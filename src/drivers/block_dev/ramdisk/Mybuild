@@ -12,4 +12,6 @@ module ramdisk {
 	depends embox.mem.pool
 	depends embox.mem.phymem
 	depends embox.util.indexator
+
+	depends embox.driver.block_dev
 }

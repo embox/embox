@@ -67,7 +67,7 @@ static inline int order_base_2(int q) {
 struct platform_device;
 struct drm_device;
 struct drm_file;
-struct file;
+struct file_desc;
 struct drm_gem_object;
 struct timespec;
 

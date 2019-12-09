@@ -34,7 +34,7 @@ const struct dumb_fs_driver *dumb_fs_driver_find(const char *name) {
 	return NULL;
 }
 
-struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file *bdev) {
+struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file_desc *bdev) {
 	const struct dumb_fs_driver *fs_drv;
 	int res;
 

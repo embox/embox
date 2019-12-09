@@ -15,7 +15,6 @@
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
 #include <fs/file_desc.h>
-#include <fs/node.h>
 
 static void bdev_idesc_close(struct idesc *desc) {
 }
@@ -28,6 +27,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	struct dev_module *devmod;
 	size_t blk_no;
 	int res;
+	off_t pos;
 
 	assert(iov);
 	buf = iov->iov_base;
@@ -36,14 +36,16 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 
 	file = (struct file_desc *) desc;
 
-	devmod = file->node->nas->fi->privdata;
+	pos = file_get_pos(file);
+
+	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
-		blk_no = file->cursor / bdev->block_size;
+		blk_no = pos / bdev->block_size;
 	} else {
 		/* It's a partition */
-		blk_no = bdev->start_offset + (file->cursor / bdev->block_size);
+		blk_no = bdev->start_offset + (pos / bdev->block_size);
 		bdev = bdev->parent_bdev;
 	}
 
@@ -53,8 +55,8 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	if (res < 0) {
 		return res;
 	}
+	file_set_pos(file, pos + res);
 
-	file->cursor += res;
 	return res;
 }
 
@@ -64,6 +66,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	struct block_dev *bdev;
 	size_t blk_no;
 	int res;
+	off_t pos;
 
 	assert(desc);
 	assert(iov);
@@ -71,14 +74,16 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 
 	file = (struct file_desc *)desc;
 
-	devmod = file->node->nas->fi->privdata;
+	pos = file_get_pos(file);
+
+	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
-		blk_no = file->cursor / bdev->block_size;
+		blk_no = pos / bdev->block_size;
 	} else {
 		/* It's a partition */
-		blk_no = bdev->start_offset + (file->cursor / bdev->block_size);
+		blk_no = bdev->start_offset + (pos / bdev->block_size);
 		bdev = bdev->parent_bdev;
 	}
 
@@ -88,7 +93,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	if (res < 0) {
 		return res;
 	}
-	file->cursor += res;
+	file_set_pos(file, pos + res);
 
 	return res;
 }
@@ -101,10 +106,8 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	assert(idesc);
 
 	file = (struct file_desc *) idesc;
-	assert(file->node);
-	assert(file->node->nas->fi->privdata);
 
-	devmod = file->node->nas->fi->privdata;
+	devmod = file_get_inode_data(file);
 	bdev = devmod->dev_priv;
 
 	switch (cmd) {

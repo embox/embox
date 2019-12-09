@@ -24,7 +24,7 @@
 POOL_DEF(superblock_pool, struct super_block, SUPERBLOCK_POOL_SIZE);
 POOL_DEF(inode_pool, struct inode, INODE_POOL_SIZE);
 POOL_DEF(dentry_pool, struct dentry, DENTRY_POOL_SIZE);
-POOL_DEF(file_pool, struct file, FILE_POOL_SIZE);
+POOL_DEF(file_pool, struct file_desc, FILE_POOL_SIZE);
 POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
 
 #define FREE_DENTRY_ANY    0
@@ -97,7 +97,7 @@ int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
  * @return Pointer to the new superblock
  * @retval NULL Superblock could not be allocated
  */
-struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file *bdev_file) {
+struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file_desc *bdev_file) {
 	struct super_block *sb;
 	assert(drv);
 
@@ -253,13 +253,13 @@ void dentry_upd_flags(struct dentry *dentry) {
  * @return Pointer to the new file descriptor
  * @retval NULL Pool is full
  */
-struct file *dvfs_alloc_file(void) {
+struct file_desc *dvfs_alloc_file(void) {
 	return pool_alloc(&file_pool);
 }
 
 /* @brief Remove file descriptor from pool
  */
-int dvfs_destroy_file(struct file *desc) {
+int dvfs_destroy_file(struct file_desc *desc) {
 	pool_free(&file_pool, desc);
 	return 0;
 }
@@ -440,7 +440,7 @@ int dvfs_destroy_sb(struct super_block *sb) {
  * if failed
  */
 int dvfs_bdev_read(
-		struct file *bdev_file,
+		struct file_desc *bdev_file,
 		char *buff,
 		size_t count,
 		int blkno) {
@@ -461,7 +461,7 @@ int dvfs_bdev_read(
  * if failed
  */
 int dvfs_bdev_write(
-		struct file *bdev_file,
+		struct file_desc *bdev_file,
 		char *buff,
 		size_t count,
 		int blkno) {

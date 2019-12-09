@@ -166,6 +166,9 @@ void kclose(struct file_desc *desc) {
 int kseek(struct file_desc *desc, long int offset, int origin) {
 	struct nas *nas;
 	struct node_info *ni;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	if (NULL == desc) {
 		return -EBADF;
@@ -176,22 +179,23 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 
 	switch (origin) {
 		case SEEK_SET:
-			desc->cursor = offset;
+			pos = offset;
 			break;
 
 		case SEEK_CUR:
-			desc->cursor += offset;
+			pos += offset;
 			break;
 
 		case SEEK_END:
-			desc->cursor = ni->size + offset;
+			pos = ni->size + offset;
 			break;
 
 		default:
 			return -EINVAL;
 	}
 
-	return desc->cursor;
+	file_set_pos(desc, pos);
+	return pos;
 }
 
 int kfstat(struct file_desc *desc, struct stat *stat_buff) {
@@ -226,6 +230,9 @@ int kioctl(struct file_desc *desc, int request, void *data) {
 
 int kftruncate(struct file_desc *desc, off_t length) {
 	int ret;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	ret = ktruncate(desc->node, length);
 	if (0 > ret) {
@@ -233,8 +240,8 @@ int kftruncate(struct file_desc *desc, off_t length) {
 		return -errno;
 	}
 
-	if (desc->cursor > length) {
-		desc->cursor = length;
+	if (pos > length) {
+		file_set_pos(desc, length);
 	}
 
 	return 0;

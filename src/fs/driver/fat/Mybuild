@@ -13,8 +13,6 @@ abstract module fat {
 	source "fat_common.c"
 	source "fatfs_subr.c"
 	source "fat_common_mem.c"
-
-	depends embox.driver.block_oldfs
 }
 
 module fat_old extends fat {
@@ -31,6 +29,6 @@ module fat_dvfs extends fat {
 
 	source "fat_dvfs.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 	depends embox.fs.dvfs.core
 }

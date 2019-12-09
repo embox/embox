@@ -858,7 +858,7 @@ static int jffs2_truncate_file (struct _inode *inode) {
 
 static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size) {
 	struct _inode *inode;
-	off_t pos = desc->cursor;
+	off_t pos = file_get_pos(desc);
 	ssize_t resid = size;
 	struct jffs2_raw_inode ri;
 	struct jffs2_inode_info *f;
@@ -931,7 +931,7 @@ static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size) {
 		inode->i_size = pos;
 	}
 
-	desc->cursor = pos;
+	file_set_pos(desc, pos);
 
 	return writtenlen;
 }
@@ -1421,6 +1421,9 @@ static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	struct jffs2_inode_info *f;
 	struct jffs2_sb_info *c;
 	size_t len;
+	off_t pos;
+
+	pos = file_get_pos(desc);
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
@@ -1428,15 +1431,15 @@ static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	f = JFFS2_INODE_INFO(fi->_inode);
 	c = &fi->_inode->i_sb->jffs2_sb;
 
-	len = min(size, fi->_inode->i_size - desc->cursor);
+	len = min(size, fi->_inode->i_size - pos);
 
 	if (0 != (rc = jffs2_read_inode_range(c, f,
-			(unsigned char *) buff, desc->cursor, len))) {
+			(unsigned char *) buff, pos, len))) {
 		SET_ERRNO(rc);
 		return 0;
 	}
 
-	desc->cursor += len;
+	file_set_pos(desc, pos + len);
 
 	return len;
 }

@@ -11,7 +11,6 @@ module cdfs {
 	option number cdfs_descriptor_quantity=4
 
 	depends embox.fs.node, embox.fs.driver.repo
-	depends embox.driver.block_oldfs
 	depends embox.mem.page_api
 	depends embox.mem.pool
 }

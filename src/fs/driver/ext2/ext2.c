@@ -449,7 +449,7 @@ static struct idesc *ext2fs_open(struct node *node, struct file_desc *desc, int 
 	nas = node->nas;
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
-	fi->f_pointer = desc->cursor; /* reset seek pointer */
+	fi->f_pointer = file_get_pos(desc); /* reset seek pointer */
 
 	if (NULL == (fi->f_buf = ext2_buff_alloc(nas, fsi->s_block_size))) {
 		return err_ptr(ENOMEM);
@@ -488,7 +488,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	fi->f_pointer = desc->cursor;
+	fi->f_pointer = file_get_pos(desc);
 
 	while (size != 0) {
 		/* XXX should handle LARGEFILE */
@@ -513,7 +513,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 		size -= csize;
 	}
 
-	desc->cursor = fi->f_pointer;
+	file_set_pos(desc, fi->f_pointer);
 
 	return (addr - (char *) buff);
 }
@@ -525,11 +525,11 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	fi->f_pointer = desc->cursor;
+	fi->f_pointer = file_get_pos(desc);
 
 	bytecount = ext2_write_file(nas, buff, size);
 
-	desc->cursor = fi->f_pointer;
+	file_set_pos(desc, fi->f_pointer);
 	nas->fi->ni.size = fi->f_di.i_size;
 
 	return bytecount;

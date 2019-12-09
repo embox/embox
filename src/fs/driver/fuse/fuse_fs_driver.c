@@ -103,7 +103,7 @@ static struct idesc *fuse_open(struct inode *node, struct idesc *desc) {
 	return desc;
 }
 
-static int fuse_close(struct file *desc) {
+static int fuse_close(struct file_desc *desc) {
 	struct inode *inode;
 	struct fuse_req_embox *req;
 	struct task *task;
@@ -152,7 +152,7 @@ static int fuse_remove(struct inode *inode) {
 	return 0;
 }
 
-static size_t fuse_read(struct file *desc, void *buf, size_t size) {
+static size_t fuse_read(struct file_desc *desc, void *buf, size_t size) {
 	struct inode *inode;
 	struct fuse_req_embox *req;
 	size_t ret;
@@ -180,7 +180,7 @@ static size_t fuse_read(struct file *desc, void *buf, size_t size) {
 	return ret;
 }
 
-static size_t fuse_write(struct file *desc, void *buf, size_t size) {
+static size_t fuse_write(struct file_desc *desc, void *buf, size_t size) {
 	struct inode *inode;
 	struct fuse_req_embox *req;
 	size_t ret;

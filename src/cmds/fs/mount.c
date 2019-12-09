@@ -67,7 +67,7 @@ static void show_mount_list(void) {
 	struct dentry *d;
 	char mount_path[DVFS_MAX_PATH_LEN];
 	char bdev_path[DVFS_MAX_PATH_LEN];
-	struct file *bdev_file;
+	struct file_desc *bdev_file;
 
 	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
 		if (d->flags & DVFS_MOUNT_POINT) {

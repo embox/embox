@@ -20,7 +20,7 @@
 
 struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 	struct idesc *idesc;
-	struct file *f;
+	struct file_desc *f;
 	int res;
 
 	idesc = idesc_serial_create(cdev->dev_priv, 0);
@@ -32,7 +32,7 @@ struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 		return err_ptr(-res);
 	}
 
-	f = mcast_out(idesc, struct file, f_idesc);
+	f = mcast_out(idesc, struct file_desc, f_idesc);
 	f->f_inode->flags |= DVFS_NO_LSEEK;
 
 	return idesc;

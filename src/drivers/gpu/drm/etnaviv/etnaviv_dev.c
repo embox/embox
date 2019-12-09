@@ -197,14 +197,14 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 void dcache_flush(const void *p, size_t size);
 static int etnaviv_ref = 0;
 static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
-	struct file *file;
+	struct file_desc *file;
 	int i, err;
 
 	if (NULL == (file = dvfs_alloc_file())) {
 		return err_ptr(ENOMEM);
 	}
 
-	*file = (struct file) {
+	*file = (struct file_desc) {
 		.f_idesc  = {
 			.idesc_ops   = &etnaviv_dev_idesc_ops,
 		},
@@ -271,7 +271,7 @@ static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 }
 
 static void etnaviv_dev_close(struct idesc *desc) {
-	dvfs_destroy_file((struct file *)desc);
+	dvfs_destroy_file((struct file_desc *)desc);
 
 	if (etnaviv_ref == 1) {
 		if (irq_detach(	GPU3D_IRQ,

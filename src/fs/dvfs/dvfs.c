@@ -136,7 +136,7 @@ extern const struct idesc_ops idesc_file_ops;
  *                 creating is not requested
  */
 struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
-	struct file *desc;
+	struct file_desc *desc;
 	struct idesc *res;
 	struct inode  *i_no;
 
@@ -148,7 +148,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 
 	i_no = lookup->item->d_inode;
 
-	*desc = (struct file) {
+	*desc = (struct file_desc) {
 		.f_dentry = lookup->item,
 		.f_inode  = i_no,
 		.f_ops    = lookup->item->d_sb->sb_fops,
@@ -218,7 +218,7 @@ int dvfs_remove(const char *path) {
  * @retval  0 Ok
  * @retval -1 Descriptor fields are inconsistent
  */
-int dvfs_close(struct file *desc) {
+int dvfs_close(struct file_desc *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
 
@@ -244,7 +244,7 @@ int dvfs_close(struct file *desc) {
  * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
-int dvfs_write(struct file *desc, char *buf, int count) {
+int dvfs_write(struct file_desc *desc, char *buf, int count) {
 	int res = 0; /* Assign to avoid compiler warning when use -O2 */
 	int retcode = count;
 	struct inode *inode;
@@ -284,7 +284,7 @@ int dvfs_write(struct file *desc, char *buf, int count) {
  * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
-int dvfs_read(struct file *desc, char *buf, int count) {
+int dvfs_read(struct file_desc *desc, char *buf, int count) {
 	int res;
 	int sz;
 	if (!desc)
@@ -306,7 +306,7 @@ int dvfs_read(struct file *desc, char *buf, int count) {
 	return res;
 }
 
-int dvfs_fstat(struct file *desc, struct stat *sb) {
+int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	*sb = (struct stat) {
 		.st_size = desc->f_inode->length,
 		.st_mode = desc->f_inode->flags,
@@ -316,8 +316,8 @@ int dvfs_fstat(struct file *desc, struct stat *sb) {
 	return 0;
 }
 
-static struct file *dvfs_get_mount_bdev(const char *dev_name) {
-	struct file *bdev_file;
+static struct file_desc *dvfs_get_mount_bdev(const char *dev_name) {
+	struct file_desc *bdev_file;
 	struct lookup lookup = {};
 	int res;
 
@@ -353,7 +353,7 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 			return NULL;
 		}
 		devfs_drv->fill_sb(&devfs_sb, bdev_file);
-		memset(bdev_file, 0, sizeof(struct file));
+		memset(bdev_file, 0, sizeof(struct file_desc));
 		bdev_file->f_inode = dvfs_alloc_inode(&devfs_sb);
 		bdev_file->f_ops   = devfs_sb.sb_fops;
 		bdev_file->f_inode->i_data = block_dev;
@@ -369,7 +369,7 @@ static struct file *dvfs_get_mount_bdev(const char *dev_name) {
 		return NULL;
 	}
 	/* TODO pass flags */
-	bdev_file = (struct file*) dvfs_file_open_idesc(&lookup, 0);
+	bdev_file = (struct file_desc*) dvfs_file_open_idesc(&lookup, 0);
 	if (err(bdev_file)) {
 		return bdev_file;
 	}
@@ -394,7 +394,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	const struct dumb_fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d = NULL;
-	struct file *bdev_file;
+	struct file_desc *bdev_file;
 	int err;
 
 	assert(dest);

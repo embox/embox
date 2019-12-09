@@ -16,7 +16,7 @@ module sdhci {
 	source "sdhci.c"
 
 	depends sdhci_ops
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 	depends embox.driver.mmc.mmc_core
 }
 
@@ -39,5 +39,5 @@ module imx6_sdhci {
 
 	source "imx6_sdhci.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 }

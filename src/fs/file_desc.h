@@ -33,7 +33,6 @@ extern off_t file_set_pos(struct file_desc *file, off_t off);
 
 extern void *file_get_inode_data(struct file_desc *file);
 
-struct node;
 extern struct file_desc *file_desc_create(struct node *node, int __oflag);
 
 extern int file_desc_destroy(struct file_desc *);

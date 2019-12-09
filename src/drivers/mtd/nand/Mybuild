@@ -8,5 +8,5 @@ module nand_dev {
 
 	source "nand.c"
 
-	depends embox.driver.block_common
+	depends embox.driver.block_dev
 }
