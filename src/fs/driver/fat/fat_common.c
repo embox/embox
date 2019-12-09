@@ -716,6 +716,8 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 	dirinfo->currentsector = 0;
 	dirinfo->currententry = 0;
 
+	dirinfo->fi.mode = S_IFDIR;
+
 	if (dir_is_root(dirname)) {
 		uint32_t ret;
 		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
@@ -1088,6 +1090,13 @@ static void fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus) {
 	de->startclus_l_h = (clus & 0xff00) >> 8;
 	de->startclus_h_l = (clus & 0xff0000) >> 16;
 	de->startclus_h_h = (clus & 0xff000000) >> 24;
+}
+
+static uint32_t fat_direntry_get_clus(struct fat_dirent *de) {
+	return (uint32_t) de->startclus_l_l |
+	  ((uint32_t) de->startclus_l_h) << 8 |
+	  ((uint32_t) de->startclus_h_l) << 16 |
+	  ((uint32_t) de->startclus_h_h) << 24;
 }
 
 static void fat_set_direntry(uint32_t dir_cluster, uint32_t cluster) {
@@ -1609,6 +1618,77 @@ uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
 	return DFS_NOTFOUND;
 }
 
+static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
+	struct fat_dirent de = { };
+	struct dirinfo saved_di = { };
+	struct dirinfo last_di = { };
+	void *p_scratch = di->p_scratch;
+	struct fat_fs_info *fsi = fi->fsi;
+
+	fat_reset_dir(di);
+
+	if (read_dir_buf(di)) {
+		return;
+	}
+
+	while (true) {
+		memcpy(&last_di, di, sizeof(last_di));
+
+		fat_get_next(di, &de);
+
+		if (fi->cluster == fat_direntry_get_clus(&de)) {
+			if (saved_di.p_scratch == NULL) {
+				/* Not a long entry */
+				return;
+			}
+
+			read_dir_buf(&saved_di);
+
+			while (saved_di.currententry != di->currententry ||
+					saved_di.currentcluster != di->currentcluster ||
+					saved_di.currentsector != di->currentsector) {
+				if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
+					return;
+				}
+
+				((struct fat_dirent*) p_scratch)[saved_di.currententry].name[0] = 0xe5;
+
+				if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
+					return;
+				}
+
+				fat_get_next(&saved_di, &de);
+			}
+
+			return;
+		}
+
+		if (de.attr != ATTR_LONG_NAME) {
+			memset(&saved_di, 0, sizeof(saved_di));
+		} else if (de.name[0] & FAT_LONG_ORDER_NUM_MASK) {
+			memcpy(&saved_di, &last_di, sizeof(saved_di));
+		}
+	}
+}
+
+static int fat_dir_empty(struct fat_file_info *fi) {
+	struct dirinfo *di = (void *) fi;
+	struct fat_dirent de = { };
+	int res;
+
+	fat_reset_dir(di);
+
+	if (read_dir_buf(di)) {
+		return 0;
+	}
+
+	while (de.name[0] == '\0' && res != DFS_EOF) {
+		res = fat_get_next(di, &de);
+	}
+
+	return DFS_EOF == res;
+}
+
 /*
  * Delete a file
  * p_scratch must point to a sector-sized buffer
@@ -1617,38 +1697,16 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
 		uint8_t *p_scratch) {
 	uint32_t tempclus;
 	struct fat_fs_info *fsi;
+	struct dirinfo *di = fi->fdi;
 
 	fsi = fi->fsi;
 
-	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-	((struct fat_dirent*) p_scratch)[fi->diroffset].name[0] = 0xe5;
-	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
-		return DFS_ERRMISC;
+	if (S_ISDIR(fi->mode) && !fat_dir_empty(fi)) {
+		return -EPERM;
 	}
 
-	/* Now follow the cluster chain to free the file space */
-	while (!fat_is_end_of_chain(fsi, fi->firstcluster)) {
-		tempclus = fi->firstcluster;
-		fi->firstcluster = fat_get_fat(fsi, p_scratch, fi->firstcluster);
-		fat_set_fat(fsi, p_scratch, tempclus, 0);
-	}
-	return DFS_OK;
-}
+	fat_dir_clean_long(di, fi);
 
-/*
- * Delete a file
- * p_scratch must point to a sector-sized buffer
- */
-int fat_unlike_directory(struct fat_file_info *fi, uint8_t *path,
-		uint8_t *p_scratch) {
-	uint32_t tempclus;
-	struct fat_fs_info *fsi;
-
-	fsi = fi->fsi;
-
-	/* First, read the directory sector and delete that entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}

@@ -1,0 +1,50 @@
+TEST_CASE {Create and remove a single file} {
+	global embox_prompt
+
+	test_exec_embox_cmd "touch f1.txt\r"
+	send "ls\r"
+	test_expect_strings "f1.txt" $embox_prompt
+	test_exec_embox_cmd "rm f1.txt\r"
+	send "ls\r"
+	test_unexpect_strings_timeout 2 "f1.txt"
+}
+
+TEST_CASE {Create and remove a single directory} {
+	global embox_prompt
+
+	test_exec_embox_cmd "mkdir dir1\r"
+	send "ls\r"
+	test_expect_strings "dir1" $embox_prompt
+
+	# rm should fail if directory is not empty
+	test_exec_embox_cmd "touch dir1/f.txt\r"
+	test_expect_strings $embox_prompt
+	send "rm dir1\r"
+	test_expect_strings $embox_prompt
+	send "ls\r"
+	test_expect_strings "dir1"
+
+	test_exec_embox_cmd "rm dir1/f.txt\r"
+	test_expect_strings $embox_prompt
+	send "rm dir1\r"
+	test_expect_strings $embox_prompt
+
+	exec sleep 1
+	send "ls\r"
+	test_unexpect_strings_timeout 2 "dir1"
+}
+
+TEST_CASE {Create and remove multiple files} {
+	global embox_prompt
+
+	exec sleep 1
+	# Touch 8 files - file0.txt, file1.txt, ..., file7.txt
+	for {set i 0} {$i < 32} {incr i} {
+		test_exec_embox_cmd "touch file$i.txt\r"
+		test_exec_embox_cmd "rm file$i.txt\r"
+	}
+	# Check first and last files are created
+	send "ls\r"
+	test_expect_strings $embox_prompt
+	test_unexpect_strings_timeout 2 "file"
+}

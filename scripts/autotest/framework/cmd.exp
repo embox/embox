@@ -7,6 +7,15 @@ proc __expect_regexp {new_timeout pattern} {
 	return 0
 }
 
+proc __unexpect_regexp {new_timeout pattern} {
+	set timeout $new_timeout
+	expect {
+		timeout { }
+		-re "$pattern" { puts "\n\nautotest error: Unexpected output: \"$pattern\"\n\n"; exit 1 }
+	}
+	return 0
+}
+
 # Sends $cmd to remote target (Embox) and sequentially waits for each
 # pattern from $args to appear
 proc test_expect_strings {args} {
@@ -19,6 +28,20 @@ proc test_expect_strings {args} {
 proc test_expect_strings_timeout {new_timeout args} {
 	foreach pattern $args {
 		__expect_regexp $new_timeout $pattern
+	}
+	return 0
+}
+
+proc test_unexpect_strings {args} {
+	foreach pattern $args {
+		__unexpect_regexp 10 $pattern
+	}
+	return 0
+}
+
+proc test_unexpect_strings_timeout {new_timeout args} {
+	foreach pattern $args {
+		__unexpect_regexp $new_timeout $pattern
 	}
 	return 0
 }
