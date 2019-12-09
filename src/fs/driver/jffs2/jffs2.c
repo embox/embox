@@ -1475,7 +1475,6 @@ static int jffs2_free_fs(struct nas *nas) {
 	return 0;
 }
 
-static int jffs2fs_init(void * par);
 static int jffs2fs_format(void *path);
 static int jffs2fs_mount(void *dev, void *dir);
 static int jffs2fs_create(struct node *parent_node, struct node *node);
@@ -1485,7 +1484,6 @@ static int jffs2fs_umount(void *dir);
 
 
 static struct fsop_desc jffs2_fsop = {
-	.init	     = jffs2fs_init,
 	.format	     = jffs2fs_format,
 	.mount	     = jffs2fs_mount,
 	.create_node = jffs2fs_create,
@@ -1497,10 +1495,6 @@ static struct fsop_desc jffs2_fsop = {
 
 	.truncate    = jffs2fs_truncate,
 	.umount      = jffs2fs_umount,
-};
-
-static int jffs2fs_init(void * par) {
-	return 0;
 };
 
 static struct fs_driver jffs2fs_driver = {

@@ -217,7 +217,6 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 
 /* File system operations */
 
-static int nfsfs_init(void * par);
 static int nfsfs_format(void * par);
 static int nfsfs_mount(void * dev, void *dir);
 static int nfsfs_create(struct node *parent_node, struct node *node);
@@ -226,7 +225,6 @@ static int nfsfs_truncate (struct node *node, off_t length);
 static int nfsfs_umount(void *dir);
 
 static struct fsop_desc nfsfs_fsop = {
-	.init = nfsfs_init,
 	.format = nfsfs_format,
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
@@ -242,11 +240,6 @@ static struct fs_driver nfsfs_driver = {
 	.fsop = &nfsfs_fsop,
 	.mount_dev_by_string = true,
 };
-
-static int nfsfs_init(void * par) {
-
-	return 0;
-}
 
 static int nfsfs_format(void *path) {
 	node_t *node;

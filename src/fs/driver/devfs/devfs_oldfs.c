@@ -15,10 +15,6 @@
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
 
-static int devfs_init(void *par) {
-	return 0;
-}
-
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
 	struct path node, root;
@@ -41,7 +37,6 @@ static int devfs_mount(void *dev, void *dir) {
 }
 
 static struct fsop_desc devfs_fsop = {
-	.init = devfs_init,
 	.mount = devfs_mount,
 };
 

@@ -275,11 +275,6 @@ static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return rezult;
 }
 
-/* File system operations */
-static int fatfs_init(void * par) {
-	return 0;
-}
-
 static int fatfs_format(void *dev) {
 	struct node *dev_node;
 	struct nas *dev_nas;
@@ -445,7 +440,6 @@ static int fatfs_umount(void *dir) {
 }
 
 static struct fsop_desc fatfs_fsop = {
-	.init = fatfs_init,
 	.format = fatfs_format,
 	.mount = fatfs_mount,
 	.create_node = fatfs_create,

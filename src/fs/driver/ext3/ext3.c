@@ -117,11 +117,6 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
-
-static int ext3fs_init(void *par) {
-	return 0;
-};
-
 static int ext3fs_create(struct node *parent_node, struct node *node) {
 	struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
@@ -351,7 +346,6 @@ static struct file_operations ext3_fop = {
 };
 
 static struct fsop_desc ext3_fsop = {
-	.init	     = ext3fs_init,
 	.format	     = ext3fs_format,
 	.mount	     = ext3fs_mount,
 	.create_node = ext3fs_create,

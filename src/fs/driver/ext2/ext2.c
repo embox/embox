@@ -538,7 +538,6 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas);
 static void ext2_free_fs(struct nas *nas);
 static int ext2_umount_entry(struct nas *nas);
 
-static int ext2fs_init(void * par);
 static int ext2fs_format(void *path);
 static int ext2fs_mount(void *dev, void *dir);
 static int ext2fs_create(struct node *parent_node, struct node *node);
@@ -548,7 +547,6 @@ static int ext2fs_umount(void *dir);
 
 
 static struct fsop_desc ext2_fsop = {
-	.init	     = ext2fs_init,
 	.format	     = ext2fs_format,
 	.mount	     = ext2fs_mount,
 	.create_node = ext2fs_create,
@@ -560,10 +558,6 @@ static struct fsop_desc ext2_fsop = {
 
 	.truncate    = ext2fs_truncate,
 	.umount      = ext2fs_umount,
-};
-
-static int ext2fs_init(void * par) {
-	return 0;
 };
 
 static struct fs_driver ext2fs_driver = {

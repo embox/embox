@@ -642,7 +642,6 @@ static int ext4_unlink(struct nas *dir_nas, struct nas *nas);
 static void ext4_free_fs(struct nas *nas);
 static int ext4_umount_entry(struct nas *nas);
 
-static int ext4fs_init(void * par);
 static int ext4fs_format(void *dev);
 static int ext4fs_mount(void *dev, void *dir);
 static int ext4fs_create(struct node *parent_node, struct node *node);
@@ -652,7 +651,6 @@ static int ext4fs_umount(void *dir);
 
 
 static struct fsop_desc ext4_fsop = {
-	.init	     = ext4fs_init,
 	.format      = ext4fs_format,
 	.mount	     = ext4fs_mount,
 	.create_node = ext4fs_create,
@@ -664,10 +662,6 @@ static struct fsop_desc ext4_fsop = {
 
 	.truncate    = ext4fs_truncate,
 	.umount      = ext4fs_umount,
-};
-
-static int ext4fs_init(void * par) {
-	return 0;
 };
 
 static struct fs_driver ext4fs_driver = {

@@ -384,7 +384,6 @@ static int ramfs_mount(void *dev, void *dir) {
 static int ramfs_init(void * par);
 
 static struct fsop_desc ramfs_fsop = {
-	.init = ramfs_init,
 	.format = ramfs_format,
 	.mount = ramfs_mount,
 	.create_node = ramfs_create,
