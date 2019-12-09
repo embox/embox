@@ -31,161 +31,12 @@
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 #include "ramfs.h"
 
-/* define sizes in 4096 blocks */
-#define MAX_FILE_SIZE   OPTION_GET(NUMBER, ramfs_file_size)
-#define RAMFS_FILES     OPTION_GET(NUMBER, inode_quantity)
-#define FILESYSTEM_SIZE (MAX_FILE_SIZE * RAMFS_FILES)
-
 /* ramfs filesystem description pool */
-POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
+POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, RAMFS_DESCRIPTORS);
 
 struct ramfs_file_info ramfs_files[RAMFS_FILES];
 
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
-
-static char sector_buff[PAGE_SIZE()];/* TODO */
-
-static int ramfs_close(struct file_desc *desc) {
-	return 0;
-}
-
-static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
-	struct ramfs_fs_info *fsi;
-	void *pbuf, *ebuf;
-	struct block_dev *bdev;
-	struct ramfs_file_info *fi;
-	off_t pos;
-
-	assert(desc);
-
-	fsi = desc->f_inode->i_sb->sb_data;
-	assert(fsi);
-
-	fi = desc->f_inode->i_data;
-	assert(fi);
-
-	bdev = desc->f_inode->i_sb->bdev;
-	assert(bdev);
-
-	pos = file_get_pos(desc);
-
-	pbuf = buf;
-	ebuf = buf + min(file_get_size(desc) - desc->pos, size);
-
-	while (pbuf < ebuf) {
-		blkno_t blk = pos / fsi->block_size;
-		int offset = pos % fsi->block_size;
-		int read_n;
-
-		assert(blk < fsi->block_per_file);
-		assert(blk < fsi->numblocks);
-
-		assert(sizeof(sector_buff) == fsi->block_size);
-		if (0 > block_dev_read(bdev, sector_buff, fsi->block_size, blk)) {
-			break;
-		}
-
-		read_n = min(fsi->block_size - offset, ebuf - pbuf);
-		memcpy (pbuf, sector_buff + offset, read_n);
-
-		pbuf += read_n;
-	}
-
-	file_set_pos(desc, pos);
-
-	return pbuf - buf;
-}
-
-static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
-	struct ramfs_file_info *fi;
-	size_t len;
-	size_t current, cnt;
-	uint32_t end_pointer;
-	blkno_t blk;
-	uint32_t bytecount;
-	uint32_t start_block;
-	struct ramfs_fs_info *fsi;
-	struct block_dev *bdev;
-	off_t pos;
-
-	assert(desc);
-
-	fsi = desc->f_inode->i_sb->sb_data;
-	assert(fsi);
-
-	fi = desc->f_inode->i_data;
-	assert(fi);
-
-	bdev = desc->f_inode->i_sb->bdev;
-	assert(bdev);
-
-	pos = file_get_pos(desc);
-
-	bytecount = 0;
-
-	fi->pointer = pos;
-	len = size;
-	end_pointer = fi->pointer + len;
-	start_block = fi->index * fsi->block_per_file;
-
-	while (1) {
-		assert(fsi->block_size > 0);
-		blk = fi->pointer / fsi->block_size;
-		/* check if block over the file */
-		if (blk >= fsi->block_per_file) {
-			bytecount = 0;
-			break;
-		}
-
-		blk += start_block;
-
-		/* calculate pointer in scratch buffer */
-		current = fi->pointer % fsi->block_size;
-
-		/* set the counter how many bytes written in block */
-		if (end_pointer - fi->pointer > fsi->block_size) {
-			if(current) {
-				cnt = fsi->block_size - current;
-			} else {
-				cnt = fsi->block_size;
-			}
-		} else {
-			cnt = end_pointer - fi->pointer;
-			/* over the block ? */
-			if((current + cnt) > fsi->block_size) {
-				cnt -= (current + cnt) % fsi->block_size;
-			}
-		}
-
-		/* one 4096-bytes block read operation */
-		if(0 > block_dev_read(bdev, sector_buff, fsi->block_size, blk)) {
-			bytecount = 0;
-			break;
-		}
-
-		/* set new data in block */
-		memcpy (sector_buff + current, buf, cnt);
-
-		/* write one block to device */
-		if(0 > block_dev_write(bdev, sector_buff, fsi->block_size, blk)) {
-			bytecount = 0;
-			break;
-		}
-		bytecount += cnt;
-		buf = (uint8_t*) buf + cnt;
-		/* shift the pointer */
-		fi->pointer += cnt;
-		if(end_pointer <= fi->pointer) {
-			break;
-		}
-	}
-	/* if we write over the last EOF, set new filelen */
-	if (file_get_size(desc) < fi->pointer) {
-		file_set_size(desc, fi->pointer)
-	}
-
-	return bytecount;
-}
 
 static int ramfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
 	struct ramfs_fs_info *fsi;
@@ -319,6 +170,9 @@ struct inode_operations ramfs_iops = {
 	.truncate = ramfs_truncate,
 };
 
+int    ramfs_close(struct file_desc *desc);
+size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
+size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
 struct file_operations ramfs_fops = {
 	.close = ramfs_close,
 	.write = ramfs_write,
@@ -359,6 +213,7 @@ static int ramfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
 	fsi->block_size = PAGE_SIZE();
 	fsi->numblocks = block_dev(bdev_file->f_inode->i_data)->size / PAGE_SIZE();
+	fsi->bdev = block_dev(bdev_file->f_inode->i_data);
 
 	sb->sb_data = fsi;
 	sb->sb_iops = &ramfs_iops;
