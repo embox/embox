@@ -4,6 +4,7 @@ TEST_CASE {Mount/umount should work multiple times} {
 	global mount_dir
 	global fs_type
 
+	test_exec_embox_cmd "cd /\r"
 	test_exec_embox_cmd "umount $mount_dir\r"
 
 	for {set i 0} {$i < 8} {incr i} {
