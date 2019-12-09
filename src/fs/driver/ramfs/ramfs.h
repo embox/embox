@@ -24,19 +24,19 @@
 #define ATTR_LONG_NAME  \
 	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
 
-typedef struct ramfs_fs_info {
+struct ramfs_fs_info {
 	uint32_t numblocks;      /* number of block in volume */
 	uint32_t block_size;     /* size of block */
 	uint32_t block_per_file; /* max number of blocks filesize*/
-} ramfs_fs_info_t;
+};
 
-typedef struct ramfs_file_info {
+struct ramfs_file_info {
 	int     index;           /* number of file in FS*/
 	int     mode;            /* mode in which this file was opened */
 	uint32_t pointer;        /* current (BYTE) pointer */
 	char    name[RAMFS_NAME_LEN];
 	struct inode *inode;
-	ramfs_fs_info_t *fsi;
+	struct ramfs_fs_info *fsi;
 } ramfs_file_info_t;
 
 #endif /* RAMFS_H_ */

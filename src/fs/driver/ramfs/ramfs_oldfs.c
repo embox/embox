@@ -50,84 +50,20 @@ INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
-#define RAMFS_DEV  "/dev/ram#"
-static char ramfs_dev[] = RAMFS_DEV;
-
-static int ramfs_format(void *path);
-static int ramfs_mount(void *dev, void *dir);
-
-static int ramfs_init(void * par) {
-	struct path dir_node;
-	struct node *dev_node;
-	int res;
-	struct ramdisk *ramdisk;
-
-	if (!par) {
-		return 0;
-	}
-
-	/*TODO */
-
-	vfs_lookup(RAMFS_DIR, &dir_node);
-
-	if (dir_node.node == NULL) {
-		return -ENOENT;
-	}
-
-	if (err(ramdisk = ramdisk_create(ramfs_dev, FILESYSTEM_SIZE))) {
-		return err(ramdisk);
-	}
-
-	dev_node = ramdisk->bdev->dev_vfs_info;
-	assert(dev_node != NULL);
-
-	/* format filesystem */
-	res = ramfs_format(dev_node);
-	if (res != 0) {
-		return res;
-	}
-
-	/* mount filesystem */
-	return ramfs_mount(dev_node, dir_node.node);
+static int ramfs_close(struct file_desc *desc) {
+	return 0;
 }
-
-static int ramfs_ramdisk_fs_init(void) {
-	return ramfs_init(ramfs_dev);
-}
-
-EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
-
-
-static struct idesc *ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
-static int    ramfs_close(struct file_desc *desc);
-static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
-static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
-
-static struct file_operations ramfs_fop = {
-	.open = ramfs_open,
-	.close = ramfs_close,
-	.read = ramfs_read,
-	.write = ramfs_write,
-};
-
-/*
- * file_operation
- */
 
 static struct idesc *ramfs_open(struct node *node, struct file_desc *desc, int flags) {
 	struct nas *nas;
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 
 	nas = node->nas;
-	fi = (ramfs_file_info_t *)nas->fi->privdata;
+	fi = (struct ramfs_file_info *)nas->fi->privdata;
 
 	fi->pointer = file_get_pos(desc);;
 
 	return &desc->idesc;
-}
-
-static int ramfs_close(struct file_desc *desc) {
-	return 0;
 }
 
 static int ramfs_read_sector(struct nas *nas, char *buffer,
@@ -175,15 +111,27 @@ static int ramfs_write_sector(struct nas *nas, char *buffer,
 }
 
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
-	struct nas *nas = desc->node->nas;
-	struct ramfs_fs_info *fsi = nas->fs->fsi;
+	struct ramfs_fs_info *fsi;
 	void *pbuf, *ebuf;
+	struct block_dev *bdev;
+	struct ramfs_file_info *fi;
 	off_t pos;
+
+	assert(desc);
+
+	fsi = desc->node->nas->fs->fsi;
+	assert(fsi);
+
+	fi = desc->node->nas->fi->privdata;
+	assert(fi);
+
+	bdev = desc->node->nas->fs->bdev;
+	assert(bdev);
 
 	pos = file_get_pos(desc);
 
 	pbuf = buf;
-	ebuf = buf + min(nas->fi->ni.size - pos, size);
+	ebuf = buf + min(desc->node->nas->fi->ni.size - pos, size);
 	while (pbuf < ebuf) {
 		blkno_t blk = pos / fsi->block_size;
 		int offset = pos % fsi->block_size;
@@ -193,7 +141,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		assert (blk < fsi->numblocks);
 
 		assert(sizeof(sector_buff) == fsi->block_size);
-		if(1 != ramfs_read_sector(nas, sector_buff, 1, blk)) {
+		if(1 != ramfs_read_sector(desc->node->nas, sector_buff, 1, blk)) {
 			break;
 		}
 
@@ -210,7 +158,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 	size_t len;
 	size_t current, cnt;
 	uint32_t end_pointer;
@@ -224,7 +172,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	pos = file_get_pos(desc);
 
 	nas = desc->node->nas;
-	fi = (ramfs_file_info_t *)nas->fi->privdata;
+	fi = (struct ramfs_file_info *)nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
 	bytecount = 0;
@@ -297,71 +245,15 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return bytecount;
 }
 
+static struct file_operations ramfs_fop = {
+	.open = ramfs_open,
+	.close = ramfs_close,
+	.read = ramfs_read,
+	.write = ramfs_write,
+};
 
-/*
-static int ramfs_seek(void *file, long offset, int whence);
-static int ramfs_stat(void *file, void *buff);
-
-static int ramfs_fseek(void *file, long offset, int whence) {
-	struct file_desc *desc;
-	ramfs_file_info_t *fi;
-	uint32_t curr_offset;
-
-	curr_offset = offset;
-
-	desc = (struct file_desc *) file;
-	fi = (ramfs_file_info_t *)desc->node->fi;
-
-	switch (whence) {
-	case SEEK_SET:
-		break;
-	case SEEK_CUR:
-		curr_offset += fi->pointer;
-		break;
-	case SEEK_END:
-		curr_offset = fi->filelen + offset;
-		break;
-	default:
-		return -1;
-	}
-
-	if (curr_offset > fi->filelen) {
-		curr_offset = fi->filelen;
-	}
-	fi->pointer = curr_offset;
-	return 0;
-}
-static int ramfs_stat(void *file, void *buff) {
-	struct file_desc *desc;
-	ramfs_file_info_t *fi;
-	struct stat *buffer;
-
-	desc = (struct file_desc *) file;
-	fi = (ramfs_file_info_t *)desc->node->fi;
-	buffer = (struct stat *) buff;
-
-	if (buffer) {
-			memset(buffer, 0, sizeof(struct stat));
-
-			buffer->st_mode = fi->mode;
-			buffer->st_ino = fi->index;
-			buffer->st_nlink = 1;
-			buffer->st_dev = *(int *) fsi->bdev;
-			buffer->st_atime = buffer->st_mtime = buffer->st_ctime = 0;
-			buffer->st_size = fi->filelen;
-			buffer->st_blksize = fsi->block_size;
-			buffer->st_blocks = fsi->numblocks;
-		}
-
-	return fi->filelen;
-}
-*/
-
-
-
-
-static ramfs_file_info_t *ramfs_create_file(struct nas *nas) {
-	ramfs_file_info_t *fi;
+static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
+	struct ramfs_file_info *fi;
 	size_t fi_index;
 
 	fi = pool_alloc(&ramfs_file_pool);
@@ -492,6 +384,7 @@ static int ramfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
+static int ramfs_init(void * par);
 
 static struct fsop_desc ramfs_fsop = {
 	.init = ramfs_init,
@@ -511,3 +404,47 @@ static struct fs_driver ramfs_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);
 
+/****************/
+EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
+
+#define RAMFS_DEV  "/dev/ram#"
+static char ramfs_dev[] = RAMFS_DEV;
+
+static int ramfs_init(void * par) {
+	struct path dir_node;
+	struct node *dev_node;
+	int res;
+	struct ramdisk *ramdisk;
+
+	if (!par) {
+		return 0;
+	}
+
+	/*TODO */
+
+	vfs_lookup(RAMFS_DIR, &dir_node);
+
+	if (dir_node.node == NULL) {
+		return -ENOENT;
+	}
+
+	if (err(ramdisk = ramdisk_create(ramfs_dev, FILESYSTEM_SIZE))) {
+		return err(ramdisk);
+	}
+
+	dev_node = ramdisk->bdev->dev_vfs_info;
+	assert(dev_node != NULL);
+
+	/* format filesystem */
+	res = ramfs_format(dev_node);
+	if (res != 0) {
+		return res;
+	}
+
+	/* mount filesystem */
+	return ramfs_mount(dev_node, dir_node.node);
+}
+
+static int ramfs_ramdisk_fs_init(void) {
+	return ramfs_init(ramfs_dev);
+}
