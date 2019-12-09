@@ -217,7 +217,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 
 /* File system operations */
 
-static int nfsfs_format(void * par);
+static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_mount(void * dev, void *dir);
 static int nfsfs_create(struct node *parent_node, struct node *node);
 static int nfsfs_delete(struct node *node);
@@ -241,15 +241,7 @@ static struct fs_driver nfsfs_driver = {
 	.mount_dev_by_string = true,
 };
 
-static int nfsfs_format(void *path) {
-	node_t *node;
-	node_t *root;
-
-	root = vfs_get_root();
-
-	if (NULL == (node = vfs_subtree_lookup(root, path))) {
-		return -ENODEV;
-	}
+static int nfsfs_format(struct block_dev *bdev, void *priv) {
 	/* TODO format command support */
 	return 0;
 }

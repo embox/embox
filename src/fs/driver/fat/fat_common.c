@@ -2188,3 +2188,33 @@ size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 int fat_close(struct file_desc *desc) {
 	return 0;
 }
+
+#define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
+/**
+ * @brief Format given block device
+ * @param dev Pointer to device
+ * @note Should be block device
+ *
+ * @return Negative error code or 0 if succeed
+ */
+int fat_format(struct block_dev *dev, void *priv) {
+	int fat_n = priv ? atoi((char*) priv) : 0;
+	struct block_dev *bdev = dev;
+
+	assert(dev);
+
+	if (!fat_n) {
+		fat_n = DEFAULT_FAT_VERSION;
+	}
+
+	if (fat_n != 12 && fat_n != 16 && fat_n != 32) {
+		log_error("Unsupported FAT version: FAT%d "
+				"(FAT12/FAT16/FAT32 available)", fat_n);
+		return -EINVAL;
+	}
+
+	fat_create_partition(bdev, fat_n);
+	fat_root_dir_record(bdev);
+
+	return 0;
+}

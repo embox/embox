@@ -49,9 +49,49 @@ POOL_DEF(ramfs_file_pool, struct ramfs_file_info, RAMFS_FILES);
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
+static char ramfs_dev[] = RAMFS_DEV;
 
-static int ramfs_close(struct file_desc *desc) {
-	return 0;
+static int ramfs_format(struct block_dev *bdev, void *priv);
+static int ramfs_mount(void *dev, void *dir);
+
+static int ramfs_init(void * par) {
+	struct path dir_node;
+	struct node *dev_node;
+	int res;
+	struct ramdisk *ramdisk;
+
+	if (!par) {
+		return 0;
+	}
+
+	/*TODO */
+
+	vfs_lookup(RAMFS_DIR, &dir_node);
+
+	if (dir_node.node == NULL) {
+		return -ENOENT;
+	}
+
+	if (err(ramdisk = ramdisk_create(ramfs_dev, FILESYSTEM_SIZE))) {
+		return err(ramdisk);
+	}
+
+	dev_node = ramdisk->bdev->dev_vfs_info;
+	assert(dev_node != NULL);
+
+	/* format filesystem */
+	res = ramfs_format(dev_node->nas->fi->privdata, NULL);
+	if (res != 0) {
+		return res;
+	}
+
+	/* mount filesystem */
+	return ramfs_mount(dev_node, dir_node.node);
+}
+
+static int ramfs_ramdisk_fs_init(void) {
+	return ramfs_init(ramfs_dev);
+>>>>>>> 3d11a6b0c... fs/drivers: Make `format()` function VFS-agnostic:src/fs/driver/ramfs/ramfs.c
 }
 
 static struct idesc *ramfs_open(struct node *node, struct file_desc *desc, int flags) {
@@ -315,24 +355,15 @@ static int ramfs_truncate(struct node *node, off_t length) {
 	return 0;
 }
 
-static int ramfs_format(void *dev) {
-	node_t *dev_node;
-	struct nas *dev_nas;
-	struct node_fi *dev_fi;
-
-	if (NULL == (dev_node = dev)) {
-		return -ENODEV;/*device not found*/
-	}
-
-	if(!node_is_block_dev(dev_node)) {
+static int ramfs_format(struct block_dev *bdev, void *priv) {
+	if (NULL == bdev) {
 		return -ENODEV;
 	}
-	dev_nas = dev_node->nas;
-	dev_fi = dev_nas->fi;
 
-	if(MAX_FILE_SIZE > block_dev(dev_fi->privdata)->size) {
+	if (MAX_FILE_SIZE > bdev->size) {
 		return -ENOSPC;
 	}
+
 	return 0;
 }
 

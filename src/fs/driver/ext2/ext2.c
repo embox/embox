@@ -538,7 +538,7 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas);
 static void ext2_free_fs(struct nas *nas);
 static int ext2_umount_entry(struct nas *nas);
 
-static int ext2fs_format(void *path);
+static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(void *dev, void *dir);
 static int ext2fs_create(struct node *parent_node, struct node *node);
 static int ext2fs_delete(struct node *node);
@@ -767,12 +767,7 @@ static int ext2_mark_bitmap(void *bdev, struct ext2sb *sb,
 }
 
 
-static int ext2fs_format(void *dev) {
-	int rc;
-	struct node *dev_node;
-	struct nas *dev_nas;
-	struct node_fi *dev_fi;
-	struct block_dev *bdev;
+static int ext2fs_format(struct block_dev *bdev, void *priv) {
 	struct ext2sb sb;
 	struct ext2_gd gd;
 	struct ext2fs_dinode *di;
@@ -782,18 +777,9 @@ static int ext2fs_format(void *dev) {
 	int sector;
 	float dev_factor;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		rc = ENODEV;
-		return -rc;
-	}
-
 	memset(&sb, 0, sizeof(struct ext2sb));
 	memset(&gd, 0, sizeof(struct ext2_gd));
 
-	bdev = (struct block_dev *) dev_fi->privdata;
 	dev_size = block_dev_size(bdev);
 	dev_bsize = block_dev_block_size(bdev);
 	dev_factor = SBSIZE / dev_bsize;

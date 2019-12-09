@@ -167,16 +167,13 @@ static int ext3fs_delete(struct node *node) {
 
 extern int main_mke2fs(int argc, char **argv);
 
-static int ext3fs_format(void *dev) {
-	struct node *dev_node;
+static int ext3fs_format(struct block_dev *bdev, void *priv) {
 	int argc = 6;
 	char *argv[6];
 	char dev_path[64];
 
-	dev_node = dev;
-
 	strcpy(dev_path, "/dev/");
-	strcat(dev_path, dev_node->name);
+	strcat(dev_path, bdev->name);
 
 	argv[0] = "mke2fs";
 	argv[1] = "-b";

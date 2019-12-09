@@ -8,16 +8,17 @@
 #ifndef FS_DRV_H_
 #define FS_DRV_H_
 
-
-#include <util/array.h>
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <sys/types.h>
+#include <util/array.h>
+
+#include <drivers/block_dev.h>
 
 struct node;
 
 struct fsop_desc {
-	int (*format)(void *par);
+	int (*format)(struct block_dev *bdev, void *priv);
 	int (*mount)(void *dev_node, void *dir_node);
 	int (*create_node)(struct node *parent_node, struct node *new_node);
 	int (*delete_node)(struct node *node);

@@ -1475,7 +1475,7 @@ static int jffs2_free_fs(struct nas *nas) {
 	return 0;
 }
 
-static int jffs2fs_format(void *path);
+static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_mount(void *dev, void *dir);
 static int jffs2fs_create(struct node *parent_node, struct node *node);
 static int jffs2fs_delete(struct node *node);
@@ -1637,13 +1637,10 @@ static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
 	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
 }
 
-static int jffs2fs_format(void *dev) {
-	struct node *dev_node = dev;
+static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	char flash_node_name[PATH_MAX];
 
-	if (0 > jffs_flash_name(dev_node, flash_node_name)) {
-		return -ERANGE;
-	}
+	snprintf(flash_node_name, PATH_MAX, "%s_flash", bdev->name);
 
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }

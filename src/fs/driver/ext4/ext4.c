@@ -642,7 +642,7 @@ static int ext4_unlink(struct nas *dir_nas, struct nas *nas);
 static void ext4_free_fs(struct nas *nas);
 static int ext4_umount_entry(struct nas *nas);
 
-static int ext4fs_format(void *dev);
+static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_mount(void *dev, void *dir);
 static int ext4fs_create(struct node *parent_node, struct node *node);
 static int ext4fs_delete(struct node *node);
@@ -707,16 +707,13 @@ static int ext4fs_create(struct node *parent_node, struct node *node) {
 
 extern int main_mke2fs(int argc, char **argv);
 
-static int ext4fs_format(void *dev) {
-	struct node *dev_node;
+static int ext4fs_format(struct block_dev *dev, void *priv) {
 	int argc = 6;
 	char *argv[6];
 	char dev_path[64];
 
-	dev_node = dev;
-
 	strcpy(dev_path, "/dev/");
-	strcat(dev_path, dev_node->name);
+	strcat(dev_path, dev->name);
 
 	argv[0] = "mke2fs";
 	argv[1] = "-b";

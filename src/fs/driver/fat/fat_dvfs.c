@@ -22,8 +22,6 @@
 
 #include "fat.h"
 
-#define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
-
 /**
  * @brief Set appropriate flags and i_data for given inode
  *
@@ -452,37 +450,6 @@ static int fat_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-
-/**
- * @brief Format given block device
- * @param dev Pointer to device
- * @note Should be block device
- *
- * @return Negative error code or 0 if succeed
- */
-static int fat_format(void *dev, void *priv) {
-	int fat_n = priv ? atoi((char*) priv) : 0;
-	struct block_dev *bdev;
-
-	assert(dev);
-
-	if (!fat_n) {
-		fat_n = DEFAULT_FAT_VERSION;
-	}
-
-	if (fat_n != 12 && fat_n != 16 && fat_n != 32) {
-		log_error("Unsupported FAT version: FAT%d "
-				"(FAT12/FAT16/FAT32 available)", fat_n);
-		return -EINVAL;
-	}
-
-	bdev = dev_module_to_bdev(dev);
-	fat_create_partition(bdev, fat_n);
-	fat_root_dir_record(bdev);
-
-	return 0;
-}
-
 /**
  * @brief Cleanup FS-specific stuff. No need to clean all files: VFS should
  * do it by itsekft
@@ -510,6 +477,7 @@ static int fat_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
+extern int fat_format(struct block_dev *dev, void *priv);
 static const struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,

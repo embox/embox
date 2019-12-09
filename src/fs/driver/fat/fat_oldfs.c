@@ -233,22 +233,6 @@ static struct idesc *fatfs_open(struct node *node, struct file_desc *desc,  int 
 	return err_ptr(res);
 }
 
-static int fatfs_format(void *dev) {
-	struct node *dev_node;
-	struct nas *dev_nas;
-
-	if (NULL == (dev_node = dev)) {
-		return -ENODEV;/*device not found*/
-	}
-
-	dev_nas = dev_node->nas;
-
-	fat_create_partition(dev_nas->fi->privdata, 12);
-	fat_root_dir_record(dev_nas->fi->privdata);
-
-	return 0;
-}
-
 static int fatfs_mount(void *dev, void *dir) {
 	struct node *dir_node, *dev_node;
 	struct nas *dir_nas, *dev_nas;
@@ -397,8 +381,9 @@ static int fatfs_umount(void *dir) {
 	return 0;
 }
 
+extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
-	.format = fatfs_format,
+	.format = fat_format,
 	.mount = fatfs_mount,
 	.create_node = fatfs_create,
 	.delete_node = fatfs_delete,

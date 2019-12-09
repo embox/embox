@@ -371,7 +371,15 @@ static int ramfs_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-static int ramfs_format(void *dev, void *priv) {
+static int ramfs_format(struct block_dev *bdev, void *priv) {
+	if (NULL == bdev) {
+		return -ENODEV;
+	}
+
+	if (MAX_FILE_SIZE > bdev->size) {
+		return -ENOSPC;
+	}
+
 	return 0;
 }
 
