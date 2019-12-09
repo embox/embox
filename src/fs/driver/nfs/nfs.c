@@ -95,7 +95,6 @@ static int nfsfs_close(struct file_desc *desc) {
 	nas = desc->node->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
 	fi->offset = 0;
-	file_set_pos(desc, 0);
 
 	return 0;
 }
@@ -144,7 +143,6 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 	}
-	file_set_pos(desc, fi->offset);
 	return datalen;
 }
 
@@ -184,8 +182,6 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	if (nas->fi->ni.size < pos) {
 		nas->fi->ni.size = pos;
 	}
-
-	file_set_pos(desc, fi->offset);
 
 	return reply.count;
 }

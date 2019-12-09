@@ -336,10 +336,6 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	res = smbc_getFunctionRead(fsi->ctx)(fsi->ctx, file, buf, size);
 
-	if (res > 0) {
-		file_set_pos(file_desc, pos + res);
-	}
-
 	return res;
 }
 
@@ -366,7 +362,6 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	res = smbc_getFunctionWrite(fsi->ctx)(fsi->ctx, file, buf, size);
 
 	if (res > 0) {
-		pos = file_set_pos(file_desc, pos + res);
 		file_desc->node->nas->fi->ni.size = max(file_desc->node->nas->fi->ni.size, pos);
 	}
 

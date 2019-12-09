@@ -617,8 +617,6 @@ static size_t ext4fs_read(struct file_desc *desc, void *buff, size_t size) {
 		size -= csize;
 	}
 
-	file_set_pos(desc, fi->f_pointer);
-
 	return (addr - (char *) buff);
 }
 
@@ -633,7 +631,6 @@ static size_t ext4fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	bytecount = ext4_write_file(nas, buff, size);
 
-	file_set_pos(desc, fi->f_pointer);
 	nas->fi->ni.size = ext4_file_size(fi->f_di);
 
 	return bytecount;

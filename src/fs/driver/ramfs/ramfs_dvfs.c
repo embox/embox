@@ -183,8 +183,6 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		desc->f_inode->length = fi->pointer;
 	}
 
-	file_set_pos(desc, fi->pointer);
-
 	return bytecount;
 }
 

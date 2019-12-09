@@ -931,8 +931,6 @@ static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size) {
 		inode->i_size = pos;
 	}
 
-	file_set_pos(desc, pos);
-
 	return writtenlen;
 }
 
@@ -1438,8 +1436,6 @@ static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 		SET_ERRNO(rc);
 		return 0;
 	}
-
-	file_set_pos(desc, pos + len);
 
 	return len;
 }

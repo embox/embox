@@ -124,6 +124,9 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 	}
 
 	ret = file->ops->write(file, (void *)buf, size);
+	if (ret > 0) {
+		file_set_pos(file, file_get_pos(file) + ret);
+	}
 
 end:
 	return ret;
@@ -148,6 +151,9 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 	}
 
 	ret = desc->ops->read(desc, buf, size);
+	if (ret > 0) {
+		file_set_pos(file, file_get_pos(file) + ret);
+	}
 
 end:
 	return ret;

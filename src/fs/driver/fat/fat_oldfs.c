@@ -252,7 +252,6 @@ static size_t fatfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
 	if (DFS_OK == rezult) {
-		file_set_pos(desc, fi->pointer);
 		return bytecount;
 	}
 	return rezult;
@@ -271,7 +270,6 @@ static size_t fatfs_write(struct file_desc *desc, void *buf, size_t size) {
 	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
 			&bytecount, size, &desc->node->nas->fi->ni.size);
 	if (DFS_OK == rezult) {
-		file_set_pos(desc, fi->pointer);
 		return bytecount;
 	}
 	return rezult;

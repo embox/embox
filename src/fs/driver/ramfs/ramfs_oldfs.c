@@ -152,8 +152,6 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		pbuf += read_n;
 	}
 
-	file_set_pos(desc, pos);
-
 	return pbuf - buf;
 }
 
@@ -241,7 +239,6 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		nas->fi->ni.size = fi->pointer;
 	}
 
-	file_set_pos(desc, fi->pointer);
 	return bytecount;
 }
 

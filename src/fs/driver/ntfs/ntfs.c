@@ -538,10 +538,6 @@ static size_t ntfs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	res = ntfs_attr_pread(desc->attr, pos, size, buf);
 
-	if (res > 0) {
-		file_set_pos(file_desc, pos + res);
-	}
-
 	return res;
 }
 
@@ -557,7 +553,6 @@ static size_t ntfs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	res = ntfs_attr_pwrite(desc->attr, pos, size, buf);
 
 	if (res > 0) {
-		file_set_pos(file_desc, pos + res);
 		file_desc->node->nas->fi->ni.size = desc->attr->data_size;
 	}
 
