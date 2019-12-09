@@ -192,6 +192,7 @@ struct dentry *dvfs_alloc_dentry(void) {
 	memset(dentry, 0, sizeof(struct dentry));
 	dentry_ref_inc(dentry);
 
+	dlist_head_init(&dentry->d_lnk);
 	dlist_add_next(&dentry->d_lnk, &dentry_dlist);
 	dlist_init(&dentry->children);
 
@@ -292,7 +293,6 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 	dentry->d_sb        = sb;
 	dentry->d_ops       = sb ? sb->sb_dops : NULL;
 	dentry->parent      = parent;
-	dentry->d_lnk       = dentry->d_lnk;
 	dentry->usage_count = 1;
 
 	if (inode) {
