@@ -161,7 +161,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	assert(desc->f_ops);
 	if (desc->f_ops->open) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
-		if (err(res)) {
+		if (res == NULL) {
 			return NULL;
 		}
 	}
@@ -428,28 +428,27 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 			goto err_free_all;
 		}
 
+		if (lookup.item->flags & DVFS_MOUNT_POINT) {
+			err = -EBUSY;
+			goto err_free_all;
+		}
+
 		if (!(lookup.item->flags & S_IFDIR)) {
 			err = -EINVAL;
 			goto err_free_all;
 		}
 
-		if (!(lookup.item->flags & DVFS_DIR_VIRTUAL)) {
-			/* Hide dentry of the directory */
-			dlist_del(&lookup.item->children_lnk);
-			dvfs_cache_del(lookup.item);
+		dentry_disconnect(lookup.item);
 
-			d = dvfs_alloc_dentry();
+		d = dvfs_alloc_dentry();
 
-			dentry_fill(sb, NULL, d, lookup.parent);
-			strcpy(d->name, lookup.item->name);
-		} else {
-			d = lookup.item;
-			/* TODO free related inode */
-		}
+		d->flags |= DVFS_DIR_VIRTUAL;
+		dentry_fill(sb, NULL, d, lookup.parent);
+		strcpy(d->name, lookup.item->name);
+
 		d->flags |= S_IFDIR | DVFS_MOUNT_POINT;
 		d->d_sb  = sb,
 		d->d_ops = sb ? sb->sb_dops : NULL,
-		dentry_ref_inc(d);
 		sb->root = d;
 
 		d->d_inode = dvfs_alloc_inode(sb);
@@ -470,6 +469,8 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 err_free_all:
 	if (d != NULL) {
 		dvfs_destroy_inode(d->d_inode);
+		dentry_reconnect(d->parent, d->name);
+		dvfs_destroy_dentry(d);
 	}
 
 	if (bdev_file) {
@@ -493,16 +494,15 @@ err_ok:
  *
  * @return Negative error code or zero if succed
  */
-static int _dentry_destroy(struct dentry *parent, int self_destroy) {
+static int _dentry_destroy(struct dentry *parent) {
 	struct dentry *child;
 	int err;
 	dlist_foreach_entry(child, &parent->children, children_lnk) {
-		if ((err = _dentry_destroy(child, 1)))
-			/* Something went wrong */
+		if ((err = _dentry_destroy(child)))
 			return err;
 	}
 
-	return self_destroy ? dvfs_destroy_dentry(parent) : 0;
+	return dvfs_destroy_dentry(parent);
 }
 
 /**
@@ -525,13 +525,23 @@ int dvfs_umount(struct dentry *mpoint) {
 			return err;
 	}
 
+	if (sb->bdev_file) {
+		dvfs_close(sb->bdev_file);
+	}
+
+	/* TODO what if mount point was renamed? */
+	dentry_reconnect(mpoint->parent, mpoint->name);
 	dentry_ref_dec(mpoint);
 
-	if ((err = _dentry_destroy(mpoint,
-	                           !(mpoint->flags & DVFS_DIR_VIRTUAL))))
+	if ((err = dvfs_destroy_sb(sb))) {
 		return err;
+	}
 
-	return dvfs_destroy_sb(sb);
+	if ((err = _dentry_destroy(mpoint))) {
+		return err;
+	}
+
+	return 0;
 }
 
 static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx) {

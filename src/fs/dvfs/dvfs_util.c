@@ -214,8 +214,9 @@ int dvfs_destroy_dentry(struct dentry *dentry) {
 		dvfs_cache_del(dentry);
 		pool_free(&dentry_pool, dentry);
 		return 0;
-	} else
+	} else {
 		return -EBUSY;
+	}
 }
 
 /*
@@ -414,7 +415,8 @@ int dvfs_destroy_sb(struct super_block *sb) {
 	assert(sb);
 	assert(sb->fs_drv);
 
-	if (sb->fs_drv->clean_sb) {
+	if (sb->fs_drv->clean_sb &&
+		sb->root && sb->root->d_inode) {
 		err = sb->fs_drv->clean_sb(sb);
 	}
 
@@ -467,4 +469,34 @@ int dvfs_bdev_write(
 		int blkno) {
 	struct block_dev *bdev = bdev_file->f_inode->i_data;
 	return block_dev_write(bdev, buff, count, blkno);
+}
+
+/**
+ * @brief Remove dentry from file tree, but leave it
+ * in dentry cache
+ */
+int dentry_disconnect(struct dentry *dentry) {
+	dentry->flags |= DVFS_DISCONNECTED;
+	dvfs_cache_del(dentry);
+	dlist_del(&dentry->children_lnk);
+	return 0;
+}
+
+/**
+ * @brief Return dentry to file tree
+ */
+int dentry_reconnect(struct dentry *parent, const char *name) {
+	struct dentry *dentry;
+	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
+		if (!(dentry->flags & DVFS_DISCONNECTED)) {
+			continue;
+		}
+
+		if (dentry->parent == parent && !strcmp(dentry->name, name)) {
+			dlist_head_init(&dentry->children_lnk);
+			dlist_add_prev(&dentry->children_lnk, &parent->children);
+			dentry_ref_inc(parent);
+		}
+	}
+	return 0;
 }
