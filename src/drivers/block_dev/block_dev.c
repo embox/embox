@@ -228,6 +228,10 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	}
 	bdev = block_dev(dev);
 
+	if (count % bdev->block_size != 0) {
+		return -EINVAL;
+	}
+
 	if (blkno >= bdev->size / bdev->block_size) {
 		return -EINVAL;
 	}
@@ -253,6 +257,10 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 	}
 
 	bdev = block_dev(dev);
+
+	if (count % bdev->block_size != 0) {
+		return -EINVAL;
+	}
 
 	if (blkno >= bdev->size / bdev->block_size) {
 		return -EINVAL;
