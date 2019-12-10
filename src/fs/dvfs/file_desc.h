@@ -29,6 +29,9 @@ struct file_desc {
 extern off_t file_get_pos(struct file_desc *file);
 extern off_t file_set_pos(struct file_desc *file, off_t off);
 
+extern size_t file_get_size(struct file_desc *file);
+extern void file_set_size(struct file_desc *file, size_t size);
+
 extern void *file_get_inode_data(struct file_desc *file);
 
 extern struct file_desc *dvfs_alloc_file(void);

@@ -54,6 +54,7 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 	static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		int fs_type, int operation_flag, char *fs_specific) {
 		const struct dumb_fs_driver *drv = dumb_fs_driver_find(fs_name);
+		struct block_dev *bdev;
 		struct lookup lu = {};
 		int err;
 
@@ -74,7 +75,8 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		assert(lu.item->d_inode);
 		assert(lu.item->d_inode->i_data);
 
-		return drv->format(lu.item->d_inode->i_data, fs_specific);
+		bdev = ((struct dev_module *) lu.item->d_inode->i_data)->dev_priv;
+		return drv->format(bdev, fs_specific);
 	}
 #endif
 

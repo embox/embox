@@ -836,13 +836,10 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 /* File system operations*/
-
-static int cdfsfs_init(void * par);
 static int cdfsfs_mount(void * dev, void *dir);
 static int cdfsfs_umount(void *dir);
 
 static struct fsop_desc cdfsfs_fsop = {
-	.init = cdfsfs_init,
 	.mount = cdfsfs_mount,
 	.umount = cdfsfs_umount,
 };
@@ -854,11 +851,6 @@ static struct fs_driver cdfsfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
-
-static int cdfsfs_init(void * par) {
-
-	return 0;
-}
 
 static void cdfs_free_fs(struct nas *nas) {
 	struct cdfs_file_info *fi;

@@ -2142,3 +2142,79 @@ uint8_t fat_canonical_name_checksum(const char *name) {
 
 	return res;
 }
+
+#include <fs/file_desc.h>
+size_t fat_read(struct file_desc *desc, void *buf, size_t size) {
+	size_t rezult;
+	uint32_t bytecount;
+	struct fat_file_info *fi;
+
+	fi = file_get_inode_data(desc);
+	fi->pointer = file_get_pos(desc);
+
+	rezult = fat_read_file(fi, fat_sector_buff, buf, &bytecount, size);
+	if (DFS_OK == rezult) {
+		return bytecount;
+	}
+	return 0;
+}
+
+size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
+	size_t rezult;
+	uint32_t bytecount;
+	struct fat_file_info *fi;
+	size_t new_sz;
+	int old_pos = file_get_pos(desc);
+
+	fi = file_get_inode_data(desc);
+	fi->pointer = old_pos;
+	fi->mode = O_RDWR; /* XXX */
+
+	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
+			&bytecount, size, &new_sz);
+
+	if (DFS_OK == rezult || DFS_EOF == rezult) {
+		if (old_pos + bytecount > file_get_size(desc)) {
+			file_set_size(desc, old_pos + bytecount);
+		}
+
+		file_set_pos(desc, old_pos + bytecount);
+		return bytecount;
+	}
+
+	return 0;
+}
+
+int fat_close(struct file_desc *desc) {
+	return 0;
+}
+
+#define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
+/**
+ * @brief Format given block device
+ * @param dev Pointer to device
+ * @note Should be block device
+ *
+ * @return Negative error code or 0 if succeed
+ */
+int fat_format(struct block_dev *dev, void *priv) {
+	int fat_n = priv ? atoi((char*) priv) : 0;
+	struct block_dev *bdev = dev;
+
+	assert(dev);
+
+	if (!fat_n) {
+		fat_n = DEFAULT_FAT_VERSION;
+	}
+
+	if (fat_n != 12 && fat_n != 16 && fat_n != 32) {
+		log_error("Unsupported FAT version: FAT%d "
+				"(FAT12/FAT16/FAT32 available)", fat_n);
+		return -EINVAL;
+	}
+
+	fat_create_partition(bdev, fat_n);
+	fat_root_dir_record(bdev);
+
+	return 0;
+}

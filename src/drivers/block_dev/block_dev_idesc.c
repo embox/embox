@@ -52,10 +52,6 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	assert(bdev->driver);
 	assert(bdev->driver->read);
 	res = bdev->driver->read(bdev, buf, nbyte, blk_no);
-	if (res < 0) {
-		return res;
-	}
-	file_set_pos(file, pos + res);
 
 	return res;
 }
@@ -90,10 +86,6 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	assert(bdev->driver);
 	assert(bdev->driver->write);
 	res = bdev->driver->write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
-	if (res < 0) {
-		return res;
-	}
-	file_set_pos(file, pos + res);
 
 	return res;
 }

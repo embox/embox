@@ -22,8 +22,6 @@
 
 #include "fat.h"
 
-#define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
-
 /**
  * @brief Set appropriate flags and i_data for given inode
  *
@@ -238,32 +236,6 @@ static int fat_close(struct file_desc *desc) {
 	return 0;
 }
 
-static size_t fat_read(struct file_desc *desc, void *buf, size_t size) {
-	uint32_t res;
-	struct fat_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-
-	fat_read_file(fi, fat_sector_buff, buf, &res, min(size, fi->filelen - desc->pos));
-
-	return res;
-}
-
-static size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
-	uint32_t res;
-	struct fat_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-
-	fi->mode = O_RDWR; /* XXX */
-
-	fat_write_file(fi, fat_sector_buff, buf, &res, size, &desc->f_inode->length);
-	fi->filelen = desc->f_inode->length;
-	return res;
-}
-
 /* @brief Get next inode in directory
  * @param inode   Structure to be filled
  * @param parent  Inode of parent directory
@@ -359,6 +331,9 @@ struct inode_operations fat_iops = {
 	.truncate = fat_truncate,
 };
 
+extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
+extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
+extern int    fat_close(struct file_desc *desc);
 static struct file_operations fat_fops = {
 	.close = fat_close,
 	.write = fat_write,
@@ -475,37 +450,6 @@ static int fat_mount_end(struct super_block *sb) {
 	return 0;
 }
 
-
-/**
- * @brief Format given block device
- * @param dev Pointer to device
- * @note Should be block device
- *
- * @return Negative error code or 0 if succeed
- */
-static int fat_format(void *dev, void *priv) {
-	int fat_n = priv ? atoi((char*) priv) : 0;
-	struct block_dev *bdev;
-
-	assert(dev);
-
-	if (!fat_n) {
-		fat_n = DEFAULT_FAT_VERSION;
-	}
-
-	if (fat_n != 12 && fat_n != 16 && fat_n != 32) {
-		log_error("Unsupported FAT version: FAT%d "
-				"(FAT12/FAT16/FAT32 available)", fat_n);
-		return -EINVAL;
-	}
-
-	bdev = dev_module_to_bdev(dev);
-	fat_create_partition(bdev, fat_n);
-	fat_root_dir_record(bdev);
-
-	return 0;
-}
-
 /**
  * @brief Cleanup FS-specific stuff. No need to clean all files: VFS should
  * do it by itsekft
@@ -533,6 +477,7 @@ static int fat_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
+extern int fat_format(struct block_dev *dev, void *priv);
 static const struct dumb_fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,

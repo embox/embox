@@ -564,7 +564,7 @@ static struct idesc *ext4fs_open(struct node *node, struct file_desc *desc, int 
 		return err_ptr(rc);
 	}
 	else {
-		nas->fi->ni.size = ext4_file_size(fi->f_di);
+		file_set_size(desc, ext4_file_size(fi->f_di));
 	}
 
 	return &desc->idesc;
@@ -617,8 +617,6 @@ static size_t ext4fs_read(struct file_desc *desc, void *buff, size_t size) {
 		size -= csize;
 	}
 
-	file_set_pos(desc, fi->f_pointer);
-
 	return (addr - (char *) buff);
 }
 
@@ -633,8 +631,7 @@ static size_t ext4fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	bytecount = ext4_write_file(nas, buff, size);
 
-	file_set_pos(desc, fi->f_pointer);
-	nas->fi->ni.size = ext4_file_size(fi->f_di);
+	file_set_size(desc, ext4_file_size(fi->f_di));
 
 	return bytecount;
 }
@@ -645,8 +642,7 @@ static int ext4_unlink(struct nas *dir_nas, struct nas *nas);
 static void ext4_free_fs(struct nas *nas);
 static int ext4_umount_entry(struct nas *nas);
 
-static int ext4fs_init(void * par);
-static int ext4fs_format(void *dev);
+static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_mount(void *dev, void *dir);
 static int ext4fs_create(struct node *parent_node, struct node *node);
 static int ext4fs_delete(struct node *node);
@@ -655,7 +651,6 @@ static int ext4fs_umount(void *dir);
 
 
 static struct fsop_desc ext4_fsop = {
-	.init	     = ext4fs_init,
 	.format      = ext4fs_format,
 	.mount	     = ext4fs_mount,
 	.create_node = ext4fs_create,
@@ -667,10 +662,6 @@ static struct fsop_desc ext4_fsop = {
 
 	.truncate    = ext4fs_truncate,
 	.umount      = ext4fs_umount,
-};
-
-static int ext4fs_init(void * par) {
-	return 0;
 };
 
 static struct fs_driver ext4fs_driver = {
@@ -716,16 +707,13 @@ static int ext4fs_create(struct node *parent_node, struct node *node) {
 
 extern int main_mke2fs(int argc, char **argv);
 
-static int ext4fs_format(void *dev) {
-	struct node *dev_node;
+static int ext4fs_format(struct block_dev *dev, void *priv) {
 	int argc = 6;
 	char *argv[6];
 	char dev_path[64];
 
-	dev_node = dev;
-
 	strcpy(dev_path, "/dev/");
-	strcat(dev_path, dev_node->name);
+	strcat(dev_path, dev->name);
 
 	argv[0] = "mke2fs";
 	argv[1] = "-b";

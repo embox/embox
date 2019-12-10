@@ -6,6 +6,8 @@ abstract module ramfs {
 	option number ramfs_descriptor_quantity=4
 	option number ramfs_file_size=4096
 
+	source "ramfs_ops.c"
+
 	depends embox.mem.pool
 	depends embox.driver.ramdisk
 }
@@ -15,8 +17,6 @@ module ramfs_old extends ramfs {
 
 	depends embox.fs.node
 	depends embox.fs.driver.repo
-
-
 }
 
 module ramfs_dvfs extends ramfs {

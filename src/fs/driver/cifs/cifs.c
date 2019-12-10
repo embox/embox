@@ -293,7 +293,7 @@ static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
 	file_desc->file_info = file;
 
 	// Yet another bullshit: size is not valid until open
-	node->nas->fi->ni.size = st.st_size;
+	file_set_size(file_desc, st.st_size);
 
 	return &file_desc->idesc;
 }
@@ -336,10 +336,6 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	res = smbc_getFunctionRead(fsi->ctx)(fsi->ctx, file, buf, size);
 
-	if (res > 0) {
-		file_set_pos(file_desc, pos + res);
-	}
-
 	return res;
 }
 
@@ -366,8 +362,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	res = smbc_getFunctionWrite(fsi->ctx)(fsi->ctx, file, buf, size);
 
 	if (res > 0) {
-		pos = file_set_pos(file_desc, pos + res);
-		file_desc->node->nas->fi->ni.size = max(file_desc->node->nas->fi->ni.size, pos);
+		file_set_size(file_desc, max(file_get_size(file_desc), pos));
 	}
 
 	return res;

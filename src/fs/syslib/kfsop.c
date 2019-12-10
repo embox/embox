@@ -308,6 +308,7 @@ int kformat(const char *pathname, const char *fs_type) {
 	struct path node;
 	struct fs_driver *drv;
 	int res;
+	struct block_dev *bdev;
 
 	if (0 != fs_type) {
 		drv = fs_driver_find_drv((const char *) fs_type);
@@ -332,7 +333,8 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->format(node.node))) {
+	bdev = node.node->nas->fi->privdata;
+	if (0 != (res = drv->fsop->format(bdev, NULL))) {
 		errno = -res;
 		return -1;
 	}

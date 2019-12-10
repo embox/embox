@@ -931,8 +931,6 @@ static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size) {
 		inode->i_size = pos;
 	}
 
-	file_set_pos(desc, pos);
-
 	return writtenlen;
 }
 
@@ -1389,7 +1387,7 @@ static struct idesc *jffs2fs_open(struct node *node, struct file_desc *desc, int
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	nas->fi->ni.size = fi->_inode->i_size;
+	file_set_size(desc, fi->_inode->i_size);
 
 	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
@@ -1409,7 +1407,7 @@ static int jffs2fs_close(struct file_desc *desc) {
 	}
 	nas = desc->node->nas;
 	fi = nas->fi->privdata;
-	nas->fi->ni.size = fi->_inode->i_size;
+	file_set_size(desc, fi->_inode->i_size);
 
 	return jffs2_fo_close(fi->_inode);
 }
@@ -1439,8 +1437,6 @@ static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 		return 0;
 	}
 
-	file_set_pos(desc, pos + len);
-
 	return len;
 }
 
@@ -1454,7 +1450,7 @@ static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	bytecount = jffs2_fo_write(desc, buff, size);
 
-	nas->fi->ni.size = fi->_inode->i_size;
+	file_set_size(desc, fi->_inode->i_size);
 
 	return bytecount;
 }
@@ -1479,8 +1475,7 @@ static int jffs2_free_fs(struct nas *nas) {
 	return 0;
 }
 
-static int jffs2fs_init(void * par);
-static int jffs2fs_format(void *path);
+static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_mount(void *dev, void *dir);
 static int jffs2fs_create(struct node *parent_node, struct node *node);
 static int jffs2fs_delete(struct node *node);
@@ -1489,7 +1484,6 @@ static int jffs2fs_umount(void *dir);
 
 
 static struct fsop_desc jffs2_fsop = {
-	.init	     = jffs2fs_init,
 	.format	     = jffs2fs_format,
 	.mount	     = jffs2fs_mount,
 	.create_node = jffs2fs_create,
@@ -1501,10 +1495,6 @@ static struct fsop_desc jffs2_fsop = {
 
 	.truncate    = jffs2fs_truncate,
 	.umount      = jffs2fs_umount,
-};
-
-static int jffs2fs_init(void * par) {
-	return 0;
 };
 
 static struct fs_driver jffs2fs_driver = {
@@ -1647,13 +1637,10 @@ static int jffs_flash_name(struct node *dev_node, char flash_name[PATH_MAX]) {
 	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
 }
 
-static int jffs2fs_format(void *dev) {
-	struct node *dev_node = dev;
+static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	char flash_node_name[PATH_MAX];
 
-	if (0 > jffs_flash_name(dev_node, flash_node_name)) {
-		return -ERANGE;
-	}
+	snprintf(flash_node_name, PATH_MAX, "%s_flash", bdev->name);
 
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }

@@ -59,10 +59,6 @@ static int fs_driver_init(void) {
 		if (NULL == (head = fs_driver_alloc((struct fs_driver *)fs_drv))) {
 			return -EINVAL;
 		}
-
-		if (NULL != fs_drv->fsop->init) {
-			fs_drv->fsop->init(NULL);
-		}
 	}
 
 	return ENOERR;

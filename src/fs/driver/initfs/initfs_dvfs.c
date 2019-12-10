@@ -52,10 +52,6 @@ static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	inode = desc->f_inode;
 
-	if (size > inode->length - desc->pos) {
-		size = inode->length - desc->pos;
-	}
-
 	memcpy(buf, (char *) (uintptr_t) (inode->start_pos + desc->pos), size);
 
 	return size;

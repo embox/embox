@@ -460,7 +460,7 @@ static struct idesc *ext2fs_open(struct node *node, struct file_desc *desc, int 
 		return err_ptr(rc);
 	}
 	else {
-		nas->fi->ni.size = fi->f_di.i_size;
+		file_set_size(desc, fi->f_di.i_size);
 	}
 
 	return &desc->idesc;
@@ -513,8 +513,6 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 		size -= csize;
 	}
 
-	file_set_pos(desc, fi->f_pointer);
-
 	return (addr - (char *) buff);
 }
 
@@ -529,8 +527,7 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 
 	bytecount = ext2_write_file(nas, buff, size);
 
-	file_set_pos(desc, fi->f_pointer);
-	nas->fi->ni.size = fi->f_di.i_size;
+	file_set_size(desc, fi->f_di.i_size);
 
 	return bytecount;
 }
@@ -541,8 +538,7 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas);
 static void ext2_free_fs(struct nas *nas);
 static int ext2_umount_entry(struct nas *nas);
 
-static int ext2fs_init(void * par);
-static int ext2fs_format(void *path);
+static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(void *dev, void *dir);
 static int ext2fs_create(struct node *parent_node, struct node *node);
 static int ext2fs_delete(struct node *node);
@@ -551,7 +547,6 @@ static int ext2fs_umount(void *dir);
 
 
 static struct fsop_desc ext2_fsop = {
-	.init	     = ext2fs_init,
 	.format	     = ext2fs_format,
 	.mount	     = ext2fs_mount,
 	.create_node = ext2fs_create,
@@ -563,10 +558,6 @@ static struct fsop_desc ext2_fsop = {
 
 	.truncate    = ext2fs_truncate,
 	.umount      = ext2fs_umount,
-};
-
-static int ext2fs_init(void * par) {
-	return 0;
 };
 
 static struct fs_driver ext2fs_driver = {
@@ -776,12 +767,7 @@ static int ext2_mark_bitmap(void *bdev, struct ext2sb *sb,
 }
 
 
-static int ext2fs_format(void *dev) {
-	int rc;
-	struct node *dev_node;
-	struct nas *dev_nas;
-	struct node_fi *dev_fi;
-	struct block_dev *bdev;
+static int ext2fs_format(struct block_dev *bdev, void *priv) {
 	struct ext2sb sb;
 	struct ext2_gd gd;
 	struct ext2fs_dinode *di;
@@ -791,18 +777,9 @@ static int ext2fs_format(void *dev) {
 	int sector;
 	float dev_factor;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		rc = ENODEV;
-		return -rc;
-	}
-
 	memset(&sb, 0, sizeof(struct ext2sb));
 	memset(&gd, 0, sizeof(struct ext2_gd));
 
-	bdev = (struct block_dev *) dev_fi->privdata;
 	dev_size = block_dev_size(bdev);
 	dev_bsize = block_dev_block_size(bdev);
 	dev_factor = SBSIZE / dev_bsize;

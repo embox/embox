@@ -556,7 +556,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	assert(buf);
 
 	pos = desc->f_inode->start_pos + desc->pos;
-	l = min(size, desc->f_inode->length - desc->pos);
+	l = min(size, file_get_size(desc) - desc->pos);
 
 	if (l <= 0)
 		return -1;
@@ -572,7 +572,7 @@ size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	assert(buf);
 
 	int pos = desc->f_inode->start_pos + desc->pos;
-	int l   = min(size, desc->f_inode->length - desc->pos);
+	int l   = min(size, file_get_size(desc) - desc->pos);
 
 	if (l < 0)
 		return -1;

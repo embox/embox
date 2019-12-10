@@ -95,7 +95,6 @@ static int nfsfs_close(struct file_desc *desc) {
 	nas = desc->node->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
 	fi->offset = 0;
-	file_set_pos(desc, 0);
 
 	return 0;
 }
@@ -144,7 +143,6 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 			break;
 		}
 	}
-	file_set_pos(desc, fi->offset);
 	return datalen;
 }
 
@@ -185,8 +183,6 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 		nas->fi->ni.size = pos;
 	}
 
-	file_set_pos(desc, fi->offset);
-
 	return reply.count;
 }
 
@@ -221,8 +217,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 
 /* File system operations */
 
-static int nfsfs_init(void * par);
-static int nfsfs_format(void * par);
+static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_mount(void * dev, void *dir);
 static int nfsfs_create(struct node *parent_node, struct node *node);
 static int nfsfs_delete(struct node *node);
@@ -230,7 +225,6 @@ static int nfsfs_truncate (struct node *node, off_t length);
 static int nfsfs_umount(void *dir);
 
 static struct fsop_desc nfsfs_fsop = {
-	.init = nfsfs_init,
 	.format = nfsfs_format,
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
@@ -247,20 +241,7 @@ static struct fs_driver nfsfs_driver = {
 	.mount_dev_by_string = true,
 };
 
-static int nfsfs_init(void * par) {
-
-	return 0;
-}
-
-static int nfsfs_format(void *path) {
-	node_t *node;
-	node_t *root;
-
-	root = vfs_get_root();
-
-	if (NULL == (node = vfs_subtree_lookup(root, path))) {
-		return -ENODEV;
-	}
+static int nfsfs_format(struct block_dev *bdev, void *priv) {
 	/* TODO format command support */
 	return 0;
 }

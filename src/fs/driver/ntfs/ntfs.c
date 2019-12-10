@@ -65,11 +65,6 @@ POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
 
 static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
 
-static int embox_ntfs_init (void *par) {
-
-	return 0;
-}
-
 static int embox_ntfs_node_create(struct node *parent_node, struct node *new_node) {
 	ntfs_inode *ni, *pni;
 	ntfschar *ufilename;
@@ -503,7 +498,7 @@ static struct idesc *ntfs_open(struct node *node, struct file_desc *file_desc,
 	file_desc->file_info = desc;
 
 	// Yet another bullshit: size is not valid until open
-	node->nas->fi->ni.size = attr->data_size;
+	file_set_size(file_desc, attr->data_size);
 
 	return &file_desc->idesc;
 }
@@ -538,10 +533,6 @@ static size_t ntfs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	res = ntfs_attr_pread(desc->attr, pos, size, buf);
 
-	if (res > 0) {
-		file_set_pos(file_desc, pos + res);
-	}
-
 	return res;
 }
 
@@ -557,8 +548,7 @@ static size_t ntfs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	res = ntfs_attr_pwrite(desc->attr, pos, size, buf);
 
 	if (res > 0) {
-		file_set_pos(file_desc, pos + res);
-		file_desc->node->nas->fi->ni.size = desc->attr->data_size;
+		file_set_size(file_desc, desc->attr->data_size);
 	}
 
 	return res;
@@ -839,8 +829,6 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 };
 
 static const struct fsop_desc ntfs_fsop = {
-	.init = embox_ntfs_init,
-	.format = NULL,
 	.create_node = embox_ntfs_node_create,
 	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_ntfs_mount,

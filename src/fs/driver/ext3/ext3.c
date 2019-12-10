@@ -49,8 +49,7 @@ static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 
 /* fs operations */
-static int ext3fs_init(void * par);
-static int ext3fs_format(void *path);
+static int ext3fs_format(struct block_dev *bdev, void *priv);
 static int ext3fs_mount(void *dev, void *dir);
 static int ext3fs_create(struct node *parent_node, struct node *node);
 static int ext3fs_delete(struct node *node);
@@ -117,11 +116,6 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
-
-static int ext3fs_init(void *par) {
-	return 0;
-};
-
 static int ext3fs_create(struct node *parent_node, struct node *node) {
 	struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
@@ -173,16 +167,13 @@ static int ext3fs_delete(struct node *node) {
 
 extern int main_mke2fs(int argc, char **argv);
 
-static int ext3fs_format(void *dev) {
-	struct node *dev_node;
+static int ext3fs_format(struct block_dev *bdev, void *priv) {
 	int argc = 6;
 	char *argv[6];
 	char dev_path[64];
 
-	dev_node = dev;
-
 	strcpy(dev_path, "/dev/");
-	strcat(dev_path, dev_node->name);
+	strcat(dev_path, bdev->name);
 
 	argv[0] = "mke2fs";
 	argv[1] = "-b";
@@ -351,7 +342,6 @@ static struct file_operations ext3_fop = {
 };
 
 static struct fsop_desc ext3_fsop = {
-	.init	     = ext3fs_init,
 	.format	     = ext3fs_format,
 	.mount	     = ext3fs_mount,
 	.create_node = ext3fs_create,
