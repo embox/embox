@@ -1386,7 +1386,7 @@ static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc) {
 	fi = nas->fi->privdata;
 	fsi = nas->fs->fsi;
 
-	file_set_size(desc, fi->_inode->i_size);
+	file_set_size(file_desc_from_idesc(idesc), fi->_inode->i_size);
 
 	vfs_get_relative_path(nas->node, path, PATH_MAX);
 

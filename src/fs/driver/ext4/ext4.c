@@ -563,7 +563,7 @@ static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc) {
 		return err_ptr(rc);
 	}
 	else {
-		file_set_size(desc, ext4_file_size(fi->f_di));
+		file_set_size(file_desc_from_idesc(idesc), ext4_file_size(fi->f_di));
 	}
 
 	return idesc;

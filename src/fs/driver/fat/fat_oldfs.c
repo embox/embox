@@ -226,7 +226,7 @@ static struct idesc *fatfs_open(struct inode *node, struct idesc *idesc) {
 	}
 
 	res = fat_open_file(fi, (uint8_t *) path, idesc->idesc_flags, fat_sector_buff, &new_sz);
-	file_set_size(idesc, new_sz);
+	file_set_size(file_desc_from_idesc(idesc), new_sz);
 	if (DFS_OK == res) {
 		fi->pointer = file_get_pos(file_desc_from_idesc(idesc));
 		return idesc;

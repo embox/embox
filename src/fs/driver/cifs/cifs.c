@@ -292,7 +292,7 @@ static struct idesc *cifs_open(struct inode *node, struct idesc *idesc)
 	file_desc_set_file_info(file_desc_from_idesc(idesc), file);
 
 	// Yet another bullshit: size is not valid until open
-	file_set_size(file_desc, st.st_size);
+	file_set_size(file_desc_from_idesc(idesc), st.st_size);
 
 	return idesc;
 }

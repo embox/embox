@@ -65,7 +65,7 @@ POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
 
 static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
 
-static int embox_ntfs_node_create(struct node *parent_node, struct node *new_node) {
+static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_node) {
 	ntfs_inode *ni, *pni;
 	ntfschar *ufilename;
 	int ufilename_len;
@@ -497,7 +497,7 @@ static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc)
 	file_desc_set_file_info(file_desc_from_idesc(idesc), desc);
 
 	// Yet another bullshit: size is not valid until open
-	file_set_size(file_desc, attr->data_size);
+	file_set_size(file_desc_from_idesc(idesc), attr->data_size);
 
 	return idesc;
 }

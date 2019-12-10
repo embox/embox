@@ -46,7 +46,7 @@ INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 static int ramfs_format(struct block_dev *bdev, void *priv);
 static int ramfs_mount(void *dev, void *dir);
 
-static struct idesc *ramfs_open(struct node *node, struct file_desc *file_desc, int flags);
+static struct idesc *ramfs_open(struct inode *node, struct idesc *idesc);
 
 int    ramfs_close(struct file_desc *desc);
 size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
