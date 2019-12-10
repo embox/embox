@@ -11,17 +11,13 @@ abstract module ramfs {
 }
 
 module ramfs_old extends ramfs {
-	@IncludeExport(path="fs")
-	source "ramfs.h"
-
-	source "ramfs.c"
+	source "ramfs_oldfs.c"
 
 	depends embox.fs.node
 	depends embox.fs.driver.repo
 
 
 }
-
 
 module ramfs_dvfs extends ramfs {
 	source "ramfs_dvfs.c"

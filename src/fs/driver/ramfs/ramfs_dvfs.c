@@ -14,40 +14,27 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#include <fs/dvfs.h>
-
 #include <util/array.h>
 #include <util/indexator.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h> /* PAGE_SIZE() */
+#include <mem/page.h>
+
+#include <fs/file_desc.h>
+#include <fs/dvfs.h>
 
 #include <util/math.h>
 #include <util/err.h>
 
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
+#include <drivers/block_dev/ramdisk/ramdisk.h>
+#include "ramfs.h"
 
 /* define sizes in 4096 blocks */
 #define MAX_FILE_SIZE   OPTION_GET(NUMBER, ramfs_file_size)
 #define RAMFS_FILES     OPTION_GET(NUMBER, inode_quantity)
-#define FILESYSTEM_SIZE (MAX_FILE_SIZE * RAM_FILES)
-
-#define RAMFS_NAME_LEN	32
-
-typedef struct ramfs_fs_info {
-	uint32_t numblocks;			/* number of block in volume */
-	uint32_t block_size;		/* size of block */
-	uint32_t block_per_file;	/* max number of blocks filesize*/
-} ramfs_fs_info_t;
-
-typedef struct ramfs_file_info {
-	int     index;		        /* number of file in FS*/
-	int     mode;				/* mode in which this file was opened */
-	uint32_t pointer;			/* current (BYTE) pointer */
-	char    name[RAMFS_NAME_LEN];
-	struct inode *inode;
-	ramfs_fs_info_t *fsi;
-} ramfs_file_info_t;
+#define FILESYSTEM_SIZE (MAX_FILE_SIZE * RAMFS_FILES)
 
 /* ramfs filesystem description pool */
 POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor_quantity));
@@ -55,8 +42,6 @@ POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, OPTION_GET(NUMBER,ramfs_descriptor
 struct ramfs_file_info ramfs_files[RAMFS_FILES];
 
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
-
-#define RAMFS_DIR  "/"
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
@@ -68,11 +53,10 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct ramfs_fs_info *fsi;
 	void *pbuf, *ebuf;
 	struct block_dev *bdev;
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
+	off_t pos;
 
 	assert(desc);
-	assert(desc->f_inode);
-	assert(desc->f_inode->i_sb);
 
 	fsi = desc->f_inode->i_sb->sb_data;
 	assert(fsi);
@@ -83,21 +67,20 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	bdev = desc->f_inode->i_sb->bdev;
 	assert(bdev);
 
-	pbuf = buf;
-	ebuf = buf + min(fi->inode->length - desc->pos, size);
-	while (pbuf < ebuf) {
-		assert(fsi->block_size != 0);
+	pos = file_get_pos(desc);
 
-		blkno_t blk = desc->pos / fsi->block_size;
-		int offset = desc->pos % fsi->block_size;
+	pbuf = buf;
+	ebuf = buf + min(fi->inode->length - pos, size);
+	while (pbuf < ebuf) {
+		blkno_t blk = pos / fsi->block_size;
+		int offset = pos % fsi->block_size;
 		int read_n;
 
 		assert(blk < fsi->block_per_file);
 		assert(blk < fsi->numblocks);
 
 		assert(sizeof(sector_buff) == fsi->block_size);
-		if (0 > block_dev_read(bdev, sector_buff,
-					fsi->block_size, blk)) {
+		if (0 > block_dev_read(bdev, sector_buff, fsi->block_size, blk)) {
 			break;
 		}
 
@@ -107,11 +90,13 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 		pbuf += read_n;
 	}
 
+	file_set_pos(desc, pos);
+
 	return pbuf - buf;
 }
 
 static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 	size_t len;
 	size_t current, cnt;
 	uint32_t end_pointer;
@@ -120,23 +105,24 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	uint32_t start_block;
 	struct ramfs_fs_info *fsi;
 	struct block_dev *bdev;
+	off_t pos;
 
 	assert(desc);
-	assert(desc->f_inode);
-	assert(desc->f_inode->i_sb);
-
-	fi = desc->f_inode->i_data;
-	assert(fi);
 
 	fsi = desc->f_inode->i_sb->sb_data;
 	assert(fsi);
 
+	fi = desc->f_inode->i_data;
+	assert(fi);
+
 	bdev = desc->f_inode->i_sb->bdev;
 	assert(bdev);
 
+	pos = file_get_pos(desc);
+
 	bytecount = 0;
 
-	fi->pointer = desc->pos;
+	fi->pointer = pos;
 	len = size;
 	end_pointer = fi->pointer + len;
 	start_block = fi->index * fsi->block_per_file;
@@ -197,7 +183,8 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		desc->f_inode->length = fi->pointer;
 	}
 
-	desc->pos = fi->pointer;
+	file_set_pos(desc, fi->pointer);
+
 	return bytecount;
 }
 
@@ -230,7 +217,7 @@ static int ramfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 }
 
 static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 	size_t fi_index;
 
 	assert(i_new);
@@ -261,7 +248,7 @@ static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 }
 
 static int ramfs_truncate(struct inode *inode, size_t len) {
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 
 	assert(inode);
 
@@ -311,7 +298,7 @@ static struct inode *ramfs_ilookup(char const *name, struct dentry const *dir) {
 }
 
 static int ramfs_remove(struct inode *inode) {
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 
 	assert(inode);
 
@@ -340,7 +327,7 @@ struct file_operations ramfs_fops = {
 };
 
 static int ramfs_destroy_inode(struct inode *inode) {
-	ramfs_file_info_t *fi;
+	struct ramfs_file_info *fi;
 
 	assert(inode);
 
