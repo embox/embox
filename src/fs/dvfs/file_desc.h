@@ -34,6 +34,8 @@ extern void file_set_size(struct file_desc *file, size_t size);
 
 extern void *file_get_inode_data(struct file_desc *file);
 
+extern struct file_desc *file_desc_from_idesc(struct idesc *idesc);
+
 extern struct file_desc *dvfs_alloc_file(void);
 extern int dvfs_destroy_file(struct file_desc *desc);
 

@@ -32,3 +32,7 @@ void *file_get_inode_data(struct file_desc *file) {
 
 	return file->f_inode->i_data;
 }
+
+struct file_desc *file_desc_from_idesc(struct idesc *idesc) {
+	return (struct file_desc *)idesc;
+}
