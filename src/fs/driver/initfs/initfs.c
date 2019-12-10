@@ -131,7 +131,6 @@ static int initfs_mount(void *dev, void *dir) {
 }
 
 static struct file_operations initfs_fop = {
-	.open = initfs_open,
 	.close = initfs_close,
 	.read = initfs_read,
 	.ioctl = initfs_ioctl,
