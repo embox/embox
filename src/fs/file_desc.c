@@ -123,3 +123,11 @@ void *file_get_inode_data(struct file_desc *file) {
 
 	return file->node->nas->fi->privdata;
 }
+
+struct file_desc *file_desc_from_idesc(struct idesc *idesc) {
+	return (struct file_desc *)idesc;
+}
+
+void file_desc_set_file_info(struct file_desc *file, void *fi) {
+	file->file_info = fi;
+}

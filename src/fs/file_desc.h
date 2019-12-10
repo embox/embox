@@ -28,6 +28,10 @@ struct file_desc {
 	void *file_info; /* customize in each file system */
 };
 
+extern struct file_desc *file_desc_from_idesc(struct idesc *idesc);
+
+extern void file_desc_set_file_info(struct file_desc *file, void *fi);
+
 extern off_t file_get_pos(struct file_desc *file);
 extern off_t file_set_pos(struct file_desc *file, off_t off);
 
