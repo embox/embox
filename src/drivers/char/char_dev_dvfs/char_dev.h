@@ -10,7 +10,7 @@
 #define CHAR_DEV_DVFS_H_
 
 #include <drivers/device.h>
-#include <fs/dvfs.h>
+#include <fs/idesc.h>
 #include <util/array.h>
 
 #define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
