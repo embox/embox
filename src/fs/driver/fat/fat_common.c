@@ -122,6 +122,33 @@ int read_dir_buf(struct dirinfo *di) {
 	return fat_read_sector(fsi, di->p_scratch, sector);
 }
 
+uint32_t fat_direntry_get_clus(struct fat_dirent *de) {
+	return (uint32_t) de->startclus_l_l |
+	  ((uint32_t) de->startclus_l_h) << 8 |
+	  ((uint32_t) de->startclus_h_l) << 16 |
+	  ((uint32_t) de->startclus_h_h) << 24;
+}
+
+void fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus) {
+	de->startclus_l_l = clus & 0xff;
+	de->startclus_l_h = (clus & 0xff00) >> 8;
+	de->startclus_h_l = (clus & 0xff0000) >> 16;
+	de->startclus_h_h = (clus & 0xff000000) >> 24;
+}
+
+uint32_t fat_direntry_get_size(struct fat_dirent *de) {
+	return  (uint32_t) de->filesize_0 |
+		((uint32_t) de->filesize_1) << 8 |
+		((uint32_t) de->filesize_2) << 16 |
+		((uint32_t) de->filesize_3) << 24;
+}
+
+void fat_direntry_set_size(struct fat_dirent *de, uint32_t size) {
+	de->filesize_0 = size & 0xff;
+	de->filesize_1 = (size & 0xff00) >> 8;
+	de->filesize_2 = (size & 0xff0000) >> 16;
+	de->filesize_3 = (size & 0xff000000) >> 24;
+}
 /**
  * @brief Format given block device
  *
@@ -777,16 +804,7 @@ uint32_t fat_open_dir(struct fat_fs_info *fsi,
 			} while (!result && memcmp(de.name, tmpfn, MSDOS_NAME));
 
 			if (!memcmp(de.name, tmpfn, MSDOS_NAME) && (de.attr & ATTR_DIRECTORY)) {
-				if (volinfo->filesystem == FAT32) {
-					dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
-					  ((uint32_t) de.startclus_l_h) << 8 |
-					  ((uint32_t) de.startclus_h_l) << 16 |
-					  ((uint32_t) de.startclus_h_h) << 24;
-				}
-				else {
-					dirinfo->currentcluster = (uint32_t) de.startclus_l_l |
-					  ((uint32_t) de.startclus_l_h) << 8;
-				}
+				dirinfo->currentcluster = fat_direntry_get_clus(&de);
 				dirinfo->currentsector = 0;
 				dirinfo->currententry = 0;
 
@@ -1083,20 +1101,6 @@ static uint32_t fat_get_free_dir_ent(struct dirinfo *di, struct fat_dirent *de) 
 
 	/* We shouldn't get here */
 	return DFS_ERRMISC;
-}
-
-static void fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus) {
-	de->startclus_l_l = clus & 0xff;
-	de->startclus_l_h = (clus & 0xff00) >> 8;
-	de->startclus_h_l = (clus & 0xff0000) >> 16;
-	de->startclus_h_h = (clus & 0xff000000) >> 24;
-}
-
-static uint32_t fat_direntry_get_clus(struct fat_dirent *de) {
-	return (uint32_t) de->startclus_l_l |
-	  ((uint32_t) de->startclus_l_h) << 8 |
-	  ((uint32_t) de->startclus_h_l) << 16 |
-	  ((uint32_t) de->startclus_h_h) << 24;
 }
 
 static void fat_set_direntry(uint32_t dir_cluster, uint32_t cluster) {
@@ -1506,116 +1510,13 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 		return DFS_ERRMISC;
 	}
 
-	((struct fat_dirent*) p_scratch)[fi->diroffset].filesize_0 =
-			 *size & 0xff;
-
-	((struct fat_dirent*) p_scratch)[fi->diroffset].filesize_1 =
-			(*size & 0xff00) >> 8;
-
-	((struct fat_dirent*) p_scratch)[fi->diroffset].filesize_2 =
-			(*size & 0xff0000) >> 16;
-
-	((struct fat_dirent*) p_scratch)[fi->diroffset].filesize_3 =
-			(*size & 0xff000000) >> 24;
+	fat_direntry_set_size(&((struct fat_dirent*) p_scratch)[fi->diroffset], *size);
 
 	if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
 	}
 
 	return result;
-}
-
-/*
- * Open a file for reading or writing. You supply populated volinfo_t,
- * a path to the file, mode (DFS_READ or DFS_WRITE) and an empty fileinfo
- * structure. You also need to provide a pointer to a sector-sized scratch
- * buffer.
- * Returns various DFS_* error states. If the result is DFS_OK, fileinfo
- * can be used to access the file from this point on.
- */
-uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
-		uint8_t *p_scratch, size_t *size) {
-	char tmppath[PATH_MAX];
-	char *filename;
-	struct dirinfo di = {0};
-	struct fat_dirent de = {0};
-
-	struct volinfo *volinfo;
-	struct fat_fs_info *fsi;
-
-	assert(fi);
-	assert(path);
-	assert(p_scratch);
-	assert(size);
-
-	memset(tmppath, 0, sizeof(tmppath));
-	filename = strrchr((char *) path, DIR_SEPARATOR);
-	if (filename == NULL) {
-		strcpy(tmppath, ROOT_DIR);
-		filename = (char *) path;
-	} else {
-		strncpy(tmppath, (char *) path, filename - (char *) path);
-		filename++;
-	}
-
-	log_debug("path(%s) tmppath(%s) filename(%s)", path, tmppath, filename);
-	fsi = fi->fsi;
-	volinfo = &fsi->vi;
-
-	fi->mode = mode;
-
-	/*
-	 *  At this point, if our path was MYDIR/MYDIR2/FILE.EXT,
-	 *  filename = "FILE    EXT" and  tmppath = "MYDIR/MYDIR2".
-	 */
-	di.p_scratch = p_scratch;
-	di.fi.fsi = fsi;
-	if (fat_open_dir(fsi, (uint8_t *) tmppath, &di)) {
-		return DFS_NOTFOUND;
-	}
-
-	/* Need to get directory data from drive */
-	fat_reset_dir(&di);
-
-	while (!fat_get_next_long(&di, &de, tmppath)) {
-		if (!strcmp(tmppath, filename)) {
-			if (de.attr & ATTR_DIRECTORY){
-				return DFS_WRONGRES;
-			}
-
-			fi->volinfo = volinfo;
-			fi->pointer = 0;
-			/*
-			 * The reason we store this extra info about the file is so that we
-			 * can speedily update the file size, modification date, etc. on a
-			 * file that is opened for writing.
-			 */
-			if (di.currentcluster == 0) {
-				fi->dirsector = volinfo->rootdir + di.currentsector;
-			} else {
-				fi->dirsector = di.currentsector + fat_sec_by_clus(fsi, di.currentcluster);
-			}
-			fi->diroffset = di.currententry - 1;
-			if (volinfo->filesystem == FAT32) {
-				fi->cluster = (uint32_t) de.startclus_l_l |
-				  ((uint32_t) de.startclus_l_h) << 8 |
-				  ((uint32_t) de.startclus_h_l) << 16 |
-				  ((uint32_t) de.startclus_h_h) << 24;
-			} else {
-				fi->cluster = (uint32_t) de.startclus_l_l |
-				  ((uint32_t) de.startclus_l_h) << 8;
-			}
-			fi->firstcluster = fi->cluster;
-			fi->filelen = (uint32_t) de.filesize_0 |
-			              ((uint32_t) de.filesize_1) << 8 |
-			              ((uint32_t) de.filesize_2) << 16 |
-			              ((uint32_t) de.filesize_3) << 24;
-			if (size)
-				*size = fi->filelen;
-			return DFS_OK;
-		}
-	}
-	return DFS_NOTFOUND;
 }
 
 static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
@@ -1693,8 +1594,7 @@ static int fat_dir_empty(struct fat_file_info *fi) {
  * Delete a file
  * p_scratch must point to a sector-sized buffer
  */
-int fat_unlike_file(struct fat_file_info *fi, uint8_t *path,
-		uint8_t *p_scratch) {
+int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
 	uint32_t tempclus;
 	struct fat_fs_info *fsi;
 	struct dirinfo *di = fi->fdi;
@@ -1774,15 +1674,7 @@ int fat_reset_dir(struct dirinfo *di) {
 	} else {
 		fat_dirent_by_file(&di->fi, &de);
 
-		if (vi->filesystem == FAT32) {
-			di->currentcluster = (uint32_t) de.startclus_l_l |
-			  ((uint32_t) de.startclus_l_h) << 8 |
-			  ((uint32_t) de.startclus_h_l) << 16 |
-			  ((uint32_t) de.startclus_h_h) << 24;
-		} else {
-			di->currentcluster = (uint32_t) de.startclus_l_l |
-			  ((uint32_t) de.startclus_l_h) << 8;
-		}
+		di->currentcluster = fat_direntry_get_clus(&de);
 		di->currentsector = 0;
 		di->currententry = 0;
 	}
@@ -2176,6 +2068,7 @@ size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 	if (DFS_OK == rezult || DFS_EOF == rezult) {
 		if (old_pos + bytecount > file_get_size(desc)) {
 			file_set_size(desc, old_pos + bytecount);
+			fi->filelen = old_pos + bytecount;
 		}
 
 		file_set_pos(desc, old_pos + bytecount);
