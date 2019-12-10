@@ -46,31 +46,13 @@ INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 static int ramfs_format(struct block_dev *bdev, void *priv);
 static int ramfs_mount(void *dev, void *dir);
 
-static struct idesc *ramfs_open(struct inode *node, struct idesc *idesc);
-
-int    ramfs_close(struct file_desc *desc);
 size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
 size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
 
 static struct file_operations ramfs_fop = {
-	.open = ramfs_open,
-	.close = ramfs_close,
 	.read = ramfs_read,
 	.write = ramfs_write,
 };
-
-static struct idesc *ramfs_open(struct inode *node, struct idesc *idesc) {
-	struct nas *nas;
-	struct ramfs_file_info *fi;
-
-	nas = node->nas;
-	fi = (struct ramfs_file_info *)nas->fi->privdata;
-
-	fi->pointer = file_get_pos(file_desc_from_idesc(idesc));;
-
-	return idesc;
-}
-
 
 static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 	struct ramfs_file_info *fi;
@@ -89,7 +71,7 @@ static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 
 	fi->index = fi_index;
 	fi->fsi = nas->fs->fsi;
-	nas->fi->ni.size = fi->pointer = 0;
+	nas->fi->ni.size = 0;
 
 	return fi;
 }
@@ -190,7 +172,6 @@ static int ramfs_mount(void *dev, void *dir) {
 	}
 	memset(fi, 0, sizeof(struct ramfs_file_info));
 	fi->index = fi->mode = 0;
-	fi->pointer = 0;
 	dir_nas->fi->privdata = (void *) fi;
 
 	return 0;

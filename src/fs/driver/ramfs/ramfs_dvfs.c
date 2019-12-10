@@ -88,7 +88,6 @@ static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	strncpy(fi->name, i_new->i_dentry->name, sizeof(fi->name) - 1);
 
 	fi->index = fi_index;
-	fi->pointer = 0;
 	fi->inode = i_new;
 	fi->fsi = i_dir->i_sb->sb_data;
 
@@ -170,11 +169,9 @@ struct inode_operations ramfs_iops = {
 	.truncate = ramfs_truncate,
 };
 
-int    ramfs_close(struct file_desc *desc);
 size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
 size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
 struct file_operations ramfs_fops = {
-	.close = ramfs_close,
 	.write = ramfs_write,
 	.read = ramfs_read,
 };

@@ -61,7 +61,7 @@ size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	struct ramfs_file_info *fi;
 	size_t len;
 	size_t current, cnt;
-	uint32_t end_pointer;
+	uint32_t end_pos;
 	blkno_t blk;
 	uint32_t bytecount;
 	uint32_t start_block;
@@ -77,16 +77,16 @@ size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	bytecount = 0;
 
-	fi->pointer = pos;
 	len = size;
-	end_pointer = fi->pointer + len;
+	end_pos = pos + len;
 	start_block = fi->index * fsi->block_per_file;
 
 	while(1) {
 		if (0 == fsi->block_size) {
 			break;
 		}
-		blk = fi->pointer / fsi->block_size;
+
+		blk = pos / fsi->block_size;
 		/* check if block over the file */
 		if(blk >= fsi->block_per_file) {
 			bytecount = 0;
@@ -95,17 +95,17 @@ size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 			blk += start_block;
 		}
 		/* calculate pointer in scratch buffer */
-		current = fi->pointer % fsi->block_size;
+		current = pos % fsi->block_size;
 
 		/* set the counter how many bytes written in block */
-		if(end_pointer - fi->pointer > fsi->block_size) {
+		if(end_pos - pos > fsi->block_size) {
 			if(current) {
 				cnt = fsi->block_size - current;
 			} else {
 				cnt = fsi->block_size;
 			}
 		} else {
-			cnt = end_pointer - fi->pointer;
+			cnt = end_pos - pos;
 			/* over the block ? */
 			if((current + cnt) > fsi->block_size) {
 				cnt -= (current + cnt) % fsi->block_size;
@@ -128,19 +128,15 @@ size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		bytecount += cnt;
 		buf = (void*) (((uint8_t*) buf) + cnt);
 		/* shift the pointer */
-		fi->pointer += cnt;
-		if(end_pointer <= fi->pointer) {
+		pos += cnt;
+		if (end_pos <= pos) {
 			break;
 		}
 	}
 	/* if we write over the last EOF, set new filelen */
-	if (file_get_size(desc) < fi->pointer) {
-		file_set_size(desc, fi->pointer);
+	if (file_get_size(desc) < pos) {
+		file_set_size(desc, pos);
 	}
 
 	return bytecount;
-}
-
-int ramfs_close(struct file_desc *desc) {
-	return 0;
 }
