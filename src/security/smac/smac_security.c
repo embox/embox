@@ -35,7 +35,7 @@ const char *smac_def_file_label = OPTION_STRING_GET(default_file_label);
  * @return 0 or negative when further mac check is meaningless
  * @return positive when label stored
  */
-static int node_getlabel(struct node *n, char *label, size_t lablen) {
+static int node_getlabel(struct inode *n, char *label, size_t lablen) {
 	int res = 0;
 
 	if (0 > (res = kfile_xattr_get(n, smac_xattrkey, label,
@@ -46,7 +46,7 @@ static int node_getlabel(struct node *n, char *label, size_t lablen) {
 	return 1;
 }
 
-static int node_setlabel(struct node *n, const char *label) {
+static int node_setlabel(struct inode *n, const char *label) {
 	return kfile_xattr_set(n, smac_xattrkey, label, strlen(label) + 1, 0);
 }
 
@@ -75,7 +75,7 @@ static int security_xattr_is_service_access(const char *name, int may_access,
 	return res;
 }
 
-int security_node_create(struct node *dir, mode_t mode) {
+int security_node_create(struct inode *dir, mode_t mode) {
 	char label[SMAC_LABELLEN];
 	struct smac_audit audit;
 	int res;
@@ -89,11 +89,11 @@ int security_node_create(struct node *dir, mode_t mode) {
 	return smac_access(task_self_resource_security(), label, S_IWOTH, &audit);
 }
 
-void security_node_cred_fill(struct node *node) {
+void security_node_cred_fill(struct inode *node) {
 	node_setlabel(node, task_self_resource_security());
 }
 
-int security_node_permissions(struct node *node, int flags) {
+int security_node_permissions(struct inode *node, int flags) {
 	char label[SMAC_LABELLEN];
 	struct smac_audit audit;
 	int res;
@@ -107,19 +107,19 @@ int security_node_permissions(struct node *node, int flags) {
 	return smac_access(task_self_resource_security(), label, flags, &audit);
 }
 
-int security_node_delete(struct node *dir, struct node *node) {
+int security_node_delete(struct inode *dir, struct inode *node) {
 	return 0;
 }
 
-int security_mount(struct node *dev, struct node *mountpoint) {
+int security_mount(struct inode *dev, struct inode *mountpoint) {
 	return 0;
 }
 
-int security_umount(struct node *mountpoint) {
+int security_umount(struct inode *mountpoint) {
 	return 0;
 }
 
-int security_xattr_get(struct node *node, const char *name, char *value,
+int security_xattr_get(struct inode *node, const char *name, char *value,
 		size_t len) {
 	char label[SMAC_LABELLEN];
 	struct smac_audit audit;
@@ -139,7 +139,7 @@ int security_xattr_get(struct node *node, const char *name, char *value,
 	return smac_access(task_self_resource_security(), label, S_IROTH, &audit);
 }
 
-int security_xattr_set(struct node *node, const char *name,
+int security_xattr_set(struct inode *node, const char *name,
 			const char *value, size_t len, int flags) {
 	char label[SMAC_LABELLEN];
 	struct smac_audit audit;
@@ -159,7 +159,7 @@ int security_xattr_set(struct node *node, const char *name,
 	return smac_access(task_self_resource_security(), label, S_IWOTH, &audit);
 }
 
-int security_xattr_list(struct node *node, char *list, size_t len) {
+int security_xattr_list(struct inode *node, char *list, size_t len) {
 	char label[SMAC_LABELLEN];
 	struct smac_audit audit;
 	int res;

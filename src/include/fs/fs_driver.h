@@ -15,22 +15,22 @@
 
 #include <drivers/block_dev.h>
 
-struct node;
+struct inode;
 
 struct fsop_desc {
 	int (*format)(struct block_dev *bdev, void *priv);
 	int (*mount)(void *dev_node, void *dir_node);
-	int (*create_node)(struct node *parent_node, struct node *new_node);
-	int (*delete_node)(struct node *node);
+	int (*create_node)(struct inode *parent_node, struct inode *new_node);
+	int (*delete_node)(struct inode *node);
 
 	/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
-	int (*getxattr)(struct node *node, const char *name,
+	int (*getxattr)(struct inode *node, const char *name,
 			char *value, size_t len);
-	int (*setxattr)(struct node *node, const char *name,
+	int (*setxattr)(struct inode *node, const char *name,
 			const char *value, size_t len, int flags);
-	int (*listxattr)(struct node *node, char *list, size_t len);
+	int (*listxattr)(struct inode *node, char *list, size_t len);
 
-	int (*truncate)(struct node *node, off_t length);
+	int (*truncate)(struct inode *node, off_t length);
 	int (*umount)(void *dir_node);
 };
 

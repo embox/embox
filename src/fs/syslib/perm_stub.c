@@ -11,11 +11,11 @@
 
 /* This is stubs to make system compile w/o old vfs */
 
-int fs_perm_mask(struct node *node) {
+int fs_perm_mask(struct inode *node) {
 	return 0777;
 }
 
-int fs_perm_check(struct node *node, int fd_flags) {
+int fs_perm_check(struct inode *node, int fd_flags) {
 	return 0;
 }
 

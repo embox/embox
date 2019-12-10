@@ -86,7 +86,7 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	if ( 0 != vfs_get_child_next(&dir->path,
-			(struct node *) (uintptr_t) dir->current.d_ino, &child)) {
+			(struct inode *) (uintptr_t) dir->current.d_ino, &child)) {
 		return NULL;
 	}
 

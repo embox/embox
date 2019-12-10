@@ -23,7 +23,7 @@ POOL_DEF(mount_desc_pool, struct mount_descriptor, OPTION_GET(NUMBER,mount_desc_
 
 static struct mount_descriptor *mnt_root = NULL;
 
-struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct node *mnt_point) {
+struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, struct inode *mnt_point) {
 	struct mount_descriptor *desc;
 
 	if (parent->mnt_point == mnt_point ) {
@@ -41,7 +41,7 @@ struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, 
 }
 
 struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
-		struct node *root, const char *dev) {
+		struct inode *root, const char *dev) {
 	struct mount_descriptor *mdesc;
 
 	assert(mnt_point_path->mnt_desc != NULL ||

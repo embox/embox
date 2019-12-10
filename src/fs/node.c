@@ -20,7 +20,7 @@
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
 struct node_tuple {
-	struct node node;
+	struct inode node;
 	struct nas nas;
 	struct node_fi fi;
 };
@@ -33,7 +33,7 @@ static int node_init(void) {
 	return 0;
 }
 
-static inline int flock_init(node_t *node) {
+static inline int flock_init(struct inode *node) {
 	/* flock initialization */
 	mutex_init(&node->flock.exlock);
 	node->flock.shlock_count = 0;
@@ -43,10 +43,10 @@ static inline int flock_init(node_t *node) {
 	return ENOERR;
 }
 
-node_t *node_alloc(const char *name, size_t name_len) {
+struct inode *node_alloc(const char *name, size_t name_len) {
 	struct node_tuple *nt;
 
-	struct node *node;
+	struct inode *node;
 	struct nas *nas;
 
 	if (!name_len) {
@@ -85,6 +85,6 @@ node_t *node_alloc(const char *name, size_t name_len) {
 	return node;
 }
 
-void node_free(node_t *node) {
+void node_free(struct inode *node) {
 	pool_free(&node_pool, member_cast_out(node, struct node_tuple, node));
 }

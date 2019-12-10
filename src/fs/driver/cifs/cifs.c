@@ -32,7 +32,7 @@
 struct cifs_fs_info
 {
 	SMBCCTX *ctx;
-	struct node *mntto;
+	struct inode *mntto;
 	char url[PATH_MAX];
 };
 
@@ -65,10 +65,10 @@ samba_type_to_mode_fmt (const unsigned dt_type)
 	}
 }
 
-struct node *
+struct inode *
 embox_set_node (struct nas *nas, char *filename, int mode)
 {
-	struct node *node;
+	struct inode *node;
 	node = vfs_subtree_create (nas->node, filename, samba_type_to_mode_fmt (mode));
 	if (!node) {
 		return NULL;
@@ -110,7 +110,7 @@ embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
 	int len, rc;
 	struct smbc_dirent *dirent;
 	SMBCFILE * fd;
-	struct node *node;
+	struct inode *node;
 
 	len = strlen (smb_path);
 
@@ -158,7 +158,7 @@ embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
 }
 
 static int cifs_umount_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if (node_is_directory(nas->node)) {
 		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -175,7 +175,7 @@ static int cifs_umount_entry(struct nas *nas) {
 }
 
 static int embox_cifs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct cifs_fs_info *fsi;
 
@@ -207,7 +207,7 @@ embox_cifs_mount (void *dev, void *dir)
 {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
-	struct node *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct cifs_fs_info *fsi;
 	int rc;
@@ -260,8 +260,7 @@ error:
 	return -rc;
 }
 
-static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
-		int flags)
+static struct idesc *cifs_open(struct inode *node, struct idesc *idesc)
 {
 	struct cifs_fs_info *fsi;
 	char fileurl[2 * PATH_MAX];
@@ -285,17 +284,17 @@ static struct idesc *cifs_open(struct node *node, struct file_desc *file_desc,
 		return err_ptr(errno);
 	}
 
-	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,flags,0);
+	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,idesc->idesc_flags,0);
 	if(!file) {
 		return err_ptr(errno);
 	}
 
-	file_desc->file_info = file;
+	file_desc_set_file_info(file_desc_from_idesc(idesc), file);
 
 	// Yet another bullshit: size is not valid until open
-	file_set_size(file_desc, st.st_size);
+	file_set_size(file_desc_from_idesc(idesc), st.st_size);
 
-	return &file_desc->idesc;
+	return idesc;
 }
 
 static int cifs_close(struct file_desc *file_desc)
@@ -368,7 +367,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	return res;
 }
 
-static int embox_cifs_node_create(struct node *parent_node, struct node *new_node) {
+static int embox_cifs_node_create(struct inode *parent_node, struct inode *new_node) {
 	struct cifs_fs_info *pfsi;
 	char fileurl[PATH_MAX];
 	SMBCFILE *file;
@@ -408,7 +407,7 @@ static int embox_cifs_node_create(struct node *parent_node, struct node *new_nod
 	return 0;
 }
 
-static int embox_cifs_node_delete(struct node *node) {
+static int embox_cifs_node_delete(struct inode *node) {
 	struct cifs_fs_info *fsi;
 	char fileurl[PATH_MAX];
 	int rc;

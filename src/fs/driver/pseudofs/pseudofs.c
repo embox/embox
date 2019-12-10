@@ -10,11 +10,11 @@
 #include <fs/fs_driver.h>
 
 
-static int pseudofs_create(struct node *parent_node, struct node *new_node) {
+static int pseudofs_create(struct inode *parent_node, struct inode *new_node) {
 	return 0;
 }
 
-static int pseudofs_delete(struct node *nod) {
+static int pseudofs_delete(struct inode *nod) {
 	return 0;
 }
 

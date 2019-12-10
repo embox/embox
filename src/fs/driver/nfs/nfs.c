@@ -34,7 +34,7 @@
 #include <util/err.h>
 
 
-static int nfs_create_dir_entry(node_t *parent);
+static int nfs_create_dir_entry(struct inode *parent);
 
 static int nfs_mount(struct nas *nas);
 static int nfs_lookup(struct nas *nas);
@@ -49,7 +49,7 @@ POOL_DEF (nfs_file_pool, struct nfs_file_info, OPTION_GET(NUMBER,inode_quantity)
 
 /* File operations */
 
-static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags);
+static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc);
 static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -68,22 +68,21 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
 /*
  * file_operation
  */
-static struct idesc *nfsfs_open(struct node *node, struct file_desc *desc, int flags) {
+static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 	off_t pos;
 
-	pos = file_get_pos(desc);
+	pos = file_get_pos(file_desc_from_idesc(idesc));
 
 	nas = node->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
 
-	fi->mode = flags;
 	fi->offset = pos;
 
 	if(0 == nfs_lookup(nas)) {
 		nas->fi->ni.size = fi->attr.size;
-		return &desc->idesc;
+		return idesc;
 	}
 	return err_ptr(ENOENT);
 }
@@ -219,9 +218,9 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_mount(void * dev, void *dir);
-static int nfsfs_create(struct node *parent_node, struct node *node);
-static int nfsfs_delete(struct node *node);
-static int nfsfs_truncate (struct node *node, off_t length);
+static int nfsfs_create(struct inode *parent_node, struct inode *node);
+static int nfsfs_delete(struct inode *node);
+static int nfsfs_truncate (struct inode *node, off_t length);
 static int nfsfs_umount(void *dir);
 
 static struct fsop_desc nfsfs_fsop = {
@@ -242,11 +241,10 @@ static struct fs_driver nfsfs_driver = {
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {
-	/* TODO format command support */
 	return 0;
 }
 
-static int nfsfs_truncate (struct node *node, off_t length) {
+static int nfsfs_truncate (struct inode *node, off_t length) {
 	struct nas *nas = node->nas;
 
 	nas->fi->ni.size = length;
@@ -348,7 +346,7 @@ static void nfs_free_fs(struct nas *nas) {
 }
 
 static int nfsfs_mount(void *dev, void *dir) {
-	node_t *dir_node;
+	struct inode *dir_node;
 	nfs_file_info_t *fi;
 	struct nas *dir_nas;
 	struct nfs_fs_info *fsi;
@@ -397,7 +395,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 }
 
 static int nfs_umount_entry(struct nas *nas) {
-	struct node *child;
+	struct inode *child;
 
 	if(node_is_directory(nas->node)) {
 		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
@@ -414,7 +412,7 @@ static int nfs_umount_entry(struct nas *nas) {
 }
 
 static int nfsfs_umount(void *dir) {
-	struct node *dir_node;
+	struct inode *dir_node;
 
 	dir_node = dir;
 
@@ -427,9 +425,9 @@ static int nfsfs_umount(void *dir) {
 	return 0;
 }
 
-static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
+static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
 	struct nas *nas;
-	node_t  *node;
+	struct inode *node;
 	nfs_file_info_t *fi;
 	const char *name;
 	mode_t mode;
@@ -485,8 +483,8 @@ static node_t *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) 
 	return node;
 }
 
-static int nfs_create_dir_entry(node_t *parent_node) {
-	node_t *node;
+static int nfs_create_dir_entry(struct inode *parent_node) {
+	struct inode *node;
 	struct nas *parent_nas;
 	__u32 vf;
 	char *point;
@@ -587,7 +585,7 @@ static int nfs_create_dir_entry(node_t *parent_node) {
 	return 0;
 }
 
-static int nfsfs_create(struct node *parent_node, struct node *node) {
+static int nfsfs_create(struct inode *parent_node, struct inode *node) {
 
 	nfs_file_info_t *parent_fi, *fi;
 	struct nas *nas, *parent_nas;
@@ -641,10 +639,10 @@ static int nfsfs_create(struct node *parent_node, struct node *node) {
 	return nfs_create_dir_entry(parent_node); // XXX parent_node? or node?
 }
 
-static int nfsfs_delete(struct node *node) {
+static int nfsfs_delete(struct inode *node) {
 	nfs_file_info_t *fi;
 	struct nas *nas, *dir_nas;
-	node_t *dir_node;
+	struct inode *dir_node;
 	nfs_file_info_t *dir_fi;
 	lookup_req_t req;
 	delete_reply_t reply;
@@ -852,7 +850,7 @@ static int nfs_call_proc_nfs(struct nas *nas,
 }
 
 static int nfs_lookup(struct nas *nas) {
-	node_t *dir_node;
+	struct inode *dir_node;
 	struct nas *dir_nas;
 	nfs_file_info_t *fi, *dir_fi;
 	lookup_req_t req;

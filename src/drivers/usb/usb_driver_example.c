@@ -27,7 +27,7 @@ static void usb_example_disconnect(struct usb_dev *dev, void *data) {
 
 }
 
-static struct idesc * example_open(struct node *node, struct file_desc *file_desc, int flags) {
+static struct idesc * example_open(struct inode *node, struct idesc *idesc) {
 	struct usb_dev_desc *ddesc;
 	int res;
 
@@ -38,9 +38,9 @@ static struct idesc * example_open(struct node *node, struct file_desc *file_des
 
 	assert(ddesc);
 
-	file_desc->file_info = ddesc;
+	file_desc_set_file_info(file_desc_from_idesc(idesc), ddesc);
 
-	return &file_desc->idesc;
+	return idesc;
 }
 
 static int example_close(struct file_desc *desc) {

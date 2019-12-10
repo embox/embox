@@ -15,7 +15,7 @@ struct usb_dev;
 struct usb_driver;
 struct file_operations;
 struct usb_dev_desc;
-struct node;
+struct inode;
 
 struct usb_device_id {
 	unsigned short vid;
@@ -32,7 +32,7 @@ struct usb_driver {
 };
 
 extern void *usb_driver_data(struct usb_dev *dev);
-extern int usb_driver_open_by_node(struct node *n, struct usb_dev_desc **ddesc);
+extern int usb_driver_open_by_node(struct inode *n, struct usb_dev_desc **ddesc);
 
 extern int usb_driver_register(struct usb_driver *drv);
 

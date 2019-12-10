@@ -17,7 +17,7 @@ EMBOX_TEST_SUITE("Test for various vfs operations");
 TEST_SETUP_SUITE(setup_suite);
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-static struct node *test_node;
+static struct inode *test_node;
 /* Builds the tree under `test_root':
  *
  *   test
@@ -45,7 +45,7 @@ static struct node *test_node;
 
 static int test_mt_path_init(const char *strpath, const char *name) {
 	struct mount_descriptor *mdesc;
-	struct node *node, *root_node;
+	struct inode *node, *root_node;
 	struct path path;
 
 	if (vfs_lookup(strpath, &path)) {
@@ -67,7 +67,7 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 
 static int test_mt_path_fini(const char *strpath) {
 	struct path path;
-	struct node *root_node;
+	struct inode *root_node;
 
 	if (vfs_lookup(strpath, &path)) {
 		return -ENOENT;

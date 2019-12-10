@@ -35,7 +35,7 @@
 #include <mem/misc/pool.h>
 
 #define MAX_FLOCK_QUANTITY OPTION_GET(NUMBER, flock_quantity)
-POOL_DEF(flock_pool, flock_shared_t, MAX_FLOCK_QUANTITY);
+POOL_DEF(flock_pool, struct flock_shared, MAX_FLOCK_QUANTITY);
 
 static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	struct path node;
@@ -278,7 +278,7 @@ int krmdir(const char *pathname) {
 
 }
 
-extern int kfile_fill_stat(struct node *node, struct stat *stat_buff);
+extern int kfile_fill_stat(struct inode *node, struct stat *stat_buff);
 int klstat(const char *path, struct stat *buf) {
 	struct path node;
 	int res;
@@ -365,7 +365,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 	}
 
 	if (drv->mount_dev_by_string) {
-		dev_node.node = (node_t *) dev;
+		dev_node.node = (struct inode *) dev;
 	} else {
 		if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
 			errno = res == -ENOENT ? ENODEV : -res;
@@ -469,7 +469,7 @@ int krename(const char *oldpath, const char *newpath) {
 	char *name, *newpathbuf = NULL;
 	char *newpatharg, *oldpatharg;
 	struct path oldnode, newnode;
-	struct node *diritem;
+	struct inode *diritem;
 	/* We use custom tree traversal while I can't
 	 * get success with tree_foreach_children */
 	struct tree_link *link, *end_link;
@@ -660,8 +660,8 @@ int kumount(const char *dir) {
 	return 0;
 }
 
-static int flock_shared_get(flock_t *flock) {
-	flock_shared_t *shlock;
+static int flock_shared_get(struct node_flock *flock) {
+	struct flock_shared *shlock;
 	struct thread *current = thread_self();
 
 	shlock = pool_alloc(&flock_pool);
@@ -675,8 +675,8 @@ static int flock_shared_get(flock_t *flock) {
 	return -ENOERR;
 }
 
-static int flock_shared_put(flock_t *flock) {
-	flock_shared_t *shlock;
+static int flock_shared_put(struct node_flock *flock) {
+	struct flock_shared *shlock;
 	struct thread *current = thread_self();
 
 	dlist_foreach_entry(shlock, &flock->shlock_holders, flock_link) {
@@ -710,7 +710,7 @@ static inline void flock_exclusive_put(struct mutex *exlock) {
  */
 int kflock(int fd, int operation) {
 	int rc;
-	flock_t *flock;
+	struct node_flock *flock;
 	struct mutex *exlock;
 	spinlock_t *flock_guard;
 	long *shlock_count;

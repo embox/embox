@@ -40,7 +40,7 @@ void *usb_driver_data(struct usb_dev *dev) {
 	return dev->drv_data;
 }
 
-static int usb_driver_id_by_node(struct node *n, struct usb_device_id *id) {
+static int usb_driver_id_by_node(struct inode *n, struct usb_device_id *id) {
 
 	if (0 > sscanf(n->name, usb_device_name_format, &id->vid, &id->pid)) {
 		return -EINVAL;
@@ -49,7 +49,7 @@ static int usb_driver_id_by_node(struct node *n, struct usb_device_id *id) {
 	return 0;
 }
 
-int usb_driver_open_by_node(struct node *n, struct usb_dev_desc **ddesc) {
+int usb_driver_open_by_node(struct inode *n, struct usb_dev_desc **ddesc) {
 	struct usb_device_id id;
 
 	*ddesc = NULL;

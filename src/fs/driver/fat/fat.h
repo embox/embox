@@ -236,7 +236,7 @@ struct volinfo {
 struct fat_fs_info {
 	struct volinfo vi;
 	struct block_dev *bdev;
-	struct node *root;
+	struct inode *root;
 };
 
 struct fat_file_info {

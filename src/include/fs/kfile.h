@@ -15,8 +15,9 @@
 
 struct file_desc;
 struct stat;
+struct inode;
 
-extern struct idesc * kopen(struct node *node, int flag);
+extern struct idesc * kopen(struct inode *node, int flag);
 
 extern ssize_t kwrite(const void *buf, size_t size, struct file_desc *file);
 
@@ -30,8 +31,7 @@ extern int kioctl(struct file_desc *fp, int request, void *data);
 
 extern int kfstat(struct file_desc *fp, struct stat *buff);
 
-struct node;
-extern int ktruncate(struct node *node, off_t length);
+extern int ktruncate(struct inode *node, off_t length);
 
 extern int kftruncate(struct file_desc *desc, off_t length);
 

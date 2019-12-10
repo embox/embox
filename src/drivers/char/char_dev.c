@@ -82,7 +82,7 @@ void char_dev_default_close(struct idesc *idesc) {
 	pool_free(&idev_pool, idesc);
 }
 
-struct idesc *char_dev_open(struct node *node, int flags) {
+struct idesc *char_dev_open(struct inode *node, int flags) {
 	struct dev_module *cdev = node->nas->fi->privdata;
 
 	if (!cdev) {

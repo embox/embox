@@ -9,7 +9,7 @@
 #ifndef SRC_FS_PERM_H_
 #define SRC_FS_PERM_H_
 
-struct node;
+struct inode;
 struct path;
 
 /**
@@ -19,7 +19,7 @@ struct path;
  *
  * @return mask
  */
-extern int fs_perm_mask(struct node *node);
+extern int fs_perm_mask(struct inode *node);
 
 /**
  * @brief Check node mask for desired permission mask @fd_flags
@@ -31,7 +31,7 @@ extern int fs_perm_mask(struct node *node);
  *	-EACCES on permission violation
  *	0 on success
  */
-extern int fs_perm_check(struct node *node, int fd_flags);
+extern int fs_perm_check(struct inode *node, int fd_flags);
 
 /**
  * @brief Perform node lookup with respect for directory rights.
