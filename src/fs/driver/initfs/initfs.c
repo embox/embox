@@ -37,14 +37,6 @@ struct initfs_file_info {
 POOL_DEF (fdesc_pool, struct initfs_file_info,
 		OPTION_GET(NUMBER,fdesc_quantity));
 
-static struct idesc *initfs_open(struct inode *nod, struct idesc *idesc) {
-	return idesc;
-}
-
-static int initfs_close(struct file_desc *desc) {
-	return 0;
-}
-
 static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct initfs_file_info *fi;
 	struct nas *nas;
@@ -131,8 +123,6 @@ static int initfs_mount(void *dev, void *dir) {
 }
 
 static struct file_operations initfs_fop = {
-	.open = initfs_open,
-	.close = initfs_close,
 	.read = initfs_read,
 	.ioctl = initfs_ioctl,
 };

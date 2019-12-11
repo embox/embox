@@ -78,11 +78,16 @@ struct idesc *kopen(struct inode *node, int flag) {
 	desc->ops = ops;
 
 	desc->idesc.idesc_flags = flag;
-	idesc = desc->ops->open(node, &desc->idesc);
-	if (err(idesc)){
-		ret = (uintptr_t)idesc;
-		goto free_out;
+	if (desc->ops->open != NULL) {
+		idesc = desc->ops->open(node, &desc->idesc);
+		if (err(idesc)){
+			ret = (uintptr_t)idesc;
+			goto free_out;
+		}
+	} else {
+		idesc = &desc->idesc;
 	}
+
 	if ((struct idesc *)idesc == &desc->idesc) {
 		goto out;
 	} else {
@@ -169,8 +174,10 @@ end:
 void kclose(struct file_desc *desc) {
 	assert(desc);
 	assert(desc->ops);
-	assert(desc->ops->close);
-	desc->ops->close(desc);
+
+	if (desc->ops->close) {
+		desc->ops->close(desc);
+	}
 
 	file_desc_destroy(desc);
 }

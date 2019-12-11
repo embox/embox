@@ -41,8 +41,7 @@ struct ramfs_fs_info {
 #define RAMFS_NAME_LEN	32
 struct ramfs_file_info {
 	int     index;		        /* number of file in FS*/
-	int     mode;				/* mode in which this file was opened */
-	uint32_t pointer;			/* current (BYTE) pointer */
+	int     mode;			/* mode in which this file was opened */
 	char    name[RAMFS_NAME_LEN];
 	void *inode;
 	struct ramfs_fs_info *fsi;
