@@ -150,6 +150,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 		nas = node->nas;
 		nas->fs = dir_nas->fs;
 		nas->fi->privdata = (void *)fi;
+		nas->fi->ni.size = fi->filelen;
 
 		if (de.attr & ATTR_DIRECTORY) {
 			fat_create_dir_entry(nas);
@@ -194,31 +195,12 @@ static int fat_umount_entry(struct nas *nas) {
 }
 
 /* File operations */
-static struct idesc *fatfs_open(struct inode *node, struct idesc *idesc);
-
 extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
 extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
-extern int    fat_close(struct file_desc *desc);
 static struct file_operations fatfs_fop = {
-	.open = fatfs_open,
-	.close = fat_close,
 	.read = fat_read,
 	.write = fat_write,
 };
-
-/*
- * file_operation
- */
-static struct idesc *fatfs_open(struct inode *node, struct idesc *idesc) {
-	struct fat_file_info *fi;
-	struct file_desc *desc = file_desc_from_idesc(idesc);
-
-	fi = file_get_inode_data(desc);
-	fi->pointer = file_get_pos(desc);
-	file_set_size(desc, fi->filelen);
-
-	return idesc;
-}
 
 static int fatfs_mount(void *dev, void *dir) {
 	struct inode *dir_node, *dev_node;
