@@ -139,10 +139,8 @@ static void dwc_gmac_start(struct dwc_priv *dwc_priv) {
 	reg |= (DWC_DMA_MODE_ST | DWC_DMA_MODE_SR);
 	dwc_reg_write(dwc_priv, DWC_DMA_OPERATION_MODE, reg);
 
-	/* Enable transmitters */
+	/* Start transmit/receive engines */
 	reg = dwc_reg_read(dwc_priv, DWC_GMAC_CONFIG);
-	reg |= (DWC_GMAC_CONF_JD | DWC_GMAC_CONF_ACS | DWC_GMAC_CONF_BE);
-	reg |= (DWC_GMAC_CONF_PS | DWC_GMAC_CONF_FES | DWC_GMAC_CONF_DM); /* 100mb mii */
 	reg |= (DWC_GMAC_CONF_TE | DWC_GMAC_CONF_RE);
 	dwc_reg_write(dwc_priv, DWC_GMAC_CONFIG, reg);
 }
@@ -350,6 +348,30 @@ static void dwc_set_phyid(struct net_device *dev, uint8_t phyid) {
 }
 
 static int dwc_set_speed(struct net_device *dev, int speed) {
+	uint32_t reg;
+	struct dwc_priv *dwc_priv;
+
+	dwc_priv = netdev_priv(dev, struct dwc_priv);
+
+	reg = dwc_reg_read(dwc_priv, DWC_GMAC_CONFIG);
+
+	reg |= DWC_GMAC_CONF_JD | DWC_GMAC_CONF_ACS | DWC_GMAC_CONF_BE;
+
+	speed = net_to_mbps(speed);
+	switch (speed) {
+	case 1000:
+		reg &= ~(DWC_GMAC_CONF_PS | DWC_GMAC_CONF_FES);
+		break;
+	case 100:
+		reg |= DWC_GMAC_CONF_PS | DWC_GMAC_CONF_FES;
+		break;
+	default:
+		log_error("Unsupported speed: %dmbps", speed);
+		return -EINVAL;
+	}
+
+	reg |= DWC_GMAC_CONF_DM;
+	dwc_reg_write(dwc_priv, DWC_GMAC_CONFIG, reg);
 	return 0;
 }
 
