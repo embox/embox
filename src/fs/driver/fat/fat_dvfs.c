@@ -75,10 +75,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 		new_di->fi.mode = S_IFDIR;
 		inode->flags |= S_IFDIR;
 
-		new_di->currentcluster = (uint32_t) de->startclus_l_l |
-		  ((uint32_t) de->startclus_l_h) << 8 |
-		  ((uint32_t) de->startclus_h_l) << 16 |
-		  ((uint32_t) de->startclus_h_h) << 24;
+		new_di->currentcluster = fat_direntry_get_clus(de);
 
 		fi = &new_di->fi;
 	} else {
@@ -94,18 +91,12 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 		.volinfo = vi,
 	};
 
-	fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
-	fi->diroffset = tmp_entry - 1;
-	fi->cluster = (uint32_t) de->startclus_l_l |
-	  ((uint32_t) de->startclus_l_h) << 8 |
-	  ((uint32_t) de->startclus_h_l) << 16 |
-	  ((uint32_t) de->startclus_h_h) << 24;
+	fi->dirsector    = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
+	fi->diroffset    = tmp_entry - 1;
+	fi->cluster      = fat_direntry_get_clus(de);
 	fi->firstcluster = fi->cluster;
-	fi->filelen = (uint32_t) de->filesize_0 |
-			      ((uint32_t) de->filesize_1) << 8 |
-			      ((uint32_t) de->filesize_2) << 16 |
-			      ((uint32_t) de->filesize_3) << 24;
-	fi->fdi = di;
+	fi->filelen      = fat_direntry_get_size(de);
+	fi->fdi          = di;
 
 	inode->length    = fi->filelen;
 	inode->start_pos = fi->firstcluster * fi->volinfo->secperclus * fi->volinfo->bytepersec;
@@ -232,10 +223,6 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return fat_create_file(fi, di, name, mode);
 }
 
-static int fat_close(struct file_desc *desc) {
-	return 0;
-}
-
 /* @brief Get next inode in directory
  * @param inode   Structure to be filled
  * @param parent  Inode of parent directory
@@ -295,7 +282,7 @@ static int fat_remove(struct inode *inode) {
 		fi = inode->i_data;
 	}
 
-	return fat_unlike_file(fi, NULL, (uint8_t*) fat_sector_buff);
+	return fat_unlike_file(fi, (uint8_t*) fat_sector_buff);
 }
 
 static int fat_pathname(struct inode *inode, char *buf, int flags) {

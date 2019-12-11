@@ -249,8 +249,8 @@ struct fat_file_info {
 	uint32_t firstcluster;		/* first cluster of file */
 	uint32_t filelen;			/* byte length of file */
 
+	uint32_t pointer;
 	uint32_t cluster;			/* current cluster */
-	uint32_t pointer;			/* current (BYTE) pointer */
 };
 
 /*
@@ -295,15 +295,13 @@ extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
 extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
 extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
                              uint8_t *dirname, struct dirinfo *dirinfo);
-extern uint32_t fat_open_file(struct fat_file_info *fi, uint8_t *path, int mode,
-		uint8_t *p_scratch, size_t *size);
 extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
                               uint8_t *buffer, uint32_t *successcount, uint32_t len);
 extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
                                uint8_t *buffer, uint32_t *successcount, uint32_t len, size_t *size);
 extern int      fat_root_dir_record(void *bdev);
 extern int      fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, int mode);
-extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *path, uint8_t *p_scratch);
+extern int      fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch);
 
 extern struct fat_fs_info *fat_fs_alloc(void);
 extern void fat_fs_free(struct fat_fs_info *fsi);
@@ -317,6 +315,11 @@ extern void fat_write_longname(char *name, struct fat_dirent *di);
 extern uint8_t fat_canonical_name_checksum(const char *name);
 extern int fat_reset_dir(struct dirinfo *di);
 extern int read_dir_buf(struct dirinfo *di);
+
+extern uint32_t fat_direntry_get_clus(struct fat_dirent *de);
+extern void     fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus);
+extern uint32_t fat_direntry_get_size(struct fat_dirent *de);
+extern void     fat_direntry_set_size(struct fat_dirent *de, uint32_t size);
 
 extern uint8_t fat_sector_buff[FAT_MAX_SECTOR_SIZE];
 

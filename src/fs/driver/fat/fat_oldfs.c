@@ -145,6 +145,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 
 		memset(fi, 0, sizeof(struct fat_file_info));
 		fi->fsi = fsi;
+		fi->filelen = fat_direntry_get_size(&de);
 
 		nas = node->nas;
 		nas->fs = dir_nas->fs;
@@ -209,32 +210,15 @@ static struct file_operations fatfs_fop = {
  * file_operation
  */
 static struct idesc *fatfs_open(struct inode *node, struct idesc *idesc) {
-	struct nas *nas;
-	char path [PATH_MAX];
 	struct fat_file_info *fi;
-	int res;
-	size_t new_sz;
+	struct file_desc *desc = file_desc_from_idesc(idesc);
 
-	nas = node->nas;
-	fi = nas->fi->privdata;
-	fi->fsi     = nas->fs->fsi;
+	fi = file_get_inode_data(desc);
+	fi->pointer = file_get_pos(desc);
+	file_set_size(desc, fi->filelen);
 
-	vfs_get_relative_path(node, path, PATH_MAX);
-
-	while (path[0] == '/') {
-		strcpy(path, path + 1);
-	}
-
-	res = fat_open_file(fi, (uint8_t *) path, idesc->idesc_flags, fat_sector_buff, &new_sz);
-	file_set_size(file_desc_from_idesc(idesc), new_sz);
-	if (DFS_OK == res) {
-		fi->pointer = file_get_pos(file_desc_from_idesc(idesc));
-		return idesc;
-	}
-
-	return err_ptr(res);
+	return idesc;
 }
-
 
 static int fatfs_mount(void *dev, void *dir) {
 	struct inode *dir_node, *dev_node;
@@ -334,25 +318,12 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 static int fatfs_delete(struct inode *node) {
 	struct nas *nas;
 	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-	char path[PATH_MAX];
-	int root_path_len;
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
 
-	vfs_get_relative_path(fsi->root, path, PATH_MAX);
-	root_path_len = strlen(path);
-	vfs_get_relative_path(node, path, PATH_MAX);
-
-	if (path[root_path_len] == '\0') {
-		fat_fs_free(fsi);
-	} else {
-		if (fat_unlike_file(fi, (uint8_t *) path + root_path_len,
-					(uint8_t *) fat_sector_buff)) {
-			return -1;
-		}
+	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
+		return -1;
 	}
 	fat_file_free(fi);
 
