@@ -22,8 +22,7 @@ idesc_mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	struct idesc *idesc;
 
 	if (!idesc_index_valid(fd)
-			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IROTH))) {
+			|| (NULL == (idesc = index_descriptor_get(fd)))) {
 		return SET_ERRNO(EBADF), NULL;
 	}
 

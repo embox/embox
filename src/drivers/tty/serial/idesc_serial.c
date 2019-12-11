@@ -8,6 +8,7 @@
 #include <poll.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <fcntl.h>
 
 #include <mem/misc/pool.h>
 
@@ -45,7 +46,7 @@ static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & S_IROTH);
+	assert(((idesc->idesc_flags & O_ACCESS_MASK) != O_WRONLY));
 
 	if (!nbyte) {
 		return 0;
@@ -73,7 +74,7 @@ static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov, int cn
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_serial_ops);
-	assert(idesc->idesc_amode & S_IWOTH);
+	assert(((idesc->idesc_flags & O_ACCESS_MASK) != O_RDONLY));
 
 	left = nbyte;
 	uart = idesc_to_uart(idesc);

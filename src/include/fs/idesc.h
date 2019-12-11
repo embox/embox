@@ -16,7 +16,6 @@ struct idesc_xattrops;
 #include <kernel/sched/waitq.h>
 
 struct idesc {
-	mode_t idesc_amode;
 	struct waitq idesc_waitq;
 	const struct idesc_ops *idesc_ops;
 	const struct idesc_xattrops *idesc_xattrops;

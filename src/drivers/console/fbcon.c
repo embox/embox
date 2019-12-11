@@ -12,6 +12,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <fcntl.h>
 
 #include <drivers/input/keymap.h>
 #include <drivers/keyboard.h>
@@ -174,7 +175,7 @@ static void *run(void *data) {
 	close(1);
 	close(2);
 
-	idesc_init(&fbcon->idesc, &fbcon_idesc_ops, S_IROTH | S_IWOTH);
+	idesc_init(&fbcon->idesc, &fbcon_idesc_ops, O_RDWR);
 	fd = index_descriptor_add(&fbcon->idesc);
 	fbcon->vterm.tty.idesc = &fbcon->idesc;
 

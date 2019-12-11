@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <poll.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
@@ -42,11 +43,11 @@ static int table_prepare(struct idesc_poll_table *pt, struct pollfd fds[],
 
 		poll_mask = 0;
 
-		if ((fds[i].events & POLLIN) && (idesc->idesc_amode & S_IROTH)) {
+		if ((fds[i].events & POLLIN) && ((idesc->idesc_flags & O_ACCESS_MASK) != O_WRONLY)) {
 			poll_mask |= POLLIN;
 		}
 
-		if ((fds[i].events & POLLOUT) && (idesc->idesc_amode & S_IWOTH)) {
+		if ((fds[i].events & POLLOUT) && ((idesc->idesc_flags & O_ACCESS_MASK) != O_RDONLY)) {
 			poll_mask |= POLLOUT;
 		}
 

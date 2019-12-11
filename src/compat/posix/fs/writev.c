@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <fcntl.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/idesc.h>
@@ -24,7 +25,7 @@ ssize_t writev(int fd, const struct iovec *iov, int iovcnt) {
 	}
 	if (!idesc_index_valid(fd)
 			|| (NULL == (idesc = index_descriptor_get(fd)))
-			|| (!(idesc->idesc_amode & S_IWOTH))) {
+			|| ((idesc->idesc_flags & O_ACCESS_MASK) == O_RDONLY)) {
 		return SET_ERRNO(EBADF);
 	}
 

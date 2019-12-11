@@ -159,7 +159,7 @@ static struct idesc_pty *idesc_pty_create(struct pty *pty, const struct idesc_op
 		return NULL;
 	}
 
-	idesc_init(&ipty->idesc, ops, S_IROTH | S_IWOTH);
+	idesc_init(&ipty->idesc, ops, O_RDWR);
 
 	ipty->pty = pty;
 

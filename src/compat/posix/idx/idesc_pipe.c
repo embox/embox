@@ -15,6 +15,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
+#include <fcntl.h>
 
 #include <util/ring_buff.h>
 
@@ -58,15 +59,15 @@ struct pipe {
 
 static const struct idesc_ops idesc_pipe_ops;
 
-static int idesc_pipe_isclosed(struct idesc_pipe *ipipe) {
-	return ipipe->idesc.idesc_amode == 0;
+static inline int idesc_pipe_isclosed(struct idesc_pipe *ipipe) {
+	return (ipipe->idesc.idesc_flags & O_ACCESS_MASK) == O_ACCESS_MASK;
 }
 
 static int idesc_pipe_close(struct idesc_pipe *cur, struct idesc_pipe *other) {
 
-	cur->idesc.idesc_amode = 0;
+	cur->idesc.idesc_flags |= O_ACCESS_MASK;
 
-	if (other->idesc.idesc_amode) {
+	if (!idesc_pipe_isclosed(other)) {
 		idesc_notify(&other->idesc, POLLERR);
 	} else {
 		return 1;
@@ -125,7 +126,7 @@ static ssize_t pipe_read(struct idesc *idesc, const struct iovec *iov, int cnt) 
 	assert(buf);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
-	assert(idesc->idesc_amode == S_IROTH);
+	assert((idesc->idesc_flags & O_ACCESS_MASK) != O_WRONLY);
 
 	if (!nbyte) {
 		return 0;
@@ -167,7 +168,7 @@ static ssize_t pipe_write(struct idesc *idesc, const struct iovec *iov, int cnt)
 	assert(cnt == 1);
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_pipe_ops);
-	assert(idesc->idesc_amode == S_IWOTH);
+	assert((idesc->idesc_flags & O_ACCESS_MASK) != O_RDONLY);
 
 	cbuf = iov->iov_base;
 	nbyte = iov->iov_len;
@@ -339,8 +340,8 @@ int pipe2(int pipefd[2], int flags) {
 	}
 
 
-	idesc_pipe_init(&pipe->read_desc, pipe, S_IROTH);
-	idesc_pipe_init(&pipe->write_desc, pipe, S_IWOTH);
+	idesc_pipe_init(&pipe->read_desc, pipe, O_RDONLY);
+	idesc_pipe_init(&pipe->write_desc, pipe, O_WRONLY);
 
 
 	pipefd[0] = idesc_table_add(it, &pipe->read_desc.idesc, flags);

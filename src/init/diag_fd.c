@@ -9,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <termios.h>
+#include <fcntl.h>
 
 #include <drivers/diag.h>
 #include <kernel/task.h>
@@ -95,7 +96,7 @@ int diag_fd(void) {
 		return -ENOSYS;
 	}
 
-	idesc_init(&diag_idesc, &diag_idx_ops, S_IROTH | S_IWOTH);
+	idesc_init(&diag_idesc, &diag_idx_ops, O_RDWR);
 
 	return idesc_table_add(idesc_table, &diag_idesc, 0);
 }

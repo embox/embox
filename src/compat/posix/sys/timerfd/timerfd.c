@@ -15,6 +15,7 @@
 #include <sys/uio.h>
 #include <time.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
@@ -108,7 +109,7 @@ static ssize_t timerfd_read(struct idesc *idesc, const struct iovec *iov,
 
 	assert(iov);
 	assert(idesc->idesc_ops == &idesc_timerfd_ops);
-	assert(idesc->idesc_amode == S_IROTH);
+	assert((idesc->idesc_flags & O_ACCESS_MASK) != O_WRONLY);
 	buf = iov->iov_base;
 
 	if (iov->iov_len < sizeof(uint64_t)) {
@@ -153,18 +154,12 @@ out_err:
 }
 
 static void timerfd_close(struct idesc *idesc) {
-	struct idesc_timerfd *idesc_timerfd;
 	struct timerfd *timerfd;
 
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_timerfd_ops);
 
-	idesc_timerfd = (struct idesc_timerfd *)idesc;
 	timerfd = idesc_to_timerfd(idesc);
-
-	mutex_lock(&timerfd->mutex);
-	idesc_timerfd->idesc.idesc_amode = 0;
-	mutex_unlock(&timerfd->mutex);
 
 	timerfd_free(timerfd);
 }
@@ -261,7 +256,7 @@ int timerfd_create(int clockid, int flags) {
 	}
 
 	timerfd->clk_id = clockid;
-	idesc_init(&timerfd->read_desc.idesc, &idesc_timerfd_ops, S_IROTH);
+	idesc_init(&timerfd->read_desc.idesc, &idesc_timerfd_ops, O_RDONLY);
 	timerfd->read_desc.timerfd = timerfd;
 
 	fd = idesc_table_add(it, &timerfd->read_desc.idesc, 0);
