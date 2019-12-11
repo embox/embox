@@ -320,9 +320,7 @@ struct inode_operations fat_iops = {
 
 extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
 extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
-extern int    fat_close(struct file_desc *desc);
 static struct file_operations fat_fops = {
-	.close = fat_close,
 	.write = fat_write,
 	.read = fat_read,
 };

@@ -2078,10 +2078,6 @@ size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 	return 0;
 }
 
-int fat_close(struct file_desc *desc) {
-	return 0;
-}
-
 #define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
 /**
  * @brief Format given block device
