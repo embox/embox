@@ -15,6 +15,8 @@
 
 #include <drivers/scsi.h>
 
+#include <kernel/panic.h>
+
 static inline struct usb_mass *scsi2mass(struct scsi_dev *dev) {
 	return member_cast_out(dev, struct usb_mass, scsi_dev);
 }
@@ -221,8 +223,9 @@ static void scsi_sense_input(struct scsi_dev *dev, int res) {
 
 	data = (struct scsi_data_sense *) dev->scsi_data_scratchpad;
 	acode = data->dsns_additional_code;
-	assertf(acode == 0x28 || acode == 0x29, "Don't know how to recover "
-			"unknown error %x", acode);
+	if (!(acode == 0x28 || acode == 0x29)) {
+		panic("Don't know how to recover unknown error %x", acode);
+	}
 
 	/* 0x28 and 0x29 are just required attention, seems that can go on */
 
