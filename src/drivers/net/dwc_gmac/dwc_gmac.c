@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <drivers/common/memory.h>
 
@@ -139,10 +140,8 @@ static void dwc_gmac_start(struct dwc_priv *dwc_priv) {
 	reg |= (DWC_DMA_MODE_ST | DWC_DMA_MODE_SR);
 	dwc_reg_write(dwc_priv, DWC_DMA_OPERATION_MODE, reg);
 
-	/* Enable transmitters */
+	/* Start transmit/receive engines */
 	reg = dwc_reg_read(dwc_priv, DWC_GMAC_CONFIG);
-	reg |= (DWC_GMAC_CONF_JD | DWC_GMAC_CONF_ACS | DWC_GMAC_CONF_BE);
-	reg |= (DWC_GMAC_CONF_PS | DWC_GMAC_CONF_FES | DWC_GMAC_CONF_DM); /* 100mb mii */
 	reg |= (DWC_GMAC_CONF_TE | DWC_GMAC_CONF_RE);
 	dwc_reg_write(dwc_priv, DWC_GMAC_CONFIG, reg);
 }
@@ -269,11 +268,6 @@ static int dwc_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
-static inline void delay(int i) {
-	volatile int tmp = i * 10000;
-	while (tmp--) ;
-}
-
 static int dwc_mdio_read(struct net_device *dev, uint8_t regAddr) {
 	struct dwc_priv *dwc_priv;
 	uint16_t mii;
@@ -301,7 +295,7 @@ static int dwc_mdio_read(struct net_device *dev, uint8_t regAddr) {
 			rv = dwc_reg_read(dwc_priv, DWC_GMAC_MII_DATA);
 			break;
 		}
-		delay(10);
+		usleep(10 * USEC_PER_MSEC);
 	}
 
 	return rv;
@@ -333,7 +327,7 @@ static int dwc_mdio_write(struct net_device *dev, uint8_t regAddr, uint16_t data
 		if (!(dwc_reg_read(dwc_priv, DWC_GMAC_MII_ADDR) & DWC_GMAC_GMII_ADDRESS_GB)) {
 			break;
 		}
-		delay(10);
+		usleep(10 * USEC_PER_MSEC);
 	}
 
 	return 0;
@@ -350,6 +344,30 @@ static void dwc_set_phyid(struct net_device *dev, uint8_t phyid) {
 }
 
 static int dwc_set_speed(struct net_device *dev, int speed) {
+	uint32_t reg;
+	struct dwc_priv *dwc_priv;
+
+	dwc_priv = netdev_priv(dev, struct dwc_priv);
+
+	reg = dwc_reg_read(dwc_priv, DWC_GMAC_CONFIG);
+
+	reg |= DWC_GMAC_CONF_JD | DWC_GMAC_CONF_ACS | DWC_GMAC_CONF_BE;
+
+	speed = net_to_mbps(speed);
+	switch (speed) {
+	case 1000:
+		reg &= ~(DWC_GMAC_CONF_PS | DWC_GMAC_CONF_FES);
+		break;
+	case 100:
+		reg |= DWC_GMAC_CONF_PS | DWC_GMAC_CONF_FES;
+		break;
+	default:
+		log_error("Unsupported speed: %dmbps", speed);
+		return -EINVAL;
+	}
+
+	reg |= DWC_GMAC_CONF_DM;
+	dwc_reg_write(dwc_priv, DWC_GMAC_CONFIG, reg);
 	return 0;
 }
 
@@ -471,7 +489,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 		if ((dwc_reg_read(dwc_priv, DWC_DMA_BUS_MODE) & DWC_DMA_BUS_MODE_SWR) == 0) {
 			break;
 		}
-		delay(10);
+		usleep(10 * USEC_PER_MSEC);
 	}
 	if (i == 0) {
 		log_error("Can't reset DWC.");
