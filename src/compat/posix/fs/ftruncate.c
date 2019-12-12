@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <assert.h>
 #include <sys/types.h>
+#include <fcntl.h>
 
 #include <fs/index_descriptor.h>
 #include <fs/kfile.h>
@@ -26,7 +27,7 @@ int ftruncate(int fd, off_t length) {
 		return SET_ERRNO(EBADF);
 	}
 
-	if (!(idesc->idesc_amode & S_IROTH)) {
+	if ((idesc->idesc_flags & O_ACCESS_MASK) == O_RDONLY) {
 		return SET_ERRNO(EINVAL);
 	}
 

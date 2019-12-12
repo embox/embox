@@ -63,7 +63,7 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 	desc->file_flags = flag & O_APPEND;
 	desc->cursor = 0;
 
-	idesc_init(&desc->idesc, &idesc_file_ops, perm_flags);
+	idesc_init(&desc->idesc, &idesc_file_ops, flag);
 	desc->idesc.idesc_xattrops = &file_idesc_xattrops;
 
 	return desc;

@@ -7,6 +7,7 @@
  */
 #include <errno.h>
 #include <string.h>
+#include <fcntl.h>
 
 #include <mem/misc/pool.h>
 #include <util/array.h>
@@ -93,9 +94,9 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 	idesc->dev = cdev;
 
 	if (cdev) {
-		idesc_init(&idesc->idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+		idesc_init(&idesc->idesc, cdev->dev_iops, O_RDWR);
 	} else {
-		idesc_init(&idesc->idesc, &idesc_char_dev_def_ops, S_IROTH | S_IWOTH);
+		idesc_init(&idesc->idesc, &idesc_char_dev_def_ops, O_RDWR);
 	}
 
 	return &idesc->idesc;

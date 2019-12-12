@@ -7,6 +7,7 @@
  */
 #include <errno.h>
 #include <stdlib.h>
+#include <fcntl.h>
 
 #include <drivers/char_dev.h>
 #include <fs/file_desc.h>
@@ -65,9 +66,9 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 	}
 
 	if (cdev) {
-		idesc_init(&idev->idesc, cdev->dev_iops, S_IROTH | S_IWOTH);
+		idesc_init(&idev->idesc, cdev->dev_iops, O_RDWR);
 	} else {
-		idesc_init(&idev->idesc, &idesc_char_dev_def_ops, S_IROTH | S_IWOTH);
+		idesc_init(&idev->idesc, &idesc_char_dev_def_ops, O_RDWR);
 	}
 	idev->dev = cdev;
 

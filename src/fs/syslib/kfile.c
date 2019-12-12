@@ -77,7 +77,6 @@ struct idesc *kopen(struct inode *node, int flag) {
 	}
 	desc->ops = ops;
 
-	desc->idesc.idesc_flags = flag;
 	if (desc->ops->open != NULL) {
 		idesc = desc->ops->open(node, &desc->idesc);
 		if (err(idesc)){
@@ -115,7 +114,7 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	if (!idesc_check_mode(&file->idesc, S_IWOTH)) {
+	if (idesc_check_mode(&file->idesc, O_RDONLY)) {
 		ret = -EBADF;
 		goto end;
 	}
@@ -146,7 +145,7 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 		goto end;
 	}
 
-	if (!idesc_check_mode(&desc->idesc, S_IROTH)) {
+	if (idesc_check_mode(&desc->idesc, O_WRONLY)) {
 		ret = -EBADF;
 		goto end;
 	}

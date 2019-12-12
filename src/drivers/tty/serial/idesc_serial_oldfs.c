@@ -69,7 +69,7 @@ struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
 		return NULL;
 	}
 
-	idesc_init(uart->tty->idesc, idesc_serial_get_ops(), S_IROTH | S_IWOTH);
+	idesc_init(uart->tty->idesc, idesc_serial_get_ops(), O_RDWR);
 
 	return uart->tty->idesc;
 }

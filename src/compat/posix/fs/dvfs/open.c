@@ -51,20 +51,7 @@ int open(const char *path, int __oflag, ...) {
 	if (err(idesc)) {
 		return SET_ERRNO(err(idesc));
 	}
-	switch(O_ACCESS_MASK & __oflag) {
-	case O_RDONLY:
-		idesc->idesc_amode = S_IROTH;
-		break;
-	case O_WRONLY:
-		idesc->idesc_amode = S_IWOTH;
-		break;
-	case O_RDWR:
-		idesc->idesc_amode = S_IROTH | S_IWOTH;
-		break;
-	default:
-		idesc->idesc_amode = 0;
-		break;
-	}
+	idesc->idesc_flags = __oflag;
 
 	it = task_resource_idesc_table(task_self());
 	res = idesc_table_add(it, idesc, 0);
