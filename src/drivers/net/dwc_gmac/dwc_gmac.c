@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <drivers/common/memory.h>
 
@@ -267,11 +268,6 @@ static int dwc_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
-static inline void delay(int i) {
-	volatile int tmp = i * 10000;
-	while (tmp--) ;
-}
-
 static int dwc_mdio_read(struct net_device *dev, uint8_t regAddr) {
 	struct dwc_priv *dwc_priv;
 	uint16_t mii;
@@ -299,7 +295,7 @@ static int dwc_mdio_read(struct net_device *dev, uint8_t regAddr) {
 			rv = dwc_reg_read(dwc_priv, DWC_GMAC_MII_DATA);
 			break;
 		}
-		delay(10);
+		usleep(10 * USEC_PER_MSEC);
 	}
 
 	return rv;
@@ -331,7 +327,7 @@ static int dwc_mdio_write(struct net_device *dev, uint8_t regAddr, uint16_t data
 		if (!(dwc_reg_read(dwc_priv, DWC_GMAC_MII_ADDR) & DWC_GMAC_GMII_ADDRESS_GB)) {
 			break;
 		}
-		delay(10);
+		usleep(10 * USEC_PER_MSEC);
 	}
 
 	return 0;
@@ -493,7 +489,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 		if ((dwc_reg_read(dwc_priv, DWC_DMA_BUS_MODE) & DWC_DMA_BUS_MODE_SWR) == 0) {
 			break;
 		}
-		delay(10);
+		usleep(10 * USEC_PER_MSEC);
 	}
 	if (i == 0) {
 		log_error("Can't reset DWC.");
