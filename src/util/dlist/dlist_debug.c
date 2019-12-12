@@ -13,7 +13,7 @@
 
 void __dlist_debug_check(const struct dlist_head *head) {
 
-#if OPTION_GET(NUMBER, debug)
+#if OPTION_GET(NUMBER, debug) && !defined NDEBUG
 
 	const struct dlist_head *p = head->prev;
 	const struct dlist_head *n = head->next;
