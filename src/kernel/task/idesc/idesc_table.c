@@ -111,14 +111,12 @@ void idesc_table_init(struct idesc_table *t) {
 
 void idesc_table_finit(struct idesc_table *t) {
 	int i;
-	struct idesc *idesc;
 
 	assert(t);
 
 	for(i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
 		if (t->idesc_table[i]) {
-			idesc = idesc_table_get(t, i);
-			assert(idesc);
+			assert(idesc_table_get(t, i));
 			idesc_table_del(t, i);
 		}
 	}
@@ -145,7 +143,7 @@ static int idesc_table_idx_copy(struct idesc_table *t, int idx,
 }
 
 int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
-	int i, ret;
+	int i;
 	struct idesc *idesc;
 
 	assert(t);
@@ -158,8 +156,10 @@ int idesc_table_fork(struct idesc_table *t, struct idesc_table *parent_table) {
 			idesc = idesc_table_get(parent_table, i);
 			assert(idesc);
 			if (!idesc_is_cloexeced(parent_table->idesc_table[i])) {
-				ret = idesc_table_idx_copy(t, i, idesc, 0);
-				assert(ret >= 0); /* FIXME */
+				int ret = idesc_table_idx_copy(t, i, idesc, 0);
+				if (ret < 0) {
+					return ret;
+				}
 			}
 		}
 	}
