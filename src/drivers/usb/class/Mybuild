@@ -21,6 +21,7 @@ module mass_storage {
 }
 
 module cdc {
+	option number log_level = 1
 	source "usb_class_cdc.c"
 
 	depends embox.driver.usb.core

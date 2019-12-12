@@ -19,6 +19,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <util/log.h>
+
 EMBOX_UNIT_INIT(usb_cdc_init);
 
 POOL_DEF(cdc_classes, struct usb_class_cdc, USB_CDC_MAX_DEVS);
@@ -96,7 +98,9 @@ static void cdc_get_endpoints(struct usb_dev *dev, struct usb_class_cdc *cdc) {
 
 		for (j = 0; j < iface->b_num_endpoints; j++) {
 			ep = (struct usb_desc_endpoint *) endpoints + j;
-			assert(usb_endp_alloc(dev, ep));
+			if (0 == usb_endp_alloc(dev, ep)) {
+				panic("usb_enp_alloc() failed");
+			}
 		}
 	}
 }
