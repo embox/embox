@@ -11,15 +11,17 @@
 
 #include <stdint.h>
 
-#include <drivers/block_dev.h>
-#include <embox/unit.h>
+#include <fs/file_operation.h>
 
+#include <framework/mod/options.h>
 #include <module/embox/fs/driver/ramfs.h>
 
 #define MAX_FILE_SIZE     OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, ramfs_file_size)
 #define RAMFS_FILES       OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, inode_quantity)
 #define RAMFS_DESCRIPTORS OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, ramfs_descriptor_quantity)
 #define FILESYSTEM_SIZE   (MAX_FILE_SIZE * RAMFS_FILES)
+
+#define RAMFS_NAME_LEN    32
 
 /* DOS attribute bits  */
 #define ATTR_READ_ONLY  0x01
@@ -31,20 +33,23 @@
 #define ATTR_LONG_NAME  \
 	(ATTR_READ_ONLY | ATTR_HIDDEN | ATTR_SYSTEM | ATTR_VOLUME_ID)
 
+struct block_dev;
+
 struct ramfs_fs_info {
-	uint32_t numblocks;			/* number of block in volume */
-	uint32_t block_size;		/* size of block */
-	uint32_t block_per_file;	/* max number of blocks filesize*/
+	uint32_t numblocks;         /* number of block in volume */
+	uint32_t block_size;        /* size of block */
+	uint32_t block_per_file;    /* max number of blocks file size*/
 	struct block_dev *bdev;
 };
 
-#define RAMFS_NAME_LEN	32
 struct ramfs_file_info {
-	int     index;		        /* number of file in FS*/
-	int     mode;			/* mode in which this file was opened */
+	int     index;                 /* number of file in FS*/
+	int     mode;                  /* mode in which this file was opened */
 	char    name[RAMFS_NAME_LEN];
 	void *inode;
 	struct ramfs_fs_info *fsi;
 };
+
+extern struct file_operations ramfs_fops;
 
 #endif /* RAMFS_H_ */

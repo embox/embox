@@ -46,14 +46,6 @@ INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 static int ramfs_format(struct block_dev *bdev, void *priv);
 static int ramfs_mount(void *dev, void *dir);
 
-size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
-size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
-
-static struct file_operations ramfs_fop = {
-	.read = ramfs_read,
-	.write = ramfs_write,
-};
-
 static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 	struct ramfs_file_info *fi;
 	size_t fi_index;
@@ -190,7 +182,7 @@ static struct fsop_desc ramfs_fsop = {
 
 static struct fs_driver ramfs_driver = {
 	.name = "ramfs",
-	.file_op = &ramfs_fop,
+	.file_op = &ramfs_fops,
 	.fsop = &ramfs_fsop,
 };
 

@@ -169,13 +169,6 @@ struct inode_operations ramfs_iops = {
 	.truncate = ramfs_truncate,
 };
 
-size_t ramfs_read(struct file_desc *desc, void *buf, size_t size);
-size_t ramfs_write(struct file_desc *desc, void *buf, size_t size);
-struct file_operations ramfs_fops = {
-	.write = ramfs_write,
-	.read = ramfs_read,
-};
-
 static int ramfs_destroy_inode(struct inode *inode) {
 	struct ramfs_file_info *fi;
 
