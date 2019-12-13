@@ -20,18 +20,23 @@
 #define HZ 1000
 #define COUNT_OFFSET (SYS_CLOCK / HZ)
 #define MTIME        OPTION_GET(NUMBER, base_mtime)
+#define MTIMECMP     OPTION_GET(NUMBER, base_mtimecmp)
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-/*	int a = COUNT_OFFSET;
-	__asm volatile ("sw %0, (mtimecmp)" :: "r" (a));
-	__asm volatile ("sw zero, (mtime)");
-*/
+	int *mtime = (int *)MTIME;
+	int *mtimecmp = (int *)MTIMECMP;
+	int cur_time = *mtime;
+	*mtimecmp = cur_time + COUNT_OFFSET;
 
 	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
 
 static int riscv_clock_setup(struct time_dev_conf * conf) {
+	int *mtime = (int *)MTIME;
+	int *mtimecmp = (int *)MTIMECMP;
+	int cur_time = *mtime;
+	*mtimecmp = cur_time + COUNT_OFFSET;
 
 	return ENOERR;
 }
@@ -40,13 +45,13 @@ static struct time_event_device riscv_event_device  = {
 	.config = riscv_clock_setup,
 	.event_hz = 1000,
 	.name = "riscv_clk",
-	.irq_nr = (((MIE_MTIE) - 1) / 2)
+	.irq_nr = (((7) - 1) / 2)
 };
 
 static struct clock_source riscv_clock_source = {
 	.name = "riscv_clk",
 	.event_device = &riscv_event_device,
-	.read = clock_source_read /* attach default read function */
+	.read = clock_source_read
 };
 
 static int riscv_clock_init(void) {
@@ -57,7 +62,7 @@ static int riscv_clock_init(void) {
 		return err;
 	}
 
-	err = irq_attach((((MIE_MTIE) - 1) / 2), clock_handler, 0, &riscv_clock_source, "riscv_clk");
+	err = irq_attach((((7) - 1) / 2), clock_handler, 0, &riscv_clock_source, "riscv_clk");
 	if (err) {
 		return err;
 	}
