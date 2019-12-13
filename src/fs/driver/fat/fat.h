@@ -269,12 +269,7 @@ struct dirinfo {
 #define FAT_MAX_SECTOR_SIZE OPTION_MODULE_GET(embox__fs__driver__fat, NUMBER, fat_max_sector_size)
 
 static inline int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
-	if (fsi->vi.filesystem == FAT32) {
-		return (clus - 2) * fsi->vi.secperclus + fsi->vi.dataarea;
-	} else {
-		/* FAT12, FAT16 */
-		return fsi->vi.secperclus * clus;
-	}
+	return (clus - 2) * fsi->vi.secperclus + fsi->vi.dataarea;
 }
 
 extern void fat_set_filetime(struct fat_dirent *de);
@@ -293,8 +288,7 @@ extern int      fat_create_partition(void *bdev, int fat_n);
 extern uint32_t fat_get_ptn_start(void *bdev, uint8_t pnum, uint8_t *pactive,
                                   uint8_t *pptype, uint32_t *psize);
 extern uint32_t fat_get_volinfo(void *bdev, struct volinfo * volinfo, uint32_t startsector);
-extern uint32_t fat_open_dir(struct fat_fs_info *fsi,
-                             uint8_t *dirname, struct dirinfo *dirinfo);
+extern uint32_t fat_open_rootdir(struct fat_fs_info *fsi, struct dirinfo *dirinfo);
 extern uint32_t fat_read_file(struct fat_file_info *fi, uint8_t *p_scratch,
                               uint8_t *buffer, uint32_t *successcount, uint32_t len);
 extern uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
@@ -315,6 +309,7 @@ extern void fat_write_longname(char *name, struct fat_dirent *di);
 extern uint8_t fat_canonical_name_checksum(const char *name);
 extern int fat_reset_dir(struct dirinfo *di);
 extern int read_dir_buf(struct dirinfo *di);
+extern uint32_t fat_current_dirsector(struct dirinfo *di);
 
 extern uint32_t fat_direntry_get_clus(struct fat_dirent *de);
 extern void     fat_direntry_set_clus(struct fat_dirent *de, uint32_t clus);

@@ -91,7 +91,12 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 		.volinfo = vi,
 	};
 
-	fi->dirsector    = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
+	if (di->fi.dirsector == 0 && (vi->filesystem == FAT12 || vi->filesystem == FAT16)) {
+		fi->dirsector = tmp_sector + tmp_cluster * vi->secperclus;
+	} else {
+		fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
+	}
+
 	fi->diroffset    = tmp_entry - 1;
 	fi->cluster      = fat_direntry_get_clus(de);
 	fi->firstcluster = fi->cluster;
@@ -401,8 +406,6 @@ static int fat_mount_end(struct super_block *sb) {
 	struct dirinfo *di;
 	struct fat_fs_info *fsi;
 
-	uint8_t tmp[] = { '\0' };
-
 	assert(sb);
 	assert(sb->bdev);
 	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
@@ -416,7 +419,7 @@ static int fat_mount_end(struct super_block *sb) {
 	fsi = sb->sb_data;
 	assert(fsi);
 
-	if (fat_open_dir(fsi, tmp, di)) {
+	if (fat_open_rootdir(fsi, di)) {
 		fat_dirinfo_free(di);
 		return -1;
 	}
