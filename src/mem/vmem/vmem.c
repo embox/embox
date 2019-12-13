@@ -64,13 +64,14 @@ int vmem_map_kernel(void) {
 
 EMBOX_UNIT_INIT(vmem_init);
 static int vmem_init(void) {
-	int ret;
 	struct marea *marea;
 	struct emmap *emmap;
 	struct task *task;
 
-	ret = vmem_map_kernel();
-	assert(ret == 0);
+	if (vmem_map_kernel()) {
+		log_error("Failed to map kernel memory!");
+		return -1;
+	}
 
 	log_debug("kernel has been successfully mapped");
 	task_foreach(task) {

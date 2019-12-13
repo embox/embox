@@ -24,15 +24,23 @@
 
 /* Do nothing.
  *
- * Implementation note: casting zero to typeof(condition) in the 'while' clause
- * is needed for two reasons:
+ * Older implementation just used "typeof(condition)" for a following reasons:
  *   1. It forces compiler to check that the condition is a scalar value and
  *      thus can be used in 'if' when NDEBUG is off.
  *   2. It suppresses a warning about any variables that would be otherwise
  *      unused.
+ *
+ * However, it turned out that typeof() couldn't be applied to bit fields (which we
+ * don't use in Embox, but it's being used in some third-party code), so it's not an
+ * accurate check for scalar value. "typeof(0 || (condition))" works better for it.
  */
-# define __assert(condition, expr_str, ...) \
-	(__ASSERT_VOID_CAST (0))
+
+/* Uncomment this part to suppress checks mentioned in the comment above
+#define __assert(condition, expr_str, ...) \
+	do { } while ((__typeof__(0 || (condition))) 0)
+*/
+
+#define __assert(...)
 
 #else
 

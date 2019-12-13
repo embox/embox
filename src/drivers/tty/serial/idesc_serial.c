@@ -22,6 +22,7 @@
 #include "idesc_serial.h"
 
 #include <framework/mod/options.h>
+#include <kernel/panic.h>
 
 #define MAX_SERIALS \
 	OPTION_GET(NUMBER, serial_quantity)
@@ -105,7 +106,9 @@ static void serial_close(struct idesc *idesc) {
 	uart = idesc_to_uart(idesc);
 	assert(uart);
 	res = uart_close(uart);
-	assert(res == 0); /* TODO */
+	if (res) {
+		panic("Failed to close UART");
+	}
 
 	idesc_serial_close(idesc);
 

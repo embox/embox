@@ -963,14 +963,11 @@ uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
 /* Same as fat_get_next(), but skip long-name entries with following 8.3-entries */
 uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char *name_buf) {
 	uint32_t ret;
-	struct fat_fs_info *fsi;
 
 	assert(dir);
 	assert(dir->p_scratch);
 	assert(dirent);
-
-	fsi = dir->fi.fsi;
-	assert(fsi);
+	assert(dir->fi.fsi);
 
 	do {
 		ret = fat_get_next(dir, dirent);

@@ -136,7 +136,9 @@ static int udp_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	const int skb_udp_offset = udp_get_udp_offset(queue.next);
 
 	const int bytes_copied = skb_queue_iov(&queue, msg->msg_iov, msg->msg_iovlen, skb_udp_offset + UDP_HEADER_SIZE);
-	assert(bytes_copied == out_data_len);
+	if (bytes_copied != out_data_len) {
+		return -1;
+	}
 
 	err = 0;
 	for (struct sk_buff *skb = skb_queue_pop(&queue); skb; skb = skb_queue_pop(&queue)) {
