@@ -57,6 +57,8 @@ module no_file_system extends fs_api{
 
 module xattr {
 	source "xattr.c"
+
+	depends embox.security.api
 }
 
 module xattr_list {
