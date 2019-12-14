@@ -104,6 +104,17 @@ int fat_write_sector(struct fat_fs_info *fsi, uint8_t *buffer, uint32_t sector) 
 		return DFS_OK;
 }
 
+uint32_t fat_current_dirsector(struct dirinfo *di) {
+	struct fat_fs_info *fsi = di->fi.fsi;
+	struct volinfo *vi = &fsi->vi;
+
+	if (di->fi.dirsector == 0 &&
+			(vi->filesystem == FAT12 || vi->filesystem == FAT16)) {
+		return fsi->vi.secperclus * di->currentcluster + di->currentsector;
+	} else {
+		return fat_sec_by_clus(fsi, di->currentcluster) + di->currentsector;
+	}
+}
 /**
 * @brief Read related dir entries into dir buffer
 *
@@ -117,7 +128,7 @@ int read_dir_buf(struct dirinfo *di) {
 	struct fat_fs_info *fsi = di->fi.fsi;
 	int sector;
 
-	sector = fat_sec_by_clus(fsi, di->currentcluster) + di->currentsector;
+	sector = fat_current_dirsector(di);
 
 	return fat_read_sector(fsi, di->p_scratch, sector);
 }
@@ -725,108 +736,26 @@ static inline int dir_is_root(uint8_t *name) {
 		((strlen((char *) name) == 1) && (name[0] == DIR_SEPARATOR));
 }
 
-/*
- * Open a directory for enumeration by fat_get_nextDirEnt
- * You must supply a populated volinfo_t (see fat_get_volinfo)
- * The empty string or a string containing only the directory separator are
- * considered to be the root directory.
- * Returns 0 OK, nonzero for any error.
- */
-uint32_t fat_open_dir(struct fat_fs_info *fsi,
-		uint8_t *dirname, struct dirinfo *dirinfo) {
+uint32_t fat_open_rootdir(struct fat_fs_info *fsi, struct dirinfo *dirinfo) {
 	struct volinfo *volinfo;
+	uint32_t ret;
 
 	assert(fsi);
 
 	volinfo = &fsi->vi;
+
 	dirinfo->flags = 0;
-	dirinfo->currentsector = 0;
-	dirinfo->currententry = 0;
-
 	dirinfo->fi.mode = S_IFDIR;
+	dirinfo->currentsector = volinfo->rootdir % volinfo->secperclus;
+	dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
 
-	if (dir_is_root(dirname)) {
-		uint32_t ret;
-		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
-		if (volinfo->filesystem == FAT32) {
-			dirinfo->currentsector = volinfo->dataarea;
-			dirinfo->currentsector += ((volinfo->rootdir - 2) * volinfo->secperclus);
-		} else {
-			dirinfo->currentsector = (volinfo->rootdir % volinfo->secperclus);
-		}
+	log_debug("dirinfo: p_scratch(%p), currentsector(%d), currentcluster(%d)",
+			dirinfo->p_scratch, dirinfo->currentsector, dirinfo->currentcluster);
+	log_debug("volinfo: secperclus %d rootdir %d", volinfo->secperclus, volinfo->rootdir);
 
-		log_debug("dirinfo: p_scratch(%p), currentsector(%d), currentcluster(%d)",
-				dirinfo->p_scratch, dirinfo->currentsector, dirinfo->currentcluster);
-		log_debug("volinfo: secperclus %d rootdir %d", volinfo->secperclus, volinfo->rootdir);
+	ret = fat_read_sector(fsi, dirinfo->p_scratch, volinfo->rootdir);
 
-		ret = fat_read_sector(fsi, dirinfo->p_scratch,
-				dirinfo->currentsector + dirinfo->currentcluster * volinfo->secperclus);
-
-		dirinfo->currentsector = volinfo->rootdir % volinfo->secperclus;
-		dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
-
-		return ret;
-	} else {
-		uint8_t tmpfn[12];
-		uint8_t *ptr = dirname;
-		uint32_t result;
-		struct fat_dirent de;
-
-		if (volinfo->filesystem == FAT32) {
-			dirinfo->currentcluster = volinfo->rootdir / volinfo->secperclus;
-			if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->dataarea +
-					((volinfo->rootdir - 2) * volinfo->secperclus))) {
-				return DFS_ERRMISC;
-			}
-		} else {
-			dirinfo->currentcluster = 0;
-			if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->rootdir)) {
-				return DFS_ERRMISC;
-			}
-		}
-
-		while (*ptr == DIR_SEPARATOR && *ptr) {
-			ptr++;
-		}
-
-		/*
-		 *  Scan the path from left to right, finding the start cluster
-		 *  of each entry.  Observe that this code is inelegant, but obviates
-		 *  the need for recursion.
-		 */
-		while (*ptr) {
-			path_canonical_to_dir((char *) tmpfn, (char *) ptr);
-
-			de.name[0] = '\0';
-
-			do {
-				result = fat_get_next(dirinfo, &de);
-			} while (!result && memcmp(de.name, tmpfn, MSDOS_NAME));
-
-			if (!memcmp(de.name, tmpfn, MSDOS_NAME) && (de.attr & ATTR_DIRECTORY)) {
-				dirinfo->currentcluster = fat_direntry_get_clus(&de);
-				dirinfo->currentsector = 0;
-				dirinfo->currententry = 0;
-
-				if (fat_read_sector(fsi, dirinfo->p_scratch, volinfo->dataarea +
-					((dirinfo->currentcluster - 2) * volinfo->secperclus))) {
-					return DFS_ERRMISC;
-				}
-			} else if (!memcmp(de.name, tmpfn, MSDOS_NAME) && !(de.attr & ATTR_DIRECTORY))
-				return DFS_WRONGRES;
-
-			while (*ptr != DIR_SEPARATOR && *ptr)
-				ptr++;
-
-			while (*ptr == DIR_SEPARATOR)
-				ptr++;
-		}
-
-		if (!dirinfo->currentcluster)
-			return DFS_NOTFOUND;
-	}
-
-	return DFS_OK;
+	return ret;
 }
 
 static uint32_t fat_fetch_dir(struct dirinfo *dir) {
@@ -873,7 +802,7 @@ static uint32_t fat_fetch_dir(struct dirinfo *dir) {
 				}
 			}
 
-			read_sector = fat_sec_by_clus(fsi, dir->currentcluster) + dir->currentsector;
+			read_sector = fat_current_dirsector(dir);
 
 			if (fat_read_sector(fsi, dir->p_scratch, read_sector))
 				return DFS_ERRMISC;
@@ -1582,6 +1511,12 @@ static int fat_dir_empty(struct fat_file_info *fi) {
 
 	while (de.name[0] == '\0' && res != DFS_EOF) {
 		res = fat_get_next(di, &de);
+		if (!strncmp((void *) de.name, ".  ", 3) ||
+			!strncmp((void *) de.name, ".. ", 3) ||
+			de.name[0] == 0xe5 ||
+			ATTR_LONG_NAME == (de.attr & ATTR_LONG_NAME)) {
+			de.name[0] = '\0';
+		}
 	}
 
 	return DFS_EOF == res;
@@ -1667,7 +1602,7 @@ int fat_reset_dir(struct dirinfo *di) {
 			di->currentcluster = vi->rootdir / vi->secperclus;
 		}
 
-		di->currententry = 1;
+		di->currententry = 0;
 	} else {
 		fat_dirent_by_file(&di->fi, &de);
 
@@ -1755,21 +1690,12 @@ int fat_create_file(struct fat_file_info *fi, struct dirinfo *di, char *name, in
 
 	fi->volinfo = volinfo;
 	fi->pointer = 0;
-	fi->dirsector = di->currentsector + fat_sec_by_clus(fsi, di->currentcluster);
+	fi->dirsector = fat_current_dirsector(di);
 	fi->diroffset = di->currententry;
 	fi->cluster = cluster;
 	fi->firstcluster = cluster;
 
-	if (fat_read_sector(fsi, fat_sector_buff, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
-
-	memcpy(&(((struct fat_dirent*) fat_sector_buff)[fi->diroffset]),
-			&de, sizeof(struct fat_dirent));
-
-	if (fat_write_sector(fsi, fat_sector_buff, fi->dirsector)) {
-		return DFS_ERRMISC;
-	}
+	fat_write_de(di, &de);
 
 	cluster = fat_end_of_chain(fsi);
 	fat_set_fat(fsi, fat_sector_buff, fi->cluster, cluster);
@@ -1836,16 +1762,12 @@ void fat_write_longname(char *name, struct fat_dirent *di) {
 }
 
 int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name) {
-	struct fat_fs_info *fsi;
 	struct fat_dirent de;
 	struct dirinfo *dir;
 	int offt = 1;
 
 	assert(name);
 	assert(fi);
-	assert(fi->fsi);
-
-	fsi = fi->fsi;
 
 	log_debug("fi->dirsector (%d)", fi->dirsector);
 
@@ -1856,7 +1778,7 @@ int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name) {
 	read_dir_buf(dir);
 
 	while (1) {
-		int dirsect = dir->currentsector + fat_sec_by_clus(fsi, dir->currentcluster);
+		int dirsect =fat_current_dirsector(dir);
 
 		if (dirsect == fi->dirsector && dir->currententry == fi->diroffset + 1) {
 			break;
@@ -2006,7 +1928,7 @@ static uint32_t fat_write_de(struct dirinfo *di, struct fat_dirent *de) {
 	assert(di);
 	assert(de);
 
-	sector = di->currentsector + fat_sec_by_clus(fsi, di->currentcluster);
+	sector = fat_current_dirsector(di);
 
 	if (fat_read_sector(fsi, di->p_scratch, sector))
 		return -1;
