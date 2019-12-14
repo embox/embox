@@ -13,9 +13,8 @@
 #include <sys/types.h>
 #include <util/array.h>
 
-#include <drivers/block_dev.h>
-
 struct inode;
+struct block_dev;
 
 struct fsop_desc {
 	int (*format)(struct block_dev *bdev, void *priv);
