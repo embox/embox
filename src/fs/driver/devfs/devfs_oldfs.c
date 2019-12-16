@@ -15,10 +15,14 @@
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
 
+extern int devfs_add_block(struct block_dev *dev);
+
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
 	struct path node, root;
 	mode_t mode;
+	struct block_dev **bdevs;
+	int i;
 
 	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
 
@@ -28,12 +32,24 @@ static int devfs_mount(void *dev, void *dir) {
 		return -1;
 	}
 
+	bdevs = get_bdev_tab();
+	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
+		if (bdevs[i]) {
+			devfs_add_block(bdevs[i]);
+		}
+	}
+
 	ret = char_dev_init_all();
 	if (ret != 0) {
 		return ret;
 	}
 
-	return block_devs_init();
+	ret = block_devs_init();
+	if (ret != 0) {
+		return ret;
+	}
+
+	return 0;
 }
 
 static struct fsop_desc devfs_fsop = {
