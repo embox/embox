@@ -257,10 +257,15 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	read_dir_buf(dirinfo);
 
 	while (((res = fat_get_next_long(dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
+		if (de.attr & ATTR_VOLUME_ID) {
+			continue;
+		}
+
 		if (!memcmp(de.name, MSDOS_DOT, strlen(MSDOS_DOT)) ||
 			!memcmp(de.name, MSDOS_DOTDOT, strlen(MSDOS_DOT))) {
 			continue;
 		}
+
 		break;
 	}
 
