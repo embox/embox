@@ -9,7 +9,7 @@
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
-size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
+static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct ramfs_file_info *fi;
 	struct ramfs_fs_info *fsi;
 	struct block_dev *bdev;
@@ -57,7 +57,7 @@ size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	return pbuf - buf;
 }
 
-size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
+static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	struct ramfs_file_info *fi;
 	size_t len;
 	size_t current, cnt;
@@ -140,3 +140,8 @@ size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	return bytecount;
 }
+
+struct file_operations ramfs_fops = {
+	.write = ramfs_write,
+	.read = ramfs_read,
+};

@@ -168,13 +168,7 @@ static int fat_umount_entry(struct nas *nas) {
 	return 0;
 }
 
-/* File operations */
-extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
-extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
-static struct file_operations fatfs_fop = {
-	.read = fat_read,
-	.write = fat_write,
-};
+extern struct file_operations fat_fops;
 
 static int fatfs_mount(void *dev, void *dir) {
 	struct inode *dir_node, *dev_node;
@@ -331,7 +325,7 @@ static struct fsop_desc fatfs_fsop = {
 
 static const struct fs_driver fatfs_driver = {
 	.name = "vfat",
-	.file_op = &fatfs_fop,
+	.file_op = &fat_fops,
 	.fsop = &fatfs_fsop,
 };
 

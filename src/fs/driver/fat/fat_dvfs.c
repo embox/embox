@@ -323,12 +323,7 @@ struct inode_operations fat_iops = {
 	.truncate = fat_truncate,
 };
 
-extern size_t fat_read(struct file_desc *desc, void *buf, size_t size);
-extern size_t fat_write(struct file_desc *desc, void *buf, size_t size);
-static struct file_operations fat_fops = {
-	.write = fat_write,
-	.read = fat_read,
-};
+extern struct file_operations fat_fops;
 
 static int fat_destroy_inode(struct inode *inode) {
 	struct fat_file_info *fi;
