@@ -1474,13 +1474,9 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 			while (saved_di.currententry != di->currententry ||
 					saved_di.currentcluster != di->currentcluster ||
 					saved_di.currentsector != di->currentsector) {
-				if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
-					return;
-				}
-
 				((struct fat_dirent*) p_scratch)[saved_di.currententry].name[0] = 0xe5;
 
-				if (fat_write_sector(fsi, p_scratch, fi->dirsector)) {
+				if (fat_write_sector(fsi, p_scratch, fat_current_dirsector(&saved_di))) {
 					return;
 				}
 
@@ -1492,7 +1488,10 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 
 		if (de.attr != ATTR_LONG_NAME) {
 			memset(&saved_di, 0, sizeof(saved_di));
-		} else if (de.name[0] & FAT_LONG_ORDER_NUM_MASK) {
+		} else if ((de.name[0] & FAT_LONG_ORDER_NUM_MASK) &&
+				saved_di.p_scratch == NULL) {
+			/* Save directory state only if it was not saved
+			 * for previous entry */
 			memcpy(&saved_di, &last_di, sizeof(saved_di));
 		}
 	}
