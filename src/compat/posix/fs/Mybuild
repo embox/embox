@@ -27,17 +27,6 @@ static module file_old extends file {
 	depends open
 }
 
-@DefaultImpl(lseek_old)
-abstract module lseek {
-}
-
-static module lseek_old extends lseek {
-	source "lseek.c"
-
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
-}
-
 module read {
 	source "read.c"
 	depends embox.kernel.task.idesc

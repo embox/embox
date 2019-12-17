@@ -25,13 +25,6 @@ static module file_dvfs extends file {
 	depends embox.compat.posix.fs.creat
 }
 
-static module lseek_dvfs extends lseek {
-	source "lseek.c"
-
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
-}
-
 static module fsop_dvfs extends fsop {
 	source "fsop.c"
 	source "../creat.c"
