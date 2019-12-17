@@ -31,13 +31,6 @@ static module file_old extends file {
 abstract module chdir {
 }
 
-static module chdir_old extends chdir {
-	source "chdir.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.all
-}
-
 @DefaultImpl(dirent_old)
 abstract module dirent {
 }

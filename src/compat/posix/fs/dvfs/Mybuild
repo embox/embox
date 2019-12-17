@@ -24,15 +24,6 @@ static module file_dvfs extends file {
 	depends embox.compat.posix.fs.creat
 }
 
-static module chdir_dvfs extends chdir {
-	option number log_level = 1
-
-	source "chdir.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.all
-}
-
 static module dirent_dvfs extends dirent {
 	option number dir_quantity=4
 	source "dirent.c"
