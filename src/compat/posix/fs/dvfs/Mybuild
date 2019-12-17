@@ -15,7 +15,8 @@ module all_dvfs extends all {
 }
 
 static module file_dvfs extends file {
-	depends file_ops_dvfs
+	depends embox.compat.posix.fs.file_ops
+	depends ftruncate_dvfs
 	depends lseek_dvfs
 	depends open_dvfs
 	depends ioctl
@@ -27,15 +28,6 @@ static module file_dvfs extends file {
 static module lseek_dvfs extends lseek {
 	source "lseek.c"
 
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
-}
-
-static module file_ops_dvfs extends file_ops {
-	source "ftruncate.c"
-
-	depends embox.fs.dvfs.core
-	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
 }

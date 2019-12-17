@@ -86,20 +86,10 @@ module writev {
 	source "writev.c"
 }
 
-@DefaultImpl(file_ops_old)
-abstract module file_ops {
-	depends read, write, fcntl, ioctl, close,
-	        fstat, fsync, readv, writev
-}
-
-static module file_ops_old extends file_ops {
-	source "ftruncate.c"
-
-	depends embox.fs.idesc
-	depends embox.fs.index_operation
-	depends embox.kernel.task.api
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
+module file_ops {
+	depends read, write, fcntl, ioctl, close
+	depends fstat, fsync, readv, writev
+	depends ftruncate
 }
 
 @DefaultImpl(fsop_old)
