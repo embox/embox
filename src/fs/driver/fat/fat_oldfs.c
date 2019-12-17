@@ -39,6 +39,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	struct fat_fs_info *fsi = parent_nas->fs->fsi;
 
 	fat_reset_dir(parent_di);
+	read_dir_buf(parent_di);
 
 	while (DFS_EOF != fat_get_next_long(parent_di, &de, name)) {
 		if (de.name[0] == 0) {
@@ -54,14 +55,8 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 		}
 
 		if (de.attr & ATTR_DIRECTORY) {
-			mode = S_IFDIR;
-
-			if (NULL == (fi = fat_file_alloc())) {
-				return -ENOMEM;
-			}
-		} else {
 			struct dirinfo *new_di;
-			mode = S_IFREG;
+			mode = S_IFDIR;
 
 			if (NULL == (new_di = fat_dirinfo_alloc())) {
 				return -ENOMEM;
@@ -69,9 +64,13 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 
 			fi = &new_di->fi;
 			new_di->p_scratch = fat_sector_buff;
-		}
+		} else {
+			mode = S_IFREG;
 
-		mode = (de.attr & ATTR_DIRECTORY) ? S_IFDIR : S_IFREG;
+			if (NULL == (fi = fat_file_alloc())) {
+				return -ENOMEM;
+			}
+		}
 
 		if (NULL == (node = vfs_subtree_create_child(parent_nas->node, name, mode))) {
 			fat_file_free(fi);
@@ -82,6 +81,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 
 		fi->fsi = parent_nas->fs->fsi;
 		fi->filelen      = fat_direntry_get_size(&de);
+		fi->dirsector    = fat_current_dirsector(parent_di);
 		fi->diroffset    = parent_di->currententry - 1;
 		fi->cluster      = fat_direntry_get_clus(&de);
 		fi->firstcluster = fi->cluster;
@@ -96,9 +96,11 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 		nas->fi->ni.size = fi->filelen;
 
 		if (de.attr & ATTR_DIRECTORY) {
-			if ((ret = fat_create_dir_entry(nas, parent_di, &de))) {
+			if ((ret = fat_create_dir_entry(nas, (void *) fi, &de))) {
 					return ret;
 			}
+			/* Children directories use the same read buffer,
+			 * so we need to reread relevant content */
 			read_dir_buf(parent_di);
 		}
 	}
