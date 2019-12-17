@@ -32,6 +32,11 @@ int main(int argc, char **argv) {
 	long data = 0;
 	uint8_t ch;
 
+	if (argc == 1) {
+		print_usage();
+		return 0;
+	}
+
 	while (-1 != (opt = getopt(argc, argv, "hy"))) {
 		i++;
 		switch (opt) {
