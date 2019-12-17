@@ -58,11 +58,12 @@ int main(int argc, char **argv) {
 	chip_addr = strtol(argv[i++], NULL, 0);
 	printf("bus(%d) chip(0x%x)", (int) busn, (unsigned) chip_addr);
 
-	if (i < (argc - 1)) {
+	if (i < argc) {
 		data_addr = strtol(argv[i++], NULL, 0);
 		printf(" data_addr(%x)", (unsigned) data_addr);
 	}
-	if (i < (argc)) {
+
+	if (i < argc) {
 		switch(argv[i][0]){
 		case 'b':
 			mode = 1;
@@ -71,7 +72,7 @@ int main(int argc, char **argv) {
 			mode = 2;
 			break;
 		default:
-			printf("\nwrong parameter [mode] choose 'b' (byte) 'w' 16-bit word\n");
+			printf("\nwrong parameter [mode] choose 'b' (byte) or 'w' (16-bit word)\n");
 			return -EINVAL;
 		}
 	}
