@@ -63,10 +63,6 @@ static module lseek_old extends lseek {
 abstract module chmod {
 }
 
-static module chmod_old extends chmod {
-	source "chmod_old.c"
-}
-
 module read {
 	source "read.c"
 	depends embox.kernel.task.idesc

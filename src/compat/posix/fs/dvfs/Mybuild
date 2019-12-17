@@ -77,9 +77,3 @@ static module xattr_dvfs extends xattr {
 	//depends embox.fs.syslib.perm
 	depends embox.security.api
 }
-
-static module chmod_dvfs extends chmod {
-	source "chmod.c"
-
-	depends embox.fs.dvfs.core
-}
