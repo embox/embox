@@ -114,18 +114,6 @@ static module umask {
 	depends embox.kernel.task.task_resource
 }
 
-@DefaultImpl(xattr_old)
-abstract module xattr {
-}
-
-static module xattr_old extends xattr {
-	source "xattr.c"
-
-	depends embox.fs.xattr
-	depends embox.fs.syslib.perm
-	depends embox.security.api
-}
-
 static module libgen {
 	source "libgen.c"
 }

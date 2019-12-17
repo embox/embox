@@ -34,11 +34,3 @@ static module fsop_dvfs extends fsop {
 	depends embox.kernel.task.resource.errno
 	depends umask // mkdir
 }
-
-static module xattr_dvfs extends xattr {
-	source "xattr.c"
-
-	//depends embox.fs.xattr
-	//depends embox.fs.syslib.perm
-	depends embox.security.api
-}
