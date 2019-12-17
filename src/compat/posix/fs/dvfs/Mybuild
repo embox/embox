@@ -24,16 +24,6 @@ static module file_dvfs extends file {
 	depends embox.compat.posix.fs.creat
 }
 
-static module dirent_dvfs extends dirent {
-	option number dir_quantity=4
-	source "dirent.c"
-
-	depends embox.fs.dvfs.core
-	depends embox.mem.objalloc
-	depends embox.compat.libc.str
-	depends embox.compat.posix.fs.getcwd
-}
-
 static module lseek_dvfs extends lseek {
 	source "lseek.c"
 

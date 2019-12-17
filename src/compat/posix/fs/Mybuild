@@ -27,26 +27,6 @@ static module file_old extends file {
 	depends open
 }
 
-@DefaultImpl(chdir_old)
-abstract module chdir {
-}
-
-@DefaultImpl(dirent_old)
-abstract module dirent {
-}
-
-static module dirent_old extends dirent {
-	option number dir_quantity=4
-	source "dirent.c"
-
-	depends embox.fs.core
-	depends embox.mem.objalloc
-	depends embox.compat.libc.str
-	depends embox.fs.syslib.dcache
-	depends embox.compat.posix.fs.getcwd
-	depends embox.fs.syslib.perm
-}
-
 @DefaultImpl(lseek_old)
 abstract module lseek {
 }
@@ -56,11 +36,6 @@ static module lseek_old extends lseek {
 
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno
-}
-
-
-@DefaultImpl(chmod_old)
-abstract module chmod {
 }
 
 module read {
