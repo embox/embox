@@ -20,7 +20,7 @@
 #include <kernel/task/resource/idesc_table.h>
 
 #include <dirent_impl.h>
-#include "getumask.h"
+#include "../getumask.h"
 
 struct inode *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;

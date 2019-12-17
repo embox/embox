@@ -118,23 +118,6 @@ static module getcwd {
 	depends embox.compat.libc.str
 }
 
-@DefaultImpl(open_old)
-abstract module open {
-}
-
-static module open_old extends open {
-	source "open.c"
-
-	depends embox.kernel.task.resource.errno
-	depends embox.fs.core /* if_mounted_follow_down */
-	/* TODO tsort loop
-	 * depends embox.fs.syslib.file_system
-	 */
-	depends libgen
-	depends dirent
-	depends umask
-}
-
 static module umask {
 	source "umask.c"
 

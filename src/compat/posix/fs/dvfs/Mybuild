@@ -42,16 +42,6 @@ static module fsop_dvfs extends fsop {
 	depends umask // mkdir
 }
 
-static module open_dvfs extends open {
-	source "open.c"
-
-	depends embox.fs.dvfs.core
-	depends embox.kernel.task.resource.errno
-	depends libgen
-	depends dirent_dvfs
-	depends umask
-}
-
 static module xattr_dvfs extends xattr {
 	source "xattr.c"
 
