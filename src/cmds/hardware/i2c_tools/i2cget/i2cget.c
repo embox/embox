@@ -34,6 +34,11 @@ int main(int argc, char **argv) {
 	uint16_t buf;
 	int mode = 1;
 
+	if (argc < 2) {
+		print_usage();
+		return 0;
+	}
+
 	while (-1 != (opt = getopt(argc, argv, "hy"))) {
 		switch (opt) {
 		case 'y':
