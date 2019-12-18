@@ -17,7 +17,7 @@
 static void print_usage(void) {
 	printf("Usage: i2cdetect -h\n");
 	printf("Usage: i2cdetect -l\n");
-	printf("Usage: i2cdetect [-y] i2cbus\n");
+	printf("Usage: i2cdetect [-r] [-y] i2cbus\n");
 }
 
 static void print_error(void) {
@@ -35,9 +35,10 @@ static void i2c_bus_list(void) {
 	}
 }
 
-static void i2c_bus_scan(long busn) {
+static void i2c_bus_scan(long busn, int read) {
 	int i;
 	uint8_t tmp;
+	ssize_t res;
 
 	printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
 	printf("00:         ");
@@ -45,7 +46,12 @@ static void i2c_bus_scan(long busn) {
 		if (0 == (i % 0x10)) {
 			printf("\n%2X:", (unsigned)i);
 		}
-		if (0 == i2c_bus_write(busn, i, &tmp, 0)) {
+		if (read) {
+			res = i2c_bus_read(busn, i, &tmp, 1);
+		} else {
+			res = i2c_bus_write(busn, i, &tmp, 0);
+		}
+		if (0 <= res) {
 			printf(" %2X", (unsigned)i);
 		} else {
 			printf(" --");
@@ -58,16 +64,19 @@ static void i2c_bus_scan(long busn) {
 int main(int argc, char **argv) {
 	int opt;
 	long busn = 0;
+	long cmd = 0;
 
-	while (-1 != (opt = getopt(argc, argv, "hly:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hlry:"))) {
 		switch (opt) {
 		case 'l':
 			i2c_bus_list();
 			return 0;
 		case 'y':
 			busn = strtol(optarg, NULL, 0);
-			i2c_bus_scan(busn);
-			return 0;
+			break;
+		case 'r':
+			cmd = 1;
+			break;
 		case '?':
 		case 'h':
 			print_usage();
@@ -77,6 +86,7 @@ int main(int argc, char **argv) {
 			return 0;
 		}
 	}
+	i2c_bus_scan(busn, cmd);
 
 	return 0;
 }

@@ -30,7 +30,12 @@ int main(int argc, char **argv) {
 	long chip_addr = 0;
 	long data_addr = 0;
 	long data = 0;
-	uint8_t ch;
+	uint16_t tx;
+
+	if (argc == 1) {
+		print_usage();
+		return 0;
+	}
 
 	while (-1 != (opt = getopt(argc, argv, "hy"))) {
 		i++;
@@ -54,10 +59,18 @@ int main(int argc, char **argv) {
 	busn = strtol(argv[i++], NULL, 0);
 	chip_addr = strtol(argv[i++], NULL, 0);
 	data_addr = strtol(argv[i++], NULL, 0);
+	if (data_addr < 0 || data_addr > 0xFF) {
+		printf("Data address should be between 0x00 and 0xFF\n");
+		return -EINVAL;
+	}
+
 	data = strtol(argv[i], NULL, 0);
 	printf ("bus(%d) chip(%x) data_addr(%x) data(%x)\n", (int) busn,
 			(unsigned )chip_addr,(unsigned ) data_addr, (unsigned )data);
-	ch = data;
-	i2c_bus_write(busn, chip_addr,  &ch, 1);
+
+	/* Writing data X to register with offset N requiers
+	 * to transfer N as a first byte and X as a second byte */
+	tx = data_addr | (data << 8);
+	i2c_bus_write(busn, chip_addr, (void *) &tx, sizeof(tx));
 	return 0;
 }

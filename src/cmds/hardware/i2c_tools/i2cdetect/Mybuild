@@ -9,7 +9,7 @@ package embox.cmd.i2c_tools
 		SYNOPSIS
 			i2cdetect -h
 			i2cdetect -l
-			i2cdetect [-y] i2cbus
+			i2cdetect [-r] [-y] i2cbus
 			i2cdetect -F i2cbus
 		DESCRIPTION
 			i2cdetect is a program to scan an I2C bus for devices. 
@@ -19,10 +19,13 @@ package embox.cmd.i2c_tools
 		OPTIONS
 			-y Disable interactive mode.
 			-l print list of busses
+			-r Use "read byte" commands instead of "write byte"
 			-h print help
 		AUTHOR
 			Anton Bondarev
 	''')
 module i2cdetect {
 	source "i2cdetect.c"
+
+	depends embox.driver.i2c
 }

@@ -30,9 +30,14 @@ int main(int argc, char **argv) {
 	int i = 1;
 	long busn = 0;
 	long chip_addr = 0;
-	long data_addr = 0;
+	long data_addr = -1;
 	uint16_t buf;
-	int mode = 1;
+	int mode = 1, ret;
+
+	if (argc < 2) {
+		print_usage();
+		return 0;
+	}
 
 	while (-1 != (opt = getopt(argc, argv, "hy"))) {
 		switch (opt) {
@@ -53,11 +58,26 @@ int main(int argc, char **argv) {
 	chip_addr = strtol(argv[i++], NULL, 0);
 	printf("bus(%d) chip(0x%x)", (int) busn, (unsigned) chip_addr);
 
-	if (i < (argc - 1)) {
+	if (i < argc) {
+		uint8_t tmp;
+
 		data_addr = strtol(argv[i++], NULL, 0);
+		if (data_addr < 0 || data_addr > 0xff) {
+			printf("Data address should be between 0x00 and 0xFF\n");
+			return -EINVAL;
+		}
+
 		printf(" data_addr(%x)", (unsigned) data_addr);
+
+		tmp = (uint8_t) data_addr;
+		ret = i2c_bus_write(busn, chip_addr, &tmp, sizeof(tmp));
+		if (0 > ret) {
+			printf("\nFailed to set data address (%d)\n", ret);
+			return -1;
+		}
 	}
-	if (i < (argc)) {
+
+	if (i < argc) {
 		switch(argv[i][0]){
 		case 'b':
 			mode = 1;
@@ -66,12 +86,13 @@ int main(int argc, char **argv) {
 			mode = 2;
 			break;
 		default:
-			printf("\nwrong parameter [mode] choose 'b' (byte) 'w' 16-bit word\n");
+			printf("\nwrong parameter [mode] choose 'b' (byte) or 'w' (16-bit word)\n");
 			return -EINVAL;
 		}
 	}
 	printf(" length(%x)", (unsigned )mode);
 	printf("\n");
+
 	if (0 < i2c_bus_read(busn, chip_addr, (uint8_t *)&buf, mode)) {
 		printf("res (%x)\n", (unsigned) buf);
 	} else {
