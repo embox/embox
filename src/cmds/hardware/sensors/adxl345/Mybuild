@@ -1,0 +1,20 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name = "adxl345",
+	help = "Test adxl345 accelerometer data",
+	man = '''
+		NAME
+			adxl345 - accelerometer test
+		SYNOPSIS
+			adxl345
+		DESCRIPTION
+			Print x/y/z accelerometer data in infinite loop
+		AUTHORS
+			Denis Deryugin
+	''')
+module adxl345 {
+	source "adxl345.c"
+
+	depends embox.driver.sensors.adxl345
+}
