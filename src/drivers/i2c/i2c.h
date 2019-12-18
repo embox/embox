@@ -19,6 +19,7 @@ struct i2c_msg {
 	uint16_t addr;           /* slave address */
 	uint16_t flags;
 	/* I2C_M_RD is guaranteed to be 0x0001! */
+#define I2C_M_TEN   0x0010  /* this is a ten bit chip address */
 #define I2C_M_RD    0x0001  /* read data, from slave to master */
 	uint16_t len;           /* msg length  */
 	uint8_t *buf;           /* pointer to msg data */
