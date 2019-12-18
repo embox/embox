@@ -51,22 +51,6 @@ int rmdir(const char *pathname) {
 	return rc;
 }
 
-
-int truncate(const char *path, off_t length) {
-	struct path node;
-	int res;
-
-	if (0 == (res = fs_perm_lookup(path, NULL, &node))) {
-		errno = -res;
-		res = -1;
-		goto end;
-	}
-
-	res = ktruncate(node.node, length);
-end:
-	return res;
-}
-
 int flock(int fd, int operation) {
 	return kflock(fd, operation);
 }

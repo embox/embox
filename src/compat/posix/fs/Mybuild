@@ -89,6 +89,8 @@ static module fsop_old extends fsop {
 	source "fsop.c"
 	source "stat.c"
 
+	depends truncate
+
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core
 	depends embox.fs.syslib.perm
@@ -123,4 +125,8 @@ static module chdir {
 
 	depends embox.compat.posix.util.environ
 	depends embox.compat.libc.all
+}
+
+static module truncate {
+	source "truncate.c"
 }

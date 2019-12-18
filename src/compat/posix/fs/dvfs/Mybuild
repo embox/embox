@@ -30,6 +30,8 @@ static module fsop_dvfs extends fsop {
 	source "../creat.c"
 	source "stat.c"
 
+	depends truncate
+
 	depends embox.fs.dvfs.core
 	depends embox.kernel.task.resource.errno
 	depends umask // mkdir
