@@ -149,7 +149,7 @@ static void fat_free_fs(struct nas *nas) {
 	}
 
 	if (NULL != (fi = nas->fi->privdata)) {
-		fat_file_free(fi);
+		fat_dirinfo_free(nas->fi->privdata);
 	}
 }
 
@@ -160,9 +160,10 @@ static int fat_umount_entry(struct nas *nas) {
 		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
 			if (node_is_directory(child)) {
 				fat_umount_entry(child->nas);
+				fat_dirinfo_free(child->nas->fi->privdata);
+			} else {
+				fat_file_free(child->nas->fi->privdata);
 			}
-
-			fat_file_free(child->nas->fi->privdata);
 			vfs_del_leaf(child);
 		}
 	}
