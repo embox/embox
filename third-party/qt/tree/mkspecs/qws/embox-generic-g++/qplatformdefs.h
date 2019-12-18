@@ -70,11 +70,6 @@
 
 #define QT_NO_LOCALSERVER
 
-
-
-//#define FD_CLOEXEC	(printf(">>> FC_CLOEXEC\n"),0)
-//#define F_DUPFD		(printf(">>> FD_DUPFD\n"),0)
-
 #include <stdio.h>
 #define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
 
@@ -98,16 +93,11 @@
 
 #include <pthread.h>
 
-
 #if 1
 #define DPRINT() printf(">>> QT CALL %s\n", __FUNCTION__)
 #else
 #define DPRINT()
 #endif
-
-
-
-
 
 static const char *tzname[2];
 inline void tzset(void) {
@@ -115,27 +105,6 @@ inline void tzset(void) {
 	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
 	tzname[0] = "EST";
 	tzname[1] = "EDT";
-}
-
-
-
-inline off_t ftello(FILE *stream) {
-	return ftell(stream);
-}
-inline int fseeko(FILE *stream, off_t offset, int whence) {
-	DPRINT();
-	return fseek(stream, offset, whence);
-}
-
-inline int truncate(const char *path, off_t length) {
-	(void)path; (void)length;
-	DPRINT();
-	return -1;
-}
-inline int ftruncate(int fd, off_t length) {
-	(void)fd; (void)length;
-	DPRINT();
-	return -1;
 }
 
 #define O_LARGEFILE 0
@@ -146,9 +115,6 @@ inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
 	return 0;
 }
 
-
-
-
 inline int symlink(const char *oldpath, const char *newpath) {
 	(void)oldpath; (void)newpath;
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
@@ -156,16 +122,10 @@ inline int symlink(const char *oldpath, const char *newpath) {
 	return -1;
 }
 
-
-
-
 // Either this or define __GLIBC__
 #include <limits.h>
-//#define PATH_MAX 256
 
 #include <locale.h>
-//#define LC_ALL   (printf(">>> LC_ALL\n"),  1)
-//#define LC_CTYPE (printf(">>> LC_CTYPE\n"),2)
 
 #include <arpa/inet.h>
 
