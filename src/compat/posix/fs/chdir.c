@@ -32,25 +32,21 @@ int chdir(const char *path) {
 	strbuf[PATH_MAX - 1] = '\0';
 
 	if (strlen(path) >= PATH_MAX - 1) {
-		SET_ERRNO(ENAMETOOLONG);
-		return -1;
+		return SET_ERRNO(ENAMETOOLONG);
 	}
 
 	if (stat(path, &buff)) {
-		/* SET_ERRNO(ENOENT); already set by stat()*/
-		return -1;
+		return SET_ERRNO(ENOENT);
 	}
 
 	/*check if it is a directory*/
 	if(!S_ISDIR(buff.st_mode)){
-		SET_ERRNO(ENOTDIR);
-		return -1;
+		return SET_ERRNO(ENOTDIR);
 	}
 
 	if (-1 == setenv("PWD", strbuf, 1)) {
 		assert(errno == ENOMEM); /* it is the only possible error */
-		SET_ERRNO(ENAMETOOLONG);
-		return -1;
+		return SET_ERRNO(ENAMETOOLONG);
 	}
 
 	return 0;

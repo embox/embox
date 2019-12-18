@@ -118,3 +118,9 @@ static module libgen {
 	source "libgen.c"
 }
 
+static module chdir {
+	source "chdir.c"
+
+	depends embox.compat.posix.util.environ
+	depends embox.compat.libc.all
+}

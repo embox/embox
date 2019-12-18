@@ -2,7 +2,7 @@ package embox.compat.posix.fs
 
 module all_dvfs extends all {
 	depends file_dvfs,
-		chdir_dvfs,
+		chdir,
 		dirent_dvfs,
 		fsop_dvfs,
 		getcwd,
