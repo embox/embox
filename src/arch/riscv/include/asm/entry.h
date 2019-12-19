@@ -17,12 +17,10 @@
 #else /* __ASSEMBLER__ */
 
 	.macro SAVE_ALL
-		.option    push
 
 		addi    sp, sp, -PT_SIZE
 		sw      t6, PT_R31(sp)
 		mv      t6, sp
-		addi    t6, t6, PT_SIZE
 		sw      t6, PT_SP(sp)
 		sw      ra, PT_RA(sp)
 		sw      gp, PT_GP(sp)
@@ -59,11 +57,9 @@
 		csrr    t6, mepc
 		sw      t6, PT_PC(sp)
 
-		.option    pop
 	.endm
 
 	.macro RESTORE_ALL
-		.option    push
 
 		lw      ra, PT_RA(sp)
 		lw      gp, PT_GP(sp)
@@ -103,11 +99,8 @@
 
 		lw      t6, PT_R31(sp)
 
-		lw      sp, PT_SP(sp)
+		addi    sp, sp, PT_SIZE
 
-		.option    pop
-
-		mret
 	.endm
 
 #endif /* __ASSEMBLER __ */

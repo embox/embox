@@ -10,7 +10,6 @@
 #ifndef RISCV_PTRACE_H_
 #define RISCV_PTRACE_H_
 
-
 #ifndef __ASSEMBLER__
 /* registers description
  * $0 - always zero
@@ -26,7 +25,7 @@
  * $18..$27 (s2-s11) saved registers
  * $28..$31 (t3-t6) temporary registers
  * pc program counter
- * 
+ *
  */
 typedef struct pt_regs {
 	unsigned int ra; /* return address r1 */
@@ -43,7 +42,6 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 }
 
 #else /* __ASSEMBLER__ */
-
 
 /*
  * Offsets of register values in saved context.
@@ -87,6 +85,5 @@ static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
 #define PT_SIZE    0x84
 
 #endif /* __ASSEMBLER__ */
-
 
 #endif /* RISCV_PTRACE_H_ */

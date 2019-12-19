@@ -18,8 +18,10 @@ trap_handler:
 	csrr    t6, mcause
 	srli    t6, t6, 31
 	beqz    t6, riscv_exception_handler
-	j       riscv_interrupt_handler
+	mv      a0, sp
+	jal     riscv_interrupt_handler
 	RESTORE_ALL
+	mret
 
 .align 4
 riscv_exception_handler:
@@ -28,8 +30,4 @@ riscv_exception_handler:
 	addi    t6, t6, 4
 	sw      t6, PT_PC(sp)
 	RESTORE_ALL
-
-/*.align 4
-riscv_interrupt_handler:
-
-	RESTORE_ALL*/
+	mret

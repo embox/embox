@@ -12,6 +12,7 @@
 #include <asm/regs.h>
 #include <hal/clock.h>
 #include <hal/system.h>
+#include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
@@ -23,20 +24,18 @@
 #define MTIMECMP     OPTION_GET(NUMBER, base_mtimecmp)
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	int *mtime = (int *)MTIME;
-	int *mtimecmp = (int *)MTIMECMP;
-	int cur_time = *mtime;
-	*mtimecmp = cur_time + COUNT_OFFSET;
+	uint64_t *mtime = (uint64_t *)MTIME;
+	uint64_t *mtimecmp = (uint64_t *)MTIMECMP;
+	*mtimecmp = *(uint64_t *)mtime + (uint64_t)COUNT_OFFSET;
 
 	clock_tick_handler(irq_nr, dev_id);
 	return IRQ_HANDLED;
 }
 
 static int riscv_clock_setup(struct time_dev_conf * conf) {
-	int *mtime = (int *)MTIME;
-	int *mtimecmp = (int *)MTIMECMP;
-	int cur_time = *mtime;
-	*mtimecmp = cur_time + COUNT_OFFSET;
+	uint64_t *mtime = (uint64_t *)MTIME;
+	uint64_t *mtimecmp = (uint64_t *)MTIMECMP;
+	*mtimecmp = *(uint64_t *)mtime + (uint64_t)COUNT_OFFSET;
 
 	return ENOERR;
 }
@@ -45,7 +44,7 @@ static struct time_event_device riscv_event_device  = {
 	.config = riscv_clock_setup,
 	.event_hz = 1000,
 	.name = "riscv_clk",
-	.irq_nr = (((7) - 1) / 2)
+	.irq_nr = MACHINE_TIMER_INTERRUPT
 };
 
 static struct clock_source riscv_clock_source = {
@@ -62,7 +61,7 @@ static int riscv_clock_init(void) {
 		return err;
 	}
 
-	err = irq_attach((((7) - 1) / 2), clock_handler, 0, &riscv_clock_source, "riscv_clk");
+	err = irq_attach(MACHINE_TIMER_INTERRUPT, clock_handler, 0, &riscv_clock_source, "riscv_clk");
 	if (err) {
 		return err;
 	}
