@@ -1,0 +1,16 @@
+package embox.driver.sensors
+
+module adxl345 {
+	option number log_level = 4
+
+	/* Default values are used in de0 socfpga board */
+	option number bus = 0
+	option number addr = 0x53
+
+	@IncludeExport(path="drivers/sensors")
+	source "adxl345.h"
+
+	source "adxl345.c"
+
+	depends embox.driver.adapters.i2c_designware
+}
