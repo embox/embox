@@ -5,6 +5,8 @@ module core extends embox.fs.fs_api {
 
 	@IncludeExport(path="fs")
 	source "dvfs.h"
+	@IncludeExport(path="fs")
+	source "inode.h"
 
 	@IncludeExport(path="fs")
 	source "file_desc.h"

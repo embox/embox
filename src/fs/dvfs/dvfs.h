@@ -14,6 +14,7 @@
 #include <fs/file_system.h>
 #include <util/dlist.h>
 #include <fs/file_operation.h>
+#include <fs/inode.h>
 
 /*****************
  New VFS prototype
@@ -64,22 +65,6 @@ struct super_block_operations {
 	int           (*write_inode)(struct inode *inode);
 	int           (*umount_begin)(struct super_block *sb);
 	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
-};
-
-struct inode {
-	int    i_no;
-	int    start_pos; /* location on disk */
-	size_t length;
-	int    flags;
-	uid_t  i_owner_id;
-	gid_t  i_group_id;
-	mode_t i_mode;
-
-	struct dentry *i_dentry;
-	struct super_block *i_sb;
-	struct inode_operations	*i_ops;
-
-	void *i_data;
 };
 
 struct inode_operations {
