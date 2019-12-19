@@ -44,12 +44,6 @@ int statfs(const char *path, struct statfs *buf);
 #undef assert
 #define assert(x, msg...)
 
-struct sockaddr_un {
-    unsigned short sun_family;  /* AF_UNIX */
-    char sun_path[108];
-};
-
-
 #include <sys/mman.h>
 
 #include <netinet/in.h>
