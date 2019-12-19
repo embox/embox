@@ -10,13 +10,13 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <fs/kfsop.h>
-#include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/perm.h>
 #include <fs/kfile.h>
 #include <sys/types.h>
 #include <stdio.h>
 
+#include "fs/inode.h"
 #include "getumask.h"
 
 int mkdir(const char *pathname, mode_t mode) {

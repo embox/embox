@@ -22,7 +22,7 @@
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/sched_lock.h>
 #include <drivers/char_dev.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <fs/file_desc.h>
 #include <fs/idesc.h>
 #include <kernel/sched/waitq.h>

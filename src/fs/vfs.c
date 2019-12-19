@@ -17,6 +17,7 @@
 
 #include <fs/hlpr_path.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 
 #include <limits.h>
 

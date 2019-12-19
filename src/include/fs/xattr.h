@@ -12,12 +12,10 @@
 #include <sys/types.h>
 #include <sys/xattr.h>
 
-#include <fs/node.h>
-#include <fs/fs_driver.h>
-
 #define XATTR_MAX_VSIZE 0xFF
 #define XATTR_MAX_NSIZE 32
 
+struct inode;
 extern int kfile_xattr_get(struct inode *node, const char *name, char *value,
 		size_t len);
 

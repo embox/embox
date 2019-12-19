@@ -15,6 +15,7 @@
 
 #include <util/array.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc_table.h>

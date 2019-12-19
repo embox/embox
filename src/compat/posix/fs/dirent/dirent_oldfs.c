@@ -15,6 +15,7 @@
 
 #include <fs/perm.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 #include <fs/dcache.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>

@@ -20,7 +20,7 @@
 #include <kernel/task/resource/idesc_table.h>
 #include <embox/unit.h>
 #include <util/err.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 
 extern const struct idesc_xattrops file_idesc_xattrops;
 

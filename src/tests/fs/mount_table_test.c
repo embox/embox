@@ -7,7 +7,7 @@
  */
 
 #include <fs/vfs.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <fs/mount.h>
 
 #include <embox/test.h>

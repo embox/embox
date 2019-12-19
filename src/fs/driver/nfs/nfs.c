@@ -19,7 +19,7 @@
 #include <fs/nfs.h>
 #include <fs/xdr_nfs.h>
 #include <fs/hlpr_path.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>

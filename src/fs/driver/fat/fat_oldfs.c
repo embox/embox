@@ -20,7 +20,7 @@
 #include <fs/file_operation.h>
 #include <fs/file_system.h>
 #include <fs/fs_driver.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <fs/vfs.h>
 #include <drivers/block_dev.h>
 

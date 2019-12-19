@@ -7,8 +7,10 @@
  */
 
 #include <sys/stat.h>
-#include <fs/vfs.h>
 #include <assert.h>
+
+#include <fs/vfs.h>
+#include <fs/inode.h>
 
 int chmod(const char *path, mode_t mode) {
 	struct path p;

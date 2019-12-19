@@ -20,6 +20,7 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 

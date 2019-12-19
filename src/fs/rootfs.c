@@ -12,7 +12,6 @@
 
 #include <fs/mount.h> /* mount */
 #include <fs/fs_driver.h>
-#include <fs/node.h>
 #include <fs/vfs.h>
 
 #include <embox/unit.h>
