@@ -52,11 +52,6 @@ int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize);
 
 #include <netinet/in.h>
 
-struct sockaddr_un {
-    unsigned short sun_family;  /* AF_UNIX */
-    char sun_path[90];
-};
-
 //FIXME
 /* Maximum queue length specifiable by listen.  */
 #define SOMAXCONN	4

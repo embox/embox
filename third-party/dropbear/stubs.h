@@ -38,11 +38,6 @@ static inline void openlog(const char *ident, int option, int facility) {
 void closelog(void);
 
 #define TCP_NODELAY 0
-#define UNIX_PATH_MAX 255
-struct sockaddr_un {
-               sa_family_t sun_family;               /* AF_UNIX */
-               char        sun_path[UNIX_PATH_MAX];  /* pathname */
-};
 
 typedef unsigned int u_int;
 

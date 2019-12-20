@@ -45,11 +45,6 @@ extern "C" {
 }
 #endif
 
-struct sockaddr_un {
-    unsigned short sun_family;  /* AF_UNIX */
-    char sun_path[108];
-};
-
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <netinet/in.h>

@@ -13,7 +13,7 @@ diff -aur -x configure dropbear-2018.76-orig/debug.h dropbear-2018.76/debug.h
 diff -aur -x configure dropbear-2018.76-orig/includes.h dropbear-2018.76/includes.h
 --- dropbear-2018.76-orig/includes.h	2018-02-27 17:25:10.000000000 +0300
 +++ dropbear-2018.76/includes.h	2018-11-21 18:16:57.153967154 +0300
-@@ -25,17 +25,16 @@
+@@ -25,13 +25,13 @@
  #ifndef DROPBEAR_INCLUDES_H_
  #define DROPBEAR_INCLUDES_H_
  
@@ -28,11 +28,7 @@ diff -aur -x configure dropbear-2018.76-orig/includes.h dropbear-2018.76/include
  #include <sys/socket.h>
  #include <sys/stat.h>
  #include <sys/time.h>
--#include <sys/un.h>
- #include <sys/wait.h>
- #include <sys/resource.h>
- 
-@@ -50,7 +49,6 @@
+@@ -50,7 +50,6 @@
  #include <string.h>
  #include <termios.h>
  #include <unistd.h>
@@ -40,7 +36,7 @@ diff -aur -x configure dropbear-2018.76-orig/includes.h dropbear-2018.76/include
  #include <netdb.h>
  #include <ctype.h>
  #include <stdarg.h>
-@@ -85,8 +83,6 @@
+@@ -85,8 +84,6 @@
  #include <netinet/in_systm.h>
  #endif
  
