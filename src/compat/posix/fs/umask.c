@@ -9,7 +9,6 @@
 #include <kernel/task/resource.h>
 
 #include <sys/stat.h>
-#include "getumask.h"
 
 #define DEFAULT_UMASK OPTION_GET(NUMBER,default_umask)
 
@@ -46,7 +45,7 @@ mode_t umask(mode_t mode) {
 	return oldmode;
 }
 
-mode_t getumask(void) {
+static mode_t getumask(void) {
 	mode_t *umask_p = task_self_resource(&task_resource_umask);
 
 	return *umask_p;

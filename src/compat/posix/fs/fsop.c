@@ -17,7 +17,8 @@
 #include <stdio.h>
 
 #include "fs/inode.h"
-#include "getumask.h"
+
+extern mode_t umask_modify(mode_t newmode);
 
 int mkdir(const char *pathname, mode_t mode) {
 	int rc;
