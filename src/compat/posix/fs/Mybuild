@@ -87,7 +87,8 @@ abstract module fsop {
 
 static module fsop_old extends fsop {
 	source "fsop.c"
-	source "stat.c"
+
+	depends stat_oldfs
 
 	depends truncate
 
