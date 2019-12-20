@@ -9,14 +9,14 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/types.h>
+
 #include <fs/kfsop.h>
 #include <fs/vfs.h>
 #include <fs/perm.h>
 #include <fs/kfile.h>
-#include <sys/types.h>
-#include <stdio.h>
-
-#include "fs/inode.h"
+#include <fs/inode.h>
 
 extern mode_t umask_modify(mode_t newmode);
 
@@ -55,4 +55,3 @@ int rmdir(const char *pathname) {
 int flock(int fd, int operation) {
 	return kflock(fd, operation);
 }
-

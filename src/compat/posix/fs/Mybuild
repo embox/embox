@@ -4,27 +4,12 @@ package embox.compat.posix.fs
 abstract module all {
 }
 
-module all_old extends all {
-	depends file,
-		chdir,
-		chmod,
-		dirent,
-		fsop,
-		getcwd,
-		umask,
-		xattr,
-		libgen,
-		chown_old
-}
-
 @DefaultImpl(file_old)
 abstract module file {
 }
 
-static module file_old extends file {
-	depends file_ops
-	depends lseek
-	depends open
+@DefaultImpl(fsop_old)
+abstract module fsop {
 }
 
 module read {
@@ -79,28 +64,6 @@ module file_ops {
 	depends read, write, fcntl, ioctl, close
 	depends fstat, fsync, readv, writev
 	depends ftruncate
-}
-
-@DefaultImpl(fsop_old)
-abstract module fsop {
-}
-
-static module fsop_old extends fsop {
-	source "fsop.c"
-
-	depends stat_oldfs
-
-	depends truncate
-
-	depends embox.kernel.task.resource.errno
-	depends embox.fs.core
-	depends embox.fs.syslib.perm
-	/* TODO tsort loop
-	 * depends embox.fs.syslib.file_system_full
-	 */
-
-	depends creat
-	depends umask
 }
 
 static module getcwd {
