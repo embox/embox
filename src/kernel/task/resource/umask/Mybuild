@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module umask {
+	option number default_umask = 0022
+
+	@IncludeExport(path="kernel/task/resource")
+	source "umask.h"
+
+	source "umask.c"
+
+	depends embox.kernel.task.task_resource
+}

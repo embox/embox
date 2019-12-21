@@ -76,8 +76,7 @@ static module getcwd {
 static module umask {
 	source "umask.c"
 
-	option number default_umask = 0022
-	depends embox.kernel.task.task_resource
+	depends embox.kernel.task.resource.umask
 }
 
 static module libgen {
