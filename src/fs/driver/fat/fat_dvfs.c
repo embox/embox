@@ -104,7 +104,6 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 	fi->fdi          = di;
 
 	inode->length    = fi->filelen;
-	inode->start_pos = fi->firstcluster * fi->volinfo->secperclus * fi->volinfo->bytepersec;
 	if (de->attr & ATTR_READ_ONLY)
 		inode->i_mode |= S_IRALL;
 	else
