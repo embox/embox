@@ -137,7 +137,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	assert(name);
 	assert(dir->d_inode);
-	assert(FILE_TYPE(dir->d_inode->flags, S_IFDIR));
+	assert(S_ISDIR(dir->d_inode->flags));
 
 	sb = dir->d_sb;
 	di = dir->d_inode->i_data;
@@ -207,7 +207,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	name = i_new->i_dentry->name;
 	assert(name);
 
-	if (FILE_TYPE(mode, S_IFDIR)) {
+	if (S_ISDIR(mode)) {
 		if (!(new_di = fat_dirinfo_alloc())) {
 			return -ENOMEM;
 		}
@@ -285,7 +285,7 @@ static int fat_remove(struct inode *inode) {
 	struct fat_file_info *fi;
 	struct dirinfo *di;
 
-	if (FILE_TYPE(inode->flags, S_IFDIR)) {
+	if (S_ISDIR(inode->flags)) {
 		di = inode->i_data;
 		fi = &di->fi;
 	} else {
@@ -337,7 +337,7 @@ static int fat_destroy_inode(struct inode *inode) {
 	if (!inode->i_data)
 		return 0;
 
-	if (FILE_TYPE(inode->flags, S_IFDIR)) {
+	if (S_ISDIR(inode->flags)) {
 		di = inode->i_data;
 		fat_dirinfo_free(di);
 	} else {

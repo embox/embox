@@ -23,18 +23,18 @@
 #include <config/embox/fs/dvfs/core.h>
 #define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, dentry_name_len)
 #define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, max_path_len)
-#define FS_NAME_LEN       16
+
+#define FS_DRV_NAME_LEN   16
 
 #define DVFS_PATH_FULL     0x001
 #define DVFS_PATH_FS       0x002
 #define DVFS_NAME          0x004
+
 #define DVFS_DIR_VIRTUAL   0x01000000
 #define DVFS_CHILD_VIRTUAL 0x02000000
 #define DVFS_MOUNT_POINT   0x04000000
 #define DVFS_NO_LSEEK      0x08000000
 #define DVFS_DISCONNECTED  0x10000000
-
-#define FILE_TYPE(flags, ftype) ((((flags) & S_IFMT) == (ftype)) ? (ftype) : 0)
 
 struct dentry;
 struct dir_ctx;
@@ -46,13 +46,13 @@ struct lookup;
 
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
-	struct block_dev *bdev;
-	struct file_desc      *bdev_file;
-	struct dentry     *root;
-	struct dlist_head *inode_list;
+	struct block_dev            *bdev;
+	struct file_desc            *bdev_file;
+	struct dentry               *root;
+	struct dlist_head           *inode_list;
 
 	struct super_block_operations *sb_ops;
-	struct inode_operations	      *sb_iops;
+	struct inode_operations       *sb_iops;
 	struct dentry_operations      *sb_dops;
 	struct file_operations        *sb_fops;
 
@@ -91,7 +91,7 @@ struct dentry {
 	struct super_block *d_sb;
 
 	struct dentry     *parent;
-	struct dlist_head children; /* Subelements of directory */
+	struct dlist_head children; /* Sub-elements of directory */
 	struct dlist_head children_lnk;
 
 	struct dlist_head d_lnk;   /* List for all dentries in system */
@@ -104,7 +104,7 @@ struct dentry_operations {
 };
 
 struct dumb_fs_driver {
-	const char name[FS_NAME_LEN];
+	const char name[FS_DRV_NAME_LEN];
 	int (*format)(struct block_dev *dev, void *priv);
 	int (*fill_sb)(struct super_block *sb, struct file_desc *dev);
 	int (*mount_end)(struct super_block *sb);
@@ -133,7 +133,6 @@ struct dir_ctx {
 	void *fs_ctx;
 };
 
-#define DFS_CREAT 0x0001
 extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
 extern int            dvfs_destroy_inode(struct inode *inode);
 

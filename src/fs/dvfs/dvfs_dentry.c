@@ -111,7 +111,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return 0;
 	}
 
-	if (!FILE_TYPE(parent->flags, S_IFDIR))
+	if (!S_ISDIR(parent->flags))
 		return -ENOTDIR;
 
 	if ((d = local_lookup(parent, buff)))

@@ -368,7 +368,7 @@ static int dfs_icreate(struct inode *i_new,
 		.i_ops     = &dfs_iops,
 	};
 
-	if (FILE_TYPE(S_IFDIR, mode)) {
+	if (S_ISDIR(mode)) {
 		memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 		for (i = 0; i < dirent.len / sizeof(buf); i++)
 			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
