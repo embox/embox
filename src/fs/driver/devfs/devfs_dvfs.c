@@ -50,7 +50,7 @@ void devfs_fill_inode(struct inode *inode,
 	assert(devmod);
 
 	inode->i_data = devmod;
-	inode->flags |= flags;
+	inode->i_mode = flags;
 }
 
 ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
@@ -179,7 +179,7 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 
 	assert(node->i_data);
 
-	if (S_ISBLK(node->flags)) {
+	if (S_ISBLK(node->i_mode)) {
 		return desc;
 	}
 
@@ -192,8 +192,7 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 
 static int devfs_pathname(struct inode *node, char *buf, int flags) {
 
-	if ((node->flags & S_IFBLK) == S_IFBLK ||
-		(node->flags & S_IFCHR) == S_IFCHR) {
+	if (S_ISBLK(node->i_mode) || S_ISCHR(node->i_mode)) {
 		struct dev_module *dev_module = node->i_data;
 		strncpy(buf, dev_module->name, DENTRY_NAME_LEN);
 	} else {
@@ -225,7 +224,7 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	i_no = l->item->d_inode;
 	dev = i_no->i_data;
 
-	if (S_ISBLK(i_no->flags)) {
+	if (S_ISBLK(i_no->i_mode)) {
 		/* XXX */
 		desc = dvfs_file_open_idesc(l, __oflag);
 

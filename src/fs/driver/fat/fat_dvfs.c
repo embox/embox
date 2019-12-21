@@ -73,7 +73,7 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 		memset(new_di, 0, sizeof(struct dirinfo));
 		new_di->p_scratch = fat_sector_buff;
 		new_di->fi.mode = S_IFDIR;
-		inode->flags |= S_IFDIR;
+		inode->i_mode |= S_IFDIR;
 
 		new_di->currentcluster = fat_direntry_get_clus(de);
 
@@ -106,9 +106,9 @@ static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dir
 	inode->length    = fi->filelen;
 	inode->start_pos = fi->firstcluster * fi->volinfo->secperclus * fi->volinfo->bytepersec;
 	if (de->attr & ATTR_READ_ONLY)
-		inode->flags |= S_IRALL;
+		inode->i_mode |= S_IRALL;
 	else
-		inode->flags |= S_IRWXA;
+		inode->i_mode |= S_IRWXA;
 	return 0;
 err_out:
 	return -1;
@@ -137,7 +137,7 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 
 	assert(name);
 	assert(dir->d_inode);
-	assert(S_ISDIR(dir->d_inode->flags));
+	assert(S_ISDIR(dir->d_inode->i_mode));
 
 	sb = dir->d_sb;
 	di = dir->d_inode->i_data;
@@ -285,7 +285,7 @@ static int fat_remove(struct inode *inode) {
 	struct fat_file_info *fi;
 	struct dirinfo *di;
 
-	if (S_ISDIR(inode->flags)) {
+	if (S_ISDIR(inode->i_mode)) {
 		di = inode->i_data;
 		fi = &di->fi;
 	} else {
@@ -337,7 +337,7 @@ static int fat_destroy_inode(struct inode *inode) {
 	if (!inode->i_data)
 		return 0;
 
-	if (S_ISDIR(inode->flags)) {
+	if (S_ISDIR(inode->i_mode)) {
 		di = inode->i_data;
 		fat_dirinfo_free(di);
 	} else {
@@ -433,7 +433,7 @@ static int fat_mount_end(struct super_block *sb) {
 	};
 
 	sb->root->d_inode->i_data = di;
-	sb->root->d_inode->flags |= S_IFDIR;
+	sb->root->d_inode->i_mode |= S_IFDIR;
 
 	return 0;
 }

@@ -33,7 +33,7 @@ struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 	}
 
 	f = mcast_out(idesc, struct file_desc, f_idesc);
-	f->f_inode->flags |= DVFS_NO_LSEEK;
+	f->f_inode->i_mode |= DVFS_NO_LSEEK;
 
 	return idesc;
 }

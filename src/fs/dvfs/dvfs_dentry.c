@@ -141,7 +141,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		in->i_dentry = parent;
 		dentry_fill(parent->d_sb, in, d, parent);
 		strcpy(d->name, buff);
-		d->flags = in->flags;
+		d->flags = in->i_mode;
 	}
 
 	return dvfs_path_walk(path + strlen(buff), in->i_dentry, lookup);

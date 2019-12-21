@@ -91,7 +91,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	inode_fill(sb, new_inode, lookup->item);
 
 	lookup->item->flags |= flags;
-	new_inode->flags |= flags;
+	new_inode->i_mode |= flags;
 	if (flags & DVFS_DIR_VIRTUAL) {
 		res = 0;
 		lookup->item->d_sb = NULL;
@@ -262,7 +262,7 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
 	inode = desc->f_inode;
 	assert(inode);
 
-	if (inode->length - desc->pos < count && !(inode->flags & DVFS_NO_LSEEK)) {
+	if (inode->length - desc->pos < count && !(inode->i_mode & DVFS_NO_LSEEK)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
 			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
 			if (res)
@@ -317,7 +317,7 @@ int dvfs_read(struct file_desc *desc, char *buf, int count) {
 int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	*sb = (struct stat) {
 		.st_size = desc->f_inode->length,
-		.st_mode = desc->f_inode->flags,
+		.st_mode = desc->f_inode->i_mode,
 		.st_uid = 0,
 		.st_gid = 0
 	};
@@ -453,7 +453,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 		d->d_inode = dvfs_alloc_inode(sb);
 		*d->d_inode = (struct inode) {
-			.flags    = S_IFDIR,
+			.i_mode   = S_IFDIR,
 			.i_ops    = sb->sb_iops,
 			.i_sb     = sb,
 			.i_dentry = d,

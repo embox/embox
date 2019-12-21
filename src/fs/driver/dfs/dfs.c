@@ -469,7 +469,7 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 
 	inode->start_pos = dirent.pos_start;
 	inode->length    = dirent.len;
-	inode->flags     = dirent.flags;
+	inode->i_mode    = dirent.flags;
 
 	return inode;
 }
@@ -497,7 +497,7 @@ static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 			.length    = dirent.len,
 			.i_sb      = dfs_sb(),
 			.i_ops     = &dfs_iops,
-			.flags     = dirent.flags,
+			.i_mode    = dirent.flags,
 		};
 		ctx->fs_ctx = (void*) (i + 1);
 

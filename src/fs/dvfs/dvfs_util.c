@@ -246,7 +246,7 @@ int dvfs_fs_dentry_try_free(struct super_block *sb) {
  */
 void dentry_upd_flags(struct dentry *dentry) {
 	if (dentry->d_inode) {
-		dentry->flags |= dentry->d_inode->flags & (S_IFMT | S_IRWXA);
+		dentry->flags |= dentry->d_inode->i_mode & (S_IFMT | S_IRWXA);
 	}
 }
 
@@ -352,7 +352,7 @@ int dvfs_update_root(void) {
 
 	if (global_root->d_inode)
 		*(global_root->d_inode) = (struct inode) {
-			.flags    = S_IFDIR,
+			.i_mode   = S_IFDIR,
 			.i_ops    = sb->sb_iops,
 			.i_sb     = sb,
 			.i_dentry = global_root,

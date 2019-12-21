@@ -89,7 +89,7 @@ static int initfs_fill_inode_entry(struct inode *node,
 		.start_pos = (intptr_t) entry->data,
 		.length    = (size_t) entry->size,
 		.i_data    = di,
-		.flags     = entry->mode & (S_IFMT | S_IRWXA),
+		.i_mode     = entry->mode & (S_IFMT | S_IRWXA),
 	};
 	return 0;
 }
