@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+image_file_name=usbdisk.img
+
+HUB_PORT=1
+USBDISK_HUB_PORT=4
+
+if [ -f $image_file_name ]
+then
+	echo "$image_file_name found."
+else
+	echo "$image_file_name not found. A new one will be created now..."
+	qemu-img create -f qcow2 $image_file_name 512M
+	/sbin/mkfs.vfat $image_file_name
+fi
+
+./scripts/qemu/auto_qemu \
+	-drive if=none,id=usbdisk,file=$image_file_name,format=raw \
+	-device usb-hub,bus=ohci.0,port=$HUB_PORT \
+	-device usb-storage,bus=ohci.0,port=$HUB_PORT.$USBDISK_HUB_PORT,drive=usbdisk \
+	$@
