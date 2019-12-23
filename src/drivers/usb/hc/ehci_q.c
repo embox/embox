@@ -17,6 +17,10 @@ int ehci_qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t buf,
 	int i, count;
 	uint64_t addr = buf;
 
+	assert(qtd);
+	/* EHCI 3.5 */
+	assert(len <= (5 * 4096));
+
 	/* one buffer entry per 4K ... first might be short or unaligned */
 	qtd->hw_buf[0] = (uint32_t) addr;
 	qtd->hw_buf_hi[0] = (uint32_t) (addr >> 32);
@@ -55,6 +59,8 @@ static unsigned
 qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	struct usb_request *req;
 	struct ehci_qh_hw *hw;
+	struct ehci_qtd_hw *qtd;
+	uintptr_t hw_next;
 
 	req = qh->req;
 
@@ -62,8 +68,24 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 
 	hw = qh->hw;
 	hw->hw_token |= EHCI_QTD_STS_HALT;
-	ehci_qtd_free(ehci, qh->qdt);
-	qh->qdt = NULL;
+
+	log_debug("qh_completions:\n");
+	log_debug("  List of qtds:\n");
+
+	qtd = qh->qdt;
+	while (1) {
+		log_debug("   qtd=%p, buf=0x%x, token=0x%x, next=0x%x\n",
+			qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
+		hw_next = qtd->hw_next;
+		ehci_qtd_free(ehci, qtd);
+
+		if (hw_next & 0x1) {
+			break;
+		}
+
+		qtd = (struct ehci_qtd_hw *) hw_next;
+	}
+	log_debug("\n");
 
 	usb_request_complete(req);
 
