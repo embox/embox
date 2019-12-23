@@ -1,0 +1,13 @@
+package embox.driver.usb
+
+/* TODO Unsupported currently! Fixme! */
+module whitelist_dev {
+	option string whitelist = ""
+	/*option string whitelist = "0x46f4:0x0001:3,0x8086:0x1234"*/
+
+	@IncludeExport(path="drivers/usb")
+	source "usb_whitelist_dev.h"
+	source "usb_whitelist_dev.c"
+
+	depends embox.driver.char_dev
+}
