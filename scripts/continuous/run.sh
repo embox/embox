@@ -115,7 +115,14 @@ run_check() {
 }
 
 kill_bg() {
-	pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+	# Sometimes $sim_bg is empty string, so we should make sure pstree is
+	# called with acual PID (otherwise it will print every process running)
+	if test -z "$sim_bg"
+	then
+		echo "warning: No background process running"
+	else
+		pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+	fi
 
 	cat $OUTPUT_FILE
 
