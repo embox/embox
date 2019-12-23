@@ -297,6 +297,11 @@ USB2QEMU=(
 	[ehci_pci]="usb-ehci"
 	[ohci_pci]="pci-ohci"
 )
+declare -A USB2QEMUID
+USB2QEMUID=(
+	[ehci_pci]="ehci"
+	[ohci_pci]="ohci"
+)
 
 USB_DEV=" " read -a qemu_usb <<< "$AUTOQEMU_USB"
 USB_DEV=" " read -a qemu_usb_config <<< "$AUTOQEMU_USB_CONFIG"
@@ -307,11 +312,12 @@ if [ $usb_n -gt 0 ]; then
 
 	for so in "${!qemu_usb[@]}"; do
 		usb_model=${USB2QEMU[${qemu_usb[$so]}]}
+		hci_id=${USB2QEMUID[${qemu_usb[$so]}]}
 		echo
 		if [ ! $usb_model ]; then
 			error "usb model ${qemu_usb[$ni]} is not supported"
 		else
-			usb_lines="$usb_lines -device $usb_model"
+			usb_lines="$usb_lines -device $usb_model,id=$hci_id"
 		fi
 	done
 fi
