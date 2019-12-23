@@ -33,6 +33,11 @@ struct usb_control_header {
 	uint16_t  w_length;
 } __attribute__((packed));
 
+struct usb_desc_common_header {
+	uint8_t  b_length;
+	uint8_t  b_desc_type;
+} __attribute__((packed));
+
 struct usb_desc_device {
 	uint8_t  b_length;
 	uint8_t  b_desc_type;
