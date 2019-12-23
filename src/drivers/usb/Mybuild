@@ -1,33 +1,14 @@
-
 package embox.driver.usb
 
 module core {
 	option number log_level = 1
 
-	source "usb_core.c"
-	depends whitelist_dev
-
-	source "usb_port.c"
-	source "usb_queue.c"
-	source "usb_obj.c"
-	source "usb_pnp.c"
-
-	source "usb_class.c"
+	source "usb_core.c",
+		"usb_queue.c",
+		"usb_hub.c",
+		"usb_config.c"
 
 	source "usb_driver.c"
-	depends embox.driver.char_dev
-
-	source "usb_dev_desc.c"
-}
-
-module whitelist_dev {
-	option string whitelist = ""
-	/*option string whitelist = "0x46f4:0x0001:3,0x8086:0x1234"*/
-
-	@IncludeExport(path="drivers/usb")
-	source "usb_whitelist_dev.h"
-	source "usb_whitelist_dev.c"
-
 	depends embox.driver.char_dev
 }
 
