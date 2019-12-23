@@ -27,60 +27,24 @@
 #include <mem/misc/pool.h>
 #include <kernel/printk.h>
 #include <util/array.h>
-#include <embox/unit.h>
 
+#include "initfs.h"
 
-struct initfs_file_info {
+#include <framework/mod/options.h>
+
+struct initfs_file_info_tmp {
 	struct node_info ni; /* must be the first member */
-    char *addr;
+	struct initfs_file_info *priv;
+	struct initfs_file_info initfs_file_info;
 };
-
-POOL_DEF (fdesc_pool, struct initfs_file_info,
-		OPTION_GET(NUMBER,fdesc_quantity));
-
-static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
-	struct initfs_file_info *fi;
-	struct nas *nas;
-	off_t pos;
-
-	pos = file_get_pos(desc);
-
-	nas = desc->node->nas;
-	fi = (struct initfs_file_info*) nas->fi;
-
-	if (!fi) {
-		return -ENOENT;
-	}
-
-	memcpy(buf, fi->addr + pos, size);
-
-	return size;
-}
-
-static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
-	struct nas *nas;
-	struct initfs_file_info *fi;
-	char **p_addr;
-
-	assert(data != NULL);
-
-	//TODO: switch through "request" ID.
-	p_addr = data;
-
-	nas = desc->node->nas;
-	fi = (struct initfs_file_info *) nas->fi;
-
-	*p_addr = fi->addr;
-
-	return 0;
-}
+POOL_DEF(file_pool, struct initfs_file_info_tmp, OPTION_GET(NUMBER,file_quantity));
 
 static int initfs_mount(void *dev, void *dir) {
 	extern char _initfs_start, _initfs_end;
 	char *cpio = &_initfs_start;
 	struct nas *dir_nas;
 	struct inode *node;
-	struct initfs_file_info *fi;
+	struct initfs_file_info_tmp *fi;
 	struct cpio_entry entry;
 	char name[PATH_MAX + 1];
 
@@ -102,17 +66,17 @@ static int initfs_mount(void *dev, void *dir) {
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
-		if (NULL == (node =
-				vfs_subtree_create_intermediate(dir_node, name, entry.mode))) {
+		node = vfs_subtree_create_intermediate(dir_node, name, entry.mode);
+		if (NULL == node) {
 			return -ENOMEM;
 		}
 
-		fi = pool_alloc(&fdesc_pool);
+		fi = pool_alloc(&file_pool);
 		if (!fi) {
 			return -ENOMEM;
 		}
-
-		fi->addr = entry.data;
+		fi->priv = &fi->initfs_file_info;
+		fi->initfs_file_info.start_pos = (intptr_t)entry.data;
 		fi->ni.size = entry.size;
 		fi->ni.mtime = entry.mtime;
 
@@ -123,10 +87,7 @@ static int initfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-static struct file_operations initfs_fop = {
-	.read = initfs_read,
-	.ioctl = initfs_ioctl,
-};
+extern struct file_operations initfs_fops;
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
@@ -134,7 +95,7 @@ static struct fsop_desc initfs_fsop = {
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
-	.file_op = &initfs_fop,
+	.file_op = &initfs_fops,
 	.fsop = &initfs_fsop,
 	.mount_dev_by_string = true,
 };

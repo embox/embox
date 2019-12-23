@@ -35,59 +35,10 @@
 #include <mem/misc/pool.h>
 #include <util/array.h>
 
-#define INITFS_MAX_NAMELEN 32
+#include "initfs.h"
 
-struct initfs_file_info {
-	int start_pos;
-
-	size_t        size;
-	unsigned int  ctime; /* time of last status change */
-	unsigned int  mtime;
-};
-
-/**
-* @brief Should be used as inode->i_data, but only for directories
-*/
-struct initfs_dir_info {
-	int    start_pos;
-
-	char  *path;
-	size_t path_len;
-	char  *name;
-	size_t name_len;
-};
-
-POOL_DEF (initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
+POOL_DEF(initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
-
-static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
-	struct initfs_file_info *fi;
-	off_t pos;
-
-	pos = file_get_pos(desc);
-	fi = file_get_inode_data(desc);
-
-	if (pos + size > file_get_size(desc)) {
-		size = file_get_size(desc) - desc->pos;
-	}
-
-	memcpy(buf, (char *) (uintptr_t) (fi->start_pos + pos), size);
-
-	return size;
-}
-
-static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
-	char **p_addr;
-	struct initfs_file_info *fi;
-
-	fi = file_get_inode_data(desc);
-
-	p_addr = data;
-
-	*p_addr = (char*) (uintptr_t) fi->start_pos;
-
-	return 0;
-}
 
 /**
 * @brief Initialize initfs inode
@@ -267,10 +218,7 @@ struct inode_operations initfs_iops = {
 	.pathname = initfs_pathname,
 };
 
-struct file_operations initfs_fops = {
-	.read  = initfs_read,
-	.ioctl = initfs_ioctl,
-};
+extern struct file_operations initfs_fops;
 
 static int initfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	sb->sb_iops = &initfs_iops;
