@@ -1,0 +1,21 @@
+package embox.cmd.hardware
+
+@AutoCmd
+@Cmd(name = "spi",
+	help = "Transfer data via SPI bus",
+	man = '''
+		NAME
+			spi -- Transfer data via SPI bus
+		SYNOPSIS
+			spi bus_number bus_line byte0 [byte1 [...]]
+		EXAMPLES
+			Reading JEDEC ID from NAND flash:
+				spi 0 1 0x9f 0x9f 0x9f 0x9f
+		AUTHORS
+			Denis Deryugin
+	''')
+module spi {
+	source "spi.c"
+
+	depends embox.driver.spi.core
+}
