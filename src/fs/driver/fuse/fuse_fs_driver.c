@@ -94,7 +94,7 @@ static struct idesc *fuse_open(struct inode *node, struct idesc *desc) {
 	}
 	data = node->i_data;
 	/* FIXME check this */
-	data->fi.flags = node->flags;
+	data->fi.flags = node->i_mode;
 
 	task = fuse_in(sb_fuse_data);
 	sb_fuse_data->fuse_lowlevel_ops->open(NULL, node->i_no, &data->fi);

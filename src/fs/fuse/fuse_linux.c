@@ -66,7 +66,7 @@ static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 
 	d->d_inode = dvfs_alloc_inode(sb);
 	*d->d_inode = (struct inode ) {
-		.flags = S_IFDIR,
+		.i_mode = S_IFDIR,
 		.i_ops = sb->sb_iops,
 		.i_sb = sb,
 		.i_dentry = d,

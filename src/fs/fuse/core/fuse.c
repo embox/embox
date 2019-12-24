@@ -67,9 +67,8 @@ int fuse_reply_entry(fuse_req_t req, const struct fuse_entry_param *e) {
 	assert(node);
 
 	node->i_no = e->ino;
-	node->start_pos = 0; /* ? */
 	node->length = e->attr.st_size;
-	node->flags = e->attr.st_mode;
+	node->i_mode = e->attr.st_mode;
 	node->i_group_id = e->attr.st_gid;
 	node->i_owner_id = e->attr.st_uid;
 

@@ -9,7 +9,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <kernel/task.h>
 #include <fs/xattr.h>
 #include <fs/idesc.h>

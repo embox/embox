@@ -3,7 +3,10 @@ package embox.fs
 module node {
 	option number fnode_quantity=64
 
-	source "node.c"
+	source "inode.c"
+
+	@IncludeExport(path="fs")
+	source "inode.h"
 
 	depends embox.kernel.thread.mutex
 	@NoRuntime depends embox.util.tree

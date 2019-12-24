@@ -17,6 +17,7 @@
 #include <sys/file.h>
 
 #include <fs/vfs.h>
+#include <fs/inode.h>
 #include <fs/mount.h>
 #include <fs/hlpr_path.h>
 #include <fs/fs_driver.h>

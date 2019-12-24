@@ -11,7 +11,8 @@
 
 #include <errno.h>
 #include <string.h>
-#include <fs/node.h>
+#include <limits.h>
+#include <sys/types.h>
 #include <fs/path.h>
 
 #define LAST_IN_PATH         0x01
@@ -19,6 +20,7 @@
 //XXX
 #include <fs/mount.h>
 
+struct inode;
 extern void if_mounted_follow_down(struct path *path);
 extern void if_root_follow_up(struct path *path);
 extern void vfs_get_root_path(struct path *path);

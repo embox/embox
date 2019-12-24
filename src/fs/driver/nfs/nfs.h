@@ -11,7 +11,7 @@
 #define NFS_H_
 
 #include <stdint.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <net/l3/ipv4/ip.h>
 #include <sys/socket.h>
 #include <net/lib/rpc/rpc.h>

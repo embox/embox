@@ -9,15 +9,16 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <sys/types.h>
+
 #include <fs/kfsop.h>
-#include <fs/node.h>
 #include <fs/vfs.h>
 #include <fs/perm.h>
 #include <fs/kfile.h>
-#include <sys/types.h>
-#include <stdio.h>
+#include <fs/inode.h>
 
-#include "getumask.h"
+extern mode_t umask_modify(mode_t newmode);
 
 int mkdir(const char *pathname, mode_t mode) {
 	int rc;
@@ -51,23 +52,6 @@ int rmdir(const char *pathname) {
 	return rc;
 }
 
-
-int truncate(const char *path, off_t length) {
-	struct path node;
-	int res;
-
-	if (0 == (res = fs_perm_lookup(path, NULL, &node))) {
-		errno = -res;
-		res = -1;
-		goto end;
-	}
-
-	res = ktruncate(node.node, length);
-end:
-	return res;
-}
-
 int flock(int fd, int operation) {
 	return kflock(fd, operation);
 }
-

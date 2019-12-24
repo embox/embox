@@ -368,7 +368,7 @@ static int dfs_icreate(struct inode *i_new,
 		.i_ops     = &dfs_iops,
 	};
 
-	if (FILE_TYPE(S_IFDIR, mode)) {
+	if (S_ISDIR(mode)) {
 		memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 		for (i = 0; i < dirent.len / sizeof(buf); i++)
 			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
@@ -469,7 +469,7 @@ static struct inode *dfs_ilookup(char const *path, struct dentry const *dir) {
 
 	inode->start_pos = dirent.pos_start;
 	inode->length    = dirent.len;
-	inode->flags     = dirent.flags;
+	inode->i_mode    = dirent.flags;
 
 	return inode;
 }
@@ -497,7 +497,7 @@ static int dfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 			.length    = dirent.len,
 			.i_sb      = dfs_sb(),
 			.i_ops     = &dfs_iops,
-			.flags     = dirent.flags,
+			.i_mode    = dirent.flags,
 		};
 		ctx->fs_ctx = (void*) (i + 1);
 

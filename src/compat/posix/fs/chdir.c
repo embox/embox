@@ -12,15 +12,9 @@
 #include <string.h>
 #include <limits.h>
 #include <unistd.h>
-
-#include <fs/vfs.h>
-#include <fs/hlpr_path.h>
-#include <fs/fs_driver.h>
-#include <fs/kfsop.h>
-#include <fs/perm.h>
+#include <sys/stat.h>
 
 int chdir(const char *path) {
-	struct path last;
 	struct stat buff;
 	char strbuf[PATH_MAX] = "";
 
@@ -38,27 +32,21 @@ int chdir(const char *path) {
 	strbuf[PATH_MAX - 1] = '\0';
 
 	if (strlen(path) >= PATH_MAX - 1) {
-		SET_ERRNO(ENAMETOOLONG);
-		return -1;
+		return SET_ERRNO(ENAMETOOLONG);
 	}
 
-	/*check if such path exists in fs*/
-	if(0 != fs_perm_lookup(path, NULL, &last)){
-		SET_ERRNO(ENOENT);
-		return -1;
+	if (stat(path, &buff)) {
+		return SET_ERRNO(ENOENT);
 	}
 
 	/*check if it is a directory*/
-	kfile_fill_stat(last.node, &buff);
 	if(!S_ISDIR(buff.st_mode)){
-		SET_ERRNO(ENOTDIR);
-		return -1;
+		return SET_ERRNO(ENOTDIR);
 	}
 
 	if (-1 == setenv("PWD", strbuf, 1)) {
 		assert(errno == ENOMEM); /* it is the only possible error */
-		SET_ERRNO(ENAMETOOLONG);
-		return -1;
+		return SET_ERRNO(ENAMETOOLONG);
 	}
 
 	return 0;

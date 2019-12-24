@@ -10,6 +10,9 @@
 #include <errno.h>
 #include <security/security.h>
 
+#include <fs/fs_driver.h>
+#include <fs/vfs.h>
+#include <fs/inode.h>
 #include <fs/xattr.h>
 
 static int check_fsop(struct inode *node, const struct fsop_desc **fsop) {

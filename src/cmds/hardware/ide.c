@@ -12,7 +12,7 @@
 
 #include <drivers/ide.h>
 #include <drivers/block_dev.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 
 static void print_usage(void) {
 	printf("Usage: ide \n");

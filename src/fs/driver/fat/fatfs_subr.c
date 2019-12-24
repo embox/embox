@@ -11,8 +11,6 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <fs/node.h>
-#include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 
 #include "fat.h"

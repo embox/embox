@@ -1,13 +1,12 @@
 /**
- * @file perm_stub.c
+ * @file
  * @brief
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2015-09-28
  */
 
-#include <fs/node.h>
-#include <fs/path.h>
+#include <fs/perm.h>
 
 /* This is stubs to make system compile w/o old vfs */
 

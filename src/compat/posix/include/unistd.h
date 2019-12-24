@@ -208,6 +208,23 @@ extern int setregid(gid_t rgid, gid_t egid);
 extern int setgid(gid_t gid);
 extern int setegid(gid_t gid);
 
+/**
+ * @brief Change length of regular file
+ *
+ * @param path Path of the regular file
+ * @param length New length
+ *
+ * @return Negative error code or 0 if succeed
+ *
+ * @note Currently unsupported errors:
+ *    EACCESS
+ *    EFAULT
+ *    EINTR
+ *    EIO
+ *    ENAMETOOLONG
+ *    ENOTDIR
+ *    EROFS
+ **/
 extern int truncate(const char *path, off_t length);
 extern int ftruncate(int fd, off_t length);
 

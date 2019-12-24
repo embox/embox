@@ -27,6 +27,7 @@
 
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 #include <fs/hlpr_path.h>
 #include <util/array.h>
 #include <util/err.h>

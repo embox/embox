@@ -4,74 +4,12 @@ package embox.compat.posix.fs
 abstract module all {
 }
 
-module all_old extends all {
-	depends file,
-		chdir,
-		chmod,
-		dirent,
-		fsop,
-		getcwd,
-		umask,
-		xattr,
-		libgen,
-		chown_old
-}
-
 @DefaultImpl(file_old)
 abstract module file {
 }
 
-static module file_old extends file {
-	depends file_ops
-	depends lseek
-	depends open
-}
-
-@DefaultImpl(chdir_old)
-abstract module chdir {
-}
-
-static module chdir_old extends chdir {
-	source "chdir.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.all
-}
-
-@DefaultImpl(dirent_old)
-abstract module dirent {
-}
-
-static module dirent_old extends dirent {
-	option number dir_quantity=4
-	source "dirent.c"
-
-	depends embox.fs.core
-	depends embox.mem.objalloc
-	depends embox.compat.libc.str
-	depends embox.fs.syslib.dcache
-	depends embox.compat.posix.fs.getcwd
-	depends embox.fs.syslib.perm
-}
-
-@DefaultImpl(lseek_old)
-abstract module lseek {
-}
-
-static module lseek_old extends lseek {
-	source "lseek.c"
-
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
-}
-
-
-@DefaultImpl(chmod_old)
-abstract module chmod {
-}
-
-static module chmod_old extends chmod {
-	source "chmod_old.c"
+@DefaultImpl(fsop_old)
+abstract module fsop {
 }
 
 module read {
@@ -122,39 +60,10 @@ module writev {
 	source "writev.c"
 }
 
-@DefaultImpl(file_ops_old)
-abstract module file_ops {
-	depends read, write, fcntl, ioctl, close,
-	        fstat, fsync, readv, writev
-}
-
-static module file_ops_old extends file_ops {
-	source "ftruncate.c"
-
-	depends embox.fs.idesc
-	depends embox.fs.index_operation
-	depends embox.kernel.task.api
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
-}
-
-@DefaultImpl(fsop_old)
-abstract module fsop {
-}
-
-static module fsop_old extends fsop {
-	source "fsop.c"
-	source "stat.c"
-
-	depends embox.kernel.task.resource.errno
-	depends embox.fs.core
-	depends embox.fs.syslib.perm
-	/* TODO tsort loop
-	 * depends embox.fs.syslib.file_system_full
-	 */
-
-	depends creat
-	depends umask
+module file_ops {
+	depends read, write, fcntl, ioctl, close
+	depends fstat, fsync, readv, writev
+	depends ftruncate
 }
 
 static module getcwd {
@@ -164,43 +73,23 @@ static module getcwd {
 	depends embox.compat.libc.str
 }
 
-@DefaultImpl(open_old)
-abstract module open {
-}
-
-static module open_old extends open {
-	source "open.c"
-
-	depends embox.kernel.task.resource.errno
-	depends embox.fs.core /* if_mounted_follow_down */
-	/* TODO tsort loop
-	 * depends embox.fs.syslib.file_system
-	 */
-	depends libgen
-	depends dirent
-	depends umask
-}
-
 static module umask {
 	source "umask.c"
 
-	option number default_umask = 0022
-	depends embox.kernel.task.task_resource
-}
-
-@DefaultImpl(xattr_old)
-abstract module xattr {
-}
-
-static module xattr_old extends xattr {
-	source "xattr.c"
-
-	depends embox.fs.xattr
-	depends embox.fs.syslib.perm
-	depends embox.security.api
+	depends embox.kernel.task.resource.umask
 }
 
 static module libgen {
 	source "libgen.c"
 }
 
+static module chdir {
+	source "chdir.c"
+
+	depends embox.compat.posix.util.environ
+	depends embox.compat.libc.all
+}
+
+static module truncate {
+	source "truncate.c"
+}

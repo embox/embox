@@ -1,0 +1,13 @@
+package embox.compat.posix.fs
+
+@DefaultImpl(stat_oldfs)
+abstract module stat {
+}
+
+static module stat_oldfs extends stat {
+	source "stat_oldfs.c"
+}
+
+static module stat_dvfs extends stat {
+	source "stat_dvfs.c"
+}

@@ -21,6 +21,7 @@
 #include <fs/fs_driver.h>
 #include <libsmbclient.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 #include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>

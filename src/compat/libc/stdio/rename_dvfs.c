@@ -56,7 +56,7 @@ int rename(const char *src_name, const char *dst_name) {
 		}
 	}
 
-	if (!FILE_TYPE(from->flags, S_IFDIR) && (to && FILE_TYPE(to->flags, S_IFDIR))) {
+	if (!S_ISDIR(from->flags) && (to && S_ISDIR(to->flags))) {
 		return SET_ERRNO(EISDIR);
 	}
 

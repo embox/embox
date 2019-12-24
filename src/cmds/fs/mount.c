@@ -28,6 +28,7 @@ static void print_usage(void) {
 #ifdef __MODULE__embox__fs__core__H_
 
 #include <fs/vfs.h>
+#include <fs/inode.h>
 #include <fs/fs_driver.h>
 
 static void lookup_mounts(struct mount_descriptor *parent) {

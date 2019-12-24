@@ -15,12 +15,14 @@
 
 #include <util/array.h>
 #include <fs/vfs.h>
+#include <fs/inode.h>
 
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc_table.h>
 
 #include <dirent_impl.h>
-#include "getumask.h"
+
+extern mode_t umask_modify(mode_t newmode);
 
 struct inode *find_node(DIR *dir, char * node_name) {
 	struct dirent * dent;

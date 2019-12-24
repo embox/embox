@@ -43,7 +43,7 @@ int open(const char *path, int __oflag, ...) {
 	if (i_no == NULL)
 		return SET_ERRNO(ENOENT);
 
-	if ((i_no->flags & S_IFMT) == S_IFDIR) {
+	if (S_ISDIR(i_no->i_mode)) {
 		dvfs_destroy_dentry(lookup.item);
 		return SET_ERRNO(EISDIR);
 	}

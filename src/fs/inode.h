@@ -75,10 +75,6 @@ extern struct inode *node_alloc(const char *name, size_t name_len);
 
 extern void node_free(struct inode *node);
 
-static inline struct inode *node_parent(struct inode *node) {
-	return tree_element(node->tree_link.par, struct inode, tree_link);
-}
-
 static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->mode);
 }

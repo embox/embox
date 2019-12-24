@@ -13,7 +13,7 @@
 #include <drivers/char_dev.h>
 #include <drivers/usb/usb.h>
 #include <drivers/usb/usb_dev_desc.h>
-#include <fs/node.h>
+#include <fs/inode.h>
 
 #include <drivers/usb/usb_driver.h>
 

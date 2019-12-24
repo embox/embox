@@ -12,11 +12,12 @@
  * @author Denis Deryugin
  *              - port from old VFS
  *
- * @note   Initfs is based on CPIO archieve format. By design, this format
- *         has no directory absraction, as all files are stored with full
- *         path names. Beacause of this it could be tricky to handle some
+ * @note   Initfs is based on CPIO archive format. By design, this format
+ *         has no directory abstraction, as all files are stored with full
+ *         path names. Because of this it could be tricky to handle some
  *         VFS calls.
  */
+#include <util/log.h>
 
 #include <stdint.h>
 #include <cpio.h>
@@ -28,49 +29,16 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <embox/unit.h>
+#include <framework/mod/options.h>
+
 #include <fs/dvfs.h>
 #include <mem/misc/pool.h>
 #include <util/array.h>
 
-#define INITFS_MAX_NAMELEN 32
+#include "initfs.h"
 
-/**
-* @brief Should be used as inode->i_data, but only for directories
-*/
-struct initfs_dir_info {
-	char  *path;
-	size_t path_len;
-	char  *name;
-	size_t name_len;
-};
-
+POOL_DEF(initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
-
-static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
-	struct inode *inode;
-
-	inode = desc->f_inode;
-
-	if (desc->pos + size > file_get_size(desc)) {
-		size = file_get_size(desc) - desc->pos;
-	}
-
-	memcpy(buf, (char *) (uintptr_t) (inode->start_pos + desc->pos), size);
-
-	return size;
-}
-
-static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
-	struct inode *inode = desc->f_inode;
-	char **p_addr;
-
-	p_addr = data;
-
-	*p_addr = (char*) (uintptr_t) inode->start_pos;
-
-	return 0;
-}
 
 /**
 * @brief Initialize initfs inode
@@ -80,59 +48,73 @@ static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
 *
 * @return Negative error code
 */
-static int initfs_fill_inode_entry(struct inode *node,
-                                   char *cpio,
-                                   struct cpio_entry *entry,
-                                   struct initfs_dir_info *di) {
-	*node = (struct inode) {
-		.i_no      = (intptr_t) cpio,
-		.start_pos = (intptr_t) entry->data,
-		.length    = (size_t) entry->size,
-		.i_data    = di,
-		.flags     = entry->mode & (S_IFMT | S_IRWXA),
-	};
-	return 0;
-}
+static int initfs_fill_inode(struct inode *node, char *cpio,
+		struct cpio_entry *entry) {
+	struct initfs_file_info *fi;
+	struct initfs_dir_info *di;
 
-static struct initfs_dir_info *child_dir(struct initfs_dir_info *parent,
-                                         struct cpio_entry *entry) {
-	struct initfs_dir_info *di = NULL;
+	node->i_no      = (intptr_t) cpio;
+	node->length    = (size_t) entry->size;
+	node->i_mode    = entry->mode & (S_IFMT | S_IRWXA);
 
-	if (entry->mode & S_IFDIR) {
+	if (S_ISDIR(entry->mode)) {
 		di = pool_alloc(&initfs_dir_pool);
-		assert(di);
-		*di = (struct initfs_dir_info) {
-			.path = entry->name,
-			.path_len = strlen(entry->name),
-		};
+		if (NULL == di) {
+			return -ENOMEM;
+		}
+		di->path = entry->name;
+		di->path_len = strlen(entry->name);
+		di->start_pos = (intptr_t)entry->data;
+
+		node->i_data = di;
+
+		return 0;
 	}
 
-	return di;
+	fi = pool_alloc(&initfs_file_pool);
+	if (!fi) {
+		return -ENOMEM;
+	}
+
+	fi->start_pos = (intptr_t)entry->data;
+
+	node->i_data    = fi;
+
+	return 0;
 }
 
 static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
 	struct cpio_entry entry;
-	struct inode *node;
+	struct inode *node = NULL;
 	struct initfs_dir_info *di = dir->d_inode->i_data;
 
-	while ((cpio = cpio_parse_entry(cpio, &entry)))
+	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (!memcmp(di->path, entry.name, di->path_len) &&
 		    !strncmp(name,
 		             entry.name + di->path_len + (*(entry.name + di->path_len) == '/' ? 1 : 0),
 		             strlen(name)) &&
 			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
-			if (NULL == (node = dvfs_alloc_inode(dir->d_sb)))
-				return NULL;
 
-			initfs_fill_inode_entry(node,
-			                        cpio,
-			                        &entry,
-			                        child_dir(di, &entry));
+			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
+				log_error("Unknown inode type in cpio\n");
+				break;
+			}
+
+			node = dvfs_alloc_inode(dir->d_sb);
+			if (node == NULL) {
+				break;
+			}
+
+			if (0 > initfs_fill_inode(node, cpio, &entry)) {
+				dvfs_destroy_inode(node);
+				return NULL;
+			}
 
 			return node;
 		}
+	}
 
 	return NULL;
 }
@@ -146,19 +128,26 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 	assert(di);
 
-	if (!cpio)
+	if (!cpio) {
 		cpio = &_initfs_start;
+	}
 
 	while ((prev = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
 		if (!memcmp(di->path, entry.name, di->path_len) &&
 			entry.name[di->path_len] != '\0' &&
 			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 
-			initfs_fill_inode_entry(next,
-						prev,
-					       &entry,
-						child_dir(di, &entry));
+			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
+				log_error("Unknown inode type in cpio\n");
+				break;
+			}
+
+			if (0 > initfs_fill_inode(next, prev, &entry)) {
+				return -1;
+			}
+
 			ctx->fs_ctx = cpio;
+
 			return 0;
 		}
 	}
@@ -206,8 +195,14 @@ static int initfs_mount_end(struct super_block *sb) {
 }
 
 static int initfs_destroy_inode(struct inode *inode) {
-	if (inode->i_data) {
+	if (!inode->i_data) {
+		return 0;
+	}
+
+	if (S_ISDIR(inode->i_mode)) {
 		pool_free(&initfs_dir_pool, inode->i_data);
+	} else {
+		pool_free(&initfs_file_pool, inode->i_data);
 	}
 	return 0;
 }
@@ -223,10 +218,7 @@ struct inode_operations initfs_iops = {
 	.pathname = initfs_pathname,
 };
 
-struct file_operations initfs_fops = {
-	.read  = initfs_read,
-	.ioctl = initfs_ioctl,
-};
+extern struct file_operations initfs_fops;
 
 static int initfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	sb->sb_iops = &initfs_iops;

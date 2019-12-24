@@ -51,7 +51,7 @@
 
 #include <util/err.h>
 
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
 #include <fs/file_system.h>

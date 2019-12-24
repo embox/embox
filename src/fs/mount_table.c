@@ -13,7 +13,7 @@
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 
-#include <fs/node.h>
+#include <fs/inode.h>
 #include <fs/vfs.h>
 #include <fs/mount.h>
 

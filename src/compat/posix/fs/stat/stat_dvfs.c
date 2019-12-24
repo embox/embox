@@ -7,8 +7,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-
-#include <fs/dvfs.h>
+#include <assert.h>
 
 int stat(const char *path, struct stat *buf) {
 	int fd, ret;
