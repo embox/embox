@@ -37,9 +37,10 @@ int usb_driver_register(struct usb_driver *drv) {
 }
 
 void *usb_driver_data(struct usb_dev *dev) {
-	return dev->drv_data;
+	return dev->driver_data;
 }
 
+#if 0
 static int usb_driver_id_by_node(struct inode *n, struct usb_device_id *id) {
 
 	if (0 > sscanf(n->name, usb_device_name_format, &id->vid, &id->pid)) {
@@ -66,6 +67,7 @@ int usb_driver_open_by_node(struct inode *n, struct usb_dev_desc **ddesc) {
 
 	return 0;
 }
+#endif
 
 static int usb_driver_match_table(struct usb_dev *dev,
 		struct usb_device_id id_table[]) {
@@ -73,9 +75,17 @@ static int usb_driver_match_table(struct usb_dev *dev,
 
 	id = id_table;
 
-	while (id->vid != 0 || id->pid != 0) {
-		if (id->vid == dev->dev_desc.id_vendor &&
-				id->pid == dev->dev_desc.id_product) {
+	/* Process root hub */
+	if (!dev->parent) {
+		if (id->dev_class == USB_CLASS_HUB) {
+			return 1;
+		}
+	}
+
+	while (id->dev_class != 0 || id->vid != 0 || id->pid != 0) {
+		if ((id->vid == dev->dev_desc.id_vendor &&
+				id->pid == dev->dev_desc.id_product) ||
+			(id->dev_class == dev->iface_desc.b_interface_class)) {
 			return 1;
 		}
 
@@ -88,7 +98,7 @@ static int usb_driver_match_table(struct usb_dev *dev,
 static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
 	struct usb_driver *drv;
 
-	dev->drv_data = NULL;
+	dev->driver_data = NULL;
 	dev->drv = NULL;
 
 	dlist_foreach_entry(drv, &usb_driver_list, drv_link) {
@@ -98,7 +108,7 @@ static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
 			continue;
 		}
 
-		res = drv->probe(drv, dev, &dev->drv_data);
+		res = drv->probe(dev);
 		if (0 != res) {
 			continue;
 		}
@@ -110,14 +120,13 @@ static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
 	return NULL;
 }
 
-void usb_driver_handle(struct usb_dev *dev) {
+int usb_driver_probe(struct usb_dev *dev) {
 	struct usb_driver *drv;
 
 	drv = usb_driver_find(dev);
 
 	if (!drv) {
-		return;
-		/*return -ENOTSUP;*/
+		return -ENOTSUP;
 	}
 
 	if (drv->file_ops) {
@@ -129,17 +138,18 @@ void usb_driver_handle(struct usb_dev *dev) {
 
 		char_dev_register(NULL);
 	}
+	return 0;
 }
 
-void usb_driver_release(struct usb_dev *dev) {
+int usb_driver_release(struct usb_dev *dev) {
 	struct usb_driver *drv;
 
 	drv = dev->drv;
 	if (!drv) {
-		return;
+		return -1;
 	}
-
-	drv->disconnect(dev, dev->drv_data);
+	drv->disconnect(dev, dev->driver_data);
+	return 0;
 
 	/*char_dev_unregister(...)*/
 

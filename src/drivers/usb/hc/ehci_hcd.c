@@ -11,6 +11,7 @@
 #include <sys/mman.h>
 
 #include <kernel/irq.h>
+#include <kernel/panic.h>
 
 #include <mem/misc/pool.h>
 
@@ -127,19 +128,6 @@ static uint32_t ehci_port_reset(struct ehci_hcd *ehci, int i) {
 	}
 
 	return pstatus;
-}
-
-static void ehci_port_probe(struct ehci_hcd *ehci, int i) {
-	uint32_t status;
-
-	assert(ehci);
-	assert(ehci->ehci_regs);
-
-	status = ehci_read(ehci, &ehci->ehci_regs->port_status[i]);
-
-	if ( !(status & EHCI_PORT_PE) && (status & EHCI_PORT_CONNECT) ) {
-		status = ehci_port_reset(ehci, i);
-	}
 }
 
 /*
@@ -336,7 +324,6 @@ static int echi_hcd_init(struct ehci_hcd *ehci_hcd) {
 static void *ehci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	struct ehci_hcd *ehci_hcd;
 	int cap_len;
-	uint32_t rh_port_n;
 
 	assert(hcd);
 	assert(args);
@@ -348,9 +335,6 @@ static void *ehci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	ehci_hcd->ehci_caps = args;
 	cap_len = EHCI_HC_LENGTH(ehci_hcd->ehci_caps->hc_capbase);
 	ehci_hcd->ehci_regs = args + cap_len;
-
-	rh_port_n = EHCI_HCS_N_PORTS(ehci_hcd->ehci_caps->hcs_params);
-	hcd->root_hub = usb_hub_alloc(hcd, rh_port_n);
 
 	ehci_hcd->usb_hcd = hcd;
 
@@ -387,6 +371,7 @@ static void ehci_ed_free(struct usb_endp *ep, void *spec) {
 
 static int ehci_start(struct usb_hcd *hcd) {
 	struct ehci_hcd *ehci_hcd;
+	struct usb_dev *udev;
 	int i;
 
 	assert(hcd);
@@ -407,6 +392,13 @@ static int ehci_start(struct usb_hcd *hcd) {
 		ehci_port_power(ehci_hcd, i, 1);
 	}
 
+	/* Create root hub */
+	udev = usb_new_device(NULL, hcd, 0);
+	if (!udev) {
+		log_error("ohci_start: usb_new_device failed\n");
+		return -1;
+	}
+
 	return 0;
 }
 
@@ -414,41 +406,84 @@ static int ehci_stop(struct usb_hcd *hcd) {
 	return 0;
 }
 
-static int ehci_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
-			unsigned short value) {
-	struct ehci_hcd *ehci;
-
-	ehci = hcd_to_ehci(port->hub->hcd);
-
-	ehci_port_probe(ehci, port->idx);
-
-	return 0;
+static void ehci_get_hub_descriptor(struct ehci_hcd *ehci,
+		struct usb_desc_hub *desc) {
+	desc->b_desc_length = 7;
+	desc->b_desc_type = USB_DT_HUB;
+	desc->b_nbr_ports = EHCI_HCS_N_PORTS(ehci->ehci_caps->hcs_params);
 }
 
-static void ehci_rh_get_port_stat(struct ehci_hcd *ehci) {
-	unsigned i;
-	struct usb_hub *rhub;
+static uint32_t ehci_roothub_portstatus(struct ehci_hcd *ehci,
+		unsigned port) {
+	uint32_t status;
 
-	assert(ehci);
-	assert(ehci->ehci_regs);
-	assert(ehci->ehci_caps);
-
-	i = EHCI_HCS_N_PORTS (ehci_read(ehci, &ehci->ehci_caps->hcs_params));
-
-	rhub = ehci_to_hcd(ehci)->root_hub;
-
-	while (i--) {
-		int pstatus;
-		pstatus = ehci_read(ehci, &ehci->ehci_regs->port_status[i]);
-
-		if (pstatus & EHCI_PORT_CSC) {
-			ehci_write(ehci, pstatus & ~EHCI_PORT_CSC, &ehci->ehci_regs->port_status[i]);
-			if (!(rhub->ports[i].status & USB_HUB_PORT_ENABLE)) {
-				rhub->ports[i].status = USB_HUB_PORT_CONNECT;
-				rhub->ports[i].changed = 1;
-			}
-		}
+	status = ehci_read(ehci, &ehci->ehci_regs->port_status[port]);
+	/* set wChange bits */
+	if (status & EHCI_PORT_CSC) {
+		status |= USB_PORT_STAT_CONNECTION << 16;
 	}
+	/* Reset is completed by ehci_port_reset(), so return
+	 * claim reset state was changed. */
+	status |= USB_PORT_STAT_RESET << 16;
+	return status;
+}
+
+static int ehci_root_hub_control(struct usb_request *req) {
+	struct ehci_hcd *ehci = hcd_to_ehci(req->endp->dev->hcd);
+	struct usb_control_header *ctrl = &req->ctrl_header;
+	uint32_t type_req;
+	uint32_t wval;
+	unsigned port;
+
+	type_req = (ctrl->bm_request_type << 8) | ctrl->b_request;
+
+	port = ctrl->w_index - 1;
+
+	switch (type_req) {
+	case USB_GET_HUB_DESCRIPTOR:
+		ehci_get_hub_descriptor(ehci, (struct usb_desc_hub *) req->buf);
+		break;
+	case USB_GET_PORT_STATUS:
+		*(uint32_t *)req->buf = ehci_roothub_portstatus(ehci, port);
+		break;
+	case USB_SET_PORT_FEATURE:
+		switch (ctrl->w_value) {
+		case USB_PORT_FEATURE_RESET:
+			ehci_port_reset(ehci, port);
+			break;
+		case USB_PORT_FEATURE_POWER:
+			ehci_port_power(ehci, port, true);
+			break;
+		default:
+			log_error("Unknown port set feature: 0x%x\n", ctrl->w_value);
+			return -1;
+		}
+		break;
+	case USB_CLEAR_PORT_FEATURE:
+		switch (ctrl->w_value) {
+		case USB_PORT_FEATURE_POWER:
+			ehci_port_power(ehci, port, false);
+			break;
+		case USB_PORT_FEATURE_C_CONNECTION:
+			wval = ehci_read(ehci, &ehci->ehci_regs->port_status[port]);
+			ehci_write(ehci, wval | EHCI_PORT_CSC,
+				&ehci->ehci_regs->port_status[port]);
+			break;
+		default:
+			log_error("Unknown port clear feature: 0x%x\n", ctrl->w_value);
+			return -1;
+		}
+		break;
+	default:
+		panic("ehci_root_hub_control: Unknown req_type=0x%x, request=0x%x\n",
+			ctrl->bm_request_type, ctrl->b_request);
+		break;
+	}
+
+	req->req_stat = USB_REQ_NOERR;
+	usb_request_complete(req);
+
+	return 0;
 }
 
 static irq_return_t ehci_irq(unsigned int irq_nr, void *data) {
@@ -494,13 +529,6 @@ static irq_return_t ehci_irq(unsigned int irq_nr, void *data) {
 		scan_async(ehci);
 	}
 
-	/* remote wakeup [4.3.1] */
-	if (status & EHCI_STS_PCD) {
-		ehci_rh_get_port_stat(ehci);
-
-		usb_rh_nofity(hcd);
-	}
-
 	if (status & EHCI_STS_FATAL) {
 		log_error("PCI error. EHCI halted");
 		ehci_write(ehci, cmd & ~(EHCI_CMD_ASE | EHCI_CMD_RUN), &ehci->ehci_regs->command);
@@ -540,8 +568,7 @@ static void ehci_qh_sched(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	echi_qh_insert_async(ehci, qh);
 }
 
-static void ehci_transfer(struct ehci_qh *qh, uint32_t token, void *buf,
-		size_t len, struct usb_request *req) {
+static void ehci_transfer(struct ehci_qh *qh, struct usb_request *req) {
 	assert(qh);
 
 	qh->req = req;
@@ -565,7 +592,7 @@ static void ehci_qh_fill(struct ehci_hcd *ehci, struct usb_request *req, struct 
 	hw->hw_info1 = EHCI_QH_HIGH_SPEED |
 			EHCI_QH_TOGGLE_CTL |
 			(ep->address << 8) |
-			(ep->dev->bus_idx) |
+			(ep->dev->addr) |
 			(ep->max_packet_size << 16); /* max packet len */
 	hw->hw_info2 = 1 << 30; /* mult = 1 one transaction */
 
@@ -576,9 +603,8 @@ static void ehci_qh_fill(struct ehci_hcd *ehci, struct usb_request *req, struct 
 static int ehci_request(struct usb_request *req) {
 	struct ehci_hcd *ehci;
 	struct ehci_qh *new_qh;
-
+	struct ehci_qtd_hw *qtd, *qtd_prev, *qtd_first;
 	uint32_t token;
-	int cnt = 0;
 
 	assert(req);
 
@@ -586,40 +612,68 @@ static int ehci_request(struct usb_request *req) {
 
 	ehci = hcd_to_ehci(req->endp->dev->hcd);
 
-	token = 0;
-	if (req->token & USB_TOKEN_SETUP) {
-		token = EHCI_QTD_PID_SETUP << 8;
-		cnt++;
-	}
-	if (req->token & USB_TOKEN_IN) {
-		/* Use bufferRounding = 1 to read less than was requested if needed. */
-		token = EHCI_QTD_PID_IN << 8;
-		cnt++;
-	}
-	if ((req->token & USB_TOKEN_OUT) && !(req->token & USB_TOKEN_SETUP)) {
-		token = EHCI_QTD_PID_OUT << 8;
-		cnt++;
-	}
-
-	assert(cnt == 1);
-
-	{
-		struct ehci_qtd_hw *qtd;
-
-		token |= EHCI_QTD_STS_ACTIVE | (3 << 10);
+	switch (req->endp->type) {
+	case USB_COMM_CONTROL:
+		/* Setup stage */
 		qtd = ehci_qtd_alloc(ehci);
-		ehci_qtd_fill(ehci, qtd, (uintptr_t)req->buf, req->len , token, 0);
-
-		if (req->endp->hci_specific) {
-			new_qh = req->endp->hci_specific;
-		} else {
-			new_qh = ehci_qh_alloc(ehci);
+		qtd_first = qtd;
+		token = EHCI_QTD_PID_SETUP << 8;
+		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT);
+		ehci_qtd_fill(ehci, qtd, (uintptr_t)&req->ctrl_header,
+			sizeof req->ctrl_header, token, 0);
+		qtd_prev = qtd;
+		qtd = ehci_qtd_alloc(ehci);
+		/* Data stage (optional) */
+		if (req->len > 0) {
+			if (req->token & USB_TOKEN_OUT)  {
+				token = EHCI_QTD_PID_OUT << 8;
+			} else {
+				token = EHCI_QTD_PID_IN << 8;
+			}
+			token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT);
+			ehci_qtd_fill(ehci, qtd, (uintptr_t) req->buf, req->len,
+				token, 0);
+			qtd_prev->hw_next = (uint32_t) qtd;
+			qtd_prev->hw_alt_next = qtd_prev->hw_next;
+			qtd_prev = qtd;
 		}
-		ehci_qh_fill(ehci, req, new_qh, qtd);
+		/* Status stage */
+		qtd = ehci_qtd_alloc(ehci);
+		if (req->token & USB_TOKEN_OUT)  {
+			token = EHCI_QTD_PID_IN << 8;
+		} else {
+			token = EHCI_QTD_PID_OUT << 8;
+		}
+		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT);
+		ehci_qtd_fill(ehci, qtd, 0, 0, token, 0);
+		qtd_prev->hw_next = (uint32_t) qtd;
+		qtd_prev->hw_alt_next = qtd_prev->hw_next;
+		break;
+	case USB_COMM_BULK:
+	case USB_COMM_INTERRUPT:
+	case USB_COMM_ISOCHRON:
+		qtd = ehci_qtd_alloc(ehci);
+		qtd_first = qtd;
+		if (req->token & USB_TOKEN_OUT)  {
+			token = EHCI_QTD_PID_OUT << 8;
+		} else {
+			token = EHCI_QTD_PID_IN << 8;
+		}
+		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT);
+		ehci_qtd_fill(ehci, qtd, (uintptr_t) req->buf, req->len,
+			token, 0);
+		break;
+	default:
+		panic("ehci_request: Unsupported enpd type %d", req->endp->type);
 	}
 
-	ehci_transfer(new_qh, token, req->buf, req->len, req);
-
+	if (req->endp->hci_specific) {
+		new_qh = req->endp->hci_specific;
+	} else {
+		new_qh = ehci_qh_alloc(ehci);
+	}
+	ehci_qh_fill(ehci, req, new_qh, qtd_first);
+	ehci_transfer(new_qh, req);
 	ehci_qh_sched(ehci, new_qh);
 
 	return 0;
@@ -632,7 +686,7 @@ static const struct usb_hcd_ops ehci_hcd_ops = {
 	.endp_hci_free = ehci_ed_free,
 	.hcd_start = ehci_start,
 	.hcd_stop = ehci_stop,
-	.rhub_ctrl = ehci_rh_ctrl,
+	.root_hub_control = ehci_root_hub_control,
 	.request = ehci_request,
 };
 

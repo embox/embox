@@ -239,10 +239,11 @@ static const struct scsi_dev_state scsi_state_sense = {
 };
 
 static void scsi_dev_try_release(struct scsi_dev *dev) {
-	struct usb_dev *udev = scsi2mass(dev)->usb_dev;
+	//struct usb_dev *udev = scsi2mass(dev)->usb_dev;
 
 	if (!dev->use_count && !dev->attached) {
-		usb_class_released(udev);
+		// TODO
+		//usb_class_released(udev);
 	}
 }
 
@@ -281,13 +282,13 @@ void scsi_request_done(struct scsi_dev *dev, int res) {
 void scsi_dev_use_inc(struct scsi_dev *dev) {
 
 	dev->use_count++;
-	usb_dev_use_inc(scsi2mass(dev)->usb_dev);
+	//usb_dev_use_inc(scsi2mass(dev)->usb_dev);
 }
 
 void scsi_dev_use_dec(struct scsi_dev *dev) {
-	struct usb_dev *udev = scsi2mass(dev)->usb_dev;
+	//struct usb_dev *udev = scsi2mass(dev)->usb_dev;
 
-	usb_dev_use_dec(udev);
+	//usb_dev_use_dec(udev);
 	dev->use_count--;
 
 	scsi_dev_try_release(dev);

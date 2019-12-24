@@ -24,7 +24,7 @@ static void print_error(void) {
 static void show_usb_dev(struct usb_dev *usb_dev) {
 	printf("Bus %03d Device %03d ID %04x:%04x\n",
 			usb_dev->bus_idx,
-			usb_dev->idx,
+			usb_dev->addr,
 			usb_dev->dev_desc.id_vendor,
 			usb_dev->dev_desc.id_product);
 

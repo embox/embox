@@ -31,6 +31,7 @@
 #define EHCI_QTD_LENGTH(tok) (((tok)>>16) & 0x7fff)
 #define EHCI_QTD_IOC         (1 << 15)         /* interrupt on complete */
 #define EHCI_QTD_CERR(tok)   (((tok)>>10) & 0x3)
+# define EHCI_QTD_CERR_SHIFT   10
 #define EHCI_QTD_PID(tok)    (((tok)>>8) & 0x3)
 #define EHCI_QTD_STS_ACTIVE  (1 << 7)   /* HC may execute this */
 #define EHCI_QTD_STS_HALT    (1 << 6)   /* halted on error */

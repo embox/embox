@@ -11,8 +11,8 @@
 #include <string.h>
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
+#include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb.h>
-
 #include <drivers/usb/class/usb_mass_storage.h>
 #include <drivers/scsi.h>
 
@@ -98,19 +98,6 @@ int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 			&req_ctx->cbw, sizeof(struct usb_mscbw));
 }
 
-static void *usb_class_mass_alloc(struct usb_class *cls, struct usb_dev *dev) {
-	struct usb_mass *mass = pool_alloc(&usb_mass_classes);
-
-	if (mass) {
-		mass->usb_dev = dev;
-	}
-	return mass;
-}
-
-static void usb_class_mass_free(struct usb_class *cls, struct usb_dev *dev, void *spec) {
-	pool_free(&usb_mass_classes, spec);
-}
-
 static void usb_mass_maxlun_hnd(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
 	struct usb_mass *mass = usb2massdata(dev);
@@ -119,21 +106,7 @@ static void usb_mass_maxlun_hnd(struct usb_request *req, void *arg) {
 	scsi_dev_attached(&mass->scsi_dev);
 }
 
-#if 0
-static void usb_mass_reset_hnd(struct usb_request *req, void *arg) {
-	struct usb_dev *dev = req->endp->dev;
-	struct usb_mass *mass = usb2massdata(dev);
-
-	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd, NULL,
-			USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
-				| USB_DEV_REQ_TYPE_IFC,
-			USB_REQ_MASS_MAXLUN, 0,
-			dev->iface_desc.b_interface_number, 1,
-			&mass->maxlun);
-}
-#endif
-
-static void usb_mass_handle(struct usb_class *cls, struct usb_dev *dev) {
+static void usb_mass_start(struct usb_dev *dev) {
 	struct usb_mass *mass = usb2massdata(dev);
 	int i;
 
@@ -152,40 +125,47 @@ static void usb_mass_handle(struct usb_class *cls, struct usb_dev *dev) {
 		}
 	}
 
-#if 0
-	usb_endp_control(dev->endpoints[0], usb_mass_reset_hnd, NULL,
-			USB_DEV_REQ_TYPE_WR | USB_DEV_REQ_TYPE_CLS
-				| USB_DEV_REQ_TYPE_IFC,
-			USB_REQ_MASS_RESET, 0,
-			dev->iface_desc.b_interface_number, 0, NULL);
-#endif
 	usb_endp_control(dev->endpoints[0], usb_mass_maxlun_hnd, NULL,
-			USB_DEV_REQ_TYPE_RD | USB_DEV_REQ_TYPE_CLS
-				| USB_DEV_REQ_TYPE_IFC,
+			USB_DIR_IN | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_MAXLUN, 0,
 			dev->iface_desc.b_interface_number, 1,
 			&mass->maxlun);
 }
 
-static void usb_mass_release(struct usb_class *cls, struct usb_dev *dev) {
-	struct usb_mass *mass = usb2massdata(dev);
+static int usb_ms_probe(struct usb_dev *dev) {
+	struct usb_mass *mass;
 
-	scsi_dev_detached(&mass->scsi_dev);
+	mass = pool_alloc(&usb_mass_classes);
+	if (!mass) {
+		return -1;
+	}
+	mass->usb_dev = dev;
+	dev->driver_data = mass;
 
-	/*usb_class_released(dev);*/
+	usb_mass_start(dev);
+
+	return 0;
 }
 
-static struct usb_class usb_class_mass = {
-	.usb_class = USB_CLASS_MASS,
-	.class_alloc = usb_class_mass_alloc,
-	.class_free = usb_class_mass_free,
-	.get_conf = usb_class_generic_get_conf,
-	.get_conf_hnd = usb_class_generic_get_conf_hnd,
-	.class_handle = usb_mass_handle,
-	.class_release = usb_mass_release,
+static void usb_ms_disconnect(struct usb_dev *dev, void *data) {
+	struct usb_mass *mass = usb2massdata(dev);
+	scsi_dev_detached(&mass->scsi_dev);
+	pool_free(&usb_mass_classes, mass);
+}
+
+/* TODO */
+static struct usb_device_id usb_ms_id_table[] = {
+	{USB_CLASS_MASS, 0xffff, 0xffff},
+	{ },
+};
+
+struct usb_driver usb_driver_ms = {
+	.name = "mass_storage",
+	.probe = usb_ms_probe,
+	.disconnect = usb_ms_disconnect,
+	.id_table = usb_ms_id_table,
 };
 
 static int usb_mass_init(void) {
-
-	return usb_class_register(&usb_class_mass);
+	return usb_driver_register(&usb_driver_ms);
 }

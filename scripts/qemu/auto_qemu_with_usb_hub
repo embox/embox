@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 
-image_file_name="usbdisk.img"
+image_file_name=usbdisk.img
+
+HUB_PORT=1
+USBDISK_HUB_PORT=4
 
 if [ -f $image_file_name ]
 then
@@ -12,6 +15,7 @@ else
 fi
 
 ./scripts/qemu/auto_qemu \
-	-drive id=my_usb_disk,file=$image_file_name,if=none,format=raw \
-	-device usb-storage,drive=my_usb_disk \
+	-drive if=none,id=usbdisk,file=$image_file_name,format=raw \
+	-device usb-hub,bus=ohci.0,port=$HUB_PORT \
+	-device usb-storage,bus=ohci.0,port=$HUB_PORT.$USBDISK_HUB_PORT,drive=usbdisk \
 	$@

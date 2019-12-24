@@ -53,6 +53,8 @@
 #define OHCI_RH_R_PWR_W_STPWR         0x0100
 #define OHCI_RH_R_LOWSPD_W_CLPWR      0x0200
 
+#define OHCI_RH_PS_CSC   (1 << 16)   /* connect status change */
+
 #define OHCI_TD_SETUP                 0x00000000
 #define OHCI_TD_OUT                   0x00080000
 #define OHCI_TD_IN                    0x00100000

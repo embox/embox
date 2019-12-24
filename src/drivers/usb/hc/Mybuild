@@ -2,6 +2,8 @@
 package embox.driver.usb.hc
 
 module ohci_pci {
+	option number log_level=1
+
 	source "ohci_pci.c"
 
 	depends embox.driver.usb.core

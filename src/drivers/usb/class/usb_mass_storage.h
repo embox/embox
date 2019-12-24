@@ -72,7 +72,7 @@ struct usb_mass {
 };
 
 static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
-	return dev->class_specific;
+	return dev->driver_data;
 }
 
 extern int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
