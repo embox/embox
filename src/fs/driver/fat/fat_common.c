@@ -1251,6 +1251,7 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	uint32_t byteswritten;
 	uint32_t lastcluster, nextcluster;
 	uint32_t clastersize;
+	uint32_t new_clus = 0;
 	struct fat_fs_info *fsi;
 	fsi = fi->fsi;
 
@@ -1260,6 +1261,12 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 
 	log_debug("len(%d) volinfo: secperclus(%d), bytepersec(%d)",
 			len, fi->volinfo->secperclus, fi->volinfo->bytepersec );
+
+	if (fi->firstcluster == 0) {
+		new_clus = fat_get_free_fat(fsi, fat_sector_buff);
+		fat_set_fat(fsi, fat_sector_buff, new_clus, fat_end_of_chain(fsi));
+		fi->firstcluster = fi->cluster = new_clus;
+	}
 
 	remain = len;
 	*successcount = 0;
@@ -1434,6 +1441,10 @@ uint32_t fat_write_file(struct fat_file_info *fi, uint8_t *p_scratch,
 	/* Update directory entry */
 	if (fat_read_sector(fsi, p_scratch, fi->dirsector)) {
 		return DFS_ERRMISC;
+	}
+
+	if (new_clus != 0) {
+		fat_direntry_set_clus(&((struct fat_dirent*) p_scratch)[fi->diroffset], new_clus);
 	}
 
 	fat_direntry_set_size(&((struct fat_dirent*) p_scratch)[fi->diroffset], *size);
