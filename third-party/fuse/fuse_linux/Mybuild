@@ -6,5 +6,5 @@ static module fuse_linux {
 
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/fuse/core/install/include")
 
-	depends embox.compat.posix.fs.statvfs
+	depends embox.compat.posix.fs.statvfs_dvfs
 }
