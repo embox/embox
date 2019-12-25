@@ -14,6 +14,7 @@
 #include <fs/file_system.h>
 #include <util/dlist.h>
 #include <fs/file_operation.h>
+#include <fs/inode_operation.h>
 #include <fs/inode.h>
 #include <sys/stat.h>
 
@@ -37,12 +38,12 @@
 #define DVFS_DISCONNECTED  0x10000000
 
 struct dentry;
-struct dir_ctx;
 struct dumb_fs_driver;
 struct file_desc;
 struct inode;
 struct super_block;
 struct lookup;
+struct inode_operations;
 
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
@@ -65,20 +66,6 @@ struct super_block_operations {
 	int           (*write_inode)(struct inode *inode);
 	int           (*umount_begin)(struct super_block *sb);
 	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
-};
-
-struct inode_operations {
-	int           (*create)(struct inode *i_new, struct inode *i_dir, int mode);
-	struct inode *(*lookup)(char const *name, struct dentry const *dir);
-	int           (*remove)(struct inode *inode);
-	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
-	int           (*rmdir)(struct dentry *dir);
-	int           (*truncate)(struct inode *inode, size_t len);
-	int           (*pathname)(struct inode *inode, char *buf, int flags);
-	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
-	int           (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
-	int           (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
-	int           (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
 };
 
 struct dentry {
