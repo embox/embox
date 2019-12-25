@@ -36,6 +36,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	struct inode *node;
 	mode_t mode;
 	int ret;
+	struct dirinfo *new_di;
 	struct fat_fs_info *fsi = parent_nas->fs->fsi;
 
 	fat_reset_dir(parent_di);
@@ -55,7 +56,6 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 		}
 
 		if (de.attr & ATTR_DIRECTORY) {
-			struct dirinfo *new_di;
 			mode = S_IFDIR;
 
 			if (NULL == (new_di = fat_dirinfo_alloc())) {
@@ -73,7 +73,11 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 		}
 
 		if (NULL == (node = vfs_subtree_create_child(parent_nas->node, name, mode))) {
-			fat_file_free(fi);
+			if (de.attr & ATTR_DIRECTORY) {
+				fat_dirinfo_free(new_di);
+			} else {
+				fat_file_free(fi);
+			}
 			return -ENOMEM;
 		}
 
