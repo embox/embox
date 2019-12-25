@@ -17,5 +17,5 @@ package embox.cmd.fs
 	''')
 module df {
 	source "df.c"
-	depends embox.compat.posix.fs.statvfs
+	depends embox.compat.posix.fs.statvfs_dvfs
 }
