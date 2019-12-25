@@ -269,6 +269,9 @@ extern int chown(const char *path, uid_t owner, gid_t group);
 static inline void sync(void) {
 }
 
+
+extern unsigned alarm(unsigned seconds);
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_UNISTD_H_ */
