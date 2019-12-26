@@ -17,7 +17,7 @@ void ipl_init(void) {
 ipl_t ipl_save(void) {
 	ipl_t csr;
 	csr = read_csr(mstatus);
-	write_csr(mstatus, csr & ~(MSTATUS_MIE) );
+	write_csr(mstatus, csr & ~(MSTATUS_MIE));
 	return csr;
 }
 

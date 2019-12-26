@@ -2,7 +2,7 @@ package embox.arch.riscv.kernel
 
 module boot extends embox.arch.boot {
 	source "boot.S"
-	source "trap.c"
+/*	source "trap.c"*/
 }
 
 module arch extends embox.arch.arch {
@@ -10,9 +10,15 @@ module arch extends embox.arch.arch {
 }
 
 module locore extends embox.arch.locore {
-	depends interrupt
+	depends entry,
+		interrupt
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "ipl_impl.c", "ipl_impl.h"
+	source "interrupt.c", "ipl_impl.c", "ipl_impl.h"
+	depends embox.kernel.irq
+}
+
+module entry extends embox.arch.entry {
+	source "entry.S"
 }

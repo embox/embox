@@ -16,7 +16,6 @@ EMBOX_TEST_SUITE("stdlib/setjmp test");
 
 TEST_CASE("Save context with 'setjmp' function than restore with 'longjmp' call") {
 	jmp_buf jb;
-
 	switch (setjmp(jb)) {
 	case 0:
 		longjmp(jb, TEST_JUMP_VALUE);
