@@ -15,6 +15,9 @@
 #include <time.h>
 __BEGIN_DECLS
 
+/* TODO this is a embox vfs specific */
+#define VFS_DIR_VIRTUAL   0x01000000
+
 #define S_IFMT   0170000   /* File type mask */
 #define S_IFPKT  0160000   /* Packet device */
 #define S_IFSOCK 0140000   /* Socket */

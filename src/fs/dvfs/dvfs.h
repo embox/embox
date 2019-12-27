@@ -15,6 +15,7 @@
 #include <util/dlist.h>
 #include <fs/file_operation.h>
 #include <fs/inode.h>
+#include <sys/stat.h>
 
 /*****************
  New VFS prototype
@@ -30,7 +31,6 @@
 #define DVFS_PATH_FS       0x002
 #define DVFS_NAME          0x004
 
-#define DVFS_DIR_VIRTUAL   0x01000000
 #define DVFS_CHILD_VIRTUAL 0x02000000
 #define DVFS_MOUNT_POINT   0x04000000
 #define DVFS_NO_LSEEK      0x08000000

@@ -345,7 +345,7 @@ int dvfs_update_root(void) {
 		.d_inode     = inode,
 		.parent      = global_root,
 		.name        = "/",
-		.flags       = S_IFDIR | DVFS_DIR_VIRTUAL | DVFS_MOUNT_POINT,
+		.flags       = S_IFDIR | VFS_DIR_VIRTUAL | DVFS_MOUNT_POINT,
 		.usage_count = 1,
 		.d_lnk       = global_root->d_lnk
 	};

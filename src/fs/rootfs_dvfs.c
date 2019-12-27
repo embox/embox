@@ -74,7 +74,7 @@ static int rootfs_mount(void) {
 		if (lu.item == NULL) {
 			tmp = strrchr(auto_mnt->mount_path, '/');
 			dvfs_create_new(tmp ? tmp + 1: auto_mnt->mount_path,
-					&lu, DVFS_DIR_VIRTUAL | S_IFDIR);
+					&lu, VFS_DIR_VIRTUAL | S_IFDIR);
 		}
 		dvfs_mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0);
 	}

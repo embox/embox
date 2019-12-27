@@ -53,16 +53,20 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 
 	/* check drv of parents */
 	drv = parent->node->nas->fs->drv;
-	if (!drv || !drv->fsop->create_node) {
-		retval = -ENOSYS;
-		goto out;
-	}
 
-	retval = drv->fsop->create_node(parent->node, node.node);
-	if (retval) {
-		goto out;
-	}
+	if ((mode & VFS_DIR_VIRTUAL) && S_ISDIR(mode)) {
+		node.node->nas->fs = parent->node->nas->fs;
+	} else {
+		if (!drv || !drv->fsop->create_node) {
+			retval = -ENOSYS;
+			goto out;
+		}
 
+		retval = drv->fsop->create_node(parent->node, node.node);
+		if (retval) {
+			goto out;
+		}
+	}
 	/* XXX it's here and not in vfs since vfs node associated with drive after
  	 * creating. security may call driver dependent features, like setting
 	 * xattr

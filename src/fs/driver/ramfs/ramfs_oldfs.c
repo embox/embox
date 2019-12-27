@@ -170,8 +170,6 @@ static int ramfs_mount(void *dev, void *dir) {
 	return 0;
 }
 
-static int ramfs_init(void * par);
-
 static struct fsop_desc ramfs_fsop = {
 	.format = ramfs_format,
 	.mount = ramfs_mount,
@@ -188,49 +186,3 @@ static struct fs_driver ramfs_driver = {
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);
-
-/****************/
-EMBOX_UNIT_INIT(ramfs_ramdisk_fs_init); /*TODO*/
-
-#define RAMFS_DEV  "/dev/ram#"
-#define RAMFS_DIR  "/"
-static char ramfs_dev[] = RAMFS_DEV;
-
-static int ramfs_init(void * par) {
-	struct path dir_node;
-	struct inode *dev_node;
-	int res;
-	struct ramdisk *ramdisk;
-
-	if (!par) {
-		return 0;
-	}
-
-	/*TODO */
-
-	vfs_lookup(RAMFS_DIR, &dir_node);
-
-	if (dir_node.node == NULL) {
-		return -ENOENT;
-	}
-
-	if (err(ramdisk = ramdisk_create(ramfs_dev, FILESYSTEM_SIZE))) {
-		return err(ramdisk);
-	}
-
-	dev_node = ramdisk->bdev->dev_vfs_info;
-	assert(dev_node != NULL);
-
-	/* format filesystem */
-	res = ramfs_format(ramdisk->bdev, NULL);
-	if (res != 0) {
-		return res;
-	}
-
-	/* mount filesystem */
-	return ramfs_mount(dev_node, dir_node.node);
-}
-
-static int ramfs_ramdisk_fs_init(void) {
-	return ramfs_init(ramfs_dev);
-}
