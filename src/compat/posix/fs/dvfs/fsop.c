@@ -47,7 +47,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	}
 
 	res = dvfs_create_new(pathname + strlen(parent), &lu,
-			       S_IFDIR | (mode & DVFS_DIR_VIRTUAL));
+			       S_IFDIR | (mode & VFS_DIR_VIRTUAL));
 	if (res) {
 		return SET_ERRNO(-res);
 	}

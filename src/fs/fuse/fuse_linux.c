@@ -47,7 +47,7 @@ static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 	assert(lookup.item);
 	assert(lookup.item->flags & S_IFDIR);
 
-	if (!(lookup.item->flags & DVFS_DIR_VIRTUAL)) {
+	if (!(lookup.item->flags & VFS_DIR_VIRTUAL)) {
 		/* Hide dentry of the directory */
 		dlist_del(&lookup.item->children_lnk);
 		dvfs_cache_del(lookup.item);

@@ -92,7 +92,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	lookup->item->flags |= flags;
 	new_inode->i_mode |= flags;
-	if (flags & DVFS_DIR_VIRTUAL) {
+	if (flags & VFS_DIR_VIRTUAL) {
 		res = 0;
 		lookup->item->d_sb = NULL;
 		dentry_ref_inc(lookup->item);
@@ -442,7 +442,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 		d = dvfs_alloc_dentry();
 
-		d->flags |= DVFS_DIR_VIRTUAL;
+		d->flags |= VFS_DIR_VIRTUAL;
 		dentry_fill(sb, NULL, d, lookup.parent);
 		strcpy(d->name, lookup.item->name);
 
@@ -554,7 +554,7 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 	{
 		next_dentry = mcast_out(l, struct dentry, children_lnk);
 
-		if (next_dentry->flags & DVFS_DIR_VIRTUAL) {
+		if (next_dentry->flags & VFS_DIR_VIRTUAL) {
 			if (i++ == (ctx->flags & ~DVFS_CHILD_VIRTUAL)) {
 				ctx->flags++;
 				dentry_ref_inc(next_dentry);
@@ -624,7 +624,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	assert(lookup);
 	assert(lookup->parent);
 
-	if (lookup->parent->flags & DVFS_DIR_VIRTUAL &&
+	if (lookup->parent->flags & VFS_DIR_VIRTUAL &&
 			!lookup->parent->d_sb) {
 		/* Clean virtual dir, no files */
 		lookup->item = NULL;

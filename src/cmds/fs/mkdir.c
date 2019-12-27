@@ -12,8 +12,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
-
-#define DVFS_DIR_VIRTUAL   0x01000000
+#include <sys/stat.h>
 
 static void print_usage(void) {
 	printf("Usage: mkdir [-v] [-m MODE] DIR ...\n");
@@ -41,7 +40,7 @@ int main(int argc, char **argv) {
 			mode_set = 1;
 			break;
 		case 'v':
-			mode |= DVFS_DIR_VIRTUAL;
+			mode |= VFS_DIR_VIRTUAL;
 			break;
 		default:
 			return 0;
