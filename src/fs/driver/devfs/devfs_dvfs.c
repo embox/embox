@@ -29,9 +29,6 @@
 #include <util/array.h>
 
 #include <module/embox/driver/block_dev.h>
-#include <module/embox/driver/char_dev_dvfs.h>
-
-#define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev_dvfs, NUMBER, dev_quantity)
 
 /**
  * @brief Do nothing

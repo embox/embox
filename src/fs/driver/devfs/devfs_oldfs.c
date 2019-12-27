@@ -101,3 +101,31 @@ int devfs_del_block(struct block_dev *bdev) {
 
 	return 0;
 }
+
+int devfs_add_char(struct dev_module *cdev) {
+	struct path node;
+	struct nas *dev_nas;
+
+	if (vfs_lookup("/dev", &node)) {
+		return -ENOENT;
+	}
+
+	if (node.node == NULL) {
+		return -ENODEV;
+	}
+
+	vfs_create_child(&node, cdev->name, S_IFCHR | S_IRALL | S_IWALL, &node);
+	if (!(node.node)) {
+		return -1;
+	}
+
+	dev_nas = node.node->nas;
+	dev_nas->fs = filesystem_create("devfs");
+	if (dev_nas->fs == NULL) {
+		return -ENOMEM;
+	}
+
+	node.node->nas->fi->privdata = (void *)cdev;
+
+	return 0;
+}
