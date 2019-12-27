@@ -132,5 +132,31 @@ int spi_select(struct spi_device *dev, int cs) {
 	return dev->spi_ops->select(dev, cs);
 }
 
+/**
+ * @brief Set device to master or slave mode
+ */
+static int spi_set_mode(struct spi_device *dev, bool is_master) {
+	assert(dev);
+	assert(dev->spi_ops);
+
+	if (dev->spi_ops->set_mode == NULL) {
+		log_debug("SPI mode setting is not supported for SPI%d",
+				spi_dev_id(dev));
+		return -ENOSUPP;
+	}
+
+	dev->is_master = is_master;
+
+	return dev->spi_ops->set_mode(dev, is_master);
+}
+
+int spi_set_master_mode(struct spi_device *dev) {
+	return spi_set_mode(dev, true);
+}
+
+int spi_set_slave_mode(struct spi_device *dev) {
+	return spi_set_mode(dev, false);
+}
+
 /* Stub */
 const struct idesc_ops spi_iops __attribute__ ((weak));

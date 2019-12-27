@@ -9,23 +9,35 @@
 #ifndef DRIVERS_SPI_H_
 #define DRIVERS_SPI_H_
 
+#include <stdbool.h>
+
 #include <drivers/char_dev.h>
 #include <util/array.h>
 #include <util/macro.h>
 
 struct spi_ops;
 
+/* Host modes */
+enum spi_mode_t {
+	/* It could be just SPI_MODE_MASTER, but
+	 * it conflicts with STM32 macros */
+	SPI_MODE_T_MASTER,
+	SPI_MODE_T_SLAVE,
+};
+
 struct spi_device {
 	int    cs;
 	int    flags;
 	struct dev_module *dev;
 	struct spi_ops *spi_ops;
+	bool is_master;
 	void  *priv;
 };
 
 struct spi_ops {
 	int (*init)(struct spi_device *dev);
 	int (*select)(struct spi_device *dev, int cs);
+	int (*set_mode)(struct spi_device *dev, bool is_master);
 	int (*transfer)(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
 };
 
@@ -33,6 +45,8 @@ extern struct spi_device *spi_dev_by_id(int id);
 extern int spi_dev_id(struct spi_device *dev);
 extern int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
 extern int spi_select(struct spi_device *dev, int cs);
+extern int spi_set_master_mode(struct spi_device *dev);
+extern int spi_set_slave_mode(struct spi_device *dev);
 
 extern const struct idesc_ops spi_iops;
 
