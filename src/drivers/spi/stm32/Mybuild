@@ -1,0 +1,29 @@
+package embox.driver.spi
+
+abstract module stm32 {}
+
+@BuildDepends(third_party.bsp.stmf4cube.core)
+module stm32_f4_cube extends stm32 {
+	option number log_level=1
+
+	@IncludeExport(path="drivers/spi", target_name="stm32_spi_conf.h")
+	source "spi_conf_f4.h"
+
+	source "stm32.c"
+
+	depends embox.driver.spi.core
+	depends embox.driver.gpio.api
+	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+}
+
+@BuildDepends(stm32)
+module stm32_spi1 {
+	option number log_level=1
+	source "stm32_spi1.c"
+}
+
+@BuildDepends(stm32)
+module stm32_spi2 {
+	option number log_level=1
+	source "stm32_spi2.c"
+}
