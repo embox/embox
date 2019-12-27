@@ -1,0 +1,13 @@
+package embox.driver
+
+module char_dev_old extends char_dev {
+	option number log_level=0
+
+	source "char_dev_oldfs.c"
+
+	depends embox.driver.common
+	depends embox.fs.core
+	depends embox.fs.driver.devfs
+
+	depends char_dev_impl
+}

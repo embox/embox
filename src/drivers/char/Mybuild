@@ -10,20 +10,19 @@ module terminal {
 
 @DefaultImpl(char_dev_old)
 abstract module char_dev {
+
 }
 
-module char_dev_old extends char_dev {
-	option number cdev_idesc_quantity=32
+module char_dev_impl {
 	option number log_level=0
 
-	@IncludeExport(path="drivers")
+	option number dev_quantity=32
+	option number cdev_idesc_quantity=32
+
+	@IncludeExport(path="drivers",target_name="char_dev.h")
 	source "char_dev.h"
 
 	source "char_dev.c"
-
-	depends embox.driver.common
-	depends embox.fs.core
-	depends embox.fs.driver.devfs
 }
 
 module char_dev_stub extends char_dev {
@@ -34,4 +33,3 @@ module char_dev_stub extends char_dev {
 
 	depends terminal
 }
-

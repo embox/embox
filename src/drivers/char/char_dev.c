@@ -1,34 +1,68 @@
-/*
+/**
  * @file
- *
- * @date 28.11.12
- * @author Anton Bondarev
- * @author Ilia Vaprol
+ * @brief Handle char devices
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
+ * @version 0.1
+ * @date 2015-10-05
  */
+#include <util/log.h>
+
 #include <errno.h>
-#include <stdlib.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 
-#include <drivers/char_dev.h>
-#include <fs/file_desc.h>
-#include <fs/inode.h>
-#include <fs/vfs.h>
-#include <fs/file_operation.h>
-
 #include <util/array.h>
-#include <util/err.h>
-#include <util/log.h>
+#include <util/indexator.h>
+
 #include <mem/misc/pool.h>
+#include <drivers/char_dev.h>
+
+#include <framework/mod/options.h>
 
 #define IDEV_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)
 POOL_DEF(idev_pool, struct idesc, IDEV_POOL_SIZE);
 
-ARRAY_SPREAD_DEF(const struct dev_module, __device_registry);
+static struct dev_module *devtab[MAX_CDEV_QUANTITY];
+INDEX_DEF(char_dev_idx, 0, MAX_CDEV_QUANTITY);
+
+struct dev_module **get_cdev_tab(void) {
+	return &devtab[0];
+}
+extern int devfs_add_char(struct dev_module *cdev);
+int char_dev_register(struct dev_module *cdev) {
+	int cdev_id;
+
+	assert(cdev);
+
+	/* This index is not supposed to be freed */
+	cdev_id = index_alloc(&char_dev_idx, INDEX_MIN);
+	if (cdev_id == INDEX_NONE) {
+		log_error("Failed to register char dev %s", cdev->name ? cdev->name : "");
+		return -ENOMEM;
+	}
+
+	devtab[cdev_id] = cdev;
+	cdev->dev_id = cdev_id;
+
+	devfs_add_char(cdev);
+
+	return 0;
+}
+
+struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv) {
+	return char_dev_idesc_create(cdev);
+}
+
+void char_dev_default_close(struct idesc *idesc) {
+	pool_free(&idev_pool, idesc);
+}
+
+ARRAY_SPREAD_DEF(const struct dev_module, __char_device_registry);
 
 int char_dev_init_all(void) {
-	const struct dev_module *cdev;
+	struct dev_module *cdev;
 
-	array_spread_foreach_ptr(cdev, __device_registry) {
+	array_spread_foreach_ptr(cdev, __char_device_registry) {
 		char_dev_register(cdev);
 	}
 
@@ -73,55 +107,4 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 	idev->dev = cdev;
 
 	return &idev->idesc;
-}
-
-struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv) {
-	return char_dev_idesc_create(cdev);
-}
-
-void char_dev_default_close(struct idesc *idesc) {
-	pool_free(&idev_pool, idesc);
-}
-
-struct idesc *char_dev_open(struct inode *node, int flags) {
-	struct dev_module *cdev = node->nas->fi->privdata;
-
-	if (!cdev) {
-		log_error("Can't open char device");
-		return NULL;
-	}
-
-	if (cdev->dev_open != NULL) {
-		return cdev->dev_open(cdev, cdev->dev_priv);
-	}
-
-	return char_dev_idesc_create(cdev);
-}
-
-int char_dev_register(const struct dev_module *cdev) {
-	struct path node;
-	struct nas *dev_nas;
-
-	if (vfs_lookup("/dev", &node)) {
-		return -ENOENT;
-	}
-
-	if (node.node == NULL) {
-		return -ENODEV;
-	}
-
-	vfs_create_child(&node, cdev->name, S_IFCHR | S_IRALL | S_IWALL, &node);
-	if (!(node.node)) {
-		return -1;
-	}
-
-	dev_nas = node.node->nas;
-	dev_nas->fs = filesystem_create("devfs");
-	if (dev_nas->fs == NULL) {
-		return -ENOMEM;
-	}
-
-	node.node->nas->fi->privdata = (void *)cdev;
-
-	return 0;
 }
