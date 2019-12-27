@@ -6,6 +6,7 @@
  * @date 20.12.2019
  */
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -40,11 +41,22 @@ static void list_spi_devices(void) {
 
 int main(int argc, char **argv) {
 	int spi_bus, spi_line;
-	int ret, opt;
+	int ret, opt, offt = 0;
+	bool set_mode = false, master_mode = false;
 	struct spi_device *dev;
 
-	while (-1 != (opt = getopt(argc, argv, "l"))) {
+	while (-1 != (opt = getopt(argc, argv, "lhsm"))) {
 		switch(opt) {
+		case 's':
+			set_mode = true;
+			master_mode = false;
+			offt++;
+			break;
+		case 'm':
+			set_mode = true;
+			master_mode = true;
+			offt++;
+			break;
 		case 'l':
 			list_spi_devices();
 			return 0;
@@ -54,13 +66,13 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (argc < 4) {
+	if (argc < 4 + offt) {
 		print_help(argv);
 		return 0;
 	}
 
-	spi_bus = strtol(argv[1], NULL, 0);
-	spi_line = strtol(argv[2], NULL, 0);
+	spi_bus = strtol(argv[1 + offt], NULL, 0);
+	spi_line = strtol(argv[2 + offt], NULL, 0);
 
 	dev = spi_dev_by_id(spi_bus);
 	if (dev == NULL) {
@@ -68,6 +80,22 @@ int main(int argc, char **argv) {
 		return -ENOENT;
 	}
 
+	if (set_mode) {
+		if (master_mode) {
+			if (spi_set_master_mode(dev)) {
+				printf("Failed to set SPI master mode\n");
+				return -1;
+			}
+		} else {
+			if (spi_set_slave_mode(dev)) {
+				printf("Failed to set SPI slave mode\n");
+				return -1;
+			}
+		}
+	}
+
+	dev->flags |= SPI_CS_ACTIVE;
+	dev->flags |= SPI_CS_INACTIVE;
 	ret = spi_select(dev, spi_line);
 	if (ret < 0) {
 		printf("Failed to select line #%d!\n", spi_line);
@@ -78,7 +106,7 @@ int main(int argc, char **argv) {
 	for (int i = 3; i < argc; i++) {
 		uint8_t buf_in, buf_out;
 
-		buf_out = strtol(argv[i], NULL, 0);
+		buf_out = strtol(argv[i + offt], NULL, 0);
 
 		spi_transfer(dev, &buf_out, &buf_in, 1);
 

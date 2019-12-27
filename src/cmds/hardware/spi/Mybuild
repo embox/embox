@@ -18,4 +18,5 @@ module spi {
 	source "spi.c"
 
 	depends embox.driver.spi.core
+	depends embox.util.pretty_print
 }
