@@ -16,6 +16,7 @@
 #include <fs/perm.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <fs/dcache.h>
 #include <mem/objalloc.h>
 #include <util/dlist.h>
@@ -61,16 +62,24 @@ DIR *opendir(const char *path) {
 
 	d->path = node_path;
 	d->current.d_ino = 0;
+	d->dir_context.fs_ctx = 0;
+
+	slist_init(&d->inodes_list);
 
 	return d;
 }
 
 int closedir(DIR *dir) {
+	struct inode *node;
+
 	if (NULL == dir) {
 		SET_ERRNO(EBADF);
 		return -1;
 	}
 
+	slist_foreach(node, &dir->inodes_list, dirent_link) {
+		inode_del(node);
+	}
 	objfree(&dir_pool, dir);
 
 	return 0;
@@ -78,6 +87,8 @@ int closedir(DIR *dir) {
 
 struct dirent *readdir(DIR *dir) {
 	struct path child;
+	int res;
+	struct inode *node;
 
 	SET_ERRNO(0);
 
@@ -85,15 +96,33 @@ struct dirent *readdir(DIR *dir) {
 		SET_ERRNO(EBADF);
 		return NULL;
 	}
-
-	if ( 0 != vfs_get_child_next(&dir->path,
-			(struct inode *) (uintptr_t) dir->current.d_ino, &child)) {
-		return NULL;
+	res = vfs_get_child_next(&dir->path,(struct inode *) (uintptr_t) dir->current.d_ino, &child);
+	if (0 != res) {
+		if (dir->path.node->i_ops && dir->path.node->i_ops->iterate) {
+			node = inode_new(NULL);
+			if (NULL == node) {
+				SET_ERRNO(ENOMEM);
+				return NULL;
+			}
+			res = dir->path.node->i_ops->iterate(node, dir->path.node, &dir->dir_context);
+			if (res == -1){
+				node_free(node);
+				return NULL;
+			}
+			vfs_add_leaf(node, dir->path.node);
+		} else {
+			return NULL;
+		}
+	} else {
+		node = child.node;
 	}
 
-	strncpy(dir->current.d_name, child.node->name, DIRENT_DNAME_LEN);
+	strncpy(dir->current.d_name, node->name, DIRENT_DNAME_LEN);
+	dir->current.d_ino = (ino_t) (uintptr_t) node;
 
-	dir->current.d_ino = (ino_t) (uintptr_t) child.node;
+	node->i_nlink ++;
+
+	slist_add_first_link(&node->dirent_link, &dir->inodes_list);
 
 	return &dir->current;
 }

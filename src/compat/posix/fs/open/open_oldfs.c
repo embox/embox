@@ -131,6 +131,8 @@ int open(const char *path, int __oflag, ...) {
 		goto out;
 	}
 
+	node_path.node->i_nlink++;
+
 	it = task_resource_idesc_table(task_self());
 	rc = idesc_table_add(it, kfile, 0);
 
