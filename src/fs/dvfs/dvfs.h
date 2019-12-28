@@ -15,6 +15,7 @@
 #include <util/dlist.h>
 #include <fs/file_operation.h>
 #include <fs/inode_operation.h>
+#include <fs/dir_context.h>
 #include <fs/inode.h>
 #include <sys/stat.h>
 
@@ -44,6 +45,7 @@ struct inode;
 struct super_block;
 struct lookup;
 struct inode_operations;
+struct dir_ctx;
 
 struct super_block {
 	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
@@ -113,11 +115,6 @@ struct dvfsmnt {
 	struct dlist_head children_lnk;
 
 	int flags;
-};
-
-struct dir_ctx {
-	int   flags;
-	void *fs_ctx;
 };
 
 extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
