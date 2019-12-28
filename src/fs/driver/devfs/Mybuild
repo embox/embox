@@ -16,11 +16,9 @@ module devfs_old extends devfs {
 
 module devfs_dvfs extends devfs {
 	source "devfs_dvfs.c"
-	source "devfs_stub.c"
 
 	depends embox.driver.char_dev_dvfs
 }
 
 module devfs_stub extends devfs {
-	source "devfs_stub.c"
 }

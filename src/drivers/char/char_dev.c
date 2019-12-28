@@ -28,7 +28,7 @@ INDEX_DEF(char_dev_idx, 0, MAX_CDEV_QUANTITY);
 struct dev_module **get_cdev_tab(void) {
 	return &devtab[0];
 }
-extern int devfs_add_char(struct dev_module *cdev);
+
 int char_dev_register(struct dev_module *cdev) {
 	int cdev_id;
 
@@ -43,8 +43,6 @@ int char_dev_register(struct dev_module *cdev) {
 
 	devtab[cdev_id] = cdev;
 	cdev->dev_id = cdev_id;
-
-	devfs_add_char(cdev);
 
 	return 0;
 }
