@@ -8,6 +8,8 @@ module nfs {
 
 	source "nfs.c"
 	source "xdr_nfs.c"
+
+	option number log_level=1
 	option number inode_quantity=264
 	option number nfs_descriptor_quantity=4
 
