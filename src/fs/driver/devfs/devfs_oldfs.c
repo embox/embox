@@ -137,7 +137,7 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 
 	inode->nas->fi->privdata = devmod;
 	inode->nas->fs = devfs_file_system;
-	inode->mode = flags;
+	inode->i_mode = flags;
 }
 
 extern struct dev_module **get_cdev_tab();

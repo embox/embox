@@ -44,7 +44,7 @@ struct inode {
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
 
-	mode_t                mode;/* discrete access mode Read-Write-Execution */
+	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
 	uid_t                 uid;/* owner user ID */
 	gid_t                 gid;/* owner group ID */
 
@@ -90,7 +90,7 @@ extern struct inode *node_alloc(const char *name, size_t name_len);
 extern void node_free(struct inode *node);
 
 static inline int node_is_directory(struct inode *node) {
-	return S_ISDIR(node->mode);
+	return S_ISDIR(node->i_mode);
 }
 
 #endif /* FS_NODE_H_ */

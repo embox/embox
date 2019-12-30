@@ -538,7 +538,7 @@ int krename(const char *oldpath, const char *newpath) {
 
 	/* If oldpath is directory, copy it recursively */
 	if (node_is_directory(oldnode.node)) {
-		rc = kmkdir(newpath, oldnode.node->mode);
+		rc = kmkdir(newpath, oldnode.node->i_mode);
 		if (-1 == rc) {
 			return -1;
 		}

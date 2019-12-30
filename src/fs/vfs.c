@@ -330,7 +330,7 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 
 	child = node_alloc(name, len);
 	if (child) {
-		child->mode = mode;
+		child->i_mode = mode;
 		child->uid = getuid();
 		child->gid = getgid();
 
@@ -435,7 +435,7 @@ struct inode *vfs_create_root(void) {
 
 	root_node = node_alloc("/", 0);
 	assert(root_node);
-	root_node->mode = S_IFDIR | ROOT_MODE;
+	root_node->i_mode = S_IFDIR | ROOT_MODE;
 
 	return root_node;
 }

@@ -1133,7 +1133,7 @@ struct _inode *jffs2_new_inode (struct _inode *dir_i,
 	struct jffs2_inode_info *f;
 	int ret;
 
-	D1(printk( "jffs2_new_inode(): dir_i %d, mode 0x%x\n", dir_i->i_ino, mode));
+	D1(printk( "jffs2_new_inode(): dir_i %d, mode 0x%x\n", dir_i->i_ino, i_mode));
 
 	c = &sb->jffs2_sb;
 
@@ -1573,9 +1573,9 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *node) {
 	parents_fi = parent_node->nas->fi->privdata;
 
 	if (node_is_directory(node)) {
-		node->mode |= S_IRUGO|S_IXUGO|S_IWUSR;
+		node->i_mode |= S_IRUGO|S_IXUGO|S_IWUSR;
 		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
-				(const char *) &node->name, node->mode))) {
+				(const char *) &node->name, node->i_mode))) {
 			return -rc;
 		}
 		/* file info for new dir will be allocate into */
@@ -1589,7 +1589,7 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *node) {
 			}
 		if (0 != (rc = jffs2_create(parents_fi->_inode,
 				(const unsigned char *) &node->name,
-								node->mode, &fi->_inode))) {
+								node->i_mode, &fi->_inode))) {
 			return -rc;
 		}
 	}

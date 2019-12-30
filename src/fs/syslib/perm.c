@@ -20,7 +20,7 @@
 #include <security/security.h>
 
 int fs_perm_mask(struct inode *node) {
-	int perm = node->mode & S_IRWXA;
+	int perm = node->i_mode & S_IRWXA;
 	uid_t uid = getuid();
 
 	if (uid == 0) {

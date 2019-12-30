@@ -386,7 +386,7 @@ static int embox_cifs_node_create(struct inode *parent_node, struct inode *new_n
 #endif
 	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
-	mode = new_node->mode & S_IRWXA;
+	mode = new_node->i_mode & S_IRWXA;
 	if (node_is_directory(new_node)) {
 		mode |= S_IFDIR;
 		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
