@@ -469,6 +469,35 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 		mode = fi->attr.mode;
 		// TODO what is mode is not known (!VALUE_FOLLOWS_YES)?
 
+		/**
+		 *	enum ftype3 {
+		 *		NF3REG    = 1,
+		 *		NF3DIR    = 2,
+		 *		NF3BLK    = 3,
+		 *		NF3CHR    = 4,
+		 *		NF3LNK    = 5,
+		 *		NF3SOCK   = 6,
+		 *		NF3FIFO   = 7
+		 *	};
+		 */
+		switch (predesc->file_attr.type) {
+			case 1:
+				/* regular file */
+				mode |= S_IFREG;
+				break;
+			case 2:
+				/* directory */
+				mode |= S_IFDIR;
+				break;
+			default:
+				/* unknown file type. Skip it. */
+				log_error("Unsupported file type=0x%x (name=%s). Skip it...\n",
+					predesc->file_attr.type,
+					predesc->file_name.name.data);
+				pool_free(&nfs_file_pool, fi);
+				return NULL;
+		}
+
 		node = vfs_subtree_create_child(parent_nas->node, name, mode);
 		if (!node) {
 			pool_free(&nfs_file_pool, fi);
@@ -543,31 +572,12 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
-			switch (predesc->file_attr.type) {
-				case 1:
-					/* regular file */
-					predesc->file_attr.mode |= S_IFREG;
-					break;
-				case 2:
-				case 3:
-					/* directory */
-					predesc->file_attr.mode |= S_IFDIR;
-					break;
-				default:
-					/* unknown file type */
-					log_error("Unknown file type");
-					sysfree(rcv_buf);
-					return -1;
-			}
-
 			if(0 == path_is_dotname(predesc->file_name.name.data,
 									predesc->file_name.name.len)) {
-				if (NULL == (node = nfs_create_file(parent_nas, predesc))) {
-					sysfree(rcv_buf);
-					return -1;
-				}
-
-				if (node_is_directory(node)) {
+				node = nfs_create_file(parent_nas, predesc);
+				if (!node) {
+					log_error("nfs_create_file failed\n");
+				} else if (node_is_directory(node)) {
 					nfs_create_dir_entry(node);
 				}
 			}
