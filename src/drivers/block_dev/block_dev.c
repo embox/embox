@@ -22,7 +22,6 @@
 #include <util/math.h>
 
 extern struct idesc_ops idesc_bdev_ops;
-extern int devfs_add_block(struct block_dev *dev);
 extern int devfs_del_block(struct block_dev *dev);
 
 #define DEFAULT_BDEV_BLOCK_SIZE OPTION_GET(NUMBER, default_block_size)
@@ -424,8 +423,6 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_driv
 	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
 	bdev->dev_module = devmod;
 
-	devfs_add_block(bdev);
-
 	return bdev;
 }
 
@@ -437,8 +434,6 @@ int block_dev_destroy(void *dev) {
 			block_dev_destroy(devtab[i]->dev_module);
 		}
 	}
-
-	devfs_del_block(devmod->dev_priv);
 
 	block_dev_free(devmod->dev_priv);
 

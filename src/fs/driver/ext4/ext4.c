@@ -1305,7 +1305,7 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 	dir_fi = dir_nas->fi->privdata;
 	fsi = dir_nas->fs->fsi;
 
-	dir_nas->node->mode = dir_fi->f_di.i_mode;
+	dir_nas->node->i_mode = dir_fi->f_di.i_mode;
 	dir_nas->node->uid = dir_fi->f_di.i_uid;
 	dir_nas->node->gid = dir_fi->f_di.i_gid;
 
@@ -1363,8 +1363,8 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 				/* read inode into fi->f_di*/
 				if (0 == ext4_open(node->nas)) {
 					/* Load permisiions and credentials. */
-					assert((node->mode & S_IFMT) == (fi->f_di.i_mode & S_IFMT));
-					node->mode = fi->f_di.i_mode;
+					assert((node->i_mode & S_IFMT) == (fi->f_di.i_mode & S_IFMT));
+					node->i_mode = fi->f_di.i_mode;
 					node->uid = fi->f_di.i_uid;
 					node->gid = fi->f_di.i_gid;
 				}
@@ -2034,7 +2034,7 @@ static int ext4_new_node(struct nas *nas,
 		}
 		fi->f_di.i_links_count++; /* directory have 2 links */
 	}
-	fi->f_di.i_mode = nas->node->mode;
+	fi->f_di.i_mode = nas->node->i_mode;
 	fi->f_di.i_links_count++;
 
 	memcpy(&fdi, &fi->f_di, sizeof(struct ext4_inode));
@@ -2042,7 +2042,7 @@ static int ext4_new_node(struct nas *nas,
 
 	/* New inode acquired.  Try to make directory entry. */
 	if (0 != (rc = ext4_dir_operation(parents_nas, (char *) nas->node->name,
-			&fi->f_num, ENTER, nas->node->mode))) {
+			&fi->f_num, ENTER, nas->node->i_mode))) {
 		return rc;
 	}
 	/* The caller has to return the directory ext4_file_info (*dir_fi).  */

@@ -243,7 +243,7 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 
 	di = (void *) parent_node->nas->fi->privdata;
 
-	if (S_ISDIR(node->mode)) {
+	if (S_ISDIR(node->i_mode)) {
 		struct dirinfo *new_di;
 		new_di = fat_dirinfo_alloc();
 		if (!new_di) {
@@ -265,10 +265,10 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 		.fsi     = fsi,
 		.volinfo = &fsi->vi,
 		.fdi     = di,
-		.mode    = node->mode,
+		.mode    = node->i_mode,
 	};
 
-	if (0 != fat_create_file(fi, di, node->name, node->mode)) {
+	if (0 != fat_create_file(fi, di, node->name, node->i_mode)) {
 		return -EIO;
 	}
 
@@ -286,7 +286,7 @@ static int fatfs_delete(struct inode *node) {
 		return -1;
 	}
 
-	if (S_ISDIR(node->mode)) {
+	if (S_ISDIR(node->i_mode)) {
 		fat_dirinfo_free((void *) fi);
 	} else {
 		fat_file_free(fi);

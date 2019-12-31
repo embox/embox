@@ -73,6 +73,8 @@ int file_desc_destroy(struct file_desc *fdesc) {
 	assert(fdesc);
 	assert(fdesc->idesc.idesc_ops == &idesc_file_ops);
 
+	inode_del(fdesc->node);
+
 	file_desc_free(fdesc);
 	return 0;
 }

@@ -62,8 +62,8 @@ static int setup_suite(void) {
         int res;
 
 	/*XXX*/
-	root_backup_mode = vfs_get_root()->mode;
-	vfs_get_root()->mode = S_IFDIR | 0777;
+	root_backup_mode = vfs_get_root()->i_mode;
+	vfs_get_root()->i_mode = S_IFDIR | 0777;
 
 	if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
 		return res;
@@ -74,7 +74,7 @@ static int setup_suite(void) {
 }
 
 static int teardown_suite(void) {
-	vfs_get_root()->mode = root_backup_mode;
+	vfs_get_root()->i_mode = root_backup_mode;
         return 0;
 }
 

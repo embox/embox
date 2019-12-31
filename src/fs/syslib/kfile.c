@@ -58,7 +58,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 			return NULL;
 		}
 
-		if (S_ISCHR(node->mode) || S_ISBLK(node->mode)) {
+		if (S_ISCHR(node->i_mode) || S_ISBLK(node->i_mode)) {
 			/* Now for opening we don't differ bdev & cdev it's just device */
 			return char_dev_open(node, flag);
 		}

@@ -9,14 +9,21 @@
 #ifndef FS_NODE_H_
 #define FS_NODE_H_
 
-#include <sys/stat.h>
-#include <fs/file_system.h>
-#include <util/tree.h>
-#include <limits.h>
-#include <kernel/thread/sync/mutex.h>
 #include <fcntl.h>
+#include <sys/stat.h>
+#include <limits.h>
+
+#include <util/slist.h>
+#include <util/tree.h>
+
+#include <kernel/thread/sync/mutex.h>
+
+#include <fs/file_system.h>
 
 struct nas;
+
+struct inode_operations;
+struct super_block;
 
 struct flock_shared {
 	struct thread *holder;
@@ -31,15 +38,19 @@ struct node_flock {
 };
 
 struct inode {
+	unsigned int i_nlink;
+	struct slist_link dirent_link;
+
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
 
-	mode_t                mode;/* discrete access mode Read-Write-Execution */
+	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
 	uid_t                 uid;/* owner user ID */
 	gid_t                 gid;/* owner group ID */
 
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
+	struct inode_operations *i_ops;
 
 	int                   mounted; /* is mount point*/
 
@@ -66,6 +77,9 @@ struct nas {
 	struct node_fi       *fi;
 };
 
+extern struct inode *inode_new(struct super_block *sb);
+extern void inode_del(struct inode *node);
+
 /**
  * @param name Non-empty string.
  * @param name_len (optional) how many bytes to take from name.
@@ -76,7 +90,7 @@ extern struct inode *node_alloc(const char *name, size_t name_len);
 extern void node_free(struct inode *node);
 
 static inline int node_is_directory(struct inode *node) {
-	return S_ISDIR(node->mode);
+	return S_ISDIR(node->i_mode);
 }
 
 #endif /* FS_NODE_H_ */

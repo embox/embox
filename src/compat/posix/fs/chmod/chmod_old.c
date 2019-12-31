@@ -21,7 +21,7 @@ int chmod(const char *path, mode_t mode) {
 		return res;
 	}
 	assert(p.node);
-	p.node->mode = mode;
+	p.node->i_mode = mode;
 
 	return 0;
 }

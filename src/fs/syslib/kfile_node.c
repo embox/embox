@@ -64,7 +64,7 @@ int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
 	ni = &nas->fi->ni;
 
 	stat_buff->st_size = ni->size;
-	stat_buff->st_mode = node->mode;
+	stat_buff->st_mode = node->i_mode;
 	stat_buff->st_uid = node->uid;
 	stat_buff->st_gid = node->gid;
 	stat_buff->st_ctime = ni->ctime;

@@ -8,12 +8,15 @@
  */
 
 #include <string.h>
-#include <embox/unit.h>
-
-#include <mem/misc/pool.h>
 #include <limits.h>
 #include <errno.h>
+
+#include <mem/misc/pool.h>
+
 #include <fs/inode.h>
+#include <fs/vfs.h>
+
+#include <framework/mod/options.h>
 
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
@@ -25,12 +28,6 @@ struct node_tuple {
 
 POOL_DEF(node_pool, struct node_tuple, MAX_NODE_QUANTITY);
 
-EMBOX_UNIT_INIT(node_init);
-
-static int node_init(void) {
-	return 0;
-}
-
 static inline int flock_init(struct inode *node) {
 	/* flock initialization */
 	mutex_init(&node->flock.exlock);
@@ -41,20 +38,10 @@ static inline int flock_init(struct inode *node) {
 	return ENOERR;
 }
 
-struct inode *node_alloc(const char *name, size_t name_len) {
+struct inode *inode_new(struct super_block *sb) {
 	struct node_tuple *nt;
-
 	struct inode *node;
 	struct nas *nas;
-
-	if (!name_len) {
-		name_len = strlen(name);
-	}
-
-	if (!*name || name_len > NAME_MAX) {
-		/* TODO behave more clever here? -- Eldar */
-		return NULL;
-	}
 
 	nt = pool_alloc(&node_pool);
 	if (!nt) {
@@ -73,12 +60,45 @@ struct inode *node_alloc(const char *name, size_t name_len) {
 
 	tree_link_init(&node->tree_link);
 
-	strncpy((char *) node->name, name, name_len);
-	node->name[name_len] = '\0';
-
 	node->mounted = 0;
 
 	flock_init(node);
+
+	node->i_nlink = 0;
+	slist_link_init(&node->dirent_link);
+
+	return node;
+}
+
+void inode_del(struct inode *node) {
+	node->i_nlink --;
+	if (0 == node->i_nlink) {
+		vfs_del_leaf(node);
+	}
+}
+
+struct inode *node_alloc(const char *name, size_t name_len) {
+	struct inode *node;
+
+	if (!name_len) {
+		name_len = strlen(name);
+	}
+
+	if (!*name || name_len > NAME_MAX) {
+		/* TODO behave more clever here? -- Eldar */
+		return NULL;
+	}
+
+	node = inode_new(NULL);
+	if (!node) {
+		return NULL;
+	}
+
+	strncpy((char *) node->name, name, name_len);
+	node->name[name_len] = '\0';
+
+	/* it's for permanent linked inode to file tree */
+	node->i_nlink ++;
 
 	return node;
 }
