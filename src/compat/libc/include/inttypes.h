@@ -189,7 +189,7 @@ __END_DECLS
 #define    PRIXFAST16  "X"
 
 
-#if defined(__riscv) || defined (__e2k__) || (defined(__mips__) && !defined(__gnu_linux__)) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
+#if (defined(__riscv) && !defined(__gnu_linux__)) || defined (__e2k__) || (defined(__mips__) && !defined(__gnu_linux__)) || defined(__sparc__) || defined(__microblaze__) || defined(__PPC__)
 #define    PRIo32      "lo"
 #define    PRIoLEAST32 "lo"
 #define    PRIoFAST32  "lo"
