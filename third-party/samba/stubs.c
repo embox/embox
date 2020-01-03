@@ -48,18 +48,6 @@ long telldir(DIR *dirp) {
 	return -1;
 }
 
-
-void setgrent(void) {
-}
-
-struct group *getgrent(void) {
-	errno = EPERM;
-	return 0;
-}
-
-void endgrent(void) {
-}
-
 int fnmatch(const char *pattern, const char *string, int flags) {
 	return -1;
 }

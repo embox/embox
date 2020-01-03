@@ -61,6 +61,7 @@
 //# include <sys/bitypes.h>
 //#else
 # include <sys/types.h>
+#include <stdint.h>
 //#endif
 #include <sys/cdefs.h>
 
@@ -113,7 +114,7 @@ typedef enum __ns_sect {
  */
 typedef struct __ns_msg {
 	const u_char	*_msg, *_eom;
-	u_int16_t	_id, _flags, _counts[ns_s_max];
+	uint16_t	_id, _flags, _counts[ns_s_max];
 	const u_char	*_sections[ns_s_max];
 	ns_sect		_sect;
 	int		_rrnum;
@@ -137,10 +138,10 @@ extern const struct _ns_flagdata _ns_flagdata[];
  */
 typedef	struct __ns_rr {
 	char		name[NS_MAXDNAME];
-	u_int16_t	type;
-	u_int16_t	rr_class;
-	u_int32_t	ttl;
-	u_int16_t	rdlength;
+	uint16_t	type;
+	uint16_t	rr_class;
+	uint32_t	ttl;
+	uint16_t	rdlength;
 	const u_char *	rdata;
 } ns_rr;
 
@@ -489,7 +490,7 @@ int		ns_sprintrrf (const u_char *, size_t, const char *,
 			      char *, size_t) __THROW;
 int		ns_format_ttl (u_long, char *, size_t) __THROW;
 int		ns_parse_ttl (const char *, u_long *) __THROW;
-u_int32_t	ns_datetosecs (const char *, int *) __THROW;
+uint32_t	ns_datetosecs (const char *, int *) __THROW;
 int		ns_name_ntol (const u_char *, u_char *, size_t) __THROW;
 int		ns_name_ntop (const u_char *, char *, size_t) __THROW;
 int		ns_name_pton (const char *, u_char *, size_t) __THROW;
