@@ -5,6 +5,8 @@ module ns16550 extends embox.driver.diag.diag_api {
 	option number irq_num = 0
 	option number baud_rate = 115200
 
+	option number reg_width = 4
+
 	source "ns16550.c"
 
 	depends embox.driver.periph_memory

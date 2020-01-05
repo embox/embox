@@ -17,6 +17,8 @@
 #include <drivers/serial/uart_device.h>
 #include <drivers/serial/diag_serial.h>
 
+#define REG_WIDTH    OPTION_GET(NUMBER,reg_width)
+
 #define COM0_IRQ_NUM OPTION_GET(NUMBER,irq_num)
 
 #define UART_LSR_DR     0x01            /* Data ready */
@@ -25,7 +27,7 @@
 
 #define UART_REG(x)                                                     \
         unsigned char x;                                                \
-        unsigned char postpad_##x[3];
+        unsigned char postpad_##x[REG_WIDTH - 1];
 
 struct com {
         UART_REG(rbr);          /* 0 */

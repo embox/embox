@@ -177,6 +177,9 @@ guess_machine() {
 		sparc)
 			echo "-M leon3_generic -cpu LEON3"
 			;;
+		riscv)
+			echo "-M virt"
+			;;
 		x86)
 			;;
 	esac
@@ -186,6 +189,7 @@ get_user_undef_guess AUTOQEMU_MACHINE guess_machine
 declare -A ARCH2QEMU
 ARCH2QEMU=(
 	[x86]="i386"
+	[riscv]="riscv32"
 )
 
 QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}

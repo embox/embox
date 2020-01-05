@@ -98,7 +98,7 @@ int periph_desc(struct periph_memory_desc **buff) {
 
 	return i;
 }
-#endif /* NOMMU */
+
 
 void *periph_memory_alloc(size_t len) {
 	void *mem = sysmemalign(MMU_PAGE_SIZE, len);
@@ -113,6 +113,16 @@ void *periph_memory_alloc(size_t len) {
 
 	return mem;
 }
+#else
+void *periph_memory_alloc(size_t len) {
+	void *mem = sysmemalign(sizeof(void *), len);
+	if (!mem) {
+		return NULL;
+	}
+
+	return mem;
+}
+#endif /* NOMMU */
 
 void periph_memory_free(void *ptr) {
 	sysfree(ptr);
