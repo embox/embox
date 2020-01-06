@@ -12,6 +12,8 @@
 #define NOMMU
 #define MMU_LEVELS         0
 
+#ifndef __ASSEMBLER__
 typedef int mmu_ctx_t;
+#endif /* __ASSEMBLER__ */
 
 #endif /* ARCH_NOMMU_H_ */
