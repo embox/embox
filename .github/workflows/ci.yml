@@ -5,7 +5,9 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    
+    strategy:
+      matrix:
+        template: [ aarch64/qemu, arm/qemu, arm/stm32f4-discovery, x86/qemu, x86/smp, x86/user_apps, x86/qt-app, x86/test/lang, x86/test/fs, x86/test/net, x86/test/units, x86/test/packetdrill, x86/test/qt-vnc, sparc/qemu, mips/qemu, ppc/qemu, microblaze/qemu, usermode86/debug ]
     container: 
       image: embox/emdocker-test
       volumes:
@@ -14,6 +16,6 @@ jobs:
     
     steps:
     - uses: actions/checkout@v1
-    - run: make confload-x86/qemu
+    - run: make confload-${{matrix.template}}
     - run: ./scripts/continuous/build.sh
-    - run: ./scripts/continuous/run.sh x86/qemu
+    - run: ./scripts/continuous/run.sh ${{matrix.template}}
