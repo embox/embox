@@ -1,0 +1,18 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    container: 
+      image: embox/emdocker-test
+      volumes:
+        - .:/embox 
+    
+    steps:
+    - uses: actions/checkout@v1
+    - run: make confload-x86/qemu
+    - run: ./scripts/continuous/build.sh
+    - run: ./scripts/continuous/run.sh x86/qemu
