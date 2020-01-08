@@ -9,7 +9,8 @@ jobs:
     container: 
       image: embox/emdocker-test
       volumes:
-        - .:/embox 
+        - .:/embox
+      options: --privileged
     
     steps:
     - uses: actions/checkout@v1
