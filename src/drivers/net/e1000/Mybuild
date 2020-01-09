@@ -1,8 +1,8 @@
 package embox.driver.net
 
 module e1000 {
-	@IncludeExport(path="drivers/net")
-	source "e1000.h"
+	option number log_level = 1
+
 	source "e1000.c"
 
 	depends embox.net.skbuff

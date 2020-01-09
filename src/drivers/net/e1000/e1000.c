@@ -5,6 +5,7 @@
  * @date 01.10.2012
  * @author Anton Kozlov
  */
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
@@ -27,14 +28,12 @@
 
 #include <hal/reg.h>
 
-#include <drivers/net/e1000.h>
-
 #include <mem/misc/pool.h>
 
+#include <util/log.h>
 #include <util/binalign.h>
-#include <kernel/printk.h>
 
-#include <embox/unit.h>
+#include "e1000.h"
 
 static const struct pci_id e1000_id_table[] = {
 	{ PCI_VENDOR_ID_INTEL, PCI_DEV_ID_INTEL_82540EM },
@@ -257,10 +256,10 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 		nic_priv->link_status ^= 1;
 
 		if (nic_priv->link_status) {
-			printk("e1000: Link up\n");
+			log_info("e1000: Link up");
 			netdev_flag_up(dev, IFF_RUNNING);
 		} else {
-			printk("e1000: Link down. Please check and insert network cable\n");
+			log_info("e1000: Link down. Please check and insert network cable");
 			netdev_flag_down(dev, IFF_RUNNING);
 		}
 		ret = IRQ_HANDLED;
