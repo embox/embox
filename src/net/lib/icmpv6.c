@@ -20,7 +20,7 @@ void icmp6_build(struct icmp6hdr *icmp6h, uint8_t type,
 	icmp6h->type = type;
 	icmp6h->code = code;
 	icmp6h->check = 0; /* use icmp6_set_check_field */
-	memcpy(icmp6h->body, body, body_sz);
+	memcpy(&icmp6h->body, body, body_sz);
 }
 
 void icmp6_set_check_field(struct icmp6hdr *icmp6h,
