@@ -140,9 +140,9 @@ static void parse_result(struct packet_in *rx_pack,
 					+ IP_HEADER_SIZE(emb_iph));
 		if ((to->sin_addr.s_addr != emb_iph->daddr)
 				|| (tx_pack->icmp.body.echo_req.id
-					!= emb_icmph->body[0].echo.id)
+					!= emb_icmph->body.echo.id)
 				|| (ntohs(tx_pack->icmp.body.echo_req.seq)
-					< ntohs(emb_icmph->body[0].echo.seq))) {
+					< ntohs(emb_icmph->body.echo.seq))) {
 			break;
 		}
 		dst_addr_str = inet_ntoa(*(struct in_addr *)&rx_pack->ip.hdr.saddr);
