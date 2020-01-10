@@ -200,10 +200,11 @@ typedef struct icmphdr {
 		struct icmpbody_param_prob param_prob;
 		struct icmpbody_timestamp timestamp;
 		struct icmpbody_info info;
-	} __attribute__((packed)) body[];
+	} __attribute__((packed)) body;
 } __attribute__((packed)) icmphdr_t;
 
-#define ICMP_MIN_HEADER_SIZE (sizeof(struct icmphdr))
+/* sizeof(struct icmphdr) without body */
+#define ICMP_MIN_HEADER_SIZE (4)
 
 static inline struct icmphdr * icmp_hdr(
 		const struct sk_buff *skb) {

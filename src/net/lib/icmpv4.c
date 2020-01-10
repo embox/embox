@@ -20,7 +20,7 @@ void icmp_build(struct icmphdr *icmph, uint8_t type,
 	icmph->type = type;
 	icmph->code = code;
 	icmph->check = 0; /* use icmp_set_check_field */
-	memcpy(icmph->body, body, body_sz);
+	memcpy(&icmph->body, body, body_sz);
 }
 
 void icmp_set_check_field(struct icmphdr *icmph,
