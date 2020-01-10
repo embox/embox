@@ -7,6 +7,8 @@ module node {
 
 	@IncludeExport(path="fs")
 	source "inode.h"
+	@IncludeExport(path="fs")
+	source "dentry.h"
 
 	depends embox.kernel.thread.mutex
 	@NoRuntime depends embox.util.tree
