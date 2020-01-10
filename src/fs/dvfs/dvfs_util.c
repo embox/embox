@@ -292,7 +292,6 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
                       struct dentry *dentry, struct dentry *parent) {
 	dentry->d_inode     = inode;
 	dentry->d_sb        = sb;
-	dentry->d_ops       = sb ? sb->sb_dops : NULL;
 	dentry->parent      = parent;
 	dentry->usage_count = 1;
 

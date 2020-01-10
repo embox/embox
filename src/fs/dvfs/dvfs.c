@@ -448,7 +448,6 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 
 		d->flags |= S_IFDIR | DVFS_MOUNT_POINT;
 		d->d_sb  = sb,
-		d->d_ops = sb ? sb->sb_dops : NULL,
 		sb->root = d;
 
 		d->d_inode = dvfs_alloc_inode(sb);

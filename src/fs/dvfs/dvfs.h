@@ -7,8 +7,12 @@
 #ifndef _DVFS_H_
 #define _DVFS_H_
 
-#include <drivers/block_dev.h>
+#include <config/embox/fs/dvfs/core.h>
 #include <framework/mod/options.h>
+#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, dentry_name_len)
+#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, max_path_len)
+
+#include <drivers/block_dev.h>
 #include <fs/idesc.h>
 #include <fs/file_desc.h>
 #include <fs/file_system.h>
@@ -17,16 +21,12 @@
 #include <fs/inode_operation.h>
 #include <fs/dir_context.h>
 #include <fs/inode.h>
+#include <fs/dentry.h>
 #include <sys/stat.h>
 
 /*****************
  New VFS prototype
  *****************/
-
-#include <config/embox/fs/dvfs/core.h>
-#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, dentry_name_len)
-#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, max_path_len)
-
 #define FS_DRV_NAME_LEN   16
 
 #define DVFS_PATH_FULL     0x001
@@ -70,28 +70,6 @@ struct super_block_operations {
 	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
 };
 
-struct dentry {
-	char name[DENTRY_NAME_LEN];
-
-	int flags;
-	int usage_count;
-
-	struct inode *d_inode;
-	struct super_block *d_sb;
-
-	struct dentry     *parent;
-	struct dlist_head children; /* Sub-elements of directory */
-	struct dlist_head children_lnk;
-
-	struct dlist_head d_lnk;   /* List for all dentries in system */
-
-	struct dentry_operations *d_ops;
-};
-
-struct dentry_operations {
-
-};
-
 struct dumb_fs_driver {
 	const char name[FS_DRV_NAME_LEN];
 	int (*format)(struct block_dev *dev, void *priv);
@@ -127,13 +105,7 @@ extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
 extern struct dvfsmnt *dvfs_alloc_mnt(void);
 extern int             dvfs_destroy_mnt(struct dvfsmnt *mnt);
 
-struct lookup {
-	struct dentry *item;
-	struct dentry *parent;
-};
-
 extern struct dentry *dvfs_root(void);
-extern int dvfs_lookup(const char *path, struct lookup *lookup);
 extern int dvfs_remove(const char *path);
 struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
 extern int dvfs_close(struct file_desc *desc);
@@ -141,7 +113,6 @@ extern int dvfs_write(struct file_desc *desc, char *buf, int count);
 extern int dvfs_read(struct file_desc *desc, char *buf, int count);
 extern int dvfs_fstat(struct file_desc *desc, struct stat *sb);
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
-extern int dvfs_pathname(struct inode *inode, char *buf, int flags);
 extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);
 extern int dvfs_rename(struct dentry *from, struct dentry *to);
 
