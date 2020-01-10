@@ -18,7 +18,7 @@
 struct sock;
 
 struct inet_sock_opt {
-	int hdrincl:1;
+	int hdrincl;
 };
 
 /**
