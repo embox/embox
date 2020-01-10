@@ -36,9 +36,12 @@
 
 #define DATA_PAD_SIZE \
 	PAD_SIZE(IP_ALIGN_SIZE + MODOPS_DATA_SIZE, MODOPS_DATA_PADTO)
+#if MODOPS_DATA_ALIGN > 1
 #define DATA_ATTR \
 	__attribute__((aligned(MODOPS_DATA_ALIGN)))
-
+#else
+#define DATA_ATTR
+#endif
 #define SKB_DATA_SIZE(size) \
 	IP_ALIGN_SIZE + MODOPS_DATA_SIZE + (size) + sizeof(size_t)
 
