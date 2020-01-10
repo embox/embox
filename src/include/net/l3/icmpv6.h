@@ -134,10 +134,10 @@ typedef struct icmp6hdr {
 		struct ndpbody_router_advert router_advert;
 		struct ndpbody_neighbor_solicit neighbor_solicit;
 		struct ndpbody_neighbor_advert neighbor_advert;
-	} __attribute__((packed)) body[];
+	} __attribute__((packed)) body;
 } __attribute__((packed)) icmp6hdr_t;
 
-#define ICMP6_MIN_HEADER_SIZE (sizeof(struct icmp6hdr))
+#define ICMP6_MIN_HEADER_SIZE (4)
 
 static inline struct icmp6hdr * icmp6_hdr(
 		const struct sk_buff *skb) {
