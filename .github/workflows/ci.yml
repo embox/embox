@@ -34,7 +34,7 @@ jobs:
       options: --privileged
     
     steps:
-      - sudo modprobe nfsd
+      - run: sudo modprobe nfsd
 
     #- uses: actions/checkout@v1
     #- run: make confload-${{matrix.template}}
