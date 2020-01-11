@@ -42,15 +42,16 @@ jobs:
       fail-fast: false
       matrix:
         template: 
-          #- x86/test/fs
-          - x86/test/net
+          - x86/test/fs
+          #- x86/test/net
     steps:
-      - uses: actions/checkout@v1
-      - name: build and test
-        run: |
-          sudo modprobe nfsd 
-          DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
-          . ./scripts/docker/docker_rc.sh
-          dr make confload-${{matrix.template}}
-          dr make
-          dr ./scripts/continuous/run.sh ${{matrix.template}}
+      - run: ping 8.8.8.8
+      #- uses: actions/checkout@v1
+      #- name: Build and test
+        #run: |
+          #sudo modprobe nfsd 
+          #DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
+          #. ./scripts/docker/docker_rc.sh
+          #dr make confload-${{matrix.template}}
+          #dr make
+          #dr ./scripts/continuous/run.sh ${{matrix.template}}
