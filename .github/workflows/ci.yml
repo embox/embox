@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        #template: 
+        template: 
           #- aarch64/qemu
           #- arm/qemu
           #- arm/stm32f4-discovery
