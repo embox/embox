@@ -12,23 +12,6 @@ env:
     - secure: KKhG29VpIOr5mq9xHptpDSfFEcSRKB8BX4e5zL0VQNJGkrNAHJ7ba+boHKEmSJJ1fZvHC18XOb886BIsn0i+lFrVymYDR8L8ca3e/k26LktnqMn76ORK1WYkD1fiRg3lX25v/j0TkoLB7pmDnMhZyGzg20675V1sHbl/KCO1LJI=
   matrix:
     - TEMPLATE=aarch64/qemu
-    - TEMPLATE=arm/qemu
-    - TEMPLATE=arm/stm32f4-discovery
-    - TEMPLATE=x86/qemu
-    - TEMPLATE=x86/smp
-    - TEMPLATE=x86/user_apps
-    - TEMPLATE=x86/qt-app
-    - TEMPLATE=x86/test/lang
-    - TEMPLATE=x86/test/fs
-    - TEMPLATE=x86/test/net
-    - TEMPLATE=x86/test/units
-    - TEMPLATE=x86/test/packetdrill
-    - TEMPLATE=x86/test/qt-vnc
-    - TEMPLATE=sparc/qemu
-    - TEMPLATE=mips/qemu
-    - TEMPLATE=ppc/qemu
-    - TEMPLATE=microblaze/qemu
-    - TEMPLATE=usermode86/debug
 #matrix:
 #  include:
 #  - env: UNCRUSTIFY
@@ -43,7 +26,7 @@ env:
 before_script:
   - set -e # make this script fail as soon as any individual command fail
   - sudo modprobe nfsd
-  - DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
+  - DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker:new
   - |
     if [ "${COVERITY_SCAN_BRANCH}" != 1 ]
     then
