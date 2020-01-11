@@ -29,9 +29,9 @@ jobs:
           #- microblaze/qemu
           #- usermode86/debug
 
-    container: 
-      image: embox/emdocker-test
-      options: --privileged
+    #container: 
+      #image: embox/emdocker-test
+      #options: --privileged
     
     steps:
       - run: sudo modprobe nfsd
