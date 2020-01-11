@@ -13,7 +13,7 @@ jobs:
           - aarch64/qemu
 
     container: 
-      image: embox/emdocker:new
+      image: embox/emdocker
       options: --privileged
     
     steps:
