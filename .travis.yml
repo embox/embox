@@ -43,7 +43,6 @@ env:
 before_script:
   - set -e # make this script fail as soon as any individual command fail
   - sudo modprobe nfsd
-  - docker pull embox/emdocker-test
   - DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
   - |
     if [ "${COVERITY_SCAN_BRANCH}" != 1 ]

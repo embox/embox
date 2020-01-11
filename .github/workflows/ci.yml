@@ -21,24 +21,24 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: 
-          #- aarch64/qemu
+        template:
+          - aarch64/qemu
           - arm/qemu
-          #- arm/stm32f4-discovery
+          - arm/stm32f4-discovery
           - x86/qemu
-          #- x86/smp
-          #- x86/user_apps
-          #- x86/qt-app
-          #- x86/test/lang
-          #- x86/test/net
-          #- x86/test/units
-          #- x86/test/packetdrill
-          #- x86/test/qt-vnc
+          - x86/smp
+          - x86/user_apps
+          - x86/qt-app
+          - x86/test/lang
+          - x86/test/net
+          - x86/test/units
+          - x86/test/packetdrill
+          - x86/test/qt-vnc
           - sparc/qemu
-          #- mips/qemu
-          #- ppc/qemu
+          - mips/qemu
+          - ppc/qemu
           - microblaze/qemu
-          #- usermode86/debug
+          - usermode86/debug
     container:
       image: embox/emdocker-test
       options: --privileged
@@ -57,21 +57,21 @@ jobs:
       - run: make
       - run: ./scripts/continuous/run.sh ${{matrix.template}}
 
-  #ci-x86-fs:
-    ## need to manage container by hand because of modprobe below
-    #runs-on: ubuntu-16.04 # on ubuntu 18.04 NFS write test results in "RPC: Can't decode result"
-    #strategy:
-      #fail-fast: false
-      #matrix:
-        #template: 
-          #- x86/test/fs
-    #steps:
-      #- uses: actions/checkout@v1
-      #- name: Build and test
-        #run: |
-          #sudo modprobe nfsd 
-          #DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
-          #. ./scripts/docker/docker_rc.sh
-          #dr make confload-${{matrix.template}}
-          #dr make
-          #dr ./scripts/continuous/run.sh ${{matrix.template}}
+  # need to manage container by hand because of modprobe below
+  ci-x86-fs:
+    needs: buildgen
+    runs-on: ubuntu-16.04 # on ubuntu 18.04 NFS write test results in "RPC: Can't decode result"
+    steps:
+      - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v1
+        with:
+          name: mk-cache
+          path: mk/.cache
+      - name: Build and test
+        run: |
+          sudo modprobe nfsd
+          DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
+          . ./scripts/docker/docker_rc.sh
+          dr make confload-x86/test/fs
+          dr make
+          dr ./scripts/continuous/run.sh x86/test/fs

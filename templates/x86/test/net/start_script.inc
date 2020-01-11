@@ -15,8 +15,8 @@
 "route",
 
 "ping 10.0.2.10",
-//"ping 8.8.8.8",
-//"ping google.com",
+"ping 8.8.8.8",
+"ping google.com",
 "httpd &",
 "telnetd &",
 "service dropbear -F",
