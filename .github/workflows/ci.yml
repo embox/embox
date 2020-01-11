@@ -9,7 +9,7 @@ jobs:
     container: embox/emdocker
     steps:
       - uses: actions/checkout@v1
-      - run: make conlfload-x86/qemu
+      - run: make confload-x86/qemu
       - run: make buildgen
       - uses: actions/upload-artifact@v1
         with:
