@@ -3,21 +3,34 @@ name: CI
 on: [push]
 
 jobs:
+
+  buildgen:
+    runs-on: ubuntu-latest
+    container: embox/emdocker
+    steps:
+      - uses: actions/checkout@v1
+      - run: make conlfload-x86/qemu
+      - run: make buildgen
+      - uses: actions/upload-artifact@v1
+        with:
+          name: mk-cache
+          path: mk/.cache
   ci:
-    runs-on: ubuntu-16.04
+    needs: buildgen
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         template: 
           #- aarch64/qemu
-          #- arm/qemu
+          - arm/qemu
           #- arm/stm32f4-discovery
-          #- x86/qemu
+          - x86/qemu
           #- x86/smp
           #- x86/user_apps
           #- x86/qt-app
           #- x86/test/lang
-          - x86/test/net
+          #- x86/test/net
           #- x86/test/units
           #- x86/test/packetdrill
           #- x86/test/qt-vnc
@@ -31,6 +44,14 @@ jobs:
       options: --privileged
     steps:
       - uses: actions/checkout@v1
+      - uses: actions/download-artifact@v1
+        with:
+          name: mk-cache
+      - run: |
+          touch mk/.cache/mk/*
+          find  mk/.cache/mybuild/files | xargs touch
+          touch mk/.cache/mybuild/myfiles-model.mk
+          touch mk/.cache/mybuild/myfiles-list.mk
       - run: make confload-${{matrix.template}}
       - run: make
       - run: ./scripts/continuous/run.sh ${{matrix.template}}
