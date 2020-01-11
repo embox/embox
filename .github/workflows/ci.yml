@@ -13,7 +13,7 @@ jobs:
           - aarch64/qemu
 
     container: 
-      image: ubuntu:16.04
+      image: embox/emdocker:aarch64
       options: --privileged
     
     steps:
