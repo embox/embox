@@ -44,11 +44,13 @@ jobs:
         template: 
           - x86/test/fs
           #- x86/test/net
+        ip: 
+          - 8.8.8.8
+          - google.com
+          - ya.ru
+          - mail.ru      
     steps:
-      - run: ping -c 4 8.8.8.8
-      - run: ping -c 4 google.com
-      - run: ping -c 4 ya.ru
-      - run: ping -c 4 mail.ru
+      - run: ping -c 4 ${{matrix.ip}}
       #- uses: actions/checkout@v1
       #- name: Build and test
         #run: |
