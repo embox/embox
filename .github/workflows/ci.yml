@@ -45,7 +45,10 @@ jobs:
           - x86/test/fs
           #- x86/test/net
     steps:
-      - run: ping -c 16 8.8.8.8
+      - run: ping -c 4 8.8.8.8
+      - run: ping -c 4 google.com
+      - run: ping -c 4 ya.ru
+      - run: ping -c 4 mail.ru
       #- uses: actions/checkout@v1
       #- name: Build and test
         #run: |
