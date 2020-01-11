@@ -6,7 +6,7 @@ jobs:
 
   buildgen:
     runs-on: ubuntu-latest
-    container: embox/emdocker
+    #container: embox/emdocker
     steps:
       - uses: actions/checkout@v1
       - run: make confload-x86/qemu
@@ -47,6 +47,7 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: mk-cache
+          path: mk/.cache
       - run: |
           touch mk/.cache/mk/*
           find  mk/.cache/mybuild/files | xargs touch
