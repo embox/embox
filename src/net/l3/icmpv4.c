@@ -193,7 +193,7 @@ static int icmp_hnd_echo_request(const struct icmphdr *icmph,
 	}
 	len -= sizeof *icmph + sizeof *echo_req;
 
-	echo_rep = &icmp_hdr(skb)->body[0].echo;
+	echo_rep = &icmp_hdr(skb)->body.echo;
 
 	return icmp_send(ICMP_ECHO_REPLY, 0, echo_rep,
 			sizeof *echo_rep + len, skb);
@@ -249,7 +249,7 @@ static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
 	msec_since_12am = (ktime_get_ns() / NSEC_PER_MSEC) % (
 				SEC_PER_DAY * MSEC_PER_SEC);
 
-	tstamp_rep = &icmp_hdr(skb)->body[0].timestamp;
+	tstamp_rep = &icmp_hdr(skb)->body.timestamp;
 	tstamp_rep->orig = tstamp_req->trans;
 	tstamp_rep->recv = tstamp_rep->trans = htonl(msec_since_12am);
 
@@ -295,21 +295,21 @@ static int icmp_rcv(struct sk_buff *skb) {
 	case ICMP_INFO_REPLY:
 		break;
 	case ICMP_DEST_UNREACH:
-		return icmp_hnd_dest_unreach(icmph, &icmph->body[0].dest_unreach, skb);
+		return icmp_hnd_dest_unreach(icmph, &icmph->body.dest_unreach, skb);
 	case ICMP_SOURCE_QUENCH:
 		return icmp_hnd_source_quench(icmph,
-				&icmph->body[0].source_quench, skb);
+				&icmph->body.source_quench, skb);
 	case ICMP_REDIRECT:
 	case ICMP_TIME_EXCEED:
 	case ICMP_INFO_REQUEST:
 		break; /* error: not implemented */
 	case ICMP_ECHO_REQUEST:
-		return icmp_hnd_echo_request(icmph, &icmph->body[0].echo, skb);
+		return icmp_hnd_echo_request(icmph, &icmph->body.echo, skb);
 	case ICMP_PARAM_PROB:
-		return icmp_hnd_param_prob(icmph, &icmph->body[0].param_prob, skb);
+		return icmp_hnd_param_prob(icmph, &icmph->body.param_prob, skb);
 	case ICMP_TIMESTAMP_REQUEST:
 		return icmp_hnd_timestamp_request(icmph,
-				&icmph->body[0].timestamp, skb);
+				&icmph->body.timestamp, skb);
 	}
 
 	skb_free(skb);
