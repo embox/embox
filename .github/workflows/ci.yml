@@ -9,32 +9,34 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        template: 
-          - aarch64/qemu
-          - arm/qemu
-          - arm/stm32f4-discovery
-          - x86/qemu
-          - x86/smp
-          - x86/user_apps
-          - x86/qt-app
-          - x86/test/lang
+        #template: 
+          #- aarch64/qemu
+          #- arm/qemu
+          #- arm/stm32f4-discovery
+          #- x86/qemu
+          #- x86/smp
+          #- x86/user_apps
+          #- x86/qt-app
+          #- x86/test/lang
           - x86/test/fs
-          - x86/test/net
-          - x86/test/units
-          - x86/test/packetdrill
-          - x86/test/qt-vnc
-          - sparc/qemu
-          - mips/qemu
-          - ppc/qemu
-          - microblaze/qemu
-          - usermode86/debug
+          #- x86/test/net
+          #- x86/test/units
+          #- x86/test/packetdrill
+          #- x86/test/qt-vnc
+          #- sparc/qemu
+          #- mips/qemu
+          #- ppc/qemu
+          #- microblaze/qemu
+          #- usermode86/debug
 
     container: 
       image: embox/emdocker-test
       options: --privileged
     
     steps:
-    - uses: actions/checkout@v1
-    - run: make confload-${{matrix.template}}
-    - run: make
-    - run: ./scripts/continuous/run.sh ${{matrix.template}}
+      - sudo modprobe nfsd
+
+    #- uses: actions/checkout@v1
+    #- run: make confload-${{matrix.template}}
+    #- run: make
+    #- run: ./scripts/continuous/run.sh ${{matrix.template}}
