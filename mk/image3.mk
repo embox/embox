@@ -283,7 +283,7 @@ $(__cpio_files) : FORCE
 		$(foreach c,chmod chown,$(if $(and $($c),$(findstring $($c),'')),,$c $($c) $f;)) \
 		$(foreach a,$(strip $(subst ',,$(xattr))), \
 			attr -s $(basename $(subst =,.,$a)) -V $(subst .,,$(suffix $(subst =,.,$a))) $f;) \
-		find $f -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf)
+		find $f -name .gitkeep -type f -print0 | xargs -0 rm -rf)
 
 __copy_user_rootfs :
 	if [ -d $(USER_ROOTFS_DIR) ]; \

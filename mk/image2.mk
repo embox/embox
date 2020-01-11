@@ -51,7 +51,7 @@ $(ROOTFS_DIR)/% :
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@$(if \
 		$(and $(chmod),$(findstring $(chmod),'')),,;chmod $(chmod) $@)
 	@touch $@ # workaround when copying directories
-	@find $@ -name .gitkeep -type f -print0 | xargs -0 /bin/rm -rf
+	@find $@ -name .gitkeep -type f -print0 | xargs -0 rm -rf
 
 fmt_line = $(addprefix \$(\n)$(\t)$(\t),$1)
 
