@@ -34,7 +34,14 @@ jobs:
       #options: --privileged
     
     steps:
-      - run: sudo modprobe nfsd
+      - run: |
+        sudo modprobe nfsd  
+        DOCKER_START_WAIT_TIME_SEC=60 ./scripts/docker/docker_start.sh embox/emdocker-test
+        . ./scripts/docker/docker_rc.sh
+        dr make confload-${{matrix.template}}
+        dr ./scripts/continuous/build.sh
+        dr ./scripts/continuous/run.sh ${{matrix.template}}
+
 
     #- uses: actions/checkout@v1
     #- run: make confload-${{matrix.template}}
