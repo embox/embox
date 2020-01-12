@@ -149,6 +149,10 @@ extern double hypot(double x, double y);
 extern float hypotf(float x, float y);
 extern long double hypotl(long double x, long double y);
 
+extern double cbrt(double x);
+extern float cbrtf(float x);
+extern long double cbrtl(long double x);
+
 __END_DECLS
 
 #define FP_NAN 0

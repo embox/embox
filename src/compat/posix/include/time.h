@@ -119,6 +119,8 @@ static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
 }
 
+extern char *strptime(const char *s, const char *fmt, struct tm *tm);
+
 __END_DECLS
 
 #endif /* TIME_H_ */

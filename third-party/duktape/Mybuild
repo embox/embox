@@ -1,0 +1,24 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "duk",
+	help = "Javascript interpreter",
+	man = '''
+		NAME
+			duk - Javascript interpreter
+		SYNOPSIS
+			duk [script]
+		AUTHORS
+			Nikolay Korotkiy - Adaptation for Embox
+	''')
+module duktape {
+	source "^BUILD/extbld/^MOD_PATH/install/duk.o"
+
+	@InitFS
+	source "fib.js"
+
+	depends embox.compat.libc.math
+	depends embox.compat.libc.time
+}

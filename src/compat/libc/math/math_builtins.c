@@ -438,3 +438,18 @@ int __isfinitel(long double e) {
 	/* Long double format is platform-specific, so just use stub */
 	return 1;
 }
+
+double cbrt(double x) {
+	// TODO
+	return 0.0;
+}
+
+float cbrtf(float x) {
+	// TODO
+	return 0.0;
+}
+
+long double cbrtl(long double x) {
+	// TODO
+	return 0.0;
+}

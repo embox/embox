@@ -1,0 +1,15 @@
+--- duktape-2.5.0/Makefile.cmdline.orig	2020-01-12 15:22:12.776509893 +0300
++++ duktape-2.5.0/Makefile.cmdline	2020-01-12 15:22:30.552679308 +0300
+@@ -8,10 +8,10 @@
+ CMDLINE_SOURCES = \
+ 	examples/cmdline/duk_cmdline.c
+ 
+-CC = gcc
++#CC = gcc
+ CCOPTS = -Os -pedantic -std=c99 -Wall -fstrict-aliasing -fomit-frame-pointer
+ CCOPTS += -I./examples/cmdline -I./src   # duktape.h and duk_config.h must be in include path
+-CCLIBS = -lm
++CCLIBS = -DDUK_USE_DATE_FMT_STRFTIME
+ 
+ # Enable print() and alert() for command line using an optional extra module.
+ CCOPTS += -DDUK_CMDLINE_PRINTALERT_SUPPORT -I./extras/print-alert

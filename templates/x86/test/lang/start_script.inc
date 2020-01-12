@@ -25,6 +25,9 @@
 "lua tofi_mod.lua /tmp/new_file.txt",
 "cat /tmp/new_file.txt",
 "lua http_request.lua http://example.com",
+
 "tclsh run_embox_cmd.tcl",
 "tclsh fib.tcl",
 "tclsh tcludp_localhost.tcl",
+
+"duk fib.js",
