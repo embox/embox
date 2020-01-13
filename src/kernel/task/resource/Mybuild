@@ -26,7 +26,6 @@ module module_ptr {
 
 module vfs {
 	source "vfs.c"
-	depends embox.fs.dvfs.core
 }
 
 module security {
