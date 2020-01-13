@@ -80,7 +80,12 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 		dlist_add_next(&mdesc->mnt_child, &mnt_point_path->mnt_desc->mnt_mounts);
 	}
 
-	strncpy(mdesc->mnt_dev, dev, MOUNT_DESC_STRINFO_LEN);
+	if (dev != NULL) {
+		strncpy(mdesc->mnt_dev, dev, MOUNT_DESC_STRINFO_LEN);
+	} else {
+		mdesc->mnt_dev[0] = '\0';
+	}
+
 	mdesc->mnt_dev[MOUNT_DESC_STRINFO_LEN - 1] = '\0';
 
 	return mdesc;

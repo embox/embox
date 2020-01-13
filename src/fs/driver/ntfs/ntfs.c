@@ -572,7 +572,7 @@ struct ntfs_bdev_desc {
 static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 {
 	int err;
-	struct inode *dev_node, *dev_folder;
+	struct block_dev *bdev;
 
 	if (NDevOpen(dev)) {
 		errno = EBUSY;
@@ -583,20 +583,18 @@ static int ntfs_device_bdev_io_open(struct ntfs_device *dev, int flags)
 	NDevSetBlock(dev);
 
 	dev->d_private = ntfs_malloc(sizeof(struct ntfs_bdev_desc));
-	if (!dev->d_private)
+	if (!dev->d_private) {
 		return -1;
-
-	dev_folder = vfs_subtree_lookup_child(vfs_get_root(),"dev");
-	dev_node = vfs_subtree_lookup_child(dev_folder, dev->d_name);
-
-	if (dev_node) {
-		((struct ntfs_bdev_desc*)dev->d_private)->dev = dev_node->nas->fi->privdata;
-		((struct ntfs_bdev_desc*)dev->d_private)->pos = 0;
 	}
-	if (!((struct ntfs_bdev_desc*)dev->d_private)->dev) {
+
+	bdev = block_dev_find(dev->d_name);
+	if (!bdev) {
 		err = ENODEV;
 		goto err_out;
 	}
+
+	((struct ntfs_bdev_desc*)dev->d_private)->dev = bdev;
+	((struct ntfs_bdev_desc*)dev->d_private)->pos = 0;
 
 	if ((flags & O_RDWR) != O_RDWR)
 		NDevSetReadOnly(dev);

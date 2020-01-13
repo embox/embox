@@ -92,6 +92,7 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 		}
 
 		dir_path = node_path;
+		if_mounted_follow_down(&node_path);
 		dnode = node_path.node;
 		vfs_lookup_childn(&node_path, path, len, &node_path);
 

@@ -28,17 +28,12 @@ static struct filesystem *devfs_file_system;
 
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
-	struct path node, root;
-	mode_t mode;
+	struct inode *dir_node;
+	struct nas *dir_nas;
 
-	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
-
-	vfs_get_root_path(&root);
-
-	if (0 != vfs_create(&root, dev, mode, &node)) {
-		return -1;
-	}
-	node.node->i_ops = &devfs_iops;
+	dir_node = dir;
+	dir_node->i_ops = &devfs_iops;
+	dir_nas = dir_node->nas;
 
 	ret = char_dev_init_all();
 	if (ret != 0) {
@@ -53,6 +48,7 @@ static int devfs_mount(void *dev, void *dir) {
 	if (devfs_file_system == NULL) {
 		return -ENOMEM;
 	}
+	dir_nas->fs = devfs_file_system;
 
 	return 0;
 }
