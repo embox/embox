@@ -1,51 +1,71 @@
 /**
- * @file
- * @brief
- *
- * @author Ilia Vaprol
- * @date 31.03.13
- */
+* @file
+* @brief
+*
+* @author Denis Deryugin
+* @date 3 Apr 2015
+*/
 
-#include <assert.h>
+#include <errno.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <unistd.h>
-#include <sys/stat.h>
 
+#include <fs/inode.h>
+#include <fs/dentry.h>
+#include <kernel/task/resource/vfs.h>
+#include <util/log.h>
+
+/**
+* @brief POSIX-compatible function changing process working directory
+*
+* @param path Path to new working directory
+*
+* @return On success, 0 returned, otherwise -1 returned and ERRNO is set
+*	 appropriately.
+*/
 int chdir(const char *path) {
-	struct stat buff;
-	char strbuf[PATH_MAX] = "";
+	struct lookup l = { NULL, NULL };
+	int err;
+	char new_pwd[PATH_MAX - 1];
+	struct task_vfs *t;
 
-	if ((path == NULL) || (*path == '\0')) {
+	if (path == NULL) {
 		SET_ERRNO(ENOENT);
 		return -1;
 	}
 
-	if (path[0] != '/') {
-		strncpy(strbuf, getenv("PWD"), PATH_MAX - 1);
-		strbuf[PATH_MAX - 1] = '\0';
-		strcat(strbuf, "/");
-	}
-	strncat(strbuf, path, PATH_MAX - 1);
-	strbuf[PATH_MAX - 1] = '\0';
-
-	if (strlen(path) >= PATH_MAX - 1) {
-		return SET_ERRNO(ENAMETOOLONG);
+	if ((err = dvfs_lookup(path, &l))) {
+		return SET_ERRNO(-err);
 	}
 
-	if (stat(path, &buff)) {
+	if (l.item == NULL) {
 		return SET_ERRNO(ENOENT);
 	}
 
-	/*check if it is a directory*/
-	if(!S_ISDIR(buff.st_mode)){
+	if (!(l.item->flags & S_IFDIR)) {
 		return SET_ERRNO(ENOTDIR);
 	}
 
-	if (-1 == setenv("PWD", strbuf, 1)) {
-		assert(errno == ENOMEM); /* it is the only possible error */
+	dentry_full_path(l.item, new_pwd);
+
+	if (-1 == setenv("PWD", new_pwd, 1)) {
+		SET_ERRNO(ENAMETOOLONG);
+		return -1;
+	}
+
+	if ((t = task_fs()) == NULL) {
+		log_error("task VFS structure is NULL");
+		return SET_ERRNO(EIO);
+	}
+
+	if (t->pwd != l.item) {
+		dentry_ref_dec(t->pwd);
+		t->pwd = l.item;
+		dentry_ref_inc(t->pwd);
+	}
+
+	if (-1 == setenv("PWD", new_pwd, 1)) {
+		assert(errno == ENOMEM);
 		return SET_ERRNO(ENAMETOOLONG);
 	}
 

@@ -6,7 +6,7 @@
  * @author Denis Deryugin
  */
 
-#include <fs/dvfs.h>
+#include <fs/dentry.h>
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/vfs.h>
 

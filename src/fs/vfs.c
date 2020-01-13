@@ -15,9 +15,10 @@
 #include <string.h>
 #include <libgen.h>
 
+#include <fs/dentry.h>
 #include <fs/hlpr_path.h>
-#include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/vfs.h>
 
 #include <limits.h>
 
@@ -331,6 +332,7 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 	child = node_alloc(name, len);
 	if (child) {
 		child->i_mode = mode;
+		child->i_dentry->flags = mode;
 		child->uid = getuid();
 		child->gid = getgid();
 
@@ -436,6 +438,7 @@ struct inode *vfs_create_root(void) {
 	root_node = node_alloc("/", 0);
 	assert(root_node);
 	root_node->i_mode = S_IFDIR | ROOT_MODE;
+	root_node->i_dentry->flags = S_IFDIR | ROOT_MODE;
 
 	return root_node;
 }

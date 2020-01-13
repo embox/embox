@@ -14,6 +14,7 @@
 #include <mem/misc/pool.h>
 
 #include <fs/inode.h>
+#include <fs/dentry.h>
 #include <fs/vfs.h>
 
 #include <framework/mod/options.h>
@@ -27,6 +28,7 @@ struct node_tuple {
 };
 
 POOL_DEF(node_pool, struct node_tuple, MAX_NODE_QUANTITY);
+POOL_DEF(dentry_pool, struct dentry, MAX_NODE_QUANTITY);
 
 static inline int flock_init(struct inode *node) {
 	/* flock initialization */
@@ -41,10 +43,16 @@ static inline int flock_init(struct inode *node) {
 struct inode *inode_new(struct super_block *sb) {
 	struct node_tuple *nt;
 	struct inode *node;
+	struct dentry *dentry;
 	struct nas *nas;
 
 	nt = pool_alloc(&node_pool);
 	if (!nt) {
+		return NULL;
+	}
+	dentry = pool_alloc(&dentry_pool);
+	if (!dentry) {
+		pool_free(&node_pool, nt);
 		return NULL;
 	}
 
@@ -52,6 +60,9 @@ struct inode *inode_new(struct super_block *sb) {
 
 	node = &nt->node;
 	nas = &nt->nas;
+
+	node->i_dentry = dentry;
+	dentry->d_inode = node;
 
 	node->nas = nas;
 	nas->node = node;
@@ -104,5 +115,8 @@ struct inode *node_alloc(const char *name, size_t name_len) {
 }
 
 void node_free(struct inode *node) {
+	if (node->i_dentry) {
+		pool_free(&dentry_pool, node->i_dentry);
+	}
 	pool_free(&node_pool, member_cast_out(node, struct node_tuple, node));
 }
