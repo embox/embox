@@ -519,13 +519,7 @@ static irq_return_t ehci_irq(unsigned int irq_nr, void *data) {
 	ehci_write(ehci, masked_status, &ehci->ehci_regs->status);
 	cmd = ehci_read(ehci, &ehci->ehci_regs->command);
 
-	/* complete the unlinking of some qh [4.15.2.3] */
-	if (status & EHCI_STS_IAA) {
-
-		/* guard against (alleged) silicon errata */
-		if (cmd & EHCI_CMD_IAAD) {
-			log_debug("IAA with IAAD still set?");
-		}
+	if (status & EHCI_STS_INT) {
 		scan_async(ehci);
 	}
 
@@ -558,7 +552,9 @@ static void echi_qh_insert_async(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 		head->hw->hw_next = EHCI_QH_NEXT(ehci, qh->hw);
 	}
 	command = ehci_read(ehci, &ehci->ehci_regs->command); /* unblock posted writes */
-	ehci_write(ehci, command | EHCI_CMD_ASE | EHCI_CMD_IAAD,  &ehci->ehci_regs->command);	/* unblock posted writes */
+	ehci_write(ehci, command | EHCI_CMD_ASE,  &ehci->ehci_regs->command);	/* unblock posted writes */
+
+	qh->hw->hw_token &= ~EHCI_QTD_STS_HALT;
 }
 
 static void ehci_qh_sched(struct ehci_hcd *ehci, struct ehci_qh *qh) {
@@ -597,7 +593,6 @@ static void ehci_qh_fill(struct ehci_hcd *ehci, struct usb_request *req, struct 
 	hw->hw_info2 = 1 << 30; /* mult = 1 one transaction */
 
 	hw->hw_qtd_next = (uintptr_t)qtd;
-	hw->hw_token &= ~EHCI_QTD_STS_HALT;
 }
 
 static int ehci_request(struct usb_request *req) {
@@ -634,7 +629,6 @@ static int ehci_request(struct usb_request *req) {
 			ehci_qtd_fill(ehci, qtd, (uintptr_t) req->buf, req->len,
 				token, 0);
 			qtd_prev->hw_next = (uint32_t) qtd;
-			qtd_prev->hw_alt_next = qtd_prev->hw_next;
 			qtd_prev = qtd;
 		}
 		/* Status stage */
@@ -644,10 +638,10 @@ static int ehci_request(struct usb_request *req) {
 		} else {
 			token = EHCI_QTD_PID_OUT << 8;
 		}
-		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT);
+		/* Interrupt when all stages are processed. */
+		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT) | EHCI_QTD_IOC;
 		ehci_qtd_fill(ehci, qtd, 0, 0, token, 0);
 		qtd_prev->hw_next = (uint32_t) qtd;
-		qtd_prev->hw_alt_next = qtd_prev->hw_next;
 		break;
 	case USB_COMM_BULK:
 	case USB_COMM_INTERRUPT:
@@ -659,7 +653,7 @@ static int ehci_request(struct usb_request *req) {
 		} else {
 			token = EHCI_QTD_PID_IN << 8;
 		}
-		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT);
+		token |= EHCI_QTD_STS_ACTIVE | (3 << EHCI_QTD_CERR_SHIFT) | EHCI_QTD_IOC;
 		ehci_qtd_fill(ehci, qtd, (uintptr_t) req->buf, req->len,
 			token, 0);
 		break;
@@ -672,6 +666,8 @@ static int ehci_request(struct usb_request *req) {
 	} else {
 		new_qh = ehci_qh_alloc(ehci);
 	}
+	assert(new_qh);
+
 	ehci_qh_fill(ehci, req, new_qh, qtd_first);
 	ehci_transfer(new_qh, req);
 	ehci_qh_sched(ehci, new_qh);
