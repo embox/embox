@@ -96,6 +96,7 @@ struct dirent *readdir(DIR *dir) {
 		SET_ERRNO(EBADF);
 		return NULL;
 	}
+	if_mounted_follow_down(&dir->path);
 	res = vfs_get_child_next(&dir->path,(struct inode *) (uintptr_t) dir->current.d_ino, &child);
 	if (0 != res) {
 		if (dir->path.node->i_ops && dir->path.node->i_ops->iterate) {
