@@ -42,9 +42,12 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct virtio_net_hdr *hdr;
 	uint32_t desc_id;
 	struct vring_desc *desc;
+	struct virtio_priv *virtio_priv;
 
 	assert(dev != NULL);
 	assert(skb != NULL);
+
+	virtio_priv = netdev_priv(dev, struct virtio_priv);
 
 	skb_extra = skb_extra_alloc();
 	if (skb_extra == NULL) {
@@ -57,7 +60,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 		return -ENOMEM;
 	}
 
-	vq = &netdev_priv(dev, struct virtio_priv)->tq;
+	vq = &virtio_priv->tq;
 
 	hdr = skb_extra_cast_in(skb_extra);
 	hdr->flags = 0;
@@ -92,6 +95,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	struct sk_buff *skb;
 	struct sk_buff_data *new_data;
 	struct vring_desc *desc, *next;
+	struct virtio_priv *virtio_priv;
 
 	dev = dev_id;
 
@@ -100,8 +104,10 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		return IRQ_NONE;
 	}
 
+	virtio_priv = netdev_priv(dev, struct virtio_priv);
+
 	/* release outgoing packets */
-	vq = &netdev_priv(dev, struct virtio_priv)->tq;
+	vq = &virtio_priv->tq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 
@@ -119,7 +125,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 	}
 
 	/* receive incoming packets */
-	vq = &netdev_priv(dev, struct virtio_priv)->rq;
+	vq = &virtio_priv->rq;
 	while (vq->last_seen_used != vq->ring.used->idx) {
 		used_elem = &vq->ring.used->ring[vq->last_seen_used % vq->ring.num];
 
