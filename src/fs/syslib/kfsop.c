@@ -371,7 +371,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 
 	if (drv->mount_dev_by_string) {
 		dev_node.node = (struct inode *) dev;
-	} else {
+	} else if (dev != NULL) {
 		if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
 			errno = res == -ENOENT ? ENODEV : -res;
 			return -1;
@@ -381,6 +381,8 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 			errno = EACCES;
 			return -1;
 		}
+	} else {
+		dev_node.node = NULL;
 	}
 
 	if (ENOERR != (res = fs_perm_lookup(dir, &lastpath, &dir_node))) {
