@@ -4,6 +4,7 @@ module node {
 	option number fnode_quantity=64
 
 	source "inode.c"
+	source "dentry.c"
 
 	@IncludeExport(path="fs")
 	source "inode.h"
@@ -85,6 +86,8 @@ module core extends fs_api {
 	depends embox.compat.posix.util.environ
 	depends embox.util.tree
 	depends embox.compat.posix.proc.uid
+
+	depends embox.kernel.task.resource.vfs
 
 	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
 }

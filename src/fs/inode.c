@@ -61,6 +61,9 @@ struct inode *inode_new(struct super_block *sb) {
 	node = &nt->node;
 	nas = &nt->nas;
 
+	node->i_dentry = dentry;
+	dentry->d_inode = node;
+
 	node->nas = nas;
 	nas->node = node;
 
