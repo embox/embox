@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <fs/mount.h> /* mount */
 #include <fs/fs_driver.h>
@@ -18,16 +19,24 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
+#define DEVFS_DIR "/dev"
 static int rootfs_mount(const char *dev, const char *fs_type) {
-	struct fs_driver *fsdrv;
-
-	/* mount dev filesystem */
-	fsdrv = fs_driver_find_drv("devfs");
-	if (fsdrv) {
-		fsdrv->fsop->mount("/dev", NULL);
-	}
+	struct path node, root;
+	mode_t mode;
 
 	if (-1 == mount((char *) dev, "/", (char *) fs_type)) {
+		return -errno;
+	}
+
+	/* Handle devfs in a special way as automount is not implemented yet */
+	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
+	vfs_get_root_path(&root);
+
+	if (0 != vfs_create(&root, DEVFS_DIR, mode, &node)) {
+		return -1;
+	}
+
+	if (-1 == mount(NULL, DEVFS_DIR, "devfs")) {
 		return -errno;
 	}
 
