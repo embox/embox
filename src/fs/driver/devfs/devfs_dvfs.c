@@ -65,7 +65,7 @@ extern struct dev_module **get_cdev_tab();
  *
  * @return Negative error code
  */
-static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	int i, j;
 	struct dev_module *dev_module;
 	struct block_dev **bdevtab = get_bdev_tab();
@@ -77,6 +77,7 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 			if (bdevtab[i]) {
 				ctx->fs_ctx = (void*) ((intptr_t) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK);
+				strncpy(name, bdevtab[i]->dev_module->name, DENTRY_NAME_LEN);
 				next->length = bdevtab[i]->size;
 				return 0;
 			}
@@ -91,6 +92,7 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 			if (i++ == (intptr_t) ctx->fs_ctx >> 2) {
 				ctx->fs_ctx = (void*) ((intptr_t) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, dev_module, S_IFCHR);
+				strncpy(name, dev_module->name, DENTRY_NAME_LEN);
 				return 0;
 			}
 		}
@@ -100,6 +102,7 @@ static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 			if (cdevtab[j] && i++ == (intptr_t) ctx->fs_ctx >> 2) {
 				ctx->fs_ctx = (void *) ((intptr_t) ctx->fs_ctx + 0x4);
 				devfs_fill_inode(next, cdevtab[j], S_IFCHR);
+				strncpy(name, cdevtab[j]->name, DENTRY_NAME_LEN);
 				return 0;
 			}
 		}
@@ -186,19 +189,6 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 	return dev->dev_open(dev, dev->dev_priv);
 }
 
-
-static int devfs_pathname(struct inode *node, char *buf, int flags) {
-
-	if (S_ISBLK(node->i_mode) || S_ISCHR(node->i_mode)) {
-		struct dev_module *dev_module = node->i_data;
-		strncpy(buf, dev_module->name, DENTRY_NAME_LEN);
-	} else {
-		return -1; /* Wrong flags */
-	}
-
-	return 0;
-}
-
 static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
@@ -248,7 +238,6 @@ struct super_block_operations devfs_sbops = {
 struct inode_operations devfs_iops = {
 	.lookup   = devfs_lookup,
 	.iterate  = devfs_iterate,
-	.pathname = devfs_pathname,
 	.create   = devfs_create,
 };
 

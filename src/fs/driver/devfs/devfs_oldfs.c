@@ -150,7 +150,7 @@ extern struct dev_module **get_cdev_tab();
  *
  * @return Negative error code
  */
-static int devfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	int i;
 	struct block_dev **bdevtab = get_bdev_tab();
 	struct dev_module **cdevtab = get_cdev_tab();
@@ -219,10 +219,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 	return NULL;
 }
 
-static int devfs_pathname(struct inode *node, char *buf, int flags) {
-	return -1;
-}
-
 static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
@@ -230,6 +226,5 @@ static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 struct inode_operations devfs_iops = {
 	.lookup   = devfs_lookup,
 	.iterate  = devfs_iterate,
-	.pathname = devfs_pathname,
 	.create   = devfs_create,
 };

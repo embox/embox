@@ -105,7 +105,7 @@ struct dirent *readdir(DIR *dir) {
 				SET_ERRNO(ENOMEM);
 				return NULL;
 			}
-			res = dir->path.node->i_ops->iterate(node, dir->path.node, &dir->dir_context);
+			res = dir->path.node->i_ops->iterate(node, node->name, dir->path.node, &dir->dir_context);
 			if (res == -1){
 				node_free(node);
 				return NULL;

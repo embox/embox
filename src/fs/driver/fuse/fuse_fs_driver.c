@@ -233,7 +233,7 @@ static struct inode *fuse_lookup(char const *name, struct dentry const *dir) {
 	return node;
 }
 
-static int fuse_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+static int fuse_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	char buf[512];
 	int res = 0;
 	struct fuse_req_embox *req;
@@ -269,6 +269,7 @@ static int fuse_iterate(struct inode *next, struct inode *parent, struct dir_ctx
 	next->i_no = -1;
 	next->i_data = data;
 	strcpy(data->name, dirent->name);
+	strcpy(name, data->name);
 
 	fuse_fill_req(req, next, NULL);
 	task = fuse_in(sb_fuse_data);
@@ -304,14 +305,6 @@ static int fuse_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	}
 	fuse_out(sb_fuse_data, task);
 	fuse_req_free(req);
-
-	return 0;
-}
-
-static int fuse_pathname(struct inode *inode, char *buf, int flags) {
-	struct fuse_data *data = inode->i_data;
-
-	strcpy(buf, data->name);
 
 	return 0;
 }
@@ -395,7 +388,6 @@ const struct super_block_operations fuse_sbops = {
 const struct inode_operations fuse_iops = {
 	.lookup   = fuse_lookup,
 	.iterate  = fuse_iterate,
-	.pathname = fuse_pathname,
 	.create = fuse_create,
 	.remove = fuse_remove,
 	.getxattr = ext2fuse_getxattr,

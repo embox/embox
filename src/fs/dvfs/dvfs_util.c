@@ -206,12 +206,19 @@ extern int dvfs_cache_del(struct dentry *dentry);
 int dvfs_destroy_dentry(struct dentry *dentry) {
 	assert(dentry->usage_count >= 0);
 	if (dentry->usage_count == 0) {
-		if (dentry->d_inode)
+		if (dentry->d_inode) {
 			dvfs_destroy_inode(dentry->d_inode);
-		dentry_ref_dec(dentry->parent);
-		dlist_del(&dentry->children_lnk);
+		}
+
+		if (dentry->parent) {
+			/* Dentry was integrated to VFS tree */
+			dentry_ref_dec(dentry->parent);
+			dlist_del(&dentry->children_lnk);
+			dvfs_cache_del(dentry);
+		}
+
 		dlist_del(&dentry->d_lnk);
-		dvfs_cache_del(dentry);
+
 		pool_free(&dentry_pool, dentry);
 		return 0;
 	} else {
