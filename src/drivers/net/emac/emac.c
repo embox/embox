@@ -601,8 +601,10 @@ static void emac_set_max_frame_len(int m) {
 }
 
 static void ti816x_config(struct net_device *dev) {
+	struct ti816x_priv *ti816x_priv;
 	unsigned char bcast_addr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
+	ti816x_priv = netdev_priv(dev, struct ti816x_priv);
 	/* reset EMAC module */
 	emac_reset();
 
@@ -627,7 +629,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
 	emac_mdio_config();
-	emac_alloc_rx_queue(netdev_priv(dev, struct ti816x_priv));
+	emac_alloc_rx_queue(ti816x_priv);
 	emac_enable_rx_and_tx_irq();
 	emac_enable_rx_and_tx_dma();
 
