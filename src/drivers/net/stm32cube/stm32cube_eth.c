@@ -237,7 +237,6 @@ static int stm32eth_init(void) {
 	nic->drv_ops = &stm32eth_ops;
 	nic->irq = STM32ETH_IRQ;
 	nic->base_addr = ETH_BASE;
-	/*nic_priv = netdev_priv(nic, struct stm32eth_priv);*/
 
 	stm32eth_netdev = nic;
 

@@ -23,7 +23,7 @@
 EMBOX_UNIT_INIT(umether_init);
 
 static int umether_xmit(struct net_device *dev, struct sk_buff *skb) {
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
+	struct host_net_adp *hnet = netdev_priv(dev);
 
 	host_net_tx(hnet, skb->mac.raw, skb->len);
 
@@ -31,13 +31,13 @@ static int umether_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int umether_start(struct net_device *dev) {
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
+	struct host_net_adp *hnet = netdev_priv(dev);
 
 	return host_net_cfg(hnet, HOST_NET_START);
 }
 
 static int umether_stop(struct net_device *dev) {
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
+	struct host_net_adp *hnet = netdev_priv(dev);
 
 	return host_net_cfg(hnet, HOST_NET_STOP);
 }
@@ -48,7 +48,7 @@ static int umether_setmac(struct net_device *dev, const void *addr) {
 
 static irq_return_t umether_irq(unsigned int irq_num, void *dev_id) {
 	struct net_device *dev = (struct net_device *) dev_id;
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
+	struct host_net_adp *hnet = netdev_priv(dev);
 	struct sk_buff *skb;
 	int len;
 
@@ -86,7 +86,7 @@ static int umether_init(void) {
 	nic->drv_ops = &umether_drv_ops;
 	nic->irq = HOST_NET_IRQ;
 
-	hnet = netdev_priv(nic, struct host_net_adp);
+	hnet = netdev_priv(nic);
 
 	res = host_net_cfg(hnet, HOST_NET_INIT);
 	if (res < 0) {

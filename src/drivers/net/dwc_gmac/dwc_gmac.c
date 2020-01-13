@@ -152,7 +152,7 @@ static int dwc_open(struct net_device *dev) {
 
 	assert(dev);
 
-	dwc_priv = netdev_priv(dev, struct dwc_priv);
+	dwc_priv = netdev_priv(dev);
 
 	version = dwc_reg_read(dwc_priv, DWC_GMAC_VERSION);
 	dwc_priv->mii_clk = (dwc_reg_read(dwc_priv, DWC_GMAC_MII_ADDR) >>
@@ -216,7 +216,7 @@ static int dwc_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(dev);
 	assert(skb);
 
-	priv = netdev_priv(dev, struct dwc_priv);
+	priv = netdev_priv(dev);
 
 	cur_idx = priv->txdesc_id;
 
@@ -260,7 +260,7 @@ static inline void dwc_get_macaddr(struct dwc_priv *dwc_priv, void *addr) {
 static int dwc_set_macaddr(struct net_device *dev, const void *addr) {
 	struct dwc_priv *dwc_priv;
 
-	dwc_priv = netdev_priv(dev, struct dwc_priv);
+	dwc_priv = netdev_priv(dev);
 
 	memcpy(dwc_priv->macaddr, addr, sizeof(dwc_priv->macaddr));
 	dwc_setup_rxfilter(dev->priv);
@@ -278,7 +278,7 @@ static int dwc_mdio_read(struct net_device *dev, uint8_t regAddr) {
 
 	assert(dev);
 
-	dwc_priv = netdev_priv(dev, struct dwc_priv);
+	dwc_priv = netdev_priv(dev);
 
 	reg = regAddr;
 	phy = dwc_priv->phy_id;
@@ -310,7 +310,7 @@ static int dwc_mdio_write(struct net_device *dev, uint8_t regAddr, uint16_t data
 
 	assert(dev);
 
-	dwc_priv = netdev_priv(dev, struct dwc_priv);
+	dwc_priv = netdev_priv(dev);
 
 	reg = regAddr;
 	phy = dwc_priv->phy_id;
@@ -338,7 +338,7 @@ static void dwc_set_phyid(struct net_device *dev, uint8_t phyid) {
 
 	assert(dev);
 
-	dwc_priv = netdev_priv(dev, struct dwc_priv);
+	dwc_priv = netdev_priv(dev);
 
 	dwc_priv->phy_id = phyid;
 }
@@ -347,7 +347,7 @@ static int dwc_set_speed(struct net_device *dev, int speed) {
 	uint32_t reg;
 	struct dwc_priv *dwc_priv;
 
-	dwc_priv = netdev_priv(dev, struct dwc_priv);
+	dwc_priv = netdev_priv(dev);
 
 	reg = dwc_reg_read(dwc_priv, DWC_GMAC_CONFIG);
 
@@ -408,7 +408,7 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 	struct dma_extended_desc *desc;
 	int len;
 
-	priv = netdev_priv(dev_id, struct dwc_priv);
+	priv = netdev_priv(dev_id);
 
 	for (;; ) {
 		cur_desc = priv->rxdesc_id;
@@ -526,7 +526,7 @@ static irq_return_t dwc_irq_handler(unsigned int irq_num, void *dev_id) {
 
 	assert(dev_id);
 
-	priv = netdev_priv(dev_id, struct dwc_priv);
+	priv = netdev_priv(dev_id);
 
 	reg = dwc_reg_read(priv, DWC_GMAC_INTERRUPT_STATUS);
 	if (reg) {

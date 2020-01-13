@@ -79,7 +79,7 @@ static int tun_set_mac(struct net_device *dev, const void *addr) {
 }
 
 static int tun_xmit(struct net_device *dev, struct sk_buff *skb) {
-	struct tun *tun = netdev_priv(dev, struct tun);
+	struct tun *tun = netdev_priv(dev);
 	skb_queue_push(&tun->rx_q, skb);
 	waitq_wakeup(&tun->wq, 1);
 	return 0;
@@ -127,7 +127,7 @@ static inline int tun_netdev_by_idesc(struct idesc *idesc,
 		return -ENOENT;
 	}
 
-	*tun = netdev_priv(*netdev, struct tun);
+	*tun = netdev_priv(*netdev);
 	if (!*tun) {
 		return -ENOENT;
 	}
@@ -144,7 +144,7 @@ static struct idesc *tun_dev_open(struct dev_module *cdev, void *priv) {
 		return err_ptr(ENOENT);
 	}
 
-	tun = netdev_priv(netdev, struct tun);
+	tun = netdev_priv(netdev);
 	if (!tun) {
 		return err_ptr(ENOENT);
 	}
@@ -300,7 +300,7 @@ static int tun_init(void) {
 			goto err_netdev_free;
 		}
 
-		tun = netdev_priv(tdev, struct tun);
+		tun = netdev_priv(tdev);
 		mutex_init(&tun->mtx_use);
 
 		tun_g_array[i] = tdev;

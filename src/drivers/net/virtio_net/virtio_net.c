@@ -47,7 +47,7 @@ static int virtio_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(dev != NULL);
 	assert(skb != NULL);
 
-	virtio_priv = netdev_priv(dev, struct virtio_priv);
+	virtio_priv = netdev_priv(dev);
 
 	skb_extra = skb_extra_alloc();
 	if (skb_extra == NULL) {
@@ -104,7 +104,7 @@ static irq_return_t virtio_interrupt(unsigned int irq_num,
 		return IRQ_NONE;
 	}
 
-	virtio_priv = netdev_priv(dev, struct virtio_priv);
+	virtio_priv = netdev_priv(dev);
 
 	/* release outgoing packets */
 	vq = &virtio_priv->tq;
@@ -345,7 +345,7 @@ static int virtio_init(struct pci_slot_dev *pci_dev) {
 	nic->drv_ops = &virtio_drv_ops;
 	nic->irq = pci_dev->irq;
 	nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
-	nic_priv = netdev_priv(nic, struct virtio_priv);
+	nic_priv = netdev_priv(nic);
 
 	virtio_config(nic);
 
