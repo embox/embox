@@ -11,6 +11,7 @@ jobs:
           set -x
           ip addr
           ip route
+          ping -c 4 $(ip route | awk '/default via/ { print $3 }')
           #A=google.com
           #cat /etc/resolv.conf || true
           #timeout 60 tracepath $A || true
