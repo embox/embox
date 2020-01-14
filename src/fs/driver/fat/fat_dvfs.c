@@ -234,7 +234,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
  *
  * @return Error code
  */
-static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+static int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
 	char path[PATH_MAX];
@@ -271,6 +271,9 @@ static int fat_iterate(struct inode *next, struct inode *parent, struct dir_ctx 
 	switch (res) {
 	case DFS_OK:
 		fat_fill_inode(next, &de, dirinfo);
+		if (DFS_OK != fat_read_filename(next->i_data, fat_sector_buff, name)) {
+			return -1;
+		}
 		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
 		return 0;
 	case DFS_EOF:
@@ -294,23 +297,6 @@ static int fat_remove(struct inode *inode) {
 	return fat_unlike_file(fi, (uint8_t*) fat_sector_buff);
 }
 
-static int fat_pathname(struct inode *inode, char *buf, int flags) {
-	struct fat_file_info *fi;
-
-	switch (flags) {
-	case DVFS_NAME:
-		fi = inode->i_data;
-
-		if (DFS_OK != fat_read_filename(fi, fat_sector_buff, buf)) {
-			return -1;
-		}
-		return 0;
-	default:
-		/* NIY */
-		return -ENOSYS;
-	}
-}
-
 static int fat_truncate(struct inode *inode, size_t len) {
 	/* This is a stub, but files should be extended automatically
 	 * with the common part of the driver on write */
@@ -323,7 +309,6 @@ struct inode_operations fat_iops = {
 	.lookup   = fat_ilookup,
 	.remove   = fat_remove,
 	.iterate  = fat_iterate,
-	.pathname = fat_pathname,
 	.truncate = fat_truncate,
 };
 

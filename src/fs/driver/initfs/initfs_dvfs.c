@@ -40,6 +40,22 @@
 POOL_DEF(initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
 POOL_DEF(initfs_dir_pool, struct initfs_dir_info, OPTION_GET(NUMBER,dir_quantity));
 
+static int initfs_fillname(struct inode *inode, char *buf) {
+	struct cpio_entry entry;
+	char *c;
+
+	if (NULL == cpio_parse_entry((char *) (uintptr_t) inode->i_no, &entry))
+		return -1;
+
+	c = strrchr(entry.name, '/');
+	if (c)
+		c++;
+	memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
+	buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
+
+	return 0;
+}
+
 /**
 * @brief Initialize initfs inode
 *
@@ -119,7 +135,7 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 	return NULL;
 }
 
-static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+static int initfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct cpio_entry entry;
 	extern char _initfs_start;
 	struct initfs_dir_info *di = parent->i_data;
@@ -146,6 +162,7 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 				return -1;
 			}
 
+			initfs_fillname(next, name);
 			ctx->fs_ctx = cpio;
 
 			return 0;
@@ -154,32 +171,6 @@ static int initfs_iterate(struct inode *next, struct inode *parent, struct dir_c
 
 	/* End of directory */
 	return -1;
-}
-
-static int initfs_pathname(struct inode *inode, char *buf, int flags) {
-	struct cpio_entry entry;
-	char *c;
-
-	if (NULL == cpio_parse_entry((char *) (uintptr_t) inode->i_no, &entry))
-		return -1;
-
-	switch (flags) {
-	case DVFS_PATH_FS:
-		memcpy(buf, entry.name, entry.name_len);
-		buf[entry.name_len] = '\0';
-		break;
-	case DVFS_NAME:
-		c = strrchr(entry.name, '/');
-		if (c)
-			c++;
-		memcpy(buf, c ? c : entry.name, entry.name_len - (c ? (c - entry.name) : 0));
-		buf[entry.name_len - (c ? (c - entry.name) : 0)] = '\0';
-		break;
-	default:
-		return -1;
-	}
-
-	return 0;
 }
 
 static int initfs_mount_end(struct super_block *sb) {
@@ -215,7 +206,6 @@ struct super_block_operations initfs_sbops = {
 struct inode_operations initfs_iops = {
 	.lookup   = initfs_lookup,
 	.iterate  = initfs_iterate,
-	.pathname = initfs_pathname,
 };
 
 extern struct file_operations initfs_fops;

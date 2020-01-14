@@ -26,35 +26,6 @@ extern int            dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
 extern int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup);
 extern int dvfs_lookup(const char *path, struct lookup *lookup);
-/* Default handlers */
-extern int           dvfs_default_pathname(struct inode *inode, char *buf, int flags);
-
-/* Path-related functions */
-
-/**
- * @brief Get the full path to the inode from task's root dentry
- * @param inode The inode of which the path is to be resolved
- * @param buf   Char buffer where path would be put
- * @param flags Used to determine how pathname should be formed
- *                  DVFS_PATH_FULL will result in pathname from process root
- *                  DVFS_PATH_FS   will result in pathname within given fs
- *                  DVFS_NAME      will result in file name
- *
- * @retval  0 Success
- * @retval -1 Error
- */
-int dvfs_pathname(struct inode *inode, char *buf, int flags) {
-	assert(inode);
-	assert(buf);
-
-	if (flags == 0)
-		flags = DVFS_NAME;
-
-	if (inode->i_ops && inode->i_ops->pathname)
-		return inode->i_ops->pathname(inode, buf, flags);
-	else
-		return dvfs_default_pathname(inode, buf, flags);
-}
 
 /**
  * @brief Create new inode
@@ -567,44 +538,6 @@ static struct dentry *iterate_virtual(struct lookup *lookup, struct dir_ctx *ctx
 	return NULL;
 }
 
-static int iterate_cached(struct super_block *sb,
-		struct lookup *lookup, struct inode *next_inode) {
-	char full_path[DVFS_MAX_PATH_LEN];
-	struct dentry *cached;
-	struct dentry *next_dentry;
-	int path_end;
-
-	next_dentry = dvfs_alloc_dentry();
-	if (!next_dentry) {
-		dvfs_destroy_inode(next_inode);
-		return -ENOMEM;
-	}
-	dentry_fill(sb, next_inode, next_dentry, lookup->parent);
-	inode_fill(sb, next_inode, next_dentry);
-	dentry_upd_flags(next_dentry);
-
-	dentry_full_path(lookup->parent, full_path);
-	path_end = strlen(full_path);
-	if (full_path[path_end - 1] != '/') {
-		strcat(full_path, "/");
-		path_end++;
-	}
-	dvfs_pathname(next_inode, full_path + path_end, 0);
-	strncpy(next_dentry->name, full_path + path_end, DENTRY_NAME_LEN - 1);
-	lookup->item = next_dentry;
-
-	if ((cached = dvfs_cache_get(full_path, lookup))) {
-		dentry_ref_dec(next_dentry);
-		dvfs_destroy_dentry(next_dentry);
-		dentry_ref_inc(cached);
-		lookup->item = cached;
-	} else {
-		dvfs_pathname(next_inode, next_dentry->name, 0);
-		dvfs_cache_add(next_dentry);
-	}
-	return 0;
-}
-
 /**
  * @brief Get next entry in the directory
  * @param lookup  Contains directory dentry (.parent) and
@@ -617,6 +550,7 @@ static int iterate_cached(struct super_block *sb,
 int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	struct super_block *sb;
 	struct inode *next_inode;
+	struct dentry *next_dentry, *cached;
 	int res;
 
 	assert(ctx);
@@ -647,27 +581,42 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	if (!next_inode) {
 		return -ENOMEM;
 	}
+	next_dentry = dvfs_alloc_dentry();
+	if (!next_dentry) {
+		dvfs_destroy_inode(next_inode);
+		return -ENOMEM;
+	}
 
-	res = sb->sb_iops->iterate(next_inode, lookup->parent->d_inode, ctx);
+	res = sb->sb_iops->iterate(next_inode, next_dentry->name, lookup->parent->d_inode, ctx);
 	if (res) {
 		/* iterate virtual */
-		dvfs_destroy_inode(next_inode);
+		dentry_ref_dec(next_dentry);
+		dvfs_destroy_dentry(next_dentry);
 
 		lookup->item = NULL;
 		if (lookup->parent->flags & DVFS_CHILD_VIRTUAL) {
 			ctx->flags = DVFS_CHILD_VIRTUAL;
 
 			lookup->item = iterate_virtual(lookup, ctx);
-
-			return 0;
 		}
+		/* Virtual entries are always cached, so we skip cache check */
 		return 0;
 	}
-	/* caching found inode */
-	iterate_cached(sb, lookup, next_inode);
-	if (NULL == lookup->item) {
-		return -ENOMEM;
+
+	if ((cached = dvfs_cache_get(next_dentry->name, lookup))) {
+		/* This node is already in the VFS tree */
+		dvfs_destroy_dentry(next_dentry);
+		lookup->item = cached;
+	} else {
+		/* Integrate next_dentry into VFS tree */
+		dentry_fill(sb, next_inode, next_dentry, lookup->parent);
+		inode_fill(sb, next_inode, next_dentry);
+		dentry_upd_flags(next_dentry);
+		dvfs_cache_add(next_dentry);
+		lookup->item = next_dentry;
 	}
+
+	//dentry_ref_inc(lookup->item);
 
 	return 0;
 }

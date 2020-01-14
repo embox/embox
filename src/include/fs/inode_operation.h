@@ -22,7 +22,8 @@ struct inode_operations {
 	int           (*rmdir)(struct dentry *dir);
 	int           (*truncate)(struct inode *inode, size_t len);
 	int           (*pathname)(struct inode *inode, char *buf, int flags);
-	int           (*iterate)(struct inode *next, struct inode *parent, struct dir_ctx *ctx);
+	int           (*iterate)(struct inode *next_inode, char *name_buf,
+			struct inode *parent, struct dir_ctx *ctx);
 	int           (*rename)(struct inode *node, struct inode *new_parent, const char *new_name);
 	int           (*getxattr)(struct inode *node, const char *name, char *value, size_t size);
 	int           (*setxattr)(struct inode *node, const char *name, const char *value, size_t size, int flags);
