@@ -8,6 +8,7 @@
 #include <net/ethernet.h>
 #include <netinet/ip.h>
 #include <netinet/ip_icmp.h>
+#include <arpa/inet.h>
 
 #include <linux/if_packet.h>
 
@@ -39,40 +40,66 @@ uint16_t cksum(unsigned char *buf, int len) {
 }
 
 int main(int argc, char *argv[]) {
+	struct in_addr myaddr;
+	bool loopback = false;
+
+	int opt; 
+	while ((opt = getopt(argc, argv, "l")) != -1) {
+		switch (opt) {
+		case 'l':
+			loopback = true;
+			break;
+		default:
+			fprintf(stderr, "unknown option \"%c\"\n", opt);
+			return 1;
+		}
+	}
+	
+	if (argc <= optind) {
+		fprintf(stderr, "no address");
+		return 1;
+	}
+
+	int r = inet_pton(AF_INET, argv[optind], &myaddr);
+	if (r == 0) {
+		fprintf(stderr, "not an address");
+		return 1;
+	} else if (r < 0) {
+		perror("inet_pton");
+		return 1;
+	}
+
 	int sock = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if (-1 == sock) {
 		perror("sock");
 		return 1;
 	}
 
+	int out = 0;
 	struct sockaddr_ll sockaddr;
 	socklen_t socklen;
-
 	int len;
 	while (0 < (socklen = sizeof(sockaddr),
 			len = recvfrom(sock, buf, sizeof(buf), 0,
 				(struct sockaddr *)&sockaddr, &socklen))) {
-
-#if 0
-		hex_print(buf, len);
-#endif
-
-		struct ether_header *eth = (struct ether_header *)buf;
-		bool lo = true;
-		for (int i = 0; i < ETH_ALEN; ++i) {
-			if (eth->ether_dhost[i] != 0 || eth->ether_dhost[i] != 0) {
-				lo = false;
-				break;
+		if (loopback) {
+			// packets on loopback caught twice, outgoing and 
+			// incoming; drop all outgoing ones.
+			if ((out = !out)) {
+				continue;
 			}
 		}
-		if (!lo) {
-			continue;
-		}
+
+		struct ether_header *eth = (struct ether_header *)buf;
 
 		if (ntohs(eth->ether_type) != ETHERTYPE_IP) {
 			continue;
 		}
 		struct iphdr *ip = (struct iphdr *)((char*)eth + sizeof(*eth));
+
+		if (ip->daddr != myaddr.s_addr) {
+			continue;
+		}
 
 		if (ip->protocol != IPPROTO_ICMP) {
 			continue;
