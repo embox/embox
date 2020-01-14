@@ -10,8 +10,9 @@ jobs:
       - run: |
           set -x
           A=google.com
-          cat /etc/resolv.conf || true
-          timeout 60 tracepath $A || true
+          #cat /etc/resolv.conf || true
+          #timeout 60 tracepath $A || true
+          sudo apt install traceroute
           timeout 60 traceroute $A || true
           timeout 60 ping -c 1 $A || true
           timeout 60 getent hosts $A || true
