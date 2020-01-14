@@ -111,6 +111,7 @@ struct dirent *readdir(DIR *dir) {
 				return NULL;
 			}
 			vfs_add_leaf(node, dir->path.node);
+			slist_add_first_link(&node->dirent_link, &dir->inodes_list);
 		} else {
 			return NULL;
 		}
@@ -122,8 +123,6 @@ struct dirent *readdir(DIR *dir) {
 	dir->current.d_ino = (ino_t) (uintptr_t) node;
 
 	node->i_nlink ++;
-
-	slist_add_first_link(&node->dirent_link, &dir->inodes_list);
 
 	return &dir->current;
 }
