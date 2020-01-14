@@ -87,6 +87,7 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	}
 	log_debug("\n");
 
+	req->req_stat = USB_REQ_NOERR;
 	usb_request_complete(req);
 
 	return 0;
