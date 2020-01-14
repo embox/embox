@@ -6,17 +6,18 @@ jobs:
 
   test:
     runs-on: ubuntu-latest
-    run: |
-      set -x
-      A=google.com
-      tracepath $A || true
-      traceroute $A || true
-      cat /etc/resolv.conf || true
-      ping -c 1 $A || true
-      getent hosts $A || true
-      getent ahosts $A || true
-      getent ahostsv4 $A || true
-      dig +short $A || true
+    steps:
+      run: |
+        set -x
+        A=google.com
+        tracepath $A || true
+        traceroute $A || true
+        cat /etc/resolv.conf || true
+        ping -c 1 $A || true
+        getent hosts $A || true
+        getent ahosts $A || true
+        getent ahostsv4 $A || true
+        dig +short $A || true
 
   #buildgen:
     #runs-on: ubuntu-latest
