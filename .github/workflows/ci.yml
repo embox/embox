@@ -11,7 +11,10 @@ jobs:
           set -x
           ip addr
           ip route
-          ping -c 4 $(ip route | awk '/default via/ { print $3 }')
+          make -C ./scripts/continuous/net/netsim/
+          sudo ip route add 10.0.4.0/24 dev lo
+          sudo ./scripts/continuous/net/netsim/netsim &
+          ping -c 10.0.4.16
           #A=google.com
           #cat /etc/resolv.conf || true
           #timeout 60 tracepath $A || true
