@@ -9,23 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: |
-          set -x
-          ip addr
-          ip route
-          make -C ./scripts/continuous/net/netsim/
-          sudo ip route add 10.0.4.0/24 dev lo
-          #sudo ./scripts/continuous/net/netsim/netsim &
-          ping -c 4 10.0.4.16
-          #A=google.com
-          #cat /etc/resolv.conf || true
-          #timeout 60 tracepath $A || true
-          #sudo apt install traceroute
-          #timeout 60 traceroute $A || true
-          #timeout 60 ping -c 1 $A || true
-          #timeout 60 getent hosts $A || true
-          #timeout 60 getent ahosts $A || true
-          #timeout 60 getent ahostsv4 $A || true
-          #timeout 60 dig +short $A || true
+          IP=192.168.128.128
+          ./scripts/continuous/net/netsim/start.sh $IP
+          ping -c 4 $IP
 
   #buildgen:
     #runs-on: ubuntu-latest
