@@ -13,7 +13,7 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
-HOST_DNS_IP=10.0.0.11
+HOST_DNS_IP=$HOST_IP
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
 
@@ -121,6 +121,7 @@ tap_down() {
 }
 
 sed -i "s/CONTINIOUS_RUN_DNS_SERVER/$(determ_dns)/" conf/mods.config
+echo -n DEBUG: ; grep nameserver= conf/mods.config
 make >/dev/null 2>/dev/null
 
 tap_up
