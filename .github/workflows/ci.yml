@@ -10,14 +10,14 @@ jobs:
       - run: |
           set -x
           A=google.com
-          tracepath $A || true
-          traceroute $A || true
           cat /etc/resolv.conf || true
-          ping -c 1 $A || true
-          getent hosts $A || true
-          getent ahosts $A || true
-          getent ahostsv4 $A || true
-          dig +short $A || true
+          timeout 60 tracepath $A || true
+          timeout 60 traceroute $A || true
+          timeout 60 ping -c 1 $A || true
+          timeout 60 getent hosts $A || true
+          timeout 60 getent ahosts $A || true
+          timeout 60 getent ahostsv4 $A || true
+          timeout 60 dig +short $A || true
 
   #buildgen:
     #runs-on: ubuntu-latest
