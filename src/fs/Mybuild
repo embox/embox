@@ -11,6 +11,7 @@ module node {
 	@IncludeExport(path="fs")
 	source "dentry.h"
 
+	depends embox.driver.block_dev
 	depends embox.kernel.thread.mutex
 	@NoRuntime depends embox.util.tree
 }

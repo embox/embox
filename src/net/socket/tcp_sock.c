@@ -383,7 +383,7 @@ static int tcp_write(struct tcp_sock *tcp_sk, struct msghdr * msg) {
 	size_t skb_len;
 	int tran_len;
 	int cp_len;
-	int cp_off;
+	int cp_off = 0;
 	int i;
 
 	full_len = 0;
