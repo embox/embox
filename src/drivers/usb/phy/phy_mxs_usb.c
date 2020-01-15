@@ -7,6 +7,7 @@
 #include <util/log.h>
 
 #include <stddef.h>
+#include <unistd.h>
 
 #include <drivers/clk/ccm_imx6.h>
 #include <drivers/common/memory.h>
@@ -136,6 +137,9 @@ void imx_usb_phy_enable(int port) {
 	uint32_t val;
 
 	ccm_analog_usb_init(port);
+
+	/* FIXME Should it be here? */
+	usleep(1 * 1000);
 
 	stmp_reset_block((void *)(uintptr_t)USBPHY_CTRL(port));
 	REG32_STORE(USBPHY_PWD(port), 0);
