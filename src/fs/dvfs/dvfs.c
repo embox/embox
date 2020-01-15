@@ -342,6 +342,7 @@ static struct file_desc *dvfs_get_mount_bdev(const char *dev_name) {
 	}
 
 	/* devfs presents, perform usual mount */
+	memset(&lookup, 0, sizeof(lookup));
 	dvfs_lookup(dev_name, &lookup);
 	if (!lookup.item) {
 		SET_ERRNO(ENOENT);
