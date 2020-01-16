@@ -21,7 +21,7 @@ TEST_CASE {ntpdate test} {
 	global host_ip
 	global host_date
 
-	send "ntpdate $host_ip\r"
+	send "ntpdate 1.pool.ntp.org\r"
 	test_expect_strings ":/#"
 
 	# And compare the host date with the Embox's one.

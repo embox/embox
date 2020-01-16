@@ -29,7 +29,7 @@ TEST_CASE_TARGET {ntpdate test} {
 	variable host_ip
 	global host_date
 
-	send "ntpdate $host_ip\r"
+	send "ntpdate 2.pool.ntp.org\r"
 	test_assert_regexp_equal ":/#"
 
 	# And compare the host date with the Embox's one.

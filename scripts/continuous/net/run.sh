@@ -163,4 +163,7 @@ test_begin "ping forwarding test suite"
 	test_retcode
 test_end
 
+set -x
+echo DEBUG 1
+ps ax
 exit $test_suite_code
