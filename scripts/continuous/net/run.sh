@@ -94,14 +94,15 @@ test_end() {
 }
 
 determ_dns() {
-	awk -v HOST_IP=$HOST_IP '$1 == "nameserver" {
-	  if ($2 == "localhost" || $2 ~ /^127\./) {
-	    print HOST_IP
-	  } else {
-	    print $2
-	  }
-	  exit
-	}' /etc/resolv.conf
+	#awk -v HOST_IP=$HOST_IP '$1 == "nameserver" {
+	  #if ($2 == "localhost" || $2 ~ /^127\./) {
+	    #print HOST_IP
+	  #} else {
+	    #print $2
+	  #}
+	  #exit
+	#}' /etc/resolv.conf
+	echo 8.8.8.8
 }
 
 tap_up() {
