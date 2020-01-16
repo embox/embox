@@ -94,7 +94,14 @@ test_end() {
 }
 
 determ_dns() {
-	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1 | sed 's/\(127\..\..\..\|localhost\)/$HOST_DNS_IP/'
+	awk -v HOST_IP=$HOST_IP '$1 == "nameserver" {
+	  if ($2 == "localhost" || $2 ~ /^127\./) {
+	    print HOST_IP
+	  } else {
+	    print $2
+	  }
+	  exit
+	}' /etc/resolv.conf
 }
 
 tap_up() {
