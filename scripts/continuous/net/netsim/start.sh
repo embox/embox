@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -x
+
 IP=$1
 
 B=$(dirname $0)

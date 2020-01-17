@@ -1,4 +1,4 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
 # bash is required by declare -A
 # @file
 # @brief
@@ -6,6 +6,8 @@
 # @author  Anton Kozlov
 # @date    30.07.2013
 #
+
+set -x
 
 # ATML == arch + template, i.e. x86/debug
 ATML="$1"

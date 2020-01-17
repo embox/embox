@@ -1,4 +1,6 @@
-#!/usr/bin/env bash -x
+#!/usr/bin/env bash
+
+set -x
 
 ROOT_DIR=.
 BASE_DIR=$ROOT_DIR
