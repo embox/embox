@@ -154,7 +154,6 @@ static inline long long atoll(const char *nptr) {
 	return strtoll(nptr, 0, 10);
 }
 extern long long atoq(const char *nptr);
-extern double strtod(const char *nptr, char **endptr);
 extern float strtof(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
 extern void abort(void);
