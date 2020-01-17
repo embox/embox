@@ -57,13 +57,11 @@ jobs:
       - run: make
       - run: |
           ./scripts/continuous/net/netsim/start.sh 192.168.128.128
-          ping -c 4 192.168.128.128
         if: matrix.template == 'x86/test/net'
       - run: |
           ./scripts/continuous/run.sh ${{matrix.template}}
-          echo DEBUG 1
-          ps ax
-      - run: echo DEBUG 1; ps ax
+          kill -9 $$
+          pstree -p
       
 
   ## need to manage container by hand because of modprobe below
