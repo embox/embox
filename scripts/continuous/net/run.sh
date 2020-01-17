@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -x
 
 ROOT_DIR=.
 BASE_DIR=$ROOT_DIR
@@ -165,5 +165,6 @@ test_end
 
 set -x
 echo DEBUG 1
-ps ax
+pstree -p
+jobs
 exit $test_suite_code

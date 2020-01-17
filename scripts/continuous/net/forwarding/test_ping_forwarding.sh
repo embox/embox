@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 set -u
+set -x
 
 ROOT_DIR=.
 BASE_DIR=$ROOT_DIR

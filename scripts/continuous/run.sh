@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env bash -x
 # bash is required by declare -A
 # @file
 # @brief
