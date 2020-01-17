@@ -1,0 +1,9 @@
+package third_party.lib.npf.deps
+
+@Build(script="$(EXTERNAL_MAKE)")
+module libqsbr {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "libmodbus.a"
+
+	depends embox.compat.posix.LibPosix
+}
