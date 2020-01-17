@@ -21,8 +21,6 @@ static module getopt {
 }
 
 static module utsname {
-	/* FIXME static release version 0.3.3 */
-	option string release="0.3.3"
 	option string system="Embox"
 	option string hostname="localhost"
 	source "utsname.c"

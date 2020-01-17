@@ -30,6 +30,8 @@ LIBGCC_FINDER=$(CC) $(CFLAGS)
 endif
 CPP     ?= $(CC) -E
 
+CPPFLAGS += -D__EMBOX_VERSION__=\"$(EMBOX_VERSION)\"
+
 comma_sep_list = $(subst $(\s),$(,),$(strip $1))
 
 COVERAGE_CFLAGS ?= -finstrument-functions \
