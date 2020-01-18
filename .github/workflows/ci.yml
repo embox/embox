@@ -16,7 +16,7 @@ jobs:
           #path: mk/.cache
 
   ci:
-    needs: buildgen
+    #needs: buildgen
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
