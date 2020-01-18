@@ -60,11 +60,12 @@ jobs:
           pstree -p
         if: matrix.template == 'x86/test/net'
       #- run: ./scripts/continuous/run.sh ${{matrix.template}}
+      - run: echo test
+      - run: killall netsim || true
+        if: matrix.template == 'x86/test/net'
       - run: |
           set -x
           timeout 10 ntpq -c lpeers
-      - run: killall netsim
-        if: matrix.template == 'x86/test/net'
 
   ## need to manage container by hand because of modprobe below
   #ci-x86-fs:
