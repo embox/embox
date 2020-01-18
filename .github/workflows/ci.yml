@@ -3,17 +3,17 @@ name: CI
 on: [push]
 
 jobs:
-  buildgen:
-    runs-on: ubuntu-latest
-    #container: embox/emdocker
-    steps:
-      - uses: actions/checkout@v1
-      - run: make confload-x86/qemu
-      - run: make buildgen
-      - uses: actions/upload-artifact@v1
-        with:
-          name: mk-cache
-          path: mk/.cache
+  #buildgen:
+    #runs-on: ubuntu-latest
+    ##container: embox/emdocker
+    #steps:
+      #- uses: actions/checkout@v1
+      #- run: make confload-x86/qemu
+      #- run: make buildgen
+      #- uses: actions/upload-artifact@v1
+        #with:
+          #name: mk-cache
+          #path: mk/.cache
 
   ci:
     needs: buildgen
@@ -59,8 +59,11 @@ jobs:
           ./scripts/continuous/net/netsim/start.sh 192.168.128.128
         if: matrix.template == 'x86/test/net'
       #- run: ./scripts/continuous/run.sh ${{matrix.template}}
-      - run: ntpdate localhost
-      
+      - run: |
+          set -x
+          timeout 10 ntpq -c lpeers
+      - run: killall netsim
+        if: matrix.template == 'x86/test/net'
 
   ## need to manage container by hand because of modprobe below
   #ci-x86-fs:
