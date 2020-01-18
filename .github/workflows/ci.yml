@@ -55,7 +55,9 @@ jobs:
           #touch mk/.cache/mybuild/myfiles-list.mk
       #- run: make confload-${{matrix.template}}
       #- run: make
-      - run: ./scripts/continuous/net/netsim/start.sh 192.168.128.128 &
+      - run: |
+        ./scripts/continuous/net/netsim/start.sh 192.168.128.128 &
+        pstree -p
         if: matrix.template == 'x86/test/net'
       #- run: ./scripts/continuous/run.sh ${{matrix.template}}
       - run: |
