@@ -19,4 +19,4 @@ if ! [ -f $NETSIM ]; then
 fi
 
 $SUDO ip route add $IP dev lo
-$SUDO $NETSIM -l $IP &
+exec $SUDO $NETSIM -l $IP
