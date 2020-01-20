@@ -25,3 +25,10 @@ module whereami extends whereami_api {
 module no_whereami extends whereami_api {
 	source "no_whereami.h"
 }
+
+module buildinfo {
+	@IncludeExport(path="debug")
+	source "buildinfo.h"
+	source "buildinfo.c"
+	source "buildinfo.lds.S"
+}
