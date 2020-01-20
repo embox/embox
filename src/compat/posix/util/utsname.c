@@ -16,14 +16,13 @@
 
 #include <framework/mod/options.h>
 
-#define MODOPS_RELEASE OPTION_STRING_GET(release)
 #define MODOPS_SYSTEM OPTION_STRING_GET(system)
 #define MODOPS_HOSTNAME OPTION_STRING_GET(hostname)
 
 static const struct utsname sys_name = {
 	.sysname = MODOPS_SYSTEM,
 	.nodename = MODOPS_HOSTNAME,
-	.release = MODOPS_RELEASE,
+	.release = __EMBOX_VERSION__,
 #ifdef SMP
 	.version = " SMP "__DATE__ " " __TIME__,
 #else /* !SMP */

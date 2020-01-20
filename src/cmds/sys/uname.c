@@ -40,7 +40,6 @@ int main(int argc, char *argv[]) {
 
 	memset(&args, 0, sizeof args);
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hasnrvmpio"))) {
 		switch(opt) {
 		default:
@@ -61,10 +60,15 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	if (!uname_args_not_empty(&args))
+	if (!uname_args_not_empty(&args)) {
 		args.with_s = 1;
+	}
 
-	uname(&info);
+	if (-1 == uname(&info)) {
+		printf("uname failed with code error %d", errno);
+		return errno;
+	}
+
 	processor = OPTION_STRING_GET(processor);
 	platform = OPTION_STRING_GET(platform);
 	system = OPTION_STRING_GET(system);
@@ -75,11 +79,15 @@ int main(int argc, char *argv[]) {
 	if (args.with_a || args.with_v) printf("%s ", info.version);
 	if (args.with_a || args.with_m) printf("%s ", info.machine);
 
-	if ((args.with_a && processor) || args.with_p)
+	if ((args.with_a && processor) || args.with_p) {
 		printf("%s ", processor ? processor : "unknown");
-	if ((args.with_a && platform) || args.with_i)
+	}
+	if ((args.with_a && platform) || args.with_i) {
 		printf("%s ", platform ? platform : "unknown");
-	if (args.with_a || args.with_o) printf("%s ", system);
+	}
+	if (args.with_a || args.with_o) {
+		printf("%s ", system);
+	}
 	printf("\n");
 
 	return 0;
