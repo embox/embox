@@ -5,8 +5,10 @@
  * @author Nikolay Korotky
  */
 
-#include <unistd.h>
 #include <stdio.h>
+#include <unistd.h>
+
+#include <debug/buildinfo.h>
 
 static void print_usage(void) {
 	printf("Usage: version [-h]\n");
@@ -36,8 +38,7 @@ int main(int argc, char **argv) {
         printf("| |____| | | | | | |_) | (_) >  <  \n");
         printf("|______|_| |_| |_|____/ \\___/_/\\_\\\n");
         printf("\n");
-	printf("Date: %12s\n", __DATE__);
-	printf("Time: %9s\n", __TIME__);
+	printf("%s\n", buildinfo_date());
 	printf("Compiler: %s\n", __VERSION__);
 #ifdef CONFIG_SVN_REV
 	printf("Revision: r%d\n", rev);
