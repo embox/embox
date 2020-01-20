@@ -69,14 +69,20 @@ __BEGIN_DECLS
  *   @a base.
  */
 extern long int strtol(const char *nptr, char **endptr, int base);
-
 extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
-
-extern double strtod(const char *nptr, char **endptr);
-
-extern unsigned long long int strtoull(const char *nptr, char **endptr, int base);
-
 extern long long int strtoll(const char *nptr, char **endptr, int base);
+extern unsigned long long int strtoull(const char *nptr, char **endptr, int base);
+extern float strtof(const char *nptr, char **endptr);
+extern double strtod(const char *nptr, char **endptr);
+extern long double strtold(const char *nptr, char **endptr);
+
+extern double atof(const char *nptr);
+extern int atoi(const char *nptr);
+extern long atol(const char *nptr);
+static inline long long atoll(const char *nptr) {
+	return strtoll(nptr, 0, 10);
+}
+extern long long atoq(const char *nptr);
 
 /**
  * Convert integer to string.
@@ -146,16 +152,6 @@ extern int setstate_r(char *statebuf, struct random_data *buf);
 extern ldiv_t ldiv(long num, long denom);
 extern div_t div(int num, int denom);
 
-//FIXME atof atoi and so on
-extern double atof(const char *nptr);
-extern int atoi(const char *nptr);
-extern long atol(const char *nptr);
-static inline long long atoll(const char *nptr) {
-	return strtoll(nptr, 0, 10);
-}
-extern long long atoq(const char *nptr);
-extern float strtof(const char *nptr, char **endptr);
-extern long double strtold(const char *nptr, char **endptr);
 extern void abort(void);
 
 /* Integer expression whose value is the maximum number of bytes in a character
