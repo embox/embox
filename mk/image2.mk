@@ -169,6 +169,8 @@ VPATH += $(GPATH)
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
 $(embox_o):
+	mkdir -p $(OBJ_DIR)/mk;
+	$(ROOT_DIR)/mk/gen_buildinfo.sh > $(OBJ_DIR)/mk/buildinfo.ld;
 	$(LD) -r $(ldflags_all) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
