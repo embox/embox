@@ -31,7 +31,7 @@ void mmu_on(void) {
 	WRITE_MMU_CR(mmu_cr);
 	E2K_WAIT_ALL;
 
-	log_error("READ_MMU_ROOT_PTB() %lx", READ_MMU_ROOT_PTB());
+	log_debug("READ_MMU_ROOT_PTB() %lx", READ_MMU_ROOT_PTB());
 }
 
 void mmu_off(void) {
