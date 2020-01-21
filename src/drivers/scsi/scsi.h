@@ -54,6 +54,17 @@ struct scsi_cmd {
 	size_t  scmd_lba;
 };
 
+
+
+#define SCSI_CMD_OPCODE_TEST_UNIT 0x00
+struct scsi_cmd_test_unit {
+	uint8_t  scsi_cmd_opcode;
+	uint8_t  __reserved[3];
+	uint8_t  control;
+	uint8_t  __pads[1];
+} __attribute__((packed));
+
+
 #define SCSI_CMD_OPCODE_INQUIRY 0x12
 struct scsi_cmd_inquiry {
 	uint8_t  sinq_opcode;
@@ -66,9 +77,12 @@ struct scsi_cmd_inquiry {
 #define SCSI_INQIRY_DEVTYPE_MASK  0x1f
 #define SCSI_INQIRY_DEVTYPE_BLK   0x00
 
-#define SCSI_DATA_INQUIRY_VID_LEN 8
-#define SCSI_DATA_INQUIRY_PID_LEN 16
-#define SCSI_DATA_INQUIRY_REV_LEN 4
+#define SCSI_DATA_INQUIRY_VID_LEN     8
+#define SCSI_DATA_INQUIRY_PID_LEN     16
+#define SCSI_DATA_INQUIRY_REV_LEN     4
+
+#define SCSI_DATA_INQUIRY_PROTECT     0x1
+
 struct scsi_data_inquiry {
 	uint8_t dinq_devtype;
 	uint8_t dinq_removable;
@@ -92,11 +106,31 @@ struct scsi_cmd_cap10 {
 	uint8_t  sc10_reserve2;
 	uint8_t  sc10_pmi;
 	uint8_t  sc10_control;
+	uint8_t __sc10_padd[2];
 } __attribute__((packed));
 
 struct scsi_data_cap10 {
 	uint32_t dc10_lba;
 	uint32_t dc10_blklen;
+} __attribute__((packed));
+
+#define SCSI_CMD_OPCODE_CAP16 0x9E
+struct scsi_cmd_cap16 {
+	uint8_t  sc16_opcode;
+	uint8_t  sc16_service_action;
+	uint64_t sc16_block_addr;
+	uint32_t sc16_alloc_len;
+	uint8_t  sc16_pmi;
+	uint8_t  sc16_control;
+} __attribute__((packed));
+
+struct scsi_data_cap16 {
+	uint64_t dc16_lba;
+	uint32_t dc16_blklen;
+	uint8_t dc16_flags;
+	uint8_t dc16_exponent;
+	uint8_t dc16_aligned_lba;
+	uint8_t dc16_reserved[0x10];
 } __attribute__((packed));
 
 #define SCSI_CMD_OPCODE_SENSE 0x03

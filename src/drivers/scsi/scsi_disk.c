@@ -5,12 +5,15 @@
  * @author  Anton Kozlov
  * @date    22.01.2014
  */
+#include <util/log.h>
 
 #include <errno.h>
+#include <string.h>
+
+#include <util/math.h>
+
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/waitq.h>
-#include <util/math.h>
-#include <string.h>
 
 #include <drivers/scsi.h>
 
@@ -23,18 +26,20 @@ static int scsi_wake_res(struct scsi_dev *dev) {
 
 static int scsi_wait_cmd_complete(struct scsi_dev *dev, struct scsi_cmd *cmd) {
 
+	int res = 0;
 	/* guards to send only one command */
 	if (!dev->in_cmd) {
 		dev->in_cmd = 1;
 		dev->cmd_complete = scsi_do_cmd(dev, cmd);
+
 	}
 
 	if (dev->cmd_complete) {
 		dev->in_cmd = 0;
-		return dev->cmd_complete;
+		res = dev->cmd_complete;
 	}
-
-	return 0;
+	log_debug("ret %d complete =%d",res, dev->cmd_complete);
+	return res;
 }
 
 static void scsi_disk_lock(struct block_dev *bdev) {

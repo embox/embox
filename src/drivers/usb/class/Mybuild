@@ -19,7 +19,6 @@ module mass_storage {
 	depends embox.driver.usb.core
 
 	depends embox.driver.scsi
-	depends embox.driver.block_dev.scsi_disk
 }
 
 module cdc {
