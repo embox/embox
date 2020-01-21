@@ -88,7 +88,6 @@ int main(int argc, char **argv) {
 	const char *basedir;
 #if USE_IP_VER == 4
 	struct sockaddr_in inaddr;
-	const size_t inaddrlen = sizeof(inaddr);
 	const int family = AF_INET;
 
 	inaddr.sin_family = AF_INET;
@@ -96,7 +95,6 @@ int main(int argc, char **argv) {
 	inaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 #elif USE_IP_VER == 6
 	struct sockaddr_in6 inaddr;
-	const size_t inaddrlen = sizeof(inaddr);
 	const int family = AF_INET6;
 
 	inaddr.sin6_family = AF_INET6;
@@ -114,7 +112,7 @@ int main(int argc, char **argv) {
 		return -errno;
 	}
 
-	if (-1 == bind(host, (struct sockaddr *) &inaddr, inaddrlen)) {
+	if (-1 == bind(host, (struct sockaddr *) &inaddr, sizeof(inaddr))) {
 		httpd_error("bind() failure: %s", strerror(errno));
 		close(host);
 		return -errno;
@@ -129,7 +127,7 @@ int main(int argc, char **argv) {
 	while (1) {
 		struct client_info ci;
 
-		ci.ci_addrlen = inaddrlen;
+		ci.ci_addrlen = sizeof(inaddr);
 		ci.ci_sock = accept(host, &ci.ci_addr, &ci.ci_addrlen);
 		if (ci.ci_sock == -1) {
 			if (errno != EINTR) {
@@ -138,7 +136,7 @@ int main(int argc, char **argv) {
 			}
 			continue;
 		}
-		assert(ci.ci_addrlen == inaddrlen);
+		assert(ci.ci_addrlen == sizeof(inaddr));
 		ci.ci_basedir = basedir;
 
 		if (USE_PARALLEL_CGI) {

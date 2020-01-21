@@ -357,7 +357,7 @@ static int ti816x_xmit(struct net_device *dev, struct sk_buff *skb) {
 	emac_desc_build(desc, skb_data_cast_in(skb->data), data_len, data_len,
 			EMAC_DESC_F_SOP | EMAC_DESC_F_EOP | EMAC_DESC_F_OWNER);
 
-	dev_priv = netdev_priv(dev, struct ti816x_priv);
+	dev_priv = netdev_priv(dev);
 	assert(dev_priv != NULL);
 
 	ipl = ipl_save();
@@ -443,7 +443,7 @@ static irq_return_t ti816x_interrupt_macrxint0(unsigned int irq_num,
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMRXINTSTAT));
 
-	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
+	dev_priv = netdev_priv(dev_id);
 	assert(dev_priv != NULL);
 
 	desc = (struct emac_desc *)REG_LOAD(EMAC_BASE + EMAC_R_RXCP(DEFAULT_CHANNEL));
@@ -509,7 +509,7 @@ static irq_return_t ti816x_interrupt_mactxint0(unsigned int irq_num,
 
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMTXINTSTAT));
 
-	dev_priv = netdev_priv(dev_id, struct ti816x_priv);
+	dev_priv = netdev_priv(dev_id);
 	assert(dev_priv != NULL);
 
 	desc = 	(struct emac_desc *)REG_LOAD(EMAC_BASE + EMAC_R_TXCP(DEFAULT_CHANNEL));
@@ -601,8 +601,10 @@ static void emac_set_max_frame_len(int m) {
 }
 
 static void ti816x_config(struct net_device *dev) {
+	struct ti816x_priv *ti816x_priv;
 	unsigned char bcast_addr[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };
 
+	ti816x_priv = netdev_priv(dev);
 	/* reset EMAC module */
 	emac_reset();
 
@@ -627,7 +629,7 @@ static void ti816x_config(struct net_device *dev) {
 	emac_clear_and_enable_rxunicast();
 	emac_enable_rxmbp();
 	emac_mdio_config();
-	emac_alloc_rx_queue(netdev_priv(dev, struct ti816x_priv));
+	emac_alloc_rx_queue(ti816x_priv);
 	emac_enable_rx_and_tx_irq();
 	emac_enable_rx_and_tx_dma();
 
@@ -651,7 +653,7 @@ static int ti816x_init(void) {
 	nic->irq = MACRXTHR0;
 	nic->base_addr = EMAC_BASE;
 
-	nic_priv = netdev_priv(nic, struct ti816x_priv);
+	nic_priv = netdev_priv(nic);
 	assert(nic_priv != NULL);
 	memset(nic_priv, 0, sizeof *nic_priv);
 

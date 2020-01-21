@@ -92,7 +92,7 @@ struct e1000_priv {
 };
 
 static inline struct e1000_priv *e1000_get_priv(struct net_device *dev) {
-	return (struct e1000_priv *) binalign_bound((uintptr_t) netdev_priv(dev, struct e1000_priv), 16);
+	return (struct e1000_priv *) binalign_bound((uintptr_t) netdev_priv(dev), 16);
 }
 
 static void mdelay(int value) {

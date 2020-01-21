@@ -57,17 +57,12 @@ struct sk_buff_data_fixed {
 	char __data_pad[DATA_PAD_SIZE];
 };
 
-struct sk_buff_data {
-	size_t links;
-	int alloc_type;
-
-	char __data[];
-} DATA_ATTR;
-
 POOL_DEF(skb_data_pool, struct sk_buff_data_fixed, MODOPS_AMOUNT_SKB_DATA);
 
-void *skb_get_data_pointner(struct sk_buff_data *skb_data) {
-	return skb_data->__data + IP_ALIGN_SIZE;
+void *skb_get_data_pointner(struct sk_buff_data *data) {
+	struct sk_buff_data_fixed *skb_data = (void *)data;
+
+	return skb_data->data;
 }
 
 size_t skb_max_size(void) {
@@ -85,12 +80,12 @@ void * skb_data_cast_in(struct sk_buff_data *skb_data) {
 
 struct sk_buff_data * skb_data_cast_out(void *data) {
 	assert(data != NULL);
-	return member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data, __data);
+	return (void *)member_cast_out(data - IP_ALIGN_SIZE, struct sk_buff_data_fixed, __ip_align);
 }
 
 struct sk_buff_data * skb_data_alloc(size_t size) {
 	ipl_t sp;
-	struct sk_buff_data *skb_data;
+	struct sk_buff_data_fixed *skb_data;
 	int alloc_type = -1;
 
 	sp = ipl_save();
@@ -99,7 +94,7 @@ struct sk_buff_data * skb_data_alloc(size_t size) {
 			skb_data = pool_alloc(&skb_data_pool);
 			alloc_type = ALLOCATED_POOL;
 		} else {
-			skb_data = (struct sk_buff_data *) sysmalloc(SKB_DATA_SIZE(size));
+			skb_data = sysmalloc(SKB_DATA_SIZE(size));
 			alloc_type = ALLOCATED_MALLOC;
 		}
 	}
@@ -113,10 +108,11 @@ struct sk_buff_data * skb_data_alloc(size_t size) {
 	skb_data->alloc_type = alloc_type;
 	skb_data->links = 1;
 
-	return skb_data;
+	return (void *)skb_data;
 }
 
-struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
+struct sk_buff_data * skb_data_clone(struct sk_buff_data *data) {
+	struct sk_buff_data_fixed *skb_data = (void *)data;
 	ipl_t sp;
 
 	assert(skb_data != NULL);
@@ -127,14 +123,16 @@ struct sk_buff_data * skb_data_clone(struct sk_buff_data *skb_data) {
 	}
 	ipl_restore(sp);
 
-	return skb_data;
+	return (void *)skb_data;
 }
 
-int skb_data_cloned(const struct sk_buff_data *skb_data) {
+int skb_data_cloned(const struct sk_buff_data *data) {
+	struct sk_buff_data_fixed *skb_data = (void *)data;
 	return skb_data->links != 1;
 }
 
-void skb_data_free(struct sk_buff_data *skb_data) {
+void skb_data_free(struct sk_buff_data *data) {
+	struct sk_buff_data_fixed *skb_data = (void *)data;
 	ipl_t sp;
 
 	assert(skb_data != NULL);

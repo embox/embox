@@ -131,7 +131,7 @@ static int usbnet_probe(struct usb_driver *drv, struct usb_dev *dev,
 		goto out_ret;
 	}
 	nic->drv_ops = &usbnet_drv_ops;
-	nic_priv = netdev_priv(nic, struct usbnet_priv);
+	nic_priv = netdev_priv(nic);
 	nic_priv->usbdev = dev;
 	nic_priv->data = nic_priv->pdata = sysmalloc(ETH_FRAME_LEN);
 	if (!nic_priv->data) {
@@ -194,7 +194,7 @@ static void usb_net_bulk_send(struct usb_dev *dev, struct sk_buff *skb) {
 static int usbnet_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct usbnet_priv *nic_priv;
 
-	nic_priv = netdev_priv(dev, struct usbnet_priv);
+	nic_priv = netdev_priv(dev);
 	usb_net_bulk_send(nic_priv->usbdev, skb);
 
 	return 0;

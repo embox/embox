@@ -133,11 +133,11 @@ typedef struct net_device {
 /**
  * Get data private data casted to type
  */
-#define netdev_priv(dev, type) \
+#define netdev_priv(dev) \
 	({                                        \
 		const struct net_device *__dev = dev; \
 		assert(__dev != NULL);                \
-		(type *)__dev->priv;                  \
+		__dev->priv;                         \
 	})
 
 /**
