@@ -610,6 +610,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		/* This node is already in the VFS tree */
 		dvfs_destroy_dentry(next_dentry);
 		lookup->item = cached;
+		dentry_ref_inc(cached);
 	} else {
 		/* Integrate next_dentry into VFS tree */
 		dentry_fill(sb, next_inode, next_dentry, lookup->parent);
