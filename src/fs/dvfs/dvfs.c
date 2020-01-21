@@ -588,6 +588,8 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		return -ENOMEM;
 	}
 
+	lookup->item = next_dentry;
+
 	res = sb->sb_iops->iterate(next_inode, next_dentry->name, lookup->parent->d_inode, ctx);
 	if (res) {
 		/* iterate virtual */
