@@ -22,3 +22,7 @@ module interrupt extends embox.arch.interrupt {
 module entry extends embox.arch.entry {
 	source "entry.S"
 }
+
+module context extends embox.arch.context {
+	source "context.c", "context_switch.S", "context.h"
+}
