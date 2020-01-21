@@ -44,10 +44,15 @@ int open(const char *path, int __oflag, ...) {
 		return SET_ERRNO(ENOENT);
 
 	if (S_ISDIR(i_no->i_mode)) {
-		dvfs_destroy_dentry(lookup.item);
-		return SET_ERRNO(EISDIR);
+		if (!(__oflag & O_PATH)) {
+			dentry_ref_dec(lookup.item);
+			dvfs_destroy_dentry(lookup.item);
+			return SET_ERRNO(EISDIR);
+		}
+		idesc = dvfs_file_open_idesc(&lookup, __oflag);
+	} else {
+		idesc = lookup.item->d_sb->sb_ops->open_idesc(&lookup, __oflag);
 	}
-	idesc = lookup.item->d_sb->sb_ops->open_idesc(&lookup, __oflag);
 	if (err(idesc)) {
 		return SET_ERRNO(err(idesc));
 	}

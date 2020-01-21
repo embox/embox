@@ -54,6 +54,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 
 	new_inode = dvfs_alloc_inode(sb);
 	if (!new_inode) {
+		dentry_ref_dec(lookup->item);
 		dvfs_destroy_dentry(lookup->item);
 		return -ENOMEM;
 	}
@@ -89,6 +90,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	}
 
 	if (res) {
+		dentry_ref_dec(lookup->item);
 		dvfs_destroy_dentry(lookup->item);
 	}
 
@@ -130,7 +132,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	};
 
 	assert(desc->f_ops);
-	if (desc->f_ops->open) {
+	if (desc->f_ops->open && !(__oflag & O_PATH)) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
 		if (res == NULL) {
 			return NULL;
@@ -441,6 +443,7 @@ err_free_all:
 	if (d != NULL) {
 		dvfs_destroy_inode(d->d_inode);
 		dentry_reconnect(d->parent, d->name);
+		dentry_ref_dec(d);
 		dvfs_destroy_dentry(d);
 	}
 
@@ -588,11 +591,14 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		return -ENOMEM;
 	}
 
+	lookup->item = next_dentry;
+
 	res = sb->sb_iops->iterate(next_inode, next_dentry->name, lookup->parent->d_inode, ctx);
 	if (res) {
 		/* iterate virtual */
 		dentry_ref_dec(next_dentry);
 		dvfs_destroy_dentry(next_dentry);
+		dvfs_destroy_inode(next_inode);
 
 		lookup->item = NULL;
 		if (lookup->parent->flags & DVFS_CHILD_VIRTUAL) {
@@ -606,8 +612,11 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 
 	if ((cached = dvfs_cache_get(next_dentry->name, lookup))) {
 		/* This node is already in the VFS tree */
+		dentry_ref_dec(next_dentry);
 		dvfs_destroy_dentry(next_dentry);
+		dvfs_destroy_inode(next_inode);
 		lookup->item = cached;
+		dentry_ref_inc(cached);
 	} else {
 		/* Integrate next_dentry into VFS tree */
 		dentry_fill(sb, next_inode, next_dentry, lookup->parent);
@@ -616,8 +625,6 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 		dvfs_cache_add(next_dentry);
 		lookup->item = next_dentry;
 	}
-
-	//dentry_ref_inc(lookup->item);
 
 	return 0;
 }
