@@ -141,7 +141,7 @@ int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
 }
 
 uintptr_t mmu_pte_get(uintptr_t *entry) {
-	return *entry & ~MMU_PAGE_MASK;
+	return *entry;
 }
 
 uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
@@ -158,5 +158,5 @@ uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
 	}
 	*flags = prot;
 
-	return pte & MMU_PAGE_MASK;
+	return pte & ~MMU_PAGE_MASK;
 }
