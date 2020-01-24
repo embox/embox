@@ -1,11 +1,18 @@
-#include <kernel/panic.h>
+#include <stdint.h>
 #include <hal/context.h>
+#include <hal/ipl.h>
+#include <asm/regs.h>
+#include <string.h>
 
 void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp) {
+	memset(ctx, 0, sizeof(*ctx));
 
-}
+	ctx->sp = (uint32_t) sp;
+	ctx->ra = (uint32_t) routine_fn;
+	ctx->mstatus = read_csr(mstatus);
 
-void context_switch(struct context *prev, struct context *next) {
-	panic("%s", __func__);
+	if (flags & CONTEXT_IRQDISABLE) {
+		ctx->mstatus &= ~(MSTATUS_MIE);
+	}
 }
