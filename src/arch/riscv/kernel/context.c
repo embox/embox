@@ -1,3 +1,12 @@
+/**
+ * @file
+ *
+ * @brief
+ *
+ * @date 21.01.2020
+ * @author Nastya Nizharadze
+ */
+
 #include <stdint.h>
 #include <hal/context.h>
 #include <hal/ipl.h>

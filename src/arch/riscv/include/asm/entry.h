@@ -20,8 +20,7 @@
 
 		addi    sp, sp, -PT_SIZE
 		sw      t6, PT_R31(sp)
-		mv      t6, sp
-		sw      t6, PT_SP(sp)
+		sw      sp, PT_SP(sp)
 		sw      ra, PT_RA(sp)
 		sw      gp, PT_GP(sp)
 		sw      tp, PT_TP(sp)
@@ -99,6 +98,7 @@
 
 		lw      t6, PT_R31(sp)
 
+		lw      sp, PT_SP(sp)
 		addi    sp, sp, PT_SIZE
 
 	.endm

@@ -38,7 +38,7 @@ typedef struct pt_regs {
 } pt_regs_t;
 
 static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
-	ptregs->reg[5] = retcode; /* $a0 ($10) */
+	ptregs->reg[5] = retcode; /* $a0 */
 }
 
 #else /* __ASSEMBLER__ */
