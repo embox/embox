@@ -58,16 +58,15 @@ void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
 
 	flags |= E2K_MMU_PAGE_PV;
 	flags |= E2K_MMU_PAGE_VALID;
-	//flags |= E2K_MMU_PAGE_W;
-	flags |= E2K_MMU_PAGE_D | E2K_MMU_PAGE_A;
-	//flags |= E2K_MMU_PAGE_G;
+	flags |= E2K_MMU_PAGE_W;
+	flags |= E2K_MMU_PAGE_G;
 
 	switch (lvl) {
 	case 0:
 	case 1:
 	case 2:
 	case 3:
-		*entry = (value & E2K_MMU_PAGE_PFN) | flags | E2K_MMU_PAGE_P | E2K_MMU_PAGE_W ;
+		*entry = (value & E2K_MMU_PAGE_PFN) | flags | E2K_MMU_PAGE_P;
 		return;
 	}
 }
@@ -104,8 +103,7 @@ uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
 	}
 	flags |= E2K_MMU_PAGE_PV;
 	flags |= E2K_MMU_PAGE_VALID;
-	flags |= E2K_MMU_PAGE_W;
-	flags |= E2K_MMU_PAGE_A;
+	flags |= E2K_MMU_PAGE_G;
 
 	return addr | flags | E2K_MMU_PAGE_P | E2K_MMU_PAGE_G;
 }
