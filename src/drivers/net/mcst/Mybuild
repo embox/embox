@@ -1,0 +1,21 @@
+package embox.driver.net.mcst
+
+module l_e1000 {
+	option number log_level = 1
+
+	option number log_rx_desc_quantity = 8
+	option number log_tx_desc_quantity = 0
+
+	source "l_e1000.c"
+
+	depends embox.net.skbuff
+	depends embox.compat.libc.all
+	depends embox.driver.pci
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq
+	depends embox.net.core
+	depends embox.net.dev
+	depends embox.net.entry_api
+	depends embox.net.netfilter
+	depends embox.net.util.show_packet
+}

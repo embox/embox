@@ -18,33 +18,23 @@
 #define MMU_REG_TRAP_POINT  0x50  /* Trap Pointer register */
 #define MMU_REG_TRAP_COUNT  0x60  /* Trap Counter register */
 
-
-#define _MMU_CR_TLB_EN		0x0000000000000001	/* translation enable */
-#define _MMU_CR_CD_MASK		0x0000000000000006	/* cache disable bits */
-#define _MMU_CR_SET1		0x0000000000000008	/* set #1 enable for */
-							/* 4 MB pages */
-#define _MMU_CR_SET2		0x0000000000000010	/* set #2 enable for */
-							/* 4 MB pages */
-#define _MMU_CR_SET3		0x0000000000000020	/* set #3 enable for */
-							/* 4 MB pages */
-#define _MMU_CR_CR0_PG		0x0000000000000040	/* paging enable for */
-							/* second space INTEL */
-#define _MMU_CR_CR4_PSE		0x0000000000000080	/* page size 4Mb */
-							/* enable for second */
-							/* space INTEL */
-#define _MMU_CR_CR0_CD		0x0000000000000100	/* cache disable for */
-							/* secondary space */
-							/* INTEL */
-#define _MMU_CR_TLU2_EN		0x0000000000000200	/* TLU enable for */
-							/* secondary space */
-							/* INTEL */
-#define _MMU_CR_LD_MPT		0x0000000000000400	/* memory protection */
-							/* table enable for */
-							/* LD from secondary */
-							/* space INTEL */
-#define _MMU_CR_IPD_MASK	0x0000000000000800	/* Instruction */
-							/* Prefetch Depth */
-#define _MMU_CR_UPT_EN		0x0000000000001000	/* enable UPT */
+#define _MMU_CR_TLB_EN   0x0000000000000001 /* translation enable */
+#define _MMU_CR_CD_MASK  0x0000000000000006 /* cache disable bits */
+#define _MMU_CR_SET1     0x0000000000000008 /* set #1 enable for 4 MB pages */
+#define _MMU_CR_SET2     0x0000000000000010 /* set #2 enable for 4 MB pages */
+#define _MMU_CR_SET3     0x0000000000000020 /* set #3 enable for 4 MB pages */
+/* paging enable for second space INTEL */
+#define _MMU_CR_CR0_PG   0x0000000000000040
+/* page size 4Mb enable for second space INTEL */
+#define _MMU_CR_CR4_PSE  0x0000000000000080
+/* cache disable for secondary space INTEL */
+#define _MMU_CR_CR0_CD   0x0000000000000100
+/* TLU enable for secondary space INTEL */
+#define _MMU_CR_TLU2_EN  0x0000000000000200
+/* memory protection table enable for LD from secondary space INTEL */
+#define _MMU_CR_LD_MPT   0x0000000000000400
+#define _MMU_CR_IPD_MASK 0x0000000000000800 /* Instruction Prefetch Depth */
+#define _MMU_CR_UPT_EN   0x0000000000001000 /* enable UPT */
 
 /*
  * Write MMU register
@@ -55,7 +45,7 @@
 /*
  * Read MMU register
  */
-#define READ_MMU_REG(addr_val)	\
+#define READ_MMU_REG(addr_val) \
 		E2K_READ_MAS_D((addr_val), MAS_MMU_REG)
 
 /*
