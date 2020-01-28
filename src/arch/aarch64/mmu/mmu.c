@@ -309,7 +309,7 @@ uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
 		log_warning("Corrupted PTE cache properties");
 	}
 
-	return 0;
+	return pte & ~MMU_PAGE_MASK;
 }
 
 void set_fault_handler(enum fault_type type, fault_handler_t handler) {
