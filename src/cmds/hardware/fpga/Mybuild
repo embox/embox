@@ -1,0 +1,20 @@
+package embox.cmd.hardware
+
+@AutoCmd
+@Cmd(name = "fpga",
+	help = "Write config to FPGA",
+	man = '''
+		NAME
+			fpga -- Write config to FPGA
+		SYNOPSIS
+			fpga [file | tftp] [file_name]
+		EXAMPLES
+			fpga file led_test.rbf
+		AUTHORS
+			Denis Deryugin
+	''')
+module fpga {
+	source "fpga.c"
+
+	depends embox.driver.fpga.core
+}
