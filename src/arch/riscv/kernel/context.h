@@ -1,3 +1,12 @@
+/**
+ * @file
+ *
+ * @brief
+ *
+ * @date 21.01.2020
+ * @author Nastya Nizharadze
+ */
+
 #ifndef ARCH_RISCV_CONTEXT_H_
 #define ARCH_RISCV_CONTEXT_H_
 
@@ -30,6 +39,6 @@ struct context {
 #define CTX_S11     0x34
 #define CTX_MSTATUS 0x38
 
-#define CTX_SIZE    0x40
+#define CTX_SIZE    0x3c
 
 #endif /* ARCH_RISCV_CONTEXT_H_ */
