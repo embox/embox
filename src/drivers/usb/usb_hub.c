@@ -75,7 +75,10 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 
 	/* Ok, now we can make USB driver specific stuff. */
 	if (usb_driver_probe(dev) < 0) {
-		goto out_err;
+		log_error("Usb driver not found for device ID %04x:%04x",
+			dev->dev_desc.id_vendor,
+			dev->dev_desc.id_product);
+		/* Return device even the driver was not found. */
 	}
 
 	return dev;
