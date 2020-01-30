@@ -13,10 +13,10 @@
 #include <fs/idesc.h>
 #include <util/array.h>
 
-#include <config/embox/driver/char_dev_impl.h>
+#include <config/embox/driver/char_dev.h>
 #include <framework/mod/options.h>
 
-#define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev_impl, NUMBER, dev_quantity)
+#define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev, NUMBER, dev_quantity)
 
 #define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
 	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \

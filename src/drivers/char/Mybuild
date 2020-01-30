@@ -8,12 +8,12 @@ module terminal {
 	depends embox.driver.terminal.vt
 }
 
-@DefaultImpl(char_dev_old)
-abstract module char_dev {
+@DefaultImpl(char_dev)
+abstract module char_dev_api {
 
 }
 
-module char_dev_impl {
+module char_dev extends char_dev_api {
 	option number log_level=0
 
 	option number dev_quantity=32

@@ -16,7 +16,7 @@ module serial_dvfs {
 	option number serial_quantity = 1
 
 	depends tty
-	depends embox.driver.char_dev_dvfs
+	depends embox.driver.char_dev
 	depends embox.driver.common
 }
 
@@ -33,7 +33,7 @@ module serial_oldfs {
 	option number serial_quantity = 1
 
 	depends tty
-	depends embox.driver.char_dev_old
+	depends embox.driver.char_dev
 	depends embox.driver.common
 }
 
