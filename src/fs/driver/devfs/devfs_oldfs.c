@@ -127,51 +127,8 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 	inode->i_mode = flags;
 }
 
-extern struct dev_module **get_cdev_tab();
-/**
- * @brief Iterate elements of /dev
- *
- * @note Devices are iterated type by type
- * @note Two least significant bits of fs-specific pointer is dev type, the
- * rest is dev number in dev tab
- *
- * @param next Inode to be filled
- * @param parent Ignored
- * @param ctx
- *
- * @return Negative error code
- */
-static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	int i;
-	struct block_dev **bdevtab = get_bdev_tab();
-	struct dev_module **cdevtab = get_cdev_tab();
-
-	i = ((intptr_t) ctx->fs_ctx);
-
-	for (; i < MAX_BDEV_QUANTITY; i++) {
-		if (bdevtab[i]) {
-			ctx->fs_ctx = (void *)(intptr_t)i + 1;
-			devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK | S_IRALL | S_IWALL);
-			strncpy(next->name, bdevtab[i]->name, sizeof(next->name) - 1);
-			next->name[sizeof(next->name) - 1] = '\0';
-			return 0;
-		}
-	}
-
-	/* Dynamically allocated devices */
-	for (; i < (MAX_CDEV_QUANTITY + MAX_BDEV_QUANTITY); i++) {
-		if (cdevtab[i - MAX_BDEV_QUANTITY]) {
-			ctx->fs_ctx = (void *) ((intptr_t) i + 1);
-			devfs_fill_inode(next, cdevtab[i - MAX_BDEV_QUANTITY], S_IFCHR | S_IRALL | S_IWALL);
-			strncpy(next->name, cdevtab[i - MAX_BDEV_QUANTITY]->name, sizeof(next->name) - 1);
-			next->name[sizeof(next->name) - 1] = '\0';
-			return 0;
-		}
-	}
-
-	/* End of directory */
-	return -1;
-}
+extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
+extern struct dev_module **get_cdev_tab(void);
 
 /**
  * @brief Find file in directory
