@@ -91,7 +91,7 @@ static int nfsfs_close(struct file_desc *desc) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = (nfs_file_info_t *)nas->fi->privdata;
 	fi->offset = 0;
 
@@ -109,7 +109,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	pos = file_get_pos(desc);
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 	datalen = 0;
 	fi->offset = pos;
@@ -157,7 +157,7 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	pos = file_get_pos(desc);
 
 	size_to_write = size;
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = (nfs_file_info_t *) nas->fi->privdata;
 	fi->offset = pos;
 

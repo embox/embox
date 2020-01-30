@@ -31,7 +31,7 @@ int ftruncate(int fd, off_t length) {
 		return SET_ERRNO(EINVAL);
 	}
 
-	ret = kftruncate(member_cast_out(idesc, struct file_desc, idesc), length);
+	ret = kftruncate(member_cast_out(idesc, struct file_desc, f_idesc), length);
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}

@@ -871,7 +871,7 @@ static int jffs2_fo_write(struct file_desc *desc, char *buf, ssize_t size) {
 	int err;
 	off_t len;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = nas->fi->privdata;
 
 	inode = fi->_inode;
@@ -1405,7 +1405,7 @@ static int jffs2fs_close(struct file_desc *desc) {
 	if (NULL == desc) {
 		return 0;
 	}
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = nas->fi->privdata;
 	file_set_size(desc, fi->_inode->i_size);
 
@@ -1423,7 +1423,7 @@ static size_t jffs2fs_read(struct file_desc *desc, void *buff, size_t size) {
 
 	pos = file_get_pos(desc);
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = nas->fi->privdata;
 
 	f = JFFS2_INODE_INFO(fi->_inode);
@@ -1445,7 +1445,7 @@ static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct nas *nas;
 	struct jffs2_file_info *fi;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = nas->fi->privdata;
 
 	bytecount = jffs2_fo_write(desc, buff, size);

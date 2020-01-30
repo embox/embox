@@ -759,7 +759,7 @@ int kflock(int fd, int operation) {
 	/* - Find locks and other properties for provided file descriptor number
 	 * - fd is validated inside task_self_idx_get */
 	fdesc = file_desc_get(fd);
-	flock = &(fdesc)->node->flock;
+	flock = &(fdesc)->f_inode->flock;
 	exlock = &flock->exlock;
 	shlock_count = &flock->shlock_count;
 	flock_guard = &flock->flock_guard;

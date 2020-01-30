@@ -16,11 +16,11 @@ struct inode;
 struct file_operations;
 
 struct file_desc {
-	struct idesc idesc;
+	struct idesc f_idesc;
 
-	struct inode *node;
+	struct inode *f_inode;
 	int file_flags; //TODO now use only for O_APPEND should move to idesc
-	const struct file_operations *ops;
+	const struct file_operations *f_ops;
 	off_t cursor;
 /* TODO this need for system without file_nodes where we want to use uart for
  *  example
