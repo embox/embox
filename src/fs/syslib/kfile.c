@@ -29,8 +29,6 @@
 
 extern struct inode *kcreat(struct path *dir, const char *path, mode_t mode);
 
-extern struct idesc *char_dev_open(struct inode *node, int flags);
-
 struct idesc *kopen(struct inode *node, int flag) {
 	struct nas *nas;
 	struct file_desc *desc;
@@ -56,11 +54,6 @@ struct idesc *kopen(struct inode *node, int flag) {
 		if (NULL == nas->fs->drv) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
-		}
-
-		if (S_ISCHR(node->i_mode) || S_ISBLK(node->i_mode)) {
-			/* Now for opening we don't differ bdev & cdev it's just device */
-			return char_dev_open(node, flag);
 		}
 
 		ops = nas->fs->drv->file_op;
