@@ -18,6 +18,7 @@
 #include <drivers/ttys.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
+#include <util/err.h>
 
 #include "idesc_serial.h"
 
@@ -30,7 +31,7 @@
 POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
 
 #define idesc_to_uart(desc) \
-	(((struct  tty_uart*)desc)->uart)
+	(((struct tty_uart *) desc)->uart)
 
 static const struct idesc_ops idesc_serial_ops;
 
@@ -96,6 +97,7 @@ static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov, int cn
 	return (ssize_t)nbyte;
 }
 
+static void idesc_serial_close(struct idesc *idesc);
 static void serial_close(struct idesc *idesc) {
 	struct uart *uart;
 	int res;
@@ -111,8 +113,8 @@ static void serial_close(struct idesc *idesc) {
 	}
 
 	idesc_serial_close(idesc);
-
 }
+
 static int serial_ioctl(struct idesc *idesc, int request, void *data) {
 	struct uart *uart;
 
@@ -153,6 +155,41 @@ static int serial_status(struct idesc *idesc, int mask) {
 	}
 
 	return res;
+}
+
+extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
+extern struct tty_ops uart_tty_ops;
+struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
+	struct tty_uart *tu;
+
+	assert(uart);
+
+	tu = pool_alloc(&uart_ttys);
+	if (!tu) {
+		return err_ptr(ENOMEM);
+	}
+
+	tty_init(&tu->tty, &uart_tty_ops);
+
+	tu->uart = uart;
+	uart->tty = &tu->tty;
+	uart->tty->idesc = &tu->idesc;
+	uart->irq_handler = uart_irq_handler;
+
+	idesc_init(&tu->idesc, idesc_serial_get_ops(), __oflags);
+
+	return &tu->idesc;
+}
+
+static void idesc_serial_close(struct idesc *idesc) {
+	struct tty_uart *tu;
+	struct uart *uart;
+
+	uart = idesc_to_uart(idesc);
+	uart->tty->idesc = NULL;
+
+	tu = member_cast_out(uart->tty, struct tty_uart, tty);
+	pool_free(&uart_ttys, tu);
 }
 
 static const struct idesc_ops idesc_serial_ops = {
