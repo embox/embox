@@ -21,6 +21,10 @@
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
 
+/* Common part */
+struct idesc *devfs_open(struct inode *node, struct idesc *desc);
+int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
+
 extern int devfs_add_block(struct block_dev *dev);
 extern struct inode_operations devfs_iops;
 
@@ -57,14 +61,7 @@ static struct fsop_desc devfs_fsop = {
 	.mount = devfs_mount,
 };
 
-struct idesc *devfs_open(struct inode *node, struct idesc *idesc) {
-	return idesc;
-}
-
-static struct file_operations devfs_fops = {
-	.open = devfs_open
-};
-
+extern struct file_operations devfs_fops;
 static const struct fs_driver devfs_driver = {
 	.name = "devfs",
 	.file_op = &devfs_fops,
@@ -217,10 +214,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 		}
 	}
 	return NULL;
-}
-
-static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return 0;
 }
 
 struct inode_operations devfs_iops = {

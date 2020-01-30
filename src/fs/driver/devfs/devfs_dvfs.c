@@ -30,6 +30,9 @@
 
 #include <module/embox/driver/block_dev.h>
 
+/* Common part */
+int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
+
 /**
  * @brief Do nothing
  *
@@ -174,29 +177,6 @@ static int devfs_mount_end(struct super_block *sb) {
 	return block_devs_init();
 }
 
-static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
-	struct dev_module *dev;
-
-	assert(node->i_data);
-
-	if (S_ISBLK(node->i_mode)) {
-		return desc;
-	}
-
-	dev = node->i_data;
-	assert(dev->dev_open);
-
-	return dev->dev_open(dev, dev->dev_priv);
-}
-
-static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return 0;
-}
-
-static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
-	return 0;
-}
-
 extern struct idesc_ops idesc_bdev_ops;
 /* Call device-specific open() handler */
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
@@ -241,11 +221,7 @@ struct inode_operations devfs_iops = {
 	.create   = devfs_create,
 };
 
-struct file_operations devfs_fops = {
-	.open  = devfs_open,
-	.ioctl = devfs_ioctl,
-};
-
+extern struct file_operations devfs_fops ;
 static int devfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	sb->sb_iops = &devfs_iops;
 	sb->sb_fops = &devfs_fops;
