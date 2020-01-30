@@ -25,7 +25,7 @@ module char_dev extends char_dev_api {
 	source "char_dev.c"
 }
 
-module char_dev_stub extends char_dev {
+module char_dev_stub extends char_dev_api {
 	@IncludeExport(path="drivers",target_name="char_dev.h")
 	source "char_dev_stub.h"
 

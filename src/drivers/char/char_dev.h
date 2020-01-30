@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Declarations for char dev based on dvfs
+ * @brief Declarations for char devices
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2015-10-05
