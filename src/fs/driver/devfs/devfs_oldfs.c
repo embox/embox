@@ -92,12 +92,6 @@ int devfs_add_block(struct block_dev *bdev) {
 	return 0;
 }
 
-int devfs_del_block(struct block_dev *bdev) {
-	vfs_del_leaf(bdev->dev_vfs_info);
-
-	return 0;
-}
-
 static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 	struct path node;
 	struct nas *dev_nas;
