@@ -102,8 +102,8 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 		return -1;
 	}
 
-	assert(desc->node);
-	fsi = desc->node->nas->fs->fsi;
+	assert(desc->f_inode);
+	fsi = desc->f_inode->nas->fs->fsi;
 	/* N * SECTOR_SIZE + K bytes of data can dirty N + 2 only if K >= 2  */
 	datablocks = (size + SECTOR_SIZE - 2) / SECTOR_SIZE + 1;
 	/* TODO recalculate */

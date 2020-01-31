@@ -30,33 +30,33 @@ static int file_idesc_getxattr(struct idesc *idesc, const char *name, void *valu
 		size_t size) {
 	struct file_desc *desc;
 
-	desc = member_cast_out(idesc, struct file_desc, idesc);
+	desc = member_cast_out(idesc, struct file_desc, f_idesc);
 
-	return kfile_xattr_get(desc->node, name, value, size);
+	return kfile_xattr_get(desc->f_inode, name, value, size);
 }
 
 static int file_idesc_setxattr(struct idesc *idesc, const char *name,
 		const void *value, size_t size, int flags) {
 	struct file_desc *desc;
 
-	desc = member_cast_out(idesc, struct file_desc, idesc);
+	desc = member_cast_out(idesc, struct file_desc, f_idesc);
 
-	return kfile_xattr_set(desc->node, name, value, size, flags);
+	return kfile_xattr_set(desc->f_inode, name, value, size, flags);
 }
 
 static int file_idesc_listxattr(struct idesc *idesc, char *list, size_t size) {
 	struct file_desc *desc;
 
-	desc = member_cast_out(idesc, struct file_desc, idesc);
+	desc = member_cast_out(idesc, struct file_desc, f_idesc);
 
-	return kfile_xattr_list(desc->node, list, size);
+	return kfile_xattr_list(desc->f_inode, list, size);
 }
 
 static int file_idesc_removexattr(struct idesc *idesc, const char *name) {
 	struct file_desc *desc;
 
-	desc = member_cast_out(idesc, struct file_desc, idesc);
+	desc = member_cast_out(idesc, struct file_desc, f_idesc);
 
-	return kfile_xattr_set(desc->node, name, NULL, 0, XATTR_REMOVE);
+	return kfile_xattr_set(desc->f_inode, name, NULL, 0, XATTR_REMOVE);
 }
 

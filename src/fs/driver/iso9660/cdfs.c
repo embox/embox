@@ -806,7 +806,7 @@ static int cdfsfs_close(struct file_desc *desc) {
 	struct cdfs_file_info *fi;
 	struct nas *nas;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 
 	fi = nas->fi->privdata;
 	fi->pos = 0;
@@ -818,7 +818,7 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct cdfs_file_info *fi;
 	struct nas *nas;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 
 	fi = (struct cdfs_file_info *)nas->fi->privdata;
 

@@ -76,19 +76,19 @@ struct idesc *kopen(struct inode *node, int flag) {
 		SET_ERRNO(-(uintptr_t)desc);
 		return NULL;
 	}
-	desc->ops = ops;
+	desc->f_ops = ops;
 
-	if (desc->ops->open != NULL) {
-		idesc = desc->ops->open(node, &desc->idesc);
+	if (desc->f_ops->open != NULL) {
+		idesc = desc->f_ops->open(node, &desc->f_idesc);
 		if (err(idesc)){
 			ret = (uintptr_t)idesc;
 			goto free_out;
 		}
 	} else {
-		idesc = &desc->idesc;
+		idesc = &desc->f_idesc;
 	}
 
-	if ((struct idesc *)idesc == &desc->idesc) {
+	if ((struct idesc *)idesc == &desc->f_idesc) {
 		goto out;
 	} else {
 		file_desc_destroy(desc);
@@ -103,7 +103,7 @@ free_out:
 	}
 
 out:
-	return &desc->idesc;
+	return &desc->f_idesc;
 }
 
 
@@ -115,12 +115,12 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		goto end;
 	}
 
-	if (idesc_check_mode(&file->idesc, O_RDONLY)) {
+	if (idesc_check_mode(&file->f_idesc, O_RDONLY)) {
 		ret = -EBADF;
 		goto end;
 	}
 
-	if (NULL == file->ops->write) {
+	if (NULL == file->f_ops->write) {
 		ret = -EBADF;
 		goto end;
 	}
@@ -129,7 +129,7 @@ ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
 		kseek(file, 0, SEEK_END);
 	}
 
-	ret = file->ops->write(file, (void *)buf, size);
+	ret = file->f_ops->write(file, (void *)buf, size);
 	if (ret > 0) {
 		file_set_pos(file, file_get_pos(file) + ret);
 	}
@@ -146,22 +146,22 @@ ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
 		goto end;
 	}
 
-	if (idesc_check_mode(&desc->idesc, O_WRONLY)) {
+	if (idesc_check_mode(&desc->f_idesc, O_WRONLY)) {
 		ret = -EBADF;
 		goto end;
 	}
 
-	if (NULL == desc->ops->read) {
+	if (NULL == desc->f_ops->read) {
 		ret = -EBADF;
 		goto end;
 	}
 
 	/* Don't try to read past EOF */
-	if (size > desc->node->nas->fi->ni.size - file_get_pos(desc)) {
-		size = desc->node->nas->fi->ni.size - file_get_pos(desc);
+	if (size > desc->f_inode->nas->fi->ni.size - file_get_pos(desc)) {
+		size = desc->f_inode->nas->fi->ni.size - file_get_pos(desc);
 	}
 
-	ret = desc->ops->read(desc, buf, size);
+	ret = desc->f_ops->read(desc, buf, size);
 	if (ret > 0) {
 		file_set_pos(desc, file_get_pos(desc) + ret);
 	}
@@ -173,10 +173,10 @@ end:
 
 void kclose(struct file_desc *desc) {
 	assert(desc);
-	assert(desc->ops);
+	assert(desc->f_ops);
 
-	if (desc->ops->close) {
-		desc->ops->close(desc);
+	if (desc->f_ops->close) {
+		desc->f_ops->close(desc);
 	}
 
 	file_desc_destroy(desc);
@@ -193,7 +193,7 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 		return -EBADF;
 	}
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	ni = &nas->fi->ni;
 
 	switch (origin) {
@@ -222,7 +222,7 @@ int kfstat(struct file_desc *desc, struct stat *stat_buff) {
 		return -EBADF;
 	}
 
-	kfile_fill_stat(desc->node, stat_buff);
+	kfile_fill_stat(desc->f_inode, stat_buff);
 
 	return 0;
 }
@@ -234,11 +234,11 @@ int kioctl(struct file_desc *desc, int request, void *data) {
 		return -EBADF;
 	}
 
-	if (NULL == desc->ops->ioctl) {
+	if (NULL == desc->f_ops->ioctl) {
 		return -ENOSUPP;
 	}
 
-	ret = desc->ops->ioctl(desc, request, data);
+	ret = desc->f_ops->ioctl(desc, request, data);
 
 	if (ret < 0) {
 		return ret;
@@ -253,7 +253,7 @@ int kftruncate(struct file_desc *desc, off_t length) {
 
 	pos = file_get_pos(desc);
 
-	ret = ktruncate(desc->node, length);
+	ret = ktruncate(desc->f_inode, length);
 	if (0 > ret) {
 		/* XXX ktruncate sets errno */
 		return -errno;

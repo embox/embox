@@ -59,21 +59,21 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 		return err_ptr(EACCES);
 	}
 
-	desc->node = node;
+	desc->f_inode = node;
 	desc->file_flags = flag & O_APPEND;
 	desc->cursor = 0;
 
-	idesc_init(&desc->idesc, &idesc_file_ops, flag);
-	desc->idesc.idesc_xattrops = &file_idesc_xattrops;
+	idesc_init(&desc->f_idesc, &idesc_file_ops, flag);
+	desc->f_idesc.idesc_xattrops = &file_idesc_xattrops;
 
 	return desc;
 }
 
 int file_desc_destroy(struct file_desc *fdesc) {
 	assert(fdesc);
-	assert(fdesc->idesc.idesc_ops == &idesc_file_ops);
+	assert(fdesc->f_idesc.idesc_ops == &idesc_file_ops);
 
-	inode_del(fdesc->node);
+	inode_del(fdesc->f_inode);
 
 	file_desc_free(fdesc);
 	return 0;
@@ -110,20 +110,20 @@ off_t file_set_pos(struct file_desc *file, off_t off) {
 }
 
 size_t file_get_size(struct file_desc *file) {
-	struct nas *nas = file->node->nas;
+	struct nas *nas = file->f_inode->nas;
 	return nas->fi->ni.size;
 }
 
 void file_set_size(struct file_desc *file, size_t size) {
-	struct nas *nas = file->node->nas;
+	struct nas *nas = file->f_inode->nas;
 	nas->fi->ni.size = size;
 }
 
 void *file_get_inode_data(struct file_desc *file) {
-	assert(file->node);
-	assert(file->node->nas->fi->privdata);
+	assert(file->f_inode);
+	assert(file->f_inode->nas->fi->privdata);
 
-	return file->node->nas->fi->privdata;
+	return file->f_inode->nas->fi->privdata;
 }
 
 struct file_desc *file_desc_from_idesc(struct idesc *idesc) {

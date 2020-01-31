@@ -472,7 +472,7 @@ static int ext2fs_close(struct file_desc *desc) {
 	if (NULL == desc) {
 		return 0;
 	}
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 
 	return ext2_close(nas);
 }
@@ -486,7 +486,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	struct nas *nas;
 	struct ext2_file_info *fi;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = nas->fi->privdata;
 	fi->f_pointer = file_get_pos(desc);
 
@@ -521,7 +521,7 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct nas *nas;
 	struct ext2_file_info *fi;
 
-	nas = desc->node->nas;
+	nas = desc->f_inode->nas;
 	fi = nas->fi->privdata;
 	fi->f_pointer = file_get_pos(desc);
 

@@ -303,7 +303,7 @@ static int cifs_close(struct file_desc *file_desc)
 	struct cifs_fs_info *fsi;
 	SMBCFILE *file;
 
-	fsi = file_desc->node->nas->fs->fsi;
+	fsi = file_desc->f_inode->nas->fs->fsi;
 	file = file_desc->file_info;
 
 	if (smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
@@ -322,7 +322,7 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->node->nas->fs->fsi;
+	fsi = file_desc->f_inode->nas->fs->fsi;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -347,7 +347,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->node->nas->fs->fsi;
+	fsi = file_desc->f_inode->nas->fs->fsi;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
