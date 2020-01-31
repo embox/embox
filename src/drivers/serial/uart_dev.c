@@ -10,17 +10,16 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <util/err.h>
+#include <util/log.h>
+
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 
+#include <drivers/device.h>
+#include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
-
-#define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
-
-INDEX_DEF(serial_indexator, 0, UART_MAX_N);
-
-static DLIST_DEFINE(uart_list);
 
 static inline int uart_state_test(struct uart *uart, int mask) {
 	return uart->state & mask;
@@ -32,17 +31,6 @@ static inline void uart_state_set(struct uart *uart, int mask) {
 
 static inline void uart_state_clear(struct uart *uart, int mask) {
 	uart->state &= ~mask;
-}
-
-static int uart_fill_name(struct uart *dev) {
-	dev->idx = index_alloc(&serial_indexator, INDEX_MIN);
-	if(dev->idx < 0) {
-		return -EBUSY;
-	}
-
-	snprintf(dev->dev_name, UART_NAME_MAXLEN, "ttyS%d", dev->idx);
-
-	return 0;
 }
 
 static int uart_attach_irq(struct uart *uart) {
@@ -78,7 +66,23 @@ static int uart_setup(struct uart *uart) {
 	return 0;
 }
 
+#define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
+
+INDEX_DEF(serial_indexator, 0, UART_MAX_N);
+
 extern int ttys_register(const char *name, void *dev_info);
+
+static int uart_fill_name(struct uart *dev) {
+
+	dev->idx = index_alloc(&serial_indexator, INDEX_MIN);
+	if(dev->idx < 0) {
+		return -EBUSY;
+	}
+
+	snprintf(dev->dev_name, UART_NAME_MAXLEN, "ttyS%d", dev->idx);
+
+	return 0;
+}
 
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
@@ -87,18 +91,17 @@ int uart_register(struct uart *uart,
 		return -EBUSY;
 	}
 
-	dlist_head_init(&uart->lnk);
-	uart->tty = NULL;
-
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
 	} else {
 		memset(&uart->params, 0, sizeof(struct uart_params));
 	}
 
-	dlist_add_next(&uart->lnk, &uart_list);
+	if (0 != ttys_register(uart->dev_name, uart)) {
+		log_error("Failed to register tty\n");
+	}
 
-	return ttys_register(uart->dev_name, uart);
+	return 0;
 }
 
 void uart_deregister(struct uart *uart) {
@@ -106,18 +109,6 @@ void uart_deregister(struct uart *uart) {
 	dlist_del(&uart->lnk);
 
 	index_free(&serial_indexator, uart->idx);
-}
-
-struct uart *uart_dev_lookup(const char *name) {
-	struct uart *uart;
-
-	dlist_foreach_entry(uart, &uart_list, lnk) {
-		if (!name || !strcmp(name, uart->dev_name)) {
-			return uart;
-		}
-	}
-
-	return NULL;
 }
 
 int uart_open(struct uart *uart) {
@@ -164,4 +155,3 @@ int uart_get_params(struct uart *uart, struct uart_params *params) {
 
 	return 0;
 }
-
