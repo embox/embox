@@ -12,7 +12,7 @@ module uart_dev_dvfs extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.driver.tty.serial_dvfs
+	@NoRuntime depends embox.driver.tty.serial
 }
 
 module core_old extends core {
@@ -24,7 +24,7 @@ module core_old extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.driver.tty.serial_oldfs
+	@NoRuntime depends embox.driver.tty.serial
 }
 
 module core_notty extends core {
