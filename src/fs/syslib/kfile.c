@@ -58,7 +58,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 
 		ops = nas->fs->drv->file_op;
 
-		if (S_ISCHR(node->i_mode) || S_ISBLK(node->i_mode)) {
+		if (S_ISCHR(node->i_mode)) {
 			/* Note: we suppose this node belongs to devfs */
 			idesc = ops->open(node, (void *) ((uintptr_t) flag));
 			idesc->idesc_flags = flag;
