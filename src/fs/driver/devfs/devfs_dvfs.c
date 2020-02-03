@@ -30,6 +30,9 @@
 
 #include <module/embox/driver/block_dev.h>
 
+/* Common part */
+int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
+
 /**
  * @brief Do nothing
  *
@@ -50,78 +53,9 @@ void devfs_fill_inode(struct inode *inode,
 	inode->i_mode = flags;
 }
 
+extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
 ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
-extern struct dev_module **get_cdev_tab();
-/**
- * @brief Iterate elements of /dev
- *
- * @note Devices are iterated type by type
- * @note Two least significant bits of fs-specific pointer is dev type, the
- * rest is dev number in dev tab
- *
- * @param next Inode to be filled
- * @param parent Ignored
- * @param ctx
- *
- * @return Negative error code
- */
-static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	int i, j;
-	struct dev_module *dev_module;
-	struct block_dev **bdevtab = get_bdev_tab();
-	struct dev_module **cdevtab = get_cdev_tab();
-	switch ((intptr_t)ctx->fs_ctx & 3) {
-	case 0:
-		/* Block device */
-		for (i = ((intptr_t) ctx->fs_ctx >> 2); i < MAX_BDEV_QUANTITY; i++) {
-			if (bdevtab[i]) {
-				ctx->fs_ctx = (void*) ((intptr_t) ctx->fs_ctx + 0x4);
-				devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK);
-				strncpy(name, bdevtab[i]->dev_module->name, DENTRY_NAME_LEN);
-				next->length = bdevtab[i]->size;
-				return 0;
-			}
-		}
-		/* Fall through */
-		ctx->fs_ctx = (void*) ((int) 0x1);
-	case 1:
-		/* Char device */
-		i = 0;
-		/* Statically registered devices */
-		array_spread_foreach_ptr(dev_module, __char_device_registry) {
-			if (i++ == (intptr_t) ctx->fs_ctx >> 2) {
-				ctx->fs_ctx = (void*) ((intptr_t) ctx->fs_ctx + 0x4);
-				devfs_fill_inode(next, dev_module, S_IFCHR);
-				strncpy(name, dev_module->name, DENTRY_NAME_LEN);
-				return 0;
-			}
-		}
-
-		/* Dynamically allocated devices */
-		for (j = 0; j < MAX_CDEV_QUANTITY; j++) {
-			if (cdevtab[j] && i++ == (intptr_t) ctx->fs_ctx >> 2) {
-				ctx->fs_ctx = (void *) ((intptr_t) ctx->fs_ctx + 0x4);
-				devfs_fill_inode(next, cdevtab[j], S_IFCHR);
-				strncpy(name, cdevtab[j]->name, DENTRY_NAME_LEN);
-				return 0;
-			}
-		}
-
-		/* Fall through */
-		ctx->fs_ctx = (void*) ((int) 0x1);
-	case 2:
-		/* Fall through */
-	case 3:
-	default:
-		/* wtf */
-		return -1;
-	}
-
-	/* End of directory */
-	return -1;
-}
-
-
+extern struct dev_module **get_cdev_tab(void);
 /**
  * @brief Find file in directory
  *
@@ -133,7 +67,6 @@ static int devfs_iterate(struct inode *next, char *name, struct inode *parent, s
 static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 	int i;
 	struct inode *node;
-	struct dev_module *dev_module;
 	struct block_dev **bdevtab = get_bdev_tab();
 	struct dev_module **cdevtab = get_cdev_tab();
 
@@ -149,15 +82,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 		}
 	}
 
-	/* Statically registered char devices */
-	array_spread_foreach_ptr(dev_module, __char_device_registry) {
-		if (!strcmp(dev_module->name, name)) {
-			devfs_fill_inode(node, dev_module, S_IFCHR);
-			return node;
-		}
-	}
-
-	/* Dynamically allocated char devices */
 	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
 		if (cdevtab[i] && !strcmp(cdevtab[i]->name, name)) {
 			devfs_fill_inode(node, cdevtab[i], S_IFCHR);
@@ -171,30 +95,8 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 }
 
 static int devfs_mount_end(struct super_block *sb) {
+	char_dev_init_all();
 	return block_devs_init();
-}
-
-static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
-	struct dev_module *dev;
-
-	assert(node->i_data);
-
-	if (S_ISBLK(node->i_mode)) {
-		return desc;
-	}
-
-	dev = node->i_data;
-	assert(dev->dev_open);
-
-	return dev->dev_open(dev, dev->dev_priv);
-}
-
-static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return 0;
-}
-
-static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
-	return 0;
 }
 
 extern struct idesc_ops idesc_bdev_ops;
@@ -241,11 +143,7 @@ struct inode_operations devfs_iops = {
 	.create   = devfs_create,
 };
 
-struct file_operations devfs_fops = {
-	.open  = devfs_open,
-	.ioctl = devfs_ioctl,
-};
-
+extern struct file_operations devfs_fops ;
 static int devfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	sb->sb_iops = &devfs_iops;
 	sb->sb_fops = &devfs_fops;

@@ -1,39 +1,18 @@
 package embox.driver.tty
 
-abstract module serial {
-}
-
-module serial_dvfs {
+module serial {
 	source "ttys_processing.c"
 	source "ttys_term.c"
-	source "ttys_dvfs.c"
-	source "idesc_serial_dvfs.c"
+	source "ttys.c"
 	source "idesc_serial.c"
 
 	@IncludeExport(path="drivers", target_name="ttys.h")
-	source "ttys_dvfs.h"
+	source "ttys.h"
 
 	option number serial_quantity = 1
 
 	depends tty
-	depends embox.driver.char_dev_dvfs
-	depends embox.driver.common
-}
-
-module serial_oldfs {
-	source "ttys_processing.c"
-	source "ttys_term.c"
-	source "ttys_oldfs.c"
-	source "idesc_serial_oldfs.c"
-	source "idesc_serial.c"
-
-	@IncludeExport(path="drivers", target_name="ttys.h")
-	source "ttys_oldfs.h"
-
-	option number serial_quantity = 1
-
-	depends tty
-	depends embox.driver.char_dev_old
+	depends embox.driver.char_dev
 	depends embox.driver.common
 }
 

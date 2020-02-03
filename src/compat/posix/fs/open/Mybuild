@@ -9,9 +9,8 @@ static module open_old extends open {
 
 	depends embox.kernel.task.resource.errno
 	depends embox.fs.core /* if_mounted_follow_down */
-	/* TODO tsort loop
-	 * depends embox.fs.syslib.file_system
-	 */
+	/* TODO tsort loop */
+	@NoRuntime depends embox.fs.syslib.file_system
 	depends libgen
 	depends dirent
 	depends umask

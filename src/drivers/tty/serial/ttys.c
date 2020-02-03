@@ -12,27 +12,21 @@
 #include <util/err.h>
 #include <util/indexator.h>
 
-#include <drivers/device.h>
 #include <mem/misc/pool.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
-#include "idesc_serial.h"
-#include <util/err.h>
 
-static struct idesc *uart_cdev_open(struct dev_module *cdev, void *flags) {
-	struct uart *uart;
+#include "idesc_serial.h"
+
+struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 	struct idesc *idesc;
 	int res;
 
-	uart = uart_dev_lookup(cdev->name);
-	if (!uart) {
-		return err_ptr(ENOENT);
-	}
-	idesc = idesc_serial_create(uart, *((int *)flags));
+	idesc = idesc_serial_create(cdev->dev_priv, *((int *) priv));
 	if (err(idesc)) {
 		return idesc;
 	}
-	res = uart_open(uart);
+	res = uart_open(cdev->dev_priv);
 	if (res) {
 		return err_ptr(-res);
 	}

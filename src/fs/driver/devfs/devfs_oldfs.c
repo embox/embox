@@ -21,6 +21,10 @@
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
 
+/* Common part */
+struct idesc *devfs_open(struct inode *node, struct idesc *desc);
+int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
+
 extern int devfs_add_block(struct block_dev *dev);
 extern struct inode_operations devfs_iops;
 
@@ -57,14 +61,7 @@ static struct fsop_desc devfs_fsop = {
 	.mount = devfs_mount,
 };
 
-struct idesc *devfs_open(struct inode *node, struct idesc *idesc) {
-	return idesc;
-}
-
-static struct file_operations devfs_fops = {
-	.open = devfs_open
-};
-
+extern struct file_operations devfs_fops;
 static const struct fs_driver devfs_driver = {
 	.name = "devfs",
 	.file_op = &devfs_fops,
@@ -91,12 +88,6 @@ int devfs_add_block(struct block_dev *bdev) {
 
 	nas = node.node->nas;
 	nas->fi->privdata = bdev;
-
-	return 0;
-}
-
-int devfs_del_block(struct block_dev *bdev) {
-	vfs_del_leaf(bdev->dev_vfs_info);
 
 	return 0;
 }
@@ -136,51 +127,8 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 	inode->i_mode = flags;
 }
 
-extern struct dev_module **get_cdev_tab();
-/**
- * @brief Iterate elements of /dev
- *
- * @note Devices are iterated type by type
- * @note Two least significant bits of fs-specific pointer is dev type, the
- * rest is dev number in dev tab
- *
- * @param next Inode to be filled
- * @param parent Ignored
- * @param ctx
- *
- * @return Negative error code
- */
-static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	int i;
-	struct block_dev **bdevtab = get_bdev_tab();
-	struct dev_module **cdevtab = get_cdev_tab();
-
-	i = ((intptr_t) ctx->fs_ctx);
-
-	for (; i < MAX_BDEV_QUANTITY; i++) {
-		if (bdevtab[i]) {
-			ctx->fs_ctx = (void *)(intptr_t)i + 1;
-			devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK | S_IRALL | S_IWALL);
-			strncpy(next->name, bdevtab[i]->name, sizeof(next->name) - 1);
-			next->name[sizeof(next->name) - 1] = '\0';
-			return 0;
-		}
-	}
-
-	/* Dynamically allocated devices */
-	for (; i < (MAX_CDEV_QUANTITY + MAX_BDEV_QUANTITY); i++) {
-		if (cdevtab[i - MAX_BDEV_QUANTITY]) {
-			ctx->fs_ctx = (void *) ((intptr_t) i + 1);
-			devfs_fill_inode(next, cdevtab[i - MAX_BDEV_QUANTITY], S_IFCHR | S_IRALL | S_IWALL);
-			strncpy(next->name, cdevtab[i - MAX_BDEV_QUANTITY]->name, sizeof(next->name) - 1);
-			next->name[sizeof(next->name) - 1] = '\0';
-			return 0;
-		}
-	}
-
-	/* End of directory */
-	return -1;
-}
+extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
+extern struct dev_module **get_cdev_tab(void);
 
 /**
  * @brief Find file in directory
@@ -217,10 +165,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 		}
 	}
 	return NULL;
-}
-
-static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return 0;
 }
 
 struct inode_operations devfs_iops = {

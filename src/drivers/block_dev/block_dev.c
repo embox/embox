@@ -22,7 +22,6 @@
 #include <util/math.h>
 
 extern struct idesc_ops idesc_bdev_ops;
-extern int devfs_del_block(struct block_dev *dev);
 
 #define DEFAULT_BDEV_BLOCK_SIZE OPTION_GET(NUMBER, default_block_size)
 

@@ -1,22 +1,9 @@
 package embox.driver.serial
 
-@DefaultImpl(core_old)
-abstract module core { }
-
-module uart_dev_dvfs extends core {
+@DefaultImpl(core_tty)
+abstract module core {
 	option number uart_max_n = 4
-
-	source "uart_dev_dvfs.c"
-
-	@IncludeExport(path="drivers/serial")
-	source "uart_device.h"
-
-	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.driver.tty.serial_dvfs
-}
-
-module core_old extends core {
-	option number uart_max_n = 4
+	option number log_level = 1
 
 	source "uart_dev.c"
 
@@ -24,21 +11,17 @@ module core_old extends core {
 	source "uart_device.h"
 
 	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.driver.tty.serial_oldfs
+	@NoRuntime depends embox.util.dlist
+	@NoRuntime depends embox.util.log
+	@NoRuntime depends embox.mem.pool
+}
+
+module core_tty extends core {
+	@NoRuntime depends embox.driver.tty.serial
 }
 
 module core_notty extends core {
-	option number uart_max_n = 4
-
-	source "uart_dev.c"
-
-	@IncludeExport(path="drivers/serial")
-	source "uart_device.h"
-
-	@NoRuntime depends embox.util.indexator
 	@NoRuntime depends embox.driver.tty.serial_stub
-	@NoRuntime depends embox.util.dlist
-	@NoRuntime depends embox.mem.pool
 }
 
 module diag {

@@ -1,5 +1,0 @@
-package embox.driver
-
-module char_dev_dvfs extends char_dev {
-	depends char_dev_impl
-}

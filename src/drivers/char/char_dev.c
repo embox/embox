@@ -57,6 +57,8 @@ void char_dev_default_close(struct idesc *idesc) {
 
 ARRAY_SPREAD_DEF(const struct dev_module, __char_device_registry);
 
+/* NOTE: this function doesn't actually init anything, it just stores
+ * statically allocated char devices to devtab[] */
 int char_dev_init_all(void) {
 	struct dev_module *cdev;
 
