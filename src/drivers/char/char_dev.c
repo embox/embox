@@ -83,6 +83,7 @@ int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 }
 
 static void char_dev_idesc_close(struct idesc *idesc) {
+	char_dev_default_close(idesc);
 }
 
 static const struct idesc_ops idesc_char_dev_def_ops = {
