@@ -16,7 +16,12 @@
 #include <drivers/device.h>
 #include <fs/file_desc.h>
 
+extern const struct idesc_ops idesc_file_ops;
 static void bdev_idesc_close(struct idesc *desc) {
+	/* It's assumed that block device may be accesed
+	 * via idesc ops only if they were opened from /dev/,
+	 * so we need to close bdev idesc as it as a file */
+	idesc_file_ops.close(desc);
 }
 
 static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {

@@ -71,7 +71,6 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 
 int file_desc_destroy(struct file_desc *fdesc) {
 	assert(fdesc);
-	assert(fdesc->f_idesc.idesc_ops == &idesc_file_ops);
 
 	inode_del(fdesc->f_inode);
 
