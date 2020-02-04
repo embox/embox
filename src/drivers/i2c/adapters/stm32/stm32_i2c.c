@@ -39,7 +39,15 @@ static int stm32_i2c_rx(struct stm32_i2c *adapter, uint16_t addr,
 
 	while (HAL_I2C_GetState(i2c_handle) != HAL_I2C_STATE_READY)
 		;
-	if (HAL_I2C_Master_Receive_IT(i2c_handle, addr, buf, len) != HAL_OK) {
+
+	/*
+	 * I2C address _must_ be shifted as it stated in
+	 * Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c:
+	 *
+	 * @param  DevAddress Target device address: The device 7 bits address value
+	 *      in datasheet must be shift at right before call interface
+	 */
+	if (HAL_I2C_Master_Receive_IT(i2c_handle, addr << 1, buf, len) != HAL_OK) {
 		return -1;
 	}
 
@@ -54,7 +62,15 @@ static int stm32_i2c_tx(struct stm32_i2c *adapter, uint16_t addr,
 
 	while (HAL_I2C_GetState(i2c_handle) != HAL_I2C_STATE_READY)
 		;
-	if (HAL_I2C_Master_Transmit_IT(i2c_handle, addr, buf, len) != HAL_OK) {
+
+	/*
+	 * I2C address _must_ be shifted as it stated in
+	 * Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c.c:
+	 *
+	 * @param  DevAddress Target device address: The device 7 bits address value
+	 *      in datasheet must be shift at right before call interface
+	 */
+	if (HAL_I2C_Master_Transmit_IT(i2c_handle, addr << 1, buf, len) != HAL_OK) {
 		return -1;
 	}
 	while (HAL_I2C_GetState(i2c_handle) != HAL_I2C_STATE_READY)
