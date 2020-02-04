@@ -40,7 +40,7 @@ POOL_DEF(flock_pool, struct flock_shared, MAX_FLOCK_QUANTITY);
 
 static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	struct path node;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int retval = 0;
 
 	if(NULL == parent->node->nas->fs) {
@@ -115,7 +115,7 @@ int kmkdir(const char *pathname, mode_t mode) {
 }
 
 int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *child) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int ret;
 
 	assert(dir_path->node);
@@ -181,7 +181,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 int kremove(const char *pathname) {
 	struct path node;
 	struct nas *nas;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -206,7 +206,7 @@ int kremove(const char *pathname) {
 
 int kunlink(const char *pathname) {
 	struct path node, parent;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -245,7 +245,7 @@ int kunlink(const char *pathname) {
 
 int krmdir(const char *pathname) {
 	struct path node, parent;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -311,7 +311,7 @@ int kutime(const char *path,const struct utimbuf *times) {
 
 int kformat(const char *pathname, const char *fs_type) {
 	struct path node;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int res;
 	struct block_dev *bdev;
 
@@ -349,7 +349,7 @@ int kformat(const char *pathname, const char *fs_type) {
 
 int kmount(const char *dev, const char *dir, const char *fs_type) {
 	struct path dev_node, dir_node, root_path;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	const char *lastpath;
 	int res;
 
@@ -612,7 +612,7 @@ int krename(const char *oldpath, const char *newpath) {
 
 int kumount(const char *dir) {
 	struct path dir_node, node;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	const char *lastpath;
 	int res;
 

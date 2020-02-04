@@ -62,7 +62,7 @@ static struct fs_driver ext3fs_driver;
  * file_operation
  */
 static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return err_ptr(EINVAL);
@@ -72,7 +72,7 @@ static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
 }
 
 static int ext3fs_close(struct file_desc *desc) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
@@ -82,7 +82,7 @@ static int ext3fs_close(struct file_desc *desc) {
 }
 
 static size_t ext3fs_read(struct file_desc *desc, void *buff, size_t size) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 
 	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
 		return -1;
@@ -92,7 +92,7 @@ static size_t ext3fs_read(struct file_desc *desc, void *buff, size_t size) {
 }
 
 static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	int res;
 	size_t datablocks;
 	struct ext2_fs_info *fsi;
@@ -117,7 +117,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 }
 
 static int ext3fs_create(struct inode *parent_node, struct inode *node) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 	int res = -1;
@@ -141,7 +141,7 @@ static int ext3fs_create(struct inode *parent_node, struct inode *node) {
 }
 
 static int ext3fs_delete(struct inode *node) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 	int res;
@@ -235,7 +235,7 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
 }
 
 static int ext3fs_mount(void *dev, void *dir) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	struct ext2fs_dinode *dip = sysmalloc(sizeof(struct ext2fs_dinode));
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
@@ -312,7 +312,7 @@ static int ext3fs_truncate (struct inode *node, off_t length) {
 }
 
 static int ext3fs_umount(void *dir) {
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	ext3_journal_specific_t *data;
 	int res;
