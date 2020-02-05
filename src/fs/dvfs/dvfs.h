@@ -48,7 +48,6 @@ struct dir_ctx;
 struct super_block {
 	const struct fs_driver *fs_drv; /* Assume that all FS have single driver */
 	struct block_dev            *bdev;
-	struct file_desc            *bdev_file;
 	struct dentry               *root;
 	struct dlist_head           *inode_list;
 
@@ -112,7 +111,7 @@ extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 
-extern struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct file_desc *bdev_file);
+extern struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct block_dev *bdev);
 extern int dvfs_destroy_sb(struct super_block *sb);
 
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
@@ -127,15 +126,4 @@ extern int dentry_ref_dec(struct dentry *dentry);
 extern int dentry_disconnect(struct dentry *dentry);
 extern int dentry_reconnect(struct dentry *parent, const char *name);
 
-extern int dvfs_bdev_read(
-		struct file_desc *bdev_file,
-		char *buff,
-		size_t count,
-		int blkno);
-
-extern int dvfs_bdev_write(
-		struct file_desc *bdev_file,
-		char *buff,
-		size_t count,
-		int blkno);
 #endif

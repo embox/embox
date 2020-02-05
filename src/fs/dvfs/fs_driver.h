@@ -18,7 +18,7 @@ struct file_desc;
 struct fs_driver {
 	const char name[FS_DRV_NAME_LEN];
 	int (*format)(struct block_dev *dev, void *priv);
-	int (*fill_sb)(struct super_block *sb, struct file_desc *dev);
+	int (*fill_sb)(struct super_block *sb, struct block_dev *dev);
 	int (*mount_end)(struct super_block *sb);
 	int (*clean_sb)(struct super_block *sb);
 };

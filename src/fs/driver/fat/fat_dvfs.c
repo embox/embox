@@ -343,31 +343,26 @@ struct super_block_operations fat_sbops = {
  *
  * @return Negative error code
  */
-static int fat_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
+static int fat_fill_sb(struct super_block *sb, struct block_dev *bdev) {
 	struct fat_fs_info *fsi;
-	struct block_dev *dev;
+
 	assert(sb);
-	if (!bdev_file) {
+
+	if (!bdev) {
 		/* FAT always uses block device, so we can't fill superblock */
 		return -ENOENT;
 	}
 
-	assert(bdev_file->f_inode);
-	assert(bdev_file->f_inode->i_data);
-
-	dev = ((struct dev_module *) bdev_file->f_inode->i_data)->dev_priv;
-	assert(dev);
-
 	fsi = fat_fs_alloc();
 	*fsi = (struct fat_fs_info) {
-		.bdev = dev,
+		.bdev = bdev,
 	};
 	sb->sb_data = fsi;
 	sb->sb_iops = &fat_iops;
 	sb->sb_fops = &fat_fops;
 	sb->sb_ops  = &fat_sbops;
 
-	if (fat_get_volinfo(dev, &fsi->vi, 0))
+	if (fat_get_volinfo(bdev, &fsi->vi, 0))
 		goto err_out;
 
 	return 0;
