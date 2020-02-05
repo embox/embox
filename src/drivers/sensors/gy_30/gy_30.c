@@ -11,7 +11,8 @@
 
 #include "gy_30.h"
 
-#define GY30_ADDR       0x46
+/* http://www.elechouse.com/elechouse/images/product/Digital%20light%20Sensor/bh1750fvi-e.pdf */
+#define GY30_ADDR       0x23
 
 uint16_t gy_30_read_light_level(unsigned char id) {
 	uint16_t level = 0;
