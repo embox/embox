@@ -318,13 +318,13 @@ static struct file_desc *dvfs_get_mount_bdev(const char *dev_name) {
 		 * hack for pseudo-open() blockdev file. This code
 		 * won't work if devfs driver will be changed. If
 		 * someone knows how to rewrite it, please, do it :) */
-		const struct dumb_fs_driver *devfs_drv;
+		const struct fs_driver *devfs_drv;
 		/* We fill local variable with file operations to
 		 * initialize bdev_file properly */
 		struct super_block devfs_sb;
 		struct block_dev *block_dev;
 
-		devfs_drv = dumb_fs_driver_find("devfs");
+		devfs_drv = fs_driver_find("devfs");
 		assert(devfs_drv);
 
 		block_dev = block_dev_find(dev_name);
@@ -373,7 +373,7 @@ extern int set_rootfs_sb(struct super_block *sb);
  */
 int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags) {
 	struct lookup lookup = {};
-	const struct dumb_fs_driver *drv;
+	const struct fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d = NULL;
 	struct file_desc *bdev_file;
@@ -382,7 +382,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	assert(dest);
 	assert(fstype);
 
-	drv = dumb_fs_driver_find(fstype);
+	drv = fs_driver_find(fstype);
 	assert(drv);
 
 	bdev_file = dvfs_get_mount_bdev(dev);

@@ -223,11 +223,11 @@ static int initfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	return 0;
 }
 
-static const struct dumb_fs_driver initfs_dumb_driver = {
+static const struct fs_driver initfs_dumb_driver = {
 	.name      = "initfs",
 	.fill_sb   = initfs_fill_sb,
 	.mount_end = initfs_mount_end,
 };
 
-ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
-ARRAY_SPREAD_ADD(dumb_drv_tab, &initfs_dumb_driver);
+ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
+ARRAY_SPREAD_ADD(fs_drivers_registry, &initfs_dumb_driver);

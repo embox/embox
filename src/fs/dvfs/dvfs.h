@@ -18,6 +18,7 @@
 #include <fs/file_system.h>
 #include <util/dlist.h>
 #include <fs/file_operation.h>
+#include <fs/fs_driver.h>
 #include <fs/inode_operation.h>
 #include <fs/dir_context.h>
 #include <fs/inode.h>
@@ -27,8 +28,6 @@
 /*****************
  New VFS prototype
  *****************/
-#define FS_DRV_NAME_LEN   16
-
 #define DVFS_PATH_FULL     0x001
 #define DVFS_PATH_FS       0x002
 #define DVFS_NAME          0x004
@@ -39,7 +38,6 @@
 #define DVFS_DISCONNECTED  0x10000000
 
 struct dentry;
-struct dumb_fs_driver;
 struct file_desc;
 struct inode;
 struct super_block;
@@ -48,7 +46,7 @@ struct inode_operations;
 struct dir_ctx;
 
 struct super_block {
-	const struct dumb_fs_driver *fs_drv; /* Assume that all FS have single driver */
+	const struct fs_driver *fs_drv; /* Assume that all FS have single driver */
 	struct block_dev            *bdev;
 	struct file_desc            *bdev_file;
 	struct dentry               *root;
@@ -70,17 +68,9 @@ struct super_block_operations {
 	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
 };
 
-struct dumb_fs_driver {
-	const char name[FS_DRV_NAME_LEN];
-	int (*format)(struct block_dev *dev, void *priv);
-	int (*fill_sb)(struct super_block *sb, struct file_desc *dev);
-	int (*mount_end)(struct super_block *sb);
-	int (*clean_sb)(struct super_block *sb);
-};
-
 struct auto_mount {
 	char mount_path[DVFS_MAX_PATH_LEN];
-	struct dumb_fs_driver *fs_driver;
+	struct fs_driver *fs_driver;
 };
 
 struct dvfsmnt {
@@ -122,10 +112,8 @@ extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 
-extern struct super_block *dvfs_alloc_sb(const struct dumb_fs_driver *drv, struct file_desc *bdev_file);
+extern struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct file_desc *bdev_file);
 extern int dvfs_destroy_sb(struct super_block *sb);
-extern const struct dumb_fs_driver *dumb_fs_driver_find(const char *name);
-struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file_desc *bdev);
 
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);

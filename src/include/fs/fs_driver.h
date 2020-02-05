@@ -49,10 +49,10 @@ struct fs_driver {
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \
 	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, \
-			__fs_drivers_registry);                \
-	ARRAY_SPREAD_ADD(__fs_drivers_registry, \
+			fs_drivers_registry);                \
+	ARRAY_SPREAD_ADD(fs_drivers_registry, \
 			&fs_driver_)
 
-extern const struct fs_driver *fs_driver_find_drv(const char *name);
+extern const struct fs_driver *fs_driver_find(const char *name);
 
 #endif /* FS_DRV_H_ */

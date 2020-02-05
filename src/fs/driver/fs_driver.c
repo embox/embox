@@ -8,16 +8,16 @@
 
 #include <string.h>
 
-#include <util/array.h>
 #include <fs/fs_driver.h>
+#include <util/array.h>
 #include <util/member.h>
 
-ARRAY_SPREAD_DEF(const struct fs_driver *const, __fs_drivers_registry);
+ARRAY_SPREAD_DEF(const struct fs_driver *const, fs_drivers_registry);
 
-const struct fs_driver *fs_driver_find_drv(const char *name) {
+const struct fs_driver *fs_driver_find(const char *name) {
 	const struct fs_driver *fs_drv;
 
-	array_spread_foreach(fs_drv, __fs_drivers_registry) {
+	array_spread_foreach(fs_drv, fs_drivers_registry) {
 		if (!strcmp(name, fs_drv->name)) {
 			return fs_drv;
 		}

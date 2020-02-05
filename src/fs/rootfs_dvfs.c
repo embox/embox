@@ -42,7 +42,7 @@ struct super_block *rootfs_sb(void) {
  */
 static int rootfs_mount(void) {
 	const char *dev, *fs_type;
-	const struct dumb_fs_driver *fsdrv;
+	const struct fs_driver *fsdrv;
 	const struct auto_mount *auto_mnt;
 	struct lookup lu = {};
 	char *tmp;
@@ -52,7 +52,7 @@ static int rootfs_mount(void) {
 	fs_type = OPTION_STRING_GET(fstype);
 	assert(fs_type);
 
-	fsdrv = dumb_fs_driver_find(fs_type);
+	fsdrv = fs_driver_find(fs_type);
 	if (fsdrv == NULL)
 		return -ENOENT;
 
