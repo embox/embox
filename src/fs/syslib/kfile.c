@@ -49,14 +49,14 @@ struct idesc *kopen(struct inode *node, int flag) {
 	}
 
 	if (node_is_directory(node)) {
-		ops = nas->fs->file_op;
+		ops = nas->fs->sb_fops;
 	} else {
-		if (NULL == nas->fs->drv) {
+		if (NULL == nas->fs->fs_drv) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
 
-		ops = nas->fs->drv->file_op;
+		ops = nas->fs->fs_drv->file_op;
 
 		if (S_ISCHR(node->i_mode)) {
 			/* Note: we suppose this node belongs to devfs */

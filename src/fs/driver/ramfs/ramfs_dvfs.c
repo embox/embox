@@ -89,7 +89,7 @@ static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	fi->index = fi_index;
 	fi->inode = i_new;
-	fi->fsi = i_dir->i_sb->sb_data;
+	fi->sb_data = i_dir->i_sb->sb_data;
 
 	i_new->i_data = fi;
 	i_new->i_no = fi->index;

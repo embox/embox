@@ -26,6 +26,7 @@
 #include <fcntl.h>
 
 #include <fs/fs_driver.h>
+#include <fs/super_block.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/hlpr_path.h>
@@ -37,7 +38,7 @@
 #include <mem/phymem.h>
 #include <mem/sysmalloc.h>
 #include <fs/file_operation.h>
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <fs/file_desc.h>
 #include <drivers/flash/flash.h>
 #include <drivers/flash/emulator.h>
@@ -268,7 +269,7 @@ static int jffs2_find(jffs2_dirsearch_t * d) {
  * Process a mount request. This mainly creates a root for the
  * filesystem.
  */
-static int jffs2_read_super(struct super_block *sb) {
+static int jffs2_read_super(struct jffs2_super_block *sb) {
 	struct jffs2_sb_info *c;
 	int err;
 
@@ -312,13 +313,13 @@ static int jffs2_read_super(struct super_block *sb) {
 }
 
 static int jffs2_mount(struct nas *dir_nas) {
-	struct super_block *jffs2_sb;
+	struct jffs2_super_block *jffs2_sb;
 	struct jffs2_sb_info *c;
 	int err;
 
 	struct jffs2_fs_info *fsi;
 
-	fsi = dir_nas->fs->fsi;
+	fsi = dir_nas->fs->sb_data;
 
 	jffs2_sb = &fsi->jffs2_sb;
 
@@ -327,7 +328,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 	}
 
 	c = &jffs2_sb->jffs2_sb;
-	memset(jffs2_sb, 0, sizeof (struct super_block));
+	memset(jffs2_sb, 0, sizeof (struct jffs2_super_block));
 
 	jffs2_sb->bdev = dir_nas->fs->bdev;
 
@@ -400,7 +401,7 @@ static int umount_vfs_dir_entry(struct nas *nas) {
  */
 static int jffs2_umount(struct nas *dir_nas) {
 	struct _inode *root;
-	struct super_block *jffs2_sb;
+	struct jffs2_super_block *jffs2_sb;
 	struct jffs2_sb_info *c;
     struct jffs2_full_dirent *fd, *next;
     struct jffs2_file_info *dir_fi;
@@ -966,7 +967,7 @@ void jffs2_gc_release_page(struct jffs2_sb_info *c,
 	/* Do nothing */
 }
 
-static struct _inode *new_inode(struct super_block *sb) {
+static struct _inode *new_inode(struct jffs2_super_block *sb) {
 	/* Only called in write.c jffs2_new_inode
 	 * Always adds itself to inode cache	 */
 
@@ -1003,7 +1004,7 @@ static struct _inode *new_inode(struct super_block *sb) {
 	return inode;
 }
 
-static struct _inode *ilookup(struct super_block *sb, uint32_t ino)
+static struct _inode *ilookup(struct jffs2_super_block *sb, uint32_t ino)
 {
 	struct _inode *inode = NULL;
 
@@ -1018,7 +1019,7 @@ static struct _inode *ilookup(struct super_block *sb, uint32_t ino)
 	return inode;
 }
 
-struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino) {
+struct _inode *jffs2_iget(struct jffs2_super_block *sb, uint32_t ino) {
 	/* Must first check for cached inode
 	 * If this fails let new_inode create one
 	 */
@@ -1128,7 +1129,7 @@ static void jffs2_clear_inode (struct _inode *inode) {
 struct _inode *jffs2_new_inode (struct _inode *dir_i,
 					int mode, struct jffs2_raw_inode *ri) {
 	struct _inode *inode;
-	struct super_block *sb = dir_i->i_sb;
+	struct jffs2_super_block *sb = dir_i->i_sb;
 	struct jffs2_sb_info *c;
 	struct jffs2_inode_info *f;
 	int ret;
@@ -1225,9 +1226,9 @@ struct jffs2_inode_info *jffs2_gc_fetch_inode(struct jffs2_sb_info *c,
 						     int inum, int nlink) {
 	struct _inode *inode;
 	struct jffs2_inode_cache *ic;
-	struct super_block *sb;
+	struct jffs2_super_block *sb;
 
-	sb = member_cast_out(c, struct super_block, jffs2_sb);
+	sb = member_cast_out(c, struct jffs2_super_block, jffs2_sb);
 
 	if (!nlink) {
 	/* The inode has zero nlink but its nodes weren't yet marked
@@ -1385,7 +1386,7 @@ static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc) {
 
 	nas = node->nas;
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	file_set_size(file_desc_from_idesc(idesc), fi->_inode->i_size);
 
@@ -1460,12 +1461,12 @@ static int jffs2_free_fs(struct nas *nas) {
 	struct jffs2_fs_info *fsi;
 
 	if(NULL != nas->fs) {
-		fsi = nas->fs->fsi;
+		fsi = nas->fs->sb_data;
 
 		if(NULL != fsi) {
 			pool_free(&jffs2_fs_pool, fsi);
 		}
-		filesystem_free(nas->fs);
+		super_block_free(nas->fs);
 	}
 
 	if(NULL != (fi = nas->fi->privdata)) {
@@ -1679,27 +1680,30 @@ static int jffs2fs_mount(void *dev, void *dir) {
 	struct nas *dir_nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
+	struct block_dev *bdev;
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	if (NULL == (dir_nas->fs = filesystem_create(FS_NAME))) {
-		rc = ENOMEM;
+	bdev = jffs_get_flashdev(dev, &rc);
+	if (bdev == NULL) {
 		goto error;
 	}
 
-	if (NULL == (dir_nas->fs->bdev = jffs_get_flashdev(dev, &rc))) {
+	dir_nas->fs = super_block_alloc(FS_NAME, bdev);
+	if (NULL == dir_nas->fs) {
+		rc = ENOMEM;
 		goto error;
 	}
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&jffs2_fs_pool))) {
-		dir_nas->fs->fsi = fsi;
+		dir_nas->fs->sb_data = fsi;
 		rc = ENOMEM;
 		goto error;
 	}
 	memset(fsi, 0, sizeof(struct jffs2_fs_info));
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 
 	if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;

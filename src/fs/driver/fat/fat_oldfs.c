@@ -18,7 +18,7 @@
 
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <fs/fs_driver.h>
 #include <fs/inode.h>
 #include <fs/vfs.h>
@@ -37,7 +37,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	mode_t mode;
 	int ret;
 	struct dirinfo *new_di;
-	struct fat_fs_info *fsi = parent_nas->fs->fsi;
+	struct fat_fs_info *fsi = parent_nas->fs->sb_data;
 
 	fat_reset_dir(parent_di);
 	read_dir_buf(parent_di);
@@ -83,7 +83,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 
 		memset(fi, 0, sizeof(*fi));
 
-		fi->fsi = parent_nas->fs->fsi;
+		fi->fsi          = parent_nas->fs->sb_data;
 		fi->filelen      = fat_direntry_get_size(&de);
 		fi->dirsector    = fat_current_dirsector(parent_di);
 		fi->diroffset    = parent_di->currententry - 1;
@@ -122,7 +122,7 @@ static int fat_mount_files(struct nas *dir_nas) {
 	assert(dir_nas);
 
 	di = dir_nas->fi->privdata;
-	fsi = dir_nas->fs->fsi;
+	fsi = dir_nas->fs->sb_data;
 
 	pstart = fat_get_ptn_start(dir_nas->fs->bdev, 0, &pactive, &ptype, &psize);
 	if (pstart == 0xffffffff) {
@@ -144,12 +144,12 @@ static void fat_free_fs(struct nas *nas) {
 	struct fat_fs_info *fsi;
 
 	if (NULL != nas->fs) {
-		fsi = nas->fs->fsi;
+		fsi = nas->fs->sb_data;
 
 		if(NULL != fsi) {
 			fat_fs_free(fsi);
 		}
-		filesystem_free(nas->fs);
+		super_block_free(nas->fs);
 	}
 
 	if (NULL != (fi = nas->fi->privdata)) {
@@ -195,19 +195,18 @@ static int fatfs_mount(void *dev, void *dir) {
 		goto error;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_create("vfat"))) {
+	dir_nas->fs = super_block_alloc("vfat", dev_fi->privdata);
+	if (dir_nas->fs == NULL) {
 		rc = -ENOMEM;
 		goto error;
 	}
-
-	dir_nas->fs->bdev = dev_fi->privdata;
 
 	if (NULL == (fsi = fat_fs_alloc())) {
 		rc = -ENOMEM;
 		goto error;
 	}
 	memset(fsi, 0, sizeof(struct fat_fs_info));
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 
 	/* allocate this directory info */
 	if (NULL == (di = fat_dirinfo_alloc())) {

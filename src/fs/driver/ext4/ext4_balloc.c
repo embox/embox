@@ -34,7 +34,7 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <fs/file_desc.h>
 
 #include <fs/ext2.h>
@@ -156,7 +156,7 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 	struct ext4_fs_info *fsi;
 
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	block = EXT4_NO_BLOCK;
 	bit = -1;
@@ -237,7 +237,7 @@ void ext4_free_block(struct nas *nas, uint32_t bit_returned) {
 	struct ext4_fs_info *fsi;
 
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	if (bit_returned >= fsi->e4sb.s_blocks_count ||
 		bit_returned < fsi->e4sb.s_first_data_block) {
@@ -292,7 +292,7 @@ uint32_t ext4_alloc_block(struct nas *nas, uint32_t block)
 	struct ext4_fs_info *fsi;
 
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	if (fsi->e4sb.s_free_blocks_count == 0) {
 		return EXT4_NO_BLOCK;

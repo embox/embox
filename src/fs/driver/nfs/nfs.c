@@ -23,7 +23,7 @@
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <limits.h>
 
 #include <mem/misc/pool.h>
@@ -331,13 +331,13 @@ static void nfs_free_fs(struct nas *nas) {
 	struct nfs_fs_info *fsi;
 
 	if(NULL != nas->fs) {
-		fsi = nas->fs->fsi;
+		fsi = nas->fs->sb_data;
 
 		if(NULL != fsi) {
 			nfs_clnt_destroy(fsi);
 			pool_free(&nfs_fs_pool, fsi);
 		}
-		filesystem_free(nas->fs);
+		super_block_free(nas->fs);
 	}
 
 	if(NULL != (fi = nas->fi->privdata)) {
@@ -356,7 +356,8 @@ static int nfsfs_mount(void *dev, void *dir) {
 	/* there are nodev for nfs. we create fs here and set nfs fs_driver*/
 	dir_nas = dir_node->nas;
 
-	if (NULL == (dir_nas->fs = filesystem_create("nfs"))) {
+	dir_nas->fs = super_block_alloc("nfs", NULL);
+	if (NULL == dir_nas->fs) {
 		return -ENOMEM;
 	}
 
@@ -366,7 +367,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 		goto error;
 	}
 
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 	dir_nas->fi->privdata = (void *) fi;
 
 	memset(fsi, 0, sizeof *fsi);
@@ -697,7 +698,7 @@ static int nfs_call_proc_mnt(struct nas *nas,
 	struct timeval timeout = { 25, 0 };
 	struct nfs_fs_info *fsi;
 
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	if(NULL == fsi->mnt){
 		if(0 >  nfs_client_init(fsi)) {
@@ -753,7 +754,7 @@ static int nfs_call_proc_nfs(struct nas *nas,
 	struct timeval timeout = { 25, 0 };
 	struct nfs_fs_info *fsi;
 
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 	if(NULL == fsi->nfs){
 		if(0 >  nfs_client_init(fsi)) {
 			return -1;
@@ -891,7 +892,7 @@ static int nfs_mount(struct nas *nas) {
 	struct nfs_fs_info *fsi;
 	export_dir_t export;
 
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	/* get server mount directory name*/
 	memset((void *)&export, 0, sizeof(export));

@@ -18,7 +18,7 @@
 
 #include <kernel/thread/sync/mutex.h>
 
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 
 struct nas;
 
@@ -74,9 +74,9 @@ struct node_fi {
 };
 
 struct nas {
-	struct inode          *node;
-	struct filesystem    *fs;
-	struct node_fi       *fi;
+	struct inode       *node;
+	struct super_block *fs;
+	struct node_fi     *fi;
 };
 
 extern struct inode *inode_new(struct super_block *sb);

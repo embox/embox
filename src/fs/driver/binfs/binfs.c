@@ -25,7 +25,7 @@ static int binfs_mount(void *dev, void *dir) {
 				S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
 	}
 
-	if (NULL == (dir_node->nas->fs = filesystem_create(BINFS_NAME))) {
+	if (NULL == (dir_node->nas->fs = super_block_alloc(BINFS_NAME, NULL))) {
 		return -ENOMEM;
 	}
 	return 0;

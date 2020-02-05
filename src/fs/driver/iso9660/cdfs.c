@@ -54,7 +54,7 @@
 #include <fs/inode.h>
 #include <fs/vfs.h>
 #include <fs/hlpr_path.h>
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
@@ -412,7 +412,7 @@ int cdfs_mount(struct nas *root_nas)
 	unsigned char *esc;
 	struct cdfs_fs_info *fsi;
 
-	fsi = root_nas->fs->fsi;
+	fsi = root_nas->fs->sb_data;
 
 	/* Check block size */
 	if (CDFS_BLOCKSIZE != block_dev_block_size(root_nas->fs->bdev)) {
@@ -539,7 +539,7 @@ static int cdfs_open(struct nas *nas, char *name) {
 	struct cdfs_fs_info *fsi;
 
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 
 	cdfs = (cdfs_t *) fsi->data;
 
@@ -593,7 +593,7 @@ static int cdfs_read(struct nas *nas, void *data, size_t size, off64_t pos) {
 	cdfs_t *cdfs;
 
 	fi = nas->fi->privdata;
-	fsi = nas->fs->fsi;
+	fsi = nas->fs->sb_data;
 	cdfs = (cdfs_t *) fsi->data;
 
 	read = 0;
@@ -850,12 +850,12 @@ static void cdfs_free_fs(struct nas *nas) {
 	struct cdfs_fs_info *fsi;
 
 	if(NULL != nas->fs) {
-		fsi = nas->fs->fsi;
+		fsi = nas->fs->sb_data;
 
 		if(NULL != fsi) {
 			pool_free(&cdfs_fs_pool, fsi);
 		}
-		filesystem_free(nas->fs);
+		super_block_free(nas->fs);
 	}
 
 	if(NULL != (fi = nas->fi->privdata)) {
@@ -880,11 +880,10 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_create("iso9660"))) {
+	dir_nas->fs = super_block_alloc("iso9660", dev_fi->privdata);
+	if (NULL == dir_nas->fs) {
 		return -ENOMEM;
 	}
-
-	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&cdfs_fs_pool))) {
@@ -892,7 +891,7 @@ static int cdfsfs_mount(void *dev, void *dir) {
 		goto error;
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 	//XXX vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	/* allocate this directory info */
@@ -938,7 +937,7 @@ static int cdfsfs_umount(void *dir) {
 
 	dir_node = dir;
 	dir_nas = dir_node->nas;
-	fsi = dir_nas->fs->fsi;
+	fsi = dir_nas->fs->sb_data;
 
 	cdfs_umount(fsi);
 
@@ -1106,7 +1105,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 	dir_node = root_node = node = root_nas->node;
 
 	fi = parent_fi = root_nas->fi->privdata;
-	fsi = root_nas->fs->fsi;
+	fsi = root_nas->fs->sb_data;
 	cdfs = fsi->data;
 
 	/* Setup pointers into path table buffer */

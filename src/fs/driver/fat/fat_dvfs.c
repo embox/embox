@@ -218,7 +218,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 			return -ENOMEM;
 		}
 	}
-	fi->fsi     = fsi;
+
 	fi->volinfo = &fsi->vi;
 	fi->fdi     = di;
 

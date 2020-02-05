@@ -332,7 +332,7 @@ struct jffs2_inode_info {
 #define CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE_0
 
 struct _inode;
-struct super_block;
+struct jffs2_super_block;
 
 static inline unsigned int full_name_hash(const unsigned char * name,
 		unsigned int len) {
@@ -379,7 +379,7 @@ struct _inode {
 	struct _inode *	i_parent; /* For directories only */
 	off_t		i_size; /* For files only */
 
-	struct super_block *	i_sb;
+	struct jffs2_super_block *	i_sb;
 
 	struct jffs2_inode_info	jffs2_i;
 
@@ -387,7 +387,7 @@ struct _inode {
 	struct _inode *		i_cache_next;
 };
 
-struct super_block {
+struct jffs2_super_block {
 	struct jffs2_sb_info jffs2_sb;
 	struct _inode *s_root;
     unsigned long  s_mount_count;
@@ -417,7 +417,7 @@ static inline void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c) {
 
 struct _inode *jffs2_new_inode (struct _inode *dir_i,
 					int mode, struct jffs2_raw_inode *ri);
-struct _inode *jffs2_iget(struct super_block *sb, uint32_t ino);
+struct _inode *jffs2_iget(struct jffs2_super_block *sb, uint32_t ino);
 void jffs2_iput(struct _inode * i);
 void jffs2_gc_release_inode(struct jffs2_sb_info *c,
 							struct jffs2_inode_info *f);
@@ -494,7 +494,7 @@ static inline void jffs2_erase_pending_trigger(struct jffs2_sb_info *c) { }
 
 typedef struct jffs2_fs_info {
 	char mntto[PATH_MAX];
-	struct super_block jffs2_sb;
+	struct jffs2_super_block jffs2_sb;
 } jffs2_fs_info_t;
 
 typedef struct jffs2_file_info {
