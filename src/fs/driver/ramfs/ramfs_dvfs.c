@@ -229,12 +229,12 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 	return 0;
 }
 
-static const struct dumb_fs_driver ramfs_dumb_driver = {
+static const struct fs_driver ramfs_dumb_driver = {
 	.name      = "ramfs",
 	.fill_sb   = ramfs_fill_sb,
 	.mount_end = ramfs_mount_end,
 	.format    = ramfs_format,
 };
 
-ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
-ARRAY_SPREAD_ADD(dumb_drv_tab, &ramfs_dumb_driver);
+ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
+ARRAY_SPREAD_ADD(fs_drivers_registry, &ramfs_dumb_driver);

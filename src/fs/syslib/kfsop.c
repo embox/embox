@@ -316,7 +316,7 @@ int kformat(const char *pathname, const char *fs_type) {
 	struct block_dev *bdev;
 
 	if (0 != fs_type) {
-		drv = fs_driver_find_drv((const char *) fs_type);
+		drv = fs_driver_find((const char *) fs_type);
 		if (NULL == drv) {
 			return -EINVAL;
 		}
@@ -358,7 +358,7 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-	drv = fs_driver_find_drv(fs_type);
+	drv = fs_driver_find(fs_type);
 	if (!drv) {
 		printf("Error : fs type %s not found.\n", fs_type);
 		errno = EINVAL;

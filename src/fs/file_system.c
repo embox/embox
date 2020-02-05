@@ -28,7 +28,7 @@ struct filesystem *filesystem_create(const char *drv_name) {
 	}
 
 	if (0 != *drv_name) {
-		fs->drv = fs_driver_find_drv(drv_name);
+		fs->drv = fs_driver_find(drv_name);
 	}
 
 	if (fs && fs->drv)

@@ -97,6 +97,27 @@ static void statvfs_fill_from_file(struct file_desc *file, struct statvfs *buf) 
 	}
 }
 
+static struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file_desc *bdev) {
+	const struct fs_driver *fs_drv;
+	int res;
+
+	assert(sb);
+	assert(bdev);
+
+	array_spread_foreach(fs_drv, fs_drivers_registry) {
+		if (!fs_drv->fill_sb) {
+			continue;
+		}
+		res = fs_drv->fill_sb(sb, bdev);
+		if (!res) {
+			sb->fs_drv = fs_drv;
+			return sb;
+		}
+	}
+
+	return NULL;
+}
+
 static void statvfs_fill_from_bdev(struct file_desc *bdev, struct statvfs *buf) {
 	struct super_block sb_buf;
 	struct super_block *sb;

@@ -79,7 +79,7 @@ static void *fuse_module_mount_process(void *arg) {
 	struct fuse_mount_params *params;
 	const struct cmd *cmd;
 	struct super_block *sb;
-	const struct dumb_fs_driver *fs_drv;
+	const struct fs_driver *fs_drv;
 	char *argv[3];
 	char argv0[0x20];
 	char argv1[0x20];
@@ -90,7 +90,7 @@ static void *fuse_module_mount_process(void *arg) {
 	cmd = cmd_lookup(params->fm->fuse_module_cmd_mount);
 	assert(cmd);
 
-	fs_drv = dumb_fs_driver_find(params->fm->fuse_module_cmd_mount);
+	fs_drv = fs_driver_find(params->fm->fuse_module_cmd_mount);
 	assert(fs_drv);
 
 	strncpy(argv0, params->fm->fuse_module_cmd_mount, sizeof(argv0));

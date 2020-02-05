@@ -64,7 +64,7 @@ static struct fs_driver ext3fs_driver;
 static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
 	const struct fs_driver *drv;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return err_ptr(EINVAL);
 	}
 
@@ -74,7 +74,7 @@ static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
 static int ext3fs_close(struct file_desc *desc) {
 	const struct fs_driver *drv;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 
@@ -84,7 +84,7 @@ static int ext3fs_close(struct file_desc *desc) {
 static size_t ext3fs_read(struct file_desc *desc, void *buff, size_t size) {
 	const struct fs_driver *drv;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 
@@ -98,7 +98,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 
-	if (NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if (NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 
@@ -122,7 +122,7 @@ static int ext3fs_create(struct inode *parent_node, struct inode *node) {
 	journal_handle_t *handle;
 	int res = -1;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 	fsi = parent_node->nas->fs->fsi;
@@ -146,7 +146,7 @@ static int ext3fs_delete(struct inode *node) {
 	journal_handle_t *handle;
 	int res;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 
@@ -251,7 +251,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 			.trans_freespace = ext3_journal_trans_freespace
 	};
 
-	if (NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if (NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 
@@ -320,7 +320,7 @@ static int ext3fs_umount(void *dir) {
 	fsi = ((struct inode *)dir)->nas->fs->fsi;
 	data = fsi->journal->j_fs_specific.data;
 
-	if(NULL == (drv = fs_driver_find_drv(EXT2_NAME))) {
+	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 

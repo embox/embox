@@ -450,7 +450,7 @@ static int fat_clean_sb(struct super_block *sb) {
 }
 
 extern int fat_format(struct block_dev *dev, void *priv);
-static const struct dumb_fs_driver dfs_fat_driver = {
+static const struct fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
 	.mount_end = fat_mount_end,
@@ -458,5 +458,5 @@ static const struct dumb_fs_driver dfs_fat_driver = {
 	.clean_sb  = fat_clean_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct dumb_fs_driver *const, dumb_drv_tab);
-ARRAY_SPREAD_ADD(dumb_drv_tab, &dfs_fat_driver);
+ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
+ARRAY_SPREAD_ADD(fs_drivers_registry, &dfs_fat_driver);
