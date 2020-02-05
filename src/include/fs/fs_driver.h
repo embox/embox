@@ -53,29 +53,6 @@ struct fs_driver {
 	ARRAY_SPREAD_ADD(__fs_drivers_registry, \
 			&fs_driver_)
 
-/**
- * allocate structure for fs_driver structure
- * @return pointer to allocated memory
- */
-extern struct fs_driver *alloc_fs_drivers(void);
-
-/**
- * free early allocated driver with function alloc_fs_drivers
- */
-extern void free_fs_drivers(struct fs_driver *);
-
-extern struct fs_driver *fs_driver_find_drv(const char *name);
-
-/**
- * register a new filesystem driver
- * @param fs the file system structure
- */
-extern int fs_driver_register_drv(struct fs_driver *);
-
-/**
- * unregister a file system driver
- * @param fs filesystem to unregister
- */
-extern int fs_driver_unregister_drv(struct fs_driver *);
+extern const struct fs_driver *fs_driver_find_drv(const char *name);
 
 #endif /* FS_DRV_H_ */

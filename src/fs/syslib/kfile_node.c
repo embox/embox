@@ -26,7 +26,7 @@
 int ktruncate(struct inode *node, off_t length) {
 	int ret;
 	struct nas *nas;
-	struct fs_driver *drv;
+	const struct fs_driver *drv;
 
 	if (node_is_directory(node)) {
 		SET_ERRNO(EISDIR);
