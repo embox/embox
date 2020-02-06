@@ -211,14 +211,14 @@ struct inode_operations initfs_iops = {
 extern struct file_operations initfs_fops;
 
 static int initfs_fill_sb(struct super_block *sb, struct block_dev *bdev) {
+	if (bdev) {
+		return -1;
+	}
+
 	sb->sb_iops = &initfs_iops;
 	sb->sb_fops = &initfs_fops;
 	sb->sb_ops  = &initfs_sbops;
 	sb->bdev = NULL;
-
-	if (bdev) {
-		return -1;
-	}
 
 	return 0;
 }
