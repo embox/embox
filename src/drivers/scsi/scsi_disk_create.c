@@ -25,6 +25,7 @@ extern const struct block_dev_driver bdev_driver_scsi;
 
 
 static void scsi_user_input(struct scsi_dev *dev, int res) {
+	log_debug("res = %d", res);
 	if (res) {
 		scsi_dev_recover(dev);
 		return;
@@ -43,10 +44,11 @@ static const struct scsi_dev_state scsi_state_user = {
 	.sds_input = scsi_user_input,
 };
 
-static void* scsi_create_thread(void *arg) {
+static void *scsi_create_thread(void *arg) {
 	struct block_dev *bdev;
 	struct scsi_dev *sdev;
 	char path[0x10]; /* enough for /dev/sdx */
+	int res = 0;
 
 	assert(arg);
 	sdev = arg;
@@ -64,9 +66,14 @@ static void* scsi_create_thread(void *arg) {
 	}
 
 	bdev->privdata = sdev;
-	bdev->size = sdev->blk_n * sdev->blk_size;
+	bdev->size = (uint64_t)sdev->blk_n * sdev->blk_size;
 	sdev->bdev = bdev;
-	create_partitions(bdev);
+
+	res = create_partitions(bdev);
+	if (res < 0) {
+		log_error("can't create partitions %d", res);
+		return (void*)res;
+	}
 
 	return 0;
 }

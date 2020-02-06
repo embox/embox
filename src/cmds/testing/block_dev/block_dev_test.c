@@ -165,6 +165,8 @@ static int block_dev_test(struct block_dev *bdev) {
 	}
 
 	for (uint64_t i = 0; i < blocks; i++) {
+		printf("Testing %"PRIu64" (of %"PRIu64")\n", i, blocks);
+
 		fill_buffer(write_buf, blk_sz);
 
 		err = block_dev_write(bdev, (void *) write_buf, blk_sz, i);
