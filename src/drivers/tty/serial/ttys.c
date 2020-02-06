@@ -22,7 +22,7 @@ struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 	struct idesc *idesc;
 	int res;
 
-	idesc = idesc_serial_create(cdev->dev_priv, *((int *) priv));
+	idesc = idesc_serial_create(cdev->dev_priv, (uintptr_t) priv);
 	if (err(idesc)) {
 		return idesc;
 	}
