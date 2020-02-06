@@ -6,8 +6,8 @@
  * @date    26 Jan 2015
  */
 
-#ifndef STM32F764G_DISCOVERY_SD_H_
-#define STM32F764G_DISCOVERY_SD_H_
+#ifndef STM32F746G_DISCOVERY_SD_H_
+#define STM32F746G_DISCOVERY_SD_H_
 
 #include "stm32f7xx_hal.h"
 #include "stm32f7xx_hal_sd.h"
@@ -17,4 +17,4 @@
 #define STM32_DMA_TX_IRQ   (DMA2_Stream6_IRQn + 16)
 #define STM32_SDMMC_IRQ    (SDMMC1_IRQn + 16)
 
-#endif /* STM32F764G_DISCOVERY_SD_H_ */
+#endif /* STM32F746G_DISCOVERY_SD_H_ */
