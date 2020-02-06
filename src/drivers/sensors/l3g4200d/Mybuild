@@ -1,0 +1,11 @@
+package embox.driver.sensors
+
+static module l3g4200d {
+	option number log_level = 1
+	option number i2c_bus = 0
+
+	@IncludeExport(path="drivers/sensors", target_name="l3g4200d.h")
+	source "l3g4200d.h"
+
+	source "l3g4200d.c"
+}
