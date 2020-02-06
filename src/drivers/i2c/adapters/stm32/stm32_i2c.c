@@ -8,10 +8,14 @@
 #include <assert.h>
 #include <kernel/irq.h>
 #include <util/log.h>
+#include <framework/mod/options.h>
 
 #include <drivers/i2c/i2c.h>
-
 #include "stm32_i2c.h"
+
+#define USE_I2C_IRQ OPTION_GET(BOOLEAN, use_i2c_irq)
+
+#define I2C_XMIT_TIMEOUT 1000
 
 static int stm32_i2c_slave_select(struct stm32_i2c *adapter, int slave_addr) {
 	I2C_HandleTypeDef *i2c_handle = adapter->i2c_handle;
@@ -47,9 +51,16 @@ static int stm32_i2c_rx(struct stm32_i2c *adapter, uint16_t addr,
 	 * @param  DevAddress Target device address: The device 7 bits address value
 	 *      in datasheet must be shift at right before call interface
 	 */
+#if USE_I2C_IRQ
 	if (HAL_I2C_Master_Receive_IT(i2c_handle, addr << 1, buf, len) != HAL_OK) {
 		return -1;
 	}
+#else
+	if (HAL_I2C_Master_Receive(i2c_handle, addr << 1, buf, len,
+			I2C_XMIT_TIMEOUT) != HAL_OK) {
+		return -1;
+	}
+#endif
 
 	while (HAL_I2C_GetState(i2c_handle) != HAL_I2C_STATE_READY)
 		;
@@ -70,14 +81,22 @@ static int stm32_i2c_tx(struct stm32_i2c *adapter, uint16_t addr,
 	 * @param  DevAddress Target device address: The device 7 bits address value
 	 *      in datasheet must be shift at right before call interface
 	 */
+#if USE_I2C_IRQ
 	if (HAL_I2C_Master_Transmit_IT(i2c_handle, addr << 1, buf, len) != HAL_OK) {
 		return -1;
 	}
+#else
+	if (HAL_I2C_Master_Transmit(i2c_handle, addr << 1, buf, len,
+			I2C_XMIT_TIMEOUT) != HAL_OK) {
+		return -1;
+	}
+#endif
 	while (HAL_I2C_GetState(i2c_handle) != HAL_I2C_STATE_READY)
 		;
 	return HAL_I2C_GetError(i2c_handle) == HAL_I2C_ERROR_AF ? -1 : len;
 }
 
+#if USE_I2C_IRQ
 static irq_return_t i2c_ev_irq_handler(unsigned int irq_nr, void *data) {
 	I2C_HandleTypeDef *i2c_handle = data;
 	HAL_I2C_EV_IRQHandler(i2c_handle);
@@ -89,20 +108,12 @@ static irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data) {
 	HAL_I2C_ER_IRQHandler(i2c_handle);
 	return IRQ_HANDLED;
 }
+#endif
 
-int stm32_i2c_common_init(struct stm32_i2c *adapter) {
+static int stm32_i2c_irq_attach(struct stm32_i2c *adapter,
+	I2C_HandleTypeDef *i2c_handle) {
+#if USE_I2C_IRQ
 	int res = 0;
-	I2C_TypeDef *i2c = adapter->i2c;
-	I2C_HandleTypeDef *i2c_handle = adapter->i2c_handle;
-
-	i2c_handle->Instance             = i2c;
-
-	i2c_handle->Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-	i2c_handle->Init.ClockSpeed      = 400000;
-	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-	i2c_handle->Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
-	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
 
 	res |= irq_attach(adapter->event_irq, i2c_ev_irq_handler, 0,
 		i2c_handle, "I2C events");
@@ -116,7 +127,24 @@ int stm32_i2c_common_init(struct stm32_i2c *adapter) {
 		log_error("irq_attach failed\n");
 		return -1;
 	}
+#endif
 	return 0;
+}
+
+int stm32_i2c_common_init(struct stm32_i2c *adapter) {
+	I2C_TypeDef *i2c = adapter->i2c;
+	I2C_HandleTypeDef *i2c_handle = adapter->i2c_handle;
+
+	i2c_handle->Instance             = i2c;
+
+	i2c_handle->Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
+	i2c_handle->Init.ClockSpeed      = 400000;
+	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	i2c_handle->Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
+	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
+
+	return stm32_i2c_irq_attach(adapter, i2c_handle);
 }
 
 static int stm32_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
