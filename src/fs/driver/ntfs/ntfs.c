@@ -351,13 +351,11 @@ static int ntfs_umount_entry(struct nas *nas) {
 	return 0;
 }
 
-static int embox_ntfs_umount(void *dir) {
-	struct inode *dir_node;
+static int embox_ntfs_umount(struct inode *dir) {
 	struct nas *dir_nas;
 	struct ntfs_fs_info *fsi;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 
 	/* delete all entry node */
 	ntfs_umount_entry(dir_nas);
@@ -383,28 +381,23 @@ static int embox_ntfs_umount(void *dir) {
 	return 0;
 }
 
-static int embox_ntfs_mount(void *dev, void *dir) {
+static int embox_ntfs_mount(const char *source, struct inode *dest) {
 	ntfs_volume *vol;
-
 	int rc;
-	struct inode *dir_node, *dev_node;
-	struct nas *dir_nas, *dev_nas;
-	struct node_fi *dev_fi;
+	struct nas *dir_nas;
 	struct ntfs_device *ntfs_dev;
 	struct ntfs_fs_info *fsi;
+	struct block_dev *bdev;
 	ntfs_inode *ni;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dest->nas;
 
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		rc = ENODEV;
-		return -rc;
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
+		return -ENODEV;
 	}
 
-	dir_nas->fs = super_block_alloc("ntfs", dev_fi->privdata);
+	dir_nas->fs = super_block_alloc("ntfs", bdev);
 	if (NULL == dir_nas->fs) {
 		rc = ENOMEM;
 		return -rc;
@@ -420,7 +413,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 	dir_nas->fs->sb_data = fsi;
 
 	/* Allocate an ntfs_device structure. */
-	ntfs_dev = ntfs_device_alloc(dir_nas->fs->bdev->name, 0, &ntfs_device_bdev_io_ops, NULL);
+	ntfs_dev = ntfs_device_alloc(bdev->name, 0, &ntfs_device_bdev_io_ops, NULL);
 	if (!ntfs_dev) {
 		rc = ENOMEM;
 		goto error;
@@ -445,7 +438,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 		goto error;
 	}
 
-    rc = embox_ntfs_simultaneous_mounting_descend(dir_node->nas, ni, true);
+	rc = embox_ntfs_simultaneous_mounting_descend(dest->nas, ni, true);
 	if (rc) {
 		goto error;
 	}
@@ -453,7 +446,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 	return 0;
 
 error:
-	embox_ntfs_umount(dir);
+	embox_ntfs_umount(dest);
 
 	return -rc;
 }

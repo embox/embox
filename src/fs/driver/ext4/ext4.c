@@ -643,11 +643,11 @@ static void ext4_free_fs(struct nas *nas);
 static int ext4_umount_entry(struct nas *nas);
 
 static int ext4fs_format(struct block_dev *dev, void *priv);
-static int ext4fs_mount(void *dev, void *dir);
+static int ext4fs_mount(const char *source, struct inode *dest);
 static int ext4fs_create(struct inode *parent_node, struct inode *node);
 static int ext4fs_delete(struct inode *node);
 static int ext4fs_truncate(struct inode *node, off_t length);
-static int ext4fs_umount(void *dir);
+static int ext4fs_umount(struct inode *dir);
 
 
 static struct fsop_desc ext4_fsop = {
@@ -744,25 +744,21 @@ static int ext4fs_delete(struct inode *node) {
 	return 0;
 }
 
-static int ext4fs_mount(void *dev, void *dir) {
+static int ext4fs_mount(const char *source, struct inode *dest) {
 	int rc;
-	struct inode *dir_node, *dev_node;
-	struct nas *dir_nas, *dev_nas;
+	struct nas *dir_nas;
+	struct block_dev *bdev;
 	struct ext4_file_info *fi;
 	struct ext4_fs_info *fsi;
-	struct node_fi *dev_fi;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-	dir_node = dir;
-	dir_nas = dir_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		rc = ENODEV;
-		return -rc;
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
+		return -ENODEV;
 	}
 
-	dir_nas->fs = super_block_alloc(EXT4_NAME, dev_fi->privdata);
+	dir_nas = dest->nas;
+
+	dir_nas->fs = super_block_alloc(EXT4_NAME, bdev);
 	if (NULL == dir_nas->fs) {
 		rc = ENOMEM;
 		goto error;
@@ -820,12 +816,10 @@ static int ext4fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
-static int ext4fs_umount(void *dir) {
-	struct inode *dir_node;
+static int ext4fs_umount(struct inode *dir) {
 	struct nas *dir_nas;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 
 	/* delete all entry node */
 	ext4_umount_entry(dir_nas);

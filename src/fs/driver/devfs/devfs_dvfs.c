@@ -144,8 +144,8 @@ struct inode_operations devfs_iops = {
 };
 
 extern struct file_operations devfs_fops ;
-static int devfs_fill_sb(struct super_block *sb, struct block_dev *bdev) {
-	if (bdev) {
+static int devfs_fill_sb(struct super_block *sb, const char *source) {
+	if (source) {
 		return -1;
 	}
 

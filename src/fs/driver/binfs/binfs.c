@@ -14,28 +14,24 @@
 
 #define BINFS_NAME "binfs"
 
-static int binfs_mount(void *dev, void *dir) {
-	struct inode *dir_node = dir;
+static int binfs_mount(const char *source, struct inode *dest) {
 	const struct cmd *cmd;
 
-	dir_node = dir;
-
 	cmd_foreach(cmd) {
-		vfs_subtree_create_child(dir_node, cmd_name(cmd),
+		vfs_subtree_create_child(dest, cmd_name(cmd),
 				S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
 	}
 
-	if (NULL == (dir_node->nas->fs = super_block_alloc(BINFS_NAME, NULL))) {
+	if (NULL == (dest->nas->fs = super_block_alloc(BINFS_NAME, NULL))) {
 		return -ENOMEM;
 	}
 	return 0;
 }
 
-static int binfs_umount(void *dir) {
-	struct inode *dir_node = dir;
+static int binfs_umount(struct inode *dir) {
 	struct inode *child;
 
-	while (NULL != (child = vfs_subtree_get_child_next(dir_node, NULL))) {
+	while (NULL != (child = vfs_subtree_get_child_next(dir, NULL))) {
 		vfs_del_leaf(child);
 	}
 
@@ -50,7 +46,6 @@ static struct fsop_desc binfs_fsop = {
 static struct fs_driver binfs_driver = {
 	.name = BINFS_NAME,
 	.fsop = &binfs_fsop,
-	.mount_dev_by_string = true,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);

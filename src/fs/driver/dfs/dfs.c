@@ -598,7 +598,7 @@ struct super_block *dfs_sb(void) {
 	return dfs_super;
 }
 
-static int dfs_fill_sb(struct super_block *sb, struct block_dev *bdev) {
+static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	int i;
 
 	assert(NAND_PAGES_MAX >= NAND_PAGES_PER_BLOCK);
@@ -612,6 +612,7 @@ static int dfs_fill_sb(struct super_block *sb, struct block_dev *bdev) {
 		.sb_iops    = &dfs_iops,
 		.sb_fops    = &dfs_fops,
 		.sb_data    = &dfs_info,
+		.bdev       = bdev_by_path(source),
 	};
 
 	if (!sb->bdev)

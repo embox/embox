@@ -16,8 +16,8 @@
 #include <fs/kfile.h>
 #include <sys/types.h>
 
-int mount(char *dev,  char *dir, char *fs_type) {
-	return kmount(dev, dir, fs_type);
+int mount(const char *source, const char *target, const char *fs_type) {
+	return kmount(source, target, fs_type);
 }
 
 int format(const char *pathname, const char *fs_type) {

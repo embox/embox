@@ -1477,11 +1477,11 @@ static int jffs2_free_fs(struct nas *nas) {
 }
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
-static int jffs2fs_mount(void *dev, void *dir);
+static int jffs2fs_mount(const char *source, struct inode *dest);
 static int jffs2fs_create(struct inode *parent_node, struct inode *node);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
-static int jffs2fs_umount(void *dir);
+static int jffs2fs_umount(struct inode *dir);
 
 
 static struct fsop_desc jffs2_fsop = {
@@ -1630,14 +1630,6 @@ static int jffs2fs_delete(struct inode *node) {
 	return 0;
 }
 
-static int jffs_flash_name(struct inode *dev_node, char flash_name[PATH_MAX]) {
-	char dev_node_path[PATH_MAX];
-
-	vfs_get_relative_path(dev_node, dev_node_path, PATH_MAX);
-
-	return snprintf(flash_name, PATH_MAX, "%s_flash", dev_node_path);
-}
-
 static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	char flash_node_name[PATH_MAX];
 
@@ -1646,46 +1638,16 @@ static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }
 
-static struct block_dev *jffs_bdev_by_node(struct inode *dev_node, int *err) {
-	struct node_fi *dev_fi;
-	struct nas *dev_nas;
-
-	*err = 0;
-	dev_nas = dev_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		*err = ENODEV;
-		return NULL;
-	}
-
-	return dev_fi->privdata;
-}
-
-static struct block_dev *jffs_get_flashdev(struct inode *dev_node, int *err) {
-	char flash_node_name[PATH_MAX];
-	struct inode *flash_node;
-
-	jffs_flash_name(dev_node, flash_node_name);
-
-	if (NULL == (flash_node = vfs_subtree_lookup(vfs_get_root(), flash_node_name))) {
-		return jffs_bdev_by_node(dev_node, err);
-	}
-
-	return jffs_bdev_by_node(flash_node, err);
-}
-
-static int jffs2fs_mount(void *dev, void *dir) {
+static int jffs2fs_mount(const char *source, struct inode *dest) {
 	int rc;
-	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
 	struct block_dev *bdev;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dest->nas;
 
-	bdev = jffs_get_flashdev(dev, &rc);
+	bdev = bdev_by_path(source);
 	if (bdev == NULL) {
 		goto error;
 	}
@@ -1743,13 +1705,11 @@ static int jffs2fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
-static int jffs2fs_umount(void *dir) {
-	struct inode *dir_node;
+static int jffs2fs_umount(struct inode *dir) {
 	struct nas *dir_nas;
 	int rc;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 
 	/* delete all entry node */
 	if(0 != (rc = jffs2_umount(dir_nas))) {

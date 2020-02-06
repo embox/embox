@@ -50,11 +50,11 @@ static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 
 /* fs operations */
 static int ext3fs_format(struct block_dev *bdev, void *priv);
-static int ext3fs_mount(void *dev, void *dir);
+static int ext3fs_mount(const char *source, struct inode *dest);
 static int ext3fs_create(struct inode *parent_node, struct inode *node);
 static int ext3fs_delete(struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
-static int ext3fs_umount(void *dir);
+static int ext3fs_umount(struct inode *dir);
 
 static struct fs_driver ext3fs_driver;
 
@@ -234,14 +234,14 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
     return 0;
 }
 
-static int ext3fs_mount(void *dev, void *dir) {
+static int ext3fs_mount(const char *source, struct inode *dest) {
 	const struct fs_driver *drv;
 	struct ext2fs_dinode *dip = sysmalloc(sizeof(struct ext2fs_dinode));
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
-	struct inode *dev_node = dev;
-	struct nas *dir_nas = ((struct inode *)dir)->nas;
+	struct nas *dir_nas;
+	struct block_dev *bdev;
 	journal_t *jp = NULL;
 	ext3_journal_specific_t *ext3_spec;
 	journal_fs_specific_t spec = {
@@ -251,11 +251,16 @@ static int ext3fs_mount(void *dev, void *dir) {
 			.trans_freespace = ext3_journal_trans_freespace
 	};
 
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
+		return -ENODEV;
+	}
+
 	if (NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
 
-	if ((ret = drv->fsop->mount(dev, dir)) < 0) {
+	if ((ret = drv->fsop->mount(source, dest)) < 0) {
 		return ret;
 	}
 
@@ -271,7 +276,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	}
 
 	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
-	dir_nas = ((struct inode *)dir)->nas;
+	dir_nas = dest->nas;
 	fsi = dir_nas->fs->sb_data;
 
 	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
@@ -289,8 +294,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 	/* XXX Hack to use ext2 functions */
 	dir_nas->fs->fs_drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
-	if (0 > ext3_journal_load(jp, (struct block_dev *) dev_node->nas->fi->privdata,
-			fsbtodb(fsi, dip->i_block[0]))) {
+	if (0 > ext3_journal_load(jp, bdev, fsbtodb(fsi, dip->i_block[0]))) {
 		return -EIO;
 	}
 	/*
@@ -311,13 +315,13 @@ static int ext3fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
-static int ext3fs_umount(void *dir) {
+static int ext3fs_umount(struct inode *dir) {
 	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	ext3_journal_specific_t *data;
 	int res;
 
-	fsi = ((struct inode *)dir)->nas->fs->sb_data;
+	fsi = dir->nas->fs->sb_data;
 	data = fsi->journal->j_fs_specific.data;
 
 	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
