@@ -66,9 +66,9 @@ extern struct dlist_head dentry_dlist;
 
 static void show_mount_list(void) {
 	struct dentry *d;
+	static const char *devfs_path = "/dev/";
 	char mount_path[DVFS_MAX_PATH_LEN];
 	char bdev_path[DVFS_MAX_PATH_LEN];
-	struct file_desc *bdev_file;
 
 	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
 		if (d->flags & DVFS_MOUNT_POINT) {
@@ -76,13 +76,9 @@ static void show_mount_list(void) {
 				continue;
 			}
 
-			bdev_file = d->d_sb->bdev_file;
-
-			if (bdev_file && bdev_file->f_dentry) {
-				dentry_full_path(bdev_file->f_dentry, bdev_path);
-			} else {
-				strcpy(bdev_path, d->d_sb->fs_drv->name);
-			}
+			strcpy(bdev_path, devfs_path);
+			strncat(bdev_path, d->d_sb->fs_drv->name,
+					sizeof(bdev_path) - strlen(devfs_path));
 
 			printf("%s on %s type %s\n",
 					bdev_path,

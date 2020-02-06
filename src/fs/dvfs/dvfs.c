@@ -297,8 +297,7 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	return 0;
 }
 
-static struct file_desc *dvfs_get_mount_bdev(const char *dev_name) {
-	struct file_desc *bdev_file;
+static struct block_dev *dvfs_get_mount_bdev(const char *dev_name) {
 	struct lookup lookup = {};
 	int res;
 
@@ -309,38 +308,11 @@ static struct file_desc *dvfs_get_mount_bdev(const char *dev_name) {
 		return NULL;
 	}
 
-	bdev_file = NULL;
-
 	/* Check if devfs is initialized */
 	res = dvfs_lookup("/dev", &lookup);
 	if (res) {
-		/* XXX devfs not present, we should use a really ugly
-		 * hack for pseudo-open() blockdev file. This code
-		 * won't work if devfs driver will be changed. If
-		 * someone knows how to rewrite it, please, do it :) */
-		const struct fs_driver *devfs_drv;
-		/* We fill local variable with file operations to
-		 * initialize bdev_file properly */
-		struct super_block devfs_sb;
-		struct block_dev *block_dev;
-
-		devfs_drv = fs_driver_find("devfs");
-		assert(devfs_drv);
-
-		block_dev = block_dev_find(dev_name);
-		bdev_file = dvfs_alloc_file();
-		if (!bdev_file) {
-			SET_ERRNO(ENOENT);
-			return NULL;
-		}
-		devfs_drv->fill_sb(&devfs_sb, bdev_file);
-		memset(bdev_file, 0, sizeof(struct file_desc));
-		bdev_file->f_inode = dvfs_alloc_inode(&devfs_sb);
-		bdev_file->f_ops   = devfs_sb.sb_fops;
-		bdev_file->f_inode->i_data = block_dev;
-		/* Now we have file object that could be used for fs
-		 * initialization */
-		return bdev_file;
+		/* devfs is not mounted yet */
+		return block_dev_find(dev_name);
 	}
 
 	/* devfs presents, perform usual mount */
@@ -350,12 +322,10 @@ static struct file_desc *dvfs_get_mount_bdev(const char *dev_name) {
 		SET_ERRNO(ENOENT);
 		return NULL;
 	}
-	/* TODO pass flags */
-	bdev_file = (struct file_desc*) dvfs_file_open_idesc(&lookup, 0);
-	if (err(bdev_file)) {
-		return bdev_file;
-	}
-	return bdev_file;
+
+	assert(lookup.item->d_inode);
+
+	return lookup.item->d_inode->i_data;
 }
 
 extern int dvfs_cache_del(struct dentry *dentry);
@@ -376,7 +346,7 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	const struct fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d = NULL;
-	struct file_desc *bdev_file;
+	struct block_dev *bdev;
 	int err;
 
 	assert(dest);
@@ -385,9 +355,9 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 	drv = fs_driver_find(fstype);
 	assert(drv);
 
-	bdev_file = dvfs_get_mount_bdev(dev);
+	bdev = dvfs_get_mount_bdev(dev);
 
-	if (NULL == (sb = dvfs_alloc_sb(drv, bdev_file))) {
+	if (NULL == (sb = dvfs_alloc_sb(drv, bdev))) {
 		return -ENOMEM;
 	}
 
@@ -447,10 +417,6 @@ err_free_all:
 		dvfs_destroy_dentry(d);
 	}
 
-	if (bdev_file) {
-		dvfs_close(bdev_file);
-	}
-
 	if (sb) {
 		dvfs_destroy_sb(sb);
 	}
@@ -497,10 +463,6 @@ int dvfs_umount(struct dentry *mpoint) {
 	if (sb->sb_ops && sb->sb_ops->umount_begin) {
 		if ((err = sb->sb_ops->umount_begin(sb)))
 			return err;
-	}
-
-	if (sb->bdev_file) {
-		dvfs_close(sb->bdev_file);
 	}
 
 	/* TODO what if mount point was renamed? */

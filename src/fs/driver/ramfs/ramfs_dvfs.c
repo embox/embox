@@ -187,13 +187,10 @@ struct super_block_operations ramfs_sbops = {
 	.destroy_inode = ramfs_destroy_inode,
 };
 
-static int ramfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
+static int ramfs_fill_sb(struct super_block *sb, struct block_dev *bdev) {
 	struct ramfs_fs_info *fsi;
 
 	assert(sb);
-	assert(bdev_file);
-	assert(bdev_file->f_inode);
-	assert(bdev_file->f_inode->i_data);
 
 	if (NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
 		return -ENOMEM;
@@ -202,8 +199,8 @@ static int ramfs_fill_sb(struct super_block *sb, struct file_desc *bdev_file) {
 	memset(fsi, 0, sizeof(struct ramfs_fs_info));
 	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
 	fsi->block_size = PAGE_SIZE();
-	fsi->numblocks = block_dev(bdev_file->f_inode->i_data)->size / PAGE_SIZE();
-	fsi->bdev = block_dev(bdev_file->f_inode->i_data);
+	fsi->numblocks = bdev->size / PAGE_SIZE();
+	fsi->bdev = bdev;
 
 	sb->sb_data = fsi;
 	sb->sb_iops = &ramfs_iops;

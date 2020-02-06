@@ -97,7 +97,7 @@ int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
  * @return Pointer to the new superblock
  * @retval NULL Superblock could not be allocated
  */
-struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct file_desc *bdev_file) {
+struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct block_dev *bdev) {
 	struct super_block *sb;
 	assert(drv);
 
@@ -105,19 +105,13 @@ struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct file_desc 
 		return NULL;
 	}
 
-	if (bdev_file) {
-		assert(bdev_file->f_inode);
-		assert(bdev_file->f_inode->i_data);
-	}
-
 	*sb = (struct super_block) {
 		.fs_drv    = drv,
-		.bdev_file = bdev_file,
-		.bdev      = bdev_file ? ((struct dev_module *) bdev_file->f_inode->i_data)->dev_priv : NULL,
+		.bdev      = bdev
 	};
 
 	if (drv->fill_sb) {
-		if (0 != drv->fill_sb(sb, bdev_file)) {
+		if (0 != drv->fill_sb(sb, bdev)) {
 			pool_free(&superblock_pool, sb);
 			return NULL;
 		}
@@ -433,48 +427,6 @@ int dvfs_destroy_sb(struct super_block *sb) {
 	pool_free(&superblock_pool, sb);
 
 	return err;
-}
-
-/**
- * @brief Read from block device pointed by bdev_file
- * with args similar to old-style bdev usage
- *
- * @param bdev_file File pointing to opened device
- * @param buff Buffer to read from
- * @param count Number of bytes to be read
- * @param blkno Number of block of device
- *
- * @return Size of read chunk or negative error number
- * if failed
- */
-int dvfs_bdev_read(
-		struct file_desc *bdev_file,
-		char *buff,
-		size_t count,
-		int blkno) {
-	struct block_dev *bdev = bdev_file->f_inode->i_data;
-	return block_dev_read(bdev, buff, count, blkno);
-}
-
-/**
- * @brief Write data to block device using args similar
- * to old-style bdev usage
- *
- * @param bdev_file File pointing to opened block device
- * @param buff Buffer to be written
- * @param count Number of bytes to be written
- * @param blkno Number of block of device
- *
- * @return Size of written chunk of negative error number
- * if failed
- */
-int dvfs_bdev_write(
-		struct file_desc *bdev_file,
-		char *buff,
-		size_t count,
-		int blkno) {
-	struct block_dev *bdev = bdev_file->f_inode->i_data;
-	return block_dev_write(bdev, buff, count, blkno);
 }
 
 /**
