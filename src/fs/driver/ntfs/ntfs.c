@@ -75,7 +75,7 @@ static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_n
 	mode_t mode;
 
 	pfi = parent_node->nas->fi->privdata;
-	pfsi = parent_node->nas->fs->fsi;
+	pfsi = parent_node->nas->fs->sb_data;
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;
@@ -146,7 +146,7 @@ static int embox_ntfs_node_delete(struct inode *node) {
 		return -EINVAL;
 	}
 	pfi = parent_node->nas->fi->privdata;
-	pfsi = parent_node->nas->fs->fsi;
+	pfsi = parent_node->nas->fs->sb_data;
 	fi = node->nas->fi->privdata;
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
@@ -202,7 +202,7 @@ static int embox_ntfs_truncate(struct inode *node, off_t length) {
 	int ret;
 
 	fi = node->nas->fi->privdata;
-	fsi = node->nas->fs->fsi;
+	fsi = node->nas->fs->sb_data;
 
 	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
 	if (!ni) {
@@ -287,7 +287,7 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		node->nas->fs = dir_nas->fs;
 	}
 
-	fsi = dir_nas->fs->fsi;
+	fsi = dir_nas->fs->sb_data;
 
 	// There is a room for optimization here, it is necessary to open only directory nodes
 	ni = ntfs_inode_open(fsi->ntfs_vol, mref);
@@ -363,7 +363,7 @@ static int embox_ntfs_umount(void *dir) {
 	ntfs_umount_entry(dir_nas);
 
 	if(NULL != dir_nas->fs) {
-		fsi = dir_nas->fs->fsi;
+		fsi = dir_nas->fs->sb_data;
 
 		if(NULL != fsi) {
 			if (fsi->ntfs_vol) {
@@ -376,7 +376,7 @@ static int embox_ntfs_umount(void *dir) {
 			}
 			pool_free(&ntfs_fs_pool, fsi);
 		}
-		filesystem_free(dir_nas->fs);
+		super_block_free(dir_nas->fs);
 		dir_nas->fs = NULL;
 	}
 
@@ -404,12 +404,11 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 		return -rc;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_create("ntfs"))) {
+	dir_nas->fs = super_block_alloc("ntfs", dev_fi->privdata);
+	if (NULL == dir_nas->fs) {
 		rc = ENOMEM;
 		return -rc;
 	}
-
-	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&ntfs_fs_pool))) {
@@ -418,7 +417,7 @@ static int embox_ntfs_mount(void *dev, void *dir) {
 		goto error;
 	}
 	memset(fsi, 0, sizeof(*fsi));
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 
 	/* Allocate an ntfs_device structure. */
 	ntfs_dev = ntfs_device_alloc(dir_nas->fs->bdev->name, 0, &ntfs_device_bdev_io_ops, NULL);
@@ -468,7 +467,7 @@ static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc)
 	ntfs_attr *attr;
 
 	fi = node->nas->fi->privdata;
-	fsi = node->nas->fs->fsi;
+	fsi = node->nas->fs->sb_data;
 
 	// ToDo: it is not necessary to allocate dedicated structure
 	//       ntfs_attr already contains pointer to ntfs_inode, so it is

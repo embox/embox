@@ -24,7 +24,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <fs/file_operation.h>
 #include <fs/path.h>
 
@@ -63,7 +63,7 @@ static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 	}
 
 	fi->index = fi_index;
-	fi->fsi = nas->fs->fsi;
+	fi->fsi = nas->fs->sb_data;
 	nas->fi->ni.size = 0;
 
 	return fi;
@@ -141,18 +141,18 @@ static int ramfs_mount(void *dev, void *dir) {
 		return -ENODEV;
 	}
 
-	if (NULL == (dir_nas->fs = filesystem_create("ramfs"))) {
+	dir_nas->fs = super_block_alloc("ramfs", dev_fi->privdata);
+	if (NULL == dir_nas->fs) {
 		return -ENOMEM;
 	}
-	dir_nas->fs->bdev = dev_fi->privdata;
 
 	/* allocate this fs info */
 	if(NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
-		filesystem_free(dir_nas->fs);
+		super_block_free(dir_nas->fs);
 		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct ramfs_fs_info));
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 
 	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
 	fsi->block_size = PAGE_SIZE();

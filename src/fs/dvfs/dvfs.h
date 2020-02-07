@@ -15,7 +15,6 @@
 #include <drivers/block_dev.h>
 #include <fs/idesc.h>
 #include <fs/file_desc.h>
-#include <fs/file_system.h>
 #include <util/dlist.h>
 #include <fs/file_operation.h>
 #include <fs/fs_driver.h>
@@ -53,7 +52,6 @@ struct super_block {
 
 	struct super_block_operations *sb_ops;
 	struct inode_operations       *sb_iops;
-	struct dentry_operations      *sb_dops;
 	struct file_operations        *sb_fops;
 
 	void *sb_data;

@@ -305,7 +305,7 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 		}
 
 		{
-			struct ext2_fs_info *fsi = node->nas->fs->fsi;
+			struct ext2_fs_info *fsi = node->nas->fs->sb_data;
 			dinode->i_facl = h2d32(xblk_n);
 			dinode->i_blocks = h2d32(d2h32(dinode->i_blocks) +
 					fsi->s_sectors_in_block);

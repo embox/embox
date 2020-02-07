@@ -28,7 +28,7 @@ int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
 extern int devfs_add_block(struct block_dev *dev);
 extern struct inode_operations devfs_iops;
 
-static struct filesystem *devfs_file_system;
+static struct super_block *devfs_sb;
 
 static int devfs_mount(void *dev, void *dir) {
 	int ret;
@@ -48,11 +48,11 @@ static int devfs_mount(void *dev, void *dir) {
 	if (ret != 0) {
 		return ret;
 	}
-	devfs_file_system = filesystem_create("devfs");
-	if (devfs_file_system == NULL) {
+	devfs_sb = super_block_alloc("devfs", NULL);
+	if (devfs_sb == NULL) {
 		return -ENOMEM;
 	}
-	dir_nas->fs = devfs_file_system;
+	dir_nas->fs = devfs_sb;
 
 	return 0;
 }
@@ -110,7 +110,7 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 	}
 
 	dev_nas = node.node->nas;
-	dev_nas->fs = devfs_file_system;
+	dev_nas->fs = devfs_sb;
 	node.node->nas->fi->privdata = (void *)cdev;
 
 	*inode = node.node;
@@ -123,7 +123,7 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 	assert(devmod);
 
 	inode->nas->fi->privdata = devmod;
-	inode->nas->fs = devfs_file_system;
+	inode->nas->fs = devfs_sb;
 	inode->i_mode = flags;
 }
 

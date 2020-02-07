@@ -187,7 +187,7 @@ static int embox_cifs_umount(void *dir) {
 	cifs_umount_entry(dir_nas);
 
 	if(NULL != dir_nas->fs) {
-		fsi = dir_nas->fs->fsi;
+		fsi = dir_nas->fs->sb_data;
 
 		if(NULL != fsi) {
 			if (fsi->ctx) {
@@ -196,7 +196,7 @@ static int embox_cifs_umount(void *dir) {
 			}
 			pool_free(&cifs_fs_pool, fsi);
 		}
-		filesystem_free(dir_nas->fs);
+		super_block_free(dir_nas->fs);
 		dir_nas->fs = NULL;
 	}
 
@@ -223,7 +223,8 @@ embox_cifs_mount (void *dev, void *dir)
 	dir_node = dir;
 	dir_nas = dir_node->nas;
 
-	if (NULL == (dir_nas->fs = filesystem_create("cifs"))) {
+	dir_nas->fs = super_block_alloc("cifs", NULL);
+	if (NULL == dir_nas->fs) {
 		rc = ENOMEM;
 		return -rc;
 	}
@@ -245,7 +246,7 @@ embox_cifs_mount (void *dev, void *dir)
 	strcpy (fsi->url, smb_path);
 	fsi->mntto = dir_node;
 	fsi->ctx = ctx;
-	dir_nas->fs->fsi = fsi;
+	dir_nas->fs->sb_data = fsi;
 
 	//get smb_path
 	rc = embox_cifs_mounting_recurse(dir_node->nas, ctx, smb_path,
@@ -269,7 +270,7 @@ static struct idesc *cifs_open(struct inode *node, struct idesc *idesc)
 	struct stat st;
 	int rc;
 
-	fsi = node->nas->fs->fsi;
+	fsi = node->nas->fs->sb_data;
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
@@ -303,7 +304,7 @@ static int cifs_close(struct file_desc *file_desc)
 	struct cifs_fs_info *fsi;
 	SMBCFILE *file;
 
-	fsi = file_desc->f_inode->nas->fs->fsi;
+	fsi = file_desc->f_inode->nas->fs->sb_data;
 	file = file_desc->file_info;
 
 	if (smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
@@ -322,7 +323,7 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->f_inode->nas->fs->fsi;
+	fsi = file_desc->f_inode->nas->fs->sb_data;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -347,7 +348,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->f_inode->nas->fs->fsi;
+	fsi = file_desc->f_inode->nas->fs->sb_data;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -375,7 +376,7 @@ static int embox_cifs_node_create(struct inode *parent_node, struct inode *new_n
 	mode_t mode;
 	int rc;
 
-	pfsi = parent_node->nas->fs->fsi;
+	pfsi = parent_node->nas->fs->sb_data;
 
 	strcpy(fileurl,pfsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
@@ -413,7 +414,7 @@ static int embox_cifs_node_delete(struct inode *node) {
 	char fileurl[PATH_MAX];
 	int rc;
 
-	fsi = node->nas->fs->fsi;
+	fsi = node->nas->fs->sb_data;
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';

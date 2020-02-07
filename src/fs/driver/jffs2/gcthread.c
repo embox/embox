@@ -12,6 +12,7 @@
  */
 #include <linux/kernel.h>
 #include "nodelist.h"
+#include <fs/super_block.h>
 //#include <cyg/kernel/kapi.h>
 
 #define GC_THREAD_FLAG_TRIG 1
@@ -21,7 +22,7 @@
 static cyg_thread_entry_t jffs2_garbage_collect_thread;
 
 void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c) {
-     struct super_block *sb=OFNI_BS_2SFFJ(c);
+     struct jffs2_super_block *sb=OFNI_BS_2SFFJ(c);
 
      /* Wake up the thread */
      D1(printk("jffs2_garbage_collect_trigger\n"));
@@ -31,7 +32,7 @@ void jffs2_garbage_collect_trigger(struct jffs2_sb_info *c) {
 
 
 void jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c) {
-     struct super_block *sb=OFNI_BS_2SFFJ(c);
+     struct jffs2_super_block *sb=OFNI_BS_2SFFJ(c);
 
      CYG_ASSERTC(c);
      CYG_ASSERTC(!sb->s_gc_thread_handle);
@@ -54,7 +55,7 @@ void jffs2_start_garbage_collect_thread(struct jffs2_sb_info *c) {
 }
 
 void jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c) {
-     struct super_block *sb=OFNI_BS_2SFFJ(c);
+     struct jffs2_super_block *sb=OFNI_BS_2SFFJ(c);
 
      CYG_ASSERTC(sb->s_gc_thread_handle);
 
@@ -82,7 +83,7 @@ void jffs2_stop_garbage_collect_thread(struct jffs2_sb_info *c) {
 
 static void jffs2_garbage_collect_thread(cyg_addrword_t data) {
      struct jffs2_sb_info *c=(struct jffs2_sb_info *)data;
-     struct super_block *sb=OFNI_BS_2SFFJ(c);
+     struct jffs2_super_block *sb=OFNI_BS_2SFFJ(c);
      cyg_flag_value_t flag;
      cyg_mtab_entry *mte;
 

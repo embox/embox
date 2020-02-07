@@ -29,7 +29,7 @@
 #include <fs/inode.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
-#include <fs/file_system.h>
+#include <fs/super_block.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 
@@ -103,7 +103,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	}
 
 	assert(desc->f_inode);
-	fsi = desc->f_inode->nas->fs->fsi;
+	fsi = desc->f_inode->nas->fs->sb_data;
 	/* N * SECTOR_SIZE + K bytes of data can dirty N + 2 only if K >= 2  */
 	datablocks = (size + SECTOR_SIZE - 2) / SECTOR_SIZE + 1;
 	/* TODO recalculate */
@@ -125,7 +125,7 @@ static int ext3fs_create(struct inode *parent_node, struct inode *node) {
 	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
 		return -1;
 	}
-	fsi = parent_node->nas->fs->fsi;
+	fsi = parent_node->nas->fs->sb_data;
 	/**
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
 	 * 2 blocks for child = 1 inode + 1 inode bitmap.
@@ -150,7 +150,7 @@ static int ext3fs_delete(struct inode *node) {
 		return -1;
 	}
 
-	fsi = node->nas->fs->fsi;
+	fsi = node->nas->fs->sb_data;
 	/**
 	 * Same as in ext3fs_create:
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
@@ -272,7 +272,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 
 	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
 	dir_nas = ((struct inode *)dir)->nas;
-	fsi = dir_nas->fs->fsi;
+	fsi = dir_nas->fs->sb_data;
 
 	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
 
@@ -287,7 +287,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 			sizeof(struct ext2fs_dinode));
 
 	/* XXX Hack to use ext2 functions */
-	dir_nas->fs->drv = &ext3fs_driver;
+	dir_nas->fs->fs_drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
 	if (0 > ext3_journal_load(jp, (struct block_dev *) dev_node->nas->fi->privdata,
 			fsbtodb(fsi, dip->i_block[0]))) {
@@ -317,7 +317,7 @@ static int ext3fs_umount(void *dir) {
 	ext3_journal_specific_t *data;
 	int res;
 
-	fsi = ((struct inode *)dir)->nas->fs->fsi;
+	fsi = ((struct inode *)dir)->nas->fs->sb_data;
 	data = fsi->journal->j_fs_specific.data;
 
 	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {

@@ -52,7 +52,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	}
 
 	/* check drv of parents */
-	drv = parent->node->nas->fs->drv;
+	drv = parent->node->nas->fs->fs_drv;
 
 	if ((mode & VFS_DIR_VIRTUAL) && S_ISDIR(mode)) {
 		node.node->nas->fs = parent->node->nas->fs;
@@ -156,7 +156,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 	}
 
 	/* check drv of parents */
-	drv = dir_path->node->nas->fs->drv;
+	drv = dir_path->node->nas->fs->fs_drv;
 	if (!drv || !drv->fsop->create_node) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
@@ -190,7 +190,7 @@ int kremove(const char *pathname) {
 	}
 
 	nas = node.node->nas;
-	drv = nas->fs->drv;
+	drv = nas->fs->fs_drv;
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
@@ -225,7 +225,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->nas->fs->drv;
+	drv = node.node->nas->fs->fs_drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
@@ -263,7 +263,7 @@ int krmdir(const char *pathname) {
 		return res;
 	}
 
-	drv = node.node->nas->fs->drv;
+	drv = node.node->nas->fs->fs_drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
@@ -635,7 +635,7 @@ int kumount(const char *dir) {
 	if_mounted_follow_down(&dir_node);
 	node = dir_node;
 
-	drv = dir_node.node->nas->fs->drv;
+	drv = dir_node.node->nas->fs->fs_drv;
 
 	if (!drv) {
 		return -EINVAL;
