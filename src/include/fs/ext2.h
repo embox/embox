@@ -14,6 +14,7 @@
 #include <linux/types.h>
 #include <stdint.h>
 #include <fs/journal.h>
+#include <fs/super_block.h>
 #include <endian.h>
 #include <swab.h>
 /*
@@ -614,17 +615,17 @@ struct nas;
 extern uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
 extern void ext2_free_block(struct nas *nas, uint32_t bit);
 
-extern int ext2_read_sector(struct nas *nas, char *buffer,
+extern int ext2_read_sector(struct super_block *sb, char *buffer,
 		uint32_t count, uint32_t sector);
-extern int ext2_write_sector(struct nas *nas, char *buffer,
+extern int ext2_write_sector(struct super_block *sb, char *buffer,
 		uint32_t count, uint32_t sector);
 extern struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
 
-extern int ext2_write_gdblock(struct nas *nas);
-extern int ext2_write_sblock(struct nas *nas);
+extern int ext2_write_gdblock(struct super_block *sb);
+extern int ext2_write_sblock(struct super_block *sb);
 
-extern void *ext2_buff_alloc(struct nas *nas, size_t size);
-extern int ext2_buff_free(struct nas *nas, char *buff);
+extern void *ext2_buff_alloc(struct ext2_fs_info *fsi, size_t size);
+extern int ext2_buff_free(struct ext2_fs_info *fsi, char *buff);
 
 extern uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
 extern int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);

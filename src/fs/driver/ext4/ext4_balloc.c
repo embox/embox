@@ -192,7 +192,7 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 			continue;
 		}
 
-		ext2_read_sector(nas, fi->f_buf, 1, ext4_block_bitmap_len(gd));
+		ext2_read_sector(nas->fs, fi->f_buf, 1, ext4_block_bitmap_len(gd));
 
 		bit = ext4_setbit(b_bitmap(fi->f_buf), fsi->e4sb.s_blocks_per_group, word);
 		if (-1 == bit) {
@@ -210,12 +210,12 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 			return 0;
 		}
 
-		ext2_write_sector(nas, fi->f_buf, 1, ext4_block_bitmap_len(gd));
+		ext2_write_sector(nas->fs, fi->f_buf, 1, ext4_block_bitmap_len(gd));
 
 		fsi->e4sb.s_free_blocks_count--;
-		ext2_write_sblock(nas);
+		ext2_write_sblock(nas->fs);
 		ext4_inc_lo_hi(gd->free_blocks_count_lo, gd->free_blocks_count_hi);
-		ext2_write_gdblock(nas);
+		ext2_write_gdblock(nas->fs);
 
 		if (update_bsearch && block != -1 && block != EXT4_NO_BLOCK) {
 			/* We searched from the beginning, update bsearch. */
@@ -262,17 +262,17 @@ void ext4_free_block(struct nas *nas, uint32_t bit_returned) {
 		return;
 	}
 
-	ext2_read_sector(nas, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
+	ext2_read_sector(nas->fs, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
 	if (ext2_unsetbit(b_bitmap(fi->f_buf), bit)) {
 		return; /*Tried to free unused block*/
 	}
-	ext2_write_sector(nas, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
+	ext2_write_sector(nas->fs, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
 
 
 	fsi->e4sb.s_free_blocks_count++;
-	ext2_write_sblock(nas);
+	ext2_write_sblock(nas->fs);
 	ext4_inc_lo_hi(gd->free_blocks_count_lo, gd->free_blocks_count_hi);
-	ext2_write_gdblock(nas);
+	ext2_write_gdblock(nas->fs);
 
 	if (bit_returned < fsi->s_bsearch) {
 		fsi->s_bsearch = bit_returned;
