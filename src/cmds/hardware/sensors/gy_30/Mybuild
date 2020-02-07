@@ -1,4 +1,4 @@
-package embox.cmd.sensors
+package embox.cmd.hardware.sensors
 
 @AutoCmd
 @Cmd(name="gy_30", help="GY-30")
