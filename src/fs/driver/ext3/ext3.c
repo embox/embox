@@ -276,7 +276,7 @@ static int ext3fs_mount(void *dev, void *dir) {
 
 	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
 
-	rsize = ext2_read_sector(dir_nas, buf, 1, inode_sector);
+	rsize = ext2_read_sector(dir_nas->fs, buf, 1, inode_sector);
 	if (rsize * fsi->s_block_size != fsi->s_block_size) {
 		return -EIO;
 	}
