@@ -14,7 +14,7 @@
 
 #define BINFS_NAME "binfs"
 
-static int binfs_mount(const char *source, struct inode *dest) {
+static int binfs_mount(struct super_block *sb, struct inode *dest) {
 	const struct cmd *cmd;
 
 	cmd_foreach(cmd) {
@@ -22,9 +22,6 @@ static int binfs_mount(const char *source, struct inode *dest) {
 				S_IFREG | S_IXUSR | S_IXGRP | S_IXOTH);
 	}
 
-	if (NULL == (dest->nas->fs = super_block_alloc(BINFS_NAME, NULL))) {
-		return -ENOMEM;
-	}
 	return 0;
 }
 

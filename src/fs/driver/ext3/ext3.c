@@ -50,57 +50,36 @@ static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 
 /* fs operations */
 static int ext3fs_format(struct block_dev *bdev, void *priv);
-static int ext3fs_mount(const char *source, struct inode *dest);
+static int ext3fs_fill_sb(struct super_block *sb, const char *source);
+static int ext3fs_mount(struct super_block *sb, struct inode *dest);
 static int ext3fs_create(struct inode *parent_node, struct inode *node);
 static int ext3fs_delete(struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
 static int ext3fs_umount(struct inode *dir);
 
+static const struct fs_driver *ext2fs_driver;
 static struct fs_driver ext3fs_driver;
 
 /*
  * file_operation
  */
 static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
-	const struct fs_driver *drv;
-
-	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return err_ptr(EINVAL);
-	}
-
-	return drv->file_op->open(node, idesc);
+	return ext2fs_driver->file_op->open(node, idesc);
 }
 
 static int ext3fs_close(struct file_desc *desc) {
-	const struct fs_driver *drv;
-
-	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
-
-	return drv->file_op->close(desc);
+	return ext2fs_driver->file_op->close(desc);
 }
 
 static size_t ext3fs_read(struct file_desc *desc, void *buff, size_t size) {
-	const struct fs_driver *drv;
-
-	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
-
-	return drv->file_op->read(desc, buff, size);
+	return ext2fs_driver->file_op->read(desc, buff, size);
 }
 
 static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
-	const struct fs_driver *drv;
 	int res;
 	size_t datablocks;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
-
-	if (NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
 
 	assert(desc->f_inode);
 	fsi = desc->f_inode->nas->fs->sb_data;
@@ -110,21 +89,17 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	if (!(handle = journal_start(fsi->journal, 4 * ext3_trans_blocks(datablocks)))) {
 		return -1;
 	}
-	res = drv->file_op->write(desc, buff, size);
+	res = ext2fs_driver->file_op->write(desc, buff, size);
 	journal_stop(handle);
 
 	return res;
 }
 
 static int ext3fs_create(struct inode *parent_node, struct inode *node) {
-	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 	int res = -1;
 
-	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
 	fsi = parent_node->nas->fs->sb_data;
 	/**
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
@@ -134,21 +109,16 @@ static int ext3fs_create(struct inode *parent_node, struct inode *node) {
 	if (!(handle = journal_start(fsi->journal, 3 * (ext3_trans_blocks(1) + 2)))) {
 		return -1;
 	}
-	res = drv->fsop->create_node(parent_node, node);
+	res = ext2fs_driver->fsop->create_node(parent_node, node);
 	journal_stop(handle);
 
 	return res;
 }
 
 static int ext3fs_delete(struct inode *node) {
-	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 	int res;
-
-	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
 
 	fsi = node->nas->fs->sb_data;
 	/**
@@ -159,7 +129,7 @@ static int ext3fs_delete(struct inode *node) {
 	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
 		return -1;
 	}
-	res = drv->fsop->delete_node(node);
+	res = ext2fs_driver->fsop->delete_node(node);
 	journal_stop(handle);
 
 	return res;
@@ -234,14 +204,27 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
     return 0;
 }
 
-static int ext3fs_mount(const char *source, struct inode *dest) {
-	const struct fs_driver *drv;
-	struct ext2fs_dinode *dip = sysmalloc(sizeof(struct ext2fs_dinode));
+static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
+	int ret;
+
+	ext2fs_driver = fs_driver_find(EXT2_NAME);
+	if (NULL == ext2fs_driver) {
+		return -1;
+	}
+
+	if ((ret = ext2fs_driver->fill_sb(sb, source)) < 0) {
+		return ret;
+	}
+
+	return 0;
+}
+
+static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
+	struct ext2fs_dinode *dip;
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
 	struct nas *dir_nas;
-	struct block_dev *bdev;
 	journal_t *jp = NULL;
 	ext3_journal_specific_t *ext3_spec;
 	journal_fs_specific_t spec = {
@@ -251,16 +234,7 @@ static int ext3fs_mount(const char *source, struct inode *dest) {
 			.trans_freespace = ext3_journal_trans_freespace
 	};
 
-	bdev = bdev_by_path(source);
-	if (NULL == bdev) {
-		return -ENODEV;
-	}
-
-	if (NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
-
-	if ((ret = drv->fsop->mount(source, dest)) < 0) {
+	if ((ret = ext2fs_driver->fsop->mount(sb, dest)) < 0) {
 		return ret;
 	}
 
@@ -287,14 +261,14 @@ static int ext3fs_mount(const char *source, struct inode *dest) {
 	}
 
 	/* set pointer to inode struct in read buffer */
-	memcpy(dip, (buf
-			+ EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE)),
-			sizeof(struct ext2fs_dinode));
+	dip = sysmalloc(sizeof(struct ext2fs_dinode));
+	memcpy(dip,
+		(buf + EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE)),
+		sizeof(struct ext2fs_dinode));
 
 	/* XXX Hack to use ext2 functions */
-	dir_nas->fs->fs_drv = &ext3fs_driver;
 	ext3_spec->ext3_journal_inode = dip;
-	if (0 > ext3_journal_load(jp, bdev, fsbtodb(fsi, dip->i_block[0]))) {
+	if (0 > ext3_journal_load(jp, sb->bdev, fsbtodb(fsi, dip->i_block[0]))) {
 		return -EIO;
 	}
 	/*
@@ -316,7 +290,6 @@ static int ext3fs_truncate (struct inode *node, off_t length) {
 }
 
 static int ext3fs_umount(struct inode *dir) {
-	const struct fs_driver *drv;
 	struct ext2_fs_info *fsi;
 	ext3_journal_specific_t *data;
 	int res;
@@ -324,11 +297,7 @@ static int ext3fs_umount(struct inode *dir) {
 	fsi = dir->nas->fs->sb_data;
 	data = fsi->journal->j_fs_specific.data;
 
-	if(NULL == (drv = fs_driver_find(EXT2_NAME))) {
-		return -1;
-	}
-
-	res = drv->fsop->umount(dir);
+	res = ext2fs_driver->fsop->umount(dir);
 
 	journal_delete(fsi->journal);
 	sysfree(data->ext3_journal_inode);
@@ -361,6 +330,7 @@ static struct fsop_desc ext3_fsop = {
 
 static struct fs_driver ext3fs_driver = {
 	.name = EXT3_NAME,
+	.fill_sb = ext3fs_fill_sb,
 	.file_op = &ext3_fop,
 	.fsop = &ext3_fsop,
 };

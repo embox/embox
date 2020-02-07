@@ -187,36 +187,6 @@ struct super_block_operations ramfs_sbops = {
 	.destroy_inode = ramfs_destroy_inode,
 };
 
-static int ramfs_fill_sb(struct super_block *sb, const char *source) {
-	struct ramfs_fs_info *fsi;
-	struct block_dev *bdev;
-
-	assert(sb);
-
-	bdev = bdev_by_path(source);
-	if (NULL == bdev) {
-		return -ENODEV;
-	}
-
-	if (NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
-		return -ENOMEM;
-	}
-
-	memset(fsi, 0, sizeof(struct ramfs_fs_info));
-	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
-	fsi->block_size = PAGE_SIZE();
-	fsi->numblocks = bdev->size / PAGE_SIZE();
-	fsi->bdev = bdev;
-
-	sb->sb_data = fsi;
-	sb->sb_iops = &ramfs_iops;
-	sb->sb_fops = &ramfs_fops;
-	sb->sb_ops  = &ramfs_sbops;
-	sb->bdev    = bdev;
-
-	return 0;
-}
-
 static int ramfs_mount_end(struct super_block *sb) {
 	return 0;
 }

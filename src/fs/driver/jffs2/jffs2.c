@@ -1477,7 +1477,7 @@ static int jffs2_free_fs(struct nas *nas) {
 }
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
-static int jffs2fs_mount(const char *source, struct inode *dest);
+static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
 static int jffs2fs_create(struct inode *parent_node, struct inode *node);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
@@ -1498,8 +1498,10 @@ static struct fsop_desc jffs2_fsop = {
 	.umount      = jffs2fs_umount,
 };
 
+static int jffs2_fill_sb(struct super_block *sb, const char *source);
 static struct fs_driver jffs2fs_driver = {
 	.name = FS_NAME,
+	.fill_sb = jffs2_fill_sb,
 	.file_op = &jffs2_fop,
 	.fsop = &jffs2_fsop,
 };
@@ -1636,34 +1638,34 @@ static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }
 
-static int jffs2fs_mount(const char *source, struct inode *dest) {
+static int jffs2_fill_sb(struct super_block *sb, const char *source) {
+	struct block_dev *bdev;
+	struct jffs2_fs_info *fsi;
+
+	bdev = bdev_by_path(source);
+	if (bdev == NULL) {
+		return -ENODEV;
+	}
+
+	sb->bdev = bdev;
+
+	/* allocate this fs info */
+	if (NULL == (fsi = pool_alloc(&jffs2_fs_pool))) {
+		return -ENOMEM;
+	}
+	memset(fsi, 0, sizeof(struct jffs2_fs_info));
+	sb->sb_data = fsi;
+
+	return 0;
+}
+
+static int jffs2fs_mount(struct super_block *sb, struct inode *dest) {
 	int rc;
 	struct nas *dir_nas;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
-	struct block_dev *bdev;
 
 	dir_nas = dest->nas;
-
-	bdev = bdev_by_path(source);
-	if (bdev == NULL) {
-		goto error;
-	}
-
-	dir_nas->fs = super_block_alloc(FS_NAME, bdev);
-	if (NULL == dir_nas->fs) {
-		rc = ENOMEM;
-		goto error;
-	}
-
-	/* allocate this fs info */
-	if (NULL == (fsi = pool_alloc(&jffs2_fs_pool))) {
-		dir_nas->fs->sb_data = fsi;
-		rc = ENOMEM;
-		goto error;
-	}
-	memset(fsi, 0, sizeof(struct jffs2_fs_info));
-	dir_nas->fs->sb_data = fsi;
 
 	if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
 		dir_nas->fi->privdata = (void *) fi;
@@ -1677,6 +1679,7 @@ static int jffs2fs_mount(const char *source, struct inode *dest) {
 	}
 
 	dir_nas->fi->privdata = fi;
+	fsi = sb->sb_data;
 	fi->_inode = fsi->jffs2_sb.s_root;
 
 	if(0 != (rc = mount_vfs_dir_enty(dir_nas))) {

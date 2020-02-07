@@ -829,7 +829,8 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 /* File system operations*/
-static int cdfsfs_mount(const char *source, struct inode *dest);
+static int cdfs_fill_sb(struct super_block *sb, const char *source);
+static int cdfsfs_mount(struct super_block *sb, struct inode *dest);
 static int cdfsfs_umount(struct inode *dir);
 
 static struct fsop_desc cdfsfs_fsop = {
@@ -839,6 +840,7 @@ static struct fsop_desc cdfsfs_fsop = {
 
 static struct fs_driver cdfsfs_driver = {
 	.name = "iso9660",
+	.fill_sb = cdfs_fill_sb,
 	.file_op = &cdfsfs_fop,
 	.fsop = &cdfsfs_fsop,
 };
@@ -863,32 +865,34 @@ static void cdfs_free_fs(struct nas *nas) {
 	}
 }
 
-static int cdfsfs_mount(const char *source, struct inode *dest) {
-	struct nas *dir_nas;
-	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
+static int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	struct block_dev *bdev;
-	int rc;
+	struct cdfs_fs_info *fsi;
 
 	bdev = bdev_by_path(source);
 	if (NULL == bdev) {
 		return -ENODEV;
 	}
 
-	dir_nas = dest->nas;
-
-	dir_nas->fs = super_block_alloc("iso9660", bdev);
-	if (NULL == dir_nas->fs) {
-		return -ENOMEM;
-	}
+	sb->bdev = bdev;
 
 	/* allocate this fs info */
-	if(NULL == (fsi = pool_alloc(&cdfs_fs_pool))) {
-		rc = -ENOMEM;
-		goto error;
+	if (NULL == (fsi = pool_alloc(&cdfs_fs_pool))) {
+		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
-	dir_nas->fs->sb_data = fsi;
+	sb->sb_data = fsi;
+
+	return 0;
+}
+
+static int cdfsfs_mount(struct super_block *sb, struct inode *dest) {
+	struct nas *dir_nas;
+	struct cdfs_file_info *fi;
+	int rc;
+
+	dir_nas = dest->nas;
+
 	//XXX vfs_get_path_by_node(dir_node, fsi->mntto);
 
 	/* allocate this directory info */
@@ -903,11 +907,10 @@ static int cdfsfs_mount(const char *source, struct inode *dest) {
 		return 0;
 	}
 
-	error:
+error:
 	cdfs_free_fs(dir_nas);
 
 	return rc;
-
 }
 
 static int cdfs_umount_entry(struct nas *nas) {

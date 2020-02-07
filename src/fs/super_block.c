@@ -15,24 +15,29 @@
 
 POOL_DEF(super_block_pool, struct super_block, OPTION_GET(NUMBER,fs_quantity));
 
-struct super_block *super_block_alloc(const char *drv_name, struct block_dev *bdev) {
+struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	struct super_block *sb;
+	const struct fs_driver *drv;
+
+	drv = fs_driver_find(fs_type);
+	if (NULL == drv) {
+		return NULL;
+	}
 
 	if (NULL == (sb = pool_alloc(&super_block_pool))) {
 		return NULL;
 	}
 
-	memset(sb, 0, sizeof(*sb));
+	*sb = (struct super_block) {
+		.fs_drv    = drv,
+	};
 
-	if (0 != *drv_name) {
-		sb->fs_drv = fs_driver_find(drv_name);
+	if (drv->fill_sb) {
+		if (0 != drv->fill_sb(sb, source)) {
+			pool_free(&super_block_pool, sb);
+			return NULL;
+		}
 	}
-
-	if (sb && sb->fs_drv) {
-		sb->sb_fops = sb->fs_drv->file_op;
-	}
-
-	sb->bdev = bdev;
 
 	return sb;
 }

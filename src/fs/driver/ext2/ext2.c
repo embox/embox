@@ -532,12 +532,12 @@ static void ext2_free_fs(struct nas *nas);
 static int ext2_umount_entry(struct nas *nas);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
-static int ext2fs_mount(const char *source, struct inode *dest);
+static int ext2fs_mount(struct super_block *sb, struct inode *dest);
 static int ext2fs_create(struct inode *parent_node, struct inode *node);
 static int ext2fs_delete(struct inode *node);
 static int ext2fs_truncate(struct inode *node, off_t length);
 static int ext2fs_umount(struct inode *dir);
-
+static int ext2_fill_sb(struct super_block *sb, const char *source);
 
 static struct fsop_desc ext2_fsop = {
 	.format	     = ext2fs_format,
@@ -555,6 +555,7 @@ static struct fsop_desc ext2_fsop = {
 
 static struct fs_driver ext2fs_driver = {
 	.name = FS_NAME,
+	.fill_sb = ext2_fill_sb,
 	.file_op = &ext2_fop,
 	.fsop = &ext2_fsop,
 };
@@ -562,11 +563,12 @@ static struct fs_driver ext2fs_driver = {
 static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {
 	ext2_file_info_t *fi;
 
+	nas->fs = fs;
+
 	fi = pool_alloc(&ext2_file_pool);
 	if (fi) {
 		nas->fi->ni.size = fi->f_pointer = 0;
 		nas->fi->privdata = fi;
-		nas->fs = fs;
 	}
 
 	return fi;
@@ -814,49 +816,27 @@ static int ext2fs_format(struct block_dev *bdev, void *priv) {
 	return 0;
 }
 
-static int ext2fs_mount(const char *source, struct inode *dest) {
-	int rc;
-	struct nas *dir_nas;
+static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	struct block_dev *bdev;
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
-
-	dir_nas = dest->nas;
+	struct ext2_fs_info *fsi = NULL;
+	int rc = 0;
 
 	bdev = bdev_by_path(source);
 	if (NULL == bdev) {
-		rc = ENODEV;
-		return -rc;
+		return -ENODEV;
 	}
+	sb->bdev = bdev;
 
-	dir_nas->fs = super_block_alloc(FS_NAME, bdev);
-	if (NULL == dir_nas->fs) {
-		rc = ENOMEM;
-		goto error;
-	}
-
-	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&ext2_fs_pool))) {
-		dir_nas->fs->sb_data = fsi;
-		rc = ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct ext2_fs_info));
-	dir_nas->fs->sb_data = fsi;
-
-	if (NULL == (fi = pool_alloc(&ext2_file_pool))) {
-		dir_nas->fi->privdata = (void *) fi;
-		rc = ENOMEM;
-		goto error;
-	}
-	memset(fi, 0, sizeof(struct ext2_file_info));
-	fi->f_pointer = 0;
-	dir_nas->fi->privdata = (void *) fi;
+	sb->sb_data = fsi;
 
 	/* presetting that we think */
 	fsi->s_block_size = SBSIZE;
 	fsi->s_sectors_in_block = fsi->s_block_size / 512;
-	if (0 != (rc = ext2_read_sblock(dir_nas->fs))) {
+	if (0 != (rc = ext2_read_sblock(sb))) {
 		goto error;
 	}
 	if (NULL == (fsi->e2fs_gd = ext2_buff_alloc(fsi,
@@ -864,16 +844,37 @@ static int ext2fs_mount(const char *source, struct inode *dest) {
 		rc = ENOMEM;
 		goto error;
 	}
-	if (0 != (rc = ext2_read_gdblock(dir_nas->fs))) {
+	if (0 != (rc = ext2_read_gdblock(sb))) {
 		goto error;
 	}
+
+	return 0;
+error:
+	if (fsi != NULL && fsi->e2fs_gd != NULL) {
+		ext2_buff_free(fsi, (void *) fsi->e2fs_gd);
+	}
+
+	if (fsi != NULL ){
+		pool_free(&ext2_fs_pool, fsi);
+	}
+
+	return -rc;
+}
+
+static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
+	int rc;
+	struct nas *dir_nas;
+
+	dir_nas = dest->nas;
+
+	ext2_fi_alloc(dir_nas, sb);
 
 	if (0 != (rc = ext2_mount_entry(dir_nas))) {
 		goto error;
 	}
 	return 0;
 
-	error:
+error:
 	ext2_free_fs(dir_nas);
 
 	return -rc;

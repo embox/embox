@@ -39,7 +39,7 @@ struct initfs_file_info_tmp {
 };
 POOL_DEF(file_pool, struct initfs_file_info_tmp, OPTION_GET(NUMBER,file_quantity));
 
-static int initfs_mount(const char *source, struct inode *dest) {
+static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	extern char _initfs_start, _initfs_end;
 	char *cpio = &_initfs_start;
 	struct nas *dir_nas;
@@ -49,7 +49,6 @@ static int initfs_mount(const char *source, struct inode *dest) {
 	char name[PATH_MAX + 1];
 
 	dir_nas = dest->nas;
-	dir_nas->fs = super_block_alloc("initfs", NULL);
 
 	if (&_initfs_start == &_initfs_end) {
 		return -1;

@@ -20,6 +20,7 @@
 #include <fs/file_operation.h>
 #include <fs/super_block.h>
 #include <fs/fs_driver.h>
+#include <fs/inode_operation.h>
 #include <fs/inode.h>
 #include <fs/vfs.h>
 #include <drivers/block_dev.h>
@@ -112,38 +113,9 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	return ENOERR;
 }
 
-static int fat_mount_files(struct nas *dir_nas) {
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
-	struct dirinfo *di;
-	struct fat_dirent de;
-	struct fat_fs_info *fsi;
-
-	assert(dir_nas);
-
-	di = dir_nas->fi->privdata;
-	fsi = dir_nas->fs->sb_data;
-
-	pstart = fat_get_ptn_start(dir_nas->fs->bdev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		return -1;
-	}
-	if (fat_get_volinfo(dir_nas->fs->bdev, &fsi->vi, pstart)) {
-		return -1;
-	}
-
-	if (fat_open_rootdir(fsi, di)) {
-		return -EBUSY;
-	}
-
-	return fat_create_dir_entry(dir_nas, di, &de);
-}
-
 static void fat_free_fs(struct nas *nas) {
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-
 	if (NULL != nas->fs) {
+		struct fat_fs_info *fsi;
 		fsi = nas->fs->sb_data;
 
 		if(NULL != fsi) {
@@ -152,21 +124,21 @@ static void fat_free_fs(struct nas *nas) {
 		super_block_free(nas->fs);
 	}
 
-	if (NULL != (fi = nas->fi->privdata)) {
-		fat_dirinfo_free(nas->fi->privdata);
+	if (NULL != inode_priv(nas->node)) {
+		fat_dirinfo_free(inode_priv(nas->node));
 	}
 }
 
-static int fat_umount_entry(struct nas *nas) {
+static int fat_umount_entry(struct inode *node) {
 	struct inode *child;
 
-	if (node_is_directory(nas->node)) {
-		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
+	if (node_is_directory(node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
 			if (node_is_directory(child)) {
-				fat_umount_entry(child->nas);
-				fat_dirinfo_free(child->nas->fi->privdata);
+				fat_umount_entry(child);
+				fat_dirinfo_free(inode_priv(child));
 			} else {
-				fat_file_free(child->nas->fi->privdata);
+				fat_file_free(inode_priv(child));
 			}
 			vfs_del_leaf(child);
 		}
@@ -177,32 +149,21 @@ static int fat_umount_entry(struct nas *nas) {
 
 extern struct file_operations fat_fops;
 
-static int fatfs_mount(const char *source, struct inode *dest) {
-	struct block_dev *bdev;
+struct inode_operations fat_iops;
+struct super_block_operations fat_sbops;
+extern int fat_fill_sb(struct super_block *sb, const char *source);
+
+static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	struct nas *dir_nas;
 	struct dirinfo *di;
 	struct fat_fs_info *fsi;
+	uint32_t pstart, psize;
+	uint8_t pactive, ptype;
+	struct fat_dirent de;
 	int rc;
 
-	bdev = bdev_by_path(source);
-	if (NULL == bdev) {
-		return -ENODEV;
-	}
-
 	dir_nas = dest->nas;
-
-	dir_nas->fs = super_block_alloc("vfat", bdev);
-	if (dir_nas->fs == NULL) {
-		rc = -ENOMEM;
-		goto error;
-	}
-
-	if (NULL == (fsi = fat_fs_alloc())) {
-		rc = -ENOMEM;
-		goto error;
-	}
-	memset(fsi, 0, sizeof(struct fat_fs_info));
-	dir_nas->fs->sb_data = fsi;
+	fsi = sb->sb_data;
 
 	/* allocate this directory info */
 	if (NULL == (di = fat_dirinfo_alloc())) {
@@ -213,11 +174,19 @@ static int fatfs_mount(const char *source, struct inode *dest) {
 	dir_nas->fi->privdata = (void *) di;
 	di->fi.fsi = fsi;
 	di->p_scratch = fat_sector_buff;
-
-	fsi->bdev = bdev;
 	fsi->root = dest;
 
-	return fat_mount_files(dir_nas);
+	pstart = fat_get_ptn_start(sb->bdev, 0, &pactive, &ptype, &psize);
+	if (pstart == 0xffffffff) {
+		rc = -1;
+		goto error;
+	}
+
+	if (fat_open_rootdir(fsi, di)) {
+		return -EBUSY;
+	}
+
+	return fat_create_dir_entry(dir_nas, di, &de);
 
 error:
 	fat_free_fs(dir_nas);
@@ -305,7 +274,7 @@ static int fatfs_umount(struct inode *dir) {
 
 	dir_nas = dir->nas;
 
-	fat_umount_entry(dir_nas);
+	fat_umount_entry(dir);
 
 	fat_free_fs(dir_nas);
 
@@ -324,6 +293,7 @@ static struct fsop_desc fatfs_fsop = {
 
 static const struct fs_driver fatfs_driver = {
 	.name = "vfat",
+	.fill_sb = fat_fill_sb,
 	.file_op = &fat_fops,
 	.fsop = &fatfs_fsop,
 };

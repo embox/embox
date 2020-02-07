@@ -54,7 +54,7 @@ static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
 
-static struct file_operations nfsfs_fop = {
+static const struct file_operations nfsfs_fop = {
 	.open = nfsfs_open,
 	.close = nfsfs_close,
 	.read = nfsfs_read,
@@ -217,11 +217,12 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 /* File system operations */
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
-static int nfsfs_mount(const char *source, struct inode *dest);
+static int nfsfs_mount(struct super_block *sb, struct inode *dest);
 static int nfsfs_create(struct inode *parent_node, struct inode *node);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
 static int nfsfs_umount(struct inode *dir);
+static int nfs_fill_sb(struct super_block *sb, const char *source);
 
 static struct fsop_desc nfsfs_fsop = {
 	.format = nfsfs_format,
@@ -234,9 +235,10 @@ static struct fsop_desc nfsfs_fsop = {
 };
 
 static struct fs_driver nfsfs_driver = {
-	.name = "nfs",
+	.name    = "nfs",
+	.fill_sb = nfs_fill_sb,
 	.file_op = &nfsfs_fop,
-	.fsop = &nfsfs_fsop,
+	.fsop    = &nfsfs_fsop,
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {
@@ -343,34 +345,42 @@ static void nfs_free_fs(struct nas *nas) {
 	}
 }
 
-static int nfsfs_mount(const char *source, struct inode *dest) {
+static int nfs_fill_sb(struct super_block *sb, const char *source) {
+	struct nfs_fs_info *fsi;
+
+	if (NULL == (fsi = pool_alloc(&nfs_fs_pool))) {
+		return -ENOMEM;
+	}
+
+	sb->sb_data = fsi;
+
+	memset(fsi, 0, sizeof *fsi);
+	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi))) {
+		pool_free(&nfs_fs_pool, fsi);
+		return -1;
+	}
+
+	return 0;
+}
+
+static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 	nfs_file_info_t *fi;
 	struct nas *dir_nas;
 	struct nfs_fs_info *fsi;
 	int rc;
 
 	dir_nas = dest->nas;
+	fsi = sb->sb_data;
 
-	dir_nas->fs = super_block_alloc("nfs", NULL);
-	if (NULL == dir_nas->fs) {
+	if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
 		return -ENOMEM;
 	}
 
-	if ((NULL == (fsi = pool_alloc(&nfs_fs_pool))) ||
-			(NULL == (fi = pool_alloc(&nfs_file_pool)))) {
-		rc = -ENOMEM;
-		goto error;
-	}
-
-	dir_nas->fs->sb_data = fsi;
 	dir_nas->fi->privdata = (void *) fi;
-
-	memset(fsi, 0, sizeof *fsi);
 	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
 
 	/* get server name and mount directory from params */
-	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi)) ||
-		(0 > nfs_mount(dir_nas))) {
+	if (0 > nfs_mount(dir_nas)) {
 		rc = -1;
 		goto error;
 	}

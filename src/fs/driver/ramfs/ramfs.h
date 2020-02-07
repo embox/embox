@@ -51,5 +51,6 @@ struct ramfs_file_info {
 };
 
 extern struct file_operations ramfs_fops;
+int ramfs_fill_sb(struct super_block *sb, const char *source);
 
 #endif /* RAMFS_H_ */

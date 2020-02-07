@@ -16,6 +16,9 @@
 #include <string.h>
 
 #include <drivers/block_dev.h>
+#include <fs/inode_operation.h>
+#include <fs/mount.h>
+#include <fs/super_block.h>
 #include "fat.h"
 
 #include <util/log.h>
@@ -1992,4 +1995,45 @@ int fat_format(struct block_dev *dev, void *priv) {
 	fat_root_dir_record(bdev);
 
 	return 0;
+}
+
+extern struct inode_operations fat_iops;
+extern struct super_block_operations fat_sbops;
+extern struct file_operations fat_fops;
+/* @brief Initializing fat super_block
+ * @param sb  Structure to be initialized
+ * @param dev Storage device
+ *
+ * @return Negative error code
+ */
+int fat_fill_sb(struct super_block *sb, const char *source) {
+	struct fat_fs_info *fsi;
+	struct block_dev *bdev;
+
+	assert(sb);
+
+	bdev = bdev_by_path(source);
+	if (!bdev) {
+		/* FAT always uses block device, so we can't fill superblock */
+		return -ENOENT;
+	}
+
+	fsi = fat_fs_alloc();
+	*fsi = (struct fat_fs_info) {
+		.bdev = bdev,
+	};
+	sb->sb_data = fsi;
+	sb->sb_iops = &fat_iops;
+	sb->sb_fops = &fat_fops;
+	sb->sb_ops  = &fat_sbops;
+	sb->bdev    = bdev;
+
+	if (fat_get_volinfo(bdev, &fsi->vi, 0))
+		goto err_out;
+
+	return 0;
+
+err_out:
+	fat_fs_free(fsi);
+	return -1;
 }
