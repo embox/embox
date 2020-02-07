@@ -19,7 +19,6 @@ extern const struct idesc_ops idesc_file_ops;
 
 static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
-	assert(idesc->idesc_ops == &idesc_file_ops);
 	dvfs_close((struct file_desc *)idesc);
 }
 

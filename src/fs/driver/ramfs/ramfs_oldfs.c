@@ -45,7 +45,7 @@ POOL_DEF(ramfs_file_pool, struct ramfs_file_info, RAMFS_FILES);
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
 static int ramfs_format(struct block_dev *bdev, void *priv);
-static int ramfs_mount(void *dev, void *dir);
+static int ramfs_mount(const char *source, struct inode *dest);
 
 static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 	struct ramfs_file_info *fi;
@@ -125,29 +125,26 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 	return 0;
 }
 
-static int ramfs_mount(void *dev, void *dir) {
-	struct inode *dir_node, *dev_node;
-	struct nas *dir_nas, *dev_nas;
+static int ramfs_mount(const char *source, struct inode *dest) {
+	struct block_dev *bdev;
+	struct nas *dir_nas;
 	struct ramfs_file_info *fi;
 	struct ramfs_fs_info *fsi;
-	struct node_fi *dev_fi;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dest->nas;
 
-	if (NULL == (dev_fi = dev_nas->fi)) {
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
 		return -ENODEV;
 	}
 
-	dir_nas->fs = super_block_alloc("ramfs", dev_fi->privdata);
+	dir_nas->fs = super_block_alloc("ramfs", bdev);
 	if (NULL == dir_nas->fs) {
 		return -ENOMEM;
 	}
 
 	/* allocate this fs info */
-	if(NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
+	if (NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
 		super_block_free(dir_nas->fs);
 		return -ENOMEM;
 	}
@@ -156,8 +153,8 @@ static int ramfs_mount(void *dev, void *dir) {
 
 	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
 	fsi->block_size = PAGE_SIZE();
-	fsi->numblocks = block_dev(dev_fi->privdata)->size / PAGE_SIZE();
-	fsi->bdev = block_dev(dev_fi->privdata);
+	fsi->numblocks = bdev->size / PAGE_SIZE();
+	fsi->bdev = bdev;
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&ramfs_file_pool))) {

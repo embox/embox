@@ -297,7 +297,7 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	return 0;
 }
 
-static struct block_dev *dvfs_get_mount_bdev(const char *dev_name) {
+struct block_dev *bdev_by_path(const char *dev_name) {
 	struct lookup lookup = {};
 	int res;
 
@@ -332,32 +332,25 @@ extern int dvfs_cache_del(struct dentry *dentry);
 extern int set_rootfs_sb(struct super_block *sb);
 /**
  * @brief Mount file system
- * @param dev    Path to the source device (e.g. /dev/sda1)
- * @param dest   Path to the mount point (e.g. /mnt)
- * @param fstype File system type related to FS driver
- * @param flags  NIY
+ * @param source  Path to the source device (e.g. /dev/sda1)
+ * @param dest    Path to the mount point (e.g. /mnt)
+ * @param fs_type File system type related to FS driver
+ * @param flags   NIY
  *
  * @return Negative error value
  * @retval       0 Ok
  * @retval -ENOENT Mount point or device not found
  */
-int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags) {
+int dvfs_mount(const char *source, const char *dest, const char *fs_type, int flags) {
 	struct lookup lookup = {};
-	const struct fs_driver *drv;
 	struct super_block *sb;
 	struct dentry *d = NULL;
-	struct block_dev *bdev;
 	int err;
 
 	assert(dest);
-	assert(fstype);
+	assert(fs_type);
 
-	drv = fs_driver_find(fstype);
-	assert(drv);
-
-	bdev = dvfs_get_mount_bdev(dev);
-
-	if (NULL == (sb = dvfs_alloc_sb(drv, bdev))) {
+	if (NULL == (sb = super_block_alloc(fs_type, source))) {
 		return -ENOMEM;
 	}
 
@@ -403,8 +396,8 @@ int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags)
 		};
 	}
 
-	if (drv->mount_end) {
-		if ((err = drv->mount_end(sb)))
+	if (sb->fs_drv->mount_end) {
+		if ((err = sb->fs_drv->mount_end(sb)))
 			goto err_free_all;
 	}
 
@@ -418,7 +411,7 @@ err_free_all:
 	}
 
 	if (sb) {
-		dvfs_destroy_sb(sb);
+		super_block_free(sb);
 	}
 
 	return err;
@@ -469,7 +462,7 @@ int dvfs_umount(struct dentry *mpoint) {
 	dentry_reconnect(mpoint->parent, mpoint->name);
 	dentry_ref_dec(mpoint);
 
-	if ((err = dvfs_destroy_sb(sb))) {
+	if ((err = super_block_free(sb))) {
 		return err;
 	}
 

@@ -109,9 +109,10 @@ extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
 
-extern struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct block_dev *bdev);
-extern int dvfs_destroy_sb(struct super_block *sb);
+extern struct super_block *super_block_alloc(const char *fs_type, const char *source);
+extern int super_block_free(struct super_block *sb);
 
+extern struct block_dev *bdev_by_path(const char *source);
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);
 extern int dvfs_umount(struct dentry *d);
 

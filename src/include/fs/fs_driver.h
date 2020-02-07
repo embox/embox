@@ -18,7 +18,7 @@ struct block_dev;
 
 struct fsop_desc {
 	int (*format)(struct block_dev *bdev, void *priv);
-	int (*mount)(void *dev_node, void *dir_node);
+	int (*mount)(const char *source, struct inode *dest);
 	int (*create_node)(struct inode *parent_node, struct inode *new_node);
 	int (*delete_node)(struct inode *node);
 
@@ -30,7 +30,7 @@ struct fsop_desc {
 	int (*listxattr)(struct inode *node, char *list, size_t len);
 
 	int (*truncate)(struct inode *node, off_t length);
-	int (*umount)(void *dir_node);
+	int (*umount)(struct inode *dir);
 };
 
 struct file_operations;
@@ -41,10 +41,9 @@ struct file_operations;
  * our system.
  */
 struct fs_driver {
-	const char                    *name;
-	bool		mount_dev_by_string;
+	const char                   *name;
 	const struct file_operations *file_op;
-	const struct fsop_desc        *fsop;
+	const struct fsop_desc       *fsop;
 };
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \

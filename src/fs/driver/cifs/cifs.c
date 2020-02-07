@@ -175,13 +175,11 @@ static int cifs_umount_entry(struct nas *nas) {
 	return 0;
 }
 
-static int embox_cifs_umount(void *dir) {
-	struct inode *dir_node;
+static int embox_cifs_umount(struct inode *dir) {
 	struct nas *dir_nas;
 	struct cifs_fs_info *fsi;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 
 	/* delete all entry node */
 	cifs_umount_entry(dir_nas);
@@ -203,25 +201,21 @@ static int embox_cifs_umount(void *dir) {
 	return 0;
 }
 
-static int
-embox_cifs_mount (void *dev, void *dir)
-{
+static int embox_cifs_mount(const char *source, struct inode *dir) {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
-	struct inode *dir_node;
 	struct nas *dir_nas;
 	struct cifs_fs_info *fsi;
 	int rc;
 
-	strncpy (smb_path + 6, dev, sizeof (smb_path) - 7);
+	strncpy(smb_path + 6, source, sizeof (smb_path) - 7);
 	smb_path[sizeof (smb_path) - 1] = '\0';
 	rc = strlen(smb_path);
 	if(smb_path[rc-1] == '/') {
 		smb_path[rc-1] = '\0';
 	}
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 
 	dir_nas->fs = super_block_alloc("cifs", NULL);
 	if (NULL == dir_nas->fs) {
@@ -244,13 +238,13 @@ embox_cifs_mount (void *dev, void *dir)
 	}
 	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
-	fsi->mntto = dir_node;
+	fsi->mntto = dir;
 	fsi->ctx = ctx;
 	dir_nas->fs->sb_data = fsi;
 
 	//get smb_path
-	rc = embox_cifs_mounting_recurse(dir_node->nas, ctx, smb_path,
-									sizeof (smb_path));
+	rc = embox_cifs_mounting_recurse(dir->nas, ctx, smb_path,
+			sizeof (smb_path));
 	if (0 > rc) {
 		goto error;
 	}
@@ -458,7 +452,6 @@ static const struct fs_driver cifs_driver = {
 	.name = "cifs",
 	.fsop = &cifs_fsop,
 	.file_op = &cifs_fop,
-	.mount_dev_by_string = true,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);

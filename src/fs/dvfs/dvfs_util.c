@@ -92,14 +92,22 @@ int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 
 /* @brief Try to allocate superblock using file system driver and given device
  * @param drv Name of file system driver
- * @param dev Path to device (e.g. /dev/sda1)
+ * @param dest Path to device (e.g. /dev/sda1)
  *
  * @return Pointer to the new superblock
  * @retval NULL Superblock could not be allocated
  */
-struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct block_dev *bdev) {
+struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	struct super_block *sb;
-	assert(drv);
+	const struct fs_driver *drv;
+
+
+	assert(fs_type);
+
+	drv = fs_driver_find(fs_type);
+	if (NULL == drv) {
+		return NULL;
+	}
 
 	if (NULL == (sb = pool_alloc(&superblock_pool))) {
 		return NULL;
@@ -107,11 +115,10 @@ struct super_block *dvfs_alloc_sb(const struct fs_driver *drv, struct block_dev 
 
 	*sb = (struct super_block) {
 		.fs_drv    = drv,
-		.bdev      = bdev
 	};
 
 	if (drv->fill_sb) {
-		if (0 != drv->fill_sb(sb, bdev)) {
+		if (0 != drv->fill_sb(sb, source)) {
 			pool_free(&superblock_pool, sb);
 			return NULL;
 		}
@@ -409,7 +416,7 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
  *
  * @return Negative error code or zero if succeed
  */
-int dvfs_destroy_sb(struct super_block *sb) {
+int super_block_free(struct super_block *sb) {
 	int err = 0;
 
 	assert(sb);

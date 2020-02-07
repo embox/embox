@@ -19,7 +19,7 @@
 
 ARRAY_SPREAD_DEF(const struct fuse_module *const, fuse_module_repo);
 
-struct fuse_module *fuse_module_lookup(char *fuse_type) {
+struct fuse_module *fuse_module_lookup(const char *fuse_type) {
 	struct fuse_module *fm;
 	array_spread_foreach(fm, fuse_module_repo) {
 		if (0 == strcmp(fuse_type, fm->fuse_module_name)) {
@@ -103,7 +103,7 @@ static void *fuse_module_mount_process(void *arg) {
 
 	params->fm = NULL;
 
-	sb = dvfs_alloc_sb(fs_drv, NULL);
+	sb = super_block_alloc(fs_drv, NULL);
 	fuse_fill_dentry(sb, argv2);
 
 	cmd_exec(cmd, 3, argv); /* will not return */
@@ -111,7 +111,7 @@ static void *fuse_module_mount_process(void *arg) {
 	return NULL;
 }
 
-int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest) {
+int fuse_module_mount(struct fuse_module *fm, const char *dev, const char *dest) {
 	int res;
 	struct fuse_mount_params params = {fm, dev, dest};
 

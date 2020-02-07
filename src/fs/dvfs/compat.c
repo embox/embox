@@ -16,19 +16,20 @@
 /**
  * @brief Mount given device on given directory
  *
- * @param dev Path to device
- * @param dir Path to mount point
+ * @param source Path to device or another source of data
+ * @param target Path to mount point
  * @param fs_type Name of FS driver
  *
  * @return Negative error number or 0 if succeed
  */
-int mount(char *dev, char *dir, char *fs_type) {
+int mount(const char *source, const char *target,
+	const char *fs_type) {
 	struct fuse_module *fm;
 	fm = fuse_module_lookup(fs_type);
 	if (fm) {
-		return fuse_module_mount(fm, dev, dir);
+		return fuse_module_mount(fm, source, target);
 	}
-	errno = dvfs_mount(dev, dir, fs_type, 0); /* Compatibility with old VFS */
+	errno = dvfs_mount(source, target, fs_type, 0); /* Compatibility with old VFS */
 	return errno;
 }
 

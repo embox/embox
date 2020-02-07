@@ -39,7 +39,7 @@ struct initfs_file_info_tmp {
 };
 POOL_DEF(file_pool, struct initfs_file_info_tmp, OPTION_GET(NUMBER,file_quantity));
 
-static int initfs_mount(void *dev, void *dir) {
+static int initfs_mount(const char *source, struct inode *dest) {
 	extern char _initfs_start, _initfs_end;
 	char *cpio = &_initfs_start;
 	struct nas *dir_nas;
@@ -48,16 +48,14 @@ static int initfs_mount(void *dev, void *dir) {
 	struct cpio_entry entry;
 	char name[PATH_MAX + 1];
 
-	struct inode *dir_node = dir;
-
-	dir_nas = dir_node->nas;
+	dir_nas = dest->nas;
 	dir_nas->fs = super_block_alloc("initfs", NULL);
 
 	if (&_initfs_start == &_initfs_end) {
 		return -1;
 	}
 	printk("%s: unpack initinitfs at %p into %s\n", __func__,
-			cpio, dir_node->name);
+			cpio, dest->name);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (entry.name_len > PATH_MAX) {
@@ -66,7 +64,7 @@ static int initfs_mount(void *dev, void *dir) {
 		memcpy(name, entry.name, entry.name_len);
 		name[entry.name_len] = '\0';
 
-		node = vfs_subtree_create_intermediate(dir_node, name, entry.mode);
+		node = vfs_subtree_create_intermediate(dest, name, entry.mode);
 		if (NULL == node) {
 			return -ENOMEM;
 		}
@@ -97,7 +95,6 @@ static struct fs_driver initfs_driver = {
 	.name = "initfs",
 	.file_op = &initfs_fops,
 	.fsop = &initfs_fsop,
-	.mount_dev_by_string = true,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(initfs_driver);

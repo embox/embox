@@ -829,8 +829,8 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 /* File system operations*/
-static int cdfsfs_mount(void * dev, void *dir);
-static int cdfsfs_umount(void *dir);
+static int cdfsfs_mount(const char *source, struct inode *dest);
+static int cdfsfs_umount(struct inode *dir);
 
 static struct fsop_desc cdfsfs_fsop = {
 	.mount = cdfsfs_mount,
@@ -863,24 +863,21 @@ static void cdfs_free_fs(struct nas *nas) {
 	}
 }
 
-static int cdfsfs_mount(void *dev, void *dir) {
-	struct inode *dir_node, *dev_node;
-	struct nas *dir_nas, *dev_nas;
+static int cdfsfs_mount(const char *source, struct inode *dest) {
+	struct nas *dir_nas;
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
-	struct node_fi *dev_fi;
+	struct block_dev *bdev;
 	int rc;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-	dir_node = dir;
-	dir_nas = dir_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
 		return -ENODEV;
 	}
 
-	dir_nas->fs = super_block_alloc("iso9660", dev_fi->privdata);
+	dir_nas = dest->nas;
+
+	dir_nas->fs = super_block_alloc("iso9660", bdev);
 	if (NULL == dir_nas->fs) {
 		return -ENOMEM;
 	}
@@ -930,13 +927,11 @@ static int cdfs_umount_entry(struct nas *nas) {
 	return 0;
 }
 
-static int cdfsfs_umount(void *dir) {
-	struct inode *dir_node;
+static int cdfsfs_umount(struct inode *dir) {
 	struct nas *dir_nas;
 	struct cdfs_fs_info *fsi;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 	fsi = dir_nas->fs->sb_data;
 
 	cdfs_umount(fsi);

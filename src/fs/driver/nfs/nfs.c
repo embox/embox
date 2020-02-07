@@ -217,11 +217,11 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 /* File system operations */
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
-static int nfsfs_mount(void * dev, void *dir);
+static int nfsfs_mount(const char *source, struct inode *dest);
 static int nfsfs_create(struct inode *parent_node, struct inode *node);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
-static int nfsfs_umount(void *dir);
+static int nfsfs_umount(struct inode *dir);
 
 static struct fsop_desc nfsfs_fsop = {
 	.format = nfsfs_format,
@@ -237,7 +237,6 @@ static struct fs_driver nfsfs_driver = {
 	.name = "nfs",
 	.file_op = &nfsfs_fop,
 	.fsop = &nfsfs_fsop,
-	.mount_dev_by_string = true,
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {
@@ -280,11 +279,10 @@ static int nfs_clnt_destroy (struct nfs_fs_info *fsi) {
 	return 0;
 }
 
-static int nfs_prepare(struct nfs_fs_info *fsi, char *dev) {
-	char *src, *dst;
+static int nfs_prepare(struct nfs_fs_info *fsi, const char *src) {
+	char *dst;
 
 	/* copy name of server and mount filesystem server directory*/
-	src = dev;
 	dst = fsi->srv_name;
 
 	do {
@@ -345,16 +343,13 @@ static void nfs_free_fs(struct nas *nas) {
 	}
 }
 
-static int nfsfs_mount(void *dev, void *dir) {
-	struct inode *dir_node;
+static int nfsfs_mount(const char *source, struct inode *dest) {
 	nfs_file_info_t *fi;
 	struct nas *dir_nas;
 	struct nfs_fs_info *fsi;
 	int rc;
 
-	dir_node = dir;
-	/* there are nodev for nfs. we create fs here and set nfs fs_driver*/
-	dir_nas = dir_node->nas;
+	dir_nas = dest->nas;
 
 	dir_nas->fs = super_block_alloc("nfs", NULL);
 	if (NULL == dir_nas->fs) {
@@ -374,7 +369,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
 
 	/* get server name and mount directory from params */
-	if ((0 > nfs_prepare(fsi, dev)) || (0 > nfs_client_init(fsi)) ||
+	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi)) ||
 		(0 > nfs_mount(dir_nas))) {
 		rc = -1;
 		goto error;
@@ -383,7 +378,7 @@ static int nfsfs_mount(void *dev, void *dir) {
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
 
-	if (0 >	nfs_create_dir_entry(dir_node)) { // XXX check the argument
+	if (0 >	nfs_create_dir_entry(dest)) { // XXX check the argument
 		rc = -1;
 	} else {
 		return 0;
@@ -412,16 +407,12 @@ static int nfs_umount_entry(struct nas *nas) {
 	return 0;
 }
 
-static int nfsfs_umount(void *dir) {
-	struct inode *dir_node;
-
-	dir_node = dir;
-
+static int nfsfs_umount(struct inode *dir) {
 	/* delete all entry node */
-	nfs_umount_entry(dir_node->nas);
+	nfs_umount_entry(dir->nas);
 
 	/* free nfs file system pools, clnt and buffers*/
-	nfs_free_fs(dir_node->nas);
+	nfs_free_fs(dir->nas);
 
 	return 0;
 }

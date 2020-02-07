@@ -14,9 +14,9 @@ struct fuse_module {
 	const char *fuse_module_cmd_mount;
 };
 
-extern struct fuse_module *fuse_module_lookup(char *fuse_type);
+extern struct fuse_module *fuse_module_lookup(const char *fuse_type);
 
-extern int fuse_module_mount(struct fuse_module *fm, char *dev, char *dest);
+extern int fuse_module_mount(struct fuse_module *fm, const char *dev, const char *dest);
 
 extern int fuse_module_umount(struct fuse_module *fm);
 

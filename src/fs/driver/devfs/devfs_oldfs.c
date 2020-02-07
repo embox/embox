@@ -30,14 +30,12 @@ extern struct inode_operations devfs_iops;
 
 static struct super_block *devfs_sb;
 
-static int devfs_mount(void *dev, void *dir) {
+static int devfs_mount(const char *source, struct inode *dest) {
 	int ret;
-	struct inode *dir_node;
 	struct nas *dir_nas;
 
-	dir_node = dir;
-	dir_node->i_ops = &devfs_iops;
-	dir_nas = dir_node->nas;
+	dest->i_ops = &devfs_iops;
+	dir_nas = dest->nas;
 
 	ret = char_dev_init_all();
 	if (ret != 0) {

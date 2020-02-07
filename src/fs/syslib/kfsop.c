@@ -347,8 +347,28 @@ int kformat(const char *pathname, const char *fs_type) {
 	return 0;
 }
 
-int kmount(const char *dev, const char *dir, const char *fs_type) {
-	struct path dev_node, dir_node, root_path;
+struct block_dev *bdev_by_path(const char *source) {
+	struct path dev_node;
+	const char *lastpath;
+
+	if (source == NULL) {
+		return NULL;
+	}
+
+	if (ENOERR != fs_perm_lookup(source, &lastpath, &dev_node)) {
+		return NULL;
+	}
+
+	if (ENOERR != fs_perm_check(dev_node.node, S_IROTH | S_IXOTH)) {
+		return NULL;
+	}
+
+	/* TODO: check if it's actually part of devfs? */
+	return dev_node.node->nas->fi->privdata;
+}
+
+int kmount(const char *source, const char *dest, const char *fs_type) {
+	struct path dir_node, root_path;
 	const struct fs_driver *drv;
 	const char *lastpath;
 	int res;
@@ -369,47 +389,25 @@ int kmount(const char *dev, const char *dir, const char *fs_type) {
 		return -1;
 	}
 
-	if (drv->mount_dev_by_string) {
-		dev_node.node = (struct inode *) dev;
-	} else if (dev != NULL) {
-		if (ENOERR != (res = fs_perm_lookup(dev, &lastpath, &dev_node))) {
-			errno = res == -ENOENT ? ENODEV : -res;
-			return -1;
-		}
-
-		if (ENOERR != (res = fs_perm_check(dev_node.node, S_IROTH | S_IXOTH))) {
-			errno = EACCES;
-			return -1;
-		}
-	} else {
-		dev_node.node = NULL;
-	}
-
-	if (ENOERR != (res = fs_perm_lookup(dir, &lastpath, &dir_node))) {
+	if (ENOERR != (res = fs_perm_lookup(dest, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 	}
 
-	if (ENOERR != (res = security_mount(dev_node.node, dir_node.node))) {
-		errno = -res;
-		return -1;
-	}
-
-	if (0 == strcmp(dir, "/")) {
+	if (0 == strcmp(dest, "/")) {
 		root_path.node = dir_node.node;
 	} else {
 		root_path.node = vfs_create_root();
 	}
 
-	if (ENOERR != (res = drv->fsop->mount(dev_node.node, root_path.node))) {
+	if (ENOERR != (res = drv->fsop->mount(source, root_path.node))) {
 		//todo free root
 		errno = -res;
 		return -1;
-
 	}
 
-	if (NULL == mount_table_add(&dir_node, root_path.node, dev)) {
-		drv->fsop->umount(&dir_node);
+	if (NULL == mount_table_add(&dir_node, root_path.node, dest)) {
+		drv->fsop->umount(dir_node.node);
 		//todo free root
 		errno = -res;
 		return -1;

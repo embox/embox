@@ -177,25 +177,21 @@ static int fat_umount_entry(struct nas *nas) {
 
 extern struct file_operations fat_fops;
 
-static int fatfs_mount(void *dev, void *dir) {
-	struct inode *dir_node, *dev_node;
-	struct nas *dir_nas, *dev_nas;
+static int fatfs_mount(const char *source, struct inode *dest) {
+	struct block_dev *bdev;
+	struct nas *dir_nas;
 	struct dirinfo *di;
 	struct fat_fs_info *fsi;
-	struct node_fi *dev_fi;
 	int rc;
 
-	dev_node = dev;
-	dev_nas = dev_node->nas;
-	dir_node = dir;
-	dir_nas = dir_node->nas;
-
-	if (NULL == (dev_fi = dev_nas->fi)) {
-		rc = -ENODEV;
-		goto error;
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
+		return -ENODEV;
 	}
 
-	dir_nas->fs = super_block_alloc("vfat", dev_fi->privdata);
+	dir_nas = dest->nas;
+
+	dir_nas->fs = super_block_alloc("vfat", bdev);
 	if (dir_nas->fs == NULL) {
 		rc = -ENOMEM;
 		goto error;
@@ -218,8 +214,8 @@ static int fatfs_mount(void *dev, void *dir) {
 	di->fi.fsi = fsi;
 	di->p_scratch = fat_sector_buff;
 
-	fsi->bdev = dir_nas->fs->bdev;
-	fsi->root = dir_node;
+	fsi->bdev = bdev;
+	fsi->root = dest;
 
 	return fat_mount_files(dir_nas);
 
@@ -305,12 +301,10 @@ static int fatfs_truncate(struct inode *node, off_t length) {
 	return 0;
 }
 
-static int fatfs_umount(void *dir) {
-	struct inode *dir_node;
+static int fatfs_umount(struct inode *dir) {
 	struct nas *dir_nas;
 
-	dir_node = dir;
-	dir_nas = dir_node->nas;
+	dir_nas = dir->nas;
 
 	fat_umount_entry(dir_nas);
 
