@@ -6,10 +6,13 @@
  * @date    20.05.2014
  */
 
-#include <util/err.h>
-#include <unistd.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+
+#include <drivers/block_dev.h>
 #include <drivers/block_dev/ramdisk/ramdisk.h>
+#include <util/err.h>
 
 #define MKRAMDISK_DEFAULT_SIZE 8192;
 
@@ -34,5 +37,10 @@ int main(int argc, char *argv[]) {
 	}
 
 	rd = ramdisk_create(ramdisk_path, ramdisk_size);
+
+	if (NULL != rd) {
+		printf("%s\n", rd->bdev->name);
+	}
+
 	return err(rd);
 }
