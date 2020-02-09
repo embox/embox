@@ -38,7 +38,7 @@ static int nfs_create_dir_entry(struct inode *parent);
 
 static int nfs_mount(struct nas *nas);
 static int nfs_lookup(struct nas *nas);
-static int nfs_call_proc_nfs(struct nas *nas,
+static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
 		__u32 procnum, char *req, char *reply);
 
 /* nfs filesystem description pool */
@@ -76,7 +76,7 @@ static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc) {
 	pos = file_get_pos(file_desc_from_idesc(idesc));
 
 	nas = node->nas;
-	fi = (nfs_file_info_t *)nas->fi->privdata;
+	fi = inode_priv(node);
 
 	fi->offset = pos;
 
@@ -89,10 +89,8 @@ static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc) {
 
 static int nfsfs_close(struct file_desc *desc) {
 	nfs_file_info_t *fi;
-	struct nas *nas;
 
-	nas = desc->f_inode->nas;
-	fi = (nfs_file_info_t *)nas->fi->privdata;
+	fi = inode_priv(desc->f_inode);
 	fi->offset = 0;
 
 	return 0;
@@ -104,13 +102,13 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	read_req_t req;
 	read_reply_t reply;
 	size_t datalen;
-	struct nas *nas;
 	off_t pos;
+	struct nfs_fs_info *fsi;
 
 	pos = file_get_pos(desc);
 
-	nas = desc->f_inode->nas;
-	fi = (nfs_file_info_t *) nas->fi->privdata;
+	fi = inode_priv(desc->f_inode);
+	fsi = desc->f_inode->i_sb->sb_data;
 	datalen = 0;
 	fi->offset = pos;
 
@@ -125,7 +123,7 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 		reply.data = (char *) buf + datalen;
 
 		/* send read command */
-		if (0 > nfs_call_proc_nfs(nas, NFSPROC3_READ,
+		if (0 > nfs_call_proc_nfs(fsi, NFSPROC3_READ,
 				(char *) &req, (char *) &reply)) {
 			return 0;
 		}
@@ -146,19 +144,20 @@ static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
-
 	size_t size_to_write;
 	nfs_file_info_t *fi;
 	write_req_t req;
 	write_reply_t reply;
 	struct nas *nas;
 	off_t pos;
+	struct nfs_fs_info *fsi;
 
 	pos = file_get_pos(desc);
 
 	size_to_write = size;
 	nas = desc->f_inode->nas;
-	fi = (nfs_file_info_t *) nas->fi->privdata;
+	fi = inode_priv(desc->f_inode);
+	fsi = desc->f_inode->i_sb->sb_data;
 	fi->offset = pos;
 
 	/* set read structure */
@@ -171,7 +170,7 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	reply.attr = &fi->attr;
 
 	/* send read command */
-	if (0 > nfs_call_proc_nfs(nas, NFSPROC3_WRITE,
+	if (0 > nfs_call_proc_nfs(fsi, NFSPROC3_WRITE,
 			(char *) &req, (char *) &reply)) {
 		return 0;
 	}
@@ -326,21 +325,21 @@ static int nfs_client_init(struct nfs_fs_info *fsi) {
 	return nfs_unix_auth_set(fsi->nfs);
 }
 
-static void nfs_free_fs(struct nas *nas) {
+static void nfs_free_fs(struct inode *node) {
 	struct nfs_file_info *fi;
 	struct nfs_fs_info *fsi;
 
-	if(NULL != nas->fs) {
-		fsi = nas->fs->sb_data;
+	if(NULL != node->i_sb) {
+		fsi = node->i_sb->sb_data;
 
 		if(NULL != fsi) {
 			nfs_clnt_destroy(fsi);
 			pool_free(&nfs_fs_pool, fsi);
 		}
-		super_block_free(nas->fs);
+		super_block_free(node->i_sb);
 	}
 
-	if(NULL != (fi = nas->fi->privdata)) {
+	if(NULL != (fi = inode_priv(node))) {
 		pool_free(&nfs_file_pool, fi);
 	}
 }
@@ -376,7 +375,7 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 		return -ENOMEM;
 	}
 
-	dir_nas->fi->privdata = (void *) fi;
+	inode_priv_set(dest, fi);
 	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
 
 	/* get server name and mount directory from params */
@@ -394,22 +393,22 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 		return 0;
 	}
 
-	error:
-	nfs_free_fs(dir_nas);
+error:
+	nfs_free_fs(dest);
 
 	return rc;
 }
 
-static int nfs_umount_entry(struct nas *nas) {
+static int nfs_umount_entry(struct inode *node) {
 	struct inode *child;
 
-	if(node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
+	if (node_is_directory(node)) {
+		while (NULL != (child =	vfs_subtree_get_child_next(node, NULL))) {
 			if (node_is_directory(child)) {
-				nfs_umount_entry(child->nas);
+				nfs_umount_entry(child);
 			}
 
-			pool_free(&nfs_file_pool, child->nas->fi->privdata);
+			pool_free(&nfs_file_pool, inode_priv(child));
 			vfs_del_leaf(child);
 		}
 	}
@@ -419,30 +418,25 @@ static int nfs_umount_entry(struct nas *nas) {
 
 static int nfsfs_umount(struct inode *dir) {
 	/* delete all entry node */
-	nfs_umount_entry(dir->nas);
+	nfs_umount_entry(dir);
 
 	/* free nfs file system pools, clnt and buffers*/
-	nfs_free_fs(dir->nas);
+	nfs_free_fs(dir);
 
 	return 0;
 }
 
 static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
-	struct nas *nas;
 	struct inode *node;
 	nfs_file_info_t *fi;
 	const char *name;
 	mode_t mode;
 
-	nas = NULL; /* XXX required for -O2 */
-
 	name = (const char *) predesc->file_name.name.data;
 
 	node = vfs_subtree_lookup_child(parent_nas->node, name);
 	if (node) {
-		nas = node->nas;
-		fi = nas->fi->privdata;
-
+		fi = inode_priv(node);
 	} else {
 		/* TODO usually mount doesn't create a directory */
 		fi = pool_alloc(&nfs_file_pool);
@@ -505,11 +499,9 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 			pool_free(&nfs_file_pool, fi);
 			return NULL; /* device not found */
 		}
-
-		nas = node->nas;
 	}
 
-	nas->fi->privdata = fi;
+	inode_priv_set(node, fi);
 	return node;
 }
 
@@ -521,11 +513,12 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 	nfs_file_info_t *parent_fi;
 	nfs_filehandle_t *fh;
 	readdir_desc_t *predesc = NULL;
+	struct nfs_fs_info *fsi;
 
 	char *rcv_buf;
 
 	parent_nas = parent_node->nas;
-	parent_fi = (nfs_file_info_t *) parent_nas->fi->privdata;
+	parent_fi = inode_priv(parent_node);
 	fh = &parent_fi->fh;
 	fh->count = fh->maxcount = DIRCOUNT;
 	fh->cookie = 0;
@@ -534,11 +527,13 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 		return -1;
 	}
 
+	fsi = parent_node->i_sb->sb_data;
+
 	while (1) {
 
 		memset(rcv_buf, 0, MAXDIRCOUNT * 2);
 
-		if (0 >  nfs_call_proc_nfs(parent_nas, NFSPROC3_READDIRPLUS,
+		if (0 >  nfs_call_proc_nfs(fsi, NFSPROC3_READDIRPLUS,
 			(char *)fh, rcv_buf)) {
 			sysfree(rcv_buf);
 			return -1;
@@ -597,18 +592,15 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 }
 
 static int nfsfs_create(struct inode *parent_node, struct inode *node) {
-
 	nfs_file_info_t *parent_fi, *fi;
-	struct nas *nas, *parent_nas;
+	struct nfs_fs_info *fsi;
 	create_req_t  req;
 	rpc_string_t name;
 	create_reply_t reply;
 	__u32 procnum;
 
-	nas = node->nas;
-	parent_nas = parent_node->nas;
-
-	parent_fi = (nfs_file_info_t *) parent_nas->fi->privdata;
+	parent_fi = inode_priv(parent_node);
+	fsi = parent_node->i_sb->sb_data;
 
 	if (node_is_directory(node)) {
 		procnum = NFSPROC3_MKDIR;
@@ -637,29 +629,28 @@ static int nfsfs_create(struct inode *parent_node, struct inode *node) {
 	req.uid = req.gid = 0;
 
 	/* send nfs CREATE command   */
-	if (0 > nfs_call_proc_nfs(nas, procnum, (char *) &req, (char *) &reply)) {
+	if (0 > nfs_call_proc_nfs(fsi, procnum, (char *) &req, (char *) &reply)) {
 		return -1;
 	}
 
 	if(NULL == (fi = pool_alloc(&nfs_file_pool))) {
 		return -1;
 	}
-	nas->fi->privdata = (void *) fi;
+
+	inode_priv_set(node, fi);
 
 	return nfs_create_dir_entry(parent_node); // XXX parent_node? or node?
 }
 
 static int nfsfs_delete(struct inode *node) {
 	nfs_file_info_t *fi;
-	struct nas *nas, *dir_nas;
 	struct inode *dir_node;
 	nfs_file_info_t *dir_fi;
 	lookup_req_t req;
 	delete_reply_t reply;
 	__u32 procnum;
 
-	nas = node->nas;
-	fi = (nfs_file_info_t *) nas->fi->privdata;
+	fi = inode_priv(node);
 
 	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
@@ -667,8 +658,7 @@ static int nfsfs_delete(struct inode *node) {
 
 	/* set delete structure */
 	req.fname = &fi->name_dsc.name;
-	dir_nas = dir_node->nas;
-	dir_fi = (nfs_file_info_t *) dir_nas->fi->privdata;
+	dir_fi = inode_priv(dir_node);
 	req.dir_fh = &dir_fi->fh.name_fh;
 
 	if (node_is_directory(node)) {
@@ -681,7 +671,7 @@ static int nfsfs_delete(struct inode *node) {
 	reply.dir_attr = &dir_fi->attr;
 
 	/* send delete command */
-	if (0 > nfs_call_proc_nfs(nas, procnum, (char *) &req, (char *) &reply)) {
+	if (0 > nfs_call_proc_nfs(node->i_sb->sb_data, procnum, (char *) &req, (char *) &reply)) {
 		return -1;
 	}
 
@@ -748,12 +738,10 @@ static int nfs_call_proc_mnt(struct nas *nas,
 	return 0;
 }
 
-static int nfs_call_proc_nfs(struct nas *nas,
+static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
 		__u32 procnum, char *req, char *reply) {
 	struct timeval timeout = { 25, 0 };
-	struct nfs_fs_info *fsi;
 
-	fsi = nas->fs->sb_data;
 	if(NULL == fsi->nfs){
 		if(0 >  nfs_client_init(fsi)) {
 			return -1;
@@ -861,26 +849,27 @@ static int nfs_call_proc_nfs(struct nas *nas,
 
 static int nfs_lookup(struct nas *nas) {
 	struct inode *dir_node;
-	struct nas *dir_nas;
+	struct nfs_fs_info *fsi;
 	nfs_file_info_t *fi, *dir_fi;
 	lookup_req_t req;
 	lookup_reply_t reply;
 
-	fi = nas->fi->privdata;
-	if(NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
+	if (NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
 		return -1;
 	}
-	dir_nas = dir_node->nas;
+
+	fi = inode_priv(nas->node);
+	fsi = dir_node->i_sb->sb_data;
 
 	/* set lookup structure */
 	req.fname = &fi->name_dsc.name;
-	dir_fi = (nfs_file_info_t *) dir_nas->fi->privdata;
+	dir_fi = inode_priv(dir_node);
 	req.dir_fh = &dir_fi->fh.name_fh;
 
 	reply.fh = &fi->fh.name_fh;
 
 	/* send read command */
-	return nfs_call_proc_nfs(nas, NFSPROC3_LOOKUP,
+	return nfs_call_proc_nfs(fsi, NFSPROC3_LOOKUP,
 			(char *) &req, (char *) &reply);
 }
 
@@ -922,9 +911,9 @@ static int nfs_mount(struct nas *nas) {
 	memcpy(p_fh, &mnt_svc.fh, sizeof(mnt_svc.fh));
 
 	/* read info about filesystem */
-	if ((0 >  nfs_call_proc_nfs(nas, NFSPROC3_NULL, 0, 0)) ||
-	(0 >  nfs_call_proc_nfs(nas, NFSPROC3_FSSTAT, (char *)&fsi->fh, 0)) ||
-	(0 >  nfs_call_proc_nfs(nas, NFSPROC3_FSINFO, (char *)&fsi->fh, 0))) {
+	if ((0 >  nfs_call_proc_nfs(fsi, NFSPROC3_NULL, 0, 0)) ||
+	(0 >  nfs_call_proc_nfs(fsi, NFSPROC3_FSSTAT, (char *)&fsi->fh, 0)) ||
+	(0 >  nfs_call_proc_nfs(fsi, NFSPROC3_FSINFO, (char *)&fsi->fh, 0))) {
 		return -1;
 	}
 	return 0;

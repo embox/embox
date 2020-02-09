@@ -155,7 +155,7 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 	struct ext4_file_info *fi;
 	struct ext4_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	block = EXT4_NO_BLOCK;
@@ -236,7 +236,7 @@ void ext4_free_block(struct nas *nas, uint32_t bit_returned) {
 	struct ext4_file_info *fi;
 	struct ext4_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	if (bit_returned >= fsi->e4sb.s_blocks_count ||
@@ -291,7 +291,7 @@ uint32_t ext4_alloc_block(struct nas *nas, uint32_t block)
 	struct ext4_file_info *fi;
 	struct ext4_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	if (fsi->e4sb.s_free_blocks_count == 0) {

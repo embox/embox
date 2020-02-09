@@ -66,13 +66,17 @@ static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 
 static int ramfs_create(struct inode *parent_node, struct inode *node) {
 	struct nas *nas;
+	struct ramfs_file_info *fi;
 
 	nas = node->nas;
 
 	if (!node_is_directory(node)) {
-		if (!(nas->fi->privdata = ramfs_create_file(nas))) {
+		fi = ramfs_create_file(nas);
+		if (NULL == fi) {
 			return -ENOMEM;
 		}
+
+		inode_priv_set(node, fi);
 	}
 
 	return 0;
@@ -80,10 +84,8 @@ static int ramfs_create(struct inode *parent_node, struct inode *node) {
 
 static int ramfs_delete(struct inode *node) {
 	struct ramfs_file_info *fi;
-	struct nas *nas;
 
-	nas = node->nas;
-	fi = nas->fi->privdata;
+	fi = inode_priv(node);
 
 	if (!node_is_directory(node)) {
 		index_free(&ramfs_file_idx, fi->index);
@@ -120,10 +122,7 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 struct inode_operations ramfs_iops;
 struct super_block_operations ramfs_sbops;
 static int ramfs_mount(struct super_block *sb, struct inode *dest) {
-	struct nas *dir_nas;
 	struct ramfs_file_info *fi;
-
-	dir_nas = dest->nas;
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&ramfs_file_pool))) {
@@ -131,7 +130,7 @@ static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 	}
 	memset(fi, 0, sizeof(struct ramfs_file_info));
 	fi->index = fi->mode = 0;
-	dir_nas->fi->privdata = (void *) fi;
+	inode_priv_set(dest, fi);
 
 	return 0;
 }
