@@ -1625,8 +1625,6 @@ static int jffs2fs_delete(struct inode *node) {
 		pool_free(&jffs2_file_pool, fi);
 	}
 
-	vfs_del_leaf(node);
-
 	return 0;
 }
 

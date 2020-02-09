@@ -183,7 +183,6 @@ static int embox_ntfs_node_delete(struct inode *node) {
 	free(ufilename);
 
 	pool_free(&ntfs_file_pool, node->nas->fi->privdata);
-	vfs_del_leaf(node);
 
 	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.

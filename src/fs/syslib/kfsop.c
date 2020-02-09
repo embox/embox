@@ -237,7 +237,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	/*vfs_del_leaf(node);*/
+	vfs_del_leaf(node.node);
 
 	return 0;
 
@@ -277,7 +277,7 @@ int krmdir(const char *pathname) {
 
 	dcache_delete(getenv("PWD"), pathname);
 
-	/*vfs_del_leaf(node);*/
+	vfs_del_leaf(node.node);
 
 	return 0;
 

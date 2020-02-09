@@ -429,8 +429,6 @@ static int embox_cifs_node_delete(struct inode *node) {
 		}
 	}
 
-	vfs_del_leaf(node);
-
 	return 0;
 }
 
