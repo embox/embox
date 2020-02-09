@@ -10,6 +10,10 @@
 
 #include <fs/inode.h>
 
+void inode_priv_set(struct inode *node, void *priv) {
+	node->i_data = priv;
+}
+
 void *inode_priv(struct inode *node) {
 	return node->i_data;
 }

@@ -32,5 +32,6 @@ struct inode {
 };
 
 extern void *inode_priv(struct inode *node);
+extern void inode_priv_set(struct inode *node, void *priv);
 
 #endif /* SRC_FS_DVFS_INODE_H_ */

@@ -126,3 +126,9 @@ void *inode_priv(struct inode *node) {
 
 	return node->nas->fi->privdata;
 }
+
+void inode_priv_set(struct inode *node, void *priv) {
+	assert(node);
+
+	node->nas->fi->privdata = priv;
+}
