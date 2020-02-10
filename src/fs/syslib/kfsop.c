@@ -244,7 +244,7 @@ int kunlink(const char *pathname) {
 }
 
 int krmdir(const char *pathname) {
-	struct path node, parent;
+	struct path node, parent, child;
 	const struct fs_driver *drv;
 	int res;
 
@@ -255,6 +255,12 @@ int krmdir(const char *pathname) {
 
 	if (0 != (res = fs_perm_check(node.node, S_IWOTH))) {
 		errno = EACCES;
+		return -1;
+	}
+
+	/* Remove directory only if it's empty */
+	if (0 == vfs_get_child_next(&node, NULL, &child)) {
+		errno = ENOTEMPTY;
 		return -1;
 	}
 
