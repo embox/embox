@@ -7,10 +7,9 @@
  */
 #include <unistd.h>
 #include <util/log.h>
-#include <framework/mod/options.h>
-#include <drivers/i2c/i2c.h>
 
 #include "l3g4200d.h"
+#include "l3g4200d_transfer.h"
 
 #define L3G4200D_WHO_AM_I     0xf
 #define L3G4200D_CTRL_REG(i)  (0x20 + i)
@@ -24,38 +23,7 @@
 
 #define L3G4200D_WHO_AM_I_VALUE 0xd3
 
-#define L3G4200D_I2C_ADDR  0x69
-#define L3G4200D_I2C_BUS   OPTION_GET(NUMBER, i2c_bus)
-
-struct l3g4200d_dev {
-	int i2c_bus;
-	int i2c_addr;
-};
-
-static struct l3g4200d_dev l3g4200d_dev0 = {
-	.i2c_bus  = L3G4200D_I2C_BUS,
-	.i2c_addr = L3G4200D_I2C_ADDR
-};
-
-static int l3g4200d_readb(struct l3g4200d_dev *dev, int offset, uint8_t *ret) {
-	if (i2c_bus_write(dev->i2c_bus, dev->i2c_addr,
-	        (uint8_t *) &offset, 1) < 0) {
-		return -1;
-	}
-	if (i2c_bus_read(dev->i2c_bus, dev->i2c_addr, ret, 1) < 0) {
-		return -1;
-	}
-	return 0;
-}
-
-static int l3g4200d_writeb(struct l3g4200d_dev *dev,
-	    int offset, uint8_t val) {
-	uint16_t tmp = (offset & 0xFF) | (val << 8);
-	if (i2c_bus_write(dev->i2c_bus, dev->i2c_addr, (void *) &tmp, 2)) {
-		return -1;
-	}
-	return 0;
-}
+extern struct l3g4200d_dev l3g4200d_dev0;
 
 int16_t l3g4200d_get_angular_rate_x(void) {
 	uint8_t l, h;
@@ -85,6 +53,11 @@ int l3g4200d_init(void) {
 	int i;
 	uint8_t tmp;
 	struct l3g4200d_dev *dev = &l3g4200d_dev0;
+
+	if (l3g4200d_hw_init(dev) < 0) {
+		log_error("L3G4200D hw init failed!");
+		return -1;
+	}
 
 	if (l3g4200d_readb(dev, L3G4200D_WHO_AM_I, &tmp) < 0) {
 		return -1;

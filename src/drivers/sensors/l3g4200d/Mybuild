@@ -1,11 +1,23 @@
 package embox.driver.sensors
 
-static module l3g4200d {
-	option number log_level = 1
-	option number i2c_bus = 0
-
+/* TODO There can be both I2C and SPI versions in one config,
+ * this must be removed after we will add sensors API. */
+abstract module l3g4200d {
 	@IncludeExport(path="drivers/sensors", target_name="l3g4200d.h")
 	source "l3g4200d.h"
 
 	source "l3g4200d.c"
+}
+
+static module l3g4200d_i2c extends l3g4200d {
+	option number log_level = 1
+	option number i2c_bus = 0
+	source "l3g4200d_i2c.c"
+}
+
+static module l3g4200d_spi extends l3g4200d {
+	option number log_level = 1
+	option number spi_bus = 0
+
+	source "l3g4200d_spi.c"
 }

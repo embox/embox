@@ -28,7 +28,7 @@ static int stm32_spi_setup(struct stm32_spi *dev, void *instance, bool is_master
 	handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
 	handle->Init.Direction         = SPI_DIRECTION_2LINES;
 	handle->Init.CLKPhase          = SPI_PHASE_1EDGE;
-	handle->Init.CLKPolarity       = SPI_POLARITY_HIGH;
+	handle->Init.CLKPolarity       = SPI_POLARITY_LOW;
 	handle->Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
 	handle->Init.CRCPolynomial     = 7;
 	handle->Init.DataSize          = SPI_DATASIZE_8BIT;
@@ -80,8 +80,6 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we lower the same pin all the tiem */
 		HAL_GPIO_WritePin(priv->nss_port, priv->nss_pin, GPIO_PIN_RESET);
-
-		__HAL_SPI_ENABLE(handle);
 	}
 
 	ret = HAL_SPI_TransmitReceive(handle, inbuf, outbuf, count, 5000);
@@ -93,7 +91,6 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 		;
 
 	if (dev->flags & SPI_CS_INACTIVE && dev->is_master) {
-		__HAL_SPI_DISABLE(handle);
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we raise the same pin all the tiem */
 		HAL_GPIO_WritePin(priv->nss_port, priv->nss_pin, GPIO_PIN_SET);
