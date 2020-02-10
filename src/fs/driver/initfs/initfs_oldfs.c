@@ -42,13 +42,10 @@ POOL_DEF(file_pool, struct initfs_file_info_tmp, OPTION_GET(NUMBER,file_quantity
 static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	extern char _initfs_start, _initfs_end;
 	char *cpio = &_initfs_start;
-	struct nas *dir_nas;
 	struct inode *node;
 	struct initfs_file_info_tmp *fi;
 	struct cpio_entry entry;
 	char name[PATH_MAX + 1];
-
-	dir_nas = dest->nas;
 
 	if (&_initfs_start == &_initfs_end) {
 		return -1;
@@ -78,7 +75,6 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 		fi->ni.mtime = entry.mtime;
 
 		node->nas->fi = (struct node_fi *) fi;
-		node->nas->fs = dir_nas->fs;
 	}
 
 	return 0;

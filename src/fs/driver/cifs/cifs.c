@@ -74,7 +74,6 @@ embox_set_node (struct nas *nas, char *filename, int mode)
 	if (!node) {
 		return NULL;
 	}
-	node->nas->fs = nas->fs;
 	return node;
 }
 
@@ -195,7 +194,6 @@ static int embox_cifs_umount(struct inode *dir) {
 			pool_free(&cifs_fs_pool, fsi);
 		}
 		super_block_free(dir_nas->fs);
-		dir_nas->fs = NULL;
 	}
 
 	return 0;
@@ -400,8 +398,6 @@ static int embox_cifs_node_create(struct inode *parent_node, struct inode *new_n
 			return -errno;
 		}
 	}
-
-	new_node->nas->fs = parent_node->nas->fs;
 
 	return 0;
 }

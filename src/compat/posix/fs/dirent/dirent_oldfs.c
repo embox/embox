@@ -110,6 +110,7 @@ struct dirent *readdir(DIR *dir) {
 				node_free(node);
 				return NULL;
 			}
+			node->nas->fs = node->i_sb = dir->path.node->nas->fs;
 			vfs_add_leaf(node, dir->path.node);
 			slist_add_first_link(&node->dirent_link, &dir->inodes_list);
 		} else {

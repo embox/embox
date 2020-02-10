@@ -87,7 +87,6 @@ int devfs_add_block(struct block_dev *bdev) {
 
 static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 	struct path node;
-	struct nas *dev_nas;
 
 	if (vfs_lookup("/dev", &node)) {
 		return -ENOENT;
@@ -102,8 +101,6 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 		return -1;
 	}
 
-	dev_nas = node.node->nas;
-	dev_nas->fs = devfs_sb;
 	node.node->nas->fi->privdata = (void *)cdev;
 
 	*inode = node.node;
@@ -116,7 +113,6 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 	assert(devmod);
 
 	inode->nas->fi->privdata = devmod;
-	inode->nas->fs = devfs_sb;
 	inode->i_mode = flags;
 }
 

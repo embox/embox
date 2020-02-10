@@ -1514,7 +1514,6 @@ static jffs2_file_info_t *jffs2_fi_alloc(struct nas *nas, void *fs) {
 		memset(fi, 0, sizeof(struct jffs2_file_info));
 		nas->fi->ni.size = 0;
 		nas->fi->privdata = fi;
-		nas->fs = fs;
 	}
 
 	return fi;

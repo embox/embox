@@ -563,8 +563,6 @@ static struct fs_driver ext2fs_driver = {
 static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {
 	ext2_file_info_t *fi;
 
-	nas->fs = fs;
-
 	fi = pool_alloc(&ext2_file_pool);
 	if (fi) {
 		nas->fi->ni.size = fi->f_pointer = 0;
