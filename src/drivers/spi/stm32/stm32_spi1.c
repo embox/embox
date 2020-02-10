@@ -35,23 +35,25 @@ static int stm32_spi1_init(void) {
 	GPIO_InitStruct.Pull      = GPIO_PULLUP;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_LOW;
 	GPIO_InitStruct.Alternate = SPI1_SCK_AF;
-
 	HAL_GPIO_Init(SPI1_SCK_GPIO_PORT, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = SPI1_MISO_PIN;
 	GPIO_InitStruct.Alternate = SPI1_MISO_AF;
-
 	HAL_GPIO_Init(SPI1_MISO_GPIO_PORT, &GPIO_InitStruct);
 
 	GPIO_InitStruct.Pin = SPI1_MOSI_PIN;
 	GPIO_InitStruct.Alternate = SPI1_MOSI_AF;
-
 	HAL_GPIO_Init(SPI1_MOSI_GPIO_PORT, &GPIO_InitStruct);
 
-	GPIO_InitStruct.Pin = SPI1_NSS_PIN;
-	GPIO_InitStruct.Alternate = SPI1_MOSI_AF;
+	/* Chip Select is usual GPIO pin. */
+	GPIO_InitStruct.Pin       = SPI1_NSS_PIN;
+	GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
+	GPIO_InitStruct.Pull      = GPIO_PULLUP;
+	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
+	HAL_GPIO_Init(SPI1_NSS_GPIO_PORT, &GPIO_InitStruct);
 
-	HAL_GPIO_Init(SPI1_MOSI_GPIO_PORT, &GPIO_InitStruct);
+	/* Chip Select is in inactive state by default. */
+	HAL_GPIO_WritePin(SPI1_NSS_GPIO_PORT, SPI1_NSS_PIN, GPIO_PIN_SET);
 
 	return 0;
 }
