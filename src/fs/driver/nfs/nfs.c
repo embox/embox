@@ -678,7 +678,7 @@ static int nfsfs_delete(struct inode *node) {
 	}
 
 	pool_free(&nfs_file_pool, fi);
-	vfs_del_leaf(node);
+
 	return 0;
 }
 

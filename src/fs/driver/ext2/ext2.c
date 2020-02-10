@@ -607,8 +607,6 @@ static int ext2fs_delete(struct inode *node) {
 		return -rc;
 	}
 
-	vfs_del_leaf(node);
-
 	return 0;
 }
 

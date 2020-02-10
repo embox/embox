@@ -287,7 +287,6 @@ static int fatfs_delete(struct inode *node) {
 		fat_file_free(fi);
 	}
 
-	vfs_del_leaf(node);
 	return 0;
 }
 

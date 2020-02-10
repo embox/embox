@@ -96,8 +96,6 @@ static int ramfs_delete(struct inode *node) {
 		pool_free(&ramfs_file_pool, fi);
 	}
 
-	vfs_del_leaf(node);
-
 	return 0;
 }
 
