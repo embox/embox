@@ -28,7 +28,7 @@ static int stm32_spi_setup(struct stm32_spi *dev, void *instance, bool is_master
 	handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
 	handle->Init.Direction         = SPI_DIRECTION_2LINES;
 	handle->Init.CLKPhase          = SPI_PHASE_1EDGE;
-	handle->Init.CLKPolarity       = SPI_POLARITY_HIGH;
+	handle->Init.CLKPolarity       = SPI_POLARITY_LOW;
 	handle->Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
 	handle->Init.CRCPolynomial     = 7;
 	handle->Init.DataSize          = SPI_DATASIZE_8BIT;
