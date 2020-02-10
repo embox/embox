@@ -913,7 +913,6 @@ static void ext2_free_fs(struct nas *nas) {
 			}
 			pool_free(&ext2_fs_pool, fsi);
 		}
-		super_block_free(nas->fs);
 	}
 
 	if(NULL != (fi = inode_priv(nas->node))) {

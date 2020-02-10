@@ -411,6 +411,7 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 
 	if (NULL == mount_table_add(&dir_node, root_path.node, dest)) {
 		drv->fsop->umount(dir_node.node);
+		super_block_free(sb);
 		//todo free root
 		errno = -res;
 		return -1;
@@ -649,9 +650,11 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	if(0 != (res = drv->fsop->umount(dir_node.node))) {
+	if (0 != (res = drv->fsop->umount(dir_node.node))) {
 		return res;
 	}
+
+	super_block_free(dir_node.node->i_sb);
 
 	if (dir_node.node != vfs_get_root()) {
 		node_free(dir_node.node);

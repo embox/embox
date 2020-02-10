@@ -193,7 +193,6 @@ static int embox_cifs_umount(struct inode *dir) {
 			}
 			pool_free(&cifs_fs_pool, fsi);
 		}
-		super_block_free(dir_nas->fs);
 	}
 
 	return 0;

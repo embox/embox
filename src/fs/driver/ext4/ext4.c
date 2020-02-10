@@ -829,7 +829,6 @@ static void ext4_free_fs(struct inode *node) {
 			}
 			pool_free(&ext4_fs_pool, fsi);
 		}
-		super_block_free(node->i_sb);
 	}
 
 	if (NULL != (fi = inode_priv(node))) {
