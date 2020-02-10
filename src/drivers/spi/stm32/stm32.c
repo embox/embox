@@ -80,8 +80,6 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we lower the same pin all the tiem */
 		HAL_GPIO_WritePin(priv->nss_port, priv->nss_pin, GPIO_PIN_RESET);
-
-		__HAL_SPI_ENABLE(handle);
 	}
 
 	ret = HAL_SPI_TransmitReceive(handle, inbuf, outbuf, count, 5000);
@@ -93,7 +91,6 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 		;
 
 	if (dev->flags & SPI_CS_INACTIVE && dev->is_master) {
-		__HAL_SPI_DISABLE(handle);
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we raise the same pin all the tiem */
 		HAL_GPIO_WritePin(priv->nss_port, priv->nss_pin, GPIO_PIN_SET);
