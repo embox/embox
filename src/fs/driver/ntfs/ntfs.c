@@ -11,6 +11,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <drivers/block_dev.h>
@@ -380,57 +381,60 @@ static int embox_ntfs_umount(struct inode *dir) {
 	return 0;
 }
 
-static int embox_ntfs_mount(const char *source, struct inode *dest) {
+static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	ntfs_volume *vol;
-	int rc;
-	struct nas *dir_nas;
-	struct ntfs_device *ntfs_dev;
-	struct ntfs_fs_info *fsi;
 	struct block_dev *bdev;
-	ntfs_inode *ni;
-
-	dir_nas = dest->nas;
+	struct ntfs_fs_info *fsi;
+	struct ntfs_device *ntfs_dev;
 
 	bdev = bdev_by_path(source);
 	if (NULL == bdev) {
 		return -ENODEV;
 	}
 
-	dir_nas->fs = super_block_alloc("ntfs", bdev);
-	if (NULL == dir_nas->fs) {
-		rc = ENOMEM;
-		return -rc;
-	}
+	sb->bdev = bdev;
 
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&ntfs_fs_pool))) {
 		/* ToDo: error: exit without deallocation of filesystem */
-		rc = ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(*fsi));
-	dir_nas->fs->sb_data = fsi;
+	sb->sb_data = fsi;
 
 	/* Allocate an ntfs_device structure. */
 	ntfs_dev = ntfs_device_alloc(bdev->name, 0, &ntfs_device_bdev_io_ops, NULL);
 	if (!ntfs_dev) {
-		rc = ENOMEM;
-		goto error;
+		pool_free(&ntfs_fs_pool, fsi);
+		return -ENOMEM;
 	}
 	/* Call ntfs_device_mount() to do the actual mount. */
 	vol = ntfs_device_mount(ntfs_dev, NTFS_MNT_NONE);
 	if (!vol) {
 		int eo = errno;
+		pool_free(&ntfs_fs_pool, fsi);
 		ntfs_device_free(ntfs_dev);
 		errno = eo;
-		rc = errno;
-		goto error;
-	} else
+		return errno;
+	} else {
 		// ToDo: it is probably possible not to use caches
 		ntfs_create_lru_caches(vol);
+	}
 
 	fsi->ntfs_dev = ntfs_dev;
 	fsi->ntfs_vol = vol;
+
+	return 0;
+}
+
+static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
+	ntfs_volume *vol;
+	int rc;
+	ntfs_inode *ni;
+	struct ntfs_fs_info *fsi;
+
+	fsi = sb->sb_data;
+	vol = fsi->ntfs_vol;
 
 	if (NULL == (ni = ntfs_pathname_to_inode(vol, NULL, "/"))) {
 		rc = errno;
@@ -825,7 +829,7 @@ static const struct fsop_desc ntfs_fsop = {
 	.truncate = embox_ntfs_truncate,
 };
 
-static struct file_operations ntfs_fop = {
+static const struct file_operations ntfs_fop = {
 	.open = ntfs_open,
 	.close = ntfs_close,
 	.read = ntfs_read,
@@ -833,9 +837,10 @@ static struct file_operations ntfs_fop = {
 };
 
 static const struct fs_driver ntfs_driver = {
-	.name = "ntfs",
+	.name    = "ntfs",
+	.fill_sb = ntfs_fill_sb,
 	.file_op = &ntfs_fop,
-	.fsop = &ntfs_fsop,
+	.fsop    = &ntfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ntfs_driver);

@@ -52,6 +52,7 @@ struct inode {
 
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
+	struct super_block      *i_sb;
 	struct inode_operations *i_ops;
 
 	int                   mounted; /* is mount point*/

@@ -337,45 +337,6 @@ struct super_block_operations fat_sbops = {
 	.destroy_inode = fat_destroy_inode,
 };
 
-/* @brief Initializing fat super_block
- * @param sb  Structure to be initialized
- * @param dev Storage device
- *
- * @return Negative error code
- */
-static int fat_fill_sb(struct super_block *sb, const char *source) {
-	struct fat_fs_info *fsi;
-	struct block_dev *bdev;
-
-	assert(sb);
-
-	bdev = bdev_by_path(source);
-	if (!bdev) {
-		/* FAT always uses block device, so we can't fill superblock */
-		return -ENOENT;
-	}
-
-	fsi = fat_fs_alloc();
-	*fsi = (struct fat_fs_info) {
-		.bdev = bdev,
-	};
-	sb->sb_data = fsi;
-	sb->sb_iops = &fat_iops;
-	sb->sb_fops = &fat_fops;
-	sb->sb_ops  = &fat_sbops;
-	sb->bdev    = bdev;
-
-
-	if (fat_get_volinfo(bdev, &fsi->vi, 0))
-		goto err_out;
-
-	return 0;
-
-err_out:
-	fat_fs_free(fsi);
-	return -1;
-}
-
 /**
 * @brief Initialize dirinfo for root FAT directory
 * @note  Should be called just after mounting FAT FS
@@ -448,6 +409,7 @@ static int fat_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
+extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_format(struct block_dev *dev, void *priv);
 static const struct fs_driver dfs_fat_driver = {
 	.name      = "vfat",

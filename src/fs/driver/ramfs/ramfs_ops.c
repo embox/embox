@@ -1,8 +1,13 @@
+#include <errno.h>
 #include <string.h>
 
 #include <drivers/block_dev.h>
 #include <fs/file_desc.h>
+#include <fs/inode_operation.h>
+#include <fs/mount.h>
+#include <fs/super_block.h>
 #include <mem/phymem.h> /* PAGE_SIZE() */
+#include <mem/misc/pool.h>
 #include <util/math.h>
 
 #include "ramfs.h"
@@ -139,6 +144,41 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 	}
 
 	return bytecount;
+}
+
+/* ramfs filesystem description pool */
+POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, RAMFS_DESCRIPTORS);
+
+extern struct inode_operations ramfs_iops;
+extern struct super_block_operations ramfs_sbops;
+int ramfs_fill_sb(struct super_block *sb, const char *source) {
+	struct ramfs_fs_info *fsi;
+	struct block_dev *bdev;
+
+	assert(sb);
+
+	bdev = bdev_by_path(source);
+	if (NULL == bdev) {
+		return -ENODEV;
+	}
+
+	if (NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
+		return -ENOMEM;
+	}
+
+	memset(fsi, 0, sizeof(struct ramfs_fs_info));
+	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
+	fsi->block_size = PAGE_SIZE();
+	fsi->numblocks = bdev->size / PAGE_SIZE();
+	fsi->bdev = bdev;
+
+	sb->sb_data = fsi;
+	sb->sb_iops = &ramfs_iops;
+	sb->sb_fops = &ramfs_fops;
+	sb->sb_ops  = &ramfs_sbops;
+	sb->bdev    = bdev;
+
+	return 0;
 }
 
 struct file_operations ramfs_fops = {

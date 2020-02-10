@@ -24,6 +24,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <fs/super_block.h>
 #include <fs/file_operation.h>
 #include <fs/path.h>
@@ -36,16 +37,10 @@
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 #include "ramfs.h"
 
-/* ramfs filesystem description pool */
-POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, RAMFS_DESCRIPTORS);
-
 /* ramfs file description pool */
 POOL_DEF(ramfs_file_pool, struct ramfs_file_info, RAMFS_FILES);
 
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
-
-static int ramfs_format(struct block_dev *bdev, void *priv);
-static int ramfs_mount(const char *source, struct inode *dest);
 
 static struct ramfs_file_info *ramfs_create_file(struct nas *nas) {
 	struct ramfs_file_info *fi;
@@ -123,36 +118,13 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 	return 0;
 }
 
-static int ramfs_mount(const char *source, struct inode *dest) {
-	struct block_dev *bdev;
+struct inode_operations ramfs_iops;
+struct super_block_operations ramfs_sbops;
+static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 	struct nas *dir_nas;
 	struct ramfs_file_info *fi;
-	struct ramfs_fs_info *fsi;
 
 	dir_nas = dest->nas;
-
-	bdev = bdev_by_path(source);
-	if (NULL == bdev) {
-		return -ENODEV;
-	}
-
-	dir_nas->fs = super_block_alloc("ramfs", bdev);
-	if (NULL == dir_nas->fs) {
-		return -ENOMEM;
-	}
-
-	/* allocate this fs info */
-	if (NULL == (fsi = pool_alloc(&ramfs_fs_pool))) {
-		super_block_free(dir_nas->fs);
-		return -ENOMEM;
-	}
-	memset(fsi, 0, sizeof(struct ramfs_fs_info));
-	dir_nas->fs->sb_data = fsi;
-
-	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
-	fsi->block_size = PAGE_SIZE();
-	fsi->numblocks = bdev->size / PAGE_SIZE();
-	fsi->bdev = bdev;
 
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&ramfs_file_pool))) {
@@ -175,9 +147,10 @@ static struct fsop_desc ramfs_fsop = {
 };
 
 static struct fs_driver ramfs_driver = {
-	.name = "ramfs",
+	.name    = "ramfs",
+	.fill_sb = ramfs_fill_sb,
 	.file_op = &ramfs_fops,
-	.fsop = &ramfs_fsop,
+	.fsop    = &ramfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);

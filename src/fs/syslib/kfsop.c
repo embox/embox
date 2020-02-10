@@ -376,20 +376,15 @@ struct block_dev *bdev_by_path(const char *source) {
 int kmount(const char *source, const char *dest, const char *fs_type) {
 	struct path dir_node, root_path;
 	const struct fs_driver *drv;
+	struct super_block *sb;
 	const char *lastpath;
 	int res;
 
-	if (!fs_type) {
-		errno = EINVAL;
-		return -1;
+	if (NULL == (sb = super_block_alloc(fs_type, source))) {
+		return -ENOMEM;
 	}
 
-	drv = fs_driver_find(fs_type);
-	if (!drv) {
-		printf("Error : fs type %s not found.\n", fs_type);
-		errno = EINVAL;
-		return -1;
-	}
+	drv = sb->fs_drv;
 	if (!drv->fsop->mount) {
 		errno = ENOSYS;
 		return -1;
@@ -406,7 +401,9 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		root_path.node = vfs_create_root();
 	}
 
-	if (ENOERR != (res = drv->fsop->mount(source, root_path.node))) {
+	root_path.node->i_sb = root_path.node->nas->fs = sb;
+
+	if (ENOERR != (res = drv->fsop->mount(sb, root_path.node))) {
 		//todo free root
 		errno = -res;
 		return -1;

@@ -201,10 +201,9 @@ static int embox_cifs_umount(struct inode *dir) {
 	return 0;
 }
 
-static int embox_cifs_mount(const char *source, struct inode *dir) {
+static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
-	struct nas *dir_nas;
 	struct cifs_fs_info *fsi;
 	int rc;
 
@@ -213,14 +212,6 @@ static int embox_cifs_mount(const char *source, struct inode *dir) {
 	rc = strlen(smb_path);
 	if(smb_path[rc-1] == '/') {
 		smb_path[rc-1] = '\0';
-	}
-
-	dir_nas = dir->nas;
-
-	dir_nas->fs = super_block_alloc("cifs", NULL);
-	if (NULL == dir_nas->fs) {
-		rc = ENOMEM;
-		return -rc;
 	}
 
 	if ((ctx = embox_create_smbctx()) == NULL) {
@@ -233,16 +224,28 @@ static int embox_cifs_mount(const char *source, struct inode *dir) {
 	/* allocate this fs info */
 	if (NULL == (fsi = pool_alloc(&cifs_fs_pool))) {
 		/* ToDo: error: exit without deallocation of filesystem */
-		rc = ENOMEM;
-		goto error;
+		return -ENOMEM;
 	}
 	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
-	fsi->mntto = dir;
 	fsi->ctx = ctx;
-	dir_nas->fs->sb_data = fsi;
+	sb->sb_data = fsi;
 
-	//get smb_path
+	return 0;
+}
+
+static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
+	struct cifs_fs_info *fsi;
+	char smb_path[PATH_MAX];
+	int rc;
+	SMBCCTX *ctx;
+
+	fsi = sb->sb_data;
+	ctx = fsi->ctx;
+
+	fsi->mntto = dir;
+	strcpy(smb_path, fsi->url);
+
 	rc = embox_cifs_mounting_recurse(dir->nas, ctx, smb_path,
 			sizeof (smb_path));
 	if (0 > rc) {
@@ -447,8 +450,9 @@ static struct file_operations cifs_fop = {
 };
 
 static const struct fs_driver cifs_driver = {
-	.name = "cifs",
-	.fsop = &cifs_fsop,
+	.name    = "cifs",
+	.fill_sb = cifs_fill_sb,
+	.fsop    = &cifs_fsop,
 	.file_op = &cifs_fop,
 };
 
