@@ -989,11 +989,9 @@ static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) 
 	int flags;
 	struct cdfs_file_info *fi;
 	struct inode *node;
-	struct nas *nas, *dir_nas;
+	struct nas *nas;
 	wchar_t *wname;
 	char name[PATH_MAX];
-
-	dir_nas = dir_node->nas;
 
 	/* The first two directory records are . (current) and .. (parent) */
 	blk = cdfs->path_table[dir]->extent;
@@ -1077,7 +1075,6 @@ static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) 
 
 			nas = node->nas;
 
-			nas->fs = dir_nas->fs;
 			nas->fi->privdata = (void *)fi;
 
  		} else {
@@ -1133,7 +1130,6 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 			}
 
 			nas = node->nas;
-			nas->fs = root_nas->fs;
 			nas->fi->privdata = (void *)fi;
 		}
 

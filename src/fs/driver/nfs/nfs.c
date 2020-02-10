@@ -509,7 +509,6 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 		nas = node->nas;
 	}
 
-	nas->fs = parent_nas->fs;
 	nas->fi->privdata = fi;
 	return node;
 }
@@ -608,7 +607,6 @@ static int nfsfs_create(struct inode *parent_node, struct inode *node) {
 
 	nas = node->nas;
 	parent_nas = parent_node->nas;
-	nas->fs = parent_nas->fs;
 
 	parent_fi = (nfs_file_info_t *) parent_nas->fi->privdata;
 

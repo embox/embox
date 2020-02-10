@@ -129,8 +129,6 @@ static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_n
 
 	free(ufilename);
 
-	new_node->nas->fs = parent_node->nas->fs;
-
 	return 0;
 }
 
@@ -284,7 +282,6 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 			errno = ENOMEM;
 			return -1;
 		}
-		node->nas->fs = dir_nas->fs;
 	}
 
 	fsi = dir_nas->fs->sb_data;
@@ -375,7 +372,6 @@ static int embox_ntfs_umount(struct inode *dir) {
 			pool_free(&ntfs_fs_pool, fsi);
 		}
 		super_block_free(dir_nas->fs);
-		dir_nas->fs = NULL;
 	}
 
 	return 0;

@@ -673,7 +673,6 @@ static ext4_file_info_t *ext4_fi_alloc(struct nas *nas, void *fs) {
 	if (fi) {
 		nas->fi->ni.size = fi->f_pointer = 0;
 		nas->fi->privdata = fi;
-		nas->fs = fs;
 	}
 
 	return fi;

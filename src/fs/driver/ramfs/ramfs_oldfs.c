@@ -68,7 +68,6 @@ static int ramfs_create(struct inode *parent_node, struct inode *node) {
 	struct nas *nas;
 
 	nas = node->nas;
-	nas->fs = parent_node->nas->fs;
 
 	if (!node_is_directory(node)) {
 		if (!(nas->fi->privdata = ramfs_create_file(nas))) {

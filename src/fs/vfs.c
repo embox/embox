@@ -336,6 +336,8 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 		child->uid = getuid();
 		child->gid = getgid();
 
+		child->nas->fs = child->i_sb = parent->i_sb;
+
 		vfs_add_leaf(child, parent);
 	}
 

@@ -96,7 +96,6 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 		fi->mode         = mode;
 
 		nas = node->nas;
-		nas->fs = parent_nas->fs;
 		nas->fi->privdata = fi;
 		nas->fi->ni.size = fi->filelen;
 
@@ -224,7 +223,6 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 
 	fsi = di->fi.fsi;
 	nas->fi->privdata = fi;
-	nas->fs = parent_node->nas->fs;
 	*fi = (struct fat_file_info) {
 		.fsi     = fsi,
 		.volinfo = &fsi->vi,
