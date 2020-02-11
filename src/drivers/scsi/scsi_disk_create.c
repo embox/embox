@@ -48,7 +48,6 @@ static void *scsi_create_thread(void *arg) {
 	struct block_dev *bdev;
 	struct scsi_dev *sdev;
 	char path[0x10]; /* enough for /dev/sdx */
-	int res = 0;
 
 	assert(arg);
 	sdev = arg;
@@ -69,18 +68,12 @@ static void *scsi_create_thread(void *arg) {
 	bdev->size = (uint64_t)sdev->blk_n * sdev->blk_size;
 	sdev->bdev = bdev;
 
-	res = create_partitions(bdev);
-	if (res < 0) {
-		log_error("can't create partitions %d", res);
-		return (void*)res;
-	}
-
 	return 0;
 }
 
 void scsi_disk_found(struct scsi_dev *sdev) {
 	scsi_state_transit(sdev, &scsi_state_user);
-	thread_create(THREAD_FLAG_DETACHED, scsi_create_thread, sdev);
+	scsi_create_thread(sdev);
 }
 
 void scsi_disk_lost(struct scsi_dev *sdev) {
