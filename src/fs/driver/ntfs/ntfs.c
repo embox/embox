@@ -36,7 +36,6 @@
 #include <ntfs-3g/dir.h>
 #include <ntfs-3g/layout.h>
 
-
 struct ntfs_fs_info {
 	struct ntfs_device *ntfs_dev;
 	ntfs_volume *ntfs_vol;
@@ -50,7 +49,6 @@ struct ntfs_desc_info {
 	ntfs_inode *ni;
 	ntfs_attr *attr;
 };
-
 
 /* ntfs filesystem description pool */
 POOL_DEF(ntfs_fs_pool, struct ntfs_fs_info,
@@ -331,47 +329,24 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
     return -1;
 }
 
-static int ntfs_umount_entry(struct nas *nas) {
-	struct inode *child;
-
-	if(node_is_directory(nas->node)) {
-		while(NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
-			if(node_is_directory(child)) {
-				ntfs_umount_entry(child->nas);
-			}
-
-			pool_free(&ntfs_file_pool, inode_priv(child));
-			vfs_del_leaf(child);
-		}
-	}
+static int ntfs_umount_entry(struct inode *node) {
+	pool_free(&ntfs_file_pool, inode_priv(node));
 
 	return 0;
 }
 
-static int embox_ntfs_umount(struct inode *dir) {
-	struct nas *dir_nas;
-	struct ntfs_fs_info *fsi;
+static int ntfs_clean_sb(struct super_block *sb) {
+	struct ntfs_fs_info *fsi = sb->sb_data;
 
-	dir_nas = dir->nas;
-
-	/* delete all entry node */
-	ntfs_umount_entry(dir_nas);
-
-	if(NULL != dir_nas->fs) {
-		fsi = dir_nas->fs->sb_data;
-
-		if(NULL != fsi) {
-			if (fsi->ntfs_vol) {
-				// ToDo: check if everything passed Ok
-				ntfs_umount(fsi->ntfs_vol, FALSE);
-			}
-			if (fsi->ntfs_dev) {
-				// ToDo: check if everything passed Ok
-				ntfs_device_free(fsi->ntfs_dev);
-			}
-			pool_free(&ntfs_fs_pool, fsi);
-		}
+	if (fsi->ntfs_vol) {
+		// ToDo: check if everything passed Ok
+		ntfs_umount(fsi->ntfs_vol, FALSE);
 	}
+	if (fsi->ntfs_dev) {
+		// ToDo: check if everything passed Ok
+		ntfs_device_free(fsi->ntfs_dev);
+	}
+	pool_free(&ntfs_fs_pool, fsi);
 
 	return 0;
 }
@@ -444,7 +419,7 @@ static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 
 error:
-	embox_ntfs_umount(dest);
+	ntfs_clean_sb(sb);
 
 	return -rc;
 }
@@ -820,7 +795,7 @@ static const struct fsop_desc ntfs_fsop = {
 	.create_node = embox_ntfs_node_create,
 	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_ntfs_mount,
-	.umount = embox_ntfs_umount,
+	.umount_entry = ntfs_umount_entry,
 	.truncate = embox_ntfs_truncate,
 };
 
@@ -832,10 +807,11 @@ static const struct file_operations ntfs_fop = {
 };
 
 static const struct fs_driver ntfs_driver = {
-	.name    = "ntfs",
-	.fill_sb = ntfs_fill_sb,
-	.file_op = &ntfs_fop,
-	.fsop    = &ntfs_fsop,
+	.name     = "ntfs",
+	.fill_sb  = ntfs_fill_sb,
+	.clean_sb = ntfs_clean_sb,
+	.file_op  = &ntfs_fop,
+	.fsop     = &ntfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ntfs_driver);

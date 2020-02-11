@@ -25,19 +25,8 @@ static int binfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int binfs_umount(struct inode *dir) {
-	struct inode *child;
-
-	while (NULL != (child = vfs_subtree_get_child_next(dir, NULL))) {
-		vfs_del_leaf(child);
-	}
-
-	return 0;
-}
-
 static struct fsop_desc binfs_fsop = {
 	.mount = binfs_mount,
-	.umount = binfs_umount,
 };
 
 static struct fs_driver binfs_driver = {

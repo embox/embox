@@ -528,36 +528,37 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 static int ext2_create(struct nas *nas, struct nas * parents_nas);
 static int ext2_mkdir(struct nas *nas, struct nas * parents_nas);
 static int ext2_unlink(struct nas *dir_nas, struct nas *nas);
-static void ext2_free_fs(struct nas *nas);
-static int ext2_umount_entry(struct nas *nas);
+static void ext2_free_fs(struct super_block *sb);
+static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(struct super_block *sb, struct inode *dest);
 static int ext2fs_create(struct inode *parent_node, struct inode *node);
 static int ext2fs_delete(struct inode *node);
 static int ext2fs_truncate(struct inode *node, off_t length);
-static int ext2fs_umount(struct inode *dir);
 static int ext2_fill_sb(struct super_block *sb, const char *source);
+static int ext2_clean_sb(struct super_block *sb);
 
 static struct fsop_desc ext2_fsop = {
-	.format	     = ext2fs_format,
-	.mount	     = ext2fs_mount,
-	.create_node = ext2fs_create,
-	.delete_node = ext2fs_delete,
+	.format	      = ext2fs_format,
+	.mount	      = ext2fs_mount,
+	.create_node  = ext2fs_create,
+	.delete_node  = ext2fs_delete,
 
-	.getxattr    = ext2fs_getxattr,
-	.setxattr    = ext2fs_setxattr,
-	.listxattr   = ext2fs_listxattr,
+	.getxattr     = ext2fs_getxattr,
+	.setxattr     = ext2fs_setxattr,
+	.listxattr    = ext2fs_listxattr,
 
-	.truncate    = ext2fs_truncate,
-	.umount      = ext2fs_umount,
+	.truncate     = ext2fs_truncate,
+	.umount_entry = ext2fs_umount_entry,
 };
 
 static struct fs_driver ext2fs_driver = {
-	.name = FS_NAME,
-	.fill_sb = ext2_fill_sb,
-	.file_op = &ext2_fop,
-	.fsop = &ext2_fsop,
+	.name     = FS_NAME,
+	.fill_sb  = ext2_fill_sb,
+	.clean_sb = ext2_clean_sb,
+	.file_op  = &ext2_fop,
+	.fsop     = &ext2_fsop,
 };
 
 static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {
@@ -873,7 +874,7 @@ static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 
 error:
-	ext2_free_fs(dir_nas);
+	ext2_free_fs(sb);
 
 	return -rc;
 }
@@ -886,54 +887,24 @@ static int ext2fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
-static int ext2fs_umount(struct inode *dir) {
-	struct nas *dir_nas;
-
-	dir_nas = dir->nas;
-
-	/* delete all entry node */
-	ext2_umount_entry(dir_nas);
-
-	/* free ext2 file system pools and buffers*/
-	ext2_free_fs(dir_nas);
-
+static int ext2_clean_sb(struct super_block *sb) {
+	ext2_free_fs(sb);
 	return 0;
 }
 
-static void ext2_free_fs(struct nas *nas) {
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
+static void ext2_free_fs(struct super_block *sb) {
+	struct ext2_fs_info *fsi = sb->sb_data;
 
-	if(NULL != nas->fs) {
-		fsi = nas->fs->sb_data;
-
-		if(NULL != fsi) {
-			if(NULL != fsi->e2fs_gd) {
-				ext2_buff_free(fsi, (char *) fsi->e2fs_gd);
-			}
-			pool_free(&ext2_fs_pool, fsi);
+	if (NULL != fsi) {
+		if (NULL != fsi->e2fs_gd) {
+			ext2_buff_free(fsi, (char *) fsi->e2fs_gd);
 		}
-	}
-
-	if(NULL != (fi = inode_priv(nas->node))) {
-		pool_free(&ext2_file_pool, fi);
+		pool_free(&ext2_fs_pool, fsi);
 	}
 }
 
-
-static int ext2_umount_entry(struct nas *nas) {
-	struct inode *child;
-
-	if (node_is_directory(nas->node)) {
-		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
-			if (node_is_directory(child)) {
-				ext2_umount_entry(child->nas);
-			}
-
-			pool_free(&ext2_file_pool, inode_priv(child));
-			vfs_del_leaf(child);
-		}
-	}
+static int ext2fs_umount_entry(struct inode *node) {
+	pool_free(&ext2_file_pool, inode_priv(node));
 
 	return 0;
 }

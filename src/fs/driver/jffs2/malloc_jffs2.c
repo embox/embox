@@ -71,13 +71,6 @@ void jffs2_free_node_frag(struct jffs2_node_frag *x) {
 
 #if CYGNUM_FS_JFFS2_RAW_NODE_REF_CACHE_POOL_SIZE == 0
 
-int jffs2_create_slab_caches(void) {
-	return 0;
-}
-
-void jffs2_destroy_slab_caches(void) {
-}
-
 struct jffs2_raw_node_ref *jffs2_alloc_raw_node_ref(void) {
 	return sysmalloc(sizeof(struct jffs2_raw_node_ref));
 }
@@ -98,4 +91,3 @@ void jffs2_free_inode_cache(struct jffs2_inode_cache *x) {
 	D1(printk( "Freeing inocache at %p\n", x));
 	sysfree(x);
 }
-

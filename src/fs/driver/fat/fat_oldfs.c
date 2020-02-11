@@ -112,34 +112,19 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	return ENOERR;
 }
 
-static void fat_free_fs(struct nas *nas) {
-	if (NULL != nas->fs) {
-		struct fat_fs_info *fsi;
-		fsi = nas->fs->sb_data;
+static void fat_free_fs(struct super_block *sb) {
+	struct fat_fs_info *fsi = sb->sb_data;
 
-		if(NULL != fsi) {
-			fat_fs_free(fsi);
-		}
-	}
-
-	if (NULL != inode_priv(nas->node)) {
-		fat_dirinfo_free(inode_priv(nas->node));
+	if (NULL != fsi) {
+		fat_fs_free(fsi);
 	}
 }
 
-static int fat_umount_entry(struct inode *node) {
-	struct inode *child;
-
+static int fatfs_umount_entry(struct inode *node) {
 	if (node_is_directory(node)) {
-		while (NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
-			if (node_is_directory(child)) {
-				fat_umount_entry(child);
-				fat_dirinfo_free(inode_priv(child));
-			} else {
-				fat_file_free(inode_priv(child));
-			}
-			vfs_del_leaf(child);
-		}
+		fat_dirinfo_free(inode_priv(node));
+	} else {
+		fat_file_free(inode_priv(node));
 	}
 
 	return 0;
@@ -150,6 +135,7 @@ extern struct file_operations fat_fops;
 struct inode_operations fat_iops;
 struct super_block_operations fat_sbops;
 extern int fat_fill_sb(struct super_block *sb, const char *source);
+extern int fat_clean_sb(struct super_block *sb);
 
 static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	struct nas *dir_nas;
@@ -187,7 +173,7 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	return fat_create_dir_entry(dir_nas, di, &de);
 
 error:
-	fat_free_fs(dir_nas);
+	fat_free_fs(sb);
 
 	return rc;
 }
@@ -265,18 +251,6 @@ static int fatfs_truncate(struct inode *node, off_t length) {
 	return 0;
 }
 
-static int fatfs_umount(struct inode *dir) {
-	struct nas *dir_nas;
-
-	dir_nas = dir->nas;
-
-	fat_umount_entry(dir);
-
-	fat_free_fs(dir_nas);
-
-	return 0;
-}
-
 extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
 	.format = fat_format,
@@ -284,14 +258,15 @@ static struct fsop_desc fatfs_fsop = {
 	.create_node = fatfs_create,
 	.delete_node = fatfs_delete,
 	.truncate = fatfs_truncate,
-	.umount = fatfs_umount,
+	.umount_entry = fatfs_umount_entry,
 };
 
 static const struct fs_driver fatfs_driver = {
-	.name = "vfat",
-	.fill_sb = fat_fill_sb,
-	.file_op = &fat_fops,
-	.fsop = &fatfs_fsop,
+	.name     = "vfat",
+	.fill_sb  = fat_fill_sb,
+	.clean_sb = fat_clean_sb,
+	.file_op  = &fat_fops,
+	.fsop     = &fatfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(fatfs_driver);

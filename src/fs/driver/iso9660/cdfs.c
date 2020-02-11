@@ -493,8 +493,9 @@ int cdfs_mount(struct nas *root_nas)
 	return 0;
 }
 
-
-int cdfs_umount(struct cdfs_fs_info *fsi) {
+static void cdfs_free_fs(struct super_block *sb);
+static int cdfs_clean_sb(struct super_block *sb) {
+	struct cdfs_fs_info *fsi = sb->sb_data;
 	cdfs_t *cdfs = (cdfs_t *) fsi->data;
 
 	/* Close device */
@@ -509,6 +510,7 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 	}
 	sysfree(cdfs);
 
+	cdfs_free_fs(sb);
 	return 0;
 }
 
@@ -823,36 +825,28 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 /* File system operations*/
 static int cdfs_fill_sb(struct super_block *sb, const char *source);
 static int cdfsfs_mount(struct super_block *sb, struct inode *dest);
-static int cdfsfs_umount(struct inode *dir);
+static int cdfs_umount_entry(struct inode *node);
 
 static struct fsop_desc cdfsfs_fsop = {
 	.mount = cdfsfs_mount,
-	.umount = cdfsfs_umount,
+	.umount_entry = cdfs_umount_entry,
 };
 
 static struct fs_driver cdfsfs_driver = {
 	.name = "iso9660",
 	.fill_sb = cdfs_fill_sb,
+	.clean_sb = cdfs_clean_sb,
 	.file_op = &cdfsfs_fop,
 	.fsop = &cdfsfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
 
-static void cdfs_free_fs(struct nas *nas) {
-	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
+static void cdfs_free_fs(struct super_block *sb) {
+	struct cdfs_fs_info *fsi = sb->sb_data;
 
-	if (NULL != nas->fs) {
-		fsi = nas->fs->sb_data;
-
-		if(NULL != fsi) {
-			pool_free(&cdfs_fs_pool, fsi);
-		}
-	}
-
-	if (NULL != (fi = inode_priv(nas->node))) {
-		pool_free(&cdfs_file_pool, fi);
+	if (NULL != fsi) {
+		pool_free(&cdfs_fs_pool, fsi);
 	}
 }
 
@@ -884,8 +878,6 @@ static int cdfsfs_mount(struct super_block *sb, struct inode *dest) {
 
 	dir_nas = dest->nas;
 
-	//XXX vfs_get_path_by_node(dir_node, fsi->mntto);
-
 	/* allocate this directory info */
 	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
 		rc = -ENOMEM;
@@ -899,46 +891,16 @@ static int cdfsfs_mount(struct super_block *sb, struct inode *dest) {
 	}
 
 error:
-	cdfs_free_fs(dir_nas);
+	cdfs_free_fs(sb);
 
 	return rc;
 }
 
-static int cdfs_umount_entry(struct nas *nas) {
-	struct inode *child;
-
-	if (node_is_directory(nas->node)) {
-		while (NULL != (child = vfs_subtree_get_child_next(nas->node, NULL))) {
-			if (node_is_directory(child)) {
-				cdfs_umount_entry(child->nas);
-			}
-
-			pool_free(&cdfs_file_pool, inode_priv(child));
-			vfs_del_leaf(child);
-		}
-	}
+static int cdfs_umount_entry(struct inode *node) {
+	pool_free(&cdfs_file_pool, inode_priv(node));
 
 	return 0;
 }
-
-static int cdfsfs_umount(struct inode *dir) {
-	struct nas *dir_nas;
-	struct cdfs_fs_info *fsi;
-
-	dir_nas = dir->nas;
-	fsi = dir_nas->fs->sb_data;
-
-	cdfs_umount(fsi);
-
-	/* delete all entry node */
-	cdfs_umount_entry(dir_nas);
-
-	/* free cdfs file system pools and buffers*/
-	cdfs_free_fs(dir_nas);
-
-	return 0;
-}
-
 
 static struct inode *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct inode *root) {
 	char path[PATH_MAX];

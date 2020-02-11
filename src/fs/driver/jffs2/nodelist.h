@@ -332,10 +332,6 @@ int jffs2_do_read_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 int jffs2_do_crccheck_inode(struct jffs2_sb_info *c, struct jffs2_inode_cache *ic);
 void jffs2_do_clear_inode(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
-/* malloc.c */
-int jffs2_create_slab_caches(void);
-void jffs2_destroy_slab_caches(void);
-
 struct jffs2_full_dirent *jffs2_alloc_full_dirent(int namesize);
 void jffs2_free_full_dirent(struct jffs2_full_dirent *);
 struct jffs2_full_dnode *jffs2_alloc_full_dnode(void);
@@ -362,7 +358,6 @@ int jffs2_read_dnode(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 		     int ofs, int len);
 int jffs2_read_inode_range(struct jffs2_sb_info *c, struct jffs2_inode_info *f,
 			   unsigned char *buf, uint32_t offset, uint32_t len);
-char *jffs2_getlink(struct jffs2_sb_info *c, struct jffs2_inode_info *f);
 
 /* scan.c */
 int jffs2_scan_medium(struct jffs2_sb_info *c);

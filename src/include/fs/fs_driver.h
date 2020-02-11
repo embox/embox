@@ -31,7 +31,7 @@ struct fsop_desc {
 	int (*listxattr)(struct inode *node, char *list, size_t len);
 
 	int (*truncate)(struct inode *node, off_t length);
-	int (*umount)(struct inode *dir);
+	int (*umount_entry)(struct inode *node);
 };
 
 struct file_operations;
@@ -44,6 +44,7 @@ struct file_operations;
 struct fs_driver {
 	const char                   *name;
 	int (*fill_sb)(struct super_block *sb, const char *source);
+	int (*clean_sb)(struct super_block *sb);
 	const struct file_operations *file_op;
 	const struct fsop_desc       *fsop;
 };

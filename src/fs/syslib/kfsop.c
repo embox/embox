@@ -410,7 +410,6 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 	}
 
 	if (NULL == mount_table_add(&dir_node, root_path.node, dest)) {
-		drv->fsop->umount(dir_node.node);
 		super_block_free(sb);
 		//todo free root
 		errno = -res;
@@ -612,6 +611,24 @@ int krename(const char *oldpath, const char *newpath) {
 	return ENOERR;
 }
 
+static int umount_walker(struct inode *node) {
+	struct inode *child;
+
+	if (node_is_directory(node)) {
+		while (NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
+			umount_walker(child);
+		}
+	}
+
+	if (node->i_sb->fs_drv->fsop->umount_entry) {
+		node->i_sb->fs_drv->fsop->umount_entry(node);
+	}
+
+	vfs_del_leaf(node);
+
+	return 0;
+}
+
 int kumount(const char *dir) {
 	struct path dir_node, node;
 	const struct fs_driver *drv;
@@ -642,15 +659,12 @@ int kumount(const char *dir) {
 	if (!drv) {
 		return -EINVAL;
 	}
-	if (!drv->fsop->umount) {
-		return  -ENOSYS;
-	}
 
 	if (0 != (res = security_umount(dir_node.node))) {
 		return res;
 	}
 
-	if (0 != (res = drv->fsop->umount(dir_node.node))) {
+	if (0 != (res = umount_walker(dir_node.node))) {
 		return res;
 	}
 

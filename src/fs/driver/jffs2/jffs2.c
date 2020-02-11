@@ -53,12 +53,12 @@ POOL_DEF(jffs2_fs_pool, struct jffs2_fs_info,
 POOL_DEF(jffs2_file_pool, struct jffs2_file_info,
 		OPTION_GET(NUMBER,inode_quantity));
 
+static int jffs2_free_fs(struct super_block *sb);
 static int jffs2_read_inode (struct _inode *inode);
 static void jffs2_clear_inode (struct _inode *inode);
 
 static int jffs2_truncate_file (struct _inode *inode);
 static unsigned char gc_buffer[PAGE_CACHE_SIZE];	/*avoids kmalloc when user may be under memory pressure */
-static unsigned char n_fs_mounted = 0;  /* a counter to track the number of jffs2 instances mounted */
 
 /***********************
  * Directory operations
@@ -341,18 +341,12 @@ static int jffs2_mount(struct nas *dir_nas) {
 	spin_init(&c->inocache_lock, __SPIN_UNLOCKED);
 	spin_init(&c->erase_completion_lock, __SPIN_UNLOCKED);
 
-	if (n_fs_mounted++ == 0) {
-		jffs2_create_slab_caches(); /* No error check, cannot fail */
-		jffs2_compressors_init();
-	}
+	jffs2_compressors_init();
 
 	err = jffs2_read_super(jffs2_sb);
 
 	if (err) {
-		if (--n_fs_mounted == 0) {
-			jffs2_destroy_slab_caches();
-			jffs2_compressors_exit();
-		}
+		jffs2_compressors_exit();
 
 		sysfree(c->inocache_list);
 		return err;
@@ -367,89 +361,68 @@ static int jffs2_mount(struct nas *dir_nas) {
 	jffs2_erase_pending_blocks(c, 0);
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
-		jffs2_start_garbage_collect_thread(c);
+	jffs2_start_garbage_collect_thread(c);
 #endif
 
-	jffs2_sb->s_mount_count++;
 	D2(printf("jffs2_mounted superblock"));
 
 	return ENOERR;
 }
 
-
-
-static int umount_vfs_dir_entry(struct nas *nas) {
-	struct inode *child;
-
-	if (node_is_directory(nas->node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(nas->node, NULL))) {
-			if(node_is_directory(child)) {
-				umount_vfs_dir_entry(child->nas);
-			}
-
-			pool_free(&jffs2_file_pool, inode_priv(child));
-			vfs_del_leaf(child);
-		}
-	}
+static int jffs2fs_umount_entry(struct inode *node) {
+	pool_free(&jffs2_file_pool, inode_priv(node));
 
 	return 0;
 }
 
-
 /**
  * Unmount the filesystem.
  */
-static int jffs2_umount(struct nas *dir_nas) {
+static int jffs2_clean_sb(struct super_block *sb) {
 	struct _inode *root;
 	struct jffs2_super_block *jffs2_sb;
+	struct jffs2_fs_info *fsi;
 	struct jffs2_sb_info *c;
 	struct jffs2_full_dirent *fd, *next;
-	struct jffs2_file_info *dir_fi;
 
-	dir_fi = inode_priv(dir_nas->node);
-	root = (struct _inode *) dir_fi->_inode;
-	jffs2_sb = root->i_sb;
+	fsi = sb->sb_data;
+	jffs2_sb = &fsi->jffs2_sb;
+	root = jffs2_sb->s_root;
 	c = &jffs2_sb->jffs2_sb;
 
 	D2(printf("jffs2_umount\n"));
 
 	/* Only really umount if this is the only mount */
-	if (jffs2_sb->s_mount_count == 1) {
-		icache_evict(root, NULL);
+	icache_evict(root, NULL);
 
-		if (root->i_count != 1) {
-			printf("Ino #1 has use count %d\n", root->i_count);
-			return EBUSY;
-		}
+	if (root->i_count != 1) {
+		printf("Ino #1 has use count %d\n", root->i_count);
+		return EBUSY;
+	}
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD
-		jffs2_stop_garbage_collect_thread(c);
+	jffs2_stop_garbage_collect_thread(c);
 #endif
-		jffs2_iput(root);	/* Time to free the root inode */
+	jffs2_iput(root);	/* Time to free the root inode */
 
-		/* free directory entries */
-		for (fd = root->jffs2_i.dents; fd; fd = next) {
-			next=fd->next;
-			jffs2_free_full_dirent(fd);
-		}
-
-		sysfree(root);
-
-		/* Clean up the super block and root inode */
-		jffs2_free_ino_caches(c);
-		jffs2_free_raw_node_refs(c);
-		sysfree(c->blocks);
-		sysfree(c->inocache_list);
-
-		D2(printf("jffs2_umount No current mounts\n"));
-	} else {
-		jffs2_sb->s_mount_count--;
-	}
-	if (--n_fs_mounted == 0) {
-		jffs2_destroy_slab_caches();
-		jffs2_compressors_exit();
+	/* free directory entries */
+	for (fd = root->jffs2_i.dents; fd; fd = next) {
+		next=fd->next;
+		jffs2_free_full_dirent(fd);
 	}
 
-	return umount_vfs_dir_entry(dir_nas);
+	sysfree(root);
+
+	/* Clean up the super block and root inode */
+	jffs2_free_ino_caches(c);
+	jffs2_free_raw_node_refs(c);
+	sysfree(c->blocks);
+	sysfree(c->inocache_list);
+
+	D2(printf("jffs2_umount No current mounts\n"));
+
+	jffs2_compressors_exit();
+
+	return jffs2_free_fs(sb);
 }
 
 /**
@@ -1446,20 +1419,11 @@ static size_t jffs2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return bytecount;
 }
 
-static int jffs2_free_fs(struct nas *nas) {
-	struct jffs2_file_info *fi;
-	struct jffs2_fs_info *fsi;
+static int jffs2_free_fs(struct super_block *sb) {
+	struct jffs2_fs_info *fsi = sb->sb_data;
 
-	if(NULL != nas->fs) {
-		fsi = nas->fs->sb_data;
-
-		if(NULL != fsi) {
-			pool_free(&jffs2_fs_pool, fsi);
-		}
-	}
-
-	if(NULL != (fi = inode_priv(nas->node))) {
-		pool_free(&jffs2_file_pool, fi);
+	if (NULL != fsi) {
+		pool_free(&jffs2_fs_pool, fsi);
 	}
 
 	return 0;
@@ -1470,27 +1434,26 @@ static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
 static int jffs2fs_create(struct inode *parent_node, struct inode *node);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
-static int jffs2fs_umount(struct inode *dir);
-
 
 static struct fsop_desc jffs2_fsop = {
-	.format	     = jffs2fs_format,
-	.mount	     = jffs2fs_mount,
-	.create_node = jffs2fs_create,
-	.delete_node = jffs2fs_delete,
+	.format	      = jffs2fs_format,
+	.mount	      = jffs2fs_mount,
+	.create_node  = jffs2fs_create,
+	.delete_node  = jffs2fs_delete,
 
-	.getxattr    = NULL,
-	.setxattr    = NULL,
-	.listxattr   = NULL,
+	.getxattr     = NULL,
+	.setxattr     = NULL,
+	.listxattr    = NULL,
 
-	.truncate    = jffs2fs_truncate,
-	.umount      = jffs2fs_umount,
+	.truncate     = jffs2fs_truncate,
+	.umount_entry = jffs2fs_umount_entry,
 };
 
 static int jffs2_fill_sb(struct super_block *sb, const char *source);
 static struct fs_driver jffs2fs_driver = {
 	.name = FS_NAME,
 	.fill_sb = jffs2_fill_sb,
+	.clean_sb = jffs2_clean_sb,
 	.file_op = &jffs2_fop,
 	.fsop = &jffs2_fsop,
 };
@@ -1676,8 +1639,8 @@ static int jffs2fs_mount(struct super_block *sb, struct inode *dest) {
 
 	return 0;
 
-	error:
-	jffs2_free_fs(dir_nas);
+error:
+	jffs2_free_fs(sb);
 
 	return -rc;
 }
@@ -1693,21 +1656,5 @@ static int jffs2fs_truncate (struct inode *node, off_t length) {
 
 	return 0;
 }
-
-static int jffs2fs_umount(struct inode *dir) {
-	struct nas *dir_nas;
-	int rc;
-
-	dir_nas = dir->nas;
-
-	/* delete all entry node */
-	if(0 != (rc = jffs2_umount(dir_nas))) {
-		return rc;
-	}
-
-	/* free jffs2 file system pools and buffers*/
-	return jffs2_free_fs(dir_nas);
-}
-
 
 DECLARE_FILE_SYSTEM_DRIVER(jffs2fs_driver);

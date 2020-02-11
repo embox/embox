@@ -55,7 +55,7 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest);
 static int ext3fs_create(struct inode *parent_node, struct inode *node);
 static int ext3fs_delete(struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
-static int ext3fs_umount(struct inode *dir);
+static int ext3fs_umount_entry(struct inode *node);
 
 static const struct fs_driver *ext2fs_driver;
 static struct fs_driver ext3fs_driver;
@@ -289,15 +289,15 @@ static int ext3fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
-static int ext3fs_umount(struct inode *dir) {
+static int ext3fs_clean_sb(struct super_block *sb) {
+	int res;
 	struct ext2_fs_info *fsi;
 	ext3_journal_specific_t *data;
-	int res;
 
-	fsi = dir->nas->fs->sb_data;
+	fsi = sb->sb_data;
 	data = fsi->journal->j_fs_specific.data;
 
-	res = ext2fs_driver->fsop->umount(dir);
+	res = ext2fs_driver->clean_sb(sb);
 
 	journal_delete(fsi->journal);
 	sysfree(data->ext3_journal_inode);
@@ -305,6 +305,10 @@ static int ext3fs_umount(struct inode *dir) {
 	objfree(&ext3_journal_cache, data);
 
 	return res;
+}
+
+static int ext3fs_umount_entry(struct inode *node) {
+	return ext2fs_driver->fsop->umount_entry(node);
 }
 
 static struct file_operations ext3_fop = {
@@ -315,22 +319,23 @@ static struct file_operations ext3_fop = {
 };
 
 static struct fsop_desc ext3_fsop = {
-	.format	     = ext3fs_format,
-	.mount	     = ext3fs_mount,
-	.create_node = ext3fs_create,
-	.delete_node = ext3fs_delete,
+	.format	      = ext3fs_format,
+	.mount	      = ext3fs_mount,
+	.create_node  = ext3fs_create,
+	.delete_node  = ext3fs_delete,
 
-	.getxattr    = ext2fs_getxattr,
-	.setxattr    = ext2fs_setxattr, /* TODO journaling */
-	.listxattr   = ext2fs_listxattr,
+	.getxattr     = ext2fs_getxattr,
+	.setxattr     = ext2fs_setxattr, /* TODO journaling */
+	.listxattr    = ext2fs_listxattr,
 
-	.truncate    = ext3fs_truncate, /* TODO journaling */
-	.umount      = ext3fs_umount,
+	.truncate     = ext3fs_truncate, /* TODO journaling */
+	.umount_entry = ext3fs_umount_entry,
 };
 
 static struct fs_driver ext3fs_driver = {
 	.name = EXT3_NAME,
 	.fill_sb = ext3fs_fill_sb,
+	.clean_sb = ext3fs_clean_sb,
 	.file_op = &ext3_fop,
 	.fsop = &ext3_fsop,
 };
