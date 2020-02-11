@@ -371,7 +371,6 @@ static int embox_ntfs_umount(struct inode *dir) {
 			}
 			pool_free(&ntfs_fs_pool, fsi);
 		}
-		super_block_free(dir_nas->fs);
 	}
 
 	return 0;

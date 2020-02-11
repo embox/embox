@@ -849,7 +849,6 @@ static void cdfs_free_fs(struct nas *nas) {
 		if(NULL != fsi) {
 			pool_free(&cdfs_fs_pool, fsi);
 		}
-		super_block_free(nas->fs);
 	}
 
 	if (NULL != (fi = inode_priv(nas->node))) {

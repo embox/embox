@@ -336,7 +336,6 @@ static void nfs_free_fs(struct inode *node) {
 			nfs_clnt_destroy(fsi);
 			pool_free(&nfs_fs_pool, fsi);
 		}
-		super_block_free(node->i_sb);
 	}
 
 	if(NULL != (fi = inode_priv(node))) {

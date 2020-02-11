@@ -120,7 +120,6 @@ static void fat_free_fs(struct nas *nas) {
 		if(NULL != fsi) {
 			fat_fs_free(fsi);
 		}
-		super_block_free(nas->fs);
 	}
 
 	if (NULL != inode_priv(nas->node)) {
