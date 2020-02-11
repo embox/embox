@@ -75,8 +75,8 @@ static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_n
 	struct ntfs_file_info *pfi;
 	mode_t mode;
 
-	pfi = parent_node->nas->fi->privdata;
-	pfsi = parent_node->nas->fs->sb_data;
+	pfi = inode_priv(parent_node);
+	pfsi = parent_node->i_sb->sb_data;
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;
@@ -119,9 +119,9 @@ static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_n
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
 		//       most appropriate solution would be to completely unmount file system.
 		int err = errno;
-		ni = ntfs_inode_open(pfsi->ntfs_vol, ((struct ntfs_file_info *)new_node->nas->fi->privdata)->mref);
+		ni = ntfs_inode_open(pfsi->ntfs_vol, ((struct ntfs_file_info *)inode_priv(new_node))->mref);
 		ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len);
-		pool_free(&ntfs_file_pool, new_node->nas->fi->privdata);
+		pool_free(&ntfs_file_pool, inode_priv(new_node));
                 free(ufilename);
 		errno = err;
 		return -errno;
@@ -144,9 +144,9 @@ static int embox_ntfs_node_delete(struct inode *node) {
 	if (!parent_node) {
 		return -EINVAL;
 	}
-	pfi = parent_node->nas->fi->privdata;
+	pfi = inode_priv(parent_node);
 	pfsi = parent_node->nas->fs->sb_data;
-	fi = node->nas->fi->privdata;
+	fi = inode_priv(node);
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;
@@ -181,7 +181,7 @@ static int embox_ntfs_node_delete(struct inode *node) {
 
 	free(ufilename);
 
-	pool_free(&ntfs_file_pool, node->nas->fi->privdata);
+	pool_free(&ntfs_file_pool, inode_priv(node));
 
 	if (ntfs_inode_close(pni)) {
 		// ToDo: it is not exactly clear what to do in this case - IINM close does fsync.
@@ -199,8 +199,8 @@ static int embox_ntfs_truncate(struct inode *node, off_t length) {
 	ntfs_attr *attr;
 	int ret;
 
-	fi = node->nas->fi->privdata;
-	fsi = node->nas->fs->sb_data;
+	fi = inode_priv(node);
+	fsi = node->i_sb->sb_data;
 
 	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
 	if (!ni) {
@@ -308,7 +308,7 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
 	}
 
 	memset(fi, 0, sizeof(*fi));
-	nas->fi->privdata = (void *) fi;
+	inode_priv_set(nas->node, fi);
 
 	// ToDo: remplir la structure de l'inode
 	// ToDo: en fait, seulement l'utilisateur et le groupe
@@ -340,7 +340,7 @@ static int ntfs_umount_entry(struct nas *nas) {
 				ntfs_umount_entry(child->nas);
 			}
 
-			pool_free(&ntfs_file_pool, child->nas->fi->privdata);
+			pool_free(&ntfs_file_pool, inode_priv(child));
 			vfs_del_leaf(child);
 		}
 	}
@@ -458,8 +458,8 @@ static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc)
 	ntfs_inode *ni;
 	ntfs_attr *attr;
 
-	fi = node->nas->fi->privdata;
-	fsi = node->nas->fs->sb_data;
+	fi = inode_priv(node);
+	fsi = node->i_sb->sb_data;
 
 	// ToDo: it is not necessary to allocate dedicated structure
 	//       ntfs_attr already contains pointer to ntfs_inode, so it is

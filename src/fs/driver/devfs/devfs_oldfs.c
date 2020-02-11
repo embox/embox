@@ -65,7 +65,6 @@ DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
 
 int devfs_add_block(struct block_dev *bdev) {
 	struct path node, root;
-	struct nas *nas;
 	char full_path[PATH_MAX];
 
 	vfs_get_root_path(&root);
@@ -79,8 +78,7 @@ int devfs_add_block(struct block_dev *bdev) {
 
 	bdev->dev_vfs_info = node.node;
 
-	nas = node.node->nas;
-	nas->fi->privdata = bdev;
+	inode_priv_set(node.node, bdev);
 
 	return 0;
 }
@@ -101,7 +99,7 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 		return -1;
 	}
 
-	node.node->nas->fi->privdata = (void *)cdev;
+	inode_priv_set(node.node, (void *) cdev);
 
 	*inode = node.node;
 
@@ -112,7 +110,7 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 	assert(inode);
 	assert(devmod);
 
-	inode->nas->fi->privdata = devmod;
+	inode_priv_set(inode, devmod);
 	inode->i_mode = flags;
 }
 

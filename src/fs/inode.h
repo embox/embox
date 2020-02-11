@@ -92,6 +92,7 @@ extern struct inode *node_alloc(const char *name, size_t name_len);
 
 extern void node_free(struct inode *node);
 extern void *inode_priv(struct inode *node);
+extern void inode_priv_set(struct inode *node, void *priv);
 
 static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->i_mode);

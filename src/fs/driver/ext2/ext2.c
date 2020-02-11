@@ -266,7 +266,7 @@ static int ext2_read_symlink(struct nas *nas, uint32_t parent_inumber,
 	struct ext2_file_info *fi;
 	struct super_block *sb;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	sb = nas->fs;
 
 	nlinks = 0;
@@ -334,7 +334,7 @@ static uint8_t ext2_type_from_mode_fmt(mode_t mode) {
 int ext2_close(struct nas *nas) {
 	struct ext2_file_info *fi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 
 	if (NULL != fi) {
 		if (NULL != fi->f_buf) {
@@ -354,7 +354,7 @@ int ext2_open(struct nas *nas) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	/* prepare full path into this filesystem */
@@ -440,7 +440,7 @@ static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc) {
 	struct ext2_fs_info *fsi;
 
 	nas = node->nas;
-	fi = nas->fi->privdata;
+	fi = inode_priv(node);
 	fsi = nas->fs->sb_data;
 	fi->f_pointer = file_get_pos(file_desc_from_idesc(idesc));
 
@@ -480,7 +480,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buff, size_t size) {
 	struct ext2_file_info *fi;
 
 	nas = desc->f_inode->nas;
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fi->f_pointer = file_get_pos(desc);
 
 	while (size != 0) {
@@ -515,7 +515,7 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	struct ext2_file_info *fi;
 
 	nas = desc->f_inode->nas;
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fi->f_pointer = file_get_pos(desc);
 
 	bytecount = ext2_write_file(nas, buff, size);
@@ -566,7 +566,7 @@ static ext2_file_info_t *ext2_fi_alloc(struct nas *nas, void *fs) {
 	fi = pool_alloc(&ext2_file_pool);
 	if (fi) {
 		nas->fi->ni.size = fi->f_pointer = 0;
-		nas->fi->privdata = fi;
+		inode_priv_set(nas->node, fi);
 	}
 
 	return fi;
@@ -916,7 +916,7 @@ static void ext2_free_fs(struct nas *nas) {
 		super_block_free(nas->fs);
 	}
 
-	if(NULL != (fi = nas->fi->privdata)) {
+	if(NULL != (fi = inode_priv(nas->node))) {
 		pool_free(&ext2_file_pool, fi);
 	}
 }
@@ -931,7 +931,7 @@ static int ext2_umount_entry(struct nas *nas) {
 				ext2_umount_entry(child->nas);
 			}
 
-			pool_free(&ext2_file_pool, child->nas->fi->privdata);
+			pool_free(&ext2_file_pool, inode_priv(child));
 			vfs_del_leaf(child);
 		}
 	}
@@ -952,7 +952,7 @@ static int ext2_read_inode(struct nas *nas, uint32_t inumber) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	inode_sector = ino_to_fsba(fsi, inumber);
@@ -991,7 +991,7 @@ static int ext2_block_map(struct nas *nas, int32_t file_block,
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 	buf = (void *) fi->f_buf;
 
@@ -1097,7 +1097,7 @@ static int ext2_buf_read_file(struct nas *nas, char **buf_p, size_t *size_p) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	off = blkoff(fsi, fi->f_pointer);
@@ -1152,7 +1152,7 @@ static size_t ext2_write_file(struct nas *nas, char *buf, size_t size) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	block_size = fsi->s_block_size; /* no fragment */
@@ -1245,7 +1245,7 @@ static int ext2_search_directory(struct nas *nas, const char *name, int length,
 	int namlen;
 	struct ext2_file_info *fi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fi->f_pointer = 0;
 	/* XXX should handle LARGEFILE */
 	while (fi->f_pointer < (long) fi->f_di.i_size) {
@@ -1437,7 +1437,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 		goto out;
 	}
 
-	dir_fi = dir_nas->fi->privdata;
+	dir_fi = inode_priv(dir_nas->node);
 
 	dir_nas->node->i_mode = dir_fi->f_di.i_mode;
 	dir_nas->node->uid = dir_fi->f_di.i_uid;
@@ -1546,7 +1546,7 @@ int ext2_write_map(struct nas *nas, long position,
 
 	index2 = index3 = 0;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	old_block = b1 = b2 = b3 = NO_BLOCK;
@@ -1834,7 +1834,7 @@ static int ext2_new_block(struct nas *nas, long position) {
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	if (0 != (rc = ext2_block_map(nas, lblkno(fsi, position), &b))) {
@@ -1889,7 +1889,7 @@ static int ext2_create(struct nas *nas, struct nas *parents_nas) {
 	int rc;
 	struct ext2_file_info *fi, *dir_fi;
 
-	dir_fi = parents_nas->fi->privdata;
+	dir_fi = inode_priv(parents_nas->node);
 
 	if (0 != (rc = ext2_open(parents_nas))) {
 		return rc;
@@ -1899,7 +1899,7 @@ static int ext2_create(struct nas *nas, struct nas *parents_nas) {
 	if (0 != (rc = ext2_new_node(nas, parents_nas))) {
 		return rc;
 	}
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 
 	dir_fi->f_di.i_links_count++;
 	ext2_rw_inode(parents_nas, &dir_fi->f_di, EXT2_W_INODE);
@@ -1924,7 +1924,7 @@ static int ext2_mkdir(struct nas *nas, struct nas *parents_nas) {
 		return rc;
 	}
 
-	dir_fi = parents_nas->fi->privdata;
+	dir_fi = inode_priv(parents_nas->node);
 
 	/* read the directory inode */
 	if (0 != (rc = ext2_open(parents_nas))) {
@@ -1935,7 +1935,7 @@ static int ext2_mkdir(struct nas *nas, struct nas *parents_nas) {
 		ext2_close(parents_nas);
 		return ENOSPC;
 	}
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	/* Get the inode numbers for . and .. to enter in the directory. */
 	dotdot = dir_fi->f_num; /* parent's inode number */
 	dot = fi->f_num; /* inode number of the new dir itself */
@@ -2030,7 +2030,7 @@ static int ext2_free_inode_bit(struct nas *nas, uint32_t bit_returned,
 
 	sb = nas->fs;
 	fsi = sb->sb_data;
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	/* At first search group, to which bit_returned belongs to
 	 * and figure out in what word bit is stored.
 	 */
@@ -2073,7 +2073,7 @@ static uint32_t ext2_alloc_inode_bit(struct nas *nas, int is_dir) { /* inode wil
 	struct ext2_fs_info *fsi;
 	struct super_block *sb;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	sb = nas->fs;
 	fsi = sb->sb_data;
 	inumber = 0;
@@ -2136,7 +2136,7 @@ static int ext2_free_inode(struct nas *nas) { /* ext2_file_info to free */
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	/* Locate the appropriate super_block. */
@@ -2177,7 +2177,7 @@ static int ext2_alloc_inode(struct nas *nas,
 	struct ext2_fs_info *fsi;
 	uint32_t b;
 
-	dir_fi = parents_nas->fi->privdata;
+	dir_fi = inode_priv(parents_nas->node);
 	fsi = parents_nas->fs->sb_data;
 
 	if (NULL == (fi = ext2_fi_alloc(nas, parents_nas->fs))) {
@@ -2227,7 +2227,7 @@ void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 
 	/* Get the block where the inode resides. */
@@ -2288,7 +2288,7 @@ static int ext2_dir_operation(struct nas *nas, char *string, ino_t *numb,
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 	/* If 'fi' is not a pointer to a dir inode, error. */
 	if (!node_is_directory(nas->node)) {
@@ -2483,7 +2483,7 @@ static int ext2_new_node(struct nas *nas,
 		return rc;
 	}
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 
 	/* Force inode to the disk before making directory entry to make
 	 * the system more robust in the face of a crash: an inode with
@@ -2536,7 +2536,7 @@ static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
 	char *dir_name;
 	struct ext2_file_info *fi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	dir_name = (char *) nas->node->name;
 
 	/* search_dir checks that rip is a directory too. */
@@ -2570,7 +2570,7 @@ static int ext2_unlink(struct nas *dir_nas, struct nas *nas) {
 	int rc;
 	struct ext2_file_info *dir_fi;
 
-	dir_fi = dir_nas->fi->privdata;
+	dir_fi = inode_priv(dir_nas->node);
 
 	/* Temporarily open the dir. */
 	if (0 != (rc = ext2_open(dir_nas))) {

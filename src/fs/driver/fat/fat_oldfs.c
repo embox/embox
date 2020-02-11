@@ -95,8 +95,8 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 		fi->fdi          = parent_di;
 		fi->mode         = mode;
 
+		inode_priv_set(node, fi);
 		nas = node->nas;
-		nas->fi->privdata = fi;
 		nas->fi->ni.size = fi->filelen;
 
 		if (de.attr & ATTR_DIRECTORY) {
@@ -170,7 +170,7 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 		goto error;
 	}
 	memset(di, 0, sizeof(struct dirinfo));
-	dir_nas->fi->privdata = (void *) di;
+	inode_priv_set(dest, di);
 	di->fi.fsi = fsi;
 	di->p_scratch = fat_sector_buff;
 	fsi->root = dest;
@@ -204,7 +204,7 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 	nas = node->nas;
 	nas->fi->ni.size = 0;
 
-	di = (void *) parent_node->nas->fi->privdata;
+	di = inode_priv(parent_node);
 
 	if (S_ISDIR(node->i_mode)) {
 		struct dirinfo *new_di;
@@ -221,8 +221,9 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 		}
 	}
 
+	inode_priv_set(node, fi);
+
 	fsi = di->fi.fsi;
-	nas->fi->privdata = fi;
 	*fi = (struct fat_file_info) {
 		.fsi     = fsi,
 		.volinfo = &fsi->vi,
@@ -238,11 +239,9 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 }
 
 static int fatfs_delete(struct inode *node) {
-	struct nas *nas;
 	struct fat_file_info *fi;
 
-	nas = node->nas;
-	fi = nas->fi->privdata;
+	fi = inode_priv(node);
 
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
 		return -1;

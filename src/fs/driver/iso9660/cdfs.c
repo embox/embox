@@ -78,7 +78,7 @@ POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_qu
 /* cdfs file description pool */
 POOL_DEF(cdfs_file_pool, struct cdfs_file_info, OPTION_GET(NUMBER,inode_quantity));
 
-static int cdfs_open(struct nas *nas, char *name);
+static int cdfs_open(struct inode *node, char *name);
 static int cdfs_create_dir_entry (struct nas *parent_nas);
 //static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path);
 
@@ -526,7 +526,7 @@ int cdfs_umount(struct cdfs_fs_info *fsi) {
 /* 	return 0; */
 /* } */
 
-static int cdfs_open(struct nas *nas, char *name) {
+static int cdfs_open(struct inode *node, char *name) {
 	cdfs_t *cdfs;
 	iso_directory_record_t *rec;
 	struct block_dev_cache *cache;
@@ -538,8 +538,8 @@ static int cdfs_open(struct nas *nas, char *name) {
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
 
-	fi = nas->fi->privdata;
-	fsi = nas->fs->sb_data;
+	fi = inode_priv(node);
+	fsi = node->i_sb->sb_data;;
 
 	cdfs = (cdfs_t *) fsi->data;
 
@@ -573,12 +573,6 @@ static int cdfs_open(struct nas *nas, char *name) {
 	return 0;
 }
 
-/*
-static int cdfs_fsync(struct nas *nas) {
-	return 0;
-}
-*/
-
 static int cdfs_read(struct nas *nas, void *data, size_t size, off64_t pos) {
 	size_t read;
 	size_t count;
@@ -592,7 +586,7 @@ static int cdfs_read(struct nas *nas, void *data, size_t size, off64_t pos) {
 	struct cdfs_fs_info *fsi;
 	cdfs_t *cdfs;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
 	cdfs = (cdfs_t *) fsi->data;
 
@@ -655,7 +649,7 @@ static int cdfs_opendir(struct nas *nas, char *name) {
 	int rc;
 	struct cdfs_file_info *fi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	cdfs = (cdfs_t *) fi->fs->data;
 
 	// Locate directory
@@ -700,7 +694,7 @@ static int cdfs_readdir(struct nas *nas, direntry_t *dirp, int count) {
 	wchar_t *wname;
 	struct cdfs_file_info *fi;
 
-	fi = nas->fi->privdata;
+	fi = inode_priv(nas->node);
 	cdfile = (cdfs_file_t *) fi->data;
 	cdfs = (cdfs_t *) fi->fs->data;
 
@@ -795,7 +789,7 @@ static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc) {
 
 	vfs_get_relative_path(node, path, PATH_MAX);
 
-	res = cdfs_open(node->nas, path);
+	res = cdfs_open(node, path);
 	if (res) {
 		return err_ptr(-res);
 	}
@@ -804,12 +798,10 @@ static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc) {
 
 static int cdfsfs_close(struct file_desc *desc) {
 	struct cdfs_file_info *fi;
-	struct nas *nas;
 
-	nas = desc->f_inode->nas;
-
-	fi = nas->fi->privdata;
+	fi = inode_priv(desc->f_inode);
 	fi->pos = 0;
+
 	return 0;
 }
 
@@ -820,7 +812,7 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 	nas = desc->f_inode->nas;
 
-	fi = (struct cdfs_file_info *)nas->fi->privdata;
+	fi = inode_priv(desc->f_inode);
 
 	rezult = cdfs_read(nas, (void *) buf, size, fi->pos);
 	fi->pos += rezult;
@@ -851,7 +843,7 @@ static void cdfs_free_fs(struct nas *nas) {
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
 
-	if(NULL != nas->fs) {
+	if (NULL != nas->fs) {
 		fsi = nas->fs->sb_data;
 
 		if(NULL != fsi) {
@@ -860,7 +852,7 @@ static void cdfs_free_fs(struct nas *nas) {
 		super_block_free(nas->fs);
 	}
 
-	if(NULL != (fi = nas->fi->privdata)) {
+	if (NULL != (fi = inode_priv(nas->node))) {
 		pool_free(&cdfs_file_pool, fi);
 	}
 }
@@ -901,7 +893,7 @@ static int cdfsfs_mount(struct super_block *sb, struct inode *dest) {
 		goto error;
 	}
 	memset(fi, 0, sizeof(struct cdfs_file_info));
-	dir_nas->fi->privdata = (void *) fi;
+	inode_priv_set(dest, fi);
 
 	if(0 == (rc = cdfs_mount(dir_nas))) {
 		return 0;
@@ -922,7 +914,7 @@ static int cdfs_umount_entry(struct nas *nas) {
 				cdfs_umount_entry(child->nas);
 			}
 
-			pool_free(&cdfs_file_pool, child->nas->fi->privdata);
+			pool_free(&cdfs_file_pool, inode_priv(child));
 			vfs_del_leaf(child);
 		}
 	}
@@ -989,7 +981,6 @@ static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) 
 	int flags;
 	struct cdfs_file_info *fi;
 	struct inode *node;
-	struct nas *nas;
 	wchar_t *wname;
 	char name[PATH_MAX];
 
@@ -1073,10 +1064,7 @@ static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) 
 				return -ENOMEM;
 			}
 
-			nas = node->nas;
-
-			nas->fi->privdata = (void *)fi;
-
+			inode_priv_set(node, fi);
  		} else {
 			/* Skip to next block */
 			left -= (cache->data + CDFS_BLOCKSIZE) - p;
@@ -1093,13 +1081,12 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 	int namelen;
 	char name[PATH_MAX];
 	struct inode *root_node, *node, *dir_node;
-	struct nas *nas;
 	struct cdfs_file_info *fi, *parent_fi;
 	struct cdfs_fs_info *fsi;
 
 	dir_node = root_node = node = root_nas->node;
 
-	fi = parent_fi = root_nas->fi->privdata;
+	fi = parent_fi = inode_priv(dir_node);
 	fsi = root_nas->fs->sb_data;
 	cdfs = fsi->data;
 
@@ -1129,8 +1116,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 				return -ENOMEM;
 			}
 
-			nas = node->nas;
-			nas->fi->privdata = (void *)fi;
+			inode_priv_set(node, fi);
 		}
 
 		cdfs_create_file_node(node, cdfs, n);
