@@ -22,7 +22,7 @@
 
 EMBOX_UNIT_INIT(imx_i2c1_init);
 
-#define I2C1_PIN_SEL  OPTION_GET(NUMBER,i2c1_pins_select)
+#define I2C1_PIN_SEL     OPTION_GET(NUMBER,i2c_pins_select)
 
 #define IMX_I2C_BASE     OPTION_GET(NUMBER,base_addr)
 
