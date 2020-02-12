@@ -37,6 +37,7 @@ int main(int argc, char *argv[]) {
 
 	host_set_input_mode(STDIN_FILENO);
 
+	extern void kernel_start(void);
 	kernel_start();
 
 	return 0;
