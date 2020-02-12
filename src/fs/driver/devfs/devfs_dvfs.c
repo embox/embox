@@ -60,11 +60,12 @@ extern struct dev_module **get_cdev_tab(void);
  * @brief Find file in directory
  *
  * @param name Name of file
- * @param dir  Pointer to directory
+ * @param dir  Not used in this driver as we assume there are no nested
+ * directories
  *
  * @return Pointer to inode structure or NULL if failed
  */
-static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
+static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 	int i;
 	struct inode *node;
 	struct block_dev **bdevtab = get_bdev_tab();

@@ -99,12 +99,12 @@ static int initfs_fill_inode(struct inode *node, char *cpio,
 	return 0;
 }
 
-static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
+static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
 	struct cpio_entry entry;
 	struct inode *node = NULL;
-	struct initfs_dir_info *di = dir->d_inode->i_data;
+	struct initfs_dir_info *di = inode_priv(dir);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (!memcmp(di->path, entry.name, di->path_len) &&
@@ -118,7 +118,7 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 				break;
 			}
 
-			node = dvfs_alloc_inode(dir->d_sb);
+			node = dvfs_alloc_inode(dir->i_sb);
 			if (node == NULL) {
 				break;
 			}

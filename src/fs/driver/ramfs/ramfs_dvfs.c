@@ -113,16 +113,15 @@ static int ramfs_truncate(struct inode *inode, size_t len) {
 	return 0;
 }
 
-static struct inode *ramfs_ilookup(char const *name, struct dentry const *dir) {
+static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	struct inode *node;
 	struct super_block *sb;
 
 	assert(dir);
-	assert(dir->d_inode);
-	assert(dir->d_inode->i_sb);
-	assert(dir->d_inode->i_sb->sb_data);
+	assert(dir->i_sb);
+	assert(dir->i_sb->sb_data);
 
-	sb = dir->d_inode->i_sb;
+	sb = dir->i_sb;
 
 	for (int i = 0; i < RAMFS_FILES; i++) {
 		if (ramfs_files[i].fsi != sb->sb_data) {

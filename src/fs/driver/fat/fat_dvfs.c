@@ -119,11 +119,11 @@ err_out:
  * as it wipes dirinfo content
  *
  * @param name Full path to the extected node
- * @param dir  Not used now
+ * @param dir  Inode of corresponding parent directory
  *
  * @return Pointer of inode or NULL if not found
  */
-static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
+static struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 	struct dirinfo *di;
 	struct fat_dirent de;
 	struct super_block *sb;
@@ -135,11 +135,10 @@ static struct inode *fat_ilookup(char const *name, struct dentry const *dir) {
 	int found = 0;
 
 	assert(name);
-	assert(dir->d_inode);
-	assert(S_ISDIR(dir->d_inode->i_mode));
+	assert(S_ISDIR(dir->i_mode));
 
-	sb = dir->d_sb;
-	di = dir->d_inode->i_data;
+	sb = dir->i_sb;
+	di = inode_priv(dir);
 
 	assert(di);
 
