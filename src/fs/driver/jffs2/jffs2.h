@@ -390,7 +390,6 @@ struct _inode {
 struct jffs2_super_block {
 	struct jffs2_sb_info jffs2_sb;
 	struct _inode *s_root;
-    unsigned long  s_mount_count;
 	struct block_dev *bdev;
 
 #ifdef CYGOPT_FS_JFFS2_GCTHREAD

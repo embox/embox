@@ -220,24 +220,25 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest);
 static int nfsfs_create(struct inode *parent_node, struct inode *node);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
-static int nfsfs_umount(struct inode *dir);
+static int nfs_umount_entry(struct inode *node);
 static int nfs_fill_sb(struct super_block *sb, const char *source);
+static int nfs_clean_sb(struct super_block *sb);
 
 static struct fsop_desc nfsfs_fsop = {
 	.format = nfsfs_format,
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
 	.delete_node = nfsfs_delete,
-
+	.umount_entry = nfs_umount_entry,
 	.truncate = nfsfs_truncate,
-	.umount = nfsfs_umount,
 };
 
 static struct fs_driver nfsfs_driver = {
-	.name    = "nfs",
-	.fill_sb = nfs_fill_sb,
-	.file_op = &nfsfs_fop,
-	.fsop    = &nfsfs_fsop,
+	.name     = "nfs",
+	.fill_sb  = nfs_fill_sb,
+	.clean_sb = nfs_clean_sb,
+	.file_op  = &nfsfs_fop,
+	.fsop     = &nfsfs_fsop,
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {
@@ -325,21 +326,12 @@ static int nfs_client_init(struct nfs_fs_info *fsi) {
 	return nfs_unix_auth_set(fsi->nfs);
 }
 
-static void nfs_free_fs(struct inode *node) {
-	struct nfs_file_info *fi;
-	struct nfs_fs_info *fsi;
+static void nfs_free_fs(struct super_block *sb) {
+	struct nfs_fs_info *fsi = sb->sb_data;
 
-	if(NULL != node->i_sb) {
-		fsi = node->i_sb->sb_data;
-
-		if(NULL != fsi) {
-			nfs_clnt_destroy(fsi);
-			pool_free(&nfs_fs_pool, fsi);
-		}
-	}
-
-	if(NULL != (fi = inode_priv(node))) {
-		pool_free(&nfs_file_pool, fi);
+	if (NULL != fsi) {
+		nfs_clnt_destroy(fsi);
+		pool_free(&nfs_fs_pool, fsi);
 	}
 }
 
@@ -393,35 +385,19 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 	}
 
 error:
-	nfs_free_fs(dest);
+	nfs_free_fs(sb);
 
 	return rc;
 }
 
 static int nfs_umount_entry(struct inode *node) {
-	struct inode *child;
-
-	if (node_is_directory(node)) {
-		while (NULL != (child =	vfs_subtree_get_child_next(node, NULL))) {
-			if (node_is_directory(child)) {
-				nfs_umount_entry(child);
-			}
-
-			pool_free(&nfs_file_pool, inode_priv(child));
-			vfs_del_leaf(child);
-		}
-	}
+	pool_free(&nfs_file_pool, inode_priv(node));
 
 	return 0;
 }
 
-static int nfsfs_umount(struct inode *dir) {
-	/* delete all entry node */
-	nfs_umount_entry(dir);
-
-	/* free nfs file system pools, clnt and buffers*/
-	nfs_free_fs(dir);
-
+static int nfs_clean_sb(struct super_block *sb) {
+	nfs_free_fs(sb);
 	return 0;
 }
 

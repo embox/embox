@@ -47,5 +47,9 @@ void super_block_free(struct super_block *sb) {
 		return;
 	}
 
+	if (sb->fs_drv->clean_sb) {
+		sb->fs_drv->clean_sb(sb);
+	}
+
 	pool_free(&super_block_pool, sb);
 }

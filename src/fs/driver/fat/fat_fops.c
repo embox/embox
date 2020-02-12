@@ -9,6 +9,7 @@
 
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
+#include <fs/super_block.h>
 
 #include "fat.h"
 
@@ -58,3 +59,25 @@ struct file_operations fat_fops = {
 	.read = fat_read,
 	.write = fat_write,
 };
+
+/**
+ * @brief Cleanup FS-specific stuff. No need to clean all files: VFS should
+ * do it by itself
+ *
+ * @param sb Pointer to superblock
+ *
+ * @return Negative error code or 0 if succeed
+ */
+int fat_clean_sb(struct super_block *sb) {
+	struct fat_fs_info *fsi;
+
+	assert(sb);
+
+	fsi = sb->sb_data;
+
+	assert(fsi);
+
+	fat_fs_free(fsi);
+
+	return 0;
+}
