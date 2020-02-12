@@ -22,7 +22,7 @@
 
 EMBOX_UNIT_INIT(imx_i2c2_init);
 
-#define I2C2_PIN_SEL  OPTION_GET(NUMBER,i2c2_pins_select)
+#define I2C2_PIN_SEL     OPTION_GET(NUMBER,i2c_pins_select)
 
 #define IMX_I2C_BASE     OPTION_GET(NUMBER,base_addr)
 
@@ -46,10 +46,10 @@ static inline void imx_i2c2_pins_init(void) {
 	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_KEY_ROW3, 0x14);
 	iomuxc_write(IOMUXC_I2C2_SDA_IN_SELECT_INPUT, 1);
 #else
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_EB2_B, 6);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_EB2_B, 0x16);
 	iomuxc_write(IOMUXC_I2C2_SCL_IN_SELECT_INPUT, 0);
 
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA16, 6);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA16, 0x16);
 	iomuxc_write(IOMUXC_I2C2_SDA_IN_SELECT_INPUT, 0);
 #endif
 }

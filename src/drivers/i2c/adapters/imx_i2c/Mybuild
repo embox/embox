@@ -14,7 +14,7 @@ module imx_i2c1 {
 
 	option number base_addr=0x21A0000
 	option number irq_num=68
-	option number i2c1_pins_select=0
+	option number i2c_pins_select=0
 	
 	source "imx_i2c1.c"
 
@@ -28,7 +28,7 @@ module imx_i2c2 {
 
 	option number base_addr=0x21A4000
 	option number irq_num=69
-	option number i2c2_pins_select=1
+	option number i2c_pins_select=1
 	
 	source "imx_i2c2.c"
 
@@ -42,7 +42,7 @@ module imx_i2c3 {
 
 	option number base_addr=0x21A8000
 	option number irq_num=70
-	option number i2c3_pins_select=0
+	option number i2c_pins_select=0
 	
 	source "imx_i2c3.c"
 
