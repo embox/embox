@@ -121,7 +121,7 @@ void node_free(struct inode *node) {
 	pool_free(&node_pool, member_cast_out(node, struct node_tuple, node));
 }
 
-void *inode_priv(struct inode *node) {
+void *inode_priv(const struct inode *node) {
 	assert(node);
 
 	return node->nas->fi->privdata;
