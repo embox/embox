@@ -374,7 +374,7 @@ struct block_dev *bdev_by_path(const char *source) {
 }
 
 int kmount(const char *source, const char *dest, const char *fs_type) {
-	struct path dir_node, root_path;
+	struct path dir_node;
 	const struct fs_driver *drv;
 	struct super_block *sb;
 	const char *lastpath;
@@ -395,21 +395,13 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		return -1;
 	}
 
-	if (0 == strcmp(dest, "/")) {
-		root_path.node = dir_node.node;
-	} else {
-		root_path.node = vfs_create_root();
-	}
-
-	root_path.node->i_sb = root_path.node->nas->fs = sb;
-
-	if (ENOERR != (res = drv->fsop->mount(sb, root_path.node))) {
+	if (ENOERR != (res = drv->fsop->mount(sb, sb->sb_root))) {
 		//todo free root
 		errno = -res;
 		return -1;
 	}
 
-	if (NULL == mount_table_add(&dir_node, root_path.node, dest)) {
+	if (NULL == mount_table_add(&dir_node, sb->sb_root, dest)) {
 		super_block_free(sb);
 		//todo free root
 		errno = -res;
