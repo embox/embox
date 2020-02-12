@@ -38,10 +38,6 @@
 
 #define SPI_FIFO_LEN		64
 
-static const int imx6_ecspi_gpio_info[4][2] = /* Format is [gpio][port], more
-                                                 details in IMX6DQRM.pdf at page 426 */
-	{ {1, 30}, {2, 19}, {2, 24}, {2, 25} };
-
 int imx6_ecspi_init(struct imx6_ecspi *dev) {
 	/* Disable SPI block */
 	REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_EN);
@@ -62,14 +58,14 @@ static void imx6_ecspi_set_cs(struct imx6_ecspi *dev, int state) {
 	int gpio_n = 0;
 	int port = 0;
 
-	assert(dev->cs <= 3);
+	assert(dev->cs < dev->cs_count);
 
 	REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_CHANNEL_SELECT_MASK);
 	REG32_ORIN(ECSPI_CONREG(dev), dev->cs << ECSPI_CONREG_CHANNEL_SELECT_OFFT);
 
 	/* TODO config gpio in proper way for ECSPI2,3,4,5*/
-	gpio_n = imx6_ecspi_gpio_info[dev->cs][0];
-	port   = imx6_ecspi_gpio_info[dev->cs][1];
+	gpio_n = dev->cs_array[dev->cs][0];
+	port   = dev->cs_array[dev->cs][1];
 
 	gpio_setup_mode(gpio_n, 1 << port, GPIO_MODE_OUTPUT);
 	gpio_set(gpio_n, 1 << port, state);
@@ -93,8 +89,8 @@ static uint8_t imx6_ecspi_transfer_byte(struct imx6_ecspi *dev, uint8_t val) {
 static int imx6_ecspi_select(struct spi_device *dev, int cs) {
 	struct imx6_ecspi *priv = dev->priv;
 
-	if (cs < 0 || cs > 3) {
-		log_error("Only cs=0..3 are avalable!");
+	if (cs < 0 || cs > priv->cs_count) {
+		log_error("Only cs=0..%d are avalable!", priv->cs_count - 1);
 		return -EINVAL;
 	}
 

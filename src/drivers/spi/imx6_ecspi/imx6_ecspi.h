@@ -12,9 +12,15 @@
 #include <stdint.h>
 #include <drivers/gpio/gpio.h>
 
+#define IMX6_ECSPI_MAX_CS   4
+
 struct imx6_ecspi {
 	uint32_t base_addr;
-	int cs;
+	int cs; /* current CS */
+	unsigned int cs_count; /* size of cs_array */
+	/* Format is [gpio][port], more
+	 * details in IMX6DQRM.pdf at page 426 */
+	unsigned char cs_array[IMX6_ECSPI_MAX_CS][2];
 };
 
 extern int imx6_ecspi_init(struct imx6_ecspi *dev);

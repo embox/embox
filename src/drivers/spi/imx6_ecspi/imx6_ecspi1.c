@@ -6,10 +6,13 @@
  * @date 12.06.2017
  */
 
+#include <embox/unit.h>
+#include <util/log.h>
+#include <framework/mod/options.h>
 #include <drivers/common/memory.h>
 #include <drivers/spi.h>
-#include <embox/unit.h>
-#include <framework/mod/options.h>
+#include <drivers/clk/ccm_imx6.h>
+#include <drivers/iomuxc.h>
 
 #include "imx6_ecspi.h"
 
@@ -19,11 +22,20 @@ EMBOX_UNIT_INIT(imx6_ecspi1_init);
 
 static struct imx6_ecspi imx6_ecspi1 = {
 	.base_addr = BASE_ADDR,
+	.cs_count  = 4,
+	.cs_array  = { {1, 30}, {2, 19}, {2, 24}, {2, 25} }
 };
 
+static void imx_ecspi1_pins_init(void) {
+	/* TODO Make init like for escpi2.
+	 * Currenly it is inited by uboot. */
+}
+
 static int imx6_ecspi1_init(void) {
-	imx6_ecspi_init(&imx6_ecspi1);
-	return 0;
+	log_debug("");
+	clk_enable("ecspi1");
+	imx_ecspi1_pins_init();
+	return imx6_ecspi_init(&imx6_ecspi1);
 }
 
 PERIPH_MEMORY_DEFINE(imx6_ecspi1, BASE_ADDR, 0x44);
