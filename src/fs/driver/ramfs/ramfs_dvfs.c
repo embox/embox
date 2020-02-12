@@ -187,10 +187,6 @@ struct super_block_operations ramfs_sbops = {
 	.destroy_inode = ramfs_destroy_inode,
 };
 
-static int ramfs_mount_end(struct super_block *sb) {
-	return 0;
-}
-
 static int ramfs_format(struct block_dev *bdev, void *priv) {
 	if (NULL == bdev) {
 		return -ENODEV;
@@ -206,7 +202,6 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 static const struct fs_driver ramfs_dumb_driver = {
 	.name      = "ramfs",
 	.fill_sb   = ramfs_fill_sb,
-	.mount_end = ramfs_mount_end,
 	.format    = ramfs_format,
 };
 
