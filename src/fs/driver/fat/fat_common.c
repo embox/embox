@@ -16,6 +16,7 @@
 #include <string.h>
 
 #include <drivers/block_dev.h>
+#include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/mount.h>
 #include <fs/super_block.h>
@@ -2009,6 +2010,8 @@ extern struct file_operations fat_fops;
 int fat_fill_sb(struct super_block *sb, const char *source) {
 	struct fat_fs_info *fsi;
 	struct block_dev *bdev;
+	struct dirinfo *di = NULL;
+	int rc;
 
 	assert(sb);
 
@@ -2028,12 +2031,34 @@ int fat_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_ops  = &fat_sbops;
 	sb->bdev    = bdev;
 
-	if (fat_get_volinfo(bdev, &fsi->vi, 0))
-		goto err_out;
+	if (fat_get_volinfo(bdev, &fsi->vi, 0)) {
+		goto error;
+	}
+
+	if (NULL == (di = fat_dirinfo_alloc())) {
+		rc = -ENOMEM;
+		goto error;
+	}
+	memset(di, 0, sizeof(struct dirinfo));
+	di->p_scratch = fat_sector_buff;
+
+	if (fat_open_rootdir(fsi, di)) {
+		rc = -EBUSY;
+		goto error;
+	}
+
+	di->fi.fsi = fsi;
+	di->fi.volinfo = &fsi->vi;
+
+	inode_priv_set(sb->sb_root, di);
 
 	return 0;
 
-err_out:
+error:
+	if (di) {
+		fat_dirinfo_free(di);
+	}
+
 	fat_fs_free(fsi);
-	return -1;
+	return rc;
 }

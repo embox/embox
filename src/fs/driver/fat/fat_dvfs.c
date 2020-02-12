@@ -221,6 +221,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	fi->volinfo = &fsi->vi;
 	fi->fdi     = di;
+	fi->fsi     = fsi;
 
 	i_new->i_data = fi;
 
@@ -337,58 +338,12 @@ struct super_block_operations fat_sbops = {
 	.destroy_inode = fat_destroy_inode,
 };
 
-/**
-* @brief Initialize dirinfo for root FAT directory
-* @note  Should be called just after mounting FAT FS
-*
-* @param super_block Superblock of just
-*
-* @return Negative error code
-* @retval 0 Success
-*/
-static int fat_mount_end(struct super_block *sb) {
-	struct dirinfo *di;
-	struct fat_fs_info *fsi;
-
-	assert(sb);
-	assert(sb->bdev);
-	assert(sb->bdev->block_size <= FAT_MAX_SECTOR_SIZE);
-
-	if (NULL == (di = fat_dirinfo_alloc())) {
-		return -ENOMEM;
-	}
-
-	di->p_scratch = fat_sector_buff;
-
-	fsi = sb->sb_data;
-	assert(fsi);
-
-	if (fat_open_rootdir(fsi, di)) {
-		fat_dirinfo_free(di);
-		return -1;
-	}
-
-	di->fi = (struct fat_file_info) {
-		.fsi          = fsi,
-		.volinfo      = &fsi->vi,
-		.dirsector    = 0,
-		.diroffset    = 0,
-		.firstcluster = 0,
-	};
-
-	sb->root->d_inode->i_data = di;
-	sb->root->d_inode->i_mode |= S_IFDIR;
-
-	return 0;
-}
-
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 extern int fat_format(struct block_dev *dev, void *priv);
 static const struct fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
-	.mount_end = fat_mount_end,
 	.format    = fat_format,
 	.clean_sb  = fat_clean_sb,
 };

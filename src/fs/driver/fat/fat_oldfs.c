@@ -138,44 +138,13 @@ extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 
 static int fatfs_mount(struct super_block *sb, struct inode *dest) {
-	struct nas *dir_nas;
 	struct dirinfo *di;
 	struct fat_fs_info *fsi;
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
 	struct fat_dirent de;
-	int rc;
 
-	dir_nas = dest->nas;
-	fsi = sb->sb_data;
+	di = inode_priv(dest);
 
-	/* allocate this directory info */
-	if (NULL == (di = fat_dirinfo_alloc())) {
-		rc = -ENOMEM;
-		goto error;
-	}
-	memset(di, 0, sizeof(struct dirinfo));
-	inode_priv_set(dest, di);
-	di->fi.fsi = fsi;
-	di->p_scratch = fat_sector_buff;
-	fsi->root = dest;
-
-	pstart = fat_get_ptn_start(sb->bdev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		rc = -1;
-		goto error;
-	}
-
-	if (fat_open_rootdir(fsi, di)) {
-		return -EBUSY;
-	}
-
-	return fat_create_dir_entry(dir_nas, di, &de);
-
-error:
-	fat_free_fs(sb);
-
-	return rc;
+	return fat_create_dir_entry(dest->nas, di, &de);
 }
 
 static int fatfs_create(struct inode *parent_node, struct inode *node) {
