@@ -42,14 +42,18 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	return sb;
 }
 
-void super_block_free(struct super_block *sb) {
+int super_block_free(struct super_block *sb) {
+	int ret = 0;
+
 	if (NULL == sb) {
 		return;
 	}
 
 	if (sb->fs_drv->clean_sb) {
-		sb->fs_drv->clean_sb(sb);
+		ret = sb->fs_drv->clean_sb(sb);
 	}
 
 	pool_free(&super_block_pool, sb);
+
+	return ret;
 }
