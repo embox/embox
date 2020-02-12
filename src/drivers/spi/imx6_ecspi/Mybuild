@@ -1,7 +1,7 @@
 package embox.driver.spi
 
 static module imx6_ecspi {
-	option number log_level = 0
+	option number log_level = 1
 
 	source "imx6_ecspi.c"
 
@@ -10,12 +10,24 @@ static module imx6_ecspi {
 }
 
 module imx6_ecspi1 {
+	option number log_level = 1
 	option number base_addr
-	option number cs
+	option number pins_group
 
 	source "imx6_ecspi1.c"
 
 	depends imx6_ecspi
-	depends embox.driver.gpio.api
+	depends embox.driver.periph_memory
+}
+
+module imx6_ecspi2 {
+	option number log_level = 1
+	option number base_addr
+	option number pins_group
+
+	source "imx6_ecspi2.c"
+
+	depends imx6_ecspi
+
 	depends embox.driver.periph_memory
 }
