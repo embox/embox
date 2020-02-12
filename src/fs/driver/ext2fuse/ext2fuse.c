@@ -27,14 +27,9 @@ static int ext2fuse_fill_sb(struct super_block *sb, const char *source) {
 	return 0;
 }
 
-static int ext2fuse_mount_end(struct super_block *sb) {
-	return 0;
-}
-
 static const struct fs_driver ext2fuse_dumb_driver = {
 	.name      = "ext2fuse",
 	.fill_sb   = ext2fuse_fill_sb,
-	.mount_end = ext2fuse_mount_end,
 };
 
 ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
