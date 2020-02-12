@@ -40,23 +40,23 @@ static struct i2c_adapter imx_i2c3_adap = {
 
 static inline void imx_i2c3_pins_init(void) {
 #if I2C3_PIN_SEL == 1
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO03, 2);
-	iomuxc_write(IOMUXC_I2C3_SCL_IN_SELECT_INPUT, 1);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO03, 0x12);
+	iomuxc_write(IOMUXC_I2C3_SCL_IN_SELECT_INPUT, 0x11);
 
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO06, 2);
-	iomuxc_write(IOMUXC_I2C3_SDA_IN_SELECT_INPUT, 1);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO06, 0x12);
+	iomuxc_write(IOMUXC_I2C3_SDA_IN_SELECT_INPUT, 0x11);
 #elif I2C3_PIN_SEL == 2
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO05, 6);
-	iomuxc_write(IOMUXC_I2C3_SCL_IN_SELECT_INPUT, 2);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO05, 0x16);
+	iomuxc_write(IOMUXC_I2C3_SCL_IN_SELECT_INPUT, 0x12);
 
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO16, 6);
-	iomuxc_write(IOMUXC_I2C3_SDA_IN_SELECT_INPUT, 2);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_GPIO16, 0x16);
+	iomuxc_write(IOMUXC_I2C3_SDA_IN_SELECT_INPUT, 0x12);
 #else
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA17, 6);
-	iomuxc_write(IOMUXC_I2C3_SCL_IN_SELECT_INPUT, 0);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA17, 0x16);
+	iomuxc_write(IOMUXC_I2C3_SCL_IN_SELECT_INPUT, 0x10);
 
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA18, 6);
-	iomuxc_write(IOMUXC_I2C3_SDA_IN_SELECT_INPUT, 0);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA18, 0x16);
+	iomuxc_write(IOMUXC_I2C3_SDA_IN_SELECT_INPUT, 0x10);
 #endif
 }
 

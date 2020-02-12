@@ -40,16 +40,16 @@ static struct i2c_adapter imx_i2c1_adap = {
 
 static inline void imx_i2c1_pins_init(void) {
 #if I2C1_PIN_SEL
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_CSI0_DATA09, 4);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_CSI0_DATA09, 0x14);
 	iomuxc_write(IOMUXC_I2C1_SCL_IN_SELECT_INPUT, 1);
 
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_CSI0_DATA08, 4);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_CSI0_DATA08, 0x14);
 	iomuxc_write(IOMUXC_I2C1_SDA_IN_SELECT_INPUT, 1);
 #else
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA21, 6);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA21, 0x16);
 	iomuxc_write(IOMUXC_I2C1_SCL_IN_SELECT_INPUT, 0);
 
-	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA28, 1);
+	iomuxc_write(IOMUXC_SW_MUX_CTL_PAD_EIM_DATA28, 0x11);
 	iomuxc_write(IOMUXC_I2C1_SDA_IN_SELECT_INPUT, 0);
 #endif
 }
