@@ -112,14 +112,6 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	return ENOERR;
 }
 
-static void fat_free_fs(struct super_block *sb) {
-	struct fat_fs_info *fsi = sb->sb_data;
-
-	if (NULL != fsi) {
-		fat_fs_free(fsi);
-	}
-}
-
 static int fatfs_umount_entry(struct inode *node) {
 	if (node_is_directory(node)) {
 		fat_dirinfo_free(inode_priv(node));
@@ -133,13 +125,13 @@ static int fatfs_umount_entry(struct inode *node) {
 extern struct file_operations fat_fops;
 
 struct inode_operations fat_iops;
+struct super_block_operations { };
 struct super_block_operations fat_sbops;
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 
 static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	struct dirinfo *di;
-	struct fat_fs_info *fsi;
 	struct fat_dirent de;
 
 	di = inode_priv(dest);
