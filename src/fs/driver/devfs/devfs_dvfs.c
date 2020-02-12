@@ -70,7 +70,7 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 	struct block_dev **bdevtab = get_bdev_tab();
 	struct dev_module **cdevtab = get_cdev_tab();
 
-	if (NULL == (node = dvfs_alloc_inode(dir->d_sb))) {
+	if (NULL == (node = dvfs_alloc_inode(dir->i_sb))) {
 		return NULL;
 	}
 
@@ -92,11 +92,6 @@ static struct inode *devfs_lookup(char const *name, struct dentry const *dir) {
 	dvfs_destroy_inode(node);
 
 	return NULL;
-}
-
-static int devfs_mount_end(struct super_block *sb) {
-	char_dev_init_all();
-	return block_devs_init();
 }
 
 extern struct idesc_ops idesc_bdev_ops;
@@ -153,13 +148,13 @@ static int devfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_fops = &devfs_fops;
 	sb->sb_ops  = &devfs_sbops;
 
-	return 0;
+	char_dev_init_all();
+	return block_devs_init();
 }
 
 static const struct fs_driver devfs_dumb_driver = {
 	.name      = "devfs",
 	.fill_sb   = devfs_fill_sb,
-	.mount_end = devfs_mount_end,
 };
 
 ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
