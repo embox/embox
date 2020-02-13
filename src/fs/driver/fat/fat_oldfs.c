@@ -37,7 +37,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	struct inode *node;
 	mode_t mode;
 	int ret;
-	struct dirinfo *new_di;
+	struct dirinfo *new_di = NULL;
 	struct fat_fs_info *fsi = parent_nas->fs->sb_data;
 
 	fat_reset_dir(parent_di);

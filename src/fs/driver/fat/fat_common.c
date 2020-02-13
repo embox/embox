@@ -2011,7 +2011,7 @@ int fat_fill_sb(struct super_block *sb, const char *source) {
 	struct fat_fs_info *fsi;
 	struct block_dev *bdev;
 	struct dirinfo *di = NULL;
-	int rc;
+	int rc = 0;
 
 	assert(sb);
 
