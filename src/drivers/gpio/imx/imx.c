@@ -60,7 +60,7 @@ static int imx_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode) {
 	tmp = REG32_LOAD(GPIO_GDIR(port));
 	tmp &= ~mask;
 	tmp |= val;
-	REG32_CLEAR(GPIO_GDIR(port), tmp);
+	REG32_STORE(GPIO_GDIR(port), tmp);
 
 	return 0;
 }
