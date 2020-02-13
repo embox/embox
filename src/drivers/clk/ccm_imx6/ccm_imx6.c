@@ -102,6 +102,10 @@ struct clk {
 static const struct clk clks_repo[] = {
 	{ MXC_CCM_CCGR0, 3 << 24, "dcic1" },
 	{ MXC_CCM_CCGR0, 3 << 26, "dcic2" },
+	{ MXC_CCM_CCGR1, 3 << 0,  "ecspi1" },
+	{ MXC_CCM_CCGR1, 3 << 2,  "ecspi2" },
+	{ MXC_CCM_CCGR1, 3 << 4,  "ecspi3" },
+	{ MXC_CCM_CCGR1, 3 << 6,  "ecspi4" },
 	{ MXC_CCM_CCGR1, 3 << 24, "gpu2d" },
 	{ MXC_CCM_CCGR1, 3 << 26, "gpu3d" },
 	{ MXC_CCM_CCGR2, 1,       "iahb" },

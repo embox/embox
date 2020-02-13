@@ -69,13 +69,13 @@ int gpio_setup_mode(unsigned short port, gpio_mask_t pins, int mode) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
 	if (!chip) {
 		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
-		return -EACCES;
+		return -EINVAL;
 	}
 	port = GPIO_PORT(port);
 	if (port >= chip->nports) {
-		log_error("port (%d) > chip->nports (%d)",
-			chip, port, chip->nports);
-		return -EACCES;
+		log_error("port (%d) is out of range (nports=%d)",
+			port, chip->nports - 1);
+		return -EINVAL;
 	}
 	assert(chip->setup_mode);
 	return chip->setup_mode(port, pins, mode);
@@ -89,8 +89,8 @@ void gpio_set(unsigned short port, gpio_mask_t pins, char level) {
 	}
 	port = GPIO_PORT(port);
 	if (port >= chip->nports) {
-		log_error("port (%d) > chip->nports (%d)",
-			chip, port, chip->nports);
+		log_error("port (%d) is out of range (nports=%d)",
+			port, chip->nports - 1);
 		return;
 	}
 	assert(chip->set);
@@ -105,9 +105,9 @@ gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins) {
 	}
 	port = GPIO_PORT(port);
 	if (port >= chip->nports) {
-		log_error("port (%d) > chip->nports (%d)",
-			chip, port, chip->nports);
-		return -1;
+		log_error("port (%d) is out of range (nports=%d)",
+			port, chip->nports - 1);
+		return -EINVAL;
 	}
 	assert(chip->get);
 	return chip->get(port, pins);
@@ -122,8 +122,8 @@ void gpio_toggle(unsigned short port, gpio_mask_t pins) {
 	}
 	port = GPIO_PORT(port);
 	if (port >= chip->nports) {
-		log_error("port (%d) > chip->nports (%d)",
-			chip, port, chip->nports);
+		log_error("port (%d) is out of range (nports=%d)",
+			port, chip->nports - 1);
 		return;
 	}
 	assert(chip->get && chip->set);
@@ -142,8 +142,8 @@ int gpio_irq_attach(unsigned short port, gpio_mask_t pins,
 	}
 	port = GPIO_PORT(port);
 	if (port >= chip->nports) {
-		log_error("port (%d) > chip->nports (%d)",
-			chip, port, chip->nports);
+		log_error("port (%d) is out of range (nports=%d)",
+			port, chip->nports - 1);
 		return -EINVAL;
 	}
 	gpio_hnd = pool_alloc(&gpio_irq_pool);

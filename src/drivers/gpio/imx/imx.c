@@ -13,10 +13,8 @@
 #include <util/log.h>
 
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
-
+#define GPIO_PORTS   OPTION_GET(NUMBER, gpio_ports)
 #define BASE_ADDR(n) ((OPTION_GET(NUMBER, base_addr)) + (n) * 0x4000)
-
-#define GPIO_MAX 4
 
 #define GPIO_DR(n)         (BASE_ADDR(n) + 0x00)
 #define GPIO_GDIR(n)       (BASE_ADDR(n) + 0x04)
@@ -35,8 +33,9 @@ EMBOX_UNIT_INIT(imx_gpio_init);
 static struct gpio_chip imx_gpio_chip;
 
 static int imx_gpio_init(void) {
-	for (int i = 0; i <= GPIO_MAX; i++)
+	for (int i = 0; i <= GPIO_PORTS; i++) {
 		log_debug("GPIO%d base address=%p", i, BASE_ADDR(i));
+	}
 
 	return gpio_register_chip(&imx_gpio_chip, GPIO_CHIP_ID);
 }
@@ -61,7 +60,7 @@ static int imx_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode) {
 	tmp = REG32_LOAD(GPIO_GDIR(port));
 	tmp &= ~mask;
 	tmp |= val;
-	REG32_CLEAR(GPIO_GDIR(port), tmp);
+	REG32_STORE(GPIO_GDIR(port), tmp);
 
 	return 0;
 }
@@ -77,7 +76,7 @@ static void imx_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 }
 
 gpio_mask_t imx_gpio_get(unsigned char port, gpio_mask_t mask) {
-	int ret = REG32_LOAD(GPIO_DR(port)) & mask;
+	int ret = REG32_LOAD(GPIO_PSR(port)) & mask;
 
 	log_debug("get level for GPIO#%d 0x%08x=0x%08x", port, mask, ret);
 
@@ -88,7 +87,7 @@ static struct gpio_chip imx_gpio_chip = {
 	.setup_mode = imx_gpio_setup_mode,
 	.get = imx_gpio_get,
 	.set = imx_gpio_set,
-	.nports = GPIO_MAX
+	.nports = GPIO_PORTS
 };
 
 PERIPH_MEMORY_DEFINE(imx_gpio, BASE_ADDR(0), (0x4000 * 5));
