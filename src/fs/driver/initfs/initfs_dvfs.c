@@ -207,10 +207,12 @@ static int initfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->bdev = NULL;
 
 	di = pool_alloc(&initfs_dir_pool);
-	assert(di);
+	if (di == NULL) {
+		return -ENOMEM;
+	}
 
 	memset(di, 0, sizeof(struct initfs_dir_info));
-	sb->sb_root->i_data = di;
+	inode_priv_set(sb->sb_root, di);
 
 	return 0;
 }
