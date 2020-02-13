@@ -44,6 +44,7 @@ int imx6_ecspi_init(struct imx6_ecspi *dev) {
 	/* Enable clocks */
 	/* Put SPI out of reset */
 	REG32_ORIN(ECSPI_CONREG(dev), ECSPI_CONREG_EN);
+
 	/* IOMUX configuration */
 	/* Configure ECSPI as a master */
 	REG32_ORIN(ECSPI_CONREG(dev), 0xF << 4);
@@ -63,11 +64,9 @@ static void imx6_ecspi_set_cs(struct imx6_ecspi *dev, int state) {
 	REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_CHANNEL_SELECT_MASK);
 	REG32_ORIN(ECSPI_CONREG(dev), dev->cs << ECSPI_CONREG_CHANNEL_SELECT_OFFT);
 
-	/* TODO config gpio in proper way for ECSPI2,3,4,5*/
 	gpio_n = dev->cs_array[dev->cs][0];
 	port   = dev->cs_array[dev->cs][1];
 
-	gpio_setup_mode(gpio_n, 1 << port, GPIO_MODE_OUTPUT);
 	gpio_set(gpio_n, 1 << port, state);
 }
 
@@ -90,7 +89,7 @@ static int imx6_ecspi_select(struct spi_device *dev, int cs) {
 	struct imx6_ecspi *priv = dev->priv;
 
 	if (cs < 0 || cs > priv->cs_count) {
-		log_error("Only cs=0..%d are avalable!", priv->cs_count - 1);
+		log_error("Only cs=0..%d are available!", priv->cs_count - 1);
 		return -EINVAL;
 	}
 
@@ -105,7 +104,7 @@ static int imx6_ecspi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	uint8_t val;
 
 	if (dev->flags & SPI_CS_ACTIVE) {
-		imx6_ecspi_set_cs(priv, 1);
+		imx6_ecspi_set_cs(priv, 0);
 	}
 
 	while (count--) {
@@ -119,7 +118,7 @@ static int imx6_ecspi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	}
 
 	if (dev->flags & SPI_CS_INACTIVE) {
-		imx6_ecspi_set_cs(priv, 0);
+		imx6_ecspi_set_cs(priv, 1);
 	}
 
 	return 0;
