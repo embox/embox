@@ -9,6 +9,7 @@
 #include <string.h>
 
 #include <embox/unit.h>
+#include <fs/dentry.h>
 #include <fs/fs_driver.h>
 #include <fs/inode.h>
 #include <fs/super_block.h>
@@ -31,8 +32,10 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 		return NULL;
 	}
 
-	node = node_alloc("/", 0);
+	node = node_alloc("", 0);
 	node->i_sb = node->nas->fs = sb;
+	node->i_mode = S_IFDIR;
+	node->i_dentry->flags = S_IFDIR;
 
 	*sb = (struct super_block) {
 		.fs_drv = drv,

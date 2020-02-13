@@ -95,8 +95,7 @@ struct inode *node_alloc(const char *name, size_t name_len) {
 		name_len = strlen(name);
 	}
 
-	if (!*name || name_len > NAME_MAX) {
-		/* TODO behave more clever here? -- Eldar */
+	if (name_len > NAME_MAX) {
 		return NULL;
 	}
 
@@ -109,7 +108,7 @@ struct inode *node_alloc(const char *name, size_t name_len) {
 	node->name[name_len] = '\0';
 
 	/* it's for permanent linked inode to file tree */
-	node->i_nlink ++;
+	node->i_nlink++;
 
 	return node;
 }
