@@ -76,7 +76,7 @@ static void imx_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 }
 
 gpio_mask_t imx_gpio_get(unsigned char port, gpio_mask_t mask) {
-	int ret = REG32_LOAD(GPIO_DR(port)) & mask;
+	int ret = REG32_LOAD(GPIO_PSR(port)) & mask;
 
 	log_debug("get level for GPIO#%d 0x%08x=0x%08x", port, mask, ret);
 
