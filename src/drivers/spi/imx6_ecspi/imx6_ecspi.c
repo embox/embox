@@ -38,6 +38,13 @@
 
 #define SPI_FIFO_LEN		64
 
+static void imx6_ecspi_show_regs(struct imx6_ecspi *dev) {
+	log_debug("SPI Registers:");
+	log_debug("ECSPI_CONREG    = 0x%08x", REG32_LOAD(ECSPI_CONREG(dev)));
+	log_debug("ECSPI_CONFIGREG = 0x%08x", REG32_LOAD(ECSPI_CONFIGREG(dev)));
+	log_debug("ECSPI_STATREG   = 0x%08x", REG32_LOAD(ECSPI_STATREG(dev)));
+}
+
 int imx6_ecspi_init(struct imx6_ecspi *dev) {
 	/* Disable SPI block */
 	REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_EN);
@@ -51,6 +58,20 @@ int imx6_ecspi_init(struct imx6_ecspi *dev) {
 	/* Set burst length to 8 bits so we work with bytes */
 	REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_BURST_LENGTH_MASK);
 	REG32_ORIN(ECSPI_CONREG(dev), 7 << ECSPI_CONREG_BURST_LENGTH_OFFT);
+
+	/* Set default speed */
+	REG32_ORIN(ECSPI_CONREG(dev), 0x2 << 12);
+
+	/* SCLK_CTL */
+	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 20);
+	/* DATA_CTL */
+	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 16);
+	/* SCLK_POL */
+	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 4);
+	/* SCLK_PHA */
+	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 0);
+
+	imx6_ecspi_show_regs(dev);
 
 	return 0;
 }
