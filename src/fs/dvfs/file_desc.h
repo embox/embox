@@ -23,7 +23,7 @@ struct file_desc {
 
 	off_t pos;
 
-	struct file_operations *f_ops;
+	const struct file_operations *f_ops;
 };
 
 extern off_t file_get_pos(struct file_desc *file);

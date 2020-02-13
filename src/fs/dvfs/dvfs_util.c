@@ -100,7 +100,7 @@ int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	struct super_block *sb;
 	const struct fs_driver *drv;
-
+	struct inode *node;
 
 	assert(fs_type);
 
@@ -117,8 +117,19 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 		.fs_drv    = drv,
 	};
 
+	node = dvfs_alloc_inode(sb);
+
+	*node = (struct inode) {
+		.i_mode   = S_IFDIR,
+		.i_ops    = sb->sb_iops,
+		.i_sb     = sb,
+	};
+
+	sb->sb_root = node;
+
 	if (drv->fill_sb) {
 		if (0 != drv->fill_sb(sb, source)) {
+			dvfs_destroy_inode(node);
 			pool_free(&superblock_pool, sb);
 			return NULL;
 		}
@@ -343,9 +354,13 @@ int dvfs_update_root(void) {
 	assert(global_root);
 
 	sb = rootfs_sb();
-	inode = global_root->d_inode;
-	if (inode == NULL)
-		inode = dvfs_alloc_inode(sb);
+
+	if (sb == NULL) {
+		return 0;
+	}
+
+	inode = sb->sb_root;
+	assert(inode);
 
 	*global_root = (struct dentry) {
 		.d_sb        = sb,
@@ -357,19 +372,11 @@ int dvfs_update_root(void) {
 		.d_lnk       = global_root->d_lnk
 	};
 
-	if (global_root->d_inode)
-		*(global_root->d_inode) = (struct inode) {
-			.i_mode   = S_IFDIR,
-			.i_ops    = sb->sb_iops,
-			.i_sb     = sb,
-			.i_dentry = global_root,
-		};
-
-	if (global_root->d_sb)
-		global_root->d_sb->root = global_root;
+	inode->i_dentry = global_root;
 
 	dlist_init(&global_root->children);
 	dlist_init(&global_root->children_lnk);
+
 	return 0;
 }
 
@@ -422,13 +429,12 @@ int super_block_free(struct super_block *sb) {
 	assert(sb);
 	assert(sb->fs_drv);
 
-	if (sb->fs_drv->clean_sb &&
-		sb->root && sb->root->d_inode) {
+	if (sb->fs_drv->clean_sb) {
 		err = sb->fs_drv->clean_sb(sb);
 	}
 
-	if (sb->root) {
-		sb->root->d_sb = NULL;
+	if (sb->sb_root) {
+		dvfs_destroy_inode(sb->sb_root);
 	}
 
 	pool_free(&superblock_pool, sb);

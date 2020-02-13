@@ -120,6 +120,7 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 }
 
 struct inode_operations ramfs_iops;
+struct super_block_operations { };
 struct super_block_operations ramfs_sbops;
 static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 	struct ramfs_file_info *fi;

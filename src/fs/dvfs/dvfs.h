@@ -22,6 +22,7 @@
 #include <fs/dir_context.h>
 #include <fs/inode.h>
 #include <fs/dentry.h>
+#include <fs/super_block.h>
 #include <sys/stat.h>
 
 /*****************
@@ -43,19 +44,6 @@ struct super_block;
 struct lookup;
 struct inode_operations;
 struct dir_ctx;
-
-struct super_block {
-	const struct fs_driver *fs_drv; /* Assume that all FS have single driver */
-	struct block_dev            *bdev;
-	struct dentry               *root;
-	struct dlist_head           *inode_list;
-
-	struct super_block_operations *sb_ops;
-	struct inode_operations       *sb_iops;
-	struct file_operations        *sb_fops;
-
-	void *sb_data;
-};
 
 struct super_block_operations {
 	struct inode *(*alloc_inode)(struct super_block *sb);
@@ -108,9 +96,6 @@ extern struct dentry *dvfs_cache_lookup(const char *path, struct dentry *base);
 extern struct dentry *dvfs_cache_get(char *path, struct lookup *lookup);
 extern int dvfs_cache_del(struct dentry *dentry);
 extern int dvfs_cache_add(struct dentry *dentry);
-
-extern struct super_block *super_block_alloc(const char *fs_type, const char *source);
-extern int super_block_free(struct super_block *sb);
 
 extern struct block_dev *bdev_by_path(const char *source);
 extern int dvfs_mount(const char *dev, const char *dest, const char *fstype, int flags);

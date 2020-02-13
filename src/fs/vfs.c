@@ -67,11 +67,15 @@ int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 		size_t nnlen;
 
 		if_root_follow_up(node);
-		nnlen = strlen(node->node->name);
 
-		if (nnlen + 1 > ll) {
-			return -ERANGE;
-		}
+		/* Some root nodes are marked with "/" name which leads
+		 * to pathes like "///dev", so we want to avoid it  */
+		if (strcmp(node->node->name, "/") && node->node->name[0] != '\0') {
+			nnlen = strlen(node->node->name);
+
+			if (nnlen + 1 > ll) {
+				return -ERANGE;
+			}
 #ifdef __GNUC__
 #if __GNUC__ > 7
 #pragma GCC diagnostic push
@@ -79,14 +83,15 @@ int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 #endif
-		p = strncpy(p - nnlen, node->node->name, nnlen);
+			p = strncpy(p - nnlen, node->node->name, nnlen);
 #ifdef __GNUC__
 #if __GNUC__ > 7
 #pragma GCC diagnostic pop
 #endif
 #endif
-		*--p = '/';
-		ll -= nnlen + 1;
+			*--p = '/';
+			ll -= nnlen + 1;
+		}
 
 		vfs_get_parent(node, node);
 	}

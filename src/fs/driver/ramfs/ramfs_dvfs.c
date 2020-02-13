@@ -113,16 +113,15 @@ static int ramfs_truncate(struct inode *inode, size_t len) {
 	return 0;
 }
 
-static struct inode *ramfs_ilookup(char const *name, struct dentry const *dir) {
+static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	struct inode *node;
 	struct super_block *sb;
 
 	assert(dir);
-	assert(dir->d_inode);
-	assert(dir->d_inode->i_sb);
-	assert(dir->d_inode->i_sb->sb_data);
+	assert(dir->i_sb);
+	assert(dir->i_sb->sb_data);
 
-	sb = dir->d_inode->i_sb;
+	sb = dir->i_sb;
 
 	for (int i = 0; i < RAMFS_FILES; i++) {
 		if (ramfs_files[i].fsi != sb->sb_data) {
@@ -187,10 +186,6 @@ struct super_block_operations ramfs_sbops = {
 	.destroy_inode = ramfs_destroy_inode,
 };
 
-static int ramfs_mount_end(struct super_block *sb) {
-	return 0;
-}
-
 static int ramfs_format(struct block_dev *bdev, void *priv) {
 	if (NULL == bdev) {
 		return -ENODEV;
@@ -206,7 +201,6 @@ static int ramfs_format(struct block_dev *bdev, void *priv) {
 static const struct fs_driver ramfs_dumb_driver = {
 	.name      = "ramfs",
 	.fill_sb   = ramfs_fill_sb,
-	.mount_end = ramfs_mount_end,
 	.format    = ramfs_format,
 };
 

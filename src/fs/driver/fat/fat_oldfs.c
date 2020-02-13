@@ -37,7 +37,7 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	struct inode *node;
 	mode_t mode;
 	int ret;
-	struct dirinfo *new_di;
+	struct dirinfo *new_di = NULL;
 	struct fat_fs_info *fsi = parent_nas->fs->sb_data;
 
 	fat_reset_dir(parent_di);
@@ -112,14 +112,6 @@ static int fat_create_dir_entry(struct nas *parent_nas,
 	return ENOERR;
 }
 
-static void fat_free_fs(struct super_block *sb) {
-	struct fat_fs_info *fsi = sb->sb_data;
-
-	if (NULL != fsi) {
-		fat_fs_free(fsi);
-	}
-}
-
 static int fatfs_umount_entry(struct inode *node) {
 	if (node_is_directory(node)) {
 		fat_dirinfo_free(inode_priv(node));
@@ -133,49 +125,18 @@ static int fatfs_umount_entry(struct inode *node) {
 extern struct file_operations fat_fops;
 
 struct inode_operations fat_iops;
+struct super_block_operations { };
 struct super_block_operations fat_sbops;
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 
 static int fatfs_mount(struct super_block *sb, struct inode *dest) {
-	struct nas *dir_nas;
 	struct dirinfo *di;
-	struct fat_fs_info *fsi;
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
 	struct fat_dirent de;
-	int rc;
 
-	dir_nas = dest->nas;
-	fsi = sb->sb_data;
+	di = inode_priv(dest);
 
-	/* allocate this directory info */
-	if (NULL == (di = fat_dirinfo_alloc())) {
-		rc = -ENOMEM;
-		goto error;
-	}
-	memset(di, 0, sizeof(struct dirinfo));
-	inode_priv_set(dest, di);
-	di->fi.fsi = fsi;
-	di->p_scratch = fat_sector_buff;
-	fsi->root = dest;
-
-	pstart = fat_get_ptn_start(sb->bdev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		rc = -1;
-		goto error;
-	}
-
-	if (fat_open_rootdir(fsi, di)) {
-		return -EBUSY;
-	}
-
-	return fat_create_dir_entry(dir_nas, di, &de);
-
-error:
-	fat_free_fs(sb);
-
-	return rc;
+	return fat_create_dir_entry(dest->nas, di, &de);
 }
 
 static int fatfs_create(struct inode *parent_node, struct inode *node) {

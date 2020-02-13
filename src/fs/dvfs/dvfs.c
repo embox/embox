@@ -299,6 +299,7 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 
 struct block_dev *bdev_by_path(const char *dev_name) {
 	struct lookup lookup = {};
+	struct dev_module *devmod;
 	int res;
 
 	if (!dev_name) {
@@ -325,7 +326,9 @@ struct block_dev *bdev_by_path(const char *dev_name) {
 
 	assert(lookup.item->d_inode);
 
-	return lookup.item->d_inode->i_data;
+	devmod = inode_priv(lookup.item->d_inode);
+
+	return devmod->dev_priv;
 }
 
 extern int dvfs_cache_del(struct dentry *dentry);
@@ -380,28 +383,13 @@ int dvfs_mount(const char *source, const char *dest, const char *fs_type, int fl
 		d = dvfs_alloc_dentry();
 
 		d->flags |= VFS_DIR_VIRTUAL;
-		dentry_fill(sb, NULL, d, lookup.parent);
+		dentry_fill(sb, sb->sb_root, d, lookup.parent);
 		strcpy(d->name, lookup.item->name);
 
 		d->flags |= S_IFDIR | DVFS_MOUNT_POINT;
-		d->d_sb  = sb,
-		sb->root = d;
-
-		d->d_inode = dvfs_alloc_inode(sb);
-		*d->d_inode = (struct inode) {
-			.i_mode   = S_IFDIR,
-			.i_ops    = sb->sb_iops,
-			.i_sb     = sb,
-			.i_dentry = d,
-		};
 	}
 
-	if (sb->fs_drv->mount_end) {
-		if ((err = sb->fs_drv->mount_end(sb)))
-			goto err_free_all;
-	}
-
-	goto err_ok;
+	return 0;
 err_free_all:
 	if (d != NULL) {
 		dvfs_destroy_inode(d->d_inode);
@@ -415,10 +403,7 @@ err_free_all:
 	}
 
 	return err;
-err_ok:
-	return 0;
 }
-
 
 /**
  * @brief Recoursive dentry freeing

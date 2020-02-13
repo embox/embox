@@ -99,12 +99,12 @@ static int initfs_fill_inode(struct inode *node, char *cpio,
 	return 0;
 }
 
-static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
+static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
 	struct cpio_entry entry;
 	struct inode *node = NULL;
-	struct initfs_dir_info *di = dir->d_inode->i_data;
+	struct initfs_dir_info *di = inode_priv(dir);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
 		if (!memcmp(di->path, entry.name, di->path_len) &&
@@ -118,7 +118,7 @@ static struct inode *initfs_lookup(char const *name, struct dentry const *dir) {
 				break;
 			}
 
-			node = dvfs_alloc_inode(dir->d_sb);
+			node = dvfs_alloc_inode(dir->i_sb);
 			if (node == NULL) {
 				break;
 			}
@@ -173,18 +173,6 @@ static int initfs_iterate(struct inode *next, char *name, struct inode *parent, 
 	return -1;
 }
 
-static int initfs_mount_end(struct super_block *sb) {
-	struct initfs_dir_info *di;
-
-	di = pool_alloc(&initfs_dir_pool);
-	assert(di);
-
-	memset(di, 0, sizeof(struct initfs_dir_info));
-	sb->root->d_inode->i_data = di;
-
-	return 0;
-}
-
 static int initfs_destroy_inode(struct inode *inode) {
 	if (!inode->i_data) {
 		return 0;
@@ -211,10 +199,20 @@ struct inode_operations initfs_iops = {
 extern struct file_operations initfs_fops;
 
 static int initfs_fill_sb(struct super_block *sb, const char *source) {
+	struct initfs_dir_info *di;
+
 	sb->sb_iops = &initfs_iops;
 	sb->sb_fops = &initfs_fops;
 	sb->sb_ops  = &initfs_sbops;
 	sb->bdev = NULL;
+
+	di = pool_alloc(&initfs_dir_pool);
+	if (di == NULL) {
+		return -ENOMEM;
+	}
+
+	memset(di, 0, sizeof(struct initfs_dir_info));
+	inode_priv_set(sb->sb_root, di);
 
 	return 0;
 }
@@ -222,7 +220,6 @@ static int initfs_fill_sb(struct super_block *sb, const char *source) {
 static const struct fs_driver initfs_dumb_driver = {
 	.name      = "initfs",
 	.fill_sb   = initfs_fill_sb,
-	.mount_end = initfs_mount_end,
 };
 
 ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);

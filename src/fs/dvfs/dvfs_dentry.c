@@ -129,7 +129,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	assert(parent->d_sb->sb_iops);
 	assert(parent->d_sb->sb_iops->lookup);
 
-	if (!(in = parent->d_sb->sb_iops->lookup(buff, parent))) {
+	if (!(in = parent->d_sb->sb_iops->lookup(buff, parent->d_inode))) {
 		*lookup = (struct lookup) {
 			.item   = NULL,
 			.parent = parent,
