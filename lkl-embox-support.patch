@@ -1,0 +1,442 @@
+diff --git a/arch/lkl/defconfig b/arch/lkl/defconfig
+index f91380b..30474d7 100644
+--- a/arch/lkl/defconfig
++++ b/arch/lkl/defconfig
+@@ -20,7 +20,7 @@ CONFIG_INET=y
+ # CONFIG_FW_LOADER is not set
+ CONFIG_VIRTIO_BLK=y
+ CONFIG_NETDEVICES=y
+-CONFIG_VIRTIO_NET=y
++CONFIG_VIRTIO_NET=n
+ # CONFIG_ETHERNET is not set
+ # CONFIG_WLAN is not set
+ # CONFIG_VT is not set
+@@ -31,8 +31,11 @@ CONFIG_EXT4_FS_POSIX_ACL=y
+ CONFIG_EXT4_FS_SECURITY=y
+ CONFIG_XFS_FS=y
+ CONFIG_XFS_POSIX_ACL=y
+-CONFIG_BTRFS_FS=y
+-CONFIG_BTRFS_FS_POSIX_ACL=y
++# Disabled BTRFS for Embox (we can't select the fastest algorithm for raid6 at the moment)
++# See https://github.com/lkl/linux/issues/296#issuecomment-273345189
++CONFIG_BTRFS_FS=n
++CONFIG_BTRFS_FS_POSIX_ACL=n
++CONFIG_RAID6_PQ=n
+ # CONFIG_FILE_LOCKING is not set
+ # CONFIG_DNOTIFY is not set
+ # CONFIG_INOTIFY_USER is not set
+diff --git a/arch/lkl/kernel/threads.c b/arch/lkl/kernel/threads.c
+index 71dddda..eeda6ea 100644
+--- a/arch/lkl/kernel/threads.c
++++ b/arch/lkl/kernel/threads.c
+@@ -56,7 +56,7 @@ static void kill_thread(struct thread_info *ti)
+ 	if (!test_ti_thread_flag(ti, TIF_HOST_THREAD)) {
+ 		ti->dead = true;
+ 		lkl_ops->sem_up(ti->sched_sem);
+-		lkl_ops->thread_join(ti->tid);
++		// lkl_ops->thread_join(ti->tid);
+ 	}
+ 	lkl_ops->sem_free(ti->sched_sem);
+ 
+diff --git a/lib/raid6/algos.c b/lib/raid6/algos.c
+index 9bdf597..a66ba8d 100644
+--- a/lib/raid6/algos.c
++++ b/lib/raid6/algos.c
+@@ -192,8 +192,8 @@ static inline const struct raid6_calls *raid6_choose_gen(
+ 
+ 			preempt_disable();
+ 			j0 = jiffies;
+-			while ((j1 = jiffies) == j0)
+-				cpu_relax();
++			// while ((j1 = jiffies) == j0)
++				// cpu_relax();
+ 			while (time_before(jiffies,
+ 					    j1 + (1<<RAID6_TIME_JIFFIES_LG2))) {
+ 				(*algo)->xor_syndrome(disks, start, stop,
+diff --git a/tools/lkl/Makefile b/tools/lkl/Makefile
+index acfbfc3..797ef98 100644
+--- a/tools/lkl/Makefile
++++ b/tools/lkl/Makefile
+@@ -68,9 +68,11 @@ $(OUTPUT)lib/lkl.o: bin/stat
+ 	$(MAKE) -C ../.. ARCH=lkl $(KOPT) install INSTALL_PATH=$(OUTPUT)
+ 
+ # rules to link libs
+-$(OUTPUT)%$(SOSUF): LDFLAGS += -shared
++# Embox doesn't like shared :)
++# $(OUTPUT)%$(SOSUF): LDFLAGS += -shared
+ $(OUTPUT)%$(SOSUF): $(OUTPUT)%-in.o $(OUTPUT)liblkl.a
+-	$(QUIET_LINK)$(CC) $(LDFLAGS) $(LDFLAGS_$*-y) -o $@ $^ $(LDLIBS) $(LDLIBS_$*-y)
++	# Disabled for Embox: everything is linked inside of Embox image
++	# $(QUIET_LINK)$(CC) $(LDFLAGS) $(LDFLAGS_$*-y) -o $@ $^ $(LDLIBS) $(LDLIBS_$*-y)
+ 
+ # liblkl is special
+ $(OUTPUT)liblkl$(SOSUF): $(OUTPUT)%-in.o $(OUTPUT)lib/lkl.o
+@@ -78,8 +80,9 @@ $(OUTPUT)liblkl.a: $(OUTPUT)lib/liblkl-in.o $(OUTPUT)lib/lkl.o
+ 	$(QUIET_AR)$(AR) -rc $@ $^
+ 
+ # rule to link programs
+-$(OUTPUT)%$(EXESUF): $(OUTPUT)%-in.o $(OUTPUT)liblkl.a
+-	$(QUIET_LINK)$(CC) $(LDFLAGS) $(LDFLAGS_$*-y) -o $@ $^ $(LDLIBS) $(LDLIBS_$*-y)
++# Disabled for Embox: everything is linked inside of Embox image
++# $(OUTPUT)%$(EXESUF): $(OUTPUT)%-in.o $(OUTPUT)liblkl.a
++# 	$(QUIET_LINK)$(CC) $(LDFLAGS) $(LDFLAGS_$*-y) -o $@ $^ $(LDLIBS) $(LDLIBS_$*-y)
+ 
+ # rule to build objects
+ $(OUTPUT)%-in.o: $(OUTPUT)lib/lkl.o FORCE
+diff --git a/tools/lkl/Makefile.autoconf b/tools/lkl/Makefile.autoconf
+index eeab41f..d402ec0 100644
+--- a/tools/lkl/Makefile.autoconf
++++ b/tools/lkl/Makefile.autoconf
+@@ -26,7 +26,7 @@ define bsd_host
+ endef
+ 
+ define virtio_net_dpdk
+-  $(call set_autoconf_var,VIRTIO_NET_DPDK,y)
++  $(call set_autoconf_var,VIRTIO_NET_DPDK,n)
+   RTE_SDK ?= $(OUTPUT)/dpdk-17.02
+   RTE_TARGET ?= build
+   DPDK_LIBS = -lrte_pmd_vmxnet3_uio -lrte_pmd_ixgbe -lrte_pmd_e1000
+@@ -40,13 +40,13 @@ define virtio_net_dpdk
+ endef
+ 
+ define virtio_net_vde
+-  $(call set_autoconf_var,VIRTIO_NET_VDE,y)
++  $(call set_autoconf_var,VIRTIO_NET_VDE,n)
+   LDLIBS += $(shell pkg-config --libs vdeplug)
+ endef
+ 
+ define posix_host
+   $(call set_autoconf_var,POSIX,y)
+-  $(call set_autoconf_var,VIRTIO_NET,y)
++  $(call set_autoconf_var,VIRTIO_NET,n)
+   LDFLAGS += -pie
+   CFLAGS += -fPIC -pthread
+   SOSUF := .so
+@@ -56,8 +56,11 @@ define posix_host
+   $(if $(filter yes,$(vde)),$(call virtio_net_vde))
+   $(if $(strip $(call find_include,fuse.h)),$(call set_autoconf_var,FUSE,y))
+   $(if $(strip $(call find_include,archive.h)),$(call set_autoconf_var,ARCHIVE,y))
+-  $(if $(strip $(call find_include,linux/if_tun.h)),$(call set_autoconf_var,VIRTIO_NET_MACVTAP,y))
++  $(call set_autoconf_var,VIRTIO_NET_MACVTAP,n)
+   $(if $(filter $(1),elf64-x86-64-freebsd),$(call set_autoconf_var,NEEDS_LARGP,y))
++  $(call set_autoconf_var,BTRFS_FS_POSIX_ACL,n)
++  $(call set_autoconf_var,BTRFS_FS,n)
++  $(call set_autoconf_var,CONFIG_RAID6_PQ,n)
+ endef
+ 
+ define nt64_host
+diff --git a/tools/lkl/Targets b/tools/lkl/Targets
+index c97c924..e408403 100644
+--- a/tools/lkl/Targets
++++ b/tools/lkl/Targets
+@@ -1,26 +1,27 @@
+ libs-y += lib/liblkl
+ 
+-# Including hijack brokes build in my environment, temporarily disabled
+-# ifneq ($(LKL_HOST_CONFIG_BSD),y)
++ifneq ($(LKL_HOST_CONFIG_BSD),y)
++# Temporarily disabled hijack for Embox
+ # libs-$(LKL_HOST_CONFIG_POSIX) += lib/hijack/liblkl-hijack
+-# endif
++endif
+ LDFLAGS_lib/hijack/liblkl-hijack-y += -shared -nodefaultlibs
+ LDLIBS_lib/hijack/liblkl-hijack-y += -ldl
+ LDLIBS_lib/hijack/liblkl-hijack-$(LKL_HOST_CONFIG_ANDROID) += -lgcc -lc
+ 
+-progs-$(LKL_HOST_CONFIG_FUSE) += lklfuse
+-LDLIBS_lklfuse-y := -lfuse
++# We don't need all these apps for Embox at the moment
+ 
+-progs-$(LKL_HOST_CONFIG_ARCHIVE) += fs2tar
+-LDLIBS_fs2tar-y := -larchive
+-LDLIBS_fs2tar-$(LKL_HOST_CONFIG_NEEDS_LARGP) += -largp
++# progs-$(LKL_HOST_CONFIG_FUSE) += lklfuse
++# LDLIBS_lklfuse-y := -lfuse
+ 
++# progs-$(LKL_HOST_CONFIG_ARCHIVE) += fs2tar
++# LDLIBS_fs2tar-y := -larchive
++# LDLIBS_fs2tar-$(LKL_HOST_CONFIG_NEEDS_LARGP) += -largp
+ 
+-progs-$(LKL_HOST_CONFIG_ARCHIVE) += cptofs
+-LDLIBS_cptofs-y := -larchive
+-LDLIBS_cptofs-$(LKL_HOST_CONFIG_NEEDS_LARGP) += -largp
+ 
+-progs-y += tests/boot
+-progs-y += tests/disk
+-progs-y += tests/net-test
++# progs-$(LKL_HOST_CONFIG_ARCHIVE) += cptofs
++# LDLIBS_cptofs-y := -larchive
++# LDLIBS_cptofs-$(LKL_HOST_CONFIG_NEEDS_LARGP) += -largp
+ 
++# progs-y += tests/boot
++# progs-y += tests/disk
++# progs-y += tests/net-test
+diff --git a/tools/lkl/lib/config.c b/tools/lkl/lib/config.c
+index 0908f1d..65f7ab3 100644
+--- a/tools/lkl/lib/config.c
++++ b/tools/lkl/lib/config.c
+@@ -472,20 +472,20 @@ static int lkl_config_netdev_create(struct lkl_config *cfg,
+ 	if (iface->iftap) {
+ 		lkl_printf("WARN: LKL_HIJACK_NET_TAP is now obsoleted.\n");
+ 		lkl_printf("use LKL_HIJACK_NET_IFTYPE and PARAMS\n");
+-		nd = lkl_netdev_tap_create(iface->iftap, offload);
++		// nd = lkl_netdev_tap_create(iface->iftap, offload);
+ 	}
+ 
+ 	if (!nd && iface->iftype && iface->ifparams) {
+ 		if ((strcmp(iface->iftype, "tap") == 0)) {
+-			nd = lkl_netdev_tap_create(iface->ifparams, offload);
++			// nd = lkl_netdev_tap_create(iface->ifparams, offload);
+ 		} else if ((strcmp(iface->iftype, "macvtap") == 0)) {
+-			nd = lkl_netdev_macvtap_create(iface->ifparams,
+-						       offload);
++			// nd = lkl_netdev_macvtap_create(iface->ifparams,
++			//			       offload);
+ 		} else if ((strcmp(iface->iftype, "dpdk") == 0)) {
+ 			nd = lkl_netdev_dpdk_create(iface->ifparams, offload,
+ 						    mac);
+ 		} else if ((strcmp(iface->iftype, "pipe") == 0)) {
+-			nd = lkl_netdev_pipe_create(iface->ifparams, offload);
++			// nd = lkl_netdev_pipe_create(iface->ifparams, offload);
+ 		} else {
+ 			if (offload) {
+ 				lkl_printf("WARN: %s isn't supported on %s\n",
+@@ -498,8 +498,9 @@ static int lkl_config_netdev_create(struct lkl_config *cfg,
+ 		}
+ 		if (strcmp(iface->iftype, "vde") == 0)
+ 			nd = lkl_netdev_vde_create(iface->ifparams);
+-		if (strcmp(iface->iftype, "raw") == 0)
+-			nd = lkl_netdev_raw_create(iface->ifparams);
++		if (strcmp(iface->iftype, "raw") == 0) {
++			// nd = lkl_netdev_raw_create(iface->ifparams);
++		}
+ 	}
+ 
+ 	if (nd) {
+@@ -521,7 +522,7 @@ static int lkl_config_netdev_create(struct lkl_config *cfg,
+ 		}
+ 
+ 		nd_args.offload = offload;
+-		ret = lkl_netdev_add(nd, &nd_args);
++		// ret = lkl_netdev_add(nd, &nd_args);
+ 		if (ret < 0) {
+ 			lkl_printf("failed to add netdev: %s\n",
+ 				   lkl_strerror(ret));
+@@ -779,9 +780,10 @@ int lkl_unload_config(struct lkl_config *cfg)
+ 
+ 		for (iface = cfg->ifaces; iface; iface = iface->next) {
+ 			if (iface->nd) {
+-				if (iface->nd->id >= 0)
+-					lkl_netdev_remove(iface->nd->id);
+-				lkl_netdev_free(iface->nd);
++				if (iface->nd->id >= 0) {
++					// lkl_netdev_remove(iface->nd->id);
++				}
++				// lkl_netdev_free(iface->nd);
+ 			}
+ 		}
+ 
+diff --git a/tools/lkl/lib/posix-host.c b/tools/lkl/lib/posix-host.c
+index db63ed7..4ba81bd 100644
+--- a/tools/lkl/lib/posix-host.c
++++ b/tools/lkl/lib/posix-host.c
+@@ -12,7 +12,6 @@
+ #include <sys/uio.h>
+ #include <sys/types.h>
+ #include <sys/socket.h>
+-#include <sys/syscall.h>
+ #include <poll.h>
+ #include <lkl_host.h>
+ #include "iomem.h"
+@@ -165,18 +164,20 @@ static struct lkl_mutex *mutex_alloc(int recursive)
+ 	return _mutex;
+ }
+ 
+-static void mutex_lock(struct lkl_mutex *mutex)
++/* Renamed mutex_XXX to mutex_XXX_lkl functions to avoid name problems when building for Embox */
++
++static void mutex_lock_lkl(struct lkl_mutex *mutex)
+ {
+ 	WARN_PTHREAD(pthread_mutex_lock(&mutex->mutex));
+ }
+ 
+-static void mutex_unlock(struct lkl_mutex *_mutex)
++static void mutex_unlock_lkl(struct lkl_mutex *_mutex)
+ {
+ 	pthread_mutex_t *mutex = &_mutex->mutex;
+ 	WARN_PTHREAD(pthread_mutex_unlock(mutex));
+ }
+ 
+-static void mutex_free(struct lkl_mutex *_mutex)
++static void mutex_free_lkl(struct lkl_mutex *_mutex)
+ {
+ 	pthread_mutex_t *mutex = &_mutex->mutex;
+ 	WARN_PTHREAD(pthread_mutex_destroy(mutex));
+@@ -258,44 +259,45 @@ static unsigned long long time_ns(void)
+ 	return 1e9*ts.tv_sec + ts.tv_nsec;
+ }
+ 
+-static void *timer_alloc(void (*fn)(void *), void *arg)
+-{
+-	int err;
+-	timer_t timer;
+-	struct sigevent se =  {
+-		.sigev_notify = SIGEV_THREAD,
+-		.sigev_value = {
+-			.sival_ptr = arg,
+-		},
+-		.sigev_notify_function = (void (*)(union sigval))fn,
+-	};
+-
+-	err = timer_create(CLOCK_REALTIME, &se, &timer);
+-	if (err)
+-		return NULL;
+-
+-	return (void *)(long)timer;
+-}
+-
+-static int timer_set_oneshot(void *_timer, unsigned long ns)
+-{
+-	timer_t timer = (timer_t)(long)_timer;
+-	struct itimerspec ts = {
+-		.it_value = {
+-			.tv_sec = ns / 1000000000,
+-			.tv_nsec = ns % 1000000000,
+-		},
+-	};
+-
+-	return timer_settime(timer, 0, &ts, NULL);
+-}
+-
+-static void timer_free(void *_timer)
+-{
+-	timer_t timer = (timer_t)(long)_timer;
+-
+-	timer_delete(timer);
+-}
++/* No timer support from Embox at the moment */
++
++// static void *timer_alloc(void (*fn)(void *), void *arg)
++// {
++// 	int err;
++// 	timer_t timer;
++// 	struct sigevent se =  {
++// 		.sigev_value = {
++// 			.sival_ptr = arg,
++// 		},
++// 		.sigev_notify_function = (void (*)(union sigval))fn,
++// 	};
++
++// 	err = timer_create(CLOCK_REALTIME, &se, &timer);
++// 	if (err)
++// 		return NULL;
++
++// 	return (void *)(long)timer;
++// }
++
++// static int timer_set_oneshot(void *_timer, unsigned long ns)
++// {
++// 	timer_t timer = (timer_t)(long)_timer;
++// 	struct itimerspec ts = {
++// 		.it_value = {
++// 			.tv_sec = ns / 1000000000,
++// 			.tv_nsec = ns % 1000000000,
++// 		},
++// 	};
++
++// 	return timer_settime(timer, 0, &ts, NULL);
++// }
++
++// static void timer_free(void *_timer)
++// {
++// 	timer_t timer = (timer_t)(long)_timer;
++
++// 	timer_delete(timer);
++// }
+ 
+ static void panic(void)
+ {
+@@ -307,7 +309,8 @@ static long _gettid(void)
+ #ifdef	__FreeBSD__
+ 	return (long)pthread_self();
+ #else
+-	return syscall(SYS_gettid);
++	/* For Embox it is almost the same */
++	return (int)pthread_self();
+ #endif
+ }
+ 
+@@ -324,17 +327,17 @@ struct lkl_host_operations lkl_host_ops = {
+ 	.sem_up = sem_up,
+ 	.sem_down = sem_down,
+ 	.mutex_alloc = mutex_alloc,
+-	.mutex_free = mutex_free,
+-	.mutex_lock = mutex_lock,
+-	.mutex_unlock = mutex_unlock,
++	.mutex_free = mutex_free_lkl,
++	.mutex_lock = mutex_lock_lkl,
++	.mutex_unlock = mutex_unlock_lkl,
+ 	.tls_alloc = tls_alloc,
+ 	.tls_free = tls_free,
+ 	.tls_set = tls_set,
+ 	.tls_get = tls_get,
+ 	.time = time_ns,
+-	.timer_alloc = timer_alloc,
+-	.timer_set_oneshot = timer_set_oneshot,
+-	.timer_free = timer_free,
++	// .timer_alloc = timer_alloc,
++	// .timer_set_oneshot = timer_set_oneshot,
++	// .timer_free = timer_free,
+ 	.print = print,
+ 	.mem_alloc = malloc,
+ 	.mem_free = free,
+@@ -396,10 +399,11 @@ static int blk_request(struct lkl_disk disk, struct lkl_blk_req *req)
+ 
+ 	switch (req->type) {
+ 	case LKL_DEV_BLK_TYPE_READ:
+-		err = do_rw(pread, disk, req);
++		/*TODO: investigate here*/
++		// err = do_rw(pread, disk, req);
+ 		break;
+ 	case LKL_DEV_BLK_TYPE_WRITE:
+-		err = do_rw(pwrite, disk, req);
++		// err = do_rw(pwrite, disk, req);
+ 		break;
+ 	case LKL_DEV_BLK_TYPE_FLUSH:
+ 	case LKL_DEV_BLK_TYPE_FLUSH_OUT:
+diff --git a/tools/lkl/lib/virtio_net_fd.c b/tools/lkl/lib/virtio_net_fd.c
+index 4e2b67b..eb7fe5c 100644
+--- a/tools/lkl/lib/virtio_net_fd.c
++++ b/tools/lkl/lib/virtio_net_fd.c
+@@ -18,12 +18,17 @@
+ #include <limits.h>
+ #endif
+ #include <fcntl.h>
+-#include <sys/poll.h>
++//#include <poll.h>
+ #include <sys/uio.h>
+ 
+ #include "virtio.h"
+ #include "virtio_net_fd.h"
+ 
++// #ifndef PIPE_BUF
++// #define PIPE_BUF 	4096
++// #endif
++
++
+ struct lkl_netdev_fd {
+ 	struct lkl_netdev dev;
+ 	/* file-descriptor based device */
+diff --git a/tools/lkl/lib/virtio_net_tap.c b/tools/lkl/lib/virtio_net_tap.c
+index e5302a3..be615fc 100644
+--- a/tools/lkl/lib/virtio_net_tap.c
++++ b/tools/lkl/lib/virtio_net_tap.c
+@@ -94,6 +94,8 @@ struct lkl_netdev *lkl_netdev_tap_create(const char *ifname, int offload)
+ 	char *path = "/dev/net/tun";
+ #elif __FreeBSD__
+ 	char path[32];
++// #else
++//	char path[32];
+ 
+ 	sprintf(path, "/dev/%s", ifname);
+ #endif

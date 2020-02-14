@@ -1,0 +1,10 @@
+package third_party
+
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+module lkl {
+	depends embox.compat.libc.all
+	depends embox.compat.posix.pthread_key
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "liblkl.a"
+}

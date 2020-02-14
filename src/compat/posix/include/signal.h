@@ -83,6 +83,21 @@ union sigval {
 	void *sival_ptr;
 };
 
+struct sigevent {
+	int          sigev_notify; /* Notification method */
+	int          sigev_signo;  /* Notification signal */
+	union sigval sigev_value;  /* Data passed with
+                                         notification */
+	void       (*sigev_notify_function) (union sigval);
+                            /* Function used for thread
+                               notification (SIGEV_THREAD) */
+	void        *sigev_notify_attributes;
+                            /* Attributes for notification thread
+                               (SIGEV_THREAD) */
+	pid_t        sigev_notify_thread_id;
+                            /* ID of thread to signal (SIGEV_THREAD_ID) */
+};
+
 typedef struct {
 	int           si_signo;
 	int           si_code;

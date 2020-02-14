@@ -1,0 +1,18 @@
+package third_party
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "hello",
+	help = "Simple Hello World",
+	man = '''
+		NAME
+			hello - Simple "Hello World"
+		AUTHORS
+			Anton Ostrouhhov
+	''')
+module hello {
+	source "^BUILD/extbld/^MOD_PATH/install/hello.o"
+
+	depends embox.compat.libc.all
+}

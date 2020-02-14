@@ -1,0 +1,19 @@
+package third_party
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "lkltest",
+	help = "Simple LKL test",
+	man = '''
+		NAME
+			lkltest - Simple LKL test
+		AUTHORS
+			Anton Ostrouhhov
+	''')
+module lkltest {
+	source "^BUILD/extbld/^MOD_PATH/install/lkltest.o"
+
+	depends embox.compat.libc.all
+	depends third_party.lkl
+}
