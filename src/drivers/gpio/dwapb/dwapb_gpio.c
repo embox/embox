@@ -38,7 +38,7 @@ static int dwapb_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode)
 
 	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
 
-	log_debug("%p mask 0x%X mode %d", gpio_port, mask, mode);
+	log_debug("port %d mask 0x%X mode %d", port, mask, mode);
 	ctl = REG32_LOAD(&gpio_port->ctl);
 	ctl &= ~mask;
 	REG32_STORE(&gpio_port->ctl, ctl); /* all hardware pins */
@@ -68,7 +68,7 @@ static void dwapb_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 	} else {
 		dr &= ~mask;
 	}
-	log_debug("%p mask 0x%X mode %d", gpio_port, mask, level);
+	log_debug("%d mask 0x%X mode %d", port, mask, level);
 	REG32_STORE(&gpio_port->dr, dr);
 }
 
