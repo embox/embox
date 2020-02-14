@@ -1,4 +1,14 @@
-Embox [![Build Status](https://travis-ci.org/aostrouhhov/embox.svg?branch=master)](https://travis-ci.org/aostrouhhov/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
+Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
+=====
+## LKL specific info
+
+LKL can be built only in x86 environment (not x86-64).
+Suitablel docker image may be used.
+`embox/emdocker-lkl` (based on `i386/ubuntu`) have all necessary packages installed.
+
+```
+docker run -it --rm --name emdocker -u $(id -u):$(id -g) -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
+```
 =====
 
 Embox is a configurable operating system kernel designed for resource
