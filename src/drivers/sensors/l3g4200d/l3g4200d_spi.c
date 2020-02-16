@@ -63,6 +63,8 @@ int l3g4200d_hw_init(struct l3g4200d_dev *dev) {
 	}
 	spi_set_master_mode(dev->spi_dev);
 
+	spi_select(dev->spi_dev, 0);
+
 	dev->spi_dev->flags |= SPI_CS_ACTIVE;
 	dev->spi_dev->flags |= SPI_CS_INACTIVE;
 	return 0;
