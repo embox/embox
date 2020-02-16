@@ -20,6 +20,8 @@
 
 #include "dw_spi.h"
 
+#define SPI_DE0_NANO_SOC      OPTION_GET(BOOLEAN,spi_de0_nano_soc)
+
 /* I am not sure it's a constant for all types of DW SPI controllers.
  * For example, Linux calculates this value in drivers/spi/spi-dw.c:spi_hw_init,
  * But at the same time, DW SPI datasheet says something
@@ -34,10 +36,24 @@ static void dw_spi_write(struct dw_spi *dw_spi, int offset, uint32_t val) {
 	REG32_STORE(dw_spi->base_addr + offset, val);
 }
 
-int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr) {
+
+/* Init hook for DE0 Nano SOC board. SPI and I2C share
+ * same pins, so we need to switch to SPI. */
+static void __attribute__((used)) spi1_de0_nano_soc_init(void) {
+	gpio_setup_mode(GPIO_PORT_B, 1 << 11, GPIO_MODE_OUTPUT);
+	gpio_set(GPIO_PORT_B, 1 << 11, GPIO_PIN_LOW);
+}
+
+static int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr) {
 	uint32_t reg;
 
 	dw_spi->base_addr = base_addr;
+
+#if SPI_DE0_NANO_SOC
+	if (spi_nr == 1) {
+		spi1_de0_nano_soc_init();
+	}
+#endif
 
 	/* FIXME
 	 * It also required to set clocks and clear resets.
@@ -181,16 +197,16 @@ SPI_DEV_DEF("dw_spi", &dw_spi_ops, &dw_spi3, 3);
 EMBOX_UNIT_INIT(dw_spi_module_init);
 static int dw_spi_module_init(void) {
 #if DW_SPI0_BASE != 0
-	dw_spi_init(&dw_spi0, DW_SPI0_BASE);
+	dw_spi_init(&dw_spi0, DW_SPI0_BASE, 0);
 #endif
 #if DW_SPI1_BASE != 0
-	dw_spi_init(&dw_spi1, DW_SPI1_BASE);
+	dw_spi_init(&dw_spi1, DW_SPI1_BASE, 1);
 #endif
 #if DW_SPI2_BASE != 0
-	dw_spi_init(&dw_spi2, DW_SPI2_BASE);
+	dw_spi_init(&dw_spi2, DW_SPI2_BASE, 2);
 #endif
 #if DW_SPI3_BASE != 0
-	dw_spi_init(&dw_spi3, DW_SPI3_BASE);
+	dw_spi_init(&dw_spi3, DW_SPI3_BASE, 3);
 #endif
 	return 0;
 }

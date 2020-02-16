@@ -6,9 +6,9 @@ module dw_spi {
 	option number base_addr2 = 0
 	option number base_addr3 = 0
 
-	option number log_level = 0
+	option boolean spi_de0_nano_soc = false
 
-	option number bus_id = 0
+	option number log_level = 0
 
 	source "dw_spi.c"
 

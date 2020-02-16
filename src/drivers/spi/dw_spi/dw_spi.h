@@ -56,6 +56,4 @@ struct dw_spi {
 	uintptr_t base_addr;
 };
 
-extern int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr);
-
 #endif /* DW_SPI_H */
