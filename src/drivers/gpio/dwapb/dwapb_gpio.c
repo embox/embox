@@ -19,9 +19,10 @@
 #include <drivers/gpio/gpio_driver.h>
 
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
-#define BASE_CTRL_ADDR ((uintptr_t) OPTION_GET(NUMBER,base_addr))
+#define BASE_CTRL_ADDR(i) \
+	((uintptr_t) OPTION_GET(NUMBER,base_addr) + (i) * 0x1000)
 
-#define DWAPB_GPIO_PORTS_COUNT 4
+#define DWAPB_GPIO_PORTS_COUNT OPTION_GET(NUMBER,gpio_ports)
 
 EMBOX_UNIT_INIT(dwapb_gpio_init);
 
@@ -36,9 +37,9 @@ static int dwapb_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode)
 	uint32_t direction;
 	uint32_t ctl;
 
-	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
+	gpio_port = (struct gpio_dwapb_port *) BASE_CTRL_ADDR(port);
 
-	log_debug("%p mask 0x%X mode %d", gpio_port, mask, mode);
+	log_debug("port %d mask 0x%X mode %d", port, mask, mode);
 	ctl = REG32_LOAD(&gpio_port->ctl);
 	ctl &= ~mask;
 	REG32_STORE(&gpio_port->ctl, ctl); /* all hardware pins */
@@ -60,7 +61,7 @@ static void dwapb_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 	struct gpio_dwapb_port *gpio_port;
 	uint32_t dr;
 
-	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
+	gpio_port = (struct gpio_dwapb_port *) BASE_CTRL_ADDR(port);
 	dr = REG32_LOAD(&gpio_port->dr);
 	if (level) {
 		dr |= mask;
@@ -68,7 +69,7 @@ static void dwapb_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 	} else {
 		dr &= ~mask;
 	}
-	log_debug("%p mask 0x%X mode %d", gpio_port, mask, level);
+	log_debug("%d mask 0x%X mode %d", port, mask, level);
 	REG32_STORE(&gpio_port->dr, dr);
 }
 
@@ -76,7 +77,7 @@ static gpio_mask_t dwapb_gpio_get(unsigned char port, gpio_mask_t mask) {
 	struct gpio_dwapb_port *gpio_port;
 	uint32_t dr;
 
-	gpio_port = (void *)(BASE_CTRL_ADDR + port * sizeof(struct gpio_dwapb_port));
+	gpio_port = (struct gpio_dwapb_port *) BASE_CTRL_ADDR(port);
 	dr = REG32_LOAD(&gpio_port->dr);
 
 	return dr & mask;
@@ -93,4 +94,4 @@ static int dwapb_gpio_init(void) {
 	return gpio_register_chip(&dwapb_gpio_chip, GPIO_CHIP_ID);
 }
 
-PERIPH_MEMORY_DEFINE(arasan, BASE_CTRL_ADDR, 0x200);
+PERIPH_MEMORY_DEFINE(arasan, BASE_CTRL_ADDR(0), 0x1000 * DWAPB_GPIO_PORTS_COUNT);

@@ -15,6 +15,8 @@
 # define DW_SPI_CTRLR0_T         (1 << 8)
 # define DW_SPI_CTRLR0_R         (2 << 8)
 # define DW_SPI_CTRLR0_EEPROM    (3 << 8)
+# define DW_SPI_CTRLR0_SCPOL     (1 << 7)
+# define DW_SPI_CTRLR0_SCPH      (1 << 6)
 # define DW_SPI_CTRLR0_FRF_MOTO  (0 << 4)
 # define DW_SPI_CTRLR0_FRF_TI    (1 << 4)
 # define DW_SPI_CTRLR0_FRF_MIC   (2 << 4)
@@ -30,6 +32,7 @@
 #define DW_SPI_RXFLR             0x24
 #define DW_SPI_SR                0x28
 # define DW_SPI_SR_BUSY          (1 << 0)
+# define DW_SPI_SR_RFNE          (1 << 3)
 #define DW_SPI_IMR               0x2C
 #define DW_SPI_ISR               0x30
 #define DW_SPI_RISR              0x34
@@ -52,7 +55,5 @@
 struct dw_spi {
 	uintptr_t base_addr;
 };
-
-extern int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr);
 
 #endif /* DW_SPI_H */
