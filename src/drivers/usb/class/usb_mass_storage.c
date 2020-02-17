@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <string.h>
+#include <unistd.h>
 
 #include <endian.h>
 
@@ -131,11 +132,6 @@ int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 			&req_ctx->cbw, sizeof(struct usb_mscbw));
 }
 
-static void delay(int d) {
-	while (--d)
-		;
-}
-
 static void usb_mass_start(struct usb_dev *dev) {
 	struct usb_mass *mass = usb2massdata(dev);
 	int ret;
@@ -165,7 +161,7 @@ static void usb_mass_start(struct usb_dev *dev) {
 		return;
 	}
 
-	delay(100 * 1000 * 1000);
+	usleep(100000);
 
 	ret = usb_endp_control_wait(dev->endpoints[0],
 			USB_DIR_IN | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
