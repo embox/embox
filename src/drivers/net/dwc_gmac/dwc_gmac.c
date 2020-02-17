@@ -62,9 +62,6 @@ static struct dwc_priv dwc_priv;
 static uint8_t rx_buffers[RX_DESC_QUANTITY][0x1000] __attribute__((aligned(0x1000)));
 static uint8_t tx_buffers[TX_DESC_QUANTITY][0x1000] __attribute__((aligned(0x1000)));
 
-static struct dma_extended_desc rx_descs_pool[RX_DESC_QUANTITY];
-static struct dma_extended_desc tx_descs_pool[TX_DESC_QUANTITY];
-
 static inline uint32_t dwc_reg_read(struct dwc_priv *dwc_priv, uint32_t reg) {
 	uint32_t res;
 
@@ -190,10 +187,8 @@ static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 	idx %= TX_DESC_QUANTITY;
 
 	desc->basic.des3 = (uint32_t) &priv->txdesc_ring_paddr[idx];
-	dcache_flush(desc, sizeof(*desc));
 
 	desc->basic.des0 |= TDES0_OWN;
-	dcache_flush(desc, sizeof(*desc));
 
 	return idx;
 }
@@ -202,9 +197,7 @@ static int dwc_desc_wait_trans(struct dwc_priv *priv, int idx) {
 	struct dma_extended_desc *desc;
 
 	desc = &priv->txdesc_ring_paddr[idx];
-	do {
-		dcache_inval(desc, sizeof (*desc));
-	} while (desc->basic.des0 & ETDES0_OWN);
+	do { } while (desc->basic.des0 & ETDES0_OWN);
 
 	return idx;
 }
@@ -394,9 +387,7 @@ static uint32_t dwc_setup_rxdesc(struct dwc_priv *priv, int idx) {
 	idx %= RX_DESC_QUANTITY;
 	desc->basic.des3 = (uint32_t)&priv->rxdesc_ring_paddr[idx];
 
-	dcache_flush(desc, sizeof(*desc));
 	desc->basic.des0 = RDES0_OWN;
-	dcache_flush(desc, sizeof(*desc));
 
 	return idx;
 }
@@ -414,7 +405,6 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 		cur_desc = priv->rxdesc_id;
 
 		desc = &((struct dma_extended_desc *)priv->rxdesc_ring_paddr)[cur_desc];
-		dcache_inval(desc, sizeof(*desc));
 
 		if (desc->basic.des0 & RDES0_OWN) {
 			return 0;
@@ -449,7 +439,9 @@ static inline int dwc_txfinish_locked(struct net_device *dev_id) {
 }
 
 static int dwc_tx_ring_init(struct dwc_priv *priv) {
-	memset(priv->txdesc_ring_paddr, 0, sizeof(tx_descs_pool));
+	memset(priv->txdesc_ring_paddr,
+			0,
+			sizeof(struct dma_extended_desc) * TX_DESC_QUANTITY);
 
 	return 0;
 }
@@ -575,8 +567,10 @@ static int dwc_init(void) {
 
 	nic->drv_ops = &dwc_drv_ops;
 	dwc_priv.base_addr = BASE_ADDR;
-	dwc_priv.rxdesc_ring_paddr = rx_descs_pool;
-	dwc_priv.txdesc_ring_paddr = tx_descs_pool;
+	dwc_priv.rxdesc_ring_paddr =
+		periph_memory_alloc(sizeof(struct dma_extended_desc) * RX_DESC_QUANTITY);
+	dwc_priv.txdesc_ring_paddr =
+		periph_memory_alloc(sizeof(struct dma_extended_desc) * TX_DESC_QUANTITY);
 
 	nic->priv = &dwc_priv;
 
