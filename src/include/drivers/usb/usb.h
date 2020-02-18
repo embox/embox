@@ -10,7 +10,7 @@
 #define DRIVERS_USB_H_
 
 #include <stdint.h>
-#include <kernel/thread.h>
+
 #include <kernel/thread/sync/mutex.h>
 #include <util/indexator.h>
 #include <util/dlist.h>
@@ -200,6 +200,7 @@ struct usb_request {
 
 	void *hci_specific;
 	struct usb_control_header ctrl_header;
+	uint8_t buffer[1024];
 };
 
 static inline int is_root_hub(struct usb_dev *dev) {
@@ -240,6 +241,7 @@ extern struct usb_dev *usb_new_device(struct usb_dev *parent,
 extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 
 extern int usb_get_configuration(struct usb_dev *dev, unsigned int n);
+extern int usb_set_configuration(struct usb_dev *dev, unsigned int n);
 
 /* FIXME This function is more like workaround to initialize
  * control endpoint. */
