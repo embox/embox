@@ -15,6 +15,11 @@ $(error Unsupported Make version. \
 	please use GNU Make 3.81 or above.)
 endif
 
+ifeq (4.3, $(MAKE_VERSION))
+$(error Make 4.3 is not supported. \
+	Please consider downgrading to 4.2 or using newer version)
+endif
+
 # Disable everything, turn on undefined variables check.
 MAKEFLAGS += --no-builtin-rules
 MAKEFLAGS += --no-builtin-variables
