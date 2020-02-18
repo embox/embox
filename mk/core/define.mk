@@ -1264,6 +1264,9 @@ define builtin_func-def-ifndef
 	$(if $(value $(call __def_expand,$1)),$(value 3),$2)
 endef
 
+# Builtin def-ifdef/def-ifndef macros are ready to be used.
+$(def_all)
+
 #
 # Builtin to user-defined function call converters.
 #
