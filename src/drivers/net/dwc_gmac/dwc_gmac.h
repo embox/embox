@@ -195,6 +195,7 @@
 #define	 DWC_DMA_STATUS_FBI		(1 << 13)
 #define	 DWC_DMA_STATUS_RI		(1 << 6)
 #define	 DWC_DMA_STATUS_TI		(1 << 0)
+#define	 DWC_DMA_STATUS_FSM_MASK        ((7 << 20) | (7 << 17))
 #define	 DWC_DMA_STATUS_INTR_MASK	0x1ffff
 #define	DWC_DMA_OPERATION_MODE		0x1018
 #define	 DWC_DMA_MODE_RSF		(1 << 25) /* RX Full Frame */
