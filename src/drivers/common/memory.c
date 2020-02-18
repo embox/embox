@@ -111,6 +111,8 @@ void *periph_memory_alloc(size_t len) {
 			len,
 			PROT_WRITE | PROT_READ | PROT_NOCACHE);
 
+	mmu_flush_tlb();
+
 	return mem;
 }
 #else
