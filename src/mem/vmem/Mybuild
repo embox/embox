@@ -22,13 +22,13 @@ module vmem_depends {
 	depends embox.mem.vmem_alloc
 	depends embox.mem.page_api
 
-	depends embox.mem.mmap_header
+	@NoRuntime depends embox.mem.mmap_header
 	@NoRuntime depends embox.mem.mmap
 	depends embox.fs.syslib.idesc_mmap_api
-	depends vmem_header
+	@NoRuntime depends vmem_header
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.resource.mmap
 	depends embox.driver.periph_memory_mmap
 
-	depends embox.mem.vmem_device_memory_full
+	@NoRuntime depends embox.mem.vmem_device_memory_full
 }
