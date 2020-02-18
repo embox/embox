@@ -7,16 +7,20 @@
 
 #include <stdint.h>
 #include <mem/misc/pool.h>
+#include <util/log.h>
 
 #include "ehci.h"
 
+#include <mem/vmem.h>
+#include <module/embox/arch/mmu.h>
+
 #define EHCI_MAX_REQUESTS 0x40
 
-POOL_DEF(ehci_qtd_pool, struct ehci_qtd_hw, EHCI_MAX_REQUESTS);
-POOL_DEF(ehci_qh_hw_pool, struct ehci_qh_hw, EHCI_MAX_REQUESTS);
-POOL_DEF(ehci_itd_pool, struct ehci_itd, EHCI_MAX_REQUESTS);
-POOL_DEF(ehci_sitd_pool, struct ehci_sitd, EHCI_MAX_REQUESTS);
-POOL_DEF(ehci_qh_pool, struct ehci_qh, EHCI_MAX_REQUESTS);
+POOL_DEF_ATTR(ehci_qtd_pool, struct ehci_qtd_hw, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
+POOL_DEF_ATTR(ehci_qh_hw_pool, struct ehci_qh_hw, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
+POOL_DEF_ATTR(ehci_itd_pool, struct ehci_itd, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
+POOL_DEF_ATTR(ehci_sitd_pool, struct ehci_sitd, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
+POOL_DEF_ATTR(ehci_qh_pool, struct ehci_qh, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
 
 static uint32_t periodic_table[1024] __attribute__((aligned(4096)));
 
@@ -63,6 +67,16 @@ void ehci_qh_free(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	pool_free(&ehci_qh_pool, qh);
 }
 
+#ifndef NOMMU
+static void ehci_pool_set_nocache(struct pool *p) {
+	log_debug("pool_addr = 0x%08x, pool_size = %d", p->memory, p->pool_size);
+	vmem_set_flags(vmem_current_context(),
+	        (mmu_vaddr_t) p->memory,
+	        p->pool_size,
+	        PROT_WRITE | PROT_READ | PROT_NOCACHE);
+}
+#endif
+
 int ehci_mem_init(struct ehci_hcd *ehci_hcd) {
 	int i;
 
@@ -70,6 +84,14 @@ int ehci_mem_init(struct ehci_hcd *ehci_hcd) {
 	ehci_hcd->qtd_pool = &ehci_qtd_pool;
 	ehci_hcd->itd_pool = &ehci_itd_pool;
 	ehci_hcd->sitd_pool = &ehci_sitd_pool;
+
+#ifndef NOMMU
+	ehci_pool_set_nocache(&ehci_qh_pool);
+	ehci_pool_set_nocache(&ehci_qtd_pool);
+	ehci_pool_set_nocache(&ehci_itd_pool);
+	ehci_pool_set_nocache(&ehci_sitd_pool);
+	ehci_pool_set_nocache(&ehci_qh_hw_pool);
+#endif
 
 	ehci_hcd->async = ehci_qh_alloc(ehci_hcd);
 
