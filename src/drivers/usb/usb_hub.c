@@ -27,7 +27,7 @@ POOL_DEF(usb_devs, struct usb_dev, USB_MAX_DEV);
 
 static DLIST_DEFINE(usb_hubs_list);
 static DLIST_DEFINE(usb_devs_list);
-static struct thread *usb_hubs_thread;
+/*static struct thread *usb_hubs_thread;*/
 
 static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 		unsigned int port_nr);
@@ -45,7 +45,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 
 	dev = pool_alloc(&usb_devs);
 	if (!dev) {
-		log_error("%s: pool_alloc failed\n", __func__);
+		log_error("pool_alloc failed");
 		return NULL;
 	}
 	memset(dev, 0, sizeof(struct usb_dev));
@@ -57,6 +57,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 
 	/* Fill control endpoint. */
 	if (usb_get_ep0(dev) < 0) {
+		log_error("usb_get_ep0 failed");
 		goto out_err;
 	}
 
@@ -65,10 +66,23 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 		assert(hub);
 		/* Here we reset device and set address. */
 		if (usb_hub_port_init(hub, dev, port) < 0) {
+			log_error("usb_hub_port_init failed");
 			goto out_err;
 		}
 		/* Fill device configuration. */
 		if (usb_get_configuration(dev, 0) < 0) {
+			log_error("usb_get_configuration failed");
+			goto out_err;
+		}
+
+		/* Set device default configuration. */
+		/* http://www.usbmadesimple.co.uk/ums_4.htm */
+		/* Usually ( when there is one configuration) the Set Configuration
+		 * request will have wValue set to 1, which will select the first configuration.
+		 * Set Configuration can also be used, with wValue set to 0, to deconfigure the device.
+		 */
+		if (usb_set_configuration(dev, 1) < 0) {
+			log_error("usb_get_configuration failed");
 			goto out_err;
 		}
 	}
@@ -81,9 +95,12 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 		/* Return device even the driver was not found. */
 	}
 
+	log_info("port(%d) bus(%d) addr(%d)", port, dev->bus_idx, dev->addr);
+
 	return dev;
 
 out_err:
+	log_error("failed");
 	dlist_del(&dev->dev_link);
 	pool_free(&usb_devs, dev);
 	return NULL;
@@ -108,7 +125,7 @@ static int usb_hub_get_descriptor(struct usb_dev *dev,
 		USB_REQ_GET_DESCRIPTOR, USB_DT_HUB << 8,
 		0, 7, desc, USB_CTRL_GET_TIMEOUT);
 	if (ret) {
-		log_error("%s: failed with %d", ret);
+		log_error("failed");
 		return ret;
 	}
 	return 0;
@@ -122,14 +139,16 @@ static int usb_hub_port_get_status(struct usb_hub *hub,
 	ret = usb_endp_control_wait(hub->dev->endpoints[0],
 		USB_DIR_IN | USB_RT_PORT, USB_REQ_GET_STATUS,
 		HUB_PORT_STATUS,
-		port + 1, 4, &portstatus, USB_HUB_PORT_STS_TIMEOUT);
+		port + 1, 4, portstatus, USB_HUB_PORT_STS_TIMEOUT);
 	if (ret) {
-		log_error("%s: failed with %d", ret);
+		log_error("failed");
 		return ret;
 	}
 
 	*status = portstatus[0];
 	*change = portstatus[1];
+
+	log_debug("port=%d, status=0x%04x, change=0x%04x", port, *status, *change);
 
 	return 0;
 }
@@ -148,25 +167,11 @@ static int usb_hub_set_port_feature(struct usb_hub *hub,
 		port + 1, 0, NULL, 1000);
 }
 
-static int usb_hub_port_set_power(struct usb_hub *hub, unsigned int port,
-		bool on) {
-	int ret;
-
-	if (on) {
-		ret = usb_hub_set_port_feature(hub, port, USB_PORT_FEATURE_POWER);
-	} else {
-		ret = usb_hub_clear_port_feature(hub, port, USB_PORT_FEATURE_POWER);
-	}
-	if (ret < 0) {
-		return ret;
-	}
-	usleep(100 * 1000); /* 100 ms */
-	return 0;
-}
-
 static int usb_hub_port_reset(struct usb_hub *hub, unsigned int port) {
 	int ret;
 	int timeout = 100;
+
+	log_debug("%d:%d port[%d]", hub->dev->bus_idx, hub->dev->addr, port);
 
 	ret = usb_hub_set_port_feature(hub, port, USB_PORT_FEATURE_RESET);
 	if (ret) {
@@ -178,19 +183,24 @@ static int usb_hub_port_reset(struct usb_hub *hub, unsigned int port) {
 	while (timeout--) {
 		uint16_t port_status, port_change;
 
+		usleep(1000 * 1000);
+
 		usb_hub_port_get_status(hub, port, &port_status, &port_change);
-		if (port_change & USB_PORT_STAT_RESET) {
+		if (!(port_status & USB_PORT_STAT_RESET) &&
+				(port_status & USB_PORT_STAT_CONNECTION)) {
+			usb_hub_clear_port_feature(hub, port, USB_PORT_FEATURE_C_RESET);
 			ret = 0;
 			break;
 		}
-		usleep(1000); /* 1 ms */
 	}
+
+	log_debug("%s", !ret ? "OK" : "ERROR");
 
 	return ret;
 }
 
 /* This function initializes device at a given port. */
-static int usb_hub_port_device_init(struct usb_hub *hub, struct usb_dev *dev) {
+static int usb_device_init(struct usb_hub *hub, struct usb_dev *dev) {
 	int ret;
 	uint32_t addr;
 
@@ -200,9 +210,16 @@ static int usb_hub_port_device_init(struct usb_hub *hub, struct usb_dev *dev) {
 		USB_DESC_TYPE_DEV << 8,
 		0, sizeof(struct usb_desc_device), &dev->dev_desc, 1000);
 	if (ret < 0) {
-		log_error("%s: GET_DESC failed\n", __func__);
+		log_error("GET_DESC failed\n");
 		return ret;
 	}
+	log_info("Device %d:%d config:"
+			"\n\t\t len=%d type=%d bcd=0x%x class=%d subclass=%d vid=0x%04x pid=0x%04x",
+			dev->bus_idx, dev->addr,
+			dev->dev_desc.b_length, dev->dev_desc.b_desc_type,
+			dev->dev_desc.bcd_usb, dev->dev_desc.b_dev_class,
+			dev->dev_desc.b_dev_subclass, dev->dev_desc.id_vendor,
+			dev->dev_desc.id_product);
 
 	addr = index_alloc(&dev->hcd->enumerator, INDEX_MIN);
 	assert(addr != INDEX_NONE);
@@ -214,10 +231,13 @@ static int usb_hub_port_device_init(struct usb_hub *hub, struct usb_dev *dev) {
 		USB_REQ_SET_ADDRESS, addr,
 		0, 0, NULL, 1000);
 	if (ret < 0) {
-		log_error("%s: SET_ADDR failed\n", __func__);
+		log_error("SET_ADDR (addr=%d) failed\n", addr);
 		return ret;
 	}
+	log_debug("SET_ADDR (addr=%d) OK", addr);
 	dev->addr = addr;
+
+	usleep(1000 * 1000);
 
 	return 0;
 }
@@ -226,11 +246,8 @@ static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 		unsigned int port) {
 	int ret;
 
-	ret = usb_hub_port_set_power(hub, port, true);
-	if (ret < 0) {
-		log_error("usb_hub_port_set_power failed\n");
-		return ret;
-	}
+	log_debug("hub(%d:%d) port[%d]", hub->dev->bus_idx, hub->dev->addr, port);
+
 	ret = usb_hub_port_reset(hub, port);
 	if (ret < 0) {
 		log_error("usb_hub_port_reset failed\n");
@@ -238,31 +255,30 @@ static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 	}
 
 	/* Now we are ready to enumerate this device */
-	ret = usb_hub_port_device_init(hub, dev);
+	ret = usb_device_init(hub, dev);
 	if (ret < 0) {
-		log_error("usb_hub_port_device_init failed\n");
+		log_error("usb_device_init failed ret %d", ret);
 		return ret;
 	}
 
 	return 0;
 }
 
-static void usb_hub_port_connect(struct usb_hub *hub, unsigned int port,
-		uint16_t port_status, uint16_t port_change) {
-	usb_new_device(hub->dev, hub->dev->hcd, port);
-}
-
-static void usb_hub_port_event(struct usb_hub *hub, unsigned int port) {
+static int usb_hub_port_event(struct usb_hub *hub, unsigned int port) {
 	uint16_t port_status, port_change;
 
+	log_debug("hub(%d:%d) port[%d]", hub->dev->bus_idx, hub->dev->addr, port);
+
 	if (usb_hub_port_get_status(hub, port, &port_status, &port_change) < 0) {
-		return;
+		return 0;
 	}
 
 	if (port_change & USB_PORT_STAT_CONNECTION) {
 		usb_hub_clear_port_feature(hub, port, USB_PORT_FEATURE_C_CONNECTION);
-		usb_hub_port_connect(hub, port, port_status, port_change);
+		usb_new_device(hub->dev, hub->dev->hcd, port);
+		return 1;
 	}
+	return 0;
 }
 
 static void usb_hub_event(struct usb_hub *hub) {
@@ -271,7 +287,10 @@ static void usb_hub_event(struct usb_hub *hub) {
 	mutex_lock(&hub->mutex);
 	/* Check each port for event occured.  */
 	for (i = 0; i < hub->port_n; i++) {
-		usb_hub_port_event(hub, i);
+		/* TODO only one device on hub */
+		if (usb_hub_port_event(hub, i)) {
+			break;
+		}
 	}
 	mutex_unlock(&hub->mutex);
 }
@@ -285,7 +304,7 @@ static void usb_hubs_enumerate_if_needed(void) {
 	}
 }
 
-static void *usb_hub_event_hnd(void *arg) {
+static inline void *usb_hub_event_hnd(void *arg) {
 	while (1) {
 		usb_hubs_enumerate_if_needed();
 		usleep(USB_HUBS_HANDLE_INTERVAL);
@@ -294,13 +313,34 @@ static void *usb_hub_event_hnd(void *arg) {
 	return NULL;
 }
 
+static int usb_hub_get_status(struct usb_hub *hub,
+		uint16_t *status, uint16_t *change) {
+	int ret;
+	uint16_t hubstatus[2];
+
+	ret = usb_endp_control_wait(hub->dev->endpoints[0],
+		USB_DIR_IN | USB_RT_HUB, USB_REQ_GET_STATUS,
+		0, 0, 4, hubstatus, USB_HUB_PORT_STS_TIMEOUT);
+	if (ret) {
+		log_error("%s: failed with %d", ret);
+		return ret;
+	}
+
+	*status = hubstatus[0];
+	*change = hubstatus[1];
+
+	return 0;
+}
+
 static int usb_hub_probe(struct usb_dev *dev) {
 	struct usb_hub *hub;
 	struct usb_desc_hub hub_desc;
+	int i;
+	int ret;
 
 	hub = pool_alloc(&usb_hubs);
 	if (!hub) {
-		log_error("%s: pool_alloc failed\n", __func__);
+		log_error("pool_alloc failed");
 		return -1;
 	}
 	hub->dev = dev;
@@ -308,10 +348,60 @@ static int usb_hub_probe(struct usb_dev *dev) {
 
 	if (usb_hub_get_descriptor(dev, &hub_desc) < 0) {
 		pool_free(&usb_hubs, hub);
-		log_error("%s: usb_hub_get_descriptor failed\n", __func__);
+		log_error("usb_hub_get_descriptor failed");
 		return -1;
 	}
 	hub->port_n = hub_desc.b_nbr_ports;
+
+	log_info("Hub with %d ports:"
+			"\n\t\t protocol = 0x%x"
+			"\n\t\t characteristics = 0x%04x"
+			"\n\t\t b_pwr_on_2_pwr_good = %d"
+			"\n\t\t b_hub_contr_current = %d",
+			hub->port_n, dev->dev_desc.b_dev_protocol,
+			hub_desc.w_hub_characteristics,
+			hub_desc.b_pwr_on_2_pwr_good, hub_desc.b_hub_contr_current);
+
+	if (!is_root_hub(dev)) {
+		uint16_t status, hubstatus, hubchange;
+
+		ret = usb_endp_control_wait(dev->endpoints[0],
+			USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
+			USB_REQ_GET_STATUS,
+			USB_DESC_TYPE_DEV << 8,
+			0, 2, &status, 1000);
+		if (ret < 0) {
+			log_error("Cannot get device status!");
+			return -1;
+		}
+		log_debug("  device status = 0x%04x", status);
+
+		ret = usb_hub_get_status(hub, &hubstatus, &hubchange);
+		if (ret < 0) {
+			log_error("Cannot get hub status!");
+			return -1;
+		}
+		log_debug("  hubstatus=0x%04x, hubchange=0x%04x", hubstatus, hubchange);
+	}
+
+	for (i = 0; i < hub->port_n; i++) {
+		usb_hub_clear_port_feature(hub, i, USB_PORT_FEATURE_POWER);
+	}
+	usleep(100 * 1000);
+
+	for (i = 0; i < hub->port_n; i++) {
+		usb_hub_set_port_feature(hub, i, USB_PORT_FEATURE_POWER);
+	}
+	usleep(100 * 1000);
+
+	for (i = 0; i < hub->port_n; i++) {
+		uint16_t port_status, port_change;
+
+		if (usb_hub_port_get_status(hub, i, &port_status, &port_change) < 0) {
+			log_error("FAILED status");
+			return -1;
+		}
+	}
 
 	dlist_head_init(&hub->lnk);
 	dlist_add_next(&hub->lnk, &usb_hubs_list);
@@ -337,10 +427,10 @@ struct usb_driver usb_driver_hub = {
 };
 
 static int usb_hub_driver_init(void) {
-	usb_hubs_thread = thread_create(0, usb_hub_event_hnd, NULL);
+/*	usb_hubs_thread = thread_create(THREAD_FLAG_SUSPENDED, usb_hub_event_hnd, NULL);
 	if (err(usb_hubs_thread)) {
 		return err(usb_hubs_thread);
 	}
-
+*/
 	return usb_driver_register(&usb_driver_hub);
 }

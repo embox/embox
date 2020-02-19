@@ -17,10 +17,13 @@
 #include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb.h>
 
+#include <mem/vmem.h>
+#include <module/embox/arch/mmu.h>
+
 static DLIST_DEFINE(usb_hcds_list);
 
 POOL_DEF(usb_hcds, struct usb_hcd, USB_MAX_HCD);
-POOL_DEF(usb_requests, struct usb_request, USB_MAX_REQ);
+POOL_DEF_ATTR(usb_requests, struct usb_request, USB_MAX_REQ, __attribute__((aligned(MMU_PAGE_SIZE))));
 
 static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	struct usb_request *req;
@@ -251,7 +254,11 @@ int usb_endp_control_wait(struct usb_endp *endp,
 		return ret;
 	}
 	ret = sched_wait_timeout(timeout, NULL);
-	return ret;
+	if (ret) {
+		return ret;
+	}
+
+	return req->req_stat;
 }
 
 int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
@@ -308,10 +315,24 @@ void usb_hcd_free(struct usb_hcd *hcd) {
 	pool_free(&usb_hcds, hcd);
 }
 
+#ifndef NOMMU
+static void usb_pool_set_nocache(struct pool *p) {
+	log_debug("pool_addr = 0x%08x, pool_size = %d", p->memory, p->pool_size);
+	vmem_set_flags(vmem_current_context(),
+	        (mmu_vaddr_t) p->memory,
+	        p->pool_size,
+	        PROT_WRITE | PROT_READ | PROT_NOCACHE);
+}
+#endif
+
 int usb_hcd_register(struct usb_hcd *hcd) {
 	int ret;
 
 	assert(hcd);
+
+#ifndef NOMMU
+	usb_pool_set_nocache(&usb_requests);
+#endif
 
 	dlist_head_init(&hcd->lnk);
 	dlist_add_next(&hcd->lnk, &usb_hcds_list);

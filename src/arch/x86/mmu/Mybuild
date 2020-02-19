@@ -7,6 +7,8 @@ module mmu extends embox.mem.vmem {
 
 	source "mmu.c", "mmu.h"
 
+	source "cache.c"
+	
 	depends embox.mem.vmem_depends
 	depends embox.arch.x86.testtrap
 	depends embox.kernel.task.kernel_task

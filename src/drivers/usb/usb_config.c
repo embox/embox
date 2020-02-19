@@ -8,10 +8,11 @@
 
 #include <string.h>
 #include <stddef.h>
+#include <unistd.h>
 
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
-#include <util/dlist.h>
+
 #include <util/log.h>
 #include <kernel/panic.h>
 #include <drivers/usb/usb.h>
@@ -23,7 +24,7 @@ static const struct usb_desc_endpoint usb_desc_endp_control_default = {
 	.b_desc_type = USB_DESC_TYPE_ENDPOINT,
 	.b_endpoint_address = 0,
 	.bm_attributes = 0,
-	.w_max_packet_size = 8,
+	.w_max_packet_size = 64,
 	.b_interval = 0,
 };
 
@@ -62,33 +63,34 @@ static void usb_endp_fill_from_desc(struct usb_endp *endp,
 }
 
 static struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned n,
-		const struct usb_desc_endpoint *endp_desc) {
-	struct usb_endp *endp;
+		const struct usb_desc_endpoint *ep_desc) {
+	struct usb_endp *ep;
 	struct usb_hcd *hcd = dev->hcd;
 
 	assert(n < USB_DEV_MAX_ENDP);
 	assert(!dev->endpoints[n]);
 
-	endp = pool_alloc(&usb_endps);
-	if (!endp) {
+	ep = pool_alloc(&usb_endps);
+	if (!ep) {
 		return NULL;
 	}
-	endp->dev = dev;
+	ep->dev = dev;
 
-	usb_endp_fill_from_desc(endp, endp_desc);
-	usb_queue_init(&endp->req_queue);
+	usb_endp_fill_from_desc(ep, ep_desc);
+	usb_queue_init(&ep->req_queue);
 
-	dev->endpoints[n] = endp;
+	dev->endpoints[n] = ep;
 
 	if (hcd->ops->endp_hci_alloc) {
-		endp->hci_specific = hcd->ops->endp_hci_alloc(endp);
-		if (!hcd->hci_specific) {
-			pool_free(&usb_endps, endp);
+		ep->hci_specific = hcd->ops->endp_hci_alloc(ep);
+		if (!ep->hci_specific) {
+			pool_free(&usb_endps, ep);
 			return NULL;
 		}
 	}
 
-	return endp;
+	log_debug("dev(%d:%d) enp(%d) dir(%d) maxpack(%d)", dev->bus_idx, dev->addr, n, ep->direction,ep->max_packet_size);
+	return ep;
 }
 
 #if 0
@@ -103,19 +105,15 @@ static void usb_endp_free(struct usb_endp *endp) {
 }
 #endif
 
-static void usb_parse_and_fill_config(struct usb_dev *dev) {
+static void usb_dev_fill_config(struct usb_dev *dev, void *cur) {
 	int i;
-	void *cur;
 	struct usb_desc_common_header *other_desc;
 	struct usb_desc_endpoint *endp_desc;
-
-	assert(dev->config_buf);
-
-	cur = dev->config_buf;
 
 	/* Fill interface. */
 	cur += sizeof (struct usb_desc_configuration);
 	memcpy(&dev->iface_desc, cur, sizeof(struct usb_desc_interface));
+
 	/* b_num_endpoints excludes control endpoint, so add it. */
 	dev->endp_n = dev->iface_desc.b_num_endpoints + 1;
 	cur += sizeof (struct usb_desc_interface);
@@ -149,14 +147,24 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 	/* Check the configuration is not allocated yet. */
 	assert(!dev->config_buf);
 
+	log_debug("dev(%d:%d) conf=%d", dev->bus_idx, dev->addr, n);
+
 	ret = usb_endp_control_wait(dev->endpoints[0],
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
-		USB_DESC_TYPE_CONFIG << 8,
-		n, sizeof(struct usb_desc_configuration), &conf, 1000);
-	if (ret < 0) {
+		(USB_DESC_TYPE_CONFIG << 8) + n,
+		0, sizeof(struct usb_desc_configuration), &conf, 1000);
+	if (ret) {
 		goto err;
 	}
+
+	log_info("dev(%d:%d) Configuration %d:"
+			"\n\t\t  b_length=%d"
+			"\n\t\t  b_desc_type=0x%x"
+			"\n\t\t  w_total_length=%d"
+			"\n\t\t  b_num_interfaces=%d",
+			dev->bus_idx, dev->addr, n,
+			conf.b_length, conf.b_desc_type, conf.w_total_length, conf.b_num_interfaces);
 
 	/* Now get full configuration. */
 	len = conf.w_total_length;
@@ -168,26 +176,46 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 	ret = usb_endp_control_wait(dev->endpoints[0],
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
-		USB_DESC_TYPE_CONFIG << 8,
-		n, len, dev->config_buf, 1000);
+		(USB_DESC_TYPE_CONFIG << 8) + n,
+		0, len, dev->config_buf, 1000);
 	if (ret < 0) {
 		goto err;
 	}
 
-	usb_parse_and_fill_config(dev);
+	usb_dev_fill_config(dev, dev->config_buf);
+
+	log_debug("b_interface_class = 0x%x OK ", dev->iface_desc.b_interface_class);
 
 	return 0;
 err:
 	if (dev->config_buf) {
 		sysfree(dev->config_buf);
 	}
-	log_error("%s: failed\n", __func__);
+	log_error("failed");
 	return -1;
+}
+
+int usb_set_configuration(struct usb_dev *dev, unsigned int n) {
+	int ret;
+
+	log_debug("dev(%d:%d) conf=%d", dev->bus_idx, dev->addr, n);
+
+	ret = usb_endp_control_wait(dev->endpoints[0],
+		USB_DIR_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
+		USB_REQ_SET_CONFIG, n,
+		0, 0, NULL, 1000);
+	if (ret < 0) {
+		log_error("failed");
+		return -1;
+	}
+	usleep(1000 * 1000);
+	log_debug("ok");
+	return 0;
 }
 
 int usb_get_ep0(struct usb_dev *dev) {
 	if (!usb_endp_alloc(dev, 0, &usb_desc_endp_control_default)) {
-		log_error("%s: failed", __func__);
+		log_error("failed");
 		return -1;
 	}
 	return 0;
