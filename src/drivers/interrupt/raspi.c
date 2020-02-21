@@ -12,11 +12,14 @@
 #include <stdint.h>
 
 #include <sys/mman.h>
+
+#include <util/binalign.h>
+#include <util/bit.h>
+
 #include <hal/mmu.h>
 #include <mem/vmem.h>
-#include <util/binalign.h>
 
-#include <util/bit.h>
+#include <drivers/common/memory.h>
 
 #include <kernel/irq.h>
 #include <drivers/irqctrl.h>
@@ -71,6 +74,7 @@ static volatile struct raspi_interrupt_regs * const regs =
 
 
 static int this_init(void) {
+#if 0
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
 			(void*) ((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK),
@@ -79,6 +83,7 @@ static int this_init(void) {
 			MAP_FIXED,
 			((uintptr_t) BCM2835_INTERRUPT_BASE & ~MMU_PAGE_MASK)
 			);
+#endif
 	return 0;
 }
 
@@ -144,3 +149,4 @@ void swi_handle(void) {
 	panic(__func__);
 }
 
+PERIPH_MEMORY_DEFINE(raspi_systick, BCM2835_INTERRUPT_BASE, sizeof(struct raspi_interrupt_regs));
