@@ -6,6 +6,7 @@ abstract module setup_exception_table { }
 module low_excpt_table extends setup_exception_table {
 	source "low_excpt_table.S"
 	source "copy_excpt_table.S"
+	source "low_excpt_table_vmem_def.c"
 }
 
 module high_excpt_table extends setup_exception_table {
