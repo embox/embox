@@ -9,8 +9,8 @@
 #define SRC_DRIVERS_USB_HC_EHCI_H_
 
 #include <drivers/usb/usb.h>
-
 #include <drivers/usb/ehci_regs.h>
+#include <util/dlist.h>
 
 /* type tag from {qh,itd,sitd,fstn}->hw_next */
 #define EHCI_Q_NEXT_TYPE(ehci, dma) ((dma) & 3 << 1)
@@ -62,6 +62,12 @@ struct ehci_qtd_hw {
 	uint32_t hw_buf[5];      /* see EHCI 3.5.4 */
 	uint32_t hw_buf_hi[5];   /* Appendix B */
 } __attribute__((packed,aligned(32)));
+
+struct ehci_req {
+	struct usb_request *req;
+	struct ehci_qtd_hw *qtds_head;
+	struct dlist_head req_link;
+};
 
 /*
  * EHCI Specification 0.95 Section 3.6
@@ -141,7 +147,7 @@ struct ehci_qh {
 	/* the rest is HCD-private */
 	uintptr_t qh_dma; /* address of qh */
 	union ehci_shadow qh_next; /* ptr to qh; or periodic */
-	struct usb_request *req;
+	struct ehci_req *ehci_req;
 
 	struct ehci_qtd_hw *qdt;
 };
@@ -217,6 +223,8 @@ struct ehci_hcd {
 	/* async schedule support */
 	struct ehci_qh *async;
 
+	struct dlist_head req_list;
+
 	/* periodic schedule support */
 	int periodic_size;
 	int i_thresh;
@@ -252,8 +260,11 @@ extern struct ehci_qtd_hw *ehci_qtd_alloc(struct ehci_hcd *ehci);
 extern void ehci_qtd_free(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd);
 extern struct ehci_qh *ehci_qh_alloc(struct ehci_hcd *ehci);
 extern void ehci_qh_free(struct ehci_hcd *ehci, struct ehci_qh *qh);
+extern struct ehci_req *ehci_req_alloc(struct ehci_hcd *ehci);
+extern void ehci_req_free(struct ehci_hcd *ehci, struct ehci_req *ehci_req);
 extern void scan_async (struct ehci_hcd *ehci);
 extern void handle_async_error (struct ehci_hcd *ehci);
+extern void ehci_submit_async(struct ehci_hcd *ehci, struct ehci_req *ehci_req);
 
 /* Helper functions to print registers for HCD */
 extern void ehci_caps_dump(struct ehci_hcd *ehci);

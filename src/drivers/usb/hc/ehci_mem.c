@@ -22,6 +22,8 @@ POOL_DEF_ATTR(ehci_itd_pool, struct ehci_itd, EHCI_MAX_REQUESTS, __attribute__((
 POOL_DEF_ATTR(ehci_sitd_pool, struct ehci_sitd, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
 POOL_DEF_ATTR(ehci_qh_pool, struct ehci_qh, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
 
+POOL_DEF(ehci_req_pool, struct ehci_req, EHCI_MAX_REQUESTS);
+
 static uint32_t periodic_table[1024] __attribute__((aligned(4096)));
 
 static void ehci_qtd_init(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t dma) {
@@ -39,6 +41,21 @@ struct ehci_qtd_hw *ehci_qtd_alloc(struct ehci_hcd *ehci) {
 		ehci_qtd_init(ehci, qtd, (uintptr_t)qtd);
 	}
 	return qtd;
+}
+
+struct ehci_req *ehci_req_alloc(struct ehci_hcd *ehci) {
+	struct ehci_req *ehci_req;
+
+	ehci_req = pool_alloc(&ehci_req_pool);
+	if (!ehci_req) {
+		return NULL;
+	}
+	dlist_head_init(&ehci_req->req_link);
+	return ehci_req;
+}
+
+void ehci_req_free(struct ehci_hcd *ehci, struct ehci_req *ehci_req) {
+	pool_free(&ehci_req_pool, ehci_req);
 }
 
 void ehci_qtd_free(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd) {
