@@ -78,21 +78,21 @@ download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
 
 EXTRACT  := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
-$(EXTRACT): | $(DOWNLOAD_DIR) $(BUILD_DIR)
-	$(if $(filter %zip,$(pkg_ext)), \
-		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR), \
-		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR))
+$(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
+	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
+		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR);, \
+		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);) \
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)))"; \
 		if [ "$$COPY_FILES" ]; then \
 			cp -R $$COPY_FILES $(BUILD_DIR); \
-		fi
+		fi; )
 	touch $@
 
 PATCH  := $(BUILD_DIR)/.patched
 patch : $(PATCH)
 PKG_PATCHES ?=
-$(PATCH): $(PKG_PATCHES) | $(BUILD_DIR)
+$(PATCH): $(EXTRACT) $(PKG_PATCHES) | $(BUILD_DIR)
 	if [ -d tree ]; then \
 		cd tree; \
 		cp -l -u -f --parents -t $(PKG_SOURCE_DIR) `find . -not -path '*/.*' -and -type f`; \
@@ -105,15 +105,15 @@ $(PATCH): $(PKG_PATCHES) | $(BUILD_DIR)
 
 CONFIGURE  := $(BUILD_DIR)/.configured
 configure : $(CONFIGURE)
-$(CONFIGURE): | $(BUILD_DIR)
+$(CONFIGURE): $(PATCH) | $(BUILD_DIR)
 
 BUILD  := $(BUILD_DIR)/.builded
 build : $(BUILD)
-$(BUILD): | $(BUILD_DIR)
+$(BUILD): $(CONFIGURE) | $(BUILD_DIR)
 
 INSTALL  := $(BUILD_DIR)/.installed
 install : $(INSTALL)
-$(INSTALL): | $(BUILD_DIR) $(PKG_INSTALL_DIR)
+$(INSTALL): $(BUILD) | $(BUILD_DIR) $(PKG_INSTALL_DIR)
 
 # Definitions used by user Makefile
 
