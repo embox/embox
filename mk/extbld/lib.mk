@@ -79,14 +79,14 @@ download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
 EXTRACT  := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
 $(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
-	$(if $(filter %zip,$(pkg_ext)), \
-		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR), \
-		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR))
+	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
+		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR);, \
+		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);) \
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)))"; \
 		if [ "$$COPY_FILES" ]; then \
 			cp -R $$COPY_FILES $(BUILD_DIR); \
-		fi
+		fi; )
 	touch $@
 
 PATCH  := $(BUILD_DIR)/.patched
