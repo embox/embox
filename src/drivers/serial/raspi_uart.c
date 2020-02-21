@@ -12,6 +12,7 @@
 
 #include <hal/reg.h>
 #include <drivers/diag.h>
+#include <drivers/common/memory.h>
 
 #include <framework/mod/options.h>
 
@@ -100,3 +101,6 @@ DIAG_OPS_DEF(
 		.getc = raspi_diag_getc,
 		.kbhit = raspi_diag_hasrx,
 );
+
+PERIPH_MEMORY_DEFINE(raspi_gpio, GPIO_OFFSET, 0x1000);
+PERIPH_MEMORY_DEFINE(raspi_uart0, UART0_OFFSET, 0x48);
