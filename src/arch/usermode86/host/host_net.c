@@ -12,7 +12,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <stropts.h>
 
 #include <net/if.h>
 #include <linux/if_tun.h>
