@@ -287,10 +287,7 @@ static void usb_hub_event(struct usb_hub *hub) {
 	mutex_lock(&hub->mutex);
 	/* Check each port for event occured.  */
 	for (i = 0; i < hub->port_n; i++) {
-		/* TODO only one device on hub */
-		if (usb_hub_port_event(hub, i)) {
-			break;
-		}
+		usb_hub_port_event(hub, i);
 	}
 	mutex_unlock(&hub->mutex);
 }

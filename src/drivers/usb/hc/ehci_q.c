@@ -67,6 +67,17 @@ int ehci_qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t buf,
 
 extern void dcache_inval(const void *p, size_t size);
 
+static void async_handle_next(struct ehci_hcd *ehci) {
+	struct ehci_req *ehci_req;
+
+	if (dlist_empty(&ehci->req_list)) {
+		return;
+	}
+	ehci_req = dlist_first_entry(&ehci->req_list, struct ehci_req, req_link);
+	assert(ehci_req);
+	ehci_submit_async(ehci, ehci_req);
+}
+
 static unsigned
 qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	struct usb_request *req;
@@ -75,7 +86,7 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	uintptr_t hw_next;
 	int nontransferred;
 
-	req = qh->req;
+	req = qh->ehci_req->req;
 
 	hw = qh->hw;
 	hw->hw_token |= EHCI_QTD_STS_HALT;
@@ -107,6 +118,12 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 
 	req->req_stat = USB_REQ_NOERR;
 	usb_request_complete(req);
+
+	dlist_del(&qh->ehci_req->req_link);
+	ehci_req_free(ehci, qh->ehci_req);
+
+	/* Handle next request */
+	async_handle_next(ehci);
 
 	return 0;
 }
@@ -149,7 +166,7 @@ qh_handle_error (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	struct ehci_qtd_hw *qtd;
 	uintptr_t hw_next;
 
-	req = qh->req;
+	req = qh->ehci_req->req;
 
 	ehci->async->qh_next.qh = NULL;
 

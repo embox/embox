@@ -281,6 +281,8 @@ static int echi_hcd_init(struct ehci_hcd *ehci_hcd) {
 	if ((ret = ehci_mem_init(ehci_hcd)) < 0)
 		return ret;
 
+	dlist_init(&ehci_hcd->req_list);
+
 	/*
 	 * dedicate a qh for the async ring head, since we couldn't unlink
 	 * a 'real' qh without stopping the async schedule [4.8].  use it
@@ -597,22 +599,21 @@ static void ehci_qh_sched(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	echi_qh_insert_async(ehci, qh);
 }
 
-static void ehci_transfer(struct ehci_qh *qh, struct usb_request *req) {
-	assert(qh);
-
-	qh->req = req;
-}
-
-static void ehci_qh_fill(struct ehci_hcd *ehci, struct usb_request *req, struct ehci_qh *qh, struct ehci_qtd_hw *qtd) {
+static void ehci_qh_fill(struct ehci_hcd *ehci, struct ehci_req *ehci_req,
+	    struct ehci_qh *qh, struct ehci_qtd_hw *qtd) {
 	struct ehci_qh_hw *hw;
 	struct usb_endp *ep;
+	struct usb_request *req;
 
-	assert(req);
+	assert(ehci_req);
 	assert(qh);
+
+	req = ehci_req->req;
 
 	ep = req->endp;
 	assert(ep);
 
+	qh->ehci_req = ehci_req;
 	qh->qdt = qtd;
 
 	hw = qh->hw;
@@ -634,10 +635,24 @@ static void ehci_qh_fill(struct ehci_hcd *ehci, struct usb_request *req, struct 
 
 extern void dcache_flush(const void *p, size_t size);
 
+void ehci_submit_async(struct ehci_hcd *ehci, struct ehci_req *ehci_req) {
+	struct ehci_qh *endp_qh;
+	struct usb_request *req;
+
+	req = ehci_req->req;
+	assert(req);
+
+	endp_qh = req->endp->hci_specific;
+	assert(endp_qh);
+
+	ehci_qh_fill(ehci, ehci_req, endp_qh, ehci_req->qtds_head);
+	ehci_qh_sched(ehci, endp_qh);
+}
+
 static int ehci_request(struct usb_request *req) {
 	struct ehci_hcd *ehci;
-	struct ehci_qh *new_qh;
 	struct ehci_qtd_hw *qtd, *qtd_prev, *qtd_first;
+	struct ehci_req *ehci_req;
 	uint32_t token;
 
 	assert(req);
@@ -645,15 +660,6 @@ static int ehci_request(struct usb_request *req) {
 	log_debug("endp->type(%d) token(%d) req->len(%d)", req->endp->type, req->token, req->len);
 
 	ehci = hcd_to_ehci(req->endp->dev->hcd);
-
-	/* TODO Remove this, and allow multiple QHs. */
-	assert(ehci->async->qh_next.qh == NULL);
-	//if (ehci->async->qh_next.qh) {
-	//	/* EHCI async transfer is active. */
-	//	req->req_stat = USB_REQ_STALL;
-	//	usb_request_complete(req);
-	//	return 0;
-	//}
 
 	switch (req->endp->type) {
 	case USB_COMM_CONTROL:
@@ -736,17 +742,17 @@ static int ehci_request(struct usb_request *req) {
 		panic("ehci_request: Unsupported enpd type %d", req->endp->type);
 	}
 
-	if (req->endp->hci_specific) {
-		new_qh = req->endp->hci_specific;
+	ehci_req = ehci_req_alloc(ehci);
+	assert(ehci_req);
+	ehci_req->req = req;
+	ehci_req->qtds_head = qtd_first;
+
+	if (dlist_empty(&ehci->req_list)) {
+		dlist_add_next(&ehci_req->req_link, &ehci->req_list);
+		ehci_submit_async(ehci, ehci_req);
 	} else {
-		new_qh = ehci_qh_alloc(ehci);
+		dlist_add_next(&ehci_req->req_link, &ehci->req_list);
 	}
-
-	assert(new_qh);
-
-	ehci_qh_fill(ehci, req, new_qh, qtd_first);
-	ehci_transfer(new_qh, req);
-	ehci_qh_sched(ehci, new_qh);
 
 	return 0;
 }
