@@ -61,7 +61,7 @@ def fix_main(info):
 	with open(info.dst + '/Src/main.c', 'w') as f:
 		f.write(''.join(lines))
 
-def generate_Mybuild(info):
+def generate_mybuild(info):
 	with open(info.script_dir + '/Mybuild_template', 'r') as f:
 		mybuild = f.read()
 
