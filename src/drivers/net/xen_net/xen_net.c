@@ -204,9 +204,444 @@ moretodo:
 }
 #endif
 
+///////////////////////////////////////////////////////
+// Here we are going to realize grant table mechanism//
+///////////////////////////////////////////////////////
+
+/*
+ * Reserve an area of virtual address space for mappings and Heap
+ */
+//static unsigned long demand_map_area_start;
+//static unsigned long demand_map_area_end;
+//Need it?
+#if 0
+#ifdef HAVE_LIBC
+unsigned long heap, brk, heap_mapped, heap_end;
+#endif
+#define VIRT_DEMAND_AREA        CONST(0x40000000)
+#define DEMAND_MAP_PAGES        CONST(0x6ffff)
+#define L2_PAGETABLE_SHIFT      21
+#define L1_MASK  ((1UL << L2_PAGETABLE_SHIFT) - 1)
+
+#define NR_RESERVED_ENTRIES 8
+/* NR_GRANT_FRAMES must be less than or equal to that configured in Xen */
+#define NR_GRANT_FRAMES 4
+#define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE / sizeof(grant_entry_v1_t))
+#endif 
+//static grant_entry_v1_t *gnttab_table;
+#include <xen_hypercall-x86_32.h>
+#if 0
+/*
+ * get the PTE for virtual address va if it exists. Otherwise NULL.
+ */
+static pgentry_t *get_pgt(unsigned long va)
+{
+    unsigned long mfn;
+    pgentry_t *tab;
+    unsigned offset;
+
+    tab = pt_base;
+    mfn = virt_to_mfn(pt_base);
+
+    offset = l3_table_offset(va);
+    if ( !(tab[offset] & _PAGE_PRESENT) )
+        return NULL;
+    mfn = pte_to_mfn(tab[offset]);
+    tab = mfn_to_virt(mfn);
+    offset = l2_table_offset(va);
+    if ( !(tab[offset] & _PAGE_PRESENT) )
+        return NULL;
+    if ( tab[offset] & _PAGE_PSE )
+        return &tab[offset];
+    mfn = pte_to_mfn(tab[offset]);
+    tab = mfn_to_virt(mfn);
+    offset = l1_table_offset(va);
+    return &tab[offset];
+}
+
+
+//TODO!!!!!!!
+void arch_init_demand_mapping_area(void)
+{
+    demand_map_area_start = VIRT_DEMAND_AREA;
+    demand_map_area_end = demand_map_area_start + DEMAND_MAP_PAGES * PAGE_SIZE;
+    printk("Demand map pfns at %lx-%lx.\n", demand_map_area_start,
+           demand_map_area_end);
+
+#ifdef HAVE_LIBC
+    heap_mapped = brk = heap = VIRT_HEAP_AREA;
+    heap_end = heap_mapped + HEAP_PAGES * PAGE_SIZE;
+    printk("Heap resides at %lx-%lx.\n", brk, heap_end);
+#endif
+}
+
+unsigned long allocate_ondemand(unsigned long n, unsigned long alignment)
+{
+    unsigned long x;
+    unsigned long y = 0;
+
+    /* Find a properly aligned run of n contiguous frames */
+    for ( x = 0;
+          x <= DEMAND_MAP_PAGES - n; 
+          x = (x + y + 1 + alignment - 1) & ~(alignment - 1) )
+    {
+        unsigned long addr = demand_map_area_start + x * PAGE_SIZE;
+        pgentry_t *pgt = get_pgt(addr);
+        for ( y = 0; y < n; y++, addr += PAGE_SIZE ) 
+        {
+            if ( !(addr & L1_MASK) )
+                pgt = get_pgt(addr);
+            if ( pgt )
+            {
+                if ( *pgt & _PAGE_PRESENT )
+                    break;
+                pgt++;
+            }
+        }
+        if ( y == n )
+            break;
+    }
+    if ( y != n )
+    {
+        printk("Failed to find %ld frames!\n", n);
+        return 0;
+    }
+    return demand_map_area_start + x * PAGE_SIZE;
+}
+
+
+
+/* map f[i*stride]+i*increment for i in 0..n-1, aligned on alignment pages */
+/*
+ * Map an array of MFNs contiguous into virtual address space. Virtual
+ * addresses are allocated from the on demand area.
+ */
+void *map_frames_ex(const unsigned long *mfns, 
+                    unsigned long n, //4
+                    unsigned long stride, //1
+                    unsigned long incr, //0
+                    unsigned long alignment, //1
+                    domid_t id, int *err, //DOMID_SELF 32752, NULL
+                    unsigned long prot) //L1_PROT 35
+{
+    unsigned long va = allocate_ondemand(n, alignment);
+
+    if ( !va )
+        return NULL;
+
+    if ( do_map_frames(va, mfns, n, stride, incr, id, err, prot) )
+        return NULL;
+
+    return (void *)va;
+}
+
+
+#define map_frames(f, n) map_frames_ex(f, n, 1, 0, 1, DOMID_SELF, NULL, L1_PROT)
+
+void init_gnttab(void)
+{
+
+/*TODO detection
+    int i;
+    for (i = NR_RESERVED_ENTRIES; i < NR_GRANT_ENTRIES; i++)
+        put_free_entry(i);
+*/	
+	struct gnttab_setup_table setup;
+    unsigned long frames[NR_GRANT_FRAMES];
+
+    setup.dom = DOMID_SELF;
+    setup.nr_frames = NR_GRANT_FRAMES;
+    set_xen_guest_handle(setup.frame_list, frames);
+
+    HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
+    
+	gnttab_table = map_frames(frames, NR_GRANT_FRAMES);
+	
+    printk("gnttab_table mapped at %p.\n", gnttab_table);
+}
+#endif
+extern char _text;
+
+extern start_info_t my_start_info;
+unsigned long *phys_to_machine_mapping;
+/*
+ * get the PTE for virtual address va if it exists. Otherwise NULL.
+ */
+ /*
+ * Lookup the page table entry for a virtual address in a specific pgd.
+ * Return a pointer to the entry and the level of the mapping.
+ */
+ //arch/x86/mm/pageattr.c:353
+static pgentry_t *get_pgt(unsigned long va)
+{
+    printk(">>>>>start get_pgt\n");
+
+    unsigned long mfn;
+    pgentry_t *tab;
+    unsigned offset;
+    pgentry_t *pt_base;
+    
+    
+    pt_base = (pgentry_t *)my_start_info.pt_base;
+    phys_to_machine_mapping = (unsigned long *)my_start_info.mfn_list;
+    printk("pt_base=%llu\n", *pt_base);
+
+
+    tab = pt_base;
+    mfn = virt_to_mfn(pt_base);
+printk("DEBUGG\n");
+
+    offset = l3_table_offset(va);
+    printk("DEBUGG2\n");
+ 
+    
+    printk("DEBUGG\n");
+    if ( !(tab[offset] & _PAGE_PRESENT) )
+    {
+        printk("DEBUGG_null\n");
+        return NULL;
+    }
+        
+    printk("DEBUGG3\n");
+    mfn = pte_to_mfn(tab[offset]);
+    printk("DEBUGG4\n");
+    tab = mfn_to_virt(mfn);
+    printk("DEBUGG5\n");
+    offset = l2_table_offset(va);
+    printk("DEBUGG6-1\n");
+    printk("offset=%lln\n", tab);
+    printk("offset=%llu\n", (tab[offset]& _PAGE_PRESENT));
+    printk("DEBUGG6,2\n");
+    if ( !(tab[offset] & _PAGE_PRESENT) )
+    {
+        printk("DEBUGG_null\n");
+        
+        return NULL;
+    }
+    
+    printk("DEBUGG7\n");
+    if ( tab[offset] & _PAGE_PSE )
+    {
+        printk("DEBUGG_pse\n");
+        return &tab[offset];
+    }
+    printk("DEBUGG8\n");
+    mfn = pte_to_mfn(tab[offset]);
+    tab = mfn_to_virt(mfn);
+    printk("DEBUGG9\n");
+    offset = l1_table_offset(va);
+    
+    printk("end of get_pgt \n");
+    printk("offset=%u\n", offset);
+    printk("offset=%p\n", &tab);
+    printk("offset=%p\n", &tab[offset]);
+    pgentry_t *asd = &tab[offset];
+    printk("end of get_pgt \n");
+    return asd;
+}
+
+/*
+ * return a valid PTE for a given virtual address. If PTE does not exist,
+ * allocate page-table pages.
+ */
+pgentry_t *need_pgt(unsigned long va)
+{
+    printk("start_need_pgt\n");
+    unsigned long pt_mfn;
+    pgentry_t *tab;
+    //unsigned long pt_pfn;
+    unsigned offset;
+
+    //вынести это отдельно
+    pgentry_t *pt_base;
+    pt_base = (pgentry_t *)my_start_info.pt_base;
+    
+    tab = pt_base;
+    pt_mfn = virt_to_mfn(pt_base);
+
+    offset = l3_table_offset(va);
+    if ( !(tab[offset] & _PAGE_PRESENT) ) 
+    {
+        printk("!(tab[offset] & _PAGE_PRESENT) true \n");
+        /*pt_pfn = virt_to_pfn(alloc_page());
+        if ( !pt_pfn )
+            return NULL;
+        new_pt_frame(&pt_pfn, pt_mfn, offset, L2_FRAME);
+        */
+    }
+    if(!(tab[offset] & _PAGE_PRESENT))
+    {
+        printk("That's not good\n");
+    }
+    pt_mfn = pte_to_mfn(tab[offset]);
+    tab = mfn_to_virt(pt_mfn);
+    offset = l2_table_offset(va);
+    if ( !(tab[offset] & _PAGE_PRESENT) )
+    {
+        printk("2!(tab[offset] & _PAGE_PRESENT) true \n");
+        /*
+        pt_pfn = virt_to_pfn(alloc_page());
+        if ( !pt_pfn )
+            return NULL;
+        new_pt_frame(&pt_pfn, pt_mfn, offset, L1_FRAME);
+        */
+    }
+    if(tab[offset] & _PAGE_PRESENT)
+    {
+        printk("That's not good\n");
+    }
+
+    if ( tab[offset] & _PAGE_PSE )
+        return &tab[offset];
+
+    pt_mfn = pte_to_mfn(tab[offset]);
+    tab = mfn_to_virt(pt_mfn);
+
+    offset = l1_table_offset(va);
+    printk("end_need_pgt\n");
+    return &tab[offset];
+}
+
+unsigned long allocate_ondemand(unsigned long n)
+{
+    printk(">>>>>start allocate_ondemand\n");
+    unsigned long x;
+    unsigned long y = 0;
+    unsigned long alignment = 1;
+#define DEMAND_MAP_PAGES        CONST(0x10000000) //somewhere out of embox memory
+
+    unsigned long demand_map_area_start = DEMAND_MAP_PAGES;
+
+    /* Find a properly aligned run of n contiguous frames */
+    for ( x = 0;
+          x <= DEMAND_MAP_PAGES - n; 
+          x = (x + y + 1 + alignment - 1) & ~(alignment - 1) ) //it can be easy
+    {
+        printk("x=%lu\n", x);
+    
+        unsigned long addr = demand_map_area_start + x * PAGE_SIZE;
+        printk("addr=%lu\n", addr);
+
+        pgentry_t *pgt = get_pgt(addr);
+        
+        
+        for ( y = 0; y < n; y++, addr += PAGE_SIZE ) 
+        {
+            printk("y=%lu\n", y);
+            if ( !(addr & L1_MASK) )
+            {
+                pgt = get_pgt(addr);
+                printk("debug1\n");
+            }
+            printk("debug2\n");
+            if ( pgt )
+            {
+                printk("debug3");
+                //printk("debug3; *pgt=%llu\n",*pgt);
+                if ( *pgt & _PAGE_PRESENT )
+                {
+                    printk("debug4\n");
+                    break;
+                }
+                printk("debug5\n");
+                pgt++;
+            }
+            printk("debug6\n");
+        }
+        if ( y == n )
+        {
+            printk("debug7\n");
+            break;
+        }
+           printk("debug8\n");
+    }
+    if ( y != n )
+    {
+        printk("Failed to find %ld frames!\n", n);
+        return 0;
+    }
+    printk("debug9\n");
+    printk("x=%ld\n",x);
+    
+    return demand_map_area_start + x * PAGE_SIZE;
+}
+extern grant_entry_v1_t my_grant;
+extern int my_debug_info;
+void offer_page(void)
+{
+    printk(">>>>>offer_page\n");
+
+/*TODO detection
+    int i;
+    for (i = NR_RESERVED_ENTRIES; i < NR_GRANT_ENTRIES; i++)
+        put_free_entry(i);
+*/	
+	struct gnttab_setup_table setup;
+    unsigned long frames[1];
+
+    setup.dom = DOMID_SELF;
+	printk("------------DOMID_SELF=%d\n", DOMID_SELF);
+    setup.nr_frames = 1;
+    set_xen_guest_handle(setup.frame_list, frames);
+
+    int rc;
+    rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
+        printk("HYPERVISOR_grant_table_op:%d\n", rc);
+
+	printk("------------status=%d\n", setup.status);
+    int count;
+	for(count = 0; count < 1; count++)
+    {
+        printk("entry %d mapped at %ld.\n",count, frames[count]);
+    }
+#if 0
+    printk("grant table virtual:%p\n", gnttab_table);
+    unsigned long va = allocate_ondemand(1); 
+    
+    pgentry_t *pgt = NULL;
+    if ( !pgt || !(va & L1_MASK) )
+    {
+        printk("deal with it\n");
+
+        pgt = need_pgt(va);
+    }
+                    
+    printk(">>>>>%lu\n", va);
+
+    //gnttab_table = (pgentry_t)((frames[0] << PAGE_SHIFT) | L1_PROT);
+    //printk("grant table machine:%ld\n", virt_to_mfn(gnttab_table));
+    
+    ////printk("grant table flags:%d\n", gnttab_table[0].flags);
+#elif 1 //HYPERVISOR_update_va_mapping
+    printk("debud info rc=%d\n", my_debug_info);
+    
+    rc = HYPERVISOR_update_va_mapping((unsigned long) &my_grant,
+			__pte((frames[0]<< PAGE_SHIFT) | 7),
+			UVMF_INVLPG);
+    printk("HYPERVISOR_update_va_mapping:%d\n", rc);
+    printk("grant table virtual:%p\n", &my_grant);
+    
+#else
+    
+    mmu_update_t mmu_updates[1];
+    mmu_updates[0].ptr = virt_to_mach((pgentry_t)(void*)&my_grant) | MMU_NORMAL_PT_UPDATE;
+    mmu_updates[0].val = ((pgentry_t)(frames[0]) << PAGE_SHIFT) | L1_PROT;
+                            
+    rc = HYPERVISOR_mmu_update(mmu_updates, 1, NULL, DOMID_SELF);
+    printk("rc=%d\n",rc);
+#endif
+/*
+    printk("grant table flags:%d\n", gnttab_table.flags);
+    gnttab_table.flags = GTF_permit_access;
+    printk("grant table flags:%d\n", gnttab_table.flags);
+  */ 
+    printk(">>>>>END OF offer_page\n");
+}
+
 static int xen_net_init(void) {
 	printk("\n");
 	printk(">>>>>xen_net_init\n");
+	offer_page();
 	int res = 0;
 	struct net_device *nic;
 
@@ -225,8 +660,10 @@ static int xen_net_init(void) {
 	ip="192.168.2.2";
 	struct netfront_dev *dev = init_netfront(nodename, print_packet, rawmac, &ip);
 	printk(">>>>>afterinit_netfront\n");
-	
+    
+
 	//Danger! hardcode of dev->evtchn_rx = 9
+#if 1 //try split channel
 	nic->irq = dev->evtchn_rx;
 	res = irq_attach(dev->evtchn_rx, xen_net_irq, IF_SHARESUP, nic,
 			"xen_net");
@@ -234,7 +671,16 @@ static int xen_net_init(void) {
 		printk("irq_attach error: %i\n", res);
 		return res;
 	}
-	
+#else
+	nic->irq = dev->evtchn;
+	res = irq_attach(dev->evtchn, xen_net_irq, IF_SHARESUP, nic,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+#endif
+
 #if 0
 	while(1) {
 		network_rx(dev);
