@@ -26,15 +26,17 @@ extern int xenstore_init(start_info_t *);
 uint8_t xen_features[XENFEAT_NR_SUBMAPS * 32];
 
 extern shared_info_t xen_shared_info;
+extern start_info_t my_start_info;
 
 shared_info_t *HYPERVISOR_shared_info;
 start_info_t * xen_start_info_global;
 
 void xen_kernel_start(start_info_t * start_info) {
 	HYPERVISOR_update_va_mapping((unsigned long) &xen_shared_info,
-			__pte(start_info->shared_info | 7),
+			__pte(start_info->shared_info | 7), //_PAGE_PRESENT | _PAGE_RW | _PAGE_ACCESSED = 7
 			UVMF_INVLPG);
 
+	my_start_info = *start_info;
 	xen_start_info_global = start_info;
 	HYPERVISOR_shared_info = &xen_shared_info;
 

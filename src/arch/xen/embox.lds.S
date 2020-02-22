@@ -20,12 +20,25 @@ _ram_base = ORIGIN(RAM);
 _ram_size = LENGTH(RAM);
 
 SECTIONS {
+	. = 0x0;
+	_text = .; 			/* Text and read-only data */
+
 	.text : {
 		. = ALIGN(0x1000);
 		hypercall_page = .;
 		. += 0x1000;
 		xen_shared_info = .;
 		. += 0x1000;
+		
+		my_start_info = .;
+		. += 0x1000;
+		
+		my_grant = .;
+		. += 0x10000;
+		
+		my_debug_info = .;
+		. += 0x1000;
+
 		_traps_text_start = .;
 		*(.traps.*)
 		_traps_text_end = .;
