@@ -46,7 +46,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap', 'pascalprecht.translate'
                 state: !!int_state,
             };
         });
-    };
+    }
 
     function collectNth(a, n) {
         return a.reduce(function(base, x, index) {
@@ -57,7 +57,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap', 'pascalprecht.translate'
             }
             return base;
         }, []);
-    };
+    }
 
     function ledStatesArrange(leds_state) {
         var pairs = collectNth(leds_state, 2);

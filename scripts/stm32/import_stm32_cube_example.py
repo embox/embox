@@ -148,10 +148,10 @@ def generate_new_main(info):
 
 def import_example(info):
 	if os.path.exists(info.dst):
-		print 'Destination directory %s is already exists' % info.dst
+		print ('Destination directory %s is already exists' % info.dst)
 		return
 	elif not os.path.exists(info.src):
-		print 'Source directory %s does not exist' % info.src
+		print ('Source directory %s does not exist' % info.src)
 		return
 
 	shutil.copytree(info.src + '/Src', info.dst + '/Src')
@@ -198,7 +198,7 @@ def main():
 	dst = '%s/%s' % (os.path.normpath(args.dest), example_name)
 	script_dir = os.path.dirname(sys.argv[0])
 
-	print "src=%s, dest=%s, platform=%s" % (src, dst, platform)
+	print ("src=%s, dest=%s, platform=%s" % (src, dst, platform))
 	info = ExampleInfo(src, dst, script_dir, example_name, platform)
 
 	import_example(info)
