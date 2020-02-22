@@ -8,7 +8,7 @@ angular.module("HttpAdmin", [])
     });
 
     $scope.update = function(iface) {
-      post_data = {
+      var post_data = {
 	'action' : 'iface_update',
 	'data' : iface
       };
@@ -19,7 +19,7 @@ angular.module("HttpAdmin", [])
     };
 
     $scope.flash = function() {
-      post_data = {
+      var post_data = {
 	'action' : 'flash_settings',
       };
 
