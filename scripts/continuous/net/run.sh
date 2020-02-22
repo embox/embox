@@ -121,6 +121,7 @@ tap_down() {
 }
 
 sed -i "s/CONTINIOUS_RUN_DNS_SERVER/$(determ_dns)/" conf/mods.config
+cp index.html conf/rootfs/index.html
 make >/dev/null 2>/dev/null
 
 tap_up
