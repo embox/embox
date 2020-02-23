@@ -9,8 +9,10 @@
 #include <string.h>
 #include <drivers/spi.h>
 #include <drivers/spi/stm32_spi_conf.h>
-
+#include <framework/mod/options.h>
 #include <embox/unit.h>
+
+#include <config/third_party/bsp/stmf4cube/arch.h>
 
 #include "stm32_spi.h"
 
@@ -23,6 +25,11 @@ static struct stm32_spi stm32_spi1 = {
 
 static int stm32_spi1_init(void) {
 	GPIO_InitTypeDef  GPIO_InitStruct;
+
+#if !OPTION_MODULE_GET(third_party__bsp__stmf4cube__arch,BOOLEAN,errata_spi_wrong_last_bit)
+	#error errata_spi_wrong_last_bit is not enabled for SPI1! \
+	       Please, enable this option in third_party.bsp.stmf4cube.arch
+#endif
 
 	spi1_enable_gpio_clocks();
 	spi1_enable_spi_clocks();

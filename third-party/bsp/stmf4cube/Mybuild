@@ -127,6 +127,14 @@ static module stm32f4_discovery_bsp {
 @Build(stage=1,script="true")
 @BuildDepends(core)
 module arch extends embox.arch.arch {
+	/* STM32F40x and STM32F41x Errata sheet:
+	 *
+	 * https://www.st.com/content/ccc/resource/technical/document/errata_sheet/0a/98/58/84/86/b6/47/a2/DM00037591.pdf/files/DM00037591.pdf/jcr:content/translations/en.DM00037591.pdf
+	 *
+	 *  "2.5.2 Corrupted last bit of data and/or CRC,
+	 *  received in Master mode with delayed SCK feedback" */
+	option boolean errata_spi_wrong_last_bit = false
+
 	source "arch.c"
 
 	depends system_init
