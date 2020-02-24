@@ -2,14 +2,18 @@
 // $ ./a.out
 
 #include <stdio.h>
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic warning "-Wundef"
 #include <lkl_host.h>
 #include <lkl.h>
+#pragma GCC diagnostic pop
 
 int main() {
 	#define access_rights 0721
 
 	long ret;
-	char cmdline[16];
+	char cmdline[64];
 
 	snprintf(cmdline, sizeof(cmdline), "mem=64M loglevel=8"); // loglevel=8 is from tests
 	ret = lkl_start_kernel(&lkl_host_ops, cmdline);
