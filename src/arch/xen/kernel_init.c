@@ -13,7 +13,6 @@
 #include <xen_hypercall-x86_32.h>
 #include <xen/event_channel.h>
 #include <xen/io/console.h>
-#include <xen/event.h>
 #include <xenstore.h>
 
 /* Embox interface */

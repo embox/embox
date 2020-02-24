@@ -1,7 +1,7 @@
 
 #include <stdint.h>
 #include <xen/xen.h>
-#include <xen/event.h> // pt_regs
+#include <traps.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
