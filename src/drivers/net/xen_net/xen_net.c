@@ -214,21 +214,7 @@ moretodo:
 //static unsigned long demand_map_area_start;
 //static unsigned long demand_map_area_end;
 //Need it?
-#if 0
-#ifdef HAVE_LIBC
-unsigned long heap, brk, heap_mapped, heap_end;
-#endif
-#define VIRT_DEMAND_AREA        CONST(0x40000000)
-#define DEMAND_MAP_PAGES        CONST(0x6ffff)
-#define L2_PAGETABLE_SHIFT      21
-#define L1_MASK  ((1UL << L2_PAGETABLE_SHIFT) - 1)
 
-#define NR_RESERVED_ENTRIES 8
-/* NR_GRANT_FRAMES must be less than or equal to that configured in Xen */
-#define NR_GRANT_FRAMES 4
-#define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE / sizeof(grant_entry_v1_t))
-#endif 
-//static grant_entry_v1_t *gnttab_table;
 #include <xen_hypercall-x86_32.h>
 #if 0
 /*
@@ -565,11 +551,10 @@ unsigned long allocate_ondemand(unsigned long n)
     
     return demand_map_area_start + x * PAGE_SIZE;
 }
-extern grant_entry_v1_t my_grant;
-extern int my_debug_info;
-void offer_page(void)
+
+void init_grant_table(int n)
 {
-    printk(">>>>>offer_page\n");
+    printk(">>>>>init_grant_table\n");
 
 /*TODO detection
     int i;
@@ -577,23 +562,17 @@ void offer_page(void)
         put_free_entry(i);
 */	
 	struct gnttab_setup_table setup;
-    unsigned long frames[1];
+    unsigned long frames[n];
 
-    setup.dom = DOMID_SELF;
-	printk("------------DOMID_SELF=%d\n", DOMID_SELF);
-    setup.nr_frames = 1;
+    setup.dom = DOMID_SELF;     //32752
+    setup.nr_frames = n;
     set_xen_guest_handle(setup.frame_list, frames);
 
     int rc;
     rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
-        printk("HYPERVISOR_grant_table_op:%d\n", rc);
-
-	printk("------------status=%d\n", setup.status);
+    printk("HYPERVISOR_grant_table_op returned:%d, status=%d\n", rc, setup.status);
     int count;
-	for(count = 0; count < 1; count++)
-    {
-        printk("entry %d mapped at %ld.\n",count, frames[count]);
-    }
+
 #if 0
     printk("grant table virtual:%p\n", gnttab_table);
     unsigned long va = allocate_ondemand(1); 
@@ -613,35 +592,32 @@ void offer_page(void)
     
     ////printk("grant table flags:%d\n", gnttab_table[0].flags);
 #elif 1 //HYPERVISOR_update_va_mapping
-    printk("debud info rc=%d\n", my_debug_info);
-    
-    rc = HYPERVISOR_update_va_mapping((unsigned long) &my_grant,
-			__pte((frames[0]<< PAGE_SHIFT) | 7),
-			UVMF_INVLPG);
-    printk("HYPERVISOR_update_va_mapping:%d\n", rc);
-    printk("grant table virtual:%p\n", &my_grant);
-    
+
+    for(count = 0; count < n; count++)
+    {
+        printk("entry %d mapped at %ld(mfn).\n",count, frames[count]);
+
+        rc = HYPERVISOR_update_va_mapping((unsigned long) grant_table[count],
+                __pte((frames[count]<< PAGE_SHIFT) | 7),
+                UVMF_INVLPG);
+        printk("HYPERVISOR_update_va_mapping:%d\n", rc);
+    }
 #else
     
     mmu_update_t mmu_updates[1];
-    mmu_updates[0].ptr = virt_to_mach((pgentry_t)(void*)&my_grant) | MMU_NORMAL_PT_UPDATE;
+    mmu_updates[0].ptr = virt_to_mach((pgentry_t)(void*)&grant_table) | MMU_NORMAL_PT_UPDATE;
     mmu_updates[0].val = ((pgentry_t)(frames[0]) << PAGE_SHIFT) | L1_PROT;
                             
     rc = HYPERVISOR_mmu_update(mmu_updates, 1, NULL, DOMID_SELF);
     printk("rc=%d\n",rc);
 #endif
-/*
-    printk("grant table flags:%d\n", gnttab_table.flags);
-    gnttab_table.flags = GTF_permit_access;
-    printk("grant table flags:%d\n", gnttab_table.flags);
-  */ 
-    printk(">>>>>END OF offer_page\n");
+    printk(">>>>>END OF init_grant_table\n");
 }
 
 static int xen_net_init(void) {
 	printk("\n");
 	printk(">>>>>xen_net_init\n");
-	offer_page();
+	init_grant_table(NR_GRANT_FRAMES);
 	int res = 0;
 	struct net_device *nic;
 

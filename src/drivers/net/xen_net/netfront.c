@@ -33,25 +33,20 @@ do {                                        \
 
 static char _text;
 
-static char memory_pages[16][PAGE_SIZE];
+static char memory_pagess[16][PAGE_SIZE];
 
-//delete this
-/*
-static grant_entry_v1_t gnttab_table[16];
-*/
 static grant_ref_t ref = 0; // it's ok
 
-extern grant_entry_v1_t my_grant;
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
 {
-	printk("gnttab_grant_access start\n");
+	printk("gnttab_grant_access start for ref:%d\n", ref);
     
-    my_grant.frame = frame;
+    grant_table[ref]->frame = frame;
 	printk("frame setuped\n");
-    my_grant.domid = domid;
+    grant_table[ref]->domid = domid;
     wmb();
     readonly *= GTF_readonly;
-    my_grant.flags = GTF_permit_access | readonly;
+    grant_table[ref]->flags = GTF_permit_access | readonly;
 
     return ref++;
 }
@@ -594,9 +589,9 @@ struct netfront_dev *init_netfront(
 //#define TSX_DEBUG
 #ifdef TSX_DEBUG
 	txs = (struct netif_tx_sring *) &my_debug_info;
-	rxs = (struct netif_rx_sring *) memory_pages[1];
+	rxs = (struct netif_rx_sring *) memory_pagess[1];
 #else
-	txs = (struct netif_tx_sring *) memory_pages[0];
+	txs = (struct netif_tx_sring *) memory_pagess[0];
 	rxs = (struct netif_rx_sring *) &my_debug_info;
 #endif
 	memset(txs, 0, PAGE_SIZE);
