@@ -552,6 +552,9 @@ unsigned long allocate_ondemand(unsigned long n)
     return demand_map_area_start + x * PAGE_SIZE;
 }
 
+extern grant_entry_v1_t memory_page[NR_GRANT_ENTRIES];
+extern grant_entry_v1_t *grant_table;
+
 void init_grant_table(int n)
 {
     printk(">>>>>init_grant_table\n");
@@ -571,7 +574,6 @@ void init_grant_table(int n)
     int rc;
     rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
     printk("HYPERVISOR_grant_table_op returned:%d, status=%d\n", rc, setup.status);
-    int count;
 
 #if 0
     printk("grant table virtual:%p\n", gnttab_table);
@@ -592,16 +594,48 @@ void init_grant_table(int n)
     
     ////printk("grant table flags:%d\n", gnttab_table[0].flags);
 #elif 1 //HYPERVISOR_update_va_mapping
-
+    int count;
+    printk("NR_GRANT_ENTRIES=%ld\n", NR_GRANT_ENTRIES);
     for(count = 0; count < n; count++)
     {
         printk("entry %d mapped at %ld(mfn).\n",count, frames[count]);
-
-        rc = HYPERVISOR_update_va_mapping((unsigned long) grant_table[count],
+        printk("addr:%p\n", (void*)(((unsigned long) &memory_page)+count*4096)); //+4k = +page
+        rc = HYPERVISOR_update_va_mapping(((unsigned long) &memory_page)+count*4096,
                 __pte((frames[count]<< PAGE_SHIFT) | 7),
                 UVMF_INVLPG);
         printk("HYPERVISOR_update_va_mapping:%d\n", rc);
     }
+
+    grant_table  = &memory_page[0];
+
+    //grant_table[1].flags = GTF_permit_acces;
+    /*
+    for(count = 0; count < NR_GRANT_ENTRIES; count++)
+    {
+        printk("count=%d\n",count);
+        int a=0;
+        int b=0;
+        grant_table[count] = (grant_entry_v1_t*)memory_page[a][b];
+        b += sizeof(grant_entry_v1_t);
+        if(b == PAGE_SIZE) 
+        {
+            a++;
+            b=0;
+        }
+
+    }*/
+    
+    
+#elif 0
+
+    
+    printk("memm addr:%p", &memm);
+    rc = HYPERVISOR_update_va_mapping((unsigned long) &memm,
+            __pte((frames[0]<< PAGE_SHIFT) | 7),
+            UVMF_INVLPG);
+    
+    printk("HYPERVISOR_update_va_mapping:%d\n", rc);
+    
 #else
     
     mmu_update_t mmu_updates[1];
