@@ -22,6 +22,7 @@ static void *heap_simple_end;
 
 #define HEAP_SIZE OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,heap_size)
 #define HEAP_ALIGN OPTION_MODULE_GET(embox__mem__heap_api,NUMBER,align)
+#define ALIGN_PADDING sizeof(size_t)
 
 #define MEM_POOL_SIZE  (HEAP_SIZE / PAGE_SIZE())
 static void *mem_pool;
@@ -84,8 +85,10 @@ static void _mem_defrag(void) {
 
 void free(void *ptr) {
 	struct mem_control_block *mcb;
+	size_t shift = *(int*)(ptr - ALIGN_PADDING);
+	ptr -= MCB_SZ + shift + ALIGN_PADDING;
 
-	mcb = (void *)((char *) ptr - MCB_SZ);
+	mcb = ptr;
 	mcb->is_available = 1;
 
 	 _mem_defrag();
@@ -93,10 +96,15 @@ void free(void *ptr) {
 }
 
 void *malloc(size_t size) {
+	return memalign(sizeof(void*), size);
+}
+
+void *memalign(size_t boundary, size_t size) {
 	void *ptr;
 	struct mem_control_block *mcb, *next_mcb;
+	size_t shift, total_mem_size;
 
-	if (size == 0) {
+	if (size == 0 || (boundary & (boundary - 1)) != 0) {
 		return NULL;
 	}
 
@@ -112,20 +120,22 @@ void *malloc(size_t size) {
 
 	while (ptr + MCB_SZ + size < heap_simple_end) {
 		mcb = ptr;
+		shift = (boundary - ((int)(ptr + MCB_SZ + ALIGN_PADDING) % boundary)) % boundary;
+		total_mem_size = size + ALIGN_PADDING + shift + MCB_SZ;
 
-		if (mcb->is_available && mcb->size >= size) {
+		if (mcb->is_available && mcb->size >= total_mem_size - MCB_SZ) {
 			mcb->is_available = 0;
 
-			if (mcb->size > size + MCB_SZ) {
-				next_mcb = ptr + size + MCB_SZ;
+			if (mcb->size > total_mem_size) {
+				next_mcb = ptr + total_mem_size;
 
-				next_mcb->size = mcb->size - size - MCB_SZ;
+				next_mcb->size = mcb->size - total_mem_size;
 				next_mcb->is_available = 1;
 
-				mcb->size = size;
+				mcb->size = total_mem_size - MCB_SZ;
 			}
-
-			return ptr + MCB_SZ;
+			*(int*)(ptr + MCB_SZ + shift) = shift;
+			return ptr + total_mem_size - size;
 		}
 
 		ptr += mcb->size + MCB_SZ;
