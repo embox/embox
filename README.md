@@ -3,13 +3,19 @@ Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](htt
 ## LKL specific info
 
 LKL can be built only in x86 environment (not x86-64).
-Suitablel docker image may be used.
-`embox/emdocker-lkl` (based on `i386/ubuntu`) have all necessary packages installed.
+Suitable docker image may be used, i.e. `embox/emdocker-lkl` have all necessary packages installed.
+It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile) 
 
+Build environment:
 ```
-docker run -it --rm --name emdocker -u $(id -u):$(id -g) -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
+docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
 ```
-=====
+
+Test (QEMU) environment:
+```
+docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
+```
+---
 
 Embox is a configurable operating system kernel designed for resource
 constrained and embedded systems.
