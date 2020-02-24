@@ -63,15 +63,17 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach g,$(sources_git), \
 		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
 			cd $(DOWNLOAD_DIR); \
-			git clone $g; \
+			git clone $g $(GIT_CLONE_ARGS); \
 		fi;)
 	touch $@
 
 DOWNLOAD_CHECK  := $(BUILD_DIR)/.download_checked
 $(DOWNLOAD_CHECK) : $(DOWNLOAD)
-	cd $(DOWNLOAD_DIR) && ( \
-		$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
-	)
+	if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
+		cd $(DOWNLOAD_DIR) && ( \
+			$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
+		); \
+	fi
 	touch $@
 
 download : $(DOWNLOAD) $(DOWNLOAD_CHECK)

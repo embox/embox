@@ -1,0 +1,4 @@
+package third_party
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) BUILD_DIR=$(abspath $(EXTERNAL_BUILD_DIR))/third_party/xen download install")
+static module xen_headers { }
