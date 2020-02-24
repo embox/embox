@@ -15,6 +15,13 @@ Test (QEMU) environment:
 ```
 docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
 ```
+
+### Clean Linux in LKL
+```
+rm build/extbld/third_party/lkl/.{builded,installed}
+make -C build/extbld/third_party/lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl clean
+```
+
 ---
 
 Embox is a configurable operating system kernel designed for resource
