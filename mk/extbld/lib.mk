@@ -65,7 +65,7 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 			cd $(DOWNLOAD_DIR); \
 			git clone $g $(GIT_CLONE_ARGS); \
 		fi;)
-	test -f $(DOWNLOAD_DIR)/$(pkg_archive_name) || \
+	test "" = "$(PKG_SOURCES)" || test -f $(DOWNLOAD_DIR)/$(pkg_archive_name) || \
 		$(foreach g,$(sources_git), test -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ||) test 1 = 0
 	touch $@
 
