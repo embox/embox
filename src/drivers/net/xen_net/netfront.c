@@ -33,21 +33,23 @@ do {                                        \
 
 static char _text;
 
-static char memory_pagess[16][PAGE_SIZE];
+//static char memory_pagess[16][PAGE_SIZE];
 
-static grant_ref_t ref = 0; // it's ok
+static grant_ref_t ref = 1; // it's ok
+
+grant_entry_v1_t *grant_table;
 
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
 {
-	printk("gnttab_grant_access start for ref:%d\n", ref);
+	printk("grant access for ref:%d on addr:%p\n", ref, &grant_table[ref]);
     
-    grant_table[ref]->frame = frame;
-	printk("frame setuped\n");
-    grant_table[ref]->domid = domid;
+    grant_table[ref].frame = frame;
+    grant_table[ref].domid = domid;
     wmb();
     readonly *= GTF_readonly;
-    grant_table[ref]->flags = GTF_permit_access | readonly;
+    grant_table[ref].flags = GTF_permit_access | readonly;
 
+	printk("frame setuped\n");
     return ref++;
 }
 #if 0 //сохраним для истории
@@ -420,7 +422,7 @@ static inline int notify_remote_via_evtchn(evtchn_port_t port)
 void init_rx_buffers(struct netfront_dev *dev)
 {
 	printk(">>>>>init_rx_buffers\n");
-	printk(">>>>>NET_RX_RING_SIZE=%lli\n", NET_RX_RING_SIZE);
+	printk(">>>>>NET_RX_RING_SIZE=%li\n", NET_RX_RING_SIZE);
     int i, requeue_idx;
     netif_rx_request_t *req;
     int notify;
@@ -571,7 +573,9 @@ grant_entry_v1_t *arch_init_gnttab(int nr_grant_frames)
     return map_frames(frames, nr_grant_frames);
 }
 #endif
-extern unsigned long my_debug_info;
+
+extern char rings_mem[2][PAGE_SIZE];
+
 struct netfront_dev *init_netfront(
 	char *_nodename,
 	void (*thenetif_rx)(unsigned char* data,
@@ -580,20 +584,12 @@ struct netfront_dev *init_netfront(
 	char **ip
 ) {
 	printk(">>>>>init_netfront\n");
-
-
-
-	
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
-//#define TSX_DEBUG
-#ifdef TSX_DEBUG
-	txs = (struct netif_tx_sring *) &my_debug_info;
-	rxs = (struct netif_rx_sring *) memory_pagess[1];
-#else
-	txs = (struct netif_tx_sring *) memory_pagess[0];
-	rxs = (struct netif_rx_sring *) &my_debug_info;
-#endif
+
+	txs = (struct netif_tx_sring *) &rings_mem[0];
+	rxs = (struct netif_rx_sring *) &rings_mem[1];
+
 	memset(txs, 0, PAGE_SIZE);
 	memset(rxs, 0, PAGE_SIZE);
 
@@ -614,13 +610,10 @@ struct netfront_dev *init_netfront(
 	FRONT_RING_INIT(&dev->rx, rxs, PAGE_SIZE);
 	
     printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
-#ifdef TSX_DEBUG //it should work both!!!
-	unsigned long a = virt_to_mfn(txs);
-	printk(">debug\n");
-	dev->tx_ring_ref = gnttab_grant_access(dev->dom,a, 0);
-#else
+	
+	dev->tx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(txs), 0);
 	dev->rx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(rxs), 0);
-#endif
+
 	printk(">>>>>>>>>>after grant\n");
 
     init_rx_buffers(dev);

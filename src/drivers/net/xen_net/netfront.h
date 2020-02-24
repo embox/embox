@@ -28,10 +28,7 @@ extern unsigned long *phys_to_machine_mapping;
 #else //ifNdef CONFIG_PARAVIRT
 #define pfn_to_mfn(_pfn) ((unsigned long)(_pfn))
 #define mfn_to_pfn(_mfn) ((unsigned long)(_mfn))
-
-
 #endif
-#define NR_GRANT_FRAMES 4
 
 #define L1_PAGETABLE_SHIFT      12
 #define L2_PAGETABLE_SHIFT      21
@@ -68,7 +65,7 @@ extern unsigned long *phys_to_machine_mapping;
 typedef uint64_t pgentry_t;
 
 #define PAGE_SHIFT      12
-#define PAGE_SIZE 				(1ULL << PAGE_SHIFT) // or 1??
+#define PAGE_SIZE 				(1UL << PAGE_SHIFT) // or 1?? // in mini-os 1UL
 #define PAGE_MASK       (~(PAGE_SIZE-1))
 #define PADDR_BITS              44
 #define PADDR_MASK              ((1ULL << PADDR_BITS)-1)
@@ -104,7 +101,9 @@ static __inline__ maddr_t phys_to_machine(paddr_t phys)
 
 // #define wmb() __asm__("dsb":::"memory");
 
-static grant_entry_v1_t *grant_table[NR_GRANT_FRAMES];
+#define NR_GRANT_FRAMES 4
+#define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE / sizeof(grant_entry_v1_t))
+
 
 struct net_buffer {
     void* page;

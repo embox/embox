@@ -32,14 +32,13 @@ SECTIONS {
 		
 		my_start_info = .;
 		. += 0x1000;
+
+		memory_page = .;
+		. += 0x10000;	/*FIX: it needs less space*/
 		
-		grant_table = .;
-		. += 0x10000;
-		
-		my_debug_info = .;
-		. += 0x1000;
-		memory_pages = .;
-		. += 0x10000;
+		rings_mem = .; /*TODO: use allocator*/
+		. += 0x2000;
+
 		_traps_text_start = .;
 		*(.traps.*)
 		_traps_text_end = .;
