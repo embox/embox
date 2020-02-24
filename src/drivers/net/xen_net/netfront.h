@@ -31,6 +31,7 @@ extern unsigned long *phys_to_machine_mapping;
 
 
 #endif
+#define NR_GRANT_FRAMES 4
 
 #define L1_PAGETABLE_SHIFT      12
 #define L2_PAGETABLE_SHIFT      21
@@ -102,6 +103,8 @@ static __inline__ maddr_t phys_to_machine(paddr_t phys)
 #define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE)
 
 // #define wmb() __asm__("dsb":::"memory");
+
+static grant_entry_v1_t *grant_table[NR_GRANT_FRAMES];
 
 struct net_buffer {
     void* page;
