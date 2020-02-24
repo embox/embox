@@ -1,7 +1,7 @@
 diff --git a/arch/lkl/defconfig b/arch/lkl/defconfig
 index f91380b..30474d7 100644
---- a/arch/lkl/defconfig
-+++ b/arch/lkl/defconfig
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/defconfig
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/defconfig
 @@ -20,7 +20,7 @@ CONFIG_INET=y
  # CONFIG_FW_LOADER is not set
  CONFIG_VIRTIO_BLK=y
@@ -27,8 +27,8 @@ index f91380b..30474d7 100644
  # CONFIG_INOTIFY_USER is not set
 diff --git a/arch/lkl/kernel/threads.c b/arch/lkl/kernel/threads.c
 index 71dddda..eeda6ea 100644
---- a/arch/lkl/kernel/threads.c
-+++ b/arch/lkl/kernel/threads.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c
 @@ -56,7 +56,7 @@ static void kill_thread(struct thread_info *ti)
  	if (!test_ti_thread_flag(ti, TIF_HOST_THREAD)) {
  		ti->dead = true;
@@ -40,8 +40,8 @@ index 71dddda..eeda6ea 100644
  
 diff --git a/lib/raid6/algos.c b/lib/raid6/algos.c
 index 9bdf597..a66ba8d 100644
---- a/lib/raid6/algos.c
-+++ b/lib/raid6/algos.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/lib/raid6/algos.c
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/lib/raid6/algos.c
 @@ -192,8 +192,8 @@ static inline const struct raid6_calls *raid6_choose_gen(
  
  			preempt_disable();
@@ -55,8 +55,8 @@ index 9bdf597..a66ba8d 100644
  				(*algo)->xor_syndrome(disks, start, stop,
 diff --git a/tools/lkl/Makefile b/tools/lkl/Makefile
 index acfbfc3..797ef98 100644
---- a/tools/lkl/Makefile
-+++ b/tools/lkl/Makefile
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/Makefile
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/Makefile
 @@ -68,9 +68,11 @@ $(OUTPUT)lib/lkl.o: bin/stat
  	$(MAKE) -C ../.. ARCH=lkl $(KOPT) install INSTALL_PATH=$(OUTPUT)
  
@@ -85,8 +85,8 @@ index acfbfc3..797ef98 100644
  $(OUTPUT)%-in.o: $(OUTPUT)lib/lkl.o FORCE
 diff --git a/tools/lkl/Makefile.autoconf b/tools/lkl/Makefile.autoconf
 index eeab41f..d402ec0 100644
---- a/tools/lkl/Makefile.autoconf
-+++ b/tools/lkl/Makefile.autoconf
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/Makefile.autoconf
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/Makefile.autoconf
 @@ -26,7 +26,7 @@ define bsd_host
  endef
  
@@ -127,8 +127,8 @@ index eeab41f..d402ec0 100644
  define nt64_host
 diff --git a/tools/lkl/Targets b/tools/lkl/Targets
 index c97c924..e408403 100644
---- a/tools/lkl/Targets
-+++ b/tools/lkl/Targets
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/Targets
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/Targets
 @@ -1,26 +1,27 @@
  libs-y += lib/liblkl
  
@@ -173,8 +173,8 @@ index c97c924..e408403 100644
 +# progs-y += tests/net-test
 diff --git a/tools/lkl/lib/config.c b/tools/lkl/lib/config.c
 index 0908f1d..65f7ab3 100644
---- a/tools/lkl/lib/config.c
-+++ b/tools/lkl/lib/config.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/config.c
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/config.c
 @@ -472,20 +472,20 @@ static int lkl_config_netdev_create(struct lkl_config *cfg,
  	if (iface->iftap) {
  		lkl_printf("WARN: LKL_HIJACK_NET_TAP is now obsoleted.\n");
@@ -238,8 +238,8 @@ index 0908f1d..65f7ab3 100644
  
 diff --git a/tools/lkl/lib/posix-host.c b/tools/lkl/lib/posix-host.c
 index db63ed7..4ba81bd 100644
---- a/tools/lkl/lib/posix-host.c
-+++ b/tools/lkl/lib/posix-host.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c
 @@ -12,7 +12,6 @@
  #include <sys/uio.h>
  #include <sys/types.h>
@@ -406,8 +406,8 @@ index db63ed7..4ba81bd 100644
  	case LKL_DEV_BLK_TYPE_FLUSH_OUT:
 diff --git a/tools/lkl/lib/virtio_net_fd.c b/tools/lkl/lib/virtio_net_fd.c
 index 4e2b67b..eb7fe5c 100644
---- a/tools/lkl/lib/virtio_net_fd.c
-+++ b/tools/lkl/lib/virtio_net_fd.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/virtio_net_fd.c
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/virtio_net_fd.c
 @@ -18,12 +18,17 @@
  #include <limits.h>
  #endif
@@ -429,8 +429,8 @@ index 4e2b67b..eb7fe5c 100644
  	/* file-descriptor based device */
 diff --git a/tools/lkl/lib/virtio_net_tap.c b/tools/lkl/lib/virtio_net_tap.c
 index e5302a3..be615fc 100644
---- a/tools/lkl/lib/virtio_net_tap.c
-+++ b/tools/lkl/lib/virtio_net_tap.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/virtio_net_tap.c
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/virtio_net_tap.c
 @@ -94,6 +94,8 @@ struct lkl_netdev *lkl_netdev_tap_create(const char *ifname, int offload)
  	char *path = "/dev/net/tun";
  #elif __FreeBSD__
