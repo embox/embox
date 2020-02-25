@@ -14,6 +14,7 @@
 #include <mem/misc/pool.h>
 #include <kernel/panic.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <kernel/irq_lock.h>
 #include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb.h>
 
@@ -96,7 +97,7 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 	struct usb_request *req;
 	struct usb_hcd *hcd;
 
-	l = usb_queue_peek(&endp->req_queue);
+	l = usb_queue_first(&endp->req_queue);
 	if (!l) {
 		return 0;
 	}
@@ -110,7 +111,6 @@ static int usb_endp_do_req(struct usb_endp *endp) {
 }
 
 static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
-	bool endp_busy;
 	struct usb_dev *dev = endp->dev;
 
 	/* TODO think about safe context for this function,
@@ -123,26 +123,27 @@ static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 		return dev->hcd->ops->root_hub_control(req);
 	}
 
-	endp_busy = usb_queue_add(&endp->req_queue, &req->req_link);
-	if (!endp_busy) {
+	if (usb_queue_empty(&endp->req_queue)) {
+		usb_queue_add(&endp->req_queue, &req->req_link);
 		return usb_endp_do_req(endp);
+	} else {
+		usb_queue_add(&endp->req_queue, &req->req_link);
+		/* Endp is busy, so do nothing. */
+		return 0;
 	}
-
-	return 0;
 }
 
 static void usb_request_remove(struct usb_request *req, bool fire_handler) {
 	struct usb_endp *endp = req->endp;
-	int ret;
 
 	if (req->notify_hnd && fire_handler) {
 		req->notify_hnd(req, req->hnd_data);
 	}
 
-	ret = usb_queue_remove(&endp->req_queue, &req->req_link);
+	usb_queue_del(&endp->req_queue, &req->req_link);
 	usb_request_free(req);
 
-	if (ret) {
+	if (!usb_queue_empty(&endp->req_queue)) {
 		usb_endp_do_req(endp);
 	}
 }
@@ -159,16 +160,10 @@ void usb_request_complete(struct usb_request *req) {
 }
 
 static void usb_endp_cancel(struct usb_endp *endp) {
-	struct usb_queue_link *ul, *first;
+	struct usb_request *req;
 
-	first = usb_queue_peek(&endp->req_queue);
-
-	for (ul = usb_queue_last(&endp->req_queue);
-			ul != first;
-			ul = usb_queue_last(&endp->req_queue)) {
-		struct usb_request *req = usb_link2req(ul);
-
-		/* FIXME handler should be fired */
+	while (!usb_queue_empty(&endp->req_queue)) {
+		req = usb_link2req(usb_queue_first(&endp->req_queue));
 		usb_request_remove(req, false);
 	}
 }
