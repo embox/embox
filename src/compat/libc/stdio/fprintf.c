@@ -16,11 +16,11 @@ struct printchar_handler_data {
 	FILE *file;
 };
 
-static void file_printchar(struct printchar_handler_data *d, int c) {
+static int file_printchar(struct printchar_handler_data *d, int c) {
 	assert(d != NULL);
 	assert(d->file != NULL);
 
-	fputc(c, d->file);
+	return fputc(c, d->file);
 }
 
 int vfprintf(FILE *file, const char *format, va_list args) {
