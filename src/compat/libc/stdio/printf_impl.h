@@ -13,7 +13,7 @@
 
 struct printchar_handler_data;
 
-extern int __print(void (*printchar_handler)(struct printchar_handler_data *d, int c),
+extern int __print(int (*printchar_handler)(struct printchar_handler_data *d, int c),
 		struct printchar_handler_data *printchar_data,
 		const char *format, va_list args);
 
