@@ -13,13 +13,17 @@
 #include <util/log.h>
 #include <mem/misc/pool.h>
 #include <kernel/panic.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/lthread/lthread_sched_wait.h>
 #include <kernel/thread/thread_sched_wait.h>
-#include <kernel/irq_lock.h>
+#include <embox/unit.h>
 #include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb.h>
 
 #include <mem/vmem.h>
 #include <module/embox/arch/mmu.h>
+
+EMBOX_UNIT_INIT(usb_core_init);
 
 static DLIST_DEFINE(usb_hcds_list);
 
@@ -92,25 +96,8 @@ static inline struct usb_request *usb_link2req(struct usb_queue_link *ul) {
 	return member_cast_out(ul, struct usb_request, req_link);
 }
 
-static int usb_endp_do_req(struct usb_endp *endp) {
-	struct usb_queue_link *l;
-	struct usb_request *req;
-	struct usb_hcd *hcd;
-
-	l = usb_queue_first(&endp->req_queue);
-	if (!l) {
-		return 0;
-	}
-
-	req = usb_link2req(l);
-
-	hcd = req->endp->dev->hcd;
-	hcd->ops->request(req);
-
-	return 0;
-}
-
 static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
+	struct usb_hcd *hcd;
 	struct usb_dev *dev = endp->dev;
 
 	/* TODO think about safe context for this function,
@@ -123,57 +110,8 @@ static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 		return dev->hcd->ops->root_hub_control(req);
 	}
 
-	if (usb_queue_empty(&endp->req_queue)) {
-		usb_queue_add(&endp->req_queue, &req->req_link);
-		return usb_endp_do_req(endp);
-	} else {
-		usb_queue_add(&endp->req_queue, &req->req_link);
-		/* Endp is busy, so do nothing. */
-		return 0;
-	}
-}
-
-static void usb_request_remove(struct usb_request *req, bool fire_handler) {
-	struct usb_endp *endp = req->endp;
-
-	if (req->notify_hnd && fire_handler) {
-		req->notify_hnd(req, req->hnd_data);
-	}
-
-	usb_queue_del(&endp->req_queue, &req->req_link);
-	usb_request_free(req);
-
-	if (!usb_queue_empty(&endp->req_queue)) {
-		usb_endp_do_req(endp);
-	}
-}
-
-void usb_request_complete(struct usb_request *req) {
-
-	/* TODO reset failed request */
-
-	if (req->req_stat != USB_REQ_NOERR) {
-		log_error("usb_request %p: failed\n", req);
-	}
-
-	usb_request_remove(req, req->req_stat == USB_REQ_NOERR);
-}
-
-static void usb_endp_cancel(struct usb_endp *endp) {
-	struct usb_request *req;
-
-	while (!usb_queue_empty(&endp->req_queue)) {
-		req = usb_link2req(usb_queue_first(&endp->req_queue));
-		usb_request_remove(req, false);
-	}
-}
-
-void usb_dev_request_delete(struct usb_dev *dev) {
-	int i;
-
-	for (i = 0; i < dev->endp_n; i++) {
-		usb_endp_cancel(dev->endpoints[i]);
-	}
+	hcd = req->endp->dev->hcd;
+	return hcd->ops->request(req);
 }
 
 static unsigned short usb_endp_dir_token_map(struct usb_endp *endp) {
@@ -367,6 +305,40 @@ int usb_hcd_register(struct usb_hcd *hcd) {
 	if ((ret = hcd->ops->hcd_start(hcd))) {
 		return ret;
 	}
+
+	return 0;
+}
+
+#define USB_REQ_HND_PRIORITY OPTION_GET(NUMBER, usb_req_hnd_priority)
+
+static struct lthread usb_req_complete_handler;
+static struct usb_queue completed_requests;
+
+void usb_request_complete(struct usb_request *req) {
+	usb_queue_add(&completed_requests, &req->req_link);
+	lthread_launch(&usb_req_complete_handler);
+}
+
+static int usb_req_complete_action(struct lthread *self) {
+	struct usb_request *req;
+
+	while (!usb_queue_empty(&completed_requests)) {
+		req = usb_link2req(usb_queue_first(&completed_requests));
+		if (req->notify_hnd) {
+			req->notify_hnd(req, req->hnd_data);
+		}
+		usb_queue_del(&completed_requests, &req->req_link);
+		usb_request_free(req);
+	}
+	return 0;
+}
+
+static int usb_core_init(void) {
+	usb_queue_init(&completed_requests);
+
+	lthread_init(&usb_req_complete_handler, &usb_req_complete_action);
+	schedee_priority_set(&usb_req_complete_handler.schedee,
+	    USB_REQ_HND_PRIORITY);
 
 	return 0;
 }

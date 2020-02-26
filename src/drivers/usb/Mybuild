@@ -2,6 +2,7 @@ package embox.driver.usb
 
 module core {
 	option number log_level = 1
+	option number usb_req_hnd_priority = 200
 
 	source "usb_core.c",
 		"usb_queue.c",
