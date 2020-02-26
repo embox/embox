@@ -20,9 +20,10 @@
 #include <util/pretty_print.h>
 
 static void print_help(void) {
-	printf("Usage: block_dev_test [-hl] [-i iters] <block device name>\n");
-	printf("\t-l        : Print all available block and flash devices\n");
-	printf("\t-i <iters>: Execute <iters> itertions of read/write\n");
+	printf("Usage: block_dev_test [-hl] [-i iters] [-s block_num] <block device name>\n");
+	printf("\t-l\t\t: Print all available block and flash devices\n");
+	printf("\t-i <iters>\t: Execute <iters> itertions of read/write\n");
+	printf("\t-s <block_num>\t: <block_num> block number at which command should start at\n");
 }
 
 static void print_block_devs(void) {
@@ -59,32 +60,38 @@ static struct flash_dev *get_flash_dev(struct block_dev *bdev) {
 	return NULL;
 }
 
-static int flash_dev_test(struct flash_dev *fdev) {
+static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block) {
 #define FLASH_RW_LEN 256
-	int i, j;
 	int offset;
 	uint8_t rbuf[FLASH_RW_LEN];
 	uint8_t wbuf[FLASH_RW_LEN];
+	uint32_t blocks;
 
-	for (i = 0; i < FLASH_RW_LEN; i++) {
+	blocks = fdev->block_info[0].blocks;
+	for (int i = 0; i < FLASH_RW_LEN; i++) {
 		wbuf[i] = 0x55;
 	}
 
+	if(s_block >= blocks) {
+		printf("Starting block should be less than number of blocks\n");
+		return -1;
+	}
+
 	/* Iterate over all flash blocks */
-	for (i = 0; i < fdev->block_info[0].blocks; i++) {
+	for (uint32_t i = s_block; i < blocks; i++) {
 		flash_erase(fdev, i);
 
 		offset = i * fdev->block_info[0].block_size;
 
 		/* Write, then read back and check result */
-		for (j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
+		for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
 			/* Clean rbuf first */
 			memset(rbuf, 0x0, FLASH_RW_LEN);
 			flash_write(fdev, offset, wbuf, FLASH_RW_LEN);
 			flash_read(fdev, offset, rbuf, FLASH_RW_LEN);
 			if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
 				printf("Flash device test failed:\n");
-				printf("  fdev=%s, block=%d, offset within block=%d\n",
+				printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
 					fdev->bdev->name, i, j);
 				return -1;
 			}
@@ -134,7 +141,7 @@ static void dump_buf(int8_t *buf, size_t cnt, char *fmt) {
 	printf("============================\n");
 }
 
-static int block_dev_test(struct block_dev *bdev) {
+static int block_dev_test(struct block_dev *bdev, uint64_t s_block) {
 	size_t blk_sz;
 	int8_t *read_buf, *write_buf;
 	uint64_t blocks;
@@ -164,7 +171,12 @@ static int block_dev_test(struct block_dev *bdev) {
 		return -ENOMEM;
 	}
 
-	for (uint64_t i = 0; i < blocks; i++) {
+	if (s_block >= blocks) {
+		printf("Starting block should be less than number of blocks\n");
+		return -1;
+	}
+
+	for (uint64_t i = s_block; i < blocks; i++) {
 		printf("Testing %"PRIu64" (of %"PRIu64")\n", i, blocks);
 
 		fill_buffer(write_buf, blk_sz);
@@ -197,14 +209,14 @@ free_buf:
 	return err;
 }
 
-static int dev_test(struct block_dev *bdev) {
+static int dev_test(struct block_dev *bdev, uint64_t s_block) {
 	struct flash_dev *fdev;
 
 	fdev = get_flash_dev(bdev);
 	if (fdev) {
-		return flash_dev_test(fdev);
+		return flash_dev_test(fdev, s_block);
 	} else {
-		return block_dev_test(bdev);
+		return block_dev_test(bdev, s_block);
 	}
 }
 
@@ -446,6 +458,7 @@ free_buf:
 int main(int argc, char **argv) {
 	int opt;
 	int i, iters = 1, test_partitions = 0;
+	uint64_t s_block = 0;
 	struct block_dev *bdev;
 
 	if (argc < 2) {
@@ -453,7 +466,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc, argv, "hpli:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hpli:s:"))) {
 		switch (opt) {
 			case 'p':
 				test_partitions = 1;
@@ -463,6 +476,9 @@ int main(int argc, char **argv) {
 				return 0;
 			case 'i':
 				iters = strtol(optarg, NULL, 0);
+				break;
+		        case 's':
+				s_block = strtoll(optarg, NULL, 0);
 				break;
 			case 'h':
 			default:
@@ -484,7 +500,7 @@ int main(int argc, char **argv) {
 	printf("Starting block device test (iters = %d)...\n", iters);
 	for (i = 0; i < iters; i++) {
 		printf("iter %d...\n", i);
-		if (dev_test(bdev) < 0) {
+		if (dev_test(bdev, s_block) < 0) {
 			printf("FAILED\n");
 			return -1;
 		}
