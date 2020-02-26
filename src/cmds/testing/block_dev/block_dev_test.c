@@ -462,7 +462,7 @@ int main(int argc, char **argv) {
 				print_block_devs();
 				return 0;
 			case 'i':
-				iters = strtol(argv[optind], NULL, 0);
+				iters = strtol(optarg, NULL, 0);
 				break;
 			case 'h':
 			default:
