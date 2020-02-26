@@ -22,8 +22,8 @@
 /* Interrupt vector for timer (TMR1) */
 #define CLOCK_IRQ	5
 
-/* The clock rate per second - 1Mhz */
-#define CLOCK_RATE	10000000L
+/* The clock rate per second */
+#define CLOCK_RATE	48054841L
 
 /* The initial counter value */
 #define TIMER_COUNT	(CLOCK_RATE / HZ)
