@@ -89,7 +89,7 @@ static void listprint(void) {
 	}
 }
 
-static int service_run(const char *path, char *const argv[]) {
+static int service_run(const char *path, char *const argv[], pid_t father) {
 	pid_t pid;
 	pid = vfork();
 
@@ -101,6 +101,8 @@ static int service_run(const char *path, char *const argv[]) {
 
 	if (pid == 0) {
 		execv(path, argv);
+		printf("Fail to launch: %s\n", path);
+		kill(father,SIGKILL);
 		exit(1);
 	}
 	service_add(path, pid);
@@ -129,6 +131,7 @@ int main(int argc, char **argv) {
 
 	argv[argc] = NULL;
 	printf("Starting service: %s\n", command);
+	pid_t father = getpid();
 
-	return service_run(command, &argv[1]);
+	return service_run(command, &argv[1], father);
 }
