@@ -98,7 +98,6 @@ module index_operation {
 	source "index_operation.c"
 
 	depends embox.fs.syslib.file
-	depends fs_api
 }
 
 @DefaultImpl(rootfs)

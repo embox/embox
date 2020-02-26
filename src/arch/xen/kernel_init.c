@@ -13,7 +13,6 @@
 #include <xen_hypercall-x86_32.h>
 #include <xen/event_channel.h>
 #include <xen/io/console.h>
-#include <xen/event.h>
 #include <xenstore.h>
 
 /* Embox interface */
@@ -37,8 +36,6 @@ void xen_kernel_start(start_info_t * start_info) {
 
 	xen_start_info_global = start_info;
 	HYPERVISOR_shared_info = &xen_shared_info;
-
-	/*init_events();*/
 
 	xenstore_init(start_info);
 

@@ -10,7 +10,6 @@
 #include <util/bitmap.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
-#include <xen/event.h>
 #include <xen_hypercall-x86_32.h>
 #include <embox/unit.h>
 
