@@ -321,6 +321,9 @@ static int ohci_root_hub_control(struct usb_request *req) {
 			OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[ctrl->w_index - 1],
 				wval);
 			break;
+		case USB_PORT_FEATURE_C_RESET:
+			/* do nothing */
+			break;
 		default:
 			log_error("Unknown port clear feature: 0x%x\n", ctrl->w_value);
 			return -1;
