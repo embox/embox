@@ -94,11 +94,16 @@ static void printer_long(const char *path, struct stat *sb) {
 
 static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 	struct dirent *dent;
+	char *line;
 
 	while (NULL != (dent = readdir(dir))) {
 		int pathlen = strlen(path);
 		int dent_namel = strlen(dent->d_name);
-		char line[pathlen + dent_namel + 3];
+		line = (char*)malloc(sizeof(char) * (pathlen + dent_namel + 3));
+		if (line == NULL) {
+			printf("Failed to allocate memory for buffer!\n");
+			return;
+		}
 		struct stat sb;
 
 		if (pathlen > 0) {
@@ -109,6 +114,7 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 
 		if (-1 == stat(line, &sb)) {
 			printf("Cannot stat %s\n", line);
+			free(line);
 			continue;
 		}
 
@@ -125,6 +131,7 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 
 			closedir(d);
 		}
+		free(line);
 	}
 }
 
