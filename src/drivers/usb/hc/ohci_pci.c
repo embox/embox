@@ -305,17 +305,29 @@ static int ohci_root_hub_control(struct usb_request *req) {
 	case USB_CLEAR_PORT_FEATURE:
 		switch (ctrl->w_value) {
 		case USB_PORT_FEATURE_POWER:
-			wval = OHCI_RH_R_LOWSPD_W_CLPWR;
+			/* FIXME Disable ohci power off right now, because
+			 * CCS (CurrentConnectStatus) will be cleared forever in QEMU,
+			 * so there is no way to know if a device is attached to this port.
+			 * I don't know currenty whether it's a bug in QEMU ohci or not,
+			 * but ehci works fine with power on/off toggling
+			 */
+			/* wval = OHCI_RH_R_LOWSPD_W_CLPWR;
+			 * OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[ctrl->w_index - 1],
+			 *	wval);
+			 */
 			break;
 		case USB_PORT_FEATURE_C_CONNECTION:
 			wval = OHCI_RH_PS_CSC;
+			OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[ctrl->w_index - 1],
+				wval);
+			break;
+		case USB_PORT_FEATURE_C_RESET:
+			/* do nothing */
 			break;
 		default:
 			log_error("Unknown port clear feature: 0x%x\n", ctrl->w_value);
 			return -1;
 		}
-		OHCI_WRITE(ohcd, &ohcd->base->hc_rh_port_stat[ctrl->w_index - 1],
-			wval);
 		break;
 	default:
 		panic("ohci_root_hub_control: Unknown req_type=0x%x, request=0x%x\n",
