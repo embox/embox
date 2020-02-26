@@ -235,10 +235,19 @@ void if_mounted_follow_down(struct path *path) {
 	}
 }
 
+/**
+ * @brief Check if given node is a root of some nested FS, and if so,
+ * then replace it with the mountpoint node of parent FS
+ */
 void if_root_follow_up(struct path *path) {
-	if (path->node == path->mnt_desc->mnt_root) {
-		path->node = path->mnt_desc->mnt_point;
-		path->mnt_desc = path->mnt_desc->mnt_parent;
+	assert(path);
+	assert(path->node);
+
+	if (path->mnt_desc != NULL) {
+		if (path->node == path->mnt_desc->mnt_root) {
+			path->node = path->mnt_desc->mnt_point;
+			path->mnt_desc = path->mnt_desc->mnt_parent;
+		}
 	}
 }
 
