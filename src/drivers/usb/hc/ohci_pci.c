@@ -63,6 +63,8 @@ static void *ohci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	ohcd->hcca = hcca;
 	ohcd->hcd = hcd;
 
+	usb_queue_init(&ohcd->req_queue);
+
 	return ohcd;
 }
 
@@ -462,7 +464,7 @@ static void ohci_transfer(struct ohci_ed *ed, uint32_t token, void *buf,
 	ohci_td_enque_tail(ed, next_td);
 }
 
-static int ohci_request(struct usb_request *req) {
+static int ohci_request_do(struct usb_request *req) {
 	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
 	struct ohci_ed *ed = endp2ohci(req->endp);
 	uint32_t token;
@@ -514,6 +516,14 @@ static int ohci_request(struct usb_request *req) {
 	return 0;
 }
 
+static int ohci_request(struct usb_request *req) {
+	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
+	int empty = usb_queue_empty(&ohcd->req_queue);
+
+	usb_queue_add(&ohcd->req_queue, &req->req_link);
+	return empty ? ohci_request_do(req) : 0;
+}
+
 static struct usb_hcd_ops ohci_hcd_ops = {
 	.hcd_hci_alloc = ohci_hcd_alloc,
 	.hcd_hci_free = ohci_hcd_free,
@@ -554,6 +564,7 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 	struct usb_hcd *hcd;
 	struct ohci_hcd *ohcd;
 	uint32_t intr_stat;
+	struct usb_request *req;
 
 	hcd = data;
 	ohcd = hcd2ohci(hcd);
@@ -565,7 +576,6 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 
 	if (intr_stat & OHCI_INTERRUPT_DONE_QUEUE) {
 		struct ohci_td *td, *next_td;
-		struct usb_request *req;
 		struct ohci_request_priv *priv;
 
 		td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
@@ -585,11 +595,17 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 			priv->tds_count--;
 			if (!priv->tds_count) {
 				pool_free(&ohci_req_priv_pool, priv);
+				usb_queue_del(&ohcd->req_queue, &req->req_link);
 				usb_request_complete(req);
 			}
 		} while ((td = next_td));
 
 		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
+	}
+
+	if (!usb_queue_empty(&ohcd->req_queue)) {
+		req = usb_link2req(usb_queue_first(&ohcd->req_queue));
+		ohci_request_do(req);
 	}
 
 	return IRQ_HANDLED;

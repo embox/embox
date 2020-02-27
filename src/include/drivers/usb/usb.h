@@ -210,6 +210,10 @@ static inline enum usb_comm_type usb_endp_type(struct usb_endp *endp) {
 	return endp->type;
 }
 
+static inline struct usb_request *usb_link2req(struct usb_queue_link *ul) {
+	return member_cast_out(ul, struct usb_request, req_link);
+}
+
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);
 
 extern void usb_hcd_free(struct usb_hcd *hcd);

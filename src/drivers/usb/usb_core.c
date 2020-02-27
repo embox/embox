@@ -92,10 +92,6 @@ static void usb_build_control_header(struct usb_request *req, uint8_t req_type,
 	rbuf[7] = count >> 8;
 }
 
-static inline struct usb_request *usb_link2req(struct usb_queue_link *ul) {
-	return member_cast_out(ul, struct usb_request, req_link);
-}
-
 static int usb_endp_request(struct usb_endp *endp, struct usb_request *req) {
 	struct usb_hcd *hcd;
 	struct usb_dev *dev = endp->dev;
