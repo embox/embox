@@ -7,6 +7,7 @@ module ohci_pci {
 	source "ohci_pci.c"
 
 	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
 	depends embox.driver.pci
 }
 
@@ -23,6 +24,7 @@ module ehci_hcd {
 	source "ehci.h", "ehci_regs.h"
 
 	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
 }
 
 module ehci_pci {
@@ -32,6 +34,7 @@ module ehci_pci {
 
 	depends ehci_hcd
 	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
 	depends embox.driver.pci
 }
 
@@ -39,12 +42,14 @@ module ti81xx {
 	source "ti81xx.c"
 
 	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
 }
 
 module usb_dwc {
 	source "usb_dwc.c", "usb_dwc.h"
 
 	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
 	depends embox.kernel.thread.sync
 	depends embox.driver.power.bcm2835_power
 }

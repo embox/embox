@@ -5,11 +5,18 @@ module core {
 
 	source "usb_core.c",
 		"usb_queue.c",
-		"usb_hub.c",
 		"usb_config.c"
 
 	source "usb_driver.c"
 	depends embox.driver.char_dev
+}
+
+module hub {
+	option number log_level = 1
+
+	source "usb_hub.c"
+
+	depends core
 }
 
 module driver_example {
