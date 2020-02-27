@@ -69,13 +69,12 @@ int main(int argc, char **argv) {
 			}
 		}
 		else {
-			bdev = *(bdevs);
-			while (bdev) {
-				if (bdev) {
-					print_device_info(count,bdev);
+			int i;
+			for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
+				if (bdevs[i]) {
+					print_device_info(count,bdevs[i]);
 					count++;
 				}
-				bdev = *(++bdevs);
 			}
 			printf("------------------------------------------------------------------\n");
 		}
