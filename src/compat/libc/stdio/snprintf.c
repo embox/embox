@@ -17,7 +17,7 @@ struct printchar_handler_data {
 	size_t left;
 };
 
-static void strn_printchar(struct printchar_handler_data *d, int c) {
+static int strn_printchar(struct printchar_handler_data *d, int c) {
 	assert(d != NULL);
 	assert((d->str != NULL) || (d->left == 0));
 
@@ -25,6 +25,8 @@ static void strn_printchar(struct printchar_handler_data *d, int c) {
 		*d->str++ = c;
 		--d->left;
 	}
+
+	return c;
 }
 
 int vsnprintf(char *str, size_t size, const char *format, va_list args) {

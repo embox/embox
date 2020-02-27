@@ -12,8 +12,9 @@
 
 #include <module/embox/compat/libc/stdio/print.h>
 
-static void printk_printchar(struct printchar_handler_data *d, int c) {
+static int printk_printchar(struct printchar_handler_data *d, int c) {
 	diag_putc(c);
+	return c;
 }
 
 int printk(const char *format, ...) {
