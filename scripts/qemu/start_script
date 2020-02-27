@@ -11,10 +11,12 @@ $ip addr add   dev $TAP 10.0.2.10/24 #broadcast 10.0.2.255
 $ip addr add   dev $TAP fe80::10:0:2:10/64
 
 #Enable IP Forwarding for gateway interface
-gw=$($ip route | sed -n "s/default via .* dev \([0-9a-z_]\+\) .*$/\1/p")
-if [ "$gw" ]; then
-	echo "Enable IP Forwarding for $gw"
-	iptables -t nat -A POSTROUTING -o $gw -j MASQUERADE
+GW=$($ip route | sed -n "s/default via .* dev \([0-9a-z_]\+\) .*$/\1/p")
+if [ "$GW" ]; then
+	echo "Enable IP Forwarding for $GW"
+	iptables -t nat -A POSTROUTING -o $GW -j MASQUERADE
+	iptables -A FORWARD -i $TAP -o $GW -j ACCEPT
+	iptables -A FORWARD -i $GW -o $TAP -j ACCEPT
+
 	sysctl net.ipv4.ip_forward=1
 fi
-
