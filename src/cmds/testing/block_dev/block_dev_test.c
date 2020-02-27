@@ -70,16 +70,17 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 	uint32_t blocks, total_blocks;
 
 	total_blocks = fdev->block_info[0].blocks;
-	if (n_blocks)
+	if (n_blocks) {
 		blocks = min(s_block + n_blocks, total_blocks);
-	else
+	} else {
 		blocks = total_blocks;
+	}
 
 	for (int i = 0; i < FLASH_RW_LEN; i++) {
 		wbuf[i] = 0x55;
 	}
 
-	if(s_block >= blocks) {
+	if (s_block >= blocks) {
 		printf("Starting block should be less than number of blocks\n");
 		return -1;
 	}
@@ -162,10 +163,11 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 
 	total_blocks = bdev->size / ((uint64_t) blk_sz);
 
-	if (n_blocks)
+	if (n_blocks) {
 		blocks = min(s_block + n_blocks, total_blocks);
-	else
+	} else {
 		blocks = total_blocks;
+	}
 
 	read_buf = malloc(blk_sz);
 	write_buf = malloc(blk_sz);
@@ -470,7 +472,7 @@ free_buf:
 
 int main(int argc, char **argv) {
 	int opt;
-	int i, iters = 1, test_partitions = 0;
+	int i, iters = 1, test_partitions = 0, n_blocks_flag = 0;
 	uint64_t s_block = 0, n_blocks = 0;
 	struct block_dev *bdev;
 
@@ -495,11 +497,19 @@ int main(int argc, char **argv) {
 				break;
 		        case 'n':
 				n_blocks = strtoll(optarg, NULL, 0);
+				n_blocks_flag = 1;
 				break;
 			case 'h':
 			default:
 				print_help();
 				return 0;
+		}
+	}
+
+	if (n_blocks_flag) {
+		if (!n_blocks) {
+			printf("Block count argument value should be greater than zero\n");
+			return -EINVAL;
 		}
 	}
 
