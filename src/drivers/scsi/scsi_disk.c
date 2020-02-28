@@ -12,35 +12,9 @@
 
 #include <util/math.h>
 
-#include <kernel/sched/waitq.h>
-#include <kernel/thread/waitq.h>
-
 #include <drivers/scsi.h>
 
 #include <drivers/block_dev.h>
-
-
-static int scsi_wake_res(struct scsi_dev *dev) {
-	return min(dev->cmd_complete, 0);
-}
-
-static int scsi_wait_cmd_complete(struct scsi_dev *dev, struct scsi_cmd *cmd) {
-
-	int res = 0;
-	/* guards to send only one command */
-	if (!dev->in_cmd) {
-		dev->in_cmd = 1;
-		dev->cmd_complete = scsi_do_cmd(dev, cmd);
-
-	}
-
-	if (dev->cmd_complete) {
-		dev->in_cmd = 0;
-		res = dev->cmd_complete;
-	}
-	log_debug("ret %d complete =%d",res, dev->cmd_complete);
-	return res;
-}
 
 static void scsi_disk_lock(struct block_dev *bdev) {
 	struct scsi_dev *sdev = bdev->privdata;
@@ -83,10 +57,7 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 		cmd.scmd_lba = lba;
 		cmd.scmd_obuf = bp;
 
-		ret = WAITQ_WAIT(&sdev->wq, scsi_wait_cmd_complete(sdev, &cmd));
-		if (!ret) {
-			ret = scsi_wake_res(sdev);
-		}
+		ret = scsi_do_cmd(sdev, &cmd);
 		if (ret) {
 			break;
 		}
@@ -129,10 +100,7 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 		cmd.scmd_lba = lba;
 		cmd.scmd_obuf = bp;
 
-		ret = WAITQ_WAIT(&sdev->wq, scsi_wait_cmd_complete(sdev, &cmd));
-		if (!ret) {
-			ret = scsi_wake_res(sdev);
-		}
+		ret = scsi_do_cmd(sdev, &cmd);
 		if (ret) {
 			break;
 		}

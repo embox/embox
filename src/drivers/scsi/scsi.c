@@ -28,13 +28,6 @@ static const struct scsi_dev_state scsi_state_inquiry;
 static const struct scsi_dev_state scsi_state_capacity10;
 static const struct scsi_dev_state scsi_state_sense;
 
-static void usb_scsi_notify(struct usb_request *req, void *arg) {
-	struct usb_mscsw *csw = arg;
-	struct scsi_dev *sdev = &(usb2massdata(req->endp->dev)->scsi_dev);
-
-	scsi_request_done(sdev, csw->csw_status);
-}
-
 int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_t data_len) {
 	struct usb_mass *mass = scsi2mass(sdev);
 	struct scsi_cmd *scmd = cmd;
@@ -50,10 +43,11 @@ int scsi_cmd(struct scsi_dev *sdev, void *cmd, size_t cmd_len, void *data, size_
 		usb_dir = USB_DIRECTION_IN;
 	}
 
-	log_debug("opc (0x%x) cmd_len(%d), usb_dir(%d), data_len(%d)",scmd->scmd_opcode, cmd_len, usb_dir, data_len);
+	log_debug("opc (0x%x) cmd_len(%d), usb_dir(%d), data_len(%d)",
+		    scmd->scmd_opcode, cmd_len, usb_dir, data_len);
 	
-	ret = usb_ms_transfer(mass->usb_dev, cmd, cmd_len, usb_dir, data, data_len,
-			usb_scsi_notify);
+	ret = usb_ms_transfer(mass->usb_dev, cmd, cmd_len, usb_dir, data, data_len);
+	scsi_request_done(sdev, ret);
 
 	return ret;
 }
