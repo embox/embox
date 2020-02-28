@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 #include <kernel/thread/sync/mutex.h>
+#include <kernel/sched/waitq.h>
 #include <util/indexator.h>
 #include <util/dlist.h>
 
@@ -230,6 +231,8 @@ extern int usb_endp_control_wait(struct usb_endp *endp,
 
 extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
 		void *buf, size_t len);
+extern int usb_endp_bulk_wait(struct usb_endp *endp, void *buf,
+	    size_t len, int timeout);
 
 extern int usb_endp_interrupt(struct usb_endp *endp,
 		usb_request_notify_hnd_t notify_hnd,

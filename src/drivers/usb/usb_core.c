@@ -273,6 +273,32 @@ int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 	return usb_endp_request(endp, req);
 }
 
+int usb_endp_bulk_wait(struct usb_endp *endp, void *buf,
+	    size_t len, int timeout) {
+	struct usb_request *req;
+	struct waitq_link wl;
+	int ret;
+
+	assert(usb_endp_type(endp) == USB_COMM_BULK);
+
+	req = usb_endp_request_alloc(endp, usb_endp_req_wait_handler, NULL,
+			usb_endp_dir_token_map(endp), buf, len);
+
+	waitq_link_init(&wl);
+	waitq_wait_prepare(&req->wq, &wl);
+
+	ret = usb_endp_request(endp, req);
+	if (ret) {
+		return ret;
+	}
+	ret = sched_wait_timeout(timeout, NULL);
+	if (ret) {
+		return ret;
+	}
+
+	return req->req_stat;
+}
+
 int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 		void *buf, size_t len) {
 	struct usb_request *req;
