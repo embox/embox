@@ -17,17 +17,9 @@
 
 struct scsi_dev;
 
-struct scsi_dev_state {
-	void (*sds_enter)(struct scsi_dev *sdev);
-	void (*sds_input)(struct scsi_dev *sdev, int req_status);
-	void (*sds_leave)(struct scsi_dev *sdev);
-};
-
 #define USB_SCSI_SCRATCHPAD_LEN 36
 struct scsi_dev {
 	int idx;
-	const struct scsi_dev_state *state;
-	const struct scsi_dev_state *holded_state;
 
 	uint8_t scsi_data_scratchpad[USB_SCSI_SCRATCHPAD_LEN];
 
@@ -36,9 +28,6 @@ struct scsi_dev {
 
 	struct block_dev *bdev;
 	struct mutex m;
-	struct waitq wq;
-	char in_cmd;
-	char cmd_complete;
 	char attached;
 	unsigned int use_count;
 };
@@ -53,8 +42,6 @@ struct scsi_cmd {
 
 	size_t  scmd_lba;
 };
-
-
 
 #define SCSI_CMD_OPCODE_TEST_UNIT 0x00
 struct scsi_cmd_test_unit {
@@ -180,25 +167,19 @@ struct scsi_cmd_write10 {
 	uint8_t  sw10_control;
 } __attribute__((packed));
 
+extern const struct scsi_cmd scsi_cmd_template_test_unit;
 extern const struct scsi_cmd scsi_cmd_template_inquiry;
 extern const struct scsi_cmd scsi_cmd_template_cap10;
 extern const struct scsi_cmd scsi_cmd_template_sense;
 extern const struct scsi_cmd scsi_cmd_template_read10;
 extern const struct scsi_cmd scsi_cmd_template_write10;
 
-int scsi_dev_init(struct scsi_dev *dev);
-void scsi_dev_attached(struct scsi_dev *dev);
-void scsi_dev_detached(struct scsi_dev *dev);
-void scsi_request_done(struct scsi_dev *dev, int res);
-void scsi_dev_wake(struct scsi_dev *dev, int res);
-void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev);
-
-int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd);
-
-void scsi_dev_recover(struct scsi_dev *dev);
-void scsi_state_transit(struct scsi_dev *dev, const struct scsi_dev_state *to);
-void scsi_dev_use_inc(struct scsi_dev *dev);
-void scsi_dev_use_dec(struct scsi_dev *dev);
+extern int scsi_dev_attached(struct scsi_dev *dev);
+extern void scsi_dev_detached(struct scsi_dev *dev);
+extern void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev);
+extern int scsi_do_cmd(struct scsi_dev *dev, struct scsi_cmd *cmd);
+extern void scsi_dev_use_inc(struct scsi_dev *dev);
+extern void scsi_dev_use_dec(struct scsi_dev *dev);
 
 extern void scsi_disk_found(struct scsi_dev *dev);
 extern void scsi_disk_lost(struct scsi_dev *dev);
