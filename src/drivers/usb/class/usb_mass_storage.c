@@ -30,11 +30,13 @@
 
 #define USB_CSW_SIGNATURE 0x53425355
 
+#define MS_BULK_TIMEOUT 1000
+
 EMBOX_UNIT_INIT(usb_mass_init);
 
 POOL_DEF(usb_mass_classes, struct usb_mass, USB_MASS_MAX_DEVS);
 
-static int usb_cbw_fill(struct usb_mscbw *cbw, uint32_t tag, uint32_t tr_len,
+static void usb_cbw_fill(struct usb_mscbw *cbw, uint32_t tag, uint32_t tr_len,
 		enum usb_direction dir, uint8_t lun, void *cb, size_t len) {
 
 	cbw->cbw_signature = USB_CBW_SIGNATURE;
@@ -46,90 +48,58 @@ static int usb_cbw_fill(struct usb_mscbw *cbw, uint32_t tag, uint32_t tr_len,
 	memcpy(cbw->cbw_cb, cb, len);
 	memset(cbw->cbw_cb + len, 0, USB_CBW_CB_MAXLEN - len);
 	cbw->cbw_len = len;
-
-	return cbw->cbw_transfer_len;
-}
-
-static void usb_ms_transfer_done(struct usb_request *req, void *arg) {
-	struct usb_dev *dev = req->endp->dev;
-	struct usb_mass *mass = usb2massdata(dev);
-	struct usb_mass_request_ctx *req_ctx;
-	struct usb_endp *endp = NULL;
-
-	req_ctx = &mass->req_ctx;
-
-	log_debug("req_state %d", req_ctx->req_state);
-
-	switch(req_ctx->req_state) {
-	case USB_MASS_REQST_CBW:
-
-		assert(req_ctx->dir == USB_DIRECTION_IN || req_ctx->dir == USB_DIRECTION_OUT);
-
-		if (req_ctx->dir == USB_DIRECTION_IN) {
-			endp = dev->endpoints[mass->blkin];
-		} else if (req_ctx->dir == USB_DIRECTION_OUT) {
-			endp = dev->endpoints[mass->blkout];
-		}
-
-		req_ctx->req_state = USB_MASS_REQST_DATA;
-
-		usb_endp_bulk(endp, usb_ms_transfer_done, req_ctx->buf, req_ctx->len);
-		break;
-	case USB_MASS_REQST_DATA:
-		endp = dev->endpoints[mass->blkin];
-
-		req_ctx->req_state = USB_MASS_REQST_CSW;
-
-		memset(&req_ctx->csw, 0, sizeof(struct usb_mscsw));
-
-		usb_endp_bulk(endp, usb_ms_transfer_done, &req_ctx->csw, sizeof(struct usb_mscsw));
-		break;
-	case USB_MASS_REQST_CSW:
-		log_debug("csw_signature=0x%x; csw_tag=0x%x; "
-				"csw_data_resude=0x%x; csw_status=0x%x",
-				req_ctx->csw.csw_signature, req_ctx->csw.csw_tag,
-				req_ctx->csw.csw_data_resude, req_ctx->csw.csw_status);
-
-		assert(req_ctx->csw.csw_signature == USB_CSW_SIGNATURE);
-		assert(req_ctx->csw.csw_tag == USB_MS_MIGHTY_TAG);
-
-		req_ctx->holded_hnd(req, &req_ctx->csw);
-		break;
-	default:
-		log_error("Unknown req_ctx->req_state %d", req_ctx->req_state);
-		assert(0);
-		break;
-	}
 }
 
 int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
-		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
-	       	usb_request_notify_hnd_t notify_hnd) {
+		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len) {
 	struct usb_mass *mass = usb2massdata(dev);
-	struct usb_mass_request_ctx *req_ctx;
+	struct usb_endp *endp;
+	struct usb_mscbw cbw;
+	struct usb_mscsw csw;
 	int res;
-
-	req_ctx = &mass->req_ctx;
-	req_ctx->dir = dir;
-	req_ctx->buf = buf;
-	req_ctx->len = len;
-	req_ctx->holded_hnd = notify_hnd;
-	if (len) {
-		req_ctx->req_state = USB_MASS_REQST_CBW;
-	} else {
-		req_ctx->req_state = USB_MASS_REQST_DATA;
-	}
-
-	res = usb_cbw_fill(&req_ctx->cbw, USB_MS_MIGHTY_TAG, len,
-			dir, 0, ms_cmd, ms_cmd_len);
-	if (res < 0) {
-		return res;
-	}
 
 	log_debug("len=%d, dir=0x%x", len, dir);
 
-	return usb_endp_bulk(dev->endpoints[mass->blkout], usb_ms_transfer_done,
-			&req_ctx->cbw, sizeof(struct usb_mscbw));
+	/* Send request */
+	usb_cbw_fill(&cbw, USB_MS_MIGHTY_TAG, len,
+			dir, 0, ms_cmd, ms_cmd_len);
+	res = usb_endp_bulk_wait(dev->endpoints[mass->blkout],
+			&cbw, sizeof(struct usb_mscbw), MS_BULK_TIMEOUT);
+	if (res < 0) {
+		goto failed;
+	}
+	if (len) {
+		/* Transfer data */
+		if (dir == USB_DIRECTION_IN) {
+			endp = dev->endpoints[mass->blkin];
+		} else if (dir == USB_DIRECTION_OUT) {
+			endp = dev->endpoints[mass->blkout];
+		}
+		res = usb_endp_bulk_wait(endp, buf, len, MS_BULK_TIMEOUT);
+		if (res < 0) {
+			goto failed;
+		}
+	}
+	/* Get status */
+	endp = dev->endpoints[mass->blkin];
+	memset(&csw, 0, sizeof(struct usb_mscsw));
+	res = usb_endp_bulk_wait(endp, &csw, sizeof(struct usb_mscsw), MS_BULK_TIMEOUT);
+	if (res < 0) {
+		goto failed;
+	}
+	log_debug("csw_signature=0x%x; csw_tag=0x%x; "
+			"csw_data_resude=0x%x; csw_status=0x%x",
+			csw.csw_signature, csw.csw_tag,
+			csw.csw_data_resude, csw.csw_status);
+	if (csw.csw_signature != USB_CSW_SIGNATURE ||
+			csw.csw_tag != USB_MS_MIGHTY_TAG) {
+		log_error("CSW mismatch!");
+		goto failed;
+	}
+	return 0;
+failed:
+	log_error("failed");
+	return -1;
 }
 
 static void usb_mass_start(struct usb_dev *dev) {

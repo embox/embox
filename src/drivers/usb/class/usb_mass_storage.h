@@ -44,23 +44,6 @@ struct usb_mscsw {
 	uint8_t  csw_status;
 } __attribute__((packed));
 
-struct usb_mass_request_ctx {
-	enum {
-		USB_MASS_REQST_CBW,
-		USB_MASS_REQST_DATA,
-		USB_MASS_REQST_CSW,
-	} req_state;
-
-	enum usb_direction dir;
-	void *buf;
-	size_t len;
-
-	struct usb_mscbw cbw;
-	struct usb_mscsw csw;
-
-	usb_request_notify_hnd_t holded_hnd;
-};
-
 struct usb_mass {
 	struct scsi_dev scsi_dev;
 	struct usb_dev *usb_dev;
@@ -68,7 +51,6 @@ struct usb_mass {
 	uint8_t maxlun;
 
 	char blkin, blkout;
-	struct usb_mass_request_ctx req_ctx;
 };
 
 static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
@@ -76,8 +58,7 @@ static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
 }
 
 extern int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
-		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len,
-	       	usb_request_notify_hnd_t notify_hnd);
+		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len);
 
 #endif /* USB_CLASS_USB_MASS_STORAGE_H_ */
 
