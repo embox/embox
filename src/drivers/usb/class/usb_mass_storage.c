@@ -143,7 +143,6 @@ static void usb_mass_start(struct usb_dev *dev) {
 	}
 	log_debug("mass(blkin = %d, blkout = %d, maxlun=%d)", mass->blkin, mass->blkout, mass->maxlun);
 
-	scsi_dev_init(&mass->scsi_dev);
 	scsi_dev_attached(&mass->scsi_dev);
 }
 
