@@ -1,0 +1,24 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "tail",
+	help = "tail util()",
+	man = '''
+		NAME
+			tail - tail util(outputs a fixed last number of lines in the file)
+		SYNOPSIS
+			tail [OPTIONS] [PARAMETER_FOR_OPTION] [FILE_NAME]
+
+		DESCRIPTION
+			Displays the fixed last number of lines in the file
+		OPTIONS
+			-n [N] 
+				displays last N lines of file
+
+			(without options displays last 10 lines of file)
+		AUTHORS
+			Nishchay Agrawal
+	''')
+module tail {
+	source "tail.c"
+}
