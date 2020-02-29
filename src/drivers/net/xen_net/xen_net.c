@@ -647,11 +647,48 @@ void init_grant_table(int n)
 #endif
     printk(">>>>>END OF init_grant_table\n");
 }
+int get_max_nr_grant_frames()
+{
+    struct gnttab_query_size query;
+	
+    int rc;
+	query.dom = DOMID_SELF;
+	rc = HYPERVISOR_grant_table_op(GNTTABOP_query_size, &query, 1);
+	if ((rc < 0) || (query.status != GNTST_okay))
+        return 4; /* Legacy max supported number of frames */
+    return query.max_nr_frames;
+}
+
+
+#include <xen/xen.h>
+#include <xen/version.h>
+#include <xen/features.h>
+int is_auto_translated_physmap(void)
+{
+    unsigned char xen_features[32]; //__read_mostly
+	struct xen_feature_info fi;
+
+	int j;
+    fi.submap_idx = 0;
+    if (HYPERVISOR_xen_version(XENVER_get_features, &fi) < 0) 
+    {
+        printk("error while feature getting!");
+    }
+    for (j = 0; j < 32; j++)
+    {
+        xen_features[j] = !!(fi.submap & 1<<j);
+    }
+
+    return xen_features[XENFEAT_auto_translated_physmap];
+}
 
 static int xen_net_init(void) {
 	printk("\n");
 	printk(">>>>>xen_net_init\n");
+    printk("max number of grant FRAMES:%d\n", get_max_nr_grant_frames()); //32
+    printk("XENFEAT_auto_translated_physmap=%d\n", is_auto_translated_physmap()); //0
 	init_grant_table(NR_GRANT_FRAMES);
+
 	int res = 0;
 	struct net_device *nic;
 

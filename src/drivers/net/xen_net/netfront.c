@@ -15,7 +15,7 @@
 
 #include <xenstore.h>
 #include <barrier.h>
-
+#include <xen/memory.h>
 #include "netfront.h"
 //add this for unmask
 #include <xen/event.h>
@@ -35,7 +35,7 @@ static char _text;
 
 //static char memory_pagess[16][PAGE_SIZE];
 
-static grant_ref_t ref = 1; // it's ok
+static grant_ref_t ref = 10; // first 8 entries are reserved 
 
 grant_entry_v1_t *grant_table;
 
@@ -584,6 +584,29 @@ struct netfront_dev *init_netfront(
 	char **ip
 ) {
 	printk(">>>>>init_netfront\n");
+//ask for mem (for rings txs rxs)
+    struct xen_memory_reservation reservation;
+    reservation.nr_extents = 2;
+    reservation.extent_order = 3;
+    reservation.address_bits= 0;
+    reservation.domid = DOMID_SELF;
+    unsigned long frame_list[2];
+    set_xen_guest_handle(reservation.extent_start, frame_list);
+   	int rc;
+    rc = HYPERVISOR_memory_op(XENMEM_increase_reservation, &reservation);
+    printk("XENMEM_populate_physmap=%d\n", rc);
+    printk("frame_list=%lu %lu\n", frame_list[0], frame_list[1]);
+//map it
+	int count;
+    for(count = 0; count < 2; count++)
+	{
+		printk("addr:%p\n", &rings_mem[count]);
+		rc = HYPERVISOR_update_va_mapping((unsigned long) &rings_mem[count],
+				__pte((frame_list[count]<< PAGE_SHIFT) | 7),
+				UVMF_INVLPG);
+		printk("HYPERVISOR_update_va_mapping:%d\n", rc);
+	}
+//done!
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
 
@@ -611,8 +634,8 @@ struct netfront_dev *init_netfront(
 	
     printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
 	
-	dev->tx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(txs), 0);
-	dev->rx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(rxs), 0);
+	dev->tx_ring_ref = gnttab_grant_access(dev->dom, frame_list[0], 0);
+	dev->rx_ring_ref = gnttab_grant_access(dev->dom, frame_list[1], 0);
 
 	printk(">>>>>>>>>>after grant\n");
 
