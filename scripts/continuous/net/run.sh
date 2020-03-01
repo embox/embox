@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 ROOT_DIR=.
 BASE_DIR=$ROOT_DIR
 DATA_DIR=$(dirname $0)
@@ -15,6 +13,8 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
+export PEER_HOST_IP=192.168.128.129 # FIXME intentional misstype
+export NTP_HOST=89.109.251.25 # FIXME ntpdate apparently cannot resolve dns names
 HOST_DNS_IP=$HOST_IP
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
@@ -96,15 +96,14 @@ test_end() {
 }
 
 determ_dns() {
-	#awk -v HOST_IP=$HOST_IP '$1 == "nameserver" {
-	  #if ($2 == "localhost" || $2 ~ /^127\./) {
-	    #print HOST_IP
-	  #} else {
-	    #print $2
-	  #}
-	  #exit
-	#}' /etc/resolv.conf
-	echo 8.8.8.8
+	awk -v HOST_IP=$HOST_IP '$1 == "nameserver" {
+	  if ($2 == "localhost" || $2 ~ /^127\./) {
+	    print HOST_IP
+	  } else {
+	    print $2
+	  }
+	  exit
+	}' /etc/resolv.conf
 }
 
 tap_up() {
@@ -165,8 +164,4 @@ test_begin "ping forwarding test suite"
 	test_retcode
 test_end
 
-set -x
-echo DEBUG 1
-pstree -p
-jobs
 exit $test_suite_code
