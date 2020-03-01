@@ -53,6 +53,11 @@ jobs:
           #find  mk/.cache/mybuild/files | xargs touch
           #touch mk/.cache/mybuild/myfiles-model.mk
           #touch mk/.cache/mybuild/myfiles-list.mk
+      - run: |
+          make confload-x86/test/ping-target
+          make
+          cp build/base/bin/embox build/ping-target
+        if: matrix.template == 'x86/test/net'
       - run: make confload-${{matrix.template}}
       - run: make
       - run: |
