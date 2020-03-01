@@ -12,5 +12,5 @@ $SUDO ip addr add   dev $TAP 192.168.128.1/24
 $SUDO ip addr add   dev $TAP fe80::192:168:128:1/64
 
 export EMBOX_USERMODE_TAP_NAME=$TAP
-build/ping-target &
+./ping-target &
 

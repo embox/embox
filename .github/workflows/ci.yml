@@ -56,7 +56,7 @@ jobs:
       - run: |
           make confload-x86/test/ping-target
           make
-          cp build/base/bin/embox build/ping-target
+          cp build/base/bin/embox ./ping-target
         if: matrix.template == 'x86/test/net'
       - run: make confload-${{matrix.template}}
       - run: make
