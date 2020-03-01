@@ -56,9 +56,10 @@ jobs:
       #- run: make confload-${{matrix.template}}
       #- run: make
       - run: |
+          if [ ${{ matrix.template }} = 'x86/test/net' ]; then echo IT IS; fi
           # ./scripts/continuous/net/ping-target.sh
           sleep 1000 &
-        if: matrix.template == 'x86/test/net'
+          killall sleep || true
       #- run: ./scripts/continuous/run.sh ${{matrix.template}}
       - run: echo test
       - run: killall ping-target || true
