@@ -47,7 +47,6 @@ endif # arm
 endif # COMPILER
 
 $(CONFIGURE) :
-	cp openlibm_fenv_stubs.h $(PKG_SOURCE_DIR)/include/openlibm_fenv_stubs.h
 	touch $@
 
 $(BUILD) :
