@@ -109,7 +109,7 @@ static SCREEN * newterm(char *type, FILE *outfile, FILE *infile) {
 	screen.out = outfile;
 	screen.in = infile;
 	window_init(&screen.std_win, 0, 0, LINES, COLS, NULL, &screen.std_buff[0][0]);
-	memset(&screen.std_buff[0][0], ' ', sizeof screen.std_buff);
+	memset(&screen.std_buff[0][0], 0, sizeof screen.std_buff);
 	window_init(&screen.cur_win, 0, 0, LINES, COLS, NULL, &screen.cur_buff[0][0]);
 	memset(&screen.cur_buff[0][0], 0, sizeof screen.cur_buff);
 	screen.curses_mode = true;
