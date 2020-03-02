@@ -1,0 +1,26 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "du",
+	help = "Estimate file space usage",
+	man = '''
+	NAME
+		du
+	SYNOPSIS:
+		du [OPTION]... [FILE_OR_DIR]...
+	DESCRIPTION
+		Summarize disk usage of the set of FILEs, recursively for directories.
+	OPTIONS
+		-B - scale  sizes  by  SIZE  before printing them; e.g., '-BM' prints
+			 in units of 1,048,576 bytes; see SIZE format below
+
+		-b - equivalent to '--apparent-size --block-size=1'
+
+	AUTHORS
+		Bartlomiej Kocot
+''')
+module du {
+	source "du.c"
+
+	depends embox.compat.posix.fs.chmod
+}
