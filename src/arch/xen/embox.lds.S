@@ -33,6 +33,9 @@ SECTIONS {
 		my_start_info = .;
 		. += 0x1000;
 
+		memory_pages = .;
+		. += 0x600000;
+		
 		memory_page = .;
 		. += 0x10000;	/*FIX: it needs less space*/
 		
