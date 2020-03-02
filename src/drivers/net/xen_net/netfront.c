@@ -419,6 +419,7 @@ static inline int notify_remote_via_evtchn(evtchn_port_t port)
     return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
 }
 
+static int rx_buffers_mfn[NET_RX_RING_SIZE];
 void init_rx_buffers(struct netfront_dev *dev)
 {
 	printk(">>>>>init_rx_buffers\n");
@@ -434,7 +435,7 @@ void init_rx_buffers(struct netfront_dev *dev)
         req = RING_GET_REQUEST(&dev->rx, requeue_idx);
 
         buf->gref = req->gref = 
-            gnttab_grant_access(dev->dom,virt_to_mfn(buf->page),0);
+            gnttab_grant_access(dev->dom,rx_buffers_mfn[requeue_idx],0);
 
         req->id = requeue_idx;
 
@@ -576,6 +577,45 @@ grant_entry_v1_t *arch_init_gnttab(int nr_grant_frames)
 
 extern char rings_mem[2][PAGE_SIZE];
 
+extern char memory_pages[600][PAGE_SIZE];
+static int alloc_page_counter = 0;
+
+int alloc_page(unsigned long *va, unsigned long *mfn)
+{
+	printk("alloc page #%d\n", alloc_page_counter);
+	if(alloc_page_counter == 600)
+	{
+		printk("KRITICAL ERROR!!!: ENOMEM\n");
+		return -ENOMEM;
+	}
+//ask for mem (for rings txs rxs)
+    struct xen_memory_reservation reservation;
+    reservation.nr_extents = 1;
+    reservation.extent_order = 3;
+    reservation.address_bits= 0;
+    reservation.domid = DOMID_SELF;
+    unsigned long frame_list[1];
+    set_xen_guest_handle(reservation.extent_start, frame_list);
+   	int rc;
+    rc = HYPERVISOR_memory_op(XENMEM_increase_reservation, &reservation);
+    printk("XENMEM_populate_physmap=%d\n", rc);
+    printk("frame_list=%lu\n", frame_list[0]);
+	
+//map it
+	printk("addr:%p\n", &memory_pages[alloc_page_counter]);
+	rc = HYPERVISOR_update_va_mapping((unsigned long) &memory_pages[alloc_page_counter],
+			__pte((frame_list[0]<< PAGE_SHIFT) | 7),
+			UVMF_INVLPG);
+	printk("HYPERVISOR_update_va_mapping:%d\n", rc);
+
+	*mfn = frame_list[0];
+	*va = (unsigned long)&memory_pages[alloc_page_counter];
+	alloc_page_counter++;
+//done!
+	return 0;
+}
+
+
 struct netfront_dev *init_netfront(
 	char *_nodename,
 	void (*thenetif_rx)(unsigned char* data,
@@ -584,6 +624,18 @@ struct netfront_dev *init_netfront(
 	char **ip
 ) {
 	printk(">>>>>init_netfront\n");
+	char nodename[256];
+	static int netfrontends = 0;
+
+	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
+
+	struct netfront_dev *dev = NULL;
+	dev = malloc(sizeof(*dev));
+	memset(dev, 0, sizeof(*dev));
+	dev->nodename = strdup(nodename);
+	printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
+
+#if 0 //TODO: del this
 //ask for mem (for rings txs rxs)
     struct xen_memory_reservation reservation;
     reservation.nr_extents = 2;
@@ -607,11 +659,36 @@ struct netfront_dev *init_netfront(
 		printk("HYPERVISOR_update_va_mapping:%d\n", rc);
 	}
 //done!
+#endif
+    //alloc pages for buffer rings
+	int i;
+	for(i=0;i<NET_TX_RING_SIZE;i++)
+    {
+	    //add_id_to_freelist(i,dev->tx_freelist);
+        dev->tx_buffers[i].page = NULL;
+    }
+
+    for(i=0;i<NET_RX_RING_SIZE;i++)
+    {
+	/* TODO: that's a lot of memory */
+		unsigned long va;
+		unsigned long mfn;
+		printk("alloc_page rc=%d\n", alloc_page(&va, &mfn));
+		rx_buffers_mfn[i] = mfn;
+        dev->rx_buffers[i].page = (char*)va;
+    }
+
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
-
-	txs = (struct netif_tx_sring *) &rings_mem[0];
-	rxs = (struct netif_rx_sring *) &rings_mem[1];
+	unsigned long txs_va;
+	unsigned long txs_mfn;
+	printk("alloc_page rc=%d\n", alloc_page(&txs_va, &txs_mfn));
+	unsigned long rxs_va;
+	unsigned long rxs_mfn;
+	printk("alloc_page rc=%d\n", alloc_page(&rxs_va, &rxs_mfn));
+	
+	txs = (struct netif_tx_sring *) txs_va;
+	rxs = (struct netif_rx_sring *) rxs_va;
 
 	memset(txs, 0, PAGE_SIZE);
 	memset(rxs, 0, PAGE_SIZE);
@@ -619,23 +696,11 @@ struct netfront_dev *init_netfront(
 	SHARED_RING_INIT(txs);
 	SHARED_RING_INIT(rxs);
 
-	char nodename[256];
-	static int netfrontends = 0;
-
-	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
-
-	struct netfront_dev *dev = NULL;
-	dev = malloc(sizeof(*dev));
-	memset(dev, 0, sizeof(*dev));
-	dev->nodename = strdup(nodename);
-
 	FRONT_RING_INIT(&dev->tx, txs, PAGE_SIZE);
 	FRONT_RING_INIT(&dev->rx, rxs, PAGE_SIZE);
 	
-    printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
-	
-	dev->tx_ring_ref = gnttab_grant_access(dev->dom, frame_list[0], 0);
-	dev->rx_ring_ref = gnttab_grant_access(dev->dom, frame_list[1], 0);
+	dev->tx_ring_ref = gnttab_grant_access(dev->dom, txs_mfn, 0);
+	dev->rx_ring_ref = gnttab_grant_access(dev->dom, rxs_mfn, 0);
 
 	printk(">>>>>>>>>>after grant\n");
 
