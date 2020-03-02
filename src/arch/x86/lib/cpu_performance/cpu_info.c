@@ -8,20 +8,16 @@
 
 #include <stdint.h>
 
-#include <module/embox/driver/clock/tsc.h>
-
 #include <hal/cpu_info.h>
 
 struct cpu_info current_cpu;
 
 static void set_cpu_freq(struct cpu_info *info) {
-
-//info->freq =
 	return;
 }
 
 static void set_vendor_id(struct cpu_info *info) {
-	uint64_t r[3]; /* registers: ebx, ecx, edx */
+	uint32_t r[3]; /* registers: ebx, ecx, edx */
 	int i, j;
 
 	/* Check if CPU supports CPUID instruction */
