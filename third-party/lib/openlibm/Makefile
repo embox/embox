@@ -1,13 +1,11 @@
 # https://github.com/JuliaLang/openlibm After merge mips supporting
-# https://github.com/embox/openlibm/archive/2252cbd02c176a31f74fa10f8fcdf926c3124987.tar.gz
 PKG_NAME := openlibm
-PKG_VER := 2252cbd02c176a31f74fa10f8fcdf926c3124987
+PKG_VER := v0.7.0
 
 # PKG_DOWNLOADS_SEPARATE := true
-PKG_SOURCES := https://github.com/embox/openlibm/archive/$(PKG_VER).tar.gz \
-	http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_SOURCES := https://github.com/JuliaMath/openlibm/archive/$(PKG_VER).tar.gz
 
-PKG_MD5 := f5bec5f9f47d11067820497858334673
+PKG_MD5 := 3fddbe1683e07a7b2791580d55d5ca7e
 
 PKG_PATCHES := patch.txt
 
@@ -49,7 +47,6 @@ endif # arm
 endif # COMPILER
 
 $(CONFIGURE) :
-	cp openlibm_fenv_stubs.h $(PKG_SOURCE_DIR)/include/openlibm_fenv_stubs.h
 	touch $@
 
 $(BUILD) :
