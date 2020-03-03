@@ -26,11 +26,9 @@ int main(int argc, char **argv) {
 	size_t arg_len;
 
 	for (no_of_arg = 0; no_of_arg < argc; no_of_arg++) {
-		arg_len = strlen(argv[no_of_arg]);
-		file_names[no_of_arg] = (char *)malloc (sizeof(char) * arg_len);
-		strcpy (file_names[no_of_arg], argv[no_of_arg]);
+		file_names[no_of_arg] = strdup (argv[no_of_arg]);
 	}
-
+	
 	if (argc < 2) {
 		print_usage();
 		return -EINVAL;
