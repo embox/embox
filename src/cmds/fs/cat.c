@@ -21,14 +21,8 @@ int main(int argc, char **argv) {
 	int number = 0, line = 0, new_line = 1;
 	FILE *fd;
 	char buff;
-	int no_of_arg;
-	char *file_names[argc];
-	size_t arg_len;
+	int i;
 
-	for (no_of_arg = 0; no_of_arg < argc; no_of_arg++) {
-		file_names[no_of_arg] = strdup (argv[no_of_arg]);
-	}
-	
 	if (argc < 2) {
 		print_usage();
 		return -EINVAL;
@@ -50,10 +44,10 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	for (no_of_arg = 1; no_of_arg < argc; no_of_arg++) {
-		if (strcmp ("-n", file_names[no_of_arg]) != 0) {
-			if (NULL == (fd = fopen(file_names[no_of_arg], "r"))) {
-				printf("Can't open file %s\n", file_names[no_of_arg]);
+	for (i = 1; i < argc; i++) {
+		if (strcmp("-n", argv[i]) != 0) {
+			if (NULL == (fd = fopen(argv[i], "r"))) {
+				printf("Can't open file %s\n", argv[i]);
 				return -errno;
 			}
 
@@ -74,11 +68,6 @@ int main(int argc, char **argv) {
 
 			fclose(fd);
 		}
-	}
-
-	for (no_of_arg = 0; no_of_arg < argc; no_of_arg++) {
-		char *file_name = file_names[no_of_arg];
-		free (file_name);
 	}
 
 	return 0;
