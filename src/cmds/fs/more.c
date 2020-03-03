@@ -28,29 +28,36 @@ static void screen(FILE *fp) {
 		columns = MAX_SCREEN_WIDTH - 1;
 	}
 	lines = std->endy - std->begy;
-	endwin();
 
 	while (1) {
 		for (x = 0; x < lines - 1; x++) {
 
 			for (y = 0; y < columns; y++) {
-				buff[y] = getc(fp);
-				switch ((int) buff[y]) {
-				case EOF:
+				if (fread(&buff[y], 1, 1, fp) == 1) {
+
+					switch ((int) buff[y]) {
+
+						case '\n':
+							/*	End of the line, filling the rest of buffer */
+							memset(buff + y, ' ', columns - y);
+							y = columns;
+							break;
+
+						case '\t':
+							/*	Perform tab instert	*/
+							memset(buff + y, ' ', TAB_SIZE);
+							y += TAB_SIZE - 1;
+							break;
+
+					}
+
+				} else {
+
 					for (i = 0; i < y; i++) {
 						printf("%c", buff[i]);
 					}
+
 					return;
-				case '\n':
-					/*	End of the line, filling the rest of buffer */
-					memset(buff + y, ' ', columns - y);
-					y = columns;
-					break;
-				case '\t':
-					/*	Perform tab instert	*/
-					memset(buff + y, ' ', TAB_SIZE);
-					y += TAB_SIZE - 1;
-					break;
 				}
 			}
 			/*	In case if we got out of the actual line size	*/
