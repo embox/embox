@@ -13,9 +13,11 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
-export PEER_HOST_IP=192.168.128.129 # FIXME intentional misstype
-export NTP_HOST=89.109.251.25 # FIXME ntpdate apparently cannot resolve dns names
 HOST_DNS_IP=$HOST_IP
+
+#export PEER_HOST_IP=192.168.128.128
+export PEER_HOST_IP=8.8.8.8
+export NTP_HOST=89.109.251.25 # FIXME ntpdate apparently cannot resolve dns names
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
 

@@ -68,9 +68,6 @@ jobs:
           r=$?
           killall ping-target || true
           exit $r
-      - run: |
-          set -x
-          timeout 10 ntpq -c lpeers
 
   ## need to manage container by hand because of modprobe below
   #ci-x86-fs:

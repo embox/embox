@@ -16,7 +16,7 @@ TEST_CASE_TARGET {Embox should ping host by IP} {
 }
 
 TEST_CASE_TARGET {Embox should ping peer host by IP} {
-	send "ping -c 4 $env(PEER_HOST_IP)\r"
+	send "ping -c 4 " $env(PEER_HOST_IP) "\r"
 	test_assert_regexp_equal "0 errors"
 
 	return 0
