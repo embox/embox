@@ -304,6 +304,13 @@ extern void fat_file_free(struct fat_file_info *fi);
 extern struct dirinfo *fat_dirinfo_alloc(void);
 extern void fat_dirinfo_free(struct dirinfo *di);
 
+extern int fat_fill_inode(struct inode *inode, struct fat_dirent *de,
+		struct dirinfo *di);
+struct dir_ctx;
+extern int fat_iterate(struct inode *next, char *name,
+		struct inode *parent, struct dir_ctx *ctx);
+extern int fat_delete(struct inode *node);
+
 extern int fat_entries_per_name(const char *name);
 extern void fat_write_longname(char *name, struct fat_dirent *di);
 extern uint8_t fat_canonical_name_checksum(const char *name);
