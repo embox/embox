@@ -9,6 +9,7 @@
 
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
+#include <fs/inode.h>
 #include <fs/super_block.h>
 
 #include "fat.h"
@@ -37,6 +38,7 @@ static size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 
 	fi = file_get_inode_data(desc);
 	fi->pointer = old_pos;
+	new_sz = file_get_size(desc);
 	fi->mode = O_RDWR; /* XXX */
 
 	rezult = fat_write_file(fi, fat_sector_buff, (uint8_t *)buf,
@@ -78,6 +80,24 @@ int fat_clean_sb(struct super_block *sb) {
 	assert(fsi);
 
 	fat_fs_free(fsi);
+
+	return 0;
+}
+
+int fat_delete(struct inode *node) {
+	struct fat_file_info *fi;
+
+	fi = inode_priv(node);
+
+	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
+		return -1;
+	}
+
+	if (S_ISDIR(node->i_mode)) {
+		fat_dirinfo_free((void *) fi);
+	} else {
+		fat_file_free(fi);
+	}
 
 	return 0;
 }
