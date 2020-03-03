@@ -56,7 +56,7 @@ static int host_net_cfg(struct host_net_adp *hnet, enum host_net_op op) {
 }
 
 static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
-	printk("xen_net_xmit is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!");
 	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
 	host_net_tx(hnet, skb->mac.raw, skb->len);
@@ -65,26 +65,27 @@ static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int xen_net_start(struct net_device *dev) {
-	printk("xen_net_start is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_start is called, you should check the code!");
 	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
 	return host_net_cfg(hnet, HOST_NET_START);
 }
 
 static int xen_net_stop(struct net_device *dev) {
-	printk("xen_net_stop is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_stop is called, you should check the code!");
 	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
 
 	return host_net_cfg(hnet, HOST_NET_STOP);
 }
 
 static int xen_net_setmac(struct net_device *dev, const void *addr) {
-	printk("xen_net_setmac is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!");
 	return ENOERR;
 }
 #if 1
 static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	printk("======>IRQ:%u\n",irq_num);
+//TODO: Implement handler
 #if 0
 	struct net_device *dev = (struct net_device *) dev_id;
 	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
@@ -123,86 +124,6 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 	}
 	printk("]\n");
 }
-#if 0
-static inline int xennet_rxidx(RING_IDX idx)
-{
-    return idx & (NET_RX_RING_SIZE - 1);
-}
-void network_rx(struct netfront_dev *dev)
-{
-    RING_IDX rp,cons,req_prod;
-    int nr_consumed, i;
-	int more, notify;
-    int dobreak;
-
-    nr_consumed = 0;
-moretodo:
-    rp = dev->rx.sring->rsp_prod;
-    rmb(); /* Ensure we see queued responses up to 'rp'. */
-
-    dobreak = 0;
-    for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
-    {
-		printk("IM IN IT");
-        struct net_buffer* buf;
-        unsigned char* page;
-        int id;
-
-        struct netif_rx_response *rx = RING_GET_RESPONSE(&dev->rx, cons);
-
-        id = rx->id;
-        BUG_ON(id >= NET_RX_RING_SIZE);
-
-        buf = &dev->rx_buffers[id];
-        page = (unsigned char*)buf->page;
-        // gnttab_end_access(buf->gref);
-
-        if (rx->status > NETIF_RSP_NULL) {
-#ifdef HAVE_LIBC
-            if (dev->netif_rx == NETIF_SELECT_RX) {
-                int len = rx->status;
-                ASSERT(current == main_thread);
-                if (len > dev->len)
-                    len = dev->len;
-                memcpy(dev->data, page+rx->offset, len);
-                dev->rlen = len;
-                /* No need to receive the rest for now */
-                dobreak = 1;
-            } else
-#endif
-		        dev->netif_rx(page+rx->offset, rx->status, dev->netif_rx_arg);
-        }
-    }
-    dev->rx.rsp_cons=cons;
-
-    RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx,more);
-    if(more && !dobreak) goto moretodo;
-
-    req_prod = dev->rx.req_prod_pvt;
-
-    for (i = 0; i < nr_consumed; i++) {
-        int id = xennet_rxidx(req_prod + i);
-        netif_rx_request_t *req = RING_GET_REQUEST(&dev->rx, req_prod + i);
-        struct net_buffer* buf = &dev->rx_buffers[id];
-        void* page = buf->page;
-
-        /* We are sure to have free gnttab entries since they got released above */
-        buf->gref = req->gref = gnttab_grant_access(dev->dom,
-                                                    virt_to_mfn(page),
-                                                    0);
-        req->id = id;
-    }
-
-    wmb();
-
-    dev->rx.req_prod_pvt = req_prod + i;
-    RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-    if (notify)
-	{
-		printk("NOTIFY!\n");
-	}
-}
-#endif
 
 ///////////////////////////////////////////////////////
 // Here we are going to realize grant table mechanism//
@@ -216,140 +137,13 @@ moretodo:
 //Need it?
 
 #include <xen_hypercall-x86_32.h>
-#if 0
-/*
- * get the PTE for virtual address va if it exists. Otherwise NULL.
- */
-static pgentry_t *get_pgt(unsigned long va)
-{
-    unsigned long mfn;
-    pgentry_t *tab;
-    unsigned offset;
-
-    tab = pt_base;
-    mfn = virt_to_mfn(pt_base);
-
-    offset = l3_table_offset(va);
-    if ( !(tab[offset] & _PAGE_PRESENT) )
-        return NULL;
-    mfn = pte_to_mfn(tab[offset]);
-    tab = mfn_to_virt(mfn);
-    offset = l2_table_offset(va);
-    if ( !(tab[offset] & _PAGE_PRESENT) )
-        return NULL;
-    if ( tab[offset] & _PAGE_PSE )
-        return &tab[offset];
-    mfn = pte_to_mfn(tab[offset]);
-    tab = mfn_to_virt(mfn);
-    offset = l1_table_offset(va);
-    return &tab[offset];
-}
 
 
-//TODO!!!!!!!
-void arch_init_demand_mapping_area(void)
-{
-    demand_map_area_start = VIRT_DEMAND_AREA;
-    demand_map_area_end = demand_map_area_start + DEMAND_MAP_PAGES * PAGE_SIZE;
-    printk("Demand map pfns at %lx-%lx.\n", demand_map_area_start,
-           demand_map_area_end);
-
-#ifdef HAVE_LIBC
-    heap_mapped = brk = heap = VIRT_HEAP_AREA;
-    heap_end = heap_mapped + HEAP_PAGES * PAGE_SIZE;
-    printk("Heap resides at %lx-%lx.\n", brk, heap_end);
-#endif
-}
-
-unsigned long allocate_ondemand(unsigned long n, unsigned long alignment)
-{
-    unsigned long x;
-    unsigned long y = 0;
-
-    /* Find a properly aligned run of n contiguous frames */
-    for ( x = 0;
-          x <= DEMAND_MAP_PAGES - n; 
-          x = (x + y + 1 + alignment - 1) & ~(alignment - 1) )
-    {
-        unsigned long addr = demand_map_area_start + x * PAGE_SIZE;
-        pgentry_t *pgt = get_pgt(addr);
-        for ( y = 0; y < n; y++, addr += PAGE_SIZE ) 
-        {
-            if ( !(addr & L1_MASK) )
-                pgt = get_pgt(addr);
-            if ( pgt )
-            {
-                if ( *pgt & _PAGE_PRESENT )
-                    break;
-                pgt++;
-            }
-        }
-        if ( y == n )
-            break;
-    }
-    if ( y != n )
-    {
-        printk("Failed to find %ld frames!\n", n);
-        return 0;
-    }
-    return demand_map_area_start + x * PAGE_SIZE;
-}
-
-
-
-/* map f[i*stride]+i*increment for i in 0..n-1, aligned on alignment pages */
-/*
- * Map an array of MFNs contiguous into virtual address space. Virtual
- * addresses are allocated from the on demand area.
- */
-void *map_frames_ex(const unsigned long *mfns, 
-                    unsigned long n, //4
-                    unsigned long stride, //1
-                    unsigned long incr, //0
-                    unsigned long alignment, //1
-                    domid_t id, int *err, //DOMID_SELF 32752, NULL
-                    unsigned long prot) //L1_PROT 35
-{
-    unsigned long va = allocate_ondemand(n, alignment);
-
-    if ( !va )
-        return NULL;
-
-    if ( do_map_frames(va, mfns, n, stride, incr, id, err, prot) )
-        return NULL;
-
-    return (void *)va;
-}
-
-
-#define map_frames(f, n) map_frames_ex(f, n, 1, 0, 1, DOMID_SELF, NULL, L1_PROT)
-
-void init_gnttab(void)
-{
-
-/*TODO detection
-    int i;
-    for (i = NR_RESERVED_ENTRIES; i < NR_GRANT_ENTRIES; i++)
-        put_free_entry(i);
-*/	
-	struct gnttab_setup_table setup;
-    unsigned long frames[NR_GRANT_FRAMES];
-
-    setup.dom = DOMID_SELF;
-    setup.nr_frames = NR_GRANT_FRAMES;
-    set_xen_guest_handle(setup.frame_list, frames);
-
-    HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
-    
-	gnttab_table = map_frames(frames, NR_GRANT_FRAMES);
-	
-    printk("gnttab_table mapped at %p.\n", gnttab_table);
-}
-#endif
-extern char _text;
 
 extern start_info_t my_start_info;
+
 unsigned long *phys_to_machine_mapping;
+#if 0 //tag: allocate_ondemand
 /*
  * get the PTE for virtual address va if it exists. Otherwise NULL.
  */
@@ -551,6 +345,7 @@ unsigned long allocate_ondemand(unsigned long n)
     
     return demand_map_area_start + x * PAGE_SIZE;
 }
+#endif
 
 extern grant_entry_v1_t memory_page[NR_GRANT_ENTRIES];
 extern grant_entry_v1_t *grant_table;
@@ -575,7 +370,7 @@ void init_grant_table(int n)
     rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
     printk("HYPERVISOR_grant_table_op returned:%d, status=%d\n", rc, setup.status);
 
-#if 0
+#if 0 //tag: allocate_ondemand
     printk("grant table virtual:%p\n", gnttab_table);
     unsigned long va = allocate_ondemand(1); 
     
@@ -698,7 +493,6 @@ static int xen_net_init(void) {
 	}
 	nic->drv_ops = &xen_net_drv_ops;
 
-
 	//xenstore_info();
 
 	char nodename[] = "device/vif/0";
@@ -707,12 +501,11 @@ static int xen_net_init(void) {
 	ip="192.168.2.2";
 	struct netfront_dev *dev = init_netfront(nodename, print_packet, rawmac, &ip);
 	printk(">>>>>afterinit_netfront\n");
-    
-
-	//Danger! hardcode of dev->evtchn_rx = 9
-#if 1 //try split channel
-	nic->irq = dev->evtchn_rx;
-	res = irq_attach(dev->evtchn_rx, xen_net_irq, IF_SHARESUP, nic,
+	
+#ifdef FEATURE_SPLIT_CHANNELS //false
+    //Danger! hardcode of dev->evtchn_rx = 9
+	nic->irq = 9;
+	res = irq_attach(9, xen_net_irq, IF_SHARESUP, nic,
 			"xen_net");
 	if (res < 0) {
 		printk("irq_attach error: %i\n", res);
@@ -725,12 +518,6 @@ static int xen_net_init(void) {
 	if (res < 0) {
 		printk("irq_attach error: %i\n", res);
 		return res;
-	}
-#endif
-
-#if 0
-	while(1) {
-		network_rx(dev);
 	}
 #endif
 

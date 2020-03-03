@@ -123,11 +123,11 @@ struct netfront_dev {
     struct netif_rx_front_ring rx;
     grant_ref_t tx_ring_ref;
     grant_ref_t rx_ring_ref;
-#if 0
-    evtchn_port_t evtchn;
-#else
+#ifdef FEATURE_SPLIT_CHANNELS //false
     evtchn_port_t evtchn_tx;
     evtchn_port_t evtchn_rx;
+#else
+    evtchn_port_t evtchn;
 #endif
     char *nodename;
     char backend[64];
