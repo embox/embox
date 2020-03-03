@@ -22,7 +22,9 @@ int sem_destroy(sem_t *sem) {
 }
 
 int sem_getvalue(sem_t *restrict sem, int *restrict sval) {
-	return semaphore_getvalue(sem, sval);
+	int ret = semaphore_getvalue(sem, sval);
+	*sval = sem->max_value - *sval;
+	return ret;
 }
 
 int sem_post(sem_t *sem) {
