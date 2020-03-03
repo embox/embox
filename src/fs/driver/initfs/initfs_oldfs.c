@@ -18,64 +18,39 @@
 #include <stdarg.h>
 #include <limits.h>
 
-#include <fs/fs_driver.h>
-#include <fs/vfs.h>
-#include <fs/inode.h>
+#include <fs/dir_context.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
-
-#include <mem/misc/pool.h>
+#include <fs/fs_driver.h>
+#include <fs/inode.h>
+#include <fs/inode_operation.h>
+#include <fs/vfs.h>
 #include <kernel/printk.h>
-#include <util/array.h>
+#include <framework/mod/options.h>
 
 #include "initfs.h"
 
-#include <framework/mod/options.h>
-
-struct initfs_file_info_tmp {
-	struct node_info ni; /* must be the first member */
-	struct initfs_file_info *priv;
-	struct initfs_file_info initfs_file_info;
+static struct inode_operations initfs_iops = {
+	.iterate = initfs_iterate,
 };
-POOL_DEF(file_pool, struct initfs_file_info_tmp, OPTION_GET(NUMBER,file_quantity));
 
 static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	extern char _initfs_start, _initfs_end;
-	char *cpio = &_initfs_start;
-	struct inode *node;
-	struct initfs_file_info_tmp *fi;
-	struct cpio_entry entry;
-	char name[PATH_MAX + 1];
+	struct initfs_file_info *fi;
 
 	if (&_initfs_start == &_initfs_end) {
 		return -1;
 	}
-	printk("%s: unpack initinitfs at %p into %s\n", __func__,
-			cpio, dest->name);
 
-	while ((cpio = cpio_parse_entry(cpio, &entry))) {
-		if (entry.name_len > PATH_MAX) {
-			return -ENAMETOOLONG;
-		}
-		memcpy(name, entry.name, entry.name_len);
-		name[entry.name_len] = '\0';
-
-		node = vfs_subtree_create_intermediate(dest, name, entry.mode);
-		if (NULL == node) {
-			return -ENOMEM;
-		}
-
-		fi = pool_alloc(&file_pool);
-		if (!fi) {
-			return -ENOMEM;
-		}
-		fi->priv = &fi->initfs_file_info;
-		fi->initfs_file_info.start_pos = (intptr_t)entry.data;
-		fi->ni.size = entry.size;
-		fi->ni.mtime = entry.mtime;
-
-		node->nas->fi = (struct node_fi *) fi;
+	fi = initfs_file_alloc();
+	if (fi == NULL) {
+		return -ENOMEM;
 	}
+
+	memset(fi, 0, sizeof(*fi));
+	inode_priv_set(dest, fi);
+
+	dest->i_ops = &initfs_iops;
 
 	return 0;
 }
