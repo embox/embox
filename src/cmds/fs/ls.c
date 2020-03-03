@@ -168,27 +168,37 @@ int main(int argc, char **argv) {
 	if (optind < argc) {
 		struct stat sb;
 
-		if (-1 == stat(argv[optind], &sb)) {
+		do {
+			if (-1 == stat(argv[optind], &sb)) {
+				return -errno;
+			}
+
+			if (!S_ISDIR(sb.st_mode)) {
+				printer(argv[optind], &sb);
+				continue;
+			}
+
+			snprintf(dir_name, NAME_MAX, "%s", argv[optind]);
+
+			if (NULL == (dir = opendir(dir_name))) {
+				return -errno;
+			}
+
+			print(dir_name, dir, recursive, printer);
+	
+			closedir(dir);
+		} while (optind++ < argc - 1);
+	} else {
+		strcpy(dir_name, ".");
+
+		if (NULL == (dir = opendir(dir_name))) {
 			return -errno;
 		}
 
-		if (!S_ISDIR(sb.st_mode)) {
-			printer(argv[optind], &sb);
-			return 0;
-		}
+		print(dir_name, dir, recursive, printer);
 
-		sprintf(dir_name, "%s", argv[optind]);
-	} else {
-		strcpy(dir_name, ".");
+		closedir(dir);
 	}
-
-	if (NULL == (dir = opendir(dir_name))) {
-		return -errno;
-	}
-
-	print(dir_name, dir, recursive, printer);
-
-	closedir(dir);
 
 	return 0;
 }
