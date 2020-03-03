@@ -93,6 +93,12 @@ extern struct inode *node_alloc(const char *name, size_t name_len);
 extern void node_free(struct inode *node);
 extern void *inode_priv(const struct inode *node);
 extern void inode_priv_set(struct inode *node, void *priv);
+extern size_t inode_size(const struct inode *node);
+extern void inode_size_set(struct inode *node, size_t sz);
+extern unsigned inode_ctime(const struct inode *node);
+extern void inode_ctime_set(struct inode *node, unsigned ctime);
+extern unsigned inode_mtime(const struct inode *node);
+extern void inode_mtime_set(struct inode *node, unsigned mtime);
 
 static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->i_mode);
