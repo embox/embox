@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <sys/types.h>
 #include <string.h>
+#include <errno.h>
 
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
@@ -42,7 +43,12 @@ static int initfs_ioctl(struct file_desc *desc, int request, void *data) {
 	return 0;
 }
 
+static size_t initfs_write(struct file_desc *desc, void *buf, size_t size) {
+	return -EACCES;
+}
+
 struct file_operations initfs_fops = {
 	.read  = initfs_read,
+	.write = initfs_write,
 	.ioctl = initfs_ioctl,
 };

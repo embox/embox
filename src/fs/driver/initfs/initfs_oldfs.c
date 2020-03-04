@@ -80,10 +80,15 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
+static int initfs_create_node(struct inode *parent_node, struct inode *node) {
+	return -EACCES;
+}
+
 extern struct file_operations initfs_fops;
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
+	.create_node = initfs_create_node,
 };
 
 static struct fs_driver initfs_driver = {
