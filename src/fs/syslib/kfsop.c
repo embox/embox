@@ -441,7 +441,7 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		vfs_mount_walker(sb->sb_root);
 	}
 
-	if (NULL == mount_table_add(&dir_node, sb->sb_root, dest)) {
+	if (NULL == mount_table_add(&dir_node, sb->sb_root, source)) {
 		super_block_free(sb);
 		//todo free root
 		errno = -res;
