@@ -16,6 +16,7 @@
 #include <utime.h>
 #include <sys/file.h>
 
+#include <drivers/device.h>
 #include <fs/dcache.h>
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
@@ -357,6 +358,7 @@ int kformat(const char *pathname, const char *fs_type) {
 struct block_dev *bdev_by_path(const char *source) {
 	struct path dev_node;
 	const char *lastpath;
+	struct dev_module *devmod;
 
 	if (source == NULL) {
 		return NULL;
@@ -371,7 +373,9 @@ struct block_dev *bdev_by_path(const char *source) {
 	}
 
 	/* TODO: check if it's actually part of devfs? */
-	return dev_node.node->nas->fi->privdata;
+	devmod = inode_priv(dev_node.node);
+
+	return devmod->dev_priv;
 }
 
 static int vfs_mount_walker(struct inode *dir) {
