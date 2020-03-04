@@ -46,11 +46,16 @@ struct ramfs_file_info {
 	int     index;                 /* number of file in FS*/
 	int     mode;                  /* mode in which this file was opened */
 	char    name[RAMFS_NAME_LEN];
-	void *inode;
+	void   *inode;
 	struct ramfs_fs_info *fsi;
 };
 
 extern struct file_operations ramfs_fops;
-int ramfs_fill_sb(struct super_block *sb, const char *source);
+extern int ramfs_fill_sb(struct super_block *sb, const char *source);
+extern int ramfs_format(struct block_dev *bdev, void *priv);
+extern int ramfs_delete(struct inode *node);
+extern int ramfs_truncate(struct inode *node, off_t length);
+
+extern struct ramfs_file_info *ramfs_file_alloc(struct inode *node);
 
 #endif /* RAMFS_H_ */
