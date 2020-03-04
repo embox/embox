@@ -36,7 +36,7 @@ static struct mount_descriptor *mount_desc_walk(struct mount_descriptor *desc, s
 	}
 
 	if (desc->mnt_root == node) {
-		return desc->mnt_parent;
+		return desc;
 	}
 
 	dlist_foreach_entry(i, &desc->mnt_mounts, mnt_child) {
@@ -49,7 +49,7 @@ static struct mount_descriptor *mount_desc_walk(struct mount_descriptor *desc, s
 	return NULL;
 }
 
-static struct mount_descriptor *mount_desc_by_inode(struct inode *node) {
+struct mount_descriptor *mount_desc_by_inode(struct inode *node) {
 	struct mount_descriptor *mount_list = mount_table();
 
 	if (mount_list == NULL) {
