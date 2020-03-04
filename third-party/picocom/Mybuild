@@ -1,0 +1,21 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "picocom",
+	help = "Terminal Emulator",
+	man = '''
+		NAME
+			Picocom - Minimal dumb-terminal emulation program
+		SYNOPSIS
+			picocom [OPTIONS] device
+		AUTHORS
+			Erick Cafferata - Adaptation for Embox
+	''')
+module picocom {
+	source "^BUILD/extbld/^MOD_PATH/install/picocom.o"
+
+	depends embox.compat.posix.stubs
+}
+
