@@ -17,8 +17,8 @@ struct block_dev;
 
 #define MOUNT_DESC_STRINFO_LEN 16
 struct mount_descriptor {
-	struct inode *mnt_point;
-	struct inode *mnt_root;
+	struct inode *mnt_point; /* Node of the parent FS */
+	struct inode *mnt_root;  /* Root node of the mounted FS */
 	struct mount_descriptor *mnt_parent;
 	struct dlist_head mnt_mounts;
 	struct dlist_head mnt_child;
