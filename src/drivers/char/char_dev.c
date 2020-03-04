@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <drivers/device.h>
 #include <util/array.h>
 #include <util/indexator.h>
 
