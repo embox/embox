@@ -28,7 +28,7 @@ TEST_SETUP_HOST {
 TEST_CASE_TARGET {ntpdate test} {
 	global host_date
 
-	send "ntpdate $env(NTP_HOST)\r"
+	send "ntpdate $::env(NTP_HOST)\r"
 	test_assert_regexp_equal ":/#"
 
 	# And compare the host date with the Embox's one.
