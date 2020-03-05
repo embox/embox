@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "file_struct.h"
 
 #include <stdio.h>
@@ -18,6 +19,11 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 
 	if (NULL == file) {
 		SET_ERRNO(EBADF);
+		return -1;
+	}
+
+	if ((file->flags & O_ACCESS_MASK) == O_WRONLY) {
+		SET_IO_ERR(file);
 		return -1;
 	}
 
@@ -51,5 +57,8 @@ size_t fread(void *buf, size_t size, size_t count, FILE *file) {
 		cnt -= (cnt % size);
 	}
 
+	if ( (cnt / size) != count) {
+		SET_IO_EOF(file);
+	}
 	return cnt / size;
 }

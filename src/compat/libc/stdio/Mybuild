@@ -91,6 +91,10 @@ static module file_ops {
 
 	source "fileno.c"
 
+	source "feof.c"
+	source "ferror.c"
+	source "clearerr.c"
+
 	source "fread.c"
 	depends embox.compat.posix.fs.read
 
@@ -98,7 +102,6 @@ static module file_ops {
 	source "fflush.c"
 	source "fclose.c"
 
-	source "stdio_stubs.c"
 	source "buf.c"
 
 	depends file_pool
