@@ -56,7 +56,12 @@ int mkdir(const char *pathname, mode_t mode) {
 }
 
 int remove(const char *pathname) {
-	return dvfs_remove(pathname);
+	int ret = dvfs_remove(pathname);
+	if (ret != 0) {
+		return SET_ERRNO(-res);
+	}
+
+	return 0;
 }
 
 int unlink(const char *pathname) {
