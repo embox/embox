@@ -113,6 +113,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	struct file_desc *desc;
 	struct idesc *res;
 	struct inode  *i_no;
+	struct dentry *d;
 
 	assert(lookup);
 
@@ -120,19 +121,23 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	if (desc == NULL)
 		return err_ptr(ENOMEM);
 
-	i_no = lookup->item->d_inode;
+	d = lookup->item;
+	i_no = d->d_inode;
 
 	*desc = (struct file_desc) {
 		.f_dentry = lookup->item,
 		.f_inode  = i_no,
-		.f_ops    = lookup->item->d_sb->sb_fops,
+		.f_ops    = d->d_sb ? d->d_sb->sb_fops : NULL,
 		.f_idesc  = {
 			.idesc_ops   = &idesc_file_ops,
 		},
 	};
 
-	assert(desc->f_ops);
-	if (desc->f_ops->open && !(__oflag & O_PATH)) {
+	if (!(d->flags & VFS_DIR_VIRTUAL)) {
+		assert(desc->f_ops);
+	}
+
+	if (desc->f_ops && desc->f_ops->open && !(__oflag & O_PATH)) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc);
 		if (res == NULL) {
 			return NULL;
@@ -203,8 +208,11 @@ int dvfs_close(struct file_desc *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
 
-	assert(desc->f_ops);
-	if (desc->f_ops->close) {
+	if (!(desc->f_dentry->flags & VFS_DIR_VIRTUAL)) {
+		assert(desc->f_ops);
+	}
+
+	if (desc->f_ops && desc->f_ops->close) {
 		desc->f_ops->close(desc);
 	}
 
