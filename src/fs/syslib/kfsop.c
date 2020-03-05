@@ -382,12 +382,15 @@ static int vfs_mount_walker(struct inode *dir) {
 	int res;
 	struct dir_ctx dir_context = { };
 
+	assert(dir);
+
 	do {
-		struct inode *node = inode_new(NULL);
+		struct inode *node = inode_new(dir->i_sb);
 		if (NULL == node) {
 			return -ENOMEM;
 		}
 
+		assert(dir->i_ops);
 		res = dir->i_ops->iterate(node,
 				node->name,
 				dir,
@@ -400,6 +403,8 @@ static int vfs_mount_walker(struct inode *dir) {
 		}
 
 		node->i_ops = dir->i_ops;
+
+		assert(node->nas);
 		node->nas->fs = node->i_sb = dir->nas->fs;
 
 		vfs_add_leaf(node, dir);
@@ -704,6 +709,7 @@ int kumount(const char *dir) {
 		return res;
 	}
 
+	dir_node.node->i_sb->sb_root = NULL;
 	super_block_free(dir_node.node->i_sb);
 
 	if (dir_node.node != vfs_get_root()) {
