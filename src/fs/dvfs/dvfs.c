@@ -184,7 +184,10 @@ int dvfs_remove(const char *path) {
 	res = i_no->i_ops->remove(i_no);
 
 	if (res == 0) {
-		dentry_ref_dec(lookup.item);
+		if (lookup.item->usage_count > 0) {
+			return -EBUSY;
+		}
+
 		res = dvfs_destroy_dentry(lookup.item);
 		if (res != 0) {
 			log_error("Failed to destroy dentry");
