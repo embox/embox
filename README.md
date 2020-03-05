@@ -18,8 +18,8 @@ docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/e
 
 ### Clean Linux in LKL
 ```
-rm build/extbld/third_party/lkl/.{builded,installed}
-make -C build/extbld/third_party/lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl clean
+rm build/extbld/third_party/lkl/lib/.{builded,installed}
+make -C build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl clean
 ```
 
 ---
