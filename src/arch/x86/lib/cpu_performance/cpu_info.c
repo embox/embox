@@ -12,7 +12,37 @@
 
 struct cpu_info current_cpu;
 
+static void set_cpu_features(struct cpu_info *info) {
+	uint32_t reg; /* register: edx */
+
+	asm volatile (	"movl $0x1, %%eax   \n\t"
+					"cpuid				\n\t"
+					"movl %%edx, %0		\n\t"
+					: "=g"(reg)
+					:
+					: "%eax", "%ebx", "%ecx", "%edx");
+
+	info->FPU = reg & 0x1;
+	info->MMX = (reg >> 23) & 0x1; 
+	info->SSE = (reg >> 25) & 0x1;
+
+	return;
+}
+
 static void set_cpu_freq(struct cpu_info *info) {
+	uint32_t reg[2]; /* registers: eax, ebx */
+
+	asm volatile (	"movl $0x16, %%eax   \n\t"
+					"cpuid				\n\t"
+					"movl %%eax, %0		\n\t"
+					"movl %%ebx, %1		\n\t"
+					: "=g"(reg[0]), "=g"(reg[1])
+					:
+					: "%eax", "%ebx", "%ecx", "%edx");
+
+	info->base_freq = reg[0];
+	info->max_freq = reg[1];
+
 	return;
 }
 
@@ -67,5 +97,6 @@ static void set_vendor_id(struct cpu_info *info) {
 struct cpu_info* get_cpu_info(void) {
 	set_vendor_id(&current_cpu);
 	set_cpu_freq(&current_cpu);
+	set_cpu_features(&current_cpu);
 	return &current_cpu;
 }
