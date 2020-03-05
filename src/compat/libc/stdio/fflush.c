@@ -18,5 +18,6 @@ int fflush(FILE *stream) {
 	if (stream->flags & O_WRONLY) {
 		libc_ob_forceflush(stream);
 	}
+
 	return 0;
 }

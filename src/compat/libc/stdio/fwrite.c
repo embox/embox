@@ -10,6 +10,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <util/math.h>
+#include <fcntl.h>
 #include "file_struct.h"
 #include <stdio.h>
 
@@ -125,6 +126,11 @@ size_t fwrite(const void *buf, size_t size, size_t count, FILE *file) {
 
 	if (NULL == file) {
 		errno = EBADF;
+		return 0;
+	}
+
+	if ((file->flags & O_ACCESS_MASK) == O_RDONLY) {
+		SET_IO_ERR(file);
 		return 0;
 	}
 

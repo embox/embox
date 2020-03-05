@@ -22,3 +22,14 @@ module fgets_test {
 	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }
+
+module file_io_error_test {
+	source "file_io_error_test.c"
+	
+	@InitFS
+	source  "file_io_error_test.txt"
+
+	depends embox.compat.libc.stdio.all
+	depends embox.framework.test
+	depends embox.framework.LibFramework
+}
