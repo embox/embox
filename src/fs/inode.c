@@ -66,6 +66,7 @@ struct inode *inode_new(struct super_block *sb) {
 
 	node->nas = nas;
 	nas->node = node;
+	node->i_sb = sb;
 
 	nas->fi = &nt->fi;
 
