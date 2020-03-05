@@ -99,6 +99,10 @@ static int initfs_fill_inode(struct inode *node, char *cpio,
 	return 0;
 }
 
+static int initfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
+	return -EACCES;
+}
+
 static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
@@ -192,6 +196,7 @@ struct super_block_operations initfs_sbops = {
 };
 
 struct inode_operations initfs_iops = {
+	.create   = initfs_create,
 	.lookup   = initfs_lookup,
 	.iterate  = initfs_iterate,
 };
