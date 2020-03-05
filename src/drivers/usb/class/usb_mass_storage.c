@@ -102,7 +102,7 @@ failed:
 	return -1;
 }
 
-static void usb_mass_start(struct usb_dev *dev) {
+static int usb_mass_start(struct usb_dev *dev) {
 	struct usb_mass *mass = usb2massdata(dev);
 	int ret;
 	int i;
@@ -128,7 +128,7 @@ static void usb_mass_start(struct usb_dev *dev) {
 			dev->iface_desc.b_interface_number, 0, NULL, 1000);
 	if (ret) {
 		log_error("Mass storage reset error\n\n");
-		return;
+		return -1;
 	}
 
 	usleep(100000);
@@ -139,15 +139,17 @@ static void usb_mass_start(struct usb_dev *dev) {
 			dev->iface_desc.b_interface_number, 1, &mass->maxlun, 1000);
 	if (ret) {
 		log_error("Mass storage conftrol error\n\n");
-		return;
+		return -1;
 	}
 	log_debug("mass(blkin = %d, blkout = %d, maxlun=%d)", mass->blkin, mass->blkout, mass->maxlun);
 
-	scsi_dev_attached(&mass->scsi_dev);
+	return scsi_dev_attached(&mass->scsi_dev);
 }
 
 static int usb_ms_probe(struct usb_dev *dev) {
 	struct usb_mass *mass;
+
+	assert(dev);
 
 	mass = pool_alloc(&usb_mass_classes);
 	if (!mass) {
@@ -156,9 +158,7 @@ static int usb_ms_probe(struct usb_dev *dev) {
 	mass->usb_dev = dev;
 	dev->driver_data = mass;
 
-	usb_mass_start(dev);
-
-	return 0;
+	return usb_mass_start(dev);
 }
 
 static void usb_ms_disconnect(struct usb_dev *dev, void *data) {
