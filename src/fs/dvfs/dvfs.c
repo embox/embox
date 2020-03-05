@@ -40,6 +40,8 @@ extern int dvfs_lookup(const char *path, struct lookup *lookup);
 int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	struct super_block *sb;
 	struct inode *new_inode;
+	struct dentry *d;
+	char *slash;
 	int res;
 
 	assert(lookup);
@@ -47,27 +49,39 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	assert(lookup->parent->flags & S_IFDIR);
 
 	sb = lookup->parent->d_sb;
-	lookup->item = dvfs_alloc_dentry();
-	if (!lookup->item) {
+	lookup->item = d = dvfs_alloc_dentry();
+	if (d == NULL) {
 		return -ENOMEM;
 	}
 
 	new_inode = dvfs_alloc_inode(sb);
 	if (!new_inode) {
-		dentry_ref_dec(lookup->item);
-		dvfs_destroy_dentry(lookup->item);
+		dentry_ref_dec(d);
+		dvfs_destroy_dentry(d);
 		return -ENOMEM;
 	}
-	dentry_fill(sb, new_inode, lookup->item, lookup->parent);
-	strncpy(lookup->item->name, name, DENTRY_NAME_LEN - 1);
-	inode_fill(sb, new_inode, lookup->item);
+	dentry_fill(sb, new_inode, d, lookup->parent);
 
-	lookup->item->flags |= flags;
+	while (*name == '/') {
+		name++;
+	}
+
+	strncpy(d->name, name, DENTRY_NAME_LEN - 1);
+
+	/* Remove possible trailing slashes */
+	slash = strchr(d->name, '/');
+	if (slash != NULL) {
+		*slash = '\0';
+	}
+
+	inode_fill(sb, new_inode, d);
+
+	d->flags |= flags;
 	new_inode->i_mode |= flags;
 	if (flags & VFS_DIR_VIRTUAL) {
 		res = 0;
-		lookup->item->d_sb = NULL;
-		dentry_ref_inc(lookup->item);
+		d->d_sb = NULL;
+		dentry_ref_inc(d);
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	} else {
 		if (!sb->sb_iops->create) {
@@ -90,8 +104,8 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 	}
 
 	if (res) {
-		dentry_ref_dec(lookup->item);
-		dvfs_destroy_dentry(lookup->item);
+		dentry_ref_dec(d);
+		dvfs_destroy_dentry(d);
 	}
 
 	return res;
@@ -181,13 +195,13 @@ int dvfs_remove(const char *path) {
 	if (!i_no->i_ops->remove)
 		return -EPERM;
 
+	if (lookup.item->usage_count > 0) {
+		return -EBUSY;
+	}
+
 	res = i_no->i_ops->remove(i_no);
 
 	if (res == 0) {
-		if (lookup.item->usage_count > 0) {
-			return -EBUSY;
-		}
-
 		res = dvfs_destroy_dentry(lookup.item);
 		if (res != 0) {
 			log_error("Failed to destroy dentry");
