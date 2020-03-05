@@ -60,7 +60,7 @@ struct utmp {
 	int32_t ut_addr_v6[4];        /* Internet address of remote
 					host; IPv4 address uses
 					just ut_addr_v6[0] */
-	char __unused[20];            /* Reserved for future use */
+	//char __unused[20];            /* Reserved for future use */
 };
 
 struct lastlog {
