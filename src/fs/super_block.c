@@ -63,7 +63,11 @@ int super_block_free(struct super_block *sb) {
 		ret = sb->fs_drv->clean_sb(sb);
 	}
 
-	node_free(sb->sb_root);
+	if (sb->sb_root) {
+		/* Mount root should be generally
+		 * freed on umount */
+		node_free(sb->sb_root);
+	}
 
 	pool_free(&super_block_pool, sb);
 
