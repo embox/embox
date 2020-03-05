@@ -58,7 +58,7 @@ int mkdir(const char *pathname, mode_t mode) {
 int remove(const char *pathname) {
 	int ret = dvfs_remove(pathname);
 	if (ret != 0) {
-		return SET_ERRNO(-res);
+		return SET_ERRNO(-ret);
 	}
 
 	return 0;
