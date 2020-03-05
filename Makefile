@@ -34,5 +34,11 @@ export PS1 :=
 
 .PHONY : $(sort all $(MAKECMDGOALS))
 $(sort all $(MAKECMDGOALS)) :
+
+# To account for upper limit on stack size in Mac OS X
+ifneq ($(shell uname -s), Darwin) 
 	@ulimit -s 65536 && $(MAKE) -C $(dir $(lastword $(MAKEFILE_LIST))) -f mk/main.mk $@
+else
+	@ulimit -s $(shell ulimit -Hs) && $(MAKE) -C $(dir $(lastword $(MAKEFILE_LIST))) -f mk/main.mk $@
+endif
 
