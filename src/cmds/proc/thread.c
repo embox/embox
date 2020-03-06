@@ -38,7 +38,7 @@ static void print_stat(void) {
 	{
 		task_foreach(task) {
 			task_foreach_thread(t, task) {
-				printf(" %4d %4d/%-11s %8d %c %c %c %c %9lds %9lu\n",
+				printf(" %4d %4d/%-11s %8d %c %c %c %c %9lds %9zu\n",
 					t->id, task_get_id(t->task),
 					task_get_name(t->task),
 					schedee_priority_get(&t->schedee),
