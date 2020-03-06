@@ -2,10 +2,10 @@ TEST_CASE {Embox should ping host} {
 	global host_ip
 
 	send "ping -c 4 $host_ip\r"
-	test_expect_strings "0 errors"
+	test_expect_strings "4 packets transmitted, 4 received, \\+0 errors, 0% packet loss"
 }
 
 TEST_CASE {Embox should ping google.com} {
 	send "ping -c 4 google.com\r"
-	test_expect_strings "0 errors"
+	test_expect_strings "4 packets transmitted, 4 received, \\+0 errors, 0% packet loss"
 }
