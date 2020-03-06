@@ -1,0 +1,13 @@
+package embox.driver.clock
+
+module epit extends embox.arch.clock {
+	source "epit.c"
+
+	option number base_addr=0x20d0000
+	option number irq_nr=88
+	option number freq=1000 /* Hz */
+
+	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.time.timer_handler
+	depends embox.driver.interrupt.irqctrl_api
+}
