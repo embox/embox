@@ -17,6 +17,8 @@ module locore extends embox.arch.locore {
 module interrupt extends embox.arch.interrupt {
 	source "interrupt.c", "ipl_impl.c", "ipl_impl.h"
 	depends embox.kernel.irq
+
+	option number plic_addr=0x0C000000
 }
 
 module entry extends embox.arch.entry {

@@ -182,7 +182,7 @@ guess_machine() {
 			echo "-M leon3_generic -cpu LEON3"
 			;;
 		riscv)
-			echo "-M virt"
+			echo "-M sifive_u"
 			;;
 		riscv64)
 			echo "-M virt"
@@ -222,6 +222,7 @@ NIC2QEMU=(
 	[fec]="imx.enet"
 	[dwc_gmac]="dwgmac"
 	[usbnet]="usb-net"
+	[cadence_gem]="cadence_gem"
 )
 
 IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
