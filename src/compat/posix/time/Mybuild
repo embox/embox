@@ -1,0 +1,5 @@
+package embox.compat.posix.time
+
+module strptime {
+	source "strptime.c"
+}
