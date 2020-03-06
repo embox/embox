@@ -55,6 +55,11 @@ _start:
 
 	# set up stack pointer based on hartid
 	csrr    t0, mhartid
+
+	/* Stub. If there is more than one hart, we infinity loop all of them but
+	 * one with ID = 0 */
+	bne     t0, zero, die
+
 	slli    t0, t0, STACK_SHIFT
 	la      sp, stacks + STACK_SIZE
 	add     sp, sp, t0
@@ -73,6 +78,9 @@ _start:
 
 	j       kernel_start  # jump kernel
 .cfi_endproc
+
+die:
+	j die
 
 park:   # infinite wait for interrupts
 	wfi
