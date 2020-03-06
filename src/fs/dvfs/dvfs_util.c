@@ -14,6 +14,7 @@
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
+#include <util/log.h>
 
 #define SUPERBLOCK_POOL_SIZE OPTION_GET(NUMBER, superblock_pool_size)
 #define INODE_POOL_SIZE OPTION_GET(NUMBER, inode_pool_size)
@@ -202,7 +203,6 @@ struct dentry *dvfs_alloc_dentry(void) {
 	}
 
 	memset(dentry, 0, sizeof(struct dentry));
-	dentry_ref_inc(dentry);
 
 	dlist_head_init(&dentry->d_lnk);
 	dlist_add_next(&dentry->d_lnk, &dentry_dlist);
@@ -216,6 +216,7 @@ extern int dvfs_cache_del(struct dentry *dentry);
  * @brief Remove dentry from pool
  */
 int dvfs_destroy_dentry(struct dentry *dentry) {
+	log_debug("destroy %p", dentry);
 	assert(dentry->usage_count >= 0);
 	if (dentry->usage_count == 0) {
 		if (dentry->d_inode) {
@@ -312,7 +313,6 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 	dentry->d_inode     = inode;
 	dentry->d_sb        = sb;
 	dentry->parent      = parent;
-	dentry->usage_count = 1;
 
 	if (inode) {
 		inode->i_dentry = dentry;
@@ -330,10 +330,16 @@ int dentry_fill(struct super_block *sb, struct inode *inode,
 
 int dentry_ref_inc(struct dentry *dentry) {
 	assert(dentry);
+	log_debug("dentry inc %p %s (%d->%d)",
+			dentry, dentry->name, dentry->usage_count,
+			dentry->usage_count + 1);
 	return ++dentry->usage_count;
 }
 
 int dentry_ref_dec(struct dentry *dentry) {
+	log_debug("dentry dec %p %s (%d->%d)",
+			dentry, dentry->name, dentry->usage_count,
+			dentry->usage_count - 1);
 	assert(dentry);
 	assert(dentry->usage_count > 0);
 	return --dentry->usage_count;
@@ -348,8 +354,10 @@ extern struct super_block *rootfs_sb(void);
 int dvfs_update_root(void) {
 	struct super_block *sb;
 	struct inode *inode;
-	if (global_root == NULL)
+	if (global_root == NULL) {
 		global_root = dvfs_alloc_dentry();
+		dentry_ref_inc(global_root);
+	}
 
 	assert(global_root);
 
@@ -409,8 +417,9 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 			continue;
 		d = mcast_out(l, struct dentry, children_lnk);
 
-		if (!strcmp(d->name, name))
+		if (!strcmp(d->name, name)) {
 			return d;
+		}
 	}
 
 	return NULL;
@@ -431,10 +440,6 @@ int super_block_free(struct super_block *sb) {
 
 	if (sb->fs_drv->clean_sb) {
 		err = sb->fs_drv->clean_sb(sb);
-	}
-
-	if (sb->sb_root) {
-		dvfs_destroy_inode(sb->sb_root);
 	}
 
 	pool_free(&superblock_pool, sb);
@@ -466,7 +471,6 @@ int dentry_reconnect(struct dentry *parent, const char *name) {
 		if (dentry->parent == parent && !strcmp(dentry->name, name)) {
 			dlist_head_init(&dentry->children_lnk);
 			dlist_add_prev(&dentry->children_lnk, &parent->children);
-			dentry_ref_inc(parent);
 		}
 	}
 	return 0;
