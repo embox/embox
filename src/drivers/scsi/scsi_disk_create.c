@@ -23,27 +23,6 @@ INDEX_DEF(scsi_disk_idx, 0, 26);
 
 extern const struct block_dev_driver bdev_driver_scsi;
 
-
-static void scsi_user_input(struct scsi_dev *dev, int res) {
-	log_debug("res = %d", res);
-	if (res) {
-		scsi_dev_recover(dev);
-		return;
-	}
-
-	scsi_dev_wake(dev, 1);
-}
-
-static void scsi_user_enter(struct scsi_dev *dev) {
-	mutex_init(&dev->m);
-	waitq_init(&dev->wq);
-}
-
-static const struct scsi_dev_state scsi_state_user = {
-	.sds_enter = scsi_user_enter,
-	.sds_input = scsi_user_input,
-};
-
 static void *scsi_create_thread(void *arg) {
 	struct block_dev *bdev;
 	struct scsi_dev *sdev;
@@ -51,6 +30,8 @@ static void *scsi_create_thread(void *arg) {
 
 	assert(arg);
 	sdev = arg;
+
+	mutex_init(&sdev->m);
 
 	strcpy(path, "/dev/sd*");
 
@@ -72,14 +53,10 @@ static void *scsi_create_thread(void *arg) {
 }
 
 void scsi_disk_found(struct scsi_dev *sdev) {
-	scsi_state_transit(sdev, &scsi_state_user);
 	scsi_create_thread(sdev);
 }
 
 void scsi_disk_lost(struct scsi_dev *sdev) {
-
-	scsi_dev_wake(sdev, -ENODEV);
-
 	if (!sdev->use_count) {
 		scsi_disk_bdev_try_unbind(sdev);
 	}
@@ -92,9 +69,3 @@ void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev) {
 		block_dev_destroy(sdev->bdev);
 	}
 }
-
-void scsi_dev_wake(struct scsi_dev *dev, int res) {
-	dev->cmd_complete = res;
-	waitq_wakeup_all(&dev->wq);
-}
-
