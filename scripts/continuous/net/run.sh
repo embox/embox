@@ -130,6 +130,9 @@ tap_down() {
 	sudo /sbin/ip tuntap del mode tap tap0
 }
 
+sudo /etc/init.d/ntp restart
+sudo inetd
+
 # FIXME The block can be removed, See discussion to #1703
 cp index.html conf/rootfs/index.html
 make >/dev/null 2>/dev/null
