@@ -68,8 +68,19 @@ sudo_var_pass() {
 	fi
 }
 
+run_check() {
+	awk '
+		/^run: success auto poweroff/ || /embox>/ || /[a-z]+@embox/ { s = 1 }
+		/fail/ || /assert/ { f = 1 }
+		END { exit !(f || s) ? 2 : f || !s }
+	' $OUTPUT_FILE
+}
+
 sim_bg=
 run_bg() {
+	rm -f $OUTPUT_FILE
+	touch $OUTPUT_FILE
+
 	declare -A atml2sim
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
@@ -93,25 +104,14 @@ run_bg() {
 		USERMODE_START_OUTPUT="$USERMODE_START_OUTPUT" \
 		$run_cmd &
 	sim_bg=$!
-}
 
-run_check() {
-
-	sudo chmod 666 $OUTPUT_FILE
-
-	ret=1
-	for success_pattern in '^run: success auto poweroff' 'embox>' '[a-z]\+@embox'; do
-		if grep "$success_pattern" $OUTPUT_FILE &>/dev/null ; then
-			ret=0
-		fi
-	done
-	for fail_pattern in "fail" "assert"; do
-		if grep "$fail_pattern" $OUTPUT_FILE &>/dev/null ; then
-			ret=1
-		fi
-	done
-
-	return $ret
+	export OUTPUT_FILE
+	export -f run_check
+	timeout $TIMEOUT bash -c '
+			while run_check; [ $? == 2 ]; do
+				sleep 1
+			done' && \
+		sleep 5 # let things to settle down
 }
 
 kill_bg() {
@@ -129,24 +129,11 @@ kill_bg() {
 	restore_conf
 }
 
-## FIXME not working
-#wait_bg() {
-#	timeout -s 9 $TIMEOUT wait $sim_bg #wait is builtin, so can't be used as timeout arg
-#	if [ 124 -eq $? ]; then
-#		kill_bg
-#	fi
-#}
-
-wait_bg() {
-	sleep $TIMEOUT
-	kill_bg
-}
-
 default_run() {
 
 	run_bg
 
-	wait_bg
+	kill_bg
 
 	run_check
 	ret=$?
@@ -160,8 +147,6 @@ run_bg_wrapper() {
 	check_if_started=$1
 
 	run_bg
-
-	sleep $TIMEOUT
 
 	ret=0
 	if [ "$check_if_started" = true ]; then
