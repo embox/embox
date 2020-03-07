@@ -6,7 +6,7 @@ namespace import autotest::*
 
 TEST_SUITE_SETUP
 
-TEST_CASE_TARGET {Embox should ping host} {
+TEST_CASE_TARGET {Embox should ping host by IP} {
 	variable host_ip
 
 	send "ping -c 4 $host_ip\r"
@@ -15,10 +15,16 @@ TEST_CASE_TARGET {Embox should ping host} {
 	return 0
 }
 
-TEST_CASE_TARGET {Embox should ping google.com} {
-	variable host_ip
+TEST_CASE_TARGET {Embox should ping peer host by IP} {
+	send "ping -c 4 $::env(PEER_HOST_IP)\r"
+	test_assert_regexp_equal "4 packets transmitted, 4 received, \\+0 errors, 0% packet loss"
 
-	send "ping -c 4 google.com\r"
+	return 0
+}
+
+
+TEST_CASE_TARGET {Embox should ping by DNS name} {
+	send "ping -c 4 $::env(PEER_HOST_IP).xip.io\r"
 	test_assert_regexp_equal "4 packets transmitted, 4 received, \\+0 errors, 0% packet loss"
 
 	return 0

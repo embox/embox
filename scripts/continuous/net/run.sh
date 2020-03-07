@@ -13,7 +13,8 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
-HOST_DNS_IP=10.0.0.11
+
+export PEER_HOST_IP=192.168.128.128 # also hardcoded into x86/test/net start_script
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
 
@@ -109,9 +110,22 @@ tap_up() {
 	fi
 
 	sudo service isc-dhcp-server start
+
+	PTTAP=tap78
+	sudo ip tuntap add dev $PTTAP mode tap
+	sudo ip link set   dev $PTTAP address aa:bb:cc:dd:ef:01
+	sudo ip link set   dev $PTTAP up
+	sudo ip addr flush dev $PTTAP
+	sudo ip addr add   dev $PTTAP 192.168.128.1/24
+	sudo ip addr add   dev $PTTAP fe80::192:168:128:1/64
+
+	export EMBOX_USERMODE_TAP_NAME=$PTTAP
+	./ping-target &
 }
 
 tap_down() {
+	pkill ping-target
+	sudo /sbin/ip tuntap del mode tap $PTTAP
 	sudo service isc-dhcp-server stop
 	sudo /sbin/ip tuntap del mode tap tap0
 }

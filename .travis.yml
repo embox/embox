@@ -55,6 +55,7 @@ before_script:
 script:
   - set -e # make this script fail as soon as any individual command fail
   - . ./scripts/docker/docker_rc.sh
+  - run dr ./scripts/continuous/prepare.sh "$TEMPLATE"
   - dr make confload-"$TEMPLATE"
   - run dr ./scripts/continuous/build.sh
   - run dr ./scripts/continuous/run.sh "$TEMPLATE"
