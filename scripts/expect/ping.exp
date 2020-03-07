@@ -10,7 +10,7 @@ TEST_CASE_TARGET {Embox should ping host} {
 	variable host_ip
 
 	send "ping -c 4 $host_ip\r"
-	test_assert_regexp_equal "0 errors"
+	test_assert_regexp_equal "4 packets transmitted, 4 received, \\+0 errors, 0% packet loss"
 
 	return 0
 }
@@ -19,7 +19,7 @@ TEST_CASE_TARGET {Embox should ping google.com} {
 	variable host_ip
 
 	send "ping -c 4 google.com\r"
-	test_assert_regexp_equal "0 errors"
+	test_assert_regexp_equal "4 packets transmitted, 4 received, \\+0 errors, 0% packet loss"
 
 	return 0
 }
