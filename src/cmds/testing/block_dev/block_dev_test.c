@@ -65,7 +65,7 @@ static struct flash_dev *get_flash_dev(struct block_dev *bdev) {
 	return NULL;
 }
 
-static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_blocks) {
+static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_blocks, uint32_t m_blocks) {
 #define FLASH_RW_LEN 256
 	int offset;
 	uint8_t rbuf[FLASH_RW_LEN];
@@ -89,24 +89,27 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 	}
 
 	/* Iterate over all flash blocks */
-	for (uint32_t i = s_block; i < blocks; i++) {
-		flash_erase(fdev, i);
+	for (uint32_t i = s_block; i < blocks; i += m_blocks) {
 
-		offset = i * fdev->block_info[0].block_size;
+		for(uint32_t k = i; k < min(blocks, i + m_blocks); k++) {
+			flash_erase(fdev, k);
 
-		/* Write, then read back and check result */
-		for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
-			/* Clean rbuf first */
-			memset(rbuf, 0x0, FLASH_RW_LEN);
-			flash_write(fdev, offset, wbuf, FLASH_RW_LEN);
-			flash_read(fdev, offset, rbuf, FLASH_RW_LEN);
-			if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
-				printf("Flash device test failed:\n");
-				printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
-					fdev->bdev->name, i, j);
-				return -1;
+			offset = k * fdev->block_info[0].block_size;
+
+			/* Write, then read back and check result */
+			for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
+				/* Clean rbuf first */
+				memset(rbuf, 0x0, FLASH_RW_LEN);
+				flash_write(fdev, offset, wbuf, FLASH_RW_LEN);
+				flash_read(fdev, offset, rbuf, FLASH_RW_LEN);
+				if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
+					printf("Flash device test failed:\n");
+					printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
+					       fdev->bdev->name, k, j);
+					return -1;
+				}
+				offset += FLASH_RW_LEN;
 			}
-			offset += FLASH_RW_LEN;
 		}
 	}
 	return 0;
@@ -152,7 +155,7 @@ static void dump_buf(int8_t *buf, size_t cnt, char *fmt) {
 	printf("============================\n");
 }
 
-static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks, int m_blocks) {
+static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks, uint64_t m_blocks) {
 	size_t blk_sz;
 	int8_t *read_buf, *write_buf;
 	uint64_t blocks, total_blocks;
@@ -197,6 +200,17 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 	for (uint64_t i = s_block; i < blocks; i += m_blocks) {
 		printf("Testing %"PRIu64" (of %"PRIu64")\n", i, total_blocks);
 
+		int out_of_range = 0;
+		/**
+		 * When writing multiple blocks, if the block we are supposed
+		 * to write is outside the block range, then write only till
+		 * the block range and ignore the rest
+		 */
+		if (i + m_blocks >= blocks) {
+			m_blocks = blocks - i - 1;
+			out_of_range = 1;
+		}
+
 		fill_buffer(write_buf, blk_sz * m_blocks);
 
 		size_t data_sz = blk_sz * m_blocks;
@@ -230,6 +244,10 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 			dump_buf(read_buf, data_sz, "Read buffer");
 			goto free_buf;
 		}
+
+		if (out_of_range) {
+			break;
+		}
 	}
 
 free_buf:
@@ -239,12 +257,12 @@ free_buf:
 	return err;
 }
 
-static int dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks, int m_blocks) {
+static int dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks, uint64_t m_blocks) {
 	struct flash_dev *fdev;
 
 	fdev = get_flash_dev(bdev);
 	if (fdev) {
-		return flash_dev_test(fdev, s_block, n_blocks);
+		return flash_dev_test(fdev, s_block, n_blocks, m_blocks);
 	} else {
 		return block_dev_test(bdev, s_block, n_blocks, m_blocks);
 	}
@@ -487,8 +505,8 @@ free_buf:
 
 int main(int argc, char **argv) {
 	int opt;
-	int i, iters = 1, test_partitions = 0, n_blocks_flag = 0, m_blocks_flag = 0, m_blocks = 1;
-	uint64_t s_block = 0, n_blocks = 0;
+	int i, iters = 1, test_partitions = 0, n_blocks_flag = 0, m_blocks_flag = 0;
+	uint64_t s_block = 0, n_blocks = 0, m_blocks = 1;
 	struct block_dev *bdev;
 
 	if (argc < 2) {
