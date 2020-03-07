@@ -93,10 +93,6 @@ test_end() {
 	fi
 }
 
-determ_dns() {
-	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1 | sed 's/\(127\..\..\..\|localhost\)/$HOST_DNS_IP/'
-}
-
 tap_up() {
 	sudo /sbin/ip tuntap add mode tap tap0
 	sudo /sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
@@ -120,7 +116,7 @@ tap_down() {
 	sudo /sbin/ip tuntap del mode tap tap0
 }
 
-sed -i "s/CONTINIOUS_RUN_DNS_SERVER/$(determ_dns)/" conf/mods.config
+# FIXME The block can be removed, See discussion to #1703
 cp index.html conf/rootfs/index.html
 make >/dev/null 2>/dev/null
 
