@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - run: make confload-test/buildgen
-      - run: make buildgen
+      - run: make -j $(nproc) buildgen
       - name: compress
         run: |
           mkdir mk-cache
@@ -60,5 +60,5 @@ jobs:
         if: matrix.template == 'x86/test/fs'
       - run: ./scripts/continuous/prepare.sh ${{matrix.template}}
       - run: make confload-${{matrix.template}}
-      - run: make
+      - run: make -j $(nproc)
       - run: ./scripts/continuous/run.sh ${{matrix.template}}
