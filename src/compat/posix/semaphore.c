@@ -42,3 +42,7 @@ int sem_wait(sem_t *sem) {
 
 	return ENOERR;
 }
+
+int sem_timedwait(sem_t *sem, const struct timespec *ts) {
+	return semaphore_timedwait(sem, ts);
+}
