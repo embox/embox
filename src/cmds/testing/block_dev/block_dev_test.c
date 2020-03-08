@@ -213,35 +213,23 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 
 		fill_buffer(write_buf, blk_sz * m_blocks);
 
-		size_t data_sz = blk_sz * m_blocks;
-
-		/**
-		 * When writing multiple blocks, if the data we are supposed to
-		 * write, exceeds the device size, then we write till the device
-		 * size is full and ignore the rest.
-		 */
-		if(data_sz + (i * blk_sz) > bdev->size) {
-			uint64_t diff_size = (data_sz + (i * blk_sz)) - bdev->size;
-			data_sz -= diff_size;
-		}
-
-		err = block_dev_write(bdev, (void *) write_buf, data_sz, i);
+		err = block_dev_write(bdev, (void *) write_buf, blk_sz * m_blocks, i);
 		if (err < 0) {
 			printf("Failed to write block #%"PRIu64"\n", i);
 			goto free_buf;
 		}
 
-		err = block_dev_read(bdev, (void *) read_buf, data_sz, i);
+		err = block_dev_read(bdev, (void *) read_buf, blk_sz * m_blocks, i);
 		if (err < 0) {
 			printf("Failed to read block #%"PRIu64"\n", i);
 			goto free_buf;
 		}
 
-		err = memcmp(read_buf, write_buf, data_sz);
+		err = memcmp(read_buf, write_buf, blk_sz * m_blocks);
 		if (err != 0) {
 			printf("Write/read mismatch!\n");
-			dump_buf(write_buf, data_sz, "Write buffer");
-			dump_buf(read_buf, data_sz, "Read buffer");
+			dump_buf(write_buf, blk_sz * m_blocks, "Write buffer");
+			dump_buf(read_buf, blk_sz * m_blocks, "Read buffer");
 			goto free_buf;
 		}
 
