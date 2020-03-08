@@ -21,14 +21,14 @@
 #define PL031_IRQ       OPTION_GET(NUMBER, irq_nr)
 #define PL031_TARGET_HZ 1
 
-#define PL031_DR   (PL031_BASE + 0x00)
-#define PL031_MR   (PL031_BASE + 0x04)
-#define PL031_LR   (PL031_BASE + 0x08)
-#define PL031_CR   (PL031_BASE + 0x0C)
-#define PL031_IMSC (PL031_BASE + 0x10)
-#define PL031_RIS  (PL031_BASE + 0x14)
-#define PL031_MIS  (PL031_BASE + 0x18)
-#define PL031_ICR  (PL031_BASE + 0x1C)
+#define PL031_DR   (PL031_BASE + 0x00) /* Data register */
+#define PL031_MR   (PL031_BASE + 0x04) /* Match register */ 
+#define PL031_LR   (PL031_BASE + 0x08) /* Load register */
+#define PL031_CR   (PL031_BASE + 0x0C) /* Control register */
+#define PL031_IMSC (PL031_BASE + 0x10) /* Interrupt Mask Set or Clear register */
+#define PL031_RIS  (PL031_BASE + 0x14) /* Raw Interrupt Status register */
+#define PL031_MIS  (PL031_BASE + 0x18) /* Masked Interrupt Status register */
+#define PL031_ICR  (PL031_BASE + 0x1C) /* Interrupt Clear register */
 
 #define PL031_CR_START     (1 << 0)
 #define PL031_IMSC_EN      (1 << 0)
@@ -38,7 +38,7 @@ static struct clock_source pl031_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(irq_nr, data);
 
-	REG32_STORE(PL031_ICR, PL031_ICR_CLEAR);
+	REG32_STORE(PL031_ICR, PL031_ICR_CLEAR); /* Clear interrupt */
 	REG32_STORE(PL031_LR, 0x0);
 	return IRQ_HANDLED;
 }
@@ -57,7 +57,7 @@ static int pl031_config(struct time_dev_conf * conf) {
 	REG32_STORE(PL031_LR, 0x0);
 
 	REG32_STORE(PL031_MR, 0x1);
-	REG32_STORE(PL031_CR, PL031_CR_START);
+	REG32_STORE(PL031_CR, PL031_CR_START);  /* Enable counter */
 	REG32_STORE(PL031_IMSC, PL031_IMSC_EN); /* Enable IRQ */
 	return 0;
 }
@@ -86,6 +86,6 @@ static struct clock_source pl031_clock_source = {
 
 EMBOX_UNIT_INIT(pl031_init);
 
-STATIC_IRQ_ATTACH(PL031_IRQ, clock_handler, &imx6_clock_source);
+STATIC_IRQ_ATTACH(PL031_IRQ, clock_handler, &pl031_clock_source);
 
-PERIPH_MEMORY_DEFINE(pl031_mem, PL031_BASE, 0x20);
+PERIPH_MEMORY_DEFINE(pl031, PL031_BASE, 0x20);
