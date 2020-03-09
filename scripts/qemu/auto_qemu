@@ -372,7 +372,13 @@ if [ $graphic_n -gt 0 ]; then
 
 fi
 
-ARG_LINE="$sudo $QEMU $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $usb_lines $@"
+RUNAS=""
+# Don't try to drop privileges for root user; qemu fails otherwise
+if [[ `id -u` -ne 0 ]] ; then
+	RUNAS="-runas `whoami`"
+fi
+
+ARG_LINE="$sudo $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $usb_lines $@"
 
 info "$ARG_LINE"
 $ARG_LINE
