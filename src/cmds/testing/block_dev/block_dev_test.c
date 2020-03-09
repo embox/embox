@@ -20,8 +20,6 @@
 #include <util/math.h>
 #include <util/pretty_print.h>
 
-#define DEFAULT_MULTIPLE_BLOCKS_NUMBER 4
-
 static void print_help(void) {
 	printf("Usage: block_dev_test [-hl] [-i iters] [-s block_num] [-n block_count] <block device name>\n");
 	printf("\t-l\t\t\t\t: Print all available block and flash devices\n");
@@ -491,9 +489,17 @@ free_buf:
 	return err;
 }
 
+static int is_valid_argument(char *endptr, char *str) {
+	if (endptr == NULL || *endptr != '\0') {
+		printf("Invalid %s argument\n", str);
+		exit(1);
+	}
+	return 0;
+}
+
 int main(int argc, char **argv) {
-	int opt;
-	int i, iters = 1, test_partitions = 0, n_blocks_flag = 0, m_blocks_flag = 0;
+	char *endptr = NULL;
+	int i, opt, iters = 1, test_partitions = 0, n_blocks_flag = 0, m_blocks_flag = 0;
 	uint64_t s_block = 0, n_blocks = 0, m_blocks = 1;
 	struct block_dev *bdev;
 
@@ -511,17 +517,21 @@ int main(int argc, char **argv) {
 				print_block_devs();
 				return 0;
 			case 'i':
-				iters = strtol(optarg, NULL, 0);
+				iters = strtol(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<iters>");
 				break;
 		        case 's':
-				s_block = strtoll(optarg, NULL, 0);
+				s_block = strtoll(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<block_num>");
 				break;
 		        case 'n':
-				n_blocks = strtoll(optarg, NULL, 0);
+				n_blocks = strtoll(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<block_count>");
 				n_blocks_flag = 1;
 				break;
 		        case 'm':
-				m_blocks = strtoll(optarg, NULL, 0);
+				m_blocks = strtoll(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<multiple_block_count>");
 				m_blocks_flag = 1;
 				break;
 			case 'h':
@@ -532,11 +542,9 @@ int main(int argc, char **argv) {
 	}
 
 	if (m_blocks_flag) {
-		if (m_blocks < 0) {
-			printf("Multiple blocks count argument value should be greater than zero\n");
+		if (!m_blocks) {
+			printf("Multiple blocks count argument value is not provided\n");
 			return -EINVAL;
-		} else if (!m_blocks) {
-			m_blocks = DEFAULT_MULTIPLE_BLOCKS_NUMBER;
 		}
 	}
 
