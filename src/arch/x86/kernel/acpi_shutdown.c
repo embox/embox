@@ -16,7 +16,7 @@ void acpi_shutdown(void) {
 	status = AcpiEnterSleepStatePrep(ACPI_STATE_S5);
 	if (ACPI_FAILURE(status)) {
 		printk("ERROR: Unable to prepare to enter the soft off system state\n");
-		break;
+		return;
 	}
 
 	status = AcpiEnterSleepState(ACPI_STATE_S5);
