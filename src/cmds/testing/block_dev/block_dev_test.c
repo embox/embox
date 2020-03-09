@@ -22,10 +22,11 @@
 
 static void print_help(void) {
 	printf("Usage: block_dev_test [-hl] [-i iters] [-s block_num] [-n block_count] <block device name>\n");
-	printf("\t-l\t\t\t: Print all available block and flash devices\n");
-	printf("\t-i <iters>\t\t: Execute <iters> itertions of read/write\n");
-	printf("\t-s <block_num>\t\t: <block_num> block number at which command should start at\n");
-	printf("\t-n <block_count>\t: <block_count> blocks to be tested\n");
+	printf("\t-l\t\t\t\t: Print all available block and flash devices\n");
+	printf("\t-i <iters>\t\t\t: Execute <iters> itertions of read/write\n");
+	printf("\t-s <block_num>\t\t\t: <block_num> block number at which command should start at\n");
+	printf("\t-n <block_count>\t\t: <block_count> blocks to be tested\n");
+	printf("\t-m <multiple_block_count>\t: read/write <multiple_block_count> blocks in a single iteration\n\t\t\t\t\t  if <multiple_block_count> is not specified, default is taken as 4.\n");
 }
 
 static void print_block_devs(void) {
@@ -62,7 +63,7 @@ static struct flash_dev *get_flash_dev(struct block_dev *bdev) {
 	return NULL;
 }
 
-static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_blocks) {
+static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_blocks, uint32_t m_blocks) {
 #define FLASH_RW_LEN 256
 	int offset;
 	uint8_t rbuf[FLASH_RW_LEN];
@@ -86,24 +87,27 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 	}
 
 	/* Iterate over all flash blocks */
-	for (uint32_t i = s_block; i < blocks; i++) {
-		flash_erase(fdev, i);
+	for (uint32_t i = s_block; i < blocks; i += m_blocks) {
 
-		offset = i * fdev->block_info[0].block_size;
+		for(uint32_t k = i; k < min(blocks, i + m_blocks); k++) {
+			flash_erase(fdev, k);
 
-		/* Write, then read back and check result */
-		for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
-			/* Clean rbuf first */
-			memset(rbuf, 0x0, FLASH_RW_LEN);
-			flash_write(fdev, offset, wbuf, FLASH_RW_LEN);
-			flash_read(fdev, offset, rbuf, FLASH_RW_LEN);
-			if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
-				printf("Flash device test failed:\n");
-				printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
-					fdev->bdev->name, i, j);
-				return -1;
+			offset = k * fdev->block_info[0].block_size;
+
+			/* Write, then read back and check result */
+			for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
+				/* Clean rbuf first */
+				memset(rbuf, 0x0, FLASH_RW_LEN);
+				flash_write(fdev, offset, wbuf, FLASH_RW_LEN);
+				flash_read(fdev, offset, rbuf, FLASH_RW_LEN);
+				if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
+					printf("Flash device test failed:\n");
+					printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
+					       fdev->bdev->name, k, j);
+					return -1;
+				}
+				offset += FLASH_RW_LEN;
 			}
-			offset += FLASH_RW_LEN;
 		}
 	}
 	return 0;
@@ -149,7 +153,7 @@ static void dump_buf(int8_t *buf, size_t cnt, char *fmt) {
 	printf("============================\n");
 }
 
-static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks) {
+static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks, uint64_t m_blocks) {
 	size_t blk_sz;
 	int8_t *read_buf, *write_buf;
 	uint64_t blocks, total_blocks;
@@ -169,8 +173,8 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 		blocks = total_blocks;
 	}
 
-	read_buf = malloc(blk_sz);
-	write_buf = malloc(blk_sz);
+	read_buf = malloc(blk_sz * m_blocks);
+	write_buf = malloc(blk_sz * m_blocks);
 
 	if (read_buf == NULL || write_buf == NULL) {
 		printf("Failed to allocate memory for buffer!\n");
@@ -191,29 +195,44 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 		return -1;
 	}
 
-	for (uint64_t i = s_block; i < blocks; i++) {
+	for (uint64_t i = s_block; i < blocks; i += m_blocks) {
 		printf("Testing %"PRIu64" (of %"PRIu64")\n", i, total_blocks);
 
-		fill_buffer(write_buf, blk_sz);
+		int out_of_range = 0;
+		/**
+		 * When writing multiple blocks, if the block we are supposed
+		 * to write is outside the block range, then write only till
+		 * the block range and ignore the rest
+		 */
+		if (i + m_blocks >= blocks) {
+			m_blocks = blocks - i - 1;
+			out_of_range = 1;
+		}
 
-		err = block_dev_write(bdev, (void *) write_buf, blk_sz, i);
+		fill_buffer(write_buf, blk_sz * m_blocks);
+
+		err = block_dev_write(bdev, (void *) write_buf, blk_sz * m_blocks, i);
 		if (err < 0) {
 			printf("Failed to write block #%"PRIu64"\n", i);
 			goto free_buf;
 		}
 
-		err = block_dev_read(bdev, (void *) read_buf, blk_sz, i);
+		err = block_dev_read(bdev, (void *) read_buf, blk_sz * m_blocks, i);
 		if (err < 0) {
 			printf("Failed to read block #%"PRIu64"\n", i);
 			goto free_buf;
 		}
 
-		err = memcmp(read_buf, write_buf, blk_sz);
+		err = memcmp(read_buf, write_buf, blk_sz * m_blocks);
 		if (err != 0) {
 			printf("Write/read mismatch!\n");
-			dump_buf(write_buf, blk_sz, "Write buffer");
-			dump_buf(read_buf, blk_sz, "Read buffer");
+			dump_buf(write_buf, blk_sz * m_blocks, "Write buffer");
+			dump_buf(read_buf, blk_sz * m_blocks, "Read buffer");
 			goto free_buf;
+		}
+
+		if (out_of_range) {
+			break;
 		}
 	}
 
@@ -224,14 +243,14 @@ free_buf:
 	return err;
 }
 
-static int dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks) {
+static int dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_blocks, uint64_t m_blocks) {
 	struct flash_dev *fdev;
 
 	fdev = get_flash_dev(bdev);
 	if (fdev) {
-		return flash_dev_test(fdev, s_block, n_blocks);
+		return flash_dev_test(fdev, s_block, n_blocks, m_blocks);
 	} else {
-		return block_dev_test(bdev, s_block, n_blocks);
+		return block_dev_test(bdev, s_block, n_blocks, m_blocks);
 	}
 }
 
@@ -470,10 +489,18 @@ free_buf:
 	return err;
 }
 
+static int is_valid_argument(char *endptr, char *str) {
+	if (endptr == NULL || *endptr != '\0') {
+		printf("Invalid %s argument\n", str);
+		exit(1);
+	}
+	return 0;
+}
+
 int main(int argc, char **argv) {
-	int opt;
-	int i, iters = 1, test_partitions = 0, n_blocks_flag = 0;
-	uint64_t s_block = 0, n_blocks = 0;
+	char *endptr = NULL;
+	int i, opt, iters = 1, test_partitions = 0, n_blocks_flag = 0, m_blocks_flag = 0;
+	uint64_t s_block = 0, n_blocks = 0, m_blocks = 1;
 	struct block_dev *bdev;
 
 	if (argc < 2) {
@@ -481,7 +508,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc, argv, "hpli:s:n:"))) {
+	while (-1 != (opt = getopt(argc, argv, "hpli:s:n:m:"))) {
 		switch (opt) {
 			case 'p':
 				test_partitions = 1;
@@ -490,19 +517,34 @@ int main(int argc, char **argv) {
 				print_block_devs();
 				return 0;
 			case 'i':
-				iters = strtol(optarg, NULL, 0);
+				iters = strtol(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<iters>");
 				break;
 		        case 's':
-				s_block = strtoll(optarg, NULL, 0);
+				s_block = strtoll(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<block_num>");
 				break;
 		        case 'n':
-				n_blocks = strtoll(optarg, NULL, 0);
+				n_blocks = strtoll(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<block_count>");
 				n_blocks_flag = 1;
+				break;
+		        case 'm':
+				m_blocks = strtoll(optarg, &endptr, 0);
+				is_valid_argument(endptr, "<multiple_block_count>");
+				m_blocks_flag = 1;
 				break;
 			case 'h':
 			default:
 				print_help();
 				return 0;
+		}
+	}
+
+	if (m_blocks_flag) {
+		if (!m_blocks) {
+			printf("Multiple blocks count argument value is not provided\n");
+			return -EINVAL;
 		}
 	}
 
@@ -526,7 +568,7 @@ int main(int argc, char **argv) {
 	printf("Starting block device test (iters = %d)...\n", iters);
 	for (i = 0; i < iters; i++) {
 		printf("iter %d...\n", i);
-		if (dev_test(bdev, s_block, n_blocks) < 0) {
+		if (dev_test(bdev, s_block, n_blocks, m_blocks) < 0) {
 			printf("FAILED\n");
 			return -1;
 		}
