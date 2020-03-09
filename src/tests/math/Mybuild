@@ -1,5 +1,13 @@
 package embox.test.math
 
+module math_test_fp {
+	source "math_test_fp.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
 module math_test {
 	source "math_test.c"
 
