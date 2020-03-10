@@ -135,9 +135,10 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 	cdevtab = get_cdev_tab();
 	bdevs = get_bdev_tab();
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
-		if(!bdevs[i]){
+		if (bdevs[i] == NULL) {
 			continue;
 		}
+
 		if (0 == strncmp(bdevs[i]->name, name, sizeof(bdevs[i]->name))) {
 			if (devfs_add_block(bdevs[i]->dev_module)) {
 				return NULL;
@@ -148,9 +149,10 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 
 	/* Dynamically allocated devices */
 	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
-		if(!cdevtab[i]){
+		if (cdevtab[i] == NULL) {
 			continue;
 		}
+
 		if (0 == strncmp(cdevtab[i]->name, name, sizeof(cdevtab[i]->name))) {
 			struct inode *inode;
 			if (devfs_add_char(cdevtab[i], &inode)) {
@@ -175,10 +177,12 @@ void devfs_notify_new_module(struct dev_module *devmod) {
 
 	bdevs = get_bdev_tab();
 
-	for (int i = 0; i < max_id; i++) {
-		if (bdevs[i] == priv) {
-			devfs_add_block(devmod);
-			return;
+	if (priv != NULL) {
+		for (int i = 0; i < max_id; i++) {
+			if (bdevs[i] == priv) {
+				devfs_add_block(devmod);
+				return;
+			}
 		}
 	}
 
