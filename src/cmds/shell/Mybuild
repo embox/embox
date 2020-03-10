@@ -1,7 +1,7 @@
 package embox.cmd.sh
 
 module shell_registry {
-	option number input_buff_sz = 80
+	option number input_buff_sz = 128
 	source "shell.c"
 
 	@IncludeExport(path="cmd")

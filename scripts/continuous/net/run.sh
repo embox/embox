@@ -13,7 +13,8 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
-HOST_DNS_IP=10.0.0.11
+
+export PEER_HOST_IP=192.168.128.128 # also hardcoded into x86/test/net start_script
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
 
@@ -93,10 +94,6 @@ test_end() {
 	fi
 }
 
-determ_dns() {
-	cat /etc/resolv.conf | sed -n 's/nameserver[\ \t]\+//p' | head -n 1 | sed 's/\(127\..\..\..\|localhost\)/$HOST_DNS_IP/'
-}
-
 tap_up() {
 	sudo /sbin/ip tuntap add mode tap tap0
 	sudo /sbin/ifconfig tap0 10.0.2.10 dstaddr 10.0.2.0 netmask 255.255.255.0 down
@@ -113,14 +110,30 @@ tap_up() {
 	fi
 
 	sudo service isc-dhcp-server start
+
+	PTTAP=tap78
+	sudo ip tuntap add dev $PTTAP mode tap
+	sudo ip link set   dev $PTTAP address aa:bb:cc:dd:ef:01
+	sudo ip link set   dev $PTTAP up
+	sudo ip addr flush dev $PTTAP
+	sudo ip addr add   dev $PTTAP 192.168.128.1/24
+	sudo ip addr add   dev $PTTAP fe80::192:168:128:1/64
+
+	export EMBOX_USERMODE_TAP_NAME=$PTTAP
+	./ping-target &
 }
 
 tap_down() {
+	pkill ping-target
+	sudo /sbin/ip tuntap del mode tap $PTTAP
 	sudo service isc-dhcp-server stop
 	sudo /sbin/ip tuntap del mode tap tap0
 }
 
-sed -i "s/CONTINIOUS_RUN_DNS_SERVER/$(determ_dns)/" conf/mods.config
+sudo /etc/init.d/ntp restart
+sudo inetd
+
+# FIXME The block can be removed, See discussion to #1703
 cp index.html conf/rootfs/index.html
 make >/dev/null 2>/dev/null
 
