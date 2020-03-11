@@ -21,4 +21,5 @@ module dwc_gmac {
 	depends embox.net.entry_api
 	depends embox.net.util.show_packet
 	@NoRuntime depends embox.driver.periph_memory_alloc
+	@NoRuntime depends embox.arch.mem_barriers
 }
