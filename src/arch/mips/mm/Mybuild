@@ -1,0 +1,9 @@
+package embox.arch.mips.mm
+
+module cache {
+	source "cache.c"
+}
+
+module mem_barriers extends embox.arch.mem_barriers {
+	source "mem_barriers.h"
+}
