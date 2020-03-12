@@ -12,7 +12,7 @@ module lib {
 
 @App
 @AutoCmd
-@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Build(stage=2,script="true")
 @BuildDepends(third_party.lkl.lib)
 @Cmd(name = "lkltest",
 	help = "Simple LKL test",
