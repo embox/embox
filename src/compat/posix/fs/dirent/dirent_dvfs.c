@@ -37,6 +37,7 @@ DIR *opendir(const char *path) {
 	}
 
 	if (!(d = pool_alloc(&dir_pool))) {
+		dentry_ref_dec(l.item);
 		SET_ERRNO(ENOMEM);
 		return NULL;
 	}
@@ -46,7 +47,6 @@ DIR *opendir(const char *path) {
 	};
 
 	fill_dirent(&d->dirent, l.item);
-	dentry_ref_inc(l.item);
 
 	return d;
 }

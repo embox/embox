@@ -9,7 +9,6 @@ abstract module initfs {
 module initfs_old extends initfs {
 	option number log_level = 1
 
-	option number dir_quantity=16
 	option number file_quantity=128
 
 	source "initfs_oldfs.c"
@@ -22,14 +21,10 @@ module initfs_old extends initfs {
 module initfs_dvfs extends initfs {
 	option number log_level = 1
 
-	option number dir_quantity=16
 	option number file_quantity=128
 
 	source "initfs_dvfs.c"
 	source "initfs_fops.c"
-
-	option number dir_quantity=16
-	option number file_quantity=128
 
 	depends embox.fs.dvfs.core
 }

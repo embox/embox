@@ -18,9 +18,11 @@ module devfs_old extends devfs {
 module devfs_dvfs extends devfs {
 	source "devfs_dvfs.c"
 	source "devfs_common.c"
+	source "devfs_notify_stub.c"
 
 	depends embox.driver.char_dev
 }
 
 module devfs_stub extends devfs {
+	source "devfs_notify_stub.c"
 }

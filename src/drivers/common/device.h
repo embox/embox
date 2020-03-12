@@ -46,4 +46,7 @@ extern struct dev_module *dev_module_create(
 
 extern int dev_module_destroy(struct dev_module *dev);
 
+/* Used only in old devfs to create node for new device */
+extern void devfs_notify_new_module(struct dev_module *devmod);
+
 #endif /* COMMON_DEVICE_H_ */

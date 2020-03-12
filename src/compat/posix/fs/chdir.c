@@ -43,10 +43,13 @@ int chdir(const char *path) {
 	}
 
 	if (!(l.item->flags & S_IFDIR)) {
+		dentry_ref_dec(l.item);
 		return SET_ERRNO(ENOTDIR);
 	}
 
 	dentry_full_path(l.item, new_pwd);
+
+	dentry_ref_dec(l.item);
 
 	if (-1 == setenv("PWD", new_pwd, 1)) {
 		SET_ERRNO(ENAMETOOLONG);

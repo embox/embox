@@ -51,11 +51,11 @@ int umount(char *dir) {
 	if ((err = dvfs_lookup(dir, &lu))) {
 		return err;
 	}
+	dentry_ref_dec(lu.item);
 
 	if (!(lu.item->flags & DVFS_MOUNT_POINT))
 		/* Not a mount point */
 		return -EINVAL;
 
-	dvfs_umount(lu.item);
-	return 0;
+	return dvfs_umount(lu.item);
 }

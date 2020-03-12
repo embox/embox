@@ -22,97 +22,6 @@
 
 #include "fat.h"
 
-/**
- * @brief Set appropriate flags and i_data for given inode
- *
- * @param inode Inode to be filled
- * @param di FAT directory entry related to file
- *
- * @return Negative error code or zero if succeed
- */
-static int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *di) {
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-	struct dirinfo *new_di;
-	struct volinfo *vi;
-	struct super_block *sb;
-	int res, tmp_sector, tmp_entry, tmp_cluster;
-
-	assert(de);
-	assert(inode);
-	assert(di);
-
-	sb = inode->i_sb;
-	assert(sb);
-
-	fsi = sb->sb_data;
-	assert(fsi);
-
-	vi = &fsi->vi;
-	assert(vi);
-
-	/* Need to save some dirinfo data because this
-	 * stuff may change while we traverse to the end
-	 * of long name entry */
-	tmp_sector = di->currentsector;
-	tmp_entry = di->currententry;
-	tmp_cluster = di->currentcluster;
-
-	while (de->attr == ATTR_LONG_NAME) {
-		res = fat_get_next(di, de);
-
-		if (res != DFS_OK && res != DFS_ALLOCNEW) {
-			return -EINVAL;
-		}
-	}
-
-	if (de->attr & ATTR_DIRECTORY){
-		if (NULL == (new_di = fat_dirinfo_alloc()))
-			goto err_out;
-
-		memset(new_di, 0, sizeof(struct dirinfo));
-		new_di->p_scratch = fat_sector_buff;
-		new_di->fi.mode = S_IFDIR;
-		inode->i_mode |= S_IFDIR;
-
-		new_di->currentcluster = fat_direntry_get_clus(de);
-
-		fi = &new_di->fi;
-	} else {
-		if (NULL == (fi = fat_file_alloc())) {
-			goto err_out;
-		}
-	}
-
-	inode->i_data = fi;
-
-	*fi = (struct fat_file_info) {
-		.fsi = fsi,
-		.volinfo = vi,
-	};
-
-	if (di->fi.dirsector == 0 && (vi->filesystem == FAT12 || vi->filesystem == FAT16)) {
-		fi->dirsector = tmp_sector + tmp_cluster * vi->secperclus;
-	} else {
-		fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
-	}
-
-	fi->diroffset    = tmp_entry - 1;
-	fi->cluster      = fat_direntry_get_clus(de);
-	fi->firstcluster = fi->cluster;
-	fi->filelen      = fat_direntry_get_size(de);
-	fi->fdi          = di;
-
-	inode->length    = fi->filelen;
-	if (de->attr & ATTR_READ_ONLY)
-		inode->i_mode |= S_IRALL;
-	else
-		inode->i_mode |= S_IRWXA;
-	return 0;
-err_out:
-	return -1;
-}
-
 /* @brief Figure out if node at specific path exists or not
  * @note  Assume dir is root
  * @note IMPORTANT: this functions should not be calls in the middle of iterate,
@@ -227,76 +136,6 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return fat_create_file(fi, di, name, mode);
 }
 
-/* @brief Get next inode in directory
- * @param inode   Structure to be filled
- * @param parent  Inode of parent directory
- * @param dir_ctx Directory context
- *
- * @return Error code
- */
-static int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	struct dirinfo *dirinfo;
-	struct fat_dirent de;
-	char path[PATH_MAX];
-	int res;
-
-	if (!parent)
-		strcpy(path, ROOT_DIR);
-
-	assert(parent->i_sb);
-
-	dirinfo = parent->i_data;
-	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
-
-	if (dirinfo->currententry == 0) {
-		/* Need to get directory data from drive */
-		fat_reset_dir(dirinfo);
-	}
-
-	read_dir_buf(dirinfo);
-
-	while (((res = fat_get_next_long(dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
-		if (de.attr & ATTR_VOLUME_ID) {
-			continue;
-		}
-
-		if (!memcmp(de.name, MSDOS_DOT, strlen(MSDOS_DOT)) ||
-			!memcmp(de.name, MSDOS_DOTDOT, strlen(MSDOS_DOT))) {
-			continue;
-		}
-
-		break;
-	}
-
-	switch (res) {
-	case DFS_OK:
-		fat_fill_inode(next, &de, dirinfo);
-		if (DFS_OK != fat_read_filename(next->i_data, fat_sector_buff, name)) {
-			return -1;
-		}
-		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
-		return 0;
-	case DFS_EOF:
-		/* Fall through */
-	default:
-		return -1;
-	}
-}
-
-static int fat_remove(struct inode *inode) {
-	struct fat_file_info *fi;
-	struct dirinfo *di;
-
-	if (S_ISDIR(inode->i_mode)) {
-		di = inode->i_data;
-		fi = &di->fi;
-	} else {
-		fi = inode->i_data;
-	}
-
-	return fat_unlike_file(fi, (uint8_t*) fat_sector_buff);
-}
-
 static int fat_truncate(struct inode *inode, size_t len) {
 	/* This is a stub, but files should be extended automatically
 	 * with the common part of the driver on write */
@@ -307,7 +146,7 @@ static int fat_truncate(struct inode *inode, size_t len) {
 struct inode_operations fat_iops = {
 	.create   = fat_create,
 	.lookup   = fat_ilookup,
-	.remove   = fat_remove,
+	.remove   = fat_delete,
 	.iterate  = fat_iterate,
 	.truncate = fat_truncate,
 };

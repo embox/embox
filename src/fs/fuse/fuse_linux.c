@@ -53,6 +53,7 @@ static int fuse_fill_dentry(struct super_block *sb, char *dest) {
 		dvfs_cache_del(lookup.item);
 
 		d = dvfs_alloc_dentry();
+		dentry_ref_inc(d);
 
 		dentry_fill(sb, NULL, d, lookup.parent);
 		strcpy(d->name, lookup.item->name);

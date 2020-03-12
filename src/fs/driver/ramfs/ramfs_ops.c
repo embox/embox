@@ -1,16 +1,21 @@
-#include <errno.h>
 #include <string.h>
 
 #include <drivers/block_dev.h>
 #include <fs/file_desc.h>
+#include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/mount.h>
 #include <fs/super_block.h>
-#include <mem/phymem.h> /* PAGE_SIZE() */
 #include <mem/misc/pool.h>
+#include <mem/page.h>
+#include <util/indexator.h>
 #include <util/math.h>
 
 #include "ramfs.h"
+
+struct ramfs_file_info ramfs_files[RAMFS_FILES];
+
+INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
 static char sector_buff[PAGE_SIZE()];/* TODO */
 
@@ -185,3 +190,64 @@ struct file_operations ramfs_fops = {
 	.write = ramfs_write,
 	.read = ramfs_read,
 };
+
+int ramfs_format(struct block_dev *bdev, void *priv) {
+	if (NULL == bdev) {
+		return -ENODEV;
+	}
+
+	if (MAX_FILE_SIZE > bdev->size) {
+		return -ENOSPC;
+	}
+
+	return 0;
+}
+
+struct ramfs_file_info *ramfs_file_alloc(struct inode *node) {
+	struct ramfs_file_info *fi;
+	size_t fi_index;
+
+	fi_index = index_alloc(&ramfs_file_idx, INDEX_MIN);
+	if (fi_index == INDEX_NONE) {
+		return NULL;
+	}
+
+	fi = &ramfs_files[fi_index];
+	memset(fi, 0, sizeof(*fi));
+
+	fi->index = fi_index;
+	fi->fsi   = node->i_sb->sb_data;
+	fi->inode = node;
+
+	inode_size_set(node, 0);
+	inode_priv_set(node, fi);
+
+	return fi;
+}
+
+static int ramfs_file_free(struct ramfs_file_info *fi) {
+	index_free(&ramfs_file_idx, fi->index);
+	memset(fi, 0, sizeof(*fi));
+
+	return 0;
+}
+
+int ramfs_delete(struct inode *node) {
+	struct ramfs_file_info *fi;
+
+	fi = inode_priv(node);
+
+	return ramfs_file_free(fi);
+}
+
+int ramfs_truncate(struct inode *node, off_t length) {
+	assert(node);
+
+	if (length > MAX_FILE_SIZE) {
+		return -EFBIG;
+	}
+
+	inode_size_set(node, length);
+
+	return 0;
+}

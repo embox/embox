@@ -93,8 +93,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	assert(parent);
 	assert(path);
 
-	while (*path == '/')
+	while (*path == '/') {
 		path++;
+	}
 
 	len = dvfs_path_next_len(path);
 	if (len >= DENTRY_NAME_LEN) {
@@ -104,6 +105,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	buff[len] = '\0';
 
 	if (buff[0] == '\0') {
+		dentry_ref_inc(parent);
 		*lookup = (struct lookup) {
 			.item   = parent,
 			.parent = parent->parent,
@@ -111,14 +113,17 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 		return 0;
 	}
 
-	if (!S_ISDIR(parent->flags))
+	if (!S_ISDIR(parent->flags)) {
 		return -ENOTDIR;
+	}
 
-	if ((d = local_lookup(parent, buff)))
+	if ((d = local_lookup(parent, buff))) {
 		return dvfs_path_walk(path + strlen(buff), d, lookup);
+	}
 
-	if (strlen(buff) > 1 && path_is_double_dot(buff))
+	if (strlen(buff) > 1 && path_is_double_dot(buff)) {
 		return dvfs_path_walk(path + 2, parent->parent, lookup);
+	}
 
 	if (path_is_single_dot(buff)) {
 		return dvfs_path_walk(path + 1, parent, lookup);
@@ -180,6 +185,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	}
 
 	if (*path == '\0') {
+		dentry_ref_inc(dentry);
 		*lookup = (struct lookup) {
 			.item = dentry,
 			.parent = dentry->parent,

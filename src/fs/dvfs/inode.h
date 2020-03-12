@@ -16,9 +16,11 @@ struct super_block;
 struct inode_operations;
 
 struct inode {
-	int    i_no;
-	int    start_pos; /* location on disk */
-	size_t length;
+	int      i_no;
+	int      start_pos; /* location on disk */
+	size_t   length;
+	unsigned mtime;
+	unsigned ctime;
 
 	uid_t  i_owner_id;
 	gid_t  i_group_id;
@@ -33,5 +35,11 @@ struct inode {
 
 extern void *inode_priv(const struct inode *node);
 extern void inode_priv_set(struct inode *node, void *priv);
+extern size_t inode_size(const struct inode *node);
+extern void inode_size_set(struct inode *node, size_t sz);
+extern unsigned inode_ctime(const struct inode *node);
+extern void inode_ctime_set(struct inode *node, unsigned ctime);
+extern unsigned inode_mtime(const struct inode *node);
+extern void inode_mtime_set(struct inode *node, unsigned mtime);
 
 #endif /* SRC_FS_DVFS_INODE_H_ */
