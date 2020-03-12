@@ -39,6 +39,18 @@ int main(int argc, char **argv) {
 	case RIFF_FILE:
 		printf("RIFF audio file\n");
 		break;
+	case PNG_FILE:
+		printf("PNG file\n");
+		break;
+	case GIF_FILE:
+		printf("GIF file\n");
+		break;
+	case ELF_FILE:
+		printf("ELF file\n");
+		break;
+	case XML_FILE:
+		printf("XML file\n");
+		break;
 	default:
 		printf("Unknown file format\n");
 		break;
