@@ -5,7 +5,7 @@
  * @date 01.08.2013
  * @author Andrey Gazukin
  */
-
+#if 0
 #ifndef __LINUX_WORKQUEUE_H__
 #define __LINUX_WORKQUEUE_H__
 
@@ -17,3 +17,4 @@ struct work_struct { } ;
 #define flush_scheduled_work() do { } while(0)
 
 #endif /* __LINUX_WORKQUEUE_H__ */
+#endif
