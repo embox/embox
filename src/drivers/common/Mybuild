@@ -31,5 +31,10 @@ module periph_memory_mmap extends periph_memory {
 module periph_memory_stub extends periph_memory {
 	@IncludeExport(path="drivers/common", target_name="memory.h")
 	source "memory_impl_stub.h"
-	source "memory.c"
+}
+
+module periph_memory_alloc {
+	@IncludeExport(path="drivers/common", target_name="periph_memory_alloc.h")
+	source "periph_memory_alloc.h"
+	source "periph_memory_alloc.c"
 }

@@ -19,6 +19,7 @@
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 #include <drivers/common/memory.h>
+#include <drivers/common/periph_memory_alloc.h>
 #include <kernel/irq.h>
 
 #include <linux/byteorder.h>

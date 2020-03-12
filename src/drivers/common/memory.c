@@ -99,33 +99,4 @@ int periph_desc(struct periph_memory_desc **buff) {
 	return i;
 }
 
-
-void *periph_memory_alloc(size_t len) {
-	void *mem = sysmemalign(MMU_PAGE_SIZE, len);
-	if (!mem) {
-		return NULL;
-	}
-
-	vmem_set_flags(vmem_current_context(),
-			(mmu_vaddr_t) mem,
-			len,
-			PROT_WRITE | PROT_READ | PROT_NOCACHE);
-
-	mmu_flush_tlb();
-
-	return mem;
-}
-#else
-void *periph_memory_alloc(size_t len) {
-	void *mem = sysmemalign(sizeof(void *), len);
-	if (!mem) {
-		return NULL;
-	}
-
-	return mem;
-}
 #endif /* NOMMU */
-
-void periph_memory_free(void *ptr) {
-	sysfree(ptr);
-}

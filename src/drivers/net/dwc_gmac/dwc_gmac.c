@@ -12,6 +12,7 @@
 #include <unistd.h>
 
 #include <drivers/common/memory.h>
+#include <drivers/common/periph_memory_alloc.h>
 
 #include <hal/mem_barriers.h>
 #include <hal/reg.h>
