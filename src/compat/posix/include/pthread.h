@@ -18,7 +18,7 @@
  * the <time.h> header.
  */
 #include <sched.h>
-
+#include <semaphore.h>
 
 #include <kernel/thread/thread_flags.h>
 #include <kernel/thread/sync/cond.h>
@@ -50,7 +50,7 @@ typedef struct thread *pthread_t;
 #define PTHREAD_INHERIT_SCHED       THREAD_FLAG_PRIORITY_INHERIT
 #define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
 
-
+#define PTHREAD_BARRIER_SERIAL_THREAD -1
 
 typedef struct pthread_attr {
 	uint32_t flags; /* scope, inherit, detachstate */
@@ -60,6 +60,23 @@ typedef struct pthread_attr {
 	struct sched_param sched_param;
 } pthread_attr_t;
 
+struct _pthread_barrier_t {
+  	unsigned int in;
+  	unsigned int round;
+    unsigned int count;
+  	int istep;
+  	int pshared;
+    int initialize_flag;
+    int in_use;
+  	sem_t lock[2];
+};
+
+struct _pthread_barrierattr_t {
+  	int pshared;
+};
+
+typedef struct _pthread_barrier_t *pthread_barrier_t;
+typedef struct _pthread_barrierattr_t *pthread_barrierattr_t;
 
 typedef cond_t pthread_cond_t;
 
@@ -199,6 +216,11 @@ extern int   pthread_setspecific(pthread_key_t, const void *);
 extern void  pthread_testcancel(void);
 
 extern int   pthread_setschedprio(pthread_t, int);
+
+extern int   pthread_barrier_init(pthread_barrier_t *, const pthread_barrierattr_t *, unsigned int);
+extern int   pthread_barrier_wait(pthread_barrier_t *);
+extern int   pthread_barrier_destroy(pthread_barrier_t *);
+extern int   pthread_barrierattr_destroy(pthread_barrierattr_t *);
 
 __END_DECLS
 
