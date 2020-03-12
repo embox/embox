@@ -6,67 +6,117 @@
 * @author Artem Sharganov
 */
 
-#include <stdlib.h>
-#include <unistd.h>
 #include <fcntl.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "lib/libelf.h"
 
-int main(int argc, char **argv) {
+#define MAX_LOADABLE_SECTIONS 0x10
 
-	if (argc < 1) {
-		return -1;
+static void print_usage(char **argv) {
+	printf("Usage: %s [ELF_file]\n", argv[0]);
+}
+
+int main(int argc, char **argv) {
+	Elf32_Addr sections_begin = 0xFFFFFFFF;
+	Elf32_Addr sections_end = 0;
+
+	void *mem = 0;
+
+	Elf32_Ehdr *header = NULL;
+	Elf32_Phdr *ph_table = NULL;
+
+	int elf_file = 0;
+	int err, ret;
+	int (*entryFunction)() = NULL;
+
+	if (argc != 2) {
+		print_usage(argv);
+		return 0;
 	}
 
-	Elf32_Ehdr *header;
-	int elf_file;
-	int err;
+	header = malloc(sizeof(Elf32_Ehdr));
+	if (header == NULL) {
+		return -ENOMEM;
+	}
 
 	elf_file = open(argv[argc - 1], O_RDONLY);
-	header = malloc(sizeof(Elf32_Ehdr));
-
 	if ((err = elf_read_header(elf_file, header)) < 0) {
-		close(elf_file);
-		return err;
+		ret = err;
+		goto out;
 	}
 
-	Elf32_Phdr *ph_table = malloc(header->e_phnum * header->e_phentsize);
+	ph_table = malloc(header->e_phnum * header->e_phentsize);
 
 	if ((err = elf_read_ph_table(elf_file, header, ph_table)) < 0) {
-		close(elf_file);
 		fprintf(stderr, "Wrong ELF file format");
-		return err;
+		ret = err;
+		goto out;
 	}
 
-	char *instructions = NULL;
-	int offset = header->e_entry;
-
 	for (int i = 0; i < header->e_phnum; i++) {
-		/* TODO: PT_LOAD may be more than one */
 		if (ph_table[i].p_type == PT_LOAD) {
-			/* calculate offset of entry point */
-			offset -= ph_table[i].p_vaddr;
-			instructions = malloc(ph_table[i].p_memsz);
+			Elf32_Addr vaddr = ph_table[i].p_vaddr;
+			Elf32_Word size = ph_table[i].p_memsz;
 
-			if ((err = elf_read_segment(elf_file, &(ph_table[i]), instructions)) < 0) {
-				close(elf_file);
-				fprintf(stderr, "Wrong ELF file format");
-				return err;
+			if (vaddr < sections_begin) {
+				sections_begin = vaddr;
+			}
+
+			if (vaddr + size > sections_end) {
+				sections_end = vaddr + size;
 			}
 		}
 	}
 
-	instructions += offset;
-	int (*functionPtr)();
-	functionPtr = (void *) instructions;
+	mem = malloc(sections_end - sections_begin);
+	if (mem == NULL) {
+		fprintf(stderr, "Failed to allocate %d bytes for app\n",
+				sections_end - sections_begin);
+		goto out;
+	}
 
-	int ret = functionPtr();
+	for (int i = 0; i < header->e_phnum; i++) {
+		if (ph_table[i].p_type == PT_LOAD) {
+			void *load_addr = mem + (ph_table[i].p_vaddr - sections_begin);
 
-	close(elf_file);
-	free(header);
-	free(ph_table);
-	instructions -= offset;
-	free(instructions);
+			if ((err = elf_read_segment(elf_file, &(ph_table[i]), load_addr)) < 0) {
+				fprintf(stderr, "Failed to read section #%d", i);
+				ret = err;
+				goto out;
+			}
+		}
+	}
+
+	entryFunction = mem + (header->e_entry - sections_begin);
+
+	if (!(((void *) entryFunction >= mem) &&
+				((void *) entryFunction <= mem + (sections_end - sections_begin)))) {
+		ret = -1;
+		goto out;
+	}
+
+	ret = entryFunction();
+
+out:
+	if (elf_file != 0) {
+		close(elf_file);
+	}
+
+	if (header != NULL) {
+		free(header);
+	}
+
+	if (ph_table != NULL) {
+		free(ph_table);
+	}
+
+	if (mem != NULL) {
+		free(mem);
+	}
 
 	return ret;
 }
