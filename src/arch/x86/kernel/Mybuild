@@ -53,9 +53,11 @@ module arch extends embox.arch.arch {
 @DefaultImpl(noacpi_shutdown)
 abstract module shutdown {}
 
+@BuildDepends(third_party.lib.acpica)
 module acpi_shutdown extends shutdown {
+	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20150204/source/include/")
 	source "acpi_shutdown.c"
-
 	depends third_party.lib.acpica
 	depends embox.lib.Printk
 }
