@@ -1,5 +1,5 @@
 
-L_CFLAGS = -nostdlib -emain -fpie -N
+L_CFLAGS = -nostdlib -emain -fpie -static
 
 $(LOADABLE_DIR)/$(DST) : | $(LOADABLE_DIR)
 $(LOADABLE_DIR)/$(DST) : $(SRC)
