@@ -111,6 +111,12 @@ int pthread_kill(pthread_t thread, int sig) {
 
 	assert(thread);
 
+	struct thread *t = (struct thread *)thread;
+	if (t->state & TS_EXITED)
+		return ESRCH;
+	if (!sig)
+		return 0;
+
 	sigstate = &thread->sigstate;
 	err = sigstate_send(sigstate, sig, NULL);
 	if (err)

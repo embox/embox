@@ -153,6 +153,8 @@ extern int   pthread_join(pthread_t, void **);
 extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
 extern int   pthread_key_delete(pthread_key_t);
 
+extern int   pthread_kill(pthread_t thread, int sig);
+
 extern int   pthread_mutex_destroy(pthread_mutex_t *);
 //extern int   pthread_mutex_getprioceiling(const pthread_mutex_t *, int *);
 extern int   pthread_mutex_init(pthread_mutex_t *, const pthread_mutexattr_t *);
