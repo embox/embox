@@ -155,7 +155,6 @@ int main(int argc, char **argv) {
 
 	/* Initialize objects */
 	param_ascii = param_binary = param_get = param_put = 0;
-	getopt_init();
 
 	/* Get options */
 	while ((ret = getopt(argc, argv, "habgpm:")) != -1) {

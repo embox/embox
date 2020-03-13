@@ -410,7 +410,6 @@ int main(int argc, char **argv) {
 	net_node_t node;
 	_rule_setter setter;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hgnt:d:p:r:s:a:l:"))) {
 		switch(opt) {

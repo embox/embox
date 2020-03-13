@@ -212,7 +212,6 @@ int main(int argc, char **argv) {
 
 	xattr_cmd_op_flags = 0;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "lxcdhpw"))) {
 		switch (opt) {
 		case 'c':

@@ -71,7 +71,6 @@ int main(int argc, char *argv[]) {
 	memset(&in, 0, sizeof in);
 	in.sin_family = AF_INET;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "K:M:G:h"))) {
 		switch (opt) {
 		case '?':

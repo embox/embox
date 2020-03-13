@@ -506,7 +506,6 @@ int main(int argc, char **argv) {
 
 	elf_initialize_object(&elf);
 
-	getopt_init();
 	do {
 		cnt++;
 		opt = getopt(argc - 1, argv, "hHSlrs");

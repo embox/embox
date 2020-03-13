@@ -286,7 +286,6 @@ int main(int argc, char **argv) {
 	int dev_number = -1;
 	func_show_bus_t show_func = show_all;
 	int opt;
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "n:b:h"))) {
 		switch(opt) {
 		case 'h':

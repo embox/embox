@@ -75,7 +75,6 @@ int main(int argc, char **argv) {
 	struct timeval t1, t2, sub_res;
 	int ret, microseconds, milliseconds;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */

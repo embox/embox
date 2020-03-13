@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
 	int opt;
 
 	if (argc >= 1) {
-		getopt_init();
 		while (-1 != (opt = getopt(argc, argv, "d:s:p:c:g:l:h"))) {
 
 			switch (opt) {

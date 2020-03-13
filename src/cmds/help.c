@@ -21,7 +21,6 @@ int main(int argc, char **argv) {
 	int opt, tab = 10;
 	char fmt[20];
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {
 		case '?':

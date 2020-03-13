@@ -63,7 +63,6 @@ int main(int argc, char **argv) {
 	struct usb_dev_desc *ddesc;
 	int opt, res;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "v:p:e:r:asw"))) {
 		switch(opt) {
 		case 'v':

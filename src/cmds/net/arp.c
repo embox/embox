@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
 	unsigned char hwaddr[ETH_ALEN];
 	struct in_device *ifdev = NULL;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hd:s:a:m:i:"))) {
 		switch (opt) {
 		case 'd':

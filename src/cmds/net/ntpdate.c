@@ -179,7 +179,6 @@ int main(int argc, char **argv) {
 
 	only_query = 0;
 	timeout = MODOPS_TIMEOUT;
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hqt:"))) {
 		switch (opt) {

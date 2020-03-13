@@ -19,7 +19,6 @@ int main(int argc, char **argv) {
 	unsigned int rev = CONFIG_SVN_REV;
 #endif
 	int opt;
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch(opt) {
 		case 'h':

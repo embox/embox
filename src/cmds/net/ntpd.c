@@ -184,7 +184,6 @@ int main(int argc, char **argv) {
 	};
 	int opt;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hS"))) {
 		switch(opt) {

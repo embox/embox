@@ -20,7 +20,6 @@ int main(int argc, char **argv) {
 	int opt, sig = SIGKILL;
 	int tid;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "s:"))) {
 		switch (opt) {
