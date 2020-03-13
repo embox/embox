@@ -521,7 +521,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 	}
 
 	data_mem_barrier();
-	if (i == 0 || i == 1000) {
+	if (i == 1000) {
 		log_error("Can't reset DWC.");
 		return (ENXIO);
 	}
@@ -607,8 +607,8 @@ static irq_return_t dwc_irq_handler(unsigned int irq_num, void *dev_id) {
 
 static int dwc_init(void) {
 	struct net_device *nic;
-	uint32_t tmp;
 	size_t rx_len = 0, tx_len = 0;
+	int res = 0;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
 		return -ENOMEM;
@@ -621,31 +621,52 @@ static int dwc_init(void) {
 	tx_len = TX_DESC_QUANTITY * sizeof(struct dma_extended_desc);
 
 	dwc_priv.rxdesc_ring_paddr = periph_memory_alloc(rx_len);
+	if (NULL == dwc_priv.rxdesc_ring_paddr) {
+		log_error("Couldnt alloc periph mem for rxdesc ring");
+		res = -ENOMEM;
+		goto err_out_etherdev_free;
+	}
+
+	dwc_priv.txdesc_ring_paddr = periph_memory_alloc(tx_len);
+	if (NULL == dwc_priv.txdesc_ring_paddr) {
+		log_error("Couldnt alloc periph mem for txdesc ring");
+		res = -ENOMEM;
+		goto err_out_rxdesc_free;
+	}
+
 	memset(dwc_priv.rxdesc_ring_paddr, 0, rx_len);
 	/* TODO: this flush is neccessary even after we write to memory
 	 * which was allocated as cached */
 	dcache_flush(dwc_priv.rxdesc_ring_paddr, rx_len);
 
-	dwc_priv.txdesc_ring_paddr = periph_memory_alloc(tx_len);
 	memset(dwc_priv.txdesc_ring_paddr, 0, tx_len);
 	dcache_flush(dwc_priv.txdesc_ring_paddr, tx_len);
 
-	if (dwc_priv.rxdesc_ring_paddr == NULL ||
-			dwc_priv.txdesc_ring_paddr == NULL) {
-		etherdev_free(nic);
-		return -ENOMEM;
-	}
-
 	nic->priv = &dwc_priv;
 
-	dwc_hw_init(nic->priv);
-	tmp = irq_attach(IRQ_NUM, dwc_irq_handler, 0, nic, "DWC_gmac");
-	dwc_reg_write(nic->priv, DWC_DMA_INTERRUPT_ENABLE, DWC_DMA_INT_EN_DEFAULT);
-	if (tmp) {
-		return tmp;
+	res = dwc_hw_init(nic->priv);
+	if (res) {
+		goto err_out_txdesc_free;
 	}
 
-	return inetdev_register_dev(nic);
+	res = irq_attach(IRQ_NUM, dwc_irq_handler, 0, nic, "DWC_gmac");
+	if (res) {
+		goto err_out_txdesc_free;
+	}
+
+	res = inetdev_register_dev(nic);
+	if (!res) {
+		dwc_reg_write(nic->priv, DWC_DMA_INTERRUPT_ENABLE, DWC_DMA_INT_EN_DEFAULT);
+		return 0;
+	}
+
+err_out_txdesc_free:
+	periph_memory_free(dwc_priv.txdesc_ring_paddr);
+err_out_rxdesc_free:
+	periph_memory_free(dwc_priv.rxdesc_ring_paddr);
+err_out_etherdev_free:
+	etherdev_free(nic);
+	return res;
 }
 
 PERIPH_MEMORY_DEFINE(dwc, BASE_ADDR, 0x2000);
