@@ -70,12 +70,11 @@ extern void dcache_inval(const void *p, size_t size);
 static void async_handle_next(struct ehci_hcd *ehci) {
 	struct ehci_req *ehci_req;
 
-	if (dlist_empty(&ehci->req_list)) {
-		return;
+	if (!usb_queue_empty(&ehci->req_queue)) {
+		ehci_req = member_cast_out(usb_queue_first(&ehci->req_queue),
+			struct ehci_req, req_link);
+		ehci_submit_async(ehci, ehci_req);
 	}
-	ehci_req = dlist_first_entry(&ehci->req_list, struct ehci_req, req_link);
-	assert(ehci_req);
-	ehci_submit_async(ehci, ehci_req);
 }
 
 static unsigned
@@ -107,7 +106,7 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 
 		qtd = (struct ehci_qtd_hw *) hw_next;
 	}
-	if(nontransferred) {
+	if (nontransferred) {
 		log_error("nontransferred = %d", nontransferred);
 	}
 
@@ -117,9 +116,10 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	}
 
 	req->req_stat = USB_REQ_NOERR;
+
+	usb_queue_del(&ehci->req_queue, &qh->ehci_req->req_link);
 	usb_request_complete(req);
 
-	dlist_del(&qh->ehci_req->req_link);
 	ehci_req_free(ehci, qh->ehci_req);
 
 	/* Handle next request */

@@ -10,7 +10,6 @@
 
 #include <drivers/usb/usb.h>
 #include <drivers/usb/ehci_regs.h>
-#include <util/dlist.h>
 
 /* type tag from {qh,itd,sitd,fstn}->hw_next */
 #define EHCI_Q_NEXT_TYPE(ehci, dma) ((dma) & 3 << 1)
@@ -66,7 +65,7 @@ struct ehci_qtd_hw {
 struct ehci_req {
 	struct usb_request *req;
 	struct ehci_qtd_hw *qtds_head;
-	struct dlist_head req_link;
+	struct usb_queue_link req_link;
 };
 
 /*
@@ -223,7 +222,7 @@ struct ehci_hcd {
 	/* async schedule support */
 	struct ehci_qh *async;
 
-	struct dlist_head req_list;
+	struct usb_queue req_queue;
 
 	/* periodic schedule support */
 	int periodic_size;
