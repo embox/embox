@@ -31,13 +31,6 @@
 #include <drivers/block_dev/ramdisk/ramdisk.h>
 #include "ramfs.h"
 
-/* ramfs filesystem description pool */
-POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, RAMFS_DESCRIPTORS);
-
-struct ramfs_file_info ramfs_files[RAMFS_FILES];
-
-INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
-
 static int ramfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
 	struct ramfs_fs_info *fsi;
 	int cur_id;
@@ -73,42 +66,12 @@ static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	assert(i_new);
 	assert(i_new->i_dentry);
 	assert(i_new->i_dentry->name);
-	assert(i_dir);
-	assert(i_dir->i_sb);
-	assert(i_dir->i_sb->sb_data);
 
-	fi_index = index_alloc(&ramfs_file_idx, INDEX_MIN);
-	if (fi_index == INDEX_NONE) {
-		return -ENOMEM;
-	}
-
-	fi = &ramfs_files[fi_index];
-	memset(fi, 0, sizeof(*fi));
+	fi = ramfs_file_alloc(i_new);
 
 	strncpy(fi->name, i_new->i_dentry->name, sizeof(fi->name) - 1);
 
-	fi->index = fi_index;
-	fi->inode = i_new;
-	fi->sb_data = i_dir->i_sb->sb_data;
-
-	i_new->i_data = fi;
 	i_new->i_no = fi->index;
-	return 0;
-}
-
-static int ramfs_truncate(struct inode *inode, size_t len) {
-	struct ramfs_file_info *fi;
-
-	assert(inode);
-
-	if (len > MAX_FILE_SIZE) {
-		return -EFBIG;
-	}
-
-	fi = inode->i_data;
-	assert(fi);
-	assert(fi->inode);
-	fi->inode->length = len;
 
 	return 0;
 }
@@ -145,26 +108,12 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
-static int ramfs_remove(struct inode *inode) {
-	struct ramfs_file_info *fi;
-
-	assert(inode);
-
-	fi = inode->i_data;
-	assert(fi);
-
-	memset(fi, 0, sizeof(*fi));
-
-	return 0;
-}
-
 /* Declaration of operations */
 struct inode_operations ramfs_iops = {
 	.create   = ramfs_create,
 	.lookup   = ramfs_ilookup,
-	.remove   = ramfs_remove,
+	.remove   = ramfs_delete,
 	.iterate  = ramfs_iterate,
-	//.pathname = ramfs_pathname,
 	.truncate = ramfs_truncate,
 };
 
@@ -185,18 +134,6 @@ struct super_block_operations ramfs_sbops = {
 	.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = ramfs_destroy_inode,
 };
-
-static int ramfs_format(struct block_dev *bdev, void *priv) {
-	if (NULL == bdev) {
-		return -ENODEV;
-	}
-
-	if (MAX_FILE_SIZE > bdev->size) {
-		return -ENOSPC;
-	}
-
-	return 0;
-}
 
 static const struct fs_driver ramfs_dumb_driver = {
 	.name      = "ramfs",

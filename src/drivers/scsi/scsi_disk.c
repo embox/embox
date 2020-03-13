@@ -7,6 +7,7 @@
  */
 #include <util/log.h>
 
+#include <endian.h>
 #include <errno.h>
 #include <string.h>
 
@@ -34,6 +35,42 @@ static void scsi_disk_unlock(struct block_dev *bdev) {
 	scsi_dev_use_dec(sdev);
 }
 
+static int scsi_read_blocks(struct scsi_dev *sdev,
+		int blk_start, int blk_count, uint8_t *buf) {
+	struct scsi_cmd cmd;
+	struct scsi_cmd_read10 cmd_read10;
+
+	memset(&cmd_read10, 0, sizeof cmd_read10);
+	cmd_read10.sr10_opcode = SCSI_CMD_OPCODE_READ10;
+	cmd_read10.sr10_lba = htobe32(blk_start);
+	cmd_read10.sr10_transfer_len = htobe16(blk_count);
+
+	cmd.scmd_buf    = (uint8_t *) &cmd_read10;
+	cmd.scmd_len    = sizeof cmd_read10;
+	cmd.sdata_buf   = buf;
+	cmd.sdata_len   = blk_count * sdev->blk_size;
+
+	return scsi_do_cmd(sdev, &cmd);
+}
+
+static int scsi_write_blocks(struct scsi_dev *sdev,
+		int blk_start, int blk_count, uint8_t *buf) {
+	struct scsi_cmd cmd;
+	struct scsi_cmd_write10 cmd_write10;
+
+	memset(&cmd_write10, 0, sizeof cmd_write10);
+	cmd_write10.sw10_opcode = SCSI_CMD_OPCODE_WRITE10;
+	cmd_write10.sw10_lba = htobe32(blk_start);
+	cmd_write10.sw10_transfer_len = htobe16(blk_count);
+
+	cmd.scmd_buf    = (uint8_t *) &cmd_write10;
+	cmd.scmd_len    = sizeof cmd_write10;
+	cmd.sdata_buf   = buf;
+	cmd.sdata_len   = blk_count * sdev->blk_size;
+
+	return scsi_do_cmd(sdev, &cmd);
+}
+
 static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
 	struct scsi_dev *sdev = bdev->privdata;
@@ -41,9 +78,6 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 	unsigned int lba;
 	char *bp;
 	int ret;
-
-	struct scsi_cmd cmd = scsi_cmd_template_read10;
-	cmd.scmd_olen = blksize;
 
 	if (!sdev) {
 		return -ENODEV;
@@ -53,11 +87,7 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 	for (lba = blkno, bp = buffer;
 			count >= blksize;
 			lba++, count -= blksize, bp += blksize) {
-
-		cmd.scmd_lba = lba;
-		cmd.scmd_obuf = bp;
-
-		ret = scsi_do_cmd(sdev, &cmd);
+		ret = scsi_read_blocks(sdev, lba, 1, (uint8_t *) bp);
 		if (ret) {
 			break;
 		}
@@ -85,9 +115,6 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 	sdev = bdev->privdata;
 	blksize = sdev->blk_size;
 
-	struct scsi_cmd cmd = scsi_cmd_template_write10;
-	cmd.scmd_olen = blksize;
-
 	if (!sdev) {
 		return -ENODEV;
 	}
@@ -96,11 +123,7 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 	for (lba = blkno, bp = buffer;
 			count >= blksize;
 			lba++, count -= blksize, bp += blksize) {
-
-		cmd.scmd_lba = lba;
-		cmd.scmd_obuf = bp;
-
-		ret = scsi_do_cmd(sdev, &cmd);
+		ret = scsi_write_blocks(sdev, lba, 1, (uint8_t *) bp);
 		if (ret) {
 			break;
 		}

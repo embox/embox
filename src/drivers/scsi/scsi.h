@@ -21,8 +21,6 @@ struct scsi_dev;
 struct scsi_dev {
 	int idx;
 
-	uint8_t scsi_data_scratchpad[USB_SCSI_SCRATCHPAD_LEN];
-
 	unsigned int blk_size;
 	unsigned int blk_n;
 
@@ -33,14 +31,10 @@ struct scsi_dev {
 };
 
 struct scsi_cmd {
-	uint8_t scmd_opcode;
+	uint8_t *scmd_buf;
 	size_t  scmd_len;
-	void    (*scmd_fixup)(void *buf, struct scsi_dev *dev,
-			struct scsi_cmd *cmd);
-	void    *scmd_obuf;
-	size_t  scmd_olen;
-
-	size_t  scmd_lba;
+	uint8_t *sdata_buf;
+	size_t  sdata_len;
 };
 
 #define SCSI_CMD_OPCODE_TEST_UNIT 0x00
@@ -166,13 +160,6 @@ struct scsi_cmd_write10 {
 	uint16_t sw10_transfer_len;
 	uint8_t  sw10_control;
 } __attribute__((packed));
-
-extern const struct scsi_cmd scsi_cmd_template_test_unit;
-extern const struct scsi_cmd scsi_cmd_template_inquiry;
-extern const struct scsi_cmd scsi_cmd_template_cap10;
-extern const struct scsi_cmd scsi_cmd_template_sense;
-extern const struct scsi_cmd scsi_cmd_template_read10;
-extern const struct scsi_cmd scsi_cmd_template_write10;
 
 extern int scsi_dev_attached(struct scsi_dev *dev);
 extern void scsi_dev_detached(struct scsi_dev *dev);

@@ -16,16 +16,18 @@
 #include <utime.h>
 #include <sys/file.h>
 
-#include <fs/vfs.h>
-#include <fs/inode.h>
-#include <fs/mount.h>
-#include <fs/hlpr_path.h>
-#include <fs/fs_driver.h>
-#include <fs/kfsop.h>
-#include <fs/perm.h>
-#include <fs/file_desc.h>
+#include <drivers/device.h>
 #include <fs/dcache.h>
-//#include <fs/file_operation.h>
+#include <fs/dir_context.h>
+#include <fs/file_desc.h>
+#include <fs/fs_driver.h>
+#include <fs/hlpr_path.h>
+#include <fs/inode.h>
+#include <fs/inode_operation.h>
+#include <fs/kfsop.h>
+#include <fs/mount.h>
+#include <fs/perm.h>
+#include <fs/vfs.h>
 
 #include <security/security.h>
 
@@ -356,6 +358,7 @@ int kformat(const char *pathname, const char *fs_type) {
 struct block_dev *bdev_by_path(const char *source) {
 	struct path dev_node;
 	const char *lastpath;
+	struct dev_module *devmod;
 
 	if (source == NULL) {
 		return NULL;
@@ -370,7 +373,46 @@ struct block_dev *bdev_by_path(const char *source) {
 	}
 
 	/* TODO: check if it's actually part of devfs? */
-	return dev_node.node->nas->fi->privdata;
+	devmod = inode_priv(dev_node.node);
+
+	return devmod->dev_priv;
+}
+
+static int vfs_mount_walker(struct inode *dir) {
+	int res;
+	struct dir_ctx dir_context = { };
+
+	assert(dir);
+
+	do {
+		struct inode *node = inode_new(dir->i_sb);
+		if (NULL == node) {
+			return -ENOMEM;
+		}
+
+		assert(dir->i_ops);
+		res = dir->i_ops->iterate(node,
+				node->name,
+				dir,
+				&dir_context);
+
+		if (res == -1){
+			/* End of directory */
+			node_free(node);
+			return 0;
+		}
+
+		node->i_ops = dir->i_ops;
+
+		assert(node->nas);
+		node->nas->fs = node->i_sb = dir->nas->fs;
+
+		vfs_add_leaf(node, dir);
+
+		if (node_is_directory(node)) {
+			vfs_mount_walker(node);
+		}
+	} while (1);
 }
 
 int kmount(const char *source, const char *dest, const char *fs_type) {
@@ -401,7 +443,14 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		return -1;
 	}
 
-	if (NULL == mount_table_add(&dir_node, sb->sb_root, dest)) {
+	if (sb->sb_root->i_ops && sb->sb_root->i_ops->iterate) {
+		/* If FS provides iterate handler, then we assume
+		 * that we should use it to actually mount all these
+		 * files */
+		vfs_mount_walker(sb->sb_root);
+	}
+
+	if (NULL == mount_table_add(&dir_node, sb->sb_root, source)) {
 		super_block_free(sb);
 		//todo free root
 		errno = -res;
@@ -660,6 +709,7 @@ int kumount(const char *dir) {
 		return res;
 	}
 
+	dir_node.node->i_sb->sb_root = NULL;
 	super_block_free(dir_node.node->i_sb);
 
 	if (dir_node.node != vfs_get_root()) {

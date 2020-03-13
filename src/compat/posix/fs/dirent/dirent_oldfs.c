@@ -99,26 +99,10 @@ struct dirent *readdir(DIR *dir) {
 	if_mounted_follow_down(&dir->path);
 	res = vfs_get_child_next(&dir->path,(struct inode *) (uintptr_t) dir->current.d_ino, &child);
 	if (0 != res) {
-		if (dir->path.node->i_ops && dir->path.node->i_ops->iterate) {
-			node = inode_new(NULL);
-			if (NULL == node) {
-				SET_ERRNO(ENOMEM);
-				return NULL;
-			}
-			res = dir->path.node->i_ops->iterate(node, node->name, dir->path.node, &dir->dir_context);
-			if (res == -1){
-				node_free(node);
-				return NULL;
-			}
-			node->nas->fs = node->i_sb = dir->path.node->nas->fs;
-			vfs_add_leaf(node, dir->path.node);
-			slist_add_first_link(&node->dirent_link, &dir->inodes_list);
-		} else {
-			return NULL;
-		}
-	} else {
-		node = child.node;
+		return NULL;
 	}
+
+	node = child.node;
 
 	strncpy(dir->current.d_name, node->name, DIRENT_DNAME_LEN);
 	dir->current.d_ino = (ino_t) (uintptr_t) node;

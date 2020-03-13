@@ -117,10 +117,15 @@ struct dentry *dvfs_cache_get(char *path, struct lookup *lookup) {
 struct dentry *dvfs_cache_lookup(const char *path,
 	struct dentry *base) {
 	char full_path[DVFS_MAX_PATH_LEN];
+	struct dentry *ret;
+
 	dentry_full_path(base, full_path);
 	strncat(full_path, path, DVFS_MAX_PATH_LEN - strlen(path));
 
 	/* TODO check path from root */
 
-	return dvfs_cache_get(full_path, NULL);
+	ret = dvfs_cache_get(full_path, NULL);
+	dentry_ref_inc(ret);
+
+	return ret;
 }

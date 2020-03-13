@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
+#include <drivers/device.h>
 #include <util/array.h>
 #include <util/indexator.h>
 
@@ -28,7 +29,7 @@ INDEX_DEF(char_dev_idx, 0, MAX_CDEV_QUANTITY);
 struct dev_module **get_cdev_tab(void) {
 	return &devtab[0];
 }
-
+void devfs_notify_new_module(struct dev_module *devmod);
 int char_dev_register(struct dev_module *cdev) {
 	int cdev_id;
 
@@ -43,6 +44,8 @@ int char_dev_register(struct dev_module *cdev) {
 
 	devtab[cdev_id] = cdev;
 	cdev->dev_id = cdev_id;
+
+	devfs_notify_new_module(cdev);
 
 	return 0;
 }

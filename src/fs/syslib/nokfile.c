@@ -8,7 +8,10 @@
 #include <errno.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include <fs/kfile.h>
+
+struct inode;
+struct file_desc;
+struct stat;
 
 struct idesc *kopen(struct inode *node, int flag) {
 	return NULL;

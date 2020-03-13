@@ -61,6 +61,8 @@ struct dev_module *dev_module_create(
 	devmod->dev_close = close;
 	devmod->dev_priv = privdata;
 
+	devfs_notify_new_module(devmod);
+
 	return devmod;
 }
 

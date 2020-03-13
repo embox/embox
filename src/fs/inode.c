@@ -66,6 +66,7 @@ struct inode *inode_new(struct super_block *sb) {
 
 	node->nas = nas;
 	nas->node = node;
+	node->i_sb = sb;
 
 	nas->fi = &nt->fi;
 
@@ -130,4 +131,28 @@ void inode_priv_set(struct inode *node, void *priv) {
 	assert(node);
 
 	node->nas->fi->privdata = priv;
+}
+
+size_t inode_size(const struct inode *node) {
+	return node->nas->fi->ni.size;
+}
+
+void inode_size_set(struct inode *node, size_t sz) {
+	node->nas->fi->ni.size = sz;
+}
+
+unsigned inode_ctime(const struct inode *node) {
+	return node->nas->fi->ni.ctime;
+}
+
+void inode_ctime_set(struct inode *node, unsigned ctime) {
+	node->nas->fi->ni.ctime = ctime;
+}
+
+unsigned inode_mtime(const struct inode *node) {
+	return node->nas->fi->ni.mtime;
+}
+
+void inode_mtime_set(struct inode *node, unsigned mtime) {
+	node->nas->fi->ni.mtime = mtime;
 }

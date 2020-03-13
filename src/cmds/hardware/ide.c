@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
 	int opt;
 
 	getopt_init();
-	while (-1 != (opt = getopt(argc - 1, argv, "ah"))) {
+	while (-1 != (opt = getopt(argc, argv, "ah"))) {
 		switch(opt) {
 		case 'a':
 			break;

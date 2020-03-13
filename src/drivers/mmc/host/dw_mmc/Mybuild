@@ -13,4 +13,5 @@ module dw_mmc_socfpga {
 	depends embox.driver.block_dev
 	depends embox.driver.clk.socfpga
 	depends embox.driver.mmc.mmc_core
+	@NoRuntime depends embox.driver.periph_memory_alloc
 }

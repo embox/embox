@@ -209,6 +209,7 @@ void vfs_get_parent(struct path *child_path, struct path *parent_path) {
 	*parent_path = *child_path;
 	if_root_follow_up(parent_path);
 	parent_path->node = __vfs_get_parent(parent_path->node);
+	parent_path->mnt_desc = mount_desc_by_inode(parent_path->node);
 }
 
 void vfs_get_root_path(struct path *path) {
@@ -256,6 +257,14 @@ void if_root_follow_up(struct path *path) {
  ==================================================================================*/
 
 static struct inode *__vfs_get_parent(struct inode *child) {
+	struct mount_descriptor *mdesc = mount_desc_by_inode(child);
+
+	/* If child is root of some FS then we return
+	 * parent of the mount point from the parent FS */
+	if (mdesc && mdesc->mnt_root == child) {
+		return __vfs_get_parent(mdesc->mnt_point);
+	}
+
 	return tree_element(child->tree_link.par, struct inode, tree_link);
 }
 
@@ -515,6 +524,10 @@ int vfs_get_relative_path(struct inode *node, char *path, size_t path_len) {
 
 		prev = node;
 		node = __vfs_get_parent(node);
+
+		if (prev && node && prev->nas->fs != node->nas->fs) {
+			break;
+		}
 	}
 
 	assert(path_len >= ll);

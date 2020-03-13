@@ -17,15 +17,14 @@
 #include <fs/dir_context.h>
 
 #include <fs/file_desc.h>
-#include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
+#include <drivers/char_dev.h>
 #include <drivers/device.h>
 
 /* Common part */
 struct idesc *devfs_open(struct inode *node, struct idesc *desc);
 int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
 
-extern int devfs_add_block(struct block_dev *dev);
 extern struct inode_operations devfs_iops;
 
 static struct super_block *devfs_sb;
@@ -63,7 +62,8 @@ static const struct fs_driver devfs_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
 
-int devfs_add_block(struct block_dev *bdev) {
+static int devfs_add_block(struct dev_module *devmod) {
+	struct block_dev *bdev = devmod->dev_priv;
 	struct path node, root;
 	char full_path[PATH_MAX];
 
@@ -78,7 +78,7 @@ int devfs_add_block(struct block_dev *bdev) {
 
 	bdev->dev_vfs_info = node.node;
 
-	inode_priv_set(node.node, bdev);
+	inode_priv_set(node.node, devmod);
 
 	return 0;
 }
@@ -100,8 +100,9 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 	}
 
 	inode_priv_set(node.node, (void *) cdev);
-
-	*inode = node.node;
+	if (inode) {
+		*inode = node.node;
+	}
 
 	return 0;
 }
@@ -134,11 +135,12 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 	cdevtab = get_cdev_tab();
 	bdevs = get_bdev_tab();
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
-		if(!bdevs[i]){
+		if (bdevs[i] == NULL) {
 			continue;
 		}
+
 		if (0 == strncmp(bdevs[i]->name, name, sizeof(bdevs[i]->name))) {
-			if (devfs_add_block(bdevs[i])) {
+			if (devfs_add_block(bdevs[i]->dev_module)) {
 				return NULL;
 			}
 			return bdevs[i]->dev_vfs_info;
@@ -147,9 +149,10 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 
 	/* Dynamically allocated devices */
 	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
-		if(!cdevtab[i]){
+		if (cdevtab[i] == NULL) {
 			continue;
 		}
+
 		if (0 == strncmp(cdevtab[i]->name, name, sizeof(cdevtab[i]->name))) {
 			struct inode *inode;
 			if (devfs_add_char(cdevtab[i], &inode)) {
@@ -166,3 +169,22 @@ struct inode_operations devfs_iops = {
 	.iterate  = devfs_iterate,
 	.create   = devfs_create,
 };
+
+void devfs_notify_new_module(struct dev_module *devmod) {
+	struct block_dev **bdevs;
+	void *priv = devmod->dev_priv;
+	int max_id = block_dev_max_id();
+
+	bdevs = get_bdev_tab();
+
+	if (priv != NULL) {
+		for (int i = 0; i < max_id; i++) {
+			if (bdevs[i] == priv) {
+				devfs_add_block(devmod);
+				return;
+			}
+		}
+	}
+
+	devfs_add_char(devmod, NULL);
+}
