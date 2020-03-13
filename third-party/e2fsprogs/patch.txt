@@ -194,24 +194,6 @@ diff -aur e2fsprogs-1.42.8/configure.in e2fsprogs/configure.in
  ]))
  dnl
  dnl Check to see if -lsocket is required (solaris) to make something
-diff -aur e2fsprogs-1.42.8/e2fsck/crc32defs.h e2fsprogs/e2fsck/crc32defs.h
---- e2fsprogs-1.42.8/e2fsck/crc32defs.h	2013-06-21 06:43:42.000000000 +0400
-+++ e2fsprogs/e2fsck/crc32defs.h	2015-11-13 01:01:53.016768215 +0300
-@@ -55,6 +55,8 @@
- #define __le32_to_cpu(x) (x)
- #endif
- 
-+#if 0
-+
- #if (__GNUC__ >= 3)
- #define likely(x)	__builtin_expect(!!(x), 1)
- #define unlikely(x)	__builtin_expect(!!(x), 0)
-@@ -62,3 +64,5 @@
- #define likely(x)	(x)
- #define unlikely(x)	(x)
- #endif
-+
-+#endif
 diff -aur e2fsprogs-1.42.8/e2fsck/journal.c e2fsprogs/e2fsck/journal.c
 --- e2fsprogs-1.42.8/e2fsck/journal.c	2013-06-21 06:43:42.000000000 +0400
 +++ e2fsprogs/e2fsck/journal.c	2015-11-13 01:01:53.016768215 +0300
