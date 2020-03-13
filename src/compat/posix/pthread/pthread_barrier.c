@@ -30,7 +30,8 @@ static void sem_post_multiple(sem_t *sem, int count) {
  *     Insufficient memory exists to initialize the barrier.
  *
  * On success, The pthread_barrier_init() function will return 0.
- * The pthread_barrier_init() function shall not return an error code of [EINTR].
+ * The pthread_barrier_init() function shall not return an 
+ * error code of [EINTR].
  */
 
 int pthread_barrier_init(pthread_barrier_t *barrier, 
@@ -78,12 +79,14 @@ int pthread_barrier_init(pthread_barrier_t *barrier,
  * The pthread_barrier_wait() function shall fail if:
  *
  * [EINVAL]
- *     The value specified by barrier does not refer to an initialized barrier object.
+ *     The value specified by barrier does not refer to an 
+ *     initialized barrier object.
  *
  * On success, The pthread_barrier_wait() function will return 
- * PTHREAD_BARRIER_SERIAL_THREAD for a single (arbitrary) thread synchronized at the barrier 
- * and 0 for each of the other threads.
- * The pthread_barrier_wait() function shall not return an error code of [EINTR].
+ * PTHREAD_BARRIER_SERIAL_THREAD for a single (arbitrary) thread
+ * synchronized at the barrier and 0 for each of the other threads.
+ * The pthread_barrier_wait() function shall not return an 
+ * error code of [EINTR].
  */
 
 int pthread_barrier_wait(pthread_barrier_t *barrier) {	
@@ -111,10 +114,10 @@ int pthread_barrier_wait(pthread_barrier_t *barrier) {
 	step = ib->istep;
 
 	pthread_mutex_init(&mutex_lock, NULL); 
-    pthread_mutex_lock(&mutex_lock); 
-    (ib->in)++;
-    pthread_mutex_unlock(&mutex_lock); 
-    pthread_mutex_destroy(&mutex_lock); 
+	pthread_mutex_lock(&mutex_lock); 
+	(ib->in)++;
+	pthread_mutex_unlock(&mutex_lock); 
+	pthread_mutex_destroy(&mutex_lock); 
 
 	if (ib->in == ib->count) {
 		ib->in = 0;
@@ -139,7 +142,8 @@ int pthread_barrier_wait(pthread_barrier_t *barrier) {
  *     The value specified by barrier is invalid.
  *
  * On success, The pthread_barrier_destroy() function will return 0.
- * The pthread_barrier_destroy() function shall not return an error code of [EINTR].
+ * The pthread_barrier_destroy() function shall not 
+ * return an error code of [EINTR].
  */
 
 int pthread_barrier_destroy(pthread_barrier_t *barrier) {	

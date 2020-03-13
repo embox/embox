@@ -61,14 +61,14 @@ typedef struct pthread_attr {
 } pthread_attr_t;
 
 struct _pthread_barrier_t {
-  	unsigned int in;
-  	unsigned int round;
+    unsigned int in;
+    unsigned int round;
     unsigned int count;
-  	int istep;
-  	int pshared;
+    int istep;
+    int pshared;
     int initialize_flag;
     int in_use;
-  	sem_t lock[2];
+    sem_t lock[2];
 };
 
 struct _pthread_barrierattr_t {
@@ -217,7 +217,8 @@ extern void  pthread_testcancel(void);
 
 extern int   pthread_setschedprio(pthread_t, int);
 
-extern int   pthread_barrier_init(pthread_barrier_t *, const pthread_barrierattr_t *, unsigned int);
+extern int   pthread_barrier_init(pthread_barrier_t *, 
+    const pthread_barrierattr_t *, unsigned int);
 extern int   pthread_barrier_wait(pthread_barrier_t *);
 extern int   pthread_barrier_destroy(pthread_barrier_t *);
 extern int   pthread_barrierattr_destroy(pthread_barrierattr_t *);
