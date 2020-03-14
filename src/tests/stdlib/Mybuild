@@ -82,4 +82,8 @@ module strchr_test {
 	depends embox.framework.LibFramework
 }
 
+module ffs_test {
+	source "ffs_test.c"
 
+	depends embox.framework.LibFramework
+}
