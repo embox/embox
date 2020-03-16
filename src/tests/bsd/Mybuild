@@ -1,0 +1,8 @@
+package embox.test.bsd
+
+module queue_test {
+	source "queue_test.c"
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.all
+	depends embox.framework.LibFramework
+}
