@@ -14,13 +14,14 @@ EMBOX_TEST_SUITE("posix/pthread_barrier_api");
 
 TEST_CASE ("Initialize barrier with pthread_barrier_init()") {
 	pthread_barrier_t barrier = NULL; 
-	pthread_barrierattr_t attr = (pthread_barrierattr_t) malloc(sizeof(*attr));
+	pthread_barrierattr_t *attr;
+	attr = (pthread_barrierattr_t *) malloc(sizeof(pthread_barrierattr_t));
 	attr->pshared = PTHREAD_PROCESS_PRIVATE;
-	test_assert_zero(pthread_barrier_init(&barrier, &attr, 1));
+	test_assert_zero(pthread_barrier_init(&barrier, attr, 1));
 	test_assert_equal(pthread_barrier_wait(&barrier), 
 	    PTHREAD_BARRIER_SERIAL_THREAD);
 	test_assert_zero(pthread_barrier_destroy(&barrier));
-	test_assert_zero(pthread_barrierattr_destroy(&attr));
+	test_assert_zero(pthread_barrierattr_destroy(attr));
 }
 
 static void *thread(void *arg) {

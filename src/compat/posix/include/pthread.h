@@ -71,12 +71,11 @@ struct _pthread_barrier_t {
     sem_t lock[2];
 };
 
-struct _pthread_barrierattr_t {
+typedef  struct _pthread_barrierattr_t {
     int pshared;
-}
+} pthread_barrierattr_t;
 
 typedef struct _pthread_barrier_t *pthread_barrier_t;
-typedef struct _pthread_barrierattr_t *pthread_barrierattr_t;
 
 typedef cond_t pthread_cond_t;
 
@@ -169,8 +168,6 @@ extern int   pthread_join(pthread_t, void **);
 
 extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
 extern int   pthread_key_delete(pthread_key_t);
-
-extern int   pthread_kill(pthread_t thread, int sig);
 
 extern int   pthread_mutex_destroy(pthread_mutex_t *);
 //extern int   pthread_mutex_getprioceiling(const pthread_mutex_t *, int *);

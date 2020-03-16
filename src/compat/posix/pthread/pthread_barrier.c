@@ -49,8 +49,8 @@ int pthread_barrier_init(pthread_barrier_t *barrier,
     }
 
 	if (NULL != (ib = (pthread_barrier_t) malloc(sizeof(*ib)))) {
-		if (NULL != attr && NULL != *attr) {
-			ib->pshared = (*attr)->pshared;
+		if (NULL != attr) {
+			ib->pshared = attr->pshared;
 		}
 		else {
 			ib->pshared = PTHREAD_PROCESS_PRIVATE;
@@ -99,7 +99,7 @@ int pthread_barrier_wait(pthread_barrier_t *barrier) {
 		return EINVAL;
 	}
 
-	if (NULL != *barrier) {
+	if (NULL != (*barrier)) {
         if (0 == (*barrier)->initialize_flag) {
             return EINVAL;
         }
@@ -154,7 +154,7 @@ int pthread_barrier_destroy(pthread_barrier_t *barrier) {
 		return EINVAL;
 	}
 
-	if (NULL != *barrier) {
+	if (NULL != (*barrier)) {
         if (0 == (*barrier)->initialize_flag) {
             return EINVAL;
         }
@@ -192,13 +192,11 @@ int pthread_barrier_destroy(pthread_barrier_t *barrier) {
 int pthread_barrierattr_destroy(pthread_barrierattr_t *attr) {	
 	int result = 0;
 
-	if (NULL == attr || NULL == (*attr)) {
+	if (NULL == attr) {
 		return EINVAL;
 	} else {
-		pthread_barrierattr_t iba = *attr;
-		
-		(*attr) = NULL;
-		free(iba);
+		free(attr);
+		attr = NULL;
 	}
 	return result;
 }
