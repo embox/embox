@@ -19,6 +19,12 @@ char  *optarg = NULL;
 static int sp = 1;
 static int not_opt = 0;
 
+/**
+ * @param argc is the number of arguments on cmdline
+ * @param argv is the pointer to array of cmdline arguments
+ * @param opts is the string of all valid options
+ * each char case must be given; options taking an arg are followed by = ':'
+ */
 int getopt(int argc, char *const argv[], const char *opts) {
 	int c;
 	char *cp;

@@ -18,9 +18,6 @@
  */
 extern int getopt(int argc, char *const argv[], const char *opts);
 
-/** setup optind and opterr */
-extern void getopt_init(void); /* TODO remove this */
-
 #define no_argument       0
 #define required_argument 1
 #define optional_argument 2

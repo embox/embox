@@ -14,6 +14,8 @@ module All {
 }
 
 static module getopt {
+	@IncludeExport(path="util")
+	source "getopt.h"
 	source "getopt.c"
 	source "getopt_long.c"
 

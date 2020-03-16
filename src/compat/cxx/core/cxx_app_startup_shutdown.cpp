@@ -9,6 +9,7 @@
 #include "cxx_app_startup_termination.h"
 #include "cxxapp.hpp"
 #include <unistd.h>
+#include <util/getopt.h>
 
 int cxx_app_start(int argc, char **argv) {
 	int ret;
