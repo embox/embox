@@ -33,6 +33,7 @@ static module str {
 	source "strtok.c"
 	source "strlcpy.c"
 	source "strnlen.c"
+	source "ffs.c"
 }
 
 static module str_dup {
