@@ -143,8 +143,6 @@ struct usb_endp {
 	unsigned short max_packet_size;
 	unsigned char interval;
 
-	struct usb_queue req_queue;
-
 	void *hci_specific;
 };
 
@@ -210,6 +208,10 @@ static inline int is_root_hub(struct usb_dev *dev) {
 
 static inline enum usb_comm_type usb_endp_type(struct usb_endp *endp) {
 	return endp->type;
+}
+
+static inline struct usb_request *usb_link2req(struct usb_queue_link *ul) {
+	return member_cast_out(ul, struct usb_request, req_link);
 }
 
 extern struct usb_hcd *usb_hcd_alloc(struct usb_hcd_ops *ops, void *args);

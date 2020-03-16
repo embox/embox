@@ -22,40 +22,27 @@ static struct usb_queue_link *usb_queue_link(struct usb_queue *q,
 	return member_cast_out(l, struct usb_queue_link, l);
 }
 
-struct usb_queue_link *usb_queue_peek(struct usb_queue *q) {
-	return usb_queue_link(q, q->q.next);
+struct usb_queue_link *usb_queue_first(struct usb_queue *q) {
+	return IRQ_LOCKED_DO(usb_queue_link(q, q->q.next));
 }
 
 struct usb_queue_link *usb_queue_last(struct usb_queue *q) {
-	return usb_queue_link(q, q->q.prev);
+	return IRQ_LOCKED_DO(usb_queue_link(q, q->q.prev));
 }
 
-int usb_queue_add(struct usb_queue *q, struct usb_queue_link *l) {
-	bool is_empty;
-
+void usb_queue_add(struct usb_queue *q, struct usb_queue_link *l) {
 	irq_lock();
 	{
-		is_empty = dlist_empty(&q->q);
 		dlist_head_init(&l->l);
 		dlist_add_prev(&l->l, &q->q);
 	}
 	irq_unlock();
-
-	return !is_empty;
 }
 
-int usb_queue_remove(struct usb_queue *q, struct usb_queue_link *l) {
-	bool is_first;
+void usb_queue_del(struct usb_queue *q, struct usb_queue_link *l) {
+	IRQ_LOCKED_DO(dlist_del(&l->l));
+}
 
-	irq_lock();
-	{
-		struct usb_queue_link *cl = usb_queue_peek(q);
-
-		is_first = cl == l;
-
-		dlist_del(&l->l);
-	}
-	irq_unlock();
-
-	return is_first;
+int usb_queue_empty(struct usb_queue *q) {
+	return IRQ_LOCKED_DO(dlist_empty(&q->q));
 }

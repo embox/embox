@@ -129,7 +129,7 @@ struct ohci_hcd {
 	struct usb_hcd *hcd;
 	struct ohci_hcca *hcca;
 	struct ohci_reg *base;
-
+	struct usb_queue req_queue;
 };
 
 static inline struct usb_hcd *ohci2hcd(struct ohci_hcd *ohcd) {

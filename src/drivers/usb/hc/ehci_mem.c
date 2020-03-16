@@ -50,7 +50,7 @@ struct ehci_req *ehci_req_alloc(struct ehci_hcd *ehci) {
 	if (!ehci_req) {
 		return NULL;
 	}
-	dlist_head_init(&ehci_req->req_link);
+	usb_queue_link_init(&ehci_req->req_link);
 	return ehci_req;
 }
 

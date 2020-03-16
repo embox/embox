@@ -281,7 +281,7 @@ static int echi_hcd_init(struct ehci_hcd *ehci_hcd) {
 	if ((ret = ehci_mem_init(ehci_hcd)) < 0)
 		return ret;
 
-	dlist_init(&ehci_hcd->req_list);
+	usb_queue_init(&ehci_hcd->req_queue);
 
 	/*
 	 * dedicate a qh for the async ring head, since we couldn't unlink
@@ -747,11 +747,11 @@ static int ehci_request(struct usb_request *req) {
 	ehci_req->req = req;
 	ehci_req->qtds_head = qtd_first;
 
-	if (dlist_empty(&ehci->req_list)) {
-		dlist_add_next(&ehci_req->req_link, &ehci->req_list);
+	if (usb_queue_empty(&ehci->req_queue)) {
+		usb_queue_add(&ehci->req_queue, &ehci_req->req_link);
 		ehci_submit_async(ehci, ehci_req);
 	} else {
-		dlist_add_next(&ehci_req->req_link, &ehci->req_list);
+		usb_queue_add(&ehci->req_queue, &ehci_req->req_link);
 	}
 
 	return 0;

@@ -77,7 +77,6 @@ static struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned n,
 	ep->dev = dev;
 
 	usb_endp_fill_from_desc(ep, ep_desc);
-	usb_queue_init(&ep->req_queue);
 
 	dev->endpoints[n] = ep;
 
