@@ -17,6 +17,8 @@
 #include <kernel/task/resource.h>
 #include <hal/vfork.h>
 
+#include <errno.h>
+
 static const char * exec_cmd_name(const char *path) {
 	size_t path_len;
 
@@ -60,13 +62,11 @@ int exec_call(void) {
 			task_self_module_ptr_set(cmd2mod(cmd));
 			ecode = cmd_exec(cmd, c, v);
 		} else {
-			ecode = ENOENT;
+			ecode = -ENOENT;
+			errno = ENOENT;
 		}
 	}
 
-	if (ecode == 0) {
-		task_exit(0);
-	}
 	return ecode;
 }
 
@@ -116,9 +116,13 @@ int execv(const char *path, char *const argv[]) {
 	vfork_child_done(task, task_exec_callback, NULL);
 
 	/* Not vforked */
-	exec_call();
+	int ecode = exec_call();
 
-	return 0;
+	if (ecode == 0) {
+		task_exit(0);
+	}
+	return -1;
+
 }
 
 int execve(const char *path, char *const argv[], char *const envp[]) {
