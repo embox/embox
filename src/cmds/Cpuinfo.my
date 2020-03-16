@@ -16,5 +16,6 @@ package embox.cmd
 module cpuinfo {
 	source "cpuinfo.c"
 
+	depends embox.lib.LibCpuInfo
 	depends embox.arch.cpu_info
 }
