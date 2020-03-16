@@ -382,11 +382,6 @@ static int usb_hub_probe(struct usb_dev *dev) {
 	}
 
 	for (i = 0; i < hub->port_n; i++) {
-		usb_hub_clear_port_feature(hub, i, USB_PORT_FEATURE_POWER);
-	}
-	usleep(100 * 1000);
-
-	for (i = 0; i < hub->port_n; i++) {
 		usb_hub_set_port_feature(hub, i, USB_PORT_FEATURE_POWER);
 	}
 	usleep(100 * 1000);
