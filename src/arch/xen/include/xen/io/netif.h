@@ -251,6 +251,7 @@ typedef struct netif_tx_response netif_tx_response_t;
 
 struct netif_rx_request {
     uint16_t    id;        /* Echoed in response message.        */
+    uint16_t pad;
     grant_ref_t gref;      /* Reference to incoming granted frame */
 };
 typedef struct netif_rx_request netif_rx_request_t;

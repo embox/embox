@@ -115,13 +115,20 @@ static const struct net_driver xen_net_drv_ops = {
 };
 
 static void print_packet(unsigned char* data, int len, void* arg) {
-	unsigned char *out = data;
 
-	printk("Packet: [");
+	printk("Packet(%d): [", len);
+#if 0
+    int i;
+    for (i = 0; i < len; i++) {
+        printf("%x", data[i]);
+    }
+#else
+    unsigned char *out = data;
 	while (len) {
-		printk("%c ", *out++);
+		printk("%x ", *out++);
 		--len;
 	}
+#endif
 	printk("]\n");
 }
 
