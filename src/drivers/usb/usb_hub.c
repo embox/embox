@@ -360,7 +360,7 @@ static int usb_hub_probe(struct usb_dev *dev) {
 			hub_desc.b_pwr_on_2_pwr_good, hub_desc.b_hub_contr_current);
 
 	if (!is_root_hub(dev)) {
-		uint16_t status, hubstatus, hubchange;
+		uint16_t status = 0, hubstatus = 0, hubchange = 0;
 
 		ret = usb_endp_control_wait(dev->endpoints[0],
 			USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
