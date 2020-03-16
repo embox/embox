@@ -74,7 +74,11 @@ int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
 			endp = dev->endpoints[mass->blkin];
 		} else if (dir == USB_DIRECTION_OUT) {
 			endp = dev->endpoints[mass->blkout];
+		} else {
+			log_error("Unsupported direction: %d", dir);
+			goto failed;
 		}
+
 		res = usb_endp_bulk_wait(endp, buf, len, MS_BULK_TIMEOUT);
 		if (res < 0) {
 			goto failed;
