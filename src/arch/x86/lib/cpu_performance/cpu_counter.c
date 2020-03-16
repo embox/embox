@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include <hal/cpu_info.h>
+#include <lib/libcpu_info.h>
 
 uint64_t get_cpu_counter(void) {
 	uint32_t hi = 0, lo = 0;

@@ -1,0 +1,11 @@
+package embox.lib
+
+static module LibCpuInfo {
+	source "cpu_info_funcs.c"
+
+	@IncludeExport(path="lib")
+	source "libcpu_info.h"
+
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.compat.libc.assert
+}
