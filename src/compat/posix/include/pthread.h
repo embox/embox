@@ -72,8 +72,8 @@ struct _pthread_barrier_t {
 };
 
 struct _pthread_barrierattr_t {
-  	int pshared;
-};
+    int pshared;
+}
 
 typedef struct _pthread_barrier_t *pthread_barrier_t;
 typedef struct _pthread_barrierattr_t *pthread_barrierattr_t;

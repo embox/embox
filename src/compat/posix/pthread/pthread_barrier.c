@@ -12,7 +12,7 @@
 #include <util/err.h>
 
 static void sem_post_multiple(sem_t *sem, int count) { 
-    for(;count > 0; --count) {
+    for (; count > 0; --count) {
         sem_post(sem);
     }
 } 
