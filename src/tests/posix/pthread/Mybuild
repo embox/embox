@@ -8,6 +8,12 @@ module pthread_mutex {
 	depends embox.framework.LibFramework
 }
 
+module pthread_kill_test {
+	source "pthread_kill_test.c"
+	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.pthreads
+}
+
 module pthread_rwlock {
 	source "pthread_rwlock_test.c"
 	depends embox.compat.posix.pthreads
