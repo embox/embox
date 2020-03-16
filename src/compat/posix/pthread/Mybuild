@@ -6,7 +6,10 @@ static module pthreads {
 	source "pthread_cond.c"
 	source "pthread_mutex.c"
 	source "pthread_cancel.c"
+	source "pthread_barrier.c"
 
+	depends embox.compat.libc.all
+	depends embox.compat.posix.semaphore
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 	depends embox.kernel.task.syslib.thread_key_table
