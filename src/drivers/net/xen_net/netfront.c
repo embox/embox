@@ -31,7 +31,7 @@ do {                                        \
 
 #define BUG_ON(x) ASSERT(!(x))
 
-static char _text;
+//static char _text;
 
 //static char memory_pagess[16][PAGE_SIZE];
 
@@ -41,7 +41,7 @@ grant_entry_v1_t *grant_table;
 
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
 {
-	printk("grant access for ref:%d on addr:%p\n", ref, &grant_table[ref]);
+	//printk("grant access for ref:%d on addr:%p\n", ref, &grant_table[ref]);
     
     grant_table[ref].frame = frame;
     grant_table[ref].domid = domid;
@@ -49,7 +49,7 @@ grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly
     readonly *= GTF_readonly;
     grant_table[ref].flags = GTF_permit_access | readonly;
 
-	printk("frame setuped\n");
+	//printk("frame setuped\n");
     return ref++;
 }
 #if 0 //сохраним для истории
@@ -165,7 +165,7 @@ static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 		return;
 	}
 #else
-	alloc_evtchn(&dev->evtchn);
+	
 	memset(xs_key, 0, XS_MSG_LEN);
 	sprintf(xs_key, "%s/event-channel", dev->nodename);
 	memset(xs_value, 0, XS_MSG_LEN);
@@ -188,41 +188,6 @@ static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 		return;
 	}
 
-	// state 	
-	memset(xs_key, 0, XS_MSG_LEN);
-	sprintf(xs_key, "%s/state", dev->nodename);
-	memset(xs_value, 0, XS_MSG_LEN);
-	sprintf(xs_value, "%u", XenbusStateConnected);
-	err = xenstore_write(xs_key, xs_value);
-	if (err) {
-		printk("[PANIC!] can not switch state\n");
-		return;
-	}
-	
-	//wait for backend
-	XenbusState state = XenbusStateUnknown;
-	int count = 0;
-	
-	while (count < 10 && state != XenbusStateConnected) {
-		memset(xs_value, 0, XS_MSG_LEN);
-		xenstore_read(xs_key, xs_value, XS_MSG_LEN);
-		printk(">>>State is:%s\n",xs_value);
-		state = atoi(xs_value);
-		sleep(5);
-		++count;
-	}
-	printk(">>>>>Backend state is:%i\n>>>>>Tries:%i\n", state, count);
-	
-	if (state != XenbusStateConnected) {
-		printk("[PANIC!] backend not avalable, state=%d\n", state);
-		// xenbus_unwatch_path_token(XBT_NIL, path, path);
-		return;
-	}
-
-	printk(">>>>>xenstore_interaction: End transaction\n");
-
-	printk("backend %p %d %d\n", dev->backend, sizeof(dev->backend),
-			sizeof(dev->nodename));
 
 		//read ip from xenstore? o_O?
 #if 0 
@@ -238,7 +203,7 @@ static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 
 	return;
 }
-
+static int rx_buffers_mfn[NET_RX_RING_SIZE];
 #if 1
 static inline int xennet_rxidx(RING_IDX idx)
 {
@@ -271,7 +236,8 @@ moretodo:
 
         buf = &dev->rx_buffers[id];
         page = (unsigned char*)buf->page;
-        // gnttab_end_access(buf->gref);
+//TODO
+        //gnttab_end_access(buf->gref);
 
         if (rx->status > NETIF_RSP_NULL) {
 #ifdef HAVE_LIBC
@@ -299,14 +265,17 @@ moretodo:
     for (i = 0; i < nr_consumed; i++) {
         int id = xennet_rxidx(req_prod + i);
         netif_rx_request_t *req = RING_GET_REQUEST(&dev->rx, req_prod + i);
+#if 0 //TODO gnttab_grant_access
         struct net_buffer* buf = &dev->rx_buffers[id];
-        void* page = buf->page;
+        //void* page = buf->page;
 //TODO virt->mfn
+
         /* We are sure to have free gnttab entries since they got released above */
         buf->gref = req->gref = gnttab_grant_access(dev->dom,
-                                                    virt_to_mfn(page),
+                                                    rx_buffers_mfn[id],
                                                     0);
-        req->id = id;
+#endif												
+	    req->id = id;
     }
 
     wmb();
@@ -314,6 +283,7 @@ moretodo:
     dev->rx.req_prod_pvt = req_prod + i;
     RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
     if (notify)
+//TODO
 		printk("NOTIFY!\n");
 }
 #endif
@@ -325,33 +295,50 @@ static inline int notify_remote_via_evtchn(evtchn_port_t port)
     return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
 }
 
-static int rx_buffers_mfn[NET_RX_RING_SIZE];
 void init_rx_buffers(struct netfront_dev *dev)
 {
 	printk(">>>>>init_rx_buffers\n");
 	printk(">>>>>NET_RX_RING_SIZE=%li\n", NET_RX_RING_SIZE);
+	printk(">>>>>NET_RX_RING_SIZE_2=%d\n", RING_SIZE(&dev->rx));
+	
     int i, requeue_idx;
     netif_rx_request_t *req;
     int notify;
 
     /* Rebuild the RX buffer freelist and the RX ring itself. */
-    for (requeue_idx = 0, i = 0; i < NET_RX_RING_SIZE; i++) 
+    for (requeue_idx = 0, i = 0; i < 32; i++) 
     {
         struct net_buffer* buf = &dev->rx_buffers[requeue_idx];
-        req = RING_GET_REQUEST(&dev->rx, requeue_idx);
+		//printk("dev->rx.req_cons=%u, RING_SIZE(_r)=%d, finally=%d\n",dev->rx.req_cons, RING_SIZE(&dev->rx), ((dev->rx.req_cons) & (RING_SIZE(&dev->rx) - 1)));
 
+		req = RING_GET_REQUEST(&dev->rx, requeue_idx);
+
+		printk("addr for %d: %p\n", requeue_idx, req);
         buf->gref = req->gref = 
             gnttab_grant_access(dev->dom,rx_buffers_mfn[requeue_idx],0);
 
         req->id = requeue_idx;
+		printk("request: id=%d, gref=%u\n", req->id, req->gref);
 
         requeue_idx++;
     }
-	printk(">>>>>requeue_idx=%i\n", requeue_idx);
-    dev->rx.req_prod_pvt = requeue_idx;
+
+    dev->rx.req_prod_pvt = requeue_idx; //256
+
+	wmb();
 
     RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-	
+/*	
+	printk(">>>\n");
+	req = RING_GET_REQUEST(&dev->rx, 0);
+	printk("request: id=%d, gref=%u\n", req->id, req->gref);
+	req = RING_GET_REQUEST(&dev->rx, 1);
+	printk("request: id=%d, gref=%u\n", req->id, req->gref);
+	req = RING_GET_REQUEST(&dev->rx, 2);
+	printk("request: id=%d, gref=%u\n", req->id, req->gref);
+	req = RING_GET_REQUEST(&dev->rx, 3);
+	printk("request: id=%d, gref=%u\n", req->id, req->gref);
+*/
 	printk(">>>>>notify=%i\n", notify);
     
 	if (notify) 
@@ -389,7 +376,7 @@ int alloc_page(unsigned long *va, unsigned long *mfn)
     set_xen_guest_handle(reservation.extent_start, frame_list);
    	int rc;
     rc = HYPERVISOR_memory_op(XENMEM_increase_reservation, &reservation);
-    printk("XENMEM_populate_physmap=%d\n", rc);
+    printk("XENMEM_increase_reservation=%d\n", rc);
     printk("frame_list=%lu\n", frame_list[0]);
 	
 //map it
@@ -405,52 +392,9 @@ int alloc_page(unsigned long *va, unsigned long *mfn)
 //done!
 	return 0;
 }
-
-
-struct netfront_dev *init_netfront(
-	char *_nodename,
-	void (*thenetif_rx)(unsigned char* data,
-		int len, void* arg),
-	unsigned char rawmac[6],
-	char **ip
-) {
-	printk(">>>>>init_netfront\n");
-	char nodename[256];
-	static int netfrontends = 0;
-
-	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
-
-	struct netfront_dev *dev = NULL;
-	dev = malloc(sizeof(*dev));
-	memset(dev, 0, sizeof(*dev));
-	dev->nodename = strdup(nodename);
-	printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
-
-#if 0 //TODO: del this
-//ask for mem (for rings txs rxs)
-    struct xen_memory_reservation reservation;
-    reservation.nr_extents = 2;
-    reservation.extent_order = 3;
-    reservation.address_bits= 0;
-    reservation.domid = DOMID_SELF;
-    unsigned long frame_list[2];
-    set_xen_guest_handle(reservation.extent_start, frame_list);
-   	int rc;
-    rc = HYPERVISOR_memory_op(XENMEM_increase_reservation, &reservation);
-    printk("XENMEM_populate_physmap=%d\n", rc);
-    printk("frame_list=%lu %lu\n", frame_list[0], frame_list[1]);
-//map it
-	int count;
-    for(count = 0; count < 2; count++)
-	{
-		printk("addr:%p\n", &rings_mem[count]);
-		rc = HYPERVISOR_update_va_mapping((unsigned long) &rings_mem[count],
-				__pte((frame_list[count]<< PAGE_SHIFT) | 7),
-				UVMF_INVLPG);
-		printk("HYPERVISOR_update_va_mapping:%d\n", rc);
-	}
-//done!
-#endif
+void setup_netfront(struct netfront_dev *dev, 
+					void (*thenetif_rx)(unsigned char* data, int len, void* arg))
+{
     //alloc pages for buffer rings
 	int i;
 	for(i=0;i<NET_TX_RING_SIZE;i++)
@@ -495,14 +439,195 @@ struct netfront_dev *init_netfront(
 
 	printk(">>>>>>>>>>after grant\n");
 
-    init_rx_buffers(dev);
-
     dev->netif_rx = thenetif_rx;
 
     //NEED IT??
 	//dev->events = NULL;
+	
+	//experiment
+	alloc_evtchn(&dev->evtchn);
+}
+
+struct xen_netif_rx_request {
+	uint16_t id;		/* Echoed in response message.        */
+	uint16_t pad;
+	grant_ref_t gref;
+};
+//from linux
+/*
+#ifdef NET_SKBUFF_DATA_USES_OFFSET
+static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
+{
+	return skb->head + skb->end;
+}
+
+static inline unsigned int skb_end_offset(const struct sk_buff *skb)
+{
+	return skb->end;
+}
+#else
+static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
+{
+	return skb->end;
+}
+
+static inline unsigned int skb_end_offset(const struct sk_buff *skb)
+{
+	return skb->end - skb->head;
+}
+#endif
+*/
+/* Internal */
+#define skb_shinfo(SKB)	((struct skb_shared_info *)(skb_end_pointer(SKB)))
+#if 0
+static void xennet_alloc_rx_buffers(struct netfront_dev *dev)
+{
+	RING_IDX req_prod = dev->rx.req_prod_pvt;
+	int notify;
+	int err = 0;
+/*
+	if (unlikely(!netif_carrier_ok(dev->info->netdev)))
+		return;
+*/
+	for (req_prod = dev->rx.req_prod_pvt;
+	     req_prod - dev->rx.rsp_cons < NET_RX_RING_SIZE;
+	     req_prod++) {
+		//struct sk_buff *skb;
+		
+		unsigned short id;
+		grant_ref_t ref;
+		//struct page *page;
+		struct xen_netif_rx_request *req;
+
+		//skb = xennet_alloc_one_rx_buffer(dev);
+		/*
+		if (!skb) {
+			err = -ENOMEM;
+			break;
+		}*/
+
+		id = xennet_rxidx(req_prod);
+		ref = gnttab_grant_access(dev->dom, rx_buffers_mfn[req_prod],0);
+		//BUG_ON(dev->rx_skbs[id]);
+		//dev->rx_skbs[id] = skb;
+
+		//ref = gnttab_claim_grant_reference(&dev->gref_rx_head);
+		//WARN_ON_ONCE(IS_ERR_VALUE((unsigned long)(int)ref));
+		//dev->grant_rx_ref[id] = ref;
+
+		//page = (&skb_shinfo(skb)->frags[0])->page.p;
+
+		req = (struct xen_netif_rx_request *)RING_GET_REQUEST(&dev->rx, req_prod);
+		/*
+		gnttab_page_grant_foreign_access_ref_one(ref,
+							 dev->info->xbdev->otherend_id,
+							 page,
+							 0);
+		*/
+		req->id = id;
+		req->gref = ref;
+	}
+
+	dev->rx.req_prod_pvt = req_prod;
+
+	/* Try again later if there are not enough requests or skb allocation
+	 * failed.
+	 * Enough requests is quantified as the sum of newly created slots and
+	 * the unconsumed slots at the backend.
+	 */
+	#define XEN_NETIF_NR_SLOTS_MIN 18
+	#define NET_RX_SLOTS_MIN (XEN_NETIF_NR_SLOTS_MIN + 1)
+
+	if (req_prod - dev->rx.rsp_cons < NET_RX_SLOTS_MIN || err) 
+	{
+		printk("!!!!!!!ERROR: req_prod - dev->rx.rsp_cons < NET_RX_SLOTS_MIN || err");
+		//mod_timer(&dev->rx_refill_timer, jiffies + (HZ/10));
+		return;
+	}
+
+	wmb();		/* barrier so backend seens requests */
+
+	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
+	if (notify)
+		notify_remote_via_evtchn(dev->evtchn);
+}
+#endif 
+
+struct netfront_dev *init_netfront(
+	char *_nodename,
+	void (*thenetif_rx)(unsigned char* data,
+		int len, void* arg),
+	unsigned char rawmac[6],
+	char **ip
+) {
+	printk(">>>>>init_netfront\n");
+	char nodename[256];
+	static int netfrontends = 0;
+
+	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
+
+	struct netfront_dev *dev = NULL;
+	dev = malloc(sizeof(*dev));
+	memset(dev, 0, sizeof(*dev));
+	dev->nodename = strdup(nodename);
+	printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
+
+	setup_netfront(dev, thenetif_rx);
 
 	xenstore_interaction(dev, ip);
+
+	//notify_remote_via_evtchn(dev->evtchn);
+#if 1
+	init_rx_buffers(dev);
+
+	char xs_key[XS_MSG_LEN], xs_value[XS_MSG_LEN];
+	int err;
+	// state 	
+	memset(xs_key, 0, XS_MSG_LEN);
+	sprintf(xs_key, "%s/state", dev->nodename);
+	memset(xs_value, 0, XS_MSG_LEN);
+	sprintf(xs_value, "%u", XenbusStateConnected);
+	err = xenstore_write(xs_key, xs_value);
+	if (err) {
+		printk("[PANIC!] can not switch state\n");
+		//return;
+	}
+	
+	//wait for backend
+	XenbusState state = XenbusStateUnknown;
+	int count = 0;
+
+//are we reading our state(not backend)?
+	while (count < 10 && state != XenbusStateConnected) {
+		memset(xs_value, 0, XS_MSG_LEN);
+		xenstore_read(xs_key, xs_value, XS_MSG_LEN);
+		printk(">>>State is:%s\n",xs_value);
+		state = atoi(xs_value);
+		sleep(5);
+		++count;
+	}
+	printk(">>>>>Backend state is:%i\n>>>>>Tries:%i\n", state, count);
+	
+	if (state != XenbusStateConnected) {
+		printk("[PANIC!] backend not avalable, state=%d\n", state);
+		// xenbus_unwatch_path_token(XBT_NIL, path, path);
+		//return;
+	}
+
+	printk(">>>>>xenstore_interaction: End transaction\n");
+
+	printk("backend %p %d %d\n", dev->backend, sizeof(dev->backend),
+			sizeof(dev->nodename));
+#else
+	xennet_alloc_rx_buffers(dev);
+#endif
+
+#if 0 //DEBUG
+	for (i = 0; i < NET_RX_RING_SIZE; i++) 
+    {
+		printk("addr for %d: %p\n", i, RING_GET_REQUEST(&dev->rx, i));
+	}
+#endif
 
     if (rawmac)
         sscanf(dev->mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
@@ -522,10 +647,10 @@ struct netfront_dev *init_netfront(
 		   dev->backend,
 		   dev->mac,
 		   *ip);
-#if 0
+
 	while(1) {
 		network_rx(dev);
 	}
-#endif
+
 	return dev;
 }
