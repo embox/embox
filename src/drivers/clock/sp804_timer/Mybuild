@@ -1,0 +1,13 @@
+package embox.driver.clock
+
+module sp804 extends embox.arch.clock {
+    source "sp804_timer.c"
+
+    option number base_addr=0x10011000
+    option number irq_nr=34
+    option number target_freq=100
+
+    depends embox.kernel.time.clock_source
+    @NoRuntime depends embox.kernel.time.timer_handler
+    depends embox.driver.interrupt.irqctrl_api
+}
