@@ -232,7 +232,7 @@ int dfs_format(void) {
 
 	/* Configure root directory */
 	sbi->inode_count++;
-	strcpy(root.name, "/");
+	strcpy((char *) root.name, "/");
 	root.pos_start = sbi->free_space;
 	root.len       = MIN_FILE_SZ;
 	root.flags     = S_IFDIR;
@@ -313,7 +313,7 @@ int ino_from_path(const char *path) {
 	assert(path);
 
 	for (int i = 0; i < DFS_INODES_MAX; i++)
-		if (!dfs_read_dirent(i, &dirent) && strcmp(path, dirent.name) == 0)
+		if (!dfs_read_dirent(i, &dirent) && strcmp(path, (char *) dirent.name) == 0)
 			return i;
 
 	return -1;
@@ -339,11 +339,14 @@ static int dfs_icreate(struct inode *i_new,
 	char buf[NAND_PAGE_SIZE];
 	int i;
 	char t;
+	int dir_start_pos;
 
 	assert(sb);
 	assert(i_dir);
 	if (i_new == NULL)
 		return -1;
+
+	dir_start_pos = (uintptr_t) i_dir->i_data;
 
 	dfs_read_sb_info(sbi);
 
@@ -357,12 +360,12 @@ static int dfs_icreate(struct inode *i_new,
 		.flags     = mode & S_IFMT,
 	};
 
-	strcpy(dirent.name, i_new->i_dentry->name);
+	strcpy((char *) dirent.name, i_new->i_dentry->name);
 	dfs_write_dirent(sbi->inode_count, &dirent);
 
 	*i_new = (struct inode) {
 		.i_no      = sbi->inode_count,
-		.start_pos = dirent.pos_start,
+		.i_data    = (void *) dirent.pos_start,
 		.length    = 0,
 		.i_sb      = sb,
 		.i_ops     = &dfs_iops,
@@ -388,11 +391,11 @@ static int dfs_icreate(struct inode *i_new,
 
 	/* Write entry to parent directory */
 	for (i = 0; i < i_dir->length; i++) {
-		_read(i_dir->start_pos + i, &t, 1);
+		_read(dir_start_pos + i, &t, 1);
 		if (t != DFS_DIRENT_EMPTY)
 			/* Entry taken */
 			continue;
-		_write(i_dir->start_pos + i, &i_new->i_no, 1);
+		_write(dir_start_pos + i, &i_new->i_no, 1);
 		break;
 	}
 
@@ -467,9 +470,9 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 
 	dfs_read_dirent(inode->i_no, &dirent);
 
-	inode->start_pos = dirent.pos_start;
-	inode->length    = dirent.len;
-	inode->i_mode    = dirent.flags;
+	inode->i_data = (void *) (uintptr_t) dirent.pos_start;
+	inode->length = dirent.len;
+	inode->i_mode = dirent.flags;
 
 	return inode;
 }
@@ -478,32 +481,35 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 		struct inode *parent, struct dir_ctx *ctx) {
 	struct dfs_dir_entry dirent;
 	int candidate = DFS_POS_MASK;
-	int i;
+	int i, dir_pos;
+	int parent_start_pos;
 
 	assert(ctx);
 	assert(next);
 	assert(parent);
 	assert(name_buf);
 
-	int dir_pos = (int) ctx->fs_ctx;
+	dir_pos = (int) ctx->fs_ctx;
+
+	parent_start_pos = (uintptr_t) parent->i_data;
 
 	for (i = dir_pos; i < parent->length; i++) {
-		_read(parent->start_pos + i, &candidate, 1);
+		_read(parent_start_pos + i, &candidate, 1);
 		if (candidate == DFS_DIRENT_EMPTY)
 			continue;
 
 		dfs_read_dirent(candidate, &dirent);
 		*next = (struct inode) {
-			.i_no      = candidate,
-			.start_pos = dirent.pos_start,
-			.length    = dirent.len,
-			.i_sb      = dfs_sb(),
-			.i_ops     = &dfs_iops,
-			.i_mode    = dirent.flags,
+			.i_no   = candidate,
+			.i_data = (void *) (uintptr_t) dirent.pos_start,
+			.length = dirent.len,
+			.i_sb   = dfs_sb(),
+			.i_ops  = &dfs_iops,
+			.i_mode = dirent.flags,
 		};
 		ctx->fs_ctx = (void*) (i + 1);
 
-		strncpy(name_buf, dirent.name, DENTRY_NAME_LEN);
+		strncpy(name_buf, (char *) dirent.name, DENTRY_NAME_LEN);
 
 		return 0;
 	}
@@ -519,10 +525,10 @@ static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 
 	if (flags & DVFS_NAME) {
 		dfs_read_dirent(inode->i_no, &dirent);
-		strcpy(buf, dirent.name);
+		strcpy(buf, (char *) dirent.name);
 	} else {
 		*buf = '/';
-		strcpy(buf + 1, dirent.name);
+		strcpy(buf + 1, (char *) dirent.name);
 	}
 
 	return 0;
@@ -559,7 +565,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	assert(desc->f_inode);
 	assert(buf);
 
-	pos = desc->f_inode->start_pos + desc->pos;
+	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	l = min(size, file_get_size(desc) - desc->pos);
 
 	if (l <= 0)
@@ -575,7 +581,7 @@ size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	assert(desc->f_inode);
 	assert(buf);
 
-	int pos = desc->f_inode->start_pos + desc->pos;
+	int pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	int l   = min(size, file_get_size(desc) - desc->pos);
 
 	if (l < 0)
@@ -626,8 +632,8 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 
 	sb->sb_root->i_no      = 0;
 	sb->sb_root->length    = MIN_FILE_SZ;
-	sb->sb_root->start_pos = _capacity(sizeof(struct dfs_sb_info)) +
-		dfs_info.max_inode_count * _capacity(sizeof(struct dfs_dir_entry));
+	sb->sb_root->i_data = (void *) ((uintptr_t) _capacity(sizeof(struct dfs_sb_info)) +
+		dfs_info.max_inode_count * _capacity(sizeof(struct dfs_dir_entry)));
 	return 0;
 }
 
