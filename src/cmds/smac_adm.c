@@ -89,7 +89,6 @@ int main(int argc, char *argv[]) {
 	} action = ACT_NONE;
 	int opt;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "S:GFPR:U:o:a:h"))) {
 		enum action act = ACT_NONE;
 

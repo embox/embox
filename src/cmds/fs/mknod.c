@@ -18,7 +18,6 @@ int main(int argc, char **argv) {
 	int opt;
 	mode_t mode;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch (opt) {
 			case 'h': /* help message */

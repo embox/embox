@@ -53,7 +53,6 @@ int main(int argc, char **argv) {
 	unsigned int value;
 	enum access_type at = MEM_AT_LONG;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "a:v:hlsc"))) {
 		switch (opt) {
 		case 'a':

@@ -258,7 +258,6 @@ int main(int argc, char **argv) {
 
 	if (argc != 1) {
 
-		getopt_init();
 
 		while (-1 != (opt = getopt(argc, argv, "pc:"))) {
 			switch(opt) {

@@ -208,7 +208,6 @@ int main(int argc, char **argv) {
 
 	animated_scene = 1;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hasd:"))) {
 		switch(opt) {
 			case 'h':

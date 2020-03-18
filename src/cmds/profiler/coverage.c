@@ -24,7 +24,6 @@ int main(int argc, char *argv[]) {
 	const unsigned long *cov_bitmap;
 	int opt, i, sym_n;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "o:h"))) {
 		switch (opt) {
 		case 'h':

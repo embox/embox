@@ -126,7 +126,6 @@ static int show_fdate(char *fmt) {
 int main(int argc, char **argv) {
 	int opt;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hs:"))) {
 		printf("\n");

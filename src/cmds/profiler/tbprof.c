@@ -60,7 +60,6 @@ int main(int argc, char *argv[]) {
 	int c_argc = argc, opt, argnum = 1;
 	FILE *out = NULL;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "chn:ed"))) {
 		argnum++;

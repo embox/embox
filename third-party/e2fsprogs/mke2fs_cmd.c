@@ -9,6 +9,7 @@
 #include <embox/cmd.h>
 #include <assert.h>
 #include <unistd.h>
+#include <util/getopt.h>
 
 EMBOX_CMD(exec);
 

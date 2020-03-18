@@ -297,7 +297,6 @@ int main(int argc, char **argv) {
 	pinfo.timeout = DEFAULT_TIMEOUT;
 	pinfo.ttl = DEFAULT_TTL;
 
-	getopt_init();
 	/* while (-1 != (opt = getopt(argc, argv, "I:c:t:W:s:i:p:h"))) { */
 	/* Parse commandline options */
 	for (i_opt = 0; i_opt < argc - 1; i_opt++) {

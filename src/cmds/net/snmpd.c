@@ -58,7 +58,6 @@ int main(int argc, char **argv) {
 	char varbuf[MAX_PDU_LEN]; /* for received variables */
 	socklen_t sklen = sizeof addr;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "h"))) {
 		switch (opt) {

@@ -16,6 +16,7 @@
 
 #include <util/array.h>
 #include <util/err.h>
+#include <util/getopt.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/objalloc.h>

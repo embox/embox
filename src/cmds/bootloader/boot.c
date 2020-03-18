@@ -91,7 +91,6 @@ int main(int argc, char **argv) {
 	unsigned int load_addr;
 	void (*entry_point)(void);
 	image_header_t *hdr;
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "f:a:h"))) {
 		switch(opt) {
 		case 'f':

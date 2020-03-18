@@ -51,7 +51,6 @@ static void print_drive (struct ide_tab *ide) {
 int main(int argc, char **argv) {
 	int opt;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "ah"))) {
 		switch(opt) {
 		case 'a':

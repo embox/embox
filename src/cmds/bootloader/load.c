@@ -72,7 +72,6 @@ int main(int argc, char **argv) {
 	int opt;
 	int err;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "a:h"))) {
 		switch (opt) {
 		case 'a':

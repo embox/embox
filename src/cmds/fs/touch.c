@@ -21,7 +21,6 @@ int main(int argc, char **argv) {
 	char *point;
 	int fd;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch(opt) {
 		case 'h':
