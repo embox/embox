@@ -28,18 +28,18 @@ int n;
 
 TEST_CASE("Test that buf1 > buf2")
 {
-  int n = memcmp(buf1,buf2,sizeof(buf1));
+   n = memcmp(buf1,buf2,sizeof(buf1));
   test_assert(n > 0)
 }
 
 TEST_CASE("Test that buf3 < buf4")
 {
-  int n = memcmp(buf3,buf4,sizeof(buf3));
+   n = memcmp(buf3,buf4,sizeof(buf3));
   test_assert(n < 0);
 }
 
 TEST_CASE("Test's that two arrays are equal")
 {
   int n = memcmp(buf4,buf5,sizeof(buf4));
-  test_assert(n = 0);
+  test_assert(n == 0);
 }
