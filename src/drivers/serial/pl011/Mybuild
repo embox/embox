@@ -4,6 +4,8 @@ module pl011 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number base_addr
 	option number irq_num
+	/* FIXME Set UARTCLK to 0 since it is not used in many templates */
+	option number uartclk = 0
 
 	source "pl011.c"
 
