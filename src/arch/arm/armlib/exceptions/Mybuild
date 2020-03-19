@@ -2,7 +2,7 @@ package embox.arch.arm.armlib
 
 module exceptions {
 	option number log_level=0
-	option boolean keep_going=true /* Don't stall on undefined exception */
+	option boolean keep_going=false /* Don't stall on undefined exception */
 
 	source "entry.S"
 	source "exception_table.S"
