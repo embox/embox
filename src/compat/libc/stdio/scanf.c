@@ -54,7 +54,10 @@ int ch_to_digit(char ch, int base) {
 	return -1;
 }
 
-static void unscanchar(const char **str, int ch) {
+static void unscanchar(const char **str, int ch, int *pc_ptr) {
+	if (ch != EOF) {
+		(*pc_ptr)--;
+	}
 	if ((uintptr_t) str >= 2) {
 		(*str) --;
 	} else if ((uintptr_t) str == 1) {
@@ -64,21 +67,24 @@ static void unscanchar(const char **str, int ch) {
 	}
 }
 
-static int scanchar(const char **str) {
+static int scanchar(const char **str, int *pc_ptr) {
 	extern int getchar(void);
 	int ch;
 	if ((uintptr_t)str >= 2) {
 		ch = **str;
 		(*str)++;
-		return ch == '\0' ? EOF : ch;
+		ch = (ch == '\0' ? EOF : ch);
 	} else if ((uintptr_t)str == 1) {
-		return getc(file);
+		ch = getc(file);
 	} else {
 		if ('\n' == (ch = getchar())) {
-			return EOF;
+			ch = EOF;
 		}
-		return ch;
 	}
+	if (ch != EOF) {
+		(*pc_ptr)++;
+	}
+	return ch;
 }
 
 static bool is_space(int ch) {
@@ -87,41 +93,41 @@ static bool is_space(int ch) {
 	return false;
 }
 
-static int trim_leading(const char **str) {
+static int trim_leading(const char **str, int *pc_ptr) {
 	int ch;
 
 	do {
-		ch = scanchar(str);
+		ch = scanchar(str, pc_ptr);
 		/*when break*/
 		if (ch == EOF)
 			break;
 	} while (is_space(ch));
 
-	unscanchar(str, ch);
+	unscanchar(str, ch, pc_ptr);
 	return ch;
 }
 
-static int scan_int(const char **in, int base, int width, int *res) {
+static int scan_int(const char **in, int base, int width, int *res, int *pc_ptr) {
 	int neg = 0;
 	int dst = 0;
 	int ch;
 	int i;
 	int not_empty = 0;
 
-	if (EOF == (ch = trim_leading(in))) {
+	if (EOF == (ch = trim_leading(in, pc_ptr))) {
 		return EOF;
 	}
 
 	if ((ch == '-') || (ch == '+')) {
 		neg = (ch == '-');
-		scanchar(in);
+		scanchar(in, pc_ptr);
 	} else {
 		dst = 0;
 	}
 
-	for (i = 0; (ch = (int) scanchar(in)) != EOF; i++) {
+	for (i = 0; (ch = (int) scanchar(in, pc_ptr)) != EOF; i++) {
 		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == width)) {
-			unscanchar(in, ch);
+			unscanchar(in, ch, pc_ptr);
 			/*end conversion*/
 			break;
 		}
@@ -152,6 +158,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 	int converted = 0;
 	int ops_len;
 	int err;
+	int pc=0;
 
 	while (*fmt != '\0') {
 		if (*fmt == '%') {
@@ -185,15 +192,17 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 's': {
 				char *dst = va_arg(args, char*);
 				char ch;
-				while (isspace(ch = scanchar(in)));
+				while (isspace(ch = scanchar(in, &pc)));
 
 				while (ch != (char) EOF && width--) {
-					if (isspace(ch))
+					if (isspace(ch)) {
+						unscanchar(in, ch, &pc);
 						break;
+					}
 
 					width--;
 					*dst++ = (char) ch;
-					ch = scanchar(in);
+					ch = scanchar(in, &pc);
 				}
 
 				if (width == 80) // XXX
@@ -207,7 +216,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 'c': {
 				int dst;
 
-				dst = scanchar(in);
+				dst = scanchar(in, &pc);
 				*va_arg(args, char*) = dst;
 
 				if (dst == (char) EOF)
@@ -218,7 +227,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'u': {
 				int dst;
-				if (0 != (err = scan_int(in, 10, width, &dst))) {
+				if (0 != (err = scan_int(in, 10, width, &dst, &pc))) {
 					if (err == EOF)
 						converted = EOF;
 					goto out;
@@ -242,7 +251,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 'f': /* TODO float scanf haven't realized */
 			case 'd': {
 				int dst;
-				if (0 != (err = scan_int(in, 10, width, &dst))) {
+				if (0 != (err = scan_int(in, 10, width, &dst, &pc))) {
 					if (err == EOF)
 						converted = EOF;
 					goto out;
@@ -265,7 +274,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'o': {
 				int dst;
-				if (0 != (err = scan_int(in, 8, width, &dst))) {
+				if (0 != (err = scan_int(in, 8, width, &dst, &pc))) {
 					if (err == EOF)
 						converted = EOF;
 					goto out;
@@ -278,7 +287,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				break;
 			case 'x': {
 				int dst;
-				if (0 != (err = scan_int(in, 16, width, &dst))) {
+				if (0 != (err = scan_int(in, 16, width, &dst, &pc))) {
 					if (err == EOF)
 						converted = EOF;
 					goto out;
@@ -288,10 +297,15 @@ static int scan(const char **in, const char *fmt, va_list args) {
 				++converted;
 			}
 				break;
+			case 'n': {
+				*va_arg(args, int *) = pc;	//%n only allows for int*
+			}
+				break;
 			}
 			fmt++;
 		} else {
-			if (*fmt++ != *(*in)++) {
+			char ch = scanchar(in, &pc);
+			if (*fmt++ != ch) {
 				return converted;
 			}
 		}
