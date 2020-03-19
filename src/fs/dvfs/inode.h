@@ -17,7 +17,6 @@ struct inode_operations;
 
 struct inode {
 	int      i_no;
-	int      start_pos; /* location on disk */
 	size_t   length;
 	unsigned mtime;
 	unsigned ctime;
