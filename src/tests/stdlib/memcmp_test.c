@@ -17,7 +17,7 @@ TEST_CASE("Test that buf1 > buf2") {
     char buf2[] = "SWGaOTP12df0";
  
     n = memcmp(buf1, buf2, sizeof(buf1));
-    test_assert(n > 0)
+    test_assert(n > 0);
 }
 
 TEST_CASE("Test that buf2 < buf4") {
