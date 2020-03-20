@@ -132,6 +132,9 @@ static int vmem_page_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, int flags) 
 	phy_addr = mmu_pte_unpack(pte, &old_flags);
 	pte = mmu_pte_pack(phy_addr, flags);
 	mmu_pte_set(entry->table[MMU_LAST_LEVEL] + entry->idx[MMU_LAST_LEVEL], pte);
+
+	mmu_flush_tlb();
+
 	return 0;
 }
 
@@ -152,6 +155,8 @@ int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int flags)
 		len -= MMU_PAGE_SIZE;
 	}
 
+	mmu_flush_tlb();
+
 	return 0;
 }
 
@@ -165,4 +170,6 @@ void vmem_unmap_region(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, size_t reg_size) {
 		vmem_entry_try_free(&entries);
 		virt_addr += MMU_PAGE_SIZE;
 	}
+
+	mmu_flush_tlb();
 }
