@@ -70,7 +70,7 @@ static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 	REG_STORE(UART_CR, 0);
 
 	if (params->irq) {
-		REG_ORIN(UART_IMSC, IMSC_RXIM);
+		REG_STORE(UART_IMSC, IMSC_RXIM);
 	}
 
 	pl011_set_baudrate(dev);
