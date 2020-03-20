@@ -8,6 +8,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
+#include <util/log.h>
 
 static uint32_t get_cache_line_size(void) {
 #if __ARM_ARCH == 6 || __ARM_ARCH == 5
@@ -37,6 +39,9 @@ void dcache_inval(const void *p, size_t size) {
 	end = (uint32_t)(uintptr_t)p + size;
 
 	line_size = get_cache_line_size();
+	if (start & ~(line_size - 1)) {
+		log_error("Unaligned start = 0x%08"PRIu32"", start);
+	}
 	start &= ~(line_size - 1);
 	while (start < end) {
 		asm volatile ("mcr p15, 0, %0, c7, c6, 1" : : "r" (start));
@@ -51,6 +56,9 @@ void dcache_flush(const void *p, size_t size) {
 	end = (uint32_t)(uintptr_t)p + size;
 
 	line_size = get_cache_line_size();
+	if (start & ~(line_size - 1)) {
+		log_error("Unaligned start = 0x%08"PRIu32"", start);
+	}
 	start &= ~(line_size - 1);
 	while (start < end) {
 		asm volatile ("mcr p15, 0, %0, c7, c14, 1" : : "r" (start));

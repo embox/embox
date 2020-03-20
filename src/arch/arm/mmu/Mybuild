@@ -3,7 +3,7 @@ package embox.arch.arm
 module mmu_section extends embox.mem.vmem {
 	option number page_size=0x100000
 	option number domain_access=3
-	option number log_level = 0
+	option number log_level = 1
 
 	source "mmu.h"
 
