@@ -75,10 +75,8 @@ static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 
 	pl011_set_baudrate(dev);
 
-	/* Enable Rx and Tx fifos. */
-	REG_ORIN(UART_LCRH, UART_FEN);
 	/* Word len 8 bit. */
-	REG_ORIN(UART_LCRH, UART_WLEN_8BIT << UART_WLEN_SHIFT);
+	REG_STORE(UART_LCRH, UART_WLEN_8BIT << UART_WLEN_SHIFT);
 
 	/* Enable uart. */
 	REG_STORE(UART_CR, UART_UARTEN | UART_TXE | UART_RXE);
