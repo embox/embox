@@ -204,6 +204,14 @@ static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
 	return;
 }
 static int rx_buffers_mfn[NET_RX_RING_SIZE];
+
+static inline int notify_remote_via_evtchn(evtchn_port_t port)
+{
+    evtchn_send_t op;
+    op.port = port;
+    return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
+}
+
 #if 1
 static inline int xennet_rxidx(RING_IDX idx)
 {
@@ -282,18 +290,17 @@ moretodo:
 
     dev->rx.req_prod_pvt = req_prod + i;
     RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-    if (notify)
-//TODO
-		printk("NOTIFY!\n");
+	if (notify) 
+	{
+#ifdef FEATURE_SPLIT_CHANNELS //false
+	notify_remote_via_evtchn(dev->evtchn_rx);
+#else
+	notify_remote_via_evtchn(dev->evtchn);
+#endif
+	}
 }
 #endif
 
-static inline int notify_remote_via_evtchn(evtchn_port_t port)
-{
-    evtchn_send_t op;
-    op.port = port;
-    return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
-}
 
 void init_rx_buffers(struct netfront_dev *dev)
 {
@@ -306,7 +313,7 @@ void init_rx_buffers(struct netfront_dev *dev)
     int notify;
 
     /* Rebuild the RX buffer freelist and the RX ring itself. */
-    for (requeue_idx = 0, i = 0; i < 32; i++) 
+    for (requeue_idx = 0, i = 0; i < 256; i++) 
     {
         struct net_buffer* buf = &dev->rx_buffers[requeue_idx];
 		//printk("dev->rx.req_cons=%u, RING_SIZE(_r)=%d, finally=%d\n",dev->rx.req_cons, RING_SIZE(&dev->rx), ((dev->rx.req_cons) & (RING_SIZE(&dev->rx) - 1)));
@@ -317,7 +324,7 @@ void init_rx_buffers(struct netfront_dev *dev)
         buf->gref = req->gref = 
             gnttab_grant_access(dev->dom,rx_buffers_mfn[requeue_idx],0);
 
-        req->id = requeue_idx;
+        req->id = xennet_rxidx(requeue_idx);
 		printk("request: id=%d, gref=%u\n", req->id, req->gref);
 
         requeue_idx++;
@@ -395,7 +402,16 @@ int alloc_page(unsigned long *va, unsigned long *mfn)
 void setup_netfront(struct netfront_dev *dev, 
 					void (*thenetif_rx)(unsigned char* data, int len, void* arg))
 {
-    //alloc pages for buffer rings
+	struct netif_tx_sring *txs;
+	struct netif_rx_sring *rxs;
+	unsigned long txs_va;
+	unsigned long txs_mfn;
+	printk("alloc_page rc=%d\n", alloc_page(&txs_va, &txs_mfn));
+	unsigned long rxs_va;
+	unsigned long rxs_mfn;
+	printk("alloc_page rc=%d\n", alloc_page(&rxs_va, &rxs_mfn));
+	
+	//alloc pages for buffer rings
 	int i;
 	for(i=0;i<NET_TX_RING_SIZE;i++)
     {
@@ -413,15 +429,6 @@ void setup_netfront(struct netfront_dev *dev,
         dev->rx_buffers[i].page = (char*)va;
     }
 
-	struct netif_tx_sring *txs;
-	struct netif_rx_sring *rxs;
-	unsigned long txs_va;
-	unsigned long txs_mfn;
-	printk("alloc_page rc=%d\n", alloc_page(&txs_va, &txs_mfn));
-	unsigned long rxs_va;
-	unsigned long rxs_mfn;
-	printk("alloc_page rc=%d\n", alloc_page(&rxs_va, &rxs_mfn));
-	
 	txs = (struct netif_tx_sring *) txs_va;
 	rxs = (struct netif_rx_sring *) rxs_va;
 
@@ -576,9 +583,9 @@ struct netfront_dev *init_netfront(
 
 	xenstore_interaction(dev, ip);
 
-	//notify_remote_via_evtchn(dev->evtchn);
+	
 #if 1
-	init_rx_buffers(dev);
+	//init_rx_buffers(dev);
 
 	char xs_key[XS_MSG_LEN], xs_value[XS_MSG_LEN];
 	int err;
@@ -599,6 +606,8 @@ struct netfront_dev *init_netfront(
 
 //are we reading our state(not backend)?
 	while (count < 10 && state != XenbusStateConnected) {
+		memset(xs_key, 0, XS_MSG_LEN);
+		sprintf(xs_key, "%s/state", dev->backend);
 		memset(xs_value, 0, XS_MSG_LEN);
 		xenstore_read(xs_key, xs_value, XS_MSG_LEN);
 		printk(">>>State is:%s\n",xs_value);
@@ -615,7 +624,8 @@ struct netfront_dev *init_netfront(
 	}
 
 	printk(">>>>>xenstore_interaction: End transaction\n");
-
+	notify_remote_via_evtchn(dev->evtchn);
+	init_rx_buffers(dev);
 	printk("backend %p %d %d\n", dev->backend, sizeof(dev->backend),
 			sizeof(dev->nodename));
 #else
