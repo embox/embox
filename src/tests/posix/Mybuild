@@ -7,6 +7,7 @@ module all {
 	depends passwd
 	depends inttypes_test
 	depends libgen_test
+	depends memccpy_test
 	depends poll_test
 	depends select_test
 	depends pipe_test
@@ -62,6 +63,12 @@ module libgen_test {
 	source "libgen_test.c"
 
 	depends embox.compat.libc.int_types
+}
+
+module memccpy_test {
+	source "memccpy_test.c"
+
+	depends embox.compat.libc.all
 }
 
 module poll_test {

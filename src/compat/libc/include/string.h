@@ -261,6 +261,30 @@ extern char *strcasestr(const char *haystack, const char *needle);
 extern char *strerror(int err);
 
 /**
+ * Copies no more than @a n bytes from memory area @a src
+ * to memory area @a dest,
+ * stopping when the character @a c is found.
+ * 
+ * @param dest
+ *  Destination buffer
+ * @param src
+ *  The object in memory being copied
+ * @param n
+ *  The number of bytes to copy
+ * @param c
+ *  Character to stop copying when found.
+ * @return
+ *  Pointer to the destination buffer.
+ * 
+ * @note
+ *  If the memory areas overlap, the results are undefined.
+ * @see memcpy()
+ *  It does the same thing, but it doesn't stop at c.
+ */
+extern void* memccpy(void* dest, const void* src, int c, size_t n);
+
+
+/**
  * Copies @a n bytes from @a src to @a dst which must be two non-overlapping
  * buffers.
  *
