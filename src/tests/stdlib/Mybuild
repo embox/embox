@@ -87,3 +87,10 @@ module ffs_test {
 
 	depends embox.framework.LibFramework
 }
+
+module strcmp_test {
+	source "strcmp_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
