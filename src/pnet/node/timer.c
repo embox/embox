@@ -61,7 +61,7 @@ PNET_NODE_DEF("timer", {
 });
 
 static int init(void) {
-	results = fopen("/tmp/pnet_total", "rw");
+	results = fopen("/tmp/pnet_total", "w+");
 	return (NULL == results);
 }
 

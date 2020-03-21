@@ -32,7 +32,7 @@ char *dns_set_nameserver(char *nameserver) {
 	char buf[0x40];
 	char *res;
 
-	file = fopen(RESOLV_FILE, "rw");
+	file = fopen(RESOLV_FILE, "w+");
 	if (file == NULL) {
 		return err_ptr(errno);
 	}
