@@ -93,4 +93,18 @@ module strcmp_test {
 
 	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
+}		
+
+module strlwr_test {
+	source "strlwr.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
+module strupr_test {
+	source "strupr.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
 }
