@@ -109,7 +109,9 @@ void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		dlist_del_init(&dev->rx_lnk);
 		skb_queue_purge(&dev->dev_queue);
-		sysfree(dev->priv);
+		if (dev->priv) {
+			sysfree(dev->priv);
+		}
 		index_free(&netdev_index, dev->index);
 		pool_free(&netdev_pool, dev);
 	}
