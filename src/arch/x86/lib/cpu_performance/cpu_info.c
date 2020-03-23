@@ -7,8 +7,9 @@
  */
 
 #include <stdint.h>
-
-#include <hal/cpu_info.h>
+#include <string.h>
+#include <assert.h>
+#include <lib/libcpu_info.h>
 
 struct cpu_info current_cpu;
 
@@ -21,11 +22,10 @@ static void set_cpu_features(struct cpu_info *info) {
 					: "=g"(reg)
 					:
 					: "%eax", "%ebx", "%ecx", "%edx");
-
-	info->FPU = reg & 0x1;
-	info->MMX = (reg >> 23) & 0x1; 
-	info->SSE = (reg >> 25) & 0x1;
-
+	
+	set_feature_val(info, "FPU", reg & 0x1);
+	set_feature_val(info, "MMU", (reg >> 23) & 0x1);
+	set_feature_val(info, "SSE", (reg >> 25) & 0x1);
 	return;
 }
 
@@ -39,10 +39,9 @@ static void set_cpu_freq(struct cpu_info *info) {
 					: "=g"(reg[0]), "=g"(reg[1])
 					:
 					: "%eax", "%ebx", "%ecx", "%edx");
-
-	info->base_freq = reg[0];
-	info->max_freq = reg[1];
-
+	
+	set_feature_val(info, "Base Freq", reg[0]);
+	set_feature_val(info, "Max Freq", reg[1]);
 	return;
 }
 
@@ -93,8 +92,8 @@ static void set_vendor_id(struct cpu_info *info) {
 	return;
 }
 
-
 struct cpu_info* get_cpu_info(void) {
+	current_cpu.feature_count = 0;
 	set_vendor_id(&current_cpu);
 	set_cpu_freq(&current_cpu);
 	set_cpu_features(&current_cpu);
