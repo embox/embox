@@ -28,3 +28,22 @@ TEST_CASE("duplicate empty string with strcpy()") {
     test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, src));
 }
+<<<<<<< HEAD
+
+TEST_CASE("check for NULL argument with strcpy()") {
+    char src[] = "\0";
+    char dst[sizeof(src)];
+
+    strcpy(dst, src);
+    test_assert_zero(strcmp(dst, src));
+}
+
+TEST_CASE("check for error if dst isn't allocated enough memory for strcpy()") {
+    char src[] = "string";
+    char dst[3];
+
+    strcpy(dst, src);
+    test_assert_not_zero(strcmp(dst, src));
+}
+=======
+>>>>>>> 8d63a9042... Add test cases for strcpy and strncpy

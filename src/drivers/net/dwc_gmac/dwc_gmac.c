@@ -221,30 +221,25 @@ static int dwc_desc_wait_trans(struct dwc_priv *priv, int idx) {
 static int dwc_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct dwc_priv *priv;
 	int cur_idx;
-	ipl_t ipl;
 
 	assert(dev);
 	assert(skb);
 
 	priv = netdev_priv(dev);
 
-	ipl = ipl_save();
-	{
-		cur_idx = priv->txdesc_id;
+	cur_idx = priv->txdesc_id;
 
-		memcpy(&tx_buffers[cur_idx][0], skb_data_cast_in(skb->data), skb->len);
+	memcpy(&tx_buffers[cur_idx][0], skb_data_cast_in(skb->data), skb->len);
 
-		priv->txdesc_id = dwc_setup_txdesc(priv, cur_idx,
-				(uint32_t) &tx_buffers[cur_idx][0], skb->len);
+	priv->txdesc_id = dwc_setup_txdesc(priv, cur_idx,
+			(uint32_t) &tx_buffers[cur_idx][0], skb->len);
 
-		show_packet(&tx_buffers[cur_idx][0], skb->len, "tx");
+	show_packet(&tx_buffers[cur_idx][0], skb->len, "tx");
 
-		/* start transmit */
-		dwc_reg_write(priv, DWC_DMA_TRANSMIT_POLL_DEMAND, 0x1);
+	/* start transmit */
+	dwc_reg_write(priv, DWC_DMA_TRANSMIT_POLL_DEMAND, 0x1);
 
-		dwc_desc_wait_trans(priv, cur_idx);
-	}
-	ipl_restore(ipl);
+	dwc_desc_wait_trans(priv, cur_idx);
 
 	skb_free(skb);
 

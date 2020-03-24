@@ -16,10 +16,12 @@ module mbstowcs_test {
 	source "mbstowcs_test.c"
 	depends embox.compat.libc.stdlib.multibyte
 }
+
 module wcstombs_test {
 	source "wcstombs_test.c"
 	depends embox.compat.libc.stdlib.multibyte
 }
+
 module mblen_test {
 	source "mblen_test.c"
 	depends embox.compat.libc.stdlib.multibyte
@@ -117,3 +119,17 @@ module memcmp_test {
 	depends embox.framework.LibFramework
 }
 
+module strcpy_test {
+	source "strcpy.c"
+
+	depends embox.framework.LibFramework
+	depends embox.compat.libc.stdlib.core
+}
+
+module strncpy_test {
+	source "strncpy.c"
+
+	depends embox.framework.LibFramework
+	depends embox.compat.libc.stdlib.core
+	depends embox.mem.heap_api
+}
