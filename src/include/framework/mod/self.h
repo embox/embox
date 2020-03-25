@@ -52,7 +52,9 @@
 	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
 			__attribute__ ((weak)); \
 	EXTERN_C const struct mod_build_info __MOD_BUILDINFO(_mod_nm) \
-			__attribute__((weak))
+			__attribute__((weak)); \
+	EXTERN_C struct logger __MOD_LOGGER(_mod_nm)         \
+			__attribute__ ((weak))                          \
 
 #define MOD_SELF_INIT(_mod_nm, _ops) { \
 	/* .ops        = */ _ops, \
@@ -60,6 +62,7 @@
 	/* .app        = */ &__MOD_APP(_mod_nm), \
 	/* .members    = */ __MOD_MEMBERS(_mod_nm), \
 	/* .build_info = */ &__MOD_BUILDINFO(_mod_nm), \
+	/* .logger     = */ &__MOD_LOGGER(_mod_nm), \
 }
 
 /**

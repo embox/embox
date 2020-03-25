@@ -22,6 +22,8 @@
 	extern const struct mod_build_info __MOD_BUILDINFO(mod_nm) \
 			__attribute__((weak)); \
 	\
+	extern struct logger __MOD_LOGGER(_mod_nm)         \
+			__attribute__ ((weak));                          \
 	extern const struct mod __MOD(mod_nm) __attribute__((weak)); \
 	\
 	ARRAY_SPREAD_DECLARE(const struct mod *const,      \

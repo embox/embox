@@ -155,6 +155,8 @@
 			__attribute__((weak)); \
 	\
 	extern const struct mod __MOD(mod_nm); \
+	extern struct logger __MOD_LOGGER(mod_nm)         \
+			__attribute__ ((weak));                          \
 	const struct mod __MOD(mod_nm) __attribute__((weak)) = MOD_SELF_INIT(mod_nm, NULL); \
 	\
 	ARRAY_SPREAD_DECLARE(const struct mod * const,      \
@@ -165,8 +167,6 @@
 #ifndef __MOD_BUILDINFO_DEF
 #define __MOD_BUILDINFO_DEF(_mod_nm, _package_name, _mod_name) \
 	extern const struct mod_label __MOD_LABEL(_mod_nm)       \
-			__attribute__ ((weak));                          \
-	extern struct logger __MOD_LOGGER(_mod_nm)         \
 			__attribute__ ((weak));                          \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
 			__MOD_REQUIRES(_mod_nm), NULL);                  \
@@ -180,7 +180,6 @@
 		.pkg_name   = _package_name,                         \
 		.mod_name   = _mod_name,                             \
 		.label      = &__MOD_LABEL(_mod_nm),                 \
-		.logger     = &__MOD_LOGGER(_mod_nm),                \
 		.requires   = __MOD_REQUIRES(_mod_nm),               \
 		.provides   = __MOD_PROVIDES(_mod_nm),               \
 		.after_deps = __MOD_AFTER_DEPS(_mod_nm),             \
