@@ -41,6 +41,7 @@
 #define MIPS_IRQN_TIMER     7 /* timer interrupt number */
 
 #define ST0_IRQ_MASK_OFFSET 0x8 /* interrupt mask offset in status and cause registers */
+#define ST0_SOFTIRQ_NUM     0x2
 
 #define ST0_IM     0x0000ff00
 #define ST0_IP0   (1 << (ST0_IRQ_MASK_OFFSET + 0))    /* soft interrupt 0 */
@@ -61,6 +62,7 @@
 #define CAUSE_DC     1 << 27   /* stop counter */
 #define CAUSE_TI     1 << 30   /* timer interrupt */
 #define CAUSE_BD     1 << 31   /* branch delay */
+#define CAUSE_IM     0x0000ff00 /* interrupts mask */
 
 #define INTCTL_VS    0x000003E0
 
