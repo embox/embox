@@ -1,0 +1,24 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "logmod",
+	help = "Print or change mod logging",
+	man = '''
+		NAME
+			logmod [name [level]]
+		OPTIONS
+			-h - print help
+		EXAMPLES
+			Print module log level
+			logmod name
+			Set embox.drivers.net.dwc_gmac log level to 4
+			logmod dwc_gmac 4
+		AUTHORS
+			Denis Deryugin
+	''')
+module logmod {
+	source "logmod.c"
+
+	depends embox.compat.libc.all
+	depends embox.framework.LibFramework
+}
