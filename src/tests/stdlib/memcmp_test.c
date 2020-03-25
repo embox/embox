@@ -37,3 +37,39 @@ TEST_CASE("Test's that 'Welcome' and 'Welcome' are equal") {
     n = memcmp(buf1, buf2, sizeof(buf1));
     test_assert(n == 0);
 }
+
+TEST_CASE("Tests that 'Hello' > '' ") {
+    int n;
+    char buf1[] = "Hello";
+    char buf2[] = "";
+
+    n = memcmp(buf1, buf2, sizeof(buf1));
+    test_assert(n > 0);
+}
+
+TEST_CASE("Tests that '' less than 'asdfghj'") {
+    int n;
+    char buf1[] = "";
+    char buf2[] = "asdfgh";
+
+    n = memcmp(buf1, buf2, sizeof(buf1));
+    test_assert(n < 0);
+}
+
+TEST_CASE("Tests that '' and '' are equal") {
+    int n;
+    char buf1[] = "";
+    char buf2[] = "";
+
+    n = memcmp(buf1, buf2, sizeof(buf1));
+    test_assert(n == 0);
+}
+
+TEST_CASE("Tests for when bits to compare is 0") {
+    int n;
+    char buf1[] = "hands";
+    char buf2[] = "legs";
+
+    n = memcmp(buf1, buf2, 0);
+    test_assert(n == 0);
+}
