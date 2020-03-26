@@ -116,3 +116,10 @@ module memcpy_test {
 	depends embox.framework.LibFramework
 }
 
+module memcmp_test {
+	source "memcmp_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
