@@ -12,6 +12,10 @@
 /** Total amount of run levels. */
 #define RUNLEVEL_NRS_TOTAL 5
 
+/** Last runlevel contains modules which are included in the
+  * config, but we don't want them to be started for some reason */
+#define RUNLEVEL_NRS_ENABLED (RUNLEVEL_NRS_TOTAL - 1)
+
 /**
  * Checks if the specified @c runlevel_nr is less then #RUNLEVEL_NRS_TOTAL
  * value.

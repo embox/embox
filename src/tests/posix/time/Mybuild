@@ -16,3 +16,7 @@ module time_test {
 module strftime_test {
 	source "strftime_test.c"
 }
+
+module strptime_test {
+	source "strptime_test.c"
+}

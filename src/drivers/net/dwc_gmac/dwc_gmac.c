@@ -14,6 +14,7 @@
 #include <drivers/common/memory.h>
 #include <drivers/common/periph_memory_alloc.h>
 
+#include <asm-generic/dma-mapping.h>
 #include <hal/mem_barriers.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
@@ -51,8 +52,10 @@ struct dwc_priv {
 	uint32_t                  mii_clk;
 	uint8_t                   macaddr[ETH_ALEN];
 	struct sk_buff           *rx_skb_pool[RX_DESC_QUANTITY];
-	struct dma_extended_desc *rxdesc_ring_paddr;
-	struct dma_extended_desc *txdesc_ring_paddr;
+	dma_addr_t                rxdesc_ring_dma;
+	struct dma_extended_desc *rxdesc_ring;
+	dma_addr_t                txdesc_ring_dma;
+	struct dma_extended_desc *txdesc_ring;
 	int                       txdesc_id;
 	int                       rxdesc_id;
 };
@@ -169,15 +172,17 @@ static int dwc_open(struct net_device *dev) {
 static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 		int len) {
 	struct dma_extended_desc *desc;
+	struct dma_extended_desc *desc_phy;
 
 	assert(idx < TX_DESC_QUANTITY);
 
-	desc = &priv->txdesc_ring_paddr[idx];
-
-	desc->basic.des2 = buff;
+	desc = &priv->txdesc_ring[idx];
+	desc_phy = (struct dma_extended_desc *)priv->txdesc_ring_dma;
+	log_debug("txdesc_ring (%p): %d",  &desc_phy[idx], idx);
+	desc->basic.des2 = dma_map_single(NULL, (void *)(uintptr_t)buff, len, DMA_TO_DEVICE);
 	desc->basic.des1 = len & 0x1FFF;
 
-	dcache_flush((void *) desc->basic.des2, len);
+	dcache_flush((void *)desc->basic.des2, len);
 
 	desc->basic.des0 =
 			ETDES0_SECOND_ADDRESS_CHAINED |
@@ -188,11 +193,14 @@ static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 	idx++;
 	idx %= TX_DESC_QUANTITY;
 
-	desc->basic.des3 = (uint32_t) &priv->txdesc_ring_paddr[idx];
+	desc->basic.des3 = (uint32_t) &desc_phy[idx];
 
 	data_mem_barrier();
 	desc->basic.des0 |= TDES0_OWN;
 	data_mem_barrier();
+
+	log_debug("txdesc (%p): (0x%x, 0x%x, 0x%x, 0x%x)", desc,
+			desc->basic.des0, desc->basic.des1, desc->basic.des2, desc->basic.des3);
 
 	return idx;
 }
@@ -200,7 +208,7 @@ static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 static int dwc_desc_wait_trans(struct dwc_priv *priv, int idx) {
 	struct dma_extended_desc *desc;
 
-	desc = &priv->txdesc_ring_paddr[idx];
+	desc = &priv->txdesc_ring[idx];
 	do {
 		/* TODO: add timeout.
 		 * For some reason using usleep() here causes exception */
@@ -213,25 +221,30 @@ static int dwc_desc_wait_trans(struct dwc_priv *priv, int idx) {
 static int dwc_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct dwc_priv *priv;
 	int cur_idx;
+	ipl_t ipl;
 
 	assert(dev);
 	assert(skb);
 
 	priv = netdev_priv(dev);
 
-	cur_idx = priv->txdesc_id;
+	ipl = ipl_save();
+	{
+		cur_idx = priv->txdesc_id;
 
-	memcpy(&tx_buffers[cur_idx][0], skb_data_cast_in(skb->data), skb->len);
+		memcpy(&tx_buffers[cur_idx][0], skb_data_cast_in(skb->data), skb->len);
 
-	priv->txdesc_id = dwc_setup_txdesc(priv, cur_idx,
-			(uint32_t) &tx_buffers[cur_idx][0], skb->len);
+		priv->txdesc_id = dwc_setup_txdesc(priv, cur_idx,
+				(uint32_t) &tx_buffers[cur_idx][0], skb->len);
 
-	show_packet(&tx_buffers[cur_idx][0], skb->len, "tx");
+		show_packet(&tx_buffers[cur_idx][0], skb->len, "tx");
 
-	/* start transmit */
-	dwc_reg_write(priv, DWC_DMA_TRANSMIT_POLL_DEMAND, 0x1);
+		/* start transmit */
+		dwc_reg_write(priv, DWC_DMA_TRANSMIT_POLL_DEMAND, 0x1);
 
-	dwc_desc_wait_trans(priv, cur_idx);
+		dwc_desc_wait_trans(priv, cur_idx);
+	}
+	ipl_restore(ipl);
 
 	skb_free(skb);
 
@@ -392,20 +405,22 @@ static const struct net_driver dwc_drv_ops = {
 
 static uint32_t dwc_setup_rxdesc(struct dwc_priv *priv, int idx) {
 	struct dma_extended_desc *desc;
+	struct dma_extended_desc *desc_phy;
 
 	assert(idx < RX_DESC_QUANTITY);
 
-	desc = &priv->rxdesc_ring_paddr[idx];
+	desc = &priv->rxdesc_ring[idx];
 
 	memset(desc, 0, sizeof(*desc));
 	data_mem_barrier();
 
-	desc->basic.des2 = (uint32_t)&rx_buffers[idx][0];
+	desc->basic.des2 = (uint32_t)dma_map_single(NULL, &rx_buffers[idx][0], ETH_FRAME_LEN, DMA_FROM_DEVICE);
 	desc->basic.des1 = ERDES1_SECOND_ADDRESS_CHAINED | ETH_FRAME_LEN;
 
 	idx++;
 	idx %= RX_DESC_QUANTITY;
-	desc->basic.des3 = (uint32_t)&priv->rxdesc_ring_paddr[idx];
+	desc_phy = (struct dma_extended_desc *)priv->rxdesc_ring_dma;
+	desc->basic.des3 = (uint32_t)&desc_phy[idx];
 
 	data_mem_barrier();
 	desc->basic.des0 = RDES0_OWN;
@@ -427,7 +442,7 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 		cur_desc = priv->rxdesc_id;
 
 		data_mem_barrier();
-		desc = &((struct dma_extended_desc *)priv->rxdesc_ring_paddr)[cur_desc];
+		desc = &priv->rxdesc_ring[cur_desc];
 
 		if (desc->basic.des0 & RDES0_OWN) {
 			return 0;
@@ -443,7 +458,7 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 			log_error("couldn't allocate skb");
 			return -ENOMEM;
 		}
-		memcpy(skb_data_cast_in(skb->data), (void *)desc->basic.des2, len);
+		memcpy(skb_data_cast_in(skb->data), &rx_buffers[cur_desc][0], len);
 
 		skb->len = len - 4; /* without CRC */
 		skb->dev = dev_id;
@@ -464,7 +479,7 @@ static inline int dwc_txfinish_locked(struct net_device *dev_id) {
 }
 
 static int dwc_tx_ring_init(struct dwc_priv *priv) {
-	memset(priv->txdesc_ring_paddr,
+	memset(priv->txdesc_ring,
 			0,
 			sizeof(struct dma_extended_desc) * TX_DESC_QUANTITY);
 
@@ -521,7 +536,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 	}
 
 	data_mem_barrier();
-	if (i == 0 || i == 1000) {
+	if (i == 1000) {
 		log_error("Can't reset DWC.");
 		return (ENXIO);
 	}
@@ -530,6 +545,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 	reg = dwc_reg_read(dwc_priv, DWC_DMA_BUS_MODE);
 	reg |= (DWC_DMA_BUS_MODE_EIGHTXPBL);
 	reg |= (DWC_DMA_BUS_MODE_PBL_BEATS_8 << DWC_DMA_BUS_MODE_PBL_SHIFT);
+	reg |= (DWC_DMA_BUS_MODE_ENHDESC_USE);
 	dwc_reg_write(dwc_priv, DWC_DMA_BUS_MODE, reg);
 	data_mem_barrier();
 
@@ -549,8 +565,8 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 	}
 	/* Setup addresses */
 	data_mem_barrier();
-	dwc_reg_write(dwc_priv, DWC_DMA_RX_DESCR_LIST_ADDR, (uint32_t)dwc_priv->rxdesc_ring_paddr);
-	dwc_reg_write(dwc_priv, DWC_DMA_TX_DESCR_LIST_ADDR, (uint32_t)dwc_priv->txdesc_ring_paddr);
+	dwc_reg_write(dwc_priv, DWC_DMA_RX_DESCR_LIST_ADDR, (uint32_t)dwc_priv->rxdesc_ring_dma);
+	dwc_reg_write(dwc_priv, DWC_DMA_TX_DESCR_LIST_ADDR, (uint32_t)dwc_priv->txdesc_ring_dma);
 
 	data_mem_barrier();
 
@@ -607,8 +623,8 @@ static irq_return_t dwc_irq_handler(unsigned int irq_num, void *dev_id) {
 
 static int dwc_init(void) {
 	struct net_device *nic;
-	uint32_t tmp;
 	size_t rx_len = 0, tx_len = 0;
+	int res = 0;
 
 	if (NULL == (nic = etherdev_alloc(0))) {
 		return -ENOMEM;
@@ -620,32 +636,53 @@ static int dwc_init(void) {
 	rx_len = RX_DESC_QUANTITY * sizeof(struct dma_extended_desc);
 	tx_len = TX_DESC_QUANTITY * sizeof(struct dma_extended_desc);
 
-	dwc_priv.rxdesc_ring_paddr = periph_memory_alloc(rx_len);
-	memset(dwc_priv.rxdesc_ring_paddr, 0, rx_len);
+	dwc_priv.rxdesc_ring = dma_alloc_coherent(NULL, rx_len,  &dwc_priv.rxdesc_ring_dma, 0);
+	if (NULL == dwc_priv.rxdesc_ring) {
+		log_error("Couldnt alloc periph mem for rxdesc ring");
+		res = -ENOMEM;
+		goto err_out_etherdev_free;
+	}
+
+	dwc_priv.txdesc_ring = dma_alloc_coherent(NULL, tx_len, &dwc_priv.txdesc_ring_dma, 0);
+	if (NULL == dwc_priv.txdesc_ring) {
+		log_error("Couldnt alloc periph mem for txdesc ring");
+		res = -ENOMEM;
+		goto err_out_rxdesc_free;
+	}
+
+	memset(dwc_priv.rxdesc_ring, 0, rx_len);
 	/* TODO: this flush is neccessary even after we write to memory
 	 * which was allocated as cached */
-	dcache_flush(dwc_priv.rxdesc_ring_paddr, rx_len);
+	dcache_flush((void *)dwc_priv.rxdesc_ring_dma, rx_len);
 
-	dwc_priv.txdesc_ring_paddr = periph_memory_alloc(tx_len);
-	memset(dwc_priv.txdesc_ring_paddr, 0, tx_len);
-	dcache_flush(dwc_priv.txdesc_ring_paddr, tx_len);
-
-	if (dwc_priv.rxdesc_ring_paddr == NULL ||
-			dwc_priv.txdesc_ring_paddr == NULL) {
-		etherdev_free(nic);
-		return -ENOMEM;
-	}
+	memset(dwc_priv.txdesc_ring, 0, tx_len);
+	dcache_flush((void *)dwc_priv.txdesc_ring_dma, tx_len);
 
 	nic->priv = &dwc_priv;
 
-	dwc_hw_init(nic->priv);
-	tmp = irq_attach(IRQ_NUM, dwc_irq_handler, 0, nic, "DWC_gmac");
-	dwc_reg_write(nic->priv, DWC_DMA_INTERRUPT_ENABLE, DWC_DMA_INT_EN_DEFAULT);
-	if (tmp) {
-		return tmp;
+	res = dwc_hw_init(nic->priv);
+	if (res) {
+		goto err_out_txdesc_free;
 	}
 
-	return inetdev_register_dev(nic);
+	res = irq_attach(IRQ_NUM, dwc_irq_handler, 0, nic, "DWC_gmac");
+	if (res) {
+		goto err_out_txdesc_free;
+	}
+
+	res = inetdev_register_dev(nic);
+	if (!res) {
+		dwc_reg_write(nic->priv, DWC_DMA_INTERRUPT_ENABLE, DWC_DMA_INT_EN_DEFAULT);
+		return 0;
+	}
+
+err_out_txdesc_free:
+	dma_free_coherent(NULL, tx_len, dwc_priv.txdesc_ring, dwc_priv.txdesc_ring_dma);
+err_out_rxdesc_free:
+dma_free_coherent(NULL, rx_len, dwc_priv.rxdesc_ring, dwc_priv.rxdesc_ring_dma);
+err_out_etherdev_free:
+	etherdev_free(nic);
+	return res;
 }
 
 PERIPH_MEMORY_DEFINE(dwc, BASE_ADDR, 0x2000);

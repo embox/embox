@@ -44,7 +44,6 @@ int main(int argc, char **argv) {
 
 	counters = get_counters();
 
-	getopt_init();
 
 	while ((c = getopt(argc, argv, "hsl:ti:")) != (char) -1) {
 		switch (c) {

@@ -25,6 +25,7 @@
 #include <kernel/printk.h>
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>
+#include <sys/mman.h>
 
 #ifdef DEBUG
 #define PRINTD(msg) printk("ACPICA OSL DEBUG: " msg "\n")
@@ -100,7 +101,13 @@ ACPI_STATUS AcpiOsPhysicalTableOverride(
 
 void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
 	PRINTD("AcpiOsMapMemory() called");
-
+	if (MAP_FAILED == mmap_device_memory((void *) Where,
+                Length,
+                PROT_READ | PROT_WRITE | PROT_NOCACHE,
+                MAP_FIXED,
+                Where)) {
+		return NULL;
+	}
 	return ACPI_PHYSADDR_TO_PTR(Where);
 }
 

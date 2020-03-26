@@ -29,7 +29,6 @@ int main(int argc, char *argv[]) {
 	char *newargv[5];
 	int newargc;
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "c:"))) {
 		switch(opt) {

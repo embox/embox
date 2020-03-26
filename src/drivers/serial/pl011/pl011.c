@@ -1,5 +1,8 @@
 /**
  * @file
+ * @brief
+ *    PrimeCell UART (PL011)
+ *    http://infocenter.arm.com/help/topic/com.arm.doc.ddi0183g/DDI0183G_uart_pl011_r1p5_trm.pdf
  *
  * @data 04 aug 2015
  * @author: Anton Bondarev
@@ -19,6 +22,8 @@ EMBOX_UNIT_INIT(uart_init);
 
 #define UART_BASE OPTION_GET(NUMBER,base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER,irq_num)
+#define UARTCLK   OPTION_GET(NUMBER,uartclk)
+#define BAUD_RATE OPTION_GET(NUMBER,baud_rate)
 
 /* UART Registers */
 #define UART_DR		(UART_BASE + 0x00)
@@ -28,7 +33,13 @@ EMBOX_UNIT_INIT(uart_init);
 #define UART_IBRD	(UART_BASE + 0x24)
 #define UART_FBRD	(UART_BASE + 0x28)
 #define UART_LCRH	(UART_BASE + 0x2c)
+# define UART_FEN         (1 << 4)
+# define UART_WLEN_8BIT   0x3
+# define UART_WLEN_SHIFT  5
 #define UART_CR		(UART_BASE + 0x30)
+# define UART_UARTEN      (1 << 0)
+# define UART_TXE         (1 << 8)
+# define UART_RXE         (1 << 9)
 #define UART_IMSC	(UART_BASE + 0x38)
 #define UART_MIS	(UART_BASE + 0x40)
 #define UART_ICR	(UART_BASE + 0x44)
@@ -39,10 +50,36 @@ EMBOX_UNIT_INIT(uart_init);
 
 #define IMSC_RXIM   (0x1 << 4)
 
+static void pl011_set_baudrate(struct uart *dev) {
+	/* FIXME Init baud rate only if UARTCLK is really used.
+	 * Currenly it is not so for the teplates which use pl011. */
+#if UARTCLK != 0
+	int ibrd, fbrd;
+
+	/* Baud Rate Divisor = UARTCLK/(16×Baud Rate) = BRDI + BRDF,
+	 * See 2.4.3 UART operation.  */
+	ibrd = (UARTCLK / (16 * BAUD_RATE));
+	fbrd = ((UARTCLK % (16 * BAUD_RATE)) * 64) / (16 * BAUD_RATE);
+	REG_STORE(UART_IBRD, ibrd);
+	REG_STORE(UART_FBRD, fbrd);
+#endif
+}
+
 static int pl011_setup(struct uart *dev, const struct uart_params *params) {
+	/* Disable uart. */
+	REG_STORE(UART_CR, 0);
+
 	if (params->irq) {
-		REG_ORIN(UART_IMSC, IMSC_RXIM);
+		REG_STORE(UART_IMSC, IMSC_RXIM);
 	}
+
+	pl011_set_baudrate(dev);
+
+	/* Word len 8 bit. */
+	REG_STORE(UART_LCRH, UART_WLEN_8BIT << UART_WLEN_SHIFT);
+
+	/* Enable uart. */
+	REG_STORE(UART_CR, UART_UARTEN | UART_TXE | UART_RXE);
 
 	return 0;
 }
@@ -77,7 +114,7 @@ static struct uart uart0 = {
 };
 
 static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.baud_rate = BAUD_RATE,
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,
@@ -85,7 +122,7 @@ static const struct uart_params uart_defparams = {
 };
 
 static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
+		.baud_rate = BAUD_RATE,
 		.parity = 0,
 		.n_stop = 1,
 		.n_bits = 8,

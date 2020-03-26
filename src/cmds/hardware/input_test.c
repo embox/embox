@@ -47,7 +47,6 @@ int main(int argc, char **argv) {
 	struct input_dev *indev;
 	int res;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "i:"))) {
 		switch(opt) {
 		case 'i':

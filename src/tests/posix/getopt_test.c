@@ -10,6 +10,7 @@
 #include <embox/test.h>
 #include <util/array.h>
 #include <unistd.h>
+#include <util/getopt.h>
 
 EMBOX_TEST_SUITE("stdlib/getopt test");
 

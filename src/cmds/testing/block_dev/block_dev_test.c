@@ -83,7 +83,7 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 
 	if (s_block >= blocks) {
 		printf("Starting block should be less than number of blocks\n");
-		return -1;
+		return -EINVAL;
 	}
 
 	/* Iterate over all flash blocks */
@@ -192,7 +192,7 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 
 	if (s_block >= blocks) {
 		printf("Starting block should be less than number of blocks\n");
-		return -1;
+		return -EINVAL;
 	}
 
 	for (uint64_t i = s_block; i < blocks; i += m_blocks) {
@@ -272,7 +272,7 @@ static int md5_outside_part(struct block_dev *bdev,
 		err = block_dev_read(bdev, read_buf, blk_sz, j);
 		if (err < 0) {
 			printf("Failed to read block #%"PRIu64"\n", j);
-			return -1;
+			return -EIO;
 		}
 
 		md5_append(&state, read_buf, blk_sz);
@@ -283,7 +283,7 @@ static int md5_outside_part(struct block_dev *bdev,
 		err = block_dev_read(bdev, read_buf, blk_sz, j);
 		if (err < 0) {
 			printf("Failed to read block #%"PRIu64"\n", j);
-			return -1;
+			return -EIO;
 		}
 
 		md5_append(&state, read_buf, blk_sz);
@@ -535,9 +535,11 @@ int main(int argc, char **argv) {
 				m_blocks_flag = 1;
 				break;
 			case 'h':
-			default:
 				print_help();
 				return 0;
+			default:
+				print_help();
+				return -ENOTSUP;
 		}
 	}
 
@@ -558,7 +560,7 @@ int main(int argc, char **argv) {
 	bdev = block_dev_find(argv[argc - 1]);
 	if (!bdev) {
 		printf("Block device \"%s\" not found\n", argv[argc - 1]);
-		return 0;
+		return -EINVAL;
 	}
 
 	if (test_partitions) {

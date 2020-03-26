@@ -55,7 +55,6 @@ int main(int argc, char **argv) {
 	/* TODO it must be agreed with shell maximum command length */
 	char test_name[100] = { 0 };
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hn:t:i"))) {
 		switch (opt) {
 		case 'n':

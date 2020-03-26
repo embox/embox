@@ -18,7 +18,6 @@ static void print_usage(void) {
 int main(int argc, char **argv) {
 	const char *file_path;
 	int opt;
-	getopt_init();
 	while (-1 != (opt = getopt(argc - 1, argv, "frh"))) {
 		switch(opt) {
 		case 'f':

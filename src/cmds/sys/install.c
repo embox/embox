@@ -46,7 +46,6 @@ int main(int argc, char *argv[]) {
 	bool mount_manage = true;
 	bool mountpoint_manage = true;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "mb:t:"))) {
 		switch(opt) {
 		case 'm':

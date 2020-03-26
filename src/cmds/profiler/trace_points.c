@@ -93,7 +93,6 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hsi:d:a:"))) {
 		printf("\n");

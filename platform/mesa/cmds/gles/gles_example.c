@@ -225,7 +225,6 @@ int main(int argc, char **argv) {
 	GLenum type;
 	int opt, depth = -1;
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "hasd:"))) {
 		switch(opt) {
 			case 'h':

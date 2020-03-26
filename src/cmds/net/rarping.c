@@ -75,7 +75,6 @@ int main(int argc, char **argv) {
 	char sha_str[] = "xx.xx.xx.xx.xx.xx", tha_str[] = "xx.xx.xx.xx.xx.xx";
 	char spa_str[] = "xxx.xxx.xxx.xxx", tpa_str[] = "xxx.xxx.xxx.xxx";
 
-	getopt_init();
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */

@@ -245,7 +245,13 @@ static inline int access(const char *path, int amode) {
 }
 
 extern void swab(const void *bfrom, void *bto, ssize_t n);
-#include <getopt.h>
+
+extern int getopt(int argc, char *const argv[], const char *opts);
+
+extern char *optarg; /**< argument to optopt */
+extern int optind;   /**< last touched cmdline argument */
+extern int optopt;   /**< last returned option */
+extern int opterr;   /**< flag:error message on unrecognzed options */
 
 #ifndef environ
 /**

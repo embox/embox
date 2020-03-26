@@ -68,8 +68,7 @@ int main(int argc, char *argv[]) {
 	/* difference from posix: execv return 0 and does not set errno on errors */
 	if (optind < argc) {
 		execv(argv[optind], argv+optind);
-		printf("env: execv: No such command '%s'\n", argv[optind]);
-		return -ENOENT;
+		return -errno;
 	}
 	
 	if (environ)

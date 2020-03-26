@@ -139,7 +139,6 @@ int main(int argc, char **argv) {
 	int opt, count = 0, user_create = 1;
 
 	if (argc >= 1) {
-		getopt_init();
 		while (-1 != (opt = getopt(argc, argv, "d:s:p:c:g:Dh"))) {
 			count++;
 

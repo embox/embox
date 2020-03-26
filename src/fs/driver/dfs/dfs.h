@@ -10,6 +10,7 @@
 #include <drivers/flash/flash.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
+#include <stdint.h>
 
 #define DFS_INODES_MAX \
 	OPTION_MODULE_GET(embox__fs__driver__dfs, NUMBER, inode_count)
@@ -22,18 +23,18 @@
 
 /* Non-VFS declarations */
 struct dfs_sb_info {
-	char magic[2];
-	int  inode_count;
-	int  max_inode_count;
-	int  buff_bk;         /* For buffer-based writing */
-	int  free_space;
+	uint8_t magic[2];
+	uint32_t inode_count;
+	uint32_t max_inode_count;
+	uint32_t buff_bk;         /* For buffer-based writing */
+	uint32_t free_space;
 };
 
 struct dfs_dir_entry {
-	char name[DFS_NAME_LEN];
-	int  pos_start;
-	int  len;
-	int  flags;
+	uint8_t name[DFS_NAME_LEN];
+	uint32_t pos_start;
+	uint32_t len;
+	uint32_t flags;
 };
 
 extern int dfs_mount(void);

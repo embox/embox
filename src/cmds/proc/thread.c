@@ -105,7 +105,6 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	getopt_init();
 
 	while (-1 != (opt = getopt(argc, argv, "hsk:"))) {
 		printf("\n");

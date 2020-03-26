@@ -166,7 +166,6 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	getopt_init();
 	filter[0] = 0;
 	while (-1 != (opt = getopt(argc, argv, "f:ehsi:d:a:n:"))) {
 		printf("\n");

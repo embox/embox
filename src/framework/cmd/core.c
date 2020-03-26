@@ -15,10 +15,9 @@
 #include <string.h>
 
 #include <util/array.h>
+#include <util/getopt.h>
 
 ARRAY_SPREAD_DEF(const struct cmd * const, __cmd_registry);
-
-extern void getopt_init(void);
 
 int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	int err;
