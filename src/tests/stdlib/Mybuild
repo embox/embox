@@ -116,3 +116,10 @@ module strupr_test {
 	depends embox.framework.LibFramework
 }
 
+module memcpy_test {
+	source "memcpy.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
