@@ -26,6 +26,12 @@
 #define CP0_EBASE    15    /* select 1 exception base */
 #define CP0_CONFIG   16    /* select 0 Configuration */
 #define CP0_CONFIG1  16    /* select 1 configuration */
+#define CP0_CONFIG2  16    /* select 2 Configuration */
+#define CP0_CONFIG3  16    /* select 3 configuration */
+#define CP0_CONFIG4  16    /* select 4 configuration */
+#define CP0_CONFIG5  16    /* select 5 Configuration */
+#define CP0_CONFIG6  16    /* select 6 configuration */
+#define CP0_CONFIG7  16    /* select 7 configuration */
 #define CP0_DEBUG    23    /* Debug control and status */
 #define CP0_DEPC     24    /* Program counter at last debug exception */
 #define CP0_ERROREPC 30    /* Program counter at last error */
@@ -35,6 +41,7 @@
 #define MIPS_IRQN_TIMER     7 /* timer interrupt number */
 
 #define ST0_IRQ_MASK_OFFSET 0x8 /* interrupt mask offset in status and cause registers */
+#define ST0_SOFTIRQ_NUM     0x2
 
 #define ST0_IM     0x0000ff00
 #define ST0_IP0   (1 << (ST0_IRQ_MASK_OFFSET + 0))    /* soft interrupt 0 */
@@ -53,7 +60,14 @@
 #define CAUSE_IV     1 << 23   /* vectored interrupt table */
 #define CAUSE_PCI    1 << 26   /* performance counter interrupt */
 #define CAUSE_DC     1 << 27   /* stop counter */
+#define CAUSE_TI     1 << 30   /* timer interrupt */
+#define CAUSE_BD     1 << 31   /* branch delay */
+#define CAUSE_IM     0x0000ff00 /* interrupts mask */
 
+#define INTCTL_VS    0x000003E0
+
+#define CONFIG3_VEXIC 1 << 6  /* Support for an external interrupt controller. */
+#define CONFIG3_VINT  1 << 5  /* Vectored interrupts implemented. */
 
 /* helpers for access to MIPS co-processor 0 registers */
 #define __read_32bit_c0_register(source, sel)				\
@@ -110,5 +124,36 @@ do {									\
 #define mips_read_c0_ebase()		__read_32bit_c0_register($15, 1)
 #define mips_write_c0_ebase(val)	__write_32bit_c0_register($15, 1, val)
 
+/* read/write mips config register */
+#define mips_read_c0_congig()		__read_32bit_c0_register($16, 0)
+#define mips_write_c0_config(val)	__write_32bit_c0_register($16, 0, val)
+
+/* read/write mips config1 register */
+#define mips_read_c0_congig1()		__read_32bit_c0_register($16, 1)
+#define mips_write_c0_config1(val)	__write_32bit_c0_register($16, 1, val)
+
+/* read/write mips config2 register */
+#define mips_read_c0_congig2()		__read_32bit_c0_register($16, 2)
+#define mips_write_c0_config2(val)	__write_32bit_c0_register($16, 2, val)
+
+/* read/write mips config3 register */
+#define mips_read_c0_congig3()		__read_32bit_c0_register($16, 3)
+#define mips_write_c0_config3(val)	__write_32bit_c0_register($16, 3, val)
+
+/* read/write mips config4 register */
+#define mips_read_c0_congig4()		__read_32bit_c0_register($16, 4)
+#define mips_write_c0_config4(val)	__write_32bit_c0_register($16, 4, val)
+
+/* read/write mips config5 register */
+#define mips_read_c0_congig5()		__read_32bit_c0_register($16, 5)
+#define mips_write_c0_config5(val)	__write_32bit_c0_register($16, 5, val)
+
+/* read/write mips config6 register */
+#define mips_read_c0_congig6()		__read_32bit_c0_register($16, 6)
+#define mips_write_c0_config6(val)	__write_32bit_c0_register($16, 6, val)
+
+/* read/write mips config7 register */
+#define mips_read_c0_congig7()		__read_32bit_c0_register($16, 7)
+#define mips_write_c0_config7(val)	__write_32bit_c0_register($16, 7, val)
 
 #endif /* MIPSREGS_H_ */

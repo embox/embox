@@ -21,7 +21,7 @@
  */
  LEAF(mips_second_exception_handler)
 	SAVE_ALL                             /* save all needed registers */
-	li      $t1, 0x40000000              /* 0x40000000 is a mask, which mean that Timer Interrupt bit of CAUSE register set in 1 */
+	li      $t1, CAUSE_IM                /*  is a mask, which mean that Interrupt bit of CAUSE register set in 1 */
 	and     $t1, $k1, $t1                /* check if Timer Interrupt bit of CAUSE register is 1 */
 	bnez    $t1, cp0_timer_irq_hnd       /* if Timer Interrupt bit of CAUSE register is 1 then go cp0_timer_irq_hnd */
 	andi    $k1, $k1, 0x7c               /* read exception number */

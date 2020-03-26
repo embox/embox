@@ -1,0 +1,10 @@
+package embox.driver.interrupt
+
+module mips_gic extends irqctrl_api {
+	option number log_level=1
+	option number base_addr
+
+	source "mips_gic.c", "mips_gic.h"
+
+	depends embox.arch.mips.subarch.p5600.global_control_block
+}

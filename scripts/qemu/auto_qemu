@@ -166,7 +166,11 @@ guess_machine() {
 			echo "-M petalogix-s3adsp1800"
 			;;
 		mips)
-			echo "-M mipssim"
+			if cat $BUILD_CONF | gcc -P -E - | grep "baikal-t" >/dev/null; then
+				echo "-M baikal-t"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "mipssim" >/dev/null; then
+				echo "-M mipssim"
+			fi
 			;;
 		mips64)
 			echo "-M mipssim"
@@ -213,6 +217,7 @@ NIC2QEMU=(
 	[lan91c111]="smc91c111"
 	[mipsnet]="mipsnet"
 	[fec]="imx.enet"
+	[dwc_gmac]="dwgmac"
 )
 
 IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"

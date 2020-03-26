@@ -1,0 +1,2 @@
+This template is a bios for qemu with baikal-t machine.
+It must build and pointed embox.bin as -bios

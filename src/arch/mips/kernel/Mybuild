@@ -30,7 +30,6 @@ module exception {
 module interrupt extends embox.arch.interrupt {
 	source "interrupt.c", "ipl_impl.h"
 	depends exception
-	depends embox.kernel.irq
 }
 
 module syscall extends embox.arch.syscall {
