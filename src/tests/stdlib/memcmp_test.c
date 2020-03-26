@@ -73,3 +73,12 @@ TEST_CASE("Tests for when bits to compare is 0") {
     n = memcmp(buf1, buf2, 0);
     test_assert(n == 0);
 }
+
+TEST_CASE("Test to compare only first 3 blocks of 'Hello' and Welcome") {
+    int n;
+    char buf1[] = "Hello";
+    char buf2[] = "Welcome";
+
+    n = memcmp(buf1, buf2, 3);
+    test_assert(n < 0);
+}
