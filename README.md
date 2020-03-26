@@ -34,8 +34,8 @@ Mailing lists:
 * embox-ru@googlegroups.com -- mailing list in Russian
 
 Telegram chats:
-* https://t.me/embox_chat_en -- main telegram chart
-* https://t.me/embox_chat -- telegram chart in Russian
+* https://t.me/embox_chat_en -- main telegram chat
+* https://t.me/embox_chat -- telegram chat in Russian
 
 Documentation
 ---------------
