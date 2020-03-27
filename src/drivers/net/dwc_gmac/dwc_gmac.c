@@ -221,6 +221,7 @@ static int dwc_desc_wait_trans(struct dwc_priv *priv, int idx) {
 static int dwc_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct dwc_priv *priv;
 	int cur_idx;
+	ipl_t ipl;
 
 	assert(dev);
 	assert(skb);

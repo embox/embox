@@ -41,7 +41,6 @@ TEST_CASE("duplicate part of a string with strncpy()") {
     test_assert_zero(strncmp(dst, src, prefix_len));
     test_assert_equal(dst[prefix_len], '\0');
 }
-<<<<<<< HEAD
 
 TEST_CASE("check for NULL argument with strncpy()") {
     char src[] = "\0";
@@ -63,5 +62,3 @@ TEST_CASE("check for zero argument length with strncpy()") {
     test_assert_zero(strncmp(dst, src, copy_len));
     test_assert_equal(dst[0], '\0');
 }
-=======
->>>>>>> 8d63a9042... Add test cases for strcpy and strncpy
