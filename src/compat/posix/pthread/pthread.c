@@ -128,7 +128,6 @@ int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		void *(*start_routine)(void *), void *arg) {
-	struct thread *t;
 	pthread_attr_t def_attr;
 	const pthread_attr_t *pattr;
 	unsigned int flags;
@@ -153,8 +152,8 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 
 	flags = detached | inherit | THREAD_FLAG_SUSPENDED;
 
-	t = thread_create(flags, start_routine, arg);
-	if (err(t)) {
+	*thread = thread_create(flags, start_routine, arg);
+	if (err(*thread)) {
 		/*
 		 * The pthread_create() function will fail if:
 		 *
@@ -172,10 +171,9 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 
 	pthread_attr_getschedpolicy(pattr, &policy);
 	pthread_attr_getschedparam(pattr, &sched_param);
-	pthread_setschedparam(t, policy, &sched_param);
+	pthread_setschedparam(*thread, policy, &sched_param);
 
-	thread_launch(t);
-	*thread = t;
+	thread_launch(*thread);
 
 	return ENOERR;
 }
