@@ -116,3 +116,10 @@ module memcpy_test {
 	depends embox.framework.LibFramework
 }
 
+module memset_test {
+	source "memset.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
