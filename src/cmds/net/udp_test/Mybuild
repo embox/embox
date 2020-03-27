@@ -1,0 +1,49 @@
+package embox.cmd.net
+
+@AutoCmd
+@Cmd(name = "udp_test",
+	help = "Simple test for block device r/w operations",
+	man  = '''
+		NAME
+			block_dev_test -- simple test for block device r/w operations
+		SYNOPSIS
+			block_dev_test [-hl] [-i iterations]
+				-l -- Show list of all block devices
+				-i -- R/W operations count
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
+module udp_test {
+	source "udp_test.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+	depends embox.driver.flash.core
+	depends embox.util.pretty_print
+}
+
+@AutoCmd
+@Cmd(name = "udp_inspector",
+	help = "Simple test for block device r/w operations",
+	man  = '''
+		NAME
+			block_dev_test -- simple test for block device r/w operations
+		SYNOPSIS
+			block_dev_test [-hl] [-i iterations]
+				-l -- Show list of all block devices
+				-i -- R/W operations count
+		AUTHORS
+			Alexander Kalmuk
+	''')
+
+module udp_inspector {
+	source "udp_inspector.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+	depends embox.driver.flash.core
+	depends embox.util.pretty_print
+}
