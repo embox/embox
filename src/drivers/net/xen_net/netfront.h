@@ -18,8 +18,10 @@
 #include <xen/grant_table.h>
 #include <xen/event_channel.h>
 
+#include <mem/phymem.h>
 #define CONFIG_PARAVIRT
 extern unsigned long *phys_to_machine_mapping;
+extern start_info_t my_start_info;
 #ifdef CONFIG_PARAVIRT
 
 #define pfn_to_mfn(_pfn) (phys_to_machine_mapping[(_pfn)])
@@ -65,8 +67,8 @@ extern unsigned long *phys_to_machine_mapping;
 typedef uint64_t pgentry_t;
 
 #define PAGE_SHIFT      12
-#define PAGE_SIZE 				(1UL << PAGE_SHIFT) // or 1?? // in mini-os 1UL
-#define PAGE_MASK       (~(PAGE_SIZE-1))
+//#define PAGE_SIZE 				(1UL << PAGE_SHIFT) // or 1?? // in mini-os 1UL
+#define PAGE_MASK       (~(PAGE_SIZE()-1))
 #define PADDR_BITS              44
 #define PADDR_MASK              ((1ULL << PADDR_BITS)-1)
 #define to_virt(x)                 ((void *)((unsigned long)(x)+VIRT_START))
@@ -96,13 +98,13 @@ static __inline__ maddr_t phys_to_machine(paddr_t phys)
 #define virt_to_mfn(_virt) 		(pfn_to_mfn(virt_to_pfn(_virt)))
 #endif
 
-#define NET_TX_RING_SIZE __CONST_RING_SIZE(netif_tx, PAGE_SIZE)
-#define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE)
+#define NET_TX_RING_SIZE __CONST_RING_SIZE(netif_tx, PAGE_SIZE())
+#define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE())
 
 // #define wmb() __asm__("dsb":::"memory");
 
 #define NR_GRANT_FRAMES 4
-#define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE / sizeof(grant_entry_v1_t))
+#define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE() / sizeof(grant_entry_v1_t))
 
 
 struct net_buffer {

@@ -31,10 +31,6 @@ do {                                        \
 
 #define BUG_ON(x) ASSERT(!(x))
 
-//static char _text;
-
-//static char memory_pagess[16][PAGE_SIZE];
-
 static grant_ref_t ref = 10; // first 8 entries are reserved 
 
 grant_entry_v1_t *grant_table;
@@ -305,8 +301,8 @@ moretodo:
 void init_rx_buffers(struct netfront_dev *dev)
 {
 	printk(">>>>>init_rx_buffers\n");
-	printk(">>>>>NET_RX_RING_SIZE=%li\n", NET_RX_RING_SIZE);
-	printk(">>>>>NET_RX_RING_SIZE_2=%d\n", RING_SIZE(&dev->rx));
+	//printk(">>>>>NET_RX_RING_SIZE=%li\n", NET_RX_RING_SIZE);
+	//printk(">>>>>NET_RX_RING_SIZE_2=%d\n", RING_SIZE(&dev->rx));
 	
     int i, requeue_idx;
     netif_rx_request_t *req;
@@ -360,9 +356,8 @@ void init_rx_buffers(struct netfront_dev *dev)
     dev->rx.sring->rsp_event = dev->rx.rsp_cons + 1;
 }
 
-extern char rings_mem[2][PAGE_SIZE];
 
-extern char memory_pages[600][PAGE_SIZE];
+extern char memory_pages[600][PAGE_SIZE()];
 static int alloc_page_counter = 0;
 
 int alloc_page(unsigned long *va, unsigned long *mfn)
@@ -432,14 +427,14 @@ void setup_netfront(struct netfront_dev *dev,
 	txs = (struct netif_tx_sring *) txs_va;
 	rxs = (struct netif_rx_sring *) rxs_va;
 
-	memset(txs, 0, PAGE_SIZE);
-	memset(rxs, 0, PAGE_SIZE);
+	memset(txs, 0, PAGE_SIZE());
+	memset(rxs, 0, PAGE_SIZE());
 
 	SHARED_RING_INIT(txs);
 	SHARED_RING_INIT(rxs);
 
-	FRONT_RING_INIT(&dev->tx, txs, PAGE_SIZE);
-	FRONT_RING_INIT(&dev->rx, rxs, PAGE_SIZE);
+	FRONT_RING_INIT(&dev->tx, txs, PAGE_SIZE());
+	FRONT_RING_INIT(&dev->rx, rxs, PAGE_SIZE());
 	
 	dev->tx_ring_ref = gnttab_grant_access(dev->dom, txs_mfn, 0);
 	dev->rx_ring_ref = gnttab_grant_access(dev->dom, rxs_mfn, 0);
@@ -455,110 +450,44 @@ void setup_netfront(struct netfront_dev *dev,
 	alloc_evtchn(&dev->evtchn);
 }
 
+//why it is here?
 struct xen_netif_rx_request {
 	uint16_t id;		/* Echoed in response message.        */
 	uint16_t pad;
 	grant_ref_t gref;
 };
-//from linux
-/*
-#ifdef NET_SKBUFF_DATA_USES_OFFSET
-static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
-{
-	return skb->head + skb->end;
-}
 
-static inline unsigned int skb_end_offset(const struct sk_buff *skb)
+void print_info() 
 {
-	return skb->end;
-}
-#else
-static inline unsigned char *skb_end_pointer(const struct sk_buff *skb)
-{
-	return skb->end;
-}
+	long ret;
+    domid_t domid = DOMID_SELF;
+	ret = HYPERVISOR_memory_op(XENMEM_maximum_reservation, &domid);
+	unsigned long nr_max_pages;
+	nr_max_pages = ret;
+    printk("XENMEM_maximum_reservation=%ld\n", nr_max_pages);
 
-static inline unsigned int skb_end_offset(const struct sk_buff *skb)
-{
-	return skb->end - skb->head;
-}
-#endif
+	unsigned long *p2m_mapping;
+    p2m_mapping = (unsigned long *)my_start_info.mfn_list;
+
+    printk("phymem_allocated_start=%ls\n", p2m_mapping);
+
+/*	int rc;
+
+	struct xen_machphys_mapping mpm;
+    rc = HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mpm);
+	printk("XENMEM_machphys_mapping=%p, %d\n", (void*)rc, rc);
+	unsigned long *mp = (unsigned long *)mpm.v_start;
+	printk("v_start = %ld,%ld,%ld,%ld\n", mp[0],mp[1],mp[2],mp[3]);
+
+	struct xen_machphys_mfn_list mpl;
+	unsigned long frames[100];
+	set_xen_guest_handle(mpl.extent_start, frames);
+	mpl.nr_extents = 100;
+    rc = HYPERVISOR_memory_op(XENMEM_machphys_mfn_list, &mpl);
+
+	printk("XENMEM_machphys_mfn_list=%p, %d\n", (void*)rc, rc);
 */
-/* Internal */
-#define skb_shinfo(SKB)	((struct skb_shared_info *)(skb_end_pointer(SKB)))
-#if 0
-static void xennet_alloc_rx_buffers(struct netfront_dev *dev)
-{
-	RING_IDX req_prod = dev->rx.req_prod_pvt;
-	int notify;
-	int err = 0;
-/*
-	if (unlikely(!netif_carrier_ok(dev->info->netdev)))
-		return;
-*/
-	for (req_prod = dev->rx.req_prod_pvt;
-	     req_prod - dev->rx.rsp_cons < NET_RX_RING_SIZE;
-	     req_prod++) {
-		//struct sk_buff *skb;
-		
-		unsigned short id;
-		grant_ref_t ref;
-		//struct page *page;
-		struct xen_netif_rx_request *req;
-
-		//skb = xennet_alloc_one_rx_buffer(dev);
-		/*
-		if (!skb) {
-			err = -ENOMEM;
-			break;
-		}*/
-
-		id = xennet_rxidx(req_prod);
-		ref = gnttab_grant_access(dev->dom, rx_buffers_mfn[req_prod],0);
-		//BUG_ON(dev->rx_skbs[id]);
-		//dev->rx_skbs[id] = skb;
-
-		//ref = gnttab_claim_grant_reference(&dev->gref_rx_head);
-		//WARN_ON_ONCE(IS_ERR_VALUE((unsigned long)(int)ref));
-		//dev->grant_rx_ref[id] = ref;
-
-		//page = (&skb_shinfo(skb)->frags[0])->page.p;
-
-		req = (struct xen_netif_rx_request *)RING_GET_REQUEST(&dev->rx, req_prod);
-		/*
-		gnttab_page_grant_foreign_access_ref_one(ref,
-							 dev->info->xbdev->otherend_id,
-							 page,
-							 0);
-		*/
-		req->id = id;
-		req->gref = ref;
-	}
-
-	dev->rx.req_prod_pvt = req_prod;
-
-	/* Try again later if there are not enough requests or skb allocation
-	 * failed.
-	 * Enough requests is quantified as the sum of newly created slots and
-	 * the unconsumed slots at the backend.
-	 */
-	#define XEN_NETIF_NR_SLOTS_MIN 18
-	#define NET_RX_SLOTS_MIN (XEN_NETIF_NR_SLOTS_MIN + 1)
-
-	if (req_prod - dev->rx.rsp_cons < NET_RX_SLOTS_MIN || err) 
-	{
-		printk("!!!!!!!ERROR: req_prod - dev->rx.rsp_cons < NET_RX_SLOTS_MIN || err");
-		//mod_timer(&dev->rx_refill_timer, jiffies + (HZ/10));
-		return;
-	}
-
-	wmb();		/* barrier so backend seens requests */
-
-	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-	if (notify)
-		notify_remote_via_evtchn(dev->evtchn);
 }
-#endif 
 
 struct netfront_dev *init_netfront(
 	char *_nodename,
@@ -568,6 +497,7 @@ struct netfront_dev *init_netfront(
 	char **ip
 ) {
 	printk(">>>>>init_netfront\n");
+	print_info();
 	char nodename[256];
 	static int netfrontends = 0;
 
