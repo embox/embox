@@ -123,3 +123,17 @@ module memcmp_test {
 	depends embox.framework.LibFramework
 }
 
+module strstr_test {
+	source "strstr.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strcasestr_test {
+	source "strcasestr.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
