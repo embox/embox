@@ -354,10 +354,9 @@ unsigned long allocate_ondemand(unsigned long n)
 }
 #endif
 
-extern grant_entry_v1_t memory_page[NR_GRANT_ENTRIES];
 extern grant_entry_v1_t *grant_table;
 
-void init_grant_table(int n)
+void *init_grant_table(int n)
 {
     printk(">>>>>init_grant_table\n");
 
@@ -367,88 +366,32 @@ void init_grant_table(int n)
         put_free_entry(i);
 */	
 	struct gnttab_setup_table setup;
-    unsigned long frames[n];
-
     setup.dom = DOMID_SELF;     //32752
     setup.nr_frames = n;
+    unsigned long frames[n];
     set_xen_guest_handle(setup.frame_list, frames);
 
     int rc;
     rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
     printk("HYPERVISOR_grant_table_op returned:%d, status=%d\n", rc, setup.status);
 
-#if 0 //tag: allocate_ondemand
-    printk("grant table virtual:%p\n", gnttab_table);
-    unsigned long va = allocate_ondemand(1); 
-    
-    pgentry_t *pgt = NULL;
-    if ( !pgt || !(va & L1_MASK) )
-    {
-        printk("deal with it\n");
+    unsigned long va = (unsigned long)phymem_alloc(n);
 
-        pgt = need_pgt(va);
-    }
-                    
-    printk(">>>>>%lu\n", va);
-
-    //gnttab_table = (pgentry_t)((frames[0] << PAGE_SHIFT) | L1_PROT);
-    //printk("grant table machine:%ld\n", virt_to_mfn(gnttab_table));
-    
-    ////printk("grant table flags:%d\n", gnttab_table[0].flags);
-#elif 1 //HYPERVISOR_update_va_mapping
-    int count;
-    printk("NR_GRANT_ENTRIES=%ld\n", NR_GRANT_ENTRIES);
+    int count;    
     for(count = 0; count < n; count++)
     {
-        printk("entry %d mapped at %ld(mfn).\n",count, frames[count]);
-        printk("addr:%p\n", (void*)(((unsigned long) &memory_page)+count*4096)); //+4k = +page
-        rc = HYPERVISOR_update_va_mapping(((unsigned long) &memory_page)+count*4096,
+        printk("entry %d mapped at %ld(mfn).\n", count, frames[count]);
+        printk("addr:%p\n", (void*)(va + count*PAGE_SIZE())); //+4k = +page
+        rc = HYPERVISOR_update_va_mapping(va + count*PAGE_SIZE(),
                 __pte((frames[count]<< PAGE_SHIFT) | 7),
                 UVMF_INVLPG);
         printk("HYPERVISOR_update_va_mapping:%d\n", rc);
     }
-
-    grant_table  = &memory_page[0];
-
-    //grant_table[1].flags = GTF_permit_acces;
-    /*
-    for(count = 0; count < NR_GRANT_ENTRIES; count++)
-    {
-        printk("count=%d\n",count);
-        int a=0;
-        int b=0;
-        grant_table[count] = (grant_entry_v1_t*)memory_page[a][b];
-        b += sizeof(grant_entry_v1_t);
-        if(b == PAGE_SIZE) 
-        {
-            a++;
-            b=0;
-        }
-
-    }*/
     
-    
-#elif 0
-
-    
-    printk("memm addr:%p", &memm);
-    rc = HYPERVISOR_update_va_mapping((unsigned long) &memm,
-            __pte((frames[0]<< PAGE_SHIFT) | 7),
-            UVMF_INVLPG);
-    
-    printk("HYPERVISOR_update_va_mapping:%d\n", rc);
-    
-#else
-    
-    mmu_update_t mmu_updates[1];
-    mmu_updates[0].ptr = virt_to_mach((pgentry_t)(void*)&grant_table) | MMU_NORMAL_PT_UPDATE;
-    mmu_updates[0].val = ((pgentry_t)(frames[0]) << PAGE_SHIFT) | L1_PROT;
-                            
-    rc = HYPERVISOR_mmu_update(mmu_updates, 1, NULL, DOMID_SELF);
-    printk("rc=%d\n",rc);
-#endif
     printk(">>>>>END OF init_grant_table\n");
+    return (void*)va;
 }
+
 int get_max_nr_grant_frames()
 {
     struct gnttab_query_size query;
@@ -483,13 +426,16 @@ int is_auto_translated_physmap(void)
 
     return xen_features[XENFEAT_auto_translated_physmap];
 }
+#include <xen/memory.h>
 
 static int xen_net_init(void) {
 	printk("\n");
 	printk(">>>>>xen_net_init\n");
     printk("max number of grant FRAMES:%d\n", get_max_nr_grant_frames()); //32
     printk("XENFEAT_auto_translated_physmap=%d\n", is_auto_translated_physmap()); //0
-	init_grant_table(NR_GRANT_FRAMES);
+    printk("PAGE_SIZE=%d\n",PAGE_SIZE());
+    
+	grant_table = init_grant_table(NR_GRANT_FRAMES);
 
 	int res = 0;
 	struct net_device *nic;

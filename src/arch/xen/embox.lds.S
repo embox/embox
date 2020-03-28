@@ -35,12 +35,6 @@ SECTIONS {
 
 		memory_pages = .;
 		. += 0x600000;
-		
-		memory_page = .;
-		. += 0x10000;	/*FIX: it needs less space*/
-		
-		rings_mem = .; /*TODO: use allocator*/
-		. += 0x2000;
 
 		_traps_text_start = .;
 		*(.traps.*)
