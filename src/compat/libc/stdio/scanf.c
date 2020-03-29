@@ -63,7 +63,7 @@ static void unscanchar(const char **str, int ch, int *pc_ptr) {
 	} else if ((uintptr_t) str == 1) {
 		ungetc(ch, file);
 	} else {
-		ungetchar(ch);
+		ungetc(ch, stdin);
 	}
 }
 
