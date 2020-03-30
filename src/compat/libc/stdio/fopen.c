@@ -106,6 +106,7 @@ FILE *freopen(const char *path, const char *mode, FILE *file) {
 	int old_fd;
 
 	if (NULL == path || NULL == file) {
+		SET_ERRNO(EINVAL);
 		return NULL;
 	}
 
@@ -121,6 +122,7 @@ FILE *freopen(const char *path, const char *mode, FILE *file) {
 
 	dup2(fd, old_fd);
 	file->flags = flags;
+	clearerr(file); /* redundant but just-in-case */
 
 	close(fd);
 
