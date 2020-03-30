@@ -328,7 +328,7 @@ static int flush_file_to_socket(FILE *file, int sock, char *buff, size_t buff_sz
 
 	while (1) {
 		readed = fread(buff, 1, buff_sz, file);
-		if (readed < 0) {
+		if (ferror(file) || readed < 0) {
 			fprintf(stderr, "Can't read data from file.\n");
 			return FTP_RET_ERROR;
 		}
