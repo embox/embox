@@ -1,0 +1,5 @@
+This is the server for udp_test. It must run on Embox
+Client must build from sources from github repository 
+
+https://github.com/Deryugin/udp_test
+ 
