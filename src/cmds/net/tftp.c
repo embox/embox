@@ -53,9 +53,9 @@ static int read_file(FILE *fp, char *buff, size_t buff_sz, size_t *out_bytes) {
 	int ret;
 
 	ret = fread(buff, 1, buff_sz, fp);
-	if (ret < 0) {
+	if (ferror(fp) || ret < 0) {
 		fprintf(stderr, "Can't read data from file\n");
-		return -errno;
+		return -1;
 	}
 
 	*out_bytes = (size_t)ret;
