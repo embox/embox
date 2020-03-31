@@ -8,7 +8,8 @@ static module luasocket {
 
 	@InitFS
 	source "loadrobots.lua",
-		"http_request.lua"
+		"http_request.lua",
+		"udp_server.lua"
 
 	@NoRuntime depends embox.compat.posix.net.All
 	@NoRuntime depends embox.kernel.task.resource.errno
