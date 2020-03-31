@@ -78,3 +78,4 @@ TEST_CASE("concatenate for length greater than size of src string with strncat()
     test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char string"));
 }
+

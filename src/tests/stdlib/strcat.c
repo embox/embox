@@ -47,3 +47,4 @@ TEST_CASE("check for error if dst isn't allocated enough memory for strcat()") {
     strcat(dst, src);
     test_assert_not_zero(strcmp(dst, src));
 }
+
