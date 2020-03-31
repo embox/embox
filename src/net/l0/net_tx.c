@@ -63,10 +63,10 @@ static int nt_build_hdr(struct sk_buff *skb,
 	return dev->ops->build_hdr(skb, hdr_info);
 }
 
+extern int netif_tx(struct net_device *dev,  struct sk_buff *skb);
 int net_tx(struct sk_buff *skb,
 		struct net_header_info *hdr_info) {
 	int ret;
-	size_t skb_len;
 	struct net_device *dev;
 
 	assert(skb != NULL);
@@ -91,8 +91,6 @@ int net_tx(struct sk_buff *skb,
 		return ret;
 	}
 
-	skb_len = skb->len;
-
 	log_debug("%p len %zu type %#.6hx", skb, skb->len, ntohs(skb->mac.ethh->h_proto));
 
 	/*
@@ -109,18 +107,8 @@ int net_tx(struct sk_buff *skb,
 		return 0;
 	}
 
-	assert(dev->drv_ops != NULL);
-	assert(dev->drv_ops->xmit != NULL);
-	ret = dev->drv_ops->xmit(dev, skb);
-	if (ret != 0) {
-		log_debug("xmit = %d", ret);
-		skb_free(skb);
-		dev->stats.tx_err++;
-		return ret;
-	}
 
-	dev->stats.tx_packets++;
-	dev->stats.tx_bytes += skb_len;
+	netif_tx(dev, skb);
 
 	return 0;
 }

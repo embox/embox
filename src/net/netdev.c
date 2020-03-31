@@ -59,9 +59,11 @@ static int netdev_init(struct net_device *dev, const char *name,
 	assert(setup != NULL);
 
 	dlist_head_init(&dev->rx_lnk);
+	dlist_head_init(&dev->tx_lnk);
 	strcpy(&dev->name[0], name);
 	memset(&dev->stats, 0, sizeof dev->stats);
 	skb_queue_init(&dev->dev_queue);
+	skb_queue_init(&dev->dev_queue_tx);
 
 	if (priv_size != 0) {
 		dev->priv = sysmalloc(priv_size);
@@ -108,7 +110,9 @@ struct net_device * netdev_alloc(const char *name,
 void netdev_free(struct net_device *dev) {
 	if (dev != NULL) {
 		dlist_del_init(&dev->rx_lnk);
+		dlist_del_init(&dev->tx_lnk);
 		skb_queue_purge(&dev->dev_queue);
+		skb_queue_purge(&dev->dev_queue_tx);
 		if (dev->priv) {
 			sysfree(dev->priv);
 		}
