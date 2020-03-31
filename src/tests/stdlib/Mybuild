@@ -130,6 +130,13 @@ module strcpy_test {
 	depends embox.framework.LibFramework
 }
 
+module strcat_test {
+	source "strcat.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
 module strrchr_test {
 	source "strrchr_test.c"
 
@@ -139,6 +146,13 @@ module strrchr_test {
 
 module strncpy_test {
 	source "strncpy.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strncat_test {
+	source "strncat.c"
 
 	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
