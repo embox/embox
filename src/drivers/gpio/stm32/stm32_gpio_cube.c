@@ -17,35 +17,13 @@
 
 #define STM32_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 
-#define STM32_GPIO_PORTS_COUNT 6
 #define EXTI_LINES_CNT 4
 
 #define EXTI0_IRQ (EXTI0_IRQn + 16)
 
 EMBOX_UNIT_INIT(stm32_gpio_init);
 
-static GPIO_TypeDef *stm32_gpio_ports[STM32_GPIO_PORTS_COUNT] = {
-	GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
-};
-
 static struct gpio_chip stm32_gpio_chip;
-
-static void stm32_gpio_clk_enable(void *gpio_base) {
-	if (gpio_base == GPIOA)
-		__HAL_RCC_GPIOA_CLK_ENABLE();
-	else if (gpio_base == GPIOB)
-		__HAL_RCC_GPIOB_CLK_ENABLE();
-	else if (gpio_base == GPIOC)
-		__HAL_RCC_GPIOC_CLK_ENABLE();
-	else if (gpio_base == GPIOD)
-		__HAL_RCC_GPIOD_CLK_ENABLE();
-	else if (gpio_base == GPIOE)
-		__HAL_RCC_GPIOE_CLK_ENABLE();
-	else if (gpio_base == GPIOF)
-		__HAL_RCC_GPIOF_CLK_ENABLE();
-	else
-		assert(0);
-}
 
 static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 		int mode) {
