@@ -9,58 +9,42 @@ EMBOX_TEST_SUITE("Test suite for memmove() function");
 TEST_CASE("move full data")
 {
     const    char    src[]="string";
-    char    *dest;
+    char    dest[sizeof(src)+1];
 
-    dest    =  (char*)(malloc(sizeof(char)*strlen(src)));
-
+    test_assert_not_null(dest) ;
     memmove((void*)dest,(void*)src,(size_t)strlen(src));
-    test_assert_not_null(*dest); /* It should be not null */
-    test_assert_null(*src);
-
-    free(dest);
+    test_assert_equal(*dest , *src) ;
 }
 
 
 TEST_CASE("check for NULL argument")
 {
     const   char  src[]="\0";
-    char    *dest;
+    char    dest[sizeof(src)+1];
 
-    dest=(char*)(malloc(sizeof(char)*strlen(src)));
-
+    test_assert_not_null(dest) ;
     memmove((void*)dest,(void*)src,(size_t)strlen(src));
-    test_assert_not_null(*dest); /* It should be not null */
-    test_assert_null(*src);
-
-    free(dest);
+    test_assert_equal(*dest , *src) ;
 }
 
 TEST_CASE("move array")
 {
     const   char  src[]={'a','t','h','-','9','0'};
-    char    *dest;
+    char    dest[sizeof(src)+1];
 
-   	dest=(char*)(malloc(sizeof(char)*strlen(src)));
-
-    memmove((void*)dest,(void*)src,(size_t)strlen(src)) ;
-    test_assert_not_null(*dest); /* It should be not null */
-    test_assert_null(*src) ;
-
-    free(dest) ;
+    test_assert_not_null(dest) ;
+    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    test_assert_equal(*dest , *src) ;
 }
 
 TEST_CASE("move array with null in the middle")
 {
     const   char    src[]={'a','t','h','-','\0','9','0'};
-    char   *dest;
+    char   dest[sizeof(src)+1] ;
 
-    dest    =  (char*)(malloc(sizeof(char)*strlen(src)));
-
-    memmove((void*)dest,(void*)src,(size_t)strlen(src)) ;
-    test_assert_not_null(*dest); /* It should be not null */
-    test_assert_null(*src) ;
-
-    free(dest) ;
+    test_assert_not_null(dest) ;
+    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    test_assert_equal(*dest , *src) ;
 }
 
 
@@ -69,7 +53,7 @@ TEST_CASE("If memory is not allocated enough")
     const   char  src[]="string"  ;
     char    dest[2];
 
-    memmove((void*)dest,(void*)src,(size_t)strlen(src)) ;
-    test_assert_not_null(*dest); /* It should be not null */
-    test_assert_null(*src) ;
+    test_assert_not_null(dest) ;
+    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    test_assert_equal(*dest , *src) ;
 }
