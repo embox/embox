@@ -29,6 +29,12 @@ module pool_test {
 	depends embox.framework.LibFramework
 }
 
+module memmove
+{
+	source "memmove.c"
+	depends embox.framework.LibFramework
+}
+
 module slab {
 	source "slab.c"
 
