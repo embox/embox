@@ -15,6 +15,7 @@ module bsearch_test {
 module memmove_test
 {
 	source "memmove.c"
+
 	depends embox.compat.libc.string
 	depends embox.framework.LibFramework
 }

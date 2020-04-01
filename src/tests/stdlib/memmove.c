@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-EMBOX_TEST_SUITE("Test suite for memmove()");
+EMBOX_TEST_SUITE("Test suite for memmove() function");
 
 
 TEST_CASE("move full data")
