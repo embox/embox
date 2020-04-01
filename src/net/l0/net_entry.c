@@ -42,7 +42,11 @@ static int netif_rx_action(struct lthread *self) {
 			struct sk_buff *skb;
 
 			while ((skb = skb_queue_pop(&dev->dev_queue)) != NULL) {
-				net_rx(skb);
+				ipl_restore(ipl);
+				{
+					net_rx(skb);
+				}
+				ipl= ipl_save();
 			}
 			dlist_del_init(&dev->rx_lnk);
 		}

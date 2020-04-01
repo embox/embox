@@ -146,7 +146,7 @@ static int nbr_build_and_send_pkt(struct sk_buff *skb,
 	ret = skb->dev->ops->build_hdr(skb, hdr_info);
 	if (ret == 0) {
 		/* try to xmit */
-		ret = net_tx(skb, NULL);
+		ret = net_tx_direct(skb);
 		if (ret != 0) {
 			log_error("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
 			return ret;

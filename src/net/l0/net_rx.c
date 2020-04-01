@@ -7,18 +7,18 @@
  * @author Ilia Vaprol
  */
 
+#include <util/log.h>
+
 #include <assert.h>
 
 #include <embox/net/pack.h>
+
 #include <net/if_packet.h>
 #include <net/l0/net_crypt.h>
 #include <net/l0/net_rx.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/socket/packet.h>
-#include <util/log.h>
-
-#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
 
 int net_rx(struct sk_buff *skb) {
 	struct net_header_info hdr_info;

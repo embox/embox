@@ -62,26 +62,13 @@ static int nt_build_hdr(struct sk_buff *skb, struct net_header_info *hdr_info) {
 }
 
 extern int netif_tx(struct net_device *dev,  struct sk_buff *skb);
-int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
-	int ret;
+int net_tx_direct(struct sk_buff *skb) {
 	struct net_device *dev;
 
 	assert(skb != NULL);
 
 	dev = skb->dev;
 	assert(dev != NULL);
-
-	if ((hdr_info != NULL) || (0 != nt_build_hdr(skb, hdr_info))) {
-		assert(hdr_info != NULL);
-		ret = neighbour_send_after_resolve(hdr_info->type,
-				hdr_info->dst_p, hdr_info->p_len,
-				dev, skb);
-		if (ret != 0) {
-			log_debug("neighbour_send_after_resolve = %d", ret);
-		}
-
-		return ret;
-	}
 
 	if (!(dev->flags & IFF_UP)) {
 		log_error("device is down");
@@ -105,8 +92,33 @@ int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
 		return 0;
 	}
 
-
 	netif_tx(dev, skb);
+
+	return 0;
+}
+
+int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
+	int ret;
+	struct net_device *dev;
+
+	assert(skb != NULL);
+
+	dev = skb->dev;
+	assert(dev != NULL);
+
+	if ((0 != nt_build_hdr(skb, hdr_info))) {
+		assert(hdr_info != NULL);
+		ret = neighbour_send_after_resolve(hdr_info->type,
+				hdr_info->dst_p, hdr_info->p_len,
+				dev, skb);
+		if (ret != 0) {
+			log_debug("neighbour_send_after_resolve = %d", ret);
+		}
+
+		return ret;
+	}
+
+	net_tx_direct(skb);
 
 	return 0;
 }
