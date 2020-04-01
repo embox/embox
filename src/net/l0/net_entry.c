@@ -32,71 +32,49 @@ static DLIST_DEFINE(netif_rx_list);
 
 static struct lthread netif_rx_irq_handler;
 
-static void netif_rx_queued(struct net_device *dev) {
-	ipl_t sp;
-
-	assert(dev != NULL);
-
-	sp = ipl_save();
-	{
-		if (dlist_empty(&dev->rx_lnk)) {
-			dlist_add_prev(&dev->rx_lnk, &netif_rx_list);
-		}
-	}
-	ipl_restore(sp);
-}
-
-static void netif_rx_dequeued(struct net_device *dev) {
-	ipl_t sp;
-
-	assert(dev != NULL);
-
-	sp = ipl_save();
-	{
-		assert(!dlist_empty(&dev->rx_lnk));
-		dlist_del_init(&dev->rx_lnk);
-	}
-	ipl_restore(sp);
-}
-
-static void netif_poll(struct net_device *dev) {
-	struct sk_buff *skb;
-
-	while ((skb = skb_queue_pop(&dev->dev_queue)) != NULL) {
-		net_rx(skb);
-	}
-}
-
-
 static int netif_rx_action(struct lthread *self) {
 	struct net_device *dev;
+	ipl_t ipl;
 
-	dlist_foreach_entry(dev, &netif_rx_list, rx_lnk) {
-		netif_poll(dev);
-		netif_rx_dequeued(dev);
+	ipl= ipl_save();
+	{
+		dlist_foreach_entry_safe(dev, &netif_rx_list, rx_lnk) {
+			struct sk_buff *skb;
+
+			while ((skb = skb_queue_pop(&dev->dev_queue)) != NULL) {
+				net_rx(skb);
+			}
+			dlist_del_init(&dev->rx_lnk);
+		}
 	}
+	ipl_restore(ipl);
 
 	return 0;
 }
 
-static void netif_rx_schedule(struct sk_buff *skb) {
+/* we can be in irq mode */
+int netif_rx(void *data) {
+	ipl_t ipl;
+	struct sk_buff *skb = data;
 	struct net_device *dev;
 
 	assert(skb != NULL);
+	assert(skb->dev != NULL);
 
 	dev = skb->dev;
-	assert(dev != NULL);
 
-	skb_queue_push(&dev->dev_queue, skb);
+	ipl = ipl_save();
+	{
+		skb_queue_push(&dev->dev_queue, skb);
 
-	netif_rx_queued(dev);
+		if (dlist_empty(&dev->rx_lnk)) {
+			dlist_add_prev(&dev->rx_lnk, &netif_rx_list);
+		}
 
-	lthread_launch(&netif_rx_irq_handler);
-}
+		lthread_launch(&netif_rx_irq_handler);
+	}
+	ipl_restore(ipl);
 
-int netif_rx(void *data) {
-	assert(data != NULL);
-	netif_rx_schedule((struct sk_buff *) data);
 	return NET_RX_SUCCESS;
 }
 
@@ -109,7 +87,7 @@ static int netif_tx_action(struct lthread *self) {
 
 	sched_lock();
 	{
-		dlist_foreach_entry(dev, &netif_tx_list, tx_lnk) {
+		dlist_foreach_entry_safe(dev, &netif_tx_list, tx_lnk) {
 			struct sk_buff * skb;
 			int ret;
 
