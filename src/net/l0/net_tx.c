@@ -6,30 +6,27 @@
  * @author Anton Bondarev
  * @author Ilia Vaprol
  */
+#include <util/log.h>
 
 #include <assert.h>
 #include <errno.h>
 #include <arpa/inet.h>
+#include <stddef.h>
+#include <util/array.h>
+
 #include <net/l0/net_crypt.h>
 #include <net/l0/net_tx.h>
 #include <net/neighbour.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stddef.h>
-#include <util/array.h>
 #include <net/socket/packet.h>
 #include <net/l2/ethernet.h>
-#include <util/log.h>
 
-#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
-
-static int nt_build_hdr(struct sk_buff *skb,
-		struct net_header_info *hdr_info,
-		struct net_device *dev) {
+static int nt_build_hdr(struct sk_buff *skb, struct net_header_info *hdr_info) {
 	int ret;
 	unsigned char dst_haddr[MAX_ADDR_LEN];
+	struct net_device *dev = skb->dev;
 
-	assert(skb != NULL);
 	assert(dev != NULL);
 
 	if (hdr_info == NULL) {
@@ -40,6 +37,7 @@ static int nt_build_hdr(struct sk_buff *skb,
 	if (hdr_info->src_hw == NULL) {
 		hdr_info->src_hw = &dev->dev_addr[0];
 	}
+
 	if (hdr_info->dst_hw == NULL) {
 		if (hdr_info->dst_p != NULL) {
 			ret = neighbour_get_haddr(hdr_info->type,
@@ -64,8 +62,7 @@ static int nt_build_hdr(struct sk_buff *skb,
 }
 
 extern int netif_tx(struct net_device *dev,  struct sk_buff *skb);
-int net_tx(struct sk_buff *skb,
-		struct net_header_info *hdr_info) {
+int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
 	int ret;
 	struct net_device *dev;
 
@@ -74,21 +71,22 @@ int net_tx(struct sk_buff *skb,
 	dev = skb->dev;
 	assert(dev != NULL);
 
-	if (!(dev->flags & IFF_UP)) {
-		log_error("device is down");
-		skb_free(skb);
-		return -ENETDOWN;
-	}
-
-	if (0 != nt_build_hdr(skb, hdr_info, dev)) {
+	if ((hdr_info != NULL) || (0 != nt_build_hdr(skb, hdr_info))) {
 		assert(hdr_info != NULL);
 		ret = neighbour_send_after_resolve(hdr_info->type,
 				hdr_info->dst_p, hdr_info->p_len,
 				dev, skb);
-		if (ret != 0)
+		if (ret != 0) {
 			log_debug("neighbour_send_after_resolve = %d", ret);
+		}
 
 		return ret;
+	}
+
+	if (!(dev->flags & IFF_UP)) {
+		log_error("device is down");
+		skb_free(skb);
+		return -ENETDOWN;
 	}
 
 	log_debug("%p len %zu type %#.6hx", skb, skb->len, ntohs(skb->mac.ethh->h_proto));
