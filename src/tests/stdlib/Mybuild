@@ -12,6 +12,13 @@ module bsearch_test {
 	depends embox.framework.LibFramework
 }
 
+module memmove_test
+{
+	source "memmove.c"
+	depends embox.compat.libc.string
+	depends embox.framework.LibFramework
+}
+
 module mbstowcs_test {
 	source "mbstowcs_test.c"
 	depends embox.compat.libc.stdlib.multibyte
