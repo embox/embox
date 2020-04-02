@@ -25,18 +25,6 @@ index f91380b..30474d7 100644
  # CONFIG_FILE_LOCKING is not set
  # CONFIG_DNOTIFY is not set
  # CONFIG_INOTIFY_USER is not set
-diff --git a/arch/lkl/kernel/threads.c b/arch/lkl/kernel/threads.c
-index 71dddda..eeda6ea 100644
---- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c
-+++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c
-@@ -56,7 +56,7 @@ static void kill_thread(struct thread_info *ti)
- 	if (!test_ti_thread_flag(ti, TIF_HOST_THREAD)) {
- 		ti->dead = true;
- 		lkl_ops->sem_up(ti->sched_sem);
--		lkl_ops->thread_join(ti->tid);
-+		lkl_ops->thread_join(ti->tid);
- 	}
- 	lkl_ops->sem_free(ti->sched_sem);
  
 diff --git a/lib/raid6/algos.c b/lib/raid6/algos.c
 index 9bdf597..a66ba8d 100644
