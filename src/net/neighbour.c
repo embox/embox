@@ -299,6 +299,7 @@ int neighbour_get_paddr(unsigned short htype, const void *haddr,
 int neighbour_del(unsigned short ptype, const void *paddr,
 		struct net_device *dev) {
 	struct neighbour *nbr;
+	int ret;
 
 	if ((paddr == NULL) || (dev == NULL)) {
 		return -EINVAL;
@@ -307,16 +308,16 @@ int neighbour_del(unsigned short ptype, const void *paddr,
 	sched_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
-		if (nbr == NULL) {
-			sched_unlock();
-			return -ENOENT;
+		if (nbr != NULL) {
+			nbr_free(nbr);
+			ret = 0;
+		} else {
+			ret = -ENOENT;
 		}
-
-		nbr_free(nbr);
 	}
 	sched_unlock();
 
-	return 0;
+	return ret;
 }
 
 int neighbour_clean(struct net_device *dev) {
@@ -347,12 +348,13 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	{
 		dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 			sched_unlock();
+
 			ret = (*func)(nbr, args);
-			sched_lock();
 			if (ret != 0) {
-				sched_unlock();
 				return ret;
 			}
+
+			sched_lock();
 		}
 	}
 	sched_unlock();
@@ -367,7 +369,7 @@ int neighbour_send_after_resolve(unsigned short ptype,
 	struct neighbour *nbr;
 	struct net_header_info hdr_info;
 
-	if ((paddr == NULL) || (dev == NULL) || (dev == NULL)) {
+	if ((paddr == NULL) || (dev == NULL)) {
 		skb_free(skb);
 		return -EINVAL;
 	}
