@@ -34,7 +34,7 @@ index 71dddda..eeda6ea 100644
  		ti->dead = true;
  		lkl_ops->sem_up(ti->sched_sem);
 -		lkl_ops->thread_join(ti->tid);
-+		// lkl_ops->thread_join(ti->tid);
++		lkl_ops->thread_join(ti->tid);
  	}
  	lkl_ops->sem_free(ti->sched_sem);
  
