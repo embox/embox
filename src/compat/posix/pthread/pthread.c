@@ -62,10 +62,10 @@ int pthread_attr_init(pthread_attr_t *attr) {
 	attr->flags = 0;
 
 	if (pthread_attr_setdetachstate(attr, 0)) {
-		return -EINVAL;
+		return EINVAL;
 	}
 	if (pthread_attr_setinheritsched(attr, THREAD_FLAG_PRIORITY_INHERIT)) {
-		return -EINVAL;
+		return EINVAL;
 	}
 
 	attr->policy = SCHED_OTHER;
@@ -136,7 +136,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 	struct sched_param sched_param;
 
 	if (!start_routine) {
-		return -EAGAIN;
+		return EAGAIN;
 	}
 	if (NULL == attr) {
 		pthread_attr_init(&def_attr);
@@ -145,10 +145,10 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		pattr = attr;
 	}
 	if (0 != pthread_attr_getdetachstate(pattr, &detached)) {
-		return -EINVAL;
+		return EINVAL;
 	}
 	if (0 != pthread_attr_getinheritsched(pattr, &inherit)) {
-		return -EINVAL;
+		return EINVAL;
 	}
 
 	flags = detached | inherit | THREAD_FLAG_SUSPENDED;
@@ -167,7 +167,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		 *
 		 * The pthread_create() function will not return an error code of [EINTR].
 		 */
-		return -EAGAIN;
+		return EAGAIN;
 	}
 
 	pthread_attr_getschedpolicy(pattr, &policy);
@@ -212,7 +212,7 @@ int pthread_join(pthread_t thread, void **value_ptr) {
 
 int pthread_once(pthread_once_t *once_control, void (*init_routine)(void)) {
 	if((NULL == init_routine) || (NULL == once_control)) {
-		return -EINVAL;
+		return EINVAL;
 	}
 	if(pthread_mutex_trylock(once_control)) {
 		return 0;
