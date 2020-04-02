@@ -1,21 +1,21 @@
 /**
- * @file stm32_gpio_conf_f4.h
- * @brief 
- * @author Denis Deryugin <deryugin.denis@gmail.com>
- * @version 0.1
- * @date 2016-02-11
+ * @file
+ *
+ * @date 31.03.2020
+ * @author Alexander Kalmuk
  */
 
-#ifndef SRC_DRIVERS_GPIO_STM32_USART_STM32_USART_CONF_F4_H_
-#define SRC_DRIVERS_GPIO_STM32_USART_STM32_USART_CONF_F4_H_
+#ifndef SRC_DRIVERS_GPIO_STM32_USART_STM32_USART_CONF_F7_H_
+#define SRC_DRIVERS_GPIO_STM32_USART_STM32_USART_CONF_F7_H_
 
-#include "stm32f4xx_hal.h"
-#include "stm32f4xx_hal_gpio.h"
+#include "stm32f7xx_hal.h"
+#include "stm32f7xx_hal_gpio.h"
 
-#define STM32_GPIO_PORTS_COUNT 8
+#define STM32_GPIO_PORTS_COUNT 11
 
 static GPIO_TypeDef *stm32_gpio_ports[STM32_GPIO_PORTS_COUNT] = {
-	GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG, GPIOH
+	GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG, GPIOH,
+	GPIOI, GPIOJ, GPIOK
 };
 
 static void stm32_gpio_clk_enable(void *gpio_base) {
@@ -28,7 +28,10 @@ static void stm32_gpio_clk_enable(void *gpio_base) {
 	case (int) GPIOF: __HAL_RCC_GPIOF_CLK_ENABLE(); break;
 	case (int) GPIOG: __HAL_RCC_GPIOG_CLK_ENABLE(); break;
 	case (int) GPIOH: __HAL_RCC_GPIOH_CLK_ENABLE(); break;
+	case (int) GPIOI: __HAL_RCC_GPIOI_CLK_ENABLE(); break;
+	case (int) GPIOJ: __HAL_RCC_GPIOJ_CLK_ENABLE(); break;
+	case (int) GPIOK: __HAL_RCC_GPIOK_CLK_ENABLE(); break;
 	}
 }
 
-#endif /* SRC_DRIVERS_GPIO_STM32_USART_STM32_USART_CONF_F4_H_ */
+#endif /* SRC_DRIVERS_GPIO_STM32_USART_STM32_USART_CONF_F7_H_ */

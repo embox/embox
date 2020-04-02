@@ -26,3 +26,16 @@ module stm32_gpio_f3 extends api {
 
 	depends embox.driver.gpio.core
 }
+
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32_gpio_f7 extends api {
+	option number log_level = 0
+	option number gpio_chip_id = 0
+
+	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
+	source "stm32_gpio_conf_f7.h"
+
+	source "stm32_gpio_cube.c"
+
+	depends embox.driver.gpio.core
+}
