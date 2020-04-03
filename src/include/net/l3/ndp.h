@@ -219,4 +219,6 @@ struct ndpoptions_mtu {
 extern int ndp_send(uint8_t type, uint8_t code, const void *body,
 		size_t body_sz, struct net_device *dev);
 
+extern int ndp_discover(struct net_device *dev, const void *tpa);
+
 #endif /* NET_L3_NDP_H_ */
