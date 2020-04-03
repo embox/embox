@@ -62,7 +62,7 @@ static int send_request(struct net_device *dev, uint16_t pro,
 	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
 			RARP_OP_REQUEST, &dev->dev_addr[0], NULL, tha, NULL);
 
-	return net_tx(skb, NULL);
+	return net_tx_direct(skb);
 }
 
 int main(int argc, char **argv) {

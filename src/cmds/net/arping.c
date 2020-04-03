@@ -60,7 +60,7 @@ static int send_request(struct net_device *dev, uint16_t pro,
 			ARP_OP_REQUEST, &dev->dev_addr[0], spa,
 			&dev->broadcast[0], tpa);
 
-	return net_tx(skb, NULL);
+	return net_tx_direct(skb);
 }
 
 int main(int argc, char **argv) {

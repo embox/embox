@@ -53,7 +53,7 @@ static int arp_xmit(struct sk_buff *skb) {
 	}
 
 	/* fall through to dev layer */
-	return net_tx(skb, NULL);
+	return net_tx_direct(skb);
 }
 
 static int arp_send(struct sk_buff *skb, struct net_device *dev,

@@ -21,8 +21,7 @@
 #include <stddef.h>
 #include <string.h>
 
-static int ndp_xmit(struct sk_buff *skb,
-		struct net_device *dev) {
+static int ndp_xmit(struct sk_buff *skb, struct net_device *dev) {
 	struct net_header_info hdr_info;
 
 	assert(skb != NULL);
