@@ -183,10 +183,9 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 	int ret;
 	struct neighbour *nbr;
 
-	if ((paddr == NULL) || (plen == 0)
-			|| (plen > sizeof(nbr->paddr)) || (dev == NULL)
-			|| (haddr == NULL) || (hlen == 0)
-			|| (hlen > sizeof(nbr->haddr))) {
+	if ((paddr == NULL) || (plen == 0) || (plen > sizeof(nbr->paddr))
+			|| (dev == NULL) || (haddr == NULL) || (hlen == 0)
+			|| hlen < dev->addr_len	|| (hlen > sizeof(nbr->haddr))) {
 		return -EINVAL;
 	}
 
