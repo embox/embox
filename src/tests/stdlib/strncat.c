@@ -40,10 +40,10 @@ TEST_CASE("concatenate to an empty string with strncat()") {
 
 TEST_CASE("concatenate part of a string with strncat()") {
     char src[] = "string";
-    const int prefix_len = 3;
+
     char dst[] = "char ";
 
-    strncat(dst, src, prefix_len);
+    strncat(dst, src, 3);
     test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char str"));
     test_assert_equal(dst[8], '\0');
