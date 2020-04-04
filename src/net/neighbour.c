@@ -356,6 +356,10 @@ int neighbour_resolve(unsigned short ptype,
 	struct neighbour *nbr;
 	int ret;
 
+	if (hlen_max < dev->addr_len) {
+		return -EINVAL;
+	}
+
 	ret = 0;
 
 	sched_lock();
