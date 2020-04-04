@@ -61,10 +61,10 @@ TEST_CASE("check for error if dst isn't allocated enough memory for strncat()") 
 
 TEST_CASE("check for zero argument length with strncat()") {
     char src[] = "string";
-    const int copy_len = 0;
+
     char dst[] = "char ";
 
-    strncat(dst, src, copy_len);
+    strncat(dst, src, 0);
     test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char "));
     test_assert_equal(dst[5], '\0');
