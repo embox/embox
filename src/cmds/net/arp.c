@@ -33,8 +33,7 @@ static int print_arp_entity(const struct neighbour *n,
 	if ((in_dev == NULL) || (in_dev->dev == n->dev)) {
 		if (neighbour_is_resolved(n)) {
 			macaddr_print(hw_addr, &n->haddr[0]);
-		}
-		else {
+		} else {
 			sprintf((char *)hw_addr, "%s", "(incomplete)");
 		}
 		printf("%-15s %-6s  %-17s %-5s %-5s\n",

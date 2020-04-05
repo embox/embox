@@ -60,11 +60,13 @@ struct arphdr {
 	uint8_t ar_body[]; /* Message body */
 } __attribute__((packed));
 
-#define ARP_MIN_HEADER_SIZE (sizeof(struct arphdr))
+/* Hardware and protocol address fields are used both for source
+ * and destination, so it's additional (htl + pln) * 2 bytes */
+#define ARP_CALC_HEADER_SIZE(hln, pln) \
+	(sizeof(struct arphdr) + (hln + pln) * 2)
+
 #define ARP_HEADER_SIZE(arph) \
 	ARP_CALC_HEADER_SIZE((arph)->ar_hln, (arph)->ar_pln)
-#define ARP_CALC_HEADER_SIZE(hln, pln) \
-	(ARP_MIN_HEADER_SIZE + (hln + pln) * 2)
 
 static inline struct arphdr * arp_hdr(const struct sk_buff *skb) {
 	assert(skb != NULL);
