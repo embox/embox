@@ -16,7 +16,7 @@ TEST_CASE("concatenate full string with strncat()") {
     char dst[] = "char ";
 
     strncat(dst, src, sizeof(src));
-    test_assert_not_null(dst);
+
     test_assert_zero(strcmp(dst, "char string"));
 }
 
@@ -33,7 +33,7 @@ TEST_CASE("concatenate to an empty string with strncat()") {
     char dst[] = "";
 
     strncat(dst, src, sizeof(src));
-    test_assert_not_null(dst);
+
     test_assert_zero(strcmp(dst, src));
 }
 
