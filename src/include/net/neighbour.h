@@ -22,7 +22,7 @@ struct neighbour {
 	unsigned char paddr[MAX_ADDR_LEN]; /* protocol address */
 	unsigned char plen;                /* protocol address len  */
 	struct net_device *dev;            /* net device */
-	int status;                        /* is incomplete */
+	int is_incomplete;                 /* is incomplete */
 	unsigned short htype;              /* hw space */
 	unsigned char haddr[MAX_ADDR_LEN]; /* hw address */
 	unsigned char hlen;                /* hw address len */
@@ -77,7 +77,7 @@ extern int neighbour_resolve(unsigned short ptype,
 		unsigned char hlen_max, void *out_haddr);
 
 static inline int neighbour_is_resolved(const struct neighbour *nbr) {
-	return nbr->status;
+	return !nbr->is_incomplete;
 }
 
 #endif /* NET_NEIGHBOUR_H_ */
