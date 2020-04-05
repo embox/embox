@@ -25,7 +25,6 @@ TEST_CASE("concatenate empty string with strncat()") {
     char dst[] = "char ";
 
     strncat(dst, src, sizeof(src));
-    test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char "));
 }
 
@@ -44,7 +43,6 @@ TEST_CASE("concatenate part of a string with strncat()") {
     char dst[] = "char ";
 
     strncat(dst, src, 3);
-    test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char str"));
     test_assert_equal(dst[8], '\0');
 }
@@ -55,7 +53,6 @@ TEST_CASE("check for zero argument length with strncat()") {
     char dst[] = "char ";
 
     strncat(dst, src, 0);
-    test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char "));
     test_assert_equal(dst[5], '\0');
 }
@@ -65,7 +62,6 @@ TEST_CASE("concatenate for length greater than size of src string with strncat()
     char dst[] = "char ";
 
     strncat(dst, src, sizeof(src)+5);
-    test_assert_not_null(dst);
     test_assert_zero(strcmp(dst, "char string"));
 }
 
