@@ -23,13 +23,10 @@ TEST_CASE("concatenate full string with strcat()") {
 TEST_CASE("concatenate empty string with strcat()") {
     char src[] = "";
     char dst[] = "char ";
-    char chk[sizeof(dst)+1];
-
-    strcpy(chk,dst);
 
     strcat(dst, src);
     test_assert_not_null(dst);
-    test_assert_zero(strcmp(dst, chk));
+    test_assert_zero(strcmp(dst, "char "));
 }
 
 TEST_CASE("concatenate to empty string with strcat()") {
