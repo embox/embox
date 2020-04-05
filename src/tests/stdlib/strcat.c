@@ -37,11 +37,3 @@ TEST_CASE("concatenate to empty string with strcat()") {
     test_assert_zero(strcmp(dst, src));
 }
 
-TEST_CASE("check for error if dst isn't allocated enough memory for strcat()") {
-    char src[] = "string";
-    char dst[3];
-
-    strcat(dst, src);
-    test_assert_not_zero(strcmp(dst, src));
-}
-

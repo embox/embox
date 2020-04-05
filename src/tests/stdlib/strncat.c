@@ -49,16 +49,6 @@ TEST_CASE("concatenate part of a string with strncat()") {
     test_assert_equal(dst[8], '\0');
 }
 
-
-
-TEST_CASE("check for error if dst isn't allocated enough memory for strncat()") {
-    char src[] = "string";
-    char dst[3];
-
-    strncat(dst, src, sizeof(src));
-    test_assert_not_zero(strcmp(dst, src));
-}
-
 TEST_CASE("check for zero argument length with strncat()") {
     char src[] = "string";
 
