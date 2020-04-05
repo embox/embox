@@ -48,11 +48,10 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 	assert(nbr != NULL);
 
 	if (haddr != NULL) {
-		nbr->status = 1;
 		nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
 		memcpy(&nbr->haddr[0], haddr, nbr->hlen);
 	} else {
-		assert(nbr->status == 0);
+		assert(nbr->is_incomplete == 1);
 	}
 }
 
@@ -65,7 +64,7 @@ static struct neighbour *nbr_create(unsigned short ptype, const void *paddr,
 	if (nbr == NULL) {
 		return NULL;
 	}
-	nbr->status = 0;
+	nbr->is_incomplete = 1;
 	skb_queue_init(&nbr->w_queue);
 	dlist_head_init(&nbr->lnk);
 	dlist_add_prev_entry(nbr, &neighbour_list, lnk);
@@ -204,8 +203,9 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 		nbr_set_haddr(nbr, haddr);
 		nbr->flags = flags;
 
-		if (nbr->status) {
+		if (nbr->is_incomplete) {
 			nbr_flush_w_queue(nbr);
+			nbr->is_incomplete = 0;
 		}
 	}
 exit:
@@ -229,16 +229,13 @@ int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
 		if (nbr == NULL) {
 			sched_unlock();
 			return -ENOENT;
-		}
-		else if (nbr->htype != htype) {
+		} else if (nbr->htype != htype) {
 			sched_unlock();
 			return -ENOENT;
-		}
-		else if (nbr->status) {
+		} else if (nbr->is_incomplete) {
 			sched_unlock();
 			return -EINPROGRESS;
-		}
-		else if (nbr->hlen > hlen_max) {
+		} else if (nbr->hlen > hlen_max) {
 			sched_unlock();
 			return -ENOMEM;
 		}
@@ -367,19 +364,20 @@ int neighbour_resolve(unsigned short ptype,
 		if (nbr == NULL) {
 			nbr = nbr_create(ptype, paddr, plen, dev, dev->type, 0);
 			if (nbr == NULL) {
-				ret = - ENOMEM;
+				ret = -ENOMEM;
 				goto exit;
 			}
 
 			nbr_send_request(nbr);
 		}
 
-		if (!nbr->status) {
+		if (nbr->is_incomplete) {
 			skb_queue_push(&nbr->w_queue, skb);
-			ret = 1;
-		} else {
-			memcpy(out_haddr, &nbr->haddr[0], nbr->hlen);
+			ret = EHOSTUNREACH;
+			goto exit;
 		}
+
+		memcpy(out_haddr, &nbr->haddr[0], nbr->hlen);
 	}
 exit:
 	sched_unlock();
@@ -397,7 +395,7 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 				continue;
 			}
 
-			if (nbr->status) {
+			if (nbr->is_incomplete) {
 				if (--nbr->expire <= 0) {
 					nbr_free(nbr);
 				}
