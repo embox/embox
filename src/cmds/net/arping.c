@@ -66,7 +66,8 @@ static int send_request(struct net_device *dev, uint16_t pro,
 int main(int argc, char **argv) {
 	int opt;
 	int cnt = 4, cnt_resp = 0, i;
-	struct in_device *in_dev = inetdev_get_by_name("eth0");
+	struct in_device *in_dev;
+	char *if_name = "eth0";
 	struct in_addr dst;
 	char dst_b[] = "xxx.xxx.xxx.xxx";
 	char from_b[] = "xxx.xxx.xxx.xxx";
@@ -78,10 +79,7 @@ int main(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "I:c:h"))) {
 		switch (opt) {
 		case 'I': /* get interface */
-			if (NULL == (in_dev = inetdev_get_by_name(optarg))) {
-				printf("arping: unknown iface %s\n", optarg);
-				return -EINVAL;
-			}
+			if_name = optarg;
 			break;
 		case 'c': /* get ping cnt */
 			if (1 != sscanf(optarg, "%d", &cnt)) {
@@ -103,6 +101,17 @@ int main(int argc, char **argv) {
 	if (argc == 1) {
 		print_usage();
 		return 0;
+	}
+
+	in_dev = inetdev_get_by_name(if_name);
+	if (NULL == in_dev) {
+		printf("arping: unknown iface %s\n", if_name);
+		return -EINVAL;
+	}
+
+	if (in_dev->dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
+		printf("arping: iface %s don't support ARP\n", if_name);
+		return -EINVAL;
 	}
 
 	/* Get destination address. */
