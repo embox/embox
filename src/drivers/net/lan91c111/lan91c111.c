@@ -52,6 +52,7 @@ EMBOX_UNIT_INIT(lan91c111_init);
 /* Bank 2 */
 #define BANK_MMU_CMD    (BANK_BASE_ADDR + 0x0)
 #define BANK_PNR        (BANK_BASE_ADDR + 0x2)
+#define BANK_TX_ALLOC   (BANK_BASE_ADDR + 0x3)
 #define BANK_FIFO_PORTS (BANK_BASE_ADDR + 0x4)
 #define BANK_POINTER    (BANK_BASE_ADDR + 0x6)
 #define BANK_DATA       (BANK_BASE_ADDR + 0x8)
@@ -106,10 +107,11 @@ EMBOX_UNIT_INIT(lan91c111_init);
 #define TX_INT   0x0200
 #define TX_ACK   0x0002
 
-#define TX_EMPTY 0x80
+#define FIFO_EMPTY 0x80
 
-#define TX_MASK  0x0002
-#define RX_MASK  0x0001
+#define ALLOC_MASK  0x0008
+#define TX_MASK     0x0002
+#define RX_MASK     0x0001
 
 #define CRC_CONTROL   0x10
 #define ODD_CONTROL   0x20
@@ -178,6 +180,7 @@ static void lan91c111_push_data(uint8_t *data, int len) {
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	uint8_t *data;
+	int ret = 0;
 	ipl_t ipl;
 
 	ipl = ipl_save();
@@ -186,7 +189,13 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		lan91c111_set_bank(2);
 
-		packet_num = (REG16_LOAD(BANK_PNR) >> 8) & PNUM_MASK;
+		if (!(REG16_LOAD(BANK_INTERRUPT) & ALLOC_MASK)) {
+			log_error("Failed to allocate packet for TX");
+			ret = -EBUSY;
+			goto out;
+		}
+
+		packet_num = (REG16_LOAD(BANK_TX_ALLOC) >> 8) & PNUM_MASK;
 
 		REG16_STORE(BANK_PNR, packet_num << 8);
 
@@ -205,10 +214,11 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		lan91c111_set_cmd(CMD_TX_ENQUEUE);
 	}
+out:
 	ipl_restore(ipl);
 
 	skb_free(skb);
-	return 0;
+	return ret;
 }
 
 static int lan91c111_open(struct net_device *dev) {
@@ -252,55 +262,68 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t buf;
 	uint16_t len;
 	uint8_t *skb_data;
-	int i;
+	int i, packet;
+	ipl_t ipl;
 
-	lan91c111_set_bank(2);
+	ipl = ipl_save();
+	{
+		lan91c111_set_bank(2);
 
-	if (REG16_LOAD(BANK_INTERRUPT) & TX_MASK) {
-		/* TX interrupt */
-		REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT | TX_ACK);
-		return 0;
-	}
+		if (REG16_LOAD(BANK_INTERRUPT) & TX_MASK) {
+			/* TX interrupt */
+			REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT | TX_ACK);
+			goto out;
+		}
 
-	if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK))
-		return 0;
+		if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK)) {
+			printk("False irq\n");
+			goto out;
+		}
 
-	REG16_STORE(BANK_POINTER, (0x8000 | AUTO_INCR | 2));
-	len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
-	/* In original structure, byte count includes headers, so
-	 * we shrink it to data size */
+		packet = (REG16_LOAD(BANK_FIFO_PORTS) >> 8) & 0xFF;
+		if (packet == FIFO_EMPTY) {
+			goto out;
+		}
 
-	skb = skb_alloc(len + 2);
-	assert(skb);
-	skb->len = len;
-	skb->dev = dev_id;
+		REG16_STORE(BANK_POINTER, (0x8000 | AUTO_INCR | 2));
+		len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
+		/* In original structure, byte count includes headers, so
+		 * we shrink it to data size */
 
-	skb_data = skb_data_cast_in(skb->data);
-	assert(skb_data);
+		skb = skb_alloc(len + 2);
+		assert(skb);
+		skb->len = len;
+		skb->dev = dev_id;
 
-	for (i = 0; i < len >> 2; i++) {
+		skb_data = skb_data_cast_in(skb->data);
+		assert(skb_data);
+
+		for (i = 0; i < len >> 2; i++) {
+			buf = REG32_LOAD(BANK_DATA);
+			*((uint32_t *)(skb_data + i * 4)) = buf;
+		}
+
+		if (len % 4 == 2) {
+			buf = REG16_LOAD(BANK_DATA);
+			*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
+		}
+
+		/* Skip 4 bytes CRC */
 		buf = REG32_LOAD(BANK_DATA);
-		*((uint32_t *)(skb_data + i * 4)) = buf;
-	}
-
-	if (len % 4 == 2) {
 		buf = REG16_LOAD(BANK_DATA);
-		*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
+
+		lan91c111_set_cmd(CMD_RX_POP_AND_RELEASE);
+
+		if (buf & (ODD_CONTROL << 8)) {
+			skb->len++;
+			skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
+		}
+		show_packet(skb_data, len, "rx_pack");
+
+		netif_rx(skb);
 	}
-
-	/* Skip 4 bytes CRC */
-	buf = REG32_LOAD(BANK_DATA);
-	buf = REG16_LOAD(BANK_DATA);
-
-	lan91c111_set_cmd(CMD_RX_POP_AND_RELEASE);
-
-	if (buf & (ODD_CONTROL << 8)) {
-		skb->len++;
-		skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
-	}
-	show_packet(skb_data, len, "rx_pack");
-
-	netif_rx(skb);
+out:
+	ipl_restore(ipl);
 
 	return 0;
 }
