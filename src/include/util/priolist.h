@@ -38,13 +38,13 @@ struct priolist_link {
 
 #define PRIOLIST_INIT(list) \
 	{                                               \
-		.node_list = DLIST_INIT((list)->node_list), \
+		.node_list = DLIST_INIT((list).node_list), \
 	}
 
 #define PRIOLIST_LINK_INIT(link) \
 	{                                               \
-		.node_link = DLIST_INIT((link)->node_link), \
-		.prio_link = DLIST_INIT((link)->prio_link), \
+		.node_link = DLIST_INIT((link).node_link), \
+		.prio_link = DLIST_INIT((link).prio_link), \
 	}
 
 static inline void priolist_init(struct priolist *list) {
