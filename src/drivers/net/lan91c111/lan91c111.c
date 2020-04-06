@@ -120,8 +120,13 @@ EMBOX_UNIT_INIT(lan91c111_init);
 #define LAN91C111_IRQ            27
 
 #define PNUM_MASK 0x3F
+#define PLEN_MASK 0x7FF
 
-#define AUTO_INCR 0x4000
+#define RX_FIFO_PACKET 0x8000
+#define AUTO_INCR      0x4000
+
+#define LAN91C111_STATUS_BYTES  2
+#define LAN91C111_CTL_BYTES     2
 
 /**
  * @brief Set active bank ID
@@ -181,6 +186,7 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint16_t packet_num;
 	uint8_t *data;
 	int ret = 0;
+	uint16_t packet_len;
 	ipl_t ipl;
 
 	ipl = ipl_save();
@@ -200,8 +206,12 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 		REG16_STORE(BANK_PNR, packet_num << 8);
 
 		/* Write header */
-		REG16_STORE(BANK_POINTER, AUTO_INCR | 2);
-		REG16_STORE(BANK_DATA, (uint16_t) (skb->len & 0xfffe) + 6);
+		REG16_STORE(BANK_POINTER, AUTO_INCR | LAN91C111_STATUS_BYTES);
+		packet_len = (uint16_t) skb->len;
+		packet_len += LAN91C111_STATUS_BYTES +
+			sizeof(packet_len) + LAN91C111_CTL_BYTES;
+		packet_len &= PLEN_MASK;
+		REG16_STORE(BANK_DATA, packet_len);
 
 		data = (uint8_t*) skb_data_cast_in(skb->data);
 		lan91c111_push_data(data, skb->len);
@@ -285,12 +295,13 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
 			goto out;
 		}
 
-		REG16_STORE(BANK_POINTER, (0x8000 | AUTO_INCR | 2));
-		len = (REG16_LOAD(BANK_DATA) & 0x7FF) - 10;
+		REG16_STORE(BANK_POINTER,
+				RX_FIFO_PACKET | AUTO_INCR | LAN91C111_STATUS_BYTES);
+		len = (REG16_LOAD(BANK_DATA) & PLEN_MASK) - 10;
 		/* In original structure, byte count includes headers, so
 		 * we shrink it to data size */
 
-		skb = skb_alloc(len + 2);
+		skb = skb_alloc(len + LAN91C111_STATUS_BYTES);
 		assert(skb);
 		skb->len = len;
 		skb->dev = dev_id;
