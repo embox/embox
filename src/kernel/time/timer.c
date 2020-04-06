@@ -40,7 +40,7 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 			return;
 		}
 
-		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
+		if (cs == cs_jiffies) {
 			timer_sched_cnt++;
 			lthread_launch(&clock_handler_lt);
 		}
