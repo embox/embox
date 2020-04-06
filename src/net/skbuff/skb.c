@@ -212,25 +212,33 @@ struct sk_buff * skb_clone(const struct sk_buff *skb) {
 
 struct sk_buff * skb_declone(struct sk_buff *skb) {
 	struct sk_buff_data *decloned_data;
+	ipl_t ipl;
 
 	assert(skb != NULL);
 
-	if (!skb_data_cloned(skb->data)) {
-		return skb;
+	ipl = ipl_save();
+	{
+		if (!skb_data_cloned(skb->data)) {
+			/* return skb */
+			goto out;
+		}
+
+		decloned_data = skb_data_alloc(skb->len);
+		if (decloned_data == NULL) {
+			skb = NULL;
+			goto out;
+		}
+
+		skb_shift_ref(skb,
+				skb_get_data_pointner(decloned_data)
+				- skb_get_data_pointner(skb->data));
+		skb_copy_data(decloned_data, skb);
+
+		skb_data_free(skb->data);
+		skb->data = decloned_data;
 	}
-
-	decloned_data = skb_data_alloc(skb->len);
-	if (decloned_data == NULL) {
-		return NULL; /* error: no memory */
-	}
-
-	skb_shift_ref(skb,
-			skb_get_data_pointner(decloned_data)
-					- skb_get_data_pointner(skb->data));
-	skb_copy_data(decloned_data, skb);
-
-	skb_data_free(skb->data);
-	skb->data = decloned_data;
+out:
+	ipl_restore(ipl);
 
 	return skb;
 }
