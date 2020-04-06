@@ -16,6 +16,9 @@ struct schedee_priority {
 	EMPTY_STRUCT_BODY
 };
 
+#define __SCHED_PRIORITY_INIT(prio) \
+	{ }
+
 typedef struct schedee_priority __schedee_priority_t;
 
 static inline int schedee_priority_set(struct schedee *s, int new_priority) {
