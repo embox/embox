@@ -19,6 +19,9 @@ struct sched_timing {
 	EMPTY_STRUCT_BODY
 };
 
+#define __SCHED_TIMING_INIT() \
+	{ }
+
 static inline void sched_timing_init(struct schedee *t) { }
 
 static inline clock_t sched_timing_get(struct schedee *t) {

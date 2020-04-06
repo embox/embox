@@ -16,4 +16,7 @@ extern int sched_affinity_check(struct affinity *a, int mask);
 extern void sched_affinity_set(struct affinity *a, int mask);
 extern int sched_affinity_get(struct affinity *a);
 
+#define SCHED_AFFINITY_INIT() \
+	__SCHED_AFFINITY_INIT()
+
 #endif /* AFFINITY_H_ */

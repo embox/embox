@@ -24,4 +24,7 @@ static inline void sched_affinity_init(struct affinity *a) { }
 /* TODO none affinity shouldn't have set method */
 static inline void sched_affinity_set(struct affinity *a, int mask) { }
 
+#define __SCHED_AFFINITY_INIT() \
+	{ }
+
 #endif /* AFFINITY_NONE_H_ */

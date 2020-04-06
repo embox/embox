@@ -20,17 +20,18 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/l0/net_rx.h>
-#include <embox/unit.h>
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/lthread/lthread.h>
 
 #define NETIF_RX_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
-EMBOX_UNIT_INIT(net_entry_init);
-
 static DLIST_DEFINE(netif_rx_list);
 
-static struct lthread netif_rx_irq_handler;
+static int netif_rx_action(struct lthread *self);
+static LTHREAD_DEF(netif_rx_irq_handler, netif_rx_action, NETIF_RX_HND_PRIORITY);
+
+static int netif_tx_action(struct lthread *self);
+static LTHREAD_DEF(netif_tx_handler, netif_tx_action, NETIF_RX_HND_PRIORITY);
 
 static int netif_rx_action(struct lthread *self) {
 	struct net_device *dev;
@@ -130,16 +131,6 @@ int netif_tx(struct net_device *dev,  struct sk_buff *skb) {
 		lthread_launch(&netif_tx_handler);
 	}
 	sched_unlock();
-
-	return 0;
-}
-
-static int net_entry_init(void) {
-	lthread_init(&netif_rx_irq_handler, &netif_rx_action);
-	schedee_priority_set(&netif_rx_irq_handler.schedee, NETIF_RX_HND_PRIORITY);
-
-	lthread_init(&netif_tx_handler, &netif_tx_action);
-	schedee_priority_set(&netif_tx_handler.schedee, NETIF_RX_HND_PRIORITY);
 
 	return 0;
 }

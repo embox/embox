@@ -7,9 +7,6 @@
 
 #include <kernel/sched/affinity.h>
 
-/** Default schedee affinity mask */
-#define SCHEDEE_AFFINITY_NONE         ((unsigned int)-1)
-
 int sched_affinity_check(struct affinity *a, int mask) {
 	return !!(a->mask & mask);
 }

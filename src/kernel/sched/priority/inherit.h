@@ -14,4 +14,7 @@ struct schedee_priority {
 	short current_priority;   /**< Current schedee scheduling priority. */
 };
 
+#define __SCHED_PRIORITY_INIT(prio) \
+	{ .base_priority = prio, .current_priority = prio }
+
 #endif /* SCHED_PRIORITY_INHERIT_H_ */

@@ -15,4 +15,7 @@ struct sched_timing {
 	clock_t            last_sync;     /**< Last recalculation of running time.*/
 };
 
+#define __SCHED_TIMING_INIT() \
+	{ .running_time = 0, .last_sync = 0 }
+
 #endif /* SCHED_RUNNING_TIME_H_ */

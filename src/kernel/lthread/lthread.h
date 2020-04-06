@@ -131,4 +131,23 @@ static inline void *lthread_resume(struct lthread *lt, void *initial_lbl) {
 	return initial_lbl + lt->label_offset;
 }
 
+extern struct schedee *lthread_process(struct schedee *prev,
+		struct schedee *next);
+
+#define LTHREAD_DEF(_lth, _run, _prio) \
+	struct lthread _lth = { \
+		.run = _run, \
+		.schedee = { \
+			.runq_link = RUNQ_ITEM_INIT(_lth.schedee.runq_link), \
+			.lock = SPIN_UNLOCKED, \
+			.process = lthread_process, \
+			.ready = false, \
+			.active = false, \
+			.waiting = true, \
+			.affinity = SCHED_AFFINITY_INIT(), \
+			.priority = SCHED_PRIORITY_INIT(_prio), \
+			.sched_timing = SCHED_TIMING_INIT(), \
+		} \
+	}
+
 #endif /* _KERNEL_LTHREAD_H_ */
