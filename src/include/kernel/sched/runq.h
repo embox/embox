@@ -20,4 +20,7 @@ extern struct schedee *runq_extract(runq_t *queue);
 
 extern void runq_item_init(runq_item_t *runq_link);
 
+#define RUNQ_ITEM_INIT(item) \
+	__RUNQ_ITEM_INIT(item)
+
 #endif /* SCHED_RUNQ_H_ */
