@@ -9,7 +9,7 @@ EMBOX_TEST_SUITE("Test suite for memmove() function");
 TEST_CASE("move full data")
 {
     const    char    src[]="string";
-    char    dest[sizeof(src)+1];
+    char    dest[strlen(src)+1];
 
     test_assert_not_null(dest) ;
     memmove((void*)dest,(void*)src,(size_t)strlen(src));
@@ -20,7 +20,7 @@ TEST_CASE("move full data")
 TEST_CASE("check for NULL argument")
 {
     const   char  src[]="\0";
-    char    dest[sizeof(src)+1];
+    char    dest[strlen(src)+1];
 
     test_assert_not_null(dest) ;
     memmove((void*)dest,(void*)src,(size_t)strlen(src));
@@ -30,7 +30,7 @@ TEST_CASE("check for NULL argument")
 TEST_CASE("move array")
 {
     const   char  src[]={'a','t','h','-','9','0'};
-    char    dest[sizeof(src)+1];
+    char    dest[strlen(src)+1];
 
     test_assert_not_null(dest) ;
     memmove((void*)dest,(void*)src,(size_t)strlen(src));
@@ -40,7 +40,7 @@ TEST_CASE("move array")
 TEST_CASE("move array with null in the middle")
 {
     const   char    src[]={'a','t','h','-','\0','9','0'};
-    char   dest[sizeof(src)+1] ;
+    char   dest[strlen(src)+1] ;
 
     test_assert_not_null(dest) ;
     memmove((void*)dest,(void*)src,(size_t)strlen(src));
