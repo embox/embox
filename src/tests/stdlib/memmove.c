@@ -12,7 +12,7 @@ TEST_CASE("move full data")
     char    dest[strlen(src)+1];
 
     test_assert_not_null(dest) ;
-    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    memmove(dest,src,strlen(src));
     test_assert_equal(*dest , *src) ;
 }
 
@@ -23,7 +23,7 @@ TEST_CASE("check for NULL argument")
     char    dest[strlen(src)+1];
 
     test_assert_not_null(dest) ;
-    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    memmove(dest,src,strlen(src));
     test_assert_equal(*dest , *src) ;
 }
 
@@ -33,7 +33,7 @@ TEST_CASE("move array")
     char    dest[strlen(src)+1];
 
     test_assert_not_null(dest) ;
-    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    memmove(dest,src,strlen(src));
     test_assert_equal(*dest , *src) ;
 }
 
@@ -43,7 +43,7 @@ TEST_CASE("move array with null in the middle")
     char   dest[strlen(src)+1] ;
 
     test_assert_not_null(dest) ;
-    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    memmove(dest,src,strlen(src));
     test_assert_equal(*dest , *src) ;
 }
 
@@ -54,6 +54,6 @@ TEST_CASE("If memory is not allocated enough")
     char    dest[2];
 
     test_assert_not_null(dest) ;
-    memmove((void*)dest,(void*)src,(size_t)strlen(src));
+    memmove(dest,src,strlen(src));
     test_assert_equal(*dest , *src) ;
 }
