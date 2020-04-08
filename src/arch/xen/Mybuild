@@ -30,3 +30,8 @@ module event {
 module ipl extends embox.arch.interrupt {
 	source "ipl.c", "ipl.h"
 }
+
+module xen_memory {
+	source "xen_memory.c"
+	depends embox.mem.vmem_device_memory
+}
