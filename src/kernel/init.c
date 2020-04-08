@@ -14,7 +14,7 @@
 #include <drivers/irqctrl.h>
 #include <embox/runlevel.h>
 #include <kernel/printk.h>
-
+#include <xen_memory.h>
 static void kernel_init(void);
 static int init(void);
 extern int system_start(void);

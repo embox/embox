@@ -149,7 +149,6 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 
 extern start_info_t my_start_info;
 
-unsigned long *phys_to_machine_mapping;
 #if 0 //tag: allocate_ondemand
 /*
  * get the PTE for virtual address va if it exists. Otherwise NULL.
@@ -375,7 +374,7 @@ void *init_grant_table(int n)
     rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
     printk("HYPERVISOR_grant_table_op returned:%d, status=%d\n", rc, setup.status);
 
-    unsigned long va = (unsigned long)phymem_alloc(n);
+    unsigned long va = (unsigned long)xen_mem_alloc(n);
 
     int count;    
     for(count = 0; count < n; count++)

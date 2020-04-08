@@ -399,12 +399,12 @@ void setup_netfront(struct netfront_dev *dev,
 {
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
-	unsigned long txs_va;
-	unsigned long txs_mfn;
-	printk("alloc_page rc=%d\n", alloc_page(&txs_va, &txs_mfn));
-	unsigned long rxs_va;
-	unsigned long rxs_mfn;
-	printk("alloc_page rc=%d\n", alloc_page(&rxs_va, &rxs_mfn));
+	unsigned long txs_va = (unsigned long)xen_mem_alloc(1);
+	unsigned long txs_mfn = virt_to_mfn(txs_va);
+	//printk("alloc_page rc=%d\n", alloc_page(&txs_va, &txs_mfn));
+	unsigned long rxs_va = (unsigned long)xen_mem_alloc(1);
+	unsigned long rxs_mfn = virt_to_mfn(rxs_va);
+	//printk("alloc_page rc=%d\n", alloc_page(&rxs_va, &rxs_mfn));
 	
 	//alloc pages for buffer rings
 	int i;
@@ -417,11 +417,16 @@ void setup_netfront(struct netfront_dev *dev,
     for(i=0;i<NET_RX_RING_SIZE;i++)
     {
 	/* TODO: that's a lot of memory */
+		#ifdef XEN_MEM_RESERVATION //false
 		unsigned long va;
 		unsigned long mfn;
 		printk("alloc_page rc=%d\n", alloc_page(&va, &mfn));
 		rx_buffers_mfn[i] = mfn;
         dev->rx_buffers[i].page = (char*)va;
+		#endif
+		char *va = xen_mem_alloc(1);
+		dev->rx_buffers[i].page = va;
+		rx_buffers_mfn[i] = virt_to_mfn(va);
     }
 
 	txs = (struct netif_tx_sring *) txs_va;
@@ -466,19 +471,14 @@ void print_info()
 	nr_max_pages = ret;
     printk("XENMEM_maximum_reservation=%ld\n", nr_max_pages);
 
-	unsigned long *p2m_mapping;
-    p2m_mapping = (unsigned long *)my_start_info.mfn_list;
-
-    printk("phymem_allocated_start=%ls\n", p2m_mapping);
-
 /*	int rc;
-
+//useless: адреса за пределами видимости domU, а доступ можно получить просто так -- del this
 	struct xen_machphys_mapping mpm;
     rc = HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mpm);
 	printk("XENMEM_machphys_mapping=%p, %d\n", (void*)rc, rc);
 	unsigned long *mp = (unsigned long *)mpm.v_start;
 	printk("v_start = %ld,%ld,%ld,%ld\n", mp[0],mp[1],mp[2],mp[3]);
-
+// ничего не происходит -- del this
 	struct xen_machphys_mfn_list mpl;
 	unsigned long frames[100];
 	set_xen_guest_handle(mpl.extent_start, frames);
@@ -486,6 +486,18 @@ void print_info()
     rc = HYPERVISOR_memory_op(XENMEM_machphys_mfn_list, &mpl);
 
 	printk("XENMEM_machphys_mfn_list=%p, %d\n", (void*)rc, rc);
+*/
+/* also returns only 32 frames -- del this
+    struct xen_memory_reservation reservation = {
+        .domid        = DOMID_SELF
+    };
+	static unsigned long balloon_frames[256];
+    set_xen_guest_handle(reservation.extent_start, balloon_frames);
+	reservation.extent_order = 3;
+    reservation.nr_extents = 256;
+    int rc;
+	rc = HYPERVISOR_memory_op(XENMEM_populate_physmap, &reservation);
+	printk("XENMEM_populate_physmap=%d\n", rc);
 */
 }
 
