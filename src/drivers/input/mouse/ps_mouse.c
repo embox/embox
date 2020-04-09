@@ -25,82 +25,56 @@ EMBOX_UNIT_INIT(ps_mouse_init);
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
-	char byteseq_state;
 };
 
-static void kmc_send_auxcmd(unsigned char val) {
-	kmc_wait_ibe();
-	out8(0x60, I8042_CMD_PORT);
-	kmc_wait_ibe();
-	out8(val, I8042_DATA_PORT);
-}
+//http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
+static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
+	unsigned char data;
 
-static int kmc_write_aux(unsigned char val) {
-	/* Write the value to the device */
-	kmc_wait_ibe();
-	outb(0xd4, I8042_CMD_PORT);
-	kmc_wait_ibe();
-	outb(val, I8042_DATA_PORT);
+	data = inb(I8042_STS_PORT);
+
+	if ((data & (I8042_STS_AUXOBF | I8042_STS_OBF))
+			!= (I8042_STS_AUXOBF | I8042_STS_OBF)) {
+		/* this is keyboard scan code */
+		return -EAGAIN;
+	}
+
+	data = inb(I8042_DATA_PORT);
+	if (data == MOUSE_ACK) {
+		return -EAGAIN;
+	}
+
+	ev->type = data;
+
+	data = inb(I8042_DATA_PORT);
+	ev->value = ((ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
+	data = inb(I8042_DATA_PORT);
+	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
+
+	ev->type  &= MSTAT_BUTMASK;
 
 	return 0;
 }
 
-//http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
-static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
-	struct ps2_mouse_indev *ps2mouse = (struct ps2_mouse_indev *) dev;
-	unsigned char data;
-	int ret = 0;
-
-	if ((inb(I8042_STS_PORT) & 0x21) != 0x21) {
-		/* this is keyboard scan code */
-		ret = -EAGAIN;
-		goto out;
-	}
-
-	data = inb(I8042_DATA_PORT);
-
-	if (ps2mouse->byteseq_state == 0 &&
-			data == MOUSE_ACK) {
-		ret = -EAGAIN;
-		goto out;
-	}
-
-	switch(ps2mouse->byteseq_state) {
-	case 0:
-		ev->type = data;
-		ret = -EAGAIN;
-		break;
-	case 1:
-		ev->value = (ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data;
-		ret = -EAGAIN;
-		break;
-	case 2:
-		ev->value <<= 16;
-	       	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
-		ev->type  &= MSTAT_BUTMASK;
-		ret = 0;
-		break;
-	}
-
-	ps2mouse->byteseq_state = (ps2mouse->byteseq_state + 1) % 3;
-
-out:
-	return ret;
-}
-
 static int ps_mouse_start(struct input_dev *dev) {
-	kmc_wait_ibe();
-	outb(0xa8, I8042_CMD_PORT); /* Enable aux */
+	unsigned char mode;
 
-	kmc_write_aux(0xf3); /* Set sample rate */
-	kmc_write_aux(100); /* 100 samples/sec */
+	mode = i8042_read_mode();
+	mode |= I8042_MODE_XLATE | I8042_MODE_SYS | I8042_MODE_MOUSE_INT;
+	mode &= ~I8042_MODE_DISABLE_MOUSE;
+	i8042_write_mode(mode);
 
-	kmc_write_aux(0xe8); /* Set resolution */
-	kmc_write_aux(3); /* 8 counts per mm */
-	kmc_write_aux(0xe7); /* 2:1 scaling */
+	i8042_wait_write();
+	outb(I8042_CMD_MOUSE_ENABLE, I8042_CMD_PORT);
 
-	kmc_write_aux(0xf4); /* Enable aux device */
-	kmc_send_auxcmd(0x47); /* Enable controller ints */
+	i8042_write_aux(I8042_AUX_SET_SAMPLE);
+	i8042_write_aux(100); /* 100 samples/sec */
+
+	i8042_write_aux(I8042_AUX_SET_RES);
+	i8042_write_aux(3); /* 8 counts per mm */
+	i8042_write_aux(I8042_AUX_SET_SCALE21);
+
+	i8042_write_aux(I8042_AUX_ENABLE_DEV);
 
 	return 0;
 }
@@ -127,7 +101,6 @@ static struct ps2_mouse_indev mouse_dev = {
 };
 
 static int ps_mouse_init(void) {
-
 	ps_mouse_start(NULL);
 
 	return input_dev_register(&mouse_dev.input_dev);
