@@ -331,17 +331,7 @@ void init_rx_buffers(struct netfront_dev *dev)
 	wmb();
 
     RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-/*	
-	printk(">>>\n");
-	req = RING_GET_REQUEST(&dev->rx, 0);
-	printk("request: id=%d, gref=%u\n", req->id, req->gref);
-	req = RING_GET_REQUEST(&dev->rx, 1);
-	printk("request: id=%d, gref=%u\n", req->id, req->gref);
-	req = RING_GET_REQUEST(&dev->rx, 2);
-	printk("request: id=%d, gref=%u\n", req->id, req->gref);
-	req = RING_GET_REQUEST(&dev->rx, 3);
-	printk("request: id=%d, gref=%u\n", req->id, req->gref);
-*/
+
 	printk(">>>>>notify=%i\n", notify);
     
 	if (notify) 
@@ -356,12 +346,12 @@ void init_rx_buffers(struct netfront_dev *dev)
     dev->rx.sring->rsp_event = dev->rx.rsp_cons + 1;
 }
 
-
+#ifdef XEN_MEM_RESERVATION //del or replace this
 extern char memory_pages[600][PAGE_SIZE()];
 static int alloc_page_counter = 0;
-
+//alloc page using xen balloon
 int alloc_page(unsigned long *va, unsigned long *mfn)
-{
+{	
 	printk("alloc page #%d\n", alloc_page_counter);
 	if(alloc_page_counter == 600)
 	{
@@ -394,6 +384,8 @@ int alloc_page(unsigned long *va, unsigned long *mfn)
 //done!
 	return 0;
 }
+#endif
+
 void setup_netfront(struct netfront_dev *dev, 
 					void (*thenetif_rx)(unsigned char* data, int len, void* arg))
 {
@@ -416,14 +408,6 @@ void setup_netfront(struct netfront_dev *dev,
 
     for(i=0;i<NET_RX_RING_SIZE;i++)
     {
-	/* TODO: that's a lot of memory */
-		#ifdef XEN_MEM_RESERVATION //false
-		unsigned long va;
-		unsigned long mfn;
-		printk("alloc_page rc=%d\n", alloc_page(&va, &mfn));
-		rx_buffers_mfn[i] = mfn;
-        dev->rx_buffers[i].page = (char*)va;
-		#endif
 		char *va = xen_mem_alloc(1);
 		dev->rx_buffers[i].page = va;
 		rx_buffers_mfn[i] = virt_to_mfn(va);
@@ -526,7 +510,6 @@ struct netfront_dev *init_netfront(
 	xenstore_interaction(dev, ip);
 
 	
-#if 1
 	//init_rx_buffers(dev);
 
 	char xs_key[XS_MSG_LEN], xs_value[XS_MSG_LEN];
@@ -570,9 +553,6 @@ struct netfront_dev *init_netfront(
 	init_rx_buffers(dev);
 	printk("backend %p %d %d\n", dev->backend, sizeof(dev->backend),
 			sizeof(dev->nodename));
-#else
-	xennet_alloc_rx_buffers(dev);
-#endif
 
 #if 0 //DEBUG
 	for (i = 0; i < NET_RX_RING_SIZE; i++) 

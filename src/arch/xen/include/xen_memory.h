@@ -28,7 +28,7 @@ extern struct page_allocator *xen_allocator(void);
 #endif
 
 extern unsigned long *phys_to_machine_mapping;
-extern start_info_t my_start_info;
+extern start_info_t xen_start_info;
 extern shared_info_t xen_shared_info;
 
 #define pfn_to_mfn(_pfn) (phys_to_machine_mapping[(_pfn)])
@@ -107,7 +107,7 @@ static __inline__ maddr_t phys_to_machine(paddr_t phys)
 extern unsigned long nr_max_pages;
 extern unsigned long nr_mem_pages;
 
-extern void memory_init();
+extern void xen_memory_init();
 
 #define round_pgdown(_p)  ((_p) & PAGE_MASK)
 #define round_pgup(_p)    (((_p) + (PAGE_SIZE() - 1)) & PAGE_MASK)
