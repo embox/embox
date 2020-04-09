@@ -429,6 +429,7 @@ static void fb_default_copyarea(struct fb_info *info, const struct fb_copyarea *
 }
 
 static uint32_t pixel_to_pat(uint32_t bpp, uint32_t pixel) {
+	pixel &= ~((uint32_t )-1 << bpp);
 	return bpp == 1 ? 0xffffffffUL * pixel
 			: bpp == 2 ? 0x55555555UL * pixel
 			: bpp == 4 ? 0x11111111UL * pixel
