@@ -9,7 +9,7 @@
 
 #include <util/log.h>
 #include <drivers/common/memory.h>
-
+#include <hal/reg.h>
 #include <kernel/printk.h>
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
@@ -50,14 +50,15 @@ EMBOX_UNIT_INIT(lan91c111_init);
 /*      BANK_BANK            (BANK_BASE_ADDR + 0xE) -- already defined above */
 
 /* Bank 2 */
-#define BANK_MMU_CMD    (BANK_BASE_ADDR + 0x0)
-#define BANK_PNR        (BANK_BASE_ADDR + 0x2)
-#define BANK_TX_ALLOC   (BANK_BASE_ADDR + 0x3)
-#define BANK_FIFO_PORTS (BANK_BASE_ADDR + 0x4)
-#define BANK_POINTER    (BANK_BASE_ADDR + 0x6)
-#define BANK_DATA       (BANK_BASE_ADDR + 0x8)
-/*      BANK_DATA       (BANK_BASE_ADDR + 0xA) -- another 2 bytes */
-#define BANK_INTERRUPT  (BANK_BASE_ADDR + 0xC)
+#define BANK_MMU_CMD           (BANK_BASE_ADDR + 0x0)
+#define BANK_PNR               (BANK_BASE_ADDR + 0x2)
+#define BANK_TX_ALLOC          (BANK_BASE_ADDR + 0x3)
+#define BANK_FIFO_PORTS        (BANK_BASE_ADDR + 0x4)
+#define BANK_POINTER           (BANK_BASE_ADDR + 0x6)
+#define BANK_DATA              (BANK_BASE_ADDR + 0x8)
+/*      BANK_DATA              (BANK_BASE_ADDR + 0xA) -- another 2 bytes */
+#define BANK_INTERRUPT_STATUS  (BANK_BASE_ADDR + 0xC)
+#define BANK_INTERRUPT_MASK    (BANK_BASE_ADDR + 0xD)
 /*      BANK_BANK       (BANK_BASE_ADDR + 0xE) -- already defined above */
 
 /* Bank 3 */
@@ -69,24 +70,6 @@ EMBOX_UNIT_INIT(lan91c111_init);
 #define BANK_REVISION (BANK_BASE_ADDR + 0xA)
 #define BANK_RCV      (BANK_BASE_ADDR + 0xC)
 /*      BANK_BANK     (BANK_BASE_ADDR + 0xE) -- already defined above */
-
-#define REG32_LOAD(addr) \
-	*((volatile uint32_t *)(addr))
-
-#define REG32_STORE(addr, val) \
-	do { *((volatile uint32_t *)(addr)) = (val); } while (0)
-
-#define REG16_LOAD(addr) \
-	*((volatile uint16_t *)(addr))
-
-#define REG16_STORE(addr, val) \
-	do { *((volatile uint16_t *)(addr)) = (val); } while (0)
-
-#define REG8_LOAD(addr) \
-	*((volatile uint8_t *)(addr))
-
-#define REG8_STORE(addr, val) \
-	do { *((volatile uint8_t *)(addr)) = (val); } while (0)
 
 /* Commands */
 #define CMD_NOP                0
@@ -103,15 +86,14 @@ EMBOX_UNIT_INIT(lan91c111_init);
 #define RX_EN    0x0100
 #define TX_EN    0x0001
 
-#define RX_INT   0x0100
-#define TX_INT   0x0200
-#define TX_ACK   0x0002
+#define RX_INT   0x01
+#define TX_INT   0x02
 
 #define FIFO_EMPTY 0x80
 
-#define ALLOC_MASK  0x0008
-#define TX_MASK     0x0002
-#define RX_MASK     0x0001
+#define ALLOC_MASK  0x08
+#define TX_MASK     0x02
+#define RX_MASK     0x01
 
 #define CRC_CONTROL   0x10
 #define ODD_CONTROL   0x20
@@ -183,7 +165,7 @@ static void lan91c111_push_data(uint8_t *data, int len) {
 }
 
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
-	uint16_t packet_num;
+	uint8_t packet_num;
 	uint8_t *data;
 	int ret = 0;
 	uint16_t packet_len;
@@ -195,15 +177,15 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		lan91c111_set_bank(2);
 
-		if (!(REG16_LOAD(BANK_INTERRUPT) & ALLOC_MASK)) {
+		if (!(REG8_LOAD(BANK_INTERRUPT_STATUS) & ALLOC_MASK)) {
 			log_error("Failed to allocate packet for TX");
 			ret = -EBUSY;
 			goto out;
 		}
 
-		packet_num = (REG16_LOAD(BANK_TX_ALLOC) >> 8) & PNUM_MASK;
+		packet_num = REG8_LOAD(BANK_TX_ALLOC) & PNUM_MASK;
 
-		REG16_STORE(BANK_PNR, packet_num << 8);
+		REG8_STORE(BANK_PNR, packet_num);
 
 		/* Write header */
 		REG16_STORE(BANK_POINTER, AUTO_INCR | LAN91C111_STATUS_BYTES);
@@ -227,7 +209,10 @@ static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
 out:
 	ipl_restore(ipl);
 
-	skb_free(skb);
+	if (ret == 0) {
+		skb_free(skb);
+	}
+
 	return ret;
 }
 
@@ -237,7 +222,7 @@ static int lan91c111_open(struct net_device *dev) {
 	REG16_STORE(BANK_TCR, TX_EN);
 
 	lan91c111_set_bank(2);
-	REG16_STORE(BANK_INTERRUPT, RX_INT);
+	REG16_STORE(BANK_INTERRUPT_MASK, RX_INT | TX_INT);
 
 	return 0;
 }
@@ -272,6 +257,7 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t buf;
 	uint16_t len;
 	uint8_t *skb_data;
+	uint16_t int_status;
 	int i, packet;
 	ipl_t ipl;
 
@@ -279,14 +265,15 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
 	{
 		lan91c111_set_bank(2);
 
-		if (REG16_LOAD(BANK_INTERRUPT) & TX_MASK) {
-			/* TX interrupt */
-			REG16_STORE(BANK_INTERRUPT, RX_INT | TX_INT | TX_ACK);
-			goto out;
+		int_status = REG16_LOAD(BANK_INTERRUPT_STATUS);
+
+		if (int_status & TX_INT) {
+			/* Clear TX interrupt */
+			int_status &= ~TX_INT;
+			REG8_STORE(BANK_INTERRUPT_STATUS, int_status);
 		}
 
-		if (!(REG16_LOAD(BANK_INTERRUPT) & RX_MASK)) {
-			printk("False irq\n");
+		if (!(int_status & RX_INT)) {
 			goto out;
 		}
 
