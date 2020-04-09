@@ -24,14 +24,11 @@ SECTIONS {
 		. = ALIGN(0x1000);
 		hypercall_page = .;
 		. += 0x1000;
+
 		xen_shared_info = .;
 		. += 0x1000;
-		
-		my_start_info = .;
+		xen_start_info = .;
 		. += 0x1000;
-
-		memory_pages = .;
-		. += 0x600000;
 
 		_traps_text_start = .;
 		*(.traps.*)
