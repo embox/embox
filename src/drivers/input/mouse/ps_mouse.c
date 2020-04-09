@@ -25,7 +25,6 @@ EMBOX_UNIT_INIT(ps_mouse_init);
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
-	char byteseq_state;
 };
 
 static void kmc_send_auxcmd(unsigned char val) {
@@ -47,45 +46,28 @@ static int kmc_write_aux(unsigned char val) {
 
 //http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
 static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
-	struct ps2_mouse_indev *ps2mouse = (struct ps2_mouse_indev *) dev;
 	unsigned char data;
-	int ret = 0;
 
 	if ((inb(I8042_STS_PORT) & 0x21) != 0x21) {
 		/* this is keyboard scan code */
-		ret = -EAGAIN;
-		goto out;
+		return -EAGAIN;
 	}
 
 	data = inb(I8042_DATA_PORT);
-
-	if (ps2mouse->byteseq_state == 0 &&
-			data == MOUSE_ACK) {
-		ret = -EAGAIN;
-		goto out;
+	if (data == MOUSE_ACK) {
+		return -EAGAIN;
 	}
 
-	switch(ps2mouse->byteseq_state) {
-	case 0:
-		ev->type = data;
-		ret = -EAGAIN;
-		break;
-	case 1:
-		ev->value = (ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data;
-		ret = -EAGAIN;
-		break;
-	case 2:
-		ev->value <<= 16;
-	       	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
-		ev->type  &= MSTAT_BUTMASK;
-		ret = 0;
-		break;
-	}
+	ev->type = data;
 
-	ps2mouse->byteseq_state = (ps2mouse->byteseq_state + 1) % 3;
+	data = inb(I8042_DATA_PORT);
+	ev->value = ((ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
+	data = inb(I8042_DATA_PORT);
+	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
 
-out:
-	return ret;
+	ev->type  &= MSTAT_BUTMASK;
+
+	return 0;
 }
 
 static int ps_mouse_start(struct input_dev *dev) {
