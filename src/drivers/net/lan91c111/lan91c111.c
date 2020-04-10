@@ -31,6 +31,10 @@ EMBOX_UNIT_INIT(lan91c111_init);
 
 #define BANK_BASE_ADDR OPTION_GET(NUMBER,base_addr)
 
+struct smc_local {
+	struct sk_buff_head pending_queue;
+};
+
 /**
  * @brief Set active bank ID
  */
@@ -107,32 +111,60 @@ static int lan91c111_send_hw(struct sk_buff *skb) {
 	return 0;
 }
 
+static int lan91c111_add_pending(struct smc_local *smc, struct sk_buff *skb) {
+	uint8_t int_mask;
+
+	lan91c111_set_bank(2);
+
+	skb_queue_push(&smc->pending_queue, skb);
+
+	int_mask = REG8_LOAD(BANK_INTERRUPT_MASK);
+	int_mask |= ALLOC_INT;
+	REG8_STORE(BANK_INTERRUPT_MASK, int_mask);
+
+	return 0;
+}
+
+static int lan91c111_tx_try(struct smc_local *smc, struct sk_buff *skb) {
+	lan91c111_set_cmd(CMD_TX_ALLOC);
+
+	lan91c111_set_bank(2);
+
+	if (!(REG8_LOAD(BANK_INTERRUPT_STATUS) & ALLOC_MASK)) {
+		log_debug("Failed to allocate packet for TX");
+		return -EBUSY;
+	}
+
+	lan91c111_send_hw(skb);
+
+	return 0;
+}
+
 static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct smc_local *smc;
 	int ret = 0;
 	ipl_t ipl;
 
+	smc = netdev_priv(dev);
+
 	ipl = ipl_save();
 	{
-		lan91c111_set_cmd(CMD_TX_ALLOC);
-
-		lan91c111_set_bank(2);
-
-		if (!(REG8_LOAD(BANK_INTERRUPT_STATUS) & ALLOC_MASK)) {
-			log_error("Failed to allocate packet for TX");
-			ret = -EBUSY;
+		if (skb_queue_front(&smc->pending_queue)) {
+			lan91c111_add_pending(smc, skb);
 			goto out;
 		}
 
-		lan91c111_send_hw(skb);
+		ret = lan91c111_tx_try(smc, skb);
+		if (ret) {
+			goto out;
+		}
+
+		skb_free(skb);
 	}
 out:
 	ipl_restore(ipl);
 
-	if (ret == 0) {
-		skb_free(skb);
-	}
-
-	return ret;
+	return 0;
 }
 
 static int lan91c111_open(struct net_device *dev) {
@@ -170,6 +202,24 @@ static const struct net_driver lan91c111_drv_ops = {
 	.start = lan91c111_open,
 	.set_macaddr = lan91c111_set_macaddr
 };
+
+static int lan91c111_tx_pend(struct net_device *dev) {
+	struct sk_buff *skb;
+	struct smc_local *smc;
+	int ret;
+
+	smc = netdev_priv(dev);
+
+	while (NULL != (skb = skb_queue_pop(&smc->pending_queue))) {
+		ret = lan91c111_tx_try(smc, skb);
+		if (ret) {
+			return ret;
+		}
+		skb_free(skb);
+	}
+
+	return 0;
+}
 
 static int lan91c111_recv_hw(struct net_device *dev_id) {
 	int i, packet;
@@ -239,8 +289,14 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
 
 		int_status &= int_mask;
 
-		if (int_status & RX_INT) {
+		if (int_status & RX_MASK) {
 			lan91c111_recv_hw(dev_id);
+		}
+
+		if (int_status & ALLOC_MASK) {
+			int_mask &= ~ALLOC_INT;
+			REG8_STORE(BANK_INTERRUPT_MASK, int_mask);
+			lan91c111_tx_pend(dev_id);
 		}
 
 	}
@@ -251,12 +307,16 @@ static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
 
 static int lan91c111_init(void) {
 	struct net_device *nic;
+	struct smc_local *smc_local;
 
-	if (NULL == (nic = etherdev_alloc(0))) {
+	if (NULL == (nic = etherdev_alloc(sizeof(struct smc_local)))) {
 		return -ENOMEM;
 	}
 
 	irq_attach(LAN91C111_IRQ, lan91c111_int_handler, 0, nic, "lan91c111");
+
+	smc_local = netdev_priv(nic);
+	skb_queue_init(&smc_local->pending_queue);
 
 	nic->drv_ops = &lan91c111_drv_ops;
 

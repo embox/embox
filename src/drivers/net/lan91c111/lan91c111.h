@@ -66,8 +66,9 @@
 #define RX_EN    0x0100
 #define TX_EN    0x0001
 
-#define RX_INT   0x01
-#define TX_INT   0x02
+#define RX_INT    0x01
+#define TX_INT    0x02
+#define ALLOC_INT 0x08
 
 #define FIFO_EMPTY 0x80
 
