@@ -9,10 +9,10 @@
 
 #include <util/log.h>
 #include <drivers/common/memory.h>
-#include <hal/reg.h>
-#include <kernel/printk.h>
+
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
+#include <hal/reg.h>
 
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
@@ -21,94 +21,19 @@
 #include <net/skbuff.h>
 #include <net/util/show_packet.h>
 
+#include "lan91c111.h"
+
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(lan91c111_init);
 
 /* Internal I/O space mapping */
 
-#define BANK_BASE_ADDR 0xC8000000
+#define BANK_BASE_ADDR OPTION_GET(NUMBER,base_addr)
 
-/* Bank 0 */
-#define BANK_TCR        (BANK_BASE_ADDR + 0x0)
-#define BANK_EPH_STATUS (BANK_BASE_ADDR + 0x2)
-#define BANK_RCR        (BANK_BASE_ADDR + 0x4)
-#define BANK_COUNTER    (BANK_BASE_ADDR + 0x6)
-#define BANK_MIR        (BANK_BASE_ADDR + 0x8)
-#define BANK_RPCR       (BANK_BASE_ADDR + 0xA)
-/*      BANK_RESERVED   (BANK_BASE_ADDR + 0xC) */
-#define BANK_BANK       (BANK_BASE_ADDR + 0xE) /* Common for all banks */
-
-/* Bank 1 */
-#define BANK_CONFIG          (BANK_BASE_ADDR + 0x0)
-#define BANK_BASE            (BANK_BASE_ADDR + 0x2)
-#define BANK_IA01            (BANK_BASE_ADDR + 0x4)
-#define BANK_IA23            (BANK_BASE_ADDR + 0x6)
-#define BANK_IA45            (BANK_BASE_ADDR + 0x8)
-#define BANK_GENERAL_PURPOSE (BANK_BASE_ADDR + 0xA)
-#define BANK_CONTROL         (BANK_BASE_ADDR + 0xC)
-/*      BANK_BANK            (BANK_BASE_ADDR + 0xE) -- already defined above */
-
-/* Bank 2 */
-#define BANK_MMU_CMD           (BANK_BASE_ADDR + 0x0)
-#define BANK_PNR               (BANK_BASE_ADDR + 0x2)
-#define BANK_TX_ALLOC          (BANK_BASE_ADDR + 0x3)
-#define BANK_FIFO_PORTS        (BANK_BASE_ADDR + 0x4)
-#define BANK_POINTER           (BANK_BASE_ADDR + 0x6)
-#define BANK_DATA              (BANK_BASE_ADDR + 0x8)
-/*      BANK_DATA              (BANK_BASE_ADDR + 0xA) -- another 2 bytes */
-#define BANK_INTERRUPT_STATUS  (BANK_BASE_ADDR + 0xC)
-#define BANK_INTERRUPT_MASK    (BANK_BASE_ADDR + 0xD)
-/*      BANK_BANK       (BANK_BASE_ADDR + 0xE) -- already defined above */
-
-/* Bank 3 */
-#define BANK_MT01     (BANK_BASE_ADDR + 0x0)
-#define BANK_MT23     (BANK_BASE_ADDR + 0x2)
-#define BANK_MT45     (BANK_BASE_ADDR + 0x4)
-#define BANK_MT67     (BANK_BASE_ADDR + 0x6)
-#define BANK_MGMT     (BANK_BASE_ADDR + 0x8)
-#define BANK_REVISION (BANK_BASE_ADDR + 0xA)
-#define BANK_RCV      (BANK_BASE_ADDR + 0xC)
-/*      BANK_BANK     (BANK_BASE_ADDR + 0xE) -- already defined above */
-
-/* Commands */
-#define CMD_NOP                0
-#define CMD_TX_ALLOC           1
-#define CMD_RESET_MMU          2
-#define CMD_RX_POP             3
-#define CMD_RX_POP_AND_RELEASE 4
-#define CMD_PACKET_FREE        5
-#define CMD_TX_ENQUEUE         6
-#define CMD_TX_FIFO_RESET      7
-
-/* Various flags */
-#define MMU_BUSY 0x0001
-#define RX_EN    0x0100
-#define TX_EN    0x0001
-
-#define RX_INT   0x01
-#define TX_INT   0x02
-
-#define FIFO_EMPTY 0x80
-
-#define ALLOC_MASK  0x08
-#define TX_MASK     0x02
-#define RX_MASK     0x01
-
-#define CRC_CONTROL   0x10
-#define ODD_CONTROL   0x20
-
-#define LAN91C111_FRAME_SIZE_MAX 2048
-#define LAN91C111_IRQ            27
-
-#define PNUM_MASK 0x3F
-#define PLEN_MASK 0x7FF
-
-#define RX_FIFO_PACKET 0x8000
-#define AUTO_INCR      0x4000
-
-#define LAN91C111_STATUS_BYTES  2
-#define LAN91C111_CTL_BYTES     2
+struct smc_local {
+	struct sk_buff_head pending_queue;
+};
 
 /**
  * @brief Set active bank ID
@@ -121,17 +46,6 @@ static void lan91c111_set_bank(int n) {
 	if (cur_bank != n) {
 		REG16_STORE(BANK_BANK, (uint16_t) n);
 		cur_bank = n;
-	}
-}
-
-static inline void lan91c111_regdump(void) {
-	int i;
-	for (i = 0; i <= 3; i++) {
-		lan91c111_set_bank(i);
-		printk("Bank %d\n", i);
-		for (int j = 0; j < 7; j++) {
-			printk("%4x\n", (uint16_t) REG16_LOAD(BANK_BASE_ADDR + 2 * j));
-		}
 	}
 }
 
@@ -164,56 +78,93 @@ static void lan91c111_push_data(uint8_t *data, int len) {
 	}
 }
 
-static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
+static int lan91c111_send_hw(struct sk_buff *skb) {
 	uint8_t packet_num;
-	uint8_t *data;
-	int ret = 0;
 	uint16_t packet_len;
+	uint8_t *data;
+
+	lan91c111_set_bank(2);
+
+	packet_num = REG8_LOAD(BANK_TX_ALLOC) & PNUM_MASK;
+
+	REG8_STORE(BANK_PNR, packet_num);
+
+	/* Write header */
+	REG16_STORE(BANK_POINTER, AUTO_INCR | LAN91C111_STATUS_BYTES);
+	packet_len = (uint16_t) skb->len;
+	packet_len += LAN91C111_STATUS_BYTES +
+		sizeof(packet_len) + LAN91C111_CTL_BYTES;
+	packet_len &= PLEN_MASK;
+	REG16_STORE(BANK_DATA, packet_len);
+
+	data = (uint8_t *)skb_data_cast_in(skb->data);
+	lan91c111_push_data(data, skb->len);
+
+	if (skb->len % 2) {
+		REG8_STORE(BANK_DATA, ODD_CONTROL);
+	} else {
+		REG16_STORE(BANK_DATA, 0x0);
+	}
+
+	lan91c111_set_cmd(CMD_TX_ENQUEUE);
+
+	return 0;
+}
+
+static int lan91c111_add_pending(struct smc_local *smc, struct sk_buff *skb) {
+	uint8_t int_mask;
+
+	lan91c111_set_bank(2);
+
+	skb_queue_push(&smc->pending_queue, skb);
+
+	int_mask = REG8_LOAD(BANK_INTERRUPT_MASK);
+	int_mask |= ALLOC_INT;
+	REG8_STORE(BANK_INTERRUPT_MASK, int_mask);
+
+	return 0;
+}
+
+static int lan91c111_tx_try(struct smc_local *smc, struct sk_buff *skb) {
+	lan91c111_set_cmd(CMD_TX_ALLOC);
+
+	lan91c111_set_bank(2);
+
+	if (!(REG8_LOAD(BANK_INTERRUPT_STATUS) & ALLOC_MASK)) {
+		log_debug("Failed to allocate packet for TX");
+		return -EBUSY;
+	}
+
+	lan91c111_send_hw(skb);
+
+	return 0;
+}
+
+static int lan91c111_xmit(struct net_device *dev, struct sk_buff *skb) {
+	struct smc_local *smc;
+	int ret = 0;
 	ipl_t ipl;
+
+	smc = netdev_priv(dev);
 
 	ipl = ipl_save();
 	{
-		lan91c111_set_cmd(CMD_TX_ALLOC);
-
-		lan91c111_set_bank(2);
-
-		if (!(REG8_LOAD(BANK_INTERRUPT_STATUS) & ALLOC_MASK)) {
-			log_error("Failed to allocate packet for TX");
-			ret = -EBUSY;
+		if (skb_queue_front(&smc->pending_queue)) {
+			lan91c111_add_pending(smc, skb);
 			goto out;
 		}
 
-		packet_num = REG8_LOAD(BANK_TX_ALLOC) & PNUM_MASK;
-
-		REG8_STORE(BANK_PNR, packet_num);
-
-		/* Write header */
-		REG16_STORE(BANK_POINTER, AUTO_INCR | LAN91C111_STATUS_BYTES);
-		packet_len = (uint16_t) skb->len;
-		packet_len += LAN91C111_STATUS_BYTES +
-			sizeof(packet_len) + LAN91C111_CTL_BYTES;
-		packet_len &= PLEN_MASK;
-		REG16_STORE(BANK_DATA, packet_len);
-
-		data = (uint8_t*) skb_data_cast_in(skb->data);
-		lan91c111_push_data(data, skb->len);
-
-		if (skb->len % 2) {
-			REG8_STORE(BANK_DATA, ODD_CONTROL);
-		} else {
-			REG16_STORE(BANK_DATA, 0x0);
+		ret = lan91c111_tx_try(smc, skb);
+		if (ret) {
+			goto out;
 		}
 
-		lan91c111_set_cmd(CMD_TX_ENQUEUE);
+		skb_free(skb);
 	}
 out:
 	ipl_restore(ipl);
 
-	if (ret == 0) {
-		skb_free(skb);
-	}
-
-	return ret;
+	return 0;
 }
 
 static int lan91c111_open(struct net_device *dev) {
@@ -222,7 +173,7 @@ static int lan91c111_open(struct net_device *dev) {
 	REG16_STORE(BANK_TCR, TX_EN);
 
 	lan91c111_set_bank(2);
-	REG16_STORE(BANK_INTERRUPT_MASK, RX_INT | TX_INT);
+	REG8_STORE(BANK_INTERRUPT_MASK, RX_INT);
 
 	return 0;
 }
@@ -252,75 +203,103 @@ static const struct net_driver lan91c111_drv_ops = {
 	.set_macaddr = lan91c111_set_macaddr
 };
 
-static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
+static int lan91c111_tx_pend(struct net_device *dev) {
+	struct sk_buff *skb;
+	struct smc_local *smc;
+	int ret;
+
+	smc = netdev_priv(dev);
+
+	while (NULL != (skb = skb_queue_pop(&smc->pending_queue))) {
+		ret = lan91c111_tx_try(smc, skb);
+		if (ret) {
+			return ret;
+		}
+		skb_free(skb);
+	}
+
+	return 0;
+}
+
+static int lan91c111_recv_hw(struct net_device *dev_id) {
+	int i, packet;
 	struct sk_buff *skb;
 	uint32_t buf;
 	uint16_t len;
 	uint8_t *skb_data;
-	uint16_t int_status;
-	int i, packet;
+
+	packet = (REG16_LOAD(BANK_FIFO_PORTS) >> 8) & 0xFF;
+	if (packet == FIFO_EMPTY) {
+		return 0;
+	}
+
+	REG16_STORE(BANK_POINTER,
+			RX_FIFO_PACKET | AUTO_INCR | LAN91C111_STATUS_BYTES);
+	len = (REG16_LOAD(BANK_DATA) & PLEN_MASK) - 10;
+	/* In original structure, byte count includes headers, so
+	 * we shrink it to data size */
+
+	skb = skb_alloc(len + LAN91C111_STATUS_BYTES);
+	assert(skb);
+	skb->len = len;
+	skb->dev = dev_id;
+
+	skb_data = skb_data_cast_in(skb->data);
+	assert(skb_data);
+
+	for (i = 0; i < len >> 2; i++) {
+		buf = REG32_LOAD(BANK_DATA);
+		*((uint32_t *)(skb_data + i * 4)) = buf;
+	}
+
+	if (len % 4 == 2) {
+		buf = REG16_LOAD(BANK_DATA);
+		*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
+	}
+
+	/* Skip 4 bytes CRC */
+	buf = REG32_LOAD(BANK_DATA);
+	buf = REG16_LOAD(BANK_DATA);
+
+	lan91c111_set_cmd(CMD_RX_POP_AND_RELEASE);
+
+	if (buf & (ODD_CONTROL << 8)) {
+		skb->len++;
+		skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
+	}
+	show_packet(skb_data, len, "rx_pack");
+
+	netif_rx(skb);
+
+	return 0;
+}
+
+static irq_return_t lan91c111_int_handler(unsigned int irq_num, void *dev_id) {
+	uint8_t int_status;
+	uint8_t int_mask;
+
 	ipl_t ipl;
 
 	ipl = ipl_save();
 	{
 		lan91c111_set_bank(2);
 
-		int_status = REG16_LOAD(BANK_INTERRUPT_STATUS);
+		int_status = REG8_LOAD(BANK_INTERRUPT_STATUS);
+		int_mask = REG8_LOAD(BANK_INTERRUPT_MASK);
 
-		if (int_status & TX_INT) {
-			/* Clear TX interrupt */
-			int_status &= ~TX_INT;
-			REG8_STORE(BANK_INTERRUPT_STATUS, int_status);
+		int_status &= int_mask;
+
+		if (int_status & RX_MASK) {
+			lan91c111_recv_hw(dev_id);
 		}
 
-		if (!(int_status & RX_INT)) {
-			goto out;
+		if (int_status & ALLOC_MASK) {
+			int_mask &= ~ALLOC_INT;
+			REG8_STORE(BANK_INTERRUPT_MASK, int_mask);
+			lan91c111_tx_pend(dev_id);
 		}
 
-		packet = (REG16_LOAD(BANK_FIFO_PORTS) >> 8) & 0xFF;
-		if (packet == FIFO_EMPTY) {
-			goto out;
-		}
-
-		REG16_STORE(BANK_POINTER,
-				RX_FIFO_PACKET | AUTO_INCR | LAN91C111_STATUS_BYTES);
-		len = (REG16_LOAD(BANK_DATA) & PLEN_MASK) - 10;
-		/* In original structure, byte count includes headers, so
-		 * we shrink it to data size */
-
-		skb = skb_alloc(len + LAN91C111_STATUS_BYTES);
-		assert(skb);
-		skb->len = len;
-		skb->dev = dev_id;
-
-		skb_data = skb_data_cast_in(skb->data);
-		assert(skb_data);
-
-		for (i = 0; i < len >> 2; i++) {
-			buf = REG32_LOAD(BANK_DATA);
-			*((uint32_t *)(skb_data + i * 4)) = buf;
-		}
-
-		if (len % 4 == 2) {
-			buf = REG16_LOAD(BANK_DATA);
-			*((uint16_t *)(skb_data + i * 4)) = buf & 0xFFFF;
-		}
-
-		/* Skip 4 bytes CRC */
-		buf = REG32_LOAD(BANK_DATA);
-		buf = REG16_LOAD(BANK_DATA);
-
-		lan91c111_set_cmd(CMD_RX_POP_AND_RELEASE);
-
-		if (buf & (ODD_CONTROL << 8)) {
-			skb->len++;
-			skb_data[skb->len -1] = (uint8_t)(buf & 0xFF);
-		}
-		show_packet(skb_data, len, "rx_pack");
-
-		netif_rx(skb);
 	}
-out:
 	ipl_restore(ipl);
 
 	return 0;
@@ -328,12 +307,16 @@ out:
 
 static int lan91c111_init(void) {
 	struct net_device *nic;
+	struct smc_local *smc_local;
 
-	if (NULL == (nic = etherdev_alloc(0))) {
+	if (NULL == (nic = etherdev_alloc(sizeof(struct smc_local)))) {
 		return -ENOMEM;
 	}
 
 	irq_attach(LAN91C111_IRQ, lan91c111_int_handler, 0, nic, "lan91c111");
+
+	smc_local = netdev_priv(nic);
+	skb_queue_init(&smc_local->pending_queue);
 
 	nic->drv_ops = &lan91c111_drv_ops;
 
