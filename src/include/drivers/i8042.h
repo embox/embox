@@ -73,6 +73,9 @@
 #define I8042_KBD_RESET_ENABLE    0xF6
 #define I8042_KBD_RESET           0xFF
 
+#define I8042_KBD_IRQ   1
+#define I8042_MOUSE_IRQ 12
+
 #define keyboard_read_stat() \
 	inb(I8042_STS_PORT)
 
