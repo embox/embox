@@ -1,0 +1,18 @@
+package de0_nano_socfpga
+
+@AutoCmd
+@Cmd(name = "fpga_bridge",
+	help = "HPS control FPGA LED",
+	man = '''
+		This is example for de0_nano_soc board, it should be tested
+		with HPS_CONTROL_FPGA_LED.rbf FPGA config which can be found
+		archieve for DE0 Nano Soc board.
+
+		This program was dested for D0 board revision.
+	''')
+module fpga_bridge {
+	source "fpga_bridge.c"
+
+	depends embox.driver.fpga.core
+	depends embox.driver.fpga.socfpga
+}
