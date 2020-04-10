@@ -13,6 +13,7 @@ module keyboard {
 	depends kbd_defs
 	depends embox.driver.input.core
 	depends embox.driver.tty.vterm
+	depends embox.driver.input.i8042
 }
 
 module keymap {

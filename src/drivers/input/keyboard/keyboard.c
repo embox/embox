@@ -132,6 +132,9 @@ static int keyboard_start(struct input_dev *indev) {
 
 	keyboard_send_cmd(I8042_CMD_PORT_EN);
 
+	i8042_wait_write();
+	outb(I8042_KBD_RESET_ENABLE, I8042_DATA_PORT);
+
 	kbd_state = 0;
 
 	return 0;
