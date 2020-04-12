@@ -16,7 +16,7 @@ module memmove
 {
 	source "memmove.c"
 
-	depends embox.compat.libc.string
+	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
 }
 
