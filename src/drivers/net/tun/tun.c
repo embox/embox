@@ -80,6 +80,14 @@ static int tun_set_mac(struct net_device *dev, const void *addr) {
 
 static int tun_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct tun *tun = netdev_priv(dev);
+	struct ethhdr *ethh;
+
+	/* we don't build headers for dev with NOARP flag */
+	ethh = eth_hdr(skb);
+	ethh->h_proto = htons(ETH_P_IP);
+	memcpy(ethh->h_source, skb->dev->dev_addr, ETH_ALEN);
+	memset(ethh->h_dest, 0, ETH_ALEN);
+
 	skb_queue_push(&tun->rx_q, skb);
 	waitq_wakeup(&tun->wq, 1);
 	return 0;
@@ -230,6 +238,7 @@ static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov, int c
 	int ret = 0;
 	size_t size = 0;
 	unsigned char *raw;
+	struct ethhdr *ethh;
 
 	err = tun_netdev_by_idesc(idesc, &netdev, &tun);
 	if (err) {
@@ -249,7 +258,11 @@ static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov, int c
 		return -ENOMEM;
 	}
 
-	ethhdr_build(skb->mac.ethh, netdev->dev_addr, NULL, ETH_P_IP);
+	ethh = eth_hdr(skb);
+
+	ethh->h_proto = htons(ETH_P_IP);
+	memcpy(ethh->h_dest, netdev->dev_addr, ETH_ALEN);
+	memset(ethh->h_source, 0, ETH_ALEN);
 	
 	raw = skb->mac.raw + ETH_HLEN;
 	for (int i = 0; i < cnt; ++i) {

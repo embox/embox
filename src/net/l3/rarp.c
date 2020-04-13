@@ -248,7 +248,7 @@ static int rarp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	assert(dev != NULL);
 
 	/* check device flags */
-	if (dev->flags & IFF_NOARP) {
+	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
 		return 0; /* error: rarp doesn't supported by device */
 	}
 

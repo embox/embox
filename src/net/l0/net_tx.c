@@ -68,8 +68,13 @@ int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
 	dev = skb->dev;
 	assert(dev != NULL);
 
-	if (hdr_info->dst_p == NULL || (dev->flags & IFF_NOARP)) {
-		/* it's local we don't need resolve hardware address */
+	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
+		eth_hdr(skb)->h_proto = htons(hdr_info->type);
+		goto send;
+	}
+
+	if (hdr_info->dst_p == NULL) {
+		/* it's loopback/local or broadcast address? */
 		hdr_info->dst_hw = &dev->broadcast[0];
 	} else {
 		ret = neighbour_resolve(hdr_info->type,
@@ -90,6 +95,7 @@ int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
 		return ret;
 	}
 
+send:
 	net_tx_direct(skb);
 
 	return 0;
