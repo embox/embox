@@ -17,10 +17,9 @@
 #include <defines/null.h>
 
 #include <kernel/irq.h>
-#include <net/netdevice.h>
-#include <net/inetdevice.h>
-#include <arpa/inet.h>
-#include <net/l2/ethernet.h>
+
+
+
 
 #include <barrier.h>
 
@@ -82,30 +81,21 @@ static int xen_net_setmac(struct net_device *dev, const void *addr) {
 	printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!");
 	return ENOERR;
 }
-#if 1
+
 static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	printk("======>IRQ:%u\n",irq_num);
 //TODO: Implement handler
-#if 0
-	struct net_device *dev = (struct net_device *) dev_id;
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
-	struct sk_buff *skb;
-	int len;
+//TODO: need save flags?
+	struct net_device *dev;
+	struct netfront_dev *nic_priv;
 
-	while ((len = host_net_rx_count(hnet))) {
-		if (!(skb = skb_alloc(len))) {
-			return IRQ_NONE;
-		}
+	dev = dev_id;
+	nic_priv = netdev_priv(dev, struct netfront_dev);
 
-		host_net_rx(hnet, skb->mac.raw, len);
-		skb->dev = dev;
-
-		netif_rx(skb);
-	}
-#endif
+	network_rx(nic_priv, dev);
+	printk("======>IRQ_NONE\n");
 	return IRQ_NONE;
 }
-#endif
 
 static const struct net_driver xen_net_drv_ops = {
 	.xmit = xen_net_xmit,
@@ -114,24 +104,6 @@ static const struct net_driver xen_net_drv_ops = {
 	.set_macaddr = xen_net_setmac,
 };
 
-static void print_packet(unsigned char* data, int len, void* arg) {
-
-	printk("Packet(%d): [", len);
-#if 0
-    int i;
-    for (i = 0; i < len; i++) {
-        printf("%x", data[i]);
-    }
-#else
-    unsigned char *out = data;
-	while (len) {
-		printk("%x ", *out++);
-		--len;
-	}
-#endif
-	printk("]\n");
-}
-
 ///////////////////////////////////////////////////////
 // Here we are going to realize grant table mechanism//
 ///////////////////////////////////////////////////////
@@ -139,8 +111,7 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 
 extern grant_entry_v1_t *grant_table;
 
-void *init_grant_table(int n)
-{
+void *init_grant_table(int n) {
     printk(">>>>>init_grant_table\n");
 
 /*TODO detection
@@ -175,8 +146,7 @@ void *init_grant_table(int n)
     return (void*)va;
 }
 
-int get_max_nr_grant_frames()
-{
+int get_max_nr_grant_frames() {
     struct gnttab_query_size query;
 	
     int rc;
@@ -191,8 +161,7 @@ int get_max_nr_grant_frames()
 #include <xen/xen.h>
 #include <xen/version.h>
 #include <xen/features.h>
-int is_auto_translated_physmap(void)
-{
+int is_auto_translated_physmap(void) {
     unsigned char xen_features[32]; //__read_mostly
 	struct xen_feature_info fi;
 
@@ -209,17 +178,58 @@ int is_auto_translated_physmap(void)
 
     return xen_features[XENFEAT_auto_translated_physmap];
 }
-#include <xen/memory.h>
+
 
 static int xen_net_init(void) {
+	/*
 	printk("\n");
 	printk(">>>>>xen_net_init\n");
     printk("max number of grant FRAMES:%d\n", get_max_nr_grant_frames()); //32
     printk("XENFEAT_auto_translated_physmap=%d\n", is_auto_translated_physmap()); //0
     printk("PAGE_SIZE=%d\n",PAGE_SIZE());
-    
+  */  
+	//move
 	grant_table = init_grant_table(NR_GRANT_FRAMES);
 
+	int res;
+	struct net_device *nic;
+	struct netfront_dev *nic_priv;
+	//struct netfront_dev *dev;
+
+	
+	nic = etherdev_alloc(sizeof *nic_priv);
+	if (nic == NULL) {
+		return -ENOMEM;
+	}
+	nic->drv_ops = &xen_net_drv_ops;
+	//nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+	nic_priv = netdev_priv(nic, struct netfront_dev);
+
+	//virtio_config(nic);
+
+	res = netfront_priv_init(nic_priv);
+	if (res != 0) {
+		printk("PANIC1");
+		return res;
+	}
+
+	nic->irq = nic_priv->evtchn;
+	res = irq_attach(nic_priv->evtchn, xen_net_irq, IF_SHARESUP, nic,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+
+	int res = inetdev_register_dev(nic);
+	if (res < 0) {
+		printk("inetdev_register_dev error: %i\n", res);
+	}
+	return res;
+
+
+
+#if 0
 	int res = 0;
 	struct net_device *nic;
 
@@ -235,7 +245,7 @@ static int xen_net_init(void) {
 	unsigned char rawmac[6];
 	char *ip = (char *) malloc(16);
 	ip="192.168.2.2";
-	struct netfront_dev *dev = init_netfront(nodename, print_packet, rawmac, &ip);
+	dev = init_netfront(nodename, print_packet, rawmac, &ip);
 	printk(">>>>>afterinit_netfront\n");
 	
 #ifdef FEATURE_SPLIT_CHANNELS //false
@@ -256,7 +266,7 @@ static int xen_net_init(void) {
 		return res;
 	}
 #endif
-
+/*
 	printk("%s\n", ip);
 	printk("nodename: %s\n"
 		   "backend: %s\n"
@@ -266,8 +276,8 @@ static int xen_net_init(void) {
 		   dev->backend,
 		   dev->mac,
 		   ip);
-
+*/
 	//free(ip);
-	
 	return inetdev_register_dev(nic);
+#endif
 }
