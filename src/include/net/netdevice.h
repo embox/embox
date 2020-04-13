@@ -100,8 +100,6 @@ struct net_header_info {
 typedef struct net_device_ops {
 	int (*build_hdr)(struct sk_buff *skb,
 			const struct net_header_info *hdr_info);
-	int (*parse_hdr)(struct sk_buff *skb,
-			struct net_header_info *out_hdr_info);
 	int (*check_addr)(const void *addr);
 	int (*check_mtu)(int mtu);
 } net_device_ops_t;

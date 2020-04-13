@@ -204,9 +204,8 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	assert(skb != NULL);
 	assert(dev != NULL);
 
-	if (dev->flags & IFF_NOARP) {
-		log_error("arp isn't supported by device %s",
-					&dev->name[0]);
+	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
+		log_error("arp isn't supported by device %s", &dev->name[0]);
 		return 0;
 	}
 
@@ -255,6 +254,10 @@ int arp_discover(struct net_device *dev, uint16_t pro,
 	size_t size;
 	int ret;
 	struct sk_buff *skb;
+
+	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
+		return -ENOSUPP;
+	}
 
 	size = dev->hdr_len + ARP_CALC_HEADER_SIZE(dev->addr_len, pln);
 	if (size > dev->mtu) {

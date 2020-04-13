@@ -10,69 +10,38 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <string.h>
+#include <util/array.h>
+
 #include <linux/etherdevice.h>
 #include <net/if.h>
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
 #include <net/netdevice.h>
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
-#include <util/array.h>
-#include <kernel/printk.h>
-
-static inline void memcondcp(void *dst, const void *src, size_t sz) {
-	if (src) {
-		memcpy(dst, src, sz);
-	} else {
-		memset(dst, 0, sz);
-	}
-}
-
-void ethhdr_build(struct ethhdr *ethh, const void *ethdst, const void *ethsrc, short h_proto) {
-	ethh->h_proto = htons(h_proto);
-	memcondcp(ethh->h_dest, ethdst, ETH_ALEN);
-	memcondcp(ethh->h_source, ethsrc, ETH_ALEN);
-}
 
 static int ethernet_build_hdr(struct sk_buff *skb,
 		const struct net_header_info *hdr_info) {
-	const void *ethdst;
+	struct ethhdr *ethh;
 
 	assert(skb != NULL);
 	assert(hdr_info != NULL);
 
 	assert(skb->dev != NULL);
-	if (skb->dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
-		ethdst = NULL;
-	}
-	else {
-		assert(hdr_info->src_hw != NULL);
-		assert(hdr_info->dst_hw != NULL);
-		ethdst = hdr_info->dst_hw;
-	}
+	assert(!(skb->dev->flags & (IFF_LOOPBACK | IFF_NOARP)));
 
-	ethhdr_build(eth_hdr(skb), ethdst, hdr_info->src_hw, hdr_info->type);
-
-	return 0;
-}
-
-static int ethernet_parse_hdr(struct sk_buff *skb,
-		struct net_header_info *out_hdr_info) {
-	const struct ethhdr *ethh;
-
-	assert(skb != NULL);
-	assert(out_hdr_info != NULL);
+	assert(hdr_info->src_hw != NULL);
+	assert(hdr_info->dst_hw != NULL);
 
 	ethh = eth_hdr(skb);
-
-	memset(out_hdr_info, 0, sizeof *out_hdr_info);
-	out_hdr_info->type = ntohs(ethh->h_proto);
-	out_hdr_info->src_hw = ethh->h_source;
-	out_hdr_info->dst_hw = ethh->h_dest;
+	ethh->h_proto = htons(hdr_info->type);
+	memcpy(ethh->h_dest, hdr_info->dst_hw, ETH_ALEN);
+	memcpy(ethh->h_source, hdr_info->src_hw, ETH_ALEN);
 
 	return 0;
 }
+
 
 static int ethernet_check_mtu(int mtu) {
 	return (mtu >= ETH_ZLEN) && (mtu <= ETH_FRAME_LEN);
@@ -80,7 +49,6 @@ static int ethernet_check_mtu(int mtu) {
 
 const struct net_device_ops ethernet_ops = {
 	.build_hdr = ethernet_build_hdr,
-	.parse_hdr = ethernet_parse_hdr,
 	.check_addr = is_valid_ether_addr,
 	.check_mtu = ethernet_check_mtu
 };
