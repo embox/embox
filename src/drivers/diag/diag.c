@@ -42,6 +42,7 @@ int diag_init(void) {
 }
 
 char diag_getc(void) {
+	//TODO: remove
 	while(1){}
 	char ch;
 
