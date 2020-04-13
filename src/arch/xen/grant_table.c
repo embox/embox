@@ -5,13 +5,13 @@
  * @date 13.04.2020
  * @author Cherepanov Aleksei
  */
+ 
+#include "grant_table.h"
 
 #include <xen_hypercall-x86_32.h>
 #include <xen_memory.h>
 #include <barrier.h>
-
-#include "grant_table.h"
-
+#include <kernel/printk.h>
 static grant_ref_t ref = 10; // first 8 entries are reserved 
 
 grant_entry_v1_t *grant_table;
@@ -29,9 +29,22 @@ grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly
 	//printk("frame setuped\n");
     return ref++;
 }
+#include <xen_hypercall-x86_32.h>
+
+int get_max_nr_grant_frames() {
+    struct gnttab_query_size query;
+	
+    int rc;
+	query.dom = DOMID_SELF;
+	rc = HYPERVISOR_grant_table_op(GNTTABOP_query_size, &query, 1);
+	if ((rc < 0) || (query.status != GNTST_okay))
+        return 4; /* Legacy max supported number of frames */
+    return query.max_nr_frames;
+}
 
 int init_grant_table(int n) {
     //printk(">>>>>init_grant_table\n");
+    printk("max number of grant FRAMES:%d\n", get_max_nr_grant_frames()); //32
 
 /*TODO detection
     int i;

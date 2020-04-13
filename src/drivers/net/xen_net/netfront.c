@@ -360,46 +360,6 @@ void init_rx_buffers(struct netfront_dev *dev)
     dev->rx.sring->rsp_event = dev->rx.rsp_cons + 1;
 }
 
-#ifdef XEN_MEM_RESERVATION //del or replace this
-extern char memory_pages[600][PAGE_SIZE()];
-static int alloc_page_counter = 0;
-//alloc page using xen balloon
-int alloc_page(unsigned long *va, unsigned long *mfn)
-{	
-	printk("alloc page #%d\n", alloc_page_counter);
-	if(alloc_page_counter == 600)
-	{
-		printk("KRITICAL ERROR!!!: ENOMEM\n");
-		return -ENOMEM;
-	}
-//ask for mem (for rings txs rxs)
-    struct xen_memory_reservation reservation;
-    reservation.nr_extents = 1;
-    reservation.extent_order = 3;
-    reservation.address_bits= 0;
-    reservation.domid = DOMID_SELF;
-    unsigned long frame_list[1];
-    set_xen_guest_handle(reservation.extent_start, frame_list);
-   	int rc;
-    rc = HYPERVISOR_memory_op(XENMEM_increase_reservation, &reservation);
-    printk("XENMEM_increase_reservation=%d\n", rc);
-    printk("frame_list=%lu\n", frame_list[0]);
-	
-//map it
-	printk("addr:%p\n", &memory_pages[alloc_page_counter]);
-	rc = HYPERVISOR_update_va_mapping((unsigned long) &memory_pages[alloc_page_counter],
-			__pte((frame_list[0]<< PAGE_SHIFT) | 7),
-			UVMF_INVLPG);
-	printk("HYPERVISOR_update_va_mapping:%d\n", rc);
-
-	*mfn = frame_list[0];
-	*va = (unsigned long)&memory_pages[alloc_page_counter];
-	alloc_page_counter++;
-//done!
-	return 0;
-}
-#endif
-
 void setup_netfront(struct netfront_dev *dev)
 {
 	struct netif_tx_sring *txs;
@@ -449,13 +409,6 @@ void setup_netfront(struct netfront_dev *dev)
 	//experiment
 	alloc_evtchn(&dev->evtchn);
 }
-
-//why it is here?
-struct xen_netif_rx_request {
-	uint16_t id;		/* Echoed in response message.        */
-	uint16_t pad;
-	grant_ref_t gref;
-};
 
 void print_info() 
 {
@@ -519,7 +472,7 @@ int netfront_priv_init(struct netfront_dev *dev) {
 	dev = malloc(sizeof(*dev));
 	
 */
-	//need it?
+	
 	memset(dev, 0, sizeof(*dev));
 	dev->nodename = strdup(nodename);
 	printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);

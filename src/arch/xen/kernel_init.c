@@ -15,7 +15,6 @@
 #include <xen/io/console.h>
 #include <xen/event.h>
 #include <xenstore.h>
-//#include <xen_memory.h>
 
 /* Embox interface */
 extern void kernel_start(void);
@@ -46,8 +45,6 @@ void xen_kernel_start(start_info_t * start_info) {
 	xenstore_init(start_info);
 
 	trap_init();
-
-	//xen_memory_init();
 	
 	kernel_start();
 }

@@ -24,52 +24,19 @@
 
 EMBOX_UNIT_INIT(xen_net_init);
 
-#if 0
-static int host_net_rx(struct host_net_adp *hnet, void *buf, int len) {
-	memcpy(buf, host_net_scratch_rx, len);
-
-	return len;
-}
-
-static int host_net_rx_count(struct host_net_adp *hnet) {
-	return 0;
-}
-
-static struct net_device * xen_net_dev_alloc(size_t priv_size) {
-
-	return NULL;
-}
-
-static void xen_net_dev_free(struct net_device *dev) {}
-#endif
-
-static void host_net_tx(struct host_net_adp *hnet, const void *buf, int len) {}
-
-static int host_net_cfg(struct host_net_adp *hnet, enum host_net_op op) {
-	return 0;
-}
-
 static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!");
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
-
-	host_net_tx(hnet, skb->mac.raw, skb->len);
-
-	return 0;
+	return ENOERR;
 }
 
 static int xen_net_start(struct net_device *dev) {
 	printk("!!!ALARM!!! xen_net_start is called, you should check the code!");
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
-
-	return host_net_cfg(hnet, HOST_NET_START);
+	return ENOERR;
 }
 
 static int xen_net_stop(struct net_device *dev) {
 	printk("!!!ALARM!!! xen_net_stop is called, you should check the code!");
-	struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
-
-	return host_net_cfg(hnet, HOST_NET_STOP);
+	return ENOERR;
 }
 
 static int xen_net_setmac(struct net_device *dev, const void *addr) {
@@ -99,51 +66,7 @@ static const struct net_driver xen_net_drv_ops = {
 	.set_macaddr = xen_net_setmac,
 };
 
-#include <xen_hypercall-x86_32.h>
-
-int get_max_nr_grant_frames() {
-    struct gnttab_query_size query;
-	
-    int rc;
-	query.dom = DOMID_SELF;
-	rc = HYPERVISOR_grant_table_op(GNTTABOP_query_size, &query, 1);
-	if ((rc < 0) || (query.status != GNTST_okay))
-        return 4; /* Legacy max supported number of frames */
-    return query.max_nr_frames;
-}
-
-
-#include <xen/xen.h>
-#include <xen/version.h>
-#include <xen/features.h>
-int is_auto_translated_physmap(void) {
-    unsigned char xen_features[32]; //__read_mostly
-	struct xen_feature_info fi;
-
-	int j;
-    fi.submap_idx = 0;
-    if (HYPERVISOR_xen_version(XENVER_get_features, &fi) < 0) 
-    {
-        printk("error while feature getting!");
-    }
-    for (j = 0; j < 32; j++)
-    {
-        xen_features[j] = !!(fi.submap & 1<<j);
-    }
-
-    return xen_features[XENFEAT_auto_translated_physmap];
-}
-
-
 static int xen_net_init(void) {
-	/*
-	printk("\n");
-	printk(">>>>>xen_net_init\n");
-    printk("max number of grant FRAMES:%d\n", get_max_nr_grant_frames()); //32
-    printk("XENFEAT_auto_translated_physmap=%d\n", is_auto_translated_physmap()); //0
-    printk("PAGE_SIZE=%d\n",PAGE_SIZE());
-  */  
-	
 	int res;
 	struct net_device *nic;
 	struct netfront_dev *nic_priv;
@@ -182,7 +105,7 @@ static int xen_net_init(void) {
 
 
 
-#if 0
+#if 0 //old stuff
 	int res = 0;
 	struct net_device *nic;
 
