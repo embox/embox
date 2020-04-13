@@ -15,7 +15,7 @@
 #include <xen/io/ring.h>
 #include <xen/io/netif.h>
 #include <xen/io/xenbus.h>
-#include <xen/grant_table.h>
+
 #include <xen/event_channel.h>
 #include <xen_memory.h>
 
@@ -34,8 +34,6 @@
 
 // #define wmb() __asm__("dsb":::"memory");
 
-#define NR_GRANT_FRAMES 4
-#define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE() / sizeof(grant_entry_v1_t))
 
 
 struct net_buffer {

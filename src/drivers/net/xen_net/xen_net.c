@@ -5,6 +5,7 @@
  * @date 
  * @author 
  */
+#include <embox/unit.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -12,16 +13,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <embox/unit.h>
 #include <kernel/printk.h>
 #include <defines/null.h>
 
 #include <kernel/irq.h>
-
-
-
-
-#include <barrier.h>
 
 #include "xen_net.h"
 #include "xs_info.h"
@@ -104,47 +99,7 @@ static const struct net_driver xen_net_drv_ops = {
 	.set_macaddr = xen_net_setmac,
 };
 
-///////////////////////////////////////////////////////
-// Here we are going to realize grant table mechanism//
-///////////////////////////////////////////////////////
 #include <xen_hypercall-x86_32.h>
-
-extern grant_entry_v1_t *grant_table;
-
-void *init_grant_table(int n) {
-    printk(">>>>>init_grant_table\n");
-
-/*TODO detection
-    int i;
-    for (i = NR_RESERVED_ENTRIES; i < NR_GRANT_ENTRIES; i++)
-        put_free_entry(i);
-*/	
-	struct gnttab_setup_table setup;
-    setup.dom = DOMID_SELF;     //32752
-    setup.nr_frames = n;
-    unsigned long frames[n];
-    set_xen_guest_handle(setup.frame_list, frames);
-
-    int rc;
-    rc = HYPERVISOR_grant_table_op(GNTTABOP_setup_table, &setup, 1);
-    printk("HYPERVISOR_grant_table_op returned:%d, status=%d\n", rc, setup.status);
-
-    unsigned long va = (unsigned long)xen_mem_alloc(n);
-
-    int count;    
-    for(count = 0; count < n; count++)
-    {
-        printk("entry %d mapped at %ld(mfn).\n", count, frames[count]);
-        printk("addr:%p\n", (void*)(va + count*PAGE_SIZE())); //+4k = +page
-        rc = HYPERVISOR_update_va_mapping(va + count*PAGE_SIZE(),
-                __pte((frames[count]<< PAGE_SHIFT) | 7),
-                UVMF_INVLPG);
-        printk("HYPERVISOR_update_va_mapping:%d\n", rc);
-    }
-    
-    printk(">>>>>END OF init_grant_table\n");
-    return (void*)va;
-}
 
 int get_max_nr_grant_frames() {
     struct gnttab_query_size query;
@@ -188,9 +143,7 @@ static int xen_net_init(void) {
     printk("XENFEAT_auto_translated_physmap=%d\n", is_auto_translated_physmap()); //0
     printk("PAGE_SIZE=%d\n",PAGE_SIZE());
   */  
-	//move
-	grant_table = init_grant_table(NR_GRANT_FRAMES);
-
+	
 	int res;
 	struct net_device *nic;
 	struct netfront_dev *nic_priv;
@@ -221,7 +174,7 @@ static int xen_net_init(void) {
 		return res;
 	}
 
-	int res = inetdev_register_dev(nic);
+	res = inetdev_register_dev(nic);
 	if (res < 0) {
 		printk("inetdev_register_dev error: %i\n", res);
 	}

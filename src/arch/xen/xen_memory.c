@@ -1,22 +1,28 @@
+#include <embox/unit.h>
+
 #include <xen_memory.h>
-//#include <kernel/printk.h>
-#include <xen/xen.h>
+#include <kernel/printk.h>
+
 #include <xen/memory.h>
 #include <xen_hypercall-x86_32.h>
 #include <string.h>
-#include <embox/test.h>
+#include <assert.h>
+//#include <embox/test.h>
 
 #define	ENOMEM		12	/* Out of memory */
 #if 1
 //phymem reuse
-#include <util/log.h>
+//#include <util/log.h>
 
 #include <stdint.h>
 #include <sys/mman.h>
 #include <mem/page.h>
-#include <util/binalign.h>
+//#include <util/binalign.h>
 
-#include <embox/unit.h>
+
+#include <grant_table.h>
+
+EMBOX_UNIT_INIT(xen_memory_init);
 
 struct page_allocator *__xen_mem_allocator;
 
@@ -24,7 +30,7 @@ static int memory_init(char *const xen_mem_alloc_start, char *const xen_mem_allo
 	const size_t mem_len = xen_mem_alloc_end - xen_mem_alloc_start;
 	void *va;
 
-	//printk("start=%p end=%p size=%zu\n", xen_mem_alloc_start, xen_mem_alloc_end, mem_len);
+	printk("start=%p end=%p size=%zu\n", xen_mem_alloc_start, xen_mem_alloc_end, mem_len);
 
 	va = mmap_device_memory(xen_mem_alloc_start,
 			mem_len,
@@ -84,7 +90,7 @@ void get_max_pages(void)
 
 void do_exit(void) 
 {
-    test_assert_equal(0,1);
+    assert(NULL);
 }
 /*
  * Make pt_pfn a new 'level' page table frame and hook it into the page
@@ -288,7 +294,7 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p)
     *max_pfn_p = max_pfn;
 }
 
-void xen_memory_init()
+static int xen_memory_init(void)
 {
     phys_to_machine_mapping = (unsigned long *)xen_start_info.mfn_list;
     pt_base = (pgentry_t *)xen_start_info.pt_base;
@@ -306,6 +312,8 @@ void xen_memory_init()
     arch_init_mm(&start_pfn, &max_pfn);
     //printk("start_pfn=%lu, max_pfn=%lu\n", start_pfn, max_pfn);
     memory_init(pfn_to_virt(start_pfn), pfn_to_virt(max_pfn));
+
+    init_grant_table(NR_GRANT_FRAMES);
     //printk("MM: done\n");
 #if 0
     arch_init_p2m(max_pfn);
@@ -314,4 +322,5 @@ void xen_memory_init()
 //CONFIG_BALLOON
     nr_mem_pages = max_pfn;
 #endif
+    return 0;
 }

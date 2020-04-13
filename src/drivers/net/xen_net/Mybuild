@@ -11,4 +11,5 @@ module xen {
 	depends embox.net.core
 	depends embox.compat.libc.str_dup
 	depends embox.compat.libc.stdlib.core
+	depends embox.arch.xen.xen_memory
 }
