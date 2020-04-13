@@ -19,6 +19,16 @@
 #include <xen/event_channel.h>
 #include <xen_memory.h>
 
+
+//net
+#include <net/netdevice.h>
+
+#include <net/inetdevice.h>
+#include <arpa/inet.h>
+#include <net/l2/ethernet.h>
+#include <net/l0/net_entry.h>
+
+
 #define NET_TX_RING_SIZE __CONST_RING_SIZE(netif_tx, PAGE_SIZE())
 #define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE())
 
@@ -72,14 +82,16 @@ struct netfront_dev_list {
     struct netfront_dev_list *next;
 };
 
-extern struct netfront_dev *init_netfront(
+/*extern struct netfront_dev *init_netfront(
 	char *_nodename,
 	void (*thenetif_rx)(unsigned char* data,
 			int len, void* arg),
 	unsigned char rawmac[6],
 	char **ip
-);
-void network_rx(struct netfront_dev *dev);
+);*/
+int netfront_priv_init(struct netfront_dev *dev);
+void network_rx(struct netfront_dev *dev, struct net_device *embox_dev);
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame,
 		int readonly);
+
 #endif /* NETFRONT_H_ */

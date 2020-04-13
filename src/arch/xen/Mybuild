@@ -31,7 +31,12 @@ module ipl extends embox.arch.interrupt {
 	source "ipl.c", "ipl.h"
 }
 
+module grant_table {
+	source "grant_table.c"
+}
+
 module xen_memory {
 	source "xen_memory.c"
 	depends embox.mem.vmem_device_memory
+	depends embox.arch.xen.grant_table
 }

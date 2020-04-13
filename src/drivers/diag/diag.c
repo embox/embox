@@ -42,6 +42,7 @@ int diag_init(void) {
 }
 
 char diag_getc(void) {
+	while(1){}
 	char ch;
 
 	if (!cdiag->ops->getc) {

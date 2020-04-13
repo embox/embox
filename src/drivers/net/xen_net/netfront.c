@@ -85,7 +85,7 @@ int alloc_evtchn(evtchn_port_t *port)
 	return err;
 }
 
-static void xenstore_interaction(struct netfront_dev *dev, char **ip) {
+static void xenstore_interaction(struct netfront_dev *dev, char *ip) {
 	char xs_key[XS_MSG_LEN], xs_value[XS_MSG_LEN];
 	int err;
 	
@@ -213,7 +213,49 @@ static inline int xennet_rxidx(RING_IDX idx)
 {
     return idx & (NET_RX_RING_SIZE - 1);
 }
-void network_rx(struct netfront_dev *dev)
+static void rx_packet(unsigned char* data, int len, void* arg, struct net_device *embox_dev) 
+{
+	
+	//struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
+	struct sk_buff *skb;
+	if (!(skb = skb_alloc(len))) {
+		return;
+	}
+	//host_net_rx(hnet, skb->mac.raw, len);
+	memcpy(data, skb->mac.raw, skb->len);
+	skb->dev = embox_dev;
+	netif_rx(skb);
+	/*
+	while ((len = host_net_rx_count(hnet))) {
+		if (!(skb = skb_alloc(len))) {
+			return;
+		}
+
+		host_net_rx(hnet, skb->mac.raw, len);
+		skb->dev = dev;
+
+		netif_rx(skb);
+	}
+*/
+}
+static void print_packet(unsigned char* data, int len, void* arg) {
+
+	printk("Packet(%d): [", len);
+#if 0
+    int i;
+    for (i = 0; i < len; i++) {
+        printf("%x", data[i]);
+    }
+#else
+    unsigned char *out = data;
+	while (len) {
+		printk("%x ", *out++);
+		--len;
+	}
+#endif
+	printk("]\n");
+}
+void network_rx(struct netfront_dev *dev, struct net_device *embox_dev)
 {
     RING_IDX rp,cons,req_prod;
     int nr_consumed, i;
@@ -256,7 +298,9 @@ moretodo:
                 dobreak = 1;
             } else
 #endif
-		        dev->netif_rx(page+rx->offset, rx->status, dev->netif_rx_arg);
+		        //dev->netif_rx(page+rx->offset, rx->status, dev->netif_rx_arg, embox_dev);
+				print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
+				rx_packet(page+rx->offset, rx->status, dev->netif_rx_arg, embox_dev);
         }
     }
     dev->rx.rsp_cons=cons;
@@ -386,8 +430,7 @@ int alloc_page(unsigned long *va, unsigned long *mfn)
 }
 #endif
 
-void setup_netfront(struct netfront_dev *dev, 
-					void (*thenetif_rx)(unsigned char* data, int len, void* arg))
+void setup_netfront(struct netfront_dev *dev)
 {
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
@@ -429,8 +472,6 @@ void setup_netfront(struct netfront_dev *dev,
 	dev->rx_ring_ref = gnttab_grant_access(dev->dom, rxs_mfn, 0);
 
 	printk(">>>>>>>>>>after grant\n");
-
-    dev->netif_rx = thenetif_rx;
 
     //NEED IT??
 	//dev->events = NULL;
@@ -485,27 +526,36 @@ void print_info()
 */
 }
 
-struct netfront_dev *init_netfront(
+int netfront_priv_init(struct netfront_dev *dev) {
+/*struct netfront_dev *init_netfront(
 	char *_nodename,
 	void (*thenetif_rx)(unsigned char* data,
 		int len, void* arg),
 	unsigned char rawmac[6],
 	char **ip
-) {
+) {*/
+	unsigned char rawmac[6];
+	char *ip = (char *) malloc(16);
+	ip="192.168.2.2";
+
 	printk(">>>>>init_netfront\n");
 	print_info();
 	char nodename[256];
 	static int netfrontends = 0;
 
 	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
-
+/*
 	struct netfront_dev *dev = NULL;
 	dev = malloc(sizeof(*dev));
+	
+*/
+	//need it?
 	memset(dev, 0, sizeof(*dev));
 	dev->nodename = strdup(nodename);
 	printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
-
-	setup_netfront(dev, thenetif_rx);
+	//dev->netif_rx = thenetif_rx;
+	
+	setup_netfront(dev);
 
 	xenstore_interaction(dev, ip);
 
@@ -561,7 +611,7 @@ struct netfront_dev *init_netfront(
 	}
 #endif
 
-    if (rawmac)
+    //if (rawmac)
         sscanf(dev->mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
 			   &rawmac[0],
 			   &rawmac[1],
@@ -578,11 +628,12 @@ struct netfront_dev *init_netfront(
 		   dev->nodename,
 		   dev->backend,
 		   dev->mac,
-		   *ip);
-
+		   ip);
+/*
 	while(1) {
 		network_rx(dev);
 	}
-
-	return dev;
+*/
+	//return dev;
+	return 0;
 }
