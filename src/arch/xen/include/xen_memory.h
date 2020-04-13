@@ -107,7 +107,6 @@ static __inline__ maddr_t phys_to_machine(paddr_t phys)
 extern unsigned long nr_max_pages;
 extern unsigned long nr_mem_pages;
 
-extern void xen_memory_init();
 
 #define round_pgdown(_p)  ((_p) & PAGE_MASK)
 #define round_pgup(_p)    (((_p) + (PAGE_SIZE() - 1)) & PAGE_MASK)

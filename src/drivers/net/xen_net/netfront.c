@@ -31,38 +31,8 @@ do {                                        \
 
 #define BUG_ON(x) ASSERT(!(x))
 
-static grant_ref_t ref = 10; // first 8 entries are reserved 
 
-grant_entry_v1_t *grant_table;
 
-grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
-{
-	//printk("grant access for ref:%d on addr:%p\n", ref, &grant_table[ref]);
-    
-    grant_table[ref].frame = frame;
-    grant_table[ref].domid = domid;
-    wmb();
-    readonly *= GTF_readonly;
-    grant_table[ref].flags = GTF_permit_access | readonly;
-
-	//printk("frame setuped\n");
-    return ref++;
-}
-#if 0 //сохраним для истории
-static grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame,
-		int readonly)
-{
-	//TODO update this after grant table implementation
-/*
-    gnttab_table[ref].frame = frame;
-    gnttab_table[ref].domid = domid;
-    wmb();
-    readonly *= GTF_readonly;
-    gnttab_table[ref].flags = GTF_permit_access | readonly;
-*/
-    return ref++;
-}
-#endif
 
 //int alloc_evtchn(struct xenbus_device *dev, int *port)
 int alloc_evtchn(evtchn_port_t *port)
