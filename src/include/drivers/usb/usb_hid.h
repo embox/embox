@@ -10,7 +10,6 @@
 #define DRIVERS_USB_HID_H_
 
 #define USB_HID_MAX_DEVS         2
-#define USB_HID_MAX_GETCONFS     2
 
 #define USB_CLASS_HID 		 3
 
@@ -35,20 +34,12 @@ struct usb_desc_hid {
 	uint16_t w_descriptor_len;
 } __attribute__((packed));
 
-struct usb_hid_getconf {
-	struct usb_desc_configuration config_desc;
-	struct usb_desc_interface interface_desc;
-	struct usb_desc_hid hid_desc;
-	struct usb_desc_endpoint endp_descs[USB_DEV_MAX_ENDP];
-} __attribute__((packed));
-
 struct usb_class_hid {
-	struct usb_hid_getconf *getconf;
 	struct input_dev *indev;
 };
 
 static inline struct usb_class_hid *usb2hiddata(struct usb_dev *dev) {
-	return dev->class_specific;
+	return dev->driver_data;
 }
 
 extern int usb_hid_found(struct usb_dev *dev);
