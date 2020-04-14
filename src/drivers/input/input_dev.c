@@ -78,17 +78,12 @@ static int indev_handler(struct lthread *self) {
 		dlist_head_init(&dev->post_link);
 		assert(dlist_empty(&dev->post_link));
 
-		assert(dev->event_cb);
-
-		dev->event_cb(dev);
+		if (dev->event_cb) {
+			dev->event_cb(dev);
+		}
 	}
 
 	sched_unlock();
-
-	return 0;
-}
-
-static int evnt_noact(struct input_dev *dev) {
 
 	return 0;
 }
@@ -97,8 +92,6 @@ int input_dev_register(struct input_dev *dev) {
 	if (dev == NULL) {
 		return -EINVAL;
 	}
-
-
 	if (!dev->ops || !dev->ops->event_get) {
 		return -EINVAL;
 	}
@@ -134,18 +127,13 @@ int input_dev_event(struct input_dev *dev, struct input_event *ev) {
 
 }
 
-int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
+int input_dev_open(struct input_dev *dev, indev_event_cb_t *event_cb) {
 	int res;
 
 	if (dev == NULL) {
 		return -EINVAL;
 	}
-
-	if (event) {
-		dev->event_cb = event;
-	} else {
-		dev->event_cb = evnt_noact;
-	}
+	dev->event_cb = event_cb;
 
 	dlist_head_init(&dev->post_link);
 

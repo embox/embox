@@ -48,8 +48,7 @@ struct input_dev {
 	const char *name; /* registered name /dev/input/<name> */
 	enum input_dev_type type;
 
-	indev_event_cb_t *event_cb; /* callback on event. NULL is valid and
-				       means input dev isn't opened */
+	indev_event_cb_t *event_cb; /* user callback on event */
 	struct dlist_head global_indev_list; /* global device list */
 	struct dlist_head post_link; /* link in to process queue */
 
