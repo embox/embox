@@ -47,8 +47,6 @@ struct input_dev {
 	const struct input_dev_ops *ops;
 	const char *name; /* registered name /dev/input/<name> */
 	enum input_dev_type type;
-	int irq;
-	void *data;
 
 	indev_event_cb_t *event_cb; /* callback on event. NULL is valid and
 				       means input dev isn't opened */

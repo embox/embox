@@ -108,7 +108,6 @@ static void usb_hid_indev_init(struct input_dev *indev) {
 	indev->name = "usb-mouse";
 	indev->type = INPUT_DEV_MOUSE;
 	indev->ops = &usb_hid_input_ops;
-	indev->irq = 0;
 }
 
 int usb_hid_found(struct usb_dev *dev) {

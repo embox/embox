@@ -67,14 +67,6 @@ out_unlock:
 	return 0;
 }
 
-static irq_return_t indev_irqhnd(unsigned int irq_nr, void *data) {
-	struct input_dev *dev = (struct input_dev *) data;
-
-	input_dev_input(dev);
-
-	return IRQ_HANDLED;
-}
-
 static int indev_handler(struct lthread *self) {
 	struct input_dev *dev;
 
@@ -157,16 +149,7 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 
 	dlist_head_init(&dev->post_link);
 
-	if (dev->irq > 0) {
-
-		res = irq_attach(dev->irq, indev_irqhnd, 0, dev, "input_dev hnd");
-		if (res < 0) {
-			return res;
-		}
-	}
-
 	if (dev->ops->start) {
-
 		res = dev->ops->start(dev);
 		if (res < 0) {
 			return res;
@@ -179,10 +162,6 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event) {
 int input_dev_close(struct input_dev *dev) {
 	if (dev == NULL) {
 		return -EINVAL;
-	}
-
-	if (dev->irq > 0) {
-		irq_detach(dev->irq, dev);
 	}
 
 	dev->event_cb = NULL;
