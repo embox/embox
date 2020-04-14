@@ -100,7 +100,6 @@ static int ps_mouse_stop(struct input_dev *dev) {
 static const struct input_dev_ops ps_mouse_input_ops = {
 	/*.start = ps_mouse_start,*/
 	.stop = ps_mouse_stop,
-	.event_get = ps_mouse_get_input_event,
 };
 
 static struct ps2_mouse_indev mouse_dev = {
@@ -113,13 +112,12 @@ static struct ps2_mouse_indev mouse_dev = {
 
 static irq_return_t ps_mouse_irq_hnd(unsigned int irq_nr, void *data) {
 	struct input_dev *dev = (struct input_dev *) data;
+	struct input_event ev;
+	int ret;
 
-	if (!dev->event_cb) {
-		/* Input device is not opened, so just get rid of ths event. */
-		struct input_event ev;
-		ps_mouse_get_input_event(dev, &ev);
-	} else {
-		input_dev_input(dev);
+	ret = ps_mouse_get_input_event(dev, &ev);
+	if (!ret && dev->event_cb) {
+		input_dev_report_event(dev, &ev);
 	}
 
 	return IRQ_HANDLED;

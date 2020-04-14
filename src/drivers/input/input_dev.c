@@ -24,36 +24,17 @@ EMBOX_UNIT_INIT(input_init);
 
 static struct lthread indev_handler_lt;
 
-/*POOL_DEF(input_event_pool, struct input_eventq, 16);*/
-
 static DLIST_DEFINE(input_devices);
 static DLIST_DEFINE(post_indevs);
 
-int input_dev_input(struct input_dev *dev) {
-	int ret = 0;
-
+void input_dev_report_event(struct input_dev *dev, struct input_event *ev) {
 	assert(dev);
-	assert(dev->ops);
-
-	if (dev->event_cb == NULL) {
-		return 0;
-	}
 
 	irq_lock();
 	{
-		if (!dev->curprocessd && !ring_buff_alloc(&dev->rbuf, 1,
-			(void **) &dev->curprocessd)) {
-			ret = 0;
-			goto out_unlock;
-		}
+		ev->devtype = dev->type;
 
-		if (0 > (ret = dev->ops->event_get(dev, dev->curprocessd))) {
-			ret = 0;
-			goto out_unlock;
-		}
-
-		dev->curprocessd->devtype = dev->type;
-		dev->curprocessd = NULL;
+		ring_buff_enqueue(&dev->rbuf, ev, 1);
 
 		if (dlist_empty(&dev->post_link)) {
 			/* dev not in queue */
@@ -61,47 +42,36 @@ int input_dev_input(struct input_dev *dev) {
 		}
 		lthread_launch(&indev_handler_lt);
 	}
-out_unlock:
 	irq_unlock();
-
-	return 0;
 }
 
 static int indev_handler(struct lthread *self) {
 	struct input_dev *dev;
 
-	sched_lock();
-
-	dlist_foreach_entry(dev, &post_indevs, post_link) {
-		dlist_del(&dev->post_link);
-
-		dlist_head_init(&dev->post_link);
-		assert(dlist_empty(&dev->post_link));
-
-		if (dev->event_cb) {
-			dev->event_cb(dev);
+	irq_lock();
+	{
+		dlist_foreach_entry_safe(dev, &post_indevs, post_link) {
+			if (dev->event_cb) {
+				irq_unlock();
+				dev->event_cb(dev);
+				irq_lock();
+			}
+			dlist_del_init(&dev->post_link);
 		}
 	}
-
-	sched_unlock();
+	irq_unlock();
 
 	return 0;
 }
 
 int input_dev_register(struct input_dev *dev) {
-	if (dev == NULL) {
+	if (!dev || !dev->ops) {
 		return -EINVAL;
 	}
-	if (!dev->ops || !dev->ops->event_get) {
-		return -EINVAL;
-	}
-
 	dev->event_cb = NULL;
 
 	ring_buff_init(&dev->rbuf, sizeof(struct input_event),
 			INPUT_DEV_EVENT_QUEUE_LEN, &dev->event_buf);
-
-	dev->curprocessd = NULL;
 
 	dlist_add_prev(dlist_head_init(&dev->global_indev_list), &input_devices);
 
@@ -109,22 +79,24 @@ int input_dev_register(struct input_dev *dev) {
 }
 
 int input_dev_event(struct input_dev *dev, struct input_event *ev) {
-	int cnt;
+	int ret = 0;
 
 	if (dev == NULL) {
 		return -EINVAL;
 	}
 
-	cnt = ring_buff_get_cnt(&dev->rbuf);
-	if ((cnt == 0)
-			|| ((dev->curprocessd != NULL) && (cnt == 1))) {
-		return -ENOENT;
+	irq_lock();
+	{
+		if (0 == ring_buff_get_cnt(&dev->rbuf)) {
+			ret = -ENOENT;
+			goto out;
+		}
+
+		ring_buff_dequeue(&dev->rbuf, ev, 1);
 	}
-
-	ring_buff_dequeue(&dev->rbuf, ev, 1);
-
-	return 0;
-
+out:
+	irq_unlock();
+	return ret;
 }
 
 int input_dev_open(struct input_dev *dev, indev_event_cb_t *event_cb) {
@@ -164,7 +136,7 @@ int input_dev_close(struct input_dev *dev) {
 struct input_dev *input_dev_lookup(const char *name) {
 	struct input_dev *dev;
 
-	dlist_foreach_entry(dev,  &input_devices, global_indev_list) {
+	dlist_foreach_entry(dev, &input_devices, global_indev_list) {
 		if (0 == strcmp(dev->name, name)) {
 			return dev;
 		}
