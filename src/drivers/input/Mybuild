@@ -2,6 +2,8 @@ package embox.driver.input
 
 module core {
 	option number hnd_priority = 200
+	option number event_queue_len = 16
+
 	source "core.c"
 
 	@IncludeExport(path="drivers/input")

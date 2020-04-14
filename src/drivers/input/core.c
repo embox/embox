@@ -20,7 +20,7 @@
 
 #define INDEV_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
-EMBOX_UNIT_INIT(input_devfs_init);
+EMBOX_UNIT_INIT(input_init);
 
 static struct lthread indev_handler_lt;
 
@@ -206,7 +206,7 @@ struct input_dev *input_dev_lookup(const char *name) {
 	return NULL;
 }
 
-static int input_devfs_init(void) {
+static int input_init(void) {
 	lthread_init(&indev_handler_lt, &indev_handler);
 	schedee_priority_set(&indev_handler_lt.schedee, INDEV_HND_PRIORITY);
 	return 0;

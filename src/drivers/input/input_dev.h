@@ -12,7 +12,11 @@
 #include <util/dlist.h>
 #include <util/ring_buff.h>
 
-#define INPUT_DEV_EVENT_QUEUE_LEN 16
+#include <framework/mod/options.h>
+#include <module/embox/driver/input/core.h>
+
+#define INPUT_DEV_EVENT_QUEUE_LEN \
+    OPTION_MODULE_GET(embox__driver__input__core, NUMBER, event_queue_len)
 
 struct input_dev;
 
@@ -43,7 +47,6 @@ struct input_dev {
 	const struct input_dev_ops *ops;
 	const char *name; /* registered name /dev/input/<name> */
 	enum input_dev_type type;
-	int proto;
 	int irq;
 	void *data;
 
