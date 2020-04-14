@@ -105,7 +105,7 @@ static const struct input_dev_ops usb_hid_input_ops = {
 
 static void usb_hid_indev_init(struct input_dev *indev) {
 
-	indev->name = "usb_hid";
+	indev->name = "usb-mouse";
 	indev->type = INPUT_DEV_MOUSE;
 	indev->ops = &usb_hid_input_ops;
 	indev->irq = 0;
