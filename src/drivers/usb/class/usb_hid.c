@@ -7,7 +7,9 @@
  */
 #include <errno.h>
 #include <string.h>
+#include <stdbool.h>
 #include <util/member.h>
+#include <util/log.h>
 #include <mem/misc/pool.h>
 #include <drivers/usb/usb_hid.h>
 #include <drivers/usb/usb.h>
@@ -42,7 +44,7 @@ static int usb_hid_event_get(struct input_dev *dev, struct input_event *ev) {
 #endif
 
 	ev->value = ((int16_t) hindev->input_data[1]) << 16
-		| (0xffff & ((int16_t) hindev->input_data[2]));
+		| (0xffff & ((int16_t) -hindev->input_data[2]));
 
 	return 0;
 }
@@ -103,7 +105,7 @@ static const struct input_dev_ops usb_hid_input_ops = {
 
 static void usb_hid_indev_init(struct input_dev *indev) {
 
-	indev->name = "usb_hid";
+	indev->name = "usb-mouse";
 	indev->type = INPUT_DEV_MOUSE;
 	indev->ops = &usb_hid_input_ops;
 	indev->irq = 0;
@@ -112,11 +114,14 @@ static void usb_hid_indev_init(struct input_dev *indev) {
 int usb_hid_found(struct usb_dev *dev) {
 	struct usb_class_hid *hid = usb2hiddata(dev);
 	struct usb_hid_indev *hindev;
+	int ret;
 
-	usb_dev_use_inc(dev);
+	/* FIXME */
+	/* usb_dev_use_inc(dev); */
 
 	hindev = pool_alloc(&usb_hid_indevs);
 	if (!hindev) {
+		log_error("alloc failed");
 		return -ENOMEM;
 	}
 
@@ -126,5 +131,11 @@ int usb_hid_found(struct usb_dev *dev) {
 
 	usb_hid_indev_init(&hindev->input_dev);
 
-	return input_dev_register(&hindev->input_dev);
+	ret = input_dev_register(&hindev->input_dev);
+	if (!ret) {
+		log_error("input device registration failed");
+		return ret;
+	}
+
+	return 0;
 }

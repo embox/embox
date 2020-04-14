@@ -601,11 +601,11 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 		} while ((td = next_td));
 
 		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
-	}
 
-	if (!usb_queue_empty(&ohcd->req_queue)) {
-		req = usb_link2req(usb_queue_first(&ohcd->req_queue));
-		ohci_request_do(req);
+		if (!usb_queue_empty(&ohcd->req_queue)) {
+			req = usb_link2req(usb_queue_first(&ohcd->req_queue));
+			ohci_request_do(req);
+		}
 	}
 
 	return IRQ_HANDLED;

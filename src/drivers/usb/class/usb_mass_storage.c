@@ -177,7 +177,7 @@ static struct usb_device_id usb_ms_id_table[] = {
 	{ },
 };
 
-struct usb_driver usb_driver_ms = {
+static struct usb_driver usb_driver_ms = {
 	.name = "mass_storage",
 	.probe = usb_ms_probe,
 	.disconnect = usb_ms_disconnect,

@@ -2,6 +2,8 @@
 package embox.driver.usb.class
 
 module hid {
+	option number log_level = 1
+
 	source "usb_class_hid.c"
 	source "usb_hid.c"
 
