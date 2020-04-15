@@ -165,7 +165,7 @@ static const struct input_dev_ops kbd_input_ops = {
 
 static struct input_dev kbd_dev = {
 		.ops = &kbd_input_ops,
-		.name = "keyboard",
+		.name = "ps-keyboard",
 		.type = INPUT_DEV_KBD,
 };
 

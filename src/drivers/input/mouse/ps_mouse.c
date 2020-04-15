@@ -105,7 +105,7 @@ static const struct input_dev_ops ps_mouse_input_ops = {
 static struct ps2_mouse_indev mouse_dev = {
 	.input_dev = {
 		.ops = &ps_mouse_input_ops,
-		.name = "mouse",
+		.name = "ps-mouse",
 		.type = INPUT_DEV_MOUSE,
 	},
 };
