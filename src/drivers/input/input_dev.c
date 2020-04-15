@@ -73,7 +73,7 @@ int input_dev_register(struct input_dev *dev) {
 	ring_buff_init(&dev->rbuf, sizeof(struct input_event),
 			INPUT_DEV_EVENT_QUEUE_LEN, &dev->event_buf);
 
-	dlist_add_prev(dlist_head_init(&dev->global_indev_list), &input_devices);
+	dlist_add_prev(dlist_head_init(&dev->dev_link), &input_devices);
 
 	return 0;
 }
@@ -136,13 +136,23 @@ int input_dev_close(struct input_dev *dev) {
 struct input_dev *input_dev_lookup(const char *name) {
 	struct input_dev *dev;
 
-	dlist_foreach_entry(dev, &input_devices, global_indev_list) {
+	dlist_foreach_entry(dev, &input_devices, dev_link) {
 		if (0 == strcmp(dev->name, name)) {
 			return dev;
 		}
 	}
 
 	return NULL;
+}
+
+struct input_dev *input_dev_iterate(struct input_dev *dev) {
+	struct dlist_head *link;
+
+	link = dev ? dev->dev_link.next : input_devices.next;
+	if (link == &input_devices) {
+		return NULL;
+	}
+	return member_cast_out(link, struct input_dev, dev_link);
 }
 
 static int input_init(void) {

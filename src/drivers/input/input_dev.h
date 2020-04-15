@@ -49,7 +49,7 @@ struct input_dev {
 	void *data;
 
 	indev_event_cb_t *event_cb; /* user callback on event */
-	struct dlist_head global_indev_list; /* global device list */
+	struct dlist_head dev_link; /* global device list */
 	struct dlist_head post_link; /* link in to process queue */
 
 	struct ring_buff rbuf;
@@ -112,5 +112,7 @@ extern int input_dev_open(struct input_dev *dev, indev_event_cb_t *event);
  * @return
  */
 extern int input_dev_close(struct input_dev *dev);
+
+extern struct input_dev *input_dev_iterate(struct input_dev * dev);
 
 #endif /* EMBOX_INPUT_DEVICE_H_ */
