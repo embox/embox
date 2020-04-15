@@ -123,6 +123,20 @@ module memcmp_test {
 	depends embox.framework.LibFramework
 }
 
+module memchr_test {
+	source "memchr_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module memrchr_test {
+	source "memrchr_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
 module strcpy_test {
 	source "strcpy.c"
 
