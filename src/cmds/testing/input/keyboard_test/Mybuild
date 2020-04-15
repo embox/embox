@@ -1,4 +1,4 @@
-package embox.cmd.testing
+package embox.cmd.testing.input
 
 @AutoCmd
 @Cmd(name = "keyboard_test",

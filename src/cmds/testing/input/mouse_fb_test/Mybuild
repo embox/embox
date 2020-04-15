@@ -1,4 +1,4 @@
-package embox.cmd.testing
+package embox.cmd.testing.input
 
 @AutoCmd
 @Cmd(name = "mouse_fb_test",
