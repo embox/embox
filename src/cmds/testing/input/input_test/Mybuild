@@ -1,5 +1,4 @@
-
-package embox.cmd
+package embox.cmd.testing.input
 
 @AutoCmd
 @Cmd(name = "input_test",

@@ -159,26 +159,24 @@ static int keyboard_stop(struct input_dev *dev) {
 }
 
 static const struct input_dev_ops kbd_input_ops = {
-		.event_get = keyboard_get_input_event,
 		/*.start = keyboard_start,*/
 		.stop = keyboard_stop,
 };
 
 static struct input_dev kbd_dev = {
 		.ops = &kbd_input_ops,
-		.name = "keyboard",
+		.name = "ps-keyboard",
 		.type = INPUT_DEV_KBD,
 };
 
 static irq_return_t ps_kbd_irq_hnd(unsigned int irq_nr, void *data) {
 	struct input_dev *dev = (struct input_dev *) data;
+	struct input_event ev;
+	int ret;
 
-	if (!dev->event_cb) {
-		/* Input device is not opened, so just get rid of ths event. */
-		struct input_event ev;
-		keyboard_get_input_event(dev, &ev);
-	} else {
-		input_dev_input(dev);
+	ret = keyboard_get_input_event(dev, &ev);
+	if (!ret && dev->event_cb) {
+		input_dev_report_event(dev, &ev);
 	}
 
 	return IRQ_HANDLED;
