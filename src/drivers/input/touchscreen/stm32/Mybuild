@@ -1,0 +1,33 @@
+package embox.driver.input.touchscreen
+
+@BuildDepends(third_party.bsp.stm32746g_cube.core)
+module stm32f746g_ts {
+	option number log_level = 1
+
+	@IncludeExport(path="drivers/input", target_name="stm32cube_ts.h")
+	source "stm32f746g_ts.h"
+
+	source "stm32_cube_touchscreen.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.input.touchscreen
+
+	@NoRuntime depends third_party.bsp.stm32746g_cube.stm32f7_discovery_bsp
+	@NoRuntime depends third_party.bsp.stm32746g_cube.stm32f7_discovery_components
+}
+
+@BuildDepends(third_party.bsp.stm32f769i_cube.core)
+module stm32f769i_ts {
+	option number log_level = 1
+
+	@IncludeExport(path="drivers/input", target_name="stm32cube_ts.h")
+	source "stm32f769i_ts.h"
+
+	source "stm32_cube_touchscreen.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.input.touchscreen
+
+	@NoRuntime depends third_party.bsp.stm32f769i_cube.stm32f7_discovery_bsp
+	@NoRuntime depends third_party.bsp.stm32f769i_cube.stm32f7_discovery_components
+}
