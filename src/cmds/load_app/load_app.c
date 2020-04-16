@@ -68,5 +68,6 @@ int main(int argc, char **argv) {
 	instructions -= offset;
 	free(instructions);
 
-	return ret;
+	printf("%d\n", ret);
+	return 0;
 }
