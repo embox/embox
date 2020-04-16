@@ -26,6 +26,7 @@ enum input_dev_type {
 	INPUT_DEV_KBD,
 	INPUT_DEV_MOUSE,
 	INPUT_DEV_APB,
+	INPUT_DEV_TOUCHSCREEN,
 };
 
 struct input_event {
