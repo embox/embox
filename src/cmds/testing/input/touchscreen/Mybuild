@@ -1,0 +1,22 @@
+package embox.cmd.testing.input
+
+@AutoCmd
+@Cmd(name = "touchscreen_test",
+	help = "Demo application which tests touchscreen",
+	man = '''
+		NAME
+			touchscreen_test - Test for touchscreen
+		SYNOPSIS
+			touchscreen_test <touchscreen>
+		DESCRIPTION
+			touchscreen_test - Test for touchscreen
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module touchscreen_test {
+	source "touchscreen_test.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.input.touchscreen
+	depends embox.driver.video.fb
+}
