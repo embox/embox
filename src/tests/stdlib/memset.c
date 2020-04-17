@@ -38,11 +38,11 @@ TEST_CASE("memset negative number") {
 	test_assert_mem_equal(str, exp, sizeof str);
 }
 
-TEST_CASE("memset null") {
+TEST_CASE("memset middle of the buffer") {
 	char str[] = {1, 2, 3, 4, 5};
-	char exp[] = {0, 0, 0, 0, 0};
+	char exp[] = {1, 0, 0, 0, 5};
 
-	memset(str, (int)NULL, sizeof str);
+	memset(str + 1, 0, 3);
 
 	test_assert_mem_equal(str, exp, sizeof str);
 }
