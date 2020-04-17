@@ -1,0 +1,6 @@
+package embox.driver.input
+
+module touchscreen {
+	@IncludeExport(path="drivers/input")
+	source "touchscreen.h"
+}

@@ -2,18 +2,15 @@ package embox.cmd.hw
 
 @AutoCmd
 @Cmd(name = "input",
+	help = "Show input devices list",
 	man = '''
-	NAME
-       input - list input devices
-    SYNOPSIS
-       input [ options ]
-    DESCRIPTION
-	OPTIONS
-			-h
-				Shows usage
-	SEE ALSO
-			input
-	AUTHORS
+		NAME
+			input - Show input devices list
+		SYNOPSIS
+			input [-h]
+		DESCRIPTION
+			input - Show input devices list
+		AUTHORS
 			Alexander Kalmuk
 	''')
 module input {
