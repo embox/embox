@@ -104,37 +104,46 @@ static void usb_endp_free(struct usb_endp *endp) {
 }
 #endif
 
-static void usb_dev_fill_config(struct usb_dev *dev, void *cur) {
-	int i;
+static void usb_dev_fill_config(struct usb_dev *dev) {
+	int i = 0, j;
 	struct usb_desc_common_header *other_desc;
 	struct usb_desc_endpoint *endp_desc;
+	struct usb_desc_configuration *conf;
+	void *cur = dev->config_buf, *end;
 
-	/* Fill interface. */
+	conf = (struct usb_desc_configuration *) cur;
+	end = cur + conf->w_total_length;
+
 	cur += sizeof (struct usb_desc_configuration);
-	memcpy(&dev->iface_desc, cur, sizeof(struct usb_desc_interface));
 
-	/* b_num_endpoints excludes control endpoint, so add it. */
-	dev->endp_n = dev->iface_desc.b_num_endpoints + 1;
-	cur += sizeof (struct usb_desc_interface);
+	while (cur < end) {
+		/* Fill interface. */
+		dev->iface_desc[i] = (struct usb_desc_interface *) cur;
 
-	/* Skip other descriptors till endpoints. */
-	other_desc = (struct usb_desc_common_header *) cur;
-	while (other_desc->b_desc_type != USB_DESC_TYPE_ENDPOINT) {
-		cur += other_desc->b_length;
+		cur += sizeof (struct usb_desc_interface);
+
+		/* Skip other descriptors till endpoints. */
 		other_desc = (struct usb_desc_common_header *) cur;
-	}
-
-	/* Fill endpoints. */
-	for (i = 1; i < dev->endp_n; i++) {
-		endp_desc = (struct usb_desc_endpoint *) cur;
-		assert(endp_desc->b_desc_type == USB_DESC_TYPE_ENDPOINT);
-
-		if (NULL == usb_endp_alloc(dev, i, endp_desc)) {
-			panic("%s: failed to alloc endpoint\n",
-					__func__);
+		while (other_desc->b_desc_type != USB_DESC_TYPE_ENDPOINT) {
+			cur += other_desc->b_length;
+			other_desc = (struct usb_desc_common_header *) cur;
 		}
 
-		cur += sizeof (struct usb_desc_endpoint);
+		/* Fill endpoints. */
+		for (j = dev->endp_n; j < dev->endp_n + dev->iface_desc[i]->b_num_endpoints; j++) {
+			endp_desc = (struct usb_desc_endpoint *) cur;
+			assert(endp_desc->b_desc_type == USB_DESC_TYPE_ENDPOINT);
+
+			if (NULL == usb_endp_alloc(dev, j, endp_desc)) {
+				panic("%s: failed to alloc endpoint\n",
+						__func__);
+			}
+
+			cur += sizeof (struct usb_desc_endpoint);
+		}
+
+		dev->endp_n += dev->iface_desc[i]->b_num_endpoints;
+		i++;
 	}
 }
 
@@ -181,9 +190,9 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 		goto err;
 	}
 
-	usb_dev_fill_config(dev, dev->config_buf);
+	usb_dev_fill_config(dev);
 
-	log_debug("b_interface_class = 0x%x OK ", dev->iface_desc.b_interface_class);
+	log_debug("b_interface_class = 0x%x OK ", dev->iface_desc[0]->b_interface_class);
 
 	return 0;
 err:
@@ -217,6 +226,7 @@ int usb_get_ep0(struct usb_dev *dev) {
 		log_error("failed");
 		return -1;
 	}
+	dev->endp_n = 1;
 	return 0;
 }
 
