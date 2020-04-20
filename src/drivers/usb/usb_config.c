@@ -219,3 +219,10 @@ int usb_get_ep0(struct usb_dev *dev) {
 	}
 	return 0;
 }
+
+int usb_set_iface(struct usb_dev *dev, int iface, int alt) {
+	return usb_endp_control_wait(dev->endpoints[0],
+	            USB_DIR_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_IFACE,
+	            USB_REQ_SET_INTERFACE,
+	            iface, alt, 0, NULL, 1000);
+}
