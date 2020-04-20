@@ -123,10 +123,12 @@ static void usb_dev_fill_config(struct usb_dev *dev) {
 		cur += sizeof (struct usb_desc_interface);
 
 		/* Skip other descriptors till endpoints. */
-		other_desc = (struct usb_desc_common_header *) cur;
-		while (other_desc->b_desc_type != USB_DESC_TYPE_ENDPOINT) {
-			cur += other_desc->b_length;
+		if (dev->iface_desc[i]->b_num_endpoints > 0) {
 			other_desc = (struct usb_desc_common_header *) cur;
+			while (other_desc->b_desc_type != USB_DESC_TYPE_ENDPOINT) {
+				cur += other_desc->b_length;
+				other_desc = (struct usb_desc_common_header *) cur;
+			}
 		}
 
 		/* Fill endpoints. */
