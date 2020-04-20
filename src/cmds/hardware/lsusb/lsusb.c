@@ -77,15 +77,15 @@ static void show_usb_desc_interface(struct usb_dev *usb_dev) {
 			"   b_interface_subclass %5u\n"
 			"   b_interface_protocol %5u\n"
 			"   i_interface          %5u\n",
-			usb_dev->iface_desc.b_length, 
-			usb_dev->iface_desc.b_desc_type, 
-			usb_dev->iface_desc.b_interface_number,
-			usb_dev->iface_desc.b_alternate_setting, 
-			usb_dev->iface_desc.b_num_endpoints, 
-			usb_dev->iface_desc.b_interface_class,
-			usb_dev->iface_desc.b_interface_subclass,
-			usb_dev->iface_desc.b_interface_protocol,
-			usb_dev->iface_desc.i_interface);
+			usb_dev->iface_desc[0]->b_length,
+			usb_dev->iface_desc[0]->b_desc_type,
+			usb_dev->iface_desc[0]->b_interface_number,
+			usb_dev->iface_desc[0]->b_alternate_setting,
+			usb_dev->iface_desc[0]->b_num_endpoints,
+			usb_dev->iface_desc[0]->b_interface_class,
+			usb_dev->iface_desc[0]->b_interface_subclass,
+			usb_dev->iface_desc[0]->b_interface_protocol,
+			usb_dev->iface_desc[0]->i_interface);
 }
 
 static void show_usb_desc_configuration(struct usb_dev *usb_dev) {

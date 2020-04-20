@@ -85,7 +85,7 @@ static int usb_driver_match_table(struct usb_dev *dev,
 	while (id->dev_class != 0 || id->vid != 0 || id->pid != 0) {
 		if ((id->vid == dev->dev_desc.id_vendor &&
 				id->pid == dev->dev_desc.id_product) ||
-			(id->dev_class == dev->iface_desc.b_interface_class)) {
+			(id->dev_class == dev->iface_desc[0]->b_interface_class)) {
 			return 1;
 		}
 

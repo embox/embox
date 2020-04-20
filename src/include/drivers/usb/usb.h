@@ -28,6 +28,7 @@
 #define USB_REQ_STD_LEN 64
 
 #define USB_REQ_HEADER_LEN 8
+#define USB_DEV_MAX_INTERFACES 4
 #define USB_DEV_MAX_ENDP 32
 #define USB_RH_MAX_PORT 15
 #define USB_HC_MAX_DEV 127
@@ -154,12 +155,13 @@ struct usb_dev {
 	struct usb_dev *parent;
 
 	struct usb_hcd *hcd;
-	unsigned char endp_n;
-	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
+
+	struct usb_desc_device dev_desc;
 
 	void *config_buf;
-	struct usb_desc_device dev_desc;
-	struct usb_desc_interface iface_desc;
+	struct usb_desc_interface *iface_desc[USB_DEV_MAX_INTERFACES];
+	unsigned char endp_n;
+	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
 
 	void *driver_data;
 	struct usb_driver *drv;
