@@ -82,7 +82,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 		 * Set Configuration can also be used, with wValue set to 0, to deconfigure the device.
 		 */
 		if (usb_set_configuration(dev, 1) < 0) {
-			log_error("usb_get_configuration failed");
+			log_error("usb_set_configuration failed");
 			goto out_err;
 		}
 	}
