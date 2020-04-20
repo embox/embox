@@ -1,12 +1,15 @@
 package embox.driver.net
 
 module usbnet {
+	option number log_level = 1
+
 	source "usbnet.c"
 
-	depends embox.driver.usb.class.cdc
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.net.dev
 	depends embox.net.entry_api
 	depends embox.net.core
+
+	depends embox.driver.usb.core
 }
