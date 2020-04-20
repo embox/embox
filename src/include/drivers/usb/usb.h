@@ -58,6 +58,7 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 #define USB_REQ_SET_ADDRESS         0x05
 #define USB_REQ_GET_DESCRIPTOR      0x06
 #define USB_REQ_SET_CONFIG          0x09
+#define USB_REQ_SET_INTERFACE       0x0B
 
 #define USB_PORT_FEATURE_CONNECTION      0
 #define USB_PORT_FEATURE_ENABLE          1
@@ -247,6 +248,7 @@ extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 
 extern int usb_get_configuration(struct usb_dev *dev, unsigned int n);
 extern int usb_set_configuration(struct usb_dev *dev, unsigned int n);
+extern int usb_set_iface(struct usb_dev *dev, int iface, int alt);
 
 /* FIXME This function is more like workaround to initialize
  * control endpoint. */
