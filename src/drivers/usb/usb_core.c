@@ -34,6 +34,10 @@ static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	struct usb_request *req;
 
 	req = pool_alloc(&usb_requests);
+	if (!req) {
+		return NULL;
+	}
+
 	memset(req, 0, sizeof *req);
 	req->endp = endp;
 
@@ -48,7 +52,9 @@ struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
 	struct usb_request *req;
 
 	req = usb_request_alloc(endp);
-	assert(req);
+	if (!req) {
+		return NULL;
+	}
 
 	req->endp = endp;
 	req->token = token;
@@ -198,6 +204,9 @@ int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 
 	req = usb_endp_request_alloc(endp, notify_hnd, arg,
 			usb_endp_dir_token_map(endp), buf, len);
+	if (!req) {
+		return -1;
+	}
 
 	return usb_endp_request(endp, req);
 }
@@ -212,6 +221,9 @@ int usb_endp_bulk_wait(struct usb_endp *endp, void *buf,
 
 	req = usb_endp_request_alloc(endp, usb_endp_req_wait_handler, NULL,
 			usb_endp_dir_token_map(endp), buf, len);
+	if (!req) {
+		return -1;
+	}
 
 	waitq_link_init(&wl);
 	waitq_wait_prepare(&req->wq, &wl);
@@ -236,6 +248,9 @@ int usb_endp_interrupt(struct usb_endp *endp, usb_request_notify_hnd_t notify_hn
 
 	req = usb_endp_request_alloc(endp, notify_hnd, NULL,
 			usb_endp_dir_token_map(endp), buf, len);
+	if (!req) {
+		return -1;
+	}
 
 	return usb_endp_request(endp, req);
 }
