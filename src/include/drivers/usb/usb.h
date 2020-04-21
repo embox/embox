@@ -264,6 +264,7 @@ extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 
 extern int usb_get_configuration(struct usb_dev *dev, unsigned int n);
 extern int usb_set_configuration(struct usb_dev *dev, unsigned int n);
+extern void usb_free_configuration(struct usb_dev *dev);
 extern int usb_set_iface(struct usb_dev *dev, int iface, int alt);
 
 /* FIXME This function is more like workaround to initialize

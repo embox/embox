@@ -92,7 +92,6 @@ static struct usb_endp *usb_endp_alloc(struct usb_dev *dev, unsigned n,
 	return ep;
 }
 
-#if 0
 static void usb_endp_free(struct usb_endp *endp) {
 	struct usb_hcd *hcd = endp->dev->hcd;
 
@@ -102,7 +101,6 @@ static void usb_endp_free(struct usb_endp *endp) {
 
 	pool_free(&usb_endps, endp);
 }
-#endif
 
 static void usb_dev_fill_config(struct usb_dev *dev) {
 	int i = 0, j;
@@ -221,6 +219,24 @@ int usb_set_configuration(struct usb_dev *dev, unsigned int n) {
 	usleep(1000 * 1000);
 	log_debug("ok");
 	return 0;
+}
+
+void usb_free_configuration(struct usb_dev *dev) {
+	int i;
+
+	/* Free endpoints expect endpoint 0. */
+	for (i = 1; i < dev->endp_n; i++) {
+		usb_endp_free(dev->endpoints[i]);
+		dev->endpoints[i] = NULL;
+	}
+	dev->endp_n = 1;
+
+	/* Zero interfaces pointers */
+	memset(&dev->iface_desc[0], 0, sizeof dev->iface_desc);
+
+	/* Free configuration */
+	sysfree(dev->config_buf);
+	dev->config_buf = NULL;
 }
 
 int usb_get_ep0(struct usb_dev *dev) {
