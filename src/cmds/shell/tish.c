@@ -32,6 +32,8 @@
 #include <framework/cmd/api.h>
 #include <embox/unit.h>
 
+#include <mem/sysmalloc.h>
+
 #include <kernel/task.h>
 #include <kernel/task/resource/module_ptr.h>
 
@@ -384,7 +386,8 @@ static void tish_run(void) {
 
 		tish_collect_bg_childs();
 
-		free(line);
+		/* TODO now linenoise use sysalloc for memory allocation */
+		sysfree(line);
 	}
 }
 
