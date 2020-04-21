@@ -20,18 +20,32 @@
 #include <drivers/usb/usb_desc.h>
 #include <drivers/usb/usb_token.h>
 
-#define USB_MAX_HCD 2
-#define USB_MAX_DEV 32
-#define USB_MAX_HUB 7
-#define USB_MAX_ENDP (USB_MAX_DEV * 2)
-#define USB_MAX_REQ USB_MAX_DEV
-#define USB_REQ_STD_LEN 64
+#include <framework/mod/options.h>
+#include <module/embox/driver/usb/core.h>
+
+#define USB_MAX_HCD \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_hcd)
+
+#define USB_HC_MAX_DEV \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_hcd_devs)
+
+#define USB_MAX_DEV \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_dev)
+
+#define USB_MAX_HUB \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_hub)
+
+#define USB_MAX_REQ \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_req)
+
+#define USB_DEV_MAX_ENDP \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_dev_max_endp)
+
+#define USB_DEV_MAX_INTERFACES \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_dev_max_interfaces)
 
 #define USB_REQ_HEADER_LEN 8
-#define USB_DEV_MAX_INTERFACES 4
-#define USB_DEV_MAX_ENDP 32
-#define USB_RH_MAX_PORT 15
-#define USB_HC_MAX_DEV 127
+#define USB_MAX_ENDP (USB_MAX_DEV * USB_DEV_MAX_ENDP)
 
 struct usb_hcd;
 struct usb_hub;
