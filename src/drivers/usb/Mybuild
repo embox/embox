@@ -4,6 +4,16 @@ module core {
 	option number log_level = 1
 	option number usb_req_hnd_priority = 200
 
+	/* Global options */
+	option number usb_max_hcd = 2
+	option number usb_max_hcd_devs = 127
+	option number usb_max_dev = 32
+	option number usb_max_hub = 8
+	option number usb_max_req = 64
+	/* Per device options */
+	option number usb_dev_max_interfaces = 4
+	option number usb_dev_max_endp = 16
+
 	source "usb_core.c",
 		"usb_queue.c",
 		"usb_config.c"
