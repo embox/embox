@@ -191,12 +191,12 @@ int usb_endp_control_wait(struct usb_endp *endp,
 }
 
 int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
-		void *buf, size_t len) {
+		void *arg, void *buf, size_t len) {
 	struct usb_request *req;
 
 	assert(usb_endp_type(endp) == USB_COMM_BULK);
 
-	req = usb_endp_request_alloc(endp, notify_hnd, NULL,
+	req = usb_endp_request_alloc(endp, notify_hnd, arg,
 			usb_endp_dir_token_map(endp), buf, len);
 
 	return usb_endp_request(endp, req);

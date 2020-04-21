@@ -235,7 +235,7 @@ extern int usb_endp_control_wait(struct usb_endp *endp,
 		uint16_t count, void *data, int timeout);
 
 extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
-		void *buf, size_t len);
+		void *arg, void *buf, size_t len);
 extern int usb_endp_bulk_wait(struct usb_endp *endp, void *buf,
 	    size_t len, int timeout);
 
