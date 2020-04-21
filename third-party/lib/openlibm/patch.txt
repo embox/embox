@@ -87,7 +87,7 @@ diff -aur openlibm-0.7.0/src/Make.files ../../../../../../tmp/openlibm/src/Make.
  	s_catanl.c s_csinl.c s_cacosl.c s_cexpl.c s_csinhl.c s_ccoshl.c \
  	s_clogl.c s_ctanhl.c s_ccosl.c s_cbrtl.c
  endif
-+ifneq ($(filter $(ARCH),arm),)
++ifneq ($(filter $(ARCH),arm mips),)
 +$(CUR_SRCS) += s_roundl.c
 +endif
 +
