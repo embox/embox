@@ -484,6 +484,7 @@ static int ohci_request_do(struct usb_request *req) {
 		if (req->len > 0) {
 			tds_count++;
 			token = (req->token & USB_TOKEN_OUT) ? OHCI_TD_OUT : OHCI_TD_IN;
+			token |= OHCI_TD_BUF_ROUND;
 			ohci_transfer(ed, token, req->buf, req->len, req);
 		}
 		/* Status stage */
@@ -496,6 +497,7 @@ static int ohci_request_do(struct usb_request *req) {
 	case USB_COMM_ISOCHRON:
 		tds_count++;
 		token = (req->token & USB_TOKEN_OUT) ? OHCI_TD_OUT : OHCI_TD_IN;
+		token |= OHCI_TD_BUF_ROUND;
 		ohci_transfer(ed, token, req->buf, req->len, req);
 		break;
 	default:
