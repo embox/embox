@@ -16,6 +16,10 @@ module kernel_task {
 	depends embox.kernel.task.task_table_api
 }
 
+module lkl_task {
+	source "lkl_task.c"
+}
+
 module multi extends api {
 	source "multi.c", "multi.h"
 
