@@ -129,7 +129,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 	ret = usb_endp_control_wait(dev->endpoints[0],
 			USB_DIR_OUT | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_RESET, 0,
-			dev->iface_desc.b_interface_number, 0, NULL, 1000);
+			dev->iface_desc[0]->b_interface_number, 0, NULL, 1000);
 	if (ret) {
 		log_error("Mass storage reset error\n\n");
 		return -1;
@@ -140,7 +140,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 	ret = usb_endp_control_wait(dev->endpoints[0],
 			USB_DIR_IN | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_MAXLUN, 0,
-			dev->iface_desc.b_interface_number, 1, &mass->maxlun, 1000);
+			dev->iface_desc[0]->b_interface_number, 1, &mass->maxlun, 1000);
 	if (ret) {
 		log_error("Mass storage conftrol error\n\n");
 		return -1;

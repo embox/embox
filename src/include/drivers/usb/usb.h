@@ -20,17 +20,32 @@
 #include <drivers/usb/usb_desc.h>
 #include <drivers/usb/usb_token.h>
 
-#define USB_MAX_HCD 2
-#define USB_MAX_DEV 32
-#define USB_MAX_HUB 7
-#define USB_MAX_ENDP (USB_MAX_DEV * 2)
-#define USB_MAX_REQ USB_MAX_DEV
-#define USB_REQ_STD_LEN 64
+#include <framework/mod/options.h>
+#include <module/embox/driver/usb/core.h>
+
+#define USB_MAX_HCD \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_hcd)
+
+#define USB_HC_MAX_DEV \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_hcd_devs)
+
+#define USB_MAX_DEV \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_dev)
+
+#define USB_MAX_HUB \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_hub)
+
+#define USB_MAX_REQ \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_max_req)
+
+#define USB_DEV_MAX_ENDP \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_dev_max_endp)
+
+#define USB_DEV_MAX_INTERFACES \
+    OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_dev_max_interfaces)
 
 #define USB_REQ_HEADER_LEN 8
-#define USB_DEV_MAX_ENDP 32
-#define USB_RH_MAX_PORT 15
-#define USB_HC_MAX_DEV 127
+#define USB_MAX_ENDP (USB_MAX_DEV * USB_DEV_MAX_ENDP)
 
 struct usb_hcd;
 struct usb_hub;
@@ -58,6 +73,7 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 #define USB_REQ_SET_ADDRESS         0x05
 #define USB_REQ_GET_DESCRIPTOR      0x06
 #define USB_REQ_SET_CONFIG          0x09
+#define USB_REQ_SET_INTERFACE       0x0B
 
 #define USB_PORT_FEATURE_CONNECTION      0
 #define USB_PORT_FEATURE_ENABLE          1
@@ -153,12 +169,13 @@ struct usb_dev {
 	struct usb_dev *parent;
 
 	struct usb_hcd *hcd;
-	unsigned char endp_n;
-	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
+
+	struct usb_desc_device dev_desc;
 
 	void *config_buf;
-	struct usb_desc_device dev_desc;
-	struct usb_desc_interface iface_desc;
+	struct usb_desc_interface *iface_desc[USB_DEV_MAX_INTERFACES];
+	unsigned char endp_n;
+	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
 
 	void *driver_data;
 	struct usb_driver *drv;
@@ -232,7 +249,7 @@ extern int usb_endp_control_wait(struct usb_endp *endp,
 		uint16_t count, void *data, int timeout);
 
 extern int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t hnd,
-		void *buf, size_t len);
+		void *arg, void *buf, size_t len);
 extern int usb_endp_bulk_wait(struct usb_endp *endp, void *buf,
 	    size_t len, int timeout);
 
@@ -247,6 +264,8 @@ extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 
 extern int usb_get_configuration(struct usb_dev *dev, unsigned int n);
 extern int usb_set_configuration(struct usb_dev *dev, unsigned int n);
+extern void usb_free_configuration(struct usb_dev *dev);
+extern int usb_set_iface(struct usb_dev *dev, int iface, int alt);
 
 /* FIXME This function is more like workaround to initialize
  * control endpoint. */

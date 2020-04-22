@@ -218,6 +218,7 @@ NIC2QEMU=(
 	[mipsnet]="mipsnet"
 	[fec]="imx.enet"
 	[dwc_gmac]="dwgmac"
+	[usbnet]="usb-net"
 )
 
 IFS=" " read -a qemu_nics <<< "$AUTOQEMU_NICS"
@@ -248,11 +249,18 @@ if [ $nic_n -gt 0 ]; then
 
 		nic_macaddr="AA:BB:CC:DD:EE:0$(($ni + 2))"
 
+		if [ $nic_model = "usb-net" ]; then
+			nic_lines="$nic_lines \
+				-device usb-net,netdev=n$ni,mac=$nic_macaddr"
+		else
+			nic_lines="$nic_lines \
+				-net nic,netdev=n$ni,model=$nic_model,macaddr=$nic_macaddr"
+		fi
+
 		# For new version of QEMU it should be in future:
 		# -nic $host_nic_config,model=$nic_model,mac=$nic_macaddr
 		#
 		nic_lines="$nic_lines \
-			-net nic,netdev=n$ni,model=$nic_model,macaddr=$nic_macaddr \
 			-netdev $host_nic_config,id=n$ni"
 	done
 fi
@@ -383,7 +391,7 @@ if [[ `id -u` -ne 0 ]] ; then
 	RUNAS="-runas `whoami`"
 fi
 
-ARG_LINE="$sudo $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines $sound_lines $graphic_lines $usb_lines $@"
+ARG_LINE="$sudo $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
 
 info "$ARG_LINE"
 $ARG_LINE

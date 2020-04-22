@@ -129,7 +129,6 @@ struct ohci_hcd {
 	struct usb_hcd *hcd;
 	struct ohci_hcca *hcca;
 	struct ohci_reg *base;
-	struct usb_queue req_queue;
 };
 
 static inline struct usb_hcd *ohci2hcd(struct ohci_hcd *ohcd) {
@@ -145,6 +144,9 @@ struct ohci_ed {
 	uint32_t tail_td;
 	uint32_t head_td;
 	uint32_t next_ed;
+
+	/* it's not hardware field, must be the last */
+	struct usb_queue req_queue;
 } __attribute__((packed,aligned(16)));
 
 

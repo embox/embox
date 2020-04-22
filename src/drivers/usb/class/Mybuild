@@ -22,11 +22,3 @@ module mass_storage {
 
 	depends embox.driver.scsi
 }
-
-module cdc {
-	option number log_level = 1
-	source "usb_class_cdc.c"
-
-	depends embox.driver.usb.core
-	depends embox.mem.sysmalloc_api
-}

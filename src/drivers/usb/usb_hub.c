@@ -36,6 +36,12 @@ static struct usb_hub *usb_dev_to_hub(struct usb_dev *dev) {
 	return (struct usb_hub *)dev->driver_data;
 }
 
+static int is_rndis(struct usb_desc_interface *desc) {
+	return desc->b_interface_class == 2 /* USB_CLASS_COMM */
+	               && desc->b_interface_subclass == 2
+	               && desc->b_interface_protocol == 0xff;
+}
+
 /* TODO May be to use usb bus instead of hcd and
  * get hcd from bus? */
 struct usb_dev *usb_new_device(struct usb_dev *parent,
@@ -62,6 +68,8 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 	}
 
 	if (parent) { /* It's not a Root Hub */
+		int cfg;
+
 		hub = usb_dev_to_hub(parent);
 		assert(hub);
 		/* Here we reset device and set address. */
@@ -69,11 +77,19 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 			log_error("usb_hub_port_init failed");
 			goto out_err;
 		}
-		/* Fill device configuration. */
-		if (usb_get_configuration(dev, 0) < 0) {
-			log_error("usb_get_configuration failed");
-			goto out_err;
-		}
+
+		cfg = -1;
+		do {
+			if (++cfg > 0) {
+				usb_free_configuration(dev);
+			}
+			/* Fill device configuration. */
+			if (usb_get_configuration(dev, cfg) < 0) {
+				log_error("usb_get_configuration failed");
+				goto out_err;
+			}
+		/* Skip Microsoft's RNDIS */
+		} while (is_rndis(dev->iface_desc[0]));
 
 		/* Set device default configuration. */
 		/* http://www.usbmadesimple.co.uk/ums_4.htm */
@@ -81,8 +97,8 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 		 * request will have wValue set to 1, which will select the first configuration.
 		 * Set Configuration can also be used, with wValue set to 0, to deconfigure the device.
 		 */
-		if (usb_set_configuration(dev, 1) < 0) {
-			log_error("usb_get_configuration failed");
+		if (usb_set_configuration(dev, cfg == 0 ? 1 : cfg) < 0) {
+			log_error("usb_set_configuration failed");
 			goto out_err;
 		}
 	}
