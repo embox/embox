@@ -19,7 +19,7 @@
 #include "netfront.h"
 //add this for unmask
 #include <xen/event.h>
-
+#include <grant_table.h>
 #define XS_MSG_LEN 256
 
 #define ASSERT(x)                           \
@@ -183,6 +183,7 @@ static inline int xennet_rxidx(RING_IDX idx)
 {
     return idx & (NET_RX_RING_SIZE - 1);
 }
+#if 0
 static void rx_packet(unsigned char* data, int len, void* arg, struct net_device *embox_dev) 
 {
 	
@@ -225,6 +226,7 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 #endif
 	printk("]\n");
 }
+#endif
 void network_rx(struct netfront_dev *dev, struct net_device *embox_dev)
 {
     RING_IDX rp,cons,req_prod;
@@ -252,25 +254,24 @@ moretodo:
 
         buf = &dev->rx_buffers[id];
         page = (unsigned char*)buf->page;
-//TODO
-        //gnttab_end_access(buf->gref);
+
+        gnttab_end_access(buf->gref);
 
         if (rx->status > NETIF_RSP_NULL) {
-#ifdef HAVE_LIBC
-            if (dev->netif_rx == NETIF_SELECT_RX) {
-                int len = rx->status;
-                ASSERT(current == main_thread);
-                if (len > dev->len)
-                    len = dev->len;
-                memcpy(dev->data, page+rx->offset, len);
-                dev->rlen = len;
-                /* No need to receive the rest for now */
-                dobreak = 1;
-            } else
-#endif
 		        //dev->netif_rx(page+rx->offset, rx->status, dev->netif_rx_arg, embox_dev);
-				print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
-				rx_packet(page+rx->offset, rx->status, dev->netif_rx_arg, embox_dev);
+				//unsigned char* p = page+rx->offset;
+				
+				struct sk_buff *skb;
+				if (!(skb = skb_alloc(rx->status))) {
+					return;
+				}
+				//host_net_rx(hnet, skb->mac.raw, len);
+				memcpy(skb->mac.raw, page+rx->offset, skb->len);
+				skb->dev = embox_dev;
+				netif_rx(skb);
+				//rx_packet(p, rx->status, dev->netif_rx_arg, embox_dev);
+				//print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
+				
         }
     }
     dev->rx.rsp_cons=cons;
@@ -457,7 +458,6 @@ int netfront_priv_init(struct netfront_dev *dev) {
 	unsigned char rawmac[6],
 	char **ip
 ) {*/
-	unsigned char rawmac[6];
 	char *ip = (char *) malloc(16);
 	ip="192.168.2.2";
 
@@ -535,22 +535,16 @@ int netfront_priv_init(struct netfront_dev *dev) {
 #endif
 
     //if (rawmac)
-        sscanf(dev->mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-			   &rawmac[0],
-			   &rawmac[1],
-			   &rawmac[2],
-			   &rawmac[3],
-			   &rawmac[4],
-			   &rawmac[5]);
+
 	
 
 	printk("nodename: %s\n"
 		   "backend: %s\n"
-		   "mac: %s\n"
+		   //"mac: %s\n"
 		   "ip[hardcoded]: %s\n",
 		   dev->nodename,
 		   dev->backend,
-		   dev->mac,
+		   //dev->mac,
 		   ip);
 /*
 	while(1) {

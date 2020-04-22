@@ -25,23 +25,40 @@
 EMBOX_UNIT_INIT(xen_net_init);
 
 static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
-	printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!\n");
 	return ENOERR;
 }
 
 static int xen_net_start(struct net_device *dev) {
-	printk("!!!ALARM!!! xen_net_start is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_start is called, you should check the code!\n");
 	return ENOERR;
 }
 
 static int xen_net_stop(struct net_device *dev) {
-	printk("!!!ALARM!!! xen_net_stop is called, you should check the code!");
+	printk("!!!ALARM!!! xen_net_stop is called, you should check the code!\n");
 	return ENOERR;
 }
 
 static int xen_net_setmac(struct net_device *dev, const void *addr) {
-	printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!");
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
+	/*
+	struct netfront_dev *nic_priv;
+	nic_priv = netdev_priv(dev, struct netfront_dev);
+
+	unsigned char rawmac[6];
+
+	sscanf(nic_priv->mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
+		&rawmac[0],
+		&rawmac[1],
+		&rawmac[2],
+		&rawmac[3],
+		&rawmac[4],
+		&rawmac[5]);
+	*/
+	printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!\n");
+	
 	return ENOERR;
+
 }
 
 static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
@@ -96,7 +113,7 @@ static int xen_net_init(void) {
 		printk("irq_attach error: %i\n", res);
 		return res;
 	}
-
+//move it to start?
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
 		printk("inetdev_register_dev error: %i\n", res);
