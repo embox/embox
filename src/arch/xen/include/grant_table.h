@@ -15,6 +15,6 @@
 #define NR_GRANT_ENTRIES (NR_GRANT_FRAMES * PAGE_SIZE() / sizeof(grant_entry_v1_t)) //make changable
 
 int init_grant_table(int n);
-extern grant_entry_v1_t *grant_table;
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly);
+int gnttab_end_access(grant_ref_t ref);
 #endif

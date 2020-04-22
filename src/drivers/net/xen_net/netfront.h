@@ -70,16 +70,6 @@ struct netfront_dev {
     void *netif_rx_arg;
 };
 
-struct netfront_dev_list {
-    struct netfront_dev *dev;
-    unsigned char rawmac[6];
-    char *ip;
-
-    int refcount;
-
-    struct netfront_dev_list *next;
-};
-
 /*extern struct netfront_dev *init_netfront(
 	char *_nodename,
 	void (*thenetif_rx)(unsigned char* data,
@@ -89,7 +79,5 @@ struct netfront_dev_list {
 );*/
 int netfront_priv_init(struct netfront_dev *dev);
 void network_rx(struct netfront_dev *dev, struct net_device *embox_dev);
-grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame,
-		int readonly);
 
 #endif /* NETFRONT_H_ */
