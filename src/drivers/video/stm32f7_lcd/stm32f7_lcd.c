@@ -61,10 +61,10 @@ static int stm32f7_lcd_get_var(struct fb_info *info,
 
 	switch (STM32_LCD_BPP) {
 	case 16:
-		var->fmt = RGB565;
+		var->fmt = BGR565;
 		break;
 	case 32:
-		var->fmt = RGBA8888;
+		var->fmt = BGRA8888;
 		break;
 	default:
 		log_error("stm32f7_lcd_get_var unknown BPP = %d\n", STM32_LCD_BPP);
