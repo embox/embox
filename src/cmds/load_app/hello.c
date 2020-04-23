@@ -23,7 +23,7 @@ static inline long os_syscall(int syscall,
 int main(int argc, char **argv) {
 	// write(1, "hi\n", 3);
 	// syscall(SYS_write, 1, "hi\n", 3);
-	os_syscall(SYS_write, 1, "hi\n", 3, 0);
+	long ret = os_syscall(SYS_write, 1, "hi\n", 3, 0);
 	int p = x();
-	return a + p + x();
+	return ret;
 }

@@ -19,7 +19,7 @@ __trap_handler __exception_table[0x20];
 
 fastcall void exception_handler(pt_regs_t *st) {
 	if(NULL != __exception_table[st->trapno]) {
-		__exception_table[st->trapno](st->trapno, NULL);
+		__exception_table[st->trapno](st->trapno, st);
 		return;
 	}
 
