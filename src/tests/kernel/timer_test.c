@@ -1,3 +1,4 @@
+#if 0
 /**
  * @file
  *
@@ -165,3 +166,4 @@ TEST_CASE("setting mutex inside timer handler") {
 
 	test_assert(m.counter > 0);
 }
+#endif
