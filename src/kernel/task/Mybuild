@@ -16,8 +16,13 @@ module kernel_task {
 	depends embox.kernel.task.task_table_api
 }
 
+@Build(stage=2,script="true")
+@BuildDepends(third_party.lkl.lib)
 module lkl_task {
 	source "lkl_task.c"
+
+	depends embox.compat.libc.all
+	depends third_party.lkl.lib
 }
 
 module multi extends api {
