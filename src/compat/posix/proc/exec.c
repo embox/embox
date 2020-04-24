@@ -6,6 +6,7 @@
  * @date    02.06.2014
  */
 
+#include <stdlib.h>
 #include <string.h>
 #include <framework/cmd/api.h>
 #include <cmd/shell.h>
@@ -125,7 +126,31 @@ int execv(const char *path, char *const argv[]) {
 
 }
 
+static int switch_env(char *const envp[]) {
+	int rc = 0;
+
+	if (!envp)
+		return 0;
+
+	clearenv();
+
+	while (*envp != NULL) {
+		rc = putenv(*envp);
+		if (rc != 0)
+			return rc;
+		envp++;
+	}
+
+	return 0;
+}
+
 int execve(const char *path, char *const argv[], char *const envp[]) {
+	int rc = 0;
+
+	rc = switch_env(envp);
+	if (rc != 0)
+		return rc;
+
 	return execv(path, argv);
 }
 
