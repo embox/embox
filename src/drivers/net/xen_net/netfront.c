@@ -73,8 +73,8 @@ static void xenstore_interaction(struct netfront_dev *dev, char *ip) {
 		printk("[PANIC!] backend/mac failed\n");
 		return;
 	}
-	printk("backend at %s\n", dev->backend);
-	printk("mac is %s\n", dev->mac);
+	//printk("backend at %s\n", dev->backend);
+	//printk("mac is %s\n", dev->mac);
 
 	// tx
 	memset(xs_key, 0, XS_MSG_LEN);
@@ -242,7 +242,6 @@ moretodo:
     dobreak = 0;
     for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
     {
-		printk("IM IN IT");
         struct net_buffer* buf;
         unsigned char* page;
         int id;
@@ -311,7 +310,57 @@ moretodo:
 	}
 }
 #endif
+unsigned short id_global = 0;
+void netfront_xmit(struct netfront_dev *dev, unsigned char* data,int len)
+{
+    //int flags;
+    struct netif_tx_request *tx;
+    RING_IDX i;
+    int notify;
+    unsigned short id;
+    struct net_buffer* buf;
+    void* page;
 
+    BUG_ON(len > PAGE_SIZE());
+
+    //down(&dev->tx_sem);
+
+    //local_irq_save(flags);
+    //id = get_id_from_freelist(dev->tx_freelist);
+    //local_irq_restore(flags);
+	id = id_global++;
+	//printk(">>>id=%u", id);
+    
+	buf = &dev->tx_buffers[id];
+    page = buf->page;
+    if (!page)
+	page = buf->page = (char*) xen_mem_alloc(1);
+
+    i = dev->tx.req_prod_pvt;
+	
+    tx = RING_GET_REQUEST(&dev->tx, i);
+
+    memcpy(page,data,len);
+
+    buf->gref = 
+        tx->gref = gnttab_grant_access(dev->dom,virt_to_mfn(page),1);
+
+    tx->offset=0;
+    tx->size = len;
+    tx->flags=0;
+    tx->id = id;
+    dev->tx.req_prod_pvt = i + 1;
+
+    wmb();
+
+    RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->tx, notify);
+
+    if(notify) notify_remote_via_evtchn(dev->evtchn);
+
+    /*local_irq_save(flags);
+    network_tx_buf_gc(dev);
+    local_irq_restore(flags);*/
+}
 
 void init_rx_buffers(struct netfront_dev *dev)
 {
@@ -346,8 +395,6 @@ void init_rx_buffers(struct netfront_dev *dev)
 	wmb();
 
     RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-
-	printk(">>>>>notify=%i\n", notify);
     
 	if (notify) 
 	{
@@ -411,77 +458,23 @@ void setup_netfront(struct netfront_dev *dev)
 	alloc_evtchn(&dev->evtchn);
 }
 
-void print_info() 
-{
-	long ret;
-    domid_t domid = DOMID_SELF;
-	ret = HYPERVISOR_memory_op(XENMEM_maximum_reservation, &domid);
-	unsigned long nr_max_pages;
-	nr_max_pages = ret;
-    printk("XENMEM_maximum_reservation=%ld\n", nr_max_pages);
-
-/*	int rc;
-//useless: адреса за пределами видимости domU, а доступ можно получить просто так -- del this
-	struct xen_machphys_mapping mpm;
-    rc = HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mpm);
-	printk("XENMEM_machphys_mapping=%p, %d\n", (void*)rc, rc);
-	unsigned long *mp = (unsigned long *)mpm.v_start;
-	printk("v_start = %ld,%ld,%ld,%ld\n", mp[0],mp[1],mp[2],mp[3]);
-// ничего не происходит -- del this
-	struct xen_machphys_mfn_list mpl;
-	unsigned long frames[100];
-	set_xen_guest_handle(mpl.extent_start, frames);
-	mpl.nr_extents = 100;
-    rc = HYPERVISOR_memory_op(XENMEM_machphys_mfn_list, &mpl);
-
-	printk("XENMEM_machphys_mfn_list=%p, %d\n", (void*)rc, rc);
-*/
-/* also returns only 32 frames -- del this
-    struct xen_memory_reservation reservation = {
-        .domid        = DOMID_SELF
-    };
-	static unsigned long balloon_frames[256];
-    set_xen_guest_handle(reservation.extent_start, balloon_frames);
-	reservation.extent_order = 3;
-    reservation.nr_extents = 256;
-    int rc;
-	rc = HYPERVISOR_memory_op(XENMEM_populate_physmap, &reservation);
-	printk("XENMEM_populate_physmap=%d\n", rc);
-*/
-}
-
 int netfront_priv_init(struct netfront_dev *dev) {
-/*struct netfront_dev *init_netfront(
-	char *_nodename,
-	void (*thenetif_rx)(unsigned char* data,
-		int len, void* arg),
-	unsigned char rawmac[6],
-	char **ip
-) {*/
 	char *ip = (char *) malloc(16);
 	ip="192.168.2.2";
 
 	printk(">>>>>init_netfront\n");
-	print_info();
 	char nodename[256];
 	static int netfrontends = 0;
 
 	snprintf(nodename, sizeof(nodename), "device/vif/%d", netfrontends);
-/*
-	struct netfront_dev *dev = NULL;
-	dev = malloc(sizeof(*dev));
-	
-*/
 	
 	memset(dev, 0, sizeof(*dev));
 	dev->nodename = strdup(nodename);
 	printk(">>>>>>>>>>dev->dom=%d\n",dev->dom);
-	//dev->netif_rx = thenetif_rx;
 	
 	setup_netfront(dev);
 
 	xenstore_interaction(dev, ip);
-
 	
 	//init_rx_buffers(dev);
 
@@ -527,17 +520,6 @@ int netfront_priv_init(struct netfront_dev *dev) {
 	printk("backend %p %d %d\n", dev->backend, sizeof(dev->backend),
 			sizeof(dev->nodename));
 
-#if 0 //DEBUG
-	for (i = 0; i < NET_RX_RING_SIZE; i++) 
-    {
-		printk("addr for %d: %p\n", i, RING_GET_REQUEST(&dev->rx, i));
-	}
-#endif
-
-    //if (rawmac)
-
-	
-
 	printk("nodename: %s\n"
 		   "backend: %s\n"
 		   //"mac: %s\n"
@@ -546,11 +528,6 @@ int netfront_priv_init(struct netfront_dev *dev) {
 		   dev->backend,
 		   //dev->mac,
 		   ip);
-/*
-	while(1) {
-		network_rx(dev);
-	}
-*/
-	//return dev;
+
 	return 0;
 }

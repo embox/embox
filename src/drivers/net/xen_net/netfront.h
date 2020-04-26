@@ -19,7 +19,6 @@
 #include <xen/event_channel.h>
 #include <xen_memory.h>
 
-
 //net
 #include <net/netdevice.h>
 
@@ -31,10 +30,6 @@
 
 #define NET_TX_RING_SIZE __CONST_RING_SIZE(netif_tx, PAGE_SIZE())
 #define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE())
-
-// #define wmb() __asm__("dsb":::"memory");
-
-
 
 struct net_buffer {
     void* page;
@@ -70,14 +65,8 @@ struct netfront_dev {
     void *netif_rx_arg;
 };
 
-/*extern struct netfront_dev *init_netfront(
-	char *_nodename,
-	void (*thenetif_rx)(unsigned char* data,
-			int len, void* arg),
-	unsigned char rawmac[6],
-	char **ip
-);*/
 int netfront_priv_init(struct netfront_dev *dev);
 void network_rx(struct netfront_dev *dev, struct net_device *embox_dev);
+void netfront_xmit(struct netfront_dev *dev, unsigned char* data,int len);
 
 #endif /* NETFRONT_H_ */

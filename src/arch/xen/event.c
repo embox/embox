@@ -151,7 +151,7 @@ void do_hypervisor_callback(struct pt_regs *regs)
 			/* Handler the event */
 			if(port==8 || port == 9)
 			{
-				printk(">>>>>IRQ=%u from {8, 9} is called\n", port);
+				//printk(">>>>>IRQ=%u from {8, 9} is called\n", port);
 			}
 			handle(port);
 		}
