@@ -65,7 +65,6 @@ int alloc_page(unsigned long *va, unsigned long *mfn) {
 	printk("alloc page #%d\n", alloc_page_counter);
 	if(alloc_page_counter == 600)
 	{
-		printk("KRITICAL ERROR!!!: ENOMEM\n");
 		return -ENOMEM;
 	}
 //ask for mem (for rings txs rxs)
@@ -120,6 +119,7 @@ void get_max_pages(void) {
     }
 
     nr_max_pages = ret;
+    
     //printk("Maximum memory size: %ld pages\n", nr_max_pages);
 }
 

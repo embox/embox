@@ -23,14 +23,19 @@
 #include "netfront.h"
 
 EMBOX_UNIT_INIT(xen_net_init);
-
+#include <kernel/sched/sched_lock.h>
 static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
-	printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!\n");
+//TODO: add lock!!!
+	sched_lock();
+	netfront_xmit(netdev_priv(dev, struct netfront_dev), skb->mac.raw, skb->len );
+	//printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!\n");
+	sched_unlock();
 	return ENOERR;
 }
 
 static int xen_net_start(struct net_device *dev) {
-	printk("!!!ALARM!!! xen_net_start is called, you should check the code!\n");
+	//printk("!!!ALARM!!! xen_net_start is called, you should check the code!\n");
+//TODO
 	return ENOERR;
 }
 
@@ -55,16 +60,17 @@ static int xen_net_setmac(struct net_device *dev, const void *addr) {
 		&rawmac[4],
 		&rawmac[5]);
 	*/
-	printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!\n");
+	//printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!\n");
 	
 	return ENOERR;
 
 }
 
 static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
-	printk("======>IRQ:%u\n",irq_num);
+	//printk("======>IRQ:%u\n",irq_num);
 //TODO: Implement handler
 //TODO: need save flags?
+sched_lock();
 	struct net_device *dev;
 	struct netfront_dev *nic_priv;
 
@@ -72,7 +78,9 @@ static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	nic_priv = netdev_priv(dev, struct netfront_dev);
 
 	network_rx(nic_priv, dev);
-	printk("======>IRQ_NONE\n");
+//TODO: clean tx
+	//printk("======>IRQ_NONE\n");
+	sched_unlock();
 	return IRQ_NONE;
 }
 
@@ -102,7 +110,6 @@ static int xen_net_init(void) {
 
 	res = netfront_priv_init(nic_priv);
 	if (res != 0) {
-		printk("PANIC1");
 		return res;
 	}
 
