@@ -29,9 +29,9 @@ struct ps2_mouse_indev {
 };
 
 //http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
-static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
+static void ps_mouse_get_input_event(struct input_dev *dev) {
 	uint8_t data;
-	int ret = 0;
+	struct input_event ev;
 
 	irq_lock();
 	{
@@ -40,28 +40,27 @@ static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *e
 		if ((data & (I8042_STS_AUXOBF | I8042_STS_OBF))
 				!= (I8042_STS_AUXOBF | I8042_STS_OBF)) {
 			/* this is keyboard scan code */
-			ret = -EAGAIN;
 			goto out;
 		}
 
 		data = inb(I8042_DATA_PORT);
 		if (data == MOUSE_ACK) {
-			ret = -EAGAIN;
 			goto out;
 		}
 
-		ev->type = data;
+		ev.type = data;
 
 		data = inb(I8042_DATA_PORT);
-		ev->value = ((ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
+		ev.value = ((ev.type & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
 		data = inb(I8042_DATA_PORT);
-		ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
+		ev.value |= (ev.type & MSTAT_YSIGN ? 0xff00 : 0) | data;
 
-		ev->type  &= MSTAT_BUTMASK;
+		ev.type  &= MSTAT_BUTMASK;
+
+		input_dev_report_event(dev, &ev);
 	}
 out:
 	irq_unlock();
-	return ret;
 }
 
 static int ps_mouse_start(struct input_dev *dev) {
@@ -112,13 +111,8 @@ static struct ps2_mouse_indev mouse_dev = {
 
 static irq_return_t ps_mouse_irq_hnd(unsigned int irq_nr, void *data) {
 	struct input_dev *dev = (struct input_dev *) data;
-	struct input_event ev;
-	int ret;
 
-	ret = ps_mouse_get_input_event(dev, &ev);
-	if (!ret && dev->event_cb) {
-		input_dev_report_event(dev, &ev);
-	}
+	ps_mouse_get_input_event(dev);
 
 	return IRQ_HANDLED;
 }
