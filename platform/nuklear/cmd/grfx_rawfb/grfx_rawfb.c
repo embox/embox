@@ -38,6 +38,7 @@
 #include <sys/mman.h>
 
 #include <drivers/video/fb.h>
+#include <drivers/input/input_dev.h>
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -57,6 +58,63 @@
 #define WINDOW_WIDTH    800
 #define WINDOW_HEIGHT   600
 
+static inline int normalize_coord(int x, int a, int b) {
+	if (x < a) {
+		return a;
+	} else if (x > b - 1) {
+		return b - 1;
+	} else {
+		return x;
+	}
+}
+
+static void handle_mouse(struct input_dev *mouse, struct fb_info *fb_info,
+		struct rawfb_context *rawfb) {
+	static int16_t mouse_x = 0, mouse_y = 0;
+	struct input_event ev;
+
+	while (0 <= input_dev_event(mouse, &ev)) {
+		mouse_x += (ev.value >> 16) & 0xffff;
+		mouse_y -= ev.value & 0xffff;
+
+		mouse_x = normalize_coord(mouse_x, 0, fb_info->var.xres);
+		mouse_y = normalize_coord(mouse_y, 0, fb_info->var.yres);
+
+		nk_input_motion(&rawfb->ctx, mouse_x, mouse_y);
+		nk_input_button(&rawfb->ctx, NK_BUTTON_LEFT, mouse_x, mouse_y, ev.type & 0x1);
+		nk_input_button(&rawfb->ctx, NK_BUTTON_RIGHT, mouse_x, mouse_y, ev.type & 0x2);
+		nk_input_button(&rawfb->ctx, NK_BUTTON_MIDDLE, mouse_x, mouse_y, ev.type & 0x4);
+
+		/* printf("pos = (%d, %d)\n", mouse_x, mouse_y); */
+	}
+}
+
+static void handle_touchscreen(struct input_dev *ts, struct fb_info *fb_info,
+		struct rawfb_context *rawfb) {
+	struct input_event ev;
+	int type;
+	static int x = 0, y = 0;
+
+	while (0 <= input_dev_event(ts, &ev)) {
+		type = ev.type & ~TS_EVENT_NEXT;
+
+		switch (type) {
+		case TS_TOUCH_1:
+			x = normalize_coord((ev.value >> 16) & 0xffff, 0, fb_info->var.xres);
+			y = normalize_coord(ev.value & 0xffff, 0, fb_info->var.yres);
+			nk_input_button(&rawfb->ctx, NK_BUTTON_LEFT, x, y, 1);
+			nk_input_motion(&rawfb->ctx, x, y);
+			break;
+		case TS_TOUCH_1_RELEASED:
+			nk_input_button(&rawfb->ctx, NK_BUTTON_LEFT, x, y, 0);
+			break;
+		default:
+			break;
+		}
+
+	}
+}
+
 /* ===============================================================
  *
  *                          DEMO
@@ -71,6 +129,7 @@ int main(int argc, char *argv[]) {
 	struct fb_info *fb_info;
 	int bpp;
 	uint32_t width = 0, height = 0;
+	struct input_dev *mouse;
 
 	fb_info = fb_lookup(0);
 
@@ -113,8 +172,33 @@ int main(int argc, char *argv[]) {
 		exit(2);
 	}
 
+	/* Input device - mouse. */
+	if (!(mouse = input_dev_lookup(argv[argc - 1]))) {
+		fprintf(stderr, "Cannot find mouse \"%s\"\n", argv[argc - 1]);
+		exit(1);
+	}
+	if (0 > input_dev_open(mouse, NULL)) {
+		fprintf(stderr, "Failed open mouse input device\n");
+		exit(1);
+	}
+
 	while (1) {
 		/* Input */
+		nk_input_begin(&rawfb->ctx);
+		{
+			switch (mouse->type) {
+			case INPUT_DEV_MOUSE:
+				handle_mouse(mouse, fb_info, rawfb);
+				break;
+			case INPUT_DEV_TOUCHSCREEN:
+				handle_touchscreen(mouse, fb_info, rawfb);
+				break;
+			default:
+				/* Unreachable */
+				break;
+			}
+		}
+		nk_input_end(&rawfb->ctx);
 
 		/* GUI */
 		if (nk_begin(&rawfb->ctx, "Demo", nk_rect(50, 50, 200, 200),
@@ -149,20 +233,12 @@ int main(int argc, char *argv[]) {
 		/* Draw framebuffer */
 		nk_rawfb_render(rawfb, nk_rgb(30,30,30), 1);
 
-		{
-			int i, j;
-			void *rb = fb_buf, *fb = fb_info->screen_base;
-
-			for (i = 0; i < height; i++) {
-				for (j = 0; j < width; j++) {
-					pix_fmt_convert(rb, fb, 1, BGRA8888, fb_info->var.fmt);
-					rb += 4;
-					fb += bpp;
-				}
-			}
+		if (fb_info->var.fmt != BGRA8888) {
+			pix_fmt_convert(fb_buf, fb_info->screen_base, width * height,
+							BGRA8888, fb_info->var.fmt);
+		} else {
+			memcpy(fb_info->screen_base, fb_buf, width * height * bpp);
 		}
-
-		usleep(1000 * 100);
 	}
 
 	nk_rawfb_shutdown(rawfb);
