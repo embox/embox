@@ -33,3 +33,9 @@ module mmap_stub extends mmap_api {
 	source "mmap_stub.c"
 	depends embox.fs.syslib.idesc_mmap_api
 }
+
+module mprotect {
+	source "mprotect.c"
+
+	depends mmap
+}
