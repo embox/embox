@@ -1,21 +1,12 @@
-diff -aur -x configure ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h
---- ../nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b-orig/nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-01-25 01:06:59.000000000 +0300
-+++ nuklear-ef2dcd3b779647e0140bb78863cb8439774e277b/nuklear.h	2017-11-28 16:56:56.700951340 +0300
-@@ -272,7 +272,7 @@
-  */
- #ifndef NK_API
- #ifdef NK_PRIVATE
--#define NK_API static
-+#define NK_API static inline
- #else
- #define NK_API extern
+diff -aur Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/nuklear.h ../build/extbld/third_party/lib/nuklear/Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/nuklear.h
+--- Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/nuklear.h	2020-04-17 11:20:02.000000000 +0300
++++ ../build/extbld/third_party/lib/nuklear/Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/nuklear.h	2020-04-25 16:16:47.744292915 +0300
+@@ -264,7 +264,7 @@
  #endif
-@@ -446,7 +446,7 @@
- struct nk_style_window;
- 
- enum {nk_false, nk_true};
--struct nk_color {nk_byte r,g,b,a;};
-+struct nk_color {nk_byte r,g,b,a;} __attribute__ ((aligned(4)));
- struct nk_colorf {float r,g,b,a;};
- struct nk_vec2 {float x,y;};
- struct nk_vec2i {short x, y;};
+ #ifndef NK_LIB
+   #ifdef NK_SINGLE_FILE
+-    #define NK_LIB static
++    #define NK_LIB static inline
+   #else
+     #define NK_LIB extern
+   #endif
