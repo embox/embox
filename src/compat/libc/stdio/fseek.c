@@ -32,6 +32,9 @@ int fseek(FILE *file, long int offset, int origin) {
 		return -1;
 	}
 
+	/* undo ungetc() and clear EOF flag */
+	file->has_ungetc = 0;
+	file->flags &= ~IO_EOF_;
 	return 0;
 }
 
@@ -83,9 +86,14 @@ int fsetpos(FILE *stream, const fpos_t *pos) {
 		return -1;
 	}
 
+	/* undo ungetc() and clear EOF flag */
+	stream->has_ungetc = 0;
+	stream->flags &= ~IO_EOF_;
 	return 0;
 }
 
 void rewind(FILE *file) {
-	fseek(file, 0L, SEEK_SET);
+	if (!fseek(file, 0L, SEEK_SET)) {
+		clearerr(file);
+	}
 }

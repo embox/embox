@@ -76,9 +76,6 @@ extern int getchar(void);
 
 extern int ungetc(int c, FILE *stream);
 
-/* ungetc() for stdin */
-int ungetchar(int ch);
-
 extern void perror(const char *s);
 
 /**

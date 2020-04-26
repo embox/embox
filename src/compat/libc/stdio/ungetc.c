@@ -14,14 +14,13 @@
 int ungetc(int ch, FILE *file) {
 	if (NULL == file) {
 		SET_ERRNO(EBADF);
-		return -1;
+		return EOF;
 	}
-	file->ungetc = (char) ch;
-	file->has_ungetc = 1;
+	if (EOF != ch) {
+		file->ungetc = (char) ch;
+		file->has_ungetc = 1;
+		file->flags &= ~IO_EOF_;
+	}
 	return ch;
-}
-
-int ungetchar(int ch) {
-	return ungetc(ch, stdin);
 }
 
