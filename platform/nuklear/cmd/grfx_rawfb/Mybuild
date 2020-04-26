@@ -1,0 +1,21 @@
+package embox.cmd.grfxs
+
+@AutoCmd
+@Cmd(name="grfx_rawfb",
+	help="This command just run example with nuklear graphics.",
+	man='''
+		NAME
+			grfx_rawfb
+		SYNOPSIS
+			It provides graphics by nuklear GUI. 
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@BuildDepends(third_party.lib.nuklear)
+module grfx_rawfb {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
+	source "grfx_rawfb.c"
+
+	depends third_party.lib.nuklear
+	depends embox.driver.input.core
+}
