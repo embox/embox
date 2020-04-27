@@ -11,6 +11,9 @@ module core {
 	@IncludeExport(path="drivers/input")
 	source "keymap.h"
 
+	@IncludeExport(path="drivers/input")
+	source "input_codes.h"
+
 	depends embox.kernel.irq
 	depends embox.util.dlist
 	depends embox.kernel.lthread.lthread

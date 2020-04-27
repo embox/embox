@@ -12,7 +12,6 @@
 #include <util/math.h>
 #include <kernel/irq.h>
 #include <drivers/input/input_dev.h>
-#include <drivers/input/touchscreen.h>
 #include <drivers/video/fb.h>
 
 #include <drivers/input/stm32cube_ts.h>
