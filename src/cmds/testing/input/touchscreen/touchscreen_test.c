@@ -9,7 +9,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <drivers/input/input_dev.h>
-#include <drivers/input/touchscreen.h>
 #include <drivers/video/fb.h>
 
 /* Cursor is 12 x 12 */
