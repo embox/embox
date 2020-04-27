@@ -29,14 +29,14 @@
 #define SP804_T1_MIS    (SP804_BASE + 0x14) /* Timer1 Masked Interrupt Status Register */
 #define SP804_T1_BGL    (SP804_BASE + 0x18) /* Timer1 Background Load Register */
 
-#define SP804_CR_MASK           (0b11101111) /* Mask for bits 0-7 */
-#define SP804_CR_ONESHOT        (0 << 0) /* OneShot bit; 0 -> wrapping mode, 1 -> one-shot mode */
-#define SP804_CR_TIMERSIZE      (0 << 1) /* TimerSize bit; 0 -> 16-bit counter, 1 -> 32-bit counter */
-#define SP804_CR_TIMERPRE       (0 << 2) /* Prescale bits; 0 -> div by 1, 1 -> div by 16, 2 -> div by 256 */
-#define SP804_CR_INTEN          (1 << 5) /* InterruptEnable bit */
-#define SP804_CR_TIMERMODE      (0 << 6) /* TimerMode bit; 0 -> free-running mode, 1 -> periodic mode */
-#define SP804_CR_TIMEREN        (1 << 7) /* TimerEnable bit */
-#define SP804_ICR_CLEAR         (1 << 0) /* InterruptClear bit */
+#define SP804_CR_MASK       (0b11101111) /* Mask for bits 0-7 */
+#define SP804_CR_WRAPPING   (0 << 0) /* OneShot bit */
+#define SP804_CR_32BIT      (1 << 1) /* TimerSize bit */
+#define SP804_CR_TIMERPRE   (0 << 2) /* Prescale bits */
+#define SP804_CR_INTEN      (1 << 5) /* InterruptEnable bit */
+#define SP804_CR_PERIODIC   (1 << 6) /* TimerMode bit */
+#define SP804_CR_TIMEREN    (1 << 7) /* TimerEnable bit */
+#define SP804_ICR_CLEAR     (1 << 0) /* InterruptClear bit */
 
 #define SP804_PRESCALE          1 /* Prescaler operation - divide the rate of master clock */
 #define SP804_LR_VAL            ((SP804_TIMCLK) / (SP804_PRESCALE * SP804_TARGET_HZ))
@@ -61,15 +61,14 @@ static int sp804_init(void) {
 }
 
 static int sp804_config(struct time_dev_conf * conf) {
-    REG32_CLEAR(SP804_T1_CR, SP804_CR_MASK); /* Unset bits 0-7, also disables the timer to proceed with new config settings */
-
-    REG32_ORIN(SP804_T1_CR, (SP804_CR_ONESHOT | SP804_CR_TIMERMODE)); /* Select wrapping, free-running mode */
-    REG32_ORIN(SP804_T1_CR, SP804_CR_TIMERSIZE); /* Select 32-bit counter mode */
-    REG32_ORIN(SP804_T1_CR, SP804_CR_TIMERPRE); /* Set prescaler rate */
-    REG32_ORIN(SP804_T1_CR, SP804_CR_INTEN); /* Enable interrupts */
+    /* Unset bits 0-7, also disables the timer to proceed with new config settings */
+    REG32_CLEAR(SP804_T1_CR, SP804_CR_MASK);
 
     REG32_STORE(SP804_T1_LR, SP804_LR_VAL); /* Don't care in free-running mode */
-    REG32_ORIN(SP804_T1_CR, SP804_CR_TIMEREN); /* Enable timer */
+
+    /* setup Timer 1 as 32-bit interruptable periodic clocksource */
+    REG32_STORE(SP804_T1_CR, SP804_CR_32BIT | SP804_CR_INTEN | 
+                SP804_CR_PERIODIC | SP804_CR_TIMEREN);
 
     return 0;
 }
