@@ -7,29 +7,27 @@
  */
 #include <embox/unit.h>
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <errno.h>
 #include <string.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <kernel/printk.h>
-#include <defines/null.h>
-
 #include <kernel/irq.h>
 
 #include "xen_net.h"
 #include "xs_info.h"
 #include "netfront.h"
+#include <net/l2/ethernet.h>
+#include <net/inetdevice.h>
+#include <kernel/sched/sched_lock.h>
 
 EMBOX_UNIT_INIT(xen_net_init);
-#include <kernel/sched/sched_lock.h>
+
 static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 //TODO: add lock!!!
-	sched_lock();
+
 	netfront_xmit(netdev_priv(dev, struct netfront_dev), skb->mac.raw, skb->len );
 	//printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!\n");
-	sched_unlock();
+
 	return ENOERR;
 }
 
@@ -70,17 +68,31 @@ static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	//printk("======>IRQ:%u\n",irq_num);
 //TODO: Implement handler
 //TODO: need save flags?
-sched_lock();
+
 	struct net_device *dev;
 	struct netfront_dev *nic_priv;
 
 	dev = dev_id;
 	nic_priv = netdev_priv(dev, struct netfront_dev);
 
+    sched_lock();
+#ifndef FEATURE_SPLIT_CHANNELS 
+    network_tx_buf_gc(nic_priv);
+#endif
 	network_rx(nic_priv, dev);
-//TODO: clean tx
-	//printk("======>IRQ_NONE\n");
 	sched_unlock();
+	return IRQ_NONE;
+}
+static irq_return_t xen_net_irq_tx(unsigned int irq_num, void *dev_id) {
+	struct net_device *dev;
+	struct netfront_dev *nic_priv;
+
+	dev = dev_id;
+	nic_priv = netdev_priv(dev, struct netfront_dev);
+
+sched_lock();
+	network_tx_buf_gc(nic_priv);
+sched_unlock();
 	return IRQ_NONE;
 }
 
@@ -103,16 +115,29 @@ static int xen_net_init(void) {
 		return -ENOMEM;
 	}
 	nic->drv_ops = &xen_net_drv_ops;
-	//nic->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
-	nic_priv = netdev_priv(nic, struct netfront_dev);
 
-	//virtio_config(nic);
+	nic_priv = netdev_priv(nic, struct netfront_dev);
+	memset(nic_priv, 0, sizeof(*nic_priv));
 
 	res = netfront_priv_init(nic_priv);
 	if (res != 0) {
 		return res;
 	}
-
+#ifdef FEATURE_SPLIT_CHANNELS 
+	nic->irq = nic_priv->evtchn_rx;
+	res = irq_attach(nic_priv->evtchn_rx, xen_net_irq, IF_SHARESUP, nic,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+	res = irq_attach(nic_priv->evtchn_tx, xen_net_irq_tx, IF_SHARESUP, nic,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+#else
 	nic->irq = nic_priv->evtchn;
 	res = irq_attach(nic_priv->evtchn, xen_net_irq, IF_SHARESUP, nic,
 			"xen_net");
@@ -120,64 +145,12 @@ static int xen_net_init(void) {
 		printk("irq_attach error: %i\n", res);
 		return res;
 	}
+#endif
+
 //move it to start?
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
 		printk("inetdev_register_dev error: %i\n", res);
 	}
 	return res;
-
-
-
-#if 0 //old stuff
-	int res = 0;
-	struct net_device *nic;
-
-	nic = etherdev_alloc(sizeof(struct host_net_adp));
-	if (nic == NULL) {
-		return -ENOMEM;
-	}
-	nic->drv_ops = &xen_net_drv_ops;
-
-	//xenstore_info();
-
-	char nodename[] = "device/vif/0";
-	unsigned char rawmac[6];
-	char *ip = (char *) malloc(16);
-	ip="192.168.2.2";
-	dev = init_netfront(nodename, print_packet, rawmac, &ip);
-	printk(">>>>>afterinit_netfront\n");
-	
-#ifdef FEATURE_SPLIT_CHANNELS //false
-    //Danger! hardcode of dev->evtchn_rx = 9
-	nic->irq = 9;
-	res = irq_attach(9, xen_net_irq, IF_SHARESUP, nic,
-			"xen_net");
-	if (res < 0) {
-		printk("irq_attach error: %i\n", res);
-		return res;
-	}
-#else
-	nic->irq = dev->evtchn;
-	res = irq_attach(dev->evtchn, xen_net_irq, IF_SHARESUP, nic,
-			"xen_net");
-	if (res < 0) {
-		printk("irq_attach error: %i\n", res);
-		return res;
-	}
-#endif
-/*
-	printk("%s\n", ip);
-	printk("nodename: %s\n"
-		   "backend: %s\n"
-		   "mac: %s\n"
-		   "ip: %s\n",
-		   dev->nodename,
-		   dev->backend,
-		   dev->mac,
-		   ip);
-*/
-	//free(ip);
-	return inetdev_register_dev(nic);
-#endif
 }

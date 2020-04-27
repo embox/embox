@@ -12,12 +12,13 @@
 #include <xen_memory.h>
 #include <barrier.h>
 #include <kernel/printk.h>
+#include <xen_hypercall-x86_32.h>
+
 static grant_ref_t ref = 10; // first 8 entries are reserved 
 
 grant_entry_v1_t *grant_table;
 
-grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly)
-{
+grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly) {
 	//printk("grant access for ref:%d on addr:%p\n", ref, &grant_table[ref]);
     
     grant_table[ref].frame = frame;
@@ -28,6 +29,13 @@ grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly
 
 	//printk("frame setuped\n");
     return ref++;
+}
+
+grant_ref_t gnttab_regrant_access(grant_ref_t gref, int readonly) {
+    wmb();
+    readonly *= GTF_readonly;
+    grant_table[gref].flags = GTF_permit_access | readonly;
+    return gref;
 }
 
 struct __synch_xchg_dummy { unsigned long a[100]; };
@@ -86,8 +94,6 @@ int gnttab_end_access(grant_ref_t ref)
 
     return 1;
 }
-
-#include <xen_hypercall-x86_32.h>
 
 int get_max_nr_grant_frames() {
     struct gnttab_query_size query;

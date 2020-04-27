@@ -9,24 +9,11 @@
 #ifndef NETFRONT_H_
 #define NETFRONT_H_
 
-#include <stdint.h>
-
-#include <xen/xen.h>
-#include <xen/io/ring.h>
+#include <xen/grant_table.h>
 #include <xen/io/netif.h>
-#include <xen/io/xenbus.h>
-
 #include <xen/event_channel.h>
 #include <xen_memory.h>
-
-//net
 #include <net/netdevice.h>
-
-#include <net/inetdevice.h>
-#include <arpa/inet.h>
-#include <net/l2/ethernet.h>
-#include <net/l0/net_entry.h>
-
 
 #define NET_TX_RING_SIZE __CONST_RING_SIZE(netif_tx, PAGE_SIZE())
 #define NET_RX_RING_SIZE __CONST_RING_SIZE(netif_rx, PAGE_SIZE())
@@ -49,6 +36,7 @@ struct netfront_dev {
     struct netif_rx_front_ring rx;
     grant_ref_t tx_ring_ref;
     grant_ref_t rx_ring_ref;
+    #define FEATURE_SPLIT_CHANNELS
 #ifdef FEATURE_SPLIT_CHANNELS //false
     evtchn_port_t evtchn_tx;
     evtchn_port_t evtchn_rx;
@@ -58,8 +46,7 @@ struct netfront_dev {
     char *nodename;
     char backend[64];
     char mac[64];
-
-    // xenbus_event_queue events;
+    char default_mac[64];
 
     void (*netif_rx)(unsigned char* data, int len, void* arg);
     void *netif_rx_arg;
@@ -68,5 +55,5 @@ struct netfront_dev {
 int netfront_priv_init(struct netfront_dev *dev);
 void network_rx(struct netfront_dev *dev, struct net_device *embox_dev);
 void netfront_xmit(struct netfront_dev *dev, unsigned char* data,int len);
-
+void network_tx_buf_gc(struct netfront_dev *dev);
 #endif /* NETFRONT_H_ */
