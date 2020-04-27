@@ -17,4 +17,5 @@
 int init_grant_table(int n);
 grant_ref_t gnttab_grant_access(domid_t domid, unsigned long frame, int readonly);
 int gnttab_end_access(grant_ref_t ref);
-#endif
+grant_ref_t gnttab_regrant_access(grant_ref_t gref, int readonly);
+#endif /* GRANT_TABLE_H_ */

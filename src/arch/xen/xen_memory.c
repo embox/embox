@@ -114,13 +114,13 @@ void get_max_pages(void) {
     ret = HYPERVISOR_memory_op(XENMEM_maximum_reservation, &domid);
     if ( ret < 0 )
     {
-        //printk("Could not get maximum pfn\n");
+        printk("Could not get maximum pfn\n");
         return;
     }
 
     nr_max_pages = ret;
     
-    //printk("Maximum memory size: %ld pages\n", nr_max_pages);
+    printk("Maximum memory size: %ld pages\n", nr_max_pages);
 }
 
 void do_exit(void) {
@@ -144,11 +144,11 @@ static void new_pt_frame(unsigned long *pt_pfn, unsigned long prev_l_mfn,
     mmu_update_t mmu_updates[1];
     int rc;
 
-    /*
+    
     printk("Allocating new L%ld pt frame for pfn=%lx, "
           "prev_l_mfn=%lx, offset=%lx\n", 
           level, *pt_pfn, prev_l_mfn, offset);
-*/
+
     /* We need to clear the page, otherwise we might fail to map it
        as a page table page */
     memset((void*) pt_page, 0, PAGE_SIZE());  
@@ -157,7 +157,7 @@ static void new_pt_frame(unsigned long *pt_pfn, unsigned long prev_l_mfn,
     if(!(level >= 1 && level <= PAGETABLE_LEVELS))
     {
         do_exit();
-        //printk("CRITICAL ERROR: FIX me!!!!\n");
+        printk("CRITICAL ERROR: FIX me!!!!\n");
     }
 
     /* Make PFN a page table page */
@@ -172,10 +172,10 @@ static void new_pt_frame(unsigned long *pt_pfn, unsigned long prev_l_mfn,
     
     if ( (rc = HYPERVISOR_mmu_update(mmu_updates, 1, NULL, DOMID_SELF)) < 0 )
     {
-        /*
+        
         printk("ERROR: PTE for new page table page could not be updated\n");
         printk("       mmu_update failed with rc=%d\n", rc);
-        */
+        
         do_exit();
     }
 
@@ -187,7 +187,7 @@ static void new_pt_frame(unsigned long *pt_pfn, unsigned long prev_l_mfn,
 
     if ( (rc = HYPERVISOR_mmu_update(mmu_updates, 1, NULL, DOMID_SELF)) < 0 ) 
     {
-        //printk("ERROR: mmu_update failed with rc=%d\n", rc);
+        printk("ERROR: mmu_update failed with rc=%d\n", rc);
         do_exit();
     }
 
@@ -212,15 +212,15 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
 
     if ( *max_pfn >= virt_to_pfn(HYPERVISOR_VIRT_START) )
     {
-        /*printk("WARNING: Mini-OS trying to use Xen virtual space. "
+        printk("WARNING: Mini-OS trying to use Xen virtual space. "
                "Truncating memory from %luMB to ",
                ((unsigned long)pfn_to_virt(*max_pfn) - VIRT_START)>>20);
-        */
+        
         *max_pfn = virt_to_pfn(HYPERVISOR_VIRT_START - PAGE_SIZE());
-        /*
+        
         printk("%luMB\n",
                ((unsigned long)pfn_to_virt(*max_pfn) - VIRT_START)>>20);
-        */
+        
     }
 
 
@@ -228,7 +228,7 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
     end_address = (unsigned long)pfn_to_virt(*max_pfn);
 
     /* We worked out the virtual memory range to map, now mapping loop */
-    //printk("Mapping memory range 0x%lx - 0x%lx\n", start_address, end_address);
+    printk("Mapping memory range 0x%lx - 0x%lx\n", start_address, end_address);
 
     while ( start_address < end_address )
     {
@@ -270,10 +270,10 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
             rc = HYPERVISOR_mmu_update(mmu_updates, count, NULL, DOMID_SELF);
             if ( rc < 0 )
             {
-                /*
+                
                 printk("ERROR: build_pagetable(): PTE could not be updated\n");
                 printk("       mmu_update failed with rc=%d\n", rc);
-                */
+                
                 do_exit();
             }
             count = 0;
@@ -314,8 +314,8 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p) {
         max_pfn = MAX_MEM_SIZE / PAGE_SIZE() - 1;
     }
 
-    //printk("  start_pfn: %lx\n", start_pfn);
-    //printk("    max_pfn: %lx\n", max_pfn);
+    printk("  start_pfn: %lx\n", start_pfn);
+    printk("    max_pfn: %lx\n", max_pfn);
 
     build_pagetable(&start_pfn, &max_pfn);
     //clear_bootstrap();
