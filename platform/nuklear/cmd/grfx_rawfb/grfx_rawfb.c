@@ -209,6 +209,11 @@ int main(int argc, char *argv[]) {
 			static int property = 20;
 			static float value = 0.6f;
 
+			if (mouse->type == INPUT_DEV_TOUCHSCREEN) {
+				/* Do not show cursor when using touchscreen */
+				nk_style_hide_cursor(&rawfb->ctx);
+			}
+
 			nk_layout_row_static(&rawfb->ctx, 30, 80, 1);
 			if (nk_button_label(&rawfb->ctx, "button"))
 				fprintf(stdout, "button pressed\n");
