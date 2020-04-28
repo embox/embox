@@ -225,14 +225,14 @@ int change_state_connected(struct netfront_dev *dev) {
 	XenbusState state = XenbusStateUnknown;
 
 	int count = 0;
-	while (count < 10 && state != XenbusStateConnected) {
+	while (count < 10000 && state != XenbusStateConnected) {
 		memset(xs_key, 0, XS_MSG_LEN);
 		sprintf(xs_key, "%s/state", dev->backend);
 		memset(xs_value, 0, XS_MSG_LEN);
 		xenstore_read(xs_key, xs_value, XS_MSG_LEN);
 		printk(">>>State is:%s\n",xs_value);
 		state = atoi(xs_value);
-		sleep(5);
+		//sleep(5);
 		++count;
 	}
 	
@@ -508,7 +508,7 @@ void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len)
     BUG_ON(len > PAGE_SIZE());
 
 	sched_lock();
-    id = dev->tx.sring->req_prod;
+    id = xennet_txidx(dev->tx.sring->req_prod);
 
 	if (xennet_txidx(id+1) == dev->tx.sring->rsp_prod) {
 		printk("CATCH TAIL!!!\n\n");
