@@ -15,6 +15,8 @@
 #include <framework/mod/options.h>
 #include <module/embox/driver/input/core.h>
 
+#include <drivers/input/input_codes.h>
+
 #define INPUT_DEV_EVENT_QUEUE_LEN \
     OPTION_MODULE_GET(embox__driver__input__core, NUMBER, event_queue_len)
 

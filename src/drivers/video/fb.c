@@ -647,320 +647,91 @@ int pix_fmt_chan_bits(enum pix_fmt fmt, enum pix_chan chan) {
 	}
 }
 
-static int pix_color_scale(int val, int bits_in, int bits_out) {
-	if (bits_in == 0 || bits_out == 0) {
-		/* Should happen only if work with alpha chan */
-		return (1 << bits_out) - 1;
-	}
+/* sr - shift of red component, sg - for green, etc.
+ * dr - bits of red componen, dg - for green, etc. */
+static const struct fb_rgb_conv {
+	uint8_t sr, sg, sb, sa, dr, dg, db, da;
+} rgb_conv[] = {
+	[RGB888]   = { 0,  8,  16, 24, 8, 8, 8, 0, },
+	[BGR888]   = { 16, 8,  0,  24, 8, 8, 8, 0, },
+	[RGBA8888] = { 0,  8,  16, 24, 8, 8, 8, 8, },
+	[BGRA8888] = { 16, 8,  0,  24, 8, 8, 8, 8, },
+	[RGB565]   = { 0,  5,  11, 16, 5, 6, 5, 0, },
+	[BGR565]   = { 11, 5,  0,  16, 5, 6, 5, 0, },
+};
 
-	int in_max = (1 << bits_in) - 1;
-	int out_max = (1 << bits_out) - 1;
-
-	if (val > in_max) {
-		log_debug("Something went wrong, value is bigger"
-				"than 2^(chan bits)");
-		val = in_max;
-	}
-
-	return val * out_max / in_max;
+static inline int fb_fmt_supported(enum pix_fmt fmt) {
+	return
+		(fmt == RGB888)   || (fmt == BGR888) || (fmt == RGBA8888) ||
+		(fmt == BGRA8888) || (fmt == RGB565) || (fmt == BGR565);
 }
 
-int pix_fmt_chan_get_val(enum pix_fmt fmt, enum pix_chan chan, void *data) {
-	int tmp;
-	switch (fmt) {
-	case RGB888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return 0;
-		case RED_CHAN:
-			return tmp & 0xFF;
-		case GREEN_CHAN:
-			return (tmp >> 8) & 0xFF;
-		case BLUE_CHAN:
-			return (tmp >> 16) & 0xFF;
-		default:
-			log_error("Wrong pixel channel enum\n");
-			return 0;
-		}
-	case BGR888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return 0;
-		case RED_CHAN:
-			return (tmp >> 16) & 0xFF;
-		case GREEN_CHAN:
-			return (tmp >> 8) & 0xFF;
-		case BLUE_CHAN:
-			return tmp & 0xFF;
-		default:
-			log_error("Wrong pixel channel enum\n");
-			return 0;
-		}
-	case RGBA8888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return (tmp >> 24) & 0xFF;
-		case RED_CHAN:
-			return tmp & 0xFF;
-		case GREEN_CHAN:
-			return (tmp >> 8) & 0xFF;
-		case BLUE_CHAN:
-			return (tmp >> 16) & 0xFF;
-		default:
-			log_error("Wrong pixel channel enum\n");
-			return 0;
-		}
-	case BGRA8888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return (tmp >> 24) & 0xFF;
-		case RED_CHAN:
-			return (tmp >> 16) & 0xFF;
-		case GREEN_CHAN:
-			return (tmp >> 8) & 0xFF;
-		case BLUE_CHAN:
-			return tmp & 0xFF;
-		default:
-			log_error("Wrong pixel channel enum\n");
-			return 0;
-		}
-	case RGB565:
-		tmp = (int) *((uint16_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return 0;
-		case RED_CHAN:
-			return tmp & 0x1F;
-		case GREEN_CHAN:
-			return (tmp >> 5) & 0x3F;
-		case BLUE_CHAN:
-			return (tmp >> 11) & 0x1F;
-		default:
-			log_error("Wrong pixel channel enum\n");
-			return 0;
-		}
-	case BGR565:
-		tmp = (int) *((uint16_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return 0;
-		case RED_CHAN:
-			return (tmp >> 11) & 0x1F;
-		case GREEN_CHAN:
-			return (tmp >> 5) & 0x3F;
-		case BLUE_CHAN:
-			return tmp & 0x1F;
-		default:
-			log_error("Wrong pixel channel enum\n");
-			return 0;
-		}
-	case UNKNOWN:
-		log_error("Wrong pixel format");
-		return 0;
+static inline int fb_component_conv(int c, int in_dx, int out_dx) {
+	if (in_dx > out_dx) {
+		return c >> (in_dx - out_dx);
+	} else {
+		return c << (out_dx - in_dx);
 	}
-
-	return 0;
 }
 
-void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan, void *data, int val) {
-	int tmp;
-	int max_val = (1 << pix_fmt_chan_bits(fmt, chan)) - 1;;
+static inline void fb_copy_pixel(char *dst, int px, int bpp) {
+	int i;
 
-	if (val > max_val)
-		val = max_val;
-
-	switch (fmt) {
-	case RGB888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return;
-		case RED_CHAN:
-			tmp &= ~0x0000FF;
-			tmp |= val;
-			break;
-		case GREEN_CHAN:
-			tmp &= ~0x00FF00;
-			tmp |= val << 8;
-			break;
-		case BLUE_CHAN:
-			tmp &= ~0xFF0000;
-			tmp |= val << 16;
-			break;
-		default:
-			log_error("Wrong pixel channel enum");
-			return;
-		}
-		*((uint32_t *) data) = tmp;
-		return;
-	case BGR888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return;
-		case RED_CHAN:
-			tmp &= ~0xFF0000;
-			tmp |= val << 16;
-			break;
-		case GREEN_CHAN:
-			tmp &= ~0x00FF00;
-			tmp |= val << 8;
-			break;
-		case BLUE_CHAN:
-			tmp &= ~0x0000FF;
-			tmp |= val;
-			break;
-		default:
-			log_error("Wrong pixel channel enum");
-			return;
-		}
-		*((uint32_t *) data) = tmp;
-		return;
-	case RGBA8888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			tmp &= ~0xFF000000;
-			tmp |= val << 24;
-			break;
-		case RED_CHAN:
-			tmp &= ~0x000000FF;
-			tmp |= val;
-			break;
-		case GREEN_CHAN:
-			tmp &= ~0x0000FF00;
-			tmp |= val << 8;
-			break;
-		case BLUE_CHAN:
-			tmp &= ~0x00FF0000;
-			tmp |= val << 16;
-			break;
-		default:
-			log_error("Wrong pixel channel enum");
-			return;
-		}
-		*((uint32_t *) data) = tmp;
-		return;
-	case BGRA8888:
-		tmp = (int) *((uint32_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			tmp &= ~0xFF000000;
-			tmp |= val << 24;
-			break;
-		case RED_CHAN:
-			tmp &= ~0x00FF0000;
-			tmp |= val << 16;
-			break;
-		case GREEN_CHAN:
-			tmp &= ~0x0000FF00;
-			tmp |= val << 8;
-			break;
-		case BLUE_CHAN:
-			tmp &= ~0x000000FF;
-			tmp |= val;
-			break;
-		default:
-			log_error("Wrong pixel channel enum");
-			return;
-		}
-		*((uint32_t *) data) = tmp;
-		return;
-	case RGB565:
-		tmp = (int) *((uint16_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return;
-		case RED_CHAN:
-			tmp &= ~0x001F;
-			tmp |= val;
-			break;
-		case GREEN_CHAN:
-			tmp &= ~0x07E0;
-			tmp |= val << 5;
-			break;
-		case BLUE_CHAN:
-			tmp &= ~0xF800;
-			tmp |= val << 11;
-			break;
-		default:
-			log_error("Wrong pixel channel enum");
-			return;
-		}
-		*((uint16_t *) data) = tmp;
-		return;
-	case BGR565:
-		tmp = (int) *((uint16_t *) data);
-		switch (chan) {
-		case ALPHA_CHAN:
-			return;
-		case RED_CHAN:
-			tmp &= ~0xF800;
-			tmp |= val << 11;
-			break;
-		case GREEN_CHAN:
-			tmp &= ~0x07E0;
-			tmp |= val << 5;
-			break;
-		case BLUE_CHAN:
-			tmp &= ~0x001F;
-			tmp |= val;
-			break;
-		default:
-			log_error("Wrong pixel channel enum");
-			return;
-		}
-		*((uint16_t *) data) = tmp;
-		return;
+	switch (bpp) {
+	case 1:
+		*(uint8_t *)dst = px;
+		break;
+	case 2:
+		*(uint16_t *)dst = px;
+		break;
+	case 4:
+		*(uint32_t *)dst = px;
+		break;
 	default:
-		log_error("Unknown pixel format type");
-		return;
+		for (i = 0; i < bpp; i++) {
+			dst[i] = px & 0xff;
+			px >>= bpp;
+		}
+		break;
 	}
 }
 
 int pix_fmt_convert(void *src, void *dst, int n,
 		enum pix_fmt in, enum pix_fmt out) {
-	int src_step = pix_fmt_bpp(in) / 8;
-	int dst_step = pix_fmt_bpp(out) / 8;
-	int alpha, red, green, blue;
-	int in_bits[] = {
-		pix_fmt_chan_bits(in, ALPHA_CHAN),
-		pix_fmt_chan_bits(in, RED_CHAN),
-		pix_fmt_chan_bits(in, GREEN_CHAN),
-		pix_fmt_chan_bits(in, BLUE_CHAN)
-	};
+	int i, a, r, g, b, src_bpp, dst_bpp;
+	uint32_t in_px, out_px;
+	struct fb_rgb_conv in_cv, out_cv;
 
-	int out_bits[] = {
-		pix_fmt_chan_bits(out, ALPHA_CHAN),
-		pix_fmt_chan_bits(out, RED_CHAN),
-		pix_fmt_chan_bits(out, GREEN_CHAN),
-		pix_fmt_chan_bits(out, BLUE_CHAN)
-	};
+	if (!fb_fmt_supported(in) || !fb_fmt_supported(out)) {
+		return -1;
+	}
 
-	memset(dst, 0, n * pix_fmt_bpp(out) / 8);
+	in_cv = rgb_conv[in];
+	out_cv = rgb_conv[out];
 
-	for (int i = 0; i < n; i++) {
-		alpha = pix_fmt_chan_get_val(in, ALPHA_CHAN, src);
-		red   = pix_fmt_chan_get_val(in, RED_CHAN, src);
-		green = pix_fmt_chan_get_val(in, GREEN_CHAN, src);
-		blue  = pix_fmt_chan_get_val(in, BLUE_CHAN, src);
+	src_bpp = (in_cv.da + in_cv.dr + in_cv.dg + in_cv.db) / 8;
+	dst_bpp = (out_cv.da + out_cv.dr + out_cv.dg + out_cv.db) / 8;
 
-		alpha = pix_color_scale(alpha, in_bits[0], out_bits[0]);
-		red   = pix_color_scale(red,   in_bits[1], out_bits[1]);
-		green = pix_color_scale(green, in_bits[2], out_bits[2]);
-		blue  = pix_color_scale(blue,  in_bits[3], out_bits[3]);
+	for (i = 0; i < n; i++) {
+		in_px = *(uint32_t *)src;
 
-		pix_fmt_chan_set_val(out, ALPHA_CHAN, dst, alpha);
-		pix_fmt_chan_set_val(out, RED_CHAN,   dst, red);
-		pix_fmt_chan_set_val(out, GREEN_CHAN, dst, green);
-		pix_fmt_chan_set_val(out, BLUE_CHAN,  dst, blue);
+		a = ((in_px >> in_cv.sa) & 0xff) >> (8 - in_cv.da);
+		r = ((in_px >> in_cv.sr) & 0xff) >> (8 - in_cv.dr);
+		g = ((in_px >> in_cv.sg) & 0xff) >> (8 - in_cv.dg);
+		b = ((in_px >> in_cv.sb) & 0xff) >> (8 - in_cv.db);
 
-		src += src_step;
-		dst += dst_step;
+		a = fb_component_conv(a, in_cv.da, out_cv.da);
+		r = fb_component_conv(r, in_cv.dr, out_cv.dr);
+		g = fb_component_conv(g, in_cv.dg, out_cv.dg);
+		b = fb_component_conv(b, in_cv.db, out_cv.db);
+
+		out_px = (a << out_cv.sa) | (r << out_cv.sr) |
+		         (g << out_cv.sg) | (b << out_cv.sb);
+
+		fb_copy_pixel(dst, out_px, dst_bpp);
+
+		dst += dst_bpp;
+		src += src_bpp;
 	}
 
 	return 0;

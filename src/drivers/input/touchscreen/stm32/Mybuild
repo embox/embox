@@ -10,7 +10,6 @@ module stm32f746g_ts {
 	source "stm32_cube_touchscreen.c"
 
 	depends embox.driver.input.core
-	depends embox.driver.input.touchscreen
 
 	@NoRuntime depends third_party.bsp.stm32746g_cube.stm32f7_discovery_bsp
 	@NoRuntime depends third_party.bsp.stm32746g_cube.stm32f7_discovery_components
@@ -26,7 +25,6 @@ module stm32f769i_ts {
 	source "stm32_cube_touchscreen.c"
 
 	depends embox.driver.input.core
-	depends embox.driver.input.touchscreen
 
 	@NoRuntime depends third_party.bsp.stm32f769i_cube.stm32f7_discovery_bsp
 	@NoRuntime depends third_party.bsp.stm32f769i_cube.stm32f7_discovery_components
