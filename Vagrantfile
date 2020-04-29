@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
   end
   
   config.vm.define "xen", autostart: false do |xen|
-    xen.vm.box = "ubuntu/bionic64"
+    xen.vm.box = "bento/ubuntu-16.04"
     
     xen.vm.synced_folder ".", "/embox", type: "rsync",
 	    rsync__exclude: ".git/"
