@@ -34,6 +34,7 @@ struct uart_rx {
 POOL_DEF(uart_rx_buff, struct uart_rx, UART_DATA_BUFF_SZ);
 
 static DLIST_DEFINE(uart_rx_list);
+static int uart_rx_action(struct lthread *self);
 
 static inline struct uart *tty2uart(struct tty *tty) {
 	struct tty_uart *tu;
@@ -48,8 +49,12 @@ static int uart_rx_buff_put(struct uart *dev, int c) {
 	{
 		rx = pool_alloc(&uart_rx_buff);
 		if (!rx) {
-			irq_unlock();
-			return -1;
+			uart_rx_action(&uart_rx_irq_handler);
+			rx = pool_alloc(&uart_rx_buff);
+			if (!rx) {
+				irq_unlock();
+				return -1;
+			}
 		}
 
 		rx->uart = dev;
