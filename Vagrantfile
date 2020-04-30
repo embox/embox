@@ -23,7 +23,7 @@ Vagrant.configure("2") do |config|
       export DEBIAN_FRONTEND=noninteractive
       apt-get update
       apt-get -y upgrade
-      apt-get -y install xen-hypervisor-amd64 bridge-utils
+      apt-get -y install xen-system-amd64 bridge-utils
 
       echo "cd /embox" >> /home/vagrant/.bashrc
       echo "export PATH=$PATH:/usr/lib/xen-4.9/bin" >> /home/vagrant/.bashrc

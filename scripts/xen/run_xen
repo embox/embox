@@ -10,7 +10,6 @@ ROOD_DIR="$DIR/../../"
 SRC_DOMCONFIG="$DIR/embox.cfg"
 DOMCONFIG="/tmp/xen_embox.cfg"
 
-sudo dd if=/dev/zero of=/data/embox_disk.img bs=1M count=100
 
 # copy image to well-known location, hardcoded in xen embox.cfg
 cp $ROOD_DIR/build/base/bin/embox /tmp/xen_embox
