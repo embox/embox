@@ -1,0 +1,23 @@
+# set ip addr to interface:
+ip addr add dev eth0 192.168.2.2/24
+ip link set eth0 up
+
+# add default record to routetable:
+ip route add default via 192.168.2.1
+ip route flush cache
+
+# configure dns server
+echo 'nameserver 8.8.8.8' > /etc/resolv.conf
+
+# add default apk repository
+# echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/main" >> /etc/apk/repositories
+
+# add stable community repository (required for docker installation)
+# echo "http://dl-cdn.alpinelinux.org/alpine/v3.9/community" >> /etc/apk/repositories
+
+# Run nginx with index.html from hwproj.me in docker container
+# apk update
+# apk add docker
+# rc-update add docker boot
+# service docker start
+# docker run --name nginx -d -p 80:80 vladimirkutuev/nginx:v1

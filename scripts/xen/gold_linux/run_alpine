@@ -7,8 +7,8 @@ sudo mkdir -p /media/cdrom
 sudo mount -t iso9660 -o loop /data/alpine.iso /media/cdrom
 
 # Creating alpine domU disk
- sudo dd if=/dev/zero of=/data/alpine_disk.img bs=1M count=100
+# sudo dd if=/dev/zero of=/data/alpine_disk.img bs=1M count=3000
 
 # Creating machine with linux
-sudo xl -vvv create -f $(pwd)/alpine.cfg -c
+sudo xl -vvv create -c -f $(dirname $0)/alpine.cfg
 
