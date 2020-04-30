@@ -10,4 +10,4 @@
 "route add default gw 192.168.2.10 eth0",
 "ls",
 "cat index.html",
-"httpd index.html"
+"httpd ."

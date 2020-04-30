@@ -203,7 +203,27 @@ static int xenstore_interaction(struct netfront_dev *dev) {
 		printk("[PANIC!] Can not write request-rx-copy\n");
 		return err;
 	}
-//TODO Feature-rx-copy
+	/*
+	memset(xs_key, 0, XS_MSG_LEN);
+	sprintf(xs_key, "%s/feature-no-csum-offload", dev->nodename);
+	memset(xs_value, 0, XS_MSG_LEN);
+	sprintf(xs_value, "%u", 0);
+	err = xenstore_write(xs_key, xs_value);
+	if (err) {
+		printk("[PANIC!] Can not write request-rx-copy\n");
+		return err;
+	}
+	*/
+	memset(xs_key, 0, XS_MSG_LEN);
+	sprintf(xs_key, "%s/feature-rx-copy", dev->nodename);
+	memset(xs_value, 0, XS_MSG_LEN);
+	sprintf(xs_value, "%u", 1);
+	err = xenstore_write(xs_key, xs_value);
+	if (err) {
+		printk("[PANIC!] Can not write request-rx-copy\n");
+		return err;
+	}
+
 	return 0;
 }
 
@@ -348,6 +368,7 @@ static void rx_packet(unsigned char* data, int len, void* arg, struct net_device
 	}
 */
 }
+#elif 0
 static void print_packet(unsigned char* data, int len, void* arg) {
 
 	printk("Packet(%d): [", len);
@@ -396,19 +417,16 @@ moretodo:
 
         gnttab_end_access(buf->gref);
 
-        if (rx->status > NETIF_RSP_NULL) {
-		        //dev->netif_rx(page+rx->offset, rx->status, dev->netif_rx_arg, embox_dev);
-				//unsigned char* p = page+rx->offset;
-				
+        if (rx->status > NETIF_RSP_NULL) {				
 				struct sk_buff *skb;
 				if (!(skb = skb_alloc(rx->status))) {
 					return;
 				}
+				//printk("tv_sec:%ld, tv_usec=%ld\n", skb->tstamp.tv_sec, skb->tstamp.tv_usec);
 				memcpy(skb->mac.raw, page+rx->offset, skb->len);
+				//print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
 				skb->dev = embox_dev;
 				netif_rx(skb);
-				//rx_packet(p, rx->status, dev->netif_rx_arg, embox_dev);
-				//print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
 				
         }
     }
@@ -490,6 +508,7 @@ int more_to_do;
         /*dev->tx.sring->rsp_event =
             prod + ((dev->tx.sring->req_prod - prod) >> 1) + 1;
         mb();*/
+//TODO?
 		RING_FINAL_CHECK_FOR_RESPONSES(&dev->tx, more_to_do);
     } while (more_to_do);
 
@@ -509,7 +528,7 @@ void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len)
 
 	sched_lock();
     id = xennet_txidx(dev->tx.sring->req_prod);
-
+	//printk("id=%d\n",xennet_txidx(id));
 	if (xennet_txidx(id+1) == dev->tx.sring->rsp_prod) {
 		printk("CATCH TAIL!!!\n\n");
 		return;
