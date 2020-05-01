@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module atexit {
+	option number atexit_max = 4
+
+	@IncludeExport(path="kernel/task/resource")
+	source "atexit.h"
+
+	source "atexit.c"
+
+	depends embox.kernel.task.task_resource
+}
