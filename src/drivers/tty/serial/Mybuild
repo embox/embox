@@ -14,6 +14,7 @@ module serial {
 	depends tty
 	depends embox.driver.char_dev
 	depends embox.driver.common
+	depends embox.driver.interrupt.irqctrl_api
 }
 
 module serial_stub {

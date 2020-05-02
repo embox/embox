@@ -11,7 +11,7 @@
 #include <drivers/tty.h>
 #include <drivers/ttys.h>
 #include <drivers/serial/uart_device.h>
-
+#include <drivers/irqctrl.h>
 #include <kernel/lthread/lthread.h>
 
 #include <embox/unit.h>
@@ -42,27 +42,35 @@ static inline struct uart *tty2uart(struct tty *tty) {
 	return tu->uart;
 }
 
-static int uart_rx_buff_put(struct uart *dev, int c) {
+static int uart_rx_buff_put(unsigned int irq_nr, struct uart *dev) {
 	struct uart_rx *rx;
 
-	irq_lock();
-	{
-		rx = pool_alloc(&uart_rx_buff);
-		if (!rx) {
-			uart_rx_action(&uart_rx_irq_handler);
-			rx = pool_alloc(&uart_rx_buff);
-			if (!rx) {
-				irq_unlock();
-				return -1;
+	if (dev->tty) {
+		while (uart_hasrx(dev)) {
+			irq_lock();
+			{
+				rx = pool_alloc(&uart_rx_buff);
+				if (!rx) {
+					irqctrl_disable(dev->irq_num);
+					lthread_launch(&uart_rx_irq_handler);
+					
+					irqctrl_enable(dev->irq_num);
+					rx = pool_alloc(&uart_rx_buff);
+					if (!rx) {
+						irq_unlock();
+						return -1;
+					}
+				}
+
+				rx->uart = dev;
+				rx->data = uart_getc(dev);
+				dlist_add_prev(dlist_head_init(&rx->lnk), &uart_rx_list);
 			}
+			irq_unlock();
 		}
-
-		rx->uart = dev;
-		rx->data = c;
-		dlist_add_prev(dlist_head_init(&rx->lnk), &uart_rx_list);
+		lthread_launch(&uart_rx_irq_handler);
 	}
-	irq_unlock();
-
+	
 	return 0;
 }
 
@@ -103,12 +111,7 @@ static int uart_rx_action(struct lthread *self) {
 irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
-	if (dev->tty) {
-		while (uart_hasrx(dev)) {
-			uart_rx_buff_put(dev, uart_getc(dev));
-		}
-		lthread_launch(&uart_rx_irq_handler);
-	}
+	uart_rx_buff_put(irq_nr, dev);
 
 	return IRQ_HANDLED;
 }
