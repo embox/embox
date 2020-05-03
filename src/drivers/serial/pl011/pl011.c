@@ -65,6 +65,19 @@ static void pl011_set_baudrate(struct uart *dev) {
 #endif
 }
 
+static int pl011_irq_enable(struct uart *dev, const struct uart_params *params) {
+	if (params->irq) {
+		REG_STORE(UART_IMSC, IMSC_RXIM);
+	}
+	return 0;
+}
+
+static int pl011_irq_disable(struct uart *dev, const struct uart_params *params) {
+	REG_STORE(UART_IMSC, 0);
+
+	return 0;
+}
+
 static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 	/* Disable uart. */
 	REG_STORE(UART_CR, 0);
@@ -105,6 +118,8 @@ static const struct uart_ops pl011_uart_ops = {
 		.uart_putc = pl011_putc,
 		.uart_hasrx = pl011_has_symbol,
 		.uart_setup = pl011_setup,
+		.uart_irq_en = pl011_irq_enable,
+		.uart_irq_dis = pl011_irq_disable,
 };
 
 static struct uart uart0 = {
