@@ -59,6 +59,13 @@ module task_resource {
 
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.util.Array
+
+/* FIXME atexit contains option atexit_max which used in limits.h
+ * #include <config/embox/kernel/task/resource/atexit.h>
+ * #define ATEXIT_MAX \
+ *   OPTION_MODULE_GET(embox__kernel__task__resource__atexit, NUMBER, atexit_max)
+ */
+	@NoRuntime depends embox.kernel.task.resource.atexit
 }
 
 module task_table extends task_table_api {
