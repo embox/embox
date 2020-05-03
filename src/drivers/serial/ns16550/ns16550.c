@@ -64,6 +64,16 @@ static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
 	return 0;
 }
 
+static int ns16550_irq_en(struct uart *dev, const struct uart_params *params) {
+	COM3->ier |= NS16550_IER_RX_IRQ;
+	return 0;
+}
+
+static int ns16550_irq_dis(struct uart *dev, const struct uart_params *params) {
+	COM3->ier &= ~NS16550_IER_RX_IRQ;
+	return 0;
+}
+
 static int ns16550_putc(struct uart *dev, int ch) {
 	while ((COM3_LSR & UART_LSR_THRE) == 0);
 
@@ -82,15 +92,17 @@ static int ns16550_has_symbol(struct uart *dev) {
 }
 
 
-static const struct uart_ops i8250_uart_ops = {
+static const struct uart_ops ns16550_uart_ops = {
 		.uart_getc = ns16550_getc,
 		.uart_putc = ns16550_putc,
 		.uart_hasrx = ns16550_has_symbol,
 		.uart_setup = ns16550_setup,
+		.uart_irq_en = ns16550_irq_en,
+		.uart_irq_dis = ns16550_irq_dis,
 };
 
 static struct uart uart0 = {
-		.uart_ops = &i8250_uart_ops,
+		.uart_ops = &ns16550_uart_ops,
 		.irq_num = COM0_IRQ_NUM,
 		.base_addr = COM_BASE,
 };
