@@ -112,11 +112,54 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	return 0;
 }
 
+static int stm32_uart_irq_en(struct uart *dev, const struct uart_params *params) {
+	if (dev->params.irq) {
+		UART_HandleTypeDef UartHandle;
+
+		memset(&UartHandle, 0, sizeof(UartHandle));
+
+		UartHandle.Instance = (void*) dev->base_addr;
+
+		UartHandle.Init.BaudRate = params->baud_rate;
+		UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+		UartHandle.Init.StopBits = UART_STOPBITS_1;
+		UartHandle.Init.Parity = UART_PARITY_NONE;
+		UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+		UartHandle.Init.Mode = UART_MODE_TX_RX;
+
+	    /* Enable the UART Data Register not empty Interrupt */
+	    __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
+	}
+	return 0;
+}
+
+static int stm32_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
+	if (params->irq) {
+		UART_HandleTypeDef UartHandle;
+
+		memset(&UartHandle, 0, sizeof(UartHandle));
+
+		UartHandle.Instance = (void*) dev->base_addr;
+
+		UartHandle.Init.BaudRate = params->baud_rate;
+		UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
+		UartHandle.Init.StopBits = UART_STOPBITS_1;
+		UartHandle.Init.Parity = UART_PARITY_NONE;
+		UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+		UartHandle.Init.Mode = UART_MODE_TX_RX;
+
+		__HAL_UART_DISABLE_IT(&UartHandle, UART_IT_RXNE);
+	}
+	return 0;
+}
+
 const struct uart_ops stm32_uart_ops = {
 		.uart_getc = stm32_uart_getc,
 		.uart_putc = stm32_uart_putc,
 		.uart_hasrx = stm32_uart_hasrx,
 		.uart_setup = stm32_uart_setup,
+		.uart_irq_en = stm32_uart_irq_en,
+		.uart_irq_dis = stm32_uart_irq_dis,
 };
 
 static struct uart stm32_diag = {
