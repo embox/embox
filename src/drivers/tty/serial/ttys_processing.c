@@ -51,15 +51,10 @@ static int uart_rx_buff_put(unsigned int irq_nr, struct uart *dev) {
 			{
 				rx = pool_alloc(&uart_rx_buff);
 				if (!rx) {
-					irqctrl_disable(dev->irq_num);
+					dev->uart_ops->uart_irq_dis(dev, &dev->params);
 					lthread_launch(&uart_rx_irq_handler);
-					
-					irqctrl_enable(dev->irq_num);
-					rx = pool_alloc(&uart_rx_buff);
-					if (!rx) {
-						irq_unlock();
-						return -1;
-					}
+					irq_unlock();
+					return -1;
 				}
 
 				rx->uart = dev;
@@ -102,7 +97,10 @@ static int uart_rx_action(struct lthread *self) {
 	struct uart_rx rx;
 
 	while (!uart_rx_buff_get(&rx)) {
+		struct uart *dev = rx.uart;
+		
 		tty_rx_locked(rx.uart->tty, rx.data, 0);
+		dev->uart_ops->uart_irq_en(dev, &dev->params);
 	}
 
 	return 0;
