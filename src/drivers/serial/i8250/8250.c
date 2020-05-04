@@ -69,6 +69,25 @@ static int i8250_setup(struct uart *dev, const struct uart_params *params) {
 	return 0;
 }
 
+static int i8250_irq_en(struct uart *dev, const struct uart_params *params) {
+	/*enable rx interrupt*/
+	if (params->irq) {
+		/*enable rx interrupt*/
+		out8(UART_IER_RX_ENABLE, dev->base_addr + UART_IER);
+	}
+
+	return 0;
+}
+
+static int i8250_irq_dis(struct uart *dev, const struct uart_params *params) {
+	if (params->irq) {
+		/*disable rx interrupt*/
+		out8(0, dev->base_addr + UART_IER);
+	}
+
+	return 0;
+}
+
 static int i8250_putc(struct uart *dev, int ch) {
 	while (!(in8(dev->base_addr + UART_LSR) & UART_EMPTY_TX));
 	out8((uint8_t) ch, dev->base_addr + UART_TX);
@@ -88,6 +107,8 @@ static const struct uart_ops i8250_uart_ops = {
 		.uart_putc = i8250_putc,
 		.uart_hasrx = i8250_has_symbol,
 		.uart_setup = i8250_setup,
+		.uart_irq_en = i8250_irq_en,
+		.uart_irq_dis = i8250_irq_dis,
 };
 
 static struct uart uart0 = {
