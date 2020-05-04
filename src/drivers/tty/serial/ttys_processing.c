@@ -41,23 +41,32 @@ static inline struct uart *tty2uart(struct tty *tty) {
 	return tu->uart;
 }
 
-static int uart_rx_buff_put(struct uart *dev, int c) {
+static int uart_rx_buff_put(struct uart *dev) {
 	struct uart_rx *rx;
 
-	irq_lock();
-	{
-		rx = pool_alloc(&uart_rx_buff);
-		if (!rx) {
+	if (dev->tty) {
+		while (uart_hasrx(dev)) {
+			irq_lock();
+			{
+				rx = pool_alloc(&uart_rx_buff);
+				if (!rx) {
+					if (dev->uart_ops->uart_irq_dis) {
+						dev->uart_ops->uart_irq_dis(dev, &dev->params);
+					}
+					lthread_launch(&uart_rx_irq_handler);
+					irq_unlock();
+					return -1;
+				}
+
+				rx->uart = dev;
+				rx->data = uart_getc(dev);
+				dlist_add_prev(dlist_head_init(&rx->lnk), &uart_rx_list);
+			}
 			irq_unlock();
-			return -1;
 		}
-
-		rx->uart = dev;
-		rx->data = c;
-		dlist_add_prev(dlist_head_init(&rx->lnk), &uart_rx_list);
+		lthread_launch(&uart_rx_irq_handler);
 	}
-	irq_unlock();
-
+	
 	return 0;
 }
 
@@ -89,7 +98,12 @@ static int uart_rx_action(struct lthread *self) {
 	struct uart_rx rx;
 
 	while (!uart_rx_buff_get(&rx)) {
+		struct uart *dev = rx.uart;
+		
 		tty_rx_locked(rx.uart->tty, rx.data, 0);
+		if (dev->uart_ops->uart_irq_en) {
+			dev->uart_ops->uart_irq_en(dev, &dev->params);
+		}
 	}
 
 	return 0;
@@ -98,12 +112,7 @@ static int uart_rx_action(struct lthread *self) {
 irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
-	if (dev->tty) {
-		while (uart_hasrx(dev)) {
-			uart_rx_buff_put(dev, uart_getc(dev));
-		}
-		lthread_launch(&uart_rx_irq_handler);
-	}
+	uart_rx_buff_put(dev);
 
 	return IRQ_HANDLED;
 }
