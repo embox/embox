@@ -23,10 +23,10 @@ Vagrant.configure("2") do |config|
       export DEBIAN_FRONTEND=noninteractive
       apt-get update
       apt-get -y upgrade
-      apt-get -y install xen-system-amd64 bridge-utils
+      apt-get -y install xen-system-amd64 bridge-utils httperf
 
       echo "cd /embox" >> /home/vagrant/.bashrc
-      echo "export PATH=$PATH:/usr/lib/xen-4.9/bin" >> /home/vagrant/.bashrc
+      echo "export PATH=$PATH:/usr/lib/xen-4.6/bin" >> /home/vagrant/.bashrc
     SHELL
 
     xen.vm.provision :reload
