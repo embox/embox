@@ -26,7 +26,7 @@ struct net_buffer {
 struct netfront_dev {
     domid_t dom;
 
-    unsigned short tx_freelist[NET_TX_RING_SIZE + 1];
+    //unsigned short tx_freelist[NET_TX_RING_SIZE + 1];
     // struct semaphore tx_sem;
 
     struct net_buffer rx_buffers[NET_RX_RING_SIZE];
@@ -45,11 +45,11 @@ struct netfront_dev {
 #endif
     char *nodename;
     char backend[64];
-    char mac[64];
+    //char mac[64];
     char default_mac[64];
 
-    void (*netif_rx)(unsigned char* data, int len, void* arg);
-    void *netif_rx_arg;
+    //void (*netif_rx)(unsigned char* data, int len, void* arg);
+    //void *netif_rx_arg;
 };
 
 int netfront_priv_init(struct netfront_dev *dev);

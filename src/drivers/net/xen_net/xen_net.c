@@ -23,52 +23,13 @@
 EMBOX_UNIT_INIT(xen_net_init);
 
 static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
-//TODO: add lock!!!
-
-	netfront_xmit(netdev_priv(dev, struct netfront_dev), skb->mac.raw, skb->len );
-	//printk("!!!ALARM!!! xen_net_xmit is called, you should check the code!\n");
-
-	return ENOERR;
-}
-
-static int xen_net_start(struct net_device *dev) {
-	//printk("!!!ALARM!!! xen_net_start is called, you should check the code!\n");
-//TODO
-	return ENOERR;
-}
-
-static int xen_net_stop(struct net_device *dev) {
-	printk("!!!ALARM!!! xen_net_stop is called, you should check the code!\n");
-	return ENOERR;
-}
-
-static int xen_net_setmac(struct net_device *dev, const void *addr) {
-	memcpy(dev->dev_addr, addr, ETH_ALEN);
-	/*
 	struct netfront_dev *nic_priv;
 	nic_priv = netdev_priv(dev, struct netfront_dev);
-
-	unsigned char rawmac[6];
-
-	sscanf(nic_priv->mac,"%hhx:%hhx:%hhx:%hhx:%hhx:%hhx",
-		&rawmac[0],
-		&rawmac[1],
-		&rawmac[2],
-		&rawmac[3],
-		&rawmac[4],
-		&rawmac[5]);
-	*/
-	//printk("!!!ALARM!!! xen_net_setmac is called, you should check the code!\n");
-	
+	netfront_xmit(nic_priv, skb->mac.raw, skb->len );
 	return ENOERR;
-
 }
 
 static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
-	//printk("======>IRQ:%u\n",irq_num);
-//TODO: Implement handler
-//TODO: need save flags?
-
 	struct net_device *dev;
 	struct netfront_dev *nic_priv;
 
@@ -83,6 +44,7 @@ static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	sched_unlock();
 	return IRQ_NONE;
 }
+
 static irq_return_t xen_net_irq_tx(unsigned int irq_num, void *dev_id) {
 	struct net_device *dev;
 	struct netfront_dev *nic_priv;
@@ -96,6 +58,47 @@ sched_unlock();
 	return IRQ_NONE;
 }
 
+static int xen_net_start(struct net_device *dev) {
+	int res;
+	struct netfront_dev *nic_priv;
+	nic_priv = netdev_priv(dev, struct netfront_dev);
+#ifdef FEATURE_SPLIT_CHANNELS 
+	dev->irq = nic_priv->evtchn_rx;
+	res = irq_attach(nic_priv->evtchn_rx, xen_net_irq, IF_SHARESUP, dev,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+	res = irq_attach(nic_priv->evtchn_tx, xen_net_irq_tx, IF_SHARESUP, dev,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+#else
+	dev->irq = nic_priv->evtchn;
+	res = irq_attach(nic_priv->evtchn, xen_net_irq, IF_SHARESUP, dev,
+			"xen_net");
+	if (res < 0) {
+		printk("irq_attach error: %i\n", res);
+		return res;
+	}
+#endif
+	return ENOERR;
+}
+
+static int xen_net_stop(struct net_device *dev) {
+//TODO free
+	return ENOERR;
+}
+
+static int xen_net_setmac(struct net_device *dev, const void *addr) {
+	memcpy(dev->dev_addr, addr, ETH_ALEN);
+
+	return ENOERR;
+}
+
 static const struct net_driver xen_net_drv_ops = {
 	.xmit = xen_net_xmit,
 	.start = xen_net_start,
@@ -107,8 +110,6 @@ static int xen_net_init(void) {
 	int res;
 	struct net_device *nic;
 	struct netfront_dev *nic_priv;
-	//struct netfront_dev *dev;
-
 	
 	nic = etherdev_alloc(sizeof *nic_priv);
 	if (nic == NULL) {
@@ -123,31 +124,7 @@ static int xen_net_init(void) {
 	if (res != 0) {
 		return res;
 	}
-#ifdef FEATURE_SPLIT_CHANNELS 
-	nic->irq = nic_priv->evtchn_rx;
-	res = irq_attach(nic_priv->evtchn_rx, xen_net_irq, IF_SHARESUP, nic,
-			"xen_net");
-	if (res < 0) {
-		printk("irq_attach error: %i\n", res);
-		return res;
-	}
-	res = irq_attach(nic_priv->evtchn_tx, xen_net_irq_tx, IF_SHARESUP, nic,
-			"xen_net");
-	if (res < 0) {
-		printk("irq_attach error: %i\n", res);
-		return res;
-	}
-#else
-	nic->irq = nic_priv->evtchn;
-	res = irq_attach(nic_priv->evtchn, xen_net_irq, IF_SHARESUP, nic,
-			"xen_net");
-	if (res < 0) {
-		printk("irq_attach error: %i\n", res);
-		return res;
-	}
-#endif
 
-//move it to start?
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
 		printk("inetdev_register_dev error: %i\n", res);

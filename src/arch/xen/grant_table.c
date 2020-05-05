@@ -87,12 +87,12 @@ int gnttab_end_access(grant_ref_t ref)
     do {
         if ((flags = nflags) & (GTF_reading|GTF_writing)) {
             printk("WARNING: g.e. still in use! (%x)\n", flags);
-            return 0;
+            return -1;
         }
     } while ((nflags = synch_cmpxchg(&grant_table[ref].flags, flags, 0)) !=
             flags);
 
-    return 1;
+    return 0;
 }
 
 int get_max_nr_grant_frames() {

@@ -427,7 +427,6 @@ moretodo:
 				//print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
 				skb->dev = embox_dev;
 				netif_rx(skb);
-				
         }
     }
     dev->rx.rsp_cons=cons;
@@ -469,8 +468,10 @@ void network_tx_buf_gc(struct netfront_dev *dev)
 {
     RING_IDX cons, prod;
     unsigned short id;
-int more_to_do;
-    do {
+#ifdef LINUX_TX_BUF_GC
+	int more_to_do;
+#endif
+	do {
         prod = dev->tx.sring->rsp_prod;
         rmb(); /* Ensure we see responses up to 'rp'. */
 
@@ -497,6 +498,11 @@ int more_to_do;
 
         dev->tx.rsp_cons = prod;
 
+#ifdef LINUX_TX_BUF_GC //false
+		RING_FINAL_CHECK_FOR_RESPONSES(&dev->tx, more_to_do);
+
+    } while (more_to_do);
+#else
         /*
          * Set a new event, then check for race with update of tx_cons.
          * Note that it is essential to schedule a callback, no matter
@@ -505,14 +511,11 @@ int more_to_do;
          * data is outstanding: in such cases notification from Xen is
          * likely to be the only kick that we'll get.
          */
-        /*dev->tx.sring->rsp_event =
+		dev->tx.sring->rsp_event =
             prod + ((dev->tx.sring->req_prod - prod) >> 1) + 1;
-        mb();*/
-//TODO?
-		RING_FINAL_CHECK_FOR_RESPONSES(&dev->tx, more_to_do);
-    } while (more_to_do);
-
-
+        mb();
+    } while ((cons == prod) && (prod != dev->tx.sring->rsp_prod));
+#endif
 }
 
 void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len)
@@ -528,7 +531,6 @@ void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len)
 
 	sched_lock();
     id = xennet_txidx(dev->tx.sring->req_prod);
-	//printk("id=%d\n",xennet_txidx(id));
 	if (xennet_txidx(id+1) == dev->tx.sring->rsp_prod) {
 		printk("CATCH TAIL!!!\n\n");
 		return;
