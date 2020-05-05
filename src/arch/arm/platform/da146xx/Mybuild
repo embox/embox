@@ -1,0 +1,5 @@
+package embox.arch.arm.platform.da146xx
+
+module da14680_lds_quirk {
+	source "da14680_quirk.lds.S"
+}
