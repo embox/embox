@@ -1,0 +1,9 @@
+package third_party.lib
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/segger_rtt/install/")
+static module segger_rtt {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/")
+	source "SEGGER_RTT.o",
+		"SEGGER_RTT_printf.o"
+}
