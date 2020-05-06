@@ -19,6 +19,8 @@ SECTIONS {
 		*(.monitor_trap_table)
 		STATIC_IRQ_TABLE
 
+		*(.da14680_quirk)
+
 		*(.flash)
 
 		*(.text)

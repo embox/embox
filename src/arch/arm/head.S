@@ -86,12 +86,12 @@ sw_init_hook:
 #endif
 
 /* zero bss */
-	ldr	    r0, =_bss_vma
-	mov	    r1, #0
-	ldr	    r2, =_bss_len
+	ldr     r0, =_bss_vma
+	movs    r1, #0
+	ldr     r2, =_bss_len
 bss_loop:
 	str     r1, [r0]
-	add     r0, r0, #4
+	adds    r0, r0, #4
 	subs    r2, r2, #4
 	bne     bss_loop
 
@@ -102,8 +102,8 @@ bss_loop:
 data_loop:
 	ldr     r3, [r1]
 	str     r3, [r0]
-	add     r0, r0, #4
-	add     r1, r1, #4
+	adds    r0, r0, #4
+	adds    r1, r1, #4
 	subs    r2, r2, #4
 	bne     data_loop
 
