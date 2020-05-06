@@ -1,0 +1,7 @@
+package third_party.bsp.dialog.da14681
+
+@BuildDepends(third_party.bsp.dialog.da14681.sdk)
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+static module sdk_hotfix {
+	@NoRuntime depends third_party.bsp.dialog.da14681.sdk
+}
