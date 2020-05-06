@@ -6,3 +6,5 @@ monitor reset 0
 monitor halt
 monitor reset 0
 monitor halt
+
+eval "monitor exec SetRTTAddr %p", &_SEGGER_RTT
