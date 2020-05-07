@@ -1,0 +1,8 @@
+package embox.driver.serial
+
+@BuildDepends(third_party.lib.segger_rtt)
+module rtt extends embox.driver.diag.diag_api {
+	source "rtt.c"
+
+	@NoRuntime depends third_party.lib.segger_rtt
+}
