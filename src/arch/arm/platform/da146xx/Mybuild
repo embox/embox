@@ -9,5 +9,7 @@ module da1469x_lds_quirk {
 }
 
 module arch extends embox.arch.arch {
+	option number gpregs_base
+
 	source "arch.c"
 }
