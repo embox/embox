@@ -13,7 +13,6 @@
 #include <kernel/critical.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
-#include <hal/context.h>
 #include <drivers/irqctrl.h>
 
 #include <kernel/irq.h>
@@ -48,6 +47,14 @@
 #define interrupted_from_fpu_mode(lr) ((lr & 0xF0) == 0xE0)
 
 #define FPU_CTX_SIZE   18
+
+/* Context saved by CPU on exception entering */
+struct exc_saved_base_ctx {
+	uint32_t r[5];
+	uint32_t lr;
+	uint32_t pc;
+	uint32_t psr;
+};
 
 /**
  * ENABLE, CLEAR, SET_PEND, CLR_PEND, ACTIVE is a base of bit arrays
