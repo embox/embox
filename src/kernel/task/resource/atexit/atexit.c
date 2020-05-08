@@ -26,6 +26,7 @@ static void task_atexit_init(const struct task *task, void *atexit_space) {
 	for (i = 0; i < ATEXIT_MAX; ++i) {
 		task_atexit->atexit_func[i] = NULL;
 	}
+	task_atexit->slot = 0;
 }
 
 static int task_atexit_inherit(const struct task *task,
@@ -39,6 +40,7 @@ static int task_atexit_inherit(const struct task *task,
 	for (i = 0; i < ATEXIT_MAX; ++i) {
 		task_atexit->atexit_func[i] = NULL;
 	}
+	task_atexit->slot = 0;
 
 	return 0;
 }

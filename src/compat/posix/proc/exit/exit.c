@@ -33,7 +33,11 @@ void _exit(int status) {
 	panic("Returning from _exit");
 }
 
+/* from atexit */
+void __atexit_funcs(void);
+
 /* stdlib */
 void exit(int status) {
+	__atexit_funcs();
 	_exit(status);
 }
