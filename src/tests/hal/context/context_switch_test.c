@@ -17,8 +17,8 @@ EMBOX_TEST_SUITE("context switch");
 #define TRACE(msg)
 
 static struct context entry_context, infinite_context, redundant_context;
-static char entry_stack[STACK_SZ];
-static char infinite_stack[STACK_SZ];
+static char entry_stack[STACK_SZ] __attribute__((aligned(8)));
+static char infinite_stack[STACK_SZ] __attribute__((aligned(8)));
 
 static unsigned int mask = 0x55555555;
 
