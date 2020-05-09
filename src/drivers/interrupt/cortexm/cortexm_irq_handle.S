@@ -71,10 +71,12 @@ __pending_handle:
 
     # Call critical_dispatch_pending if we are already exited
     # from all nested interrupt handlers. If we were interrupted
-    # from irq handler (0xfffffff1) then just return back.
-    # So we check wheter the value is 0xfffffff9 or 0xffffffe9
-    mov    r1, #0xffffff09
-    and    r0, r0, #0xffffff0f
+    # from irq handler (3 bit is zero - that's why we use 0x08)
+    # then just return back. If 3 bit is set to one, it means we were
+    # interrupted from usual thread mode, so call critical_dispatch_pending
+    # safely.
+    mov    r1, #0xffffff08
+    and    r0, r0, #0xffffff08
     cmp    r0, r1
     bne.n  __call_pendsv
     bl critical_dispatch_pending
