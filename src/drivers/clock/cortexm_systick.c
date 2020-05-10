@@ -12,9 +12,10 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
+#include <framework/mod/options.h>
 #include <embox/unit.h>
 
-#define CLOCK_DIVIDER 1
+#define SYSTICK_HZ  OPTION_GET(NUMBER,systick_hz)
 
 #define SYSTICK_IRQ 15
 
@@ -28,7 +29,7 @@
 #define SYSTICK_VAL     (SYSTICK_BASE + 0x8)
 #define SYSTICK_CALIB   (SYSTICK_BASE + 0xc)
 
-#define RELOAD_VALUE (SYS_CLOCK / (CLOCK_DIVIDER * 1000))
+#define RELOAD_VALUE (SYS_CLOCK / SYSTICK_HZ)
 
 static struct clock_source cortexm_systick_clock_source;
 
@@ -59,13 +60,13 @@ static cycle_t cortexm_systick_read(void) {
 
 static struct time_event_device cortexm_systick_event = {
 	.config = cortexm_systick_config,
-	.event_hz = 1000,
+	.event_hz = SYSTICK_HZ,
 	.irq_nr = SYSTICK_IRQ,
 };
 
 static struct time_counter_device cortexm_systick_counter = {
 	.read = cortexm_systick_read,
-	.cycle_hz = SYS_CLOCK / CLOCK_DIVIDER,
+	.cycle_hz = SYS_CLOCK,
 };
 
 static struct clock_source cortexm_systick_clock_source = {
