@@ -7,3 +7,8 @@ module cortexm_nvic extends embox.driver.interrupt.irqctrl_api {
 			"cortexm_nvic.h",
 			"cortexm_irq_handle.S"
 }
+
+module cortexm0_nvic extends embox.driver.interrupt.irqctrl_api {
+	source "cortexm0_nvic.c",
+			"cortexm0_nvic.h"
+}

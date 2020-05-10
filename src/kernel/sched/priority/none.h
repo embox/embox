@@ -37,4 +37,8 @@ static inline int schedee_priority_reverse(struct schedee *s) {
 	return 0;
 }
 
+static inline int schedee_priority_init(struct schedee *schedee, int new_priority) {
+	return 0;
+}
+
 #endif /* STRATEGY_NO_PRIORITY_H_ */
