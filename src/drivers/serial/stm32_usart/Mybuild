@@ -18,7 +18,7 @@ module stm_usart_f3 extends embox.driver.diag.diag_api {
 	depends third_party.bsp.stmf3cube.core
 }
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f4 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=6
@@ -33,7 +33,7 @@ module stm_usart_f4 extends embox.driver.diag.diag_api {
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
-	depends third_party.bsp.stmf4cube.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)

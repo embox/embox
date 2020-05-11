@@ -28,7 +28,7 @@ static int stm32_spi1_init(void) {
 
 #if !OPTION_MODULE_GET(third_party__bsp__stmf4cube__arch,BOOLEAN,errata_spi_wrong_last_bit)
 	#error errata_spi_wrong_last_bit is not enabled for SPI1! \
-	       Please, enable this option in third_party.bsp.stmf4cube.arch
+	       Please, enable this option in third_party.bsp.stmf4cube.stm32f4_discovery.arch
 #endif
 
 	spi1_enable_gpio_clocks();

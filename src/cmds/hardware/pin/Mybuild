@@ -19,7 +19,7 @@ package embox.cmd.hardware
 		Denis Deryugin <deryugin.denis@gmail.com>
 	''')
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module pin {
 	source "pin.c"
 

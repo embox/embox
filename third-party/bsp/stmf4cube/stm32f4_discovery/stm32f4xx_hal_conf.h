@@ -179,12 +179,12 @@
 #define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
 
 #include <framework/mod/options.h>
-#include <module/third_party/bsp/stmf4cube/core.h>
+#include <config/third_party/bsp/stmf4cube/stm32f4_discovery/core.h>
 
 #define ETH_RXBUFNB \
-	OPTION_MODULE_GET(third_party__bsp__stmf4cube__core, NUMBER, eth_rx_packet_count)
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__stm32f4_discovery__core, NUMBER, eth_rx_packet_count)
 #define ETH_TXBUFNB \
-	OPTION_MODULE_GET(third_party__bsp__stmf4cube__core, NUMBER, eth_tx_packet_count)
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__stm32f4_discovery__core, NUMBER, eth_tx_packet_count)
 
 
 /* Section 2: PHY configuration section */

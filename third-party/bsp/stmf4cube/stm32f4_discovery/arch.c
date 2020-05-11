@@ -14,7 +14,6 @@
 
 #include <system_stm32f4xx.h>
 #include <stm32f4xx_hal.h>
-#include <stm32f4_discovery.h>
 #include <stm32f4xx_hal_cortex.h>
 
 #include <framework/mod/options.h>

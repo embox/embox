@@ -1,6 +1,6 @@
 package embox.driver.net
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4cube_eth {
 	source "stm32cube_eth.c"
 	source "stm32f4cube_eth.c"
