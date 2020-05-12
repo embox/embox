@@ -1,0 +1,8 @@
+package embox.driver.usb.gadget
+
+module f_rndis {
+	source "f_rndis.c"
+
+	@IncludeExport(path="drivers/usb/gadget")
+	source "rndis_desc.h"
+}
