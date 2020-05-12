@@ -1,0 +1,5 @@
+package third_party.bsp.dialog.da14695
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+static module sdk {
+}
