@@ -56,13 +56,14 @@ static uint64_t xen_time(void) {
 }
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	return IRQ_HANDLED;
+
 	uint64_t time = xen_time();
 
 	const int n = (time - system_time) / NSEC_PER_MSEC;
 	for (int i = 0; i < n; i++) {
 		clock_tick_handler(irq_nr, dev_id);
 	}
+	system_time = time;
 
 	return IRQ_HANDLED;
 }
