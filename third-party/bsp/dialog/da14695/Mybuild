@@ -20,7 +20,9 @@ static module sys_man {
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man")
-	source "sys_trng.c", "sys_tcs_da1469x.c"
+	source "sys_trng.c",
+			"sys_tcs_da1469x.c",
+			"sys_clock_mgr_da1469x.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.periphirals
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -76,15 +78,39 @@ static module memory {
 }
 
 module usb_example {
+	option number log_level = 1
+
 	@Cflags("-Wno-undef")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
 
-	source "usb_example.c" 
+	source "usb_example.c"
+
+	depends usb_core
 }
 
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module usb_core {
+	option number log_level = 1
+
+	@IncludeExport(path="third_party/dialog/da14695")
+	source "usb_da1469x.h"
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
+
+	source "usb_da1469x.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+	@NoRuntime depends embox.driver.usb.gadget.f_rndis
+}
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module system_init {
@@ -102,4 +128,20 @@ static module system_init {
 	source "system_da1469x.c", "init_da1469x.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.system_init)
+static module arch_init extends embox.arch.arch {
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/osal)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+
+	source "arch.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
 }
