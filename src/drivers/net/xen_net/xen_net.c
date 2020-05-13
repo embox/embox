@@ -26,6 +26,7 @@ static int xen_net_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct netfront_dev *nic_priv;
 	nic_priv = netdev_priv(dev, struct netfront_dev);
 	netfront_xmit(nic_priv, skb->mac.raw, skb->len );
+	skb_free(skb);
 	return ENOERR;
 }
 
