@@ -83,6 +83,11 @@
 #define dg_configBLE_BROADCASTER                ( 1 )
 #define dg_configBLE_L2CAP_COC                  ( 1 )
 
+#define dg_configUSE_CLOCK_MGR                  ( 1 )
+
+/* FIXME It is probably required by BLE! Should be checked. */
+#define dg_configPMU_ADAPTER                    ( 0 )
+
 /* Include bsp default values */
 #include "bsp_defaults.h"
 /* Include middleware default values */
