@@ -3,12 +3,10 @@
 #include <framework/mod/options.h>
 
 SECTIONS {
-	.text.retained : {
+	.data.retained : {
 		__copy_table_start__ = .;
 		*(text_retained)
 		__copy_table_end__ = .;
-	}
-	.data.retained : {
 		*(retention_mem_const)
 		*(retention_mem_init)
 	}

@@ -12,6 +12,7 @@
 #define USB_DESC_TYPE_DEV               1
 #define USB_DESC_TYPE_CONFIG            2
 #define USB_DESC_TYPE_STRING            3
+#define USB_DESC_TYPE_INTERFACE         4
 #define USB_DESC_TYPE_ENDPOINT          5
 
 #define USB_DESC_ENDP_TYPE_MASK         0x03
