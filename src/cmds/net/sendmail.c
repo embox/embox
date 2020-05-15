@@ -87,8 +87,7 @@ int main(int argc, char **argv) {
 	if (NULL == fgets(&text[0] + text_len, sizeof text - text_len,
 			stdin)) { ret = -EIO; goto error; }
 	text[strlen(&text[0]) - 1] = '\0'; /* remove \n */
-	if (0 > snprintf(&text[0], sizeof text, "%s\r\n\r\n",
-			&text[0])) { ret = -EIO; goto error; }
+	strcat(text, "\r\n\r\n");
 
 	ret = smtp_data_add(&ss, &text[0]);
 	if ((ret != 0) || !smtp_ok(&ss)) goto error;
@@ -105,8 +104,7 @@ int main(int argc, char **argv) {
 			break;
 		}
 
-		if (0 > snprintf(&text[0], sizeof text, "%s\r\n",
-				&text[0])) { ret = -EIO; goto error; }
+		strcat(text, "\r\n");
 
 		ret = smtp_data_add(&ss, &text[0]);
 		if ((ret != 0) || !smtp_ok(&ss)) goto error;
