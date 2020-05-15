@@ -12,6 +12,7 @@
 #include <util/log.h>
 #include <hal/arch.h>
 #include <hal/reg.h>
+#include <arm/fpu.h>
 
 #include <config/custom_config_qspi.h>
 
@@ -19,6 +20,9 @@
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
+
+#define FPU_CPACR  0xE000ED88
+#define FPU_FPCCR  0xE000EF34
 
 #define PLL_LOCK_IRQ      49
 static_assert(PLL_LOCK_IRQ == PLL_LOCK_IRQn + 16);
@@ -49,6 +53,16 @@ extern char _bss_vma;
 extern char _bss_len;
 
 void arch_init(void) {
+#ifdef ARM_FPU_VFP
+	/* Enable FPU */
+	/** FIXME Currently FPU is enabled permanently */
+	REG32_ORIN(FPU_CPACR, 0xf << 20);
+	/* Disable FPU context preservation/restoration on exception
+	 * entry and exit, because we can guarantee every irq handler
+	 * execute without using FPU */
+	REG32_CLEAR(FPU_FPCCR, 0x3 << 30);
+#endif
+
 	/* Disable watchdog. It was enabled by bootloader. */
 	REG16_STORE(GPREG_SET_FREEZE_REG, GPREG_SET_FREEZE_SYS_WDOG);
 
