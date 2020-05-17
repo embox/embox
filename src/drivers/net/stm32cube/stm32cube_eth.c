@@ -69,7 +69,7 @@ static void low_level_init(unsigned char mac[6]) {
 		log_error("HAL_ETH_Init error\n");
 	}
 	if (stm32_eth_handler.State == HAL_ETH_STATE_READY) {
-		log_error("STATE_READY sp %d duplex %d\n",
+		log_info("STATE_READY sp %d duplex %d\n",
 			stm32_eth_handler.Init.Speed, stm32_eth_handler.Init.DuplexMode);
 	}
 
