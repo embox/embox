@@ -55,7 +55,8 @@ char diag_getc(void) {
 	}
 
 	ch = cdiag->ops->getc(cdiag);
-	return ch != '\r' ? ch : '\n';
+
+	return ch;
 }
 
 #define BUFLEN 4
