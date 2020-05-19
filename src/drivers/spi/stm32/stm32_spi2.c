@@ -1,5 +1,5 @@
 /**
- * @file stm32_spi2.c
+ * @file
  * @brief
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version

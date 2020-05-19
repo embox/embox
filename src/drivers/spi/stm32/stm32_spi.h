@@ -10,8 +10,6 @@
 
 #include <stdint.h>
 
-#include <drivers/gpio/gpio.h>
-
 #if defined(STM32F407xx)
 #include "stm32f4_discovery.h"
 #elif defined (STM32F429xx)

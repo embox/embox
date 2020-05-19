@@ -1,5 +1,5 @@
 /**
- * @file stm32_spi1.c
+ * @file
  * @brief
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
@@ -9,10 +9,13 @@
 #include <string.h>
 #include <drivers/spi.h>
 #include <drivers/spi/stm32_spi_conf.h>
-#include <framework/mod/options.h>
+
 #include <embox/unit.h>
 
-#include <config/third_party/bsp/stmf4cube/arch.h>
+#if defined(STM32F407xx)
+#include <framework/mod/options.h>
+#include <config/third_party/bsp/stmf4cube/stm32f4_discovery/arch.h>
+#endif
 
 #include "stm32_spi.h"
 
@@ -26,7 +29,7 @@ static struct stm32_spi stm32_spi1 = {
 static int stm32_spi1_init(void) {
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
-#if !OPTION_MODULE_GET(third_party__bsp__stmf4cube__arch,BOOLEAN,errata_spi_wrong_last_bit)
+#if defined(STM32F407xx) && !OPTION_MODULE_GET(third_party__bsp__stmf4cube__stm32f4_discovery__arch,BOOLEAN,errata_spi_wrong_last_bit)
 	#error errata_spi_wrong_last_bit is not enabled for SPI1! \
 	       Please, enable this option in third_party.bsp.stmf4cube.stm32f4_discovery.arch
 #endif
