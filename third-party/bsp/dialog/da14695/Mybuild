@@ -11,6 +11,7 @@ module custom_config {
 static module sys_man {
 	@Cflags("-Wno-undef")
 	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
@@ -22,7 +23,9 @@ static module sys_man {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man")
 	source "sys_trng.c",
 			"sys_tcs_da1469x.c",
-			"sys_clock_mgr_da1469x.c"
+			"sys_clock_mgr_da1469x.c",
+			"sys_watchdog.c",
+			"sys_usb_da1469x.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.periphirals
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -88,11 +91,16 @@ module usb_example {
 
 	source "usb_example.c"
 
-	depends usb_core
+	depends usb_dev_api
+	depends ble_arch_main_api
+
+	@NoRuntime depends embox.driver.usb.gadget.f_rndis
 }
 
+abstract module usb_dev_api { }
+
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module usb_core {
+static module usb_dev_direct extends usb_dev_api {
 	option number log_level = 1
 
 	@IncludeExport(path="third_party/dialog/da14695")
@@ -109,7 +117,26 @@ static module usb_core {
 	source "usb_da1469x.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-	@NoRuntime depends embox.driver.usb.gadget.f_rndis
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module usb_dev_sdk extends usb_dev_api {
+	option number log_level = 1
+
+	@IncludeExport(path="third_party/dialog/da14695")
+	source "usb_da1469x.h"
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
+
+	source "usb_sdk_da1469x.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
@@ -148,17 +175,194 @@ static module arch_init extends embox.arch.arch {
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module libble_stack {
-	@IncludeExport(path="platform/dialog")
-	source "da14695_libble_stack.h"
-
-	@Cflags("-Wno-undef")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
-	source "arch_main.c"
-
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/binaries/DA1469x-Release")
 	source "libble_stack_da1469x.a"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@DefaultImpl(ble_arch_main_stub)
+abstract module ble_arch_main_api { }
+
+static module ble_arch_main_stub extends ble_arch_main_api {
+	source "ble_arch_main_stub.c"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_arch_main_sdk extends ble_arch_main_api {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-variable")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp_include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/src")
+	source "arch_main.c"
+
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	source "cmac_irq_handler.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module pmu_adapter {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-incompatible-pointer-types")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp_include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/src")
+	source "ad_pmu.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_adapter {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-value")
+	@Cflags("-Wno-uninitialized")
+	@Cflags("-Wno-unused-function")
+	@Cflags("-Wno-discarded-qualifiers")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/snc/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/snc/src)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/src")
+	source "ad_ble.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_api {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-value")
+	@Cflags("-Wno-uninitialized")
+	@Cflags("-Wno-unused-function")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/snc/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/snc/src)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/util/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/src")
+	source "ble_common.c",
+		   "ble_storage.c",
+		   "ble_uuid.c",
+		   "ble_gap.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ble_manager {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-value")
+	@Cflags("-Wno-unused-variable")
+	@Cflags("-Wno-unused-but-set-variable")
+	@Cflags("-Wno-uninitialized")
+	@Cflags("-Wno-unused-function")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/snc/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/snc/src)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/util/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/clients/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/services/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/src")
+	source "ble_mgr_helper.c",
+		   "ble_mgr_common.c",
+		   "ble_mgr.c",
+		   "ble_mgr_cmd.c",
+		   "ble_mgr_ad_msg.c",
+		   "ble_mgr_gtl.c",
+		   "ble_mgr_gap.c",
+		   "ble_mgr_gatts.c",
+		   "ble_mgr_gattc.c",
+		   "ble_mgr_l2cap.c",
+		   "storage.c",
+		   "storage_flash.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module sdk_util {
+	@Cflags("-Wno-undef")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/util/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/util/src")
+	source "sdk_queue.c",
+		   "sdk_list.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
