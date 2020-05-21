@@ -8,6 +8,8 @@
 #include <embox/unit.h>
 #include <hal/test/traps_core.h>
 #include <kernel/printk.h>
+#include <assert.h>
+#include <stdlib.h>
 
 #define DISK_CAPACITY 4096
 
@@ -91,11 +93,31 @@ static int lkl_task_init(void) {
 	disk_id = ret;
 
 	snprintf(cmdline, sizeof(cmdline), "mem=64M loglevel=8"); // loglevel=8 is from tests
-    ret = lkl_start_kernel(&lkl_host_ops, cmdline);
-
+  ret = lkl_start_kernel(&lkl_host_ops, cmdline);
 	if (ret < 0) {
 		printk("Can't start lkl: %s\n", lkl_strerror(ret));
 	}
+
+	intptr_t t = (intptr_t)malloc(4096 * 2);
+	t += 0xFFF;
+	t &= ~0xFFF;
+
+	int fd = lkl_sys_open("/test", LKL_O_RDWR | LKL_O_CREAT, 0777);
+	printk("%d\n", fd);
+
+	for (int q = 0; q < 10; q++) {
+		int err_code = lkl_sys_write(fd, "TESTME", 6);
+		assert(err_code == 6);
+	}
+	
+
+	char * addr = lkl_sys_mmap((void*)t, 4096, 0, 0x10 | 0x02, fd, 0);
+	printk("%p\n", addr);
+
+	for (int q = 0; q < 6; q++) {
+		printk("%c", addr[q]);
+	}
+	printk("\n");
 
 	ret = lkl_get_virtio_blkdev(disk_id, 0, &dev);
 
