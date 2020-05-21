@@ -68,4 +68,4 @@ static int stm32_spi1_init(void) {
 	return 0;
 }
 
-SPI_DEV_DEF("STM32 SPI", &stm32_spi_ops, &stm32_spi1, 1);
+SPI_DEV_DEF("stm32_spi_1", &stm32_spi_ops, &stm32_spi1, 1);
