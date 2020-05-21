@@ -27,8 +27,13 @@
 //#define CONFIG_RETARGET							( 1 )
 #define CONFIG_RETARGET_UART_BAUDRATE    		( HW_UART_BAUDRATE_1000000 )
 
+#if 0
 #define dg_configUSE_WDOG                       ( 1 )
 #define dg_configWDOG_MAX_TASKS_CNT				( 16 )
+#else
+#define dg_configUSE_WDOG                       ( 0 )
+#define dg_configWDOG_MAX_TASKS_CNT				( 0 )
+#endif
 
 #define dg_configFLASH_CONNECTED_TO             ( FLASH_CONNECTED_TO_1V8 )
 #define dg_configFLASH_POWER_DOWN               ( 1 )
@@ -64,29 +69,47 @@
 /*************************************************************************************************\
  * Peripherals configuration
  */
+#if 0
 #define dg_configFLASH_ADAPTER                  ( 1 )
 #define dg_configNVMS_ADAPTER                   ( 1 )
 #define dg_configNVMS_VES                       ( 1 )
 #define dg_configNVPARAM_ADAPTER                ( 1 )
+#else
+#define dg_configFLASH_ADAPTER                  ( 0 )
+#define dg_configNVMS_ADAPTER                   ( 0 )
+#define dg_configNVMS_VES                       ( 0 )
+#define dg_configNVPARAM_ADAPTER                ( 0 )
+#endif
 
 /*************************************************************************************************\
  * BLE configuration
  */
 //#define CONFIG_BLE_STORAGE
+#if 0
 #define CONFIG_USE_BLE_CLIENTS
 #define CONFIG_USE_BLE_SERVICES
-
 #define dg_configBLE_CENTRAL                    ( 1 )
 #define dg_configBLE_GATT_CLIENT                ( 1 )
 #define dg_configBLE_GATT_SERVER                ( 1 )
 #define dg_configBLE_OBSERVER                   ( 1 )
 #define dg_configBLE_BROADCASTER                ( 1 )
 #define dg_configBLE_L2CAP_COC                  ( 1 )
+#else
+#define dg_configBLE_CENTRAL                    ( 0 )
+#define dg_configBLE_GATT_CLIENT                ( 0 )
+#define dg_configBLE_GATT_SERVER                ( 0 )
+#define dg_configBLE_OBSERVER                   ( 0 )
+#define dg_configBLE_BROADCASTER                ( 0 )
+#define dg_configBLE_L2CAP_COC                  ( 0 )
+// REMOVE
+#define USE_BLE_SLEEP                           ( 0 )
+#endif
 
 #define dg_configUSE_CLOCK_MGR                  ( 1 )
 
-/* FIXME It is probably required by BLE! Should be checked. */
-#define dg_configPMU_ADAPTER                    ( 0 )
+#define dg_configRF_ENABLE_RECALIBRATION        ( 0 )
+
+#define BLE_MGR_USE_EVT_LIST                    ( 0 )
 
 /* Include bsp default values */
 #include "bsp_defaults.h"
