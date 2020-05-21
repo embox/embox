@@ -1,0 +1,9 @@
+package third_party.bsp.dialog.da14695
+
+static module osal {
+	option number os_thread_count = 4
+	option number os_queues_count = 8
+	option number os_mutex_count = 8
+
+	source "osal.c"
+}
