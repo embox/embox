@@ -18,6 +18,7 @@
 
 #include <sys_clock_mgr.h>
 #include <hw_sys.h>
+#include <hw_cache.h>
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
@@ -61,6 +62,12 @@ void arch_init(void) {
 
 	for (i = 0; i < 1 * 1000 * 1000; i++) {
 
+	}
+
+	/* Default value is 512Kb. I will be changed only after software reset. */
+	if (hw_cache_flash_get_region_size() == HW_CACHE_FLASH_REGION_SZ_512KB) {
+		hw_cache_flash_set_region_size(HW_CACHE_FLASH_REGION_SZ_1MB);
+		NVIC_SystemReset();
 	}
 
 #ifdef ARM_FPU_VFP
