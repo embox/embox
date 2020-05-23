@@ -1,0 +1,86 @@
+package third_party.bsp.dialog.da14695.cmd
+
+@AutoCmd
+@Cmd(name = "ble_example_sdk",
+	help = "BLE advertising - device appears in BLE scanner on your phone",
+	man = '''
+	''')
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module ble_example_sdk {
+	@Cflags("-Wno-undef")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695/osal")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/include)")
+	source "ble_example_sdk.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+	@NoRuntime depends third_party.bsp.dialog.da14695.ble_arch_main_sdk
+}
+
+@AutoCmd
+@Cmd(name = "ble_example_direct",
+	help = "BLE advertising - device appears in BLE scanner on your phone",
+	man = '''
+	''')
+@BuildDepends(ble_adapter_direct)
+module ble_example_direct {
+	option number log_level = 1
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/include)")
+	source "ble_example_direct.c"
+
+	@NoRuntime depends ble_adapter_direct
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module ble_adapter_direct extends third_party.bsp.dialog.da14695.ble_arch_main_api {
+	option number log_level = 4
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(ROOT_DIR)/third-party/bsp/dialog/da14695")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/include)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/cmd/ble_adapter_direct/ble_example_direct-v1")
+	source "arch_main.c",
+		"ble_adapter.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}

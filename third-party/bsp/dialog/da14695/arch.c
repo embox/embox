@@ -17,6 +17,8 @@
 #include <config/custom_config_qspi.h>
 
 #include <sys_clock_mgr.h>
+#include <hw_sys.h>
+#include <hw_cache.h>
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
@@ -53,6 +55,21 @@ extern char _bss_vma;
 extern char _bss_len;
 
 void arch_init(void) {
+	int i;
+
+	/* Disable watchdog. It was enabled by bootloader. */
+	REG16_STORE(GPREG_SET_FREEZE_REG, GPREG_SET_FREEZE_SYS_WDOG);
+
+	for (i = 0; i < 1 * 1000 * 1000; i++) {
+
+	}
+
+	/* Default value is 512Kb. I will be changed only after software reset. */
+	if (hw_cache_flash_get_region_size() == HW_CACHE_FLASH_REGION_SZ_512KB) {
+		hw_cache_flash_set_region_size(HW_CACHE_FLASH_REGION_SZ_1MB);
+		NVIC_SystemReset();
+	}
+
 #ifdef ARM_FPU_VFP
 	/* Enable FPU */
 	/** FIXME Currently FPU is enabled permanently */
@@ -63,14 +80,14 @@ void arch_init(void) {
 	REG32_CLEAR(FPU_FPCCR, 0x3 << 30);
 #endif
 
-	/* Disable watchdog. It was enabled by bootloader. */
-	REG16_STORE(GPREG_SET_FREEZE_REG, GPREG_SET_FREEZE_SYS_WDOG);
-
 	SystemInitPre();
 	da1469x_SystemInit();
 
 	/* SystemInitPre and da1469x_SystemInit use BSS variables, so reinit BSS.*/
 	memset(&_bss_vma, 0, (int) &_bss_len);
+
+	/* Enables the COM power domain (for example, it's used to enable GPIO) */
+	hw_sys_pd_com_enable();
 }
 
 void arch_idle(void) {

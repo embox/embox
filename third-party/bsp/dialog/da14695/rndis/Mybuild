@@ -1,0 +1,35 @@
+package third_party.bsp.dialog.da14695
+
+@BuildDepends(rndis)
+module rndis_net_card {
+	option number log_level = 1
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/rndis/rndis-v1")
+	source "rndis_net_card.c"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+	depends embox.net.core
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module rndis {
+	option number log_level = 1
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/rndis/rndis-v1")
+	source "rndis_class.c",
+			"init.c"
+
+	depends third_party.bsp.dialog.da14695.usb_dev_api
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
