@@ -47,6 +47,8 @@ int main(int argc, char **argv) {
 	ble_gap_adv_start(GAP_CONN_MODE_UNDIRECTED);
 
 	while (1) {
+		/* It's just to let other threads to execute. */
+		usleep(1 * 1000);
 	}
 
 	return 0;
