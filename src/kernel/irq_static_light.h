@@ -26,7 +26,9 @@
 	static void _static_hnd(void) { \
 		assertf(irq_stack_protection() == 0, \
 			"Stack overflow detected on irq handler %s\n", __func__); \
+		critical_enter(CRITICAL_IRQ_HANDLER); \
 		_hnd(_irq_nr, _data); \
+		critical_leave(CRITICAL_IRQ_HANDLER); \
 	} \
 	ARM_M_IRQ_HANDLER_DEF(_irq_nr, _static_hnd);
 
