@@ -1,9 +1,14 @@
 
 package embox.arch.arm.arm9.arm926ejs
 
+module arch extends embox.arch.arch {
+	source "arch.c"
+}
+
 module cpu extends embox.arch.arm.armlib.cpu {
-	depends embox.arch.generic.arch
+	depends arch
 	depends embox.arch.arm.armlib.arch
+
 	/* exception table location must setup also 
 	 * embox.arch.arm.armlib.high_excpt_table
 	 *                       static_excpt_table
