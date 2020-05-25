@@ -165,3 +165,9 @@ module sem_test {
 
 	depends embox.compat.posix.semaphore
 }
+
+module atexit_test {
+	source "atexit_test.c"
+
+	depends embox.compat.posix.proc.atexit
+}
