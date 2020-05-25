@@ -9,7 +9,13 @@
 #ifndef SRC_DRIVERS_STM32_SPI_CONF_F4_H_
 #define SRC_DRIVERS_STM32_SPI_CONF_F4_H_
 
+#if defined(STM32F407xx)
 #include "stm32f4_discovery.h"
+#elif defined (STM32F429xx)
+#include "stm32f4xx_nucleo_144.h"
+#else
+#error Unsupported platform
+#endif
 #include <drivers/gpio/gpio.h>
 
 /* SPI1 */

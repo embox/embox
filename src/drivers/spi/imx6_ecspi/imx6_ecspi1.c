@@ -39,4 +39,4 @@ static int imx6_ecspi1_init(void) {
 }
 
 PERIPH_MEMORY_DEFINE(imx6_ecspi1, BASE_ADDR, 0x44);
-SPI_DEV_DEF("ixm6 ecspi1", &imx6_ecspi_ops, &imx6_ecspi1, 0);
+SPI_DEV_DEF("ixm6_ecspi1", &imx6_ecspi_ops, &imx6_ecspi1, 0);

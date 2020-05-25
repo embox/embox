@@ -23,7 +23,7 @@ module portaudio_lib extends portaudio_api {
 	depends audio_utils
 }
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4_pa_cube extends portaudio_api {
 	option number volume=70
 	option number sample_rate
@@ -39,7 +39,7 @@ module stm32f4_pa_cube extends portaudio_api {
 	@IncludeExport(path="drivers/audio")
 	source "portaudio.h"
 
-	depends third_party.bsp.stmf4cube.core
+	depends third_party.bsp.st_bsp_api
 	depends embox.util.dlist
 	depends embox.compat.libc.assert
 	depends embox.compat.posix.util.sleep

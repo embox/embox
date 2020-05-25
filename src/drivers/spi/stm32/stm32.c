@@ -9,14 +9,13 @@
 #include <assert.h>
 #include <string.h>
 
-#include <drivers/gpio/gpio.h>
+#include "stm32_spi.h"
+
 #include <drivers/spi.h>
 #include <kernel/irq.h>
 #include <util/log.h>
 
-#include "stm32_spi.h"
-
-#include <drivers/gpio/stm32.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/gpio/gpio_driver.h>
 
 static int stm32_spi_setup(struct stm32_spi *dev, void *instance, bool is_master) {
