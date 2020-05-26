@@ -7,22 +7,14 @@ abstract module static_irq_table_impl {
 
 }
 
-module irq_static_common {
-	source "irq_static.c"
-	source "arm_m_irq.S"
+module irq_static_light extends irq_api {
+	source "irq_static.c",
+	       "irq_static_light.h",
+	       "arm_m_irq.S"
+
 	depends irq_lock
 	depends irq_stack
 	depends static_irq_table_impl
-}
-
-module irq_static extends irq_api {
-	source "irq_static.h"
-	depends irq_static_common
-}
-
-module irq_static_light extends irq_api {
-	source "irq_static_light.h"
-	depends irq_static_common
 }
 
 module no_irq extends irq_api {
