@@ -24,7 +24,6 @@ static int inited = 0;
 
 static struct lthread clock_handler_lt;
 extern struct clock_source *cs_jiffies;
-static clock_t timer_sched_cnt;
 
 void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
@@ -41,23 +40,15 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 		}
 
 		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
-			timer_sched_cnt++;
-			lthread_launch(&clock_handler_lt);
+			if (timer_strat_need_sched(cs_jiffies->jiffies)) {
+				lthread_launch(&clock_handler_lt);
+			}
 		}
 	}
 }
 
 static int clock_handler(struct lthread *self) {
-
-	int sched_cnt;
-	irq_lock();
-		sched_cnt = timer_sched_cnt;
-		timer_sched_cnt = 0;
-	irq_unlock();
-
-	while (0 < sched_cnt--) {
-		timer_strat_sched();
-	}
+	timer_strat_sched(cs_jiffies->jiffies);
 	return 0;
 }
 

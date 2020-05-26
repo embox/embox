@@ -10,6 +10,7 @@
 #include <util/dlist.h>
 
 #include <hal/ipl.h>
+#include <hal/clock.h>
 
 #include <kernel/time/timer.h>
 
@@ -31,18 +32,29 @@ void timer_strat_start(struct sys_timer *tmr) {
 	ipl_restore(ipl);
 }
 
+bool timer_strat_need_sched(clock_t jiffies) {
+	struct sys_timer *tmr;
+
+	dlist_foreach_entry(tmr, &sys_timers_list, lnk) {
+		if (jiffies >= tmr->cnt) {
+			return true;
+		}
+	}
+	return false;
+}
+
 /**
  * For each timer in the timers array do the following: if the timer is enable
  * and the counter of this timer is the zero then its initial value is assigned
  * to the counter and the function is executed.
  */
-void timer_strat_sched(void) {
+void timer_strat_sched(clock_t jiffies) {
 	sys_timer_t *tmr;
 
 	dlist_foreach_entry(tmr, &sys_timers_list, lnk) {
-		if (0 == tmr->cnt--) {
+		if (jiffies >= tmr->cnt) {
 			if (timer_is_periodic(tmr)) {
-				tmr->cnt = tmr->load;
+				tmr->cnt = clock_sys_ticks() + tmr->load;
 			} else {
 				timer_strat_stop(tmr);
 			}
