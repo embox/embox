@@ -9,8 +9,3 @@ module cortexm_nvic extends embox.driver.interrupt.irqctrl_api {
 	/* FIXME It should be moved to src/arch/arm/ */
 	source "irq_entry.S"
 }
-
-module cortexm0_nvic extends embox.driver.interrupt.irqctrl_api {
-	source "cortexm0_nvic.c",
-			"cortexm0_nvic.h"
-}

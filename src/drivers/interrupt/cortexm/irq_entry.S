@@ -7,7 +7,10 @@
  */
 
 #include <arm/fpu.h>
+#include <module/embox/kernel/irq_api.h>
 #include "cortexm_nvic.h"
+
+#ifndef STATIC_IRQ_EXTENTION
 
 .text
 .thumb
@@ -71,3 +74,5 @@ arm_m_pendsv_entry:
 	add sp, #SAVED_CORE_REGS_SIZE
 	/* Finally, restore context previously CPU-saved on arm_m_irq_entry() entering */
 	bx lr
+
+#endif /* STATIC_IRQ_EXTENTION */
