@@ -22,6 +22,8 @@
 #define NVIC_CLR_PEND_BASE (NVIC_BASE + 0x180)
 #define NVIC_PRIORITY_BASE (NVIC_BASE + 0x300)
 
+#define NVIC_PRIO_SHIFT    4
+
 #define EXCEPTION_TABLE_SZ OPTION_GET(NUMBER,irq_table_size)
 
 EMBOX_UNIT_INIT(nvic_init);
@@ -138,7 +140,7 @@ unsigned int irqctrl_get_prio(unsigned int interrupt_nr) {
 	int nr = (int) interrupt_nr - 16;
 	if (nr >= 0) {
 		/* In NVIC the lower priopity means higher IRQ prioriry. */
-		return 15 - REG8_LOAD(NVIC_PRIORITY_BASE + nr);
+		return 15 - (REG8_LOAD(NVIC_PRIORITY_BASE + nr) >> NVIC_PRIO_SHIFT);
 	}
 	return 0;
 }
