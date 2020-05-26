@@ -58,7 +58,7 @@ static int bootp_process(struct bootphdr *bph, struct net_device *dev) {
 
 	ret = bootp_get_ip(bph, &ip_addr);
 	if (ret) {
-		return -ETIMEDOUT;
+		return ret;
 	}
 
 	ret = bootp_get_mask(bph, &ip_mask);
@@ -151,18 +151,18 @@ int bootp_client(struct net_device *dev) {
 		MODOPS_TIMEOUT / MSEC_PER_SEC,
 		(MODOPS_TIMEOUT % MSEC_PER_SEC) * USEC_PER_MSEC
 	};
-	int ret, sock;
+	int ret, tx_sock, rx_sock;
 	uint8_t req_buff[sizeof(struct ethhdr) + IP_MIN_HEADER_SIZE + sizeof(struct udphdr) + sizeof(struct bootphdr)];
 	struct sockaddr_ll link_layer;
-	struct bootphdr *bootphdr;
+	struct sockaddr_in addr;
 
 	ret = bootp_prepare(dev);
 	if (ret) {
 		return ret;
 	}
 
-	sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-	if (sock == -1) {
+	tx_sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	if (tx_sock == -1) {
 		return -errno;
 	}
 
@@ -176,41 +176,66 @@ int bootp_client(struct net_device *dev) {
 	link_layer.sll_pkttype = PACKET_OTHERHOST;
 	link_layer.sll_halen = 6;
 
-
-	if (-1 == bind(sock, (struct sockaddr *)&link_layer, sizeof(struct sockaddr_ll))) {
+	if (-1 == bind(tx_sock, (struct sockaddr *)&link_layer, sizeof(struct sockaddr_ll))) {
 		ret = -errno;
 		goto error;
 	}
 
-	if (-1 == setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE,
+	if (-1 == setsockopt(tx_sock, SOL_SOCKET, SO_BINDTODEVICE,
 				&dev->name[0], strlen(&dev->name[0]))) {
 		ret = -errno;
 		goto error;
 	}
 
-	if (-1 == setsockopt(sock, SOL_SOCKET, SO_RCVTIMEO,
+	if (-1 == setsockopt(tx_sock, SOL_SOCKET, SO_RCVTIMEO,
 				&timeout, sizeof timeout)) {
 		ret = -errno;
 		goto error;
 	}
 
+	rx_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (tx_sock == -1) {
+		return -errno;
+	}
+
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(BOOTP_CLIENT_PORT);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	if (-1 == bind(rx_sock, (struct sockaddr *)&addr, sizeof addr)) {
+		ret = -errno;
+		goto error_rx;
+	}
+
+	if (-1 == setsockopt(rx_sock, SOL_SOCKET, SO_BINDTODEVICE,
+				&dev->name[0], strlen(&dev->name[0]))) {
+		ret = -errno;
+		goto error_rx;
+	}
+	if (-1 == setsockopt(rx_sock, SOL_SOCKET, SO_RCVTIMEO,
+				&timeout, sizeof timeout)) {
+		ret = -errno;
+		goto error_rx;
+	}
+
 	bootp_make_discover(dev, req_buff);
 
-	if (-1 == sendto(sock, req_buff, sizeof(req_buff), 0,
+	if (-1 == sendto(tx_sock, req_buff, sizeof(req_buff), 0,
 			(struct sockaddr *) &link_layer, sizeof(struct sockaddr_ll))) {
 		ret = -errno;
-		goto error;
+		goto error_rx;
 	}
 
-	if (-1 == recv(sock, req_buff, sizeof(req_buff), 0)) {
+	if (-1 == recv(rx_sock, req_buff, sizeof(req_buff), 0)) {
 		ret = -errno;
-		goto error;
+		goto error_rx;
 	}
 
-	bootphdr = (void *)&req_buff[sizeof(struct ethhdr) + IP_MIN_HEADER_SIZE + sizeof(struct udphdr)];
-	ret = bootp_process(bootphdr, dev);
+	ret = bootp_process((void*)req_buff, dev);
+error_rx:
+	close(rx_sock);
 error:
-	close(sock);
+	close(tx_sock);
 	return ret;
 }
 
