@@ -23,19 +23,27 @@
 .thumb_func
 .global arm_m_irq_entry
 arm_m_irq_entry:
-	/* Just handle IRQ (without pending work) if we are in
-	 * nested intertupt */
+	push {lr}
+	bl nvic_irq_handle
+	pop {lr}
+
+	/* Return if we are in nested intertupt */
 	ldr r1, =SCB_ICSR
 	ldr r0, [r1]
 	tst r0, SCB_ICSR_RETTOBASE
 	beq 1f
 
-	/* Just handle IRQ if we already requested PendSV */
+	/* Return if we already requested PendSV */
 	tst r0, SCB_ICSR_PENDSVSET
 	bne 1f
 
-	/* TODO Here we should check whether critical_dispatch_pending()
-	 * really required */
+	/* Return if there is no work pending */
+	push {lr}
+	bl critical_dispatch_required
+	pop {lr}
+	cmp r0, #0
+	beq 1f
+
 	/* Prepare context to exit to arm_m_dispatch_pending() */
 #ifdef ARM_FPU_VFP
 	sub sp, #SAVED_FPU_REGS_SIZE
@@ -48,9 +56,6 @@ arm_m_irq_entry:
 	sub  sp, #(4 * 5)              /* r12, r0-r4 */
 
 1:
-	push {lr}
-	bl nvic_irq_handle
-	pop {lr}
 	bx lr
 
 arm_m_dispatch_pending:
