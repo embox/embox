@@ -28,6 +28,12 @@
 #define BOOTP_SERVER_PORT 67
 #define BOOTP_CLIENT_PORT 68
 
+#define DHCP_MSG_TYPE_DISCOVER   1
+#define DHCP_MSG_TYPE_OFFER      2
+#define DHCP_MSG_TYPE_REQUEST    3
+#define DHCP_MSG_TYPE_DECLINE    4
+#define DHCP_MSG_TYPE_ACK        5
+
 struct bootphdr {
 	uint8_t op;          /* message type */
 	uint8_t htype;       /* hw_addr type */
@@ -117,8 +123,16 @@ struct bootphdr {
 #define TAG_DHCP_CLIENTID       ((unsigned char)  61)
 #define TAG_FQDN                ((unsigned char)  81)
 
+struct dhcp_option {
+	uint8_t tag;
+	uint8_t len;
+	uint8_t *value;
+};
+
 extern int bootp_build_request(struct bootphdr *bph, uint8_t opcode,
 		uint8_t hw_type, uint8_t hw_len, uint8_t *hw_addr);
+
+extern int bootp_find_option(struct bootphdr *bph, struct dhcp_option *opt);
 
 extern int bootp_get_ip(struct bootphdr *bph, in_addr_t *ip);
 
@@ -127,5 +141,9 @@ extern int bootp_get_nameserver(struct bootphdr *bph, in_addr_t *ip);
 extern int bootp_get_gateway(struct bootphdr *bph, in_addr_t *ip);
 
 extern int bootp_get_mask(struct bootphdr *bph, in_addr_t *ip);
+
+extern int bootp_build_offer(struct bootphdr *bph, uint32_t xid,  uint8_t msg_type,
+		uint8_t hw_type, uint8_t hw_len, uint8_t *hw_addr,
+		in_addr_t client_ip_addr, in_addr_t server_ip_addr);
 
 #endif /* NET_LIB_BOOTP_H_ */
