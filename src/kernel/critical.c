@@ -38,6 +38,14 @@ void critical_dispatch_pending(void) {
 	ipl_restore(ipl);
 }
 
+int critical_dispatch_required(void) {
+	struct critical_dispatcher **pp = cpudata_ptr(&dispatch_queue);
+	unsigned int count = critical_count();
+	struct critical_dispatcher *d;
+
+	return ((d = *pp) && !(d->mask & count));
+}
+
 void critical_request_dispatch(struct critical_dispatcher *d) {
 	struct critical_dispatcher **pp;
 	unsigned int inv_mask;
