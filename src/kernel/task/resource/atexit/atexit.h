@@ -14,6 +14,7 @@
 
 struct task_atexit {
 	void (*atexit_func[ATEXIT_MAX])(void);
+	int slot;
 };
 
 __BEGIN_DECLS
