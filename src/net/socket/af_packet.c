@@ -204,6 +204,19 @@ static int packet_recvmsg(struct sock *sk, struct msghdr *msg,
 }
 
 static int packet_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
+	struct net_device *dev;
+	struct sk_buff *skb;
+
+	dev = sk->opt.so_bindtodevice;
+	if (dev == NULL) {
+		return -ENODEV;
+	}
+
+	skb = skb_alloc(msg->msg_iov[0].iov_len);
+	memcpy(skb->mac.raw, msg->msg_iov[0].iov_base, msg->msg_iov[0].iov_len);
+	if (dev->drv_ops && dev->drv_ops->xmit) {
+		dev->drv_ops->xmit(dev, skb);
+	}
 	return 0;
 }
 

@@ -149,16 +149,17 @@ int main(int argc, char **argv) {
 			strcat(buf, "bootpc ");
 			strncat(buf, ifname, sizeof(buf)-strlen(buf)-1);
 			if (0 == (err = system(buf))) {
-				return 0;
+				continue;
 			}
 			switch(err) {
 				case -ENOENT:
 					printf("'bootp' not found using static config\n");
 					break;
 				default:
-					printf("BOOTP failed, loading default config for %s...\n", argv[1]);
+					printf("BOOTP failed, using static config for %s...\n", ifname);
 					break;
 				}
+			continue;
 		}
 		setup_static_config(input, buf, ifname);
 	}
