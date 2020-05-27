@@ -187,12 +187,6 @@ int bootp_client(struct net_device *dev) {
 		goto error;
 	}
 
-	if (-1 == setsockopt(tx_sock, SOL_SOCKET, SO_RCVTIMEO,
-				&timeout, sizeof timeout)) {
-		ret = -errno;
-		goto error;
-	}
-
 	rx_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 	if (tx_sock == -1) {
 		return -errno;
