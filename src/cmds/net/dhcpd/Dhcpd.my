@@ -15,6 +15,7 @@ package embox.cmd.net
 	''')
 module dhcpd {	
 	option string if_name = "eth0"
+	option string client_ip_addr = "192.168.2.1"
 
 	source "dhcpd.c"
 
