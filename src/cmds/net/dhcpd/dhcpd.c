@@ -18,10 +18,8 @@
 
 #include <framework/mod/options.h>
 
-#define DHCPD_IF_NAME     "eth0"
-
-//#define NEIGHBOUR_IP_ADDR  "10.0.2.10"
-#define NEIGHBOUR_IP_ADDR  "192.168.2.1"
+#define DHCPD_IF_NAME      OPTION_STRING_GET(if_name)
+#define NEIGHBOUR_IP_ADDR  OPTION_STRING_GET(client_ip_addr)
 
 static int dhcpd_create_socket(struct net_device *dev) {
 	int sock;
