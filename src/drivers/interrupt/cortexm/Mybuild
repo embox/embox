@@ -4,11 +4,8 @@ module cortexm_nvic extends embox.driver.interrupt.irqctrl_api {
 	option number log_level = 1
 	option number irq_table_size = 16
 	source "cortexm_nvic.c",
-			"cortexm_nvic.h",
-			"cortexm_irq_handle.S"
-}
+			"cortexm_nvic.h"
 
-module cortexm0_nvic extends embox.driver.interrupt.irqctrl_api {
-	source "cortexm0_nvic.c",
-			"cortexm0_nvic.h"
+	/* FIXME It should be moved to src/arch/arm/ */
+	source "irq_entry.S"
 }
