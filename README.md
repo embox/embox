@@ -22,6 +22,14 @@ rm build/extbld/third_party/lkl/lib/.{builded,installed}
 make -C build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl clean
 ```
 
+### Links
+
+* https://github.com/lsds/sgx-lkl
+* https://github.com/lsds/sgx-lkl/blob/d8716cf49e32bee002853d6d979003300b92f66a/src/main/load_elf.c
+* https://github.com/bediger4000/userlandexec
+* https://www.microsoft.com/en-us/research/uploads/prod/2018/08/Confidential_Computing_Peter_Pietzuch_Manuel_Costa.pdf
+* https://storage.googleapis.com/pub-tools-public-publication-data/pdf/6ece8c450ee375eb31b2795a2a227a5d8c3598b7.pdf
+
 ---
 
 Embox is a configurable operating system kernel designed for resource
