@@ -86,8 +86,8 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 		log_error("fail %d", ret);
 	}
 
-	while (HAL_SPI_GetState(handle) != HAL_SPI_STATE_READY)
-		;
+	while (HAL_SPI_GetState(handle) != HAL_SPI_STATE_READY) {
+	}
 
 	if (dev->flags & SPI_CS_INACTIVE && dev->is_master) {
 		/* Note: we suppose that there's a single slave device
