@@ -1,0 +1,10 @@
+package platform.adar7251.drivers
+
+module adar7251 {
+	option number log_level=4
+	 
+	source "adar7251_driver.c"
+
+	@IncludeExport(path="drivers")
+	source "adar7251_driver.h"
+}

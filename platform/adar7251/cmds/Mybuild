@@ -1,0 +1,8 @@
+package platform.adar7251.cmds
+
+@AutoCmd
+@Cmd(name = "adar7251",
+	help = "Get ADC samples and send them with UDP")
+module adar7251 {
+	source "adar7251.c"
+}
