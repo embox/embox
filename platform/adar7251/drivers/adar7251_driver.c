@@ -84,8 +84,10 @@ static void adar_ctrl_port_init(struct adar7251_dev *adar7251_dev) {
 
 	log_debug("in ADARinitControlPort");
 
+	sleep(1);
 	/* Chip must be deselected */
 	gpio_set(CS_PORT, CS_PIN, 1);
+	spi_set_master_mode(dev);
 
 	/* Setup the spi for 8 bit data, high steady state clock,
 	   second edge capture, with a 1MHz clock rate
@@ -118,6 +120,8 @@ static void adar_ctrl_port_init(struct adar7251_dev *adar7251_dev) {
 	spi_transfer(dev, &buf_out, &buf_in, 1);
 	buf_out = LowerByte(CRC_DISABLE_CRC);
 	spi_transfer(dev, &buf_out, &buf_in, 1);
+
+	gpio_set(CS_PORT, CS_PIN, 1);
 }
 
 int adar7251_hw_init(struct adar7251_dev *dev) {
