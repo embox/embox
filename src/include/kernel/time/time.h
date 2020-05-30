@@ -87,7 +87,9 @@ static inline time64_t clock_to_ns(uint32_t hz, clock_t ticks) {
 
 static inline clock_t ns_to_clock(uint32_t hz, time64_t ns) {
 	assert(hz != 0);
-	return (ns * hz + NSEC_PER_SEC - 1) / NSEC_PER_SEC;
+	/* for example, 10001000 ns = 1 ms 1 usec, hz = 1000. Then,
+	 * there should be 3 clocks to guarantee 1 ms 1 usec fits the interval. */
+	return (ns * hz + NSEC_PER_SEC - 1) / NSEC_PER_SEC + 1;
 }
 
 static inline struct timespec cycles64_to_timespec(uint32_t hz, uint64_t cycles) {

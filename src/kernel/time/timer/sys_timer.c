@@ -14,6 +14,7 @@
 #include <kernel/time/timer.h>
 #include <kernel/time/time.h>
 #include <kernel/sched/sched_lock.h>
+#include <hal/clock.h>
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
@@ -34,12 +35,8 @@ void timer_start(struct sys_timer *tmr, clock_t jiffies) {
 
 	timer_stop(tmr);
 
-	if (timer_is_periodic(tmr)) {
-		tmr->load = jiffies;
-		tmr->cnt = tmr->load + 1;
-	} else {
-		tmr->cnt = tmr->load = jiffies + 1;
-	}
+	tmr->load = jiffies;
+	tmr->cnt = clock_sys_ticks() + tmr->load;
 
 	sched_lock();
 	{
