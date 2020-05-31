@@ -26,7 +26,6 @@ enum spi_mode_t {
 };
 
 struct spi_device {
-	int    cs;
 	int    flags;
 	struct dev_module *dev;
 	struct spi_ops *spi_ops;
