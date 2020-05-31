@@ -84,8 +84,8 @@ static mb_timers_t *timers = (mb_timers_t *) CONFIG_XILINX_TIMER_BASEADDR;
  * timer.
  */
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	timer0->tcsr |= TIMER_INT;
 	clock_tick_handler(irq_nr,dev_id);
+	timer0->tcsr |= TIMER_INT;
 	return IRQ_HANDLED;
 }
 
