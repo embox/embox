@@ -1,0 +1,21 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "blockdev",
+	help = "blockdev shows the device blocks information",
+	man = '''
+		NAME
+			blockdev - block devices information
+		SYNOPSIS
+			blockdev displays block devices related information, like the block size
+			of the specified block or the report of the block devices present, in terms
+			of block size and total size.
+		AUTHOR
+			Adityar Rayala
+	''')
+module blockdev {
+	source "blockdev.c"
+	@NoRuntime depends embox.framework.cmd
+	@NoRuntime depends embox.compat.libc.stdio.printf
+	depends embox.driver.block_dev
+}
