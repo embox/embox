@@ -9,6 +9,8 @@
 #include <drivers/adar7251_driver.h>
 #include "adar7251.h"
 
+#include <drivers/nucleo_f429zi_audio.h>
+
 #define SPI_BUS_NUM      1
 
 #define ADC_START_PORT   GPIO_PORT_B
@@ -125,6 +127,8 @@ static void adar_ctrl_port_init(struct adar7251_dev *adar7251_dev) {
 }
 
 int adar7251_hw_init(struct adar7251_dev *dev) {
+
+	sai_init();
 
 	gpio_setup_mode(ADC_START_PORT, ADC_START_PIN, GPIO_MODE_OUTPUT);
 	gpio_setup_mode(CS_PORT, CS_PIN, GPIO_MODE_OUTPUT);
