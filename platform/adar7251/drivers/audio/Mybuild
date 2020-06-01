@@ -1,0 +1,11 @@
+package platform.adar7251.drivers
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module nucleo_f429_audio {
+	source "nucleo_f429zi_audio.c"
+	
+	@IncludeExport(path="drivers")
+	source "nucleo_f429zi_audio.h"
+
+	depends third_party.bsp.st_bsp_api
+}
