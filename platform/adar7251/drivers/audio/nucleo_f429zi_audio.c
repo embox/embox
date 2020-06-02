@@ -5,10 +5,39 @@
  *      Author: anton
  */
 
+
+#include <kernel/irq.h>
+
 #include <stm32f4xx_hal.h>
 
-SAI_HandleTypeDef hsai_BlockA1;
+#if 0
+#define AUDIO_SAIx_FS_GPIO_PORT              GPIOG
+#define AUDIO_SAIx_FS_AF                     GPIO_AF10_SAI2
+#define AUDIO_SAIx_FS_PIN                    GPIO_PIN_9
+#define AUDIO_SAIx_SCK_GPIO_PORT             GPIOA
+#define AUDIO_SAIx_SCK_AF                    GPIO_AF8_SAI2
+#define AUDIO_SAIx_SCK_PIN                   GPIO_PIN_2
+#define AUDIO_SAIx_SD_GPIO_PORT              GPIOG
+#define AUDIO_SAIx_SD_AF                     GPIO_AF10_SAI2
+#define AUDIO_SAIx_SD_PIN                    GPIO_PIN_10
+#define AUDIO_SAIx_MCLK_GPIO_PORT            GPIOA
+#define AUDIO_SAIx_MCLK_AF                   GPIO_AF10_SAI2
+#define AUDIO_SAIx_MCLK_PIN                  GPIO_PIN_1
+#endif
+
+struct sai_device {
+	uint8_t buf[4096];
+};
+
+static struct sai_device sai_device;
+
+static SAI_HandleTypeDef hsai_BlockA1;
 DMA_HandleTypeDef hdma_sai1_a;
+
+static irq_return_t sai_interrupt(unsigned int irq_num, void *dev_id) {
+
+	return IRQ_HANDLED;
+}
 
 /**
   * @brief SAI1 Initialization Function
@@ -64,7 +93,7 @@ static void MX_DMA_Init(void)
 
   /* DMA interrupt init */
   /* DMA2_Stream1_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 0, 0);
+  HAL_NVIC_SetPriority(DMA2_Stream1_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream1_IRQn);
 
 }
@@ -87,9 +116,20 @@ static void MX_GPIO_Init(void)
 }
 
 int sai_init(void) {
-	  /* Initialize all configured peripherals */
-	  MX_GPIO_Init();
-	  MX_DMA_Init();
-	  MX_SAI1_Init();
-	  return 0;
+	int res;
+
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_DMA_Init();
+	MX_SAI1_Init();
+
+	res = irq_attach(DMA2_Stream1_IRQn + 16, sai_interrupt, 0, &sai_device, "");
+	if (res < 0) {
+		return res;
+	}
+	return 0;
 }
+
+
+
+STATIC_IRQ_ATTACH(DMA2_Stream1_IRQn + 16, sai_interrupt, &sai_device);
