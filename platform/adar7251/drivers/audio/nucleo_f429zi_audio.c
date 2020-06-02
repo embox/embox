@@ -26,7 +26,7 @@
 #endif
 
 struct sai_device {
-	uint8_t buf[4096];
+	uint32_t buf[4096];
 };
 
 static struct sai_device sai_device;
@@ -130,6 +130,8 @@ int sai_init(void) {
 	return 0;
 }
 
-
+int sai_recieve(struct sai_device *sai_dev, uint8_t buf, int len) {
+	return 0;
+}
 
 STATIC_IRQ_ATTACH(DMA2_Stream1_IRQn + 16, sai_interrupt, &sai_device);
