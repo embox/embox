@@ -5,9 +5,7 @@
  *      Author: anton
  */
 
-//#include <stm32f4xx.h>
 #include <stm32f4xx_hal.h>
-//#include <stm32f4xx_hal_sai.h>
 
 SAI_HandleTypeDef hsai_BlockA1;
 DMA_HandleTypeDef hdma_sai1_a;
