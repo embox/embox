@@ -10,11 +10,14 @@
 
 #include <kernel/time/timer.h>
 #include <hal/clock.h>
+#include <hal/ipl.h>
 
 static DLIST_DEFINE(sys_timers_list); /* list head to timers */
 
 void timer_strat_start(struct sys_timer *tmr) {
 	struct sys_timer *it_tmr;
+	struct dlist_head *next_tmr_lnk = &sys_timers_list;
+	ipl_t ipl;
 
 	dlist_head_init(&tmr->lnk);
 	timer_set_started(tmr);
@@ -27,20 +30,21 @@ void timer_strat_start(struct sys_timer *tmr) {
 			/* decrease value of next timer after inserting */
 			it_tmr->cnt -= tmr->cnt;
 
-			dlist_add_prev(&tmr->lnk, &it_tmr->lnk);
-
-			return;
+			next_tmr_lnk = &it_tmr->lnk;
+			goto out;
 		}
 		tmr->cnt -= it_tmr->cnt;
-
 	}
 
-	/* add the latest timer to end of list */
-	dlist_add_prev(&tmr->lnk, &sys_timers_list);
+out:
+	ipl = ipl_save();
+	dlist_add_prev(&tmr->lnk, next_tmr_lnk);
+	ipl_restore(ipl);
 }
 
 void timer_strat_stop(struct sys_timer *ptimer) {
 	struct sys_timer *next_tmr;
+	ipl_t ipl;
 
 	timer_set_stopped(ptimer);
 
@@ -49,7 +53,9 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 		next_tmr->cnt += ptimer->cnt;
 	}
 
+	ipl = ipl_save();
 	dlist_del(&ptimer->lnk);
+	ipl_restore(ipl);
 }
 
 bool timer_strat_need_sched(clock_t jiffies) {
