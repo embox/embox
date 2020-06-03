@@ -37,8 +37,8 @@ TEST_CASE("strpbrk with printable strings") {
 }
 
 TEST_CASE("strpbrk with non-printable data") {
-	char data[] = {0xCA, 0xFE, 0xBA, 0xBE, 0x00};
-	char key[] = {0xBA, 0x00};
+	char data[] = "\xCA\xFE\xBA\xBE";
+	char key[] = "\xBA";
 
 	test_assert_equal(strpbrk(data, key), data + 2);
 	test_assert_equal(strpbrk(key, data), key);
