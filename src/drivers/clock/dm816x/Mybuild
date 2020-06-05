@@ -5,5 +5,4 @@ module dm816x_timer extends embox.arch.clock {
 
 	depends embox.kernel.irq
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }

@@ -5,7 +5,6 @@ module at91_pitc extends embox.arch.clock {
 
 	depends embox.kernel.irq
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 module gptimer extends embox.arch.clock {
@@ -13,7 +12,6 @@ module gptimer extends embox.arch.clock {
 
 	depends embox.kernel.irq
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 
 	depends embox.driver.ambapp_api /*if ampa pnp enable option not required */
 	option number gptimer_base=0x80000300 /* if amba pnp disable */
@@ -26,14 +24,12 @@ module cortexm_systick extends embox.arch.clock {
 	source "cortexm_systick.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 module raspi_systick extends embox.arch.clock {
 	source "raspi_systick.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 	depends embox.driver.periph_memory
 }
 
@@ -42,14 +38,12 @@ module cmsis_systick extends embox.arch.clock {
 	source "cmsis_systick.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 module ppc_clk extends embox.arch.clock {
 	source "ppc_clk.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 // TODO Can be used with pit. That means tsc not implements embox.arch.clock
@@ -63,14 +57,12 @@ module mips_clk extends embox.arch.clock {
 
 	depends embox.arch.interrupt
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 module riscv_clk extends embox.arch.clock {
 	source "riscv_clk.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 
 	option number base_mtime=0x200bff8
 	option number base_mtimecmp=0x2004000
@@ -82,7 +74,6 @@ module lapic_timer extends embox.arch.clock {
 
 	depends embox.driver.interrupt.lapic
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 module usermode extends embox.arch.clock {
@@ -90,7 +81,6 @@ module usermode extends embox.arch.clock {
 
 	depends embox.kernel.irq
 	@NoRuntime depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
 }
 
 module hpet {
