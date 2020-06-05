@@ -13,6 +13,7 @@ module clock_source {
 	@NoRuntime depends embox.mem.pool
 
 	depends slowdown
+	depends embox.kernel.lthread.lthread
 }
 
 module kernel_time {
