@@ -6,6 +6,7 @@ module nucleo_f429_audio {
 	
 	source "nucleo_f429zi_audio.c"
 	source "cube_callbacks.c"
+	source "nucleo_f429zi_sai_msp.c"
 	
 	@IncludeExport(path="drivers")
 	source "nucleo_f429zi_audio.h"
