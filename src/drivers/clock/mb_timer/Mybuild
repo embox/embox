@@ -7,6 +7,7 @@ module mb_timer extends embox.arch.clock {
 	option number irq_num
 
 	depends embox.kernel.irq
+	@NoRuntime depends embox.kernel.time.clock_source
 	depends embox.kernel.time.timer_handler
 	depends embox.driver.periph_memory
 }
