@@ -12,7 +12,7 @@ MYFILES := \
 		\( -name Mybuild -o -name \*.my \) -print)
 
 CONFIGFILES_PATH := $(CONF_DIR)
-CONFIGFILES := $(wildcard $(CONFIGFILES_PATH)/*.config)
+CONFIGFILES := $(wildcard $(CONFIGFILES_PATH)/mods.conf)
 
 ifeq ($(strip $(CONFIGFILES)),)
 $(error No config files were found in '$(CONFIGFILES_PATH)')
