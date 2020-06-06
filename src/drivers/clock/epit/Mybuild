@@ -7,7 +7,6 @@ module epit extends embox.arch.clock {
 	option number irq_nr=88
 	option number freq=1000 /* Hz */
 
-	depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
+	@NoRuntime depends embox.kernel.time.clock_source
 	depends embox.driver.interrupt.irqctrl_api
 }

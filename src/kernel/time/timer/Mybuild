@@ -9,7 +9,6 @@ module sys_timer {
 
 	depends embox.kernel.timer.strategy.api
 	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.timer_handler
 	/*uses ms2jiffies */
 	depends embox.kernel.time.jiffies
 	depends embox.arch.clock

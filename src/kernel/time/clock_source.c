@@ -23,6 +23,9 @@
 #include <kernel/time/time.h>
 #include <module/embox/kernel/time/slowdown.h>
 
+#include <kernel/sched/schedee_priority.h>
+#include <kernel/lthread/lthread.h>
+
 /* XXX used by x86/test/packetdrill */
 #define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
 
@@ -34,7 +37,7 @@ ARRAY_SPREAD_DEF(const struct time_counter_device *const, __counter_devices);
 POOL_DEF(clock_source_pool, struct clock_source_head,
 						OPTION_GET(NUMBER, clocks_quantity));
 
-DLIST_DEFINE(clock_source_list);
+static DLIST_DEFINE(clock_source_list);
 
 static struct timespec cs_full_read(struct clock_source *cs);
 static struct timespec cs_event_read(struct clock_source *cs);
@@ -56,6 +59,8 @@ static struct clock_source_head *clock_source_find(struct clock_source *cs) {
 	return NULL;
 }
 
+extern int clock_tick_init(void);
+
 int clock_source_register(struct clock_source *cs) {
 	struct clock_source_head *csh;
 
@@ -76,6 +81,8 @@ int clock_source_register(struct clock_source *cs) {
 	}
 
 	dlist_add_prev(dlist_head_init(&csh->lnk), &clock_source_list);
+
+	clock_tick_init();
 
 	jiffies_init();
 

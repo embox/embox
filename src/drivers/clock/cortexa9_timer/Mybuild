@@ -9,6 +9,6 @@ module cortexa9 extends embox.arch.clock {
 
 	source "cortexa9_timer.c"
 
-	@NoRuntime depends embox.kernel.time.timer_handler
+	@NoRuntime depends embox.kernel.time.clock_source
 	depends embox.driver.interrupt.irqctrl_api
 }
