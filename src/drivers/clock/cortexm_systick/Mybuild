@@ -1,0 +1,9 @@
+package embox.driver.clock
+
+module cortexm_systick extends embox.arch.clock {
+	option number systick_hz = 1000
+
+	source "cortexm_systick.c"
+
+	depends embox.kernel.time.clock_source
+}
