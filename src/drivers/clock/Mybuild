@@ -27,13 +27,6 @@ module tsc {
 	depends embox.kernel.time.clock_source
 }
 
-module mips_clk extends embox.arch.clock {
-	source "mips_clk.c"
-
-	depends embox.arch.interrupt
-	@NoRuntime depends embox.kernel.time.clock_source
-}
-
 module riscv_clk extends embox.arch.clock {
 	source "riscv_clk.c"
 

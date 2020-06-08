@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module mips_clk extends embox.arch.clock {
+	source "mips_clk.c"
+
+	depends embox.arch.interrupt
+	depends embox.kernel.time.clock_source
+}
