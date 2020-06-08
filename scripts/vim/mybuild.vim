@@ -7,7 +7,7 @@
 "
 " Also add following command to ~/.vimrc 
 "
-" au BufRead,BufNewFile *.my,Mybuild,mods.config set filetype=mybuild
+" au BufRead,BufNewFile *.my,Mybuild,mods.conf set filetype=mybuild
 
 syn keyword	myDepends	depends
 syn keyword	myInclude	include

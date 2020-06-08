@@ -15,5 +15,5 @@ The HTML page structure should be the following:
 Pressing on LEDs toggles its states. Also you can change Network settings
 
 Pressing "Save" button will save current LEDs state to internal flash memory,
-if it's allowed in your mods.config. After rebooting the configuration
+if it's allowed in your mods.conf. After rebooting the configuration
 will be restored automatically.

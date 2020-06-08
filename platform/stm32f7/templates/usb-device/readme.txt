@@ -14,7 +14,7 @@ Compile and run one of the two following examples:
 	
 	3. Now you should to enable USE_USB_HS or USE_USB_FS as it is stated in usb_device_example/readme.txt. To do this, modify platform/stm32f7/cmds/usb_device_example/Src/usbd_conf.c: Insert '#define USE_USB_HS' at the beginning of the file.
 	
-	4. Uncomment module 'stm32f7.cmd.usb_device_example' in mods.config and rebuild Embox.
+	4. Uncomment module 'stm32f7.cmd.usb_device_example' in mods.conf and rebuild Embox.
 	
 	Type 'usb_device_example' in Embox shell to launch the imported example.
 
@@ -29,6 +29,6 @@ Compile and run one of the two following examples:
 	
 	3. Now you should to enable USE_USB_HS or USE_USB_FS as it is stated in usb_host_example/readme.txt. To do this, modify platform/stm32f7/cmds/usb_host_example/Src/usbh_conf.c: Insert '#define USE_USB_HS' at the beginning of the file.
 	
-	4. Uncomment module 'stm32f7.cmd.usb_host_example' in mods.config and rebuild Embox.
+	4. Uncomment module 'stm32f7.cmd.usb_host_example' in mods.conf and rebuild Embox.
 	
 	Type 'usb_host_example' in Embox shell to launch the imported example.
