@@ -21,12 +21,6 @@ module cmsis_systick extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.clock_source
 }
 
-module ppc_clk extends embox.arch.clock {
-	source "ppc_clk.c"
-
-	@NoRuntime depends embox.kernel.time.clock_source
-}
-
 // TODO Can be used with pit. That means tsc not implements embox.arch.clock
 module tsc {
 	source "tsc.c"
