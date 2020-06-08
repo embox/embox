@@ -7,17 +7,6 @@ module at91_pitc extends embox.arch.clock {
 	@NoRuntime depends embox.kernel.time.clock_source
 }
 
-module gptimer extends embox.arch.clock {
-	source "gptimer.c"
-
-	depends embox.kernel.irq
-	@NoRuntime depends embox.kernel.time.clock_source
-
-	depends embox.driver.ambapp_api /*if ampa pnp enable option not required */
-	option number gptimer_base=0x80000300 /* if amba pnp disable */
-	option number irq_num=8               /* if amba pnp disable */
-}
-
 module raspi_systick extends embox.arch.clock {
 	source "raspi_systick.c"
 
