@@ -6,6 +6,8 @@
  */
 #include <util/log.h>
 
+#include <unistd.h>
+
 #include <kernel/irq.h>
 
 #include <stm32f4xx_hal.h>
@@ -113,11 +115,16 @@ struct sai_device *sai_init(void) {
 
 	sai_thread_init(&sai_device);
 
+	HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t *)&sai_device.sai_buf[0], sizeof(sai_device.sai_buf) / 4);
+
 	return &sai_device;
 }
 
+
 int sai_recieve(struct sai_device *sai_dev, uint8_t *buf, int len) {
-	HAL_SAI_Receive_DMA(&hsai_BlockA1, buf, len);
+//	log_error("buf %p sai_buf %p", buf, (uint8_t *)&sai_device.sai_buf[0]);
+//	HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t *)&sai_buf[0], sizeof(sai_buf));
+	sleep(1);
 //	HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*)buf, len, 0xFFFFFFFF);
 	return 0;
 }

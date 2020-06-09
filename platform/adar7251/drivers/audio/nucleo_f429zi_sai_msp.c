@@ -48,9 +48,18 @@ void HAL_SAI_MspInit(SAI_HandleTypeDef* hsai)
     hdma_sai1_a.Init.MemInc = DMA_MINC_ENABLE;
     hdma_sai1_a.Init.PeriphDataAlignment = DMA_PDATAALIGN_WORD;
     hdma_sai1_a.Init.MemDataAlignment = DMA_MDATAALIGN_WORD;
+#if 0
     hdma_sai1_a.Init.Mode = DMA_NORMAL;
     hdma_sai1_a.Init.Priority = DMA_PRIORITY_LOW;
     hdma_sai1_a.Init.FIFOMode = DMA_FIFOMODE_DISABLE;
+#else
+    hdma_sai1_a.Init.Mode                = DMA_CIRCULAR;
+    hdma_sai1_a.Init.Priority            = DMA_PRIORITY_HIGH;
+    hdma_sai1_a.Init.FIFOMode            = DMA_FIFOMODE_ENABLE;
+    hdma_sai1_a.Init.FIFOThreshold       = DMA_FIFO_THRESHOLD_FULL;
+    hdma_sai1_a.Init.MemBurst            = DMA_MBURST_SINGLE;
+    hdma_sai1_a.Init.PeriphBurst         = DMA_PBURST_SINGLE;
+#endif
     if (HAL_DMA_Init(&hdma_sai1_a) != HAL_OK)
     {
     	log_error("HAL_DMA_Init failed");

@@ -15,7 +15,7 @@ void HAL_SAI_RxCpltCallback(SAI_HandleTypeDef *hsai)
  /* Prevent unused argument(s) compilation warning */
  UNUSED(hsai);
 
- log_debug("1");
+// log_debug("1");
  /* NOTE : This function should not be modified, when the callback is needed,
            the HAL_SAI_RxCpltCallback could be implemented in the user file
   */
@@ -31,7 +31,7 @@ void HAL_SAI_RxHalfCpltCallback(SAI_HandleTypeDef *hsai)
 {
  /* Prevent unused argument(s) compilation warning */
  UNUSED(hsai);
- log_error("2");
+// log_debug("2");
 
  /* NOTE : This function should not be modified, when the callback is needed,
            the HAL_SAI_RxHalfCpltCallback could be implemented in the user file

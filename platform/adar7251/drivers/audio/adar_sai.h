@@ -13,7 +13,7 @@
 struct thread;
 
 struct sai_device {
-	uint32_t sai_buf[0x600];
+	uint32_t sai_buf[0x800]; /* 2 * 1024  udp frames */
 	struct thread *sai_thread;
 	int (*sai_callback)(const void *input, unsigned long frameCount, void *userData );
 	void *sai_user_data;
