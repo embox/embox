@@ -11,9 +11,7 @@
 #include <stm32f4xx_hal.h>
 #include <stm32f4xx_hal_dma.h>
 
-struct sai_device {
-	uint32_t buf[4096];
-};
+#include "adar_sai.h"
 
 static struct sai_device sai_device;
 
@@ -108,13 +106,18 @@ struct sai_device *sai_init(void) {
 
 	res = irq_attach(DMA2_Stream1_IRQn + 16, sai_interrupt, 0, &sai_device, "");
 	if (res < 0) {
+		log_error("irq_attach failed errcode %d", res);
+
 		return NULL;
 	}
+
+	sai_thread_init(&sai_device);
+
 	return &sai_device;
 }
 
 int sai_recieve(struct sai_device *sai_dev, uint8_t *buf, int len) {
-	HAL_SAI_Receive_DMA(&hsai_BlockA1, (uint8_t*)buf, len);
+	HAL_SAI_Receive_DMA(&hsai_BlockA1, buf, len);
 //	HAL_SAI_Receive(&hsai_BlockA1, (uint8_t*)buf, len, 0xFFFFFFFF);
 	return 0;
 }
