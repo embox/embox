@@ -3,7 +3,7 @@
 #include <drivers/adar7251_driver.h>
 #include <drivers/nucleo_f429zi_audio.h>
 
-static uint8_t rx_buf[0x600];
+static uint8_t rx_buf[0x400];
 static struct adar7251_dev adar7251_dev;
 
 int main(int argc, char **argv) {
