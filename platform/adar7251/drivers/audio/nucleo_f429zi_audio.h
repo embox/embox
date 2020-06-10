@@ -14,6 +14,8 @@ struct sai_device;
 
 extern struct sai_device *sai_init(void);
 
-extern int sai_recieve(struct sai_device *sai_dev, uint8_t *buf, int len);
+extern int sai_receive(struct sai_device *sai_dev, uint8_t *buf, int len);
+
+#define SAI_SAMPLES_BUFFER 0x200
 
 #endif /* PLATFORM_ADAR7251_DRIVERS_AUDIO_NUCLEO_F429ZI_AUDIO_H_ */
