@@ -67,6 +67,13 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 }
 
 static void show_usb_desc_interface(struct usb_dev *usb_dev) {
+	if (!usb_dev->iface_desc[0]) {
+		printf(" Interface Descriptor:\n"
+			   "   No interfaces\n"
+		);
+		return;
+	}
+
 	printf(" Interface Descriptor:\n"
 			"   b_length             %5u\n"
 			"   b_desc_type          %5u\n"
@@ -92,7 +99,10 @@ static void show_usb_desc_configuration(struct usb_dev *usb_dev) {
 	struct usb_desc_configuration *config = \
 				(struct usb_desc_configuration *) usb_dev->config_buf;
 	
-	if(!config) {
+	if (!config) {
+		printf(" Configuration Descriptor:\n"
+			   "   No configurations\n\n"
+		);
 		return;
 	}
 
