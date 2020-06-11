@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# libnss3-dev, libnss3-tools, libcacard-dev packages are required
+# to run properly
+
+FAKE_SMARTCARD="fake_smartcard.img"
+
+if [ -d $FAKE_SMARTCARD ]; then
+	echo "$FAKE_SMARTCARD found."
+else
+	echo "$FAKE_SMARTCARD not found. A new one will be created now..."
+
+	# It's taken from QEMU's docs/ccid.txt
+	mkdir $FAKE_SMARTCARD
+	cd $FAKE_SMARTCARD
+	certutil -N -d sql:$PWD
+	certutil -S -d sql:$PWD -s "CN=Fake Smart Card CA" -x -t TC,TC,TC -n fake-smartcard-ca
+	certutil -S -d sql:$PWD -t ,, -s "CN=John Doe" -n id-cert -c fake-smartcard-ca
+	certutil -S -d sql:$PWD -t ,, -s "CN=John Doe (signing)" --nsCertType smime -n signing-cert -c fake-smartcard-ca
+	certutil -S -d sql:$PWD -t ,, -s "CN=John Doe (encryption)" --nsCertType sslClient -n encryption-cert -c fake-smartcard-ca
+	cd -
+fi
+
+./scripts/qemu/auto_qemu \
+	-device usb-ccid \
+	-device ccid-card-emulated,backend=certificates,db=sql:$FAKE_SMARTCARD,cert1=id-cert,cert2=signing-cert,cert3=encryption-cert \
+	$@
