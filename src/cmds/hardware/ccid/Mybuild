@@ -1,0 +1,21 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "ccid_cmd",
+	man = '''
+	NAME
+       ccid_cmd - list Smart Cards, show ATR's and executes commands
+    SYNOPSIS
+       ccid_cmd [ -h ] <usb bus> <usb dev>
+    DESCRIPTION
+	OPTIONS
+			-h
+				Shows usage
+	AUTHORS
+			Alexander Kalmuk
+	''')
+module ccid_cmd {
+	source "ccid_cmd.c"
+
+	@NoRuntime depends embox.driver.usb.core
+}
