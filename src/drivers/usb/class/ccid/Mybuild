@@ -1,0 +1,13 @@
+package embox.driver.usb.class
+
+module ccid {
+	option number log_level=1
+	option number ccid_max_devs=2
+
+	@IncludeExport(path="drivers/usb/class")
+	source "ccid.h"
+
+	source "ccid.c"
+
+	depends embox.driver.usb.core
+}
