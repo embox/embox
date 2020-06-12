@@ -3,24 +3,7 @@ name: CI
 on: [push]
 
 jobs:
-  # does Mybuilds processing and provides mk/.cache to other jobs
-  buildgen:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - run: make confload-test/buildgen
-      - run: make -j $(nproc) buildgen
-      - name: compress
-        run: |
-          mkdir mk-cache
-          tar zcf mk-cache/archive.tar.gz mk/.cache
-      - uses: actions/upload-artifact@v1
-        with:
-          name: mk-cache
-          path: mk-cache
-
   ci:
-    needs: buildgen
     runs-on: ubuntu-16.04 # Embox NFS write test fails with ubuntu 18.04: "RPC: Can't decode result"
     strategy:
       fail-fast: false
@@ -49,13 +32,12 @@ jobs:
       options: --privileged -v /:/host
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/download-artifact@v1
+      - uses: actions/cache@v2
         with:
-          name: mk-cache
-      - name: unpack mk-cache
-        run: |
-          tar zxf mk-cache/archive.tar.gz
-          scripts/continuous/touch-mk-cache.sh
+          path: |
+            mk/.cache
+          key: mybuild-${{ hashFiles('**/Mybuild') }}-${{ hashFiles('**/*.my') }}
+      - run: scripts/continuous/touch-mk-cache.sh
       - run: chroot /host modprobe nfsd
         if: matrix.template == 'x86/test/fs'
       - run: ./scripts/continuous/prepare.sh ${{matrix.template}}
