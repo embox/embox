@@ -11,11 +11,20 @@ include $(EXTBLD_LIB)
 
 PACKETDRILL_SOURCE_DIR := $(BUILD_DIR)/$(PKG_NAME)/gtests/net/$(PKG_NAME)
 
+CFLAGS_NO_PACKED =
+
+GCCVERSIONGTEQ9 := $(shell expr `$(EMBOX_GCC) -dumpversion | cut -f1 -d.` \>= 9)
+
+ifeq "$(GCCVERSIONGTEQ9)" "1"
+    CFLAGS_NO_PACKED = -Wno-address-of-packed-member
+endif
+
 $(BUILD) :
 	cd $(PACKETDRILL_SOURCE_DIR) && ( \
 		$(MAKE) -f Makefile.common \
 			MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			CC=$(EMBOX_GCC) \
+			CFLAGS+=$(CFLAGS_NO_PACKED) \
 			CPPFLAGS+="-I$(abspath $(CURDIR))/include -include $(abspath $(CURDIR))/packetdrill_stubs.h" \
 	)
 	touch $@
