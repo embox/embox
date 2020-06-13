@@ -39,7 +39,6 @@ struct clock_source {
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
 	volatile clock_t jiffies; /**< count of jiffies since clock source started */
-	clock_t jiffies_cnt; /**< interjiffes count */
 	uint32_t flags; /**< periodical or not */
 	struct timespec (*read)(struct clock_source *cs);
 	uint32_t counter_mult;

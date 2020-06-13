@@ -6,7 +6,6 @@
  * @author Alexander Kalmuk
  */
 
-#include <module/embox/kernel/time/slowdown.h>
 #include <kernel/irq_lock.h>
 #include <kernel/time/timer.h>
 #include <kernel/time/clock_source.h>
@@ -16,7 +15,6 @@
 
 #include <framework/mod/options.h>
 
-#define SLOWDOWN_SHIFT OPTION_MODULE_GET(embox__kernel__time__slowdown, NUMBER, shift)
 #define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 
 static struct lthread clock_handler_lt;
@@ -27,15 +25,11 @@ void clock_tick_handler(int irq_num, void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
 
 	assert(cs);
-	if (++cs->jiffies_cnt == (1 << SLOWDOWN_SHIFT)) {
-		cs->jiffies_cnt = 0;
-		cs->jiffies++;
 
-		if (cs_jiffies->event_device &&	irq_num == cs_jiffies->event_device->irq_nr) {
-			if (timer_strat_need_sched(cs_jiffies->jiffies)) {
-				lthread_launch(&clock_handler_lt);
-			}
-		}
+	cs->jiffies++;
+
+	if (timer_strat_need_sched(cs_jiffies->jiffies)) {
+		lthread_launch(&clock_handler_lt);
 	}
 }
 
