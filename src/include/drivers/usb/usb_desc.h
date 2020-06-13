@@ -53,7 +53,7 @@ struct usb_desc_device {
 	uint8_t  i_manufacter;
 	uint8_t  i_product;
 	uint8_t  i_serial_number;
-	uint8_t  i_num_configurations;
+	uint8_t  b_num_configurations;
 } __attribute__((packed));
 
 struct usb_desc_configuration {
