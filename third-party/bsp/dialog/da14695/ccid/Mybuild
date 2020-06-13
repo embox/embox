@@ -1,0 +1,50 @@
+package third_party.bsp.dialog.da14695
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module ccid_sources {
+}
+
+@BuildDepends(ccid_sources)
+module ccid {
+	option number log_level    = 1
+	option number slots        = 1
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v1")
+	source "ccid.c",
+		   "ccid_desc.c"
+
+	@NoRuntime depends ccid_sources
+	@NoRuntime depends ccid_card_api
+	depends third_party.bsp.dialog.da14695.usb_dev_api
+}
+
+abstract module ccid_card_api {
+}
+
+@BuildDepends(ccid_sources)
+module ccid_card_emulated extends ccid_card_api {
+	option number log_level = 1
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v1")
+	source "ccid_card_emulated.c"
+
+	@NoRuntime depends ccid_sources
+	depends third_party.bsp.dialog.da14695.usb_dev_api
+}
