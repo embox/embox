@@ -49,7 +49,7 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			"   i_manufacter         %5u\n"
 			"   i_product            %5u\n"
 			"   i_serial_number      %5u\n"
-			"   i_num_configurations %5u\n\n",
+			"   b_num_configurations %5u\n\n",
 			usb_dev->dev_desc.b_length, 
 			usb_dev->dev_desc.b_desc_type,
 			usb_dev->dev_desc.bcd_usb >> 8, usb_dev->dev_desc.bcd_usb & 0xff,
@@ -63,7 +63,7 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			usb_dev->dev_desc.i_manufacter,
 			usb_dev->dev_desc.i_product,
 			usb_dev->dev_desc.i_serial_number,
-			usb_dev->dev_desc.i_num_configurations);
+			usb_dev->dev_desc.b_num_configurations);
 }
 
 static void show_usb_desc_interface(struct usb_dev *usb_dev) {
