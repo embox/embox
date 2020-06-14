@@ -10,14 +10,14 @@
 #ifndef CTYPE_H_
 #define CTYPE_H_
 
-#define _U      0x01    /* upper */
-#define _L      0x02    /* lower */
-#define _D      0x04    /* digit */
-#define _C      0x08    /* cntrl */
-#define _P      0x10    /* punct */
-#define _S      0x20    /* white space (space/lf/tab) */
-#define _X      0x40    /* hex digit */
-#define _SP     0x80    /* hard space (0x20) */
+#define _CTYPE_U      0x01    /* upper */
+#define _CTYPE_L      0x02    /* lower */
+#define _CTYPE_D      0x04    /* digit */
+#define _CTYPE_C      0x08    /* cntrl */
+#define _CTYPE_P      0x10    /* punct */
+#define _CTYPE_S      0x20    /* white space (space/lf/tab) */
+#define _CTYPE_X      0x40    /* hex digit */
+#define _CTYPE_SP     0x80    /* hard space (0x20) */
 
 extern const unsigned char _ctype[];
 
@@ -37,30 +37,30 @@ __BEGIN_DECLS
 #endif /*__GNUC__ */
 
 /* Checks for an alphanumeric character. */
-static inline int isalnum(int c) { return __ismask(c) & (_U | _L | _D); }
+static inline int isalnum(int c) { return __ismask(c) & (_CTYPE_U | _CTYPE_L | _CTYPE_D); }
 /* Checks for an alphabetic character. */
-static inline int isalpha(int c) { return __ismask(c) & (_U | _L); }
+static inline int isalpha(int c) { return __ismask(c) & (_CTYPE_U | _CTYPE_L); }
 /* Checks for an blank character - space or tab */
 static inline int isblank(int c) { return (c == ' ' || c == '\t'); }
 /* Checks for a control character. */
-static inline int iscntrl(int c) { return __ismask(c) & (_C); }
+static inline int iscntrl(int c) { return __ismask(c) & (_CTYPE_C); }
 /* Checks for a digit (0 through 9). */
-static inline int isdigit(int c) { return __ismask(c) & (_D); }
+static inline int isdigit(int c) { return __ismask(c) & (_CTYPE_D); }
 /* Checks for any printable character except space. */
-static inline int isgraph(int c) { return __ismask(c) & (_P | _U | _L | _D); }
+static inline int isgraph(int c) { return __ismask(c) & (_CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_D); }
 /* Checks for a lower-case character. */
-static inline int islower(int c) { return __ismask(c) & (_L); }
+static inline int islower(int c) { return __ismask(c) & (_CTYPE_L); }
 /* Checks for any printable character including space. */
-static inline int isprint(int c) { return __ismask(c) & (_P | _U | _L | _D | _SP); }
+static inline int isprint(int c) { return __ismask(c) & (_CTYPE_P | _CTYPE_U | _CTYPE_L | _CTYPE_D | _CTYPE_SP); }
 /* Checks for any printable character which is not a space
  * or an alphanumeric character. */
-static inline int ispunct(int c) { return __ismask(c) & (_P); }
+static inline int ispunct(int c) { return __ismask(c) & (_CTYPE_P); }
 /* Checks for white-space characters. */
-static inline int isspace(int c) { return __ismask(c) & (_S); }
+static inline int isspace(int c) { return __ismask(c) & (_CTYPE_S); }
 /* Checks for an uppercase letter. */
-static inline int isupper(int c) { return __ismask(c) & (_U); }
+static inline int isupper(int c) { return __ismask(c) & (_CTYPE_U); }
 /* Checks for a hexadecimal digits. */
-static inline int isxdigit(int c) { return __ismask(c) & (_D | _X); }
+static inline int isxdigit(int c) { return __ismask(c) & (_CTYPE_D | _CTYPE_X); }
 /* Convert a character to lower case */
 static inline int tolower(int c) { return isupper(c) ? c - ('A' - 'a') : c; }
 /* Convert a character to upper case */
