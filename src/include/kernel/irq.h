@@ -120,6 +120,7 @@ extern void irq_dispatch(unsigned int interrupt_nr);
 #include <asm-generic/static_irq.h>
 #ifndef STATIC_IRQ_EXTENTION
 #define STATIC_IRQ_ATTACH(_irq_nr, _hnd, _data)
+#define STATIC_EXC_ATTACH(_exc_nr, _hnd, _data)
 #endif
 
 #endif /* KERNEL_IRQ_H_ */
