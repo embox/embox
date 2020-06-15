@@ -2,6 +2,8 @@ package embox.driver.net
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4cube_eth {
+	option number irq = 61
+
 	source "stm32cube_eth.c"
 	source "stm32f4cube_eth.c"
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
@@ -19,6 +21,8 @@ module stm32f4cube_eth {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7cube_eth {
+	option number irq = 61
+
 	source "stm32f7cube_eth.c"
 	source "stm32cube_eth.c"
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
