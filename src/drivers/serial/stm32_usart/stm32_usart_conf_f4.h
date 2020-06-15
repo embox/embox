@@ -20,8 +20,23 @@
 #error Unsupported platform
 #endif
 
+#include <assert.h>
 #include <framework/mod/options.h>
+#include <module/embox/driver/serial/stm_usart_f4.h>
+
 #define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
+
+#define USART6_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart6_irq)
+static_assert(USART6_IRQ == USART6_IRQn);
+
+#define USART3_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart3_irq)
+static_assert(USART3_IRQ == USART3_IRQn);
+
+#define USART2_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart2_irq)
+static_assert(USART2_IRQ == USART2_IRQn);
 
 #if MODOPS_USARTX == 6
 
@@ -42,7 +57,7 @@
 #define USARTx_RX_AF                     GPIO_AF8_USART6
 
 /* Definition for USARTx's NVIC */
-#define USARTx_IRQn                      USART6_IRQn + 16
+#define USARTx_IRQn                      USART6_IRQ
 #define USARTx_IRQHandler                USART6_IRQHandler
 
 #elif MODOPS_USARTX == 2
@@ -63,7 +78,7 @@
 #define USARTx_RX_AF                     GPIO_AF7_USART2
 
 /* Definition for USARTx's NVIC */
-#define USARTx_IRQn                      USART2_IRQn + 16
+#define USARTx_IRQn                      USART2_IRQ
 #define USARTx_IRQHandler                USART2_IRQHandler
 
 #elif MODOPS_USARTX == 3
@@ -84,7 +99,7 @@
 #define USARTx_RX_AF                     GPIO_AF7_USART3
 
 /* Definition for USARTx's NVIC */
-#define USARTx_IRQn                      USART3_IRQn + 16
+#define USARTx_IRQn                      USART3_IRQ
 #define USARTx_IRQHandler                USART3_IRQHandler
 
 #else
