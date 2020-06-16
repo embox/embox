@@ -1,7 +1,7 @@
 
 PKG_NAME := stm32cubel4
 
-PKG_SOURCES := http://download.embox.rocks/en.$(PKG_NAME).zip
-PKG_MD5     := 6729ce70fcfb45741fb7732c8875b438
+PKG_SOURCES := https://github.com/STMicroelectronics/STM32CubeL4/archive/v1.14.0.zip
+PKG_MD5     := 4ecae18543a461335f2889eb2206dbf4
 
 include $(EXTBLD_LIB)
