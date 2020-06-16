@@ -10,6 +10,7 @@
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
 #include <util/log.h>
+#include <framework/mod/options.h>
 
 #include <config/custom_config_qspi.h>
 
@@ -22,11 +23,11 @@
 
 #include <third_party/dialog/da14695/usb_da1469x.h>
 
-#define USB_IRQ           31
-#define VBUS_IRQ          37
+#define USB_IRQ           OPTION_GET(NUMBER, usb_irq)
+#define VBUS_IRQ          OPTION_GET(NUMBER, vbus_irq)
 
-static_assert(USB_IRQ == USB_IRQn + 16);
-static_assert(VBUS_IRQ == VBUS_IRQn + 16);
+static_assert(USB_IRQ == USB_IRQn);
+static_assert(VBUS_IRQ == VBUS_IRQn);
 
 static int usb_da1469x_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(usb_da1469x_reset_lt, usb_da1469x_reset_hnd, 200);
@@ -97,7 +98,7 @@ static void usb_da1469x_attach(void) {
 
 	hw_usb_enable_usb_interrupt(usb_da1469x_usb_irq_cb);
 
-	ret = irq_attach(USB_IRQ, usb_da1469x_usb_irq_handler, 0,
+	ret = irq_attach(USB_IRQ + 16, usb_da1469x_usb_irq_handler, 0,
 	                 NULL, "usb da1469x");
 	if (ret != 0) {
 		log_error("USB irq attach failed");
@@ -166,7 +167,7 @@ int usb_da1469x_init(void) {
 
 	hw_usb_enable_vbus_interrupt(usb_da1469x_hw_vbus_irq_handler);
 
-	ret = irq_attach(VBUS_IRQ, usb_da1469x_vbus_irq_handler, 0,
+	ret = irq_attach(VBUS_IRQ + 16, usb_da1469x_vbus_irq_handler, 0,
 	                 NULL, "vbus da1469x");
 	if (ret != 0) {
 		log_error("VBUS irq attach failed");
