@@ -32,10 +32,10 @@ EMBOX_UNIT_INIT(nvic_init);
 static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
 extern void *trap_table_start;
-extern void *trap_table_end;
 
 extern void arm_m_irq_entry(void);
 extern void arm_m_pendsv_entry(void);
+extern void exp_default_entry(void);
 
 static void hnd_stub(void) {
 	/* It's just a stub. DO NOTHING */
@@ -53,18 +53,19 @@ void nvic_table_fill_stubs(void) {
 
 static int nvic_init(void) {
 	ipl_t ipl;
-	int i, trap_table_size;
-
-	trap_table_size = ((int) &trap_table_end - (int) &trap_table_start) / 4;
-	assert(EXCEPTION_TABLE_SZ >= trap_table_size);
+	int i;
 
 	ipl = ipl_save();
 
-	for (i = trap_table_size; i < EXCEPTION_TABLE_SZ; i++) {
+	/* Copy stack top and reset. */
+	memcpy(&exception_table[0], &trap_table_start, 8);
+
+	/* Set up Hard Fault exception */
+	exception_table[3] = ((int) exp_default_entry) | 1;
+
+	for (i = 2; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) arm_m_irq_entry) | 1;
 	}
-	/* load head from bootstrap table */
-	memcpy(&exception_table[0], &trap_table_start, trap_table_size * 4);
 	exception_table[14] = ((int) arm_m_pendsv_entry) | 1;
 
 	REG_STORE(SCB_VTOR, SCB_VTOR_IN_RAM | (int) exception_table);
