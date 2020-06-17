@@ -25,7 +25,7 @@
 #define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
 
 #define USART1_IRQ    \
-	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f3, NUMBER, usart1_irq)
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_l4, NUMBER, usart1_irq)
 static_assert(USART1_IRQ == USART1_IRQn);
 
 #if MODOPS_USARTX == 1
