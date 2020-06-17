@@ -28,6 +28,10 @@
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_l4, NUMBER, usart1_irq)
 static_assert(USART1_IRQ == USART1_IRQn);
 
+#define USART2_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_l4, NUMBER, usart2_irq)
+static_assert(USART2_IRQ == USART2_IRQn);
+
 #if MODOPS_USARTX == 1
 
 #define USARTx                           USART1
@@ -48,6 +52,27 @@ static_assert(USART1_IRQ == USART1_IRQn);
 
 #define USARTx_IRQn                      USART1_IRQ
 #define USARTx_IRQHandler                USART1_IRQHandler
+
+#elif MODOPS_USARTX == 2
+
+#define USARTx                           USART2
+#define USARTx_CLK_ENABLE()              __USART2_CLK_ENABLE();
+#define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
+#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
+
+#define USARTx_FORCE_RESET()             __USART2_FORCE_RESET()
+#define USARTx_RELEASE_RESET()           __USART2_RELEASE_RESET()
+
+/* Definition for USARTx Pins */
+#define USARTx_TX_PIN                    GPIO_PIN_2
+#define USARTx_TX_GPIO_PORT              GPIOA
+#define USARTx_TX_AF                     GPIO_AF7_USART2
+#define USARTx_RX_PIN                    GPIO_PIN_3
+#define USARTx_RX_GPIO_PORT              GPIOA
+#define USARTx_RX_AF                     GPIO_AF7_USART2
+
+#define USARTx_IRQn                      USART2_IRQ
+#define USARTx_IRQHandler                USART2_IRQHandler
 
 #else
 #error "Unsupported USART number"
