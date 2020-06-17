@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <kernel/irq.h>
 #include <util/log.h>
+#include <framework/mod/options.h>
 
 #include <config/custom_config_qspi.h>
 
@@ -21,11 +22,11 @@
 
 #include <third_party/dialog/da14695/usb_da1469x.h>
 
-#define USB_IRQ           31
-#define VBUS_IRQ          37
+#define USB_IRQ           OPTION_GET(NUMBER, usb_irq)
+#define VBUS_IRQ          OPTION_GET(NUMBER, vbus_irq)
 
-static_assert(USB_IRQ == USB_IRQn + 16);
-static_assert(VBUS_IRQ == VBUS_IRQn + 16);
+static_assert(USB_IRQ == USB_IRQn);
+static_assert(VBUS_IRQ == VBUS_IRQn);
 
 extern void USB_Handler(void);
 static irq_return_t usb_da1469x_usb_irq_handler(unsigned int irq_nr,

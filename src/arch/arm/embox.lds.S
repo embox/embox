@@ -15,7 +15,9 @@ _ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.text : {
+		trap_table_start = .;
 		*(.trap_table)
+		trap_table_end = .;
 		*(.monitor_trap_table)
 		STATIC_IRQ_TABLE
 

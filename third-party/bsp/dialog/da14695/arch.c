@@ -13,6 +13,7 @@
 #include <hal/arch.h>
 #include <hal/reg.h>
 #include <arm/fpu.h>
+#include <framework/mod/options.h>
 
 #include <config/custom_config_qspi.h>
 
@@ -26,11 +27,11 @@
 #define FPU_CPACR  0xE000ED88
 #define FPU_FPCCR  0xE000EF34
 
-#define PLL_LOCK_IRQ      49
-static_assert(PLL_LOCK_IRQ == PLL_LOCK_IRQn + 16);
+#define PLL_LOCK_IRQ      OPTION_GET(NUMBER, pll_lock_irq)
+static_assert(PLL_LOCK_IRQ == PLL_LOCK_IRQn);
 
-#define XTAL32M_RDY_IRQ   42
-static_assert(XTAL32M_RDY_IRQ == XTAL32M_RDY_IRQn + 16);
+#define XTAL32M_RDY_IRQ   OPTION_GET(NUMBER, xtal32m_rdy_irq)
+static_assert(XTAL32M_RDY_IRQ == XTAL32M_RDY_IRQn);
 
 extern void XTAL32M_Ready_Handler(void);
 static irq_return_t xtal32m_irq_handler(unsigned int irq_nr,

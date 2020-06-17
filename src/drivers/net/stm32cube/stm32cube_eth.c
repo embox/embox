@@ -30,7 +30,7 @@
 
 EMBOX_UNIT_INIT(stm32eth_init);
 
-#define STM32ETH_IRQ (ETH_IRQn + 16)
+#define STM32ETH_IRQ   OPTION_GET(NUMBER, irq)
 
 static ETH_HandleTypeDef stm32_eth_handler;
 
@@ -235,7 +235,7 @@ static int stm32eth_init(void) {
 	}
 
 	nic->drv_ops = &stm32eth_ops;
-	nic->irq = STM32ETH_IRQ;
+	nic->irq = STM32ETH_IRQ + 16;
 	nic->base_addr = ETH_BASE;
 
 	stm32eth_netdev = nic;
@@ -248,8 +248,4 @@ static int stm32eth_init(void) {
 	return inetdev_register_dev(nic);
 }
 
-/* STM32ETH_IRQ defined through ETH_IRQn, which as enum and
- * can't expand into int, as STATIC_IRQ_ATTACH require
- */
-static_assert(77 == STM32ETH_IRQ);
-STATIC_IRQ_ATTACH(77, stm32eth_interrupt, stm32eth_netdev);
+STATIC_IRQ_ATTACH(STM32ETH_IRQ, stm32eth_interrupt, stm32eth_netdev);

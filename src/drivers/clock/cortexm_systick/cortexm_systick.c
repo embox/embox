@@ -78,4 +78,4 @@ static struct clock_source cortexm_systick_clock_source = {
 
 EMBOX_UNIT_INIT(cortexm_systick_init);
 
-STATIC_IRQ_ATTACH(SYSTICK_IRQ, cortexm_systick_irq_handler, &cortexm_systick_clock_source);
+STATIC_EXC_ATTACH(SYSTICK_IRQ, cortexm_systick_irq_handler, &cortexm_systick_clock_source);

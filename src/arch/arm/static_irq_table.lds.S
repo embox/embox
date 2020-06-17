@@ -1,14 +1,17 @@
 #include <asm-generic/static_irq.h>
 
 #define SIRQ_TABLE_ENTRY(n) \
-	. = DEFINED(ARM_M_IRQ_HANDLER_VAR_NAME(n)) ? (n - 11) * 4 : .; \
+	. = DEFINED(ARM_M_IRQ_HANDLER_VAR_NAME(n)) ? (n) * 4 : .; \
 	*(.static_irq_table.routine_##n); \
 
-/* Currently, we allow to define handlers starting from
- * SVCall, please take a look at exception_table.S and
- * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0553a/CIHIGCIF.html */
 SECTIONS {
 	.static_irq_table : {
+		SIRQ_TABLE_ENTRY(0)
+		SIRQ_TABLE_ENTRY(1) SIRQ_TABLE_ENTRY(2)
+		SIRQ_TABLE_ENTRY(3) SIRQ_TABLE_ENTRY(4)
+		SIRQ_TABLE_ENTRY(5) SIRQ_TABLE_ENTRY(6)
+		SIRQ_TABLE_ENTRY(7) SIRQ_TABLE_ENTRY(8)
+		SIRQ_TABLE_ENTRY(9) SIRQ_TABLE_ENTRY(10)
 		SIRQ_TABLE_ENTRY(11) SIRQ_TABLE_ENTRY(12)
 		SIRQ_TABLE_ENTRY(13) SIRQ_TABLE_ENTRY(14)
 		SIRQ_TABLE_ENTRY(15) SIRQ_TABLE_ENTRY(16)

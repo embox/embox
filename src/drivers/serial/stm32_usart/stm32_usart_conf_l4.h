@@ -18,8 +18,15 @@
 #include <stm32l4xx_hal_uart.h>
 #include <stm32l4xx_hal_usart.h>
 
+#include <assert.h>
 #include <framework/mod/options.h>
+#include <module/embox/driver/serial/stm_usart_l4.h>
+
 #define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
+
+#define USART1_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f3, NUMBER, usart1_irq)
+static_assert(USART1_IRQ == USART1_IRQn);
 
 #if MODOPS_USARTX == 1
 
@@ -39,10 +46,7 @@
 #define USARTx_RX_GPIO_PORT              GPIOB
 #define USARTx_RX_AF                     GPIO_AF7_USART1
 
-/* Definition for USARTx's NVIC */
-/* In Embox we assume that the lower external irq number is 0,
- * but in the cortexm3 it is -15 */
-#define USARTx_IRQn                      USART1_IRQn + 16
+#define USARTx_IRQn                      USART1_IRQ
 #define USARTx_IRQHandler                USART1_IRQHandler
 
 #else

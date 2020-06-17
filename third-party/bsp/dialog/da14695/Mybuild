@@ -102,6 +102,8 @@ abstract module usb_dev_api { }
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module usb_dev_direct extends usb_dev_api {
 	option number log_level = 1
+	option number usb_irq = 15
+	option number vbus_irq = 21
 
 	@IncludeExport(path="third_party/dialog/da14695")
 	source "usb_da1469x.h"
@@ -122,6 +124,8 @@ static module usb_dev_direct extends usb_dev_api {
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module usb_dev_sdk extends usb_dev_api {
 	option number log_level = 1
+	option number usb_irq = 15
+	option number vbus_irq = 21
 
 	@IncludeExport(path="third_party/dialog/da14695")
 	source "usb_da1469x.h"
@@ -159,6 +163,9 @@ static module system_init {
 
 @BuildDepends(third_party.bsp.dialog.da14695.system_init)
 static module arch_init extends embox.arch.arch {
+	option number pll_lock_irq    = 33
+	option number xtal32m_rdy_irq = 26
+
 	@Cflags("-Wno-undef")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
 	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
@@ -190,6 +197,8 @@ static module ble_arch_main_stub extends ble_arch_main_api {
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module ble_arch_main_sdk extends ble_arch_main_api {
+	option number cmac2sys_irq = 4
+
 	@Cflags("-Wno-undef")
 	@Cflags("-Wno-unused-variable")
 	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")

@@ -6,40 +6,33 @@
 
  */
 
+#include <module/embox/kernel/irq_api.h>
+
 .type start, %function
 .type exp_default_entry, %function
 
-.global trap_table_start
-.global trap_table_end
 .global start
 .global exp_default_entry
 
-/* This trap table derived from Cortex-M7.
- * So for lower Cortex-M version some of these handlers
- * are unused. */
 .section .trap_table, "x"
-trap_table_start:
     .word _stack_top
-    .word start /* Reset */
-    .word exp_default_entry /* NMI */
-    .word exp_default_entry /* Hard fault */
-    .word exp_default_entry /* Memory management fault */
-    .word exp_default_entry /* Bus fault */
-    .word exp_default_entry /* Usage fault */
-    .word 0 /* Reserved */
-    .word 0 /* Reserved */
-    .word 0 /* Reserved */
-    .word 0 /* Reserved */
-#if 0
-    /* we use static_irq_attach for these handlers and below
-     * http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0497a/Babefdjc.html */
-    .word exp_default_entry /* SVCall */
-    .word 0 /* Reserved for debug */
-    .word 0 /* Reserved */
+    .word start
+#ifdef STATIC_IRQ_EXTENTION
+    .word exc_entry2
+    .word exc_entry3
+    .word exc_entry4
+    .word exc_entry5
+    .word exc_entry6
+    .word exc_entry7
+    .word exc_entry8
+    .word exc_entry9
+    .word exc_entry10
+    .word exc_entry11
+    .word exc_entry12
+    .word exc_entry13
+    .word exc_entry14
+    .word exc_entry15
 #endif
-trap_table_end:
-
-
 
 .section .text, "x"
 
