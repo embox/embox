@@ -117,6 +117,11 @@ static void usb_dev_fill_config(struct usb_dev *dev) {
 	while (cur < end) {
 		/* Fill interface. */
 		dev->iface_desc[i] = (struct usb_desc_interface *) cur;
+		if (dev->iface_desc[i]->b_desc_type == USB_DESC_TYPE_INTERFACE_ASSOC) {
+			log_debug("interface_assoc");
+			cur += sizeof (struct usb_desc_interface_assoc);
+			continue;
+		}
 
 		cur += sizeof (struct usb_desc_interface);
 
