@@ -184,6 +184,9 @@ guess_machine() {
 		riscv)
 			echo "-M virt"
 			;;
+		riscv64)
+			echo "-M virt"
+			;;
 		x86)
 			;;
 	esac

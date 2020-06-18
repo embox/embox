@@ -20,7 +20,11 @@ _start:
 	bne		t0, zero, die
 
 	# stack
-	lla		sp, stack
+	la		sp, stack
+	li		a0, STACK_SIZE * MAX_HARTS
+	addi	t0, t0, 1
+	mul		a0, a0, t0
+	add		sp, sp, a0
 
 	# Zero the BSS segment
 	la		t1, bss_target_start
@@ -32,7 +36,6 @@ zero_bss:
 	sw		x0, 0(t1)
 	addi	t1, t1, 4
 	blt		t1, t2, zero_bss
-
 zero_bss_end:
 
 	# jump kernel
