@@ -9,6 +9,7 @@
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
+#include <arm/exception.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
@@ -16,8 +17,6 @@
 #include <embox/unit.h>
 
 #define SYSTICK_HZ  OPTION_GET(NUMBER,systick_hz)
-
-#define SYSTICK_IRQ 15
 
 #define SYSTICK_BASE 0xe000e010
 
@@ -39,9 +38,7 @@ static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data)
 }
 
 static int cortexm_systick_init(void) {
-	clock_source_register(&cortexm_systick_clock_source);
-	return irq_attach(SYSTICK_IRQ, cortexm_systick_irq_handler, 0,
-	                  &cortexm_systick_clock_source, "cortex-m systick timer");
+	return clock_source_register(&cortexm_systick_clock_source);
 }
 
 static int cortexm_systick_config(struct time_dev_conf * conf) {

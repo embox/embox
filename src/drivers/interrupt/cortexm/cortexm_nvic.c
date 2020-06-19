@@ -11,6 +11,7 @@
 #include <hal/reg.h>
 #include <hal/ipl.h>
 #include <asm/arm_m_regs.h>
+#include <arm/exception.h>
 #include <drivers/irqctrl.h>
 #include <kernel/irq.h>
 #include <kernel/critical.h>
@@ -35,8 +36,8 @@ static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128
 extern void *trap_table_start;
 
 extern void arm_m_irq_entry(void);
-extern void arm_m_pendsv_entry(void);
-extern void exp_default_entry(void);
+extern void EXC_HANDLER_NAME(PENDSV_IRQ)(void);
+extern void EXC_HANDLER_NAME(SYSTICK_IRQ)(void);
 
 static void hnd_stub(void) {
 	/* It's just a stub. DO NOTHING */
@@ -61,13 +62,12 @@ static int nvic_init(void) {
 	/* Copy stack top and reset. */
 	memcpy(&exception_table[0], &trap_table_start, 8);
 
-	/* Set up Hard Fault exception */
-	exception_table[3] = ((int) exp_default_entry) | 1;
-
 	for (i = 2; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) arm_m_irq_entry) | 1;
 	}
-	exception_table[14] = ((int) arm_m_pendsv_entry) | 1;
+
+	exception_table[PENDSV_IRQ] = ((int) EXC_HANDLER_NAME(PENDSV_IRQ)) | 1;
+	exception_table[SYSTICK_IRQ] = ((int) EXC_HANDLER_NAME(SYSTICK_IRQ)) | 1;
 
 	REG_STORE(SCB_VTOR, SCB_VTOR_IN_RAM | (int) exception_table);
 

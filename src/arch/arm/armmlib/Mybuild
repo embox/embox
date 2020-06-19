@@ -1,17 +1,29 @@
 
 package embox.arch.arm.armmlib
 
+module irq_static extends embox.kernel.irq_static_impl {
+	source "irq_static_impl.h"
+}
+
 module irq_entry {
 	source "irq_entry.S"
 }
 
-module locore extends embox.arch.locore {
+module exception_entry {
 	source "exception_table.S"
 	source "exception_table.lds.S"
 	source "exception_handlers.c"
 
+	@IncludeExport(path="arm", target_name="exception.h")
+	source "exception.h"
+
+	depends irq_static
+}
+
+module locore extends embox.arch.locore {
 	depends embox.arch.arm.head
 	depends irq_entry
+	depends exception_entry
 }
 
 module interrupt extends embox.arch.interrupt {
