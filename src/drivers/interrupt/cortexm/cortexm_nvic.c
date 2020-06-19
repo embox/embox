@@ -34,10 +34,9 @@ EMBOX_UNIT_INIT(nvic_init);
 static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
 extern void *trap_table_start;
+extern void *trap_table_end;
 
 extern void arm_m_irq_entry(void);
-extern void EXC_HANDLER_NAME(PENDSV_IRQ)(void);
-extern void EXC_HANDLER_NAME(SYSTICK_IRQ)(void);
 
 static void hnd_stub(void) {
 	/* It's just a stub. DO NOTHING */
@@ -56,18 +55,16 @@ void nvic_table_fill_stubs(void) {
 static int nvic_init(void) {
 	ipl_t ipl;
 	int i;
+	int trap_table_len = ((int) &trap_table_end - (int) &trap_table_start) / 4;
 
 	ipl = ipl_save();
 
-	/* Copy stack top and reset. */
-	memcpy(&exception_table[0], &trap_table_start, 8);
+	/* Copy exception table. */
+	memcpy(&exception_table[0], &trap_table_start, trap_table_len * 4);
 
-	for (i = 2; i < EXCEPTION_TABLE_SZ; i++) {
+	for (i = trap_table_len; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) arm_m_irq_entry) | 1;
 	}
-
-	exception_table[PENDSV_IRQ] = ((int) EXC_HANDLER_NAME(PENDSV_IRQ)) | 1;
-	exception_table[SYSTICK_IRQ] = ((int) EXC_HANDLER_NAME(SYSTICK_IRQ)) | 1;
 
 	REG_STORE(SCB_VTOR, SCB_VTOR_IN_RAM | (int) exception_table);
 
