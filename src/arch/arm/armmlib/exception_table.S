@@ -17,7 +17,6 @@
 .section .trap_table, "x"
     .word _stack_top
     .word start
-#ifdef STATIC_IRQ_EXTENTION
     .word exc_entry2
     .word exc_entry3
     .word exc_entry4
@@ -32,7 +31,6 @@
     .word exc_entry13
     .word exc_entry14
     .word exc_entry15
-#endif
 
 .section .text, "x"
 
