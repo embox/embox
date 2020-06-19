@@ -1,0 +1,15 @@
+package embox.kernel
+
+abstract module static_irq_table_impl {
+
+}
+
+module irq_static_light extends irq_api {
+	source "irq_static.c",
+	       "irq_static_light.h",
+	       "arm_m_irq.S"
+
+	depends irq_lock
+	depends irq_stack
+	depends static_irq_table_impl
+}
