@@ -8,7 +8,7 @@
 
 #include <arm/fpu.h>
 #include <module/embox/kernel/irq_api.h>
-#include "cortexm_nvic.h"
+#include <asm/arm_m_regs.h>
 
 #ifndef STATIC_IRQ_EXTENTION
 

@@ -10,6 +10,7 @@
 #include <string.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
+#include <asm/arm_m_regs.h>
 #include <drivers/irqctrl.h>
 #include <kernel/irq.h>
 #include <kernel/critical.h>
