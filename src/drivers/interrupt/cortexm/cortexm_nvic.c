@@ -79,7 +79,7 @@ static int nvic_init(void) {
 void nvic_irq_handle(void) {
 	uint32_t source;
 
-	source = REG_LOAD(SCB_ICSR) & 0x1ff;
+	source = (REG_LOAD(SCB_ICSR) & 0x1ff) - 16;
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	irq_dispatch(source);
@@ -95,54 +95,34 @@ static int nvic_init(void) {
 }
 #endif /* STATIC_IRQ_EXTENTION */
 
-void irqctrl_enable(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_ENABLE_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_enable(unsigned int nr) {
+	REG_STORE(NVIC_ENABLE_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_disable(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_CLEAR_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_disable(unsigned int nr) {
+	REG_STORE(NVIC_CLEAR_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_clear(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_CLR_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_clear(unsigned int nr) {
+	REG_STORE(NVIC_CLR_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_force(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_SET_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_force(unsigned int nr) {
+	REG_STORE(NVIC_SET_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio) {
-	int nr = (int) interrupt_nr - 16;
-
+void irqctrl_set_prio(unsigned int nr, unsigned int prio) {
 	if (prio > 15) {
 		return;
 	}
 	/* In NVIC the lower priopity means higher IRQ prioriry. */
 	prio = 15 - prio;
 
-	if (nr >= 0) {
-		REG8_STORE(NVIC_PRIORITY_BASE + nr,
-			((prio << NVIC_PRIO_SHIFT) & 0xff));
-	}
+	REG8_STORE(NVIC_PRIORITY_BASE + nr,
+		((prio << NVIC_PRIO_SHIFT) & 0xff));
 }
 
-unsigned int irqctrl_get_prio(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		/* In NVIC the lower priopity means higher IRQ prioriry. */
-		return 15 - (REG8_LOAD(NVIC_PRIORITY_BASE + nr) >> NVIC_PRIO_SHIFT);
-	}
-	return 0;
+unsigned int irqctrl_get_prio(unsigned int nr) {
+	/* In NVIC the lower priopity means higher IRQ prioriry. */
+	return 15 - (REG8_LOAD(NVIC_PRIORITY_BASE + nr) >> NVIC_PRIO_SHIFT);
 }
