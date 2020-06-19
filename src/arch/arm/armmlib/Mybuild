@@ -1,12 +1,17 @@
 
 package embox.arch.arm.armmlib
 
+module irq_entry {
+	source "irq_entry.S"
+}
+
 module locore extends embox.arch.locore {
 	source "exception_table.S"
 	source "exception_table.lds.S"
 	source "exception_handlers.c"
 
 	depends embox.arch.arm.head
+	depends irq_entry
 }
 
 module interrupt extends embox.arch.interrupt {
