@@ -15,12 +15,11 @@ extern char __static_irq_table_end;
 #define STATIC_IRQ_TABLE_SIZE \
 	(((int) &__static_irq_table_end - (int) &__static_irq_table_start) / 4)
 
-#define MAX_IRQ_NUMBER \
-	(STATIC_IRQ_TABLE_SIZE + 16)
-
 int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 		void *dev_id, const char *dev_name) {
-	assert(irq_nr <= MAX_IRQ_NUMBER);
+	assert(irq_nr <= STATIC_IRQ_TABLE_SIZE);
+	assertf(((void **) &__static_irq_table_start)[irq_nr] != NULL,
+			"IRQ handler is not assigned with STATIC_IRQ_ATTACH\n");
 
 	irqctrl_enable(irq_nr);
 	return 0;
