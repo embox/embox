@@ -9,11 +9,12 @@
 #ifndef DRIVERS_USB_DESC_H_
 #define DRIVERS_USB_DESC_H_
 
-#define USB_DESC_TYPE_DEV               1
-#define USB_DESC_TYPE_CONFIG            2
-#define USB_DESC_TYPE_STRING            3
-#define USB_DESC_TYPE_INTERFACE         4
-#define USB_DESC_TYPE_ENDPOINT          5
+#define USB_DESC_TYPE_DEV               0x01
+#define USB_DESC_TYPE_CONFIG            0x02
+#define USB_DESC_TYPE_STRING            0x03
+#define USB_DESC_TYPE_INTERFACE         0x04
+#define USB_DESC_TYPE_ENDPOINT          0x05
+#define USB_DESC_TYPE_INTERFACE_ASSOC   0x0b
 
 #define USB_DESC_ENDP_TYPE_MASK         0x03
 #define USB_DESC_ENDP_TYPE_CTRL         0x00
@@ -66,6 +67,17 @@ struct usb_desc_configuration {
 	uint8_t  bm_attributes;
 	uint8_t  b_max_power;
 } __attribute__((packed));
+
+struct usb_desc_interface_assoc {
+	uint8_t b_length;
+	uint8_t b_desc_type;
+	uint8_t b_first_interface;
+	uint8_t b_interface_count;
+	uint8_t b_function_class;
+	uint8_t b_function_subclass;
+	uint8_t b_function_protocol;
+	uint8_t b_function;
+}__attribute__((packed));
 
 struct usb_desc_interface {
 	uint8_t b_length;
