@@ -11,6 +11,8 @@
 #include <module/embox/kernel/irq_api.h>
 #include <asm/arm_m_regs.h>
 
+#if !defined(__ARM_ARCH_6M__) /* FIXME unsupported for Cortex-M0 */
+
 .text
 .thumb
 .syntax unified
@@ -84,3 +86,4 @@ EXC_HANDLER_NAME(PENDSV_IRQ):
 	add sp, #SAVED_CORE_REGS_SIZE
 	/* Finally, restore context previously CPU-saved on arm_m_irq_entry() entering */
 	bx lr
+#endif /* !defined(__ARM_ARCH_6M__) */
