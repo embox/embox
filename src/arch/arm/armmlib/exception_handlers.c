@@ -11,17 +11,7 @@
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <hal/reg.h>
-
-/* SCB - System Control Block */
-#define SCB_BASE 0xe000ed00
-#define SCB_MEM_FAULT_STATUS   (SCB_BASE + 0x28)
-# define SCB_MEM_FAULT_MMARVALID (1 << 7)
-#define SCB_BUS_FAULT_STATUS   (SCB_BASE + 0x29)
-# define SCB_BUS_FAULT_BFARVALID (1 << 7)
-#define SCB_USAGE_FAULT_STATUS (SCB_BASE + 0x2A)
-#define SCB_HARD_FAULT_STATUS  (SCB_BASE + 0x2C)
-#define SCB_MEM_FAULT_ADDRESS  (SCB_BASE + 0x34)
-#define SCB_BUS_FAULT_ADDRESS  (SCB_BASE + 0x38)
+#include <asm/arm_m_regs.h>
 
 /* Context saved by CPU on exception entering */
 struct exc_saved_base_ctx {
