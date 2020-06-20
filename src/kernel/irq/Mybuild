@@ -3,19 +3,6 @@ package embox.kernel
 abstract module irq_api {
 
 }
-abstract module static_irq_table_impl {
-
-}
-
-module irq_static_light extends irq_api {
-	source "irq_static.c",
-	       "irq_static_light.h",
-	       "arm_m_irq.S"
-
-	depends irq_lock
-	depends irq_stack
-	depends static_irq_table_impl
-}
 
 module no_irq extends irq_api {
 	source "no_irq.c"
@@ -51,4 +38,3 @@ module irq_lock {
 	source "irq_lock.c"
 	@NoRuntime depends critical
 }
-

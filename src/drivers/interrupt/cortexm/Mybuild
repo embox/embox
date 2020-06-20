@@ -5,7 +5,4 @@ module cortexm_nvic extends embox.driver.interrupt.irqctrl_api {
 	option number irq_table_size = 16
 	source "cortexm_nvic.c",
 			"cortexm_nvic.h"
-
-	/* FIXME It should be moved to src/arch/arm/ */
-	source "irq_entry.S"
 }

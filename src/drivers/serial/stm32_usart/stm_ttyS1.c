@@ -17,7 +17,7 @@ extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 static struct uart stm32_ttyS1 = {
 		.uart_ops = &stm32_uart_ops,
-		.irq_num = USARTx_IRQn + 16,
+		.irq_num = USARTx_IRQn,
 		.base_addr = (unsigned long) USARTx,
 		.params = {
 				.baud_rate = OPTION_GET(NUMBER,baud_rate),

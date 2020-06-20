@@ -1,8 +1,7 @@
+#include <arm/exception.h>
+
 #define TRAP_TABLE_ENTRY_NAME(n) \
 	exc_entry ## n
-
-#define EXC_HANDLER_NAME(_exc_nr) \
-    __exc_handler__ ## _exc_nr
 
 #define TRAP_TABLE_ENTRY(n) \
 	TRAP_TABLE_ENTRY_NAME(n) = DEFINED(EXC_HANDLER_NAME(n)) ? EXC_HANDLER_NAME(n) : exp_default_entry;

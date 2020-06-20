@@ -98,7 +98,7 @@ static void usb_da1469x_attach(void) {
 
 	hw_usb_enable_usb_interrupt(usb_da1469x_usb_irq_cb);
 
-	ret = irq_attach(USB_IRQ + 16, usb_da1469x_usb_irq_handler, 0,
+	ret = irq_attach(USB_IRQ, usb_da1469x_usb_irq_handler, 0,
 	                 NULL, "usb da1469x");
 	if (ret != 0) {
 		log_error("USB irq attach failed");
@@ -167,7 +167,7 @@ int usb_da1469x_init(void) {
 
 	hw_usb_enable_vbus_interrupt(usb_da1469x_hw_vbus_irq_handler);
 
-	ret = irq_attach(VBUS_IRQ + 16, usb_da1469x_vbus_irq_handler, 0,
+	ret = irq_attach(VBUS_IRQ, usb_da1469x_vbus_irq_handler, 0,
 	                 NULL, "vbus da1469x");
 	if (ret != 0) {
 		log_error("VBUS irq attach failed");

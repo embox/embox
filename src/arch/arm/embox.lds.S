@@ -1,6 +1,5 @@
 
 #include <asm-generic/embox.lds.h>
-#include <asm-generic/static_irq.h>
 
 OUTPUT_FORMAT("elf32-littlearm", "elf32-littlearm", "elf32-littlearm")
 OUTPUT_ARCH(arm)
@@ -18,8 +17,12 @@ SECTIONS {
 		trap_table_start = .;
 		*(.trap_table)
 		trap_table_end = .;
+
 		*(.monitor_trap_table)
-		STATIC_IRQ_TABLE
+
+		__static_irq_table_start = .;
+		*(.static_irq_table)
+		__static_irq_table_end = .;
 
 		*(.da14680_quirk)
 		*(.da1469x_quirk)

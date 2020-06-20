@@ -10,6 +10,8 @@
 #include <string.h>
 #include <hal/reg.h>
 #include <hal/ipl.h>
+#include <asm/arm_m_regs.h>
+#include <arm/exception.h>
 #include <drivers/irqctrl.h>
 #include <kernel/irq.h>
 #include <kernel/critical.h>
@@ -32,10 +34,9 @@ EMBOX_UNIT_INIT(nvic_init);
 static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
 extern void *trap_table_start;
+extern void *trap_table_end;
 
 extern void arm_m_irq_entry(void);
-extern void arm_m_pendsv_entry(void);
-extern void exp_default_entry(void);
 
 static void hnd_stub(void) {
 	/* It's just a stub. DO NOTHING */
@@ -54,19 +55,16 @@ void nvic_table_fill_stubs(void) {
 static int nvic_init(void) {
 	ipl_t ipl;
 	int i;
+	int trap_table_len = ((int) &trap_table_end - (int) &trap_table_start) / 4;
 
 	ipl = ipl_save();
 
-	/* Copy stack top and reset. */
-	memcpy(&exception_table[0], &trap_table_start, 8);
+	/* Copy exception table. */
+	memcpy(&exception_table[0], &trap_table_start, trap_table_len * 4);
 
-	/* Set up Hard Fault exception */
-	exception_table[3] = ((int) exp_default_entry) | 1;
-
-	for (i = 2; i < EXCEPTION_TABLE_SZ; i++) {
+	for (i = trap_table_len; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) arm_m_irq_entry) | 1;
 	}
-	exception_table[14] = ((int) arm_m_pendsv_entry) | 1;
 
 	REG_STORE(SCB_VTOR, SCB_VTOR_IN_RAM | (int) exception_table);
 
@@ -78,7 +76,7 @@ static int nvic_init(void) {
 void nvic_irq_handle(void) {
 	uint32_t source;
 
-	source = REG_LOAD(SCB_ICSR) & 0x1ff;
+	source = (REG_LOAD(SCB_ICSR) & 0x1ff) - 16;
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	irq_dispatch(source);
@@ -94,54 +92,34 @@ static int nvic_init(void) {
 }
 #endif /* STATIC_IRQ_EXTENTION */
 
-void irqctrl_enable(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_ENABLE_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_enable(unsigned int nr) {
+	REG_STORE(NVIC_ENABLE_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_disable(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_CLEAR_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_disable(unsigned int nr) {
+	REG_STORE(NVIC_CLEAR_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_clear(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_CLR_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_clear(unsigned int nr) {
+	REG_STORE(NVIC_CLR_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_force(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		REG_STORE(NVIC_SET_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
-	}
+void irqctrl_force(unsigned int nr) {
+	REG_STORE(NVIC_SET_PEND_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }
 
-void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio) {
-	int nr = (int) interrupt_nr - 16;
-
+void irqctrl_set_prio(unsigned int nr, unsigned int prio) {
 	if (prio > 15) {
 		return;
 	}
 	/* In NVIC the lower priopity means higher IRQ prioriry. */
 	prio = 15 - prio;
 
-	if (nr >= 0) {
-		REG8_STORE(NVIC_PRIORITY_BASE + nr,
-			((prio << NVIC_PRIO_SHIFT) & 0xff));
-	}
+	REG8_STORE(NVIC_PRIORITY_BASE + nr,
+		((prio << NVIC_PRIO_SHIFT) & 0xff));
 }
 
-unsigned int irqctrl_get_prio(unsigned int interrupt_nr) {
-	int nr = (int) interrupt_nr - 16;
-	if (nr >= 0) {
-		/* In NVIC the lower priopity means higher IRQ prioriry. */
-		return 15 - (REG8_LOAD(NVIC_PRIORITY_BASE + nr) >> NVIC_PRIO_SHIFT);
-	}
-	return 0;
+unsigned int irqctrl_get_prio(unsigned int nr) {
+	/* In NVIC the lower priopity means higher IRQ prioriry. */
+	return 15 - (REG8_LOAD(NVIC_PRIORITY_BASE + nr) >> NVIC_PRIO_SHIFT);
 }

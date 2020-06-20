@@ -1,8 +1,8 @@
-#include <asm-generic/static_irq.h>
+#include "irq_static_light.h"
 
 #define SIRQ_TABLE_ENTRY(n) \
-	. = DEFINED(ARM_M_IRQ_HANDLER_VAR_NAME(n)) ? (n) * 4 : .; \
-	*(.static_irq_table.routine_##n); \
+	. = DEFINED(STATIC_IRQ_HANDLER_VAR_NAME(n)) ? (n) * 4 : .; \
+	*(STATIC_IRQ_HANDLER_SECTION(n)); \
 
 SECTIONS {
 	.static_irq_table : {

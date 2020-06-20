@@ -7,10 +7,11 @@
  */
 
 #include <arm/fpu.h>
+#include <arm/exception.h>
 #include <module/embox/kernel/irq_api.h>
-#include "cortexm_nvic.h"
+#include <asm/arm_m_regs.h>
 
-#ifndef STATIC_IRQ_EXTENTION
+#if !defined(__ARM_ARCH_6M__) /* FIXME unsupported for Cortex-M0 */
 
 .text
 .thumb
@@ -20,13 +21,19 @@
 #define SAVED_FPU_REGS_SIZE  (16 * 4 + 4 + 4)
 #define SAVED_CORE_REGS_SIZE (8 * 4)
 
+#ifndef STATIC_IRQ_EXTENTION
 .thumb_func
 .global arm_m_irq_entry
 arm_m_irq_entry:
 	push {lr}
 	bl nvic_irq_handle
 	pop {lr}
+	b arm_m_irq_exit
+#endif
 
+.thumb_func
+.global arm_m_irq_exit
+arm_m_irq_exit:
 	/* Return if we are in nested intertupt */
 	ldr r1, =SCB_ICSR
 	ldr r0, [r1]
@@ -70,8 +77,8 @@ arm_m_dispatch_pending:
 	b 2b
 
 .thumb_func
-.global arm_m_pendsv_entry
-arm_m_pendsv_entry:
+.global EXC_HANDLER_NAME(PENDSV_IRQ)
+EXC_HANDLER_NAME(PENDSV_IRQ):
 	/* Skip PendSV context */
 #ifdef ARM_FPU_VFP
 	add sp, #SAVED_FPU_REGS_SIZE
@@ -79,5 +86,4 @@ arm_m_pendsv_entry:
 	add sp, #SAVED_CORE_REGS_SIZE
 	/* Finally, restore context previously CPU-saved on arm_m_irq_entry() entering */
 	bx lr
-
-#endif /* STATIC_IRQ_EXTENTION */
+#endif /* !defined(__ARM_ARCH_6M__) */
