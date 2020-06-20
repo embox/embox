@@ -149,3 +149,5 @@ err_irq_detach:
 	irq_detach(STM32_TS_IRQ, &stm32_ts_dev.input_dev);
 	return ret;
 }
+
+STATIC_IRQ_ATTACH(STM32_TS_IRQ, stm32_ts_irq_hnd, &stm32_ts_dev.input_dev);
