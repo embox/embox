@@ -14,7 +14,7 @@ module core {
 	@IncludeExport(path="drivers/input")
 	source "input_codes.h"
 
-	depends embox.kernel.irq
+	depends embox.kernel.irq_api
 	depends embox.util.dlist
 	depends embox.kernel.lthread.lthread
 }
