@@ -8,12 +8,16 @@
 #include <errno.h>
 #include <util/log.h>
 #include <assert.h>
+#include <framework/mod/options.h>
 #include <kernel/irq.h>
 
 #include <drivers/audio/stm32f7_audio.h>
 
-#define STM32_AUDIO_OUT_DMA_IRQ (AUDIO_OUT_SAIx_DMAx_IRQ + 16)
-#define STM32_AUDIO_IN_DMA_IRQ  (AUDIO_IN_SAIx_DMAx_IRQ + 16)
+#define STM32_AUDIO_OUT_DMA_IRQ      OPTION_GET(NUMBER, audio_out_dma_irq)
+static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ);
+
+#define STM32_AUDIO_IN_DMA_IRQ       OPTION_GET(NUMBER, audio_in_dma_irq)
+static_assert(STM32_AUDIO_IN_DMA_IRQ == AUDIO_IN_SAIx_DMAx_IRQ);
 
 static irq_return_t stm32_audio_in_dma_interrupt(unsigned int irq_num,
 		void *audio_dev) {
@@ -22,8 +26,7 @@ static irq_return_t stm32_audio_in_dma_interrupt(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
-static_assert(86 == STM32_AUDIO_IN_DMA_IRQ);
-STATIC_IRQ_ATTACH(86, stm32_audio_in_dma_interrupt, NULL);
+STATIC_IRQ_ATTACH(STM32_AUDIO_IN_DMA_IRQ, stm32_audio_in_dma_interrupt, NULL);
 
 static irq_return_t stm32_audio_out_dma_interrupt(unsigned int irq_num,
 		void *audio_dev) {
@@ -32,8 +35,7 @@ static irq_return_t stm32_audio_out_dma_interrupt(unsigned int irq_num,
 	return IRQ_HANDLED;
 }
 
-static_assert(76 == STM32_AUDIO_OUT_DMA_IRQ);
-STATIC_IRQ_ATTACH(76, stm32_audio_out_dma_interrupt, NULL);
+STATIC_IRQ_ATTACH(STM32_AUDIO_OUT_DMA_IRQ, stm32_audio_out_dma_interrupt, NULL);
 
 /* XXX
  * STM32 Cube suppose only 3 possible audio configurations:
