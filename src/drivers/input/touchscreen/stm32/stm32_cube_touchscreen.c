@@ -8,13 +8,24 @@
 #include <errno.h>
 #include <assert.h>
 #include <embox/unit.h>
+#include <framework/mod/options.h>
 #include <util/log.h>
 #include <util/math.h>
 #include <kernel/irq.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/video/fb.h>
 
-#include <drivers/input/stm32cube_ts.h>
+#if defined STM32F746xx
+#include "stm32746g_discovery_ts.h"
+#elif defined STM32F769xx
+#include "stm32f769i_discovery_ts.h"
+#else
+#error Unsupported platform
+#endif
+
+#define STM32_TS_INT_PIN   TS_INT_PIN
+#define STM32_TS_IRQ       OPTION_GET(NUMBER, ts_irq)
+static_assert(STM32_TS_IRQ == TS_INT_EXTI_IRQn);
 
 EMBOX_UNIT_INIT(stm32_ts_init);
 
@@ -138,3 +149,5 @@ err_irq_detach:
 	irq_detach(STM32_TS_IRQ, &stm32_ts_dev.input_dev);
 	return ret;
 }
+
+STATIC_IRQ_ATTACH(STM32_TS_IRQ, stm32_ts_irq_hnd, &stm32_ts_dev.input_dev);

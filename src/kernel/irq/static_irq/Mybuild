@@ -4,9 +4,9 @@ package embox.kernel
 abstract module irq_static_impl {
 }
 
-module irq_static_light extends irq_api {
+module irq_static extends irq_api {
 	source "irq_static.c",
-	       "irq_static_light.h"
+	       "irq_static.h"
 
 	source "static_irq_table.lds.S"
 

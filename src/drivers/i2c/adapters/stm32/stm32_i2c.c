@@ -97,13 +97,13 @@ static int stm32_i2c_tx(struct stm32_i2c *adapter, uint16_t addr,
 }
 
 #if USE_I2C_IRQ
-static irq_return_t i2c_ev_irq_handler(unsigned int irq_nr, void *data) {
+irq_return_t i2c_ev_irq_handler(unsigned int irq_nr, void *data) {
 	I2C_HandleTypeDef *i2c_handle = data;
 	HAL_I2C_EV_IRQHandler(i2c_handle);
 	return IRQ_HANDLED;
 }
 
-static irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data) {
+irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data) {
 	I2C_HandleTypeDef *i2c_handle = data;
 	HAL_I2C_ER_IRQHandler(i2c_handle);
 	return IRQ_HANDLED;

@@ -6,8 +6,8 @@
  * @author: Anton Bondarev
  */
 
-#ifndef IRQ_STATIC_LIGHT_H_
-#define IRQ_STATIC_LIGHT_H_
+#ifndef KERNEL_IRQ_STATIC_H_
+#define KERNEL_IRQ_STATIC_H_
 
 #define STATIC_IRQ_EXTENTION
 
@@ -32,4 +32,4 @@
 	void * STATIC_IRQ_HANDLER_VAR_NAME(irq_num) \
 		__attribute__((section(MACRO_STRING(STATIC_IRQ_HANDLER_SECTION(irq_num))))) = (void *)irq_handler;
 
-#endif /* IRQ_STATIC_LIGHT_H_ */
+#endif /* KERNEL_IRQ_STATIC_H_ */

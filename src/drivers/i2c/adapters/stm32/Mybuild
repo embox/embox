@@ -6,6 +6,10 @@ abstract module stm32_i2c {}
 module stm32_i2c_f4 extends stm32_i2c {
 	option number log_level=1
 	option boolean use_i2c_irq=false
+	option number i2c1_ev_irq=31
+	option number i2c1_er_irq=32
+	option number i2c2_ev_irq=33
+	option number i2c2_er_irq=34
 
 	@IncludeExport(path="drivers/i2c", target_name="stm32_i2c_conf.h")
 	source "i2c_conf_f4.h"

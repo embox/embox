@@ -25,6 +25,7 @@ module portaudio_lib extends portaudio_api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4_pa_cube extends portaudio_api {
+	option number audio_dma_irq = 47
 	option number volume=70
 	option number sample_rate
 	option number buf_cnt=0x4
@@ -50,6 +51,7 @@ module stm32f4_pa_cube extends portaudio_api {
 
 @BuildDepends(third_party.bsp.stmf7cube.core)
 module stm32f7_pa_cube extends portaudio_api {
+	option number audio_dma_irq = 60
 	option number volume=70
 	option number sample_rate
 	option number buf_cnt=0x4

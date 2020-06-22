@@ -1,4 +1,4 @@
-#include "irq_static_light.h"
+#include "irq_static.h"
 
 #define SIRQ_TABLE_ENTRY(n) \
 	. = DEFINED(STATIC_IRQ_HANDLER_VAR_NAME(n)) ? (n) * 4 : .; \
