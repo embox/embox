@@ -1,0 +1,28 @@
+package embox.arch.riscv64.kernel
+
+module boot extends embox.arch.boot {
+	source "boot.S"
+/*	source "trap.c"*/
+}
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+}
+
+module locore extends embox.arch.locore {
+	depends entry,
+		interrupt
+}
+
+module interrupt extends embox.arch.interrupt {
+	source "interrupt.c", "ipl_impl.c", "ipl_impl.h"
+	depends embox.kernel.irq
+}
+
+module entry extends embox.arch.entry {
+	source "entry.S"
+}
+
+module context extends embox.arch.context {
+	source "context.c", "context_switch.S", "context.h"
+}

@@ -189,7 +189,7 @@ __END_DECLS
 #define    PRIXFAST16  "X"
 
 
-#if (defined(__riscv) && !defined(__gnu_linux__)) || defined (__e2k__) || \
+#if (defined(__riscv) && !defined(__gnu_linux__) && !defined(__LP64__)) || defined (__e2k__) || \
 	(defined(__mips__) && !defined(__gnu_linux__)) || defined(__sparc__) || \
 	defined(__microblaze__) || defined(__PPC__) || (defined(__arm__) && defined(__ARM_ARCH_6M__))
 #define    PRIo32      "lo"
@@ -290,7 +290,7 @@ __END_DECLS
 #define    PRIxPTR     "x"
 #define    PRIXPTR     "X"
 
-#elif defined(__aarch64__)
+#elif defined(__aarch64__) || (defined(__riscv) && defined(__LP64__))
 
 #define    PRIoPTR     PRIo64
 #define    PRIuPTR     PRIu64
