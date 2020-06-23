@@ -74,7 +74,7 @@
 //#define HAL_RTC_MODULE_ENABLED
 //#define HAL_SDADC_MODULE_ENABLED
 //#define HAL_SMARTCARD_MODULE_ENABLED
-//#define HAL_SPI_MODULE_ENABLED
+#define HAL_SPI_MODULE_ENABLED
 #define HAL_TIM_MODULE_ENABLED
 //#define HAL_TSC_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
@@ -84,6 +84,9 @@
 #define USE_HAL_TIM_REGISTER_CALLBACKS 0
 #define USE_HAL_USART_REGISTER_CALLBACKS 0
 #define USE_HAL_UART_REGISTER_CALLBACKS 0
+#define USE_HAL_SPI_REGISTER_CALLBACKS 0
+#define USE_SPI_CRC	1U
+
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**
   * @brief Adjust the value of External High Speed oscillator (HSE) used in your application.

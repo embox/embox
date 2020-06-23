@@ -16,6 +16,20 @@ module stm32_f4_cube extends stm32 {
 	depends third_party.bsp.st_bsp_api
 }
 
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_l4_cube extends stm32 {
+	option number log_level=1
+
+	@IncludeExport(path="drivers/spi", target_name="stm32_spi_conf.h")
+	source "spi_conf_l4.h"
+
+	source "stm32.c"
+
+	depends embox.driver.spi.core
+	depends embox.driver.gpio.api
+	depends third_party.bsp.st_bsp_api
+}
+
 @BuildDepends(stm32)
 module stm32_spi1 {
 	option number log_level=1

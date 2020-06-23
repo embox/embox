@@ -14,6 +14,10 @@
 #include "stm32f4_discovery.h"
 #elif defined (STM32F429xx)
 #include "stm32f4xx_nucleo_144.h"
+#elif defined (STM32L476xx)
+#include "stm32l4xx_nucleo.h"
+#elif defined (STM32L475xx)
+#include "stm32l475e_iot01.h"
 #else
 #error Unsupported platform
 #endif
