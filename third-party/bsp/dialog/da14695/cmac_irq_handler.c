@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <kernel/irq.h>
 #include <framework/mod/options.h>
 #include <DA1469xAB.h>
