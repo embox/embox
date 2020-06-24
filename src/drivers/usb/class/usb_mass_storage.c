@@ -50,7 +50,7 @@ static void usb_cbw_fill(struct usb_mscbw *cbw, uint32_t tag, uint32_t tr_len,
 	cbw->cbw_len = len;
 }
 
-int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
+int usb_ms_transfer(struct usb_interface *dev, void *ms_cmd,
 		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len) {
 	struct usb_mass *mass = usb2massdata(dev);
 	struct usb_endp *endp;
@@ -106,14 +106,14 @@ failed:
 	return -1;
 }
 
-static int usb_mass_start(struct usb_dev *dev) {
+static int usb_mass_start(struct usb_interface *dev) {
 	struct usb_mass *mass = usb2massdata(dev);
 	int ret;
 	int i;
 
 	mass->blkin = mass->blkout = -1;
 
-	for (i = 1; i < dev->endp_n; i++) {
+	for (i = 1; i <= dev->endp_n; i++) {
 		struct usb_endp *endp = dev->endpoints[i];
 
 		if (endp->type == USB_COMM_BULK) {
@@ -126,7 +126,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 		}
 	}
 
-	ret = usb_endp_control_wait(&dev->endp0,
+	ret = usb_endp_control_wait(&dev->usb_dev->endp0,
 			USB_DIR_OUT | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_RESET, 0,
 			dev->iface_desc[0]->b_interface_number, 0, NULL, 1000);
@@ -137,7 +137,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 
 	usleep(100000);
 
-	ret = usb_endp_control_wait(&dev->endp0,
+	ret = usb_endp_control_wait(&dev->usb_dev->endp0,
 			USB_DIR_IN | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_MAXLUN, 0,
 			dev->iface_desc[0]->b_interface_number, 1, &mass->maxlun, 1000);
@@ -150,7 +150,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 	return scsi_dev_attached(&mass->scsi_dev);
 }
 
-static int usb_ms_probe(struct usb_dev *dev) {
+static int usb_ms_probe(struct usb_interface *dev) {
 	struct usb_mass *mass;
 
 	assert(dev);
@@ -165,7 +165,7 @@ static int usb_ms_probe(struct usb_dev *dev) {
 	return usb_mass_start(dev);
 }
 
-static void usb_ms_disconnect(struct usb_dev *dev, void *data) {
+static void usb_ms_disconnect(struct usb_interface *dev, void *data) {
 	struct usb_mass *mass = usb2massdata(dev);
 	scsi_dev_detached(&mass->scsi_dev);
 	pool_free(&usb_mass_classes, mass);

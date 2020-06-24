@@ -52,6 +52,7 @@ struct usb_hub;
 struct usb_dev;
 struct usb_endp;
 struct usb_request;
+struct usb_interface;
 
 typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 
@@ -151,8 +152,10 @@ struct usb_hcd_ops {
 	int (*request)(struct usb_request *req);
 };
 
+
 struct usb_endp {
 	struct usb_dev *dev;
+
 	unsigned char address;
 	enum usb_direction direction;
 	enum usb_comm_type type;
@@ -176,18 +179,26 @@ struct usb_dev {
 
 	struct usb_endp endp0;
 
+	struct usb_interface *usb_iface[USB_DEV_MAX_INTERFACES];
+	int usb_iface_num;
+
+	enum usb_speed speed;
+};
+
+struct usb_interface {
+	struct usb_dev *usb_dev;
+
 	struct usb_desc_interface *iface_desc[USB_DEV_MAX_INTERFACES];
 	unsigned char endp_n;
 	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];
 
 	void *driver_data;
 	struct usb_driver *drv;
-
-	enum usb_speed speed;
 };
 
 struct usb_hub {
 	struct usb_dev *dev;
+
 	struct dlist_head lnk;
 	unsigned port_n;
 	struct mutex mutex;

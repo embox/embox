@@ -17,13 +17,11 @@
 
 EMBOX_UNIT_INIT(usb_example_init);
 
-static int usb_example_probe(struct usb_driver *drv, struct usb_dev *dev,
-		void **data) {
-
+static int usb_example_probe(struct usb_interface *dev) {
 	return 0;
 }
 
-static void usb_example_disconnect(struct usb_dev *dev, void *data) {
+static void usb_example_disconnect(struct usb_interface *dev, void *data) {
 
 }
 

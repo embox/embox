@@ -19,7 +19,7 @@
 
 struct usb_hid_indev {
 	struct input_dev input_dev;
-	struct usb_dev *usb_dev;
+	struct usb_interface *usb_dev;
 	char input_data[USB_HID_MAX_INPUT_LEN];
 	bool running;
 };
@@ -40,7 +40,7 @@ static void usb_hid_intr_request(struct usb_hid_indev *hindev) {
 
 static void usb_hid_notify(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
-	struct usb_class_hid *hid = usb2hiddata(dev);
+	struct usb_class_hid *hid = usb2hiddata(dev->usb_iface[0]);
 	struct usb_hid_indev *hindev;
 	struct input_event ev;
 
@@ -93,7 +93,7 @@ static void usb_hid_indev_init(struct input_dev *indev) {
 	indev->ops = &usb_hid_input_ops;
 }
 
-int usb_hid_found(struct usb_dev *dev) {
+int usb_hid_found(struct usb_interface *dev) {
 	struct usb_class_hid *hid = usb2hiddata(dev);
 	struct usb_hid_indev *hindev;
 	int ret;

@@ -36,7 +36,7 @@ int usb_driver_register(struct usb_driver *drv) {
 	return 0;
 }
 
-void *usb_driver_data(struct usb_dev *dev) {
+void *usb_driver_data(struct usb_interface *dev) {
 	return dev->driver_data;
 }
 
@@ -69,22 +69,22 @@ int usb_driver_open_by_node(struct inode *n, struct usb_dev_desc **ddesc) {
 }
 #endif
 
-static int usb_driver_match_table(struct usb_dev *dev,
+static int usb_driver_match_table(struct usb_interface *dev,
 		struct usb_device_id id_table[]) {
 	struct usb_device_id *id;
 
 	id = id_table;
 
 	/* Process root hub */
-	if (!dev->parent) {
+	if (!dev->usb_dev->parent) {
 		if (id->dev_class == USB_CLASS_HUB) {
 			return 1;
 		}
 	}
 
 	while (id->dev_class != 0 || id->vid != 0 || id->pid != 0) {
-		if ((id->vid == dev->dev_desc.id_vendor &&
-				id->pid == dev->dev_desc.id_product) ||
+		if ((id->vid == dev->usb_dev->dev_desc.id_vendor &&
+				id->pid == dev->usb_dev->dev_desc.id_product) ||
 			(id->dev_class == dev->iface_desc[0]->b_interface_class)) {
 			return 1;
 		}
@@ -95,7 +95,7 @@ static int usb_driver_match_table(struct usb_dev *dev,
 	return 0;
 }
 
-static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
+static struct usb_driver *usb_driver_find(struct usb_interface *dev) {
 	struct usb_driver *drv;
 
 	dev->driver_data = NULL;
@@ -120,7 +120,7 @@ static struct usb_driver *usb_driver_find(struct usb_dev *dev) {
 	return NULL;
 }
 
-int usb_driver_probe(struct usb_dev *dev) {
+int usb_driver_probe(struct usb_interface *dev) {
 	struct usb_driver *drv;
 
 	drv = usb_driver_find(dev);
@@ -133,15 +133,15 @@ int usb_driver_probe(struct usb_dev *dev) {
 		char name_buf[USB_DEV_NAME_LEN];
 
 		snprintf(name_buf, USB_DEV_NAME_LEN, usb_device_name_format,
-				dev->dev_desc.id_vendor,
-				dev->dev_desc.id_product);
+				dev->usb_dev->dev_desc.id_vendor,
+				dev->usb_dev->dev_desc.id_product);
 
 		char_dev_register(NULL);
 	}
 	return 0;
 }
 
-int usb_driver_release(struct usb_dev *dev) {
+int usb_driver_release(struct usb_interface *dev) {
 	struct usb_driver *drv;
 
 	drv = dev->drv;

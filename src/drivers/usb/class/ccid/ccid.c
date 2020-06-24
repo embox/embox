@@ -24,7 +24,7 @@
 #define CCID_BULK_TIMEOUT   1000
 
 struct ccid {
-	struct usb_dev *usb_dev;
+	struct usb_interface *usb_dev;
 	char ep_bulk_in;  /* Mandatory EP */
 	char ep_bulk_out; /* Mandatory EP */
 	char ep_intr;     /* Optional EP */
@@ -57,7 +57,7 @@ out_err:
 	return res;
 }
 
-int ccid_handle_msg(struct usb_dev *udev, const void *out,
+int ccid_handle_msg(struct usb_interface *udev, const void *out,
 		void *in, int in_cnt) {
 	struct ccid_msg_hdr *ccid_hdr = (struct ccid_msg_hdr *) out;
 	struct ccid *ccid = (struct ccid *) udev->driver_data;
@@ -94,14 +94,14 @@ int ccid_handle_msg(struct usb_dev *udev, const void *out,
 	return res;
 }
 
-int ccid_read_msg_data(struct usb_dev *udev, void *in, int in_cnt) {
+int ccid_read_msg_data(struct usb_interface *udev, void *in, int in_cnt) {
 	struct ccid *ccid = (struct ccid *) udev->driver_data;
 
 	return usb_endp_bulk_wait(udev->endpoints[ccid->ep_bulk_in],
 			in, in_cnt, CCID_BULK_TIMEOUT);
 }
 
-static int ccid_probe(struct usb_dev *udev) {
+static int ccid_probe(struct usb_interface *udev) {
 	struct ccid *ccid;
 	int i;
 
@@ -117,7 +117,7 @@ static int ccid_probe(struct usb_dev *udev) {
 	/* Interrupt endpoint is currenly unsupported. */
 	ccid->ep_intr = -1;
 
-	for (i = 1; i < udev->endp_n; i++) {
+	for (i = 1; i <= udev->endp_n; i++) {
 		struct usb_endp *endp = udev->endpoints[i];
 
 		if (endp->type == USB_COMM_BULK) {
@@ -133,7 +133,7 @@ static int ccid_probe(struct usb_dev *udev) {
 	return 0;
 }
 
-static void ccid_disconnect(struct usb_dev *dev, void *data) {
+static void ccid_disconnect(struct usb_interface *dev, void *data) {
 }
 
 static struct usb_device_id ccid_id_table[] = {

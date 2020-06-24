@@ -28,13 +28,16 @@ EMBOX_UNIT_INIT(usbnet_init);
 
 #define USBNET_TIMER_FREQ 1
 
+#define USBNET_IN_ENDP   1
+#define USBNET_OUT_ENDP  2
+
 static struct usb_driver usbnet_driver;
 static const struct net_driver usbnet_drv_ops;
 
 static void usbnet_timer_handler(struct sys_timer *tmr, void *param);
 
 struct usbnet_priv {
-	struct usb_dev *usbdev;
+	struct usb_interface *usbdev;
 	/* Storage for incoming packet */
 	char *data;
 	/* Current position in packet */
@@ -54,12 +57,12 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 	struct net_device *nic;
 	struct usb_endp *in_endp;
 
-	nic_priv = (struct usbnet_priv *) req->endp->dev->driver_data;
+	nic_priv = (struct usbnet_priv *) req->endp->dev->usb_iface[2]->driver_data;
 	assert(nic_priv);
 	nic = nic_priv->nic;
 	assert(nic);
 
-	in_endp = nic_priv->usbdev->endpoints[2];
+	in_endp = nic_priv->usbdev->endpoints[USBNET_IN_ENDP];
 	assert(in_endp);
 
 	switch(req->req_stat) {
@@ -103,20 +106,29 @@ static void usbnet_timer_handler(struct sys_timer *tmr, void *param) {
 	struct usb_endp *in_endp;
 	struct usbnet_priv *nic_priv = (struct usbnet_priv *) param;
 
-	in_endp = nic_priv->usbdev->endpoints[2];
+	in_endp = nic_priv->usbdev->endpoints[USBNET_IN_ENDP];
 	assert(in_endp);
 
 	usb_endp_bulk(in_endp, usbnet_rcv_notify, NULL, nic_priv->pdata,
 			in_endp->max_packet_size);
 }
 
-static int usbnet_probe(struct usb_dev *dev) {
+static int usbnet_probe(struct usb_interface *dev) {
 	struct net_device *nic;
 	struct usbnet_priv *nic_priv;
 	int res;
+	struct usb_interface *data_iface;
+
+//	if (dev == dev->usb_dev->usb_iface[0]) {
+//		return 0; /*control interface */
+//	}
+
+	data_iface = dev->usb_dev->usb_iface[2];
+
+	assert(data_iface);
 
 	/* Enable in/out DATA interface */
-	if (usb_set_iface(dev, 1, 1) < 0) {
+	if (usb_set_iface(dev->usb_dev, 1, 1) < 0) {
 		res = -EINVAL;
 		goto out_ret;
 	}
@@ -128,14 +140,14 @@ static int usbnet_probe(struct usb_dev *dev) {
 	}
 	nic->drv_ops = &usbnet_drv_ops;
 	nic_priv = netdev_priv(nic);
-	nic_priv->usbdev = dev;
+	nic_priv->usbdev = data_iface;
 	nic_priv->nic = nic;
 	nic_priv->data = nic_priv->pdata = sysmalloc(ETH_FRAME_LEN);
 	if (!nic_priv->data) {
 		res = -ENOMEM;
 		goto out_free_nic;
 	}
-	dev->driver_data = nic_priv;
+	data_iface->driver_data = nic_priv;
 
 	res = inetdev_register_dev(nic);
 	if (res < 0) {
@@ -158,7 +170,7 @@ out_ret:
 	return res;
 }
 
-static void usbnet_disconnect(struct usb_dev *dev, void *data) {
+static void usbnet_disconnect(struct usb_interface *dev, void *data) {
 }
 
 static struct usb_device_id usbnet_id_table[] = {
@@ -179,7 +191,7 @@ static int usbnet_xmit(struct net_device *dev, struct sk_buff *skb) {
 	assert(priv);
 	assert(priv->usbdev);
 
-	endp = priv->usbdev->endpoints[3];
+	endp = priv->usbdev->endpoints[USBNET_OUT_ENDP];
 	assert(endp);
 
 	log_debug("skb->len = %d\n", skb->len);
