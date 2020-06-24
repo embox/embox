@@ -20,7 +20,7 @@
 		__attribute__((unused)) static struct { \
 			void *o, *c, *i, *p; \
 		} unused##__LINE__ = { \
-			.o = open_fn, .c = close_fn, .i = idesc_op, .p = priv \
+			.o = open_fn, .c = close_fn, .i = (void *)idesc_op, .p = priv \
 		};
 #else
 	#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv)
