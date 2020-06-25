@@ -136,7 +136,7 @@ static int usb_hub_get_descriptor(struct usb_dev *dev,
 		struct usb_desc_hub *desc) {
 	int ret;
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_IN | USB_RT_HUB,
 		USB_REQ_GET_DESCRIPTOR, USB_DT_HUB << 8,
 		0, 7, desc, USB_CTRL_GET_TIMEOUT);
@@ -152,7 +152,7 @@ static int usb_hub_port_get_status(struct usb_hub *hub,
 	int ret;
 	uint16_t portstatus[2];
 
-	ret = usb_endp_control_wait(hub->dev->endpoints[0],
+	ret = usb_endp_control_wait(&hub->dev->endp0,
 		USB_DIR_IN | USB_RT_PORT, USB_REQ_GET_STATUS,
 		HUB_PORT_STATUS,
 		port + 1, 4, portstatus, USB_HUB_PORT_STS_TIMEOUT);
@@ -171,14 +171,14 @@ static int usb_hub_port_get_status(struct usb_hub *hub,
 
 static int usb_hub_clear_port_feature(struct usb_hub *hub,
 		unsigned int port, int feature) {
-	return usb_endp_control_wait(hub->dev->endpoints[0],
+	return usb_endp_control_wait(&hub->dev->endp0,
 		USB_RT_PORT, USB_REQ_CLEAR_FEATURE, feature,
 		port + 1, 0, NULL, 1000);
 }
 
 static int usb_hub_set_port_feature(struct usb_hub *hub,
 		unsigned int port, int feature) {
-	return usb_endp_control_wait(hub->dev->endpoints[0],
+	return usb_endp_control_wait(&hub->dev->endp0,
 		USB_RT_PORT, USB_REQ_SET_FEATURE, feature,
 		port + 1, 0, NULL, 1000);
 }
@@ -220,7 +220,7 @@ static int usb_device_init(struct usb_hub *hub, struct usb_dev *dev) {
 	int ret;
 	uint32_t addr;
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
 		USB_DESC_TYPE_DEV << 8,
@@ -242,7 +242,7 @@ static int usb_device_init(struct usb_hub *hub, struct usb_dev *dev) {
 	assert(addr < USB_HC_MAX_DEV);
 
 	/* Set device address */
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_SET_ADDRESS, addr,
 		0, 0, NULL, 1000);
@@ -331,7 +331,7 @@ static int usb_hub_get_status(struct usb_hub *hub,
 	int ret;
 	uint16_t hubstatus[2];
 
-	ret = usb_endp_control_wait(hub->dev->endpoints[0],
+	ret = usb_endp_control_wait(&hub->dev->endp0,
 		USB_DIR_IN | USB_RT_HUB, USB_REQ_GET_STATUS,
 		0, 0, 4, hubstatus, USB_HUB_PORT_STS_TIMEOUT);
 	if (ret) {
@@ -378,7 +378,7 @@ static int usb_hub_probe(struct usb_dev *dev) {
 	if (!is_root_hub(dev)) {
 		uint16_t status = 0, hubstatus = 0, hubchange = 0;
 
-		ret = usb_endp_control_wait(dev->endpoints[0],
+		ret = usb_endp_control_wait(&dev->endp0,
 			USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 			USB_REQ_GET_STATUS,
 			USB_DESC_TYPE_DEV << 8,

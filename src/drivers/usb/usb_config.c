@@ -162,7 +162,7 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 
 	log_debug("dev(%d:%d) conf=%d", dev->bus_idx, dev->addr, n);
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
 		(USB_DESC_TYPE_CONFIG << 8) + n,
@@ -186,7 +186,7 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 		goto err;
 	}
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
 		(USB_DESC_TYPE_CONFIG << 8) + n,
@@ -213,7 +213,7 @@ int usb_set_configuration(struct usb_dev *dev, unsigned int n) {
 
 	log_debug("dev(%d:%d) conf=%d", dev->bus_idx, dev->addr, n);
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_SET_CONFIG, n,
 		0, 0, NULL, 1000);
@@ -245,16 +245,32 @@ void usb_free_configuration(struct usb_dev *dev) {
 }
 
 int usb_get_ep0(struct usb_dev *dev) {
-	if (!usb_endp_alloc(dev, 0, &usb_desc_endp_control_default)) {
-		log_error("failed");
-		return -1;
+	struct usb_endp *ep;
+	struct usb_hcd *hcd = dev->hcd;
+
+	ep = &dev->endp0;
+
+	ep->dev = dev;
+
+	usb_endp_fill_from_desc(ep, &usb_desc_endp_control_default);
+
+	dev->endpoints[0] = NULL;
+
+	if (hcd->ops->endp_hci_alloc) {
+		ep->hci_specific = hcd->ops->endp_hci_alloc(ep);
+		if (!ep->hci_specific) {
+			log_error("failed");
+			return -1;
+		}
 	}
+
 	dev->endp_n = 1;
+
 	return 0;
 }
 
 int usb_set_iface(struct usb_dev *dev, int iface, int alt) {
-	return usb_endp_control_wait(dev->endpoints[0],
+	return usb_endp_control_wait(&dev->endp0,
 	            USB_DIR_OUT | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_IFACE,
 	            USB_REQ_SET_INTERFACE,
 	            iface, alt, 0, NULL, 1000);

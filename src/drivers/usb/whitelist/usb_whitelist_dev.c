@@ -135,7 +135,7 @@ static void usb_wl_sn_len_got(struct usb_request *req, void *arg) {
 	struct usb_whitelist_temp_string *tstrs = arg;
 	short lang_id = tstrs->lang_array[1];
 
-	usb_endp_control(req->endp->dev->endpoints[0], usb_wl_sn_got, tstrs,
+	usb_endp_control(&req->endp->dev->endp0, usb_wl_sn_got, tstrs,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -149,7 +149,7 @@ static void usb_wl_lang_array_got(struct usb_request *req, void *arg) {
 	struct usb_whitelist_temp_string *tstrs = arg;
 	short lang_id = tstrs->lang_array[1];
 
-	usb_endp_control(req->endp->dev->endpoints[0], usb_wl_sn_len_got, tstrs,
+	usb_endp_control(&req->endp->dev->endp0, usb_wl_sn_len_got, tstrs,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
@@ -173,7 +173,7 @@ int usb_whitelist_check(struct usb_dev *dev) {
 
 	memset(tstrs, 0, sizeof(*tstrs));
 
-	usb_endp_control(dev->endpoints[0], usb_wl_lang_array_got, tstrs,
+	usb_endp_control(&dev->endp0, usb_wl_lang_array_got, tstrs,
 		USB_DEV_REQ_TYPE_RD
 			| USB_DEV_REQ_TYPE_STD
 			| USB_DEV_REQ_TYPE_DEV,
