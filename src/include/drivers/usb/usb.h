@@ -173,6 +173,9 @@ struct usb_dev {
 	struct usb_desc_device dev_desc;
 
 	void *config_buf;
+
+	struct usb_endp endp0;
+
 	struct usb_desc_interface *iface_desc[USB_DEV_MAX_INTERFACES];
 	unsigned char endp_n;
 	struct usb_endp *endpoints[USB_DEV_MAX_ENDP];

@@ -126,7 +126,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 		}
 	}
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 			USB_DIR_OUT | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_RESET, 0,
 			dev->iface_desc[0]->b_interface_number, 0, NULL, 1000);
@@ -137,7 +137,7 @@ static int usb_mass_start(struct usb_dev *dev) {
 
 	usleep(100000);
 
-	ret = usb_endp_control_wait(dev->endpoints[0],
+	ret = usb_endp_control_wait(&dev->endp0,
 			USB_DIR_IN | USB_REQ_TYPE_CLASS | USB_REQ_RECIP_IFACE,
 			USB_REQ_MASS_MAXLUN, 0,
 			dev->iface_desc[0]->b_interface_number, 1, &mass->maxlun, 1000);
