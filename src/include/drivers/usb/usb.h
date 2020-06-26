@@ -59,9 +59,10 @@ typedef void (*usb_request_notify_hnd_t)(struct usb_request *req, void *arg);
 #define USB_DIR_OUT                 0x00
 #define USB_DIR_IN                  0x80
 
-#define USB_REQ_TYPE_STANDARD       0x00
-#define USB_REQ_TYPE_CLASS          0x20
-#define USB_REQ_TYPE_VENDOR         0x40
+#define USB_REQ_TYPE_MASK           (0x03 << 5)
+#define USB_REQ_TYPE_STANDARD       (0x00 << 5)
+#define USB_REQ_TYPE_CLASS          (0x01 << 5)
+#define USB_REQ_TYPE_VENDOR         (0x02 << 5)
 
 #define USB_REQ_RECIP_DEVICE        0x00
 #define USB_REQ_RECIP_IFACE         0x01
