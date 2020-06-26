@@ -6,74 +6,19 @@
  */
 
 #include <stdint.h>
-
+#include <string.h>
+#include <embox/unit.h>
+#include <util/log.h>
+#include <drivers/usb/usb_defines.h>
 #include <drivers/usb/usb_desc.h>
+#include <drivers/usb/gadget/udc.h>
+#include <drivers/usb/gadget/gadget.h>
 
-#include <drivers/usb/gadget/rndis_desc.h>
-
-#define RNDIS_NUM_OF_INTERFACES 2
-
-#define RNDIS_VID 0xDEAD
-#define RNDIS_PID 0xBEAF
-
-/* Enable or disable handling of MS OS descriptors and string */
-#define USBD_MS_OS_DSC_SUPPORT 1
-#define USBD_MS_OS_VENDOR_CODE 0xBC /* bMS_VendorCode, must match the vendor code returned in OS string descriptor */
-
-#define USB_BM_ATTR_SELF_POWER     (1 << 6)
-
-/* M$ OS string */
-const unsigned char OS_String[18] =
-	{ 18, 3, 'M', 0, 'S', 0, 'F', 0,'T', 0, '1', 0, '0', 0, '0', 0, USBD_MS_OS_VENDOR_CODE , 0x00 };
-
-/* MS OS Feature descriptor */
-const unsigned char OS_feature_dsc[] =
-{
-    0x28, 0x00, 0x00, 0x00, /* dwLength */
-    0x00, 0x01, /* bcdVersion */
-    0x04, 0x00, /* wIndex */
-    0x01, /* bCount */
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* reserve 7 bytes */
-    0x00, /* bInterfaceNumber */
-    0x01, /* reserved */
-    /* The following is compatible ID 8 bytes (RNDIS) */
-    0x52, 0x4E, 0x44, 0x49, 0x53, 0x00, 0x00, 0x00,
-    /* The following is SubCompatible ID null 8 bytes (5162001) */
-    0x35, 0x31, 0x36, 0x32, 0x30, 0x30, 0x31, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00 /* reserve 6 bytes */
-};
-
-const struct usb_desc_device rndis_device_desc = {
-        sizeof(struct usb_desc_device),
-		USB_DESC_TYPE_DEV,
-	    0x0200,                                         /* uint16 bcdUSB; */
-	    0xE0,                                           /* uint8  bDeviceClass = Wireless Controller; */
-	    0x00,                                           /* uint8  bDeviceSubClass; */
-	    0x00,                                           /* uint8  bDeviceProtocol; */
-	    0x08,                                           /* uint8  bMaxPacketSize0; */
-		RNDIS_VID,                                  /* uint16 idVendor; */
-	    RNDIS_PID,                                  /* uint16 idProduct; */
-	    0xFFFF,                                         /* uint16 bcdDevice; */
-		RNDIS_MANUFACTURER_STR_INDEX,                         /* uint8  iManufacturer; */
-		RNDIS_PRODUCT_STR_INDEX,                              /* uint8  iProduct; */
-		RNDIS_SERIAL_STR_INDEX,                               /* uint8  iSerialNumber; */
-	    0x01                                            /* uint8  bNumConfigurations; */
-};
-
-const struct usb_desc_configuration rndis_config_desc = {
-	    sizeof(struct  usb_desc_configuration),
-		USB_DESC_TYPE_CONFIG,
-
-	    0x0BAD,                                         /* uint16 wTotalLength; */
-	    RNDIS_NUM_OF_INTERFACES,                        /* uint8  bNumInterfaces; */
-	    0x01,                                           /* uint8  bConfigurationValue; */
-		RNDIS_CONFIGURATION_STR_INDEX,                        /* uint8  iConfiguration; */
-		USB_BM_ATTR_SELF_POWER,                         /* uint8  bmAttributes; */
-	    0x30                                            /* uint8  bMaxPower = 96 mA; */
-};
+/* FIXME Should be examined how to do this, because strings are at rndis_gadget.c */
+#define RNDIS_CONFIGURATION_STR_INDEX 4
 
 /* IAD descriptor */
-const uint8_t iad_descriptor[8] = {
+static const uint8_t iad_descriptor[8] = {
 		0x08, /*    bLength */
 		0x0B, /*    bDescriptorType */
 		0x00, /*    bFirstInterface */
@@ -85,11 +30,11 @@ const uint8_t iad_descriptor[8] = {
 };
 
 /* Interface 0 descriptor */
-const struct usb_desc_interface rndis_interface0_desc = {
+static struct usb_desc_interface rndis_interface0_desc = {
     sizeof(struct usb_desc_interface),
 	USB_DESC_TYPE_INTERFACE,
 
-    0x00,                                           // uint8  bInterfaceNumber;
+    0x00, /* uint8  bInterfaceNumber; DYNAMIC */
     0x00,                                           // uint8  bAlternateSetting;
     1,                                              // uint8  bNumEndpoints;
     0xE0,                                  			// uint8  bInterfaceClass: Wireless Controller;
@@ -98,7 +43,7 @@ const struct usb_desc_interface rndis_interface0_desc = {
     0      											// uint8  iInterface;
 };
 
-const uint8_t interface0_functional_desc[4][5] = {
+static const uint8_t interface0_functional_desc[4][5] = {
 		/* Header Functional Descriptor */
 		[0] = { 0x05,                              // bFunctionLength
 		        0x24,                              // bDescriptorType = CS Interface
@@ -128,11 +73,11 @@ const uint8_t interface0_functional_desc[4][5] = {
 		        0x01 },                             // bSubordinateInterface0 = "RNDIS Ethernet Data"
 };
 
-const struct usb_desc_interface rndis_interface1_desc = {
+static struct usb_desc_interface rndis_interface1_desc = {
 	    sizeof(struct usb_desc_interface),
 		USB_DESC_TYPE_INTERFACE,
 
-		0x01,                                           // uint8  bInterfaceNumber;
+		0x00, /* uint8  bInterfaceNumber; DYNAMIC */
 		0x00,                                           // uint8  bAlternateSetting;
 		2,                                              // uint8  bNumEndpoints;
 		0x0A,                                           // uint8  bInterfaceClass: CDC;
@@ -141,3 +86,91 @@ const struct usb_desc_interface rndis_interface1_desc = {
 		0   											// uint8  iInterface;
 };
 
+static int rndis_probe(struct usb_gadget *gadget);
+
+static struct usb_desc_endpoint int_ep_desc = {
+	.b_length            = sizeof (struct usb_desc_endpoint),
+	.b_desc_type         = USB_DESC_TYPE_ENDPOINT,
+	.bm_attributes       = USB_DESC_ENDP_TYPE_INTR,
+	.w_max_packet_size   = 8,
+	.b_interval          = 1,
+};
+
+static struct usb_desc_endpoint bulk_ep_tx_desc = {
+	.b_length            = sizeof (struct usb_desc_endpoint),
+	.b_desc_type         = USB_DESC_TYPE_ENDPOINT,
+	.bm_attributes       = USB_DESC_ENDP_TYPE_BULK,
+	.w_max_packet_size   = 64,
+	.b_interval          = 0,
+};
+
+static struct usb_desc_endpoint bulk_ep_rx_desc = {
+	.b_length            = sizeof (struct usb_desc_endpoint),
+	.b_desc_type         = USB_DESC_TYPE_ENDPOINT,
+	.bm_attributes       = USB_DESC_ENDP_TYPE_BULK,
+	.w_max_packet_size   = 64,
+	.b_interval          = 0,
+};
+
+static const struct usb_desc_common_header *rndis_descs[] = {
+	(struct usb_desc_common_header *) &iad_descriptor,
+	(struct usb_desc_common_header *) &rndis_interface0_desc,
+	(struct usb_desc_common_header *) &interface0_functional_desc[0],
+	(struct usb_desc_common_header *) &interface0_functional_desc[1],
+	(struct usb_desc_common_header *) &interface0_functional_desc[2],
+	(struct usb_desc_common_header *) &interface0_functional_desc[3],
+	(struct usb_desc_common_header *) &int_ep_desc,
+	(struct usb_desc_common_header *) &rndis_interface1_desc,
+	(struct usb_desc_common_header *) &bulk_ep_tx_desc,
+	(struct usb_desc_common_header *) &bulk_ep_rx_desc,
+	NULL,
+};
+
+static struct usb_gadget_ep intr = {
+	.dir = USB_DIR_IN,
+	.desc = &int_ep_desc,
+};
+
+static struct usb_gadget_ep bulk_tx = {
+	.dir = USB_DIR_IN,
+	.desc = &bulk_ep_tx_desc,
+};
+
+static struct usb_gadget_ep bulk_rx = {
+	.dir = USB_DIR_OUT,
+	.desc = &bulk_ep_rx_desc,
+};
+
+static struct usb_gadget_function rndis_func = {
+	.name = "rndis",
+	.descs = rndis_descs,
+	.probe = rndis_probe,
+};
+
+static int rndis_probe(struct usb_gadget *gadget) {
+	rndis_interface0_desc.b_interface_number =
+		usb_gadget_add_interface(gadget, &rndis_func);
+
+	rndis_interface1_desc.b_interface_number =
+		usb_gadget_add_interface(gadget, &rndis_func);
+
+	/* FIXME */
+	intr.udc    = gadget->ep0.udc;
+	bulk_tx.udc = gadget->ep0.udc;
+	bulk_rx.udc = gadget->ep0.udc;
+
+	usb_gadget_ep_configure(&bulk_tx);
+	usb_gadget_ep_configure(&bulk_rx);
+	usb_gadget_ep_configure(&intr);
+
+	/* TODO Endpoints are not enabled. */
+
+	return 0;
+}
+
+EMBOX_UNIT_INIT(rndis_init);
+
+static int rndis_init(void) {
+	usb_gadget_register_function(&rndis_func);
+	return 0;
+}
