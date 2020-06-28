@@ -37,9 +37,9 @@ static irq_return_t xen_net_irq(unsigned int irq_num, void *dev_id) {
 	dev = dev_id;
 	nic_priv = netdev_priv(dev, struct netfront_dev);
 
-    sched_lock();
+	sched_lock();
 #ifndef FEATURE_SPLIT_CHANNELS 
-    network_tx_buf_gc(nic_priv);
+	network_tx_buf_gc(nic_priv);
 #endif
 	network_rx(nic_priv, dev);
 	sched_unlock();
