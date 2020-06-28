@@ -1,20 +1,14 @@
 #include <embox/unit.h>
-
 #include <xen_memory.h>
 #include <kernel/printk.h>
-
 #include <xen/memory.h>
 #include <xen_hypercall-x86_32.h>
 #include <string.h>
 #include <assert.h>
-
-#define	ENOMEM		12	/* Out of memory */
-
+#include <errno.h>
 #include <xen/xen.h>
 #include <xen/version.h>
 #include <xen/features.h>
-
-//phymem reuse
 #include <stdint.h>
 #include <sys/mman.h>
 #include <mem/page.h>
@@ -22,26 +16,77 @@
 
 EMBOX_UNIT_INIT(xen_memory_init);
 
+unsigned long *phys_to_machine_mapping;
+#define pfn_to_mfn(_pfn)        (phys_to_machine_mapping[(_pfn)])
+#define mfn_to_pfn(_mfn)        (machine_to_phys_mapping[(_mfn)])
+
+#define L1_PAGETABLE_SHIFT      12
+#define L2_PAGETABLE_SHIFT      21
+#define L3_PAGETABLE_SHIFT      30
+
+#define L1_PAGETABLE_ENTRIES    512
+#define L2_PAGETABLE_ENTRIES    512
+#define L3_PAGETABLE_ENTRIES    4
+
+/* Given a virtual address, get an entry offset into a page table. */
+#define l1_table_offset(_a) \
+  (((_a) >> L1_PAGETABLE_SHIFT) & (L1_PAGETABLE_ENTRIES - 1))
+#define l2_table_offset(_a) \
+  (((_a) >> L2_PAGETABLE_SHIFT) & (L2_PAGETABLE_ENTRIES - 1))
+#define l3_table_offset(_a) \
+  (((_a) >> L3_PAGETABLE_SHIFT) & (L3_PAGETABLE_ENTRIES - 1))
+
+#define VIRT_START              ((unsigned long)0x100000L)
+#define to_phys(x)              ((unsigned long)(x)-VIRT_START)
+#define PFN_DOWN(x)             ((x) >> L1_PAGETABLE_SHIFT)
+#define virt_to_pfn(_virt)      (PFN_DOWN(to_phys(_virt)))
+
+#define CONST(x)                x ## ULL
+#define _PAGE_PRESENT           CONST(0x001)
+#define _PAGE_RW                CONST(0x002)
+#define _PAGE_USER              CONST(0x004)
+#define _PAGE_ACCESSED          CONST(0x020)
+#define _PAGE_DIRTY             CONST(0x040)
+#define _PAGE_PSE               CONST(0x080)
+#define L1_PROT (_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED)
+#define L1_PROT_RO (_PAGE_PRESENT|_PAGE_ACCESSED)
+#define L2_PROT (_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_DIRTY |_PAGE_USER)
+#define L3_PROT (_PAGE_PRESENT)
+#define PAGETABLE_LEVELS        3
+
+#define L1_MASK                 ((1UL << L2_PAGETABLE_SHIFT) - 1)
+#define L1_FRAME                1
+#define L2_FRAME                2
+
+#define PAGE_MASK               (~(PAGE_SIZE()-1))
+#define PADDR_BITS              44
+#define PADDR_MASK              ((1ULL << PADDR_BITS)-1)
+
+#define to_virt(x)                 ((void *)((unsigned long)(x)+VIRT_START))
+#define pte_to_mfn(_pte)           (((_pte) & (PADDR_MASK&PAGE_MASK)) >> L1_PAGETABLE_SHIFT)
+#define pte_to_virt(_pte)          to_virt(mfn_to_pfn(pte_to_mfn(_pte)) << PAGE_SHIFT)
+#define mfn_to_virt(_mfn)          (to_virt(mfn_to_pfn(_mfn) << PAGE_SHIFT))
+#define pfn_to_virt(_pfn)          (to_virt((_pfn) << PAGE_SHIFT))
+#define _virt_to_mfn(_virt)        (pfn_to_mfn(virt_to_pfn(_virt)))
+#define MAX_MEM_SIZE               0x3f000000ULL
+
+#define PFN_UP(x)	(((x) + PAGE_SIZE()-1) >> L1_PAGETABLE_SHIFT)
+#define PFN_PHYS(x)	((uint64_t)(x) << L1_PAGETABLE_SHIFT)
+#define PHYS_PFN(x)	((x) >> L1_PAGETABLE_SHIFT)
+
 struct page_allocator *__xen_mem_allocator;
-
-static int memory_init(char *const xen_mem_alloc_start, char *const xen_mem_alloc_end) {
-	const size_t mem_len = xen_mem_alloc_end - xen_mem_alloc_start;
-	void *va;
-
-	printk("start=%p end=%p size=%zu\n", xen_mem_alloc_start, xen_mem_alloc_end, mem_len);
-
-	va = mmap_device_memory(xen_mem_alloc_start,
-			mem_len,
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			(uint64_t)((uintptr_t) xen_mem_alloc_start));
-
-	if (va) {
-		__xen_mem_allocator = page_allocator_init(xen_mem_alloc_start, mem_len, PAGE_SIZE());
-	}
-    
-	return xen_mem_alloc_start == va ? 0 : -EIO;
-}
+extern start_info_t xen_start_info;
+typedef uint64_t pgentry_t;
+pgentry_t *pt_base;
+unsigned long mfn_zero;
+static unsigned long first_free_pfn;
+static unsigned long last_free_pfn;
+unsigned long nr_max_pages;
+static pgentry_t pt_prot[PAGETABLE_LEVELS] = {
+    L1_PROT,
+    L2_PROT,
+    L3_PROT
+};
 
 void *xen_mem_alloc(size_t page_number) {
 	return page_alloc(__xen_mem_allocator, page_number);
@@ -54,88 +99,14 @@ void xen_mem_free(void *page, size_t page_number) {
 struct page_allocator *xen_allocator(void) {
 	return __xen_mem_allocator;
 }
-// end of phymem
 
-
-#ifdef XEN_MEM_RESERVATION //del or replace this
-extern char memory_pages[600][PAGE_SIZE()];
-static int alloc_page_counter = 0;
-//alloc page using xen balloon
-int alloc_page(unsigned long *va, unsigned long *mfn) {
-	printk("alloc page #%d\n", alloc_page_counter);
-	if(alloc_page_counter == 600)
-	{
-		return -ENOMEM;
-	}
-//ask for mem (for rings txs rxs)
-    struct xen_memory_reservation reservation;
-    reservation.nr_extents = 1;
-    reservation.extent_order = 3;
-    reservation.address_bits= 0;
-    reservation.domid = DOMID_SELF;
-    unsigned long frame_list[1];
-    set_xen_guest_handle(reservation.extent_start, frame_list);
-   	int rc;
-    rc = HYPERVISOR_memory_op(XENMEM_increase_reservation, &reservation);
-    printk("XENMEM_increase_reservation=%d\n", rc);
-    printk("frame_list=%lu\n", frame_list[0]);
-	
-//map it
-	printk("addr:%p\n", &memory_pages[alloc_page_counter]);
-	rc = HYPERVISOR_update_va_mapping((unsigned long) &memory_pages[alloc_page_counter],
-			__pte((frame_list[0]<< PAGE_SHIFT) | 7),
-			UVMF_INVLPG);
-	printk("HYPERVISOR_update_va_mapping:%d\n", rc);
-
-	*mfn = frame_list[0];
-	*va = (unsigned long)&memory_pages[alloc_page_counter];
-	alloc_page_counter++;
-//done!
-	return 0;
-}
-#endif
-
-extern start_info_t xen_start_info;
-
-
-typedef uint64_t pgentry_t;
-
-unsigned long *phys_to_machine_mapping;
-pgentry_t *pt_base;
-unsigned long mfn_zero;
-static unsigned long first_free_pfn;
-static unsigned long last_free_pfn;
-unsigned long nr_max_pages;
-
-void get_max_pages(void) {
-    long ret;
-    domid_t domid = DOMID_SELF;
-
-    ret = HYPERVISOR_memory_op(XENMEM_maximum_reservation, &domid);
-    if ( ret < 0 )
-    {
-        printk("Could not get maximum pfn\n");
-        return;
-    }
-
-    nr_max_pages = ret;
-    
-    printk("Maximum memory size: %ld pages\n", nr_max_pages);
+long int virt_to_mfn(void* virt) {
+    return _virt_to_mfn(virt);
 }
 
 void do_exit(void) {
     assert(NULL);
 }
-/*
- * Make pt_pfn a new 'level' page table frame and hook it into the page
- * table at offset in previous level MFN (pref_l_mfn). pt_pfn is a guest
- * PFN.
- */
-static pgentry_t pt_prot[PAGETABLE_LEVELS] = {
-    L1_PROT,
-    L2_PROT,
-    L3_PROT
-};
 
 static void new_pt_frame(unsigned long *pt_pfn, unsigned long prev_l_mfn, 
                          unsigned long offset, unsigned long level) {
@@ -193,9 +164,7 @@ static void new_pt_frame(unsigned long *pt_pfn, unsigned long prev_l_mfn,
 
     *pt_pfn += 1;
 }
-/*
- * Build the initial pagetable.
- */
+
 static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
     unsigned long start_address, end_address;
     unsigned long pfn_to_map, pt_pfn = *start_pfn;
@@ -212,7 +181,7 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
 
     if ( *max_pfn >= virt_to_pfn(HYPERVISOR_VIRT_START) )
     {
-        printk("WARNING: Mini-OS trying to use Xen virtual space. "
+        printk("WARNING: Embox trying to use Xen virtual space. "
                "Truncating memory from %luMB to ",
                ((unsigned long)pfn_to_virt(*max_pfn) - VIRT_START)>>20);
         
@@ -222,7 +191,6 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
                ((unsigned long)pfn_to_virt(*max_pfn) - VIRT_START)>>20);
         
     }
-
 
     start_address = (unsigned long)pfn_to_virt(pfn_to_map);
     end_address = (unsigned long)pfn_to_virt(*max_pfn);
@@ -264,13 +232,12 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
             count++;
         }
         pfn_to_map++;
-        if ( count == L1_PAGETABLE_ENTRIES ||
-             (count && pfn_to_map == *max_pfn) )
+
+        if ( count == L1_PAGETABLE_ENTRIES || (count && pfn_to_map == *max_pfn) )
         {
             rc = HYPERVISOR_mmu_update(mmu_updates, count, NULL, DOMID_SELF);
             if ( rc < 0 )
-            {
-                
+            { 
                 printk("ERROR: build_pagetable(): PTE could not be updated\n");
                 printk("       mmu_update failed with rc=%d\n", rc);
                 
@@ -283,25 +250,41 @@ static void build_pagetable(unsigned long *start_pfn, unsigned long *max_pfn) {
 
     *start_pfn = pt_pfn;
 }
-#if 0
-/*
- * Clear some of the bootstrap memory
- */
-static void clear_bootstrap(void)
-{
-    pte_t nullpte = { };
-    int rc;
 
-    /* Use first page as the CoW zero page */
-    memset((void*)VIRT_START, 0, PAGE_SIZE());
-    mfn_zero = virt_to_mfn(VIRT_START);
+int is_auto_translated_physmap(void) {
+    unsigned char xen_features[32];
+	struct xen_feature_info fi;
 
-    if ( (rc = HYPERVISOR_update_va_mapping(0, nullpte, UVMF_INVLPG)) )
-        printk("Unable to unmap NULL page. rc=%d\n", rc);
+	int j;
+    fi.submap_idx = 0;
+    if (HYPERVISOR_xen_version(XENVER_get_features, &fi) < 0) 
+    {
+        printk("error while feature getting!");
+    }
+    for (j = 0; j < 32; j++)
+    {
+        xen_features[j] = !!(fi.submap & 1<<j);
+    }
+
+    return xen_features[XENFEAT_auto_translated_physmap];
 }
-#endif
 
-#define MAX_MEM_SIZE            0x3f000000ULL
+void get_max_pages(void) {
+    long ret;
+    domid_t domid = DOMID_SELF;
+
+    ret = HYPERVISOR_memory_op(XENMEM_maximum_reservation, &domid);
+    if ( ret < 0 )
+    {
+        printk("Could not get maximum pfn\n");
+        return;
+    }
+
+    nr_max_pages = ret;
+    
+    printk("Maximum memory size: %ld pages\n", nr_max_pages);
+}
+
 void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p) {
     unsigned long start_pfn, max_pfn;
 
@@ -318,29 +301,28 @@ void arch_init_mm(unsigned long* start_pfn_p, unsigned long* max_pfn_p) {
     printk("    max_pfn: %lx\n", max_pfn);
 
     build_pagetable(&start_pfn, &max_pfn);
-    //clear_bootstrap();
-    //set_readonly(&_text, &_erodata); //TODO: remove _text!!!!
 
     *start_pfn_p = start_pfn;
     *max_pfn_p = max_pfn;
 }
 
-int is_auto_translated_physmap(void) {
-    unsigned char xen_features[32]; //__read_mostly
-	struct xen_feature_info fi;
+static int memory_init(char *const xen_mem_alloc_start, char *const xen_mem_alloc_end) {
+	const size_t mem_len = xen_mem_alloc_end - xen_mem_alloc_start;
+	void *va;
 
-	int j;
-    fi.submap_idx = 0;
-    if (HYPERVISOR_xen_version(XENVER_get_features, &fi) < 0) 
-    {
-        printk("error while feature getting!");
-    }
-    for (j = 0; j < 32; j++)
-    {
-        xen_features[j] = !!(fi.submap & 1<<j);
-    }
+	printk("start=%p end=%p size=%zu\n", xen_mem_alloc_start, xen_mem_alloc_end, mem_len);
 
-    return xen_features[XENFEAT_auto_translated_physmap];
+	va = mmap_device_memory(xen_mem_alloc_start,
+			mem_len,
+			PROT_WRITE | PROT_READ,
+			MAP_FIXED,
+			(uint64_t)((uintptr_t) xen_mem_alloc_start));
+
+	if (va) {
+		__xen_mem_allocator = page_allocator_init(xen_mem_alloc_start, mem_len, PAGE_SIZE());
+	}
+    
+	return xen_mem_alloc_start == va ? 0 : -EIO;
 }
 
 static int xen_memory_init(void) {
