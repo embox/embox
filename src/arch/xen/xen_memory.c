@@ -48,10 +48,11 @@ unsigned long *phys_to_machine_mapping;
 #define _PAGE_ACCESSED          CONST(0x020)
 #define _PAGE_DIRTY             CONST(0x040)
 #define _PAGE_PSE               CONST(0x080)
-#define L1_PROT (_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED)
-#define L1_PROT_RO (_PAGE_PRESENT|_PAGE_ACCESSED)
-#define L2_PROT (_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_DIRTY |_PAGE_USER)
-#define L3_PROT (_PAGE_PRESENT)
+
+#define L1_PROT                 (_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED)
+#define L1_PROT_RO              (_PAGE_PRESENT|_PAGE_ACCESSED)
+#define L2_PROT                 (_PAGE_PRESENT|_PAGE_RW|_PAGE_ACCESSED|_PAGE_DIRTY |_PAGE_USER)
+#define L3_PROT                 (_PAGE_PRESENT)
 #define PAGETABLE_LEVELS        3
 
 #define L1_MASK                 ((1UL << L2_PAGETABLE_SHIFT) - 1)
@@ -62,13 +63,13 @@ unsigned long *phys_to_machine_mapping;
 #define PADDR_BITS              44
 #define PADDR_MASK              ((1ULL << PADDR_BITS)-1)
 
-#define to_virt(x)                 ((void *)((unsigned long)(x)+VIRT_START))
-#define pte_to_mfn(_pte)           (((_pte) & (PADDR_MASK&PAGE_MASK)) >> L1_PAGETABLE_SHIFT)
-#define pte_to_virt(_pte)          to_virt(mfn_to_pfn(pte_to_mfn(_pte)) << PAGE_SHIFT)
-#define mfn_to_virt(_mfn)          (to_virt(mfn_to_pfn(_mfn) << PAGE_SHIFT))
-#define pfn_to_virt(_pfn)          (to_virt((_pfn) << PAGE_SHIFT))
-#define _virt_to_mfn(_virt)        (pfn_to_mfn(virt_to_pfn(_virt)))
-#define MAX_MEM_SIZE               0x3f000000ULL
+#define to_virt(x)              ((void *)((unsigned long)(x)+VIRT_START))
+#define pte_to_mfn(_pte)        (((_pte) & (PADDR_MASK&PAGE_MASK)) >> L1_PAGETABLE_SHIFT)
+#define pte_to_virt(_pte)       to_virt(mfn_to_pfn(pte_to_mfn(_pte)) << PAGE_SHIFT)
+#define mfn_to_virt(_mfn)       (to_virt(mfn_to_pfn(_mfn) << PAGE_SHIFT))
+#define pfn_to_virt(_pfn)       (to_virt((_pfn) << PAGE_SHIFT))
+#define _virt_to_mfn(_virt)     (pfn_to_mfn(virt_to_pfn(_virt)))
+#define MAX_MEM_SIZE            0x3f000000ULL
 
 #define PFN_UP(x)	(((x) + PAGE_SIZE()-1) >> L1_PAGETABLE_SHIFT)
 #define PFN_PHYS(x)	((uint64_t)(x) << L1_PAGETABLE_SHIFT)

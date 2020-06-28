@@ -53,9 +53,9 @@ static irq_return_t xen_net_irq_tx(unsigned int irq_num, void *dev_id) {
 	dev = dev_id;
 	nic_priv = netdev_priv(dev, struct netfront_dev);
 
-sched_lock();
+	sched_lock();
 	network_tx_buf_gc(nic_priv);
-sched_unlock();
+	sched_unlock();
 	return IRQ_NONE;
 }
 
@@ -90,7 +90,6 @@ static int xen_net_start(struct net_device *dev) {
 }
 
 static int xen_net_stop(struct net_device *dev) {
-//TODO free
 	return ENOERR;
 }
 

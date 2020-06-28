@@ -19,12 +19,11 @@
 #include <xen/io/xenbus.h>
 #include <net/l0/net_entry.h>
 #include "netfront.h"
-//add this for unmask
 #include <xen/event.h>
 #include <grant_table.h>
-#define XS_MSG_LEN 256
 #include <kernel/sched/sched_lock.h>
 
+#define XS_MSG_LEN 256
 #define ASSERT(x)                           \
 do {                                        \
 	if (!(x)) {                          	\
@@ -35,21 +34,18 @@ do {                                        \
 #define BUG_ON(x) ASSERT(!(x))
 #define NET_FRONTEND_NUMBER 0
 
-static inline void add_id_to_freelist(unsigned int id,unsigned short* freelist)
-{
+static inline void add_id_to_freelist(unsigned int id,unsigned short* freelist) {
 	freelist[id + 1] = freelist[0];
 	freelist[0]  = id;
 }
 
-static inline unsigned short get_id_from_freelist(unsigned short* freelist)
-{
+static inline unsigned short get_id_from_freelist(unsigned short* freelist) {
 	unsigned int id = freelist[0];
 	freelist[0] = freelist[id + 1];
 	return id;
 }
 
-int alloc_evtchn(evtchn_port_t *port)
-{
+int alloc_evtchn(evtchn_port_t *port) {
 	struct evtchn_alloc_unbound alloc_unbound;
 	int err;
 
@@ -66,8 +62,7 @@ int alloc_evtchn(evtchn_port_t *port)
 	return err;
 }
 
-int setup_netfront(struct netfront_dev *dev)
-{
+int setup_netfront(struct netfront_dev *dev) {
 	// Rings
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
@@ -154,8 +149,7 @@ static int xenstore_interaction(struct netfront_dev *dev) {
 	}
 
 	// Event channel
-#ifdef FEATURE_SPLIT_CHANNELS //false
-//TODO
+#ifdef FEATURE_SPLIT_CHANNELS
 	alloc_evtchn(&dev->evtchn_tx);
 	alloc_evtchn(&dev->evtchn_rx);
 
@@ -203,17 +197,7 @@ static int xenstore_interaction(struct netfront_dev *dev) {
 		printk("[PANIC!] Can not write request-rx-copy\n");
 		return err;
 	}
-	/*
-	memset(xs_key, 0, XS_MSG_LEN);
-	sprintf(xs_key, "%s/feature-no-csum-offload", dev->nodename);
-	memset(xs_value, 0, XS_MSG_LEN);
-	sprintf(xs_value, "%u", 0);
-	err = xenstore_write(xs_key, xs_value);
-	if (err) {
-		printk("[PANIC!] Can not write request-rx-copy\n");
-		return err;
-	}
-	*/
+
 	memset(xs_key, 0, XS_MSG_LEN);
 	sprintf(xs_key, "%s/feature-rx-copy", dev->nodename);
 	memset(xs_value, 0, XS_MSG_LEN);
@@ -269,12 +253,10 @@ static inline int notify_remote_via_evtchn(evtchn_port_t port) {
 	return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
 }
 
-static inline int xennet_rxidx(RING_IDX idx)
-{
+static inline int xennet_rxidx(RING_IDX idx) {
 	return idx & (NET_RX_RING_SIZE - 1);
 }
 
-//TODO: refactor
 void init_rx_buffers(struct netfront_dev *dev) {
 	int i, requeue_idx;
 	netif_rx_request_t *req;
@@ -291,14 +273,14 @@ void init_rx_buffers(struct netfront_dev *dev) {
 		requeue_idx++;
 	}
 
-	dev->rx.req_prod_pvt = requeue_idx; //256
+	dev->rx.req_prod_pvt = requeue_idx;
 
 	wmb();
 
 	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
 	
 	if (notify) {
-#ifdef FEATURE_SPLIT_CHANNELS //false
+#ifdef FEATURE_SPLIT_CHANNELS
 	notify_remote_via_evtchn(dev->evtchn_rx);
 #else
 	notify_remote_via_evtchn(dev->evtchn);
@@ -342,54 +324,7 @@ int netfront_priv_init(struct netfront_dev *dev) {
 	return 0;
 }
 
-#if 0
-static void rx_packet(unsigned char* data, int len, void* arg, struct net_device *embox_dev) 
-{
-	
-	//struct host_net_adp *hnet = netdev_priv(dev, struct host_net_adp);
-	struct sk_buff *skb;
-	if (!(skb = skb_alloc(len))) {
-		return;
-	}
-	//host_net_rx(hnet, skb->mac.raw, len);
-	memcpy(data, skb->mac.raw, skb->len);
-	skb->dev = embox_dev;
-	netif_rx(skb);
-	/*
-	while ((len = host_net_rx_count(hnet))) {
-		if (!(skb = skb_alloc(len))) {
-			return;
-		}
-
-		host_net_rx(hnet, skb->mac.raw, len);
-		skb->dev = dev;
-
-		netif_rx(skb);
-	}
-*/
-}
-#elif 0
-static void print_packet(unsigned char* data, int len, void* arg) {
-
-	printk("Packet(%d): [", len);
-#if 0
-	int i;
-	for (i = 0; i < len; i++) {
-		printf("%x", data[i]);
-	}
-#else
-	unsigned char *out = data;
-	while (len) {
-		printk("%x ", *out++);
-		--len;
-	}
-#endif
-	printk("]\n");
-}
-#endif
-//TODO
-void network_rx(struct netfront_dev *dev, struct net_device *embox_dev)
-{
+void network_rx(struct netfront_dev *dev, struct net_device *embox_dev) {
 	RING_IDX rp,cons,req_prod;
 	int nr_consumed, i;
 	int more, notify;
@@ -422,13 +357,12 @@ moretodo:
 				if (!(skb = skb_alloc(rx->status))) {
 					return;
 				}
-				//printk("tv_sec:%ld, tv_usec=%ld\n", skb->tstamp.tv_sec, skb->tstamp.tv_usec);
 				memcpy(skb->mac.raw, page+rx->offset, skb->len);
-				//print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
 				skb->dev = embox_dev;
 				netif_rx(skb);
 		}
 	}
+
 	dev->rx.rsp_cons=cons;
 
 	RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx, more);
@@ -451,7 +385,7 @@ moretodo:
 	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
 	if (notify) 
 	{
-#ifdef FEATURE_SPLIT_CHANNELS //false
+#ifdef FEATURE_SPLIT_CHANNELS
 	notify_remote_via_evtchn(dev->evtchn_rx);
 #else
 	notify_remote_via_evtchn(dev->evtchn);
@@ -459,24 +393,19 @@ moretodo:
 	}
 }
 
-static inline int xennet_txidx(RING_IDX idx)
-{
+static inline int xennet_txidx(RING_IDX idx) {
 	return idx & (NET_TX_RING_SIZE - 1);
 }
 
-void network_tx_buf_gc(struct netfront_dev *dev)
-{
+void network_tx_buf_gc(struct netfront_dev *dev) {
 	RING_IDX cons, prod;
 	unsigned short id;
-#ifdef LINUX_TX_BUF_GC
-	int more_to_do;
-#endif
+
 	do {
 		prod = dev->tx.sring->rsp_prod;
 		rmb(); /* Ensure we see responses up to 'rp'. */
 
-		for (cons = dev->tx.rsp_cons; cons != prod; cons++) 
-		{
+		for (cons = dev->tx.rsp_cons; cons != prod; cons++) {
 			struct netif_tx_response *txrsp;
 			struct net_buffer *buf;
 
@@ -491,40 +420,20 @@ void network_tx_buf_gc(struct netfront_dev *dev)
 			BUG_ON(id >= NET_TX_RING_SIZE);
 			buf = &dev->tx_buffers[id];
 			gnttab_end_access(buf->gref);
-
-		//add_id_to_freelist(id,dev->tx_freelist);
-		//up(&dev->tx_sem);
 		}
 
 		dev->tx.rsp_cons = prod;
 
-#ifdef LINUX_TX_BUF_GC //false
-		RING_FINAL_CHECK_FOR_RESPONSES(&dev->tx, more_to_do);
-
-	} while (more_to_do);
-#else
-		/*
-		 * Set a new event, then check for race with update of tx_cons.
-		 * Note that it is essential to schedule a callback, no matter
-		 * how few tx_buffers are pending. Even if there is space in the
-		 * transmit ring, higher layers may be blocked because too much
-		 * data is outstanding: in such cases notification from Xen is
-		 * likely to be the only kick that we'll get.
-		 */
 		dev->tx.sring->rsp_event =
 			prod + ((dev->tx.sring->req_prod - prod) >> 1) + 1;
 		mb();
 	} while ((cons == prod) && (prod != dev->tx.sring->rsp_prod));
-#endif
 }
 
-void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len)
-{
-	//int flags;
+void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len) {
 	struct netif_tx_request *tx;
 	RING_IDX i, id;
 	int notify;
-	//unsigned short id;
 	struct net_buffer* buf;
 
 	BUG_ON(len > PAGE_SIZE());
