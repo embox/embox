@@ -37,15 +37,15 @@ do {                                        \
 
 static inline void add_id_to_freelist(unsigned int id,unsigned short* freelist)
 {
-    freelist[id + 1] = freelist[0];
-    freelist[0]  = id;
+	freelist[id + 1] = freelist[0];
+	freelist[0]  = id;
 }
 
 static inline unsigned short get_id_from_freelist(unsigned short* freelist)
 {
-    unsigned int id = freelist[0];
-    freelist[0] = freelist[id + 1];
-    return id;
+	unsigned int id = freelist[0];
+	freelist[0] = freelist[id + 1];
+	return id;
 }
 
 int alloc_evtchn(evtchn_port_t *port)
@@ -91,15 +91,15 @@ int setup_netfront(struct netfront_dev *dev)
 	int i;
 	for (i=0; i<NET_TX_RING_SIZE; i++) {
 		struct net_buffer* buf = &dev->tx_buffers[i];
-        buf->page = (void*)xen_mem_alloc(1);
+		buf->page = (void*)xen_mem_alloc(1);
 		buf->gref = gnttab_grant_access(dev->dom, virt_to_mfn(buf->page), 1);
-    }
+	}
 
-    for (i=0; i<NET_RX_RING_SIZE; i++) {
+	for (i=0; i<NET_RX_RING_SIZE; i++) {
 		struct net_buffer* buf = &dev->rx_buffers[i];
 		buf->page = (void*)xen_mem_alloc(1);
-        buf->gref = gnttab_grant_access(dev->dom, virt_to_mfn(buf->page), 1);
-    }
+		buf->gref = gnttab_grant_access(dev->dom, virt_to_mfn(buf->page), 1);
+	}
 	
 	// Event channel
 #ifdef FEATURE_SPLIT_CHANNELS
@@ -264,39 +264,39 @@ int change_state_connected(struct netfront_dev *dev) {
 }
 
 static inline int notify_remote_via_evtchn(evtchn_port_t port) {
-    evtchn_send_t op;
-    op.port = port;
-    return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
+	evtchn_send_t op;
+	op.port = port;
+	return HYPERVISOR_event_channel_op(EVTCHNOP_send, &op);
 }
 
 static inline int xennet_rxidx(RING_IDX idx)
 {
-    return idx & (NET_RX_RING_SIZE - 1);
+	return idx & (NET_RX_RING_SIZE - 1);
 }
 
 //TODO: refactor
 void init_rx_buffers(struct netfront_dev *dev) {
-    int i, requeue_idx;
-    netif_rx_request_t *req;
-    int notify;
+	int i, requeue_idx;
+	netif_rx_request_t *req;
+	int notify;
 
-    for (requeue_idx = 0, i = 0; i < 256; i++) {
-        struct net_buffer* buf = &dev->rx_buffers[requeue_idx];
+	for (requeue_idx = 0, i = 0; i < 256; i++) {
+		struct net_buffer* buf = &dev->rx_buffers[requeue_idx];
 
 		req = RING_GET_REQUEST(&dev->rx, requeue_idx);
 
-        req->gref = gnttab_regrant_access(buf->gref, 0);
-        req->id = xennet_rxidx(requeue_idx);
+		req->gref = gnttab_regrant_access(buf->gref, 0);
+		req->id = xennet_rxidx(requeue_idx);
 
-        requeue_idx++;
-    }
+		requeue_idx++;
+	}
 
-    dev->rx.req_prod_pvt = requeue_idx; //256
+	dev->rx.req_prod_pvt = requeue_idx; //256
 
 	wmb();
 
-    RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-    
+	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
+	
 	if (notify) {
 #ifdef FEATURE_SPLIT_CHANNELS //false
 	notify_remote_via_evtchn(dev->evtchn_rx);
@@ -305,7 +305,7 @@ void init_rx_buffers(struct netfront_dev *dev) {
 #endif
 	}
 
-    dev->rx.sring->rsp_event = dev->rx.rsp_cons + 1;
+	dev->rx.sring->rsp_event = dev->rx.rsp_cons + 1;
 }
 
 int netfront_priv_init(struct netfront_dev *dev) {
@@ -373,12 +373,12 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 
 	printk("Packet(%d): [", len);
 #if 0
-    int i;
-    for (i = 0; i < len; i++) {
-        printf("%x", data[i]);
-    }
+	int i;
+	for (i = 0; i < len; i++) {
+		printf("%x", data[i]);
+	}
 #else
-    unsigned char *out = data;
+	unsigned char *out = data;
 	while (len) {
 		printk("%x ", *out++);
 		--len;
@@ -390,34 +390,34 @@ static void print_packet(unsigned char* data, int len, void* arg) {
 //TODO
 void network_rx(struct netfront_dev *dev, struct net_device *embox_dev)
 {
-    RING_IDX rp,cons,req_prod;
-    int nr_consumed, i;
+	RING_IDX rp,cons,req_prod;
+	int nr_consumed, i;
 	int more, notify;
-    int dobreak;
+	int dobreak;
 
-    nr_consumed = 0;
+	nr_consumed = 0;
 moretodo:
-    rp = dev->rx.sring->rsp_prod;
-    rmb(); /* Ensure we see queued responses up to 'rp'. */
+	rp = dev->rx.sring->rsp_prod;
+	rmb(); /* Ensure we see queued responses up to 'rp'. */
 
-    dobreak = 0;
-    for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
-    {
-        struct net_buffer* buf;
-        unsigned char* page;
-        int id;
+	dobreak = 0;
+	for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
+	{
+		struct net_buffer* buf;
+		unsigned char* page;
+		int id;
 
-        struct netif_rx_response *rx = RING_GET_RESPONSE(&dev->rx, cons);
+		struct netif_rx_response *rx = RING_GET_RESPONSE(&dev->rx, cons);
 
-        id = rx->id;
-        BUG_ON(id >= NET_RX_RING_SIZE);
+		id = rx->id;
+		BUG_ON(id >= NET_RX_RING_SIZE);
 
-        buf = &dev->rx_buffers[id];
-        page = (unsigned char*)buf->page;
+		buf = &dev->rx_buffers[id];
+		page = (unsigned char*)buf->page;
 
-        gnttab_end_access(buf->gref);
+		gnttab_end_access(buf->gref);
 
-        if (rx->status > NETIF_RSP_NULL) {				
+		if (rx->status > NETIF_RSP_NULL) {				
 				struct sk_buff *skb;
 				if (!(skb = skb_alloc(rx->status))) {
 					return;
@@ -427,28 +427,28 @@ moretodo:
 				//print_packet(page+rx->offset, rx->status, dev->netif_rx_arg);
 				skb->dev = embox_dev;
 				netif_rx(skb);
-        }
-    }
-    dev->rx.rsp_cons=cons;
+		}
+	}
+	dev->rx.rsp_cons=cons;
 
-    RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx, more);
-    if(more && !dobreak) goto moretodo;
+	RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx, more);
+	if(more && !dobreak) goto moretodo;
 
-    req_prod = dev->rx.req_prod_pvt;
+	req_prod = dev->rx.req_prod_pvt;
 
-    for (i = 0; i < nr_consumed; i++) {
-        int id = xennet_rxidx(req_prod + i);
-        netif_rx_request_t *req = RING_GET_REQUEST(&dev->rx, req_prod + i);
+	for (i = 0; i < nr_consumed; i++) {
+		int id = xennet_rxidx(req_prod + i);
+		netif_rx_request_t *req = RING_GET_REQUEST(&dev->rx, req_prod + i);
 		
 		struct net_buffer* buf = &dev->rx_buffers[id];
-        req->gref = gnttab_regrant_access(buf->gref, 0);										
-	    req->id = id;
-    }
+		req->gref = gnttab_regrant_access(buf->gref, 0);										
+		req->id = id;
+	}
 
-    wmb();
+	wmb();
 
-    dev->rx.req_prod_pvt = req_prod + i;
-    RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
+	dev->rx.req_prod_pvt = req_prod + i;
+	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
 	if (notify) 
 	{
 #ifdef FEATURE_SPLIT_CHANNELS //false
@@ -461,108 +461,108 @@ moretodo:
 
 static inline int xennet_txidx(RING_IDX idx)
 {
-    return idx & (NET_TX_RING_SIZE - 1);
+	return idx & (NET_TX_RING_SIZE - 1);
 }
 
 void network_tx_buf_gc(struct netfront_dev *dev)
 {
-    RING_IDX cons, prod;
-    unsigned short id;
+	RING_IDX cons, prod;
+	unsigned short id;
 #ifdef LINUX_TX_BUF_GC
 	int more_to_do;
 #endif
 	do {
-        prod = dev->tx.sring->rsp_prod;
-        rmb(); /* Ensure we see responses up to 'rp'. */
+		prod = dev->tx.sring->rsp_prod;
+		rmb(); /* Ensure we see responses up to 'rp'. */
 
-        for (cons = dev->tx.rsp_cons; cons != prod; cons++) 
-        {
-            struct netif_tx_response *txrsp;
-            struct net_buffer *buf;
+		for (cons = dev->tx.rsp_cons; cons != prod; cons++) 
+		{
+			struct netif_tx_response *txrsp;
+			struct net_buffer *buf;
 
-            txrsp = RING_GET_RESPONSE(&dev->tx, cons);
-            if (txrsp->status == NETIF_RSP_NULL)
-                continue;
+			txrsp = RING_GET_RESPONSE(&dev->tx, cons);
+			if (txrsp->status == NETIF_RSP_NULL)
+				continue;
 
-            if (txrsp->status == NETIF_RSP_ERROR)
-                printk("packet error\n");
+			if (txrsp->status == NETIF_RSP_ERROR)
+				printk("packet error\n");
 
-            id  = txrsp->id;
-            BUG_ON(id >= NET_TX_RING_SIZE);
-            buf = &dev->tx_buffers[id];
-            gnttab_end_access(buf->gref);
+			id  = txrsp->id;
+			BUG_ON(id >= NET_TX_RING_SIZE);
+			buf = &dev->tx_buffers[id];
+			gnttab_end_access(buf->gref);
 
-	    //add_id_to_freelist(id,dev->tx_freelist);
-	    //up(&dev->tx_sem);
-        }
+		//add_id_to_freelist(id,dev->tx_freelist);
+		//up(&dev->tx_sem);
+		}
 
-        dev->tx.rsp_cons = prod;
+		dev->tx.rsp_cons = prod;
 
 #ifdef LINUX_TX_BUF_GC //false
 		RING_FINAL_CHECK_FOR_RESPONSES(&dev->tx, more_to_do);
 
-    } while (more_to_do);
+	} while (more_to_do);
 #else
-        /*
-         * Set a new event, then check for race with update of tx_cons.
-         * Note that it is essential to schedule a callback, no matter
-         * how few tx_buffers are pending. Even if there is space in the
-         * transmit ring, higher layers may be blocked because too much
-         * data is outstanding: in such cases notification from Xen is
-         * likely to be the only kick that we'll get.
-         */
+		/*
+		 * Set a new event, then check for race with update of tx_cons.
+		 * Note that it is essential to schedule a callback, no matter
+		 * how few tx_buffers are pending. Even if there is space in the
+		 * transmit ring, higher layers may be blocked because too much
+		 * data is outstanding: in such cases notification from Xen is
+		 * likely to be the only kick that we'll get.
+		 */
 		dev->tx.sring->rsp_event =
-            prod + ((dev->tx.sring->req_prod - prod) >> 1) + 1;
-        mb();
-    } while ((cons == prod) && (prod != dev->tx.sring->rsp_prod));
+			prod + ((dev->tx.sring->req_prod - prod) >> 1) + 1;
+		mb();
+	} while ((cons == prod) && (prod != dev->tx.sring->rsp_prod));
 #endif
 }
 
 void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len)
 {
-    //int flags;
-    struct netif_tx_request *tx;
-    RING_IDX i, id;
-    int notify;
-    //unsigned short id;
-    struct net_buffer* buf;
+	//int flags;
+	struct netif_tx_request *tx;
+	RING_IDX i, id;
+	int notify;
+	//unsigned short id;
+	struct net_buffer* buf;
 
-    BUG_ON(len > PAGE_SIZE());
+	BUG_ON(len > PAGE_SIZE());
 
 	sched_lock();
-    id = xennet_txidx(dev->tx.sring->req_prod);
+	id = xennet_txidx(dev->tx.sring->req_prod);
 	if (xennet_txidx(id+1) == dev->tx.sring->rsp_prod) {
 		printk("CATCH TAIL!!!\n\n");
 		return;
 	}
 
 	sched_unlock();
-    
-	buf = &dev->tx_buffers[id];
-    i = dev->tx.req_prod_pvt;
 	
-    tx = RING_GET_REQUEST(&dev->tx, i);
+	buf = &dev->tx_buffers[id];
+	i = dev->tx.req_prod_pvt;
+	
+	tx = RING_GET_REQUEST(&dev->tx, i);
 
-    memcpy(buf->page, data, len);
+	memcpy(buf->page, data, len);
 
-    tx->gref = gnttab_regrant_access(buf->gref, 0);
+	tx->gref = gnttab_regrant_access(buf->gref, 0);
 
-    tx->offset=0;
-    tx->size = len;
-    tx->flags=0;
-    tx->id = id;
-    dev->tx.req_prod_pvt = i + 1;
+	tx->offset=0;
+	tx->size = len;
+	tx->flags=0;
+	tx->id = id;
+	dev->tx.req_prod_pvt = i + 1;
 
-    wmb();
+	wmb();
 
-    RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->tx, notify);
+	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->tx, notify);
 #ifdef FEATURE_SPLIT_CHANNELS
 	if(notify) notify_remote_via_evtchn(dev->evtchn_tx);
 #else
-    if(notify) notify_remote_via_evtchn(dev->evtchn);
+	if(notify) notify_remote_via_evtchn(dev->evtchn);
 #endif
 
-    sched_lock();
-    network_tx_buf_gc(dev);
-    sched_unlock();
+	sched_lock();
+	network_tx_buf_gc(dev);
+	sched_unlock();
 }

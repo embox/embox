@@ -8,7 +8,7 @@ module xen_header {
 module boot {
 	source "boot.S",
 		"kernel_init.c"
-        depends xenstore
+		depends xenstore
 }
 
 module traps {
@@ -16,7 +16,7 @@ module traps {
 }
 
 module xenstore {
-        source "xenstore.c"
+		source "xenstore.c"
 }
 
 module xenstore_test {
