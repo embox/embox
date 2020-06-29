@@ -111,7 +111,7 @@
 
 #include <config/embox/kernel/task/resource/atexit_api.h>
 #define ATEXIT_MAX \
-	OPTION_MODULE_GET(embox__kernel__task__resource__atexit, NUMBER, atexit_max)
+	OPTION_MODULE_GET(embox__kernel__task__resource__atexit_api, NUMBER, atexit_max)
 
 /*
 Maximum number of bytes in a character, for any supported locale.
