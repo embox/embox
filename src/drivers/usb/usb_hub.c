@@ -33,7 +33,7 @@ static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 		unsigned int port_nr);
 
 static struct usb_hub *usb_dev_to_hub(struct usb_dev *dev) {
-	return (struct usb_hub *)dev->driver_data;
+	return (struct usb_hub *)dev->usb_iface[0]->driver_data;
 }
 
 static int is_rndis(struct usb_desc_interface *desc) {
@@ -41,6 +41,8 @@ static int is_rndis(struct usb_desc_interface *desc) {
 	               && desc->b_interface_subclass == 2
 	               && desc->b_interface_protocol == 0xff;
 }
+
+extern int usb_create_root_interface(struct usb_dev *dev);
 
 /* TODO May be to use usb bus instead of hcd and
  * get hcd from bus? */
@@ -89,7 +91,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 				goto out_err;
 			}
 		/* Skip Microsoft's RNDIS */
-		} while (is_rndis(dev->iface_desc[0]));
+		} while (is_rndis(dev->usb_iface[0]->iface_desc[0]));
 
 		/* Set device default configuration. */
 		/* http://www.usbmadesimple.co.uk/ums_4.htm */
@@ -101,10 +103,12 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 			log_error("usb_set_configuration failed");
 			goto out_err;
 		}
+	} else {
+		usb_create_root_interface(dev);
 	}
 
 	/* Ok, now we can make USB driver specific stuff. */
-	if (usb_driver_probe(dev) < 0) {
+	if (usb_driver_probe(dev->usb_iface[0]) < 0) {
 		log_error("Usb driver not found for device ID %04x:%04x",
 			dev->dev_desc.id_vendor,
 			dev->dev_desc.id_product);
@@ -345,19 +349,23 @@ static int usb_hub_get_status(struct usb_hub *hub,
 	return 0;
 }
 
-static int usb_hub_probe(struct usb_dev *dev) {
+static int usb_hub_probe(struct usb_interface *iface) {
 	struct usb_hub *hub;
 	struct usb_desc_hub hub_desc;
 	int i;
 	int ret;
+	struct usb_dev *dev;
 
 	hub = pool_alloc(&usb_hubs);
 	if (!hub) {
 		log_error("pool_alloc failed");
 		return -1;
 	}
+
+	dev = iface->usb_dev;
+
 	hub->dev = dev;
-	dev->driver_data = hub;
+	iface->driver_data = hub;
 
 	if (usb_hub_get_descriptor(dev, &hub_desc) < 0) {
 		pool_free(&usb_hubs, hub);

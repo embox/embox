@@ -15,7 +15,7 @@ EMBOX_UNIT_INIT(usb_hid_init);
 
 POOL_DEF(hid_classes, struct usb_class_hid, USB_HID_MAX_DEVS);
 
-static int usb_hid_probe(struct usb_dev *dev) {
+static int usb_hid_probe(struct usb_interface *dev) {
 	struct usb_class_hid *hid;
 
 	assert(dev);
@@ -29,7 +29,7 @@ static int usb_hid_probe(struct usb_dev *dev) {
 	return usb_hid_found(dev);
 }
 
-static void usb_hid_disconnect(struct usb_dev *dev, void *data) {
+static void usb_hid_disconnect(struct usb_interface *dev, void *data) {
 	/* TODO */
 }
 

@@ -72,7 +72,7 @@ struct ccid_msg_hdr_icc_power_on {
 } __attribute__((packed));
 
 /* Sends msg and receives reply */
-extern int ccid_handle_msg(struct usb_dev *udev, const void *out,
+extern int ccid_handle_msg(struct usb_interface *udev, const void *out,
 		void *in, int in_cnt);
 
 /* Read the rest (data) of the message, if not all bytes were read with
@@ -83,6 +83,6 @@ extern int ccid_handle_msg(struct usb_dev *udev, const void *out,
  * Then you read an actual data size (ccid_msg_hdr.dw_length) from
  * the received header and call ccid_read_msg_data() to read
  * the rest of the message. */
-extern int ccid_read_msg_data(struct usb_dev *udev, void *in, int in_cnt);
+extern int ccid_read_msg_data(struct usb_interface *udev, void *in, int in_cnt);
 
 #endif /* USB_CLASS_CCID_H_ */

@@ -38,11 +38,11 @@ struct usb_class_hid {
 	struct input_dev *indev;
 };
 
-static inline struct usb_class_hid *usb2hiddata(struct usb_dev *dev) {
+static inline struct usb_class_hid *usb2hiddata(struct usb_interface *dev) {
 	return dev->driver_data;
 }
 
-extern int usb_hid_found(struct usb_dev *dev);
+extern int usb_hid_found(struct usb_interface *dev);
 
 #endif /* DRIVERS_USB_HID_H_ */
 
