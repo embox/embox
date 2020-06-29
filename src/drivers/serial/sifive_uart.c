@@ -46,6 +46,7 @@ struct com {
 #define COM_TXC (COM->txctrl)
 #define COM_RXC (COM->rxctrl)
 #define COM_IE (COM->ie)
+#define COM_IP (COM->ip)
 
 static int sifive_uart_setup(const struct diag *dev) {
 	COM_DIV = UART_CLOCK_FREQ / UART_BAUD_RATE - 1;
@@ -56,9 +57,16 @@ static int sifive_uart_setup(const struct diag *dev) {
 	return 0;
 }
 
+static int sifive_uart_kbhit(const struct diag *diag) {
+	if (COM_IP & 2) {
+		return 1;
+	}
+	return 0;
+}
+
 static char sifive_uart_getc(const struct diag *dev) {
 	int ch = COM_RXF;
-	if (ch < 0) return -1;
+	if (ch == 0) return -1;
 
 	return ch;
 }
@@ -72,5 +80,6 @@ DIAG_OPS_DEF(
 	.init = sifive_uart_setup,
 	.putc = sifive_uart_putc,
 	.getc = sifive_uart_getc,
+	.kbhit = sifive_uart_kbhit,
 );
 

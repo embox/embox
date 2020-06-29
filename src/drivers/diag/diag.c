@@ -50,11 +50,15 @@ char diag_getc(void) {
 
 	if (cdiag->ops->kbhit) {
 		while (!cdiag->ops->kbhit(cdiag)) {
-
 		}
-	}
 
-	ch = cdiag->ops->getc(cdiag);
+		ch = cdiag->ops->getc(cdiag);
+	} else {
+
+		do {
+			ch = cdiag->ops->getc(cdiag);
+		} while (ch == (char)-1);
+	}
 
 	return ch;
 }
