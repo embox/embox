@@ -18,9 +18,10 @@
 
 #include <embox/unit.h>
 
-#define HZ 100
+#define HZ 1000
 #define COUNT_OFFSET (RTC_CLOCK / HZ)
 #define RTC_CLOCK    OPTION_GET(NUMBER, rtc_freq)
+
 #define MTIME        OPTION_GET(NUMBER, base_mtime)
 #define MTIMECMP     OPTION_GET(NUMBER, base_mtimecmp)
 
