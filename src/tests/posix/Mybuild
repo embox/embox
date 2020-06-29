@@ -171,3 +171,35 @@ module atexit_test {
 
 	depends embox.compat.posix.proc.atexit
 }
+
+module aligned_alloc_test {
+	source "aligned_alloc_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.framework.test
+	depends embox.framework.LibFramework
+}
+
+module posix_memalign_test {
+	source "posix_memalign_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.framework.test
+	depends embox.framework.LibFramework
+}
+
+module pvalloc_test {
+	source "pvalloc_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.framework.test
+	depends embox.framework.LibFramework
+}
+
+module valloc_test {
+	source "valloc_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.framework.test
+	depends embox.framework.LibFramework
+}

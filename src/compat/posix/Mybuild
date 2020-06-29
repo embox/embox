@@ -33,3 +33,7 @@ static module termios {
 static module semaphore {
 	source "semaphore.c"
 }
+
+static module posix_memalign {
+	source "posix_memalign.c"
+}
