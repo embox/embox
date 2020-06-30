@@ -1,7 +1,7 @@
 PKG_NAME := ccid
-PKG_VER  := v1
+PKG_VER  := v2
 
 PKG_SOURCES := http://localhost/$(PKG_NAME)-$(PKG_VER).zip
-PKG_MD5     := 70341da05801cf24063b971d9589f51a
+PKG_MD5     := 30463aad114ba25832457bb64f184196
 
 include $(EXTBLD_LIB)
