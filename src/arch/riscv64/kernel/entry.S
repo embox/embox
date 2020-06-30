@@ -15,6 +15,12 @@
 trap_handler:
 	SAVE_ALL
 
+	csrr    t6, mcause
+	srli    t6, t6, 63
+	beqz    t6, riscv64_exception_handler
+	mv      a0, sp
+	jal     riscv64_interrupt_handler
+
 	RESTORE_ALL
 	mret
 

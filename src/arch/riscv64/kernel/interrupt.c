@@ -18,11 +18,11 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(riscv_interrupt_init);
+EMBOX_UNIT_INIT(riscv64_interrupt_init);
 
-#define CLEAN_IRQ_BIT (~(1 << 31))
+#define CLEAN_IRQ_BIT (~(1L << 63))
 
-void riscv_interrupt_handler(pt_regs_t *regs) {
+void riscv64_interrupt_handler(pt_regs_t *regs) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
@@ -41,7 +41,7 @@ void riscv_interrupt_handler(pt_regs_t *regs) {
 	critical_dispatch_pending();
 }
 
-static int riscv_interrupt_init(void) {
+static int riscv64_interrupt_init(void) {
 	enable_interrupts();
 	return 0;
 }
