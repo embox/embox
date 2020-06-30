@@ -1,0 +1,18 @@
+package embox.driver.net
+
+module cadence_gem {
+	option number log_level=1
+
+	option number plic_addr=0x0C000000
+	option number base_addr=0x10090000
+	option number irq_num=53
+	source "cadence_gem.c"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq_api
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.entry_api
+	depends embox.net.util.show_packet
+}
