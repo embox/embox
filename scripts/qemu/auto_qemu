@@ -182,7 +182,13 @@ guess_machine() {
 			echo "-M leon3_generic -cpu LEON3"
 			;;
 		riscv)
-			echo "-M sifive_u"
+			if cat $BUILD_CONF | gcc -P -E - | grep "sifive_e" >/dev/null; then
+				echo "-M sifive_e"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "sifive_u" >/dev/null; then
+				echo "-M sifive_u"
+			else
+				echo "-M virt"
+			fi
 			;;
 		riscv64)
 			echo "-M virt"
