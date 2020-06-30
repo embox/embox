@@ -5,81 +5,156 @@
  * @author: Dmitry Kurbatov
  */
 
+#include <stdint.h>
+
 #include <drivers/diag.h>
+
+#include <hal/reg.h>
+#include <drivers/serial/uart_device.h>
+#include <drivers/serial/diag_serial.h>
 
 #include <framework/mod/options.h>
 
-#include <embox/unit.h>
+#define UART_BASE        OPTION_GET(NUMBER,base_addr)
+#define IRQ_NUM          OPTION_GET(NUMBER,irq_num)
 
-#define UART_BASE 	OPTION_GET(NUMBER,base_addr)
-#define UART_CLOCK_FREQ OPTION_GET(NUMBER,clock_freq)
-#define UART_BAUD_RATE	OPTION_GET(NUMBER,baud_rate)
+#define UART_CLOCK_FREQ  OPTION_GET(NUMBER,clock_freq)
+#define UART_BAUD_RATE   OPTION_GET(NUMBER,baud_rate)
 
-/* TXCTRL register */
-#define UART_TXEN       1
-#define UART_TXSTOP     2
+/*
+ * Register offsets
+ */
 
-/* RXCTRL register */
-#define UART_RXEN       1
+/* TXDATA */
+#define SIFIVE_SERIAL_TXDATA_OFFS        0x0
+#define SIFIVE_SERIAL_TXDATA_FULL_SHIFT  31
+#define SIFIVE_SERIAL_TXDATA_FULL_MASK  (1 << SIFIVE_SERIAL_TXDATA_FULL_SHIFT)
+#define SIFIVE_SERIAL_TXDATA_DATA_SHIFT  0
+#define SIFIVE_SERIAL_TXDATA_DATA_MASK  (0xff << SIFIVE_SERIAL_TXDATA_DATA_SHIFT)
 
-#define UART_REG(x) 			\
-        unsigned char x;		\
-        unsigned char postpad_##x[3];
+/* RXDATA */
+#define SIFIVE_SERIAL_RXDATA_OFFS         0x4
+#define SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT  31
+#define SIFIVE_SERIAL_RXDATA_EMPTY_MASK  (1 << SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT)
+#define SIFIVE_SERIAL_RXDATA_DATA_SHIFT   0
+#define SIFIVE_SERIAL_RXDATA_DATA_MASK   (0xff << SIFIVE_SERIAL_RXDATA_DATA_SHIFT)
 
-#define UART_REG_INT32(x)		\
-	unsigned int x;
+/* TXCTRL */
+#define SIFIVE_SERIAL_TXCTRL_OFFS         0x8
+#define SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT  16
+#define SIFIVE_SERIAL_TXCTRL_TXCNT_MASK  (0x7 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT)
+#define SIFIVE_SERIAL_TXCTRL_NSTOP_SHIFT  1
+#define SIFIVE_SERIAL_TXCTRL_NSTOP_MASK  (1 << SIFIVE_SERIAL_TXCTRL_NSTOP_SHIFT)
+#define SIFIVE_SERIAL_TXCTRL_TXEN_SHIFT   0
+#define SIFIVE_SERIAL_TXCTRL_TXEN_MASK   (1 << SIFIVE_SERIAL_TXCTRL_TXEN_SHIFT)
 
-struct com {
-        UART_REG(txfifo);          /* 0 */
-        UART_REG(rxfifo);          /* 1 */
-        UART_REG(txctrl);          /* 2 */
-        UART_REG(rxctrl);          /* 3 */
-        UART_REG(ie);  	           /* 4 */
-        UART_REG(ip);              /* 5 */
-        UART_REG_INT32(div);       /* 6 */
-};
+/* RXCTRL */
+#define SIFIVE_SERIAL_RXCTRL_OFFS         0xC
+#define SIFIVE_SERIAL_RXCTRL_RXCNT_SHIFT  16
+#define SIFIVE_SERIAL_RXCTRL_RXCNT_MASK  (0x7 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT)
+#define SIFIVE_SERIAL_RXCTRL_RXEN_SHIFT   0
+#define SIFIVE_SERIAL_RXCTRL_RXEN_MASK   (1 << SIFIVE_SERIAL_RXCTRL_RXEN_SHIFT)
 
-#define COM ((volatile struct com *)UART_BASE)
-#define COM_TXF (COM->txfifo)
-#define COM_RXF (COM->rxfifo)
-#define COM_DIV (COM->div)
-#define COM_TXC (COM->txctrl)
-#define COM_RXC (COM->rxctrl)
-#define COM_IE (COM->ie)
-#define COM_IP (COM->ip)
+/* IE */
+#define SIFIVE_SERIAL_IE_OFFS             0x10
+#define SIFIVE_SERIAL_IE_RXWM_SHIFT       1
+#define SIFIVE_SERIAL_IE_RXWM_MASK       (1 << SIFIVE_SERIAL_IE_RXWM_SHIFT)
+#define SIFIVE_SERIAL_IE_TXWM_SHIFT       0
+#define SIFIVE_SERIAL_IE_TXWM_MASK       (1 << SIFIVE_SERIAL_IE_TXWM_SHIFT)
 
-static int sifive_uart_setup(const struct diag *dev) {
-	COM_DIV = UART_CLOCK_FREQ / UART_BAUD_RATE - 1;
-	COM_TXC = UART_TXEN;
-	COM_RXC = UART_RXEN;
-	COM_IE = 0;
+/* IP */
+#define SIFIVE_SERIAL_IP_OFFS             0x14
+#define SIFIVE_SERIAL_IP_RXWM_SHIFT       1
+#define SIFIVE_SERIAL_IP_RXWM_MASK       (1 << SIFIVE_SERIAL_IP_RXWM_SHIFT)
+#define SIFIVE_SERIAL_IP_TXWM_SHIFT       0
+#define SIFIVE_SERIAL_IP_TXWM_MASK       (1 << SIFIVE_SERIAL_IP_TXWM_SHIFT)
+
+/* DIV */
+#define SIFIVE_SERIAL_DIV_OFFS            0x18
+#define SIFIVE_SERIAL_DIV_DIV_SHIFT       0
+#define SIFIVE_SERIAL_DIV_DIV_MASK       (0xffff << SIFIVE_SERIAL_IP_DIV_SHIFT)
+
+static int sifive_uart_setup(struct uart *dev, const struct uart_params *params) {
+	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_DIV_OFFS,
+			(UART_CLOCK_FREQ / UART_BAUD_RATE - 1));
+
+	if (params->irq) {
+		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, SIFIVE_SERIAL_IE_RXWM_MASK);
+	} else {
+		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, 0);
+	}
+
+	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IP_OFFS, 0);
+
+	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_TXCTRL_OFFS,
+			SIFIVE_SERIAL_TXCTRL_TXEN_MASK);
+	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_RXCTRL_OFFS,
+			SIFIVE_SERIAL_RXCTRL_RXEN_MASK);
+	return 0;
+}
+
+static int sifive_uart_hasrx(struct uart *dev) {
+	uint32_t reg;
+
+	reg = REG32_LOAD(dev->base_addr + SIFIVE_SERIAL_IP_OFFS);
+	if (reg & SIFIVE_SERIAL_IP_RXWM_MASK) {
+		return 1;
+	}
 
 	return 0;
 }
 
-static int sifive_uart_kbhit(const struct diag *diag) {
-	if (COM_IP & 2) {
-		return 1;
+static int sifive_uart_getc(struct uart *dev) {
+	uint32_t reg;
+
+	reg = REG32_LOAD(dev->base_addr + SIFIVE_SERIAL_RXDATA_OFFS);
+
+	return reg & SIFIVE_SERIAL_RXDATA_DATA_MASK;
+}
+
+static int sifive_uart_putc(struct uart *dev, int ch) {
+	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_TXDATA_OFFS,
+			ch & SIFIVE_SERIAL_TXDATA_DATA_MASK);
+
+	return 0;
+}
+
+static int sifive_uart_irq_en(struct uart *dev, const struct uart_params *params) {
+	if (dev->params.irq) {
+		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, SIFIVE_SERIAL_IE_RXWM_MASK);
 	}
 	return 0;
 }
 
-static char sifive_uart_getc(const struct diag *dev) {
-	int ch = COM_RXF;
-	if (ch == 0) return -1;
+static int sifive_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
+	if (dev->params.irq) {
+		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, 0);
+	}
 
-	return ch;
+	return 0;
 }
 
-static void sifive_uart_putc(const struct diag *dev, char ch) {
-	while (COM_TXF < 0);
-	COM_TXF = ch & 0xff;
-}
+static const struct uart_ops sifive_uart_ops = {
+		.uart_getc = sifive_uart_getc,
+		.uart_putc = sifive_uart_putc,
+		.uart_hasrx = sifive_uart_hasrx,
+		.uart_setup = sifive_uart_setup,
+		.uart_irq_en = sifive_uart_irq_en,
+		.uart_irq_dis = sifive_uart_irq_dis,
+};
 
-DIAG_OPS_DEF(
-	.init = sifive_uart_setup,
-	.putc = sifive_uart_putc,
-	.getc = sifive_uart_getc,
-	.kbhit = sifive_uart_kbhit,
-);
+static struct uart sifive_diag = {
+		.uart_ops = &sifive_uart_ops,
+		.irq_num = IRQ_NUM,
+		.base_addr = (unsigned long) UART_BASE,
+};
 
+static const struct uart_params diag_defparams = {
+		.baud_rate = UART_BAUD_RATE,
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = false,
+};
+
+DIAG_SERIAL_DEF(&sifive_diag, &diag_defparams);
