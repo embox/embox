@@ -15,7 +15,19 @@ static int rtt_diag_init(const struct diag *diag) {
 }
 
 static void rtt_diag_putc(const struct diag *diag, char ch) {
-	SEGGER_RTT_Write(0, &ch, 1);
+	/* RTT lost charachters, so we should check whether there is a room
+	 * for a char, but on the other hand, we can block forever here if
+	 * we are running without JLINK attached (nobody reads buffer and overflow occurs).
+	 * So just put char without checking for possible overflows. */
+#if 0
+	int ret;
+
+	do {
+		ret = SEGGER_RTT_PutChar(0, ch);
+	} while (!ret);
+#else
+	SEGGER_RTT_PutChar(0, ch);
+#endif
 }
 
 static char rtt_diag_getc(const struct diag *diag) {

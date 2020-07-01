@@ -2,7 +2,12 @@ package embox.driver.usb.gadget
 
 module f_rndis {
 	source "f_rndis.c"
+}
 
-	@IncludeExport(path="drivers/usb/gadget")
-	source "rndis_desc.h"
+module rndis_gadget {
+	option number log_level = 1
+
+	source "rndis_gadget.c"
+
+	depends f_rndis
 }

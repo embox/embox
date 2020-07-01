@@ -1,0 +1,19 @@
+package embox.driver.usb.gadget
+
+module gadget {
+	option number log_level = 1
+
+	source "gadget.c"
+
+	@IncludeExport(path="drivers/usb/gadget")
+	source "gadget.h"
+
+	depends udc
+}
+
+module udc {
+	source "udc.c"
+
+	@IncludeExport(path="drivers/usb/gadget")
+	source "udc.h"
+}
