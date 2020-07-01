@@ -62,5 +62,5 @@ TEST_CASE("Memory is not allocated enough") {
 
     char dest[2] = "OK";
 
-    test_assert_equal(strlen(dest), strlen(memmove(dest, src, strlen(strlen(dest)))));
+    test_assert_equal(strlen(dest), strlen(memmove(dest, src, strlen(dest))));
 }
