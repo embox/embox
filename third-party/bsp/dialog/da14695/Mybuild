@@ -80,23 +80,6 @@ static module memory {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-module usb_example {
-	option number log_level = 1
-
-	@Cflags("-Wno-undef")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/include)")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/config)")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/include)")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/config)")
-
-	source "usb_example.c"
-
-	depends usb_dev_api
-	depends ble_arch_main_api
-
-	@NoRuntime depends embox.driver.usb.gadget.f_rndis
-}
-
 abstract module usb_dev_api { }
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
