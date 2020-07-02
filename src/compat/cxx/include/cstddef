@@ -26,15 +26,6 @@ namespace std {
 
 	/* Stubs */
 	template<class T, ::size_t N> struct array;
-
-	class recursive_mutex {
-	public:
-		void lock(void) {
-		}
-
-		void unlock(void) {
-		}
-	}; 
 } // namespace std
 
 #endif // CSTDDEF_
