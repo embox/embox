@@ -1,4 +1,4 @@
-package embox.cmd.testing
+package embox.cmd.testing.cxx
 
 @AutoCmd
 @Cmd(name="stl_demo_sort1",
