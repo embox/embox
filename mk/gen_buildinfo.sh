@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 export LC_ALL=C
 
 command -v date >/dev/null 2>&1 || { echo >&2 "Warning: command 'date' not found, skip generating buildinfo."; exit 0; }
