@@ -238,6 +238,15 @@ static inline int pclose(FILE *stream) {
 	return 0;
 }
 
+static inline FILE *tmpfile(void) {
+	return NULL;
+}
+
+static inline char *tmpnam(char *s) {
+	(void) s;
+	return "";
+}
+
 __END_DECLS
 
 #endif /* STDIO_H_ */
