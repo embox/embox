@@ -6,6 +6,5 @@ module omap3_clk extends embox.arch.clock {
 	depends embox.driver.periph_memory
 
 	depends embox.kernel.irq
-	depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.kernel.time.timer_handler
+	@NoRuntime depends embox.kernel.time.clock_source
 }

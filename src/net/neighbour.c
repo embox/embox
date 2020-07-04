@@ -6,20 +6,22 @@
  * @author Ilia Vaprol
  */
 
-#include <net/neighbour.h>
+#include <util/log.h>
+
 #include <errno.h>
-#include <kernel/sched/sched_lock.h>
-#include <mem/misc/pool.h>
 #include <string.h>
 #include <time.h>
-#include <util/dlist.h>
-#include <util/array.h>
 #include <sys/time.h>
+
+#include <util/dlist.h>
+
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
+#include <kernel/sched/sched_lock.h>
+#include <mem/misc/pool.h>
+
 #include <net/l0/net_tx.h>
-#include <util/binalign.h>
-#include <util/log.h>
+#include <net/neighbour.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
@@ -46,14 +48,37 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 	assert(nbr != NULL);
 
 	if (haddr != NULL) {
-		nbr->incomplete = 0;
+		nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
 		memcpy(&nbr->haddr[0], haddr, nbr->hlen);
+	} else {
+		assert(nbr->is_incomplete == 1);
 	}
-	else {
-		nbr->incomplete = 1;
-		nbr->resend = MODOPS_NEIGHBOUR_RESEND;
-		nbr->sent_times = 0;
+}
+
+static struct neighbour *nbr_create(unsigned short ptype, const void *paddr,
+		unsigned char plen, struct net_device *dev,
+		unsigned short htype, unsigned int flags ) {
+	struct neighbour *nbr;
+
+	nbr = pool_alloc(&neighbour_pool);
+	if (nbr == NULL) {
+		return NULL;
 	}
+	nbr->is_incomplete = 1;
+	skb_queue_init(&nbr->w_queue);
+	dlist_head_init(&nbr->lnk);
+	dlist_add_prev_entry(nbr, &neighbour_list, lnk);
+	nbr->ptype = ptype;
+	memcpy(nbr->paddr, paddr, plen);
+	nbr->plen = plen;
+	nbr->dev = dev;
+	nbr->htype = htype;
+	nbr->hlen = dev->addr_len;
+	nbr_set_haddr(nbr, NULL);
+	nbr->resend = MODOPS_NEIGHBOUR_RESEND;
+	nbr->sent_times = 0;
+
+	return nbr;
 }
 
 static void nbr_free(struct neighbour *nbr) {
@@ -102,11 +127,6 @@ static struct neighbour * nbr_lookup_by_haddr(unsigned short htype,
 
 static int nbr_send_request(struct neighbour *nbr) {
 	struct in_device *in_dev;
-	struct {
-		struct ndpbody_neighbor_solicit body;
-		struct ndpoptions_ll_addr ops;
-		char __ops_ll_addr_storage[MAX_ADDR_LEN];
-	} __attribute__((packed)) nbr_solicit;
 
 	++nbr->sent_times;
 
@@ -115,62 +135,43 @@ static int nbr_send_request(struct neighbour *nbr) {
 		assert(in_dev != NULL);
 		return arp_discover(nbr->dev, nbr->ptype, nbr->plen,
 				&in_dev->ifa_address, &nbr->paddr[0]);
-	}
-	else {
+	} else {
 		assert(nbr->ptype == ETH_P_IPV6);
-		nbr_solicit.body.zero = 0;
-		memcpy(&nbr_solicit.body.target, &nbr->paddr[0],
-				sizeof nbr_solicit.body.target);
-		nbr_solicit.ops.hdr.type = NDP_SOURCE_LL_ADDR;
-		nbr_solicit.ops.hdr.len = binalign_bound(sizeof nbr_solicit.ops
-				+ nbr->dev->addr_len, 8) / 8;
-		memcpy(nbr_solicit.ops.ll_addr, &nbr->dev->dev_addr[0],
-				nbr->dev->addr_len);
-		return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
-				sizeof nbr_solicit.body + sizeof nbr_solicit.ops
-					+ nbr->dev->addr_len, nbr->dev);
+		return ndp_discover(nbr->dev, &nbr->paddr[0]);
 	}
 }
 
-static int nbr_build_and_send_pkt(struct sk_buff *skb,
-		const struct net_header_info *hdr_info) {
+static int nbr_build_and_send_pkt(struct sk_buff *skb, struct neighbour *nbr) {
 	int ret;
-
-	assert(skb != NULL);
-	assert(hdr_info != NULL);
-
-	/* try to rebuild */
-	assert(skb->dev != NULL);
-	assert(skb->dev->ops != NULL);
-	assert(skb->dev->ops->build_hdr != NULL);
-	ret = skb->dev->ops->build_hdr(skb, hdr_info);
-	if (ret == 0) {
-		/* try to xmit */
-		ret = net_tx(skb, NULL);
-		if (ret != 0) {
-			log_error("nbr_build_and_send_pkt: error: can't xmit over device, code %d\n", ret);
-			return ret;
-		}
-	}
-	else {
-		log_error("nbr_build_and_send_pkt: error: can't build after resolving, code %d\n", ret);
-		skb_free(skb);
-		return ret;
-	}
-
-	return 0;
-}
-
-static void nbr_flush_w_queue(struct neighbour *nbr) {
-	struct sk_buff *skb;
 	struct net_header_info hdr_info;
 
 	hdr_info.type = nbr->ptype;
 	hdr_info.src_hw = &nbr->dev->dev_addr[0];
 	hdr_info.dst_hw = &nbr->haddr[0];
 
+	assert(skb != NULL);
+
+	/* try to rebuild */
+	assert(skb->dev != NULL);
+	assert(skb->dev->ops != NULL);
+	assert(skb->dev->ops->build_hdr != NULL);
+	ret = skb->dev->ops->build_hdr(skb, &hdr_info);
+	if (ret) {
+		skb_free(skb);
+		return ret;
+	}
+
+	/* try to xmit */
+	ret = net_tx_direct(skb);
+
+	return ret;
+}
+
+static void nbr_flush_w_queue(struct neighbour *nbr) {
+	struct sk_buff *skb;
+
 	while ((skb = skb_queue_pop(&nbr->w_queue)) != NULL) {
-		(void)nbr_build_and_send_pkt(skb, &hdr_info);
+		(void)nbr_build_and_send_pkt(skb, nbr);
 	}
 }
 
@@ -178,54 +179,39 @@ int neighbour_add(unsigned short ptype, const void *paddr,
 		unsigned char plen, struct net_device *dev,
 		unsigned short htype, const void *haddr, unsigned char hlen,
 		unsigned int flags) {
-	int exist;
+	int ret;
 	struct neighbour *nbr;
 
-	if ((paddr == NULL) || (plen == 0)
-			|| (plen > ARRAY_SIZE(nbr->paddr)) || (dev == NULL)
-			|| (haddr == NULL) || (hlen == 0)
-			|| (hlen > ARRAY_SIZE(nbr->haddr))) {
+	if ((paddr == NULL) || (plen == 0) || (plen > sizeof(nbr->paddr))
+			|| (dev == NULL) || (haddr == NULL) || (hlen == 0)
+			|| hlen < dev->addr_len	|| (hlen > sizeof(nbr->haddr))) {
 		return -EINVAL;
 	}
 
+	ret = 0;
 	sched_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
-		exist = nbr != NULL;
 		if (nbr == NULL) {
-			nbr = pool_alloc(&neighbour_pool);
+			nbr = nbr_create(ptype, paddr, plen, dev, htype, flags);
+			if (nbr == NULL) {
+				ret = - ENOMEM;
+				goto exit;
+			}
+		}
+
+		nbr_set_haddr(nbr, haddr);
+		nbr->flags = flags;
+
+		if (nbr->is_incomplete) {
+			nbr_flush_w_queue(nbr);
+			nbr->is_incomplete = 0;
 		}
 	}
+exit:
 	sched_unlock();
-	if (nbr == NULL) {
-		return -ENOMEM;
-	}
 
-	nbr->htype = htype;
-	nbr->hlen = hlen;
-	nbr_set_haddr(nbr, haddr);
-	nbr->flags = flags;
-	nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
-
-	if (exist) {
-		nbr_flush_w_queue(nbr);
-	}
-	else {
-		dlist_head_init(&nbr->lnk);
-		nbr->ptype = ptype;
-		memcpy(nbr->paddr, paddr, plen);
-		nbr->plen = plen;
-		nbr->dev = dev;
-		skb_queue_init(&nbr->w_queue);
-
-		sched_lock();
-		{
-			dlist_add_prev_entry(nbr, &neighbour_list, lnk);
-		}
-		sched_unlock();
-	}
-
-	return 0;
+	return ret;
 }
 
 int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
@@ -243,16 +229,13 @@ int neighbour_get_haddr(unsigned short ptype,  const void *paddr,
 		if (nbr == NULL) {
 			sched_unlock();
 			return -ENOENT;
-		}
-		else if (nbr->htype != htype) {
+		} else if (nbr->htype != htype) {
 			sched_unlock();
 			return -ENOENT;
-		}
-		else if (nbr->incomplete) {
+		} else if (nbr->is_incomplete) {
 			sched_unlock();
 			return -EINPROGRESS;
-		}
-		else if (nbr->hlen > hlen_max) {
+		} else if (nbr->hlen > hlen_max) {
 			sched_unlock();
 			return -ENOMEM;
 		}
@@ -299,6 +282,7 @@ int neighbour_get_paddr(unsigned short htype, const void *haddr,
 int neighbour_del(unsigned short ptype, const void *paddr,
 		struct net_device *dev) {
 	struct neighbour *nbr;
+	int ret;
 
 	if ((paddr == NULL) || (dev == NULL)) {
 		return -EINVAL;
@@ -307,16 +291,16 @@ int neighbour_del(unsigned short ptype, const void *paddr,
 	sched_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
-		if (nbr == NULL) {
-			sched_unlock();
-			return -ENOENT;
+		if (nbr != NULL) {
+			nbr_free(nbr);
+			ret = 0;
+		} else {
+			ret = -ENOENT;
 		}
-
-		nbr_free(nbr);
 	}
 	sched_unlock();
 
-	return 0;
+	return ret;
 }
 
 int neighbour_clean(struct net_device *dev) {
@@ -347,12 +331,13 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	{
 		dlist_foreach_entry(nbr, &neighbour_list, lnk) {
 			sched_unlock();
+
 			ret = (*func)(nbr, args);
-			sched_lock();
 			if (ret != 0) {
-				sched_unlock();
 				return ret;
 			}
+
+			sched_lock();
 		}
 	}
 	sched_unlock();
@@ -360,68 +345,44 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	return 0;
 }
 
-int neighbour_send_after_resolve(unsigned short ptype,
+int neighbour_resolve(unsigned short ptype,
 		const void *paddr, unsigned char plen,
-		struct net_device *dev, struct sk_buff *skb) {
-	int allocated, resolved;
+		struct net_device *dev, struct sk_buff *skb,
+		unsigned char hlen_max, void *out_haddr) {
 	struct neighbour *nbr;
-	struct net_header_info hdr_info;
+	int ret;
 
-	if ((paddr == NULL) || (dev == NULL) || (dev == NULL)) {
-		skb_free(skb);
+	if (hlen_max < dev->addr_len) {
 		return -EINVAL;
 	}
+
+	ret = 0;
 
 	sched_lock();
 	{
 		nbr = nbr_lookup_by_paddr(ptype, paddr, dev);
 		if (nbr == NULL) {
-			nbr = pool_alloc(&neighbour_pool);
+			nbr = nbr_create(ptype, paddr, plen, dev, dev->type, 0);
 			if (nbr == NULL) {
-				sched_unlock();
-				skb_free(skb);
-				return -ENOMEM;
+				ret = -ENOMEM;
+				goto exit;
 			}
-			dlist_head_init(&nbr->lnk);
-			nbr->ptype = ptype;
-			memcpy(nbr->paddr, paddr, plen);
-			nbr->plen = plen;
-			nbr->dev = dev;
-			nbr->htype = dev->type;
-			nbr->hlen = dev->addr_len;
-			nbr_set_haddr(nbr, NULL);
-			nbr->flags = 0;
-			skb_queue_init(&nbr->w_queue);
-			nbr->expire = MODOPS_NEIGHBOUR_EXPIRE;
 
-			dlist_add_prev_entry(nbr, &neighbour_list, lnk);
-
-			allocated = 1;
-		}
-		else {
-			allocated = 0;
+			nbr_send_request(nbr);
 		}
 
-		resolved = !nbr->incomplete;
-
-		if (!resolved) {
+		if (nbr->is_incomplete) {
 			skb_queue_push(&nbr->w_queue, skb);
+			ret = EHOSTUNREACH;
+			goto exit;
 		}
+
+		memcpy(out_haddr, &nbr->haddr[0], nbr->hlen);
 	}
+exit:
 	sched_unlock();
 
-	if (resolved) {
-		hdr_info.type = nbr->ptype;
-		hdr_info.src_hw = &nbr->dev->dev_addr[0];
-		hdr_info.dst_hw = &nbr->haddr[0];
-		return nbr_build_and_send_pkt(skb, &hdr_info);
-	}
-
-	if (allocated) {
-		(void)nbr_send_request(nbr);
-	}
-
-	return 0;
+	return ret;
 }
 
 static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
@@ -433,25 +394,21 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 			if (nbr->flags & NEIGHBOUR_FLAG_PERMANENT) {
 				continue;
 			}
-			else if (nbr->expire <= MODOPS_NEIGHBOUR_TMR_FREQ) {
-				nbr_free(nbr);
-				continue;
-			}
 
-			nbr->expire -= MODOPS_NEIGHBOUR_TMR_FREQ;
-
-			if (nbr->incomplete) {
-				if (nbr->resend <= MODOPS_NEIGHBOUR_TMR_FREQ) {
-					if (nbr->sent_times == MODOPS_NEIGHBOUR_ATTEMPT) {
+			if (nbr->is_incomplete) {
+				if (--nbr->expire <= 0) {
+					nbr_free(nbr);
+				}
+			} else {
+				/* have not revolved yet */
+				if ( --nbr->resend <= 0) {
+					if (nbr->sent_times++ == MODOPS_NEIGHBOUR_ATTEMPT) {
 						nbr_free(nbr);
-					}
-					else {
+						/* unreachable host */
+					} else {
 						(void)nbr_send_request(nbr);
 						nbr->resend = MODOPS_NEIGHBOUR_RESEND;
 					}
-				}
-				else {
-					nbr->resend -= MODOPS_NEIGHBOUR_TMR_FREQ;
 				}
 			}
 		}

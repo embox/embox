@@ -30,14 +30,14 @@ rl_completion_func_t *rl_attempted_completion_function;
 
 static rl_command_func_t *complcb_function;
 static const char *complcb_text;
-static linenoiseCompletions_t *complcb_lc;
+static linenoiseCompletions *complcb_lc;
 
 char * readline(const char *prompt) {
 	return linenoise(prompt != NULL ? prompt : "");
 }
 
 static void completion_callback(const char *text,
-		linenoiseCompletions_t *lc) {
+		linenoiseCompletions *lc) {
 	complcb_text = text;
 	complcb_lc = lc;
 	complcb_function(0, '\t');

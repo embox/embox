@@ -80,38 +80,38 @@ uint64_t __atomic_fetch_add_8(void *mem, uint64_t val, int model) {
 	return ret;
 }
 
-uint8_t __sync_val_compare_and_swap_1(uint8_t *ptr, uint8_t soldval,
+uint8_t __sync_val_compare_and_swap_1(volatile void *ptr, uint8_t soldval,
 		uint8_t snewval) {
 	spin_lock(&atomic_lock);
-	uint8_t ret = *ptr;
-	*ptr = snewval;
+	uint8_t ret = *((uint8_t *) ptr);
+	*((uint8_t *) ptr) = snewval;
 	spin_unlock(&atomic_lock);
 	return ret;
 }
 
-uint16_t __sync_val_compare_and_swap_2(uint16_t *ptr, uint16_t soldval,
+uint16_t __sync_val_compare_and_swap_2(volatile void *ptr, uint16_t soldval,
 		uint16_t snewval) {
 	spin_lock(&atomic_lock);
-	uint16_t ret = *ptr;
-	*ptr = snewval;
+	uint16_t ret = *((uint16_t *) ptr);
+	*((uint16_t *) ptr) = snewval;
 	spin_unlock(&atomic_lock);
 	return ret;
 }
 
-uint32_t __sync_val_compare_and_swap_4(uint32_t *ptr, uint32_t soldval,
+uint32_t __sync_val_compare_and_swap_4(volatile void *ptr, uint32_t soldval,
 		uint32_t snewval) {
 	spin_lock(&atomic_lock);
-	uint32_t ret = *ptr;
-	*ptr = snewval;
+	uint32_t ret = *((uint32_t *) ptr);
+	*((uint32_t *) ptr) = snewval;
 	spin_unlock(&atomic_lock);
 	return ret;
 }
 
-uint64_t __sync_val_compare_and_swap_8(uint64_t *ptr, uint64_t soldval,
+uint64_t __sync_val_compare_and_swap_8(volatile void *ptr, uint64_t soldval,
 		uint64_t snewval) {
 	spin_lock(&atomic_lock);
-	uint64_t ret = *ptr;
-	*ptr = snewval;
+	uint64_t ret = *((uint64_t *) ptr);
+	*((uint64_t *) ptr) = snewval;
 	spin_unlock(&atomic_lock);
 	return ret;
 }

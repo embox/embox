@@ -16,7 +16,7 @@ static module nrf24 {
 	depends embox.util.ring
 }
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.stmf4cube.stm32f4_discovery.core)
 static module nrf24_cube_layer {
 	option number spi=2
 	option number log_level = 1
@@ -26,6 +26,6 @@ static module nrf24_cube_layer {
 
 	source "nrf24_stm32_cube.c"
 
-	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+	depends third_party.bsp.stmf4cube.stm32f4_discovery.stm32f4_discovery_bsp
 	depends stm32f4_multibot.libs.spi
 }

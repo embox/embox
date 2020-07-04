@@ -49,7 +49,7 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			"   i_manufacter         %5u\n"
 			"   i_product            %5u\n"
 			"   i_serial_number      %5u\n"
-			"   i_num_configurations %5u\n\n",
+			"   b_num_configurations %5u\n\n",
 			usb_dev->dev_desc.b_length, 
 			usb_dev->dev_desc.b_desc_type,
 			usb_dev->dev_desc.bcd_usb >> 8, usb_dev->dev_desc.bcd_usb & 0xff,
@@ -63,10 +63,17 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 			usb_dev->dev_desc.i_manufacter,
 			usb_dev->dev_desc.i_product,
 			usb_dev->dev_desc.i_serial_number,
-			usb_dev->dev_desc.i_num_configurations);
+			usb_dev->dev_desc.b_num_configurations);
 }
 
 static void show_usb_desc_interface(struct usb_dev *usb_dev) {
+	if (!usb_dev->usb_iface[0]->iface_desc[0]) {
+		printf(" Interface Descriptor:\n"
+			   "   No interfaces\n"
+		);
+		return;
+	}
+
 	printf(" Interface Descriptor:\n"
 			"   b_length             %5u\n"
 			"   b_desc_type          %5u\n"
@@ -77,22 +84,25 @@ static void show_usb_desc_interface(struct usb_dev *usb_dev) {
 			"   b_interface_subclass %5u\n"
 			"   b_interface_protocol %5u\n"
 			"   i_interface          %5u\n",
-			usb_dev->iface_desc.b_length, 
-			usb_dev->iface_desc.b_desc_type, 
-			usb_dev->iface_desc.b_interface_number,
-			usb_dev->iface_desc.b_alternate_setting, 
-			usb_dev->iface_desc.b_num_endpoints, 
-			usb_dev->iface_desc.b_interface_class,
-			usb_dev->iface_desc.b_interface_subclass,
-			usb_dev->iface_desc.b_interface_protocol,
-			usb_dev->iface_desc.i_interface);
+			usb_dev->usb_iface[0]->iface_desc[0]->b_length,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_desc_type,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_number,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_alternate_setting,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_num_endpoints,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_class,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_subclass,
+			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_protocol,
+			usb_dev->usb_iface[0]->iface_desc[0]->i_interface);
 }
 
 static void show_usb_desc_configuration(struct usb_dev *usb_dev) {
 	struct usb_desc_configuration *config = \
 				(struct usb_desc_configuration *) usb_dev->config_buf;
 	
-	if(!config) {
+	if (!config) {
+		printf(" Configuration Descriptor:\n"
+			   "   No configurations\n\n"
+		);
 		return;
 	}
 

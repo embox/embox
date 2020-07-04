@@ -1,0 +1,20 @@
+package embox.cmd.testing.input
+
+@AutoCmd
+@Cmd(name = "keyboard_test",
+	help = "Prints keyboards events to serial port",
+	man = '''
+		NAME
+			keyboard_test - Prints keyboards events to serial port
+		SYNOPSIS
+			keyboard_test <keyboard>
+		DESCRIPTION
+			keyboard_test - Prints keyboards events to serial port
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module keyboard_test {
+	source "keyboard_test.c"
+
+	depends embox.driver.input.core
+}

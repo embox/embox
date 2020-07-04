@@ -19,29 +19,27 @@
 #include <net/lib/ipv6.h>
 
 static const struct net_pack_out_ops ip6_out_ops_struct;
-const struct net_pack_out_ops *const ip6_out_ops
-		= &ip6_out_ops_struct;
+const struct net_pack_out_ops *const ip6_out_ops = &ip6_out_ops_struct;
 
 static int ip6_xmit(struct sk_buff *skb) {
-	const struct in6_addr *daddr;
 	struct net_header_info hdr_info;
 
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
-	daddr = &skb->nh.ip6h->daddr;
 
 	hdr_info.type = ETH_P_IPV6;
-	hdr_info.src_hw = NULL;
+
 	hdr_info.dst_hw = NULL;
 
 	/* FIXME */
 	assert(skb->dev != NULL);
+	hdr_info.src_hw = skb->dev->dev_addr;
 	if (skb->dev->flags & IFF_LOOPBACK) {
 		hdr_info.dst_p = NULL;
 	}
 	else {
-		hdr_info.dst_p = daddr;
-		hdr_info.p_len = sizeof *daddr;
+		hdr_info.dst_p = &skb->nh.ip6h->daddr;
+		hdr_info.p_len = sizeof(skb->nh.ip6h->daddr);
 	}
 
 	return net_tx(skb, &hdr_info);

@@ -9,6 +9,11 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+#include <string.h>
+
+#include <util/binalign.h>
+
 #include <net/l0/net_tx.h>
 #include <net/l3/icmpv6.h>
 #include <net/l3/ipv6.h>
@@ -18,11 +23,8 @@
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stddef.h>
-#include <string.h>
 
-static int ndp_xmit(struct sk_buff *skb,
-		struct net_device *dev) {
+static int ndp_xmit(struct sk_buff *skb, struct net_device *dev) {
 	struct net_header_info hdr_info;
 
 	assert(skb != NULL);
@@ -64,4 +66,22 @@ int ndp_send(uint8_t type, uint8_t code, const void *body,
 	icmp6_set_check_field(skb->h.icmp6h, skb->nh.ip6h);
 
 	return ndp_xmit(skb, dev);
+}
+
+int ndp_discover(struct net_device *dev, const void *tpa) {
+	struct {
+		struct ndpbody_neighbor_solicit body;
+		struct ndpoptions_ll_addr ops;
+		char __ops_ll_addr_storage[MAX_ADDR_LEN];
+	} __attribute__((packed)) nbr_solicit;
+
+	nbr_solicit.body.zero = 0;
+	memcpy(&nbr_solicit.body.target, tpa, sizeof(nbr_solicit.body.target));
+	nbr_solicit.ops.hdr.type = NDP_SOURCE_LL_ADDR;
+	nbr_solicit.ops.hdr.len =
+			binalign_bound(sizeof nbr_solicit.ops + dev->addr_len, 8) / 8;
+	memcpy(nbr_solicit.ops.ll_addr, &dev->dev_addr[0], dev->addr_len);
+
+	return ndp_send(NDP_NEIGHBOR_SOLICIT, 0, &nbr_solicit,
+			sizeof(nbr_solicit.body) + sizeof(nbr_solicit.ops) + dev->addr_len, dev);
 }

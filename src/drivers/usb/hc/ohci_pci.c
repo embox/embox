@@ -63,8 +63,6 @@ static void *ohci_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	ohcd->hcca = hcca;
 	ohcd->hcd = hcd;
 
-	usb_queue_init(&ohcd->req_queue);
-
 	return ohcd;
 }
 
@@ -96,6 +94,8 @@ static void *ohci_ed_alloc(struct usb_endp *ep) {
 	ed->tail_td = (uint32_t) sentinel_td;
 	ed->next_ed = 0;
 	ed->flags = 64 << 16;
+
+	usb_queue_init(&ed->req_queue);
 
 	return ed;
 }
@@ -484,6 +484,7 @@ static int ohci_request_do(struct usb_request *req) {
 		if (req->len > 0) {
 			tds_count++;
 			token = (req->token & USB_TOKEN_OUT) ? OHCI_TD_OUT : OHCI_TD_IN;
+			token |= OHCI_TD_BUF_ROUND;
 			ohci_transfer(ed, token, req->buf, req->len, req);
 		}
 		/* Status stage */
@@ -496,6 +497,7 @@ static int ohci_request_do(struct usb_request *req) {
 	case USB_COMM_ISOCHRON:
 		tds_count++;
 		token = (req->token & USB_TOKEN_OUT) ? OHCI_TD_OUT : OHCI_TD_IN;
+		token |= OHCI_TD_BUF_ROUND;
 		ohci_transfer(ed, token, req->buf, req->len, req);
 		break;
 	default:
@@ -517,10 +519,10 @@ static int ohci_request_do(struct usb_request *req) {
 }
 
 static int ohci_request(struct usb_request *req) {
-	struct ohci_hcd *ohcd = hcd2ohci(req->endp->dev->hcd);
-	int empty = usb_queue_empty(&ohcd->req_queue);
+	struct ohci_ed *ed = endp2ohci(req->endp);
+	int empty = usb_queue_empty(&ed->req_queue);
 
-	usb_queue_add(&ohcd->req_queue, &req->req_link);
+	usb_queue_add(&ed->req_queue, &req->req_link);
 	return empty ? ohci_request_do(req) : 0;
 }
 
@@ -577,6 +579,7 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 	if (intr_stat & OHCI_INTERRUPT_DONE_QUEUE) {
 		struct ohci_td *td, *next_td;
 		struct ohci_request_priv *priv;
+		struct ohci_ed *ed;
 
 		td = (struct ohci_td *) (REG_LOAD(&ohcd->hcca->done_head) & ~1);
 
@@ -594,18 +597,20 @@ static irq_return_t ohci_irq(unsigned int irq_nr, void *data) {
 			priv = req->hci_specific;
 			priv->tds_count--;
 			if (!priv->tds_count) {
+				ed = endp2ohci(req->endp);
+
 				pool_free(&ohci_req_priv_pool, priv);
-				usb_queue_del(&ohcd->req_queue, &req->req_link);
+				usb_queue_del(&ed->req_queue, &req->req_link);
 				usb_request_complete(req);
+
+				if (!usb_queue_empty(&ed->req_queue)) {
+					req = usb_link2req(usb_queue_first(&ed->req_queue));
+					ohci_request_do(req);
+				}
 			}
 		} while ((td = next_td));
 
 		OHCI_WRITE(ohcd, &ohcd->base->hc_intstat, OHCI_INTERRUPT_DONE_QUEUE);
-	}
-
-	if (!usb_queue_empty(&ohcd->req_queue)) {
-		req = usb_link2req(usb_queue_first(&ohcd->req_queue));
-		ohci_request_do(req);
 	}
 
 	return IRQ_HANDLED;

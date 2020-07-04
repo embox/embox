@@ -1,0 +1,25 @@
+package embox.cmd.net
+
+@AutoCmd
+@Cmd(name = "dhcpd",
+	help = "simple dhcp server",
+	man = '''
+		NAME
+			dhcpd - dhcp server.
+		SYNOPSIS
+			dhcpd
+		DESCRIPTION
+			
+		AUTHORS
+			Anton Bondarev
+	''')
+module dhcpd {	
+	option string if_name = "eth0"
+	option string client_ip_addr = "192.168.2.1"
+
+	source "dhcpd.c"
+
+	@NoRuntime depends embox.net.lib.bootp
+	@NoRuntime depends embox.net.udp
+	@NoRuntime depends embox.net.udp_sock
+}

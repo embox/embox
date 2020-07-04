@@ -33,6 +33,10 @@ Mailing lists:
 * embox-devel@googlegroups.com -- main mailing list
 * embox-ru@googlegroups.com -- mailing list in Russian
 
+Telegram chats:
+* https://t.me/embox_chat_en -- main telegram chat
+* https://t.me/embox_chat -- telegram chat in Russian
+
 Documentation
 ---------------
 * [Wiki](https://github.com/embox/embox/wiki)

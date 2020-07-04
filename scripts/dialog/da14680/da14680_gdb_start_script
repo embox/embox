@@ -1,0 +1,10 @@
+target remote :2331
+
+monitor memU32 0x400c3050 = 1
+monitor sleep 1000
+monitor reset 0
+monitor halt
+monitor reset 0
+monitor halt
+
+eval "monitor exec SetRTTAddr %p", &_SEGGER_RTT

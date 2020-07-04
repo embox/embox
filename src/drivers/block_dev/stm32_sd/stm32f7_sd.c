@@ -34,6 +34,7 @@ static irq_return_t stm32_dma_rx_irq(unsigned int irq_num,
 	HAL_DMA_IRQHandler(uSdHandle.hdmarx);
 	return IRQ_HANDLED;
 }
+STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32_dma_rx_irq, NULL);
 
 static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 		void *audio_dev) {
@@ -41,6 +42,7 @@ static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 	HAL_DMA_IRQHandler(uSdHandle.hdmatx);
 	return IRQ_HANDLED;
 }
+STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
 
 static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
 		void *audio_dev) {
@@ -48,6 +50,7 @@ static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
 	HAL_SD_IRQHandler(&uSdHandle);
 	return IRQ_HANDLED;
 }
+STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
 
 static const struct block_dev_driver stm32f7_sd_driver = {
 	.name  = STM32F7_SD_DEVNAME,

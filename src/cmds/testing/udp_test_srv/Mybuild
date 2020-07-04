@@ -1,0 +1,21 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "udp_test_srv",
+	help = "Simple test server for UDP echo measurement",
+	man  = '''
+		NAME
+			udp_test_srv -- simple test for UDP echo measurement
+		SYNOPSIS
+			udp_test_srv [port]
+		AUTHORS
+			Denis Deryugin
+	''')
+
+module udp_test_srv {
+	source "udp_test_srv.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+}

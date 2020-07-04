@@ -1,9 +1,13 @@
 package embox.driver.gpio
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f4 extends api {
 	option number log_level = 0
 	option number gpio_chip_id = 0
+	option number exti0_irq = 6
+	option number exti1_irq = 7
+	option number exti2_irq = 8
+	option number exti3_irq = 9
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_f4.h"
@@ -11,16 +15,56 @@ module stm32_gpio_f4 extends api {
 	source "stm32_gpio_cube.c"
 
 	depends embox.driver.gpio.core
-	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_gpio_l4 extends api {
+	option number log_level = 0
+	option number gpio_chip_id = 0
+	option number exti0_irq = 6
+	option number exti1_irq = 7
+	option number exti2_irq = 8
+	option number exti3_irq = 9
+	option number exti4_irq = 10
+
+	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
+	source "stm32_gpio_conf_l4.h"
+
+	source "stm32_gpio_cube.c"
+
+	depends embox.driver.gpio.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.stmf3cube.core)
 module stm32_gpio_f3 extends api {
 	option number log_level = 0
 	option number gpio_chip_id = 0
+	option number exti0_irq = 6
+	option number exti1_irq = 7
+	option number exti2_irq = 8
+	option number exti3_irq = 9
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_f3.h"
+
+	source "stm32_gpio_cube.c"
+
+	depends embox.driver.gpio.core
+}
+
+@BuildDepends(third_party.bsp.stmf7cube.core)
+module stm32_gpio_f7 extends api {
+	option number log_level = 0
+	option number gpio_chip_id = 0
+	option number exti0_irq = 6
+	option number exti1_irq = 7
+	option number exti2_irq = 8
+	option number exti3_irq = 9
+
+	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
+	source "stm32_gpio_conf_f7.h"
 
 	source "stm32_gpio_cube.c"
 

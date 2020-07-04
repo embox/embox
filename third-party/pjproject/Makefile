@@ -11,7 +11,8 @@ PKG_PATCHES := pjproject.patch \
 	simpleua_default_loglevel.patch \
 	mutex_loglevel_increase.patch \
 	kmalloc.patch \
-	srtp.patch
+	srtp.patch \
+	sha256_error_fix.patch
 
 ifeq ($(PJSIP_ENABLE_CXX),false)
 PKG_PATCHES	+= pjsua2_disable.patch

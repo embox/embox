@@ -14,4 +14,7 @@
 typedef struct priolist      runq_t;
 typedef struct priolist_link runq_item_t;
 
+#define __RUNQ_ITEM_INIT(item) \
+	PRIOLIST_LINK_INIT(item)
+
 #endif /* KERNEL_THREAD_QUEUE_PRIOQ_H_ */

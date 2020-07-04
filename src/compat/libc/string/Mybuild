@@ -5,6 +5,7 @@ static module str {
 	source "memrchr.c"
 	source "memcmp.c"
 	source "memcpy.c"
+	source "memccpy.c"
 	source "memmove.c"
 	source "memset.c"
 	source "strcat.c"

@@ -1,0 +1,15 @@
+package embox.arch.arm.platform.da146xx
+
+module da14680_lds_quirk {
+	source "da14680_quirk.lds.S"
+}
+
+module da1469x_lds_quirk {
+	source "da1469x_quirk.lds.S"
+}
+
+module arch extends embox.arch.arch {
+	option number gpregs_base
+
+	source "arch.c"
+}

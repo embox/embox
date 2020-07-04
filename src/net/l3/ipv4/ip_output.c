@@ -10,10 +10,15 @@
 
 #include <errno.h>
 
+#include <util/math.h>
+
+#include <net/netdevice.h>
+#include <net/inetdevice.h>
+
 #include <net/l3/ipv4/ip.h>
 #include <net/l4/udp.h>
 #include <net/socket/inet_sock.h>
-#include <net/inetdevice.h>
+
 #include <net/l3/route.h>
 #include <net/l0/net_tx.h>
 #include <net/lib/bootp.h>
@@ -25,7 +30,7 @@
 #include <kernel/printk.h>
 #include <net/if_packet.h>
 #include <net/l2/ethernet.h>
-#include <util/math.h>
+
 #include <embox/net/pack.h>
 #include <net/lib/ipv4.h>
 
@@ -49,19 +54,18 @@ static int ip_xmit(struct sk_buff *skb) {
 
 	assert(skb != NULL);
 	assert(skb->nh.iph != NULL);
-	daddr = skb->nh.iph->daddr;
 
 	hdr_info.type = ETH_P_IP;
-	hdr_info.src_hw = NULL;
 	hdr_info.dst_hw = NULL;
+	hdr_info.src_hw = skb->dev->dev_addr;
 
 	/* it's loopback/local or broadcast address? */
-	if (ip_is_local(daddr, IP_LOCAL_BROADCAST)) {
+	if (ip_is_local(skb->nh.iph->daddr, IP_LOCAL_BROADCAST)) {
 		hdr_info.dst_p = NULL;
 	}
 	else {
 		/* get dest ip from route table */
-		ret = rt_fib_route_ip(daddr, &daddr);
+		ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
 		if (ret != 0) {
 			DBG(printk("ip_xmit: unknown target for %s\n",
 						inet_ntoa(*(struct in_addr *)&daddr)));

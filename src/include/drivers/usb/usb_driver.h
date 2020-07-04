@@ -16,6 +16,7 @@ struct usb_hcd;
 struct usb_driver;
 struct file_operations;
 struct inode;
+struct usb_interface;
 
 struct usb_device_id {
 	unsigned short dev_class;
@@ -25,8 +26,8 @@ struct usb_device_id {
 
 struct usb_driver {
 	const char *name;
-	int (*probe)(struct usb_dev *dev);
-	void (*disconnect)(struct usb_dev *dev, void *data);
+	int (*probe)(struct usb_interface *dev);
+	void (*disconnect)(struct usb_interface *dev, void *data);
 	const struct file_operations *file_ops;
 	struct dlist_head drv_link;
 
@@ -34,7 +35,7 @@ struct usb_driver {
 };
 
 extern int usb_driver_register(struct usb_driver *drv);
-extern int usb_driver_probe(struct usb_dev *dev);
-extern int usb_driver_release(struct usb_dev *dev);
+extern int usb_driver_probe(struct usb_interface *dev);
+extern int usb_driver_release(struct usb_interface *dev);
 
 #endif /* DRIVERS_USB_DRIVER_H_ */

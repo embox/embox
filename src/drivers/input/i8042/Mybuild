@@ -1,0 +1,5 @@
+package embox.driver.input
+
+module i8042 {
+	source "i8042.c"
+}

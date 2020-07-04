@@ -1,0 +1,102 @@
+package third_party.bsp.dialog.da14681
+
+module custom_config {
+	@IncludeExport(path="config")
+	source "custom_config_qspi.h"
+
+	source "sdk_retention.lds.S"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14681.sdk_hotfix)
+module rom {
+	source "da14681_rom.lds.S"
+
+	@IncludeExport(path="platform/dialog")
+	source "da14681_rom.h"
+		
+	@NoRuntime depends third_party.bsp.dialog.da14681.sdk_hotfix
+}
+
+@BuildDepends(third_party.bsp.dialog.da14681.sdk_hotfix)
+static module libble_stack {
+	@IncludeExport(path="platform/dialog")
+	source "da14681_libble_stack.h"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/interfaces/ble_stack/DA14681-01-Debug/")
+	source "libble_stack_da14681_01.a"
+
+	@NoRuntime depends third_party.bsp.dialog.da14681.sys_man
+	@NoRuntime depends third_party.bsp.dialog.da14681.sdk_hotfix
+}
+
+@BuildDepends(third_party.bsp.dialog.da14681.sdk_hotfix)
+static module sys_man {
+	@Cflags("-Wno-undef")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+//	@DefineMacro("dg_configUSE_HW_TRNG=1")
+//	@DefineMacro("dg_configBLACK_ORCA_IC_REV=BLACK_ORCA_IC_REV_A")
+//	@DefineMacro("dg_configBLACK_ORCA_IC_STEP=BLACK_ORCA_IC_STEP_E")
+	//@DefineMacro("RELEASE_BUILD")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/osal)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/memory/include)")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man")
+	source "sys_trng.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14681.periphirals
+	@NoRuntime depends third_party.bsp.dialog.da14681.interface_ble
+	@NoRuntime depends third_party.bsp.dialog.da14681.sdk_hotfix
+
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/peripherals/include)")
+	source "sys_clock_mgr.c"
+
+	source "sys_charger.c"
+	// FIXME
+	source "default_patch_handler.c"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14681.sdk_hotfix)
+static module periphirals {
+	@Cflags("-Wno-undef")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/osal)")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/peripherals/src")
+	source "hw_trng.c", "hw_usb.c", "hw_cpm.c", "hw_watchdog.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14681.sdk_hotfix
+}
+
+@BuildDepends(third_party.bsp.dialog.da14681.sdk_hotfix)
+static module interface_ble {
+/*	@Cflags("-Wno-undef")
+	@Cflags("-include$(abspath ./build/base/include/config/custom_config_qspi.h)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/peripherals/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/interfaces/ble/config)")
+	
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/interfaces/ble/src/manager")
+*/
+	source "ble_mgr.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14681.sdk_hotfix
+}
+
+module usb_example {
+	@Cflags("-Wno-undef")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/config)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/peripherals/include)")
+	source "usb_example.c" 
+}

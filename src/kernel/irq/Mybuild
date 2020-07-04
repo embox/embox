@@ -1,0 +1,40 @@
+package embox.kernel
+
+abstract module irq_api {
+
+}
+
+module no_irq extends irq_api {
+	source "no_irq.c"
+}
+
+module irq extends irq_api {
+	option number action_n = 0
+	option number entry_n = 0
+
+	source "irq.c"
+	depends irq_lock
+	@NoRuntime depends irq_stack
+	@NoRuntime depends embox.mem.objalloc
+	depends embox.driver.interrupt.irqctrl_api
+	@NoRuntime depends embox.profiler.trace
+	@NoRuntime depends embox.util.dlist
+}
+
+@DefaultImpl(irq_stack_no_protection)
+abstract module irq_stack {
+
+}
+
+module irq_stack_no_protection extends irq_stack {
+	source "irq_stack_no_protection.c"
+}
+
+module irq_stack_protection extends irq_stack {
+	source "irq_stack_protection.c"
+}
+
+module irq_lock {
+	source "irq_lock.c"
+	@NoRuntime depends critical
+}

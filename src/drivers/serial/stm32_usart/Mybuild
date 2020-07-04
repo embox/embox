@@ -4,6 +4,9 @@ package embox.driver.serial
 module stm_usart_f3 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=1
+	option number usart1_irq=37
+	option number usart2_irq=38
+	option number usart3_irq=39
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f3.h"
@@ -18,10 +21,13 @@ module stm_usart_f3 extends embox.driver.diag.diag_api {
 	depends third_party.bsp.stmf3cube.core
 }
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f4 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=6
+	option number usart2_irq=38
+	option number usart3_irq=39
+	option number usart6_irq=71
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f4.h"
@@ -33,13 +39,16 @@ module stm_usart_f4 extends embox.driver.diag.diag_api {
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
-	depends third_party.bsp.stmf4cube.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f7 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=1
+	option number usart1_irq=37
+	option number usart2_irq=38
+	option number usart6_irq=71
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f7.h"
@@ -53,10 +62,12 @@ module stm_usart_f7 extends embox.driver.diag.diag_api {
 	depends third_party.bsp.st_bsp_api
 }
 
-@BuildDepends(third_party.bsp.stml4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_l4 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=1
+	option number usart1_irq=37
+	option number usart2_irq=38
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_l4.h"
@@ -68,7 +79,7 @@ module stm_usart_l4 extends embox.driver.diag.diag_api {
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 
-	depends third_party.bsp.stml4cube.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(embox.driver.diag.diag_api)

@@ -105,6 +105,23 @@ static int apbuart_setup(struct uart *dev, const struct uart_params *params) {
 	return 0;
 }
 
+static int apbuart_irq_en(struct uart *dev, const struct uart_params *params) {
+
+	if (params->irq) {
+		REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
+	}
+
+	return 0;
+}
+
+static int apbuart_irq_dis(struct uart *dev, const struct uart_params *params) {
+	if (params->irq) {
+		REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE);
+	}
+
+	return 0;
+}
+
 static int apbuart_putc(struct uart *dev, int ch) {
 	while (!(UART_STAT_TE & REG_LOAD(&dev_regs->status))) {
 	}
@@ -151,6 +168,8 @@ static const struct uart_ops uart_ops = {
 		.uart_putc = apbuart_putc,
 		.uart_hasrx = apbuart_has_symbol,
 		.uart_setup = apbuart_setup,
+		.uart_irq_en = apbuart_irq_en,
+		.uart_irq_dis = apbuart_irq_dis,
 };
 
 static struct uart uart0 = {

@@ -89,6 +89,11 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_PORT_D 3
 #define GPIO_PORT_E 4
 #define GPIO_PORT_F 5
+#define GPIO_PORT_G 6
+#define GPIO_PORT_H 7
+#define GPIO_PORT_I 8
+#define GPIO_PORT_J 9
+#define GPIO_PORT_K 10
 
 #define GPIO_PIN_LOW  0
 #define GPIO_PIN_HIGH 1

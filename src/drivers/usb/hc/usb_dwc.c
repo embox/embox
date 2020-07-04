@@ -412,7 +412,7 @@ static const struct usb_desc_device root_hub_device_descriptor = {
 	.i_manufacter = 0,
 	.i_product = 1,
 	.i_serial_number = 0,
-	.i_num_configurations = 1,
+	.b_num_configurations = 1,
 };
 
 #define USB_CONFIGURATION_ATTRIBUTE_RESERVED_HIGH   0x80

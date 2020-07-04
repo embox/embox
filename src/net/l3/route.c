@@ -166,8 +166,11 @@ int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
 		return -ENETUNREACH;
 	}
 
-	*next_ip = rte->rt_gateway == INADDR_ANY ? dst_ip
-			: rte->rt_gateway;
+	if (rte->rt_gateway == INADDR_ANY) {
+		*next_ip = dst_ip;
+	} else {
+		*next_ip = rte->rt_gateway;
+	}
 
 	return 0;
 }

@@ -9,81 +9,116 @@
 
 #include <stdint.h>
 
-#include <drivers/common/memory.h>
-
 #include <asm/bitops.h>
 #include <kernel/irq.h>
-
-#include <drivers/diag.h>
-
+#include <embox/unit.h>
 #include <framework/mod/options.h>
+#include <drivers/common/memory.h>
+#include <drivers/diag.h>
+#include <drivers/serial/uart_device.h>
+#include <drivers/serial/diag_serial.h>
+
 #include <module/embox/driver/serial/xuartlite.h>
 
-#define CONFIG_XILINX_UARTLITE_BASEADDR OPTION_GET(NUMBER,xuartlite_base)
-#define CONFIG_XILINX_UARTLITE_IRQ_NUM  OPTION_GET(NUMBER,irq_num)
+EMBOX_UNIT_INIT(xuartlite_init);
 
-typedef struct uart_regs {
+#define UARTLITE_BASEADDR OPTION_GET(NUMBER,xuartlite_base)
+#define UARTLITE_IRQ_NUM  OPTION_GET(NUMBER,irq_num)
+
+/* There is no buad rate setup in QEMU, so it is unused. */
+#define UARTLITE_BAUD_RATE 115200
+
+struct xuartlite_regs {
 	uint32_t rx_data;
 	uint32_t tx_data;
 	uint32_t status;
 	uint32_t ctrl;
-} uart_regs_t;
+};
 
-/*status registers bit definitions*/
-#define STATUS_PAR_ERROR_BIT          24
-#define STATUS_FRAME_ERROR_BIT        25
-#define STATUS_OVERUN_ERROR_BIT       26
-#define STATUS_INTR_ENABLED_BIT       27
-#define STATUS_TX_FIFO_FULL_BIT       28
-#define STATUS_TX_FIFO_EMPTY_BIT      29
-#define STATUS_RX_FIFO_FULL_BIT       30
-#define STATUS_RX_FIFO_VALID_DATA_BIT 31
-/*ctrl registers bit definitions*/
-#define CTRL_ENABLE_INTR_BIT          27
-#define CTRL_RST_RX_FIFO_BIT          30
-#define CTRL_RST_TX_FIFO_BIT          31
+/* status registers bit definitions */
+#define STATUS_PAR_ERROR             0x80
+#define STATUS_FRAME_ERROR           0x40
+#define STATUS_OVERUN_ERROR          0x20
+#define STATUS_INTR_ENABLED          0x10
+#define STATUS_TX_FIFO_FULL          0x08
+#define STATUS_TX_FIFO_EMPTY         0x04
+#define STATUS_RX_FIFO_FULL          0x02
+#define STATUS_RX_FIFO_VALID_DATA    0x01
 
-#define STATUS_PAR_ERROR             REVERSE_MASK(STATUS_PAR_ERROR_BIT)
-#define STATUS_FRAME_ERROR           REVERSE_MASK(STATUS_FRAME_ERROR_BIT)
-#define STATUS_OVERUN_ERROR          REVERSE_MASK(STATUS_OVERUN_ERROR_BIT)
-#define STATUS_INTR_ENABLED          REVERSE_MASK(STATUS_INTR_ENABLED_BIT)
-#define STATUS_TX_FIFO_FULL          REVERSE_MASK(STATUS_TX_FIFO_FULL_BIT)
-#define STATUS_TX_FIFO_EMPTY         REVERSE_MASK(STATUS_TX_FIFO_EMPTY_BIT)
-#define STATUS_RX_FIFO_FULL          REVERSE_MASK(STATUS_RX_FIFO_FULL_BIT)
-#define STATUS_RX_FIFO_VALID_DATA    REVERSE_MASK(STATUS_RX_FIFO_VALID_DATA_BIT)
-
-#define CTRL_ENABLE_INTR             REVERSE_MASK(CTRL_ENABLE_INTR_BIT)
-#define CTRL_RST_RX_FIFO             REVERSE_MASK(CTRL_RST_RX_FIFO_BIT)
-#define CTRL_RST_TX_FIFO             REVERSE_MASK(CTRL_RST_TX_FIFO_BIT)
+/* ctrl registers bit definitions */
+#define CTRL_ENABLE_INTR             0x10
+#define CTRL_RST_RX_FIFO             0x02
+#define CTRL_RST_TX_FIFO             0x01
 
 /*set registers base*/
-static volatile uart_regs_t *uart = (uart_regs_t *) CONFIG_XILINX_UARTLITE_BASEADDR;
+static volatile struct xuartlite_regs *xuartlite_regs =
+		(struct xuartlite_regs *) UARTLITE_BASEADDR;
 
-static inline int is_rx_empty(void) {
-	return !(uart->status & STATUS_RX_FIFO_VALID_DATA);
+static inline int xuartlite_is_rx_empty(void) {
+	return !(xuartlite_regs->status & STATUS_RX_FIFO_VALID_DATA);
 }
 
-static inline int can_tx_trans(void) {
-	return !(uart->status & STATUS_TX_FIFO_FULL);
+static inline int xuartlite_can_tx_trans(void) {
+	return !(xuartlite_regs->status & STATUS_TX_FIFO_FULL);
 }
 
-static char xuartlite_diag_getc(const struct diag *diag) {
-	return (char) (uart->rx_data & 0xFF);
+static int xuartlite_setup(struct uart *dev, const struct uart_params *params) {
+	if (params->irq) {
+		xuartlite_regs->ctrl |= CTRL_ENABLE_INTR;
+	}
+
+	return 0;
 }
 
-static void xuartlite_diag_putc(const struct diag *diag, char ch) {
-	while (!can_tx_trans());
-	uart->tx_data = (unsigned int)ch;
+static int xuartlite_putc(struct uart *dev, int ch) {
+	while (!xuartlite_can_tx_trans()) {
+	}
+	xuartlite_regs->tx_data = (unsigned int)ch;
+
+	return 0;
 }
 
-static int xuartlite_diag_has_symbol(const struct diag *diag) {
-	return !is_rx_empty();
+static int xuartlite_getc(struct uart *dev) {
+	return xuartlite_regs->rx_data & 0xFF;
 }
 
-DIAG_OPS_DEF(
-		.putc = xuartlite_diag_putc,
-		.getc = xuartlite_diag_getc,
-		.kbhit = xuartlite_diag_has_symbol,
-);
+static int xuartlite_has_symbol(struct uart *dev) {
+	return !xuartlite_is_rx_empty();
+}
 
-PERIPH_MEMORY_DEFINE(xuartlite, CONFIG_XILINX_UARTLITE_BASEADDR, sizeof(struct uart_regs));
+static const struct uart_ops xuartlite_uart_ops = {
+		.uart_getc = xuartlite_getc,
+		.uart_putc = xuartlite_putc,
+		.uart_hasrx = xuartlite_has_symbol,
+		.uart_setup = xuartlite_setup,
+};
+
+static struct uart uart0 = {
+		.uart_ops = &xuartlite_uart_ops,
+		.irq_num = UARTLITE_IRQ_NUM,
+		.base_addr = UARTLITE_BASEADDR,
+};
+
+static const struct uart_params uart_defparams = {
+		.baud_rate = UARTLITE_BAUD_RATE,
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = true,
+};
+
+static const struct uart_params uart_diag_params = {
+		.baud_rate = UARTLITE_BAUD_RATE,
+		.parity = 0,
+		.n_stop = 1,
+		.n_bits = 8,
+		.irq = false,
+};
+
+DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
+
+static int xuartlite_init(void) {
+	return uart_register(&uart0, &uart_defparams);
+}
+
+PERIPH_MEMORY_DEFINE(xuartlite, UARTLITE_BASEADDR, sizeof(struct xuartlite_regs));

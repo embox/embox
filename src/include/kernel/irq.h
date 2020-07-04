@@ -117,7 +117,6 @@ extern int irq_detach(unsigned int irq_nr, void *data);
  */
 extern void irq_dispatch(unsigned int interrupt_nr);
 
-#include <asm-generic/static_irq.h>
 #ifndef STATIC_IRQ_EXTENTION
 #define STATIC_IRQ_ATTACH(_irq_nr, _hnd, _data)
 #endif

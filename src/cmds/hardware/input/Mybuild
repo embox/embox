@@ -1,0 +1,20 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "input",
+	help = "Show input devices list",
+	man = '''
+		NAME
+			input - Show input devices list
+		SYNOPSIS
+			input [-h]
+		DESCRIPTION
+			input - Show input devices list
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module input {
+	source "input.c"
+
+	depends embox.driver.input.core
+}

@@ -1,0 +1,13 @@
+package embox.driver.usb.gadget
+
+module f_rndis {
+	source "f_rndis.c"
+}
+
+module rndis_gadget {
+	option number log_level = 1
+
+	source "rndis_gadget.c"
+
+	depends f_rndis
+}

@@ -1,18 +1,16 @@
 package embox.kernel.time
 
-module slowdown {
-	/* factor = 1 << shift */
-	option number shift = 0
-}
-
 module clock_source {
 	@NumConstraint(ge=1)
 	option number clocks_quantity = 3
 
 	source "clock_source.c"
 	@NoRuntime depends embox.mem.pool
+	
+	option number hnd_priority = 200
+	source "clock_tick.c"
 
-	depends slowdown
+	depends embox.kernel.lthread.lthread
 }
 
 module kernel_time {
@@ -26,14 +24,6 @@ module jiffies {
 	source "jiffies.c"
 	//depends embox.arch.clock
 	depends clock_source
-	depends slowdown
-}
-
-module timer_handler {
-	option number hnd_priority = 200
-	source "timer.c"
-
-	depends embox.kernel.lthread.lthread
 }
 
 static module timeval {

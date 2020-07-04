@@ -147,7 +147,7 @@ int fgetpwent_r(FILE *file, struct passwd *pwd, char *buf, size_t buflen,
 int getpwnam_r(const char *name, struct passwd *pwd,
 		char *buf, size_t buflen, struct passwd **result) {
 	int res;
-	FILE *file;
+	FILE *file = NULL;
 
 	if (buflen > sysconf(_SC_GETPW_R_SIZE_MAX)) {
 		*result = NULL;
@@ -192,7 +192,7 @@ struct passwd *getpwnam(const char *name) {
 int getpwuid_r(uid_t uid, struct passwd *pwd,
 		char *buf, size_t buflen, struct passwd **result) {
 	int res;
-	FILE *file;
+	FILE *file = NULL;
 
 	if (0 != (res = open_db(PASSWD_FILE, &file))) {
 		*result = NULL;
@@ -308,7 +308,7 @@ struct group *fgetgrent(FILE *stream) {
 int getgrnam_r(const char *name, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;
-	FILE *file;
+	FILE *file = NULL;
 
 	*result = NULL;
 
@@ -359,7 +359,7 @@ struct group *getgrnam(const char *name) {
 int getgrgid_r(gid_t gid, struct group *grp,
 	char *buf, size_t buflen, struct group **result) {
 	int res;
-	FILE *file;
+	FILE *file = NULL;
 
 	*result = NULL;
 
@@ -434,7 +434,7 @@ void endgrent(void) {
 
 int getmaxuid() {
 	int res, curmax = 0;
-	FILE *file;
+	FILE *file = NULL;
 	static char buff[0x80];
 	struct passwd *result, pwd;
 

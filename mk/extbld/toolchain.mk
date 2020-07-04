@@ -21,7 +21,12 @@ EMBOX_IMPORTED_LDFLAGS += -T $(_empty_lds_hack)
 endif
 
 EMBOX_IMPORTED_LDFLAGS_FULL  =
+LD_DISABLE_RELAXATION ?= n
+ifeq (n,$(LD_DISABLE_RELAXATION))
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
+else
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--no-relax
+endif
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(abspath $(OBJ_DIR))/mk/image.lds
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
 EMBOX_IMPORTED_LDFLAGS_FULL += $(abspath $(OBJ_DIR))/embox.o

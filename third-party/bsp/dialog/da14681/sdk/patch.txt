@@ -1,0 +1,14 @@
+diff -aur DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man/include/sys_charger.h ../build/extbld/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man/include/sys_charger.h
+--- DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man/include/sys_charger.h	2018-07-19 07:48:24.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/bsp/system/sys_man/include/sys_charger.h	2020-05-09 14:03:53.906977424 +0300
+@@ -84,8 +84,9 @@
+ 
+ #define debug_print(fmt, ...) \
+             do { if (DEBUG_USB_CHARGER_PRINT) usb_printf(fmt, __VA_ARGS__); } while (0)
+-
++#if 0
+ extern OS_TASK xUSBChrgTaskHandle;
++#endif
+ 
+ /**
+  * \brief Handles the initialization of the USB Charger.

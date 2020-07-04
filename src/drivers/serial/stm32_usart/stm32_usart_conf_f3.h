@@ -20,8 +20,23 @@
    resources */
 /* Definition for USARTx clock resources */
 
+#include <assert.h>
 #include <framework/mod/options.h>
+#include <module/embox/driver/serial/stm_usart_f3.h>
+
 #define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
+
+#define USART1_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f3, NUMBER, usart1_irq)
+static_assert(USART1_IRQ == USART1_IRQn);
+
+#define USART2_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f3, NUMBER, usart2_irq)
+static_assert(USART2_IRQ == USART2_IRQn);
+
+#define USART3_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f3, NUMBER, usart3_irq)
+static_assert(USART3_IRQ == USART3_IRQn);
 
 #if MODOPS_USARTX == 1
 
@@ -44,7 +59,7 @@
 /* Definition for USARTx's NVIC */
 /* In Embox we assume that the lower external irq number is 0,
  * but in the cortexm3 it is -15 */
-#define USARTx_IRQn                      USART1_IRQn + 16
+#define USARTx_IRQn                      USART1_IRQ
 #define USARTx_IRQHandler                USART1_IRQHandler
 
 #elif MODOPS_USARTX == 2
@@ -68,7 +83,7 @@
 /* Definition for USARTx's NVIC */
 /* In Embox we assume that the lower external irq number is 0,
  * but in the cortexm3 it is -15 */
-#define USARTx_IRQn                      USART2_IRQn + 16
+#define USARTx_IRQn                      USART2_IRQ
 #define USARTx_IRQHandler                USART2_IRQHandler
 
 #elif MODOPS_USARTX == 3
@@ -92,7 +107,7 @@
 /* Definition for USARTx's NVIC */
 /* In Embox we assume that the lower external irq number is 0,
  * but in the cortexm3 it is -15 */
-#define USARTx_IRQn                      USART3_IRQn + 16
+#define USARTx_IRQn                      USART3_IRQ
 #define USARTx_IRQHandler                USART3_IRQHandler
 
 #endif

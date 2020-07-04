@@ -50,12 +50,17 @@ char diag_getc(void) {
 
 	if (cdiag->ops->kbhit) {
 		while (!cdiag->ops->kbhit(cdiag)) {
-
 		}
+
+		ch = cdiag->ops->getc(cdiag);
+	} else {
+
+		do {
+			ch = cdiag->ops->getc(cdiag);
+		} while (ch == (char)-1);
 	}
 
-	ch = cdiag->ops->getc(cdiag);
-	return ch != '\r' ? ch : '\n';
+	return ch;
 }
 
 #define BUFLEN 4

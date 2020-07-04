@@ -102,6 +102,14 @@ module strlwr_test {
 	depends embox.framework.LibFramework
 }
 
+module memmove_test
+{
+	source "memmove_test.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
 module strupr_test {
 	source "strupr.c"
 
@@ -116,3 +124,58 @@ module memcpy_test {
 	depends embox.framework.LibFramework
 }
 
+module memcmp_test {
+	source "memcmp_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strcpy_test {
+	source "strcpy.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strrchr_test {
+	source "strrchr_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strncpy_test {
+	source "strncpy.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strstr_test {
+	source "strstr.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strcasestr_test {
+	source "strcasestr.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strchrnul_test {
+	source "strchrnul_test.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}
+
+module strpbrk_test {
+	source "strpbrk.c"
+
+	depends embox.compat.libc.str
+	depends embox.framework.LibFramework
+}

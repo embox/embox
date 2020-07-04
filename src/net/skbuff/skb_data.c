@@ -49,7 +49,7 @@
 #define ALLOCATED_MALLOC 1
 
 struct sk_buff_data_fixed {
-	size_t links;
+	int links;
 	int alloc_type;
 
 	char __ip_align[IP_ALIGN_SIZE];
@@ -139,7 +139,10 @@ void skb_data_free(struct sk_buff_data *data) {
 
 	sp = ipl_save();
 	{
-		if (--skb_data->links == 0) {
+		skb_data->links--;
+		assert(skb_data->links >= 0);
+
+		if (skb_data->links == 0) {
 			switch (skb_data->alloc_type) {
 			case ALLOCATED_POOL:
 				pool_free(&skb_data_pool, skb_data);

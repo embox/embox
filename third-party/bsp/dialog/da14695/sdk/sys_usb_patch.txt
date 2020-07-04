@@ -1,0 +1,90 @@
+diff -aur SDK_10.0.8.105/sdk/bsp/system/sys_man/sys_usb_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/sys_usb_da1469x.c
+--- SDK_10.0.8.105/sdk/bsp/system/sys_man/sys_usb_da1469x.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man/sys_usb_da1469x.c	2020-06-13 17:32:06.688301246 +0300
+@@ -45,8 +45,8 @@
+ #if (dg_configUSE_USB_ENUMERATION == 1)
+ static void sys_usb_assert_usb_data_pin_conf(void);
+ static void sys_usb_idle_on_suspend(bool set_idle);
+-extern void set_sdk_callbacks_1469x();
+-extern void set_emusb_1469x_driver();
++//extern void set_sdk_callbacks_1469x();
++//extern void set_emusb_1469x_driver();
+ #endif /* (dg_configUSE_USB_ENUMERATION == 1) */
+ 
+ /************************************** OS handlers ***********************************************/
+@@ -91,7 +91,7 @@
+         hw_usb_interrupt_handler(status);
+ }
+ /************************************** Processing Tasks ******************************************/
+-
++#include <kernel/printk.h>
+ static void sys_usb_task(void* pvParameters)
+ {
+         uint32_t        notif;
+@@ -128,8 +128,12 @@
+ #if (dg_configUSE_USB_ENUMERATION == 1)
+                 if (notif & SYS_USB_TASK_MSG_SYS_CLOCK_RESET) {
+                         if ( sys_usb_is_pll96_activated ){
+-                                cm_sys_clk_set(dg_configDEFAULT_CLK);
+-                                sys_usb_is_pll96_activated = false;
++                               /* FIXME SYS_USB_TASK_MSG_USB_RESUME and SYS_USB_TASK_MSG_SYS_CLOCK_RESET
++                                * are set together, and assert OS_ASSERT(sys_usb_is_pll96_activated == true)
++                                * failed below at SYS_USB_TASK_MSG_USB_RESUME.
++                                * */
++                                //cm_sys_clk_set(dg_configDEFAULT_CLK);
++                                //sys_usb_is_pll96_activated = false;
+                         }
+                 }
+ 
+@@ -200,7 +204,7 @@
+          */
+         sys_usb_is_process_attach_completed = true;
+ 
+-        pm_sleep_mode_request(pm_mode_active);
++        //pm_sleep_mode_request(pm_mode_active);
+         ad_pmu_dcdc_suspend();
+ 
+         sys_usb_ext_hook_attach();
+@@ -248,7 +252,7 @@
+ #endif
+                 }
+ #endif /* (dg_configUSE_USB_ENUMERATION == 1) */
+-                pm_sleep_mode_release(pm_mode_active);
++                //pm_sleep_mode_release(pm_mode_active);
+ 
+ #if (dg_configUSE_SYS_CHARGER == 1)
+                 sys_usb_int_charger_hook_detach();
+@@ -272,14 +276,14 @@
+ 
+         hw_usb_enable_vbus_interrupt(sys_usb_vbus_isr_cb);
+ #if (dg_configUSE_USB_ENUMERATION == 1)
+-        set_sdk_callbacks_1469x();
+-        set_emusb_1469x_driver();
++        //set_sdk_callbacks_1469x();
++        //set_emusb_1469x_driver();
+ #endif /* (dg_configUSE_USB_ENUMERATION == 1) */
+         OS_TASK_CREATE("VBUS",                          /* The text name assigned to the task, for
+                                                            debug only; not used by the kernel. */
+                        sys_usb_task,                    /* The function that implements the task. */
+                        NULL,                            /* The parameter passed to the task. */
+-                       configMINIMAL_STACK_SIZE * OS_STACK_WORD_SIZE,
++                       256 * OS_STACK_WORD_SIZE,
+                                                         /* The number of bytes to allocate to the
+                                                            stack of the task. */
+                        OS_TASK_PRIORITY_HIGHEST - 2,    /* The priority assigned to the task. */
+@@ -419,6 +423,7 @@
+ static void sys_usb_idle_on_suspend(bool set_idle)
+ {
+ #if (dg_configUSB_SUSPEND_MODE != USB_SUSPEND_MODE_NONE)
++#if 0
+         if (set_idle){
+                 pm_sleep_mode_request(pm_mode_idle);
+                 pm_sleep_mode_release(pm_mode_active);
+@@ -427,6 +432,7 @@
+                 pm_sleep_mode_release(pm_mode_idle);
+         }
+ #endif
++#endif
+ }
+ 
+ #endif /* (dg_configUSE_USB_ENUMERATION == 1) */

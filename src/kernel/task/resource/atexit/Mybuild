@@ -1,0 +1,21 @@
+package embox.kernel.task.resource
+
+@Mandatory
+@DefaultImpl(atexit_stub)
+abstract module atexit_api {
+}
+
+module atexit_stub extends atexit_api {
+	option number atexit_max = 0
+}
+
+module atexit extends atexit_api {
+	option number atexit_max = 4
+
+	@IncludeExport(path="kernel/task/resource")
+	source "atexit.h"
+
+	source "atexit.c"
+
+	depends embox.kernel.task.task_resource
+}

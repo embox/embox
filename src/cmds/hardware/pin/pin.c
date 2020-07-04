@@ -25,28 +25,27 @@ static void print_usage(void) {
 		"    pin GPIOA 12 blink  -- Toggle pin number 12 at GPIOA\n");
 }
 
-static int gpio_by_name(char *name) {
-	if (!strncmp("GPIO", name, 4) || !strncmp("gpio", name, 4)) {
-		name += 4;
-	}
+static int gpio_by_name(const char *name) {
+	int id = -1;
 
-	if (strlen(name) == 0) {
+	if (strncmp("GPIO", name, 4) && strncmp("gpio", name, 4)) {
 		return -1;
 	}
-
-	switch (name[0]) {
-	case '0': case 'a': case 'A': return GPIO_PORT_A;
-	case '1': case 'b': case 'B': return GPIO_PORT_B;
-	case '2': case 'c': case 'C': return GPIO_PORT_C;
-	case '3': case 'd': case 'D': return GPIO_PORT_D;
-	case '4': case 'e': case 'E': return GPIO_PORT_E;
-	case '5': case 'f': case 'F': return GPIO_PORT_F;
-	default:
-		fprintf(stderr, "Can't convert character '%c' to GPIO. Error.",
-			name[0]);
+	name += 4;
+	if (!strlen(name)) {
+		return -1;
 	}
-
-	return -1;
+	if (toupper(name[0]) >= 'A' && toupper(name[0]) <= 'Z') {
+		if (strlen(name) > 1) {
+			return -1;
+		}
+		id = toupper(name[0]) - 'A';
+	} else {
+		if (1 != sscanf(name, "%d", &id)) {
+			return -1;
+		}
+	}
+	return id;
 }
 
 int main(int argc, char **argv) {
@@ -73,11 +72,12 @@ int main(int argc, char **argv) {
 	}
 	opt = 1;
 
-	gpio = gpio_by_name(argv[opt++]);
+	gpio = gpio_by_name(argv[opt]);
 	if (gpio == -1) {
-		fprintf(stderr, "Can't extract GPIO.\n");
+		fprintf(stderr, "Unknown GPIO: %s\n", argv[opt]);
 		return 0;
 	}
+	opt++;
 
 	if (!sscanf(argv[opt++], "%d", &arg)) {
 		fprintf(stderr, "Pin is not specified.\n");

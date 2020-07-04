@@ -1,6 +1,0 @@
-package embox.driver.input.mouse
-
-module PsMouse {
-	source "ps_mouse.c"
-	depends embox.driver.input.core
-}

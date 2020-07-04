@@ -100,8 +100,6 @@ struct net_header_info {
 typedef struct net_device_ops {
 	int (*build_hdr)(struct sk_buff *skb,
 			const struct net_header_info *hdr_info);
-	int (*parse_hdr)(struct sk_buff *skb,
-			struct net_header_info *out_hdr_info);
 	int (*check_addr)(const void *addr);
 	int (*check_mtu)(int mtu);
 } net_device_ops_t;
@@ -110,7 +108,6 @@ typedef struct net_device_ops {
  * structure of net device
  */
 typedef struct net_device {
-	struct dlist_head rx_lnk;
 	int index;
 	char name[IFNAMSIZ]; /**< Name of the interface.  */
 	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
@@ -125,7 +122,10 @@ typedef struct net_device {
 	struct net_device_stats stats;
 	const struct net_device_ops *ops; /**< Hardware description  */
 	const struct net_driver *drv_ops; /**< Management operations        */
-	struct sk_buff_head dev_queue;
+	struct dlist_head rx_lnk;         /* for netif_rx list */
+	struct dlist_head tx_lnk;         /* for netif_tx list */
+	struct sk_buff_head dev_queue;    /* rx skb queue */
+	struct sk_buff_head dev_queue_tx; /* tx skb queue */
 	struct net_node *pnet_node;
 	void *priv; /**< private data */
 } net_device_t;

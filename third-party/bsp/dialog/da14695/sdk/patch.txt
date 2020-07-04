@@ -1,0 +1,49 @@
+diff -aur SDK_10.0.8.105/sdk/bsp/startup/DA1469x/init_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/startup/DA1469x/init_da1469x.c
+--- SDK_10.0.8.105/sdk/bsp/startup/DA1469x/init_da1469x.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/startup/DA1469x/init_da1469x.c	2020-05-13 16:21:18.923206843 +0300
+@@ -48,16 +48,19 @@
+ extern uint32_t __copy_table_end__;
+ extern uint32_t __zero_table_start__;
+ extern uint32_t __zero_table_end__;
++#if 0
+ extern uint8_t end;
+ extern uint8_t __HeapLimit;
+-
++#endif
+ /*
+  * Global variables
+  */
++#if 0
+ __RETAINED_RW static uint8_t *heapend = &end;
++#endif
+ __RETAINED_RW uint32_t SystemLPClock = dg_configXTAL32K_FREQ;   /*!< System Low Power Clock Frequency (LP Clock) */
+ 
+-
++#if 0
+ /**
+  * @brief  Memory safe implementation of newlib's _sbrk().
+  *
+@@ -103,6 +106,7 @@
+ void srand (unsigned __seed)
+ {
+ }
++#endif
+ 
+ /*
+  * Dialog default priority configuration table.
+@@ -476,6 +480,7 @@
+          * If any of the assertions below hits, please correct your linker script
+          * file accordingly!
+          */
++#if 0
+         if (dg_configIMAGE_SETUP == DEVELOPMENT_MODE) {
+                 uint32_t *p;
+ 
+@@ -499,6 +504,7 @@
+                         ASSERT_WARNING_UNINIT( (p[1] & 0x3) == 0 );    // size
+                 }
+         }
++#endif
+ 
+         /*
+          * Clear all PDC entries and make sure SYS_SLEEP is 0.

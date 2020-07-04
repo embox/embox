@@ -9,14 +9,13 @@
 #include <assert.h>
 #include <string.h>
 
-#include <drivers/gpio/gpio.h>
+#include "stm32_spi.h"
+
 #include <drivers/spi.h>
 #include <kernel/irq.h>
 #include <util/log.h>
 
-#include "stm32_spi.h"
-
-#include <drivers/gpio/stm32.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/gpio/gpio_driver.h>
 
 static int stm32_spi_setup(struct stm32_spi *dev, void *instance, bool is_master) {
@@ -87,8 +86,8 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 		log_error("fail %d", ret);
 	}
 
-	while (HAL_SPI_GetState(handle) != HAL_SPI_STATE_READY)
-		;
+	while (HAL_SPI_GetState(handle) != HAL_SPI_STATE_READY) {
+	}
 
 	if (dev->flags & SPI_CS_INACTIVE && dev->is_master) {
 		/* Note: we suppose that there's a single slave device

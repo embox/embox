@@ -46,18 +46,18 @@ struct usb_mscsw {
 
 struct usb_mass {
 	struct scsi_dev scsi_dev;
-	struct usb_dev *usb_dev;
+	struct usb_interface *usb_dev;
 
 	uint8_t maxlun;
 
 	char blkin, blkout;
 };
 
-static inline struct usb_mass *usb2massdata(struct usb_dev *dev) {
+static inline struct usb_mass *usb2massdata(struct usb_interface *dev) {
 	return dev->driver_data;
 }
 
-extern int usb_ms_transfer(struct usb_dev *dev, void *ms_cmd,
+extern int usb_ms_transfer(struct usb_interface *dev, void *ms_cmd,
 		size_t ms_cmd_len, enum usb_direction dir, void *buf, size_t len);
 
 #endif /* USB_CLASS_USB_MASS_STORAGE_H_ */

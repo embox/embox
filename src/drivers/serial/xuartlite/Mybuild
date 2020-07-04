@@ -6,5 +6,7 @@ module xuartlite extends embox.driver.diag.diag_api {
 	option number xuartlite_base
 	option number irq_num
 
+	depends core
+	depends diag
 	depends embox.driver.periph_memory
 }

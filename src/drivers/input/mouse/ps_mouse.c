@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <embox/unit.h>
 #include <drivers/input/input_dev.h>
+#include <kernel/irq.h>
 
 #include <drivers/i8042.h>
 
@@ -25,82 +26,66 @@ EMBOX_UNIT_INIT(ps_mouse_init);
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
-	char byteseq_state;
 };
 
-static void kmc_send_auxcmd(unsigned char val) {
-	kmc_wait_ibe();
-	out8(0x60, I8042_CMD_PORT);
-	kmc_wait_ibe();
-	out8(val, I8042_DATA_PORT);
-}
-
-static int kmc_write_aux(unsigned char val) {
-	/* Write the value to the device */
-	kmc_wait_ibe();
-	outb(0xd4, I8042_CMD_PORT);
-	kmc_wait_ibe();
-	outb(val, I8042_DATA_PORT);
-
-	return 0;
-}
-
 //http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
-static int ps_mouse_get_input_event(struct input_dev *dev, struct input_event *ev) {
-	struct ps2_mouse_indev *ps2mouse = (struct ps2_mouse_indev *) dev;
-	unsigned char data;
-	int ret = 0;
+static void ps_mouse_get_input_event(struct input_dev *dev) {
+	uint8_t data;
+	struct input_event ev;
 
-	if ((inb(I8042_STS_PORT) & 0x21) != 0x21) {
-		/* this is keyboard scan code */
-		ret = -EAGAIN;
-		goto out;
+	irq_lock();
+	{
+		data = inb(I8042_STS_PORT);
+
+		if ((data & (I8042_STS_AUXOBF | I8042_STS_OBF))
+				!= (I8042_STS_AUXOBF | I8042_STS_OBF)) {
+			/* this is keyboard scan code */
+			goto out;
+		}
+
+		data = inb(I8042_DATA_PORT);
+		if (data == MOUSE_ACK) {
+			goto out;
+		}
+
+		ev.type = data;
+
+		data = inb(I8042_DATA_PORT);
+		ev.value = ((ev.type & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
+		data = inb(I8042_DATA_PORT);
+		ev.value |= (ev.type & MSTAT_YSIGN ? 0xff00 : 0) | data;
+
+		ev.type  &= MSTAT_BUTMASK;
+
+		input_dev_report_event(dev, &ev);
 	}
-
-	data = inb(I8042_DATA_PORT);
-
-	if (ps2mouse->byteseq_state == 0 &&
-			data == MOUSE_ACK) {
-		ret = -EAGAIN;
-		goto out;
-	}
-
-	switch(ps2mouse->byteseq_state) {
-	case 0:
-		ev->type = data;
-		ret = -EAGAIN;
-		break;
-	case 1:
-		ev->value = (ev->type & MSTAT_XSIGN ? 0xff00 : 0) | data;
-		ret = -EAGAIN;
-		break;
-	case 2:
-		ev->value <<= 16;
-	       	ev->value |= (ev->type & MSTAT_YSIGN ? 0xff00 : 0) | data;
-		ev->type  &= MSTAT_BUTMASK;
-		ret = 0;
-		break;
-	}
-
-	ps2mouse->byteseq_state = (ps2mouse->byteseq_state + 1) % 3;
-
 out:
-	return ret;
+	irq_unlock();
 }
 
 static int ps_mouse_start(struct input_dev *dev) {
-	kmc_wait_ibe();
-	outb(0xa8, I8042_CMD_PORT); /* Enable aux */
+	uint8_t mode;
 
-	kmc_write_aux(0xf3); /* Set sample rate */
-	kmc_write_aux(100); /* 100 samples/sec */
+	irq_lock();
+	{
+		mode = i8042_read_mode();
+		mode |= I8042_MODE_XLATE | I8042_MODE_SYS | I8042_MODE_MOUSE_INT;
+		mode &= ~I8042_MODE_DISABLE_MOUSE;
+		i8042_write_mode(mode);
 
-	kmc_write_aux(0xe8); /* Set resolution */
-	kmc_write_aux(3); /* 8 counts per mm */
-	kmc_write_aux(0xe7); /* 2:1 scaling */
+		i8042_wait_write();
+		outb(I8042_CMD_MOUSE_ENABLE, I8042_CMD_PORT);
 
-	kmc_write_aux(0xf4); /* Enable aux device */
-	kmc_send_auxcmd(0x47); /* Enable controller ints */
+		i8042_write_aux(I8042_AUX_SET_SAMPLE);
+		i8042_write_aux(100); /* 100 samples/sec */
+
+		i8042_write_aux(I8042_AUX_SET_RES);
+		i8042_write_aux(3); /* 8 counts per mm */
+		i8042_write_aux(I8042_AUX_SET_SCALE21);
+
+		i8042_write_aux(I8042_AUX_ENABLE_DEV);
+	}
+	irq_unlock();
 
 	return 0;
 }
@@ -114,19 +99,32 @@ static int ps_mouse_stop(struct input_dev *dev) {
 static const struct input_dev_ops ps_mouse_input_ops = {
 	/*.start = ps_mouse_start,*/
 	.stop = ps_mouse_stop,
-	.event_get = ps_mouse_get_input_event,
 };
 
 static struct ps2_mouse_indev mouse_dev = {
 	.input_dev = {
 		.ops = &ps_mouse_input_ops,
-		.name = "mouse",
+		.name = "ps-mouse",
 		.type = INPUT_DEV_MOUSE,
-		.irq = 12,
 	},
 };
 
+static irq_return_t ps_mouse_irq_hnd(unsigned int irq_nr, void *data) {
+	struct input_dev *dev = (struct input_dev *) data;
+
+	ps_mouse_get_input_event(dev);
+
+	return IRQ_HANDLED;
+}
+
 static int ps_mouse_init(void) {
+	int res;
+
+	res = irq_attach(I8042_MOUSE_IRQ, ps_mouse_irq_hnd, 0,
+					 &mouse_dev.input_dev, "ps mouse");
+	if (res < 0) {
+		return res;
+	}
 
 	ps_mouse_start(NULL);
 

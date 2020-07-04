@@ -15,25 +15,48 @@
 #include "file_struct.h"
 
 #include <sys/ioctl.h>
+#include <sys/stat.h>
 
-#define DEFAULT_MODE 0666
+#define DEFAULT_MODE (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH) /* 0666 */
 
 extern FILE *stdio_file_alloc(int fd);
 
 static int mode2flag(const char *mode) {
-	int flags = 0;
+	int oflags, omode, loop;
 
-	if (strchr(mode, 'r') && strchr(mode, 'w')) {
-		flags |= O_RDWR | O_TRUNC | O_CREAT;
-	} else if (strchr(mode, 'w')) {
-		flags |= O_WRONLY | O_TRUNC | O_CREAT;
+	switch (*mode++) {
+	case 'r':
+		omode = O_RDONLY;
+		oflags = 0;
+		break;
+	case 'w':
+		omode = O_WRONLY;
+		oflags = O_CREAT|O_TRUNC;
+		break;
+	case 'a':
+		omode = O_WRONLY;
+		oflags = O_CREAT|O_APPEND;
+		break;
+	default: /*illegal mode */
+		SET_ERRNO(EINVAL);
+		return -1;
 	}
 
-	if (strchr(mode, 'a')) {
-		flags |= O_APPEND | O_CREAT | O_RDWR;
-	}
-
-	return flags;
+	do {
+		loop = 1;
+		switch (*mode++) {
+		case 'b':
+			/* ignore 'b' (binary) */
+			break;
+		case '+':
+			omode = O_RDWR;
+			break;
+		default:
+			loop = 0;
+			break;
+		}
+	} while (loop);
+	return omode | oflags;
 }
 
 FILE *fopen(const char *path, const char *mode) {
@@ -41,7 +64,9 @@ FILE *fopen(const char *path, const char *mode) {
 	FILE *file = NULL;
 	int flags = 0;
 
-	flags = mode2flag(mode);
+	if((flags = mode2flag(mode)) < 0 ) {
+		return NULL;
+	}
 
 	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
 		/* That's sad, but open sets errno, no need to alter */
@@ -81,10 +106,13 @@ FILE *freopen(const char *path, const char *mode, FILE *file) {
 	int old_fd;
 
 	if (NULL == path || NULL == file) {
+		SET_ERRNO(EINVAL);
 		return NULL;
 	}
 
-	flags = mode2flag(mode);
+	if((flags = mode2flag(mode)) < 0 ) {
+		return NULL;
+	}
 
 	if ((fd = open(path, flags, DEFAULT_MODE)) < 0) {
 		/* That's sad, but open sets errno, no need to alter */
@@ -94,6 +122,7 @@ FILE *freopen(const char *path, const char *mode, FILE *file) {
 
 	dup2(fd, old_fd);
 	file->flags = flags;
+	clearerr(file); /* redundant but just-in-case */
 
 	close(fd);
 

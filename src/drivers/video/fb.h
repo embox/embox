@@ -59,10 +59,6 @@ enum pix_fmt {
 extern int pix_fmt_has_alpha(enum pix_fmt fmt);
 extern int pix_fmt_bpp(enum pix_fmt fmt);
 extern int pix_fmt_chan_bits(enum pix_fmt fmt, enum pix_chan chan);
-extern int pix_fmt_chan_get_val(enum pix_fmt fmt, enum pix_chan chan,
-		void *data);
-extern void pix_fmt_chan_set_val(enum pix_fmt fmt, enum pix_chan chan,
-		void *data, int val);
 extern int pix_fmt_convert(void *src, void *dst, int n,
 		enum pix_fmt in, enum pix_fmt out);
 

@@ -11,41 +11,36 @@
 
 #include <embox/unit.h>
 #include <util/bit.h>
+#include <util/array.h>
 
 #include <drivers/gpio/stm32.h>
 #include <drivers/gpio/gpio_driver.h>
 
-#define STM32_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
-
-#define STM32_GPIO_PORTS_COUNT 6
-#define EXTI_LINES_CNT 4
-
-#define EXTI0_IRQ (EXTI0_IRQn + 16)
-
 EMBOX_UNIT_INIT(stm32_gpio_init);
 
-static GPIO_TypeDef *stm32_gpio_ports[STM32_GPIO_PORTS_COUNT] = {
-	GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF
+#define STM32_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
+
+#define EXTI0_IRQ          OPTION_GET(NUMBER, exti0_irq)
+static_assert(EXTI0_IRQ == EXTI0_IRQn);
+
+#define EXTI1_IRQ          OPTION_GET(NUMBER, exti1_irq)
+static_assert(EXTI1_IRQ == EXTI1_IRQn);
+
+#define EXTI2_IRQ          OPTION_GET(NUMBER, exti2_irq)
+#if defined(STM32F303xC)
+static_assert(EXTI2_IRQ == EXTI2_TSC_IRQn);
+#else
+static_assert(EXTI2_IRQ == EXTI2_IRQn);
+#endif
+
+#define EXTI3_IRQ          OPTION_GET(NUMBER, exti3_irq)
+static_assert(EXTI3_IRQ == EXTI3_IRQn);
+
+static const unsigned char exti_irqs[] = {
+	EXTI0_IRQ, EXTI1_IRQ, EXTI2_IRQ, EXTI3_IRQ
 };
 
 static struct gpio_chip stm32_gpio_chip;
-
-static void stm32_gpio_clk_enable(void *gpio_base) {
-	if (gpio_base == GPIOA)
-		__HAL_RCC_GPIOA_CLK_ENABLE();
-	else if (gpio_base == GPIOB)
-		__HAL_RCC_GPIOB_CLK_ENABLE();
-	else if (gpio_base == GPIOC)
-		__HAL_RCC_GPIOC_CLK_ENABLE();
-	else if (gpio_base == GPIOD)
-		__HAL_RCC_GPIOD_CLK_ENABLE();
-	else if (gpio_base == GPIOE)
-		__HAL_RCC_GPIOE_CLK_ENABLE();
-	else if (gpio_base == GPIOF)
-		__HAL_RCC_GPIOF_CLK_ENABLE();
-	else
-		assert(0);
-}
 
 static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 		int mode) {
@@ -150,8 +145,8 @@ static struct gpio_chip stm32_gpio_chip = {
 static int stm32_gpio_init(void) {
 	int res, i;
 
-	for (i = 0; i < EXTI_LINES_CNT; i++) {
-		res = irq_attach(EXTI0_IRQ + i, stm32_gpio_irq_handler, 0, NULL,
+	for (i = 0; i < ARRAY_SIZE(exti_irqs); i++) {
+		res = irq_attach(exti_irqs[i], stm32_gpio_irq_handler, 0, NULL,
 			"STM32 EXTI irq handler");
 		if (res < 0) {
 			return -1;
@@ -160,3 +155,8 @@ static int stm32_gpio_init(void) {
 
 	return gpio_register_chip(&stm32_gpio_chip, STM32_GPIO_CHIP_ID);
 }
+
+STATIC_IRQ_ATTACH(EXTI0_IRQ, stm32_gpio_irq_handler, NULL);
+STATIC_IRQ_ATTACH(EXTI1_IRQ, stm32_gpio_irq_handler, NULL);
+STATIC_IRQ_ATTACH(EXTI2_IRQ, stm32_gpio_irq_handler, NULL);
+STATIC_IRQ_ATTACH(EXTI3_IRQ, stm32_gpio_irq_handler, NULL);

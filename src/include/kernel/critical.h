@@ -188,6 +188,7 @@ __BEGIN_DECLS
 
 extern void critical_request_dispatch(struct critical_dispatcher *d);
 extern void critical_dispatch_pending(void);
+extern int  critical_dispatch_required(void);
 
 __END_DECLS
 

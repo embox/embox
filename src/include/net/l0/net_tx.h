@@ -12,7 +12,10 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 
-extern int net_tx(struct sk_buff *skb,
-		struct net_header_info *hdr_info);
+struct net_header_info;
+struct sk_buff;
+
+extern int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info);
+extern int net_tx_direct(struct sk_buff *skb);
 
 #endif /* NET_L0_NET_TX_ */

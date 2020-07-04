@@ -11,7 +11,6 @@
 #include <util/array.h>
 
 #include <drivers/gpio/gpio_driver.h>
-#include <drivers/gpio/stm32.h>
 
 #include "libleddrv_ll.h"
 

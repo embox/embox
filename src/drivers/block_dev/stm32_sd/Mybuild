@@ -2,7 +2,7 @@ package embox.driver.sd
 
 abstract module sd { }
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4_sd extends sd {
 	option boolean use_local_buf=true /* Used to fix align problems */
 	option number sd_buf_size=4096
@@ -10,11 +10,15 @@ module stm32f4_sd extends sd {
 	source "stm32f4_sd.c"
 
 	depends embox.driver.block_dev
-	depends third_party.bsp.stmf4cube.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f746g_discovery_sd extends sd {
+	option number dma_sdmmc_irq = 49
+	option number dma_rx_irq    = 59
+	option number dma_tx_irq    = 69
+
 	option boolean use_local_buf=true /* Used to fix align problems */
 	option number sd_buf_size=4096
 
@@ -29,6 +33,10 @@ module stm32f746g_discovery_sd extends sd {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f769i_discovery_sd extends sd {
+	option number dma_sdmmc_irq = 103
+	option number dma_rx_irq    = 56
+	option number dma_tx_irq    = 68
+
 	option boolean use_local_buf=true /* Used to fix align problems */
 	option number sd_buf_size=4096
 

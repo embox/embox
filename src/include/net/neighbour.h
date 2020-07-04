@@ -22,15 +22,15 @@ struct neighbour {
 	unsigned char paddr[MAX_ADDR_LEN]; /* protocol address */
 	unsigned char plen;                /* protocol address len  */
 	struct net_device *dev;            /* net device */
-	int incomplete;                    /* is incomplete */
+	int is_incomplete;                 /* is incomplete */
 	unsigned short htype;              /* hw space */
 	unsigned char haddr[MAX_ADDR_LEN]; /* hw address */
 	unsigned char hlen;                /* hw address len */
-	unsigned int flags;                /* flags */
+	int flags;                         /* flags */
 	struct sk_buff_head w_queue;       /* waiting queue */
-	unsigned long expire;              /* lifetime */
-	unsigned long resend;              /* resend timeout */
-	unsigned int sent_times;           /* how much times request was sent */
+	int expire;                        /* lifetime */
+	int resend;                        /* re-send timeout */
+	int sent_times;                    /* how much times request was sent */
 };
 
 /**
@@ -71,8 +71,13 @@ typedef int (*neighbour_foreach_ft)(const struct neighbour *nbr,
 
 extern int neighbour_foreach(neighbour_foreach_ft func, void *args);
 
-extern int neighbour_send_after_resolve(unsigned short ptype,
+extern int neighbour_resolve(unsigned short ptype,
 		const void *paddr, unsigned char plen,
-		struct net_device *dev, struct sk_buff *skb);
+		struct net_device *dev, struct sk_buff *skb,
+		unsigned char hlen_max, void *out_haddr);
+
+static inline int neighbour_is_resolved(const struct neighbour *nbr) {
+	return !nbr->is_incomplete;
+}
 
 #endif /* NET_NEIGHBOUR_H_ */

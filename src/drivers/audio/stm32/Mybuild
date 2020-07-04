@@ -5,6 +5,8 @@ module stm32f746g_discovery {
 	option number log_level = 1
 	option number volume = 70
 	option number audio_buf_len = 4096
+	option number audio_out_dma_irq = 60
+	option number audio_in_dma_irq  = 70
 
 	@IncludeExport(path="drivers/audio", target_name="stm32f7_audio.h")
 	source "stm32f746g_discovery_audio.h"
@@ -25,6 +27,11 @@ module stm32f769i_discovery {
 	option number log_level = 1
 	option number volume = 70
 	option number audio_buf_len = 4096
+	option number audio_out_dma_irq      = 57
+	option number dfsdm_top_left_irq     = 56
+	option number dfsdm_top_right_irq    = 68
+	option number dfsdm_bottom_left_irq  = 69
+	option number dfsdm_bottom_right_irq = 70
 
 	@IncludeExport(path="drivers/audio", target_name="stm32f7_audio.h")
 	source "stm32f769i_discovery_audio.h"

@@ -98,7 +98,7 @@
 #define ULLONG_MAX	18446744073709551615ULL
 #endif /* ULLONG_MAX */
 
-
+#include <framework/mod/options.h>
 /**
  * Pathname Variable Values
  */
@@ -108,6 +108,10 @@
 
 /* Maximum number of bytes in a pathname, including \0 character */
 #define PATH_MAX 256
+
+#include <config/embox/kernel/task/resource/atexit_api.h>
+#define ATEXIT_MAX \
+	OPTION_MODULE_GET(embox__kernel__task__resource__atexit, NUMBER, atexit_max)
 
 /*
 Maximum number of bytes in a character, for any supported locale.

@@ -12,6 +12,9 @@
 
 #include <kernel/printk.h>
 
+void __atexit_funcs(void) {
+}
+
 int atexit(void (*func)(void)) {
 	printk("STUB >>> %s %p\n", __func__, func);
 	return -ENOSYS;

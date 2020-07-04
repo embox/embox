@@ -8,6 +8,7 @@
 
 #include <util/dlist.h>
 
+#include <kernel/sched.h>
 #include <kernel/sched/sched_strategy.h>
 
 struct schedee;

@@ -43,3 +43,9 @@ module mmap {
 	depends embox.kernel.task.resource.mmap_full
 	depends embox.compat.posix.sys.mman.mmap
 }
+
+module mprotect {
+	source "mprotect.c"
+
+	depends embox.compat.posix.sys.mman.mprotect
+}

@@ -26,7 +26,7 @@ int __lthread_is_disabled(struct lthread *lt) {
 }
 
 /** locks: IPL, sched. lthread->run must be atomic. */
-static struct schedee *lthread_process(struct schedee *prev,
+struct schedee *lthread_process(struct schedee *prev,
 		struct schedee *next) {
 	struct lthread *lt = mcast_out(next, struct lthread, schedee);
 

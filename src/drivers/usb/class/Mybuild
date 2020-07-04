@@ -2,6 +2,8 @@
 package embox.driver.usb.class
 
 module hid {
+	option number log_level = 1
+
 	source "usb_class_hid.c"
 	source "usb_hid.c"
 
@@ -19,12 +21,4 @@ module mass_storage {
 	depends embox.driver.usb.core
 
 	depends embox.driver.scsi
-}
-
-module cdc {
-	option number log_level = 1
-	source "usb_class_cdc.c"
-
-	depends embox.driver.usb.core
-	depends embox.mem.sysmalloc_api
 }

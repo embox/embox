@@ -140,7 +140,7 @@ static void telnet_execv_shell(void) {
 	execv(SHELL_NAME, shell_args);
 }
 
-static struct telnet_session *telnet_create_new_session(int sock) {
+static int telnet_create_new_session(int sock, struct telnet_session **tsp) {
 	int master_pty, slave_pty;
 	pid_t pid;
 	struct telnet_session *ts;
@@ -148,13 +148,14 @@ static struct telnet_session *telnet_create_new_session(int sock) {
 	ts = telnet_alloc_session();
 	if (!ts) {
 		DPRINTF("Failed to alloc new session\n");
-		return NULL;
+		return -1;
 	}
+	*tsp = ts;
 
 	master_pty = telnet_open_master_pty(ts);
 	if (master_pty < 0) {
 		DPRINTF("Failed to open master pty\n");
-		return 0;
+		return -1;
 	}
 	/* It's used to do not pass pty master to children. */
 	fcntl(master_pty, F_SETFD, FD_CLOEXEC);
@@ -177,16 +178,15 @@ static struct telnet_session *telnet_create_new_session(int sock) {
 		close(master_pty);
 		telnet_free_session(ts);
 		DPRINTF("vfork failed\n");
-		return NULL;
+		return -1;
 	}
 	if (pid > 0) {
 		/* Parent */
 #ifndef TELNETD_FOR_LINUX
 		/* FIXME remove. CLosing the slave end. */
-		close(ts->pptyfds[1]);
+		close((*tsp)->pptyfds[1]);
 #endif
-		ts->pid = pid;
-		return ts;
+		return pid;
 	}
 	/* Child */
 	slave_pty = telnet_open_slave_pty(ts, master_pty);
@@ -205,7 +205,7 @@ static struct telnet_session *telnet_create_new_session(int sock) {
 
 	telnet_execv_shell();
 
-	return NULL;
+	return -1;
 }
 
 static void telnet_main_loop(int server_sock) {
@@ -262,6 +262,7 @@ main_loop:
 	if (FD_ISSET(server_sock, &readfds)) {
 		int client_sock;
 		struct sockaddr_in client_sockaddr;
+		pid_t pid;
 		socklen_t client_socket_len = sizeof client_sockaddr;
 
 		client_sock = accept(server_sock,
@@ -276,11 +277,13 @@ main_loop:
 				inet_ntoa(client_sockaddr.sin_addr),
 				ntohs(client_sockaddr.sin_port));
 
-		ts = telnet_create_new_session(client_sock);
-		if (!ts) {
+		pid = telnet_create_new_session(client_sock, &ts);
+		if (pid < 0) {
 			/* Close current connection and process other below. */
 			DPRINTF("Failed to create new session\n");
 			close(client_sock);
+		} else {
+			ts->pid = pid;
 		}
 	}
 

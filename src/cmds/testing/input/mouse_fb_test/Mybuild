@@ -1,0 +1,21 @@
+package embox.cmd.testing.input
+
+@AutoCmd
+@Cmd(name = "mouse_fb_test",
+	help = "Demo application which draws mouse current pos into framebuffer",
+	man = '''
+		NAME
+			mouse_fb_test - Draws mouse into framebuffer
+		SYNOPSIS
+			mouse_fb_test <mouse>
+		DESCRIPTION
+			mouse_fb_test - Draws mouse into framebuffer
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module mouse_fb_test {
+	source "mouse_fb_test.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.video.fb
+}

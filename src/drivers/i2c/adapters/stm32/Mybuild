@@ -2,10 +2,14 @@ package embox.driver.i2c
 
 abstract module stm32_i2c {}
 
-@BuildDepends(third_party.bsp.stmf4cube.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_i2c_f4 extends stm32_i2c {
 	option number log_level=1
 	option boolean use_i2c_irq=false
+	option number i2c1_ev_irq=31
+	option number i2c1_er_irq=32
+	option number i2c2_ev_irq=33
+	option number i2c2_er_irq=34
 
 	@IncludeExport(path="drivers/i2c", target_name="stm32_i2c_conf.h")
 	source "i2c_conf_f4.h"
@@ -14,7 +18,7 @@ module stm32_i2c_f4 extends stm32_i2c {
 
 	depends embox.driver.i2c
 	depends embox.driver.gpio.api
-	depends third_party.bsp.stmf4cube.stm32f4_discovery_bsp
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(stm32_i2c)

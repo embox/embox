@@ -1,0 +1,15 @@
+package embox.kernel
+
+/* It provides STATIC_IRQ_HANDLER_DEF */
+abstract module irq_static_impl {
+}
+
+module irq_static extends irq_api {
+	source "irq_static.c",
+	       "irq_static.h"
+
+	source "static_irq_table.lds.S"
+
+	depends irq_lock
+	depends irq_stack
+}
