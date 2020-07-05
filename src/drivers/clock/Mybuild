@@ -27,16 +27,6 @@ module tsc {
 	depends embox.kernel.time.clock_source
 }
 
-module riscv_clk extends embox.arch.clock {
-	source "riscv_clk.c"
-
-	@NoRuntime depends embox.kernel.time.clock_source
-
-	option number base_mtime=0x200bff8
-	option number base_mtimecmp=0x2004000
-	option number rtc_freq=1000000
-}
-
 module lapic_timer extends embox.arch.clock {
 	source "lapic_timer.c"
 
