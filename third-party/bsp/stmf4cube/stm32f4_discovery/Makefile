@@ -1,9 +1,9 @@
 
 PKG_NAME := stm32cubef4
+PKG_VER := v1.25.0
 PKG_PATCHES := patch.txt
 
-PKG_SOURCES := https://www.dropbox.com/s/kglgqpgw186ho6r/stm32cubef4.zip \
-	http://download.embox.rocks/stm32cubef4.zip
+PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeF4/archive/$(PKG_VER).zip
 
-PKG_MD5     := fb93309ca8acdc6bfe9fc089cc6441fe
+PKG_MD5     := 75abbac68e9fc9af999cb641c8f3ab77
 include $(EXTBLD_LIB)
