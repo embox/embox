@@ -19,13 +19,12 @@ int power_of_two(int nmber) {
     }
 	if (nmber == 1) {
         return 0 ;
-    }
-    else {
+    } else {
         return 1 ;
     }
 }
 int posix_memalign (void **__memptr, size_t __alignment, size_t __size) {
-    if (power_of_two(__alignment) != 0 || __alignment % (sizeof(void*) != 0) || __size == 0){
+    if (power_of_two(__alignment) != 0 || __size == 0){
         return EINVAL;
     }
     *__memptr = memalign(__alignment,  __size) ;
@@ -38,19 +37,16 @@ void *aligned_alloc(size_t alignment, size_t size) {
     //that size should be a multiple of alignment.
     if (alignment == 0 || size == 0) {
         return NULL ;
-    }
-    else if (size % alignment==0) {
+    } else if (size % alignment==0) {
         return memalign(alignment, size) ;
-    }
-    else {
+    } else {
         return NULL ;
     }
 }
 void *valloc(size_t size) {
     if (size == 0) {
         return NULL ;
-    }
-    else {
+    } else {
        return memalign(MMU_PAGE_SIZE, size) ;
     }
 }
@@ -61,11 +57,9 @@ void *pvalloc(size_t size) {
     */
     if (size == 0) {
        return NULL ;
-    }
-    else if ((size % MMU_PAGE_SIZE) == 0) {
+    } else if ((size % MMU_PAGE_SIZE) == 0) {
        return valloc(size) ;
-    }
-    else {
+    } else {
        size /= MMU_PAGE_SIZE ;
        size++;
        size *= MMU_PAGE_SIZE ;
