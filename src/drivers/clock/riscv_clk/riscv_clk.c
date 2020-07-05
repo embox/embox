@@ -26,25 +26,22 @@
 #define MTIMECMP     OPTION_GET(NUMBER, base_mtimecmp)
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-	uint64_t *mtime = (uint64_t *)MTIME;
-	uint64_t *mtimecmp = (uint64_t *)MTIMECMP;
-	*mtimecmp = *(uint64_t *)mtime + (uint64_t)COUNT_OFFSET;
+	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 
 	clock_tick_handler(irq_nr, dev_id);
+
 	return IRQ_HANDLED;
 }
 
 static int riscv_clock_setup(struct time_dev_conf * conf) {
-	uint64_t *mtime = (uint64_t *)MTIME;
-	uint64_t *mtimecmp = (uint64_t *)MTIMECMP;
-	*mtimecmp = *(uint64_t *)mtime + (uint64_t)COUNT_OFFSET;
+	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 
 	return ENOERR;
 }
 
 static struct time_event_device riscv_event_device  = {
 	.config = riscv_clock_setup,
-	.event_hz = 1000,
+	.event_hz = HZ,
 	.name = "riscv_clk",
 	.irq_nr = MACHINE_TIMER_INTERRUPT
 };
