@@ -179,3 +179,24 @@ module strpbrk_test {
 	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
 }
+
+module aligned_alloc_test {
+	source "aligned_alloc_test.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
+module posix_memalign_test {
+	source "posix_memalign_test.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
+module valloc_test {
+	source "valloc_test.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}

@@ -200,6 +200,13 @@ int dlposix_memalign(void**, size_t, size_t);
 void* dlvalloc(size_t);
 
 /*
+  pvalloc(size_t size)
+  The obsolete function pvalloc() is similar to valloc(),
+  but rounds the size of the allocation up to the next multiple of the system page size.
+*/
+void *pvalloc(size_t size);
+
+/*
   mallopt(int parameter_number, int parameter_value)
   Sets tunable parameters The format is to provide a
   (parameter-number, parameter-value) pair.  mallopt then sets the
