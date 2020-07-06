@@ -98,7 +98,7 @@ static struct clock_source gptimer_cs;
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	// XXX clock_hander is called from arch part
-	clock_tick_handler(irq_nr,dev_id);
+	clock_tick_handler(dev_id);
 	return IRQ_HANDLED;
 }
 

@@ -72,7 +72,7 @@
 
 static struct clock_source e2k_clock_source;
 static irq_return_t e2k_clock_handler(unsigned int irq_nr, void *dev_id) {
-	clock_tick_handler(irq_nr, dev_id);
+	clock_tick_handler(dev_id);
 	return IRQ_HANDLED;
 }
 

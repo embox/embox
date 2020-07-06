@@ -28,7 +28,7 @@
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 
-	clock_tick_handler(irq_nr, dev_id);
+	clock_tick_handler(dev_id);
 
 	return IRQ_HANDLED;
 }

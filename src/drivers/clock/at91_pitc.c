@@ -23,7 +23,7 @@ static struct clock_source at91_pitc_clock_source;
 static irq_return_t clock_handler(unsigned int irq_num, void *dev_id) {
 	if (REG_LOAD(AT91C_PITC_PISR)) {
 		REG_LOAD(AT91C_PITC_PIVR);
-		clock_tick_handler(irq_num, dev_id);
+		clock_tick_handler(dev_id);
 	}
 	return IRQ_HANDLED;
 }

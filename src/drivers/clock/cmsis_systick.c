@@ -23,7 +23,7 @@
 
 static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 	return IRQ_HANDLED;
 }
 

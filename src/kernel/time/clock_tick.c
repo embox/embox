@@ -21,7 +21,7 @@ static struct lthread clock_handler_lt;
 /* from jiffies.c */
 extern struct clock_source *cs_jiffies;
 
-void clock_tick_handler(int irq_num, void *dev_id) {
+void clock_tick_handler(void *dev_id) {
 	struct clock_source *cs = (struct clock_source *) dev_id;
 
 	assert(cs);
