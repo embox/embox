@@ -2,5 +2,6 @@
 "route add 10.1.0.0 netmask 255.255.255.0 eth0",
 //"ticker",
 "service dhcpd",
+"service telnetd",
 "ble_example_sdk",
 //"ble_example_direct",

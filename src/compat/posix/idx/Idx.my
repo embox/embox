@@ -61,6 +61,7 @@ static module ppty {
 	source "pipe_pty.c"
 
 	depends embox.fs.idesc_event
+	depends embox.driver.tty.tty
 	depends embox.kernel.task.api
 }
 
