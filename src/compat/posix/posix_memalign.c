@@ -57,12 +57,7 @@ void *pvalloc(size_t size) {
     */
     if (size == 0) {
        return NULL ;
-    } else if ((size % MMU_PAGE_SIZE) == 0) {
-       return valloc(size) ;
     } else {
-       size /= MMU_PAGE_SIZE ;
-       size++;
-       size *= MMU_PAGE_SIZE ;
-       return valloc(size) ;
+        return valloc((  size+(MMU_PAGE_SIZE - 1) & ~(MMU_PAGE_SIZE - 1)));
    }
 }
