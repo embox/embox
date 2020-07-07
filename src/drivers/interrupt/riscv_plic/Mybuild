@@ -1,0 +1,5 @@
+package embox.driver.interrupt
+
+module riscv_plic extends irqctrl_api {
+	source "riscv_plic.c", "riscv_plic.h"
+}
