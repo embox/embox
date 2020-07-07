@@ -13,6 +13,8 @@
 #include <drivers/serial/uart_device.h>
 #include <drivers/serial/diag_serial.h>
 
+#include <drivers/ttys.h>
+
 #include <framework/mod/options.h>
 
 #define UART_BASE        OPTION_GET(NUMBER,base_addr)
@@ -158,3 +160,18 @@ static const struct uart_params diag_defparams = {
 };
 
 DIAG_SERIAL_DEF(&sifive_diag, &diag_defparams);
+
+static struct uart sifive_ttyS0 = {
+		.uart_ops = &sifive_uart_ops,
+		.irq_num = IRQ_NUM,
+		.base_addr = (unsigned long) UART_BASE,
+		.params = {
+				.baud_rate = UART_BAUD_RATE,
+				.parity = 0,
+				.n_stop = 1,
+				.n_bits = 8,
+				.irq = true,
+		}
+};
+
+TTYS_DEF("ttyS0", &sifive_ttyS0);
