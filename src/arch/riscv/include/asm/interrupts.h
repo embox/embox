@@ -17,4 +17,12 @@
 #define enable_software_interrupts()	set_csr_bit(mie, MIE_MSIE)
 #define disable_software_interrupts()	clear_csr_bit(mie, MIE_MSIE)
 
+
+#define RISCV_TIMER_IRQ_DEF(timer_handler, pclock_source) \
+	int (*__riscv_timer_handler)(unsigned int, void *) = timer_handler; \
+	void *__riscv_timer_data = pclock_source;
+
+extern int (*__riscv_timer_handler)(unsigned int, void *);
+extern void *__riscv_timer_data;
+
 #endif /* RISCV_INTERRUPTS_H_ */

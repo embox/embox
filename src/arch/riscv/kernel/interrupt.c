@@ -40,7 +40,15 @@ void riscv_interrupt_handler(pt_regs_t *regs) {
 		pending = (read_csr(mcause)) & CLEAN_IRQ_BIT;
 		interrupt_id = pending;
 
-		if (pending == MACHINE_EXTERNAL_INTERRUPT) {
+		if (pending == MACHINE_TIMER_INTERRUPT) {
+			irqctrl_disable(pending);   //disable mie
+			ipl_enable();               //enable mstatus.MIE
+			if (__riscv_timer_handler) {
+				__riscv_timer_handler(0, __riscv_timer_data);
+			}
+			ipl_disable();              //disable mstatus.MIE
+			irqctrl_enable(pending);    //enable mie
+		} else if (pending == MACHINE_EXTERNAL_INTERRUPT) {
 			/* the ID of the highest-priority pending interrupt */
 			interrupt_id = *claim; 
 
@@ -55,15 +63,13 @@ void riscv_interrupt_handler(pt_regs_t *regs) {
 
 			/* threshold 0x0C20_0000 masks all interrupt with ipl less than X,
 			 * could try disable interrupts using this register*/
-		}
 
-		irqctrl_disable(pending);   //disable mie
-		ipl_enable();               //enable mstatus.MIE
-		irq_dispatch(interrupt_id); //call handler
-		ipl_disable();              //disable mstatus.MIE
-		irqctrl_enable(pending);    //enable mie
+			irqctrl_disable(pending);   //disable mie
+			ipl_enable();               //enable mstatus.MIE
+			irq_dispatch(interrupt_id); //call handler
+			ipl_disable();              //disable mstatus.MIE
+			irqctrl_enable(pending);    //enable mie
 
-		if (pending == MACHINE_EXTERNAL_INTERRUPT) {
 			*interrupt_enable_reg = *interrupt_enable_reg | (enable_bit);
 			/* A hart signals it has completed executing an interrupt handler by
 			 * writing the interrupt ID it received from the claim to the 
