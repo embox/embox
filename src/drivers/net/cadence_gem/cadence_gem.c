@@ -26,15 +26,8 @@
 #include <stdio.h>
 #include <kernel/printk.h>
 
-#define BASE_ADDR			OPTION_GET(NUMBER,base_addr) // 0x10090000
-#define SIFIVE_U_GEM_IRQ	(OPTION_GET(NUMBER,irq_num) + EXTERNAL_INTERRUPT_OFFSET)
-
-#define PLIC_ADDR                  (uint32_t)OPTION_GET(NUMBER, plic_addr)
-#define INTERRUPT_ENABLE_REG_1     (PLIC_ADDR + 0x2000U)
-#define INTERRUPT_ENABLE_REG_2     (PLIC_ADDR + 0x2004U) //21st bit enable etnernet interrupt
-#define ETH_IPL_ADDR               (PLIC_ADDR + 0xD4U) /* offset for hart 0 etnernet ipl */
-#define ETH_IPL_ADDR_2             (PLIC_ADDR + 0xD8U) /* offset for hart 0 etnernet ipl */
-#define ETH_IPL_ENABLE		0x00200000
+#define BASE_ADDR			OPTION_GET(NUMBER,base_addr)
+#define SIFIVE_U_GEM_IRQ	OPTION_GET(NUMBER,irq_num)
 
 #define GEM_NWCTRL        0x00000000 /* Network Control */
 #define GEM_NWCFG         0x00000004 /* Network Config */
@@ -222,12 +215,6 @@ static irq_return_t cadence_gem_interrupt_handler(unsigned int irq,
 static int cadence_gem_init(void) {
 	struct net_device *netdev;
 	int err;
-
-	uint32_t *eth_ipl = (uint32_t *)(ETH_IPL_ADDR);
-	uint32_t *eth_interrupt_enable = (uint32_t *)(INTERRUPT_ENABLE_REG_2);
-
-	*eth_ipl = 0x1; // priority levels are from 1 to 7. 0 disable interrupt
-	*eth_interrupt_enable = ETH_IPL_ENABLE; // 21st bit enable etnernet interrupt
 
 	netdev = etherdev_alloc(0);
 	if (!netdev) {
