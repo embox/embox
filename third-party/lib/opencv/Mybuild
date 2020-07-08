@@ -12,6 +12,7 @@ static module opencv {
 	source "^BUILD/extbld/^MOD_PATH/install/libopencv_core.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libopencv_imgcodecs.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libopencv_imgproc.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libopencv_objdetect.a"
 	source "^BUILD/extbld/^MOD_PATH/install/liblibpng.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libzlib.a"
 
