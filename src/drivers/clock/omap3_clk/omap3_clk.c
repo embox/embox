@@ -66,7 +66,7 @@ struct gptimerxx_x {
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	volatile struct gptimerxx_x *gptimer = GPTIMER1_BASE;
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 	REG_STORE(&gptimer->tisr, GPTIMER_TISR_OVERFLOW);
 	return IRQ_HANDLED;
 }

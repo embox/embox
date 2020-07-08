@@ -23,7 +23,7 @@
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	mips_write_c0_compare(COUNT_OFFSET); /* this lowers irq line */
 	mips_write_c0_count(0);
-	clock_tick_handler(irq_nr, dev_id);
+	clock_tick_handler(dev_id);
 	return IRQ_HANDLED;
 }
 

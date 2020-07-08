@@ -33,7 +33,7 @@
 static struct clock_source cortexm_systick_clock_source;
 
 static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data) {
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 	return IRQ_HANDLED;
 }
 

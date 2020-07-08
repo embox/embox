@@ -62,7 +62,7 @@ struct gptimer13_1 {
 static irq_return_t ti8168_clock_handler(unsigned int irq_nr, void *data) {
 	volatile struct gptimer13_1 *gptimer = TI8168_GPTIMER1_BASE;
 
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 
 	REG_STORE(&gptimer->irqstat, GPTIMER_TISR_OVERFLOW);
 	REG_STORE(&gptimer->eoi, 0);

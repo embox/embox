@@ -41,7 +41,7 @@
 
 static struct clock_source epit_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 	REG32_STORE(EPIT_SR, EPIT_SR_CLEAR);
 	return IRQ_HANDLED;
 }

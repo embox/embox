@@ -32,7 +32,7 @@ static struct clock_source lapic_clock_source;
 static struct time_event_device lapic_event_device;
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-        clock_tick_handler(irq_nr, dev_id);
+        clock_tick_handler(dev_id);
         return IRQ_HANDLED;
 }
 

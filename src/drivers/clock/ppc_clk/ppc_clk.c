@@ -32,7 +32,7 @@ EMBOX_UNIT_INIT(ppc_clk_init);
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	__set_tsr(__get_tsr() & ~TSR_DIS);
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler( data);
 	return IRQ_HANDLED;
 }
 

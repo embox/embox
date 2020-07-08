@@ -36,7 +36,7 @@
 
 static struct clock_source pl031_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 
 	REG32_STORE(PL031_ICR, PL031_ICR_CLEAR); /* Clear interrupt */
 	REG32_STORE(PL031_LR, 0x0);

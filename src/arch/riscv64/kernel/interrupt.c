@@ -30,12 +30,15 @@ void riscv64_interrupt_handler(pt_regs_t *regs) {
 		unsigned int pending;
 		pending = (read_csr(mcause)) & CLEAN_IRQ_BIT;
 
-		irqctrl_disable(pending);
-		ipl_enable();
-		irq_dispatch(pending);
-		ipl_disable();
-		irqctrl_enable(pending);
-
+		if (pending == MACHINE_TIMER_INTERRUPT) {
+			irqctrl_disable(pending);   //disable mie
+			ipl_enable();               //enable mstatus.MIE
+			if (__riscv_timer_handler) {
+				__riscv_timer_handler(0, __riscv_timer_data);
+			}
+			ipl_disable();              //disable mstatus.MIE
+			irqctrl_enable(pending);    //enable mie
+		}
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();

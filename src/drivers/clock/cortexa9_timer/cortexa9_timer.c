@@ -45,7 +45,7 @@ static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	//static int cnt = 0;
 
-	clock_tick_handler(irq_nr, data);
+	clock_tick_handler(data);
 	REG_STORE(PTIMER_IS, 0x1);
 
 	//log_debug("irq clock %d", cnt++);
