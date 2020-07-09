@@ -15,6 +15,7 @@ SECTIONS {
 	.data.retained : {
 		__copy_table_start__ = .;
 		*(text_retained)
+		*(nmi_info)
 		__copy_table_end__ = .;
 		*(retention_mem_const)
 		*(retention_mem_init)
