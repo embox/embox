@@ -30,14 +30,46 @@ diff -aur gcc-6.3.0-orig/gcc/cp/Make-lang.in gcc-6.3.0/gcc/cp/Make-lang.in
  
  cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
  	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-diff -aur gcc-6.3.0-orig/libstdc++-v3/configure gcc-6.3.0/libstdc++-v3/configure
---- gcc-6.3.0-orig/libstdc++-v3/configure	2016-12-12 21:03:30.000000000 +0300
-+++ gcc-6.3.0/libstdc++-v3/configure	2019-04-23 14:43:10.271167273 +0300
-@@ -78260,7 +78260,7 @@
+--- gcc-6.3.0/libgcc/configure	2016-04-11 22:45:35.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-6.3.0/libgcc/configure	2020-07-02 19:14:03.030153298 +0300
+@@ -4603,6 +4603,9 @@
+ target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
+ $as_echo "$target_thread_file" >&6; }
++# In Embox we provide posix even if gcc built with single thread model
++# Among other solutions is to use Linux gcc, or our own gcc.
++target_thread_file=posix
+ 
+ # Check for assembler CFI support.
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
+--- gcc-6.3.0/libstdc++-v3/configure	2016-12-12 21:03:30.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-6.3.0/libstdc++-v3/configure	2020-07-02 19:14:07.964161058 +0300
+@@ -15165,6 +15165,9 @@
+   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
+ $as_echo "$target_thread_file" >&6; }
++  # In Embox we provide posix even if gcc built with single thread model
++  # Among other solutions is to use Linux gcc, or our own gcc.
++  target_thread_file=posix
+ 
+ case $target_thread_file in
+     aix)	thread_header=config/rs6000/gthr-aix.h ;;
+@@ -78260,7 +78263,7 @@
  
      ;;
    *)
 -    as_fn_error "No support for this host/target combination." "$LINENO" 5
-+    # as_fn_error "No support for this host/target combination." "$LINENO" 5
++    #as_fn_error "No support for this host/target combination." "$LINENO" 5
     ;;
  esac
+ 
+@@ -79861,7 +79864,8 @@
+   CXXFLAGS="$CXXFLAGS -fno-exceptions \
+ 	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
+ 
+-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
++  #target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
++  target_thread_file=posix
+   case $target_thread_file in
+     posix)
+       CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"

@@ -10,31 +10,31 @@
 
 /**< ASCII table */
 const unsigned char _ctype[] = {
-_C,_C,_C,_C,_C,_C,_C,_C,                        /* 0-7 */
-_C,_C|_S,_C|_S,_C|_S,_C|_S,_C|_S,_C,_C,         /* 8-15 */
-_C,_C,_C,_C,_C,_C,_C,_C,                        /* 16-23 */
-_C,_C,_C,_C,_C,_C,_C,_C,                        /* 24-31 */
-_S|_SP,_P,_P,_P,_P,_P,_P,_P,                    /* 32-39 */
-_P,_P,_P,_P,_P,_P,_P,_P,                        /* 40-47 */
-_D,_D,_D,_D,_D,_D,_D,_D,                        /* 48-55 */
-_D,_D,_P,_P,_P,_P,_P,_P,                        /* 56-63 */
-_P,_U|_X,_U|_X,_U|_X,_U|_X,_U|_X,_U|_X,_U,      /* 64-71 */
-_U,_U,_U,_U,_U,_U,_U,_U,                        /* 72-79 */
-_U,_U,_U,_U,_U,_U,_U,_U,                        /* 80-87 */
-_U,_U,_U,_P,_P,_P,_P,_P,                        /* 88-95 */
-_P,_L|_X,_L|_X,_L|_X,_L|_X,_L|_X,_L|_X,_L,      /* 96-103 */
-_L,_L,_L,_L,_L,_L,_L,_L,                        /* 104-111 */
-_L,_L,_L,_L,_L,_L,_L,_L,                        /* 112-119 */
-_L,_L,_L,_P,_P,_P,_P,_C,                        /* 120-127 */
+_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,                        /* 0-7 */
+_CTYPE_C,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C,_CTYPE_C,         /* 8-15 */
+_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,                        /* 16-23 */
+_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,                        /* 24-31 */
+_CTYPE_S|_CTYPE_SP,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,                    /* 32-39 */
+_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,                        /* 40-47 */
+_CTYPE_D,_CTYPE_D,_CTYPE_D,_CTYPE_D,_CTYPE_D,_CTYPE_D,_CTYPE_D,_CTYPE_D,                        /* 48-55 */
+_CTYPE_D,_CTYPE_D,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,                        /* 56-63 */
+_CTYPE_P,_CTYPE_U|_CTYPE_X,_CTYPE_U|_CTYPE_X,_CTYPE_U|_CTYPE_X,_CTYPE_U|_CTYPE_X,_CTYPE_U|_CTYPE_X,_CTYPE_U|_CTYPE_X,_CTYPE_U,      /* 64-71 */
+_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,                        /* 72-79 */
+_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,                        /* 80-87 */
+_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,                        /* 88-95 */
+_CTYPE_P,_CTYPE_L|_CTYPE_X,_CTYPE_L|_CTYPE_X,_CTYPE_L|_CTYPE_X,_CTYPE_L|_CTYPE_X,_CTYPE_L|_CTYPE_X,_CTYPE_L|_CTYPE_X,_CTYPE_L,      /* 96-103 */
+_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,                        /* 104-111 */
+_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,                        /* 112-119 */
+_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_C,                        /* 120-127 */
 /* Extended ASCII Codes */
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,                /* 128-143 */
 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,                /* 144-159 */
-_S|_SP,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,   /* 160-175 */
-_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,_P,       /* 176-191 */
-_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,_U,       /* 192-207 */
-_U,_U,_U,_U,_U,_U,_U,_P,_U,_U,_U,_U,_U,_U,_U,_L,       /* 208-223 */
-_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,_L,       /* 224-239 */
-_L,_L,_L,_L,_L,_L,_L,_P,_L,_L,_L,_L,_L,_L,_L,_L};      /* 240-255 */
+_CTYPE_S|_CTYPE_SP,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,   /* 160-175 */
+_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,_CTYPE_P,       /* 176-191 */
+_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,       /* 192-207 */
+_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_P,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_U,_CTYPE_L,       /* 208-223 */
+_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,       /* 224-239 */
+_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_P,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L,_CTYPE_L};      /* 240-255 */
 
 const unsigned short **__ctype_b_loc(void) {
 	return NULL;

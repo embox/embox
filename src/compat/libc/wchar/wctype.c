@@ -16,10 +16,10 @@
  * Therefore I extracted "blank" class in separate case. */
 #define _B    0xFF            // <space> and <tab>
 
-#define _A     (_U | _L)      // "alpha"
-#define _AN    (_U | _L | _D) // "alnum"
-#define _G     (_P | _AN)     // "graph"
-#define _R     (_G | _SP)     // "print"
+#define _A     (_CTYPE_U | _CTYPE_L)      // "alpha"
+#define _AN    (_CTYPE_U | _CTYPE_L | _CTYPE_D) // "alnum"
+#define _G     (_CTYPE_P | _AN)     // "graph"
+#define _R     (_G | _CTYPE_SP)     // "print"
 
 wctype_t wctype(const char *property) {
 	static const struct {
@@ -29,15 +29,15 @@ wctype_t wctype(const char *property) {
 		{ "alnum",  _AN },
 		{ "alpha",  _A },
 		{ "blank",  _B },
-		{ "cntrl",  _C },
-		{ "digit",  _D },
+		{ "cntrl",  _CTYPE_C },
+		{ "digit",  _CTYPE_D },
 		{ "graph",  _G },
-		{ "lower",  _L },
+		{ "lower",  _CTYPE_L },
 		{ "print",  _R },
-		{ "punct",  _P },
-		{ "space",  _S },
-		{ "upper",  _U },
-		{ "xdigit", _X },
+		{ "punct",  _CTYPE_P },
+		{ "space",  _CTYPE_S },
+		{ "upper",  _CTYPE_U },
+		{ "xdigit", _CTYPE_X },
 		{ NULL,     0UL }, /* Default */
 	};
 	int i = 0;
@@ -54,8 +54,8 @@ wctrans_t wctrans(const char *charclass) {
 		const char	*name;
 		wctrans_t	 type;
 	} classes[] = {
-		{ "tolower", _L },
-		{ "toupper", _U },
+		{ "tolower", _CTYPE_L },
+		{ "toupper", _CTYPE_U },
 		{ NULL,      0UL }, /* Default */
 	};
 	int i = 0;
@@ -80,9 +80,9 @@ wint_t towctrans(wint_t w, wctrans_t t) {
 	if (w == WEOF)
 		return WEOF;
 	switch (t) {
-	case _L:
+	case _CTYPE_L:
 		return towlower(w);
-	case _U:
+	case _CTYPE_U:
 		return towupper(w);
 	default:
 		return w;
