@@ -13,6 +13,7 @@
 //FIXME
 #define OS_DELAY_MS(delay)
 
+#define USE_RTOS          1
 
 #define CONFIG_USE_BLE
 
