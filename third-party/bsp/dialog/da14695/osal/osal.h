@@ -9,6 +9,12 @@
 struct os_thread_info;
 struct os_queue;
 
+#define pdFALSE			( ( uintptr_t ) 0 )
+#define pdTRUE			( ( uintptr_t ) 1 )
+
+#define pdPASS			( pdTRUE )
+#define pdFAIL			( pdFALSE )
+
 extern int os_task_create(const char *name, void (*run)(void *), void *arg,
 	    size_t stack_size, int priority, struct os_thread_info **info);
 extern struct os_thread_info *os_get_current_task(void);
@@ -48,12 +54,16 @@ extern int os_mutex_create(struct mutex **m_p);
 #define OS_MUTEX_NO_WAIT        0
 #define OS_MUTEX_FOREVER        ((unsigned) -1)
 
+#define OS_EVENT_GROUP          void *
+
 #define OS_QUEUE                struct os_queue*
 #define OS_QUEUE_FULL           -ENOMEM
 #define OS_QUEUE_EMPTY          -1
 #define OS_QUEUE_OK             0
 #define OS_QUEUE_NO_WAIT        0
 #define OS_QUEUE_FOREVER        ((unsigned) -1)
+
+#define OS_TIMER                void *
 
 #define OS_BASE_TYPE            int
 #define OS_UBASE_TYPE           int
@@ -136,6 +146,39 @@ extern int os_mutex_create(struct mutex **m_p);
 #define OS_FREE(addr)      sysfree(addr)
 #define OS_FREE_FUNC       sysfree
 
+
+/**** Events ************/
+#define OS_EVENT_GROUP_SET_BITS_FROM_ISR(event_group, bits_to_set)     (0)
+
+#define OS_EVENT_GROUP_CLEAR_BITS_FROM_ISR(event_group, bits_to_clear)
+
 //#define configMINIMAL_STACK_SIZE      256 /* sys_usb_da1469x.c */
+
+/*************************** TODO PWR DEPS ****************************/
+
+#define configUSE_TICKLESS_IDLE    0
+
+static inline OS_MUTEX xSemaphoreCreateMutex(void) {
+	return NULL;
+}
+
+#define OS_EVENT_WAIT(mutex, timeout)
+
+#define OS_EVENT_FOREVER   (-1u)
+
+#define OS_EVENT_SIGNAL(mutex)
+
+#define configPOST_SLEEP_PROCESSING()
+#define configPRE_STOP_PROCESSING()
+#define configPRE_SLEEP_PROCESSING(x)
+
+#define configPRE_IDLE_ENTRY( x )               /*cm_lower_all_clocks()*/
+#define configPOST_IDLE_ENTRY( x )              /*cm_restore_all_clocks()*/
+
+#define configSYSTICK_CLOCK_HZ                  32000
+#define configTICK_RATE_HZ                      500
+#define TICK_PERIOD   (configSYSTICK_CLOCK_HZ / configTICK_RATE_HZ)
+
+/*************************** TODO PWR DEPS ****************************/
 
 #endif /* OSAL_H */
