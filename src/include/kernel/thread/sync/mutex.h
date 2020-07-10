@@ -17,6 +17,7 @@
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/sync/mutex.h>
 
+struct timespec;
 
 #define MUTEX_INIT_STATIC \
 	{                                                  \
@@ -78,6 +79,8 @@ extern void mutex_init(struct mutex *mutex);
  * @param free_mutex Mutex to lock.
  */
 extern int mutex_lock(struct mutex *free_mutex);
+
+extern int mutex_timedlock(struct mutex *m, const struct timespec *abstime);
 
 /**
  * Unleashes the mutex from lock and unbinds it, if lockscount

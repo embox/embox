@@ -28,6 +28,11 @@ int pthread_mutex_lock(pthread_mutex_t *mutex) {
 	return mutex_lock(mutex);
 }
 
+int pthread_mutex_timedlock(pthread_mutex_t *mutex,
+				const struct timespec *abstime) {
+	return mutex_timedlock(mutex, abstime);
+}
+
 /*
 int pthread_mutex_setprioceiling(pthread_mutex_t *mutex, int prioceiling, int *old_ceiling) {
 	return -ENOSYS;
