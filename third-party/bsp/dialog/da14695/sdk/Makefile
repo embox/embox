@@ -10,7 +10,8 @@ PKG_PATCHES := patch.txt \
 	           sys_usb_patch.txt \
 	           hw_usb_da1469x_patch.txt \
 			   pwr_patch.txt \
-			   hw_dma_patch.txt
+			   hw_dma_patch.txt \
+			   sys_timer_patch.txt \
 
 verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
