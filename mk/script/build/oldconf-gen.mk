@@ -5,7 +5,7 @@
 
 include mk/script/script-common.mk
 
-HOSTCC  = gcc
+HOSTCC  = cc
 HOSTCPP = $(HOSTCC) -E
 
 HOSTCC_IQUOTE_SUPPORT:=
