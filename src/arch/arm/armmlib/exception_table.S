@@ -8,6 +8,8 @@
 
 #include <module/embox/kernel/irq_api.h>
 
+#define IRQ_STACK_SIZE 0x1000
+
 .type start, %function
 .type exp_default_entry, %function
 
@@ -32,7 +34,9 @@
 	.word exc_entry14
 	.word exc_entry15
 
-.section .text, "x"
+.text
+.thumb
+.syntax unified
 
 exp_default_entry:
 	mov  r0, sp
@@ -40,6 +44,17 @@ exp_default_entry:
 	bl   exc_default_handler
 
 start:
+	# Init PSP stack
+	ldr r0, =_stack_top
+	sub r0, #IRQ_STACK_SIZE
+	msr psp, r0
+
+	# Switch to PSP stack
+	mrs  r0, CONTROL
+	orrs r0, r0, #0x2
+	msr  CONTROL, r0
+	isb
+
 	ldr r1, =bootldr_start
 	bx r1
 die:
