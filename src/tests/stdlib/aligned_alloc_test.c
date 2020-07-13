@@ -48,7 +48,7 @@ TEST_CASE("TEST WITH MULTIPLE ALLOCATION WITH LONG SIZE") {
     for (i = 0;i < _const_size_;i++) {
         test_assert_not_equal(mem[i], NULL);
     }
-    for (i = 0;i < _const_size_;i++){
+    for (i = 0;i < _const_size_;i++) {
         free(mem[i]);
     }
 }
