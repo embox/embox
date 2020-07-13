@@ -51,16 +51,18 @@ arm_m_irq_exit:
 	cmp r0, #0
 	beq 1f
 
+	mrs r0, psp
 	/* Prepare context to exit to arm_m_dispatch_pending() */
 #ifdef ARM_FPU_VFP
-	sub sp, #SAVED_FPU_REGS_SIZE
+	sub r0, #SAVED_FPU_REGS_SIZE
 #endif
 	mov r1, #PSR_RESET_VALUE
-	push {r1}                      /* xPSR */
+	str r1, [r0, #-4]!             /* xPSR */
 	ldr r1, =arm_m_dispatch_pending
-	push {r1}                      /* pc */
-	push {r1}                      /* lr (equal to pc here) */
-	sub  sp, #(4 * 5)              /* r12, r0-r4 */
+	str r1, [r0, #-4]!             /* pc */
+	str r1, [r0, #-4]!             /* lr (equal to pc here) */
+	sub r0, #(4 * 5)               /* r12, r0-r4 */
+	msr psp, r0
 
 1:
 	bx lr
@@ -79,11 +81,13 @@ arm_m_dispatch_pending:
 .thumb_func
 .global EXC_HANDLER_NAME(PENDSV_IRQ)
 EXC_HANDLER_NAME(PENDSV_IRQ):
-	/* Skip PendSV context */
+	/* Skip PendSV context (it's located on PSP stack) */
+	mrs r0, psp
 #ifdef ARM_FPU_VFP
-	add sp, #SAVED_FPU_REGS_SIZE
+	add r0, #SAVED_FPU_REGS_SIZE
 #endif
-	add sp, #SAVED_CORE_REGS_SIZE
+	add r0, #SAVED_CORE_REGS_SIZE
+	msr psp, r0
 	/* Finally, restore context previously CPU-saved on arm_m_irq_entry() entering */
 	bx lr
 #endif /* !defined(__ARM_ARCH_6M__) */
