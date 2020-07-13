@@ -29,7 +29,7 @@ void context_init(struct context *ctx, unsigned int flags,
 		"Firstly please make sure the thread stack size is aligned to 8 bytes"
 	);
 
-	ctx->control = 0;
+	ctx->control = CONTROL_SPSEL_PSP;
 
 	if (!(flags & CONTEXT_PRIVELEGED)) {
 		ctx->control |= CONTROL_NPRIV;
