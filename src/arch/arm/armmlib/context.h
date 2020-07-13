@@ -14,8 +14,9 @@
 #include <stdint.h>
 #include <arm/fpu.h>
 
-#define CM3_CONTROL_NPRIV     0x00000000
-#define CM3_CONTROL_SPSEL_PSP 0x00000001
+/* CONTROL register */
+#define CONTROL_NPRIV         (1 << 0)
+#define CONTROL_SPSEL_PSP     (1 << 1)
 
 struct context {
 	uint32_t r[13];
