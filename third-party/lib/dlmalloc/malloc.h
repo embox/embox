@@ -98,6 +98,15 @@ struct mallinfo {
 #endif  /* !NO_MALLINFO */
 
 /*
+  pvalloc(size_t size)
+  The obsolete function pvalloc() is similar to valloc(),
+  but rounds the size of the allocation up to the next multiple of the system page size.
+*/
+extern void *pvalloc(size_t size);
+
+
+
+/*
   malloc(size_t n)
   Returns a pointer to a newly allocated chunk of at least n bytes, or
   null if no space is available, in which case errno is set to ENOMEM

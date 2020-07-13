@@ -49,3 +49,11 @@ module mprotect {
 
 	depends embox.compat.posix.sys.mman.mprotect
 }
+
+module pvalloc_test {
+	source "pvalloc_test.c"
+
+	depends embox.mem.page_api
+	depends embox.mem.phymem
+	depends embox.framework.LibFramework
+}

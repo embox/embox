@@ -101,6 +101,9 @@ extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern void *realloc(void *ptr, size_t size);
 extern void *memalign(size_t boundary, size_t size);
+extern int posix_memalign (void **__memptr, size_t __alignment, size_t __size);
+extern void *aligned_alloc(size_t alignment, size_t size);
+extern void *valloc(size_t size);
 
 
 extern void qsort(void *base, size_t nmemb, size_t size,
