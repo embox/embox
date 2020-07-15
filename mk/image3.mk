@@ -80,8 +80,8 @@ common_prereqs = $(ROOT_DIR)/mk/image2.mk $(ROOT_DIR)/mk/flags.mk $(MKGEN_DIR)/b
 
 # Here goes image creation rules...
 
-symbols_pass1_c = $(OBJ_DIR)/symbols_pass1.c
-symbols_pass2_c = $(OBJ_DIR)/symbols_pass2.c
+symbols_pass1_c = $(GEN_DIR)/symbols_pass1.c
+symbols_pass2_c = $(GEN_DIR)/symbols_pass2.c
 
 symbols_c_files = \
 	$(symbols_pass1_c) \
@@ -117,9 +117,9 @@ $(symbols_a_files:%.a=%.o) : flags_before :=
 $(symbols_a_files:%.a=%.o) : flags :=
 
 # workaround to get VPATH and GPATH to work with an OBJ_DIR.
-$(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
-GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
-VPATH += $(GPATH)
+#$(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
+#GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%) $(GEN_DIR:$(ROOT_DIR)/%=%)
+#VPATH += $(GPATH)
 
 image_relocatable_o = $(OBJ_DIR)/image_relocatable.o
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
@@ -218,18 +218,18 @@ md5sums1_o := $(OBJ_DIR)/md5sums1.o
 md5sums2_o := $(OBJ_DIR)/md5sums2.o
 image_nocksum := $(OBJ_DIR)/image_nocksum.o
 
-$(OBJ_DIR)/md5sums1.c : source = $(image_pass1_o)
-$(OBJ_DIR)/md5sums2.c : source = $(image_nocksum)
+$(GEN_DIR)/md5sums1.c : source = $(image_pass1_o)
+$(GEN_DIR)/md5sums2.c : source = $(image_nocksum)
 
-$(OBJ_DIR)/md5sums1.c $(OBJ_DIR)/md5sums2.c: $$(source)
+$(GEN_DIR)/md5sums1.c $(GEN_DIR)/md5sums2.c: $$(source)
 	echo "/* Generated md5sums */" > $@
 	for sect in text rodata; do \
 		$(OBJCOPY) -j .$$sect -O binary $< $@.$$sect.bin ; \
 		$(NM) $< | $(gensums_py) $$sect $@.$$sect.bin 0x$$($(OBJDUMP) -h $< | grep .$$sect | sed -E "s/ +/ /g" | cut -d " " -f 5) >> $@ ; \
 	done
 
-$(md5sums1_o) : $(OBJ_DIR)/md5sums1.c
-$(md5sums2_o) : $(OBJ_DIR)/md5sums2.c
+$(md5sums1_o) : $(GEN_DIR)/md5sums1.c
+$(md5sums2_o) : $(GEN_DIR)/md5sums2.c
 
 $(image_nocksum): $(image_lds) $(embox_o) $(md5sums1_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \

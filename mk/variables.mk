@@ -2,7 +2,7 @@
 # Directories.
 #
 
-export ROOT_DIR       := .
+export ROOT_DIR       := $(abspath  .)
 export EMBOX_ROOT_DIR := $(abspath $(ROOT_DIR))
 
 export CONF_DIR        = $(ROOT_DIR)/conf
