@@ -32,6 +32,9 @@ include_install_prerequisites = $(common_prereqs)
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.c
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S
 	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
