@@ -9,6 +9,12 @@ module irq_entry {
 	source "irq_entry.S"
 }
 
+module lthread_own_stack {
+	option number stack_size = 1024
+
+	source "lthread_process.S"
+}
+
 module exception_entry {
 	source "exception_table.S"
 	source "exception_table.lds.S"
