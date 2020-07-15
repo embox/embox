@@ -22,7 +22,7 @@ export DOC_DIR         = $(ROOT_DIR)/build/doc
 export BIN_DIR         = $(BUILD_DIR)/bin
 export OBJ_DIR         = $(BUILD_DIR)/obj
 
-export DIST_DIR        = build
+export DIST_DIR        = $(ROOT_DIR)/build
 export DIST_BASE_DIR   = $(DIST_DIR)/base
 export GEN_DIR         = $(DIST_BASE_DIR)/gen
 export SRCGEN_DIR      = $(GEN_DIR)
