@@ -115,6 +115,8 @@ static int icmp_notify_an_error(const struct icmphdr *icmph,
 		}
 	}
 
+	skb_free(skb);
+
 	return 0;
 }
 
