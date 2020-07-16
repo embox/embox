@@ -14,6 +14,7 @@
 #include <sys/socket.h>
 #include <errno.h>
 #include <net/util/servent.h>
+#include <util/log.h>
 
 #include <mem/misc/pool.h>
 
@@ -146,6 +147,7 @@ static int ai_make(int family, int socktype, int protocol,
 	ait = pool_alloc(&addrinfo_tuple_pool);
 	if (ait == NULL) {
 		SET_ERRNO(ENOMEM);
+		log_error("addrinfo alloc: no mem");
 		return EAI_SYSTEM;
 	}
 
