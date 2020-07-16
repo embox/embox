@@ -7,8 +7,9 @@
  */
 
 #include <module/embox/kernel/irq_api.h>
+#include <framework/mod/options.h>
 
-#define IRQ_STACK_SIZE 0x1000
+#define IRQ_STACK_SIZE OPTION_GET(NUMBER, irq_stack_size)
 
 .type start, %function
 .type exp_default_entry, %function
