@@ -138,28 +138,28 @@ do_exception:
 # existing activation in its critical region -- if so, we pop the current
 # activation and restart the handler using the previous one.
 C_LABEL(hypervisor_callback):
-        pushl %eax
-        SAVE_ALL
-        movl EIP(%esp),%eax
-        cmpl $scrit,%eax
-        jb   11f
-        cmpl $ecrit,%eax
-        jb   critical_region_fixup
+	    pushl %eax
+	    SAVE_ALL
+	    movl EIP(%esp),%eax
+	    cmpl $scrit,%eax
+	    jb   11f
+	    cmpl $ecrit,%eax
+	    jb   critical_region_fixup
 11:     push %esp
-        call do_hypervisor_callback
-        add  $4,%esp
-        movl HYPERVISOR_shared_info,%esi
-        xorl %eax,%eax
-        movb CS(%esp),%cl
-    	test $2,%cl          # slow return to ring 2 or 3
-        jne  safesti
+	    call do_hypervisor_callback
+	    add  $4,%esp
+	    movl HYPERVISOR_shared_info,%esi
+	    xorl %eax,%eax
+	    movb CS(%esp),%cl
+		test $2,%cl          # slow return to ring 2 or 3
+	    jne  safesti
 safesti:movb $0,1(%esi)     # reenable event callbacks
 scrit:  /**** START OF CRITICAL REGION ****/
-        testb $0xFF,(%esi)
-        jnz  14f              # process more events if necessary...
-        RESTORE_ALL
+	    testb $0xFF,(%esi)
+	    jnz  14f              # process more events if necessary...
+	    RESTORE_ALL
 14:     movb $1,1(%esi)
-        jmp  11b
+	    jmp  11b
 ecrit:  /**** END OF CRITICAL REGION ****/
 # [How we do the fixup]. We want to merge the current stack frame with the
 # just-interrupted frame. How we do this depends on where in the critical
@@ -169,48 +169,48 @@ ecrit:  /**** END OF CRITICAL REGION ****/
 # provides the number of bytes which have already been popped from the
 # interrupted stack frame. 
 critical_region_fixup:
-        addl $critical_fixup_table-scrit,%eax
-        movzbl (%eax),%eax    # %eax contains num bytes popped
-        mov  %esp,%esi
-        add  %eax,%esi        # %esi points at end of src region
-        mov  %esp,%edi
-        add  $0x34,%edi       # %edi points at end of dst region
-        mov  %eax,%ecx
-        shr  $2,%ecx          # convert words to bytes
-        je   16f              # skip loop if nothing to copy
+	    addl $critical_fixup_table-scrit,%eax
+	    movzbl (%eax),%eax    # %eax contains num bytes popped
+	    mov  %esp,%esi
+	    add  %eax,%esi        # %esi points at end of src region
+	    mov  %esp,%edi
+	    add  $0x34,%edi       # %edi points at end of dst region
+	    mov  %eax,%ecx
+	    shr  $2,%ecx          # convert words to bytes
+	    je   16f              # skip loop if nothing to copy
 15:     subl $4,%esi          # pre-decrementing copy loop
-        subl $4,%edi
-        movl (%esi),%eax
-        movl %eax,(%edi)
-        loop 15b
+	    subl $4,%edi
+	    movl (%esi),%eax
+	    movl %eax,(%edi)
+	    loop 15b
 16:     movl %edi,%esp        # final %edi is top of merged stack
-        jmp  11b
-         
-critical_fixup_table:        
-        .byte 0x00,0x00,0x00                  # testb $0xff,(%esi)
-        .byte 0x00,0x00                       # jne  14f
-        .byte 0x00                            # pop  %ebx
-        .byte 0x04                            # pop  %ecx
-        .byte 0x08                            # pop  %edx
-        .byte 0x0c                            # pop  %esi
-        .byte 0x10                            # pop  %edi
-        .byte 0x14                            # pop  %ebp
-        .byte 0x18                            # pop  %eax
-        .byte 0x1c                            # pop  %ds
-        .byte 0x20                            # pop  %es
-        .byte 0x24,0x24,0x24                  # add  $4,%esp
-        .byte 0x28                            # iret
-        .byte 0x00,0x00,0x00,0x00             # movb $1,1(%esi)
-        .byte 0x00,0x00                       # jmp  11b
-       
+	    jmp  11b
+
+critical_fixup_table:
+	.byte 0x00,0x00,0x00                  # testb $0xff,(%esi)
+	.byte 0x00,0x00                       # jne  14f
+	.byte 0x00                            # pop  %ebx
+	.byte 0x04                            # pop  %ecx
+	.byte 0x08                            # pop  %edx
+	.byte 0x0c                            # pop  %esi
+	.byte 0x10                            # pop  %edi
+	.byte 0x14                            # pop  %ebp
+	.byte 0x18                            # pop  %eax
+	.byte 0x1c                            # pop  %ds
+	.byte 0x20                            # pop  %es
+	.byte 0x24,0x24,0x24                  # add  $4,%esp
+	.byte 0x28                            # iret
+	.byte 0x00,0x00,0x00,0x00             # movb $1,1(%esi)
+	.byte 0x00,0x00                       # jmp  11b
+
 # Hypervisor uses this for application faults while it executes.
 C_LABEL(failsafe_callback):
-      pop  %ds
-      pop  %es
-      pop  %fs
-      pop  %gs
-      iret
-                
+	pop  %ds
+	pop  %es
+	pop  %fs
+	pop  %gs
+	iret
+
 C_LABEL(coprocessor_error):
 	pushl $0
 	pushl $do_coprocessor_error
@@ -222,7 +222,7 @@ C_LABEL(simd_coprocessor_error):
 	jmp do_exception
 
 C_LABEL(device_not_available):
-        iret
+	iret
 
 C_LABEL(debug):
 	pushl $0
@@ -282,9 +282,9 @@ C_LABEL(alignment_check):
 
 
 C_LABEL(page_fault):
-    pushl $do_page_fault
-    jmp do_exception
-    
+	pushl $do_page_fault
+	jmp do_exception
+
 C_LABEL(machine_check):
 	pushl $0
 	pushl $do_machine_check

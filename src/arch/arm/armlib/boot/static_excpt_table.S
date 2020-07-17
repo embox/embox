@@ -8,4 +8,4 @@
 
 .global setup_excpt_table
 setup_excpt_table:
-    mov pc, lr
+	mov pc, lr

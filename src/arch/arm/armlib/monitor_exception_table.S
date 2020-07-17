@@ -34,7 +34,7 @@ _monitor_vectors:
 	adr pc, _secure_undef_exception
 
 _secure_undef_exception:
-    nop
+	nop
 
 _secure_monitor:
 
@@ -82,4 +82,4 @@ _secure_monitor:
 
 	movs pc, lr
 
-    .popsection
+	.popsection

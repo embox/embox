@@ -9,7 +9,7 @@
 #include <asm/setjmp.h>
 #include <asm/ptrace.h>
 
-    .section .text
+	.section .text
 
 C_ENTRY(ptregs_jmp):
 	addik   r1, r5, -PT_OFFSET

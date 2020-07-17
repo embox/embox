@@ -10,14 +10,14 @@
 
 .global copy_excpt_table
 copy_excpt_table:
-    ldr r1, =arm_trap_table
-    cmp r0, r1
-    beq 1f
-    /* 16 words */
-    ldmia r1!, {r2-r9}
-    stmia r0!, {r2-r9}
-    ldmia r1!, {r2-r9}
-    stmia r0!, {r2-r9}
+	ldr r1, =arm_trap_table
+	cmp r0, r1
+	beq 1f
+	/* 16 words */
+	ldmia r1!, {r2-r9}
+	stmia r0!, {r2-r9}
+	ldmia r1!, {r2-r9}
+	stmia r0!, {r2-r9}
 1:
-    /* exit */
-    mov pc, lr
+	/* exit */
+	mov pc, lr

@@ -16,4 +16,4 @@
 _reset:
 	la      $k0, _start
 	jr      $k0                      # Jump to startup code
-        nop
+	    nop
