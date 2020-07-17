@@ -18,7 +18,7 @@
 .global exp_default_entry
 
 .section .trap_table, "x"
-	.word _stack_top
+	.word irq_stack_top
 	.word start
 	.word exc_entry2
 	.word exc_entry3
@@ -47,7 +47,6 @@ exp_default_entry:
 start:
 	# Init PSP stack
 	ldr r0, =_stack_top
-	sub r0, #IRQ_STACK_SIZE
 	msr psp, r0
 
 	# Switch to PSP stack
@@ -60,3 +59,11 @@ start:
 	bx r1
 die:
 	b 	    die
+
+.data
+.align 3
+irq_stack_start:
+	.rept   IRQ_STACK_SIZE
+	.byte   0x50
+	.endr
+irq_stack_top:
