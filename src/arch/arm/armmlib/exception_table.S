@@ -51,7 +51,8 @@ start:
 
 	# Switch to PSP stack
 	mrs  r0, CONTROL
-	orrs r0, r0, #0x2
+	movs r1, #0x2
+	orrs r0, r0, r1
 	msr  CONTROL, r0
 	isb
 
