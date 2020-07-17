@@ -17,7 +17,7 @@
 	.weak software_init_hook
 
 
-        .ent _start
+	    .ent _start
 C_ENTRY(_start):
 	/* clean all registers */
 	.set noat
@@ -87,6 +87,6 @@ C_ENTRY(_start):
 	jal     kernel_start
 	nop
 
-        .globl _start
+	    .globl _start
 
 	.end _start

@@ -7,9 +7,9 @@
 
 #include <asm/setjmp.h>
 
-        .text
+	    .text
 
-        .global setjmp
+	    .global setjmp
 setjmp:
 	movl    4(%esp), %ecx   /* fetch buffer */
 	movl    %ebx, 0(%ecx)

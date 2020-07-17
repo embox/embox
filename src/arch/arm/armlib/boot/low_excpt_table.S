@@ -8,8 +8,8 @@
 
 .global setup_excpt_table
 setup_excpt_table:
-    mov r0, #0
-    stmfd sp!, { lr }
-    bl copy_excpt_table
-    ldmfd sp!, { pc }
+	mov r0, #0
+	stmfd sp!, { lr }
+	bl copy_excpt_table
+	ldmfd sp!, { pc }
 

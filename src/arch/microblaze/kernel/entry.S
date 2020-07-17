@@ -20,7 +20,7 @@ C_ENTRY(break_except_hnd):
 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
 	SAVE_REGS
 
-    /* we already have trap number in r5 and user data in r6 */
+	/* we already have trap number in r5 and user data in r6 */
 	brlid   r15, mb_exception_dispatcher
 	addik   r7, r1, PT_OFFSET /* set third param */
 
@@ -34,8 +34,8 @@ C_ENTRY(break_except_hnd):
 	nop
 
 C_ENTRY(hardware_except_hnd):
- 	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
- 	SAVE_REGS
+	addik   r1, r1, -STATE_SAVE_SIZE; /* Make room on the stack. */
+	SAVE_REGS
 
 	/* disable interupts*/
 	mfs	r12, rmsr
@@ -56,7 +56,7 @@ C_ENTRY(hardware_except_hnd):
 	mts	rmsr, r12
 
 	RESTORE_REGS
- 	addik   r1, r1, STATE_SAVE_SIZE; /* Clean up stack space.  */
+	addik   r1, r1, STATE_SAVE_SIZE; /* Clean up stack space.  */
 
 	rted    r17, 0
 	nop

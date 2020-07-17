@@ -14,7 +14,7 @@
 #include <asm/linkage.h>
 #include <module/embox/arch/interrupt.h>
 
-    .section .trap_table.text
+	.section .trap_table.text
 
 /**
  * Exception table:
@@ -26,10 +26,10 @@
  * 0x28..0x4F - Reserved
  */
 
-    .macro EXCEPTION_ENTRY hnd
-		.align 3
-        brai \hnd
-    .endm
+	.macro EXCEPTION_ENTRY hnd
+	    .align 3
+	    brai \hnd
+	.endm
 
 /**
  * Trap table start

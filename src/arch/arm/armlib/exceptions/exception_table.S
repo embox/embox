@@ -34,27 +34,27 @@ arm_trap_table:
  *
  * actually, this is general for all ARM cores
  */
-    ldr pc, reset_handler_addr
-    ldr pc, undef_handler_addr
-    ldr pc, swi_handler_addr
-    ldr pc, prefetch_abt_handler_addr
-    ldr pc, data_abt_handler_addr
-    nop /*bad exception not_used:		.word not_used*/
-    ldr pc, irq_handler_addr
-    ldr pc, fiq_handler_addr
+	ldr pc, reset_handler_addr
+	ldr pc, undef_handler_addr
+	ldr pc, swi_handler_addr
+	ldr pc, prefetch_abt_handler_addr
+	ldr pc, data_abt_handler_addr
+	nop /*bad exception not_used:		.word not_used*/
+	ldr pc, irq_handler_addr
+	ldr pc, fiq_handler_addr
 
 reset_handler_addr:
-    .word reset_handler
+	.word reset_handler
 undef_handler_addr:
-    .word undef_handler
+	.word undef_handler
 swi_handler_addr:
-    .word swi_handler
+	.word swi_handler
 prefetch_abt_handler_addr:
-    .word prefetch_abt_handler
+	.word prefetch_abt_handler
 .global data_abt_handler_addr
 data_abt_handler_addr:
-    .word data_abt_handler
+	.word data_abt_handler
 irq_handler_addr:
-    .word irq_handler
+	.word irq_handler
 fiq_handler_addr:
-    .word fiq_handler
+	.word fiq_handler
