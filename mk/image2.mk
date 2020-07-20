@@ -161,11 +161,6 @@ $(OBJ_DIR)/module/%.o :
 
 # Here goes image creation rules...
 #
-# workaround to get VPATH and GPATH to work with an OBJ_DIR.
-$(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
-GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
-VPATH += $(GPATH)
-
 $(embox_o): ldflags_all = $(LDFLAGS) \
 		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
 $(embox_o):

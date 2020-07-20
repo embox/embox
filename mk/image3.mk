@@ -12,7 +12,7 @@ all : image
 
 FORCE :
 
-include mk/image_lib.mk
+include $(ROOT_DIR)/mk/image_lib.mk
 
 include $(MKGEN_DIR)/build.mk
 
@@ -28,7 +28,7 @@ IMAGE_PIGGY = $(IMAGE).piggy
 IMAGE_A     = $(BIN_DIR)/lib$(TARGET).a
 IMAGE_LINKED_A = $(BIN_DIR)/lib$(TARGET)-linked.a
 
-include mk/flags.mk # It must be included after a user-defined config.
+include $(ROOT_DIR)/mk/flags.mk # It must be included after a user-defined config.
 
 ld_prerequisites =
 ar_prerequisites =
@@ -74,14 +74,14 @@ endif
 
 # This must be expanded in a secondary expansion context.
 # NOTE: must be the last one in a list of prerequisites (contains order-only)
-common_prereqs = mk/image2.mk mk/flags.mk $(MKGEN_DIR)/build.mk \
+common_prereqs = $(ROOT_DIR)/mk/image2.mk $(ROOT_DIR)/mk/flags.mk $(MKGEN_DIR)/build.mk \
 	$(if $(value mk_file),$(mk_file)) \
 	| $(if $(value my_file),$(dir $(my_file:%=$(OBJ_DIR)/%)).) $(@D)/.
 
 # Here goes image creation rules...
 
-symbols_pass1_c = $(OBJ_DIR)/symbols_pass1.c
-symbols_pass2_c = $(OBJ_DIR)/symbols_pass2.c
+symbols_pass1_c = $(GEN_DIR)/symbols_pass1.c
+symbols_pass2_c = $(GEN_DIR)/symbols_pass2.c
 
 symbols_c_files = \
 	$(symbols_pass1_c) \
@@ -99,9 +99,9 @@ NM_OPTS := --demangle --numeric-sort
 endif
 
 $(symbols_c_files) :
-$(symbols_c_files) : mk/script/nm2c.awk $$(common_prereqs)
+$(symbols_c_files) : $(ROOT_DIR)/mk/script/nm2c.awk $$(common_prereqs)
 $(symbols_c_files) : $$(image_o)
-	$(NM) $(NM_OPTS) $< | $(AWK) -f mk/script/nm2c.awk > $@
+	$(NM) $(NM_OPTS) $< | $(AWK) -f $(ROOT_DIR)/mk/script/nm2c.awk > $@
 
 symbols_pass1_a = $(OBJ_DIR)/symbols_pass1.a
 symbols_pass2_a = $(OBJ_DIR)/symbols_pass2.a
@@ -117,9 +117,9 @@ $(symbols_a_files:%.a=%.o) : flags_before :=
 $(symbols_a_files:%.a=%.o) : flags :=
 
 # workaround to get VPATH and GPATH to work with an OBJ_DIR.
-$(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
-GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%)
-VPATH += $(GPATH)
+#$(shell $(MKDIR) $(OBJ_DIR) 2> /dev/null)
+#GPATH := $(OBJ_DIR:$(ROOT_DIR)/%=%) $(GEN_DIR:$(ROOT_DIR)/%=%)
+#VPATH += $(GPATH)
 
 image_relocatable_o = $(OBJ_DIR)/image_relocatable.o
 image_nosymbols_o = $(OBJ_DIR)/image_nosymbols.o
@@ -213,9 +213,9 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	--cref -Map $@.map \
 	-o $@
 
-gensums_py := mk/gensums.py
-md5sums1 := $(OBJ_DIR)/md5sums1.o
-md5sums2 := $(OBJ_DIR)/md5sums2.o
+gensums_py := $(ROOT_DIR)/mk/gensums.py
+md5sums1_o := $(OBJ_DIR)/md5sums1.o
+md5sums2_o := $(OBJ_DIR)/md5sums2.o
 image_nocksum := $(OBJ_DIR)/image_nocksum.o
 
 $(GEN_DIR)/md5sums1.c : source = $(image_pass1_o)
@@ -228,20 +228,23 @@ $(GEN_DIR)/md5sums1.c $(GEN_DIR)/md5sums2.c: $$(source)
 		$(NM) $< | $(gensums_py) $$sect $@.$$sect.bin 0x$$($(OBJDUMP) -h $< | grep .$$sect | sed -E "s/ +/ /g" | cut -d " " -f 5) >> $@ ; \
 	done
 
-$(image_nocksum): $(image_lds) $(embox_o) $(md5sums1) $(symbols_pass2_a) $$(common_prereqs)
+$(md5sums1_o) : $(GEN_DIR)/md5sums1.c
+$(md5sums2_o) : $(GEN_DIR)/md5sums2.c
+
+$(image_nocksum): $(image_lds) $(embox_o) $(md5sums1_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
-	$(md5sums1) \
+	$(md5sums1_o) \
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
 	-o $@
 
-$(IMAGE): $(image_lds) $(embox_o) $(md5sums2) $(symbols_pass2_a) $$(common_prereqs)
+$(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \
 	-T $(image_lds) \
 	$(embox_o) \
-	$(md5sums2) \
+	$(md5sums2_o) \
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
 	-o $@

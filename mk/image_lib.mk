@@ -32,6 +32,9 @@ include_install_prerequisites = $(common_prereqs)
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.c
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S
 	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
@@ -42,7 +45,16 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cpp
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
+	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+	-I$(SRCGEN_DIR) \
+	-imacros $(SRCGEN_DIR)/config.lds.h \
+		-MMD -MT $@ -MF $@.d -o $@ $<
+
+$(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
 	-I$(SRCGEN_DIR) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
