@@ -45,6 +45,9 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cpp
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
 	-I$(SRCGEN_DIR) \
