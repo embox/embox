@@ -29,10 +29,10 @@ void context_init(struct context *ctx, unsigned int flags,
 		"Firstly please make sure the thread stack size is aligned to 8 bytes"
 	);
 
-	if (flags & CONTEXT_PRIVELEGED) {
-		ctx->control = 0;
-	} else {
-		ctx->control = CM3_CONTROL_NPRIV;
+	ctx->control = CONTROL_SPSEL_PSP;
+
+	if (!(flags & CONTEXT_PRIVELEGED)) {
+		ctx->control |= CONTROL_NPRIV;
 	}
 
 	arm_fpu_context_init(&ctx->fpu_data);

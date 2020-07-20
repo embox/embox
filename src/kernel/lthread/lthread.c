@@ -26,7 +26,7 @@ int __lthread_is_disabled(struct lthread *lt) {
 }
 
 /** locks: IPL, sched. lthread->run must be atomic. */
-struct schedee *lthread_process(struct schedee *prev,
+struct schedee *lthread_do_process(struct schedee *prev,
 		struct schedee *next) {
 	struct lthread *lt = mcast_out(next, struct lthread, schedee);
 
@@ -43,6 +43,11 @@ struct schedee *lthread_process(struct schedee *prev,
 		sched_wakeup(lt->joining);
 
 	return NULL;
+}
+
+__attribute__((weak)) struct schedee *lthread_process(
+		struct schedee *prev, struct schedee *next) {
+	return lthread_do_process(prev, next);
 }
 
 void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
