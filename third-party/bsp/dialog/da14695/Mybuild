@@ -358,15 +358,3 @@ static module sdk_util {
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
-
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-module gadget_rndis_ccid {
-	option number log_level = 1
-
-	source "gadget_rndis_ccid.c"
-
-	depends third_party.bsp.dialog.da14695.ccid
-	depends third_party.bsp.dialog.da14695.rndis
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-}
