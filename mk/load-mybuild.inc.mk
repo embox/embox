@@ -7,6 +7,11 @@
 #
 
 MYFILES_PATH := mk/ src/ platform/ third-party/
+
+ifneq ($(wildcard ext_project/),)
+MYFILES_PATH += ext_project/
+endif
+
 MYFILES := \
 	$(shell find $(MYFILES_PATH) -depth \
 		\( -name Mybuild -o -name \*.my \) -print)
