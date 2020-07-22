@@ -1,0 +1,21 @@
+package embox.driver.usb.gadget
+
+module f_ecm {
+	option number log_level = 1
+
+	source "f_ecm.c"
+	source "ecm_net_card.c"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+	depends embox.net.core
+}
+
+module ecm_gadget {
+	option number log_level = 1
+
+	source "ecm_gadget.c"
+
+	depends f_ecm
+}
