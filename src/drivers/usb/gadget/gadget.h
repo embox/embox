@@ -50,6 +50,8 @@ struct usb_gadget_function {
 	const struct usb_desc_common_header **descs;
 	const char *name;
 
+	struct usb_gadget *gadget;
+
 	struct dlist_head link;
 
 	int (*probe)(struct usb_gadget *);
