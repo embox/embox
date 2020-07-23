@@ -34,6 +34,7 @@ struct da1469x_udc {
 	unsigned int ep_in_num_assign;
 	unsigned int ep_out_num_assign;
 	unsigned int setup_buf_pos;
+	unsigned int tx_in_progress[DA1469X_UDC_EPS_COUNT];
 };
 
 static hw_usb_device_framework_ctrl_req_t usb_setup;
@@ -52,14 +53,14 @@ static int da1469x_udc_ep_queue(struct usb_gadget_ep *ep,
 
 	assert(ep && req);
 
-	if (ep->nr == 0) {
-		hw_usb_ep_tx_start(ep->nr, req->buf, req->len);
-		return 0;
-	}
-
 	u->requests[ep->nr] = req;
 
-	if (ep->dir == USB_DIR_IN) {
+	if (ep->nr == 0 || ep->dir == USB_DIR_IN) {
+		/* It would be better to use queue here, put req in queue,
+		 * then get next req from queue after current finished. */
+		while (u->tx_in_progress[ep->nr]) {
+		}
+		u->tx_in_progress[ep->nr] = 1;
 		hw_usb_ep_tx_start(ep->nr, req->buf, req->len);
 	}
 
@@ -127,6 +128,8 @@ static void da1469x_udc_send_control_msg(uint8_t *data, uint8_t size) {
 
 void hw_usb_ep_tx_done(uint8_t ep_nr, uint8_t *buffer) {
 	struct usb_gadget_request *req;
+
+	da1469x_udc.tx_in_progress[ep_nr] = 0;
 
 	if (ep_nr == 0) {
 		hw_usb_ep_rx_enable(0);
