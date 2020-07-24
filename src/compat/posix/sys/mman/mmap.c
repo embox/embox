@@ -20,9 +20,10 @@
 #include <util/binalign.h>
 #include <util/log.h>
 
-void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
+void *mmap_ph(void *addr, size_t len, int prot, int flags, int fd, off_t off,
+				void *phy) {
 	int err;
-	void *phy, *virt;
+	void *virt;
 	struct emmap *emmap = task_self_resource_mmap();
 
 	assert(emmap);
@@ -37,11 +38,13 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	virt = (void *) binalign_bound((uintptr_t) addr, VMEM_PAGE_SIZE);
 	len = binalign_bound(len, VMEM_PAGE_SIZE);
 
-	if (flags & MAP_ANONYMOUS) {
+	if ( (flags & MAP_ANONYMOUS) || (phy != NULL) ) {
 		/* Allocate physical memory and map it to `addr' */
-		phy = phymem_alloc(len / VMEM_PAGE_SIZE);
 		if (phy == NULL) {
-			return MAP_FAILED;
+			phy = phymem_alloc(len / VMEM_PAGE_SIZE);
+			if (phy == NULL) {
+				return MAP_FAILED;
+			}
 		}
 
 		if (virt == NULL) {
@@ -87,6 +90,10 @@ void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
 	}
 
 	return virt;
+}
+
+void *mmap(void *addr, size_t len, int prot, int flags, int fd, off_t off) {
+	return mmap_ph(addr, len, prot, flags, fd, off, NULL);
 }
 
 int munmap(void *addr, size_t size) {
