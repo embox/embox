@@ -181,13 +181,18 @@ void usb_gadget_register_function(struct usb_gadget_function *func) {
 
 int usb_gadget_add_function(struct usb_gadget *gadget,
 	                         const char *func_name) {
+	int res;
 	struct usb_gadget_function *func;
 
 	/* Check each hub for event occured. */
 	dlist_foreach_entry(func, &usb_gadget_func_list, link) {
 		if (!strcmp(func->name, func_name)) {
 			assert(func->probe);
-			return func->probe(gadget);
+			res = func->probe(gadget);
+			if (!res) {
+				func->gadget = gadget;
+			}
+			return res;
 		}
 	}
 	return -1; /* func not found */
