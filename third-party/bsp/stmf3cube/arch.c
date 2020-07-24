@@ -49,8 +49,6 @@ static void SystemClock_Config(void)
   }
 }
 
-extern void nvic_table_fill_stubs(void);
-
 void arch_init(void) {
 	ipl_t ipl = ipl_save();
 
@@ -58,8 +56,6 @@ void arch_init(void) {
 
 	SystemInit();
 	HAL_Init();
-
-	nvic_table_fill_stubs();
 
 	SystemClock_Config();
 
