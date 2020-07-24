@@ -38,20 +38,6 @@ extern void *trap_table_end;
 
 extern void arm_m_irq_entry(void);
 
-static void hnd_stub(void) {
-	/* It's just a stub. DO NOTHING */
-}
-
-/* TODO Should be removed at all. */
-void nvic_table_fill_stubs(void) {
-	int i;
-
-	for (i = 0; i < EXCEPTION_TABLE_SZ; i++) {
-		exception_table[i] = ((int) hnd_stub) | 1;
-	}
-	REG_STORE(SCB_VTOR, SCB_VTOR_IN_RAM | (int) exception_table);
-}
-
 static int nvic_init(void) {
 	ipl_t ipl;
 	int i;
@@ -83,10 +69,6 @@ void nvic_irq_handle(void) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
 }
 #else /* STATIC_IRQ_EXTENTION */
-void nvic_table_fill_stubs(void) {
-
-}
-
 static int nvic_init(void) {
 	return 0;
 }
