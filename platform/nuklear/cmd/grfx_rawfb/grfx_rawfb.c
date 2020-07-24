@@ -130,6 +130,8 @@ int main(int argc, char *argv[]) {
 	int bpp;
 	uint32_t width = 0, height = 0;
 	struct input_dev *mouse;
+	clock_t start_time, cur_time;
+	int frames;
 
 	fb_info = fb_lookup(0);
 
@@ -181,6 +183,8 @@ int main(int argc, char *argv[]) {
 		fprintf(stderr, "Failed open mouse input device\n");
 		exit(1);
 	}
+
+	start_time = clock();
 
 	while (1) {
 		/* Input */
@@ -243,6 +247,16 @@ int main(int argc, char *argv[]) {
 							BGRA8888, fb_info->var.fmt);
 		} else {
 			memcpy(fb_info->screen_base, fb_buf, width * height * bpp);
+		}
+
+		frames++;
+
+		cur_time = clock();
+
+		if (cur_time - start_time > 1000) {
+			printf("FPS = %d\n", frames);
+			frames = 0;
+			start_time = clock();
 		}
 	}
 
