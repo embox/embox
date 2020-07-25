@@ -15,6 +15,8 @@ abstract module stm32f7_discovery_bsp {
 
 @BuildDepends(third_party.bsp.stmf7cube.cube)
 module arch extends embox.arch.arch {
+	option boolean enable_cpu_cache = false
+
 	source "arch.c"
 
 	depends third_party.bsp.stmf7cube.cube
