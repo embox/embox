@@ -2,7 +2,7 @@
 
 if [ -z $DIALOG_DA14695_SDK_ROOT ]; then
 	printf "DIALOG_DA14695_SDK_ROOT is not set. Please specify DA14695 SDK path.\n"
-	printf "  Example: export DIALOG_DA14695_SDK_ROOT=~/git/usb/DA14695/SDK\n"
+	printf "  Example: export DIALOG_DA14695_SDK_ROOT=~/SDK_10.0.8.105\n"
 	exit 1
 fi
 
