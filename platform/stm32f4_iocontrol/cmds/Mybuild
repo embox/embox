@@ -18,12 +18,12 @@ module led_driver {
 	depends libleddrv
 }
 
-@BuildDepends(third_party.bsp.stmf4cube.stm32f4_discovery.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 static module libleddrv {
 	source "libleddrv.c"
 	source "libleddrv_ll.c"
 	depends embox.driver.gpio.stm32_gpio_f4
-	depends third_party.bsp.stmf4cube.stm32f4_discovery.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @AutoCmd

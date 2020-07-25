@@ -58,7 +58,7 @@
 /* #define HAL_DCMI_MODULE_ENABLED     */
 #define HAL_DMA_MODULE_ENABLED
 /* #define HAL_DMA2D_MODULE_ENABLED    */
-/* #define HAL_ETH_MODULE_ENABLED      */
+#define HAL_ETH_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 /* #define HAL_NAND_MODULE_ENABLED     */
 /* #define HAL_NOR_MODULE_ENABLED      */
@@ -79,7 +79,7 @@
 #define HAL_SD_MODULE_ENABLED
 #define HAL_SPI_MODULE_ENABLED
 /* #define HAL_TIM_MODULE_ENABLED       */
-/* #define HAL_UART_MODULE_ENABLED      */
+#define HAL_UART_MODULE_ENABLED
 /* #define HAL_USART_MODULE_ENABLED     */
 /* #define HAL_IRDA_MODULE_ENABLED      */
 /* #define HAL_SMARTCARD_MODULE_ENABLED */
@@ -218,12 +218,12 @@
 #define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
 
 #include <framework/mod/options.h>
-#include <config/third_party/bsp/stmf4cube/stm32f4_discovery/core.h>
+#include <config/third_party/bsp/stmf4cube/cube.h>
 
 #define ETH_RXBUFNB \
-	OPTION_MODULE_GET(third_party__bsp__stmf4cube__stm32f4_discovery__core, NUMBER, eth_rx_packet_count)
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__cube, NUMBER, eth_rx_packet_count)
 #define ETH_TXBUFNB \
-	OPTION_MODULE_GET(third_party__bsp__stmf4cube__stm32f4_discovery__core, NUMBER, eth_tx_packet_count)
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__cube, NUMBER, eth_tx_packet_count)
 
 
 /* Section 2: PHY configuration section */
