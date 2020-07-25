@@ -15,4 +15,4 @@ fi
 IMAGE=build/base/bin/embox.bin
 SCRIPT=$DIALOG_DA14680_SDK_ROOT/utilities/scripts/qspi/program_qspi_jtag.sh
 
-/bin/bash $SCRIPT --jlink_path $JLINK_ROOT $IMAGE
+$SCRIPT --jlink_path $JLINK_ROOT $IMAGE
