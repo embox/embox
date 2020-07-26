@@ -1,35 +1,36 @@
 package third_party.bsp.stmf7cube
 
-@DefaultImpl(third_party.bsp.stm32746g_cube.core)
-abstract module core extends third_party.bsp.st_bsp_api {
+
+abstract module core extends third_party.bsp.st_bsp_api{
 }
 
-@DefaultImpl(third_party.bsp.stm32746g_cube.stm32f7_discovery_bsp)
-abstract module stm32f7_discovery_bsp {
-}
-
-@DefaultImpl(third_party.bsp.stm32746g_cube.stm32f7_discovery_components)
-abstract module stm32f7_discovery_components {
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	depends system_init
-}
-
-@DefaultImpl(third_party.bsp.stm32746g_cube.system_init)
 abstract module system_init {
 }
 
-@BuildDepends(third_party.bsp.st_bsp_api)
-module cmsis extends embox.arch.arm.cmsis {
-	source "cmsis_impl.h"
+abstract module stm32f7_bsp {
 }
 
-@Build(stage=1,script="true")
-@BuildDepends(third_party.bsp.st_bsp_api)
+abstract module stm32f7_discovery_bsp {
+}
+
+abstract module stm32f7_discovery_components {
+}
+
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module arch extends embox.arch.arch {
+	source "arch.c"
+
+	depends third_party.bsp.stmf7cube.cube
+}
+
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module cmsis extends embox.arch.arm.cmsis {
+	source "cmsis_impl.h"
+	depends third_party.bsp.stmf7cube.cube
+}
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
 module sdram {
 	/* If true, swap SDRAM from 0xc0000000 to 0x60000000 */
 	option boolean fmc_swap = false
@@ -39,7 +40,7 @@ module sdram {
 	depends embox.kernel.time.jiffies
 	depends embox.kernel.sched.sched
 	depends embox.kernel.time.timekeeper
-	depends system_init
 	depends stm32f7_discovery_bsp
 	depends embox.driver.interrupt.cortexm_nvic
+	depends third_party.bsp.stmf7cube.cube
 }
