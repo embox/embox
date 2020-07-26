@@ -7,7 +7,7 @@ package embox.cmd.hardware
 		Type `exit` in shell to exit app.
 	''')
 
-@BuildDepends(third_party.bsp.stmf4cube.stm32f4_discovery.core)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module lorawan {
 	option number usartx=2
 	

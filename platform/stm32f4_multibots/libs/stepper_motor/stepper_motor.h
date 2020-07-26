@@ -9,6 +9,8 @@
 #ifndef STEPPER_MOTOR_H_
 #define STEPPER_MOTOR_H_
 
+#include "stm32f4xx_hal.h"
+
 #include "stm32f4xx_hal_gpio.h"
 
 #define MOTOR_MIN_DELAY            15000

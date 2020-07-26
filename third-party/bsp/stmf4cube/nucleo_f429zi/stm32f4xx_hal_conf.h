@@ -221,12 +221,12 @@
 #define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
 
 #include <framework/mod/options.h>
-#include <config/third_party/bsp/stmf4cube/nucleo_f429zi/core.h>
+#include <config/third_party/bsp/stmf4cube/cube.h>
 
 #define ETH_RXBUFNB \
-	OPTION_MODULE_GET(third_party__bsp__stmf4cube__nucleo_f429zi__core, NUMBER, eth_rx_packet_count)
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__cube, NUMBER, eth_rx_packet_count)
 #define ETH_TXBUFNB \
-	OPTION_MODULE_GET(third_party__bsp__stmf4cube__nucleo_f429zi__core, NUMBER, eth_tx_packet_count)
+	OPTION_MODULE_GET(third_party__bsp__stmf4cube__cube, NUMBER, eth_tx_packet_count)
 
 
 
