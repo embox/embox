@@ -1,0 +1,54 @@
+package third_party.bsp.stmf7cube
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+static module middlewares_usb_device {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_conf_template.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_core.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ctlreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_bot.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_data.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_scsi.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_storage_template.c"
+
+	depends third_party.bsp.stmf7cube.cube
+}
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+static module middlewares_usb_host {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_conf_template.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_core.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ctlreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_ioreq.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Core/Src/usbh_pipes.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc_bot.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc.c",
+			"./STM32Cube_FW_F7_V1.5.0/Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Src/usbh_msc_scsi.c"
+
+	depends third_party.bsp.stmf7cube.cube
+}
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+static module middlewares_fat_fs {
+	@DefineMacro("_STR_VOLUME_ID=0")
+	/* FIXME: Do not use FatFs config from USB_Host/MSC_Standalone */
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Middlewares/Third_Party/FatFs/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Middlewares/Third_Party/FatFs/src/ff.c"
+	
+	depends third_party.bsp.stmf7cube.cube
+}
