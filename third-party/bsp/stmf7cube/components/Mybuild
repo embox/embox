@@ -1,0 +1,27 @@
+package third_party.bsp.stmf7cube
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+static module stm32f7_discovery_components {
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ft5336")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ft5336/ft5336.c"
+
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ft6x06")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ft6x06/ft6x06.c"
+
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/wm8994/wm8994.c"
+
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ov9655")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/ov9655/ov9655.c"
+
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/otm8009a")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Drivers/BSP/Components/otm8009a/otm8009a.c"
+
+	depends third_party.bsp.stmf7cube.cube
+}

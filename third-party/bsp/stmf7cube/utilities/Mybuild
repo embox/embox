@@ -1,0 +1,9 @@
+package third_party.bsp.stmf7cube
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+static module stm32f7_discovery_utilities {
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32Cube_FW_F7_V1.5.0/Utilities/Log")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32Cube_FW_F7_V1.5.0/Utilities/Log/lcd_log.c"
+}
