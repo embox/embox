@@ -1,0 +1,12 @@
+package embox.driver.dma
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f7_dma extends dma_api {
+	option number dma2_stream0_irq
+
+	option number log_level = 1
+
+	source "stm32f7_dma.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
