@@ -12,12 +12,27 @@ package embox.cmd.grfxs
 			Alexander Kalmuk
 	''')
 @BuildDepends(third_party.lib.nuklear)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module grfx_rawfb {
-	option boolean use_dma = false
-
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
 	source "grfx_rawfb.c"
 
 	depends third_party.lib.nuklear
 	depends embox.driver.input.core
+	depends third_party.bsp.st_bsp_api
+	depends rawfb_api
+}
+
+abstract module rawfb_api {
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module rawfb_stm32_ltdc extends rawfb_api {
+	source "rawfb_stm32_ltdc.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+
+module rawfb_memcpy extends rawfb_api {
+	source "rawfb_memcpy.c"
 }

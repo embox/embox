@@ -40,11 +40,7 @@
 #include <drivers/video/fb.h>
 #include <drivers/input/input_dev.h>
 
-#define USE_DMA   OPTION_GET(BOOLEAN, use_dma)
-
-#if USE_DMA
-#include <drivers/dma/dma.h>
-#endif
+#include "rawfb.h"
 
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
@@ -60,11 +56,7 @@
 #include "nuklear.h"
 #include "nuklear_rawfb.h"
 
-#define DTIME           20
-#define WINDOW_WIDTH    800
-#define WINDOW_HEIGHT   600
-
-static int fb_buf_idx;
+#define BACKGROUND_COLOR 0xffa0a0a0
 
 static inline int normalize_coord(int x, int a, int b) {
 	if (x < a) {
@@ -130,6 +122,7 @@ static void handle_touchscreen(struct input_dev *ts, struct fb_info *fb_info,
  * ===============================================================*/
 int main(int argc, char *argv[]) {
 	struct rawfb_context *rawfb;
+	struct rawfb_fb_info rfb;
 	int i;
 	void *fb_buf[2] = { NULL };
 	unsigned char *tex_scratch;
@@ -166,7 +159,7 @@ int main(int argc, char *argv[]) {
 	height = fb_info->var.yres;
 
 	for (i = 0; i < 2; i++) {
-		fb_buf[i] = malloc(height * width * 4);
+		fb_buf[i] = memalign(64, height * width * 4);
 		if (!fb_buf[i]) {
 			fprintf(stderr, "Cannot allocate buffer for screen\n");
 			goto out_free_fb_buf;
@@ -198,9 +191,16 @@ int main(int argc, char *argv[]) {
 
 	start_time = clock();
 
-#if USE_DMA
-	dma_config(0);
-#endif
+	rfb.fb_info = fb_info;
+	rfb.fb_buf[0] = fb_buf[0];
+	rfb.fb_buf[1] = fb_buf[1];
+	rfb.fb_buf_idx = 0;
+	rfb.width = width;
+	rfb.height = height;
+	rfb.bpp = bpp;
+	rfb.clear_color = BACKGROUND_COLOR;
+
+	rawfb_init(&rfb);
 
 	while (1) {
 		/* Input */
@@ -255,33 +255,14 @@ int main(int argc, char *argv[]) {
 		nk_end(&rawfb->ctx);
 		if (nk_window_is_closed(&rawfb->ctx, "Demo")) break;
 
-		/* Draw framebuffer */
-		nk_rawfb_render(rawfb, nk_rgb(30,30,30), 1);
+		nk_rawfb_render(rawfb, nk_rgb(0, 0, 0), 0);
 
-		if (fb_info->var.fmt != BGRA8888) {
-			pix_fmt_convert(fb_buf[fb_buf_idx], fb_info->screen_base, width * height,
-							BGRA8888, fb_info->var.fmt);
-		} else {
-#if USE_DMA
-			int ret;
+		rawfb_swap_buffers(&rfb);
 
-			while (dma_in_progress(0)) {
+		rawfb_clear_screen(&rfb);
 
-			}
-
-			ret = dma_transfer(0, (uint32_t) fb_info->screen_base,
-					(uint32_t) fb_buf[fb_buf_idx], (width * height * bpp) / 4);
-			if (ret < 0) {
-				printf("DMA transfer failed\n");
-			}
-#else
-			memcpy(fb_info->screen_base, fb_buf[fb_buf_idx], width * height * bpp);
-#endif
-		}
-
-		fb_buf_idx = (fb_buf_idx + 1) % 2;
-
-		nk_rawfb_resize_fb(rawfb, fb_buf[fb_buf_idx], width, height, width * 4,
+		/* Swap nuklear to new FB. */
+		nk_rawfb_resize_fb(rawfb, fb_buf[rfb.fb_buf_idx], width, height, width * 4,
 			PIXEL_LAYOUT_XRGB_8888);
 
 		frames++;
