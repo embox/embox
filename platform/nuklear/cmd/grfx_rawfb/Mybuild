@@ -13,6 +13,8 @@ package embox.cmd.grfxs
 	''')
 @BuildDepends(third_party.lib.nuklear)
 module grfx_rawfb {
+	option boolean use_dma = false
+
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
 	source "grfx_rawfb.c"
 

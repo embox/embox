@@ -40,6 +40,12 @@
 #include <drivers/video/fb.h>
 #include <drivers/input/input_dev.h>
 
+#define USE_DMA   OPTION_GET(BOOLEAN, use_dma)
+
+#if USE_DMA
+#include <drivers/dma/dma.h>
+#endif
+
 #define NK_INCLUDE_FIXED_TYPES
 #define NK_INCLUDE_STANDARD_IO
 #define NK_INCLUDE_STANDARD_VARARGS
@@ -57,6 +63,8 @@
 #define DTIME           20
 #define WINDOW_WIDTH    800
 #define WINDOW_HEIGHT   600
+
+static int fb_buf_idx;
 
 static inline int normalize_coord(int x, int a, int b) {
 	if (x < a) {
@@ -122,7 +130,8 @@ static void handle_touchscreen(struct input_dev *ts, struct fb_info *fb_info,
  * ===============================================================*/
 int main(int argc, char *argv[]) {
 	struct rawfb_context *rawfb;
-	void *fb_buf = NULL;
+	int i;
+	void *fb_buf[2] = { NULL };
 	unsigned char *tex_scratch;
 	long int screensize = 0;
 	uint8_t *fbp = 0;
@@ -131,7 +140,7 @@ int main(int argc, char *argv[]) {
 	uint32_t width = 0, height = 0;
 	struct input_dev *mouse;
 	clock_t start_time, cur_time;
-	int frames;
+	int frames = 0;
 
 	fb_info = fb_lookup(0);
 
@@ -156,35 +165,42 @@ int main(int argc, char *argv[]) {
 	width = fb_info->var.xres;
 	height = fb_info->var.yres;
 
-	fb_buf = malloc(height * width * 4);
-	if (!fb_buf) {
-		fprintf(stderr, "Cannot allocate buffer for screen\n");
-		exit(2);
+	for (i = 0; i < 2; i++) {
+		fb_buf[i] = malloc(height * width * 4);
+		if (!fb_buf[i]) {
+			fprintf(stderr, "Cannot allocate buffer for screen\n");
+			goto out_free_fb_buf;
+		}
 	}
+
 	tex_scratch = malloc(512 * 512);
 	if (!tex_scratch) {
 		fprintf(stderr, "Cannot allocate buffer for font\n");
-		exit(2);
+		goto out_free_fb_buf;
 	}
 
-	rawfb = nk_rawfb_init(fb_buf, tex_scratch, width, height, width * 4,
+	rawfb = nk_rawfb_init(fb_buf[0], tex_scratch, width, height, width * 4,
 		PIXEL_LAYOUT_XRGB_8888);
 	if (!rawfb) {
 		fprintf(stderr, "Cannot allocate rawfb\n");
-		exit(2);
+		goto out_free_fb_and_tex;
 	}
 
 	/* Input device - mouse. */
 	if (!(mouse = input_dev_lookup(argv[argc - 1]))) {
 		fprintf(stderr, "Cannot find mouse \"%s\"\n", argv[argc - 1]);
-		exit(1);
+		goto out_free;
 	}
 	if (0 > input_dev_open(mouse, NULL)) {
 		fprintf(stderr, "Failed open mouse input device\n");
-		exit(1);
+		goto out_free;
 	}
 
 	start_time = clock();
+
+#if USE_DMA
+	dma_config(0);
+#endif
 
 	while (1) {
 		/* Input */
@@ -243,11 +259,30 @@ int main(int argc, char *argv[]) {
 		nk_rawfb_render(rawfb, nk_rgb(30,30,30), 1);
 
 		if (fb_info->var.fmt != BGRA8888) {
-			pix_fmt_convert(fb_buf, fb_info->screen_base, width * height,
+			pix_fmt_convert(fb_buf[fb_buf_idx], fb_info->screen_base, width * height,
 							BGRA8888, fb_info->var.fmt);
 		} else {
-			memcpy(fb_info->screen_base, fb_buf, width * height * bpp);
+#if USE_DMA
+			int ret;
+
+			while (dma_in_progress(0)) {
+
+			}
+
+			ret = dma_transfer(0, (uint32_t) fb_info->screen_base,
+					(uint32_t) fb_buf[fb_buf_idx], (width * height * bpp) / 4);
+			if (ret < 0) {
+				printf("DMA transfer failed\n");
+			}
+#else
+			memcpy(fb_info->screen_base, fb_buf[fb_buf_idx], width * height * bpp);
+#endif
 		}
+
+		fb_buf_idx = (fb_buf_idx + 1) % 2;
+
+		nk_rawfb_resize_fb(rawfb, fb_buf[fb_buf_idx], width, height, width * 4,
+			PIXEL_LAYOUT_XRGB_8888);
 
 		frames++;
 
@@ -260,10 +295,18 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
+out_free:
 	nk_rawfb_shutdown(rawfb);
 
-	free(fb_buf);
+out_free_fb_and_tex:
 	free(tex_scratch);
+
+out_free_fb_buf:
+	for (i = 0; i < 2; i++) {
+		if (fb_buf[i]) {
+			free(fb_buf[i]);
+		}
+	}
 
 	return 0;
 }
