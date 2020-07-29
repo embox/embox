@@ -1,11 +1,11 @@
 
 PKG_NAME := qt-everywhere-opensource-src
-PKG_VER  := 4.8.5
+PKG_VER  := 4.8.7
 
 PKG_SOURCES := http://download.qt-project.org/archive/qt/4.8/$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz \
 		http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.gz
 
-PKG_MD5     := 1864987bdbb2f58f8ae8b350dfdbe133
+PKG_MD5     := d990ee66bf7ab0c785589776f35ba6ad
 
 PKG_PATCHES := pkg_patch.txt \
 	patch_cortex_m7.txt
