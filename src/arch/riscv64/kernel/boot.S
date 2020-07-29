@@ -17,7 +17,7 @@ _start:
 	csrr	t0, mhartid
 
 	# jump die if ID != 0
-	bne		t0, zero, die
+	bnez	t0, die
 
 	# stack
 	lla		sp, stack

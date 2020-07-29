@@ -16,12 +16,23 @@
 
 #define BUSY_LOOP(num)	for(volatile unsigned busy_loop_counter=0;busy_loop_counter<num;busy_loop_counter++){}
 
-void arch_init(void) {
+void maix_putc(char c){
 	volatile char *p = (char*)TXF_ADDR;
+	while(*p < 0);
+	*p = c;
+	BUSY_LOOP(5000);
+}
+
+void maix_puts(const char *str){
+	while(*str != '\0'){
+		maix_putc(*str);
+		str++;
+	}
+}
+
+void arch_init(void) {
 	while(1){
-		while(*p < 0);
-		*p = 'A';
-//		BUSY_LOOP(100000);
+		maix_puts("hello MAiX BiT from embox!\n\r");
 	}
 }
 
