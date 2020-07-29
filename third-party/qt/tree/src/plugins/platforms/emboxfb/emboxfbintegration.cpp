@@ -182,8 +182,6 @@ QRegion QEmboxFbScreen::doRedraw()
 {
 	QVector<QRect> rects;
 	QRegion touched = QFbScreen::doRedraw();
-
-	DPRINTF("QEmboxFbScreen::doRedraw\n");
 	
 	if (!compositePainter) {
 		compositePainter = new QPainter(mFbScreenImage);
