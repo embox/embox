@@ -19,6 +19,8 @@ _start:
 	# jump die if ID != 0
 	bne		t0, zero, die
 
+	j kernel_start
+
 	# stack
 	la		sp, stack
 	li		a0, STACK_SIZE * MAX_HARTS
