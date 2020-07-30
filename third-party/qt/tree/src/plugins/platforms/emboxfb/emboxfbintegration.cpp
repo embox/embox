@@ -41,7 +41,7 @@ QEmboxFbIntegration::QEmboxFbIntegration()
 	const char *fbPath = "/dev/fb0";
 
 	fbFd = open(fbPath, O_RDWR);
-	if (fbPath < 0) {
+	if (fbFd < 0) {
 		qFatal("QEmboxFbIntegration: Error open framebuffer %s", fbPath);
 	}
 	if (ioctl(fbFd, FBIOGET_FSCREENINFO, &finfo) == -1) {
@@ -182,8 +182,6 @@ QRegion QEmboxFbScreen::doRedraw()
 {
 	QVector<QRect> rects;
 	QRegion touched = QFbScreen::doRedraw();
-
-	DPRINTF("QEmboxFbScreen::doRedraw\n");
 	
 	if (!compositePainter) {
 		compositePainter = new QPainter(mFbScreenImage);
