@@ -17,10 +17,10 @@ _start:
 	csrr	t0, mhartid
 
 	# jump die if ID != 0
-	bne		t0, zero, die
+	bnez	t0, die
 
 	# stack
-	la		sp, stack
+	lla		sp, stack
 	li		a0, STACK_SIZE * MAX_HARTS
 	addi	t0, t0, 1
 	mul		a0, a0, t0
@@ -45,6 +45,7 @@ zero_bss_end:
 die:
 	j		die
 
+.section .bss
 .global stack
 stack:
 	.skip	STACK_SIZE * MAX_HARTS
