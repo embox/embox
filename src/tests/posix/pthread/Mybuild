@@ -48,3 +48,7 @@ module pthread_cond_timedwait_test {
 	depends embox.kernel.timer.sleep_api
 	depends embox.framework.LibFramework
 }
+
+module pthread_mutex_timedlock {
+	source "pthread_mutex_timedlock_test.c"
+}
