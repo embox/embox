@@ -12,7 +12,7 @@ module custom_config {
 static module sys_man {
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man")
 	source "sys_trng.c",
 			"sys_timer.c",
 			"sys_tcs_da1469x.c",
@@ -34,7 +34,7 @@ static module sys_man {
 static module periphirals {
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/peripherals/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/peripherals/src")
 	source "hw_trng.c", 
 			"hw_usb_da1469x.c",
 			"hw_cpm_da1469x.c",
@@ -59,7 +59,7 @@ static module periphirals {
 static module memory {
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/memory/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/memory/src")
 	source "qspi_automode.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -103,13 +103,13 @@ static module usb_dev_sdk extends usb_dev_api {
 static module system_init {
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/startup/DA1469x")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/startup/DA1469x")
 	source "system_da1469x.c", 
 			"init_da1469x.c"
 
 	@Cflags("-Wno-undef")
 		
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/startup/DA1469x/GCC")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/startup/DA1469x/GCC")
 	source "deepsleep.S"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -129,7 +129,7 @@ static module arch_init extends embox.arch.arch {
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module libble_stack {
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/binaries/DA1469x-Release")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/binaries/DA1469x-Release")
 	source "libble_stack_da1469x.a"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -148,9 +148,9 @@ static module ble_arch_main_sdk extends ble_arch_main_api {
 
 	@Cflags("-Wno-undef")
 	@Cflags("-Wno-unused-variable")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp_include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp_include)")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/stack/da14690/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/stack/da14690/src")
 	source "arch_main.c"
 
 	@Cflags("-Wno-undef")
@@ -163,9 +163,9 @@ static module ble_arch_main_sdk extends ble_arch_main_api {
 static module pmu_adapter {
 	@Cflags("-Wno-undef")
 	@Cflags("-Wno-incompatible-pointer-types")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp_include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp_include)")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/middleware/adapters/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/middleware/adapters/src")
 	source "ad_pmu.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -179,7 +179,7 @@ static module ble_adapter {
 	@Cflags("-Wno-unused-function")
 	@Cflags("-Wno-discarded-qualifiers")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/adapter/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src")
 	source "ad_ble.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
@@ -192,7 +192,7 @@ static module ble_api {
 	@Cflags("-Wno-uninitialized")
 	@Cflags("-Wno-unused-function")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/api/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/api/src")
 	source "ble_common.c",
 		   "ble_storage.c",
 		   "ble_uuid.c",
@@ -209,10 +209,10 @@ static module ble_manager {
 	@Cflags("-Wno-unused-but-set-variable")
 	@Cflags("-Wno-uninitialized")
 	@Cflags("-Wno-unused-function")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/clients/include)")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/services/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/clients/include)")
+	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/services/include)")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/interfaces/ble/manager/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src")
 	source "ble_mgr_helper.c",
 		   "ble_mgr_common.c",
 		   "ble_mgr.c",
@@ -233,7 +233,7 @@ static module ble_manager {
 static module sdk_util {
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/util/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/util/src")
 	source "sdk_queue.c",
 		   "sdk_list.c"
 
