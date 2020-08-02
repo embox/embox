@@ -77,7 +77,6 @@ static module usb_dev_direct extends usb_dev_api {
 	source "usb_da1469x.h"
 
 	@Cflags("-Wno-undef")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
 
 	source "usb_da1469x.c"
 
@@ -94,7 +93,6 @@ static module usb_dev_sdk extends usb_dev_api {
 	source "usb_da1469x.h"
 
 	@Cflags("-Wno-undef")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
 
 	source "usb_sdk_da1469x.c"
 

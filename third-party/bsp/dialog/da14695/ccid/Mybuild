@@ -11,7 +11,6 @@ module ccid {
 	option number slots        = 1
 
 	@Cflags("-Wno-undef")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v3")
 	source "ccid.c",
@@ -30,7 +29,6 @@ module ccid_card_emulated extends ccid_card_api {
 	option number log_level = 1
 
 	@Cflags("-Wno-undef")
-	@IncludePath("$(abspath $(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14695/sdk/SDK_10.0.8.105/sdk/bsp/system/sys_man)")
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v3")
 	source "ccid_card_emulated.c"
