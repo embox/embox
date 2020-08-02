@@ -1,18 +1,18 @@
 
 PKG_NAME := SDK_10.0.8.105
+PKG_MD5     := ff136c082317acb3fe161daf3e02e6bb
+#PKG_NAME := SDK_10.0.10.118
+#PKG_MD5     := 17ba2eba5a02146b0f4f6c6375829514
 
 PKG_SOURCES := https://support.dialog-semiconductor.com/system/files/restricted/$(PKG_NAME).zip
 
-PKG_MD5     := ff136c082317acb3fe161daf3e02e6bb
-
-PKG_PATCHES := patch.txt \
-	           ble_patch.txt \
-	           sys_usb_patch.txt \
-	           hw_usb_da1469x_patch.txt \
-			   pwr_patch.txt \
-			   hw_dma_patch.txt \
-			   sys_timer_patch.txt \
-			   sys_clock_mgr_patch.txt
+PKG_PATCHES := patch_$(PKG_NAME).txt \
+	           ble_patch_$(PKG_NAME).txt \
+	           sys_usb_patch_$(PKG_NAME).txt \
+			   pwr_patch_$(PKG_NAME).txt \
+			   hw_dma_patch_$(PKG_NAME).txt \
+			   sys_timer_patch_$(PKG_NAME).txt \
+			   sys_clock_mgr_patch_$(PKG_NAME).txt
 
 verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
