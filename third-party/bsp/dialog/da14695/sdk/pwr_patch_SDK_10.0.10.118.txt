@@ -1,0 +1,158 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_power_mgr.h ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_power_mgr.h
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_power_mgr.h	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_power_mgr.h	2020-07-09 21:19:59.988720120 +0300
+@@ -28,7 +28,7 @@
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+ #include "osal.h"
+ #endif
+ 
+@@ -48,7 +48,7 @@
+ } sys_wakeup_mode_t;
+ 
+ 
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+ 
+ typedef void (*periph_init_cb)(void);
+ typedef int32_t pm_id_t;
+@@ -329,7 +329,7 @@
+  */
+ __RETAINED_CODE void pm_sleep_enter(uint32_t low_power_periods);
+ 
+-#endif /* OS_FREERTOS */
++#endif /* USE_RTOS */
+ 
+ 
+ /*
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_internal.h ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_internal.h
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_internal.h	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_internal.h	2020-07-09 21:19:09.477564886 +0300
+@@ -91,7 +91,7 @@
+  */
+ void cm_restore_all_clocks(void);
+ 
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+ /**
+  * \brief Clear the Event Groups Bit(s), the "settled" flag and the RCX calibration flag.
+  *
+@@ -138,7 +138,7 @@
+  */
+ __RETAINED_CODE void cm_switch_to_xtalm_if_settled(void);
+ 
+-#endif /* OS_FREERTOS */
++#endif /* USE_RTOS */
+ 
+ /**
+  * \brief Restore the system clock (unprotected).
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_da1469x.c
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_da1469x.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_da1469x.c	2020-07-09 21:19:00.836538330 +0300
+@@ -21,7 +21,6 @@
+  \{
+  */
+ 
+-
+ #include "sdk_defs.h"
+ #include "hw_clk.h"
+ #if dg_configUSE_HW_PMU
+@@ -44,7 +43,7 @@
+ #include "sys_watchdog.h"
+ #include "sys_watchdog_internal.h"
+ 
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+ #       include "osal.h"
+ #       include "sys_charger.h"
+ #       include "sys_tcs.h"
+@@ -57,7 +56,7 @@
+ #       include "hw_usb.h"
+ #       include "hw_usb_charger.h"
+ #       include "hw_dma.h"
+-#       include "resmgmt.h"
++//#       include "resmgmt.h"
+ #       if (USE_BLE_SLEEP == 1)
+ #               include "ad_ble.h"
+ #       endif
+@@ -74,7 +73,7 @@
+ #undef dg_configUSE_HW_GPADC
+ #define dg_configUSE_HW_GPADC 0
+ 
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+         bool goto_deepsleep(void);
+ 
+ #       if (PWR_MGR_DEBUG == 1)
+@@ -146,9 +145,9 @@
+         __RETAINED uint32_t lp_time3_ret;  // Power-up: after the clock setting - finish
+ #       endif
+ 
+-#endif /* OS_FREERTOS */
++#endif /* USE_RTOS */
+ 
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+ 
+ /*
+  * Local variables
+@@ -188,7 +187,6 @@
+ /*
+  * Function definitions
+  */
+-
+ static void init_component(const comp_init_tree_t **done, int *done_cnt,
+                                                                 const comp_init_tree_t *for_init)
+ {
+@@ -394,7 +392,8 @@
+         sys_sw_bsr_init();
+ 
+         qspi_operations_init();
+-        resource_init();
++		// TODO
++        //resource_init();
+         init_adapters();
+         init_buses();
+         init_devices();
+@@ -1580,7 +1579,7 @@
+ 
+ #endif /* dg_configENABLE_DEBUGGER */
+ 
+-#endif /* OS_FREERTOS */
++#endif /* USE_RTOS */
+ 
+ void pm_set_sys_wakeup_mode(sys_wakeup_mode_t mode)
+ {
+@@ -1692,7 +1691,7 @@
+ __RETAINED_CODE void pm_prepare_sleep(sleep_mode_t sleep_mode)
+ {
+         if (sleep_mode == pm_mode_hibernation || sleep_mode == pm_mode_deep_sleep) {
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+                 // Hibernation Sleep mode! Wake-up only from external button!
+                 // Deep sleep mode! Wake-up only from external button! Keep RTC.
+                 sys_timer_stop();            // Stop OS timer
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_internal.h ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_internal.h
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_internal.h	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_power_mgr_internal.h	2020-07-09 21:21:19.984965949 +0300
+@@ -27,7 +27,7 @@
+ #ifndef SYS_POWER_MGR_INTERNAL_H_
+ #define SYS_POWER_MGR_INTERNAL_H_
+ 
+-#ifdef OS_FREERTOS
++#ifdef USE_RTOS
+ 
+ #include <stdint.h>
+ #include <stdbool.h>
+@@ -53,7 +53,7 @@
+  */
+ system_state_t pm_get_system_sleep_state(void);
+ 
+-#endif /* OS_FREERTOS */
++#endif /* USE_RTOS */
+ 
+ #endif /* SYS_POWER_MGR_INTERNAL_H_ */
+ 

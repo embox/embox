@@ -1,0 +1,21 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_usb_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_usb_da1469x.c
+--- SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_usb_da1469x.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_usb_da1469x.c	2020-07-07 14:09:13.935103221 +0300
+@@ -22,6 +22,7 @@
+ #include "sys_power_mgr.h"
+ #include "sys_clock_mgr.h"
+ #include "qspi_automode.h"
++#include "util/log.h"
+ /*========================== Local macro definitions ========================*/
+ 
+ /*========================== Global definitions =============================*/
+@@ -962,6 +963,9 @@
+          * To call multiple concurrent USB-TX use queues for the buffers to avoid overwriting.
+          * The current implementation is single buffer thus the use of ep->flags.tx_busy flag.
+          */
++        if(ep->flags.tx_busy)
++            log_warning("Endpoint %d is busy", ep_nr);
++
+         ASSERT_WARNING(ep->flags.tx_busy == 0);
+         ep->tx.max_size = size;
+         ep->tx.actual_size = 0;

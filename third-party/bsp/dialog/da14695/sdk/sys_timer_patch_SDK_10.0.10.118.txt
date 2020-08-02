@@ -1,0 +1,86 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_timer.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_timer.c
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_timer.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_timer.c	2020-07-10 15:38:54.875445272 +0300
+@@ -28,11 +28,12 @@
+ 
+ #include "sys_timer_internal.h"
+ 
+-#ifdef OS_FREERTOS
+ #include "sys_timer.h"
+-#include "FreeRTOS.h"
+ #include "sys_power_mgr.h"
+ #include "sys_power_mgr_internal.h"
++
++#ifdef OS_FREERTOS
++#include "FreeRTOS.h"
+ #endif
+ 
+ #define TICK_GUARD_PRESC_LIM                    2
+@@ -62,10 +63,8 @@
+ #endif
+ 
+ 
+-#ifdef OS_FREERTOS
+-__RETAINED static uint32_t current_time;
+-__RETAINED static uint64_t sys_rtc_time;
+-#endif
++__RETAINED uint32_t current_time;
++__RETAINED uint64_t sys_rtc_time;
+ 
+ 
+ /*
+@@ -78,9 +77,8 @@
+  * Function definitions
+  */
+ 
+-#ifdef OS_FREERTOS
+ 
+-__RETAINED_CODE static uint32_t sys_timer_advance_time_compute(uint32_t *trigger)
++__RETAINED_CODE uint32_t sys_timer_advance_time_compute(uint32_t *trigger)
+ {
+         uint32_t elapsed_time;
+         uint32_t elapsed_ticks;
+@@ -144,7 +142,7 @@
+         return elapsed_ticks;
+ }
+ 
+-__RETAINED_CODE static void sys_timer_advance_time_apply(uint32_t trigger)
++__RETAINED_CODE void sys_timer_advance_time_apply(uint32_t trigger)
+ {
+         uint32_t dummy __UNUSED;
+         uint32_t timer_current_value;
+@@ -170,7 +168,7 @@
+         rt_trigger_mon_wr %= MAX_TRG_MON_SZ;
+ #endif
+ }
+-
++#ifdef OS_FREERTOS
+ /**
+  * \brief Advances time from the previous tick that hit.
+  *
+@@ -301,14 +299,12 @@
+          return lp_tick_offset;
+ }
+ 
+-
+-#ifdef OS_FREERTOS
+ #if (dg_configUSE_LP_CLK == LP_CLK_RCX)
+-__RETAINED static uint64_t sys_rtc_clock_time_fine;         // counts time in usec*1024*1024
+-__RETAINED static uint64_t sys_rtc_clock_time;         // counts time in usec
++__RETAINED uint64_t sys_rtc_clock_time_fine;         // counts time in usec*1024*1024
++__RETAINED uint64_t sys_rtc_clock_time;         // counts time in usec
+ #endif
+ 
+-__RETAINED_CODE static void update_timestamp_values(void)
++__RETAINED_CODE void update_timestamp_values(void)
+ {
+         uint32_t prev_time = current_time;
+ 
+@@ -328,6 +324,7 @@
+         sys_rtc_time += rtc_tick;
+ }
+ 
++#ifdef OS_FREERTOS
+ uint64_t sys_timer_get_uptime_ticks(void)
+ {
+         vPortEnterCritical();

@@ -1,0 +1,133 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c	2020-07-10 17:43:26.375415369 +0300
+@@ -55,10 +55,11 @@
+ #define SEGGER_SYSTEMVIEW_ISR_EXIT()
+ #endif
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ #include "osal.h"
++#ifdef OS_FREERTOS
+ #include "sdk_list.h"
+-
++#endif /*OS_FREERTOS */
+ #include "hw_qspi.h"
+ //#include "sys_tcs.h"
+ 
+@@ -66,14 +67,16 @@
+ #pragma message "Clock manager: GPIO Debugging is on!"
+ #endif
+ 
++#ifdef OS_FREERTOS
+ #ifdef CONFIG_USE_BLE
+ #include "ad_ble.h"
+ #endif
++#endif /*OS_FREERTOS */
+ 
+ #define XTAL32_AVAILABLE                1       // XTAL32M availability
+ #define LP_CLK_AVAILABLE                2       // LP clock availability
+ #define PLL_AVAILABLE                   4       // PLL locked
+-#endif /* OS_FREERTOS */
++#endif /* OS_BAREMETAL */
+ 
+ #define RCX_MIN_HZ                      450
+ #define RCX_MAX_HZ                      550
+@@ -145,7 +148,9 @@
+ 
+ #ifdef OS_FREERTOS
+ __RETAINED static OS_MUTEX xSemaphoreCM;
++#endif /* OS_FREERTOS */
+ __RETAINED static OS_EVENT_GROUP xEventGroupCM_xtal;
++#ifdef OS_FREERTOS
+ __RETAINED static OS_TIMER xLPSettleTimer;
+ 
+ #if (dg_configUSE_LP_CLK == LP_CLK_RCX)
+@@ -417,12 +422,13 @@
+         // Stop the Timer.
+         OS_TIMER_STOP(xLPSettleTimer, OS_TIMER_FOREVER);
+ }
++#endif /* OS_FREERTOS */
+ 
+ /**
+  * \brief Handle the indication that the XTAL32M has settled.
+  *
+  */
+-static OS_BASE_TYPE xtal32m_is_ready(BaseType_t *xHigherPriorityTaskWoken)
++static OS_BASE_TYPE xtal32m_is_ready(OS_BASE_TYPE *xHigherPriorityTaskWoken)
+ {
+         OS_BASE_TYPE xResult = OS_FAIL;
+ 
+@@ -436,11 +442,15 @@
+                 }
+ 
+                 if (xEventGroupCM_xtal != NULL) {
++#ifdef OS_FREERTOS
+                         // Inform blocked Tasks
+                         *xHigherPriorityTaskWoken = pdFALSE;            // Must be initialized to pdFALSE
+ 
+                         xResult = xEventGroupSetBitsFromISR(xEventGroupCM_xtal, XTAL32_AVAILABLE,
+                                                             xHigherPriorityTaskWoken);
++#else
++			xResult = OS_EVENT_GROUP_SET_BITS_FROM_ISR(xEventGroupCM_xtal, XTAL32_AVAILABLE);
++#endif
+                 }
+ 
+                 DBG_SET_LOW(CLK_MGR_USE_TIMING_DEBUG, CLKDBG_XTAL32M_SETTLED);
+@@ -448,6 +458,7 @@
+         return xResult;
+ }
+ 
++#ifdef OS_FREERTOS
+ /**
+  * \brief Handle the indication that the PLL is locked and therefore available.
+  */
+@@ -1290,8 +1301,6 @@
+         return (cpu_clk_t)get_clk_freq(curr_sysclk, curr_ahbclk);
+ }
+ 
+-#ifdef OS_FREERTOS
+-
+ cpu_clk_t cm_cpu_clk_get_fromISR(void)
+ {
+         sys_clk_t curr_sysclk = cm_sys_clk_get_fromISR();
+@@ -1299,7 +1308,6 @@
+ 
+         return (cpu_clk_t)get_clk_freq(curr_sysclk, curr_ahbclk);
+ }
+-#endif
+ 
+ /**
+  * \brief Interrupt handler of the XTAL32M_RDY_IRQn.
+@@ -2092,7 +2100,7 @@
+         switch_to_pll();
+ }
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ __RETAINED_CODE void cm_sys_clk_wakeup(void)
+ {
+         /*
+@@ -2106,11 +2114,12 @@
+          * the first message of the queue (clear Event Group bits) and then the second (set Event
+          * Group bits), which is the desired operation.
+          */
+-
++#ifdef OS_FREERTOS
+         /* Timer task must have the highest priority so that it runs first
+          * as soon as the OS scheduler is unblocked.
+          * See caller (system_wake_up()) */
+         ASSERT_WARNING(configTIMER_TASK_PRIORITY == (configMAX_PRIORITIES - 1));
++#endif /*OS_FREERTOS */
+ 
+         xtal32m_settled_notification = false;
+         xtal32m_settled = hw_clk_is_xtalm_started();
+@@ -2136,7 +2145,7 @@
+         }
+ }
+ 
+-#endif /* OS_FREERTOS */
++#endif /* OS_BAREMETAL */
+ 
+ #endif /* dg_configUSE_CLOCK_MGR */
+ 
