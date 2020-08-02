@@ -1,0 +1,24 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_usb_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_usb_da1469x.c
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_usb_da1469x.c	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_usb_da1469x.c	2020-08-02 17:07:24.193490632 +0300
+@@ -21,6 +21,9 @@
+  \{
+  */
+ 
++/* TODO for Embox */
++#define configMINIMAL_STACK_SIZE 256
++
+ #if (dg_configUSE_SYS_USB == 1)
+ 
+ #include "sys_usb.h"
+@@ -273,8 +276,8 @@
+ 
+         hw_usb_enable_vbus_interrupt(sys_usb_vbus_isr_cb);
+ #if (dg_configUSE_USB_ENUMERATION == 1)
+-        set_sdk_callbacks_1469x();
+-        set_emusb_1469x_driver();
++//        set_sdk_callbacks_1469x();
++//        set_emusb_1469x_driver();
+ #endif /* (dg_configUSE_USB_ENUMERATION == 1) */
+         OS_TASK_CREATE("VBUS",                          /* The text name assigned to the task, for
+                                                            debug only; not used by the kernel. */

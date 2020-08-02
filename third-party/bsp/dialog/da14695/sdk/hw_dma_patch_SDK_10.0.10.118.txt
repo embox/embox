@@ -1,0 +1,56 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_dma.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_dma.c
+--- SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_dma.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/peripherals/src/hw_dma.c	2020-07-09 23:26:18.590168140 +0300
+@@ -37,7 +37,7 @@
+         void *user_data;
+ } dma_callbacks_user_data[8];
+ 
+-#define DMA_CHN_REG(reg, chan) ((volatile uint32 *)(&(reg)) + ((chan) * 8))
++#define DMA_CHN_REG(reg, chan) ((volatile uint32_t *)(&(reg)) + ((chan) * 8))
+ 
+ /**
+  * \brief Initialize DMA Channel
+@@ -49,11 +49,11 @@
+ {
+         volatile dma_size_t *dma_x_len_reg;
+         volatile dma_size_t *dma_x_int_reg;
+-        volatile uint32 *dma_x_ctrl_reg;
+-        volatile uint32 *dma_x_a_start_reg;
+-        volatile uint32 *dma_x_b_start_reg;
+-        uint32 src_address;
+-        uint32 dest_address;
++        volatile uint32_t *dma_x_ctrl_reg;
++        volatile uint32_t *dma_x_a_start_reg;
++        volatile uint32_t *dma_x_b_start_reg;
++        uint32_t src_address;
++        uint32_t dest_address;
+ 
+         /* Make sure the DMA channel length is not zero */
+         ASSERT_WARNING(channel_setup->length > 0);
+@@ -184,7 +184,7 @@
+         dma_callbacks_user_data[channel].callback = cb;
+ 
+         // Look up DMAx_A_START_REG address
+-        volatile uint32 *dma_x_a_start_reg = DMA_CHN_REG(DMA->DMA0_A_START_REG, channel);
++        volatile uint32_t *dma_x_a_start_reg = DMA_CHN_REG(DMA->DMA0_A_START_REG, channel);
+ 
+         // Look up DMAX_LEN_REG address
+         volatile dma_size_t *dma_x_len_reg = DMA_CHN_REG(DMA->DMA0_LEN_REG, channel);
+@@ -219,7 +219,7 @@
+         dma_callbacks_user_data[channel].callback = cb;
+ 
+         // Look up DMAx_B_START_REG address
+-        volatile uint32 *dma_x_b_start_reg = DMA_CHN_REG(DMA->DMA0_B_START_REG, channel);
++        volatile uint32_t *dma_x_b_start_reg = DMA_CHN_REG(DMA->DMA0_B_START_REG, channel);
+ 
+         // Look up DMAX_LEN_REG address
+         volatile dma_size_t *dma_x_len_reg = DMA_CHN_REG(DMA->DMA0_LEN_REG, channel);
+@@ -325,7 +325,7 @@
+         uint16_t i;
+         volatile dma_size_t *dma_x_len_reg;
+         volatile dma_size_t *dma_x_int_reg;
+-        volatile uint32 *dma_x_ctrl_reg;
++        volatile uint32_t *dma_x_ctrl_reg;
+         risen = DMA->DMA_INT_STATUS_REG;
+ 
+         for (i = 0; risen != 0 && i < 8; ++i, risen >>= 1) {
