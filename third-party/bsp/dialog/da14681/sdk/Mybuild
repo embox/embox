@@ -1,5 +1,11 @@
 package third_party.bsp.dialog.da14681
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildDepends(third_party.bsp.dialog.da14681.custom_config)
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/,bsp/peripherals/include bsp/system/sys_man/include bsp/memory/include)")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/,bsp/config bsp/include bsp/osal)")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/dialog/da14681/sdk/DA1468x_DA15xxx_SDK_1.0.14.1081/sdk/,interfaces/ble/config)")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/third-party/bsp/dialog/da14681/osal")
 static module sdk {
+	@NoRuntime depends third_party.bsp.dialog.da14681.custom_config
 }
