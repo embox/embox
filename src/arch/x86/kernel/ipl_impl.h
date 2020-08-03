@@ -31,8 +31,8 @@ static inline void ipl_init(void) {
 	__asm__ __volatile__ ("sti;\n\t" : : : "memory");
 }
 
-static inline unsigned int ipl_save(void) {
-	unsigned int ret;
+static inline __ipl_t ipl_save(void) {
+	__ipl_t ret;
 
 	__asm__ __volatile__ (
 		"pushf;\n\t"
@@ -46,7 +46,7 @@ static inline unsigned int ipl_save(void) {
 	return ret;
 }
 
-static inline void ipl_restore(unsigned int ipl) {
+static inline void ipl_restore(__ipl_t ipl) {
 	if (ipl & X86_EFLAGS_IF) {
 		__asm__ __volatile__ ("sti;\n\t" : : : "memory");
 	} else {
