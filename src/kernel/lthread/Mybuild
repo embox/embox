@@ -9,4 +9,7 @@ module lthread {
 
 	depends embox.kernel.sched.sched
 	depends embox.kernel.sched.current.api
+
+	@NoRuntime depends embox.kernel.timer.sys_timer
+	@NoRuntime depends embox.compat.posix.util.time
 }
