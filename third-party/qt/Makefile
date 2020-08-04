@@ -7,8 +7,21 @@ PKG_SOURCES := http://download.qt-project.org/archive/qt/4.8/$(PKG_VER)/$(PKG_NA
 
 PKG_MD5     := d990ee66bf7ab0c785589776f35ba6ad
 
+#
+# NOTE: q_foreach_bug_g++9.txt patch is required because
+# QT 4 has a buggy Q_FOREACH() macro which breaks "for" loop
+# at incorrect place (outer loop). It is discussed here
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=44715,
+# and here
+# https://gcc.gnu.org/bugzilla/show_bug.cgi?id=90617
+#
+# QT 5 has a better version of Q_FOREACH(), so this patch
+# derives this improved version from QT 5 sources.
+#
+
 PKG_PATCHES := pkg_patch.txt \
-	patch_cortex_m7.txt
+	patch_cortex_m7.txt \
+	q_foreach_bug_g++9.txt
 
 include $(EXTBLD_LIB)
 
