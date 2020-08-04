@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <inttypes.h>
 #include <getopt.h>
+#include <assert.h>
 
 #include <drivers/block_dev.h>
 
