@@ -64,7 +64,7 @@ module waitq_protect_link_store extends waitq_protect_link {
 	source "waitq_protect_link_store.h"
 }
 
-@DefaultImpl(idle_thread)
+@DefaultImpl(idle_light)
 abstract module idle { }
 
 module idle_thread extends idle {
@@ -81,7 +81,7 @@ module idle_light extends idle {
 	@NoRuntime depends embox.kernel.lthread.lthread
 }
 
-@DefaultImpl(boot_thread)
+@DefaultImpl(boot_light)
 abstract module boot { }
 
 module boot_thread extends boot {
