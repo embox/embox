@@ -14,7 +14,6 @@
 #include <sys/cdefs.h>
 #include <util/dlist.h>
 #include <kernel/spinlock.h>
-#include <kernel/sched/current.h>
 
 __BEGIN_DECLS
 
@@ -40,10 +39,7 @@ static inline void waitq_init(struct waitq *wq) {
 	wq->lock = SPIN_UNLOCKED;
 }
 
-static inline void waitq_link_init(struct waitq_link *wql) {
-	wql->schedee = schedee_get_current();
-	dlist_head_init(&wql->link);
-}
+extern void waitq_link_init(struct waitq_link *wql);
 
 extern void __waitq_wait_prepare(struct waitq *, struct waitq_link *);
 extern void waitq_wait_prepare(struct waitq *, struct waitq_link *);
