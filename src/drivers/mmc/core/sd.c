@@ -6,6 +6,7 @@
  * @date 05.11.2019
  */
 #include <unistd.h>
+#include <assert.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/mmc/mmc.h>
