@@ -7,5 +7,5 @@ module riscv_clk extends embox.arch.clock {
 	
 	source "riscv_clk.c"
 
-	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.kernel.time.clock_source
 }
