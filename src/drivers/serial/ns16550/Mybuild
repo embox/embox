@@ -12,5 +12,5 @@ module ns16550 extends embox.driver.diag.diag_api {
 	depends embox.driver.periph_memory
 	depends core
 	depends diag
-	depends embox.driver.char_dev
+	depends embox.driver.char_dev_api
 }
