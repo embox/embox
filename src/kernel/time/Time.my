@@ -11,6 +11,7 @@ module clock_source {
 	source "clock_tick.c"
 
 	depends embox.kernel.lthread.lthread
+	depends embox.kernel.timer.strategy.api
 }
 
 module kernel_time {

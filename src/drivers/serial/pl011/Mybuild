@@ -13,4 +13,6 @@ module pl011 extends embox.driver.diag.diag_api {
 	depends diag
 	depends embox.driver.char_dev_api
 	depends embox.driver.periph_memory
+
+	@NoRuntime depends embox.util.dlist
 }

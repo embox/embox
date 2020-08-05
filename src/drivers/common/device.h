@@ -11,7 +11,6 @@
 
 #include <config/embox/driver/common.h>
 #include <framework/mod/options.h>
-#include <fs/idesc.h>
 
 #define DEV_NAME_LEN \
 	OPTION_MODULE_GET(embox__driver__common, NUMBER, device_name_len)

@@ -13,8 +13,14 @@
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
 #include <kernel/sched/waitq.h>
+#include <kernel/sched/current.h>
 
 #include <kernel/sched/waitq_protect_link.h>
+
+void waitq_link_init(struct waitq_link *wql) {
+	wql->schedee = schedee_get_current();
+	dlist_head_init(&wql->link);
+}
 
 static void waitq_add(struct waitq *wq, struct waitq_link *wql) {
 	ipl_t ipl;
