@@ -115,6 +115,8 @@ static int sifive_uart_getc(struct uart *dev) {
 }
 
 static int sifive_uart_putc(struct uart *dev, int ch) {
+	while((REG32_LOAD(dev->base_addr + SIFIVE_SERIAL_TXDATA_OFFS) & SIFIVE_SERIAL_TXDATA_FULL_MASK));
+
 	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_TXDATA_OFFS,
 			ch & SIFIVE_SERIAL_TXDATA_DATA_MASK);
 
