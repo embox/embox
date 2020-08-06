@@ -38,8 +38,8 @@ void riscv64_interrupt_handler(pt_regs_t *regs) {
 		if (pending == MACHINE_TIMER_INTERRUPT) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
-			if (__riscv_timer_handler) {
-				__riscv_timer_handler(0, __riscv_timer_data);
+			if (__riscv64_timer_handler) {
+				__riscv64_timer_handler(0, __riscv64_timer_data);
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();

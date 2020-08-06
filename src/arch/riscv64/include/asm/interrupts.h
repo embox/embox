@@ -19,10 +19,10 @@
 
 
 #define RISCV_TIMER_IRQ_DEF(timer_handler, pclock_source) \
-	int (*__riscv_timer_handler)(unsigned int, void *) = timer_handler; \
-	void *__riscv_timer_data = pclock_source;
+	int (*__riscv64_timer_handler)(unsigned int, void *) = timer_handler; \
+	void *__riscv64_timer_data = pclock_source;
 
-extern int (*__riscv_timer_handler)(unsigned int, void *);
-extern void *__riscv_timer_data;
+extern int (*__riscv64_timer_handler)(unsigned int, void *);
+extern void *__riscv64_timer_data;
 
 #endif /* RISCV_INTERRUPTS_H_ */
