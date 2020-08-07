@@ -7,7 +7,9 @@
  */
 
 #include <stddef.h>
+
 #include <kernel/irq.h>
+
 #include <drivers/serial/stm_usart.h>
 
 #include <drivers/serial/uart_device.h>
@@ -16,7 +18,9 @@
 extern const struct uart_ops stm32_uart_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-static struct uart stm32_ttyS0 = {
+#define TTY_NAME    "ttyS0"
+
+static struct uart stm32_ttySx = {
 		.uart_ops = &stm32_uart_ops,
 		.irq_num = USARTx_IRQn,
 		.base_addr = (unsigned long) USARTx,
@@ -29,6 +33,6 @@ static struct uart stm32_ttyS0 = {
 		}
 };
 
-TTYS_DEF("ttyS0", &stm32_ttyS0);
+TTYS_DEF(TTY_NAME, &stm32_ttySx);
 
-STATIC_IRQ_ATTACH(USARTx_IRQn, uart_irq_handler, &stm32_ttyS0);
+STATIC_IRQ_ATTACH(USARTx_IRQn, uart_irq_handler, &stm32_ttySx);
