@@ -45,9 +45,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 
-#define USARTx_FORCE_RESET()             __USART1_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __USART1_RELEASE_RESET()
-
 /* Definition for USARTx Pins */
 #define USARTx_TX_PIN                    GPIO_PIN_4
 #define USARTx_TX_GPIO_PORT              GPIOC
@@ -60,7 +57,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 /* In Embox we assume that the lower external irq number is 0,
  * but in the cortexm3 it is -15 */
 #define USARTx_IRQn                      USART1_IRQ
-#define USARTx_IRQHandler                USART1_IRQHandler
 
 #elif MODOPS_USARTX == 2
 
@@ -68,9 +64,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 #define USARTx_CLK_ENABLE()              __USART2_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
-
-#define USARTx_FORCE_RESET()             __USART2_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __USART2_RELEASE_RESET()
 
 /* Definition for USARTx Pins */
 #define USARTx_TX_PIN                    GPIO_PIN_2
@@ -84,7 +77,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 /* In Embox we assume that the lower external irq number is 0,
  * but in the cortexm3 it is -15 */
 #define USARTx_IRQn                      USART2_IRQ
-#define USARTx_IRQHandler                USART2_IRQHandler
 
 #elif MODOPS_USARTX == 3
 
@@ -92,9 +84,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 #define USARTx_CLK_ENABLE()              __USART3_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
-
-#define USARTx_FORCE_RESET()             __USART3_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __USART3_RELEASE_RESET()
 
 /* Definition for USARTx Pins */
 #define USARTx_TX_PIN                    GPIO_PIN_10
@@ -108,7 +97,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 /* In Embox we assume that the lower external irq number is 0,
  * but in the cortexm3 it is -15 */
 #define USARTx_IRQn                      USART3_IRQ
-#define USARTx_IRQHandler                USART3_IRQHandler
 
 #endif
 
