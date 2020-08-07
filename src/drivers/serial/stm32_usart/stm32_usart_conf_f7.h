@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 30 нояб. 2015 г.
+ * @data 30.11.2015
  * @author: Anton Bondarev
  */
 
@@ -41,7 +41,7 @@ static_assert(USART1_IRQ == USART1_IRQn);
 #if MODOPS_USARTX == 6
 
 #define USARTx                           USART6
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART6_CLK_ENABLE();
+#define USARTx_CLK_ENABLE()              __HAL_RCC_USART6_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
 
@@ -62,7 +62,7 @@ static_assert(USART1_IRQ == USART1_IRQn);
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART2_CLK_ENABLE();
+#define USARTx_CLK_ENABLE()              __HAL_RCC_USART2_CLK_ENABLE()
 #define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 
@@ -83,7 +83,7 @@ static_assert(USART1_IRQ == USART1_IRQn);
 
 #elif MODOPS_USARTX == 1
 #define USARTx                           USART1
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART1_CLK_ENABLE();
+#define USARTx_CLK_ENABLE()              __HAL_RCC_USART1_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 
 #define USARTx_FORCE_RESET()             __HAL_RCC_USART1_FORCE_RESET()
