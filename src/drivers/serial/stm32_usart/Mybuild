@@ -12,7 +12,8 @@ module stm_usart_f3 extends embox.driver.diag.diag_api {
 	source "stm32_usart_conf_f3.h"
 
 	source "hal_msp_f3.c"
-	source "stm_usart_cube_diag.c"
+	source "stm_diag.c"
+	source "stm_usart.c"
 
 	depends embox.driver.char_dev
 	depends embox.driver.serial.core
@@ -33,7 +34,8 @@ module stm_usart_f4 extends embox.driver.diag.diag_api {
 	source "stm32_usart_conf_f4.h"
 
 	source "hal_msp_f4.c"
-	source "stm_usart_cube_diag.c"
+	source "stm_diag.c"
+	source "stm_usart.c"
 
 	depends embox.driver.char_dev
 	depends embox.driver.serial.core
@@ -54,7 +56,8 @@ module stm_usart_f7 extends embox.driver.diag.diag_api {
 	source "stm32_usart_conf_f7.h"
 
 	source "hal_msp_f7.c"
-	source "stm_usart_cube_diag.c"
+	source "stm_diag.c"
+	source "stm_usart.c"
 
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
@@ -73,7 +76,8 @@ module stm_usart_l4 extends embox.driver.diag.diag_api {
 	source "stm32_usart_conf_l4.h"
 
 	source "hal_msp_l4.c"
-	source "stm_usart_cube_diag.c"
+	source "stm_diag.c"
+	source "stm_usart.c"
 
 	depends embox.driver.char_dev
 	depends embox.driver.serial.core
