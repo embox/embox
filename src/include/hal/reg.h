@@ -66,10 +66,10 @@
 	REG32_STORE(addr, REG32_LOAD(addr) & (~((uint32_t) mask)))
 
 #define REG16_LOAD(addr) \
-	*((volatile uint16_t *)(addr))
+	*((volatile uint16_t *)((uintptr_t)addr))
 
 #define REG16_STORE(addr, val) \
-	do { *((volatile uint16_t *)(addr)) = (val); } while (0)
+	do { *((volatile uint16_t *)((uintptr_t) addr)) = (val); } while (0)
 
 #define REG16_ORIN(addr, mask) \
 	REG16_STORE(addr, REG16_LOAD(addr) | ((uint16_t) mask))
@@ -81,10 +81,10 @@
 	REG16_STORE(addr, REG16_LOAD(addr) & (~((uint16_t) mask)))
 
 #define REG8_LOAD(addr) \
-	*((volatile uint8_t *)(addr))
+	*((volatile uint8_t *)((uintptr_t)addr))
 
 #define REG8_STORE(addr, val) \
-	do { *((volatile uint8_t *)(addr)) = (val); } while (0)
+	do { *((volatile uint8_t *)((uintptr_t) addr)) = (val); } while (0)
 
 #define REG8_ORIN(addr, mask) \
 	REG8_STORE(addr, REG8_LOAD(addr) | ((uint8_t) mask))
