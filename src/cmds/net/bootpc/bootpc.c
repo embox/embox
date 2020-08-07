@@ -237,6 +237,9 @@ int bootp_client(struct net_device *dev) {
 	}
 
 	ret = bootp_process((void*)req_buff, dev);
+	if (ret != 0) {
+		inetdev_set_addr(in_dev, dev_ip_addr);
+	}
 error_rx:
 	close(rx_sock);
 error:
