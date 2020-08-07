@@ -98,16 +98,6 @@ static_assert(USART2_IRQ == USART2_IRQn);
 #define STM32_USART_RXDATA(uart)  uart->DR
 #define STM32_USART_TXDATA(uart)  uart->DR
 
-extern void USART_RX_GPIO_CLK_ENABLE(void *usart_base);
-extern void USART_TX_GPIO_CLK_ENABLE(void *usart_base);
-extern void USART_CLK_ENABLE(void *usart_base);
-extern uint16_t USART_RX_PIN(void *usart_base);
-extern uint16_t USART_TX_PIN(void *usart_base);
-extern uint8_t USART_RX_AF(void *usart_base);
-extern uint8_t USART_TX_AF(void *usart_base);
-extern GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base);
-extern GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base);
-
 /* Look at stm32f4xx_hal_uart.h and find ORE */
 #define STM32_USART_CLEAR_ORE(uart) \
 	do { \
