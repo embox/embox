@@ -41,7 +41,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 #if MODOPS_USARTX == 1
 
 #define USARTx                           USART1
-#define USARTx_CLK_ENABLE()              __USART1_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOC_CLK_ENABLE()
 
@@ -61,7 +60,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 #elif MODOPS_USARTX == 2
 
 #define USARTx                           USART2
-#define USARTx_CLK_ENABLE()              __USART2_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
 
@@ -81,7 +79,6 @@ static_assert(USART3_IRQ == USART3_IRQn);
 #elif MODOPS_USARTX == 3
 
 #define USARTx                           USART3
-#define USARTx_CLK_ENABLE()              __USART3_CLK_ENABLE();
 #define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
 #define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
 
