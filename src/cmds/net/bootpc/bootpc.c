@@ -155,6 +155,8 @@ int bootp_client(struct net_device *dev) {
 	uint8_t req_buff[sizeof(struct ethhdr) + IP_MIN_HEADER_SIZE + sizeof(struct udphdr) + sizeof(struct bootphdr)];
 	struct sockaddr_ll link_layer;
 	struct sockaddr_in addr;
+	struct in_device *in_dev;
+	in_addr_t dev_ip_addr;
 
 	ret = bootp_prepare(dev);
 	if (ret) {
@@ -214,6 +216,14 @@ int bootp_client(struct net_device *dev) {
 
 	bootp_make_discover(dev, req_buff);
 
+	in_dev = inetdev_get_by_dev(dev);
+	if (in_dev == NULL) {
+		ret = -EINVAL;
+		goto error_rx;
+	}
+	dev_ip_addr = in_dev->ifa_address;
+	inetdev_set_addr(in_dev, 0);
+
 	if (-1 == sendto(tx_sock, req_buff, sizeof(req_buff), 0,
 			(struct sockaddr *) &link_layer, sizeof(struct sockaddr_ll))) {
 		ret = -errno;
@@ -222,10 +232,14 @@ int bootp_client(struct net_device *dev) {
 
 	if (-1 == recv(rx_sock, req_buff, sizeof(req_buff), 0)) {
 		ret = -errno;
+		inetdev_set_addr(in_dev, dev_ip_addr);
 		goto error_rx;
 	}
 
 	ret = bootp_process((void*)req_buff, dev);
+	if (ret != 0) {
+		inetdev_set_addr(in_dev, dev_ip_addr);
+	}
 error_rx:
 	close(rx_sock);
 error:
