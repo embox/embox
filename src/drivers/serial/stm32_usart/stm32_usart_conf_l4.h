@@ -34,38 +34,39 @@ static_assert(USART2_IRQ == USART2_IRQn);
 #if MODOPS_USARTX == 1
 
 #define USARTx                           USART1
-#define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_6
-#define USARTx_TX_GPIO_PORT              GPIOB
-#define USARTx_TX_AF                     GPIO_AF7_USART1
-#define USARTx_RX_PIN                    GPIO_PIN_7
-#define USARTx_RX_GPIO_PORT              GPIOB
-#define USARTx_RX_AF                     GPIO_AF7_USART1
 
 #define USARTx_IRQn                      USART1_IRQ
 
 #elif MODOPS_USARTX == 2
 
 #define USARTx                           USART2
-#define USARTx_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_2
-#define USARTx_TX_GPIO_PORT              GPIOA
-#define USARTx_TX_AF                     GPIO_AF7_USART2
-#define USARTx_RX_PIN                    GPIO_PIN_3
-#define USARTx_RX_GPIO_PORT              GPIOA
-#define USARTx_RX_AF                     GPIO_AF7_USART2
 
 #define USARTx_IRQn                      USART2_IRQ
 
 #else
 #error "Unsupported USART number"
 #endif
+
+#define STM32_USART1_ENABLED             1
+#define USART1_RX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
+#define USART1_TX_GPIO_CLK_ENABLE()      __GPIOB_CLK_ENABLE()
+#define USART1_TX_PIN                    GPIO_PIN_6
+#define USART1_TX_GPIO_PORT              GPIOB
+#define USART1_TX_AF                     GPIO_AF7_USART1
+#define USART1_RX_PIN                    GPIO_PIN_7
+#define USART1_RX_GPIO_PORT              GPIOB
+#define USART1_RX_AF                     GPIO_AF7_USART1
+
+#define STM32_USART2_ENABLED             1
+#define USART2_RX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
+#define USART2_TX_GPIO_CLK_ENABLE()      __GPIOA_CLK_ENABLE()
+#define USART2_TX_PIN                    GPIO_PIN_2
+#define USART2_TX_GPIO_PORT              GPIOA
+#define USART2_TX_AF                     GPIO_AF7_USART2
+#define USART2_RX_PIN                    GPIO_PIN_3
+#define USART2_RX_GPIO_PORT              GPIOA
+#define USART2_RX_AF                     GPIO_AF7_USART2
+
 
 #define STM32_USART_FLAGS(uart)   uart->ISR
 #define STM32_USART_RXDATA(uart)  uart->RDR
