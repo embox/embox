@@ -2,6 +2,25 @@
 #include <stm32.h>
 
 struct uart_conf uarts[] = {
+	[1] = {
+		.status = DISABLED,
+		.name = "USART1",
+		.dev = {
+			.irqs = {
+				VAL("", 37),
+			},
+			.pins = {
+				PIN("TX", PA, PIN_9, AF7),
+				PIN("RX", PA, PIN_10, AF7),
+			},
+			.clocks = {
+				VAL("TX",   CLK_GPIOA),
+				VAL("RX",   CLK_GPIOA),
+				VAL("UART", CLK_USART1),
+			}
+		},
+		.baudrate = 115200,
+	},
 	[2] = {
 		.status = DISABLED,
 		.name = "USART2",
@@ -43,3 +62,4 @@ struct uart_conf uarts[] = {
 };
 
 EXPORT_CONFIG(UART(uarts))
+
