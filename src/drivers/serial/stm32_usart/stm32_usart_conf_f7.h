@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 30 нояб. 2015 г.
+ * @data 30.11.2015
  * @author: Anton Bondarev
  */
 
@@ -41,79 +41,64 @@ static_assert(USART1_IRQ == USART1_IRQn);
 #if MODOPS_USARTX == 6
 
 #define USARTx                           USART6
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART6_CLK_ENABLE();
-#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
-
-#define USARTx_FORCE_RESET()             __HAL_RCC_USART6_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __HAL_RCC_USART6_RELEASE_RESET()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_6
-#define USARTx_TX_GPIO_PORT              GPIOC
-#define USARTx_TX_AF                     GPIO_AF8_USART6
-#define USARTx_RX_PIN                    GPIO_PIN_7
-#define USARTx_RX_GPIO_PORT              GPIOC
-#define USARTx_RX_AF                     GPIO_AF8_USART6
-
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART6_IRQ
-#define USARTx_IRQHandler                USART6_IRQHandler
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART2_CLK_ENABLE();
-#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 
-#define USARTx_FORCE_RESET()             __HAL_RCC_USART2_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __HAL_RCC_USART2_RELEASE_RESET()
-
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_2
-#define USARTx_TX_GPIO_PORT              GPIOA
-#define USARTx_TX_AF                     GPIO_AF7_USART2
-#define USARTx_RX_PIN                    GPIO_PIN_3
-#define USARTx_RX_GPIO_PORT              GPIOA
-#define USARTx_RX_AF                     GPIO_AF7_USART2
 
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART2_IRQ
-#define USARTx_IRQHandler                USART2_IRQHandler
 
 #elif MODOPS_USARTX == 1
 #define USARTx                           USART1
-#define USARTx_CLK_ENABLE()              __HAL_RCC_USART1_CLK_ENABLE();
-#define USARTx_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
 
-#define USARTx_FORCE_RESET()             __HAL_RCC_USART1_FORCE_RESET()
-#define USARTx_RELEASE_RESET()           __HAL_RCC_USART1_RELEASE_RESET()
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      USART1_IRQ
+#else
+#error Unsupported USARTx
+#endif
 
-/* Definition for USARTx Pins */
-#define USARTx_TX_PIN                    GPIO_PIN_9
-#define USARTx_TX_GPIO_PORT              GPIOA
-#define USARTx_TX_AF                     GPIO_AF7_USART1
-
+#define STM32_USART1_ENABLED             1
+#define USART1_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART1_TX_PIN                    GPIO_PIN_9
+#define USART1_TX_GPIO_PORT              GPIOA
+#define USART1_TX_AF                     GPIO_AF7_USART1
 #if defined STM32F746xx
-#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
-#define USARTx_RX_PIN                    GPIO_PIN_7
-#define USARTx_RX_GPIO_PORT              GPIOB
-#define USARTx_RX_AF                     GPIO_AF7_USART1
+#define USART1_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOB_CLK_ENABLE()
+#define USART1_RX_PIN                    GPIO_PIN_7
+#define USART1_RX_GPIO_PORT              GPIOB
+#define USART1_RX_AF                     GPIO_AF7_USART1
 #elif defined STM32F769xx
-#define USARTx_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
-#define USARTx_RX_PIN                    GPIO_PIN_10
-#define USARTx_RX_GPIO_PORT              GPIOA
-#define USARTx_RX_AF                     GPIO_AF7_USART1
+#define USART1_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART1_RX_PIN                    GPIO_PIN_10
+#define USART1_RX_GPIO_PORT              GPIOA
+#define USART1_RX_AF                     GPIO_AF7_USART1
 #else
 #error Unsupported platform
 #endif
 
-/* Definition for USARTx's NVIC */
-#define USARTx_IRQn                      USART1_IRQ
-#define USARTx_IRQHandler                USART1_IRQHandler
-#else
-#error Unsupported USARTx
-#endif
+#define STM32_USART2_ENABLED             1
+#define USART2_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART2_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOA_CLK_ENABLE()
+#define USART2_TX_PIN                    GPIO_PIN_2
+#define USART2_TX_GPIO_PORT              GPIOA
+#define USART2_TX_AF                     GPIO_AF7_USART2
+#define USART2_RX_PIN                    GPIO_PIN_3
+#define USART2_RX_GPIO_PORT              GPIOA
+#define USART2_RX_AF                     GPIO_AF7_USART2
+
+#define STM32_USART6_ENABLED             1
+#define USART6_RX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
+#define USART6_TX_GPIO_CLK_ENABLE()      __HAL_RCC_GPIOC_CLK_ENABLE()
+#define USART6_TX_PIN                    GPIO_PIN_6
+#define USART6_TX_GPIO_PORT              GPIOC
+#define USART6_TX_AF                     GPIO_AF8_USART6
+#define USART6_RX_PIN                    GPIO_PIN_7
+#define USART6_RX_GPIO_PORT              GPIOC
+#define USART6_RX_AF                     GPIO_AF8_USART6
+
 
 
 #define STM32_USART_FLAGS(uart)   uart->ISR
