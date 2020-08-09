@@ -9,41 +9,43 @@
 
 #include <drivers/serial/stm_usart.h>
 
+#include <config/board_config.h>
+
 static void USART_CLK_ENABLE(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		__HAL_RCC_USART1_CLK_ENABLE();
+		CONF_USART1_CLK_ENABLE_UART();
 		break;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		__HAL_RCC_USART2_CLK_ENABLE();
+		CONF_USART2_CLK_ENABLE_UART();
 		break;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		__HAL_RCC_USART3_CLK_ENABLE();
+		CONF_USART3_CLK_ENABLE_UART();
 		break;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		__HAL_RCC_USART4_CLK_ENABLE();
+		CONF_USART4_CLK_ENABLE_UART();
 		break;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		__HAL_RCC_USART5_CLK_ENABLE();
+		CONF_USART5_CLK_ENABLE_UART();
 		break;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		__HAL_RCC_USART6_CLK_ENABLE();
+		CONF_USART6_CLK_ENABLE_UART();
 		break;
 	}
 #endif
@@ -54,39 +56,39 @@ static void USART_CLK_ENABLE(void *usart_base) {
 
 static void USART_TX_GPIO_CLK_ENABLE(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		USART1_TX_GPIO_CLK_ENABLE();
+		CONF_USART1_CLK_ENABLE_TX();
 		break;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		USART2_TX_GPIO_CLK_ENABLE();
+		CONF_USART2_CLK_ENABLE_TX();
 		break;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		USART3_TX_GPIO_CLK_ENABLE();
+		CONF_USART3_CLK_ENABLE_TX();
 		break;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		USART4_TX_GPIO_CLK_ENABLE();
+		CONF_USART4_CLK_ENABLE_TX();
 		break;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		USART5_TX_GPIO_CLK_ENABLE();
+		CONF_USART5_CLK_ENABLE_TX();
 		break;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		USART6_TX_GPIO_CLK_ENABLE();
+		CONF_USART6_CLK_ENABLE_TX();
 		break;
 	}
 #endif
@@ -97,39 +99,39 @@ static void USART_TX_GPIO_CLK_ENABLE(void *usart_base) {
 
 static void USART_RX_GPIO_CLK_ENABLE(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		USART1_RX_GPIO_CLK_ENABLE();
+		CONF_USART1_CLK_ENABLE_RX();
 		break;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		USART2_RX_GPIO_CLK_ENABLE();
+		CONF_USART2_CLK_ENABLE_RX();
 		break;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		USART3_RX_GPIO_CLK_ENABLE();
+		CONF_USART3_CLK_ENABLE_RX();
 		break;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		USART4_RX_GPIO_CLK_ENABLE();
+		CONF_USART4_CLK_ENABLE_RX();
 		break;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		USART5_RX_GPIO_CLK_ENABLE();
+		CONF_USART5_CLK_ENABLE_RX();
 		break;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		USART6_RX_GPIO_CLK_ENABLE();
+		CONF_USART6_CLK_ENABLE_RX();
 		break;
 	}
 #endif
@@ -140,34 +142,34 @@ static void USART_RX_GPIO_CLK_ENABLE(void *usart_base) {
 
 static uint16_t USART_RX_PIN(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		return USART1_RX_PIN;
+		return CONF_USART1_PIN_RX_NR;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		return USART2_RX_PIN;
+		return CONF_USART2_PIN_RX_NR;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		return USART3_RX_PIN;
+		return CONF_USART3_PIN_RX_NR;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		return USART4_RX_PIN;
+		return CONF_USART4_PIN_RX_NR;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		return USART5_RX_PIN;
+		return CONF_USART5_PIN_RX_NR;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		return USART6_RX_PIN;
+		return CONF_USART6_PIN_RX_NR;
 	}
 #endif
 	default:
@@ -178,34 +180,34 @@ static uint16_t USART_RX_PIN(void *usart_base) {
 
 static uint16_t USART_TX_PIN(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		return USART1_TX_PIN;
+		return CONF_USART1_PIN_TX_NR;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		return USART2_TX_PIN;
+		return CONF_USART2_PIN_TX_NR;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		return USART3_TX_PIN;
+		return CONF_USART3_PIN_TX_NR;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		return USART4_TX_PIN;
+		return CONF_USART4_PIN_TX_NR;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		return USART5_TX_PIN;
+		return CONF_USART5_PIN_TX_NR;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		return USART6_TX_PIN;
+		return CONF_USART6_PIN_TX_NR;
 	}
 #endif
 	default:
@@ -216,34 +218,34 @@ static uint16_t USART_TX_PIN(void *usart_base) {
 
 static GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		return USART1_RX_GPIO_PORT;
+		return CONF_USART1_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		return USART2_RX_GPIO_PORT;
+		return CONF_USART2_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		return USART3_RX_GPIO_PORT;
+		return CONF_USART3_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		return USART4_RX_GPIO_PORT;
+		return CONF_USART4_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		return USART5_RX_GPIO_PORT;
+		return CONF_USART5_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		return USART6_RX_GPIO_PORT;
+		return CONF_USART6_PIN_RX_PORT;
 	}
 #endif
 	default:
@@ -254,34 +256,34 @@ static GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base) {
 
 static GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		return USART1_TX_GPIO_PORT;
+		return CONF_USART1_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		return USART2_TX_GPIO_PORT;
+		return CONF_USART2_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		return USART3_TX_GPIO_PORT;
+		return CONF_USART3_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		return USART4_TX_GPIO_PORT;
+		return CONF_USART4_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		return USART5_TX_GPIO_PORT;
+		return CONF_USART5_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		return USART6_TX_GPIO_PORT;
+		return CONF_USART6_PIN_TX_PORT;
 	}
 #endif
 	default:
@@ -292,34 +294,34 @@ static GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base) {
 
 static uint8_t USART_TX_AF(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		return USART1_TX_AF;
+		return CONF_USART1_PIN_TX_AF;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		return USART2_TX_AF;
+		return CONF_USART2_PIN_TX_AF;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		return USART3_TX_AF;
+		return CONF_USART3_PIN_TX_AF;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		return USART4_TX_AF;
+		return CONF_USART4_PIN_TX_AF;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		return USART5_TX_AF;
+		return CONF_USART5_PIN_TX_AF;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		return USART6_TX_AF;
+		return CONF_USART6_PIN_TX_AF;
 	}
 #endif
 	default:
@@ -330,34 +332,34 @@ static uint8_t USART_TX_AF(void *usart_base) {
 
 static uint8_t USART_RX_AF(void *usart_base) {
 	switch((uintptr_t)usart_base) {
-#if defined(USART1) &&  defined(STM32_USART1_ENABLED)
+#if defined(USART1) &&  defined(CONF_USART1_ENABLED)
 	case (uintptr_t)USART1: {
-		return USART1_RX_AF;
+		return CONF_USART1_PIN_RX_AF;
 	}
 #endif
-#if defined(USART2) &&  defined(STM32_USART2_ENABLED)
+#if defined(USART2) &&  defined(CONF_USART2_ENABLED)
 	case (uintptr_t)USART2: {
-		return USART2_RX_AF;
+		return CONF_USART2_PIN_RX_AF;
 	}
 #endif
-#if defined(USART3) &&  defined(STM32_USART3_ENABLED)
+#if defined(USART3) &&  defined(CONF_USART3_ENABLED)
 	case (uintptr_t)USART3: {
-		return USART3_RX_AF;
+		return CONF_USART3_PIN_RX_AF;
 	}
 #endif
-#if defined(USART4) &&  defined(STM32_USART4_ENABLED)
+#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
 	case (uintptr_t)USART4: {
-		return USART4_RX_AF;
+		return CONF_USART4_PIN_RX_AF;
 	}
 #endif
-#if defined(USART5) &&  defined(STM32_USART5_ENABLED)
+#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
 	case (uintptr_t)USART5: {
-		return USART5_RX_AF;
+		return CONF_USART5_PIN_RX_AF;
 	}
 #endif
-#if defined(USART6) &&  defined(STM32_USART6_ENABLED)
+#if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
-		return USART6_RX_AF;
+		return CONF_USART6_PIN_RX_AF;
 	}
 #endif
 	default:
