@@ -53,6 +53,13 @@ module strtok_test {
 	depends embox.framework.LibFramework
 }
 
+module strtok_r_test {
+	source "strtok_r.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
+
 module strlcpy_test {
 	source "strlcpy.c"
 
@@ -93,7 +100,7 @@ module strcmp_test {
 
 	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
-}		
+}
 
 module strlwr_test {
 	source "strlwr.c"
