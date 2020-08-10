@@ -59,10 +59,6 @@ void HAL_ETH_MspInit(ETH_HandleTypeDef *heth) {
 			GPIO_PIN_2 | GPIO_PIN_11 | GPIO_PIN_13 | GPIO_PIN_14;
 	HAL_GPIO_Init(GPIOG, &GPIO_InitStructure);
 
-	/* Enable the Ethernet global Interrupt */
-	HAL_NVIC_SetPriority(ETH_IRQn, 0x7, 0);
-	HAL_NVIC_EnableIRQ(ETH_IRQn);
-
 	/* Enable ETHERNET clock  */
 	__HAL_RCC_ETH_CLK_ENABLE();
 }
