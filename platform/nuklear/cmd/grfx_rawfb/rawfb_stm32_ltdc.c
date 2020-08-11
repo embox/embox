@@ -17,7 +17,15 @@
 #error Unsupported platform
 #endif
 
+#if defined STM32F746xx
 extern LTDC_HandleTypeDef hLtdcHandler;
+#define hltdc_handler hLtdcHandler
+#elif defined STM32F769xx
+extern LTDC_HandleTypeDef  hltdc_discovery;
+#define hltdc_handler hltdc_discovery
+#else
+#error Unsupported platform
+#endif
 
 static volatile int ltdc_li_triggered = 0;
 
@@ -29,7 +37,7 @@ void rawfb_init(struct rawfb_fb_info *rfb) {
 	BSP_LCD_LayerDefaultInit(0, (uint32_t) rfb->fb_buf[0]);
 	BSP_LCD_LayerDefaultInit(1, (uint32_t) rfb->fb_buf[1]);
 
-	HAL_LTDC_ProgramLineEvent(&hLtdcHandler, rfb->height - 1);
+	HAL_LTDC_ProgramLineEvent(&hltdc_handler, rfb->height - 1);
 }
 
 void rawfb_clear_screen(struct rawfb_fb_info *rfb) {
@@ -47,12 +55,12 @@ void rawfb_swap_buffers(struct rawfb_fb_info *rfb) {
 
 		ltdc_li_triggered = 0;
 		
-		HAL_LTDC_ProgramLineEvent(&hLtdcHandler, rfb->height - 1);
+		HAL_LTDC_ProgramLineEvent(&hltdc_handler, rfb->height - 1);
 
 		while (!ltdc_li_triggered) {
 		}
 
-		BSP_LCD_SetTransparency_NoReload(rfb->fb_buf_idx, 0xff);
+		BSP_LCD_SetTransparency(rfb->fb_buf_idx, 0xff);
 	}
 
 	rfb->fb_buf_idx = (rfb->fb_buf_idx + 1) % 2;

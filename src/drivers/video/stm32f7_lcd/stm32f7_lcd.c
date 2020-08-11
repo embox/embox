@@ -115,9 +115,17 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 }
 
 static irq_return_t ltdc_irq_handler(unsigned int irq_num, void *dev_id) {
-	extern LTDC_HandleTypeDef hLtdcHandler;
+#if defined STM32F746xx
+extern LTDC_HandleTypeDef hLtdcHandler;
+#define hltdc_handler hLtdcHandler
+#elif defined STM32F769xx
+extern LTDC_HandleTypeDef  hltdc_discovery;
+#define hltdc_handler hltdc_discovery
+#else
+#error Unsupported platform
+#endif
 
-	HAL_LTDC_IRQHandler(&hLtdcHandler);
+	HAL_LTDC_IRQHandler(&hltdc_handler);
 
 	return IRQ_HANDLED;
 }
