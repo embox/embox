@@ -1,12 +1,10 @@
 package embox.driver.net
 
 module virtio {
-	option number log_level = 0
+	option number log_level = 1
 
 	option number prep_buff_cnt=16 /* the number of prepared buffers for rxing */
 
-	@IncludeExport(path="drivers/net")
-	source "virtio_net.h"
 	source "virtio_net.c"
 
 	depends embox.net.skbuff

@@ -6,25 +6,32 @@
  * @author Ilia Vaprol
  */
 
+#include <util/log.h>
+
+#include <stdlib.h>
+#include <string.h>
+#include <errno.h>
 #include <assert.h>
+
 #include <drivers/virtio/virtio.h>
 #include <drivers/virtio/virtio_ring.h>
 #include <drivers/virtio/virtio_queue.h>
-#include <drivers/net/virtio_net.h>
+
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_driver.h>
-#include <errno.h>
-#include <framework/mod/options.h>
+
 #include <kernel/irq.h>
+#include <kernel/sched/sched_lock.h>
+
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/netdevice.h>
-#include <stdlib.h>
-#include <string.h>
-#include <util/log.h>
-#include <kernel/sched/sched_lock.h>
+
+#include "virtio_net.h"
+
+#include <framework/mod/options.h>
 
 PCI_DRIVER("virtio", virtio_init, PCI_VENDOR_ID_VIRTIO, PCI_DEV_ID_VIRTIO_NET);
 
@@ -340,6 +347,7 @@ static int virtio_init(struct pci_slot_dev *pci_dev) {
 
 	nic = etherdev_alloc(sizeof *nic_priv);
 	if (nic == NULL) {
+		log_error("couldn't allocate etherdev");
 		return -ENOMEM;
 	}
 	nic->drv_ops = &virtio_drv_ops;
@@ -351,11 +359,13 @@ static int virtio_init(struct pci_slot_dev *pci_dev) {
 
 	ret = virtio_priv_init(nic_priv, nic);
 	if (ret != 0) {
+		log_error("virtio_priv_init returned %d", ret);
 		return ret;
 	}
 
 	ret = irq_attach(nic->irq, virtio_interrupt, IF_SHARESUP, nic, "virtio");
 	if (ret != 0) {
+		log_error("irq_attach returned %d", ret);
 		virtio_priv_fini(nic_priv, nic);
 		return ret;
 	}
