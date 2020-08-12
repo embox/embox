@@ -153,7 +153,7 @@ static struct usb_gadget_ep bulk_rx = {
 static int ecm_setup(struct usb_gadget_function *f,
 		const struct usb_control_header *ctrl, uint8_t *buffer) {
 	struct usb_gadget *gadget = f->gadget;
-	struct usb_gadget_request *req = &gadget->req;
+	struct usb_gadget_request *req = &gadget->composite->req;
 
 	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) != USB_REQ_TYPE_STANDARD) {
 		log_error("Not a standard request");
@@ -164,7 +164,7 @@ static int ecm_setup(struct usb_gadget_function *f,
 	case USB_REQ_SET_INTERFACE:
 		/* Send zero-length reply */
 		req->len = 0;
-		usb_gadget_ep_queue(&gadget->ep0, req);
+		usb_gadget_ep_queue(&gadget->composite->ep0, req);
 		return 0;
 	default:
 		log_error("Not supported standard request");
@@ -177,8 +177,6 @@ static int ecm_setup(struct usb_gadget_function *f,
 extern int ecm_card_init(struct usb_gadget_ep *tx, struct usb_gadget_ep *rx);
 
 static int ecm_enumerate(struct usb_gadget_function *f) {
-	ecm_card_init(&bulk_tx, &bulk_rx);
-
 	usb_gadget_ep_enable(&bulk_tx);
 	usb_gadget_ep_enable(&bulk_rx);
 	usb_gadget_ep_enable(&intr);
@@ -205,13 +203,15 @@ static int ecm_probe(struct usb_gadget *gadget) {
 		ecm_data_intf_nop_desc.b_interface_number;
 
 	/* FIXME */
-	intr.udc    = gadget->ep0.udc;
-	bulk_tx.udc = gadget->ep0.udc;
-	bulk_rx.udc = gadget->ep0.udc;
+	intr.udc    = gadget->composite->ep0.udc;
+	bulk_tx.udc = gadget->composite->ep0.udc;
+	bulk_rx.udc = gadget->composite->ep0.udc;
 
-	usb_gadget_ep_configure(&bulk_tx);
-	usb_gadget_ep_configure(&bulk_rx);
-	usb_gadget_ep_configure(&intr);
+	usb_gadget_ep_configure(gadget, &bulk_tx);
+	usb_gadget_ep_configure(gadget, &bulk_rx);
+	usb_gadget_ep_configure(gadget, &intr);
+
+	ecm_card_init(&bulk_tx, &bulk_rx);
 
 	return 0;
 }

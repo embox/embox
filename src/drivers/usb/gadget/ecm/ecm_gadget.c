@@ -23,7 +23,21 @@ EMBOX_UNIT_INIT(ecm_gadget_init);
 #define ECM_VID    0xdead
 #define ECM_PID    0xbeaf
 
-static struct usb_gadget ecm_gadget = {
+static struct usb_gadget ecm_config = {
+	.config_desc = {
+		.b_length                = sizeof(struct  usb_desc_configuration),
+		.b_desc_type             = USB_DESC_TYPE_CONFIG,
+		.w_total_length          = 0, /* DYNAMIC */
+		.b_num_interfaces        = 0, /* DYNAMIC */
+		.b_configuration_value   = 1,
+		.i_configuration         = ECM_STR_CONFIGURATION,
+		.bm_attributes           = USB_CFG_ATT_ONE | USB_CFG_ATT_SELFPOWER |
+		                           USB_CFG_ATT_WAKEUP,
+		.b_max_power             = 0x30,
+	},
+};
+
+static struct usb_gadget_composite ecm_gadget = {
 	.device_desc = {
 		.b_length               = sizeof(struct usb_desc_device),
 		.b_desc_type            = USB_DESC_TYPE_DEV,
@@ -40,17 +54,6 @@ static struct usb_gadget ecm_gadget = {
 		.i_serial_number        = ECM_STR_SERIALNUMBER,
 		.b_num_configurations   = 1,
 	},
-	.config_desc = {
-		.b_length                = sizeof(struct  usb_desc_configuration),
-		.b_desc_type             = USB_DESC_TYPE_CONFIG,
-		.w_total_length          = 0, /* DYNAMIC */
-		.b_num_interfaces        = 0, /* DYNAMIC */
-		.b_configuration_value   = 1,
-		.i_configuration         = ECM_STR_CONFIGURATION,
-		.bm_attributes           = USB_CFG_ATT_ONE | USB_CFG_ATT_SELFPOWER |
-		                           USB_CFG_ATT_WAKEUP,
-		.b_max_power             = 0x30,
-	},
 	.strings = {
 		[ECM_STR_MANUFACTURER]      = "Embox",
 		[ECM_STR_PRODUCT]           = "Embox USB CDC-ECM",
@@ -60,12 +63,15 @@ static struct usb_gadget ecm_gadget = {
 		[ECM_STR_DATA_INTERFACE]    = "ECM Data Interface",
 		[ECM_STR_ETHADDR]           = "aabbccddee00",
 	},
+	.configs = {
+		&ecm_config,
+	},
 };
 
 static int ecm_gadget_init(void) {
 	usb_gadget_register(&ecm_gadget);
 
-	if (usb_gadget_add_function(&ecm_gadget, "ecm") != 0) {
+	if (usb_gadget_add_function(ecm_gadget.configs[0], "ecm") != 0) {
 		log_error("ecm interface insertion failed");
 		return -1;
 	}
