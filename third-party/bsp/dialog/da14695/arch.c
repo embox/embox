@@ -18,8 +18,15 @@
 #include <config/custom_config_qspi.h>
 
 #include <sys_clock_mgr.h>
+#include <sys_power_mgr.h>
+#include <hw_rtc.h>
 #include <hw_sys.h>
 #include <hw_cache.h>
+
+
+
+
+extern bool goto_deepsleep(void);
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
@@ -73,16 +80,49 @@ extern void da1469x_SystemInit(void);
 extern char _bss_vma;
 extern char _bss_len;
 
+__RETAINED_CODE void my_deepsleep_test(void) {
+
+
+
+	pm_set_sys_wakeup_mode(pm_sys_wakeup_mode_fast);
+	pm_prepare_sleep(pm_mode_extended_sleep);
+	while(1) {
+#if 0
+
+	goto_deepsleep();
+#else
+
+	__asm__ __volatile__ ("wfi");
+
+#endif
+	}
+	pm_resume_from_sleep();
+
+}
+static void rtc_init(void)
+{
+        // Enable the RTC peripheral clock
+        hw_rtc_clock_enable();
+
+        // Start the RTC
+        hw_rtc_time_start();
+}
+
 void arch_init(void) {
 	int i;
 
 	/* Disable watchdog. It was enabled by bootloader. */
 	REG16_STORE(GPREG_SET_FREEZE_REG, GPREG_SET_FREEZE_SYS_WDOG);
 
-	for (i = 0; i < 1 * 1000 * 1000; i++) {
+	for (i = 0; i < 1 * 1000 * 1000 * 10; i++) {
 
 	}
-
+#if 0
+	while(1) {
+	//__asm__ __volatile__ ("wfi");
+		my_deepsleep_test();
+	}
+#endif
 	/* Default value is 512Kb. I will be changed only after software reset. */
 	if (hw_cache_flash_get_region_size() == HW_CACHE_FLASH_REGION_SZ_512KB) {
 		hw_cache_flash_set_region_size(CACHE_FLASH_SIZE);
@@ -105,11 +145,31 @@ void arch_init(void) {
 	/* SystemInitPre and da1469x_SystemInit use BSS variables, so reinit BSS.*/
 	memset(&_bss_vma, 0, (int) &_bss_len);
 
+	extern void ad_pmu_init(void);
+	ad_pmu_init();
+
+	/* from system_init() */
+    /* Use appropriate XTAL for each device */
+    cm_sys_clk_init(sysclk_XTAL32M);
+    cm_apb_set_clock_divider(apb_div1);
+    cm_ahb_set_clock_divider(ahb_div1);
+   // cm_lp_clk_init();
+
+
+	/* from pm_system_init */
 	/* Enables the COM power domain (for example, it's used to enable GPIO) */
 	hw_sys_pd_com_enable();
+
+	hw_sys_setup_retmem();
+	hw_sys_set_cache_retained();
+
+	//qspi_operations_init();
+
+	rtc_init();
 }
 
 void arch_idle(void) {
+	__asm__ __volatile__ ("wfi");
 }
 
 void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
