@@ -19,13 +19,20 @@
 
 static DLIST_DEFINE(usb_gadget_func_list);
 
-static int usb_gadget_prepare_config_desc(struct usb_gadget *gadget,
-	                                uint16_t w_value) {
+static int usb_gadget_prepare_config_desc(
+	    struct usb_gadget_composite *composite,
+	    uint16_t w_value) {
 	int i, j, size = 0;
-	uint8_t *buf = gadget->req.buf;
+	uint8_t *buf = composite->req.buf;
+	struct usb_gadget *gadget;
 	struct usb_gadget_function *func = NULL, *prev_func = NULL;
+	int config;
 
-	log_debug("conf=%d", w_value);
+	config = w_value == 0 ? 0 : w_value - 1;
+
+	log_debug("w_value=%d, conf=%d", w_value, config);
+
+	gadget = composite->configs[config];
 
 	/* Copy configuration descriptor */
 	memcpy(buf, &gadget->config_desc, gadget->config_desc.b_length);
@@ -54,15 +61,16 @@ static int usb_gadget_prepare_config_desc(struct usb_gadget *gadget,
 
 		prev_func = func;
 	}
-	((struct usb_desc_configuration *) gadget->req.buf)->w_total_length = size;
+	((struct usb_desc_configuration *) composite->req.buf)->w_total_length = size;
 
 	return size;
 }
 
-static int usb_gadget_prepare_string_desc(struct usb_gadget *gadget,
-	                                uint16_t w_value) {
+static int usb_gadget_prepare_string_desc(
+	    struct usb_gadget_composite *composite,
+	    uint16_t w_value) {
 	const char *str;
-	uint8_t *buf = gadget->req.buf;
+	uint8_t *buf = composite->req.buf;
 	int len, wlen, i;
 	/* English US */
 	uint8_t lang[] = { 0x04, USB_DESC_TYPE_STRING, 0x09, 0x04 };
@@ -77,7 +85,7 @@ static int usb_gadget_prepare_string_desc(struct usb_gadget *gadget,
 		return sizeof lang;
 	}
 
-	str = gadget->strings[w_value];
+	str = composite->strings[w_value];
 	len = strlen(str);
 	wlen = 2 + (2 * len);
 
@@ -93,9 +101,10 @@ static int usb_gadget_prepare_string_desc(struct usb_gadget *gadget,
 	return wlen;
 }
 
-int usb_gadget_setup(struct usb_gadget *gadget,
+int usb_gadget_setup(struct usb_gadget_composite *composite,
 		const struct usb_control_header *ctrl, uint8_t *buffer) {
-	struct usb_gadget_request *req = &gadget->req;
+	struct usb_gadget_request *req = &composite->req;
+	struct usb_gadget *gadget = composite->config;
 	struct usb_gadget_function *f = NULL;
 	int len, intf;
 
@@ -111,16 +120,16 @@ int usb_gadget_setup(struct usb_gadget *gadget,
 	case USB_REQ_GET_DESCRIPTOR:
 		switch (ctrl->w_value >> 8) {
 		case USB_DESC_TYPE_DEV:
-			req->len = min(ctrl->w_length, sizeof gadget->device_desc);
-			memcpy(req->buf, &gadget->device_desc, req->len);
+			req->len = min(ctrl->w_length, sizeof composite->device_desc);
+			memcpy(req->buf, &composite->device_desc, req->len);
 			goto submit_req;
 		case USB_DESC_TYPE_CONFIG:
-			len = usb_gadget_prepare_config_desc(gadget,
+			len = usb_gadget_prepare_config_desc(composite,
 						ctrl->w_value & 0xff);
 			req->len = min(ctrl->w_length, len);
 			goto submit_req;
 		case USB_DESC_TYPE_STRING:
-			len = usb_gadget_prepare_string_desc(gadget,
+			len = usb_gadget_prepare_string_desc(composite,
 						ctrl->w_value & 0xff);
 			req->len = min(ctrl->w_length, len);
 			goto submit_req;
@@ -137,6 +146,8 @@ func_setup:
 	switch (ctrl->bm_request_type & USB_REQ_RECIP_MASK) {
 	case USB_REQ_RECIP_IFACE:
 		intf = ctrl->w_index & 0xff;
+
+		assert(gadget);
 
 		if (intf < gadget->intf_count) {
 			f = gadget->interfaces[intf];
@@ -156,20 +167,32 @@ func_setup:
 	return -1;
 
 submit_req:
-	usb_gadget_ep_queue(&gadget->ep0, req);
+	usb_gadget_ep_queue(&composite->ep0, req);
 
 	return 0;
 }
 
-int usb_gadget_register(struct usb_gadget *gadget) {
+int usb_gadget_register(struct usb_gadget_composite *composite) {
 	struct usb_udc *udc = usb_gadget_find_udc();
+	struct usb_gadget *gadget;
+	int i;
 
 	assert(udc);
 
-	gadget->ep0.nr = 0;
-	gadget->ep0.udc = udc;
+	composite->ep0.nr = 0;
+	composite->ep0.udc = udc;
 
-	udc->gadget = gadget;
+	udc->composite = composite;
+
+	for (i = 0; i < USB_GADGET_CONFIGS_MAX; i++) {
+		gadget = composite->configs[i];
+
+		if (!gadget) {
+			break;
+		}
+
+		gadget->composite = composite;
+	}
 
 	return 0;
 }
@@ -213,9 +236,51 @@ int usb_gadget_add_interface(struct usb_gadget *gadget,
 	return id;
 }
 
-int usb_gadget_enumerate(struct usb_gadget *gadget) {
-	struct usb_gadget_function *func = NULL, *prev_func = NULL;
+int usb_gadget_ep_configure(struct usb_gadget *gadget,
+	    struct usb_gadget_ep *ep) {
+	uint32_t eps_mask, all_eps, active_eps;
 	int i;
+
+	if (ep->dir == USB_DIR_OUT) {
+		all_eps = ep->udc->out_ep_mask;
+		active_eps = gadget->out_ep_active_mask;
+	} else {
+		all_eps = ep->udc->in_ep_mask;
+		active_eps = gadget->in_ep_active_mask;
+	}
+	eps_mask = all_eps & ~active_eps;
+
+	/* Found next unassigned EP number */
+	for (i = 0; i < 8 * sizeof(eps_mask); i++) {
+		if ((1 << i) & eps_mask) {
+			break;
+		}
+	}
+
+	if (i == 8 * sizeof(eps_mask)) {
+		log_error("Endpoint not allocated");
+		return -1;
+	}
+
+	ep->nr = i;
+	ep->desc->b_endpoint_address = ep->dir | ep->nr;
+
+	if (ep->dir == USB_DIR_OUT) {
+		gadget->out_ep_active_mask |= (1 << ep->nr);
+	} else {
+		gadget->in_ep_active_mask  |= (1 << ep->nr);
+	}
+
+	return 0;
+}
+
+int usb_gadget_set_config(struct usb_gadget_composite *composite, int config) {
+	struct usb_gadget_function *func = NULL, *prev_func = NULL;
+	struct usb_gadget *gadget;
+	int i;
+
+	composite->config = composite->configs[config - 1];
+	gadget = composite->config;
 
 	assert(gadget);
 
