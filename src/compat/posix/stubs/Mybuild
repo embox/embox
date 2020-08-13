@@ -15,7 +15,6 @@ static module stubs {
 		"getppid.c",
 		"getpgrp.c",
 		"link.c",
-		"mman.c",
 		"readlinkat.c",
 		"readlink.c",
 		"setpgid.c",
