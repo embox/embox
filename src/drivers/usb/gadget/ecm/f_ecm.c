@@ -17,7 +17,7 @@
 #include <drivers/usb/gadget/gadget.h>
 
 /* TODO Remove. It's only used for i_interface, iMACAddress, etc. defines. */
-#include "ecm_gadget.h"
+#include <drivers/usb/function/f_ecm_idx.h>
 
 EMBOX_UNIT_INIT(ecm_init);
 

@@ -16,12 +16,17 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
 
-#include "ecm_gadget.h"
+#include <drivers/usb/function/f_ecm_idx.h>
 
 EMBOX_UNIT_INIT(ecm_gadget_init);
 
 #define ECM_VID    0xdead
 #define ECM_PID    0xbeaf
+
+#define STR_MANUFACTURER        1
+#define STR_PRODUCT             2
+#define STR_SERIALNUMBER        3
+#define ECM_STR_CONFIGURATION       4
 
 static struct usb_gadget ecm_config = {
 	.config_desc = {
@@ -49,15 +54,15 @@ static struct usb_gadget_composite ecm_gadget = {
 		.id_vendor              = ECM_VID,
 		.id_product             = ECM_PID,
 		.bcd_device             = 0,
-		.i_manufacter           = ECM_STR_MANUFACTURER,
-		.i_product              = ECM_STR_PRODUCT,
-		.i_serial_number        = ECM_STR_SERIALNUMBER,
+		.i_manufacter           = STR_MANUFACTURER,
+		.i_product              = STR_PRODUCT,
+		.i_serial_number        = STR_SERIALNUMBER,
 		.b_num_configurations   = 1,
 	},
 	.strings = {
-		[ECM_STR_MANUFACTURER]      = "Embox",
-		[ECM_STR_PRODUCT]           = "Embox USB CDC-ECM",
-		[ECM_STR_SERIALNUMBER]      = "0123456789",
+		[STR_MANUFACTURER]      = "Embox",
+		[STR_PRODUCT]           = "Embox USB CDC-ECM",
+		[STR_SERIALNUMBER]      = "0123456789",
 		[ECM_STR_CONFIGURATION]     = "ECM",
 		[ECM_STR_CONTROL_INTERFACE] = "ECM Control Interface",
 		[ECM_STR_DATA_INTERFACE]    = "ECM Data Interface",
