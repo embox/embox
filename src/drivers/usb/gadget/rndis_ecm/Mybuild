@@ -1,0 +1,10 @@
+package embox.driver.usb.gadget
+
+module rndis_ecm_gadget {
+	option number log_level = 1
+
+	source "rndis_ecm_gadget.c"
+
+	depends f_rndis
+	depends f_ecm
+}
