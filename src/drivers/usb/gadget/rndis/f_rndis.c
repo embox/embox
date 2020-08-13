@@ -22,9 +22,9 @@ static const uint8_t iad_descriptor[8] = {
 		0x0B, /*    bDescriptorType */
 		0x00, /*    bFirstInterface */
 		0x02, /*    bInterfaceCount */
-		0xE0, /*    bFunctionClass   (Wireless Controller) */
-		0x01, /*    bFunctionSubClass */
-		0x03, /*    bFunctionProtocol */
+		0x02, /*    bFunctionClass */
+		0x02, /*    bFunctionSubClass */
+		0xFF, /*    bFunctionProtocol */
 		RNDIS_STR_CONFIGURATION /*    iFunction   "RNDIS" */
 };
 
@@ -36,9 +36,9 @@ static struct usb_desc_interface rndis_interface0_desc = {
     0x00, /* uint8  bInterfaceNumber; DYNAMIC */
     0x00,                                           // uint8  bAlternateSetting;
     1,                                              // uint8  bNumEndpoints;
-    0xE0,                                  			// uint8  bInterfaceClass: Wireless Controller;
-    0x01,                                           // uint8  bInterfaceSubClass
-    0x03,                                           // uint8  bInterfaceProtocol
+    0x02,                                  			// uint8  bInterfaceClass: Wireless Controller;
+    0x02,                                           // uint8  bInterfaceSubClass
+    0xFF,                                           // uint8  bInterfaceProtocol
     0      											// uint8  iInterface;
 };
 
