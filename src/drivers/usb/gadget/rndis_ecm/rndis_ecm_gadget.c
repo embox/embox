@@ -16,23 +16,17 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
 
+#include <drivers/usb/function/f_rndis_idx.h>
+#include <drivers/usb/function/f_ecm_idx.h>
+
 EMBOX_UNIT_INIT(rndis_ecm_gadget_init);
 
 #define RNDIS_VID    0xdead
 #define RNDIS_PID    0xbeaf
 
-#define RNDIS_STR_MANUFACTURER        (1)
-#define RNDIS_STR_PRODUCT             (2)
-#define RNDIS_STR_SERIALNUMBER        (3)
-#define RNDIS_STR_CONFIGURATION       (4)
-
-#define ECM_STR_MANUFACTURER        (1 + RNDIS_STR_CONFIGURATION)
-#define ECM_STR_PRODUCT             (2 + RNDIS_STR_CONFIGURATION)
-#define ECM_STR_SERIALNUMBER        (3 + RNDIS_STR_CONFIGURATION)
-#define ECM_STR_CONFIGURATION       (4 + RNDIS_STR_CONFIGURATION)
-#define ECM_STR_CONTROL_INTERFACE   (5 + RNDIS_STR_CONFIGURATION)
-#define ECM_STR_DATA_INTERFACE      (6 + RNDIS_STR_CONFIGURATION)
-#define ECM_STR_ETHADDR             (7 + RNDIS_STR_CONFIGURATION)
+#define STR_MANUFACTURER        1
+#define STR_PRODUCT             2
+#define STR_SERIALNUMBER        3
 
 static struct usb_gadget rndis_config = {
 	.config_desc = {
@@ -74,20 +68,17 @@ static struct usb_gadget_composite rndis_ecm_gadget = {
 		.id_vendor              = RNDIS_VID,
 		.id_product             = RNDIS_PID,
 		.bcd_device             = 0,
-		.i_manufacter           = RNDIS_STR_MANUFACTURER,
-		.i_product              = RNDIS_STR_PRODUCT,
-		.i_serial_number        = RNDIS_STR_SERIALNUMBER,
+		.i_manufacter           = STR_MANUFACTURER,
+		.i_product              = STR_PRODUCT,
+		.i_serial_number        = STR_SERIALNUMBER,
 		.b_num_configurations   = 2,
 	},
 	.strings = {
-		[RNDIS_STR_MANUFACTURER]  = "Embox",
-		[RNDIS_STR_PRODUCT]       = "Embox USB RNDIS",
-		[RNDIS_STR_SERIALNUMBER]  = "0123456789",
+		[STR_MANUFACTURER]  = "Embox",
+		[STR_PRODUCT]       = "Embox USB RNDIS",
+		[STR_SERIALNUMBER]  = "0123456789",
 		[RNDIS_STR_CONFIGURATION] = "RNDIS",
 
-		[ECM_STR_MANUFACTURER]      = "Embox",
-		[ECM_STR_PRODUCT]           = "Embox USB CDC-ECM",
-		[ECM_STR_SERIALNUMBER]      = "0123456789",
 		[ECM_STR_CONFIGURATION]     = "ECM",
 		[ECM_STR_CONTROL_INTERFACE] = "ECM Control Interface",
 		[ECM_STR_DATA_INTERFACE]    = "ECM Data Interface",
