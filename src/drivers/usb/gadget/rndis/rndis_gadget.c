@@ -26,7 +26,21 @@ EMBOX_UNIT_INIT(rndis_gadget_init);
 #define RNDIS_STR_SERIALNUMBER        3
 #define RNDIS_STR_CONFIGURATION       4
 
-static struct usb_gadget rndis_gadget = {
+static struct usb_gadget rndis_config = {
+	.config_desc = {
+		.b_length                = sizeof(struct  usb_desc_configuration),
+		.b_desc_type             = USB_DESC_TYPE_CONFIG,
+		.w_total_length          = 0, /* DYNAMIC */
+		.b_num_interfaces        = 0, /* DYNAMIC */
+		.b_configuration_value   = 1,
+		.i_configuration         = RNDIS_STR_CONFIGURATION,
+		.bm_attributes           = USB_CFG_ATT_ONE | USB_CFG_ATT_SELFPOWER |
+		                           USB_CFG_ATT_WAKEUP,
+		.b_max_power             = 0x30,
+	},
+};
+
+static struct usb_gadget_composite rndis_gadget = {
 	.device_desc = {
 		.b_length               = sizeof(struct usb_desc_device),
 		.b_desc_type            = USB_DESC_TYPE_DEV,
@@ -43,29 +57,21 @@ static struct usb_gadget rndis_gadget = {
 		.i_serial_number        = RNDIS_STR_SERIALNUMBER,
 		.b_num_configurations   = 1,
 	},
-	.config_desc = {
-		.b_length                = sizeof(struct  usb_desc_configuration),
-		.b_desc_type             = USB_DESC_TYPE_CONFIG,
-		.w_total_length          = 0, /* DYNAMIC */
-		.b_num_interfaces        = 0, /* DYNAMIC */
-		.b_configuration_value   = 1,
-		.i_configuration         = RNDIS_STR_CONFIGURATION,
-		.bm_attributes           = USB_CFG_ATT_ONE | USB_CFG_ATT_SELFPOWER |
-		                           USB_CFG_ATT_WAKEUP,
-		.b_max_power             = 0x30,
-	},
 	.strings = {
 		[RNDIS_STR_MANUFACTURER]  = "Embox",
 		[RNDIS_STR_PRODUCT]       = "Embox USB RNDIS",
 		[RNDIS_STR_SERIALNUMBER]  = "0123456789",
 		[RNDIS_STR_CONFIGURATION] = "RNDIS",
 	},
+	.configs = {
+		&rndis_config,
+	},
 };
 
 static int rndis_gadget_init(void) {
 	usb_gadget_register(&rndis_gadget);
 
-	if (usb_gadget_add_function(&rndis_gadget, "rndis") != 0) {
+	if (usb_gadget_add_function(rndis_gadget.configs[0], "rndis") != 0) {
 		log_error("RNDIS interface insertion failed");
 		return -1;
 	}

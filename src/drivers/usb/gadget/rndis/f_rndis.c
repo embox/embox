@@ -155,13 +155,13 @@ static int rndis_probe(struct usb_gadget *gadget) {
 		usb_gadget_add_interface(gadget, &rndis_func);
 
 	/* FIXME */
-	intr.udc    = gadget->ep0.udc;
-	bulk_tx.udc = gadget->ep0.udc;
-	bulk_rx.udc = gadget->ep0.udc;
+	intr.udc    = gadget->composite->ep0.udc;
+	bulk_tx.udc = gadget->composite->ep0.udc;
+	bulk_rx.udc = gadget->composite->ep0.udc;
 
-	usb_gadget_ep_configure(&bulk_tx);
-	usb_gadget_ep_configure(&bulk_rx);
-	usb_gadget_ep_configure(&intr);
+	usb_gadget_ep_configure(gadget, &bulk_tx);
+	usb_gadget_ep_configure(gadget, &bulk_rx);
+	usb_gadget_ep_configure(gadget, &intr);
 
 	/* TODO Endpoints are not enabled. */
 
