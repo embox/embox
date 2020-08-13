@@ -16,7 +16,10 @@
 #define MIP_MTIP (1 << 7)	/* Machine Timer Interrupt Pending */
 #define MIP_MEIP (1 << 11)	/* Machine External Interrupt Pending */
 
+#define MACHINE_SOFTWARE_INTERRUPT 3
 #define MACHINE_TIMER_INTERRUPT 7
+#define MACHINE_EXTERNAL_INTERRUPT 11
+#define EXTERNAL_INTERRUPT_OFFSET 16
 
 #define __ENABLE_TIMER_INTERRUPTS \
 	__asm volatile("csrs mie,%0"::"r"(MIE_MTIE));
