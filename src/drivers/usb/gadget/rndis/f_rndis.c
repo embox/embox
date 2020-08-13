@@ -14,8 +14,7 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
 
-/* FIXME Should be examined how to do this, because strings are at rndis_gadget.c */
-#define RNDIS_CONFIGURATION_STR_INDEX 4
+#include <drivers/usb/function/f_rndis_idx.h>
 
 /* IAD descriptor */
 static const uint8_t iad_descriptor[8] = {
@@ -26,7 +25,7 @@ static const uint8_t iad_descriptor[8] = {
 		0xE0, /*    bFunctionClass   (Wireless Controller) */
 		0x01, /*    bFunctionSubClass */
 		0x03, /*    bFunctionProtocol */
-		RNDIS_CONFIGURATION_STR_INDEX /*    iFunction   "RNDIS" */
+		RNDIS_STR_CONFIGURATION /*    iFunction   "RNDIS" */
 };
 
 /* Interface 0 descriptor */

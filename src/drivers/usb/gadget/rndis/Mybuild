@@ -9,5 +9,8 @@ module rndis_gadget {
 
 	source "rndis_gadget.c"
 
+	@IncludeExport(path="drivers/usb/function")
+	source "f_rndis_idx.h"
+
 	depends f_rndis
 }
