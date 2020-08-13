@@ -26,13 +26,10 @@ static int usb_gadget_prepare_config_desc(
 	uint8_t *buf = composite->req.buf;
 	struct usb_gadget *gadget;
 	struct usb_gadget_function *func = NULL, *prev_func = NULL;
-	int config;
 
-	config = w_value == 0 ? 0 : w_value - 1;
+	log_debug("\nconf=%d\n", w_value);
 
-	log_debug("w_value=%d, conf=%d", w_value, config);
-
-	gadget = composite->configs[config];
+	gadget = composite->configs[w_value];
 
 	/* Copy configuration descriptor */
 	memcpy(buf, &gadget->config_desc, gadget->config_desc.b_length);
