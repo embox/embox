@@ -177,6 +177,8 @@ static int ecm_setup(struct usb_gadget_function *f,
 extern int ecm_card_init(struct usb_gadget_ep *tx, struct usb_gadget_ep *rx);
 
 static int ecm_enumerate(struct usb_gadget_function *f) {
+	ecm_card_init(&bulk_tx, &bulk_rx);
+
 	usb_gadget_ep_enable(&bulk_tx);
 	usb_gadget_ep_enable(&bulk_rx);
 	usb_gadget_ep_enable(&intr);
@@ -210,8 +212,6 @@ static int ecm_probe(struct usb_gadget *gadget) {
 	usb_gadget_ep_configure(gadget, &bulk_tx);
 	usb_gadget_ep_configure(gadget, &bulk_rx);
 	usb_gadget_ep_configure(gadget, &intr);
-
-	ecm_card_init(&bulk_tx, &bulk_rx);
 
 	return 0;
 }
