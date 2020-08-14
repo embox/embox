@@ -30,6 +30,18 @@ EMBOX_UNIT_INIT(ecm_init);
 
 static int ecm_probe(struct usb_gadget *gadget);
 
+/* IAD descriptor */
+static const uint8_t iad_descriptor[8] = {
+		0x08, /*    bLength */
+		0x0B, /*    bDescriptorType */
+		0x00, /*    bFirstInterface */
+		0x02, /*    bInterfaceCount */
+		USB_CLASS_COMM, /*    bFunctionClass  */
+		USB_CDC_SUBCLASS_ETHERNET, /*    bFunctionSubClass */
+		0x00, /*    bFunctionProtocol */
+		ECM_STR_CONFIGURATION /*    iFunction   "RNDIS" */
+};
+
 static struct usb_desc_endpoint int_ep_desc = {
 	.b_length            = sizeof (struct usb_desc_endpoint),
 	.b_desc_type         = USB_DESC_TYPE_ENDPOINT,
@@ -118,6 +130,7 @@ static struct usb_desc_interface ecm_data_intf_desc = {
 };
 
 static const struct usb_desc_common_header *ecm_descs[] = {
+	(struct usb_desc_common_header *) &iad_descriptor,
 	/* Control interface */
 	(struct usb_desc_common_header *) &ecm_control_intf_desc,
 	(struct usb_desc_common_header *) &ecm_header_desc,
