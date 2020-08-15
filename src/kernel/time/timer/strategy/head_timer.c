@@ -20,9 +20,10 @@ void timer_strat_start(struct sys_timer *tmr) {
 	ipl_t ipl;
 
 	dlist_head_init(&tmr->lnk);
-	timer_set_started(tmr);
 
 	tmr->cnt = clock_sys_ticks() + tmr->load;
+
+	ipl = ipl_save();
 
 	/* find first element that its time bigger than inserting @new_time */
 	dlist_foreach_entry(it_tmr, &sys_timers_list, lnk) {
@@ -37,7 +38,8 @@ void timer_strat_start(struct sys_timer *tmr) {
 	}
 
 out:
-	ipl = ipl_save();
+
+	timer_set_started(tmr);
 	dlist_add_prev(&tmr->lnk, next_tmr_lnk);
 	ipl_restore(ipl);
 }
@@ -46,6 +48,7 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 	struct sys_timer *next_tmr;
 	ipl_t ipl;
 
+	ipl = ipl_save();
 	timer_set_stopped(ptimer);
 
 	if (ptimer->lnk.next != &sys_timers_list) {
@@ -53,19 +56,24 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 		next_tmr->cnt += ptimer->cnt;
 	}
 
-	ipl = ipl_save();
 	dlist_del(&ptimer->lnk);
 	ipl_restore(ipl);
 }
 
 bool timer_strat_need_sched(clock_t jiffies) {
 	struct sys_timer *t;
+	ipl_t ipl;
+	bool ret;
 
+	ipl = ipl_save();
 	if (dlist_empty(&sys_timers_list)) {
-		return false;
+		ret = false;
+	} else {
+		t = dlist_first_entry(&sys_timers_list, struct sys_timer, lnk);
+		ret = jiffies >= t->cnt;
 	}
-	t = dlist_first_entry(&sys_timers_list, struct sys_timer, lnk);
-	return jiffies >= t->cnt;
+	ipl_restore(ipl);
+	return ret;
 }
 
 /**
@@ -75,7 +83,9 @@ bool timer_strat_need_sched(clock_t jiffies) {
  */
 void timer_strat_sched(clock_t jiffies) {
 	struct sys_timer *timer;
+	ipl_t ipl;
 
+	ipl = ipl_save();
 	dlist_foreach_entry(timer, &sys_timers_list, lnk) {
 		if (jiffies < timer->cnt) {
 			break;
@@ -89,4 +99,5 @@ void timer_strat_sched(clock_t jiffies) {
 
 		timer->handle(timer, timer->param);
 	}
+	ipl_restore(ipl);
 }
