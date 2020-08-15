@@ -46,13 +46,13 @@ void timer_start(struct sys_timer *tmr, clock_t jiffies) {
 }
 
 void timer_stop(struct sys_timer *tmr) {
-	if (timer_is_started(tmr)) {
-		sched_lock();
-		{
+	sched_lock();
+	{
+		if (timer_is_started(tmr)) {
 			timer_strat_stop(tmr);
 		}
-		sched_unlock();
 	}
+	sched_unlock();
 }
 
 int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
