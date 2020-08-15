@@ -1,0 +1,22 @@
+package embox.driver.gpio
+
+module k210_gpio {
+	option number log_level = 4
+
+	@IncludeExport(path="drivers/gpio", target_name="k210.h")
+	source "k210_gpio.h"
+
+	source "k210_gpio.c"
+
+	depends embox.driver.gpio.core
+	depends k210_fpioa
+}
+
+module k210_fpioa {
+	option number log_level = 4
+
+	@IncludeExport(path="drivers/gpio/k210", target_name="fpioa.h")
+	source "k210_fpioa.h"
+
+	source "k210_fpioa.c"
+}
