@@ -13,6 +13,7 @@
 #define PJ     GPIOJ
 #define PK     GPIOK
 
+#define PIN_0   GPIO_PIN_0
 #define PIN_1   GPIO_PIN_1
 #define PIN_2   GPIO_PIN_2
 #define PIN_3   GPIO_PIN_3
@@ -60,8 +61,10 @@
 #define CLK_USART1    __HAL_RCC_USART1_CLK_ENABLE()
 #define CLK_USART2    __HAL_RCC_USART2_CLK_ENABLE()
 #define CLK_USART3    __HAL_RCC_USART3_CLK_ENABLE()
-#define CLK_USART4    __HAL_RCC_USART4_CLK_ENABLE()
-#define CLK_USART5    __HAL_RCC_USART5_CLK_ENABLE()
+#define CLK_UART4     __HAL_RCC_UART4_CLK_ENABLE()
+#define CLK_UART5     __HAL_RCC_UART5_CLK_ENABLE()
 #define CLK_USART6    __HAL_RCC_USART6_CLK_ENABLE()
+#define CLK_UART7     __HAL_RCC_UART7_CLK_ENABLE()
+#define CLK_UART8     __HAL_RCC_UART8_CLK_ENABLE()
 
 #endif /* STM32_H_ */

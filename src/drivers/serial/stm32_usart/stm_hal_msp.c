@@ -31,21 +31,33 @@ static void USART_CLK_ENABLE(void *usart_base) {
 		break;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		CONF_USART4_CLK_ENABLE_UART();
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		CONF_UART4_CLK_ENABLE_UART();
 		break;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		CONF_USART5_CLK_ENABLE_UART();
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		CONF_UART5_CLK_ENABLE_UART();
 		break;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		CONF_USART6_CLK_ENABLE_UART();
+		break;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		CONF_UART7_CLK_ENABLE_UART();
+		break;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		CONF_UART8_CLK_ENABLE_UART();
 		break;
 	}
 #endif
@@ -74,21 +86,33 @@ static void USART_TX_GPIO_CLK_ENABLE(void *usart_base) {
 		break;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		CONF_USART4_CLK_ENABLE_TX();
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		CONF_UART4_CLK_ENABLE_TX();
 		break;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		CONF_USART5_CLK_ENABLE_TX();
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		CONF_UART5_CLK_ENABLE_TX();
 		break;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		CONF_USART6_CLK_ENABLE_TX();
+		break;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		CONF_UART7_CLK_ENABLE_TX();
+		break;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		CONF_UART8_CLK_ENABLE_TX();
 		break;
 	}
 #endif
@@ -117,21 +141,33 @@ static void USART_RX_GPIO_CLK_ENABLE(void *usart_base) {
 		break;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		CONF_USART4_CLK_ENABLE_RX();
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		CONF_UART4_CLK_ENABLE_RX();
 		break;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		CONF_USART5_CLK_ENABLE_RX();
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		CONF_UART5_CLK_ENABLE_RX();
 		break;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		CONF_USART6_CLK_ENABLE_RX();
+		break;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		CONF_UART7_CLK_ENABLE_RX();
+		break;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		CONF_UART8_CLK_ENABLE_RX();
 		break;
 	}
 #endif
@@ -157,19 +193,29 @@ static uint16_t USART_RX_PIN(void *usart_base) {
 		return CONF_USART3_PIN_RX_NR;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		return CONF_USART4_PIN_RX_NR;
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		return CONF_UART4_PIN_RX_NR;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		return CONF_USART5_PIN_RX_NR;
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		return CONF_UART5_PIN_RX_NR;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		return CONF_USART6_PIN_RX_NR;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		return CONF_UART7_PIN_RX_NR;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		return CONF_UART8_PIN_RX_NR;
 	}
 #endif
 	default:
@@ -195,19 +241,29 @@ static uint16_t USART_TX_PIN(void *usart_base) {
 		return CONF_USART3_PIN_TX_NR;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		return CONF_USART4_PIN_TX_NR;
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		return CONF_UART4_PIN_TX_NR;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		return CONF_USART5_PIN_TX_NR;
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		return CONF_UART5_PIN_TX_NR;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		return CONF_USART6_PIN_TX_NR;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		return CONF_UART7_PIN_TX_NR;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		return CONF_UART8_PIN_TX_NR;
 	}
 #endif
 	default:
@@ -233,19 +289,29 @@ static GPIO_TypeDef *USART_RX_GPIO_PORT(void *usart_base) {
 		return CONF_USART3_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		return CONF_USART4_PIN_RX_PORT;
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		return CONF_UART4_PIN_RX_PORT;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		return CONF_USART5_PIN_RX_PORT;
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		return CONF_UART5_PIN_RX_PORT;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		return CONF_USART6_PIN_RX_PORT;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		return CONF_UART7_PIN_RX_PORT;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		return CONF_UART8_PIN_RX_PORT;
 	}
 #endif
 	default:
@@ -271,19 +337,29 @@ static GPIO_TypeDef *USART_TX_GPIO_PORT(void *usart_base) {
 		return CONF_USART3_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		return CONF_USART4_PIN_TX_PORT;
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		return CONF_UART4_PIN_TX_PORT;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		return CONF_USART5_PIN_TX_PORT;
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		return CONF_UART5_PIN_TX_PORT;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		return CONF_USART6_PIN_TX_PORT;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		return CONF_UART7_PIN_TX_PORT;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		return CONF_UART8_PIN_TX_PORT;
 	}
 #endif
 	default:
@@ -309,19 +385,29 @@ static uint8_t USART_TX_AF(void *usart_base) {
 		return CONF_USART3_PIN_TX_AF;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		return CONF_USART4_PIN_TX_AF;
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		return CONF_UART4_PIN_TX_AF;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		return CONF_USART5_PIN_TX_AF;
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		return CONF_UART5_PIN_TX_AF;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		return CONF_USART6_PIN_TX_AF;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		return CONF_UART7_PIN_TX_AF;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		return CONF_UART8_PIN_TX_AF;
 	}
 #endif
 	default:
@@ -347,19 +433,29 @@ static uint8_t USART_RX_AF(void *usart_base) {
 		return CONF_USART3_PIN_RX_AF;
 	}
 #endif
-#if defined(USART4) &&  defined(CONF_USART4_ENABLED)
-	case (uintptr_t)USART4: {
-		return CONF_USART4_PIN_RX_AF;
+#if defined(UART4) &&  defined(CONF_UART4_ENABLED)
+	case (uintptr_t)UART4: {
+		return CONF_UART4_PIN_RX_AF;
 	}
 #endif
-#if defined(USART5) &&  defined(CONF_USART5_ENABLED)
-	case (uintptr_t)USART5: {
-		return CONF_USART5_PIN_RX_AF;
+#if defined(UART5) &&  defined(CONF_UART5_ENABLED)
+	case (uintptr_t)UART5: {
+		return CONF_UART5_PIN_RX_AF;
 	}
 #endif
 #if defined(USART6) &&  defined(CONF_USART6_ENABLED)
 	case (uintptr_t)USART6: {
 		return CONF_USART6_PIN_RX_AF;
+	}
+#endif
+#if defined(UART7) &&  defined(CONF_UART7_ENABLED)
+	case (uintptr_t)UART7: {
+		return CONF_UART7_PIN_RX_AF;
+	}
+#endif
+#if defined(UART8) &&  defined(CONF_UART8_ENABLED)
+	case (uintptr_t)UART8: {
+		return CONF_UART8_PIN_RX_AF;
 	}
 #endif
 	default:

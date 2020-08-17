@@ -38,6 +38,12 @@ static_assert(USART3_IRQ == USART3_IRQn);
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart2_irq)
 static_assert(USART2_IRQ == USART2_IRQn);
 
+#if defined(UART8)
+#define UART8_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, uart8_irq)
+static_assert(UART8_IRQ == UART8_IRQn);
+#endif
+
 #if MODOPS_USARTX == 6
 
 #define USARTx                           USART6
@@ -56,6 +62,16 @@ static_assert(USART2_IRQ == USART2_IRQn);
 
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART3_IRQ
+
+#elif MODOPS_USARTX == 8
+#if !defined(UART8)
+#error Unsupported UART8 for this target
+#endif
+
+#define USARTx                           UART8
+
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      UART8_IRQ
 
 #else
 #error Unsupported USARTx
