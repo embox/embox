@@ -27,12 +27,13 @@ EMBOX_UNIT_INIT(da1469x_udc_init);
 #define EP0_BUFFER_SIZE 1024
 #define DA1469X_UDC_EPS_COUNT 7
 
+#define DA1469x_UDC_IN_EP_MASK   ((1 << 1) | (1 << 3) | (1 << 5))
+#define DA1469x_UDC_OUT_EP_MASK  ((1 << 2) | (1 << 4) | (1 << 6))
+
 struct da1469x_udc {
 	struct usb_udc udc;
 	struct usb_gadget_ep *eps[DA1469X_UDC_EPS_COUNT];
 	struct usb_gadget_request *requests[DA1469X_UDC_EPS_COUNT];
-	unsigned int ep_in_num_assign;
-	unsigned int ep_out_num_assign;
 	unsigned int setup_buf_pos;
 	unsigned int tx_in_progress[DA1469X_UDC_EPS_COUNT];
 };
@@ -67,30 +68,6 @@ static int da1469x_udc_ep_queue(struct usb_gadget_ep *ep,
 	return 0;
 }
 
-static int da1469x_udc_ep_configure(struct usb_gadget_ep *ep) {
-	struct da1469x_udc *u = (struct da1469x_udc *) ep->udc;
-
-	/* EP numbers. IN: 1, 3, 5. OUT: 2, 4, 6. */
-
-	if (ep->dir == USB_DIR_OUT) {
-		if (u->ep_out_num_assign > 6) {
-			log_error("No OUT endpoints");
-			return -1;
-		}
-		ep->nr = u->ep_out_num_assign;
-		u->ep_out_num_assign += 2;
-	} else {
-		if (u->ep_in_num_assign > 5) {
-			log_error("No IN endpoints");
-			return -1;
-		}
-		ep->nr = u->ep_in_num_assign;
-		u->ep_in_num_assign += 2;
-	}
-
-	return 0;
-}
-
 static void da1469x_udc_ep_enable(struct usb_gadget_ep *ep) {
 	struct da1469x_udc *u = (struct da1469x_udc *) ep->udc;
 
@@ -102,6 +79,10 @@ static void da1469x_udc_ep_enable(struct usb_gadget_ep *ep) {
 		/* TODO May be true? */
 		hw_usb_ep_configure(ep->nr, false,
 		    (hw_usb_device_framework_ep_descriptor_t*) ep->desc);
+
+		if (ep->dir == USB_DIR_OUT) {
+			hw_usb_ep_rx_enable(ep->nr);
+		}
 	}
 }
 
@@ -110,11 +91,11 @@ static struct da1469x_udc da1469x_udc = {
 		.name = "da1496x udc",
 		.udc_start = da1469x_udc_start,
 		.ep_queue = da1469x_udc_ep_queue,
-		.ep_configure = da1469x_udc_ep_configure,
 		.ep_enable = da1469x_udc_ep_enable,
+
+		.in_ep_mask = DA1469x_UDC_IN_EP_MASK,
+		.out_ep_mask = DA1469x_UDC_OUT_EP_MASK,
 	},
-	.ep_in_num_assign = 1,
-	.ep_out_num_assign = 2,
 };
 
 static void da1469x_udc_send_control_msg(uint8_t *data, uint8_t size) {
@@ -185,8 +166,6 @@ void hw_usb_ep_nak(uint8_t ep_nr) {
 
 void sys_usb_ext_hook_begin_enumeration(void) {
 	hw_usb_ep_configure(0, true, NULL);
-
-	usb_gadget_enumerate(da1469x_udc.udc.gadget);
 }
 
 uint8_t *hw_usb_ep_get_rx_buffer(uint8_t ep_nr, bool is_setup, uint16_t *buffer_size) {
@@ -259,6 +238,16 @@ static void da1469x_udc_set_address(void) {
 	hw_usb_ep_tx_start(0, NULL, 0);
 }
 
+static void da1469x_udc_set_configuration(void) {
+	int config = usb_setup.value & 0xff;
+
+	log_debug("\nconf=0x%x\n", config);
+
+	usb_gadget_set_config(da1469x_udc.udc.composite, config);
+
+	hw_usb_ep_tx_start(0, NULL, 0);
+}
+
 static void da1469x_udc_handle_standard_req(int ep_nr) {
 	int ret;
 
@@ -271,13 +260,13 @@ static void da1469x_udc_handle_standard_req(int ep_nr) {
 		break;
 	case HW_USB_DEVICE_FRAMEWORK_REQ_GET_CONFIGURATION:
 		/* TODO usb_req_get_configuration(); */
+		log_debug("GET_CONFIGURATION");
 		break;
 	case HW_USB_DEVICE_FRAMEWORK_REQ_SET_CONFIGURATION:
-		/* TODO usb_req_set_configuration(); */
-		hw_usb_ep_tx_start(0, NULL, 0);
+		da1469x_udc_set_configuration();
 		break;
 	default:
-		ret = usb_gadget_setup(da1469x_udc.udc.gadget,
+		ret = usb_gadget_setup(da1469x_udc.udc.composite,
 		         (const struct usb_control_header *) &usb_setup, NULL);
 		if (ret != 0) {
 			log_error("Not implemented req 0x%x", usb_setup.request);
@@ -313,7 +302,7 @@ bool hw_usb_ep_rx_done(uint8_t ep_nr, uint8_t *buffer, uint16_t size) {
 			da1469x_udc_handle_standard_req(ep_nr);
 			break;
 		default:
-			ret = usb_gadget_setup(da1469x_udc.udc.gadget,
+			ret = usb_gadget_setup(da1469x_udc.udc.composite,
 			         (const struct usb_control_header *) &usb_setup,
 			         ep0_buffer);
 			if (ret != 0) {

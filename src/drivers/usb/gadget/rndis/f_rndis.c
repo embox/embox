@@ -14,8 +14,7 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
 
-/* FIXME Should be examined how to do this, because strings are at rndis_gadget.c */
-#define RNDIS_CONFIGURATION_STR_INDEX 4
+#include <drivers/usb/function/f_rndis_idx.h>
 
 /* IAD descriptor */
 static const uint8_t iad_descriptor[8] = {
@@ -23,10 +22,10 @@ static const uint8_t iad_descriptor[8] = {
 		0x0B, /*    bDescriptorType */
 		0x00, /*    bFirstInterface */
 		0x02, /*    bInterfaceCount */
-		0xE0, /*    bFunctionClass   (Wireless Controller) */
-		0x01, /*    bFunctionSubClass */
-		0x03, /*    bFunctionProtocol */
-		RNDIS_CONFIGURATION_STR_INDEX /*    iFunction   "RNDIS" */
+		0x02, /*    bFunctionClass */
+		0x02, /*    bFunctionSubClass */
+		0xFF, /*    bFunctionProtocol */
+		RNDIS_STR_CONFIGURATION /*    iFunction   "RNDIS" */
 };
 
 /* Interface 0 descriptor */
@@ -37,9 +36,9 @@ static struct usb_desc_interface rndis_interface0_desc = {
     0x00, /* uint8  bInterfaceNumber; DYNAMIC */
     0x00,                                           // uint8  bAlternateSetting;
     1,                                              // uint8  bNumEndpoints;
-    0xE0,                                  			// uint8  bInterfaceClass: Wireless Controller;
-    0x01,                                           // uint8  bInterfaceSubClass
-    0x03,                                           // uint8  bInterfaceProtocol
+    0x02,                                  			// uint8  bInterfaceClass: Wireless Controller;
+    0x02,                                           // uint8  bInterfaceSubClass
+    0xFF,                                           // uint8  bInterfaceProtocol
     0      											// uint8  iInterface;
 };
 
@@ -155,13 +154,13 @@ static int rndis_probe(struct usb_gadget *gadget) {
 		usb_gadget_add_interface(gadget, &rndis_func);
 
 	/* FIXME */
-	intr.udc    = gadget->ep0.udc;
-	bulk_tx.udc = gadget->ep0.udc;
-	bulk_rx.udc = gadget->ep0.udc;
+	intr.udc    = gadget->composite->ep0.udc;
+	bulk_tx.udc = gadget->composite->ep0.udc;
+	bulk_rx.udc = gadget->composite->ep0.udc;
 
-	usb_gadget_ep_configure(&bulk_tx);
-	usb_gadget_ep_configure(&bulk_rx);
-	usb_gadget_ep_configure(&intr);
+	usb_gadget_ep_configure(gadget, &bulk_tx);
+	usb_gadget_ep_configure(gadget, &bulk_rx);
+	usb_gadget_ep_configure(gadget, &intr);
 
 	/* TODO Endpoints are not enabled. */
 

@@ -12,6 +12,7 @@
 #include <util/dlist.h>
 #include <drivers/usb/usb_desc.h>
 
+#define USB_GADGET_CONFIGS_MAX      2
 #define USB_GADGET_STR_MAX          16
 #define USB_GADGET_REQ_BUFSIZE      2048
 #define USB_GADGET_MAX_INTERFACES   8
@@ -34,21 +35,35 @@ struct usb_gadget_request {
 };
 
 struct usb_gadget {
-	struct usb_desc_device device_desc;
+	struct usb_gadget_composite *composite;
+
 	struct usb_desc_configuration config_desc;
-	char *strings[USB_GADGET_STR_MAX];
 
 	/* Each interface points to the corresponding USB function. */
 	struct usb_gadget_function *interfaces[USB_GADGET_MAX_INTERFACES];
 	unsigned int intf_count;
 
+	/* Enpdoints reserved for the current gadget (configuration) */
+	int out_ep_active_mask;
+	int in_ep_active_mask;
+};
+
+struct usb_gadget_composite {
+	struct usb_desc_device device_desc;
+	char *strings[USB_GADGET_STR_MAX];
+
 	struct usb_gadget_request req;
 	struct usb_gadget_ep ep0;
+
+	struct usb_gadget *config; /* Current configuration */
+
+	struct usb_gadget *configs[USB_GADGET_CONFIGS_MAX]; /* All configurations */
 };
 
 struct usb_gadget_function {
-	const struct usb_desc_common_header **descs;
 	const char *name;
+
+	const struct usb_desc_common_header **descs;
 
 	struct usb_gadget *gadget;
 
@@ -60,12 +75,13 @@ struct usb_gadget_function {
 	void (*event)(struct usb_gadget_function *, int event);
 };
 
-extern int usb_gadget_setup(struct usb_gadget *gadget,
+extern int usb_gadget_setup(struct usb_gadget_composite *composite,
 	const struct usb_control_header *ctrl, uint8_t *buffer);
 
-extern int usb_gadget_enumerate(struct usb_gadget *gadget);
+extern int usb_gadget_set_config(struct usb_gadget_composite *composite,
+	int config);
 
-extern int usb_gadget_register(struct usb_gadget *gadget);
+extern int usb_gadget_register(struct usb_gadget_composite *gadget);
 
 extern void usb_gadget_register_function(struct usb_gadget_function *f);
 
@@ -74,5 +90,8 @@ extern int usb_gadget_add_function(struct usb_gadget *gadget,
 
 extern int usb_gadget_add_interface(struct usb_gadget *gadget,
 	                                struct usb_gadget_function *f);
+
+extern int usb_gadget_ep_configure(struct usb_gadget *gadget,
+	struct usb_gadget_ep *ep);
 
 #endif /* DRIVERS_USB_GADGET_GADGET_H_ */
