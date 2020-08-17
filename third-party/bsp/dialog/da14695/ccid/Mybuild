@@ -12,7 +12,7 @@ module ccid {
 
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v3")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v4")
 	source "ccid.c",
 		   "ccid_desc.c"
 
@@ -30,7 +30,7 @@ module ccid_card_emulated extends ccid_card_api {
 
 	@Cflags("-Wno-undef")
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v3")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/ccid_sources/ccid-v4")
 	source "ccid_card_emulated.c"
 
 	@NoRuntime depends ccid_sources
