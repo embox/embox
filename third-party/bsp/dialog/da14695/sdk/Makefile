@@ -12,7 +12,8 @@ PKG_PATCHES := patch_$(PKG_NAME).txt \
 			   pwr_patch_$(PKG_NAME).txt \
 			   hw_dma_patch_$(PKG_NAME).txt \
 			   sys_timer_patch_$(PKG_NAME).txt \
-			   sys_clock_mgr_patch_$(PKG_NAME).txt
+			   sys_clock_mgr_patch_$(PKG_NAME).txt \
+			   ad_pmu_patch_$(PKG_NAME).txt
 
 verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
