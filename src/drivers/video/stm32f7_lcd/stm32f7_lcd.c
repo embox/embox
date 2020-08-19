@@ -24,11 +24,14 @@
 #include "stm32f769i_discovery_lcd.h"
 /* This macro is not defined for STM32F769I, but it still
  * works just fine with the same numeric constatnt */
-#define LTDC_ACTIVE_LAYER 1
 void     BSP_LCD_LayerRgb565Init(uint16_t LayerIndex, uint32_t FB_Address);
 #else
 #error Unsupported platform
 #endif
+
+/* Initialize layer 0 as active for all F7 boards. */
+#undef LTDC_ACTIVE_LAYER
+#define LTDC_ACTIVE_LAYER 0
 
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32f7_lcd_init);
