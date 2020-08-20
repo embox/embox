@@ -26,13 +26,6 @@ volatile k210_gpio_t* const gpio = (volatile k210_gpio_t*) K210_GPIO_BASE_ADDR;
 extern volatile sysctl_clock_enable_central* const clk_en_cent;
 extern volatile sysctl_clock_enable_peripheral* const clk_en_peri;
 
-typedef enum {
-	INPUT,
-	INPUT_PULL_DOWN,
-	INPUT_PULL_UP,
-	OUTPUT,
-} pinmode_t;
-
 static struct gpio_chip k210_gpio_chip = {
 	.setup_mode = k210_gpio_setup_mode,
 	.get = k210_gpio_get,
@@ -57,9 +50,16 @@ static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
 }
 
 static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level){
+	volatile uint32_t *reg_dir = gpio->dir.reg32;
 	volatile uint32_t *reg = gpio->data_out.reg32;
 	assert(port < K210_GPIO_PORTS_COUNT);
-	// TODO: direction check
+
+	// direction check
+	uint32_t input = ~(*reg_dir);
+	input = (uint32_t)pins & input;
+	if(input){
+		log_error("input pin cannot set level: pin mask=%x, level=%d", input, level);
+	}
 
 	if(level == GPIO_PIN_HIGH){
 		*reg |= (uint32_t)pins;
@@ -73,13 +73,18 @@ static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level){
 }
 
 static gpio_mask_t k210_gpio_get(unsigned char port, gpio_mask_t pins){
-	volatile uint32_t *reg;
+	volatile uint32_t *reg_dir = gpio->dir.reg32;
+	gpio_mask_t res = 0;
 	assert(port < K210_GPIO_PORTS_COUNT);
 
-	// TODO: dir==input
-	reg = gpio->data_out.reg32;
-
-	return (gpio_mask_t)*reg;
+	uint32_t dir = *reg_dir;
+	int bit;
+	bit_foreach(bit, (uint32_t)pins){
+		volatile uint32_t *reg =
+			(dir << bit ? gpio->data_out.reg32 : gpio->data_in.reg32);
+		res |= *reg & (1 << bit);
+	}
+	return res;
 }
 
 // TODO: remove
