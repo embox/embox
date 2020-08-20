@@ -2,7 +2,9 @@
 PKG_NAME := ntfs-3g_ntfsprogs
 PKG_VER  := 2013.1.13
 
-PKG_SOURCES := http://tuxera.com/opensource/$(PKG_NAME)-$(PKG_VER).tgz
+PKG_SOURCES := http://tuxera.com/opensource/$(PKG_NAME)-$(PKG_VER).tgz \
+               http://ftp.osuosl.org/pub/blfs/conglomeration/ntfs-3g/$(PKG_NAME)-$(PKG_VER).tgz
+
 PKG_MD5     := 2d6fb47ddf62b51733227126fe9227fe
 
 PKG_PATCHES := patch.txt

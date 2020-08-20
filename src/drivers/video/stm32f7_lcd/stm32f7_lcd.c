@@ -7,6 +7,7 @@
  */
 
 #include <errno.h>
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -15,8 +16,7 @@
 #include <mem/page.h>
 #include <util/binalign.h>
 #include <util/log.h>
-
-#include <kernel/printk.h>
+#include <kernel/irq.h>
 
 #if defined STM32F746xx
 #include "stm32746g_discovery_lcd.h"
@@ -24,14 +24,20 @@
 #include "stm32f769i_discovery_lcd.h"
 /* This macro is not defined for STM32F769I, but it still
  * works just fine with the same numeric constatnt */
-#define LTDC_ACTIVE_LAYER 1
 void     BSP_LCD_LayerRgb565Init(uint16_t LayerIndex, uint32_t FB_Address);
 #else
 #error Unsupported platform
 #endif
 
+/* Initialize layer 0 as active for all F7 boards. */
+#undef LTDC_ACTIVE_LAYER
+#define LTDC_ACTIVE_LAYER 0
+
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32f7_lcd_init);
+
+#define LTDC_IRQ      OPTION_GET(NUMBER,ltdc_irq)
+static_assert(LTDC_IRQ == LTDC_IRQn);
 
 #define USE_FB_SECTION OPTION_GET(BOOLEAN,use_fb_section)
 
@@ -111,6 +117,24 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 	}
 }
 
+static irq_return_t ltdc_irq_handler(unsigned int irq_num, void *dev_id) {
+#if defined STM32F746xx
+extern LTDC_HandleTypeDef hLtdcHandler;
+#define hltdc_handler hLtdcHandler
+#elif defined STM32F769xx
+extern LTDC_HandleTypeDef  hltdc_discovery;
+#define hltdc_handler hltdc_discovery
+#else
+#error Unsupported platform
+#endif
+
+	HAL_LTDC_IRQHandler(&hltdc_handler);
+
+	return IRQ_HANDLED;
+}
+
+STATIC_IRQ_ATTACH(LTDC_IRQ, ltdc_irq_handler, NULL);
+
 static struct fb_ops stm32f7_lcd_ops = {
 	.fb_set_var   = stm32f7_lcd_set_var,
 	.fb_get_var   = stm32f7_lcd_get_var,
@@ -123,6 +147,11 @@ static int stm32f7_lcd_init(void) {
 
 	if (BSP_LCD_Init() != LCD_OK) {
 		log_error("Failed to init LCD!");
+		return -1;
+	}
+
+	if (0 > irq_attach(LTDC_IRQ, ltdc_irq_handler, 0, NULL, "LTDC")) {
+		log_error("irq_attach failed");
 		return -1;
 	}
 

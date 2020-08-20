@@ -2,7 +2,10 @@ package embox.driver.video
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7_lcd {
+	option number log_level=1
+
 	option number fb_base = 0xc0000000
+	option number ltdc_irq = 88
 	option number height = 272
 	option number width = 480
 	option number bpp = 32
