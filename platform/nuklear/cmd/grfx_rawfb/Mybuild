@@ -33,6 +33,13 @@ module rawfb_stm32_ltdc extends rawfb_api {
 	depends third_party.bsp.st_bsp_api
 }
 
+@BuildDepends(third_party.bsp.st_bsp_api)
+module rawfb_stm32_ltdc_alpha extends rawfb_api {
+	source "rawfb_stm32_ltdc_alpha.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+
 module rawfb_memcpy extends rawfb_api {
 	source "rawfb_memcpy.c"
 }
