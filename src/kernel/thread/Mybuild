@@ -93,7 +93,7 @@ module thread_local_heap extends thread_local {
 	depends embox.kernel.task.syslib.thread_key_table
 }
 
-@DefaultImpl(thread_cancel_disable)
+@DefaultImpl(thread_cancel_enable)
 abstract module thread_cancel {}
 
 module thread_cancel_enable extends thread_cancel {

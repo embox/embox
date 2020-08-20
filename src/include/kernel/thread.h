@@ -16,6 +16,7 @@
 #define KERNEL_THREAD_API_H_
 
 #include <kernel/thread/types.h>
+#include <kernel/thread/thread_cancel.h>
 #include <kernel/thread/thread_flags.h>
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/current.h>

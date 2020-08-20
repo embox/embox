@@ -14,6 +14,12 @@ module pthread_kill_test {
 	depends embox.compat.posix.pthreads
 }
 
+module pthread_cancel_test {
+	source "pthread_cancel_test.c"
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.pthreads
+}
+
 module pthread_rwlock {
 	source "pthread_rwlock_test.c"
 	depends embox.compat.posix.pthreads

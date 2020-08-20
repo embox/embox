@@ -13,6 +13,19 @@
 #include <kernel/thread/thread_cancel.h>
 
 int thread_cancel(struct thread *t) {
+	if (t->state == TS_EXITED) {
+		return ESRCH;
+	}
+	if (PTHREAD_CANCEL_DISABLE == t->cleanups.state) {
+		while (1) {
+			if (PTHREAD_CANCEL_ENABLE == t->cleanups.state) {
+				break;
+			}
+			if (t->state == TS_EXITED) {
+				return 0;
+			}
+		}
+	}
 	sched_lock();
 	{
 		for (; t->cleanups.counter > 0; t->cleanups.counter--) {
@@ -37,7 +50,8 @@ int thread_cancel_set_state(int state, int *oldstate) {
 
 	if (oldstate != NULL) {
 		*oldstate = t->cleanups.state;
-	}
+	} 
+	t->cleanups.state = state;
 
 	return ENOERR;
 }
