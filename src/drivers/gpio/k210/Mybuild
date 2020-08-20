@@ -2,6 +2,7 @@ package embox.driver.gpio
 
 module k210_gpio {
 	option number log_level = 4
+	option number gpio_chip_id = 0
 
 	@IncludeExport(path="drivers/gpio", target_name="k210.h")
 	source "k210_gpio.h"

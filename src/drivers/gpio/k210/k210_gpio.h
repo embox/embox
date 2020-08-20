@@ -9,10 +9,11 @@
 #ifndef SRC_DRIVERS_GPIO_K210_GPIO_H_
 #define SRC_DRIVERS_GPIO_K210_GPIO_H_
 
-#include <drivers/gpio/k210/fpioa.h>
+#include <drivers/gpio/gpio.h>
 
-#define GPIO_BASE_ADDR	(0x50200000U)
-#define GPIO_NUM_PIN	8
+#define K210_GPIO_BASE_ADDR		(0x50200000U)
+#define K210_GPIO_PORTS_COUNT	1
+#define K210_GPIO_PIN_COUNT		8
 
 typedef union {
 	uint32_t reg32[1];
@@ -45,6 +46,10 @@ typedef struct {
 } __attribute__((packed, aligned(4))) k210_gpio_t;
 
 static int k210_gpio_init(void);
-void k210_gpio_set_dir(uint8_t pin, uint8_t dir);
+static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode);
+static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level);
+static gpio_mask_t k210_gpio_get(unsigned char port, gpio_mask_t pins);
+
+void k210_gpio_set_dir(gpio_mask_t pins, bool dir);
 
 #endif
