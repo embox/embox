@@ -20,11 +20,7 @@ _start:
 	bnez	t0, die
 
 	# stack
-	lla		sp, stack
-	li		a0, STACK_SIZE * MAX_HARTS
-	addi	t0, t0, 1
-	mul		a0, a0, t0
-	add		sp, sp, a0
+	lla		sp, _stack_top
 
 	# Zero the BSS segment
 	la		t1, bss_target_start
@@ -45,7 +41,3 @@ zero_bss_end:
 die:
 	j		die
 
-.section .bss
-.global stack
-stack:
-	.skip	STACK_SIZE * MAX_HARTS
