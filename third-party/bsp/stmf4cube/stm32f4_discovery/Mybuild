@@ -65,3 +65,15 @@ module arch extends embox.arch.arch {
 
 	@NoRuntime depends system_init
 }
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildDepends(stm32f4_discovery_bsp)
+module usb_dev_api {
+	option number irq = 67 //OTG_FS_IRQn
+	@IncludeExport(path="third_party/stmf4cube")
+	source "usb_stm32f4.h"
+
+	//@Cflags("-Wno-undef")
+	source "usb_stm32f4.c"
+}
