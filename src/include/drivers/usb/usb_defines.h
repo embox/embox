@@ -28,6 +28,7 @@
 #define USB_REQ_SET_FEATURE         0x03
 #define USB_REQ_SET_ADDRESS         0x05
 #define USB_REQ_GET_DESCRIPTOR      0x06
+#define USB_REQ_GET_CONFIG          0x08
 #define USB_REQ_SET_CONFIG          0x09
 #define USB_REQ_SET_INTERFACE       0x0B
 
