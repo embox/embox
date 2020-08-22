@@ -19,6 +19,27 @@
 
 static DLIST_DEFINE(usb_gadget_func_list);
 
+static void usb_gadget_reconfigure(struct usb_gadget *gadget) {
+	struct usb_gadget_function *f;
+	int i, res;
+
+	gadget->intf_count = 0;
+	gadget->out_ep_active_mask = 0;
+	gadget->in_ep_active_mask = 0;
+
+	for (i = 0; i < gadget->func_count; i++) {
+		f = gadget->functions[i];
+
+		if (f->fini) {
+			f->fini(f);
+		}
+
+		assert(f->probe);
+		res = f->probe(gadget);
+		assert(res == 0);
+	}
+}
+
 static int usb_gadget_prepare_config_desc(
 	    struct usb_gadget_composite *composite,
 	    uint16_t w_value) {
@@ -30,6 +51,11 @@ static int usb_gadget_prepare_config_desc(
 	log_debug("\nconf=%d\n", w_value);
 
 	gadget = composite->configs[w_value];
+
+	if (composite->config != gadget) {
+		usb_gadget_reconfigure(gadget);
+		composite->config = gadget;
+	}
 
 	/* Copy configuration descriptor */
 	memcpy(buf, &gadget->config_desc, gadget->config_desc.b_length);
@@ -208,6 +234,9 @@ int usb_gadget_add_function(struct usb_gadget *gadget,
 	dlist_foreach_entry(func, &usb_gadget_func_list, link) {
 		if (!strcmp(func->name, func_name)) {
 			assert(func->probe);
+
+			gadget->functions[gadget->func_count++] = func;
+
 			res = func->probe(gadget);
 			if (!res) {
 				func->gadget = gadget;
@@ -280,6 +309,8 @@ int usb_gadget_set_config(struct usb_gadget_composite *composite, int config) {
 	gadget = composite->config;
 
 	assert(gadget);
+
+	usb_gadget_reconfigure(gadget);
 
 	for (i = 0;; i++) {
 		func = gadget->interfaces[i];
