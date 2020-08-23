@@ -1,0 +1,34 @@
+****** Building problem ********
+There is a building trouble command 'make' first time fails.
+Error message looks like:
+--cref -Map /home/anton/embox/build/base/obj/embox.o.map \
+-o /home/anton/embox/build/base/obj/embox.o
+EMBOX_GCC_LINK=full /home/anton/embox/mk/extbld/arch-embox-gcc /home/anton/embox/mk/extbld/toolchain_test.c -o /home/anton/embox/build/base/obj/toolchain_test
+collect2: fatal error: ld terminated with signal 11 [Segmentation fault], core dumped
+compilation terminated.
+make[4]: *** [mk/extbld/toolchain.mk:77: /home/anton/embox/build/base/obj/toolchain_test] Error 1
+make[3]: *** [mk/build.mk:25: build] Error 2
+make[2]: *** [mk/load.mk:41: build] Error 2
+make[1]: *** [mk/main.mk:30: build] Error 2
+make: *** [Makefile:40: all] Error 2
+
+*** Building problem fix ***
+For fixing just call 'make' ones again
+
+-T /home/anton/embox/build/base/obj/mk/image.lds \
+/home/anton/embox/build/base/obj/embox-2.o \
+/home/anton/embox/build/base/obj/md5sums2.o \
+/home/anton/embox/build/base/obj/symbols_pass2.a \
+--cref -Map /home/anton/embox/build/base/bin/embox.map \
+-o /home/anton/embox/build/base/bin/embox
+   text	   data	    bss	    dec	    hex	filename
+5010308	1921152	68330723	75262183	47c68e7	/home/anton/embox/build/base/bin/embox
+Build complete
+
+****** Demos ********
+There are several demos:
+
+1. opencv_version just returns verion of opencv library
+2. edges fruits.png 20 demonstrates egdes detection
+3. imagecapture capture some video stream
+ 
