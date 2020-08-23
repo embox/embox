@@ -16,6 +16,7 @@
 #define USB_GADGET_STR_MAX          16
 #define USB_GADGET_REQ_BUFSIZE      2048
 #define USB_GADGET_MAX_INTERFACES   8
+#define USB_GADGET_MAX_FUNCTIONS    4
 
 struct usb_udc;
 
@@ -38,6 +39,9 @@ struct usb_gadget {
 	struct usb_gadget_composite *composite;
 
 	struct usb_desc_configuration config_desc;
+
+	struct usb_gadget_function *functions[USB_GADGET_MAX_FUNCTIONS];
+	unsigned int func_count;
 
 	/* Each interface points to the corresponding USB function. */
 	struct usb_gadget_function *interfaces[USB_GADGET_MAX_INTERFACES];
@@ -70,6 +74,7 @@ struct usb_gadget_function {
 	struct dlist_head link;
 
 	int (*probe)(struct usb_gadget *);
+	int (*fini)(struct usb_gadget_function *);
 	int (*enumerate)(struct usb_gadget_function *);
 	int (*setup)(struct usb_gadget_function *, const struct usb_control_header *, uint8_t *);
 	void (*event)(struct usb_gadget_function *, int event);
