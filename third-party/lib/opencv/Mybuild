@@ -5,6 +5,8 @@ package third_party.lib
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/imgproc/include/")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/highgui/include/")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/imgcodecs/include/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/videoio/include/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/video/include/")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/")
 @BuildDepends(third_party.gcc.libstdcxx)
 @BuildDepends(third_party.gcc.libsupcxx)
@@ -13,6 +15,7 @@ static module opencv {
 	source "^BUILD/extbld/^MOD_PATH/install/libopencv_imgcodecs.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libopencv_imgproc.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libopencv_objdetect.a"
+	source "^BUILD/extbld/^MOD_PATH/install/libopencv_videoio.a"
 	source "^BUILD/extbld/^MOD_PATH/install/liblibpng.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libzlib.a"
 
