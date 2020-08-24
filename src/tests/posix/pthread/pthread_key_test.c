@@ -10,14 +10,8 @@
 
 EMBOX_TEST_SUITE("posix/pthread_key_api");
 
-#define SOME_KEY_1 11
-#define SOME_KEY_2 22
-
 static pthread_key_t key;
 static pthread_once_t key_once = PTHREAD_ONCE_INIT;
-
-static pthread_key_t key1, key2;
-static pthread_t thread1, thread2;
 
 static void make_key(void) {
 	pthread_key_create(&key, NULL);
@@ -25,7 +19,7 @@ static void make_key(void) {
 
 static void *foo_thread1(void *arg) {
 	int i;
-	key1 = SOME_KEY_1;
+	static pthread_key_t key1;
 
 	test_assert_zero(pthread_key_create(&key1, NULL));
 	test_assert_zero(pthread_setspecific(key1, &key1));
@@ -36,7 +30,7 @@ static void *foo_thread1(void *arg) {
 
 static void *foo_thread2(void *arg) {
 	int i;
-	key2 = SOME_KEY_2;
+	pthread_key_t key2;
 
 	test_assert_zero(pthread_key_create(&key2, NULL));
 	test_assert_zero(pthread_setspecific(key2, &key2));
@@ -46,6 +40,8 @@ static void *foo_thread2(void *arg) {
 }
 
 TEST_CASE("create key for thread") {
+	pthread_t thread1, thread2;
+
 	test_assert_zero(pthread_create(&thread1, NULL, foo_thread1, NULL));
 	test_assert_zero(pthread_create(&thread2, NULL, foo_thread2, NULL));
 }
