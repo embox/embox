@@ -124,9 +124,12 @@ endef
 
 # Assuming that we have 'build.conf' in every template.
 PLATFORM_LABEL:=platform/
+PROJECT_LABEL:=project/
 EXT_PROJECT_LABEL:=ext_project/
 template_name=$(patsubst $(TEMPLATES_DIR)/%,%,$1)
 platform_template_name=$(patsubst $(PLATFORM_DIR)/%,$(PLATFORM_LABEL)%,\
+		       $(subst $(SUBPLATFORM_TEMPLATE_DIR),,$1))
+project_template_name=$(patsubst $(PROJECT_DIR)/%,$(PROJECT_LABEL)%,\
 		       $(subst $(SUBPLATFORM_TEMPLATE_DIR),,$1))
 ext_project_template_name=$(patsubst $(EXT_PROJECT_DIR)/%,$(EXT_PROJECT_LABEL)%,\
 		       $(subst $(SUBPLATFORM_TEMPLATE_DIR),,$1))
@@ -136,6 +139,7 @@ template_item=$(foreach t,$(patsubst %/build.conf,%,$2),$(call $1_name,$t)|$t)
 __templates := \
 	$(call template_item,template, $(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)) \
 	$(call template_item,platform_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(PLATFORM_DIR)/*/templates)))) \
+	$(call template_item,project_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(PROJECT_DIR)/*/templates)))) \
 	$(call template_item,ext_project_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(EXT_PROJECT_DIR)/*/templates))))
 
 templates:=$(foreach t,$(__templates),$(firstword $(subst |, ,$t)))

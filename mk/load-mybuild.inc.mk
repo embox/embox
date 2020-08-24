@@ -6,7 +6,7 @@
 # Author: Anton Kozlov
 #
 
-MYFILES_PATH := mk/ src/ platform/ third-party/
+MYFILES_PATH := mk/ src/ platform/ project/ third-party/
 
 ifneq ($(wildcard ext_project/),)
 MYFILES_PATH += ext_project/
