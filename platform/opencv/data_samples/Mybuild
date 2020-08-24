@@ -1,0 +1,11 @@
+package platform.opencv.data_samples
+
+module fruits_png {
+	@InitFS
+	source "fruits.png"
+}
+
+module sample_avi {
+	@InitFS
+	source "sample.avi"
+}
