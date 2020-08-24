@@ -1,4 +1,4 @@
-package embox.cmd.grfxs
+package project.nuklear.cmd
 
 @AutoCmd
 @Cmd(name="grfx_rawfb",

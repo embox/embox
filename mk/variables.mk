@@ -11,6 +11,7 @@ export TEMPLATES_DIR   = $(ROOT_DIR)/templates
 export SRC_DIR         = $(ROOT_DIR)/src
 export THIRDPARTY_DIR  = $(ROOT_DIR)/third-party
 export PLATFORM_DIR    = $(ROOT_DIR)/platform
+export PROJECT_DIR     = $(ROOT_DIR)/project
 export EXT_PROJECT_DIR = $(ROOT_DIR)/ext_project
 
 export SUBPLATFORM_TEMPLATE_DIR  = templates/

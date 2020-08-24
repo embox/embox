@@ -1,4 +1,4 @@
-package platform.pjsip.cmd
+package project.pjsip.cmd
 
 @AutoCmd
 @Cmd(name="simple_pjsua_imported", help="", man="")

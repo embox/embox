@@ -1,4 +1,4 @@
-package platform.nuklear
+package project.nuklear
 
 module nk_embox_renderer {
 	@IncludeExport(path="")
