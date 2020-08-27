@@ -69,6 +69,8 @@ static void dma2d_fill(uint32_t *dst, uint16_t xsize, uint16_t ysize, uint32_t c
 			}
 		}
 	}
+
+	SCB_InvalidateDCache();
 }
 
 void rawfb_init(struct rawfb_fb_info *rfb) {
@@ -97,6 +99,8 @@ void rawfb_swap_buffers(struct rawfb_fb_info *rfb) {
 
 		while (!ltdc_li_triggered) {
 		}
+
+		SCB_CleanDCache();
 
 		LTDC_LAYER(&hltdc_handler, 0)->CFBAR = ((uint32_t)rfb->fb_buf[rfb->fb_buf_idx]);
 		__HAL_LTDC_RELOAD_CONFIG(&hltdc_handler);

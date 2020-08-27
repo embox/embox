@@ -9,24 +9,19 @@
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
-
 #include <util/math.h>
-
 #include <kernel/irq.h>
 #include <hal/reg.h>
-
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
 #include <net/util/show_packet.h>
-
 #include <drivers/net/stm32cube_eth.h>
-
 #include <util/log.h>
-
 #include <embox/unit.h>
+#include <arm/cpu_cache.h>
 
 EMBOX_UNIT_INIT(stm32eth_init);
 
@@ -34,8 +29,11 @@ EMBOX_UNIT_INIT(stm32eth_init);
 
 static ETH_HandleTypeDef stm32_eth_handler;
 
-static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB]__attribute__ ((aligned (4)));
-static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __attribute__ ((aligned (4)));
+static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB] \
+	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+
+static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
+	 __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 
 #if ETH_TXBUFNB == 0
 #undef  ETH_TXBUFNB
@@ -44,11 +42,17 @@ static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] __attribute__ ((aligned (4)
 #endif
 
 #ifdef TX_NO_BUFF
-static uint8_t Tx_Buff[0][ETH_TX_BUF_SIZE] __attribute__ ((aligned (4)));
-static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB]__attribute__ ((aligned (4)));
+static uint8_t Tx_Buff[0][ETH_TX_BUF_SIZE] \
+	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+
+static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
+	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #else
-static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] __attribute__ ((aligned (4)));
-static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB]__attribute__ ((aligned (4)));
+static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
+	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+
+static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
+	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif
 
 static void low_level_init(unsigned char mac[6]) {
