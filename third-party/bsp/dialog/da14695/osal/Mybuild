@@ -4,6 +4,18 @@ static module osal {
 	option number os_thread_count = 4
 	option number os_queues_count = 8
 	option number os_mutex_count = 8
+	option number os_timer_count = 8
 
 	source "osal.c"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module osal_resmgmt {
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-variable")
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/middleware/osal")
+	source "resmgmt.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
