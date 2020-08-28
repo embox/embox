@@ -89,11 +89,28 @@ static gpio_mask_t k210_gpio_get(unsigned char port, gpio_mask_t pins){
 
 // TODO: remove
 void gpio_test(void){
-	// turn on LED(24)
-	// pin3 -> FPIOA[24]
+	// builtin RGB LEDs
+	k210_fpioa_set_func(MAIXBIT_IO_LED_R, FN_GPIO0);
+	k210_fpioa_set_pull(MAIXBIT_IO_LED_R, FPIOA_PULL_DOWN);
 
-	k210_fpioa_set_func(24, FN_GPIO3);
-	k210_fpioa_set_pull(24, FPIOA_PULL_DOWN);
+	k210_fpioa_set_func(MAIXBIT_IO_LED_G, FN_GPIO1);
+	k210_fpioa_set_pull(MAIXBIT_IO_LED_G, FPIOA_PULL_DOWN);
+
+	k210_fpioa_set_func(MAIXBIT_IO_LED_B, FN_GPIO2);
+	k210_fpioa_set_pull(MAIXBIT_IO_LED_B, FPIOA_PULL_DOWN);
+
+	// IO24
+	k210_fpioa_set_func(MAIXBIT_IO24, FN_GPIO3);
+	k210_fpioa_set_pull(MAIXBIT_IO24, FPIOA_PULL_DOWN);
+
+	k210_gpio_setup_mode(0, 1, GPIO_MODE_OUTPUT);
+	k210_gpio_set(0,1,1); /* RED: 0 - ON 1- OFF */
+
+	k210_gpio_setup_mode(0, 4, GPIO_MODE_OUTPUT);
+	k210_gpio_set(0,4,0); /* Blue: 0 - ON 1- OFF*/
+
+	k210_gpio_setup_mode(0, 2, GPIO_MODE_OUTPUT);
+	k210_gpio_set(0,2,1); /* GREEN: 0 - ON 1- OFF */
 }
 
 static int k210_gpio_init(void){
