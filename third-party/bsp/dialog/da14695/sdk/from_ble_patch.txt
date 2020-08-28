@@ -1,0 +1,21 @@
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gap.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gap.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gap.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gap.c	2020-05-21 14:35:29.528238233 +0300
+@@ -147,7 +147,7 @@
+ }
+ 
+ /** \brief Translate Dialog API role to GTL API role */
+-static uint8_t dlg_role_to_gtl_role(gap_role_t dlg_role)
++uint8_t dlg_role_to_gtl_role(gap_role_t dlg_role)
+ {
+         gap_role_t gtl_role = GAP_ROLE_NONE;
+ 
+@@ -176,7 +176,7 @@
+ }
+ 
+ /** \brief Create GTL system configuration command using current ble_dev_params */
+-static ble_mgr_common_stack_msg_t *ble_gap_dev_params_to_gtl(ble_dev_params_t *ble_dev_params)
++ble_mgr_common_stack_msg_t *ble_gap_dev_params_to_gtl(ble_dev_params_t *ble_dev_params)
+ {
+         ble_mgr_common_stack_msg_t *gmsg;
+         struct gapm_set_dev_config_cmd *gcmd;

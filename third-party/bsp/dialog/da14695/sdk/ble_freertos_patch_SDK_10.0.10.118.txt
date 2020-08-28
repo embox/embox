@@ -1,6 +1,6 @@
 diff -aur SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c
 --- SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c	2020-07-07 07:08:18.000000000 +0300
-+++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c	2020-09-01 17:57:59.804577323 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c	2020-09-01 14:34:56.069235253 +0300
 @@ -19,8 +19,8 @@
  #include "ble_config.h"
  
@@ -47,19 +47,6 @@ diff -aur SDK_10.0.10.118/sdk/interfaces/ble/adapter/src/ad_ble.c ../build/extbl
                                  /* Get message from the command queue. */
                                  OS_QUEUE_GET(adapter_if.cmd_q, &received_msg, 0);
                                  /* Make sure a valid op code is received */
-@@ -810,9 +811,9 @@
-                         ble_stack_initialized = true;
- 
-                         /* Apply TCS settings */
--                        ad_ble_sys_tcs_config();
--                        ad_ble_synth_tcs_config();
--                        ad_ble_rfcu_tcs_config();
-+                        //ad_ble_sys_tcs_config();
-+                        //ad_ble_synth_tcs_config();
-+                        //ad_ble_rfcu_tcs_config();
- #if (USE_BLE_SLEEP == 1)
-                         ad_ble_update_wakeup_time();
-                         #if (dg_configUSE_LP_CLK == LP_CLK_RCX)
 @@ -967,7 +968,7 @@
                          /* Post item to queue. */
                          if (ad_ble_event_queue_send(&msgBuf, 0) == OS_OK) {

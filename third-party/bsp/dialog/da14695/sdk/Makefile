@@ -7,6 +7,7 @@ PKG_MD5     := 17ba2eba5a02146b0f4f6c6375829514
 PKG_SOURCES := https://support.dialog-semiconductor.com/system/files/restricted/$(PKG_NAME).zip
 
 PKG_PATCHES := patch_$(PKG_NAME).txt \
+	           freertos_patch_$(PKG_NAME).txt \
 	           ble_patch_$(PKG_NAME).txt \
 	           sys_usb_patch_$(PKG_NAME).txt \
 			   pwr_patch_$(PKG_NAME).txt \
