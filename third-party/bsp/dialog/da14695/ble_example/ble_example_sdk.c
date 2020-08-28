@@ -18,12 +18,14 @@ static const uint8_t adv_data[] = {
 	'E', 'm', 'b', 'o', 'x', ' ', 'A', 'D', 'V', ' ', 'D', 'e', 'm', 'o'
 };
 
+#if 0
 #define CMAC_SHARED_POWER_CTRL_REG_CONFIG_MSK                                                   \
         (REG_MSK(CRG_TOP, POWER_CTRL_REG, LDO_CORE_ENABLE) |                                    \
          REG_MSK(CRG_TOP, POWER_CTRL_REG, LDO_CORE_RET_ENABLE_ACTIVE) |                         \
          REG_MSK(CRG_TOP, POWER_CTRL_REG, VDD_LEVEL))
 
 extern void cmac_update_power_ctrl_reg_values(uint32_t onsleep_value);
+#endif
 extern void ad_ble_init(void);
 
 int main(int argc, char **argv) {
@@ -31,10 +33,11 @@ int main(int argc, char **argv) {
 
 	ad_ble_init();
 
+#if 0
 	/* FIXME */
 	cmac_update_power_ctrl_reg_values(
 		CRG_TOP->POWER_CTRL_REG & (~CMAC_SHARED_POWER_CTRL_REG_CONFIG_MSK));
-
+#endif
 	ble_peripheral_start();
 
 	/* Set device name */
