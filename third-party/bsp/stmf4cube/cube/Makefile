@@ -1,7 +1,6 @@
 
 PKG_NAME := stm32cubef4
 PKG_VER := v1.25.0
-PKG_PATCHES := patch.txt
 
 PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeF4/archive/$(PKG_VER).zip
 
