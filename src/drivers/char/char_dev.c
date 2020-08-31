@@ -43,7 +43,11 @@ int char_dev_register(struct dev_module *cdev) {
 	}
 
 	devtab[cdev_id] = cdev;
-	cdev->dev_id = cdev_id;
+
+	/* XXX Since cdevs were probably allocated as read-only in array spread
+	 * we cannot modify its dev_id. Since dev_id is unused currently
+	 * it's safely do not assign it at all. */
+	/* cdev->dev_id = cdev_id; */
 
 	devfs_notify_new_module(cdev);
 
