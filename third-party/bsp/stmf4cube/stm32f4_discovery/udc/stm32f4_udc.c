@@ -17,9 +17,6 @@
 #include <drivers/usb/gadget/udc.h>
 #include <third_party/stmf4cube/usb_stm32f4.h>
 
-/* FIX: add dependency */
-#include <kernel/printk.h>
-
 #include "stm32f4xx_hal.h"
 
 EMBOX_UNIT_INIT(stm32f4_udc_init);
@@ -33,12 +30,12 @@ EMBOX_UNIT_INIT(stm32f4_udc_init);
 #define STM32F4_UDC_OUT_EP_MASK  ((1 << 1) | (1 << 2) | (1 << 3))
 
 struct ep_status {
-//  uint32_t status;
-  uint32_t total_length;
-  uint32_t rem_length;
-  uint32_t maxpacket;
-  uint8_t is_used;
-//  uint16_t bInterval;
+//	uint32_t status;
+	uint32_t total_length;
+	uint32_t rem_length;
+	uint32_t maxpacket;
+	uint8_t is_used;
+//	uint16_t bInterval;
 };
 
 struct stm32f4_udc {
@@ -200,11 +197,11 @@ static void stm32f4_ll_handle_standard_request(struct usb_control_header *req) {
 		log_debug("CLEAR_FEATURE");
 		break;
 	default:
-		printk("usb:if\n");
+		log_debug("usb:if\n");
 		ret = usb_gadget_setup(stm32f4_udc.udc.composite,
 			(const struct usb_control_header *) req, NULL);
 		if (ret != 0) {
-			printk("if_error\n");
+			log_debug("if_error\n");
 			log_error("Not implemented req 0x%x", req->b_request);
 			HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
 		}
@@ -222,16 +219,16 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
 	struct usb_gadget_request *req;
 	int ret;
 
-	/* struct usb_control_header *ctrl = (struct usb_control_header *)hpcd->Setup; */
+	/* TODO: test changing memcpy with simple re-cast.
+	 * struct usb_control_header *ctrl = (struct usb_control_header *)hpcd->Setup; */
 	struct usb_control_header ctrl;
 	memcpy(&ctrl, hpcd->Setup, sizeof(struct usb_control_header));
 
-	printk("usb: setupstage\n");
-	printk("bmRequestType:0x%x\nbRequest:0x%x\nwValue:0x%x\nwIndex:0x%x\nwLength:0x%x\n",
-			ctrl.bm_request_type, ctrl.b_request, ctrl.w_value, ctrl.w_index, ctrl.w_length);
-			//ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index, ctrl->w_length);
+	log_debug("usb: setupstage\n");
+	log_debug("bmRequestType:0x%x\nbRequest:0x%x\nwValue:0x%x\nwIndex:0x%x\nwLength:0x%x\n",
+		ctrl.bm_request_type, ctrl.b_request, ctrl.w_value, ctrl.w_index, ctrl.w_length);
 
-  stm32f4_udc.ep0_data_len = ctrl.w_length;
+	stm32f4_udc.ep0_data_len = ctrl.w_length;
 
 	switch (ctrl.bm_request_type & USB_REQ_TYPE_MASK) {
 	case USB_REQ_TYPE_STANDARD:
@@ -255,9 +252,9 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
-	printk("usb: dataINstage of 0x%x\n", epnum);
+	log_debug("usb: dataINstage of 0x%x\n", epnum);
 
-  struct ep_status *pep;
+	struct ep_status *pep;
 
 	if (epnum == 0U) {
 		pep = &stm32f4_udc.ep_info[0x4 | epnum];
@@ -283,7 +280,7 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 				 * INs and OUTs have to non-intermixed. */
 				//HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			} else {
-				printk("usb: din:?\n");
+				log_debug("usb: din:?\n");
 
 				stm32f4_udc.ep_info[0x4 | epnum].is_used = 0;
 				HAL_PCD_EP_SetStall(hpcd, 0x80U);
@@ -291,19 +288,19 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 				HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			}
 		}
+#if 1
 	} else {
-		printk("usb: din: EP%d\n", epnum);
-	/*  uncomment for EP!=0 later */
-//  else if ((pdev->pClass->DataIn != NULL) &&
-//           (pdev->dev_state == USBD_STATE_CONFIGURED))
-//  {
-//    (USBD_StatusTypeDef)pdev->pClass->DataIn(pdev, epnum);
-//  }
-//  else
-//  {
-//    /* should never be in this condition */
-//    /* maybe add a log instead of return */
+		log_debug("usb: din: EP%d\n", epnum);
 	}
+#else /*  uncomment for EP!=0 later */
+	} else if ((pdev->pClass->DataIn != NULL) &&
+			(pdev->dev_state == USBD_STATE_CONFIGURED)) {
+		(USBD_StatusTypeDef)pdev->pClass->DataIn(pdev, epnum);
+	} else {
+		/* should never be in this condition */
+		/* maybe add a log instead of return */
+	}
+#endif
 }
 
 /**
@@ -313,13 +310,13 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
  * @retval None
  */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
-	printk("usb: dataOUTstage of 0x%x\n", epnum);
+	log_debug("usb: dataOUTstage of 0x%x\n", epnum);
 #if 0
-  struct ep_status *pep;
+	struct ep_status *pep;
 
 	if (epnum == 0U) {
 		pep = &stm32f4_udc.ep_info[0x00 | epnum];
-		printk("usb: dout: epnum=0x%x;rem=0x%x;maxpkt=0x%x\n", epnum, pep->rem_length, pep->maxpacket);
+		log_debug("usb: dout: epnum=0x%x;rem=0x%x;maxpkt=0x%x\n", epnum, pep->rem_length, pep->maxpacket);
 
 //		if (pdev->ep0_state == USBD_EP0_DATA_OUT) {
 		if (pep->rem_length > pep->maxpacket) {
@@ -329,7 +326,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 
 			HAL_PCD_EP_Receive(hpcd, 0U, hpcd->OUT_ep[epnum].xfer_buff, len);
 		} else {
-			printk("usb: dout:?\n");
+			log_debug("usb: dout:?\n");
 			//if ((pdev->pClass->EP0_RxReady != NULL) &&
 			//		(pdev->dev_state == USBD_STATE_CONFIGURED)) {
 			//	pdev->pClass->EP0_RxReady(pdev);
@@ -339,7 +336,7 @@ void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 		}
 //		}
 	} else {
-		printk("usb: dout: EP%d\n", epnum);
+		log_debug("usb: dout: EP%d\n", epnum);
 	}
 #endif
 }
@@ -353,21 +350,19 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 	int i;
 
 	/* Reset Device */
-	printk("usb: reset\n");
+	log_debug("usb: reset\n");
 
 	/*TODO: DeInit some stuff */
 
 	/* Open EP0 OUT */
-  HAL_PCD_EP_Open(hpcd, 0x00U, USB_MAX_EP0_SIZE, EP_TYPE_CTRL); /* EP0_MAX_SIZE */
-  //stm32f4_udc.ep_info[0x00U | 0x00U].is_used = 1U;
+	HAL_PCD_EP_Open(hpcd, 0x00U, USB_MAX_EP0_SIZE, EP_TYPE_CTRL); /* EP0_MAX_SIZE */
 
-  stm32f4_udc.ep_info[0x00U | 0x00U].maxpacket = USB_MAX_EP0_SIZE;
+	stm32f4_udc.ep_info[0x00U | 0x00U].maxpacket = USB_MAX_EP0_SIZE;
 
-  /* Open EP0 IN */
-  HAL_PCD_EP_Open(hpcd, 0x80U, USB_MAX_EP0_SIZE, EP_TYPE_CTRL); /* EP0_MAX_SIZE */
-  //stm32f4_udc.ep_info[0x04U | 0x00U].is_used = 1U;
+	/* Open EP0 IN */
+	HAL_PCD_EP_Open(hpcd, 0x80U, USB_MAX_EP0_SIZE, EP_TYPE_CTRL); /* EP0_MAX_SIZE */
 
-  stm32f4_udc.ep_info[0x04U | 0x00U].maxpacket = USB_MAX_EP0_SIZE;
+	stm32f4_udc.ep_info[0x04U | 0x00U].maxpacket = USB_MAX_EP0_SIZE;
 
 	for (i = 0; i < ARRAY_SIZE(stm32f4_udc.ep_info); i++) {
 		stm32f4_udc.ep_info[i].is_used = 0;
