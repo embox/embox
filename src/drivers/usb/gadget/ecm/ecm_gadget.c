@@ -11,6 +11,7 @@
 #include <util/log.h>
 #include <util/array.h>
 #include <embox/unit.h>
+#include <framework/mod/options.h>
 
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/gadget/udc.h>
@@ -50,7 +51,7 @@ static struct usb_gadget_composite ecm_gadget = {
 		.b_dev_class            = 0, /* Each interface specifies it’s own class code */
 		.b_dev_subclass         = 0,
 		.b_dev_protocol         = 0,
-		.b_max_packet_size      = 64, /* FIXME Was 8 for da14695. */
+		.b_max_packet_size      = OPTION_GET(NUMBER, max_packet_size),
 		.id_vendor              = ECM_VID,
 		.id_product             = ECM_PID,
 		.bcd_device             = 0,
