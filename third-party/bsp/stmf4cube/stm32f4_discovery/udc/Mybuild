@@ -1,0 +1,14 @@
+package third_party.bsp.stmf4cube.stm32f4_discovery
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f4_udc {
+	option number log_level = 1
+
+	@Cflags("-Wno-undef")
+	@Cflags("-Wno-unused-variable")
+	@Cflags("-Wno-implicit-function-declaration")
+
+	source "stm32f4_udc.c"
+
+	depends third_party.bsp.stmf4cube.stm32f4_discovery.usb_dev_api
+}

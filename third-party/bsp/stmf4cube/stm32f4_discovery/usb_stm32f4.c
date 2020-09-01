@@ -13,7 +13,6 @@
 #include <framework/mod/options.h>
 
 /* FIX: add dependency */
-#include <embox/unit.h>
 #include <kernel/printk.h>
 
 #include "stm32f4xx_hal.h"
@@ -21,8 +20,6 @@
 #include <third_party/stmf4cube/usb_stm32f4.h>
 
 #define USB_IRQ OPTION_GET(NUMBER, irq)
-
-EMBOX_UNIT_INIT(usb_stm32f4_init_test);
 
 static int usb_stm32f4_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(usb_stm32f4_reset_lt, usb_stm32f4_reset_hnd, 200);
@@ -93,28 +90,6 @@ void HAL_PCD_MspDeInit(PCD_HandleTypeDef *hpcd) {
 }
 
 /**
- * @brief  Setup stage callback.
- * @param  hpcd: PCD handle
- * @retval None
- */
-void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
-	//USBD_LL_SetupStage(hpcd->pData, (uint8_t *)hpcd->Setup);
-	//here calls a udc function and passes the udc struct address in pData
-	printk("usb: setupstage\n");
-}
-
-/**
- * @brief  Data Out stage callback.
- * @param  hpcd: PCD handle
- * @param  epnum: Endpoint Number
- * @retval None
- */
-void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
-	//USBD_LL_DataOutStage(hpcd->pData, epnum, hpcd->OUT_ep[epnum].xfer_buff);
-	printk("usb: dataOUTstage\n");
-}
-
-/**
 	* @brief  Connect callback.
 	* @param  hpcd: PCD handle
 	* @retval None
@@ -131,10 +106,6 @@ static irq_return_t usb_stm32f4_usb_irq_handler(unsigned int irq_nr, void *data)
 	printk("usb: irq entry\n");
 	HAL_PCD_IRQHandler(&hpcd);
 	return IRQ_HANDLED;
-}
-
-static int usb_stm32f4_init_test(void) {
-	return usb_stm32f4_init();
 }
 
 int usb_stm32f4_init(void) {

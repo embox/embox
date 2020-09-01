@@ -14,6 +14,7 @@ module f_ecm {
 
 module ecm_gadget {
 	option number log_level = 1
+	option number max_packet_size = 8
 
 	source "ecm_gadget.c"
 	@IncludeExport(path="drivers/usb/function")
