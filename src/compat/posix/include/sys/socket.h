@@ -54,6 +54,37 @@ struct linger {
 	int         l_linger;         /* linger time, in seconds */
 };
 
+#define __CMSG_ALIGN(len) \
+	(((len) + sizeof(long) - 1) & ~(sizeof(long) - 1))
+
+#define CMSG_FIRSTHDR(mhdr) \
+	((mhdr)->msg_controllen >= sizeof(struct cmsghdr) ? \
+		(struct cmsghdr *) (mhdr)->msg_control : \
+		(struct cmsghdr *) NULL)
+
+#define CMSG_NXTHDR(mhdr, cmsg) \
+	(((cmsg) == NULL) \
+	    ? CMSG_FIRSTHDR(mhdr) \
+	    : (((char *) (cmsg) + __CMSG_ALIGN((cmsg)->cmsg_len) \
+	            + sizeof(struct cmsghdr) \
+	            > (char *) ((mhdr)->msg_control) + (mhdr)->msg_controllen) \
+	        ? (struct cmsghdr *) NULL \
+	        : (struct cmsghdr *) ((char *) (cmsg) + __CMSG_ALIGN((cmsg)->cmsg_len))))
+
+#define CMSG_DATA(cmsg) \
+	((void *)((char *)(cmsg) + sizeof(struct cmsghdr)))
+
+/*
+ * CMSG_SPACE and CMSG_LEN are not POSIX, but they are part of rfc2292:
+ *   https://tools.ietf.org/html/rfc2292#section-4.3
+ * Since they are not Linux-specific macros and often are used alongside
+ * with another CMSG_ macros we also support them.
+ */
+#define CMSG_SPACE(len) \
+	(sizeof(struct cmsghdr) + __CMSG_ALIGN(len))
+
+#define CMSG_LEN(len) \
+	(sizeof(struct cmsghdr) + (len))
 
 /**
  * Supported protocol/address families
