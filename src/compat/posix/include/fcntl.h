@@ -61,6 +61,9 @@ extern int fcntl(int fd, int cmd, ...);
 #define O_EXCL             0x0400  /* Open only if file doesn't already exist */
 #define O_DIRECT           0x0800  /* Do not use cache for reads and writes */
 #define O_NONBLOCK         0x1000  /* Non-blocking mode */
+/* Write I/O operations on the file descriptor shall complete
+ * as defined by synchronized I/O file integrity completion. */
+#define O_SYNC             0x04000000
 
 #define O_NOCTTY		   0x10000 	/*  */
 #define O_NDELAY		   0x01000	/*	*/
