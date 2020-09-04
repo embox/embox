@@ -1,3 +1,8 @@
+define reset
+	monitor reset 0
+	monitor halt
+end
+
 target remote :2331
 
 monitor memU32 0x100c0050 = 1
