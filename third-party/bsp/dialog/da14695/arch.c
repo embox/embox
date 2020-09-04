@@ -140,10 +140,13 @@ void arch_init(void) {
 #endif
 
 	SystemInitPre();
-	da1469x_SystemInit();
 
-	/* SystemInitPre and da1469x_SystemInit use BSS variables, so reinit BSS.*/
+	/* SystemInitPre() is called in
+	 * SDK (sdk/bsp/startup/DA1469x/GCC/exception_handlers.S) before
+	 * BSS zeroing, so reinit BSS. */
 	memset(&_bss_vma, 0, (int) &_bss_len);
+
+	da1469x_SystemInit();
 
 	extern void ad_pmu_init(void);
 	ad_pmu_init();
