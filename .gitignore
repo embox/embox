@@ -25,17 +25,10 @@ mk/.cache
 mk/GNUmakefile
 /nbproject
 scripts/continuous/fs/mountpoint
-scripts/qemu/auto_qemu_my
 scripts/qemu/beagle/bb_nandflash_ecc
-scripts/qemu/debug_qemu
-scripts/qemu/start_script_my
-scripts/qemu/stop_script_my
-scripts/qemu/tap_dev
 scripts/expect/*.log
 scripts/autotest/*.log
 scripts/autotest/*.img
-third-party/qt/.downloaded
-third-party/qt/qt-everywhere-opensource-src-4.8.4.tar.gz
 third-party/ti/ipc_1_24_00_16
 third-party/ti/syslink_2_21_01_05
 /ext_project
