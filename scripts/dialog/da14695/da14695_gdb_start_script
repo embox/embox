@@ -14,9 +14,7 @@ monitor memU32 0x50000024 = 0x000000D0
 monitor reset 0
 monitor memU32 0x50000024 = 0x000000D0
 
-monitor reset 0
-monitor halt
-monitor reset 0
-monitor halt
+reset
+reset
 
 eval "monitor exec SetRTTAddr %p", &_SEGGER_RTT
