@@ -10,9 +10,9 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-const int aa_test = 0xFFF ;
+#define CONST_TEST 0xFFF
 
-EMBOX_TEST_SUITE("aligned_alloc test");
+EMBOX_TEST_SUITE("aligned_alloc tests suite");
 
 TEST_CASE("TEST WITH BAD VALUES") {
     test_assert_equal(aligned_alloc(2, 75), NULL);
@@ -27,28 +27,28 @@ TEST_CASE("tEST WITH LARGE SIZE") {
     test_assert_not_equal(aligned_alloc(64, 0xF00), NULL);
 }
 TEST_CASE("TEST WITH MULTIPLE ALLOCATION") {
-    void *mem[aa_test];
+    void *mem[CONST_TEST];
     uint32_t i = 0;
-    for (;i < aa_test;i++) {
+    for (;i < CONST_TEST;i++) {
         mem[i] = aligned_alloc(i, i*0xF00);
     }
-    for (i = 0;i < aa_test;i++) {
+    for (i = 0;i < CONST_TEST;i++) {
         test_assert_not_equal(mem[i], NULL);
     }
-    for (i = 0;i < aa_test;i++) {
+    for (i = 0;i < CONST_TEST;i++) {
         free(mem[i]);
     }
 }
 TEST_CASE("TEST WITH MULTIPLE ALLOCATION WITH LONG SIZE") {
-    void *mem[aa_test];
+    void *mem[CONST_TEST];
     uint32_t i = 0;
-    for (;i < aa_test;i++) {
+    for (;i < CONST_TEST;i++) {
         mem[i] = aligned_alloc(i, i*0xF00);
     }
-    for (i = 0;i < aa_test;i++) {
+    for (i = 0;i < CONST_TEST;i++) {
         test_assert_not_equal(mem[i], NULL);
     }
-    for (i = 0;i < aa_test;i++) {
+    for (i = 0;i < CONST_TEST;i++) {
         free(mem[i]);
     }
 }
