@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-const int _const_size_ = 0xFFF ;
+#define CONST_TEST 0xFFF
 
 EMBOX_TEST_SUITE("VALLOC TESTS SUITE");
 
@@ -22,28 +22,28 @@ TEST_CASE("call with large value") {
     test_assert_not_equal(valloc(0xF00), NULL);
 }
 TEST_CASE("TEST WITH MULTIPLE ALLOCATION") {
-    void *mem[_const_size_];
+    void *mem[CONST_TEST];
     uint32_t i = 0 ;
-    for (;i < _const_size_;i++) {
+    for (;i < CONST_TEST;i++) {
         mem[i] = valloc(0xF00);
     }
-    for (i = 0;i < _const_size_;i++) {
+    for (i = 0;i < CONST_TEST;i++) {
         test_assert_not_equal(mem[i], NULL);
     }
-    for (i = 0;i < _const_size_;i++) {
+    for (i = 0;i < CONST_TEST;i++) {
         free(mem[i]);
     }
 }
 TEST_CASE("TEST WITH MULTIPLE ALLOCATION WITH LONG SIZE") {
-    void *mem[_const_size_];
+    void *mem[CONST_TEST];
     uint32_t i = 0;
-    for (;i < _const_size_;i++) {
+    for (;i < CONST_TEST;i++) {
         mem[i] = valloc(i*0xF00);
     }
-    for (i = 0;i < _const_size_;i++){
+    for (i = 0;i < CONST_TEST;i++){
         test_assert_not_equal(mem[i], NULL);
     }
-    for (i = 0;i<_const_size_;i++) {
+    for (i = 0;i<CONST_TEST;i++) {
         free(mem[i]);
     }
 }

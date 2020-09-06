@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-const int pm_test = 0xFFF ;
+#define CONST_TEST 0xFFF
 
 EMBOX_TEST_SUITE("POSIX MEMALIGN tests suite");
 
@@ -35,7 +35,7 @@ TEST_CASE("Call posix_memalign with bad values") {
 
 TEST_CASE("Call the function with a large number") {
     void *mem = NULL;
-    test_assert_equal(posix_memalign(&mem, 32, pm_test), 0);
+    test_assert_equal(posix_memalign(&mem, 32, CONST_TEST), 0);
     free(mem);
 }
 TEST_CASE("call the function with good parameter") {
@@ -44,28 +44,28 @@ TEST_CASE("call the function with good parameter") {
     free(mem);
 }
 TEST_CASE("call a multiple allocation with little size") {
-    void *mem[pm_test];
+    void *mem[CONST_TEST];
     int i = 0;
-    for(;i < pm_test;i++) {
+    for(;i < CONST_TEST;i++) {
         posix_memalign(mem[i], 64, 0xF00);
     }
-    for(i = 0;i < pm_test;i++) {
+    for(i = 0;i < CONST_TEST;i++) {
         test_assert_not_equal(mem[i], NULL);
     }
-    for(i = 0;i < pm_test;i++) {
+    for(i = 0;i < CONST_TEST;i++) {
         free(mem[i]);
     }
 }
 TEST_CASE("Call a multiple allocation with long size") {
-    void *mem[pm_test];
+    void *mem[CONST_TEST];
     int i = 0;
-    for(;i < pm_test;i++) {
+    for(;i < CONST_TEST;i++) {
         posix_memalign(mem[i], 64, 0xF00);
     }
-    for(i = 0;i < pm_test;i++) {
+    for(i = 0;i < CONST_TEST;i++) {
         test_assert_not_equal(mem[i], NULL);
     }
-    for(i = 0;i < pm_test;i++) {
+    for(i = 0;i < CONST_TEST;i++) {
         free(mem[i]);
     }
 }
