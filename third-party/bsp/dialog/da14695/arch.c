@@ -77,8 +77,8 @@ STATIC_IRQ_ATTACH(PLL_LOCK_IRQ, pll_lock_irq_handler, NULL);
 extern void SystemInitPre(void);
 extern void da1469x_SystemInit(void);
 
-extern char _bss_vma;
-extern char _bss_len;
+extern char _bss_vma, _bss_end;
+extern char __zero_table_start__, __zero_table_end__;
 
 __RETAINED_CODE void my_deepsleep_test(void) {
 
@@ -140,13 +140,11 @@ void arch_init(void) {
 #endif
 
 	SystemInitPre();
-
-	/* SystemInitPre() is called in
-	 * SDK (sdk/bsp/startup/DA1469x/GCC/exception_handlers.S) before
-	 * BSS zeroing, so reinit BSS. */
-	memset(&_bss_vma, 0, (int) &_bss_len);
-
 	da1469x_SystemInit();
+
+	/* Init all BSS once more except retained data. */
+	memset(&_bss_vma, 0, &__zero_table_start__ - &_bss_vma);
+	memset(&__zero_table_end__, 0, &_bss_end - &__zero_table_end__);
 
 	extern void ad_pmu_init(void);
 	ad_pmu_init();
