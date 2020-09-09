@@ -33,6 +33,24 @@ static_assert(PLL_LOCK_IRQ == PLL_LOCK_IRQn);
 #define XTAL32M_RDY_IRQ   OPTION_GET(NUMBER, xtal32m_rdy_irq)
 static_assert(XTAL32M_RDY_IRQ == XTAL32M_RDY_IRQn);
 
+#define FLASH_SIZE OPTION_GET(NUMBER, flash_size)
+
+#if FLASH_SIZE == 256
+	#define CACHE_FLASH_SIZE    HW_CACHE_FLASH_REGION_SZ_256KB
+#elif FLASH_SIZE == 512
+	#define CACHE_FLASH_SIZE    HW_CACHE_FLASH_REGION_SZ_512KB
+#elif FLASH_SIZE == 1024
+	#define CACHE_FLASH_SIZE    HW_CACHE_FLASH_REGION_SZ_1MB
+#elif FLASH_SIZE == 2048
+	#define CACHE_FLASH_SIZE    HW_CACHE_FLASH_REGION_SZ_2MB
+#elif FLASH_SIZE == 4096
+	#define CACHE_FLASH_SIZE    HW_CACHE_FLASH_REGION_SZ_4MB
+#elif FLASH_SIZE == 8192
+	#define CACHE_FLASH_SIZE    HW_CACHE_FLASH_REGION_SZ_8MB
+#else
+	#error Unsupported flash size
+#endif
+
 extern void XTAL32M_Ready_Handler(void);
 static irq_return_t xtal32m_irq_handler(unsigned int irq_nr,
 		void *data) {
@@ -67,7 +85,7 @@ void arch_init(void) {
 
 	/* Default value is 512Kb. I will be changed only after software reset. */
 	if (hw_cache_flash_get_region_size() == HW_CACHE_FLASH_REGION_SZ_512KB) {
-		hw_cache_flash_set_region_size(HW_CACHE_FLASH_REGION_SZ_1MB);
+		hw_cache_flash_set_region_size(CACHE_FLASH_SIZE);
 		NVIC_SystemReset();
 	}
 

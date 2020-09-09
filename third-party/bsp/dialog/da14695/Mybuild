@@ -120,6 +120,9 @@ static module arch_init extends embox.arch.arch {
 	option number pll_lock_irq    = 33
 	option number xtal32m_rdy_irq = 26
 
+	/* Flash size in Kb */
+	option number flash_size=1024
+
 	@Cflags("-Wno-undef")
 
 	source "arch.c"
