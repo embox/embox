@@ -1,0 +1,214 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_clock_mgr_da1469x.c	2020-09-04 18:02:04.273823073 +0300
+@@ -55,7 +55,7 @@
+ #define SEGGER_SYSTEMVIEW_ISR_EXIT()
+ #endif
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ #include "osal.h"
+ #include "sdk_list.h"
+ 
+@@ -73,7 +73,7 @@
+ #define XTAL32_AVAILABLE                1       // XTAL32M availability
+ #define LP_CLK_AVAILABLE                2       // LP clock availability
+ #define PLL_AVAILABLE                   4       // PLL locked
+-#endif /* OS_FREERTOS */
++#endif /* OS_BAREMETAL */
+ 
+ #define RCX_MIN_HZ                      450
+ #define RCX_MAX_HZ                      550
+@@ -143,9 +143,11 @@
+ static volatile bool xtal32m_settled = false;
+ static volatile bool pll_locked = false;
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ __RETAINED static OS_MUTEX xSemaphoreCM;
++
+ __RETAINED static OS_EVENT_GROUP xEventGroupCM_xtal;
++
+ __RETAINED static OS_TIMER xLPSettleTimer;
+ 
+ #if (dg_configUSE_LP_CLK == LP_CLK_RCX)
+@@ -161,7 +163,7 @@
+ 
+ __RETAINED static void* clk_mgr_task_list;
+ 
+-#endif /* OS_FREERTOS */
++#endif /* OS_BAREMETAL */
+ 
+ #define NUM_OF_CPU_CLK_CONF 5
+ 
+@@ -391,7 +393,7 @@
+         }
+ }
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ 
+ /**
+  * \brief The handler of the XTAL32K LP settling timer.
+@@ -417,12 +419,13 @@
+         // Stop the Timer.
+         OS_TIMER_STOP(xLPSettleTimer, OS_TIMER_FOREVER);
+ }
++#endif /* OS_BAREMETAL */
+ 
+ /**
+  * \brief Handle the indication that the XTAL32M has settled.
+  *
+  */
+-static OS_BASE_TYPE xtal32m_is_ready(BaseType_t *xHigherPriorityTaskWoken)
++static OS_BASE_TYPE xtal32m_is_ready(OS_BASE_TYPE *xHigherPriorityTaskWoken)
+ {
+         OS_BASE_TYPE xResult = OS_FAIL;
+ 
+@@ -436,11 +439,15 @@
+                 }
+ 
+                 if (xEventGroupCM_xtal != NULL) {
++#ifdef OS_FREERTOS
+                         // Inform blocked Tasks
+                         *xHigherPriorityTaskWoken = pdFALSE;            // Must be initialized to pdFALSE
+ 
+                         xResult = xEventGroupSetBitsFromISR(xEventGroupCM_xtal, XTAL32_AVAILABLE,
+                                                             xHigherPriorityTaskWoken);
++#else
++			xResult = OS_EVENT_GROUP_SET_BITS_FROM_ISR(xEventGroupCM_xtal, XTAL32_AVAILABLE);
++#endif
+                 }
+ 
+                 DBG_SET_LOW(CLK_MGR_USE_TIMING_DEBUG, CLKDBG_XTAL32M_SETTLED);
+@@ -448,6 +455,7 @@
+         return xResult;
+ }
+ 
++#ifdef OS_FREERTOS
+ /**
+  * \brief Handle the indication that the PLL is locked and therefore available.
+  */
+@@ -792,7 +800,7 @@
+         cm_wait_pll_lock();
+ }
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ bool sys_clk_mgr_match_task(const void *elem, const void *ud)
+ {
+         return ((clk_mgr_task_list_elem_t*)elem)->task == ud;
+@@ -811,7 +819,7 @@
+                 return cm_sysclk_ahb_divider_in_use;
+         }
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+         clk_mgr_task_list_elem_t *elem;
+         OS_TASK task = OS_GET_CURRENT_TASK();
+ #endif
+@@ -820,7 +828,7 @@
+         if (type != sysclk_PLL96) {
+                 CM_EVENT_WAIT();
+                 if (pll_count > 1) {
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+                         /* Check if the current task is in the list */
+                         elem = list_find(&clk_mgr_task_list, sys_clk_mgr_match_task, task);
+                         if (elem) {
+@@ -839,7 +847,7 @@
+                         CM_EVENT_SIGNAL();
+                         return cm_sysclk_pll_used_by_task;
+                 }
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+                 if (pll_count == 1) {
+                         if (list_find(&clk_mgr_task_list, sys_clk_mgr_match_task, task) == NULL) {
+                                 // If this is not the task that has requested PLL
+@@ -875,7 +883,7 @@
+         if (ret == cm_sysclk_success) {
+                 CM_EVENT_WAIT();
+                 if (type == sysclk_PLL96) {
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+                         elem = list_find(&clk_mgr_task_list, sys_clk_mgr_match_task, task);
+                         if (elem == NULL) {
+                                 // Add the current task in the list
+@@ -894,7 +902,7 @@
+                 }
+                 else if (pll_count > 0) {
+                         ASSERT_WARNING(pll_count == 1);
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+                         /* The current task must be is in the list. */
+                         elem = list_find(&clk_mgr_task_list, sys_clk_mgr_match_task, task);
+                         OS_ASSERT(elem);
+@@ -918,7 +926,7 @@
+ 
+         if (sysclk != sysclk_PLL96) {
+                 disable_pll();
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+                 OS_EVENT_GROUP_CLEAR_BITS(xEventGroupCM_xtal, PLL_AVAILABLE);
+ #endif
+         }
+@@ -1270,8 +1278,7 @@
+ 
+         return (cpu_clk_t)get_clk_freq(curr_sysclk, curr_ahbclk);
+ }
+-
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ 
+ cpu_clk_t cm_cpu_clk_get_fromISR(void)
+ {
+@@ -1423,7 +1430,7 @@
+         }
+ }
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ 
+ void cm_calibrate_rc32k(void)
+ {
+@@ -1744,7 +1751,7 @@
+ 
+         OS_EVENT_GROUP_CLEAR_BITS_FROM_ISR(xEventGroupCM_xtal, LP_CLK_AVAILABLE);
+ }
+-#endif /* OS_FREERTOS */
++#endif /* OS_BAREMETAL */
+ 
+ /*
+  * Functions intended to be used only by the Clock and Power Manager or in hooks.
+@@ -2073,7 +2080,7 @@
+         switch_to_pll();
+ }
+ 
+-#ifdef OS_FREERTOS
++#ifndef OS_BAREMETAL
+ __RETAINED_CODE void cm_sys_clk_wakeup(void)
+ {
+         /*
+@@ -2087,11 +2094,12 @@
+          * the first message of the queue (clear Event Group bits) and then the second (set Event
+          * Group bits), which is the desired operation.
+          */
+-
++#ifdef OS_FREERTOS
+         /* Timer task must have the highest priority so that it runs first
+          * as soon as the OS scheduler is unblocked.
+          * See caller (system_wake_up()) */
+         ASSERT_WARNING(configTIMER_TASK_PRIORITY == (configMAX_PRIORITIES - 1));
++#endif /*OS_FREERTOS */
+ 
+         xtal32m_settled_notification = false;
+         xtal32m_settled = hw_clk_is_xtalm_started();
+@@ -2117,7 +2125,7 @@
+         }
+ }
+ 
+-#endif /* OS_FREERTOS */
++#endif /* OS_BAREMETAL */
+ 
+ #endif /* dg_configUSE_CLOCK_MGR */
+ 
