@@ -28,6 +28,9 @@ DISABLE_FEATURES := \
 	g7221-codec \
 	#g711-codec
 
+# Build fix for GCC9 because of old STLport
+PJSIP_BUILD_FIXUP_CFLAGS := -Wno-narrowing
+
 PJPROJECT_ROOT := $(ROOT_DIR)/third-party/pjproject
 PJSIP_CPPFLAGS := -I$(PJPROJECT_ROOT)/include $(EMBOX_DEPS_CPPFLAGS) -I$(SRC_DIR)/compat/cxx/include 
 PJSIP_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
@@ -45,7 +48,7 @@ $(CONFIGURE) :
 			--prefix=/ \
 			$(DISABLE_FEATURES:%=--disable-%) \
 			--with-external-pa; \
-		echo export CFLAGS+="$(PJSIP_CPPFLAGS)" > user.mak; \
+		echo export CFLAGS+="$(PJSIP_CPPFLAGS) $(PJSIP_BUILD_FIXUP_CFLAGS)" > user.mak; \
 		echo export CXXFLAGS+="$(EMBOX_CXXFLAGS) $(PJSIP_CPPFLAGS)" >> user.mak; \
 	)
 	cp ./config_site.h $(BUILD_ROOT)/pjlib/include/pj/config_site.h
