@@ -1,0 +1,16 @@
+package embox.driver.serial
+
+module rpi_mini_uart extends embox.driver.diag.diag_api {
+	option number base_addr = 0x20215000
+	option number irq_num = 29
+	option number baud_rate = 115200
+
+	option number reg_width = 4
+
+	source "rpi_mini_uart.c"
+
+	depends embox.driver.periph_memory
+	depends core
+	depends diag
+	depends embox.driver.char_dev_api
+}
