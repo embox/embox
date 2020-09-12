@@ -6,6 +6,7 @@
  * @author Alexander Kalmuk
  */
 
+#include <stdbool.h>
 #include <drivers/video/fb.h>
 #include "rawfb.h"
 
@@ -27,10 +28,20 @@ extern LTDC_HandleTypeDef  hltdc_discovery;
 #error Unsupported platform
 #endif
 
-static volatile int ltdc_li_triggered = 0;
+static volatile bool buffer_pending = true;
+
+/* grfb is "global raw FB". It's to use FB from irq. */
+static struct rawfb_fb_info *grfb;
 
 void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *hltdc) {
-	ltdc_li_triggered = 1;
+	if (!buffer_pending) {
+		goto out;
+	}
+	BSP_LCD_SetLayerAddress(0, (uint32_t) grfb->fb_buf[grfb->fb_buf_idx]);
+	grfb->fb_buf_idx = (grfb->fb_buf_idx + 1) % 2;
+	buffer_pending = false;
+out:
+	HAL_LTDC_ProgramLineEvent(hltdc, grfb->height - 1);
 }
 
 static void dma2d_fill(uint32_t *dst, uint16_t xsize, uint16_t ysize, uint32_t color) {
@@ -76,6 +87,8 @@ static void dma2d_fill(uint32_t *dst, uint16_t xsize, uint16_t ysize, uint32_t c
 void rawfb_init(struct rawfb_fb_info *rfb) {
 	BSP_LCD_SelectLayer(0);
 
+	grfb = rfb;
+
 	HAL_LTDC_ProgramLineEvent(&hltdc_handler, rfb->height - 1);
 }
 
@@ -90,22 +103,14 @@ void rawfb_swap_buffers(struct rawfb_fb_info *rfb) {
 						rfb->fb_info->screen_base, rfb->width * rfb->height,
 						BGRA8888, rfb->fb_info->var.fmt);
 	} else {
-		/* Here we wait for the next display refresh, and after it happened
-		 * swap buffers. */
-
-		ltdc_li_triggered = 0;
-		
-		HAL_LTDC_ProgramLineEvent(&hltdc_handler, rfb->height - 1);
-
-		while (!ltdc_li_triggered) {
-		}
-
 		SCB_CleanDCache();
 
-		LTDC_LAYER(&hltdc_handler, 0)->CFBAR = ((uint32_t)rfb->fb_buf[rfb->fb_buf_idx]);
-		__HAL_LTDC_RELOAD_CONFIG(&hltdc_handler);
+		buffer_pending = true;
 
+		while (buffer_pending) {
+			/* LTDC not handled buffer yet */
+		}
+
+		HAL_LTDC_ProgramLineEvent(&hltdc_handler, rfb->height - 1);
 	}
-
-	rfb->fb_buf_idx = (rfb->fb_buf_idx + 1) % 2;
 }
