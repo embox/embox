@@ -1,0 +1,19 @@
+package platform.stm32_graphics_testing.cmd
+
+@AutoCmd
+@Cmd(name = "static_square_draw",
+	help = "",
+	man = '''
+	''')
+module static_square_draw {
+	source "static_square_draw.c"
+
+	depends static_square
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module static_square {
+	source "static_square.c"
+
+	depends third_party.bsp.st_bsp_api
+}

@@ -1,0 +1,19 @@
+package platform.stm32_graphics_testing.cmd
+
+@AutoCmd
+@Cmd(name = "moving_square_draw",
+	help = "",
+	man = '''
+	''')
+module moving_square_draw {
+	source "moving_square_draw.c"
+
+	depends moving_square
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module moving_square {
+	source "moving_square.c"
+
+	depends third_party.bsp.st_bsp_api
+}
