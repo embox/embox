@@ -80,25 +80,36 @@ QEmboxFbIntegration::~QEmboxFbIntegration()
 	delete mPrimaryScreen;
 }
 
-QImage::Format QEmboxFbIntegration::emboxFbFormatToQImageFormat(
+FbFormat QEmboxFbIntegration::emboxFbFormatToQImageFormat(
 	int emboxFbFormat)
 {
+	FbFormat format;
+
+	format.format = QImage::Format_Invalid;
+	format.swapRgb = 0;
+
 	switch (emboxFbFormat) {
 	case EMBOX_BGR888:
+		format.swapRgb = 1;
 	case EMBOX_RGB888:
-		return QImage::Format_RGB888;
+		format.format =  QImage::Format_RGB888;
+		break;
 	case EMBOX_BGRA8888:
+		format.swapRgb = 1;
 	case EMBOX_RGBA8888:
-		return QImage::Format_ARGB32;
+		format.format = QImage::Format_ARGB32;
+		break;
 	case EMBOX_BGR565:
+		format.swapRgb = 1;
 	case EMBOX_RGB565:
-		return QImage::Format_RGB16;
+		format.format = QImage::Format_RGB16;
+		break;
 	default:
 		qFatal("QEmboxFbIntegration: Unknown framebuffer format %d",
 			emboxFbFormat);
 		break;
 	}
-	return QImage::Format_Invalid;
+	return format;
 }
 
 bool QEmboxFbIntegration::hasCapability(QPlatformIntegration::Capability cap) const
@@ -137,12 +148,13 @@ QPlatformFontDatabase *QEmboxFbIntegration::fontDatabase() const
 
 QEmboxFbScreen::QEmboxFbScreen(uint8_t *data, int width,
 	int height, int bytesPerLine,
-	QImage::Format format) : compositePainter(0)
+	FbFormat format) : compositePainter(0)
 {
 	mData         = data;
 	mGeometry     = QRect(0, 0, width, height);
 	mBytesPerLine = bytesPerLine;
-	mFormat       = format;
+	mFormat       = format.format;
+	mSwapRgb      = format.swapRgb;
 	mDepth        = 16;
 
 	mScreenImage = new QImage(mGeometry.width(), mGeometry.height(), mFormat);
@@ -188,8 +200,14 @@ QRegion QEmboxFbScreen::doRedraw()
 	}
 	
 	rects = touched.rects();
-	for (int i = 0; i < rects.size(); i++) {
-		compositePainter->drawImage(rects[i], *mScreenImage, rects[i]);
+	if (mSwapRgb) {
+		for (int i = 0; i < rects.size(); i++) {
+			compositePainter->drawImage(rects[i], mScreenImage->rgbSwapped(), rects[i]);
+			}
+	} else {
+		for (int i = 0; i < rects.size(); i++) {
+			compositePainter->drawImage(rects[i], *mScreenImage, rects[i]);
+		}
 	}
 	return touched;
 }
