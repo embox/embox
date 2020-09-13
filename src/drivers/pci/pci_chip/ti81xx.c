@@ -14,6 +14,7 @@
 #include <mem/vmem.h>
 
 #include <drivers/pci/pci_chip/pci_utils.h>
+#include <drivers/pci/pci.h>
 
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(ti81xx_pci_init);
