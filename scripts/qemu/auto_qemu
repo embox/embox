@@ -149,6 +149,8 @@ guess_machine() {
 		arm)
 			if cat $BUILD_CONF | gcc -P -E - | grep "overo" >/dev/null; then
 				echo "-M overo"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "SECO-Q7-796" >/dev/null; then
+				echo "-M overo"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "integratorcp" >/dev/null; then
 				echo "-M integratorcp"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "vexpress-a9" > /dev/null; then
