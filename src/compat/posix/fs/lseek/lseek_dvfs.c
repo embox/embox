@@ -48,7 +48,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 			break;
 
 		default:
-			return -EINVAL;
+			return SET_ERRNO(EINVAL);
 	}
 	file_set_pos(file, pos);
 	return pos;
