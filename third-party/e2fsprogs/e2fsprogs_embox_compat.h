@@ -53,15 +53,6 @@ static inline int fchmod(int fd, mode_t mode) {
 	return -1;
 }
 
-static inline ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
-	printf(">>> pread, fd - %d, offset - %d\n", fd, offset);
-	return -1;
-}
-
-static inline ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset) {
-	printf(">>> pwrite, fd - %d, offset - %d\n", fd, offset);
-	return -1;
-}
 
 /****************** Functions for e2fsck *******************/
 

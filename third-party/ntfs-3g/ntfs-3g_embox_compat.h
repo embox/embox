@@ -112,16 +112,6 @@ typedef int sig_atomic_t;
 #define UTIME_OMIT      ((1l << 30) - 2l)
 
 
-static inline ssize_t pread(int fd, void *buf, size_t count, off_t offset) {
-	printf(">>> pread, fd - %d, offset - %d\n", fd, offset);
-	return -1;
-}
-
-static inline ssize_t pwrite(int fd, const void *buf, size_t count, off_t offset) {
-	printf(">>> pwrite, fd - %d, offset - %d\n", fd, offset);
-	return -1;
-}
-
 static inline struct group *getgrgid(gid_t gid) {
 	printf(">>> getgrgid %d\n", gid);
 	return NULL;
