@@ -14,9 +14,6 @@
 
 #define HUGE_VAL ((double)-1)
 
-#define IN6_ARE_ADDR_EQUAL(a,b) \
-	0
-
 /* (termios.h) Extensions to the termios c_iflag bit map.  */
 #define IXANY           0x0800  /* allow any key to continue ouptut */
 
