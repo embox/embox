@@ -134,6 +134,23 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
 	})
 #define IN6_IS_ADDR_MULTICAST(a) \
 	(((const struct in6_addr *)(a))->s6_addr == 0xFF)
+#define IN6_ARE_ADDR_EQUAL(a, b) \
+	({ const struct in6_addr *__a = (const struct in6_addr *) (a); \
+		const struct in6_addr *__b = (const struct in6_addr *) (b); \
+		__a->s6_addr32[0] == __b->s6_addr32[0]        \
+		&& __a->s6_addr32[1] == __b->s6_addr32[1]     \
+		&& __a->s6_addr32[2] == __b->s6_addr32[2]     \
+		&& __a->s6_addr32[3] == __b->s6_addr32[3]; })
+#define IN6_IS_ADDR_LINKLOCAL(a) \
+	({ \
+		const struct in6_addr *__a = (const struct in6_addr *) (a); \
+		(__a->s6_addr32[0] & htonl(0xffc00000)) == htonl(0xfe800000); \
+	})
+#define IN6_IS_ADDR_SITELOCAL(a) \
+	({ \
+		const struct in6_addr *__a = (const struct in6_addr *) (a); \
+		(__a->s6_addr32[0] & htonl(0xffc00000)) == htonl(0xfec00000); \
+	})
 
 /**
  * Ports
