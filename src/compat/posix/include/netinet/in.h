@@ -134,6 +134,23 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
 	})
 #define IN6_IS_ADDR_MULTICAST(a) \
 	(((const struct in6_addr *)(a))->s6_addr == 0xFF)
+#define IN6_ARE_ADDR_EQUAL(a, b) \
+	({ const struct in6_addr *__a = (const struct in6_addr *) (a); \
+		const struct in6_addr *__b = (const struct in6_addr *) (b); \
+		__a->s6_addr32[0] == __b->s6_addr32[0]        \
+		&& __a->s6_addr32[1] == __b->s6_addr32[1]     \
+		&& __a->s6_addr32[2] == __b->s6_addr32[2]     \
+		&& __a->s6_addr32[3] == __b->s6_addr32[3]; })
+#define IN6_IS_ADDR_LINKLOCAL(a) \
+	({ \
+		const struct in6_addr *__a = (const struct in6_addr *) (a); \
+		(__a->s6_addr32[0] & htonl(0xffc00000)) == htonl(0xfe800000); \
+	})
+#define IN6_IS_ADDR_SITELOCAL(a) \
+	({ \
+		const struct in6_addr *__a = (const struct in6_addr *) (a); \
+		(__a->s6_addr32[0] & htonl(0xffc00000)) == htonl(0xfec00000); \
+	})
 
 /**
  * Ports
@@ -143,9 +160,38 @@ extern const struct in6_addr in6addr_loopback; /* ::1 */
 #define IPPORT_USERRESERVED 5000 /* Ports >= IPPORT_USERRESERVED are
 									reserved for explicit use */
 
-#define IPV6_MULTICAST_IF   1
-#define IPV6_LEAVE_GROUP    2
-#define IPV6_JOIN_GROUP     4
+#define IP_MULTICAST_IF            1
+#define IP_MULTICAST_TTL           2
+#define IP_MULTICAST_LOOP          3
+#define IP_ADD_MEMBERSHIP          4
+#define IP_DROP_MEMBERSHIP         5
+#define IP_UNBLOCK_SOURCE          6
+#define IP_BLOCK_SOURCE            7
+#define IP_ADD_SOURCE_MEMBERSHIP   8
+#define IP_DROP_SOURCE_MEMBERSHIP  9
+#define IP_MSFILTER                10
+#define IP_MULTICAST_ALL           11
+#define IP_PKTINFO                 12
+
+#define IPV6_MULTICAST_IF          20
+#define IPV6_LEAVE_GROUP           21
+#define IPV6_JOIN_GROUP            22
+#define IPV6_MULTICAST_LOOP        23
+#define IPV6_UNICAST_HOPS          24
+#define IPV6_MULTICAST_HOPS        25
+#define IPV6_ADD_MEMBERSHIP        26
+#define IPV6_DROP_MEMBERSHIP       27
+#define IPV6_V6ONLY                28
+
+struct ip_mreq {
+	struct in_addr imr_multiaddr;
+	struct in_addr imr_interface;
+};
+
+struct ipv6_mreq {
+	struct in6_addr ipv6mr_multiaddr;
+	unsigned int ipv6mr_interface;
+};
 
 #include <arpa/inet.h>
 

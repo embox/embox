@@ -56,6 +56,9 @@
 #define EOVERFLOW        75    /* Value too large to be stored in data type. */
 #define EILSEQ           84    /* Illegal byte sequence */
 #define ENOTSUP          95    /* Not supported error */
+
+#define ECANCELED        125   /* Operation Canceled */
+
 #define EEOF             200   /* End of file reached */
 #define ENOSUPP          201   /* Operation not supported */
 #define EDEVNOSUPP       202   /* Device does not support this operation */

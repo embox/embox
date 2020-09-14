@@ -147,7 +147,6 @@ __END_DECLS
 
 #include <netinet/in.h>
 
-#define IPV6_V6ONLY 0
 #define TCP_NODELAY 0
 
 #define NI_MAXHOST	1025

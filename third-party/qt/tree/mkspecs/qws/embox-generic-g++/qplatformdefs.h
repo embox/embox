@@ -218,9 +218,6 @@ struct __res_state {
 #endif
 
 
-#define IP_MULTICAST_TTL 0
-#define IPV6_MULTICAST_LOOP 0
-#define IP_MULTICAST_LOOP 0
 #define TCP_NODELAY 0
 
 //------BEGIN QProcess
