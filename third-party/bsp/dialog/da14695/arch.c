@@ -18,8 +18,11 @@
 #include <config/custom_config_qspi.h>
 
 #include <sys_clock_mgr.h>
+#include <sys_power_mgr.h>
+#include <hw_rtc.h>
 #include <hw_sys.h>
 #include <hw_cache.h>
+
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
@@ -70,8 +73,17 @@ STATIC_IRQ_ATTACH(PLL_LOCK_IRQ, pll_lock_irq_handler, NULL);
 extern void SystemInitPre(void);
 extern void da1469x_SystemInit(void);
 
-extern char _bss_vma;
-extern char _bss_len;
+extern char _bss_vma, _bss_end;
+extern char __zero_table_start__, __zero_table_end__;
+
+static void rtc_init(void)
+{
+        // Enable the RTC peripheral clock
+        hw_rtc_clock_enable();
+
+        // Start the RTC
+        hw_rtc_time_start();
+}
 
 void arch_init(void) {
 	int i;
@@ -79,7 +91,7 @@ void arch_init(void) {
 	/* Disable watchdog. It was enabled by bootloader. */
 	REG16_STORE(GPREG_SET_FREEZE_REG, GPREG_SET_FREEZE_SYS_WDOG);
 
-	for (i = 0; i < 1 * 1000 * 1000; i++) {
+	for (i = 0; i < 1 * 1000 * 1000 * 1; i++) {
 
 	}
 
@@ -102,14 +114,35 @@ void arch_init(void) {
 	SystemInitPre();
 	da1469x_SystemInit();
 
-	/* SystemInitPre and da1469x_SystemInit use BSS variables, so reinit BSS.*/
-	memset(&_bss_vma, 0, (int) &_bss_len);
+	/* Init all BSS once more except retained data. */
+	memset(&_bss_vma, 0, &__zero_table_start__ - &_bss_vma);
+	memset(&__zero_table_end__, 0, &_bss_end - &__zero_table_end__);
 
+	extern void ad_pmu_init(void);
+	ad_pmu_init();
+
+	/* from system_init() */
+    /* Use appropriate XTAL for each device */
+    cm_sys_clk_init(sysclk_XTAL32M);
+    cm_apb_set_clock_divider(apb_div1);
+    cm_ahb_set_clock_divider(ahb_div1);
+   // cm_lp_clk_init();
+
+
+	/* from pm_system_init */
 	/* Enables the COM power domain (for example, it's used to enable GPIO) */
 	hw_sys_pd_com_enable();
+
+	hw_sys_setup_retmem();
+	hw_sys_set_cache_retained();
+
+	//qspi_operations_init();
+
+	rtc_init();
 }
 
 void arch_idle(void) {
+	__asm__ __volatile__ ("wfi");
 }
 
 void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {

@@ -1,0 +1,138 @@
+--- SDK_10.0.10.118/sdk/middleware/adapters/src/ad_pmu.c	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/middleware/adapters/src/ad_pmu.c	2020-09-07 11:58:41.983637659 +0300
+@@ -23,6 +23,8 @@
+ 
+ #if dg_configPMU_ADAPTER
+ 
++#define OS_RTOS
++
+ #include "sdk_defs.h"
+ #include <hw_bod.h>
+ #include <hw_sys.h>
+@@ -30,7 +32,9 @@
+ #include "ad_pmu_internal.h"
+ #include "hw_usb.h"
+ 
+-#ifdef OS_FREERTOS
++#include <hw_clk.h>
++
++#ifdef OS_RTOS
+ #include <sys_power_mgr.h>
+ #endif
+ 
+@@ -63,7 +67,7 @@
+ 
+ #define AD_PMU_ONWAKEUP_VOLTAGE         ( HW_PMU_1V2_VOLTAGE_0V9 )
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+ __RETAINED static OS_MUTEX ad_pmu_mutex;
+ #endif
+ 
+@@ -76,7 +80,7 @@
+ #if (dg_configPOWER_1V8_ACTIVE == 1)
+         HW_PMU_ERROR_CODE error_code;
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         ASSERT_WARNING(ad_pmu_mutex != NULL);
+ 
+         OS_EVENT_WAIT(ad_pmu_mutex, OS_EVENT_FOREVER);    // Block forever
+@@ -125,7 +129,7 @@
+                 GLOBAL_INT_RESTORE();
+ #endif /* CONFIG_USE_BLE */
+         }
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         OS_EVENT_SIGNAL(ad_pmu_mutex);
+ #endif
+ #else
+@@ -136,14 +140,14 @@
+ bool ad_pmu_get_1v8_state(void)
+ {
+ #if (dg_configPOWER_1V8_ACTIVE == 1)
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         ASSERT_WARNING(ad_pmu_mutex != NULL);
+ 
+         OS_EVENT_WAIT(ad_pmu_mutex, OS_EVENT_FOREVER);    // Block forever
+ #endif
+         bool state = pm_1v8_state;
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         OS_EVENT_SIGNAL(ad_pmu_mutex);
+ #endif
+         return state;
+@@ -417,7 +421,7 @@
+         ASSERT_WARNING(rail != PMU_RAIL_1V8  || (dg_configPOWER_1V8_ACTIVE == 2  && dg_configPOWER_1V8_SLEEP == 2));
+         ASSERT_WARNING(rail != PMU_RAIL_1V8P || (dg_configPOWER_1V8P_ACTIVE == 2 && dg_configPOWER_1V8P_SLEEP == 2));
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         ASSERT_WARNING(ad_pmu_mutex != NULL);
+ 
+         OS_EVENT_WAIT(ad_pmu_mutex, OS_EVENT_FOREVER);    // Block forever
+@@ -484,7 +488,7 @@
+         GLOBAL_INT_RESTORE();
+ #endif /* CONFIG_USE_BLE */
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         OS_EVENT_SIGNAL(ad_pmu_mutex);
+ #endif
+ 
+@@ -515,7 +519,7 @@
+ 
+ static void enable_dcdc(bool enable)
+ {
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         ASSERT_WARNING(ad_pmu_mutex != NULL);
+ 
+         OS_EVENT_WAIT(ad_pmu_mutex, OS_EVENT_FOREVER);    // Block forever
+@@ -567,7 +571,7 @@
+                 }
+         }
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+         OS_EVENT_SIGNAL(ad_pmu_mutex);
+ #endif
+ }
+@@ -736,7 +740,7 @@
+         update_1v2_voltage();
+ }
+ 
+-#ifdef OS_FREERTOS
++#ifdef OS_RTOS
+ 
+ const adapter_call_backs_t ad_pmu_pm_call_backs = {
+         /*
+@@ -761,14 +765,14 @@
+  * \brief Initialize adapter
+  *
+  */
+-static void ad_pmu_init(void)
++void ad_pmu_init(void)
+ {
+         ad_pmu_rail_config_t rail_config;
+         HW_PMU_ERROR_CODE error_code;
+ 
+-        pm_register_adapter(&ad_pmu_pm_call_backs);
++//        pm_register_adapter(&ad_pmu_pm_call_backs);
+ 
+-        ad_pmu_mutex = xSemaphoreCreateMutex();         // Create Mutex
++        OS_MUTEX_CREATE(ad_pmu_mutex);         // Create Mutex
+         ASSERT_WARNING(ad_pmu_mutex != NULL);
+ 
+         if (dg_configUSE_BOD == 1) {
+@@ -937,7 +941,7 @@
+ 
+ ADAPTER_INIT(ad_pmu_adapter, ad_pmu_init);
+ 
+-#endif /* OS_FREERTOS */
++#endif /* OS_RTOS */
+ 
+ #endif /* dg_configPMU_ADAPTER */
+ 

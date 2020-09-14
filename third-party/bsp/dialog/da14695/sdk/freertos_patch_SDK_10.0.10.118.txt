@@ -1,0 +1,225 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_watchdog.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_watchdog.c
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_watchdog.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/sys_watchdog.c	2020-05-21 14:35:29.526238242 +0300
+@@ -19,8 +19,8 @@
+ 
+ #include "sys_watchdog.h"
+ #include "sys_watchdog_internal.h"
+-#include "FreeRTOS.h"
+-#include "timers.h"
++//#include "FreeRTOS.h"
++//#include "timers.h"
+ #include "osal.h"
+ 
+ /* mutex to synchronize access to wdog data */
+diff -aur SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_clock_mgr.h ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_clock_mgr.h
+--- SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_clock_mgr.h	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/system/sys_man/include/sys_clock_mgr.h	2020-08-28 12:38:07.721338883 +0300
+@@ -254,6 +254,8 @@
+  */
+ void cm_rcx_trigger_calibration(void);
+ #endif
++#endif /* OS_FREERTOS */
++
+ /**
+  * \brief Initialize the Low Power clock.
+  *
+@@ -298,7 +300,6 @@
+  */
+ __RETAINED_CODE void cm_lp_clk_wakeup(void);
+ 
+-#endif /* OS_FREERTOS */
+ 
+ /**
+  * \brief Block until the PLL is locked. If the PLL is locked then the function exits
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/api/include/ble_l2cap.h ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/api/include/ble_l2cap.h
+--- SDK_10.0.10.118/sdk/interfaces/ble/api/include/ble_l2cap.h	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/api/include/ble_l2cap.h	2020-08-28 12:38:07.721338883 +0300
+@@ -21,6 +21,7 @@
+ #define BLE_L2CAP_H_
+ 
+ #include <stdint.h>
++#include <sdk_defs.h>
+ #include "ble_common.h"
+ #include "ble_gap.h"
+ 
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/api/src/ble_gap.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/api/src/ble_gap.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/api/src/ble_gap.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/api/src/ble_gap.c	2020-05-21 14:35:29.527238237 +0300
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include <string.h>
+-#include "FreeRTOS.h"
++//#include "FreeRTOS.h"
+ #include "ble_common.h"
+ #include "osal.h"
+ #include "ble_gap.h"
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr.c	2020-05-21 16:30:08.969551078 +0300
+@@ -17,10 +17,10 @@
+ #include "ble_config.h"
+ #include "ble_stack_config.h"
+ 
+-#include "FreeRTOS.h"
+-#include "task.h"
+-#include "queue.h"
+-#include "semphr.h"
++//#include "FreeRTOS.h"
++//#include "task.h"
++//#include "queue.h"
++//#include "semphr.h"
+ 
+ #include "sdk_list.h"
+ #include "ble_common.h"
+@@ -238,13 +238,13 @@
+ 
+                 if (ulNotifiedValue & mainBIT_ADAPTER_EVENT_QUEUE) {
+                         /* Make sure there are messages waiting on the queue */
+-                        if (!uxQueueMessagesWaiting(adapter_if->evt_q)) {
++                        if (!OS_QUEUE_MESSAGES_WAITING(adapter_if->evt_q)) {
+                                 goto no_event;
+                         }
+ 
+                         /* Check if there is free space on BLE manager's event queue */
+ #if (BLE_MGR_USE_EVT_LIST == 0)
+-                        if (uxQueueSpacesAvailable(mgr_if.evt_q))
++                        if (OS_QUEUE_SPACES_AVAILABLE(mgr_if.evt_q))
+ #endif /* (BLE_MGR_USE_EVT_LIST == 0) */
+                         {
+                                 /* Get message from queue */
+@@ -324,7 +324,7 @@
+                                  * Check if there are more messages waiting in the BLE adapter's
+                                  * event queue.
+                                  */
+-                                if (uxQueueMessagesWaiting(adapter_if->evt_q)) {
++                                if (OS_QUEUE_MESSAGES_WAITING(adapter_if->evt_q)) {
+                                         OS_TASK_NOTIFY(mgr_if.task,
+                                                 mainBIT_ADAPTER_EVENT_QUEUE, OS_NOTIFY_SET_BITS);
+                                 }
+@@ -339,7 +339,7 @@
+ no_event:
+ #if ((BLE_MGR_DIRECT_ACCESS == 0) || (defined(BLE_STACK_PASSTHROUGH_MODE)))
+                 if (ulNotifiedValue & mainBIT_MANAGER_COMMAND_QUEUE) {
+-                        if (uxQueueMessagesWaiting(mgr_if.cmd_q)) {
++                        if (OS_QUEUE_MESSAGES_WAITING(mgr_if.cmd_q)) {
+                                 ble_mgr_msg_hdr_t *cmd;
+ 
+                                 /* Get command from the queue */
+@@ -352,7 +352,7 @@
+                                 }
+ 
+                                 /* Check if there are messages waiting in the command queue */
+-                                if (uxQueueMessagesWaiting(mgr_if.cmd_q)) {
++                                if (OS_QUEUE_MESSAGES_WAITING(mgr_if.cmd_q)) {
+                                         OS_TASK_NOTIFY(mgr_if.task,
+                                                 mainBIT_MANAGER_COMMAND_QUEUE, OS_NOTIFY_SET_BITS);
+                                 }
+@@ -363,7 +363,7 @@
+ #if (BLE_MGR_USE_EVT_LIST == 0)
+                 if (ulNotifiedValue & mainBIT_EVENT_CONSUMED) {
+                         /* Check if blocked and if there is space on the event queue */
+-                        if (ble_mgr_blocked && uxQueueSpacesAvailable(mgr_if.evt_q)) {
++                        if (ble_mgr_blocked && OS_QUEUE_SPACES_AVAILABLE(mgr_if.evt_q)) {
+                                 /* Set flag to false */
+                                 ble_mgr_blocked = false;
+ 
+@@ -392,7 +392,7 @@
+ #endif
+ 
+                 /* Check if BLE adapter is blocked and if there is free space on its event queue */
+-                if (ble_mgr_adapter_is_blocked() && uxQueueSpacesAvailable(adapter_if->evt_q)) {
++                if (ble_mgr_adapter_is_blocked() && OS_QUEUE_SPACES_AVAILABLE(adapter_if->evt_q)) {
+                         /* Notify BLE adapter that there is free space on its event queue */
+                         ad_ble_notify_event_queue_avail();
+                 }
+@@ -420,13 +420,13 @@
+ 
+         /* Create needed mutexes */
+         (void) OS_MUTEX_CREATE(ble_interface_lock);
+-        configASSERT(ble_interface_lock);
++        OS_ASSERT(ble_interface_lock);
+ #ifndef BLE_STACK_PASSTHROUGH_MODE
+         (void) OS_MUTEX_CREATE(ble_dev_params_lock);
+-        configASSERT(ble_dev_params_lock);
++        OS_ASSERT(ble_dev_params_lock);
+ #if (BLE_MGR_DIRECT_ACCESS == 1)
+         (void) OS_MUTEX_CREATE(ble_waitqueue_lock);
+-        configASSERT(ble_waitqueue_lock);
++        OS_ASSERT(ble_waitqueue_lock);
+ #endif /* (BLE_MGR_DIRECT_ACCESS == 1) */
+ 
+         /* Set default BLE device parameters */
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_ad_msg.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_ad_msg.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_ad_msg.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_ad_msg.c	2020-05-21 14:35:29.528238233 +0300
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include <string.h>
+-#include "FreeRTOS.h"
++//#include "FreeRTOS.h"
+ #include "ble_stack_config.h"
+ #include "ble_common.h"
+ #include "ble_mgr_helper.h"
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gtl.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gtl.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gtl.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_gtl.c	2020-05-21 14:35:29.529238228 +0300
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include <string.h>
+-#include "FreeRTOS.h"
++//#include "FreeRTOS.h"
+ #include "co_version.h"
+ #include "ble_stack_config.h"
+ 
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_helper.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_helper.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_helper.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/ble_mgr_helper.c	2020-05-21 14:35:29.529238228 +0300
+@@ -19,6 +19,8 @@
+ #include "ble_mgr_helper.h"
+ #include "ble_common.h"
+ 
++#include "sdk_defs.h"
++
+ void *alloc_ble_msg(uint16_t op_code, uint16_t size)
+ {
+         ble_mgr_msg_hdr_t *msg;
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage.c	2020-05-21 14:35:29.529238228 +0300
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include <string.h>
+-#include "FreeRTOS.h"
++//#include "FreeRTOS.h"
+ #include "osal.h"
+ #include "ble_mgr.h"
+ #include "storage.h"
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage_flash.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage_flash.c
+--- SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage_flash.c	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/manager/src/storage_flash.c	2020-05-21 14:35:29.529238228 +0300
+@@ -13,7 +13,7 @@
+  */
+ 
+ #include <string.h>
+-#include "FreeRTOS.h"
++//#include "FreeRTOS.h"
+ #include "osal.h"
+ #include "ble_config.h"
+ #include "storage.h"
+diff -aur SDK_10.0.10.118/sdk/interfaces/ble/stack/config/ble_stack_config.h ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/stack/config/ble_stack_config.h
+--- SDK_10.0.10.118/sdk/interfaces/ble/stack/config/ble_stack_config.h	2019-12-20 11:51:02.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/stack/config/ble_stack_config.h	2020-05-21 14:35:29.529238228 +0300
+@@ -23,6 +23,8 @@
+ 
+ #include "ble_config.h"
+ 
++#include "sdk_defs.h"
++
+ 
+ #define RAM_BUILD
+ 

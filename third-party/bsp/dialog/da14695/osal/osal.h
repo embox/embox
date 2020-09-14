@@ -64,6 +64,9 @@ extern int os_mutex_create(struct mutex **m_p);
 #define OS_QUEUE_FOREVER        ((unsigned) -1)
 
 #define OS_TIMER                void *
+#define OS_TIMER_SUCCESS        pdPASS
+#define OS_TIMER_FAIL           pdFAIL
+#define OS_TIMER_FOREVER        ((unsigned) -1)
 
 #define OS_BASE_TYPE            int
 #define OS_UBASE_TYPE           int
@@ -104,6 +107,8 @@ extern int os_mutex_create(struct mutex **m_p);
 #define OS_LEAVE_CRITICAL_SECTION() \
 	irq_unlock()
 
+#define OS_LEAVE_CRITICAL_SECTION_FROM_ISR(a)
+
 /**** Queue *****/
 
 #define OS_QUEUE_CREATE(queue, item_size, max_items) \
@@ -140,6 +145,55 @@ extern int os_mutex_create(struct mutex **m_p);
 #define OS_MUTEX_PUT(mutex) \
 	mutex_unlock(mutex)
 
+#include <time.h>
+#include <kernel/time/time.h>
+#include <kernel/time/timer.h>
+/**** Timer ****/
+extern struct sys_timer *os_timer_create(int period, int reload, void *handler );
+extern int os_timer_start(struct sys_timer * t );
+extern int os_timer_stop(struct sys_timer * t );
+extern int os_timer_change_period(struct sys_timer * t, int period );
+
+#define OS_TIMER_CREATE(name, period, reload, timer_id, callback) \
+			os_timer_create(period, reload, callback);
+
+#define OS_TIMER_START(timer, timeout) \
+		os_timer_start(timer)
+
+#define OS_TIMER_STOP(timer, timeout) \
+		os_timer_stop(timer)
+
+#define OS_TIMER_START_FROM_ISR(timer) \
+		os_timer_start(timer)
+
+#define OS_TIMER_STOP_FROM_ISR(timer) \
+		os_timer_stop(timer)
+
+#define OS_TICKS_2_MS(ticks) \
+		jiffies2ms(ticks)
+
+/**
+ * \brief Convert from ms to OS ticks
+ *
+ * \param [in] ms milliseconds to convert
+ *
+ * \return value in OS ticks
+ *
+ */
+#define OS_MS_2_TICKS(ms) ms2jiffies(ms)
+
+#define OS_TIME_TO_TICKS(ms) \
+		ms2jiffies(ms)
+
+#define OS_GET_TICK_COUNT() \
+		clock()
+
+#define OS_TIMER_CHANGE_PERIOD(timer, period, timeout) \
+		os_timer_change_period(timer, period)
+
+#define OS_TIMER_CHANGE_PERIOD_FROM_ISR(timer, period) \
+		 os_timer_change_period(timer, period)
+
 /**** Malloc ****/
 
 #define OS_MALLOC(size)    sysmalloc(size)
@@ -148,11 +202,25 @@ extern int os_mutex_create(struct mutex **m_p);
 
 
 /**** Events ************/
-#define OS_EVENT_GROUP_SET_BITS_FROM_ISR(event_group, bits_to_set)     (0)
+
+#define OS_EVENT_GROUP_CREATE() NULL
+
+#define OS_EVENT_GROUP_WAIT_BITS(event_group, bits_to_wait, clear_on_exit, wait_for_all, timeout)
+
+
+#define OS_EVENT_GROUP_SET_BITS(event_group, bits_to_set)
+
+
+#define OS_EVENT_GROUP_SET_BITS_FROM_ISR(event_group, bits_to_set) \
+				OS_FAIL
+
+#define OS_EVENT_GROUP_CLEAR_BITS(event_group, bits_to_clear)
 
 #define OS_EVENT_GROUP_CLEAR_BITS_FROM_ISR(event_group, bits_to_clear)
 
-//#define configMINIMAL_STACK_SIZE      256 /* sys_usb_da1469x.c */
+#define OS_EVENT_GROUP_GET_BITS(event_group) 0
+
+#define OS_EVENT_GROUP_GET_BITS_FROM_ISR(event_group) 0
 
 /*************************** TODO PWR DEPS ****************************/
 
@@ -162,11 +230,23 @@ static inline OS_MUTEX xSemaphoreCreateMutex(void) {
 	return NULL;
 }
 
-#define OS_EVENT_WAIT(mutex, timeout)
+#define OS_EVENT void *
+
+#define OS_EVENT_SIGNALED  1
+
+static inline int evt_wait(void) {
+	return 0;
+}
+
+#define OS_EVENT_WAIT(mutex, timeout)  evt_wait()
 
 #define OS_EVENT_FOREVER   (-1u)
 
 #define OS_EVENT_SIGNAL(mutex)
+
+#define OS_EVENT_CREATE(event)
+#define OS_ENTER_CRITICAL_SECTION_FROM_ISR(event)
+#define OS_EVENT_SIGNAL_FROM_ISR(event)
 
 #define configPOST_SLEEP_PROCESSING()
 #define configPRE_STOP_PROCESSING()

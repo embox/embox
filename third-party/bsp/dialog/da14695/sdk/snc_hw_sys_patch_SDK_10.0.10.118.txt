@@ -1,0 +1,20 @@
+--- SDK_10.0.10.118/sdk/bsp/snc/include/snc_hw_sys.h	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/snc/include/snc_hw_sys.h	2020-09-04 18:04:44.703176401 +0300
+@@ -45,7 +45,7 @@
+  *****************************************************************************************
+  */
+ 
+-#if (defined(OS_FREERTOS) && dg_configUSE_HW_TIMER)
++#if (dg_configUSE_HW_TIMER)
+ /**
+  * \brief System timer SNC uptime ticks resolution mask
+  */
+@@ -73,7 +73,7 @@
+ DEPRECATED_MSG("API no longer supported, use snc_hw_sys_uptime_ticks_t instead.")
+ typedef snc_hw_sys_uptime_ticks_t snc_hw_sys_timestamp_t;
+ 
+-#endif /* defined(OS_FREERTOS) && dg_configUSE_HW_TIMER */
++#endif /* dg_configUSE_HW_TIMER */
+ 
+ /*
+  * MACRO DEPENDENCIES

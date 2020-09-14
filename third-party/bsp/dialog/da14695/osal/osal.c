@@ -244,3 +244,46 @@ int os_mutex_create(struct mutex **m_p) {
 
 	return 0;
 }
+
+#include <kernel/time/timer.h>
+#include <mem/misc/pool.h>
+#include "osal.h"
+
+#define OS_TIMER_COUNT OPTION_GET(NUMBER, os_timer_count)
+POOL_DEF(os_timer_pool, struct sys_timer, OS_TIMER_COUNT);
+
+struct sys_timer *os_timer_create(int period, int reload, void *handler ) {
+	struct sys_timer *t;
+
+	t = pool_alloc(&os_timer_pool);
+	if (!t) {
+		return NULL;
+	}
+
+	timer_init(t, reload ? TIMER_PERIODIC : TIMER_ONESHOT, handler, NULL );
+
+	t->load = ms2jiffies(period);
+
+	return t;
+}
+
+int os_timer_start(struct sys_timer * t ) {
+
+	timer_start(t, ms2jiffies(t->load));
+
+	return OS_TIMER_SUCCESS;
+}
+
+int os_timer_stop(struct sys_timer * t ) {
+
+	timer_stop(t);
+
+	return OS_TIMER_SUCCESS;
+}
+
+int os_timer_change_period(struct sys_timer * t, int period ) {
+	timer_stop(t);
+	timer_start(t, ms2jiffies(period));
+
+	return OS_TIMER_SUCCESS;
+}
