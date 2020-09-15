@@ -1,0 +1,5 @@
+package embox.test.posix.net
+
+module socket_cmsg_test {
+	source "socket_cmsg_test.c"
+}
