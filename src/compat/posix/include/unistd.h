@@ -154,6 +154,10 @@ extern ssize_t write(int fd, const void *buf, size_t nbyte);
 
 extern ssize_t read(int fd, void *buf, size_t nbyte);
 
+extern ssize_t pwrite(int fd, const void *buf, size_t nbyte, off_t offset);
+
+extern ssize_t pread(int fildes, void *buf, size_t nbyte, off_t offset);
+
 extern ssize_t writev(int fd, const struct iovec *iov, int iovcnt);
 
 extern ssize_t readv(int fd, const struct iovec *iov, int iovcnt);

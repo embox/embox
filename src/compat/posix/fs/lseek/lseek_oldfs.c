@@ -27,7 +27,7 @@ off_t lseek(int fd, off_t offset, int origin) {
 
 	desc = file_desc_get(fd);
 	if (desc == NULL) {
-		return -ESPIPE;
+		return SET_ERRNO(ESPIPE);
 	}
 
 	ret = kseek(desc, offset, origin);
