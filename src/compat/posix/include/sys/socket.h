@@ -54,6 +54,8 @@ struct linger {
 	int         l_linger;         /* linger time, in seconds */
 };
 
+#define SCM_RIGHTS     0x1
+
 #define __CMSG_ALIGN(len) \
 	(((len) + sizeof(long) - 1) & ~(sizeof(long) - 1))
 
