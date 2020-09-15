@@ -70,7 +70,7 @@ static cycle_t integratorcp_counter_read(void) {
 }
 
 static struct time_counter_device integratorcp_counter_device = {
-	.cycle_hz = 1000,
+	.cycle_hz = CLOCK_RATE,
 	.read = integratorcp_counter_read,
 };
 
