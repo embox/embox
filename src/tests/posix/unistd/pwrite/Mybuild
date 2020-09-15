@@ -1,0 +1,6 @@
+
+package embox.test.posix.unistd
+
+module pwrite_test {
+	source "pwrite_test.c"
+}
