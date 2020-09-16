@@ -211,6 +211,14 @@ ifeq ($(GCC_VERSION_MAJOR),7)
 	override COMMON_CCFLAGS += -Wno-error=format-truncation=
 	override COMMON_CCFLAGS += -Wno-error=alloc-size-larger-than=
 endif
+ifeq ($(ARCH),x86)
+	ifeq ($(shell expr $(GCC_VERSION_MAJOR) \>= 8), 1)
+		# This fixes gdb corrupt stack when debugging with QEMU.
+		# This options is added here to suppress addbr32 instr generation,
+		# which is incorrectly interpreted by QEMU.
+		override COMMON_CCFLAGS += -fcf-protection=none
+	endif
+endif
 endif
 
 override COMMON_CCFLAGS += -Wformat
