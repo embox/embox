@@ -198,6 +198,7 @@ override ASFLAGS += $(asflags)
 override COMMON_CCFLAGS := $(COMMON_FLAGS)
 override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
 override COMMON_CCFLAGS += -fno-stack-protector
+override COMMON_CCFLAGS += -fno-pic
 override COMMON_CCFLAGS += -Wall -Werror
 override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 
