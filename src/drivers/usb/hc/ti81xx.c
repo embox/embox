@@ -224,7 +224,7 @@ struct ti81xx_hcd_hci {
 };
 
 POOL_DEF(hcd_hcis, struct ti81xx_hcd_hci, USB_MAX_HCD);
-
+#if 0
 static inline struct ti81xx_hcd_hci *usb2hcd(struct usb_hcd *hcd) {
 	return hcd->hci_specific;
 }
@@ -808,8 +808,9 @@ static irq_return_t ti81xx_irq(unsigned int irq_nr, void *data) {
 
 	return IRQ_HANDLED;
 }
-
+#endif
 static int usb_ti81xx_init(void) {
+#if 0
 	struct usb_hcd *hcd;
 
 	static_assert(offsetof(struct ti81xx_usb, m_devctl) == 0x460);
@@ -844,6 +845,8 @@ static int usb_ti81xx_init(void) {
 	}
 
 	return usb_hcd_register(hcd);
+#endif
+	return 0;
 }
 
 PERIPH_MEMORY_DEFINE(hc_ti816x, PRCM_BASE, 0x1000);

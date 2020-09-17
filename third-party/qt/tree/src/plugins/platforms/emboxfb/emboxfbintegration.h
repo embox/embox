@@ -14,12 +14,17 @@
 
 QT_BEGIN_NAMESPACE
 
+typedef struct {
+    QImage::Format format;
+    int swapRgb;
+} FbFormat;
+
 class QEmboxFbScreen : public QFbScreen
 {
 	Q_OBJECT
 public:
 	QEmboxFbScreen(uint8_t *d, int width, int height,
-					int stride, QImage::Format screenFormat);
+					int stride, FbFormat screenFormat);
 	void setGeometry(QRect rect);
 	void setFormat(QImage::Format format);
 
@@ -32,6 +37,7 @@ private:
 	unsigned int mBytesPerLine;
 
 	QPainter *compositePainter;
+	int mSwapRgb;
 };
 
 class QEmboxFbIntegration : public QPlatformIntegration
@@ -55,7 +61,7 @@ private:
 		   EMBOX_BGRA8888, EMBOX_RGB565, EMBOX_BGR565 };
 
 	void           printFbInfo(void);
-	QImage::Format emboxFbFormatToQImageFormat(int emboxFbFormat);
+	FbFormat emboxFbFormatToQImageFormat(int emboxFbFormat);
 
 	int fbFd;
 
