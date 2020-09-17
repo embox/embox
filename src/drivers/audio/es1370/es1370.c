@@ -25,6 +25,9 @@ struct es1370_hw_dev {
 	uint32_t base_addr;
 	uint32_t ctrl;
 	uint32_t sctrl;
+
+	void *po_stream;
+	void *mic_stream;
 };
 
 struct es1370_dev_priv {
@@ -35,6 +38,7 @@ struct es1370_dev_priv {
 	uint8_t *in_buf;
 
 	uint32_t cur_buff_offset;
+
 };
 
 static struct es1370_hw_dev es1370_hw_dev;
@@ -342,6 +346,22 @@ int es1370_drv_start(int sub_dev) {
 	return 0;
 }
 
+void audio_dev_open_out_stream(struct audio_dev *audio_dev, void *stream) {
+	struct es1370_dev_priv *priv;
+
+	priv = audio_dev->ad_priv;
+
+	priv->hw_dev->po_stream = stream;
+}
+
+void audio_dev_open_in_stream(struct audio_dev *audio_dev, void *stream) {
+	struct es1370_dev_priv *priv;
+
+	priv = audio_dev->ad_priv;
+
+	priv->hw_dev->mic_stream = stream;
+}
+
 uint8_t *audio_dev_get_in_cur_ptr(struct audio_dev *audio_dev) {
 	return NULL;
 }
@@ -384,7 +404,7 @@ static irq_return_t es1370_interrupt(unsigned int irq_num, void *dev_id) {
 	out32(sctl, base_addr + ES1370_REG_SERIAL_CONTROL);
 	out32(sctl_old, base_addr + ES1370_REG_SERIAL_CONTROL);
 
-	Pa_StartStream(NULL);
+	Pa_StartStream(hw_dev->po_stream);
 
 	return IRQ_HANDLED;
 }
@@ -482,6 +502,10 @@ static int es1370_ioctl(struct audio_dev *dev, int cmd, void *args) {
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
 		return ES1370_MAX_BUF_LEN;
+	case ADIOCTL_GET_RATE:
+		return 44100;
+	default:
+		log_error("Do not support cmd %d", cmd);
 	}
 	SET_ERRNO(EINVAL);
 	return -1;
@@ -515,6 +539,6 @@ static struct es1370_dev_priv es1370_adc1 = {
 };
 
 
-AUDIO_DEV_DEF("es1370_dac1", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_dac1);
-AUDIO_DEV_DEF("es1370_dac2", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_dac2);
-AUDIO_DEV_DEF("es1370_adc1", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_adc1);
+AUDIO_DEV_DEF("es1370_dac1", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_dac1, AUDIO_DEV_OUTPUT);
+AUDIO_DEV_DEF("es1370_dac2", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_dac2, AUDIO_DEV_OUTPUT);
+AUDIO_DEV_DEF("es1370_adc1", (struct audio_dev_ops *)&es1370_dev_ops, &es1370_adc1, AUDIO_DEV_INPUT);
