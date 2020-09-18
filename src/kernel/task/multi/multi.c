@@ -26,6 +26,16 @@
 #include <util/err.h>
 #include <compiler.h>
 
+#include <framework/mod/options.h>
+
+#if OPTION_GET(NUMBER, task_quantity)
+extern struct thread *main_thread_create(unsigned int flags, void *(*run)(void *), void *arg);
+extern void main_thread_delete(struct thread *t);
+#else
+#define main_thread_create thread_create
+#define main_thread_delete thread_delete
+#endif /* OPTION_GET(NUMBER, task_quantity) */
+
 struct task_trampoline_arg {
 	void * (*run)(void *);
 	void *run_arg;
@@ -64,6 +74,12 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 	struct task *self_task = NULL;
 	int res, tid;
 
+#if OPTION_GET(NUMBER, task_quantity)
+	assertf(OPTION_GET(NUMBER, resource_size) == TASK_RESOURCE_SIZE,
+			"resource_size (%d) must be set up %d",
+			OPTION_GET(NUMBER, resource_size), TASK_RESOURCE_SIZE);
+#endif /* OPTION_GET(NUMBER, task_quantity) */
+
 	sched_lock();
 	{
 		if (!task_table_has_space()) {
@@ -74,7 +90,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		thd = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
+		thd = main_thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				task_trampoline, NULL);
 		if (0 != err(thd)) {
 			res = err(thd);
@@ -182,7 +198,7 @@ int task_prepare(const char *name) {
 		/*
 		 * Thread does not run until we go through sched_unlock()
 		 */
-		thd = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
+		thd = main_thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				task_trampoline, NULL);
 		if (0 != err(thd)) {
 			res = err(thd);
@@ -336,7 +352,7 @@ void _NORETURN task_exit(void *res) {
 void task_delete(struct task *tsk) {
 	dlist_del(&tsk->child_lnk);
 	task_table_del(task_get_id(tsk));
-	thread_delete(task_get_main(tsk));
+	main_thread_delete(task_get_main(tsk));
 }
 
 int task_set_priority(struct task *tsk, task_priority_t new_prior) {

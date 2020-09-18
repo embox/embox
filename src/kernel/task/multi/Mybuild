@@ -2,6 +2,11 @@ package embox.kernel.task
 
 module multi extends api {
 	source "multi.c", "multi.h"
+	source "main_thread_create.c"
+	source "main_thread_allocator.c"
+
+	option number task_quantity = 0
+	option number resource_size = 0
 
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.task_resource
