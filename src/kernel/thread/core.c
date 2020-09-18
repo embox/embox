@@ -82,7 +82,7 @@ static void _NORETURN thread_trampoline(void) {
 	/* NOTREACHED */
 }
 
-static int thread_priority_by_flags(unsigned int flags) {
+int thread_priority_by_flags(unsigned int flags) {
 	int priority;
 
 	if (flags & THREAD_FLAG_PRIORITY_INHERIT) {
