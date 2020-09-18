@@ -11,6 +11,7 @@
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <assert.h>
 
 #include <drivers/audio/portaudio.h>
 #include <fs/file_format.h>
@@ -19,6 +20,11 @@
 
 #define USE_LOCAL_BUFFER OPTION_GET(BOOLEAN, use_local_buffer)
 #define FRAMES_PER_BUFFER OPTION_GET(NUMBER, frames_per_buffer)
+
+/* Lengths of fields in WAV. */
+#define WAV_CHUNK_ID     4
+#define WAV_CHUNK_SIZE   4
+#define WAV_CHUNK_DESCR  (WAV_CHUNK_ID + WAV_CHUNK_SIZE)
 
 static void print_usage(void) {
 	printf("Usage: play [WAVAUDIOFILE]\n"
@@ -102,12 +108,12 @@ int main(int argc, char **argv) {
 	int opt;
 	int err;
 	FILE *fd = NULL;
-	static uint8_t fmt_buf[128];
+	static uint8_t fmt_buf[256];
 	int chan_n = 2;
 	int sample_rate = 44100;
 	int bits_per_sample = 16;
 	int fdata_len = 0x100000;
-	int sleep_msec;
+	int sleep_msec, i, chunk_sz;
 
 	PaStreamCallback *callback;
 	PaStream *stream = NULL;
@@ -151,8 +157,7 @@ int main(int argc, char **argv) {
 
 		if (audio_memory_addr != AUDIO_ADDR_UNINITIALIZED) {
 			/* Get audio info from memory */
-			memcpy(fmt_buf, (void*) audio_memory_addr, 44);
-			_fbuffer = (uint8_t*) audio_memory_addr;
+			memcpy(fmt_buf, (void*) audio_memory_addr, sizeof fmt_buf);
 		} else if (_fbuffer) {
 			/* Get audio info from file */
 			if (NULL == (fd = fopen(argv[argc - 1], "r"))) {
@@ -160,43 +165,68 @@ int main(int argc, char **argv) {
 				return 0;
 			}
 
-			fread(fmt_buf, 1, 44, fd);
+			fread(fmt_buf, 1, sizeof fmt_buf, fd);
 			if (raw_get_file_format(fmt_buf) != RIFF_FILE) {
 				printf("%s is not a RIFF audio file\n", argv[argc - 1]);
 				return 0;
 			}
-			_bl = min(fread(_fbuffer, 1, FBUFFER_SIZE, fd), FBUFFER_SIZE);
 		}
 
-		chan_n          = *((uint16_t*) &fmt_buf[22]);
-		sample_rate     = *((uint32_t*) &fmt_buf[24]);
-		bits_per_sample = *((uint16_t*) &fmt_buf[34]);
-		fdata_len       = *((uint32_t*) &fmt_buf[40]);
+		/* WAV format:
+		 * http://www-mmsp.ece.mcgill.ca/Documents/AudioFormats/WAVE/Docs/riffmci.pdf
+		 */
+		i = 12;
+		assert(memcmp(&fmt_buf[i], "fmt", 3) == 0);
+		chunk_sz = *((uint32_t*) &fmt_buf[i + 4]);
+
+		chan_n          = *((uint16_t*) &fmt_buf[i + 10]);
+		sample_rate     = *((uint32_t*) &fmt_buf[i + 12]);
+		bits_per_sample = *((uint16_t*) &fmt_buf[i + 22]);
 		printf("File size:             %d bytes\n",
 		       *((uint32_t*) &fmt_buf[4]));
 		printf("File type header:      %c%c%c%c\n",
 		        fmt_buf[8], fmt_buf[9], fmt_buf[10], fmt_buf[11]);
-		printf("Length of format data: %d\n", *((uint32_t*) &fmt_buf[16]));
-		printf("Type format:           %d\n", *((uint16_t*) &fmt_buf[20]));
+		printf("Length of format data: %d\n", *((uint16_t*) &fmt_buf[i + 4]));
+		printf("Type format:           %d\n", *((uint16_t*) &fmt_buf[i + 8]));
 		printf("Number of channels:    %d\n", chan_n);
 		printf("Sample rate:           %d\n", sample_rate);
 		printf("Bits per sample:       %d\n", bits_per_sample);
+
+		/* Search for 'data' chunk. */
+		do {
+			chunk_sz = *((uint32_t*) &fmt_buf[i + 4]);
+			i += WAV_CHUNK_DESCR + chunk_sz;
+
+			/* TODO Process next bytes. not exit. */
+			if (i + WAV_CHUNK_DESCR >= sizeof fmt_buf) {
+				fprintf(stderr, "Failed to get WAV data sub-chunk\n");
+				goto err_close_fd;
+			}
+		} while (memcmp(&fmt_buf[i], "data", 4) != 0);
+
+		fdata_len = *((uint32_t*) &fmt_buf[i + 4]);
 		printf("Size of data section:  %d\n", fdata_len);
+
+		/* Data starts here. */
+		i += WAV_CHUNK_DESCR;
 
 		if (bits_per_sample * sample_rate * chan_n == 0) {
 			printf("Check bps, sample rate and channel number, they should not be zero!\n");
 			goto err_close_fd;
 		}
 
-		printf("Progress:\n");
-
 		if (audio_memory_addr != AUDIO_ADDR_UNINITIALIZED) {
+			_fbuffer = (uint8_t*) audio_memory_addr + i;
 			_bl = fdata_len;
+		} else {
+			fseek(fd, i, SEEK_SET);
+			_bl = min(fread(_fbuffer, 1, FBUFFER_SIZE, fd), FBUFFER_SIZE);
 		}
 
 		_fchan = chan_n;
-	}
 
+		printf("Progress:\n");
+	}
 
 	/* Initialize PA */
 	if (paNoError != (err = Pa_Initialize())) {

@@ -158,20 +158,23 @@ static void *pa_thread_hnd(void *arg) {
 			return NULL;
 		}
 
-		out_buf = audio_dev_get_out_cur_ptr(audio_dev);
-		in_buf  = audio_dev_get_in_cur_ptr(audio_dev);
-
-		log_debug("out_buf = 0x%X, buf_len %d", out_buf, buf_len);
-
-		if (out_buf) {
+		switch (audio_dev->dir) {
+		case AUDIO_DEV_OUTPUT:
+			out_buf = audio_dev_get_out_cur_ptr(audio_dev);
+			log_debug("out_buf = 0x%X, buf_len %d", out_buf, buf_len);
 			memset(out_buf, 0, buf_len);
-		}
+			break;
+		case AUDIO_DEV_INPUT:
+			in_buf  = audio_dev_get_in_cur_ptr(audio_dev);
+			log_debug("in_buf = 0x%X, buf_len %d", in_buf, buf_len);
 
-		if (audio_dev->dir == AUDIO_DEV_INPUT) {
 			pa_do_rate_conversion(pa_stream, audio_dev, in_buf,
 				inp_frames);
 			pa_do_channel_conversion(pa_stream, audio_dev, in_buf,
 				inp_frames);
+			break;
+		default:
+			break;
 		}
 
 		err = pa_stream->callback(in_buf,

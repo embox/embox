@@ -19,7 +19,7 @@
 #include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
-#include "../ac97/ac97.h"
+#include <drivers/audio/ac97.h>
 
 #include <embox/unit.h>
 
@@ -45,6 +45,9 @@ struct aaci_pl041_hw_dev {
 	uint32_t maincr;
 	struct aaci_runtime aaci_runtime;
 	uint32_t fifo_depth;
+
+	void *po_stream;
+	void *mic_stream;
 };
 
 static struct aaci_pl041_hw_dev aaci_pl041_hw_dev;
@@ -59,6 +62,7 @@ struct aaci_pl041_dev_priv {
 
 	uint32_t cur_buff_offset;
 };
+
 static void udelay(int delay) {
 	volatile int i;
 
@@ -110,7 +114,7 @@ static void aaci_pl041_dev_start(struct audio_dev *dev) {
 
 	ie = REG32_LOAD(aacirun->base + AACI_IE);
 	if (stat & AACI_SR_TXHE) {
-		Pa_StartStream(NULL);
+		//Pa_StartStream(NULL);
 	} else {
 		ie |= AACI_IE_URIE | AACI_IE_TXIE;
 	}
@@ -160,6 +164,8 @@ static int aaci_pl041_ioctl(struct audio_dev *dev, int cmd, void *args) {
 		       AD_16BIT_SUPPORT;
 	case ADIOCTL_BUFLEN:
 		return aaci_pl041_hw_dev.fifo_depth * FIFO_SAMPLE_SZ;
+	case ADIOCTL_GET_RATE:
+		return 44100;
 	}
 	SET_ERRNO(EINVAL);
 	return -1;
@@ -207,6 +213,16 @@ AUDIO_DEV_DEF("aaci_pl041_adc1",
 		(struct audio_dev_ops *)&aaci_pl041_dev_ops,
 		&aaci_pl041_adc1,
 		AUDIO_DEV_INPUT);
+
+void audio_dev_open_out_stream(struct audio_dev *audio_dev, void *stream) {
+	struct aaci_pl041_dev_priv *priv = audio_dev->ad_priv;
+	priv->hw_dev->po_stream = stream;
+}
+
+void audio_dev_open_in_stream(struct audio_dev *audio_dev, void *stream) {
+	struct aaci_pl041_dev_priv *priv = audio_dev->ad_priv;
+	priv->hw_dev->mic_stream = stream;
+}
 
 uint8_t *audio_dev_get_out_cur_ptr(struct audio_dev *audio_dev) {
 	struct aaci_pl041_dev_priv *priv;
@@ -423,7 +439,7 @@ static void aaci_fifo_irq(uint32_t base, int channel, uint32_t mask) {
 		val &= ~( AACI_IE_URIE | AACI_IE_TXIE);
 		REG32_STORE(aacirun->base + AACI_IE, val);
 
-		Pa_StartStream(NULL);
+		Pa_StartStream(aaci_pl041_hw_dev.po_stream);
 	}
 }
 
