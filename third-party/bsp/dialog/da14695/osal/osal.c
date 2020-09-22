@@ -13,6 +13,7 @@
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
 #include <util/err.h>
+#include <util/log.h>
 #include <framework/mod/options.h>
 
 #include "osal.h"
@@ -65,12 +66,14 @@ int os_task_create(const char *name, void (*run)(void *), void *arg,
 
 	info = pool_alloc(&os_thread_pool);
 	if (!info) {
+		log_error("pool_alloc failed");
 		return -1;
 	}
 	memset(info, 0, sizeof *info);
 
 	info->thread = thread_create(THREAD_FLAG_SUSPENDED, os_thread_run, info);
 	if (err(info->thread)) {
+		log_error("thread_create failed");
 		return -1;
 	}
 	schedee_priority_set(&info->thread->schedee, priority);
@@ -108,7 +111,8 @@ int os_task_notify_wait(uint32_t entry_bits, uint32_t exit_bits,
 	}
 
 	ret = sched_wait_timeout(timeout, NULL);
-	if (ret) {
+	if (ret == -ETIMEDOUT) {
+		log_debug("timeout");
 		return -1;
 	}
 
@@ -149,6 +153,7 @@ int os_queue_create(size_t item_size, size_t max_items, struct os_queue **queue_
 
 	q = pool_alloc(&os_queues_pool);
 	if (!q) {
+		log_error("pool_alloc failed");
 		return -1;
 	}
 	memset(q, 0, sizeof *q);
@@ -169,11 +174,13 @@ int os_queue_put(struct os_queue *q, const void *item, int timeout) {
 	(void) timeout;
 
 	if (q->max_items == q->items) {
+		log_debug("queue is full");
 		return OS_QUEUE_FULL;
 	}
 
 	q_item = sysmalloc(sizeof (struct dlist_head) + q->item_size);
 	if (!q_item) {
+		log_error("sysmalloc failed");
 		return -1;
 	}
 
@@ -193,6 +200,7 @@ int os_queue_get(struct os_queue *q, void *item, int timeout) {
 	(void) timeout;
 
 	if (0 == q->items) {
+		log_debug("queue is empty");
 		return OS_QUEUE_EMPTY;
 	}
 	q_item = dlist_first(&q->list);
@@ -213,6 +221,7 @@ int os_queue_peek(struct os_queue *q, void *item, int timeout) {
 	(void) timeout;
 
 	if (0 == q->items) {
+		log_debug("queue is empty");
 		return OS_QUEUE_EMPTY;
 	}
 	q_item = dlist_first(&q->list);
@@ -237,6 +246,7 @@ int os_mutex_create(struct mutex **m_p) {
 
 	m = pool_alloc(&os_mutex_pool);
 	if (!m) {
+		log_error("pool_alloc failed");
 		return -1;
 	}
 	mutex_init(m);
@@ -258,6 +268,7 @@ struct sys_timer *os_timer_create(int period, int reload, void *handler ) {
 
 	t = pool_alloc(&os_timer_pool);
 	if (!t) {
+		log_error("pool_alloc failed");
 		return NULL;
 	}
 
