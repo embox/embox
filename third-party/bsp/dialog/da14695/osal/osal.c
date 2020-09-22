@@ -12,6 +12,7 @@
 #include <kernel/thread/thread_sched_wait.h>
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
+#include <util/err.h>
 #include <framework/mod/options.h>
 
 #include "osal.h"
@@ -69,7 +70,7 @@ int os_task_create(const char *name, void (*run)(void *), void *arg,
 	memset(info, 0, sizeof *info);
 
 	info->thread = thread_create(THREAD_FLAG_SUSPENDED, os_thread_run, info);
-	if (!info->thread) {
+	if (err(info->thread)) {
 		return -1;
 	}
 	schedee_priority_set(&info->thread->schedee, priority);
