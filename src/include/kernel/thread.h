@@ -234,6 +234,8 @@ extern void thread_set_run_arg(struct thread *t, void *run_arg);
  */
 extern clock_t thread_get_running_time(struct thread *thread);
 
+extern int thread_priority_by_flags(unsigned int flags);
+
 __END_DECLS
 
 #endif /* KERNEL_THREAD_API_H_ */

@@ -16,27 +16,6 @@ module kernel_task {
 	depends embox.kernel.task.task_table_api
 }
 
-module multi extends api {
-	source "multi.c", "multi.h"
-
-	depends embox.kernel.task.kernel_task
-	depends embox.kernel.task.task_resource
-	depends embox.kernel.task.task_table
-
-	depends embox.compat.posix.proc.vfork
-
-	depends embox.kernel.thread.core
-	depends embox.kernel.sched.sched
-	/* uses task_self() to initialize
-	 * resources, which implies to thread be
-	 * already loaded, as task_self uses
-	 * thread_self to determine current thread
-	 */
-
-	@NoRuntime depends embox.compat.libc.assert
-	@NoRuntime depends embox.compat.libc.str
-}
-
 module single extends api {
 	source "single.c"
 	source "single.h"

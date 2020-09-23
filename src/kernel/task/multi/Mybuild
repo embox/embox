@@ -1,0 +1,27 @@
+package embox.kernel.task
+
+module multi extends api {
+	source "multi.c", "multi.h"
+	source "main_thread_create.c"
+	source "main_thread_allocator.c"
+
+	option number task_quantity = 0
+	option number resource_size = 0
+
+	depends embox.kernel.task.kernel_task
+	depends embox.kernel.task.task_resource
+	depends embox.kernel.task.task_table
+
+	depends embox.compat.posix.proc.vfork
+
+	depends embox.kernel.thread.core
+	depends embox.kernel.sched.sched
+	/* uses task_self() to initialize
+	 * resources, which implies to thread be
+	 * already loaded, as task_self uses
+	 * thread_self to determine current thread
+	 */
+
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
+}
