@@ -42,6 +42,13 @@ extern int            readdir_r(DIR *, struct dirent *, struct dirent **);
 
 extern void           rewinddir(DIR *dirp);
 
+static inline
+int scandir(const char *dir, struct dirent ***namelist,
+       int (*sel)(const struct dirent *),
+       int (*compar)(const struct dirent **, const struct dirent **)) {
+	return -1;
+}
+
 __END_DECLS
 
 #endif /* DIRENT_H_ */
