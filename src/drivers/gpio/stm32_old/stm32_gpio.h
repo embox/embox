@@ -10,12 +10,14 @@
 #ifndef STM32_GPIO_H_
 #define STM32_GPIO_H_
 
+#include <stdint.h>
+
 #define GPIO_PORT_SIZE 0x400
 #define GPIO_PORT_BASE 0x40010800
 
 #define GPIO_PORT_NUM 5
 
-typedef volatile unsigned int stm32_reg_t;
+typedef volatile uint32_t stm32_reg_t;
 
 struct stm32_gpio {
 	stm32_reg_t crl;
