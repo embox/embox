@@ -33,6 +33,14 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_MODE_IN_SCHMITT        (1 << 3)
 #endif
 
+/* 4 .. 7 port number*/
+#define GPIO_PORT(port)  ((port) & 0xf)
+#define GPIO_CHIP(port) (((port) & 0xf0) >> 4)
+
+#define GPIO_CHIP0 (0 << 4)
+#define GPIO_CHIP1 (1 << 4)
+
+
 #ifndef GPIO_MODE_OUTPUT
 #define GPIO_MODE_OUTPUT            (1 << 16)
 #endif
@@ -49,9 +57,14 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_MODE_OUT_ALTERNATE     (1 << 13)
 #endif
 
-/* Alternate function number. Bits: 17 ... 20 */
-#define GPIO_GET_ALTERNATE(mode) (((mode) & 0x1e0000) >> 17)
-#define GPIO_ALTERNATE(af) (((af) << 17) & 0x1e0000)
+#ifndef GPIO_MODE_VDD_LEVEL
+#define GPIO_MODE_VDD_LEVEL         (1 << 12)
+#endif
+
+
+/* Alternate function number. Bits: 17 ... 22 */
+#define GPIO_GET_ALTERNATE(mode) (((mode) & 0x7e0000) >> 17)
+#define GPIO_ALTERNATE(af) (((af) << 17) & 0x7e0000)
 
 #ifndef GPIO_MODE_IN_INT_EN
 #define GPIO_MODE_IN_INT_EN         (1 << 31)
@@ -74,14 +87,8 @@ typedef volatile unsigned long gpio_mask_t;
 #endif
 
 #ifndef GPIO_MODE_IN_INT_DIS
-#define GPIO_MODE_IN_INT_DIS        (1 << 25)
+#define GPIO_MODE_IN_INT_DIS        (1 << 26)
 #endif
-
-#define GPIO_PORT(port)  ((port) & 0xf)
-#define GPIO_CHIP(port) (((port) & 0xf0) >> 4)
-
-#define GPIO_CHIP0 (0 << 4)
-#define GPIO_CHIP1 (1 << 4)
 
 #define GPIO_PORT_A 0
 #define GPIO_PORT_B 1
