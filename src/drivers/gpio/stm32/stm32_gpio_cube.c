@@ -74,8 +74,9 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 		}
 	} else if (mode & GPIO_MODE_OUT_ALTERNATE) {
+#ifndef STM32F1_CUBE_GPIO /* There is no Alternate field in GPIO_InitTypeDef */
 		GPIO_InitStruct.Alternate = GPIO_GET_ALTERNATE(mode);
-
+#endif
 		if (mode & GPIO_MODE_OUT_OPEN_DRAIN) {
 			GPIO_InitStruct.Mode = GPIO_MODE_AF_OD;
 		}
