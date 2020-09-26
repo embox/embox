@@ -41,13 +41,6 @@ void closelog(void);
 
 typedef unsigned int u_int;
 
-struct rlimit;
-static inline int setrlimit(int resource, const struct rlimit *rlp) {
-	(void) resource;
-	(void) rlp;
-	return SET_ERRNO(ENOSYS);
-}
-
 static inline pid_t setsid(void) {
 	return 0;
 }
