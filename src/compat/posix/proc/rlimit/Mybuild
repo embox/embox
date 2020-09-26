@@ -1,0 +1,9 @@
+package embox.compat.posix.proc
+
+@DefaultImpl(rlimit_stub)
+abstract module rlimit {
+}
+
+static module rlimit_stub extends rlimit {
+	source "rlimit_stub.c"
+}
