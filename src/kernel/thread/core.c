@@ -46,6 +46,8 @@
 #include <util/err.h>
 #include <compiler.h>
 
+#define DEFAULT_STACK_SIZE    OPTION_GET(NUMBER, thread_stack_size)
+
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
 
@@ -102,7 +104,8 @@ int thread_priority_by_flags(unsigned int flags) {
 	return priority;
 }
 
-struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
+static struct thread *__thread_create(unsigned int flags, size_t stack_sz,
+	    void *(*run)(void *), void *arg) {
 	struct thread *t;
 	int priority;
 
@@ -133,7 +136,7 @@ struct thread *thread_create(unsigned int flags, void *(*run)(void *), void *arg
 	sched_lock();
 	{
 		/* allocate memory */
-		if (!(t = thread_alloc())) {
+		if (!(t = thread_alloc(stack_sz))) {
 			t = err_ptr(ENOMEM);
 			goto out_unlock;
 		}
@@ -161,6 +164,16 @@ out_unlock:
 	sched_unlock();
 
 	return t;
+}
+
+struct thread *thread_create(unsigned int flags,
+		void *(*run)(void *), void *arg) {
+	return __thread_create(flags, DEFAULT_STACK_SIZE, run, arg);
+}
+
+struct thread *thread_create_with_stack(unsigned int flags,
+		size_t stack_sz, void *(*run)(void *), void *arg) {
+	return __thread_create(flags, stack_sz, run, arg);
 }
 
 static struct schedee *thread_process(struct schedee *prev, struct schedee *next) {

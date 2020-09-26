@@ -17,10 +17,12 @@
 
 #include <kernel/thread/stack_protect.h>
 
-#define STACK_SZ      OPTION_GET(NUMBER, thread_stack_size)
+#define STACK_SZ \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
 static_assert(STACK_SZ > sizeof(struct thread));
 
-#define POOL_SZ       OPTION_GET(NUMBER, thread_pool_size)
+#define POOL_SZ \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
 
 typedef union thread_pool_entry {
 	struct thread thread;
@@ -35,7 +37,7 @@ POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
 POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
 #endif
 
-struct thread *thread_alloc(void) {
+struct thread *thread_alloc(size_t stack_sz) {
 	thread_pool_entry_t *block;
 	struct thread *t;
 
