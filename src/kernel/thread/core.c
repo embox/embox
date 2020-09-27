@@ -46,7 +46,7 @@
 #include <util/err.h>
 #include <compiler.h>
 
-#define DEFAULT_STACK_SIZE    OPTION_GET(NUMBER, thread_stack_size)
+#define THREAD_DEFAULT_STACK_SIZE    OPTION_GET(NUMBER, thread_stack_size)
 
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
@@ -168,7 +168,15 @@ out_unlock:
 
 struct thread *thread_create(unsigned int flags,
 		void *(*run)(void *), void *arg) {
-	return __thread_create(flags, DEFAULT_STACK_SIZE, run, arg);
+	rlim_t stack_sz;
+
+	if (flags & THREAD_FLAG_NOTASK) {
+		stack_sz = THREAD_DEFAULT_STACK_SIZE;
+	} else {
+		stack_sz = task_getrlim_stack_size(task_self());
+	}
+
+	return __thread_create(flags, stack_sz, run, arg);
 }
 
 struct thread *thread_create_with_stack(unsigned int flags,
