@@ -29,12 +29,16 @@
 #include <framework/mod/options.h>
 
 #if OPTION_GET(NUMBER, task_quantity)
-extern struct thread *main_thread_create(unsigned int flags, void *(*run)(void *), void *arg);
+extern struct thread *main_thread_create(unsigned int flags, size_t stack_sz,
+	void *(*run)(void *), void *arg);
 extern void main_thread_delete(struct thread *t);
 #else
-#define main_thread_create thread_create
+#define main_thread_create thread_create_with_stack
 #define main_thread_delete thread_delete
 #endif /* OPTION_GET(NUMBER, task_quantity) */
+
+#define THREAD_DEFAULT_STACK_SIZE \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
 
 struct task_trampoline_arg {
 	void * (*run)(void *);
@@ -68,11 +72,26 @@ static void * task_trampoline(void *arg_) {
 	return res;
 }
 
+static rlim_t task_get_stack_size(struct task *parent) {
+	rlim_t stack_sz;
+
+	if (parent) {
+		stack_sz = task_getrlim_stack_size(parent);
+	} else {
+		stack_sz = THREAD_DEFAULT_STACK_SIZE;
+	}
+
+	return stack_sz;
+}
+
 int new_task(const char *name, void * (*run)(void *), void *arg) {
 	struct task_trampoline_arg *trampoline_arg;
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res, tid;
+	rlim_t stack_sz;
+
+	stack_sz = task_get_stack_size(task_self());
 
 #if OPTION_GET(NUMBER, task_quantity)
 	assertf(OPTION_GET(NUMBER, resource_size) == TASK_RESOURCE_SIZE,
@@ -91,7 +110,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 		 * Thread does not run until we go through sched_unlock()
 		 */
 		thd = main_thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
-				task_trampoline, NULL);
+				stack_sz, task_trampoline, NULL);
 		if (0 != err(thd)) {
 			res = err(thd);
 			goto out_unlock;
@@ -187,6 +206,9 @@ int task_prepare(const char *name) {
 	struct thread *thd = NULL;
 	struct task *self_task = NULL;
 	int res, tid;
+	rlim_t stack_sz;
+
+	stack_sz = task_get_stack_size(task_self());
 
 	sched_lock();
 	{
@@ -199,7 +221,7 @@ int task_prepare(const char *name) {
 		 * Thread does not run until we go through sched_unlock()
 		 */
 		thd = main_thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
-				task_trampoline, NULL);
+				stack_sz, task_trampoline, NULL);
 		if (0 != err(thd)) {
 			res = err(thd);
 			goto out_unlock;
@@ -266,6 +288,8 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 	if (parent) {
 		dlist_add_prev(&tsk->child_lnk, &parent->child_list);
 	}
+
+	task_setrlim_stack_size(tsk, task_get_stack_size(parent));
 
 	tsk->tsk_priority = priority;
 
