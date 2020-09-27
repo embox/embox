@@ -26,4 +26,5 @@ module service {
 	depends embox.arch.vfork_entry
 	depends embox.compat.posix.proc.vfork
 	depends embox.compat.posix.proc.exec
+	depends embox.compat.posix.proc.rlimit
 }
