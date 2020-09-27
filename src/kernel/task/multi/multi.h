@@ -12,6 +12,7 @@
 #include <assert.h>
 
 #include <sys/cdefs.h>
+#include <sys/resource.h>
 #include <sys/types.h>
 
 #include <kernel/thread.h>
@@ -28,6 +29,10 @@ struct task {
 	struct task *parent;
 	struct dlist_head child_list;
 	struct dlist_head child_lnk;
+
+	struct {
+		rlim_t stack_size;
+	} rlim;
 
 	char tsk_name[MAX_TASK_NAME_LEN];
 	struct thread *tsk_main;
@@ -134,6 +139,16 @@ static inline clock_t task_get_clock(const struct task *tsk) {
 static inline void task_set_clock(struct task *tsk, clock_t new_clock) {
 	assert(tsk != NULL);
 	tsk->tsk_clock = new_clock;
+}
+
+static inline rlim_t task_getrlim_stack_size(struct task *tsk) {
+	assert(tsk != NULL);
+	return tsk->rlim.stack_size;
+}
+
+static inline void task_setrlim_stack_size(struct task *tsk, rlim_t stack_sz) {
+	assert(tsk != NULL);
+	tsk->rlim.stack_size = stack_sz;
 }
 
 __END_DECLS
