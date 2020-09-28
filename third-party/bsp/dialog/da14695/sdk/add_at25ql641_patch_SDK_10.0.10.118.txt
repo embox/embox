@@ -1,0 +1,19 @@
+diff -aur SDK_10.0.10.118/sdk/bsp/memory/src/qspi_automode.c ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/memory/src/qspi_automode.c
+--- SDK_10.0.10.118/sdk/bsp/memory/src/qspi_automode.c	2020-07-07 07:08:18.000000000 +0300
++++ ../build/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/bsp/memory/src/qspi_automode.c	2020-09-28 14:00:24.612056456 +0300
+@@ -117,6 +117,7 @@
+ #               include "qspi_mx25u3235.h"
+ #               include "qspi_w25q32fw.h"
+ #               include "qspi_at25sl321.h"
++#               include "qspi_at25ql641.h"
+ #               include "psram_aps1604jsq.h"
+ #               include "psram_aps3204jsq.h"
+ #               include "psram_aps6404jsq.h"
+@@ -126,6 +127,7 @@
+                 &flash_mx25u3235_config,
+                 &flash_w25q32fw_config,
+                 &flash_at25sl321_config,
++                &flash_at25ql641_config,
+                 &psram_aps1604jsq_config,
+                 &psram_aps3204jsq_config,
+                 &psram_aps6404jsq_config,

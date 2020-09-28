@@ -15,7 +15,8 @@ PKG_PATCHES := patch_$(PKG_NAME).txt \
 			   sys_timer_patch_$(PKG_NAME).txt \
 			   sys_clock_mgr_patch_$(PKG_NAME).txt \
 			   ad_pmu_patch_$(PKG_NAME).txt \
-			   snc_hw_sys_patch_$(PKG_NAME).txt
+			   snc_hw_sys_patch_$(PKG_NAME).txt \
+			   add_at25ql641_patch_$(PKG_NAME).txt
 
 verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
@@ -30,3 +31,7 @@ verify:
 	fi
 
 include $(EXTBLD_LIB)
+
+$(CONFIGURE) :
+	cp qspi_at25ql641.h $(PKG_SOURCE_DIR)/sdk/bsp/memory/include/
+	touch $@
