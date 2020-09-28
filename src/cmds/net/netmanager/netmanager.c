@@ -15,10 +15,6 @@
 #define BUFF_SZ 128
 #define CONFIG_FILE "network"
 
-void print_usage() {
-	printf("USAGE: netmanager [iface]\n");
-}
-
 static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name) {
 	int err = 0;
 	int if_netmask;
