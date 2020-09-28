@@ -20,6 +20,9 @@
 #define STACK_SZ     THREAD_DEFAULT_STACK_SIZE
 static_assert(STACK_SZ > sizeof(struct thread));
 
+#define STACK_ALIGN \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, stack_align)
+
 #define POOL_SZ \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
 
@@ -33,12 +36,15 @@ typedef union thread_pool_entry {
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
     __attribute__ ((aligned (VMEM_PAGE_SIZE))));
 #else
-POOL_DEF(thread_pool, thread_pool_entry_t, POOL_SZ);
+POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
+	__attribute__ ((aligned (STACK_ALIGN))));
 #endif
 
 struct thread *thread_alloc(size_t stack_sz) {
 	thread_pool_entry_t *block;
 	struct thread *t;
+
+	(void) stack_sz;
 
 	if (!(block = (thread_pool_entry_t *) pool_alloc(&thread_pool))) {
 		return NULL;
