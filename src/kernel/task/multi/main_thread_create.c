@@ -53,9 +53,12 @@
 extern struct thread *main_thread_alloc(void);
 extern void main_thread_free(struct thread *t);
 
-struct thread *main_thread_create(unsigned int flags, void *(*run)(void *), void *arg) {
+struct thread *main_thread_create(unsigned int flags, size_t stack_sz,
+                                  void *(*run)(void *), void *arg) {
 	struct thread *t;
 	int priority;
+
+	(void) stack_sz;
 
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)

@@ -13,6 +13,7 @@
 #include <errno.h>
 #include <time.h>
 #include <sys/cdefs.h>
+#include <sys/resource.h>
 #include <sys/types.h>
 #include <string.h>
 #include <time.h>
@@ -21,6 +22,8 @@
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
 #include <compiler.h>
+
+#include <framework/mod/options.h>
 
 struct task {
 	struct thread *tsk_main;
@@ -121,6 +124,14 @@ static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
 	/* XXX t->task isn't set to null, thread allowed to know old parent while
  	 * shutting down
 	 */
+}
+
+static inline rlim_t task_getrlim_stack_size(struct task *tsk) {
+	return THREAD_DEFAULT_STACK_SIZE;
+}
+
+static inline void task_setrlim_stack_size(struct task *tsk, rlim_t stack_sz) {
+	/* do nothing */
 }
 
 #include <kernel/thread/types.h>

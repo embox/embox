@@ -11,12 +11,12 @@ module core {
 	option number thread_pool_size=16
 
 	source "core.c"
-	source "thread_allocator.c"
 	source "thread_switch.c"
 
 	@IncludeExport(path="kernel/thread", target_name="types.h")
 	source "thread_types.h"
 
+	depends thread_allocator
 	depends sched_wait
 
 	@NoRuntime depends embox.kernel.sched.sched

@@ -1,0 +1,19 @@
+package embox.kernel.thread
+
+@DefaultImpl(thread_allocator_pool)
+abstract module thread_allocator {
+
+}
+
+module thread_allocator_pool extends thread_allocator {
+	source "thread_allocator_pool.c"
+}
+
+module thread_allocator_heap extends thread_allocator {
+	option number thread_heap_size=0
+
+	source "thread_allocator_heap.c"
+	source "thread_heap.lds.S"
+
+	depends embox.mem.page_api
+}

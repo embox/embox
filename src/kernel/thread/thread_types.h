@@ -76,4 +76,7 @@ struct thread {
 		OPTION_MODULE_GET(embox__kernel__thread__core, \
 					NUMBER,stack_align))));
 
+#define THREAD_DEFAULT_STACK_SIZE \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
+
 #endif /* KERNEL_THREAD_TYPES_H_ */

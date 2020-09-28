@@ -8,7 +8,9 @@
 #ifndef THREAD_ALLOC_H_
 #define THREAD_ALLOC_H_
 
-extern struct thread *thread_alloc(void);
+#include <stddef.h>
+
+extern struct thread *thread_alloc(size_t stack_sz);
 
 extern void thread_free(struct thread *t);
 
