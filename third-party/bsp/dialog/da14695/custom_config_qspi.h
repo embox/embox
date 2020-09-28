@@ -106,6 +106,12 @@
 #define USE_BLE_SLEEP                           ( 0 )
 #endif
 
+#define dg_configUSE_HW_GPIO                    ( 1 )
+#define dg_configUSE_HW_WKUP                    ( 1 )
+#define dg_configUSE_HW_DMA						( 1 )
+#define dg_configUSE_HW_I2C                    	( 1 )
+#define dg_configUSE_HW_SPI                    	( 1 )
+
 #define dg_configUSE_CLOCK_MGR                  ( 1 )
 
 #define dg_configRF_ENABLE_RECALIBRATION        ( 0 )
