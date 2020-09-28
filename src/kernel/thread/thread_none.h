@@ -14,4 +14,6 @@ struct thread {
 	struct task *task;
 };
 
+#define THREAD_DEFAULT_STACK_SIZE    0
+
 #endif /* SRC_KERNEL_THREAD_THREAD_NONE_H_ */

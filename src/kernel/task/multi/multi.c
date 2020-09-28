@@ -37,9 +37,6 @@ extern void main_thread_delete(struct thread *t);
 #define main_thread_delete thread_delete
 #endif /* OPTION_GET(NUMBER, task_quantity) */
 
-#define THREAD_DEFAULT_STACK_SIZE \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
-
 struct task_trampoline_arg {
 	void * (*run)(void *);
 	void *run_arg;

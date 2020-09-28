@@ -46,8 +46,6 @@
 #include <util/err.h>
 #include <compiler.h>
 
-#define THREAD_DEFAULT_STACK_SIZE    OPTION_GET(NUMBER, thread_stack_size)
-
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
 

@@ -17,8 +17,7 @@
 
 #include <kernel/thread/stack_protect.h>
 
-#define STACK_SZ \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
+#define STACK_SZ     THREAD_DEFAULT_STACK_SIZE
 static_assert(STACK_SZ > sizeof(struct thread));
 
 #define POOL_SZ \

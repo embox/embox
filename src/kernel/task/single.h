@@ -25,9 +25,6 @@
 
 #include <framework/mod/options.h>
 
-#define THREAD_DEFAULT_STACK_SIZE \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
-
 struct task {
 	struct thread *tsk_main;
 	char resources[];
