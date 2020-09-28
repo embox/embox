@@ -22,7 +22,7 @@ static struct page_allocator *thread_heap_allocator;
 
 struct thread *thread_alloc(size_t stack_sz) {
 	struct thread *t;
-	size_t pages = stack_sz / PAGE_SIZE();
+	size_t pages = (stack_sz + PAGE_SIZE() - 1) / PAGE_SIZE();
 
 	t = (struct thread *) page_alloc(thread_heap_allocator, pages);
 	if (!t) {
