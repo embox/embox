@@ -14,6 +14,7 @@
 #include <hal/mmu.h>
 #include <assert.h>
 #include <embox/unit.h>
+#include <util/log.h>
 
 EMBOX_UNIT_INIT(thread_allocator_heap_init);
 
@@ -41,11 +42,13 @@ struct thread *thread_alloc(size_t stack_sz) {
 
 	ti = (struct thread_info *) pool_alloc(&thread_info_pool);
 	if (!ti) {
+		log_error("pool_alloc failed");
 		return NULL;
 	}
 
 	stack = (uint8_t *) page_alloc(thread_heap_allocator, pages);
 	if (!stack) {
+		log_error("stack allocation (page_alloc) failed");
 		pool_free(&thread_info_pool, ti);
 		return NULL;
 	}
@@ -81,6 +84,7 @@ static int thread_allocator_heap_init(void) {
 	thread_heap_allocator = page_allocator_init((char *)&thread_heap_start,
 		THREAD_HEAP_SIZE, PAGE_SIZE());
 	if (!thread_heap_allocator) {
+		log_error("page_allocator_init failed");
 		return -1;
 	}
 
