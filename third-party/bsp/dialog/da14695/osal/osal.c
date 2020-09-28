@@ -71,7 +71,8 @@ int os_task_create(const char *name, void (*run)(void *), void *arg,
 	}
 	memset(info, 0, sizeof *info);
 
-	info->thread = thread_create(THREAD_FLAG_SUSPENDED, os_thread_run, info);
+	info->thread = thread_create_with_stack(THREAD_FLAG_SUSPENDED, stack_size,
+	                                        os_thread_run, info);
 	if (err(info->thread)) {
 		log_error("thread_create failed");
 		return -1;

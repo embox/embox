@@ -7,3 +7,7 @@ abstract module rlimit {
 static module rlimit_stub extends rlimit {
 	source "rlimit_stub.c"
 }
+
+static module rlimit_impl extends rlimit {
+	source "rlimit_impl.c"
+}

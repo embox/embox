@@ -89,6 +89,7 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 	rlim_t stack_sz;
 
 	stack_sz = task_get_stack_size(task_self());
+	stack_sz += sizeof (struct task) + TASK_RESOURCE_SIZE;
 
 #if OPTION_GET(NUMBER, task_quantity)
 	assertf(OPTION_GET(NUMBER, resource_size) == TASK_RESOURCE_SIZE,
@@ -206,6 +207,7 @@ int task_prepare(const char *name) {
 	rlim_t stack_sz;
 
 	stack_sz = task_get_stack_size(task_self());
+	stack_sz += sizeof (struct task) + TASK_RESOURCE_SIZE;
 
 	sched_lock();
 	{
