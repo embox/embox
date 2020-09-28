@@ -27,7 +27,7 @@ struct rlimit {
 extern int getrlimit(int resource, struct rlimit *rlp);
 extern int setrlimit(int resource, const struct rlimit *rlp);
 
-int getpriority(int which, id_t who);
-int setpriority(int which, id_t who, int value);
+extern int getpriority(int which, id_t who);
+extern int setpriority(int which, id_t who, int value);
 
 #endif /* COMPAT_POSIX_SYS_RESOURCE_H_ */

@@ -30,19 +30,6 @@ void thread_stack_set_size(struct thread *t, size_t size) {
 	t->stack.stack_sz = size;
 }
 
-#if 0
-int thread_stack_reserve(struct thread *t, size_t size) {
-	if (size > t->stack.stack_sz) {
-		return -ENOMEM;
-	}
-
-	t->stack.stack += size;
-	t->stack.stack_sz -= size;
-
-	return 0;
-}
-#endif
-
 void * thread_stack_alloc(struct thread *t, size_t size) {
 	void *space;
 
