@@ -6,7 +6,7 @@ module thread_none {
 }
 
 module core {
-	option number stack_align=4
+	option number stack_align=8
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
 
