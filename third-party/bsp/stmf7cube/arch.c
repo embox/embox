@@ -46,13 +46,13 @@ static void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLQ = 9;
   if(HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-	printf(">>> SystemClock_Config failed\n");
+	arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
   }
 
   /* activate the OverDrive to reach the 216 Mhz Frequency */
   if(HAL_PWREx_EnableOverDrive() != HAL_OK)
   {
-	printf(">>> SystemClock_Config failed\n");
+	arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
   }
 
   /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
@@ -64,8 +64,7 @@ static void SystemClock_Config(void)
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
   if(HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_7) != HAL_OK)
   {
-	printf(">>> SystemClock_Config failed\n");
-
+	arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
   }
 }
 
