@@ -88,8 +88,8 @@ static void *pa_thread_hnd(void *arg) {
 	struct pa_strm *pa_stream = (struct pa_strm *) arg;
 	int err;
 	struct audio_dev *audio_dev;
-	uint8_t *out_buf;
-	uint8_t *in_buf;
+	uint8_t *out_buf = NULL;
+	uint8_t *in_buf = NULL;
 	int inp_frames;
 	int out_frames;
 	int buf_len;
