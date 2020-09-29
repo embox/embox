@@ -6,19 +6,21 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
+
 #include <hal/mmu.h>
 
 #include <kernel/thread/thread_alloc.h>
-#include <mem/page.h>
-
 #include <kernel/thread.h>
-#include <mem/misc/pool.h>
-#include <assert.h>
-
 #include <kernel/thread/stack_protect.h>
 
+#include <mem/page.h>
+#include <mem/misc/pool.h>
+
+#include <framework/mod/options.h>
+
+
 #define STACK_SZ     THREAD_DEFAULT_STACK_SIZE
-static_assert(STACK_SZ > sizeof(struct thread));
 
 #define STACK_ALIGN \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, stack_align)
@@ -34,28 +36,27 @@ typedef union thread_pool_entry {
 #ifdef STACK_PROTECT_MMU
 #include <mem/vmem.h>
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
-    __attribute__ ((aligned (VMEM_PAGE_SIZE))));
+		__attribute__ ((aligned (VMEM_PAGE_SIZE))));
 #else
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
-	__attribute__ ((aligned (STACK_ALIGN))));
+		__attribute__ ((aligned (STACK_ALIGN))));
 #endif
 
 struct thread *thread_alloc(size_t stack_sz) {
 	thread_pool_entry_t *block;
 	struct thread *t;
 
-	(void) stack_sz;
-
-	if (!(block = (thread_pool_entry_t *) pool_alloc(&thread_pool))) {
+	if (!(block = pool_alloc(&thread_pool))) {
 		return NULL;
 	}
 	memset(block, 0x53, sizeof(*block));
 
 	t = &block->thread;
 
-	thread_stack_init(t, STACK_SZ);
+	stack_sz = STACK_SZ;
+	thread_stack_init(t, stack_sz);
 
-    stack_protect(t, STACK_SZ);
+    stack_protect(t, stack_sz);
 
 	return t;
 }
@@ -65,10 +66,9 @@ void thread_free(struct thread *t) {
 
 	assert(t != NULL);
 
-	// TODO may be this is not the best way... -- Eldar
-	block = member_cast_out(t, thread_pool_entry_t, thread);
+	block = (thread_pool_entry_t *)t;
 
-    stack_protect_release(t);
+	stack_protect_release(t);
 
 	memset(block, 0xa5, sizeof(*block));
 
