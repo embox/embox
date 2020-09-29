@@ -28,9 +28,6 @@
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
 static_assert(THREAD_STACK_SZ > sizeof(struct thread));
 
-#define THREAD_STACK_ALIGN \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, stack_align)
-
 #define POOL_SZ       OPTION_GET(NUMBER, task_quantity)
 
 #define RESOURCE_SIZE OPTION_GET(NUMBER, resource_size)

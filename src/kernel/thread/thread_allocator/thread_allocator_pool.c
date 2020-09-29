@@ -22,9 +22,6 @@
 
 #define STACK_SZ     THREAD_DEFAULT_STACK_SIZE
 
-#define STACK_ALIGN \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, stack_align)
-
 #define POOL_SZ \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
 
@@ -39,7 +36,7 @@ POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
 		__attribute__ ((aligned (VMEM_PAGE_SIZE))));
 #else
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
-		__attribute__ ((aligned (STACK_ALIGN))));
+		__attribute__ ((aligned (THREAD_STACK_ALIGN))));
 #endif
 
 struct thread *thread_alloc(size_t stack_sz) {

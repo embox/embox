@@ -34,6 +34,12 @@ struct task;
 #define TS_EXITED       (0x1 << 1)
 #define TS_DETACHED     (0x1 << 2)
 
+#define THREAD_DEFAULT_STACK_SIZE \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
+
+#define THREAD_STACK_ALIGN \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_align)
+
 /**
  * Thread control block.
  */
@@ -72,11 +78,8 @@ struct thread {
 	struct thread_wait thread_wait_list;
 
 	int                policy;
-} __attribute__ ((aligned(
-		OPTION_MODULE_GET(embox__kernel__thread__core, \
-					NUMBER,stack_align))));
+} __attribute__ ((aligned(THREAD_STACK_ALIGN)));
 
-#define THREAD_DEFAULT_STACK_SIZE \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
+
 
 #endif /* KERNEL_THREAD_TYPES_H_ */
