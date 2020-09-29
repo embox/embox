@@ -1,0 +1,15 @@
+package embox.kernel.thread
+
+@DefaultImpl(thread_cancel_disable)
+abstract module thread_cancel {}
+
+module thread_cancel_enable extends thread_cancel {
+	source "thread_cancel_enable.h"
+	source "thread_cancel_enable.c"
+
+	option number cleanups_quantity=100
+}
+
+module thread_cancel_disable extends thread_cancel {
+	source "thread_cancel_disable.h"
+}
