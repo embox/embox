@@ -6,6 +6,7 @@
  * @date 18.06.2019
  */
 
+#include <stdio.h>
 #include <assert.h>
 
 #include <lib/tftp.h>
