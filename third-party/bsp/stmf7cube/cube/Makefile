@@ -1,9 +1,8 @@
 
 PKG_NAME := stm32cubef7
-PKG_PATCHES := audio.patch
+PKG_VER  := v1.16.0
 
-PKG_SOURCES := https://www.dropbox.com/s/2u5cuh3gmrv375m/stm32cubef7.zip \
-	http://download.embox.rocks/stm32cubef7.zip
-PKG_MD5     := 15f04dadded7602d1406cc0623ba0e22
+PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeF7/archive/$(PKG_VER).zip
+PKG_MD5     := 9586ec0996e154c21dbb31f92834c3aa
 
 include $(EXTBLD_LIB)

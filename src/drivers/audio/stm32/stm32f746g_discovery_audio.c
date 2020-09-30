@@ -58,12 +58,11 @@ int stm32f7_audio_init(void) {
 		log_error("irq_attach error");
 	}
 
-	/* Set volume 90 for both audio input and output. Then we can change
-	 * output volume in stm32_audio_out_start() */
+	/* 16000 Hz, 16 bit, stereo. */
 	if (0 != BSP_AUDIO_IN_OUT_Init(
 				INPUT_DEVICE_DIGITAL_MICROPHONE_2,
 				OUTPUT_DEVICE_HEADPHONE,
-				90, 16000)) {
+				16000, 16, 2)) {
 		log_error("BSP_AUDIO_IN_OUT_Init error");
 		return -1;
 	}
