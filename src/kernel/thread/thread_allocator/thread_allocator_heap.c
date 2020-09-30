@@ -24,7 +24,6 @@ EMBOX_UNIT_INIT(thread_allocator_heap_init);
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
 
 struct thread_info {
-	struct thread thread;
 	size_t pages;
 	void *stack;
 };
@@ -33,20 +32,20 @@ POOL_DEF(thread_info_pool, struct thread_info, POOL_SZ);
 
 static struct page_allocator *thread_heap_allocator;
 
-struct thread *thread_alloc(size_t stack_sz) {
+void *thread_user_stack_alloc(struct thread *t, size_t stack_sz) {
 	struct thread_info *ti;
 	uint8_t *stack;
 	size_t pages = (stack_sz + PAGE_SIZE() - 1) / PAGE_SIZE();
 
 	stack_sz = pages * PAGE_SIZE();
 
-	ti = (struct thread_info *) pool_alloc(&thread_info_pool);
+	ti = pool_alloc(&thread_info_pool);
 	if (!ti) {
 		log_error("pool_alloc failed");
 		return NULL;
 	}
 
-	stack = (uint8_t *) page_alloc(thread_heap_allocator, pages);
+	stack = page_alloc(thread_heap_allocator, pages);
 	if (!stack) {
 		log_error("stack allocation (page_alloc) failed");
 		pool_free(&thread_info_pool, ti);
@@ -57,20 +56,16 @@ struct thread *thread_alloc(size_t stack_sz) {
 	ti->stack = stack;
 	ti->pages = pages;
 
-	thread_stack_set(&ti->thread, stack);
-	thread_stack_set_size(&ti->thread, stack_sz);
+	thread_stack_set(t, stack);
+	thread_stack_set_size(t, stack_sz);
 
-	stack_protect(&ti->thread, stack_sz);
-
-	return &ti->thread;
+	return ti;
 }
 
-void thread_free(struct thread *t) {
+void thread_user_stack_free(void *t) {
 	struct thread_info *ti = (struct thread_info *) t;
 
 	assert(t != NULL);
-
-	stack_protect_release(t);
 
 	page_free(thread_heap_allocator, ti->stack, ti->pages);
 	memset(ti->stack, 0xa5, ti->pages * PAGE_SIZE());

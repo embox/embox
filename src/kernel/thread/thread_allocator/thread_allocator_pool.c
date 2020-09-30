@@ -6,56 +6,72 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
+
 #include <hal/mmu.h>
 
 #include <kernel/thread/thread_alloc.h>
-#include <mem/page.h>
-
 #include <kernel/thread.h>
-#include <mem/misc/pool.h>
-#include <assert.h>
-
 #include <kernel/thread/stack_protect.h>
 
-#define STACK_SZ     THREAD_DEFAULT_STACK_SIZE
-static_assert(STACK_SZ > sizeof(struct thread));
+#include <mem/page.h>
+#include <mem/misc/pool.h>
 
-#define STACK_ALIGN \
-	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, stack_align)
+#include <framework/mod/options.h>
+
+#define USE_USER_STACK    OPTION_GET(NUMBER, thread_user_stack)
+
+#define STACK_SZ          THREAD_DEFAULT_STACK_SIZE
 
 #define POOL_SZ \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
+
+#if (USE_USER_STACK == 0)
 
 typedef union thread_pool_entry {
 	struct thread thread;
 	char stack[STACK_SZ];
 } thread_pool_entry_t;
 
+#else
+
+extern void *thread_user_stack_alloc(struct thread *t, size_t stack_sz);
+extern void thread_user_stack_free(void *t);
+
+typedef struct thread_pool_entry {
+	struct thread thread;
+	void *user_stack;
+} thread_pool_entry_t;
+
+#endif
+
 #ifdef STACK_PROTECT_MMU
 #include <mem/vmem.h>
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
-    __attribute__ ((aligned (VMEM_PAGE_SIZE))));
+		__attribute__ ((aligned (VMEM_PAGE_SIZE))));
 #else
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
-	__attribute__ ((aligned (STACK_ALIGN))));
+		__attribute__ ((aligned (THREAD_STACK_ALIGN))));
 #endif
 
 struct thread *thread_alloc(size_t stack_sz) {
 	thread_pool_entry_t *block;
 	struct thread *t;
 
-	(void) stack_sz;
-
-	if (!(block = (thread_pool_entry_t *) pool_alloc(&thread_pool))) {
+	if (!(block = pool_alloc(&thread_pool))) {
 		return NULL;
 	}
 	memset(block, 0x53, sizeof(*block));
 
 	t = &block->thread;
+#if (USE_USER_STACK == 0)
+	stack_sz = STACK_SZ;
+	thread_stack_init(t, stack_sz);
+#else
+	block->user_stack = thread_user_stack_alloc(t, stack_sz);
+#endif
 
-	thread_stack_init(t, STACK_SZ);
-
-    stack_protect(t, STACK_SZ);
+	stack_protect(t, stack_sz);
 
 	return t;
 }
@@ -65,10 +81,15 @@ void thread_free(struct thread *t) {
 
 	assert(t != NULL);
 
-	// TODO may be this is not the best way... -- Eldar
-	block = member_cast_out(t, thread_pool_entry_t, thread);
+	block = (thread_pool_entry_t *)t;
 
-    stack_protect_release(t);
+	stack_protect_release(t);
+
+#if (USE_USER_STACK == 0)
+
+#else
+	thread_user_stack_free(block->user_stack);
+#endif
 
 	memset(block, 0xa5, sizeof(*block));
 
