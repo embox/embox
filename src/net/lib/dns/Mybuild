@@ -12,10 +12,10 @@ module dns_fixed extends dns {
 	depends dns_query
 }
 
-
 module dns_file extends dns {
+	option number log_level=1
 	option string resolv_file="resolv.conf"
-	option string nameserver="8.8.8.8"
+
 	source "dns_file.c"
 
 	depends dns_query
