@@ -15,8 +15,13 @@
 #define BUFF_SZ 128
 #define CONFIG_FILE "network"
 
-void print_usage() {
-	printf("USAGE: netmanager [iface]\n");
+
+static void skip_commented_line(FILE *file) {
+	int c;
+
+	do {
+		c = fgetc(file);
+	} while (c != '\n' && c != EOF);
 }
 
 static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name) {
@@ -32,6 +37,11 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 	char net[32] = "";
 
 	while (fscanf(input, "%s", buf) != EOF && strcmp(buf, "iface")) {
+		if (!strncmp(buf, "#", 1)) {
+			skip_commented_line(input);
+			continue;
+		}
+
 		if (!strcmp(buf, "address"))
 			fscanf(input, "%s", ipv4_addr);
 		else if (!strcmp(buf, "netmask"))
@@ -120,12 +130,16 @@ int main(int argc, char **argv) {
 	while (1) {
 		/* iface eth0 inet static */
 		if (strcmp(buf, "iface")) {
+			if (!strncmp(buf, "#", 1)) {
+				skip_commented_line(input);
+			}
 			if (fscanf(input, "%s", buf) == EOF) {
 				break;
 			} else {
 				continue;
 			}
 		}
+
 		fscanf(input, "%s", buf);
 		if (argc < 2) {
 			strncpy(ifname, buf, sizeof(ifname)-1);
