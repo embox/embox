@@ -106,6 +106,8 @@ enum {
 #define AF_INET6  PF_INET6
 	PF_PACKET = 17, /* packet family */
 #define AF_PACKET PF_PACKET
+	PF_NETLINK = 18,
+#define AF_NETLINK PF_NETLINK
 	PF_MAX          /* upper bound of protocol family */
 #define AF_MAX    PF_MAX
 };
