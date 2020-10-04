@@ -252,8 +252,9 @@ static irq_return_t e1000_interrupt(unsigned int irq_num, void *dev_id) {
 
 	if (cause & (E1000_REG_ICR_LSC)) {
 		struct net_device *dev = dev_id;
+		uint32_t status = REG32_LOAD(e1000_reg(dev_id, E1000_REG_STATUS));
 
-		nic_priv->link_status ^= 1;
+		nic_priv->link_status = status & E1000_REG_STATUS_LU;
 
 		if (nic_priv->link_status) {
 			log_info("e1000: Link up");
