@@ -69,7 +69,7 @@ static struct uart acm_diag = {
 
 static const struct uart_params diag_defparams = {
 		.baud_rate = BAUD_RATE,
-		.parity = 0,
+		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
 		.irq = false,
@@ -83,7 +83,7 @@ static struct uart acm_ttyS0 = {
 		//.base_addr = (unsigned long) UART_BASE,
 		.params = {
 				.baud_rate = BAUD_RATE,
-				.parity = 0,
+				.uart_param_flags = 0,
 				.n_stop = 1,
 				.n_bits = 8,
 				.irq = true,

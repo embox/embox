@@ -118,7 +118,7 @@ static struct uart stm32_uart0 = {
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
+		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
 		.irq = false,

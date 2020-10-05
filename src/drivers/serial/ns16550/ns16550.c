@@ -109,7 +109,7 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
+		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
 		.irq = true,
@@ -117,7 +117,7 @@ static const struct uart_params uart_defparams = {
 
 static const struct uart_params uart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
+		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
 		.irq = false,
