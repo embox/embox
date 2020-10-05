@@ -75,7 +75,6 @@ struct i2c_bus *i2c_bus_get(int id) {
 }
 
 ssize_t i2c_bus_read(int id, uint16_t addr, uint8_t *ch, size_t sz) {
-	struct i2c_bus *bus;
 	struct i2c_msg msg = {
 			.addr = addr,
 			.buf = (uint8_t *)ch,
@@ -83,22 +82,10 @@ ssize_t i2c_bus_read(int id, uint16_t addr, uint8_t *ch, size_t sz) {
 			.len = sz
 	};
 
-	if (id < 0 || id >= I2C_BUS_MAX) {
-		return -EINVAL;
-	}
-	bus = i2c_bus_get(id);
-	if (err(bus) || bus == NULL) {
-		return -EBUSY;
-	}
-	assert(bus->i2c_adapter);
-	assert(bus->i2c_adapter->i2c_algo);
-	assert(bus->i2c_adapter->i2c_algo->i2c_master_xfer);
-
-	return bus->i2c_adapter->i2c_algo->i2c_master_xfer(bus->i2c_adapter, &msg, 1);
+	return i2c_bus_transfer(id, addr, &msg, 1);
 }
 
 ssize_t i2c_bus_write(int id, uint16_t addr, const uint8_t *ch, size_t sz) {
-	struct i2c_bus *bus;
 	struct i2c_msg msg = {
 			.addr = addr,
 			.buf = (uint8_t *)ch,
@@ -106,6 +93,13 @@ ssize_t i2c_bus_write(int id, uint16_t addr, const uint8_t *ch, size_t sz) {
 			.len = sz
 	};
 
+	return i2c_bus_transfer(id, addr, &msg, 1);
+}
+
+int i2c_bus_transfer(int id, uint16_t addr, struct i2c_msg *msgs, int num) {
+	struct i2c_bus *bus;
+	int i;
+
 	if (id < 0 || id >= I2C_BUS_MAX) {
 		return -EINVAL;
 	}
@@ -113,9 +107,36 @@ ssize_t i2c_bus_write(int id, uint16_t addr, const uint8_t *ch, size_t sz) {
 	if (err(bus) || bus == NULL) {
 		return -EBUSY;
 	}
+
+	for (i = 0; i < num; i++) {
+		msgs[i].addr = addr;
+	}
+
 	assert(bus->i2c_adapter);
 	assert(bus->i2c_adapter->i2c_algo);
 	assert(bus->i2c_adapter->i2c_algo->i2c_master_xfer);
 
-	return bus->i2c_adapter->i2c_algo->i2c_master_xfer(bus->i2c_adapter, &msg, 1);
+	return bus->i2c_adapter->i2c_algo->i2c_master_xfer(bus->i2c_adapter, msgs, num);
+}
+
+int i2c_bus_set_baudrate(int id, uint32_t baudrate) {
+	struct i2c_bus *bus;
+
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return -EINVAL;
+	}
+
+	bus = i2c_bus_get(id);
+	if (err(bus) || bus == NULL) {
+		return -EBUSY;
+	}
+
+	assert(bus->i2c_adapter);
+	assert(bus->i2c_adapter->i2c_algo);
+
+	if (!bus->i2c_adapter->i2c_algo->i2c_set_baudrate) {
+		return -ENOSUPP;
+	}
+
+	return bus->i2c_adapter->i2c_algo->i2c_set_baudrate(bus->i2c_adapter, baudrate);
 }
