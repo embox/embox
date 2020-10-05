@@ -80,7 +80,7 @@ static int sifive_uart_setup(struct uart *dev, const struct uart_params *params)
 	REG32_STORE(dev->base_addr + SIFIVE_SERIAL_DIV_OFFS,
 			(UART_CLOCK_FREQ / UART_BAUD_RATE - 1));
 
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, SIFIVE_SERIAL_IE_RXWM_MASK);
 	} else {
 		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, 0);
@@ -124,14 +124,14 @@ static int sifive_uart_putc(struct uart *dev, int ch) {
 }
 
 static int sifive_uart_irq_en(struct uart *dev, const struct uart_params *params) {
-	if (dev->params.irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, SIFIVE_SERIAL_IE_RXWM_MASK);
 	}
 	return 0;
 }
 
 static int sifive_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
-	if (dev->params.irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG32_STORE(dev->base_addr + SIFIVE_SERIAL_IE_OFFS, 0);
 	}
 
@@ -158,7 +158,6 @@ static const struct uart_params diag_defparams = {
 		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = false,
 };
 
 DIAG_SERIAL_DEF(&sifive_diag, &diag_defparams);
@@ -169,10 +168,9 @@ static struct uart sifive_ttyS0 = {
 		.base_addr = (unsigned long) UART_BASE,
 		.params = {
 				.baud_rate = UART_BAUD_RATE,
-				.uart_param_flags = 0,
+				.uart_param_flags = UART_PARAM_FLAGS_USE_IRQ,
 				.n_stop = 1,
 				.n_bits = 8,
-				.irq = true,
 		}
 };
 

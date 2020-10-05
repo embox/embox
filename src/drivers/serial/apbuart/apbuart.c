@@ -100,14 +100,18 @@ static int apbuart_setup(struct uart *dev, const struct uart_params *params) {
 
 	REG_STORE(&dev_regs->ctrl, UART_DISABLE_ALL);
 	REG_STORE(&dev_regs->scaler, UART_SCALER_VAL);
-	REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+		REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
+	} else {
+		REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE);
+	}
 
 	return 0;
 }
 
 static int apbuart_irq_en(struct uart *dev, const struct uart_params *params) {
 
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE | UART_CTRL_RI);
 	}
 
@@ -115,7 +119,7 @@ static int apbuart_irq_en(struct uart *dev, const struct uart_params *params) {
 }
 
 static int apbuart_irq_dis(struct uart *dev, const struct uart_params *params) {
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG_STORE(&dev_regs->ctrl, UART_CTRL_TE | UART_CTRL_RE);
 	}
 
@@ -180,10 +184,9 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = 0,
+		.uart_param_flags = UART_PARAM_FLAGS_USE_IRQ,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = true,
 };
 
 static const struct uart_params uart_diag_params = {
@@ -191,7 +194,6 @@ static const struct uart_params uart_diag_params = {
 		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = false,
 };
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);

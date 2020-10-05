@@ -35,7 +35,7 @@ static inline void uart_state_clear(struct uart *uart, int mask) {
 
 static int uart_attach_irq(struct uart *uart) {
 
-	if (!uart->params.irq) {
+	if (!(uart->params.uart_param_flags & UART_PARAM_FLAGS_USE_IRQ)) {
 		return 0;
 	}
 
@@ -49,7 +49,7 @@ static int uart_attach_irq(struct uart *uart) {
 
 static int uart_detach_irq(struct uart *uart) {
 
-	if (uart->params.irq) {
+	if (uart->params.uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		return irq_detach(uart->irq_num, uart);
 	}
 

@@ -148,7 +148,6 @@ static const struct uart_params uart_defparams = {
 		.uart_param_flags = 0,
 		.n_stop = 1,
 		.n_bits = 8,
-		.irq = false,
 };
 
 DIAG_SERIAL_DEF(&efm32_uart0, &uart_defparams);

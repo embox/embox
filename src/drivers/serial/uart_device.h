@@ -9,19 +9,20 @@
 #define UART_DEVICE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <util/dlist.h>
 #include <kernel/irq.h>
 
 #define UART_NAME_MAXLEN 16
 
 #define UART_STATE_OPEN  (1 << 0)
+/*
 #define UART_CTS_ENABLE  (1 << 1))
 #define UART_DCD_ENABLE  (1 << 2))
 #define UART_AUTORTS     (1 << 3))
 #define UART_AUTOCTS     (1 << 4))
 #define UART_AUTOXOFF    (1 << 5))
 #define UART_SYNC_FIFO   (1 << 6))
+*/
 
 struct uart;
 struct uart_desc;
@@ -32,14 +33,15 @@ struct uart_params {
 	uint32_t uart_param_flags;
 	int n_stop;
 	int n_bits;
-	bool irq;
 };
 
-#define UART_PARAM_FLAGS_PARITY        (0x1 << 0)
+#define UART_PARAM_FLAGS_AUTO_PARITY   (0x1 << 0)
 #define UART_PARAM_FLAGS_AUTO_CTS      (0x1 << 1)
 #define UART_PARAM_FLAGS_AUTO_RTS      (0x1 << 2)
 #define UART_PARAM_FLAGS_HARD_FLOW \
 	(UART_PARAM_FLAGS_AUTO_CTS | UART_PARAM_FLAGS_AUTO_RTS))
+
+#define UART_PARAM_FLAGS_USE_IRQ       (0x1 << 3)
 
 struct uart_ops {
 	int (*uart_getc)(struct uart *dev);
