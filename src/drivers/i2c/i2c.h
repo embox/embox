@@ -39,6 +39,7 @@ struct i2c_adapter {
 struct i2c_algorithm {
 	int (*i2c_master_xfer)(struct i2c_adapter *adap, struct i2c_msg *msgs,
 			int num);
+	int (*i2c_set_baudrate)(struct i2c_adapter *adap, uint32_t baudrate);
 };
 
 struct i2c_bus {
@@ -62,5 +63,7 @@ extern ssize_t i2c_bus_write(int id, uint16_t addr, const uint8_t *ch,
 
 extern ssize_t i2c_bus_transfer(int id, uint16_t addr, struct i2c_msg *msgs,
 		int num);
+
+extern int i2c_bus_set_baudrate(int id, uint32_t baudrate);
 
 #endif

@@ -118,3 +118,25 @@ int i2c_bus_transfer(int id, uint16_t addr, struct i2c_msg *msgs, int num) {
 
 	return bus->i2c_adapter->i2c_algo->i2c_master_xfer(bus->i2c_adapter, msgs, num);
 }
+
+int i2c_bus_set_baudrate(int id, uint32_t baudrate) {
+	struct i2c_bus *bus;
+
+	if (id < 0 || id >= I2C_BUS_MAX) {
+		return -EINVAL;
+	}
+
+	bus = i2c_bus_get(id);
+	if (err(bus) || bus == NULL) {
+		return -EBUSY;
+	}
+
+	assert(bus->i2c_adapter);
+	assert(bus->i2c_adapter->i2c_algo);
+
+	if (!bus->i2c_adapter->i2c_algo->i2c_set_baudrate) {
+		return -ENOSUPP;
+	}
+
+	return bus->i2c_adapter->i2c_algo->i2c_set_baudrate(bus->i2c_adapter, baudrate);
+}
