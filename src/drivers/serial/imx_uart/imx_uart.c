@@ -160,7 +160,7 @@ static int imxuart_setup(struct uart *dev, const struct uart_params *params) {
 	UART(UBMR) = 0x015b;
 	UART(UMCR) = 0;
 
-	if (params && params->irq) {
+	if (params && (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ)) {
 		uint32_t reg;
 
 		reg = UART(UFCR);
@@ -208,18 +208,12 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_defparams = {
 	.baud_rate = OPTION_GET(NUMBER,baud_rate),
-	.parity = 0,
-	.n_stop = 1,
-	.n_bits = 8,
-	.irq = true,
+	.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 };
 
 static const struct uart_params uart_diag_params = {
 	.baud_rate = OPTION_GET(NUMBER,baud_rate),
-	.parity = 0,
-	.n_stop = 1,
-	.n_bits = 8,
-	.irq = false,
+	.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
 };
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);

@@ -27,13 +27,15 @@ static uint8_t calc_line_stat(const struct uart_params *params) {
 	uint8_t line_stat;
 
 	line_stat = 0;
-	if(0 == params->parity) {
+	if(!(params->uart_param_flags & UART_PARAM_FLAGS_AUTO_PARITY)) {
 		line_stat |= UART_NO_PARITY;
 	}
-	if(8 == params->n_bits) {
+	if(params->uart_param_flags & UART_PARAM_FLAGS_8BIT_WORD) {
 		line_stat |= UART_8BITS_WORD;
 	}
-	if(1 == params->n_stop) {
+	if((params->uart_param_flags & UART_PARAM_FLAGS_2_STOP)) {
+		line_stat |= UART_2_STOP_BIT;
+	} else {
 		line_stat |= UART_1_STOP_BIT;
 	}
 	return line_stat;
@@ -61,7 +63,7 @@ static int i8250_setup(struct uart *dev, const struct uart_params *params) {
 	out8(UART_ENABLE_MODEM, dev->base_addr + UART_MCR);
 
 	/*enable rx interrupt*/
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		/*enable rx interrupt*/
 		out8(UART_IER_RX_ENABLE, dev->base_addr + UART_IER);
 	}
@@ -71,7 +73,7 @@ static int i8250_setup(struct uart *dev, const struct uart_params *params) {
 
 static int i8250_irq_en(struct uart *dev, const struct uart_params *params) {
 	/*enable rx interrupt*/
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		/*enable rx interrupt*/
 		out8(UART_IER_RX_ENABLE, dev->base_addr + UART_IER);
 	}
@@ -80,7 +82,7 @@ static int i8250_irq_en(struct uart *dev, const struct uart_params *params) {
 }
 
 static int i8250_irq_dis(struct uart *dev, const struct uart_params *params) {
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		/*disable rx interrupt*/
 		out8(0, dev->base_addr + UART_IER);
 	}
@@ -119,18 +121,12 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 };
 
 static const struct uart_params uart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
 };
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);

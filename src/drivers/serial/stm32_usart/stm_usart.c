@@ -59,7 +59,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 		return -1;
 	}
 
-	if (dev->params.irq) {
+	if (dev->params.uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 	    /* Enable the UART Data Register not empty Interrupt */
 	    __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
 	}
@@ -68,7 +68,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 }
 
 static int stm32_uart_irq_en(struct uart *dev, const struct uart_params *params) {
-	if (dev->params.irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		UART_HandleTypeDef UartHandle;
 
 		memset(&UartHandle, 0, sizeof(UartHandle));
@@ -89,7 +89,7 @@ static int stm32_uart_irq_en(struct uart *dev, const struct uart_params *params)
 }
 
 static int stm32_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		UART_HandleTypeDef UartHandle;
 
 		memset(&UartHandle, 0, sizeof(UartHandle));

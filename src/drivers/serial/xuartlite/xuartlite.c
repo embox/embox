@@ -63,7 +63,7 @@ static inline int xuartlite_can_tx_trans(void) {
 }
 
 static int xuartlite_setup(struct uart *dev, const struct uart_params *params) {
-	if (params->irq) {
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		xuartlite_regs->ctrl |= CTRL_ENABLE_INTR;
 	}
 
@@ -101,18 +101,12 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = UARTLITE_BAUD_RATE,
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 };
 
 static const struct uart_params uart_diag_params = {
 		.baud_rate = UARTLITE_BAUD_RATE,
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
 };
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);

@@ -25,10 +25,7 @@ static struct uart stm32_diag = {
 
 static const struct uart_params diag_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
 };
 
 DIAG_SERIAL_DEF(&stm32_diag, &diag_defparams);

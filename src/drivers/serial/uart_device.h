@@ -9,13 +9,20 @@
 #define UART_DEVICE_H_
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <util/dlist.h>
 #include <kernel/irq.h>
 
 #define UART_NAME_MAXLEN 16
 
-#define UART_STATE_OPEN (1 << 0)
+#define UART_STATE_OPEN  (1 << 0)
+/*
+#define UART_CTS_ENABLE  (1 << 1))
+#define UART_DCD_ENABLE  (1 << 2))
+#define UART_AUTORTS     (1 << 3))
+#define UART_AUTOCTS     (1 << 4))
+#define UART_AUTOXOFF    (1 << 5))
+#define UART_SYNC_FIFO   (1 << 6))
+*/
 
 struct uart;
 struct uart_desc;
@@ -23,11 +30,30 @@ struct tty;
 
 struct uart_params {
 	uint32_t baud_rate;
-	bool parity;
-	int n_stop;
-	int n_bits;
-	bool irq;
+	uint32_t uart_param_flags;
 };
+
+#define UART_PARAM_FLAGS_AUTO_PARITY     (0x1 << 0)
+#define UART_PARAM_FLAGS_AUTO_CTS        (0x1 << 1)
+#define UART_PARAM_FLAGS_AUTO_RTS        (0x1 << 2)
+#define UART_PARAM_FLAGS_HARD_FLOW \
+	(UART_PARAM_FLAGS_AUTO_CTS | UART_PARAM_FLAGS_AUTO_RTS))
+
+#define UART_PARAM_FLAGS_USE_IRQ         (0x1 << 3)
+
+#define UART_PARAM_FLAGS_2_STOP          (0x1 << 4)
+
+#define UART_PARAM_FLAGS_BIT_WORD(len)   (((len - 4) & 0x7) << 5)
+#define UART_PARAM_FLAGS_5BIT_WORD       UART_PARAM_FLAGS_BIT_WORD(5)
+#define UART_PARAM_FLAGS_8BIT_WORD       UART_PARAM_FLAGS_BIT_WORD(8)
+#define UART_PARAM_FLAGS_10BIT_WORD      UART_PARAM_FLAGS_BIT_WORD(10)
+
+#define UART_PARAM_FLAGS_DEV_TYPE(type)      ((type & 0xF) << 8)
+#define UART_PARAM_FLAGS_DEV_TYPE_UART       UART_PARAM_FLAGS_DEV_TYPE(0)
+#define UART_PARAM_FLAGS_DEV_TYPE_RS485      UART_PARAM_FLAGS_DEV_TYPE(1)
+#define UART_PARAM_FLAGS_DEV_TYPE_ISO7816    UART_PARAM_FLAGS_DEV_TYPE(2)
+#define UART_PARAM_FLAGS_DEV_TYPE_IR         UART_PARAM_FLAGS_DEV_TYPE(3)
+#define UART_PARAM_FLAGS_GET_DEV_TYPE(flags) ((flags & 0xF))
 
 struct uart_ops {
 	int (*uart_getc)(struct uart *dev);
@@ -55,6 +81,7 @@ struct uart {
 	struct uart_params params;
 	struct tty *tty;
 };
+
 
 /**
  * @brief Register uart in kernel

@@ -78,7 +78,7 @@
 
 /* The type of the length of stop bit */
 #define UART_1_STOP_BIT     0x00
-#define UART_2_STOP_BITS    0x04
+#define UART_2_STOP_BIT     0x04
 
 #define DIVISOR(baud) (115200 / baud)
 

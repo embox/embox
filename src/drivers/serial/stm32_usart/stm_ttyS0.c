@@ -26,10 +26,7 @@ static struct uart stm32_ttySx = {
 		.base_addr = (unsigned long) USARTx,
 		.params = {
 				.baud_rate = OPTION_GET(NUMBER,baud_rate),
-				.parity = 0,
-				.n_stop = 1,
-				.n_bits = 8,
-				.irq = true,
+				.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 		}
 };
 

@@ -60,7 +60,9 @@ struct com {
 EMBOX_UNIT_INIT(ns16550_init);
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
-	COM3->ier |= NS16550_IER_RX_IRQ;
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+		COM3->ier |= NS16550_IER_RX_IRQ;
+	}
 	return 0;
 }
 
@@ -109,18 +111,12 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = true,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 };
 
 static const struct uart_params uart_diag_params = {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.parity = 0,
-		.n_stop = 1,
-		.n_bits = 8,
-		.irq = false,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
 };
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
