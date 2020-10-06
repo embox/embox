@@ -48,6 +48,13 @@ struct uart_params {
 #define UART_PARAM_FLAGS_8BIT_WORD       UART_PARAM_FLAGS_BIT_WORD(8)
 #define UART_PARAM_FLAGS_10BIT_WORD      UART_PARAM_FLAGS_BIT_WORD(10)
 
+#define UART_PARAM_FLAGS_DEV_TYPE(type)      ((type & 0xF) << 8)
+#define UART_PARAM_FLAGS_DEV_TYPE_UART       UART_PARAM_FLAGS_DEV_TYPE(0)
+#define UART_PARAM_FLAGS_DEV_TYPE_RS485      UART_PARAM_FLAGS_DEV_TYPE(1)
+#define UART_PARAM_FLAGS_DEV_TYPE_ISO7816    UART_PARAM_FLAGS_DEV_TYPE(2)
+#define UART_PARAM_FLAGS_DEV_TYPE_IR         UART_PARAM_FLAGS_DEV_TYPE(3)
+#define UART_PARAM_FLAGS_GET_DEV_TYPE(flags) ((flags & 0xF))
+
 struct uart_ops {
 	int (*uart_getc)(struct uart *dev);
 	int (*uart_putc)(struct uart *dev, int symbol);
