@@ -10,11 +10,13 @@
 
 #include <stdint.h>
 #include <util/dlist.h>
+#include <util/ring_buff.h>
 #include <kernel/irq.h>
 
-#define UART_NAME_MAXLEN 8
+#define UART_NAME_MAXLEN  8
+#define UART_RX_BUFF_SZ   8
 
-#define UART_STATE_OPEN  (1 << 0)
+#define UART_STATE_OPEN      (1 << 0)
 /*
 #define UART_CTS_ENABLE  (1 << 1))
 #define UART_DCD_ENABLE  (1 << 2))
@@ -23,6 +25,7 @@
 #define UART_AUTOXOFF    (1 << 5))
 #define UART_SYNC_FIFO   (1 << 6))
 */
+#define UART_STATE_RX_ACTIVE  (1 << 8)
 
 struct uart;
 struct uart_desc;
@@ -80,6 +83,8 @@ struct uart {
 	int state;
 	struct uart_params params;
 	struct tty *tty;
+	int uart_rx_buff[UART_RX_BUFF_SZ];
+	struct ring_buff uart_rx_ring;
 };
 
 
@@ -164,5 +169,23 @@ static inline int uart_getc(struct uart *uart) {
 static inline int uart_hasrx(struct uart *uart) {
 	return uart->uart_ops->uart_hasrx(uart);
 }
+
+
+static inline int uart_state_test(struct uart *uart, int mask) {
+	return uart->state & mask;
+}
+
+static inline void uart_state_set(struct uart *uart, int mask) {
+	uart->state |= mask;
+}
+
+static inline void uart_state_clear(struct uart *uart, int mask) {
+	uart->state &= ~mask;
+}
+
+extern struct dlist_head *uart_get_list(void);
+
+#define uart_foreach(uart_dev) \
+	dlist_foreach_entry(uart_dev, uart_get_list(), uart_lnk)
 
 #endif /* UART_DEVICE_H_ */

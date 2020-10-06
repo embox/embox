@@ -18,32 +18,21 @@
 
 EMBOX_UNIT_INIT(idesc_serial_init);
 
-
-#define UART_DATA_BUFF_SZ 8
 #define UART_RX_HND_PRIORITY 128
-
 
 static struct lthread uart_rx_irq_handler;
 
-struct uart_rx {
-	struct uart *uart;
-	int data;
-	struct dlist_head lnk;
-};
-
-POOL_DEF(uart_rx_buff, struct uart_rx, UART_DATA_BUFF_SZ);
-
-static DLIST_DEFINE(uart_rx_list);
-
 static int uart_rx_buff_put(struct uart *dev) {
-	struct uart_rx *rx;
 
 	if (dev->tty) {
 		while (uart_hasrx(dev)) {
 			irq_lock();
 			{
-				rx = pool_alloc(&uart_rx_buff);
-				if (!rx) {
+				int ch;
+
+				uart_state_set(dev, UART_STATE_RX_ACTIVE);
+
+				if (ring_full(&dev->uart_rx_ring.ring, dev->uart_rx_ring.capacity)) {
 					if (dev->uart_ops->uart_irq_dis) {
 						dev->uart_ops->uart_irq_dis(dev, &dev->params);
 					}
@@ -52,9 +41,9 @@ static int uart_rx_buff_put(struct uart *dev) {
 					return -1;
 				}
 
-				rx->uart = dev;
-				rx->data = uart_getc(dev);
-				dlist_add_prev(dlist_head_init(&rx->lnk), &uart_rx_list);
+				ch = uart_getc(dev);
+				assert(1 == ring_buff_enqueue(&dev->uart_rx_ring, &ch, 1));
+
 			}
 			irq_unlock();
 		}
@@ -64,39 +53,20 @@ static int uart_rx_buff_put(struct uart *dev) {
 	return 0;
 }
 
-static int uart_rx_buff_get(struct uart_rx *rx_data) {
-	struct uart_rx *rx;
-
-	if (dlist_empty(&uart_rx_list)) {
-		return -1;
-	}
-
-	irq_lock();
-	{
-		rx = dlist_next_entry_or_null(&uart_rx_list, struct uart_rx, lnk);
-		if (!rx) {
-			irq_unlock();
-			return -1;
-		}
-
-		*rx_data = *rx;
-		dlist_del(&rx->lnk);
-		pool_free(&uart_rx_buff, rx);
-	}
-	irq_unlock();
-
-	return 0;
-}
-
 static int uart_rx_action(struct lthread *self) {
-	struct uart_rx rx;
+	struct uart *uart;
 
-	while (!uart_rx_buff_get(&rx)) {
-		struct uart *dev = rx.uart;
+	uart_foreach(uart) {
+		int ch;
 		
-		tty_rx_locked(rx.uart->tty, rx.data, 0);
-		if (dev->uart_ops->uart_irq_en) {
-			dev->uart_ops->uart_irq_en(dev, &dev->params);
+		if (uart_state_test(uart, UART_STATE_RX_ACTIVE)) {
+			uart_state_clear(uart, UART_STATE_RX_ACTIVE);
+			while(ring_buff_dequeue(&uart->uart_rx_ring, &ch, 1)) {
+				tty_rx_locked(uart->tty, ch, 0);
+			}
+			if (uart->uart_ops->uart_irq_en) {
+				uart->uart_ops->uart_irq_en(uart, &uart->params);
+			}
 		}
 	}
 

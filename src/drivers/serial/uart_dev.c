@@ -12,11 +12,12 @@
 
 #include <util/err.h>
 #include <util/log.h>
+#include <util/indexator.h>
+#include <util/dlist.h>
+#include <util/ring_buff.h>
 
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
-#include <util/dlist.h>
 
 #include <drivers/device.h>
 #include <drivers/char_dev.h>
@@ -24,16 +25,8 @@
 
 DLIST_DEFINE(uart_list);
 
-static inline int uart_state_test(struct uart *uart, int mask) {
-	return uart->state & mask;
-}
-
-static inline void uart_state_set(struct uart *uart, int mask) {
-	uart->state |= mask;
-}
-
-static inline void uart_state_clear(struct uart *uart, int mask) {
-	uart->state &= ~mask;
+struct dlist_head *uart_get_list(void) {
+	return &uart_list;
 }
 
 static int uart_attach_irq(struct uart *uart) {
@@ -98,6 +91,11 @@ int uart_register(struct uart *uart,
 		index_free(&serial_indexator, uart->idx);
 		return res;
 	}
+
+	uart->state = 0;
+
+	ring_buff_init(&uart->uart_rx_ring, sizeof(uart->uart_rx_buff[0]),
+			UART_RX_BUFF_SZ, uart->uart_rx_buff);
 
 	dlist_add_next(&uart->uart_lnk, &uart_list);
 
