@@ -31,17 +31,22 @@ struct tty;
 struct uart_params {
 	uint32_t baud_rate;
 	uint32_t uart_param_flags;
-	int n_stop;
-	int n_bits;
 };
 
-#define UART_PARAM_FLAGS_AUTO_PARITY   (0x1 << 0)
-#define UART_PARAM_FLAGS_AUTO_CTS      (0x1 << 1)
-#define UART_PARAM_FLAGS_AUTO_RTS      (0x1 << 2)
+#define UART_PARAM_FLAGS_AUTO_PARITY     (0x1 << 0)
+#define UART_PARAM_FLAGS_AUTO_CTS        (0x1 << 1)
+#define UART_PARAM_FLAGS_AUTO_RTS        (0x1 << 2)
 #define UART_PARAM_FLAGS_HARD_FLOW \
 	(UART_PARAM_FLAGS_AUTO_CTS | UART_PARAM_FLAGS_AUTO_RTS))
 
-#define UART_PARAM_FLAGS_USE_IRQ       (0x1 << 3)
+#define UART_PARAM_FLAGS_USE_IRQ         (0x1 << 3)
+
+#define UART_PARAM_FLAGS_2_STOP          (0x1 << 4)
+
+#define UART_PARAM_FLAGS_BIT_WORD(len)   (((len - 4) & 0x7) << 5)
+#define UART_PARAM_FLAGS_5BIT_WORD       UART_PARAM_FLAGS_BIT_WORD(5)
+#define UART_PARAM_FLAGS_8BIT_WORD       UART_PARAM_FLAGS_BIT_WORD(8)
+#define UART_PARAM_FLAGS_10BIT_WORD      UART_PARAM_FLAGS_BIT_WORD(10)
 
 struct uart_ops {
 	int (*uart_getc)(struct uart *dev);
