@@ -35,12 +35,6 @@ POOL_DEF(uart_rx_buff, struct uart_rx, UART_DATA_BUFF_SZ);
 
 static DLIST_DEFINE(uart_rx_list);
 
-static inline struct uart *tty2uart(struct tty *tty) {
-	struct tty_uart *tu;
-	tu = member_cast_out(tty, struct tty_uart, tty);
-	return tu->uart;
-}
-
 static int uart_rx_buff_put(struct uart *dev) {
 	struct uart_rx *rx;
 
