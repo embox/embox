@@ -16,10 +16,13 @@
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
+#include <util/dlist.h>
 
 #include <drivers/device.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_device.h>
+
+DLIST_DEFINE(uart_list);
 
 static inline int uart_state_test(struct uart *uart, int mask) {
 	return uart->state & mask;
@@ -72,24 +75,16 @@ INDEX_DEF(serial_indexator, 0, UART_MAX_N);
 
 extern int ttys_register(const char *name, void *dev_info);
 
-static int uart_fill_name(struct uart *dev) {
-
-	dev->idx = index_alloc(&serial_indexator, INDEX_MIN);
-	if(dev->idx < 0) {
-		return -EBUSY;
-	}
-
-	snprintf(dev->dev_name, UART_NAME_MAXLEN, "ttyS%d", dev->idx);
-
-	return 0;
-}
-
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
+	int res;
 
-	if (uart_fill_name(uart)) {
+	uart->idx = index_alloc(&serial_indexator, INDEX_MIN);
+	if(uart->idx < 0) {
 		return -EBUSY;
 	}
+
+	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", uart->idx);
 
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
@@ -97,16 +92,21 @@ int uart_register(struct uart *uart,
 		memset(&uart->params, 0, sizeof(struct uart_params));
 	}
 
-	if (0 != ttys_register(uart->dev_name, uart)) {
-		log_error("Failed to register tty\n");
+	res = ttys_register(uart->dev_name, uart);
+	if (0 != res) {
+		log_error("Failed to register tty %s", uart->dev_name);
+		index_free(&serial_indexator, uart->idx);
+		return res;
 	}
+
+	dlist_add_next(&uart->uart_lnk, &uart_list);
 
 	return 0;
 }
 
 void uart_deregister(struct uart *uart) {
 
-	dlist_del(&uart->lnk);
+	dlist_del(&uart->uart_lnk);
 
 	index_free(&serial_indexator, uart->idx);
 }

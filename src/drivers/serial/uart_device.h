@@ -12,7 +12,7 @@
 #include <util/dlist.h>
 #include <kernel/irq.h>
 
-#define UART_NAME_MAXLEN 16
+#define UART_NAME_MAXLEN 8
 
 #define UART_STATE_OPEN  (1 << 0)
 /*
@@ -72,7 +72,7 @@ struct uart {
 	irq_handler_t irq_handler;
 
 	/* management */
-	struct dlist_head lnk;
+	struct dlist_head uart_lnk;
 	char dev_name[UART_NAME_MAXLEN];
 	int idx;
 
