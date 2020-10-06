@@ -10,7 +10,7 @@
 
 #include <drivers/tty.h>
 #include <drivers/ttys.h>
-#include <drivers/serial/uart_device.h>
+#include <drivers/serial/uart_dev.h>
 
 #include <kernel/lthread/lthread.h>
 

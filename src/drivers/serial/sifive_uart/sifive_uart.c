@@ -10,7 +10,7 @@
 #include <drivers/diag.h>
 
 #include <hal/reg.h>
-#include <drivers/serial/uart_device.h>
+#include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
 #include <drivers/ttys.h>

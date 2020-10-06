@@ -14,7 +14,7 @@
 
 #include <mem/misc/pool.h>
 #include <drivers/char_dev.h>
-#include <drivers/serial/uart_device.h>
+#include <drivers/serial/uart_dev.h>
 
 #include "idesc_serial.h"
 
