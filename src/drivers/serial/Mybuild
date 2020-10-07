@@ -8,7 +8,7 @@ abstract module core {
 	source "uart_dev.c"
 
 	@IncludeExport(path="drivers/serial")
-	source "uart_device.h"
+	source "uart_dev.h"
 
 	@NoRuntime depends embox.util.indexator
 	@NoRuntime depends embox.util.dlist

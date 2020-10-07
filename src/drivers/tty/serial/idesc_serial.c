@@ -17,7 +17,7 @@
 #include <drivers/tty.h>
 #include <drivers/ttys.h>
 #include <drivers/char_dev.h>
-#include <drivers/serial/uart_device.h>
+#include <drivers/serial/uart_dev.h>
 #include <util/err.h>
 
 #include "idesc_serial.h"

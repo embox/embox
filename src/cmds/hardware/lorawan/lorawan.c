@@ -14,12 +14,9 @@
 
 #include <kernel/sched/sched_lock.h>
 #include <drivers/gpio.h>
-#include <drivers/serial/uart_device.h>
-
+#include <drivers/serial/uart_dev.h>
 
 #include <drivers/serial/stm_usart.h>
-
-#include <drivers/serial/uart_device.h>
 
 char cur_str[256];
 char request[256];

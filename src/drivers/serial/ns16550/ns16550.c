@@ -14,7 +14,7 @@
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 #include <util/binalign.h>
-#include <drivers/serial/uart_device.h>
+#include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
 #define REG_WIDTH    OPTION_GET(NUMBER,reg_width)

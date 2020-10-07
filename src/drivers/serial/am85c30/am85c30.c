@@ -11,7 +11,7 @@
 #include <asm/io.h>
 #include <drivers/common/memory.h>
 #include <drivers/diag.h>
-#include <drivers/serial/uart_device.h>
+#include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
 #include "am85c30.h"
