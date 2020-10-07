@@ -9,6 +9,7 @@
 #include <ble_common.h>
 #include <ble_mgr.h>
 #include <ble_gap.h>
+#include <hw_clk.h>
 
 /*
  * BLE adv demo advertising data
@@ -49,9 +50,24 @@ int main(int argc, char **argv) {
 	/* Start advertising */
 	ble_gap_adv_start(GAP_CONN_MODE_UNDIRECTED);
 
+	/* LP clocks allows BLE to go sleep as I seen in ad_ble.c */
+	//hw_clk_set_lpclk(LP_CLK_IS_XTAL32K);
+
 	while (1) {
+	/* TODO This part can lead to potentially broken USB because of
+	 * of disableing/enabling COM (GPIO), so disable it for a while. */
+#if 0
+		hw_sys_pd_com_disable();
+		hw_sys_pd_periph_disable();
+
+		__asm__ __volatile__ ("wfi");
+
+		hw_sys_pd_periph_enable();
+		hw_sys_pd_com_enable();
+#else
 		/* It's just to let other threads to execute. */
-		usleep(1 * 1000);
+		usleep(1 * 1000 * 1000);
+#endif
 	}
 
 	return 0;
