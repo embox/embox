@@ -9,13 +9,18 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <framework/mod/options.h>
-#include <mem/misc/pool.h>
-#include <net/inetdevice.h>
-#include <net/netdevice.h>
 #include <stddef.h>
 #include <string.h>
+
 #include <util/dlist.h>
+
+#include <mem/misc/pool.h>
+
+#include <net/netlink.h>
+#include <net/inetdevice.h>
+#include <net/netdevice.h>
+
+#include <framework/mod/options.h>
 
 #define MODOPS_AMOUNT_INTERFACE OPTION_GET(NUMBER, amount_interface)
 
@@ -47,6 +52,8 @@ int inetdev_register_dev(struct net_device *dev) {
 
 	dlist_add_prev_entry(in_dev, &inetdev_list, lnk);
 
+	netlink_notify_newlink(dev);
+
 	return 0;
 }
 
@@ -62,6 +69,8 @@ int inetdev_unregister_dev(struct net_device *dev) {
 	if (in_dev == NULL) {
 		return -ESRCH;
 	}
+
+	netlink_notify_dellink(dev);
 
 	ret = netdev_unregister(dev);
 	if (ret != 0) {

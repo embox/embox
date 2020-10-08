@@ -25,6 +25,7 @@
 #include <net/if.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
+#include <net/netlink.h>
 
 #include <framework/mod/options.h>
 
@@ -338,3 +339,12 @@ unsigned int if_nametoindex(const char *name) {
 		return 0;
 	}
 }
+
+void netif_carrier_on(struct net_device *dev) {
+	netlink_notify_newlink(dev);
+}
+
+void netif_carrier_off(struct net_device *dev) {
+	netlink_notify_dellink(dev);
+}
+

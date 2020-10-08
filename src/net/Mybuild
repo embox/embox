@@ -9,12 +9,14 @@ module dev {
 	depends embox.mem.sysmalloc_api
 	depends embox.util.dlist
 	depends embox.util.hashtable
+	depends embox.net.netlink
 }
 
 module core {
 	option number amount_interface=4
 
 	source "inetdev.c"
+	
 	depends dev /* for dev.c */
 	depends embox.util.dlist
 	depends embox.mem.pool
