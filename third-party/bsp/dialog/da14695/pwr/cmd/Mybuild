@@ -1,12 +1,15 @@
-package third_party.bsp.dialog.da14695.cmd
+package third_party.bsp.dialog.da14695.pwr.cmd
 
 @AutoCmd
-@Cmd(name = "pwr_deepsleep_test",
+@Cmd(name = "deepsleep_test",
 	help = "",
 	man = '''
 	''')
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
-module pwr_deepsleep_test {
+module deepsleep_test {
+	option number loop_cnt = 10
+	option number sleep_time = 10
+
 	@Cflags("-Wno-undef")
 	source "deepsleep_test.c"
 
@@ -15,11 +18,10 @@ module pwr_deepsleep_test {
 }
 
 @AutoCmd
-@Cmd(name = "pwr_wfi_test",
-	help = "pwr_wfi_test",
+@Cmd(name = "wfi_test",
+	help = "wfi_test",
 	man = '''
 	''')
-module pwr_wfi_test {
+module wfi_test {
 	source "wfi_test.c"
 }
-
