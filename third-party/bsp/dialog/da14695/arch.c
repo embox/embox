@@ -23,6 +23,7 @@
 #include <hw_sys.h>
 #include <hw_cache.h>
 #include <hw_otpc.h>
+#include <hw_watchdog.h>
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
@@ -142,6 +143,9 @@ void arch_init(void) {
 
 	hw_sys_setup_retmem();
 	hw_sys_set_cache_retained();
+
+	hw_watchdog_freeze();                   // Stop watchdog
+	hw_watchdog_set_pos_val(dg_configWDOG_IDLE_RESET_VALUE);
 
 	//qspi_operations_init();
 
