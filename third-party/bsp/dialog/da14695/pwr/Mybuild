@@ -1,0 +1,5 @@
+package third_party.bsp.dialog.da14695
+
+module deepsleep_wakeup {
+	source "deepsleep_wakeup.S"
+}
