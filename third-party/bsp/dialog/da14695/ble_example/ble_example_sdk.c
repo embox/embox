@@ -10,6 +10,7 @@
 #include <ble_mgr.h>
 #include <ble_gap.h>
 #include <hw_clk.h>
+#include <sys_clock_mgr.h>
 
 /*
  * BLE adv demo advertising data
@@ -27,7 +28,9 @@ static const uint8_t adv_data[] = {
 
 extern void cmac_update_power_ctrl_reg_values(uint32_t onsleep_value);
 #endif
+
 extern void ad_ble_init(void);
+extern int deep_usleep(useconds_t usec);
 
 int main(int argc, char **argv) {
 	ble_mgr_init();
@@ -50,8 +53,12 @@ int main(int argc, char **argv) {
 	/* Start advertising */
 	ble_gap_adv_start(GAP_CONN_MODE_UNDIRECTED);
 
-	/* LP clocks allows BLE to go sleep as I seen in ad_ble.c */
-	//hw_clk_set_lpclk(LP_CLK_IS_XTAL32K);
+	if (!cm_lp_clk_is_avail()) {
+		fprintf(stderr, "No low power enabled\n");
+		return -1;
+	} else {
+		ad_ble_lpclock_available();
+	}
 
 	while (1) {
 	/* TODO This part can lead to potentially broken USB because of
@@ -60,13 +67,13 @@ int main(int argc, char **argv) {
 		hw_sys_pd_com_disable();
 		hw_sys_pd_periph_disable();
 
-		__asm__ __volatile__ ("wfi");
+		deep_usleep(1 * 1000 * 1000);
 
 		hw_sys_pd_periph_enable();
 		hw_sys_pd_com_enable();
 #else
 		/* It's just to let other threads to execute. */
-		usleep(1 * 1000 * 1000);
+		sleep(3600);
 #endif
 	}
 
