@@ -22,7 +22,8 @@
 #include <hw_rtc.h>
 #include <hw_sys.h>
 #include <hw_cache.h>
-
+#include <hw_otpc.h>
+#include <hw_watchdog.h>
 
 #define GPREG_SET_FREEZE_REG (GPREG_BASE + 0x0)
 # define GPREG_SET_FREEZE_SYS_WDOG (1 << 3)
@@ -118,6 +119,13 @@ void arch_init(void) {
 	memset(&_bss_vma, 0, &__zero_table_start__ - &_bss_vma);
 	memset(&__zero_table_end__, 0, &_bss_end - &__zero_table_end__);
 
+	/* From pm_system_init */
+#if dg_configUSE_HW_OTPC
+        if (dg_configCODE_LOCATION != NON_VOLATILE_IS_OTP) {
+                hw_otpc_disable();                      // Make sure OTPC is off
+        }
+#endif
+
 	extern void ad_pmu_init(void);
 	ad_pmu_init();
 
@@ -135,6 +143,9 @@ void arch_init(void) {
 
 	hw_sys_setup_retmem();
 	hw_sys_set_cache_retained();
+
+	hw_watchdog_freeze();                   // Stop watchdog
+	hw_watchdog_set_pos_val(dg_configWDOG_IDLE_RESET_VALUE);
 
 	//qspi_operations_init();
 

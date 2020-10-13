@@ -1,25 +1,5 @@
-package third_party.bsp.dialog.da14695.cmd
+package third_party.bsp.dialog.da14695
 
-@AutoCmd
-@Cmd(name = "pwr_deepsleep_test",
-	help = "",
-	man = '''
-	''')
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-module pwr_deepsleep_test {
-	@Cflags("-Wno-undef")
-	source "deepsleep_test.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-	@NoRuntime depends third_party.bsp.dialog.da14695.ble_arch_main_sdk
+module deepsleep_wakeup {
+	source "deepsleep_wakeup.S"
 }
-
-@AutoCmd
-@Cmd(name = "pwr_wfi_test",
-	help = "pwr_wfi_test",
-	man = '''
-	''')
-module pwr_wfi_test {
-	source "wfi_test.c"
-}
-
