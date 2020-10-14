@@ -152,8 +152,53 @@ void arch_init(void) {
 	rtc_init();
 }
 
+extern int deep_usleep(useconds_t usec);
+
+static uint32_t arch_deepsleep_flags = 0;
+
+void arch_deepsleep_disable(uint32_t mask) {
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	arch_deepsleep_flags |= mask;
+	ipl_restore(ipl);
+}
+
+void arch_deepsleep_enable(uint32_t mask) {
+	ipl_t ipl;
+
+	ipl = ipl_save();
+	{
+		arch_deepsleep_flags &= ~mask;
+	}
+	ipl_restore(ipl);
+}
+
+static uint32_t arch_deepsleep_start(ipl_t *ipl) {
+	*ipl = ipl_save();
+
+	return arch_deepsleep_flags;
+}
+
+static void arch_deepsleep_finish(ipl_t ipl) {
+	ipl_restore(ipl);
+}
+
 void arch_idle(void) {
-	__asm__ __volatile__ ("wfi");
+	ipl_t ipl;
+
+	if (arch_deepsleep_start(&ipl)) {
+		__asm__ __volatile__ ("wfi");
+	} else {
+		hw_sys_pd_com_disable();
+		hw_sys_pd_periph_disable();
+
+		deep_usleep(1 * 1000 * 1000);
+
+		hw_sys_pd_periph_enable();
+		hw_sys_pd_com_enable();
+	}
+	arch_deepsleep_finish(ipl);
 }
 
 void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
