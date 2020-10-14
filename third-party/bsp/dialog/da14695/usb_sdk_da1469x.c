@@ -36,9 +36,13 @@ static irq_return_t usb_da1469x_usb_irq_handler(unsigned int irq_nr,
 }
 STATIC_IRQ_ATTACH(USB_IRQ, usb_da1469x_usb_irq_handler, NULL);
 
+extern void arch_deepsleep_disable(uint32_t mask);
+#define DEEPSLEEP_DISABLE_USB     0x1
+
 extern void VBUS_Handler(void);
 static irq_return_t usb_da1469x_vbus_irq_handler(unsigned int irq_nr,
 		void *data) {
+	arch_deepsleep_disable(DEEPSLEEP_DISABLE_USB);
 	VBUS_Handler();
 	return IRQ_HANDLED;
 }
