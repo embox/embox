@@ -251,12 +251,10 @@ if [ $nic_n -gt 0 ]; then
 		if [ ${qemu_nics_config[$ni]} ] && [ ${qemu_nics_config[$ni]} != "-" ]; then
 			host_nic_config=${qemu_nics_config[$ni]}
 		else
+			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script"
 			if [ $nic_model = "virtio" ]; then
-				vnet_hdr="vnet_hdr=no"
-			else
-				vnet_hdr=""
+				host_nic_config="$host_nic_config,vnet_hdr=no"
 			fi
-			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script,$vnet_hdr"
 		fi
 
 		nic_macaddr="AA:BB:CC:DD:EE:0$(($ni + 2))"
