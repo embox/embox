@@ -92,6 +92,36 @@ module af_unix {
 	depends net_sock
 }
 
+@DefaultImpl(netlink_stub)
+abstract module netlink {
+	@IncludeExport(path="linux/", target_name="rtnetlink.h")
+	source "uapi_linux_rtnetlink.h"
+
+	@IncludeExport(path="linux/", target_name="netlink.h")
+	source "uapi_linux_netlink.h"
+
+	@IncludeExport(path="linux/", target_name="if_link.h")
+	source "uapi_linux_if_link.h"
+}
+
+module af_netlink extends netlink {
+	option number max_socks=1
+
+	source "af_netlink.c"
+
+	@IncludeExport(path="net/", target_name="netlink.h")
+	source "netlink.h"
+
+	depends sock
+	depends family
+	depends net_sock
+}
+
+module netlink_stub extends netlink {
+	@IncludeExport(path="net/", target_name="netlink.h")
+	source "netlink_stub.h"
+}
+
 module socket {
 	option number log_level=0
 

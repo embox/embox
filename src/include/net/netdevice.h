@@ -221,4 +221,7 @@ extern int netdev_set_bcastaddr(struct net_device *dev,
 		const void *bcast_addr);
 extern int netdev_set_mtu(struct net_device *dev, int mtu);
 
+extern void netif_carrier_off(struct net_device *dev);
+extern void netif_carrier_on(struct net_device *dev);
+
 #endif /* NET_NETDEVICE_H_ */

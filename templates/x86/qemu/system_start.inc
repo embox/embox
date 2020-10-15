@@ -3,7 +3,7 @@
 "partition",
 // "mkdir -v /bin",
 // "mount -t binfs / /bin",
-"netmanager",
+"service net_service",
 "service telnetd",
 "service httpd",
 "tish",

@@ -28,3 +28,36 @@ module netmanager {
 	depends embox.compat.libc.stdlib.system
 	depends embox.compat.libc.str
 }
+
+
+@AutoCmd
+@Cmd(name = "net_service",
+	help = "Simple network manager",
+	man = '''
+		SYNOPSIS
+			netmanager [iface]
+		NAME
+			netmanager -- try to receive net parameters
+			automatically or take it from default config
+			if fails
+		OPTIONS
+		AUTHORS
+			Denis Deryugin <deryugin.denis@gmail.com>
+	''')
+
+
+module net_service {
+	source "net_service.c"
+
+	depends embox.cmd.net.ifconfig
+	depends embox.cmd.net.route
+
+	depends embox.net.af_netlink
+
+	depends embox.compat.libc.stdio.open
+	depends embox.compat.libc.stdio.print
+	depends embox.compat.libc.stdio.scanf
+	depends embox.compat.libc.stdlib.system
+	depends embox.compat.libc.str
+}
+

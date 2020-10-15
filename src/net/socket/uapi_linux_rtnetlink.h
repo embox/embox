@@ -1,0 +1,235 @@
+/**
+ * @file
+ *
+ * @brif It's similar like uapi/linux/rtnetlink.h (linux/rtnetlink.h)
+ *
+ * @date Oct 4, 2020
+ * @author Anton Bondarev
+ */
+
+#ifndef SRC_NET_SOCKET_UAPI_LINUX_RTNETLINK_H_
+#define SRC_NET_SOCKET_UAPI_LINUX_RTNETLINK_H_
+
+/* Types of messages */
+
+enum {
+	RTM_BASE	= 16,
+#define RTM_BASE	RTM_BASE
+
+	RTM_NEWLINK	= 16,
+#define RTM_NEWLINK	RTM_NEWLINK
+	RTM_DELLINK,
+#define RTM_DELLINK	RTM_DELLINK
+	RTM_GETLINK,
+#define RTM_GETLINK	RTM_GETLINK
+	RTM_SETLINK,
+#define RTM_SETLINK	RTM_SETLINK
+
+	RTM_NEWADDR	= 20,
+#define RTM_NEWADDR	RTM_NEWADDR
+	RTM_DELADDR,
+#define RTM_DELADDR	RTM_DELADDR
+	RTM_GETADDR,
+#define RTM_GETADDR	RTM_GETADDR
+
+	RTM_NEWROUTE	= 24,
+#define RTM_NEWROUTE	RTM_NEWROUTE
+	RTM_DELROUTE,
+#define RTM_DELROUTE	RTM_DELROUTE
+	RTM_GETROUTE,
+#define RTM_GETROUTE	RTM_GETROUTE
+
+	RTM_NEWNEIGH	= 28,
+#define RTM_NEWNEIGH	RTM_NEWNEIGH
+	RTM_DELNEIGH,
+#define RTM_DELNEIGH	RTM_DELNEIGH
+	RTM_GETNEIGH,
+#define RTM_GETNEIGH	RTM_GETNEIGH
+
+	RTM_NEWRULE	= 32,
+#define RTM_NEWRULE	RTM_NEWRULE
+	RTM_DELRULE,
+#define RTM_DELRULE	RTM_DELRULE
+	RTM_GETRULE,
+#define RTM_GETRULE	RTM_GETRULE
+
+	RTM_NEWQDISC	= 36,
+#define RTM_NEWQDISC	RTM_NEWQDISC
+	RTM_DELQDISC,
+#define RTM_DELQDISC	RTM_DELQDISC
+	RTM_GETQDISC,
+#define RTM_GETQDISC	RTM_GETQDISC
+
+	RTM_NEWTCLASS	= 40,
+#define RTM_NEWTCLASS	RTM_NEWTCLASS
+	RTM_DELTCLASS,
+#define RTM_DELTCLASS	RTM_DELTCLASS
+	RTM_GETTCLASS,
+#define RTM_GETTCLASS	RTM_GETTCLASS
+
+	RTM_NEWTFILTER	= 44,
+#define RTM_NEWTFILTER	RTM_NEWTFILTER
+	RTM_DELTFILTER,
+#define RTM_DELTFILTER	RTM_DELTFILTER
+	RTM_GETTFILTER,
+#define RTM_GETTFILTER	RTM_GETTFILTER
+
+	RTM_NEWACTION	= 48,
+#define RTM_NEWACTION   RTM_NEWACTION
+	RTM_DELACTION,
+#define RTM_DELACTION   RTM_DELACTION
+	RTM_GETACTION,
+#define RTM_GETACTION   RTM_GETACTION
+
+	RTM_NEWPREFIX	= 52,
+#define RTM_NEWPREFIX	RTM_NEWPREFIX
+
+	RTM_GETMULTICAST = 58,
+#define RTM_GETMULTICAST RTM_GETMULTICAST
+
+	RTM_GETANYCAST	= 62,
+#define RTM_GETANYCAST	RTM_GETANYCAST
+
+	RTM_NEWNEIGHTBL	= 64,
+#define RTM_NEWNEIGHTBL	RTM_NEWNEIGHTBL
+	RTM_GETNEIGHTBL	= 66,
+#define RTM_GETNEIGHTBL	RTM_GETNEIGHTBL
+	RTM_SETNEIGHTBL,
+#define RTM_SETNEIGHTBL	RTM_SETNEIGHTBL
+
+	RTM_NEWNDUSEROPT = 68,
+#define RTM_NEWNDUSEROPT RTM_NEWNDUSEROPT
+
+	RTM_NEWADDRLABEL = 72,
+#define RTM_NEWADDRLABEL RTM_NEWADDRLABEL
+	RTM_DELADDRLABEL,
+#define RTM_DELADDRLABEL RTM_DELADDRLABEL
+	RTM_GETADDRLABEL,
+#define RTM_GETADDRLABEL RTM_GETADDRLABEL
+
+	RTM_GETDCB = 78,
+#define RTM_GETDCB RTM_GETDCB
+	RTM_SETDCB,
+#define RTM_SETDCB RTM_SETDCB
+
+	RTM_NEWNETCONF = 80,
+#define RTM_NEWNETCONF RTM_NEWNETCONF
+	RTM_DELNETCONF,
+#define RTM_DELNETCONF RTM_DELNETCONF
+	RTM_GETNETCONF = 82,
+#define RTM_GETNETCONF RTM_GETNETCONF
+
+	RTM_NEWMDB = 84,
+#define RTM_NEWMDB RTM_NEWMDB
+	RTM_DELMDB = 85,
+#define RTM_DELMDB RTM_DELMDB
+	RTM_GETMDB = 86,
+#define RTM_GETMDB RTM_GETMDB
+
+	RTM_NEWNSID = 88,
+#define RTM_NEWNSID RTM_NEWNSID
+	RTM_DELNSID = 89,
+#define RTM_DELNSID RTM_DELNSID
+	RTM_GETNSID = 90,
+#define RTM_GETNSID RTM_GETNSID
+
+	RTM_NEWSTATS = 92,
+#define RTM_NEWSTATS RTM_NEWSTATS
+	RTM_GETSTATS = 94,
+#define RTM_GETSTATS RTM_GETSTATS
+
+	RTM_NEWCACHEREPORT = 96,
+#define RTM_NEWCACHEREPORT RTM_NEWCACHEREPORT
+
+	RTM_NEWCHAIN = 100,
+#define RTM_NEWCHAIN RTM_NEWCHAIN
+	RTM_DELCHAIN,
+#define RTM_DELCHAIN RTM_DELCHAIN
+	RTM_GETCHAIN,
+#define RTM_GETCHAIN RTM_GETCHAIN
+
+	RTM_NEWNEXTHOP = 104,
+#define RTM_NEWNEXTHOP	RTM_NEWNEXTHOP
+	RTM_DELNEXTHOP,
+#define RTM_DELNEXTHOP	RTM_DELNEXTHOP
+	RTM_GETNEXTHOP,
+#define RTM_GETNEXTHOP	RTM_GETNEXTHOP
+
+	RTM_NEWLINKPROP = 108,
+#define RTM_NEWLINKPROP	RTM_NEWLINKPROP
+	RTM_DELLINKPROP,
+#define RTM_DELLINKPROP	RTM_DELLINKPROP
+	RTM_GETLINKPROP,
+#define RTM_GETLINKPROP	RTM_GETLINKPROP
+
+	RTM_NEWVLAN = 112,
+#define RTM_NEWNVLAN	RTM_NEWVLAN
+	RTM_DELVLAN,
+#define RTM_DELVLAN	RTM_DELVLAN
+	RTM_GETVLAN,
+#define RTM_GETVLAN	RTM_GETVLAN
+
+	__RTM_MAX,
+#define RTM_MAX		(((__RTM_MAX + 3) & ~3) - 1)
+};
+
+/*
+   Generic structure for encapsulation of optional route information.
+   It is reminiscent of sockaddr, but with sa_family replaced
+   with attribute type.
+ */
+
+struct rtattr {
+	unsigned short rta_len;
+	unsigned short rta_type;
+};
+
+/* Macros to handle rtattributes */
+
+#define RTA_ALIGNTO	4U
+#define RTA_ALIGN(len) ( ((len)+RTA_ALIGNTO-1) & ~(RTA_ALIGNTO-1) )
+#define RTA_OK(rta,len) ((len) >= (int)sizeof(struct rtattr) && \
+			 (rta)->rta_len >= sizeof(struct rtattr) && \
+			 (rta)->rta_len <= (len))
+#define RTA_NEXT(rta,attrlen)	((attrlen) -= RTA_ALIGN((rta)->rta_len), \
+				 (struct rtattr*)(((char*)(rta)) + RTA_ALIGN((rta)->rta_len)))
+#define RTA_LENGTH(len)	(RTA_ALIGN(sizeof(struct rtattr)) + (len))
+#define RTA_SPACE(len)	RTA_ALIGN(RTA_LENGTH(len))
+#define RTA_DATA(rta)   ((void*)(((char*)(rta)) + RTA_LENGTH(0)))
+#define RTA_PAYLOAD(rta) ((int)((rta)->rta_len) - RTA_LENGTH(0))
+
+
+#define RTMGRP_LINK          1
+#define RTMGRP_NOTIFY        2
+#define RTMGRP_NEIGH         4
+#define RTMGRP_TC            8
+
+#define RTMGRP_IPV4_IFADDR   0x10
+#define RTMGRP_IPV4_MROUTE   0x20
+#define RTMGRP_IPV4_ROUTE    0x40
+#define RTMGRP_IPV4_RULE     0x80
+
+#define RTMGRP_IPV6_IFADDR   0x100
+#define RTMGRP_IPV6_MROUTE   0x200
+#define RTMGRP_IPV6_ROUTE    0x400
+#define RTMGRP_IPV6_IFINFO   0x800
+
+#define RTMGRP_DECnet_IFADDR 0x1000
+#define RTMGRP_DECnet_ROUTE  0x4000
+
+#define RTMGRP_IPV6_PREFIX	0x20000
+
+/* struct ifinfomsg
+ * passes link level specific information, not dependent
+ * on network protocol.
+ */
+struct ifinfomsg {
+	unsigned char ifi_family;
+	unsigned char   __ifi_pad;
+	unsigned short  ifi_type;   /* ARPHRD_* */
+	int             ifi_index;  /* Link index */
+	unsigned        ifi_flags;  /* IFF_* flags */
+	unsigned        ifi_change; /* IFF_* change mask */
+};
+
+#endif /* SRC_NET_SOCKET_UAPI_LINUX_RTNETLINK_H_ */
