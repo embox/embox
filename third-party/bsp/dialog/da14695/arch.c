@@ -190,13 +190,7 @@ void arch_idle(void) {
 	if (arch_deepsleep_start(&ipl)) {
 		__asm__ __volatile__ ("wfi");
 	} else {
-		hw_sys_pd_com_disable();
-		hw_sys_pd_periph_disable();
-
 		deep_usleep(1 * 1000 * 1000);
-
-		hw_sys_pd_periph_enable();
-		hw_sys_pd_com_enable();
 	}
 	arch_deepsleep_finish(ipl);
 }
