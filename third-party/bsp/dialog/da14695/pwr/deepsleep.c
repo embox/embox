@@ -27,15 +27,15 @@ extern void set_wakeup_reset_handler(void);
 extern bool goto_deepsleep(void);
 
 static __RETAINED_CODE void prepare_for_deepsleep(void) {
-	//hw_sys_pd_com_disable();
-	//hw_sys_pd_periph_disable();
+	hw_sys_pd_com_disable();
+	hw_sys_pd_periph_disable();
 	qspi_automode_flash_power_down();
 }
 
 static __RETAINED_CODE void resume_after_deepsleep(void) {
 	qspi_automode_flash_power_up();
-	//hw_sys_pd_periph_enable();
-	//hw_sys_pd_com_enable();
+	hw_sys_pd_periph_enable();
+	hw_sys_pd_com_enable();
 }
 
 __RETAINED_CODE int deep_usleep(useconds_t usec) {
