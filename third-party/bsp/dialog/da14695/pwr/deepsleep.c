@@ -6,7 +6,9 @@
  */
 
 #include <embox/unit.h>
+#include <kernel/time/clock_source.h>
 #include <hal/ipl.h>
+#include <hal/clock.h>
 #include <time.h>
 #include <kernel/time/time.h>
 
@@ -26,6 +28,8 @@ extern void da1469x_timer_set(int trigger);
 extern void set_wakeup_reset_handler(void);
 extern bool goto_deepsleep(void);
 
+extern struct clock_source *cs_jiffies;
+
 static __RETAINED_CODE void prepare_for_deepsleep(void) {
 	hw_sys_pd_com_disable();
 	hw_sys_pd_periph_disable();
@@ -41,8 +45,13 @@ static __RETAINED_CODE void resume_after_deepsleep(void) {
 __RETAINED_CODE int deep_usleep(useconds_t usec) {
 	bool entered_sleep;
 	ipl_t ipl;
+	unsigned systimer_ticks, lp_timer_ticks;
 
-	da1469x_timer_set((usec * 100) / USEC_PER_SEC);
+	lp_timer_ticks = (usec * 100) / USEC_PER_SEC;
+	/* Calculate to how many ticks system timer should be updated after sleep. */
+	systimer_ticks = (lp_timer_ticks * cs_jiffies->event_device->event_hz) / 100;
+
+	da1469x_timer_set(lp_timer_ticks);
 
 	ipl = ipl_save();
 
@@ -63,6 +72,8 @@ __RETAINED_CODE int deep_usleep(useconds_t usec) {
 
 	/* Re-enable system timer */
 	jiffies_init();
+
+	clock_handle_ticks(cs_jiffies, systimer_ticks);
 
 	return 0;
 }
