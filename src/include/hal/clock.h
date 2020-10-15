@@ -34,6 +34,8 @@ extern void clock_setup(useconds_t useconds);
 
 extern void clock_tick_handler(void *dev_id);
 
+extern void clock_handle_ticks(void *dev_id, unsigned ticks);
+
 extern clock_t clock_sys_ticks(void);
 extern uint32_t clock_freq(void);
 extern clock_t clock_sys_sec(void);
