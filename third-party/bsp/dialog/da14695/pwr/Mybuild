@@ -3,3 +3,12 @@ package third_party.bsp.dialog.da14695
 module deepsleep_wakeup {
 	source "deepsleep_wakeup.S"
 }
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module deepsleep {
+	@Cflags("-Wno-undef")
+	source "deepsleep.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+	depends third_party.bsp.dialog.da14695.deepsleep_wakeup
+}

@@ -103,7 +103,7 @@
 #define dg_configBLE_BROADCASTER                ( 0 )
 #define dg_configBLE_L2CAP_COC                  ( 0 )
 // REMOVE
-#define USE_BLE_SLEEP                           ( 0 )
+#define USE_BLE_SLEEP                           ( 1 )
 #endif
 
 #define dg_configUSE_HW_GPIO                    ( 1 )
