@@ -21,6 +21,7 @@
 
 EMBOX_UNIT_INIT(deepsleep_init);
 
+extern void lp_clock_enable(void);
 extern void da1469x_timer_set(int trigger);
 extern void set_wakeup_reset_handler(void);
 extern bool goto_deepsleep(void);
@@ -84,14 +85,7 @@ static void configure_trigger(void) {
 }
 
 static int deepsleep_init(void) {
-	int i;
-
-	hw_clk_set_lpclk(LP_CLK_IS_XTAL32K);
-	/* I am not sure if it's required, but it's for LP clock settling time.
-	 * Should be removed or improved. */
-	for (i = 0; i < 1000000; i++) {
-
-	}
+	lp_clock_enable();
 
 	configure_trigger();
 
