@@ -18,6 +18,7 @@
 
 #include <framework/mod/options.h>
 
+#define BIND_TO_DEV        OPTION_GET(NUMBER, bind_to_dev)
 #define DHCPD_IF_NAME      OPTION_STRING_GET(if_name)
 #define NEIGHBOUR_IP_ADDR  OPTION_STRING_GET(client_ip_addr)
 
@@ -41,12 +42,13 @@ static int dhcpd_create_socket(struct net_device *dev) {
 		ret = -errno;
 		goto error;
 	}
-
+#if BIND_TO_DEV
 	if (-1 == setsockopt(sock, SOL_SOCKET, SO_BINDTODEVICE,
 				&dev->name[0], strlen(&dev->name[0]))) {
 		ret = -errno;
 		goto error;
 	}
+#endif
 	return sock;
 
 error:
@@ -110,7 +112,6 @@ int main(int argc, char **argv) {
 	int ret;
 	socklen_t sklen = sizeof(struct sockaddr_in);
 
-
 	dev = netdev_get_by_name(DHCPD_IF_NAME);
 
 	sock = dhcpd_create_socket(dev);
@@ -127,6 +128,7 @@ int main(int argc, char **argv) {
 		}
 		switch(bootphdr.op) {
 		case BOOTPREQUEST:
+			dev = netdev_get_by_name(DHCPD_IF_NAME);
 			dhcpd_parse_discover(dev, sock, &bootphdr);
 		default:
 			continue;
