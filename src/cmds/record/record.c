@@ -140,6 +140,7 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 int main(int argc, char **argv) {
 	int opt;
 	int err;
+	int devid;
 	int sleep_msec = MAX_REC_DURATION;
 	char *filename = NULL;
 	PaStream *stream = NULL;
@@ -213,8 +214,13 @@ int main(int argc, char **argv) {
 		goto err_exit;
 	}
 
+	if (paNoDevice == (devid = Pa_GetDefaultInputDevice())) {
+		printf("No default input device!\n");
+		goto err_terminate_pa;
+	}
+
 	in_par = (PaStreamParameters) {
-		.device                    = Pa_GetDefaultInputDevice(),
+		.device                    = devid,
 		.channelCount              = chan_n,
 		.sampleFormat              = paInt16,
 		.suggestedLatency          = 10,
