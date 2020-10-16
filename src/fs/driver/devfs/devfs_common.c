@@ -15,6 +15,7 @@
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <util/array.h>
 
 extern struct idesc_ops idesc_bdev_ops;
@@ -54,6 +55,49 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 
 	inode_priv_set(inode, devmod);
 	inode->i_mode = flags;
+}
+
+extern void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags);
+
+extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
+extern struct dev_module **get_cdev_tab(void);
+/**
+ * @brief Find file in directory
+ *
+ * @param name Name of file
+ * @param dir  Not used in this driver as we assume there are no nested
+ * directories
+ *
+ * @return Pointer to inode structure or NULL if failed
+ */
+static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
+	int i;
+	struct inode *node;
+	struct block_dev **bdevtab = get_bdev_tab();
+	struct dev_module **cdevtab = get_cdev_tab();
+
+	if (NULL == (node = inode_new(dir->i_sb))) {
+		return NULL;
+	}
+
+	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
+		if (bdevtab[i] && !strcmp(bdevtab[i]->name, name)) {
+			devfs_fill_inode(node, bdevtab[i]->dev_module, S_IFBLK);
+			node->length = bdevtab[i]->size;
+			return node;
+		}
+	}
+
+	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
+		if (cdevtab[i] && !strcmp(cdevtab[i]->name, name)) {
+			devfs_fill_inode(node, cdevtab[i], S_IFCHR);
+			return node;
+		}
+	}
+
+	inode_del(node);
+
+	return NULL;
 }
 
 /**
@@ -104,3 +148,9 @@ int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct d
 	/* End of directory */
 	return -1;
 }
+
+struct inode_operations devfs_iops = {
+	.lookup   = devfs_lookup,
+	.iterate  = devfs_iterate,
+	.create   = devfs_create,
+};
