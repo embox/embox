@@ -21,10 +21,6 @@
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
 
-/* Common part */
-struct idesc *devfs_open(struct inode *node, struct idesc *desc);
-int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
-
 extern struct inode_operations devfs_iops;
 
 static struct super_block *devfs_sb;

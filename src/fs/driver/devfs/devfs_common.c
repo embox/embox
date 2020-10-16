@@ -37,7 +37,7 @@ static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
 	return 0;
 }
 
-int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
+static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
@@ -57,10 +57,6 @@ void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags)
 	inode->i_mode = flags;
 }
 
-extern void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags);
-
-extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
-extern struct dev_module **get_cdev_tab(void);
 /**
  * @brief Find file in directory
  *
@@ -113,7 +109,7 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
  *
  * @return Negative error code
  */
-int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
+static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	int i;
 	struct block_dev **bdevtab = get_bdev_tab();
 	struct dev_module **cdevtab = get_cdev_tab();

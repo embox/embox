@@ -30,9 +30,6 @@
 
 #include <module/embox/driver/block_dev.h>
 
-/* Common part */
-int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
-
 /**
  * @brief Do nothing
  *
@@ -43,7 +40,6 @@ int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
 static int devfs_destroy_inode(struct inode *inode) {
 	return 0;
 }
-
 
 extern struct idesc_ops idesc_bdev_ops;
 /* Call device-specific open() handler */
@@ -78,7 +74,7 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	return desc;
 }
 
-struct super_block_operations devfs_sbops = {
+static struct super_block_operations devfs_sbops = {
 	.open_idesc = devfs_open_idesc,
 	.destroy_inode = devfs_destroy_inode,
 };
