@@ -114,6 +114,7 @@ int main(int argc, char **argv) {
 	int bits_per_sample = 16;
 	int fdata_len = 0x100000;
 	int sleep_msec, i, chunk_sz;
+	int devid;
 
 	PaStreamCallback *callback;
 	PaStream *stream = NULL;
@@ -234,8 +235,13 @@ int main(int argc, char **argv) {
 		goto err_close_fd;
 	}
 
+	if (paNoDevice == (devid = Pa_GetDefaultOutputDevice())) {
+		printf("No default output device!\n");
+		goto err_terminate_pa;
+	}
+
 	out_par = (PaStreamParameters) {
-		.device                    = 0,
+		.device                    = devid,
 		.channelCount              = chan_n,
 		.sampleFormat              = paInt16,
 		.suggestedLatency          = 10,
