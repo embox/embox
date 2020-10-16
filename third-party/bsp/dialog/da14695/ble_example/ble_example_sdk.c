@@ -21,6 +21,18 @@ static const uint8_t adv_data[] = {
 
 extern void ad_ble_init(void);
 
+static void handle_evt_gap_connected(ble_evt_gap_connected_t *evt) {
+}
+
+static void handle_evt_gap_disconnected(ble_evt_gap_disconnected_t *evt) {
+	/* Restart advertising */
+	ble_gap_adv_start(GAP_CONN_MODE_UNDIRECTED);
+}
+
+static void handle_evt_gap_pair_req(ble_evt_gap_pair_req_t *evt) {
+	ble_gap_pair_reply(evt->conn_idx, true, evt->bond);
+}
+
 int main(int argc, char **argv) {
 	ble_mgr_init();
 
@@ -44,9 +56,38 @@ int main(int argc, char **argv) {
 		ad_ble_lpclock_available();
 	}
 
-	while (1) {
-		/* It's just to let other threads to execute. */
-		sleep(3600);
+	/* TODO The only difference from the original ble_adv example
+	 * is removed watchdog. */
+	for (;;) {
+		ble_evt_hdr_t *hdr;
+
+		/*
+		 * Wait for a BLE event - this task will block
+		 * indefinitely until something is received.
+		 */
+		hdr = ble_get_event(true);
+
+		if (!hdr) {
+			continue;
+		}
+
+		switch (hdr->evt_code) {
+		case BLE_EVT_GAP_CONNECTED:
+			handle_evt_gap_connected((ble_evt_gap_connected_t *) hdr);
+			break;
+		case BLE_EVT_GAP_DISCONNECTED:
+			handle_evt_gap_disconnected((ble_evt_gap_disconnected_t *) hdr);
+			break;
+		case BLE_EVT_GAP_PAIR_REQ:
+			handle_evt_gap_pair_req((ble_evt_gap_pair_req_t *) hdr);
+			break;
+		default:
+			ble_handle_event_default(hdr);
+			break;
+		}
+
+		/* Free event buffer (it's not needed anymore) */
+		OS_FREE(hdr);
 	}
 
 	return 0;
