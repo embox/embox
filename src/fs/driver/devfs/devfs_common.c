@@ -45,10 +45,17 @@ struct file_operations devfs_fops = {
 	.ioctl = devfs_ioctl,
 };
 
-ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
 extern struct dev_module **get_cdev_tab(void);
 extern struct block_dev **get_bdev_tab(void);
-extern void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags);
+
+void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags) {
+	assert(inode);
+	assert(devmod);
+
+	inode_priv_set(inode, devmod);
+	inode->i_mode = flags;
+}
+
 /**
  * @brief Iterate elements of /dev
  *

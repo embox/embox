@@ -107,14 +107,6 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 	return 0;
 }
 
-void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags) {
-	assert(inode);
-	assert(devmod);
-
-	inode_priv_set(inode, devmod);
-	inode->i_mode = flags;
-}
-
 extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
 extern struct dev_module **get_cdev_tab(void);
 

@@ -44,17 +44,9 @@ static int devfs_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
-void devfs_fill_inode(struct inode *inode,
-		struct dev_module *devmod, int flags) {
-	assert(inode);
-	assert(devmod);
-
-	inode->i_data = devmod;
-	inode->i_mode = flags;
-}
+extern void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags);
 
 extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
-ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
 extern struct dev_module **get_cdev_tab(void);
 /**
  * @brief Find file in directory
