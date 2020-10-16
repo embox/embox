@@ -61,6 +61,8 @@ struct inode {
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;
+
+	size_t   length;
 };
 
 struct node_info {
