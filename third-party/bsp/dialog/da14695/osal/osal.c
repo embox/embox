@@ -144,6 +144,8 @@ struct os_queue {
 	int max_items;
 	int items;
 	struct dlist_head list;
+
+	struct schedee *get_waiting_schedee;
 };
 
 #define OS_QUEUES_COUNT OPTION_GET(NUMBER, os_queues_count)
@@ -192,18 +194,30 @@ int os_queue_put(struct os_queue *q, const void *item, int timeout) {
 
 	q->items++;
 
+	if (q->get_waiting_schedee != NULL) {
+		sched_wakeup(q->get_waiting_schedee);
+	}
+
 	return OS_QUEUE_OK;
 }
 
 int os_queue_get(struct os_queue *q, void *item, int timeout) {
 	struct dlist_head *q_item;
 
-	(void) timeout;
-
 	if (0 == q->items) {
 		log_debug("queue is empty");
-		return OS_QUEUE_EMPTY;
+
+		if (timeout) {
+			q->get_waiting_schedee = &thread_self()->schedee;
+			SCHED_WAIT_TIMEOUT(q->items != 0, timeout);
+			q->get_waiting_schedee = NULL;
+
+			return os_queue_get(q, item, 0);
+		} else {
+			return OS_QUEUE_EMPTY;
+		}
 	}
+
 	q_item = dlist_first(&q->list);
 	memcpy(item, q_item + 1, q->item_size);
 

@@ -9,7 +9,6 @@
 #include <ble_common.h>
 #include <ble_mgr.h>
 #include <ble_gap.h>
-#include <hw_clk.h>
 #include <sys_clock_mgr.h>
 
 /*
@@ -20,28 +19,25 @@ static const uint8_t adv_data[] = {
 	'E', 'm', 'b', 'o', 'x', ' ', 'A', 'D', 'V', ' ', 'D', 'e', 'm', 'o'
 };
 
-#if 0
-#define CMAC_SHARED_POWER_CTRL_REG_CONFIG_MSK                                                   \
-        (REG_MSK(CRG_TOP, POWER_CTRL_REG, LDO_CORE_ENABLE) |                                    \
-         REG_MSK(CRG_TOP, POWER_CTRL_REG, LDO_CORE_RET_ENABLE_ACTIVE) |                         \
-         REG_MSK(CRG_TOP, POWER_CTRL_REG, VDD_LEVEL))
-
-extern void cmac_update_power_ctrl_reg_values(uint32_t onsleep_value);
-#endif
-
 extern void ad_ble_init(void);
-extern int deep_usleep(useconds_t usec);
+
+static void handle_evt_gap_connected(ble_evt_gap_connected_t *evt) {
+}
+
+static void handle_evt_gap_disconnected(ble_evt_gap_disconnected_t *evt) {
+	/* Restart advertising */
+	ble_gap_adv_start(GAP_CONN_MODE_UNDIRECTED);
+}
+
+static void handle_evt_gap_pair_req(ble_evt_gap_pair_req_t *evt) {
+	ble_gap_pair_reply(evt->conn_idx, true, evt->bond);
+}
 
 int main(int argc, char **argv) {
 	ble_mgr_init();
 
 	ad_ble_init();
 
-#if 0
-	/* FIXME */
-	cmac_update_power_ctrl_reg_values(
-		CRG_TOP->POWER_CTRL_REG & (~CMAC_SHARED_POWER_CTRL_REG_CONFIG_MSK));
-#endif
 	ble_peripheral_start();
 
 	/* Set device name */
@@ -60,21 +56,38 @@ int main(int argc, char **argv) {
 		ad_ble_lpclock_available();
 	}
 
-	while (1) {
-	/* TODO This part can lead to potentially broken USB because of
-	 * of disableing/enabling COM (GPIO), so disable it for a while. */
-#if 0
-		hw_sys_pd_com_disable();
-		hw_sys_pd_periph_disable();
+	/* TODO The only difference from the original ble_adv example
+	 * is removed watchdog. */
+	for (;;) {
+		ble_evt_hdr_t *hdr;
 
-		deep_usleep(1 * 1000 * 1000);
+		/*
+		 * Wait for a BLE event - this task will block
+		 * indefinitely until something is received.
+		 */
+		hdr = ble_get_event(true);
 
-		hw_sys_pd_periph_enable();
-		hw_sys_pd_com_enable();
-#else
-		/* It's just to let other threads to execute. */
-		sleep(3600);
-#endif
+		if (!hdr) {
+			continue;
+		}
+
+		switch (hdr->evt_code) {
+		case BLE_EVT_GAP_CONNECTED:
+			handle_evt_gap_connected((ble_evt_gap_connected_t *) hdr);
+			break;
+		case BLE_EVT_GAP_DISCONNECTED:
+			handle_evt_gap_disconnected((ble_evt_gap_disconnected_t *) hdr);
+			break;
+		case BLE_EVT_GAP_PAIR_REQ:
+			handle_evt_gap_pair_req((ble_evt_gap_pair_req_t *) hdr);
+			break;
+		default:
+			ble_handle_event_default(hdr);
+			break;
+		}
+
+		/* Free event buffer (it's not needed anymore) */
+		OS_FREE(hdr);
 	}
 
 	return 0;
