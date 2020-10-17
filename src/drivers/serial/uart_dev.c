@@ -68,6 +68,18 @@ INDEX_DEF(serial_indexator, 0, UART_MAX_N);
 
 extern int ttys_register(const char *name, void *dev_info);
 
+static void uart_internal_init(struct uart *uart) {
+	if (uart_state_test(uart, UART_STATE_INITED)) {
+		return;
+	}
+	uart_state_set(uart, UART_STATE_INITED);
+
+	ring_buff_init(&uart->uart_rx_ring, sizeof(uart->uart_rx_buff[0]),
+			UART_RX_BUFF_SZ, uart->uart_rx_buff);
+
+	dlist_add_next(&uart->uart_lnk, &uart_list);
+}
+
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
 	int res;
@@ -92,13 +104,6 @@ int uart_register(struct uart *uart,
 		return res;
 	}
 
-	uart->state = 0;
-
-	ring_buff_init(&uart->uart_rx_ring, sizeof(uart->uart_rx_buff[0]),
-			UART_RX_BUFF_SZ, uart->uart_rx_buff);
-
-	dlist_add_next(&uart->uart_lnk, &uart_list);
-
 	return 0;
 }
 
@@ -115,6 +120,8 @@ int uart_open(struct uart *uart) {
 	}
 
 	uart_state_set(uart, UART_STATE_OPEN);
+
+	uart_internal_init(uart);
 
 	uart_setup(uart);
 

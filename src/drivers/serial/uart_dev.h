@@ -26,6 +26,7 @@
 #define UART_SYNC_FIFO   (1 << 6))
 */
 #define UART_STATE_RX_ACTIVE  (1 << 8)
+#define UART_STATE_INITED     (1 << 10)
 
 struct uart;
 struct uart_desc;
