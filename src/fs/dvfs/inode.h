@@ -41,4 +41,10 @@ extern void inode_ctime_set(struct inode *node, unsigned ctime);
 extern unsigned inode_mtime(const struct inode *node);
 extern void inode_mtime_set(struct inode *node, unsigned mtime);
 
+extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
+#define inode_new     dvfs_alloc_inode
+
+extern int            dvfs_destroy_inode(struct inode *inode);
+#define inode_del     dvfs_destroy_inode
+
 #endif /* SRC_FS_DVFS_INODE_H_ */

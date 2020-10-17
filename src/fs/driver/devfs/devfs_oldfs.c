@@ -21,10 +21,6 @@
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
 
-/* Common part */
-struct idesc *devfs_open(struct inode *node, struct idesc *desc);
-int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
-
 extern struct inode_operations devfs_iops;
 
 static struct super_block *devfs_sb;
@@ -106,69 +102,6 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 
 	return 0;
 }
-
-void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags) {
-	assert(inode);
-	assert(devmod);
-
-	inode_priv_set(inode, devmod);
-	inode->i_mode = flags;
-}
-
-extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
-extern struct dev_module **get_cdev_tab(void);
-
-/**
- * @brief Find file in directory
- *
- * @param name Name of file
- * @param dir  Not used in this driver as we assume there are no nested
- * directories
- *
- * @return Pointer to inode structure or NULL if failed
- */
-static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
-	struct block_dev **bdevs;
-	int i;
-	struct dev_module **cdevtab;
-
-	cdevtab = get_cdev_tab();
-	bdevs = get_bdev_tab();
-	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
-		if (bdevs[i] == NULL) {
-			continue;
-		}
-
-		if (0 == strncmp(bdevs[i]->name, name, sizeof(bdevs[i]->name))) {
-			if (devfs_add_block(bdevs[i]->dev_module)) {
-				return NULL;
-			}
-			return bdevs[i]->dev_vfs_info;
-		}
-	}
-
-	/* Dynamically allocated devices */
-	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
-		if (cdevtab[i] == NULL) {
-			continue;
-		}
-
-		if (0 == strncmp(cdevtab[i]->name, name, sizeof(cdevtab[i]->name))) {
-			struct inode *inode;
-			if (devfs_add_char(cdevtab[i], &inode)) {
-				return NULL;
-			}
-			return inode;
-		}
-	}
-	return NULL;
-}
-
-struct inode_operations devfs_iops = {
-	.lookup   = devfs_lookup,
-	.iterate  = devfs_iterate,
-	.create   = devfs_create,
-};
 
 void devfs_notify_new_module(struct dev_module *devmod) {
 	struct block_dev **bdevs;

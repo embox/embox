@@ -30,9 +30,6 @@
 
 #include <module/embox/driver/block_dev.h>
 
-/* Common part */
-int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
-
 /**
  * @brief Do nothing
  *
@@ -42,57 +39,6 @@ int devfs_create(struct inode *i_new, struct inode *i_dir, int mode);
  */
 static int devfs_destroy_inode(struct inode *inode) {
 	return 0;
-}
-
-void devfs_fill_inode(struct inode *inode,
-		struct dev_module *devmod, int flags) {
-	assert(inode);
-	assert(devmod);
-
-	inode->i_data = devmod;
-	inode->i_mode = flags;
-}
-
-extern int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
-ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
-extern struct dev_module **get_cdev_tab(void);
-/**
- * @brief Find file in directory
- *
- * @param name Name of file
- * @param dir  Not used in this driver as we assume there are no nested
- * directories
- *
- * @return Pointer to inode structure or NULL if failed
- */
-static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
-	int i;
-	struct inode *node;
-	struct block_dev **bdevtab = get_bdev_tab();
-	struct dev_module **cdevtab = get_cdev_tab();
-
-	if (NULL == (node = dvfs_alloc_inode(dir->i_sb))) {
-		return NULL;
-	}
-
-	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
-		if (bdevtab[i] && !strcmp(bdevtab[i]->name, name)) {
-			devfs_fill_inode(node, bdevtab[i]->dev_module, S_IFBLK);
-			node->length = bdevtab[i]->size;
-			return node;
-		}
-	}
-
-	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
-		if (cdevtab[i] && !strcmp(cdevtab[i]->name, name)) {
-			devfs_fill_inode(node, cdevtab[i], S_IFCHR);
-			return node;
-		}
-	}
-
-	dvfs_destroy_inode(node);
-
-	return NULL;
 }
 
 extern struct idesc_ops idesc_bdev_ops;
@@ -128,18 +74,14 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	return desc;
 }
 
-struct super_block_operations devfs_sbops = {
+static struct super_block_operations devfs_sbops = {
 	.open_idesc = devfs_open_idesc,
 	.destroy_inode = devfs_destroy_inode,
 };
 
-struct inode_operations devfs_iops = {
-	.lookup   = devfs_lookup,
-	.iterate  = devfs_iterate,
-	.create   = devfs_create,
-};
-
+extern struct inode_operations devfs_iops;
 extern struct file_operations devfs_fops ;
+
 static int devfs_fill_sb(struct super_block *sb, const char *source) {
 	if (source) {
 		return -1;

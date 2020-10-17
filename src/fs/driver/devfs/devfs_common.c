@@ -15,6 +15,7 @@
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <util/array.h>
 
 extern struct idesc_ops idesc_bdev_ops;
@@ -36,7 +37,7 @@ static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
 	return 0;
 }
 
-int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
+static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
@@ -45,10 +46,56 @@ struct file_operations devfs_fops = {
 	.ioctl = devfs_ioctl,
 };
 
-ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry);
 extern struct dev_module **get_cdev_tab(void);
 extern struct block_dev **get_bdev_tab(void);
-extern void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags);
+
+void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int flags) {
+	assert(inode);
+	assert(devmod);
+
+	inode_priv_set(inode, devmod);
+	inode->i_mode = flags;
+}
+
+/**
+ * @brief Find file in directory
+ *
+ * @param name Name of file
+ * @param dir  Not used in this driver as we assume there are no nested
+ * directories
+ *
+ * @return Pointer to inode structure or NULL if failed
+ */
+static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
+	int i;
+	struct inode *node;
+	struct block_dev **bdevtab = get_bdev_tab();
+	struct dev_module **cdevtab = get_cdev_tab();
+
+	if (NULL == (node = inode_new(dir->i_sb))) {
+		return NULL;
+	}
+
+	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
+		if (bdevtab[i] && !strcmp(bdevtab[i]->name, name)) {
+			devfs_fill_inode(node, bdevtab[i]->dev_module, S_IFBLK);
+			node->length = bdevtab[i]->size;
+			return node;
+		}
+	}
+
+	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
+		if (cdevtab[i] && !strcmp(cdevtab[i]->name, name)) {
+			devfs_fill_inode(node, cdevtab[i], S_IFCHR);
+			return node;
+		}
+	}
+
+	inode_del(node);
+
+	return NULL;
+}
+
 /**
  * @brief Iterate elements of /dev
  *
@@ -62,7 +109,7 @@ extern void devfs_fill_inode(struct inode *inode, struct dev_module *devmod, int
  *
  * @return Negative error code
  */
-int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
+static int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	int i;
 	struct block_dev **bdevtab = get_bdev_tab();
 	struct dev_module **cdevtab = get_cdev_tab();
@@ -97,3 +144,9 @@ int devfs_iterate(struct inode *next, char *name, struct inode *parent, struct d
 	/* End of directory */
 	return -1;
 }
+
+struct inode_operations devfs_iops = {
+	.lookup   = devfs_lookup,
+	.iterate  = devfs_iterate,
+	.create   = devfs_create,
+};
