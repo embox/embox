@@ -22,7 +22,7 @@ verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
 		echo ""; \
 		echo $(DOWNLOAD_DIR)/$(PKG_NAME).zip" not found\n"; \
-		echo "SDK is under SEGGER License. Please download archive here:"; \
+		echo "SDK is mostly under Dialog proprietary License. Please download archive here:"; \
 		echo "  $(PKG_SOURCES)"; \
 		echo "Copy downloaded archive to Embox download folder:"; \
 		echo "  cp $(PKG_NAME).zip embox/download/$(PKG_NAME).zip"; \
