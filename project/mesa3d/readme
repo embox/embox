@@ -1,0 +1,18 @@
+Mesa3D is used in Embox as OpenGL library. There are demos on following platforms:
+ * arm-qemu with integrator cp machine
+ * x86- qemu
+ Both of them use osmesa plugin (soft-rendering mode).
+
+Prepare to build
+
+You must install install xorg-macros 1.2 or later
+`sudo apt-get install xutils-dev`
+
+package 'pciaccess'
+`sudo apt-get install libpciaccess-dev`
+
+package 'libtool'
+`sudo apt-get install libtool`
+
+To run use auto_qemu `./scripts/qemu/auto_qemu`
+OpenGL demo 'osdemofb' is started automatically
