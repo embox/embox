@@ -8,7 +8,7 @@ package third_party.bsp.dialog.da14695.pwr.cmd
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 module deepsleep_test {
 	option number loop_cnt = 10
-	option number sleep_time = 10
+	option number sleep_sec = 10
 
 	@Cflags("-Wno-undef")
 	source "deepsleep_test.c"
