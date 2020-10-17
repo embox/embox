@@ -20,7 +20,7 @@
 #include <sys_clock_mgr_internal.h>
 #include <sys_usb_da1469x.h>
 
-#include <third_party/dialog/da14695/usb_da1469x.h>
+#include "usb_da1469x.h"
 
 #define USB_IRQ           OPTION_GET(NUMBER, usb_irq)
 #define VBUS_IRQ          OPTION_GET(NUMBER, vbus_irq)

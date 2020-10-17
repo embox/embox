@@ -68,40 +68,6 @@ static module memory {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-abstract module usb_dev_api { }
-
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module usb_dev_direct extends usb_dev_api {
-	option number log_level = 1
-	option number usb_irq = 15
-	option number vbus_irq = 21
-
-	@IncludeExport(path="third_party/dialog/da14695")
-	source "usb_da1469x.h"
-
-	@Cflags("-Wno-undef")
-
-	source "usb_da1469x.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-}
-
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module usb_dev_sdk extends usb_dev_api {
-	option number log_level = 1
-	option number usb_irq = 15
-	option number vbus_irq = 21
-
-	@IncludeExport(path="third_party/dialog/da14695")
-	source "usb_da1469x.h"
-
-	@Cflags("-Wno-undef")
-
-	source "usb_sdk_da1469x.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-}
-
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module system_init {
 	@Cflags("-Wno-undef")

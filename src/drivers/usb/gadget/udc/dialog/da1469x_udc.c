@@ -20,7 +20,7 @@
 #include <embox/unit.h>
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/gadget/udc.h>
-#include <third_party/dialog/da14695/usb_da1469x.h>
+#include "usb_da1469x.h"
 
 EMBOX_UNIT_INIT(da1469x_udc_init);
 
