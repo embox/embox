@@ -84,22 +84,6 @@ static module system_init {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-@BuildDepends(third_party.bsp.dialog.da14695.system_init)
-static module arch_init extends embox.arch.arch {
-	option number pll_lock_irq    = 33
-	option number xtal32m_rdy_irq = 26
-
-	/* Flash size in Kb */
-	option number flash_size=1024
-
-	@Cflags("-Wno-undef")
-
-	source "arch.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
-	@NoRuntime depends third_party.bsp.dialog.da14695.lp_clk
-}
-
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module libble_stack {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/binaries/DA1469x-Release")
