@@ -250,6 +250,12 @@ static inline int access(const char *path, int amode) {
 
 extern void swab(const void *bfrom, void *bto, ssize_t n);
 
+/**
+ * @param argc is the number of arguments on cmdline
+ * @param argv is the pointer to array of cmdline arguments
+ * @param opts is the string of all valid options
+ * each char case must be given; options taking an arg are followed by = ':'
+ */
 extern int getopt(int argc, char *const argv[], const char *opts);
 
 extern char *optarg; /**< argument to optopt */
