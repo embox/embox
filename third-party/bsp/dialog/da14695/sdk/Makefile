@@ -1,8 +1,6 @@
 
-#PKG_NAME := SDK_10.0.8.105
-#PKG_MD5     := ff136c082317acb3fe161daf3e02e6bb
 PKG_NAME := SDK_10.0.10.118
-PKG_MD5     := 17ba2eba5a02146b0f4f6c6375829514
+PKG_MD5  := 17ba2eba5a02146b0f4f6c6375829514
 
 PKG_SOURCES := https://support.dialog-semiconductor.com/system/files/restricted/$(PKG_NAME).zip
 
