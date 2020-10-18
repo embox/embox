@@ -274,6 +274,20 @@ extern char **environ;
 #define PASS_MAX 32
 extern char *getpass(const char *prompt);
 
+/**
+ * @brief Non posix extension of deprecated @a getpass that not use static buffers and
+ * therefore thread-safe.
+ *
+ * @param prompt Prompt to be printed to user
+ * @param buf Buffer to store user's input
+ * @param buflen @a buf length
+ *
+ * @return
+ * 	NULL on error
+ * 	pointer to user entered password
+ */
+extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
+
 extern int gethostname(char *name, size_t len);
 
 extern int chown(const char *path, uid_t owner, gid_t group);

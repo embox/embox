@@ -29,8 +29,6 @@
 
 #include <crypt.h>
 
-extern char *getpass_r(const char *prompt, char *buf, size_t buflen);
-
 #define BUF_LEN 64
 
 #define LOGIN_PROMPT "login: "
