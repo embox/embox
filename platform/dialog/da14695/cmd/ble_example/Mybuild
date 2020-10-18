@@ -1,4 +1,4 @@
-package third_party.bsp.dialog.da14695.cmd
+package platform.dialog.da14695.cmd
 
 @AutoCmd
 @Cmd(name = "ble_example_sdk",
