@@ -11,4 +11,13 @@ module deepsleep {
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 	depends deepsleep_wakeup
+	depends lp_clk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module lp_clk {
+	@Cflags("-Wno-undef")
+	source "lp_clk.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }

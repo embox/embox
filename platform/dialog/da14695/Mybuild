@@ -13,5 +13,4 @@ static module arch_init extends embox.arch.arch {
 	source "arch.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
-	@NoRuntime depends third_party.bsp.dialog.da14695.lp_clk
 }
