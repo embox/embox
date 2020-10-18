@@ -14,7 +14,6 @@ module deepsleep_test {
 	source "deepsleep_test.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-	@NoRuntime depends third_party.bsp.dialog.da14695.ble_arch_main_sdk
 }
 
 @AutoCmd
