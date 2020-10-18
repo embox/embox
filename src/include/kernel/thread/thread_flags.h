@@ -10,6 +10,7 @@
 #define THREAD_FLAGS_H_
 
 #define THREAD_FLAG_DETACHED         (0x1 << 1) /**< Initially detached. */
+#define THREAD_FLAG_JOINABLE         (0x0 << 1) /**< Initially not detached. */
 
 /** Create thread with parent priority */
 #define THREAD_FLAG_PRIORITY_INHERIT (0x1 << 2)
