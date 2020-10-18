@@ -11,8 +11,6 @@ module da1469x_udc {
 	depends usb_dev_api
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-	/* FIXME */
-	depends third_party.bsp.dialog.da14695.ble_arch_main_api
 }
 
 @DefaultImpl(usb_dev_sys)

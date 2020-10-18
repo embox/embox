@@ -92,15 +92,8 @@ static module libble_stack {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-@DefaultImpl(ble_arch_main_stub)
-abstract module ble_arch_main_api { }
-
-static module ble_arch_main_stub extends ble_arch_main_api {
-	source "ble_arch_main_stub.c"
-}
-
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module ble_arch_main_sdk extends ble_arch_main_api {
+static module ble_arch_main_sdk {
 	option number cmac2sys_irq = 4
 
 	@Cflags("-Wno-undef")
