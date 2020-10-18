@@ -15,12 +15,3 @@ module deepsleep_test {
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
-
-@AutoCmd
-@Cmd(name = "wfi_test",
-	help = "wfi_test",
-	man = '''
-	''')
-module wfi_test {
-	source "wfi_test.c"
-}
