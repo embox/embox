@@ -1,4 +1,4 @@
-package third_party.bsp.dialog.da14695.pwr.cmd
+package platform.dialog.da14695.pwr.cmd
 
 @AutoCmd
 @Cmd(name = "deepsleep_test",
