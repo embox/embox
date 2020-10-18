@@ -1,10 +1,6 @@
 package third_party.bsp.dialog.da14695
 
-@BuildArtifactPath(cppflags="-include$(INCUDE_INSTALL_DIR)/config/custom_config_qspi.h")
-module custom_config {
-	@IncludeExport(path="config")
-	source "custom_config_qspi.h"
-
+module sdk_lds {
 	source "sdk_retention.lds.S"
 }
 
