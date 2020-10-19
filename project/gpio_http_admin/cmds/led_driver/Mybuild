@@ -1,4 +1,4 @@
-package platform.gpio_httpd_admin
+package project.gpio_httpd_admin
 
 @AutoCmd
 @Cmd(name="led_driver", help="Drives GPIO leds", man="")
