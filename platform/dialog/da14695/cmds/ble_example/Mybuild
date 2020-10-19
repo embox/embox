@@ -1,4 +1,4 @@
-package third_party.bsp.dialog.da14695.cmd
+package platform.dialog.da14695.cmd
 
 @AutoCmd
 @Cmd(name = "ble_example_sdk",
@@ -32,7 +32,7 @@ module ble_example_direct {
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
-module ble_adapter_direct extends third_party.bsp.dialog.da14695.ble_arch_main_api {
+module ble_adapter_direct {
 	option number log_level = 4
 
 	@Cflags("-Wno-undef")

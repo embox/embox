@@ -1,8 +1,6 @@
 
-#PKG_NAME := SDK_10.0.8.105
-#PKG_MD5     := ff136c082317acb3fe161daf3e02e6bb
 PKG_NAME := SDK_10.0.10.118
-PKG_MD5     := 17ba2eba5a02146b0f4f6c6375829514
+PKG_MD5  := 17ba2eba5a02146b0f4f6c6375829514
 
 PKG_SOURCES := https://support.dialog-semiconductor.com/system/files/restricted/$(PKG_NAME).zip
 
@@ -22,7 +20,7 @@ verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
 		echo ""; \
 		echo $(DOWNLOAD_DIR)/$(PKG_NAME).zip" not found\n"; \
-		echo "SDK is under SEGGER License. Please download archive here:"; \
+		echo "SDK is mostly under Dialog proprietary License. Please download archive here:"; \
 		echo "  $(PKG_SOURCES)"; \
 		echo "Copy downloaded archive to Embox download folder:"; \
 		echo "  cp $(PKG_NAME).zip embox/download/$(PKG_NAME).zip"; \

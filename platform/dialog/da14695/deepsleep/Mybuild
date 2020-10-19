@@ -1,0 +1,23 @@
+package platform.dialog.da14695
+
+module deepsleep_wakeup {
+	source "deepsleep_wakeup.S"
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module deepsleep {
+	@Cflags("-Wno-undef")
+	source "deepsleep.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+	depends deepsleep_wakeup
+	depends lp_clk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module lp_clk {
+	@Cflags("-Wno-undef")
+	source "lp_clk.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}

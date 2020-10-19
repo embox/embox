@@ -1,10 +1,6 @@
 package third_party.bsp.dialog.da14695
 
-@BuildArtifactPath(cppflags="-include$(INCUDE_INSTALL_DIR)/config/custom_config_qspi.h")
-module custom_config {
-	@IncludeExport(path="config")
-	source "custom_config_qspi.h"
-
+module sdk_lds {
 	source "sdk_retention.lds.S"
 }
 
@@ -68,40 +64,6 @@ static module memory {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-abstract module usb_dev_api { }
-
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module usb_dev_direct extends usb_dev_api {
-	option number log_level = 1
-	option number usb_irq = 15
-	option number vbus_irq = 21
-
-	@IncludeExport(path="third_party/dialog/da14695")
-	source "usb_da1469x.h"
-
-	@Cflags("-Wno-undef")
-
-	source "usb_da1469x.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-}
-
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module usb_dev_sdk extends usb_dev_api {
-	option number log_level = 1
-	option number usb_irq = 15
-	option number vbus_irq = 21
-
-	@IncludeExport(path="third_party/dialog/da14695")
-	source "usb_da1469x.h"
-
-	@Cflags("-Wno-undef")
-
-	source "usb_sdk_da1469x.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-}
-
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module system_init {
 	@Cflags("-Wno-undef")
@@ -118,22 +80,6 @@ static module system_init {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-@BuildDepends(third_party.bsp.dialog.da14695.system_init)
-static module arch_init extends embox.arch.arch {
-	option number pll_lock_irq    = 33
-	option number xtal32m_rdy_irq = 26
-
-	/* Flash size in Kb */
-	option number flash_size=1024
-
-	@Cflags("-Wno-undef")
-
-	source "arch.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
-	@NoRuntime depends third_party.bsp.dialog.da14695.lp_clk
-}
-
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module libble_stack {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/binaries/DA1469x-Release")
@@ -142,15 +88,8 @@ static module libble_stack {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }
 
-@DefaultImpl(ble_arch_main_stub)
-abstract module ble_arch_main_api { }
-
-static module ble_arch_main_stub extends ble_arch_main_api {
-	source "ble_arch_main_stub.c"
-}
-
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module ble_arch_main_sdk extends ble_arch_main_api {
+static module ble_arch_main_sdk {
 	option number cmac2sys_irq = 4
 
 	@Cflags("-Wno-undef")
@@ -188,14 +127,6 @@ static module ble_adapter {
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/dialog/da14695/sdk/SDK_10.0.10.118/sdk/interfaces/ble/adapter/src")
 	source "ad_ble.c"
-
-	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
-}
-
-@BuildDepends(third_party.bsp.dialog.da14695.sdk)
-static module lp_clk {
-	@Cflags("-Wno-undef")
-	source "lp_clk.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 }

@@ -18,7 +18,6 @@ module ccid {
 
 	@NoRuntime depends ccid_sources
 	@NoRuntime depends ccid_card_api
-	depends third_party.bsp.dialog.da14695.usb_dev_api
 }
 
 abstract module ccid_card_api {
@@ -34,5 +33,4 @@ module ccid_card_emulated extends ccid_card_api {
 	source "ccid_card_emulated.c"
 
 	@NoRuntime depends ccid_sources
-	depends third_party.bsp.dialog.da14695.usb_dev_api
 }

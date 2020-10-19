@@ -1,0 +1,43 @@
+package embox.driver.usb.gadget.udc
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+module da1469x_udc {
+	option number log_level = 1
+
+	@Cflags("-Wno-undef")
+
+	source "da1469x_udc.c"
+
+	depends usb_dev_api
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@DefaultImpl(usb_dev_sys)
+abstract module usb_dev_api { }
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module usb_dev_hw extends usb_dev_api {
+	option number log_level = 1
+	option number usb_irq = 15
+	option number vbus_irq = 21
+
+	@Cflags("-Wno-undef")
+
+	source "usb_da1469x_hw.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
+
+@BuildDepends(third_party.bsp.dialog.da14695.sdk)
+static module usb_dev_sys extends usb_dev_api {
+	option number log_level = 1
+	option number usb_irq = 15
+	option number vbus_irq = 21
+
+	@Cflags("-Wno-undef")
+
+	source "usb_da1469x_sys.c"
+
+	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
+}
