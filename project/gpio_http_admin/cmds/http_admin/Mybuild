@@ -1,4 +1,4 @@
-package platform.gpio_httpd_admin
+package project.gpio_httpd_admin
 
 @Cmd(name="http_admin_backend", help="", man="")
 @BuildDepends(third_party.lib.cjson)

@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Based on platform/stm32f4_iocontrol/cmds/libleddrv_ll.c
+ * @brief Based on project/stm32f4_iocontrol/cmds/libleddrv_ll.c
  *
  * @author  Alexander Kalmuk
  * @date    20.08.2019
