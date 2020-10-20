@@ -28,8 +28,8 @@ EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/./build/extbld/third_party/games/quake3
 EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/extbld/third_party/games/quake3/ioq3/code/curl-7.54.0/include/
 EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/extbld/third_party/games/quake3/ioq3/./code/SDL2/include/
 EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/./build/extbld/third_party/lib/sdl2/SDL2-2.0.8/include/
-EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/./build/extbld/third_party/lib/OpenLibm/openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/src/
-EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/extbld/third_party/lib/OpenLibm/openlibm-2252cbd02c176a31f74fa10f8fcdf926c3124987/include/
+EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/./build/extbld/third_party/lib/OpenLibm/openlibm-0.7.0/src/
+EMBOX_IMPORTED_CFLAGS   += -I$(ROOT_DIR)/build/extbld/third_party/lib/OpenLibm/openlibm-0.7.0/include/
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

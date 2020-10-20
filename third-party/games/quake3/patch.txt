@@ -367,9 +367,20 @@ diff -aur ioq3-orig/Makefile ioq3/Makefile
  
  $(B)/$(MISSIONPACK)/vm/cgame.qvm: $(MPCGVMOBJ) $(CGDIR)/cg_syscalls.asm $(Q3ASM)
  	$(echo_cmd) "Q3ASM $@"
-diff -aur ioq3-orig/code/renderergl1/tr_init.c ioq3/code/renderergl1/tr_init.c
---- ioq3-orig/code/renderergl1/tr_init.c	2018-10-24 14:04:17.000000000 +0300
-+++ ioq3/code/renderergl1/tr_init.c	2018-11-06 13:38:06.489802422 +0300
+diff -aur ioq3/code/qcommon/files.c ../build/extbld/third_party/games/quake3/ioq3/code/qcommon/files.c
+--- ioq3/code/qcommon/files.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/qcommon/files.c	2020-10-20 15:33:59.850246349 +0300
+@@ -523,6 +523,7 @@
+ ============
+ */
+ qboolean FS_CreatePath (char *OSPath) {
++	return qfalse;
+ 	char	*ofs;
+ 	char	path[MAX_OSPATH];
+ 	
+diff -aur ioq3/code/renderergl1/tr_init.c ../build/extbld/third_party/games/quake3/ioq3/code/renderergl1/tr_init.c
+--- ioq3/code/renderergl1/tr_init.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/renderergl1/tr_init.c	2020-10-20 15:18:25.234560139 +0300
 @@ -269,7 +269,7 @@
  	{ "Mode  0: 320x240",		320,	240,	1 },
  	{ "Mode  1: 400x300",		400,	300,	1 },
@@ -379,9 +390,9 @@ diff -aur ioq3-orig/code/renderergl1/tr_init.c ioq3/code/renderergl1/tr_init.c
  	{ "Mode  4: 800x600",		800,	600,	1 },
  	{ "Mode  5: 960x720",		960,	720,	1 },
  	{ "Mode  6: 1024x768",		1024,	768,	1 },
-diff -aur ioq3-orig/code/renderergl2/tr_init.c ioq3/code/renderergl2/tr_init.c
---- ioq3-orig/code/renderergl2/tr_init.c	2018-10-24 14:04:17.000000000 +0300
-+++ ioq3/code/renderergl2/tr_init.c	2018-11-06 13:38:14.377846548 +0300
+diff -aur ioq3/code/renderergl2/tr_init.c ../build/extbld/third_party/games/quake3/ioq3/code/renderergl2/tr_init.c
+--- ioq3/code/renderergl2/tr_init.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/renderergl2/tr_init.c	2020-10-20 15:18:25.234560139 +0300
 @@ -347,7 +347,7 @@
  	{ "Mode  0: 320x240",		320,	240,	1 },
  	{ "Mode  1: 400x300",		400,	300,	1 },
@@ -391,10 +402,18 @@ diff -aur ioq3-orig/code/renderergl2/tr_init.c ioq3/code/renderergl2/tr_init.c
  	{ "Mode  4: 800x600",		800,	600,	1 },
  	{ "Mode  5: 960x720",		960,	720,	1 },
  	{ "Mode  6: 1024x768",		1024,	768,	1 },
-diff -aur ioq3-orig/code/sys/sys_main.c ioq3/code/sys/sys_main.c
---- ioq3-orig/code/sys/sys_main.c	2018-10-24 14:04:17.000000000 +0300
-+++ ioq3/code/sys/sys_main.c	2018-11-06 13:40:09.114474148 +0300
-@@ -319,6 +319,7 @@
+diff -aur ioq3/code/sys/sys_main.c ../build/extbld/third_party/games/quake3/ioq3/code/sys/sys_main.c
+--- ioq3/code/sys/sys_main.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/sys/sys_main.c	2020-10-20 15:18:25.238562194 +0300
+@@ -254,6 +254,7 @@
+ =================
+ */
+ void Sys_InitPIDFile( const char *gamedir ) {
++	return;
+ 	if( Sys_WritePIDFile( gamedir ) ) {
+ #ifndef DEDICATED
+ 		char message[1024];
+@@ -319,6 +320,7 @@
  cpuFeatures_t Sys_GetProcessorFeatures( void )
  {
  	cpuFeatures_t features = 0;

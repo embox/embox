@@ -10,8 +10,8 @@ module sdl2 {
 	source "libSDL2.a"
 
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-17.0.3/src/mesa/main/")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include")
+	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/src/mesa/main/")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/sdl2/SDL2-2.0.8/src/video/qnx/")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/sdl2/SDL2-2.0.8/include/")
 	source "embox.c", "gl.c"
@@ -19,4 +19,6 @@ module sdl2 {
 	depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.stubs
 	depends embox.driver.video.fb_overlay
+	depends embox.compat.posix.semaphore
+	depends embox.compat.posix.sys.mman.shm_mem
 }
