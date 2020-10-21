@@ -4,8 +4,6 @@ package third_party.bsp.stml4cube.stm32l4_discovery
 @BuildArtifactPath(cppflags="-DSTM32L475xx -DUSE_RTOS=0 -I$(ROOT_DIR)/third-party/bsp/stml4cube/ -I$(ROOT_DIR)/third-party/bsp/stml4cube/stm32l4_discovry $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/stm32l4_discovery/core/STM32CubeL4-1.14.0/,Drivers/STM32L4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include Drivers/BSP/STM32L4-Discovery)")
 static module core extends third_party.bsp.st_bsp_api {
 
-	option number hse_freq_hz = 8000000 /* STM32l4Discovery oscillator */
-
 	@Cflags("-Wno-unused")
 	@DefineMacro("STM32L475xx")
 	@DefineMacro("USE_RTOS=0")

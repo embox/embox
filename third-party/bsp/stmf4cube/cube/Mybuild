@@ -10,8 +10,6 @@ module cube_cppflags {
 @BuildDepends(cube_cppflags)
 @BuildDepends(third_party.bsp.stmf4cube.stm32f4_bsp)
 static module cube {
-
-	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
 	option number eth_rx_packet_count = 4
 	option number eth_tx_packet_count = 2
 
