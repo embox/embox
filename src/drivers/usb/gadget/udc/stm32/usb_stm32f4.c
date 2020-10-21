@@ -17,7 +17,7 @@
 
 #include "stm32f4xx_hal.h"
 
-#include <third_party/stmf4cube/usb_stm32f4.h>
+#include <drivers/udc/stm32/usb_stm32.h>
 
 #define USB_IRQ OPTION_GET(NUMBER, irq)
 

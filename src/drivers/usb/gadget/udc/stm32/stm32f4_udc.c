@@ -15,7 +15,8 @@
 #include <embox/unit.h>
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/gadget/udc.h>
-#include <third_party/stmf4cube/usb_stm32f4.h>
+
+#include <drivers/udc/stm32/usb_stm32.h>
 
 #include "stm32f4xx_hal.h"
 
@@ -85,8 +86,6 @@ static int stm32f4_udc_ep_queue(struct usb_gadget_ep *ep,
 }
 
 static void stm32f4_udc_ep_enable(struct usb_gadget_ep *ep) {
-	struct stm32f4_udc *u = (struct stm32f4_udc *) ep->udc;
-
 	assert(ep);
 }
 
@@ -216,7 +215,6 @@ static void stm32f4_ll_handle_standard_request(struct usb_control_header *req) {
  */
 void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
 	//TODO: nice to have a gadget state struct to contain all the info
-	struct usb_gadget_request *req;
 	int ret;
 
 	/* TODO: test changing memcpy with simple re-cast.
