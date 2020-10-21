@@ -2,9 +2,3 @@ package third_party.bsp.stmf1cube
 
 abstract module stm32f1_bsp {
 }
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-static module cmsis extends embox.arch.arm.cmsis {
-	source "cmsis_impl.h"
-	depends third_party.bsp.st_bsp_api
-}

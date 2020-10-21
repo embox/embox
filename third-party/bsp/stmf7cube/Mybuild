@@ -20,12 +20,6 @@ module arch extends embox.arch.arch {
 	depends third_party.bsp.stmf7cube.cube
 }
 
-@BuildDepends(third_party.bsp.stmf7cube.cube)
-module cmsis extends embox.arch.arm.cmsis {
-	source "cmsis_impl.h"
-	depends third_party.bsp.stmf7cube.cube
-}
-
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf7cube.cube)
 module sdram {
