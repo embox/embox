@@ -42,7 +42,9 @@ static int uart_rx_buff_put(struct uart *dev) {
 				}
 
 				ch = uart_getc(dev);
-				assert(1 == ring_buff_enqueue(&dev->uart_rx_ring, &ch, 1));
+				if(1 != ring_buff_enqueue(&dev->uart_rx_ring, &ch, 1)) {
+					assert(0);
+				}
 
 			}
 			irq_unlock();
