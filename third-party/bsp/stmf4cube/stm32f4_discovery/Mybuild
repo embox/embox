@@ -19,7 +19,7 @@ static module arch extends embox.arch.arch {
 	source "arch.c"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
-	source "./STM32CubeF4-1.25.0/Projects/STM32F4-Discovery/Examples/BSP/Src/system_stm32f4xx.c"
+	source "./STM32CubeF4-1.25.0/Projects/STM32F4-Discovery/Templates/Src/system_stm32f4xx.c"
 }
 
 @Build(stage=1)
