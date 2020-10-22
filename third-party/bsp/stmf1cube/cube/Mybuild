@@ -1,18 +1,18 @@
 package third_party.bsp.stmf1cube
 
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32F1_CUBE $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/,Drivers/STM32F1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include)")
+module cube_cppflags {
+
+}
+
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildDepends(third_party.bsp.stmf1cube.stm32f1_bsp)
-@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DUSE_RTOS=0 -DSTM32F1_CUBE -I$(ROOT_DIR)/third-party/bsp/stmf1cube/")
-@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/,Drivers/STM32F1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F1xx/Include Drivers/CMSIS/Include)")
+@BuildDepends(cube_cppflags)
+@BuildDepends(third_party.bsp.stmf1cube.stm32f1_conf)
 static module cube {
 
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
-	@DefineMacro("USE_HAL_DRIVER")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/STM32F1xx_HAL_Driver/Inc")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/CMSIS/Device/ST/STM32F1xx/Include")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/CMSIS/Include")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF1-1.8.1/Drivers/STM32F1xx_HAL_Driver/Src/")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF1-1.8.1/Drivers/STM32F1xx_HAL_Driver/Src")
 	source "stm32f1xx_hal.c",
 		"stm32f1xx_hal_cortex.c",
 		"stm32f1xx_hal_adc.c",
@@ -35,6 +35,6 @@ static module cube {
 		"stm32f1xx_hal_uart.c",
 		"stm32f1xx_hal_wwdg.c"
 
-	@NoRuntime depends third_party.bsp.stmf1cube.stm32f1_bsp
-		
+	@NoRuntime depends third_party.bsp.stmf1cube.stm32f1_conf
+	@NoRuntime depends cube_cppflags
 }
