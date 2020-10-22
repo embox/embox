@@ -13,7 +13,6 @@
 #include <hal/clock.h>
 #include <hal/ipl.h>
 
-#include <system_stm32l4xx.h>
 #include <stm32l4xx_hal.h>
 
 #include <framework/mod/options.h>
