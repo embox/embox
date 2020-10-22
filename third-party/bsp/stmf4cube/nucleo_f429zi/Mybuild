@@ -1,6 +1,6 @@
 package third_party.bsp.stmf4cube.nucleo_f429zi
 
-@BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F4XX_NUCLEO_144 -I$(ROOT_DIR)/third-party/bsp/stmf4cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/, Drivers/BSP/STM32F4xx_Nucleo_144)")
+@BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F4XX_NUCLEO_144 $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/, Drivers/BSP/STM32F4xx_Nucleo_144)")
 static module nucleo_f429zi_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
 	source "stm32f4xx_hal_conf.h"
