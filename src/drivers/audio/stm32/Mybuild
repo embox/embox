@@ -18,7 +18,6 @@ module stm32f746g_discovery {
 	depends embox.driver.audio.audio_dev
 
 	depends third_party.bsp.st_bsp_api
-	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_components
 }
 
@@ -43,6 +42,5 @@ module stm32f769i_discovery {
 	depends embox.driver.audio.audio_dev
 
 	depends third_party.bsp.st_bsp_api
-	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
 	depends third_party.bsp.stmf7cube.stm32f7_discovery_components
 }

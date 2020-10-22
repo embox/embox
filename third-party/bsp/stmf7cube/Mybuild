@@ -1,27 +1,10 @@
 package third_party.bsp.stmf7cube
 
-
-abstract module core extends third_party.bsp.st_bsp_api{
-}
-
-abstract module system_init {
-}
-
-abstract module stm32f7_bsp {
-}
-
-abstract module stm32f7_discovery_bsp {
-}
-
-@BuildDepends(third_party.bsp.stmf7cube.cube)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	depends third_party.bsp.stmf7cube.cube
+abstract module stm32f7_conf {
 }
 
 @Build(stage=1)
-@BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module sdram {
 	/* If true, swap SDRAM from 0xc0000000 to 0x60000000 */
 	option boolean fmc_swap = false
@@ -31,7 +14,5 @@ module sdram {
 	depends embox.kernel.time.jiffies
 	depends embox.kernel.sched.sched
 	depends embox.kernel.time.timekeeper
-	depends stm32f7_discovery_bsp
 	depends embox.driver.interrupt.cortexm_nvic
-	depends third_party.bsp.stmf7cube.cube
 }
