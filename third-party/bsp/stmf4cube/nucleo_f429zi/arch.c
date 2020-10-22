@@ -11,14 +11,10 @@
 
 #include <hal/arch.h>
 #include <hal/clock.h>
-
-#include <system_stm32f4xx.h>
-#include <stm32f4xx_hal.h>
-#include <stm32f4xx_hal_cortex.h>
-#include "stm32f4xx_hal_uart.h"
-#include <string.h>
 #include <framework/mod/options.h>
 #include <module/embox/arch/system.h>
+
+#include <stm32f4xx_hal.h>
 
 static void SystemClock_Config(void)
 {
