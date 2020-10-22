@@ -1,4 +1,4 @@
 package third_party.bsp.stmf4cube
 
-abstract module stm32f4_bsp {
+abstract module stm32f4_conf {
 }
