@@ -1,4 +1,4 @@
-package third_party.bsp.stmf1cube.stm32vl_discovery
+package platform.stm32.f1.stm32vl_discovery
 
 @Build(stage=1)
 static module stm32vl_discovery_conf extends third_party.bsp.stmf1cube.stm32f1_conf {
