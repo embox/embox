@@ -1,4 +1,4 @@
-package third_party.bsp.stmf7cube.stm32f769i_discovery
+package platform.stm32.f7.stm32f769i_discovery
 
 @Build(stage=1)
 @BuildArtifactPath(cppflags="-DSTM32F769xx")
