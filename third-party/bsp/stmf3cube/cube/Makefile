@@ -1,8 +1,8 @@
 
 PKG_NAME := stm32cubef3
+PKG_VER  := v1.11.0
 
-PKG_SOURCES := https://www.dropbox.com/s/c154pmnrmkhop7b/stm32cubef3.zip \
-	http://download.embox.rocks/stm32cubef3.zip
-PKG_MD5     := 0b6817c0da649bd4c15d2b141713dcec
+PKG_SOURCES := https://github.com/STMicroelectronics/STM32CubeF3/archive/$(PKG_VER).tar.gz
+PKG_MD5     := 02e9d799b424d6b5175ebcaf9cf02188
 
 include $(EXTBLD_LIB)

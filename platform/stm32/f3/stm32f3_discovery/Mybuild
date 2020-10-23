@@ -10,16 +10,16 @@ static module stm32f3_discovery_conf extends third_party.bsp.stmf3cube.stm32f3_c
 static module arch extends embox.arch.arch {
 	source "arch.c"
 
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf3cube/cube/STM32Cube_FW_F3_V1.6.0")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0")
 	source "Projects/STM32F3-Discovery/Examples/BSP/Src/system_stm32f3xx.c"
 }
 
 @Build(stage=1)
 @BuildDepends(stm32f3_discovery_conf)
 @BuildDepends(third_party.bsp.stmf3cube.cube)
-@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32Cube_FW_F3_V1.6.0/,Drivers/BSP/STM32F3-Discovery)")
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0/,Drivers/BSP/STM32F3-Discovery)")
 static module bsp extends third_party.bsp.st_bsp_api {
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf3cube/cube/STM32Cube_FW_F3_V1.6.0/Drivers/BSP/STM32F3-Discovery/")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0/Drivers/BSP/STM32F3-Discovery/")
 	source
 		"stm32f3_discovery.c",
 		"stm32f3_discovery_accelerometer.c",

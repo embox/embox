@@ -43,6 +43,12 @@
  extern "C" {
 #endif
 
+#define USE_HAL_I2C_REGISTER_CALLBACKS   0
+#define USE_HAL_SPI_REGISTER_CALLBACKS   0
+#define USE_HAL_TIM_REGISTER_CALLBACKS   0
+#define USE_HAL_UART_REGISTER_CALLBACKS  0
+#define USE_HAL_USART_REGISTER_CALLBACKS 0
+
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 

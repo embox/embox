@@ -1,6 +1,6 @@
 package third_party.bsp.stmf3cube
 
-@BuildArtifactPath(cppflags="-DUSE_RTOS=0 -DUSE_HAL_DRIVER $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32Cube_FW_F3_V1.6.0/Drivers/,STM32F3xx_HAL_Driver/Inc CMSIS/Device/ST/STM32F3xx/Include CMSIS/Include)")
+@BuildArtifactPath(cppflags="-DUSE_RTOS=0 -DUSE_HAL_DRIVER $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0/Drivers/,STM32F3xx_HAL_Driver/Inc CMSIS/Device/ST/STM32F3xx/Include CMSIS/Include)")
 module cube_cppflags {
 
 }
@@ -11,7 +11,8 @@ module cube_cppflags {
 static module cube {
 
 	@Cflags("-Wno-unused")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32Cube_FW_F3_V1.6.0/Drivers/STM32F3xx_HAL_Driver/Src/")
+	@Cflags("-Wno-undef")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF3-1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/")
 	source
 		"stm32f3xx_hal.c",
 		"stm32f3xx_hal_adc.c",
