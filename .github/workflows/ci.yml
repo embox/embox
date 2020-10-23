@@ -11,7 +11,7 @@ jobs:
         template:
           - aarch64/qemu
           - arm/qemu
-          - arm/stm32f4-discovery
+          - platform/stm32/f4/stm32f4-discovery
           - x86/qemu
           - x86/smp
           - x86/user_apps
