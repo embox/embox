@@ -1,4 +1,4 @@
-package third_party.bsp.stmf4cube.nucleo_f429zi
+package platform.stm32.f4.nucleo_f429zi
 
 @BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F4XX_NUCLEO_144")
 static module nucleo_f429zi_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
