@@ -1,0 +1,28 @@
+package platform.stm32.l4.nucleo_l476rg
+
+@BuildArtifactPath(cppflags="-DSTM32L476xx")
+static module nucleo_l476rg_conf extends third_party.bsp.stml4cube.stm32l4_conf {
+	@IncludeExport(path="")
+	source "stm32l4xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stml4cube.cube)
+static module arch extends embox.arch.arch {
+	source "arch.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stml4cube/cube")
+	source "./STM32CubeL4-1.14.0/Projects/NUCLEO-L476RG/Templates/Src/system_stm32l4xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(nucleo_l476rg_conf)
+@BuildDepends(third_party.bsp.stml4cube.cube)
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/,Drivers/BSP/STM32L4xx_Nucleo)")
+static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/Drivers/BSP/STM32L4xx_Nucleo")
+	source "stm32l4xx_nucleo.c"
+
+	@NoRuntime depends third_party.bsp.stml4cube.cube
+	@NoRuntime depends nucleo_l476rg_conf
+	@NoRuntime depends arch
+}

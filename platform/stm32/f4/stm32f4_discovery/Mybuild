@@ -1,0 +1,66 @@
+package platform.stm32.f4.stm32f4_discovery
+
+@BuildArtifactPath(cppflags="-DSTM32F407xx")
+static module stm32f4_discovery_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
+	@IncludeExport(path="")
+	source "stm32f4xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module arch extends embox.arch.arch {
+	/* STM32F40x and STM32F41x Errata sheet:
+	 *
+	 * https://www.st.com/content/ccc/resource/technical/document/errata_sheet/0a/98/58/84/86/b6/47/a2/DM00037591.pdf/files/DM00037591.pdf/jcr:content/translations/en.DM00037591.pdf
+	 *
+	 *  "2.5.2 Corrupted last bit of data and/or CRC,
+	 *  received in Master mode with delayed SCK feedback" */
+	option boolean errata_spi_wrong_last_bit = false
+
+	source "arch.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+	source "./STM32CubeF4-1.25.0/Projects/STM32F4-Discovery/Templates/Src/system_stm32f4xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(stm32f4_discovery_conf)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM32F4-Discovery)")
+static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP")
+	source "STM32F4-Discovery/stm32f4_discovery.c",
+			"STM32F4-Discovery/stm32f4_discovery_accelerometer.c",
+			"STM324xG_EVAL/stm324xg_eval_sd.c"
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends stm32f4_discovery_conf
+	@NoRuntime depends arch
+}
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildDepends(bsp)
+static module stm32f4_discovery_bsp_audio {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+	source "./STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/Components/cs43l22")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+	source "./STM32CubeF4-1.25.0/Drivers/BSP/Components/cs43l22/cs43l22.c"
+
+	depends pdm_filter_stub
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends bsp
+}
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildDepends(bsp)
+static module pdm_filter_stub {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Middlewares/ST/STM32_Audio/Addons/PDM")
+	source "pdm_filter_stub.c"
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends bsp
+}

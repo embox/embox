@@ -41,3 +41,5 @@ struct uart_conf uarts[] = {
 		.baudrate = 115200,
 	},
 };
+
+EXPORT_CONFIG(UART(uarts))

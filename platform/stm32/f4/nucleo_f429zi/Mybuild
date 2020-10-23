@@ -1,0 +1,28 @@
+package platform.stm32.f4.nucleo_f429zi
+
+@BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F4XX_NUCLEO_144")
+static module nucleo_f429zi_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
+	@IncludeExport(path="")
+	source "stm32f4xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module arch extends embox.arch.arch {
+	source "arch.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+	source "./STM32CubeF4-1.25.0/Projects/STM32F429ZI-Nucleo/Templates/Src/system_stm32f4xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(nucleo_f429zi_conf)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/, Drivers/BSP/STM32F4xx_Nucleo_144)")
+static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+	source "./STM32CubeF4-1.25.0/Drivers/BSP/STM32F4xx_Nucleo_144/stm32f4xx_nucleo_144.c"
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends nucleo_f429zi_conf
+	@NoRuntime depends arch
+}

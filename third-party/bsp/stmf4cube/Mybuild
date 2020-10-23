@@ -1,10 +1,4 @@
 package third_party.bsp.stmf4cube
 
-abstract module stm32f4_bsp {
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-static module cmsis extends embox.arch.arm.cmsis {
-	source "cmsis_impl.h"
-	depends third_party.bsp.st_bsp_api
+abstract module stm32f4_conf {
 }

@@ -1,0 +1,39 @@
+package platform.stm32.f7.stm32746g_discovery
+
+@Build(stage=1)
+@BuildArtifactPath(cppflags="-DSTM32F746xx")
+static module stm32f746g_conf extends third_party.bsp.stmf7cube.stm32f7_conf {
+	@IncludeExport(path="")
+	source "stm32f7xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+module arch extends embox.arch.arch {
+	source "arch.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32CubeF7-1.16.0/Projects/STM32746G-Discovery/Templates/Src/system_stm32f7xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(stm32f746g_conf)
+@BuildDepends(third_party.bsp.stmf7cube.cube)
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/,Drivers/BSP/STM32746G-Discovery)")
+static module bsp extends third_party.bsp.st_bsp_api {
+	/* Cubse LCD call SDRAM_Init, we don't wont that, so tell Cube's LCD do not init SDRAM */
+	@DefineMacro("DATA_IN_ExtSDRAM")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/BSP/STM32746G-Discovery")
+	source "stm32746g_discovery.c",
+			"stm32746g_discovery_sdram.c",
+			"stm32746g_discovery_lcd.c",
+			"stm32746g_discovery_audio.c",
+			"stm32746g_discovery_camera.c",
+			"stm32746g_discovery_eeprom.c",
+			"stm32746g_discovery_qspi.c",
+			"stm32746g_discovery_sd.c",
+			"stm32746g_discovery_ts.c"
+
+	@NoRuntime depends third_party.bsp.stmf7cube.cube
+	@NoRuntime depends stm32f746g_conf
+	@NoRuntime depends arch
+}

@@ -1,9 +1,4 @@
 package third_party.bsp.stml4cube
 
-
-abstract module stm32l4_bsp {
+abstract module stm32l4_conf {
 }
-
-abstract module system_init {
-}
-

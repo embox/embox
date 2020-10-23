@@ -18,5 +18,4 @@ module qspi_loader {
 	depends embox.lib.tftp
 	depends embox.driver.flash.stm32f7_qspi
 	depends third_party.bsp.st_bsp_api
-	depends third_party.bsp.stmf7cube.stm32f7_discovery_bsp
 }

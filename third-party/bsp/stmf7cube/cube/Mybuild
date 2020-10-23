@@ -1,19 +1,19 @@
 package third_party.bsp.stmf7cube
 
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/,Drivers/STM32F7xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include)")
+module cube_cppflags {
+
+}
+
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-@BuildDepends(third_party.bsp.stmf7cube.stm32f7_bsp)
-@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DUSE_STDPERIPH_DRIVER -DUSBD_LPM_ENABLED=1 -I$(ROOT_DIR)/third-party/bsp/stmf7cube/ $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/,Drivers/STM32F7xx_HAL_Driver/Inc  Drivers/CMSIS/Device/ST/STM32F7xx/Include Drivers/CMSIS/Include Utilities/Log Middlewares/ST/STM32_USB_Device_Library/Core/Inc Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc Middlewares/ST/STM32_USB_Host_Library/Core/Inc Middlewares/ST/STM32_USB_Host_Library/Class/MSC/Inc Middlewares/Third_Party/FatFs/src)")
+@BuildDepends(cube_cppflags)
+@BuildDepends(third_party.bsp.stmf7cube.stm32f7_conf)
 static module cube {
-	option number hse_freq_hz = 8000000 /* STM32F3Discovery oscillator */
 	option number eth_rx_packet_count = 5
 	option number eth_tx_packet_count = 5
 
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-attributes")
-	@DefineMacro("USE_HAL_DRIVER")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/STM32F7xx_HAL_Driver/Inc")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/CMSIS/Device/ST/STM32F7xx/Include")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/CMSIS/Include")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF7-1.16.0/Drivers/STM32F7xx_HAL_Driver/Src")
 	source
 		"stm32f7xx_hal.c",
@@ -79,4 +79,7 @@ static module cube {
 		"stm32f7xx_ll_fmc.c",
 		"stm32f7xx_ll_sdmmc.c",
 		"stm32f7xx_ll_usb.c"
+
+	@NoRuntime depends third_party.bsp.stmf7cube.stm32f7_conf
+	@NoRuntime depends cube_cppflags
 }

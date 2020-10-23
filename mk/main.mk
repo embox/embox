@@ -138,7 +138,7 @@ template_item=$(foreach t,$(patsubst %/build.conf,%,$2),$(call $1_name,$t)|$t)
 
 __templates := \
 	$(call template_item,template, $(call r-wildcard,$(TEMPLATES_DIR)/**/build.conf)) \
-	$(call template_item,platform_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(PLATFORM_DIR)/*/templates)))) \
+	$(call template_item,platform_template, $(call r-wildcard,$(PLATFORM_DIR)/**/build.conf)) \
 	$(call template_item,project_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(PROJECT_DIR)/*/templates)))) \
 	$(call template_item,ext_project_template, $(wildcard $(addsuffix /*/build.conf,$(wildcard $(EXT_PROJECT_DIR)/*/templates))))
 
