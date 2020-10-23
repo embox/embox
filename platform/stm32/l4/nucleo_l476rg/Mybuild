@@ -1,4 +1,4 @@
-package third_party.bsp.stml4cube.nucleo_l476rg
+package platform.stm32.l4.nucleo_l476rg
 
 @BuildArtifactPath(cppflags="-DSTM32L476xx")
 static module nucleo_l476rg_conf extends third_party.bsp.stml4cube.stm32l4_conf {

@@ -1,4 +1,4 @@
-package third_party.bsp.stml4cube.stm32l4_discovery
+package platform.stm32.l4.stm32l4_discovery
 
 @BuildArtifactPath(cppflags="-DSTM32L475xx")
 static module stm32l4_discovery_conf extends third_party.bsp.stml4cube.stm32l4_conf {
