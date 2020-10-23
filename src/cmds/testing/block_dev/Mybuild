@@ -23,4 +23,5 @@ module block_dev_test {
 	depends embox.driver.flash.core
 	depends embox.driver.block_dev
 	depends embox.util.pretty_print
+	depends embox.lib.LibCrypt
 }
