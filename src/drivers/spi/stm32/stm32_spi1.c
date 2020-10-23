@@ -15,9 +15,6 @@
 #if defined(STM32F407xx)
 #include <framework/mod/options.h>
 #include <config/platform/stm32/f4/stm32f4_discovery/arch.h>
-#elif defined(STM32L476xx)
-#include <framework/mod/options.h>
-#include <config/platform/stm32/f4/nucleo_l476rg/arch.h>
 #endif
 
 #include "stm32_spi.h"
