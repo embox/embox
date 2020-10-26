@@ -13,4 +13,9 @@ static module arch_init extends embox.arch.arch {
 	source "arch.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
+	@NoRuntime depends da1469x_lds_quirk
+}
+
+module da1469x_lds_quirk {
+	source "da1469x_quirk.lds.S"
 }
