@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <hal/clock.h>
 #include <hal/system.h>
+#include <arm/exception.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
@@ -28,8 +29,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 }
 
 static int this_init(void) {
-	clock_source_register(&this_clock_source);
-	return irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source, "stm32 systick timer");
+	return clock_source_register(&this_clock_source);
 }
 
 static int this_config(struct time_dev_conf * conf) {
@@ -64,4 +64,4 @@ static struct clock_source this_clock_source = {
 
 EMBOX_UNIT_INIT(this_init);
 
-STATIC_IRQ_ATTACH(SYSTICK_IRQ, clock_handler, &this_clock_source);
+STATIC_EXC_ATTACH(SYSTICK_IRQ, clock_handler, &this_clock_source);
