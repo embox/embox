@@ -15,19 +15,19 @@ _ram_size = LENGTH(RAM);
 SECTIONS {
 	.text : {
 		trap_table_start = .;
-		*(.trap_table)
+		KEEP(*(.trap_table));
 		trap_table_end = .;
 
 		*(.monitor_trap_table)
 
 		__static_irq_table_start = .;
-		*(.static_irq_table)
+		KEEP(*(.static_irq_table));
 		__static_irq_table_end = .;
 
-		*(.da14680_quirk)
-		*(.da1469x_quirk)
+		KEEP(*(.da14680_quirk));
+		KEEP(*(.da1469x_quirk));
 
-		*(.flash)
+		KEEP(*(.flash));
 
 		*(.text)
 		*(.text.*)
@@ -37,11 +37,11 @@ SECTIONS {
 	/* XXX symbols __exidx_start/end are required by libgcc.a --Alexander */
 	.ARM.exidx : {
 		__exidx_start = .;
-		*(.ARM.exidx*)
+		KEEP(*(.ARM.exidx*));
 		__exidx_end = .;
 	} SECTION_REGION(text)
 
 	.ARM.extab : {
-		*(.ARM.extab*)
+		KEEP(*(.ARM.extab*));
 	} SECTION_REGION(text)
 }
