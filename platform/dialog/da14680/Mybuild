@@ -1,0 +1,13 @@
+package platform.dialog.da14680
+
+module arch_init extends embox.arch.arch {
+	option number gpregs_base
+
+	source "arch.c"
+
+	@NoRuntime depends da14680_lds_quirk
+}
+
+module da14680_lds_quirk {
+	source "da14680_quirk.lds.S"
+}
