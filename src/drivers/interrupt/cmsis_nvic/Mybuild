@@ -1,0 +1,6 @@
+package embox.driver.interrupt
+
+@BuildDepends(embox.arch.arm.cmsis)
+module cmsis_nvic extends irqctrl_api {
+	source "cmsis_nvic.c", "cmsis_nvic.h"
+}
