@@ -198,6 +198,7 @@ $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \
+	--gc-sections \
 	-T $(image_lds) \
 	$(embox_o) \
 	--defsym=__symbol_table=0 \
@@ -207,6 +208,7 @@ $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 
 $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \
+	--gc-sections \
 	-T $(image_lds) \
 	$(embox_o) \
 	$(symbols_pass1_a) \
@@ -233,6 +235,7 @@ $(md5sums2_o) : $(GEN_DIR)/md5sums2.c
 
 $(image_nocksum): $(image_lds) $(embox_o) $(md5sums1_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \
+	--gc-sections \
 	-T $(image_lds) \
 	$(embox_o) \
 	$(md5sums1_o) \
@@ -242,6 +245,7 @@ $(image_nocksum): $(image_lds) $(embox_o) $(md5sums1_o) $(symbols_pass2_a) $$(co
 
 $(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(LD) $(relax) $(ldflags) \
+	--gc-sections \
 	-T $(image_lds) \
 	$(embox_o) \
 	$(md5sums2_o) \
