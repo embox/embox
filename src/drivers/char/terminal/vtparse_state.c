@@ -59,7 +59,7 @@ const __vtparse_state_actions_entry_t  __vtparse_state_actions_table
 		[0x9b         ] = ACTION_TRANSIT(NONE, CSI_ENTRY),
 
 const __vtparse_state_transition_entry_t  __vtparse_state_transition_table
-				[VTPARSE_STATES_TOTAL][0x100] = {
+				[VTPARSE_STATES_TOTAL][MAX_ANYWHERE_TRANSITIONS] = {
 	[STATE_INDEX(CSI_ENTRY)] = {
 		[0x00 ... 0x17] = ACTION_STAY(EXECUTE),
 		[0x19         ] = ACTION_STAY(EXECUTE),

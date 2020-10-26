@@ -28,7 +28,8 @@ enum vtparse_state {
 	VTPARSE_STATE_SOS_PM_APC_STRING   = 14
 };
 
-#define VTPARSE_STATES_TOTAL 14
+#define VTPARSE_STATES_TOTAL            14
+#define MAX_ANYWHERE_TRANSITIONS        0xA0
 
 typedef enum vtparse_state vtparse_state_t;
 
@@ -47,7 +48,7 @@ typedef uint8_t __vtparse_state_actions_entry_t;
 static inline __vtparse_state_transition_entry_t
 	    __vtparse_state_transition_entry(vtparse_state_t state, char ch) {
 	extern const __vtparse_state_transition_entry_t
-		__vtparse_state_transition_table[VTPARSE_STATES_TOTAL][0x100];
+		__vtparse_state_transition_table[VTPARSE_STATES_TOTAL][MAX_ANYWHERE_TRANSITIONS];
 	return __vtparse_state_transition_table
 			[__VTPARSE_STATE_TABLE_INDEX(state)][ch];
 }
