@@ -15,8 +15,6 @@ SECTIONS {
 	.text : {
 		KEEP(*(.trap_table));
 
-		KEEP(*(.flash));
-
 		*(.text)
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)
