@@ -16,7 +16,7 @@ SECTIONS {
 		_bootinfo_start = .;
 		/* . = 0x1000000 - 0x10000; */
 		/* 0x00FF0000 */
-		*(.x86_boot)
+		KEEP(*(.x86_boot));
 		. = _bootinfo_start + 0x10000;
 		_bootinfo_end = .;
 	}
@@ -25,18 +25,18 @@ SECTIONS {
 		_start = .;
 		 _t_entry = .;
 		/* Interrupt handler */
-		*(.ttable_entry0)
+		KEEP(*(.ttable_entry0));
 		. = _t_entry + 0x800;
 		/* Syscall handler */
-		*(.ttable_entry1)
+		KEEP(*(.ttable_entry1));
 		. = _t_entry + 0x1000;
 		/* longjmp handler */
-		*(.ttable_entry2)
+		KEEP(*(.ttable_entry2));
 		. = _t_entry + 0x1800;
 		_t_entry_end = .;
 
-		*(.e2k_entry)
-		*(.cpu_idle)
+		KEEP(*(.e2k_entry));
+		KEEP(*(.cpu_idle));
 
 		/* text */
 	} SECTION_REGION(text)
