@@ -20,16 +20,16 @@ _ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.text : {
-		*(.multiboot)
+		KEEP(*(.multiboot));
 		_traps_text_start = .;
-		*(.traps.*)
+		KEEP(*(.traps.*));
 		_traps_text_end = .;
-		*(.text)
-		*(.text.*)
+		KEEP(*(.text));
+		KEEP(*(.text.*));
 	}
 #if 0
 	.eh_frame : {
-		*(.eh_frame)
+		KEEP(*(.eh_frame))
 	} SECTION_REGION(data)
 #endif
 }
