@@ -13,9 +13,7 @@ _ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.text : {
-		*(.trap_table)
-
-		*(.flash)
+		KEEP(*(.trap_table));
 
 		*(.text)
 		*(.text.*)

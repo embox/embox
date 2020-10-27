@@ -14,7 +14,7 @@ _ram_size = LENGTH(RAM);
 
 SECTIONS {
 	.vectors : {
-		*(.vectors)
+		KEEP(*(.vectors));
 	} > vectors
 
 	.text : {

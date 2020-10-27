@@ -2,57 +2,61 @@
 package efm32zg_sk3200
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/CMSIS/Include")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/emlib/inc")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Device/EnergyMicro/EFM32ZG/Include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/kits/EFM32ZG_STK3200/config")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/kits/common/drivers")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/reptile/glib")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/platform/CMSIS/Include")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/platform/emlib/inc")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/platform/middleware/glib")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/platform/Device/SiliconLabs/EFM32ZG/Include")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/hardware/kit/EFM32ZG_STK3200/config")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/drivers/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/bsp/")
+//@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/platform/, Device/SiliconLabs/EFM32ZG/Include emlib/inc CMSIS/Include)") 
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/app/mcu_example/EFM32ZG_STK3200/glib")
+@BuildArtifactPath(cppflags="-D__CORTEX_SC=0") 
 module bsp_get { }
 
 @BuildDepends(bsp_get)
 static module bsp extends embox.arch.arm.cmsis {
 
+	@DefineMacro("DOXY_DOC_ONLY=0")
 	@DefineMacro("UART_COUNT=1") // FIXME required by leuart define
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/kits/EFM32ZG_STK3200/examples/spaceinvaders") // FIXME required by display driver
-	@AddPrefix("^BUILD/extbld/efm32zg_sk3200/bsp_get")
-	source "emlib/src/em_timer.c",
-		"emlib/src/em_adc.c",
-		"emlib/src/em_acmp.c",
-		"emlib/src/em_dbg.c",
-		"emlib/src/em_opamp.c",
-		"emlib/src/em_pcnt.c",
-		"emlib/src/em_int.c",
-		"emlib/src/em_prs.c",
-		"emlib/src/em_dac.c",
-		"emlib/src/em_leuart.c",
-		"emlib/src/em_vcmp.c",
-		"emlib/src/em_assert.c",
-		"emlib/src/em_usart.c", /* Requires UART_COUNT define */
-		"emlib/src/em_mpu.c",
-		"emlib/src/em_dma.c",
-		"emlib/src/em_msc.c",
-		"emlib/src/em_aes.c",
-		"emlib/src/em_i2c.c",
-		"emlib/src/em_cmu.c",
-		"emlib/src/em_lesense.c",
-		"emlib/src/em_emu.c",
-		"emlib/src/em_gpio.c",
-		"emlib/src/em_burtc.c",
-		"emlib/src/em_lcd.c",
-		"emlib/src/em_idac.c",
-		"emlib/src/em_rtc.c",
-		"emlib/src/em_wdog.c",
-		"emlib/src/em_ebi.c",
-		"emlib/src/em_rmu.c",
-		"emlib/src/em_letimer.c",
-		"emlib/src/em_system.c",
-		"Device/EnergyMicro/EFM32ZG/Source/system_efm32zg.c",
-
-		"kits/common/drivers/displayls013b7dh03.c",
-		"kits/common/drivers/displaypalemlib.c",
-		"kits/common/drivers/display.c",
-		"kits/common/drivers/udelay.c"
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/app/mcu_example/EFM32ZG_STK3200") // FIXME required by display driver
+	@AddPrefix("^BUILD/extbld/efm32zg_sk3200/bsp_get/Gecko_SDK-5.1.2/")
+	source "platform/emlib/src/em_timer.c",
+		"platform/emlib/src/em_adc.c",
+		"platform/emlib/src/em_acmp.c",
+		"platform/emlib/src/em_dbg.c",
+		"platform/emlib/src/em_opamp.c",
+		"platform/emlib/src/em_pcnt.c",
+		//"platform/emlib/src/em_int.c",
+		"platform/emlib/src/em_prs.c",
+		"platform/emlib/src/em_dac.c",
+		"platform/emlib/src/em_leuart.c",
+		"platform/emlib/src/em_vcmp.c",
+		"platform/emlib/src/em_assert.c",
+		//"platform/emlib/src/em_usart.c", /* Requires UART_COUNT define */
+		"platform/emlib/src/em_mpu.c",
+		"platform/emlib/src/em_dma.c",
+		"platform/emlib/src/em_msc.c",
+		"platform/emlib/src/em_aes.c",
+		"platform/emlib/src/em_i2c.c",
+		"platform/emlib/src/em_cmu.c",
+		"platform/emlib/src/em_lesense.c",
+		"platform/emlib/src/em_emu.c",
+		"platform/emlib/src/em_gpio.c",
+		"platform/emlib/src/em_burtc.c",
+		"platform/emlib/src/em_lcd.c",
+		"platform/emlib/src/em_idac.c",
+		"platform/emlib/src/em_rtc.c",
+		"platform/emlib/src/em_wdog.c",
+		"platform/emlib/src/em_ebi.c",
+		"platform/emlib/src/em_rmu.c",
+		"platform/emlib/src/em_letimer.c",
+		"platform/emlib/src/em_system.c",
+		"platform/Device/SiliconLabs/EFM32ZG/Source/system_efm32zg.c",
+		"hardware/kit/common/drivers/displayls013b7dh03.c",
+		"hardware/kit/common/drivers/displaypalemlib.c",
+		"hardware/kit/common/drivers/display.c",
+		"hardware/kit/common/drivers/udelay.c"
 
 	source "api_impl.h"
 

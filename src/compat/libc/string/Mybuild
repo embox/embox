@@ -1,5 +1,10 @@
 package embox.compat.libc
 
+static module strerror {
+	option number strerror_short = 0
+	source "strerror.c"
+}
+
 static module str {
 	source "memchr.c"
 	source "memrchr.c"
@@ -17,7 +22,7 @@ static module str {
 	source "stpcpy.c"
 	source "strcpy.c"
 	source "strcspn.c"
-	source "strerror.c"
+	@NoRuntime depends strerror
 	source "strlen.c"
 	source "strlwr.c"
 	source "strncat.c"

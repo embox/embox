@@ -9,7 +9,12 @@
 #include <string.h>
 #include <errno.h>
 
+#include <framework/mod/options.h>
+
 char *strerror(int errnum) {
+#if OPTION_GET(NUMBER, strerror_short)
+	return "error types unsupport";
+#else
 	switch (errnum) {
 	case ENOERR:       return "No error";
 	case EPERM:        return "Not permitted";
@@ -69,4 +74,5 @@ char *strerror(int errnum) {
 	case ENOTCONN:     return "Socket is not connected";
 	default:           return "Unknown error code. PLEASE REPORT ISSUE 519!";
 	}
+#endif
 }

@@ -27,6 +27,7 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
 else
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--no-relax
 endif
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--gc-sections
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(abspath $(OBJ_DIR))/mk/image.lds
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
 EMBOX_IMPORTED_LDFLAGS_FULL += $(abspath $(OBJ_DIR))/embox.o
