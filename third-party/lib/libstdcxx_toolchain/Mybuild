@@ -1,5 +1,6 @@
 package third_party.lib
 
+@BuildArtifactPath(cppflags_before="-include $(ROOT_DIR)/third-party/lib/libstdcxx_toolchain/newlib_compat/ctype.h")
 @BuildArtifactPath(cppflags="$(shell $(ROOT_DIR)/third-party/lib/libstdcxx_toolchain/c++_headers_finder.sh \"$(LIBGCC_FINDER)\" \"$(AWK)\")")
 static module libstdcxx_toolchain extends embox.lib.stl {
 	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libstdc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/libstdcxx_toolchain")
