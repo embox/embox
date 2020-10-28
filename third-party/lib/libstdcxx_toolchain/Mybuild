@@ -4,4 +4,7 @@ package third_party.lib
 static module libstdcxx_toolchain extends embox.lib.stl {
 	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libstdc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/libstdcxx_toolchain")
 	source "libstdc++.a"
+
+	@NoRuntime depends third_party.lib.newlib_compat.errno
+	@NoRuntime depends third_party.lib.newlib_compat.locale
 }

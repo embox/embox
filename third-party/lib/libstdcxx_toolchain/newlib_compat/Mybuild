@@ -1,0 +1,9 @@
+package third_party.lib.newlib_compat
+
+module errno {
+	source "errno.c"
+}
+
+module locale {
+	source "locale.c"
+}
