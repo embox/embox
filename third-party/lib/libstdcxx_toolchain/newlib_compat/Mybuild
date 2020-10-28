@@ -7,3 +7,7 @@ module errno {
 module locale {
 	source "locale.c"
 }
+
+module reent {
+	source "reent.c"
+}

@@ -7,4 +7,5 @@ static module libstdcxx_toolchain extends embox.lib.stl {
 
 	@NoRuntime depends third_party.lib.newlib_compat.errno
 	@NoRuntime depends third_party.lib.newlib_compat.locale
+	depends third_party.lib.newlib_compat.reent
 }
