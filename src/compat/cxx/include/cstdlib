@@ -16,7 +16,11 @@ namespace std {
 	using ::atol;
 	using ::strtod;
 	using ::strtol;
+	using ::strtoll;
 	using ::strtoul;
+	using ::strtoull;
+	using ::strtof;
+	using ::strtold;
 	using ::rand;
 	using ::srand;
 	using ::calloc;
