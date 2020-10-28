@@ -19,9 +19,9 @@
 #define _CTYPE_X      0x40    /* hex digit */
 #define _CTYPE_SP     0x80    /* hard space (0x20) */
 
-extern const unsigned char _ctype[];
+extern const unsigned char _ctype_[];
 
-#define __ismask(x) (_ctype[(int)(unsigned char)(x)])
+#define __ismask(x) (_ctype_[(int)(unsigned char)(x)])
 
 #include <sys/cdefs.h>
 #include <stdint.h>

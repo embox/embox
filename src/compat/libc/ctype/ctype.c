@@ -9,7 +9,7 @@
 #include <defines/null.h>
 
 /**< ASCII table */
-const unsigned char _ctype[] = {
+const unsigned char _ctype_[] = {
 _CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,                        /* 0-7 */
 _CTYPE_C,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C|_CTYPE_S,_CTYPE_C,_CTYPE_C,         /* 8-15 */
 _CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,                        /* 16-23 */
