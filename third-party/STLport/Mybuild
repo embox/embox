@@ -2,6 +2,7 @@ package third_party.STLport
 
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/libstlportg/install/include/stlport")
+@BuildArtifactPath(cppflags="-Wno-narrowing")
 @BuildDepends(embox.lib.libgcc)
 @BuildDepends(embox.lib.libsupcxx)
 static module libstlportg extends embox.lib.stl {

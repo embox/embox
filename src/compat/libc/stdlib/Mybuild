@@ -17,6 +17,7 @@ static module core {
 	source "bsearch.c"
 	source "qsort.c"
 	source "strtod.c"
+	source "strtof.c"
 	source "strtol.c"
 	source "strtoul.c"
 	source "abort.c"

@@ -12,6 +12,14 @@
 
 namespace std {
 	using ::mbstate_t;
+	using ::vswprintf;
+	using ::wcstol;
+	using ::wcstoul;
+	using ::wcstoll;
+	using ::wcstoull;
+	using ::wcstof;
+	using ::wcstod;
+	using ::wcstold;
 }
 
 #endif // CWCHAR_

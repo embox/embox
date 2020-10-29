@@ -36,28 +36,40 @@
 #define EINVAL           22    /* Invalid argument */
 #define ENFILE           23    /* Too many open files in system */
 #define EMFILE           24    /* Too many open files */
+#define ETXTBSY          26    /* Text file busy */
 #define EFBIG            27    /* File too large */
 #define ENOSPC           28    /* No space left on device */
 #define ESPIPE           29    /* Illegal seek */
 #define EROFS            30    /* Read-only file system */
-#define	EMLINK           31    /* Too many links */
+#define EMLINK           31    /* Too many links */
 #define EDOM             33    /* Argument to math function out of domain */
 #define ERANGE           34    /* Math result cannot be represented */
 #define EDEADLK          35    /* Resource deadlock would occur */
+#define ENAMETOOLONG     36    /* File name too long */
 #define EDEADLOCK        EDEADLK
 #define ENOSYS           38    /* Function not implemented */
 
 
 #define ELOOP            40    /* Too many levels of symbolic links. */
 #define ENOMSG           42    /* No message of desired type */
+#define EIDRM            43    /* Identifier removed */
 
-#define ENAMETOOLONG     60    /* File name too long */
+#define ENOSTR           60    /* Device not a stream */
+#define ENODATA          61    /* No data available */
+#define ETIME            62    /* Timer expired */
+#define ENOSR            63    /* Out of streams resources */
 #define ENOTEMPTY        66    /* Directory not empty */
+#define ENOLINK          67    /* Link has been severed */
+#define EPROTO           71    /* Protocol error */
 #define EOVERFLOW        75    /* Value too large to be stored in data type. */
+#define EBADMSG          74    /* Not a data message */
 #define EILSEQ           84    /* Illegal byte sequence */
 #define ENOTSUP          95    /* Not supported error */
 
 #define ECANCELED        125   /* Operation Canceled */
+
+#define EOWNERDEAD       130   /* Owner died */
+#define ENOTRECOVERABLE  131   /* State not recoverable */
 
 #define EEOF             200   /* End of file reached */
 #define ENOSUPP          201   /* Operation not supported */

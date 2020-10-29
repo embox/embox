@@ -6,4 +6,5 @@ static module wchar {
 	source "wcstrtoimax.c"
 	source "wcstrtoumax.c"
 	source "wctype.c"
+	source "wchar_stubs.c"
 }

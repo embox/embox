@@ -51,9 +51,7 @@ extern int putc(int c, FILE *f);
 extern int fputc(int c, FILE *f);
 
 extern int fgetc(FILE *f);
-static inline int getc(FILE *f) {
-	return fgetc(f);
-}
+extern int getc(FILE *f);
 
 
 /**

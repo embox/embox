@@ -11,6 +11,7 @@ static module all {
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.compat.libc.str_dup
 	@NoRuntime depends embox.compat.libc.wchar
+	@NoRuntime depends embox.compat.libc.locale
 
 	depends embox.mem.heap_api
 	//depends embox.fs.syslib.file_system_full

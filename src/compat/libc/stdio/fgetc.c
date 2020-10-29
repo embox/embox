@@ -21,3 +21,7 @@ int fgetc(FILE *file) {
 int getchar(void) {
 	return getc(stdin);
 }
+
+int getc(FILE *f) {
+	return fgetc(f);
+}

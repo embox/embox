@@ -1,0 +1,10 @@
+package embox.compat.libc
+
+@DefaultImpl(locale_stub)
+abstract module locale {
+}
+
+
+static module locale_stub extends locale {
+	source "locale_stub.c"
+}
