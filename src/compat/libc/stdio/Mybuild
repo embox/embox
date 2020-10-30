@@ -145,6 +145,26 @@ static module all {
 	@NoRuntime depends scanf
 	@NoRuntime depends perror
 	@NoRuntime depends div
+	@NoRuntime depends tmpfile
+	@NoRuntime depends ppipe
+}
+
+@DefaultImpl(tmpfile_stub)
+abstract module tmpfile {
+}
+
+
+static module tmpfile_stub extends tmpfile {
+	source "tmpfile_stub.c"
+}
+
+@DefaultImpl(ppipe_stub)
+abstract module ppipe {
+}
+
+
+static module ppipe_stub extends ppipe {
+	source "ppipe_stub.c"
 }
 
 static module perror {

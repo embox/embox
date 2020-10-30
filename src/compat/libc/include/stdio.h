@@ -224,28 +224,11 @@ extern void setbuf(FILE *stream, char *buf);
 /* #define _GNU_SOURCE  */
 extern int asprintf(char **strp, const char *fmt, ...);
 
-/*******************************************
- * stubs
- *******************************************/
-static inline FILE *popen(const char *command, const char *type) {
-	(void) command;
-	(void) type;
-	return NULL;
-}
+extern FILE *popen(const char *command, const char *type);
+extern int pclose(FILE *stream);
 
-static inline int pclose(FILE *stream) {
-	(void) stream;
-	return 0;
-}
-
-static inline FILE *tmpfile(void) {
-	return NULL;
-}
-
-static inline char *tmpnam(char *s) {
-	(void) s;
-	return "";
-}
+extern FILE *tmpfile(void);
+extern char *tmpnam(char *s);
 
 __END_DECLS
 
