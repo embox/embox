@@ -17,7 +17,4 @@ static module ftruncate_dvfs extends ftruncate {
 	source "ftruncate_dvfs.c"
 
 	depends embox.fs.dvfs.core
-	depends embox.kernel.task.api
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
 }
