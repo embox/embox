@@ -47,3 +47,7 @@ int32_t **__ctype_tolower_loc(void) {
 int32_t **__ctype_toupper_loc(void) {
 	return NULL;
 }
+
+int isspace(int c) {
+	return __ismask(c) & (_CTYPE_S);
+}
