@@ -68,12 +68,13 @@ extern wint_t getwc(FILE *);
 extern wint_t ungetwc(wint_t, FILE *);
 extern wint_t putwc(wchar_t, FILE *);
 extern size_t wcrtomb(char *, wchar_t, mbstate_t *);
-extern size_t mbrtowc(wchar_t *, const char *, size_t,
-                  mbstate_t *);
+extern size_t mbrtowc(wchar_t *, const char *, size_t, mbstate_t *);
 extern int wcscoll(const wchar_t *, const wchar_t *);
 extern size_t wcsxfrm(wchar_t *, const wchar_t *, size_t);
 extern size_t wcsftime(wchar_t *, size_t,
                   const wchar_t *, const struct tm *);
+
+extern int wcsncasecmp(const wchar_t *ws1, const wchar_t *ws2, size_t n);
 
 __END_DECLS
 

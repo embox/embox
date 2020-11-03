@@ -94,8 +94,7 @@ size_t wcrtomb(char *c, wchar_t wc, mbstate_t *st) {
 	return 0;
 }
 
-size_t mbrtowc(wchar_t *wc, const char *c, size_t s,
-                  mbstate_t *st) {
+size_t mbrtowc(wchar_t *wc, const char *c, size_t s, mbstate_t *st) {
 	return 0;
 }
 
@@ -107,7 +106,10 @@ size_t wcsxfrm(wchar_t *wc, const wchar_t *wci, size_t s) {
 	return 0;
 }
 
-size_t wcsftime(wchar_t *wc, size_t s,
-                  const wchar_t *wci, const struct tm *tm) {
+size_t wcsftime(wchar_t *wc, size_t s, const wchar_t *wci, const struct tm *tm) {
+	return 0;
+}
+
+int wcsncasecmp(const wchar_t *ws1, const wchar_t *ws2, size_t n) {
 	return 0;
 }

@@ -56,7 +56,7 @@ static inline int isprint(int c) { return __ismask(c) & (_CTYPE_P | _CTYPE_U | _
  * or an alphanumeric character. */
 static inline int ispunct(int c) { return __ismask(c) & (_CTYPE_P); }
 /* Checks for white-space characters. */
-static inline int isspace(int c) { return __ismask(c) & (_CTYPE_S); }
+extern int isspace(int c);
 /* Checks for an uppercase letter. */
 static inline int isupper(int c) { return __ismask(c) & (_CTYPE_U); }
 /* Checks for a hexadecimal digits. */
