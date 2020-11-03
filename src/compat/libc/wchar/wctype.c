@@ -100,3 +100,7 @@ wint_t towupper(wint_t wc) {
 		return WEOF;
 	return (wc < (wint_t)0x100 ? toupper(wc) : wc);
 }
+
+int iswspace(wint_t wc) {
+	return ((wc < (wint_t)0x100 ? isspace(wc) : 0));
+}

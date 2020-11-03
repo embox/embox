@@ -30,7 +30,7 @@ WCFUNC(graph);
 WCFUNC(lower);
 WCFUNC(print);
 WCFUNC(punct);
-WCFUNC(space);
+//WCFUNC(space);
 WCFUNC(upper);
 WCFUNC(xdigit);
 
@@ -48,6 +48,8 @@ extern wint_t towctrans(wint_t, wctrans_t);
 
 extern wctype_t wctype(const char *property);
 extern wctrans_t wctrans(const char *charclass);
+
+extern int iswspace(wint_t wc);
 
 __END_DECLS
 
