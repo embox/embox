@@ -1,0 +1,15 @@
+package platform.stm32_tests.cmd
+
+@AutoCmd
+@Cmd(name = "cpu_cache_test",
+	help = "Test for CPU cache modes",
+	man  = '''
+		NAME
+			cpu_cache_test -- test for CPU cache modes
+		AUTHORS
+			Alexander Kalmuk
+	''')
+@BuildDepends(third_party.bsp.st_bsp_api)
+module cpu_cache_test {
+	source "cpu_cache_test.c"
+}
