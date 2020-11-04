@@ -124,8 +124,9 @@ $(BUILD) :
 
 $(INSTALL) :
 	cd $(PKG_BUILD_DIR) && ( \
-		$(MAKE) install-target-libgcc; \
-		$(MAKE) install-target-libstdc++-v3; \
+		. $(EMBOX_GCC_ENV) && \
+		$(MAKE) install-target-libgcc RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib; \
+		$(MAKE) install-target-libstdc++-v3 RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib; \
 	)
 	mkdir -p $(PKG_INSTALL_DIR)/libs
 	cp $(PKG_INSTALL_DIR)/lib/gcc/$(AUTOCONF_TARGET_TRIPLET)/$(PKG_VER)/libgcc.a $(PKG_INSTALL_DIR)/libs
