@@ -102,8 +102,8 @@ $(BUILD) :
 			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			RAW_CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			AR_FOR_TARGET=ar \
-			RANLIB_FOR_TARGET=ranlib \
+			AR_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ar \
+			RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib \
 			TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
 			TARGET-zlib="LINKER=true CC=true AR=true RANLIB=touch all" \
 			TARGET-libbacktrace="LINKER=true CC=true AR=touch \
@@ -124,8 +124,9 @@ $(BUILD) :
 
 $(INSTALL) :
 	cd $(PKG_BUILD_DIR) && ( \
-		$(MAKE) install-target-libgcc; \
-		$(MAKE) install-target-libstdc++-v3; \
+		. $(EMBOX_GCC_ENV) && \
+		$(MAKE) install-target-libgcc RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib; \
+		$(MAKE) install-target-libstdc++-v3 RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib; \
 	)
 	mkdir -p $(PKG_INSTALL_DIR)/libs
 	cp $(PKG_INSTALL_DIR)/lib/gcc/$(AUTOCONF_TARGET_TRIPLET)/$(PKG_VER)/libgcc.a $(PKG_INSTALL_DIR)/libs
