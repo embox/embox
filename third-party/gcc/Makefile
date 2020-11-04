@@ -102,8 +102,8 @@ $(BUILD) :
 			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			RAW_CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			AR_FOR_TARGET=ar \
-			RANLIB_FOR_TARGET=ranlib \
+			AR_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ar \
+			RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib \
 			TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
 			TARGET-zlib="LINKER=true CC=true AR=true RANLIB=touch all" \
 			TARGET-libbacktrace="LINKER=true CC=true AR=touch \
