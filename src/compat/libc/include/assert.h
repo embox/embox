@@ -50,10 +50,19 @@ __END_DECLS
 
 /* It's an ability to perform check like ususal assert() does, but in compile time
  * It'll be superseded by _Static_assert() since gcc-4.6
+ *
+ * Version before gcc-4.6:
+ *
+ * #define static_assert(cond) \
+ *	  extern void __static_assert(int [!!(cond) - 1])
+ *
  */
 #ifndef __cplusplus
 #define static_assert(cond) \
-	extern void __static_assert(int [!!(cond) - 1])
+	_Static_assert(cond, "")
+
+#define static_assertf(cond, msg) \
+	_Static_assert(cond, msg)
 #endif /* !__cplusplus */
 
 #endif /* ASSERT_H_ */
