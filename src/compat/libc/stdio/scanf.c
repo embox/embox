@@ -13,9 +13,8 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
-#include <fs/file_operation.h>
 
-FILE *file;
+#include <framework/mod/options.h>
 
 /*TODO: throw out.*/
 /**
@@ -53,39 +52,8 @@ int ch_to_digit(char ch, int base) {
 	}
 	return -1;
 }
-
-static void unscanchar(const char **str, int ch, int *pc_ptr) {
-	if (ch != EOF) {
-		(*pc_ptr)--;
-	}
-	if ((uintptr_t) str >= 2) {
-		(*str) --;
-	} else if ((uintptr_t) str == 1) {
-		ungetc(ch, file);
-	} else {
-		ungetc(ch, stdin);
-	}
-}
-
-static int scanchar(const char **str, int *pc_ptr) {
-	extern int getchar(void);
-	int ch;
-	if ((uintptr_t)str >= 2) {
-		ch = **str;
-		(*str)++;
-		ch = (ch == '\0' ? EOF : ch);
-	} else if ((uintptr_t)str == 1) {
-		ch = getc(file);
-	} else {
-		if ('\n' == (ch = getchar())) {
-			ch = EOF;
-		}
-	}
-	if (ch != EOF) {
-		(*pc_ptr)++;
-	}
-	return ch;
-}
+extern void __stdio_unscanchar(const char **str, int ch, int *pc_ptr);
+extern int __stdio_scanchar(const char **str, int *pc_ptr);
 
 static bool is_space(int ch) {
 	if ((ch == ' ') || (ch == '\t') || (ch == '\n'))
@@ -97,13 +65,13 @@ static int trim_leading(const char **str, int *pc_ptr) {
 	int ch;
 
 	do {
-		ch = scanchar(str, pc_ptr);
+		ch = __stdio_scanchar(str, pc_ptr);
 		/*when break*/
 		if (ch == EOF)
 			break;
 	} while (is_space(ch));
 
-	unscanchar(str, ch, pc_ptr);
+	__stdio_unscanchar(str, ch, pc_ptr);
 	return ch;
 }
 
@@ -120,14 +88,14 @@ static int scan_int(const char **in, int base, int width, int *res, int *pc_ptr)
 
 	if ((ch == '-') || (ch == '+')) {
 		neg = (ch == '-');
-		scanchar(in, pc_ptr);
+		__stdio_scanchar(in, pc_ptr);
 	} else {
 		dst = 0;
 	}
 
-	for (i = 0; (ch = (int) scanchar(in, pc_ptr)) != EOF; i++) {
+	for (i = 0; (ch = (int) __stdio_scanchar(in, pc_ptr)) != EOF; i++) {
 		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == width)) {
-			unscanchar(in, ch, pc_ptr);
+			__stdio_unscanchar(in, ch, pc_ptr);
 			/*end conversion*/
 			break;
 		}
@@ -153,7 +121,7 @@ static int scan_int(const char **in, int base, int width, int *res, int *pc_ptr)
 #define OPS_LEN_PTRDIFF       0x00001000 /* ptrdiff_t (d, i, u, o, x, X); ptrdiff_t* (n) */
 #define OPS_LEN_LONGFP        0x00002000 /* long double (f, F, e, E, g, G, a, A) */
 
-static int scan(const char **in, const char *fmt, va_list args) {
+int stdio_scan(const char **in, const char *fmt, va_list args) {
 	int width;
 	int converted = 0;
 	int ops_len;
@@ -192,17 +160,17 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 's': {
 				char *dst = va_arg(args, char*);
 				char ch;
-				while (isspace(ch = scanchar(in, &pc)));
+				while (isspace(ch = __stdio_scanchar(in, &pc)));
 
 				while (ch != (char) EOF && width--) {
 					if (isspace(ch)) {
-						unscanchar(in, ch, &pc);
+						__stdio_unscanchar(in, ch, &pc);
 						break;
 					}
 
 					width--;
 					*dst++ = (char) ch;
-					ch = scanchar(in, &pc);
+					ch = __stdio_scanchar(in, &pc);
 				}
 
 				if (width == 80) // XXX
@@ -216,7 +184,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			case 'c': {
 				int dst;
 
-				dst = scanchar(in, &pc);
+				dst = __stdio_scanchar(in, &pc);
 				*va_arg(args, char*) = dst;
 
 				if (dst == (char) EOF)
@@ -304,7 +272,7 @@ static int scan(const char **in, const char *fmt, va_list args) {
 			}
 			fmt++;
 		} else {
-			char ch = scanchar(in, &pc);
+			char ch = __stdio_scanchar(in, &pc);
 			if (*fmt++ != ch) {
 				return converted;
 			}
@@ -315,35 +283,12 @@ out:
 	return converted;
 }
 
-int scanf(const char *format, ...) {
-	va_list args;
-	int rv;
-
-	va_start(args, format);
-	rv = scan(0, format, args);
-	va_end(args);
-
-	return rv;
-}
-
-int fscanf(FILE *stream, const char *format, ...) {
-	va_list args;
-	int rv;
-
-	file = stream;
-
-	va_start(args, format);
-	rv = scan((const char **)1, format, args);
-	va_end(args);
-
-	return rv;
-}
 int sscanf(const char *out, const char *format, ...) {
 	va_list args;
 	int rv;
 
 	va_start(args, format);
-	rv = scan(&out, format, args);
+	rv = stdio_scan(&out, format, args);
 	va_end (args);
 
 	return rv;
