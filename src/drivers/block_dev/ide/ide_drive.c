@@ -238,7 +238,8 @@ static int hd_identify(hd_t *hd) {
 	/* XXX this was added when ide drive with reported block size equals 64
  	 * However, block dev tries to use this and fails */
 	if (bdev) {
-		static_assert(bdev->size == 512);
+		assert(bdev->size == 512);
+
 		if (hd->param.unfbytes < bdev->block_size) {
 			hd->param.unfbytes = bdev->block_size;
 		}
