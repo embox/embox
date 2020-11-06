@@ -6,6 +6,7 @@
  * @author Anton Kozlov
  */
 
+#include <assert.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
@@ -25,10 +26,13 @@
 # define SYSTICK_TICKINT   (1 << 1)
 # define SYSTICK_CLOCKINIT (1 << 2)
 #define SYSTICK_RELOAD  (SYSTICK_BASE + 0x4)
+# define SYSTICK_RELOAD_MSK  0xfffffful
 #define SYSTICK_VAL     (SYSTICK_BASE + 0x8)
 #define SYSTICK_CALIB   (SYSTICK_BASE + 0xc)
 
 #define RELOAD_VALUE (SYS_CLOCK / SYSTICK_HZ)
+static_assertf(RELOAD_VALUE - 1 <= SYSTICK_RELOAD_MSK,
+	"RELOAD_VALUE is too big: "MACRO_STRING(RELOAD_VALUE));
 
 static struct clock_source cortexm_systick_clock_source;
 
