@@ -11,6 +11,7 @@
 #include <hal/clock.h>
 #include <time.h>
 #include <kernel/time/time.h>
+#include <kernel/time/timer.h>
 
 #include <config/custom_config_qspi.h>
 #include <hw_clk.h>
@@ -18,6 +19,7 @@
 #include <hw_bod.h>
 #include <hw_pmu.h>
 #include <hw_pdc.h>
+#include <hw_timer.h>
 #include <hw_watchdog.h>
 #include <qspi_automode.h>
 
@@ -42,14 +44,21 @@ static __RETAINED_CODE void resume_after_deepsleep(void) {
 	hw_sys_pd_com_enable();
 }
 
-__RETAINED_CODE int deep_usleep(useconds_t usec) {
+__RETAINED_CODE int deepsleep_enter(void) {
 	bool entered_sleep;
 	ipl_t ipl;
 	unsigned systimer_ticks, lp_timer_ticks;
+	clock_t next_event;
 
-	lp_timer_ticks = (usec * 100) / USEC_PER_SEC;
-	/* Calculate to how many ticks system timer should be updated after sleep. */
-	systimer_ticks = (lp_timer_ticks * cs_jiffies->event_device->event_hz) / 100;
+	if (timer_strat_get_next_event(&next_event) != 0) {
+		/* There is no next event, so sleep as long as possible.
+		 * We will be wake up with CMAC interrupt or another trigger. */
+		systimer_ticks = 0;
+		lp_timer_ticks = TIMER_MAX_RELOAD_VAL;
+	} else {
+		systimer_ticks = next_event - clock_sys_ticks();
+		lp_timer_ticks = (systimer_ticks * 100) / cs_jiffies->event_device->event_hz;
+	}
 
 	da1469x_timer_set(lp_timer_ticks);
 
@@ -73,7 +82,9 @@ __RETAINED_CODE int deep_usleep(useconds_t usec) {
 	/* Re-enable system timer */
 	jiffies_init();
 
-	clock_handle_ticks(cs_jiffies, systimer_ticks);
+	if (systimer_ticks) {
+		clock_handle_ticks(cs_jiffies, systimer_ticks);
+	}
 
 	return 0;
 }
