@@ -28,13 +28,15 @@ void clock_tick_handler(void *dev_id) {
 }
 
 void clock_handle_ticks(void *dev_id, unsigned ticks) {
+	clock_t next_event;
 	struct clock_source *cs = (struct clock_source *) dev_id;
 
 	assert(cs);
 
 	cs->jiffies += ticks;
 
-	if (timer_strat_need_sched(cs_jiffies->jiffies)) {
+	if ((timer_strat_get_next_event(&next_event) == 0) &&
+			(cs_jiffies->jiffies >= next_event)) {
 		lthread_launch(&clock_handler_lt);
 	}
 }

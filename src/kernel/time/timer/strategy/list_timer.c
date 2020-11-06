@@ -56,16 +56,6 @@ int timer_strat_get_next_event(clock_t *next_event) {
 	return 0;
 }
 
-bool timer_strat_need_sched(clock_t jiffies) {
-	clock_t next_event;
-
-	if (timer_strat_get_next_event(&next_event) != 0) {
-		return false;
-	}
-
-	return jiffies >= next_event;
-}
-
 /**
  * For each timer in the timers array do the following: if the timer is enable
  * and the counter of this timer is the zero then its initial value is assigned
