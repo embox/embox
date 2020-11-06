@@ -20,6 +20,8 @@ extern void timer_strat_sched(clock_t jiffies);
 
 extern bool timer_strat_need_sched(clock_t jiffies);
 
+extern int timer_strat_get_next_event(clock_t *next_event);
+
 extern void timer_strat_stop(struct sys_timer *ptimer);
 
 extern void timer_strat_start(struct sys_timer *ptimer);
