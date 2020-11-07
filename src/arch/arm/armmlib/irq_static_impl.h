@@ -33,9 +33,9 @@
 #else
 #define STATIC_IRQ_HANDLER_DEF(_irq_nr, _static_hnd, _hnd, _data)     \
 	void _static_hnd(void) {                                          \
-		critical_enter(CRITICAL_IRQ_HANDLER);                         \
+		/* critical_enter(CRITICAL_IRQ_HANDLER); */                   \
 		_hnd(_irq_nr, _data);                                         \
-		critical_leave(CRITICAL_IRQ_HANDLER);                         \
+		/* critical_leave(CRITICAL_IRQ_HANDLER); */                   \
 	}
 #endif /* !defined(__ARM_ARCH_6M__) */
 
