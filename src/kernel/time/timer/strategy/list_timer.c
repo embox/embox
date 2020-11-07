@@ -32,15 +32,28 @@ void timer_strat_start(struct sys_timer *tmr) {
 	ipl_restore(ipl);
 }
 
-bool timer_strat_need_sched(clock_t jiffies) {
+int timer_strat_get_next_event(clock_t *next_event) {
 	struct sys_timer *tmr;
+	clock_t next = (clock_t) -1;
+	ipl_t ipl;
+
+	ipl = ipl_save();
 
 	dlist_foreach_entry(tmr, &sys_timers_list, lnk) {
-		if (jiffies >= tmr->cnt) {
-			return true;
+		if (tmr->cnt < next) {
+			next = tmr->cnt;
 		}
 	}
-	return false;
+
+	ipl_restore(ipl);
+
+	if (next == (clock_t) -1) {
+		return -1;
+	}
+
+	*next_event = next;
+
+	return 0;
 }
 
 /**

@@ -8,8 +8,7 @@
  */
 
 #include <stdio.h>
-#include <kernel/time/time.h>
-#include <framework/cmd/api.h>
+#include <unistd.h>
 #include <framework/mod/options.h>
 
 #include <config/custom_config_qspi.h>
@@ -23,8 +22,6 @@
 #define LED1_PIN        (HW_GPIO_PIN_1)
 #define LED1_MODE       (HW_GPIO_MODE_OUTPUT)
 #define LED1_FUNC       (HW_GPIO_FUNC_GPIO)
-
-extern int deep_usleep(useconds_t usec);
 
 static void busy_loop(unsigned volatile n) {
 	while (n--) {
@@ -57,7 +54,7 @@ static void deepsleep_test(void) {
 	toggle_led(led);
 
 	for (cnt = 0; cnt < LOOP_CNT; cnt++) {
-		deep_usleep(SLEEP_SEC * USEC_PER_SEC);
+		usleep(SLEEP_SEC * USEC_PER_SEC);
 
 		led ^= 1;
 		toggle_led(led);

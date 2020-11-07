@@ -60,19 +60,19 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 	ipl_restore(ipl);
 }
 
-bool timer_strat_need_sched(clock_t jiffies) {
-	struct sys_timer *t;
+int timer_strat_get_next_event(clock_t *next_event) {
 	ipl_t ipl;
-	bool ret;
+	int ret = -1;
+	struct sys_timer *t;
 
 	ipl = ipl_save();
-	if (dlist_empty(&sys_timers_list)) {
-		ret = false;
-	} else {
+	if (!dlist_empty(&sys_timers_list)) {
 		t = dlist_first_entry(&sys_timers_list, struct sys_timer, lnk);
-		ret = jiffies >= t->cnt;
+		*next_event = t->cnt;
+		ret = 0;
 	}
 	ipl_restore(ipl);
+
 	return ret;
 }
 
