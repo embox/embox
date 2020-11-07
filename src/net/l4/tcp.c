@@ -43,10 +43,7 @@
 
 #include <embox/net/pack.h>
 #include <embox/net/proto.h>
-#include <embox/unit.h>
 
-
-EMBOX_UNIT_INIT(tcp_init);
 EMBOX_NET_PROTO(ETH_P_IP, IPPROTO_TCP, tcp_rcv,
 		net_proto_handle_error_none);
 EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
@@ -94,6 +91,8 @@ typedef enum tcp_ret_code (*tcp_handler_t)(struct tcp_sock *tcp_sk,
 		struct tcphdr *out_tcph);
 
 static struct sys_timer tcp_tmr_default; /* Timer structure for rexmitting or TIME-WAIT satate */
+
+static void tcp_timer_handler(struct sys_timer *timer, void *param);
 
 /* Prototypes */
 static int tcp_handle(struct tcp_sock *tcp_sk, struct sk_buff *skb, tcp_handler_t hnd);
@@ -212,6 +211,31 @@ static void tcp_sock_rcv(struct tcp_sock *tcp_sk,
 			tcp_data_length(skb->h.th, skb->nh.raw) - seq_off);
 }
 
+static void tcp_timer_update(void) {
+	bool enable_tcp_timer = false;
+	struct sock *sk;
+	struct tcp_sock *tcp_sk;
+
+	sock_foreach(sk, tcp_sock_ops) {
+		tcp_sk = to_tcp_sock(sk);
+		if ((tcp_sock_get_status(tcp_sk) != TCP_ST_NOTEXIST)) {
+			enable_tcp_timer = true;
+			break;
+		}
+	}
+
+	if (enable_tcp_timer) {
+		if (!timer_is_started(&tcp_tmr_default)) {
+			timer_init_start_msec(&tcp_tmr_default, TIMER_PERIODIC,
+					TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
+		}
+	} else {
+		if (timer_is_started(&tcp_tmr_default)) {
+			timer_stop(&tcp_tmr_default);
+		}
+	}
+}
+
 void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 		enum tcp_sock_state new_state) {
 	const char *str_state[TCP_MAX_STATE] = {"TCP_CLOSED",
@@ -243,6 +267,8 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 				sk, tcp_sk->ack_flag, new_state, str_state[new_state]);
 		break;
 	}
+
+	tcp_timer_update();
 
 	tcp_sk->state = new_state;
 	log_debug("sk %p set state %d-%s", sk, new_state, str_state[new_state]);
@@ -489,6 +515,8 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	}
 
 	sock_release(to_sock(tcp_sk));
+
+	tcp_timer_update();
 }
 
 
@@ -1350,17 +1378,4 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 			tcp_rexmit(tcp_sk);
 		}
 	}
-}
-
-static int tcp_init(void) {
-	int ret;
-
-	/* Create default timer */
-	ret = timer_init_start_msec(&tcp_tmr_default, TIMER_PERIODIC,
-			TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return 0;
 }
