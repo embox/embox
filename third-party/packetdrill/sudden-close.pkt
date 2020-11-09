@@ -18,6 +18,6 @@
 0.350 close(3) = 0
 0.350 > F. 33:33(0) ack 1
 0.400 < . 1:1(0) ack 1 win 92 // got F. only
-2.690 > P. 1:17(16) ack 1 win 16384 //XXX retransmit by timeout
-2.690 < . 1:1(0) ack 17 win 92
-2.690 > P. 17:33(16) ack 1 win 16384
+2.203 > P. 1:17(16) ack 1 win 16384 //XXX retransmit by timeout
+2.203 < . 1:1(0) ack 17 win 92
+2.203 > P. 17:33(16) ack 1 win 16384
