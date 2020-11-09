@@ -24,7 +24,6 @@
 #include <net/neighbour.h>
 
 #include <framework/mod/options.h>
-#include <embox/unit.h>
 
 #include <net/l3/arp.h>
 #include <net/l3/ndp.h>
@@ -38,11 +37,11 @@
 #define MODOPS_NEIGHBOUR_RESEND   OPTION_GET(NUMBER, neighbour_resend)
 #define MODOPS_NEIGHBOUR_ATTEMPT  OPTION_GET(NUMBER, neighbour_attempt)
 
-EMBOX_UNIT_INIT(neighbour_init);
-
 POOL_DEF(neighbour_pool, struct neighbour, MODOPS_NEIGHBOUR_AMOUNT);
 static DLIST_DEFINE(neighbour_list);
 static struct sys_timer neighbour_tmr;
+
+static void nbr_timer_handler(struct sys_timer *tmr, void *param);
 
 static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 	assert(nbr != NULL);
@@ -52,6 +51,19 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 		memcpy(&nbr->haddr[0], haddr, nbr->hlen);
 	} else {
 		assert(nbr->is_incomplete == 1);
+	}
+}
+
+static void neighbour_timer_update(void) {
+	if (dlist_empty(&neighbour_list)) {
+		if (timer_is_started(&neighbour_tmr)) {
+			timer_stop(&neighbour_tmr);
+		}
+	} else {
+		if (!timer_is_started(&neighbour_tmr)) {
+			timer_init_start_msec(&neighbour_tmr, TIMER_PERIODIC,
+					MODOPS_NEIGHBOUR_TMR_FREQ, nbr_timer_handler, NULL);
+		}
 	}
 }
 
@@ -78,6 +90,8 @@ static struct neighbour *nbr_create(unsigned short ptype, const void *paddr,
 	nbr->resend = MODOPS_NEIGHBOUR_RESEND;
 	nbr->sent_times = 0;
 
+	neighbour_timer_update();
+
 	return nbr;
 }
 
@@ -87,6 +101,8 @@ static void nbr_free(struct neighbour *nbr) {
 	dlist_del_init_entry(nbr, lnk);
 	skb_queue_purge(&nbr->w_queue);
 	pool_free(&neighbour_pool, nbr);
+
+	neighbour_timer_update();
 }
 
 static struct neighbour * nbr_lookup_by_paddr(unsigned short ptype,
@@ -414,16 +430,4 @@ static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
 		}
 	}
 	sched_unlock();
-}
-
-static int neighbour_init(void) {
-	int ret;
-
-	ret = timer_init_start_msec(&neighbour_tmr, TIMER_PERIODIC,
-			MODOPS_NEIGHBOUR_TMR_FREQ, nbr_timer_handler, NULL);
-	if (ret != 0) {
-		return ret;
-	}
-
-	return 0;
 }
