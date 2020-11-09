@@ -39,6 +39,7 @@ struct time_dev_conf {
 struct time_event_device {
 	void (*event_handler)(void);
 	int (*config)(struct time_dev_conf *);
+	int (*set_next_event)(uint32_t next_event);
 	uint32_t event_hz;
 	uint32_t irq_nr;
 	int (*pending) (unsigned int nr);
