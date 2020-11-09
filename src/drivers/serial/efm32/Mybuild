@@ -1,0 +1,12 @@
+package embox.driver.serial
+
+@BuildDepends(platform.efm32.efm32_bsp)
+module efm32_leuart extends embox.driver.diag.diag_api {
+	option number baud_rate
+
+	source "efm32_leuart.c"
+
+	@NoRuntime depends platform.efm32.efm32_bsp
+	depends core
+	depends diag
+}

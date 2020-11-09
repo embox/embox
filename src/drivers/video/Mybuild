@@ -104,8 +104,3 @@ module fonts {
 	@IncludeExport(path="drivers/video")
 	source "font.h"
 }
-
-@BuildDepends(efm32zg_sk3200.bsp)
-module efm32_lcd {
-	source "efm32_lcd.c"
-}

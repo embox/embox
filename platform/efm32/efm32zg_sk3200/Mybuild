@@ -1,0 +1,30 @@
+package platform.efm32.efm32zg_stk3200
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/platform/Device/SiliconLabs/EFM32ZG/Include")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/EFM32ZG_STK3200/config")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/app/mcu_example/EFM32ZG_STK3200") 
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/drivers/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/bsp/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/app/mcu_example/EFM32ZG_STK3200/glib")
+@BuildArtifactPath(cppflags="-D__CORTEX_SC=0") 
+@BuildArtifactPath(cppflags="-DUART_COUNT=1")
+module efm32zg_stk3200_conf extends platform.efm32.efm32_conf {
+	source "efm32_conf.h"
+}
+
+@BuildDepends(platform.efm32.bsp)
+@BuildDepends(efm32zg_stk3200_conf)
+static module bsp extends platform.efm32.efm32_bsp {
+
+	@DefineMacro("DOXY_DOC_ONLY=0")
+	@AddPrefix("^BUILD/extbld/platform/efm32/bsp_get/Gecko_SDK-5.1.2/")
+	source
+		"platform/Device/SiliconLabs/EFM32ZG/Source/system_efm32zg.c",
+		"hardware/kit/common/drivers/displayls013b7dh03.c",
+		"hardware/kit/common/drivers/displaypalemlib.c",
+		"hardware/kit/common/drivers/display.c",
+		"hardware/kit/common/drivers/udelay.c"
+
+	depends platform.efm32.bsp
+	depends efm32zg_stk3200_conf
+}

@@ -50,17 +50,6 @@ module stm32_usart extends embox.driver.diag.diag_api {
 	depends diag
 }
 
-@BuildDepends(efm32zg_sk3200.bsp)
-module efm32_leuart extends embox.driver.diag.diag_api {
-	option number baud_rate
-
-	source "efm32_leuart.c"
-
-	depends efm32zg_sk3200.bsp
-	depends core
-	depends diag
-}
-
 module mspdebug_console extends embox.driver.diag.diag_api {
 	source "mspdebug_simio.c"
 }
