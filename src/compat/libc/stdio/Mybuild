@@ -162,7 +162,6 @@ static module tmpfile_stub extends tmpfile {
 abstract module ppipe {
 }
 
-
 static module ppipe_stub extends ppipe {
 	source "ppipe_stub.c"
 }
@@ -171,8 +170,13 @@ static module perror {
 	source "perror.c"
 }
 
+static module scanf_without_file {
+	source "scanf.c", "scanf_scanchar_without_file.c"
+}
+
 static module scanf {
 	source "scanf.c"
+	source "fscanf.c"
 
 	depends file_ops /* ungetc() */
 }
