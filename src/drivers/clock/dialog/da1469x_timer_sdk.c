@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <kernel/irq.h>
+#include <kernel/time/clock_source.h>
 #include <util/log.h>
 #include <framework/mod/options.h>
 #include <embox/unit.h>
@@ -78,6 +79,22 @@ void da1469x_timer_set(int trigger) {
 	hw_timer_enable(TIMER_ID);
 }
 
+static int da1469x_timer_config(struct time_dev_conf *conf) {
+	return 0;
+}
+
+static struct time_event_device da1469x_timer_event = {
+	.config = da1469x_timer_config,
+	.event_hz = TICK_RATE_HZ,
+	.irq_nr = DA1469X_TIMER_IRQ,
+};
+
+static struct clock_source da1469x_timer_clock_source = {
+	.name = "da1469x_timer",
+	.event_device = &da1469x_timer_event,
+	.read = clock_source_read,
+};
+
 static int da1469x_timer_init(void) {
 	timer_config timer_cfg = {
 		.clk_src = HW_TIMER_CLK_SRC_INT,
@@ -100,7 +117,7 @@ static int da1469x_timer_init(void) {
 	/* Disable by default */
 	hw_timer_disable(TIMER_ID);
 
-	return 0;
+	return clock_source_register(&da1469x_timer_clock_source);
 }
 
 STATIC_IRQ_ATTACH(DA1469X_TIMER_IRQ, da1469x_timer_irq_handler, NULL);
