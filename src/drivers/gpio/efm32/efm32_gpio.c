@@ -18,7 +18,7 @@
 
 #include <framework/mod/options.h>
 
-#include <module/efm32zg_sk3200/bsp.h>
+#include <module/platform/efm32/efm32_conf.h>
 
 #include <embox/unit.h>
 

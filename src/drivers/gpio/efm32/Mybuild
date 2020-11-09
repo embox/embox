@@ -1,6 +1,6 @@
 package embox.driver.gpio
 
-@BuildDepends(efm32zg_sk3200.bsp)
+@BuildDepends(platform.efm32.efm32_bsp)
 module efm32_gpio extends api {
 	option number log_level = 0
 
@@ -10,5 +10,5 @@ module efm32_gpio extends api {
 	source "efm32_gpio.c"
 
 	depends embox.driver.gpio.core
-	@NoRuntime depends efm32zg_sk3200.bsp
+	@NoRuntime depends platform.efm32.efm32_bsp
 }
