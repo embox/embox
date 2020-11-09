@@ -1,8 +1,0 @@
-package embox.kernel.watchdog
-
-module watchdog_source {
-	source "watchdog.c"
-	depends embox.compat.posix.util.All
-	depends embox.kernel.timer.sys_timer
-	depends embox.kernel.time.jiffies
-}
