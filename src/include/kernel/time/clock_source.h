@@ -46,6 +46,7 @@ struct clock_source {
 };
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
+extern struct clock_source *clock_source_get_by_name(const char *name);
 
 extern struct dlist_head *clock_source_get_list(void);
 

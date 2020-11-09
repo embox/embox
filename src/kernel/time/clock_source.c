@@ -212,6 +212,20 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	return best;
 }
 
+struct clock_source *clock_source_get_by_name(const char *name) {
+	struct clock_source *cs;
+	struct clock_source_head *csh;
+
+	dlist_foreach_entry(csh, &clock_source_list, lnk) {
+		cs = csh->clock_source;
+		if (!strcmp(cs->name, name)) {
+			return cs;
+		}
+	}
+
+	return NULL;
+}
+
 struct dlist_head *clock_source_get_list(void) {
 	return &clock_source_list;
 }
