@@ -104,9 +104,3 @@ module fonts {
 	@IncludeExport(path="drivers/video")
 	source "font.h"
 }
-
-@BuildDepends(platform.efm32.efm32_bsp)
-module efm32_lcd {
-	source "efm32_lcd.c"
-	@NoRuntime depends platform.efm32.efm32_bsp
-}
