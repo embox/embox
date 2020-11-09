@@ -69,14 +69,15 @@ static __RETAINED_CODE irq_return_t da1469x_timer_irq_handler(
 	return IRQ_HANDLED;
 }
 
-void da1469x_timer_set(int trigger) {
-
-	hw_timer_set_reload(TIMER_ID, trigger * TICK_PERIOD);
+static int da1469x_timer_set_next_event(uint32_t next_event) {
+	hw_timer_set_reload(TIMER_ID, next_event * TICK_PERIOD);
 
 	hw_timer_enable_clk(TIMER_ID);
-	while (hw_timer_get_count(TIMER_ID) != (trigger * TICK_PERIOD));
+	while (hw_timer_get_count(TIMER_ID) != (next_event * TICK_PERIOD));
 
 	hw_timer_enable(TIMER_ID);
+
+	return 0;
 }
 
 static int da1469x_timer_config(struct time_dev_conf *conf) {
@@ -85,6 +86,7 @@ static int da1469x_timer_config(struct time_dev_conf *conf) {
 
 static struct time_event_device da1469x_timer_event = {
 	.config = da1469x_timer_config,
+	.set_next_event = da1469x_timer_set_next_event,
 	.event_hz = TICK_RATE_HZ,
 	.irq_nr = DA1469X_TIMER_IRQ,
 };
