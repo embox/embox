@@ -26,9 +26,6 @@ enum clock_source_property {
 	CS_WITHOUT_IRQ = 2
 };
 
-/* TODO move it arch dependent code */
-#define CS_SHIFT_CONSTANT 24
-
 /**
  * Time source of hardware time - events and cycles.
  * @param read - return count of ns

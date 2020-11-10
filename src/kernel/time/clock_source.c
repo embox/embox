@@ -12,43 +12,18 @@
 #include <string.h>
 #include <errno.h>
 
-#include <util/array.h>
 #include <util/dlist.h>
 #include <util/math.h>
-
-#include <mem/misc/pool.h>
-
-#include <kernel/panic.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-#include <kernel/sched/schedee_priority.h>
-#include <kernel/lthread/lthread.h>
-
-#include <embox/unit.h>
-
 static DLIST_DEFINE(clock_source_list);
-
-static struct timespec cs_full_read(struct clock_source *cs);
-static struct timespec cs_event_read(struct clock_source *cs);
-static struct timespec cs_counter_read(struct clock_source *cs);
-
-static inline cycle_t clock_source_get_jiffies(struct clock_source *cs) {
-	return ((cycle_t) cs->jiffies);
-}
 
 extern int clock_tick_init(void);
 
 int clock_source_register(struct clock_source *cs) {
 	if (!cs) {
 		return -EINVAL;
-	}
-
-	/* TODO move it to arch dependent code */
-	if (cs->counter_device) {
-		cs->counter_shift = CS_SHIFT_CONSTANT;
-		cs->counter_mult = clock_sourcehz2mult(cs->counter_device->cycle_hz,
-				cs->counter_shift);
 	}
 
 	dlist_add_prev(dlist_head_init(&cs->lnk), &clock_source_list);
@@ -71,75 +46,24 @@ int clock_source_unregister(struct clock_source *cs) {
 }
 
 struct timespec clock_source_read(struct clock_source *cs) {
-	struct timespec ret;
-	assert(cs);
-
-	/* See comment to clock_source_read in clock_source.h */
-	if (cs->event_device && cs->counter_device) {
-		ret = cs_full_read(cs);
-	} else if (cs->event_device) {
-		ret = cs_event_read(cs);
-	} else if (cs->counter_device) {
-		ret = cs_counter_read(cs);
-	} else {
-		panic("all clock sources must have at least one device (event or counter)\n");
-	}
-
-	return ret;
-}
-
-static struct timespec cs_full_read(struct clock_source *cs) {
-	static cycle_t prev_cycles, cycles, cycles_all;
-	int old_jiffies, cycles_per_jiff, safe;
+	struct timespec ts;
 	struct time_event_device *ed;
 	struct time_counter_device *cd;
-	struct timespec ts;
-
-	assert(cs);
+	uint64_t ns = 0;
 
 	ed = cs->event_device;
-	assert(ed);
-	assert(ed->event_hz != 0);
+	if (ed) {
+		ns += ((uint64_t) cs->jiffies * NSEC_PER_SEC) / ed->event_hz;
+	}
 
 	cd = cs->counter_device;
-	assert(cd);
-	assert(cd->read);
-	assert(cd->cycle_hz != 0);
-
-	cycles_per_jiff = cd->cycle_hz / ed->event_hz;
-	safe = 0;
-
-	do {
-		old_jiffies = clock_source_get_jiffies(cs);
-		cycles = cd->read();
-		safe++;
-	} while (old_jiffies != clock_source_get_jiffies(cs) && safe < 3);
-
-	if (ed->pending && ed->pending(ed->irq_nr)) {
-		old_jiffies++;
+	if (cd) {
+		ns += ((uint64_t) cd->read() * NSEC_PER_SEC) / cd->cycle_hz;
 	}
 
-	cycles_all = cycles + (time64_t)old_jiffies * cycles_per_jiff;
-
-	/* TODO cheat. read() will miss for one jiff sometimes. */
-	if (cycles_all < prev_cycles) {
-		cycles_all += cycles_per_jiff;
-	}
-
-	prev_cycles = cycles_all;
-
-	ts = cycles32_to_timespec(cycles, cs->counter_mult, cs->counter_shift);
-	ts = timespec_add(ts, jiffies_to_timespec(ed->event_hz, old_jiffies));
+	ts = ns_to_timespec(ns);
 
 	return ts;
-}
-
-static struct timespec cs_event_read(struct clock_source *cs) {
-	return jiffies_to_timespec(cs->event_device->event_hz, clock_source_get_jiffies(cs));
-}
-
-static struct timespec cs_counter_read(struct clock_source *cs) {
-	return cycles64_to_timespec(cs->counter_device->cycle_hz, cs->counter_device->read());
 }
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
