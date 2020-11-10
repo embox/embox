@@ -27,9 +27,6 @@
 
 #include <embox/unit.h>
 
-ARRAY_SPREAD_DEF(const struct time_event_device *const, __event_devices);
-ARRAY_SPREAD_DEF(const struct time_counter_device *const, __counter_devices);
-
 static DLIST_DEFINE(clock_source_list);
 
 static struct timespec cs_full_read(struct clock_source *cs);
