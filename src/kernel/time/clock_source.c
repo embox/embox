@@ -68,37 +68,30 @@ struct timespec clock_source_read(struct clock_source *cs) {
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
-	uint32_t best_resolution = 0;
-	uint32_t resolution = 0;
+	uint32_t event_hz, cycle_hz, best_hz, hz;
 
+	best_hz = 0;
 	best = NULL;
 
 	dlist_foreach_entry(cs, &clock_source_list, lnk) {
+		event_hz = cs->event_device ? cs->event_device->event_hz : 0;
+		cycle_hz = cs->counter_device ? cs->counter_device->cycle_hz : 0;
+
 		switch (pr) {
 			case CS_ANY:
+				hz = max(event_hz, cycle_hz);
+				break;
 			case CS_WITH_IRQ:
-				if (cs->event_device) {
-					resolution = cs->event_device->event_hz;
-				}
-
-				if (pr == CS_ANY && cs->counter_device) {
-					resolution = max(resolution, cs->counter_device->cycle_hz);
-				}
-				if (resolution > best_resolution) {
-					best_resolution = resolution;
-					best = cs;
-				}
-			break;
-
+				hz = event_hz;
+				break;
 			case CS_WITHOUT_IRQ:
-				if (cs->counter_device) {
-					resolution = cs->counter_device->cycle_hz;
-				}
-				if (resolution > best_resolution) {
-					best_resolution = resolution;
-					best = cs;
-				}
-			break;
+				hz = cycle_hz;
+				break;
+		}
+
+		if (hz > best_hz) {
+			best_hz = hz;
+			best = cs;
 		}
 	}
 
