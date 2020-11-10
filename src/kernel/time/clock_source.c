@@ -30,9 +30,6 @@
 ARRAY_SPREAD_DEF(const struct time_event_device *const, __event_devices);
 ARRAY_SPREAD_DEF(const struct time_counter_device *const, __counter_devices);
 
-POOL_DEF(clock_source_pool, struct clock_source_head,
-						OPTION_GET(NUMBER, clocks_quantity));
-
 static DLIST_DEFINE(clock_source_list);
 
 static struct timespec cs_full_read(struct clock_source *cs);
@@ -43,31 +40,12 @@ static inline cycle_t clock_source_get_jiffies(struct clock_source *cs) {
 	return ((cycle_t) cs->jiffies);
 }
 
-static struct clock_source_head *clock_source_find(struct clock_source *cs) {
-	struct clock_source_head *csh;
-
-	dlist_foreach_entry(csh, &clock_source_list, lnk) {
-		if (cs == csh->clock_source) {
-			return csh;
-		}
-	}
-
-	return NULL;
-}
-
 extern int clock_tick_init(void);
 
 int clock_source_register(struct clock_source *cs) {
-	struct clock_source_head *csh;
-
 	if (!cs) {
 		return -EINVAL;
 	}
-	csh = (struct clock_source_head *) pool_alloc(&clock_source_pool);
-	if (!csh) {
-		return -EBUSY;
-	}
-	csh->clock_source = cs;
 
 	/* TODO move it to arch dependent code */
 	if (cs->counter_device) {
@@ -76,7 +54,7 @@ int clock_source_register(struct clock_source *cs) {
 				cs->counter_shift);
 	}
 
-	dlist_add_prev(dlist_head_init(&csh->lnk), &clock_source_list);
+	dlist_add_prev(dlist_head_init(&cs->lnk), &clock_source_list);
 
 	clock_tick_init();
 
@@ -86,14 +64,11 @@ int clock_source_register(struct clock_source *cs) {
 }
 
 int clock_source_unregister(struct clock_source *cs) {
-	struct clock_source_head *csh;
-
 	if (!cs) {
 		return -EINVAL;
 	}
-	if (NULL == (csh = clock_source_find(cs))) {
-		return -EBADF;
-	}
+
+	dlist_del(&cs->lnk);
 
 	return ENOERR;
 }
@@ -172,15 +147,12 @@ static struct timespec cs_counter_read(struct clock_source *cs) {
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
-	struct clock_source_head *csh;
 	uint32_t best_resolution = 0;
 	uint32_t resolution = 0;
 
 	best = NULL;
 
-	dlist_foreach_entry(csh, &clock_source_list, lnk) {
-		cs = csh->clock_source;
-
+	dlist_foreach_entry(cs, &clock_source_list, lnk) {
 		switch (pr) {
 			case CS_ANY:
 			case CS_WITH_IRQ:
@@ -214,10 +186,8 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 
 struct clock_source *clock_source_get_by_name(const char *name) {
 	struct clock_source *cs;
-	struct clock_source_head *csh;
 
-	dlist_foreach_entry(csh, &clock_source_list, lnk) {
-		cs = csh->clock_source;
+	dlist_foreach_entry(cs, &clock_source_list, lnk) {
 		if (!strcmp(cs->name, name)) {
 			return cs;
 		}

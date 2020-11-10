@@ -43,6 +43,8 @@ struct clock_source {
 	struct timespec (*read)(struct clock_source *cs);
 	uint32_t counter_mult;
 	uint32_t counter_shift;
+
+	struct dlist_head lnk;
 };
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
@@ -56,9 +58,6 @@ static inline int clock_source_set_next_event(struct clock_source *cs,
 }
 
 extern struct dlist_head *clock_source_get_list(void);
-
-#define clock_source_foreach(csh) \
-	dlist_foreach_entry(csh, clock_source_get_list(), lnk)
 
 /**
  * Read cycles from clock source since moment when it started. This function may be used exactly
@@ -81,11 +80,6 @@ static inline uint32_t clock_sourcehz2mult(uint32_t hz, uint32_t shift) {
 	uint64_t tmp = ((uint64_t)NSEC_PER_SEC) << shift;
 	return tmp / hz;
 }
-
-struct clock_source_head {
-	struct dlist_head lnk;
-	struct clock_source *clock_source;
-};
 
 #define TIME_EVENT_DEVICE(ted) \
 	ARRAY_SPREAD_DECLARE(const struct time_event_device *const, \
