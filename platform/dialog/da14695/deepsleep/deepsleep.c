@@ -26,11 +26,12 @@
 EMBOX_UNIT_INIT(deepsleep_init);
 
 extern void lp_clock_enable(void);
-extern void da1469x_timer_set(int trigger);
 extern void set_wakeup_reset_handler(void);
 extern bool goto_deepsleep(void);
 
 extern struct clock_source *cs_jiffies;
+
+static struct clock_source *da1469x_timer;
 
 static __RETAINED_CODE void prepare_for_deepsleep(void) {
 	hw_sys_pd_com_disable();
@@ -50,6 +51,13 @@ __RETAINED_CODE int deepsleep_enter(void) {
 	unsigned systimer_ticks, lp_timer_ticks;
 	clock_t next_event;
 
+	if (!da1469x_timer) {
+		da1469x_timer = clock_source_get_by_name("da1469x_timer");
+		if (!da1469x_timer) {
+			return -1;
+		}
+	}
+
 	if (timer_strat_get_next_event(&next_event) != 0) {
 		/* There is no next event, so sleep as long as possible.
 		 * We will be wake up with CMAC interrupt or another trigger. */
@@ -57,10 +65,12 @@ __RETAINED_CODE int deepsleep_enter(void) {
 		lp_timer_ticks = TIMER_MAX_RELOAD_VAL;
 	} else {
 		systimer_ticks = next_event - clock_sys_ticks();
-		lp_timer_ticks = (systimer_ticks * 100) / cs_jiffies->event_device->event_hz;
+		lp_timer_ticks =
+			(systimer_ticks * da1469x_timer->event_device->event_hz) /
+		    cs_jiffies->event_device->event_hz;
 	}
 
-	da1469x_timer_set(lp_timer_ticks);
+	clock_source_set_next_event(da1469x_timer, lp_timer_ticks);
 
 	ipl = ipl_save();
 

@@ -8,6 +8,7 @@
 
 #include <assert.h>
 #include <kernel/irq.h>
+#include <kernel/time/clock_source.h>
 #include <util/log.h>
 #include <framework/mod/options.h>
 #include <embox/unit.h>
@@ -68,15 +69,33 @@ static __RETAINED_CODE irq_return_t da1469x_timer_irq_handler(
 	return IRQ_HANDLED;
 }
 
-void da1469x_timer_set(int trigger) {
-
-	hw_timer_set_reload(TIMER_ID, trigger * TICK_PERIOD);
+static int da1469x_timer_set_next_event(uint32_t next_event) {
+	hw_timer_set_reload(TIMER_ID, next_event * TICK_PERIOD);
 
 	hw_timer_enable_clk(TIMER_ID);
-	while (hw_timer_get_count(TIMER_ID) != (trigger * TICK_PERIOD));
+	while (hw_timer_get_count(TIMER_ID) != (next_event * TICK_PERIOD));
 
 	hw_timer_enable(TIMER_ID);
+
+	return 0;
 }
+
+static int da1469x_timer_config(struct time_dev_conf *conf) {
+	return 0;
+}
+
+static struct time_event_device da1469x_timer_event = {
+	.config = da1469x_timer_config,
+	.set_next_event = da1469x_timer_set_next_event,
+	.event_hz = TICK_RATE_HZ,
+	.irq_nr = DA1469X_TIMER_IRQ,
+};
+
+static struct clock_source da1469x_timer_clock_source = {
+	.name = "da1469x_timer",
+	.event_device = &da1469x_timer_event,
+	.read = clock_source_read,
+};
 
 static int da1469x_timer_init(void) {
 	timer_config timer_cfg = {
@@ -100,7 +119,7 @@ static int da1469x_timer_init(void) {
 	/* Disable by default */
 	hw_timer_disable(TIMER_ID);
 
-	return 0;
+	return clock_source_register(&da1469x_timer_clock_source);
 }
 
 STATIC_IRQ_ATTACH(DA1469X_TIMER_IRQ, da1469x_timer_irq_handler, NULL);
