@@ -40,7 +40,4 @@ extern clock_t clock_sys_ticks(void);
 extern uint32_t clock_freq(void);
 extern clock_t clock_sys_sec(void);
 
-extern int time_before(clock_t now, clock_t before);
-extern int time_after(clock_t now, clock_t after);
-
 #endif /* HAL_CLOCK_H_ */
