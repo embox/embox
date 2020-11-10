@@ -57,8 +57,6 @@ static inline int clock_source_set_next_event(struct clock_source *cs,
 	return cs->event_device->set_next_event(next_event);
 }
 
-extern struct dlist_head *clock_source_get_list(void);
-
 /**
  * Read cycles from clock source since moment when it started. This function may be used exactly
  * for three types of clock sources:

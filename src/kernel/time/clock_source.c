@@ -193,10 +193,6 @@ struct clock_source *clock_source_get_by_name(const char *name) {
 	return NULL;
 }
 
-struct dlist_head *clock_source_get_list(void) {
-	return &clock_source_list;
-}
-
 time64_t clock_source_get_hwcycles(struct clock_source *cs) {
 	int load;
 
