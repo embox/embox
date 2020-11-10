@@ -26,9 +26,6 @@ enum clock_source_property {
 	CS_WITHOUT_IRQ = 2
 };
 
-/* TODO move it arch dependent code */
-#define CS_SHIFT_CONSTANT 24
-
 /**
  * Time source of hardware time - events and cycles.
  * @param read - return count of ns
@@ -43,6 +40,8 @@ struct clock_source {
 	struct timespec (*read)(struct clock_source *cs);
 	uint32_t counter_mult;
 	uint32_t counter_shift;
+
+	struct dlist_head lnk;
 };
 
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
@@ -54,11 +53,6 @@ static inline int clock_source_set_next_event(struct clock_source *cs,
 
 	return cs->event_device->set_next_event(next_event);
 }
-
-extern struct dlist_head *clock_source_get_list(void);
-
-#define clock_source_foreach(csh) \
-	dlist_foreach_entry(csh, clock_source_get_list(), lnk)
 
 /**
  * Read cycles from clock source since moment when it started. This function may be used exactly
@@ -81,20 +75,5 @@ static inline uint32_t clock_sourcehz2mult(uint32_t hz, uint32_t shift) {
 	uint64_t tmp = ((uint64_t)NSEC_PER_SEC) << shift;
 	return tmp / hz;
 }
-
-struct clock_source_head {
-	struct dlist_head lnk;
-	struct clock_source *clock_source;
-};
-
-#define TIME_EVENT_DEVICE(ted) \
-	ARRAY_SPREAD_DECLARE(const struct time_event_device *const, \
-			__event_devices) \
-    ARRAY_SPREAD_ADD(__event_devices, ted);
-
-#define TIME_COUNTER_DEVICE(tcd) \
-	ARRAY_SPREAD_DECLARE(const struct time_counter_device *const, \
-			__counter_devices); \
-    ARRAY_SPREAD_ADD(__counter_devices, tcd);
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */
