@@ -48,6 +48,14 @@ static module sleep {
 	option number log_level=0
 
 	source "sleep.c"
+
+	depends embox.kernel.timer.sleep_api
+	depends embox.kernel.time.kernel_time
+}
+
+static module nanosleep {
+	option number log_level=0
+
 	source "nanosleep.c"
 
 	depends embox.kernel.timer.sleep_api

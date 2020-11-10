@@ -66,11 +66,6 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 	return ENOERR;
 }
 
-void delay(int d) {
-	//FIXME delay must plase in linux/delay.h
-
-}
-
 static void cs_nanospin(struct clock_source *cs, struct hw_time *hw) {
 	while(cs->jiffies < hw->jiffies);
 	while((cs->jiffies == hw->jiffies) && (cs->counter_device->read() <= hw->cycles));
