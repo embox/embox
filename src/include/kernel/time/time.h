@@ -123,6 +123,7 @@ extern clock_t ns2jiffies(time64_t ns);
 extern clock_t ms2jiffies(time64_t ms);
 extern time64_t jiffies2ms(clock_t jiff);
 extern int jiffies_init(void);
+extern void jiffies_update(int ticks);
 
 __END_DECLS
 

@@ -24,7 +24,22 @@ static struct lthread clock_handler_lt;
 extern struct clock_source *cs_jiffies;
 
 void clock_tick_handler(void *dev_id) {
-	clock_handle_ticks(dev_id, 1);
+	if (dev_id == cs_jiffies) {
+		jiffies_update(1);
+	} else {
+		clock_handle_ticks(dev_id, 1);
+	}
+}
+
+void jiffies_update(int ticks) {
+	clock_t next_event;
+
+	cs_jiffies->jiffies += ticks;
+
+	if ((timer_strat_get_next_event(&next_event) == 0) &&
+			(cs_jiffies->jiffies >= next_event)) {
+		lthread_launch(&clock_handler_lt);
+	}
 }
 
 void clock_handle_ticks(void *dev_id, unsigned ticks) {
