@@ -10,11 +10,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-
-#include <hal/clock.h>
-#include <kernel/time/ktime.h>
-#include <kernel/time/clock_source.h>
 #include <time.h>
+#include <sys/time.h>
 
 static void print_usage(void) {
 	printf("Usage: date -s CCYYMMDDhhmm.ss\n");
@@ -24,14 +21,14 @@ static void print_usage(void) {
 #define SECONDS_1900_1970 2208988800L
 
 static void show_date(void) {
-	struct timespec ts;
+	struct timeval tv;
 	char buf[256];
 	time_t time;
 
 	memset(buf, 0, 256);
 
-	getnsofday(&ts, NULL);
-	time = ts.tv_sec;
+	gettimeofday(&tv, NULL);
+	time = tv.tv_sec;
 	ctime_r(&time, buf);
 
 	printf("%s\n", buf);
@@ -40,7 +37,7 @@ static void show_date(void) {
 static void set_date(char *new_date) {
 	char *end;
 	time_t cur_time;
-	struct timespec tv;
+	struct timeval tv = {0};
 	struct tm date;
 
 	end = new_date + strlen(new_date);
@@ -75,8 +72,8 @@ static void set_date(char *new_date) {
 
 	cur_time = mktime(&date);
 	tv.tv_sec = cur_time;
-	tv.tv_nsec = 0;
-	setnsofday(&tv, NULL);
+
+	settimeofday(&tv, NULL);
 }
 
 static int show_fdate(char *fmt) {
