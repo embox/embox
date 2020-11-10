@@ -29,8 +29,6 @@ extern void lp_clock_enable(void);
 extern void set_wakeup_reset_handler(void);
 extern bool goto_deepsleep(void);
 
-extern struct clock_source *cs_jiffies;
-
 static struct clock_source *da1469x_timer;
 
 static __RETAINED_CODE void prepare_for_deepsleep(void) {
@@ -65,9 +63,10 @@ __RETAINED_CODE int deepsleep_enter(void) {
 		lp_timer_ticks = TIMER_MAX_RELOAD_VAL;
 	} else {
 		systimer_ticks = next_event - clock_sys_ticks();
+
 		lp_timer_ticks =
 			(systimer_ticks * da1469x_timer->event_device->event_hz) /
-		    cs_jiffies->event_device->event_hz;
+				clock_freq();
 	}
 
 	clock_source_set_next_event(da1469x_timer, lp_timer_ticks);
@@ -93,7 +92,7 @@ __RETAINED_CODE int deepsleep_enter(void) {
 	jiffies_init();
 
 	if (systimer_ticks) {
-		clock_handle_ticks(cs_jiffies, systimer_ticks);
+		jiffies_update(systimer_ticks);
 	}
 
 	return 0;
