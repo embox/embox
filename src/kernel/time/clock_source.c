@@ -74,6 +74,7 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	best = NULL;
 
 	dlist_foreach_entry(cs, &clock_source_list, lnk) {
+		hz = 0;
 		event_hz = cs->event_device ? cs->event_device->event_hz : 0;
 		cycle_hz = cs->counter_device ? cs->counter_device->cycle_hz : 0;
 
@@ -85,7 +86,9 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 				hz = event_hz;
 				break;
 			case CS_WITHOUT_IRQ:
-				hz = cycle_hz;
+				if (!cs->event_device) {
+					hz = cycle_hz;
+				}
 				break;
 		}
 
