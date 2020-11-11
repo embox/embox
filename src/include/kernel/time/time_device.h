@@ -42,7 +42,6 @@ struct time_event_device {
 	int (*set_next_event)(uint32_t next_event);
 	uint32_t event_hz;
 	uint32_t irq_nr;
-	int (*pending) (unsigned int nr);
 	const char *name;
 };
 

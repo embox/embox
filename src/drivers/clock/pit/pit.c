@@ -108,7 +108,6 @@ static struct time_event_device pit_event_device = {
 	.config = pit_clock_setup,
 	.event_hz = PIT_HZ,
 	.irq_nr = IRQ_NR,
-	.pending = irqctrl_pending
 };
 
 static struct time_counter_device pit_counter_device = {
