@@ -37,7 +37,17 @@ static_assertf(RELOAD_VALUE - 1 <= SYSTICK_RELOAD_MSK,
 static struct clock_source cortexm_systick_clock_source;
 
 static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data) {
+	struct clock_source *cs = data;
+
 	clock_tick_handler(data);
+
+	if (cs->flags & CLOCK_SOURCE_ONESHOT_MODE) {
+		/* Systick do not support one-shot mode, so we do
+		 * it by shutting Systick down. */
+		REG_STORE(SYSTICK_CTRL, 0);
+		REG_STORE(SYSTICK_VAL, 0);
+	}
+
 	return IRQ_HANDLED;
 }
 
@@ -55,12 +65,34 @@ static int cortexm_systick_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
+static int cortexm_systick_set_oneshot(struct clock_source *cs) {
+	return 0;
+}
+
+static int cortexm_systick_set_periodic(struct clock_source *cs) {
+	return 0;
+}
+
+static int cortexm_systick_set_next_event(struct clock_source *cs,
+		uint32_t next_event) {
+	REG_STORE(SYSTICK_CTRL, 0);
+	REG_STORE(SYSTICK_RELOAD, next_event - 1);
+	REG_STORE(SYSTICK_VAL, 0);
+	REG_STORE(SYSTICK_CTRL, SYSTICK_ENABLE | SYSTICK_TICKINT |
+			SYSTICK_CLOCKINIT);
+
+	return 0;
+}
+
 static cycle_t cortexm_systick_read(void) {
-	return RELOAD_VALUE - REG_LOAD(SYSTICK_VAL);
+	return REG_LOAD(SYSTICK_RELOAD) - REG_LOAD(SYSTICK_VAL);
 }
 
 static struct time_event_device cortexm_systick_event = {
 	.config = cortexm_systick_config,
+	.set_oneshot = cortexm_systick_set_oneshot,
+	.set_periodic = cortexm_systick_set_periodic,
+	.set_next_event = cortexm_systick_set_next_event,
 	.event_hz = SYSTICK_HZ,
 	.irq_nr = SYSTICK_IRQ,
 };
@@ -68,6 +100,7 @@ static struct time_event_device cortexm_systick_event = {
 static struct time_counter_device cortexm_systick_counter = {
 	.read = cortexm_systick_read,
 	.cycle_hz = SYS_CLOCK,
+	.mask = SYSTICK_RELOAD_MSK,
 };
 
 static struct clock_source cortexm_systick_clock_source = {
