@@ -66,6 +66,49 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	return ts;
 }
 
+int clock_source_set_oneshot(struct clock_source *cs) {
+	assert(cs && cs->event_device);
+
+	if (!cs->event_device->set_oneshot) {
+		return -1;
+	}
+
+	if (!cs->event_device->set_oneshot(cs)) {
+		cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
+		cs->flags |= CLOCK_SOURCE_ONESHOT_MODE;
+		return 0;
+	}
+
+	return -1;
+}
+
+int clock_source_set_periodic(struct clock_source *cs) {
+	assert(cs && cs->event_device);
+
+	if (!cs->event_device->set_periodic) {
+		return -1;
+	}
+
+	if (!cs->event_device->set_periodic(cs)) {
+		cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
+		cs->flags |= CLOCK_SOURCE_PERIODIC_MODE;
+		return 0;
+	}
+
+	return -1;
+}
+
+int clock_source_set_next_event(struct clock_source *cs,
+		uint32_t next_event) {
+	assert(cs && cs->event_device);
+
+	if (!cs->event_device->set_next_event) {
+		return -1;
+	}
+
+	return cs->event_device->set_next_event(cs, next_event);
+}
+
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
 	uint32_t event_hz, cycle_hz, best_hz, hz;

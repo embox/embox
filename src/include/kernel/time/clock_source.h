@@ -37,6 +37,11 @@ struct clock_source {
 	struct time_counter_device *counter_device;
 	volatile clock_t jiffies; /**< count of jiffies since clock source started */
 	uint32_t flags; /**< periodical or not */
+#define CLOCK_SOURCE_ONESHOT_MODE  (1 << 0)
+#define CLOCK_SOURCE_PERIODIC_MODE (1 << 1)
+#define CLOCK_SOURCE_MODE_MASK     \
+	(CLOCK_SOURCE_ONESHOT_MODE | CLOCK_SOURCE_PERIODIC_MODE)
+
 	struct timespec (*read)(struct clock_source *cs);
 	uint32_t counter_mult;
 	uint32_t counter_shift;
@@ -47,11 +52,31 @@ struct clock_source {
 extern struct clock_source *clock_source_get_best(enum clock_source_property property);
 extern struct clock_source *clock_source_get_by_name(const char *name);
 
-static inline int clock_source_set_next_event(struct clock_source *cs,
-		uint32_t next_event) {
-	assert(cs && cs->event_device);
+extern int clock_source_set_oneshot(struct clock_source *cs);
+extern int clock_source_set_periodic(struct clock_source *cs);
+extern int clock_source_set_next_event(struct clock_source *cs,
+		uint32_t next_event);
 
-	return cs->event_device->set_next_event(next_event);
+static inline clock_t clock_source_get_cycles(struct clock_source *cs) {
+	assert(cs && cs->counter_device);
+
+	return cs->counter_device->read();
+}
+
+static inline uint64_t clock_source_cycles2ticks(struct clock_source *cs,
+	                                             uint64_t cycles) {
+	assert(cs);
+	assert(cs->event_device && cs->counter_device);
+
+	return (cycles * cs->event_device->event_hz) / cs->counter_device->cycle_hz;
+}
+
+static inline uint64_t clock_source_ticks2cycles(struct clock_source *cs,
+	                                             uint64_t ticks) {
+	assert(cs);
+	assert(cs->event_device && cs->counter_device);
+
+	return (ticks * cs->counter_device->cycle_hz) / cs->event_device->event_hz;
 }
 
 /**
