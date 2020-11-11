@@ -15,6 +15,10 @@
 #include <framework/mod/options.h>
 #include <module/embox/arch/system.h>
 
+#include <kernel/time/clock_source.h>
+#include <kernel/time/time.h>
+#include <kernel/time/timer.h>
+
 #include <stm32f7xx_hal.h>
 
 static void SystemClock_Config(void)
@@ -70,7 +74,36 @@ void arch_init(void) {
 }
 
 void arch_idle(void) {
+	extern const struct clock_source *cs_jiffies;
+	clock_t next_event_ticks, sleep_ticks;
+	uint64_t next_event_cycles;
+	struct clock_source *cs = (struct clock_source *) cs_jiffies;
 
+	if (!cs) {
+		return;
+	}
+
+	if (timer_strat_get_next_event(&next_event_ticks) != 0) {
+		/* Sleep as long as possible */
+		next_event_ticks = UINT32_MAX;
+	}
+
+	next_event_cycles = clock_source_ticks2cycles(cs, next_event_ticks);
+	if (next_event_cycles > cs->counter_device->mask) {
+		next_event_cycles = cs->counter_device->mask;
+	}
+
+	clock_source_set_oneshot(cs);
+	clock_source_set_next_event(cs, next_event_cycles);
+
+	__asm__ ("wfi");
+
+	sleep_ticks = clock_source_cycles2ticks(cs, clock_source_get_cycles(cs));
+
+	jiffies_update(sleep_ticks);
+
+	clock_source_set_periodic(cs);
+	clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
 }
 
 void arch_shutdown(arch_shutdown_mode_t mode) {
