@@ -40,6 +40,7 @@ static module periphirals {
 			"hw_gpio.c",
 			"hw_i2c.c",
 			"hw_spi.c",
+			"hw_uart.c",
 			"hw_clk_da1469x.c",
 			"hw_gpadc.c",
 			"hw_pdc.c",
