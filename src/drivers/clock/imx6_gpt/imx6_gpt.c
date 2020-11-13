@@ -110,7 +110,6 @@ static cycle_t imx6_gpt_read(struct clock_source *cs) {
 
 static struct time_event_device imx6_gpt_event = {
 	.set_periodic   = imx6_gpt_set_periodic,
-	.event_hz = GPT_TARGET_HZ,
 	.irq_nr   = GPT_IRQ,
 };
 

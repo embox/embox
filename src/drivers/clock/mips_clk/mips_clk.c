@@ -35,7 +35,6 @@ static int mips_clock_setup(struct clock_source *cs) {
 
 static struct time_event_device mips_event_device  = {
 	.set_periodic = mips_clock_setup,
-	.event_hz = 1000,
 	.name = "mips_clk",
 	.irq_nr = MIPS_IRQN_TIMER
 };

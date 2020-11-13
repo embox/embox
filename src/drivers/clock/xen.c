@@ -29,7 +29,6 @@ static int integratorcp_clock_setup(struct clock_source *cs) {
 static struct time_event_device xen_event_device = {
 	.name = "xen event device",
 	.set_periodic = integratorcp_clock_setup,
-	.event_hz = 1000,
 	.irq_nr = -1
 };
 

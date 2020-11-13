@@ -38,7 +38,6 @@ static int at91_pitc_set_periodic(struct clock_source *cs);
 
 static struct time_event_device at91_pitc_event = {
 	.set_periodic = at91_pitc_set_periodic,
-	.event_hz = AT91_PIT_EVENT_RES,
 	.irq_nr = AT91C_ID_SYS
 };
 
@@ -61,7 +60,7 @@ static struct clock_source at91_pitc_clock_source = {
 static int at91_pitc_set_periodic(struct clock_source *cs) {
 	REG_LOAD(AT91C_PITC_PIVR);
 	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN |
-	    (at91_pitc_counter.cycle_hz / at91_pitc_event.event_hz));
+	    (at91_pitc_counter.cycle_hz / AT91_PIT_EVENT_RES));
 	return 0;
 }
 

@@ -68,7 +68,6 @@ static cycle_t pl031_read(struct clock_source *cs) {
 
 static struct time_event_device pl031_event = {
 	.set_periodic   = pl031_set_periodic,
-	.event_hz = PL031_TARGET_HZ,
 	.irq_nr   = PL031_IRQ,
 };
 

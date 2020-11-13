@@ -140,11 +140,10 @@ static cycle_t gptimer_read(struct clock_source *cs) {
 
 static struct time_event_device gptimer_ed = {
 	.set_periodic = gptimer_set_periodic ,
-	.event_hz = TIMER0_RELOAD + 1,
 };
 
 static int gptimer_set_periodic(struct clock_source *cs) {
-	REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.event_hz - 1);
+	REG_STORE(&dev_regs->timer[0].reload, TIMER0_RELOAD);
 	REG_STORE(&dev_regs->timer[0].counter, 0);
 	REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
 	return 0;

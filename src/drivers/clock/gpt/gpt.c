@@ -110,7 +110,6 @@ static cycle_t this_read(struct clock_source *cs) {
 
 static struct time_event_device this_event = {
 	.set_periodic = this_set_periodic,
-	.event_hz = 1000,
 	.irq_nr = GPT_IRQ,
 };
 

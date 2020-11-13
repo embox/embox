@@ -92,7 +92,6 @@ static int ti8168_clk_set_periodic(struct clock_source *cs) {
 
 static struct time_event_device ti8168_clk_event = {
 	.set_periodic = ti8168_clk_set_periodic,
-	.event_hz = 1000,
 	.irq_nr = TI8168_GPTIMER1_IRQ,
 };
 

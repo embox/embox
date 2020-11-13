@@ -19,7 +19,6 @@ EMBOX_UNIT_INIT(stm32_cube_tim_init);
 /* Desired clock hz, we will set Presacaler to reach this value. */
 #define TIM_CLK_HZ   10000
 
-#define TIM_HZ   OPTION_GET(NUMBER, hz)
 #define TIM_IRQ  OPTION_GET(NUMBER, irq)
 static_assert(TIM_IRQ == TIM2_IRQn);
 
@@ -29,7 +28,6 @@ static struct time_event_device stm32_cube_tim_event = {
 	.set_oneshot = stm32_cube_tim_base_set_oneshot,
 	.set_periodic = stm32_cube_tim_base_set_periodic,
 	.set_next_event = stm32_cube_tim_base_set_next_event,
-	.event_hz = TIM_HZ,
 	.irq_nr = TIM_IRQ,
 };
 

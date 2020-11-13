@@ -17,8 +17,6 @@
 #include <framework/mod/options.h>
 #include <embox/unit.h>
 
-#define SYSTICK_HZ  OPTION_GET(NUMBER,systick_hz)
-
 #define SYSTICK_BASE 0xe000e010
 
 #define SYSTICK_CTRL    (SYSTICK_BASE + 0x0)
@@ -29,10 +27,6 @@
 # define SYSTICK_RELOAD_MSK  0xfffffful
 #define SYSTICK_VAL     (SYSTICK_BASE + 0x8)
 #define SYSTICK_CALIB   (SYSTICK_BASE + 0xc)
-
-#define RELOAD_VALUE (SYS_CLOCK / SYSTICK_HZ)
-static_assertf(RELOAD_VALUE - 1 <= SYSTICK_RELOAD_MSK,
-	"RELOAD_VALUE is too big: "MACRO_STRING(RELOAD_VALUE));
 
 static struct clock_source cortexm_systick_clock_source;
 
@@ -82,7 +76,6 @@ static struct time_event_device cortexm_systick_event = {
 	.set_oneshot = cortexm_systick_set_oneshot,
 	.set_periodic = cortexm_systick_set_periodic,
 	.set_next_event = cortexm_systick_set_next_event,
-	.event_hz = SYSTICK_HZ,
 	.irq_nr = SYSTICK_IRQ,
 };
 

@@ -116,7 +116,6 @@ static int mb_clock_setup(struct clock_source *cs) {
 
 static struct time_event_device mb_ed = {
 	.set_periodic = mb_clock_setup,
-	.event_hz = 1000,
 	.name = "mb_timer",
 	.irq_nr = CONFIG_XILINX_TIMER_IRQ
 };

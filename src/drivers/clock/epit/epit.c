@@ -78,7 +78,6 @@ static cycle_t epit_read(struct clock_source *cs) {
 
 static struct time_event_device epit_event = {
 	.set_periodic   = epit_set_periodic,
-	.event_hz = EPIT_TARGET_HZ,
 	.irq_nr   = EPIT_IRQ,
 };
 

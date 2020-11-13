@@ -40,7 +40,6 @@ static int this_set_periodic(struct clock_source *cs) {
 
 static struct time_event_device this_event = {
 	.set_periodic = this_set_periodic,
-	.event_hz = 1000,
 	.irq_nr = SYSTICK_IRQ,
 };
 

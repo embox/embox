@@ -38,7 +38,6 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 
 static struct time_event_device lapic_event_device = {
 	.set_periodic = lapic_clock_setup,
-	.event_hz = LAPIC_HZ,
 	.name = "lapic clock",
 	.irq_nr = IRQ0,
 };

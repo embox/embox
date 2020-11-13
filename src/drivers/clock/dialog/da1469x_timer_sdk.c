@@ -87,7 +87,6 @@ static int da1469x_timer_set_periodic(struct clock_source *cs) {
 static struct time_event_device da1469x_timer_event = {
 	.set_periodic = da1469x_timer_set_periodic,
 	.set_next_event = da1469x_timer_set_next_event,
-	.event_hz = TICK_RATE_HZ,
 	.irq_nr = DA1469X_TIMER_IRQ,
 };
 

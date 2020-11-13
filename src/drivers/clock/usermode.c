@@ -28,7 +28,6 @@ static int clk_set_periodic(struct clock_source *cs);
 
 static struct time_event_device umclock_ev = {
 	.set_periodic = clk_set_periodic,
-	.event_hz = 1000,
 	.irq_nr = CLOCK_IRQ,
 };
 
@@ -40,7 +39,7 @@ static struct clock_source umclock_cs = {
 
 static int clk_set_periodic(struct clock_source *cs) {
 
-	host_timer_config(1000000 / umclock_ev.event_hz);
+	host_timer_config(1000000 / 1000);
 
 	return 0;
 }
