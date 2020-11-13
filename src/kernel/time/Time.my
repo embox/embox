@@ -22,6 +22,8 @@ module kernel_time {
 }
 
 module jiffies {
+	option number hz = 1000
+
 	source "jiffies.c"
 	//depends embox.arch.clock
 	depends clock_source

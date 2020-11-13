@@ -11,6 +11,8 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
+#define HZ      OPTION_GET(NUMBER, hz)
+
 const struct clock_source *cs_jiffies;
 
 clock_t clock_sys_ticks(void) {
@@ -46,8 +48,7 @@ int jiffies_init(void) {
 
 	cs_jiffies = cs;
 
-	clock_source_set_periodic(cs);
-	clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
+	clock_source_set_periodic(cs, HZ);
 
 	return 0;
 }
