@@ -1,0 +1,19 @@
+package embox.driver.clock
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_cube_tim_base {
+	source "stm32_cube_tim_base.c"
+
+	depends embox.kernel.time.clock_source
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_cube_tim2 {
+	option number irq = 28
+	option number hz = 1000
+
+	source "stm32_cube_tim2.c"
+
+	depends stm32_cube_tim_base
+}
