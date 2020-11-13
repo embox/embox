@@ -55,16 +55,6 @@ static int cortexm_systick_init(void) {
 	return clock_source_register(&cortexm_systick_clock_source);
 }
 
-static int cortexm_systick_set_periodic(struct clock_source *cs) {
-	REG_STORE(SYSTICK_CTRL, 0);
-	REG_STORE(SYSTICK_RELOAD, RELOAD_VALUE - 1);
-	REG_STORE(SYSTICK_VAL, 0);
-	REG_STORE(SYSTICK_CTRL, SYSTICK_ENABLE | SYSTICK_TICKINT |
-			SYSTICK_CLOCKINIT);
-
-	return 0;
-}
-
 static int cortexm_systick_set_oneshot(struct clock_source *cs) {
 	return 0;
 }
