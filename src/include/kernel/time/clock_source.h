@@ -51,7 +51,7 @@ extern struct clock_source *clock_source_get_best(enum clock_source_property pro
 extern struct clock_source *clock_source_get_by_name(const char *name);
 
 extern int clock_source_set_oneshot(struct clock_source *cs);
-extern int clock_source_set_periodic(struct clock_source *cs);
+extern int clock_source_set_periodic(struct clock_source *cs, uint32_t hz);
 extern int clock_source_set_next_event(struct clock_source *cs,
 		uint32_t next_event);
 

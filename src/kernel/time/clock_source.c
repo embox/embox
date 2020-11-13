@@ -82,20 +82,25 @@ int clock_source_set_oneshot(struct clock_source *cs) {
 	return -1;
 }
 
-int clock_source_set_periodic(struct clock_source *cs) {
+int clock_source_set_periodic(struct clock_source *cs, uint32_t hz) {
 	assert(cs && cs->event_device);
 
 	if (!cs->event_device->set_periodic) {
 		return -1;
 	}
 
-	if (!cs->event_device->set_periodic(cs)) {
-		cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
-		cs->flags |= CLOCK_SOURCE_PERIODIC_MODE;
-		return 0;
+	if (cs->event_device->set_periodic(cs) != 0) {
+		return -1;
 	}
 
-	return -1;
+	cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
+	cs->flags |= CLOCK_SOURCE_PERIODIC_MODE;
+
+	cs->event_device->event_hz = hz;
+
+	clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
+
+	return 0;
 }
 
 int clock_source_set_next_event(struct clock_source *cs,
@@ -111,22 +116,23 @@ int clock_source_set_next_event(struct clock_source *cs,
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
-	uint32_t event_hz, cycle_hz, best_hz, hz;
+	uint32_t cycle_hz, best_hz, hz;
 
 	best_hz = 0;
 	best = NULL;
 
 	dlist_foreach_entry(cs, &clock_source_list, lnk) {
 		hz = 0;
-		event_hz = cs->event_device ? cs->event_device->event_hz : 0;
 		cycle_hz = cs->counter_device ? cs->counter_device->cycle_hz : 0;
 
 		switch (pr) {
 			case CS_ANY:
-				hz = max(event_hz, cycle_hz);
+				hz = cycle_hz;
 				break;
 			case CS_WITH_IRQ:
-				hz = event_hz;
+				if (cs->event_device) {
+					hz = cycle_hz;
+				}
 				break;
 			case CS_WITHOUT_IRQ:
 				if (!cs->event_device) {
