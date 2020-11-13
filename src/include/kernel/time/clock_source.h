@@ -43,8 +43,6 @@ struct clock_source {
 	(CLOCK_SOURCE_ONESHOT_MODE | CLOCK_SOURCE_PERIODIC_MODE)
 
 	struct timespec (*read)(struct clock_source *cs);
-	uint32_t counter_mult;
-	uint32_t counter_shift;
 
 	void *driver_priv_data;
 
