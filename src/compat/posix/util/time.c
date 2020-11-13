@@ -9,6 +9,7 @@
  *         - clock()
  */
 
+#include <errno.h>
 #include <time.h>
 #include <hal/clock.h>
 #include <kernel/time/clock_source.h>
@@ -20,12 +21,28 @@ clock_t clock(void) {
 }
 
 int clock_gettime(clockid_t clk_id, struct timespec *ts) {
-	ktime_get_timespec(ts);
+	switch (clk_id) {
+	case CLOCK_REALTIME:
+		getnsofday(ts, NULL);
+		break;
+	case CLOCK_MONOTONIC:
+		ktime_get_timespec(ts);
+		break;
+	default:
+		return SET_ERRNO(EINVAL);
+	}
+
 	return 0;
 }
 
 int clock_settime(clockid_t clk_id, const struct timespec *ts) {
-	setnsofday(ts, NULL);
+	switch (clk_id) {
+	case CLOCK_REALTIME:
+		setnsofday(ts, NULL);
+		break;
+	default:
+		return SET_ERRNO(EINVAL);
+	}
 	return 0;
 }
 
