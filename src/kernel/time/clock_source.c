@@ -98,7 +98,12 @@ int clock_source_set_periodic(struct clock_source *cs, uint32_t hz) {
 
 	cs->event_device->event_hz = hz;
 
-	clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
+	/* FIXME Currently not all clock drivers support counter device. */
+	if (cs->counter_device) {
+		clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
+	} else {
+		clock_source_set_next_event(cs, 0);
+	}
 
 	return 0;
 }
@@ -116,9 +121,9 @@ int clock_source_set_next_event(struct clock_source *cs,
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
-	uint32_t cycle_hz, best_hz, hz;
+	int32_t cycle_hz, best_hz, hz;
 
-	best_hz = 0;
+	best_hz = -1;
 	best = NULL;
 
 	dlist_foreach_entry(cs, &clock_source_list, lnk) {
