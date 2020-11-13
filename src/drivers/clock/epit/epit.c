@@ -72,7 +72,7 @@ static int epit_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t epit_read(void) {
+static cycle_t epit_read(struct clock_source *cs) {
 	return REG32_LOAD(EPIT_CNR);
 }
 

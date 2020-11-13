@@ -89,7 +89,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static cycle_t mb_cycle_read(void) {
+static cycle_t mb_cycle_read(struct clock_source *cs) {
 	return TIMER_PRELOAD - timer0->tcr;
 
 }

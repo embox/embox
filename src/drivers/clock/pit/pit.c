@@ -89,7 +89,7 @@ static struct time_counter_device pit_counter_device;
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static cycle_t i8253_read(void) {
+static cycle_t i8253_read(struct clock_source *cs) {
 	unsigned char lsb, msb;
 
 	pit_out8(PIT_SEL0 | PIT_LATCH, MODE_REG);

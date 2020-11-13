@@ -45,7 +45,7 @@ static struct time_event_device this_event = {
 };
 
 #if 0
-static cycle_t this_read(void) {
+static cycle_t this_read(struct clock_source *cs) {
 	return 0;
 }
 

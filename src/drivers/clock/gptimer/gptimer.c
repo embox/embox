@@ -134,7 +134,7 @@ static int gptimer_init(void) {
 
 static int gptimer_config(struct time_dev_conf *conf);
 
-static cycle_t gptimer_read(void) {
+static cycle_t gptimer_read(struct clock_source *cs) {
 	return TIMER0_RELOAD - REG_LOAD(&dev_regs->timer[0].counter);
 }
 

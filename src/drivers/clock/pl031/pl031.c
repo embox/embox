@@ -62,7 +62,7 @@ static int pl031_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t pl031_read(void) {
+static cycle_t pl031_read(struct clock_source *cs) {
 	return REG32_LOAD(PL031_DR);
 }
 

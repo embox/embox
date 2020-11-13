@@ -38,7 +38,7 @@ EMBOX_UNIT_INIT(hpet_init);
 //ACPI_GENERIC_ADDRESS __attribute__((packed));
 //ACPI_TABLE_HPET __attribute__((packed));
 
-static cycle_t hpet_read(void);
+static cycle_t hpet_read(struct clock_source *cs);
 
 static struct time_counter_device hpet_counter_device = {
 	.read = &hpet_read
@@ -104,6 +104,6 @@ static int hpet_init(void) {
 	return clock_source_register(&hpet_clock_source);
 }
 
-static cycle_t hpet_read(void) {
+static cycle_t hpet_read(struct clock_source *cs) {
 	return hpet_get_register(HPET_MAIN_CNT_REG);
 }

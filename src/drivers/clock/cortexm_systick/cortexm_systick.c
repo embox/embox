@@ -84,7 +84,7 @@ static int cortexm_systick_set_next_event(struct clock_source *cs,
 	return 0;
 }
 
-static cycle_t cortexm_systick_read(void) {
+static cycle_t cortexm_systick_read(struct clock_source *cs) {
 	return REG_LOAD(SYSTICK_RELOAD) - REG_LOAD(SYSTICK_VAL);
 }
 

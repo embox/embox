@@ -87,7 +87,7 @@ static int this_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t this_read(void) {
+static cycle_t this_read(struct clock_source *cs) {
 	return regs->CLO;
 }
 

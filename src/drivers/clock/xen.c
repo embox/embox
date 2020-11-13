@@ -33,7 +33,7 @@ static struct time_event_device xen_event_device = {
 	.irq_nr = -1
 };
 
-static cycle_t xen_tcd_read(void) {
+static cycle_t xen_tcd_read(struct clock_source *cs) {
 	return 0;
 }
 

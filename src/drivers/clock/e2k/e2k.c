@@ -93,7 +93,7 @@ static int e2k_clock_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t e2k_clock_read(void) {
+static cycle_t e2k_clock_read(struct clock_source *cs) {
 #if 0
 	/* TODO Should be checked, because values are looking a bit weird. */
 	return e2k_read32((void*)E2K_RESET_COUNTER_LOW); /* Ignore high 32 bits */

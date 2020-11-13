@@ -97,7 +97,7 @@ static struct time_event_device ti8168_clk_event = {
 };
 
 /* TODO */
-cycle_t ti8168_this_read(void) {
+cycle_t ti8168_this_read(struct clock_source *cs) {
 	return 0;
 }
 

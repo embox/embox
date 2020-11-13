@@ -104,7 +104,7 @@ static int imx6_gpt_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t imx6_gpt_read(void) {
+static cycle_t imx6_gpt_read(struct clock_source *cs) {
 	return REG32_LOAD(GPT_CNT);
 }
 

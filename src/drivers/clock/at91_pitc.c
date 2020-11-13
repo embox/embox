@@ -43,7 +43,7 @@ static struct time_event_device at91_pitc_event = {
 };
 
 
-static cycle_t at91_pitc_read(void) {
+static cycle_t at91_pitc_read(struct clock_source *cs) {
 	return 0; //REG_LOAD(AT91C_PITC_PIVR);
 }
 

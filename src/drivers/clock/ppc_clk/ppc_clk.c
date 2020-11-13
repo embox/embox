@@ -43,7 +43,7 @@ static int ppc_clk_config(struct time_dev_conf *conf) {
 	return 0;
 }
 
-static cycle_t ppc_clk_read(void) {
+static cycle_t ppc_clk_read(struct clock_source *cs) {
 	uint32_t l, u, tmp;
 	tmp = __get_tbu();
 	do {
