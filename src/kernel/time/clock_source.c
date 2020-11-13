@@ -58,7 +58,7 @@ struct timespec clock_source_read(struct clock_source *cs) {
 
 	cd = cs->counter_device;
 	if (cd) {
-		ns += ((uint64_t) cd->read() * NSEC_PER_SEC) / cd->cycle_hz;
+		ns += ((uint64_t) cd->read(cs) * NSEC_PER_SEC) / cd->cycle_hz;
 	}
 
 	ts = ns_to_timespec(ns);
@@ -163,5 +163,5 @@ time64_t clock_source_get_hwcycles(struct clock_source *cs) {
 	assert(cs->event_device && cs->counter_device);
 
 	load = cs->counter_device->cycle_hz / cs->event_device->event_hz;
-	return ((uint64_t) cs->jiffies) * load + cs->counter_device->read();
+	return ((uint64_t) cs->jiffies) * load + cs->counter_device->read(cs);
 }

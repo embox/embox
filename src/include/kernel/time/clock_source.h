@@ -46,6 +46,8 @@ struct clock_source {
 	uint32_t counter_mult;
 	uint32_t counter_shift;
 
+	void *driver_priv_data;
+
 	struct dlist_head lnk;
 };
 
@@ -60,7 +62,7 @@ extern int clock_source_set_next_event(struct clock_source *cs,
 static inline clock_t clock_source_get_cycles(struct clock_source *cs) {
 	assert(cs && cs->counter_device);
 
-	return cs->counter_device->read();
+	return cs->counter_device->read(cs);
 }
 
 static inline uint64_t clock_source_cycles2ticks(struct clock_source *cs,

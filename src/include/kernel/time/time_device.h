@@ -62,7 +62,7 @@ struct time_counter_device {
 	uint32_t cycle_hz;
 	uint64_t mask; /* Maximum value that can be loaded */
 
-	cycle_t (*read)(void);
+	cycle_t (*read)(struct clock_source *cs);
 };
 
 #endif /* KERNEL_TIME_TIME_DEVICE_H_ */
