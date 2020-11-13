@@ -36,7 +36,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int ppc_clk_config(struct time_dev_conf *conf) {
+static int ppc_clk_set_periodic(struct clock_source *cs) {
 	__set_dec(PPCCLK_DECR);
 	__set_decar(PPCCLK_DECR);
     __set_tcr(TCR_DIE | TCR_ARE);

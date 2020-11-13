@@ -47,7 +47,7 @@
 
 EMBOX_UNIT_INIT(integratorcp_init);
 
-static int integratorcp_clock_setup(struct time_dev_conf * conf) {
+static int integratorcp_clock_setup(struct clock_source *cs) {
 	/* Setup counter value */
 	REG_STORE(TMR_CTRL, TCTRL_DISABLE);
 	REG_STORE(TMR_LOAD, TIMER_COUNT);

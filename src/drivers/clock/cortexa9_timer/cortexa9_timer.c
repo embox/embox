@@ -63,7 +63,7 @@ static int this_init(void) {
 	                  "Cortex A9 systick timer");
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
 	uint32_t tmp;
 	uint8_t  prescaler = 0;
 

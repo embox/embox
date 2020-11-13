@@ -70,7 +70,7 @@ static irq_return_t ti8168_clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int ti8168_clk_config(struct time_dev_conf *conf) {
+static int ti8168_clk_set_periodic(struct clock_source *cs) {
 	volatile struct gptimer13_1 *gptimer = TI8168_GPTIMER1_BASE;
 
 	REG_STORE(CM_TIMER1_CLKSEL, CM_CLKIN);

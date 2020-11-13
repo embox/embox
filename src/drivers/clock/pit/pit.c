@@ -29,7 +29,7 @@
 #define PIT_LOAD ((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ)
 static_assert(PIT_LOAD < 0x10000);
 
-static int pit_clock_setup(struct time_dev_conf * conf);
+static int pit_clock_setup(struct clock_source *cs);
 static int pit_clock_init(void);
 
 static struct clock_source pit_clock_source;
@@ -135,7 +135,7 @@ static int pit_clock_init(void) {
 	return ENOERR;
 }
 
-static int pit_clock_setup(struct time_dev_conf * conf) {
+static int pit_clock_setup(struct clock_source *cs) {
 	uint16_t divisor = PIT_LOAD;
 
 	pit_clock_source.flags = 1;

@@ -89,7 +89,7 @@ static int e2k_clock_init(void) {
 	return 0;
 }
 
-static int e2k_clock_config(struct time_dev_conf * conf) {
+static int e2k_clock_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 

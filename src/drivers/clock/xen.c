@@ -22,7 +22,7 @@ EMBOX_UNIT_INIT(xen_clock_init);
 
 extern shared_info_t xen_shared_info;
 
-static int integratorcp_clock_setup(struct time_dev_conf * conf) {
+static int integratorcp_clock_setup(struct clock_source *cs) {
 	return 0;
 }
 

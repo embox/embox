@@ -32,7 +32,7 @@ static int this_init(void) {
 	return clock_source_register(&this_clock_source);
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
 	int reload = SYS_CLOCK / (CLOCK_DIVIDER * 1000);
 
 	return 0 == SysTick_Config(reload) ? 0 : -EINVAL;

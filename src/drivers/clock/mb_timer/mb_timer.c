@@ -102,7 +102,7 @@ static int mb_clock_init(void) {
 	return 0;
 }
 
-static int mb_clock_setup(struct time_dev_conf * conf) {
+static int mb_clock_setup(struct clock_source *cs) {
 	/*set clocks period*/
 	timer0->tlr = TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/

@@ -79,7 +79,7 @@ static int this_init(void) {
 	return 0;
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
 	raspi_systick_clear();
 	/* From that point interrupts will occur. */
 	raspi_systick_comare(RELOAD_VALUE);

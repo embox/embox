@@ -71,7 +71,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int omap3_clk_config(struct time_dev_conf *conf) {
+static int omap3_clk_set_periodic(struct clock_source *cs) {
 	volatile struct gptimerxx_x *gptimer = GPTIMER1_BASE;
 
 	REG_ORIN(CM_FCLKEN_WKUP, 1);

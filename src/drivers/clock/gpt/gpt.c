@@ -77,7 +77,7 @@ static int this_init(void) {
 	return 0;
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
 	/* Init timer as described in 12.1.5.1 in IMX8MDQLQRM.pdf */
 	REG32_STORE(GPT_CR, 0);
 

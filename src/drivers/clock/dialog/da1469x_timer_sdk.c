@@ -80,7 +80,7 @@ static int da1469x_timer_set_next_event(uint32_t next_event) {
 	return 0;
 }
 
-static int da1469x_timer_config(struct time_dev_conf *conf) {
+static int da1469x_timer_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 

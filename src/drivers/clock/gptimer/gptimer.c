@@ -132,7 +132,7 @@ static int gptimer_init(void) {
 }
 
 
-static int gptimer_config(struct time_dev_conf *conf);
+static int gptimer_set_periodic(struct clock_source *cs);
 
 static cycle_t gptimer_read(struct clock_source *cs) {
 	return TIMER0_RELOAD - REG_LOAD(&dev_regs->timer[0].counter);
@@ -143,7 +143,7 @@ static struct time_event_device gptimer_ed = {
 	.event_hz = TIMER0_RELOAD + 1,
 };
 
-static int gptimer_config(struct time_dev_conf *conf) {
+static int gptimer_set_periodic(struct clock_source *cs) {
 	REG_STORE(&dev_regs->timer[0].reload, gptimer_ed.event_hz - 1);
 	REG_STORE(&dev_regs->timer[0].counter, 0);
 	REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);

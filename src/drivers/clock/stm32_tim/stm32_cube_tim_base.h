@@ -15,7 +15,7 @@ extern int stm32_cube_tim_base_set_periodic(struct clock_source *cs);
 extern int stm32_cube_tim_base_set_next_event(struct clock_source *cs,
 		uint32_t next_event);
 extern cycle_t stm32_cube_tim_base_read(struct clock_source *cs);
-extern int stm32_cube_tim_base_config(struct time_dev_conf *conf);
+extern int stm32_cube_tim_base_config(struct clock_source *cs);
 extern irq_return_t stm32_cube_time_base_irq_handler(unsigned int irq_nr,
 		void *data);
 

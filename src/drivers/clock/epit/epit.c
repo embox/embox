@@ -55,7 +55,7 @@ static int epit_init(void) {
 			"EPIT");
 }
 
-static int epit_config(struct time_dev_conf * conf) {
+static int epit_set_periodic(struct clock_source *cs) {
 	/* changin clock source to peripheral clock */
 	REG32_STORE(EPIT_CR, REG32_LOAD(EPIT_CR) & (~EPIT_CR_OCIEN)); /* Turn off the interrupt */
 	REG32_STORE(EPIT_CR, REG32_LOAD(EPIT_CR) & (~EPIT_CR_EN)); /* disable the timer*/

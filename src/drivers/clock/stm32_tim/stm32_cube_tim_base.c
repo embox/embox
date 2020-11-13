@@ -57,7 +57,3 @@ irq_return_t stm32_cube_time_base_irq_handler(unsigned int irq_nr, void *data) {
 
 	return IRQ_HANDLED;
 }
-
-int stm32_cube_tim_base_config(struct time_dev_conf *conf) {
-	return 0;
-}

@@ -100,7 +100,7 @@ static int imx6_gpt_init(void) {
 	                  "i.MX6 General Purpose Timer");
 }
 
-static int imx6_gpt_config(struct time_dev_conf * conf) {
+static int imx6_gpt_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 

@@ -53,7 +53,7 @@ static int pl031_init(void) {
 	                  "PL031");
 }
 
-static int pl031_config(struct time_dev_conf * conf) {
+static int pl031_set_periodic(struct clock_source *cs) {
 	REG32_STORE(PL031_LR, 0x0);
 
 	REG32_STORE(PL031_MR, 0x1);

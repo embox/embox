@@ -37,7 +37,7 @@ static int clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int riscv_clock_setup(struct time_dev_conf * conf) {
+static int riscv_clock_setup(struct clock_source *cs) {
 	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 	enable_timer_interrupts();
 
