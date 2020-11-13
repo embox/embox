@@ -27,11 +27,11 @@ void itimer_free(struct itimer *it) {
 void itimer_init(struct itimer *it, struct clock_source *cs,
 		time64_t start_tstamp) {
 	struct timespec ts;
-	assert(it && cs && cs->read);
+	assert(it && cs);
 
 	ts = ns_to_timespec(start_tstamp);
 	it->cs = cs;
-	it->start_value = timespec_add(ts, cs->read(it->cs));
+	it->start_value = timespec_add(ts, clock_source_read(it->cs));
 }
 
 time64_t itimer_read(struct itimer *it) {
@@ -41,6 +41,6 @@ time64_t itimer_read(struct itimer *it) {
 }
 
 void itimer_read_timespec(struct itimer *it, struct timespec *ts) {
-	assert(it && it->cs && it->cs->read);
-	*ts = timespec_sub(it->cs->read(it->cs), it->start_value);
+	assert(it && it->cs);
+	*ts = timespec_sub(clock_source_read(it->cs), it->start_value);
 }
