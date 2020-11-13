@@ -10,12 +10,14 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <netdb.h>
 
 #include <net/lib/ntp.h>
 
@@ -177,6 +179,7 @@ int main(int argc, char **argv) {
 	int opt, only_query, timeout;
 	struct timeval timeout_tv;
 	in_addr_t addr;
+	struct hostent *he = NULL;
 
 	only_query = 0;
 	timeout = MODOPS_TIMEOUT;
@@ -205,11 +208,13 @@ int main(int argc, char **argv) {
 		printf("%s: error: no server specified\n", argv[0]);
 		return -EINVAL;
 	}
-	else if (!inet_aton(argv[optind], (struct in_addr *)&addr)) {
-		printf("%s: error: invalid address %s\n", argv[0],
-				argv[optind]);
+
+	he = gethostbyname(argv[optind]);
+	if (he == NULL) {
+		printf("could not resolve server name %s\n", argv[optind]);
 		return -EINVAL;
 	}
+	memcpy(&addr, &((struct in_addr *)he->h_addr_list[0])->s_addr, sizeof (addr));
 
 	timeout_tv.tv_sec = timeout / MSEC_PER_SEC;
 	timeout_tv.tv_usec = (timeout % MSEC_PER_SEC) * USEC_PER_MSEC;
