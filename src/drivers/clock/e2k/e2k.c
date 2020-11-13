@@ -116,7 +116,6 @@ static struct clock_source e2k_clock_source = {
 	.name           = "e2k_clock",
 	.event_device   = &e2k_clock_event,
 	.counter_device = &e2k_clock_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(e2k_clock_init);

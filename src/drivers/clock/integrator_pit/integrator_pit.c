@@ -78,7 +78,6 @@ static struct clock_source integratorcp_cs = {
 	.name = "integratorcp_clk",
 	.event_device = &integratorcp_event_device,
 	.counter_device = &integratorcp_counter_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {

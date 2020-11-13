@@ -48,7 +48,6 @@ static struct clock_source hpet_clock_source = {
 	.name = "HPET",
 	.event_device = NULL,
 	.counter_device = &hpet_counter_device,
-	.read = &clock_source_read
 };
 
 static ACPI_TABLE_HPET *hpet_table;

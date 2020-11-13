@@ -94,7 +94,6 @@ static struct time_event_device da1469x_timer_event = {
 static struct clock_source da1469x_timer_clock_source = {
 	.name = "da1469x_timer",
 	.event_device = &da1469x_timer_event,
-	.read = clock_source_read,
 };
 
 static int da1469x_timer_init(void) {

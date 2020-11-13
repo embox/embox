@@ -103,7 +103,6 @@ static struct time_event_device omap3_clk_event = {
 static struct clock_source omap3_clk_clock_source = {
 	.name = "omap3_clk",
 	.event_device = &omap3_clk_event,
-	.read = clock_source_read,
 };
 
 static int omap_clk_init(void) {

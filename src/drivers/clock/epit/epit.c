@@ -91,7 +91,6 @@ static struct clock_source epit_clock_source = {
 	.name           = "epit",
 	.event_device   = &epit_event,
 	.counter_device = &epit_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(epit_init);

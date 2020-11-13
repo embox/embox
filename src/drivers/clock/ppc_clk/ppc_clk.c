@@ -69,7 +69,6 @@ static struct clock_source ppc_clk_clock_source = {
 	.name = "ppc_clk",
 	.event_device = &ppc_clk_event,
 	.counter_device = &ppc_clk_counter,
-	.read = clock_source_read,
 };
 
 static int ppc_clk_init(void) {

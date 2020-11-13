@@ -123,7 +123,6 @@ static struct clock_source imx6_gpt_clock_source = {
 	.name           = "imx6_gpt",
 	.event_device   = &imx6_gpt_event,
 	.counter_device = &imx6_gpt_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(imx6_gpt_init);

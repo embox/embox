@@ -44,7 +44,6 @@ static struct clock_source stm32_cube_tim_clock_source = {
 	.name = "TIM2",
 	.event_device = &stm32_cube_tim_event,
 	.counter_device = &stm32_cube_tim_counter,
-	.read = clock_source_read,
 	.driver_priv_data = &TimHandle,
 };
 

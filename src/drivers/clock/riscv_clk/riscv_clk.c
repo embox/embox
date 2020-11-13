@@ -54,7 +54,6 @@ static struct time_event_device riscv_event_device  = {
 static struct clock_source riscv_clock_source = {
 	.name = "riscv_clk",
 	.event_device = &riscv_event_device,
-	.read = clock_source_read
 };
 
 static int riscv_clock_init(void) {

@@ -36,7 +36,6 @@ static struct clock_source umclock_cs = {
 	.name = "usermode clock",
 	.event_device = &umclock_ev,
 	.counter_device = NULL,
-	.read = clock_source_read,
 };
 
 static int clk_set_periodic(struct clock_source *cs) {

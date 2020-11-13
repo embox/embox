@@ -159,7 +159,6 @@ static struct clock_source gptimer_cs = {
 	.name = "gptimer",
 	.event_device = &gptimer_ed,
 	.counter_device = &gptimer_cd,
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(gptimer_init);

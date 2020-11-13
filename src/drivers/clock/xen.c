@@ -46,7 +46,6 @@ static struct clock_source xen_cs = {
 	.name = "xen clock source",
 	.event_device = &xen_event_device,
 	.counter_device = &xen_tcd,
-	.read = clock_source_read /* attach default read function */
 };
 
 static uint64_t system_time;

@@ -56,7 +56,6 @@ static struct clock_source at91_pitc_clock_source = {
 	.name = "at91_pitc",
 	.event_device = &at91_pitc_event,
 	.counter_device = &at91_pitc_counter,
-	.read = clock_source_read,
 };
 
 static int at91_pitc_set_periodic(struct clock_source *cs) {

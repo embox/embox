@@ -110,7 +110,6 @@ struct clock_source ti8168_clk_clock_source = {
 	.name = "ti8168",
 	.event_device = &ti8168_clk_event,
 	.counter_device = &ti8168_counter_device,
-	.read = clock_source_read,
 };
 
 static int ti8168_clk_init(void) {

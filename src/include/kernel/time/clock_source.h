@@ -42,8 +42,6 @@ struct clock_source {
 #define CLOCK_SOURCE_MODE_MASK     \
 	(CLOCK_SOURCE_ONESHOT_MODE | CLOCK_SOURCE_PERIODIC_MODE)
 
-	struct timespec (*read)(struct clock_source *cs);
-
 	void *driver_priv_data;
 
 	struct dlist_head lnk;

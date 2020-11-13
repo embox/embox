@@ -81,7 +81,6 @@ static struct clock_source pl031_clock_source = {
 	.name           = "pl031",
 	.event_device   = &pl031_event,
 	.counter_device = &pl031_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(pl031_init);

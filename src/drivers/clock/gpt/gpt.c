@@ -123,7 +123,6 @@ static struct clock_source this_clock_source = {
 	.name = "GPT",
 	.event_device = &this_event,
 	.counter_device = &this_counter,
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(this_init);

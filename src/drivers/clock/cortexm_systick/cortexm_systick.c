@@ -107,7 +107,6 @@ static struct clock_source cortexm_systick_clock_source = {
 	.name = "system_tick",
 	.event_device = &cortexm_systick_event,
 	.counter_device = &cortexm_systick_counter,
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(cortexm_systick_init);

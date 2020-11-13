@@ -46,7 +46,6 @@ static struct time_event_device lapic_event_device = {
 static struct clock_source lapic_clock_source = {
 	.name = "lapic clock",
 	.event_device = &lapic_event_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 EMBOX_UNIT_INIT(lapic_clock_init);

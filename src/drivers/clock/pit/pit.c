@@ -119,7 +119,6 @@ static struct clock_source pit_clock_source = {
 	.name = "pit",
 	.event_device = &pit_event_device,
 	.counter_device = &pit_counter_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 EMBOX_UNIT_INIT(pit_clock_init);
