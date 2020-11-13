@@ -18,6 +18,8 @@
 
 #define TMR                  OPTION_GET(NUMBER, timer_n)
 #define DA1469X_TIMER_IRQ    OPTION_GET(NUMBER, irq)
+
+/* FIXME Unused, remove */
 #define TICK_RATE_HZ         OPTION_GET(NUMBER, hz)
 
 #if TMR == 1
@@ -35,8 +37,6 @@
 /* TODO We assume xtal32k is used as LP clock.
  * But there should be more flexible setup. */
 #define CLOCK_FREQ     dg_configXTAL32K_FREQ
-
-#define TICK_PERIOD    (CLOCK_FREQ / TICK_RATE_HZ)
 
 EMBOX_UNIT_INIT(da1469x_timer_init);
 
@@ -69,30 +69,37 @@ static __RETAINED_CODE irq_return_t da1469x_timer_irq_handler(
 	return IRQ_HANDLED;
 }
 
-static int da1469x_timer_set_next_event(uint32_t next_event) {
-	hw_timer_set_reload(TIMER_ID, next_event * TICK_PERIOD);
+static cycle_t da1469x_timer_read(struct clock_source *cs) {
+	return hw_timer_get_reload(TIMER_ID) - hw_timer_get_count(TIMER_ID);
+}
+
+static int da1469x_timer_set_next_event(struct clock_source *cs,
+		uint32_t next_event) {
+	hw_timer_set_reload(TIMER_ID, next_event);
 
 	hw_timer_enable_clk(TIMER_ID);
-	while (hw_timer_get_count(TIMER_ID) != (next_event * TICK_PERIOD));
+	while (hw_timer_get_count(TIMER_ID) != next_event);
 
 	hw_timer_enable(TIMER_ID);
 
 	return 0;
 }
 
-static int da1469x_timer_set_periodic(struct clock_source *cs) {
-	return 0;
-}
-
 static struct time_event_device da1469x_timer_event = {
-	.set_periodic = da1469x_timer_set_periodic,
 	.set_next_event = da1469x_timer_set_next_event,
 	.irq_nr = DA1469X_TIMER_IRQ,
+};
+
+static struct time_counter_device da1469x_timer_counter = {
+	.read = da1469x_timer_read,
+	.cycle_hz = CLOCK_FREQ,
+	.mask = 0xffffff,
 };
 
 static struct clock_source da1469x_timer_clock_source = {
 	.name = "da1469x_timer",
 	.event_device = &da1469x_timer_event,
+	.counter_device = &da1469x_timer_counter,
 };
 
 static int da1469x_timer_init(void) {
@@ -101,7 +108,7 @@ static int da1469x_timer_init(void) {
 		.prescaler = 0,
 		.timer = {
 			.direction = HW_TIMER_DIR_DOWN,
-			.reload_val = TICK_PERIOD - 1,
+			.reload_val = CLOCK_FREQ - 1,
 			.free_run = false,
 		},
 		.pwm = { .frequency = 0, .duty_cycle = 0 },

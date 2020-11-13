@@ -65,10 +65,11 @@ __RETAINED_CODE int deepsleep_enter(void) {
 		systimer_ticks = next_event - clock_sys_ticks();
 
 		lp_timer_ticks =
-			(systimer_ticks * da1469x_timer->event_device->event_hz) /
+			(systimer_ticks * da1469x_timer->counter_device->cycle_hz) /
 				clock_freq();
 	}
 
+	clock_source_set_oneshot(da1469x_timer);
 	clock_source_set_next_event(da1469x_timer, lp_timer_ticks);
 
 	ipl = ipl_save();
