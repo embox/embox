@@ -10,15 +10,16 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
-#include <framework/mod/options.h>
-#include <kernel/time/time.h>
-#include <net/lib/ntp.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <time.h>
 
+#include <net/lib/ntp.h>
+
+#include <framework/mod/options.h>
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
 static int make_socket(const struct timeval *timeout, int *out_sock,
@@ -111,7 +112,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		/* show result */
 		struct timespec offset, delay;
 
-		getnsofday(&ts, NULL);
+		clock_gettime(CLOCK_REALTIME, &ts);
 
 		ret = ntp_offset(rep, &ts, &offset);
 		if (ret != 0) {
@@ -140,7 +141,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		if (ret != 0) {
 			return ret;
 		}
-		setnsofday(&ts, NULL);
+		clock_settime(CLOCK_REALTIME, &ts);
 	}
 
 	return 0;
@@ -153,7 +154,7 @@ static int ntpdate(in_addr_t addr, const struct timeval *timeout,
 	struct ntphdr req, rep;
 	struct ntp_data_l xmit_time;
 
-	getnsofday(&ts, NULL);
+	clock_gettime(CLOCK_REALTIME, &ts);
 	ret = ntp_timespec_to_data_l(&ts, &xmit_time);
 	if (ret != 0) {
 		return ret;
