@@ -8,35 +8,7 @@
 
 #include <wchar.h>
 #include <inttypes.h>
-
-int wmemcmp(const wchar_t *s1, const wchar_t *s2, size_t n) {
-	return -1;
-}
-
-size_t wcslen(const wchar_t *s) {
-	return 0;
-}
-
-wchar_t *wmemchr(const wchar_t *s, wchar_t c, size_t n) {
-	return NULL;
-}
-
-wchar_t *wmemmove(wchar_t *dest, const wchar_t *src, size_t n) {
-	return NULL;
-}
-
-wchar_t *wmemcpy(wchar_t *dest, const wchar_t *src, size_t n) {
-	return NULL;
-}
-
-wchar_t *wmemset(wchar_t *wcs, wchar_t wc, size_t n) {
-	return NULL;
-}
-
-int vswprintf(wchar_t *wcs, size_t maxlen,
-		const wchar_t *format, va_list args) {
-	return -1;
-}
+#include <string.h>
 
 long wcstol(const wchar_t *restrict nptr, wchar_t **restrict endptr,
        int base) {
@@ -110,6 +82,4 @@ size_t wcsftime(wchar_t *wc, size_t s, const wchar_t *wci, const struct tm *tm) 
 	return 0;
 }
 
-int wcsncasecmp(const wchar_t *ws1, const wchar_t *ws2, size_t n) {
-	return 0;
-}
+
