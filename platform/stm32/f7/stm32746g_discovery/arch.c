@@ -102,8 +102,7 @@ void arch_idle(void) {
 
 	jiffies_update(sleep_ticks);
 
-	clock_source_set_periodic(cs);
-	clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
+	clock_source_set_periodic(cs, cs->event_device->event_hz);
 }
 
 void arch_shutdown(arch_shutdown_mode_t mode) {
