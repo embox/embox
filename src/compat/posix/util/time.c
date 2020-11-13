@@ -13,6 +13,7 @@
 #include <hal/clock.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
+#include <kernel/time/time.h>
 
 clock_t clock(void) {
 	return clock_sys_ticks();
@@ -20,6 +21,11 @@ clock_t clock(void) {
 
 int clock_gettime(clockid_t clk_id, struct timespec *ts) {
 	ktime_get_timespec(ts);
+	return 0;
+}
+
+int clock_settime(clockid_t clk_id, const struct timespec *ts) {
+	setnsofday(ts, NULL);
 	return 0;
 }
 
