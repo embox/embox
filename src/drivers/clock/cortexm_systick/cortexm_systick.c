@@ -89,7 +89,6 @@ static cycle_t cortexm_systick_read(struct clock_source *cs) {
 }
 
 static struct time_event_device cortexm_systick_event = {
-	.config = cortexm_systick_config,
 	.set_oneshot = cortexm_systick_set_oneshot,
 	.set_periodic = cortexm_systick_set_periodic,
 	.set_next_event = cortexm_systick_set_next_event,

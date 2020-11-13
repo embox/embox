@@ -55,7 +55,7 @@ static cycle_t ppc_clk_read(struct clock_source *cs) {
 }
 
 static struct time_event_device ppc_clk_event = {
-	.config = ppc_clk_config,
+	.set_periodic = ppc_clk_set_periodic,
 	.event_hz = PPCCLK_FREQ / PPCCLK_DECR,
 	.irq_nr = PPCCLK_IRQ,
 };

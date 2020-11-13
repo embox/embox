@@ -26,7 +26,6 @@ static_assert(TIM_IRQ == TIM2_IRQn);
 static TIM_HandleTypeDef TimHandle;
 
 static struct time_event_device stm32_cube_tim_event = {
-	.config = stm32_cube_tim_base_config,
 	.set_oneshot = stm32_cube_tim_base_set_oneshot,
 	.set_periodic = stm32_cube_tim_base_set_periodic,
 	.set_next_event = stm32_cube_tim_base_set_next_event,

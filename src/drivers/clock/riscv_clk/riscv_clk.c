@@ -45,7 +45,7 @@ static int riscv_clock_setup(struct clock_source *cs) {
 }
 
 static struct time_event_device riscv_event_device  = {
-	.config = riscv_clock_setup,
+	.set_periodic = riscv_clock_setup,
 	.event_hz = HZ,
 	.name = "riscv_clk",
 	.irq_nr = MACHINE_TIMER_INTERRUPT

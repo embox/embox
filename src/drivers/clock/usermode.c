@@ -27,7 +27,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 static int clk_set_periodic(struct clock_source *cs);
 
 static struct time_event_device umclock_ev = {
-	.config = clk_config,
+	.set_periodic = clk_set_periodic,
 	.event_hz = 1000,
 	.irq_nr = CLOCK_IRQ,
 };

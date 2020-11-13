@@ -60,7 +60,7 @@ static int integratorcp_clock_setup(struct clock_source *cs) {
 }
 
 static struct time_event_device integratorcp_event_device = {
-	.config = integratorcp_clock_setup,
+	.set_periodic = integratorcp_clock_setup,
 	.event_hz = 1000, .name = "integratorcp_clk",
 	.irq_nr = CLOCK_IRQ
 };

@@ -139,7 +139,7 @@ static cycle_t gptimer_read(struct clock_source *cs) {
 }
 
 static struct time_event_device gptimer_ed = {
-	.config = gptimer_config ,
+	.set_periodic = gptimer_set_periodic ,
 	.event_hz = TIMER0_RELOAD + 1,
 };
 

@@ -102,7 +102,7 @@ static cycle_t e2k_clock_read(struct clock_source *cs) {
 }
 
 static struct time_event_device e2k_clock_event = {
-	.config   = e2k_clock_config,
+	.set_periodic   = e2k_clock_set_periodic,
 	.event_hz = LT_FREQ,
 	.irq_nr = IRQ_NR
 };

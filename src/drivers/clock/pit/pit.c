@@ -105,7 +105,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 }
 
 static struct time_event_device pit_event_device = {
-	.config = pit_clock_setup,
+	.set_periodic = pit_clock_set_periodic,
 	.event_hz = PIT_HZ,
 	.irq_nr = IRQ_NR,
 };

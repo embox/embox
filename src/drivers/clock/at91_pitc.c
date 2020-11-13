@@ -37,7 +37,7 @@ static int at91_pitc_init(void) {
 static int at91_pitc_set_periodic(struct clock_source *cs);
 
 static struct time_event_device at91_pitc_event = {
-	.config = at91_pitc_config,
+	.set_periodic = at91_pitc_set_periodic,
 	.event_hz = AT91_PIT_EVENT_RES,
 	.irq_nr = AT91C_ID_SYS
 };
