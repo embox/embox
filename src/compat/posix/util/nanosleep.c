@@ -85,23 +85,26 @@ static inline struct timespec get_timetosleep(const struct timespec *rqtp) {
 
 /**
  * Main logic:
- * 1. Calculate execution time of ktime_get_ns (i.e. overhead)
+ * 1. Calculate execution time of ktime_get_timespec (i.e. overhead)
  * 2. Then we can calculate execution of nanosleep without going in ksleep and without spin (i.e. overhead).
  * 3. When we get T ns as argument in nanosleep, we substitute overhead calculated in step 2 from T.
  */
 static int nanosleep_calibrate(void) {
-	uint64_t t, m;
-	const struct timespec rqtp = { .tv_sec = 0, .tv_nsec = 1 };
+	struct timespec t, m, ts;
+	struct timespec rqtp = { .tv_sec = 0, .tv_nsec = 1 };
 
-	m = ktime_get_ns();
-	m = ktime_get_ns() - m;
+	ktime_get_timespec(&t);
+	ktime_get_timespec(&m);
+	timespecsub(&m, &t, &ts);
 
-	log_info("ktime_get_ns execution ns: %d", (int) m);
+	log_info("ktime_get_timespec() execution ns: %d", (int) ts.tv_nsec);
 
-	t = ktime_get_ns();
-	nanosleep(&rqtp, NULL); // calculate nanosleep overhead
-	t = ktime_get_ns() - t;
-	nanosleep_waste_time.tv_nsec = t - m;
+	ktime_get_timespec(&t);
+	nanosleep(&rqtp, NULL);
+	ktime_get_timespec(&m);
+	timespecsub(&m, &t, &rqtp);
+
+	timespecsub(&rqtp, &ts, &nanosleep_waste_time);
 
 	log_info("nanosleep execution ns: %d", (int) nanosleep_waste_time.tv_nsec);
 
