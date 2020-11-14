@@ -20,7 +20,9 @@ static struct itimer sys_timecounter;
 struct clock_source *kernel_clock_source;
 
 time64_t ktime_get_ns(void) {
-	return itimer_read(&sys_timecounter);
+	struct timespec ts;
+	itimer_read_timespec(&sys_timecounter, &ts);
+	return timespec_to_ns(&ts);
 }
 
 struct timeval *ktime_get_timeval(struct timeval *tv) {
