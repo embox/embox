@@ -3,4 +3,5 @@
 "netmanager",
 "service telnetd",
 "service httpd",
+"ntpdate 0.europe.pool.ntp.org",
 "tish",
