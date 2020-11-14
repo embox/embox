@@ -61,6 +61,11 @@ static inline time64_t timespec_to_ns(const struct timespec *ts) {
 	return ((__s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
 
+static inline time64_t timespec_to_ms(const struct timespec *ts) {
+	assert(ts != NULL);
+	return ((__s64) ts->tv_sec * MSEC_PER_SEC) + ts->tv_nsec / NSEC_PER_MSEC;
+}
+
 static inline uint64_t timespec_to_hw(const struct timespec *ts, uint32_t hz) {
 	return (uint64_t) ts->tv_sec * hz + ((uint64_t)ts->tv_nsec * hz) / NSEC_PER_SEC;
 }
