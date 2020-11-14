@@ -21,13 +21,19 @@ struct clock_source *kernel_clock_source;
 
 time64_t ktime_get_ns(void) {
 	struct timespec ts;
+
 	itimer_read_timespec(&sys_timecounter, &ts);
+
 	return timespec_to_ns(&ts);
 }
 
 struct timeval *ktime_get_timeval(struct timeval *tv) {
-	time64_t ns = ktime_get_ns();
-	*tv = ns_to_timeval(ns);
+	struct timespec ts;
+
+	itimer_read_timespec(&sys_timecounter, &ts);
+
+	TIMESPEC_TO_TIMEVAL(tv, &ts);
+
 	return tv;
 }
 
@@ -36,6 +42,7 @@ struct timespec *ktime_get_timespec(struct timespec *ts) {
 	return ts;
 }
 
+/* TODO Use only in jffs2.h as "#define timestamp ktime_get_timeseconds" */
 time_t ktime_get_timeseconds(void) {
 	struct timespec ts;
 
