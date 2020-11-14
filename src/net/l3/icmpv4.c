@@ -19,6 +19,7 @@
 #include <arpa/inet.h>
 #include <stdarg.h>
 #include <stdint.h>
+#include <time.h>
 
 #include <util/math.h>
 #include <util/log.h>
@@ -235,6 +236,8 @@ static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
 		const struct icmpbody_timestamp *tstamp_req,
 		struct sk_buff *skb) {
 	uint32_t msec_since_12am;
+	struct timeval tv;
+	time64_t ms;
 	struct icmpbody_timestamp *tstamp_rep;
 
 	if (icmph->code != 0) {
@@ -248,8 +251,9 @@ static int icmp_hnd_timestamp_request(const struct icmphdr *icmph,
 		return 0; /* error: invalid length */
 	}
 
-	msec_since_12am = (ktime_get_ns() / NSEC_PER_MSEC) % (
-				SEC_PER_DAY * MSEC_PER_SEC);
+	gettimeofday(&tv, NULL);
+	ms = timeval_to_ms(&tv);
+	msec_since_12am = ms % (SEC_PER_DAY * MSEC_PER_SEC);
 
 	tstamp_rep = &icmp_hdr(skb)->body.timestamp;
 	tstamp_rep->orig = tstamp_req->trans;
