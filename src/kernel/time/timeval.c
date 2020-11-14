@@ -45,6 +45,7 @@ struct timespec timespec_sub(struct timespec t1,
 	return ts;
 }
 
+#if 0
 struct timespec timespec_add_ns(struct timespec t, time64_t ns) {
 	struct timespec res;
 
@@ -52,6 +53,7 @@ struct timespec timespec_add_ns(struct timespec t, time64_t ns) {
 
 	return res;
 }
+#endif
 
 struct timespec ns_to_timespec(const __s64 nsec) {
 	struct timespec ts;

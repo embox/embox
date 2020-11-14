@@ -52,7 +52,9 @@ extern struct timespec timespec_add(struct timespec t1,
 		struct timespec t2);
 extern struct timespec timespec_sub(struct timespec t1,
 		struct timespec t2);
+#if 0
 extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
+#endif
 
 static inline time64_t timespec_to_ns(const struct timespec *ts) {
 	assert(ts != NULL);
