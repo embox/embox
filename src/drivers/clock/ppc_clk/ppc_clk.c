@@ -36,14 +36,14 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int ppc_clk_config(struct time_dev_conf *conf) {
+static int ppc_clk_set_periodic(struct clock_source *cs) {
 	__set_dec(PPCCLK_DECR);
 	__set_decar(PPCCLK_DECR);
     __set_tcr(TCR_DIE | TCR_ARE);
 	return 0;
 }
 
-static cycle_t ppc_clk_read(void) {
+static cycle_t ppc_clk_read(struct clock_source *cs) {
 	uint32_t l, u, tmp;
 	tmp = __get_tbu();
 	do {
@@ -55,8 +55,7 @@ static cycle_t ppc_clk_read(void) {
 }
 
 static struct time_event_device ppc_clk_event = {
-	.config = ppc_clk_config,
-	.event_hz = PPCCLK_FREQ / PPCCLK_DECR,
+	.set_periodic = ppc_clk_set_periodic,
 	.irq_nr = PPCCLK_IRQ,
 };
 
@@ -69,7 +68,6 @@ static struct clock_source ppc_clk_clock_source = {
 	.name = "ppc_clk",
 	.event_device = &ppc_clk_event,
 	.counter_device = &ppc_clk_counter,
-	.read = clock_source_read,
 };
 
 static int ppc_clk_init(void) {

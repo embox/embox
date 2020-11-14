@@ -71,7 +71,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int omap3_clk_config(struct time_dev_conf *conf) {
+static int omap3_clk_set_periodic(struct clock_source *cs) {
 	volatile struct gptimerxx_x *gptimer = GPTIMER1_BASE;
 
 	REG_ORIN(CM_FCLKEN_WKUP, 1);
@@ -95,15 +95,13 @@ static int omap3_clk_config(struct time_dev_conf *conf) {
 }
 
 static struct time_event_device omap3_clk_event = {
-	.config = omap3_clk_config,
-	.event_hz = 1000,
+	.set_periodic = omap3_clk_set_periodic,
 	.irq_nr = GPTIMER1_IRQ,
 };
 
 static struct clock_source omap3_clk_clock_source = {
 	.name = "omap3_clk",
 	.event_device = &omap3_clk_event,
-	.read = clock_source_read,
 };
 
 static int omap_clk_init(void) {

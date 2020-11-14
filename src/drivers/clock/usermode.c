@@ -24,11 +24,10 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int clk_config(struct time_dev_conf *conf);
+static int clk_set_periodic(struct clock_source *cs);
 
 static struct time_event_device umclock_ev = {
-	.config = clk_config,
-	.event_hz = 1000,
+	.set_periodic = clk_set_periodic,
 	.irq_nr = CLOCK_IRQ,
 };
 
@@ -36,12 +35,11 @@ static struct clock_source umclock_cs = {
 	.name = "usermode clock",
 	.event_device = &umclock_ev,
 	.counter_device = NULL,
-	.read = clock_source_read,
 };
 
-static int clk_config(struct time_dev_conf *conf) {
+static int clk_set_periodic(struct clock_source *cs) {
 
-	host_timer_config(1000000 / umclock_ev.event_hz);
+	host_timer_config(1000000 / 1000);
 
 	return 0;
 }

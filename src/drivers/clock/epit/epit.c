@@ -55,7 +55,7 @@ static int epit_init(void) {
 			"EPIT");
 }
 
-static int epit_config(struct time_dev_conf * conf) {
+static int epit_set_periodic(struct clock_source *cs) {
 	/* changin clock source to peripheral clock */
 	REG32_STORE(EPIT_CR, REG32_LOAD(EPIT_CR) & (~EPIT_CR_OCIEN)); /* Turn off the interrupt */
 	REG32_STORE(EPIT_CR, REG32_LOAD(EPIT_CR) & (~EPIT_CR_EN)); /* disable the timer*/
@@ -72,13 +72,12 @@ static int epit_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t epit_read(void) {
+static cycle_t epit_read(struct clock_source *cs) {
 	return REG32_LOAD(EPIT_CNR);
 }
 
 static struct time_event_device epit_event = {
-	.config   = epit_config,
-	.event_hz = EPIT_TARGET_HZ,
+	.set_periodic   = epit_set_periodic,
 	.irq_nr   = EPIT_IRQ,
 };
 
@@ -91,7 +90,6 @@ static struct clock_source epit_clock_source = {
 	.name           = "epit",
 	.event_device   = &epit_event,
 	.counter_device = &epit_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(epit_init);

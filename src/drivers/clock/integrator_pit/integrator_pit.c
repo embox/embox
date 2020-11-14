@@ -47,7 +47,7 @@
 
 EMBOX_UNIT_INIT(integratorcp_init);
 
-static int integratorcp_clock_setup(struct time_dev_conf * conf) {
+static int integratorcp_clock_setup(struct clock_source *cs) {
 	/* Setup counter value */
 	REG_STORE(TMR_CTRL, TCTRL_DISABLE);
 	REG_STORE(TMR_LOAD, TIMER_COUNT);
@@ -60,12 +60,12 @@ static int integratorcp_clock_setup(struct time_dev_conf * conf) {
 }
 
 static struct time_event_device integratorcp_event_device = {
-	.config = integratorcp_clock_setup,
-	.event_hz = 1000, .name = "integratorcp_clk",
+	.set_periodic = integratorcp_clock_setup,
+	.name = "integratorcp_clk",
 	.irq_nr = CLOCK_IRQ
 };
 
-static cycle_t integratorcp_counter_read(void) {
+static cycle_t integratorcp_counter_read(struct clock_source *cs) {
 	return REG32_LOAD(TMR_VAL) & 0xFFFF;
 }
 
@@ -78,7 +78,6 @@ static struct clock_source integratorcp_cs = {
 	.name = "integratorcp_clk",
 	.event_device = &integratorcp_event_device,
 	.counter_device = &integratorcp_counter_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {

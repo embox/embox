@@ -34,16 +34,15 @@ static int at91_pitc_init(void) {
 	return irq_attach(AT91C_ID_SYS, clock_handler, 0, &at91_pitc_clock_source, "at91 PIT");
 }
 
-static int at91_pitc_config(struct time_dev_conf * conf);
+static int at91_pitc_set_periodic(struct clock_source *cs);
 
 static struct time_event_device at91_pitc_event = {
-	.config = at91_pitc_config,
-	.event_hz = AT91_PIT_EVENT_RES,
+	.set_periodic = at91_pitc_set_periodic,
 	.irq_nr = AT91C_ID_SYS
 };
 
 
-static cycle_t at91_pitc_read(void) {
+static cycle_t at91_pitc_read(struct clock_source *cs) {
 	return 0; //REG_LOAD(AT91C_PITC_PIVR);
 }
 
@@ -56,13 +55,12 @@ static struct clock_source at91_pitc_clock_source = {
 	.name = "at91_pitc",
 	.event_device = &at91_pitc_event,
 	.counter_device = &at91_pitc_counter,
-	.read = clock_source_read,
 };
 
-static int at91_pitc_config(struct time_dev_conf * conf) {
+static int at91_pitc_set_periodic(struct clock_source *cs) {
 	REG_LOAD(AT91C_PITC_PIVR);
 	REG_STORE(AT91C_PITC_PIMR, AT91C_PITC_PITEN | AT91C_PITC_PITIEN |
-	    (at91_pitc_counter.cycle_hz / at91_pitc_event.event_hz));
+	    (at91_pitc_counter.cycle_hz / AT91_PIT_EVENT_RES));
 	return 0;
 }
 

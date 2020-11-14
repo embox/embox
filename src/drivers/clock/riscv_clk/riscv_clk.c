@@ -37,7 +37,7 @@ static int clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int riscv_clock_setup(struct time_dev_conf * conf) {
+static int riscv_clock_setup(struct clock_source *cs) {
 	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 	enable_timer_interrupts();
 
@@ -45,8 +45,7 @@ static int riscv_clock_setup(struct time_dev_conf * conf) {
 }
 
 static struct time_event_device riscv_event_device  = {
-	.config = riscv_clock_setup,
-	.event_hz = HZ,
+	.set_periodic = riscv_clock_setup,
 	.name = "riscv_clk",
 	.irq_nr = MACHINE_TIMER_INTERRUPT
 };
@@ -54,7 +53,6 @@ static struct time_event_device riscv_event_device  = {
 static struct clock_source riscv_clock_source = {
 	.name = "riscv_clk",
 	.event_device = &riscv_event_device,
-	.read = clock_source_read
 };
 
 static int riscv_clock_init(void) {

@@ -29,7 +29,7 @@
 #define PIT_LOAD ((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ)
 static_assert(PIT_LOAD < 0x10000);
 
-static int pit_clock_setup(struct time_dev_conf * conf);
+static int pit_clock_setup(struct clock_source *cs);
 static int pit_clock_init(void);
 
 static struct clock_source pit_clock_source;
@@ -89,7 +89,7 @@ static struct time_counter_device pit_counter_device;
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
 
-static cycle_t i8253_read(void) {
+static cycle_t i8253_read(struct clock_source *cs) {
 	unsigned char lsb, msb;
 
 	pit_out8(PIT_SEL0 | PIT_LATCH, MODE_REG);
@@ -105,10 +105,8 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 }
 
 static struct time_event_device pit_event_device = {
-	.config = pit_clock_setup,
-	.event_hz = PIT_HZ,
+	.set_periodic = pit_clock_setup,
 	.irq_nr = IRQ_NR,
-	.pending = irqctrl_pending
 };
 
 static struct time_counter_device pit_counter_device = {
@@ -120,7 +118,6 @@ static struct clock_source pit_clock_source = {
 	.name = "pit",
 	.event_device = &pit_event_device,
 	.counter_device = &pit_counter_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 EMBOX_UNIT_INIT(pit_clock_init);
@@ -136,7 +133,7 @@ static int pit_clock_init(void) {
 	return ENOERR;
 }
 
-static int pit_clock_setup(struct time_dev_conf * conf) {
+static int pit_clock_setup(struct clock_source *cs) {
 	uint16_t divisor = PIT_LOAD;
 
 	pit_clock_source.flags = 1;

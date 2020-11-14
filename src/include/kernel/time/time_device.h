@@ -12,20 +12,7 @@
 #include <stdint.h>
 #include <kernel/time/time.h>
 
-struct time_dev_conf {
-	enum {
-		HW_TIMER_PERIOD,
-		HW_TIMER_ONESHOOT,
-	} period_type;
-	int counter_period;
-	int event_period;
-	int mode;
-	int irq_nr;
-	enum {
-		RISING_EDGE,
-		FALLING_EDGE,
-	} edge_type;
-};
+struct clock_source;
 
 /**
  * Time device, that generate interrupts.
@@ -38,11 +25,12 @@ struct time_dev_conf {
  */
 struct time_event_device {
 	void (*event_handler)(void);
-	int (*config)(struct time_dev_conf *);
-	int (*set_next_event)(uint32_t next_event);
+	int (*set_oneshot)(struct clock_source *cs);
+	int (*set_periodic)(struct clock_source *cs);
+	int (*set_next_event)(struct clock_source *cs, uint32_t next_event);
+
 	uint32_t event_hz;
 	uint32_t irq_nr;
-	int (*pending) (unsigned int nr);
 	const char *name;
 };
 
@@ -56,7 +44,9 @@ struct time_event_device {
  */
 struct time_counter_device {
 	uint32_t cycle_hz;
-	cycle_t (*read)(void);
+	uint64_t mask; /* Maximum value that can be loaded */
+
+	cycle_t (*read)(struct clock_source *cs);
 };
 
 #endif /* KERNEL_TIME_TIME_DEVICE_H_ */

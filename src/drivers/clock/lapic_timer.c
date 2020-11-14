@@ -26,7 +26,7 @@
 #define IRQ0               0x0
 #define LAPIC_HZ           1000     /* You can change it */
 
-static int lapic_clock_setup(struct time_dev_conf *conf);
+static int lapic_clock_setup(struct clock_source *cs);
 
 static struct clock_source lapic_clock_source;
 static struct time_event_device lapic_event_device;
@@ -37,8 +37,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 }
 
 static struct time_event_device lapic_event_device = {
-	.config = lapic_clock_setup,
-	.event_hz = LAPIC_HZ,
+	.set_periodic = lapic_clock_setup,
 	.name = "lapic clock",
 	.irq_nr = IRQ0,
 };
@@ -46,7 +45,6 @@ static struct time_event_device lapic_event_device = {
 static struct clock_source lapic_clock_source = {
 	.name = "lapic clock",
 	.event_device = &lapic_event_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 EMBOX_UNIT_INIT(lapic_clock_init);
@@ -67,7 +65,7 @@ static int lapic_clock_init(void) {
 	return ENOERR;
 }
 
-int lapic_clock_setup(struct time_dev_conf *conf) {
+int lapic_clock_setup(struct clock_source *cs) {
 	static int initialized = 0;
 	uint32_t ticks, cpubusfreq, counter;
 	uint8_t tmp;

@@ -70,7 +70,7 @@ static irq_return_t ti8168_clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int ti8168_clk_config(struct time_dev_conf *conf) {
+static int ti8168_clk_set_periodic(struct clock_source *cs) {
 	volatile struct gptimer13_1 *gptimer = TI8168_GPTIMER1_BASE;
 
 	REG_STORE(CM_TIMER1_CLKSEL, CM_CLKIN);
@@ -91,13 +91,12 @@ static int ti8168_clk_config(struct time_dev_conf *conf) {
 }
 
 static struct time_event_device ti8168_clk_event = {
-	.config = ti8168_clk_config,
-	.event_hz = 1000,
+	.set_periodic = ti8168_clk_set_periodic,
 	.irq_nr = TI8168_GPTIMER1_IRQ,
 };
 
 /* TODO */
-cycle_t ti8168_this_read(void) {
+cycle_t ti8168_this_read(struct clock_source *cs) {
 	return 0;
 }
 
@@ -110,7 +109,6 @@ struct clock_source ti8168_clk_clock_source = {
 	.name = "ti8168",
 	.event_device = &ti8168_clk_event,
 	.counter_device = &ti8168_counter_device,
-	.read = clock_source_read,
 };
 
 static int ti8168_clk_init(void) {

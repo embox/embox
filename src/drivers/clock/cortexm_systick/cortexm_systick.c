@@ -17,8 +17,6 @@
 #include <framework/mod/options.h>
 #include <embox/unit.h>
 
-#define SYSTICK_HZ  OPTION_GET(NUMBER,systick_hz)
-
 #define SYSTICK_BASE 0xe000e010
 
 #define SYSTICK_CTRL    (SYSTICK_BASE + 0x0)
@@ -30,14 +28,20 @@
 #define SYSTICK_VAL     (SYSTICK_BASE + 0x8)
 #define SYSTICK_CALIB   (SYSTICK_BASE + 0xc)
 
-#define RELOAD_VALUE (SYS_CLOCK / SYSTICK_HZ)
-static_assertf(RELOAD_VALUE - 1 <= SYSTICK_RELOAD_MSK,
-	"RELOAD_VALUE is too big: "MACRO_STRING(RELOAD_VALUE));
-
 static struct clock_source cortexm_systick_clock_source;
 
 static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data) {
+	struct clock_source *cs = data;
+
 	clock_tick_handler(data);
+
+	if (cs->flags & CLOCK_SOURCE_ONESHOT_MODE) {
+		/* Systick do not support one-shot mode, so we do
+		 * it by shutting Systick down. */
+		REG_STORE(SYSTICK_CTRL, 0);
+		REG_STORE(SYSTICK_VAL, 0);
+	}
+
 	return IRQ_HANDLED;
 }
 
@@ -45,9 +49,18 @@ static int cortexm_systick_init(void) {
 	return clock_source_register(&cortexm_systick_clock_source);
 }
 
-static int cortexm_systick_config(struct time_dev_conf * conf) {
+static int cortexm_systick_set_oneshot(struct clock_source *cs) {
+	return 0;
+}
+
+static int cortexm_systick_set_periodic(struct clock_source *cs) {
+	return 0;
+}
+
+static int cortexm_systick_set_next_event(struct clock_source *cs,
+		uint32_t next_event) {
 	REG_STORE(SYSTICK_CTRL, 0);
-	REG_STORE(SYSTICK_RELOAD, RELOAD_VALUE - 1);
+	REG_STORE(SYSTICK_RELOAD, next_event - 1);
 	REG_STORE(SYSTICK_VAL, 0);
 	REG_STORE(SYSTICK_CTRL, SYSTICK_ENABLE | SYSTICK_TICKINT |
 			SYSTICK_CLOCKINIT);
@@ -55,26 +68,27 @@ static int cortexm_systick_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t cortexm_systick_read(void) {
-	return RELOAD_VALUE - REG_LOAD(SYSTICK_VAL);
+static cycle_t cortexm_systick_read(struct clock_source *cs) {
+	return REG_LOAD(SYSTICK_RELOAD) - REG_LOAD(SYSTICK_VAL);
 }
 
 static struct time_event_device cortexm_systick_event = {
-	.config = cortexm_systick_config,
-	.event_hz = SYSTICK_HZ,
+	.set_oneshot = cortexm_systick_set_oneshot,
+	.set_periodic = cortexm_systick_set_periodic,
+	.set_next_event = cortexm_systick_set_next_event,
 	.irq_nr = SYSTICK_IRQ,
 };
 
 static struct time_counter_device cortexm_systick_counter = {
 	.read = cortexm_systick_read,
 	.cycle_hz = SYS_CLOCK,
+	.mask = SYSTICK_RELOAD_MSK,
 };
 
 static struct clock_source cortexm_systick_clock_source = {
 	.name = "system_tick",
 	.event_device = &cortexm_systick_event,
 	.counter_device = &cortexm_systick_counter,
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(cortexm_systick_init);

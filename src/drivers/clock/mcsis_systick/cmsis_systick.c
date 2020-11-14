@@ -32,20 +32,19 @@ static int this_init(void) {
 	return clock_source_register(&this_clock_source);
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
 	int reload = SYS_CLOCK / (CLOCK_DIVIDER * 1000);
 
 	return 0 == SysTick_Config(reload) ? 0 : -EINVAL;
 }
 
 static struct time_event_device this_event = {
-	.config = this_config ,
-	.event_hz = 1000,
+	.set_periodic = this_set_periodic,
 	.irq_nr = SYSTICK_IRQ,
 };
 
 #if 0
-static cycle_t this_read(void) {
+static cycle_t this_read(struct clock_source *cs) {
 	return 0;
 }
 
@@ -59,7 +58,6 @@ static struct clock_source this_clock_source = {
 	.name = "system_tick",
 	.event_device = &this_event,
 	/*.counter_device = &this_counter,*/
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(this_init);

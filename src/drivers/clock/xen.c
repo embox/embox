@@ -22,18 +22,17 @@ EMBOX_UNIT_INIT(xen_clock_init);
 
 extern shared_info_t xen_shared_info;
 
-static int integratorcp_clock_setup(struct time_dev_conf * conf) {
+static int integratorcp_clock_setup(struct clock_source *cs) {
 	return 0;
 }
 
 static struct time_event_device xen_event_device = {
 	.name = "xen event device",
-	.config = integratorcp_clock_setup,
-	.event_hz = 1000,
+	.set_periodic = integratorcp_clock_setup,
 	.irq_nr = -1
 };
 
-static cycle_t xen_tcd_read(void) {
+static cycle_t xen_tcd_read(struct clock_source *cs) {
 	return 0;
 }
 
@@ -46,7 +45,6 @@ static struct clock_source xen_cs = {
 	.name = "xen clock source",
 	.event_device = &xen_event_device,
 	.counter_device = &xen_tcd,
-	.read = clock_source_read /* attach default read function */
 };
 
 static uint64_t system_time;

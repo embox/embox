@@ -11,6 +11,8 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
+#define HZ      OPTION_GET(NUMBER, hz)
+
 const struct clock_source *cs_jiffies;
 
 clock_t clock_sys_ticks(void) {
@@ -38,10 +40,7 @@ uint32_t clock_freq(void) {
 }
 
 int jiffies_init(void) {
-	const struct clock_source *cs;
-	struct time_dev_conf jiffies_conf = {
-		HW_TIMER_PERIOD
-	};
+	struct clock_source *cs;
 
 	/* find clock_event_device with maximal frequency  */
 	cs = clock_source_get_best(CS_WITH_IRQ);
@@ -49,9 +48,7 @@ int jiffies_init(void) {
 
 	cs_jiffies = cs;
 
-	/* set periodic mode */
-	assert(cs->event_device->config);
-	cs->event_device->config(&jiffies_conf);
+	clock_source_set_periodic(cs, HZ);
 
 	return 0;
 }

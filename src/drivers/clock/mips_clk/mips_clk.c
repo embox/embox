@@ -27,15 +27,14 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int mips_clock_setup(struct time_dev_conf * conf) {
+static int mips_clock_setup(struct clock_source *cs) {
 	mips_write_c0_compare(COUNT_OFFSET);
 	mips_write_c0_count(0);
 	return ENOERR;
 }
 
 static struct time_event_device mips_event_device  = {
-	.config = mips_clock_setup,
-	.event_hz = 1000,
+	.set_periodic = mips_clock_setup,
 	.name = "mips_clk",
 	.irq_nr = MIPS_IRQN_TIMER
 };
@@ -43,7 +42,6 @@ static struct time_event_device mips_event_device  = {
 static struct clock_source mips_clock_source = {
 	.name = "mips_clk",
 	.event_device = &mips_event_device,
-	.read = clock_source_read /* attach default read function */
 };
 
 static int mips_clock_init(void) {

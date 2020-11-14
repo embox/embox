@@ -89,7 +89,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static cycle_t mb_cycle_read(void) {
+static cycle_t mb_cycle_read(struct clock_source *cs) {
 	return TIMER_PRELOAD - timer0->tcr;
 
 }
@@ -102,7 +102,7 @@ static int mb_clock_init(void) {
 	return 0;
 }
 
-static int mb_clock_setup(struct time_dev_conf * conf) {
+static int mb_clock_setup(struct clock_source *cs) {
 	/*set clocks period*/
 	timer0->tlr = TIMER_PRELOAD;
 	/*clear interrupts bit and load value from tlr register*/
@@ -115,8 +115,7 @@ static int mb_clock_setup(struct time_dev_conf * conf) {
 }
 
 static struct time_event_device mb_ed = {
-	.config = mb_clock_setup,
-	.event_hz = 1000,
+	.set_periodic = mb_clock_setup,
 	.name = "mb_timer",
 	.irq_nr = CONFIG_XILINX_TIMER_IRQ
 };
@@ -130,7 +129,6 @@ static struct clock_source mb_cs = {
 	.name = "gptimer",
 	.event_device = &mb_ed,
 	.counter_device = &mb_cd,
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(mb_clock_init);

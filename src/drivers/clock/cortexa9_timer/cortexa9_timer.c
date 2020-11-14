@@ -63,7 +63,7 @@ static int this_init(void) {
 	                  "Cortex A9 systick timer");
 }
 
-static int this_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
 	uint32_t tmp;
 	uint8_t  prescaler = 0;
 
@@ -79,13 +79,12 @@ static int this_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t this_read(void) {
+static cycle_t this_read(struct clock_source *cs) {
 	return LOAD_VALUE - REG_LOAD(PTIMER_COUNTER);
 }
 
 static struct time_event_device this_event = {
-	.config = this_config,
-	.event_hz = 1000,
+	.set_periodic = this_set_periodic,
 	.irq_nr = PTIMER_IRQ,
 };
 
@@ -98,7 +97,6 @@ static struct clock_source this_clock_source = {
 	.name = "system_tick",
 	.event_device = &this_event,
 	.counter_device = &this_counter,
-	.read = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(this_init);

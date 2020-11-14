@@ -53,7 +53,7 @@ static int pl031_init(void) {
 	                  "PL031");
 }
 
-static int pl031_config(struct time_dev_conf * conf) {
+static int pl031_set_periodic(struct clock_source *cs) {
 	REG32_STORE(PL031_LR, 0x0);
 
 	REG32_STORE(PL031_MR, 0x1);
@@ -62,13 +62,12 @@ static int pl031_config(struct time_dev_conf * conf) {
 	return 0;
 }
 
-static cycle_t pl031_read(void) {
+static cycle_t pl031_read(struct clock_source *cs) {
 	return REG32_LOAD(PL031_DR);
 }
 
 static struct time_event_device pl031_event = {
-	.config   = pl031_config,
-	.event_hz = PL031_TARGET_HZ,
+	.set_periodic   = pl031_set_periodic,
 	.irq_nr   = PL031_IRQ,
 };
 
@@ -81,7 +80,6 @@ static struct clock_source pl031_clock_source = {
 	.name           = "pl031",
 	.event_device   = &pl031_event,
 	.counter_device = &pl031_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(pl031_init);

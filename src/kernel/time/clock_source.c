@@ -58,7 +58,7 @@ struct timespec clock_source_read(struct clock_source *cs) {
 
 	cd = cs->counter_device;
 	if (cd) {
-		ns += ((uint64_t) cd->read() * NSEC_PER_SEC) / cd->cycle_hz;
+		ns += ((uint64_t) cd->read(cs) * NSEC_PER_SEC) / cd->cycle_hz;
 	}
 
 	ts = ns_to_timespec(ns);
@@ -66,26 +66,83 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	return ts;
 }
 
+int clock_source_set_oneshot(struct clock_source *cs) {
+	assert(cs && cs->event_device);
+
+	if (!cs->event_device->set_oneshot) {
+		return -1;
+	}
+
+	if (!cs->event_device->set_oneshot(cs)) {
+		cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
+		cs->flags |= CLOCK_SOURCE_ONESHOT_MODE;
+		return 0;
+	}
+
+	return -1;
+}
+
+int clock_source_set_periodic(struct clock_source *cs, uint32_t hz) {
+	assert(cs && cs->event_device);
+
+	if (!cs->event_device->set_periodic) {
+		return -1;
+	}
+
+	if (cs->event_device->set_periodic(cs) != 0) {
+		return -1;
+	}
+
+	cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
+	cs->flags |= CLOCK_SOURCE_PERIODIC_MODE;
+
+	cs->event_device->event_hz = hz;
+
+	/* FIXME Currently not all clock drivers support counter device. */
+	if (cs->counter_device) {
+		clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
+	} else {
+		clock_source_set_next_event(cs, 0);
+	}
+
+	return 0;
+}
+
+int clock_source_set_next_event(struct clock_source *cs,
+		uint32_t next_event) {
+	assert(cs && cs->event_device);
+
+	if (!cs->event_device->set_next_event) {
+		return -1;
+	}
+
+	return cs->event_device->set_next_event(cs, next_event);
+}
+
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 	struct clock_source *cs, *best;
-	uint32_t event_hz, cycle_hz, best_hz, hz;
+	int32_t cycle_hz, best_hz, hz;
 
-	best_hz = 0;
+	best_hz = -1;
 	best = NULL;
 
 	dlist_foreach_entry(cs, &clock_source_list, lnk) {
-		event_hz = cs->event_device ? cs->event_device->event_hz : 0;
+		hz = 0;
 		cycle_hz = cs->counter_device ? cs->counter_device->cycle_hz : 0;
 
 		switch (pr) {
 			case CS_ANY:
-				hz = max(event_hz, cycle_hz);
+				hz = cycle_hz;
 				break;
 			case CS_WITH_IRQ:
-				hz = event_hz;
+				if (cs->event_device) {
+					hz = cycle_hz;
+				}
 				break;
 			case CS_WITHOUT_IRQ:
-				hz = cycle_hz;
+				if (!cs->event_device) {
+					hz = cycle_hz;
+				}
 				break;
 		}
 
@@ -117,5 +174,5 @@ time64_t clock_source_get_hwcycles(struct clock_source *cs) {
 	assert(cs->event_device && cs->counter_device);
 
 	load = cs->counter_device->cycle_hz / cs->event_device->event_hz;
-	return ((uint64_t) cs->jiffies) * load + cs->counter_device->read();
+	return ((uint64_t) cs->jiffies) * load + cs->counter_device->read(cs);
 }

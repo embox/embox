@@ -100,17 +100,16 @@ static int imx6_gpt_init(void) {
 	                  "i.MX6 General Purpose Timer");
 }
 
-static int imx6_gpt_config(struct time_dev_conf * conf) {
+static int imx6_gpt_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t imx6_gpt_read(void) {
+static cycle_t imx6_gpt_read(struct clock_source *cs) {
 	return REG32_LOAD(GPT_CNT);
 }
 
 static struct time_event_device imx6_gpt_event = {
-	.config   = imx6_gpt_config,
-	.event_hz = GPT_TARGET_HZ,
+	.set_periodic   = imx6_gpt_set_periodic,
 	.irq_nr   = GPT_IRQ,
 };
 
@@ -123,7 +122,6 @@ static struct clock_source imx6_gpt_clock_source = {
 	.name           = "imx6_gpt",
 	.event_device   = &imx6_gpt_event,
 	.counter_device = &imx6_gpt_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(imx6_gpt_init);

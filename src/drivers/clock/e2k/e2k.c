@@ -89,11 +89,11 @@ static int e2k_clock_init(void) {
 	return 0;
 }
 
-static int e2k_clock_config(struct time_dev_conf * conf) {
+static int e2k_clock_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t e2k_clock_read(void) {
+static cycle_t e2k_clock_read(struct clock_source *cs) {
 #if 0
 	/* TODO Should be checked, because values are looking a bit weird. */
 	return e2k_read32((void*)E2K_RESET_COUNTER_LOW); /* Ignore high 32 bits */
@@ -102,8 +102,7 @@ static cycle_t e2k_clock_read(void) {
 }
 
 static struct time_event_device e2k_clock_event = {
-	.config   = e2k_clock_config,
-	.event_hz = LT_FREQ,
+	.set_periodic   = e2k_clock_set_periodic,
 	.irq_nr = IRQ_NR
 };
 
@@ -116,7 +115,6 @@ static struct clock_source e2k_clock_source = {
 	.name           = "e2k_clock",
 	.event_device   = &e2k_clock_event,
 	.counter_device = &e2k_clock_counter,
-	.read           = clock_source_read,
 };
 
 EMBOX_UNIT_INIT(e2k_clock_init);
