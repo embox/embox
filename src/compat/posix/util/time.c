@@ -47,12 +47,13 @@ int clock_settime(clockid_t clk_id, const struct timespec *ts) {
 }
 
 time_t time(time_t *t) {
-	time_t sec;
+	struct timespec ts;
 
-	sec = ktime_get_ns() / NSEC_PER_SEC;
+	ktime_get_timespec(&ts);
+
 	if (t != NULL) {
-		*t = sec;
+		*t = ts.tv_sec;
 	}
 
-	return sec;
+	return ts.tv_sec;
 }
