@@ -17,7 +17,6 @@ module clock_source {
 module kernel_time {
 	source "ktime.c"
 	depends embox.kernel.timer.itimer
-	depends embox.arch.clock
 	depends timeval
 }
 
@@ -25,7 +24,7 @@ module jiffies {
 	option number hz = 1000
 
 	source "jiffies.c"
-	//depends embox.arch.clock
+
 	depends clock_source
 }
 

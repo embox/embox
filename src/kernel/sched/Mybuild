@@ -19,8 +19,6 @@ module sched {
 	depends wait_queue
 
 	depends embox.kernel.sched.current.api
-
-	//depends embox.arch.clock
 }
 
 module schedee {

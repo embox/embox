@@ -11,7 +11,6 @@ module sys_timer {
 	depends embox.kernel.time.clock_source
 	/*uses ms2jiffies */
 	depends embox.kernel.time.jiffies
-	depends embox.arch.clock
 }
 
 module sleep extends sleep_api {
