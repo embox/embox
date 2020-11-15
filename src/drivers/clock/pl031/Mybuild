@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module pl031 extends embox.arch.clock {
+module pl031 {
 	source "pl031.c"
 
 	option number base_addr=0x9010000

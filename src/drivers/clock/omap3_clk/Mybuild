@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module omap3_clk extends embox.arch.clock {
+module omap3_clk {
 	source "omap3_clk.c"
 
 	depends embox.driver.periph_memory

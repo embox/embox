@@ -1,7 +1,7 @@
 package embox.driver.clock
 
 @BuildDepends(embox.arch.arm.cmsis)
-module cmsis_systick extends embox.arch.clock {
+module cmsis_systick {
 	source "cmsis_systick.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source

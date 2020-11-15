@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module mips_clk extends embox.arch.clock {
+module mips_clk {
 	source "mips_clk.c"
 
 	depends embox.arch.interrupt

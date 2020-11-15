@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module cortexa9 extends embox.arch.clock {
+module cortexa9 {
 	option number log_level = 0
 
 	option number periph_base_addr

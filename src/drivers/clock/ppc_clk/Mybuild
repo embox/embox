@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module ppc_clk extends embox.arch.clock {
+module ppc_clk {
 	source "ppc_clk.c"
 
 	depends embox.kernel.time.clock_source
