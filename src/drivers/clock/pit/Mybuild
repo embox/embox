@@ -19,5 +19,5 @@ module pit {
 
 	depends pit_regs
 	depends embox.kernel.irq
-	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.kernel.time.clock_source
 }
