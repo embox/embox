@@ -21,7 +21,7 @@ struct itimer {
 extern void itimer_init(struct itimer *it,
 		struct clock_source *cs, time64_t start_tstamp);
 
-extern time64_t itimer_read(struct itimer *it);
+extern time64_t itimer_read_ns(struct itimer *it);
 extern void itimer_read_timespec(struct itimer *it, struct timespec *ts);
 
 extern struct itimer *itimer_alloc(void);

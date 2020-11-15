@@ -34,7 +34,7 @@ void itimer_init(struct itimer *it, struct clock_source *cs,
 	it->start_value = timespec_add(ts, clock_source_read(it->cs));
 }
 
-time64_t itimer_read(struct itimer *it) {
+time64_t itimer_read_ns(struct itimer *it) {
 	struct timespec ts;
 	itimer_read_timespec(it, &ts);
 	return timespec_to_ns(&ts);

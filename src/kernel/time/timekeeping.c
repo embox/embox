@@ -23,7 +23,10 @@ void setnsofday(const struct timespec *newtime, const struct timezone *tz) {
 }
 
 void getnsofday(struct timespec *t, struct timezone *tz) {
-	*t = timespec_add_ns(timekeep_g_time, itimer_read(&timekeep_g_itimer));
+	struct timespec ts;
+
+	itimer_read_timespec(&timekeep_g_itimer, &ts);
+	*t = timespec_add(timekeep_g_time, ts);
 }
 
 static int time_init(void) {

@@ -10,15 +10,16 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
-#include <kernel/time/time.h>
-#include <kernel/time/timer.h>
-#include <net/lib/ntp.h>
 #include <netinet/in.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <time.h>
 #include <unistd.h>
+
+#include <kernel/time/timer.h>
+
+#include <net/lib/ntp.h>
 
 struct ntpd_param {
 	int running;
@@ -37,7 +38,7 @@ static int send_request(struct ntpd_param *param) {
 
 	assert(param != NULL);
 
-	getnsofday(&ts, NULL);
+	clock_gettime(CLOCK_REALTIME, &ts);
 	ret = ntp_timespec_to_data_l(&ts, &xmit_time);
 	if (ret != 0) {
 		return ret;
@@ -136,7 +137,7 @@ static int serve(struct ntpd_param *param) {
 		if (ret != 0) {
 			return ret;
 		}
-		settimeofday(&ts, NULL);
+		clock_settime(CLOCK_REALTIME, &ts);
 	}
 
 	return 0;
@@ -179,11 +180,8 @@ static int ntpd_stop(struct ntpd_param *param) {
 }
 
 int main(int argc, char **argv) {
-	static struct ntpd_param param = {
-		.running = 0
-	};
+	static struct ntpd_param param = {0};
 	int opt;
-
 
 	while (-1 != (opt = getopt(argc, argv, "hS"))) {
 		switch(opt) {

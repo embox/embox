@@ -14,6 +14,7 @@
 #include <stdio.h> /* snprintf */
 #include <fcntl.h> /* O_CREAT, O_APPEND */
 #include <sys/stat.h>
+#include <sys/time.h>
 
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
@@ -71,7 +72,7 @@ static void audit_log(const char *subject, const char *object,
 	struct passwd pwd_buf;
 	struct passwd *pwd;
 	time_t time;
-	struct timespec ts;
+	struct timeval tv;
 
 	if (no_audit) {
 		return;
@@ -82,8 +83,8 @@ static void audit_log(const char *subject, const char *object,
 	getpwuid_r(uid, &pwd_buf, pwd_sbuf, sizeof(pwd_sbuf), &pwd);
 	no_audit = 0;
 
-	getnsofday(&ts, NULL);
-	time = (time_t)((uint32_t)ts.tv_sec - SECONDS_1900_1970);
+	gettimeofday(&tv, NULL);
+	time = (time_t)((uint32_t)tv.tv_sec - SECONDS_1900_1970);
 	snprintf(line, AUDITLINE_LEN,
 			"[%s] cmd=%s subject=%s(label=%s), object=%s, file=%s, request=%c%c%c, action=%s, function=%s\n",
 			ctime(&time),

@@ -7,8 +7,10 @@
  */
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
+#include <fs/idesc.h>
 #include <fs/vfs.h>
 #include <security/seculog/seculog.h>
 #include <embox/unit.h>
@@ -34,7 +36,7 @@ static int audit_log_open(struct file_desc **log_desc_p) {
 	}
 
 	/* This is `forever' file_desc, prevent it from to be free */
-	log_desc->idesc.idesc_count ++;
+	log_desc->f_idesc.idesc_count ++;
 	close(fd);
 
 	*log_desc_p = log_desc;

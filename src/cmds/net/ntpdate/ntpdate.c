@@ -10,15 +10,18 @@
 #include <arpa/inet.h>
 #include <assert.h>
 #include <errno.h>
-#include <framework/mod/options.h>
-#include <kernel/time/time.h>
-#include <net/lib/ntp.h>
+#include <string.h>
+#include <sys/time.h>
 #include <unistd.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <sys/socket.h>
 #include <time.h>
+#include <netdb.h>
 
+#include <net/lib/ntp.h>
+
+#include <framework/mod/options.h>
 #define MODOPS_TIMEOUT OPTION_GET(NUMBER, timeout)
 
 static int make_socket(const struct timeval *timeout, int *out_sock,
@@ -111,7 +114,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		/* show result */
 		struct timespec offset, delay;
 
-		getnsofday(&ts, NULL);
+		clock_gettime(CLOCK_REALTIME, &ts);
 
 		ret = ntp_offset(rep, &ts, &offset);
 		if (ret != 0) {
@@ -140,7 +143,7 @@ static int ntpdate_process(const struct ntphdr *rep, in_addr_t addr, int only_qu
 		if (ret != 0) {
 			return ret;
 		}
-		setnsofday(&ts, NULL);
+		clock_settime(CLOCK_REALTIME, &ts);
 	}
 
 	return 0;
@@ -153,7 +156,7 @@ static int ntpdate(in_addr_t addr, const struct timeval *timeout,
 	struct ntphdr req, rep;
 	struct ntp_data_l xmit_time;
 
-	getnsofday(&ts, NULL);
+	clock_gettime(CLOCK_REALTIME, &ts);
 	ret = ntp_timespec_to_data_l(&ts, &xmit_time);
 	if (ret != 0) {
 		return ret;
@@ -176,6 +179,7 @@ int main(int argc, char **argv) {
 	int opt, only_query, timeout;
 	struct timeval timeout_tv;
 	in_addr_t addr;
+	struct hostent *he = NULL;
 
 	only_query = 0;
 	timeout = MODOPS_TIMEOUT;
@@ -204,11 +208,13 @@ int main(int argc, char **argv) {
 		printf("%s: error: no server specified\n", argv[0]);
 		return -EINVAL;
 	}
-	else if (!inet_aton(argv[optind], (struct in_addr *)&addr)) {
-		printf("%s: error: invalid address %s\n", argv[0],
-				argv[optind]);
+
+	he = gethostbyname(argv[optind]);
+	if (he == NULL) {
+		printf("could not resolve server name %s\n", argv[optind]);
 		return -EINVAL;
 	}
+	memcpy(&addr, &((struct in_addr *)he->h_addr_list[0])->s_addr, sizeof (addr));
 
 	timeout_tv.tv_sec = timeout / MSEC_PER_SEC;
 	timeout_tv.tv_usec = (timeout % MSEC_PER_SEC) * USEC_PER_MSEC;
