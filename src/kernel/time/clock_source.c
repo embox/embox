@@ -19,20 +19,25 @@
 
 static DLIST_DEFINE(clock_source_list);
 
-extern int clock_tick_init(void);
-
 int clock_source_register(struct clock_source *cs) {
-	if (!cs) {
-		return -EINVAL;
+	struct clock_source *tmp;
+
+	assert(cs);
+
+	dlist_foreach_entry(tmp, &clock_source_list, lnk) {
+		if (tmp == cs) {
+			/* Already registered, do nothing. */
+			return 0;
+		}
+	}
+
+	if (cs->init) {
+		cs->init(cs);
 	}
 
 	dlist_add_prev(dlist_head_init(&cs->lnk), &clock_source_list);
 
-	clock_tick_init();
-
-	jiffies_init();
-
-	return ENOERR;
+	return 0;
 }
 
 int clock_source_unregister(struct clock_source *cs) {
