@@ -12,6 +12,7 @@
 
 #include <embox/unit.h>
 #include <kernel/sched.h>
+#include <kernel/time/clock_source.h>
 
 EMBOX_UNIT_INIT(sched_start_init);
 
@@ -32,6 +33,8 @@ static int sched_start_init(void) {
 	}
 
 	err = idle_thread_create(); /* idle thread always has ID=0 */
+
+	jiffies_init();
 
 	return err;
 }
