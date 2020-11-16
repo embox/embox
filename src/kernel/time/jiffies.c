@@ -13,9 +13,11 @@
 #include <kernel/time/time.h>
 
 #define HZ      OPTION_GET(NUMBER, hz)
-#define CS_NAME OPTION_STRING_GET(cs_name)
+#define CS_NAME OPTION_GET(STRING, cs_name)
 
-const struct clock_source *cs_jiffies;
+extern struct clock_source CLOCK_SOURCE_NAME(CS_NAME);
+
+const struct clock_source *cs_jiffies = &CLOCK_SOURCE_NAME(CS_NAME);
 
 clock_t clock_sys_ticks(void) {
 	if (!cs_jiffies) {
@@ -42,24 +44,13 @@ uint32_t clock_freq(void) {
 }
 
 int jiffies_init(void) {
-	struct clock_source *cs;
+	extern int clock_tick_init(void);
 
-	if (cs_jiffies && strcmp(CS_NAME, "")) {
-		/* Jiffies clock source already found and assigned, do nothing. */
-		return 0;
-	}
+	clock_tick_init();
 
-	if (!strcmp(CS_NAME, "")) {
-		cs = clock_source_get_best(CS_WITH_IRQ);
-		assert(cs);
-	} else {
-		cs = clock_source_get_by_name(CS_NAME);
-		assertf(cs, "clock source \"%s\" not found", CS_NAME);
-	}
+	clock_source_register((struct clock_source *) cs_jiffies);
 
-	cs_jiffies = cs;
-
-	clock_source_set_periodic(cs, HZ);
+	clock_source_set_periodic((struct clock_source *) cs_jiffies, HZ);
 
 	return 0;
 }
