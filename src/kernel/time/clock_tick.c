@@ -62,14 +62,8 @@ static int clock_handler(struct lthread *self) {
 }
 
 int clock_tick_init(void) {
-	static int inited = 0;
-
-	if (!inited) {
-		lthread_init(&clock_handler_lt, &clock_handler);
-		schedee_priority_set(&clock_handler_lt.schedee, CLOCK_HND_PRIORITY);
-
-		inited = 1;
-	}
+	lthread_init(&clock_handler_lt, &clock_handler);
+	schedee_priority_set(&clock_handler_lt.schedee, CLOCK_HND_PRIORITY);
 
 	return 0;
 }

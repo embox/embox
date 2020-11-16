@@ -7,14 +7,11 @@
  * @date 18.05.2012
  * @author Anton Bondarev
  */
-#include <embox/unit.h>
 
 #include <kernel/time/itimer.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
-
-EMBOX_UNIT_INIT(module_init);
 
 static struct itimer sys_timecounter;
 struct clock_source *kernel_clock_source;
@@ -50,7 +47,7 @@ time_t ktime_get_timeseconds(void) {
 	return ts.tv_sec;
 }
 
-static int module_init(void) {
+int monotonic_clock_select(void) {
 	/* find clock_event_device with maximal frequency  */
 	kernel_clock_source = clock_source_get_best(CS_ANY);
 	assert(kernel_clock_source);

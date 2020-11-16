@@ -10,10 +10,6 @@
 #include <kernel/time/itimer.h>
 #include <time.h>
 
-#include <embox/unit.h>
-
-EMBOX_UNIT_INIT(time_init);
-
 static struct timespec timekeep_g_time;
 static struct itimer timekeep_g_itimer;
 
@@ -29,7 +25,7 @@ void getnsofday(struct timespec *t, struct timezone *tz) {
 	*t = timespec_add(timekeep_g_time, ts);
 }
 
-static int time_init(void) {
+int realtime_clock_select(void) {
 	extern struct clock_source *kernel_clock_source;
 
 	timekeep_g_time.tv_sec = 0;

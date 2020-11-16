@@ -37,6 +37,10 @@ int clock_source_register(struct clock_source *cs) {
 
 	dlist_add_prev(dlist_head_init(&cs->lnk), &clock_source_list);
 
+	monotonic_clock_select();
+
+	realtime_clock_select();
+
 	return 0;
 }
 

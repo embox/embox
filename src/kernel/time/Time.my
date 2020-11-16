@@ -6,26 +6,23 @@ module clock_source {
 	
 	option number hnd_priority = 200
 	source "clock_tick.c"
-
-	depends embox.kernel.lthread.lthread
-	depends embox.kernel.timer.strategy.api
 }
 
 module kernel_time {
 	source "ktime.c"
-	depends embox.kernel.timer.itimer
-	depends timeval
+
+	@NoRuntime depends embox.kernel.timer.itimer
+	@NoRuntime depends timeval
 }
 
 module jiffies {
-	/* "cs_name" is one of registered clock sources. If not specified
-	 * the best clock source found will be used. */
+	/* "cs_name" is one of registered clock sources. */
 	option string cs_name = ""
 	option number hz = 1000
 
 	source "jiffies.c"
 
-	depends clock_source
+	@NoRuntime depends clock_source
 }
 
 static module timeval {
@@ -34,5 +31,6 @@ static module timeval {
 
 module timekeeper {
 	source "timekeeping.c"
+
 	depends kernel_time
 }
