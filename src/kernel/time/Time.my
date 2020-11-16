@@ -21,6 +21,9 @@ module kernel_time {
 }
 
 module jiffies {
+	/* "cs_name" is one of registered clock sources. If not specified
+	 * the best clock source found will be used. */
+	option string cs_name = ""
 	option number hz = 1000
 
 	source "jiffies.c"

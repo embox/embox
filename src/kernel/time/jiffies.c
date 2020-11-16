@@ -7,11 +7,13 @@
  * @date 10.04.2012
  * @author Anton Bondarev
  */
-#include <embox/unit.h>
+
+#include <string.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
 #define HZ      OPTION_GET(NUMBER, hz)
+#define CS_NAME OPTION_STRING_GET(cs_name)
 
 const struct clock_source *cs_jiffies;
 
@@ -42,9 +44,18 @@ uint32_t clock_freq(void) {
 int jiffies_init(void) {
 	struct clock_source *cs;
 
-	/* find clock_event_device with maximal frequency  */
-	cs = clock_source_get_best(CS_WITH_IRQ);
-	assert(cs);
+	if (cs_jiffies && strcmp(CS_NAME, "")) {
+		/* Jiffies clock source already found and assigned, do nothing. */
+		return 0;
+	}
+
+	if (!strcmp(CS_NAME, "")) {
+		cs = clock_source_get_best(CS_WITH_IRQ);
+		assert(cs);
+	} else {
+		cs = clock_source_get_by_name(CS_NAME);
+		assertf(cs, "clock source \"%s\" not found", CS_NAME);
+	}
 
 	cs_jiffies = cs;
 
