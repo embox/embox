@@ -29,6 +29,12 @@ struct time_event_device {
 	int (*set_periodic)(struct clock_source *cs);
 	int (*set_next_event)(struct clock_source *cs, uint32_t next_event);
 
+	uint32_t flags; /**< periodical or not */
+#define CLOCK_EVENT_ONESHOT_MODE  (1 << 0)
+#define CLOCK_EVENT_PERIODIC_MODE (1 << 1)
+#define CLOCK_EVENT_MODE_MASK     \
+	(CLOCK_EVENT_ONESHOT_MODE | CLOCK_EVENT_PERIODIC_MODE)
+
 	uint32_t event_hz;
 	uint32_t irq_nr;
 	const char *name;

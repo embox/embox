@@ -74,8 +74,8 @@ int clock_source_set_oneshot(struct clock_source *cs) {
 	}
 
 	if (!cs->event_device->set_oneshot(cs)) {
-		cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
-		cs->flags |= CLOCK_SOURCE_ONESHOT_MODE;
+		cs->event_device->flags &= ~CLOCK_EVENT_MODE_MASK;
+		cs->event_device->flags |= CLOCK_EVENT_ONESHOT_MODE;
 		return 0;
 	}
 
@@ -93,8 +93,8 @@ int clock_source_set_periodic(struct clock_source *cs, uint32_t hz) {
 		return -1;
 	}
 
-	cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
-	cs->flags |= CLOCK_SOURCE_PERIODIC_MODE;
+	cs->event_device->flags &= ~CLOCK_EVENT_MODE_MASK;
+	cs->event_device->flags |= CLOCK_EVENT_PERIODIC_MODE;
 
 	cs->event_device->event_hz = hz;
 

@@ -35,7 +35,7 @@ static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data)
 
 	clock_tick_handler(data);
 
-	if (cs->flags & CLOCK_SOURCE_ONESHOT_MODE) {
+	if (cs->event_device->flags & CLOCK_EVENT_ONESHOT_MODE) {
 		/* Systick do not support one-shot mode, so we do
 		 * it by shutting Systick down. */
 		REG_STORE(SYSTICK_CTRL, 0);

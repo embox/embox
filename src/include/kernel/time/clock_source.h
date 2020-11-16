@@ -36,11 +36,6 @@ struct clock_source {
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
 	volatile clock_t jiffies; /**< count of jiffies since clock source started */
-	uint32_t flags; /**< periodical or not */
-#define CLOCK_SOURCE_ONESHOT_MODE  (1 << 0)
-#define CLOCK_SOURCE_PERIODIC_MODE (1 << 1)
-#define CLOCK_SOURCE_MODE_MASK     \
-	(CLOCK_SOURCE_ONESHOT_MODE | CLOCK_SOURCE_PERIODIC_MODE)
 
 	void *driver_priv_data;
 
