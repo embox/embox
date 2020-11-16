@@ -34,9 +34,7 @@ static module time {
 	source "time.c"
 	source "linux_timer.c"
 
-	depends embox.kernel.time.kernel_time
-	/* for clock_sys_ticks */
-	depends embox.kernel.time.jiffies
+	depends embox.kernel.time.timekeeper
 }
 
 static module times {
