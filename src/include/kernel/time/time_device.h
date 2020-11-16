@@ -35,6 +35,8 @@ struct time_event_device {
 #define CLOCK_EVENT_MODE_MASK     \
 	(CLOCK_EVENT_ONESHOT_MODE | CLOCK_EVENT_PERIODIC_MODE)
 
+	volatile clock_t jiffies; /**< count of jiffies since event device started */
+
 	uint32_t event_hz;
 	uint32_t irq_nr;
 	const char *name;

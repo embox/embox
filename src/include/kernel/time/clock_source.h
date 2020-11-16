@@ -35,7 +35,6 @@ struct clock_source {
 	const char *name;
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
-	volatile clock_t jiffies; /**< count of jiffies since clock source started */
 
 	void *driver_priv_data;
 

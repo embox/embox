@@ -34,10 +34,10 @@ void clock_tick_handler(void *dev_id) {
 void jiffies_update(int ticks) {
 	clock_t next_event;
 
-	cs_jiffies->jiffies += ticks;
+	cs_jiffies->event_device->jiffies += ticks;
 
 	if ((timer_strat_get_next_event(&next_event) == 0) &&
-			(cs_jiffies->jiffies >= next_event)) {
+			(cs_jiffies->event_device->jiffies >= next_event)) {
 		lthread_launch(&clock_handler_lt);
 	}
 }
@@ -48,16 +48,16 @@ void clock_handle_ticks(void *dev_id, unsigned ticks) {
 
 	assert(cs);
 
-	cs->jiffies += ticks;
+	cs->event_device->jiffies += ticks;
 
 	if ((timer_strat_get_next_event(&next_event) == 0) &&
-			(cs_jiffies->jiffies >= next_event)) {
+			(cs_jiffies->event_device->jiffies >= next_event)) {
 		lthread_launch(&clock_handler_lt);
 	}
 }
 
 static int clock_handler(struct lthread *self) {
-	timer_strat_sched(cs_jiffies->jiffies);
+	timer_strat_sched(cs_jiffies->event_device->jiffies);
 	return 0;
 }
 

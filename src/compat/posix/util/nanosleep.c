@@ -57,7 +57,7 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 		int tmp;
 
 		tmp = remaining_cycles + nanosleep_cs->counter_device->read(nanosleep_cs);
-		hw.jiffies = nanosleep_cs->jiffies + tmp / nanosleep_cs_load;
+		hw.jiffies = nanosleep_cs->event_device->jiffies + tmp / nanosleep_cs_load;
 		hw.cycles = tmp % nanosleep_cs_load;
 
 		cs_nanospin(nanosleep_cs, &hw);
@@ -67,8 +67,8 @@ int nanosleep(const struct timespec *rqtp, struct timespec *rmtp) {
 }
 
 static void cs_nanospin(struct clock_source *cs, struct hw_time *hw) {
-	while(cs->jiffies < hw->jiffies);
-	while((cs->jiffies == hw->jiffies) && (cs->counter_device->read(cs) <= hw->cycles));
+	while(cs->event_device->jiffies < hw->jiffies);
+	while((cs->event_device->jiffies == hw->jiffies) && (cs->counter_device->read(cs) <= hw->cycles));
 }
 
 static inline struct timespec get_timetosleep(const struct timespec *rqtp) {

@@ -21,7 +21,7 @@ clock_t clock_sys_ticks(void) {
 	if (!cs_jiffies) {
 		return 0;
 	}
-	return (clock_t)cs_jiffies->jiffies;
+	return (clock_t)cs_jiffies->event_device->jiffies;
 }
 
 clock_t ns2jiffies(time64_t ns) {
