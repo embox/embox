@@ -11,7 +11,6 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/irq.h>
 
-#include <embox/unit.h>
 #include <drivers/common/memory.h>
 #include <kernel/printk.h>
 
@@ -45,8 +44,6 @@
 #define TCTRL_32BIT     0x02
 #define TCTRL_ONESHOT   0x01
 
-EMBOX_UNIT_INIT(integratorcp_init);
-
 static int integratorcp_clock_setup(struct clock_source *cs) {
 	/* Setup counter value */
 	REG_STORE(TMR_CTRL, TCTRL_DISABLE);
@@ -74,23 +71,18 @@ static struct time_counter_device integratorcp_counter_device = {
 	.read = integratorcp_counter_read,
 };
 
-static struct clock_source integratorcp_cs = {
-	.name = "integratorcp_clk",
-	.event_device = &integratorcp_event_device,
-	.counter_device = &integratorcp_counter_device,
-};
-
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	clock_tick_handler(dev_id);
 	REG_STORE(TMR_CLR, 0x01); /* Clear timer interrupt */
 	return IRQ_HANDLED;
 }
 
-static int integratorcp_init(void) {
-	clock_source_register(&integratorcp_cs);
-
-	return irq_attach(CLOCK_IRQ, clock_handler, 0, &integratorcp_cs,
+static int integratorcp_cs_init(struct clock_source *cs) {
+	return irq_attach(CLOCK_IRQ, clock_handler, 0, cs,
 			"integratorcp_clk");
 }
+
+CLOCK_SOURCE_DEF(integratorcp, integratorcp_cs_init, NULL,
+	&integratorcp_event_device, &integratorcp_counter_device);
 
 PERIPH_MEMORY_DEFINE(integratorcp_clock, TIMER_BASE, 0x30);
