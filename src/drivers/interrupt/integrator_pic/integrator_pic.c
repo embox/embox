@@ -15,10 +15,7 @@
 #include <drivers/irqctrl.h>
 
 #include <kernel/irq.h>
-#include <embox/unit.h>
 #include <kernel/printk.h>
-
-EMBOX_UNIT_INIT(integrator_pic_init);
 
 #define ICU_BASE 0x14000000
 /* Registers for interrupt control unit - enable/flag/master */
@@ -85,5 +82,7 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	printk("swi!\n");
 }
+
+IRQCTRL_DEF(integrator_pic, integrator_pic_init);
 
 PERIPH_MEMORY_DEFINE(icu, ICU_BASE, 0x10);
