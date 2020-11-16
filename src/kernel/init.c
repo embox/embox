@@ -11,6 +11,7 @@
 #include <hal/arch.h>
 #include <hal/ipl.h>
 #include <drivers/diag.h>
+#include <drivers/irqctrl.h>
 #include <embox/runlevel.h>
 #include <kernel/printk.h>
 
@@ -44,6 +45,9 @@ static void kernel_init(void) {
 	ipl_init();
 
 	diag_init();
+
+	irqctrl_init();
+	printk("Interrupt controller: %s\n", irqctrl_get()->name);
 }
 
 /**
