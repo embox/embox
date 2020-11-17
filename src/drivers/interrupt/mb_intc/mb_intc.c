@@ -19,8 +19,6 @@
 
 #include <module/embox/driver/interrupt/mb_intc.h>
 
-EMBOX_UNIT_INIT(unit_init);
-
 #define CONFIG_XILINX_INTC_BASEADDR OPTION_GET(NUMBER,mbintc_base)
 
 /**
@@ -46,7 +44,7 @@ struct irqc_regs {
 static volatile struct irqc_regs *irqc =
 		(struct irqc_regs *) CONFIG_XILINX_INTC_BASEADDR;
 
-static int unit_init(void) {
+static int mb_intc_init(void) {
 	irqc->mer = 0;
 	irqc->ier = 0;
 	irqc->iar = ~(0x0);
@@ -85,3 +83,5 @@ unsigned int irqctrl_get_irq_num(void) {
 }
 
 PERIPH_MEMORY_DEFINE(mb_intc, CONFIG_XILINX_INTC_BASEADDR, sizeof(struct irqc_regs));
+
+IRQCTRL_DEF(mb_intc, mb_intc_init);
