@@ -1,0 +1,7 @@
+package embox.driver.interrupt
+
+module xen extends irqctrl_api {
+	source "xen.h"
+	source "xen.c"
+	depends embox.arch.xen.traps
+}
