@@ -8,8 +8,11 @@
  */
 #include <assert.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #include <asm/mipsregs.h>
+
+#include <drivers/irqctrl.h>
 
 void irqctrl_enable(unsigned int interrupt_nr) {
 	uint32_t c0;
@@ -26,3 +29,6 @@ void irqctrl_disable(unsigned int interrupt_nr) {
 	c0 &= ~(1 << (interrupt_nr + ST0_IRQ_MASK_OFFSET));
 	mips_write_c0_status(c0);
 }
+
+IRQCTRL_DEF(mips_intc, NULL);
+
