@@ -6,6 +6,8 @@
  * @date    26.08.2013
  */
 
+#include <stddef.h>
+
 #include <hal/reg.h>
 
 #include <drivers/irqctrl.h>
@@ -45,4 +47,4 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	REG_ORIN(TACTL, TACTL_IFG);
 }
 
-
+IRQCTRL_DEF(msp430_intc, NULL);
