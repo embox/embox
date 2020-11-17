@@ -15,8 +15,6 @@
 
 #include <drivers/irqctrl.h>
 
-EMBOX_UNIT_INIT(xen_int_init);
-
 static struct {
 	int port1;
 	int port2;
@@ -54,7 +52,7 @@ static int init_event_mask(void) {
 	return 0;
 }
 
-static int xen_int_init(void) {
+static int xen_intc_init(void) {
 	int res;
 
 	if ((res = init_event_mask())) {
@@ -108,3 +106,5 @@ void irqctrl_force(unsigned int irq) {
 void irqctrl_eoi(unsigned int irq) {
 	bitmap_clear_bit(xen_shared_info.evtchn_pending, irq);
 }
+
+IRQCTRL_DEF(xen_intc, xen_intc_init);
