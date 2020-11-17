@@ -27,7 +27,7 @@ module smac extends api {
 	depends embox.security.seculog
 	depends embox.security.seculog_file
 
-	depends embox.kernel.time.timekeeper
+	depends embox.kernel.time.kernel_time
 }
 
 @DefaultImpl(smac_user_static_db)

@@ -19,6 +19,14 @@
 
 static DLIST_DEFINE(clock_source_list);
 
+__attribute__((weak)) int monotonic_clock_select(void) {
+	return 0;
+}
+
+__attribute__((weak)) int realtime_clock_select(void) {
+	return 0;
+}
+
 int clock_source_register(struct clock_source *cs) {
 	struct clock_source *tmp;
 

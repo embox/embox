@@ -13,6 +13,5 @@ module sdram {
 
 	depends embox.kernel.time.jiffies
 	depends embox.kernel.sched.sched
-	depends embox.kernel.time.timekeeper
 	depends embox.driver.interrupt.cortexm_nvic
 }

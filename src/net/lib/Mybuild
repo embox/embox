@@ -55,7 +55,7 @@ module ipv6 {
 module ntp {
 	source "ntp.c"
 
-	depends embox.kernel.time.timekeeper
+	depends embox.kernel.time.kernel_time
 }
 
 module pop3 {

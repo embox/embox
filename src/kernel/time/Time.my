@@ -8,13 +8,6 @@ module clock_source {
 	source "clock_tick.c"
 }
 
-module kernel_time {
-	source "ktime.c"
-
-	@NoRuntime depends embox.kernel.timer.itimer
-	@NoRuntime depends timeval
-}
-
 module jiffies {
 	/* "cs_name" is one of registered clock sources. */
 	option string cs_name = ""
@@ -29,8 +22,10 @@ static module timeval {
 	source "timeval.c"
 }
 
-module timekeeper {
+module kernel_time {
+	source "ktime.c"
 	source "timekeeping.c"
 
-	depends kernel_time
+	@NoRuntime depends embox.kernel.timer.itimer
+	@NoRuntime depends timeval
 }
