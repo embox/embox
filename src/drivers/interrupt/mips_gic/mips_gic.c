@@ -21,7 +21,7 @@
 EMBOX_UNIT_INIT(mips_gic_init);
 
 
-static int mips_gic_init(void) {
+static int mips_gic_ctrl_init(void) {
 	uint32_t c0;
 	int i;
 
@@ -30,7 +30,6 @@ static int mips_gic_init(void) {
 	mips_write_c0_status(c0);
 
 	mips32_gcb_set_register(GCR_GIC_BASE, MIPS_GIC_BASE | GIC_EN);
-	log_info("mips_gic revision %x", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
 
 	for (i = 0; i < __IRQCTRL_IRQS_TOTAL; i++) {
 		if (0 == (i & 0x1F)) {
@@ -41,6 +40,11 @@ static int mips_gic_init(void) {
 		REG32_STORE(MIPS_GIC_BASE + GIC_SH_MAP_CORE31_0(i), 0x1);
 		REG32_STORE(MIPS_GIC_BASE + GIC_SH_MAP_PIN(i), MIPS_GIC_INTERRUPT_PIN | 1 << 31);
 	}
+	return 0;
+}
+
+static int mips_gic_init(void) {
+	log_info("mips_gic revision %x", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
 	return 0;
 }
 
@@ -87,3 +91,5 @@ void irqctrl_disable(unsigned int interrupt_nr) {
 
 	REG32_STORE(MIPS_GIC_BASE + GIC_SH_RMASK(reg << 5), mask);
 }
+
+IRQCTRL_DEF(mips_gic, mips_gic_ctrl_init);
