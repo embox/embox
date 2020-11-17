@@ -11,6 +11,7 @@ module sys_timer {
 	@NoRuntime depends embox.kernel.timer.strategy.api
 	/*uses ms2jiffies */
 	@NoRuntime depends embox.kernel.time.jiffies
+	depends embox.kernel.sched.sched
 }
 
 module sleep extends sleep_api {
@@ -19,14 +20,12 @@ module sleep extends sleep_api {
 	depends sys_timer
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sched_wait
-	depends embox.kernel.sched.sched
 }
 
 module sleep_nosched extends sleep_api {
 	source "ksleep_nosched.c"
 
 	depends sys_timer
-	depends embox.kernel.sched.sched
 }
 
 module itimer {
