@@ -70,7 +70,7 @@ EMBOX_UNIT_INIT(gic_init);
 
 #define SPURIOUS_IRQ          0x3FF
 
-static int gic_init(void) {
+static int gic_ctrl_init(void) {
 	uint32_t tmp = REG32_LOAD(GICD_CTLR);
 	uint64_t t64;
 
@@ -81,6 +81,10 @@ static int gic_init(void) {
 	icc_igrpen0_el1_write(0x1);
 	icc_igrpen1_el1_write(0x3);
 
+	return 0;
+}
+
+static int gic_init(void) {
 	/* Set priority filter level */
 	icc_pmr_el1_write(0xFF);
 
@@ -174,3 +178,5 @@ void swi_handle(void) {
 }
 
 PERIPH_MEMORY_DEFINE(gic, GIC_DISTRIBUTOR_BASE, 0x2020);
+
+IRQCTRL_DEF(gicv3, gicv3_cntl_init);
