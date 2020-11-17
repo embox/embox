@@ -6,7 +6,6 @@
  * @author Nikolay Korotky
  */
 
-#include <embox/unit.h>
 #include <framework/mod/options.h>
 
 #include <errno.h>
@@ -21,6 +20,7 @@
 #include <util/array.h>
 #include <drivers/clock/pit/regs.h>
 
+
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ_NR             OPTION_GET(NUMBER,irq_num)
 
@@ -28,13 +28,6 @@
 
 #define PIT_LOAD ((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ)
 static_assert(PIT_LOAD < 0x10000);
-
-static int pit_clock_setup(struct clock_source *cs);
-static int pit_clock_init(void);
-
-static struct clock_source pit_clock_source;
-static struct time_event_device pit_event_device;
-static struct time_counter_device pit_counter_device;
 
 /**
  * The PIT chip uses the following I/O ports:
@@ -104,39 +97,8 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
         return IRQ_HANDLED;
 }
 
-static struct time_event_device pit_event_device = {
-	.set_periodic = pit_clock_setup,
-	.irq_nr = IRQ_NR,
-};
-
-static struct time_counter_device pit_counter_device = {
-	.read = i8253_read,
-	.cycle_hz = INPUT_CLOCK,
-};
-
-static struct clock_source pit_clock_source = {
-	.name = "pit",
-	.event_device = &pit_event_device,
-	.counter_device = &pit_counter_device,
-};
-
-EMBOX_UNIT_INIT(pit_clock_init);
-
-static int pit_clock_init(void) {
-	pit_clock_setup(NULL);
-	clock_source_register(&pit_clock_source);
-
-	if (ENOERR != irq_attach(IRQ_NR, clock_handler, 0, &pit_clock_source, "PIT")) {
-		panic("pit timer irq_attach failed");
-	}
-
-	return ENOERR;
-}
-
 static int pit_clock_setup(struct clock_source *cs) {
 	uint16_t divisor = PIT_LOAD;
-
-	pit_clock_source.flags = 1;
 
 	/* Propose switch by all modes in future */
 	/* Set control byte */
@@ -148,3 +110,27 @@ static int pit_clock_setup(struct clock_source *cs) {
 
 	return ENOERR;
 }
+
+static struct time_event_device pit_event_device = {
+	.set_periodic = pit_clock_setup,
+	.irq_nr = IRQ_NR,
+};
+
+static struct time_counter_device pit_counter_device = {
+	.read = i8253_read,
+	.cycle_hz = INPUT_CLOCK,
+	.mask = 0xffff,
+};
+
+static int pit_clock_init(struct clock_source *cs) {
+	pit_clock_setup(NULL);
+
+	if (ENOERR != irq_attach(IRQ_NR, clock_handler, 0, cs, "PIT")) {
+		panic("pit timer irq_attach failed");
+	}
+
+	return ENOERR;
+}
+
+CLOCK_SOURCE_DEF(pit, pit_clock_init, NULL,
+	&pit_event_device, &pit_counter_device);
