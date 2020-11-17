@@ -11,11 +11,6 @@ module at91_aic extends irqctrl_api {
 	depends embox.kernel.critical
 }
 
-module msp430sfr extends irqctrl_api {
-	source "msp430sfr.c",
-	       "msp430sfr.h"
-}
-
 module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
 	source "no_interrupts.c"

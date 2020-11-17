@@ -1,0 +1,5 @@
+package embox.driver.interrupt
+
+module msp430sfr extends irqctrl_api {
+	source "msp430sfr.c", "msp430sfr.h"
+}
