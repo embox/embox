@@ -21,10 +21,6 @@ module bpi_intc extends irqctrl_api {
 	source "bpi_intc.c", "bpi_intc.h"
 }
 
-module ppc_intc extends irqctrl_api {
-	source "ppc_intc.c", "ppc_intc.h"
-}
-
 module usermode extends irqctrl_api {
 	source "usermode.c",
 	       "usermode.h"
