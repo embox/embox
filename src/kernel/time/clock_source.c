@@ -69,7 +69,7 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	uint64_t ns = 0;
 
 	ed = cs->event_device;
-	if (ed) {
+	if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
 		ns += ((uint64_t) ed->jiffies * NSEC_PER_SEC) / ed->event_hz;
 	}
 
