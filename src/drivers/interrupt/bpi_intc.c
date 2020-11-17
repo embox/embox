@@ -17,8 +17,6 @@
 #include <embox/unit.h>
 #include <kernel/printk.h>
 
-EMBOX_UNIT_INIT(bpi_intc_init);
-
 /** On BananaPi SGI source numbers lie between 0 and 15 */
 #define SGI_MAX_SRC         15
 
@@ -47,7 +45,7 @@ EMBOX_UNIT_INIT(bpi_intc_init);
 /** CPUTargetList[0] corresponds to CPU interface 0 */
 #define CPU_TARGET_LIST_0 (1 << 16) 
 
-void software_init_hook(void) {
+static int bpi_intc_init(void) {
 	int i;
 
 	REG_STORE(GICD_CTRL, 0);
@@ -71,9 +69,7 @@ void software_init_hook(void) {
 	REG_STORE(GICC_PMR, 0xf0);
 
 	REG_STORE(GICC_CTRL, 0x1);
-}
 
-static int bpi_intc_init(void) {
 	return 0;
 }
 
@@ -151,3 +147,5 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	printk("swi!\n");
 }
+
+IRQCTRL_DEF(bpi_intc, bpi_intc_init);
