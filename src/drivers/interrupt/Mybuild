@@ -11,10 +11,6 @@ module at91_aic extends irqctrl_api {
 	depends embox.kernel.critical
 }
 
-module i8259 extends irqctrl_api {
-	source "i8259.c", "i8259.h"
-}
-
 module raspi extends irqctrl_api {
 	source "raspi.c", "raspi.h"
 
