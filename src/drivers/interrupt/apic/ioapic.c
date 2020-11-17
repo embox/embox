@@ -19,7 +19,7 @@
 #include <module/embox/driver/interrupt/lapic.h>
 
 #ifdef LAPIC_REGS_X86_H_
-#include "../i8259_regs.h"
+#include "drivers/i8259_regs.h"
 #endif
 
 #define IOAPIC_ID                 0x0
@@ -136,3 +136,5 @@ void irqctrl_eoi(unsigned int irq) {
 	//TODO: irq >= 16
 	lapic_send_eoi();
 }
+
+IRQCTRL_DEF(iopic, NULL);
