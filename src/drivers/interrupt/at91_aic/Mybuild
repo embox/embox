@@ -1,0 +1,10 @@
+package embox.driver.interrupt
+
+module at91_aic extends irqctrl_api {
+	/* FIXME:
+	 * 1.it use irq_def_handler (called from at91_aic.c)
+	 */
+	source "at91_aic.c", "at91_aic.h"
+
+	depends embox.kernel.critical
+}

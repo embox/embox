@@ -2,15 +2,6 @@ package embox.driver.interrupt
 
 abstract module irqctrl_api { }
 
-module at91_aic extends irqctrl_api {
-	/* FIXME:
-	 * 1.it use irq_def_handler (called from at91_aic.c)
-	 */
-	source "at91_aic.c", "at91_aic.h"
-
-	depends embox.kernel.critical
-}
-
 module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
 	source "no_interrupts.c"
