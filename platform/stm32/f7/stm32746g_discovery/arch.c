@@ -86,6 +86,8 @@ void arch_idle(void) {
 	if (timer_strat_get_next_event(&next_event_ticks) != 0) {
 		/* Sleep as long as possible */
 		next_event_ticks = UINT32_MAX;
+	} else {
+		next_event_ticks = next_event_ticks - clock_sys_ticks();
 	}
 
 	next_event_cycles = clock_source_ticks2cycles(cs, next_event_ticks);
