@@ -16,3 +16,12 @@ module stm32_cube_tim2 {
 
 	depends stm32_cube_tim_base
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_cube_tim3 {
+	option number irq = 29
+
+	source "stm32_cube_tim3.c"
+
+	depends stm32_cube_tim_base
+}
