@@ -20,8 +20,6 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(ti8168_clk_init);
-
 #define TI8168_CLKIN_HZ      27000000
 
 #define CM_TIMER1_CLKSEL     0x48180390
@@ -96,7 +94,7 @@ static struct time_event_device ti8168_clk_event = {
 };
 
 /* TODO */
-cycle_t ti8168_this_read(struct clock_source *cs) {
+static cycle_t ti8168_this_read(struct clock_source *cs) {
 	return 0;
 }
 
@@ -105,18 +103,13 @@ static struct time_counter_device ti8168_counter_device = {
 	.cycle_hz = TI8168_CLKIN_HZ,
 };
 
-struct clock_source ti8168_clk_clock_source = {
-	.name = "ti8168",
-	.event_device = &ti8168_clk_event,
-	.counter_device = &ti8168_counter_device,
-};
-
-static int ti8168_clk_init(void) {
-
-	clock_source_register(&ti8168_clk_clock_source);
-	return irq_attach(ti8168_clk_event.irq_nr, ti8168_clock_handler, 0, &ti8168_clk_clock_source, "omap3_clk");
+static int dm816x_timer_init(struct clock_source *cs) {
+	return irq_attach(ti8168_clk_event.irq_nr, ti8168_clock_handler, 0, cs, "omap3_clk");
 }
 
 PERIPH_MEMORY_DEFINE(dm816x_timer, (uintptr_t) TI8168_GPTIMER1_BASE, 0x1000);
 
 PERIPH_MEMORY_DEFINE(dm816x_timer_cm, 0x48180000, 0x1000);
+
+CLOCK_SOURCE_DEF(dm816x_timer, dm816x_timer_init, NULL,
+	&ti8168_clk_event, &ti8168_counter_device);
