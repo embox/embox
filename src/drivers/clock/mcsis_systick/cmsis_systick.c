@@ -13,6 +13,7 @@
 #include <arm/exception.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
+#include <hal/reg.h>
 
 #include <embox/unit.h>
 
@@ -22,14 +23,19 @@
 
 #include <module/embox/arch/arm/cmsis.h>
 
-static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	clock_tick_handler(data);
-	return IRQ_HANDLED;
-}
+	struct clock_source *cs = data;
 
-static int this_init(void) {
-	return clock_source_register(&this_clock_source);
+	clock_tick_handler(data);
+
+	if (cs->event_device->flags & CLOCK_EVENT_ONESHOT_MODE) {
+		/* Systick do not support one-shot mode, so we do
+		 * it by shutting Systick down. */
+		REG_STORE(SysTick->CTRL, 0);
+		REG_STORE(SysTick->VAL, 0);
+	}
+
+	return IRQ_HANDLED;
 }
 
 static int this_set_periodic(struct clock_source *cs) {
@@ -38,7 +44,7 @@ static int this_set_periodic(struct clock_source *cs) {
 	return 0 == SysTick_Config(reload) ? 0 : -EINVAL;
 }
 
-static struct time_event_device this_event = {
+static struct time_event_device cmsis_systick_event = {
 	.set_periodic = this_set_periodic,
 	.irq_nr = SYSTICK_IRQ,
 };
@@ -54,12 +60,7 @@ static struct time_counter_device this_counter = {
 };
 #endif
 
-static struct clock_source this_clock_source = {
-	.name = "system_tick",
-	.event_device = &this_event,
-	/*.counter_device = &this_counter,*/
-};
+CLOCK_SOURCE_DEF(cmsis_systick, NULL, NULL,
+	&cmsis_systick_event, NULL);
 
-EMBOX_UNIT_INIT(this_init);
-
-STATIC_EXC_ATTACH(SYSTICK_IRQ, clock_handler, &this_clock_source);
+STATIC_EXC_ATTACH(SYSTICK_IRQ, clock_handler,  &CLOCK_SOURCE_NAME(cmsis_systick));
