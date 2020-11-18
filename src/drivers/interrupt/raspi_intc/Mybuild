@@ -1,0 +1,7 @@
+package embox.driver.interrupt
+
+module raspi extends irqctrl_api {
+	source "raspi.c", "raspi.h"
+
+	depends embox.util.Bit
+}

@@ -53,7 +53,7 @@ EMBOX_UNIT_INIT(omap3_intc_init);
 #define INTC_CONTROL_NEWFIQARG (1 << 1)
 #define INTC_SIR_IRQ_ACTIVE_MASK 0x7f
 
-void software_init_hook(void) {
+static int omap3_intc_ctrl_init(void) {
 	REG_STORE(OMAP35X_INTC_SYSCONFIG, INTC_SYSCONFIG_RESET);
 
 	REG_STORE(OMAP35X_INTC_IDLE, 0x0);
@@ -69,6 +69,8 @@ void software_init_hook(void) {
 	REG_STORE(OMAP35X_INTC_ISR_SET(0), 0);
 	REG_STORE(OMAP35X_INTC_ISR_SET(1), 0);
 	REG_STORE(OMAP35X_INTC_ISR_SET(2), 0);
+
+	return 0;
 }
 
 
@@ -128,3 +130,5 @@ void swi_handle(void) {
 }
 
 PERIPH_MEMORY_DEFINE(omap3_intc, OMAP35X_INTC_BASE, 0x1000);
+
+IRQCTRL_DEF(omap3_intc, omap3_intc_ctrl_init);

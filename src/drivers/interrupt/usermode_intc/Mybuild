@@ -1,0 +1,5 @@
+package embox.driver.interrupt
+
+module usermode extends irqctrl_api {
+	source "usermode.c", "usermode.h"
+}

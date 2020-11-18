@@ -22,12 +22,12 @@
 
 #include "i8259_regs.h"
 
-EMBOX_UNIT_INIT(unit_init);
+EMBOX_UNIT_INIT(pic_init);
 
 /**
  * Initialize the PIC
  */
-static int unit_init(void) {
+static int pic_init(void) {
 	static int inited = 0;
 	if (1 == inited) {
 		return 0;
@@ -58,7 +58,7 @@ static int unit_init(void) {
 }
 
 void apic_init(void) {
-	unit_init();
+	pic_init();
 }
 
 void irqctrl_enable(unsigned int irq) {
@@ -98,3 +98,5 @@ void irqctrl_eoi(unsigned int irq) {
 	/* Send reset signal to master. (As well as to slave, if necessary). */
 	out8(NON_SPEC_EOI, PIC1_COMMAND);
 }
+
+IRQCTRL_DEF(pic, pic_init);

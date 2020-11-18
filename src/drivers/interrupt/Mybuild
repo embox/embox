@@ -2,50 +2,7 @@ package embox.driver.interrupt
 
 abstract module irqctrl_api { }
 
-module at91_aic extends irqctrl_api {
-	/* FIXME:
-	 * 1.it use irq_def_handler (called from at91_aic.c)
-	 */
-	source "at91_aic.c", "at91_aic.h"
-
-	depends embox.kernel.critical
-}
-
-module i8259 extends irqctrl_api {
-	source "i8259.c", "i8259.h"
-}
-
-module raspi extends irqctrl_api {
-	source "raspi.c", "raspi.h"
-
-	depends embox.util.Bit
-}
-
-module bpi_intc extends irqctrl_api {
-	source "bpi_intc.c", "bpi_intc.h"
-}
-
-module ppc_intc extends irqctrl_api {
-	source "ppc_intc.c", "ppc_intc.h"
-}
-
-module usermode extends irqctrl_api {
-	source "usermode.c",
-	       "usermode.h"
-}
-
-module msp430sfr extends irqctrl_api {
-	source "msp430sfr.c",
-	       "msp430sfr.h"
-}
-
 module no_interrupts extends irqctrl_api {
 	source "no_interrupts.h"
 	source "no_interrupts.c"
-}
-
-module xen extends irqctrl_api {
-	source "xen.h"
-	source "xen.c"
-	depends embox.arch.xen.traps
 }

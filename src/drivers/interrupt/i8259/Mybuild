@@ -1,0 +1,10 @@
+package embox.driver.interrupt
+
+module i8259_headers {
+	@IncludeExport(path="drivers")
+	source "i8259_regs.h"
+}
+
+module i8259 extends irqctrl_api {
+	source "i8259.c", "i8259.h"
+}

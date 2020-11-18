@@ -74,6 +74,8 @@ static int nvic_init(void) {
 }
 #endif /* STATIC_IRQ_EXTENTION */
 
+IRQCTRL_DEF(cortexm_nvic, nvic_init);
+
 void irqctrl_enable(unsigned int nr) {
 	REG_STORE(NVIC_ENABLE_BASE + 4 * (nr / 32), 1 << (nr % 32));
 }

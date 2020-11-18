@@ -32,3 +32,8 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	NVIC_SetPendingIRQ(interrupt_nr);
 }
 
+static int cmsis_nvic_init(void) {
+	return 0;
+}
+
+IRQCTRL_DEF(cortexm_nvic, cmsis_nvic_init);

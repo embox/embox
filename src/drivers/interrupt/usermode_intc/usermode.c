@@ -7,6 +7,7 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 #include <kernel/host.h>
 #include <kernel/critical.h>
 #include <kernel/irq.h>
@@ -41,3 +42,5 @@ void irq_entry(int irq_nr) {
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
 }
+
+IRQCTRL_DEF(usermode_intc, NULL);

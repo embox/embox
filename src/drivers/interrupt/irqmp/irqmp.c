@@ -12,14 +12,13 @@
 #include <stdint.h>
 #include <sys/mman.h>
 
+#include <drivers/common/memory.h>
 #include <mem/page.h>
 #include <hal/reg.h>
 #include <drivers/irqctrl.h>
 #include <drivers/amba_pnp.h>
 
 #include <embox/unit.h>
-
-EMBOX_UNIT_INIT(unit_init);
 
 struct irqmp_regs {
 	/* 0x00 */uint32_t level;
@@ -57,7 +56,7 @@ void irqctrl_force(unsigned int irq) {
 	REG_ORIN(&dev_regs->force, 1 << irq);
 }
 
-static int unit_init(void) {
+static int irqmp_init(void) {
 	int error;
 
 	assert(NULL == dev_regs);
@@ -75,6 +74,8 @@ static int unit_init(void) {
 	return 0;
 }
 
+#ifdef DRIVER_AMBAPP
+
 static int irqctrl_memory_map(uint32_t base, size_t len) {
 	void *ptr;
 
@@ -90,7 +91,6 @@ static int irqctrl_memory_map(uint32_t base, size_t len) {
 	return 0;
 }
 
-#ifdef DRIVER_AMBAPP
 static int dev_regs_init(void) {
 	amba_dev_t amba_dev;
 	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
@@ -104,8 +104,14 @@ static int dev_regs_init(void) {
 #elif OPTION_DEFINED(NUMBER,irqmp_base)
 static int dev_regs_init(void) {
 	dev_regs = (volatile struct irqmp_regs *) OPTION_GET(NUMBER,irqmp_base);
+	return 0;
+#if 0
+	/* TODO We can't use memory_map in this stage */
 	return irqctrl_memory_map((uint32_t) dev_regs, 0x100);
+#endif
 }
+PERIPH_MEMORY_DEFINE(irqmp, OPTION_GET(NUMBER, irqmp_base), 0x100);
+IRQCTRL_DEF(irqmp, irqmp_init);
 #else
 # error "Either DRIVER_AMBAPP or irqmp_base option must be defined"
 #endif /* DRIVER_AMBAPP */

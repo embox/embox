@@ -19,8 +19,6 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(plic_init);
-
 #define PLIC_ADDR                 OPTION_GET(NUMBER, base_addr)
 
 #define IPL_ADDR(num)            (PLIC_ADDR + (num * 4))
@@ -79,3 +77,5 @@ void irqctrl_disable(unsigned int interrupt_nr) {
 void irqctrl_eoi(unsigned int irq) {
 	REG32_STORE(CLAIM_COMPLETE_ADDR, irq);
 }
+
+IRQCTRL_DEF(riscv_plic, plic_init);

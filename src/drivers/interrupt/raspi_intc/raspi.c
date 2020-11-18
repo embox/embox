@@ -27,8 +27,6 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(this_init);
-
 #define BCM2835_INTERRUPT_BASE 0x2000B200
 
 #define BANK_CAPACITY 32
@@ -73,7 +71,7 @@ static volatile struct raspi_interrupt_regs * const regs =
         (volatile struct raspi_interrupt_regs*)((int)BCM2835_INTERRUPT_BASE);
 
 
-static int this_init(void) {
+static int raspi_intc_init(void) {
 #if 0
 	/* Map one vmem page to handle this device if mmu is used */
 	mmap_device_memory(
@@ -149,4 +147,6 @@ void swi_handle(void) {
 	panic(__func__);
 }
 
-PERIPH_MEMORY_DEFINE(raspi_systick, BCM2835_INTERRUPT_BASE, sizeof(struct raspi_interrupt_regs));
+PERIPH_MEMORY_DEFINE(raspi_intc, BCM2835_INTERRUPT_BASE, sizeof(struct raspi_interrupt_regs));
+
+IRQCTRL_DEF(raspi_intc, raspi_intc_init);

@@ -77,7 +77,7 @@ EMBOX_UNIT_INIT(gic_init);
 
 #define SPURIOUS_IRQ          0x3FF
 
-static int gic_init(void) {
+static int gic_cntl_init(void) {
 	uint32_t tmp = REG32_LOAD(GICD_CTLR);
 	REG32_STORE(GICD_CTLR, tmp | 0x1);
 
@@ -86,6 +86,12 @@ static int gic_init(void) {
 
 	/* Set priority filter level */
 	REG32_STORE(GICC_PMR, 0xFF);
+
+	return 0;
+}
+
+static int gic_init(void) {
+	uint32_t tmp;
 
 	tmp = REG32_LOAD(GICD_TYPER);
 	printk("\n"
@@ -177,3 +183,5 @@ void swi_handle(void) {
 
 PERIPH_MEMORY_DEFINE(gic_cpu, GIC_CPU_BASE, 0x2020);
 PERIPH_MEMORY_DEFINE(gic_distributor, GIC_DISTRIBUTOR_BASE, 0x1000);
+
+IRQCTRL_DEF(gic, gic_cntl_init);

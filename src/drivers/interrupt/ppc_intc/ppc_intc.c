@@ -6,9 +6,8 @@
  * @author Ilia Vaprol
  */
 
+#include <drivers/irqctrl.h>
 #include <embox/unit.h>
-
-EMBOX_UNIT_INIT(ppc_intc_init);
 
 static int ppc_intc_init(void) {
 	return 0;
@@ -25,3 +24,5 @@ void irqctrl_clear(unsigned int interrupt_nr) {
 
 void irqctrl_force(unsigned int interrupt_nr) {
 }
+
+IRQCTRL_DEF(ppc_intc, ppc_intc_init);

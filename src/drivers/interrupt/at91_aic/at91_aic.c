@@ -20,13 +20,11 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(unit_init);
-
 static void irq_def_handler(void) {
 	panic(__func__);
 }
 
-static int unit_init(void) {
+static int at91_intc_init(void) {
 
 	REG_STORE(AT91C_PMC_PCER, 1 << AT91C_ID_IRQ0 |
 			1 << AT91C_ID_IRQ1 | 1 << AT91C_ID_FIQ);
@@ -97,3 +95,5 @@ void interrupt_handle(void) {
 void swi_handle(void) {
 	panic(__func__);
 }
+
+IRQCTRL_DEF(at91_intc, at91_intc_init);

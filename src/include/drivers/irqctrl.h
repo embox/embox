@@ -72,4 +72,31 @@ extern void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio);
  */
 extern unsigned int irqctrl_get_prio(unsigned int interrupt_nr);
 
+struct irqctrl {
+	const char *name;
+	int (*init)(void);
+};
+
+#define IRQCTRL_NAME \
+	__global_irqctrl
+
+#define IRQCTRL_DEF(_name, _init) \
+	struct irqctrl IRQCTRL_NAME = { \
+		.name = #_name, \
+		.init = _init, \
+	};
+
+static inline int irqctrl_init(void) {
+	extern struct irqctrl IRQCTRL_NAME;
+	if (IRQCTRL_NAME.init) {
+		return IRQCTRL_NAME.init();
+	}
+	return 0;
+}
+
+static inline struct irqctrl *irqctrl_get(void) {
+	extern struct irqctrl IRQCTRL_NAME;
+	return &IRQCTRL_NAME;
+}
+
 #endif /* DRIVER_IRQCTRL_H_ */
