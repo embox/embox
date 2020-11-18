@@ -37,30 +37,21 @@
 #define PTIMER_PRESCALER_SHIFT    8
 
 #define PERIPHCLK       (SYS_CLOCK / 2)
-#define TARGET_FREQ		OPTION_GET(NUMBER, freq)
-#define LOAD_VALUE		PERIPHCLK / (TARGET_FREQ - 1)
-//#define LOAD_VALUE 0x10000000
+#define TARGET_FREQ     OPTION_GET(NUMBER, freq)
+#define LOAD_VALUE      PERIPHCLK / (TARGET_FREQ - 1)
 
-static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	//static int cnt = 0;
 
 	clock_tick_handler(data);
 	REG_STORE(PTIMER_IS, 0x1);
 
-	//log_debug("irq clock %d", cnt++);
-
 	return IRQ_HANDLED;
 }
 
-static int this_init(void) {
+static int cortexa9_timer_init(struct clock_source *cs) {
 	REG_STORE(PTIMER_CONTROL, 0);
-	clock_source_register(&this_clock_source);
-	return irq_attach(PTIMER_IRQ,
-	                  clock_handler,
-	                  0,
-	                  &this_clock_source,
-	                  "Cortex A9 systick timer");
+
+	return irq_attach(PTIMER_IRQ, clock_handler, 0, cs, "Cortex A9 systick timer");
 }
 
 static int this_set_periodic(struct clock_source *cs) {
@@ -83,24 +74,19 @@ static cycle_t this_read(struct clock_source *cs) {
 	return LOAD_VALUE - REG_LOAD(PTIMER_COUNTER);
 }
 
-static struct time_event_device this_event = {
+static struct time_event_device cortexa9_timer_event = {
 	.set_periodic = this_set_periodic,
 	.irq_nr = PTIMER_IRQ,
 };
 
-static struct time_counter_device this_counter = {
+static struct time_counter_device cortexa9_timer_counter = {
 	.read = this_read,
 	.cycle_hz = 1000,
 };
 
-static struct clock_source this_clock_source = {
-	.name = "system_tick",
-	.event_device = &this_event,
-	.counter_device = &this_counter,
-};
-
-EMBOX_UNIT_INIT(this_init);
-
 STATIC_IRQ_ATTACH(PTIMER_IRQ, clock_handler, &this_clock_source);
 
 PERIPH_MEMORY_DEFINE(cortexa9_timer, PTIMER_BASE_ADDR, 0x10);
+
+CLOCK_SOURCE_DEF(cortexa9_timer, cortexa9_timer_init, NULL,
+	&cortexa9_timer_event, &cortexa9_timer_counter);
