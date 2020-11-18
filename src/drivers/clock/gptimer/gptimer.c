@@ -94,7 +94,6 @@ static volatile struct gptimer_regs *dev_regs;
 static int dev_regs_init(unsigned int *irq_nr);
 
 static struct time_event_device gptimer_ed;
-static struct clock_source gptimer_cs;
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	// XXX clock_hander is called from arch part
@@ -102,7 +101,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int gptimer_init(void) {
+static int gptimer_init(struct clock_source *cs) {
 	uint32_t cfg_reg;
 	unsigned int irq_nr;
 	int i;
@@ -126,11 +125,8 @@ static int gptimer_init(void) {
 	REG_STORE(&dev_regs->scaler_reload, SCALER_RELOAD);
 	REG_STORE(&dev_regs->scaler_counter, 0);
 
-	clock_source_register(&gptimer_cs);
-
-	return irq_attach(irq_nr, clock_handler, 0, &gptimer_cs, "gptimer");
+	return irq_attach(irq_nr, clock_handler, 0, cs, "gptimer");
 }
-
 
 static int gptimer_set_periodic(struct clock_source *cs);
 
@@ -142,25 +138,17 @@ static struct time_event_device gptimer_ed = {
 	.set_periodic = gptimer_set_periodic ,
 };
 
+static struct time_counter_device gptimer_cd = {
+	.read = gptimer_read,
+	.cycle_hz = 1000000,
+};
+
 static int gptimer_set_periodic(struct clock_source *cs) {
 	REG_STORE(&dev_regs->timer[0].reload, TIMER0_RELOAD);
 	REG_STORE(&dev_regs->timer[0].counter, 0);
 	REG_STORE(&dev_regs->timer[0].ctrl, CTRL_INITIAL);
 	return 0;
 }
-
-static struct time_counter_device gptimer_cd = {
-	.read = gptimer_read,
-	.cycle_hz = 1000000,
-};
-
-static struct clock_source gptimer_cs = {
-	.name = "gptimer",
-	.event_device = &gptimer_ed,
-	.counter_device = &gptimer_cd,
-};
-
-EMBOX_UNIT_INIT(gptimer_init);
 
 #ifdef DRIVER_AMBAPP
 static int dev_regs_init(unsigned int *irq_nr) {
@@ -187,3 +175,6 @@ static int dev_regs_init(unsigned int *irq_nr) {
 #else
 # error "Either DRIVER_AMBAPP or gptimer_base must be defined"
 #endif /* DRIVER_AMBAPP */
+
+CLOCK_SOURCE_DEF(gptimer, gptimer_init, NULL,
+	&gptimer_ed, &gptimer_cd);
