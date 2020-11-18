@@ -11,10 +11,7 @@
 #include <hal/clock.h>
 #include <hal/system.h>
 #include <framework/mod/options.h>
-#include <embox/unit.h>
 #include "stm32_cube_tim_base.h"
-
-EMBOX_UNIT_INIT(stm32_cube_tim_init);
 
 /* Desired clock hz, we will set Presacaler to reach this value. */
 #define TIM_CLK_HZ   10000
@@ -37,17 +34,11 @@ static struct time_counter_device stm32_cube_tim_counter = {
 	.mask = 0xffffffff,
 };
 
-static struct clock_source stm32_cube_tim_clock_source = {
-	.name = "TIM2",
-	.event_device = &stm32_cube_tim_event,
-	.counter_device = &stm32_cube_tim_counter,
-	.driver_priv_data = &TimHandle,
-};
+void HAL_TIM_Base_MspInit(TIM_HandleTypeDef *htim) {
+	__HAL_RCC_TIM2_CLK_ENABLE();
+}
 
-STATIC_IRQ_ATTACH(TIM_IRQ, stm32_cube_time_base_irq_handler,
-	&stm32_cube_tim_clock_source)
-
-static int stm32_cube_tim_init(void) {
+static int stm32_cube_tim2_init(struct clock_source *cs) {
 	uint32_t uwPrescalerValue;
 
 	/* Compute the prescaler value to have TIMx counter clock equal to TIM_CLK_HZ */
@@ -65,8 +56,12 @@ static int stm32_cube_tim_init(void) {
 		return -1;
 	}
 
-	clock_source_register(&stm32_cube_tim_clock_source);
-
 	return irq_attach(TIM_IRQ, stm32_cube_time_base_irq_handler, 0,
-			&stm32_cube_tim_clock_source, "tim2_cs");
+			cs, "stm32_cube_tim2");
 }
+
+CLOCK_SOURCE_DEF(stm32_cube_tim2, stm32_cube_tim2_init, &TimHandle,
+	&stm32_cube_tim_event, &stm32_cube_tim_counter);
+
+STATIC_IRQ_ATTACH(TIM_IRQ, stm32_cube_time_base_irq_handler,
+	&CLOCK_SOURCE_NAME(stm32_cube_tim2));
