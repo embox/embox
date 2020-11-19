@@ -34,7 +34,6 @@
 #define PL031_IMSC_EN      (1 << 0)
 #define PL031_ICR_CLEAR    (1 << 0)
 
-static struct clock_source pl031_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(data);
 
@@ -43,13 +42,11 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int pl031_init(void) {
-	clock_source_register(&pl031_clock_source);
-
+static int pl031_init(struct clock_source *cs) {
 	return irq_attach(PL031_IRQ,
 	                  clock_handler,
 	                  0,
-	                  &pl031_clock_source,
+	                  cs,
 	                  "PL031");
 }
 
@@ -76,14 +73,9 @@ static struct time_counter_device pl031_counter = {
 	.cycle_hz = PL031_TARGET_HZ,
 };
 
-static struct clock_source pl031_clock_source = {
-	.name           = "pl031",
-	.event_device   = &pl031_event,
-	.counter_device = &pl031_counter,
-};
-
-EMBOX_UNIT_INIT(pl031_init);
-
 STATIC_IRQ_ATTACH(PL031_IRQ, clock_handler, &pl031_clock_source);
 
 PERIPH_MEMORY_DEFINE(pl031, PL031_BASE, 0x20);
+
+CLOCK_SOURCE_DEF(pl031, pl031_init, NULL,
+	&pl031_event, &pl031_counter);
