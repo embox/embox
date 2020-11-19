@@ -18,10 +18,9 @@
 
 #include <embox/unit.h>
 
-static int tsc_init(void);
 
 /* Read Time Stamp Counter Register */
-static inline unsigned long long rdtsc(void) {
+static inline unsigned long long rdtsc(struct clock_source *cs) {
 	unsigned hi, lo;
 	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
 	return (((unsigned long long) lo) | (((unsigned long long) hi) << 32));
@@ -31,22 +30,16 @@ static struct time_counter_device tsc = {
 	.read = rdtsc
 };
 
-static struct clock_source tsc_clock_source = {
-	.name = "TSC",
-	.event_device = NULL,
-	.counter_device = &tsc,
-};
-
-static int tsc_init(void) {
+static int tsc_init(struct clock_source *cs) {
 	time64_t t1, t2;
 	/* Getting CPU frequency */
-	t1 = rdtsc();
+	t1 = rdtsc(cs);
 	sleep(1);
-	t2 = rdtsc();
+	t2 = rdtsc(cs);
 	tsc.cycle_hz = t2 - t1;
-	/*printk("CPU frequency: %llu\n", t2 - t1);*/
-	clock_source_register(&tsc_clock_source);
+
 	return ENOERR;
 }
 
-EMBOX_UNIT_INIT(tsc_init);
+CLOCK_SOURCE_DEF(tsc, tsc_init, NULL,
+	NULL, &tsc);

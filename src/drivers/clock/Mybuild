@@ -3,12 +3,6 @@ package embox.driver.clock
 module no_clock {
 }
 
-module tsc {
-	source "tsc.c"
-
-	depends embox.kernel.time.clock_source
-}
-
 module hpet {
 	option number log_level=0
 

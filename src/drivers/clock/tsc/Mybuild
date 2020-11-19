@@ -1,0 +1,7 @@
+package embox.driver.clock
+
+module tsc {
+	source "tsc.c"
+
+	depends embox.kernel.time.clock_source
+}
