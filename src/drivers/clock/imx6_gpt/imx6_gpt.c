@@ -60,13 +60,12 @@
 #define _BASE_HZ     528000000
 #define _BASE_SCALER 8
 
-static struct clock_source imx6_gpt_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	REG32_STORE(GPT_SR, 0x3F);
 	return IRQ_HANDLED;
 }
 
-static int imx6_gpt_init(void) {
+static int imx6_gpt_init(struct clock_source *cs) {
 	uint32_t t;
 	REG32_STORE(GPT_CR, GPT_CR_SWR);
 
@@ -91,12 +90,11 @@ static int imx6_gpt_init(void) {
 
 	REG32_STORE(GPT_CR, t);
 
-	clock_source_register(&imx6_gpt_clock_source);
 
 	return irq_attach(GPT_IRQ,
 	                  clock_handler,
 	                  0,
-	                  &imx6_gpt_clock_source,
+	                  cs,
 	                  "i.MX6 General Purpose Timer");
 }
 
@@ -118,12 +116,7 @@ static struct time_counter_device imx6_gpt_counter = {
 	.cycle_hz = GPT_TARGET_HZ,
 };
 
-static struct clock_source imx6_gpt_clock_source = {
-	.name           = "imx6_gpt",
-	.event_device   = &imx6_gpt_event,
-	.counter_device = &imx6_gpt_counter,
-};
+STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, NULL);
 
-EMBOX_UNIT_INIT(imx6_gpt_init);
-
-STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, &imx6_clock_source);
+CLOCK_SOURCE_DEF( imx6_gpt,  imx6_gpt_init, NULL,
+	&imx6_gpt_event, &imx6_gpt_counter);
