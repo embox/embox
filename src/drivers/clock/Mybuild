@@ -33,10 +33,3 @@ module hpet {
 	@NoRuntime depends embox.kernel.time.clock_source
 	depends third_party.lib.acpica
 }
-
-module xen {
-	source "xen.c"
-
-	@NoRuntime depends embox.kernel.time.clock_source
-	depends embox.kernel.irq
-}

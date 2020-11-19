@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module xen {
+	source "xen.c"
+
+	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.kernel.irq
+}

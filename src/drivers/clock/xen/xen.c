@@ -18,8 +18,6 @@
 #include <time.h>
 #include <xen/xen.h>
 
-EMBOX_UNIT_INIT(xen_clock_init);
-
 extern shared_info_t xen_shared_info;
 
 static int integratorcp_clock_setup(struct clock_source *cs) {
@@ -41,12 +39,6 @@ static struct time_counter_device xen_tcd = {
 	.read = xen_tcd_read,
 };
 
-static struct clock_source xen_cs = {
-	.name = "xen clock source",
-	.event_device = &xen_event_device,
-	.counter_device = &xen_tcd,
-};
-
 static uint64_t system_time;
 
 static uint64_t xen_time(void) {
@@ -64,9 +56,8 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static int xen_clock_init(void) {
+static int xen_clock_init(struct clock_source *cs) {
 
-	clock_source_register(&xen_cs);
 	evtchn_bind_virq_t op;
 
 	op.virq = VIRQ_TIMER;
@@ -78,5 +69,8 @@ static int xen_clock_init(void) {
 
 	system_time = xen_time();
 
-	return irq_attach(op.port, clock_handler, 0, &xen_cs, "xen clock irq");
+	return irq_attach(op.port, clock_handler, 0, cs, "xen clock irq");
 }
+
+CLOCK_SOURCE_DEF(xen,  xen_clock_init, NULL,
+	&xen_event_device, &xen_tcd);
