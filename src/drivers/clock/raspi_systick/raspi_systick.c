@@ -62,7 +62,6 @@ static inline void raspi_systick_comare(uint32_t value) {
 	regs->C3 = regs->CLO + value;
 }
 
-static struct clock_source this_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	raspi_systick_clear();
 	raspi_systick_comare(RELOAD_VALUE);
@@ -72,10 +71,8 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int this_init(void) {
-	clock_source_register(&this_clock_source);
-	irq_attach(SYSTICK_IRQ, clock_handler, 0, &this_clock_source,
-		"Raspberry PI systick timer");
+static int raspi_systick_init(struct clock_source *cs) {
+	irq_attach(SYSTICK_IRQ, clock_handler, 0, cs, "Raspberry PI systick timer");
 	return 0;
 }
 
@@ -91,22 +88,17 @@ static cycle_t this_read(struct clock_source *cs) {
 	return regs->CLO;
 }
 
-static struct time_event_device this_event = {
+static struct time_event_device raspi_systick_event = {
 	.set_periodic = this_set_periodic,
 	.irq_nr = SYSTICK_IRQ,
 };
 
-static struct time_counter_device this_counter = {
+static struct time_counter_device raspi_systick_counter = {
 	.read = this_read,
 	.cycle_hz = SYS_CLOCK / CLOCK_DIVIDER,
 };
 
-static struct clock_source this_clock_source = {
-	.name = "system_tick",
-	.event_device = &this_event,
-	.counter_device = &this_counter,
-};
-
-EMBOX_UNIT_INIT(this_init);
-
 PERIPH_MEMORY_DEFINE(raspi_systick, BCM2835_SYSTEM_TIMER_BASE, sizeof(struct raspi_timer_regs));
+
+CLOCK_SOURCE_DEF(raspi_systick, raspi_systick_init, NULL,
+	&raspi_systick_event, &raspi_systick_counter);

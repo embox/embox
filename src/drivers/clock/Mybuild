@@ -3,13 +3,6 @@ package embox.driver.clock
 module no_clock {
 }
 
-module raspi_systick {
-	source "raspi_systick.c"
-
-	@NoRuntime depends embox.kernel.time.clock_source
-	depends embox.driver.periph_memory
-}
-
 module tsc {
 	source "tsc.c"
 
