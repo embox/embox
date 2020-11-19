@@ -55,7 +55,6 @@
 /** set down count mode*/
 #define TIMER_DOWN_COUNT    REVERSE_MASK(TIMER_UDT_BIT)
 
-static struct clock_source mb_cs;
 static struct time_event_device mb_ed;
 
 /**
@@ -94,9 +93,8 @@ static cycle_t mb_cycle_read(struct clock_source *cs) {
 
 }
 
-static int mb_clock_init(void) {
-	clock_source_register(&mb_cs);
-	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, &mb_cs, "mbtimer")) {
+static int mb_timer_init(struct clock_source *cs) {
+	if (0 != irq_attach(CONFIG_XILINX_TIMER_IRQ, clock_handler, 0, cs, "mbtimer")) {
 		panic("mbtimer irq_attach failed");
 	}
 	return 0;
@@ -125,12 +123,7 @@ static struct time_counter_device mb_cd = {
 	.cycle_hz = SYS_CLOCK,
 };
 
-static struct clock_source mb_cs = {
-	.name = "gptimer",
-	.event_device = &mb_ed,
-	.counter_device = &mb_cd,
-};
-
-EMBOX_UNIT_INIT(mb_clock_init);
-
 PERIPH_MEMORY_DEFINE(mb_timer, CONFIG_XILINX_TIMER_BASEADDR, sizeof(struct timer_regs));
+
+CLOCK_SOURCE_DEF(mb_timer, mb_timer_init, NULL,
+	&mb_ed, &mb_cd);
