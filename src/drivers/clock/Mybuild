@@ -3,13 +3,6 @@ package embox.driver.clock
 module no_clock {
 }
 
-module at91_pitc {
-	source "at91_pitc.c"
-
-	depends embox.kernel.irq
-	@NoRuntime depends embox.kernel.time.clock_source
-}
-
 module raspi_systick {
 	source "raspi_systick.c"
 
