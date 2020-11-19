@@ -39,20 +39,10 @@ static struct time_event_device mips_event_device  = {
 	.irq_nr = MIPS_IRQN_TIMER
 };
 
-static struct clock_source mips_clock_source = {
-	.name = "mips_clk",
-	.event_device = &mips_event_device,
-};
-
-static int mips_clock_init(void) {
+static int mips_clock_init(struct clock_source *cs) {
 	int err;
 
-	err = clock_source_register(&mips_clock_source);
-	if (err) {
-		return err;
-	}
-
-	err = irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, &mips_clock_source, "mips_clk");
+	err = irq_attach(MIPS_IRQN_TIMER, clock_handler, 0, cs, "mips_clk");
 	if (err) {
 		return err;
 	}
@@ -60,4 +50,5 @@ static int mips_clock_init(void) {
 	return 0;
 }
 
-EMBOX_UNIT_INIT(mips_clock_init);
+CLOCK_SOURCE_DEF(mips_clk, mips_clock_init, NULL,
+	&mips_event_device, NULL);
