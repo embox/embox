@@ -19,8 +19,6 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(omap_clk_init);
-
 /* omap's gptimer */
 
 #define CM_FCLKEN_WKUP  0x48004C00
@@ -99,17 +97,14 @@ static struct time_event_device omap3_clk_event = {
 	.irq_nr = GPTIMER1_IRQ,
 };
 
-static struct clock_source omap3_clk_clock_source = {
-	.name = "omap3_clk",
-	.event_device = &omap3_clk_event,
-};
-
-static int omap_clk_init(void) {
+static int omap_clk_init(struct clock_source *cs) {
 	/* Map one vmem page to handle this device if mmu is used */
-	clock_source_register(&omap3_clk_clock_source);
-	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, &omap3_clk_clock_source, "omap3_clk");
+	return irq_attach(GPTIMER1_IRQ, clock_handler, 0, cs, "omap3_clk");
 }
 
 PERIPH_MEMORY_DEFINE(omap3_gptimer, (uintptr_t) GPTIMER1_BASE, 0x1000);
 
 PERIPH_MEMORY_DEFINE(omap3_cm, CM_FCLKEN_WKUP, 0x50);
+
+CLOCK_SOURCE_DEF(omap3_clk, omap_clk_init, NULL,
+	&omap3_clk_event, NULL);
