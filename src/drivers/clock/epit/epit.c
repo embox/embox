@@ -39,19 +39,17 @@
 #define EPIT_CR_IOVW		(1 << 17) /* Load Immidiate Override*/
 #define EPIT_LR_VALUE		((EPIT_FREQ)/(EPIT_PRESCALER * EPIT_TARGET_HZ))
 
-static struct clock_source epit_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(data);
 	REG32_STORE(EPIT_SR, EPIT_SR_CLEAR);
 	return IRQ_HANDLED;
 }
 
-static int epit_init(void) {
-	clock_source_register(&epit_clock_source);
+static int epit_init(struct clock_source *cs) {
 	return irq_attach(EPIT_IRQ,
 			clock_handler,
 			0,
-			&epit_clock_source,
+			cs,
 			"EPIT");
 }
 
@@ -86,14 +84,9 @@ static struct time_counter_device epit_counter = {
 	.cycle_hz = EPIT_TARGET_HZ,
 };
 
-static struct clock_source epit_clock_source = {
-	.name           = "epit",
-	.event_device   = &epit_event,
-	.counter_device = &epit_counter,
-};
-
-EMBOX_UNIT_INIT(epit_init);
-
 STATIC_IRQ_ATTACH(EPIT_IRQ, clock_handler, &imx6_clock_source);
 
 PERIPH_MEMORY_DEFINE(epit_mem, EPIT_BASE, 0x14);
+
+CLOCK_SOURCE_DEF(epit, epit_init, NULL,
+	&epit_event, &epit_counter);
