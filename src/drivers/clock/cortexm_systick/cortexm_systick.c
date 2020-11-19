@@ -62,6 +62,13 @@ static int cortexm_systick_set_next_event(struct clock_source *cs,
 	return 0;
 }
 
+static int cortexm_systick_init(struct clock_source *cs) {
+	/* Disable clock. */
+	REG_STORE(SYSTICK_CTRL, 0);
+
+	return 0;
+}
+
 static cycle_t cortexm_systick_read(struct clock_source *cs) {
 	return REG_LOAD(SYSTICK_RELOAD) - REG_LOAD(SYSTICK_VAL);
 }
@@ -79,7 +86,7 @@ static struct time_counter_device cortexm_systick_counter = {
 	.mask = SYSTICK_RELOAD_MSK,
 };
 
-CLOCK_SOURCE_DEF(cortexm_systick, NULL, NULL,
+CLOCK_SOURCE_DEF(cortexm_systick, cortexm_systick_init, NULL,
 	&cortexm_systick_event, &cortexm_systick_counter);
 
 STATIC_EXC_ATTACH(SYSTICK_IRQ, cortexm_systick_irq_handler, &CLOCK_SOURCE_NAME(cortexm_systick));
