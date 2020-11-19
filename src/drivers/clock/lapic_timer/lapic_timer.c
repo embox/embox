@@ -28,12 +28,9 @@
 
 static int lapic_clock_setup(struct clock_source *cs);
 
-static struct clock_source lapic_clock_source;
-static struct time_event_device lapic_event_device;
-
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-        clock_tick_handler(dev_id);
-        return IRQ_HANDLED;
+	clock_tick_handler(dev_id);
+	return IRQ_HANDLED;
 }
 
 static struct time_event_device lapic_event_device = {
@@ -42,19 +39,10 @@ static struct time_event_device lapic_event_device = {
 	.irq_nr = IRQ0,
 };
 
-static struct clock_source lapic_clock_source = {
-	.name = "lapic clock",
-	.event_device = &lapic_event_device,
-};
-
-EMBOX_UNIT_INIT(lapic_clock_init);
-
-static int lapic_clock_init(void) {
+static int lapic_timer_init(struct clock_source *cs) {
 	ipl_t ipl = ipl_save();
 
-	clock_source_register(&lapic_clock_source);
-
-	if (ENOERR != irq_attach(IRQ0, clock_handler, 0, &lapic_clock_source, "lapic")) {
+	if (ENOERR != irq_attach(IRQ0, clock_handler, 0, cs, "lapic")) {
 		panic("lapic timer irq_attach failed");
 	}
 
@@ -131,3 +119,6 @@ int lapic_clock_setup(struct clock_source *cs) {
 
 	return ENOERR;
 }
+
+CLOCK_SOURCE_DEF(lapic_timer, lapic_timer_init, NULL,
+	&lapic_event_device, NULL);

@@ -9,13 +9,6 @@ module tsc {
 	depends embox.kernel.time.clock_source
 }
 
-module lapic_timer {
-	source "lapic_timer.c"
-
-	depends embox.driver.interrupt.lapic
-	@NoRuntime depends embox.kernel.time.clock_source
-}
-
 module hpet {
 	option number log_level=0
 
