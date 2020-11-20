@@ -15,6 +15,10 @@ static module wchar {
 	source "wcsncasecmp.c"
 	source "vswprintf.c"
 	source "wprintf_impl.c"
+	source "wcstol.c"
+	source "wcstoll.c"
+	source "wcstoul.c"
+	source "wcstoull.c"
 
 	source "wchar_stubs.c"
 }
