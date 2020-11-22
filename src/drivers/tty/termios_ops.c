@@ -186,6 +186,8 @@ int termios_input(const struct termios *t, char ch, struct termios_i_buff *b,
 		}
 	}
 
+	got_echo &= TIO_L(t, ECHO);
+
 	return termios_input_status(t, b, ch, is_eol) | got_echo | (is_eol ? TERMIOS_RES_GOT_NEWLINE : 0);
 }
 
