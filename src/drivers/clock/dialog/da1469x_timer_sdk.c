@@ -38,8 +38,6 @@
  * But there should be more flexible setup. */
 #define CLOCK_FREQ     dg_configXTAL32K_FREQ
 
-EMBOX_UNIT_INIT(da1469x_timer_init);
-
 static __RETAINED_CODE irq_return_t da1469x_timer_irq_handler(
 		unsigned int irq_nr, void *data) {
 
@@ -96,13 +94,7 @@ static struct time_counter_device da1469x_timer_counter = {
 	.mask = 0xffffff,
 };
 
-static struct clock_source da1469x_timer_clock_source = {
-	.name = "da1469x_timer",
-	.event_device = &da1469x_timer_event,
-	.counter_device = &da1469x_timer_counter,
-};
-
-static int da1469x_timer_init(void) {
+static int da1469x_timer_init(struct clock_source *cs) {
 	timer_config timer_cfg = {
 		.clk_src = HW_TIMER_CLK_SRC_INT,
 		.prescaler = 0,
@@ -124,7 +116,10 @@ static int da1469x_timer_init(void) {
 	/* Disable by default */
 	hw_timer_disable(TIMER_ID);
 
-	return clock_source_register(&da1469x_timer_clock_source);
+	return 0;
 }
 
 STATIC_IRQ_ATTACH(DA1469X_TIMER_IRQ, da1469x_timer_irq_handler, NULL);
+
+CLOCK_SOURCE_DEF(da1469x_timer, da1469x_timer_init, NULL,
+	&da1469x_timer_event, &da1469x_timer_counter);

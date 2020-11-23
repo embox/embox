@@ -20,8 +20,6 @@
 
 #include <embox/unit.h>
 
-EMBOX_UNIT_INIT(riscv_clock_init);
-
 #define HZ 1000
 #define COUNT_OFFSET (RTC_CLOCK / HZ)
 #define RTC_CLOCK    OPTION_GET(NUMBER, rtc_freq)
@@ -50,20 +48,7 @@ static struct time_event_device riscv_event_device  = {
 	.irq_nr = MACHINE_TIMER_INTERRUPT
 };
 
-static struct clock_source riscv_clock_source = {
-	.name = "riscv_clk",
-	.event_device = &riscv_event_device,
-};
+CLOCK_SOURCE_DEF(riscv_clk, NULL, NULL,
+	&riscv_event_device, NULL);
 
-static int riscv_clock_init(void) {
-	int err;
-
-	err = clock_source_register(&riscv_clock_source);
-	if (err) {
-		return err;
-	}
-
-	return 0;
-}
-
-RISCV_TIMER_IRQ_DEF(clock_handler, &riscv_clock_source);
+RISCV_TIMER_IRQ_DEF(clock_handler, &CLOCK_SOURCE_NAME(riscv_clk));

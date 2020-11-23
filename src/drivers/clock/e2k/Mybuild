@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module e2k extends embox.arch.clock {
+module e2k_clock {
 	option number irq_num=2
 	option number freq=10
 

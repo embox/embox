@@ -15,7 +15,6 @@ abstract module cpu {
 @DefaultImpl(embox.arch.generic.interrupt_stub)
 abstract module interrupt { }
 
-abstract module clock { }
 abstract module libarch { }
 abstract module locore { }
 abstract module arch { }
@@ -24,7 +23,6 @@ abstract module boot { }
 abstract module lds { }
 
 module no_libarch extends libarch { }
-module no_clock extends clock { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nocontext)

@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module lapic_timer {
+	source "lapic_timer.c"
+
+	depends embox.driver.interrupt.lapic
+	@NoRuntime depends embox.kernel.time.clock_source
+}

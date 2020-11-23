@@ -19,20 +19,37 @@
 
 static DLIST_DEFINE(clock_source_list);
 
-extern int clock_tick_init(void);
+__attribute__((weak)) int monotonic_clock_select(void) {
+	return 0;
+}
+
+__attribute__((weak)) int realtime_clock_select(void) {
+	return 0;
+}
 
 int clock_source_register(struct clock_source *cs) {
-	if (!cs) {
-		return -EINVAL;
+	struct clock_source *tmp;
+
+	assert(cs);
+
+	dlist_foreach_entry(tmp, &clock_source_list, lnk) {
+		if (tmp == cs) {
+			/* Already registered, do nothing. */
+			return 0;
+		}
+	}
+
+	if (cs->init) {
+		cs->init(cs);
 	}
 
 	dlist_add_prev(dlist_head_init(&cs->lnk), &clock_source_list);
 
-	clock_tick_init();
+	monotonic_clock_select();
 
-	jiffies_init();
+	realtime_clock_select();
 
-	return ENOERR;
+	return 0;
 }
 
 int clock_source_unregister(struct clock_source *cs) {
@@ -52,8 +69,8 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	uint64_t ns = 0;
 
 	ed = cs->event_device;
-	if (ed) {
-		ns += ((uint64_t) cs->jiffies * NSEC_PER_SEC) / ed->event_hz;
+	if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
+		ns += ((uint64_t) ed->jiffies * NSEC_PER_SEC) / ed->event_hz;
 	}
 
 	cd = cs->counter_device;
@@ -74,8 +91,8 @@ int clock_source_set_oneshot(struct clock_source *cs) {
 	}
 
 	if (!cs->event_device->set_oneshot(cs)) {
-		cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
-		cs->flags |= CLOCK_SOURCE_ONESHOT_MODE;
+		cs->event_device->flags &= ~CLOCK_EVENT_MODE_MASK;
+		cs->event_device->flags |= CLOCK_EVENT_ONESHOT_MODE;
 		return 0;
 	}
 
@@ -93,8 +110,8 @@ int clock_source_set_periodic(struct clock_source *cs, uint32_t hz) {
 		return -1;
 	}
 
-	cs->flags &= ~CLOCK_SOURCE_MODE_MASK;
-	cs->flags |= CLOCK_SOURCE_PERIODIC_MODE;
+	cs->event_device->flags &= ~CLOCK_EVENT_MODE_MASK;
+	cs->event_device->flags |= CLOCK_EVENT_PERIODIC_MODE;
 
 	cs->event_device->event_hz = hz;
 
@@ -174,5 +191,5 @@ time64_t clock_source_get_hwcycles(struct clock_source *cs) {
 	assert(cs->event_device && cs->counter_device);
 
 	load = cs->counter_device->cycle_hz / cs->event_device->event_hz;
-	return ((uint64_t) cs->jiffies) * load + cs->counter_device->read(cs);
+	return ((uint64_t) cs->event_device->jiffies) * load + cs->counter_device->read(cs);
 }

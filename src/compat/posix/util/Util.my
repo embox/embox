@@ -35,8 +35,6 @@ static module time {
 	source "linux_timer.c"
 
 	depends embox.kernel.time.kernel_time
-	/* for clock_sys_ticks */
-	depends embox.kernel.time.jiffies
 }
 
 static module times {
@@ -65,7 +63,7 @@ static module nanosleep {
 static module gettimeofday {
 	source "gettimeofday.c"
 
-	depends embox.kernel.time.timekeeper
+	depends embox.kernel.time.kernel_time
 }
 
 static module getpass {

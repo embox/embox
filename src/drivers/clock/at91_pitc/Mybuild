@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module at91_pitc {
+	source "at91_pitc.c"
+
+	depends embox.kernel.irq
+	@NoRuntime depends embox.kernel.time.clock_source
+}

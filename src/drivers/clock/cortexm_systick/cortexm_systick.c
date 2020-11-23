@@ -28,14 +28,12 @@
 #define SYSTICK_VAL     (SYSTICK_BASE + 0x8)
 #define SYSTICK_CALIB   (SYSTICK_BASE + 0xc)
 
-static struct clock_source cortexm_systick_clock_source;
-
 static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data) {
 	struct clock_source *cs = data;
 
 	clock_tick_handler(data);
 
-	if (cs->flags & CLOCK_SOURCE_ONESHOT_MODE) {
+	if (cs->event_device->flags & CLOCK_EVENT_ONESHOT_MODE) {
 		/* Systick do not support one-shot mode, so we do
 		 * it by shutting Systick down. */
 		REG_STORE(SYSTICK_CTRL, 0);
@@ -43,10 +41,6 @@ static irq_return_t cortexm_systick_irq_handler(unsigned int irq_nr, void *data)
 	}
 
 	return IRQ_HANDLED;
-}
-
-static int cortexm_systick_init(void) {
-	return clock_source_register(&cortexm_systick_clock_source);
 }
 
 static int cortexm_systick_set_oneshot(struct clock_source *cs) {
@@ -68,6 +62,13 @@ static int cortexm_systick_set_next_event(struct clock_source *cs,
 	return 0;
 }
 
+static int cortexm_systick_init(struct clock_source *cs) {
+	/* Disable clock. */
+	REG_STORE(SYSTICK_CTRL, 0);
+
+	return 0;
+}
+
 static cycle_t cortexm_systick_read(struct clock_source *cs) {
 	return REG_LOAD(SYSTICK_RELOAD) - REG_LOAD(SYSTICK_VAL);
 }
@@ -85,12 +86,7 @@ static struct time_counter_device cortexm_systick_counter = {
 	.mask = SYSTICK_RELOAD_MSK,
 };
 
-static struct clock_source cortexm_systick_clock_source = {
-	.name = "system_tick",
-	.event_device = &cortexm_systick_event,
-	.counter_device = &cortexm_systick_counter,
-};
+CLOCK_SOURCE_DEF(cortexm_systick, cortexm_systick_init, NULL,
+	&cortexm_systick_event, &cortexm_systick_counter);
 
-EMBOX_UNIT_INIT(cortexm_systick_init);
-
-STATIC_EXC_ATTACH(SYSTICK_IRQ, cortexm_systick_irq_handler, &cortexm_systick_clock_source);
+STATIC_EXC_ATTACH(SYSTICK_IRQ, cortexm_systick_irq_handler, &CLOCK_SOURCE_NAME(cortexm_systick));

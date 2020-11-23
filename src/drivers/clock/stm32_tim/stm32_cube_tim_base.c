@@ -15,33 +15,25 @@
 int stm32_cube_tim_base_set_oneshot(struct clock_source *cs) {
 	TIM_HandleTypeDef *htim = cs->driver_priv_data;
 
-	HAL_TIM_Base_Stop(htim);
-
-	htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-	TIM_Base_SetConfig(htim->Instance, &htim->Init);
+	HAL_TIM_Base_Stop_IT(htim);
 
 	return 0;
 }
 
 int stm32_cube_tim_base_set_periodic(struct clock_source *cs) {
-	TIM_HandleTypeDef *htim = cs->driver_priv_data;
-
-	HAL_TIM_Base_Stop(htim);
-
-	htim->Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
-	TIM_Base_SetConfig(htim->Instance, &htim->Init);
-
-	return 0;
+	/* Same as oneshot mode. */
+	return stm32_cube_tim_base_set_oneshot(cs);
 }
 
 int stm32_cube_tim_base_set_next_event(struct clock_source *cs,
 		uint32_t next_event) {
 	TIM_HandleTypeDef *htim = cs->driver_priv_data;
 
-	htim->Init.Period = next_event - 1;
-	TIM_Base_SetConfig(htim->Instance, &htim->Init);
+	htim->Instance->CR1 |= (1 << TIM_CR1_URS_Pos);
+	htim->Instance->ARR = next_event - 1;
+	htim->Instance->EGR = TIM_EGR_UG;
 
-	HAL_TIM_Base_Start(htim);
+	HAL_TIM_Base_Start_IT(htim);
 
 	return 0;
 }
@@ -49,10 +41,23 @@ int stm32_cube_tim_base_set_next_event(struct clock_source *cs,
 cycle_t stm32_cube_tim_base_read(struct clock_source *cs) {
 	TIM_HandleTypeDef *htim = cs->driver_priv_data;
 
+	if (!(htim->Instance->CR1 & (1 << TIM_CR1_CEN_Pos))) {
+		return htim->Instance->ARR;
+	}
+
 	return htim->Instance->ARR - htim->Instance->CNT;
 }
 
 irq_return_t stm32_cube_time_base_irq_handler(unsigned int irq_nr, void *data) {
+	struct clock_source *cs = data;
+	TIM_HandleTypeDef *htim = cs->driver_priv_data;
+
+	HAL_TIM_IRQHandler(htim);
+
+	if (cs->event_device->flags & CLOCK_EVENT_ONESHOT_MODE) {
+		HAL_TIM_Base_Stop_IT(htim);
+	}
+
 	clock_tick_handler(data);
 
 	return IRQ_HANDLED;

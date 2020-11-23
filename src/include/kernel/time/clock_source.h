@@ -14,6 +14,7 @@
 
 #include <stdint.h>
 #include <util/dlist.h>
+#include <embox/unit.h>
 #include <kernel/time/time_device.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/time.h>
@@ -35,12 +36,8 @@ struct clock_source {
 	const char *name;
 	struct time_event_device *event_device;
 	struct time_counter_device *counter_device;
-	volatile clock_t jiffies; /**< count of jiffies since clock source started */
-	uint32_t flags; /**< periodical or not */
-#define CLOCK_SOURCE_ONESHOT_MODE  (1 << 0)
-#define CLOCK_SOURCE_PERIODIC_MODE (1 << 1)
-#define CLOCK_SOURCE_MODE_MASK     \
-	(CLOCK_SOURCE_ONESHOT_MODE | CLOCK_SOURCE_PERIODIC_MODE)
+
+	int (*init)(struct clock_source *cs);
 
 	void *driver_priv_data;
 
@@ -98,5 +95,25 @@ static inline uint32_t clock_sourcehz2mult(uint32_t hz, uint32_t shift) {
 	uint64_t tmp = ((uint64_t)NSEC_PER_SEC) << shift;
 	return tmp / hz;
 }
+
+#define CLOCK_SOURCE_NAME(name) \
+	MACRO_CONCAT(clock_source_, name)
+
+#define CLOCK_SOURCE_DEF(cs_name, cs_init, cs_data, cs_event, cs_counter) \
+	struct clock_source CLOCK_SOURCE_NAME(cs_name) = { \
+		.name = #cs_name, \
+		.init = cs_init, \
+		.event_device = cs_event, \
+		.counter_device = cs_counter, \
+		.driver_priv_data = cs_data, \
+	}; \
+	__CLOCK_SOURCE_UNIT_INIT(&CLOCK_SOURCE_NAME(cs_name))
+
+/* Private macro */
+#define __CLOCK_SOURCE_UNIT_INIT(cs) \
+	static int __clock_source_init(void) { \
+		return clock_source_register(cs); \
+	} \
+	EMBOX_UNIT_INIT(__clock_source_init)
 
 #endif /* KERNEL_CLOCK_SOURCE_H_ */

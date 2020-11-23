@@ -22,6 +22,5 @@ module date {
 	depends embox.compat.posix.util.getopt
 
 	depends embox.compat.posix.util.gettimeofday
-	depends embox.kernel.time.clock_source
-	depends embox.kernel.time.timekeeper
+	depends embox.kernel.time.kernel_time
 }

@@ -12,12 +12,12 @@ module pit_regs_e2k extends pit_regs {
 	source "pit_regs_e2k.h"
 }
 
-module pit extends embox.arch.clock {
+module pit {
 	source "pit.c"
 
 	option number irq_num=0
 
 	depends pit_regs
 	depends embox.kernel.irq
-	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.kernel.time.clock_source
 }

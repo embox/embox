@@ -56,6 +56,12 @@ static int mips_exception_init(void) {
 
 	mips_setup_exc_table();
 
+	/* read status registers for cleaning interrupts mask */
+	tmp = mips_read_c0_status();
+	tmp &= ~(ST0_IM);           /* clear all interrupts mask */
+	tmp &= ~ST0_IE;              /* global enable interrupt */
+	mips_write_c0_status(tmp);  /* write back status register */
+
 	/* clear EXL bit */
 	tmp = mips_read_c0_status();
 	tmp &= ~(ST0_ERL);

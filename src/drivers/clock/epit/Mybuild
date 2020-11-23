@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module epit extends embox.arch.clock {
+module epit {
 	source "epit.c"
 
 	option number base_addr=0x20d0000

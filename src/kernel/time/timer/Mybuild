@@ -5,32 +5,31 @@ abstract module sleep_api { }
 
 module sys_timer {
 	option number timer_quantity=20
+
 	source "sys_timer.c"
 
-	depends embox.kernel.timer.strategy.api
-	depends embox.kernel.time.clock_source
+	@NoRuntime depends embox.kernel.timer.strategy.api
 	/*uses ms2jiffies */
-	depends embox.kernel.time.jiffies
-	depends embox.arch.clock
+	@NoRuntime depends embox.kernel.time.jiffies
+	depends embox.kernel.sched.sched
 }
 
 module sleep extends sleep_api {
 	source "ksleep.c"
+
 	depends sys_timer
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sched_wait
-	depends embox.kernel.sched.sched
 }
 
 module sleep_nosched extends sleep_api {
 	source "ksleep_nosched.c"
+
 	depends sys_timer
 }
 
 module itimer {
 	option number itimer_quantity = 10
+
 	source "itimer.c"
-	depends embox.kernel.time.clock_source
 }
-
-

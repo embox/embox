@@ -8,6 +8,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <sys/mman.h>
 
 #include <kernel/time/time_device.h>
 #include <kernel/time/clock_source.h>
@@ -24,8 +25,6 @@
 #include <util/log.h>
 #endif
 
-EMBOX_UNIT_INIT(hpet_init);
-
 #define HPET_GEN_CAP_REG    0x000
 #define HPET_GEN_CONF_REG   0x010
 #define HPET_GEN_INT_REG    0x020
@@ -40,15 +39,6 @@ EMBOX_UNIT_INIT(hpet_init);
 
 static cycle_t hpet_read(struct clock_source *cs);
 
-static struct time_counter_device hpet_counter_device = {
-	.read = &hpet_read
-};
-
-static struct clock_source hpet_clock_source = {
-	.name = "HPET",
-	.event_device = NULL,
-	.counter_device = &hpet_counter_device,
-};
 
 static ACPI_TABLE_HPET *hpet_table;
 static uintptr_t hpet_base_address;
@@ -61,17 +51,17 @@ static inline void hpet_set_register(uintptr_t offset, uint64_t value) {
 	*((volatile uint64_t *) (hpet_base_address + offset)) = value;
 }
 
-static uint32_t hpet_get_hz() {
+static uint32_t hpet_get_hz(void) {
 	uint64_t reg;
 	uint32_t period;
 
 	reg = hpet_get_register(HPET_GEN_CAP_REG);
 	period = reg >> 32;
-	printk("Period: %u\n", period);
+
 	return FEMPTOSEC_IN_SEC / period;
 }
 
-static void hpet_start_counter() {
+static void hpet_start_counter(void) {
 	uint64_t reg;
 
 	reg = hpet_get_register(HPET_GEN_CONF_REG);
@@ -79,7 +69,7 @@ static void hpet_start_counter() {
 	hpet_set_register(HPET_GEN_CONF_REG, reg);
 }
 
-static int hpet_init(void) {
+static int hpet_init(struct clock_source *cs) {
 	ACPI_STATUS status;
 
 	status = AcpiGetTable("HPET", 1, (ACPI_TABLE_HEADER **) &hpet_table);
@@ -89,7 +79,9 @@ static int hpet_init(void) {
 	}
 
 	hpet_base_address = hpet_table->Address.Address;
-	hpet_counter_device.cycle_hz = hpet_get_hz();
+	hpet_base_address = (uintptr_t)mmap_device_memory((uintptr_t *)hpet_base_address,
+			0x100, PROT_READ | PROT_WRITE, MAP_SHARED, (uint64_t)hpet_base_address);
+	cs->counter_device->cycle_hz = hpet_get_hz();
 	hpet_start_counter();
 
 #ifdef HPET_DEBUG
@@ -100,9 +92,16 @@ static int hpet_init(void) {
 	}
 #endif
 
-	return clock_source_register(&hpet_clock_source);
+	return 0;
 }
 
 static cycle_t hpet_read(struct clock_source *cs) {
 	return hpet_get_register(HPET_MAIN_CNT_REG);
 }
+
+static struct time_counter_device hpet_counter_device = {
+	.read = &hpet_read
+};
+
+CLOCK_SOURCE_DEF(hpet, hpet_init, NULL,
+	NULL, &hpet_counter_device);

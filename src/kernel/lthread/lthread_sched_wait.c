@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <util/math.h>
+#include <hal/clock.h>
 #include <kernel/time/timer.h>
 
 #include <kernel/lthread/lthread.h>
@@ -30,7 +31,7 @@ void sched_wait_info_init(struct sched_wait_info *info) {
 
 void sched_wait_prepare_lthread(struct lthread *self, clock_t timeout) {
 	struct sched_wait_info *info = &self->info;
-	clock_t cur_time = clock();
+	clock_t cur_time = clock_sys_ticks();
 
 	if (!(info->status & SCHED_WAIT_PREPARED)) {
 		info->status |= SCHED_WAIT_PREPARED;

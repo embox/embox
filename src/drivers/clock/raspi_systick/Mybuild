@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module raspi_systick {
+	source "raspi_systick.c"
+
+	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.driver.periph_memory
+}

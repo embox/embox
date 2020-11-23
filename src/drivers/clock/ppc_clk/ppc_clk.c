@@ -15,9 +15,6 @@
 #include <kernel/time/clock_source.h>
 #include <stdint.h>
 
-
-EMBOX_UNIT_INIT(ppc_clk_init);
-
 /** Test for different frequancy (300K ticks -- i.e. 5min)
  * 300MHz is 00:04:10.356 (300K)
  * 333MHz is 00:04:37.672 (300K)
@@ -64,13 +61,9 @@ static struct time_counter_device ppc_clk_counter = {
 	.cycle_hz = PPCCLK_FREQ,
 };
 
-static struct clock_source ppc_clk_clock_source = {
-	.name = "ppc_clk",
-	.event_device = &ppc_clk_event,
-	.counter_device = &ppc_clk_counter,
-};
-
-static int ppc_clk_init(void) {
-	clock_source_register(&ppc_clk_clock_source);
-	return irq_attach(PPCCLK_IRQ, clock_handler, 0, &ppc_clk_clock_source, "ppc_clk");
+static int ppc_clk_init(struct clock_source *cs) {
+	return irq_attach(PPCCLK_IRQ, clock_handler, 0, cs, "ppc_clk");
 }
+
+CLOCK_SOURCE_DEF(ppc_clk, ppc_clk_init, NULL,
+	&ppc_clk_event, &ppc_clk_counter);

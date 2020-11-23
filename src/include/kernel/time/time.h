@@ -132,6 +132,9 @@ extern time64_t jiffies2ms(clock_t jiff);
 extern int jiffies_init(void);
 extern void jiffies_update(int ticks);
 
+extern int monotonic_clock_select(void);
+extern int realtime_clock_select(void);
+
 __END_DECLS
 
 #endif /* KERNEL_TIME_TIME_H_ */

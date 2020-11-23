@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module gpt extends embox.arch.clock {
+module gpt {
 	option number log_level = 0
 
 	option number base_addr

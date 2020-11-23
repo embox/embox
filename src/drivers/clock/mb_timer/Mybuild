@@ -1,6 +1,6 @@
 package embox.driver.clock
 
-module mb_timer extends embox.arch.clock {
+module mb_timer {
 	source "mb_timer.c"
 
 	option number mbtimer_base
