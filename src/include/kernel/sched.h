@@ -100,9 +100,8 @@ extern int schedee_init(struct schedee *schedee, int priority,
 
 extern void sched_set_current(struct schedee *schedee);
 
-extern void sched_ticker_init(void);
-extern void sched_ticker_fini(void);
-extern void sched_ticker_switch(int prev_policy, int next_policy);
+extern void sched_ticker_add(void);
+extern void sched_ticker_del(void);
 
 extern int sched_active(struct schedee *s);
 

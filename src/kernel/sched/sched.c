@@ -365,6 +365,26 @@ void sched_start_switch(struct schedee *next) {
 	__sched_activate(next);
 }
 
+static void sched_ticker_update(void) {
+	struct schedee *cur, *next;
+	int cur_prio, next_prio;
+
+	cur = schedee_get_current();
+
+	next = runq_get_next(&rq.queue);
+
+	cur_prio = schedee_priority_get(cur);
+	next_prio = schedee_priority_get(next);
+
+	/* We only need re-schedule by ticker only if there is
+	 * an active schedee with the same priority in runq. */
+	if (cur_prio == next_prio) {
+		sched_ticker_add();
+	} else {
+		sched_ticker_del();
+	}
+}
+
 /** locks: sched */
 static void __schedule(int preempt) {
 	ipl_t ipl;
@@ -408,6 +428,8 @@ static void __schedule(int preempt) {
 		/* ipl is enabled, no need to save it. */
 		spin_lock_ipl_disable(&rq.lock);
 	}
+
+	sched_ticker_update();
 
 	sched_timing_start(next);
 
