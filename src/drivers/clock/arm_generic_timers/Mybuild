@@ -1,0 +1,12 @@
+package embox.driver.clock
+
+module arm_el1_phy_timer {
+	option number log_level = 0
+
+	option number irq_num = 30
+
+	source "arm_ns_el1_phy_timer.c"
+
+	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.irqctrl_api
+}
