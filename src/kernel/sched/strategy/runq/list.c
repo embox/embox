@@ -29,6 +29,10 @@ void runq_remove(runq_t *queue, struct schedee *schedee) {
 	dlist_del(&schedee->runq_link);
 }
 
+struct schedee *runq_get_next(runq_t *queue) {
+	return dlist_entry(queue->next, struct schedee, runq_link);
+}
+
 struct schedee *runq_extract(runq_t *queue) {
 	struct schedee *schedee;
 
