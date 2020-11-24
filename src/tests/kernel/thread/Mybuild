@@ -7,11 +7,13 @@ module thread_test {
 	depends embox.framework.LibFramework
 }
 
-module thread_systimer_irq_test {
-    source "thread_systimer_irq_test.c"
+module thread_running_test {
+	option number delay = 5000000
 
-    depends embox.kernel.thread.core
-    depends embox.framework.LibFramework
+	source "thread_running_test.c"
+
+	depends embox.kernel.thread.core
+	depends embox.framework.LibFramework
 }
 
 module thread_priority_test {
