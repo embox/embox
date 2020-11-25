@@ -53,7 +53,8 @@ __attribute__((weak)) struct schedee *lthread_process(
 void lthread_init(struct lthread *lt, int (*run)(struct lthread *)) {
 	assert(lt);
 
-	schedee_init(&lt->schedee, SCHED_PRIORITY_HIGH, lthread_process);
+	schedee_init(&lt->schedee, SCHED_PRIORITY_HIGH, lthread_process,
+	             SCHEDEE_LTHREAD);
 	sched_wait_info_init(&lt->info);
 
 	lt->run = run;

@@ -253,7 +253,7 @@ void thread_init(struct thread *t, int priority,
 
 	sigstate_init(&t->sigstate);
 
-	schedee_init(&t->schedee, priority, thread_process);
+	schedee_init(&t->schedee, priority, thread_process, SCHEDEE_THREAD);
 
 	/* initialize everthing else */
 	thread_wait_init(&t->thread_wait_list);
