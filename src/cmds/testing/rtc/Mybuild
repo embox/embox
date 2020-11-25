@@ -1,0 +1,24 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "rtc",
+     help = "Helps to check RTC",
+     man  = '''
+     	NAME
+		rtc - manual test for working with RTC
+	SYNOPSIS
+		ticker [-a alarm_offset_in_sec] [-s setup date]
+	DESCRIPTION
+		manual test for working with RTC
+	OPTIONS
+		-a offset
+		      Number of seconds for RTC alarm
+		-s date
+		      Set up date into RTC
+	AUTHORS
+		Anton Bondarev <anton.bondarev2310@gmail.com>
+	''')
+
+module rtc {
+	source "rtc.c"
+}
