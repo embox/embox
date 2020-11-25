@@ -16,7 +16,7 @@ module pjsip_dependencies {
 	depends embox.compat.posix.proc.pid
 	depends embox.compat.posix.proc.exit
 	depends embox.compat.libc.stdio.fseek
-	depends embox.compat.libc.time
+	depends embox.compat.posix.time.time
 
 	depends embox.kernel.thread.thread_local_heap
 

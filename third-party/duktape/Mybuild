@@ -20,5 +20,5 @@ module duktape {
 	source "fib.js"
 
 	depends embox.compat.libc.math
-	depends embox.compat.libc.time
+	depends embox.compat.posix.time.time
 }

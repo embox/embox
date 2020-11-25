@@ -111,15 +111,13 @@ extern time_t time(time_t *t);
 /** Format date and time */
 extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
 
-extern char *strptime(const char *s, const char *format, struct tm *tm);
+extern char *strptime(const char *s, const char *fmt, struct tm *tm);
 
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
 
 static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
 }
-
-extern char *strptime(const char *s, const char *fmt, struct tm *tm);
 
 __END_DECLS
 
