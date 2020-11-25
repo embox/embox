@@ -125,7 +125,8 @@ static void sched_check_preempt(struct schedee *t) {
 		if (schedee_is_thread(t)) {
 			sched_post_switch(); // TODO SMP
 		} else {
-			sched_post_switch_noyield(); // TODO SMP
+			sched_post_switch();
+			//sched_post_switch_noyield();
 		}
 	}
 }
