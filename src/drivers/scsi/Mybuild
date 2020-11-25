@@ -1,11 +1,5 @@
 package embox.driver
 
-module scsi_disk {
-	option number log_level=1
-
-
-}
-
 module scsi {
 	option number log_level = 1
 

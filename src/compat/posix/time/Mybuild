@@ -3,3 +3,10 @@ package embox.compat.posix.time
 module strptime {
 	source "strptime.c"
 }
+
+module time {
+	source "ctime.c"
+	source "strftime.c"
+
+	@NoRuntime depends strptime
+}

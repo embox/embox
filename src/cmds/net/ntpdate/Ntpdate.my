@@ -22,6 +22,7 @@ module ntpdate {
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.time.time
 	depends embox.framework.LibFramework
 	depends embox.kernel.time.kernel_time
 	depends embox.compat.libc.all

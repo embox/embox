@@ -4,7 +4,6 @@ static module all {
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.int_types
 	@NoRuntime depends embox.compat.libc.math
-	@NoRuntime depends embox.compat.libc.time
 	@NoRuntime depends embox.compat.libc.type
 	@NoRuntime depends embox.compat.libc.stdlib.all
 	@NoRuntime depends embox.compat.libc.stdio.all
