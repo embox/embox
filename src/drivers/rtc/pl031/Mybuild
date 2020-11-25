@@ -1,11 +1,12 @@
-package embox.driver.clock
+package embox.driver.rtc
 
 module pl031 {
-	source "pl031.c"
+	option number log_vevel = 1
 
 	option number base_addr=0x9010000
 	option number irq_nr=34
 
-	depends embox.kernel.time.clock_source
-	depends embox.driver.interrupt.irqctrl_api
+	source "pl031.c"
+
+	depends embox.driver.rtc.rtc
 }

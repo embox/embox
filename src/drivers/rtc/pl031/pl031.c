@@ -1,21 +1,24 @@
 /**
- * @file pl031.c
+ * @file
  * @brief ARM PrimeCell Real Time Clock driver
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2019-07-18
  */
 
+#include <time.h>
+
 #include <drivers/common/memory.h>
-#include <hal/clock.h>
+
 #include <hal/reg.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
-#include <kernel/time/clock_source.h>
-#include <kernel/time/time_device.h>
+
+#include <drivers/rtc.h>
 
 #include <framework/mod/options.h>
 #include <embox/unit.h>
+
+EMBOX_UNIT_INIT(pl031_init);
 
 #define PL031_BASE      OPTION_GET(NUMBER, base_addr)
 #define PL031_IRQ       OPTION_GET(NUMBER, irq_nr)
@@ -34,48 +37,71 @@
 #define PL031_IMSC_EN      (1 << 0)
 #define PL031_ICR_CLEAR    (1 << 0)
 
-static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	clock_tick_handler(data);
+static irq_return_t pl031_irq_handler(unsigned int irq_nr, void *data) {
 
 	REG32_STORE(PL031_ICR, PL031_ICR_CLEAR); /* Clear interrupt */
-	REG32_STORE(PL031_LR, 0x0);
+
+	rtc_update_irq(data, 1, (RTC_AF | RTC_IRQF));
 	return IRQ_HANDLED;
 }
 
-static int pl031_init(struct clock_source *cs) {
-	return irq_attach(PL031_IRQ,
-	                  clock_handler,
-	                  0,
-	                  cs,
-	                  "PL031");
-}
-
-static int pl031_set_periodic(struct clock_source *cs) {
-	REG32_STORE(PL031_LR, 0x0);
-
-	REG32_STORE(PL031_MR, 0x1);
-	REG32_STORE(PL031_CR, PL031_CR_START);  /* Enable counter */
-	REG32_STORE(PL031_IMSC, PL031_IMSC_EN); /* Enable IRQ */
+static int pl031_get_time(struct rtc_device *dev, struct tm *tm) {
+	time_t time;
+	time = REG32_LOAD(PL031_DR);
+	gmtime_r(&time, tm);
 	return 0;
 }
 
-static cycle_t pl031_read(struct clock_source *cs) {
-	return REG32_LOAD(PL031_DR);
+static int pl031_set_time(struct rtc_device *dev, struct tm *tm) {
+	REG32_STORE(PL031_LR, mktime(tm));
+	return 0;
 }
 
-static struct time_event_device pl031_event = {
-	.set_periodic   = pl031_set_periodic,
-	.irq_nr   = PL031_IRQ,
+static int pl031_get_alarm(struct rtc_device *dev, struct tm *tm) {
+	time_t time;
+	time = REG32_LOAD(PL031_MR);
+	gmtime_r(&time, tm);
+	return 0;
+}
+
+static int pl031_set_alarm(struct rtc_device *dev, struct tm *tm) {
+	REG32_STORE(PL031_MR, mktime(tm));
+	return 0;
+}
+
+int pl031_alarm_irq_enable(struct rtc_device *dev, int enabled) {
+	if (enabled) {
+		REG32_STORE(PL031_IMSC, PL031_IMSC_EN); /* Enable IRQ */
+	} else {
+		REG32_STORE(PL031_IMSC, 0); /* disable IRQ */
+	}
+	return 0;
+}
+
+static struct rtc_ops pl031_ops = {
+	.get_time = pl031_get_time,
+	.set_time = pl031_set_time,
+	.get_alarm = pl031_get_alarm,
+	.set_alarm = pl031_set_alarm,
+	.alarm_irq_enable = pl031_alarm_irq_enable
 };
 
-static struct time_counter_device pl031_counter = {
-	.read     = pl031_read,
-	.cycle_hz = PL031_TARGET_HZ,
+static struct rtc_device pl031_rtc_device = {
+	.rtc_ops = &pl031_ops
 };
 
-STATIC_IRQ_ATTACH(PL031_IRQ, clock_handler, &pl031_clock_source);
+RTC_DEVICE_DEF(&pl031_rtc_device);
+
+static int pl031_init(void) {
+	REG32_STORE(PL031_CR, PL031_CR_START);  /* Enable counter */
+
+	return irq_attach(PL031_IRQ,
+			pl031_irq_handler,
+			0,
+			&pl031_rtc_device,
+			"PL031");
+}
+
+STATIC_IRQ_ATTACH(PL031_IRQ, pl031_irq_handler, &pl031_rtc_device;);
 
 PERIPH_MEMORY_DEFINE(pl031, PL031_BASE, 0x20);
-
-CLOCK_SOURCE_DEF(pl031, pl031_init, NULL,
-	&pl031_event, &pl031_counter);
