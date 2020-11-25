@@ -1,0 +1,9 @@
+package embox.driver.rtc
+
+module rtc {
+	option number log_level = 1
+
+	source "rtc.c"
+	@IncludeExport(path="drivers")
+	source "rtc.h"
+}
