@@ -39,6 +39,31 @@ void runq_remove(runq_t *queue, struct schedee *schedee) {
 	dlist_del(&schedee->runq_link);
 }
 
+struct schedee *runq_get_next(runq_t *queue) {
+	const unsigned int mask = 1 << cpu_get_id();
+	struct schedee *schedee = NULL;
+	int i;
+
+	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
+		struct schedee *s;
+
+		dlist_foreach_entry(s, &queue->list[i], runq_link) {
+			/* Checking the affinity */
+
+			if (sched_affinity_check(&s->affinity, mask)) {
+				schedee = s;
+				break;
+			}
+		}
+
+		if (schedee) {
+			break;
+		}
+	}
+
+	return schedee;
+}
+
 struct schedee *runq_extract(runq_t *queue) {
 	const unsigned int mask = 1 << cpu_get_id();
 	struct schedee *schedee = NULL;

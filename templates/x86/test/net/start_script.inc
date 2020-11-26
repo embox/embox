@@ -19,7 +19,7 @@
 /* FIXME Fails too often.
  * "ping 192.168.128.128.xip.io",
  */
-"httpd &",
-"telnetd &",
+"service httpd",
+"service telnetd",
 "service dropbear -F",
-"snmpd &",
+"service snmpd",

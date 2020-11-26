@@ -33,6 +33,11 @@
 # define TW_SMP_WAKING  (0x0)   /**< Not used in non-SMP kernel. */
 #endif
 
+enum schedee_type {
+	SCHEDEE_THREAD,
+	SCHEDEE_LTHREAD,
+};
+
 /**
  * The abstract structure for scheduling entities.
  *
@@ -50,6 +55,8 @@ struct schedee {
 	runq_item_t       runq_link;
 
 	spinlock_t        lock; /**< Protects wait state and others. */
+
+	enum schedee_type type; /** < Thread or lthread */
 
 	/**
 	 * Process function is called in the function schedule() after extracting
@@ -76,6 +83,10 @@ struct schedee {
 
 __BEGIN_DECLS
 
+static inline int schedee_is_thread(struct schedee *s) {
+	return s->type == SCHEDEE_THREAD;
+}
+
 /**
  * Initializes the scheduler.
  *
@@ -96,13 +107,13 @@ extern int sched_init(struct schedee *current);
  *   The operation result. At the moment always success.
  */
 extern int schedee_init(struct schedee *schedee, int priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next));
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next),
+	enum schedee_type type);
 
 extern void sched_set_current(struct schedee *schedee);
 
-extern void sched_ticker_init(void);
-extern void sched_ticker_fini(void);
-extern void sched_ticker_switch(int prev_policy, int next_policy);
+extern void sched_ticker_add(void);
+extern void sched_ticker_del(void);
 
 extern int sched_active(struct schedee *s);
 

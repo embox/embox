@@ -17,14 +17,10 @@
 
 #include <framework/mod/options.h>
 
-#include <embox/unit.h>
-
-EMBOX_UNIT_INIT(sched_ticker_module_init);
-
 #define SCHED_TICK_INTERVAL \
 	OPTION_GET(NUMBER, tick_interval)
 
-static struct sys_timer *sched_tick_timer;
+static struct sys_timer sched_tick_timer;
 
 static void sched_tick(sys_timer_t *timer, void *param) {
 	sched_post_switch();
@@ -37,31 +33,15 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 #endif /* SMP */
 }
 
-void sched_ticker_init(void) {
-	if (timer_set(&sched_tick_timer, TIMER_PERIODIC, SCHED_TICK_INTERVAL,
-			sched_tick, NULL)) {
-		panic("Scheduler initialization failed!\n");
+void sched_ticker_add(void) {
+	if (!timer_is_started(&sched_tick_timer)) {
+		timer_init_start_msec(&sched_tick_timer, TIMER_PERIODIC,
+				SCHED_TICK_INTERVAL, sched_tick, NULL);
 	}
 }
 
-void sched_ticker_fini(void) {
-	timer_close(sched_tick_timer);  // TODO err check?
-}
-
-void sched_ticker_switch(int prev_policy, int next_policy) {
-	if (prev_policy == SCHED_FIFO &&
-		next_policy != SCHED_FIFO) {
-		sched_ticker_init();
-	}
-
-	if (prev_policy != SCHED_FIFO &&
-		next_policy == SCHED_FIFO) {
-		sched_ticker_fini();
+void sched_ticker_del(void) {
+	if (timer_is_started(&sched_tick_timer)) {
+		timer_stop(&sched_tick_timer);
 	}
 }
-
-static int sched_ticker_module_init(void) {
-	sched_ticker_init();
-	return 0;
-}
-

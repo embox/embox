@@ -49,7 +49,26 @@ CRITICAL_DISPATCHER_DEF(sched_critical, sched_preempt, CRITICAL_SCHED_LOCK);
 //TODO these variable for scheduler (may be create object scheduler?)
 static struct runq rq;
 
+static int sched_yield_req;
+
+static inline int sched_yield_requested(void) {
+	return sched_yield_req;
+}
+
+static inline void sched_yield_request(void) {
+	sched_yield_req = 1;
+}
+
+static inline void sched_yield_ack(void) {
+	sched_yield_req = 0;
+}
+
 void sched_post_switch(void) {
+	sched_yield_request();
+	critical_request_dispatch(&sched_critical);
+}
+
+void sched_post_switch_noyield(void) {
 	critical_request_dispatch(&sched_critical);
 }
 
@@ -68,12 +87,14 @@ int sched_init(struct schedee *current) {
 }
 
 int schedee_init(struct schedee *schedee, int priority,
-	struct schedee *(*process)(struct schedee *prev, struct schedee *next))
+	struct schedee *(*process)(struct schedee *prev, struct schedee *next),
+	enum schedee_type type)
 {
 	runq_item_init(&schedee->runq_link);
 
 	schedee->lock = SPIN_UNLOCKED;
 
+	schedee->type = type;
 	schedee->process = process;
 
 	schedee->ready = false;
@@ -99,8 +120,15 @@ void sched_set_current(struct schedee *schedee) {
 static void sched_check_preempt(struct schedee *t) {
 	// TODO ask runq
 	if (schedee_priority_get(schedee_get_current()) <=
-			schedee_priority_get(t))
-		sched_post_switch(); // TODO SMP
+			schedee_priority_get(t)) {
+
+		if (schedee_is_thread(t)) {
+			sched_post_switch(); // TODO SMP
+		} else {
+			sched_post_switch();
+			//sched_post_switch_noyield();
+		}
+	}
 }
 
 /** Locks: IPL, thread, runq. */
@@ -365,16 +393,39 @@ void sched_start_switch(struct schedee *next) {
 	__sched_activate(next);
 }
 
+static void sched_ticker_update(void) {
+	struct schedee *cur, *next;
+	int cur_prio, next_prio;
+
+	cur = schedee_get_current();
+
+	next = runq_get_next(&rq.queue);
+
+	cur_prio = schedee_priority_get(cur);
+	next_prio = schedee_priority_get(next);
+
+	/* We only need re-schedule by ticker only if there is
+	 * an active schedee with the same priority in runq. */
+	if (cur != next && cur_prio == next_prio) {
+		sched_ticker_add();
+	} else {
+		sched_ticker_del();
+	}
+}
+
 /** locks: sched */
 static void __schedule(int preempt) {
 	ipl_t ipl;
 	struct schedee *prev;
 	struct schedee *next;
+	int yield_requested;
 
 	prev = schedee_get_current();
 
 	assert(!sched_in_interrupt());
 	ipl = spin_lock_ipl(&rq.lock);
+
+	yield_requested = sched_yield_requested();
 
 	if (!preempt && prev->waiting)
 		prev->ready = false;
@@ -389,6 +440,28 @@ static void __schedule(int preempt) {
 	sched_timing_stop(prev);
 
 	while (1) {
+		next = runq_get_next(&rq.queue);
+
+		if (schedee_is_thread(prev) && schedee_is_thread(next) &&
+			    schedee_priority_get(prev) == schedee_priority_get(next)) {
+			if (yield_requested) {
+				/* Clear ticker request and continue with 'next' thread. */
+				sched_yield_ack();
+			} else if (preempt || !prev->waiting) {
+				/* Do nothing in case if next thread has the same priority
+				 * and ticker didn't requested switch yet. */
+				next = prev;
+
+				schedee_set_current(prev);
+
+				runq_remove(&rq.queue, prev);
+
+				spin_unlock(&rq.lock);
+
+				break;
+			}
+		}
+
 		next = runq_extract(&rq.queue);
 
 		/* Runq is unlocked as soon as possible, but interrupts remain disabled
@@ -408,6 +481,8 @@ static void __schedule(int preempt) {
 		/* ipl is enabled, no need to save it. */
 		spin_lock_ipl_disable(&rq.lock);
 	}
+
+	sched_ticker_update();
 
 	sched_timing_start(next);
 
