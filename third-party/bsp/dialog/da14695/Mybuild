@@ -46,6 +46,7 @@ static module periphirals {
 			"hw_pdc.c",
 			"hw_dma.c",
 			"hw_timer.c",
+			"hw_rtc.c",
 			"hw_qspi.c",
 			"hw_bod_da1469x.c",
 			"hw_memctrl.c",
