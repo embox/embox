@@ -1,0 +1,12 @@
+package embox.driver.rtc
+
+module pl031 {
+	option number log_vevel = 1
+
+	option number base_addr=0x9010000
+	option number irq_nr=34
+
+	source "pl031.c"
+
+	depends embox.driver.rtc.rtc
+}

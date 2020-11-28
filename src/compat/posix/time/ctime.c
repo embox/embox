@@ -102,7 +102,7 @@ time_t mktime(struct tm *tm) {
 	for (year = EPOCH_START; year < YEAR_1900 + tm->tm_year; year++) {
 		time += year_length(year);
 	}
-	for (month = 1; month < tm->tm_mon; month++) {
+	for (month = 1; month <= tm->tm_mon; month++) {
 		time += days_of_month(tm->tm_year, month);
 	}
 	time += DAY_LENGHT * (tm->tm_mday - 1);

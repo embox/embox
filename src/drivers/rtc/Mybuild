@@ -1,0 +1,18 @@
+package embox.driver.rtc
+
+@DefaultImpl(no_rtc)
+abstract module rtc_api {
+}
+
+module rtc extends rtc_api {
+	option number log_level = 1
+
+	source "rtc.c"
+	@IncludeExport(path="drivers")
+	source "rtc.h"
+}
+
+module no_rtc extends rtc_api {
+	@IncludeExport(path="drivers", target_name="rtc.h")
+	source "no_rtc.h"
+}

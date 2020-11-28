@@ -28,4 +28,6 @@ module kernel_time {
 
 	@NoRuntime depends embox.kernel.timer.itimer
 	@NoRuntime depends timeval
+
+	@NoRuntime depends embox.driver.rtc.rtc_api
 }
