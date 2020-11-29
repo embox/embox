@@ -12,6 +12,9 @@ module deepsleep {
 	@NoRuntime depends third_party.bsp.dialog.da14695.sdk
 	depends deepsleep_wakeup
 	depends lp_clk
+
+	@NoRuntime depends embox.driver.rtc.da1469x_rtc_sdk
+	@NoRuntime depends embox.compat.posix.time.time
 }
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
