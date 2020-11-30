@@ -40,6 +40,9 @@ void input_dev_report_event(struct input_dev *dev, struct input_event *ev) {
 			/* dev not in queue */
 			dlist_add_prev(&dev->post_link, &post_indevs);
 		}
+
+		input_dev_private_notify(dev, ev);
+
 		lthread_launch(&indev_handler_lt);
 	}
 	irq_unlock();
@@ -74,6 +77,8 @@ int input_dev_register(struct input_dev *dev) {
 			INPUT_DEV_EVENT_QUEUE_LEN, &dev->event_buf);
 
 	dlist_add_prev(dlist_head_init(&dev->dev_link), &input_devices);
+
+	input_dev_private_register(dev);
 
 	return 0;
 }
