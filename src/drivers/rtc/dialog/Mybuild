@@ -3,7 +3,7 @@ package embox.driver.rtc
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 module da1469x_rtc_sdk {
 	option number log_vevel = 1
-	option number irq
+	option number irq = 18
 
 	@Cflags("-Wno-undef")
 	source "da1469x_rtc_sdk.c"
