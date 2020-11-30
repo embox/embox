@@ -18,3 +18,10 @@ module core {
 	depends embox.util.dlist
 	depends embox.kernel.lthread.lthread
 }
+
+static module input_dev_devfs {
+	option number log_level = 1
+	option number input_dev_cnt = 4
+
+	source "input_dev_devfs.c"
+}
