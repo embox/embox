@@ -1,4 +1,5 @@
 "service net_service",
 "service dhcpd",
 "service telnetd",
+"service httpd",
 "ble_example_sdk",
