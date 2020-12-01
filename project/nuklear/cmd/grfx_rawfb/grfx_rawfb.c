@@ -81,9 +81,9 @@ static void handle_mouse(struct input_dev *mouse, struct fb_info *fb_info,
 		mouse_y = normalize_coord(mouse_y, 0, fb_info->var.yres);
 
 		nk_input_motion(&rawfb->ctx, mouse_x, mouse_y);
-		nk_input_button(&rawfb->ctx, NK_BUTTON_LEFT, mouse_x, mouse_y, ev.type & 0x1);
-		nk_input_button(&rawfb->ctx, NK_BUTTON_RIGHT, mouse_x, mouse_y, ev.type & 0x2);
-		nk_input_button(&rawfb->ctx, NK_BUTTON_MIDDLE, mouse_x, mouse_y, ev.type & 0x4);
+		nk_input_button(&rawfb->ctx, NK_BUTTON_LEFT, mouse_x, mouse_y, ev.type & MOUSE_BUTTON_LEFT);
+		nk_input_button(&rawfb->ctx, NK_BUTTON_RIGHT, mouse_x, mouse_y, ev.type & MOUSE_BUTTON_RIGHT);
+		nk_input_button(&rawfb->ctx, NK_BUTTON_MIDDLE, mouse_x, mouse_y, ev.type & MOUSE_BUTTON_MIDDLE);
 
 		/* printf("pos = (%d, %d)\n", mouse_x, mouse_y); */
 	}

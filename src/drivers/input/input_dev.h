@@ -33,7 +33,7 @@ enum input_dev_type {
 
 struct input_event {
 	enum input_dev_type devtype;
-	/* e.g. KEY_PRESSED. Device-dependent */
+	/* e.g. KBD_KEY_PRESSED. Device-dependent */
 	int type;
 	/* e.g. REL_X for mouse, or pressed key for keyboard */
 	int value;
@@ -49,7 +49,12 @@ struct input_dev {
 	const struct input_dev_ops *ops;
 	const char *name; /* registered name /dev/input/<name> */
 	enum input_dev_type type;
+
 	void *data;
+	void *fs_data;
+
+	int flags;
+#define INPUT_DEV_OPENED (1 << 0)
 
 	indev_event_cb_t *event_cb; /* user callback on event */
 	struct dlist_head dev_link; /* global device list */
@@ -117,5 +122,13 @@ extern int input_dev_open(struct input_dev *dev, indev_event_cb_t *event);
 extern int input_dev_close(struct input_dev *dev);
 
 extern struct input_dev *input_dev_iterate(struct input_dev * dev);
+
+static inline int input_dev_bytes_count(struct input_dev *dev) {
+	return ring_buff_get_cnt(&dev->rbuf);
+}
+
+extern int input_dev_private_register(struct input_dev *inpdev);
+extern int input_dev_private_notify(struct input_dev *inpdev,
+                                    struct input_event *ev);
 
 #endif /* EMBOX_INPUT_DEVICE_H_ */

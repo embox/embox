@@ -7,6 +7,7 @@
  */
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/video/fb.h>
@@ -67,11 +68,15 @@ static void draw_cursor(int x, int y, int color) {
 	fb_fillrect(fb, &rect);
 }
 
-static int mouse_handle(struct input_dev *mouse) {
+static int mouse_handle(int fd) {
 	struct input_event ev;
 
-	while (0 <= input_dev_event(mouse, &ev)) {
-		if ((ev.type & 0x7) == 0) { /* Mouse move */
+	while (1) {
+		if (read(fd, &ev, sizeof ev) <= 0) {
+			continue;
+		}
+
+		if ((ev.type & MOUSE_BUTTON_PRESSED) == 0) { /* Mouse move */
 			draw_cursor(mouse_x, mouse_y, 0xffffff);
 
 			mouse_x += (ev.value >> 16) & 0xffff;
@@ -99,7 +104,7 @@ static void print_usage(const char *cmd) {
 
 int main(int argc, char **argv) {
 	int opt;
-	struct input_dev *mouse;
+	int fd;
 
 	if (argc < 2) {
 		print_usage(argv[0]);
@@ -116,25 +121,20 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (!(mouse = input_dev_lookup(argv[argc - 1]))) {
+	fd = open(argv[argc - 1], O_RDONLY);
+	if (fd == -1) {
 		fprintf(stderr, "Cannot find mouse \"%s\"\n", argv[argc - 1]);
-		return -1;
-	}
-
-	if (0 > input_dev_open(mouse, mouse_handle)) {
-		fprintf(stderr, "Failed open mouse input device\n");
 		return -1;
 	}
 
 	if (0 > init_fb()) {
 		fprintf(stderr, "Framebuffer color filling error\n");
-		input_dev_close(mouse);
+		close(fd);
 		return -1;
 	}
 
 	/* Testing for infinite time. */
-	while (1) {
-	}
+	mouse_handle(fd);
 
 	return 0;
 }

@@ -7,6 +7,7 @@
  */
 
 #include <unistd.h>
+#include <fcntl.h>
 #include <stdio.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/video/fb.h>
@@ -86,12 +87,16 @@ static void handle_touch(int i, int x, int y, int pressure) {
 	printf("finger%d = (x=%d, y=%d)\n", i, ts_x[i], ts_y[i]);
 }
 
-static int ts_handle(struct input_dev *ts) {
+static int ts_handle(int fd) {
 	struct input_event ev;
 	int type;
 	int pressure = CURSOR_DEFAULT_SIZE, new_x = 0, new_y = 0, touch = -1;
 
-	while (0 <= input_dev_event(ts, &ev)) {
+	while (1) {
+		if (read(fd, &ev, sizeof ev) <= 0) {
+			continue;
+		}
+
 		type = ev.type & ~TS_EVENT_NEXT;
 
 		switch (type) {
@@ -138,8 +143,7 @@ static void print_usage(const char *cmd) {
 }
 
 int main(int argc, char **argv) {
-	int opt;
-	struct input_dev *ts;
+	int opt, fd;
 
 	if (argc < 2) {
 		print_usage(argv[0]);
@@ -161,25 +165,20 @@ int main(int argc, char **argv) {
 	memset(ts_y, 0, sizeof ts_y);
 	ts_cursor_size[0] = ts_cursor_size[1] = CURSOR_DEFAULT_SIZE;
 
-	if (!(ts = input_dev_lookup(argv[argc - 1]))) {
-		fprintf(stderr, "Cannot find touchscreen \"%s\"\n", argv[argc - 1]);
-		return -1;
-	}
-
-	if (0 > input_dev_open(ts, ts_handle)) {
-		fprintf(stderr, "Failed open ts input device\n");
+	fd = open(argv[argc - 1], O_RDONLY);
+	if (fd == -1) {
+		fprintf(stderr, "Cannot open touchscreen \"%s\"\n", argv[argc - 1]);
 		return -1;
 	}
 
 	if (0 > init_fb()) {
 		fprintf(stderr, "Framebuffer color filling error\n");
-		input_dev_close(ts);
+		close(fd);
 		return -1;
 	}
 
 	/* Testing for infinite time. */
-	while (1) {
-	}
+	ts_handle(fd);
 
 	return 0;
 }

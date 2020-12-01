@@ -18,7 +18,6 @@
 #include <unistd.h>
 
 #include <drivers/video/fb.h>
-#include <drivers/keyboard.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/input/keymap.h>
 #include <util/log.h>
@@ -218,13 +217,13 @@ static void pumpEvents(_THIS) {
 			scancode = key_to_sdl[keycode];
 			log_debug("scancode is %d\n", scancode);
 
-			if (event->type & KEY_PRESSED) {
+			if (event->type & KBD_KEY_PRESSED) {
 				SDL_SendKeyboardKey(SDL_PRESSED, scancode);
 			} else {
 				SDL_SendKeyboardKey(SDL_RELEASED, scancode);
 			}
 		} else if (event->devtype == INPUT_DEV_MOUSE) {
-			if (event->type == 1) {
+			if (event->type == MOUSE_BUTTON_LEFT) {
 				/* Left putton press */
 				log_debug("Send mouse left press");
 				SDL_SendMouseButton(0, SDL_TOUCH_MOUSEID * 0, SDL_PRESSED, 1);

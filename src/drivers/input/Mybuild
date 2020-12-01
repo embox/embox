@@ -1,7 +1,6 @@
 package embox.driver.input
 
 module core {
-	option number hnd_priority = 200
 	option number event_queue_len = 16
 
 	source "input_dev.c"
@@ -14,7 +13,28 @@ module core {
 	@IncludeExport(path="drivers/input")
 	source "input_codes.h"
 
+	depends input_dev_handler
 	depends embox.kernel.irq_api
 	depends embox.util.dlist
+}
+
+@DefaultImpl(input_dev_nofs)
+abstract module input_dev_handler {
+
+}
+
+module input_dev_nofs extends input_dev_handler {
+	option number log_level = 1
+	option number hnd_priority = 200
+
+	source "input_dev_nofs.c"
+
 	depends embox.kernel.lthread.lthread
+}
+
+module input_dev_devfs extends input_dev_handler {
+	option number log_level = 1
+	option number input_dev_cnt = 4
+
+	source "input_dev_devfs.c"
 }

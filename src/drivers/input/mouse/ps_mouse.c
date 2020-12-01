@@ -15,14 +15,17 @@
 
 EMBOX_UNIT_INIT(ps_mouse_init);
 
-#define MSTAT_BUTMASK 0x07
-#define MSTAT_ALONE   0x08
-#define MSTAT_XSIGN   0x10
-#define MSTAT_YSIGN   0x20
-#define MSTAT_XOVER   0x40
-#define MSTAT_YOVER   0x80
+#define MSTAT_BUTMASK   0x07
+#define MSTAT_BUTLEFT   0x01
+#define MSTAT_BUTRIGHT  0x02
+#define MSTAT_BUTMIDDLE 0x04
+#define MSTAT_ALONE     0x08
+#define MSTAT_XSIGN     0x10
+#define MSTAT_YSIGN     0x20
+#define MSTAT_XOVER     0x40
+#define MSTAT_YOVER     0x80
 
-#define MOUSE_ACK     0xfa
+#define MOUSE_ACK       0xfa
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;
@@ -31,32 +34,41 @@ struct ps2_mouse_indev {
 //http://lists.gnu.org/archive/html/qemu-devel/2004-11/msg00082.html
 static void ps_mouse_get_input_event(struct input_dev *dev) {
 	uint8_t data;
+	uint8_t stat;
 	struct input_event ev;
 
 	irq_lock();
 	{
-		data = inb(I8042_STS_PORT);
+		stat = inb(I8042_STS_PORT);
 
-		if ((data & (I8042_STS_AUXOBF | I8042_STS_OBF))
+		if ((stat & (I8042_STS_AUXOBF | I8042_STS_OBF))
 				!= (I8042_STS_AUXOBF | I8042_STS_OBF)) {
 			/* this is keyboard scan code */
 			goto out;
 		}
 
-		data = inb(I8042_DATA_PORT);
-		if (data == MOUSE_ACK) {
+		stat = inb(I8042_DATA_PORT);
+		if (stat == MOUSE_ACK) {
 			goto out;
 		}
 
-		ev.type = data;
-
 		data = inb(I8042_DATA_PORT);
-		ev.value = ((ev.type & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
+
+		ev.value = ((stat & MSTAT_XSIGN ? 0xff00 : 0) | data) << 16;
 		data = inb(I8042_DATA_PORT);
-		ev.value |= (ev.type & MSTAT_YSIGN ? 0xff00 : 0) | data;
+		ev.value |= (stat & MSTAT_YSIGN ? 0xff00 : 0) | data;
 
-		ev.type  &= MSTAT_BUTMASK;
-
+		ev.type = 0;
+		if (stat & MSTAT_BUTLEFT) {
+			ev.type |= MOUSE_BUTTON_LEFT;
+		}
+		if (stat & MSTAT_BUTRIGHT) {
+			ev.type  |= MOUSE_BUTTON_RIGHT;
+		}
+		if (stat & MSTAT_BUTMIDDLE) {
+			ev.type  |= MOUSE_BUTTON_MIDDLE;
+		}
+//		ev.type = stat & MSTAT_BUTMASK;
 		input_dev_report_event(dev, &ev);
 	}
 out:

@@ -171,9 +171,9 @@ void *readMouseDataThread(void *arg) {
 
 		bstate = Qt::NoButton;
 
-		if (ev.type & 1) {
+		if (ev.type & MOUSE_BUTTON_LEFT) {
 			bstate = Qt::LeftButton;
-		} else if (ev.type & 2) {
+		} else if (ev.type & MOUSE_BUTTON_RIGHT) {
 			bstate = Qt::RightButton;
 		}
 
@@ -259,13 +259,13 @@ void *readKbdThread(void *arg) {
 
 		SCHED_LOCKED_DO_INTRET(ring_buff_dequeue(kh->ring_buff, &ev, sizeof(struct input_event)));
 
-		type = ev.type & KEY_PRESSED ? QEvent::KeyPress : QEvent::KeyRelease;
+		type = ev.type & KBD_KEY_PRESSED ? QEvent::KeyPress : QEvent::KeyRelease;
 
-		if (ev.value & SHIFT_PRESSED) {
+		if (ev.value & KBD_SHIFT_PRESSED) {
 			modifier = Qt::ShiftModifier;
-		} else if (ev.value & ALT_PRESSED) {
+		} else if (ev.value & KBD_ALT_PRESSED) {
 			modifier = Qt::AltModifier;
-		} else if (ev.value & CTRL_PRESSED) {
+		} else if (ev.value & KBD_CTRL_PRESSED) {
 			modifier = Qt::ControlModifier;
 		}
 

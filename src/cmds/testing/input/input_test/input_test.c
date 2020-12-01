@@ -24,6 +24,10 @@ static char *dev_type_map(enum input_dev_type type) {
 		return "MOUSE";
 	case INPUT_DEV_APB:
 		return "APB";
+	case INPUT_DEV_TOUCHSCREEN:
+		return "TOUCHSCREEN";
+	default:
+		break;
 	}
 
 	/* NOTREACHED */
