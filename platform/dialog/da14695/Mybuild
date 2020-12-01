@@ -10,7 +10,8 @@ static module arch_init extends embox.arch.arch {
 
 	@Cflags("-Wno-undef")
 
-	source "arch.c"
+	source "arch.c",
+		"clk.c"
 
 	@NoRuntime depends third_party.bsp.dialog.da14695.system_init
 	@NoRuntime depends da1469x_lds_quirk
