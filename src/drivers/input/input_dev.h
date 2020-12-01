@@ -53,6 +53,9 @@ struct input_dev {
 	void *data;
 	void *fs_data;
 
+	int flags;
+#define INPUT_DEV_OPENED (1 << 0)
+
 	indev_event_cb_t *event_cb; /* user callback on event */
 	struct dlist_head dev_link; /* global device list */
 	struct dlist_head post_link; /* link in to process queue */

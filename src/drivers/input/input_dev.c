@@ -30,6 +30,10 @@ static DLIST_DEFINE(post_indevs);
 void input_dev_report_event(struct input_dev *dev, struct input_event *ev) {
 	assert(dev);
 
+	if (!(dev->flags & INPUT_DEV_OPENED)) {
+		return;
+	}
+
 	irq_lock();
 	{
 		ev->devtype = dev->type;
@@ -121,6 +125,8 @@ int input_dev_open(struct input_dev *dev, indev_event_cb_t *event_cb) {
 		}
 	}
 
+	dev->flags |= INPUT_DEV_OPENED;
+
 	return 0;
 }
 
@@ -134,6 +140,8 @@ int input_dev_close(struct input_dev *dev) {
 	if (dev->ops->stop) {
 		dev->ops->stop(dev);
 	}
+
+	dev->flags &= ~INPUT_DEV_OPENED;
 
 	return 0;
 }
