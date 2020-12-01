@@ -39,6 +39,10 @@
 /* TODO Should we move it to the common part input_dev.h? */
 #define TS_EVENT_NEXT           (1 << 31)
 
-/* TODO Mouse */
+/* Mouse */
+#define MOUSE_BUTTON_PRESSED    0x7
+#define MOUSE_BUTTON_LEFT       0x1
+#define MOUSE_BUTTON_RIGHT      0x2
+#define MOUSE_BUTTON_MIDDLE     0x4
 
 #endif /* DRIVERS_INPUT_INPUT_CODES_H_ */

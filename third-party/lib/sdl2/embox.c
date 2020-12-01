@@ -223,7 +223,7 @@ static void pumpEvents(_THIS) {
 				SDL_SendKeyboardKey(SDL_RELEASED, scancode);
 			}
 		} else if (event->devtype == INPUT_DEV_MOUSE) {
-			if (event->type == 1) {
+			if (event->type == MOUSE_BUTTON_LEFT) {
 				/* Left putton press */
 				log_debug("Send mouse left press");
 				SDL_SendMouseButton(0, SDL_TOUCH_MOUSEID * 0, SDL_PRESSED, 1);

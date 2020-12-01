@@ -171,9 +171,9 @@ void *readMouseDataThread(void *arg) {
 
 		bstate = Qt::NoButton;
 
-		if (ev.type & 1) {
+		if (ev.type & MOUSE_BUTTON_LEFT) {
 			bstate = Qt::LeftButton;
-		} else if (ev.type & 2) {
+		} else if (ev.type & MOUSE_BUTTON_RIGHT) {
 			bstate = Qt::RightButton;
 		}
 

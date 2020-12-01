@@ -76,7 +76,7 @@ static int mouse_handle(int fd) {
 			continue;
 		}
 
-		if ((ev.type & 0x7) == 0) { /* Mouse move */
+		if ((ev.type & MOUSE_BUTTON_PRESSED) == 0) { /* Mouse move */
 			draw_cursor(mouse_x, mouse_y, 0xffffff);
 
 			mouse_x += (ev.value >> 16) & 0xffff;
