@@ -33,7 +33,7 @@ enum input_dev_type {
 
 struct input_event {
 	enum input_dev_type devtype;
-	/* e.g. KEY_PRESSED. Device-dependent */
+	/* e.g. KBD_KEY_PRESSED. Device-dependent */
 	int type;
 	/* e.g. REL_X for mouse, or pressed key for keyboard */
 	int value;

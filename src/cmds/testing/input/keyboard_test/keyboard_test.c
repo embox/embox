@@ -11,7 +11,6 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <drivers/input/input_dev.h>
-#include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
 
 static int keyboard_handle(int fd) {
@@ -26,7 +25,7 @@ static int keyboard_handle(int fd) {
 
 		printf("event (id=%d, type=0x%x, value=0x%x)\n",
 			event_nr++, ev.type, ev.value);
-		printf("Key %s\n", ev.type & KEY_PRESSED ? "pressed" : "released");
+		printf("Key %s\n", ev.type & KBD_KEY_PRESSED ? "pressed" : "released");
 		if (1 == keymap_to_ascii(&ev, code)) {
 			if (isprint(code[0])) {
 				printf("Code = %c\n", code[0]);

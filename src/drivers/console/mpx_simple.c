@@ -9,7 +9,7 @@
 
 #include <errno.h>
 #include <drivers/console/mpx.h>
-#include <drivers/keyboard.h>
+#include <drivers/input/input_dev.h>
 #include <util/dlist.h>
 #include <embox/unit.h>
 
@@ -124,7 +124,7 @@ static int indev_event_cb(struct input_dev *indev) {
 
 	while (0 <= input_dev_event(indev, &ev)) {
 
-		if (ev.type == KEY_PRESSED && (ev.value & CTRL_PRESSED)) {
+		if (ev.type == KBD_KEY_PRESSED && (ev.value & KBD_CTRL_PRESSED)) {
 			int num = (ev.value & 0x7f) - f1;
 			if (num >= 0 && num < VC_MPX_N && vcs[num] != NULL) {
 				mpx_visualize(vcs[num]);

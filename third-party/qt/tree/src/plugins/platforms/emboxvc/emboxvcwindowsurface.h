@@ -10,7 +10,7 @@
 
 #include <drivers/video/fb.h>
 #include <drivers/input/keymap.h>
-#include <drivers/keyboard.h>
+#include <drivers/input/input_dev.h>
 #include <drivers/console/mpx.h>
 
 #include <string.h>

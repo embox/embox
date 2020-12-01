@@ -15,7 +15,7 @@
 #include <fcntl.h>
 
 #include <drivers/input/keymap.h>
-#include <drivers/keyboard.h>
+#include <drivers/input/input_dev.h>
 #include <drivers/console/mpx.h>
 #include <drivers/console/fbcon.h>
 #include <drivers/video/fb.h>
@@ -63,7 +63,7 @@ static void inpevent(struct vc *vc, struct input_event *ev) {
 		return;
 	}
 
-	if (!(ev->type & KEY_PRESSED)) {
+	if (!(ev->type & KBD_KEY_PRESSED)) {
 		return;
 	}
 
