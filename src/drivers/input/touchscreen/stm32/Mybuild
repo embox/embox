@@ -1,6 +1,7 @@
 package embox.driver.input.touchscreen
 
 @BuildDepends(third_party.bsp.stmf7cube.stm32f7_discovery_components)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7cube_ts {
 	option number log_level = 1
 	option number ts_irq = 40
@@ -8,5 +9,6 @@ module stm32f7cube_ts {
 	source "stm32_cube_touchscreen.c"
 
 	depends embox.driver.input.core
+	depends third_party.bsp.st_bsp_api
 	@NoRuntime depends third_party.bsp.stmf7cube.stm32f7_discovery_components
 }
