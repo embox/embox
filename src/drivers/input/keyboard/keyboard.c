@@ -175,7 +175,7 @@ static irq_return_t ps_kbd_irq_hnd(unsigned int irq_nr, void *data) {
 	int ret;
 
 	ret = keyboard_get_input_event(dev, &ev);
-	if (!ret && dev->event_cb) {
+	if (!ret) {
 		input_dev_report_event(dev, &ev);
 	}
 
