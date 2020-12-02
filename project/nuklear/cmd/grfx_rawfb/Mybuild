@@ -12,14 +12,12 @@ package project.nuklear.cmd
 			Alexander Kalmuk
 	''')
 @BuildDepends(third_party.lib.nuklear)
-@BuildDepends(third_party.bsp.st_bsp_api)
 module grfx_rawfb {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/nuklear/install")
 	source "grfx_rawfb.c"
 
 	depends third_party.lib.nuklear
 	depends embox.driver.input.core
-	depends third_party.bsp.st_bsp_api
 	depends rawfb_api
 }
 
