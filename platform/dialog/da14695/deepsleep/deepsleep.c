@@ -100,6 +100,10 @@ __RETAINED_CODE int deepsleep_enter(void) {
 	int res;
 	bool use_rtc = false;
 
+	if (hw_sys_is_debugger_attached()) {
+		return -1;
+	}
+
 	res = timer_strat_get_next_event(&next_event);
 
 	if (res) {

@@ -185,7 +185,10 @@ static void arch_deepsleep_finish(ipl_t ipl) {
 }
 
 void arch_idle(void) {
+	extern void clk_update_hook(void);
 	ipl_t ipl;
+
+	clk_update_hook();
 
 	if (arch_deepsleep_start(&ipl)) {
 		__asm__ __volatile__ ("wfi");
