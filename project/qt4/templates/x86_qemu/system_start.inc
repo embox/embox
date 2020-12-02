@@ -6,6 +6,6 @@
 "export QT_QPA_FONTDIR=/fonts",
 //"service moveblocks -platform vnc",
 //"service animatedtiles -platform vnc",
-"service moveblocks -platform emboxfb",
-//"service animatedtiles -platform emboxfb",
+//"service moveblocks -platform emboxfb",
+"service animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/ps-mouse",
 "tish",
