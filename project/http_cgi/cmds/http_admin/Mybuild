@@ -1,0 +1,20 @@
+package project.http_cgi
+
+@AutoCmd
+@Cmd(name="http_admin_backend", help="", man="")
+@BuildDepends(third_party.lib.cjson)
+module http_admin {
+
+	source "http_admin_backend.c"
+
+	@InitFS(target_dir="http_admin")
+	source "partials",
+	       "css",
+	       "index.html",
+	       "ui-bootstrap-tpls-0.12.1.min.js",
+	       "app.js"
+
+	depends third_party.lib.cjson
+	depends embox.compat.libc.stdlib.system
+	depends embox.compat.posix.util.environ
+}
