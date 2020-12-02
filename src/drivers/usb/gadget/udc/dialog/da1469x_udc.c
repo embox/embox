@@ -54,15 +54,22 @@ static int da1469x_udc_ep_queue(struct usb_gadget_ep *ep,
 
 	assert(ep && req);
 
-	u->requests[ep->nr] = req;
-
 	if (ep->nr == 0 || ep->dir == USB_DIR_IN) {
+		log_debug("TX, ep=%d, req->len=%d", ep->nr, req->len);
+
 		/* It would be better to use queue here, put req in queue,
 		 * then get next req from queue after current finished. */
 		while (u->tx_in_progress[ep->nr]) {
 		}
 		u->tx_in_progress[ep->nr] = 1;
+
+		u->requests[ep->nr] = req;
+
 		hw_usb_ep_tx_start(ep->nr, req->buf, req->len);
+	} else {
+		log_debug("RX, ep=%d", ep->nr);
+
+		u->requests[ep->nr] = req;
 	}
 
 	return 0;
