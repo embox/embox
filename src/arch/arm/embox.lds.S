@@ -24,6 +24,8 @@ SECTIONS {
 		KEEP(*(.static_irq_table));
 		__static_irq_table_end = .;
 
+		*(.text.bootcode*)
+
 		KEEP(*(.da14680_quirk));
 		KEEP(*(.da1469x_quirk));
 
