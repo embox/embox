@@ -86,6 +86,14 @@ static void rtc_init(void)
         hw_rtc_time_start();
 }
 
+__attribute__((section(".text.bootcode"))) void hardware_init_hook(void) {
+	/* Default value is 512Kb. I will be changed only after software reset. */
+	if (hw_cache_flash_get_region_size() == HW_CACHE_FLASH_REGION_SZ_512KB) {
+		hw_cache_flash_set_region_size(CACHE_FLASH_SIZE);
+		NVIC_SystemReset();
+	}
+}
+
 void arch_init(void) {
 	int i;
 
@@ -94,12 +102,6 @@ void arch_init(void) {
 
 	for (i = 0; i < 1 * 1000 * 1000 * 1; i++) {
 
-	}
-
-	/* Default value is 512Kb. I will be changed only after software reset. */
-	if (hw_cache_flash_get_region_size() == HW_CACHE_FLASH_REGION_SZ_512KB) {
-		hw_cache_flash_set_region_size(CACHE_FLASH_SIZE);
-		NVIC_SystemReset();
 	}
 
 #ifdef ARM_FPU_VFP
