@@ -31,6 +31,7 @@ struct thread_info {
 POOL_DEF(thread_info_pool, struct thread_info, POOL_SZ);
 
 static struct page_allocator *thread_heap_allocator;
+static int all_stacks_sz = 0;
 
 void *thread_user_stack_alloc(struct thread *t, size_t stack_sz) {
 	struct thread_info *ti;
@@ -38,6 +39,9 @@ void *thread_user_stack_alloc(struct thread *t, size_t stack_sz) {
 	size_t pages = (stack_sz + PAGE_SIZE() - 1) / PAGE_SIZE();
 
 	stack_sz = pages * PAGE_SIZE();
+
+	all_stacks_sz += stack_sz;
+	log_debug("stack_sz=%d, all_stacks=%d", stack_sz, all_stacks_sz);
 
 	ti = pool_alloc(&thread_info_pool);
 	if (!ti) {
@@ -66,6 +70,9 @@ void thread_user_stack_free(void *t) {
 	struct thread_info *ti = (struct thread_info *) t;
 
 	assert(t != NULL);
+
+	all_stacks_sz -= ti->pages * PAGE_SIZE();
+	log_debug("stack_sz=%d, all_stacks=%d", ti->pages * PAGE_SIZE(), all_stacks_sz);
 
 	page_free(thread_heap_allocator, ti->stack, ti->pages);
 	memset(ti->stack, 0xa5, ti->pages * PAGE_SIZE());
