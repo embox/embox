@@ -35,7 +35,7 @@
 	.word exc_entry14
 	.word exc_entry15
 
-.text
+.section .text.bootcode
 .thumb
 .syntax unified
 

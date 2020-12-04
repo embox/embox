@@ -16,11 +16,11 @@
 #if MMU_BOOT
 #include <asm/cp15.h>
 /* Put tables to text section to avoid setting it to zero during clearing bss */
-.text
+.section .text.bootcode
 .align 14
 boot_tables: .space 1024 * 16
 
-.text
+.section .text.bootcode
 boot_mmu_setup:
 	/* Setup MMU base */
 	ldr r0, =boot_tables
@@ -71,7 +71,7 @@ boot_mmu_finish:
 .global bootldr_start
 .type bootldr_start, %function
 
-.text
+.section .text.bootcode
 
 bootldr_start:
 	ldr     r0, =hardware_init_hook
