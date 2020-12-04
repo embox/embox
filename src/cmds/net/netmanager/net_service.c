@@ -120,7 +120,7 @@ int main(int argc, char **argv) {
 		for (nh = (struct nlmsghdr*) buf; NLMSG_OK(nh, len);
 				nh = NLMSG_NEXT(nh, len)) {
 			char *if_addr;
-			char *if_name;
+			char *if_name = NULL;
 
 			/* The end of multipart message */
 			if (nh->nlmsg_type == NLMSG_DONE) {

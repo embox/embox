@@ -83,11 +83,12 @@ static int cmp_month_weekday_name(const char *s, const char *format, struct tm *
 }
 
 static int def_format(const char *format, const char *s, struct tm *tm) {
-
 	int n_leng = num_length(s);
 	int w_leng = word_length(s);
 	int date, res, res_equi;
 	int count_equi = 0;
+
+	date = 0;
 
 	switch (*format) {
 		case 'm':
