@@ -17,12 +17,19 @@
 static void print_usage(void) {
 	printf("USAGE:\npin <gpio> <pin> <state>\n"
 		" Examples:\n"
-		"    pin GPIO1 12 get    -- Get value of pin number 12 at GPIO1\n"
-		"    pin GPIOA 12 set    -- Up pin number 12 at GPIOA\n"
-		"    pin GPIOa 12 reset  -- Down pin number 12 at GPIOA\n"
-		"    pin GPIO0 12 unset  -- Down pin number 12 at GPIO0 (GPIOA)\n"
-		"    pin GPIOA 12 toggle -- Reverts pin number 12 at GPIOA\n"
-		"    pin GPIOA 12 blink  -- Toggle pin number 12 at GPIOA\n");
+		"    pin GPIO1 12 get         -- Get value of pin number 12 at GPIO1\n"
+		"    pin GPIOA 12 set         -- Up pin number 12 at GPIOA\n"
+		"    pin GPIOa 12 reset       -- Down pin number 12 at GPIOA\n"
+		"    pin GPIO0 12 unset       -- Down pin number 12 at GPIO0 (GPIOA)\n"
+		"    pin GPIOA 12 toggle      -- Reverts pin number 12 at GPIOA\n"
+		"    pin GPIOA 12 blink       -- Toggle pin number 12 at GPIOA\n"
+		"    pin GPIOA 12 irq rising  -- Test irq in RISING mode\n"
+		"    pin GPIOA 12 irq falling -- Test irq in FALLING mode\n"
+		"    pin GPIOA 12 irq both    -- Test irq in RISING_FALLING mode\n");
+}
+
+void pin_irq_hnd(void *data) {
+	(*(int *) data)++;
 }
 
 static int gpio_by_name(const char *name) {
@@ -107,6 +114,37 @@ int main(int argc, char **argv) {
 			gpio_toggle(gpio, pin);
 			sleep(1);
 		}
+	} else if (!strcmp("irq", argv[opt])) {
+		int pin_irq_handled = 0, expected = 0;
+
+		opt++;
+
+		if (!strcmp("rising", argv[opt])) {
+			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_MODE_RISING);
+			expected = 1; /* Single rising IRQ */
+		} else if (!strcmp("falling", argv[opt])) {
+			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_MODE_FALLING);
+			expected = 1; /* Single falling IRQ */
+		} else if (!strcmp("both", argv[opt])) {
+			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_MODE_RISING_FALLING);
+			expected = 2; /* One rising and one falling IRQs */
+		} else {
+			fprintf(stderr, "Unknown IRQ mode \"%s\"\n", argv[opt]);
+			return -1;
+		}
+
+		if (0 > gpio_irq_attach(gpio, pin, pin_irq_hnd, &pin_irq_handled)) {
+			fprintf(stderr, "Failed to attach IRQ handler\n");
+			return -1;
+		}
+
+		while (pin_irq_handled < expected) {
+			usleep(100 * 1000);
+		}
+
+		printf("GPIO interrupts handled!\n");
+
+		gpio_irq_detach(gpio, pin);
 	} else {
 		fprintf(stderr, "Unknown pin state: \"%s\"\n", argv[opt]);
 	}
