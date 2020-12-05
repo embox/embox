@@ -100,10 +100,15 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 		if (mode & GPIO_MODE_IN_PULL_DOWN) {
 			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 		}
-	} else if (mode & GPIO_MODE_INT_MODE_RISING) {
-		GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	} else if (mode & GPIO_MODE_INT_MODE_FALLING) {
-		GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	} else if (mode & GPIO_MODE_INT_MODE_RISING_FALLING) {
+		if ((mode & GPIO_MODE_INT_MODE_RISING_FALLING)
+				== GPIO_MODE_INT_MODE_RISING_FALLING) {
+			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+		} else if (mode & GPIO_MODE_INT_MODE_RISING) {
+			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+		} else if (mode & GPIO_MODE_INT_MODE_FALLING) {
+			GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+		}
 	}
 
 	HAL_GPIO_Init(stm32_gpio_ports[port], &GPIO_InitStruct);
