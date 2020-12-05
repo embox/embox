@@ -45,6 +45,7 @@ int gpio_register_chip(struct gpio_chip *chip, unsigned char chip_id) {
 		return -1;
 	}
 	gpio_chip_registry[chip_id] = chip;
+
 	return 0;
 }
 
@@ -67,6 +68,7 @@ void gpio_handle_irq(struct gpio_chip *chip, unsigned int irq_nr,
 
 int gpio_setup_mode(unsigned short port, gpio_mask_t pins, int mode) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
+
 	if (!chip) {
 		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
 		return -EINVAL;
@@ -78,11 +80,13 @@ int gpio_setup_mode(unsigned short port, gpio_mask_t pins, int mode) {
 		return -EINVAL;
 	}
 	assert(chip->setup_mode);
+
 	return chip->setup_mode(port, pins, mode);
 }
 
 void gpio_set(unsigned short port, gpio_mask_t pins, char level) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
+
 	if (!chip) {
 		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
 		return;
@@ -99,6 +103,7 @@ void gpio_set(unsigned short port, gpio_mask_t pins, char level) {
 
 gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
+
 	if (!chip) {
 		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
 		return -1;
@@ -110,12 +115,14 @@ gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins) {
 		return -EINVAL;
 	}
 	assert(chip->get);
+
 	return chip->get(port, pins);
 }
 
 void gpio_toggle(unsigned short port, gpio_mask_t pins) {
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
 	gpio_mask_t state;
+
 	if (!chip) {
 		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
 		return;
@@ -136,6 +143,7 @@ int gpio_irq_attach(unsigned short port, gpio_mask_t pins,
 		irq_handler_t pin_handler, void *data) {
 	struct gpio_irq_handler *gpio_hnd;
 	struct gpio_chip *chip = gpio_get_chip(GPIO_CHIP(port));
+
 	if (!chip) {
 		log_error("Chip not found, chip=%d", GPIO_CHIP(port));
 		return -EINVAL;
