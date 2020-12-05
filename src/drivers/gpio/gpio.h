@@ -78,6 +78,9 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_MODE_INT_MODE_FALLING  (1 << 29)
 #endif
 
+#define GPIO_MODE_INT_MODE_RISING_FALLING \
+	(GPIO_MODE_INT_MODE_RISING | GPIO_MODE_INT_MODE_FALLING)
+
 #ifndef GPIO_MODE_INT_MODE_LEVEL0
 #define GPIO_MODE_INT_MODE_LEVEL0   (1 << 28)
 #endif
