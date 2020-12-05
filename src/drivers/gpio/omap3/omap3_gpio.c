@@ -128,7 +128,7 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 	gpio_reg_write(gpio_base, GPIO_IRQSTATUS1, changed);
 	gpio_reg_write(gpio_base, GPIO_IRQSTATUS2, changed);
 
-	gpio_handle_irq(&omap3_gpio_chip, irq_nr, port, changed);
+	gpio_handle_irq(&omap3_gpio_chip, port, changed);
 
 	return IRQ_HANDLED;
 }
