@@ -118,7 +118,8 @@ extern void gpio_toggle(unsigned short port, gpio_mask_t pins);
 
 extern gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins);
 
-extern int gpio_irq_attach(unsigned short port, gpio_mask_t pins,
-		irq_handler_t pin_handler, void *data);
+extern int gpio_irq_attach(unsigned short port, uint32_t pin,
+		void (*pin_handler)(void *), void *data);
+extern int gpio_irq_detach(unsigned short port, uint32_t pin);
 
 #endif /* DRIVERS_GPIO_H_ */

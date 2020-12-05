@@ -21,8 +21,8 @@ struct gpio_chip {
 extern int gpio_register_chip(struct gpio_chip *gpio_chip, unsigned char chip_id);
 
 /* Drivers should call this function when interrupts happened
- * on the specified pins */
-extern void gpio_handle_irq(struct gpio_chip *gpio_chip, unsigned int irq_nr,
-		unsigned char port, gpio_mask_t changed_pins);
+ * on the specified pin. */
+extern void gpio_handle_irq(struct gpio_chip *chip, uint8_t port,
+                            gpio_mask_t pins);
 
 #endif /* DRIVERS_GPIO_DRIVER_H_ */
