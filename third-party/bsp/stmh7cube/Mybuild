@@ -1,0 +1,4 @@
+package third_party.bsp.stmh7cube
+
+abstract module stm32h7_conf {
+}
