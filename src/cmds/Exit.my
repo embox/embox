@@ -2,7 +2,7 @@ package embox.cmd
 
 @AutoCmd
 @Cmd(name="exit",
-	help="exit from shell",
+	help="Exit from shell",
 	man="")
 module exit {
 	source "exit.c"
@@ -12,7 +12,7 @@ module exit {
 
 @AutoCmd
 @Cmd(name="logout",
-	help="logout current user",
+	help="Logout current user",
 	man="")
 module logout {
 	source "logout.c"

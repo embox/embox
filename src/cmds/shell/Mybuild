@@ -17,7 +17,7 @@ abstract module shell_api {
 
 @AutoCmd
 @Cmd(name = "tish",
-	help = "start tish - tiny shell interpretator",
+	help = "Start tish - tiny shell interpretator",
 	man = '''
 		NAME
 			tish - tiny shell

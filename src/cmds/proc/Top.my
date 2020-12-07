@@ -2,7 +2,7 @@ package embox.cmd.proc
 
 @AutoCmd
 @Cmd(name = "top",
-	help = "display processes",
+	help = "Display processes",
 	man = '''
 		NAME
 			top - display processes
