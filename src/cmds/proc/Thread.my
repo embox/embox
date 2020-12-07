@@ -19,6 +19,9 @@ package embox.cmd.proc
 			Gleb Efimov, Alina Kramar, Roman Oderov
 	''')
 module thread {
+	option boolean use_sprintf = false
+	option number  sprintf_buf_sz = 0
+
 	source "thread.c"
 
 	depends embox.kernel.thread.core
