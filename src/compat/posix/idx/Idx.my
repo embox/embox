@@ -57,6 +57,7 @@ static module pipe {
 }
 
 static module ppty {
+	option number pty_count = 20
 
 	source "pipe_pty.c"
 

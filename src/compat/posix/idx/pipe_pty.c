@@ -30,6 +30,7 @@
 
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/misc/pool.h>
+#include <framework/mod/options.h>
 
 struct pty;
 
@@ -38,7 +39,8 @@ struct idesc_pty {
 	struct pty *pty;
 };
 
-#define MAX_PTY 20
+#define MAX_PTY   OPTION_GET(NUMBER, pty_count)
+
 POOL_DEF(pty_pool, struct pty, MAX_PTY);
 POOL_DEF(ipty_pool, struct idesc_pty, 2 * MAX_PTY);
 
