@@ -10,6 +10,8 @@
 
 #include <sys/cdefs.h>
 
+typedef float float_t;
+
 __BEGIN_DECLS
 
 extern double modf(double x, double *i_ptr);
