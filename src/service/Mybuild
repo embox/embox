@@ -1,7 +1,10 @@
 package embox.service
 
 @AutoCmd
-@Cmd(name="cgi_cmd_wrapper", help="", man="")
+@Cmd(name="cgi_cmd_wrapper",
+	help="CGI for HTTP (do not use directly from command line)",
+	man=""
+)
 module cgi_cmd_wrapper {
 	option boolean cmds_check = false
 	option string allowed_cmds = ""
