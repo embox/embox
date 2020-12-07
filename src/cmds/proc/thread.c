@@ -20,6 +20,29 @@
 #include <kernel/sched.h>
 #include <kernel/thread/thread_stack.h>
 
+#if OPTION_GET(BOOLEAN, use_sprintf)
+	/* This is a version without sched_lock()/sched_unlock().
+	 * We faced issues when using such locked printf's in http CGI,
+	 * so added this locks-free variant.*/
+
+	#include <stdlib.h>
+
+	#define START() \
+		char * _buf = malloc(OPTION_GET(NUMBER, sprintf_buf_sz)); \
+		int _n = 0;
+
+	#define FINISH() \
+		printf("%s\n", _buf); \
+		free(_buf);
+
+	#define PRINTF(fmt, ...)  \
+		_n += sprintf(_buf + _n, fmt, ## __VA_ARGS__)
+#else
+	#define START()   sched_lock()
+	#define FINISH()  sched_unlock()
+	#define PRINTF(fmt, ...)  printf(fmt, ## __VA_ARGS__)
+#endif
+
 static void print_usage(void) {
 	printf("Usage: thread [-h] [-s] [-k <thread_id>]\n");
 }
@@ -30,24 +53,24 @@ static void print_stat(void) {
 	int total;
 	struct task *task;
 
-	printf(" %4s %16s %8s %7s %10s %12s\n", "id", "tid/Task name", "priority", "state", "time", "Stack size");
+	printf(" %4s %8s %8s %10s %12s %16s\n", "Id", "Priority", "State", "Time", "Stack size", "Task ID/Name");
 
 	running = sleeping = suspended = 0;
 
-	sched_lock();
 	{
+		START();
+
 		task_foreach(task) {
 			task_foreach_thread(t, task) {
-				printf(" %4d %4d/%-11s %8d %c %c %c %c %9lds %9zu\n",
-					t->id, task_get_id(t->task),
-					task_get_name(t->task),
-					schedee_priority_get(&t->schedee),
+				PRINTF(" %4d %8d %2c %c %c %c %9lds %9zu %8d/%-11s\n",
+					t->id, schedee_priority_get(&t->schedee),
 					(t == thread_self()) ? '*' : ' ',
 					sched_active(&t->schedee) ? 'A' : ' ',
 					t->schedee.ready        ? 'R' : ' ',
 					t->schedee.waiting      ? 'W' : ' ',
 					thread_get_running_time(t)/CLOCKS_PER_SEC,
-					thread_stack_get_size(t));
+					thread_stack_get_size(t),
+					task_get_id(t->task), task_get_name(t->task));
 
 				if (t->schedee.ready || sched_active(&t->schedee))
 					running++;
@@ -55,8 +78,9 @@ static void print_stat(void) {
 					sleeping++;
 			}
 		}
+
+		FINISH();
 	}
-	sched_unlock();
 
 	total = running + sleeping;
 

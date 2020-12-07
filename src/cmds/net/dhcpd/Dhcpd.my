@@ -2,7 +2,7 @@ package embox.cmd.net
 
 @AutoCmd
 @Cmd(name = "dhcpd",
-	help = "simple dhcp server",
+	help = "Simple dhcp server",
 	man = '''
 		NAME
 			dhcpd - dhcp server.
