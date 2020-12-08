@@ -242,4 +242,4 @@ static const struct block_dev_driver idecd_pio_driver = {
 	idecd_init,
 };
 
-BLOCK_DEV_DEF("idecd", &idecd_pio_driver);
+BLOCK_DEV_DRIVER_DEF("idecd", &idecd_pio_driver);

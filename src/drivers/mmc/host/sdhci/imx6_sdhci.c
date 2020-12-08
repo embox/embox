@@ -388,7 +388,7 @@ struct block_dev_driver imx6_usdhc_driver = {
 	.write = imx6_usdhc_write
 };
 
-BLOCK_DEV_DEF("imx6_usdhc", &imx6_usdhc_driver);
+BLOCK_DEV_DRIVER_DEF("imx6_usdhc", &imx6_usdhc_driver);
 
 PERIPH_MEMORY_DEFINE(imx6_usdhc, BASE_ADDR, 0x4000);
 

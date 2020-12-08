@@ -60,7 +60,7 @@ static const struct block_dev_driver stm32f7_sd_driver = {
 	.probe = stm32f7_sd_init,
 };
 
-BLOCK_DEV_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);
+BLOCK_DEV_DRIVER_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);
 
 static int stm32f7_sd_init(void *arg) {
 	struct block_dev *bdev;

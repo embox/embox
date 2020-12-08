@@ -273,4 +273,4 @@ static const struct block_dev_driver idedisk_udma_driver = {
 	idedisk_udma_init,
 };
 
-BLOCK_DEV_DEF("idedisk_udma", &idedisk_udma_driver);
+BLOCK_DEV_DRIVER_DEF("idedisk_udma", &idedisk_udma_driver);

@@ -105,7 +105,7 @@ extern dev_t block_dev_id(struct block_dev *dev);
 
 #include <util/array.h>
 
-#define BLOCK_DEV_DEF(name, block_dev_driver) \
+#define BLOCK_DEV_DRIVER_DEF(name, block_dev_driver) \
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
 	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
 

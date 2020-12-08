@@ -223,4 +223,4 @@ static const struct block_dev_driver idedisk_pio_driver = {
 	idedisk_init,
 };
 
-BLOCK_DEV_DEF("idedisk", &idedisk_pio_driver);
+BLOCK_DEV_DRIVER_DEF("idedisk", &idedisk_pio_driver);
