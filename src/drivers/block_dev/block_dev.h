@@ -23,11 +23,6 @@
 #define IOCTL_GETGEOMETRY       3
 #define IOCTL_REVALIDATE        4
 
-#define NODEV                 (-1)
-#define DEV_TYPE_STREAM         1
-#define DEV_TYPE_BLOCK          2
-#define DEV_TYPE_PACKET         3
-
 struct block_dev {
 	dev_t id;
 	char name[NAME_MAX + 1];
