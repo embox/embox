@@ -61,11 +61,10 @@ static int write_sectors(struct block_dev *bdev,
 }
 
 static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	struct ramdisk *ramd = bdev->privdata;
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
-		return ramd->blocks;
+		return bdev->size / bdev->block_size;
 
 	case IOCTL_GETBLKSIZE:
 		return bdev->block_size;
@@ -93,8 +92,6 @@ struct ramdisk *ramdisk_create(char *path, size_t size) {
 		err = ENOMEM;
 		goto err_out;
 	}
-
-	ramdisk->blocks = ramdisk_size / PAGE_SIZE();
 
 	ramdisk->p_start_addr = phymem_alloc(page_n);
 	if (NULL == (ramdisk->p_start_addr)) {
@@ -131,7 +128,6 @@ err_out:
 int ramdisk_delete(const char *name) {
 	struct ramdisk *ram;
 	struct block_dev *bdev;
-	size_t ramsize;
 
 	assert(name);
 
@@ -147,9 +143,7 @@ int ramdisk_delete(const char *name) {
 		return -EINVAL;
 	}
 
-	ramsize = ram->blocks * RAMDISK_BLOCK_SIZE + PAGE_SIZE() - 1;
-
-	phymem_free(ram->p_start_addr, ramsize / PAGE_SIZE());
+	phymem_free(ram->p_start_addr, bdev->size / PAGE_SIZE());
 	index_free(&ramdisk_idx, ram->idx);
 	pool_free(&ramdisk_pool, ram);
 
