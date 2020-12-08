@@ -381,7 +381,7 @@ static int imx6_usdhc_write(struct block_dev *bdev, char *buffer, size_t count,
 
 static int imx6_usdhc_probe(void *args);
 
-struct block_dev_driver imx6_usdhc_driver = {
+struct block_dev_ops imx6_usdhc_driver = {
 	.name  = "imx6_usdhc_driver",
 	.probe = imx6_usdhc_probe,
 	.read  = imx6_usdhc_read,

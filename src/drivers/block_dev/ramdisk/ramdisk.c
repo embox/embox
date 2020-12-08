@@ -72,7 +72,7 @@ static int ram_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static const struct block_dev_driver ramdisk_pio_driver = {
+static const struct block_dev_ops ramdisk_pio_driver = {
 	.name  = "ramdisk_drv",
 	.ioctl = ram_ioctl,
 	.read = read_sectors,
