@@ -28,10 +28,11 @@
 
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
-#include <drivers/block_dev/ramdisk/ramdisk.h>
+
 #include "ramfs.h"
 
-static int ramfs_iterate(struct inode *next, struct inode *parent, struct dir_ctx *ctx) {
+extern struct ramfs_file_info ramfs_files[RAMFS_FILES];
+static int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct ramfs_fs_info *fsi;
 	int cur_id;
 
@@ -61,7 +62,6 @@ static int ramfs_iterate(struct inode *next, struct inode *parent, struct dir_ct
 
 static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct ramfs_file_info *fi;
-	size_t fi_index;
 
 	assert(i_new);
 	assert(i_new->i_dentry);
@@ -108,6 +108,18 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
+static int ramfs_truncate(struct inode *node, size_t length) {
+	assert(node);
+
+	if (length > MAX_FILE_SIZE) {
+		return -EFBIG;
+	}
+
+	inode_size_set(node, length);
+
+	return 0;
+}
+
 /* Declaration of operations */
 struct inode_operations ramfs_iops = {
 	.create   = ramfs_create,
@@ -118,14 +130,10 @@ struct inode_operations ramfs_iops = {
 };
 
 static int ramfs_destroy_inode(struct inode *inode) {
-	struct ramfs_file_info *fi;
 
 	assert(inode);
 
-	fi = inode->i_data;
-	if (fi) {
-		index_free(&ramfs_file_idx, fi->index);
-	}
+	ramfs_delete(inode);
 
 	return 0;
 }
