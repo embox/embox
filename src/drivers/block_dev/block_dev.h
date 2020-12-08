@@ -31,7 +31,6 @@
 struct block_dev {
 	dev_t id;
 	char name[NAME_MAX + 1];
-	void *dev_vfs_info;
 
 	const struct block_dev_driver *driver;
 	void *privdata;

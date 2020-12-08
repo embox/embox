@@ -72,8 +72,6 @@ static int devfs_add_block(struct dev_module *devmod) {
 		return -ENOENT;
 	}
 
-	bdev->dev_vfs_info = node.node;
-
 	inode_priv_set(node.node, devmod);
 
 	return 0;
