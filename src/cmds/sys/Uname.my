@@ -26,10 +26,7 @@ package embox.cmd.sys
 module uname {
 	source "uname.c"
 
-	option string system = "Embox-OS"
-	option string platform = ""
-	option string processor = "unknown"
-
 	depends embox.compat.posix.util.utsname
+	depends embox.lib.sysctl
 	depends embox.framework.LibFramework
 }
