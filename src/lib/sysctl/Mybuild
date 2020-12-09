@@ -1,0 +1,13 @@
+package embox.lib
+
+static module sysctl {
+	option string system = "Embox OS"
+	option string platform = ""
+	option string processor = "Unknown"
+	source "sysctl.c"
+
+	@IncludeExport(path="lib")
+	source "sysctl.h"
+
+	@NoRuntime depends embox.compat.libc.str
+}
