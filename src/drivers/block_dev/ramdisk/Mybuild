@@ -15,3 +15,12 @@ module ramdisk {
 
 	depends embox.driver.block_dev
 }
+
+module static_ramdisk {
+	option string ramdisk_name = "ramdisk_static"
+	
+	option number size = 16384
+	option number block_size = 512
+
+	source "static_ramdisk.c"
+}
