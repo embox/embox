@@ -54,7 +54,6 @@ extern struct file_operations ramfs_fops;
 extern int ramfs_fill_sb(struct super_block *sb, const char *source);
 extern int ramfs_format(struct block_dev *bdev, void *priv);
 extern int ramfs_delete(struct inode *node);
-extern int ramfs_truncate(struct inode *node, off_t length);
 
 extern struct ramfs_file_info *ramfs_file_alloc(struct inode *node);
 

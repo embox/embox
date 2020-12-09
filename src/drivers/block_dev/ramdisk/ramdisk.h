@@ -14,7 +14,6 @@
 struct ramdisk {
 	struct block_dev *bdev;
 	char             *p_start_addr;
-	size_t            blocks;
 	int               idx;
 };
 

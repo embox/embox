@@ -1,3 +1,4 @@
+#include <errno.h>
 #include <string.h>
 
 #include <drivers/block_dev.h>
@@ -238,16 +239,4 @@ int ramfs_delete(struct inode *node) {
 	fi = inode_priv(node);
 
 	return ramfs_file_free(fi);
-}
-
-int ramfs_truncate(struct inode *node, off_t length) {
-	assert(node);
-
-	if (length > MAX_FILE_SIZE) {
-		return -EFBIG;
-	}
-
-	inode_size_set(node, length);
-
-	return 0;
 }

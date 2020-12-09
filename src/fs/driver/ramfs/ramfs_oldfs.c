@@ -37,6 +37,18 @@ static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
+static int ramfs_truncate(struct inode *node, off_t length) {
+	assert(node);
+
+	if (length > MAX_FILE_SIZE) {
+		return -EFBIG;
+	}
+
+	inode_size_set(node, length);
+
+	return 0;
+}
+
 static struct fsop_desc ramfs_fsop = {
 	.format = ramfs_format,
 	.mount = ramfs_mount,
