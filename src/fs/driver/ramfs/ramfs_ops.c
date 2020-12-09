@@ -18,7 +18,7 @@ struct ramfs_file_info ramfs_files[RAMFS_FILES];
 
 INDEX_DEF(ramfs_file_idx, 0, RAMFS_FILES);
 
-static char sector_buff[PAGE_SIZE()];/* TODO */
+static char sector_buff[RAMFS_BUFFER_SIZE];
 
 static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct ramfs_file_info *fi;
@@ -52,7 +52,7 @@ static size_t ramfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 		blk += fi->index * fsi->block_per_file;
 
-		assert(sizeof(sector_buff) == fsi->block_size);
+		assert(sizeof(sector_buff) >= fsi->block_size);
 		if (0 > block_dev_read(bdev, sector_buff,
 					fsi->block_size, blk)) {
 			break;
@@ -123,7 +123,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 			}
 		}
 
-		/* one 4096-bytes block read operation */
+		/* one block read operation */
 		if(0 > block_dev_read(bdev, sector_buff, fsi->block_size, blk)) {
 			bytecount = 0;
 			break;
@@ -149,6 +149,8 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		file_set_size(desc, pos);
 	}
 
+	fi->length = pos;
+
 	return bytecount;
 }
 
@@ -172,10 +174,12 @@ int ramfs_fill_sb(struct super_block *sb, const char *source) {
 		return -ENOMEM;
 	}
 
+	assert(bdev->block_size <= sizeof(sector_buff));
+
 	memset(fsi, 0, sizeof(struct ramfs_fs_info));
-	fsi->block_per_file = MAX_FILE_SIZE / PAGE_SIZE();
-	fsi->block_size = PAGE_SIZE();
-	fsi->numblocks = bdev->size / PAGE_SIZE();
+	fsi->block_per_file = MAX_FILE_SIZE / bdev->block_size;
+	fsi->block_size = bdev->block_size;
+	fsi->numblocks = bdev->size / bdev->block_size;
 	fsi->bdev = bdev;
 
 	sb->sb_data = fsi;

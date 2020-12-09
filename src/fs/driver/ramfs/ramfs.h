@@ -18,7 +18,8 @@
 
 #define MAX_FILE_SIZE     OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, ramfs_file_size)
 #define RAMFS_FILES       OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, inode_quantity)
-#define RAMFS_DESCRIPTORS OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, ramfs_descriptor_quantity)
+#define RAMFS_DESCRIPTORS OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, ramfs_quantity)
+#define RAMFS_BUFFER_SIZE OPTION_MODULE_GET(embox__fs__driver__ramfs, NUMBER, ramfs_buffer_size)
 #define FILESYSTEM_SIZE   (MAX_FILE_SIZE * RAMFS_FILES)
 
 #define RAMFS_NAME_LEN    32
@@ -43,6 +44,7 @@ struct ramfs_fs_info {
 };
 
 struct ramfs_file_info {
+	int     length;
 	int     index;                 /* number of file in FS*/
 	int     mode;                  /* mode in which this file was opened */
 	char    name[RAMFS_NAME_LEN];
