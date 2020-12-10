@@ -323,11 +323,13 @@ declare -A USB2QEMU
 USB2QEMU=(
 	[ehci_pci]="usb-ehci"
 	[ohci_pci]="pci-ohci"
+	[uhci_pci]="piix3-usb-uhci"
 )
 declare -A USB2QEMUID
 USB2QEMUID=(
 	[ehci_pci]="ehci"
 	[ohci_pci]="ohci"
+	[uhci_pci]="uhci"
 )
 
 USB_DEV=" " read -a qemu_usb <<< "$AUTOQEMU_USB"
