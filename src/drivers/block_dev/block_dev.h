@@ -23,17 +23,11 @@
 #define IOCTL_GETGEOMETRY       3
 #define IOCTL_REVALIDATE        4
 
-#define NODEV                 (-1)
-#define DEV_TYPE_STREAM         1
-#define DEV_TYPE_BLOCK          2
-#define DEV_TYPE_PACKET         3
-
 struct block_dev {
 	dev_t id;
 	char name[NAME_MAX + 1];
-	void *dev_vfs_info;
 
-	const struct block_dev_driver *driver;
+	const struct block_dev_ops *driver;
 	void *privdata;
 
 	uint64_t size;
@@ -47,7 +41,7 @@ struct block_dev {
 	struct block_dev *parent_bdev;
 };
 
-struct block_dev_driver {
+struct block_dev_ops {
 	char *name;
 
 	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
@@ -59,7 +53,7 @@ struct block_dev_driver {
 
 struct block_dev_module {
 	const char * name;
-	const struct block_dev_driver *dev_drv;
+	const struct block_dev_ops *dev_drv;
 };
 
 struct block_dev_cache {
@@ -77,7 +71,7 @@ struct indexator;
 
 extern struct block_dev **get_bdev_tab(void);
 
-extern struct block_dev *block_dev_create(const char *name, const struct block_dev_driver *driver, void *privdata);
+extern struct block_dev *block_dev_create(const char *name, const struct block_dev_ops *driver, void *privdata);
 extern struct block_dev *block_dev(void *bdev);
 
 extern struct block_dev_cache *block_dev_cache_init(void *bdev, int blocks);
@@ -105,9 +99,9 @@ extern dev_t block_dev_id(struct block_dev *dev);
 
 #include <util/array.h>
 
-#define BLOCK_DEV_DEF(name, block_dev_driver) \
+#define BLOCK_DEV_DRIVER_DEF(name, block_dev_ops) \
 	ARRAY_SPREAD_DECLARE(const struct block_dev_module, __block_dev_registry); \
-	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_driver})
+	ARRAY_SPREAD_ADD(__block_dev_registry, {name, block_dev_ops})
 
 
 extern int block_devs_init(void);

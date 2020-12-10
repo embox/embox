@@ -3,8 +3,9 @@ package embox.fs.driver
 @DefaultImpl(ramfs_old)
 abstract module ramfs {
 	option number inode_quantity=64
-	option number ramfs_descriptor_quantity=4
+	option number ramfs_quantity=4
 	option number ramfs_file_size=4096
+	option number ramfs_buffer_size = 4096
 
 	source "ramfs_ops.c"
 

@@ -21,7 +21,7 @@
 
 INDEX_DEF(scsi_disk_idx, 0, 26);
 
-extern const struct block_dev_driver bdev_driver_scsi;
+extern const struct block_dev_ops bdev_driver_scsi;
 
 static void *scsi_create_thread(void *arg) {
 	struct block_dev *bdev;

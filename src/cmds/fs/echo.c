@@ -21,8 +21,8 @@ static void print_usage(void) {
 
 int main(int argc, char **argv) {
 	int opt;
-	FILE *fd;
-	const char *mode;
+	int fd;
+	int mode;
 
 	while (-1 != (opt = getopt(argc - 1, argv, "h"))) {
 		switch(opt) {
@@ -36,25 +36,40 @@ int main(int argc, char **argv) {
 
 	if (argc > 3) {
 		size_t write_items_count;
+		int res;
+
+		mode = O_WRONLY;
 
 		if (0 == strcmp((const char *) argv[argc - 2], ">>")) {
-			mode = "a";
+			mode |= O_APPEND;
 		} else if (0 == strcmp((const char *) argv[argc - 2], ">")) {
-			mode = "w";
+			mode |= O_CREAT | O_TRUNC;
 		}
 		else {
 			print_usage();
 			return 0;
 		}
 
-		if (NULL == (fd = fopen((const char *) argv[argc - 1], mode))) {
+		fd = open((const char *) argv[argc - 1], mode,  S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+		if (fd < 0) {
 			return -errno;
 		}
 
-		write_items_count = fwrite((const void *) argv[1], strlen((const char *) argv[1]), 1, fd);
-		write_items_count += fwrite((const void *) "\n", 1, 1, fd);
-		fclose(fd);
-		return write_items_count > 0 ? 0 : -EIO;
+		res = write(fd, (const void *) argv[1], strlen((const char *) argv[1]));
+		if (0 > res) {
+			close(fd);
+			return -EIO;
+		}
+		write_items_count = res;
+		res = write(fd, (const void *) "\n", 1);
+		if (0 > res) {
+			close(fd);
+			return -EIO;
+		}
+		write_items_count += res;
+
+		close(fd);
+		return 0;
 	}
 	else if (argc == 2) {
 		printf("%s \n",argv[argc - 1]);

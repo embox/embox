@@ -22,7 +22,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t si
 static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
-static const struct block_dev_driver flashbdev_pio_driver = {
+static const struct block_dev_ops flashbdev_pio_driver = {
 	"flash_drv",
 	flashbdev_ioctl,
 	flashbdev_read,

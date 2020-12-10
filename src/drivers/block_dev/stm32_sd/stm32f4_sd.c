@@ -30,7 +30,7 @@ static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 #define USE_LOCAL_BUF
 #endif
 
-static const struct block_dev_driver stm32f4_sd_driver = {
+static const struct block_dev_ops stm32f4_sd_driver = {
 	.name  = STM32F4_SD_DEVNAME,
 	.ioctl = stm32f4_sd_ioctl,
 	.read  = stm32f4_sd_read,

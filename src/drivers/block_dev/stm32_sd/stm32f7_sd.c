@@ -52,7 +52,7 @@ static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
 }
 STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
 
-static const struct block_dev_driver stm32f7_sd_driver = {
+static const struct block_dev_ops stm32f7_sd_driver = {
 	.name  = STM32F7_SD_DEVNAME,
 	.ioctl = stm32f7_sd_ioctl,
 	.read  = stm32f7_sd_read,
@@ -60,7 +60,7 @@ static const struct block_dev_driver stm32f7_sd_driver = {
 	.probe = stm32f7_sd_init,
 };
 
-BLOCK_DEV_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);
+BLOCK_DEV_DRIVER_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);
 
 static int stm32f7_sd_init(void *arg) {
 	struct block_dev *bdev;
