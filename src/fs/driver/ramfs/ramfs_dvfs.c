@@ -53,8 +53,11 @@ static int ramfs_iterate(struct inode *next, char *name, struct inode *parent, s
 		next->i_data = &ramfs_files[cur_id];
 		next->i_no = cur_id;
 		next->length = ramfs_files[cur_id].length;
+		next->i_mode = ramfs_files[cur_id].mode & (S_IFMT | S_IRWXA);
+
 		ctx->fs_ctx = (void *) (cur_id + 1);
 		strncpy(name, (char *) ramfs_files[cur_id].name, DENTRY_NAME_LEN);
+
 		return 0;
 	}
 
@@ -70,6 +73,7 @@ static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	assert(i_new->i_dentry->name);
 
 	fi = ramfs_file_alloc(i_new);
+	fi->mode = S_IFREG | mode;
 
 	strncpy(fi->name, i_new->i_dentry->name, sizeof(fi->name) - 1);
 
@@ -104,6 +108,7 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 		node->i_data = &ramfs_files[i];
 		node->i_no = ramfs_files[i].index;
 		node->length = ramfs_files[i].length;
+		node->i_mode = ramfs_files[i].mode & (S_IFMT | S_IRWXA);
 
 		return node;
 	}
