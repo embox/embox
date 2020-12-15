@@ -171,3 +171,7 @@ module atexit_test {
 
 	depends embox.compat.posix.proc.atexit
 }
+
+module mkdir_test {
+	source "mkdir_test.c"
+}
