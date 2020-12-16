@@ -38,3 +38,24 @@ module stm32f7cube_eth {
 	depends embox.net.util.show_packet
 	depends third_party.bsp.st_bsp_api
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32h7cube_eth {
+	option number log_level=1
+
+	option number irq = 61
+
+	source "stm32h7cube_eth.c"
+	source "stm32cube_eth.c"
+	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
+	source "stm32h7cube_eth.h"
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.kernel.irq_api
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.entry_api
+	depends embox.net.util.show_packet
+	depends third_party.bsp.st_bsp_api
+}

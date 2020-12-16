@@ -477,6 +477,17 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart) {
 	/* Enable USART2 clock */
 	USART_CLK_ENABLE(uart_base);
 
+#if 0
+	/*TODO It can be required for some STM32 series (H7 for example)
+	 * but now all boards work without it
+	 */
+	RCC_PeriphCLKInitTypeDef RCC_PeriphClkInit;
+	/* Select HSI as source of USARTx clocks */
+	RCC_PeriphClkInit.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+	RCC_PeriphClkInit.Usart234578ClockSelection = RCC_USART3CLKSOURCE_HSI;
+	HAL_RCCEx_PeriphCLKConfig(&RCC_PeriphClkInit);
+#endif
+
 	/*##-2- Configure peripheral GPIO ##########################################*/
 	/* UART TX GPIO pin configuration  */
 	GPIO_InitStruct.Pin       = USART_TX_PIN(uart_base);
