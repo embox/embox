@@ -36,7 +36,7 @@
 											device */
 #define VIRTIO_CONFIG_S_DRIVER_OK   0x04 /* Driver is set up and ready to drive
 											the device */
-#define VIRTIO_CONFIG_S_FAILED      0x80 /* Something went wront */
+#define VIRTIO_CONFIG_S_FAILED      0x80 /* Something went wrong */
 
 /**
  * VirtIO Ring Alignment
