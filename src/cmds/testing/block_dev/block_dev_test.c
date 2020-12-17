@@ -41,7 +41,7 @@ static void print_block_devs(void) {
 
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevs[i]) {
-			printf("%4d | %s\n", bdevs[i]->id, bdevs[i]->name);
+			printf("%4d | %s\n", block_dev_id(bdevs[i]), block_dev_name(bdevs[i]));
 		}
 	}
 	printf("\n");
@@ -56,7 +56,7 @@ static struct flash_dev *get_flash_dev(struct block_dev *bdev) {
 		if (!fdev) {
 			break;
 		}
-		if (!strcmp(fdev->bdev->name, bdev->name)) {
+		if (!strcmp(block_dev_name(fdev->bdev), block_dev_name(bdev))) {
 			return fdev;
 		}
 	}
@@ -103,7 +103,7 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 				if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
 					printf("Flash device test failed:\n");
 					printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
-					       fdev->bdev->name, k, j);
+							block_dev_name(fdev->bdev), k, j);
 					return -1;
 				}
 				offset += FLASH_RW_LEN;
@@ -311,10 +311,10 @@ static int part_test(struct block_dev *bdev) {
 		struct block_dev *b = block_dev_by_id(i);
 
 		if (b && b->parent_bdev == bdev) {
-			printf("%s\n", b->name);
+			printf("%s\n", block_dev_name(b));
 			if (b->block_size != blk_sz) {
 				printf("Block size mismatch! %d for %s; %d for %s\n",
-						blk_sz, bdev->name, b->block_size, b->name);
+						blk_sz, block_dev_name(bdev), b->block_size, block_dev_name(b));
 				return 0;
 			}
 
@@ -352,11 +352,11 @@ static int part_test(struct block_dev *bdev) {
 	}
 
 	printf("Step 1/3: Check if partitions writes also change %s content\n",
-			bdev->name);
+			block_dev_name(bdev));
 	for (int i = 0; i < parts_n; i++) {
 		blocks = parts[i]->size / ((uint64_t) blk_sz);
 
-		printf("%s ... ", parts[i]->name);
+		printf("%s ... ", block_dev_name(parts[i]));
 		fflush(stdout);
 
 		for (int64_t j = 0; j < blocks; j++) {
@@ -388,7 +388,7 @@ static int part_test(struct block_dev *bdev) {
 	}
 
 	printf("Step 2/3: Check if %s writes also change partitions content\n",
-			bdev->name);
+			block_dev_name(bdev));
 	blocks = bdev->size / ((uint64_t) blk_sz);
 
 	/* Skip first block because it contains MBR */
@@ -397,7 +397,7 @@ static int part_test(struct block_dev *bdev) {
 		err = block_dev_write(bdev, (void *) write_buf, blk_sz, j);
 		if (err < 0) {
 			printf("Failed to write block #%"PRIu64" to %s\n",
-					j, bdev->name);
+					j, block_dev_name(bdev));
 			goto free_buf;
 		}
 
@@ -412,14 +412,14 @@ static int part_test(struct block_dev *bdev) {
 						j - parts[i]->start_offset);
 				if (err < 0) {
 					printf("Failed to read block #%"PRIu64" from %s\n",
-							j, parts[i]->name);
+							j, block_dev_name(parts[i]));
 					goto free_buf;
 				}
 
 				err = memcmp(read_buf, write_buf, blk_sz);
 				if (err != 0) {
 					printf("Write/read mismatch! %s block %"PRIu64"\n",
-							bdev->name, j);
+							block_dev_name(bdev), j);
 					dump_buf(write_buf, blk_sz, "Write buffer");
 					dump_buf(read_buf, blk_sz, "Read buffer");
 					goto free_buf;
@@ -435,7 +435,7 @@ static int part_test(struct block_dev *bdev) {
 		uint64_t last_blk = parts[i]->size / blk_sz;
 		md5_byte_t digest_pre[16], digest_post[16];
 
-		printf("%s ... ", parts[i]->name);
+		printf("%s ... ", block_dev_name(parts[i]));
 		fflush(stdout);
 
 		if (md5_outside_part(bdev, parts[i], digest_pre, read_buf)) {
@@ -451,7 +451,7 @@ static int part_test(struct block_dev *bdev) {
 				/* Inner writes should succeed */
 				if (err < 0) {
 					printf("Failed to write block #%"PRIu64" from %s\n",
-							j, parts[i]->name);
+							j, block_dev_name(parts[i]));
 					goto free_buf;
 				}
 			} else if (err >= 0) {
@@ -459,7 +459,7 @@ static int part_test(struct block_dev *bdev) {
 				printf("Block #%"PRIu64" is outside of %s, "
 						"but it was written successfully\n",
 						j,
-						parts[i]->name);
+						block_dev_name(parts[i]));
 				goto free_buf;
 			}
 		}
@@ -470,7 +470,7 @@ static int part_test(struct block_dev *bdev) {
 
 		if (memcmp(digest_pre, digest_post, sizeof(digest_pre))) {
 			printf("Writes to %s change content outside of partition!\n",
-					parts[i]->name);
+					block_dev_name(parts[i]));
 			goto free_buf;
 		}
 		printf("OK\n");
