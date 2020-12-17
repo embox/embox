@@ -37,6 +37,7 @@ struct idesc_dev {
 
 extern int char_dev_init_all(void);
 extern int char_dev_register(struct dev_module *cdev);
+extern int char_dev_unregister(struct dev_module *cdev);
 extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
 extern struct idesc *char_dev_idesc_create(struct dev_module *cdev);
 

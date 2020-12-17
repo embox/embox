@@ -11,3 +11,7 @@ struct dev_module;
 void devfs_notify_new_module(struct dev_module *devmod) {
 	/* Do nothing */
 }
+
+void devfs_notify_del_module(struct dev_module *devmod) {
+	/* Do nothing */
+}

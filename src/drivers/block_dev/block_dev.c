@@ -434,7 +434,9 @@ int block_dev_destroy(void *dev) {
 		}
 	}
 
+	dev_module_destroy(dev);
+
 	block_dev_free(devmod->dev_priv);
 
-	return dev_module_destroy(dev);
+	return 0;
 }

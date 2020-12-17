@@ -6,6 +6,10 @@
  * @date 2016-06-12
  */
 
+#include <sys/mman.h>
+
+#include <drivers/common/memory.h>
+
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
@@ -73,11 +77,13 @@ static int imx6_gpt_init(struct clock_source *cs) {
 	REG32_STORE(GPT_CR,   0);
 	REG32_STORE(GPT_IR,   0);
 
+#if 0
 	t = REG32_LOAD(0x20C4000 + 0x14);
 	printk("STATUS %#x\n", t);
 	t &= ~(1 << 25);
 
 	REG32_STORE(0x20C4000, t);
+#endif
 
 	REG32_STORE(GPT_PR, GPT_PRESCALER);
 
@@ -115,6 +121,8 @@ static struct time_counter_device imx6_gpt_counter = {
 	.read     = imx6_gpt_read,
 	.cycle_hz = GPT_TARGET_HZ,
 };
+
+PERIPH_MEMORY_DEFINE(imx_gpt, GPT_BASE, 0x40);
 
 STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, NULL);
 
