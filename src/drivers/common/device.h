@@ -18,7 +18,11 @@
 #define MAX_DEV_MODULE_COUNT \
 	OPTION_MODULE_GET(embox__driver__common, NUMBER, max_dev_module_count)
 
-#define STATIC_DEVMOD_ID -1
+#define DEVID_ID_MASK       0x00FF
+#define DEVID_FLAGS_MASK    0xFF00
+#define DEVID_CDEV          0x0100
+#define DEVID_BDEV          0x0200
+#define DEVID_STATIC        0x0400
 
 struct idesc;
 struct idesc_ops;
@@ -29,8 +33,8 @@ struct dev_module {
 
 	const struct idesc_ops *dev_iops;
 
-	struct idesc *(*dev_open)  (struct dev_module *, void *);
-	void 		  (*dev_close) (struct idesc *);
+	struct idesc *(*dev_open) (struct dev_module *, void *);
+	void   (*dev_close) (struct idesc *);
 
 	void  *dev_priv;
 };

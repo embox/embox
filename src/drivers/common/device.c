@@ -15,7 +15,6 @@
 #include <util/indexator.h>
 
 POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
-INDEX_DEF(dev_module_idx, 0, MAX_DEV_MODULE_COUNT);
 
 /**
  * @brief Alloc and initialize device module with given parameters
@@ -34,7 +33,6 @@ struct dev_module *dev_module_create(
 	void *privdata
 ) {
 	struct dev_module *devmod;
-	int id;
 
 	assert(dev_iops);
 	assert(name);
@@ -46,14 +44,12 @@ struct dev_module *dev_module_create(
 	}
 
 	devmod = pool_alloc(&dev_module_pool);
-	id = index_alloc(&dev_module_idx, INDEX_MIN);
-	if (id == INDEX_NONE) {
-		pool_free(&dev_module_pool, devmod);
+	if (devmod == NULL) {
 		return NULL;
 	}
 
 	memset(devmod, 0, sizeof(*devmod));
-	devmod->dev_id = id;
+
 	strncpy(devmod->name, name, DEV_NAME_LEN);
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
 	devmod->dev_iops = dev_iops;
@@ -75,7 +71,6 @@ struct dev_module *dev_module_create(
  */
 int dev_module_destroy(struct dev_module *dev) {
 	devfs_notify_del_module(dev);
-	index_free(&dev_module_idx, dev->dev_id);
 	pool_free(&dev_module_pool, dev);
 	return 0;
 }

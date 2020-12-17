@@ -420,6 +420,7 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_ops 
 	bdev->name[sizeof(bdev->name) - 1]  = '\0';
 
 	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
+	devmod->dev_id = DEVID_BDEV | bdev_id;
 	bdev->dev_module = devmod;
 
 	return bdev;
