@@ -74,6 +74,7 @@ struct dev_module *dev_module_create(
  * @return Zero or negative error number if failed
  */
 int dev_module_destroy(struct dev_module *dev) {
+	devfs_notify_del_module(dev);
 	index_free(&dev_module_idx, dev->dev_id);
 	pool_free(&dev_module_pool, dev);
 	return 0;

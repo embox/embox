@@ -101,6 +101,18 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 	return 0;
 }
 
+static void devfs_del_node(const char *name) {
+	struct path node;
+	char full_path[PATH_MAX];
+
+	strcpy(full_path, "/dev/");
+	strncat(full_path, name, PATH_MAX - strlen("/dev") - 1);
+
+	vfs_lookup(full_path, &node);
+
+	vfs_del_leaf(node.node);
+}
+
 void devfs_notify_new_module(struct dev_module *devmod) {
 	struct block_dev **bdevs;
 	void *priv = devmod->dev_priv;
@@ -118,4 +130,23 @@ void devfs_notify_new_module(struct dev_module *devmod) {
 	}
 
 	devfs_add_char(devmod, NULL);
+}
+
+void devfs_notify_del_module(struct dev_module *devmod) {
+	struct block_dev **bdevs;
+	void *priv = devmod->dev_priv;
+	int max_id = block_dev_max_id();
+
+	bdevs = get_bdev_tab();
+
+	if (priv != NULL) {
+		for (int i = 0; i < max_id; i++) {
+			if (bdevs[i] == priv) {
+				devfs_del_node(bdevs[i]->name);
+				return;
+			}
+		}
+	}
+
+	devfs_del_node(devmod->name);
 }
