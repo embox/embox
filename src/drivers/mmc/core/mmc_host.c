@@ -153,7 +153,7 @@ free_mmc:
 
 int mmc_dev_destroy(struct mmc_host *mmc) {
 	if (mmc->bdev) {
-		block_dev_destroy(mmc->bdev->dev_module);
+		block_dev_destroy(mmc->bdev);
 	}
 	index_free(&mmc_idx, mmc->idx);
 	pool_free(&mmc_dev_pool, mmc);
