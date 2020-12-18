@@ -400,6 +400,10 @@ dev_t block_dev_id(struct block_dev *dev) {
 	return dev->dev_module.dev_id & DEVID_ID_MASK;
 }
 
+void *block_dev_priv(struct block_dev *dev) {
+	return dev->privdata;
+}
+
 struct block_dev *block_dev_create(const char *path, const struct block_dev_ops *driver, void *privdata) {
 	struct block_dev *bdev;
 	struct dev_module *devmod;

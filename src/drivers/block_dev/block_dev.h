@@ -98,6 +98,7 @@ extern size_t block_dev_block_size(struct block_dev *dev);
 extern struct block_dev *block_dev_parent(struct block_dev *dev);
 extern const char *block_dev_name(struct block_dev *dev);
 extern dev_t block_dev_id(struct block_dev *dev);
+extern void *block_dev_priv(struct block_dev *dev);
 
 #include <util/array.h>
 
