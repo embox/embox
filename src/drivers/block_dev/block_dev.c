@@ -391,7 +391,7 @@ const char *block_dev_name(struct block_dev *dev) {
 dev_t block_dev_id(struct block_dev *dev) {
 	assert(dev);
 
-	return dev->id;
+	return dev->dev_module->dev_id & DEVID_ID_MASK;
 }
 
 struct block_dev *block_dev_create(const char *path, const struct block_dev_ops *driver, void *privdata) {
@@ -414,7 +414,6 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_ops 
 	devtab[bdev_id] = bdev;
 
 	*bdev = (struct block_dev) {
-		.id = (dev_t)bdev_id,
 		.driver = driver,
 		.privdata = privdata,
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
