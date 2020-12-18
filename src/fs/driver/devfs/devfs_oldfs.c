@@ -59,14 +59,13 @@ static const struct fs_driver devfs_driver = {
 DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
 
 static int devfs_add_block(struct dev_module *devmod) {
-	struct block_dev *bdev = devmod->dev_priv;
 	struct path node, root;
 	char full_path[PATH_MAX];
 
 	vfs_get_root_path(&root);
 
 	strcpy(full_path, "/dev/");
-	strncat(full_path, block_dev_name(bdev), PATH_MAX - strlen("/dev") - 1);
+	strncat(full_path, devmod->name, PATH_MAX - strlen("/dev") - 1);
 
 	if (0 != vfs_create(&root, full_path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		return -ENOENT;

@@ -24,8 +24,6 @@
 #define IOCTL_REVALIDATE        4
 
 struct block_dev {
-	char name[NAME_MAX + 1];
-
 	const struct block_dev_ops *driver;
 	void *privdata;
 

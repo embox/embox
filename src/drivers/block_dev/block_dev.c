@@ -385,7 +385,7 @@ struct block_dev *block_dev_parent(struct block_dev *dev) {
 const char *block_dev_name(struct block_dev *dev) {
 	assert(dev);
 
-	return dev->name;
+	return dev->dev_module->name;
 }
 
 dev_t block_dev_id(struct block_dev *dev) {
@@ -419,10 +419,7 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_ops 
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	strncpy(bdev->name, basename((char *)path), sizeof(bdev->name) - 1);
-	bdev->name[sizeof(bdev->name) - 1]  = '\0';
-
-	devmod = dev_module_create(bdev->name, NULL, NULL, &idesc_bdev_ops, bdev);
+	devmod = dev_module_create(basename((char *)path), NULL, NULL, &idesc_bdev_ops, bdev);
 	devmod->dev_id = DEVID_BDEV | bdev_id;
 	bdev->dev_module = devmod;
 
