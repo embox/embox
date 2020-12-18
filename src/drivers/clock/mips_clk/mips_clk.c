@@ -27,6 +27,11 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
+static cycle_t mips_clk_read(struct clock_source *cs) {
+	uint32_t cnt = mips_read_c0_count();
+	return cnt;
+}
+
 static int mips_clock_setup(struct clock_source *cs) {
 	mips_write_c0_compare(COUNT_OFFSET);
 	mips_write_c0_count(0);
@@ -37,6 +42,11 @@ static struct time_event_device mips_event_device  = {
 	.set_periodic = mips_clock_setup,
 	.name = "mips_clk",
 	.irq_nr = MIPS_IRQN_TIMER
+};
+
+static struct time_counter_device mips_counter_device  = {
+	.read = mips_clk_read,
+	.cycle_hz = SYS_CLOCK
 };
 
 static int mips_clock_init(struct clock_source *cs) {
@@ -51,4 +61,4 @@ static int mips_clock_init(struct clock_source *cs) {
 }
 
 CLOCK_SOURCE_DEF(mips_clk, mips_clock_init, NULL,
-	&mips_event_device, NULL);
+	&mips_event_device, &mips_counter_device);
