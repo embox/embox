@@ -12,6 +12,8 @@
 #include <limits.h>
 #include <sys/types.h>
 
+#include <drivers/device.h>
+
 #include <framework/mod/options.h>
 #include <config/embox/driver/block_dev.h>
 
@@ -24,6 +26,8 @@
 #define IOCTL_REVALIDATE        4
 
 struct block_dev {
+	struct dev_module dev_module;
+
 	const struct block_dev_ops *driver;
 	void *privdata;
 
@@ -31,7 +35,6 @@ struct block_dev {
 	size_t block_size;
 	struct block_dev_cache *cache;
 
-	struct dev_module *dev_module;
 
 	/* partitions */
 	uint64_t start_offset;
@@ -79,7 +82,7 @@ extern int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, 
 extern int block_dev_write(void *bdev, const char *buffer, size_t count, blkno_t blkno);
 extern int block_dev_ioctl(void *bdev, int cmd, void *args, size_t size);
 extern int block_dev_close(void *bdev);
-extern int block_dev_destroy(void *bdev);
+extern int block_dev_destroy(struct block_dev *bdev);
 extern int block_dev_named(const char *name, struct indexator *indexator);
 extern struct block_dev_module *block_dev_lookup(const char *name);
 extern void block_dev_free(struct block_dev *dev);

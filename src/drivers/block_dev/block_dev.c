@@ -367,7 +367,7 @@ struct block_dev_cache *block_dev_cached_read(void *dev, blkno_t blkno) {
 struct dev_module *block_dev_to_device(struct block_dev *dev) {
 	assert(dev);
 
-	return dev->dev_module;
+	return &dev->dev_module;
 }
 
 uint64_t block_dev_size(struct block_dev *dev) {
@@ -391,13 +391,13 @@ struct block_dev *block_dev_parent(struct block_dev *dev) {
 const char *block_dev_name(struct block_dev *dev) {
 	assert(dev);
 
-	return dev->dev_module->name;
+	return dev->dev_module.name;
 }
 
 dev_t block_dev_id(struct block_dev *dev) {
 	assert(dev);
 
-	return dev->dev_module->dev_id & DEVID_ID_MASK;
+	return dev->dev_module.dev_id & DEVID_ID_MASK;
 }
 
 struct block_dev *block_dev_create(const char *path, const struct block_dev_ops *driver, void *privdata) {
@@ -425,25 +425,22 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_ops 
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	devmod = dev_module_create(basename((char *)path), NULL, NULL, &idesc_bdev_ops, bdev);
+	devmod = dev_module_init(&bdev->dev_module, basename((char *)path), NULL, NULL, &idesc_bdev_ops, bdev);
 	devmod->dev_id = DEVID_BDEV | bdev_id;
-	bdev->dev_module = devmod;
 
 	return bdev;
 }
 
-int block_dev_destroy(void *dev) {
-	struct dev_module *devmod = dev;
-
+int block_dev_destroy(struct block_dev *dev) {
 	for (int i = 0; i < MAX_BDEV_QUANTITY; i++) {
-		if (devtab[i] && devtab[i]->parent_bdev == devmod->dev_priv) {
-			block_dev_destroy(devtab[i]->dev_module);
+		if (devtab[i] && devtab[i]->parent_bdev == dev) {
+			block_dev_destroy(devtab[i]);
 		}
 	}
 
-	dev_module_destroy(dev);
+	dev_module_deinit(&dev->dev_module);
 
-	block_dev_free(devmod->dev_priv);
+	block_dev_free(dev);
 
 	return 0;
 }
