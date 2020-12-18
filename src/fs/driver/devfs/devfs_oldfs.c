@@ -66,7 +66,7 @@ static int devfs_add_block(struct dev_module *devmod) {
 	vfs_get_root_path(&root);
 
 	strcpy(full_path, "/dev/");
-	strncat(full_path, bdev->name, PATH_MAX - strlen("/dev") - 1);
+	strncat(full_path, block_dev_name(bdev), PATH_MAX - strlen("/dev") - 1);
 
 	if (0 != vfs_create(&root, full_path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
 		return -ENOENT;
@@ -142,7 +142,7 @@ void devfs_notify_del_module(struct dev_module *devmod) {
 	if (priv != NULL) {
 		for (int i = 0; i < max_id; i++) {
 			if (bdevs[i] == priv) {
-				devfs_del_node(bdevs[i]->name);
+				devfs_del_node(block_dev_name(bdevs[i]));
 				return;
 			}
 		}

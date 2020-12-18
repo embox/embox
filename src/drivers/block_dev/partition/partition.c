@@ -28,6 +28,7 @@ int create_partitions(struct block_dev *bdev) {
 	int last_digit = 0;
 	char part_name[PART_NAME_MAX];
 	struct block_dev *part_bdev;
+	const char *bdev_name;
 
 	/* Read partition table */
 	rc = block_dev_read(bdev, (char *)&mbr, bdev->block_size, 0);
@@ -40,7 +41,9 @@ int create_partitions(struct block_dev *bdev) {
 		return 0;
 	}
 
-	if (isdigit(bdev->name[strlen(bdev->name) - 1])) {
+	bdev_name = block_dev_name(bdev);
+
+	if (isdigit(bdev_name[strlen(bdev_name) - 1])) {
 		last_digit = 1;
 	}
 
@@ -50,7 +53,7 @@ int create_partitions(struct block_dev *bdev) {
 			return part_n;
 		}
 
-		sprintf(part_name, "/dev/%s%s%d", bdev->name, last_digit ? "p" : "", part_n + 1);
+		sprintf(part_name, "/dev/%s%s%d", bdev_name, last_digit ? "p" : "", part_n + 1);
 		part_bdev = block_dev_create(part_name, bdev->driver, NULL);
 		if (!part_bdev) {
 			return -ENOMEM;

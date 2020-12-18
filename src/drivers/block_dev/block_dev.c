@@ -96,7 +96,7 @@ struct block_dev *block_dev_find(const char *bd_name) {
 	int i;
 
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
-		if (devtab[i] && 0 == strcmp(devtab[i]->name, bd_name)) {
+		if (devtab[i] && 0 == strcmp(block_dev_name(devtab[i]), bd_name)) {
 			return devtab[i];
 		}
 	}

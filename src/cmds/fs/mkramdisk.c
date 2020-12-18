@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 	rd = ramdisk_create(ramdisk_path, ramdisk_size);
 
 	if (NULL != rd) {
-		printf("%s\n", rd->bdev->name);
+		printf("%s\n", block_dev_name(rd->bdev));
 	}
 
 	return err(rd);
