@@ -57,10 +57,14 @@ static int block_dev_cache_free(void *dev) {
 }
 
 void block_dev_free(struct block_dev *dev) {
+	int idx;
+
 	assert(dev);
 
-	devtab[dev->id] = NULL;
-	index_free(&block_dev_idx, dev->id);
+	idx = block_dev_id(dev);
+
+	devtab[idx] = NULL;
+	index_free(&block_dev_idx, idx);
 	pool_free(&blockdev_pool, dev);
 }
 
