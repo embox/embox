@@ -39,7 +39,7 @@ static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno
 		return 0;
 	}
 	bufp = (char *) buffer;
-	hd = (hd_t *) bdev->privdata;
+	hd = block_dev_priv(bdev);
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 	if (count % bdev->block_size) {
@@ -106,7 +106,7 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 		return 0;
 	}
 	bufp = (char *) buffer;
-	hd = (hd_t *) bdev->privdata;
+	hd = block_dev_priv(bdev);
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 

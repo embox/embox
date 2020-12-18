@@ -38,7 +38,7 @@ static int mmc_block_read(struct block_dev *bdev, char *buffer, size_t count, bl
 	assert(bdev);
 	assert(buffer);
 
-	mmc = bdev->privdata;
+	mmc = block_dev_priv(bdev);
 	assert(mmc);
 
 	if (mmc->high_capacity) {
@@ -74,7 +74,7 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 	assert(bdev);
 	assert(buffer);
 
-	mmc = bdev->privdata;
+	mmc = block_dev_priv(bdev);
 	assert(mmc);
 
 	if (mmc->high_capacity) {

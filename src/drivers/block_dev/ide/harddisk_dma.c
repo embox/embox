@@ -95,7 +95,7 @@ static int hd_read_udma(struct block_dev *bdev, char *buffer, size_t count, blkn
 	}
 	bufp = (char *) buffer;
 
-	hd = (hd_t *) bdev->privdata;
+	hd = block_dev_priv(bdev);
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 
@@ -173,7 +173,7 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 	}
 	bufp = (char *) buffer;
 
-	hd = (hd_t *) bdev->privdata;
+	hd = block_dev_priv(bdev);
 	hdc = hd->hdc;
 	sectsleft = count / bdev->block_size;
 

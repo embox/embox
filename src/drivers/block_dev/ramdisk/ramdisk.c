@@ -40,7 +40,7 @@ int ramdisk_read_sectors(struct block_dev *bdev,
 	struct ramdisk *ramdisk;
 	char *read_addr;
 
-	ramdisk = bdev->privdata;
+	ramdisk = block_dev_priv(bdev);
 	read_addr = ramdisk->p_start_addr + (blkno * bdev->block_size);
 
 	memcpy(buffer, read_addr, count);
@@ -53,7 +53,7 @@ int ramdisk_write_sectors(struct block_dev *bdev,
 	struct ramdisk *ramdisk;
 	char *write_addr;
 
-	ramdisk = bdev->privdata;
+	ramdisk = block_dev_priv(bdev);
 	write_addr = ramdisk->p_start_addr + (blkno * bdev->block_size);
 
 	memcpy(write_addr, buffer, count);
@@ -137,7 +137,7 @@ int ramdisk_delete(const char *name) {
 		return -ENOENT;
 	}
 
-	ram = bdev->privdata;
+	ram = block_dev_priv(bdev);
 
 	if (!pool_belong(&ramdisk_pool, ram)) {
 		return -EINVAL;

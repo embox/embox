@@ -18,14 +18,14 @@
 #include <drivers/block_dev.h>
 
 static void scsi_disk_lock(struct block_dev *bdev) {
-	struct scsi_dev *sdev = bdev->privdata;
+	struct scsi_dev *sdev = block_dev_priv(bdev);
 
 	scsi_dev_use_inc(sdev);
 	mutex_lock(&sdev->m);
 }
 
 static void scsi_disk_unlock(struct block_dev *bdev) {
-	struct scsi_dev *sdev = bdev->privdata;
+	struct scsi_dev *sdev = block_dev_priv(bdev);
 
 	if (sdev->use_count == 1) {
 		scsi_disk_bdev_try_unbind(sdev);
@@ -73,7 +73,7 @@ static int scsi_write_blocks(struct scsi_dev *sdev,
 
 static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 		blkno_t blkno) {
-	struct scsi_dev *sdev = bdev->privdata;
+	struct scsi_dev *sdev = block_dev_priv(bdev);
 	int blksize = sdev->blk_size;
 	unsigned int lba;
 	char *bp;
@@ -112,7 +112,7 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 	assert(bdev);
 	assert(buffer);
 
-	sdev = bdev->privdata;
+	sdev = block_dev_priv(bdev);
 	blksize = sdev->blk_size;
 
 	if (!sdev) {
@@ -138,7 +138,7 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 }
 
 static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	struct scsi_dev *sdev = bdev->privdata;
+	struct scsi_dev *sdev = block_dev_priv(bdev);
 	int ret;
 
 	if (!sdev) {
