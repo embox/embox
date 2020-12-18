@@ -39,13 +39,12 @@ static void *scsi_create_thread(void *arg) {
 		return NULL;
 	}
 
-	bdev = block_dev_create(path, (void *) &bdev_driver_scsi, NULL);
+	bdev = block_dev_create(path, (void *) &bdev_driver_scsi, sdev);
 	if (!bdev) {
 		log_error("can't create block device");
 		return NULL;
 	}
 
-	bdev->privdata = sdev;
 	bdev->size = (uint64_t)sdev->blk_n * sdev->blk_size;
 	sdev->bdev = bdev;
 
@@ -64,7 +63,6 @@ void scsi_disk_lost(struct scsi_dev *sdev) {
 
 void scsi_disk_bdev_try_unbind(struct scsi_dev *sdev) {
 	if (!sdev->attached) {
-		sdev->bdev->privdata = NULL;
 		index_free(&scsi_disk_idx, sdev->idx);
 		block_dev_destroy(sdev->bdev);
 	}
