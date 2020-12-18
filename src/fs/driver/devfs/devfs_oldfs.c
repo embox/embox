@@ -58,25 +58,7 @@ static const struct fs_driver devfs_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
 
-static int devfs_add_block(struct dev_module *devmod) {
-	struct path node, root;
-	char full_path[PATH_MAX];
-
-	vfs_get_root_path(&root);
-
-	strcpy(full_path, "/dev/");
-	strncat(full_path, devmod->name, PATH_MAX - strlen("/dev") - 1);
-
-	if (0 != vfs_create(&root, full_path, S_IFBLK | S_IRALL | S_IWALL, &node)) {
-		return -ENOENT;
-	}
-
-	inode_priv_set(node.node, devmod);
-
-	return 0;
-}
-
-static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
+static int devfs_add_dev(struct dev_module *cdev, int flag) {
 	struct path node;
 
 	if (vfs_lookup("/dev", &node)) {
@@ -87,15 +69,12 @@ static int devfs_add_char(struct dev_module *cdev, struct inode **inode) {
 		return -ENODEV;
 	}
 
-	vfs_create_child(&node, cdev->name, S_IFCHR | S_IRALL | S_IWALL, &node);
+	vfs_create_child(&node, cdev->name, flag | S_IRALL | S_IWALL, &node);
 	if (!(node.node)) {
 		return -1;
 	}
 
 	inode_priv_set(node.node, (void *) cdev);
-	if (inode) {
-		*inode = node.node;
-	}
 
 	return 0;
 }
@@ -122,13 +101,13 @@ void devfs_notify_new_module(struct dev_module *devmod) {
 	if (priv != NULL) {
 		for (int i = 0; i < max_id; i++) {
 			if (bdevs[i] == priv) {
-				devfs_add_block(devmod);
+				devfs_add_dev(devmod, S_IFBLK);
 				return;
 			}
 		}
 	}
 
-	devfs_add_char(devmod, NULL);
+	devfs_add_dev(devmod, S_IFCHR);
 }
 
 void devfs_notify_del_module(struct dev_module *devmod) {
