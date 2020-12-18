@@ -88,6 +88,8 @@ extern struct block_dev *block_dev_find(const char *bd_name);
 extern int block_dev_max_id(void);
 extern struct block_dev *block_dev_by_id(int id);
 
+extern struct dev_module *block_dev_to_device(struct block_dev *dev);
+
 extern uint64_t block_dev_size(struct block_dev *dev);
 extern size_t block_dev_block_size(struct block_dev *dev);
 extern struct block_dev *block_dev_parent(struct block_dev *dev);

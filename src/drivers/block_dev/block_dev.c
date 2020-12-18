@@ -364,6 +364,12 @@ struct block_dev_cache *block_dev_cached_read(void *dev, blkno_t blkno) {
 	return cache;
 }
 
+struct dev_module *block_dev_to_device(struct block_dev *dev) {
+	assert(dev);
+
+	return dev->dev_module;
+}
+
 uint64_t block_dev_size(struct block_dev *dev) {
 	assert(dev);
 

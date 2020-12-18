@@ -78,7 +78,7 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevtab[i] && !strcmp(block_dev_name(bdevtab[i]), name)) {
-			devfs_fill_inode(node, bdevtab[i]->dev_module, S_IFBLK);
+			devfs_fill_inode(node, block_dev_to_device(bdevtab[i]), S_IFBLK);
 			node->length = bdevtab[i]->size;
 			return node;
 		}
@@ -121,7 +121,7 @@ static int devfs_iterate(struct inode *next, char *name, struct inode *parent, s
 	for (; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevtab[i]) {
 			ctx->fs_ctx = (void *)(intptr_t)i + 1;
-			devfs_fill_inode(next, bdevtab[i]->dev_module, S_IFBLK | S_IRALL | S_IWALL);
+			devfs_fill_inode(next, block_dev_to_device(bdevtab[i]), S_IFBLK | S_IRALL | S_IWALL);
 			strncpy(name, block_dev_name(bdevtab[i]), NAME_MAX - 1);
 			name[NAME_MAX - 1] = '\0';
 			return 0;
