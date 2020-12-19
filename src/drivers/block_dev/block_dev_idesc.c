@@ -44,7 +44,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	pos = file_get_pos(file);
 
 	devmod = file_get_inode_data(file);
-	bdev = devmod->dev_priv;
+	bdev = dev_module_to_bdev(devmod);
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
 		blk_no = pos / bdev->block_size;
@@ -86,7 +86,7 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	pos = file_get_pos(file);
 
 	devmod = file_get_inode_data(file);
-	bdev = devmod->dev_priv;
+	bdev = dev_module_to_bdev(devmod);
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
 		blk_no = pos / bdev->block_size;
@@ -121,7 +121,7 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	file = (struct file_desc *) idesc;
 
 	devmod = file_get_inode_data(file);
-	bdev = devmod->dev_priv;
+	bdev = dev_module_to_bdev(devmod);
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:

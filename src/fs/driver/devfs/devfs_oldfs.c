@@ -93,14 +93,14 @@ static void devfs_del_node(const char *name) {
 
 void devfs_notify_new_module(struct dev_module *devmod) {
 	struct block_dev **bdevs;
-	void *priv = devmod->dev_priv;
+	struct block_dev *bdev = dev_module_to_bdev(devmod);
 	int max_id = block_dev_max_id();
 
 	bdevs = get_bdev_tab();
 
-	if (priv != NULL) {
+	if (bdev != NULL) {
 		for (int i = 0; i < max_id; i++) {
-			if (bdevs[i] == priv) {
+			if (bdevs[i] == bdev) {
 				devfs_add_dev(devmod, S_IFBLK);
 				return;
 			}
@@ -112,14 +112,14 @@ void devfs_notify_new_module(struct dev_module *devmod) {
 
 void devfs_notify_del_module(struct dev_module *devmod) {
 	struct block_dev **bdevs;
-	void *priv = devmod->dev_priv;
+	struct block_dev *bdev = dev_module_to_bdev(devmod);
 	int max_id = block_dev_max_id();
 
 	bdevs = get_bdev_tab();
 
-	if (priv != NULL) {
+	if (bdev != NULL) {
 		for (int i = 0; i < max_id; i++) {
-			if (bdevs[i] == priv) {
+			if (bdevs[i] == bdev) {
 				devfs_del_node(block_dev_name(bdevs[i]));
 				return;
 			}

@@ -30,7 +30,7 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 	dev = inode_priv(node);
 	assert(dev->dev_open);
 
-	return dev->dev_open(dev, dev->dev_priv);
+	return dev->dev_open(dev, dev_module_to_bdev(dev));
 }
 
 static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
