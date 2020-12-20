@@ -429,7 +429,7 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_ops 
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	devmod = dev_module_init(&bdev->dev_module, basename((char *)path), NULL, NULL, &idesc_bdev_ops, bdev);
+	devmod = dev_module_init(&bdev->dev_module, basename((char *)path), NULL, NULL, &idesc_bdev_ops, privdata);
 	devmod->dev_id = DEVID_BDEV | bdev_id;
 
 	return bdev;
