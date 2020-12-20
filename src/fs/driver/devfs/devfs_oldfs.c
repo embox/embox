@@ -111,20 +111,5 @@ void devfs_notify_new_module(struct dev_module *devmod) {
 }
 
 void devfs_notify_del_module(struct dev_module *devmod) {
-	struct block_dev **bdevs;
-	struct block_dev *bdev = dev_module_to_bdev(devmod);
-	int max_id = block_dev_max_id();
-
-	bdevs = get_bdev_tab();
-
-	if (bdev != NULL) {
-		for (int i = 0; i < max_id; i++) {
-			if (bdevs[i] == bdev) {
-				devfs_del_node(block_dev_name(bdevs[i]));
-				return;
-			}
-		}
-	}
-
 	devfs_del_node(devmod->name);
 }
