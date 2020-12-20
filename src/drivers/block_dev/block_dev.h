@@ -12,6 +12,8 @@
 #include <limits.h>
 #include <sys/types.h>
 
+#include <util/member.h>
+
 #include <drivers/device.h>
 
 #include <framework/mod/options.h>
@@ -109,9 +111,8 @@ extern void *block_dev_priv(struct block_dev *dev);
 
 extern int block_devs_init(void);
 
-#include <drivers/device.h>
 static inline struct block_dev *dev_module_to_bdev(struct dev_module *devmod) {
-	return (struct block_dev *) devmod->dev_priv;
+	return (struct block_dev *) member_cast_out(devmod, struct block_dev, dev_module);
 }
 
 #endif /* BLOCK_DEV_H_ */
