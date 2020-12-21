@@ -40,7 +40,7 @@ int system_start(void) {
 		strncpy(cmd_line, command, sizeof(cmd_line) - 1);
 		cmd_line[sizeof(cmd_line) - 1] = '\0';
 #if OPTION_GET(NUMBER,log_level) >= LOG_INFO
-		printf(">%s\n", command);
+		printf(">%s\n", cmd_line);
 #endif
 		argc = cmdline_tokenize((char *)cmd_line, argv);
 		if (0 == strncmp(argv[0], "pthread", 7)) {
