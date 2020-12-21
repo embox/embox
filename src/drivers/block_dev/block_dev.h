@@ -31,7 +31,6 @@ struct block_dev {
 	struct dev_module dev_module;
 
 	const struct block_dev_ops *driver;
-	void *privdata;
 
 	uint64_t size;
 	size_t block_size;

@@ -401,7 +401,7 @@ dev_t block_dev_id(struct block_dev *dev) {
 }
 
 void *block_dev_priv(struct block_dev *dev) {
-	return dev->privdata;
+	return dev->dev_module.dev_priv;
 }
 
 struct block_dev *block_dev_create(const char *path, const struct block_dev_ops *driver, void *privdata) {
@@ -425,7 +425,6 @@ struct block_dev *block_dev_create(const char *path, const struct block_dev_ops 
 
 	*bdev = (struct block_dev) {
 		.driver = driver,
-		.privdata = privdata,
 		.block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
