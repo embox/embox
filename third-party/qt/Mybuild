@@ -22,7 +22,7 @@ static module core {
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.compat.posix.util.nanosleep
-	@NoRuntime depends embox.fs.rootfs
+	@NoRuntime depends embox.fs.root_file_system
 	@NoRuntime depends embox.compat.posix.LibPosix
 	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.compat.posix.util.times
