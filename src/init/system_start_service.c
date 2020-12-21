@@ -20,16 +20,19 @@
 
 #include "setup_tty.h"
 
+#define CMD_MAX_ARGV OPTION_GET(NUMBER, cmd_max_argv)
+#define CMD_MAX_LEN  OPTION_GET(NUMBER, cmd_max_len)
+
 static const char *script_commands[] = {
 	#include <system_start.inc>
 };
 
 int system_start(void) {
 	const char *command;
-	char *argv[10];
+	char *argv[CMD_MAX_ARGV];
 	int argc;
 	const struct cmd *cmd;
-	char cmd_line[64];
+	char cmd_line[CMD_MAX_LEN];
 	const char *tty_dev_name;
 
 	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
