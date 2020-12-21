@@ -144,7 +144,7 @@ static int ext3fs_format(struct block_dev *bdev, void *priv) {
 	char dev_path[64];
 
 	strcpy(dev_path, "/dev/");
-	strcat(dev_path, bdev->name);
+	strcat(dev_path, block_dev_name(bdev));
 
 	argv[0] = "mke2fs";
 	argv[1] = "-b";

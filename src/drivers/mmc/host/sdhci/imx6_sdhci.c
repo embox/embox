@@ -408,7 +408,6 @@ static int imx6_usdhc_probe(void *args) {
 	uint32_t tmp;
 
 	bdev = block_dev_create("sdhc", &imx6_usdhc_driver, NULL);
-	bdev->privdata = NULL;
 	bdev->block_size = BLK_LEN;
 
 	/* SDHC initialization */

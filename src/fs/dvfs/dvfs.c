@@ -358,7 +358,7 @@ struct block_dev *bdev_by_path(const char *dev_name) {
 
 	dentry_ref_dec(lookup.item);
 
-	return devmod->dev_priv;
+	return dev_module_to_bdev(devmod);
 }
 
 extern int dvfs_cache_del(struct dentry *dentry);

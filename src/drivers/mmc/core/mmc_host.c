@@ -38,7 +38,7 @@ static int mmc_block_read(struct block_dev *bdev, char *buffer, size_t count, bl
 	assert(bdev);
 	assert(buffer);
 
-	mmc = bdev->privdata;
+	mmc = block_dev_priv(bdev);
 	assert(mmc);
 
 	if (mmc->high_capacity) {
@@ -74,7 +74,7 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 	assert(bdev);
 	assert(buffer);
 
-	mmc = bdev->privdata;
+	mmc = block_dev_priv(bdev);
 	assert(mmc);
 
 	if (mmc->high_capacity) {
@@ -153,7 +153,7 @@ free_mmc:
 
 int mmc_dev_destroy(struct mmc_host *mmc) {
 	if (mmc->bdev) {
-		block_dev_destroy(mmc->bdev->dev_module);
+		block_dev_destroy(mmc->bdev);
 	}
 	index_free(&mmc_idx, mmc->idx);
 	pool_free(&mmc_dev_pool, mmc);

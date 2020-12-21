@@ -1584,7 +1584,7 @@ static int jffs2fs_delete(struct inode *node) {
 static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	char flash_node_name[PATH_MAX];
 
-	snprintf(flash_node_name, PATH_MAX, "%s_flash", bdev->name);
+	snprintf(flash_node_name, PATH_MAX, "%s_flash", block_dev_name(bdev));
 
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }

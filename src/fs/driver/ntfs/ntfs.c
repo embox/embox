@@ -373,7 +373,7 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 
 	/* Allocate an ntfs_device structure. */
-	ntfs_dev = ntfs_device_alloc(bdev->name, 0, &ntfs_device_bdev_io_ops, NULL);
+	ntfs_dev = ntfs_device_alloc(block_dev_name(bdev), 0, &ntfs_device_bdev_io_ops, NULL);
 	if (!ntfs_dev) {
 		pool_free(&ntfs_fs_pool, fsi);
 		return -ENOMEM;

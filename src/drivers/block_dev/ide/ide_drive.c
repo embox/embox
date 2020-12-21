@@ -309,7 +309,7 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 
 int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct dev_geometry *geom;
-	hd_t *hd = (hd_t *) bdev->privdata;
+	hd_t *hd = block_dev_priv(bdev);
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:

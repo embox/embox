@@ -42,6 +42,7 @@ int char_dev_register(struct dev_module *cdev) {
 		log_error("Failed to register char dev %s", cdev->name ? cdev->name : "");
 		return -ENOMEM;
 	}
+	cdev->dev_id = DEVID_CDEV | cdev_id;
 
 	devtab[cdev_id] = cdev;
 
@@ -56,25 +57,17 @@ int char_dev_register(struct dev_module *cdev) {
 }
 
 int char_dev_unregister(struct dev_module *cdev) {
-	int i;
-
 	assert(cdev);
 
-	for (i = 0; i < MAX_CDEV_QUANTITY; i ++) {
-		if (devtab[i] == cdev) {
-			break;
-		}
-	}
-
-	if (i >= MAX_CDEV_QUANTITY ) {
+	if (devtab[cdev->dev_id & DEVID_ID_MASK] == cdev) {
 		return -ENODEV;
 	}
 
 	devfs_notify_del_module(cdev);
 
-	index_free(&char_dev_idx, i);
+	index_free(&char_dev_idx, cdev->dev_id & DEVID_ID_MASK);
 
-	devtab[i] = NULL;
+	devtab[cdev->dev_id & DEVID_ID_MASK] = NULL;
 
 	return 0;
 }

@@ -29,6 +29,8 @@
 #include <fs/perm.h>
 #include <fs/vfs.h>
 
+#include <drivers/block_dev.h>
+
 #include <security/security.h>
 
 
@@ -375,7 +377,7 @@ struct block_dev *bdev_by_path(const char *source) {
 	/* TODO: check if it's actually part of devfs? */
 	devmod = inode_priv(dev_node.node);
 
-	return devmod->dev_priv;
+	return dev_module_to_bdev(devmod);
 }
 
 static int vfs_mount_walker(struct inode *dir) {

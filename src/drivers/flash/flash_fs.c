@@ -67,7 +67,7 @@ static int flashbdev_read(struct block_dev *bdev,
 
 	assert(bdev);
 
-	flash = (struct flash_dev *)bdev->privdata;
+	flash = block_dev_priv(bdev);
 	assert(flash);
 
 	assert(flash->num_block_infos == 1); /* NIY for num_block_infos > 1 */
@@ -84,7 +84,7 @@ static int flashbdev_write(struct block_dev *bdev,
 
 	assert(bdev);
 
-	flash = (struct flash_dev *)bdev->privdata;
+	flash = block_dev_priv(bdev);
 	assert(flash);
 	assert(flash->num_block_infos == 1); /* NIY for num_block_infos > 1 */
 
@@ -164,7 +164,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 
 	assert(bdev);
 
-	dev = (struct flash_dev *)bdev->privdata;
+	dev = block_dev_priv(bdev);
 	assert(dev);
 
 	cmd = decode_flash_cmd(cmd);

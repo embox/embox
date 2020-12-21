@@ -709,7 +709,7 @@ static int ext4fs_format(struct block_dev *dev, void *priv) {
 	char dev_path[64];
 
 	strcpy(dev_path, "/dev/");
-	strcat(dev_path, dev->name);
+	strcat(dev_path, block_dev_name(dev));
 
 	argv[0] = "mke2fs";
 	argv[1] = "-b";

@@ -18,7 +18,11 @@
 #define MAX_DEV_MODULE_COUNT \
 	OPTION_MODULE_GET(embox__driver__common, NUMBER, max_dev_module_count)
 
-#define STATIC_DEVMOD_ID -1
+#define DEVID_ID_MASK       0x00FF
+#define DEVID_FLAGS_MASK    0xFF00
+#define DEVID_CDEV          0x0100
+#define DEVID_BDEV          0x0200
+#define DEVID_STATIC        0x0400
 
 struct idesc;
 struct idesc_ops;
@@ -29,8 +33,8 @@ struct dev_module {
 
 	const struct idesc_ops *dev_iops;
 
-	struct idesc *(*dev_open)  (struct dev_module *, void *);
-	void 		  (*dev_close) (struct idesc *);
+	struct idesc *(*dev_open) (struct dev_module *, void *);
+	void   (*dev_close) (struct idesc *);
 
 	void  *dev_priv;
 };
@@ -38,12 +42,31 @@ struct dev_module {
 extern struct dev_module *dev_module_create(
 	const char *name,
 	struct idesc * (*open)  (struct dev_module *, void *),
-	void		   (*close) (struct idesc *),
+	void           (*close) (struct idesc *),
+	const struct idesc_ops *dev_iops,
+	void *privdata
+);
+
+/**
+ * @brief initialize device module with given parameters
+ *
+ * @param dev Device driver to which dev module would be realted
+ * @param name How device should be introduced in devfs
+ * @param privdata Pointer to block_dev, char_dev and so on
+ *
+ * @return
+ */
+extern struct dev_module *dev_module_init(struct dev_module *devmod,
+	const char *name,
+	struct idesc * (*open)  (struct dev_module *, void *),
+	void           (*close) (struct idesc *),
 	const struct idesc_ops *dev_iops,
 	void *privdata
 );
 
 extern int dev_module_destroy(struct dev_module *dev);
+
+extern int dev_module_deinit(struct dev_module *dev);
 
 /* Used only in old devfs to create node for new device */
 extern void devfs_notify_new_module(struct dev_module *devmod);

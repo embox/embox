@@ -30,7 +30,8 @@ static inline struct block_dev* chk_dev_avail(char* dev_name) {
 	return bdev;
 }
 static inline void print_device_info(int count, struct block_dev *bdev) {
-	printf("| %-3d | %-15s | %-15d | %-20lld |\n", count, bdev->name, bdev->block_size, bdev->size);
+	printf("| %-3d | %-15s | %-15d | %-20lld |\n",
+			count, block_dev_name(bdev), block_dev_block_size(bdev), block_dev_size(bdev));
 }
 
 int main(int argc, char **argv) {
