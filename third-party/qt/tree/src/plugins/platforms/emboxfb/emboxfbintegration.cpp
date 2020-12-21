@@ -160,6 +160,9 @@ QEmboxFbScreen::QEmboxFbScreen(uint8_t *data, int width,
 	mScreenImage = new QImage(mGeometry.width(), mGeometry.height(), mFormat);
 	mFbScreenImage = new QImage(mData, mGeometry.width(), mGeometry.height(),
 						        mBytesPerLine, mFormat);
+#ifndef QT_NO_CURSOR
+    cursor = new QPlatformSoftwareCursor(this);
+#endif
 }
 
 void QEmboxFbScreen::setGeometry(QRect rect)
