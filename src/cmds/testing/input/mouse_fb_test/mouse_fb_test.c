@@ -76,23 +76,24 @@ static int mouse_handle(int fd) {
 			continue;
 		}
 
-		if ((ev.type & MOUSE_BUTTON_PRESSED) == 0) { /* Mouse move */
-			draw_cursor(mouse_x, mouse_y, 0xffffff);
+		draw_cursor(mouse_x, mouse_y, 0xffffff);
 
-			mouse_x += (ev.value >> 16) & 0xffff;
-			mouse_y -= ev.value & 0xffff;
+		mouse_x += (ev.value >> 16) & 0xffff;
+		mouse_y -= ev.value & 0xffff;
 
-			mouse_x = normalize_coord(mouse_x, CURSOR_WIDTH,
-				fb->var.xres - CURSOR_WIDTH);
-			mouse_y = normalize_coord(mouse_y, CURSOR_HEIGHT,
-				fb->var.yres - CURSOR_HEIGHT);
+		mouse_x = normalize_coord(mouse_x, CURSOR_WIDTH,
+			fb->var.xres - CURSOR_WIDTH);
+		mouse_y = normalize_coord(mouse_y, CURSOR_HEIGHT,
+			fb->var.yres - CURSOR_HEIGHT);
 
-			draw_cursor(mouse_x, mouse_y, 0x000000);
+		draw_cursor(mouse_x, mouse_y, 0x000000);
 
-			printf("pos = (%d, %d)\n", mouse_x, mouse_y);
-		} else {
-			printf("event (type=%d, value=%d)\n", ev.type, ev.value);
-		}
+		printf("pos = (%d, %d), buttons = %c %c %c\n",
+			mouse_x, mouse_y,
+			ev.type & MOUSE_BUTTON_LEFT   ? 'L' : ' ',
+			ev.type & MOUSE_BUTTON_MIDDLE ? 'M' : ' ',
+			ev.type & MOUSE_BUTTON_RIGHT  ? 'R' : ' '
+		);
 	}
 
 	return 0;
