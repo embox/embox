@@ -35,11 +35,6 @@ struct dev_module *dev_module_init(struct dev_module *devmod,
 	assert(devmod);
 	assert(dev_iops);
 	assert(name);
-	assert(privdata); /* No known devices without privdata. Currently	it's up to legacy of the old FS */
-
-	while (*name == '/') {
-		name++;
-	}
 
 	memset(devmod, 0, sizeof(*devmod));
 
