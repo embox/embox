@@ -92,6 +92,10 @@ ifneq ($(call option_get_boolean,vnc_support),0)
 QT_CONF_FLAGS += -qt-gfx-vnc
 endif
 
+ifneq ($(call option_get_boolean,touchscreen),0)
+QT_CONF_FLAGS += -D QT_EMBOX_TOUCHSCREEN
+endif
+
 ifeq ($(call option_get_string,qconfig),small)
 QT_CONF_FLAGS += -qconfig small
 QT_CONF_FLAGS += -D QT_NO_NETWORKPROXY
