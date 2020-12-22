@@ -21,7 +21,8 @@ PKG_MD5     := d990ee66bf7ab0c785589776f35ba6ad
 
 PKG_PATCHES := pkg_patch.txt \
 	patch_cortex_m7.txt \
-	q_foreach_bug_g++9.txt
+	q_foreach_bug_g++9.txt \
+	animatedtiles_fullscreen_option.txt
 
 include $(EXTBLD_LIB)
 
@@ -90,6 +91,10 @@ QT_CONF_FLAGS += -no-xmlpatterns
 
 ifneq ($(call option_get_boolean,vnc_support),0)
 QT_CONF_FLAGS += -qt-gfx-vnc
+endif
+
+ifneq ($(call option_get_boolean,touchscreen),0)
+QT_CONF_FLAGS += -D QT_EMBOX_TOUCHSCREEN
 endif
 
 ifeq ($(call option_get_string,qconfig),small)

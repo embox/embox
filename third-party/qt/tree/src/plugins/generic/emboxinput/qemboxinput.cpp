@@ -73,6 +73,23 @@ void QEmboxInputMouseHandler::readMouseData()
 			return;
 		}
 
+#ifdef QT_EMBOX_TOUCHSCREEN
+		switch (ev.type & ~TS_EVENT_NEXT) {
+		case TS_TOUCH_1:
+			m_x = (int16_t) ((ev.value >> 16) & 0xffff);
+			m_y = (int16_t) (ev.value & 0xffff);
+
+			m_buttons = Qt::LeftButton;
+
+			break;
+		case TS_TOUCH_1_RELEASED:
+			m_buttons = Qt::NoButton;
+
+			break;
+		default:
+			continue;
+		}
+#else
 		if ((ev.type & MOUSE_BUTTON_PRESSED) == 0) { /* Mouse move */
 			m_x += (int16_t) ((ev.value >> 16) & 0xffff);
 			m_y -= (int16_t) (ev.value & 0xffff);
@@ -89,6 +106,7 @@ void QEmboxInputMouseHandler::readMouseData()
 		if (ev.type & MOUSE_BUTTON_RIGHT) {
 			m_buttons |= Qt::RightButton;
 		}
+#endif
 
 		sendMouseEvent(m_x, m_y, m_buttons);
 	}

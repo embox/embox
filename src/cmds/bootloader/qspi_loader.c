@@ -25,7 +25,7 @@ static int qspi_recv_file(char *filename, char *hostname) {
 	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, true);
 	int addr = 0;
 	int last_block = -1;
-	int bytes;
+	int bytes, written = 0;
 	uint8_t buf[TFTP_SEGSIZE];
 	QSPI_Info info;
 
@@ -59,7 +59,14 @@ static int qspi_recv_file(char *filename, char *hostname) {
 		BSP_QSPI_Write(buf, addr, bytes);
 
 		addr += bytes;
+		written += bytes;
+
+		if (written % 0x2000 == 0) {
+			printf("\rWritten %d bytes", written);
+		}
 	}
+
+	printf("\rWritten %d bytes total\n", written);
 
 	tftp_delete_stream(s);
 
@@ -77,6 +84,8 @@ int main(int argc, char **argv) {
 		fprintf(stderr, "Error\n");
 		return 0;
 	}
+
+	printf("OK\n");
 
 	return 0;
 }
