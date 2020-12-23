@@ -10,7 +10,7 @@ module cube_cppflags {
 @BuildDepends(third_party.bsp.stmh7cube.stm32h7_conf)
 static module cube {
 	option number eth_rx_packet_count = 4
-	option number eth_tx_packet_count = 2
+	option number eth_tx_packet_count = 0
 
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
