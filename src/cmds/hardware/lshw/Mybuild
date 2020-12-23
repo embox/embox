@@ -1,0 +1,32 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "lshw",
+    help = "Show all hardware configuration and properties",
+	man = '''
+	NAME
+       lshw - Show all hardware configuration and properties
+    SYNOPSIS
+       lshw [ options ]
+    DESCRIPTION
+       lshw  lists  information  about  all  available or the specified hardware
+	OPTIONS
+			-h
+				Shows usage
+	SEE ALSO
+			cpuinfo lsblk lspci lsusb ifconfig
+	AUTHORS
+            Avinal Kumar
+	''')
+module lshw {
+	source "lshw.c"
+
+	depends embox.lib.LibCpuInfo
+	depends embox.arch.cpu_info
+
+    @NoRuntime depends embox.driver.usb.core
+
+    depends embox.compat.libc.all
+	depends embox.driver.pci
+	depends embox.framework.LibFramework
+}
