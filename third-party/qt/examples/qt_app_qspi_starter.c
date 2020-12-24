@@ -31,7 +31,9 @@ extern char QT_DATA_VMA, QT_DATA_LMA, QT_DATA_LEN;
 extern char QT_BSS_VMA, QT_BSS_LEN;
 
 static void load_section(void *vma, void *lma, unsigned int len) {
-	memcpy(vma, lma, len);
+	if (vma != lma) {
+		memcpy(vma, lma, len);
+	}
 }
 
 static void zero_bss_section(void *vma, unsigned int len) {

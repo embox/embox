@@ -22,7 +22,8 @@ PKG_MD5     := d990ee66bf7ab0c785589776f35ba6ad
 PKG_PATCHES := pkg_patch.txt \
 	patch_cortex_m7.txt \
 	q_foreach_bug_g++9.txt \
-	animatedtiles_fullscreen_option.txt
+	animatedtiles_fullscreen_option.txt \
+	fb_base_touchscreen_cursor.txt
 
 include $(EXTBLD_LIB)
 

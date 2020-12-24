@@ -75,8 +75,6 @@ static void arm_mpu_init_nocache_regions(void) {
 		{ NOCACHE_REGION1_ADDR, NOCACHE_REGION1_SIZE },
 	};
 
-	arm_mpu_disable();
-
 	/* Process non-cacheble SRAM section */
 	if (sram_nocache_size > 0) {
 		log_debug("\nSRAM section non-cacheble: start=0x%08x, region size=0x%x",
@@ -84,7 +82,8 @@ static void arm_mpu_init_nocache_regions(void) {
 
 		/* Non-cacheable region with full read/write access */
 		arm_mpu_configure(region++, sram_nocache_start, sram_nocache_log_size,
-			(1 << MPU_RASR_ENABLE_POS) | (0x3 << MPU_RASR_AP_POS));
+			(1 << MPU_RASR_ENABLE_POS) | (0x3 << MPU_RASR_AP_POS) |
+			(1 << MPU_RASR_TEX_POS));
 	}
 
 	/* Process other non-cacheble regions at fixed addresses. */
@@ -104,10 +103,9 @@ static void arm_mpu_init_nocache_regions(void) {
 
 		/* Non-cacheable region with full read/write access */
 		arm_mpu_configure(region++, regions[i].addr, logsize,
-			(1 << MPU_RASR_ENABLE_POS) | (0x3 << MPU_RASR_AP_POS));
+			(1 << MPU_RASR_ENABLE_POS) | (0x3 << MPU_RASR_AP_POS) |
+			(1 << MPU_RASR_TEX_POS));
 	}
-
-	arm_mpu_enable();
 }
 
 static void arm_cpu_icache_enable(void) {
@@ -150,7 +148,9 @@ static void arm_cpu_dcache_enable(void) {
 }
 
 static int arm_cpu_cache_init(void) {
+	arm_mpu_disable();
 	arm_mpu_init_nocache_regions();
+	arm_mpu_enable();
 
 	arm_cpu_icache_enable();
 	arm_cpu_dcache_enable();
