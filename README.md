@@ -30,12 +30,13 @@ Key features
 Contacts
 ---------------
 Mailing lists:
-* embox-devel@googlegroups.com -- main mailing list
-* embox-ru@googlegroups.com -- mailing list in Russian
+* main (english): embox-devel@googlegroups.com
+* russian: embox-ru@googlegroups.com
 
 Telegram chats:
-* https://t.me/embox_chat_en -- main telegram chat
-* https://t.me/embox_chat -- telegram chat in Russian
+* main (english): https://t.me/embox_chat_en
+* news:  https://t.me/embox_news
+* russian: https://t.me/embox_chat
 
 Documentation
 ---------------
