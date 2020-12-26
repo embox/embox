@@ -22,9 +22,6 @@
 #include "stm32746g_discovery_lcd.h"
 #elif defined STM32F769xx
 #include "stm32f769i_discovery_lcd.h"
-/* This macro is not defined for STM32F769I, but it still
- * works just fine with the same numeric constatnt */
-void     BSP_LCD_LayerRgb565Init(uint16_t LayerIndex, uint32_t FB_Address);
 #else
 #error Unsupported platform
 #endif
@@ -51,6 +48,16 @@ extern char STM32_FB_SECTION_START;
 #define STM32_LCD_HEIGHT  OPTION_GET(NUMBER, height)
 #define STM32_LCD_WIDTH   OPTION_GET(NUMBER, width)
 #define STM32_LCD_BPP     OPTION_GET(NUMBER, bpp)
+
+#if defined STM32F746xx
+extern LTDC_HandleTypeDef hLtdcHandler;
+#define hltdc_handler hLtdcHandler
+#elif defined STM32F769xx
+extern LTDC_HandleTypeDef  hltdc_discovery;
+#define hltdc_handler hltdc_discovery
+#else
+#error Unsupported platform
+#endif
 
 static int stm32f7_lcd_set_var(struct fb_info *info,
 		struct fb_var_screeninfo const *var) {
@@ -117,17 +124,40 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 	}
 }
 
-static irq_return_t ltdc_irq_handler(unsigned int irq_num, void *dev_id) {
-#if defined STM32F746xx
-extern LTDC_HandleTypeDef hLtdcHandler;
-#define hltdc_handler hLtdcHandler
-#elif defined STM32F769xx
-extern LTDC_HandleTypeDef  hltdc_discovery;
-#define hltdc_handler hltdc_discovery
-#else
-#error Unsupported platform
-#endif
+static void ltdc_layer_init(uint16_t LayerIndex, uint32_t FB_Address, int bpp) {
+	LCD_LayerCfgTypeDef  Layercfg;
 
+	switch (bpp) {
+	case 16:
+		Layercfg.PixelFormat = LTDC_PIXEL_FORMAT_RGB565;
+		break;
+	case 32:
+		Layercfg.PixelFormat = LTDC_PIXEL_FORMAT_ARGB8888;
+		break;
+	default:
+		return;
+	}
+
+	/* Layer Init */
+	Layercfg.WindowX0 = 0;
+	Layercfg.WindowX1 = BSP_LCD_GetXSize();
+	Layercfg.WindowY0 = 0;
+	Layercfg.WindowY1 = BSP_LCD_GetYSize();
+	Layercfg.FBStartAdress = FB_Address;
+	Layercfg.Alpha = 255;
+	Layercfg.Alpha0 = 0;
+	Layercfg.Backcolor.Blue = 0;
+	Layercfg.Backcolor.Green = 0;
+	Layercfg.Backcolor.Red = 0;
+	Layercfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
+	Layercfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
+	Layercfg.ImageWidth = BSP_LCD_GetXSize();
+	Layercfg.ImageHeight = BSP_LCD_GetYSize();
+
+	HAL_LTDC_ConfigLayer(&hltdc_handler, &Layercfg, LayerIndex);
+}
+
+static irq_return_t ltdc_irq_handler(unsigned int irq_num, void *dev_id) {
 	HAL_LTDC_IRQHandler(&hltdc_handler);
 
 	return IRQ_HANDLED;
@@ -164,17 +194,16 @@ static int stm32f7_lcd_init(void) {
 	BSP_LCD_SetXSize(STM32_LCD_WIDTH);
 	BSP_LCD_SetYSize(STM32_LCD_HEIGHT);
 
-	switch (STM32_LCD_BPP) {
-	case 16:
-		BSP_LCD_LayerRgb565Init(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base);
-		break;
-	case 32:
-		BSP_LCD_LayerDefaultInit(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base);
-		break;
-	default:
-		log_error("Failed to init LCD Layer!");
-		return -1;
-	}
+#if STM32_LCD_BPP == 16
+	ltdc_layer_init(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base, 16);
+#elif STM32_LCD_BPP == 32
+	ltdc_layer_init(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base, 32);
+#else
+	#error Unsupported STM32_LCD_BPP value
+#endif
+
+	BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
+	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
 	BSP_LCD_SelectLayer(LTDC_ACTIVE_LAYER);
 

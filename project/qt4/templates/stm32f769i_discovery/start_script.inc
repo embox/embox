@@ -1,0 +1,6 @@
+"export PWD=/",
+"export HOME=/",
+"export QT_QPA_FONTDIR=/fonts",
+"qt_app_qspi_starter",
+//"moveblocks -platform emboxfb",
+"animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/stm32-ts -fullscreen",
