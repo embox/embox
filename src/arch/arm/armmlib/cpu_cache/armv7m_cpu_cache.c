@@ -147,6 +147,29 @@ static void arm_cpu_dcache_enable(void) {
 	isb();
 }
 
+extern void dcache_flush_all(void) {
+	uint32_t ccsidr, sets, ways;
+
+	/* Level 1 data cache */
+	REG32_STORE(SCB_CSSELR, (0U << 1U) | 0U);
+	dsb();
+
+	ccsidr = REG32_LOAD(SCB_CCSIDR);
+
+	/* Clean D-Cache */
+	sets = SCB_CCSIDR_SETS(ccsidr);
+	do {
+		ways = SCB_CCSIDR_WAYS(ccsidr);
+		do {
+			REG32_STORE(SCB_DCCSW, (sets << SCB_DCCSW_SET_POS) |
+	                               (ways << SCB_DCCSW_WAY_POS));
+		} while (ways--);
+	} while (sets--);
+
+	dsb();
+	isb();
+}
+
 static int arm_cpu_cache_init(void) {
 	arm_mpu_disable();
 	arm_mpu_init_nocache_regions();
