@@ -10,6 +10,8 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <arm/cpu_cache.h>
+
 #define QT_TEXT_VMA   _qt_text_vma
 #define QT_TEXT_LMA   _qt_text_lma
 #define QT_TEXT_LEN   _qt_text_len
@@ -47,6 +49,8 @@ int main(int argc, char **argv) {
 	load_section(&QT_RODATA_VMA, &QT_RODATA_LMA, (unsigned int) &QT_RODATA_LEN);
 	load_section(&QT_DATA_VMA, &QT_DATA_LMA, (unsigned int) &QT_DATA_LEN);
 	zero_bss_section(&QT_BSS_VMA, (unsigned int) &QT_BSS_LEN);
+
+	dcache_flush_all();
 
 	cxx_invoke_constructors();
 
