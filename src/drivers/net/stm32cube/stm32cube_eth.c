@@ -152,13 +152,26 @@ static const struct net_driver stm32eth_ops = {
 
 static int stm32eth_open(struct net_device *dev) {
 	low_level_init(dev->dev_addr);
+
 	return 0;
 }
 
 static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
+	ETH_TypeDef *regs = (ETH_TypeDef *) ETH_BASE;
+
 	memcpy(dev->dev_addr, addr, ETH_ALEN);
+
+	regs->MACA0HR = ((uint32_t) dev->dev_addr[5] << 8) |
+	                ((uint32_t) dev->dev_addr[4] << 0);
+
+	regs->MACA0LR = ((uint32_t) dev->dev_addr[3] << 24) |
+	                ((uint32_t) dev->dev_addr[2] << 16) |
+	                ((uint32_t) dev->dev_addr[1] << 8)  |
+	                ((uint32_t) dev->dev_addr[0] << 0);
+
 	return ENOERR;
 }
+
 #ifdef TX_NO_BUFF
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	__IO ETH_DMADescTypeDef *dma_tx_desc;
