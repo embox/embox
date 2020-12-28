@@ -11,4 +11,9 @@
 
 #define SRAM_NOCACHE_SECTION
 
+#ifndef __ASSEMBLER__
+static inline void dcache_flush_all(void) {
+}
+#endif
+
 #endif /* ARCH_ARM_ARMMLIB_CPU_NOCACHE_NONE_H_ */

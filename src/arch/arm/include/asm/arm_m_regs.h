@@ -55,6 +55,9 @@
 #define SCB_DCISW                   (ARM_M_SCB_BASE + 0x260)
 # define SCB_DCISW_WAY_POS          30
 # define SCB_DCISW_SET_POS          5
+#define SCB_DCCSW                   (ARM_M_SCB_BASE + 0x26C)
+# define SCB_DCCSW_WAY_POS          30
+# define SCB_DCCSW_SET_POS          5
 
 /************ MPU registers ************/
 #define ARM_M_MPU_BASE              (ARM_M_SCS_BASE + 0xd90)
