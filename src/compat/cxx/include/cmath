@@ -8,6 +8,7 @@
 #ifndef CMATH_
 #define CMATH_
 
+#include <stdbool.h>
 #include <math.h>
 
 #undef isnan
@@ -22,6 +23,11 @@
 #undef islessgreater
 #undef isunordered
 #undef fpclassify
+#undef fmax
+#undef fmin
+#undef round
+#undef roundf
+#undef roundl
 
 namespace std {
 	using ::floor;
@@ -46,6 +52,9 @@ namespace std {
 	using ::sinh;
 	using ::log10;
 	using ::sqrt;
+	using ::round;
+	using ::roundf;
+	using ::roundl;
 
 	static inline float floor(float x) {
 		return floorf(x);
@@ -95,16 +104,52 @@ namespace std {
 		return __builtin_isnanl(value);
 	}
 
-	static inline int signbit(float value) {
+	static inline bool isinf(float value) {
+		return __builtin_isinf(value);
+	}
+
+	static inline bool isinf(double value) {
+		return __builtin_isinf(value);
+	}
+
+	static inline bool isinf(long double value) {
+		return __builtin_isinf(value);
+	}
+
+	static inline bool signbit(float value) {
 		return __builtin_signbitf(value);
 	}
 
-	static inline int signbit(double value) {
+	static inline bool signbit(double value) {
 		return __builtin_signbit(value);
 	}
 
-	static inline int signbit(long double value) {
+	static inline bool signbit(long double value) {
 		return __builtin_signbitl(value);
+	}
+
+	static inline float round(float __x) {
+		return __builtin_roundf(__x);
+	}
+
+	static inline long double round(long double __x) {
+		return __builtin_roundl(__x);
+	}
+
+	static inline float fmax(float __x, float __y) {
+		return __builtin_fmaxf(__x, __y);
+	}
+
+	static inline long double fmax(long double __x, long double __y) {
+		return __builtin_fmaxl(__x, __y);
+	}
+
+	static inline float fmin(float __x, float __y) {
+		return __builtin_fminf(__x, __y);
+	}
+
+	static inline long double fmin(long double __x, long double __y) {
+		return __builtin_fminl(__x, __y);
 	}
 
 	static inline double max(double x, int y) {
