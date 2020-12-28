@@ -21,6 +21,8 @@
 #error Unsupported platform
 #endif
 
+#include <arm/cpu_cache.h>
+
 static int qspi_recv_file(char *filename, char *hostname) {
 	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, true);
 	int addr = 0;
@@ -71,6 +73,9 @@ static int qspi_recv_file(char *filename, char *hostname) {
 	tftp_delete_stream(s);
 
 	BSP_QSPI_EnableMemoryMappedMode();
+
+	dcache_flush_all();
+
 	return 0;
 }
 
