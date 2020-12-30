@@ -12,6 +12,8 @@
 
 #define TABLE_SIZE OPTION_GET(NUMBER,table_size)
 
+typedef void (*dtor_func_t)(void);
+
 struct atexit_func_entry {
 	void (*destructor_func)(void *);
 	void *obj_ptr;
@@ -60,5 +62,19 @@ void __cxa_finalize(void *f) {
 }
 
 void cxx_invoke_destructors(void) {
+	extern const char _dtors_start, _dtors_end;
+	typedef void (*dtor_func_t)(void);
+	dtor_func_t *func = ((dtor_func_t *) &_dtors_end) - 1;
+
+	/* There are two possible ways for destructors to be calls:
+	 * 1. Through callbacks registered with __cxa_atexit.
+	 * 2. From .fini_array section.  */
+
+	/* Handle callbacks registered with __cxa_atexit first, if any.*/
 	__cxa_finalize(0);
+
+	/* Handle .fini_array, if any. Functions are executed in teh reverse order. */
+	for ( ; func >= (dtor_func_t *) &_dtors_start; func--) {
+		(*func)();
+	}
 }
