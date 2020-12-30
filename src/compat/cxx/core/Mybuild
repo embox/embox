@@ -28,7 +28,6 @@ module ConstructionNone extends ConstructionPolicy {
 @DefaultImpl(DestructionStatic)
 abstract module DestructionPolicy {
 	source "cxx_invoke_destructors.h"
-	source "cxx_destruction_signatures.h"
 }
 
 module DestructionStatic extends DestructionPolicy {

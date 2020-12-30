@@ -8,8 +8,6 @@
 #include <embox/unit.h>
 #include <stdio.h>
 
-#include "cxx_destruction_signatures.h"
-
 #define TABLE_SIZE OPTION_GET(NUMBER,table_size)
 
 typedef void (*dtor_func_t)(void);
