@@ -28,18 +28,11 @@ module ConstructionNone extends ConstructionPolicy {
 @DefaultImpl(DestructionStatic)
 abstract module DestructionPolicy {
 	source "cxx_invoke_destructors.h"
-	source "cxx_destruction_signatures.h"
 }
 
 module DestructionStatic extends DestructionPolicy {
 	option number table_size = 50
 	source "cxx_destruction_static.c"
-}
-
-module DescructionMallocChunk extends DestructionPolicy {
-	option number chunk_size = 10
-	// ToDo: Not Implemented
-	//source "cxx_destruction_malloc_chunk.c"
 }
 
 module AppStartupShutdown {

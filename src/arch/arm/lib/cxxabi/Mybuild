@@ -1,0 +1,13 @@
+package embox.arch.arm
+
+@DefaultImpl(cxxabi_stub)
+abstract module cxxabi_api {
+}
+
+module cxxabi {
+	source "aeabi_atexit.c"
+}
+
+module cxxabi_stub {
+	source "aeabi_atexit_stub.c"
+}

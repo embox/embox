@@ -116,10 +116,6 @@ uint64_t __sync_val_compare_and_swap_8(volatile void *ptr, uint64_t soldval,
 	return ret;
 }
 
-uint32_t __aeabi_atexit(void *obj, void *func, void *d) {
-	return 0;
-}
-
 void __sync_synchronize(void) {
 }
 
