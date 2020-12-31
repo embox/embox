@@ -113,23 +113,9 @@ static void SystemClock_Config(void)
   */
 }
 
-/**
-  * @brief  CPU L1-Cache enable.
-  * @param  None
-  * @retval None
-  */
-static void CPU_CACHE_Enable(void)
-{
-  /* Enable I-Cache */
-  SCB_EnableICache();
-
-  /* Enable D-Cache */
-  SCB_EnableDCache();
-}
-
 void arch_init(void) {
 	ipl_t ipl = ipl_save();
-	CPU_CACHE_Enable();
+
 	SystemInit();
 	HAL_Init();
 
