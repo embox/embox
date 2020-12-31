@@ -78,6 +78,9 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_MODE_INT_MODE_FALLING  (1 << 29)
 #endif
 
+#define GPIO_MODE_INT_MODE_RISING_FALLING \
+	(GPIO_MODE_INT_MODE_RISING | GPIO_MODE_INT_MODE_FALLING)
+
 #ifndef GPIO_MODE_INT_MODE_LEVEL0
 #define GPIO_MODE_INT_MODE_LEVEL0   (1 << 28)
 #endif
@@ -118,7 +121,8 @@ extern void gpio_toggle(unsigned short port, gpio_mask_t pins);
 
 extern gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins);
 
-extern int gpio_irq_attach(unsigned short port, gpio_mask_t pins,
-		irq_handler_t pin_handler, void *data);
+extern int gpio_irq_attach(unsigned short port, uint32_t pin,
+		void (*pin_handler)(void *), void *data);
+extern int gpio_irq_detach(unsigned short port, uint32_t pin);
 
 #endif /* DRIVERS_GPIO_H_ */

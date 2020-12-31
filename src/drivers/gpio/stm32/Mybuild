@@ -8,6 +8,9 @@ module stm32_gpio_f1 extends api {
 	option number exti1_irq = 7
 	option number exti2_irq = 8
 	option number exti3_irq = 9
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_f1.h"
@@ -27,6 +30,9 @@ module stm32_gpio_f4 extends api {
 	option number exti1_irq = 7
 	option number exti2_irq = 8
 	option number exti3_irq = 9
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_f4.h"
@@ -46,6 +52,9 @@ module stm32_gpio_l4 extends api {
 	option number exti2_irq = 8
 	option number exti3_irq = 9
 	option number exti4_irq = 10
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_l4.h"
@@ -64,6 +73,9 @@ module stm32_gpio_f3 extends api {
 	option number exti1_irq = 7
 	option number exti2_irq = 8
 	option number exti3_irq = 9
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_f3.h"
@@ -83,6 +95,9 @@ module stm32_gpio_f7 extends api {
 	option number exti1_irq = 7
 	option number exti2_irq = 8
 	option number exti3_irq = 9
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
 
 	@IncludeExport(path="drivers/gpio", target_name="stm32.h")
 	source "stm32_gpio_conf_f7.h"

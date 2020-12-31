@@ -36,8 +36,18 @@ static_assert(EXTI2_IRQ == EXTI2_IRQn);
 #define EXTI3_IRQ          OPTION_GET(NUMBER, exti3_irq)
 static_assert(EXTI3_IRQ == EXTI3_IRQn);
 
+#define EXTI4_IRQ          OPTION_GET(NUMBER, exti4_irq)
+static_assert(EXTI4_IRQ == EXTI4_IRQn);
+
+#define EXTI9_5_IRQ        OPTION_GET(NUMBER, exti9_5_irq)
+static_assert(EXTI9_5_IRQ == EXTI9_5_IRQn);
+
+#define EXTI15_10_IRQ     OPTION_GET(NUMBER, exti15_10_irq)
+static_assert(EXTI15_10_IRQ == EXTI15_10_IRQn);
+
 static const unsigned char exti_irqs[] = {
-	EXTI0_IRQ, EXTI1_IRQ, EXTI2_IRQ, EXTI3_IRQ
+	EXTI0_IRQ, EXTI1_IRQ, EXTI2_IRQ, EXTI3_IRQ, EXTI4_IRQ,
+	EXTI9_5_IRQ, EXTI15_10_IRQ,
 };
 
 static struct gpio_chip stm32_gpio_chip;
@@ -90,10 +100,15 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 		if (mode & GPIO_MODE_IN_PULL_DOWN) {
 			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 		}
-	} else if (mode & GPIO_MODE_INT_MODE_RISING) {
-		GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
-	} else if (mode & GPIO_MODE_INT_MODE_FALLING) {
-		GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+	} else if (mode & GPIO_MODE_INT_MODE_RISING_FALLING) {
+		if ((mode & GPIO_MODE_INT_MODE_RISING_FALLING)
+				== GPIO_MODE_INT_MODE_RISING_FALLING) {
+			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
+		} else if (mode & GPIO_MODE_INT_MODE_RISING) {
+			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
+		} else if (mode & GPIO_MODE_INT_MODE_FALLING) {
+			GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
+		}
 	}
 
 	HAL_GPIO_Init(stm32_gpio_ports[port], &GPIO_InitStruct);
@@ -122,17 +137,17 @@ static gpio_mask_t stm32_gpio_get(unsigned char port, gpio_mask_t pins) {
 
 irq_return_t stm32_gpio_irq_handler(unsigned int irq_nr, void *data) {
 	int i;
-	unsigned int pin = 1 << (irq_nr - EXTI0_IRQ);
+	uint16_t pending;
 
-	if (__HAL_GPIO_EXTI_GET_IT(pin) == RESET) {
-		return IRQ_HANDLED;
-	}
-	 __HAL_GPIO_EXTI_CLEAR_IT(pin);
+	pending = __HAL_GPIO_EXTI_GET_FLAG(0xffff);
+
+	__HAL_GPIO_EXTI_CLEAR_IT(pending);
 
 	/* Notify all GPIO ports about interrupt */
 	for (i = 0; i < STM32_GPIO_PORTS_COUNT; i++) {
-		gpio_handle_irq(&stm32_gpio_chip, irq_nr, i, pin);
+		gpio_handle_irq(&stm32_gpio_chip, i, pending);
 	}
+
 	return IRQ_HANDLED;
 }
 
@@ -161,3 +176,6 @@ STATIC_IRQ_ATTACH(EXTI0_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI1_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI2_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI3_IRQ, stm32_gpio_irq_handler, NULL);
+STATIC_IRQ_ATTACH(EXTI4_IRQ, stm32_gpio_irq_handler, NULL);
+STATIC_IRQ_ATTACH(EXTI9_5_IRQ, stm32_gpio_irq_handler, NULL);
+STATIC_IRQ_ATTACH(EXTI15_10_IRQ, stm32_gpio_irq_handler, NULL);

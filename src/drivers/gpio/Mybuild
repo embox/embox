@@ -4,6 +4,7 @@ module core {
 	option number log_level = 1
 	option number gpio_chips_count = 1
 	option number gpio_irqs_count = 4 /* Number of GPIO pins irq handlers */
+	option number gpio_hnd_prio = 200
 
 	/* User API */
 	@IncludeExport(path="drivers/gpio")
@@ -14,6 +15,8 @@ module core {
 	source "gpio_driver.h"
 
 	source "gpio.c"
+
+	depends embox.kernel.lthread.lthread
 }
 
 /* Should be implemented by GPIO drivers */
