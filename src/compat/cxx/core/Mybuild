@@ -35,12 +35,6 @@ module DestructionStatic extends DestructionPolicy {
 	source "cxx_destruction_static.c"
 }
 
-module DescructionMallocChunk extends DestructionPolicy {
-	option number chunk_size = 10
-	// ToDo: Not Implemented
-	//source "cxx_destruction_malloc_chunk.c"
-}
-
 module AppStartupShutdown {
 	depends ConstructionPolicy
 	depends app
