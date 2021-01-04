@@ -27,11 +27,13 @@ module pjsip_dependencies {
 abstract module core { }
 
 @Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=false")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/install/include/")
 module core_c extends core {
 	depends pjsip_dependencies
 }
 
 @Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/install/include/")
 @BuildDepends(third_party.STLport.libstlportg)
 module core_cxx extends core {
 	depends pjsip_dependencies
@@ -40,9 +42,8 @@ module core_cxx extends core {
 
 @BuildDepends(core)
 @Build(stage=2,script="true")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/include/pjsip")
 static module libpjsip {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libpjsip.a",
 			"libpjsip-simple.a",
 			"libpjsip-ua.a"
@@ -53,7 +54,7 @@ static module libpjsip {
 @BuildDepends(core)
 @Build(stage=2,script="true")
 static module libpjsua {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libpjsua.a"
 
 	@NoRuntime depends core
@@ -61,9 +62,8 @@ static module libpjsua {
 
 @BuildDepends(core)
 @Build(stage=2,script="true")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/include/pjlib-util")
 static module libpjlib_util {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libpjlib-util.a"
 
 	@NoRuntime depends core
@@ -71,9 +71,8 @@ static module libpjlib_util {
 
 @BuildDepends(core)
 @Build(stage=2,script="true")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/include/pjlib")
 static module libpj {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libpj.a"
 
 	@NoRuntime depends core
@@ -81,22 +80,19 @@ static module libpj {
 
 @BuildDepends(core)
 @Build(stage=2,script="true")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/include/pjmedia")
 static module libpjmedia {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libpjmedia.a",
 			"libpjmedia-codec.a",
-			"libpjmedia-audiodev.a",
-			"libpjsdp.a"
+			"libpjmedia-audiodev.a"
 
 	@NoRuntime depends core
 }
 
 @BuildDepends(core)
 @Build(stage=2,script="true")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/include/pjnath")
 static module libpjnath {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libpjnath.a"
 
 	@NoRuntime depends core
@@ -105,7 +101,7 @@ static module libpjnath {
 @BuildDepends(core)
 @Build(stage=2,script="true")
 static module libpj_third_party {
-	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install")
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
 	source "libresample.a",
 			"libsrtp.a"
 

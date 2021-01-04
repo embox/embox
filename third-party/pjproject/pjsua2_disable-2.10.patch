@@ -1,6 +1,21 @@
---- pjproject-2.2.1-my/pjsip/build/Makefile	2018-11-02 18:04:26.781621275 +0300
-+++ pjproject-2.2.1/pjsip/build/Makefile	2018-11-02 18:08:23.929462852 +0300
-@@ -206,11 +206,10 @@
+diff -aur pjproject-2.10/Makefile ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/Makefile
+--- pjproject-2.10/Makefile	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/Makefile	2021-01-04 13:48:24.702794506 +0300
+@@ -118,8 +118,8 @@
+ 
+ install:
+ 	mkdir -p $(DESTDIR)$(libdir)/
+-#	cp -af $(APP_LIB_FILES) $(DESTDIR)$(libdir)/
+-	cp -af $(APP_LIBXX_FILES) $(DESTDIR)$(libdir)/
++	cp -af $(APP_LIB_FILES) $(DESTDIR)$(libdir)/
++#	cp -af $(APP_LIBXX_FILES) $(DESTDIR)$(libdir)/
+ 	mkdir -p $(DESTDIR)$(includedir)/
+ 	for d in pjlib pjlib-util pjnath pjmedia pjsip; do \
+ 		cp -RLf $$d/include/* $(DESTDIR)$(includedir)/; \
+diff -aur pjproject-2.10/pjsip/build/Makefile ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjsip/build/Makefile
+--- pjproject-2.10/pjsip/build/Makefile	2021-01-04 13:49:14.023213090 +0300
++++ ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjsip/build/Makefile	2021-01-04 13:30:25.734595581 +0300
+@@ -209,9 +209,8 @@
  TARGETS := $(PJSIP_LIB) $(PJSIP_SONAME) \
  	   $(PJSIP_SIMPLE_LIB) $(PJSIP_SIMPLE_SONAME) \
  	   $(PJSIP_UA_LIB) $(PJSIP_UA_SONAME) \
@@ -8,14 +23,11 @@
 -	   $(PJSUA2_LIB_LIB) $(PJSUA2_LIB_SONAME)
 -TARGETS_EXE := $(TEST_EXE) $(PJSUA2_TEST_EXE)
 +	   $(PJSUA_LIB_LIB) $(PJSUA_LIB_SONAME)
-+TARGETS_EXE := $(TEST_EXE)
++TARGETS_EXE :=
  
--all: $(TARGETS) $(TARGETS_EXE)
-+all: $(TARGETS)
+ all: $(TARGETS) $(TARGETS_EXE)
  
- lib: $(TARGETS)
- 
-@@ -318,9 +317,7 @@
+@@ -321,9 +320,7 @@
  	$(MAKE) -f $(RULES_MAK) APP=PJSIP_UA app=pjsip-ua $@
  	$(MAKE) -f $(RULES_MAK) APP=PJSIP_SIMPLE app=pjsip-simple $@
  	$(MAKE) -f $(RULES_MAK) APP=PJSUA_LIB app=pjsua-lib $@
@@ -25,29 +37,15 @@
  	echo '$(BINDIR)/$(TEST_EXE): $(PJMEDIA_LIB) $(LIBDIR)/$(PJSUA_LIB_LIB) $(LIBDIR)/$(PJSIP_SIMPLE_LIB) $(LIBDIR)/$(PJSIP_UA_LIB) $(LIBDIR)/$(PJSIP_LIB) $(PJNATH_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjsip-test-$(TARGET_NAME).depend
  	echo '$(BINDIR)/$(PJSUA2_TEST_EXE): $(LIBDIR)/$(PJSUA2_LIB_LIB) $(PJMEDIA_LIB) $(LIBDIR)/$(PJSUA_LIB_LIB) $(LIBDIR)/$(PJSIP_SIMPLE_LIB) $(LIBDIR)/$(PJSIP_UA_LIB) $(LIBDIR)/$(PJSIP_LIB) $(PJNATH_LIB) $(PJLIB_UTIL_LIB) $(PJLIB_LIB)' >> .pjsua2-test-$(TARGET_NAME).depend
  
---- pjproject-2.2.1-my/pjsip-apps/build/Samples.mak	2014-02-20 12:08:06.000000000 +0400
-+++ pjproject-2.2.1/pjsip-apps/build/Samples.mak	2018-11-02 18:07:16.669510491 +0300
-@@ -47,22 +47,15 @@
- 	   tonegen \
- 	   vid_streamutil
- 
--PJSUA2_SAMPLES := pjsua2_demo
--
- EXES := $(foreach file, $(SAMPLES), $(file)$(HOST_EXE))
--PJSUA2_EXES := $(foreach file, $(PJSUA2_SAMPLES), $(file)$(HOST_EXE))
- 
+diff -aur pjproject-2.10/pjsip-apps/build/Samples.mak ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjsip-apps/build/Samples.mak
+--- pjproject-2.10/pjsip-apps/build/Samples.mak	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjsip-apps/build/Samples.mak	2021-01-04 13:30:25.738595587 +0300
+@@ -58,7 +58,7 @@
  .PHONY: $(EXES)
--.PHONY: $(PJSUA2_EXES)
+ .PHONY: $(PJSUA2_EXES)
  
 -all: $(EXES) $(PJSUA2_EXES)
 +all: $(EXES)
  
  $(EXES):
  	$(MAKE) --no-print-directory -f $(RULES_MAK) SAMPLE_SRCDIR=$(SRCDIR) SAMPLE_OBJS=$@.o SAMPLE_CFLAGS="$(_CFLAGS)" SAMPLE_CXXFLAGS="$(_CXXFLAGS)" SAMPLE_LDFLAGS="$(_LDFLAGS)" SAMPLE_EXE=$@ APP=SAMPLE app=sample $(subst /,$(HOST_PSEP),$(BINDIR)/$@)
- 
--$(PJSUA2_EXES):
--	$(MAKE) --no-print-directory -f $(RULES_MAK) PJSUA2_SAMPLE_SRCDIR=$(SRCDIR) PJSUA2_SAMPLE_OBJS=$@.o PJSUA2_SAMPLE_CFLAGS="$(_CFLAGS)" PJSUA2_SAMPLE_CXXFLAGS="$(_CXXFLAGS)" PJSUA2_SAMPLE_LDFLAGS="$(_LDXXFLAGS)" PJSUA2_SAMPLE_EXE=$@ APP=PJSUA2_SAMPLE app=pjsua2_sample $(subst /,$(HOST_PSEP),$(BINDIR)/$@)
--
- depend:
- 
- clean:

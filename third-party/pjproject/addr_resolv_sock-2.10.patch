@@ -1,0 +1,12 @@
+diff -aur pjproject-2.10/pjlib/src/pj/addr_resolv_sock.c ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjlib/src/pj/addr_resolv_sock.c
+--- pjproject-2.10/pjlib/src/pj/addr_resolv_sock.c	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjlib/src/pj/addr_resolv_sock.c	2021-01-04 18:57:39.401156053 +0300
+@@ -178,7 +178,7 @@
+     /* Call getaddrinfo() */
+     pj_bzero(&hint, sizeof(hint));
+     hint.ai_family = af;
+-    hint.ai_socktype = pj_SOCK_DGRAM() | pj_SOCK_STREAM();
++    hint.ai_socktype = 0; // pj_SOCK_DGRAM() | pj_SOCK_STREAM();
+ 
+     rc = getaddrinfo(nodecopy, NULL, &hint, &res);
+     if (rc != 0)
