@@ -10,7 +10,7 @@
 
 #include <asm/io.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
 #include <drivers/audio/audio_dev.h>
 
 #include <kernel/lthread/lthread.h>

@@ -21,7 +21,8 @@
 #include <mem/misc/pool.h>
 #include <framework/mod/options.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
+
 #include <drivers/audio/audio_dev.h>
 #include <drivers/audio/audio_utils.h>
 

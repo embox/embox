@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
 #include <fs/file_format.h>
 #include <util/math.h>
 #include <framework/mod/options.h>

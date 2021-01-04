@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
 
 #include <kernel/printk.h>
 #define D(fmt, ...) \
