@@ -199,8 +199,6 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 
 #define UINTMAX_MAX UINT64_MAX
 
-#if !defined __cplusplus || defined __STDC_LIMIT_MACROS
-
 # undef INT8_MAX
 #ifndef __INT8_MAX__
 # define INT8_MAX 0x7f
@@ -351,10 +349,6 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 #undef WINT_MIN
 #define WINT_MIN __WINT_MIN__
 
-#endif /* !defined __cplusplus || defined __STDC_LIMIT_MACROS */
-
-#if !defined __cplusplus || defined __STDC_CONSTANT_MACROS
-
 #undef INT8_C
 #define INT8_C(c) __INT8_C(c)
 #undef INT16_C
@@ -375,8 +369,6 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 #define INTMAX_C(c) __INTMAX_C(c)
 #undef UINTMAX_C
 #define UINTMAX_C(c) __UINTMAX_C(c)
-
-#endif /* !defined __cplusplus || defined __STDC_CONSTANT_MACROS */
 
 #endif /* __ASSEMBLER__ */
 
