@@ -509,7 +509,8 @@ $(@module_extbld_rmk) : stage = $(or $(strip $(call annotation_value,$(call get,
 $(@module_extbld_rmk) : __build_deps = $(call build_deps, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : __build_deps_all = $(call build_deps_all, $(call get,$@,allTypes))
 $(@module_extbld_rmk) : this_build_deps = $(patsubst %,$(value module_extbld_rmk_target_pat),$(call module_type_path,$(__build_deps)))
-$(@module_extbld_rmk) : __build_deps_artpath_cppflags = $(call annotation_value,$(__build_deps_all),$(my_bld_artpath_cppflags_before)) $(call annotation_value,$(__build_deps_all),$(my_bld_artpath_cppflags))
+$(@module_extbld_rmk) : __build_deps_artpath_cppflags_before = $(call annotation_value,$(__build_deps_all),$(my_bld_artpath_cppflags_before))
+$(@module_extbld_rmk) : __build_deps_artpath_cppflags_after  = $(call annotation_value,$(__build_deps_all),$(my_bld_artpath_cppflags))
 $(@module_extbld_rmk) : __build_deps_artpath_ldflags = $(call annotation_value,$(__build_deps),$(my_bld_artpath_ldflags))
 
 $(@module_extbld_rmk) : kind := extbld
@@ -524,7 +525,8 @@ $(@module_extbld_rmk) :
 		$(call gen_make_tsvar,$(target),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
-		$(call gen_add_tsvar,$(target),BUILD_DEPS_CPPFLAGS,$(__build_deps_artpath_cppflags)); \
+		$(call gen_add_tsvar,$(target),BUILD_DEPS_CPPFLAGS_BEFORE,$(__build_deps_artpath_cppflags_before)); \
+		$(call gen_add_tsvar,$(target),BUILD_DEPS_CPPFLAGS_AFTER,$(__build_deps_artpath_cppflags_after)); \
 		$(call gen_add_tsvar,$(target),BUILD_DEPS_LDFLAGS,$(__build_deps_artpath_ldflags)); \
 		$(foreach d,$(this_build_deps),$(call gen_make_rule,$(dir $d)%,,@true); ) \
 		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
