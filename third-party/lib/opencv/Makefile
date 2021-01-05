@@ -11,11 +11,6 @@ include $(EXTBLD_LIB)
 EMBOX_IMPORTED_CXXFLAGS += -save-temps=obj
 EMBOX_IMPORTED_CXXFLAGS += -DUSE_SPRINTF_INSTEAD
 
-EMBOX_IMPORTED_MAKEFLAGS += $(filter -j,$(EMBOX_MAKEFLAGS))
-ifneq ($(filter -j,$(EMBOX_MAKEFLAGS)),)
-EMBOX_IMPORTED_MAKEFLAGS += $(shell nproc)
-endif
-
 ifneq (,$(filter -fno-rtti,$(EMBOX_CXXFLAGS)))
 EMBOX_RTTI_FLAG          = --without-rtti
 else
@@ -94,13 +89,10 @@ OPENCV_FLAGS = \
 		-DCMAKE_BUILD_TYPE:STRING=Debug \
 		-DC_HAS_MFPU_NEON=0
 
-all:
-
-.PHONY: all
-
 $(BUILD) :
-	cd $(BUILD_DIR) && mkdir build; cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && make -j $(shell nproc)
-
+	cd $(BUILD_DIR) && mkdir build; \
+	cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && \
+	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
 
 $(INSTALL) :
 	cd $(BUILD_DIR) && cp build/lib/libopencv_*.a build/3rdparty/lib/*a install
