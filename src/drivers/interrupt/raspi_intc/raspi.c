@@ -24,10 +24,11 @@
 #include <kernel/irq.h>
 #include <drivers/irqctrl.h>
 #include <kernel/panic.h>
+#include <framework/mod/options.h>
 
 #include <embox/unit.h>
 
-#define BCM2835_INTERRUPT_BASE 0x2000B200
+#define BCM2835_INTERRUPT_BASE OPTION_GET(NUMBER,base_addr)
 
 #define BANK_CAPACITY 32
 

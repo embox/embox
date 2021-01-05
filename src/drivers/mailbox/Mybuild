@@ -1,7 +1,10 @@
 package embox.driver.mailbox
 
 module bcm2835_mailbox {
+	option number base_addr = 0x2000B880
+
 	@IncludeExport(path="drivers/mailbox")
-	source "bcm2835_mailbox.h",
-		"bcm2835_mailbox.c"
+	source "bcm2835_mailbox.h"
+
+	source "bcm2835_mailbox.c"
 }

@@ -10,6 +10,7 @@
 #define BCM2835_MAILBOX_H_
 
 #include <stdint.h>
+#include <framework/mod/options.h>
 
 #define BCM2835_FB_MAX_RES    4096
 #define BCM2835_FB_MAX_BPP    32
@@ -18,7 +19,7 @@
  * The Mailbox gives the ability to send/receive messages to/from the processor
  * and the graphic card.
  */
-#define BCM2835_MAILBOX_BASE            0x2000B880
+#define BCM2835_MAILBOX_BASE OPTION_GET(NUMBER,base_addr)
 #define BCM2835_MAILBOX_DATA_MASK       0xFFFFFFF0
 #define BCM2835_MAILBOX_CHANNEL_MASK    0x0000000F
 
