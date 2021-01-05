@@ -46,3 +46,7 @@ PKG_INSTALL_PROGS :
 
 $(INSTALL) : PKG_INSTALL_LIBS PKG_INSTALL_PROGS
 	touch $@
+
+# This is due to $(INSTALL) : PKG_INSTALL_LIBS PKG_INSTALL_PROGS
+# (above) bugs with parallel build.
+.NOTPARALLEL:
