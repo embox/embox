@@ -4,10 +4,10 @@ package embox.arch.arm
 abstract module cxxabi_api {
 }
 
-module cxxabi {
+module cxxabi extends cxxabi_api {
 	source "aeabi_atexit.c"
 }
 
-module cxxabi_stub {
+module cxxabi_stub extends cxxabi_api {
 	source "aeabi_atexit_stub.c"
 }
