@@ -41,11 +41,6 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
 # next with image.lds
 #EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_scripts1:.%=-Wl,-T,$(abspath $(ROOT_DIR))%)
 
-EMBOX_IMPORTED_MAKEFLAGS =
-ifneq (,$(filter -j,$(MAKEFLAGS)))
-EMBOX_IMPORTED_MAKEFLAGS += -j $(shell nproc)
-endif
-
 ifdef GEN_DIST
 root2dist = $(strip \
 	$(subst $(abspath $(DIST_BASE_DIR)),$${EMBOX_DIST_BASE_DIR}, \
