@@ -69,7 +69,8 @@ get_user_undef_guess AUTOQEMU_NICS guess_nics
 guessed_info AUTOQEMU_NICS_CONFIG "(got)"
 
 guess_sound() {
-	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.audio.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | grep -v portaudio_stub | head -n 1;
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.audio.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | \
+	grep -v "portaudio_stub\|portaudio_lib" | head -n 1;
 }
 get_user_undef_guess AUTOQEMU_AUDIO guess_sound
 
