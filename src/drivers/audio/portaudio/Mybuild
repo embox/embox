@@ -1,7 +1,7 @@
 package embox.driver.audio
 
 abstract module portaudio_api {
-	@IncludeExport(path="drivers/audio")
+	@IncludeExport(path="")
 	source "portaudio.h"
 }
 
@@ -37,7 +37,7 @@ module stm32f4_pa_cube extends portaudio_api {
 
 	source "stm32_pa_cube.c"
 
-	@IncludeExport(path="drivers/audio")
+	@IncludeExport(path="")
 	source "portaudio.h"
 
 	depends third_party.bsp.st_bsp_api
@@ -63,7 +63,7 @@ module stm32f7_pa_cube extends portaudio_api {
 
 	source "stm32_pa_cube.c"
 
-	@IncludeExport(path="drivers/audio")
+	@IncludeExport(path="")
 	source "portaudio.h"
 
 	depends third_party.bsp.st_bsp_api

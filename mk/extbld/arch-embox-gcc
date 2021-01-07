@@ -7,10 +7,12 @@ else
 	exit 1
 fi
 
+cppflags="$EMBOX_DEPS_CPPFLAGS_BEFORE $EMBOX_IMPORTED_CPPFLAGS $EMBOX_DEPS_CPPFLAGS_AFTER"
+
 cmd=$(basename $0)
 case $cmd in
-	*-gcc|*-clang) C_CXX_FLAGS="$EMBOX_IMPORTED_CPPFLAGS $EMBOX_DEPS_CPPFLAGS $EMBOX_IMPORTED_CFLAGS";;
-	*-g++)         C_CXX_FLAGS="$EMBOX_IMPORTED_CPPFLAGS $EMBOX_DEPS_CPPFLAGS $EMBOX_IMPORTED_CXXFLAGS";;
+	*-gcc|*-clang) C_CXX_FLAGS="$EMBOX_IMPORTED_CFLAGS   $cppflags";;
+	*-g++)         C_CXX_FLAGS="$EMBOX_IMPORTED_CXXFLAGS $cppflags";;
 	*)             echo "Unknown flags for $cmd"; exit 1;;
 esac
 

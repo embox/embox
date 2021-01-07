@@ -24,7 +24,7 @@
 #include <util/dlist.h>
 #include <util/bit.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
 
 #include <drivers/audio/stm32_audio.h>
 

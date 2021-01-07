@@ -1,0 +1,49 @@
+diff -aur pjproject-2.10/build.mak.in ../build/extbld/third_party/pjproject/core_cxx/pjproject-2.10/build.mak.in
+--- pjproject-2.10/build.mak.in	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_cxx/pjproject-2.10/build.mak.in	2021-01-04 10:12:56.423140256 +0300
+@@ -117,7 +117,7 @@
+ 
+ ifeq (@ac_external_pa@,1)
+ # External PA
+-APP_THIRD_PARTY_EXT += -lportaudio
++#APP_THIRD_PARTY_EXT += -lportaudio
+ endif
+ 
+ ifneq (@ac_no_yuv@,1)
+@@ -296,7 +296,6 @@
+ 	$(PJLIB_LDLIB) \
+ 	@LIBS@
+ export APP_LDXXLIBS := $(PJSUA2_LIB_LDLIB) \
+-	-lstdc++ \
+ 	$(APP_LDLIBS)
+ 
+ # Here are the variabels to use if application is using the library
+diff -aur pjproject-2.10/pjlib/src/pj/sock_bsd.c ../build/extbld/third_party/pjproject/core_cxx/pjproject-2.10/pjlib/src/pj/sock_bsd.c
+--- pjproject-2.10/pjlib/src/pj/sock_bsd.c	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_cxx/pjproject-2.10/pjlib/src/pj/sock_bsd.c	2021-01-04 10:16:12.867527952 +0300
+@@ -54,7 +54,11 @@
+ const pj_uint16_t PJ_SOCK_STREAM= SOCK_STREAM;
+ const pj_uint16_t PJ_SOCK_DGRAM	= SOCK_DGRAM;
+ const pj_uint16_t PJ_SOCK_RAW	= SOCK_RAW;
+-const pj_uint16_t PJ_SOCK_RDM	= SOCK_RDM;
++#if defined(SOCK_RDM)
++const pj_uint16_t PJ_SOCK_RDM  = SOCK_RDM;
++#else
++const pj_uint16_t PJ_SOCK_RDM  = 0xFFFF;
++#endif
+ 
+ /*
+  * Socket level values.
+diff -aur pjproject-2.10/pjsip/build/Makefile ../build/extbld/third_party/pjproject/core_cxx/pjproject-2.10/pjsip/build/Makefile
+--- pjproject-2.10/pjsip/build/Makefile	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_cxx/pjproject-2.10/pjsip/build/Makefile	2021-01-04 10:16:51.853929467 +0300
+@@ -164,7 +164,8 @@
+ 			   main.o
+ export PJSUA2_TEST_CFLAGS += $(_CFLAGS) $(PJ_VIDEO_CFLAGS)
+ export PJSUA2_TEST_CXXFLAGS = $(_CXXFLAGS) $(PJSUA2_LIB_CFLAGS) 
+-export PJSUA2_TEST_LDFLAGS += $(PJ_LDXXFLAGS) $(PJ_LDXXLIBS) $(LDFLAGS)
++#export PJSUA2_TEST_LDFLAGS += $(PJ_LDXXFLAGS) $(PJ_LDXXLIBS) $(LDFLAGS)
++export PJSUA2_TEST_LDFLAGS +=
+ ifeq ($(EXCLUDE_APP),0)
+ export PJSUA2_TEST_EXE := pjsua2-test-$(TARGET_NAME)$(HOST_EXE)
+ endif

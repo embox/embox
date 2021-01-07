@@ -15,9 +15,8 @@
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
 #include <drivers/audio/audio_dev.h>
-
 #include <drivers/audio/stm32f7_audio.h>
 
 EMBOX_UNIT_INIT(stm32_audio_init);

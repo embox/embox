@@ -12,6 +12,7 @@
 #include <errno.h>
 
 #include <util/log.h>
+#include <util/err.h>
 
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
@@ -21,7 +22,8 @@
 #include <mem/misc/pool.h>
 #include <framework/mod/options.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
+
 #include <drivers/audio/audio_dev.h>
 #include <drivers/audio/audio_utils.h>
 
@@ -287,6 +289,12 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream->state = PA_STREAM_RUNNING;
 	pa_stream->pa_thread = thread_create(THREAD_FLAG_SUSPENDED,
 								pa_thread_hnd, pa_stream);
+
+	if (err(pa_stream->pa_thread)) {
+		log_error("thread_create failed");
+		return paInternalError;;
+	}
+
 	schedee_priority_set(&pa_stream->pa_thread->schedee, SCHED_PRIORITY_MAX);
 
 	return paNoError;

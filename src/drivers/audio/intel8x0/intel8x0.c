@@ -15,10 +15,11 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_chip/pci_utils.h>
 #include <drivers/pci/pci_driver.h>
-#include <drivers/audio/portaudio.h>
 #include <drivers/audio/audio_dev.h>
 #include <drivers/audio/ac97.h>
 #include <kernel/irq.h>
+
+#include <portaudio.h>
 
 /* values for each busmaster block */
 

@@ -1,0 +1,23 @@
+diff -aur pjproject-2.10/pjsip/src/pjsip/sip_auth_client.c ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjsip/src/pjsip/sip_auth_client.c
+--- pjproject-2.10/pjsip/src/pjsip/sip_auth_client.c	2020-02-14 12:48:27.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_c/pjproject-2.10/pjsip/src/pjsip/sip_auth_client.c	2021-01-04 17:16:37.427932183 +0300
+@@ -1222,8 +1222,17 @@
+ 	 */
+ 	status = process_auth(tdata->pool, hchal, tdata->msg->line.req.uri,
+ 			      tdata, sess, cached_auth, &hauth);
+-	if (status != PJ_SUCCESS)
+-	    return status;
++	//if (status != PJ_SUCCESS)
++	//    return status;
++	if (status != PJ_SUCCESS) {
++	    /*
++	     * https://stackoverflow.com/questions/60683714/pjsip-application-fails-to-register-the-account-with-invalid-unsupported-digest
++	     */
++	    PJ_LOG(4,(THIS_FILE, "Moving to the next header"));
++	    hdr = hdr->next;
++	    continue;
++	}
++
+ 
+ 	if (pj_pool_get_used_size(cached_auth->pool) >
+ 	    PJSIP_AUTH_CACHED_POOL_MAX_SIZE) 

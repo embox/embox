@@ -9,7 +9,8 @@
 #include <assert.h>
 #include <embox/unit.h>
 
-#include <drivers/audio/portaudio.h>
+#include <portaudio.h>
+
 #include <drivers/audio/audio_dev.h>
 
 #include <util/log.h>
