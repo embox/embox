@@ -32,6 +32,7 @@ module core_c extends core {
 	depends pjsip_dependencies
 }
 
+/* Currently not used. It will be used for PJSUA2 if required. */
 @Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=true")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/install/include/")
 @BuildDepends(third_party.STLport.libstlportg)
@@ -141,7 +142,6 @@ module streamutil {
 @Build(stage=2,script="true")
 module pjsua {
 	source "^BUILD/extbld/third_party/pjproject/core/install/pjsua.o"
-	depends core_cxx
 }
 
 @AutoCmd
