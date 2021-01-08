@@ -5,13 +5,10 @@ package project.pjsip.cmd
 @BuildDepends(third_party.pjproject.libpj_all)
 @Build(stage=2)
 module simple_pjsua_imported {
-	option string sip_domain = "sip.linphone.org"
-	option string sip_user = "embox"
-	option string sip_passwd = "123"
-
 	/* This option is currently used on STM32F7-Discovery to use SDRAM */
 	option boolean use_extern_mem = false
 
+	@IncludePath("$(CONF_DIR)")
 	@DefineMacro("PJ_AUTOCONF=1")
 	source "simple_pjsua_imported.c"
 

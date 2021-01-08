@@ -13,11 +13,9 @@
 
 #include <mem/heap/mspace_malloc.h>
 
-#define THIS_FILE	"APP"
+#include <simple_pjsua_sip_account.inc>
 
-#define SIP_DOMAIN	OPTION_STRING_GET(sip_domain)
-#define SIP_USER	OPTION_STRING_GET(sip_user)
-#define SIP_PASSWD	OPTION_STRING_GET(sip_passwd)
+#define THIS_FILE	"APP"
 
 #define PJ_MAX_PORTS 16
 
