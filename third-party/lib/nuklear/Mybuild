@@ -1,6 +1,7 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch install")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/nuklear/Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3 -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/nuklear/Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/src")
 static module nuklear {
 	source "nuklear.h"
 }
