@@ -30,7 +30,7 @@ static module bsp extends embox.arch.arm.cmsis {
 		"platform/emlib/src/em_dbg.c",
 		"platform/emlib/src/em_opamp.c",
 		"platform/emlib/src/em_pcnt.c",
-		//"platform/emlib/src/em_int.c",
+		"platform/emlib/src/em_core.c",
 		"platform/emlib/src/em_prs.c",
 		"platform/emlib/src/em_dac.c",
 		"platform/emlib/src/em_leuart.c",
@@ -55,6 +55,7 @@ static module bsp extends embox.arch.arm.cmsis {
 		"platform/emlib/src/em_rmu.c",
 		"platform/emlib/src/em_letimer.c",
 		"platform/emlib/src/em_system.c"
+		
 
 	source "api_impl.h"
 
