@@ -36,7 +36,7 @@ static module bsp extends embox.arch.arm.cmsis {
 		"platform/emlib/src/em_leuart.c",
 		"platform/emlib/src/em_vcmp.c",
 		"platform/emlib/src/em_assert.c",
-		//"platform/emlib/src/em_usart.c", /* Requires UART_COUNT define */
+		"platform/emlib/src/em_usart.c", /* Requires UART_COUNT define */
 		"platform/emlib/src/em_mpu.c",
 		"platform/emlib/src/em_dma.c",
 		"platform/emlib/src/em_msc.c",
