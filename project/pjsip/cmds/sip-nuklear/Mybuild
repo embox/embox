@@ -1,0 +1,40 @@
+package project.pjsip.cmd
+
+@AutoCmd
+@Cmd(name="sip_nuklear", help="", man="")
+@BuildDepends(third_party.pjproject.libpj_all)
+@BuildDepends(third_party.lib.nuklear)
+@Build(stage=2)
+module sip_nuklear {
+	@InitFS
+	source "icons/phone-accept-80.png",
+	       "icons/phone-decline-80.png",
+	       "fonts/Roboto-Regular.ttf"
+
+	source "main.c"
+
+	source "nuklear_main.c"
+
+	@IncludePath("$(CONF_DIR)")
+	@DefineMacro("PJ_AUTOCONF=1")
+	source "pjsua.c"
+
+	@NoRuntime depends third_party.pjproject.libpj_all
+	@NoRuntime depends third_party.lib.nuklear
+	depends embox.driver.input.core
+	depends rawfb_api
+}
+
+abstract module rawfb_api {
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module rawfb_stm32_ltdc extends rawfb_api {
+	source "rawfb_stm32_ltdc.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+
+module rawfb_memcpy extends rawfb_api {
+	source "rawfb_memcpy.c"
+}
