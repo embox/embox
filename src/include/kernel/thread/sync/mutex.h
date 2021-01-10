@@ -14,6 +14,8 @@
 #include <sys/cdefs.h>
 #include <errno.h>
 
+#include <util/dlist.h>
+
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/sync/mutex.h>
 
@@ -22,7 +24,7 @@ struct timespec;
 #define MUTEX_INIT_STATIC \
 	{                                                  \
 		{ /* wait_queue init */                        \
-			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			DLIST_INIT_NULL(),                         \
 			/* spinlock_t lock*/                       \
 			{ /*l*/__SPIN_UNLOCKED,                    \
 				/* owner */ (unsigned int)-1,		\
@@ -39,7 +41,7 @@ struct timespec;
 #define RMUTEX_INIT_STATIC \
 	{                                                  \
 		{ /* wait_queue init */                        \
-			{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL},     \
+			DLIST_INIT_NULL(),                         \
 			/* spinlock_t lock*/                       \
 			{ /*l*/__SPIN_UNLOCKED,                    \
 				/* owner */ -1,                        \
