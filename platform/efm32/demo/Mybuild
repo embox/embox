@@ -1,0 +1,5 @@
+package platform.efm32.efm32zg_stk3200.demo
+
+module embox_logo_mono_128x128 {
+	source "demo_embox_logo_mono_128x128.c"
+}
