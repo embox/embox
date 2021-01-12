@@ -12,6 +12,9 @@
 
 struct schedee;
 
+extern int schedee_is_idle(struct schedee *s);
+extern int schedee_is_boot(struct schedee *s);
+
 struct schedee_priority {
 	EMPTY_STRUCT_BODY
 };
@@ -26,7 +29,13 @@ static inline int schedee_priority_set(struct schedee *s, int new_priority) {
 }
 
 static inline int schedee_priority_get(struct schedee *s) {
-	return 0;
+	if (schedee_is_idle(s)) {
+		return 0;
+	}
+	if (schedee_is_boot(s)) {
+		return 1;
+	}
+	return 2; /* lthread */
 }
 
 static inline int schedee_priority_inherit(struct schedee *s, int priority) {
