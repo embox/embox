@@ -3,6 +3,10 @@ package embox.driver.video
 
 @BuildDepends(platform.efm32.efm32_bsp)
 module efm32_lcd {
+	option number log_level = 1
+
+	option number start_with_logo = 1
+
 	source "efm32_lcd.c"
 	@NoRuntime depends platform.efm32.efm32_bsp
 }
