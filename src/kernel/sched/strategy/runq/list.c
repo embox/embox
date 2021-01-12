@@ -30,13 +30,24 @@ void runq_remove(runq_t *queue, struct schedee *schedee) {
 }
 
 struct schedee *runq_get_next(runq_t *queue) {
-	return dlist_entry(queue->next, struct schedee, runq_link);
+	struct schedee *schedee;
+	struct schedee *s;
+
+	schedee = mcast_out(queue->next, struct schedee, runq_link);
+
+	dlist_foreach_entry_safe(s, queue, runq_link) {
+		if (schedee_priority_get(s) >  schedee_priority_get(schedee)) {
+			schedee = s;
+		}
+	}
+
+	return schedee;
 }
 
 struct schedee *runq_extract(runq_t *queue) {
 	struct schedee *schedee;
 
-	schedee = dlist_entry(queue->next, struct schedee, runq_link);
+	schedee = runq_get_next(queue);
 	runq_remove(queue, schedee);
 
 	return schedee;
