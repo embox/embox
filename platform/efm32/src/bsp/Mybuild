@@ -11,10 +11,7 @@ abstract module efm32_conf {
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/platform/CMSIS/Include")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/platform/emlib/inc")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/platform/middleware/glib")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/drivers/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/bsp/")
-//@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/platform/, Device/SiliconLabs/EFM32ZG/Include emlib/inc CMSIS/Include)") 
-@BuildArtifactPath(cppflags="-D__CORTEX_SC=0") 
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common, drivers bsp)") 
 module bsp_get { }
 
 @BuildDepends(bsp_get)
