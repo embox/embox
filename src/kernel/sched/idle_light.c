@@ -31,3 +31,7 @@ int idle_thread_create(void) {
 
 	return 0;
 }
+
+int schedee_is_idle(struct schedee *s) {
+	return &idle.schedee == s;
+}

@@ -39,6 +39,9 @@ struct dlist_head;
 #define DLIST_INIT(head) \
 	__DLIST_INIT(head)
 
+#define DLIST_INIT_NULL() \
+	__DLIST_INIT_NULL()
+
 /**
  * A macro declares list head variable and initialize it with #DLIST_INIT. It
  * declare structure of list head if you wand refer to it you should use

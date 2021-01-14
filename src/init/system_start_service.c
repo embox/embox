@@ -15,7 +15,7 @@
 #include <util/array.h>
 
 #include <framework/cmd/api.h>
-#include <cmd/shell.h>
+
 #include <cmd/cmdline.h>
 
 #include "setup_tty.h"

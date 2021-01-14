@@ -23,27 +23,35 @@
 #include <stdint.h>
 // #include <assert.h> /*it's required for assertion operation */
 
+#include <framework/mod/options.h>
+
+#define DLIST_DEBUG_VERSION OPTION_MODULE_GET(embox__util__dlist, NUMBER, debug)
 /**
  * Double list head structure with an additional field 'list_id'. It contains
  * an address of a list head (entry of the list) structure or NULL if item is
  * not initialized now.
  */
 struct dlist_head {
-	uintptr_t          poison; /**< Valid value is zero or ~&head. */
 	struct dlist_head *next;   /**<pointer to next item in the list*/
 	struct dlist_head *prev;   /**<pointer to previous item in the list*/
+
+#if DLIST_DEBUG_VERSION && !defined NDEBUG
+	uintptr_t          poison; /**< Valid value is zero or ~&head. */
 	/**
 	 * Special implementation field. It's used as flag to indicate whether the
 	 * head is in a list or not
 	 */
 	struct dlist_head *list_id;
+#endif
 };
 
+#if DLIST_DEBUG_VERSION && !defined NDEBUG
 /** The implementation of the #DLIST_INIT macro */
-#define __DLIST_INIT(head) { 0, &(head), &(head), &(head) }
+#define __DLIST_INIT(head) { &(head), &(head), 0, &(head) }
+
+#define __DLIST_INIT_NULL() { NULL, NULL, 0, NULL }
 
 extern void __dlist_debug_check(const struct dlist_head *head);
-
 
 /* Only for internal using */
 static inline void __dlist_add(struct dlist_head *_new, struct dlist_head *next,
@@ -52,6 +60,7 @@ static inline void __dlist_add(struct dlist_head *_new, struct dlist_head *next,
 	__dlist_debug_check(next);
 	_new->prev = prev;
 	_new->next = next;
+
 	_new->poison = ~(uintptr_t) _new;
 	next->prev = _new;
 	prev->next = _new;
@@ -172,5 +181,103 @@ static inline void dlist_del_init(struct dlist_head *head) {
 	dlist_del(head);
 	dlist_init(head);
 }
+#else
+
+/** The implementation of the #DLIST_INIT macro */
+#define __DLIST_INIT(head) { &(head), &(head)}
+
+#define __DLIST_INIT_NULL(head) { NULL, NULL}
+
+extern void __dlist_debug_check(const struct dlist_head *head);
+
+/* Only for internal using */
+static inline void __dlist_add(struct dlist_head *_new, struct dlist_head *next,
+		struct dlist_head *prev) {
+
+	_new->prev = prev;
+	_new->next = next;
+
+	next->prev = _new;
+	prev->next = _new;
+}
+
+/**
+ * Initialize the item head. Set list_is as NULL it means that item head is not
+ * in any list
+ */
+static inline struct dlist_head *dlist_head_init(struct dlist_head *head) {
+	head->next = head->prev = head;
+	return head;
+}
+
+/**
+ * Implementation of the #dlist_init function.
+ * It initializes the list head.
+ * Setup all fields as own address, it means that the list is looped itself
+ * (marked empty), and list_id field filled with the own address points.
+ * It means that this list head now is owned the specify list and the list id
+ * is address of this list head.
+ */
+static inline struct dlist_head *dlist_init(struct dlist_head *head) {
+	head->next = head->prev = head; /* closure list */
+
+	return head;
+}
+
+/**
+ * Implementation of the #dlist_add_next function
+ * First of all it examine correct state of the item head and the list head.
+ * List head must be in a list but item head not.
+ * Then if state is correct it marks the new item head as owned this list.
+ * And at the and it add the new element into the list after list head element.
+ */
+static inline void dlist_add_next(struct dlist_head *_new,
+		struct dlist_head *list) {
+	/* Real adding the element
+	 * _new sequence will be following
+	 * list head <-> _new item <-> next item of list head
+	 */
+	__dlist_add(_new, list->next, list);
+}
+
+/**
+ * Implementation of the #dlist_add_prev function
+ * First of all it examine correct state of the item head and the list head.
+ * List head must be in a list but item head not.
+ * Then if state is correct it marks the _new item head as owned this list.
+ * And at the and it add the _new element into the list as previous element for
+ * the list head.
+ */
+static inline void dlist_add_prev(struct dlist_head *_new,
+		struct dlist_head *list) {
+
+	/* Real adding the element
+	 * new sequence will be following
+	 * list head <-> _new item <-> previous item of list head
+	 */
+	__dlist_add(_new, list, list->prev);
+}
+
+/**
+ * Remove the element from its list. First of all it checks whether the head
+ * is owned any of list, if head not in the list it is error. If head is owned
+ * the list (list_id is setup in correct value) the head will unlink from the
+ * list (previous will point to the next item and next will point to the
+ * previous). And at the end the head is marked 'initialize' (not in a list)
+ */
+static inline void dlist_del(struct dlist_head *head) {
+	/* close the list
+	 * the previous element refer to the next element and next element refer to
+	 * the previous */
+	head->prev->next = head->next;
+	head->next->prev = head->prev;
+}
+
+static inline void dlist_del_init(struct dlist_head *head) {
+	dlist_del(head);
+	dlist_init(head);
+}
+
+#endif
 
 #endif /* DLIST_DEBUG_H_ */

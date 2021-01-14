@@ -7,7 +7,8 @@ package platform.efm32.efm32zg_stk3200
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/hardware/kit/common/bsp/")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/platform/efm32/bsp_get/Gecko_SDK-5.1.2/app/mcu_example/EFM32ZG_STK3200/glib")
 @BuildArtifactPath(cppflags="-D__CORTEX_SC=0") 
-@BuildArtifactPath(cppflags="-DUART_COUNT=1")
+@BuildArtifactPath(cppflags="-DUART_COUNT=0")
+@BuildArtifactPath(cppflags="-DEFM32ZG222F32=1")
 module efm32zg_stk3200_conf extends platform.efm32.efm32_conf {
 	source "efm32_conf.h"
 }

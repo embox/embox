@@ -31,3 +31,7 @@ struct schedee *boot_thread_create(void)
 
 	return &boot_schedee;
 };
+
+int schedee_is_boot(struct schedee *s) {
+	return &boot_schedee == s;
+}

@@ -39,7 +39,7 @@ typedef struct cond cond_t;
 #define COND_INIT_STATIC \
 		{ \
 			{ /*wait_queue init */ \
-				{/* dlist_init*/ (uintptr_t)NULL, NULL, NULL, NULL}, \
+				DLIST_INIT_NULL(), \
 				/* spinlock_t lock*/ \
 				{ /*l*/__SPIN_UNLOCKED, \
 					/* owner */ -1,   \
