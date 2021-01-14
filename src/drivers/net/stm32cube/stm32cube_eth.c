@@ -33,7 +33,7 @@ static ETH_TxPacketConfig TxConfig;
 #endif
 
 static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB] \
-	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
 
 static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
 	 __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
@@ -50,13 +50,13 @@ static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif /* STM32H7_CUBE */
 static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
-	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
 #else /* TX_NO_BUFF */
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 
 static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
-	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
 #endif /* TX_NO_BUFF */
 
 static void low_level_init(unsigned char mac[6]) {
