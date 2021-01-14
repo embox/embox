@@ -39,6 +39,8 @@ static inline uint32_t calc_log2(uint32_t val) {
 extern char _sram_nocache_start;
 extern char _sram_nocache_size;
 extern char _sram_nocache_log_size;
+extern char _sram_device_mem_start;
+extern char _sram_device_mem_stop;
 
 static inline void arm_mpu_disable(void) {
 	dsb();
@@ -65,10 +67,14 @@ static void arm_mpu_configure(int region, uint32_t base_addr,
 }
 
 static void arm_mpu_init_nocache_regions(void) {
-	int i;
+	int i, logsize;
 	uint32_t sram_nocache_start = (uint32_t) &_sram_nocache_start;
 	uint32_t sram_nocache_size = (uint32_t) &_sram_nocache_size;
 	uint32_t sram_nocache_log_size = (uint32_t) &_sram_nocache_log_size;
+	uint32_t sram_device_start = (uint32_t) &_sram_device_mem_start;
+	uint32_t sram_device_stop = (uint32_t) &_sram_device_mem_stop;
+	uint32_t sram_device_size = sram_device_stop - sram_device_start;
+
 	unsigned region = 0;
 	struct mpu_region regions[] = {
 		{ NOCACHE_REGION0_ADDR, NOCACHE_REGION0_SIZE },
@@ -84,12 +90,23 @@ static void arm_mpu_init_nocache_regions(void) {
 		arm_mpu_configure(region++, sram_nocache_start, sram_nocache_log_size,
 			(1 << MPU_RASR_ENABLE_POS) | (0x3 << MPU_RASR_AP_POS) |
 			(1 << MPU_RASR_TEX_POS));
+
+		if (sram_device_size) {
+			logsize = calc_log2(sram_device_size);
+			if (sram_device_size != (1 << logsize)) {
+				logsize++;
+			}
+			log_debug("\nSRAM device memory: start=0x%08x, region size=0x%x",
+				sram_device_start, (1 << logsize));
+
+			arm_mpu_configure(region++, sram_device_start, logsize,
+				(1 << MPU_RASR_ENABLE_POS) | (0x3 << MPU_RASR_AP_POS) |
+				(0 << MPU_RASR_TEX_POS) | (1 << MPU_RASR_B_POS));
+		}
 	}
 
 	/* Process other non-cacheble regions at fixed addresses. */
 	for (i = 0; i < ARRAY_SIZE(regions); i++) {
-		unsigned logsize;
-
 		if (!regions[i].size) {
 			continue;
 		}
@@ -99,7 +116,7 @@ static void arm_mpu_init_nocache_regions(void) {
 
 		logsize = calc_log2(regions[i].size);
 		assertf(regions[i].size == (1 << logsize),
-			"region%d size (0x%08x) is no power of 2\n", i, regions[i].size);
+			"region%d size (0x%08x) is not a power of 2\n", i, regions[i].size);
 
 		/* Non-cacheable region with full read/write access */
 		arm_mpu_configure(region++, regions[i].addr, logsize,
