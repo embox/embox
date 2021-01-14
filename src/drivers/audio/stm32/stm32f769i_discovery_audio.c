@@ -10,6 +10,7 @@
 #include <util/log.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
+#include <arm/cpu_cache.h>
 
 #include <drivers/audio/stm32f7_audio.h>
 
@@ -30,7 +31,7 @@ static_assert(STM32_DFSDM_BOTTOM_LEFT_IRQ == DMA2_Stream6_IRQn);
 static_assert(STM32_DFSDM_BOTTOM_RIGHT_IRQ == DMA2_Stream7_IRQn);
 
 #define SCRATCH_BUFF_SIZE 1024
-static int32_t audio_scratch_buffer[SCRATCH_BUFF_SIZE];
+static int32_t audio_scratch_buffer[SCRATCH_BUFF_SIZE] SRAM_NOCACHE_SECTION;
 
 static irq_return_t stm32_audio_out_dma_irq(unsigned int irq_num,
 		void *audio_dev) {
