@@ -7,7 +7,9 @@ SECTIONS {
 	/* MPU region must be aligned to its own size */
 	.bss.sram_nocache : ALIGN(SRAM_NOCACHE_SIZE) {
 		_sram_nocache_start = .;
-		*(.bss.sram_nocache)
+		_sram_device_mem_start = .;
+		*(.bss.sram_device_mem*)
+		_sram_device_mem_stop = .;
 		*(.bss.sram_nocache*)
 		. = ALIGN(SRAM_NOCACHE_SIZE);
 		_sram_nocache_end = .;

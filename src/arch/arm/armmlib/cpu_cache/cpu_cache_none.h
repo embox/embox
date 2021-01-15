@@ -10,6 +10,7 @@
 #define ARCH_ARM_ARMMLIB_CPU_CACHE_NONE_H_
 
 #define SRAM_NOCACHE_SECTION
+#define SRAM_DEVICE_MEM_SECTION
 
 #ifndef __ASSEMBLER__
 static inline void dcache_flush_all(void) {

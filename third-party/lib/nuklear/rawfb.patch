@@ -1,0 +1,36 @@
+--- Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/demo/x11_rawfb/nuklear_rawfb.h	2020-04-17 11:20:02.000000000 +0300
++++ ../build/extbld/third_party/lib/nuklear/Nuklear-9f0bca461b028c1f8b638beeba1859045ebe1ac3/demo/x11_rawfb/nuklear_rawfb.h	2021-01-10 01:17:49.092283054 +0300
+@@ -895,7 +895,7 @@
+                     continue;
+             }
+             col = nk_rawfb_img_getpixel(src, (int)xoff, (int) yoff);
+-	    if (col.r || col.g || col.b)
++	    if (fg && (col.r || col.g || col.b))
+ 	    {
+ 		col.r = fg->r;
+ 		col.g = fg->g;
+@@ -1007,7 +1007,23 @@
+     dst_rect.y = y;
+     dst_rect.w = w;
+     dst_rect.h = h;
+-    nk_rawfb_stretch_image(&rawfb->fb, &rawfb->font_tex, &dst_rect, &src_rect, &rawfb->scissors, col);
++
++    if (img && img->handle.ptr) {
++        struct rawfb_image fb;
++        int wx = img->region[2];
++        int hx = img->region[3];
++
++        fb.pixels = img->handle.ptr;
++        fb.w = wx;
++        fb.h = hx;
++        fb.pitch = wx * 4;
++        fb.pl = PIXEL_LAYOUT_XRGB_8888;
++        fb.format = NK_FONT_ATLAS_RGBA32;
++
++        nk_rawfb_stretch_image(&rawfb->fb, &fb, &dst_rect, &src_rect, &rawfb->scissors, NULL);
++	} else {
++    	nk_rawfb_stretch_image(&rawfb->fb, &rawfb->font_tex, &dst_rect, &src_rect, &rawfb->scissors, col);
++	}
+ }
+ 
+ NK_API void

@@ -47,6 +47,10 @@ void *thread_local_get(struct thread *t, size_t idx) {
 
 	assert(t);
 
+	if (idx >= t->local.size) {
+		return NULL;
+	}
+
 	kt = task_resource_thread_key_table(t->task);
 
 	mutex_lock(&kt->mutex);
@@ -67,6 +71,10 @@ int thread_local_set(struct thread *t, size_t idx, void *value) {
 	struct thread_key_table *kt;
 
 	assert(t);
+
+	if (idx >= t->local.size) {
+		return -EINVAL;
+	}
 
 	kt = task_resource_thread_key_table(t->task);
 

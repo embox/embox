@@ -14,6 +14,7 @@
 #include <util/log.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
+#include <arm/cpu_cache.h>
 
 #include <portaudio.h>
 #include <drivers/audio/audio_dev.h>
@@ -46,8 +47,8 @@ struct stm32_hw {
 static struct stm32_hw stm32_hw_out;
 static struct stm32_hw stm32_hw_in;
 
-static uint8_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN * 2];
-static uint8_t stm32_audio_out_bufs[STM32_AUDIO_BUF_LEN * 2];
+static uint8_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
+static uint8_t stm32_audio_out_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
 
 static void stm32_audio_in_activate(void) {
 	stm32_hw_in.stm32_audio_running = 0;

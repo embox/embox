@@ -12,6 +12,9 @@
 #define SRAM_NOCACHE_SECTION \
 	__attribute__ ((section(".bss.sram_nocache")))
 
+#define SRAM_DEVICE_MEM_SECTION \
+	__attribute__ ((section(".bss.sram_device_mem")))
+
 #ifndef __ASSEMBLER__
 extern void dcache_flush_all(void);
 #endif
