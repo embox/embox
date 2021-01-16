@@ -14,7 +14,7 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
 
-HTTP_GOLD_SIMPLE_FILE="index.html"
+HTTP_GOLD_SIMPLE_FILE="http_gold_simple_file.html"
 
 export PEER_HOST_IP=192.168.128.128 # also hardcoded into x86/test/net start_script
 
