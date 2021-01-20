@@ -23,6 +23,8 @@ module core {
 }
 
 module sock {
+	option number log_level = 0
+
 	source "sock.c"
 	source "socket/sock_hash.c"
 	source "socket/sock_repo.c"
