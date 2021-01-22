@@ -14,6 +14,8 @@ EXPECT_TESTS_BASE=$ROOT_DIR/scripts/expect
 EMBOX_IP=10.0.2.16
 HOST_IP=10.0.2.10
 
+HTTP_GOLD_SIMPLE_FILE="http_gold_simple_file.html"
+
 export PEER_HOST_IP=192.168.128.128 # also hardcoded into x86/test/net start_script
 
 TEST_PING_FORWARING_SCRIPT=$CONT_BASE/net/forwarding/test_ping_forwarding.sh
@@ -30,13 +32,13 @@ test_case_target_should_reply_to_big_ping() {
 
 test_case_correct_index_html_should_be_downloaded() {
 
-	wget $EMBOX_IP
+	wget $EMBOX_IP/$HTTP_GOLD_SIMPLE_FILE
 	test_retcode
 
-	diff -q index.html $DATA_DIR/index.html
+	diff -q $HTTP_GOLD_SIMPLE_FILE $DATA_DIR/$HTTP_GOLD_SIMPLE_FILE
 	test_retcode
 
-	rm index.html
+	rm $HTTP_GOLD_SIMPLE_FILE
 }
 
 #test_case_ssh_should_be_able_to_execute_command_and_show_output() {
@@ -133,8 +135,7 @@ tap_down() {
 sudo /etc/init.d/ntp restart
 sudo inetd
 
-# FIXME The block can be removed, See discussion to #1703
-cp index.html conf/rootfs/index.html
+cp $CONT_BASE/net/$HTTP_GOLD_SIMPLE_FILE $ROOT_DIR/conf/rootfs/$HTTP_GOLD_SIMPLE_FILE
 make >/dev/null 2>/dev/null
 
 tap_up
