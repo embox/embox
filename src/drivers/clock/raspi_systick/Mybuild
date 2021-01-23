@@ -1,6 +1,8 @@
 package embox.driver.clock
 
 module raspi_systick {
+	option number base_addr = 0x20003000
+
 	source "raspi_systick.c"
 
 	@NoRuntime depends embox.kernel.time.clock_source

@@ -1,6 +1,8 @@
 package embox.driver.interrupt
 
 module raspi extends irqctrl_api {
+	option number base_addr = 0x2000B200
+
 	source "raspi.c", "raspi.h"
 
 	depends embox.util.Bit

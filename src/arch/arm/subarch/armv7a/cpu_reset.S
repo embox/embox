@@ -13,6 +13,14 @@
 
 .global hardware_init_hook
 hardware_init_hook:
+#ifdef CORTEXA7_MULTIPROCESSING
+	/* check primary core */
+	mrc     p15, 0, r0, c0, c0, 5
+	ubfx    r0, r0, #0, #2
+	cmp     r0, #0
+	bne		mp_halt
+#endif
+
 	/* setup interrupt vector */
 	ldr r0, =arm_trap_table
 	mcr p15, 0, r0, c12, c0, 0
@@ -34,6 +42,11 @@ hardware_init_hook:
 	mrc p15, 0, r0, c1, c0, 1
 	orr r0, r0, #ACR_L2EN /* enabling L2 cache */
 	mcr p15, 0, r0, c1, c0, 1
-
 	mov pc, lr
 
+#ifdef CORTEXA7_MULTIPROCESSING
+mp_halt:
+	/* halt */
+	wfe
+	b mp_halt
+#endif

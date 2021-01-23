@@ -19,10 +19,11 @@
 #include <sys/mman.h>
 #include <hal/mmu.h>
 #include <util/binalign.h>
+#include <framework/mod/options.h>
 
 #include <embox/unit.h>
 
-#define BCM2835_SYSTEM_TIMER_BASE 0x20003000
+#define BCM2835_SYSTEM_TIMER_BASE OPTION_GET(NUMBER,base_addr)
 
 /**
  * Layout of the System Timer Registers.

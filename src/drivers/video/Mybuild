@@ -50,6 +50,8 @@ module bochs {
 }
 
 module raspi_video {
+	option number base_addr = 0x2000B880
+
 	source "raspi_video.c"
 
 	depends embox.driver.mailbox.bcm2835_mailbox
