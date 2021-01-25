@@ -1,4 +1,4 @@
-package platform.stm32_tests.cmd
+package platform.stm32.cmd
 
 @AutoCmd
 @Cmd(name = "static_square_draw",
