@@ -2,6 +2,8 @@
 package embox.arch.arm.cortexa8
 
 module bundle {
+	option number multi_processing = 0
+
 	source "cpu_reset.S"
 
 	depends embox.arch.arm.head

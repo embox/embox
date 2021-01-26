@@ -9,11 +9,15 @@
 #include <asm/regs.h>
 #include <asm/cp15.h>
 
+#include <framework/mod/options.h>
+
+#define MULTIPROCESSING OPTION_GET(NUMBER, multi_processing)
+
 .extern arm_trap_table
 
 .global hardware_init_hook
 hardware_init_hook:
-#ifdef CORTEXA7_MULTIPROCESSING
+#if MULTIPROCESSING
 	/* check primary core */
 	mrc     p15, 0, r0, c0, c0, 5
 	ubfx    r0, r0, #0, #2
@@ -44,7 +48,7 @@ hardware_init_hook:
 	mcr p15, 0, r0, c1, c0, 1
 	mov pc, lr
 
-#ifdef CORTEXA7_MULTIPROCESSING
+#if MULTIPROCESSING
 mp_halt:
 	/* halt */
 	wfe
