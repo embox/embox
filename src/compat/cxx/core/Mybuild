@@ -34,16 +34,3 @@ module DestructionStatic extends DestructionPolicy {
 	option number table_size = 50
 	source "cxx_destruction_static.c"
 }
-
-module AppStartupShutdown {
-	depends ConstructionPolicy
-	depends app
-	source "cxx_app_start.h"
-	source "cxx_app_startup_shutdown.cpp"
-}
-
-abstract module app {
-	/* The implementation of this module is supposed to
-		implement the "int main(int argc, char** argv)" */
-	source "cxxapp.hpp"
-}

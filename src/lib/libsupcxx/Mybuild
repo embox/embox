@@ -1,5 +1,0 @@
-package embox.lib
-
-@DefaultImpl(third_party.lib.libsupcxx_toolchain)
-abstract module libsupcxx {
-}

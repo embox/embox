@@ -1,0 +1,14 @@
+package embox.lib.cxx
+
+module libsupcxx_standalone extends embox.lib.libsupcxx {
+	@IncludeExport
+	source "new", "exception", "typeinfo"
+
+	/* Generic files */
+	source "new.cpp"
+
+	/* Private C++ files */
+	source "purevirt_routines.cpp"
+
+	depends embox.compat.libc.all
+}

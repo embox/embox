@@ -23,7 +23,7 @@ static module libgcc extends embox.lib.libgcc {
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version/_target")
-static module libstdcxx extends embox.lib.stl {
+static module libstdcxx extends embox.lib.libstdcxx {
 	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/libs")
 	source "libstdc++.a"
 
