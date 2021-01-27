@@ -5,7 +5,7 @@ package third_party.STLport
 @BuildArtifactPath(cppflags="-Wno-narrowing")
 @BuildDepends(embox.lib.libgcc)
 @BuildDepends(embox.lib.libsupcxx)
-static module libstlportg extends embox.lib.stl {
+static module libstlportg extends embox.lib.libstdcxx {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libstlportg.a"
 

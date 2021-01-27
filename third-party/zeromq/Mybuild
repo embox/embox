@@ -1,14 +1,14 @@
 package third_party.zeromq
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildDepends(embox.lib.stl)
+@BuildDepends(embox.lib.libstdcxx)
 @BuildDepends(embox.lib.libsupcxx)
 @BuildArtifactPath(cppflags_before="-I$(ROOT_DIR)/extbld/third_party/zeromq/core/include")
 static module core {
 	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 
-	@NoRuntime depends embox.lib.stl
+	@NoRuntime depends embox.lib.libstdcxx
 	@NoRuntime depends embox.lib.libsupcxx
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
