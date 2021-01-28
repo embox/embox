@@ -1,4 +1,4 @@
-package stm32f4_cnc
+package cnc_web_admin.cgi_bin
 
 @AutoCmd
 @Cmd(name="live_status", help="Live CGI updates")
