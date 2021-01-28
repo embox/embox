@@ -45,7 +45,7 @@ static int memcpy_iov(void *dst, size_t dst_len, struct iovec *iov, int iovlen) 
 int main(int argc, char *argv[]) {
 	const int sock = STDOUT_FILENO;
 	const int ipc_in = cnc_ipc_get_input_fd();
-	char buf[64], out_buf[64];
+	char buf[128], out_buf[64];
 	struct pollfd fds[2];
 	struct iovec iov[3];
 	bool sock_conn, ipc_has_data;
