@@ -1,5 +1,5 @@
 
-package stm32f4_cnc
+package cnc_web_admin.cgi_bin
 
 @Cmd(name="http_admin_backend", help="", man="")
 @BuildDepends(third_party.lib.cjson)

@@ -124,6 +124,7 @@ int main(int argc, char *argv[]) {
 			int len = read(STDIN_FILENO, mpfd_g_buf, min(BUFF_SZ, clen));
 			write(fd, mpfd_g_buf, len);
 			clen -= len;
+			sleep(0);
 		}
 		close(fd);
 

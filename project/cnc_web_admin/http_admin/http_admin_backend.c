@@ -18,8 +18,6 @@
 #include <cJSON.h>
 #include <embox/cmd.h>
 
-#include <stm32f4xx_hal.h>
-
 EMBOX_CMD(http_admin_main);
 
 static char *http_admin_build_iface_list(void) {
@@ -146,7 +144,7 @@ static void http_admin_post(char *post_data) {
 
 		system("flash_settings store net");
 
-		NVIC_SystemReset();
+		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
 	}
 
 outerr:
