@@ -1,0 +1,7 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"service telnetd",
+"service httpd http_admin",
+"ntpdate 0.europe.pool.ntp.org",
+"tish",
