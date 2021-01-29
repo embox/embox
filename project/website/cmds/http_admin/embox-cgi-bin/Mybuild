@@ -1,0 +1,7 @@
+package project.website.cgi_bin
+
+@AutoCmd
+@Cmd(name="gettime", help="Live time updates")
+module gettime {
+	source "gettime.c"
+}
