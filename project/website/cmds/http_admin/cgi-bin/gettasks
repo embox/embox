@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo -ne "HTTP/1.1 200 OK\r\n"
+echo -ne "Content-Type: text/event-stream\r\n"
+echo -ne "Cache-Control: no-cache\r\n"
+echo -ne "Connection: keep-alive\r\n"
+echo -ne "\r\n"
+
+while true; do
+	proc=`LC_ALL=C top -b -n1 | \
+                 awk '{ printf("%-8s %-8s %-8s  %-8s  %-8s\n", $1, $2, $9, $10, $12); }' | \
+                 tail -n +7 | head -n 11 | awk 'ORS="\ndata: "'`
+	echo -ne "data: $proc\n\n" 2>/dev/null || exit 0
+	sleep 1
+done

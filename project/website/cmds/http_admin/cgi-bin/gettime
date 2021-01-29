@@ -1,0 +1,13 @@
+#!/bin/bash
+
+echo -ne "HTTP/1.1 200 OK\r\n"
+echo -ne "Content-Type: text/event-stream\r\n"
+echo -ne "Cache-Control: no-cache\r\n"
+echo -ne "Connection: keep-alive\r\n"
+echo -ne "\r\n"
+
+while true; do
+	tm=`LC_ALL=C date +%c`
+	echo -ne "data: {\"time\" : \"$tm\"}\n\n" 2>/dev/null || exit 0
+	sleep 1
+done

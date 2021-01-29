@@ -1,0 +1,19 @@
+#!/bin/python3
+
+import sys
+
+cmd = sys.argv[1]
+
+if cmd == 'serialize_states':
+	print('Serializing states', file=sys.stderr)
+	with open('cgi-bin/leds.txt', 'r') as f:
+		print('[' + f.read() + ']')
+
+elif cmd == 'clr' or cmd == 'set':
+	led_nr = int(sys.argv[2])
+
+	with open('cgi-bin/leds.txt', 'r+') as f:
+		leds = f.read().split(',')
+		leds[led_nr] = str(1 if cmd == 'set' else 0)
+		f.seek(0)
+		f.write(','.join(leds))
