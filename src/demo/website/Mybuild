@@ -2,16 +2,12 @@ package embox.demo
 
 module website {
 	@InitFS
-	source  "about.html",
+	source "index.html",
 		"em_big.png",
 		"em_small.png",
 		"favicon.ico",
-		"hosts",
-		"index.html",
-		"joke.html",
 		"matmex.gif",
 		"mm_en.gif",
-		"test_temp.html"
 
 	depends embox.fs.driver.initfs
 	depends embox.cmd.net.httpd
