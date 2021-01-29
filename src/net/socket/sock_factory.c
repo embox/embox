@@ -4,6 +4,8 @@
  * @date Nov 7, 2013
  * @author: Anton Bondarev
  */
+#include <util/log.h>
+
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -34,6 +36,7 @@ static struct sock * sock_alloc(
 		sk = pool_alloc(f_ops->sock_pool);
 		if (sk == NULL) {
 			ipl_restore(sp);
+			log_error("could not alloc sock_family");
 			return NULL;
 		}
 
@@ -42,6 +45,7 @@ static struct sock * sock_alloc(
 			if (p_sk == NULL) {
 				pool_free(f_ops->sock_pool, sk);
 				ipl_restore(sp);
+				log_error("could not alloc sock_proto");
 				return NULL;
 			}
 		}

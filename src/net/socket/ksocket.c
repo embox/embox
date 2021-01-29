@@ -63,7 +63,8 @@ int kbind(struct sock *sk, const struct sockaddr *addr,
 	if (sock_state_bound(sk)) {
 		return -EINVAL;
 	}
-	else if (sk->opt.so_domain != addr->sa_family) {
+
+	if (sk->opt.so_domain != addr->sa_family) {
 		return -EAFNOSUPPORT;
 	}
 
@@ -94,14 +95,16 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 	if (sk->opt.so_domain != addr->sa_family) {
 		return -EAFNOSUPPORT;
 	}
-	else if ((sk->opt.so_type == SOCK_STREAM)
-			&& sock_state_connected(sk)) {
+
+	if ((sk->opt.so_type == SOCK_STREAM) && sock_state_connected(sk)) {
 		return -EISCONN;
 	}
-	else if (sock_state_listening(sk)) {
+
+	if (sock_state_listening(sk)) {
 		return -EISCONN;
 	}
-	else if (sock_state_connecting(sk)) {
+
+	if (sock_state_connecting(sk)) {
 		return -EALREADY;
 	}
 
@@ -130,6 +133,7 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 			(void)sk->f_ops->shutdown(sk, SHUT_RDWR);
 		}
 	}
+
 	if (ret != 0) {
 		log_error("unable to connect on socket");
 		sock_set_state(sk, SS_BOUND);
@@ -154,11 +158,12 @@ int klisten(struct sock *sk, int backlog) {
 	if (sk->opt.so_type != SOCK_STREAM) {
 		return -EOPNOTSUPP;
 	}
-	else if (sock_state_connecting(sk)
-			|| sock_state_connected(sk)) {
+
+	if (sock_state_connecting(sk) || sock_state_connected(sk)) {
 		return -EINVAL;
 	}
-	else if (!sock_state_bound(sk)) {
+
+	if (!sock_state_bound(sk)) {
 		if (sk->f_ops->bind_local == NULL) {
 			return -EINVAL;
 		}
@@ -201,7 +206,8 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 	if (sk->opt.so_type != SOCK_STREAM) {
 		return -EOPNOTSUPP;
 	}
-	else if (!sock_state_listening(sk)) {
+
+	if (!sock_state_listening(sk)) {
 		log_error("accepting socket should be in listening state");
 		return -EINVAL;
 	}
@@ -246,15 +252,15 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 			}
 			sock_set_state(sk, SS_BOUND);
 		}
+
 		if (msg->msg_name == NULL) {
 			if (msg->msg_namelen != 0) {
 				return -EINVAL;
 			}
-			else if (!sock_state_connected(sk)) {
+			if (!sock_state_connected(sk)) {
 				return -EDESTADDRREQ;
 			}
-		}
-		else if (msg->msg_namelen <= 0) {
+		} else if (msg->msg_namelen <= 0) {
 			return -EINVAL;
 		}
 		break;
@@ -262,15 +268,15 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		if (!sock_state_connected(sk)) {
 			return -ENOTCONN;
 		}
-		else if ((msg->msg_name != NULL)
-				|| (msg->msg_namelen != 0)) {
+		if ((msg->msg_name != NULL) || (msg->msg_namelen != 0)) {
 			return -EISCONN;
 		}
 		break;
 	}
 
-	if (sk->f_ops->sendmsg == NULL)
+	if (sk->f_ops->sendmsg == NULL) {
 		return -EOPNOTSUPP;
+	}
 
 	return sk->f_ops->sendmsg(sk, msg, flags);
 }
@@ -302,8 +308,7 @@ int kshutdown(struct sock *sk, int how) {
 
 	sk->shutdown_flag |= (how + 1);
 
-	if (!sock_state_connected(sk)
-			&& !sock_state_listening(sk)) {
+	if (!sock_state_connected(sk) && !sock_state_listening(sk)) {
 		return -ENOTCONN;
 	}
 
@@ -370,25 +375,23 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 		if (sk->f_ops->getsockopt == NULL) {
 			return -EOPNOTSUPP;
 		}
-		return sk->f_ops->getsockopt(sk, level, optname,
-				optval, optlen);
+
+		return sk->f_ops->getsockopt(sk, level, optname, optval, optlen);
 	}
 
 	switch (optname) {
 	default:
 		return -ENOPROTOOPT;
+
 	CASE_GETSOCKOPT(SO_ACCEPTCONN, so_acceptconn, );
 	CASE_GETSOCKOPT(SO_BINDTODEVICE, so_bindtodevice,
-			strncpy(optval, &sk->opt.so_bindtodevice->name[0],
-				*optlen);
-			*optlen = min(*optlen,
-				strlen(&sk->opt.so_bindtodevice->name[0]));
+			strncpy(optval, &sk->opt.so_bindtodevice->name[0], *optlen);
+			*optlen = min(*optlen, strlen(&sk->opt.so_bindtodevice->name[0]));
 			break);
 	CASE_GETSOCKOPT(SO_BROADCAST, so_broadcast, );
 	CASE_GETSOCKOPT(SO_DOMAIN, so_domain, );
 	CASE_GETSOCKOPT(SO_DONTROUTE, so_dontroute, );
-	CASE_GETSOCKOPT(SO_ERROR, so_error,
-			sk->opt.so_error = 0);
+	CASE_GETSOCKOPT(SO_ERROR, so_error, sk->opt.so_error = 0);
 	CASE_GETSOCKOPT(SO_LINGER, so_linger, );
 	CASE_GETSOCKOPT(SO_OOBINLINE, so_oobinline, );
 	CASE_GETSOCKOPT(SO_PROTOCOL, so_protocol, );

@@ -69,11 +69,9 @@ static int tcp_init(struct sock *sk) {
 
 	log_debug("sk %p", to_sock(tcp_sk));
 
-	tcp_sk->p_sk = tcp_sk->p_sk; /* already initialized */
 	tcp_sk->state = TCP_CLOSED;
 	tcp_sk->self.seq = tcp_sk->last_ack;
-	memcpy(&tcp_sk->self.wind, &self_wind_default,
-			sizeof tcp_sk->self.wind);
+	memcpy(&tcp_sk->self.wind, &self_wind_default, sizeof(tcp_sk->self.wind));
 	tcp_sk->rem.wind.factor = 0;
 	tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&tcp_sk->conn_lnk);
@@ -92,6 +90,7 @@ static int tcp_init(struct sock *sk) {
 }
 
 static int tcp_close(struct sock *sk) {
+	int ret;
 	struct sk_buff *skb;
 	struct tcphdr *tcph;
 	struct tcp_sock *tcp_sk;
@@ -106,42 +105,53 @@ static int tcp_close(struct sock *sk) {
 		assert(tcp_sk->state < TCP_MAX_STATE);
 		switch (tcp_sk->state) {
 		default:
-			return -EBADF;
+			ret = -EBADF;
+			break;
 		case TCP_CLOSED:
-			tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 			tcp_sock_release(tcp_sk);
-			return 0;
+			ret = 0;
+			break;
 		case TCP_LISTEN:
 		case TCP_SYN_SENT:
 		case TCP_SYN_RECV_PRE:
 			tcp_sock_set_state(tcp_sk, TCP_CLOSED);
-			tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 			tcp_sock_release(tcp_sk);
-			return 0;
+			ret = 0;
+			break;
 		case TCP_SYN_RECV:
 		case TCP_ESTABIL:
 		case TCP_CLOSEWAIT:
+		{
+			enum tcp_sock_state new_state;
+			in_port_t dst_port;
+			in_port_t src_port;
+
 			skb = NULL; /* alloc new pkg */
-			if (0 != alloc_prep_skb(tcp_sk, 0, NULL, &skb)) {
+			ret = alloc_prep_skb(tcp_sk, 0, NULL, &skb);
+			if (ret) {
 				break; /* error: see ret */
 			}
-			tcp_sock_set_state(tcp_sk,
-					tcp_sk->state == TCP_CLOSEWAIT ? TCP_LASTACK
-						: TCP_FINWAIT_1);
+			new_state = (tcp_sk->state == TCP_CLOSEWAIT) ? TCP_LASTACK :
+					TCP_FINWAIT_1;
+			tcp_sock_set_state(tcp_sk, new_state);
+
 			tcph = tcp_hdr(skb);
-			tcp_build(tcph,
-					sock_inet_get_dst_port(to_sock(tcp_sk)),
-					sock_inet_get_src_port(to_sock(tcp_sk)),
-					TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
+			dst_port = sock_inet_get_dst_port(to_sock(tcp_sk));
+			src_port = sock_inet_get_src_port(to_sock(tcp_sk));
+			tcp_build(tcph, dst_port, src_port, TCP_MIN_HEADER_SIZE,
+					tcp_sk->self.wind.value);
 			tcph->fin = 1;
 			tcp_set_ack_field(tcph, tcp_sk->rem.seq);
 			send_seq_from_sock(tcp_sk, skb);
+
+			ret = 0;
 			break;
+		} /* TCP_CLOSEWAIT */
 		}
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
 
-	return 0;
+	return ret;
 }
 
 static int tcp_connect(struct sock *sk,
@@ -151,12 +161,12 @@ static int tcp_connect(struct sock *sk,
 	struct tcphdr *tcph;
 	struct tcp_sock *tcp_sk;
 	int ret;
-	static const __u8 magic_opts[] = {
-		TCP_OPT_KIND_MSS, 0x04,     /* Maximum segment size:             */
-				0x40, 0x0C,               /* 16396 bytes         */
-		TCP_OPT_KIND_NOP,           /* No-Operation                      */
-		TCP_OPT_KIND_WS, 0x03,      /* Window scale:                     */
-				TCP_WINDOW_FACTOR_DEFAULT /* 7 (multiply by 128) */
+	static const uint8_t magic_opts[] = {
+		TCP_OPT_KIND_MSS, 0x04,     /* Maximum segment size: */
+		0x40, 0x0C,                 /* 16396 bytes           */
+		TCP_OPT_KIND_NOP,           /* No-Operation          */
+		TCP_OPT_KIND_WS, 0x03,      /* Window scale:         */
+		TCP_WINDOW_FACTOR_DEFAULT   /* 7 (multiply by 128)   */
 	};
 
 	(void)addr;
@@ -176,6 +186,10 @@ static int tcp_connect(struct sock *sk,
 			ret = -EISCONN;
 			break;
 		case TCP_CLOSED:
+		{
+			in_port_t dst_port;
+			in_port_t src_port;
+
 			/* make skb with options */
 			skb = NULL; /* alloc new pkg */
 			ret = alloc_prep_skb(tcp_sk, sizeof magic_opts, NULL, &skb);
@@ -184,14 +198,15 @@ static int tcp_connect(struct sock *sk,
 			}
 			tcp_sock_set_state(tcp_sk, TCP_SYN_SENT);
 			tcph = tcp_hdr(skb);
-			tcp_build(tcph,
-					sock_inet_get_dst_port(to_sock(tcp_sk)),
-					sock_inet_get_src_port(to_sock(tcp_sk)),
-					TCP_MIN_HEADER_SIZE + sizeof magic_opts,
+			dst_port = sock_inet_get_dst_port(to_sock(tcp_sk));
+			src_port = sock_inet_get_src_port(to_sock(tcp_sk));
+			tcp_build(tcph, dst_port, src_port,
+					TCP_MIN_HEADER_SIZE + sizeof(magic_opts),
 					tcp_sk->self.wind.value);
 			tcph->syn = 1;
 			memcpy(&tcph->options, &magic_opts[0], sizeof magic_opts);
 			send_seq_from_sock(tcp_sk, skb);
+
 			//FIXME hack use common lock/unlock systems for socket
 			sched_lock();
 			{
@@ -204,6 +219,7 @@ static int tcp_connect(struct sock *sk,
 				ret = -EINPROGRESS;
 				break;
 			}
+
 			if (tcp_sock_get_status(tcp_sk) == TCP_ST_NOTEXIST) {
 				ret = -ECONNRESET;
 				break;
@@ -213,6 +229,7 @@ static int tcp_connect(struct sock *sk,
 			}
 
 			break;
+		} /*TCP_CLOSED */
 		}
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_STATE);
@@ -348,7 +365,6 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 			if (tcp_newsk) {
 				break;
 			}
-			tcp_sock_alloc_missing_backlog(tcp_sk);
 			ret = sock_wait(sk, POLLIN | POLLERR, SCHED_TIMEOUT_INFINITE);
 		} while (!ret);
 	}
@@ -403,6 +419,8 @@ static int tcp_write(struct tcp_sock *tcp_sk, struct msghdr * msg) {
 		}
 
 		if (0 == skb_len) {
+			in_port_t src_port, dst_port;
+
 			cp_off = 0;
 			skb_len = min((full_len - tran_len), IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
 			skb = NULL; /* alloc new pkg */
@@ -412,10 +430,10 @@ static int tcp_write(struct tcp_sock *tcp_sk, struct msghdr * msg) {
 				break;
 			}
 
-			tcp_build(skb->h.th,
-				sock_inet_get_dst_port(to_sock(tcp_sk)),
-				sock_inet_get_src_port(to_sock(tcp_sk)),
-				TCP_MIN_HEADER_SIZE, tcp_sk->self.wind.value);
+			dst_port = sock_inet_get_dst_port(to_sock(tcp_sk));
+			src_port = sock_inet_get_src_port(to_sock(tcp_sk));
+			tcp_build(skb->h.th, dst_port, src_port, TCP_MIN_HEADER_SIZE,
+					tcp_sk->self.wind.value);
 		}
 
 		cp_len = min(iov_len, skb_len);

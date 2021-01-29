@@ -1,0 +1,46 @@
+<div class="container-fluid">
+<div class="row">
+  <div class="col-sm-6 col-sm-offset-3">
+    <div ng-controller="InterfacesAdminCtrl">
+      <form role="form" name="interfaceForm"
+        ng-repeat="iface in interfaces">
+        <h1>{{iface.name}}</h1>
+        <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.ipInput.$invalid}">
+          <label for="ipInput{{index}}">IP</label>
+          <input type="text" class="form-control" id="ipInput{{index}}" name="ipInput"
+            placeholder="x.x.x.x"
+            ng-model="iface.ip"
+            ng-pattern="/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/"
+            required/>
+            <span class='glyphicon glyphicon-remove form-control-feedback'
+      	ng-show="interfaceForm.ipInput.$invalid"></span>
+        </div>
+        <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.maskInput.$invalid}">
+          <label for="maskInput{{index}}">NETMASK</label>
+          <input type="text" class="form-control" id="maskInput{{index}}" name="maskInput"
+            placeholder="x.x.x.x"
+            ng-model="iface.netmask"
+            ng-pattern="/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$/"
+            required/>
+            <span class='glyphicon glyphicon-remove form-control-feedback'
+      	ng-show="interfaceForm.maskInput.$invalid"></span>
+        </div>
+        <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.macInput.$invalid}">
+          <label for="maskInput{{index}}">MAC</label>
+          <input type="text" class="form-control" id="macInput{{index}}" name="macInput"
+            placeholder="ff:ff:ff:ff:ff:ff"
+            ng-model="iface.mac"
+            ng-pattern="/[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}\:[0-9a-fA-F]{2}$/"
+            required/>
+            <span class='glyphicon glyphicon-remove form-control-feedback'
+      	ng-show="interfaceForm.macInput.$invalid"></span>
+        </div>
+        <button type="submit" class="btn btn-danger"
+          ng-disabled="interfaceForm.$invalid"
+          ng-click="update(iface)">Apply Settings</button>
+      </form>
+    {{sent}}
+    </div>
+  </div>
+</div>
+</div>
