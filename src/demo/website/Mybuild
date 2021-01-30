@@ -7,8 +7,7 @@ module website {
 		"em_small.png",
 		"favicon.ico",
 		"matmex.gif",
-		"mm_en.gif",
+		"mm_en.gif"
 
 	depends embox.fs.driver.initfs
-	depends embox.cmd.net.httpd
 }
