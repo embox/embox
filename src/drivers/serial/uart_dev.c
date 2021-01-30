@@ -89,7 +89,7 @@ int uart_register(struct uart *uart,
 		return -EBUSY;
 	}
 
-	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", uart->idx);
+	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", (char)uart->idx);
 
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
