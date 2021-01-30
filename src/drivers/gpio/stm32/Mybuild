@@ -8,8 +8,6 @@ module stm32_gpio_f0 extends api {
 	option number exti4_15_irq = 7
 
 	source "stm32_gpio_f0.c"
-
-	depends embox.driver.gpio.core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
