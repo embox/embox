@@ -7,7 +7,8 @@ module stm32_gpio_f0 extends api {
 	option number exti2_3_irq = 6
 	option number exti4_15_irq = 7
 
-	source "stm32_gpio_f0.c"
+    source "stm32_gpio_conf_f0.h"
+	source "stm32_gpio_f0.c"	
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)

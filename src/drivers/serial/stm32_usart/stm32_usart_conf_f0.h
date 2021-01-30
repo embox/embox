@@ -25,6 +25,34 @@ typedef struct {
     volatile uint32_t TDR;
 } usart_struct; // Doc: DocID025023 Rev 4, 640/779.
 
+typedef struct {
+	volatile uint32_t MODER;
+	volatile uint32_t OTYPER;
+	volatile uint32_t OSPEEDR;
+	volatile uint32_t PUPDR;
+	volatile uint32_t IDR;
+	volatile uint32_t ODR;
+	volatile uint32_t BSRR;
+	volatile uint32_t LCKR;
+	volatile uint32_t AFRL;
+	volatile uint32_t AFRH;
+	volatile uint32_t BRR;
+} gpio_struct; // Doc: DocID025023 Rev 4, 143/779.
+
+// Doc: DocID025023 Rev 4, 136/779.
+#define M_ALT(N) (0b10 << 2 * N)
+#define M_MSK(N) (0b11 << 2 * N)
+
+// Doc: DocID025023 Rev 4, 140/779.
+#define L_AF(N,AFx) (AFx << (4 * N))
+#define L_AF_MSK(N) (0b1111 << (4 * N))
+#define H_AF(N,AFx) (AFx << (4 * (N - 8)))
+#define H_AF_MSK(N) (0b1111 << (4 * (N - 8)))
+
+// Doc: DocID025023 Rev 4, 137/779.
+#define S_HS(N)  (0b11 << 2 * N)
+#define S_MSK(N) (0b11 << 2 * N)
+
 // Doc: DS9773 Rev 4, 40/93.
 #define USART1    ((usart_struct *)      0x40013800)
 #define USART2    ((usart_struct *)      0x40004400)
@@ -32,6 +60,11 @@ typedef struct {
 #define USART4    ((usart_struct *)      0x40004C00)
 #define USART5    ((usart_struct *)      0x40005000)
 #define USART6    ((usart_struct *)      0x40011400)
+
+// Doc: DS9773 Rev 4, 39/93.
+#define GPIOA     ((gpio_struct *)       0x48000000)
+
+#define PINS_NUMBER 16
 
 #define MODOPS_USARTX OPTION_GET(NUMBER, usartx)
 

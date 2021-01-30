@@ -50,8 +50,15 @@ typedef struct {
 #define RCC       ((rcc_struct *)          0x40021000)
 #define FLASH     ((flash_struct *)        0x40022000)
 
+const uint32_t HSE_VALUE = 8000000;
+
+__attribute__((always_inline))
+static inline void enable_all_irq () {
+	__asm("cpsie i");
+}
+
 void arch_init() {
-	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 32000000);
+	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 48000000);
 
 	// On HSE.
 	RCC->CR |= (1 << 16); // Doc: DocID025023 Rev 4, 99/779.
@@ -62,7 +69,7 @@ void arch_init() {
 
 	// Init PLL, HSE is 8 MHz.
 	// Doc: DocID025023 Rev 4, 102/779.
-	RCC->CFGR = (0b0100 << 18)|(1 << 16); // HSI * 6.
+	RCC->CFGR = (0b0100 << 18)|(1 << 16); // HSI * 3.
 	__asm("nop");
 	__asm("nop");
 	__asm("nop");
@@ -90,6 +97,8 @@ void arch_init() {
 	__asm("nop");
 	__asm("nop");
 	while(RCC->CR & (1 << 1)) {};
+
+	enable_all_irq();
 }
 
 __attribute__((always_inline)) static inline void wfi () {
