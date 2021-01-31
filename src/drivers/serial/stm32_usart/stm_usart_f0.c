@@ -26,6 +26,8 @@ extern const uint32_t HSE_VALUE;
  */
 #define USART_BRR(USART_CLK,USART_BAUDRATE)             (2 * USART_CLK / USART_BAUDRATE)
 
+
+// Clock part.
 typedef struct {
     volatile uint32_t CR;
     volatile uint32_t CFGR;
@@ -125,6 +127,7 @@ static void set_usart_pwr (usart_struct *USART) {
 	}
 }
 
+// GPIO part.
 static void set_gpio_pwr (uint32_t port) {
 	REG32_ORIN(REG_RCC_AHBENR, (1 << (port + 17))); // Doc: DocID025023 Rev 4, 111/779.
 }
@@ -168,6 +171,7 @@ static void init_usart_gpio () {
 	set_gpio_high_spped(OPTION_GET(NUMBER,port_rx), OPTION_GET(NUMBER,pin_rx));
 }
 
+// USART part.
 static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) {
 	init_usart_gpio();
 
@@ -225,6 +229,7 @@ static int stm32_uart_irq_dis(struct uart *dev, const struct uart_params *params
 	return 0;
 }
 
+// System part.
 const struct uart_ops stm32_uart_ops = {
 		.uart_getc = stm32_uart_getc,
 		.uart_putc = stm32_uart_putc,

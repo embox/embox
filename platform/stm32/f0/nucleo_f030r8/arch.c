@@ -50,95 +50,92 @@ typedef struct {
 #define RCC       ((rcc_struct *)          0x40021000)
 #define FLASH     ((flash_struct *)        0x40022000)
 
+// Nucleo hasn't HSE in board. I added it to my board own.
 const uint32_t HSE_VALUE = 8000000;
 
-__attribute__((always_inline))
-static inline void enable_all_irq () {
-	__asm("cpsie i");
-}
-
 void arch_init() {
-	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 48000000);
+    // Board is always working in max frequency.
+    static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 48000000);
 
-	// On HSE.
-	RCC->CR |= (1 << 16); // Doc: DocID025023 Rev 4, 99/779.
-	__asm("nop");
-	__asm("nop");
-	__asm("nop");
-	while(!(RCC->CR & (1 << 17))) {};
+    // On HSE.
+    RCC->CR |= (1 << 16); // Doc: DocID025023 Rev 4, 99/779.
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    while(!(RCC->CR & (1 << 17))) {};
 
-	// Init PLL, HSE is 8 MHz.
-	// Doc: DocID025023 Rev 4, 102/779.
-	RCC->CFGR = (0b0100 << 18)|(1 << 16); // HSI * 3.
-	__asm("nop");
-	__asm("nop");
-	__asm("nop");
-	RCC->CR |= (1 << 24);
-	__asm("nop");
-	__asm("nop");
-	__asm("nop");
-	while(!(RCC->CR & (1 << 25))) {};
+    // Init PLL, HSE is 8 MHz.
+    // Doc: DocID025023 Rev 4, 102/779.
+    RCC->CFGR = (0b0100 << 18)|(1 << 16); // HSI * 3.
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    RCC->CR |= (1 << 24);
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    while(!(RCC->CR & (1 << 25))) {};
 
-	// Set flash latency.
-	// Doc: DocID025023 Rev 4, 58/779.
-	// LATENCY = 1, PRFTBS = on, PRFTBE = on.
-	FLASH->ACR = (1 << 0)|(1 << 4)|(1 << 5);
+    // Set flash latency.
+    // Doc: DocID025023 Rev 4, 58/779.
+    // LATENCY = 1, PRFTBS = on, PRFTBE = on.
+    FLASH->ACR = (1 << 0)|(1 << 4)|(1 << 5);
 
-	// Set PLL by CPUCLK
-	RCC->CFGR |= (0b10 << 0);
-	__asm("nop");
-	__asm("nop");
-	__asm("nop");
-	while(!((RCC->CFGR & (0b11 << 2)) == (0b10 << 2))) {};
+    // Set PLL by CPUCLK
+    RCC->CFGR |= (0b10 << 0);
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    while(!((RCC->CFGR & (0b11 << 2)) == (0b10 << 2))) {};
 
-	// Off HSI.
-	RCC->CR &= ~(1 << 0);
-	__asm("nop");
-	__asm("nop");
-	__asm("nop");
-	while(RCC->CR & (1 << 1)) {};
-
-	enable_all_irq();
+    // Off HSI.
+    RCC->CR &= ~(1 << 0);
+    __asm("nop");
+    __asm("nop");
+    __asm("nop");
+    while(RCC->CR & (1 << 1)) {};
 }
 
 __attribute__((always_inline)) static inline void wfi () {
-	__asm("WFI");
+    __asm("WFI");
 }
 
 void arch_idle() {
-	wfi();
+    wfi();
 }
 
 typedef struct {
-	volatile uint32_t CPUID;
-	volatile uint32_t ICSR;
-	volatile uint32_t RES1;
-	volatile uint32_t AIRCR;
-	volatile uint32_t SCR;
-	volatile uint32_t CCR;
-	volatile uint32_t RES2;
-	volatile uint32_t SHPR2;
-	volatile uint32_t SHPR3;
+    volatile uint32_t CPUID;
+    volatile uint32_t ICSR;
+    volatile uint32_t RES1;
+    volatile uint32_t AIRCR;
+    volatile uint32_t SCR;
+    volatile uint32_t CCR;
+    volatile uint32_t RES2;
+    volatile uint32_t SHPR2;
+    volatile uint32_t SHPR3;
 } scb_struct; // Doc ID 022979 Rev 1.
 
 // Doc ID 022979 Rev 1, 77/91.
 #define SCB      ((scb_struct *)         0xE000ED00)
 
 __attribute__((always_inline)) static inline void dsb () {
-	__asm("DSB");
+    __asm("DSB");
 }
 
 void arch_shutdown(arch_shutdown_mode_t mode) {
-	switch (mode) {
-	case ARCH_SHUTDOWN_MODE_HALT:
-	case ARCH_SHUTDOWN_MODE_REBOOT:
-	case ARCH_SHUTDOWN_MODE_ABORT:
-	default:
-		dsb();
-		SCB->AIRCR = (0x5FA << 16) | (1 << 2); // Doc ID 022979 Rev 1, 80/91.
-		break;
-	}
+    switch (mode) {
+    case ARCH_SHUTDOWN_MODE_HALT:
+    case ARCH_SHUTDOWN_MODE_REBOOT:
+    case ARCH_SHUTDOWN_MODE_ABORT:
+    default:
+        dsb();
 
-	while(1) {
-	}
+        // Doc ID 022979 Rev 1, 80/91.
+        SCB->AIRCR = (0x5FA << 16) | (1 << 2);
+        break;
+    }
+
+    while(1) {
+    }
 }
