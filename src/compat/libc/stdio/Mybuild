@@ -65,7 +65,7 @@ static module fputc {
 	source "fputc.c"
 
 	depends fwrite
-	depends stdio_static
+	depends embox.compat.libc.stdio.stdio_stdstreams
 }
 
 static module fputs {
@@ -74,7 +74,11 @@ static module fputs {
 	depends fputc
 }
 
-static module stdio_static {
+@DefaultImpl(embox.compat.libc.stdio.stdio_streams_global)
+abstract module stdio_stdstreams {
+}
+
+static module stdio_streams_global extends embox.compat.libc.stdio.stdio_stdstreams {
 	source "stdfile_static.c"
 }
 
@@ -83,6 +87,7 @@ static module funopen {
 
 	depends file_pool
 }
+
 static module file_ops {
 
 	source "fgetc.c"
@@ -115,7 +120,7 @@ static module file_ops {
 	depends fputc
 	depends fputs
 	depends fwrite
-	depends stdio_static
+	depends embox.compat.libc.stdio.stdio_stdstreams
 }
 
 @DefaultImpl(rename_old)
