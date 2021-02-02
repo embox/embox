@@ -1,0 +1,13 @@
+package project.website.cgi_bin.stubs
+
+@AutoCmd
+@Cmd(name="led_driver", help="Simulate LEDs control")
+module led_driver {
+	source "led_driver_stub.c"
+}
+
+@AutoCmd
+@Cmd(name="getlight", help="Simulate light sensors")
+module getlight {
+	source "getlight_stub.c"
+}
