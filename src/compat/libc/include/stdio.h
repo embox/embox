@@ -207,7 +207,10 @@ extern int rename(const char *oldpath, const char *newpath);
 extern int fioctl(FILE *fp, int request, ...);
 
 extern FILE *stdin;
-extern FILE *stdout;
+/* extern FILE *stdout; *
+ * There are two implementation of stdout (global and multitask)
+ */
+#include <module/embox/compat/libc/stdio/stdio_stdstreams.h>
 extern FILE *stderr;
 
 extern int fileno(FILE *stream);
