@@ -79,7 +79,8 @@ abstract module stdio_stdstreams {
 }
 
 static module stdio_streams_global extends embox.compat.libc.stdio.stdio_stdstreams {
-	source "stdfile_static.c"
+	source "stdin_stderr.c"
+	source "stdout_global.c"
 }
 
 static module funopen {
