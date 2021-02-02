@@ -5,3 +5,9 @@ package project.website.cgi_bin
 module gettime {
 	source "gettime.c"
 }
+
+@AutoCmd
+@Cmd(name="gettasks", help="Live top")
+module gettasks {
+	source "gettasks.c"
+}
