@@ -1,0 +1,14 @@
+package embox.kernel.task.resource
+
+module stdout {
+	//@IncludeExport(path="kernel/task/resource")
+	source "task_resource_stdout.h"
+	source "task_resource_stdout.c"
+
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.util.Array
+}
+
