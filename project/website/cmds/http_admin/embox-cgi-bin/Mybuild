@@ -11,3 +11,9 @@ module gettime {
 module gettasks {
 	source "gettasks.c"
 }
+
+@AutoCmd
+@Cmd(name="get_angular_rate", help="Get angular rate for l3g4200d gyroscope")
+module get_angular_rate {
+	source "get_angular_rate.c"
+}
