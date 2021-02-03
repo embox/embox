@@ -10,14 +10,15 @@ app.controller("NavBarCtrl", ['$scope', '$location', function($scope, $location)
 app.controller('DemoCtrl', ['$scope', '$http', function($scope, $http) {
     $scope.leds = [];
     $scope.light = null;
+    $scope.rate = null;
 
     var eventCallback = function (msg) {
         $scope.$apply(function () {
-            $scope.light = JSON.parse(msg.data).light
+            $scope.rate = JSON.parse(msg.data).rate
         });
     }
 
-    var source = new EventSource('/cgi-bin/getlight');
+    var source = new EventSource('/cgi-bin/get_angular_rate');
     source.addEventListener('message', eventCallback);
     $scope.$on('$destroy', function () {
         source.close();

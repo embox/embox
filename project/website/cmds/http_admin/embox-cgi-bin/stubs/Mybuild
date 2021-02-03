@@ -11,3 +11,9 @@ module led_driver {
 module getlight {
 	source "getlight_stub.c"
 }
+
+@AutoCmd
+@Cmd(name="get_angular_rate", help="Simulate gyroscope angular rate sensor")
+module get_angular_rate {
+	source "get_angular_rate_stub.c"
+}
