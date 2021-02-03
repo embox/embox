@@ -91,6 +91,11 @@ static module funopen {
 	depends file_pool
 }
 
+static module file_struct_header {
+	@IncludeExport(path="stdio/internal")
+	source "file_struct.h"
+}
+
 static module file_ops {
 
 	source "fgetc.c"
@@ -112,6 +117,7 @@ static module file_ops {
 
 	source "buf.c"
 
+	depends file_struct_header
 	depends file_pool
 	depends embox.compat.posix.fs.file_ops
 
