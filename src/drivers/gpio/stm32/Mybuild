@@ -7,7 +7,10 @@ module stm32_gpio_l0x0 extends api {
     option number exti2_3_irq = 6
     option number exti4_15_irq = 7
 
+    option number reg_rcc_address = 0x40021000
+
     source "stm32_gpio_conf_l0x0.h"
+    source "stm32_gpio_common_struct.h"
     source "stm32_gpio_l0x0.c"    
 }
 
@@ -18,7 +21,10 @@ module stm32_gpio_f0 extends api {
 	option number exti2_3_irq = 6
 	option number exti4_15_irq = 7
 
+    option number reg_rcc_address = 0x40021000
+
 	source "stm32_gpio_conf_f0.h"
+	source "stm32_gpio_common_struct.h"
 	source "stm32_gpio_f0.c"	
 }
 

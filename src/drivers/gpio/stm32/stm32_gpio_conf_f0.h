@@ -13,22 +13,10 @@
 #define PINS_NUMBER 16
 #define STM32_GPIO_PORTS_COUNT 6
 
-#define REG_RCC        0x40021000       // Doc: DS9773 Rev 4, 39/93.
+#define REG_RCC        OPTION_GET(NUMBER,reg_rcc_address)       // Doc: DS9773 Rev 4, 39/93.
 #define REG_RCC_AHBENR (REG_RCC + 0x14) // Doc: DocID025023 Rev 4, 125/779.
 
-typedef struct {
-	volatile uint32_t MODER;
-	volatile uint32_t OTYPER;
-	volatile uint32_t OSPEEDR;
-	volatile uint32_t PUPDR;
-	volatile uint32_t IDR;
-	volatile uint32_t ODR;
-	volatile uint32_t BSRR;
-	volatile uint32_t LCKR;
-	volatile uint32_t AFRL;
-	volatile uint32_t AFRH;
-	volatile uint32_t BRR;
-} gpio_struct; // Doc: DocID025023 Rev 4, 143/779.
+#include "stm32_gpio_common_struct.h"
 
 typedef struct {
 	volatile uint32_t IMR;
