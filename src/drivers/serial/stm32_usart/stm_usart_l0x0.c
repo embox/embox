@@ -13,69 +13,95 @@
 
 #include <drivers/serial/diag_serial.h>
 #include <drivers/serial/uart_dev.h>
-#include <drivers/gpio/gpio.h>
 
-#include "stm32_usart_conf_f0.h"
+#include "stm32_usart_conf_l0x0.h"
 
-extern const uint32_t HSE_VALUE;
-#define HSI_VALUE 8000000
-
-/*
- * RM0360, 23.4.4 "USART baud rate generation", 609.
- * Oversampling = 8.
- */
+// Doc: DocID031151 Rev 1, RM0451, 620/774.
 #define USART_BRR(USART_CLK,USART_BAUDRATE)             (2 * USART_CLK / USART_BAUDRATE)
 
-
 // Clock part.
-typedef struct {
-    volatile uint32_t CR;
-    volatile uint32_t CFGR;
-    volatile uint32_t CIR;
-    volatile uint32_t APB2RSTR;
-    volatile uint32_t APB1RSTR;
-    volatile uint32_t AHBENR;
-    volatile uint32_t APB2ENR;
-    volatile uint32_t APB1ENR;
-    volatile uint32_t BDCR;
-    volatile uint32_t CSR;
-    volatile uint32_t AHBRSTR;
-    volatile uint32_t CFGR2;
-    volatile uint32_t CFGR3;
-    volatile uint32_t CR2;
-} rcc_struct;
+static const uint32_t HSI_VALUE = 16000000;
+extern const uint32_t HSE_VALUE;
 
-#define RCC       ((rcc_struct *)          0x40021000)
+typedef struct {
+    volatile uint32_t CR;        // 0x00
+    volatile uint32_t ICSCR;     // 0x04
+    volatile uint32_t RES_1;     // 0x08
+    volatile uint32_t CFGR;      // 0x0C
+    volatile uint32_t CIER;      // 0x10
+    volatile uint32_t CIFR;      // 0x14
+    volatile uint32_t CICR;      // 0x18
+    volatile uint32_t IOPRSTR;   // 0x1C
+    volatile uint32_t AHBRSTR;   // 0x20
+    volatile uint32_t APB2RSTR;  // 0x24
+    volatile uint32_t APB1RSTR;  // 0x28
+    volatile uint32_t IOPENR;    // 0x2C
+    volatile uint32_t AHBENR;    // 0x30
+    volatile uint32_t APB2ENR;   // 0x34
+    volatile uint32_t APB1ENR;   // 0x38
+    volatile uint32_t IOPSMEN;   // 0x3C
+    volatile uint32_t AHBSMENR;  // 0x40
+    volatile uint32_t APB2SMENR; // 0x44
+    volatile uint32_t APB1SMENR; // 0x48
+    volatile uint32_t CCIPR;     // 0x4C
+    volatile uint32_t CSR;       // 0x50
+} rcc_struct; // Doc: DocID031151 Rev 1, RM0451, 185/774.
+
+// Doc: DocID031151 Rev 1, RM0451, 39/774.
+#define RCC       ((rcc_struct *)          0X40021000)
+
+static uint32_t get_hsi_clk () {
+	if (RCC->CR & (1 << 4)) {
+		return HSI_VALUE / 4;
+	} else {
+		return HSI_VALUE;
+	}
+}
+
+static uint32_t PLLMUL_VALUE[9] = {3, 4, 6, 8, 12, 16, 24, 32, 48};
 
 static uint32_t get_pll_clk () {
 	uint32_t src_clk;
 
 	if (RCC->CFGR & (1 << 16)) {
-		src_clk = HSE_VALUE / (RCC->CFGR2 + 1);
+		src_clk = HSE_VALUE;
 	} else {
-		src_clk = HSI_VALUE / 2;
+		src_clk = get_hsi_clk();
 	}
 
-	src_clk *= ((RCC->CFGR >> 18) & 0b1111) + 2;
+	src_clk *= PLLMUL_VALUE[(RCC->CFGR >> 18) & 0b1111];
+	src_clk /= ((RCC->CFGR >> 22) & 0b11) + 1;
 	return src_clk;
 }
 
 static uint32_t HPRE_VALUE[8] = {2, 4, 8, 16, 64, 128, 256, 512};
 static uint32_t PPRE_VALUE[8] = {2, 4, 8, 16};
 
-static uint32_t get_usart_clk (usart_struct *USART) {
+static uint32_t MSI_CLI_TABLE[8] = {
+		65536, 131072, 262144, 524288, 1048000, 2097000, 4194000, 0
+};
+
+static uint32_t get_msi_clk () {
+	return MSI_CLI_TABLE[(RCC->ICSCR & (0b111 << 13)) >> 13];
+}
+
+static uint32_t get_usart_clk () {
 	volatile uint32_t SW_SRC;
 
 	switch ((RCC->CFGR & (0b11 << 2)) >> 2) {
 	case 0b00:
-		SW_SRC = HSI_VALUE;
+		SW_SRC = get_msi_clk();
 		break;
 
 	case 0b01:
+		SW_SRC = get_hsi_clk();
+		break;
+
+	case 0b10:
 		SW_SRC = HSE_VALUE;
 		break;
 
-	default:
+	case 0b11:
 		SW_SRC = get_pll_clk();
 		break;
 	}
@@ -91,45 +117,13 @@ static uint32_t get_usart_clk (usart_struct *USART) {
 	return SW_SRC;
 }
 
-#define REG_RCC         0x40021000       // Doc: DS9773 Rev 4, 39/93.
-#define REG_RCC_APB2ENR (REG_RCC + 0x18) // Doc: DocID025023 Rev 4, 125/779.
-#define REG_RCC_APB1ENR (REG_RCC + 0x1C) // Doc: DocID025023 Rev 4, 125/779.
-#define REG_RCC_AHBENR  (REG_RCC + 0x14) // Doc: DocID025023 Rev 4, 125/779.
-
-static void set_usart_pwr (usart_struct *USART) {
-	switch ((uint32_t)USART) {
-	case (uint32_t)USART1:
-			REG32_ORIN(REG_RCC_APB2ENR, (1 << 14)); // Doc: DocID025023 Rev 4, 113/779.
-			break;
-
-	case (uint32_t)USART2:
-			REG32_ORIN(REG_RCC_APB1ENR, (1 << 17)); // Doc: DocID025023 Rev 4, 115/779.
-			break;
-
-	case (uint32_t)USART3:
-			REG32_ORIN(REG_RCC_APB1ENR, (1 << 18)); // Doc: DocID025023 Rev 4, 115/779.
-			break;
-
-	case (uint32_t)USART4:
-			REG32_ORIN(REG_RCC_APB1ENR, (1 << 19)); // Doc: DocID025023 Rev 4, 115/779.
-			break;
-
-	case (uint32_t)USART5:
-			REG32_ORIN(REG_RCC_APB1ENR, (1 << 20)); // Doc: DocID025023 Rev 4, 115/779.
-			break;
-
-	case (uint32_t)USART6:
-			REG32_ORIN(REG_RCC_APB2ENR, (1 << 5)); // Doc: DocID025023 Rev 4, 114/779.
-			break;
-
-	default:
-		break;
-	}
+static void set_usart_pwr () {
+	RCC->APB1ENR |= 1 << 17; // On USART2.
 }
 
 // GPIO part.
 static void set_gpio_pwr (uint32_t port) {
-	REG32_ORIN(REG_RCC_AHBENR, (1 << (port + 17))); // Doc: DocID025023 Rev 4, 111/779.
+	RCC->IOPENR |= (1 << port); // Doc: DocID031151 Rev 1, RM0451, 169/774.
 }
 
 static gpio_struct *get_gpio (unsigned char port) {
@@ -176,9 +170,9 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	init_usart_gpio();
 
 	usart_struct *USART = (usart_struct *)dev->base_addr;
-	volatile uint32_t usart_clk = get_usart_clk(USART);
+	volatile uint32_t usart_clk = get_usart_clk();
 
-	set_usart_pwr(USART);
+	set_usart_pwr();
 
 	USART->BRR = (USART_BRR(usart_clk, dev->params.baud_rate) & 0xFFFFFFF0) |
 			     ((USART_BRR(usart_clk, dev->params.baud_rate) & 0xF) >> 1);
