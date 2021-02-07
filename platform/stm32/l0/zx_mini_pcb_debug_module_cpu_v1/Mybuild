@@ -1,0 +1,5 @@
+package platform.stm32.l0.zx_mini_pcb_debug_module_cpu_v1
+
+module arch extends embox.arch.arch {
+    source "arch.c"
+}
