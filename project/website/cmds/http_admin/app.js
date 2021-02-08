@@ -39,12 +39,12 @@ app.controller('DemoCtrl', ['$scope', '$http', function($scope, $http) {
         led.active = !led.active;
     
         var str_op = led.active ? 'set' : 'clr';
-        var uri = 'cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=' + str_op + '&a2=' + led.index;
+        var uri = 'cgi-bin/led_driver?cmd=' + str_op + '&led=' + led.index;
         $http.get(uri);
     };
 
     $scope.update = function() {
-        $http.get('cgi-bin/cgi_cmd_wrapper?c=led_driver&a1=serialize_states').then(function (r) {
+        $http.get('cgi-bin/led_driver?cmd=serialize_states').then(function (r) {
             var data = r.data;
             $scope.leds = ledStatesFromJson(data);
         });
