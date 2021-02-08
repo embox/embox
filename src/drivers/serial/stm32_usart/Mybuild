@@ -1,5 +1,25 @@
 package embox.driver.serial
 
+module stm_usart_l0x0 extends embox.driver.diag.diag_api {
+    option number baud_rate
+    option number usartx=2
+    
+    option number port_tx
+    option number port_rx
+    option number pin_tx
+    option number pin_rx
+    option number pin_tx_af
+    option number pin_rx_af
+    
+    option number usart2_irq=28
+
+    source "stm32_usart_conf_l0x0.h"
+    source "stm_usart_l0x0.c"
+
+    depends embox.driver.serial.core
+    depends embox.driver.serial.diag
+}
+
 module stm_usart_f0 extends embox.driver.diag.diag_api {
     option number baud_rate
     option number usartx=1
@@ -18,7 +38,6 @@ module stm_usart_f0 extends embox.driver.diag.diag_api {
     source "stm32_usart_conf_f0.h"
     source "stm_usart_f0.c"
 
-	depends embox.driver.gpio.stm32_gpio_f0
     depends embox.driver.serial.core
     depends embox.driver.serial.diag
 }
