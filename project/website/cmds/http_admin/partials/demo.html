@@ -1,0 +1,29 @@
+<div class="container" ng-controller="DemoCtrl">
+  <div class="row">
+  <div class="leds-buttons" ng-repeat="led in leds">
+    <div class="col-sm-3">
+    <button class="btn led-off"
+            ng-class="{'led-off': !led.active, 'led-on': led.active}"
+            ng-click="led_toggle(led)">
+       LED{{led.index}} 
+   </button>
+   </div>
+  </div>
+  </div>
+
+  <br/><br/>
+
+  <!--<div class="card border-primary text-center" style="max-width: 20rem;">
+    <div class="card-header"><h2><i class="fas fa-lightbulb"></i></h2></div>
+    <div class="card-body text-primary">
+        <p class="card-text"><h5>{{light}}</h5></p>
+    </div>
+  </div>-->
+
+  <div class="card border-primary text-center" style="max-width: 20rem;">
+    <div class="card-header"><h2><i class="fas fa-location-arrow"></i></h2>Angular rate</div>
+    <div class="card-body text-primary">
+        <p class="card-text"><h5>{{rate}}</h5></p>
+    </div>
+  </div>
+</div>

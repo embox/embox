@@ -16,9 +16,10 @@ if [ -z $MAP ] || [ -z $PATTERN ]; then
 	exit 1
 fi
 
+# FIXME: Fix for any awk, not mawk only
 cat $MAP | \
-	awk -v pat="$PATTERN" '($0 ~ pat || prev ~ pat) && /\.o/; { prev=$0 }' | \
-	awk '{ printf "%-20x%-20d%s\n", $(NF-1), $(NF-1), $NF }' | sort -n -k2 | \
-	awk 'BEGIN { printf "%-20s%-20s%s\n", "Size (hex)", "Size (dec)", "File" }
+	mawk -v pat="$PATTERN" '($0 ~ pat || prev ~ pat) && /\.o/; { prev=$0 }' | \
+	mawk '{ printf "%-20x%-20d%s\n", $(NF-1), $(NF-1), $NF }' | sort -n -k2 | \
+	mawk 'BEGIN { printf "%-20s%-20s%s\n", "Size (hex)", "Size (dec)", "File" }
 	     { s += $2; print }
 	     END { printf "Total: %x (hex) / %d (dec)\n", s, s }'

@@ -1,0 +1,21 @@
+.led-off, .led-off:hover, .led-off:focus {
+  color: #555;
+  background-color: #A9A9A9;
+  border-color: #ccc;
+}
+
+.led-on, .led-on:hover, .led-on:focus {
+  color: #555;
+  background-color: #7FFF00;
+  border-color: #ccc;
+}
+
+.carousel-control-next,
+.carousel-control-prev , .carousel-indicators {
+    filter: invert(100%);
+}
+
+textarea {
+    background-color:lightgray;
+    font-family: monospace;
+}

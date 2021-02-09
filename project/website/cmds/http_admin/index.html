@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en" ng-app="HttpAdmin">
+<head>
+  <meta charset="utf-8">
+  <title>HTTP Admin</title>
+  <link rel="shortcut icon" href="#">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular-route.min.js"></script>
+  <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+  <script src="https://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-2.5.0.js"></script>
+  <script src="app.js"></script>
+</head>
+<body>
+
+  <nav class="navbar navbar-light navbar-expand-lg" style="background-color: #e3f2fd;" role="navigation" ng-controller="NavBarCtrl">
+    <a class="navbar-brand" href="#!info">Embox panel</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarAdmin">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarAdmin">
+      <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="#!demo">Demo</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="#!system">System</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <br/>
+
+  <div ng-view></div>
+
+</body>
+</html>

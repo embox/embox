@@ -1,0 +1,24 @@
+#!/bin/python3
+
+import cgi
+import sys
+import subprocess
+
+print("HTTP/1.1 200 OK")
+print("Content-Type: text/plain")
+print("Connection: close")
+print()
+
+form = cgi.FieldStorage()
+
+cmd = "cgi-bin/" + form['c'].value
+
+for item in cgi.parse().keys():
+	if item != 'c':
+		cmd += ' ' + form[item].value
+
+print(cmd, file=sys.stderr)
+
+result = subprocess.check_output(cmd, shell=True).decode("utf-8")
+
+print(result)

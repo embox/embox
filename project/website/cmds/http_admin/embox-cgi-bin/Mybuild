@@ -1,0 +1,19 @@
+package project.website.cgi_bin
+
+@AutoCmd
+@Cmd(name="gettime", help="Live time updates")
+module gettime {
+	source "gettime.c"
+}
+
+@AutoCmd
+@Cmd(name="gettasks", help="Live top")
+module gettasks {
+	source "gettasks.c"
+}
+
+@AutoCmd
+@Cmd(name="get_angular_rate", help="Get angular rate for l3g4200d gyroscope")
+module get_angular_rate {
+	source "get_angular_rate.c"
+}
