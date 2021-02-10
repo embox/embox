@@ -8,7 +8,6 @@
 
 #include <string.h>
 #include <drivers/spi.h>
-#include <drivers/spi/stm32_spi_conf.h>
 
 #include <embox/unit.h>
 
@@ -19,12 +18,14 @@
 
 #include "stm32_spi.h"
 
+#include <config/board_config.h>
+
 EMBOX_UNIT_INIT(stm32_spi1_init);
 
 static struct stm32_spi stm32_spi1 = {
-#if defined(SPI1_NSS_GPIO_PORT) && defined(SPI1_NSS_PIN)
-	.nss_port = SPI1_NSS_GPIO_PORT,
-	.nss_pin  = SPI1_NSS_PIN
+#if defined(CONF_SPI1_PIN_CS_PORT)
+	.nss_port = CONF_SPI1_PIN_CS_PORT,
+	.nss_pin  = CONF_SPI1_PIN_CS_NR,
 #endif
 };
 
@@ -36,37 +37,40 @@ static int stm32_spi1_init(void) {
 	       Please, enable this option in platform.stm32.f4.stm32f4_discovery.arch
 #endif
 
-	spi1_enable_gpio_clocks();
-	spi1_enable_spi_clocks();
+	CONF_SPI1_CLK_ENABLE_SCK();
+	CONF_SPI1_CLK_ENABLE_MISO();
+	CONF_SPI1_CLK_ENABLE_MOSI();
+	CONF_SPI1_CLK_ENABLE_CS();
+	CONF_SPI1_CLK_ENABLE_SPI();
 
 	stm32_spi_init(&stm32_spi1, SPI1);
 
 	memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
-	GPIO_InitStruct.Pin       = SPI1_SCK_PIN;
+	GPIO_InitStruct.Pin       = CONF_SPI1_PIN_SCK_NR;
 	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
 	GPIO_InitStruct.Pull      = GPIO_PULLUP;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
-	GPIO_InitStruct.Alternate = SPI1_SCK_AF;
-	HAL_GPIO_Init(SPI1_SCK_GPIO_PORT, &GPIO_InitStruct);
+	GPIO_InitStruct.Alternate = CONF_SPI1_PIN_SCK_AF;
+	HAL_GPIO_Init(CONF_SPI1_PIN_SCK_PORT, &GPIO_InitStruct);
 
-	GPIO_InitStruct.Pin = SPI1_MISO_PIN;
-	GPIO_InitStruct.Alternate = SPI1_MISO_AF;
-	HAL_GPIO_Init(SPI1_MISO_GPIO_PORT, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = CONF_SPI1_PIN_MISO_NR;
+	GPIO_InitStruct.Alternate = CONF_SPI1_PIN_MISO_AF;
+	HAL_GPIO_Init(CONF_SPI1_PIN_MISO_PORT, &GPIO_InitStruct);
 
-	GPIO_InitStruct.Pin = SPI1_MOSI_PIN;
-	GPIO_InitStruct.Alternate = SPI1_MOSI_AF;
-	HAL_GPIO_Init(SPI1_MOSI_GPIO_PORT, &GPIO_InitStruct);
+	GPIO_InitStruct.Pin = CONF_SPI1_PIN_MOSI_NR;
+	GPIO_InitStruct.Alternate = CONF_SPI1_PIN_MOSI_AF;
+	HAL_GPIO_Init(CONF_SPI1_PIN_MOSI_PORT, &GPIO_InitStruct);
 
-#if defined(SPI1_NSS_GPIO_PORT) && defined(SPI1_NSS_PIN)
+#if defined(CONF_SPI1_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */
-	GPIO_InitStruct.Pin       = SPI1_NSS_PIN;
+	GPIO_InitStruct.Pin       = CONF_SPI1_PIN_CS_NR;
 	GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull      = GPIO_PULLUP;
 	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
-	HAL_GPIO_Init(SPI1_NSS_GPIO_PORT, &GPIO_InitStruct);
+	HAL_GPIO_Init(CONF_SPI1_PIN_CS_PORT, &GPIO_InitStruct);
 
 	/* Chip Select is in inactive state by default. */
-	HAL_GPIO_WritePin(SPI1_NSS_GPIO_PORT, SPI1_NSS_PIN, GPIO_PIN_SET);
+	HAL_GPIO_WritePin(CONF_SPI1_PIN_CS_PORT, CONF_SPI1_PIN_CS_NR, GPIO_PIN_SET);
 #endif
 
 	return 0;
