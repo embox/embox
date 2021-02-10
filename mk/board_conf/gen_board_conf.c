@@ -94,12 +94,15 @@ int main() {
 	int i, j;
 	struct conf_item *uart_conf = &board_config[UART_IDX];
 	const struct uart_conf *uart;
+	struct conf_item *spi_conf = &board_config[SPI_IDX];
+	const struct spi_conf *spi;
 
 	config();
 
 	printf("#ifndef BOARD_CONFIG_H_\n");
 	printf("#define BOARD_CONFIG_H_\n\n");
 
+	/* UART */
 	for (i = 0; i < uart_conf->array_size; i++) {
 		uart = &((const struct uart_conf *) uart_conf->ptr)[i];;
 
@@ -126,6 +129,40 @@ int main() {
 		for (j = 0; j < ARRAY_SIZE(uart->dev.clocks); j++) {
 			if (gen_field_func(uart->name,
 					"CLK_ENABLE", &uart->dev.clocks[j]) != 0) {
+				break;
+			}
+		}
+
+		printf("\n");
+	}
+
+	/* SPI */
+	for (i = 0; i < spi_conf->array_size; i++) {
+		spi = &((const struct spi_conf *) spi_conf->ptr)[i];;
+
+		if (spi->status != ENABLED) {
+			continue;
+		}
+
+		gen_dev_enabled(spi->name);
+
+		for (j = 0; j < ARRAY_SIZE(spi->dev.irqs); j++) {
+			if (gen_field_int(spi->name,
+					"IRQ", &spi->dev.irqs[j]) != 0) {
+				break;
+			}
+		}
+
+		for (j = 0; j < ARRAY_SIZE(spi->dev.pins); j++) {
+			if (gen_field_pin(spi->name,
+					"PIN", &spi->dev.pins[j]) != 0) {
+				break;
+			}
+		}
+
+		for (j = 0; j < ARRAY_SIZE(spi->dev.clocks); j++) {
+			if (gen_field_func(spi->name,
+					"CLK_ENABLE", &spi->dev.clocks[j]) != 0) {
 				break;
 			}
 		}
