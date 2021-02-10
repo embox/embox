@@ -42,4 +42,45 @@ struct uart_conf uarts[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts))
+struct spi_conf spis[] = {
+	[1] = {
+		.status = DISABLED,
+		.name = "SPI1",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PB, PIN_3, AF5),
+				PIN("MISO", PB, PIN_4, AF5),
+				PIN("MOSI", PB, PIN_5, AF5),
+				PIN("CS",   PB, PIN_2, NOAF),
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOB),
+				VAL("MISO", CLK_GPIOB),
+				VAL("MOSI", CLK_GPIOB),
+				VAL("CS",   CLK_GPIOB),
+				VAL("SPI",  CLK_SPI1),
+			}
+		},
+	},
+	[2] = {
+		.status = DISABLED,
+		.name = "SPI2",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PB, PIN_13, AF5),
+				PIN("MISO", PB, PIN_14, AF5),
+				PIN("MOSI", PB, PIN_15, AF5),
+				PIN("CS",   PB, PIN_12, NOAF),
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOB),
+				VAL("MISO", CLK_GPIOB),
+				VAL("MOSI", CLK_GPIOB),
+				VAL("CS",   CLK_GPIOB),
+				VAL("SPI",  CLK_SPI2),
+			}
+		},
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis))
