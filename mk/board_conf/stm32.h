@@ -46,7 +46,9 @@
 #define AF13   0xd
 #define AF14   0xe
 #define AF15   0xf
+#define NOAF   -1 /* No alternate */
 
+/* GPIO clocks */
 #define CLK_GPIOA     __HAL_RCC_GPIOA_CLK_ENABLE()
 #define CLK_GPIOB     __HAL_RCC_GPIOB_CLK_ENABLE()
 #define CLK_GPIOC     __HAL_RCC_GPIOC_CLK_ENABLE()
@@ -58,6 +60,7 @@
 #define CLK_GPIOJ     __HAL_RCC_GPIOJ_CLK_ENABLE()
 #define CLK_GPIOK     __HAL_RCC_GPIOK_CLK_ENABLE()
 
+/* UART clocks */
 #define CLK_USART1    __HAL_RCC_USART1_CLK_ENABLE()
 #define CLK_USART2    __HAL_RCC_USART2_CLK_ENABLE()
 #define CLK_USART3    __HAL_RCC_USART3_CLK_ENABLE()
@@ -66,5 +69,9 @@
 #define CLK_USART6    __HAL_RCC_USART6_CLK_ENABLE()
 #define CLK_UART7     __HAL_RCC_UART7_CLK_ENABLE()
 #define CLK_UART8     __HAL_RCC_UART8_CLK_ENABLE()
+
+/* SPI clocks */
+#define CLK_SPI1      __HAL_RCC_SPI1_CLK_ENABLE()
+#define CLK_SPI2      __HAL_RCC_SPI2_CLK_ENABLE()
 
 #endif /* STM32_H_ */

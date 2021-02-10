@@ -40,7 +40,6 @@ struct spi_conf {
 	int status;
 	const char *name;
 	struct device_conf dev;
-	struct field_pin cs[64];
 };
 
 struct i2c_conf {
