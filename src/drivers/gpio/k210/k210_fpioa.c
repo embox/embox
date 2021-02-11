@@ -37,27 +37,29 @@ static int k210_fpioa_init(void){
 }
 
 void k210_fpioa_set_func_impl(uint8_t num, k210_fpioa_func_t func){
-	// TODO: remove
-	assert(num == 24);
-	assert(func == FN_GPIO3);
-	fpioa->io[24] = (const k210_fpioa_io_cfg_t){
-		.channel = FN_GPIO3,
-		.div = 0xf,
-		.out_enable = 1,
-		.out_inv = 0,
-		.data_out = 0,
-		.data_inv = 0,
-		.pullup = 0,
-		.pulldown = 1,		// pull down
-		.reserved = 0,
-		.slew = 0,
-		.in_enable = 1,
-		.in_inv = 0,
-		.data_in_inv = 0,
-		.sch_trigger = 1,
-		.reserved1 = 0,
-		.pad_di = 0,
-	};
+	// TODO: other func
+	assert(FN_GPIO0 <= func && func <= FN_GPIO7);
+
+	if(FN_GPIO0 <= func && func <= FN_GPIO7){
+		fpioa->io[num] = (const k210_fpioa_io_cfg_t){
+			.channel = func,
+			.div = 0xf,
+			.out_enable = 1,
+			.out_inv = 0,
+			.data_out = 0,
+			.data_inv = 0,
+			.pullup = 0,
+			.pulldown = 1,		// pull down
+			.reserved = 0,
+			.slew = 0,
+			.in_enable = 1,
+			.in_inv = 0,
+			.data_in_inv = 0,
+			.sch_trigger = 1,
+			.reserved1 = 0,
+			.pad_di = 0,
+		};
+	}
 }
 
 void k210_fpioa_set_func(uint8_t num, k210_fpioa_func_t func){
