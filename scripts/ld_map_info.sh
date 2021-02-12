@@ -16,10 +16,17 @@ if [ -z $MAP ] || [ -z $PATTERN ]; then
 	exit 1
 fi
 
-# FIXME: Fix for any awk, not mawk only
+if awk --non-decimal-data '' &>/dev/null ; then
+	AWK='awk --non-decimal-data'
+else
+	AWK='awk'
+fi
+
+export PATTERN_VAR="$PATTERN"
+
 cat $MAP | \
-	mawk -v pat="$PATTERN" '($0 ~ pat || prev ~ pat) && /\.o/; { prev=$0 }' | \
-	mawk '{ printf "%-20x%-20d%s\n", $(NF-1), $(NF-1), $NF }' | sort -n -k2 | \
-	mawk 'BEGIN { printf "%-20s%-20s%s\n", "Size (hex)", "Size (dec)", "File" }
+	$AWK '($0 ~ ENVIRON["PATTERN_VAR"] || prev ~ ENVIRON["PATTERN_VAR"]) && /\.o/ \
+	     { printf "%-20x%-20d%s\n", $(NF-1), $(NF-1), $NF }; { prev=$0 }' | sort -n -k2 | \
+	$AWK 'BEGIN { printf "%-20s%-20s%s\n", "Size (hex)", "Size (dec)", "File" }
 	     { s += $2; print }
 	     END { printf "Total: %x (hex) / %d (dec)\n", s, s }'
