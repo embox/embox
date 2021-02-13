@@ -117,18 +117,6 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
-static int ramfs_truncate(struct inode *node, off_t length) {
-	assert(node);
-
-	if (length > MAX_FILE_SIZE) {
-		return -EFBIG;
-	}
-
-	inode_size_set(node, length);
-
-	return 0;
-}
-
 /* Declaration of operations */
 struct inode_operations ramfs_iops = {
 	.create   = ramfs_create,
