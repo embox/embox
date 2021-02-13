@@ -5,21 +5,26 @@
 #include <util/binalign.h>
 #include <struct_shm.h>
 
+#include <fs/inode.h>
+
 void * shm_get_phy(struct shm *shm) {
-	return shm->inode.i_data;
+	return inode_priv(&shm->inode);
 }
 
 size_t shm_get_len(struct shm *shm) {
-	return shm->inode.length;
+	return inode_size(&shm->inode);
 }
 
 int shm_truncate(struct inode *inode, off_t len) {
 	void *phy;
 	len = binalign_bound(len, VMEM_PAGE_SIZE);
 
-	phy = inode->i_data = phymem_alloc(len / VMEM_PAGE_SIZE);
-	if (phy == NULL)
+	phy = phymem_alloc(len / VMEM_PAGE_SIZE);
+	if (phy == NULL) {
 		return EINVAL;
-	inode->length = len;
+	}
+	inode_priv_set(inode, phy);
+	inode_size_set(inode, len);
+
 	return 0;
 }
