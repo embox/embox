@@ -1,6 +1,7 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
+
 #include <fs/inode.h>
 #include <fs/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
@@ -11,7 +12,7 @@
 
 extern void * shm_get_phy(struct shm *shm);
 extern size_t shm_get_len(struct shm *shm);
-extern int shm_truncate(struct inode *inode, size_t len);
+extern int shm_truncate(struct inode *inode, off_t len);
 
 #define MODOPS_AMOUNT_SHMEM_OBJS OPTION_GET(NUMBER, amount_shmem_objs)
 POOL_DEF(shm_pool, struct shm, MODOPS_AMOUNT_SHMEM_OBJS);

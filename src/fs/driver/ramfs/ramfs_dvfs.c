@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <sys/types.h>
 
 #include <util/array.h>
 #include <util/indexator.h>
@@ -116,7 +117,7 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
-static int ramfs_truncate(struct inode *node, size_t length) {
+static int ramfs_truncate(struct inode *node, off_t length) {
 	assert(node);
 
 	if (length > MAX_FILE_SIZE) {

@@ -9,6 +9,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <string.h>
+#include <sys/types.h>
 
 #include <fs/dfs.h>
 #include <fs/dvfs.h>
@@ -411,7 +412,7 @@ static int dfs_icreate(struct inode *i_new,
  *
  * @return Negative error number or 0 if succeed
  */
-static int dfs_itruncate(struct inode *inode, size_t new_len) {
+static int dfs_itruncate(struct inode *inode, off_t new_len) {
 	struct dfs_sb_info *sbi;
 	struct dfs_dir_entry entry;
 	assert(inode);
