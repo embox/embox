@@ -15,16 +15,15 @@
 
 #include "ramfs.h"
 
-static int ramfs_create(struct inode *parent_node, struct inode *node) {
+static int ramfs_create(struct inode *i_dir, struct inode *i_new) {
 	struct ramfs_file_info *fi;
 
-	if (!node_is_directory(node)) {
-		fi = ramfs_file_alloc(node);
+	if (S_ISREG(i_new->i_mode)) {
+		fi = ramfs_file_alloc(i_new);
 		if (NULL == fi) {
 			return -ENOMEM;
 		}
-
-		inode_priv_set(node, fi);
+		fi->mode = i_new->i_mode;
 	}
 
 	return 0;
