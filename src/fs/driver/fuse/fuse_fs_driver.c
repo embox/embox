@@ -299,9 +299,11 @@ static int fuse_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	fuse_fill_req(req, i_new, NULL);
 	task = fuse_in(sb_fuse_data);
 	if (mode & S_IFDIR) {
-		sb_fuse_data->fuse_lowlevel_ops->mkdir((fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, mode);
+		sb_fuse_data->fuse_lowlevel_ops->mkdir(
+				(fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, i_new->i_mode);
 	} else {
-		sb_fuse_data->fuse_lowlevel_ops->create((fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, mode, req->fi);
+		sb_fuse_data->fuse_lowlevel_ops->create(
+				(fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, i_new->i_mode, req->fi);
 	}
 	fuse_out(sb_fuse_data, task);
 	fuse_req_free(req);
