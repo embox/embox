@@ -282,10 +282,10 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
+/* TODO ext2fs_truncate()? */
 static int ext3fs_truncate (struct inode *node, off_t length) {
-	struct nas *nas = node->nas;
 
-	nas->fi->ni.size = length;
+	inode_size_set(node, length);
 
 	return 0;
 }
