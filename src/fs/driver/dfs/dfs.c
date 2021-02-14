@@ -332,8 +332,7 @@ struct super_block_operations dfs_sbops = {
 	.write_inode   = NULL,
 };
 
-static int dfs_icreate(struct inode *i_new,
-                       struct inode *i_dir, int mode) {
+static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct super_block *sb = i_dir->i_sb;
 	struct dfs_sb_info *sbi = sb->sb_data;
 	struct dfs_dir_entry dirent;
@@ -344,21 +343,24 @@ static int dfs_icreate(struct inode *i_new,
 
 	assert(sb);
 	assert(i_dir);
-	if (i_new == NULL)
+
+	if (i_new == NULL) {
 		return -1;
+	}
 
 	dir_start_pos = (uintptr_t) i_dir->i_data;
 
 	dfs_read_sb_info(sbi);
 
-	if (sbi->inode_count > sbi->max_inode_count)
+	if (sbi->inode_count > sbi->max_inode_count) {
 		return -ENOMEM;
+	}
 
 	memset(&dirent, 0, sizeof(dirent));
 	dirent = (struct dfs_dir_entry) {
 		.pos_start = sbi->free_space,
 		.len       = MIN_FILE_SZ,
-		.flags     = mode & S_IFMT,
+		.flags     = i_new->i_mode & S_IFMT,
 	};
 
 	strcpy((char *) dirent.name, i_new->i_dentry->name);
@@ -372,16 +374,18 @@ static int dfs_icreate(struct inode *i_new,
 		.i_ops     = &dfs_iops,
 	};
 
-	if (S_ISDIR(mode)) {
+	if (S_ISDIR(i_new->i_mode)) {
 		memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
-		for (i = 0; i < dirent.len / sizeof(buf); i++)
+		for (i = 0; i < dirent.len / sizeof(buf); i++) {
 			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
 			              buf,
 			              sizeof(buf));
+		}
 	} else {
-		memset(buf, '\0', sizeof(buf));
-		for (i = sbi->free_space; i < sbi->free_space + dirent.len; i++)
+		memset(buf, 0, sizeof(buf));
+		for (i = sbi->free_space; i < sbi->free_space + dirent.len; i++) {
 			_write(i, buf, 1);
+		}
 	}
 
 	sbi->inode_count++;
@@ -393,9 +397,10 @@ static int dfs_icreate(struct inode *i_new,
 	/* Write entry to parent directory */
 	for (i = 0; i < i_dir->length; i++) {
 		_read(dir_start_pos + i, &t, 1);
-		if (t != DFS_DIRENT_EMPTY)
+		if (t != DFS_DIRENT_EMPTY) {
 			/* Entry taken */
 			continue;
+		}
 		_write(dir_start_pos + i, &i_new->i_no, 1);
 		break;
 	}
