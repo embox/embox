@@ -44,16 +44,18 @@ struct inode {
 
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
-	struct dentry         *i_dentry;
 
 	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
 	uid_t                 uid;/* owner user ID */
 	gid_t                 gid;/* owner group ID */
 
-	/* node attribute structure (extended information about node)*/
-	struct nas            *nas;
+	struct dentry        *i_dentry;
+	size_t                length;
 	struct super_block      *i_sb;
 	struct inode_operations *i_ops;
+
+	/* node attribute structure (extended information about node)*/
+	struct nas            *nas;
 
 	int                   mounted; /* is mount point*/
 
@@ -61,8 +63,6 @@ struct inode {
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;
-
-	size_t   length;
 };
 
 struct node_info {
