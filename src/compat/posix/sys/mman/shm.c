@@ -1,20 +1,32 @@
 #include <sys/mman.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits.h>
+
+#include <mem/vmem.h>
+#include <mem/phymem.h>
+#include <util/binalign.h>
+#include <util/dlist.h>
 
 #include <fs/inode.h>
 #include <fs/idesc.h>
+#include <fs/inode_operation.h>
+#include <fs/file_desc.h>
+
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/mmap.h>
-#include <struct_shm.h>
 #include <mem/misc/pool.h>
-#include <fs/inode_operation.h>
-
-extern void * shm_get_phy(struct shm *shm);
-extern size_t shm_get_len(struct shm *shm);
-extern int shm_truncate(struct inode *inode, off_t len);
 
 #define MODOPS_AMOUNT_SHMEM_OBJS OPTION_GET(NUMBER, amount_shmem_objs)
+
+struct shm {
+	struct file_desc fd;
+	struct inode inode;
+	struct dlist_head lnk;
+	char name[NAME_MAX + 1];
+};
+
+
 POOL_DEF(shm_pool, struct shm, MODOPS_AMOUNT_SHMEM_OBJS);
 
 static DLIST_DEFINE(shm_list_d);
@@ -29,15 +41,34 @@ static struct idesc_ops shm_d_ops = {
 		.idesc_mmap = &shm_mmap,
 };
 
-static struct inode_operations shm_i_ops = {
-	.truncate = &shm_truncate
-};
+static void *shm_get_phy(struct shm *shm) {
+	return inode_priv(&shm->inode);
+}
 
-char * shm_get_name(struct shm *shm) {
+static inline size_t shm_get_len(struct shm *shm) {
+	return inode_size(&shm->inode);
+}
+
+int shm_truncate(struct inode *inode, off_t len) {
+	void *phy;
+	len = binalign_bound(len, VMEM_PAGE_SIZE);
+
+	phy = phymem_alloc(len / VMEM_PAGE_SIZE);
+	if (phy == NULL) {
+		return EINVAL;
+	}
+	inode_priv_set(inode, phy);
+	inode_size_set(inode, len);
+
+	return 0;
+}
+
+
+static char *shm_get_name(struct shm *shm) {
 	return shm->name;
 }
 
-void shm_free(struct shm *shm) {
+static void shm_free(struct shm *shm) {
 	ipl_t sp;
 
 	sp = ipl_save();
@@ -46,7 +77,11 @@ void shm_free(struct shm *shm) {
 	ipl_restore(sp);
 }
 
-struct shm *shm_create(const char *name) {
+static struct inode_operations shm_i_ops = {
+	.truncate = &shm_truncate
+};
+
+static struct shm *shm_create(const char *name) {
 	ipl_t ipl;
 	struct shm *shm;
 	size_t namelen;
@@ -130,3 +165,4 @@ int shm_unlink(const char *name) {
 
 	return 0;
 }
+
