@@ -15,7 +15,6 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/hlpr_path.h>
-#include <fs/dcache.h>
 
 #include <security/security.h>
 

@@ -17,7 +17,6 @@
 #include <sys/file.h>
 
 #include <drivers/device.h>
-#include <fs/dcache.h>
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
