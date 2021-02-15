@@ -7,6 +7,7 @@
  */
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
@@ -30,6 +31,9 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc, int __of
 	dev = inode_priv(node);
 	assert(dev->dev_open);
 
+	if(__oflag & O_PATH) {
+		return char_dev_idesc_create(NULL);
+	}
 	return dev->dev_open(dev, dev_module_to_bdev(dev));
 }
 
