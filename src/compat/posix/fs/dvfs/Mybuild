@@ -28,7 +28,7 @@ static module file_dvfs extends file {
 static module fsop_dvfs extends fsop {
 	source "fsop.c"
 
-	depends stat_dvfs
+	depends stat
 
 	depends creat
 	depends truncate

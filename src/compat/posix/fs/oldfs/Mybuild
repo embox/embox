@@ -22,7 +22,7 @@ static module file_old extends file {
 static module fsop_old extends fsop {
 	source "fsop.c"
 
-	depends stat_oldfs
+	depends stat
 
 	depends truncate
 
