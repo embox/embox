@@ -1,0 +1,5 @@
+package third_party.lib
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract")
+static module lvgl_examples {
+}
