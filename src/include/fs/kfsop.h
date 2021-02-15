@@ -24,8 +24,6 @@ extern int kunlink(const char *pathname);
 
 extern int krmdir(const char *pathname);
 
-extern int klstat(const char *path, struct stat *buf);
-
 extern int kformat(const char *pathname, const char *fs_type);
 
 extern int kmount(const char *dev, const char *dir, const char *fs_type);

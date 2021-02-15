@@ -29,11 +29,6 @@ int krmdir(const char *pathname) {
 	return -1;
 }
 
-
-int klstat(const char *path, struct stat *buf) {
-	return -1;
-}
-
 int kmount(const char *source, const char *dest, const char *fs_type) {
 	return -1;
 }
