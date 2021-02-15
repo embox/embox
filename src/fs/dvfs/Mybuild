@@ -36,7 +36,6 @@ module core extends embox.fs.fs_api {
 
 	depends embox.fs.dvfs.cache_strategy
 	depends embox.fs.dvfs.compat
-	depends embox.fs.syslib.dcache
 	depends embox.fs.driver.repo
 	depends embox.fs.idesc
 	@NoRuntime depends embox.kernel.task.resource.vfs

@@ -71,23 +71,3 @@ module perm_full extends perm {
 module perm_stub extends perm {
 	source "perm_stub.c"
 }
-
-@DefaultImpl(noncache)
-abstract module dcache {
-
-}
-
-module dcache_last extends dcache{
-	option number dcache_table_size=0x10
-	option number dcache_size=0x10
-
-
-	source "dcache.c"
-	depends embox.util.hashtable
-}
-
-module noncache extends dcache{
-	source "noncache.c"
-}
-
-
