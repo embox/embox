@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <limits.h>
+#include <sys/types.h>
 
 #include <drivers/device.h>
 
@@ -134,12 +135,6 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	i_new->i_data = fi;
 
 	return fat_create_file(fi, di, name, mode);
-}
-
-static int fat_truncate(struct inode *inode, size_t len) {
-	/* This is a stub, but files should be extended automatically
-	 * with the common part of the driver on write */
-	return 0;
 }
 
 /* Declaration of operations */

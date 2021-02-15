@@ -96,23 +96,13 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 	return 0;
 }
 
-static int fatfs_truncate(struct inode *node, off_t length) {
-	struct nas *nas = node->nas;
-
-	nas->fi->ni.size = length;
-
-	/* TODO realloc blocks*/
-
-	return 0;
-}
-
 extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
 	.format = fat_format,
 	.mount = fatfs_mount,
 	.create_node = fatfs_create,
 	.delete_node = fat_delete,
-	.truncate = fatfs_truncate,
+	.truncate = fat_truncate,
 	.umount_entry = fatfs_umount_entry,
 };
 

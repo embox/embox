@@ -44,18 +44,14 @@ module mprotect {
 abstract module shm_mem {
 }
 
-module shm_mem_dvfs extends shm_mem {
-	@IncludeExport(target_name="struct_shm.h")
-	source "struct_shm.h"
-
-	source "mman_common.c"
-	source "dvfs_mman.c"
+module shm_mem_nommu extends shm_mem {
+	source "shm.c"
 
 	option number amount_shmem_objs=20
 
-	depends embox.compat.posix.fs.ftruncate_dvfs
+	depends mmap
 }
 
 module shm_mem_stub extends shm_mem {
-	source "stub_mman.c"
+	source "shm_stub.c"
 }

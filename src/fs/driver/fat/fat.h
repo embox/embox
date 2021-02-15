@@ -10,6 +10,7 @@
 #define FAT_H_
 
 #include <stdint.h>
+#include <sys/types.h>
 
 #include <fs/mbr.h>
 
@@ -310,6 +311,7 @@ struct dir_ctx;
 extern int fat_iterate(struct inode *next, char *name,
 		struct inode *parent, struct dir_ctx *ctx);
 extern int fat_delete(struct inode *node);
+extern int fat_truncate(struct inode *node, off_t length);
 
 extern int fat_entries_per_name(const char *name);
 extern void fat_write_longname(char *name, struct fat_dirent *di);

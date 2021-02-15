@@ -2215,3 +2215,13 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 		return -1;
 	}
 }
+
+int fat_truncate(struct inode *node, off_t length) {
+	assert(node);
+
+	inode_size_set(node, length);
+
+	/* TODO realloc blocks*/
+
+	return 0;
+}

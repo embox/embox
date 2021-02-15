@@ -8,6 +8,7 @@
 #ifndef SRC_INCLUDE_FS_INODE_OPERATION_H_
 #define SRC_INCLUDE_FS_INODE_OPERATION_H_
 
+#include <sys/types.h>
 #include <stddef.h>
 
 struct inode;
@@ -20,7 +21,7 @@ struct inode_operations {
 	int           (*remove)(struct inode *inode);
 	int           (*mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int           (*rmdir)(struct dentry *dir);
-	int           (*truncate)(struct inode *inode, size_t len);
+	int           (*truncate)(struct inode *inode, off_t len);
 	int           (*pathname)(struct inode *inode, char *buf, int flags);
 	int           (*iterate)(struct inode *next_inode, char *name_buf,
 			struct inode *parent, struct dir_ctx *ctx);
