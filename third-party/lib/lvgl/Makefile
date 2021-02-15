@@ -12,11 +12,14 @@ include $(EXTBLD_LIB)
 LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(ROOT_DIR)/conf/lv_conf.h
 
 $(BUILD) :
-	cd $(PKG_SOURCE_DIR) && $(RM) -r build/ && mkdir build/ && cd build && \
+	cd $(PKG_SOURCE_DIR) && (mkdir build/ || true) && cd build && \
 	cmake \
 	    -D LIBLVGL_STATIC=1 \
 	    -D CMAKE_C_FLAGS="$(LVGL_CPP_FLAGS)" \
 	    -D CMAKE_C_COMPILER="$(EMBOX_GCC)" \
+	    -D CMAKE_CXX_COMPILER="$(EMBOX_GXX)" \
+	    -D CMAKE_C_COMPILER_WORKS=1 \
+	    -D CMAKE_CXX_COMPILER_WORKS=1 \
 	    .. && \
 	make
 	touch $@
