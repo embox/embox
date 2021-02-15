@@ -285,8 +285,6 @@ int krmdir(const char *pathname) {
 		return -1;
 	}
 
-	dcache_delete(getenv("PWD"), pathname);
-
 	vfs_del_leaf(node.node);
 
 	return 0;
