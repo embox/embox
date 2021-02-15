@@ -25,10 +25,10 @@
 #include <framework/mod/options.h>
 #include <kernel/panic.h>
 
-#define MAX_SERIALS \
-	OPTION_GET(NUMBER, serial_quantity)
+#define MAX_IDESC_SERIALS \
+	OPTION_GET(NUMBER, idesc_serial_quantity)
 
-POOL_DEF(uart_ttys, struct tty_uart, MAX_SERIALS);
+POOL_DEF(uart_ttys, struct tty_uart, MAX_IDESC_SERIALS);
 
 #define idesc_to_uart(desc) \
 	(((struct tty_uart *) desc)->uart)

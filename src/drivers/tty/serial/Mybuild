@@ -10,6 +10,7 @@ module serial {
 	source "ttys.h"
 
 	option number serial_quantity = 1
+	option number idesc_serial_quantity = 1
 
 	depends tty
 	depends embox.driver.char_dev
