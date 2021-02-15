@@ -147,7 +147,7 @@ POOL_DEF(ext4_file_pool, struct ext4_file_info, 128);
 
 /* TODO link counter */
 
-static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -539,7 +539,7 @@ int ext4_open(struct nas *nas) {
 /*
  * file_operation
  */
-static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	int rc;
 	struct nas *nas;
 	struct ext4_file_info *fi;

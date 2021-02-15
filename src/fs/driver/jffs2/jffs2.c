@@ -1333,7 +1333,7 @@ uint32_t jffs2_to_os_mode (uint32_t jmode) {
 	return 0;
 }
 
-static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int jffs2fs_close(struct file_desc *desc);
 static size_t jffs2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t jffs2fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -1348,7 +1348,7 @@ static struct file_operations jffs2_fop = {
 /*
  * file_operation
  */
-static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
 	char path[PATH_MAX];

@@ -82,7 +82,7 @@ static void fuse_fill_req(struct fuse_req_embox *req, struct inode *node, void *
 	req->buf = buf;
 }
 
-static struct idesc *fuse_open(struct inode *node, struct idesc *desc) {
+static struct idesc *fuse_open(struct inode *node, struct idesc *desc, int __oflag) {
 	struct fuse_data *data;
 	struct task *task;
 	struct fuse_sb_priv_data *sb_fuse_data;

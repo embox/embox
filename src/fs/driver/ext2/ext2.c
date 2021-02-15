@@ -137,7 +137,7 @@ POOL_DEF(ext2_file_pool, struct ext2_file_info,
 
 /* TODO link counter */
 
-static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -433,7 +433,7 @@ int ext2_open(struct nas *nas) {
 /*
  * file_operation
  */
-static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	int rc;
 	struct nas *nas;
 	struct ext2_file_info *fi;

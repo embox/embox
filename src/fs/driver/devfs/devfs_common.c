@@ -19,7 +19,7 @@
 #include <util/array.h>
 
 extern struct idesc_ops idesc_bdev_ops;
-static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
+static struct idesc *devfs_open(struct inode *node, struct idesc *desc, int __oflag) {
 	struct dev_module *dev;
 
 	if (S_ISBLK(node->i_mode)) {

@@ -550,7 +550,7 @@ struct inode_operations dfs_iops = {
 	.pathname = dfs_pathname,
 };
 
-static struct idesc *dfs_open(struct inode *node, struct idesc *desc) {
+static struct idesc *dfs_open(struct inode *node, struct idesc *desc, int __oflag) {
 	if (!desc || !node) {
 		SET_ERRNO(ENOENT);
 		return NULL;

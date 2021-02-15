@@ -49,7 +49,7 @@ POOL_DEF (nfs_file_pool, struct nfs_file_info, OPTION_GET(NUMBER,inode_quantity)
 
 /* File operations */
 
-static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -68,7 +68,7 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
 /*
  * file_operation
  */
-static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 	off_t pos;
