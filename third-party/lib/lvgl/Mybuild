@@ -1,8 +1,15 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-7.10.0")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-7.10.0 -DLV_CONF_PATH=$(abspath $(CONF_DIR))/lv_conf.h")
 static module lvgl {
 	@AddPrefix("^BUILD/extbld/third_party/lib/lvgl/install")
 	source "liblvgl.a"
+}
+
+@BuildDepends(lvgl)
+static module lvgl_display_port {
+	option number log_level = 1
+
+	source "display_port.c"
 }
