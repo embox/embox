@@ -25,11 +25,15 @@ struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 
 	idesc = idesc_serial_create(cdev->dev_priv, (uintptr_t) priv);
 	if (err(idesc)) {
-		return idesc;
+		//return idesc;
+		// TODO now below on stack wait NULL
+		return NULL;
 	}
 	res = uart_open(cdev->dev_priv);
 	if (res) {
-		return err_ptr(-res);
+		//return err_ptr(-res);
+		// TODO now below on stack wait NULL
+		return NULL;
 	}
 
 	return idesc;

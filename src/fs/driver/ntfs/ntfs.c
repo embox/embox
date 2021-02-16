@@ -424,7 +424,7 @@ error:
 	return -rc;
 }
 
-static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc)
+static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __oflag)
 {
 	struct ntfs_file_info *fi;
 	struct ntfs_fs_info *fsi;

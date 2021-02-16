@@ -17,7 +17,7 @@
 #include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
-#include <fs/dcache.h>
+
 #include <mem/objalloc.h>
 #include <util/dlist.h>
 #include <framework/mod/options.h>

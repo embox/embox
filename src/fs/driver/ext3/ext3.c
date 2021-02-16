@@ -44,7 +44,7 @@
 OBJALLOC_DEF(ext3_journal_cache, ext3_journal_specific_t, EXT3_JOURNAL_CNT);
 
 /* file operations */
-static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -64,8 +64,8 @@ static struct fs_driver ext3fs_driver;
 /*
  * file_operation
  */
-static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc) {
-	return ext2fs_driver->file_op->open(node, idesc);
+static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
+	return ext2fs_driver->file_op->open(node, idesc, __oflag);
 }
 
 static int ext3fs_close(struct file_desc *desc) {
@@ -282,10 +282,10 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
+/* TODO ext2fs_truncate()? */
 static int ext3fs_truncate (struct inode *node, off_t length) {
-	struct nas *nas = node->nas;
 
-	nas->fi->ni.size = length;
+	inode_size_set(node, length);
 
 	return 0;
 }

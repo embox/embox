@@ -60,7 +60,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 
 		if (S_ISCHR(node->i_mode)) {
 			/* Note: we suppose this node belongs to devfs */
-			idesc = ops->open(node, (void *) ((uintptr_t) flag));
+			idesc = ops->open(node, NULL, flag);
 			idesc->idesc_flags = flag;
 			return idesc;
 		}
@@ -79,7 +79,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 	desc->f_ops = ops;
 
 	if (desc->f_ops->open != NULL) {
-		idesc = desc->f_ops->open(node, &desc->f_idesc);
+		idesc = desc->f_ops->open(node, &desc->f_idesc, flag);
 		if (err(idesc)){
 			ret = (uintptr_t)idesc;
 			goto free_out;

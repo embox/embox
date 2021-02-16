@@ -49,7 +49,7 @@ POOL_DEF (nfs_file_pool, struct nfs_file_info, OPTION_GET(NUMBER,inode_quantity)
 
 /* File operations */
 
-static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int    nfsfs_close(struct file_desc *desc);
 static size_t nfsfs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size);
@@ -68,7 +68,7 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
 /*
  * file_operation
  */
-static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	nfs_file_info_t *fi;
 	struct nas *nas;
 	off_t pos;
@@ -81,7 +81,7 @@ static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc) {
 	fi->offset = pos;
 
 	if(0 == nfs_lookup(nas)) {
-		nas->fi->ni.size = fi->attr.size;
+		inode_size_set(node, fi->attr.size);
 		return idesc;
 	}
 	return err_ptr(ENOENT);
@@ -148,14 +148,12 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	nfs_file_info_t *fi;
 	write_req_t req;
 	write_reply_t reply;
-	struct nas *nas;
 	off_t pos;
 	struct nfs_fs_info *fsi;
 
 	pos = file_get_pos(desc);
 
 	size_to_write = size;
-	nas = desc->f_inode->nas;
 	fi = inode_priv(desc->f_inode);
 	fsi = desc->f_inode->i_sb->sb_data;
 	fi->offset = pos;
@@ -177,8 +175,8 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	fi->offset += reply.count;
 	pos = fi->offset;
-	if (nas->fi->ni.size < pos) {
-		nas->fi->ni.size = pos;
+	if (inode_size(desc->f_inode) < pos) {
+		inode_size_set(desc->f_inode, pos);
 	}
 
 	return reply.count;
@@ -246,9 +244,8 @@ static int nfsfs_format(struct block_dev *bdev, void *priv) {
 }
 
 static int nfsfs_truncate (struct inode *node, off_t length) {
-	struct nas *nas = node->nas;
 
-	nas->fi->ni.size = length;
+	inode_size_set(node, length);
 
 	return 0;
 }

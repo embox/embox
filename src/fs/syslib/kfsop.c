@@ -17,7 +17,6 @@
 #include <sys/file.h>
 
 #include <drivers/device.h>
-#include <fs/dcache.h>
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
@@ -285,27 +284,10 @@ int krmdir(const char *pathname) {
 		return -1;
 	}
 
-	dcache_delete(getenv("PWD"), pathname);
-
 	vfs_del_leaf(node.node);
 
 	return 0;
 
-}
-
-extern int kfile_fill_stat(struct inode *node, struct stat *stat_buff);
-int klstat(const char *path, struct stat *buf) {
-	struct path node;
-	int res;
-
-	if (0 != (res = fs_perm_lookup(path, NULL, &node))) {
-		errno = -res;
-		return -1;
-	}
-
-	kfile_fill_stat(node.node, buf);
-
-	return 0;
 }
 
 int kutime(const char *path,const struct utimbuf *times) {
@@ -473,14 +455,15 @@ static int copy_file(const char *oldpath, const char *newpath) {
 	char buf[BUFSIZ];
 	struct stat old_st;
 
-	if (-1 == klstat(oldpath, &old_st)) {
-		return -1;
-	}
-
 	oldfd = open(oldpath, O_RDONLY);
 	if (-1 == oldfd) {
 		return -1;
 	}
+
+	if (-1 == fstat(oldfd, &old_st)) {
+		return -1;
+	}
+
 	newfd = open(newpath, O_CREAT|O_WRONLY|O_TRUNC, old_st.st_mode & 0777);
 	if (-1 == newfd) {
 		return -1;

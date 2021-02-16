@@ -1333,7 +1333,7 @@ uint32_t jffs2_to_os_mode (uint32_t jmode) {
 	return 0;
 }
 
-static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int jffs2fs_close(struct file_desc *desc);
 static size_t jffs2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t jffs2fs_write(struct file_desc *desc, void *buf, size_t size);
@@ -1348,7 +1348,7 @@ static struct file_operations jffs2_fop = {
 /*
  * file_operation
  */
-static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
 	char path[PATH_MAX];
@@ -1431,7 +1431,7 @@ static int jffs2_free_fs(struct super_block *sb) {
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
-static int jffs2fs_create(struct inode *parent_node, struct inode *node);
+static int jffs2fs_create(struct inode *parent_node, struct inode *i_new);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
 
@@ -1458,14 +1458,14 @@ static struct fs_driver jffs2fs_driver = {
 	.fsop = &jffs2_fsop,
 };
 
-static jffs2_file_info_t *jffs2_fi_alloc(struct nas *nas, void *fs) {
+static jffs2_file_info_t *jffs2_fi_alloc(struct inode *i_new, void *fs) {
 	jffs2_file_info_t *fi;
 
 	fi = pool_alloc(&jffs2_file_pool);
 	if (fi) {
 		memset(fi, 0, sizeof(struct jffs2_file_info));
-		inode_priv_set(nas->node, fi);
-		nas->fi->ni.size = 0;
+		inode_priv_set(i_new, fi);
+		inode_size_set(i_new, 0);
 	}
 
 	return fi;
@@ -1500,9 +1500,9 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 					}
 				}
 				nas = vfs_node->nas;
-				if (NULL == inode_priv(nas->node)) {
-					if (NULL == (fi = jffs2_fi_alloc(nas, dir_nas->fs))) {
-						inode_priv_set(nas->node, fi);
+				if (NULL == inode_priv(vfs_node)) {
+					if (NULL == (fi = jffs2_fi_alloc(vfs_node, dir_nas->fs))) {
+						inode_priv_set(vfs_node, fi);
 						return ENOMEM;
 					}
 					fi->_inode = inode;
@@ -1518,18 +1518,16 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 	return 0;
 }
 
-static int jffs2fs_create(struct inode *parent_node, struct inode *node) {
+static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
 	int rc;
-	struct nas *nas;
 	struct jffs2_file_info *fi, *parents_fi;
 
-	nas = node->nas;
 	parents_fi = inode_priv(parent_node);
 
-	if (node_is_directory(node)) {
-		node->i_mode |= S_IRUGO|S_IXUGO|S_IWUSR;
+	if (node_is_directory(i_new)) {
+		i_new->i_mode |= S_IRUGO|S_IXUGO|S_IWUSR;
 		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
-				(const char *) &node->name, node->i_mode))) {
+				(const char *) &i_new->name, i_new->i_mode))) {
 			return -rc;
 		}
 		/* file info for new dir will be allocate into */
@@ -1537,13 +1535,13 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *node) {
 			return -rc;
 		}
 	} else {
-		if (NULL == (fi = jffs2_fi_alloc(nas, parent_node->nas->fs))) {
-				inode_priv_set(node, fi);
+		if (NULL == (fi = jffs2_fi_alloc(i_new, parent_node->nas->fs))) {
+				inode_priv_set(i_new, fi);
 				return ENOMEM;
 			}
 		if (0 != (rc = jffs2_create(parents_fi->_inode,
-				(const unsigned char *) &node->name,
-								node->i_mode, &fi->_inode))) {
+				(const unsigned char *) &i_new->name,
+								i_new->i_mode, &fi->_inode))) {
 			return -rc;
 		}
 	}
@@ -1646,10 +1644,9 @@ error:
 }
 
 static int jffs2fs_truncate (struct inode *node, off_t length) {
-	struct nas *nas = node->nas;
 	struct jffs2_file_info *fi;
 
-	nas->fi->ni.size = length;
+	inode_size_set(node, length);
 
 	fi = inode_priv(node);
 	jffs2_truncate_file(fi->_inode);

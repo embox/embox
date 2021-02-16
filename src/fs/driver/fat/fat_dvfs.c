@@ -100,41 +100,45 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct dirinfo *di, *new_di;
 	char *name;
 
-	assert(i_new);
-	assert(i_dir);
+	assert(i_dir && i_new);
 
-	/* TODO check file exists */
-	assert(i_dir->i_sb);
-	fsi = i_dir->i_sb->sb_data;
-	di = i_dir->i_data;
-
-	fat_reset_dir(di);
-	read_dir_buf(di);
+	di = inode_priv(i_dir);
 
 	assert(i_new->i_dentry);
 	name = i_new->i_dentry->name;
 	assert(name);
 
-	if (S_ISDIR(mode)) {
+	/* TODO check file exists */
+	assert(i_dir->i_sb);
+	fsi = i_dir->i_sb->sb_data;
+
+	fat_reset_dir(di);
+	read_dir_buf(di);
+
+	if (S_ISDIR(i_new->i_mode)) {
 		if (!(new_di = fat_dirinfo_alloc())) {
 			return -ENOMEM;
 		}
 		new_di->p_scratch = fat_sector_buff;
 		fi = &new_di->fi;
-		fi->mode |= S_IFDIR;
 	} else {
 		if (!(fi = fat_file_alloc())) {
 			return -ENOMEM;
 		}
 	}
 
+	inode_priv_set(i_new, fi);
+
 	fi->volinfo = &fsi->vi;
 	fi->fdi     = di;
 	fi->fsi     = fsi;
+	fi->mode   |= i_new->i_mode;
 
-	i_new->i_data = fi;
+	if (0 != fat_create_file(fi, di, name, fi->mode)) {
+		return -EIO;
+	}
 
-	return fat_create_file(fi, di, name, mode);
+	return 0;
 }
 
 /* Declaration of operations */

@@ -25,7 +25,7 @@ struct idesc;
  */
 
 struct file_operations {
-	struct idesc *(*open)(struct inode *node, struct idesc *file_desc);
+	struct idesc *(*open)(struct inode *node, struct idesc *file_desc, int __oflag);
 	int    (*close)(struct file_desc *desc);
 	size_t (*read)(struct file_desc *desc, void *buf, size_t size);
 	size_t (*write)(struct file_desc *desc, void *buf, size_t size);

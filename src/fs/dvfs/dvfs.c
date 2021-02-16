@@ -153,7 +153,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	}
 
 	if (desc->f_ops && desc->f_ops->open && !(__oflag & O_PATH)) {
-		res = desc->f_ops->open(i_no, &desc->f_idesc);
+		res = desc->f_ops->open(i_no, &desc->f_idesc, __oflag);
 		if (res == NULL) {
 			return NULL;
 		}

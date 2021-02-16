@@ -15,7 +15,6 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/hlpr_path.h>
-#include <fs/dcache.h>
 
 #include <security/security.h>
 
@@ -42,17 +41,6 @@ int fs_perm_check(struct inode *node, int fd_flags) {
 	/* Here, we rely on the fact that fd_flags correspond to OTH perm bits. */
 	return (fd_flags & ~fs_perm_mask(node)) ? -EACCES :
 		security_node_permissions(node, fd_flags);
-}
-
-static int quick_lookup(const char *path, struct path *nodelast) {
-	struct path *cached = dcache_get(getenv("PWD"), path);
-
-	if (cached) {
-		*nodelast = *cached;
-		return 0;
-	}
-
-	return -1;
 }
 
 int fs_perm_lookup(const char *path, const char **pathlast,
@@ -114,10 +102,6 @@ int fs_perm_lookup_relative(const char *path, const char **pathlast,
 		struct path *nodelast) {
 	int ret = 0;
 
-	if (0 == quick_lookup(path, nodelast)) {
-		return fs_perm_check(nodelast->node, S_IXOTH);
-	}
-
 	if (0 != (ret = fs_perm_lookup(path, pathlast, nodelast))) {
 		return ret;
 	}
@@ -125,8 +109,6 @@ int fs_perm_lookup_relative(const char *path, const char **pathlast,
 	if (!node_is_directory(nodelast->node)) {
 		return 0;
 	}
-
-	dcache_add(getenv("PWD"), path, nodelast);
 
 	return 0;
 }

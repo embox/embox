@@ -15,7 +15,6 @@
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
-#include <fs/dcache.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
 

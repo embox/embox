@@ -72,6 +72,10 @@ module writev {
 	source "writev.c"
 }
 
+static module stat {
+	source "stat.c"
+}
+
 module file_ops {
 	depends read, write, fcntl, ioctl, close
 	depends fstat, fsync, readv, writev

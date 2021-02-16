@@ -775,7 +775,7 @@ void cdfs_init(void) {
 */
 
 /* File operations */
-static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc);
+static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int    cdfsfs_close(struct file_desc *desc);
 static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
 
@@ -785,7 +785,7 @@ static struct file_operations cdfsfs_fop = {
 	.read = cdfsfs_read,
 };
 
-static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc) {
+static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	char path [PATH_MAX];
 	int res;
 

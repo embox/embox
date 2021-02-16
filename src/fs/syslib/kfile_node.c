@@ -25,7 +25,6 @@
 
 int ktruncate(struct inode *node, off_t length) {
 	int ret;
-	struct nas *nas;
 	const struct fs_driver *drv;
 
 	if (node_is_directory(node)) {
@@ -38,8 +37,7 @@ int ktruncate(struct inode *node, off_t length) {
 		return -1;
 	}
 
-	nas = node->nas;
-	drv = nas->fs->fs_drv;
+	drv = node->nas->fs->fs_drv;
 
 	if (NULL == drv || NULL == drv->fsop || NULL == drv->fsop->truncate) {
 		//errno = EPERM;
@@ -55,45 +53,34 @@ int ktruncate(struct inode *node, off_t length) {
 }
 
 int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
-	struct nas *nas;
-	struct node_info *ni;
-
 	memset(stat_buff, 0 , sizeof(struct stat));
 
-	nas = node->nas;
-	ni = &nas->fi->ni;
-
-	stat_buff->st_size = ni->size;
+	stat_buff->st_size = inode_size(node);
 	stat_buff->st_mode = node->i_mode;
 	stat_buff->st_uid = node->uid;
 	stat_buff->st_gid = node->gid;
-	stat_buff->st_ctime = ni->ctime;
-	stat_buff->st_mtime = ni->mtime;
+	stat_buff->st_ctime = inode_ctime(node);
+	stat_buff->st_mtime = inode_mtime(node);
 	return 0;
 }
 
 int kfile_change_stat(struct inode *node, const struct utimbuf *times) {
-	struct nas *nas;
-	struct node_info *ni;
 	struct timeval now;
 
 	if (node == NULL) {
 		return -ENOENT;
 	}
 
-	nas = node->nas;
-	ni = &nas->fi->ni;
-
 	if (times == NULL) {
 		if (gettimeofday(&now, NULL) == -1) {
 			return -EINVAL;
 		}
-		ni->ctime = now.tv_sec;
+		inode_ctime_set(node, now.tv_sec);
 		return 0;
 	}
 
-	ni->ctime = times->actime;
-	ni->mtime = times->modtime;
+	inode_ctime_set(node, times->actime);
+	inode_mtime_set(node, times->modtime);
 
 	return 0;
 }

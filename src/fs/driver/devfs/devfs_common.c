@@ -7,6 +7,7 @@
  */
 #include <string.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
@@ -19,7 +20,7 @@
 #include <util/array.h>
 
 extern struct idesc_ops idesc_bdev_ops;
-static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
+static struct idesc *devfs_open(struct inode *node, struct idesc *desc, int __oflag) {
 	struct dev_module *dev;
 
 	if (S_ISBLK(node->i_mode)) {
@@ -30,6 +31,9 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc) {
 	dev = inode_priv(node);
 	assert(dev->dev_open);
 
+	if(__oflag & O_PATH) {
+		return char_dev_idesc_create(NULL);
+	}
 	return dev->dev_open(dev, dev_module_to_bdev(dev));
 }
 

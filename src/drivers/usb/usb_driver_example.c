@@ -25,7 +25,7 @@ static void usb_example_disconnect(struct usb_interface *dev, void *data) {
 
 }
 
-static struct idesc * example_open(struct inode *node, struct idesc *idesc) {
+static struct idesc * example_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	struct usb_dev_desc *ddesc;
 	int res;
 

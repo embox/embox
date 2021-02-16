@@ -53,18 +53,23 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int fatfs_create(struct inode *parent_node, struct inode *node) {
+static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	struct dirinfo *di;
+	char *name;
 
-	assert(parent_node && node);
+	assert(i_dir && i_new);
 
-	inode_size_set(node, 0);
+	inode_size_set(i_new, 0);
 
-	di = inode_priv(parent_node);
+	di = inode_priv(i_dir);
 
-	if (S_ISDIR(node->i_mode)) {
+	name = i_new->name;
+
+	fsi = di->fi.fsi;
+
+	if (S_ISDIR(i_new->i_mode)) {
 		struct dirinfo *new_di;
 		new_di = fat_dirinfo_alloc();
 		if (!new_di) {
@@ -79,23 +84,21 @@ static int fatfs_create(struct inode *parent_node, struct inode *node) {
 		}
 	}
 
-	inode_priv_set(node, fi);
+	inode_priv_set(i_new, fi);
 
-	fsi = di->fi.fsi;
-	*fi = (struct fat_file_info) {
-		.fsi     = fsi,
-		.volinfo = &fsi->vi,
-		.fdi     = di,
-		.mode    = node->i_mode,
-	};
+	fi->volinfo = &fsi->vi;
+	fi->fdi     = di;
+	fi->fsi     = fsi;
+	fi->mode   |= i_new->i_mode;
 
-	if (0 != fat_create_file(fi, di, node->name, node->i_mode)) {
+	if (0 != fat_create_file(fi, di, name, fi->mode)) {
 		return -EIO;
 	}
 
 	return 0;
-}
 
+	return 0;
+}
 extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
 	.format = fat_format,

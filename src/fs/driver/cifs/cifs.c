@@ -226,7 +226,7 @@ error:
 	return -rc;
 }
 
-static struct idesc *cifs_open(struct inode *node, struct idesc *idesc)
+static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __oflag)
 {
 	struct cifs_fs_info *fsi;
 	char fileurl[2 * PATH_MAX];
