@@ -38,7 +38,6 @@ project/website/cmds/http_admin/cgi-bin/leds.txt
 /*-console.log
 # Idea and Cmake
 .idea/
-CMakeLists.txt
 backup/
 cmake-build-debug/
 src/.idea/

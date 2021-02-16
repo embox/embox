@@ -1,0 +1,14 @@
+--- lvgl-7.10.0/CMakeLists.txt	2021-02-02 17:12:11.000000000 +0300
++++ ../build/extbld/third_party/lib/lvgl/lvgl-7.10.0/CMakeLists.txt	2021-02-13 19:19:12.145503744 +0300
+@@ -59,6 +59,11 @@
+ 
+ endif() # CONFIG_LVGL
+ 
++elseif(LIBLVGL_STATIC)
++
++file(GLOB_RECURSE SOURCES src/*.c)
++add_library(lvgl STATIC ${SOURCES})
++
+ else()
+ message(FATAL_ERROR "Unknown platform.")
+ endif()
