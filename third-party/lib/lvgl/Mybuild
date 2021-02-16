@@ -13,3 +13,10 @@ static module lvgl_display_port {
 
 	source "display_port.c"
 }
+
+@BuildDepends(lvgl)
+static module lvgl_input_dev_port {
+	option number log_level = 1
+
+	source "input_dev_port.c"
+}
