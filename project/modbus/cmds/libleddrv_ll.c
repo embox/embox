@@ -6,13 +6,14 @@
  * @date    10.11.2014
  */
 
+#include "libleddrv_ll.h"
+
 #include <assert.h>
 #include <stdbool.h>
 #include <util/array.h>
 
 #include <drivers/gpio/gpio_driver.h>
 
-#include "libleddrv_ll.h"
 
 #define LEDS_PER_LINE 8
 #define LINES_N 10

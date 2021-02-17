@@ -6,13 +6,14 @@
  * @date    23.02.2015
  */
 
+#include "led_names.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <errno.h>
 #include <stdio.h>
 
-#include "led_names.h"
 
 static int lednames_serialize(void) {
 	int i;
