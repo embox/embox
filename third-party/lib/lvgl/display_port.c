@@ -53,6 +53,15 @@ void lvgl_port_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area,
 			memcpy(&fbp32[location], (uint32_t *)color_p, (act_x2 - act_x1 + 1) * 4);
 			color_p += w;
 		}
+	} else if (vinfo.bits_per_pixel == 16) {
+		uint16_t * fbp16 = (uint16_t *)fbp;
+		int32_t y;
+
+		for(y = act_y1; y <= act_y2; y++) {
+			location = (act_x1 + vinfo.xoffset) + (y + vinfo.yoffset) * finfo.line_length / 2;
+			memcpy(&fbp16[location], (uint32_t *)color_p, (act_x2 - act_x1 + 1) * 2);
+			color_p += w;
+		}
 	} else {
 		log_error("Unsupported bits_per_pixel=%d", vinfo.bits_per_pixel);
 	}
