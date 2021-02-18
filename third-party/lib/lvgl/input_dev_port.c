@@ -18,7 +18,7 @@ static bool left_button_down = false;
 static int16_t last_x = 0, last_y = 0;
 static int inp_fd;
 
-bool lvgl_port_mouse_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
+bool lvgl_port_input_dev_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
 	(void) indev_drv;      /*Unused*/
 
 	/*Store the collected data*/

@@ -56,7 +56,7 @@ static int hal_init(void) {
 	/* Add the mouse as input device */
 	lv_indev_drv_init(&indev_drv);
 	indev_drv.type = LV_INDEV_TYPE_POINTER;
-	indev_drv.read_cb = lvgl_port_mouse_read;
+	indev_drv.read_cb = lvgl_port_input_dev_read;
 	mouse_indev = lv_indev_drv_register(&indev_drv);
 
 	/*Set a cursor for the mouse*/
