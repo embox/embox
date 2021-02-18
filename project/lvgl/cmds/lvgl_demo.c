@@ -15,14 +15,19 @@
 
 #include "lvgl_port.h"
 
-#define FB_PATH        "/dev/fb0"
-#define INPUT_DEV_PATH "/dev/ps-mouse"
+static char *fb_path;
+static char *input_dev_path;
+static int input_is_mouse = 0;
 
 static lv_color_t *buf1_1;
 static lv_disp_buf_t disp_buf1;
 
-static void input_dev_event_handler(lv_task_t *t) {
+static void input_dev_mouse_handler(lv_task_t *t) {
 	lvgl_port_mouse_handle();
+}
+
+static void input_dev_touchscreen_handler(lv_task_t *t) {
+	lvgl_port_touchscreen_handle();
 }
 
 static int hal_init(void) {
@@ -31,7 +36,8 @@ static int hal_init(void) {
 	lv_indev_t *mouse_indev;
 	lv_obj_t *cursor_obj;
 
-	if (lvgl_port_fbdev_init(FB_PATH) < 0) {
+	if (lvgl_port_fbdev_init(fb_path) < 0) {
+		fprintf(stderr, "Failed to init framebuffer %s\n", fb_path);
 		return -1;
 	}
 
@@ -48,8 +54,8 @@ static int hal_init(void) {
 	disp_drv.flush_cb = lvgl_port_fbdev_flush;
 	lv_disp_drv_register(&disp_drv);
 
-	if (lvgl_port_input_dev_init(INPUT_DEV_PATH) < 0) {
-		fprintf(stderr, "Error open input device %s", INPUT_DEV_PATH);
+	if (lvgl_port_input_dev_init(input_dev_path) < 0) {
+		fprintf(stderr, "Error open input device %s\n", input_dev_path);
 		goto err_free;
 	}
 
@@ -59,13 +65,19 @@ static int hal_init(void) {
 	indev_drv.read_cb = lvgl_port_input_dev_read;
 	mouse_indev = lv_indev_drv_register(&indev_drv);
 
-	/*Set a cursor for the mouse*/
-	LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
-	cursor_obj = lv_img_create(lv_scr_act(), NULL);
-	lv_img_set_src(cursor_obj, &mouse_cursor_icon);
-	lv_indev_set_cursor(mouse_indev, cursor_obj);
+	if (input_is_mouse) {
+		/*Set a cursor for the mouse*/
+		LV_IMG_DECLARE(mouse_cursor_icon); /*Declare the image file.*/
+		cursor_obj = lv_img_create(lv_scr_act(), NULL);
+		lv_img_set_src(cursor_obj, &mouse_cursor_icon);
+		lv_indev_set_cursor(mouse_indev, cursor_obj);
+	}
 
-	lv_task_create(input_dev_event_handler, 10, LV_TASK_PRIO_HIGH, NULL);
+	if (input_is_mouse) {
+		lv_task_create(input_dev_mouse_handler, 10, LV_TASK_PRIO_HIGH, NULL);
+	} else {
+		lv_task_create(input_dev_touchscreen_handler, 10, LV_TASK_PRIO_HIGH, NULL);
+	}
 
 	return 0;
 
@@ -74,7 +86,39 @@ err_free:
 	return -1;
 }
 
+static void print_usage(void) {
+	printf("Usage: lvgl_demo [-t] fb input_dev\n"
+	       "\t -t: Ifspecified, this means input device is touchscreen.\n"
+	       "\t     Othervice, it's mouse.\n"
+	);
+}
+
 int main(int argc, char **argv) {
+	int opt;
+
+	input_is_mouse = 1;
+
+	if (argc < 3) {
+		print_usage();
+		return 0;
+	}
+
+	while (-1 != (opt = getopt(argc, argv, "ht"))) {
+		switch (opt) {
+		case 't':
+			input_is_mouse = 0;
+			break;
+		case 'h':
+			print_usage();
+			/* fallthrough */
+		default:
+			return 0;
+		}
+	}
+
+	fb_path = argv[argc - 2];
+	input_dev_path = argv[argc - 1];
+
 	/*Initialize LVGL*/
 	lv_init();
 
