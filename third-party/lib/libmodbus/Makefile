@@ -1,13 +1,15 @@
 
 PKG_NAME := libmodbus
-PKG_VER  := 3.0.6
+PKG_VER  := 3.1.6
 
 PKG_SOURCES := http://libmodbus.org/releases/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := c80f88b6ca19cabc4ceffc195ca07771
+PKG_MD5     := 15c84c1f7fb49502b3efaaa668cfd25e
+
+PKG_PATCHES := accept4_disable.patch
 
 include $(EXTBLD_LIB)
 
-libmodbus_cflags =
+libmodbus_cflags = -UHAVE_ACCEPT4
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
