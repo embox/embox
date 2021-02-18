@@ -7,7 +7,7 @@ PKG_MD5     := c80f88b6ca19cabc4ceffc195ca07771
 
 include $(EXTBLD_LIB)
 
-libmodbus_cflags = -I$(ROOT_DIR)/third-party/lib/libmodbus/include/ \
+libmodbus_cflags =
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
