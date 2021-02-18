@@ -1,7 +1,7 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-7.10.0 -DLV_CONF_PATH=$(abspath $(CONF_DIR))/lv_conf.h -I$(abspath $(ROOT_DIR))/third-party/lib/lvgl")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-7.10.0 -DLV_CONF_PATH=$(abspath $(CONF_DIR))/lvgl/lv_conf.h -I$(abspath $(ROOT_DIR))/third-party/lib/lvgl")
 static module lvgl {
 	@AddPrefix("^BUILD/extbld/third_party/lib/lvgl/install")
 	source "liblvgl.a"

@@ -9,7 +9,7 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(ROOT_DIR)/conf/lv_conf.h
+LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(CONF_DIR)/lvgl/lv_conf.h
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && (mkdir build/ || true) && cd build && \
