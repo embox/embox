@@ -21,7 +21,7 @@ $(BUILD) :
 	    -D CMAKE_C_COMPILER_WORKS=1 \
 	    -D CMAKE_CXX_COMPILER_WORKS=1 \
 	    .. && \
-	make
+	make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
 	touch $@
 
 $(INSTALL) :
