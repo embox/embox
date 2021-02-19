@@ -12,8 +12,8 @@ module mem_diag extends diag_api {
 	source "mem_diag.c"
 }
 
-module no_diag extends diag_api {
-	source "no_diag.c"
+module diag_stub extends diag_api {
+	source "diag_stub.c"
 }
 
 module usermode extends diag_api {
