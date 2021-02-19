@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <kernel/time/timer.h>
 
 #include "lvgl.h"
 #include "lv_examples.h"
@@ -86,6 +87,13 @@ err_free:
 	return -1;
 }
 
+static void lvgl_timer_handler(struct sys_timer *timer, void *param) {
+	(void) timer;
+	(void) param;
+
+	lv_tick_inc(50);
+}
+
 static void print_usage(void) {
 	printf("Usage: lvgl_demo [-t] fb input_dev\n"
 	       "\t -t: Ifspecified, this means input device is touchscreen.\n"
@@ -95,6 +103,7 @@ static void print_usage(void) {
 
 int main(int argc, char **argv) {
 	int opt;
+	struct sys_timer *timer;
 
 	input_is_mouse = 1;
 
@@ -130,13 +139,13 @@ int main(int argc, char **argv) {
 
 	lv_demo_widgets();
 
+	timer_set(&timer, TIMER_PERIODIC, 50, lvgl_timer_handler, NULL);
+
 	while (1) {
 		/* Periodically call the lv_task handler.
 		 * It could be done in a timer interrupt or an OS task too.*/
 		lv_task_handler();
 		usleep(5 * 1000);
-
-		lv_tick_inc(5);
 	}
 
 	return 0;
