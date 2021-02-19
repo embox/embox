@@ -8,10 +8,24 @@ static module lvgl {
 }
 
 @BuildDepends(lvgl)
-static module lvgl_display_port {
+abstract module lvgl_display_port_api {
+}
+
+static module lvgl_display_port_memcpy extends lvgl_display_port_api {
 	option number log_level = 1
 
-	source "display_port.c"
+	source "display_port.c",
+	       "display_port_memcpy.c"
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+static module lvgl_display_port_stm32 extends lvgl_display_port_api {
+	option number log_level = 1
+
+	source "display_port.c",
+	       "display_port_stm32.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(lvgl)
