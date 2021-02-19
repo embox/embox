@@ -14,6 +14,7 @@
 
 #include <drivers/gpio/gpio_driver.h>
 
+#include <libleddrv.h>
 
 #define LEDS_PER_LINE 8
 #define LINES_N 10

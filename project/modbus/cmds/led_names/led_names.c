@@ -6,7 +6,7 @@
  * @date    23.02.2015
  */
 
-#include "led_names.h"
+#include <led_names.h>
 
 #include <string.h>
 #include <stdlib.h>

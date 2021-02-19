@@ -16,8 +16,8 @@
 #include <net/inetdevice.h>
 #include <drivers/flash/flash.h>
 
-#include "led_names.h"
-#include "libleddrv.h"
+#include <led_names.h>
+#include <libleddrv.h>
 
 #define FLASHSET_MAGIC 0x5500AAAA
 #define FLASHSET_WHAT_NET 0x00000001

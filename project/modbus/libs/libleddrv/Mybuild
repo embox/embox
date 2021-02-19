@@ -1,0 +1,8 @@
+package stm32f4_iocontrol
+
+static module libleddrv {
+	source "libleddrv.c"
+
+	@IncludeExport(path="")
+	source "libleddrv.h"
+}

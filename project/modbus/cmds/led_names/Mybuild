@@ -1,0 +1,9 @@
+package stm32f4_iocontrol
+
+@AutoCmd
+@Cmd(name="led_names", help="", man="")
+module led_names {
+	source "led_names.c"
+
+	depends libled_names
+}

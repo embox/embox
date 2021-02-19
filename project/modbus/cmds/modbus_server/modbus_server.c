@@ -29,9 +29,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
+
 #include <modbus.h>
 
-#include "libleddrv.h"
+#include <libleddrv.h>
 
 static modbus_mapping_t *mb_mapping_wrapper_new(void) {
 	modbus_mapping_t *mb_mapping;

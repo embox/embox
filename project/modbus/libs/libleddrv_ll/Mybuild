@@ -1,0 +1,22 @@
+package stm32f4_iocontrol
+
+abstract module libleddrv_ll {
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+static module libleddrv_ll_stm32_f4 extends libleddrv_ll {
+	source "libleddrv_ll.c"
+
+	@IncludeExport(path="")
+	source "libleddrv_ll.h"
+
+	depends embox.driver.gpio.stm32_gpio_f4
+	depends third_party.bsp.st_bsp_api
+}
+
+static module libleddrv_ll_stub extends libleddrv_ll {
+	source "libleddrv_ll_stub.c"
+
+	@IncludeExport(path="")
+	source "libleddrv_ll.h"
+}

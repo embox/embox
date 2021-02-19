@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include "libleddrv_ll.h"
+#include <libleddrv_ll.h>
 
 static unsigned char leddrv_leds_state[LEDDRV_LED_N];
 

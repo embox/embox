@@ -26,6 +26,6 @@ module flash_settings {
 	depends embox.net.lib.getifaddrs
 
 	depends stm32f4_iocontrol.libleddrv
-	depends stm32f4_iocontrol.lib_led_names
+	depends stm32f4_iocontrol.libled_names
 }
 

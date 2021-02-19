@@ -1,0 +1,8 @@
+package stm32f4_iocontrol
+
+@AutoCmd
+@Cmd(name="led_driver", help="Drives abstract led", man="")
+module led_driver {
+	source "led_driver.c"
+	depends libleddrv
+}

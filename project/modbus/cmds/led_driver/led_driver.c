@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#include "libleddrv.h"
+#include <libleddrv.h>
 
 static void cldrv_serialize(unsigned char arr[LEDDRV_LED_N]) {
 	int i;
