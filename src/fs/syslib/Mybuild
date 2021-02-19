@@ -34,7 +34,6 @@ module file_system_full extends file_system {
 	source "kfsop.c"
 	source "fsop.c"
 
-	depends dcache
 	depends perm
 
 	depends fs_full        // kfile_fill_stat
