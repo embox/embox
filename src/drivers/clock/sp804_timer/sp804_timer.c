@@ -3,6 +3,9 @@
  * @brief ARM Dual-Timer (SP804) Module driver
  * @author Nishant Malpani <nish.malpani25@gmail.com>
  * @date 2020-03-07
+ *
+ * @author Svirin Evgeny <eugenysvirin@gmail.com>
+ * @date 2021-02-20
  */
 
 #include <drivers/common/memory.h>
@@ -19,7 +22,7 @@
 #define SP804_BASE      OPTION_GET(NUMBER, base_addr) /* Base address */
 #define SP804_IRQ       OPTION_GET(NUMBER, irq_nr) /* Interrupt Request number */
 #define SP804_TARGET_HZ OPTION_GET(NUMBER, target_freq) /* Frequency to run the timer at */
-#define SP804_TIMCLK    100000000 /* Frequency of the SP804 clock timer - 100 MHz */
+#define SP804_TIMCLK    OPTION_GET(NUMBER, TIMCLK_freq) /* Frequency of the SP804 clock timer - 1 mHz, frequency of subtraction from Timer1 Load Register */
 
 #define SP804_T1_LR     (SP804_BASE + 0x00) /* Timer1 Load Register */
 #define SP804_T1_VR     (SP804_BASE + 0x04) /* Timer1 Current Value Register */
@@ -41,26 +44,23 @@
 #define SP804_PRESCALE          1 /* Prescaler operation - divide the rate of master clock */
 #define SP804_LR_VAL            ((SP804_TIMCLK) / (SP804_PRESCALE * SP804_TARGET_HZ))
 
-static struct clock_source sp804_clock_source;
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-    clock_tick_handler(irq_nr, data);
+    clock_tick_handler(data);
 
     REG32_STORE(SP804_T1_ICR, SP804_ICR_CLEAR); /* Clear interrupts */
     REG32_STORE(SP804_T1_LR, SP804_LR_VAL);
     return IRQ_HANDLED;
 }
 
-static int sp804_init(void) {
-    clock_source_register(&sp804_clock_source);
-
+static int sp804_timer_init(struct clock_source *cs) {
     return irq_attach(SP804_IRQ,
                       clock_handler,
                       0,
-                      &sp804_clock_source,
+                      cs,
                       "SP804");
 }
 
-static int sp804_config(struct time_dev_conf * conf) {
+static int this_set_periodic(struct clock_source *cs) {
     /* Unset bits 0-7, also disables the timer to proceed with new config settings */
     REG32_CLEAR(SP804_T1_CR, SP804_CR_MASK);
 
@@ -73,31 +73,24 @@ static int sp804_config(struct time_dev_conf * conf) {
     return 0;
 }
 
-static cycle_t sp804_read(void) {
+static cycle_t this_read(struct clock_source *cs) {
     return REG32_LOAD(SP804_T1_VR);
 }
 
-static struct time_event_device sp804_event = {
-    .config   = sp804_config,
-    .event_hz = SP804_TARGET_HZ,
+static struct time_event_device sp804_timer_event = {
+    .set_periodic   = this_set_periodic,
     .irq_nr   = SP804_IRQ,
 };
 
-static struct time_counter_device sp804_counter = {
-    .read     = sp804_read,
-    .cycle_hz = SP804_TARGET_HZ,
+static struct time_counter_device sp804_timer_counter = {
+    .read     = this_read,
+    .cycle_hz = 1000,
 };
 
-static struct clock_source sp804_clock_source = {
-    .name           = "sp804",
-    .event_device   = &sp804_event,
-    .counter_device = &sp804_counter,
-    .read           = clock_source_read,
-};
-
-EMBOX_UNIT_INIT(sp804_init);
-
-STATIC_IRQ_ATTACH(SP804_IRQ, clock_handler, &sp804_clock_source);
+STATIC_IRQ_ATTACH(SP804_IRQ, clock_handler, &this_clock_source);
 
 PERIPH_MEMORY_DEFINE(sp804, SP804_BASE, 0x1C);
+
+CLOCK_SOURCE_DEF(sp804_timer, sp804_timer_init, NULL,
+	&sp804_timer_event, &sp804_timer_counter);
 
