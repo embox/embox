@@ -12,6 +12,8 @@ module stm32_gpio_l0x0 extends api {
     source "stm32_gpio_conf_l0x0.h"
     source "stm32_gpio_common_struct.h"
     source "stm32_gpio_l0x0.c"    
+    
+    depends embox.driver.gpio.core
 }
 
 module stm32_gpio_f0 extends api {
@@ -26,6 +28,8 @@ module stm32_gpio_f0 extends api {
 	source "stm32_gpio_conf_f0.h"
 	source "stm32_gpio_common_struct.h"
 	source "stm32_gpio_f0.c"	
+	
+	depends embox.driver.gpio.core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
