@@ -7,8 +7,8 @@ PKG_MD5 := 1187435bc003dc7d4f58df354b0212f8
 
 include $(EXTBLD_LIB)
 
-LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(ROOT_DIR)/conf/lv_conf.h \
-                -DLV_EX_CONF_PATH=$(ROOT_DIR)/conf/lv_ex_conf.h \
+LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(CONF_DIR)/lvgl/lv_conf.h \
+                -DLV_EX_CONF_PATH=$(CONF_DIR)/lvgl/lv_ex_conf.h \
                 -DLV_LVGL_H_INCLUDE_SIMPLE
 
 $(BUILD) :
@@ -21,7 +21,7 @@ $(BUILD) :
 	    -D CMAKE_C_COMPILER_WORKS=1 \
 	    -D CMAKE_CXX_COMPILER_WORKS=1 \
 	    .. && \
-	make
+	make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
 	touch $@
 
 $(INSTALL) :

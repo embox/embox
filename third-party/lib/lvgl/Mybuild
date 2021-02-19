@@ -1,17 +1,31 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-7.10.0 -DLV_CONF_PATH=$(abspath $(CONF_DIR))/lv_conf.h -I$(abspath $(ROOT_DIR))/third-party/lib/lvgl")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-7.10.0 -DLV_CONF_PATH=$(abspath $(CONF_DIR))/lvgl/lv_conf.h -I$(abspath $(ROOT_DIR))/third-party/lib/lvgl -Wno-error=undef")
 static module lvgl {
 	@AddPrefix("^BUILD/extbld/third_party/lib/lvgl/install")
 	source "liblvgl.a"
 }
 
 @BuildDepends(lvgl)
-static module lvgl_display_port {
+abstract module lvgl_display_port_api {
+}
+
+static module lvgl_display_port_memcpy extends lvgl_display_port_api {
 	option number log_level = 1
 
-	source "display_port.c"
+	source "display_port.c",
+	       "display_port_memcpy.c"
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+static module lvgl_display_port_stm32 extends lvgl_display_port_api {
+	option number log_level = 1
+
+	source "display_port.c",
+	       "display_port_stm32.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(lvgl)
