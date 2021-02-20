@@ -41,6 +41,7 @@ extern int wcscmp(const wchar_t *s1, const wchar_t *s2);
 extern wchar_t *wcsncpy(wchar_t *dst, const wchar_t *src, size_t n);
 extern int wmemcmp(const wchar_t *s1, const wchar_t *s2, size_t n);
 extern size_t wcslen(const wchar_t *s);
+extern size_t wcsnlen(const wchar_t *s, size_t maxlen);
 extern wchar_t *wmemchr(const wchar_t *s, wchar_t c, size_t n);
 extern wchar_t *wmemmove(wchar_t *dest, const wchar_t *src, size_t n);
 extern wchar_t *wmemcpy(wchar_t *dest, const wchar_t *src, size_t n);

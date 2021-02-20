@@ -7,6 +7,7 @@ static module wchar {
 	source "wcstrtoumax.c"
 	source "wctype.c"
 	source "wcslen.c"
+	source "wcsnlen.c"
 	source "wmemset.c"
 	source "wmemmove.c"
 	source "wmemcpy.c"
