@@ -1,10 +1,8 @@
 package third_party.lib
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/third-party/lib/libmodbus/include")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/lib/libmodbus/install/include/modbus")
 module libmodbus {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libmodbus.a"
-
-	depends embox.compat.posix.LibPosix
 }
