@@ -16,7 +16,6 @@
 #define REG_RCC        OPTION_GET(NUMBER,reg_rcc_address)
 #define REG_RCC_IOPENR (REG_RCC + 0x2C) // Doc: DocID031151 Rev 1, RM0451, 169/774.
 
-
 #include "stm32_gpio_common_struct.h"
 
 typedef struct {
