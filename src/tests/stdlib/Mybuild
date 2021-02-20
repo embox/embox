@@ -186,3 +186,10 @@ module strpbrk_test {
 	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
 }
+
+module wcslen_test {
+	source "wcslen.c"
+
+	depends embox.compat.libc.wchar
+	depends embox.framework.LibFramework
+}
