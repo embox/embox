@@ -12,3 +12,8 @@ module diag {
 	@NoRuntime depends embox.driver.tty.termios_ops
 }
 
+module no_diag {
+
+	@IncludeExport(path="drivers", target_name="diag.h")
+	source "no_diag.h"
+}

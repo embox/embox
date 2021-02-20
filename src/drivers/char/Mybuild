@@ -30,6 +30,4 @@ module char_dev_stub extends char_dev_api {
 	source "char_dev_stub.h"
 
 	source "char_dev_stub.c"
-
-	depends terminal
 }
