@@ -1,5 +1,28 @@
 package embox.driver.spi
 
+module stm32_spi1_l0x0 {
+    option number reg_rcc_address = 0x40021000
+
+    option number log_level=1
+    
+    option number port_mosi=1
+    option number port_miso=1
+    option number port_sck=1
+    option number pin_mosi=5
+    option number pin_miso=4
+    option number pin_sck=3
+    
+    option number spha = 0
+    option number spol = 0
+    option number dev = 256
+    
+    source "stm32_spi1_l0x0.c"
+    source "stm32_spi_l0x0.h"
+    
+    depends embox.driver.spi.core
+    depends embox.driver.gpio.core
+}
+
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_cube {
 	option number log_level=1
