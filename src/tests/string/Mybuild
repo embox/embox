@@ -1,0 +1,11 @@
+package embox.test.str
+
+module strcat_test {
+	source "strcat_test.c"
+	depends embox.compat.libc.str
+}
+
+module strncat_test {
+	source "strncat_test.c"
+	depends embox.compat.libc.str
+}
