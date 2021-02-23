@@ -14,9 +14,9 @@ TEST_CASE("get length with strnlen()") {
 	char str[] = "string";
 	size_t len;
 
-	len = sizeof(str);
+	len = sizeof(str) - 1;
 
-	test_assert_equal(len - 1, strnlen(str, len));
+	test_assert_equal(len, strlen(str));
 }
 
 TEST_CASE("use strnlen() with maxlen less than string length") {
