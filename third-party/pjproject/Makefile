@@ -42,7 +42,11 @@ $(CONFIGURE) :
 			$(DISABLE_FEATURES:%=--disable-%) \
 			--with-external-pa; \
 	)
-	cp ./config_site.h $(BUILD_ROOT)/pjlib/include/pj/config_site.h
+	if [ -f $(CONF_DIR)/pjsip/config_site.h ]; then \
+		cp $(CONF_DIR)/pjsip/config_site.h $(BUILD_ROOT)/pjlib/include/pj/config_site.h; \
+	else \
+		cp ./config_site.h $(BUILD_ROOT)/pjlib/include/pj/config_site.h; \
+	fi
 	touch $@
 
 $(BUILD) :
