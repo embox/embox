@@ -68,4 +68,6 @@ $(INSTALL) :
 		fn=$$(basename $$f); \
 		cp $$f $(PJSIP_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET)}.o; \
 	done
+	cp -r $(BUILD_ROOT)/pjlib/build/output/pjlib-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
+		$(PJSIP_INSTALL_DIR)/pjlib-test
 	touch $@
