@@ -106,14 +106,24 @@ static int socket_status(struct idesc *desc, int status_nr) {
 
 	res = 0;
 
+	/*
+	 * FIXME From https://pubs.opengroup.org/onlinepubs/9699919799/functions/select.html,
+	 * there are only a few situations when exceptfds are updated.
+	 * It looks like so_error doesn't related directly to exceptfds.
+	 * Also, here: https://stackoverflow.com/questions/15714602/whats-a-file-descriptors-exception
+	 *
+	 *  PJSIP's pjlib-test's tcp_ioqueue_test() failed if sk->opt.so_error
+	 *  where used.
+	 */
+
 	if (status_nr & POLLIN) {
-		res += sk->rx_data_len + sk->opt.so_error;
+		res += sk->rx_data_len /* + sk->opt.so_error */;
 	}
 	if (status_nr & POLLOUT) {
-		res += 0x600 + sk->opt.so_error;
+		res += 0x600 /* + sk->opt.so_error */;
 	}
 	if (status_nr & POLLERR) {
-		res += sk->opt.so_error;
+		/* res += sk->opt.so_error; */
 	}
 
 	return res;
