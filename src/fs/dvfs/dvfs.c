@@ -88,6 +88,9 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		if (!sb->sb_iops->create) {
 			res = -ENOSUPP;
 		} else {
+			if (!S_ISDIR(flags)) {
+				new_inode->i_mode |= S_IFREG;
+			}
 			res = sb->sb_iops->create(new_inode,
 					lookup->parent->d_inode,
 					flags);
