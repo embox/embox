@@ -239,3 +239,22 @@ module pjmedia_test {
 
 	depends core
 }
+
+@AutoCmd
+@Cmd(name="pjnath_test", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module pjnath_test {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/pjnath-test")
+	source "concur_test.o",
+		"ice_test.o",
+		"main.o",
+		"server.o",
+		"sess_auth.o",
+		"stun.o",
+		"stun_sock_test.o",
+		"test.o",
+		"turn_sock_test.o"
+
+	depends core
+}
