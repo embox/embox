@@ -1,0 +1,9 @@
+package embox.driver.net
+
+module veth {
+	source "veth.c"
+
+	depends embox.net.entry_api
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+}

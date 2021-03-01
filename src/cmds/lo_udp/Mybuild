@@ -1,0 +1,12 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "udp_s")
+module udp_s {
+	source "server.c"
+}
+@AutoCmd
+@Cmd(name = "udp_c")
+module udp_c {
+	source "client.c"
+}
