@@ -15,6 +15,7 @@
 #include <net/l3/ipv4/ip.h>
 #include <stddef.h>
 #include <net/netdevice.h>
+#include <net/net_namespace.h>
 
 struct net_device;
 
@@ -27,6 +28,7 @@ typedef struct rt_entry {
 	uint32_t     rt_flags;
 	in_addr_t    rt_mask;
 	in_addr_t    rt_gateway;
+	net_namespace_p net_ns;
 } rt_entry_t;
 
 /**< Flags */
@@ -54,6 +56,9 @@ typedef struct rt_entry {
 extern int rt_add_route(struct net_device *dev, in_addr_t dst,
 				in_addr_t mask, in_addr_t gw, int flags);
 
+extern int rt_add_route_netns(struct net_device *dev, in_addr_t dst,
+			in_addr_t mask, in_addr_t gw, int flags,
+			net_namespace_p net_ns);
 /**
  * Remove route from table.
  * @param dev Iface
@@ -85,6 +90,8 @@ extern int ip_route(sk_buff_t *skb, struct net_device *wanna_dev,
  * @return error code
  */
 extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
+extern int rt_fib_route_ip_net_ns(in_addr_t source_addr, in_addr_t *new_addr,
+				net_namespace_p net_ns);
 
 /**
  * Get IP address of local interface from which packet would be sent
@@ -95,9 +102,13 @@ extern int rt_fib_route_ip(in_addr_t source_addr, in_addr_t *new_addr);
  */
 extern int rt_fib_source_ip(in_addr_t dst, struct net_device *dev,
 		in_addr_t *out_src);
+extern int rt_fib_source_ip_net_ns(in_addr_t dst, struct net_device *dev,
+		in_addr_t *out_src, net_namespace_p net_ns);
 
 extern int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 		struct net_device **out_dev);
+extern int rt_fib_out_dev_net_ns(in_addr_t dst, const struct sock *sk,
+		struct net_device **out_dev, net_namespace_p net_ns);
 
 /**
  * @param dst - ip address of destination
@@ -106,6 +117,10 @@ extern int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
  * @retval NULL if entity not found
  */
 extern struct rt_entry* rt_fib_get_best(in_addr_t dst, struct net_device *out_dev);
+
+extern struct rt_entry * rt_fib_get_best_net_ns(in_addr_t dst,
+						struct net_device *out_dev,
+						net_namespace_p net_ns);
 
 /**
  * Get first element from route from table.

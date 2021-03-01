@@ -41,6 +41,8 @@ extern int inetdev_unregister_dev(struct net_device *dev);
  * @param if_name - interface name
  */
 extern struct in_device * inetdev_get_by_name(const char *name);
+extern struct in_device * inetdev_get_by_name_netns(const char *name,
+					net_namespace_p net_ns);
 
 /**
  * get pointer on in_device struct linked with pointed net_device
@@ -60,6 +62,8 @@ extern struct in_device * inetdev_get_by_addr(in_addr_t addr);
  * @return pointer to the loopback device
  */
 extern struct in_device * inetdev_get_loopback_dev(void);
+
+struct in_device * inetdev_get_loopback_dev_netns(net_namespace_p net_ns);
 
 /**
  * Set IP address (sw)
@@ -89,6 +93,9 @@ extern in_addr_t inetdev_get_addr(struct in_device *in_dev);
 extern struct in_device * inetdev_get_first(void);
 extern struct in_device * inetdev_get_next(struct in_device *in_dev);
 
+extern struct in_device * inetdev_get_first_all(void);
+extern struct in_device * inetdev_get_next_all(struct in_device *in_dev);
+
 /**
  * generate new id for requiered interface
  */
@@ -108,5 +115,7 @@ static inline unsigned int inetdev_get_ip_id(struct in_device *in_dev) {
  * @param check_multicast - should we check multicast addresses
  */
 extern int ip_is_local(in_addr_t addr, int opts);
+extern int ip_is_local_net_ns(in_addr_t addr, int opts,
+		net_namespace_p net_ns);
 
 #endif /* NET_INETDEVICE_H_ */

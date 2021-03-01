@@ -39,6 +39,12 @@ static DLIST_DEFINE(rt_entry_info_list);
 
 int rt_add_route(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw, int flags) {
+	return rt_add_route_netns(dev, dst, mask, gw, flags, get_net_ns());
+}
+
+int rt_add_route_netns(struct net_device *dev, in_addr_t dst,
+		in_addr_t mask, in_addr_t gw, int flags,
+		net_namespace_p net_ns) {
 	struct rt_entry_info *rt_info;
 	bool flag = true;
 
@@ -50,7 +56,8 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
 		if ((rt_info->entry.rt_dst == dst) &&
                 ((rt_info->entry.rt_mask == mask) || (INADDR_ANY == mask)) &&
     			((rt_info->entry.rt_gateway == gw) || (INADDR_ANY == gw)) &&
-    			((rt_info->entry.dev == dev) || (NULL == dev))) {
+			((rt_info->entry.dev == dev) || (NULL == dev)) &&
+			cmp_net_ns(rt_info->entry.net_ns, net_ns)) {
 			flag = false;
 			return 0;
 		}
@@ -66,6 +73,7 @@ int rt_add_route(struct net_device *dev, in_addr_t dst,
 		rt_info->entry.rt_mask = mask;
 		rt_info->entry.rt_gateway = gw;
 		rt_info->entry.rt_flags = RTF_UP | flags;
+		assign_net_ns(rt_info->entry.net_ns, net_ns);
 		dlist_add_prev_entry(rt_info, &rt_entry_info_list, lnk);
 	}
 
@@ -129,16 +137,18 @@ int ip_route(struct sk_buff *skb, struct net_device *wanna_dev,
 	}
 
 	/* if loopback set lo device */
-	if (ip_is_local(daddr, 0)) {
-		assert(inetdev_get_loopback_dev() != NULL);
-		skb->dev = inetdev_get_loopback_dev()->dev;
+	if (ip_is_local_net_ns(daddr, 0, skb->dev->net_ns)) {
+		assert(inetdev_get_loopback_dev_netns(skb->dev->net_ns) != NULL);
+		assign_net_ns(skb->dev->net_ns,
+			inetdev_get_loopback_dev_netns(skb->dev->net_ns)->dev->net_ns);
 		return 0;
 	}
 
 	/* route destination address */
 	rte = ((wanna_dev == NULL)
-		? (suggested_route == NULL) ? rt_fib_get_best(daddr, NULL) : suggested_route
-		: rt_fib_get_best(daddr, wanna_dev));
+		? (suggested_route == NULL) ?
+		rt_fib_get_best_net_ns(daddr, NULL, skb->dev->net_ns) : suggested_route
+		: rt_fib_get_best_net_ns(daddr, wanna_dev, skb->dev->net_ns));
 	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
@@ -153,7 +163,8 @@ int ip_route(struct sk_buff *skb, struct net_device *wanna_dev,
 	return 0;
 }
 
-int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
+int rt_fib_route_ip_net_ns(in_addr_t dst_ip, in_addr_t *next_ip,
+					net_namespace_p net_ns) {
 	struct rt_entry *rte;
 
 	if (dst_ip == INADDR_BROADCAST) {
@@ -161,7 +172,7 @@ int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
 		return 0;
 	}
 
-	rte = rt_fib_get_best(dst_ip, NULL);
+	rte = rt_fib_get_best_net_ns(dst_ip, NULL, net_ns);
 	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
@@ -171,6 +182,28 @@ int rt_fib_route_ip(in_addr_t dst_ip, in_addr_t *next_ip) {
 	} else {
 		*next_ip = rte->rt_gateway;
 	}
+
+	return 0;
+}
+
+int rt_fib_source_ip_net_ns(in_addr_t dst_ip, struct net_device *dev,
+		in_addr_t *src_ip, net_namespace_p net_ns) {
+	struct rt_entry *rte;
+
+	if (dst_ip != INADDR_BROADCAST) {
+		rte = rt_fib_get_best_net_ns(dst_ip, NULL, net_ns);
+		if (rte == NULL) {
+			return -ENETUNREACH;
+		}
+		assert(rte->dev != NULL);
+		dev = rte->dev;
+	}
+	else if (dev == NULL) {
+		return -ENODEV;
+	}
+
+	assert(inetdev_get_by_dev(dev) != NULL);
+	*src_ip = inetdev_get_by_dev(dev)->ifa_address;
 
 	return 0;
 }
@@ -197,8 +230,8 @@ int rt_fib_source_ip(in_addr_t dst_ip, struct net_device *dev,
 	return 0;
 }
 
-int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
-		struct net_device **out_dev) {
+int rt_fib_out_dev_net_ns(in_addr_t dst, const struct sock *sk,
+		struct net_device **out_dev, net_namespace_p net_ns) {
 	struct rt_entry *rte;
 	struct net_device *wanna_dev;
 
@@ -214,14 +247,14 @@ int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 	}
 
 	/* if loopback set lo device */
-	if (ip_is_local(dst, 0)) {
-		assert(inetdev_get_loopback_dev() != NULL);
-		*out_dev = inetdev_get_loopback_dev()->dev;
+	if (ip_is_local_net_ns(dst, 0, net_ns)) {
+		assert(inetdev_get_loopback_dev_netns(net_ns) != NULL);
+		*out_dev = inetdev_get_loopback_dev_netns(net_ns)->dev;
 		return 0;
 	}
 
 	/* route destination address */
-	rte = rt_fib_get_best(dst, wanna_dev);
+	rte = rt_fib_get_best_net_ns(dst, wanna_dev, net_ns);
 	if (rte == NULL) {
 		return -ENETUNREACH;
 	}
@@ -236,28 +269,55 @@ int rt_fib_out_dev(in_addr_t dst, const struct sock *sk,
 	return 0;
 }
 
-struct rt_entry * rt_fib_get_first(void) {
-	if (dlist_empty(&rt_entry_info_list)) {
-		return NULL;
-	}
-
-	return &dlist_next_entry_or_null(&rt_entry_info_list,
-			struct rt_entry_info, lnk)->entry;
-}
-
-struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
+struct rt_entry * rt_fib_get_next_net_ns(struct rt_entry *entry,
+					 net_namespace_p netns) {
 	struct rt_entry_info *rt_info;
 
 	assert(entry != NULL);
 
-	rt_info = member_cast_out(entry, struct rt_entry_info, entry);
-	if (rt_info == dlist_prev_entry_or_null(&rt_entry_info_list,
-			struct rt_entry_info, lnk)) {
+	while (1) {
+		rt_info = member_cast_out(entry, struct rt_entry_info, entry);
+		if (rt_info == dlist_prev_entry_or_null(&rt_entry_info_list,
+				struct rt_entry_info, lnk)) {
+			return NULL;
+		}
+
+		entry = &dlist_entry(rt_info->lnk.next,
+				struct rt_entry_info, lnk)->entry;
+
+		if (!cmp_net_ns(entry->net_ns, netns)) {
+			continue;
+		} else {
+			return entry;
+		}
+	}
+
+	return NULL;
+}
+
+struct rt_entry * rt_fib_get_first_net_ns(net_namespace_p netns) {
+	struct rt_entry * rt_entry;
+
+	if (dlist_empty(&rt_entry_info_list)) {
 		return NULL;
 	}
 
-	return &dlist_entry(rt_info->lnk.next,
+	rt_entry = &dlist_next_entry_or_null(&rt_entry_info_list,
 			struct rt_entry_info, lnk)->entry;
+
+	if (!cmp_net_ns(rt_entry->net_ns, netns)) {
+		return rt_fib_get_next_net_ns(rt_entry, netns);
+	}
+
+	return rt_entry;
+}
+
+struct rt_entry * rt_fib_get_first(void) {
+	return rt_fib_get_first_net_ns(get_net_ns());
+}
+
+struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
+	return rt_fib_get_next_net_ns(entry, get_net_ns());
 }
 
 /* ToDo: It's too ugly to perform sorting for every packet.
@@ -285,38 +345,27 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 	return best_rte;
 }
 
-int rt_add_route_netns(struct net_device *dev, in_addr_t dst,
-		in_addr_t mask, in_addr_t gw, int flags,
-		net_namespace_p net_ns) {
-	return rt_add_route(dev, dst, mask, gw, flags);
-}
-
-int rt_fib_route_ip_net_ns(in_addr_t dst_ip, in_addr_t *next_ip,
-					net_namespace_p net_ns) {
-	return rt_fib_route_ip(dst_ip, next_ip);
-}
-
-int rt_fib_source_ip_net_ns(in_addr_t dst_ip, struct net_device *dev,
-		in_addr_t *src_ip, net_namespace_p net_ns) {
-	return rt_fib_source_ip(dst_ip, dev, src_ip);
-}
-
-struct rt_entry * rt_fib_get_next_net_ns(struct rt_entry *entry,
-					 net_namespace_p netns) {
-	return rt_fib_get_next(entry);
-}
-
-struct rt_entry * rt_fib_get_first_net_ns(net_namespace_p netns) {
-	return rt_fib_get_first();
-}
-
 struct rt_entry * rt_fib_get_best_net_ns(in_addr_t dst,
 					 struct net_device *out_dev,
 					 net_namespace_p net_ns) {
-	return rt_fib_get_best(dst, out_dev);
-}
+	struct rt_entry_info *rt_info;
+	int mask_len, best_mask_len;
+	struct rt_entry *best_rte;
 
-int rt_fib_out_dev_net_ns(in_addr_t dst, const struct sock *sk,
-		struct net_device **out_dev, net_namespace_p net_ns) {
-	return rt_fib_out_dev(dst, sk, out_dev);
+	best_rte = NULL;
+	best_mask_len = -1;
+	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
+		if (!cmp_net_ns(rt_info->entry.net_ns, net_ns))
+			continue;
+		mask_len = ~rt_info->entry.rt_mask
+			? bit_clz(ntohl(~rt_info->entry.rt_mask)) + 1 : 32;
+		if (((dst & rt_info->entry.rt_mask) == rt_info->entry.rt_dst)
+				&& (out_dev == NULL || out_dev == rt_info->entry.dev)
+				&& (mask_len > best_mask_len)) {
+			best_rte = &rt_info->entry;
+			best_mask_len = mask_len;
+		}
+	}
+
+	return best_rte;
 }

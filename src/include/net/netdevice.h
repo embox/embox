@@ -15,6 +15,7 @@
 #include <net/if.h>
 #include <net/skbuff.h>
 #include <util/dlist.h>
+#include <net/net_namespace.h>
 
 /**
  * Prototypes
@@ -127,6 +128,7 @@ typedef struct net_device {
 	struct sk_buff_head dev_queue;    /* rx skb queue */
 	struct sk_buff_head dev_queue_tx; /* tx skb queue */
 	struct net_node *pnet_node;
+	net_namespace_p net_ns;
 	void *priv; /**< private data */
 } net_device_t;
 
@@ -154,6 +156,10 @@ extern struct net_device * netdev_get_by_name(const char *name);
  */
 extern struct net_device * netdev_alloc(const char *name,
 		int (*setup)(struct net_device *), size_t priv_size);
+
+extern void dev_net_set(struct net_device *dev, net_namespace_p net_ns);
+extern struct net_device *veth_alloc(struct net_device **v1,
+				struct net_device **v2);
 
 /**
  * Free network device

@@ -12,14 +12,31 @@ module dev {
 	depends embox.net.netlink
 }
 
-module core {
+@DefaultImpl(core_no_net_ns)
+abstract module core {
+}
+
+module core_no_net_ns extends core {
 	option number amount_interface=4
+	option number log_level = 1
 
 	source "inetdev.c"
-	
+
 	depends dev /* for dev.c */
 	depends embox.util.dlist
 	depends embox.mem.pool
+	depends embox.net.net_namespace
+}
+
+module core_net_ns extends core {
+	option number amount_interface=4
+	option number log_level = 1
+
+	source "inetdev_net_ns.c"
+	depends dev /* for dev.c */
+	depends embox.util.dlist
+	depends embox.mem.pool
+	depends embox.net.net_namespace
 }
 
 module sock {

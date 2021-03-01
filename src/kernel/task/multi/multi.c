@@ -21,6 +21,7 @@
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
+#include <nsproxy.h>
 
 #include <util/binalign.h>
 #include <util/err.h>
@@ -287,6 +288,8 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 	if (parent) {
 		dlist_add_prev(&tsk->child_lnk, &parent->child_list);
 	}
+
+	set_task_proxy(tsk, parent)
 
 	task_setrlim_stack_size(tsk, task_get_stack_size(parent));
 

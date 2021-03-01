@@ -24,6 +24,8 @@
 #include <net/skbuff.h>
 #include <netinet/in.h>
 
+#include <net/net_namespace.h>
+
 
 struct proto_sock; //TODO What does it mean
 struct sock_family_ops;
@@ -90,6 +92,7 @@ struct sock {
 	struct timeval last_packet_tstamp;
 	size_t addr_len;
 	int err;
+	net_namespace_p net_ns;
 };
 
 static inline int sock_err(struct sock *sk) {

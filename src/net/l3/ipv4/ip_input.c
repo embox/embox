@@ -114,7 +114,8 @@ static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 		 * Check the destination address, and if it doesn't match
 		 * any of own addresses, retransmit packet according to the routing table.
 		 */
-		if (!ip_is_local(iph->daddr, IP_LOCAL_BROADCAST)) {
+		if (!ip_is_local_net_ns(iph->daddr, IP_LOCAL_BROADCAST,
+					skb->dev->net_ns)) {
 			if (0 != nf_test_skb(NF_CHAIN_FORWARD, NF_TARGET_ACCEPT, skb)) {
 				log_debug("ip_rcv: dropped by forward netfilter");
 				stats->rx_dropped++;
