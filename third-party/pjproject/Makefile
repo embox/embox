@@ -74,4 +74,6 @@ $(INSTALL) :
 	done
 	cp -r $(BUILD_ROOT)/pjlib/build/output/pjlib-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
 		$(PJSIP_INSTALL_DIR)/pjlib-test
+	cp -r $(BUILD_ROOT)/pjlib-util/build/output/pjlib-util-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
+		$(PJSIP_INSTALL_DIR)/pjlib-util-test
 	touch $@

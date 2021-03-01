@@ -195,3 +195,21 @@ module pjlib_test {
 
 	depends core
 }
+
+@AutoCmd
+@Cmd(name="pjlib_util_test", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module pjlib_util_test {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/pjlib-util-test")
+	source "encryption.o",
+		"http_client.o",
+		"json_test.o",
+		"main.o",
+		"resolver_test.o",
+		"stun.o",
+		"test.o",
+		"xml.o"
+
+	depends core
+}
