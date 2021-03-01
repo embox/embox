@@ -213,3 +213,29 @@ module pjlib_util_test {
 
 	depends core
 }
+
+@AutoCmd
+@Cmd(name="pjmedia_test", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module pjmedia_test {
+	// FIXME
+	// Doesn't work with soemthing like this:
+	// source "^BUILD/extbld/third_party/pjproject/core/install/pjmedia-test/Jbtest.dat"
+	@InitFS
+	source "Jbtest.dat"
+
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/pjmedia-test")
+	source "codec_vectors.o",
+		"jbuf_test.o",
+		"main.o",
+		"mips_test.o",
+		"rtp_test.o",
+		"sdp_neg_test.o",
+		"test.o",
+		"vid_codec_test.o",
+		"vid_dev_test.o",
+		"vid_port_test.o"
+
+	depends core
+}

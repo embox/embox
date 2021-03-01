@@ -76,4 +76,8 @@ $(INSTALL) :
 		$(PJSIP_INSTALL_DIR)/pjlib-test
 	cp -r $(BUILD_ROOT)/pjlib-util/build/output/pjlib-util-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
 		$(PJSIP_INSTALL_DIR)/pjlib-util-test
+	cp -r $(BUILD_ROOT)/pjmedia/build/output/pjmedia-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
+		$(PJSIP_INSTALL_DIR)/pjmedia-test
+	cp -r $(BUILD_ROOT)/pjmedia/build/Jbtest.dat \
+		$(PJSIP_INSTALL_DIR)/pjmedia-test
 	touch $@
