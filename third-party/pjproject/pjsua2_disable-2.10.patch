@@ -23,7 +23,7 @@ diff -aur pjproject-2.10/pjsip/build/Makefile ../build/extbld/third_party/pjproj
 -	   $(PJSUA2_LIB_LIB) $(PJSUA2_LIB_SONAME)
 -TARGETS_EXE := $(TEST_EXE) $(PJSUA2_TEST_EXE)
 +	   $(PJSUA_LIB_LIB) $(PJSUA_LIB_SONAME)
-+TARGETS_EXE :=
++TARGETS_EXE := $(TEST_EXE)
  
  all: $(TARGETS) $(TARGETS_EXE)
  

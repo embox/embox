@@ -86,4 +86,7 @@ $(INSTALL) :
 	mkdir $(PJSIP_INSTALL_DIR)/pjnath-test || true
 	cp -r $(BUILD_ROOT)/pjnath/build/output/pjnath-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
 		$(PJSIP_INSTALL_DIR)/pjnath-test
+	mkdir $(PJSIP_INSTALL_DIR)/pjsip-test || true
+	cp -r $(BUILD_ROOT)/pjsip/build/output/pjsip-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
+		$(PJSIP_INSTALL_DIR)/pjsip-test
 	touch $@

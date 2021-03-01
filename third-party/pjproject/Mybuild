@@ -258,3 +258,33 @@ module pjnath_test {
 
 	depends core
 }
+
+@AutoCmd
+@Cmd(name="pjsip_test", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module pjsip_test {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/pjsip-test")
+	source "dlg_core_test.o",
+		"dns_test.o",
+		"inv_offer_answer_test.o",
+		"main.o",
+		"msg_err_test.o",
+		"msg_logger.o",
+		"msg_test.o",
+		"multipart_test.o",
+		"regc_test.o",
+		"test.o",
+		"transport_loop_test.o",
+		"transport_tcp_test.o",
+		"transport_test.o",
+		"transport_udp_test.o",
+		"tsx_basic_test.o",
+		"tsx_bench.o",
+		"tsx_uac_test.o",
+		"tsx_uas_test.o",
+		"txdata_test.o",
+		"uri_test.o"
+
+	depends core
+}
