@@ -1,0 +1,21 @@
+package embox.net
+
+@DefaultImpl(net_namespace_stub)
+abstract module net_namespace {
+}
+
+module net_namespace_nonstub extends net_namespace {
+	option number amount_net_ns=20
+
+	@IncludeExport(path="net",target_name="net_namespace.h")
+	source "net_namespace.h"
+
+	source "net_namespace.c"
+	depends embox.driver.net.loopback
+}
+
+module net_namespace_stub extends net_namespace {
+	@IncludeExport(path="net",target_name="net_namespace.h")
+	source "net_namespace_stub.h"
+	source "net_namespace_stub.c"
+}

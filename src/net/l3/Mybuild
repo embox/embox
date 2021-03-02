@@ -63,9 +63,22 @@ module rarp {
 	@NoRuntime depends embox.net.skbuff
 }
 
-module route {
+@DefaultImpl(route_no_net_ns)
+abstract module route {
+}
+
+module route_no_net_ns extends route {
 	option number route_table_size=8
 	source "route.c"
+
+	depends core /* for inetdev.c */
+	depends embox.mem.pool
+	depends embox.util.dlist
+}
+
+module route_net_ns extends route {
+	option number route_table_size=8
+	source "route_net_ns.c"
 
 	depends core /* for inetdev.c */
 	depends embox.mem.pool

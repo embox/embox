@@ -107,6 +107,27 @@ static int inet_addr_tester(const struct sockaddr *lhs_sa,
 			&& (lhs_in->sin_port == rhs_in->sin_port);
 }
 
+int sock_addr_is_busy_net_ns(const struct sock_proto_ops *p_ops,
+		sock_addr_tester_ft tester, const struct sockaddr *addr,
+		socklen_t addrlen, struct sock *src_sk) {
+	const struct sock *sk;
+
+	assert(p_ops != NULL);
+	assert(tester != NULL);
+
+	sock_foreach(sk, p_ops) {
+		if (!cmp_net_ns(src_sk->net_ns, sk->net_ns)) {
+			continue;
+		}
+		if ((sk->addr_len == addrlen)
+				&& tester(addr, sk->src_addr)) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
 	struct sockaddr_in addr_in;
@@ -124,7 +145,9 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		return -EAFNOSUPPORT;
 	}
 	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
-			!ip_is_local(addr_in.sin_addr.s_addr, IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST)) {
+			!ip_is_local_net_ns(addr_in.sin_addr.s_addr,
+								IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST,
+								sk->net_ns)) {
 		return -EADDRNOTAVAIL;
 	}
 
@@ -138,8 +161,8 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 			return -ENOMEM;
 		}
 	}
-	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
-				addrlen)) {
+	else if (sock_addr_is_busy_net_ns(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
+				addrlen, sk)) {
 		/* TODO consider opt.so_reuseaddr */
 		return -EADDRINUSE;
 	}
@@ -179,7 +202,8 @@ static int __inet_connect(struct inet_sock *in_sk,
 	assert(addr_in != NULL);
 	assert(addr_in->sin_family == AF_INET);
 
-	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, NULL, &src_ip);
+	ret = rt_fib_source_ip_net_ns(addr_in->sin_addr.s_addr, NULL, &src_ip,
+				((struct sock *)in_sk)->net_ns);
 	if (ret != 0) {
 		return ret;
 	}

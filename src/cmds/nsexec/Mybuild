@@ -1,0 +1,7 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "nsexec")
+module nsexec {
+	source "nsexec.c"
+}

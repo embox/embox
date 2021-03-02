@@ -37,6 +37,8 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_UDP, udp_rcv,
 static int udp4_rcv_tester(const struct sock *sk,
 		const struct sk_buff *skb) {
 	assert(sk != NULL);
+	if (!cmp_net_ns(sk->net_ns, skb->dev->net_ns))
+		return 0;
 	return (sk->opt.so_domain == AF_INET)
 			&& ip_tester_dst_or_any(sk, skb)
 			&& (sock_inet_get_src_port(sk) == udp_hdr(skb)->dest);

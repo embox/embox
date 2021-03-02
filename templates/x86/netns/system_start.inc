@@ -1,0 +1,18 @@
+"export PWD=/",
+"export HOME=/",
+"partition",
+// "mkdir -v /bin",
+// "mount -t binfs / /bin",
+"netmanager",
+"service telnetd",
+"service httpd",
+
+"addveth ns1 ns2",
+"nsexec ns1 ifconfig eth1 10.0.0.1 netmask 255.255.255.0 hw ether aa:bb:cc:dd:ee:03 up",
+"nsexec ns1 route add 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.2 eth1",
+"nsexec ns1 service udp_s",
+"nsexec ns2 ifconfig eth2 10.0.0.2 netmask 255.255.255.0 hw ether aa:bb:cc:dd:ee:04 up",
+"nsexec ns2 route add 10.0.0.0 netmask 255.255.255.0 gw 10.0.0.1 eth2",
+"nsexec ns2 service udp_c",
+
+"nsexec init_net_ns tish",

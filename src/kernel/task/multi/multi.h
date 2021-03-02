@@ -18,6 +18,8 @@
 #include <kernel/thread.h>
 #include <kernel/task/task_priority.h>
 
+#include <nsproxy.h>
+
 #define MAX_TASK_NAME_LEN 20
 
 struct thread;
@@ -38,6 +40,7 @@ struct task {
 	struct thread *tsk_main;
 	task_priority_t tsk_priority;
 	clock_t tsk_clock;
+	struct nsproxy nsproxy;
 	char resources[];
 };
 

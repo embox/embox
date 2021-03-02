@@ -60,12 +60,14 @@ static int ip_xmit(struct sk_buff *skb) {
 	hdr_info.src_hw = skb->dev->dev_addr;
 
 	/* it's loopback/local or broadcast address? */
-	if (ip_is_local(skb->nh.iph->daddr, IP_LOCAL_BROADCAST)) {
+	if (ip_is_local_net_ns(skb->nh.iph->daddr, IP_LOCAL_BROADCAST,
+				skb->dev->net_ns)) {
 		hdr_info.dst_p = NULL;
 	}
 	else {
 		/* get dest ip from route table */
-		ret = rt_fib_route_ip(skb->nh.iph->daddr, &daddr);
+		ret = rt_fib_route_ip_net_ns(skb->nh.iph->daddr, &daddr,
+					skb->dev->net_ns);
 		if (ret != 0) {
 			DBG(printk("ip_xmit: unknown target for %s\n",
 						inet_ntoa(*(struct in_addr *)&daddr)));
@@ -113,7 +115,8 @@ static int fragment_skb_and_send(struct sk_buff *skb, struct net_device *dev) {
 int ip_forward(struct sk_buff *skb) {
 	iphdr_t *iph = ip_hdr(skb);
 	int optlen = IP_HEADER_SIZE(iph) - IP_MIN_HEADER_SIZE;
-	struct rt_entry *best_route = rt_fib_get_best(iph->daddr, NULL);
+	struct rt_entry *best_route = rt_fib_get_best_net_ns(iph->daddr,
+						NULL, skb->dev->net_ns);
 
 	/* Drop broadcast and multicast addresses of 2 and 3 layers
 	 * Note, that some kinds of those addresses we can't get here, because
@@ -222,6 +225,7 @@ static int ip_make(const struct sock *sk,
 	in_addr_t src_ip, dst_ip;
 	int ret;
 	int ip_length;
+	net_namespace_p net_ns;
 
 	assert(out_skb);
 	assert(sk || *out_skb);
@@ -233,8 +237,9 @@ static int ip_make(const struct sock *sk,
 
 	dst_ip = ip_get_dest_addr(in_sk, to, out_skb);
 
-	ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
-			&dev);
+	fill_net_ns_from_sk(net_ns, sk, out_skb);
+	ret = rt_fib_out_dev_net_ns(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
+			&dev, net_ns);
 	if (ret != 0) {
 		DBG(printk("ip_make: unknown device for %s\n",
 					inet_ntoa(*(struct in_addr *)&dst_ip)));
@@ -244,7 +249,7 @@ static int ip_make(const struct sock *sk,
 
 	assert(inetdev_get_by_dev(dev) != NULL);
 	//src_ip = inetdev_get_by_dev(dev)->ifa_address; /* TODO it's better! */
-	ret = rt_fib_source_ip(dst_ip, dev, &src_ip);
+	ret = rt_fib_source_ip_net_ns(dst_ip, dev, &src_ip, dev->net_ns);
 	if (ret != 0) {
 		DBG(printk("ip_make: can't resolve source ip for %s\n",
 					inet_ntoa(*(struct in_addr *)&dst_ip)));

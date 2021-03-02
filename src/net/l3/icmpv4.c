@@ -338,9 +338,10 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 	uint8_t *body_msg;
 	size_t body_msg_sz;
 
-	if (!(ip_is_local(
-			ip_hdr(skb)->saddr, 0)
-			|| ip_is_local(ip_hdr(skb)->daddr, 0))
+	if (!(ip_is_local_net_ns(
+			ip_hdr(skb)->saddr, 0, skb->dev->net_ns)
+			|| ip_is_local_net_ns(ip_hdr(skb)->daddr, 0,
+						skb->dev->net_ns))
 			|| (ip_hdr(skb)->frag_off & htons(IP_OFFSET))
 			|| (ip_data_length(ip_hdr(skb)) < ICMP_DISCARD_MIN_SIZE)
 			|| (ip_hdr(skb)->proto != IPPROTO_ICMP)
