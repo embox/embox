@@ -1,19 +1,13 @@
 
 PKG_NAME := pjproject
-PKG_VER  := 2.10
+PKG_VER  := 6470fb9e4bd9baa14d50f754dc7f945e7a76c828
 
-PKG_SOURCES := https://github.com/pjsip/pjproject/archive/$(PKG_VER).tar.gz
-PKG_MD5     := 13e5c418008ae46c4ce0c1e27cdfe9b5
+PKG_SOURCES := https://github.com/pjsip/pjproject/archive/$(PKG_VER).zip
+PKG_MD5     := ec8e45c13d6b8a578612dabf98382141
 
 include $(EXTBLD_LIB)
 
-PKG_PATCHES := pjproject-$(PKG_VER).patch \
-	sha256_error_fix-$(PKG_VER).patch \
-	addr_resolv_sock-$(PKG_VER).patch
-
-ifeq ($(PJSIP_ENABLE_CXX),false)
-PKG_PATCHES	+= pjsua2_disable-$(PKG_VER).patch
-endif
+PKG_PATCHES := pjproject.patch
 
 DISABLE_FEATURES := \
 	l16-codec   \
@@ -26,6 +20,10 @@ DISABLE_FEATURES := \
 	libyuv \
 	libwebrtc \
 	#g711-codec
+
+ifeq ($(PJSIP_ENABLE_CXX),false)
+DISABLE_FEATURES += pjsua2
+endif
 
 BUILD_ROOT  := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PJSIP_INSTALL_DIR := $(EXTERNAL_BUILD_DIR)/third_party/pjproject/core/install
@@ -72,6 +70,7 @@ $(INSTALL) :
 		fn=$$(basename $$f); \
 		cp $$f $(PJSIP_INSTALL_DIR)/$${fn%-$(AUTOCONF_TARGET_TRIPLET)}.o; \
 	done
+	# Install tests
 	mkdir $(PJSIP_INSTALL_DIR)/pjlib-test || true
 	cp -r $(BUILD_ROOT)/pjlib/build/output/pjlib-test-$(AUTOCONF_TARGET_TRIPLET)/*.o \
 		$(PJSIP_INSTALL_DIR)/pjlib-test
