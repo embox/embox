@@ -289,7 +289,9 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 		dlist_add_prev(&tsk->child_lnk, &parent->child_list);
 	}
 
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	set_task_proxy(tsk, parent)
+#endif
 
 	task_setrlim_stack_size(tsk, task_get_stack_size(parent));
 
