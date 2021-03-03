@@ -285,6 +285,7 @@ struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
 	return best_rte;
 }
 
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 int rt_add_route_netns(struct net_device *dev, in_addr_t dst,
 		in_addr_t mask, in_addr_t gw, int flags,
 		net_namespace_p net_ns) {
@@ -320,3 +321,4 @@ int rt_fib_out_dev_net_ns(in_addr_t dst, const struct sock *sk,
 		struct net_device **out_dev, net_namespace_p net_ns) {
 	return rt_fib_out_dev(dst, sk, out_dev);
 }
+#endif
