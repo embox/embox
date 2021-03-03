@@ -208,7 +208,7 @@ int ip_is_local(in_addr_t addr, int opts) {
 
 	return false;
 }
-
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 struct in_device * inetdev_get_by_name_netns(const char *name,
 					net_namespace_p net_ns) {
 	return inetdev_get_by_name(name);
@@ -231,3 +231,4 @@ int ip_is_local_net_ns(in_addr_t addr, int opts,
 		net_namespace_p net_ns) {
 	return ip_is_local(addr, opts);
 }
+#endif
