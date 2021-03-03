@@ -40,7 +40,9 @@ struct task {
 	struct thread *tsk_main;
 	task_priority_t tsk_priority;
 	clock_t tsk_clock;
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	struct nsproxy nsproxy;
+#endif
 	char resources[];
 };
 
