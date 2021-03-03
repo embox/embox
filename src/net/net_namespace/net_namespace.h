@@ -4,6 +4,8 @@
 #include <limits.h>
 #include <util/dlist.h>
 
+#define NET_NAMESPACE_ENABLED  (1)
+
 typedef struct net_namespace {
 	struct dlist_head lnk;
 	char name[NAME_MAX + 1];
