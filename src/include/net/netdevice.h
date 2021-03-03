@@ -128,7 +128,9 @@ typedef struct net_device {
 	struct sk_buff_head dev_queue;    /* rx skb queue */
 	struct sk_buff_head dev_queue_tx; /* tx skb queue */
 	struct net_node *pnet_node;
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	net_namespace_p net_ns;
+#endif
 	void *priv; /**< private data */
 } net_device_t;
 
