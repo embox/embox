@@ -106,7 +106,7 @@ static int inet_addr_tester(const struct sockaddr *lhs_sa,
 							sizeof rhs_in->sin_addr)))
 			&& (lhs_in->sin_port == rhs_in->sin_port);
 }
-
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 int sock_addr_is_busy_net_ns(const struct sock_proto_ops *p_ops,
 		sock_addr_tester_ft tester, const struct sockaddr *addr,
 		socklen_t addrlen, struct sock *src_sk) {
@@ -127,6 +127,7 @@ int sock_addr_is_busy_net_ns(const struct sock_proto_ops *p_ops,
 
 	return 0;
 }
+#endif
 
 static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
@@ -144,12 +145,19 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 	if (addr_in.sin_family != AF_INET) {
 		return -EAFNOSUPPORT;
 	}
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
 			!ip_is_local_net_ns(addr_in.sin_addr.s_addr,
 								IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST,
 								sk->net_ns)) {
 		return -EADDRNOTAVAIL;
 	}
+#else
+	else if ((addr_in.sin_addr.s_addr != htonl(INADDR_ANY)) &&
+			!ip_is_local(addr_in.sin_addr.s_addr, IP_LOCAL_BROADCAST | IP_LOCAL_MULTICAST)) {
+		return -EADDRNOTAVAIL;
+	}
+#endif
 
 	if (addr_in.sin_port == 0) {
 		/* Allocation of an ephemeral port, when the port number in a socket address is specified as 0,
@@ -161,12 +169,19 @@ static int inet_bind(struct sock *sk, const struct sockaddr *addr,
 			return -ENOMEM;
 		}
 	}
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	else if (sock_addr_is_busy_net_ns(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
 				addrlen, sk)) {
 		/* TODO consider opt.so_reuseaddr */
 		return -EADDRINUSE;
 	}
-
+#else
+	else if (sock_addr_is_busy(sk->p_ops, inet_addr_tester, (struct sockaddr *)&addr_in,
+			addrlen)) {
+		/* TODO consider opt.so_reuseaddr */
+		return -EADDRINUSE;
+	}
+#endif
 	__inet_bind(to_inet_sock(sk), &addr_in);
 
 	return 0;
@@ -202,8 +217,13 @@ static int __inet_connect(struct inet_sock *in_sk,
 	assert(addr_in != NULL);
 	assert(addr_in->sin_family == AF_INET);
 
-	ret = rt_fib_source_ip_net_ns(addr_in->sin_addr.s_addr, NULL, &src_ip,
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
+	ret = rt_fib_source_ip_net(addr_in->sin_addr.s_addr, NULL, &src_ip,
 				((struct sock *)in_sk)->net_ns);
+#else
+	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, NULL, &src_ip);
+#endif
+
 	if (ret != 0) {
 		return ret;
 	}

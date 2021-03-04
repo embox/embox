@@ -79,9 +79,11 @@ static int netdev_init(struct net_device *dev, const char *name,
 	return (*setup)(dev);
 }
 
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 void dev_net_set(struct net_device *dev, net_namespace_p net_ns) {
 	assign_net_ns(dev->net_ns, net_ns);
 }
+#endif
 
 struct net_device * netdev_alloc(const char *name,
 		int (*setup)(struct net_device *), size_t priv_size) {

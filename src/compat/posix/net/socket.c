@@ -65,8 +65,9 @@ int socket(int domain, int type, int protocol) {
 		ksocket_close(sk);
 		return SET_ERRNO(EMFILE);
 	}
-
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	assign_net_ns(sk->net_ns, get_net_ns());
+#endif
 	return sockfd;
 }
 /* fcntl */
@@ -138,8 +139,10 @@ int accept(int sockfd, struct sockaddr *addr, socklen_t *addrlen) {
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
-	assign_net_ns(new_sk->net_ns, sk->net_ns);
 
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
+	assign_net_ns(new_sk->net_ns, sk->net_ns);
+#endif
 	new_sockfd = get_index(new_sk);
 	if (new_sockfd < 0) {
 		ksocket_close(new_sk);

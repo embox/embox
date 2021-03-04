@@ -10,6 +10,7 @@ typedef struct net_namespace {
 typedef struct net_namespace_ptr {
 } net_namespace_p;
 
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 extern net_namespace_p init_net_ns;
 
 extern net_namespace_p get_net_ns();
@@ -20,4 +21,5 @@ extern int unshare(const char *name);
 #define cmp_net_ns(net_ns1, net_ns2) 1
 
 #define fill_net_ns_from_sk(net_ns, sk, out_skb)
+#endif
 #endif /* NET_NAMESPACE_H_ */

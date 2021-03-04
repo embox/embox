@@ -28,7 +28,9 @@ typedef struct rt_entry {
 	uint32_t     rt_flags;
 	in_addr_t    rt_mask;
 	in_addr_t    rt_gateway;
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	net_namespace_p net_ns;
+#endif
 } rt_entry_t;
 
 /**< Flags */

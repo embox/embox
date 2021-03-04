@@ -335,6 +335,7 @@ int neighbour_clean(struct net_device *dev) {
 	return 0;
 }
 
+#if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 #include <net/net_namespace.h>
 
 int neighbour_foreach_net_ns(neighbour_foreach_ft func, void *args,
@@ -369,6 +370,35 @@ int neighbour_foreach_net_ns(neighbour_foreach_ft func, void *args,
 int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	return neighbour_foreach_net_ns(func, args, get_net_ns());
 }
+
+#else
+
+int neighbour_foreach(neighbour_foreach_ft func, void *args) {
+	int ret;
+	struct neighbour *nbr;
+
+	if (func == NULL) {
+		return -EINVAL;
+	}
+
+	sched_lock();
+	{
+		dlist_foreach_entry(nbr, &neighbour_list, lnk) {
+			sched_unlock();
+
+			ret = (*func)(nbr, args);
+			if (ret != 0) {
+				return ret;
+			}
+
+			sched_lock();
+		}
+	}
+	sched_unlock();
+
+	return 0;
+}
+#endif
 
 int neighbour_resolve(unsigned short ptype,
 		const void *paddr, unsigned char plen,
