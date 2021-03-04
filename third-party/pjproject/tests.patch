@@ -1,0 +1,18 @@
+diff -aur pjproject-6470fb9e4bd9baa14d50f754dc7f945e7a76c828/pjsip/src/test/msg_test.c ../build/extbld/third_party/pjproject/core_c/pjproject-6470fb9e4bd9baa14d50f754dc7f945e7a76c828/pjsip/src/test/msg_test.c
+--- pjproject-6470fb9e4bd9baa14d50f754dc7f945e7a76c828/pjsip/src/test/msg_test.c	2021-02-24 12:03:29.000000000 +0300
++++ ../build/extbld/third_party/pjproject/core_c/pjproject-6470fb9e4bd9baa14d50f754dc7f945e7a76c828/pjsip/src/test/msg_test.c	2021-03-03 10:47:33.617616523 +0300
+@@ -1168,12 +1168,14 @@
+ 	&hdr_test_retry_after1
+     },
+ 
++#if 0
+     {
+ 	/* Non-ASCII UTF-8 characters in Subject */
+ 	"Subject", NULL,
+ 	"\xC0\x81",
+ 	&hdr_test_subject_utf
+     }
++#endif
+ };
+ 
+ static int hdr_test_success(pjsip_hdr *h)

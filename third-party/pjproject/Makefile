@@ -7,7 +7,8 @@ PKG_MD5     := ec8e45c13d6b8a578612dabf98382141
 
 include $(EXTBLD_LIB)
 
-PKG_PATCHES := pjproject.patch
+PKG_PATCHES := pjproject.patch \
+               tests.patch
 
 DISABLE_FEATURES := \
 	l16-codec   \
