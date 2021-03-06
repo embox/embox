@@ -1,22 +1,22 @@
 PKG_NAME	:= mqtt_udp
-PKG_VER  	:= 0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa
+PKG_VER  	:= v0.4-1
 
 PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
 
 PKG_SOURCES := https://github.com/dzavalishin/mqtt_udp/archive/$(PKG_VER).tar.gz
-PKG_MD5 	:= 4707c6f644c6fa09bf000e9ab22cd7b4
+PKG_MD5 	:= f881143ae137868bf1ed4308e1844e49
 
 PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
-	cd $(PKG_SOURCE_DIR)/lang/c && chmod +x configure && (./configure \
+	cd $(PKG_SOURCE_DIR)/lang/c && aclocal && autoconf && (./configure \
 		--host=$(AUTOCONF_TARGET_TRIPLET) \
 		--target=$(AUTOCONF_TARGET_TRIPLET) \
 		CC=$(EMBOX_GCC) \
 		CFLAGS="$(EMBOX_IMPORTED_CFLAGS)" \
-		CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS) -Drpl_malloc=malloc" \
+		CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS)" \
 	)
 
 	touch $@
