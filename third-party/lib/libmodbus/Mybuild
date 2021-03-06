@@ -5,4 +5,6 @@ package third_party.lib
 module libmodbus {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libmodbus.a"
+
+	@NoRuntime depends embox.compat.posix.util.nanosleep
 }
