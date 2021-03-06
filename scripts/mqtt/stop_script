@@ -1,0 +1,8 @@
+#!/bin/sh
+
+TAP=$1
+ip=$(which ip)
+
+$ip link set   dev $TAP down
+$ip addr flush dev $TAP
+$ip tuntap del mode tap $TAP

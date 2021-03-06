@@ -1,0 +1,31 @@
+package embox.cmd.testing.mqtt_udp
+
+@AutoCmd
+@Cmd(name = "server",
+    help = "MQTT test server",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+@BuildDepends(third_party.mqtt_udp.core)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
+@Build(stage=2,script="true")
+module server {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
+	source "server.c"
+}
+
+@AutoCmd
+@Cmd(name = "client",
+    help = "MQTT test client",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+@BuildDepends(third_party.mqtt_udp.core)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
+@Build(stage=2,script="true")
+module client {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
+	source "client.c"	
+}

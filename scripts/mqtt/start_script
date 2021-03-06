@@ -1,0 +1,21 @@
+#!/bin/sh
+
+TAP=$1
+ip=$(which ip)
+USER=$(whoami)
+
+$ip tuntap add $TAP mode tap user "$USER"
+$ip link set   dev $TAP up
+$ip addr flush dev $TAP
+$ip link set   dev $TAP address aa:bb:cc:dd:ee:ff
+$ip addr add   dev $TAP 10.0.2.10/24 #broadcast 10.0.2.255
+$ip addr add   dev $TAP fe80::10:0:2:10/64
+$ip link set $TAP master br0
+
+# Enable IP Forwarding for gateway interface
+gw=$($ip route | sed -n "s/default via .* dev \([0-9a-z_]\+\) .*$/\1/p")
+if [ "$gw" ]; then
+	echo "Enable IP Forwarding for $gw"
+	sysctl net.ipv4.ip_forward=1
+	iptables -t nat -A POSTROUTING -o $gw -j MASQUERADE
+fi
