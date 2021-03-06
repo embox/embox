@@ -8,11 +8,10 @@ package embox.cmd.testing.mqtt_udp
             Written by Mark Kovalev.
     ''')
 @BuildDepends(third_party.mqtt_udp.core)
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
-@Build(stage=2,script="true")
 module server {
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
 	source "server.c"
+
+	@NoRuntime depends third_party.mqtt_udp.core
 }
 
 @AutoCmd
@@ -23,9 +22,9 @@ module server {
             Written by Mark Kovalev.
     ''')
 @BuildDepends(third_party.mqtt_udp.core)
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
-@Build(stage=2,script="true")
 module client {
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/mqtt_udp/core/install/")
 	source "client.c"	
+
+	@NoRuntime depends third_party.mqtt_udp.core
+
 }

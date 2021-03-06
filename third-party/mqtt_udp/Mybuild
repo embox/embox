@@ -1,13 +1,8 @@
 package third_party.mqtt_udp
 
-@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/mqtt_udp/core/install/")
 module core {
-	//@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	//@IncludeExport(path="mqtt")
-	//source "mqtt_udp.h"
-
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libmqttudp.a"
-	
-	depends embox.compat.libc.all
 }

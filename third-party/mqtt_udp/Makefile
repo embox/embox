@@ -11,13 +11,12 @@ PKG_PATCHES := patch.txt
 include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
-	export EMBOX_GCC_LINK=full
 	cd $(PKG_SOURCE_DIR)/lang/c && chmod +x configure && (./configure \
-		CC=$(EMBOX_GCC) \
-		CFLAGS="$(EMBOX_IMPORTED_CFLAGS) -g -O2" \
-		CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS) -Drpl_malloc=malloc" \
 		--host=$(AUTOCONF_TARGET_TRIPLET) \
 		--target=$(AUTOCONF_TARGET_TRIPLET) \
+		CC=$(EMBOX_GCC) \
+		CFLAGS="$(EMBOX_IMPORTED_CFLAGS)" \
+		CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS) -Drpl_malloc=malloc" \
 	)
 
 	touch $@
