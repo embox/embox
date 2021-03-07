@@ -7,11 +7,11 @@ package embox.cmd.testing.mqtt_udp
         AUTHOR
             Written by Mark Kovalev.
     ''')
-@BuildDepends(third_party.mqtt_udp.core)
+@BuildDepends(third_party.mqtt_udp.libmqttudp)
 module server {
 	source "server.c"
 
-	@NoRuntime depends third_party.mqtt_udp.core
+	@NoRuntime depends third_party.mqtt_udp.libmqttudp
 }
 
 @AutoCmd
@@ -21,10 +21,10 @@ module server {
         AUTHOR
             Written by Mark Kovalev.
     ''')
-@BuildDepends(third_party.mqtt_udp.core)
+@BuildDepends(third_party.mqtt_udp.libmqttudp)
 module client {
 	source "client.c"	
 
-	@NoRuntime depends third_party.mqtt_udp.core
+	@NoRuntime depends third_party.mqtt_udp.libmqttudp
 
 }

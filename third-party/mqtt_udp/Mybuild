@@ -1,8 +1,8 @@
 package third_party.mqtt_udp
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/mqtt_udp/core/install/")
-module core {
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/mqtt_udp/libmqttudp/install/")
+module libmqttudp {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libmqttudp.a"
 }
