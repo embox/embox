@@ -1,52 +1,12 @@
-diff -aur mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/configure mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/configure
---- mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/configure	2019-03-09 17:40:15.000000000 +0300
-+++ mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/configure	2019-04-19 16:37:12.086407199 +0300
-@@ -3515,23 +3515,23 @@
- fi
- { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_func_malloc_0_nonnull" >&5
- $as_echo "$ac_cv_func_malloc_0_nonnull" >&6; }
--if test $ac_cv_func_malloc_0_nonnull = yes; then :
-+# if test $ac_cv_func_malloc_0_nonnull = yes; then :
+diff -aur mqtt_udp-0.4-1/lang/c/configure.in ../build/extbld/third_party/mqtt_udp/core/mqtt_udp-0.4-1/lang/c/configure.in
+--- mqtt_udp-0.4-1/lang/c/configure.in	2019-01-15 04:19:17.000000000 +0300
++++ ../build/extbld/third_party/mqtt_udp/core/mqtt_udp-0.4-1/lang/c/configure.in2021-03-06 19:34:59.006236839 +0300
+@@ -22,7 +22,7 @@
+ AC_TYPE_SSIZE_T
  
- $as_echo "#define HAVE_MALLOC 1" >>confdefs.h
+ # Checks for library functions.
+-AC_FUNC_MALLOC
++#AC_FUNC_MALLOC
+ AC_CHECK_FUNCS([memset socket strlcpy])
  
--else
--  $as_echo "#define HAVE_MALLOC 0" >>confdefs.h
-+# else
-+#   $as_echo "#define HAVE_MALLOC 0" >>confdefs.h
- 
--   case " $LIBOBJS " in
--  *" malloc.$ac_objext "* ) ;;
--  *) LIBOBJS="$LIBOBJS malloc.$ac_objext"
-- ;;
--esac
-+#    case " $LIBOBJS " in
-+#   *" malloc.$ac_objext "* ) ;;
-+#   *) LIBOBJS="$LIBOBJS malloc.$ac_objext"
-+#  ;;
-+# esac
- 
- 
--$as_echo "#define malloc rpl_malloc" >>confdefs.h
-+# $as_echo "#define malloc rpl_malloc" >>confdefs.h
- 
--fi
-+# fi
- 
- 
- for ac_func in memset socket strlcpy
-diff -aur -x configure mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/glue/unix/udp_open.c mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/glue/unix/udp_open.c
---- mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa-orig/lang/c/glue/unix/udp_open.c	2019-03-09 17:40:15.000000000 +0300
-+++ mqtt_udp-0a38cfdb724c7f662188153d0fb02e4ae0f6e6aa/lang/c/glue/unix/udp_open.c	2019-05-19 21:32:10.123576106 +0300
-@@ -64,6 +64,11 @@
- 		//    error("setsockopt(SO_REUSEADDR) failed");
-     }
- 
-+	{
-+		char *devname = "eth0";
-+        setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, devname, strlen(devname));
-+	}
-+
-     //last_socket = fd;
-     return fd;
- }
+ AC_CONFIG_FILES([Makefile])

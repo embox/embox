@@ -1,0 +1,30 @@
+package embox.cmd.testing.mqtt_udp
+
+@AutoCmd
+@Cmd(name = "server",
+    help = "MQTT test server",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+@BuildDepends(third_party.mqtt_udp.libmqttudp)
+module server {
+	source "server.c"
+
+	@NoRuntime depends third_party.mqtt_udp.libmqttudp
+}
+
+@AutoCmd
+@Cmd(name = "client",
+    help = "MQTT test client",
+    man = '''
+        AUTHOR
+            Written by Mark Kovalev.
+    ''')
+@BuildDepends(third_party.mqtt_udp.libmqttudp)
+module client {
+	source "client.c"	
+
+	@NoRuntime depends third_party.mqtt_udp.libmqttudp
+
+}
