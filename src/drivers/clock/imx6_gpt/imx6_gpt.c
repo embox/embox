@@ -48,6 +48,9 @@
 #define GPT_CR_FO2    (1 << 30)
 #define GPT_CR_FO3    (1 << 31)
 
+#define GPT_EN_INT1   (1 << 0)      /* Enable interruption on OutputCompare1 */
+#define GPT_CR_MASK   (0b10000011)  /* Enable interruptable periodic timer mode */
+
 #define GPT_CR_CLKSRC_OFFT  6
 #define GPT_CR_IM1_OFFT    16
 #define GPT_CR_IM2_OFFT    18
@@ -65,37 +68,16 @@
 #define _BASE_SCALER 8
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	REG32_STORE(GPT_SR, 0x3F);
+	/* printk("INT OCURRED"); */
+	REG32_CLEAR(GPT_SR, 0);
+
 	return IRQ_HANDLED;
 }
 
 static int imx6_gpt_init(struct clock_source *cs) {
-	uint32_t t;
-	REG32_STORE(GPT_CR, GPT_CR_SWR);
-
 	/* We can configure GPT only when disabled */
 	REG32_STORE(GPT_CR,   0);
 	REG32_STORE(GPT_IR,   0);
-
-#if 0
-	t = REG32_LOAD(0x20C4000 + 0x14);
-	printk("STATUS %#x\n", t);
-	t &= ~(1 << 25);
-
-	REG32_STORE(0x20C4000, t);
-#endif
-
-	REG32_STORE(GPT_PR, GPT_PRESCALER);
-
-	REG32_STORE(GPT_OCR1, _BASE_HZ / _BASE_SCALER / GPT_TARGET_HZ); /* XXX */
-	/* Generate interrupt on OutputCompare1 overflow */
-	REG32_STORE(GPT_IR, GPT_IR_OF1IE);
-
-	t  = GPT_CR_EN;
-	t |= CLKSRC_PERIPH << GPT_CR_CLKSRC_OFFT;
-
-	REG32_STORE(GPT_CR, t);
-
 
 	return irq_attach(GPT_IRQ,
 	                  clock_handler,
@@ -105,6 +87,11 @@ static int imx6_gpt_init(struct clock_source *cs) {
 }
 
 static int imx6_gpt_set_periodic(struct clock_source *cs) {
+	REG32_STORE(GPT_PR, GPT_PRESCALER);
+	REG32_STORE(GPT_OCR1, _BASE_HZ / _BASE_SCALER / GPT_TARGET_HZ); 
+	REG32_STORE(GPT_IR, GPT_EN_INT1);
+	REG32_STORE(GPT_CR, GPT_CR_MASK); 
+	
 	return 0;
 }
 
@@ -124,7 +111,7 @@ static struct time_counter_device imx6_gpt_counter = {
 
 PERIPH_MEMORY_DEFINE(imx_gpt, GPT_BASE, 0x40);
 
-STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, NULL);
+STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, &this_clock_source);
 
 CLOCK_SOURCE_DEF( imx6_gpt,  imx6_gpt_init, NULL,
 	&imx6_gpt_event, &imx6_gpt_counter);
