@@ -4,12 +4,15 @@
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2016-06-12
+ * 
+ * @author Evgeny Svirin <eugenysvirin@gmail.com>
+ * @date 2021-04-9
  */
 
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
-
+#include <hal/clock.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
@@ -36,6 +39,10 @@
 #define GPT_ICR2 (GPT_BASE + 0x20) /* Input capture register 2 */
 #define GPT_CNT  (GPT_BASE + 0x24) /* Counter register */
 
+#define GPT_IR_INT1   (1 << 0)     /* Enable interruption on OutputCompare1 */
+#define GPT_CR_MASK   (0b10000011) /* Enable interruptable periodic timer mode */
+#define GPT_SR_CLR   0             /* Clear status mask */ 
+
 #define GPT_CR_EN     (1 <<  0)
 #define GPT_CR_ENMOD  (1 <<  1)
 #define GPT_CR_DBGEN  (1 <<  2)
@@ -47,9 +54,6 @@
 #define GPT_CR_FO1    (1 << 29)
 #define GPT_CR_FO2    (1 << 30)
 #define GPT_CR_FO3    (1 << 31)
-
-#define GPT_EN_INT1   (1 << 0)      /* Enable interruption on OutputCompare1 */
-#define GPT_CR_MASK   (0b10000011)  /* Enable interruptable periodic timer mode */
 
 #define GPT_CR_CLKSRC_OFFT  6
 #define GPT_CR_IM1_OFFT    16
@@ -68,8 +72,9 @@
 #define _BASE_SCALER 8
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
-	/* printk("INT OCURRED"); */
-	REG32_CLEAR(GPT_SR, 0);
+	clock_tick_handler(data);
+	
+	REG32_CLEAR(GPT_SR, GPT_SR_CLR);
 
 	return IRQ_HANDLED;
 }
@@ -89,7 +94,7 @@ static int imx6_gpt_init(struct clock_source *cs) {
 static int imx6_gpt_set_periodic(struct clock_source *cs) {
 	REG32_STORE(GPT_PR, GPT_PRESCALER);
 	REG32_STORE(GPT_OCR1, _BASE_HZ / _BASE_SCALER / GPT_TARGET_HZ); 
-	REG32_STORE(GPT_IR, GPT_EN_INT1);
+	REG32_STORE(GPT_IR, GPT_IR_INT1);
 	REG32_STORE(GPT_CR, GPT_CR_MASK); 
 	
 	return 0;
@@ -109,9 +114,9 @@ static struct time_counter_device imx6_gpt_counter = {
 	.cycle_hz = GPT_TARGET_HZ,
 };
 
-PERIPH_MEMORY_DEFINE(imx_gpt, GPT_BASE, 0x40);
-
 STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, &this_clock_source);
+
+PERIPH_MEMORY_DEFINE(imx_gpt, GPT_BASE, 0x40);
 
 CLOCK_SOURCE_DEF( imx6_gpt,  imx6_gpt_init, NULL,
 	&imx6_gpt_event, &imx6_gpt_counter);
