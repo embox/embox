@@ -8,7 +8,6 @@
  * @author Evgeny Svirin <eugenysvirin@gmail.com>
  * @date 2021-04-9
  */
-
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
@@ -41,7 +40,7 @@
 
 #define GPT_IR_INT1   (1 << 0)     /* Enable interruption on OutputCompare1 */
 #define GPT_CR_MASK   (0b10000011) /* Enable interruptable periodic timer mode */
-#define GPT_SR_CLR   0             /* Clear status mask */ 
+#define GPT_SR_CLR    (0)          /* Clear status mask */ 
 
 #define GPT_CR_EN     (1 <<  0)
 #define GPT_CR_ENMOD  (1 <<  1)
@@ -75,7 +74,6 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(data);
 	
 	REG32_CLEAR(GPT_SR, GPT_SR_CLR);
-
 	return IRQ_HANDLED;
 }
 
@@ -118,5 +116,5 @@ STATIC_IRQ_ATTACH(GPT_IRQ, clock_handler, &this_clock_source);
 
 PERIPH_MEMORY_DEFINE(imx_gpt, GPT_BASE, 0x40);
 
-CLOCK_SOURCE_DEF( imx6_gpt,  imx6_gpt_init, NULL,
+CLOCK_SOURCE_DEF(imx6_gpt,  imx6_gpt_init, NULL,
 	&imx6_gpt_event, &imx6_gpt_counter);

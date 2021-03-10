@@ -7,7 +7,6 @@
  * @author Svirin Evgeny <eugenysvirin@gmail.com>
  * @date 2021-02-20
  */
-
 #include <drivers/common/memory.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
@@ -93,4 +92,3 @@ PERIPH_MEMORY_DEFINE(sp804, SP804_BASE, 0x1C);
 
 CLOCK_SOURCE_DEF(sp804_timer, sp804_timer_init, NULL,
 	&sp804_timer_event, &sp804_timer_counter);
-
