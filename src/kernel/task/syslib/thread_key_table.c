@@ -56,6 +56,6 @@ int task_thread_key_destroy(struct task *task, size_t idx) {
 		index_unlock(&kt->indexator, idx);
 	}
 out:
-	mutex_lock(&kt->mutex);
+	mutex_unlock(&kt->mutex);
 	return res;
 }

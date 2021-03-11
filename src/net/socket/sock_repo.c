@@ -82,10 +82,19 @@ int sock_addr_alloc_port(const struct sock_proto_ops *p_ops,
 		in_port_t *addrport, sock_addr_tester_ft tester,
 		const struct sockaddr *addr, socklen_t addrlen) {
 	in_port_t port;
+	static uint16_t start_port = IPPORT_RESERVED;
 
 	assert(addrport != NULL);
 
-	for (port = IPPORT_RESERVED; port < IPPORT_USERRESERVED; ++port) {
+	/* This is allocation of ephemeral port (https://en.wikipedia.org/wiki/Ephemeral_port).
+	 * Instead of getting random port we increase port number for each
+	 * new port allocation request. */
+	start_port++;
+	if (start_port >= IPPORT_USERRESERVED) {
+		start_port = IPPORT_RESERVED;
+	}
+
+	for (port = start_port; port < IPPORT_USERRESERVED; ++port) {
 		*addrport = htons(port);
 		if (!sock_addr_is_busy(p_ops, tester, addr, addrlen)) {
 			break;

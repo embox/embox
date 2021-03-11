@@ -14,7 +14,7 @@ module dns_fixed extends dns {
 
 module dns_file extends dns {
 	option number log_level=1
-	option string resolv_file="resolv.conf"
+	option string resolv_file="/resolv.conf"
 
 	source "dns_file.c"
 
