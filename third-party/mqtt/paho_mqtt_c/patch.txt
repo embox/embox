@@ -1,0 +1,51 @@
+diff -aur paho.mqtt.c-1.3.8/src/Log.c ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/Log.c
+--- paho.mqtt.c-1.3.8/src/Log.c	2020-12-26 16:20:04.000000000 +0300
++++ ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/Log.c	2021-03-11 20:24:02.339990044 +0300
+@@ -39,7 +39,7 @@
+ #include <string.h>
+ 
+ #if !defined(_WIN32) && !defined(_WIN64)
+-#include <syslog.h>
++//#include <syslog.h>
+ #include <sys/stat.h>
+ #define GETTIMEOFDAY 1
+ #else
+diff -aur paho.mqtt.c-1.3.8/src/MQTTProperties.c ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/MQTTProperties.c
+--- paho.mqtt.c-1.3.8/src/MQTTProperties.c	2020-12-26 16:20:04.000000000 +0300
++++ ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/MQTTProperties.c	2021-03-11 20:24:02.339990044 +0300
+@@ -21,7 +21,8 @@
+ #include "Heap.h"
+ #include "StackTrace.h"
+ 
+-#include <memory.h>
++//#include <memory.h>
++#include <string.h>
+ 
+ #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+ 
+diff -aur paho.mqtt.c-1.3.8/src/MQTTReasonCodes.c ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/MQTTReasonCodes.c
+--- paho.mqtt.c-1.3.8/src/MQTTReasonCodes.c	2020-12-26 16:20:04.000000000 +0300
++++ ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/MQTTReasonCodes.c	2021-03-11 20:24:02.339990044 +0300
+@@ -20,7 +20,8 @@
+ #include "Heap.h"
+ #include "StackTrace.h"
+ 
+-#include <memory.h>
++//#include <memory.h>
++#include <string.h>
+ 
+ #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
+ 
+diff -aur paho.mqtt.c-1.3.8/src/SHA1.c ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/SHA1.c
+--- paho.mqtt.c-1.3.8/src/SHA1.c	2020-12-26 16:20:04.000000000 +0300
++++ ../build/extbld/third_party/mqtt/paho_mqtt_c/libpaho_mqtt3a/paho.mqtt.c-1.3.8/src/SHA1.c	2021-03-11 21:14:40.948393330 +0300
+@@ -53,7 +53,7 @@
+ }
+ 
+ #else /* if defined(_WIN32) || defined(_WIN64) */
+-#if defined(__linux__) || defined(__CYGWIN__)
++#if defined(__linux__) || defined(__CYGWIN__) || defined (__EMBOX__)
+ #  include <endian.h>
+ #elif defined(__APPLE__)
+ #  include <libkern/OSByteOrder.h>
+
