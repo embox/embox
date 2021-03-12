@@ -2,7 +2,7 @@ package third_party.mqtt.paho_mqtt_c
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/mqtt/paho_mqtt_c/install/src")
-module libpaho_mqtt3c {
+static module libpaho_mqtt3c {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libpaho-mqtt3c.a"
 
@@ -11,7 +11,7 @@ module libpaho_mqtt3c {
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/mqtt/paho_mqtt_c/install/src")
-module libpaho_mqtt3a {
+static module libpaho_mqtt3a {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libpaho-mqtt3a.a"
 
