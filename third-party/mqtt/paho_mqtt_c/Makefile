@@ -38,5 +38,5 @@ $(BUILD) :
 $(INSTALL) :
 	cp $(PKG_INSTALL_DIR)/src/libpaho-mqtt3c.a $(PKG_INSTALL_DIR)/libpaho-mqtt3c.a
 	cp $(PKG_INSTALL_DIR)/src/libpaho-mqtt3a.a $(PKG_INSTALL_DIR)/libpaho-mqtt3a.a
-
+	cp $(PKG_SOURCE_DIR)/src/*.h $(PKG_INSTALL_DIR)/
 	touch $@
