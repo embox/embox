@@ -11,10 +11,9 @@
 
 #include <MQTTClient.h>
 
-#define ADDRESS     "tcp://mqtt.eclipse.org:1883"
+#include <paho_c_mqtt_client_publish.inc>
+
 #define CLIENTID    "ExampleClientPub"
-#define TOPIC       "MQTT Examples"
-#define PAYLOAD     "Hello World!"
 #define QOS         1
 #define TIMEOUT     10000L
 
