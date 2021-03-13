@@ -1,0 +1,14 @@
+package project.paho_mqtt_c.cmd
+
+@App
+@AutoCmd
+@Cmd(name="mqtt_client_subscribe", help="", man="")
+@BuildDepends(third_party.mqtt.paho_mqtt_c.libpaho_mqtt3c)
+@Build(stage=2)
+module mqtt_client_subscribe {
+
+	@IncludePath("$(CONF_DIR)")
+	source "mqtt_client_subscribe.c"
+
+	@NoRuntime depends third_party.mqtt.paho_mqtt_c.libpaho_mqtt3c
+}
