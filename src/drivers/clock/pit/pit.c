@@ -85,16 +85,20 @@ static_assert(PIT_LOAD < 0x10000);
 static cycle_t i8253_read(struct clock_source *cs) {
 	unsigned char lsb, msb;
 
-	pit_out8(PIT_SEL0 | PIT_LATCH, MODE_REG);
-	lsb = pit_in8(CHANNEL0);
-	msb = pit_in8(CHANNEL0);
+	irq_lock();
+	{
+		pit_out8(PIT_SEL0 | PIT_LATCH, MODE_REG);
+		lsb = pit_in8(CHANNEL0);
+		msb = pit_in8(CHANNEL0);
+	}
+	irq_unlock();
 
 	return PIT_LOAD - ((msb << 8) | lsb);
 }
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
-        clock_tick_handler(dev_id);
-        return IRQ_HANDLED;
+	clock_tick_handler(dev_id);
+	return IRQ_HANDLED;
 }
 
 static int pit_clock_setup(struct clock_source *cs) {
