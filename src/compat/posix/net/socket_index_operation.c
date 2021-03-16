@@ -117,10 +117,18 @@ static int socket_status(struct idesc *desc, int status_nr) {
 	 */
 
 	if (status_nr & POLLIN) {
-		res += sk->rx_data_len /* + sk->opt.so_error */;
+		if (sk->opt.so_error) {
+			res = sk->opt.so_error;
+		} else {
+			res += sk->rx_data_len;
+		}
 	}
 	if (status_nr & POLLOUT) {
-		res += 0x600 /* + sk->opt.so_error */;
+		if (sk->opt.so_error) {
+			res = sk->opt.so_error;
+		} else {
+			res += 0x600;
+		}
 	}
 	if (status_nr & POLLERR) {
 		/* res += sk->opt.so_error; */
