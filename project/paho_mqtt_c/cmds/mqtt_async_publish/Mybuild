@@ -1,0 +1,13 @@
+package project.paho_mqtt_c.cmd
+
+@AutoCmd
+@Cmd(name="mqtt_async_publish", help="", man="")
+@BuildDepends(third_party.mqtt.paho_mqtt_c.libpaho_mqtt3a)
+@Build(stage=2)
+module mqtt_async_publish {
+
+	@IncludePath("$(CONF_DIR)")
+	source "mqtt_async_publish.c"
+
+	@NoRuntime depends third_party.mqtt.paho_mqtt_c.libpaho_mqtt3a
+}

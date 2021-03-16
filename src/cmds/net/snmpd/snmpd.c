@@ -105,8 +105,10 @@ int main(int argc, char **argv) {
 
 		if (recvfrom(sock, snmpbuf, MAX_SNMP_LEN, 0, (struct sockaddr *)&addr, &sklen) > 0) {
 			size_t len;
+			memset(varbuf, 0, MAX_PDU_LEN);
 			snmp_parse(&snmp, snmpbuf, varbuf, MAX_PDU_LEN);
 			build_response(&snmp);
+			memset(snmpbuf, 0, MAX_SNMP_LEN);
 			len = snmp_build(&snmp, snmpbuf);
 			sendto(sock, snmpbuf, len, 0, (struct sockaddr *)&addr, sklen);
 		}
