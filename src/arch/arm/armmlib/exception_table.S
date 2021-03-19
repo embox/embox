@@ -6,6 +6,7 @@
 
  */
 
+#include <asm/arm_m_regs.h>
 #include <module/embox/kernel/irq_api.h>
 #include <framework/mod/options.h>
 
@@ -40,9 +41,20 @@
 .syntax unified
 
 exp_default_entry:
-	mov  r0, sp
-	mrs  r1, IPSR
-	bl   exc_default_handler
+	mrs r1, IPSR
+
+	/* Registers are saved on MSP stack if the exception
+	 * happened inside interrupt context. Otherwise, we are on PSP stack. */
+	ldr r1, =SCB_ICSR
+	ldr r0, [r1]
+	tst r0, SCB_ICSR_RETTOBASE
+	beq 1f
+	mrs r0, psp
+	b   2f
+1:
+	mrs r0, msp
+2:
+	bl  exc_default_handler
 
 start:
 	# Init PSP stack
