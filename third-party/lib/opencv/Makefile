@@ -8,15 +8,6 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-EMBOX_IMPORTED_CXXFLAGS += -save-temps=obj
-EMBOX_IMPORTED_CXXFLAGS += -DUSE_SPRINTF_INSTEAD
-
-ifneq (,$(filter -fno-rtti,$(EMBOX_CXXFLAGS)))
-EMBOX_RTTI_FLAG          = --without-rtti
-else
-EMBOX_RTTI_FLAG          =
-endif
-
 OPENCV_FLAGS = \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_opencv_python_bindings_generator=OFF \
