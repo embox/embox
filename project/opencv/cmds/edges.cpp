@@ -29,11 +29,38 @@ static const char* keys = {
 	"{@repeat |1     | number}"
 };
 
+static void imdrawfb(Mat& img) {
+	struct fb_info *fbi;
+	int w, h;
+
+	fbi = fb_lookup(0);
+	if (!fbi) {
+		printf("fb0 not found\n");
+		return;
+	}
+
+	printf("Framebuffer: %dx%d %dbpp\n", fbi->var.xres, fbi->var.yres, fbi->var.bits_per_pixel);
+
+	h = min((int) fbi->var.yres, img.rows);
+	w = min((int) (fbi->var.bits_per_pixel * fbi->var.xres) / 8, 3 * img.cols);
+
+	for (int y = 0; y < h; y++) {
+		const uchar *row = &img.at<uchar>(y, 0);
+		for (int x = 0; x < w; x += 3) {
+			unsigned rgb888	=
+				0xFF000000 |
+				unsigned(row[x]) |
+				(unsigned(row[x + 1]) << 8) |
+				(unsigned(row[x + 2]) << 16);
+
+			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x / 3] = rgb888;
+		}
+	}
+}
+
 int main(int argc, const char** argv) {
 	int edgeThresh = 2;
 	Mat image, gray, edge, cedge;
-
-	struct fb_info *fbi = fb_lookup(0);
 
 	CommandLineParser parser(argc, argv, keys);
 	if (parser.has("help"))  {
@@ -59,22 +86,9 @@ int main(int argc, const char** argv) {
 
 	image.copyTo(cedge, edge);
 
-	printf("Framebuffer: %dx%d %dbpp\n", fbi->var.xres, fbi->var.yres, fbi->var.bits_per_pixel);
 	printf("Image: %dx%d; Threshold=%d\n", cedge.cols, cedge.rows, edgeThresh);
 
-
-	for (int y = 0; y < cedge.rows; y++) {
-		const uchar *row = &cedge.at<uchar>(y, 0);
-		for (int x = 0; x < 3 * cedge.cols; x += 3) {
-			unsigned rgb888	=
-				0xFF000000 |
-				unsigned(row[x]) |
-				(unsigned(row[x + 1]) << 8) |
-				(unsigned(row[x + 2]) << 16);
-
-			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x / 3] = rgb888;
-		}
-	}
+	imdrawfb(cedge);
 
 	return 0;
 }
