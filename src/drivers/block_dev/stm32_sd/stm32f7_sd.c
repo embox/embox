@@ -6,13 +6,19 @@
  * @date    26 Jan 2015
  */
 
+#include <util/log.h>
+
+#include <errno.h>
 #include <string.h>
 #include <assert.h>
 
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
-#include <util/log.h>
+
+#include <kernel/thread.h>
+#include <kernel/thread/thread_sched_wait.h>
+#include <kernel/sched.h>
 
 #include "stm32f7_discovery_sd.h"
 
@@ -21,8 +27,14 @@ static int stm32f7_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
 static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
 
-#define STM32F7_SD_DEVNAME "stm32f7_sd_card"
+#define STM32F7_SD_DEVNAME "sd_card"
 #define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
+
+static volatile int dma_rx_finish = 0;
+static volatile struct schedee *dma_rx_thread = NULL;
+
+static volatile int dma_tx_finish = 0;
+static volatile struct schedee *dma_tx_thread = NULL;
 
 #if OPTION_GET(BOOLEAN, use_local_buf)
 #define USE_LOCAL_BUF
@@ -32,6 +44,8 @@ static irq_return_t stm32_dma_rx_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
 	HAL_DMA_IRQHandler(uSdHandle.hdmarx);
+	dma_rx_finish=1;
+	sched_wakeup((struct schedee *)dma_rx_thread);
 	return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32_dma_rx_irq, NULL);
@@ -40,6 +54,8 @@ static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
 	HAL_DMA_IRQHandler(uSdHandle.hdmatx);
+	dma_tx_finish=1;
+	sched_wakeup((struct schedee *)dma_tx_thread);
 	return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
@@ -134,19 +150,30 @@ static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 
 	assert(bsize == BLOCKSIZE);
 
+	dma_rx_finish=0;
+	dma_rx_thread = &thread_self()->schedee;
 #ifdef USE_LOCAL_BUF
-	res = BSP_SD_ReadBlocks_DMA((uint32_t *) sd_buf, blkno, 1) ? -1 : bsize;
-	if (res == -1) {
-		log_error("BSP_SD_ReadBlocks_DMA failed, blkno=%d\n", blkno);
-	}
-	memcpy(buf, sd_buf, bsize);
+	res = BSP_SD_ReadBlocks_DMA((uint32_t *) sd_buf, blkno, 1);
 #else
-	res = BSP_SD_ReadBlocks_DMA((uint32_t *) buf, blkno, 1) ? -1 : bsize;
-	if (res == -1) {
+	res = BSP_SD_ReadBlocks_DMA((uint32_t *) buf, blkno, 1);
+#endif
+	if (res != 0) {
 		log_error("BSP_SD_ReadBlocks_DMA failed, blkno=%d\n", blkno);
+		goto out;
 	}
+	res = SCHED_WAIT_TIMEOUT(dma_rx_finish, 100);
+	if (res != 0) {
+		log_error("timeout");
+		res = -ETIMEDOUT;
+		goto out;
+	}
+	res = bsize;
+
+#ifdef USE_LOCAL_BUF
+	memcpy(buf, sd_buf, bsize);
 #endif
 
+out:
 	return res;
 }
 
@@ -157,17 +184,28 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 
 	assert(bsize == BLOCKSIZE);
 
+	dma_tx_finish = 0;
+	dma_tx_thread = &thread_self()->schedee;
+
 #ifdef USE_LOCAL_BUF
 	memcpy(sd_buf, buf, bsize);
-	res = BSP_SD_WriteBlocks_DMA((uint32_t *) sd_buf, blkno, 1) ? -1 : bsize;
-	if (res == -1) {
-		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d\n", blkno);
-	}
+	res = BSP_SD_WriteBlocks_DMA((uint32_t *) sd_buf, blkno, 1);
 #else
-	res = BSP_SD_WriteBlocks_DMA((uint32_t *) buf, blkno, 1) ? -1 : bsize;
-	if (res == -1) {
-		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d\n", blkno);
-	}
+	res = BSP_SD_WriteBlocks_DMA((uint32_t *) buf, blkno, 1);
 #endif
+	if (res != 0) {
+		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d\n", blkno);
+		goto out;
+	}
+
+	res = SCHED_WAIT_TIMEOUT(dma_tx_finish, 100);
+	if (res != 0) {
+		log_error("timeout");
+		res = -ETIMEDOUT;
+		goto out;
+	}
+	res = bsize;
+
+out:
 	return res;
 }
