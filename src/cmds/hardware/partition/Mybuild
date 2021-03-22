@@ -18,4 +18,6 @@ package embox.cmd.hw
 	''')
 module partition {
 	source "partition.c"
+
+	depends embox.driver.block.partition
 }
