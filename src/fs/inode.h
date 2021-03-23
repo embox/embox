@@ -45,6 +45,8 @@ struct inode {
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
 
+	int      i_no;
+
 	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
 	uid_t                 uid;/* owner user ID */
 	gid_t                 gid;/* owner group ID */
