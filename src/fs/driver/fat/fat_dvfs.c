@@ -87,64 +87,7 @@ succ_out:
 	return node;
 }
 
-/* @brief Create new file or directory
- * @param i_new Inode to be filled
- * @param i_dir Inode realted to the parent
- * @param mode  Used to figure out file type
- *
- * @return Negative error code
- */
-static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-	struct dirinfo *di;
-	char *name;
-
-	assert(i_dir && i_new);
-
-	inode_size_set(i_new, 0);
-
-	di = inode_priv(i_dir);
-
-	name = inode_name(i_new);
-	assert(name);
-
-	/* TODO check file exists */
-	assert(i_dir->i_sb);
-	fsi = i_dir->i_sb->sb_data;
-
-	fat_reset_dir(di);
-	read_dir_buf(di);
-
-	if (S_ISDIR(i_new->i_mode)) {
-		struct dirinfo *new_di;
-		new_di = fat_dirinfo_alloc();
-		if (!new_di) {
-			return -ENOMEM;
-		}
-		new_di->p_scratch = fat_sector_buff;
-		fi = &new_di->fi;
-	} else {
-		fi = fat_file_alloc();
-		if (!fi) {
-			return -ENOMEM;
-		}
-	}
-
-	inode_priv_set(i_new, fi);
-
-	fi->volinfo = &fsi->vi;
-	fi->fdi     = di;
-	fi->fsi     = fsi;
-	fi->mode   |= i_new->i_mode;
-
-	if (0 != fat_create_file(fi, di, name, fi->mode)) {
-		return -EIO;
-	}
-
-	return 0;
-}
-
+extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
 /* Declaration of operations */
 struct inode_operations fat_iops = {
 	.create   = fat_create,
@@ -179,6 +122,7 @@ struct super_block_operations fat_sbops = {
 	.destroy_inode = fat_destroy_inode,
 };
 
+extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 extern int fat_format(struct block_dev *dev, void *priv);
