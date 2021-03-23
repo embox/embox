@@ -97,10 +97,12 @@ succ_out:
 static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
-	struct dirinfo *di, *new_di;
+	struct dirinfo *di;
 	char *name;
 
 	assert(i_dir && i_new);
+
+	inode_size_set(i_new, 0);
 
 	di = inode_priv(i_dir);
 
@@ -116,13 +118,16 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	read_dir_buf(di);
 
 	if (S_ISDIR(i_new->i_mode)) {
-		if (!(new_di = fat_dirinfo_alloc())) {
+		struct dirinfo *new_di;
+		new_di = fat_dirinfo_alloc();
+		if (!new_di) {
 			return -ENOMEM;
 		}
 		new_di->p_scratch = fat_sector_buff;
 		fi = &new_di->fi;
 	} else {
-		if (!(fi = fat_file_alloc())) {
+		fi = fat_file_alloc();
+		if (!fi) {
 			return -ENOMEM;
 		}
 	}
