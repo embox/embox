@@ -2033,6 +2033,7 @@ int fat_fill_sb(struct super_block *sb, const char *source) {
 	sb->bdev    = bdev;
 
 	if (fat_get_volinfo(bdev, &fsi->vi, 0)) {
+		rc = -EBUSY;
 		goto error;
 	}
 
