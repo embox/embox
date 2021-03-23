@@ -15,20 +15,6 @@
 
 #include "ramfs.h"
 
-static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	struct ramfs_file_info *fi;
-
-	if (S_ISREG(i_new->i_mode)) {
-		fi = ramfs_file_alloc(i_new);
-		if (NULL == fi) {
-			return -ENOMEM;
-		}
-		fi->mode = i_new->i_mode;
-	}
-
-	return 0;
-}
-
 struct inode_operations ramfs_iops;
 struct super_block_operations { };
 struct super_block_operations ramfs_sbops;
