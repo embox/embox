@@ -66,8 +66,11 @@ static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
 	di = inode_priv(i_dir);
 
 	name = inode_name(i_new);
+	assert(name);
 
-	fsi = di->fi.fsi;
+	/* TODO check file exists */
+	assert(i_dir->i_sb);
+	fsi = i_dir->i_sb->sb_data;
 
 	fat_reset_dir(di);
 	read_dir_buf(di);
