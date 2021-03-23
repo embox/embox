@@ -156,3 +156,7 @@ unsigned inode_mtime(const struct inode *node) {
 void inode_mtime_set(struct inode *node, unsigned mtime) {
 	node->nas->fi->ni.mtime = mtime;
 }
+
+char *inode_name(struct inode *node) {
+	return node->name;
+}

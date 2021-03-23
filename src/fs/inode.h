@@ -101,6 +101,7 @@ extern unsigned inode_ctime(const struct inode *node);
 extern void inode_ctime_set(struct inode *node, unsigned ctime);
 extern unsigned inode_mtime(const struct inode *node);
 extern void inode_mtime_set(struct inode *node, unsigned mtime);
+extern char *inode_name(struct inode *node);
 
 static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->i_mode);
