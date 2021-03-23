@@ -43,7 +43,7 @@ struct lookup_tuple {
 static int vfs_lookup_cmp(struct tree_link *link, void *data) {
 	struct lookup_tuple *lookup = data;
 	struct inode *node = tree_element(link, struct inode, tree_link);
-	const char *name = node->name;
+	const char *name = inode_name(node);
 	return !(strncmp(name, lookup->name, lookup->len) || name[lookup->len]);
 }
 
@@ -65,13 +65,15 @@ int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 
 	while (node->node != parent->node && node->node != NULL) {
 		size_t nnlen;
+		char *node_name;
 
 		if_root_follow_up(node);
 
+		node_name = inode_name(node->node);
 		/* Some root nodes are marked with "/" name which leads
 		 * to pathes like "///dev", so we want to avoid it  */
-		if (strcmp(node->node->name, "/") && node->node->name[0] != '\0') {
-			nnlen = strlen(node->node->name);
+		if (strcmp(node_name, "/") && node_name[0] != '\0') {
+			nnlen = strlen(node_name);
 
 			if (nnlen + 1 > ll) {
 				return -ERANGE;
@@ -83,7 +85,7 @@ int vfs_get_pathbynode_tilln(struct path *node, struct path *parent, char *path,
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 #endif
-			p = strncpy(p - nnlen, node->node->name, nnlen);
+			p = strncpy(p - nnlen, node_name, nnlen);
 #ifdef __GNUC__
 #if __GNUC__ > 7
 #pragma GCC diagnostic pop
@@ -501,7 +503,7 @@ int vfs_get_relative_path(struct inode *node, char *path, size_t path_len) {
 	while (node != prev && node != NULL) {
 		size_t nnlen;
 
-		nnlen = strlen(node->name);
+		nnlen = strlen(inode_name(node));
 
 		if (nnlen + 1 > ll) {
 			return -ERANGE;
@@ -513,7 +515,7 @@ int vfs_get_relative_path(struct inode *node, char *path, size_t path_len) {
 #pragma GCC diagnostic ignored "-Wstringop-overflow"
 #endif
 #endif
-		p = strncpy(p - nnlen, node->name, nnlen);
+		p = strncpy(p - nnlen, inode_name(node), nnlen);
 #ifdef __GNUC__
 #if __GNUC__ > 7
 #pragma GCC diagnostic pop

@@ -1527,7 +1527,7 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
 	if (node_is_directory(i_new)) {
 		i_new->i_mode |= S_IRUGO|S_IXUGO|S_IWUSR;
 		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
-				(const char *) &i_new->name, i_new->i_mode))) {
+				(const char *) inode_name(i_new), i_new->i_mode))) {
 			return -rc;
 		}
 		/* file info for new dir will be allocate into */
@@ -1540,7 +1540,7 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
 				return ENOMEM;
 			}
 		if (0 != (rc = jffs2_create(parents_fi->_inode,
-				(const unsigned char *) &i_new->name,
+				(const unsigned char *) inode_name(i_new),
 								i_new->i_mode, &fi->_inode))) {
 			return -rc;
 		}
@@ -1562,12 +1562,12 @@ static int jffs2fs_delete(struct inode *node) {
 	fi = inode_priv(node);
 	if (node_is_directory(node)) {
 		if (0 != (rc = jffs2_ops_rmdir(par_fi->_inode,
-						(const char *) node->name))) {
+						(const char *) inode_name(node)))) {
 			return -rc;
 		}
 	} else {
 		if (0 != (rc = jffs2_ops_unlink(par_fi->_inode,
-						(const char *) node->name))) {
+						(const char *) inode_name(node)))) {
 			return -rc;
 		}
 	}

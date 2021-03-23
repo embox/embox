@@ -65,7 +65,7 @@ static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
 
 	di = inode_priv(i_dir);
 
-	name = i_new->name;
+	name = inode_name(i_new);
 
 	fsi = di->fi.fsi;
 

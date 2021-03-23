@@ -592,8 +592,8 @@ static int nfsfs_create(struct inode *parent_node, struct inode *node) {
 	req.new.dir_fh = &parent_fi->fh.name_fh;
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
-	strncpy(name.data, node->name, NAME_MAX + 1);
-	name.len = strlen(node->name);
+	strncpy(name.data, inode_name(node), NAME_MAX + 1);
+	name.len = strlen(inode_name(node));
 	req.new.fname = &name;
 	/* set attribute of new file */
 	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =

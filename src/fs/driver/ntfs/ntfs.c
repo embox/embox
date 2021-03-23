@@ -78,7 +78,7 @@ static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_n
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;
-	ufilename_len = ntfs_mbstoucs(new_node->name, &ufilename);
+	ufilename_len = ntfs_mbstoucs(inode_name(new_node), &ufilename);
 	if (ufilename_len == -1) {
 		return -errno;
 	}
@@ -148,7 +148,7 @@ static int embox_ntfs_node_delete(struct inode *node) {
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
 	ufilename = NULL;
-	ufilename_len = ntfs_mbstoucs(node->name, &ufilename);
+	ufilename_len = ntfs_mbstoucs(inode_name(node), &ufilename);
 	if (ufilename_len == -1) {
 		return -errno;
 	}
