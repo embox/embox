@@ -50,6 +50,7 @@ static int nvic_init(void) {
 
 	for (i = trap_table_len; i < EXCEPTION_TABLE_SZ; i++) {
 		exception_table[i] = ((int) arm_m_irq_entry) | 1;
+		irqctrl_disable(i);
 	}
 
 	REG_STORE(SCB_VTOR, SCB_VTOR_IN_RAM | (int) exception_table);
