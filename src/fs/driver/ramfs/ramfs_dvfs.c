@@ -79,7 +79,7 @@ static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 			return -ENOMEM;
 		}
 		fi->mode = i_new->i_mode;
-		strncpy(fi->name, i_new->i_dentry->name, sizeof(fi->name) - 1);
+		strncpy(fi->name, inode_name(i_new), sizeof(fi->name) - 1);
 
 		i_new->i_no = fi->index;
 	}

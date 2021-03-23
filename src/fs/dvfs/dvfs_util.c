@@ -84,7 +84,7 @@ int dvfs_default_destroy_inode(struct inode *inode) {
 int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 	assert(inode);
 	if (inode->i_dentry)
-		strcpy(buf, inode->i_dentry->name);
+		strcpy(buf, inode_name(inode));
 	else
 		strcpy(buf, "empty");
 

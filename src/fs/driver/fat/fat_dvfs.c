@@ -107,7 +107,7 @@ static int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	di = inode_priv(i_dir);
 
 	assert(i_new->i_dentry);
-	name = i_new->i_dentry->name;
+	name = inode_name(i_new);
 	assert(name);
 
 	/* TODO check file exists */
