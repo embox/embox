@@ -9,6 +9,7 @@
 #include <assert.h>
 
 #include <fs/inode.h>
+#include <fs/dentry.h>
 
 void *inode_priv(const struct inode *node) {
 	return node->i_data;
@@ -40,4 +41,8 @@ unsigned inode_mtime(const struct inode *node) {
 
 void inode_mtime_set(struct inode *node, unsigned mtime) {
 	node->mtime = mtime;
+}
+
+char *inode_name(struct inode *node) {
+	return node->i_dentry->name;
 }

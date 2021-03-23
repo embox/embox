@@ -40,6 +40,7 @@ extern unsigned inode_ctime(const struct inode *node);
 extern void inode_ctime_set(struct inode *node, unsigned ctime);
 extern unsigned inode_mtime(const struct inode *node);
 extern void inode_mtime_set(struct inode *node, unsigned mtime);
+extern char *inode_name(struct inode *node);
 
 extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
 #define inode_new     dvfs_alloc_inode
