@@ -69,6 +69,9 @@ static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
 
 	fsi = di->fi.fsi;
 
+	fat_reset_dir(di);
+	read_dir_buf(di);
+
 	if (S_ISDIR(i_new->i_mode)) {
 		struct dirinfo *new_di;
 		new_di = fat_dirinfo_alloc();
