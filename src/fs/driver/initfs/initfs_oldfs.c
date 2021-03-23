@@ -55,7 +55,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int initfs_create_node(struct inode *parent_node, struct inode *node) {
+static int initfs_create_node(struct inode *node, struct inode *parent_node, int mode) {
 	return -EACCES;
 }
 

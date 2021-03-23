@@ -1431,7 +1431,7 @@ static int jffs2_free_fs(struct super_block *sb) {
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
-static int jffs2fs_create(struct inode *parent_node, struct inode *i_new);
+static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
 
@@ -1518,7 +1518,7 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 	return 0;
 }
 
-static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
+static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode) {
 	int rc;
 	struct jffs2_file_info *fi, *parents_fi;
 

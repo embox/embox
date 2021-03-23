@@ -641,7 +641,7 @@ static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_fill_sb(struct super_block *sb, const char *source);
 static int ext4fs_clean_sb(struct super_block *sb);
 static int ext4fs_mount(struct super_block *sb, struct inode *dest);
-static int ext4fs_create(struct inode *parent_node, struct inode *node);
+static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext4fs_delete(struct inode *node);
 static int ext4fs_truncate(struct inode *node, off_t length);
 
@@ -680,7 +680,7 @@ static ext4_file_info_t *ext4_fi_alloc(struct inode *i_new, void *fs) {
 	return fi;
 }
 
-static int ext4fs_create(struct inode *parent_node, struct inode *node) {
+static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
 	struct nas *nas;
 

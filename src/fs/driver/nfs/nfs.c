@@ -215,7 +215,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_mount(struct super_block *sb, struct inode *dest);
-static int nfsfs_create(struct inode *parent_node, struct inode *node);
+static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
 static int nfs_umount_entry(struct inode *node);
@@ -563,7 +563,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 	return 0;
 }
 
-static int nfsfs_create(struct inode *parent_node, struct inode *node) {
+static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode) {
 	nfs_file_info_t *parent_fi, *fi;
 	struct nfs_fs_info *fsi;
 	create_req_t  req;

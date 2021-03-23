@@ -333,7 +333,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	return res;
 }
 
-static int embox_cifs_node_create(struct inode *parent_node, struct inode *new_node) {
+static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_node, int I_mode) {
 	struct cifs_fs_info *pfsi;
 	char fileurl[PATH_MAX];
 	SMBCFILE *file;

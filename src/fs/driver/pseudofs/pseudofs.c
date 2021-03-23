@@ -10,7 +10,7 @@
 #include <fs/fs_driver.h>
 
 
-static int pseudofs_create(struct inode *parent_node, struct inode *new_node) {
+static int pseudofs_create(struct inode *new_node, struct inode *parent_node, int mode) {
 	return 0;
 }
 

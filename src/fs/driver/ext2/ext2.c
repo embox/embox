@@ -533,7 +533,7 @@ static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(struct super_block *sb, struct inode *dest);
-static int ext2fs_create(struct inode *parent_node, struct inode *node);
+static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext2fs_delete(struct inode *node);
 static int ext2fs_truncate(struct inode *node, off_t length);
 static int ext2_fill_sb(struct super_block *sb, const char *source);
@@ -574,7 +574,7 @@ static ext2_file_info_t *ext2_fi_alloc(struct inode *i_new, void *fs) {
 	return fi;
 }
 
-static int ext2fs_create(struct inode *parent_node, struct inode *node) {
+static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
 	struct nas *nas;
 

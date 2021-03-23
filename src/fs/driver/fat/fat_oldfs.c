@@ -53,7 +53,7 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
+static int fatfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
 	struct dirinfo *di;

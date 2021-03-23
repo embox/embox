@@ -65,7 +65,7 @@ POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
 
 static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
 
-static int embox_ntfs_node_create(struct inode *parent_node, struct inode *new_node) {
+static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_node, int i_mode) {
 	ntfs_inode *ni, *pni;
 	ntfschar *ufilename;
 	int ufilename_len;

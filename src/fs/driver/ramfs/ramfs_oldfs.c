@@ -15,7 +15,7 @@
 
 #include "ramfs.h"
 
-static int ramfs_create(struct inode *i_dir, struct inode *i_new) {
+static int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct ramfs_file_info *fi;
 
 	if (S_ISREG(i_new->i_mode)) {

@@ -65,7 +65,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 			goto out;
 		}
 
-		retval = drv->fsop->create_node(parent->node, node.node);
+		retval = drv->fsop->create_node(node.node, parent->node, node.node->i_mode);
 		if (retval) {
 			goto out;
 		}
@@ -166,7 +166,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	if (0 != (ret = drv->fsop->create_node(dir_path->node, child->node))) {
+	if (0 != (ret = drv->fsop->create_node(child->node, dir_path->node, child->node->i_mode))) {
 		SET_ERRNO(-ret);
 		vfs_del_leaf(child->node);
 		return -1;
