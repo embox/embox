@@ -320,7 +320,6 @@ static struct file_operations ext3_fop = {
 };
 
 static struct fsop_desc ext3_fsop = {
-	.format	      = ext3fs_format,
 	.mount	      = ext3fs_mount,
 	.create_node  = ext3fs_create,
 	.delete_node  = ext3fs_delete,
@@ -335,6 +334,7 @@ static struct fsop_desc ext3_fsop = {
 
 static struct fs_driver ext3fs_driver = {
 	.name = EXT3_NAME,
+	.format   = ext3fs_format,
 	.fill_sb = ext3fs_fill_sb,
 	.clean_sb = ext3fs_clean_sb,
 	.file_op = &ext3_fop,

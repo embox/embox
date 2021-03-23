@@ -646,7 +646,6 @@ static int ext4fs_delete(struct inode *node);
 static int ext4fs_truncate(struct inode *node, off_t length);
 
 static struct fsop_desc ext4_fsop = {
-	.format       = ext4fs_format,
 	.mount	      = ext4fs_mount,
 	.create_node  = ext4fs_create,
 	.delete_node  = ext4fs_delete,
@@ -661,6 +660,7 @@ static struct fsop_desc ext4_fsop = {
 
 static struct fs_driver ext4fs_driver = {
 	.name     = EXT4_NAME,
+	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
 	.file_op  = &ext4_fop,

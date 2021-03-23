@@ -223,7 +223,6 @@ static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
 
 static struct fsop_desc nfsfs_fsop = {
-	.format = nfsfs_format,
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
 	.delete_node = nfsfs_delete,
@@ -233,6 +232,7 @@ static struct fsop_desc nfsfs_fsop = {
 
 static struct fs_driver nfsfs_driver = {
 	.name     = "nfs",
+	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
 	.file_op  = &nfsfs_fop,

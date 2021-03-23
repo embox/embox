@@ -312,7 +312,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		if (NULL == drv) {
 			return -EINVAL;
 		}
-		if (NULL == drv->fsop->format) {
+		if (NULL == drv->format) {
 			return  -ENOSYS;
 		}
 	}
@@ -331,7 +331,7 @@ int kformat(const char *pathname, const char *fs_type) {
 	}
 
 	bdev = node.node->nas->fi->privdata;
-	if (0 != (res = drv->fsop->format(bdev, NULL))) {
+	if (0 != (res = drv->format(bdev, NULL))) {
 		errno = -res;
 		return -1;
 	}

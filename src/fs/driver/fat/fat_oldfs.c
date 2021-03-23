@@ -107,7 +107,6 @@ static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
 }
 extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
-	.format = fat_format,
 	.mount = fatfs_mount,
 	.create_node = fatfs_create,
 	.delete_node = fat_delete,
@@ -117,6 +116,7 @@ static struct fsop_desc fatfs_fsop = {
 
 static const struct fs_driver fatfs_driver = {
 	.name     = "vfat",
+	.format = fat_format,
 	.fill_sb  = fat_fill_sb,
 	.clean_sb = fat_clean_sb,
 	.file_op  = &fat_fops,
