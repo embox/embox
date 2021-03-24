@@ -363,7 +363,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 		.flags     = i_new->i_mode & S_IFMT,
 	};
 
-	strcpy((char *) dirent.name, i_new->i_dentry->name);
+	strcpy((char *) dirent.name, inode_name(i_new));
 	dfs_write_dirent(sbi->inode_count, &dirent);
 
 	*i_new = (struct inode) {

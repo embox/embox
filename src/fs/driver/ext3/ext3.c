@@ -53,7 +53,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 static int ext3fs_format(struct block_dev *bdev, void *priv);
 static int ext3fs_fill_sb(struct super_block *sb, const char *source);
 static int ext3fs_mount(struct super_block *sb, struct inode *dest);
-static int ext3fs_create(struct inode *parent_node, struct inode *node);
+static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext3fs_delete(struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
 static int ext3fs_umount_entry(struct inode *node);
@@ -96,7 +96,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
-static int ext3fs_create(struct inode *parent_node, struct inode *node) {
+static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 	int res = -1;
@@ -110,7 +110,7 @@ static int ext3fs_create(struct inode *parent_node, struct inode *node) {
 	if (!(handle = journal_start(fsi->journal, 3 * (ext3_trans_blocks(1) + 2)))) {
 		return -1;
 	}
-	res = ext2fs_driver->fsop->create_node(parent_node, node);
+	res = ext2fs_driver->fsop->create_node(node, parent_node, node->i_mode);
 	journal_stop(handle);
 
 	return res;
@@ -320,7 +320,6 @@ static struct file_operations ext3_fop = {
 };
 
 static struct fsop_desc ext3_fsop = {
-	.format	      = ext3fs_format,
 	.mount	      = ext3fs_mount,
 	.create_node  = ext3fs_create,
 	.delete_node  = ext3fs_delete,
@@ -335,6 +334,7 @@ static struct fsop_desc ext3_fsop = {
 
 static struct fs_driver ext3fs_driver = {
 	.name = EXT3_NAME,
+	.format   = ext3fs_format,
 	.fill_sb = ext3fs_fill_sb,
 	.clean_sb = ext3fs_clean_sb,
 	.file_op = &ext3_fop,

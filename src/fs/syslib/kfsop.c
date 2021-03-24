@@ -65,7 +65,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 			goto out;
 		}
 
-		retval = drv->fsop->create_node(parent->node, node.node);
+		retval = drv->fsop->create_node(node.node, parent->node, node.node->i_mode);
 		if (retval) {
 			goto out;
 		}
@@ -166,7 +166,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	if (0 != (ret = drv->fsop->create_node(dir_path->node, child->node))) {
+	if (0 != (ret = drv->fsop->create_node(child->node, dir_path->node, child->node->i_mode))) {
 		SET_ERRNO(-ret);
 		vfs_del_leaf(child->node);
 		return -1;
@@ -312,7 +312,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		if (NULL == drv) {
 			return -EINVAL;
 		}
-		if (NULL == drv->fsop->format) {
+		if (NULL == drv->format) {
 			return  -ENOSYS;
 		}
 	}
@@ -331,7 +331,7 @@ int kformat(const char *pathname, const char *fs_type) {
 	}
 
 	bdev = node.node->nas->fi->privdata;
-	if (0 != (res = drv->fsop->format(bdev, NULL))) {
+	if (0 != (res = drv->format(bdev, NULL))) {
 		errno = -res;
 		return -1;
 	}
@@ -376,7 +376,7 @@ static int vfs_mount_walker(struct inode *dir) {
 
 		assert(dir->i_ops);
 		res = dir->i_ops->iterate(node,
-				node->name,
+				inode_name(node),
 				dir,
 				&dir_context);
 
@@ -581,12 +581,15 @@ int krename(const char *oldpath, const char *newpath) {
 		end_link = tree_children_end(&oldnode.node->tree_link);
 
 		while (link != end_link) {
+			char *node_name;
+
 			diritem = tree_element(link, typeof(*diritem), tree_link);
 			link = tree_children_next(link);
 
-			if (0 != strcmp(".", diritem->name) &&
-					0 != strcmp("..", diritem->name)) {
-				diritemlen = strlen(diritem->name);
+			node_name = inode_name(diritem);
+			if (0 != strcmp(".", node_name) &&
+					0 != strcmp("..", node_name)) {
+				diritemlen = strlen(node_name);
 				oldpatharg =
 						calloc(strlen(oldpath) + diritemlen + 2, sizeof(char));
 				newpatharg =
@@ -600,12 +603,12 @@ int krename(const char *oldpath, const char *newpath) {
 				if (oldpatharg[strlen(oldpatharg) - 1] != '/') {
 					strcat(oldpatharg, "/");
 				}
-				strcat(oldpatharg, diritem->name);
+				strcat(oldpatharg, node_name);
 				strcat(newpatharg, newpath);
 				if (newpatharg[strlen(newpatharg) - 1] != '/') {
 					strcat(newpatharg, "/");
 				}
-				strcat(newpatharg, diritem->name);
+				strcat(newpatharg, node_name);
 
 				/* Call itself recursively */
 				if (-1 == krename(oldpatharg, newpatharg)) {

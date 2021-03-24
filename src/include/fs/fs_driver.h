@@ -18,9 +18,8 @@ struct block_dev;
 struct super_block;
 
 struct fsop_desc {
-	int (*format)(struct block_dev *bdev, void *priv);
 	int (*mount)(struct super_block *sb, struct inode *dest);
-	int (*create_node)(struct inode *parent_node, struct inode *new_node);
+	int (*create_node)(struct inode *new_node, struct inode *parent_node, int mode);
 	int (*delete_node)(struct inode *node);
 
 	/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
@@ -43,6 +42,7 @@ struct file_operations;
  */
 struct fs_driver {
 	const char                   *name;
+	int (*format)(struct block_dev *bdev, void *priv);
 	int (*fill_sb)(struct super_block *sb, const char *source);
 	int (*clean_sb)(struct super_block *sb);
 	const struct file_operations *file_op;

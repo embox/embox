@@ -80,7 +80,7 @@ int security_node_create(struct inode *dir, mode_t mode) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__, dir->name);
+	smac_audit_prepare(&audit, __func__, inode_name(dir));
 
 	if (0 >= (res = node_getlabel(dir, label, SMAC_LABELLEN))) {
 		return res;
@@ -98,7 +98,7 @@ int security_node_permissions(struct inode *node, int flags) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__, node->name);
+	smac_audit_prepare(&audit, __func__, inode_name(node));
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
 		return res;
@@ -125,7 +125,7 @@ int security_xattr_get(struct inode *node, const char *name, char *value,
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__, node->name);
+	smac_audit_prepare(&audit, __func__, inode_name(node));
 
 	if (1 != (res = security_xattr_is_service_access(name, S_IROTH,
 					&audit))) {
@@ -145,7 +145,7 @@ int security_xattr_set(struct inode *node, const char *name,
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__, node->name);
+	smac_audit_prepare(&audit, __func__, inode_name(node));
 
 	if (1 != (res = security_xattr_is_service_access(name, S_IWOTH,
 					&audit))) {
@@ -164,7 +164,7 @@ int security_xattr_list(struct inode *node, char *list, size_t len) {
 	struct smac_audit audit;
 	int res;
 
-	smac_audit_prepare(&audit, __func__, node->name);
+	smac_audit_prepare(&audit, __func__, inode_name(node));
 
 	if (0 >= (res = node_getlabel(node, label, SMAC_LABELLEN))) {
 		return res;

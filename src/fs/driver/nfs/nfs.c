@@ -215,7 +215,7 @@ static int nfsfs_fseek(void *file, long offset, int whence) {
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_mount(struct super_block *sb, struct inode *dest);
-static int nfsfs_create(struct inode *parent_node, struct inode *node);
+static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
 static int nfs_umount_entry(struct inode *node);
@@ -223,7 +223,6 @@ static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
 
 static struct fsop_desc nfsfs_fsop = {
-	.format = nfsfs_format,
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
 	.delete_node = nfsfs_delete,
@@ -233,6 +232,7 @@ static struct fsop_desc nfsfs_fsop = {
 
 static struct fs_driver nfsfs_driver = {
 	.name     = "nfs",
+	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
 	.file_op  = &nfsfs_fop,
@@ -563,7 +563,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 	return 0;
 }
 
-static int nfsfs_create(struct inode *parent_node, struct inode *node) {
+static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode) {
 	nfs_file_info_t *parent_fi, *fi;
 	struct nfs_fs_info *fsi;
 	create_req_t  req;
@@ -592,8 +592,8 @@ static int nfsfs_create(struct inode *parent_node, struct inode *node) {
 	req.new.dir_fh = &parent_fi->fh.name_fh;
 	/* set new file name */
 	memset((void *) &name, 0, sizeof(name));
-	strncpy(name.data, node->name, NAME_MAX + 1);
-	name.len = strlen(node->name);
+	strncpy(name.data, inode_name(node), NAME_MAX + 1);
+	name.len = strlen(inode_name(node));
 	req.new.fname = &name;
 	/* set attribute of new file */
 	req.mode_vf = req.uid_vf = req.gid_vf = req.size_vf =

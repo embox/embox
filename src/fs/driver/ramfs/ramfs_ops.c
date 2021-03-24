@@ -1,5 +1,6 @@
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <drivers/block_dev.h>
 #include <fs/file_desc.h>
@@ -253,6 +254,25 @@ int ramfs_truncate(struct inode *node, off_t length) {
 	}
 
 	inode_size_set(node, length);
+
+	return 0;
+}
+
+int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
+	struct ramfs_file_info *fi;
+
+	if (S_ISREG(i_new->i_mode)) {
+		assert(i_new);
+
+		fi = ramfs_file_alloc(i_new);
+		if (NULL == fi) {
+			return -ENOMEM;
+		}
+		fi->mode = i_new->i_mode;
+		strncpy(fi->name, inode_name(i_new), sizeof(fi->name) - 1);
+
+		i_new->i_no = fi->index;
+	}
 
 	return 0;
 }

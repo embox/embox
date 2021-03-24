@@ -1431,12 +1431,11 @@ static int jffs2_free_fs(struct super_block *sb) {
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
-static int jffs2fs_create(struct inode *parent_node, struct inode *i_new);
+static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
 
 static struct fsop_desc jffs2_fsop = {
-	.format	      = jffs2fs_format,
 	.mount	      = jffs2fs_mount,
 	.create_node  = jffs2fs_create,
 	.delete_node  = jffs2fs_delete,
@@ -1452,6 +1451,7 @@ static struct fsop_desc jffs2_fsop = {
 static int jffs2_fill_sb(struct super_block *sb, const char *source);
 static struct fs_driver jffs2fs_driver = {
 	.name = FS_NAME,
+	.format      = jffs2fs_format,
 	.fill_sb = jffs2_fill_sb,
 	.clean_sb = jffs2_clean_sb,
 	.file_op = &jffs2_fop,
@@ -1518,7 +1518,7 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 	return 0;
 }
 
-static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
+static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode) {
 	int rc;
 	struct jffs2_file_info *fi, *parents_fi;
 
@@ -1527,7 +1527,7 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
 	if (node_is_directory(i_new)) {
 		i_new->i_mode |= S_IRUGO|S_IXUGO|S_IWUSR;
 		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
-				(const char *) &i_new->name, i_new->i_mode))) {
+				(const char *) inode_name(i_new), i_new->i_mode))) {
 			return -rc;
 		}
 		/* file info for new dir will be allocate into */
@@ -1540,7 +1540,7 @@ static int jffs2fs_create(struct inode *parent_node, struct inode *i_new) {
 				return ENOMEM;
 			}
 		if (0 != (rc = jffs2_create(parents_fi->_inode,
-				(const unsigned char *) &i_new->name,
+				(const unsigned char *) inode_name(i_new),
 								i_new->i_mode, &fi->_inode))) {
 			return -rc;
 		}
@@ -1562,12 +1562,12 @@ static int jffs2fs_delete(struct inode *node) {
 	fi = inode_priv(node);
 	if (node_is_directory(node)) {
 		if (0 != (rc = jffs2_ops_rmdir(par_fi->_inode,
-						(const char *) node->name))) {
+						(const char *) inode_name(node)))) {
 			return -rc;
 		}
 	} else {
 		if (0 != (rc = jffs2_ops_unlink(par_fi->_inode,
-						(const char *) node->name))) {
+						(const char *) inode_name(node)))) {
 			return -rc;
 		}
 	}

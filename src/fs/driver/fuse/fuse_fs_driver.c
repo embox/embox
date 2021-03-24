@@ -143,7 +143,7 @@ static int fuse_remove(struct inode *inode) {
 
 	fuse_fill_req(req, inode, NULL);
 	task = fuse_in(sb_fuse_data);
-	sb_fuse_data->fuse_lowlevel_ops->unlink((fuse_req_t) req, parent->i_no, inode->i_dentry->name);
+	sb_fuse_data->fuse_lowlevel_ops->unlink((fuse_req_t) req, parent->i_no, inode_name(inode));
 	fuse_out(sb_fuse_data, task);
 	fuse_req_free(req);
 
@@ -300,10 +300,10 @@ static int fuse_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	task = fuse_in(sb_fuse_data);
 	if (mode & S_IFDIR) {
 		sb_fuse_data->fuse_lowlevel_ops->mkdir(
-				(fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, i_new->i_mode);
+				(fuse_req_t) req, i_dir->i_no, inode_name(i_new), i_new->i_mode);
 	} else {
 		sb_fuse_data->fuse_lowlevel_ops->create(
-				(fuse_req_t) req, i_dir->i_no, i_new->i_dentry->name, i_new->i_mode, req->fi);
+				(fuse_req_t) req, i_dir->i_no, inode_name(i_new), i_new->i_mode, req->fi);
 	}
 	fuse_out(sb_fuse_data, task);
 	fuse_req_free(req);

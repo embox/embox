@@ -53,57 +53,11 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int fatfs_create(struct inode *i_dir, struct inode *i_new) {
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-	struct dirinfo *di;
-	char *name;
-
-	assert(i_dir && i_new);
-
-	inode_size_set(i_new, 0);
-
-	di = inode_priv(i_dir);
-
-	name = i_new->name;
-
-	fsi = di->fi.fsi;
-
-	if (S_ISDIR(i_new->i_mode)) {
-		struct dirinfo *new_di;
-		new_di = fat_dirinfo_alloc();
-		if (!new_di) {
-			return -ENOMEM;
-		}
-		new_di->p_scratch = fat_sector_buff;
-		fi = &new_di->fi;
-	} else {
-		fi = fat_file_alloc();
-		if (!fi) {
-			return -ENOMEM;
-		}
-	}
-
-	inode_priv_set(i_new, fi);
-
-	fi->volinfo = &fsi->vi;
-	fi->fdi     = di;
-	fi->fsi     = fsi;
-	fi->mode   |= i_new->i_mode;
-
-	if (0 != fat_create_file(fi, di, name, fi->mode)) {
-		return -EIO;
-	}
-
-	return 0;
-
-	return 0;
-}
+extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
 extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
-	.format = fat_format,
 	.mount = fatfs_mount,
-	.create_node = fatfs_create,
+	.create_node = fat_create,
 	.delete_node = fat_delete,
 	.truncate = fat_truncate,
 	.umount_entry = fatfs_umount_entry,
@@ -111,6 +65,7 @@ static struct fsop_desc fatfs_fsop = {
 
 static const struct fs_driver fatfs_driver = {
 	.name     = "vfat",
+	.format = fat_format,
 	.fill_sb  = fat_fill_sb,
 	.clean_sb = fat_clean_sb,
 	.file_op  = &fat_fops,

@@ -533,14 +533,13 @@ static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(struct super_block *sb, struct inode *dest);
-static int ext2fs_create(struct inode *parent_node, struct inode *node);
+static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext2fs_delete(struct inode *node);
 static int ext2fs_truncate(struct inode *node, off_t length);
 static int ext2_fill_sb(struct super_block *sb, const char *source);
 static int ext2_clean_sb(struct super_block *sb);
 
 static struct fsop_desc ext2_fsop = {
-	.format	      = ext2fs_format,
 	.mount	      = ext2fs_mount,
 	.create_node  = ext2fs_create,
 	.delete_node  = ext2fs_delete,
@@ -555,6 +554,7 @@ static struct fsop_desc ext2_fsop = {
 
 static struct fs_driver ext2fs_driver = {
 	.name     = FS_NAME,
+	.format   = ext2fs_format,
 	.fill_sb  = ext2_fill_sb,
 	.clean_sb = ext2_clean_sb,
 	.file_op  = &ext2_fop,
@@ -574,7 +574,7 @@ static ext2_file_info_t *ext2_fi_alloc(struct inode *i_new, void *fs) {
 	return fi;
 }
 
-static int ext2fs_create(struct inode *parent_node, struct inode *node) {
+static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
 	struct nas *nas;
 
@@ -1919,7 +1919,7 @@ static int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
 		/* It was not possible to enter . or .. probably disk was full -
 		 * links counts haven't been touched.
 		 */
-		ext2_dir_operation(i_dir->nas, (char *) i_new->name/*string*/,
+		ext2_dir_operation(i_dir->nas, inode_name(i_new)/*string*/,
 				&dot, DELETE, 0);
 		/* TODO del inode and clear the pool*/
 		return (r1 | r2);
@@ -2470,7 +2470,7 @@ static int ext2_new_node(struct inode *i_new, struct inode *i_dir) {
 	ext2_rw_inode(i_new->nas, &fdi, EXT2_W_INODE);/* force inode to disk now */
 
 	/* New inode acquired.  Try to make directory entry. */
-	if (0 != (rc = ext2_dir_operation(i_dir->nas, (char *) i_new->name,
+	if (0 != (rc = ext2_dir_operation(i_dir->nas, inode_name(i_new),
 			&fi->f_num, ENTER, i_new->i_mode))) {
 		return rc;
 	}
@@ -2488,7 +2488,7 @@ static int ext2_unlink_file(struct nas *dir_nas, struct nas *nas) {
 		return rc;
 	}
 	return ext2_dir_operation(dir_nas,
-			(char *) nas->node->name, NULL, DELETE, 0);
+			inode_name(nas->node), NULL, DELETE, 0);
 }
 
 static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
@@ -2504,7 +2504,7 @@ static int ext2_remove_dir(struct nas *dir_nas, struct nas *nas) {
 	struct ext2_file_info *fi;
 
 	fi = inode_priv(nas->node);
-	dir_name = (char *) nas->node->name;
+	dir_name = inode_name(nas->node);
 
 	/* search_dir checks that rip is a directory too. */
 	if (0 != (rc = ext2_dir_operation(nas, "", NULL, IS_EMPTY, 0))) {
