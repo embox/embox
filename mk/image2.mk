@@ -120,7 +120,8 @@ $(OBJ_DIR)/module/% : objcopy_options = \
 			$(call rename_section,$f,rodata,$(linker_section_rodata)) \
 			$(call rename_section,$f,data,$(linker_section_data)) \
 			$(call rename_section,$f,bss,$(linker_section_bss)) \
-			$(call rename_section,$f,ARM.exidx,) \
+			$(call rename_section,$f,ARM.exidx,$(linker_section_arm_exidx)) \
+			$(call rename_section,$f,ARM.extab,$(linker_section_arm_extab)) \
 	)))
 
 #
