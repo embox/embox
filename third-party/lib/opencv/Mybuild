@@ -1,5 +1,6 @@
 package third_party.lib
 
+@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/core/include/")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/opencv-4.0.1/modules/imgproc/include/")
