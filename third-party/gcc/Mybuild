@@ -1,5 +1,6 @@
 package third_party.gcc
 
+@LinkerSection(text="libsupcxx_text",rodata="libsupcxx_rodata",data="libsupcxx_data",bss="libsupcxx_bss",arm_exidx="libsupcxx_arm_exidx",arm_extab="libsupcxx_arm_extab")
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version/_target")
