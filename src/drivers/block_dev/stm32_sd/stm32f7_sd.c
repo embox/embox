@@ -22,30 +22,28 @@
 
 #include "stm32f7_discovery_sd.h"
 
-static int stm32f7_sd_init(void *arg);
-static int stm32f7_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
-static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
-static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
-
 #define STM32F7_SD_DEVNAME "sd_card"
 #define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
 
-static volatile int dma_rx_finish = 0;
-static volatile struct schedee *dma_rx_thread = NULL;
-
-static volatile int dma_tx_finish = 0;
-static volatile struct schedee *dma_tx_thread = NULL;
 
 #if OPTION_GET(BOOLEAN, use_local_buf)
 #define USE_LOCAL_BUF
+static uint8_t sd_buf[SD_BUF_SIZE];
 #endif
+
+static volatile int dma_transfer_active = 0;
+static volatile struct schedee *dma_transfer_thread = NULL;
 
 static irq_return_t stm32_dma_rx_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
 	HAL_DMA_IRQHandler(uSdHandle.hdmarx);
-	dma_rx_finish=1;
-	sched_wakeup((struct schedee *)dma_rx_thread);
+
+	if (!dma_transfer_active) {
+		dma_transfer_active = 1;
+		sched_wakeup((struct schedee *)dma_transfer_thread);
+	}
+
 	return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32_dma_rx_irq, NULL);
@@ -54,8 +52,12 @@ static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 		void *audio_dev) {
 	extern SD_HandleTypeDef uSdHandle;
 	HAL_DMA_IRQHandler(uSdHandle.hdmatx);
-	dma_tx_finish=1;
-	sched_wakeup((struct schedee *)dma_tx_thread);
+
+	if (!dma_transfer_active) {
+		dma_transfer_active = 1;
+		sched_wakeup((struct schedee *)dma_transfer_thread);
+	}
+
 	return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
@@ -68,16 +70,130 @@ static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
 }
 STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
 
-static const struct block_dev_ops stm32f7_sd_driver = {
-	.name  = STM32F7_SD_DEVNAME,
-	.ioctl = stm32f7_sd_ioctl,
-	.read  = stm32f7_sd_read,
-	.write = stm32f7_sd_write,
-	.probe = stm32f7_sd_init,
-};
+static int stm32_transfer_prepare(void) {
+	dma_transfer_active = 0;
+	dma_transfer_thread = &thread_self()->schedee;
 
-BLOCK_DEV_DRIVER_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);
+	return 0;
+}
 
+static int stm32_transfer_wait(void) {
+	int res;
+
+	res = SCHED_WAIT_TIMEOUT(dma_transfer_active, 100);
+	if (res != 0) {
+		log_error("timeout");
+		return -ETIMEDOUT;
+	}
+	return 0;
+}
+
+static int stm32f7_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
+	HAL_SD_CardInfoTypeDef info;
+
+	BSP_SD_GetCardInfo(&info);
+
+	switch (cmd) {
+	case IOCTL_GETDEVSIZE:
+		return info.BlockNbr * info.BlockSize;
+	case IOCTL_GETBLKSIZE:
+		return info.BlockSize;
+	default:
+		return -1;
+	}
+}
+
+static int stm32_sd_read_block(char *buf, blkno_t blkno) {
+	int res;
+
+	res = stm32_transfer_prepare();
+	if (res) {
+		return res;
+	}
+
+	res = BSP_SD_ReadBlocks_DMA((uint32_t *) buf, blkno, 1);
+	if (res) {
+		log_error("BSP_SD_ReadBlocks_DMA failed, blkno=%d\n", blkno);
+		return -1;
+	}
+
+	res = stm32_transfer_wait();
+	if (res) {
+		return res;
+	}
+
+	return BLOCKSIZE;
+}
+
+
+static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
+	int res = -1;
+	char *tmp_buf;
+	size_t bsize = bdev->block_size;
+
+	assert(bsize == BLOCKSIZE);
+
+#ifdef USE_LOCAL_BUF
+	tmp_buf = (char *)sd_buf;
+#else
+	tmp_buf = buf;
+#endif
+	res = stm32_sd_read_block(tmp_buf, blkno);
+	if (res < 0) {
+		return res;
+	}
+#ifdef USE_LOCAL_BUF
+	memcpy(buf, sd_buf, bsize);
+#endif
+
+	return bsize;
+}
+
+
+static int stm32_sd_write_block(char *buf, blkno_t blkno) {
+	int res;
+
+	res = stm32_transfer_prepare();
+	if (res) {
+		return res;
+	}
+
+	res = BSP_SD_WriteBlocks_DMA((uint32_t *) buf, blkno, 1);
+	if (res != 0) {
+		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d\n", blkno);
+		return -1;
+	}
+
+	res = stm32_transfer_wait();
+	if (res) {
+		return res;
+	}
+
+	return BLOCKSIZE;
+}
+
+static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
+	char *tmp_buf;
+	int res;
+	size_t bsize = bdev->block_size;
+
+	assert(bsize == BLOCKSIZE);
+
+#ifdef USE_LOCAL_BUF
+	memcpy(sd_buf, buf, bsize);
+	tmp_buf = (char *)sd_buf;
+#else
+	tmp_buf = buf;
+#endif
+	res = stm32_sd_write_block(tmp_buf, blkno);
+	if (res < 0) {
+		return res;
+	}
+
+	return bsize;
+}
+
+static const struct block_dev_ops stm32f7_sd_driver;
 static int stm32f7_sd_init(void *arg) {
 	struct block_dev *bdev;
 
@@ -119,93 +235,16 @@ static int stm32f7_sd_init(void *arg) {
 		return 0;
 	} else {
 		log_error("BSP_SD_Init error\n");
-		irq_detach(STM32_DMA_RX_IRQ, NULL);
-		irq_detach(STM32_DMA_TX_IRQ, NULL);
-		irq_detach(STM32_SDMMC_IRQ, NULL);
 		return -1;
 	}
 }
 
-static int stm32f7_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
-	HAL_SD_CardInfoTypeDef info;
+static const struct block_dev_ops stm32f7_sd_driver = {
+	.name  = STM32F7_SD_DEVNAME,
+	.ioctl = stm32f7_sd_ioctl,
+	.read  = stm32f7_sd_read,
+	.write = stm32f7_sd_write,
+	.probe = stm32f7_sd_init,
+};
 
-	BSP_SD_GetCardInfo(&info);
-
-	switch (cmd) {
-	case IOCTL_GETDEVSIZE:
-		return info.BlockNbr * info.BlockSize;
-	case IOCTL_GETBLKSIZE:
-		return info.BlockSize;
-	default:
-		return -1;
-	}
-}
-#ifdef USE_LOCAL_BUF
-static uint8_t sd_buf[SD_BUF_SIZE];
-#endif
-static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
-	assert(count <= SD_BUF_SIZE);
-	int res = -1;
-	size_t bsize = bdev->block_size;
-
-	assert(bsize == BLOCKSIZE);
-
-	dma_rx_finish=0;
-	dma_rx_thread = &thread_self()->schedee;
-#ifdef USE_LOCAL_BUF
-	res = BSP_SD_ReadBlocks_DMA((uint32_t *) sd_buf, blkno, 1);
-#else
-	res = BSP_SD_ReadBlocks_DMA((uint32_t *) buf, blkno, 1);
-#endif
-	if (res != 0) {
-		log_error("BSP_SD_ReadBlocks_DMA failed, blkno=%d\n", blkno);
-		goto out;
-	}
-	res = SCHED_WAIT_TIMEOUT(dma_rx_finish, 100);
-	if (res != 0) {
-		log_error("timeout");
-		res = -ETIMEDOUT;
-		goto out;
-	}
-	res = bsize;
-
-#ifdef USE_LOCAL_BUF
-	memcpy(buf, sd_buf, bsize);
-#endif
-
-out:
-	return res;
-}
-
-static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
-	assert(count <= SD_BUF_SIZE);
-	int res;
-	size_t bsize = bdev->block_size;
-
-	assert(bsize == BLOCKSIZE);
-
-	dma_tx_finish = 0;
-	dma_tx_thread = &thread_self()->schedee;
-
-#ifdef USE_LOCAL_BUF
-	memcpy(sd_buf, buf, bsize);
-	res = BSP_SD_WriteBlocks_DMA((uint32_t *) sd_buf, blkno, 1);
-#else
-	res = BSP_SD_WriteBlocks_DMA((uint32_t *) buf, blkno, 1);
-#endif
-	if (res != 0) {
-		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d\n", blkno);
-		goto out;
-	}
-
-	res = SCHED_WAIT_TIMEOUT(dma_tx_finish, 100);
-	if (res != 0) {
-		log_error("timeout");
-		res = -ETIMEDOUT;
-		goto out;
-	}
-	res = bsize;
-
-out:
-	return res;
-}
+BLOCK_DEV_DRIVER_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);
