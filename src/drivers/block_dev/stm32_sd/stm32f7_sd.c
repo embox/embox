@@ -31,16 +31,22 @@
 static uint8_t sd_buf[SD_BUF_SIZE];
 #endif
 
-static volatile int dma_transfer_active = 0;
+#define DMA_TRANSFER_STATE_IDLE      (0)
+#define DMA_TRANSFER_STATE_RX_START  (2)
+#define DMA_TRANSFER_STATE_RX_FIN    (3)
+#define DMA_TRANSFER_STATE_TX_START  (4)
+#define DMA_TRANSFER_STATE_TX_FIN    (5)
+
+static volatile int dma_transfer_state = DMA_TRANSFER_STATE_IDLE;
 static volatile struct schedee *dma_transfer_thread = NULL;
 
-static irq_return_t stm32_dma_rx_irq(unsigned int irq_num,
-		void *audio_dev) {
-	extern SD_HandleTypeDef uSdHandle;
+extern SD_HandleTypeDef uSdHandle;
+
+static irq_return_t stm32_dma_rx_irq(unsigned int irq_num, void *dev) {
 	HAL_DMA_IRQHandler(uSdHandle.hdmarx);
 
-	if (!dma_transfer_active) {
-		dma_transfer_active = 1;
+	if (dma_transfer_state == DMA_TRANSFER_STATE_RX_START) {
+		dma_transfer_state = DMA_TRANSFER_STATE_RX_FIN;
 		sched_wakeup((struct schedee *)dma_transfer_thread);
 	}
 
@@ -48,13 +54,11 @@ static irq_return_t stm32_dma_rx_irq(unsigned int irq_num,
 }
 STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32_dma_rx_irq, NULL);
 
-static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
-		void *audio_dev) {
-	extern SD_HandleTypeDef uSdHandle;
+static irq_return_t stm32_dma_tx_irq(unsigned int irq_num, void *dev) {
 	HAL_DMA_IRQHandler(uSdHandle.hdmatx);
 
-	if (!dma_transfer_active) {
-		dma_transfer_active = 1;
+	if (dma_transfer_state == DMA_TRANSFER_STATE_TX_START) {
+		dma_transfer_state = DMA_TRANSFER_STATE_TX_FIN;
 		sched_wakeup((struct schedee *)dma_transfer_thread);
 	}
 
@@ -62,29 +66,42 @@ static irq_return_t stm32_dma_tx_irq(unsigned int irq_num,
 }
 STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32_dma_tx_irq, NULL);
 
-static irq_return_t stm32_sdmmc_irq(unsigned int irq_num,
-		void *audio_dev) {
-	extern SD_HandleTypeDef uSdHandle;
+static irq_return_t stm32_sdmmc_irq(unsigned int irq_num, void *dev) {
 	HAL_SD_IRQHandler(&uSdHandle);
 	return IRQ_HANDLED;
 }
 STATIC_IRQ_ATTACH(STM32_SDMMC_IRQ, stm32_sdmmc_irq, NULL);
 
-static int stm32_transfer_prepare(void) {
-	dma_transfer_active = 0;
+static int stm32_transfer_prepare(int state) {
+	if (dma_transfer_state != DMA_TRANSFER_STATE_IDLE) {
+		return -EBUSY;
+	}
+
+	dma_transfer_state = state;
 	dma_transfer_thread = &thread_self()->schedee;
 
 	return 0;
 }
-
-static int stm32_transfer_wait(void) {
+extern uint8_t BSP_SD_GetCardState(void);
+static int stm32_transfer_wait(int state) {
 	int res;
 
-	res = SCHED_WAIT_TIMEOUT(dma_transfer_active, 100);
+	res = SCHED_WAIT_TIMEOUT((dma_transfer_state == state), 100);
+	dma_transfer_state = DMA_TRANSFER_STATE_IDLE;
+
 	if (res != 0) {
 		log_error("timeout");
-		return -ETIMEDOUT;
+		res = -ETIMEDOUT;
 	}
+
+	while (BSP_SD_GetCardState() != SD_TRANSFER_OK);
+
+	return res;
+}
+
+static int stm32_transfer_abort(int state) {
+	dma_transfer_state = state;
+
 	return 0;
 }
 
@@ -106,7 +123,7 @@ static int stm32f7_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t s
 static int stm32_sd_read_block(char *buf, blkno_t blkno) {
 	int res;
 
-	res = stm32_transfer_prepare();
+	res = stm32_transfer_prepare(DMA_TRANSFER_STATE_RX_START);
 	if (res) {
 		return res;
 	}
@@ -117,7 +134,7 @@ static int stm32_sd_read_block(char *buf, blkno_t blkno) {
 		return -1;
 	}
 
-	res = stm32_transfer_wait();
+	res = stm32_transfer_wait(DMA_TRANSFER_STATE_RX_FIN);
 	if (res) {
 		return res;
 	}
@@ -153,18 +170,19 @@ static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 static int stm32_sd_write_block(char *buf, blkno_t blkno) {
 	int res;
 
-	res = stm32_transfer_prepare();
+	res = stm32_transfer_prepare(DMA_TRANSFER_STATE_TX_START);
 	if (res) {
 		return res;
 	}
 
 	res = BSP_SD_WriteBlocks_DMA((uint32_t *) buf, blkno, 1);
 	if (res != 0) {
-		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d\n", blkno);
+		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d", blkno);
+		stm32_transfer_abort(DMA_TRANSFER_STATE_IDLE);
 		return -1;
 	}
 
-	res = stm32_transfer_wait();
+	res = stm32_transfer_wait(DMA_TRANSFER_STATE_TX_FIN);
 	if (res) {
 		return res;
 	}
@@ -186,6 +204,7 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 	tmp_buf = buf;
 #endif
 	res = stm32_sd_write_block(tmp_buf, blkno);
+	log_debug("written=%d res %d", blkno, res);
 	if (res < 0) {
 		return res;
 	}
@@ -198,7 +217,7 @@ static int stm32f7_sd_init(void *arg) {
 	struct block_dev *bdev;
 
 	if (!block_dev_lookup(STM32F7_SD_DEVNAME)) {
-		log_error("Block device not found\n");
+		log_error("Block device not found");
 		return -1;
 	}
 	if (0 != irq_attach(STM32_DMA_RX_IRQ,
@@ -234,7 +253,7 @@ static int stm32f7_sd_init(void *arg) {
 		/* microSD Card is not inserted, do nothing. */
 		return 0;
 	} else {
-		log_error("BSP_SD_Init error\n");
+		log_error("BSP_SD_Init error");
 		return -1;
 	}
 }
