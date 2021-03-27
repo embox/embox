@@ -8,17 +8,20 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-EMBOX_IMPORTED_CXXFLAGS += -save-temps=obj
-EMBOX_IMPORTED_CXXFLAGS += -DUSE_SPRINTF_INSTEAD
-
-ifneq (,$(filter -fno-rtti,$(EMBOX_CXXFLAGS)))
-EMBOX_RTTI_FLAG          = --without-rtti
-else
-EMBOX_RTTI_FLAG          =
-endif
-
 OPENCV_FLAGS = \
-		-DBUILD_SHARED_LIBS=OFF -DBUILD_opencv_python_bindings_generator=OFF -DBUILD_JAVA=OFF -DBUILD_TESTS=OFF -DBUILD_opencv_apps=OFF BUILD_opencv_java_bindings_generator=OFF -DBUILD_opencv_ml=OFF -DWITH_FFMPEG=OFF -DWITH_EIGEN=OFF -DBUILD_IPP_IW=OFF -DBUILD_ITT=OFF -DBUILD_PERF_TESTS=OFF -DBUILD_PROTOBUF=OFF \
+		-DBUILD_SHARED_LIBS=OFF \
+		-DBUILD_opencv_python_bindings_generator=OFF \
+		-DBUILD_JAVA=OFF \
+		-DBUILD_TESTS=OFF \
+		-DBUILD_opencv_apps=OFF \
+		-DBUILD_opencv_java_bindings_generator=OFF \
+		-DBUILD_opencv_ml=OFF \
+		-DWITH_FFMPEG=OFF \
+		-DWITH_EIGEN=OFF \
+		-DBUILD_IPP_IW=OFF \
+		-DBUILD_ITT=OFF \
+		-DBUILD_PERF_TESTS=OFF \
+		-DBUILD_PROTOBUF=OFF \
 		-DOPENCV_FORCE_3RDPARTY_BUILD=ON \
 		-DBUILD_opencv_calib3d=ON \
 		-DBUILD_opencv_dnn=OFF \
@@ -86,7 +89,6 @@ OPENCV_FLAGS = \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
 		-DCMAKE_BUILD_TYPE:STRING=Debug \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
-		-DCMAKE_BUILD_TYPE:STRING=Debug \
 		-DC_HAS_MFPU_NEON=0
 
 $(BUILD) :

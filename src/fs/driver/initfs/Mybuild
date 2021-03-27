@@ -2,6 +2,8 @@ package embox.fs.driver
 
 @DefaultImpl(initfs_old)
 abstract module initfs {
+	option string section = ".rodata.embox"
+
 	source "cpio.c", "initfs_cpio.S"
 	source "initfs.lds.S"
 }

@@ -54,7 +54,7 @@ double strtod(const char *nptr, char **endptr) {
 	     }
 	     else if (*nptr == '-') {
 	     	nptr++;
-	         sign = -1;
+	        e_sign = -1;
 	     }
 
 	     while ((*nptr >= '0' && *nptr <= '9')) {

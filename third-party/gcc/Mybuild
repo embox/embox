@@ -1,5 +1,6 @@
 package third_party.gcc
 
+@LinkerSection(text="libsupcxx_text",rodata="libsupcxx_rodata",data="libsupcxx_data",bss="libsupcxx_bss",arm_exidx="libsupcxx_arm_exidx",arm_extab="libsupcxx_arm_extab")
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version/_target")
@@ -20,6 +21,7 @@ static module libgcc extends embox.lib.libgcc {
 	@NoRuntime depends gcc_build
 }
 
+@LinkerSection(text="libstdcxx_text",rodata="libstdcxx_rodata",data="libstdcxx_data",bss="libstdcxx_bss",arm_exidx="libstdcxx_arm_exidx",arm_extab="libstdcxx_arm_extab")
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version/_target")

@@ -417,10 +417,12 @@ $(@module_ld_rmk) $(@module_ar_rmk) : is_app = \
 		$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_app))),1)
 
-my_linker_section_text   := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.text)
-my_linker_section_rodata := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.rodata)
-my_linker_section_data   := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.data)
-my_linker_section_bss    := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.bss)
+my_linker_section_text      := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.text)
+my_linker_section_rodata    := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.rodata)
+my_linker_section_data      := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.data)
+my_linker_section_bss       := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.bss)
+my_linker_section_arm_exidx := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.arm_exidx)
+my_linker_section_arm_extab := $(call mybuild_resolve_or_die,mybuild.lang.LinkerSection.arm_extab)
 
 $(@module_ld_rmk) $(@module_ar_rmk) : linker_section_text = \
 		$(strip $(call annotation_value, \
@@ -437,6 +439,14 @@ $(@module_ld_rmk) $(@module_ar_rmk) : linker_section_data = \
 $(@module_ld_rmk) $(@module_ar_rmk) : linker_section_bss = \
 		$(strip $(call annotation_value, \
 			$(call get,$@,allTypes),$(my_linker_section_bss)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : linker_section_arm_exidx = \
+		$(strip $(call annotation_value, \
+			$(call get,$@,allTypes),$(my_linker_section_arm_exidx)))
+
+$(@module_ld_rmk) $(@module_ar_rmk) : linker_section_arm_extab = \
+		$(strip $(call annotation_value, \
+			$(call get,$@,allTypes),$(my_linker_section_arm_extab)))
 
 build_deps = $(call annotation_value,$1,$(my_bld_dep_value))
 
@@ -466,6 +476,8 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_tsvar,$(out),linker_section_rodata,$(linker_section_rodata)); \
 		$(call gen_make_tsvar,$(out),linker_section_data,$(linker_section_data)); \
 		$(call gen_make_tsvar,$(out),linker_section_bss,$(linker_section_bss)); \
+		$(call gen_make_tsvar,$(out),linker_section_arm_exidx,$(linker_section_arm_exidx)); \
+		$(call gen_make_tsvar,$(out),linker_section_arm_extab,$(linker_section_arm_extab)); \
 		$(call gen_make_tsvar,$(out),mod_path,$(path)); \
 		$(call gen_make_tsvar,$(out),my_file,$(my_file)); \
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
