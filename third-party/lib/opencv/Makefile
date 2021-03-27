@@ -87,7 +87,7 @@ OPENCV_FLAGS = \
 		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
 		-DCMAKE_AR:STRING=ar \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
-		-DCMAKE_BUILD_TYPE:STRING=Debug \
+		-DCMAKE_BUILD_TYPE:STRING=None \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
 		-DC_HAS_MFPU_NEON=0
 
@@ -95,6 +95,8 @@ $(BUILD) :
 	cd $(BUILD_DIR) && mkdir build; \
 	cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && \
 	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
+	touch $@
 
 $(INSTALL) :
 	cd $(BUILD_DIR) && cp build/lib/libopencv_*.a build/3rdparty/lib/*a install
+	touch $@
