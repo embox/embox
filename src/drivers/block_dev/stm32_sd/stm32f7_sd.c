@@ -25,9 +25,9 @@
 #define STM32F7_SD_DEVNAME "sd_card"
 #define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
 
+#define USE_LOCAL_BUF OPTION_GET(BOOLEAN, use_local_buf)
 
-#if OPTION_GET(BOOLEAN, use_local_buf)
-#define USE_LOCAL_BUF
+#if USE_LOCAL_BUF
 static uint8_t sd_buf[SD_BUF_SIZE];
 #endif
 
@@ -150,7 +150,7 @@ static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 
 	assert(bsize == BLOCKSIZE);
 
-#ifdef USE_LOCAL_BUF
+#if USE_LOCAL_BUF
 	tmp_buf = (char *)sd_buf;
 #else
 	tmp_buf = buf;
@@ -159,7 +159,7 @@ static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 	if (res < 0) {
 		return res;
 	}
-#ifdef USE_LOCAL_BUF
+#if USE_LOCAL_BUF
 	memcpy(buf, sd_buf, bsize);
 #endif
 
@@ -197,7 +197,7 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 
 	assert(bsize == BLOCKSIZE);
 
-#ifdef USE_LOCAL_BUF
+#if USE_LOCAL_BUF
 	memcpy(sd_buf, buf, bsize);
 	tmp_buf = (char *)sd_buf;
 #else
