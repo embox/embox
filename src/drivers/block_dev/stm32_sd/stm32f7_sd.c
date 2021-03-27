@@ -15,6 +15,7 @@
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
+#include <arm/cpu_cache.h>
 
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
@@ -23,12 +24,11 @@
 #include "stm32f7_discovery_sd.h"
 
 #define STM32F7_SD_DEVNAME "sd_card"
-#define SD_BUF_SIZE OPTION_GET(NUMBER, sd_buf_size)
 
 #define USE_LOCAL_BUF OPTION_GET(BOOLEAN, use_local_buf)
 
 #if USE_LOCAL_BUF
-static uint8_t sd_buf[SD_BUF_SIZE];
+static uint8_t sd_buf[BLOCKSIZE] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif
 
 #define DMA_TRANSFER_STATE_IDLE      (0)
