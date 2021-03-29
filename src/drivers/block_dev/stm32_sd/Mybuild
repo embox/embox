@@ -6,6 +6,10 @@ abstract module sd { }
 module stm32f4_sd extends sd {
 	option number log_level = 1
 
+	option number dma_sdmmc_irq = 40
+	option number dma_rx_irq    = 59
+	option number dma_tx_irq    = 69
+
 	option boolean use_irq = false
 	option boolean use_local_buf=true
 	option number sd_buf_size=4096

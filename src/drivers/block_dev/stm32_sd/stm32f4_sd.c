@@ -57,15 +57,15 @@ static int stm32f4_sd_init(void) {
 }
 
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size) {
-	SD_CardInfo info;
+	HAL_SD_CardInfoTypeDef info;
 
 	BSP_SD_GetCardInfo(&info);
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
-		return info.CardCapacity;
+		return info.BlockNbr * info.BlockSize;
 	case IOCTL_GETBLKSIZE:
-		return info.CardBlockSize;
+		return info.BlockSize;
 	default:
 		return -1;
 	}
@@ -89,11 +89,11 @@ static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkn
 	while (retries--) {
 #ifdef USE_LOCAL_BUF
 		res = BSP_SD_ReadBlocks((uint32_t *) sd_buf, blkno * bsize, bsize, 1) ? -1 : bsize;
-		while (BSP_SD_GetStatus() != SD_TRANSFER_OK);
+		while (BSP_SD_GetCardState() != SD_TRANSFER_OK);
 		memcpy(buf, sd_buf, bsize);
 #else
 		res = BSP_SD_ReadBlocks((uint32_t *) buf, blkno * bsize, bsize, 1) ? -1 : bsize;
-		while (BSP_SD_GetStatus() != SD_TRANSFER_OK);
+		while (BSP_SD_GetCardState() != SD_TRANSFER_OK);
 #endif
 	}
 
@@ -116,7 +116,7 @@ static int stm32f4_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 #else
 		res = BSP_SD_WriteBlocks((uint32_t *) buf, blkno * bsize, bsize, 1) ? -1 : bsize;
 #endif
-		while (BSP_SD_GetStatus() != SD_TRANSFER_OK);
+		while (BSP_SD_GetCardState() != SD_TRANSFER_OK);
 	}
 
 	ipl_restore(ipl);
