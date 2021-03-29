@@ -39,8 +39,10 @@ static uint8_t sd_buf[BLOCKSIZE] __attribute__ ((aligned (4))) SRAM_NOCACHE_SECT
 #define DMA_TRANSFER_STATE_TX_FIN    (5)
 
 #if USE_IRQ
-#define stm32_transfer_read   BSP_SD_ReadBlocks_DMA
-#define stm32_transfer_write   BSP_SD_WriteBlocks_DMA
+#define stm32_transfer_read(buf, blkno, num)  \
+	BSP_SD_ReadBlocks_DMA(buf, blkno, num)
+#define stm32_transfer_write(buf, blkno, num) \
+	BSP_SD_WriteBlocks_DMA(buf, blkno, num)
 
 static volatile int dma_transfer_state = DMA_TRANSFER_STATE_IDLE;
 static volatile struct schedee *dma_transfer_thread = NULL;
@@ -110,8 +112,11 @@ static int stm32_transfer_abort(int state) {
 	return 0;
 }
 #else
-#define stm32_transfer_read   BSP_SD_ReadBlocks
-#define stm32_transfer_write   BSP_SD_WriteBlocks
+#define stm32_transfer_read(buf, blkno, num)  \
+	BSP_SD_ReadBlocks(buf, blkno, num, 10)
+#define stm32_transfer_write(buf, blkno, num) \
+	BSP_SD_WriteBlocks(buf, blkno, num, 10)
+
 static int stm32_transfer_prepare(int state) {
 	return 0;
 }
