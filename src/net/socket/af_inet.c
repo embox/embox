@@ -218,7 +218,7 @@ static int __inet_connect(struct inet_sock *in_sk,
 	assert(addr_in->sin_family == AF_INET);
 
 #if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
-	ret = rt_fib_source_ip_net(addr_in->sin_addr.s_addr, NULL, &src_ip,
+	ret = rt_fib_source_ip_net_ns(addr_in->sin_addr.s_addr, NULL, &src_ip,
 				((struct sock *)in_sk)->net_ns);
 #else
 	ret = rt_fib_source_ip(addr_in->sin_addr.s_addr, NULL, &src_ip);
