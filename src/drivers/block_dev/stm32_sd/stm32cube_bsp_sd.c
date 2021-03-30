@@ -112,8 +112,16 @@ static int stm32_transfer_abort(int state) {
 	return 0;
 }
 #else
-#define stm32_transfer_read(buf, blkno, num)  \
-	BSP_SD_ReadBlocks(buf, blkno, num, 10)
+static inline int stm32_transfer_read(uint32_t *buf, int blkno, int num) {
+	ipl_t ipl;
+	int res;
+	ipl = ipl_save();
+	res = BSP_SD_ReadBlocks(buf, blkno, num, 10);
+	ipl_restore(ipl);
+
+	return res;
+}
+
 #define stm32_transfer_write(buf, blkno, num) \
 	BSP_SD_WriteBlocks(buf, blkno, num, 10)
 
@@ -156,7 +164,7 @@ static int stm32_sd_read_block(char *buf, blkno_t blkno) {
 
 	res = stm32_transfer_read((uint32_t *) buf, blkno, 1);
 	if (res) {
-		log_error("BSP_SD_ReadBlocks_DMA failed, blkno=%d\n", blkno);
+		log_error("stm32_transfer_read failed, blkno=%d, res%dn", blkno,res);
 		return -1;
 	}
 
@@ -203,7 +211,7 @@ static int stm32_sd_write_block(char *buf, blkno_t blkno) {
 
 	res = stm32_transfer_write((uint32_t *) buf, blkno, 1);
 	if (res != 0) {
-		log_error("BSP_SD_WriteBlocks_DMA failed, blkno=%d", blkno);
+		log_error("stm32_transfer_write failed, blkno=%d res=%d", blkno, res);
 		stm32_transfer_abort(DMA_TRANSFER_STATE_IDLE);
 		return -1;
 	}
