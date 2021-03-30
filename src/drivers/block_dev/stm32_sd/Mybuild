@@ -8,7 +8,9 @@ module stm32f4_sd {
 	option number dma_rx_irq    = 59
 	option number dma_tx_irq    = 69
 
-	option boolean use_irq = false
+/* use noirq version only with -Os compiler flag optimization.
+ * It seems CPU could not read from SD FIFO fast enough */
+	option boolean use_irq = true
 	option boolean use_local_buf=true
 	option number sd_buf_size=4096
 
@@ -29,6 +31,8 @@ module stm32f746g_discovery_sd {
 	option number dma_rx_irq    = 59
 	option number dma_tx_irq    = 69
 
+/* use noirq version only with -Os compiler flag optimization and cache.
+ * It seems CPU could not read from SD FIFO fast enough */
 	option boolean use_irq = true
 	option boolean use_local_buf = true
 	option number sd_buf_size = 4096
@@ -49,7 +53,9 @@ module stm32f769i_discovery_sd {
 	option number dma_sdmmc_irq = 103
 	option number dma_rx_irq    = 56
 	option number dma_tx_irq    = 68
-
+	
+/* use noirq version only with -Os compiler flag optimization and cache.
+ * It seems CPU could not read from SD FIFO fast enough */ 
 	option boolean use_irq = true
 	option boolean use_local_buf=true
 	option number sd_buf_size=4096

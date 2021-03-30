@@ -14,6 +14,8 @@
 #include "stm32f7xx_hal_sd.h"
 #include "stm32746g_discovery_sd.h"
 
+#include <framework/mod/options.h>
+
 #define STM32_DMA_RX_IRQ   OPTION_GET(NUMBER, dma_rx_irq)
 static_assert(STM32_DMA_RX_IRQ == DMA2_Stream3_IRQn);
 

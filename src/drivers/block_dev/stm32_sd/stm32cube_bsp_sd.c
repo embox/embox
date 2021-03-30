@@ -13,7 +13,7 @@
 #include <assert.h>
 
 #include <drivers/block_dev.h>
-#include <framework/mod/options.h>
+
 #include <kernel/irq.h>
 #include <arm/cpu_cache.h>
 
@@ -22,6 +22,8 @@
 #include <kernel/sched.h>
 
 #include "stm32cube_bsp_sd.h"
+
+#include <framework/mod/options.h>
 
 #define STM32F7_SD_DEVNAME "sd_card"
 
@@ -175,7 +177,6 @@ static int stm32_sd_read_block(char *buf, blkno_t blkno) {
 
 	return BLOCKSIZE;
 }
-
 
 static int stm32f7_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno) {
 	int res = -1;
