@@ -15,6 +15,6 @@ static_assert(STM32_DMA_RX_IRQ == DMA2_Stream3_IRQn);
 static_assert(STM32_DMA_TX_IRQ == DMA2_Stream6_IRQn);
 
 #define STM32_SDMMC_IRQ    OPTION_GET(NUMBER, dma_sdmmc_irq)
-static_assert(STM32_SDMMC_IRQ == EXTI15_10_IRQn);
+//static_assert(STM32_SDMMC_IRQ == EXTI15_10_IRQn);
 
 #endif /* STM32F4_DISCOVERY_SD_H_ */
