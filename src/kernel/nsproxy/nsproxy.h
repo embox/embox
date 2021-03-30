@@ -16,4 +16,7 @@ extern struct nsproxy init_nsproxy;
 		tsk->nsproxy = init_nsproxy; \
 	}
 
+
+extern void netns_decrement_ref_cnt(net_namespace_p netns);
+
 #endif /* NSPROXY_H_ */

@@ -378,6 +378,7 @@ void _NORETURN task_exit(void *res) {
 }
 
 void task_delete(struct task *tsk) {
+	netns_decrement_ref_cnt(tsk->nsproxy.net_ns);
 	dlist_del(&tsk->child_lnk);
 	task_table_del(task_get_id(tsk));
 	main_thread_delete(task_get_main(tsk));

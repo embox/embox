@@ -15,7 +15,7 @@ extern net_namespace_p init_net_ns;
 
 extern net_namespace_p get_net_ns();
 extern int setns(const char *name);
-extern int unshare(const char *name);
+extern int unshare_by_name(const char *name);
 
 #define assign_net_ns(net_ns1, net_ns2)
 #define cmp_net_ns(net_ns1, net_ns2) 1
