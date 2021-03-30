@@ -21,7 +21,7 @@
 #include <kernel/thread/thread_sched_wait.h>
 #include <kernel/sched.h>
 
-#include "stm32f7_discovery_sd.h"
+#include "stm32cube_bsp_sd.h"
 
 #define STM32F7_SD_DEVNAME "sd_card"
 
