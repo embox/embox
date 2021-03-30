@@ -13,11 +13,10 @@
 #include <hal/ipl.h>
 #include <kernel/time/ktime.h>
 
-#include "stm32f4_discovery_sdio_sd.h"
-
 #include <embox/unit.h>
 
 #include <util/log.h>
+#include "stm32f4_discovery_sd.h"
 
 static int stm32f4_sd_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
 static int stm32f4_sd_read(struct block_dev *bdev, char *buf, size_t count, blkno_t blkno);
