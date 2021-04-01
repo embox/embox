@@ -26,6 +26,7 @@ static module arch extends embox.arch.arch {
 @BuildDepends(stm32f4_discovery_conf)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
 @BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM32F4-Discovery)")
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM324xG_EVAL)")
 static module bsp extends third_party.bsp.st_bsp_api {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP")
 	source "STM32F4-Discovery/stm32f4_discovery.c",

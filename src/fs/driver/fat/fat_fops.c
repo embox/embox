@@ -50,7 +50,6 @@ static size_t fat_write(struct file_desc *desc, void *buf, size_t size) {
 			fi->filelen = old_pos + bytecount;
 		}
 
-		file_set_pos(desc, old_pos + bytecount);
 		return bytecount;
 	}
 

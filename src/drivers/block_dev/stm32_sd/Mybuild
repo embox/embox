@@ -1,49 +1,69 @@
 package embox.driver.sd
 
-abstract module sd { }
-
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f4_sd extends sd {
-	option boolean use_local_buf=true /* Used to fix align problems */
+module stm32f4_sd {
+	option number log_level = 1
+
+	option number dma_sdmmc_irq = 40
+	option number dma_rx_irq    = 59
+	option number dma_tx_irq    = 69
+
+/* use noirq version only with -Os compiler flag optimization.
+ * It seems CPU could not read from SD FIFO fast enough */
+	option boolean use_irq = true
+	option boolean use_local_buf=true
 	option number sd_buf_size=4096
 
-	source "stm32f4_sd.c"
+	@IncludeExport(target_name="stm32cube_bsp_sd.h")
+	source "stm32f4_discovery_sd.h"
+
+	source "stm32cube_bsp_sd.c"
 
 	depends embox.driver.block_dev
 	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f746g_discovery_sd extends sd {
+module stm32f746g_discovery_sd {
+	option number log_level = 1
+
 	option number dma_sdmmc_irq = 49
 	option number dma_rx_irq    = 59
 	option number dma_tx_irq    = 69
 
-	option boolean use_local_buf=true /* Used to fix align problems */
-	option number sd_buf_size=4096
+/* use noirq version only with -Os compiler flag optimization and cache.
+ * It seems CPU could not read from SD FIFO fast enough */
+	option boolean use_irq = true
+	option boolean use_local_buf = true
+	option number sd_buf_size = 4096
 
-	@IncludeExport(target_name="stm32f7_discovery_sd.h")
+	@IncludeExport(target_name="stm32cube_bsp_sd.h")
 	source "stm32f746g_discovery_sd.h"
 
-	source "stm32f7_sd.c"
+	source "stm32cube_bsp_sd.c"
 
 	depends embox.driver.block_dev
 	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f769i_discovery_sd extends sd {
+module stm32f769i_discovery_sd {
+	option number log_level = 1
+
 	option number dma_sdmmc_irq = 103
 	option number dma_rx_irq    = 56
 	option number dma_tx_irq    = 68
-
-	option boolean use_local_buf=true /* Used to fix align problems */
+	
+/* use noirq version only with -Os compiler flag optimization and cache.
+ * It seems CPU could not read from SD FIFO fast enough */ 
+	option boolean use_irq = true
+	option boolean use_local_buf=true
 	option number sd_buf_size=4096
 
-	@IncludeExport(target_name="stm32f7_discovery_sd.h")
+	@IncludeExport(target_name="stm32cube_bsp_sd.h")
 	source "stm32f769i_discovery_sd.h"
 
-	source "stm32f7_sd.c"
+	source "stm32cube_bsp_sd.c"
 
 	depends embox.driver.block_dev
 	depends third_party.bsp.st_bsp_api

@@ -1,0 +1,11 @@
+diff -aur STM32CubeF7-1.16.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c ../build/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c
+--- STM32CubeF7-1.16.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c	2020-03-04 11:19:45.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.16.0/Drivers/STM32F7xx_HAL_Driver/Src/stm32f7xx_hal_sd.c	2021-03-30 17:25:43.728201025 +0300
+@@ -656,6 +656,7 @@
+           tempbuff++;
+           dataremaining--;
+         }
++        continue;
+       }
+ 
+       if(((HAL_GetTick()-tickstart) >=  Timeout) || (Timeout == 0U))

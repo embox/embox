@@ -136,8 +136,9 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	assert(lookup);
 
 	desc = dvfs_alloc_file();
-	if (desc == NULL)
+	if (desc == NULL) {
 		return err_ptr(ENOMEM);
+	}
 
 	d = lookup->item;
 	i_no = d->d_inode;
@@ -158,16 +159,22 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	if (desc->f_ops && desc->f_ops->open && !(__oflag & O_PATH)) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc, __oflag);
 		if (res == NULL) {
-			return NULL;
+			dvfs_destroy_file(desc);
+			return err_ptr(ENOENT);
 		}
 	}
 
+	if ((__oflag & O_TRUNC) && (desc->f_inode)) {
+		if (i_no->i_ops && i_no->i_ops->truncate) {
+			if (i_no->i_ops->truncate(desc->f_inode, 0)) {
+				dvfs_destroy_file(desc);
+				return err_ptr(ENOENT);
+			}
+		}
+		inode_size_set(i_no, 0);
+	}
 	if ((__oflag & O_APPEND) && (desc->f_inode)) {
-		/* XXX for some reason position of the last symbol
-		 * is zero both for empty and 1-byte files,  this
-		 * probably should be fixed  */
-		desc->pos = desc->f_inode->length == 0 ?
-			0 : desc->f_inode->length - 1;
+		desc->pos = desc->f_inode->length;
 	}
 
 	return &desc->f_idesc;
@@ -259,8 +266,10 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
 	int res = 0; /* Assign to avoid compiler warning when use -O2 */
 	int retcode = count;
 	struct inode *inode;
-	if (!desc)
-		return -1;
+
+	if (!desc) {
+		return -EINVAL;
+	}
 
 	inode = desc->f_inode;
 	assert(inode);
@@ -268,19 +277,23 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
 	if (inode->length - desc->pos < count && !(inode->i_mode & DVFS_NO_LSEEK)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
 			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
-			if (res)
+			if (res) {
 				retcode = -EFBIG;
-		} else
+			}
+		} else {
 			retcode = -EFBIG;
+		}
 	}
 
-	if (desc->f_ops && desc->f_ops->write)
+	if (desc->f_ops && desc->f_ops->write) {
 		res = desc->f_ops->write(desc, buf, count);
-	else
+	} else {
 		retcode = -ENOSYS;
+	}
 
-	if (res > 0)
+	if (res > 0) {
 		desc->pos += res;
+	}
 
 	return retcode;
 }
