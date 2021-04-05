@@ -23,18 +23,26 @@
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
 
-static void parse_rtattr(struct rtattr *rta, int len, char **if_name) {
+static void parse_rtattr_if_name(struct rtattr *rta, int len, char **if_name) {
 	while (RTA_OK(rta, len)) {
 
 		switch(rta->rta_type) {
 		case IFLA_IFNAME:
 			*if_name = RTA_DATA(rta);
 			break;
-#if 0
+		}
+		rta = RTA_NEXT(rta, len);
+	}
+}
+
+static void parse_rtattr_if_addr(struct rtattr *rta, int len, char **if_addr) {
+	while (RTA_OK(rta, len)) {
+
+		switch(rta->rta_type) {
 		case IFLA_ADDRESS:
 			*if_addr = RTA_DATA(rta);
 			break;
-#endif
+
 		}
 		rta = RTA_NEXT(rta, len);
 	}
@@ -131,9 +139,7 @@ int main(int argc, char **argv) {
 				/* Do some error handling */
 			}
 
-			if_addr = NULL;
-
-			parse_rtattr(NLMSG_DATA(nh), nh->nlmsg_len, &if_name);
+			parse_rtattr_if_name(NLMSG_DATA(nh), nh->nlmsg_len, &if_name);
 
 			switch (nh->nlmsg_type) {
 			case RTM_DELADDR:
@@ -151,6 +157,8 @@ int main(int argc, char **argv) {
 				break;
 
 			case RTM_NEWADDR:
+				if_addr = NULL;
+				parse_rtattr_if_addr(NLMSG_DATA(nh), nh->nlmsg_len, &if_addr);
 				printf("Interface %s: new address was assigned: %s\n", if_name,
 						if_addr);
 				break;
