@@ -1,0 +1,13 @@
+package embox.driver.input.button
+
+module stm32cube_button {
+	option number log_level = 1
+
+	option number pin_port = 0
+	option number pin_num = 0
+
+	source "stm32cube_button.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.gpio.api
+}
