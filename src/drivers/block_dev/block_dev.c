@@ -139,9 +139,6 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 		return -EIO;
 	}
 	blksize = block_dev_block_size(bdev);
-	if (blksize < 0) {
-		return blksize;
-	}
 	blkno = offset / blksize;
 	cplen = min(count, blksize - offset % blksize);
 
@@ -180,10 +177,6 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 	}
 
 	blksize = bdev->block_size;
-	if (blksize < 0) {
-		return blksize;
-	}
-
 	blkno = offset / blksize;
 	cplen = min(count, blksize - offset % blksize);
 
@@ -240,9 +233,7 @@ int block_dev_read(void *dev, char *buffer, size_t count, blkno_t blkno) {
 	}
 
 	blksize = block_dev_block_size(bdev);
-	if (blksize < 0) {
-		return blksize;
-	}
+
 	return block_dev_read_buffered(bdev, buffer, count, blkno * blksize);
 }
 
@@ -266,9 +257,7 @@ int block_dev_write(void *dev, const char *buffer, size_t count, blkno_t blkno) 
 	}
 
 	blksize = block_dev_block_size(bdev);
-	if (blksize < 0) {
-		return blksize;
-	}
+
 	return block_dev_write_buffered(bdev, buffer, count, blkno * blksize);
 }
 

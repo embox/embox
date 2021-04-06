@@ -21,8 +21,8 @@ static size_t __fread(FILE *file, void *buf, size_t len) {
 	} else {
 		cnt = read(file->fd,  buf, len);
 	}
-	if (cnt <= 0) {
-		file->flags |= cnt ? IO_ERR_ : IO_EOF_;
+	if (cnt == 0) {
+		file->flags |= IO_EOF_;
 		return 0;
 	}
 	return cnt;
