@@ -196,6 +196,7 @@ cppflags_fn = \
 cppflags := $(CPPFLAGS)
 override CPPFLAGS  = $(call cppflags_fn,id) $(cppflags)
 EMBOX_EXPORT_CPPFLAGS = $(call cppflags_fn,abspath)
+EMBOX_EXPORT_CPPFLAGS += $(filter-out -D%" -D%',$(cppflags))
 
 override COMMON_FLAGS := -pipe
 debug_prefix_map_supported:=$(shell $(CPP) /dev/zero --debug-prefix-map=./= 2>/dev/null && echo true)
