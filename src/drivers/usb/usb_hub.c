@@ -201,7 +201,7 @@ static int usb_hub_port_reset(struct usb_hub *hub, unsigned int port) {
 	/* Wait until reset done. */
 	ret = -1;
 	while (timeout--) {
-		uint16_t port_status, port_change;
+		uint16_t port_status = 0, port_change = 0;
 
 		usleep(1000 * 1000);
 
@@ -285,7 +285,7 @@ static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 }
 
 static int usb_hub_port_event(struct usb_hub *hub, unsigned int port) {
-	uint16_t port_status, port_change;
+	uint16_t port_status = 0, port_change = 0;
 
 	log_debug("hub(%d:%d) port[%d]", hub->dev->bus_idx, hub->dev->addr, port);
 
