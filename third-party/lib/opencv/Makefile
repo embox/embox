@@ -4,7 +4,8 @@ PKG_NAME         := opencv
 PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
 PKG_MD5          := eb367fc73de66e6d8808e8712138c6b4
 
-PKG_PATCHES := patch.txt
+PKG_PATCHES := patch.txt \
+               patch2.txt
 
 include $(EXTBLD_LIB)
 
