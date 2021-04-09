@@ -199,6 +199,8 @@ extern int system(const char *command);
 
 extern int mkstemp(char *path_template);
 
+extern char *realpath(const char *file_name, char *resolved_name);
+
 extern int mbtowc(wchar_t *out, const char *in, size_t n);
 extern int wctomb(char *out, const wchar_t *in );
 
