@@ -104,6 +104,12 @@ extern int snprintf(char *s, size_t n, const char *format, ...);
 
 extern int vsnprintf(char *s, size_t n, const char *format, va_list args);
 
+extern int vfscanf(FILE */*restrict*/ stream, const char */*restrict*/ format,
+       va_list arg);
+extern int vscanf(const char */*restrict*/ format, va_list arg);
+extern int vsscanf(const char */*restrict*/ s, const char */*restrict*/ format,
+       va_list arg);
+
 /**
  * Read formatted input from stdin according to the format string FORMAT.
  */
