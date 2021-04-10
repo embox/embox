@@ -21,3 +21,14 @@ module md5sum {
 	depends embox.compat.posix.LibPosix
 	depends embox.framework.LibFramework
 }
+
+@AutoCmd
+@Cmd(name = "md5mem",
+	help = "Compute and check MD5 message digest",
+	man = '''
+	''')
+module md5mem {
+	source "md5mem.c"
+
+	depends embox.lib.LibCrypt
+}
