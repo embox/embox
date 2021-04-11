@@ -14,7 +14,12 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
 
-int open(const char *path, int __oflag, ...) {
+#include <limits.h>
+
+ssize_t read(int fd, void *buf, size_t count);
+int close(int fd);
+
+int _open(const char *path, int __oflag) {
 	struct idesc *idesc;
 	struct idesc_table *it;
 	int res;
@@ -64,6 +69,16 @@ int open(const char *path, int __oflag, ...) {
 		return SET_ERRNO(-res);
 	}
 
+	if (S_ISLNK(i_no->i_mode)) {
+		char buff[NAME_MAX + 1];
+		read(res, buff, sizeof(buff));
+		close(res);
+		return _open(buff, __oflag);
+	}
+
 	return res;
 }
 
+int open(const char *path, int __oflag, ...) {
+	return _open(path, __oflag);
+}

@@ -1,0 +1,7 @@
+package embox.fs.driver
+
+module procfs { 
+	source "procfs.c"
+
+	depends embox.fs.dvfs.core
+}

@@ -6,7 +6,7 @@ int setns(const char *name) {
 	return -ENOTSUP;
 }
 
-int unshare(const char *name) {
+int unshare_by_name(const char *name) {
 	return -ENOTSUP;
 }
 

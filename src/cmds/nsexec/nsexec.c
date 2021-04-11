@@ -6,7 +6,7 @@ int main(int argc, char **argv) {
 	char *ns = argv[1];
 	const struct cmd *cmd;
 
-	if (!(setns(ns) == 0 || unshare(ns) == 0))
+	if (!(setns_by_name(ns) == 0 || unshare_by_name(ns) == 0))
 		return -1;
 
 	if (argc > 2) {

@@ -4,6 +4,13 @@
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
 #include <net/inetdevice.h>
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fs/vfs.h>
+#include <fs/file_desc.h>
+#include <fcntl.h>
+#include <fs/dentry.h>
 
 EMBOX_UNIT_INIT(set_init_net_ns);
 
@@ -20,7 +27,7 @@ net_namespace_p init_net_ns = { .p = &init_net_ns_s };
 	net_ns_p.p = net_ns; \
 	return net_ns_p;
 
-static net_namespace_p net_ns_lookup(const char *name) {
+net_namespace_p net_ns_lookup(const char *name) {
 	struct net_namespace *net_ns;
 	net_namespace_p net_ns_p;
 
@@ -31,6 +38,27 @@ static net_namespace_p net_ns_lookup(const char *name) {
 	}
 
 	assign_net_ns_p_and_ret(net_ns_p, NULL);
+}
+
+net_namespace_p net_ns_lookup_by_inode(struct inode *inode) {
+	struct net_namespace *net_ns;
+	net_namespace_p net_ns_p;
+
+	dlist_foreach_entry_safe(net_ns, net_ns_list, lnk) {
+		if (net_ns->inode == inode) {
+			assign_net_ns_p_and_ret(net_ns_p, net_ns);
+		}
+	}
+
+	assign_net_ns_p_and_ret(net_ns_p, NULL);
+}
+
+static void netns_create_inode(net_namespace_p ns) {
+	struct lookup lookup = {0, 0};
+
+	dvfs_lookup("/proc", &lookup);
+	ns.p->inode = inode_new(lookup.item->d_sb);
+	ns.p->inode->i_mode = S_IFREG;
 }
 
 static net_namespace_p alloc_net_ns(const char *name) {
@@ -51,22 +79,66 @@ static net_namespace_p alloc_net_ns(const char *name) {
 	if (net_ns == NULL) {
 		assign_net_ns_p_and_ret(net_ns_p, NULL);
 	}
+	net_ns_p.p = net_ns;
 	memcpy(net_ns->name, name, strlen(name) + 1);
 
 	ipl = ipl_save();
 	dlist_add_prev_entry(net_ns, net_ns_list, lnk);
 	ipl_restore(ipl);
 
+	netns_create_inode(net_ns_p);
+
+	net_ns->ref_cnt = 0;
 	assign_net_ns_p_and_ret(net_ns_p, net_ns);
 }
 
-//User space:
-int setns(const char *name) {
-	return (assign_net_ns((task_self())->nsproxy.net_ns,
-			      net_ns_lookup(name))) == NULL ? -1 : 0;
+void free_net_ns(net_namespace_p netns) {
+	ipl_t ipl;
+	inode_del(netns.p->inode);
+	ipl = ipl_save();
+	dlist_del_init_entry(netns.p, lnk);
+	pool_free((struct pool*)&net_ns_pool, netns.p);
+	ipl_restore(ipl);
 }
 
-int unshare(const char *name) {
+void netns_decrement_ref_cnt(net_namespace_p netns) {
+	if (netns.p == NULL || netns.p == &init_net_ns_s)
+		return;
+	(netns.p->ref_cnt)--;
+	if (netns.p->ref_cnt <= 0) {
+		free_net_ns(netns);
+	}
+}
+
+void netns_increment_ref_cnt(net_namespace_p netns) {
+	if (netns.p == NULL)
+		return;
+	(netns.p->ref_cnt)++;
+}
+
+//User space:
+int setns_by_name(const char *name) {
+	struct task * task = task_self();
+	char *init_name;
+
+	if (task->nsproxy.net_ns.p != NULL) {
+		init_name = task->nsproxy.net_ns.p->name;
+		if (strcmp(init_name, name) != 0 &&
+		    net_ns_lookup(init_name).p != NULL) {
+			netns_decrement_ref_cnt(task->nsproxy.net_ns);
+		}
+	}
+
+	if ((assign_net_ns(task->nsproxy.net_ns,
+			   net_ns_lookup(name))) == NULL)
+		return -1;
+
+	netns_increment_ref_cnt(task->nsproxy.net_ns);
+
+	return 0;
+}
+
+int unshare_by_name(const char *name) {
 	net_namespace_p net_ns;
 
 	net_ns = alloc_net_ns(name);
@@ -74,9 +146,44 @@ int unshare(const char *name) {
 		return -1;
 	}
 
-	return setns(name);
+	return setns_by_name(name);
 }
-//
+
+int unshare() {
+	char netns_name[NAME_MAX + 1];
+	int i = 0;
+
+	do {
+		sprintf(netns_name, "netns%d", i++);
+	} while ((net_ns_lookup(netns_name)).p != NULL);
+
+	return unshare_by_name(netns_name);
+}
+
+#include <kernel/task.h>
+
+#include <kernel/task/resource/idesc_table.h>
+#include <fs/idesc.h>
+
+#include <fs/index_descriptor.h>
+
+int setns(int fd) {
+	struct idesc *fd_idesc;
+	struct net_namespace *net_ns;
+
+	fd_idesc = index_descriptor_get(fd);
+
+	dlist_foreach_entry_safe(net_ns, net_ns_list, lnk) {
+		if (((struct file_desc *)fd_idesc)->f_inode == net_ns->inode) {
+			netns_decrement_ref_cnt((task_self())->nsproxy.net_ns);
+			(task_self())->nsproxy.net_ns.p = net_ns;
+			netns_increment_ref_cnt((task_self())->nsproxy.net_ns);
+			return 0;
+		}
+	}
+
+	return -1;
+}
 
 static int init_net_ns_devs(void) {
 	static int init = 0;
@@ -103,5 +210,6 @@ static int set_init_net_ns(void) {
 	dlist_add_prev_entry(&init_net_ns_s, net_ns_list, lnk);
 	ipl_restore(ipl);
 	memcpy(init_net_ns_s.name, "init_net_ns", strlen("init_net_ns") + 1);
+	init_net_ns_s.ref_cnt = 1;
 	return 0;
 }
