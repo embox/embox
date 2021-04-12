@@ -96,9 +96,9 @@ int uart_register(struct uart *uart,
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 #endif
 #endif
+	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", (char)uart->idx);
 #ifdef __GNUC__
 #if __GNUC__ >= 7
-	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", (char)uart->idx);
 #pragma GCC diagnostic pop
 #endif
 #endif
