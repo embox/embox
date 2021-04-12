@@ -110,3 +110,9 @@ static module chdir {
 static module truncate {
 	source "truncate.c"
 }
+
+static module realpath {
+	option number log_level = 1
+
+	source "realpath.c"
+}

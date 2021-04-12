@@ -1,0 +1,52 @@
+diff -aur opencv-4.0.1/modules/core/include/opencv2/core/utils/filesystem.private.hpp ../build/extbld/third_party/lib/opencv/build/opencv-4.0.1/modules/core/include/opencv2/core/utils/filesystem.private.hpp
+--- opencv-4.0.1/modules/core/include/opencv2/core/utils/filesystem.private.hpp	2018-12-22 10:03:30.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.0.1/modules/core/include/opencv2/core/utils/filesystem.private.hpp	2021-04-09 11:36:15.016341708 +0300
+@@ -12,7 +12,8 @@
+ #  elif defined WINRT
+      /* not supported */
+ #  elif defined __ANDROID__ || defined __linux__ || defined _WIN32 || \
+-        defined __FreeBSD__ || defined __bsdi__ || defined __HAIKU__
++        defined __FreeBSD__ || defined __bsdi__ || defined __HAIKU__ || \
++        defined __EMBOX__
+ #      define OPENCV_HAVE_FILESYSTEM_SUPPORT 1
+ #  elif defined(__APPLE__)
+ #    include <TargetConditionals.h>
+diff -aur opencv-4.0.1/modules/core/src/utils/filesystem.cpp ../build/extbld/third_party/lib/opencv/build/opencv-4.0.1/modules/core/src/utils/filesystem.cpp
+--- opencv-4.0.1/modules/core/src/utils/filesystem.cpp	2018-12-22 10:03:30.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.0.1/modules/core/src/utils/filesystem.cpp	2021-04-09 11:59:49.127884165 +0300
+@@ -34,7 +34,7 @@
+ #include <errno.h>
+ #include <io.h>
+ #include <stdio.h>
+-#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__
++#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__ || defined __EMBOX__
+ #include <sys/types.h>
+ #include <sys/stat.h>
+ #include <fcntl.h>
+@@ -178,7 +178,7 @@
+     sz = GetCurrentDirectoryA((DWORD)buf.size(), buf.data());
+     return cv::String(buf.data(), (size_t)sz);
+ #endif
+-#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__
++#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__ || defined __EMBOX__
+     for(;;)
+     {
+         char* p = ::getcwd(buf.data(), buf.size());
+@@ -212,7 +212,7 @@
+ #else
+     int result = _mkdir(path.c_str());
+ #endif
+-#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__
++#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__ || defined __EMBOX__
+     int result = mkdir(path.c_str(), 0777);
+ #else
+     int result = -1;
+@@ -327,7 +327,7 @@
+     Impl& operator=(const Impl&); // disabled
+ };
+ 
+-#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__
++#elif defined __linux__ || defined __APPLE__ || defined __HAIKU__ || defined __FreeBSD__ || defined __EMBOX__
+ 
+ struct FileLock::Impl
+ {

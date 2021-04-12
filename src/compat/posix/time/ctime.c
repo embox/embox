@@ -42,8 +42,10 @@ char *ctime_r(const time_t *t, char *buff) {
 	struct tm *time = gmtime(t);
 
 	sprintf(buff, "%04d-%02d-%02d %02d:%02d:%02d",
-			time->tm_year + YEAR_1900, time->tm_mon + 1, time->tm_mday, time->tm_hour,
-			time->tm_min, time->tm_sec);
+			(unsigned short) (time->tm_year + YEAR_1900),
+			(unsigned char) (time->tm_mon + 1), (unsigned char) time->tm_mday,
+			(unsigned char) time->tm_hour, (unsigned char) time->tm_min,
+			(unsigned char) time->tm_sec);
 	return buff;
 }
 
