@@ -1,61 +1,14 @@
---- acpica-unix-20150204/source/include/platform/acenv.h	2015-02-05 00:12:05.000000000 +0300
-+++ acpica-unix-20150204/source/include/platform/acenv.new.h	2015-03-12 14:01:01.716351636 +0300
-@@ -240,57 +240,7 @@
-  *
-  *****************************************************************************/
+diff -aur acpica-unix-20210331/source/include/platform/acenv.h ../build/extbld/third_party/lib/acpica/acpica-unix-20210331/source/include/platform/acenv.h
+--- acpica-unix-20210331/source/include/platform/acenv.h	2021-03-31 23:04:44.000000000 +0300
++++ ../build/extbld/third_party/lib/acpica/acpica-unix-20210331/source/include/platform/acenv.h	2021-04-11 21:00:41.622420979 +0300
+@@ -350,6 +350,9 @@
+ #elif defined(__QNX__)
+ #include "acqnx.h"
  
--#if defined(_LINUX) || defined(__linux__)
--#include "aclinux.h"
--
--#elif defined(_APPLE) || defined(__APPLE__)
--#include "acmacosx.h"
--
--#elif defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
--#include "acfreebsd.h"
--
--#elif defined(__NetBSD__)
--#include "acnetbsd.h"
--
--#elif defined(__sun)
--#include "acsolaris.h"
--
--#elif defined(MODESTO)
--#include "acmodesto.h"
--
--#elif defined(NETWARE)
--#include "acnetware.h"
--
--#elif defined(_CYGWIN)
--#include "accygwin.h"
--
--#elif defined(WIN32)
--#include "acwin.h"
--
--#elif defined(WIN64)
--#include "acwin64.h"
--
--#elif defined(_WRS_LIB_BUILD)
--#include "acvxworks.h"
--
--#elif defined(__OS2__)
--#include "acos2.h"
--
--#elif defined(_AED_EFI)
--#include "acefi.h"
--
--#elif defined(_GNU_EFI)
--#include "acefi.h"
--
--#elif defined(__HAIKU__)
--#include "achaiku.h"
--
--#else
--
--/* Unknown environment */
--
--#error Unknown target environment
--#endif
-+#include <acembox.h>
- 
- /*! [End] no source code translation !*/
++#elif defined(__EMBOX__)
++#include "acembox.h"
++
+ /*
+  * EFI applications can be built with -nostdlib, in this case, it must be
+  * included after including all other host environmental definitions, in
  
