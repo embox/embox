@@ -1,19 +1,21 @@
 package third_party.lib
 
-@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
-
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/acpica/acpica-unix-20210331/source/include/")
+@BuildArtifactPath(cppflags="-I$(abspath $(THIRDPARTY_DIR))/lib/acpica")
 module acpica {
-	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20150204/source/include")
-	source
-	"init.c",
-	"osemboxxf.c"
 
 	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20150204/source/include")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/acpica-unix-20150204/source/components")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20210331/source/include")
+	source "init.c", "osemboxxf.c"
 
+	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20210331/source/include")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/acpica-unix-20210331/source/components")
 	source
+	"utilities/utascii.c",
+	"utilities/utstrtoul64.c",
+	"utilities/utstrsuppt.c",
 	"utilities/utaddress.c",
 	"utilities/uterror.c",
 	"utilities/uttrack.c",
@@ -58,7 +60,7 @@ module acpica {
 	"resources/rsserial.c",
 	"resources/rscreate.c",
 	"resources/rsxface.c",
-	"resources/rsdump.c",
+	/*"resources/rsdump.c",*/
 	"resources/rsio.c",
 	"events/evgpeinit.c",
 	"events/evgpeutil.c",
@@ -96,6 +98,9 @@ module acpica {
 	"parser/psutils.c",
 	"parser/pstree.c",
 	"parser/psopcode.c",
+	"executer/extrace.c",
+	"executer/exconcat.c",
+	"executer/exserial.c",
 	"executer/exutils.c",
 	"executer/exdebug.c",
 	"executer/exregion.c",
@@ -151,6 +156,8 @@ module acpica {
 	"tables/tbfadt.c",
 	"tables/tbinstal.c",
 	"tables/tbdata.c",
+	"dispatcher/dspkginit.c",
+	"dispatcher/dsdebug.c",
 	"dispatcher/dswstate.c",
 	"dispatcher/dsutils.c",
 	"dispatcher/dswload.c",
@@ -169,6 +176,5 @@ module acpica {
 	depends embox.mem.heap_api
 	depends embox.kernel.timer.sleep_api
 	depends embox.arch.cpu
-	depends embox.compat.libc.stdio.all
-	depends embox.lib.Printk
+
 }
