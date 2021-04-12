@@ -78,7 +78,7 @@ struct uart {
 	/* management */
 	struct dlist_head uart_lnk;
 	char dev_name[UART_NAME_MAXLEN];
-	int idx;
+	unsigned char idx;
 
 	/* runtime */
 	int state;
