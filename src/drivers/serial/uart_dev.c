@@ -89,19 +89,7 @@ int uart_register(struct uart *uart,
 		return -EBUSY;
 	}
 
-	/* Fixes -O3 build (x86/qemu) */
-#ifdef __GNUC__
-#if __GNUC__ >= 7
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-truncation"
-#endif
-#endif
-	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", (char)uart->idx);
-#ifdef __GNUC__
-#if __GNUC__ >= 7
-#pragma GCC diagnostic pop
-#endif
-#endif
+	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", uart->idx);
 
 	if (uart_defparams) {
 		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
