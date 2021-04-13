@@ -5,4 +5,13 @@ package third_party.lib
 static module OpenLibm {
 	source "^BUILD/extbld/^MOD_PATH/install/libopenlibm.a"
 	source "impl.h"
+
+	@NoRuntime depends libm_long_double_stubs
+}
+
+/* Here are stubs for platforms on which long double != double.
+ * On such platforms roundl() evaluates to round() and so on.
+ * For example, newlib have similar stubs. */
+static module libm_long_double_stubs {
+	source "libm_long_double_stubs.c"
 }
