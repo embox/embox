@@ -234,6 +234,10 @@ ifeq ($(ARCH),x86)
 		# which is incorrectly interpreted by QEMU.
 		override COMMON_CCFLAGS += -fcf-protection=none
 	endif
+
+	# There are some troubles on x86 with optimizations (O1 and more)
+	# without this flag*/
+	override COMMON_CCFLAGS += -fno-omit-frame-pointer
 endif
 endif
 
