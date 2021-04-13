@@ -77,7 +77,7 @@ static int scsi_read(struct block_dev *bdev, char *buffer, size_t count,
 	int blksize = sdev->blk_size;
 	unsigned int lba;
 	char *bp;
-	int ret;
+	int ret = 0;
 
 	if (!sdev) {
 		return -ENODEV;
@@ -107,7 +107,7 @@ static int scsi_write(struct block_dev *bdev, char *buffer, size_t count,
 	int blksize;
 	unsigned int lba;
 	char *bp;
-	int ret;
+	int ret = 0;
 
 	assert(bdev);
 	assert(buffer);

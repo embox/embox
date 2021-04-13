@@ -1513,7 +1513,7 @@ int ext2_write_map(struct nas *nas, long position,
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	index2 = index3 = 0;
+	index1 = index2 = index3 = 0;
 
 	fi = inode_priv(nas->node);
 	fsi = nas->fs->sb_data;
