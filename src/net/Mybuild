@@ -14,10 +14,10 @@ module dev {
 
 @DefaultImpl(core_no_net_ns)
 abstract module core {
+	option number amount_interface=4
 }
 
 module core_no_net_ns extends core {
-	option number amount_interface=4
 	option number log_level = 1
 
 	source "inetdev.c"
@@ -29,7 +29,6 @@ module core_no_net_ns extends core {
 }
 
 module core_net_ns extends core {
-	option number amount_interface=4
 	option number log_level = 1
 
 	source "inetdev_net_ns.c"
