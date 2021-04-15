@@ -20,10 +20,4 @@ static inline int finitel(long double x) {
 	return isfinite(x);
 }
 
-#if (defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L)
-__BEGIN_DECLS
-extern long long int llabs(long long int j);
-__END_DECLS
-#endif
-
 #endif /* _OPENLIB_FINITE_H */
