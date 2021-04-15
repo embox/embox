@@ -188,6 +188,7 @@ extern void _NORETURN exit(int status);
  */
 static inline int abs(int x) { return x < 0 ? -x : x; }
 static inline long labs(long x) { return x < 0 ? -x : x; }
+static inline long long int llabs(long long int x) { return x < 0 ? -x : x; }
 #ifdef __GNUC__
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
 
