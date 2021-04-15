@@ -169,6 +169,8 @@ extern void abort(void);
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 extern void _NORETURN exit(int status);
+/* _Exit() is equivalent to _exit() but defined here in stdlib.h. */
+extern void _NORETURN _Exit(int status);
 
 #ifdef __GNUC__
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))

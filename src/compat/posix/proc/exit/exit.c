@@ -33,6 +33,13 @@ void _exit(int status) {
 	panic("Returning from _exit");
 }
 
+/* From man:
+ * The function _Exit() is equivalent to _exit().
+ * The function _Exit() was introduced by C99. */
+void _Exit(int status) {
+	_exit(status);
+}
+
 /* from atexit */
 void __atexit_funcs(void);
 
