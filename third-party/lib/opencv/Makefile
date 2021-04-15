@@ -7,6 +7,7 @@ PKG_MD5          := f100177ab3e7b884f490cba4cff8e074
 PKG_PATCHES := endian.patch \
                disable_wstring.patch \
                disable_dlopen.patch \
+               disable_fpu_cortex_m.patch \
                add_if_defined_embox.patch
 
 include $(EXTBLD_LIB)

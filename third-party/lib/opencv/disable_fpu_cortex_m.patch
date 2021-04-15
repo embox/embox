@@ -1,0 +1,11 @@
+diff -aur opencv-4.5.2/modules/core/include/opencv2/core/fast_math.hpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/include/opencv2/core/fast_math.hpp
+--- opencv-4.5.2/modules/core/include/opencv2/core/fast_math.hpp	2021-04-02 14:23:54.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/include/opencv2/core/fast_math.hpp	2021-04-15 18:19:20.922156087 +0300
+@@ -81,6 +81,7 @@
+     #undef pixel
+   #endif
+ 
++  #undef __arm__ /* This check is not performed correctly, so we need to switch off ARM FPU instructions */
+   #if defined(CV_INLINE_ROUND_FLT)
+     // user-specified version
+     // CV_INLINE_ROUND_DBL should be defined too
