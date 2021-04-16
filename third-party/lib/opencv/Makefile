@@ -13,6 +13,7 @@ PKG_PATCHES := endian.patch \
 include $(EXTBLD_LIB)
 
 OPENCV_FLAGS = \
+		-DCMAKE_INSTALL_PREFIX=$(BUILD_DIR)/install \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_opencv_python_bindings_generator=OFF \
 		-DBUILD_JAVA=OFF \
@@ -42,6 +43,8 @@ OPENCV_FLAGS = \
 		-DBUILD_opencv_ts=ON \
 		-DBUILD_opencv_video=ON \
 		-DBUILD_opencv_videoio=ON \
+		-DBUILD_opencv_js_bindings_generator=OFF \
+		-DBUILD_opencv_objc_bindings_generator=OFF \
 		-DCPACK_BINARY_STGZ=OFF \
 		-DCPACK_BINARY_TGZ=OFF \
 		-DCPACK_BINARY_TZ=OFF \
@@ -108,5 +111,5 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR) && cp build/lib/libopencv_*.a build/3rdparty/lib/*a install
+	cd $(BUILD_DIR)/build && make install
 	touch $@
