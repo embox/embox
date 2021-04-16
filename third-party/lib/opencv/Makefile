@@ -17,6 +17,7 @@ PKG_PATCHES := endian.patch \
                disable_wstring.patch \
                disable_dlopen.patch \
                disable_fpu_cortex_m.patch \
+               disable_hershey_fonts.patch \
                add_if_defined_embox.patch
 else ifeq ("$(PKG_VER)","4.0.1")
 PKG_PATCHES += patch_4_0_1.txt

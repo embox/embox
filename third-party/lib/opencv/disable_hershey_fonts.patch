@@ -1,0 +1,26 @@
+diff -aur opencv-4.5.2/modules/imgproc/src/hershey_fonts.cpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/imgproc/src/hershey_fonts.cpp
+--- opencv-4.5.2/modules/imgproc/src/hershey_fonts.cpp	2021-04-02 14:23:54.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/imgproc/src/hershey_fonts.cpp	2021-04-16 13:37:22.555794305 +0300
+@@ -50,7 +50,12 @@
+ 
+ namespace cv
+ {
+-
++#if 1
++// FIXME It's disabled for text size minimizing
++const char* g_HersheyGlyphs[] = {
++ ""
++};
++#else
+ const char* g_HersheyGlyphs[] = {
+  "",
+  "MWRMNV RMVV PSTS",
+@@ -3353,7 +3358,7 @@
+  "",
+  "",
+  0 };
+-
++#endif
+ }
+ 
+ /* End of file. */
