@@ -5,6 +5,7 @@ package third_party.lib.opencv
 @BuildDepends(third_party.gcc.libstdcxx)
 @BuildDepends(third_party.gcc.libsupcxx)
 static module build {
+	option string opencv_version="4.0.1"
 
 	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.util.gettimeofday
