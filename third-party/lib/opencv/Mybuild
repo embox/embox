@@ -1,17 +1,11 @@
 package third_party.lib.opencv
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/core/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/imgproc/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/highgui/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/imgcodecs/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/objdetect/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/videoio/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/opencv-4.0.1/modules/video/include/")
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/build/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/install/include/opencv4")
 @BuildDepends(third_party.gcc.libstdcxx)
 @BuildDepends(third_party.gcc.libsupcxx)
 static module build {
+	option string opencv_version="4.0.1"
 
 	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.util.gettimeofday
@@ -28,7 +22,7 @@ static module build {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_core {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/libopencv_core.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_core.a"
 
 	@NoRuntime depends build
 }
@@ -37,7 +31,7 @@ static module libopencv_core {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_imgcodecs {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/libopencv_imgcodecs.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_imgcodecs.a"
 
 	@NoRuntime depends build
 }
@@ -46,7 +40,7 @@ static module libopencv_imgcodecs {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_imgproc {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/libopencv_imgproc.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_imgproc.a"
 
 	@NoRuntime depends build
 }
@@ -55,7 +49,7 @@ static module libopencv_imgproc {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_objdetect {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/libopencv_objdetect.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_objdetect.a"
 
 	@NoRuntime depends build
 }
@@ -64,7 +58,7 @@ static module libopencv_objdetect {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_videoio {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/libopencv_videoio.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_videoio.a"
 
 	@NoRuntime depends build
 }
@@ -73,7 +67,7 @@ static module libopencv_videoio {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module liblibpng {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/liblibpng.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/opencv4/3rdparty/liblibpng.a"
 
 	@NoRuntime depends build
 }
@@ -82,7 +76,7 @@ static module liblibpng {
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libzlib {
-	source "^BUILD/extbld/third_party/lib/opencv/build/install/libzlib.a"
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/opencv4/3rdparty/libzlib.a"
 
 	@NoRuntime depends build
 }

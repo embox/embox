@@ -30,6 +30,11 @@ typedef struct ldiv {
    long int rem;
 } ldiv_t;
 
+typedef struct lldiv {
+   long long int quot;
+   long long int rem;
+} lldiv_t;
+
 typedef struct div {
    int quot;
    int rem;
@@ -149,6 +154,7 @@ extern int initstate_r(unsigned int seed, char *statebuf,
                        size_t statelen, struct random_data *buf);
 extern int setstate_r(char *statebuf, struct random_data *buf);
 
+extern lldiv_t lldiv(long long num, long long denom);
 extern ldiv_t ldiv(long num, long denom);
 extern div_t div(int num, int denom);
 
@@ -163,6 +169,8 @@ extern void abort(void);
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 extern void _NORETURN exit(int status);
+/* _Exit() is equivalent to _exit() but defined here in stdlib.h. */
+extern void _NORETURN _Exit(int status);
 
 #ifdef __GNUC__
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
@@ -182,6 +190,7 @@ extern void _NORETURN exit(int status);
  */
 static inline int abs(int x) { return x < 0 ? -x : x; }
 static inline long labs(long x) { return x < 0 ? -x : x; }
+static inline long long int llabs(long long int x) { return x < 0 ? -x : x; }
 #ifdef __GNUC__
 #if __GNUC__ > 4 || (__GNUC__ == 4 && (__GNUC_MINOR__ > 5 ))
 

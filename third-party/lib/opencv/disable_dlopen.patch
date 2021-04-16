@@ -1,0 +1,21 @@
+diff -aur opencv-4.5.2/modules/core/include/opencv2/core/utils/plugin_loader.private.hpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/include/opencv2/core/utils/plugin_loader.private.hpp
+--- opencv-4.5.2/modules/core/include/opencv2/core/utils/plugin_loader.private.hpp	2021-04-02 14:23:54.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/include/opencv2/core/utils/plugin_loader.private.hpp	2021-04-15 17:49:32.708957981 +0300
+@@ -67,6 +67,8 @@
+     return (void*)GetProcAddress(h, symbolName);
+ #elif defined(__linux__) || defined(__APPLE__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__HAIKU__) || defined(__GLIBC__)
+     return dlsym(h, symbolName);
++#elif defined(__EMBOX__)
++	return NULL;
+ #endif
+ }
+ 
+@@ -81,6 +83,8 @@
+ #endif
+ #elif defined(__linux__) || defined(__APPLE__) || defined(__OpenBSD__) || defined(__FreeBSD__) || defined(__HAIKU__) || defined(__GLIBC__)
+     return dlopen(filename.c_str(), RTLD_NOW);
++#elif defined(__EMBOX__)
++	return NULL;
+ #endif
+ }
+ 

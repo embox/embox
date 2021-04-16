@@ -1,15 +1,34 @@
-PKG_VER          := 4.0.1
-PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
-PKG_NAME         := opencv
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
-PKG_MD5          := eb367fc73de66e6d8808e8712138c6b4
 
-PKG_PATCHES := patch.txt \
-               patch2.txt
+define option_get_string
+$(shell echo OPTION_STRING_third_party__lib__opencv__build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+endef
+
+PKG_NAME         := opencv
+PKG_VER          := $(call option_get_string,opencv_version)
+PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
+PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
+
+PKG_MD5_4.5.2    := f100177ab3e7b884f490cba4cff8e074
+PKG_MD5_4.0.1    := eb367fc73de66e6d8808e8712138c6b4
+PKG_MD5          := $(PKG_MD5_$(PKG_VER))
+
+ifeq ("$(PKG_VER)","4.5.2")
+PKG_PATCHES := endian.patch \
+               disable_wstring.patch \
+               disable_dlopen.patch \
+               disable_fpu_cortex_m.patch \
+               disable_hershey_fonts.patch \
+               add_if_defined_embox.patch
+else ifeq ("$(PKG_VER)","4.0.1")
+PKG_PATCHES += patch_4_0_1.txt
+else
+$(error Unsupported OpenCV version: $(PKG_VER))
+endif
 
 include $(EXTBLD_LIB)
 
 OPENCV_FLAGS = \
+		-DCMAKE_INSTALL_PREFIX=$(BUILD_DIR)/install \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_opencv_python_bindings_generator=OFF \
 		-DBUILD_JAVA=OFF \
@@ -39,6 +58,8 @@ OPENCV_FLAGS = \
 		-DBUILD_opencv_ts=ON \
 		-DBUILD_opencv_video=ON \
 		-DBUILD_opencv_videoio=ON \
+		-DBUILD_opencv_js_bindings_generator=OFF \
+		-DBUILD_opencv_objc_bindings_generator=OFF \
 		-DCPACK_BINARY_STGZ=OFF \
 		-DCPACK_BINARY_TGZ=OFF \
 		-DCPACK_BINARY_TZ=OFF \
@@ -70,6 +91,7 @@ OPENCV_FLAGS = \
 		-DWITH_ITT=OFF \
 		-DWITH_JASPER=OFF \
 		-DWITH_JPEG=OFF \
+		-DWITH_OPENJPEG=OFF \
 		-DWITH_LAPACK=OFF \
 		-DWITH_OPENCL=OFF \
 		-DWITH_OPENCLAMDBLAS=OFF \
@@ -83,6 +105,7 @@ OPENCV_FLAGS = \
 		-DWITH_V4L=OFF \
 		-DWITH_VTK=OFF \
 		-DWITH_WEBP=OFF \
+		-DPARALLEL_ENABLE_PLUGINS=OFF \
 		-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
 		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
 		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
@@ -92,12 +115,16 @@ OPENCV_FLAGS = \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
 		-DC_HAS_MFPU_NEON=0
 
+# FIXME mv $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp is used
+# becase there are two files in modules/core/src/ with the same name parallel.cpp which
+# then leads to broken gnu ar extraction.
 $(BUILD) :
 	cd $(BUILD_DIR) && mkdir build; \
+	mv $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel2.cpp; \
 	cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && \
 	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR) && cp build/lib/libopencv_*.a build/3rdparty/lib/*a install
+	cd $(BUILD_DIR)/build && make install
 	touch $@

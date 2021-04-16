@@ -206,7 +206,7 @@ static module scanf {
 static module div {
 	source "div.c"
 	source "ldiv.c"
-	/* source "lldiv.c" */
+	source "lldiv.c"
 }
 
 static module asprintf {

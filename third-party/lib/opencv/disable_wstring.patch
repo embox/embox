@@ -1,0 +1,38 @@
+diff -aur opencv-4.5.2/modules/core/include/opencv2/core/utils/filesystem.hpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/include/opencv2/core/utils/filesystem.hpp
+--- opencv-4.5.2/modules/core/include/opencv2/core/utils/filesystem.hpp	2021-04-02 14:23:54.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/include/opencv2/core/utils/filesystem.hpp	2021-04-15 12:38:05.915332384 +0300
+@@ -28,7 +28,8 @@
+ 
+ /** Get parent directory */
+ CV_EXPORTS cv::String getParent(const cv::String &path);
+-CV_EXPORTS std::wstring getParent(const std::wstring& path);
++//TODO Disable this until we add enable what_t in libstdc++.
++//CV_EXPORTS std::wstring getParent(const std::wstring& path);
+ 
+ /**
+  * Generate a list of all files that match the globbing pattern.
+diff -aur opencv-4.5.2/modules/core/src/utils/filesystem.cpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/utils/filesystem.cpp
+--- opencv-4.5.2/modules/core/src/utils/filesystem.cpp	2021-04-02 14:23:54.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/utils/filesystem.cpp	2021-04-15 12:38:37.019396061 +0300
+@@ -91,13 +91,14 @@
+     return std::string(path, 0, loc);
+ }
+ 
+-CV_EXPORTS std::wstring getParent(const std::wstring& path)
+-{
+-    std::wstring::size_type loc = path.find_last_of(L"/\\");
+-    if (loc == std::wstring::npos)
+-        return std::wstring();
+-    return std::wstring(path, 0, loc);
+-}
++//TODO Disable this until we add enable what_t in libstdc++.
++//CV_EXPORTS std::wstring getParent(const std::wstring& path)
++//{
++//    std::wstring::size_type loc = path.find_last_of(L"/\\");
++//    if (loc == std::wstring::npos)
++//        return std::wstring();
++//    return std::wstring(path, 0, loc);
++//}
+ 
+ #if OPENCV_HAVE_FILESYSTEM_SUPPORT
+ 
