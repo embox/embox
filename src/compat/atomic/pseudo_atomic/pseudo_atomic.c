@@ -135,14 +135,14 @@ uint32_t __sync_fetch_and_sub_4(void *mem, uint32_t val) {
 	return __atomic_fetch_sub_4(mem, val, 0);
 }
 
-uint8_t __atomic_exchange_1(uint8_t *p, uint8_t val, int memorder) {
-	uint8_t prev;
+unsigned char __atomic_exchange_1(volatile void *p, unsigned char val, int memorder) {
+	unsigned char prev;
 
 	(void) memorder;
 
 	spin_lock(&atomic_lock);
-	prev = *p;
-	*p = val;
+	prev = *(unsigned char *) p;
+	*(unsigned char *) p = val;
 	spin_unlock(&atomic_lock);
 
 	return prev;

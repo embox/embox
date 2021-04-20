@@ -3,6 +3,10 @@ define option_get_string
 $(shell echo OPTION_STRING_third_party__lib__opencv__build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
 endef
 
+define option_get_boolean
+$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+endef
+
 PKG_NAME         := opencv
 PKG_VER          := $(call option_get_string,opencv_version)
 PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
@@ -17,8 +21,10 @@ PKG_PATCHES := endian.patch \
                disable_wstring.patch \
                disable_dlopen.patch \
                disable_fpu_cortex_m.patch \
-               disable_hershey_fonts.patch \
                add_if_defined_embox.patch
+ifneq (0,$(call option_get_boolean,hack_4_5_2_disable_fonts))
+PKG_PATCHES += disable_hershey_fonts.patch
+endif
 else ifeq ("$(PKG_VER)","4.0.1")
 PKG_PATCHES += patch_4_0_1.txt
 else

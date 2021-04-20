@@ -93,7 +93,7 @@ int main(int argc, const char** argv) {
 	image.copyTo(cedge, edge);
 
 	printf("Image: %dx%d; Threshold=%d\n", cedge.cols, cedge.rows, edgeThresh);
-	printf("Detection time: %d s %d ms\n", tv_res.tv_sec, tv_res.tv_usec / 1000);
+	printf("Detection time: %d s %d ms\n", (int) tv_res.tv_sec, (int) tv_res.tv_usec / 1000);
 
 	imdrawfb(cedge);
 

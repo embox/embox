@@ -7,6 +7,10 @@ package third_party.lib.opencv
 static module build {
 	option string opencv_version="4.0.1"
 
+	/* Disables fonts for OpenCV version 4.5.2. It's used
+	 * to minimize .rodata size by ~70 Kb. */
+	option boolean hack_4_5_2_disable_fonts=true
+
 	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.util.gettimeofday
 	depends embox.compat.atomic.pseudo_atomic
@@ -66,6 +70,33 @@ static module libopencv_videoio {
 @LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
+static module libopencv_calib3d {
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_calib3d.a"
+
+	@NoRuntime depends build
+}
+
+@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@BuildDepends(third_party.lib.opencv.build)
+@Build(script="true")
+static module libopencv_flann {
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_flann.a"
+
+	@NoRuntime depends build
+}
+
+@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@BuildDepends(third_party.lib.opencv.build)
+@Build(script="true")
+static module libopencv_features2d {
+	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_features2d.a"
+
+	@NoRuntime depends build
+}
+
+@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@BuildDepends(third_party.lib.opencv.build)
+@Build(script="true")
 static module liblibpng {
 	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/opencv4/3rdparty/liblibpng.a"
 
@@ -88,6 +119,9 @@ static module all {
 	@NoRuntime depends libopencv_imgproc
 	@NoRuntime depends libopencv_objdetect
 	@NoRuntime depends libopencv_videoio
+	@NoRuntime depends libopencv_calib3d
+	@NoRuntime depends libopencv_flann
+	@NoRuntime depends libopencv_features2d
 	@NoRuntime depends liblibpng
 	@NoRuntime depends libzlib
 }
