@@ -7,6 +7,10 @@ package third_party.lib.opencv
 static module build {
 	option string opencv_version="4.0.1"
 
+	/* Disables fonts for OpenCV version 4.5.2. It's used
+	 * to minimize .rodata size by ~70 Kb. */
+	option boolean hack_4_5_2_disable_fonts=true
+
 	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.util.gettimeofday
 	depends embox.compat.atomic.pseudo_atomic
