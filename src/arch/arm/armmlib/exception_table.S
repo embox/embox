@@ -41,6 +41,10 @@
 .syntax unified
 
 exp_default_entry:
+#if defined(__ARM_ARCH_6M__) /* FIXME unsupported 'tst' for Cortex-M0 */
+	mov  r0, sp
+	mrs  r1, IPSR
+#else
 	mrs r1, IPSR
 
 	/* Registers are saved on MSP stack if the exception
@@ -54,6 +58,7 @@ exp_default_entry:
 1:
 	mrs r0, msp
 2:
+#endif
 	bl  exc_default_handler
 
 start:
