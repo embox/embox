@@ -37,8 +37,6 @@ static inline void openlog(const char *ident, int option, int facility) {
 
 void closelog(void);
 
-#define TCP_NODELAY 0
-
 typedef unsigned int u_int;
 
 static inline pid_t setsid(void) {
