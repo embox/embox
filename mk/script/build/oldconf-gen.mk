@@ -43,6 +43,7 @@ regions_lds_h  := $(SRCGEN_DIR)/regions.lds.h
 sections_lds_h := $(SRCGEN_DIR)/sections.lds.h
 phdrs_lds_h    := $(SRCGEN_DIR)/phdrs.lds.h
 section_symbols_lds_h := $(SRCGEN_DIR)/section_symbols.lds.h
+section_symbols_arr_h := $(SRCGEN_DIR)/section_symbols.h
 
 all : $(build_mk) $(config_lds_h) $(regions_lds_h) \
 	$(sections_lds_h) $(phdrs_lds_h) $(section_symbols_lds_h)
@@ -69,7 +70,7 @@ gen_phdrs = \
 	$(abspath $(ROOT_DIR))/mk/gen_ld_phdrs.sh $1 $2
 
 gen_section_symbols = \
-	$(abspath $(ROOT_DIR))/mk/gen_ld_section_symbols.sh $1 $2
+	$(abspath $(ROOT_DIR))/mk/gen_ld_section_symbols.sh $1 $2 $(section_symbols_arr_h)
 
 $(config_lds_h) :
 	@$(call cmd_notouch_stdout,$@, \
