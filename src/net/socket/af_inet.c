@@ -504,6 +504,8 @@ static int inet_setsockopt(struct sock *sk, int level,
 		}
 		inet->opt.hdrincl = val ? 1 : 0;
 		break;
+	case IP_TOS:
+		break;
 	default:
 		return -ENOPROTOOPT;
 	}
