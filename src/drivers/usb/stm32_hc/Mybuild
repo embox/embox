@@ -1,0 +1,14 @@
+package embox.driver.usb.stm32_hc
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f4_hc {
+
+	source "stm32_hc.c"
+	source "stm32f4cube_hc.c"
+
+	option number log_level=1
+	option number irq = 67 //OTG_FS_IRQn
+	
+	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
+}
