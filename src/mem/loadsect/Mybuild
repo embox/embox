@@ -1,0 +1,11 @@
+package embox.mem
+
+module loadsect {
+	option number log_level=1
+
+	/* Cflags accepts only options without spaces, so make it as two ops. */
+	@Cflags("-include")
+	@Cflags("$(BUILD_DIR)/gen/section_symbols.h")
+
+	source "loadsect.c"
+}
