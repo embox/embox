@@ -5,4 +5,5 @@ module phymem {
 
 	source "phymem.c"
 	depends embox.mem.vmem_device_memory
+	depends embox.mem.sections
 }

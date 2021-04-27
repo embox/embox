@@ -1,0 +1,14 @@
+package embox.mem
+
+module loadsect {
+	option number log_level=1
+
+	source "loadsect.c"
+
+	depends sections
+}
+
+module sections {
+	@Generated(script="./mk/gen_sections_c.sh")
+	source "sections.c"
+}

@@ -13,6 +13,7 @@ module imagecapture {
 	depends third_party.lib.opencv.all
 }
 
+@LinkerSection(text="edges_text",rodata="edges_rodata",data="edges_data",bss="edges_bss",arm_exidx="edges_arm_exidx",arm_extab="edges_arm_extab")
 @AutoCmd
 @Cmd(name = "edges",
 	help = "Basic OpenCV test")
