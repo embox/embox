@@ -70,7 +70,7 @@ gen_phdrs = \
 	$(abspath $(ROOT_DIR))/mk/gen_ld_phdrs.sh $1 $2
 
 gen_section_symbols = \
-	$(abspath $(ROOT_DIR))/mk/gen_ld_section_symbols.sh $1 $2 $(section_symbols_arr_h)
+	$(abspath $(ROOT_DIR))/mk/gen_ld_section_symbols.sh $1 $2
 
 $(config_lds_h) :
 	@$(call cmd_notouch_stdout,$@, \
