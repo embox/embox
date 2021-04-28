@@ -5,9 +5,13 @@
  * @author: Anton Bondarev
  */
 
+#include <util/log.h>
+
+#include <stdlib.h>
+#include <arpa/inet.h>
+
 #include <net/sock.h>
 #include <util/dlist.h>
-#include <arpa/inet.h>
 #include <hal/ipl.h>
 
 struct sock * sock_iter(const struct sock_proto_ops *p_ops) {
@@ -86,6 +90,9 @@ int sock_addr_alloc_port(const struct sock_proto_ops *p_ops,
 
 	assert(addrport != NULL);
 
+	if (start_port == IPPORT_RESERVED) {
+		start_port = IPPORT_RESERVED + ((rand() & 0xFFFF)) % (IPPORT_USERRESERVED - IPPORT_RESERVED);
+	}
 	/* This is allocation of ephemeral port (https://en.wikipedia.org/wiki/Ephemeral_port).
 	 * Instead of getting random port we increase port number for each
 	 * new port allocation request. */
