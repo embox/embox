@@ -1,0 +1,12 @@
+package embox.driver.random
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f7_rng {
+	option number irq = 61
+
+	source "stm32_rng.c"
+	@IncludeExport(path="drivers/rng", target_name="stm32cube_rng.h")
+	source "stm32f7cube_rng.h"
+	
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
