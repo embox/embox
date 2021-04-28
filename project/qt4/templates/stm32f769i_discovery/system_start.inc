@@ -4,7 +4,5 @@
 "netmanager",
 "service telnetd",
 "service httpd",
-"qspi_loader qt.bin 192.168.1.10",
-"qt_app_qspi_starter",
 //"moveblocks -platform emboxfb",
 "animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/stm32-ts -fullscreen",
