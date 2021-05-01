@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <drivers/keyboard.h>
 #include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
 

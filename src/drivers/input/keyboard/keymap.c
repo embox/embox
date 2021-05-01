@@ -8,7 +8,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <drivers/keyboard.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/input/keymap.h>
 
