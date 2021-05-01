@@ -10,4 +10,5 @@ module pl050_mouse {
 
 	depends embox.driver.input.core
 	@NoRuntime depends embox.driver.input.pl050
+	@NoRuntime depends embox.driver.input.mouse.ps_mouse
 }

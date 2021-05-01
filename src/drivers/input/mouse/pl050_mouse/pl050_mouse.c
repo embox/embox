@@ -15,20 +15,9 @@
 #include <drivers/common/memory.h>
 
 #include <drivers/pl050.h>
+#include <drivers/ps_mouse.h>
 
 #include <embox/unit.h>
-
-#define MSTAT_BUTMASK   0x07
-#define MSTAT_BUTLEFT   0x01
-#define MSTAT_BUTRIGHT  0x02
-#define MSTAT_BUTMIDDLE 0x04
-#define MSTAT_ALONE     0x08
-#define MSTAT_XSIGN     0x10
-#define MSTAT_YSIGN     0x20
-#define MSTAT_XOVER     0x40
-#define MSTAT_YOVER     0x80
-
-#define MOUSE_ACK       0xfa
 
 #define BASE_ADDR OPTION_GET(NUMBER,base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER,irq_num)
@@ -59,28 +48,6 @@ static struct pl050_mouse_indev mouse_dev = {
 		.type = INPUT_DEV_MOUSE,
 	},
 };
-
-static int ps_mouse_event_send(struct input_dev *indev, uint8_t data[3]) {
-	struct input_event ev;
-
-	ev.value = ((data[0] & MSTAT_XSIGN ? 0xff00 : 0) | data[1]) << 16;
-	ev.value |= (data[0] & MSTAT_YSIGN ? 0xff00 : 0) | data[2];
-
-	ev.type = 0;
-	if (data[0] & MSTAT_BUTLEFT) {
-		ev.type |= MOUSE_BUTTON_LEFT;
-	}
-	if (data[0] & MSTAT_BUTRIGHT) {
-		ev.type  |= MOUSE_BUTTON_RIGHT;
-	}
-	if (data[0] & MSTAT_BUTMIDDLE) {
-		ev.type  |= MOUSE_BUTTON_MIDDLE;
-	}
-
-	input_dev_report_event(indev, &ev);
-
-	return 0;
-}
 
 static irq_return_t pl050_mouse_irq_hnd(unsigned int irq_nr, void *data) {
 	struct pl050_mouse_indev *pl050_mouse_indev;

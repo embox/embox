@@ -1,0 +1,8 @@
+package embox.driver.input.mouse
+
+module ps_mouse {
+	@IncludeExport(path="drivers")
+	source "ps_mouse.h"
+
+	source "ps_mouse.c"
+}

@@ -11,21 +11,10 @@
 #include <drivers/input/input_dev.h>
 #include <kernel/irq.h>
 
+#include <drivers/ps_mouse.h>
 #include <drivers/i8042.h>
 
 EMBOX_UNIT_INIT(ps_mouse_init);
-
-#define MSTAT_BUTMASK   0x07
-#define MSTAT_BUTLEFT   0x01
-#define MSTAT_BUTRIGHT  0x02
-#define MSTAT_BUTMIDDLE 0x04
-#define MSTAT_ALONE     0x08
-#define MSTAT_XSIGN     0x10
-#define MSTAT_YSIGN     0x20
-#define MSTAT_XOVER     0x40
-#define MSTAT_YOVER     0x80
-
-#define MOUSE_ACK       0xfa
 
 struct ps2_mouse_indev {
 	struct input_dev input_dev;

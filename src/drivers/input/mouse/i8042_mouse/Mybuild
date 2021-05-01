@@ -5,4 +5,5 @@ module i8042_mouse {
 
 	depends embox.driver.input.core
 	depends embox.driver.input.i8042
+	@NoRuntime depends embox.driver.input.mouse.ps_mouse
 }
