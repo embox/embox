@@ -1,16 +1,5 @@
 package embox.driver.input.keyboard
 
-module keyboard {
-	source "keyboard.c"
-
-	option number register_in_vt = 1
-
-	depends embox.driver.input.core
-	depends embox.driver.tty.vterm
-	depends embox.driver.input.i8042
-	@NoRuntime depends embox.driver.input.keyboard.ps_keyboard
-}
-
 module keymap {
 	source "keymap.c"
 }
