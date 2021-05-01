@@ -8,8 +8,18 @@ module keyboard {
 	depends embox.driver.input.core
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.i8042
+	@NoRuntime depends embox.driver.input.keyboard.ps_keyboard
 }
 
 module keymap {
 	source "keymap.c"
+}
+
+module ps_keyboard {
+	option number log_level = 1
+
+	@IncludeExport(path="drivers")
+	source "ps_keyboard.h"
+
+	source "ps_keyboard.c"
 }

@@ -11,6 +11,7 @@
 
 #include <drivers/input/keymap.h>
 #include <drivers/input/input_dev.h>
+#include <drivers/ps_keyboard.h>
 
 #include <kernel/irq.h>
 #include <embox/unit.h>
@@ -43,24 +44,12 @@ static void keyboard_set_mode(unsigned char mode) {
 	outb(mode, I8042_DATA_PORT);
 }
 
-static int kbd_state;
-
-static void kbd_key_serv_press(int state, int flag) {
-	if (state & KBD_KEY_PRESSED) {
-		kbd_state |= flag;
-	} else {
-		kbd_state &= ~flag;
-	}
-}
-
 static int keyboard_get_input_event(struct input_dev *dev, struct input_event *event) {
 	uint8_t scan_code, status;
-	int ret = 0, flag = 0;
+	int ret = 0;
 
 	irq_lock();
 	{
-		event->type = event->value = 0;
-
 		status = keyboard_read_stat();
 
 		if (!(status & I8042_STS_OBF)) {
@@ -80,32 +69,7 @@ static int keyboard_get_input_event(struct input_dev *dev, struct input_event *e
 			goto out;
 		}
 
-		if (scan_code & 0x80) {
-			/* key unpressed */
-			event->type &= ~KBD_KEY_PRESSED;
-		} else {
-			/* key pressed */
-			event->type |= KBD_KEY_PRESSED;
-		}
-		scan_code &= 0x7F;
-
-		switch(scan_code) {
-		case KEYBOARD_SCAN_CODE_CTRL:
-			flag = KBD_CTRL_PRESSED;
-			break;
-		case KEYBOARD_SCAN_CODE_ALT:
-			flag = KBD_ALT_PRESSED;
-			break;
-		case KEYBOARD_SCAN_CODE_SHIFT:
-			flag = KBD_SHIFT_PRESSED;
-			break;
-		case KEYBOARD_SCAN_CODE_CAPS:
-			flag = KBD_CAPS_PRESSED;
-			break;
-		}
-		kbd_key_serv_press(event->type, flag);
-
-		event->value = kbd_state | scan_code;
+		keyboard_scan_code_to_event(scan_code, event);
 	}
 out:
 	irq_unlock();
@@ -143,8 +107,6 @@ static int keyboard_start(struct input_dev *indev) {
 
 		i8042_wait_write();
 		outb(I8042_KBD_RESET_ENABLE, I8042_DATA_PORT);
-
-		kbd_state = 0;
 	}
 out:
 	irq_unlock();

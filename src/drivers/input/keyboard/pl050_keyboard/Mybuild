@@ -10,4 +10,5 @@ module pl050_keyboard {
 
 	depends embox.driver.input.core
 	@NoRuntime depends embox.driver.input.pl050
+	@NoRuntime depends embox.driver.input.keyboard.ps_keyboard
 }
