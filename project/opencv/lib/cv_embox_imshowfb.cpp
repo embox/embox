@@ -43,7 +43,7 @@ void imshowfb(cv::Mat& img, int fbx) {
 	for (int y = 0; y < h; y++) {
 		const uchar *row = &img.at<uchar>(y, 0);
 		for (int x = 0; x < w; x += img.channels()) {
-			unsigned rgb888;
+			unsigned rgb888 = 0;
 
 			switch (img.channels()) {
 			case 1:
