@@ -32,6 +32,10 @@ struct logging {
  */
 extern char *log_levels[];
 
+#include <sys/cdefs.h>
+
+__BEGIN_DECLS
+
 /**
  * Logs message in a way specified by @p logging.
  *
@@ -41,5 +45,7 @@ extern char *log_levels[];
  */
 extern void logging_raw(struct logging *logging, int level,
 	const char* fmt, ...);
+
+__END_DECLS
 
 #endif /* UTIL_LOGGING_H_ */
