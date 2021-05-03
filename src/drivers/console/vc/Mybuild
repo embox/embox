@@ -21,7 +21,7 @@ module vc {
 	depends vga
 	depends embox.driver.tty.vterm
 	depends embox.driver.input.core
-	depends embox.driver.input.keyboard.keyboard
+	depends embox.driver.input.keyboard.i8042_keyboard
 
 	depends embox.driver.char_dev
 }

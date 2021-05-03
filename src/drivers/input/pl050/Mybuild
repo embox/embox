@@ -1,0 +1,10 @@
+package embox.driver.input
+
+module pl050 {
+	option number log_level=1
+
+	@IncludeExport(path="drivers")
+	source "pl050.h"
+
+	source "pl050.c"
+}

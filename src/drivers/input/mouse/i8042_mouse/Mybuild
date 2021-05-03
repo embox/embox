@@ -1,0 +1,9 @@
+package embox.driver.input.mouse
+
+module i8042_mouse {
+	source "i8042_mouse.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.input.i8042
+	@NoRuntime depends embox.driver.input.mouse.ps_mouse
+}

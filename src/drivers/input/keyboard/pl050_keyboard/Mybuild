@@ -1,0 +1,14 @@
+package embox.driver.input.keyboard
+
+module pl050_keyboard {
+	option number log_level = 1
+
+	option number base_addr = 0x18000000
+	option number irq_num = 3
+
+	source "pl050_keyboard.c"
+
+	depends embox.driver.input.core
+	@NoRuntime depends embox.driver.input.pl050
+	@NoRuntime depends embox.driver.input.keyboard.ps_keyboard
+}

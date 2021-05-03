@@ -1,0 +1,14 @@
+package embox.driver.input.mouse
+
+module pl050_mouse {
+	option number log_level = 1
+
+	option number base_addr = 0x19000000
+	option number irq_num = 4
+
+	source "pl050_mouse.c"
+
+	depends embox.driver.input.core
+	@NoRuntime depends embox.driver.input.pl050
+	@NoRuntime depends embox.driver.input.mouse.ps_mouse
+}

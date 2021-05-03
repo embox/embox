@@ -1,0 +1,8 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"service telnetd",
+"service httpd",
+"ntpdate 0.europe.pool.ntp.org",
+"lvgl_demo /dev/fb0 /dev/ps-mouse",
+"tish",

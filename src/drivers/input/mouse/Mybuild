@@ -1,8 +1,8 @@
 package embox.driver.input.mouse
 
 module ps_mouse {
-	source "ps_mouse.c"
+	@IncludeExport(path="drivers")
+	source "ps_mouse.h"
 
-	depends embox.driver.input.core
-	depends embox.driver.input.i8042
+	source "ps_mouse.c"
 }

@@ -1,21 +1,14 @@
 package embox.driver.input.keyboard
 
-module kbd_defs {
-	@IncludeExport(path="drivers")
-	source "keyboard.h"
-}
-
-module keyboard {
-	source "keyboard.c"
-
-	option number register_in_vt = 1
-
-	depends kbd_defs
-	depends embox.driver.input.core
-	depends embox.driver.tty.vterm
-	depends embox.driver.input.i8042
-}
-
 module keymap {
 	source "keymap.c"
+}
+
+module ps_keyboard {
+	option number log_level = 1
+
+	@IncludeExport(path="drivers")
+	source "ps_keyboard.h"
+
+	source "ps_keyboard.c"
 }
