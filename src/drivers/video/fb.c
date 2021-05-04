@@ -720,7 +720,13 @@ int pix_fmt_convert(void *src, void *dst, int n,
 		g = ((in_px >> in_cv.sg) & 0xff) >> (8 - in_cv.dg);
 		b = ((in_px >> in_cv.sb) & 0xff) >> (8 - in_cv.db);
 
-		a = fb_component_conv(a, in_cv.da, out_cv.da);
+		if (!a) {
+			/* For the formats which do not support alpha, set
+			 * alpha to the maximum value. */
+			a = 0xff;
+		} else {
+			a = fb_component_conv(a, in_cv.da, out_cv.da);
+		}
 		r = fb_component_conv(r, in_cv.dr, out_cv.dr);
 		g = fb_component_conv(g, in_cv.dg, out_cv.dg);
 		b = fb_component_conv(b, in_cv.db, out_cv.db);

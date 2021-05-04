@@ -22,7 +22,7 @@ void imshowfb(cv::Mat& img, int fbx) {
 		return;
 	}
 
-	log_debug("\nimage width:  %d\n"
+	log_debug("\nimage width:    %d\n"
 			  "image height:   %d\n"
 			  "image size:     %dx%d\n"
 			  "image depth:    %d\n"
@@ -32,7 +32,12 @@ void imshowfb(cv::Mat& img, int fbx) {
 			  img.depth(), img.channels(), img.type());
 
 	if (img.channels() != 1 && img.channels() != 3) {
-		fprintf(stderr, "Unsupported channels count: %d\n", img.channels());
+		fprintf(stderr, "%s: Unsupported channels count: %d\n", __func__, img.channels());
+
+		return;
+	}
+	if (fbi->var.fmt != BGRA8888 && fbi->var.fmt != RGBA8888) {
+		fprintf(stderr, "%s: Unsupported framebuffer format: %d\n", __func__, fbi->var.fmt);
 
 		return;
 	}
@@ -43,30 +48,34 @@ void imshowfb(cv::Mat& img, int fbx) {
 	for (int y = 0; y < h; y++) {
 		const uchar *row = &img.at<uchar>(y, 0);
 		for (int x = 0; x < w; x += img.channels()) {
-			unsigned rgb888 = 0;
+			uint32_t pixel = 0;
 
 			switch (img.channels()) {
 			case 1:
 			{
 				unsigned val = unsigned(row[x]);
 
-				rgb888 = 0xFF000000 | val | (val << 8) | (val << 16);
+				pixel = 0xFF000000 | val | (val << 8) | (val << 16);
 
 				break;
 			}
 			case 3:
-				rgb888 =
-					0xFF000000 |
-					unsigned(row[x + 2]) |
+			{
+				uint32_t in;
+
+				in = unsigned(row[x + 2]) |
 					(unsigned(row[x + 1]) << 8) |
 					(unsigned(row[x]) << 16);
 
+				pix_fmt_convert(&in, &pixel, 1, RGB888, fbi->var.fmt);
+
 				break;
+			}
 			default:
 				break;
 			}
 
-			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x / img.channels()] = rgb888;
+			((uint32_t *) fbi->screen_base)[fbi->var.xres * y + x / img.channels()] = pixel;
 		}
 	}
 }
