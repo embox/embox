@@ -24,26 +24,16 @@
 
 #include <embox/unit.h>
 
-
 #include <stm32f4xx.h>
 #include <stm32f4xx_hal.h>
 #include <stm32f4xx_hal_hcd.h>
 
 #include <drivers/usb/usb.h>
+#include "stm32_hc.h"
 
 EMBOX_UNIT_INIT(stm32hc_init);
 
 #define USB_IRQ OPTION_GET(NUMBER, irq)
-
-static HCD_HandleTypeDef stm32_hcd_handler;
-
-struct stm32_hcd {
-	struct usb_hcd *hcd;
-	HCD_HandleTypeDef *hhcd;
-	int port_status; /* 0 - device not attached, 1- device attached, port not ready, 2 - device attached, port ready */
-	int control_pipes; /* 0 - control pipes closed, 1 - control pipes open */
-	int bulk_pipes; /* 0 - bulk pipes closed, 1 - bulk pipes open */
-};
 
 POOL_DEF(stm32_hcds, struct stm32_hcd, USB_MAX_HCD);
 
@@ -60,9 +50,22 @@ static void *stm32_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	return stm32_hcd;
 }
 
+void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state) {
+	if (urb_state != 1) {
+		printk("Error while processing URB\n");
+		printk("Error channel number: %d\n", chnum);
+		printk("urb dead\n");
+		//assert(0);
+	}
+}
+
+void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
+	printk("STM32 USB: Port Disabled.\n");
+}
+
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd) {
-	struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
-	stm32_hcd->port_status = 1;
+	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+	stm32_hcd->port_status = STM32_PORT_CONNECTED;
 }
 
 static irq_return_t stm32_irq_handler(unsigned int irq_nr, void *data) {
@@ -99,7 +102,7 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 
 	/* Start VBus */
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
-	HAL_Delay(200);
+	HAL_Delay(2000);
 
 	struct usb_dev *udev = usb_new_device(NULL, hcd, 0);
 	if (!udev) {
@@ -117,34 +120,84 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 static int stm32_common_request(struct usb_request *req) {
 	/* Request properties */
 	uint32_t speed = req->endp->dev->speed;
-	struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
-	uint32_t packet_type;
+	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(&stm32_hcd_handler);
+	uint32_t packet_type = (req->token & USB_TOKEN_OUT) ? STM32_URB_OUT  : STM32_URB_IN;
+
 	/* Open pipes */
-	if (!stm32_hcd->bulk_pipes) {
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, 3, 0x80U, req->endp->dev->addr, speed, 0u, 64) != HAL_OK) {
-			log_error("stm32_common_request: error while opening pipe.");
-			return -1;
+	if (stm32_hcd->bulk_pipes == STM32_PIPES_CLOSED) {
+		/* Open BULK IN Pipe */
+		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
+				STM32_ENDP_BULK_IN, STM32_USB_DEV_ADDR, speed, EP_TYPE_BULK,
+					STM32_MAX_PACKET_SIZE) != HAL_OK) {
+						log_error("stm32_common_request: error while opening pipe.");
+						return -1;
 		}
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, 4, 0x00U, req->endp->dev->addr, speed, 0u, 64) != HAL_OK) {
-			log_error("stm32_common_request: error while opening pipe.");
-			return -1;
+
+		/* Open BULK OUT Pipe */
+		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
+				STM32_ENDP_BULK_OUT, STM32_USB_DEV_ADDR, speed, EP_TYPE_BULK,
+					STM32_MAX_PACKET_SIZE) != HAL_OK) {
+						log_error("stm32_common_request: error while opening pipe.");
+						return -1;
 		}
-		stm32_hcd->bulk_pipes = 1;
+		stm32_hcd->bulk_pipes = STM32_PIPES_OPEN;
 	}
 
-	packet_type = (req->token & USB_TOKEN_OUT) ? 1 : 0;
-	if (packet_type == 1) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, 4, 0, EP_TYPE_BULK, 1, (uint8_t*)req->buf, req->len, 0) != HAL_OK) {
-				log_error("stm32_common_request: error while processing usb request.");
-				return -1;
+	if (req->len > STM32_MAX_PACKET_SIZE) {
+		/* If URB > 64 send few URBs */
+		uint8_t *tmp = (uint8_t *)req->buf;
+		uint8_t *end = tmp + req->len; /* end of buffer */
+		uint32_t packet_size;
+		uint32_t max_size = STM32_MAX_PACKET_SIZE;
+
+		while (tmp < end) {
+			packet_size = end - tmp; /* size of remaining data */
+			if (packet_size > max_size) {
+				packet_size = max_size;
 			}
+
+			/* Send OUT URB */
+			if (packet_type == STM32_URB_OUT) {
+				if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
+						0, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
+							log_error("stm32_common_request: error while processing usb request.");
+							return -1;
+				}
+				HAL_Delay(200);
+			}
+
+			/* Send IN URB */
+			if (packet_type == STM32_URB_IN) {
+				if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
+						1, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
+							log_error("stm32_common_request: error while processing usb request.");
+							return -1;
+				}
+				HAL_Delay(200);
+			}
+
+			tmp += packet_size;
 		}
 
-	if (packet_type == 0) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, 3, 1, EP_TYPE_BULK, 1, (uint8_t*)req->buf, req->len, 0) != HAL_OK) {
-				log_error("stm32_common_request: error while processing usb request.");
-				return -1;
+	} else {
+		/* If URB < 64 send one URB */
+		if (packet_type == STM32_URB_OUT) {
+			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
+					0, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+						log_error("stm32_common_request: error while processing usb request.");
+						return -1;
 			}
+			HAL_Delay(200);
+		}
+
+		if (packet_type == STM32_URB_IN) {
+			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
+					1, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+						log_error("stm32_common_request: error while processing usb request.");
+						return -1;
+			}
+			HAL_Delay(200);
+		}
 	}
 
 	req->actual_len = req->len;
@@ -156,39 +209,56 @@ static int stm32_control_request(struct usb_request *req) {
 	/* Request properties */
 	uint32_t speed = req->endp->dev->speed;
 	struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
-	uint32_t packet_type;
+	uint32_t packet_type = (req->token & USB_TOKEN_OUT) ? STM32_URB_OUT : STM32_URB_IN;
+
 	/* Open pipes */
-	if (!stm32_hcd->control_pipes) {
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, 1, 0x80U, req->endp->dev->addr, speed, 0u, 64) != HAL_OK) {
-			log_error("stm32_control_request: error while opening pipe.");
-			return -1;
+	if (stm32_hcd->control_pipes == 0) {
+		/* Open CONTROL IN Pipe */
+		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_CONTROL_IN,
+				STM32_ENDP_CONTROL_IN, STM32_USB_DEV_ADDR, speed, EP_TYPE_CTRL,
+					STM32_MAX_PACKET_SIZE) != HAL_OK) {
+						log_error("stm32_control_request: error while opening pipe.");
+						return -1;
 		}
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, 2, 0x00U, req->endp->dev->addr, speed, 0u, 64) != HAL_OK) {
-			log_error("stm32_control_request: error while opening pipe.");
-			return -1;
+
+		/* Open CONTROL OUT Pipe */
+		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT,
+				STM32_ENDP_CONTROL_OUT, STM32_USB_DEV_ADDR, speed, EP_TYPE_CTRL,
+					STM32_MAX_PACKET_SIZE) != HAL_OK) {
+						log_error("stm32_control_request: error while opening pipe.");
+						return -1;
 		}
 		stm32_hcd->control_pipes = 1;
 	}
 
-	/* Setup */
-	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, 2, 0, EP_TYPE_CTRL, 0, (uint8_t*)&req->ctrl_header, sizeof(req->ctrl_header), 0) != HAL_OK) {
-		log_error("stm32_control_request: error while processing request.");
-		return -1;
+	/* Setup  URB */
+	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT, 0,
+			EP_TYPE_CTRL, 0, (uint8_t*)&req->ctrl_header,
+				sizeof(req->ctrl_header), 0) != HAL_OK) {
+					log_error("stm32_control_request: error while processing request.");
+					return -1;
 	}
+	HAL_Delay(200);
 
-	packet_type = (req->token & USB_TOKEN_OUT) ? 1 : 0;
-	if (req->len > 0) {
-		if (packet_type == 1) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, 2, 0, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-				log_error("stm32_control_request: error while processing request.");
-				return -1;
+	if (req->len > 1) {
+		/* Send OUT URB */
+		if (packet_type == STM32_URB_OUT) {
+			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT,
+					0, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+						log_error("stm32_control_request: error while processing request.");
+						return -1;
 			}
+			HAL_Delay(200);
 		}
-		if (packet_type == 0) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, 1, 1, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-				log_error("stm32_control_request: error while processing request.");
-				return -1;
+
+		/* Send IN URB */
+		if (packet_type == STM32_URB_IN) {
+			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_IN,
+					1, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+						log_error("stm32_control_request: error while processing request.");
+						return -1;
 			}
+			HAL_Delay(200);
 		}
 	}
 
@@ -221,14 +291,14 @@ static int stm32_request (struct usb_request *req) {
 static uint32_t stm32_roothub_portstatus() {
 	struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
 
-	/* return values from other USB drivers */
-	if (stm32_hcd->port_status == 0) {
+	/* return values from other USB drivers : TODO : make adequate return*/
+	if (stm32_hcd->port_status == STM32_PORT_IDLE) {
 		return 256; /* No device in port */
 	}
-	if (stm32_hcd->port_status == 1) {
+	if (stm32_hcd->port_status == STM32_PORT_CONNECTED) {
 		return 0x1114371; /* Device in port, not enable */
 	}
-	if (stm32_hcd->port_status == 2){
+	if (stm32_hcd->port_status == STM32_PORT_READY){
 		return 0x100103; /* Device in port, enable */
 	}
 
@@ -272,8 +342,8 @@ static int stm32_root_hub_control (struct usb_request *req) {
   		case USB_PORT_FEATURE_C_CONNECTION:
 			/* Reset port and change port status in stm32_hcd struct */
 			HAL_HCD_ResetPort(&stm32_hcd_handler);
-			struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
-			stm32_hcd->port_status = 2;
+			struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(&stm32_hcd_handler);
+			stm32_hcd->port_status = STM32_PORT_READY;
   			break;
   		case USB_PORT_FEATURE_C_RESET:
   			break;
