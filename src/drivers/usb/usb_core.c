@@ -8,26 +8,37 @@
 
 #include <errno.h>
 #include <string.h>
+
 #include <util/member.h>
 #include <util/dlist.h>
 #include <util/log.h>
 #include <mem/misc/pool.h>
+
 #include <kernel/panic.h>
 #include <kernel/lthread/lthread.h>
 #include <kernel/lthread/lthread_sched_wait.h>
 #include <kernel/thread/thread_sched_wait.h>
+
 #include <embox/unit.h>
+
 #include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb.h>
 
+#include <hal/mmu.h>
 
+#ifndef NOMMU
+#include <mem/vmem.h>
+#define URB_ALIGNMENT     MMU_PAGE_SIZE
+#else
+#define URB_ALIGNMENT     OPTION_GET(NUMBER,urb_alignment)
+#endif
 
 EMBOX_UNIT_INIT(usb_core_init);
 
 static DLIST_DEFINE(usb_hcds_list);
 
 POOL_DEF(usb_hcds, struct usb_hcd, USB_MAX_HCD);
-POOL_DEF(usb_requests, struct usb_request, USB_MAX_REQ);
+POOL_DEF_ATTR(usb_requests, struct usb_request, USB_MAX_REQ, __attribute__((aligned(URB_ALIGNMENT))));
 
 static struct usb_request *usb_request_alloc(struct usb_endp *endp) {
 	struct usb_request *req;
@@ -284,7 +295,7 @@ void usb_hcd_free(struct usb_hcd *hcd) {
 	pool_free(&usb_hcds, hcd);
 }
 
-/*#ifndef NOMMU
+#ifndef NOMMU
 static void usb_pool_set_nocache(struct pool *p) {
 	log_debug("pool_addr = 0x%08x, pool_size = %d", p->memory, p->pool_size);
 	vmem_set_flags(vmem_current_context(),
@@ -292,16 +303,16 @@ static void usb_pool_set_nocache(struct pool *p) {
 	        p->pool_size,
 	        PROT_WRITE | PROT_READ | PROT_NOCACHE);
 }
-#endif*/
+#endif
 
 int usb_hcd_register(struct usb_hcd *hcd) {
 	int ret;
 
 	assert(hcd);
 
-/*#ifndef NOMMU
+#ifndef NOMMU
 	usb_pool_set_nocache(&usb_requests);
-#endif*/
+#endif
 
 	dlist_head_init(&hcd->lnk);
 	dlist_add_next(&hcd->lnk, &usb_hcds_list);
