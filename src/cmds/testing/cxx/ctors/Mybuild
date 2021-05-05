@@ -1,0 +1,9 @@
+package embox.cmd.testing.cxx
+
+@AutoCmd
+@CxxCmd(name="cxx_ctors_demo",
+	help="",
+	man="")
+module cxx_ctors_demo {
+	source "cxx_ctors_demo.cpp"
+}
