@@ -8,6 +8,7 @@ include mk/script/script-common.mk
 mod_autocmd_postbuild = \
 	$$(EXTERNAL_MAKE_FLAGS) \
 	MAIN_STRIPPING_LOCALS=$(if $(strip $1),no,yes) \
+	CXX_CMD=$(if $(strip $2),yes,no) \
 	$$(abspath $$(ROOT_DIR))/mk/main-stripping.sh \
 	$$(module_id) \
 	$$(abspath $$(obj_build)) \
@@ -164,6 +165,7 @@ $(@build_image) : target_file = \
 my_bld       := $(call mybuild_resolve_or_die,mybuild.lang.Build)
 my_bld_stage := $(call mybuild_resolve_or_die,mybuild.lang.Build.stage)
 my_autocmd   := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd)
+my_cxx_cmd   := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd)
 my_autocmd_preserve_locals := $(call mybuild_resolve_or_die,mybuild.lang.AutoCmd.preserve_locals)
 my_postbuild_script := $(call mybuild_resolve_or_die,mybuild.lang.Postbuild.script)
 
@@ -484,7 +486,10 @@ $(@module_ld_rmk) $(@module_ar_rmk) :
 		$(call gen_make_tsfn,$(out),mod_postbuild, \
 			$(if $(strip $(call invoke, \
 				$(call get,$@,allTypes),getAnnotationsOfType,$(my_autocmd))),\
-				$(call mod_autocmd_postbuild,$(call annotation_value,$(call get,$@,allTypes),$(my_autocmd_preserve_locals)));) \
+				$(call mod_autocmd_postbuild, \
+					$(call annotation_value,$(call get,$@,allTypes),$(my_autocmd_preserve_locals)),\
+					$(call invoke,$(call get,$@,allTypes),getAnnotationsOfType,$(my_cxx_cmd))); \
+			) \
 			$(call cond_add,$(call annotation_value,$(call get,$@,allTypes),$(my_postbuild_script)),;)); \
 		$(call gen_make_tsvar_list,$(out),o_files,$(o_files)); \
 		$(call gen_make_tsvar_list,$(out),a_files,$(a_files)))

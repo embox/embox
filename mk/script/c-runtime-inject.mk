@@ -24,6 +24,10 @@ my_cmd       := $(call mybuild_resolve_or_die,mybuild.lang.Cmd)
 my_cmd_name  := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.name)
 my_cmd_help  := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.help)
 my_cmd_man   := $(call mybuild_resolve_or_die,mybuild.lang.Cmd.man)
+my_cxx_cmd       := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd)
+my_cxx_cmd_name  := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd.name)
+my_cxx_cmd_help  := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd.help)
+my_cxx_cmd_man   := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd.man)
 my_rl_value  := $(call mybuild_resolve_or_die,mybuild.lang.Runlevel.value)
 
 # 1. Module instance.
@@ -44,6 +48,9 @@ is_a = \
 
 cmd_modules := \
 	$(foreach m,$(modules),$(if $(call is_a,$(my_cmd),$m),$m))
+
+cxx_cmd_modules := \
+	$(foreach m,$(modules),$(if $(call is_a,$(my_cxx_cmd),$m),$m))
 
 app_modules := \
 	$(foreach m,$(modules),$(if $(call is_a,$(my_app),$m),$m))
@@ -151,6 +158,14 @@ $(foreach m,$(cmd_modules),$(foreach n,$(basename $m), \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_name))), \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_help))), \
 		$(call str_escape,$(call module_annotation_value,$m,$(my_cmd_man))));)))
+$(info )
+
+$(info /* C++ commands. */)
+$(foreach m,$(cxx_cmd_modules),$(foreach n,$(basename $m), \
+	$(info MOD_CMD_DEF($(call fqn2id,$n), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cxx_cmd_name))), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cxx_cmd_help))), \
+		$(call str_escape,$(call module_annotation_value,$m,$(my_cxx_cmd_man))));)))
 $(info )
 
 $(info /* Dependencies. */)
