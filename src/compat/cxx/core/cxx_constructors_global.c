@@ -6,6 +6,9 @@
  */
 
 #include <embox/unit.h>
+#include <kernel/panic.h>
+#include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 
 #include "cxx_invoke_constructors.h"
 #include "cxx_invoke_destructors.h"
@@ -24,7 +27,13 @@ static int cxx_fini(void) {
 }
 
 void cxx_app_startup(void) {
+	if (task_self() != task_kernel_task()) {
+		panic("The current command runs not in the kernel task (add it to builtin)\n");
+	}
 }
 
 void cxx_app_termination(void) {
+	if (task_self() != task_kernel_task()) {
+		panic("The current command runs not in the kernel task (add it to builtin)\n");
+	}
 }
