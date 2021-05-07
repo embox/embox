@@ -1,105 +1,10 @@
-/**
- * @file usb_dwc_hcd.c
- * @ingroup usbhcd
- *
- * This file contains a USB Host Controller Driver for the Synopsys DesignWare
- * Hi-Speed USB 2.0 On-The-Go Controller.
- */
-/* Embedded Xinu, Copyright (C) 2013.  All rights reserved. */
-
-/* Copyright (c) 2008, Douglas Comer and Dennis Brylow
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted for use in any lawful way, provided that
- * the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the names of the authors nor their contributors may be
- *       used to endorse or promote products derived from this software
- *       without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE AUTHORS AND CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
-
-/**
- * @addtogroup usbhcd
- *
- * This is a USB Host Controller Driver (HCD) that interfaces with the Synopsys
- * DesignWare Hi-Speed USB 2.0 On-The-Go Controller, henceforth abbreviated as
- * "DWC".  This is the USB Host Controller used on the BCM2835 SoC used on the
- * Raspberry Pi.
- *
- * Please note that there is no publicly available official documentation for
- * this particular piece of hardware, and it uses its own custom host controller
- * interface rather than a standard one such as EHCI.  Therefore, this driver
- * was written on a best-effort basis using several sources to gleam the
- * necessary hardware details, including the extremely complicated and difficult
- * to understand vendor-provided Linux driver.
- *
- * This file implements the Host Controller Driver Interface defined in
- * usb_hcdi.h.  Most importantly, it implements a function to power on and start
- * the host controller (hcd_start()) and a function to send and receive messages
- * over the USB (hcd_submit_xfer_request()).
- *
- * The DWC is controlled by reading and writing to/from memory-mapped registers.
- * The most important registers are the host channel registers.  On this
- * particular hardware, a "host channel", or simply "channel", is a set of
- * registers to which software can read and write to cause transactions to take
- * place on the USB.  A fixed number of host channels exist; on the Raspberry Pi
- * there are 8.  From the software's perspective, transactions using different
- * host channels can be executed at the same time.
- *
- * Some of the host channel registers, as well as other registers, deal with
- * interrupts.  This driver makes use heavy of these and performs all USB
- * transfers in an interrupt-driven manner.  However, due to design flaws in
- * this hardware and in USB 2.0 itself, "interrupt" and "isochronous" transfers
- * still need to make use of software polling when checking for new data, even
- * though each individual transfer is itself interrupt-driven.  This means that,
- * for example, if your USB mouse specifies a polling rate of 100 times per
- * second, then it will, unfortunately, be polled 100 times per second in
- * software.  For more detail about how interrupts can be controlled on this
- * particular hardware, see the comment above dwc_setup_interrupts().
- *
- * Another important concept is the idea of "packets", "transactions", and
- * "transfers".  A USB transfer, such as a single control message or bulk
- * request, may need to be split into multiple packets if it exceeds the
- * endpoint's maximum packet size.  Unfortunately, this has to be dealt with
- * explicitly in this code, as this hardware doesn't do it for us.  But at
- * least, from the viewpoint of this software, a "transaction" is essentially
- * the same as a "packet".
- *
- * The "On-The-Go" in the name of this hardware means that it supports the USB
- * On-The-Go protocol, which allows it to act either as a host or a device.
- * However, we only are concerned with it acting as a host, which simplifies our
- * driver.
- *
- * To simplify the USB core software, a useful design technique (as recommended
- * by the USB 2.0 standard and used in other implementations such as Linux's) is
- * to have the HCD present the root hub as a standard USB hub, even if the root
- * hub is integrated with the host controller and does not appear as a standard
- * hub at the hardware level.  This is the case with the DWC, and we implement
- * this design.  Therefore, some code in this file deals with faking requests
- * sent to the root hub.
- */
-
 #include <unistd.h>
 #include <stdbool.h>
 
 #include <drivers/usb/usb.h>
 #include <drivers/usb/usb_desc.h>
 #include <drivers/bcm2835_power.h>
+#include <mem/misc/pool.h>
 #include <kernel/irq.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread.h>
@@ -111,69 +16,53 @@
 #include <hal/ipl.h>
 #include <kernel/thread/sync/semaphore.h>
 #include <embox/unit.h>
+#include <kernel/printk.h>
+#include <drivers/common/memory.h>
+#include <hal/reg.h>
+
+#define PERIPHERALS_BASE 0x20000000
+#define DWC_REGS_BASE          (PERIPHERALS_BASE + 0x980000)
+#define DWC_PERIPH_MEMORY_SIZE 0x20000
+#define DWC_MAX_REQUESTS 32
 
 EMBOX_UNIT_INIT(usb_dwc_init);
+PERIPH_MEMORY_DEFINE(dwc_usb, DWC_REGS_BASE, DWC_PERIPH_MEMORY_SIZE);
+static volatile struct dwc_regs * const regs = (void*)DWC_REGS_BASE;
 
+
+/* Next code is from commit */
+
+
+enum __usb_hub_request {
+    USB_HUB_REQ_GET_STATUS       = 0,
+    USB_HUB_REQ_CLEAR_FEATURE    = 1,
+    USB_HUB_REQ_SET_FEATURE      = 3,
+    USB_HUB_REQ_GET_DESCRIPTOR   = 6,
+    USB_HUB_REQ_SET_DESCRIPTOR   = 7,
+    USB_HUB_REQ_CLEAR_TT_BUFFER  = 8,
+    USB_HUB_REQ_RESET_TT         = 9,
+    USB_HUB_REQ_GET_TT_STATE     = 10,
+    USB_HUB_REQ_STOP_TT          = 11,
+};
+
+/* End code from commit */
 
 #define IRQ_USB            9
 #define USB_FRAMES_PER_MS  1
 #define USB_UFRAMES_PER_MS 8
-
 #define DIV_ROUND_UP(num, denom) (((num) + (denom) - 1) / (denom))
 
-/** Round a number up to the next multiple of the word size.  */
 #define WORD_ALIGN(n) (((n) + sizeof(ulong) - 1) & ~(sizeof(ulong) - 1))
-
-/** Determines whether a pointer is word-aligned or not.  */
 #define IS_WORD_ALIGNED(ptr) ((ulong)(ptr) % sizeof(ulong) == 0)
-
-#define PERIPHERALS_BASE 0x20000000
-#define DWC_REGS_BASE          (PERIPHERALS_BASE + 0x980000)
-/** Pointer to the memory-mapped registers of the Synopsys DesignWare Hi-Speed
- * USB 2.0 OTG Controller.  */
-static volatile struct dwc_regs * const regs = (void*)DWC_REGS_BASE;
-
-/**
- * Maximum packet size of any USB endpoint.  1024 is the maximum allowed by USB
- * 2.0.  Most endpoints will provide maximum packet sizes much smaller than
- * this.
- */
 #define USB_MAX_PACKET_SIZE 1024
-
-
-/**
- * Stack size of USB transfer request scheduler thread (can be fairly small).
- */
 #define XFER_SCHEDULER_THREAD_STACK_SIZE 4096
-
-/**
- * Priority of USB transfer request scheduler thread (should be fairly high so
- * that USB transfers can be started as soon as possible).
- */
 #define XFER_SCHEDULER_THREAD_PRIORITY 60
-
-/** Name of USB transfer request scheduler thread.  */
 #define XFER_SCHEDULER_THREAD_NAME "USB scheduler"
-
-/** Stack size of USB deferred transfer threads (can be fairly small).  */
 #define DEFER_XFER_THREAD_STACK_SIZE 4096
-
-/**
- * Priority of USB deferred transfer threads (should be very high since these
- * threads are used for the necessary software polling of interrupt endpoints,
- * which are supposed to have guaranteed bandwidth).
- */
 #define DEFER_XFER_THREAD_PRIORITY 100
-
-/**
- * Name of USB defer transfer threads.  Note: including the null-terminator this
- * should be at most TNMLEN, otherwise it will be truncated.
- */
 #define DEFER_XFER_THREAD_NAME "USB defer xfer"
 
-/** TODO: remove this if appropriate */
 #define START_SPLIT_INTR_TRANSFERS_ON_SOF 1
-
 /** USB packet ID constants recognized by the DWC hardware.  */
 enum dwc_usb_pid {
 	DWC_USB_PID_DATA0 = 0,
@@ -263,6 +152,7 @@ static int dwc_power_on(void) {
 	log_info("Powering on Synopsys DesignWare Hi-Speed  USB 2.0 On-The-Go "
 			"Controller");
 
+//	return bcm2835_setpower(1, true);
 	return bcm2835_setpower(POWER_USB, true);
 }
 
@@ -1014,6 +904,8 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 	 * device.  */
 	if (req->endp->dev->speed != USB_SPEED_HIGH) {
 		/* Determine which hub is acting as the Transaction Translator.  */
+		printk("better not go here");
+		/*
 		struct usb_dev *tt_hub;
 		uint tt_hub_port;
 
@@ -1035,6 +927,7 @@ static void dwc_channel_start_xfer(uint chan, struct usb_request *req) {
 		if (req->endp->dev->speed == USB_SPEED_LOW) {
 			characteristics.low_speed = 1;
 		}
+		*/
 	}
 
 	/* Set up DMA buffer. */
@@ -1538,9 +1431,11 @@ static void dwc_handle_channel_halted_interrupt(uint chan) {
  */
 static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 	union dwc_core_interrupts interrupts = regs->core_interrupts;
-
+	
+	printk("catch irq%u", regs->host_port_ctrlstatus.val);
 #if START_SPLIT_INTR_TRANSFERS_ON_SOF
 	if (interrupts.sof_intr) {
+	printk("sof intr");
 		/* Start of frame (SOF) interrupt occurred. */
 
 		log_debug("Received SOF intr (host_frame_number=0x%08x)",
@@ -1574,7 +1469,7 @@ static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 
 	if (interrupts.host_channel_intr) {
 		/* One or more channels has an interrupt pending. */
-
+		printk("host channel intr");
 		uint32_t chintr;
 		uint chan;
 
@@ -1588,6 +1483,7 @@ static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 			chintr ^= (1 << chan);
 		} while (chintr != 0);
 	} if (interrupts.port_intr) {
+		printk("port intr");
 		/* Status of the host port changed. Update host_port_status. */
 		union dwc_host_port_ctrlstatus hw_status = regs->host_port_ctrlstatus;
 
@@ -1613,12 +1509,14 @@ static irq_return_t dwc_interrupt_handler(unsigned int irq_nr, void *data) {
 		 * apparently disable itself. */
 		hw_status.enabled = 0;
 		regs->host_port_ctrlstatus = hw_status;
-
+		printk("%u", regs->host_port_ctrlstatus.val);
+		printk("%u", hw_status.val);
 		/* Complete status change request to the root hub if one has been
 		 * submitted. */
 		dwc_host_port_status_changed();
 	}
-
+			printk("%u", regs->host_port_ctrlstatus.val);
+	printk("irq handled");
 	return IRQ_HANDLED;
 }
 
@@ -1699,26 +1597,49 @@ static enum usb_request_status dwc_start_xfer_scheduler(void) {
 	return USB_REQ_NOERR;
 }
 
+/*
+void provoke_interrupts(struct usb_hcd *hcd) {
+	union dwc_core_interrupts core_interrupt_mask;
+
+	regs->core_interrupt_mask.val = 0;
+	regs->core_interrupts.val = 0xffffffff;
+
+	core_interrupt_mask.val = 0xFFFFFFF;
+	core_interrupt_mask.host_channel_intr = 1;
+	core_interrupt_mask.port_intr = 1;
+	regs->core_interrupt_mask = core_interrupt_mask;
+
+	irq_attach(IRQ_USB, dwc_interrupt_handler, 0, hcd, "usb_dwc irq");
+
+	regs->ahb_configuration |= DWC_AHB_INTERRUPT_ENABLE;
+	
+	//regs->host_channels[0].interrupt_mask.val = 0;//0xFFFFFFFF;
+	regs->host_channels[0].characteristics.val = 0;//0xFFFFFFFF;
+}
+*/
 /* Implementation of hcd_start() for the DesignWare Hi-Speed USB 2.0 On-The-Go
  * Controller. See usb_hcdi.h for the documentation of this interface of the
  * Host Controller Driver. */
 int hcd_start(struct usb_hcd *hcd) {
 	enum usb_request_status status;
-
 	status = dwc_power_on();
-	if (status != USB_REQ_NOERR) {
-		return status;
-	}
-
 	dwc_soft_reset();
 	dwc_setup_dma_mode();
 	dwc_setup_interrupts(hcd);
-
 	status = dwc_start_xfer_scheduler();
+
+/*
+	if (status != USB_REQ_NOERR) {
+		printk("wtf");
+		return status;
+	}
+*/
+//	
+/*
 	if (status != USB_REQ_NOERR) {
 		dwc_power_off();
 	}
-
+*/
 	return status;
 }
 
@@ -1759,9 +1680,7 @@ static int hcd_request(struct usb_request *req) {
 	return USB_REQ_NOERR;
 }
 
-static int hcd_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
-			unsigned short value) {
-	/* Special case: request is to the root hub. Fake it. */
+static int hcd_rh_ctrl(struct usb_request *req) { 
 	dwc_process_root_hub_request(NULL);
 
 	return USB_REQ_NOERR;
@@ -1770,9 +1689,7 @@ static int hcd_rh_ctrl(struct usb_hub_port *port, enum usb_hub_request req,
 static struct usb_hcd_ops usb_dwc_hcd_ops = {
 	.hcd_start = hcd_start,
 	.hcd_stop = hcd_stop,
-	// .hcd_hci_alloc = usb_dvc_hcd_hcd_alloc,
-	// .hcd_hci_free = usb_dvc_hcd_hcd_free,
-	.rhub_ctrl = hcd_rh_ctrl,
+	.root_hub_control = hcd_rh_ctrl,
 	.request = hcd_request,
 };
 

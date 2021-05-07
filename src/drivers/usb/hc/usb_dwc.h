@@ -5,32 +5,6 @@
  */
 /* Embedded Xinu, Copyright (C) 2013.  All rights reserved. */
 
-/* Copyright (c) 2008, Douglas Comer and Dennis Brylow
- * All rights reserved.
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted for use in any lawful way, provided that
- * the following conditions are met:
- *
- *     * Redistributions of source code must retain the above copyright
- *       notice, this list of conditions and the following disclaimer.
- *     * Redistributions in binary form must reproduce the above copyright
- *       notice, this list of conditions and the following disclaimer in the
- *       documentation and/or other materials provided with the distribution.
- *     * Neither the names of the authors nor their contributors may be
- *       used to endorse or promote products derived from this software
- *       without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHORS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE AUTHORS AND CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
- * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
- * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
- * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
-
 #ifndef _USB_DWC_REGS_H_
 #define _USB_DWC_REGS_H_
 
@@ -38,6 +12,37 @@
 #include <assert.h>
 #include <kernel/thread/types.h>
 #include <kernel/thread/sync/semaphore.h>
+
+
+/* Next macros changed in commit de12b8f81e3d9fa18e6ae0ce9ba5660faafcdc15*/
+#define USB_DEV_REQ_TYPE_WR             0x00
+#define USB_DEV_REQ_TYPE_RD             0x80
+
+#define USB_DEV_REQ_TYPE_STD            0x00
+#define USB_DEV_REQ_TYPE_CLS            0x20
+#define USB_DEV_REQ_TYPE_VND            0x40
+
+#define USB_DEV_REQ_TYPE_DEV            0x00
+#define USB_DEV_REQ_TYPE_IFC            0x01
+#define USB_DEV_REQ_TYPE_ENP            0x02
+#define USB_DEV_REQ_TYPE_OTH            0x03
+
+#define USB_DEV_REQ_GET_STAT            0x00
+#define USB_DEV_REQ_SET_ADDR            0x05
+#define USB_DEV_REQ_GET_DESC            0x06
+#define USB_DEV_REQ_SET_CONF            0x09
+
+#define USB_HUB_PORT_CONNECT            0x0001
+#define USB_HUB_PORT_ENABLE             0x0002
+#define USB_HUB_PORT_SUSPEND            0x0004
+#define USB_HUB_PORT_OVERRUN            0x0008
+#define USB_HUB_PORT_RESET              0x0010
+#define USB_HUB_PORT_POWER              0x0020
+#define USB_HUB_PORT_TIMEOUT            0x0040
+
+/* End of changed marcos in commit de12b8f81e3d9fa18e6ae0ce9ba5660faafcdc15*/
+
+#define HUB_PORT_STATUS     0
 
 /**
  * Number of DWC host channels, each of which can be used for an independent
@@ -973,5 +978,55 @@ struct usb_dwc_request {
 	struct thread *deferer_thread;
 	struct sem deferer_thread_sema;
 };
+
+struct usb_hub_status {
+    union {
+        uint16_t w_hub_status;
+        struct {
+            uint16_t local_power : 1;
+            uint16_t overcurrent : 1;
+            uint16_t wHubStatus_reserved : 14;
+        };
+    };
+    union {
+        uint16_t w_hub_change;
+        struct {
+            uint16_t local_power_changed : 1;
+            uint16_t overcurrent_changed : 1;
+            uint16_t wHubChange_reserved : 14;
+        };
+    };
+} __attribute__((packed));
+
+struct usb_port_status {
+    union {
+        uint16_t port_status;
+        struct {
+            uint16_t connected : 1;
+            uint16_t enabled : 1;
+            uint16_t suspended : 1;
+            uint16_t overcurrent : 1;
+            uint16_t reset : 1;
+            uint16_t wPortStatus_reserved1 : 3;
+            uint16_t powered : 1;
+            uint16_t low_speed_attached : 1;
+            uint16_t high_speed_attached : 1;
+            uint16_t test_mode : 1;
+            uint16_t indicator_control : 1;
+            uint16_t wPortStatus_reserved2 : 3;
+        };
+    };
+    union {
+        uint16_t port_change;
+        struct {
+            uint16_t connected_changed : 1;
+            uint16_t enabled_changed : 1;
+            uint16_t suspended_changed : 1;
+            uint16_t overcurrent_changed : 1;
+            uint16_t reset_changed : 1;
+            uint16_t wPortChange_reserved : 11;
+        };
+    };
+} __attribute__((packed));
 
 #endif /* _USB_DWC_REGS_H_ */
