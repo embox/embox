@@ -29,5 +29,9 @@ static module stm32h7_discovery_components {
     @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
 	source "./STM32CubeH7-1.8.0/Drivers/BSP/Components/otm8009a/otm8009a.c"
 
-	depends third_party.bsp.stmh7cube.cube
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components//mt48lc4m32b2")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
+	source "./STM32CubeH7-1.8.0/Drivers/BSP/Components/mt48lc4m32b2/mt48lc4m32b2.c"
+
+	@NoRuntime depends third_party.bsp.stmh7cube.cube
 }

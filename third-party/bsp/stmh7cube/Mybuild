@@ -2,3 +2,16 @@ package third_party.bsp.stmh7cube
 
 abstract module stm32h7_conf {
 }
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.st_bsp_api)
+module sdram {
+	/* If true, swap SDRAM from 0xc0000000 to 0x60000000 */
+	option boolean fmc_swap = false
+
+	source "sdram_init.c"
+
+	depends embox.kernel.time.jiffies
+	depends embox.kernel.sched.sched
+	depends embox.driver.interrupt.cortexm_nvic
+}

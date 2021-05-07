@@ -75,7 +75,8 @@ static module cube {
 		"stm32h7xx_hal_wwdg.c",
 		"stm32h7xx_ll_fmc.c",
 		"stm32h7xx_ll_sdmmc.c",
-		"stm32h7xx_ll_usb.c"
+		"stm32h7xx_ll_usb.c",
+		"stm32h7xx_hal_mdma.c"
 
 	@NoRuntime depends third_party.bsp.stmh7cube.stm32h7_conf
 	@NoRuntime depends cube_cppflags
