@@ -33,7 +33,8 @@ static module bsp extends third_party.bsp.st_bsp_api {
 			"stm32h745i_discovery_audio.c",
 			"stm32h745i_discovery_qspi.c",
 			"stm32h745i_discovery_ts.c",
-			"stm32h745i_discovery_mmc.c"
+			"stm32h745i_discovery_mmc.c",
+			"stm32h745i_discovery_bus.c"
 			/*"stm32h745i_discovery_eeprom.c" */
 
 	@NoRuntime depends third_party.bsp.stmh7cube.cube
