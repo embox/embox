@@ -117,6 +117,7 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 }
 
 static void ltdc_layer_init(uint16_t LayerIndex, uint32_t FB_Address, int bpp) {
+
 	LTDC_LayerCfgTypeDef  Layercfg;
 
 	switch (bpp) {
@@ -173,6 +174,12 @@ static int stm32f7_lcd_init(void) {
 
 	BSP_LCD_SetBrightness(0, 100);
 	BSP_LCD_DisplayOn(0);
+
+    BSP_LCD_SetLayerVisible(0, 1, DISABLE);
+    BSP_LCD_SetLayerVisible(0, 0, ENABLE);
+
+
+
 	if (0 > irq_attach(LTDC_IRQ, ltdc_irq_handler, 0, NULL, "LTDC")) {
 		log_error("irq_attach failed");
 		return -1;
@@ -184,6 +191,7 @@ static int stm32f7_lcd_init(void) {
 	mmap_base = (char *) STM32_FB_START;
 #endif
 
+
 #if STM32_LCD_BPP == 16
 	ltdc_layer_init(LTDC_ACTIVE_LAYER, (unsigned int) mmap_base, 16);
 #elif STM32_LCD_BPP == 32
@@ -191,24 +199,14 @@ static int stm32f7_lcd_init(void) {
 #else
 	#error Unsupported STM32_LCD_BPP value
 #endif
-#if 0
-	BSP_LCD_SetBackColor(LCD_COLOR_WHITE);
-	BSP_LCD_SetTextColor(LCD_COLOR_BLACK);
 
-	BSP_LCD_SelectLayer(LTDC_ACTIVE_LAYER);
-
-#ifdef STM32F769xx
-	/* STM32746 doesn't support brightness change */
-	BSP_LCD_SetBrightness(100);
-#endif
-
-	BSP_LCD_Clear(LCD_COLOR_BLACK);
-#endif
 	fb_create(&stm32f7_lcd_ops,
 			mmap_base,
 			STM32_LCD_WIDTH *
 			STM32_LCD_HEIGHT /
 			8 * STM32_LCD_BPP);
+
+	memset(mmap_base, 0, STM32_LCD_WIDTH * STM32_LCD_HEIGHT * 4);
 
 	return 0;
 }
