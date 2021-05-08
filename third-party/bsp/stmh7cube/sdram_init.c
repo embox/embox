@@ -29,7 +29,8 @@ static int sdram_init(void) {
 	BSP_SDRAM_Init(0);
 
 	if (FMC_SWAP) {
-		HAL_SetFMCMemorySwappingConfig(FMC_BCR1_BMAP_0);
+		//HAL_SetFMCMemorySwappingConfig(FMC_BCR1_BMAP_0);
+		HAL_SetFMCMemorySwappingConfig(FMC_SWAPBMAP_SDRAMB2);
 	}
 	return 0;
 }

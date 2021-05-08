@@ -7,8 +7,8 @@ package third_party.bsp.stmh7cube
 static module stm32h7_discovery_components {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Projects/STM32H745I-DISCO/Templates/BootCM7_CM4Gated/Common/Inc/")
     @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmfhcube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/ft5336")
-    @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
-	source "./STM32CubeH7-1.8.0/Drivers/BSP/Components/ft5336/ft5336.c"
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/ft5336/")
+	source "ft5336.c", "ft5336_reg.c"
 
 	/*
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Projects/STM32H745I-DISCO/Templates/BootCM7_CM4Gated/Common/Inc/")
