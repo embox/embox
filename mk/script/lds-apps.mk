@@ -39,58 +39,55 @@ define file_header
 
 #include <asm-generic/embox.lds.h>
 
-#define MODULE_ENRTY(section_, module_) $(\h)
+#define __MODULE_ENRTY(section_, module_) $(\h)
 		__module_##module_##_##section_##_vma = .; $(\h)
 		*(.section_.module.module_); $(\h)
 		__module_##module_##_##section_##_len = ABSOLUTE(. - $(\h)
 			ABSOLUTE(__module_##module_##_##section_##_vma));
 
-SECTIONS {
 endef
 
 define section_item
-		MODULE_ENRTY($1,$2)
+		__MODULE_ENRTY($1,$2)
 endef
 # __module_$2_$1_vma = .;
 # *(.$2.$1)
 # __module_$2_$1_len = ABSOLUTE(. - __module_$2_$1_vma);
 
-section_header = $(\t).$1$(value 3) : \
-		ALIGN($(or $(value 2),DEFAULT_DATA_ALIGNMENT)) {
-section_footer = $(\t)$(\t)*(.$1) } /* .$1$(value 3) */
-
-define file_footer
-
-	.bss..reserve.apps (NOLOAD) : ALIGN(DEFAULT_DATA_ALIGNMENT) {
-		/* MAX is a workaround to avoid PROGBITS set on empty section. */
-		/* . += MAX(SIZEOF(.data.apps), 1); */
-		/* MAX isn't avaible on old ld, at least at 2.20 */
-		. += SIZEOF(.data.apps) + 4;
-	}
-	_app_data_vma = ADDR(.data.apps);
-	_app_reserve_vma = ADDR(.bss..reserve.apps);
-}
+define section_header
+#define LDS_$1 $(\h)
+		_$(shell echo $1 | tr A-Z a-z)_start = .; $(\h)
 endef
 
+define section_footer
+		_$(shell echo $1 | tr A-Z a-z)_end = .;
+
+endef
+
+define app_data_reserve_bss
+/* Reserves memory to copy data. */
+#define LDS_APP_DATA_RESERVE_BSS $(\h)
+		_app_reserve_vma = .; $(\h)
+		. += _apps_data_end - _apps_data_start + 4;
+
+endef
 
 # 1. list of module ids
 # 2. section name
 # 3. optional section alignment
 # 4. optional section suffix
 print_section = \
-	$(info $(call section_header,$2,$(value 3),$(value 4))) \
-	$(foreach n,$1,$(info $(call section_item,$2,$n))) \
-	$(info $(call section_footer,$2,$(value 3),$(value 4)))
+	$(info $(call section_header,$(value 4))) \
+	$(foreach n,$1,$(info $(call section_item,$2,$n) $(\h))) \
+	$(info $(call section_footer,$(value 4))) \
 
 $(info $(file_header))
 
-$(call print_section,$(app_ids),data,,.apps)
-$(call print_section,$(app_ids),bss,,.apps)
+$(call print_section,$(app_ids),data,,APPS_DATA)
+$(call print_section,$(app_ids),bss,,APPS_BSS)
+$(info $(app_data_reserve_bss))
 
-$(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT)
-$(call print_section,$(module_ids),rodata)
-$(call print_section,$(noapp_ids),data)
-$(call print_section,$(noapp_ids),bss)
-
-$(info $(file_footer))
-
+$(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT,MODULES_TEXT)
+$(call print_section,$(module_ids),rodata,,MODULES_RODATA)
+$(call print_section,$(noapp_ids),data,,MODULES_DATA)
+$(call print_section,$(noapp_ids),bss,,MODULES_BSS)

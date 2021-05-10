@@ -1,5 +1,6 @@
 
 #include <asm-generic/embox.lds.h>
+#include <apps.lds.h>
 
 #ifdef ARCH_TEXT_ALIGNMENT
 # define TEXT_ALIGNMENT    ARCH_TEXT_ALIGNMENT
@@ -30,6 +31,7 @@ SECTION_SYMBOLS(bss)
 SECTIONS {
 	.text : ALIGN(TEXT_ALIGNMENT) {
 
+		LDS_MODULES_TEXT
 		*(.text)
 		*(.text.*)
 
@@ -37,6 +39,7 @@ SECTIONS {
 
 	.rodata : ALIGN(DATA_ALIGNMENT) {
 
+		LDS_MODULES_RODATA
 		*(.rodata)
 		*(.rodata.*)
 		*(.const)
@@ -69,6 +72,9 @@ SECTIONS {
 
 	.data : ALIGN(DATA_ALIGNMENT) {
 
+		LDS_MODULES_DATA
+		_app_data_vma = .;
+		LDS_APPS_DATA
 		*(.data)
 		*(.sdata)
 		*(.data.*)
@@ -79,6 +85,8 @@ SECTIONS {
 
 	.bss : ALIGN(DATA_ALIGNMENT) {
 
+		LDS_MODULES_BSS
+		LDS_APPS_BSS
 		*(.bss)
 		*(.sbss)
 		*(.bss.[a-zA-Z0-9_-]*) /* this hell is to exclude '.bss..reserve'. */
@@ -91,6 +99,8 @@ SECTIONS {
 
 		*(.bss..reserve)
 		*(.bss..reserve.*)
+
+		LDS_APP_DATA_RESERVE_BSS
 
 		ALIGNMENT();
 		_reserve_end = .;

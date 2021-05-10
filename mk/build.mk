@@ -18,6 +18,7 @@ build_gen_ts := $(BUILD_DIR)/build-gen.timestamp
 build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
 	@$(MAKE) -f mk/board_conf/board-conf-gen.mk MAKEFILES=''
+	@$(MAKE) -f mk/script/lds-apps.mk > $(SRCGEN_DIR)/apps.lds.h
 	@$(MAKE) -f mk/script/incinst.mk
 	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
