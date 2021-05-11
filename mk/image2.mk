@@ -103,12 +103,11 @@ section_in_region = \
 # 2. Section name - text, rodata, data, bss
 # 3. Name of section specified with @LinkerSection annonation
 rename_section = \
-	$(if $3, \
-		$(if $(call section_in_region,$3), \
-			$(foreach section, $(call get_sections,$1,$2), \
-				$(section)=.$3.$(section).module.$(module_id) \
-		), .$2=.$2.module.$(module_id)), \
-		.$2=.$2.module.$(module_id) \
+	$(if $(and $3,$(call section_in_region,$3)), \
+		$(foreach section, $(call get_sections,$1,$2), \
+			$(section)=.$3.$(section).module.$(module_id)), \
+		$(foreach section, $(call get_sections,$1,$2), \
+			$(section)=$(section).module.$(module_id)) \
 	)
 
 # Here we also rename .ARM.exidx section because some ARM none-eabi
