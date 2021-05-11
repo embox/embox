@@ -803,6 +803,9 @@ $(@source_dist) :
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
 
+@dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
+
 __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
 @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
 	$(wildcard $(foreach e,*.h include/*.h include/*/*.h *.inc Makefile *.txt *.patch *.diff, \
