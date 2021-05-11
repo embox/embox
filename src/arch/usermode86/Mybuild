@@ -1,0 +1,5 @@
+package embox.arch.usermode86
+
+module apps_lds {
+	source "apps.lds.S"
+}
