@@ -112,7 +112,16 @@ static module libzlib {
 	@NoRuntime depends build
 }
 
-@BuildDepends(third_party.lib.opencv.build)
+@BuildDepends(libopencv_core)
+@BuildDepends(libopencv_imgcodecs)
+@BuildDepends(libopencv_imgproc)
+@BuildDepends(libopencv_objdetect)
+@BuildDepends(libopencv_videoio)
+@BuildDepends(libopencv_calib3d)
+@BuildDepends(libopencv_flann)
+@BuildDepends(libopencv_features2d)
+@BuildDepends(liblibpng)
+@BuildDepends(libzlib)
 static module all {
 	@NoRuntime depends libopencv_core
 	@NoRuntime depends libopencv_imgcodecs
