@@ -4,7 +4,7 @@
 #
 
 include mk/script/script-common.mk
-
+include mk/script/build-deps.mk
 
 my_app := $(call mybuild_resolve_or_die,mybuild.lang.App)
 
@@ -18,10 +18,22 @@ module_ids := \
 	$(foreach m,$(call get,$(build_model),modules), \
 		$(call fqn2id,$(call get,$(call get,$m,type),qualifiedName)))
 
-app_ids := \
+apps := \
 	$(foreach m,$(call get,$(build_model),modules), \
 		$(if $(call is_app,$m), \
-			$(call fqn2id,$(call get,$(call get,$m,type),qualifiedName))))
+			$(call get,$m,type)))
+
+# All apps with their @BuildDepends()'s modules. So if the app depends
+# on another module with @BuildDepends it will be included in the list.
+app_ids := \
+	$(sort \
+		$(foreach m,$(apps), \
+			$(call fqn2id,$(call get,$m,qualifiedName)) \
+			$(foreach d,$(call build_deps_all,$m), \
+				$(call fqn2id,$(call get,$d,qualifiedName)) \
+			) \
+		) \
+	)
 
 noapp_ids := \
 	$(filter-out $(app_ids),$(module_ids))
