@@ -65,11 +65,18 @@ static int invoke_member_fini(const struct mod_member *member) {
 }
 
 static void mod_init_app(const struct mod *mod) {
+	int i;
 	const struct mod_app *app = mod->app;
 
-	if (app)
+	if (app) {
 		/* No need to traverse deps here, they are already initialized. */
 		memcpy(app->data + APP_DATA_RESERVE_OFFSET, app->data, app->data_sz);
+
+		for (i = 0; app->build_dep_data[i]; i++) {
+			memcpy(app->build_dep_data[i] + APP_DATA_RESERVE_OFFSET,
+					app->build_dep_data[i], app->build_dep_data_sz[i]);
+		}
+	}
 }
 
 int mod_activate_app(const struct mod *mod) {
@@ -81,6 +88,7 @@ int mod_activate_app(const struct mod *mod) {
 
 	app = mod->app;
 	if (app) {
+		int i;
 		const struct mod *dep;
 
 		mod_foreach_requires(dep, mod) {
@@ -93,6 +101,16 @@ int mod_activate_app(const struct mod *mod) {
 		memcpy(app->data, app->data + APP_DATA_RESERVE_OFFSET, app->data_sz);
 		memset(app->bss, 0, app->bss_sz);
 		*mod->priv = priv;
+
+		for (i = 0; app->build_dep_data[i]; i++) {
+			memcpy(app->build_dep_data[i],
+					app->build_dep_data[i] + APP_DATA_RESERVE_OFFSET,
+					app->build_dep_data_sz[i]);
+		}
+
+		for (i = 0; app->build_dep_bss[i]; i++) {
+			memset(app->build_dep_bss[i], 0, app->build_dep_bss_sz[i]);
+		}
 	}
 
 	return 0;

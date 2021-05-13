@@ -35,10 +35,17 @@ struct mod {
 };
 
 struct mod_app {
+	/* app's .data and .bss */
 	char  *data;
 	size_t data_sz;
 	char  *bss;
 	size_t bss_sz;
+
+	/* .data and .bss of the modules on which app uses @BuildDepends */
+	void **build_dep_data;
+	unsigned *build_dep_data_sz;
+	void **build_dep_bss;
+	unsigned *build_dep_bss_sz;
 };
 
 struct __mod_private {
