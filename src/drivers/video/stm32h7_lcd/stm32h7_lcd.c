@@ -85,7 +85,7 @@ static void stm32f7_lcd_fillrect(struct fb_info *info,
 	BSP_LCD_FillRect(0, rect->dx, rect->dy, rect->width, rect->height, rect->color | 0xff000000);
 }
 
-static uint32_t stm32f7_get_image_color(const struct fb_image *image, int num) {
+static uint32_t stm32h7_get_image_color(const struct fb_image *image, int num) {
 	switch (image->depth) {
 	case 1:
 		if (image->data[num / 8] & (1 << (8 - num % 8))) {
@@ -111,13 +111,13 @@ static void stm32f7_lcd_imageblit(struct fb_info *info,
 
 	for (int j = dy; j < dy + height; j++) {
 		for (int i = dx; i < dx + width; i++) {
-			BSP_LCD_WritePixel(0, i, j, stm32f7_get_image_color(image, n));
+			BSP_LCD_WritePixel(0, i, j, stm32h7_get_image_color(image, n));
 		}
 	}
 }
 
 static void ltdc_layer_init(uint16_t LayerIndex, uint32_t FB_Address, int bpp) {
-
+#if 0
 	LTDC_LayerCfgTypeDef  Layercfg;
 
 	switch (bpp) {
@@ -144,11 +144,11 @@ static void ltdc_layer_init(uint16_t LayerIndex, uint32_t FB_Address, int bpp) {
 	Layercfg.Backcolor.Red = 0;
 	Layercfg.BlendingFactor1 = LTDC_BLENDING_FACTOR1_PAxCA;
 	Layercfg.BlendingFactor2 = LTDC_BLENDING_FACTOR2_PAxCA;
-	BSP_LCD_GetXSize(0, &Layercfg.ImageWidth);
 	Layercfg.ImageWidth = Layercfg.WindowX1;
 	Layercfg.ImageHeight = Layercfg.WindowY1;
 
 	HAL_LTDC_ConfigLayer(&hlcd_ltdc, &Layercfg, LayerIndex);
+#endif
 }
 
 static irq_return_t ltdc_irq_handler(unsigned int irq_num, void *dev_id) {
@@ -169,8 +169,12 @@ static struct fb_ops stm32f7_lcd_ops = {
 static int stm32f7_lcd_init(void) {
 	char *mmap_base;
 
+#if STM32_LCD_BPP == 16
 	/* Initialize the LCD */
-	BSP_LCD_Init(0, LCD_ORIENTATION_LANDSCAPE);
+	BSP_LCD_InitEx(0, LCD_ORIENTATION_LANDSCAPE, LTDC_PIXEL_FORMAT_RGB565, STM32_LCD_WIDTH, STM32_LCD_HEIGHT);
+#else
+	BSP_LCD_InitEx(0, LCD_ORIENTATION_LANDSCAPE, LTDC_PIXEL_FORMAT_ARGB8888, STM32_LCD_WIDTH, STM32_LCD_HEIGHT);
+#endif
 
 	BSP_LCD_SetBrightness(0, 100);
 	BSP_LCD_DisplayOn(0);
