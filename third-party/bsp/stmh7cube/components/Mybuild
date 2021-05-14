@@ -18,8 +18,8 @@ static module stm32h7_discovery_components {
 	*/
 
     @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994")
-    @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
-	source "./STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994/wm8994.c"
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994/")
+	source "wm8994.c", "wm8994_reg.c" 
 
     @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/ov9655")
     @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
