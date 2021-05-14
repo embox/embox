@@ -85,6 +85,15 @@ define app_data_reserve_bss
 
 endef
 
+define lma_item
+			__module_$1_data_lma = __module_$1_data_vma + LOADADDR(.data) - ADDR(.data); $(\h)
+endef
+
+print_lma = \
+	$(info $(call section_header,$(value 2))) \
+	$(foreach n,$1,$(info $(call lma_item,$n))) \
+	$(info $(call section_footer,$(value 2)))
+
 # 1. list of module ids
 # 2. section name
 # 3. optional section alignment
@@ -92,7 +101,7 @@ endef
 print_section = \
 	$(info $(call section_header,$(value 4))) \
 	$(foreach n,$1,$(info $(call section_item,$2,$n) $(\h))) \
-	$(info $(call section_footer,$(value 4))) \
+	$(info $(call section_footer,$(value 4)))
 
 $(info $(file_header))
 
@@ -104,3 +113,5 @@ $(call print_section,$(module_ids),text,DEFAULT_TEXT_ALIGNMENT,MODULES_TEXT)
 $(call print_section,$(module_ids),rodata,,MODULES_RODATA)
 $(call print_section,$(noapp_ids),data,,MODULES_DATA)
 $(call print_section,$(noapp_ids),bss,,MODULES_BSS)
+
+$(call print_lma,$(module_ids),MODULES_DATA_LMA)

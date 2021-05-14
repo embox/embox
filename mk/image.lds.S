@@ -82,6 +82,7 @@ SECTIONS {
 		*(.got.*)
 
 	} SECTION_REGION(data) :data
+	LDS_MODULES_DATA_LMA
 
 	.bss : ALIGN(DATA_ALIGNMENT) {
 

@@ -67,6 +67,15 @@ $(foreach s,data bss, \
 	) \
 )
 
+$(foreach s,data, \
+	$(foreach m,$(apps), \
+		$(info $(call app_build_deps_extern_ref,$m,$s,lma)) \
+		$(info $(call app_build_deps_array_start,$m,$s,void *,lma)) \
+		$(info $(call app_build_deps_array_body,$m,$s,void *,lma)) \
+		$(info $(call app_build_deps_array_end,(void *)0,lma)) \
+	) \
+)
+
 $(foreach s,data bss, \
 	$(foreach m,$(apps), \
 		$(info $(call app_build_deps_extern_ref,$m,$s,len)) \
