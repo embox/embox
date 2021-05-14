@@ -69,12 +69,25 @@ static void mod_init_app(const struct mod *mod) {
 	const struct mod_app *app = mod->app;
 
 	if (app) {
-		/* No need to traverse deps here, they are already initialized. */
-		memcpy(app->data + APP_DATA_RESERVE_OFFSET, app->data, app->data_sz);
+		/* */
+		if (app->data_vma == app->data_lma) {
+			/* No need to traverse deps here, they are already initialized. */
+			memcpy(app->data_vma + APP_DATA_RESERVE_OFFSET, app->data_vma, app->data_sz);
 
-		for (i = 0; app->build_dep_data[i]; i++) {
-			memcpy(app->build_dep_data[i] + APP_DATA_RESERVE_OFFSET,
-					app->build_dep_data[i], app->build_dep_data_sz[i]);
+			for (i = 0; app->build_dep_data_vma[i]; i++) {
+				assert(app->build_dep_data_vma[i] == app->build_dep_data_lma[i]);
+
+				memcpy(app->build_dep_data_vma[i] + APP_DATA_RESERVE_OFFSET,
+						app->build_dep_data_vma[i], app->build_dep_data_sz[i]);
+			}
+		} else {
+			/* No need to traverse deps here, they are already initialized. */
+			memcpy(app->data_vma, app->data_lma, app->data_sz);
+
+			for (i = 0; app->build_dep_data_vma[i]; i++) {
+				memcpy(app->build_dep_data_vma[i], app->build_dep_data_lma[i],
+						app->build_dep_data_sz[i]);
+			}
 		}
 	}
 }
@@ -98,14 +111,25 @@ int mod_activate_app(const struct mod *mod) {
 		}
 
 		priv = *mod->priv;
-		memcpy(app->data, app->data + APP_DATA_RESERVE_OFFSET, app->data_sz);
+		if (app->data_vma == app->data_lma) {
+			memcpy(app->data_vma, app->data_vma + APP_DATA_RESERVE_OFFSET, app->data_sz);
+		} else {
+			memcpy(app->data_vma, app->data_lma, app->data_sz);
+		}
 		memset(app->bss, 0, app->bss_sz);
 		*mod->priv = priv;
 
-		for (i = 0; app->build_dep_data[i]; i++) {
-			memcpy(app->build_dep_data[i],
-					app->build_dep_data[i] + APP_DATA_RESERVE_OFFSET,
-					app->build_dep_data_sz[i]);
+		if (app->data_vma == app->data_lma) {
+			for (i = 0; app->build_dep_data_vma[i]; i++) {
+				memcpy(app->build_dep_data_vma[i],
+						app->build_dep_data_vma[i] + APP_DATA_RESERVE_OFFSET,
+						app->build_dep_data_sz[i]);
+			}
+		} else {
+			for (i = 0; app->build_dep_data_vma[i]; i++) {
+				memcpy(app->build_dep_data_vma[i], app->build_dep_data_lma[i],
+						app->build_dep_data_sz[i]);
+			}
 		}
 
 		for (i = 0; app->build_dep_bss[i]; i++) {
