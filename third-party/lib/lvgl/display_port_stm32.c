@@ -10,7 +10,12 @@
 #include <unistd.h>
 #include <util/log.h>
 #include <drivers/video/fb.h>
+
+#if defined STM32F746xx || defined STM32F769xx
 #include <stm32f7xx_hal.h>
+#elif defined STM32H745xx
+#include <stm32h7xx_hal.h>
+#endif
 
 #include "lvgl.h"
 
