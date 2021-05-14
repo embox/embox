@@ -9,6 +9,6 @@ module loadsect {
 }
 
 module sections {
-	@Generated(script="./mk/gen_sections_c.sh")
+	@Generated(script="$(MAKE) -f mk/script/user-lds-sections.mk")
 	source "sections.c"
 }
