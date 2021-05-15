@@ -4,4 +4,6 @@
 "service telnetd",
 "service httpd",
 "fb_direct_access",
+//"record -r 16000 -c 2 -d 3000 -m 0x30000000",
+//"play -m 0x30000000",
 "tish",
