@@ -27,7 +27,7 @@ apps := \
 # on another module with @BuildDepends it will be included in the list.
 apps := \
 	$(sort \
-		$(foreach m,$(apps),$m,$(foreach d,$(call build_deps_all,$m),$d)) \
+		$(foreach m,$(apps),$m $(foreach d,$(call build_deps_all,$m),$d)) \
 	)
 
 noapps := \
