@@ -42,11 +42,9 @@ config_lds_h := $(SRCGEN_DIR)/config.lds.h
 regions_lds_h  := $(SRCGEN_DIR)/regions.lds.h
 sections_lds_h := $(SRCGEN_DIR)/sections.lds.h
 phdrs_lds_h    := $(SRCGEN_DIR)/phdrs.lds.h
-section_symbols_lds_h := $(SRCGEN_DIR)/section_symbols.lds.h
-section_symbols_arr_h := $(SRCGEN_DIR)/section_symbols.h
 
 all : $(build_mk) $(config_lds_h) $(regions_lds_h) \
-	$(sections_lds_h) $(phdrs_lds_h) $(section_symbols_lds_h)
+	$(sections_lds_h) $(phdrs_lds_h)
 
 $(build_mk)     : $(build_conf)
 $(config_lds_h) : $(lds_conf)
@@ -69,9 +67,6 @@ gen_sections = \
 gen_phdrs = \
 	$(abspath $(ROOT_DIR))/mk/gen_ld_phdrs.sh $1 $2
 
-gen_section_symbols = \
-	$(abspath $(ROOT_DIR))/mk/gen_ld_section_symbols.sh $1 $2
-
 $(config_lds_h) :
 	@$(call cmd_notouch_stdout,$@, \
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
@@ -87,9 +82,6 @@ $(sections_lds_h) : $(config_lds_h)
 
 $(phdrs_lds_h) : $(config_lds_h)
 	@$(call gen_phdrs, $(config_lds_h), $@)
-
-$(section_symbols_lds_h) : $(config_lds_h)
-	@$(call gen_section_symbols, $(config_lds_h), $@)
 
 $(AUTOCONF_DIR)/start_script.inc: $(CONF_DIR)/start_script.inc
 	@$(call cmd_notouch_stdout,$@,cat $<)
