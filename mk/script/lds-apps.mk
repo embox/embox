@@ -110,17 +110,25 @@ define app_data_reserve_bss
 
 endef
 
+define lma_header
+#define LDS_MODULES_DATA_LMA $(\h)
+endef
+
+# It's made in two expressions instead of a single one,
+# because older ld (2.26.1) generates something wrong
+# in the first case.
 define lma_item
-			__module_$1_data_lma = __module_$1_data_vma + LOADADDR(.data) - ADDR(.data);
+		__module_$1_data_lma = _data_lma - _data_vma; $(\h)
+		__module_$1_data_lma += __module_$1_data_vma;
 endef
 
 print_lma = \
-	$(info $(call section_header,$(value 2))) \
+	$(info $(call lma_header)) \
 	$(foreach n,$1, \
 		$(if $(call mod_in_extmem,$n,data),, \
 			 $(info $(call lma_item,$(call id,$n)) $(\h))) \
 	) \
-	$(info $(call section_footer,$(value 2)))
+	$(info )
 
 # 1. list of module ids
 # 2. section name
@@ -145,4 +153,4 @@ $(call print_section,$(modules),rodata,,MODULES_RODATA)
 $(call print_section,$(noapps),data,,MODULES_DATA)
 $(call print_section,$(noapps),bss,,MODULES_BSS)
 
-$(call print_lma,$(modules),MODULES_DATA_LMA)
+$(call print_lma,$(modules))
