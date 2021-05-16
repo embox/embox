@@ -26,6 +26,8 @@
 #define POOL_SZ \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_pool_size)
 
+#define USE_THREAD_SECTION   OPTION_GET(NUMBER,use_thread_section)
+
 #if (USE_USER_STACK == 0)
 
 typedef union thread_pool_entry {
@@ -50,8 +52,15 @@ typedef struct thread_pool_entry {
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
 		__attribute__ ((aligned (VMEM_PAGE_SIZE))));
 #else
+
+#if USE_THREAD_SECTION
+POOL_DEF_SECTION_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ, ".thread_heap_section.pool",
+		__attribute__ ((aligned (THREAD_STACK_ALIGN))));
+#else
 POOL_DEF_ATTR(thread_pool, thread_pool_entry_t, POOL_SZ,
 		__attribute__ ((aligned (THREAD_STACK_ALIGN))));
+#endif
+
 #endif
 
 struct thread *thread_alloc(size_t stack_sz) {
