@@ -83,6 +83,21 @@ struct pool {
 			.pool_size = sizeof(__pool_storage ## name), \
 			POOL_BLOCKS_INIT \
 	};
+
+#define POOL_DEF_SECTION_ATTR(name, object_type, size, section_name, attr) \
+	static union { \
+		object_type object; \
+		struct slist_link free_link; \
+	} __pool_storage ## name[size] \
+		attr __attribute__((section(section_name ",\"aw\",%nobits;#")));  \
+	static struct pool name = { \
+			.memory = __pool_storage ## name, \
+			.bound_free = __pool_storage ## name, \
+			.free_blocks = SLIST_INIT(&name.free_blocks),\
+			.obj_size = sizeof(__pool_storage ## name[0]), \
+			.pool_size = sizeof(__pool_storage ## name), \
+			POOL_BLOCKS_INIT \
+	};
 #endif
 
 /**
