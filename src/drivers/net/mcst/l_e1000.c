@@ -35,12 +35,14 @@
 
 #include <framework/mod/options.h>
 
-static const uint8_t l_base_mac_addr[6] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 };
+
 
 /** Number of receive descriptors per card. */
 #define E1000_LOG_RX_BUFFERS       OPTION_GET(NUMBER,log_rx_desc_quantity)
 /** Number of transmit descriptors per card. */
 #define E1000_LOG_TX_BUFFERS       OPTION_GET(NUMBER,log_tx_desc_quantity)
+
+#define E1000_CARD_QUANTITY        OPTION_GET(NUMBER,card_quantity)
 
 /*
  * Set the number of Tx and Rx buffers, using Log_2(# buffers).
@@ -54,6 +56,10 @@ static const uint8_t l_base_mac_addr[6] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 }
 #define RX_RING_SIZE            (1 << (E1000_LOG_RX_BUFFERS))
 #define RX_RING_MOD_MASK        (RX_RING_SIZE - 1)
 #define RX_RING_LEN_BITS        ((E1000_LOG_RX_BUFFERS) << 4)
+
+
+static const uint8_t l_base_mac_addr[6] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 };
+static int card_number = 0;
 
 struct l_e1000_dma_area {
 	struct l_e1000_init_block init_block __attribute__((aligned(32)));
@@ -69,7 +75,7 @@ struct mii_if {
 	unsigned char phy_id;
 };
 
-static struct l_e1000_dma_area e1000_dma_area __attribute__((aligned(32)));
+static struct l_e1000_dma_area e1000_dma_area[E1000_CARD_QUANTITY] __attribute__((aligned(32)));
 
 struct l_e1000_priv {
 	struct net_device *netdev;
@@ -387,7 +393,7 @@ static int l_e1000_reset(struct net_device *dev) {
 	return 0;
 }
 
-static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev) {
+static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev, int number) {
 	struct l_e1000_priv *ep;
 	struct l_e1000_dma_area *m;
 	unsigned int soft_reset;
@@ -398,7 +404,7 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev)
 
 	ep = netdev_priv(dev);
 
-	m = &e1000_dma_area;
+	m = &e1000_dma_area[number];
 
 	ep->init_block = &m->init_block;
 	ep->tx_ring = &m->tx_ring[0];
@@ -420,6 +426,7 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev)
 	for (i = 0; i < 6; i++) {
 		dev->dev_addr[i] = l_base_mac_addr[i];
 	}
+	dev->dev_addr[5] = l_base_mac_addr[5] + number;
 
 	fdx = 1; mii = 1; gmii = 1;
 	ep->mii_if.full_duplex = fdx;
@@ -624,8 +631,15 @@ static int l_e1000_init(struct pci_slot_dev *pci_dev) {
 	int res;
 	struct net_device *nic;
 	struct l_e1000_priv *nic_priv;
+	int number;
 
 	log_boot_start();
+
+	if (card_number == E1000_CARD_QUANTITY) {
+		return 0;
+	}
+	number = card_number;
+	card_number++;
 
 	nic = (struct net_device *) etherdev_alloc(sizeof(struct l_e1000_priv));
 	if (nic == NULL) {
@@ -649,7 +663,7 @@ static int l_e1000_init(struct pci_slot_dev *pci_dev) {
 	}
 
 	pci_set_master(pci_dev);
-	l_e1000_hw_init(pci_dev, nic);
+	l_e1000_hw_init(pci_dev, nic, number);
 
 	log_boot_stop();
 
