@@ -1,0 +1,7 @@
+package third_party.bsp.stmh7cube.middlewares
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+static module st_audio_pdm {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/middlewares/st_audio_pdm/Addons/PDM/Lib/")
+	source "libPDMFilter_CM7_GCC_wc32.a"
+}
