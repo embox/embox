@@ -270,6 +270,7 @@ int main(int argc, char **argv) {
 	sleep_msec = 1000 * (fdata_len /
 	           (bits_per_sample / 8 * sample_rate * chan_n));
 	Pa_Sleep(sleep_msec);
+	printf("\n");
 
 	if (paNoError != (err = Pa_StopStream(stream))) {
 		printf("Portaudio error: could not stop stream!\n");
