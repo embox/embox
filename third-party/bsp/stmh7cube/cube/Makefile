@@ -6,6 +6,6 @@ PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeH7/archive/$(P
 
 PKG_MD5     := 285f779b056866ed1bd746e7cfec77c7
 
-PKG_PATCHES := stm32h45i_discovery_audio.patch
+#PKG_PATCHES := stm32h45i_discovery_audio.patch
 
 include $(EXTBLD_LIB)
