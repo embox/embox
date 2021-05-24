@@ -92,11 +92,7 @@ static int e2k_clock_set_periodic(struct clock_source *cs) {
 }
 
 static cycle_t e2k_clock_read(struct clock_source *cs) {
-#if 0
-	/* TODO Should be checked, because values are looking a bit weird. */
-	return e2k_read32((void*)E2K_RESET_COUNTER_LOW); /* Ignore high 32 bits */
-#endif
-	return 0;
+	return e2k_read64(E2K_POWER_COUNTER);
 }
 
 static struct time_event_device e2k_clock_event = {
