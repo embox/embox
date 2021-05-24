@@ -31,7 +31,15 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 
 	getopt_init();
 
-	return cmd->exec(argc, argv);
+	err = cmd->exec(argc, argv);
+
+	/* FIXME Here we make app's data and bss as they was
+	 * before app execution. It's required because we call all
+	 * C++ ctors on every app launch. When we will call only ctors
+	 * of the running app, this workaround can be removed. */
+	mod_activate_app(cmd2mod(cmd));
+
+	return err;
 }
 
 const struct cmd *cmd_lookup(const char *name) {

@@ -269,14 +269,26 @@
 #ifndef __MOD_APP_DEF
 #define __MOD_APP_DEF(mod_nm) \
 	extern char __module_ ## mod_nm ## _data_vma; \
+	extern char __module_ ## mod_nm ## _data_lma; \
 	extern char __module_ ## mod_nm ## _data_len; \
 	extern char __module_ ## mod_nm ## _bss_vma;  \
 	extern char __module_ ## mod_nm ## _bss_len;  \
+	extern void *   __module_ ## mod_nm ## _build_deps_data_vma[]; \
+	extern void *   __module_ ## mod_nm ## _build_deps_data_lma[]; \
+	extern unsigned __module_ ## mod_nm ## _build_deps_data_len[]; \
+	extern void *   __module_ ## mod_nm ## _build_deps_bss_vma[];  \
+	extern unsigned __module_ ## mod_nm ## _build_deps_bss_len[];  \
 	const struct mod_app __MOD_APP(mod_nm) = { \
-		.data    =          &__module_ ## mod_nm ## _data_vma, \
-		.data_sz = (size_t) &__module_ ## mod_nm ## _data_len, \
-		.bss     =          &__module_ ## mod_nm ## _bss_vma,  \
-		.bss_sz  = (size_t) &__module_ ## mod_nm ## _bss_len,  \
+		.data_vma =          &__module_ ## mod_nm ## _data_vma, \
+		.data_lma =          &__module_ ## mod_nm ## _data_lma, \
+		.data_sz  = (size_t) &__module_ ## mod_nm ## _data_len, \
+		.bss      =          &__module_ ## mod_nm ## _bss_vma,  \
+		.bss_sz   = (size_t) &__module_ ## mod_nm ## _bss_len,  \
+		.build_dep_data_vma = __module_ ## mod_nm ## _build_deps_data_vma, \
+		.build_dep_data_lma = __module_ ## mod_nm ## _build_deps_data_lma, \
+		.build_dep_data_sz  = __module_ ## mod_nm ## _build_deps_data_len, \
+		.build_dep_bss      = __module_ ## mod_nm ## _build_deps_bss_vma,  \
+		.build_dep_bss_sz   = __module_ ## mod_nm ## _build_deps_bss_len,  \
 	}
 #endif /* __MOD_APP_DEF */
 

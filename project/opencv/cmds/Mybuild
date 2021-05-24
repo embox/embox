@@ -1,8 +1,9 @@
 package platform.opencv.cmds
 
 @LinkerSection(text="imagecapture_text",rodata="imagecapture_rodata",data="imagecapture_data",bss="imagecapture_bss",arm_exidx="imagecapture_arm_exidx",arm_extab="imagecapture_arm_extab")
+@App
 @AutoCmd
-@Cmd(name = "imagecapture",
+@CxxCmd(name = "imagecapture",
 	help = "Basic OpenCV test")
 @BuildDepends(third_party.lib.opencv.all)
 @Build(stage=2)
@@ -14,8 +15,9 @@ module imagecapture {
 }
 
 @LinkerSection(text="edges_text",rodata="edges_rodata",data="edges_data",bss="edges_bss",arm_exidx="edges_arm_exidx",arm_extab="edges_arm_extab")
+@App
 @AutoCmd
-@Cmd(name = "edges",
+@CxxCmd(name = "edges",
 	help = "Basic OpenCV test")
 @BuildDepends(third_party.lib.opencv.all)
 @Build(stage=2)
@@ -27,8 +29,9 @@ module edges {
 }
 
 @LinkerSection(text="version_text",rodata="version_rodata",data="version_data",bss="version_bss",arm_exidx="version_arm_exidx",arm_extab="version_arm_extab")
+@App
 @AutoCmd
-@Cmd(name = "opencv_version",
+@CxxCmd(name = "opencv_version",
 	help = "Print OpenCV build info")
 @BuildDepends(third_party.lib.opencv.all)
 @Build(stage=2)

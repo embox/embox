@@ -37,7 +37,7 @@ void fork_static_store(struct static_space *sspc) {
 		sspc->data_store = sysmalloc(app->data_sz);
 		assert(sspc->data_store);
 	}
-	memcpy(sspc->data_store, app->data, app->data_sz);
+	memcpy(sspc->data_store, app->data_vma, app->data_sz);
 }
 
 void fork_static_restore(struct static_space *sspc) {
@@ -55,7 +55,7 @@ void fork_static_restore(struct static_space *sspc) {
 
 	if (app->data_sz) {
 		assert(sspc->data_store);
-		memcpy(app->data, sspc->data_store, app->data_sz);
+		memcpy(app->data_vma, sspc->data_store, app->data_sz);
 	}
 }
 

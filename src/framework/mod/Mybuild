@@ -10,6 +10,9 @@ module mod {
 	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject.mk")
 	source "depsinject.c"
 
+	@Generated(script="$(MAKE) -f mk/script/apps-build-deps.mk")
+	source "apps_build_deps.c"
+
 	depends embox.util.Array
 	depends embox.util.log
 

@@ -22,7 +22,7 @@ static module build {
 	@NoRuntime depends third_party.gcc.libsupcxx
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_core_text",rodata="cv_core_rodata",data="cv_core_data",bss="cv_core_bss",arm_exidx="cv_core_arm_exidx",arm_extab="cv_core_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_core {
@@ -31,7 +31,7 @@ static module libopencv_core {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_imgcodecs_text",rodata="cv_imgcodecs_rodata",data="cv_imgcodecs_data",bss="cv_imgcodecs_bss",arm_exidx="cv_imgcodecs_arm_exidx",arm_extab="cv_imgcodecs_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_imgcodecs {
@@ -40,7 +40,7 @@ static module libopencv_imgcodecs {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_imgproc_text",rodata="cv_imgproc_rodata",data="cv_imgproc_data",bss="cv_imgproc_bss",arm_exidx="cv_imgproc_arm_exidx",arm_extab="cv_imgproc_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_imgproc {
@@ -49,7 +49,7 @@ static module libopencv_imgproc {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_objdetect_text",rodata="cv_objdetect_rodata",data="cv_objdetect_data",bss="cv_objdetect_bss",arm_exidx="cv_objdetect_arm_exidx",arm_extab="cv_objdetect_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_objdetect {
@@ -58,7 +58,7 @@ static module libopencv_objdetect {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_videoio_text",rodata="cv_videoio_rodata",data="cv_videoio_data",bss="cv_videoio_bss",arm_exidx="cv_videoio_arm_exidx",arm_extab="cv_videoio_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_videoio {
@@ -67,7 +67,7 @@ static module libopencv_videoio {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_calib3d_text",rodata="cv_calib3d_rodata",data="cv_calib3d_data",bss="cv_calib3d_bss",arm_exidx="cv_calib3d_arm_exidx",arm_extab="cv_calib3d_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_calib3d {
@@ -76,7 +76,7 @@ static module libopencv_calib3d {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_flann_text",rodata="cv_flann_rodata",data="cv_flann_data",bss="cv_flann_bss",arm_exidx="cv_flann_arm_exidx",arm_extab="cv_flann_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_flann {
@@ -85,7 +85,7 @@ static module libopencv_flann {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_features2d_text",rodata="cv_features2d_rodata",data="cv_features2d_data",bss="cv_features2d_bss",arm_exidx="cv_features2d_arm_exidx",arm_extab="cv_features2d_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libopencv_features2d {
@@ -94,7 +94,7 @@ static module libopencv_features2d {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_png_text",rodata="cv_png_rodata",data="cv_png_data",bss="cv_png_bss",arm_exidx="cv_png_arm_exidx",arm_extab="cv_png_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module liblibpng {
@@ -103,7 +103,7 @@ static module liblibpng {
 	@NoRuntime depends build
 }
 
-@LinkerSection(text="cv_text",rodata="cv_rodata",data="cv_data",bss="cv_bss",arm_exidx="cv_arm_exidx",arm_extab="cv_arm_extab")
+@LinkerSection(text="cv_zlib_text",rodata="cv_zlib_rodata",data="cv_zlib_data",bss="cv_zlib_bss",arm_exidx="cv_zlib_arm_exidx",arm_extab="cv_zlib_arm_extab")
 @BuildDepends(third_party.lib.opencv.build)
 @Build(script="true")
 static module libzlib {
@@ -112,7 +112,16 @@ static module libzlib {
 	@NoRuntime depends build
 }
 
-@BuildDepends(third_party.lib.opencv.build)
+@BuildDepends(libopencv_core)
+@BuildDepends(libopencv_imgcodecs)
+@BuildDepends(libopencv_imgproc)
+@BuildDepends(libopencv_objdetect)
+@BuildDepends(libopencv_videoio)
+@BuildDepends(libopencv_calib3d)
+@BuildDepends(libopencv_flann)
+@BuildDepends(libopencv_features2d)
+@BuildDepends(liblibpng)
+@BuildDepends(libzlib)
 static module all {
 	@NoRuntime depends libopencv_core
 	@NoRuntime depends libopencv_imgcodecs
