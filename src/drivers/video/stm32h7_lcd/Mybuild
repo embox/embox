@@ -1,0 +1,20 @@
+package embox.driver.video
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32h7_lcd {
+	option number log_level=1
+
+	option number fb_base = 0xD0000000
+	option number ltdc_irq = 88
+	option number height = 272
+	option number width = 480
+	option number bpp = 32
+	option boolean use_fb_section = false
+	option string fb_section_start = ""
+
+	source "stm32h7_lcd.c"
+
+	depends embox.driver.video.fb
+	depends third_party.bsp.st_bsp_api
+	depends third_party.bsp.stmh7cube.sdram
+}

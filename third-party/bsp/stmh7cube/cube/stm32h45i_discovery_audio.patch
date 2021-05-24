@@ -1,0 +1,28 @@
+diff -aur STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c
+--- STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c	2020-07-29 19:11:49.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c	2021-05-14 17:12:45.746503750 +0300
+@@ -1940,13 +1940,13 @@
+       PDM_FilterHandler[index].high_pass_tap = 2122358088;
+       PDM_FilterHandler[index].out_ptr_channels = ChnlNbrOut;
+       PDM_FilterHandler[index].in_ptr_channels = ChnlNbrIn;
+-      PDM_Filter_Init((PDM_Filter_Handler_t *)(&PDM_FilterHandler[index]));
++//      PDM_Filter_Init((PDM_Filter_Handler_t *)(&PDM_FilterHandler[index]));
+ 
+       /* PDM lib config phase */
+       PDM_FilterConfig[index].output_samples_number = AudioFreq / 1000;
+       PDM_FilterConfig[index].mic_gain = 24;
+       PDM_FilterConfig[index].decimation_factor = PDM_FILTER_DEC_FACTOR_64;
+-      PDM_Filter_setConfig((PDM_Filter_Handler_t *)&PDM_FilterHandler[index], &PDM_FilterConfig[index]);
++//      PDM_Filter_setConfig((PDM_Filter_Handler_t *)&PDM_FilterHandler[index], &PDM_FilterConfig[index]);
+     }
+ 
+   }
+@@ -1973,7 +1973,7 @@
+   {
+     for (index = 0; index < Audio_In_Ctx[Instance].ChannelsNbr; index++)
+     {
+-      PDM_Filter(&((uint8_t *)(PDMBuf))[index], (uint16_t *)&(PCMBuf[index]), &PDM_FilterHandler[index]);
++//      PDM_Filter(&((uint8_t *)(PDMBuf))[index], (uint16_t *)&(PCMBuf[index]), &PDM_FilterHandler[index]);
+     }
+   }
+ 

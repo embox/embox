@@ -1,0 +1,229 @@
+diff -aur STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994/wm8994.c ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994/wm8994.c
+--- STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994/wm8994.c	2020-07-29 19:11:49.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/wm8994/wm8994.c	2021-05-18 21:46:10.618140915 +0300
+@@ -551,7 +551,7 @@
+     {
+       /* Enable Microphone bias 1 generator, Enable VMID */
+       tmp = 0x0013;
+-      ret += wm8994_write_reg(&pObj->Ctx, WM8994_PWR_MANAGEMENT_1, &tmp, 2);
++    //  ret += wm8994_write_reg(&pObj->Ctx, WM8994_PWR_MANAGEMENT_1, &tmp, 2);
+       
+       /* ADC oversample enable */
+       tmp = 0x0002;
+@@ -565,7 +565,7 @@
+     {
+       /* Enable Microphone bias 1 generator, Enable VMID */
+       tmp = 0x0013;
+-      ret += wm8994_write_reg(&pObj->Ctx, WM8994_PWR_MANAGEMENT_1, &tmp, 2);
++   //   ret += wm8994_write_reg(&pObj->Ctx, WM8994_PWR_MANAGEMENT_1, &tmp, 2);
+       
+       /* ADC oversample enable */
+       tmp = 0x0002;
+diff -aur STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c
+--- STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c	2020-07-29 19:11:49.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/STM32H745I-DISCO/stm32h745i_discovery_audio.c	2021-05-18 21:54:01.356040219 +0300
+@@ -1640,6 +1640,179 @@
+   return ret;
+ }
+ 
++int32_t BSP_AUDIO_OUT_IN_Init(uint32_t Instance, BSP_AUDIO_Init_t *AudioInit)
++{
++  int32_t ret = BSP_ERROR_NONE;
++
++	uint16_t in_device = AudioInit->Device & 0xF0;
++	uint16_t out_device = AudioInit->Device & 0x0F;
++
++    /* Store the audio record context */
++    Audio_In_Ctx[Instance].Device = in_device;
++    Audio_In_Ctx[Instance].ChannelsNbr = AudioInit->ChannelsNbr;
++    Audio_In_Ctx[Instance].SampleRate = AudioInit->SampleRate;
++    Audio_In_Ctx[Instance].BitsPerSample = AudioInit->BitsPerSample;
++    Audio_In_Ctx[Instance].Volume = AudioInit->Volume;
++    Audio_In_Ctx[Instance].State = AUDIO_IN_STATE_RESET;
++        /* Fill Audio_Out_Ctx structure */
++    Audio_Out_Ctx[Instance].Device         = out_device;
++    Audio_Out_Ctx[Instance].Instance       = Instance;
++    Audio_Out_Ctx[Instance].SampleRate     = AudioInit->SampleRate;
++    Audio_Out_Ctx[Instance].BitsPerSample  = AudioInit->BitsPerSample;
++    Audio_Out_Ctx[Instance].ChannelsNbr    = AudioInit->ChannelsNbr;
++    Audio_Out_Ctx[Instance].Volume         = AudioInit->Volume;
++    Audio_Out_Ctx[Instance].State          = AUDIO_OUT_STATE_RESET;
++
++
++#if (USE_AUDIO_CODEC_WM8994 == 1)
++    if(WM8994_Probe() != BSP_ERROR_NONE)
++    {
++      ret = BSP_ERROR_COMPONENT_FAILURE;
++    }
++#endif
++    if(ret == BSP_ERROR_NONE)
++    {
++      /* PLL clock is set depending by the AudioFreq (44.1khz vs 48khz groups) */
++      if(MX_SAI2_ClockConfig(&haudio_out_sai, AudioInit->SampleRate) != HAL_OK)
++      {
++        ret = BSP_ERROR_CLOCK_FAILURE;
++      }
++      else
++      {
++        /* SAI data transfer preparation:
++        Prepare the Media to be used for the audio transfer from memory to SAI peripheral */
++        haudio_out_sai.Instance = AUDIO_OUT_SAIx;
++        haudio_in_sai.Instance = AUDIO_IN_SAIx;
++
++#if (USE_HAL_SAI_REGISTER_CALLBACKS == 0)
++        SAI_MspInit(&haudio_in_sai);
++        SAI_MspInit(&haudio_out_sai);
++#else
++        /* Register the SAI MSP Callbacks */
++        if(Audio_Out_Ctx[Instance].IsMspCallbacksValid == 0U)
++        {
++          if(BSP_AUDIO_OUT_RegisterDefaultMspCallbacks(Instance) != BSP_ERROR_NONE)
++          {
++            ret = BSP_ERROR_PERIPH_FAILURE;
++          }
++        }
++        if(ret == BSP_ERROR_NONE)
++        {
++#endif /* (USE_HAL_SAI_REGISTER_CALLBACKS == 0U) */
++
++          MX_SAI_Config_t mx_config;
++
++          mx_config.MonoStereoMode = (AudioInit->ChannelsNbr == 1U) ? SAI_MONOMODE : SAI_STEREOMODE;
++          mx_config.DataSize = SAI_DATASIZE_16;
++          mx_config.FrameLength = 64;
++          mx_config.ActiveFrameLength = 32;
++          if (AudioInit->BitsPerSample == AUDIO_RESOLUTION_32B)
++          {
++            mx_config.DataSize = SAI_DATASIZE_32;
++            mx_config.FrameLength = 128;
++            mx_config.ActiveFrameLength = 64;
++          }
++          mx_config.OutputDrive = SAI_OUTPUTDRIVE_DISABLE;
++          switch (AudioInit->Device)
++          {
++          case AUDIO_IN_DEVICE_ANALOG_MIC:
++            mx_config.SlotActive = SAI_SLOTACTIVE_0;
++            break;
++          case AUDIO_IN_DEVICE_DIGITAL_MIC:
++          default:
++            mx_config.SlotActive = CODEC_AUDIOFRAME_SLOT_13;
++            break;
++          }
++
++          /* Prepare haudio_in_sai handle */
++          //haudio_in_sai.Instance = SAI2_Block_B;
++          mx_config.AudioFrequency = Audio_In_Ctx[Instance].SampleRate;
++          mx_config.AudioMode = SAI_MODESLAVE_RX;
++          mx_config.ClockStrobing = SAI_CLOCKSTROBING_RISINGEDGE;
++          mx_config.Synchro = SAI_SYNCHRONOUS;
++          mx_config.SynchroExt = SAI_SYNCEXT_DISABLE;
++          if (MX_SAI2_Block_B_Init(&haudio_in_sai, &mx_config) != HAL_OK)
++          {
++            /* Return BSP_ERROR_PERIPH_FAILURE when operations are not correctly done */
++            ret = BSP_ERROR_PERIPH_FAILURE;
++            goto out;
++          }
++
++
++          /* Prepare haudio_out_sai handle */
++          mx_config.AudioFrequency    = AudioInit->SampleRate;
++          mx_config.AudioMode         = SAI_MODEMASTER_TX;
++          mx_config.ClockStrobing     = SAI_CLOCKSTROBING_RISINGEDGE;
++          //mx_config.MonoStereoMode    = (AudioInit->ChannelsNbr == 1U) ? SAI_MONOMODE : SAI_STEREOMODE;
++          //mx_config.DataSize          = (AudioInit->BitsPerSample == AUDIO_RESOLUTION_32B) ? SAI_DATASIZE_32 : SAI_DATASIZE_16;
++          //mx_config.FrameLength       = 128;
++         // mx_config.ActiveFrameLength = 64;
++          mx_config.OutputDrive       = SAI_OUTPUTDRIVE_ENABLE;
++          mx_config.Synchro           = SAI_ASYNCHRONOUS;
++          mx_config.SynchroExt        = SAI_SYNCEXT_DISABLE;
++          mx_config.SlotActive        = CODEC_AUDIOFRAME_SLOT_02;
++
++          /* SAI peripheral initialization: this __weak function can be redefined by the application  */
++          if(MX_SAI2_Block_A_Init(&haudio_out_sai, &mx_config) != HAL_OK)
++          {
++            ret = BSP_ERROR_PERIPH_FAILURE;
++          }
++
++#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1U)
++          /* Register SAI TC, HT and Error callbacks */
++          else if(HAL_SAI_RegisterCallback(&haudio_out_sai, HAL_SAI_TX_COMPLETE_CB_ID, SAI_TxCpltCallback) != HAL_OK)
++          {
++            ret = BSP_ERROR_PERIPH_FAILURE;
++          }
++          else if(HAL_SAI_RegisterCallback(&haudio_out_sai, HAL_SAI_TX_HALFCOMPLETE_CB_ID, SAI_TxHalfCpltCallback) != HAL_OK)
++          {
++            ret = BSP_ERROR_PERIPH_FAILURE;
++          }
++          else
++          {
++            if(HAL_SAI_RegisterCallback(&haudio_out_sai, HAL_SAI_ERROR_CB_ID, SAI_ErrorCallback) != HAL_OK)
++            {
++              ret = BSP_ERROR_PERIPH_FAILURE;
++            }
++          }
++#endif
++#if (USE_AUDIO_CODEC_WM8994 == 1)
++          if(ret == BSP_ERROR_NONE)
++          {
++            WM8994_Init_t codec_init;
++            codec_init.Resolution  = (AudioInit->BitsPerSample == AUDIO_RESOLUTION_32B) ? 3 : 0;
++
++            /* Fill codec_init structure */
++            codec_init.Frequency    = AudioInit->SampleRate;
++            codec_init.InputDevice  = WM8994_IN_MIC2;
++            codec_init.OutputDevice = WM8994_OUT_HEADPHONE;
++
++            /* Convert volume before sending to the codec */
++            codec_init.Volume       = VOLUME_OUT_CONVERT(AudioInit->Volume);
++
++            /* Initialize the codec internal registers */
++            if(Audio_Drv->Init(Audio_CompObj, &codec_init) != 0)
++            {
++              ret =  BSP_ERROR_COMPONENT_FAILURE;
++            }
++          }
++#endif
++#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1)
++        }
++#endif
++      }
++    }
++out:
++    /* Update BSP AUDIO OUT state */
++    if(ret == BSP_ERROR_NONE)
++    {
++      Audio_Out_Ctx[Instance].State = AUDIO_OUT_STATE_STOP;
++    }
++
++  /* Return BSP status */
++  return ret;
++}
++
+ /**
+   * @brief  Deinit the audio IN peripherals.
+   * @param  Instance  AUDIO IN Instance. It can be 0 when SAI is used or 1 is used
+@@ -1940,13 +2113,13 @@
+       PDM_FilterHandler[index].high_pass_tap = 2122358088;
+       PDM_FilterHandler[index].out_ptr_channels = ChnlNbrOut;
+       PDM_FilterHandler[index].in_ptr_channels = ChnlNbrIn;
+-      PDM_Filter_Init((PDM_Filter_Handler_t *)(&PDM_FilterHandler[index]));
++//      PDM_Filter_Init((PDM_Filter_Handler_t *)(&PDM_FilterHandler[index]));
+ 
+       /* PDM lib config phase */
+       PDM_FilterConfig[index].output_samples_number = AudioFreq / 1000;
+       PDM_FilterConfig[index].mic_gain = 24;
+       PDM_FilterConfig[index].decimation_factor = PDM_FILTER_DEC_FACTOR_64;
+-      PDM_Filter_setConfig((PDM_Filter_Handler_t *)&PDM_FilterHandler[index], &PDM_FilterConfig[index]);
++//      PDM_Filter_setConfig((PDM_Filter_Handler_t *)&PDM_FilterHandler[index], &PDM_FilterConfig[index]);
+     }
+ 
+   }
+@@ -1973,7 +2146,7 @@
+   {
+     for (index = 0; index < Audio_In_Ctx[Instance].ChannelsNbr; index++)
+     {
+-      PDM_Filter(&((uint8_t *)(PDMBuf))[index], (uint16_t *)&(PCMBuf[index]), &PDM_FilterHandler[index]);
++//      PDM_Filter(&((uint8_t *)(PDMBuf))[index], (uint16_t *)&(PCMBuf[index]), &PDM_FilterHandler[index]);
+     }
+   }
+ 

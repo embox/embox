@@ -280,6 +280,7 @@ int main(int argc, char **argv) {
 		write_wave_addr(audio_memory_addr, (uint8_t*) in_buf, cur_ptr * 2);
 	}
 
+	printf("\n");
 err_terminate_pa:
 	if (paNoError != (err = Pa_Terminate()))
 		printf("Portaudio error: could not terminate!\n");
