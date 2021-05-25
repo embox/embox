@@ -6,3 +6,10 @@ module stm32f7_qspi {
 
 	depends third_party.bsp.st_bsp_api
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32h7_qspi {
+	source "stm32h7_qspi.c"
+
+	depends third_party.bsp.st_bsp_api
+}
