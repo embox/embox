@@ -10,8 +10,10 @@ PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeH7/archive/$(P
 
 PKG_MD5     := 285f779b056866ed1bd746e7cfec77c7
 
+PKG_PATCHES := component_mt25tl01g.patch
+
 ifeq (0,$(call option_get_boolean,use_middleware_pdm))
-PKG_PATCHES := stm32h45i_discovery_audio.patch
+PKG_PATCHES += stm32h45i_discovery_audio.patch
 endif
 
 
