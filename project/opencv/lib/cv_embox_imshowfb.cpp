@@ -45,6 +45,10 @@ void imshowfb(cv::Mat& img, int fbx) {
 	h = std::min((int) fbi->var.yres, img.rows);
 	w = std::min((int) (fbi->var.bits_per_pixel * fbi->var.xres) / 8, img.channels() * img.cols);
 
+	/* Clear fb with white color. */
+	memset(fbi->screen_base, 0xff,
+		(fbi->var.xres * fbi->var.yres * fbi->var.bits_per_pixel) / 8);
+
 	for (int y = 0; y < h; y++) {
 		const uchar *row = &img.at<uchar>(y, 0);
 		for (int x = 0; x < w; x += img.channels()) {
