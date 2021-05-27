@@ -27,11 +27,13 @@ static_assert(EXTI0_IRQ == EXTI0_IRQn);
 static_assert(EXTI1_IRQ == EXTI1_IRQn);
 
 #define EXTI2_IRQ          OPTION_GET(NUMBER, exti2_irq)
+#if (EXTI2_IRQ != 0)
 #if defined(STM32F303xC)
 static_assert(EXTI2_IRQ == EXTI2_TSC_IRQn);
 #else
 static_assert(EXTI2_IRQ == EXTI2_IRQn);
 #endif
+#endif /*(EXTI2_IRQ != 0)*/
 
 #define EXTI3_IRQ          OPTION_GET(NUMBER, exti3_irq)
 static_assert(EXTI3_IRQ == EXTI3_IRQn);
@@ -162,6 +164,9 @@ static int stm32_gpio_init(void) {
 	int res, i;
 
 	for (i = 0; i < ARRAY_SIZE(exti_irqs); i++) {
+		if (0 == exti_irqs[i]) {
+			continue;
+		}
 		res = irq_attach(exti_irqs[i], stm32_gpio_irq_handler, 0, NULL,
 			"STM32 EXTI irq handler");
 		if (res < 0) {
@@ -174,7 +179,9 @@ static int stm32_gpio_init(void) {
 
 STATIC_IRQ_ATTACH(EXTI0_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI1_IRQ, stm32_gpio_irq_handler, NULL);
+#if (EXTI2_IRQ != 0)
 STATIC_IRQ_ATTACH(EXTI2_IRQ, stm32_gpio_irq_handler, NULL);
+#endif /* (EXTI2_IRQ != 0) */
 STATIC_IRQ_ATTACH(EXTI3_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI4_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI9_5_IRQ, stm32_gpio_irq_handler, NULL);
