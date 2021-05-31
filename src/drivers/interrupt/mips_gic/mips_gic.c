@@ -14,12 +14,11 @@
 #include <asm/mipsregs.h>
 #include <kernel/irq.h>
 
+#include <asm/io.h>
 
-//#define MIPS_GIC_BASE OPTION_GET(NUMBER,base_addr)
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(mips_gic_init);
-
 
 static int mips_gic_ctrl_init(void) {
 	uint32_t c0;
@@ -29,7 +28,12 @@ static int mips_gic_ctrl_init(void) {
 	c0 |= 1 << (MIPS_GIC_INTERRUPT_PIN + ST0_IRQ_MASK_OFFSET + ST0_SOFTIRQ_NUM);
 	mips_write_c0_status(c0);
 
+#if (MIPS_GIC_BASE < (0xA0000000))
 	mips32_gcb_set_register(GCR_GIC_BASE, MIPS_GIC_BASE | GIC_EN);
+#else
+	mips32_gcb_set_register(GCR_GIC_BASE, (MIPS_GIC_BASE - (0xA0000000)) | GIC_EN);
+#endif /* (MIPS_GIC_BASE < (0xA0000000)) */
+	__sync();
 
 	for (i = 0; i < __IRQCTRL_IRQS_TOTAL; i++) {
 		if (0 == (i & 0x1F)) {
