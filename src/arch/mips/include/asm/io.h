@@ -22,8 +22,8 @@
 
 
 
-#define mmiowb() asm volatile ("sync" ::: "memory")
+#define mmiowb()   asm volatile ("sync" ::: "memory")
 
-#define sync()		mmiowb()
+#define __sync()   mmiowb()
 
 #endif /* MIPS_IO_H_ */

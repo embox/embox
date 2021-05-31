@@ -160,7 +160,7 @@ void flush_cache(unsigned long start_addr, size_t size) {
 
 ops_done:
 	/* ensure cache ops complete before any further memory accesses */
-	sync();
+	__sync();
 
 	/* ensure the pipeline doesn't contain now-invalid instructions */
 	instruction_hazard_barrier();
@@ -181,7 +181,7 @@ void flush_dcache_range(unsigned long start_addr, unsigned long stop) {
 	cache_loop(start_addr, stop, slsize, HIT_WRITEBACK_INV_SD);
 
 	/* ensure cache ops complete before any further memory accesses */
-	sync();
+	__sync();
 }
 
 void invalidate_dcache_range(unsigned long start_addr, unsigned long stop) {
@@ -199,7 +199,7 @@ void invalidate_dcache_range(unsigned long start_addr, unsigned long stop) {
 	cache_loop(start_addr, stop, lsize, HIT_INVALIDATE_D);
 
 	/* ensure cache ops complete before any further memory accesses */
-	sync();
+	__sync();
 }
 
 int dcache_status(void) {
