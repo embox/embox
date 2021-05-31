@@ -25,6 +25,7 @@ module entry extends embox.arch.entry {
 
 module exception {
 	source "exception.c"
+	depends embox.arch.mips.mm.cache_api
 }
 
 module interrupt extends embox.arch.interrupt {
