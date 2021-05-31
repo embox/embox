@@ -1,7 +1,21 @@
 package embox.arch.mips.mm
 
-module cache {
+@DefaultImpl(cache_stub)
+abstract module cache_api {
+}
+
+module cache_stub extends cache_api {
+	source "cache_stub.c"
+}
+
+module cache extends cache_api {
+	option number log_level=1
+
+	option boolean use_l2_cache=true
+	option boolean use_auto_cache_size=true
+
 	source "cache.c"
+	source "mips_cache.c"
 }
 
 module mem_barriers extends embox.arch.mem_barriers {
