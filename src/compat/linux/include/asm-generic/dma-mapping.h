@@ -19,6 +19,10 @@
 #include <mem/sysmalloc.h>
 #include <mem/vmem.h>
 
+#ifdef __mips__
+#include <asm/addrspace.h>
+#endif
+
 struct device;
 
 /*
@@ -48,7 +52,7 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
 #endif
 
 #ifdef __mips__
-	*handle = (uintptr_t)mem - 0xA0000000;
+	*handle = (uintptr_t)mem - KSEG0;
 #else
 	*handle = (uintptr_t)mem;
 #endif
@@ -63,7 +67,7 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
 static inline dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
                            enum dma_data_direction direction) {
 #ifdef __mips__
-	return (uintptr_t)ptr - 0xA0000000;
+	return (uintptr_t)ptr - KSEG0;
 #else
 	return (uintptr_t)ptr;
 #endif
