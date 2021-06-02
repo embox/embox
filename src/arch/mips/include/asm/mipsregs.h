@@ -309,12 +309,12 @@ do {									\
 
 #ifndef __ASSEMBLER__
 static inline unsigned int mips_change_c0_config(unsigned int change, unsigned int val) {
-	unsigned int res, new;
+	unsigned int res, new_val;
 
 	res = mips_read_c0_config();
-	new = res & ~change;
-	new |= (val & change);
-	mips_write_c0_config(new);
+	new_val = res & ~change;
+	new_val |= (val & change);
+	mips_write_c0_config(new_val);
 
 	return res;
 }
