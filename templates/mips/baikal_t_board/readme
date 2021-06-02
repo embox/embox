@@ -1,0 +1,12 @@
+This template targets to run Embox on Baikal-T1 demoboards
+
+To running:
+* Build this template
+* Copy build/base/bin/embox.bin into tftp folder
+* Enter to board u-boot) console
+  * Press any key during the board starting
+  * Select "U-boot console"
+* Load embox.bin
+  `tftpboot 80000000 embox.bin`
+* Run Embox
+  `go 80000000`
