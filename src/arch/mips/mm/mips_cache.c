@@ -170,7 +170,9 @@ void flush_dcache_range(unsigned long start_addr, unsigned long stop) {
 	unsigned long lsize = dcache_line_size();
 	unsigned long slsize = scache_line_size();
 
-	/* aend will be miscalculated when size is zero, so we return here */
+	log_debug("start(%x) stop(%x)", start_addr, stop);
+
+	/* end will be miscalculated when size is zero, so we return here */
 	if (start_addr == stop) {
 		return;
 	}
@@ -188,7 +190,9 @@ void invalidate_dcache_range(unsigned long start_addr, unsigned long stop) {
 	unsigned long lsize = dcache_line_size();
 	unsigned long slsize = scache_line_size();
 
-	/* aend will be miscalculated when size is zero, so we return here */
+	log_debug("start(%x) stop(%x)", start_addr, stop);
+
+	/* end will be miscalculated when size is zero, so we return here */
 	if (start_addr == stop) {
 		return;
 	}
