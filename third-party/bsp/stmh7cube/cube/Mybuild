@@ -9,6 +9,8 @@ module cube_cppflags {
 @BuildDepends(cube_cppflags)
 @BuildDepends(third_party.bsp.stmh7cube.stm32h7_conf)
 static module cube {
+	option boolean use_middleware_pdm = false
+
 	option number eth_rx_packet_count = 4
 	option number eth_tx_packet_count = 0
 

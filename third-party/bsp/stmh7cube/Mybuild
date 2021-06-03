@@ -6,7 +6,7 @@ abstract module stm32h7_conf {
 @Build(stage=1)
 @BuildDepends(third_party.bsp.st_bsp_api)
 module sdram {
-	/* If true, swap SDRAM from 0xc0000000 to 0x60000000 */
+	/* If true, swap SDRAM from 0xd0000000 to 0x70000000 */
 	option boolean fmc_swap = false
 
 	source "sdram_init.c"

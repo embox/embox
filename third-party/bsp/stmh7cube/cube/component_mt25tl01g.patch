@@ -1,0 +1,12 @@
+diff -aur STM32CubeH7-1.8.0/Drivers/BSP/Components/mt25tl01g/mt25tl01g.c ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/mt25tl01g/mt25tl01g.c
+--- STM32CubeH7-1.8.0/Drivers/BSP/Components/mt25tl01g/mt25tl01g.c	2020-07-29 19:11:49.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/mt25tl01g/mt25tl01g.c	2021-05-26 15:19:55.893820917 +0300
+@@ -84,7 +84,7 @@
+   }
+ 
+   /* Configure automatic polling mode to wait the memory is ready */
+-  else if(MT25TL01G_AutoPollingMemReady(Ctx,Mode)!=MT25TL01G_OK)
++  else if(MT25TL01G_AutoPollingMemReady(Ctx,MT25TL01G_QPI_MODE)!=MT25TL01G_OK)
+   {
+     return MT25TL01G_ERROR_COMMAND;
+   }

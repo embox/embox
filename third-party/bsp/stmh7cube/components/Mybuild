@@ -4,6 +4,7 @@ package third_party.bsp.stmh7cube
 @BuildDepends(third_party.bsp.stmh7cube.cube)
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/Common/")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Projects/STM32H747I-DISCO/Demonstrations/STemWin/Modules/audio_player/Addons/PDM/Inc/")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components//mt25tl01g/")
 static module stm32h7_discovery_components {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Projects/STM32H745I-DISCO/Templates/BootCM7_CM4Gated/Common/Inc/")
     @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmfhcube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components/ft5336")
@@ -32,6 +33,10 @@ static module stm32h7_discovery_components {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components//mt48lc4m32b2")
     @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
 	source "./STM32CubeH7-1.8.0/Drivers/BSP/Components/mt48lc4m32b2/mt48lc4m32b2.c"
+
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/Components//mt25tl01g")
+    @AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
+	source "./STM32CubeH7-1.8.0/Drivers/BSP/Components/mt25tl01g/mt25tl01g.c"
 
 	@NoRuntime depends third_party.bsp.stmh7cube.cube
 }
