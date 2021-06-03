@@ -78,7 +78,11 @@ export MV     := mv -f
 export PRINTF := printf
 export MKDIR  := mkdir -p
 export LN     := ln -s
+ifneq ($(shell uname -s), Darwin) 
 export MD5    := $(call find_tool_impl,MD5,md5 md5sum,md5sum)
+else
+export MD5    := md5 -q
+endif
 export CPIO   := $(call find_tool_impl,CPIO,gcpio gnucpio cpio,cpio)
 export AWK    := $(call find_tool_impl,AWK,gawk awk nawk mawk,awk)
 export TSORT  := tsort
