@@ -21,12 +21,7 @@
 EMBOX_UNIT_INIT(mips_gic_init);
 
 static int mips_gic_ctrl_init(void) {
-	uint32_t c0;
 	int i;
-
-	c0 = mips_read_c0_status();
-	c0 |= 1 << (MIPS_GIC_INTERRUPT_PIN + ST0_IRQ_MASK_OFFSET + ST0_SOFTIRQ_NUM);
-	mips_write_c0_status(c0);
 
 #if (MIPS_GIC_BASE < (0xA0000000))
 	mips32_gcb_set_register(GCR_GIC_BASE, MIPS_GIC_BASE | GIC_EN);
@@ -51,11 +46,13 @@ static int mips_gic_init(void) {
 	uint32_t c0;
 
 	c0 = mips_read_c0_status();
-	c0 |= (1 << (MIPS_GIC_INTERRUPT_PIN + ST0_IRQ_MASK_OFFSET + ST0_SOFTIRQ_NUM)) | ST0_IE;
+	c0 |= (1 << (MIPS_GIC_INTERRUPT_PIN + ST0_IRQ_MASK_OFFSET + ST0_SOFTIRQ_NUM));
 	mips_write_c0_status(c0);
 
-	log_info("mips_gic config %x", REG_LOAD(MIPS_GIC_BASE + GIC_SH_CONFIG));
-	log_info("mips_gic revision %x", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
+	log_boot_start();
+	log_boot("mips_gic config %x\n", REG_LOAD(MIPS_GIC_BASE + GIC_SH_CONFIG));
+	log_boot("mips_gic revision %x\n", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
+	log_boot_stop();
 	return 0;
 }
 
