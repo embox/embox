@@ -23,23 +23,23 @@
 
 #include <framework/mod/options.h>
 
-#define CONFIG_MIPS_L2_CACHE        OPTION_GET(BOOLEAN,use_l2_cache)
-#define CONFIG_SYS_CACHE_SIZE_AUTO  OPTION_GET(BOOLEAN,use_auto_cache_size)
+#define USE_L2_CACHE        OPTION_GET(BOOLEAN,use_l2_cache)
+#define USE_CACHE_SIZE_AUTO  OPTION_GET(BOOLEAN,use_auto_cache_size)
 
-EMBOX_UNIT_INIT(mips_cache_probe);
+EMBOX_UNIT_INIT(mips_cache_init);
 
-#if CONFIG_MIPS_L2_CACHE
+#if USE_L2_CACHE
 static uint32_t l2_line_size;
 #endif
 
-#if CONFIG_SYS_CACHE_SIZE_AUTO
+#if USE_CACHE_SIZE_AUTO
 static uint32_t l1i_line_size;
 static uint32_t l1d_line_size;
 #endif
 
 
 static inline unsigned long icache_line_size(void) {
-#ifdef CONFIG_SYS_CACHE_SIZE_AUTO
+#ifdef USE_CACHE_SIZE_AUTO
 	return l1i_line_size;
 #else
 	return CONFIG_SYS_ICACHE_LINE_SIZE;
@@ -47,7 +47,7 @@ static inline unsigned long icache_line_size(void) {
 }
 
 static inline unsigned long dcache_line_size(void) {
-#ifdef CONFIG_SYS_CACHE_SIZE_AUTO
+#ifdef USE_CACHE_SIZE_AUTO
 	return l1d_line_size;
 #else
 	return CONFIG_SYS_DCACHE_LINE_SIZE;
@@ -55,14 +55,14 @@ static inline unsigned long dcache_line_size(void) {
 }
 
 static inline unsigned long scache_line_size(void) {
-#ifdef CONFIG_MIPS_L2_CACHE
+#ifdef USE_L2_CACHE
 	return l2_line_size;
 #else
 	return CONFIG_SYS_SCACHE_LINE_SIZE;
 #endif
 }
 
-#if CONFIG_MIPS_L2_CACHE
+#if USE_L2_CACHE
 static void probe_l2(void) {
 
 	unsigned long conf2, sl;
@@ -95,8 +95,9 @@ static void probe_l2(void) {
 }
 #endif
 
-static int mips_cache_probe(void) {
-#ifdef CONFIG_SYS_CACHE_SIZE_AUTO
+static int mips_cache_init(void) {
+	log_boot_start();
+#ifdef USE_CACHE_SIZE_AUTO
 	unsigned long conf1, il, dl;
 
 	conf1 = mips_read_c0_config1();
@@ -107,13 +108,14 @@ static int mips_cache_probe(void) {
 	l1i_line_size = il ? (2 << il) : 0;
 	l1d_line_size = dl ? (2 << dl) : 0;
 #endif
-	log_info("cache L1: i line size (%d) d line size (%d)",
-				icache_line_size(), dcache_line_size());
-#if CONFIG_MIPS_L2_CACHE
-	probe_l2();
-	log_info("cache L2: line size (%d) ", scache_line_size());
-#endif
 
+	log_boot("cache L1: instr line size (%d) data line size (%d)\n",
+				icache_line_size(), dcache_line_size());
+#if USE_L2_CACHE
+	probe_l2();
+	log_boot("cache L2: line size (%d)\n", scache_line_size());
+#endif
+	log_boot_stop();
 	return 0;
 }
 
