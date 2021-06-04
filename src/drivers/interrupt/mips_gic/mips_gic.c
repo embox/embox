@@ -48,6 +48,13 @@ static int mips_gic_ctrl_init(void) {
 }
 
 static int mips_gic_init(void) {
+	uint32_t c0;
+
+	c0 = mips_read_c0_status();
+	c0 |= (1 << (MIPS_GIC_INTERRUPT_PIN + ST0_IRQ_MASK_OFFSET + ST0_SOFTIRQ_NUM)) | ST0_IE;
+	mips_write_c0_status(c0);
+
+	log_info("mips_gic config %x", REG_LOAD(MIPS_GIC_BASE + GIC_SH_CONFIG));
 	log_info("mips_gic revision %x", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
 	return 0;
 }
@@ -56,6 +63,7 @@ void irqctrl_enable(unsigned int interrupt_nr) {
 	int reg;
 	uint32_t mask;
 
+	log_debug("enabling %d", interrupt_nr);
 	if (interrupt_nr >= __IRQCTRL_IRQS_TOTAL) {
 		return;
 	}

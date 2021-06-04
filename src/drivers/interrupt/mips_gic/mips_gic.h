@@ -91,5 +91,7 @@
 #define GIC_SH_MAP_CORE31_0(N)   (0x2000 + (((N) << 5)))
 #define GIC_SH_MAP0_CORE31_0      0x2000
 
+#define GIC_VB_DINT_SEND         0x6000
+
 
 #endif /* SRC_DRIVERS_INTERRUPT_MIPS_GIC_MIPS_GIC_H_ */
