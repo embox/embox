@@ -24,11 +24,15 @@ EMBOX_UNIT_INIT(mips_interrupt_init);
 #ifdef MIPS_GIC_INTERRUPT_PIN
 void mips_gic_interrupt(void) {
 	uint32_t pend;
+	uint32_t mask;
 	int i;
 
 	for (i = 0; i < __IRQCTRL_IRQS_TOTAL; i += 32) {
-		pend = REG32_LOAD(MIPS_GIC_BASE + GIC_SH_PEND(i)) &
-				REG32_LOAD(MIPS_GIC_BASE + GIC_SH_MASK(i));
+		pend = REG32_LOAD(MIPS_GIC_BASE + GIC_SH_PEND(i));
+		mask = REG32_LOAD(MIPS_GIC_BASE + GIC_SH_MASK(i));
+
+		log_debug("pend %x pask %x", pend, mask);
+		pend &= mask;
 
 		if (pend) {
 			int j;
@@ -48,11 +52,19 @@ void mips_gic_interrupt(void) {
 
 void mips_c_interrupt_handler(pt_regs_t *regs) {
 
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
+//	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		unsigned int pending = mips_read_c0_cause() & mips_read_c0_status() & ST0_IM;
+		unsigned int pending;
+		unsigned int mask;
+
+		pending = mips_read_c0_cause();
+		mask = mips_read_c0_status();
+
+		log_debug("interrupt occured c0_cause(%x) : c0_status(%x)", mips_read_c0_cause(), mips_read_c0_status());
+
+		pending &= (mask &  ST0_IM);
 
 #ifdef MIPS_GIC_INTERRUPT_PIN
 
@@ -65,6 +77,7 @@ void mips_c_interrupt_handler(pt_regs_t *regs) {
 					ipl_disable();
 //					irqctrl_enable(MIPS_IRQN_TIMER);
 		}
+
 		if (pending & (0x1 << (ST0_SOFTIRQ_NUM + MIPS_GIC_INTERRUPT_PIN))) {
 			mips_gic_interrupt();
 		}
