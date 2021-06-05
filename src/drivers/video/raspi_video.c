@@ -22,9 +22,10 @@
 EMBOX_UNIT_INIT(raspi_init);
 
 /*	set_x = 1024, set_y = 768, set_bpp = 16 */
-#define XRES 1024
-#define YRES 768
-#define BPP  16
+#define CONFIG_FB_XRES OPTION_GET(NUMBER,fb_xres)
+#define CONFIG_FB_YRES OPTION_GET(NUMBER,fb_yres)
+#define CONFIG_FB_BPP OPTION_GET(NUMBER,fb_bpp)
+#define CONFIG_FB_VC_BUS OPTION_GET(NUMBER,fb_vc_bus)
 
 static int raspi_set_var(struct fb_info *info,
 		struct fb_var_screeninfo const *var) {
@@ -32,9 +33,9 @@ static int raspi_set_var(struct fb_info *info,
 }
 
 static int raspi_get_var(struct fb_info *info, struct fb_var_screeninfo *var) {
-	var->xres = XRES;
-	var->yres = YRES;
-	var->bits_per_pixel = BPP;
+	var->xres = CONFIG_FB_XRES;
+	var->yres = CONFIG_FB_YRES;
+	var->bits_per_pixel = CONFIG_FB_BPP;
 	return 0;
 }
 
@@ -48,22 +49,17 @@ static int raspi_init(void) {
 	struct fb_info *info;
 
 	/* Set new frame buffer information */
-	raspi_fb.width_p        = XRES;
-	raspi_fb.height_p       = YRES;
-	raspi_fb.bit_depth      = BPP;
-	raspi_fb.width_v        = XRES;
-	raspi_fb.height_v       = YRES;
+	raspi_fb.width_p        = CONFIG_FB_XRES;
+	raspi_fb.height_p       = CONFIG_FB_YRES;
+	raspi_fb.bit_depth      = CONFIG_FB_BPP;
+	raspi_fb.width_v        = CONFIG_FB_XRES;
+	raspi_fb.height_v       = CONFIG_FB_YRES;
 	raspi_fb.x              = 0;
 	raspi_fb.y              = 0;
 	raspi_fb.gpu_pitch      = 0;    // Filled in by the VC
 	raspi_fb.gpu_pointer    = 0;    // Filled in by the VC
-	/**
-	 * Send the address of the frame buffer + 0x40000000 to the mailbox
-	 *
-	 * By adding 0x40000000, we tell the GPU not to use its cache for these
-	 * writes, which ensures we will be able to see the change
-	 */
-	bcm2835_mailbox_write(((uint32_t) &raspi_fb) + 0x40000000, BCM2835_FRAMEBUFFER_CHANNEL);
+
+	bcm2835_mailbox_write(((uint32_t) &raspi_fb) + CONFIG_FB_VC_BUS, BCM2835_FRAMEBUFFER_CHANNEL);
 	if (bcm2835_mailbox_read(BCM2835_FRAMEBUFFER_CHANNEL) != 0 ||
 			!raspi_fb.gpu_pointer) {
 		return -EAGAIN;
