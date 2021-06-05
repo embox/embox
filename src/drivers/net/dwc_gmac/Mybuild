@@ -8,6 +8,8 @@ module dwc_gmac {
 
 	option number rx_desc_quantity = 256
 	option number tx_desc_quantity = 256
+	
+	option boolean use_uncached_rings = false
 
 	source "dwc_gmac.h"
 	source "dwc_gmac.c"

@@ -30,10 +30,21 @@
 #define GCR_GIC_BASE_UPPER           0x0084
 #define GCR_CPC_BASE                 0x0088
 #define GCR_CPC_BASE_UPPER           0x008C
+#define GCR_L2_CONFIG                0x0130
 
+/* GCR_L2_CONFIG fields */
+#define GCR_L2_CONFIG_ASSOC_SHIFT   0
+#define GCR_L2_CONFIG_ASSOC_BITS    8
+#define GCR_L2_CONFIG_LINESZ_SHIFT  8
+#define GCR_L2_CONFIG_LINESZ_BITS   4
+#define GCR_L2_CONFIG_SETSZ_SHIFT   12
+#define GCR_L2_CONFIG_SETSZ_BITS    4
+#define GCR_L2_CONFIG_BYPASS        (1 << 20)
 
 extern uint32_t mips32_gcb_set_register(uint32_t offset, uint32_t val);
 
 extern uint32_t mips32_gcb_get_register(uint32_t val);
+
+extern uint32_t mips_cm_l2_line_size(void);
 
 #endif /* SRC_ARCH_MIPS_SUBARCH_P5600_GLOBAL_CONTROL_BLOCK_GLOBAL_CONTROL_BLOCK_H_ */

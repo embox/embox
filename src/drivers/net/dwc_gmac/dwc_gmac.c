@@ -45,6 +45,8 @@ EMBOX_UNIT_INIT(dwc_init);
 #define RX_DESC_QUANTITY OPTION_GET(NUMBER, rx_desc_quantity)
 #define TX_DESC_QUANTITY OPTION_GET(NUMBER, tx_desc_quantity)
 
+#define USE_UNCACHED_RINGS   OPTION_GET(BOOLEAN, use_uncached_rings)
+
 struct dwc_priv {
 	uint32_t                  base_addr;
 
@@ -182,7 +184,8 @@ static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 	desc->basic.des2 = dma_map_single(NULL, (void *)(uintptr_t)buff, len, DMA_TO_DEVICE);
 	desc->basic.des1 = len & 0x1FFF;
 
-	dcache_flush((void *)desc->basic.des2, len);
+	//dcache_flush((void *)desc->basic.des2, len);
+	dcache_flush((void *)(uintptr_t)buff, len);
 
 	desc->basic.des0 =
 			ETDES0_SECOND_ADDRESS_CHAINED |
@@ -194,11 +197,14 @@ static int dwc_setup_txdesc(struct dwc_priv *priv, int idx, uint32_t buff,
 	idx %= TX_DESC_QUANTITY;
 
 	desc->basic.des3 = (uint32_t) &desc_phy[idx];
-
+#if USE_UNCACHED_RINGS
+	desc->basic.des0 |= TDES0_OWN;
+	dcache_flush(desc, sizeof(*desc));
+#else
 	data_mem_barrier();
 	desc->basic.des0 |= TDES0_OWN;
 	data_mem_barrier();
-
+#endif
 	log_debug("txdesc (%p): (0x%x, 0x%x, 0x%x, 0x%x)", desc,
 			desc->basic.des0, desc->basic.des1, desc->basic.des2, desc->basic.des3);
 
@@ -212,7 +218,11 @@ static int dwc_desc_wait_trans(struct dwc_priv *priv, int idx) {
 	do {
 		/* TODO: add timeout.
 		 * For some reason using usleep() here causes exception */
+#if USE_UNCACHED_RINGS
+		dcache_inval(desc, sizeof (*desc));
+#else
 		data_mem_barrier();
+#endif
 	} while (desc->basic.des0 & ETDES0_OWN);
 
 	return idx;
@@ -412,8 +422,11 @@ static uint32_t dwc_setup_rxdesc(struct dwc_priv *priv, int idx) {
 	desc = &priv->rxdesc_ring[idx];
 
 	memset(desc, 0, sizeof(*desc));
+#if USE_UNCACHED_RINGS
+	dcache_flush(desc, sizeof(*desc));
+#else
 	data_mem_barrier();
-
+#endif
 	desc->basic.des2 = (uint32_t)dma_map_single(NULL, &rx_buffers[idx][0], ETH_FRAME_LEN, DMA_FROM_DEVICE);
 	desc->basic.des1 = ERDES1_SECOND_ADDRESS_CHAINED | ETH_FRAME_LEN;
 
@@ -421,11 +434,14 @@ static uint32_t dwc_setup_rxdesc(struct dwc_priv *priv, int idx) {
 	idx %= RX_DESC_QUANTITY;
 	desc_phy = (struct dma_extended_desc *)priv->rxdesc_ring_dma;
 	desc->basic.des3 = (uint32_t)&desc_phy[idx];
-
+#if USE_UNCACHED_RINGS
+	desc->basic.des0 = RDES0_OWN;
+	dcache_flush(desc, sizeof(*desc));
+#else
 	data_mem_barrier();
 	desc->basic.des0 = RDES0_OWN;
 	data_mem_barrier();
-
+#endif
 	return idx;
 }
 
@@ -441,16 +457,19 @@ static inline int dwc_rxfinish_locked(struct net_device *dev_id) {
 	for (;; ) {
 		cur_desc = priv->rxdesc_id;
 
-		data_mem_barrier();
 		desc = &priv->rxdesc_ring[cur_desc];
-
+#if USE_UNCACHED_RINGS
+		dcache_inval(desc, sizeof(*desc));
+#else
+		data_mem_barrier();
+#endif
 		if (desc->basic.des0 & RDES0_OWN) {
 			return 0;
 		}
 
 		len = (desc->basic.des0 >> 16) & 0x1FFF;
 		if (NULL != (void *)desc->basic.des2) {
-			dcache_inval((void *)(desc->basic.des2 & ~0xf), len);
+			dcache_inval((void *)&rx_buffers[cur_desc][0],len);
 		}
 
 		skb = skb_alloc(len);
@@ -482,8 +501,11 @@ static int dwc_tx_ring_init(struct dwc_priv *priv) {
 	memset(priv->txdesc_ring,
 			0,
 			sizeof(struct dma_extended_desc) * TX_DESC_QUANTITY);
-
+#if USE_UNCACHED_RINGS
+	dcache_flush(priv->txdesc_ring, sizeof(struct dma_extended_desc) * TX_DESC_QUANTITY);
+#else
 	data_mem_barrier();
+#endif
 	return 0;
 }
 
@@ -532,6 +554,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 		if ((dwc_reg_read(dwc_priv, DWC_DMA_BUS_MODE) & DWC_DMA_BUS_MODE_SWR) == 0) {
 			break;
 		}
+		log_error("Can't reset DWC.");
 		usleep(10 * USEC_PER_MSEC);
 	}
 
@@ -542,6 +565,7 @@ static int dwc_hw_init(struct dwc_priv *dwc_priv) {
 	}
 
 	data_mem_barrier();
+
 	reg = dwc_reg_read(dwc_priv, DWC_DMA_BUS_MODE);
 	reg |= (DWC_DMA_BUS_MODE_EIGHTXPBL);
 	reg |= (DWC_DMA_BUS_MODE_PBL_BEATS_8 << DWC_DMA_BUS_MODE_PBL_SHIFT);
@@ -651,12 +675,12 @@ static int dwc_init(void) {
 	}
 
 	memset(dwc_priv.rxdesc_ring, 0, rx_len);
-	/* TODO: this flush is neccessary even after we write to memory
+	/* TODO: this flush is necessary even after we write to memory
 	 * which was allocated as cached */
-	dcache_flush((void *)dwc_priv.rxdesc_ring_dma, rx_len);
+	dcache_flush((void *)dwc_priv.rxdesc_ring, rx_len);
 
 	memset(dwc_priv.txdesc_ring, 0, tx_len);
-	dcache_flush((void *)dwc_priv.txdesc_ring_dma, tx_len);
+	dcache_flush((void *)dwc_priv.txdesc_ring, tx_len);
 
 	nic->priv = &dwc_priv;
 

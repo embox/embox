@@ -19,4 +19,11 @@
 
 #define out32(v,a) do { *((volatile uint32_t *)((size_t)a + IO_OFFSET)) = (uint32_t)(v); } while (0)
 #define in32(a) (*(volatile uint32_t *)((size_t)a + IO_OFFSET))
+
+
+
+#define mmiowb()   asm volatile ("sync" ::: "memory")
+
+#define __sync()   mmiowb()
+
 #endif /* MIPS_IO_H_ */

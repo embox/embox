@@ -17,17 +17,22 @@
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
-#define REG_WIDTH    OPTION_GET(NUMBER,reg_width)
-
-#define COM0_IRQ_NUM OPTION_GET(NUMBER,irq_num)
+#define REG_WIDTH     OPTION_GET(NUMBER,reg_width)
+#define MEM32_ACCESS  OPTION_GET(NUMBER,mem32_access)
+#define COM0_IRQ_NUM  OPTION_GET(NUMBER,irq_num)
 
 #define UART_LSR_DR     0x01            /* Data ready */
 #define UART_LSR_THRE   0x20            /* Xmit holding register empty */
 #define COM_BASE (OPTION_GET(NUMBER, base_addr))
 
+
+#if MEM32_ACCESS
+#define UART_REG(x) uint32_t x
+#else
 #define UART_REG(x)                                                     \
         unsigned char x;                                                \
         unsigned char postpad_##x[REG_WIDTH - 1];
+#endif
 
 struct com {
         UART_REG(rbr);          /* 0 */
