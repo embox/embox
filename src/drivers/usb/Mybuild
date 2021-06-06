@@ -14,6 +14,8 @@ module core {
 	option number usb_dev_max_interfaces = 4
 	option number usb_dev_max_endp = 16
 
+	option number urb_alignment = 1024
+
 	source "usb_core.c",
 		"usb_queue.c",
 		"usb_config.c"
