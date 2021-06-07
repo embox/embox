@@ -21,6 +21,13 @@ module pthread_rwlock {
 	depends embox.framework.LibFramework
 }
 
+module pthread_barrier {
+	source "pthread_barrier_test.c"
+
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.pthread_barrier
+}
+
 module pthread_policy {
 	source "pthread_policy_test.c"
 	depends embox.compat.posix.pthreads
