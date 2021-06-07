@@ -22,3 +22,10 @@ static module pthread_key {
 static module pthread_rwlock {
 	source "pthread_rwlock.c"
 }
+
+static module pthread_barrier {
+	source "pthread_barrier.c"
+
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.semaphore
+}
