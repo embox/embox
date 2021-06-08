@@ -1,0 +1,20 @@
+package embox.cmd.testing.input
+
+@AutoCmd
+@Cmd(name = "button_test",
+	help = "Demo application which tests button",
+	man = '''
+		NAME
+			button_test - Test for button
+		SYNOPSIS
+			button_test <button>
+		DESCRIPTION
+			button_test - Test for button
+		AUTHORS
+			Alexander Kalmuk
+	''')
+module button_test {
+	source "button_test.c"
+
+	depends embox.driver.input.core
+}
