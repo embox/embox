@@ -24,6 +24,8 @@ static char *type_to_str(enum input_dev_type type) {
 		return "apb";
 	case INPUT_DEV_TOUCHSCREEN:
 		return "touchscreen";
+	case INPUT_DEV_BUTTON:
+		return "button";
 	default:
 		return "unknown";
 	}
