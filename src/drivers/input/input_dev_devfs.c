@@ -126,7 +126,13 @@ int input_dev_private_register(struct input_dev *inpdev) {
 }
 
 int input_dev_private_notify(struct input_dev *inpdev, struct input_event *ev) {
-	idesc_notify((struct idesc *) inpdev->fs_data, POLLIN);
+	if (inpdev->fs_data) {
+		idesc_notify((struct idesc *) inpdev->fs_data, POLLIN);
+	} else if (inpdev->event_cb) {
+		inpdev->event_cb(inpdev);
+	} else {
+		log_error("input device has not been opend \"%s\"", inpdev->name);
+	}
 
 	return 0;
 }
