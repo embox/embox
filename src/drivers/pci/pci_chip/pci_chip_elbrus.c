@@ -64,6 +64,8 @@ static inline uint32_t e2k_pci_config_write(uint32_t bus, uint32_t dev_fn,
 	unsigned long pci_conf_base = 0x200000;
 	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
+	pci_conf_base <<= 12;
+
 	e2k_write32(value, dev_addr + pci_conf_base);
 
 	log_debug("bus %d def_fn %d where %d size %d value 0x%X", bus, dev_fn, where, size, value);
