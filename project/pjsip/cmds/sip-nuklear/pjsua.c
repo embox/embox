@@ -86,6 +86,12 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 	PJ_LOG(3,(THIS_FILE, "Call %d state=%.*s", call_id,
 						 (int)ci.state_text.slen,
 						 ci.state_text.ptr));
+	if (ci.state == PJSIP_INV_STATE_DISCONNECTED) {
+		call_info->state = CALL_INACTIVE;
+		current_call = PJSUA_INVALID_ID;
+		//demo_pj_hang();
+		demo_nk_on_incoming_call();
+	}
 }
 
 /* Callback called by the library when call's media state has changed */
