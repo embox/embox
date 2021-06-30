@@ -34,25 +34,23 @@ create_gdb_script() {
 	rm -f $GDB_CMD_FILE
 
 	echo "target ext :3333" >> $GDB_CMD_FILE
-	echo "monitor reset halt" >> $GDB_CMD_FILE
 	echo "monitor reset init" >> $GDB_CMD_FILE
 	echo "monitor flash banks" >> $GDB_CMD_FILE
 
 	# Write embox.bin
 	echo "monitor stm32h7x mass_erase 0" >> $GDB_CMD_FILE
 	echo "monitor flash write_bank 0 $EMBOX_BIN0" >> $GDB_CMD_FILE
-	
+
 	echo "monitor stm32h7x mass_erase 1" >> $GDB_CMD_FILE
 	echo "monitor flash write_bank 1 $EMBOX_BIN1" >> $GDB_CMD_FILE
 
 	# Write qspi.bin
 	sect_size=$(stat -c%s $QSPI_BIN)
 	sectors=$((($sect_size + 65535) / 65536)) # Sector size is 64K for stm32h7 QSPI
-	#echo "monitor flash probe 2" >> $GDB_CMD_FILE
-	#echo "monitor flash erase_sector 2 0 $sectors" >> $GDB_CMD_FILE
-	#echo "monitor flash write_bank 2 $QSPI_BIN" >> $GDB_CMD_FILE
+	echo "monitor flash erase_sector 2 0 $sectors" >> $GDB_CMD_FILE
+	echo "monitor flash write_bank 2 $QSPI_BIN" >> $GDB_CMD_FILE
 	## Check qspi.bin is written correctly
-	#echo "monitor flash verify_bank 2 $QSPI_BIN" >> $GDB_CMD_FILE
+	echo "monitor flash verify_bank 2 $QSPI_BIN" >> $GDB_CMD_FILE
 
 	echo "monitor reset halt" >> $GDB_CMD_FILE
 	echo "continue" >> $GDB_CMD_FILE
