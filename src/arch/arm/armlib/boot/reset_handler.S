@@ -24,9 +24,9 @@ reset_handler:
 
 	ldr r0, =_stack_top
 
-	msr CPSR_c, #0x16 | I_BIT | F_BIT
+	/* Set stack pointer same for all modes and disable interrupts in all modes */
+	msr CPSR_c, #ARM_MODE_MON | I_BIT | F_BIT
 	mov sp, r0
-
 	msr CPSR_c, #ARM_MODE_FIQ | I_BIT | F_BIT
 	mov sp, r0
 	msr CPSR_c, #ARM_MODE_SVC | I_BIT | F_BIT
@@ -38,6 +38,9 @@ reset_handler:
 	msr CPSR_c, #ARM_MODE_IRQ | I_BIT | F_BIT
 	mov sp, r0
 
+	/* put chip in System mode - move stack pointer down by IRQ_STACK_SIZE to make 
+	 * room for stack in above modes 
+	 */
 	msr CPSR_c, #ARM_MODE_SYS | I_BIT | F_BIT
 	sub r0, r0, #IRQ_STACK_SIZE
 	mov sp, r0
