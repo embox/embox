@@ -1,0 +1,22 @@
+package raspberry_pi.cmd
+
+@AutoCmd
+@Cmd(name = "jtag",
+	help = "Set GPIO pins for JTAG w. bcm283x (Pi Zero, ...)",
+	man = '''
+		NAME
+			jtag - configure GPIO for JTAG
+		SYNOPSIS
+			jtag
+		DESCRIPTION
+		OPTIONS
+		AUTHORS
+			kpishere
+	''')
+module jtag {
+	source "jtag.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.driver.gpio.core
+	depends raspberry_pi.driver.jtag
+}

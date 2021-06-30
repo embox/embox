@@ -1,0 +1,26 @@
+package raspberry_pi.driver
+
+module jtag {
+	/* Optional JTAG configurations :
+	 * 
+	 * BCM283x (Raspberry Pi with 40 pin header) :
+	 *
+	 * Config: 0 - Pin 22-TRST set to GFAlt4 mode, pins 4-TDI
+	 *             , 5-TDO, 6-RTCK, 12-TMS, 13-TCK set to GFAlt5
+	 *
+	 * Config: 1 - Pins 22-TRST, 23-RTCK, 24-TDO, 25-TCK, 26-TDI
+	 *             ,and 27-TMS set to GFAlt4 mode
+	 *
+	 * Config: 2 - Pins 4-TDI, 5-TDO, 6-RTCK, 12-TMS, 13-TCK set to GFAlt5
+	 *
+	 */
+	option number gpio_jtag_config = 0 
+
+	source "jtag.c"
+
+	/* User API */
+	@IncludeExport(path="drivers/jtag")
+	source "jtag.h"
+
+	depends embox.driver.gpio.core
+}
