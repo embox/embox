@@ -1,0 +1,5 @@
+package embox.arch.arm.libarch
+
+static module delay {
+	source "delay.S"
+}

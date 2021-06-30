@@ -1,0 +1,59 @@
+package embox.driver.gpio
+
+module bcm283x_gpio extends api {
+	/* 	RPI_VERSION == 0 then 0x20200000
+		RPI_VERSION == 3 then 0x3F200000
+		RPI_VERSION == 4 then 0xFE200000
+	*/
+	option number base_addr = 0x20200000
+
+	/* Pi Zero configuration (RPI_VERSION == 0) */
+	option number gpio_pins = 54
+	/* Port A has 0-31 pins, Port B has 32-53 pins numbered as 0-21 */
+	option number gpio_ports = 2
+
+	/* There is confusion about this.  There are three banks, only the first two
+	 * are linked to pins 0-53 (internally, of those, not all are on GPIO header)
+	 * An interrupt exists for each bank and the highest interrupt is for any 
+	 * GPIO pin.  We set just one, just the first bank for 
+	 * all pins connected to the 40-pin header.
+	 * 
+	 * Bank0( pins:  0-31 ) - 49 (interrupt)
+	 * Bank1( pins: 32-53 ) - 50 			 
+	 * Bank2( pins: 54-96 ) - 51 (not used)
+	 * all  ( pins: 00-96 ) - 52 
+	 */
+	option number gpu_irq_int = 49
+
+	/* Due to architecture constraints, setting of pull-up/down can only be 
+	 * applied accross all pins at the same time.  Hence, shadow registers 
+	 * exist in driver implementation to allow setting value to apply
+	 * per pin, then by applying _any_ setting to this pin (settings are
+	 * ignored in this case) with gpio_setup_mode() will cause the 
+	 * aggreggated pins settings to be applied for pull-up/down
+	 * functionality. All other functionality will be applied immediately.
+	 */
+
+	/* Bit mask for pullups, defaults set to as per BCM2835 ARM Peripherals
+	 * sec. 6.2 defaults for GPIO 0 thru 53
+	 */
+	option number gpu_pullup_porta_float = 0x30000000
+	option number gpu_pullup_porta_down  = 0xCFFFFE00
+	option number gpu_pullup_porta_up    = 0x000001FF
+
+	option number gpu_pullup_portb_float = 0x00003000
+	option number gpu_pullup_portb_down  = 0x00000FE3
+	option number gpu_pullup_portb_up    = 0x003FC01C
+
+	option number log_level=0
+
+	source "bcm283x_gpio.c"
+	source "bcm283x_gpio.h"
+
+	/* User API */
+	@IncludeExport(path="drivers/gpio/bcm283x")
+	source "bcm283x_gpio.h"
+
+	depends embox.driver.gpio.core
+	depends embox.arch.arm.libarch.delay
+}

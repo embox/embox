@@ -61,7 +61,7 @@ module raspi_video {
 	 * By adding fb_vc_bus, we tell the GPU to use memory in the following way
 	 * 
 	 * L1 & L2 Cached 	 - 0x00000000 ; Only mode that works on qemu w. raspi0 emulation
-	 * L2 Cache coherent, non allocating - 0x40000000
+	 * L2 Cache coherent, non allocating - 0x40000000 ; This mode works with physical unit
 	 * L2 Cached (only)	 - 0x80000000 
 	 * Direct (no cache) - 0xC0000000
 	 */

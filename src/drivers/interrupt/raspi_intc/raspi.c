@@ -87,22 +87,18 @@ static int raspi_intc_init(void) {
 }
 
 void irqctrl_enable(unsigned int interrupt_nr) {
-	if (interrupt_nr < BANK_CAPACITY) {
-		regs->enable_irqs_1 = 1 << interrupt_nr;
-	} else if (interrupt_nr < BANK_CAPACITY*2) {
-		regs->enable_irqs_2 = 1 << (interrupt_nr - BANK_CAPACITY);
-	} else {
-		regs->enable_basic_irqs = 1 << (interrupt_nr - BANK_CAPACITY*2);
+	switch( interrupt_nr / BANK_CAPACITY ) {
+		case 0:	regs->enable_irqs_1 = 1 << interrupt_nr % BANK_CAPACITY;		break;
+		case 1:	regs->enable_irqs_2 = 1 << interrupt_nr % BANK_CAPACITY;		break;
+		case 2:	regs->enable_basic_irqs = 1 << interrupt_nr % BANK_CAPACITY;	break;
 	}
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
-	if (interrupt_nr < BANK_CAPACITY) {
-		regs->disable_irqs_1 = 1 << interrupt_nr;
-	} else if (interrupt_nr < BANK_CAPACITY*2) {
-		regs->disable_irqs_2 = 1 << (interrupt_nr - BANK_CAPACITY);
-	} else {
-		regs->disable_basic_irqs = 1 << (interrupt_nr - BANK_CAPACITY*2);
+	switch( interrupt_nr / BANK_CAPACITY ) {
+		case 0:	regs->disable_irqs_1 = 1 << interrupt_nr % BANK_CAPACITY;		break;
+		case 1:	regs->disable_irqs_2 = 1 << interrupt_nr % BANK_CAPACITY;		break;
+		case 2:	regs->disable_basic_irqs = 1 << interrupt_nr % BANK_CAPACITY;	break;
 	}
 }
 
