@@ -6,16 +6,10 @@
  * @author  kpishere
  */
 
-#include <assert.h>
-#include <hal/reg.h>
-#include <drivers/common/memory.h>
 #include <embox/unit.h>
-#include <util/array.h>
 #include <kernel/printk.h>
-#include <kernel/panic.h>
-
 #include <framework/mod/options.h>
-#include <asm/delay.h>
+
 #include <drivers/gpio/gpio.h>
 #include <drivers/gpio/bcm283x/bcm283x_gpio.h>
 
@@ -36,8 +30,12 @@ int gpio_jtag(uint8_t config) {
 	};
 
 	if(config < OPTIONS) {
-		gpio_setup_mode(GPIO_PORT_A, pins_GFAlt5[config], GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt5) );
-		gpio_setup_mode(GPIO_PORT_A, pins_GFAlt4[config], GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt4) );
+		if(pins_GFAlt5[config]) {
+			gpio_setup_mode(GPIO_PORT_A, pins_GFAlt5[config], GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt5) );
+		}
+		if(pins_GFAlt4[config]) {
+			gpio_setup_mode(GPIO_PORT_A, pins_GFAlt4[config], GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt4) );
+		}
 		return 0;
 	} else {
 		return -1;
