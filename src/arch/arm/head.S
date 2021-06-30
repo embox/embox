@@ -86,37 +86,26 @@ sw_init_hook:
 #endif
 
 /* zero bss */
-	ldr r4, =_bss_vma
-	ldr r9, =_bss_vma
-	ldr r5, =_bss_len
-	add r9, r9, r5
-	mov r5, #0
-	mov r6, #0
-	mov r7, #0
-	mov r8, #0
-	b       2f 
-1:
-	// store multiple at r4.
-	stmia r4!, {r5-r8} 
-	// If we are still below _bss_vma+_bss_len, loop.
-2:
-	cmp r4, r9
-	blo 1b
+	ldr     r0, =_bss_vma
+	movs    r1, #0
+	ldr     r2, =_bss_len
+bss_loop:
+	str     r1, [r0]
+	adds    r0, r0, #4
+	subs    r2, r2, #4
+	bne     bss_loop
 
 /* copy data section */
 	ldr     r0, =_data_vma
 	ldr     r1, =_data_lma
-	sub 	r2, r1, r0
-	beq 	data_loop_done  ;@ Don't copy if same address	
-	ldr     r2, =_data_lma
-	ldr 	r3, =_data_len
-	add 	r2, r2, r3	
+	ldr     r2, =_data_len
 data_loop:
-	ldmia 	r1!, {r4-r7}
-	stmia 	r0!, {r4-r7}
-	cmp 	r1, r2
-	blo 	data_loop
-data_loop_done:
+	ldr     r3, [r1]
+	str     r3, [r0]
+	adds    r0, r0, #4
+	adds    r1, r1, #4
+	subs    r2, r2, #4
+	bne     data_loop
 
 #if MMU_BOOT
 	bl boot_mmu_finish
