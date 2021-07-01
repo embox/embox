@@ -6,6 +6,8 @@ package project.pjsip.cmd
 @BuildDepends(third_party.lib.nuklear)
 @Build(stage=2)
 module sip_nuklear {
+	option boolean use_small_display = false
+
 	@InitFS
 	source "icons/phone-accept-80.png",
 	       "icons/phone-decline-80.png",
