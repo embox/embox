@@ -104,9 +104,7 @@ static void low_level_init(unsigned char mac[6]) {
 	HAL_ETH_Start_IT(&stm32_eth_handler);
 }
 
-static struct sk_buff *low_level_input(void) {
-	struct sk_buff *skb;
-	int len;
+static uint8_t *low_level_input(int *len) {
 	uint8_t *buffer;
 
 	ETH_BufferTypeDef RxBuff;
@@ -125,21 +123,8 @@ static struct sk_buff *low_level_input(void) {
 	//SCB_InvalidateDCache_by_Addr((uint32_t *)RxBuff.buffer, framelength);
 
 	buffer = RxBuff.buffer;
-	len = framelength;
-
-	skb = NULL;
-
-	/* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
-	skb = skb_alloc(len);
-
-	/* copy received frame to pbuf chain */
-	if (skb != NULL) {
-		memcpy(skb->mac.raw, buffer, len);
-	} else {
-		log_error("skb_alloc failed\n");
-	}
-
-	return skb;
+	*len = framelength;
+	return buffer;
 }
 
 
@@ -228,8 +213,21 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 	{
 		if(__HAL_ETH_DMA_GET_IT_SOURCE(heth, ETH_DMACIER_RIE))
 		{
+			uint8_t *buffer;
+			int len;
 			/* Receive complete callback */
-			while (NULL != (skb = low_level_input())) {
+			while (NULL != (buffer = low_level_input(&len))) {
+
+				/* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
+				skb = skb_alloc(len);
+
+				if (!skb) {
+					log_error("skb_alloc failed\n");
+					continue;
+				}
+				/* copy received frame to pbuf chain */
+				memcpy(skb->mac.raw, buffer, len);
+
 				skb->dev = nic_p;
 
 				show_packet(skb->mac.raw, skb->len, "rx");
