@@ -7,7 +7,8 @@
 
 #include <framework/mod/options.h>
 
-#define MMU_BOOT OPTION_GET(BOOLEAN,mmu_boot)
+#define MMU_BOOT 		OPTION_GET(BOOLEAN,mmu_boot)
+#define MMU_FAST_BOOT 	OPTION_GET(BOOLEAN,use_fast_boot)
 
 .weak hardware_init_hook
 .weak software_init_hook
@@ -86,6 +87,24 @@ sw_init_hook:
 #endif
 
 /* zero bss */
+#if MMU_FAST_BOOT
+	ldr r4, =_bss_vma
+ 	ldr r9, =_bss_vma
+ 	ldr r5, =_bss_len
+ 	add r9, r9, r5
+ 	mov r5, #0
+ 	mov r6, #0
+ 	mov r7, #0
+ 	mov r8, #0
+ 	b       2f 
+ 1:
+ 	// store multiple at r4.
+ 	stmia r4!, {r5-r8} 
+ 	// If we are still below _bss_vma+_bss_len, loop.
+ 2:
+ 	cmp r4, r9
+ 	blo 1b
+#else
 	ldr     r0, =_bss_vma
 	movs    r1, #0
 	ldr     r2, =_bss_len
@@ -94,10 +113,24 @@ bss_loop:
 	adds    r0, r0, #4
 	subs    r2, r2, #4
 	bne     bss_loop
+#endif
 
 /* copy data section */
 	ldr     r0, =_data_vma
 	ldr     r1, =_data_lma
+#if MMU_FAST_BOOT
+	sub 	r2, r1, r0
+ 	beq 	data_loop_done  ;@ Don't copy if same address	
+ 	ldr     r2, =_data_lma
+ 	ldr 	r3, =_data_len
+ 	add 	r2, r2, r3	
+data_loop:
+	ldmia 	r1!, {r4-r7}
+ 	stmia 	r0!, {r4-r7}
+ 	cmp 	r1, r2
+ 	blo 	data_loop
+data_loop_done:
+#else
 	ldr     r2, =_data_len
 data_loop:
 	ldr     r3, [r1]
@@ -106,6 +139,7 @@ data_loop:
 	adds    r1, r1, #4
 	subs    r2, r2, #4
 	bne     data_loop
+#endif
 
 #if MMU_BOOT
 	bl boot_mmu_finish
