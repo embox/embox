@@ -1,0 +1,8 @@
+
+package embox.test.driver.mailbox
+
+module bcm2835_mailbox_property {
+	source "bcm2835_property.c"
+
+	depends embox.driver.mailbox.bcm2835_mailbox_property
+}
