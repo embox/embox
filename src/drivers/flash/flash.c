@@ -95,7 +95,7 @@ int flash_devs_init(void) {
 	return 0;
 }
 
-/* Handlers to check ranges and call device-specific funcions */
+/* Handlers to check ranges and call device-specific functions */
 int flash_read(struct flash_dev *flashdev, unsigned long offset,
 		void *buf, size_t len) {
 	assert(buf);

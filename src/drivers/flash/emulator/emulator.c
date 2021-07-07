@@ -80,7 +80,7 @@ static int flash_emu_program (struct flash_dev *dev, uint32_t base,
 
 	memcpy(mem, data, len);
 
-	return 0;
+	return len;
 }
 
 static int flash_emu_read (struct flash_dev *dev,
@@ -103,7 +103,7 @@ static int flash_emu_read (struct flash_dev *dev,
 
 	memcpy(data, mem, len);
 
-	return 0;
+	return len;
 }
 
 static struct flash_dev_drv flash_emu_drv = {
