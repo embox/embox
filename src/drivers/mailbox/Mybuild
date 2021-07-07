@@ -8,3 +8,12 @@ module bcm2835_mailbox {
 
 	source "bcm2835_mailbox.c"
 }
+
+module bcm2835_mailbox_property {
+	@IncludeExport(path="drivers/mailbox")
+
+	source "bcm2835_mailbox_property.h"
+	source "bcm2835_mailbox_property.c"
+
+	depends embox.driver.mailbox.bcm2835_mailbox
+}
