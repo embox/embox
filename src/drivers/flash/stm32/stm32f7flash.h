@@ -12,9 +12,9 @@
 
 #define STM32_FLASH_FLASH_SIZE         OPTION_GET(NUMBER,flash_size)
 #define STM32_ADDR_FLASH_SECTOR_0      ((uint32_t)0x08000000)
-/* First 4 sectors of STM32F4-Discovery flash are 16Kb */
+/* First 4 sectors of STM32F4-Discovery flash are 32Kb */
 #define STM32_FLASH_SECTOR_SIZE        (32 * 1024)
-/* We use only first 4 16Kb sectors */
+/* We use only first 4 32Kb sectors */
 #define STM32_FLASH_SECTORS_COUNT      4
 
 #ifndef __ASSEMBLER__
@@ -25,9 +25,10 @@ static inline void stm32_fill_flash_erase_struct(
 		FLASH_EraseInitTypeDef *erase_struct,
 		unsigned int block) {
 	memset(erase_struct, 0, sizeof *erase_struct);
-	erase_struct->TypeErase = FLASH_TYPEERASE_SECTORS;
-	erase_struct->Sector    = block;
-	erase_struct->NbSectors = 1;
+	erase_struct->TypeErase    = FLASH_TYPEERASE_SECTORS;
+	erase_struct->VoltageRange = FLASH_VOLTAGE_RANGE_3;
+	erase_struct->Sector       = block;
+	erase_struct->NbSectors    = 1;
 }
 #endif
 

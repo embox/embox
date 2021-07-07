@@ -47,13 +47,14 @@ static inline int stm32_flash_check_word_aligned(unsigned long base,
 
 static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	int ret;
+	int repeat = 3;
 	uint32_t page_err;
 	FLASH_EraseInitTypeDef erase_struct;
 
 	assert(block < STM32_FLASH_SECTORS_COUNT);
 	assert(dev->num_block_infos == 1);
 
-	/* block is relative to flash beginning whith not
+	/* block is relative to flash beginning with not
 	 * the actual ROM start address. So calculate the new sector
 	 * in terms of ROM start address. */
 	block += stm32_flash_first_sector;
@@ -61,9 +62,14 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 
 	stm32_fill_flash_erase_struct(&erase_struct, block);
 
-	HAL_FLASH_Unlock();
-	ret = HAL_FLASHEx_Erase(&erase_struct, &page_err);
-	HAL_FLASH_Lock();
+	while (repeat--) {
+		HAL_FLASH_Unlock();
+		ret = HAL_FLASHEx_Erase(&erase_struct, &page_err);
+		HAL_FLASH_Lock();
+		if (ret == HAL_OK) {
+			break;
+		}
+	}
 	if (ret != HAL_OK) {
 		log_error("0x%x", block);
 	}
@@ -79,7 +85,7 @@ static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, si
 	}
 	/* read can be unaligned */
 	memcpy(data, (void *) STM32_FLASH_START + base, len);
-	return 0;
+	return len;
 }
 
 static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data, size_t len) {
@@ -113,7 +119,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 		dest += 4;
 	}
 	HAL_FLASH_Lock();
-	return 0;
+	return len;
 err_exit:
 	log_error("base=0x08%x,data=%p,len=0x%x", base, data, len);
 	return err;
