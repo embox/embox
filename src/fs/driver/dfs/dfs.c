@@ -116,10 +116,10 @@ static inline int _copy(unsigned long to, unsigned long from, int len) {
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
 
 	while (len > 0) {
-		if (_read(from, b, min(len, sizeof(b)))) {
+		if (0 > _read(from, b, min(len, sizeof(b)))) {
 			return -1;
 		}
-		if (_write(to, b, min(len, sizeof(b)))) {
+		if (0 > _write(to, b, min(len, sizeof(b)))) {
 			return -1;
 		}
 
