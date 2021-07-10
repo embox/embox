@@ -11,12 +11,16 @@
 #include <string.h>
 #include <sys/types.h>
 
-#include <fs/dfs.h>
 #include <fs/dvfs.h>
-#include <framework/mod/options.h>
+#include <drivers/flash/flash.h>
+
 #include <util/array.h>
 #include <util/bitmap.h>
 #include <util/math.h>
+
+#include <fs/dfs.h>
+
+#include <framework/mod/options.h>
 
 static struct flash_dev *dfs_flashdev;
 
@@ -51,8 +55,10 @@ static inline int _erase(unsigned int block) {
 
 	assert(NAND_PAGES_MAX > NAND_PAGES_PER_BLOCK * (block + 1));
 
-	for (i = 0; i < NAND_PAGES_PER_BLOCK; i++)
+	for (i = 0; i < NAND_PAGES_PER_BLOCK; i++) {
 		bitmap_set_bit(dfs_free_pages, i + block * NAND_PAGES_PER_BLOCK);
+	}
+
 	return flash_erase(dfs_flashdev, block);
 }
 
@@ -75,8 +81,9 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
 	assert(buff);
 
-	for (i = offset; i < offset + len; i++)
+	for (i = offset; i < offset + len; i++) {
 		bitmap_clear_bit(dfs_free_pages, i);
+	}
 
 	if (head) {
 		offset -= head;
@@ -86,14 +93,17 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 		buff += NAND_PAGE_SIZE - head;
 		offset += NAND_PAGE_SIZE;
 
-		if (len > NAND_PAGE_SIZE - head)
+		if (len > NAND_PAGE_SIZE - head) {
 			len -= NAND_PAGE_SIZE - head;
-		else
+		}
+		else {
 			len = 0;
+		}
 	}
 
-	if (len < 0)
+	if (len < 0) {
 		return 0;
+	}
 
 	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
 		memcpy(b, buff, NAND_PAGE_SIZE);
@@ -174,8 +184,9 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	_copy(buff_bk * NAND_BLOCK_SIZE, start_bk * NAND_BLOCK_SIZE, pos);
 
 	if (start_bk == last_bk) {
-		if ((err = _write(buff_bk * NAND_BLOCK_SIZE + pos, buff, size)))
+		if ((err = _write(buff_bk * NAND_BLOCK_SIZE + pos, buff, size))) {
 			return err;
+		}
 		pos += size;
 	} else {
 		_write(buff_bk * NAND_BLOCK_SIZE + pos, buff, NAND_BLOCK_SIZE - pos);
@@ -185,8 +196,9 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
 			_erase(bk);
-			if ((err = _write(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE)))
+			if ((err = _write(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
 				return err;
+			}
 			buff += NAND_BLOCK_SIZE;
 		}
 
@@ -200,7 +212,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	return 0;
 }
 
-int dfs_format(void) {
+static int dfs_format(void) {
 	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
 	struct dfs_dir_entry root;
 	char buf[NAND_PAGE_SIZE];
@@ -213,8 +225,9 @@ int dfs_format(void) {
 
 	for (j = 0, k = 0; j < dfs_flashdev->num_block_infos; j++) {
 		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
-			if ((err = _erase(k)))
+			if ((err = _erase(k))) {
 				return err;
+			}
 			k++;
 			i++;
 		}
@@ -240,10 +253,9 @@ int dfs_format(void) {
 	sbi->free_space += MIN_FILE_SZ;
 	dfs_write_dirent(0, &root);
 	memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
-	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++)
-		_write(root.pos_start + i * sizeof(buf),
-		              buf,
-		              sizeof(buf));
+	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++) {
+		_write(root.pos_start + i * sizeof(buf), buf, sizeof(buf));
+	}
 
 
 	dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
@@ -251,13 +263,13 @@ int dfs_format(void) {
 	return 0;
 }
 
-int dfs_set_dev(struct flash_dev *new_dev) {
+static inline int dfs_set_dev(struct flash_dev *new_dev) {
 	assert(new_dev);
 	dfs_flashdev = new_dev;
 	return 0;
 }
 
-struct flash_dev *dfs_get_dev(void) {
+static inline struct flash_dev *dfs_get_dev(void) {
 	return dfs_flashdev;
 }
 
@@ -269,11 +281,13 @@ static enum { EMPTY, DIRTY, ACTUAL } dfs_sb_status = EMPTY;
 
 static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 	assert(sbi);
-	if (dfs_sb_status == EMPTY)
+	if (dfs_sb_status == EMPTY) {
 		_read(0, sbi, sizeof(struct dfs_sb_info));
+	}
 	dfs_sb_status = ACTUAL;
-	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1))
+	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
 		dfs_format();
+	}
 
 	return 0;
 }
@@ -294,8 +308,9 @@ static int dfs_read_dirent(int n, struct dfs_dir_entry *dtr) {
 
 	_read(offt, dtr, sizeof(struct dfs_dir_entry));
 
-	if (dtr->name[0] == '\0')
+	if (dtr->name[0] == '\0') {
 		return -ENOENT;
+	}
 
 	return 0;
 }
@@ -311,11 +326,14 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
 
 int ino_from_path(const char *path) {
 	struct dfs_dir_entry dirent;
+
 	assert(path);
 
-	for (int i = 0; i < DFS_INODES_MAX; i++)
-		if (!dfs_read_dirent(i, &dirent) && strcmp(path, (char *) dirent.name) == 0)
+	for (int i = 0; i < DFS_INODES_MAX; i++) {
+		if (!dfs_read_dirent(i, &dirent) && strcmp(path, (char *) dirent.name) == 0) {
 			return i;
+		}
+	}
 
 	return -1;
 }
@@ -323,9 +341,9 @@ int ino_from_path(const char *path) {
 /***************
  New-VFS-related
  ***************/
-extern struct inode_operations dfs_iops;
+static struct inode_operations dfs_iops;
 
-struct super_block_operations dfs_sbops = {
+static struct super_block_operations dfs_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
 	.alloc_inode   = NULL,
 	.destroy_inode = NULL,
@@ -377,9 +395,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	if (S_ISDIR(i_new->i_mode)) {
 		memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 		for (i = 0; i < dirent.len / sizeof(buf); i++) {
-			dfs_write_raw(dirent.pos_start + i * sizeof(buf),
-			              buf,
-			              sizeof(buf));
+			dfs_write_raw(dirent.pos_start + i * sizeof(buf), buf, sizeof(buf));
 		}
 	} else {
 		memset(buf, 0, sizeof(buf));
@@ -422,11 +438,13 @@ static int dfs_itruncate(struct inode *inode, off_t new_len) {
 	struct dfs_dir_entry entry;
 	assert(inode);
 
-	if (new_len < inode->length)
+	if (new_len < inode->length) {
 		return -1;
+	}
 
-	if (new_len < 0)
+	if (new_len < 0) {
 		return -1;
+	}
 
 	sbi = dfs_sb()->sb_data;
 
@@ -464,8 +482,9 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 
 	inode = dvfs_alloc_inode(dfs_sb());
 
-	if (!inode)
+	if (!inode) {
 		return NULL;
+	}
 
 	inode->i_no = ino_from_path(path);
 
@@ -540,7 +559,7 @@ static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 	return 0;
 }
 
-struct inode_operations dfs_iops = {
+static struct inode_operations dfs_iops = {
 	.create   = dfs_icreate,
 	.lookup   = dfs_ilookup,
 	.mkdir    = NULL,
@@ -550,13 +569,19 @@ struct inode_operations dfs_iops = {
 	.pathname = dfs_pathname,
 };
 
+static struct file_operations dfs_fops;
+
 static struct idesc *dfs_open(struct inode *node, struct idesc *desc, int __oflag) {
+	struct file_desc *fdesc;
+
 	if (!desc || !node) {
 		SET_ERRNO(ENOENT);
 		return NULL;
 	}
 
-	((struct file_desc*)desc)->f_ops = &dfs_fops;
+	fdesc = (struct file_desc*)desc;
+	fdesc->f_ops = &dfs_fops;
+
 	return desc;
 }
 
@@ -567,6 +592,7 @@ static int dfs_close(struct file_desc *desc) {
 static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	int pos;
 	int l;
+
 	assert(desc);
 	assert(desc->f_inode);
 	assert(buf);
@@ -574,8 +600,9 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	l = min(size, file_get_size(desc) - desc->pos);
 
-	if (l <= 0)
+	if (l <= 0) {
 		return -1;
+	}
 
 	dfs_write_raw(pos, buf, l);
 
@@ -590,15 +617,16 @@ size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	int pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	int l   = min(size, file_get_size(desc) - desc->pos);
 
-	if (l < 0)
+	if (l < 0) {
 		return -1;
+	}
 
 	_read(pos, buf, l);
 
 	return l;
 }
 
-struct file_operations dfs_fops = {
+static struct file_operations dfs_fops = {
 	.open = dfs_open,
 	.close = dfs_close,
 	.write = dfs_write,
@@ -627,14 +655,16 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data    = &dfs_info;
 	sb->bdev       = bdev_by_path(source);
 
-	if (!sb->bdev)
+	if (!sb->bdev) {
 		sb->bdev = dfs_flashdev->bdev;
+	}
 
 	dfs_set_dev(flash_by_id(0));
 	dfs_read_sb_info(dfs_sb()->sb_data);
 
-	for (i = 0; i < NAND_PAGES_MAX; i++)
+	for (i = 0; i < NAND_PAGES_MAX; i++) {
 		bitmap_clear_bit(dfs_free_pages, i);
+	}
 
 	sb->sb_root->i_no      = 0;
 	sb->sb_root->length    = MIN_FILE_SZ;
