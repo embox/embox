@@ -1,0 +1,26 @@
+package project.pjsip
+
+@AutoCmd
+@Cmd(name="flash_settings",
+	help="(re)store settings from persistens storage",
+	man = '''
+		NAME
+			flash_settings - (re)store settings from persistens storage
+		SYNOPSIS
+			flash_settings [store|restore]
+		DESCRIPTION
+		OPTIONS
+			store - stores settings to store
+			restore - restores settings from store
+		AUTHORS
+			Anton Kozlov
+	''')
+module flash_settings {
+	source "flash_settings.c"
+
+	depends embox.compat.libc.stdio.file_ops
+	depends embox.compat.posix.util.environ
+
+	depends embox.net.lib.getifaddrs
+}
+
