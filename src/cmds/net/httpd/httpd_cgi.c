@@ -35,8 +35,10 @@ static const struct cgi_env_descr cgi_env[] = {
 /* TODO replace with execve */
 static int httpd_execve(const char *path, char *const argv[], char *const envp[]) {
 	for (int i_ce = 0; envp[i_ce]; i_ce++) {
-		if (putenv(envp[i_ce])) {
-			httpd_error("putenv failed");
+		int res;
+		res = putenv(envp[i_ce]);
+		if (res) {
+			httpd_error("putenv(%s) failed with %d", envp[i_ce], res);
 			exit(1);
 		}
 	}
