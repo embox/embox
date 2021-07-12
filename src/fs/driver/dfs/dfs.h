@@ -28,6 +28,7 @@ struct dfs_sb_info {
 	uint8_t magic[2];
 	uint8_t inode_count;
 	uint8_t max_inode_count;
+	uint32_t max_len;
 	uint32_t buff_bk;         /* For buffer-based writing */
 	uint32_t free_space;
 };
