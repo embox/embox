@@ -250,17 +250,19 @@ static int dfs_format(void) {
 
 	/* Configure root directory */
 	sbi->inode_count++;
+	sbi->free_space += MIN_FILE_SZ;
+
 	strcpy((char *) root.name, "/");
 	root.pos_start = sbi->free_space;
 	root.len       = MIN_FILE_SZ;
 	root.flags     = S_IFDIR;
-	sbi->free_space += MIN_FILE_SZ;
 	dfs_write_dirent(0, &root);
+
+	/* clean root folder */
 	memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
 	for (i = 0; i < MIN_FILE_SZ / sizeof(buf); i++) {
 		_write(root.pos_start + i * sizeof(buf), buf, sizeof(buf));
 	}
-
 
 	dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
 
@@ -381,8 +383,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	memset(&dirent, 0, sizeof(dirent));
 	dirent = (struct dfs_dir_entry) {
 		.pos_start = sbi->free_space,
-		//.len       = 0,
-		.len       = MIN_FILE_SZ,
+		.len       = 0,
 		.flags     = i_new->i_mode & S_IFMT,
 	};
 
@@ -410,7 +411,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	}
 
 	sbi->inode_count++;
-	sbi->free_space += dirent.len;
+	sbi->free_space += MIN_FILE_SZ;
 
 	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(sbi);
@@ -459,8 +460,7 @@ static int dfs_itruncate(struct inode *inode, off_t new_len) {
 		/* No need to write changes on drive */
 		return 0;
 	}
-	//entry.len = new_len;
-	entry.len = MIN_FILE_SZ;
+	entry.len = new_len;
 	dfs_write_dirent(inode->i_no, &entry);
 
 	inode->length = new_len;
@@ -598,7 +598,6 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	l = min(size, sbi->max_len - desc->pos);
-	l = min(size, file_get_size(desc) - desc->pos);
 
 	if (l <= 0) {
 		return -1;
@@ -676,8 +675,6 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_root->length    = MIN_FILE_SZ;
 	sb->sb_root->i_data    = (void *) ((uintptr_t) dtr.pos_start);
 
-//	sb->sb_root->i_data = (void *) ((uintptr_t) _capacity(sizeof(struct dfs_sb_info)) +
-//	               dfs_info.max_inode_count * _capacity(sizeof(struct dfs_dir_entry)));
 	return 0;
 }
 
