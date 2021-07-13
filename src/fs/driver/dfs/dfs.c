@@ -27,12 +27,12 @@ static struct flash_dev *dfs_flashdev;
 #define DFS_MAGIC_0 0x0D
 #define DFS_MAGIC_1 0xF5
 
-#define NAND_PAGE_SIZE OPTION_GET(NUMBER, page_size)
-#define NAND_BLOCK_SIZE OPTION_GET(NUMBER, block_size)
-#define NAND_PAGES_PER_BLOCK (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
-#define NAND_PAGES_MAX OPTION_GET(NUMBER, pages_max)
+#define NAND_PAGE_SIZE         OPTION_GET(NUMBER, page_size)
+#define NAND_BLOCK_SIZE        OPTION_GET(NUMBER, block_size)
+#define NAND_PAGES_PER_BLOCK  (NAND_BLOCK_SIZE / NAND_PAGE_SIZE)
+#define NAND_PAGES_MAX         OPTION_GET(NUMBER, pages_max)
 
-#define MIN_FILE_SZ OPTION_GET(NUMBER, minimum_file_size)
+#define MIN_FILE_SZ            OPTION_GET(NUMBER, minimum_file_size)
 
 BITMAP_DECL(dfs_free_pages, NAND_PAGES_MAX);
 
@@ -80,7 +80,7 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
  */
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int i;
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
+	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 	int head = offset & (NAND_PAGE_SIZE - 1);
 	size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
 	assert(buff);
@@ -127,7 +127,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 }
 
 static inline int _copy(unsigned long to, unsigned long from, int len) {
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(4)));
+	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
 	while (len > 0) {
 		if (0 > _read(from, b, min(len, sizeof(b)))) {
