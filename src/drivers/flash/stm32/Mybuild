@@ -1,6 +1,21 @@
 package embox.driver.flash
 
 @BuildDepends(third_party.bsp.st_bsp_api)
+module stm32h7cube {
+	option number log_level = 1
+	option number flash_size=0x40000
+
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
+
+	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
+	source "stm32h7flash.h"
+
+	depends third_party.bsp.st_bsp_api
+	depends core
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7cube {
 	option number log_level = 1
 	option number flash_size=0x18000
