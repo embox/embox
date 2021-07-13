@@ -40,9 +40,9 @@ static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long b
 	return STM32_FLASH_START + base + len <= STM32_FLASH_END;
 }
 
-static inline int stm32_flash_check_word_aligned(unsigned long base,
-		size_t len) {
-	return ((uintptr_t) base & 0x3) == 0 && ((uintptr_t) len & 0x3) == 0;
+static inline int stm32_flash_check_word_aligned(unsigned long base, size_t len) {
+	return ((uintptr_t) base & (STM32_FLASH_WORD - 1)) == 0 &&
+			((uintptr_t) len & (STM32_FLASH_WORD - 1)) == 0;
 }
 
 static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
@@ -95,7 +95,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	int err = -1;
 
 	if (!stm32_flash_check_word_aligned(base, len)
-			|| ((uintptr_t) data & 0x3) != 0) {
+			|| ((uintptr_t) data & (STM32_FLASH_WORD - 1)) != 0) {
 		err = -EINVAL;
 		goto err_exit;
 	}
@@ -110,13 +110,17 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	data32 = (uint32_t *) data;
 
 	HAL_FLASH_Unlock();
-	for (i = 0; i < len / 4; i++) {
+	for (i = 0; i < len / STM32_FLASH_WORD; i += (STM32_FLASH_WORD/sizeof(*data32)) ) {
+#ifdef STM32H7_CUBE
+		if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, (uint32_t )&data32[i])) {
+#else
 		if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, data32[i])) {
+#endif
 			HAL_FLASH_Lock();
 			err = -EBUSY;
 			goto err_exit;
 		}
-		dest += 4;
+		dest += STM32_FLASH_WORD;
 	}
 	HAL_FLASH_Lock();
 	return len;

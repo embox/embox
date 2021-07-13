@@ -17,6 +17,8 @@
 /* We use only first 4 32Kb sectors */
 #define STM32_FLASH_SECTORS_COUNT      4
 
+#define STM32_FLASH_WORD               (4)
+
 #ifndef __ASSEMBLER__
 #include <stm32f7xx_hal.h>
 #include <string.h>
