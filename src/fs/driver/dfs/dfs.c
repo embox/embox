@@ -81,46 +81,45 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
 static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
-	int head = offset & (NAND_PAGE_SIZE - 1);
-	size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
+	int head;
+
 	assert(buff);
 
-	for (i = offset; i < offset + len; i++) {
-		bitmap_clear_bit(dfs_free_pages, i);
-	}
+	head = offset % NAND_PAGE_SIZE;
 
 	if (head) {
+		size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
+
 		offset -= head;
 		_read(offset, b, NAND_PAGE_SIZE);
 		memcpy(b + head, buff, head_write_cnt);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
-		buff += NAND_PAGE_SIZE - head;
+		bitmap_clear_bit(dfs_free_pages, offset / NAND_PAGE_SIZE);
+
+		if (len <= head_write_cnt) {
+			return 0;
+		}
+
+		buff   += head_write_cnt;
 		offset += NAND_PAGE_SIZE;
-
-		if (len > NAND_PAGE_SIZE - head) {
-			len -= NAND_PAGE_SIZE - head;
-		}
-		else {
-			len = 0;
-		}
-	}
-
-	if (len < 0) {
-		return 0;
+		len    -= head_write_cnt;
 	}
 
 	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
 		memcpy(b, buff, NAND_PAGE_SIZE);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		bitmap_clear_bit(dfs_free_pages, offset / NAND_PAGE_SIZE);
+
 		offset += NAND_PAGE_SIZE;
 		buff   += NAND_PAGE_SIZE;
 		len    -= NAND_PAGE_SIZE;
 	}
 
-	if (len) {
+	if (len > 0) {
 		_read(offset, b, NAND_PAGE_SIZE);
 		memcpy(b, buff, len);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		bitmap_clear_bit(dfs_free_pages, offset / NAND_PAGE_SIZE);
 	}
 
 	return 0;
@@ -173,8 +172,8 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 	/* Check if we do need buffering */
 	err = 0;
-	for (i = pos; i < pos + size; i++)
-		if (!bitmap_test_bit(dfs_free_pages, i)) {
+	for (i = pos; i < pos + size; i += NAND_PAGE_SIZE)
+		if (!bitmap_test_bit(dfs_free_pages, i / NAND_PAGE_SIZE)) {
 			err = -1;
 			break;
 		}
