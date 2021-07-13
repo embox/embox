@@ -254,7 +254,7 @@ static int dfs_format(void) {
 
 	strcpy((char *) root.name, "/");
 	root.pos_start = sbi->free_space;
-	root.len       = MIN_FILE_SZ;
+	root.len       = DFS_INODES_MAX;
 	root.flags     = S_IFDIR;
 	dfs_write_dirent(0, &root);
 
@@ -332,11 +332,13 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
 
 int ino_from_path(const char *path) {
 	struct dfs_dir_entry dirent;
+	int i;
 
 	assert(path);
 
-	for (int i = 0; i < DFS_INODES_MAX; i++) {
-		if (!dfs_read_dirent(i, &dirent) && strcmp(path, (char *) dirent.name) == 0) {
+	for (i = 0; i < DFS_INODES_MAX; i++) {
+		if (!dfs_read_dirent(i, &dirent) &&
+				strcmp(path, (char *) dirent.name) == 0) {
 			return i;
 		}
 	}
@@ -360,10 +362,6 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct super_block *sb = i_dir->i_sb;
 	struct dfs_sb_info *sbi = sb->sb_data;
 	struct dfs_dir_entry dirent;
-	char buf[NAND_PAGE_SIZE];
-	int i;
-	char t;
-	int dir_start_pos;
 
 	assert(sb);
 	assert(i_dir);
@@ -371,8 +369,6 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	if (i_new == NULL) {
 		return -1;
 	}
-
-	dir_start_pos = (uintptr_t) i_dir->i_data;
 
 	dfs_read_sb_info(sbi);
 
@@ -398,34 +394,11 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 		.i_ops     = &dfs_iops,
 	};
 
-	if (S_ISDIR(i_new->i_mode)) {
-		memset(buf, DFS_DIRENT_EMPTY, sizeof(buf));
-		for (i = 0; i < dirent.len / sizeof(buf); i++) {
-			dfs_write_raw(dirent.pos_start + i * sizeof(buf), buf, sizeof(buf));
-		}
-	} else {
-		memset(buf, 0, sizeof(buf));
-		for (i = sbi->free_space; i < sbi->free_space + dirent.len; i++) {
-			_write(i, buf, 1);
-		}
-	}
-
 	sbi->inode_count++;
 	sbi->free_space += MIN_FILE_SZ;
 
 	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(sbi);
-
-	/* Write entry to parent directory */
-	for (i = 0; i < i_dir->length; i++) {
-		_read(dir_start_pos + i, &t, 1);
-		if (t != DFS_DIRENT_EMPTY) {
-			/* Entry taken */
-			continue;
-		}
-		_write(dir_start_pos + i, &i_new->i_no, 1);
-		break;
-	}
 
 	return 0;
 }
@@ -500,9 +473,7 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 static int dfs_iterate(struct inode *next, char *name_buf,
 		struct inode *parent, struct dir_ctx *ctx) {
 	struct dfs_dir_entry dirent;
-	int candidate = DFS_POS_MASK;
 	int i, dir_pos;
-	int parent_start_pos;
 
 	assert(ctx);
 	assert(next);
@@ -510,29 +481,28 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 	assert(name_buf);
 
 	dir_pos = (int) ctx->fs_ctx;
-
-	parent_start_pos = (uintptr_t) parent->i_data;
+	if (dir_pos == 0) {
+		dir_pos++; /*skip root dir */
+	}
 
 	for (i = dir_pos; i < parent->length; i++) {
-		_read(parent_start_pos + i, &candidate, 1);
-		if (candidate == DFS_DIRENT_EMPTY) {
-			continue;
+		const uint32_t empty_dirent = 0xFFFFFFFF;
+
+		dfs_read_dirent(i, &dirent);
+		if (memcmp(&dirent, &empty_dirent, sizeof(empty_dirent))) {
+			*next = (struct inode) {
+				.i_no   = i,
+				.i_data = (void *) (uintptr_t) dirent.pos_start,
+				.length = dirent.len,
+				.i_sb   = dfs_sb(),
+				.i_ops  = &dfs_iops,
+				.i_mode = dirent.flags,
+			};
+			ctx->fs_ctx = (void*) (i + 1);
+
+			strncpy(name_buf, (char *) dirent.name, DENTRY_NAME_LEN);
+			return 0;
 		}
-
-		dfs_read_dirent(candidate, &dirent);
-		*next = (struct inode) {
-			.i_no   = candidate,
-			.i_data = (void *) (uintptr_t) dirent.pos_start,
-			.length = dirent.len,
-			.i_sb   = dfs_sb(),
-			.i_ops  = &dfs_iops,
-			.i_mode = dirent.flags,
-		};
-		ctx->fs_ctx = (void*) (i + 1);
-
-		strncpy(name_buf, (char *) dirent.name, DENTRY_NAME_LEN);
-
-		return 0;
 	}
 
 	/* End of directory */
