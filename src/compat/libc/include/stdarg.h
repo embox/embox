@@ -40,43 +40,6 @@ Boston, MA 02110-1301, USA.  */
 #ifndef STDARG_H_
 #define STDARG_H_
 
-#if defined(__e2k__)
-
-#define __STDARG_H
-typedef void* va_list;
-
-#include "va-e2k.h"
-
-#if 0
-#ifdef __LCC__
-#define __STDARG_H
-
-typedef void* va_list;
-typedef va_list __gnuc_va_list;
-#define _VA_LIST_
-#define _VA_LIST va_list
-#define _VA_LIST_DEFINED
-#define _VA_LIST_T_H
-#define __va_list__
-
-#define __PAR_SIZE              8
-#define __arg_size(x)           ((sizeof(x)+__PAR_SIZE-1) & ~(__PAR_SIZE-1))
-#define va_start(ap, parmN)     \
-     ((ap) = (va_list)((char *)(&parmN)+__arg_size(parmN)))
-
-#define va_arg(ap, type)        \
-        ( ( ap = (char*)ap +    \
-            ((~((int)((char*)ap-(char*)0))+1) & (((__PAR_SIZE<<1)-1)>>(sizeof(type) <= __PAR_SIZE))) \
-            ),\
-        (*(type *)((char*)( ap = (char*)ap + __arg_size(type)) - __arg_size(type))) )
-
-#define va_end(ap)              ((void)0)
-#define va_copy(dest, src)      ((dest) = (src))
-#endif
-#endif
-
-#else
-/* If not LCC, we assume it's GCC */
 #ifdef __GNUC__
 
 typedef __builtin_va_list va_list;
@@ -91,7 +54,5 @@ typedef __builtin_va_list va_list;
 #define va_list char *
 
 #endif /* __GNUC__ */
-
-#endif /* __LCC__ */
 
 #endif /* STDARG_H_ */
