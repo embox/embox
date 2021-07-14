@@ -57,7 +57,7 @@ static inline int block_from_pos(int pos) { return pos / NAND_BLOCK_SIZE; }
 static inline int _erase(unsigned int block) {
 	int i;
 
-	assert(NAND_PAGES_MAX > NAND_PAGES_PER_BLOCK * (block + 1));
+	assert(NAND_PAGES_MAX >= NAND_PAGES_PER_BLOCK * (block + 1));
 
 	for (i = 0; i < NAND_PAGES_PER_BLOCK; i++) {
 		bitmap_set_bit(dfs_free_pages, i + block * NAND_PAGES_PER_BLOCK);
@@ -329,7 +329,7 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
 	return 0;
 }
 
-int ino_from_path(const char *path) {
+static int ino_from_path(const char *path) {
 	struct dfs_dir_entry dirent;
 	int i;
 
@@ -641,7 +641,7 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	sb->sb_root->i_no      = 0;
-	sb->sb_root->length    = MIN_FILE_SZ;
+	sb->sb_root->length    = dtr.len;
 	sb->sb_root->i_data    = (void *) ((uintptr_t) dtr.pos_start);
 
 	return 0;
