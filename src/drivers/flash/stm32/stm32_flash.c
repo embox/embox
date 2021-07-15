@@ -110,16 +110,32 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	data32 = (uint32_t *) data;
 
 	HAL_FLASH_Unlock();
-	for (i = 0; i < len / STM32_FLASH_WORD; i += (STM32_FLASH_WORD/sizeof(*data32)) ) {
+	for (i = 0; i < len / STM32_FLASH_WORD; i += (STM32_FLASH_WORD / sizeof(*data32)) ) {
+		uint32_t flash_err;
+		int rep;
+
+		for (rep = 3; rep >= 0; rep --) {
+
 #ifdef STM32H7_CUBE
-		if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, (uint32_t )&data32[i])) {
+			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, (uint32_t )&data32[i])) {
 #else
-		if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, data32[i])) {
+			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, data32[i])) {
 #endif
+				flash_err = HAL_FLASH_GetError();
+				log_error("base=0x08%x,len=0x%x, flash_err 0x%x", dest, len, flash_err);
+				err = -EBUSY;
+
+				continue;
+			} else {
+				err = 0;
+				break;
+			}
+		}
+		if (err) {
 			HAL_FLASH_Lock();
-			err = -EBUSY;
 			goto err_exit;
 		}
+
 		dest += STM32_FLASH_WORD;
 	}
 	HAL_FLASH_Lock();
