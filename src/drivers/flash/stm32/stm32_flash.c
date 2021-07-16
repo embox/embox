@@ -46,7 +46,7 @@ static inline int stm32_flash_check_word_aligned(unsigned long base, size_t len)
 }
 
 static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
-	int ret;
+	int ret = 0;
 	int repeat = 3;
 	uint32_t page_err;
 	FLASH_EraseInitTypeDef erase_struct;
