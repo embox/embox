@@ -7,7 +7,7 @@
  */
 
 #include <assert.h>
-#include <kernel/printk.h>
+#include <util/log.h>
 #include <kernel/irq.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -15,7 +15,6 @@
 #include <module/embox/mem/bitmask.h>
 
 #include <asm/cp15.h>
-#include <kernel/printk.h>
 
 #include <drivers/bcm283x_dma.h>
 #include <drivers/mailbox/bcm2835_mailbox_property.h>
@@ -45,19 +44,10 @@ typedef struct {
 
 static volatile Dma_conbk shared_conbk; 
 
-#if 0
-static irq_return_t bcm283x_dma_irq_handler(unsigned int irq_num, void *dev_id) {
-//	HAL_DMA_IRQHandler(&dma_handle);
-
-	return IRQ_HANDLED;
-}
-STATIC_IRQ_ATTACH(DMA330_IRQ, bcm283x_dma_irq_handler, NULL);
-#endif
-
 
 // Returns a handle to the allocated memory
 //
-uint32_t vc_malloc(size_t bytes, uint32_t align, uint32_t flags) {
+static uint32_t vc_malloc(size_t bytes, uint32_t align, uint32_t flags) {
     bcm2835_mailbox_property_t *resp;
     
     bcm2835_property_init();
@@ -73,7 +63,7 @@ uint32_t vc_malloc(size_t bytes, uint32_t align, uint32_t flags) {
 // accessable only by GPU and DMA (but corresponding physical address
 // can now be accessed by ARM CPU)
 //
-uint32_t vc_mem_lock(uint32_t handle) {
+static uint32_t vc_mem_lock(uint32_t handle) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
@@ -87,7 +77,7 @@ uint32_t vc_mem_lock(uint32_t handle) {
 // Unlock but don't de-allocate memory
 // (can't be accessed by ARM CPU but still can by GPU and DMA)
 //
-int vc_mem_unlock(uint32_t handle) {
+static int vc_mem_unlock(uint32_t handle) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
@@ -100,7 +90,7 @@ int vc_mem_unlock(uint32_t handle) {
 
 // Release the allocated memory
 //
-int vc_mem_free(uint32_t handle) {
+static int vc_mem_free(uint32_t handle) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
@@ -195,28 +185,13 @@ void bcm283x_dma_disp(int dma_chan)
 {
     assert(dma_chan <= DMA_CHANNELS);
 
-    printk("\ncs(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->cs);
-    printk("conblk_ad(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->conblk_ad);
-    printk("ti(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->ti);
-    printk("source_ad(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->source_ad);
-    printk("dest_ad(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->dest_ad);
-    printk("txfr_len(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->txfr_len);
-    printk("stride(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->stride);
-    printk("nextconbk(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->nextconbk);
-    printk("debug(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->debug);
+    log_debug("\ncs(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->cs);
+    log_debug("conblk_ad(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->conblk_ad);
+    log_debug("ti(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->ti);
+    log_debug("source_ad(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->source_ad);
+    log_debug("dest_ad(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->dest_ad);
+    log_debug("txfr_len(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->txfr_len);
+    log_debug("stride(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->stride);
+    log_debug("nextconbk(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->nextconbk);
+    log_debug("debug(%d) %08X\n", dma_chan, REGS_DMA(dma_chan)->debug);
 }
-
-static int bcm283x_dma_init(void) {
-	int ret = 0;
-    
-#if 0
-	ret = irq_attach(DMA330_IRQ, bcm283x_dma_irq_handler,
-			0, NULL, "dma330_all");
-	if (ret < 0) {
-		log_error("irq_attach failed\n");
-	}
-#endif
-	return ret;
-}
-
-EMBOX_UNIT_INIT(bcm283x_dma_init);

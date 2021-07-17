@@ -1,4 +1,5 @@
-#pragma once
+#ifndef _BCM283X_DMA_H_
+#define _BCM283X_DMA_H_
 /**
  * @file
  * @brief
@@ -160,3 +161,4 @@ extern int bcm283x_dma_config(int dma_chan);
 extern Dma_mem_handle *dma_malloc(size_t size);
 extern void dma_free(Dma_mem_handle *mem);
 
+#endif /* _BCM283X_DMA_H_ */

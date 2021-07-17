@@ -10,7 +10,7 @@
 #define CPY_BLK 256
 #define DMA_CHAN 5
 
-void fill_test(uint32_t *memLoc, uint32_t bytes) {
+static void fill_test(uint32_t *memLoc, uint32_t bytes) {
     uint32_t pattern = 0xDEADBEEF;
     for(uint32_t i = 0 ; i < bytes / sizeof(uint32_t) ; i+= 2 ) {
         memLoc[i] = pattern;
@@ -20,7 +20,7 @@ void fill_test(uint32_t *memLoc, uint32_t bytes) {
 
 
 // DMA memory-to-memory test
-int dma_test_mem_transfer(Dma_mem_handle *mem)
+static int dma_test_mem_transfer(Dma_mem_handle *mem)
 {
     Dma_conbk *cbp = mem->physical_addr;
     // Pointers for DMA 
@@ -39,9 +39,7 @@ int dma_test_mem_transfer(Dma_mem_handle *mem)
     bcm283x_dma_transfer_conbk(DMA_CHAN, cbp);
 
     while(bcm283x_dma_in_progress(DMA_CHAN)) {
-#if 1
         bcm283x_dma_disp(DMA_CHAN);
-#endif
     }
 
     return memcmp(DMA_BUS_TO_PHYS(srce),DMA_BUS_TO_PHYS(dest),CPY_BLK);
