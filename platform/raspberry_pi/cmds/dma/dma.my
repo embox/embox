@@ -1,0 +1,29 @@
+package raspberry_pi.cmd
+
+
+@AutoCmd
+@Cmd(name = "dma",
+	help = "test dma tasks",
+	man = '''
+		NAME
+			dma - test dma task(s)
+		SYNOPSIS
+			dma [-hpsvi]
+		DESCRIPTION
+			
+		OPTIONS
+			-h 
+				displays help
+			-0
+				memory copy test
+
+			(without options executes default)
+		AUTHOR
+			kpishere
+	''')
+module dma {
+	source "dma.c"
+
+	depends embox.arch.mmu
+	depends embox.driver.dma.bcm283x_dma
+}

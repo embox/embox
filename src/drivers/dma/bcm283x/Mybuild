@@ -1,0 +1,30 @@
+package embox.driver.dma
+
+/* @BuildDepends(third_party.bsp.st_bsp_api) */
+module bcm283x_dma extends dma_api {
+
+    /* raspi0 has physical memory base of 0x20000000
+    */
+
+	option number dma0_base = 0x20007000
+	option number dmaF_base = 0x20E05000
+
+	/* Firmware, depending upon version, is using some 
+	 * of the channels, earlier ones use 0, 2, 4, 6 and 
+	 * later ones (Pi 4) use 2, 11, 12, 13, 14.  Some testing
+	 * and validation on your target is required. 
+	 *
+	 * - IRQ to channel: IRQ 16 / DMA 0, 17/1, 18/2, 19/3, 20/4, 21/5
+	 *   22/6, 23/7, 24/8, 25/9, 26/A
+	 * - IRQ number 27 is shared by channels B thru E 
+	 * - Channel F does not have an IRQ
+	 * - IRQ number 28 also fires for any DMA channel interrupt ( 16 thru 27 )
+	 */
+	option number dma_default_chan = 3
+	option number dma_default_irq = 19
+	option number log_level = 1
+
+	source "bcm283x_dma.c"
+
+	depends embox.mem.page_api
+}
