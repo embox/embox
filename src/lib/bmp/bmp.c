@@ -139,6 +139,7 @@ int bmp_load(char *file_name, struct bmp *bmp_data) {
 		/* 16bpp very unusual format and is not supported in most parsers */
 		case 16:
 			printf("Error : 16bit bmp not supported\n");
+			close(fd);
 			return -1;
 
 		case 8:
