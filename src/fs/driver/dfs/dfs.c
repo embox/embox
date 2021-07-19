@@ -43,19 +43,11 @@ static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 #endif
 
-static inline int _erase(unsigned int block) {
-
+static inline int dfs_erase_flash(unsigned int block) {
 	return flash_erase(dfs_flashdev, block);
 }
-#if 0
-static inline int _read(unsigned long offset, void *buff, size_t len) {
-	assert(buff);
-	return flash_read(dfs_flashdev, offset, buff, len);
-}
-#endif
 
-#if 1
-static inline int _read(unsigned long offset, void *buff, size_t len) {
+static inline int dfs_read_flash(unsigned long offset, void *buff, size_t len) {
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 	int head;
@@ -96,7 +88,6 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
 
 	return 0;
 }
-#endif
 
 /* @brief Write non-aligned raw data to \b erased NAND flash
  * @param offset Start position on disk
@@ -105,7 +96,7 @@ static inline int _read(unsigned long offset, void *buff, size_t len) {
  *
  * @returns Bytes written or negative error code
  */
-static inline int _write(unsigned long offset, const void *buff, size_t len) {
+static inline int dfs_write_flash(unsigned long offset, const void *buff, size_t len) {
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 	int head;
@@ -149,7 +140,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	return 0;
 }
 
-static inline int _copy(unsigned long to, unsigned long from, int len) {
+static inline int dfs_copy_flash(unsigned long to, unsigned long from, int len) {
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
 	while (len > 0) {
@@ -157,10 +148,10 @@ static inline int _copy(unsigned long to, unsigned long from, int len) {
 
 		tmp_len = min(len, sizeof(b));
 
-		if (0 > _read(from, b, tmp_len)) {
+		if (0 > dfs_read_flash(from, b, tmp_len)) {
 			return -1;
 		}
-		if (0 > _write(to, b, tmp_len)) {
+		if (0 > dfs_write_flash(to, b, tmp_len)) {
 			return -1;
 		}
 
@@ -172,9 +163,9 @@ static inline int _copy(unsigned long to, unsigned long from, int len) {
 	return 0;
 }
 
-static inline int _blkcpy(unsigned int to, unsigned long from) {
-	_erase(to);
-	return _copy(to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
+static inline int dfs_blkcpy_flash(unsigned int to, unsigned long from) {
+	dfs_erase_flash(to);
+	return dfs_copy_flash(to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
 }
 
 static int dfs_mem_is_free(uint32_t offset, int len) {
@@ -193,7 +184,7 @@ static int dfs_mem_is_free(uint32_t offset, int len) {
 		size_t head_cnt = min(len, NAND_PAGE_SIZE - head);
 
 		offset -= head;
-		_read(offset, b, NAND_PAGE_SIZE);
+		dfs_read_flash(offset, b, NAND_PAGE_SIZE);
 		if (memcmp(b + head, check, head_cnt)) {
 			return 0;
 		}
@@ -207,7 +198,7 @@ static int dfs_mem_is_free(uint32_t offset, int len) {
 	}
 
 	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
-		_read(offset, b, NAND_PAGE_SIZE);
+		dfs_read_flash(offset, b, NAND_PAGE_SIZE);
 		if (memcmp(b, check, NAND_PAGE_SIZE)) {
 			return 0;
 		}
@@ -217,7 +208,7 @@ static int dfs_mem_is_free(uint32_t offset, int len) {
 	}
 
 	if (len > 0) {
-		_read(offset, b, NAND_PAGE_SIZE);
+		dfs_read_flash(offset, b, NAND_PAGE_SIZE);
 		if (memcmp(b, check, len)) {
 			return 0;
 		}
@@ -229,9 +220,9 @@ static int dfs_mem_is_free(uint32_t offset, int len) {
 
 #if USE_RAM_AS_CACHE
 static int dfs_cache_erase(uint32_t addr) {
-	//memset((void *)((uintptr_t)addr), 0xFF, sizeof(cache_block_buffer));
 	return 0;
 }
+
 static int dfs_cache(uint32_t to, uint32_t from, int len) {
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
@@ -240,7 +231,7 @@ static int dfs_cache(uint32_t to, uint32_t from, int len) {
 
 		tmp_len = min(len, sizeof(b));
 
-		if (0 > _read(from, b, tmp_len)) {
+		if (0 > dfs_read_flash(from, b, tmp_len)) {
 			return -1;
 		}
 		memcpy((void *)((uintptr_t)to), b, tmp_len);
@@ -252,22 +243,22 @@ static int dfs_cache(uint32_t to, uint32_t from, int len) {
 
 	return 0;
 }
-static inline int dfs_cache_write(uint32_t offset, const void *buff, size_t len) {
 
+static inline int dfs_cache_write(uint32_t offset, const void *buff, size_t len) {
 	memcpy((void *)((uintptr_t)offset), buff, len);
 	return 0;
 }
 
 static inline int dfs_cache_restore(uint32_t to, uint32_t from) {
-	_erase(to);
-	return _write(to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
+	dfs_erase_flash(to);
+	return dfs_write_flash(to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
 }
 #define CACHE_OFFSET                  ((uintptr_t)cache_block_buffer)
 #else
-#define dfs_cache_erase(block)         _erase(block)
-#define dfs_cache(to, from, len)       _copy(to,from,len)
-#define dfs_cache_write(off,buf, len)  _write(off,buf, len)
-#define dfs_cache_restore(to, from)    _blkcpy(to,from)
+#define dfs_cache_erase(block)         dfs_erase_flash(block)
+#define dfs_cache(to, from, len)       dfs_copy_flash(to,from,len)
+#define dfs_cache_write(off,buf, len)  dfs_write_flash(off,buf, len)
+#define dfs_cache_restore(to, from)    dfs_blkcpy_flash(to,from)
 #define CACHE_OFFSET                  (buff_bk * NAND_BLOCK_SIZE)
 #endif
 /* @brief Write non-aligned raw data to \b non-erased NAND flash
@@ -293,7 +284,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 	err = 0;
 	if (dfs_mem_is_free(pos, size)) {
-		 _write(pos, buff, size);
+		 dfs_write_flash(pos, buff, size);
 		 return 0;
 	}
 
@@ -306,21 +297,21 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 		}
 		pos += size;
 	} else {
-		_write(CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
-		_blkcpy(start_bk, buff_bk);
+		dfs_write_flash(CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
+		dfs_blkcpy_flash(start_bk, buff_bk);
 		buff += NAND_BLOCK_SIZE - pos;
 		pos = (pos + size) % NAND_BLOCK_SIZE;
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
-			_erase(bk);
-			if ((err = _write(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
+			dfs_erase_flash(bk);
+			if ((err = dfs_write_flash(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
 				return err;
 			}
 			buff += NAND_BLOCK_SIZE;
 		}
 
-		_erase(buff_bk);
-		_write(CACHE_OFFSET, buff, pos);
+		dfs_erase_flash(buff_bk);
+		dfs_write_flash(CACHE_OFFSET, buff, pos);
 	}
 
 	dfs_cache(CACHE_OFFSET + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
@@ -342,7 +333,7 @@ static int dfs_format(void) {
 
 	for (j = 0, k = 0; j < dfs_flashdev->num_block_infos; j++) {
 		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
-			if ((err = _erase(k))) {
+			if ((err = dfs_erase_flash(k))) {
 				return err;
 			}
 			k++;
@@ -376,9 +367,9 @@ static int dfs_format(void) {
 	root.pos_start = sbi->free_space;
 	root.len       = DFS_INODES_MAX;
 	root.flags     = S_IFDIR;
-	_write(DFS_DENTRY_OFFSET(0), &root, sizeof(struct dfs_dir_entry));
+	dfs_write_flash(DFS_DENTRY_OFFSET(0), &root, sizeof(struct dfs_dir_entry));
 
-	_write(0, sbi, sizeof(struct dfs_sb_info));
+	dfs_write_flash(0, sbi, sizeof(struct dfs_sb_info));
 
 	return 0;
 }
@@ -402,7 +393,7 @@ static enum { EMPTY, DIRTY, ACTUAL } dfs_sb_status = EMPTY;
 static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 	assert(sbi);
 	if (dfs_sb_status == EMPTY) {
-		_read(0, sbi, sizeof(struct dfs_sb_info));
+		dfs_read_flash(0, sbi, sizeof(struct dfs_sb_info));
 	}
 	dfs_sb_status = ACTUAL;
 	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
@@ -426,7 +417,7 @@ static int dfs_read_dirent(int n, struct dfs_dir_entry *dtr) {
 
 	assert(dtr);
 
-	_read(offt, dtr, sizeof(struct dfs_dir_entry));
+	dfs_read_flash(offt, dtr, sizeof(struct dfs_dir_entry));
 
 	if (dtr->name[0] == '\0') {
 		return -ENOENT;
@@ -476,8 +467,6 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	struct super_block *sb = i_dir->i_sb;
 	struct dfs_sb_info *sbi = sb->sb_data;
 	struct dfs_dir_entry dirent;
-	struct dfs_dir_entry tmp_dirent;
-	int exist_dirent;
 
 	assert(sb);
 	assert(i_dir);
@@ -491,13 +480,6 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	if (sbi->inode_count > sbi->max_inode_count) {
 		return -ENOMEM;
 	}
-	memset(&tmp_dirent, 0xFF, sizeof(tmp_dirent));
-	dfs_read_dirent(sbi->inode_count, &dirent);
-	if(memcmp(&dirent,&tmp_dirent,sizeof(tmp_dirent))) {
-		exist_dirent = 1;
-	} else {
-		exist_dirent = 0;
-	}
 
 	memset(&dirent, 0, sizeof(dirent));
 	dirent = (struct dfs_dir_entry) {
@@ -508,11 +490,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	strcpy((char *) dirent.name, inode_name(i_new));
 
-	if (exist_dirent) {
-		dfs_write_dirent(sbi->inode_count, &dirent);
-	} else {
-		_write(DFS_DENTRY_OFFSET(sbi->inode_count), &dirent, sizeof(dirent));
-	}
+	dfs_write_dirent(sbi->inode_count, &dirent);
 
 	*i_new = (struct inode) {
 		.i_no      = sbi->inode_count,
@@ -721,7 +699,7 @@ static size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	_read(pos, buf, l);
+	dfs_read_flash(pos, buf, l);
 
 	return l;
 }
