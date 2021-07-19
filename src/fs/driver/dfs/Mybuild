@@ -12,5 +12,6 @@ module dfs {
 	option number inode_count = 4
 	option number max_name_len = 16
 	option boolean use_ram_as_cache = false
+	option boolean use_ram_section = false
 }
 

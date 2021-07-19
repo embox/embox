@@ -31,6 +31,7 @@ static struct flash_dev *dfs_flashdev;
 #define NAND_BLOCK_SIZE        OPTION_GET(NUMBER, block_size)
 #define MIN_FILE_SZ            OPTION_GET(NUMBER, minimum_file_size)
 #define USE_RAM_AS_CACHE       OPTION_GET(BOOLEAN, use_ram_as_cache)
+#define USE_RAM_SECTION        OPTION_GET(BOOLEAN, use_ram_section)
 
 extern struct super_block *dfs_sb(void);
 static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr);
@@ -38,9 +39,15 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr);
 #define DFS_DENTRY_OFFSET(N) \
 	((sizeof(struct dfs_sb_info)) + N * (sizeof(struct dfs_dir_entry)))
 
+#if USE_RAM_SECTION
+#define CACHE_SECTION      __attribute__((section(".dfs_cache_section")))
+#else
+#define CACHE_SECTION
+#endif
+
 #if USE_RAM_AS_CACHE
 static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
-								  __attribute__ ((aligned(NAND_PAGE_SIZE)));
+								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 #endif
 
 static inline int dfs_erase_flash(unsigned int block) {
