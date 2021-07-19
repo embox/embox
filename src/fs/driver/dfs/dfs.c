@@ -47,11 +47,56 @@ static inline int _erase(unsigned int block) {
 
 	return flash_erase(dfs_flashdev, block);
 }
-
+#if 0
 static inline int _read(unsigned long offset, void *buff, size_t len) {
 	assert(buff);
 	return flash_read(dfs_flashdev, offset, buff, len);
 }
+#endif
+
+#if 1
+static inline int _read(unsigned long offset, void *buff, size_t len) {
+	int i;
+	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
+	int head;
+
+	assert(buff);
+
+	head = offset % NAND_PAGE_SIZE;
+
+	if (head) {
+		size_t head_cnt = min(len, NAND_PAGE_SIZE - head);
+
+		offset -= head;
+		flash_read(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		memcpy(buff, b + head, head_cnt);
+
+		if (len <= head_cnt) {
+			return 0;
+		}
+
+		buff   += head_cnt;
+		offset += NAND_PAGE_SIZE;
+		len    -= head_cnt;
+	}
+
+	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
+		flash_read(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		memcpy(buff, b, NAND_PAGE_SIZE);
+
+		offset += NAND_PAGE_SIZE;
+		buff   += NAND_PAGE_SIZE;
+		len    -= NAND_PAGE_SIZE;
+	}
+
+	if (len > 0) {
+		flash_read(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
+		memcpy(buff, b, len);
+	}
+
+	return 0;
+}
+#endif
 
 /* @brief Write non-aligned raw data to \b erased NAND flash
  * @param offset Start position on disk
@@ -73,7 +118,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 		size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
 
 		offset -= head;
-		_read(offset, b, NAND_PAGE_SIZE);
+		flash_read(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
 		memcpy(b + head, buff, head_write_cnt);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
 
@@ -96,7 +141,7 @@ static inline int _write(unsigned long offset, const void *buff, size_t len) {
 	}
 
 	if (len > 0) {
-		_read(offset, b, NAND_PAGE_SIZE);
+		flash_read(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
 		memcpy(b, buff, len);
 		flash_write(dfs_flashdev, offset, b, NAND_PAGE_SIZE);
 	}
@@ -133,6 +178,8 @@ static inline int _blkcpy(unsigned int to, unsigned long from) {
 }
 
 static int dfs_mem_is_free(uint32_t offset, int len) {
+	return 0;
+#if 0
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 	int head;
@@ -143,20 +190,20 @@ static int dfs_mem_is_free(uint32_t offset, int len) {
 	memset(check, 0xFF, sizeof(check));
 
 	if (head) {
-		size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
+		size_t head_cnt = min(len, NAND_PAGE_SIZE - head);
 
 		offset -= head;
 		_read(offset, b, NAND_PAGE_SIZE);
-		if (memcmp(b + head, check, head_write_cnt)) {
+		if (memcmp(b + head, check, head_cnt)) {
 			return 0;
 		}
 
-		if (len <= head_write_cnt) {
+		if (len <= head_cnt) {
 			return 1;
 		}
 
 		offset += NAND_PAGE_SIZE;
-		len    -= head_write_cnt;
+		len    -= head_cnt;
 	}
 
 	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
@@ -177,6 +224,7 @@ static int dfs_mem_is_free(uint32_t offset, int len) {
 	}
 
 	return 1;
+#endif
 }
 
 #if USE_RAM_AS_CACHE
