@@ -176,5 +176,7 @@ extern void bcm2835_property_init( void );
 extern void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... );
 extern int bcm2835_property_process( void );
 extern bcm2835_mailbox_property_t* bcm2835_property_get( bcm2835_mailbox_tag_t tag );
+extern void bcm2835_property_value32(bcm2835_mailbox_tag_t *props, uint32_t *value32);
+
 
 #endif /* BCM2835_MAILBOX_INTERFACE_H */
