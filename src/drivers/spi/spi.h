@@ -25,12 +25,28 @@ enum spi_mode_t {
 	SPI_MODE_T_SLAVE,
 };
 
+enum spi_pol_phase_t {
+	SPI_MODE_0 = 0x00,	/* CPOL = 0, CPHA = 0 */
+	SPI_MODE_1 = 0x01,  /* CPOL = 0, CPHA = 1 */
+	SPI_MODE_2 = 0x02,  /* CPOL = 1, CPHA = 0 */
+	SPI_MODE_3 = 0x03,  /* CPOL = 1, CPHA = 1 */
+};
+
+struct spi_device;
+
+typedef void (*irq_event_t)(struct spi_device *data);
+
 struct spi_device {
 	int    flags;
 	struct dev_module *dev;
 	struct spi_ops *spi_ops;
 	bool is_master;
 	void  *priv;
+	irq_event_t send_complete;
+	irq_event_t received_data;
+	uint8_t *in;
+	uint8_t *out;
+	int count;
 };
 
 struct spi_ops {
@@ -42,7 +58,24 @@ struct spi_ops {
 
 extern struct spi_device *spi_dev_by_id(int id);
 extern int spi_dev_id(struct spi_device *dev);
+
+/* In polling mode: 
+ * - either of *in or *out buffers can be set, cnt is zero to positive
+ *
+ * In interrupt mode:  
+ * - call with cnt < 0, set to -N bytes to write out. Interrupts will fire
+ *   until N bytes are written out to make cnt == 0
+ * - within interrupt handlers, function can be called as expected in polling mode
+ *   where cnt is positive.
+ * 
+ *   NB For BCM283X implementation: 
+ *   - count must not be larger than 16 bytes for sending within interrupt call 
+ *   - takes 12 bytes received to trigger interrupt
+ */
 extern int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
+
+/* Set extra options in struct *dev before calling this function 
+ */
 extern int spi_select(struct spi_device *dev, int cs);
 extern int spi_set_master_mode(struct spi_device *dev);
 extern int spi_set_slave_mode(struct spi_device *dev);
@@ -73,5 +106,9 @@ struct spi_transfer_arg {
 /* CS modes */
 #define SPI_CS_ACTIVE   (1 << 0)
 #define SPI_CS_INACTIVE (1 << 1)
+#define SPI_CS_MODE(x)	( ( (x) & 0x03) << 2)		/* x is one of enum spi_pol_phase_t */
+#define SPI_CS_IRQD  	(1 << 4)					
+#define SPI_CS_IRQR  	(1 << 5)					
+#define SPI_CS_DIVSOR(x) ( ( (x) & 0xFFFF) << 16 ) 	/* Upper 16 bits used to set clock divisor */
 
 #endif /* DRIVERS_SPI_H_ */
