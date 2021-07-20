@@ -165,7 +165,6 @@ static int bcm283x_spi0_do_transfer(struct spi_device *dev, uint8_t *inbuf
     /* Do not add log_debug() or some another stuff here,
      * because we need to write all tx data before transfer competed. */
     REGS_SPI0->dlen = DLEN_NO_DMA_VALUE;
-    REGS_SPI0->cs |= SPI0_CS_CLEAR( SPI0_tx_fifo | SPI0_rx_fifo ) | SPI0_CS_TA; // clear FIFO and Assert
     while ( ( tx_cnt < tx_count && inbuf != NULL ) 
         ||  (rx_cnt < rx_count && outbuf != NULL ) ) {
         if(tx_cnt < tx_count ) {
@@ -234,7 +233,7 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
     if( ( (REGS_SPI0->cs & SPI0_CS_INTD) || (REGS_SPI0->cs & SPI0_CS_INTR) ) ) {
         if(count < 0) {
             // count < 0 is signal to trigger interrupt and return
-            dev->count = -1 * count;    /* set the target amount to output in series of interrupt transfers*/
+            dev->count = -1 * count;    /* set the target amount to output in series of interrupt transfers */
             dev->in = inbuf;
             dev->out = outbuf;
             REGS_SPI0->dlen = DLEN_NO_DMA_VALUE;
@@ -255,7 +254,7 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
         return -EINVAL;        
     } else { 
         // Poll mode - bytes send, bytes receive
-        
+        REGS_SPI0->cs |= SPI0_CS_CLEAR( SPI0_tx_fifo | SPI0_rx_fifo ) | SPI0_CS_TA; // clear FIFO and Assert
         bcm283x_spi0_do_transfer(dev, inbuf, outbuf, count, count);
         REGS_SPI0->cs &= ~SPI0_CS_TA; // De-assert
     }
