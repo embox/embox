@@ -1,0 +1,19 @@
+package embox.driver.spi
+
+module bcm283x_spi0 {
+	option number base_addr = 0x20204000
+	option number spi_int = 54
+
+/*  Bus Display speed = core_freq/divisor. (on Pi3B, by default core_freq=400). 
+	A safe starting default value may be 40
+ */
+	option number spi_bus_clock_divisor = 40
+	option number log_level = 0
+
+	source "bcm283x_spi0.c"
+	source "bcm283x_spi0.h"
+
+	depends core
+	depends embox.driver.periph_memory
+	depends embox.driver.gpio.api
+}

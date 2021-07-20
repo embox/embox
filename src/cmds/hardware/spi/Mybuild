@@ -2,21 +2,44 @@ package embox.cmd.hardware
 
 @AutoCmd
 @Cmd(name = "spi",
-	help = "Transfer data via SPI bus",
-	man = '''
-		NAME
-			spi -- Transfer data via SPI bus
-		SYNOPSIS
-			spi bus_number bus_line byte0 [byte1 [...]]
-		EXAMPLES
-			Reading JEDEC ID from NAND flash:
-				spi 0 1 0x9f 0x9f 0x9f 0x9f
-		AUTHORS
-			Denis Deryugin
-	''')
-module spi {
-	source "spi.c"
+    help = "Transfer data via SPI bus",
+    man = '''
+        NAME
+            spi -- Transfer data via SPI bus
+        SYNOPSIS
+            spi [-t<method>] [-d<clkdiv>] [lsmh] bus_number bus_line [byte0 byte1 [...]]
+        DESCRIPTION
+            'p' test sends 4-bytes in MODE0 for in/out, out only, then read only and
+            then repeats for 32 bytes in same three patterns.  What follows in MODE1/2/3
+            tests in in/out pattern for 4-bytes each. (Input bytes are not checked)
+            'i' Out and Incoming interrupts are set.
+            'w' Incoming interrupt is set, command waits for input (requires 12 bytes before
+                interrupt fires)
 
-	depends embox.driver.spi.core
-	depends embox.util.pretty_print
+            If no bytes are provided as arguments, a default pattern of 32 bytes is used (polling 
+            test excepted). 
+        OPTIONS
+            -l      list spi devices
+            -s      slave mode
+            -m      master mode
+            -t p    by polling method (all tests as master)
+               i    by interrupt 
+               w    interrupt input only, wait for input
+               d    by use of DMA 
+            -d XXX    clock divisor 0-65534 to define speed of device
+                    based upon CPU clock
+        EXAMPLES
+            Reading JEDEC ID from NAND flash:
+                spi 0 1 0x9f 0x9f 0x9f 0x9f
+        AUTHORS
+            Denis Deryugin
+    ''')
+module spi {
+    source "spi.c"
+
+    depends embox.driver.spi.core
+    depends embox.util.pretty_print
+    depends embox.compat.libc.stdio.printf
+    depends embox.compat.libc.str
+    depends embox.compat.posix.util.getopt
 }

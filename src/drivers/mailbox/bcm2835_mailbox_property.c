@@ -282,3 +282,21 @@ bcm2835_mailbox_property_t* bcm2835_property_get( bcm2835_mailbox_tag_t tag )
 
     return &property;
 }
+
+//
+// A null terminated list of properties to retrieve
+// 
+void bcm2835_property_value32(bcm2835_mailbox_tag_t *props, uint32_t *value32) {
+    bcm2835_mailbox_property_t *resp;
+
+    bcm2835_property_init();
+    for(int i = 0; props[i] != 0x0; i++) {
+        bcm2835_property_add_tag( props[i] );
+
+    }
+    bcm2835_property_process();
+    for(int i = 0; props[i] != 0x0; i++) {
+        resp = bcm2835_property_get( props[i] );
+        value32[i] = resp->data.value_32;
+    }
+}
