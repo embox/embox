@@ -2284,3 +2284,22 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	return 0;
 }
+
+int fat_destroy_inode(struct inode *inode) {
+	struct fat_file_info *fi;
+	struct dirinfo *di;
+
+	if (!inode_priv(inode)) {
+		return 0;
+	}
+
+	if (S_ISDIR(inode->i_mode)) {
+		di = inode_priv(inode);
+		fat_dirinfo_free(di);
+	} else {
+		fi = inode_priv(inode);
+		fat_file_free(fi);
+	}
+
+	return 0;
+}

@@ -99,24 +99,7 @@ struct inode_operations fat_iops = {
 
 extern struct file_operations fat_fops;
 
-static int fat_destroy_inode(struct inode *inode) {
-	struct fat_file_info *fi;
-	struct dirinfo *di;
-
-	if (!inode->i_data)
-		return 0;
-
-	if (S_ISDIR(inode->i_mode)) {
-		di = inode->i_data;
-		fat_dirinfo_free(di);
-	} else {
-		fi = inode->i_data;
-		fat_file_free(fi);
-	}
-
-	return 0;
-}
-
+extern int fat_destroy_inode(struct inode *inode);
 struct super_block_operations fat_sbops = {
 	.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = fat_destroy_inode,
