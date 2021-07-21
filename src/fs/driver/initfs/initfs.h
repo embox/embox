@@ -28,4 +28,6 @@ extern int initfs_iterate(struct inode *next, char *name,
 extern int initfs_fill_inode(struct inode *node, char *cpio,
 		struct cpio_entry *entry);
 
+extern int initfs_destroy_inode(struct inode *inode);
+
 #endif /* SRC_FS_DRIVER_INITFS_INITFS_H_ */

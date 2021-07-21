@@ -167,3 +167,12 @@ int initfs_iterate(struct inode *next, char *name, struct inode *parent, struct 
 	/* End of directory */
 	return -1;
 }
+
+
+int initfs_destroy_inode(struct inode *inode) {
+	if (inode_priv(inode) != NULL) {
+		initfs_file_free(inode_priv(inode));
+	}
+
+	return 0;
+}

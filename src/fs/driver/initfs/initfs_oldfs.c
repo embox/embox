@@ -25,7 +25,8 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/vfs.h>
-#include <kernel/printk.h>
+#include <fs/super_block.h>
+
 #include <framework/mod/options.h>
 
 #include "initfs.h"
@@ -60,6 +61,11 @@ static int initfs_create_node(struct inode *node, struct inode *parent_node, int
 }
 
 extern struct file_operations initfs_fops;
+
+struct super_block_operations initfs_sbops = {
+	//.open_idesc = dvfs_file_open_idesc,
+	.destroy_inode = initfs_destroy_inode,
+};
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
