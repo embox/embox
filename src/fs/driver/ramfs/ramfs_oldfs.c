@@ -17,7 +17,11 @@
 
 struct inode_operations ramfs_iops;
 
-struct super_block_operations ramfs_sbops;
+struct super_block_operations ramfs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = ramfs_destroy_inode,
+};
+
 static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }

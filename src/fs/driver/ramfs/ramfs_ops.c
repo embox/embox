@@ -276,3 +276,9 @@ int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	return 0;
 }
+
+int ramfs_destroy_inode(struct inode *inode) {
+	assert(inode);
+	return 0;
+}
+

@@ -109,12 +109,6 @@ struct inode_operations ramfs_iops = {
 	.truncate = ramfs_truncate,
 };
 
-static int ramfs_destroy_inode(struct inode *inode) {
-
-	assert(inode);
-
-	return 0;
-}
 
 struct super_block_operations ramfs_sbops = {
 	.open_idesc    = dvfs_file_open_idesc,
