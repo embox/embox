@@ -152,6 +152,15 @@ static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
 
+static int ext4fs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations ext4fs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = ext4fs_destroy_inode,
+};
+
 static struct file_operations ext4_fop = {
 	.open = ext4fs_open,
 	.close = ext4fs_close,
@@ -751,6 +760,7 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	}
 	memset(fsi, 0, sizeof(struct ext4_fs_info));
 	sb->sb_data = fsi;
+	sb->sb_ops = &ext4fs_sbops;
 
 	return 0;
 }
