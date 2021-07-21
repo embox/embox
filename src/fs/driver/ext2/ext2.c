@@ -149,6 +149,15 @@ static struct file_operations ext2_fop = {
 	.write = ext2fs_write,
 };
 
+static int e2fs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations e2fs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = e2fs_destroy_inode,
+};
+
 /*
  * help function
  */
@@ -831,6 +840,7 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	}
 	memset(fsi, 0, sizeof(struct ext2_fs_info));
 	sb->sb_data = fsi;
+	sb->sb_ops = &e2fs_sbops;
 
 	/* presetting that we think */
 	fsi->s_block_size = SBSIZE;
@@ -2638,6 +2648,7 @@ void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new) {
 
 }
 #endif
+
 
 DECLARE_FILE_SYSTEM_DRIVER(ext2fs_driver);
 
