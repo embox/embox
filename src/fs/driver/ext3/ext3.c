@@ -61,6 +61,14 @@ static int ext3fs_umount_entry(struct inode *node);
 static const struct fs_driver *ext2fs_driver;
 static struct fs_driver ext3fs_driver;
 
+static int ext3fs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations ext3fs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = &ext3fs_destroy_inode,
+};
 /*
  * file_operation
  */
@@ -216,6 +224,8 @@ static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 	if ((ret = ext2fs_driver->fill_sb(sb, source)) < 0) {
 		return ret;
 	}
+
+	sb->sb_ops = &ext3fs_sbops;
 
 	return 0;
 }
