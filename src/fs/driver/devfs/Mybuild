@@ -9,7 +9,6 @@ module devfs_old extends devfs {
 	source "devfs_common.c"
 
 	depends embox.fs.core
-	depends embox.fs.driver.PseudoFs
 	depends embox.fs.rootfs
 	depends embox.driver.flash.core
 	@NoRuntime depends embox.driver.char_dev
