@@ -222,6 +222,15 @@ static int nfs_umount_entry(struct inode *node);
 static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
 
+static int nfs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations nfs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = nfs_destroy_inode,
+};
+
 static struct fsop_desc nfsfs_fsop = {
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
@@ -340,6 +349,7 @@ static int nfs_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	sb->sb_data = fsi;
+	sb->sb_ops = &nfs_sbops;
 
 	memset(fsi, 0, sizeof *fsi);
 	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi))) {
