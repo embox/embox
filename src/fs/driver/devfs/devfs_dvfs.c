@@ -30,18 +30,9 @@
 
 #include <module/embox/driver/block_dev.h>
 
-/**
- * @brief Do nothing
- *
- * @param inode
- *
- * @return
- */
-static int devfs_destroy_inode(struct inode *inode) {
-	return 0;
-}
-
 extern struct idesc_ops idesc_bdev_ops;
+extern int devfs_destroy_inode(struct inode *inode);
+
 /* Call device-specific open() handler */
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode  *i_no;

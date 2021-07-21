@@ -15,15 +15,22 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/dir_context.h>
-
+#include <fs/super_block.h>
 #include <fs/file_desc.h>
+
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
 
 extern struct inode_operations devfs_iops;
+extern int devfs_destroy_inode(struct inode *inode);
 
 static struct super_block *devfs_sb;
+
+static struct super_block_operations devfs_sbops = {
+	//.open_idesc = devfs_open_idesc,
+	.destroy_inode = devfs_destroy_inode,
+};
 
 static int devfs_mount(struct super_block *sb, struct inode *dest) {
 	int ret;
@@ -41,6 +48,7 @@ static int devfs_mount(struct super_block *sb, struct inode *dest) {
 	}
 
 	devfs_sb = sb;
+	sb->sb_ops = &devfs_sbops;
 
 	return 0;
 }

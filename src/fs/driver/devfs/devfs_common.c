@@ -149,6 +149,17 @@ static int devfs_iterate(struct inode *next, char *name, struct inode *parent, s
 	return -1;
 }
 
+/**
+ * @brief Do nothing
+ *
+ * @param inode
+ *
+ * @return
+ */
+int devfs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
 struct inode_operations devfs_iops = {
 	.lookup   = devfs_lookup,
 	.iterate  = devfs_iterate,
