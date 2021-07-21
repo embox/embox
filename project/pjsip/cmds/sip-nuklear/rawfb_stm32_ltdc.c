@@ -17,6 +17,8 @@
 #include "stm32746g_discovery_lcd.h"
 #elif defined STM32F769xx
 #include "stm32f769i_discovery_lcd.h"
+#elif defined STM32H745xx
+#include "stm32h745i_discovery_lcd.h"
 #else
 #error Unsupported platform
 #endif
@@ -27,6 +29,9 @@ extern LTDC_HandleTypeDef hLtdcHandler;
 #elif defined STM32F769xx
 extern LTDC_HandleTypeDef  hltdc_discovery;
 #define hltdc_handler hltdc_discovery
+#elif defined STM32H745xx
+extern LTDC_HandleTypeDef  hlcd_ltdc;
+#define hltdc_handler hlcd_ltdc
 #else
 #error Unsupported platform
 #endif
@@ -40,7 +45,11 @@ void HAL_LTDC_LineEvenCallback(LTDC_HandleTypeDef *hltdc) {
 	if (!buffer_pending) {
 		goto out;
 	}
+#if defined STM32H745xx
+	BSP_LCD_SetLayerAddress(0, 0, (uint32_t) grfb->fb_buf[grfb->fb_buf_idx]);
+#else
 	BSP_LCD_SetLayerAddress(0, (uint32_t) grfb->fb_buf[grfb->fb_buf_idx]);
+#endif
 	grfb->fb_buf_idx = (grfb->fb_buf_idx + 1) % 2;
 	buffer_pending = false;
 out:
@@ -96,7 +105,10 @@ void rawfb_swap_irq_set(int set_irq) {
 }
 
 void rawfb_init(struct rawfb_fb_info *rfb) {
+#if defined STM32H745xx
+#else
 	BSP_LCD_SelectLayer(0);
+#endif
 
 	grfb = rfb;
 

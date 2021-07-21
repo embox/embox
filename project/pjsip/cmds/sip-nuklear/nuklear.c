@@ -1,7 +1,20 @@
-#define WIN_WIDTH      800
-#define WIN_HEIGHT     480
-#define CALL_BTN_HEIGHT  ((WIN_WIDTH - 9 * 4) / 9)
+#include <framework/mod/options.h>
+
+#define USE_SMALL_DISPLAY  OPTION_GET(BOOLEAN,use_small_display)
+
+#if USE_SMALL_DISPLAY
+#define WIN_WIDTH                480
+#define WIN_HEIGHT               272
+#define CALL_BTN_HEIGHT          ((WIN_WIDTH - 9 * 4) / 9)
+#define CALL_INFO_TEXTBOX_HEIGHT 25
+#define FONT_DIVIDER             2
+#else
+#define WIN_WIDTH                800
+#define WIN_HEIGHT               480
+#define CALL_BTN_HEIGHT          ((WIN_WIDTH - 9 * 4) / 9)
 #define CALL_INFO_TEXTBOX_HEIGHT 50
+#define FONT_DIVIDER             1
+#endif
 
 extern struct demo_call_info *call_info;
 
@@ -102,28 +115,28 @@ static void demo_nk_gui(struct nk_context *ctx, struct nk_image *im_accept,
 
 		switch (call_info->state) {
 		case CALL_INACTIVE:
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 56;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 56 / FONT_DIVIDER;
 			nk_label(ctx, "PJSIP demo", NK_TEXT_CENTERED);
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32 / FONT_DIVIDER;
 			break;
 		case CALL_INCOMING:
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32 / FONT_DIVIDER;
 			nk_label(ctx, "Incoming call from:", NK_TEXT_CENTERED);
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 38;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 38 / FONT_DIVIDER;
 			nk_label(ctx, call_info->incoming, NK_TEXT_CENTERED);
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32 / FONT_DIVIDER;
 			break;
 		case CALL_ACTIVE:
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32 / FONT_DIVIDER;
 			nk_label(ctx, "Active call:", NK_TEXT_CENTERED);
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 38;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 38 / FONT_DIVIDER;
 			nk_label(ctx, call_info->remote_uri, NK_TEXT_CENTERED);
-			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32;
+			rawfb_fonts[RAWFB_FONT_DEFAULT]->handle.height = 32 / FONT_DIVIDER;
 			break;
 		}
 
 		if (call_info->state != CALL_INACTIVE) {
-			nk_layout_row_static(ctx, (WIN_WIDTH - 9 * 4) / 9, (WIN_WIDTH - 9 * 4) / 9, 9);
+			nk_layout_row_static(ctx, CALL_BTN_HEIGHT, CALL_BTN_HEIGHT, 9);
 
 			switch (call_info->state) {
 			case CALL_INCOMING:
