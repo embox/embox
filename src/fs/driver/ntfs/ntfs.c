@@ -351,6 +351,15 @@ static int ntfs_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
+static int ntfs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations ntfs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = ntfs_destroy_inode,
+};
+
 static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	ntfs_volume *vol;
 	struct block_dev *bdev;
@@ -371,6 +380,7 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	}
 	memset(fsi, 0, sizeof(*fsi));
 	sb->sb_data = fsi;
+	sb->sb_ops = &ntfs_sbops;
 
 	/* Allocate an ntfs_device structure. */
 	ntfs_dev = ntfs_device_alloc(block_dev_name(bdev), 0, &ntfs_device_bdev_io_ops, NULL);
