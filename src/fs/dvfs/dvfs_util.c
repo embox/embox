@@ -16,13 +16,11 @@
 #include <util/dlist.h>
 #include <util/log.h>
 
-#define SUPERBLOCK_POOL_SIZE OPTION_GET(NUMBER, superblock_pool_size)
 #define INODE_POOL_SIZE OPTION_GET(NUMBER, inode_pool_size)
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 #define FILE_POOL_SIZE OPTION_GET(NUMBER, file_pool_size)
 #define MNT_POOL_SIZE OPTION_GET(NUMBER, mnt_pool_size)
 
-POOL_DEF(superblock_pool, struct super_block, SUPERBLOCK_POOL_SIZE);
 POOL_DEF(inode_pool, struct inode, INODE_POOL_SIZE);
 POOL_DEF(dentry_pool, struct dentry, DENTRY_POOL_SIZE);
 POOL_DEF(file_pool, struct file_desc, FILE_POOL_SIZE);
@@ -89,54 +87,6 @@ int dvfs_default_pathname(struct inode *inode, char *buf, int flags) {
 		strcpy(buf, "empty");
 
 	return 0;
-}
-
-/* @brief Try to allocate superblock using file system driver and given device
- * @param drv Name of file system driver
- * @param dest Path to device (e.g. /dev/sda1)
- *
- * @return Pointer to the new superblock
- * @retval NULL Superblock could not be allocated
- */
-struct super_block *super_block_alloc(const char *fs_type, const char *source) {
-	struct super_block *sb;
-	const struct fs_driver *drv;
-	struct inode *node;
-
-	assert(fs_type);
-
-	drv = fs_driver_find(fs_type);
-	if (NULL == drv) {
-		return NULL;
-	}
-
-	if (NULL == (sb = pool_alloc(&superblock_pool))) {
-		return NULL;
-	}
-
-	*sb = (struct super_block) {
-		.fs_drv    = drv,
-	};
-
-	node = dvfs_alloc_inode(sb);
-
-	*node = (struct inode) {
-		.i_mode   = S_IFDIR,
-		.i_ops    = sb->sb_iops,
-		.i_sb     = sb,
-	};
-
-	sb->sb_root = node;
-
-	if (drv->fill_sb) {
-		if (0 != drv->fill_sb(sb, source)) {
-			dvfs_destroy_inode(node);
-			pool_free(&superblock_pool, sb);
-			return NULL;
-		}
-	}
-
-	return sb;
 }
 
 extern int dvfs_default_destroy_inode(struct inode *);
@@ -423,28 +373,6 @@ struct dentry *local_lookup(struct dentry *parent, char *name) {
 	}
 
 	return NULL;
-}
-
-/**
- * @brief Free superblock resources
- *
- * @param sb Superblock to be destroyed
- *
- * @return Negative error code or zero if succeed
- */
-int super_block_free(struct super_block *sb) {
-	int err = 0;
-
-	assert(sb);
-	assert(sb->fs_drv);
-
-	if (sb->fs_drv->clean_sb) {
-		err = sb->fs_drv->clean_sb(sb);
-	}
-
-	pool_free(&superblock_pool, sb);
-
-	return err;
 }
 
 /**
