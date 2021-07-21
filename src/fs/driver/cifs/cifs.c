@@ -15,20 +15,24 @@
 #include <string.h>
 #include <errno.h>
 
+#include <util/math.h>
 #include <util/err.h>
+
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/fs_driver.h>
-#include <libsmbclient.h>
+#include <fs/super_block.h>
+#include <fs/hlpr_path.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+
 #include <drivers/block_dev.h>
+
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
-#include <fs/hlpr_path.h>
 
-#include <util/math.h>
 
+#include <libsmbclient.h>
 
 struct cifs_fs_info
 {
@@ -51,6 +55,8 @@ struct smbitem
 	int type;
 	char name[1];
 };
+
+static struct super_block_operations cifs_sbops;
 
 static mode_t
 samba_type_to_mode_fmt (const unsigned dt_type)
@@ -198,6 +204,7 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	strcpy (fsi->url, smb_path);
 	fsi->ctx = ctx;
 	sb->sb_data = fsi;
+	sb->sb_ops = &cifs_sbops;
 
 	return 0;
 }
@@ -399,6 +406,15 @@ static int embox_cifs_node_delete(struct inode *node) {
 
 	return 0;
 }
+
+static int cifs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations cifs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = cifs_destroy_inode,
+};
 
 static const struct fsop_desc cifs_fsop = {
 	.create_node = embox_cifs_node_create,
