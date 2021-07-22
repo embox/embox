@@ -56,17 +56,20 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	}
 	*node = (struct inode) {
 		.i_mode   = S_IFDIR,
-		.i_ops    = sb->sb_iops,
 		.i_sb     = sb,
 	};
+
 	sb->sb_root = node;
 
 	if (drv->fill_sb) {
 		if (0 != drv->fill_sb(sb, source)) {
+			dvfs_destroy_inode(node);
 			pool_free(&superblock_pool, sb);
 			return NULL;
 		}
 	}
+
+	node->i_ops = sb->sb_iops;
 
 	return sb;
 }
