@@ -2170,12 +2170,7 @@ err_out:
 int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
-	char path[PATH_MAX];
 	int res;
-
-	if (!parent) {
-		strcpy(path, ROOT_DIR);
-	}
 
 	assert(parent->i_sb);
 
