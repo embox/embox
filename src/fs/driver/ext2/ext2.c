@@ -1400,17 +1400,14 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	struct ext2fs_direct *dp, *edp;
 	struct ext2_file_info *dir_fi, *fi;
 	struct ext2_fs_info *fsi;
-	char *name, *name_buff;
+	char *name;
 	struct inode *node;
 	mode_t mode;
+	char name_buff[NAME_MAX];
 
 	rc = 0;
 
 	fsi = dir_nas->fs->sb_data;
-	if (NULL == (name_buff = ext2_buff_alloc(fsi, NAME_MAX))) {
-		rc = ENOMEM;
-		return rc;
-	}
 
 	if (0 != ext2_open(dir_nas)) {
 		goto out;
@@ -1488,7 +1485,7 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	}
 
 	out: ext2_close(dir_nas);
-	ext2_buff_free(fsi, name_buff);
+
 	return rc;
 }
 
