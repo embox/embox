@@ -35,6 +35,9 @@
 #include <fs/super_block.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
+#include <fs/dir_context.h>
+#include <fs/inode_operation.h>
+
 
 #include <mem/sysmalloc.h>
 
@@ -130,6 +133,7 @@ static int ext4_search_directory(struct nas *nas, const char *, int, uint32_t *)
 static int ext4_read_sblock(struct nas *nas);
 static int ext4_read_gdblock(struct nas *nas);
 static int ext4_mount_entry(struct nas *nas);
+static int ext4_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
 
 int ext4_write_gdblock(struct nas *nas);
 
@@ -159,6 +163,10 @@ static int ext4fs_destroy_inode(struct inode *inode) {
 static struct super_block_operations ext4fs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = ext4fs_destroy_inode,
+};
+
+struct inode_operations ext4_iops = {
+	.iterate = ext4_iterate,
 };
 
 static struct file_operations ext4_fop = {
@@ -270,10 +278,8 @@ static void ext4_extent_add_block(struct nas *nas, uint32_t lblock, uint64_t pbl
 	ee_array[current_ee].ee_start_hi = 0;
 }
 
-static void *ext4_buff_alloc(struct nas *nas, size_t size) {
-	struct ext4_fs_info *fsi;
+static void *ext4_buff_alloc(struct ext4_fs_info *fsi, size_t size) {
 
-	fsi = nas->fs->sb_data;
 	if (size < fsi->s_block_size) {
 		size = fsi->s_block_size;
 	}
@@ -476,7 +482,7 @@ int ext4_open(struct nas *nas) {
 	vfs_get_relative_path(nas->node, path, PATH_MAX);
 
 	/* alloc a block sized buffer used for all transfers */
-	if (NULL == (fi->f_buf = ext4_buff_alloc(nas, fsi->s_block_size))) {
+	if (NULL == (fi->f_buf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
 		return ENOMEM;
 	}
 
@@ -559,7 +565,7 @@ static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc, int __
 	fsi = nas->fs->sb_data;
 	fi->f_pointer = file_get_pos(file_desc_from_idesc(idesc)); /* reset seek pointer */
 
-	if (NULL == (fi->f_buf = ext4_buff_alloc(nas, fsi->s_block_size))) {
+	if (NULL == (fi->f_buf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
 		return err_ptr(ENOMEM);
 	}
 
@@ -761,6 +767,7 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	memset(fsi, 0, sizeof(struct ext4_fs_info));
 	sb->sb_data = fsi;
 	sb->sb_ops = &ext4fs_sbops;
+	sb->sb_iops = &ext4_iops;
 
 	return 0;
 }
@@ -788,7 +795,7 @@ static int ext4fs_mount(struct super_block *sb, struct inode *dest) {
 	if (0 != (rc = ext4_read_sblock(dir_nas))) {
 		goto error;
 	}
-	if (NULL == (fsi->e4fs_gd = ext4_buff_alloc(dir_nas,
+	if (NULL == (fsi->e4fs_gd = ext4_buff_alloc(fsi,
 			sizeof(struct ext4_group_desc) * fsi->s_ncg))) {
 		rc = ENOMEM;
 		goto error;
@@ -796,11 +803,11 @@ static int ext4fs_mount(struct super_block *sb, struct inode *dest) {
 	if (0 != (rc = ext4_read_gdblock(dir_nas))) {
 		goto error;
 	}
-
+#if 0
 	if (0 != (rc = ext4_mount_entry(dir_nas))) {
 		goto error;
 	}
-
+#endif
 	return 0;
 
 error:
@@ -1105,7 +1112,7 @@ static int ext4_read_sblock(struct nas *nas) {
 	fsi = nas->fs->sb_data;
 	ext4sb = &fsi->e4sb;
 
-	if (!(sbbuf = ext4_buff_alloc(nas, fsi->s_block_size))) {
+	if (!(sbbuf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
 		return ENOMEM;
 	}
 
@@ -1220,7 +1227,7 @@ static int ext4_read_gdblock(struct nas *nas) {
 
 	gdpb = fsi->s_block_size / sizeof(struct ext4_group_desc);
 
-	if (!(gdbuf = ext4_buff_alloc(nas, fsi->s_block_size))) {
+	if (!(gdbuf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
 		return ENOMEM;
 	}
 
@@ -1242,6 +1249,108 @@ out:
 	return ret;
 }
 
+struct inode *ext4_lookup(char const *name, struct inode const *dir) {
+	return NULL;
+}
+
+static int ext4_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
+//	mode_t mode;
+	char name_buff[NAME_MAX];
+	struct ext4_fs_info *fsi;
+	struct nas *dir_nas;
+	struct ext4_file_info *dir_fi;
+	struct ext4_file_info *fi;
+	struct ext4_dir *dp, *edp;
+	size_t buf_size;
+	char *buf;
+	int rc;
+	char *name;
+	int idx = 0;
+
+	dir_nas = parent->nas;
+	fsi = parent->nas->fs->sb_data;
+
+	if (0 != ext4_open(dir_nas)) {
+		return -1;
+	}
+
+	dir_fi = inode_priv(dir_nas->node);
+
+	dir_fi->f_pointer = 0;
+	while (dir_fi->f_pointer < ext4_file_size(dir_fi->f_di)) {
+		if (0 != (rc = ext4_buf_read_file(dir_nas, &buf, &buf_size))) {
+			goto out;
+		}
+		if (buf_size != fsi->s_block_size || buf_size == 0) {
+			rc = EIO;
+			goto out;
+		}
+
+		dp = (struct ext4_dir *) buf;
+		edp = (struct ext4_dir *) (buf + buf_size);
+		for (; dp < edp; dp = (void *)((char *)dp + fs2h16(dp->rec_len))) {
+			if (fs2h16(dp->rec_len) <= 0) {
+				goto out;
+			}
+			if (fs2h32(dp->inode) == 0) {
+				continue;
+			}
+
+			/* set null determine name */
+			name = (char *) &dp->name;
+
+			memcpy(name_buff, name, fs2h16(dp->name_len));
+			name_buff[fs2h16(dp->name_len)] = '\0';
+
+			if(0 != path_is_dotname(name_buff, dp->name_len)) {
+				/* dont need create dot or dotdot node */
+				continue;
+			}
+
+			if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
+				continue;
+			}
+
+			//mode = ext4_type_to_mode_fmt(dp->e2d_type);
+			fi = ext4_fi_alloc(next, dir_nas->fs);
+			if (!fi) {
+				goto out;
+			}
+			memset(fi, 0, sizeof(struct ext4_file_info));
+			fi->f_num = fs2h32(dp->inode);
+
+			next->nas->fs = parent->nas->fs;
+
+			/* Load permisiions and credentials. */
+			if (NULL == (fi->f_buf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
+				rc = ENOSPC;
+				goto out;
+			}
+
+			ext4_read_inode(next->nas, fs2h32(dp->inode));
+			ext4_buff_free(fsi, fi->f_buf);
+
+			next->i_mode = fi->f_di.i_mode;
+
+			next->uid = fi->f_di.i_uid;
+			next->gid = fi->f_di.i_gid;
+			inode_size_set(next, ext4_file_size(fi->f_di));
+			strncpy(next_name, name_buff, NAME_MAX - 1);
+			next_name[NAME_MAX - 1] = '\0';
+
+			dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
+			ext4_close(dir_nas);
+			return 0;
+		}
+		dir_fi->f_pointer += buf_size;
+	}
+
+out:
+	ext4_close(dir_nas);
+
+	return -1;
+}
+
 static int ext4_mount_entry(struct nas *dir_nas) {
 	int rc;
 	char *buf;
@@ -1255,7 +1364,7 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 
 	rc = 0;
 
-	if (NULL == (name_buff = ext4_buff_alloc(dir_nas, NAME_MAX))) {
+	if (NULL == (name_buff = ext4_buff_alloc(dir_nas->fs->sb_data, NAME_MAX))) {
 		rc = ENOMEM;
 		return rc;
 	}
@@ -1689,7 +1798,7 @@ static int ext4_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	}
 	memset(fi, 0, sizeof(struct ext4_file_info));
 
-	if (NULL == (fi->f_buf = ext4_buff_alloc(i_new->nas, fsi->s_block_size))) {
+	if (NULL == (fi->f_buf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
 		rc = ENOSPC;
 		goto out;
 	}
