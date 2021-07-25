@@ -26,6 +26,8 @@
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/super_block.h>
+#include <fs/dir_context.h>
+#include <fs/inode_operation.h>
 
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
@@ -38,9 +40,14 @@
 static int nfs_create_dir_entry(struct inode *parent);
 
 static int nfs_mount(struct nas *nas);
-static int nfs_lookup(struct nas *nas);
-static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
-		uint32_t procnum, char *req, char *reply);
+static int __nfs_lookup(struct nas *nas);
+static int nfs_iterate(struct inode *next, char *name, struct inode *parent,
+		struct dir_ctx *dir_ctx);
+static struct inode *nfs_fill_inode(struct inode *node,
+		readdir_desc_t *predesc );
+
+static int nfs_call_proc_nfs(struct nfs_fs_info *fsi, uint32_t procnum,
+		char *req, char *reply);
 
 /* nfs filesystem description pool */
 POOL_DEF (nfs_fs_pool, struct nfs_fs_info, OPTION_GET(NUMBER,nfs_descriptor_quantity));
@@ -81,7 +88,7 @@ static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __o
 
 	fi->offset = pos;
 
-	if(0 == nfs_lookup(nas)) {
+	if(0 == __nfs_lookup(nas)) {
 		inode_size_set(node, fi->attr.size);
 		return idesc;
 	}
@@ -232,6 +239,10 @@ static struct super_block_operations nfs_sbops = {
 	.destroy_inode = nfs_destroy_inode,
 };
 
+struct inode_operations nfs_iops = {
+	.iterate = nfs_iterate,
+};
+
 static struct fsop_desc nfsfs_fsop = {
 	.mount = nfsfs_mount,
 	.create_node = nfsfs_create,
@@ -342,6 +353,99 @@ static void nfs_free_fs(struct super_block *sb) {
 	}
 }
 
+struct inode *nfs_lookup(char const *name, struct inode const *dir) {
+	return NULL;
+}
+
+static int nfs_iterate(struct inode *next, char *next_name, struct inode *parent_node, struct dir_ctx *dir_ctx) {
+	struct inode *node;
+	uint32_t vf;
+	char *point;
+	nfs_file_info_t *parent_fi;
+	nfs_filehandle_t *fh;
+	readdir_desc_t *predesc = NULL;
+	struct nfs_fs_info *fsi;
+	char *rcv_buf;
+	int idx = 0;
+
+	parent_fi = inode_priv(parent_node);
+	fh = &parent_fi->fh;
+	fh->count = fh->maxcount = DIRCOUNT;
+	fh->cookie = 0;
+
+	if (NULL == (rcv_buf = sysmalloc(MAXDIRCOUNT * 2))) {
+		return -1;
+	}
+
+	fsi = parent_node->i_sb->sb_data;
+
+	while (1) {
+
+		memset(rcv_buf, 0, MAXDIRCOUNT * 2);
+
+		if (0 >  nfs_call_proc_nfs(fsi, NFSPROC3_READDIRPLUS,
+			(char *)fh, rcv_buf)) {
+			sysfree(rcv_buf);
+			return -1;
+		}
+
+		point = rcv_buf;
+		/* check status */
+		vf = *(uint32_t *)point;
+		if (STATUS_OK != vf) {
+			sysfree(rcv_buf);
+			return -1;
+		}
+		point += sizeof(vf);
+
+		/* check if a directory attributes */
+		vf = *(uint32_t *)point;
+		if (VALUE_FOLLOWS_YES != vf) {
+			break;
+		}
+		point += sizeof(vf);
+
+		/*TODO copy root dir attr*/
+		point += sizeof(dir_attribute_rep_t);
+
+		/* check if a new files attributes */
+		vf = *(uint32_t *)point;
+		if (VALUE_FOLLOWS_YES != vf) {
+			break;
+		}
+
+		while (VALUE_FOLLOWS_YES == (vf = *(uint32_t *)point)) {
+			point += sizeof(vf);
+			predesc = (readdir_desc_t *) point;
+
+			if(0 == path_is_dotname(predesc->file_name.name.data,
+									predesc->file_name.name.len)) {
+				if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
+				} else {
+					node = nfs_fill_inode(next, predesc);
+					if (!node) {
+						log_error("nfs_fill_inode failed\n");
+						break;
+					}
+					dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
+					sysfree(rcv_buf);
+					return 0;
+				}
+			}
+			point += sizeof(*predesc);
+		}
+		point += sizeof(vf);
+		if (NFS_EOF != *(uint32_t *)point) {
+			unaligned_set_hyper(&fh->cookie, &predesc->file_name.cookie);
+		} else {
+			fh->cookie = 0;
+			break;
+		}
+	}
+	sysfree(rcv_buf);
+	return -1;
+}
+
 static int nfs_fill_sb(struct super_block *sb, const char *source) {
 	struct nfs_fs_info *fsi;
 
@@ -351,6 +455,7 @@ static int nfs_fill_sb(struct super_block *sb, const char *source) {
 
 	sb->sb_data = fsi;
 	sb->sb_ops = &nfs_sbops;
+//	sb->sb_iops = &nfs_iops;
 
 	memset(fsi, 0, sizeof *fsi);
 	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi))) {
@@ -385,13 +490,13 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
-
+#if 1
 	if (0 >	nfs_create_dir_entry(dest)) { // XXX check the argument
 		rc = -1;
 	} else {
 		return 0;
 	}
-
+#endif
 error:
 	nfs_free_fs(sb);
 
@@ -407,6 +512,67 @@ static int nfs_umount_entry(struct inode *node) {
 static int nfs_clean_sb(struct super_block *sb) {
 	nfs_free_fs(sb);
 	return 0;
+}
+
+static struct inode *nfs_fill_inode(struct inode *node, readdir_desc_t *predesc ) {
+	nfs_file_info_t *fi;
+	mode_t mode;
+
+	fi = pool_alloc(&nfs_file_pool);
+	if (!fi) {
+		return NULL;
+	}
+
+	/* copy read the description in the created file*/
+	memcpy(&fi->name_dsc, &predesc->file_name,
+			sizeof(predesc->file_name));
+
+	if (VALUE_FOLLOWS_YES == predesc->vf_attr) {
+		memcpy(&fi->attr, &predesc->file_attr,
+				sizeof(predesc->file_attr));
+	}
+	if (VALUE_FOLLOWS_YES == predesc->vf_fh) {
+		memcpy(&fi->fh, &predesc->file_handle,
+				sizeof(predesc->file_handle));
+		fi->fh.count = fi->fh.maxcount = DIRCOUNT;
+		fi->fh.cookie = 0;
+	}
+
+	mode = fi->attr.mode;
+	// TODO what is mode is not known (!VALUE_FOLLOWS_YES)?
+
+	/**
+	 *	enum ftype3 {
+	 *		NF3REG    = 1,
+	 *		NF3DIR    = 2,
+	 *		NF3BLK    = 3,
+	 *		NF3CHR    = 4,
+	 *		NF3LNK    = 5,
+	 *		NF3SOCK   = 6,
+	 *		NF3FIFO   = 7
+	 *	};
+	 */
+	switch (predesc->file_attr.type) {
+		case 1:
+			/* regular file */
+			mode |= S_IFREG;
+			break;
+		case 2:
+			/* directory */
+			mode |= S_IFDIR;
+			break;
+		default:
+			/* unknown file type. Skip it. */
+			log_error("Unsupported file type=0x%x (name=%s). Skip it...\n",
+				predesc->file_attr.type,
+				predesc->file_name.name.data);
+			pool_free(&nfs_file_pool, fi);
+			return NULL;
+	}
+
+	inode_priv_set(node, fi);
+	inode_size_set(node, fi->attr.size);
+	return node;
 }
 
 static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
@@ -830,7 +996,7 @@ static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
 	return 0;
 }
 
-static int nfs_lookup(struct nas *nas) {
+static int __nfs_lookup(struct nas *nas) {
 	struct inode *dir_node;
 	struct nfs_fs_info *fsi;
 	nfs_file_info_t *fi, *dir_fi;
