@@ -6,6 +6,9 @@
  * @author Andrey Gazukin
  */
 
+#include <util/log.h>
+
+#include <limits.h>
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -13,7 +16,6 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
-#include <util/log.h>
 
 #include <fs/vfs.h>
 #include <fs/nfs.h>
@@ -24,7 +26,6 @@
 #include <fs/fs_driver.h>
 #include <fs/file_operation.h>
 #include <fs/super_block.h>
-#include <limits.h>
 
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
@@ -39,7 +40,7 @@ static int nfs_create_dir_entry(struct inode *parent);
 static int nfs_mount(struct nas *nas);
 static int nfs_lookup(struct nas *nas);
 static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
-		__u32 procnum, char *req, char *reply);
+		uint32_t procnum, char *req, char *reply);
 
 /* nfs filesystem description pool */
 POOL_DEF (nfs_fs_pool, struct nfs_fs_info, OPTION_GET(NUMBER,nfs_descriptor_quantity));
@@ -490,7 +491,7 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 static int nfs_create_dir_entry(struct inode *parent_node) {
 	struct inode *node;
 	struct nas *parent_nas;
-	__u32 vf;
+	uint32_t vf;
 	char *point;
 	nfs_file_info_t *parent_fi;
 	nfs_filehandle_t *fh;
@@ -523,7 +524,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 
 		point = rcv_buf;
 		/* check status */
-		vf = *(__u32 *)point;
+		vf = *(uint32_t *)point;
 		if (STATUS_OK != vf) {
 			sysfree(rcv_buf);
 			return -1;
@@ -531,7 +532,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 		point += sizeof(vf);
 
 		/* check if a directory attributes */
-		vf = *(__u32 *)point;
+		vf = *(uint32_t *)point;
 		if (VALUE_FOLLOWS_YES != vf) {
 			break;
 		}
@@ -541,12 +542,12 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 		point += sizeof(dir_attribute_rep_t);
 
 		/* check if a new files attributes */
-		vf = *(__u32 *)point;
+		vf = *(uint32_t *)point;
 		if (VALUE_FOLLOWS_YES != vf) {
 			break;
 		}
 
-		while (VALUE_FOLLOWS_YES == (vf = *(__u32 *)point)) {
+		while (VALUE_FOLLOWS_YES == (vf = *(uint32_t *)point)) {
 			point += sizeof(vf);
 			predesc = (readdir_desc_t *) point;
 
@@ -562,7 +563,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 			point += sizeof(*predesc);
 		}
 		point += sizeof(vf);
-		if (NFS_EOF != *(__u32 *)point) {
+		if (NFS_EOF != *(uint32_t *)point) {
 			unaligned_set_hyper(&fh->cookie, &predesc->file_name.cookie);
 		} else {
 			fh->cookie = 0;
@@ -579,7 +580,7 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	create_req_t  req;
 	rpc_string_t name;
 	create_reply_t reply;
-	__u32 procnum;
+	uint32_t procnum;
 
 	parent_fi = inode_priv(parent_node);
 	fsi = parent_node->i_sb->sb_data;
@@ -630,7 +631,7 @@ static int nfsfs_delete(struct inode *node) {
 	nfs_file_info_t *dir_fi;
 	lookup_req_t req;
 	delete_reply_t reply;
-	__u32 procnum;
+	uint32_t procnum;
 
 	fi = inode_priv(node);
 
@@ -665,7 +666,7 @@ static int nfsfs_delete(struct inode *node) {
 DECLARE_FILE_SYSTEM_DRIVER(nfsfs_driver);
 
 static int nfs_call_proc_mnt(struct nas *nas,
-		__u32 procnum, char *req, char *reply) {
+		uint32_t procnum, char *req, char *reply) {
 	struct timeval timeout = { 25, 0 };
 	struct nfs_fs_info *fsi;
 
@@ -721,7 +722,7 @@ static int nfs_call_proc_mnt(struct nas *nas,
 }
 
 static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
-		__u32 procnum, char *req, char *reply) {
+		uint32_t procnum, char *req, char *reply) {
 	struct timeval timeout = { 25, 0 };
 
 	if(NULL == fsi->nfs){
