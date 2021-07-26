@@ -30,18 +30,9 @@
 
 #include <module/embox/driver/block_dev.h>
 
-/**
- * @brief Do nothing
- *
- * @param inode
- *
- * @return
- */
-static int devfs_destroy_inode(struct inode *inode) {
-	return 0;
-}
-
 extern struct idesc_ops idesc_bdev_ops;
+extern int devfs_destroy_inode(struct inode *inode);
+
 /* Call device-specific open() handler */
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode  *i_no;
@@ -74,26 +65,12 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	return desc;
 }
 
-static struct super_block_operations devfs_sbops = {
+struct super_block_operations devfs_sbops = {
 	.open_idesc = devfs_open_idesc,
 	.destroy_inode = devfs_destroy_inode,
 };
 
-extern struct inode_operations devfs_iops;
-extern struct file_operations devfs_fops ;
-
-static int devfs_fill_sb(struct super_block *sb, const char *source) {
-	if (source) {
-		return -1;
-	}
-
-	sb->sb_iops = &devfs_iops;
-	sb->sb_fops = &devfs_fops;
-	sb->sb_ops  = &devfs_sbops;
-
-	char_dev_init_all();
-	return block_devs_init();
-}
+extern int devfs_fill_sb(struct super_block *sb, const char *source);
 
 static const struct fs_driver devfs_dumb_driver = {
 	.name      = "devfs",

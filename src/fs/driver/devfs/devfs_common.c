@@ -16,6 +16,7 @@
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/inode.h>
+#include <fs/super_block.h>
 #include <fs/inode_operation.h>
 #include <util/array.h>
 
@@ -149,8 +150,33 @@ static int devfs_iterate(struct inode *next, char *name, struct inode *parent, s
 	return -1;
 }
 
+/**
+ * @brief Do nothing
+ *
+ * @param inode
+ *
+ * @return
+ */
+int devfs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
 struct inode_operations devfs_iops = {
 	.lookup   = devfs_lookup,
 	.iterate  = devfs_iterate,
 	.create   = devfs_create,
 };
+
+extern struct super_block_operations devfs_sbops;
+int devfs_fill_sb(struct super_block *sb, const char *source) {
+	if (source) {
+		return -1;
+	}
+
+	sb->sb_iops = &devfs_iops;
+	sb->sb_fops = &devfs_fops;
+	sb->sb_ops  = &devfs_sbops;
+
+	char_dev_init_all();
+	return block_devs_init();
+}

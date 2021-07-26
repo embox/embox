@@ -38,9 +38,12 @@ static int fatfs_umount_entry(struct inode *node) {
 }
 
 extern struct file_operations fat_fops;
+extern int fat_destroy_inode(struct inode *inode);
+struct super_block_operations fat_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = fat_destroy_inode,
+};
 
-struct super_block_operations { };
-struct super_block_operations fat_sbops;
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 

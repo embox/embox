@@ -61,4 +61,6 @@ extern int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode);
 
 extern struct ramfs_file_info *ramfs_file_alloc(struct inode *node);
 
+extern int ramfs_destroy_inode(struct inode *inode);
+
 #endif /* RAMFS_H_ */

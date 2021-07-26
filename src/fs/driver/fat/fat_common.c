@@ -2170,12 +2170,7 @@ err_out:
 int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
-	char path[PATH_MAX];
 	int res;
-
-	if (!parent) {
-		strcpy(path, ROOT_DIR);
-	}
 
 	assert(parent->i_sb);
 
@@ -2280,6 +2275,25 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	if (0 != fat_create_file(fi, di, name, fi->mode)) {
 		return -EIO;
+	}
+
+	return 0;
+}
+
+int fat_destroy_inode(struct inode *inode) {
+	struct fat_file_info *fi;
+	struct dirinfo *di;
+
+	if (!inode_priv(inode)) {
+		return 0;
+	}
+
+	if (S_ISDIR(inode->i_mode)) {
+		di = inode_priv(inode);
+		fat_dirinfo_free(di);
+	} else {
+		fi = inode_priv(inode);
+		fat_file_free(fi);
 	}
 
 	return 0;

@@ -21,18 +21,18 @@ static void print_usage(void) {
 	printf("Usage: du [-b BYTES] [-B BLOCK_SIZE] [FILE_OR_DIR] ...\n");
 }
 
-long long divide_with_round_up(long long size, size_t block_size) {
+static long long divide_with_round_up(long long size, size_t block_size) {
 	long long  result = size / block_size;
 	return result * block_size == size ? result : result + 1;
 }
 
-long long print_file_mem_usage(const char *path, struct stat *sb, size_t block_size) {
+static long long print_file_mem_usage(const char *path, struct stat *sb, size_t block_size) {
 	long long size = divide_with_round_up((long long)sb->st_size, block_size);
 	printf("%-21llu %s\n", size, path);
 	return size;
 }
 
-long long print(char *path, DIR *dir, size_t block_size) {
+static long long print(char *path, DIR *dir, size_t block_size) {
 	struct dirent *dent;
 	long long dir_size = 0;
 	char *line;

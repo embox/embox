@@ -475,7 +475,6 @@ struct inode *vfs_get_root(void) {
 
 	if (!root_node) {
 		root_node = vfs_create_root();
-		//TODO set pseudofs driver
 	}
 
 	return root_node;

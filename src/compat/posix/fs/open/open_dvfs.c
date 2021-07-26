@@ -7,17 +7,14 @@
  */
 #include <errno.h>
 #include <fcntl.h>
+#include <limits.h>
+#include <unistd.h>
 
 #include <util/err.h>
 
 #include <fs/dvfs.h>
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
-
-#include <limits.h>
-
-ssize_t read(int fd, void *buf, size_t count);
-int close(int fd);
 
 int _open(const char *path, int __oflag) {
 	struct idesc *idesc;

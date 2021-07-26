@@ -2,9 +2,10 @@ package embox.fs.driver
 
 module binfs {
 	source "binfs.c"
-
-	depends embox.fs.core
-	depends embox.mem.pool
+	source "binfs_oldfs.c"
 }
 
-
+module binfs_dvfs {
+	source "binfs.c"
+	source "binfs_dvfs.c"
+}

@@ -842,6 +842,15 @@ static struct fs_driver cdfsfs_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
 
+static int cdfs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations cdfs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = cdfs_destroy_inode,
+};
+
 static void cdfs_free_fs(struct super_block *sb) {
 	struct cdfs_fs_info *fsi = sb->sb_data;
 
@@ -867,6 +876,7 @@ static int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
 	sb->sb_data = fsi;
+	sb->sb_ops = &cdfs_sbops;
 
 	return 0;
 }

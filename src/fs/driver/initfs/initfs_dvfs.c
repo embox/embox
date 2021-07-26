@@ -77,20 +77,12 @@ static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
-static int initfs_destroy_inode(struct inode *inode) {
-	if (inode_priv(inode) != NULL) {
-		initfs_file_free(inode_priv(inode));
-	}
-
-	return 0;
-}
-
-struct super_block_operations initfs_sbops = {
+static struct super_block_operations initfs_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = initfs_destroy_inode,
 };
 
-struct inode_operations initfs_iops = {
+static struct inode_operations initfs_iops = {
 	.create   = initfs_create,
 	.lookup   = initfs_lookup,
 	.iterate  = initfs_iterate,

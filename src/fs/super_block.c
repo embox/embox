@@ -33,9 +33,8 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	}
 
 	node = node_alloc("", 0);
-	node->i_sb = node->nas->fs = sb;
+	node->i_sb = sb;
 	node->i_mode = S_IFDIR;
-	node->i_dentry->flags = S_IFDIR;
 
 	*sb = (struct super_block) {
 		.fs_drv = drv,
@@ -44,10 +43,14 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 
 	if (drv->fill_sb) {
 		if (0 != drv->fill_sb(sb, source)) {
+			node_free(node);
 			pool_free(&super_block_pool, sb);
 			return NULL;
 		}
 	}
+
+	node->i_ops = sb->sb_iops;
+	node->nas->fs = sb;
 
 	return sb;
 }

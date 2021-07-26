@@ -15,20 +15,26 @@
 #include <string.h>
 #include <errno.h>
 
+#include <util/math.h>
 #include <util/err.h>
+
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 #include <fs/fs_driver.h>
-#include <libsmbclient.h>
+#include <fs/super_block.h>
+#include <fs/hlpr_path.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/dir_context.h>
+#include <fs/inode_operation.h>
+
 #include <drivers/block_dev.h>
+
 #include <mem/misc/pool.h>
 #include <embox/unit.h>
-#include <fs/hlpr_path.h>
 
-#include <util/math.h>
 
+#include <libsmbclient.h>
 
 struct cifs_fs_info
 {
@@ -51,6 +57,8 @@ struct smbitem
 	int type;
 	char name[1];
 };
+
+static struct super_block_operations cifs_sbops;
 
 static mode_t
 samba_type_to_mode_fmt (const unsigned dt_type)
@@ -102,8 +110,12 @@ embox_delete_smbctx (SMBCCTX * ctx)
 	smbc_getFunctionPurgeCachedServers (ctx) (ctx);
 	smbc_free_context (ctx, 1);
 }
+static void
+cifs_fill_node(struct inode *node, char *name, unsigned type) {
+	node->i_mode = samba_type_to_mode_fmt(type);
+}
 
-static int
+int
 embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
 							 int maxlen)
 {
@@ -169,6 +181,68 @@ static int cifs_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
+struct inode *cifs_lookup(char const *name, struct inode const *dir) {
+	return NULL;
+}
+
+int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx) {
+	struct cifs_fs_info *fsi;
+	char smb_path[PATH_MAX];
+	struct smbc_dirent *dirent;
+	SMBCCTX *ctx;
+	SMBCFILE * fd_dir;
+	int i = 0;
+
+	fsi = parent->nas->fs->sb_data;
+	ctx = fsi->ctx;
+	strncpy(smb_path, fsi->url, PATH_MAX - 1);
+	smb_path[PATH_MAX - 1] = '\0';
+
+
+	if ((fd_dir = smbc_getFunctionOpendir (ctx) (ctx, smb_path)) == NULL) {
+		return -1;
+	}
+
+	while ((dirent = smbc_getFunctionReaddir (ctx) (ctx, fd_dir)) != NULL) {
+		if (strcmp (dirent->name, "") == 0) {
+			continue;
+		}
+		if (strcmp (dirent->name, ".") == 0) {
+			continue;
+		}
+		if (strcmp (dirent->name, "..") == 0) {
+			continue;
+		}
+		if (i == ((intptr_t) dir_ctx->fs_ctx)) {
+			cifs_fill_node(next, dirent->name, dirent->smbc_type);
+			strncpy(name, dirent->name, NAME_MAX - 1);
+			name[NAME_MAX - 1] = '0';
+			dir_ctx->fs_ctx = (void *)(intptr_t)i + 1;
+
+			switch (dirent->smbc_type) {
+			case SMBC_DIR:
+				break;
+			case SMBC_FILE_SHARE:
+				smbc_getFunctionPurgeCachedServers(ctx)(ctx);
+				break;
+			case SMBC_FILE:
+				break;
+			}
+			break;
+		}
+		i++;
+	}
+
+	smbc_getFunctionClose (ctx) (ctx, fd_dir);
+
+	return 0;
+}
+
+static struct inode_operations cifs_iops = {
+//	.lookup   = cifs_lookup,
+//	.iterate  = cifs_iterate,
+};
+
 static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
@@ -198,11 +272,15 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	strcpy (fsi->url, smb_path);
 	fsi->ctx = ctx;
 	sb->sb_data = fsi;
+	sb->sb_ops = &cifs_sbops;
+	sb->sb_iops = &cifs_iops;
 
 	return 0;
 }
 
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
+
+#if 1
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
 	int rc;
@@ -224,6 +302,7 @@ static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 
 error:
 	return -rc;
+#endif
 }
 
 static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __oflag)
@@ -399,6 +478,15 @@ static int embox_cifs_node_delete(struct inode *node) {
 
 	return 0;
 }
+
+static int cifs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations cifs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = cifs_destroy_inode,
+};
 
 static const struct fsop_desc cifs_fsop = {
 	.create_node = embox_cifs_node_create,

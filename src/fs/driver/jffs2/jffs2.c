@@ -1587,6 +1587,15 @@ static int jffs2fs_format(struct block_dev *bdev, void *priv) {
 	return flash_emu_dev_create(flash_node_name, 16 * 1024, 1024);
 }
 
+static int jffs2fs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+static struct super_block_operations jffs2fs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = jffs2fs_destroy_inode,
+};
+
 static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	struct block_dev *bdev;
 	struct jffs2_fs_info *fsi;
@@ -1604,6 +1613,7 @@ static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	}
 	memset(fsi, 0, sizeof(struct jffs2_fs_info));
 	sb->sb_data = fsi;
+	sb->sb_ops = &jffs2fs_sbops;
 
 	return 0;
 }

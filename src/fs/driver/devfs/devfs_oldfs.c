@@ -15,33 +15,24 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/dir_context.h>
-
+#include <fs/super_block.h>
 #include <fs/file_desc.h>
+
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
 
 extern struct inode_operations devfs_iops;
+extern struct file_operations devfs_fops;
+extern int devfs_fill_sb(struct super_block *sb, const char *source);
+extern int devfs_destroy_inode(struct inode *inode);
 
-static struct super_block *devfs_sb;
+struct super_block_operations devfs_sbops = {
+	//.open_idesc = devfs_open_idesc,
+	.destroy_inode = devfs_destroy_inode,
+};
 
 static int devfs_mount(struct super_block *sb, struct inode *dest) {
-	int ret;
-
-	dest->i_ops = &devfs_iops;
-
-	ret = char_dev_init_all();
-	if (ret != 0) {
-		return ret;
-	}
-
-	ret = block_devs_init();
-	if (ret != 0) {
-		return ret;
-	}
-
-	devfs_sb = sb;
-
 	return 0;
 }
 
@@ -49,9 +40,9 @@ static struct fsop_desc devfs_fsop = {
 	.mount = devfs_mount,
 };
 
-extern struct file_operations devfs_fops;
 static const struct fs_driver devfs_driver = {
 	.name = "devfs",
+	.fill_sb   = devfs_fill_sb,
 	.file_op = &devfs_fops,
 	.fsop = &devfs_fsop
 };
