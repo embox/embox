@@ -3,7 +3,7 @@ angular.module("HttpAdmin", [])
   .controller("InterfacesAdminCtrl", ['$scope', '$http', function($scope, $http) {
     $scope.interfaces = [];
 
-    $http.get('cgi-bin/http_admin_backend').success(function (data) {
+    $http.get('cgi-bin/http_admin_iface_list').success(function (data) {
       $scope.interfaces = data;
     });
 
@@ -13,7 +13,7 @@ angular.module("HttpAdmin", [])
 	'data' : iface
       };
 
-      $http.post('cgi-bin/http_admin_backend', post_data).success(function (data) {
+      $http.post('cgi-bin/http_admin_iface_list', post_data).success(function (data) {
 	/* saved */
       });
     };
@@ -23,7 +23,7 @@ angular.module("HttpAdmin", [])
 	'action' : 'flash_settings',
       };
 
-      $http.post('cgi-bin/http_admin_backend', post_data).success(function (data) {
+      $http.post('cgi-bin/http_admin_iface_list', post_data).success(function (data) {
 	/* saved */
       });
     };

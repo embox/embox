@@ -6,6 +6,8 @@
  * @date    11.07.2014
  */
 
+#include <util/log.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,8 +17,12 @@
 
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>
+
+#include <hal/arch.h>
+
 #include <cJSON.h>
-#include <util/log.h>
+
+#include <framework/mod/options.h>
 
 static char *http_admin_build_iface_list(void) {
 	struct ifaddrs *i_ifa, *ifa = NULL;
@@ -39,6 +45,10 @@ static char *http_admin_build_iface_list(void) {
 		char buf[64];
 
 		if (iaddr == NULL || iaddr->sa_family != AF_INET) {
+			continue;
+		}
+
+		if (0 == strcmp(i_ifa->ifa_name, "lo")) {
 			continue;
 		}
 
@@ -142,10 +152,18 @@ static void http_admin_post(char *post_data) {
 		if (netdev_set_macaddr(iface_dev->dev, if_hwaddr)) {
 			goto outerr;
 		}
-	} else if (!strcmp(action, "flash_settings")) {
-		system("flash_settings store");
+#if !OPTION_GET(BOOLEAN,is_readonly)
+		if (!system("flash_settings store net")) {
+			log_info("Net configuration is successfully saved");
+			log_info("\tRebooting now to apply new net config...");
+			arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+		} else {
+			log_error("Net configuration saving failed");
+		}
+#else
+		log_info("Net configuration is updated now");
+#endif
 	}
-
 	cJSON_Delete(post_json);
 	return;
 
