@@ -9,7 +9,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
 .controller("InterfacesAdminCtrl", ['$scope', '$http', function($scope, $http) {
     $scope.interfaces = [];
 
-    $http.get('cgi-bin/http_admin_backend').success(function (data) {
+    $http.get('cgi-bin/http_admin_iface_list').success(function (data) {
         $scope.interfaces = data;
     });
 
@@ -19,7 +19,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
             'data' : iface
         };
 
-        $http.post('cgi-bin/http_admin_backend', post_data);
+        $http.post('cgi-bin/http_admin_iface_list', post_data);
     };
 }])
 .controller("SystemCtrl", ['$scope', '$http', function($scope, $http) {
