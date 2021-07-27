@@ -78,8 +78,13 @@ int main(int argc, char *argv[]) {
 
 		if (sock_conn && ipc_has_data) {
 			int buf_o;
-			buf_len = read(ipc_in, buf, sizeof(buf));
-			assert(buf_len > 0);
+			while(1) {
+				buf_len = read(ipc_in, buf, sizeof(buf));
+				if (buf_len > 0) {
+					break;
+				}
+				usleep(1000);
+			}
 
 			buf_o = 0;
 			while (buf_o < buf_len) {
