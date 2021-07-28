@@ -1,5 +1,10 @@
 
-angular.module("HttpAdmin", [])
+angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
+.controller("NavBarCtrl", ['$scope', '$location', function($scope, $location) {
+    $scope.isActive = function(id) {
+        return $location.path().indexOf('/' + id) == 0;
+    };
+}])
   .controller("InterfacesAdminCtrl", ['$scope', '$http', function($scope, $http) {
     $scope.interfaces = [];
 
@@ -28,4 +33,13 @@ angular.module("HttpAdmin", [])
       });
     };
 
-  }]);
+}])
+.config(['$routeProvider', function($routeProvider) {
+    $routeProvider.
+    when('/interfaces', {
+        templateUrl: 'partials/interfaces.html',
+    }).
+    otherwise({
+        redirectTo: '/interfaces'
+    });
+}]);
