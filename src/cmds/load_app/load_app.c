@@ -68,6 +68,6 @@ int main(int argc, char **argv) {
 	instructions -= offset;
 	free(instructions);
 
-	printf("%d\n", ret);
+	printf("Loaded app returned %d\n", ret);
 	return 0;
 }

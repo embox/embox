@@ -28,3 +28,22 @@ module lkltest {
 	depends embox.compat.libc.all
 	depends third_party.lkl.lib
 }
+
+@App
+@AutoCmd
+@Build(stage=2,script="true")
+@BuildDepends(third_party.lkl.lib)
+@Cmd(name = "echotovda",
+	help = "Write arguments to the standard output (/vda) using Linux system calls",
+	man = '''
+		NAME
+			echotovda
+		AUTHORS
+			Anton Ostrouhhov
+	''')
+module echotovda {
+	source "echotovda.c"
+
+	depends embox.compat.libc.all
+	depends third_party.lkl.lib
+}

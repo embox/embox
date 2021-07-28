@@ -16,6 +16,11 @@ int main() {
 	char cmdline[64];
 
 	snprintf(cmdline, sizeof(cmdline), "mem=64M loglevel=8"); // loglevel=8 is from tests
+	/*
+	Do not try to run 'lkltest'
+	if 'embox.kernel.task.lkl_task' is included in 'conf/mods.config'
+	because lkl_start_kernel() is executed in 'lkl_task.c' too.
+	*/
 	ret = lkl_start_kernel(&lkl_host_ops, cmdline);
 
 	if (ret) {
