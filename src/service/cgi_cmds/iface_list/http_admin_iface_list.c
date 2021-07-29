@@ -17,6 +17,7 @@
 
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>
+#include <net/l3/route.h>
 
 #include <hal/arch.h>
 
@@ -25,6 +26,20 @@
 #include <framework/mod/options.h>
 
 #define USE_NETMANAGER     OPTION_GET(BOOLEAN,use_netmanager)
+
+
+static in_addr_t *iface_get_gateway(char *ifname) {
+	struct rt_entry *rt;
+
+	for (rt = rt_fib_get_first(); rt != NULL; rt = rt_fib_get_next(rt)) {
+
+		if ((rt->rt_gateway != 0) && !strcmp(ifname, rt->dev->name)) {
+			return &rt->rt_gateway;
+		}
+	}
+
+	return 0;
+}
 
 static char *http_admin_build_iface_list(void) {
 	struct ifaddrs *i_ifa, *ifa = NULL;
@@ -77,6 +92,12 @@ static char *http_admin_build_iface_list(void) {
 					buf,
 					sizeof(buf)));
 
+		cJSON_AddStringToObject(iface_obj, "gateway",
+				inet_ntop(i_ifa->ifa_netmask->sa_family,
+					iface_get_gateway(i_ifa->ifa_name),
+					buf,
+					sizeof(buf)));
+
 		iface_dev = inetdev_get_by_name(i_ifa->ifa_name);
 		if (!iface_dev) {
 			goto outerr;
@@ -116,10 +137,11 @@ static char *cJSON_GetObjectString(cJSON *obj, const char *name) {
 
 static void http_admin_post(char *post_data) {
 	struct in_device *iface_dev;
-	struct in_addr if_addr, if_netmask;
+	struct in_addr if_addr, if_netmask, if_gateway;
 	unsigned char if_hwaddr[MAX_ADDR_LEN];
 	const char *action;
 	cJSON *post_json;
+
 
 	post_json = cJSON_Parse(post_data);
 
@@ -143,17 +165,25 @@ static void http_admin_post(char *post_data) {
 				cJSON_GetObjectString(iface_desc, "ip"), &if_addr)) {
 			goto outerr;
 		}
-		if (inetdev_set_addr(iface_dev, if_addr.s_addr)) {
-			goto outerr;
-		}
 
 		if (1 != inet_pton(AF_INET,
 				cJSON_GetObjectString(iface_desc, "netmask"), &if_netmask)) {
 			goto outerr;
 		}
+
+		if (1 != inet_pton(AF_INET,
+				cJSON_GetObjectString(iface_desc, "gateway"), &if_gateway)) {
+			goto outerr;
+		}
+#if 0
+		if (inetdev_set_addr(iface_dev, if_addr.s_addr)) {
+			goto outerr;
+		}
+
 		if (inetdev_set_mask(iface_dev, if_netmask.s_addr)) {
 			goto outerr;
 		}
+#endif
 
 		if (!macaddr_scan((unsigned char *)cJSON_GetObjectString(
 				iface_desc, "mac"), if_hwaddr)) {
@@ -165,6 +195,17 @@ static void http_admin_post(char *post_data) {
 		cJSON *item;
 		item = cJSON_GetObjectItem(iface_desc, "useDhcp");
 		log_error("%d", item->valueint);
+
+
+		rt_del_route_if(iface_dev->dev);
+
+		inetdev_set_addr(iface_dev, if_addr.s_addr);
+
+		inetdev_set_mask(iface_dev, if_netmask.s_addr);
+		rt_add_route(iface_dev->dev, if_addr.s_addr & if_netmask.s_addr, if_netmask.s_addr, INADDR_ANY, 0);
+
+		rt_add_route(iface_dev->dev, 0, 0, if_gateway.s_addr, RTF_UP | RTF_GATEWAY);
+
 
 #if !OPTION_GET(BOOLEAN,is_readonly)
 		if (!system("flash_settings store net")) {
