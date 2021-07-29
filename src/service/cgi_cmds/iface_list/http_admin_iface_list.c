@@ -24,6 +24,8 @@
 
 #include <framework/mod/options.h>
 
+#define USE_NETMANAGER     OPTION_GET(BOOLEAN,use_netmanager)
+
 static char *http_admin_build_iface_list(void) {
 	struct ifaddrs *i_ifa, *ifa = NULL;
 	cJSON *iface_array;
@@ -43,6 +45,7 @@ static char *http_admin_build_iface_list(void) {
 		struct sockaddr *iaddr = i_ifa->ifa_addr;
 		cJSON *iface_obj;
 		char buf[64];
+		bool use_dhcp=false;
 
 		if (iaddr == NULL || iaddr->sa_family != AF_INET) {
 			continue;
@@ -81,6 +84,13 @@ static char *http_admin_build_iface_list(void) {
 		macaddr_print((unsigned char *) buf,
 			(unsigned char *) iface_dev->dev->dev_addr);
 		cJSON_AddStringToObject(iface_obj, "mac", buf);
+#if USE_NETMANAGER
+		snprintf(buf,sizeof(buf), "netmanager -d %s", i_ifa->ifa_name);
+		if (!system(buf)) {
+			use_dhcp = true;
+		}
+#endif
+		cJSON_AddBoolToObject(iface_obj, "useDhcp", use_dhcp);
 	}
 
 	json_list = cJSON_PrintUnformatted(iface_array);
@@ -152,6 +162,10 @@ static void http_admin_post(char *post_data) {
 		if (netdev_set_macaddr(iface_dev->dev, if_hwaddr)) {
 			goto outerr;
 		}
+		cJSON *item;
+		item = cJSON_GetObjectItem(iface_desc, "useDhcp");
+		log_error("%d", item->valueint);
+
 #if !OPTION_GET(BOOLEAN,is_readonly)
 		if (!system("flash_settings store net")) {
 			log_info("Net configuration is successfully saved");

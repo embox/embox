@@ -35,6 +35,10 @@
             <span class='glyphicon glyphicon-remove form-control-feedback'
       	ng-show="interfaceForm.macInput.$invalid"></span>
         </div>
+        <div class="form-group has-feedback" ng-class="{'has-error' : interfaceForm.useDhcpInput.$invalid}">
+          <input type="checkbox" id="useDhcpInput{{index}}" name="useDhcp" ng-model="iface.useDhcp" />
+          <label for="useDhcpInput{{index}}">USE DHCP</label>
+        </div>
         <button type="submit" class="btn btn-danger"
           ng-disabled="interfaceForm.$invalid"
           ng-click="update(iface)">Apply Settings</button>
