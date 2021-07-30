@@ -14,6 +14,8 @@ module http_admin {
 @Cmd(name="http_admin_accounts", help="", man="")
 @BuildDepends(third_party.lib.cjson)
 module http_admin_accounts {
+	option number log_level=1
+
 	@IncludePath("$(CONF_DIR)")
 	source "http_admin_accounts.c"
 }

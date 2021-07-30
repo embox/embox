@@ -5,6 +5,7 @@
  * @author  Anton Kozlov
  * @date    11.07.2014
  */
+#include <util/log.h>
 
 #include <stdio.h>
 #include <string.h>
@@ -25,6 +26,7 @@ static char *http_admin_build_accounts_list(void) {
 
 	accounts_array = cJSON_CreateArray();
 	if (!accounts_array) {
+		log_error("could not create cJSON_CreateArray()");
 		goto outerr;
 	}
 
@@ -32,6 +34,7 @@ static char *http_admin_build_accounts_list(void) {
 
 	account_obj = cJSON_CreateObject();
 	if (!account_obj) {
+		log_error("could not create cJSON_CreateObject()");
 		goto outerr;
 	}
 	cJSON_AddItemToArray(accounts_array, account_obj);
