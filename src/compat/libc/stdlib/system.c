@@ -6,16 +6,18 @@
  */
 
 #include <errno.h>
-#include <cmd/shell.h>
-
 #include <stdlib.h>
 
+#include <cmd/cmdline.h>
+#include <framework/cmd/api.h>
+
 int system(const char *command) {
-	const struct shell *sh = shell_any();
+	int argc;
+	char *argv[32];
+	const struct cmd *cmd;
 
-	if (!sh) {
-		return -ENOENT;
-	}
+	argc = cmdline_tokenize((char *)command, argv);
 
-	return shell_exec(sh, command);
+	cmd = cmd_lookup(argv[0]);
+	return cmd_exec(cmd, argc, argv);
 }
