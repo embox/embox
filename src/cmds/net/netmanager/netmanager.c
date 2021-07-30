@@ -15,7 +15,9 @@
 
 #include <ifaddrs.h>
 
+#include <net/inetdevice.h>
 #include <net/l3/route.h>
+#include <net/util/macaddr.h>
 
 #include <framework/mod/options.h>
 
@@ -138,11 +140,11 @@ static int netmanager_is_dhcp_use(char *ifname) {
 			break;
 		}
 		if (!strncmp(buf, pattern, pat_len)) {
-			res = 0;
+			res = 1;
 			break;
 		}
 		if (buf[0] == '#' && !strncmp(buf + 1, pattern, pat_len)) {
-			res = 1;
+			res = 0;
 			break;
 		}
 	}
@@ -172,6 +174,7 @@ static int netmanager_store_config(char *ifname, int dhcp) {
 	char file_buf[256] = "";
 	char buf[16];
 	const char *tmp;
+	struct in_device *iface_dev;
 
 	if (-1 == getifaddrs(&ifa)) {
 		return -1;
@@ -211,11 +214,10 @@ static int netmanager_store_config(char *ifname, int dhcp) {
 			buf,
 			sizeof(buf));
 	strcat(file_buf, tmp);
+
+	iface_dev = inetdev_get_by_name(i_ifa->ifa_name);
 	strcat(file_buf, "\n\thwaddress ");
-	tmp = inet_ntop(i_ifa->ifa_netmask->sa_family,
-		&((struct sockaddr_in *) i_ifa->ifa_netmask)->sin_addr,
-		buf,
-		sizeof(buf));
+	macaddr_print((unsigned char *)buf, iface_dev->dev->dev_addr);
 	strcat(file_buf, tmp);
 
 	strcat(file_buf, "\n\n");
