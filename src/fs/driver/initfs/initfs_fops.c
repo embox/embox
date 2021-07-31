@@ -60,11 +60,11 @@ struct file_operations initfs_fops = {
 	.ioctl = initfs_ioctl,
 };
 
-struct initfs_file_info *initfs_file_alloc(void) {
+struct initfs_file_info *initfs_alloc_inode(void) {
 	return pool_alloc(&initfs_file_pool);
 }
 
-void initfs_file_free(struct initfs_file_info *fi) {
+void initfs_free_inode(struct initfs_file_info *fi) {
 	pool_free(&initfs_file_pool, fi);
 }
 
@@ -84,7 +84,7 @@ int initfs_fill_inode(struct inode *node, char *cpio,
 	inode_mtime_set(node, entry->mtime);
 	node->i_mode = entry->mode & (S_IFMT | S_IRWXA);
 
-	fi = initfs_file_alloc();
+	fi = initfs_alloc_inode();
 	if (!fi) {
 		return -ENOMEM;
 	}
@@ -171,7 +171,7 @@ int initfs_iterate(struct inode *next, char *name, struct inode *parent, struct 
 
 int initfs_destroy_inode(struct inode *inode) {
 	if (inode_priv(inode) != NULL) {
-		initfs_file_free(inode_priv(inode));
+		initfs_free_inode(inode_priv(inode));
 	}
 
 	return 0;

@@ -21,8 +21,8 @@ struct initfs_file_info {
 	size_t name_len;
 };
 
-extern struct initfs_file_info *initfs_file_alloc(void);
-extern void initfs_file_free(struct initfs_file_info *fi);
+extern struct initfs_file_info *initfs_alloc_inode(void);
+extern void initfs_free_inode(struct initfs_file_info *fi);
 extern int initfs_iterate(struct inode *next, char *name,
 		struct inode *parent, struct dir_ctx *ctx);
 extern int initfs_fill_inode(struct inode *node, char *cpio,

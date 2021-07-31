@@ -43,7 +43,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 		return -1;
 	}
 
-	fi = initfs_file_alloc();
+	fi = initfs_alloc_inode();
 	if (fi == NULL) {
 		return -ENOMEM;
 	}

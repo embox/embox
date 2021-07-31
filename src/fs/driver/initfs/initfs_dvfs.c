@@ -93,7 +93,7 @@ extern struct file_operations initfs_fops;
 static int initfs_fill_sb(struct super_block *sb, const char *source) {
 	struct initfs_file_info *fi;
 
-	fi = initfs_file_alloc();
+	fi = initfs_alloc_inode();
 	if (fi == NULL) {
 		return -ENOMEM;
 	}
