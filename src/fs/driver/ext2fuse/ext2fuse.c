@@ -32,5 +32,4 @@ static const struct fs_driver ext2fuse_dumb_driver = {
 	.fill_sb   = ext2fuse_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &ext2fuse_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(ext2fuse_dumb_driver);

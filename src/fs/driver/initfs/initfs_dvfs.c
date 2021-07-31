@@ -110,5 +110,4 @@ static const struct fs_driver initfs_dumb_driver = {
 	.fill_sb   = initfs_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &initfs_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(initfs_dumb_driver);

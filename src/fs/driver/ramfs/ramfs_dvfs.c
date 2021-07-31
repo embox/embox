@@ -121,5 +121,4 @@ static const struct fs_driver ramfs_dumb_driver = {
 	.format    = ramfs_format,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &ramfs_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(ramfs_dumb_driver);

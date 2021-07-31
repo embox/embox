@@ -22,6 +22,12 @@ struct fs_driver {
 	int (*clean_sb)(struct super_block *sb);
 };
 
+#define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \
+	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, \
+			fs_drivers_registry);                \
+	ARRAY_SPREAD_ADD(fs_drivers_registry, \
+			&fs_driver_)
+
 extern const struct fs_driver *fs_driver_find(const char *name);
 
 #endif /* FS_DRV_H */

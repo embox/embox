@@ -759,5 +759,4 @@ static const struct fs_driver dfs_dumb_driver = {
 	.fill_sb   = &dfs_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &dfs_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(dfs_dumb_driver);

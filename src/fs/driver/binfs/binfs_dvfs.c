@@ -37,8 +37,7 @@ static const struct fs_driver binfs_driver = {
 	.fill_sb   = binfs_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &binfs_driver);
+DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);
 
 static struct auto_mount binfs_auto_mount = {
 	.mount_path = "/bin",
@@ -47,4 +46,3 @@ static struct auto_mount binfs_auto_mount = {
 
 ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab);
 ARRAY_SPREAD_ADD(auto_mount_tab, &binfs_auto_mount);
-
