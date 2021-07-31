@@ -21,6 +21,10 @@
 
 POOL_DEF(initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
 
+int initfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
+	return -EACCES;
+}
+
 static size_t initfs_read(struct file_desc *desc, void *buf, size_t size) {
 	struct initfs_file_info *fi;
 	off_t pos;

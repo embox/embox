@@ -56,10 +56,6 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-static int initfs_create_node(struct inode *node, struct inode *parent_node, int mode) {
-	return -EACCES;
-}
-
 extern struct file_operations initfs_fops;
 
 struct super_block_operations initfs_sbops = {
@@ -69,7 +65,7 @@ struct super_block_operations initfs_sbops = {
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
-	.create_node = initfs_create_node,
+	.create_node = initfs_create,
 };
 
 static struct fs_driver initfs_driver = {

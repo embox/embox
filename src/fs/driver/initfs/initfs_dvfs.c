@@ -37,10 +37,6 @@
 
 #include "initfs.h"
 
-static int initfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return -EACCES;
-}
-
 static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
