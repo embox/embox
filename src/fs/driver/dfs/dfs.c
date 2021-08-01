@@ -465,9 +465,6 @@ static struct inode_operations dfs_iops;
 
 static struct super_block_operations dfs_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
-	.alloc_inode   = NULL,
-	.destroy_inode = NULL,
-	.write_inode   = NULL,
 };
 
 static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
