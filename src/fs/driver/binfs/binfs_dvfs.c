@@ -39,4 +39,4 @@ static const struct fs_driver binfs_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);
 
-FILE_SYSTEM_AUTOMOUNT"/bin", binfs_driver);
+FILE_SYSTEM_AUTOMOUNT("/bin", binfs_driver);

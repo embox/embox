@@ -19,25 +19,28 @@
 
 EMBOX_UNIT_INIT(unit_init);
 
-#define DEVFS_DIR "/dev"
+ARRAY_SPREAD_DEF(const struct auto_mount *const, auto_mount_tab);
+
 static int rootfs_mount(const char *dev, const char *fs_type) {
 	struct path node, root;
 	mode_t mode;
+	const struct auto_mount *auto_mnt;
 
 	if (-1 == mount((char *) dev, "/", (char *) fs_type)) {
 		return -errno;
 	}
 
-	/* Handle devfs in a special way as automount is not implemented yet */
 	mode = S_IFDIR | S_IRALL | S_IWALL | S_IXALL;
 	vfs_get_root_path(&root);
 
-	if (0 != vfs_create(&root, DEVFS_DIR, mode, &node)) {
-		return -1;
-	}
+	array_spread_foreach(auto_mnt, auto_mount_tab) {
+		if (0 != vfs_create(&root, auto_mnt->mount_path, mode, &node)) {
+			return -1;
+		}
 
-	if (-1 == mount(NULL, DEVFS_DIR, "devfs")) {
-		return -errno;
+		if (-1 == mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name)) {
+			return -errno;
+		}
 	}
 
 	return 0;
