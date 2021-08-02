@@ -45,11 +45,6 @@ struct lookup;
 struct inode_operations;
 struct dir_ctx;
 
-struct auto_mount {
-	char mount_path[DVFS_MAX_PATH_LEN];
-	struct fs_driver *fs_driver;
-};
-
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
 extern int            dvfs_fs_dentry_try_free(struct super_block *sb);

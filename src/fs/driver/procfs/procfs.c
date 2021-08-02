@@ -189,10 +189,4 @@ static const struct fs_driver procfs_dumb_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(procfs_dumb_driver);
 
-static struct auto_mount procfs_auto_mount = {
-	.mount_path = "/proc",
-	.fs_driver  = (struct fs_driver *)&procfs_dumb_driver,
-};
-
-ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab);
-ARRAY_SPREAD_ADD(auto_mount_tab, &procfs_auto_mount);
+FILE_SYSTEM_AUTOMOUNT("/proc", procfs_dumb_driver);

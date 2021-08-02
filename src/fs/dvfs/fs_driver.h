@@ -28,6 +28,21 @@ struct fs_driver {
 	ARRAY_SPREAD_ADD(fs_drivers_registry, \
 			&fs_driver_)
 
+
+struct auto_mount {
+	const char *mount_path;
+	const struct fs_driver *fs_driver;
+};
+
+#define FILE_SYSTEM_AUTOMOUNT(path, fsdriver) \
+	static const struct auto_mount fsdriver ## _auto_mount = { \
+			.mount_path = path, \
+			.fs_driver  = &fsdriver,  \
+		}; \
+		ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab); \
+		ARRAY_SPREAD_ADD(auto_mount_tab, &fsdriver ## _auto_mount)
+
+
 extern const struct fs_driver *fs_driver_find(const char *name);
 
 #endif /* FS_DRV_H */
