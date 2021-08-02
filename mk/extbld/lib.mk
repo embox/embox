@@ -69,9 +69,12 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 
 DOWNLOAD_CHECK  := $(BUILD_DIR)/.download_checked
 $(DOWNLOAD_CHECK) : $(DOWNLOAD)
-	cd $(DOWNLOAD_DIR) && ( \
-		$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
-	)
+    # check md5sum only for source archives and skip the check for git repos
+	if [ "$(sources_archive_mirrors)" ] ; then \
+		cd $(DOWNLOAD_DIR) && ( \
+				$(MD5) $(pkg_archive_name) | $(AWK) '{print $$1}' | grep $(PKG_MD5) 2>&1 >/dev/null; \
+			); \
+    fi;
 	touch $@
 
 download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
