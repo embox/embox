@@ -19,12 +19,10 @@
 #define INODE_POOL_SIZE OPTION_GET(NUMBER, inode_pool_size)
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 #define FILE_POOL_SIZE OPTION_GET(NUMBER, file_pool_size)
-#define MNT_POOL_SIZE OPTION_GET(NUMBER, mnt_pool_size)
 
 POOL_DEF(inode_pool, struct inode, INODE_POOL_SIZE);
 POOL_DEF(dentry_pool, struct dentry, DENTRY_POOL_SIZE);
 POOL_DEF(file_pool, struct file_desc, FILE_POOL_SIZE);
-POOL_DEF(mnt_pool, struct dvfsmnt, MNT_POOL_SIZE);
 
 #define FREE_DENTRY_ANY    0
 #define FREE_DENTRY_INODE  1

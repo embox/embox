@@ -50,24 +50,9 @@ struct auto_mount {
 	struct fs_driver *fs_driver;
 };
 
-struct dvfsmnt {
-	struct dvfsmnt *mnt_parent;
-	struct dentry  *mnt_mountpoint;
-	struct dentry  *mnt_root;
-	struct super_block *mnt_sb;
-
-	struct dlist_head children;
-	struct dlist_head children_lnk;
-
-	int flags;
-};
-
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);
 extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
-
-extern struct dvfsmnt *dvfs_alloc_mnt(void);
-extern int             dvfs_destroy_mnt(struct dvfsmnt *mnt);
 
 extern struct dentry *dvfs_root(void);
 extern int dvfs_remove(const char *path);
