@@ -1,0 +1,13 @@
+package embox.lib
+
+static module loop_file_logger_lib {
+	option number log_level=1
+	option string file_name
+	option number record_size
+	option number record_quantity
+
+	source "loop_file_logger_lib.c"
+
+	@IncludeExport(path="lib")
+	source "loop_file_logger.h"
+}
