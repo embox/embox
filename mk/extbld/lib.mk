@@ -61,9 +61,22 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 			$(RM) $(pkg_archive_name); \
 		fi;) \
 	$(foreach g,$(sources_git), \
-		if [ ! -d $(DOWNLOAD_DIR)/$(call targets_git,$g) ]; then \
-			cd $(DOWNLOAD_DIR); \
-			git clone $g; \
+		dir_to_clone=$(DOWNLOAD_DIR)/$(call targets_git,$g); \
+		if [ ! -d $$dir_to_clone ]; then \
+			if [ ! "$(PKG_VER)" ]; then \
+				cd $(DOWNLOAD_DIR); \
+				git clone $g; \
+			else \
+				mkdir $$dir_to_clone; \
+				cd $$dir_to_clone; \
+				git init . ; \
+				git remote add origin '$g'; \
+				git remote set-url origin '$g'; \
+				git fetch origin ; \
+				git fetch origin -t ; \
+				git checkout -f -q '$(PKG_VER)'; \
+				git clean -ffdx; \
+			fi; \
 		fi;)
 	touch $@
 
@@ -84,12 +97,12 @@ extract : $(EXTRACT)
 $(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
 		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR);, \
-		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);) \
+		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);))
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
 			$(call targets_git,$(sources_git)))"; \
 		if [ "$$COPY_FILES" ]; then \
 			cp -R $$COPY_FILES $(BUILD_DIR); \
-		fi; )
+		fi;
 	touch $@
 
 PATCH  := $(BUILD_DIR)/.patched
