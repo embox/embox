@@ -1,6 +1,8 @@
 package embox.driver.dma
 
 abstract module dma_api {
+	source "dma.c"
+
 	@IncludeExport(path="drivers/dma")
 	source "dma.h"
 }

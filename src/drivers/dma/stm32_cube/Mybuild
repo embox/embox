@@ -8,5 +8,6 @@ module stm32f7_dma extends dma_api {
 
 	source "stm32f7_dma.c"
 
+	depends embox.driver.dma.dma_api
 	@NoRuntime depends third_party.bsp.st_bsp_api
 }

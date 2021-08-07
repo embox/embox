@@ -26,5 +26,9 @@ module bcm283x_dma extends dma_api {
 
 	source "bcm283x_dma.c"
 
+	@IncludeExport(path="drivers/dma")
+	source "bcm283x_dma.h"
+
+	depends embox.driver.dma.dma_api
 	depends embox.mem.page_api
 }
