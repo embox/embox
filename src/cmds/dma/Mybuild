@@ -1,9 +1,9 @@
-package raspberry_pi.cmd
+package embox.cmd.dma
 
 
 @AutoCmd
 @Cmd(name = "dma",
-	help = "test dma tasks",
+	help = "test dma tasks, output available DMA channels",
 	man = '''
 		NAME
 			dma - test dma task(s)
@@ -25,5 +25,5 @@ module dma {
 	source "dma.c"
 
 	depends embox.arch.mmu
-	depends embox.driver.dma.bcm283x_dma
+	depends embox.driver.dma
 }
