@@ -16,7 +16,7 @@
 #include <asm/cp15.h>
 
 #include <drivers/dma/dma.h>
-#include <drivers/dma/bcm283x_dma.h>
+#include <drivers/dma/pl330_dma.h>
 #include <drivers/mailbox/bcm2835_mailbox_property.h>
 
 #define DMA_0_BASE OPTION_GET(NUMBER, dma0_base)
@@ -35,7 +35,7 @@ static volatile Dma_conbk shared_conbk;
 
 // Returns a handle to the allocated memory
 //
-static uint32_t bcm283x_vc_malloc(size_t bytes, uint32_t align, uint32_t flags) {
+static uint32_t pl330_vc_malloc(size_t bytes, uint32_t align, uint32_t flags) {
     bcm2835_mailbox_property_t *resp;
     
     bcm2835_property_init();
@@ -51,7 +51,7 @@ static uint32_t bcm283x_vc_malloc(size_t bytes, uint32_t align, uint32_t flags) 
 // accessable only by GPU and DMA (but corresponding physical address
 // can now be accessed by ARM CPU)
 //
-static uint32_t bcm283x_vc_mem_lock(uint32_t handle) {
+static uint32_t pl330_vc_mem_lock(uint32_t handle) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
@@ -65,7 +65,7 @@ static uint32_t bcm283x_vc_mem_lock(uint32_t handle) {
 // Unlock but don't de-allocate memory
 // (can't be accessed by ARM CPU but still can by GPU and DMA)
 //
-static int bcm283x_vc_mem_unlock(uint32_t handle) {
+static int pl330_vc_mem_unlock(uint32_t handle) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
@@ -78,7 +78,7 @@ static int bcm283x_vc_mem_unlock(uint32_t handle) {
 
 // Release the allocated memory
 //
-static int bcm283x_vc_mem_free(uint32_t handle) {
+static int pl330_vc_mem_free(uint32_t handle) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
@@ -102,14 +102,14 @@ static uint8_t get_irq_from_channel(uint8_t ch) {
 
 // Allocate and lock memory for use by DMA
 //
-Dma_mem_handle *bcm283x_dma_malloc(size_t size)
+Dma_mem_handle *pl330_dma_malloc(size_t size)
 {
     // Make `size` a multiple of PAGE_SIZE
     size = ((size + PAGE_SIZE() - 1) / PAGE_SIZE()) * PAGE_SIZE();
 
     Dma_mem_handle *mem = (Dma_mem_handle *)malloc(sizeof(Dma_mem_handle));
-    mem->mb_handle = (uint32_t)bcm283x_vc_malloc(size, PAGE_SIZE(), BCM2835_MEM_FLAG_DIRECT);
-    mem->bus_addr = bcm283x_vc_mem_lock(mem->mb_handle);
+    mem->mb_handle = (uint32_t)pl330_vc_malloc(size, PAGE_SIZE(), BCM2835_MEM_FLAG_DIRECT);
+    mem->bus_addr = pl330_vc_mem_lock(mem->mb_handle);
     mem->physical_addr = DMA_BUS_TO_PHYS(mem->bus_addr);
     mem->size = size;
 
@@ -119,19 +119,19 @@ Dma_mem_handle *bcm283x_dma_malloc(size_t size)
 
 // Unlock and deallocate memory
 //
-void bcm283x_dma_free(Dma_mem_handle *mem)
+void pl330_dma_free(Dma_mem_handle *mem)
 {
     if (mem->physical_addr == NULL)
         return;
 
-    bcm283x_vc_mem_unlock(mem->mb_handle);
-    bcm283x_vc_mem_free(mem->mb_handle);
+    pl330_vc_mem_unlock(mem->mb_handle);
+    pl330_vc_mem_free(mem->mb_handle);
     mem->physical_addr = NULL;
     free(mem);
 }
 
 // Enable and reset DMA
-int bcm283x_dma_config(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_opts) {
+int pl330_dma_config(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_opts) {
     assert(dma_chan <= DMA_CHANNELS);
     int res = 0, irq = get_irq_from_channel(dma_chan);
     Dma *dev = REGS_DMA(dma_chan);
@@ -156,7 +156,7 @@ int bcm283x_dma_config(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic
 // Start DMA
 // dma_chan - integer 0-15
 // conbk - pointer to data type in physical memory
-int bcm283x_dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
+int pl330_dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
     assert(dma_chan <= DMA_CHANNELS);
 
     REGS_DMA(dma_chan)->conblk_ad = (uint32_t)DMA_PHYS_TO_BUS(conbk);  
@@ -172,7 +172,7 @@ int bcm283x_dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
 // dma_chan - integer 0-15
 // dst, src - are destination and source memory locations in bus address space
 // words - 4-byte aligned memory length
-int bcm283x_dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {   
+int pl330_dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {   
     assert(dma_chan <= DMA_CHANNELS);
 
     // A standard copy block to support basic implementation
@@ -184,10 +184,10 @@ int bcm283x_dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {
     shared_conbk.stride = 0;
     shared_conbk.debug[1] = shared_conbk.debug[0] = 0;
 
-    return bcm283x_dma_transfer_conbk(dma_chan, &shared_conbk);
+    return pl330_dma_transfer_conbk(dma_chan, &shared_conbk);
 }
 
-int bcm283x_dma_in_progress(int dma_chan, uint32_t *error_flags) {
+int pl330_dma_in_progress(int dma_chan, uint32_t *error_flags) {
     assert(dma_chan <= DMA_CHANNELS);
 
     *error_flags = REGS_DMA(dma_chan)->debug;
@@ -195,7 +195,7 @@ int bcm283x_dma_in_progress(int dma_chan, uint32_t *error_flags) {
     return (REGS_DMA(dma_chan)->cs & DMA_CS_ACTIVE);
 }
 
-uint32_t bcm283x_dma_channels_free(void) {
+uint32_t pl330_dma_channels_free(void) {
     bcm2835_mailbox_tag_t queries[] = {TAG_GET_DMA_CHANNELS, 0x0};
     uint32_t answers[] = {0x0, 0x0};
 
@@ -204,15 +204,15 @@ uint32_t bcm283x_dma_channels_free(void) {
     return answers[0];
 }
 
-static int bcm283x_dma_init(void) {
-    dma_dev.config_extended = bcm283x_dma_config;
-    dma_dev.transfer = bcm283x_dma_transfer;
-    dma_dev.transfer_conbk = bcm283x_dma_transfer_conbk;
-    dma_dev.in_progress_status = bcm283x_dma_in_progress;
-    dma_dev.malloc = bcm283x_dma_malloc;
-    dma_dev.free = bcm283x_dma_free;
-    dma_dev.channels_free = bcm283x_dma_channels_free;
+static int pl330_dma_init(void) {
+    dma_dev.config_extended = pl330_dma_config;
+    dma_dev.transfer = pl330_dma_transfer;
+    dma_dev.transfer_conbk = pl330_dma_transfer_conbk;
+    dma_dev.in_progress_status = pl330_dma_in_progress;
+    dma_dev.malloc = pl330_dma_malloc;
+    dma_dev.free = pl330_dma_free;
+    dma_dev.channels_free = pl330_dma_channels_free;
     return 0;
 }
 
-EMBOX_UNIT_INIT(bcm283x_dma_init);
+EMBOX_UNIT_INIT(pl330_dma_init);

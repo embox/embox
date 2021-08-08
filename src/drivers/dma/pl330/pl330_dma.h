@@ -1,5 +1,5 @@
-#ifndef _BCM283X_DMA_H_
-#define _BCM283X_DMA_H_
+#ifndef _pl330_DMA_H_
+#define _pl330_DMA_H_
 /**
  * @file
  * @brief
@@ -297,4 +297,4 @@
 // Get bus address of register
 #define DMA_PERF_TO_BUS(x) ((uint32_t)(x) | 0x7E000000)
 
-#endif /* _BCM283X_DMA_H_ */
+#endif /* _pl330_DMA_H_ */
