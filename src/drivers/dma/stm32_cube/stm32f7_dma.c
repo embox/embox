@@ -17,8 +17,6 @@
 #include <stm32f7xx_hal.h>
 #include <stm32f7xx_hal_dma.h>
 
-EMBOX_UNIT_INIT(stm32_dma_init);
-
 #define DMA_MAX_SIZE (64 * 1024 - 1)
 
 #define DMA2_STREAM0_IRQ   OPTION_GET(NUMBER, dma2_stream0_irq)
@@ -28,9 +26,6 @@ static DMA_HandleTypeDef dma_handle;
 
 static uint32_t dma_dst, dma_src;
 static unsigned dma_words;
-
-struct dma_ops dma_dev;
-
 
 static irq_return_t dma2_stream0_irq_handler(unsigned int irq_num, void *dev_id) {
 	HAL_DMA_IRQHandler(&dma_handle);
@@ -143,3 +138,5 @@ static int stm32_dma_init(void) {
 	
 	return ret;
 }
+
+EMBOX_UNIT_INIT(stm32_dma_init);
