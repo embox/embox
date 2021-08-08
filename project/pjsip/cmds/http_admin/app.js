@@ -57,8 +57,20 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
 
     $scope.update();
 }])
+.controller("LogCtrl", ['$scope', '$http', function($scope, $http) {
+    $scope.update = function() {
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=loop_file_logger').then(function (r) {
+            $scope.logger = r.data;
+        });
+    };
+
+    $scope.update();
+}])
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider.
+    when('/log', {
+        templateUrl: 'partials/log.html',
+    }).
     when('/interfaces', {
         templateUrl: 'partials/interfaces.html',
     }).
