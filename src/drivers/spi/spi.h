@@ -14,6 +14,8 @@
 #include <drivers/char_dev.h>
 #include <util/array.h>
 #include <util/macro.h>
+#include <kernel/irq.h>
+#include <drivers/dma/dma.h>
 
 struct spi_ops;
 
@@ -34,7 +36,7 @@ enum spi_pol_phase_t {
 
 struct spi_device;
 
-typedef void (*irq_event_t)(struct spi_device *data);
+typedef void (*irq_spi_event_t)(struct spi_device *data);
 
 struct spi_device {
 	int    flags;
@@ -42,11 +44,15 @@ struct spi_device {
 	struct spi_ops *spi_ops;
 	bool is_master;
 	void  *priv;
-	irq_event_t send_complete;
-	irq_event_t received_data;
+	irq_spi_event_t send_complete;
+	irq_spi_event_t received_data;
+	irq_handler_t dma_complete;
 	uint8_t *in;
 	uint8_t *out;
 	int count;
+	int dma_chan_out;
+	int dma_chan_in;
+	uint32_t dma_levels;
 };
 
 struct spi_ops {
@@ -54,6 +60,11 @@ struct spi_ops {
 	int (*select)(struct spi_device *dev, int cs);
 	int (*set_mode)(struct spi_device *dev, bool is_master);
 	int (*transfer)(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
+
+	Dma_conbk *(*init_dma_block_spi_in)(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+		, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
+	Dma_conbk *(*init_dma_block_spi_out)(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+		, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
 };
 
 extern struct spi_device *spi_dev_by_id(int id);
@@ -108,7 +119,51 @@ struct spi_transfer_arg {
 #define SPI_CS_INACTIVE (1 << 1)
 #define SPI_CS_MODE(x)	( ( (x) & 0x03) << 2)		/* x is one of enum spi_pol_phase_t */
 #define SPI_CS_IRQD  	(1 << 4)					
-#define SPI_CS_IRQR  	(1 << 5)					
+#define SPI_CS_IRQR  	(1 << 5)	
+#define SPI_CS_DMAEN	(1 << 6)				
 #define SPI_CS_DIVSOR(x) ( ( (x) & 0xFFFF) << 16 ) 	/* Upper 16 bits used to set clock divisor */
+
+/* DMA Levels 
+ * rcPanic: DMA Read Panic Threshold. Generate the Panic signal to 
+ * 		the RX DMA engine whenever the RX FIFO level is greater than this amount. 
+ * rdReq:  DMA Read Request Threshold. Generate A DREQ to the RX DMA engine 
+ * 		whenever the RX FIFO level is greater than this amount, (RX DREQ 
+ * 		is also generated if the transfer has finished but the RXFIFO isn t empty).
+ * wrPanic: DMA Write Panic Threshold. Generate the Panic signal to the TX DMA 
+ * 		engine whenever the TX FIFO level is less than or equal to this amount
+ * wrReq: DMA Write Request Threshold. Generate a DREQ signal to the TX DMA 
+ * 		engine whenever the TX FIFO level is less than or equal to this amount.
+ */
+#define DMA_LEVELS(rdPanic, rdReq, wrPanic, wrReq) ( (rdPanic & 0xFF) << 24 | (rdReq & 0xFF) << 16 \
+	|  (wrPanic & 0xff) << 8 | (wrReq & 0xff) ) 
+
+
+/* Initializes a control block in the dma allocated memory with sensible default values
+ * for a single block transfer to send.
+ *
+ * @param dev - structure returned from spi_dev_by_id()
+ * @param mem_handle - memory allocated from dma_malloc()
+ * @param offset - offset into allocated mem_handle memory in which to initialize a control block
+ * @param src - pointer to source physical memory location 
+ * @param bytes - bytes to copy from src pointer being first byte
+ * @param next_conbk - pointer to next conbk, null if this is last one 
+ * @param int_enable - enable interrupt at end of transmission/receipt for conbk
+ */
+extern Dma_conbk *init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+	, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
+
+/* Initializes a control block in the dma allocated memory with sensible default values
+ * for a single block transfer to receive to.
+ *
+ * @param dev - structure returned from spi_dev_by_id()
+ * @param mem_handle - memory allocated from dma_malloc()
+ * @param offset - offset into allocated mem_handle memory in which to initialize a control block
+ * @param dest - pointer to source physical memory location 
+ * @param bytes - bytes to copy to dest pointer being first byte
+ * @param next_conbk - pointer to next conbk, null if this is last one 
+ * @param int_enable - enable interrupt at end of transmission/receipt for conbk
+ */
+extern Dma_conbk *init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+	, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
 
 #endif /* DRIVERS_SPI_H_ */

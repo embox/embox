@@ -14,9 +14,11 @@
 #include <hal/reg.h>
 #include <util/log.h>
 #include <util/math.h>
-#include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <asm/delay.h>
+#include <assert.h>
+
+#include <drivers/dma/pl330_dma.h>
 
 #include <drivers/gpio/gpio.h>
 #include <drivers/gpio/bcm283x/bcm283x_gpio.h>
@@ -25,8 +27,11 @@
 #include "bcm283x_spi0.h"
 
 #define PBASE                     OPTION_GET(NUMBER,base_addr)
-#define SPI_BUS_CLOCK_DIVISOR     OPTION_GET(NUMBER, spi_bus_clock_divisor)
+#define SPI_BUS_CLOCK_DIVISOR     OPTION_GET(NUMBER,spi_bus_clock_divisor)
 #define SPI_INT0                  OPTION_GET(NUMBER,spi_int)
+
+// command block must be 256 bit aligned in memory
+#define MEM_ALGN_256 (0x00000020)
 
 // Toggle an extra GPIO pin at various points to debug/test timing
 #if 0
@@ -133,11 +138,33 @@ static int bcm283x_spi0_select(struct spi_device *dev, int cs) {
         res = bcm283x_spi0_attach(dev);     
         REGS_SPI0->cs |= SPI0_CS_INTR;
     }
-
     // If no flags set for interrupt, detatch interrupt
     if( !(dev->flags & SPI_CS_IRQR) && !(dev->flags & SPI_CS_IRQD)
         && irq_nr_valid(SPI_INT0) == 0 ) {
         res = irq_detach(SPI_INT0, dev);
+    }
+
+    // Enable DMA
+    if( dev->flags & SPI_CS_DMAEN 
+        && !(REGS_SPI0->cs & SPI0_CS_DMAEN) ) {
+        assert( dev->dma_chan_out != dev->dma_chan_in );
+
+        REGS_SPI0->cs |= SPI0_CS_DMAEN;
+        REGS_SPI0->dc = dev->dma_levels;
+
+        /* Set Panic and Priority levels at High 2/3rds and then Low 1/3rd respectively
+         * If they are not set, DMA_LEVELS() must be about double higher.
+         */
+        dma_config_extended(dev->dma_chan_in, NULL, DMA_CS_PANIC_PRIORITY(0x0C) | DMA_CS_PRIORITY(0x06) );    
+        // Channel out receives data from SPI fifo to memory in    
+        dma_config_extended(dev->dma_chan_out, dev->dma_complete, DMA_CS_PANIC_PRIORITY(0x0C) | DMA_CS_PRIORITY(0x06));
+    }
+
+
+    // If no flags set for interrupt, cause interrupt to detatch
+    if( !(dev->flags & SPI_CS_DMAEN) && (REGS_SPI0->cs & SPI0_CS_DMAEN) ) {
+        dma_config_extended(dev->dma_chan_out, NULL, 0x00);        
+        REGS_SPI0->cs &= ~( SPI0_CS_DMAEN );
     }
 
     // set default CPHA=0 (Clock Phase), CPOL=0 (Clock Polarity)
@@ -150,9 +177,12 @@ static int bcm283x_spi0_select(struct spi_device *dev, int cs) {
         REGS_SPI0->clk = (dev->flags >> 16);
     }
 
+    // Set the CS lines
     REGS_SPI0->cs &= ~SPI0_CS(0xFF);
     REGS_SPI0->cs |= SPI0_CS(cs);
 
+    // Set the CS hold delay
+    REGS_SPI0->ltoh = 0;
     return res;
 }
 
@@ -162,9 +192,7 @@ static int bcm283x_spi0_do_transfer(struct spi_device *dev, uint8_t *inbuf
 
     irq_lock();
     tx_cnt = rx_cnt = 0;
-    /* Do not add log_debug() or some another stuff here,
-     * because we need to write all tx data before transfer competed. */
-    REGS_SPI0->dlen = DLEN_NO_DMA_VALUE;
+    /* Do not add log_debug() or some another stuff here, */
     while ( ( tx_cnt < tx_count && inbuf != NULL ) 
         ||  (rx_cnt < rx_count && outbuf != NULL ) ) {
         if(tx_cnt < tx_count ) {
@@ -226,6 +254,51 @@ irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data) {
     return ret;
 }
 
+Dma_conbk *bcm283x_init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle
+, uint32_t offset, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable) {
+    assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
+
+    Dma_conbk *cbp = (Dma_conbk *)(mem_handle->physical_addr + offset);
+    cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_TX) | DMA_TI_SRC_INC | DMA_TI_DEST_DREQ | DMA_TI_WAIT_RESP;
+    cbp->dest_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
+    cbp->stride = 0x0;
+
+    cbp->source_ad = (uint32_t)DMA_PHYS_TO_BUS((uint32_t)src);
+    cbp->txfr_len = bytes;
+    cbp->nextconbk = ( next_conbk == NULL ? 0x00 : (uint32_t)DMA_PHYS_TO_BUS((uint32_t)next_conbk) );
+
+    if(int_enable) cbp->ti |= DMA_TI_INTEN;
+    else cbp->ti &= ~DMA_TI_INTEN;
+
+    return cbp;
+}
+
+Dma_conbk *bcm283x_init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable) {
+    assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
+
+    Dma_conbk *cbp = (Dma_conbk *)(mem_handle->physical_addr + offset);
+    cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_RX) | DMA_TI_DEST_INC | DMA_TI_SRC_DREQ | DMA_TI_WAIT_RESP;
+    cbp->source_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
+    cbp->stride = 0x0;
+
+    cbp->dest_ad = (uint32_t)DMA_PHYS_TO_BUS((uint32_t)dest);
+    cbp->txfr_len = bytes;
+    cbp->nextconbk = ( next_conbk == NULL ? 0x00 : (uint32_t)DMA_PHYS_TO_BUS((uint32_t)next_conbk) );
+
+    if(int_enable) cbp->ti |= DMA_TI_INTEN;
+    else cbp->ti &= ~DMA_TI_INTEN;
+
+    return cbp;
+}
+
+/*
+    // Hi 16 bits are length, lower 8 bits are the lower 8 bits of SPI control register
+ * 
+ * For SPI Device: txfr_len is in top sixteen bits and control register settings are in [7:0]
+ * (the bottom eight bits) for TA = 1, CS, CPOL, CPHA 
+*/
+
 static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
         , uint8_t *outbuf, int count) {
 
@@ -247,14 +320,23 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
         }
     }
 
+    // DMA Mode
     if(REGS_SPI0->cs & SPI0_CS_DMAEN) { 
-        // DMA enabled mode
+        REGS_SPI0->dlen = count;    
 
-        log_error("DMA not supported (yet)!");
-        return -EINVAL;        
+        // Receive - start dma transfer
+        dma_transfer_conbk(dev->dma_chan_out, (volatile Dma_conbk *)outbuf);
+        // Transmit - start dma transfer
+        dma_transfer_conbk(dev->dma_chan_in, (volatile Dma_conbk *)inbuf);
+        // Activate SPI
+        REGS_SPI0->cs |= SPI0_CS_ADCS | SPI0_CS_CLEAR( SPI0_tx_fifo | SPI0_rx_fifo ) | SPI0_CS_TA; // clear FIFO and Assert
     } else { 
         // Poll mode - bytes send, bytes receive
         REGS_SPI0->cs |= SPI0_CS_CLEAR( SPI0_tx_fifo | SPI0_rx_fifo ) | SPI0_CS_TA; // clear FIFO and Assert
+
+        /* because we need to write all tx data before transfer competed. */
+        REGS_SPI0->dlen = DLEN_NO_DMA_VALUE;
+
         bcm283x_spi0_do_transfer(dev, inbuf, outbuf, count, count);
         REGS_SPI0->cs &= ~SPI0_CS_TA; // De-assert
     }
@@ -263,7 +345,9 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
 
 struct spi_ops bcm283x_spi0_ops = {
     .select   = bcm283x_spi0_select,
-    .transfer = bcm283x_spi0_transfer
+    .transfer = bcm283x_spi0_transfer,
+    .init_dma_block_spi_in = bcm283x_init_dma_block_spi_in,
+    .init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
 };
 
 PERIPH_MEMORY_DEFINE(bcm283x_spi0, PBASE, sizeof(Bcm283x_spi0));
