@@ -132,6 +132,34 @@ int spi_select(struct spi_device *dev, int cs) {
 	return dev->spi_ops->select(dev, cs);
 }
 
+Dma_conbk *init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+		, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable) {
+	assert(dev);
+	assert(dev->spi_ops);
+
+	if(dev->spi_ops->init_dma_block_spi_in == NULL) {
+		log_debug("Select operation is not supported for SPI%d",
+				spi_dev_id(dev));
+		return NULL;
+	}
+	return dev->spi_ops->init_dma_block_spi_in(dev,mem_handle, offset, src,bytes, next_conbk, int_enable);
+}
+
+Dma_conbk *init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+		, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable) {
+	assert(dev);
+	assert(dev->spi_ops);
+
+	if(dev->spi_ops->init_dma_block_spi_out == NULL) {
+		log_debug("Select operation is not supported for SPI%d",
+				spi_dev_id(dev));
+		return NULL;
+	}
+	return dev->spi_ops->init_dma_block_spi_out(dev, mem_handle, offset, dest, bytes, next_conbk, int_enable);
+
+}
+
+		
 /**
  * @brief Set device to master or slave mode
  */

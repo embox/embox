@@ -9,6 +9,8 @@
 #ifndef BCM283X_SPI0_H
 #define BCM283X_SPI0_H
 
+#include <drivers/dma/dma.h>
+
 //
 // Control and Status register
 //
@@ -78,13 +80,13 @@
 								0 = Chip select lines are active low \
 								1 = Chip select lines are active high  */
 typedef enum {
-	SPI0_no_action = 0x00
-,	SPI0_tx_fifo = 0x10 /* Clear TX FIFO. One shot operation. */
-,	SPI0_rx_fifo = 0x20 /* Clear RX FIFO. One shot operation. */
+	SPI0_no_action = 0x0
+,	SPI0_tx_fifo = 0x1 /* Clear TX FIFO. One shot operation. */
+,	SPI0_rx_fifo = 0x2 /* Clear RX FIFO. One shot operation. */
 } SPI0_fifo_clear; /* If CLEAR and TA are both set in the same operation, \
 					the FIFOs are cleared before the new frame is started. 
 					Read back as 0.*/
-#define SPI0_CS_CLEAR(a) ( (a) & 0x30)
+#define SPI0_CS_CLEAR(a) ( ((a) & 0x03) << 4)
 #define SPI0_CS_CPOL ( 1 << 3 ) /* RW: Clock Polarity \
 					0 = Rest state of clock = low. 1 = Rest state of clock = high. */
 #define SPI0_CS_CPHA ( 1 << 2 ) /* RW: Clock Phase \

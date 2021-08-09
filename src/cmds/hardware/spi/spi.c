@@ -13,7 +13,10 @@
 #include <util/math.h>
 
 #include <drivers/spi.h>
+#include <drivers/dma/dma.h>
 #include <util/pretty_print.h>
+
+#include <string.h>
 
 static void print_help(char **argv) {
 	printf("Transfer bytes via SPI bus\n");
@@ -81,6 +84,15 @@ static void data_received(struct spi_device *data) {
 	spi_stat = DATA_RECEIVED;
 };
 
+static irq_return_t data_block_complete(unsigned int irq_nr, void *dma_data) {
+	irq_return_t ret = IRQ_HANDLED;
+	Dma *dev = (Dma *)dma_data;
+	spi_bytes = dev->txfr_len;
+	spi_stat = SEND_COMPLETE;
+
+	return ret;
+}
+
 static int test_interrupt(struct spi_device *dev, int spi_line, uint8_t *dataOut, uint8_t *dataIn, int clkdiv, int bytes) {
 	int ret;
 
@@ -112,6 +124,14 @@ static void list_spi_devices(void) {
 
 		printf("%s\n", s->dev->name);
 	}
+}
+
+static void fill_test(uint32_t *memLoc, uint32_t bytes) {
+    uint32_t pattern = 0xDEADBEEF;
+    for(uint32_t i = 0 ; i < bytes / sizeof(uint32_t) ; i+= 2 ) {
+        memLoc[i] = pattern;
+        memLoc[i+1] = i;
+    }
 }
 
 static void report(char *msg, uint8_t *data, int len) {
@@ -207,30 +227,133 @@ int main(int argc, char **argv) {
 
 
 	printf("\nexec: %c, clkdiv: %d, bus: %d, cs: %d\n",method, clkdiv, spi_bus, spi_line);
-	report("\nS", dataOut, bCount);
 
 	switch(method) {
 	case 'i':
+		report("\nS", dataOut, bCount);
 		ret = test_interrupt(dev, spi_line, dataOut, dataIn, clkdiv, -bCount);
 
 		// Busy wait until transfer done
 		while(spi_stat == UNKNOWN);
+		report("\nR", dataIn, bCount);
 		printf("Status %d, Bytes remain/received: %d\n", (int)spi_stat, spi_bytes);
 		break;
 	case 'w':
+		report("\nS", dataOut, bCount);
 		printf("Waiting for bytes received.\n");
 		ret = test_interrupt(dev, spi_line, NULL, dataIn, clkdiv, -bCount);
 
 		// Busy wait until transfer done
 		while(spi_stat == UNKNOWN);
+		report("\nR", dataIn, bCount);
 		printf("Status %d, Bytes remain/received: %d\n", (int)spi_stat, spi_bytes);
 		break;
 	case 'd':
-		printf("To be implemented.\n");
-		return ret;
+		{
+			#define DMA_XFER_LEN 0x1000
+			#define DMA_XFER_BLOCKS 4
+			#define DMA_MEM (DMA_XFER_LEN * DMA_XFER_BLOCKS * 2)
+			#define DMA_CHAN_OUT 4
+			#define DMA_CHAN_IN 5
+			Dma_conbk *cbp_out, *cbp_out_first = NULL;
+			Dma_conbk *cbp_in, *cbp_in_first = NULL;
+			uint32_t error_flags = 0x00;
+
+		    Dma_mem_handle *mem_handle = dma_malloc(DMA_MEM);
+
+			fill_test(mem_handle->physical_addr, DMA_MEM / 2);
+
+			// Configure SPI
+			dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
+				| SPI_CS_DMAEN;
+			dev->dma_complete = data_block_complete;
+			dev->dma_chan_out = DMA_CHAN_OUT; // Receiving from SPI
+			dev->dma_chan_in = DMA_CHAN_IN; // Sending to SPI
+
+			// Note: These values are important to tune and check in multi-block transfers
+			// A symtom of improper values is the receipt memory locations are missing 
+			// values but retain their correct position in memory from the transmit memory
+			// values.
+			dev->dma_levels = DMA_LEVELS(12, 4, 12, 4);
+
+			ret = spi_select(dev, spi_line);
+
+			/* NOTE: The BCM2835 Peripheral document speaks of putting a uint32_t value of the following
+			 * form in the data stream on the outgoing data block but with the latest firmware
+			 * this does not seem necessary and this extra byte is unwantedly transmitted.  So, it isn't
+			 * present in these examples but I note it as a deviation just in case you're on a firmware
+			 * that requires it.
+			 * 
+			 *  // Place SPI config on first word of data stream
+			 *	DMA_TXFR_LEN_YLENGTH(bytes - sizeof(uint32_t)) | (REGS_SPI0->cs & 0x0000007F) | SPI0_CS_TA;
+			 *
+			 */		
+
+#if 0		// Send a single block
+			// Send block 
+			cbp_out = (Dma_conbk *)init_dma_block_spi_in(dev, mem_handle, 0 
+				, (void *)(mem_handle->physical_addr + sizeof(Dma_conbk) )
+				, DMA_XFER_LEN - sizeof(Dma_conbk) );
+			cbp_out->nextconbk = 0;								
+			// Receive block 
+			cbp_in = (Dma_conbk *)init_dma_block_spi_out(dev, mem_handle, 0 + DMA_XFER_LEN * DMA_XFER_BLOCKS 
+				, (void *)(mem_handle->physical_addr + DMA_XFER_LEN * DMA_XFER_BLOCKS + sizeof(Dma_conbk) )
+				, DMA_XFER_LEN - sizeof(Dma_conbk) );
+			cbp_in->nextconbk = 0;
+			cbp_in->ti |= DMA_TI_INTEN;
+
+			if(cbp_out_first == NULL) cbp_out_first = cbp_out;
+			if(cbp_in_first == NULL) cbp_in_first = cbp_in;
+
+#else		// Send multple blocks
+
+			// Layout control blocks
+			for(uint32_t i = 0 ; i < DMA_XFER_LEN * DMA_XFER_BLOCKS; i += ( DMA_XFER_LEN ) ) {
+				// Send block 
+				cbp_out = init_dma_block_spi_in(dev, mem_handle, i 
+					, (void *)(mem_handle->physical_addr + i + sizeof(Dma_conbk) )
+					, DMA_XFER_LEN - sizeof(Dma_conbk) 
+					, ( i + DMA_XFER_LEN < DMA_XFER_LEN * DMA_XFER_BLOCKS
+						? mem_handle->physical_addr + i + DMA_XFER_LEN
+						: 0 )
+					, false
+					);
+				// Receive block 
+				cbp_in = init_dma_block_spi_out(dev, mem_handle, i + DMA_MEM / 2 
+					, (void *)(mem_handle->physical_addr + i + DMA_MEM / 2 + sizeof(Dma_conbk) )
+					, DMA_XFER_LEN - sizeof(Dma_conbk)
+					, ( i + DMA_XFER_LEN < DMA_XFER_LEN * DMA_XFER_BLOCKS
+						? mem_handle->physical_addr + i + DMA_XFER_LEN + DMA_MEM / 2 
+						: 0 )
+					// Set last Receiving control block with enabled interrupt
+					, !( i + DMA_XFER_LEN < DMA_XFER_LEN * DMA_XFER_BLOCKS ) 
+					);
+				if(cbp_out_first == NULL) cbp_out_first = cbp_out;
+				if(cbp_in_first == NULL) cbp_in_first = cbp_in;
+			}
+#endif
+			// Initiate transfer with callback interrupts
+			ret = spi_transfer(dev, (uint8_t *)cbp_out_first
+				, (uint8_t *)cbp_in_first
+				, DMA_XFER_BLOCKS * ( DMA_XFER_LEN - sizeof(Dma_conbk) ) );	
+	
+			// busy wait until interrupt that DMA is done
+			while(spi_stat == UNKNOWN ) {
+				// busy polling wait
+				// TODO: This polling check should not be necessary, the interrupt should
+				// be firing and setting spi_stat to indicate transfer is complete
+				if(!dma_in_progress_status(dev->dma_chan_out, &error_flags)) break;
+				if(error_flags) printf("DMA_DEBUG_FLAGS %x\n", error_flags);
+			};
+
+			dma_free(mem_handle);
+			spi_stat = UNKNOWN;
+		}
 		break;
 	case 'p':
+		report("\nS", dataOut, 32);
 		ret = test_poll(dev, spi_line, dataOut, dataIn, clkdiv);
+		report("\nR", dataIn, 32);
 		break;
 	default:
 		dev->flags |= SPI_CS_ACTIVE;
@@ -240,10 +363,11 @@ int main(int argc, char **argv) {
 			printf("Failed to select line #%d!\n", spi_line);
 			return ret;
 		}
+		report("\nS", dataOut, bCount);
 		spi_transfer(dev, dataOut, dataIn, bCount);
+		report("\nR", dataIn, bCount);
 		break;
 	}
-	report("\nR", dataIn, bCount);
 
 	return ret;
 }

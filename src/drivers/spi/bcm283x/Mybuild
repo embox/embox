@@ -13,6 +13,9 @@ module bcm283x_spi0 {
 	source "bcm283x_spi0.c"
 	source "bcm283x_spi0.h"
 
+	@IncludeExport(path="drivers")
+	source "bcm283x_spi0.h"
+
 	depends core
 	depends embox.driver.periph_memory
 	depends embox.driver.gpio.api

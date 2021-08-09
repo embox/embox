@@ -42,4 +42,5 @@ module spi {
     depends embox.compat.libc.stdio.printf
     depends embox.compat.libc.str
     depends embox.compat.posix.util.getopt
+	depends embox.driver.dma
 }
