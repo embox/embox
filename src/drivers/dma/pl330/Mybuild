@@ -1,7 +1,7 @@
 package embox.driver.dma
 
 /* @BuildDepends(third_party.bsp.st_bsp_api) */
-module bcm283x_dma extends dma_api {
+module pl330_dma extends dma_api {
 
     /* raspi0 has physical memory base of 0x20000000
     */
@@ -24,7 +24,11 @@ module bcm283x_dma extends dma_api {
 	option number dma_default_irq = 19
 	option number log_level = 1
 
-	source "bcm283x_dma.c"
+	source "pl330_dma.c"
 
+	@IncludeExport(path="drivers/dma")
+	source "pl330_dma.h"
+
+	depends embox.driver.dma.dma_api
 	depends embox.mem.page_api
 }

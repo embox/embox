@@ -17,8 +17,6 @@
 #include <stm32f7xx_hal.h>
 #include <stm32f7xx_hal_dma.h>
 
-EMBOX_UNIT_INIT(dma_init);
-
 #define DMA_MAX_SIZE (64 * 1024 - 1)
 
 #define DMA2_STREAM0_IRQ   OPTION_GET(NUMBER, dma2_stream0_irq)
@@ -57,13 +55,15 @@ static void dma_xfer_complete(DMA_HandleTypeDef *hdma) {
 	}
 }
 
-int dma_in_progress(int dma_chan) {
+int stm32_dma_in_progress(int dma_chan, uint32_t *error_flags) {
 	assert(dma_chan == 0);
+
+	error_flags = 0x00;
 
 	return (HAL_DMA_GetState(&dma_handle) != HAL_DMA_STATE_READY);
 }
 
-static void dma_init_chan(DMA_HandleTypeDef *dma_handle, int chan) {
+static void stm32_dma_init_chan(DMA_HandleTypeDef *dma_handle, int chan) {
 	dma_handle->Init.Direction = DMA_MEMORY_TO_MEMORY;
 	dma_handle->Init.PeriphInc = DMA_PINC_ENABLE;
 	dma_handle->Init.MemInc = DMA_MINC_ENABLE;
@@ -79,12 +79,12 @@ static void dma_init_chan(DMA_HandleTypeDef *dma_handle, int chan) {
 	dma_handle->Init.Channel = chan;
 }
 
-int dma_config(int dma_chan) {
+int stm32_dma_config(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_opts) {
 	assert(dma_chan == 0);
 
 	__HAL_RCC_DMA2_CLK_ENABLE();
 
-	dma_init_chan(&dma_handle, dma_chan);
+	stm32_dma_init_chan(&dma_handle, dma_chan);
 
 	dma_handle.Instance = DMA2_Stream0;
 	if (HAL_DMA_Init(&dma_handle) != HAL_OK) {
@@ -97,7 +97,7 @@ int dma_config(int dma_chan) {
 	return 0;
 }
 
-int dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {
+int stm32_dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {
 	assert(dma_chan == 0);
 
 	log_debug("chan=%d, dst=0x%08x, src=0x%08x, words=%d",
@@ -119,7 +119,7 @@ int dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {
 	return 0;
 }
 
-static int dma_init(void) {
+static int stm32_dma_init(void) {
 	int ret = 0;
 
 	ret = irq_attach(DMA2_STREAM0_IRQ, dma2_stream0_irq_handler,
@@ -128,5 +128,15 @@ static int dma_init(void) {
 		log_error("irq_attach failed\n");
 	}
 
+    dma_dev.config_extended = stm32_dma_config;
+    dma_dev.transfer = stm32_dma_transfer;
+    dma_dev.transfer_conbk = NULL;
+    dma_dev.in_progress_status = stm32_dma_in_progress;
+    dma_dev.malloc = NULL;
+    dma_dev.free = NULL;
+	dma_dev.channels_free = NULL;
+	
 	return ret;
 }
+
+EMBOX_UNIT_INIT(stm32_dma_init);
