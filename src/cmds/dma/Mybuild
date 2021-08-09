@@ -25,5 +25,5 @@ module dma {
 	source "dma.c"
 
 	depends embox.arch.mmu
-	depends embox.driver.dma
+	depends embox.driver.dma.dma_api
 }

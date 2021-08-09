@@ -29,6 +29,5 @@ module pl330_dma extends dma_api {
 	@IncludeExport(path="drivers/dma")
 	source "pl330_dma.h"
 
-	depends embox.driver.dma.dma_api
 	depends embox.mem.page_api
 }
