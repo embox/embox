@@ -150,7 +150,7 @@ static size_t ramfs_write(struct file_desc *desc, void *buf, size_t size) {
 		file_set_size(desc, pos);
 	}
 
-	fi->length = pos;
+	fi->length = file_get_size(desc);
 
 	return bytecount;
 }

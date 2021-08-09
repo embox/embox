@@ -17,6 +17,8 @@ package embox.cmd.net
 
 
 module netmanager {
+	option string conf_file="network"
+
 	source "netmanager.c"
 
 	depends embox.cmd.net.ifconfig

@@ -1,8 +1,6 @@
 "export PWD=/",
 "export HOME=/",
 "partition",
-// "mkdir -v /bin",
-// "mount -t binfs / /bin",
 "netmanager",
 "service telnetd",
 "service httpd",

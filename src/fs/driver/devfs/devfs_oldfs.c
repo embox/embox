@@ -49,6 +49,8 @@ static const struct fs_driver devfs_driver = {
 
 DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
 
+FILE_SYSTEM_AUTOMOUNT("/dev", devfs_driver);
+
 static int devfs_add_dev(struct dev_module *cdev, int flag) {
 	struct path node;
 

@@ -38,6 +38,11 @@
  * This program will quit once it has completed a single call.
  */
 
+#include <sys/time.h>
+#include <time.h>
+
+#include <lib/loop_file_logger.h>
+
 #include <pjsua-lib/pjsua.h>
 
 #include <simple_pjsua_sip_account.inc>
@@ -49,6 +54,9 @@
 static pjsua_call_id current_call = PJSUA_INVALID_ID;
 
 extern struct demo_call_info *call_info;
+
+static struct timeval tv_start_call;
+static char pjsip_log_message_buf[128];
 
 /* Callback called by the library upon receiving incoming call */
 static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
@@ -72,6 +80,8 @@ static void on_incoming_call(pjsua_acc_id acc_id, pjsua_call_id call_id,
 	/* Automatically answer incoming calls with 200/OK */
 	//pjsua_call_answer(call_id, 200, NULL, NULL);
 
+	gettimeofday(&tv_start_call, NULL);
+
 	demo_nk_on_incoming_call();
 }
 
@@ -87,9 +97,32 @@ static void on_call_state(pjsua_call_id call_id, pjsip_event *e)
 						 (int)ci.state_text.slen,
 						 ci.state_text.ptr));
 	if (ci.state == PJSIP_INV_STATE_DISCONNECTED) {
+		struct timeval tv_end, tv_res;
+		char dur[8];
+		time_t time;
+
+
 		call_info->state = CALL_INACTIVE;
 		current_call = PJSUA_INVALID_ID;
 		//demo_pj_hang();
+
+		memset(pjsip_log_message_buf, 0, sizeof(pjsip_log_message_buf));
+
+		time = tv_start_call.tv_sec;
+		ctime_r(&time, pjsip_log_message_buf);
+		strncat(pjsip_log_message_buf, ": ", sizeof(pjsip_log_message_buf) - 1 );
+		strncat(pjsip_log_message_buf, ci.remote_contact.ptr, sizeof(pjsip_log_message_buf) - 1);
+		strncat(pjsip_log_message_buf, ": dur: ", sizeof(pjsip_log_message_buf) - 1 );
+
+		gettimeofday(&tv_end, NULL);
+		timersub(&tv_end, &tv_start_call, &tv_res);
+		time = tv_res.tv_sec;
+		itoa(time, dur, 10);
+
+		//call_info->has_log = 1;
+		strncat(pjsip_log_message_buf, dur, sizeof(pjsip_log_message_buf) - 1);
+		loop_logger_write(pjsip_log_message_buf);
+
 		demo_nk_on_incoming_call();
 	}
 }

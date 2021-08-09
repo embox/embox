@@ -9,7 +9,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
 .controller("InterfacesAdminCtrl", ['$scope', '$http', function($scope, $http) {
     $scope.interfaces = [];
 
-    $http.get('cgi-bin/http_admin_backend').success(function (data) {
+    $http.get('cgi-bin/http_admin_iface_list').success(function (data) {
         $scope.interfaces = data;
     });
 
@@ -19,7 +19,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
             'data' : iface
         };
 
-        $http.post('cgi-bin/http_admin_backend', post_data);
+        $http.post('cgi-bin/http_admin_iface_list', post_data);
     };
 
     $scope.flash = function() {
@@ -27,7 +27,7 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
             'action' : 'flash_settings',
         };
 
-        $http.post('cgi-bin/http_admin_backend', post_data);
+        $http.post('cgi-bin/http_admin_iface_list', post_data);
     };
 
 }])
@@ -66,8 +66,22 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
 
     $scope.update();
 }])
+
+.controller("LogCtrl", ['$scope', '$http', function($scope, $http) {
+    $scope.update = function() {
+        $http.get('cgi-bin/cgi_cmd_wrapper?c=loop_file_logger').then(function (r) {
+            $scope.logger = r.data;
+        });
+    };
+
+    $scope.update();
+}])
+
 .config(['$routeProvider', function($routeProvider) {
     $routeProvider.
+    when('/log', {
+        templateUrl: 'partials/log.html',
+    }).
     when('/interfaces', {
         templateUrl: 'partials/interfaces.html',
     }).

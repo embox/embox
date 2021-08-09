@@ -1,0 +1,23 @@
+package embox.service
+
+
+@AutoCmd
+@Cmd(name="http_admin_iface_list", help="", man="")
+@BuildDepends(third_party.lib.cjson)
+module http_admin_iface_list {
+	option number log_level = 3
+
+	option boolean is_readonly=true
+	option boolean use_netmanager=false
+	option string settings_file="/conf/network"
+
+	source "http_admin_iface_list.c"
+
+	depends third_party.lib.cjson
+	depends embox.compat.libc.stdlib.system
+}
+
+module http_admin_iface_html {
+	@InitFS(target_dir="http_admin/partials")
+	source "interfaces.html"
+}

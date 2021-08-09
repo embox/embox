@@ -175,56 +175,6 @@ static inline int dfs_blkcpy_flash(unsigned int to, unsigned long from) {
 	return dfs_copy_flash(to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
 }
 
-static int dfs_mem_is_free(uint32_t offset, int len) {
-	return 0;
-#if 0
-	int i;
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
-	int head;
-	uint8_t check[NAND_PAGE_SIZE];
-
-	head = offset % NAND_PAGE_SIZE;
-
-	memset(check, 0xFF, sizeof(check));
-
-	if (head) {
-		size_t head_cnt = min(len, NAND_PAGE_SIZE - head);
-
-		offset -= head;
-		dfs_read_flash(offset, b, NAND_PAGE_SIZE);
-		if (memcmp(b + head, check, head_cnt)) {
-			return 0;
-		}
-
-		if (len <= head_cnt) {
-			return 1;
-		}
-
-		offset += NAND_PAGE_SIZE;
-		len    -= head_cnt;
-	}
-
-	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
-		dfs_read_flash(offset, b, NAND_PAGE_SIZE);
-		if (memcmp(b, check, NAND_PAGE_SIZE)) {
-			return 0;
-		}
-
-		offset += NAND_PAGE_SIZE;
-		len    -= NAND_PAGE_SIZE;
-	}
-
-	if (len > 0) {
-		dfs_read_flash(offset, b, NAND_PAGE_SIZE);
-		if (memcmp(b, check, len)) {
-			return 0;
-		}
-	}
-
-	return 1;
-#endif
-}
-
 #if USE_RAM_AS_CACHE
 static int dfs_cache_erase(uint32_t addr) {
 	return 0;
@@ -290,10 +240,6 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	pos %= NAND_BLOCK_SIZE;
 
 	err = 0;
-	if (dfs_mem_is_free(pos, size)) {
-		 dfs_write_flash(pos, buff, size);
-		 return 0;
-	}
 
 	dfs_cache_erase(buff_bk);
 	dfs_cache(CACHE_OFFSET, start_bk * NAND_BLOCK_SIZE, pos);
@@ -465,9 +411,6 @@ static struct inode_operations dfs_iops;
 
 static struct super_block_operations dfs_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
-	.alloc_inode   = NULL,
-	.destroy_inode = NULL,
-	.write_inode   = NULL,
 };
 
 static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
@@ -759,5 +702,4 @@ static const struct fs_driver dfs_dumb_driver = {
 	.fill_sb   = &dfs_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &dfs_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(dfs_dumb_driver);

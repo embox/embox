@@ -20,9 +20,7 @@ struct idesc;
 struct lookup;
 
 struct super_block_operations {
-	struct inode *(*alloc_inode)(struct super_block *sb);
 	int           (*destroy_inode)(struct inode *inode);
-	int           (*write_inode)(struct inode *inode);
 	int           (*umount_begin)(struct super_block *sb);
 	struct idesc *(*open_idesc)(struct lookup *l, int __oflag);
 };

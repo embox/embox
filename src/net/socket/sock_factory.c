@@ -163,6 +163,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
+		log_info("could not alloc type %d prot %d", nftype->type, nsock->protocol);
 		return err_ptr(ENOMEM);
 	}
 

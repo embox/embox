@@ -1,0 +1,19 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "loop_file_logger",
+	help = "",
+	man = '''
+		NAME
+			loop_file_logger
+		SYNOPSIS
+			
+		DESCRIPTION
+			
+		OPTIONS
+		AUTHOR
+			Anton Bondarev
+	''')
+module loop_file_logger {
+	source "loop_file_logger.c"
+}

@@ -6,6 +6,8 @@
  * @date    11.07.2014
  */
 
+#include <util/log.h>
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -15,8 +17,29 @@
 
 #include <net/inetdevice.h>
 #include <net/util/macaddr.h>
+#include <net/l3/route.h>
+
+#include <hal/arch.h>
+
 #include <cJSON.h>
-#include <util/log.h>
+
+#include <framework/mod/options.h>
+
+#define USE_NETMANAGER     OPTION_GET(BOOLEAN,use_netmanager)
+
+
+static in_addr_t *iface_get_gateway(char *ifname) {
+	struct rt_entry *rt;
+
+	for (rt = rt_fib_get_first(); rt != NULL; rt = rt_fib_get_next(rt)) {
+
+		if ((rt->rt_gateway != 0) && !strcmp(ifname, rt->dev->name)) {
+			return &rt->rt_gateway;
+		}
+	}
+
+	return 0;
+}
 
 static char *http_admin_build_iface_list(void) {
 	struct ifaddrs *i_ifa, *ifa = NULL;
@@ -37,8 +60,13 @@ static char *http_admin_build_iface_list(void) {
 		struct sockaddr *iaddr = i_ifa->ifa_addr;
 		cJSON *iface_obj;
 		char buf[64];
+		bool use_dhcp=false;
 
 		if (iaddr == NULL || iaddr->sa_family != AF_INET) {
+			continue;
+		}
+
+		if (0 == strcmp(i_ifa->ifa_name, "lo")) {
 			continue;
 		}
 
@@ -64,6 +92,12 @@ static char *http_admin_build_iface_list(void) {
 					buf,
 					sizeof(buf)));
 
+		cJSON_AddStringToObject(iface_obj, "gateway",
+				inet_ntop(i_ifa->ifa_netmask->sa_family,
+					iface_get_gateway(i_ifa->ifa_name),
+					buf,
+					sizeof(buf)));
+
 		iface_dev = inetdev_get_by_name(i_ifa->ifa_name);
 		if (!iface_dev) {
 			goto outerr;
@@ -71,6 +105,21 @@ static char *http_admin_build_iface_list(void) {
 		macaddr_print((unsigned char *) buf,
 			(unsigned char *) iface_dev->dev->dev_addr);
 		cJSON_AddStringToObject(iface_obj, "mac", buf);
+#if USE_NETMANAGER
+		snprintf(buf,sizeof(buf), "netmanager -d %s", i_ifa->ifa_name);
+		switch(system(buf)) {
+		case 0: /* disabled */
+		case -1: /* not available */
+			break;
+		case 1: /* enabled */
+			use_dhcp = true;
+			break;
+		default:
+			break;
+		}
+#endif
+		log_debug("use_dhcp %d", use_dhcp);
+		cJSON_AddBoolToObject(iface_obj, "useDhcp", use_dhcp);
 	}
 
 	json_list = cJSON_PrintUnformatted(iface_array);
@@ -96,7 +145,7 @@ static char *cJSON_GetObjectString(cJSON *obj, const char *name) {
 
 static void http_admin_post(char *post_data) {
 	struct in_device *iface_dev;
-	struct in_addr if_addr, if_netmask;
+	struct in_addr if_addr, if_netmask, if_gateway;
 	unsigned char if_hwaddr[MAX_ADDR_LEN];
 	const char *action;
 	cJSON *post_json;
@@ -123,15 +172,14 @@ static void http_admin_post(char *post_data) {
 				cJSON_GetObjectString(iface_desc, "ip"), &if_addr)) {
 			goto outerr;
 		}
-		if (inetdev_set_addr(iface_dev, if_addr.s_addr)) {
-			goto outerr;
-		}
 
 		if (1 != inet_pton(AF_INET,
 				cJSON_GetObjectString(iface_desc, "netmask"), &if_netmask)) {
 			goto outerr;
 		}
-		if (inetdev_set_mask(iface_dev, if_netmask.s_addr)) {
+
+		if (1 != inet_pton(AF_INET,
+				cJSON_GetObjectString(iface_desc, "gateway"), &if_gateway)) {
 			goto outerr;
 		}
 
@@ -142,10 +190,51 @@ static void http_admin_post(char *post_data) {
 		if (netdev_set_macaddr(iface_dev->dev, if_hwaddr)) {
 			goto outerr;
 		}
-	} else if (!strcmp(action, "flash_settings")) {
-		system("flash_settings store");
-	}
 
+		rt_del_route_if(iface_dev->dev);
+
+		inetdev_set_addr(iface_dev, if_addr.s_addr);
+
+		inetdev_set_mask(iface_dev, if_netmask.s_addr);
+		rt_add_route(iface_dev->dev, if_addr.s_addr & if_netmask.s_addr, if_netmask.s_addr, INADDR_ANY, 0);
+
+		rt_add_route(iface_dev->dev, 0, 0, if_gateway.s_addr, RTF_UP | RTF_GATEWAY);
+
+
+#if !OPTION_GET(BOOLEAN,is_readonly)
+#if USE_NETMANAGER
+		cJSON *item;
+		int res = 0;
+		char buf[32];
+
+		snprintf(buf,sizeof(buf), "netmanager -d %s",iface_dev->dev->name);
+		res = system(buf);
+
+		if (res < 0) {
+			snprintf(buf,sizeof(buf), "netmanager -s %d %s", res, iface_dev->dev->name);
+		} else {
+			item = cJSON_GetObjectItem(iface_desc, "useDhcp");
+			log_debug("res(%d) item(%d)", res, item->valueint);
+			snprintf(buf,sizeof(buf), "netmanager -s %d %s",
+					item->valueint, iface_dev->dev->name);
+		}
+		system(buf);
+		log_info("\nNet configuration is successfully saved");
+		log_info("\tRebooting now to apply new net config...");
+		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+#else /*not netmanager */
+		if (!system("flash_settings store net")) {
+			log_info("\nNet configuration is successfully saved");
+			log_info("\tRebooting now to apply new net config...");
+			arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+		} else {
+			log_error("\nNet configuration saving failed");
+		}
+#endif /* USE_NETMANAGER */
+#else /* is readonly config */
+		log_info("Net configuration is updated now");
+#endif /* is_readonly */
+	}
 	cJSON_Delete(post_json);
 	return;
 

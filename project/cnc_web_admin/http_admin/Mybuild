@@ -1,12 +1,6 @@
-
 package cnc_web_admin.cgi_bin
 
-@Cmd(name="http_admin_backend", help="", man="")
-@BuildDepends(third_party.lib.cjson)
-@BuildDepends(third_party.bsp.st_bsp_api)
 module http_admin {
-
-	source "http_admin_backend.c"
 
 	@InitFS(target_dir="http_admin")
 	source "partials",
@@ -14,6 +8,4 @@ module http_admin {
 	       "index.html",
 	       "app.js"
 
-	depends third_party.lib.cjson
-	depends embox.compat.libc.stdlib.system
 }

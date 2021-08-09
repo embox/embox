@@ -71,10 +71,15 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 
 		//assert(idesc_poll->idesc);
 		idesc = poll_table_idx2idesc(idesc_poll->fd);
-		if (!idesc)
+		if (!idesc ) {
 			continue;
-
+		}
+		idesc->idesc_count--;
+		if (idesc->idesc_count > 0) {
 		idesc_wait_cleanup(idesc,  &idesc_poll->wait_link);
+		} else {
+			idesc_close(idesc, idesc_poll->fd);
+		}
 	}
 
 	return 0;
@@ -89,8 +94,10 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 
 		//assert(ip->idesc);
 		idesc = poll_table_idx2idesc(ip->fd);
-		if (!idesc)
+		if (!idesc) {
 			continue;
+		}
+		idesc->idesc_count++;
 
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
 		idesc_wait_prepare(idesc, &ip->wait_link);

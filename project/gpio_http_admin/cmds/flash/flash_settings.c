@@ -18,6 +18,8 @@
 
 #include <led_driver_lib.h>
 
+#include <lib/loop_file_logger.h>
+
 #define NIC_FILENAME  "/conf/nic"
 #define LED_FILENAME  "/conf/led"
 
@@ -133,6 +135,30 @@ outerr:
 	return errcode;
 }
 
+static void logging_state(unsigned char state[MAX_LEDS]) {
+	struct timeval tv;
+	char buf[64];
+	time_t time;
+	int i;
+	int led_off;
+
+	memset(buf, 0, sizeof(buf));
+
+	gettimeofday(&tv, NULL);
+	time = tv.tv_sec;
+	ctime_r(&time, buf);
+
+	led_off = strlen(buf);
+	buf[led_off ++] = ':';
+	buf[led_off ++] = ' ';
+	for (i = 0; i < MAX_LEDS; i ++ ) {
+		buf[led_off + i] = state[i] +'0';
+	}
+
+	loop_logger_write(buf);
+}
+
+
 static int flashset_led_store(void) {
 	int errcode, fd;
 
@@ -149,6 +175,7 @@ static int flashset_led_store(void) {
 		DPRINTF("Error writing led\n");
 	}
 
+	logging_state(fsn_leds_state);
 	return errcode;
 }
 

@@ -77,13 +77,6 @@ static const struct fs_driver devfs_dumb_driver = {
 	.fill_sb   = devfs_fill_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &devfs_dumb_driver);
+DECLARE_FILE_SYSTEM_DRIVER(devfs_dumb_driver);
 
-static struct auto_mount devfs_auto_mount = {
-	.mount_path = "/dev",
-	.fs_driver  = (struct fs_driver *)&devfs_dumb_driver,
-};
-
-ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab);
-ARRAY_SPREAD_ADD(auto_mount_tab, &devfs_auto_mount);
+FILE_SYSTEM_AUTOMOUNT("/dev", devfs_dumb_driver);

@@ -116,5 +116,4 @@ static const struct fs_driver dfs_fat_driver = {
 	.clean_sb  = fat_clean_sb,
 };
 
-ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry);
-ARRAY_SPREAD_ADD(fs_drivers_registry, &dfs_fat_driver);
+DECLARE_FILE_SYSTEM_DRIVER(dfs_fat_driver);

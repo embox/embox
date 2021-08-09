@@ -18,7 +18,6 @@ module core extends embox.fs.fs_api {
 	option number inode_pool_size=64
 	option number dentry_pool_size=64
 	option number file_pool_size=64
-	option number mnt_pool_size=4
 
 	option boolean use_dcache=false
 

@@ -1,0 +1,19 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "conf_setup",
+	help = "Copy pointed config files into a writeble folder",
+	man = '''
+		NAME
+			conf_setup
+		SYNOPSIS
+		DESCRIPTION
+
+		AUTHOR
+			Anton Bondarev
+
+	''')
+module conf_setup {
+	@IncludePath("$(CONF_DIR)")
+	source "conf_setup.c"
+}
