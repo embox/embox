@@ -45,9 +45,79 @@
 
 #include <pjsua-lib/pjsua.h>
 
+#include "main.h"
+
+#include <framework/mod/options.h>
+
+#define USE_ACC_FILE OPTION_GET(BOOLEAN, use_acc_file)
+
+#if USE_ACC_FILE
+#define ACC_FILE_NAME    OPTION_STRING_GET(acc_file_name)
+
+static char sip_domain_buf[32];
+#define SIP_DOMAIN sip_domain_buf
+
+static char sip_user_buf[32];
+#define SIP_USER sip_user_buf
+
+static char sip_passwd_buf[32];
+#define SIP_PASSWD sip_passwd_buf
+
+static void load_account(void) {
+	FILE *fp;
+	char str[128];
+
+
+	fp = fopen(ACC_FILE_NAME , "r");
+	if (!fp) {
+		printf("error during loading account file %s", ACC_FILE_NAME);
+		return;
+	}
+	memset(str, 0, sizeof(str));
+	while (fgets(str, sizeof(str), fp)) {
+		if (0 == strncmp(str, "sip_domain: ", sizeof("sip_domain: ") - 1)) {
+			str[strlen(str) - 1] = '\0';
+			strcpy(SIP_DOMAIN, &str[sizeof("sip_domain: ") - 1]);
+			memset(str, 0, sizeof(str));
+			continue;
+		}
+		if (0 == strncmp(str, "sip_user: ", sizeof("sip_user: ") - 1)) {
+			str[strlen(str) - 1] = '\0';
+			strcpy(SIP_USER, &str[sizeof("sip_user: ") - 1]);
+			memset(str, 0, sizeof(str));
+			continue;
+		}
+		if (0 == strncmp(str, "sip_passwd: ", sizeof("sip_passwd: ") - 1)) {
+			str[strlen(str) - 1] = '\0';
+			strcpy(SIP_PASSWD, &str[sizeof("sip_passwd: ") - 1]);
+			memset(str, 0, sizeof(str));
+			continue;
+		}
+	}
+}
+
+#else
 #include <simple_pjsua_sip_account.inc>
 
-#include "main.h"
+
+static inline void load_account(void) {}
+
+#endif
+
+static inline char *get_sip_id_str(char buf[]) {
+	strcpy(buf, "sip:");
+	strcat(buf, SIP_USER);
+	strcat(buf, "@");
+	strcat(buf, SIP_DOMAIN);
+
+	return buf;
+}
+static inline char *get_sip_uri_str(char buf[]) {
+	strcpy(buf, "sip:");
+	strcat(buf, SIP_DOMAIN);
+
+	return buf;
+}
 
 #define THIS_FILE		"APP"
 
@@ -230,10 +300,23 @@ int demo_pj_main(int argc, char *argv[], int (*nk_cb)(const char *),
 	/* Register to SIP server by creating SIP account. */
 	{
 		pjsua_acc_config cfg;
+		static char id_buf[128];
+		static char uri_buf[64];
+
+		load_account();
+
+		printf("sip domain: %s\n", SIP_DOMAIN);
+		printf("sip user: %s\n", SIP_USER);
+		printf("sip passwd: %s\n", SIP_PASSWD);
 
 		pjsua_acc_config_default(&cfg);
-		cfg.id = pj_str("sip:" SIP_USER "@" SIP_DOMAIN);
-		cfg.reg_uri = pj_str("sip:" SIP_DOMAIN);
+
+		memset(id_buf, 0, sizeof(id_buf));
+		cfg.id = pj_str(get_sip_id_str(id_buf));
+
+		memset(uri_buf, 0, sizeof(uri_buf));
+		cfg.reg_uri = pj_str(get_sip_uri_str(uri_buf));
+
 		cfg.cred_count = 1;
 		cfg.cred_info[0].realm = pj_str("*");
 		cfg.cred_info[0].scheme = pj_str("digest");

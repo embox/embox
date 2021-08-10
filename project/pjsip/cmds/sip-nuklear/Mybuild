@@ -7,6 +7,8 @@ package project.pjsip.cmd
 @Build(stage=2)
 module sip_nuklear {
 	option boolean use_small_display = false
+	option boolean use_acc_file = false
+	option string acc_file_name = "sip_acc.conf"
 
 	@InitFS
 	source "icons/phone-accept-80.png",
