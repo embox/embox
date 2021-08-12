@@ -38,24 +38,15 @@ angular.module("HttpAdmin", ['ngRoute', 'ui.bootstrap'])
         $scope.sipAccounts = data;
     });
 
-    $scope.update = function(account) {
+    $scope.update = function(sip_account) {
         var post_data = {
             'action' : 'accounts_update',
-            'data' : account
+            'data' : sip_account
         };
 
         $http.post('cgi-bin/http_admin_accounts', post_data);
     };
 
-    $scope.flash = function() {
-        var post_data = {
-            'action' : 'flash_settings',
-        };
-
-        $http.post('cgi-bin/http_admin_accounts', post_data);
-    };
-
-    $scope.update();
 }])
 .controller("LogCtrl", ['$scope', '$http', function($scope, $http) {
     $scope.update = function() {
