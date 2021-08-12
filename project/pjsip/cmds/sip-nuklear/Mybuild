@@ -6,9 +6,7 @@ package project.pjsip.cmd
 @BuildDepends(third_party.lib.nuklear)
 @Build(stage=2)
 module sip_nuklear {
-	option boolean use_small_display = false
-	option boolean use_acc_file = false
-	option string acc_file_name = "sip_acc.conf"
+	
 
 	@InitFS
 	source "icons/phone-accept-80.png",
@@ -17,17 +15,38 @@ module sip_nuklear {
 
 	source "main.c"
 
-	source "nuklear_main.c"
+
+
+	@NoRuntime depends third_party.pjproject.libpj_all
+	@NoRuntime depends third_party.lib.nuklear
+	depends embox.driver.input.core
+	depends rawfb_api
+	@NoRuntime depends pjsua_lib
+	@NoRuntime depends nuklear_lib
+}
+
+@BuildDepends(third_party.pjproject.libpj_all)
+@Build(stage=2)
+static module pjsua_lib {
+	option boolean use_acc_file = false
+	option string acc_file_name = "sip_acc.conf"
 
 	@IncludePath("$(CONF_DIR)")
 	@DefineMacro("PJ_AUTOCONF=1")
 	source "pjsua.c"
 
 	@NoRuntime depends third_party.pjproject.libpj_all
-	@NoRuntime depends third_party.lib.nuklear
-	depends embox.driver.input.core
-	depends rawfb_api
 }
+
+@BuildDepends(third_party.lib.nuklear)
+@Build(stage=2)
+static module nuklear_lib {
+	option boolean use_small_display = false
+	source "nuklear_main.c"
+
+	@NoRuntime depends third_party.lib.nuklear
+}
+
 
 abstract module rawfb_api {
 }

@@ -96,13 +96,49 @@ static void load_account(void) {
 	}
 }
 
+void store_sip_account(char *domain, char *user, char *passwd) {
+	char file_buf[256] = "";
+
+	strcpy(file_buf, "sip_domain: ");
+	strcat(file_buf, domain);
+	strcat(file_buf, "\n");
+
+	strcat(file_buf, "sip_user: ");
+	strcat(file_buf, user);
+	strcat(file_buf, "\n");
+
+	strcat(file_buf, "sip_passwd: ");
+	strcat(file_buf, passwd);
+	strcat(file_buf, "\n");
+
+	FILE *file = fopen(ACC_FILE_NAME, "w");
+	if (!file) {
+		printf("Couldn't write file %s...\n", ACC_FILE_NAME);
+
+		return ;
+	}
+	fwrite(file_buf, strlen(file_buf), 1, file);
+	fclose(file);
+}
 #else
 #include <simple_pjsua_sip_account.inc>
 
 
 static inline void load_account(void) {}
-
+void store_sip_account(char *domain, char *user, char *passwd) {}
 #endif
+
+char *get_sip_acc_domain(void) {
+	return SIP_DOMAIN;
+}
+
+char *get_sip_acc_user(void) {
+	return SIP_USER;
+}
+
+char *get_sip_acc_passwd(void) {
+	return SIP_PASSWD;
+}
 
 static inline char *get_sip_id_str(char buf[]) {
 	strcpy(buf, "sip:");
@@ -123,7 +159,7 @@ static inline char *get_sip_uri_str(char buf[]) {
 
 static pjsua_call_id current_call = PJSUA_INVALID_ID;
 
-extern struct demo_call_info *call_info;
+struct demo_call_info *call_info;
 
 static struct timeval tv_start_call;
 static char pjsip_log_message_buf[128];

@@ -4,7 +4,7 @@
 
 #include "main.h"
 
-struct demo_call_info *call_info;
+extern struct demo_call_info *call_info;
 
 int main(int argc, char *argv[]) {
 	call_info = malloc(sizeof (struct demo_call_info));
