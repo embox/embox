@@ -274,15 +274,16 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 }
 
 static int dfs_format(void) {
-	struct dfs_sb_info *sbi = dfs_sb()->sb_data;
+	struct dfs_sb_info *sbi;
 	struct dfs_dir_entry root;
-
+	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
 	int i, j, k;
 	int err;
 
 	if (!dfs_flashdev) {
 		return -ENOENT;
 	}
+
 
 	for (j = 0, k = 0; j < dfs_flashdev->num_block_infos; j++) {
 		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
@@ -294,6 +295,7 @@ static int dfs_format(void) {
 		}
 	}
 
+	sbi = dfs_sb()->sb_data;
 	/* Empty FS */
 	*sbi = (struct dfs_sb_info) {
 		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
@@ -311,18 +313,16 @@ static int dfs_format(void) {
 
 	/* Configure root directory */
 	sbi->inode_count++;
-/*
- * the root folder use dentry space for store information
-	sbi->free_space += MIN_FILE_SZ;
- */
 
 	strcpy((char *) root.name, "/");
 	root.pos_start = sbi->free_space;
 	root.len       = DFS_INODES_MAX;
 	root.flags     = S_IFDIR;
-	dfs_write_flash(DFS_DENTRY_OFFSET(0), &root, sizeof(struct dfs_dir_entry));
 
-	dfs_write_flash(0, sbi, sizeof(struct dfs_sb_info));
+	memcpy(write_buf, sbi, sizeof(struct dfs_sb_info));
+	memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
+
+	dfs_write_raw(0, write_buf, sizeof(write_buf));
 
 	return 0;
 }

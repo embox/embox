@@ -18,7 +18,10 @@
 #include <kernel/printk.h>
 #include <hal/arch.h>
 
-#include <simple_pjsua_sip_account.inc>
+extern char *get_sip_acc_domain(void);
+extern char *get_sip_acc_user(void);
+extern char *get_sip_acc_passwd(void);
+extern void store_sip_account(char *domain, char *user, char *passwd);
 
 static char *http_admin_build_accounts_list(void) {
 	cJSON *accounts_array;
@@ -43,11 +46,11 @@ static char *http_admin_build_accounts_list(void) {
 
 	cJSON_AddStringToObject(account_obj, "name", "main account");
 
-	cJSON_AddStringToObject(account_obj, "sip_domain", SIP_DOMAIN);
+	cJSON_AddStringToObject(account_obj, "sip_domain", get_sip_acc_domain());
 
-	cJSON_AddStringToObject(account_obj, "sip_user", SIP_USER);
+	cJSON_AddStringToObject(account_obj, "sip_user", get_sip_acc_user());
 
-	cJSON_AddStringToObject(account_obj, "sip_password", SIP_PASSWD);
+	cJSON_AddStringToObject(account_obj, "sip_password", get_sip_acc_passwd());
 
 	json_list = cJSON_PrintUnformatted(accounts_array);
 
@@ -59,7 +62,48 @@ outerr:
 	return strdup("{}");
 }
 
+static char *cJSON_GetObjectString(cJSON *obj, const char *name) {
+	cJSON *item;
+
+	assert(obj->type == cJSON_Object);
+	item = cJSON_GetObjectItem(obj, name);
+	assert(item);
+	assert(item->type == cJSON_String);
+	return item->valuestring;
+}
+
 static void http_admin_post(char *post_data) {
+	const char *action;
+	cJSON *post_json;
+
+	post_json = cJSON_Parse(post_data);
+
+	if (!post_json) {
+		goto outerr;
+	}
+
+	action = cJSON_GetObjectString(post_json, "action");
+	if (!strcmp(action, "accounts_update")) {
+		cJSON *acount_desc = cJSON_GetObjectItem(post_json, "data");
+		char *domain;
+		char *user;
+		char *passwd;
+
+		log_debug("Action: accounts update");
+
+
+		domain = cJSON_GetObjectString(acount_desc, "sip_domain");
+		user = cJSON_GetObjectString(acount_desc, "sip_user");
+		passwd = cJSON_GetObjectString(acount_desc, "sip_password");
+
+		store_sip_account(domain, user, passwd);
+	}
+	cJSON_Delete(post_json);
+	return;
+
+outerr:
+	log_error("failed");
+	cJSON_Delete(post_json);
 }
 
 int main(int argc, char *argv[]) {
