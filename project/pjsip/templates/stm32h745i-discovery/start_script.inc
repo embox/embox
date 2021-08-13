@@ -4,4 +4,4 @@
 "netmanager",
 "ntpdate 0.europe.pool.ntp.org",
 "service httpd http_admin",
-"sip_nuklear /dev/stm32-ts"
+//"simple_pjsua_imported"
