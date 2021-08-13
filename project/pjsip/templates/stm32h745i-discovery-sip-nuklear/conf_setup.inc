@@ -3,5 +3,6 @@
 
 static char *conf_files[] = {
 		"network",
-		"log.txt"
+		"log.txt",
+		"sip_acc.conf"
 };
