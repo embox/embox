@@ -1,6 +1,6 @@
-diff -aur samba-3.6.18/source3/configure samba-3.6.18-working-copy/source3/configure
---- samba-3.6.18/source3/configure	2013-08-12 10:26:02.000000000 +0300
-+++ samba-3.6.18-working-copy/source3/configure	2015-11-17 16:30:58.559981984 +0300
+diff -aur samba-3.6.25/source3/configure ../build/extbld/third_party/samba/core/samba-3.6.25/source3/configure
+--- samba-3.6.25/source3/configure	2015-02-22 17:16:23.000000000 +0300
++++ ../build/extbld/third_party/samba/core/samba-3.6.25/source3/configure	2021-08-14 13:55:13.000865392 +0300
 @@ -13289,58 +13289,58 @@
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libreplace_cv_HAVE_GETADDRINFO" >&5
  $as_echo "$libreplace_cv_HAVE_GETADDRINFO" >&6; }
@@ -112,14 +112,13 @@ diff -aur samba-3.6.18/source3/configure samba-3.6.18-working-copy/source3/confi
  
  if test x"$libreplace_cv_HAVE_GETADDRINFO" = x"yes"; then
  
-diff -aur samba-3.6.18/source3/rpc_server/samr/srv_samr_chgpasswd.c samba-3.6.18-working-copy/source3/rpc_server/samr/srv_samr_chgpasswd.c
---- samba-3.6.18/source3/rpc_server/samr/srv_samr_chgpasswd.c	2013-08-12 10:25:27.000000000 +0300
-+++ samba-3.6.18-working-copy/source3/rpc_server/samr/srv_samr_chgpasswd.c	2015-11-17 17:55:31.280077217 +0300
-@@ -638,8 +638,7 @@
- }
+diff -aur samba-3.6.25/source3/rpc_server/samr/srv_samr_chgpasswd.c ../build/extbld/third_party/samba/core/samba-3.6.25/source3/rpc_server/samr/srv_samr_chgpasswd.c
+--- samba-3.6.25/source3/rpc_server/samr/srv_samr_chgpasswd.c	2015-02-22 17:11:32.000000000 +0300
++++ ../build/extbld/third_party/samba/core/samba-3.6.25/source3/rpc_server/samr/srv_samr_chgpasswd.c	2021-08-14 14:00:57.350398161 +0300
+@@ -639,7 +639,7 @@
  
  #else /* ALLOW_CHANGE_PASSWORD */
--
+ 
 -bool chgpasswd(const char *name, const struct passwd *pass,
 +bool chgpasswd(const char *name, const char *rhost, const struct passwd *pass,
  	       const char *oldpass, const char *newpass, bool as_root)
