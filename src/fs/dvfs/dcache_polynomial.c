@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <limits.h>
 
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
@@ -17,13 +18,13 @@
 #define DENTRY_POOL_SIZE 64
 
 static const unsigned long long prime = 19, module = 1023;
-static unsigned long long pows[DVFS_MAX_PATH_LEN];
+static unsigned long long pows[PATH_MAX];
 
 static void hash_init(void) {
 	/* TODO precount in runtime or even in compiletime */
 	int i;
 	pows[0] = 1;
-	for (i = 1; i < DVFS_MAX_PATH_LEN; i++)
+	for (i = 1; i < PATH_MAX; i++)
 		pows[i] = (pows[i - 1] * prime) % module;
 }
 
@@ -65,7 +66,7 @@ extern int dentry_full_path(struct dentry *dentry, char *buf);
  * @return Negative error code
  */
 int dvfs_cache_add(struct dentry *dentry) {
-	char pathname[DVFS_MAX_PATH_LEN];
+	char pathname[PATH_MAX];
 	unsigned long long hash;
 	struct hashtable_item *ht_item = pool_alloc(&dentry_ht_pool);
 	assert(ht_item);
@@ -85,7 +86,7 @@ int dvfs_cache_add(struct dentry *dentry) {
  * @return Negative error code
  */
 int dvfs_cache_del(struct dentry *dentry) {
-	char pathname[DVFS_MAX_PATH_LEN];
+	char pathname[PATH_MAX];
 	unsigned long long hash;
 	struct hashtable_item *ht_item;
 	if (dentry->name[0] == '\0')
@@ -116,11 +117,11 @@ struct dentry *dvfs_cache_get(char *path, struct lookup *lookup) {
 
 struct dentry *dvfs_cache_lookup(const char *path,
 	struct dentry *base) {
-	char full_path[DVFS_MAX_PATH_LEN];
+	char full_path[PATH_MAX];
 	struct dentry *ret;
 
 	dentry_full_path(base, full_path);
-	strncat(full_path, path, DVFS_MAX_PATH_LEN - strlen(path));
+	strncat(full_path, path, PATH_MAX - strlen(path));
 
 	/* TODO check path from root */
 

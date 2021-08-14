@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <fs/mount.h>
 
@@ -67,8 +68,8 @@ extern struct dlist_head dentry_dlist;
 static void show_mount_list(void) {
 	struct dentry *d;
 	static const char *devfs_path = "/dev/";
-	char mount_path[DVFS_MAX_PATH_LEN];
-	char bdev_path[DVFS_MAX_PATH_LEN];
+	char mount_path[PATH_MAX];
+	char bdev_path[PATH_MAX];
 
 	dlist_foreach_entry(d, &dentry_dlist, d_lnk) {
 		if (d->flags & DVFS_MOUNT_POINT) {

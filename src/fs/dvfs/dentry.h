@@ -9,11 +9,13 @@
 #ifndef FS_DENTRY_H_
 #define FS_DENTRY_H_
 
+#include <limits.h>
+
 #include <fs/dvfs.h>
 #include <util/dlist.h>
 
 struct dentry {
-	char name[DENTRY_NAME_LEN];
+	char name[NAME_MAX];
 
 	int flags;
 	int usage_count;

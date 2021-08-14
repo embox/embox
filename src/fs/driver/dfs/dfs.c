@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 #include <string.h>
 #include <sys/types.h>
+#include <limits.h>
 
 #include <fs/dvfs.h>
 #include <drivers/flash/flash.h>
@@ -556,7 +557,7 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 			};
 			ctx->fs_ctx = (void*) (i + 1);
 
-			strncpy(name_buf, (char *) dirent.name, DENTRY_NAME_LEN);
+			strncpy(name_buf, (char *) dirent.name, NAME_MAX);
 			return 0;
 		}
 	}

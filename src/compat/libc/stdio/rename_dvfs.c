@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
+#include <limits.h>
 
 #include <fs/dvfs.h>
 
@@ -27,7 +28,7 @@
 int rename(const char *src_name, const char *dst_name) {
 	struct lookup lu = {};
 	struct dentry *from, *to, *dst_parent;
-	char dst_parent_path[DVFS_MAX_PATH_LEN + 1];
+	char dst_parent_path[PATH_MAX + 1];
 	int err;
 	char buf[FS_BUFFER_SZ];
 	FILE *in, *out;

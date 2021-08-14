@@ -57,7 +57,7 @@ static int ramfs_iterate(struct inode *next, char *name, struct inode *parent, s
 		next->i_mode = ramfs_files[cur_id].mode & (S_IFMT | S_IRWXA);
 
 		ctx->fs_ctx = (void *) (cur_id + 1);
-		strncpy(name, (char *) ramfs_files[cur_id].name, DENTRY_NAME_LEN);
+		strncpy(name, (char *) ramfs_files[cur_id].name, NAME_MAX);
 
 		return 0;
 	}
