@@ -29,9 +29,9 @@ INDEX_DEF(idecd_idx, 0, MAX_IDE_QUANTITY);
 
 static const struct block_dev_ops idecd_pio_driver;
 
-static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
+static int atapi_packet_read(struct hd *hd, unsigned char *pkt,
 		int pktlen, char *buffer, size_t bufsize) {
-	hdc_t *hdc;
+	struct hdc *hdc;
 	int result;
 	char *bufp;
 	int bufleft;
@@ -111,7 +111,7 @@ static int atapi_packet_read(hd_t *hd, unsigned char *pkt,
 	return result == 0 ? bufsize - bufleft : -EIO;
 }
 
-static int atapi_read_capacity(hd_t *hd) {
+static int atapi_read_capacity(struct hd *hd) {
 	unsigned char pkt[12];
 	unsigned long buf[2];
 	unsigned long blks;
@@ -132,7 +132,7 @@ static int atapi_read_capacity(hd_t *hd) {
 	return blks;
 }
 
-static int atapi_request_sense(hd_t *hd) {
+static int atapi_request_sense(struct hd *hd) {
 	unsigned char pkt[12];
 	unsigned char buf[18];
 	int rc;
@@ -153,7 +153,7 @@ static int cd_read(struct block_dev *bdev, char *buffer,
 					size_t count, blkno_t blkno) {
 	unsigned char pkt[12];
 	unsigned int blks;
-	hd_t *hd = block_dev_priv(bdev);
+	struct hd *hd = block_dev_priv(bdev);
 
 	blks = count / CDSECTORSIZE;
 	if (blks > 0xFFFF) {
@@ -178,7 +178,7 @@ static int cd_write(struct block_dev *bdev, char *buffer,
 }
 
 static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-	hd_t *hd = block_dev_priv(bdev);
+	struct hd *hd = block_dev_priv(bdev);
 	int rc;
 
 	switch (cmd) {
@@ -206,10 +206,10 @@ static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 }
 
 static int idecd_init (void *args) {
-	hd_t *drive;
+	struct hd *drive;
 	size_t size;
 	char   path[PATH_MAX];
-	drive = (hd_t *)args;
+	drive = (struct hd *)args;
 	/* Make new device */
 	if (drive && drive->media == IDE_CDROM) {
 		*path = 0;

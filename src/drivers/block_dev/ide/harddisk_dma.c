@@ -22,7 +22,7 @@
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 static const struct block_dev_ops idedisk_udma_driver;
 
-static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
+static void setup_dma(struct hdc *hdc, char *buffer, int count, int cmd) {
 	int i;
 	int len;
 	char *next;
@@ -55,13 +55,13 @@ static void setup_dma(hdc_t *hdc, char *buffer, int count, int cmd) {
 		 hdc->bmregbase + BM_STATUS_REG);
 }
 
-static void start_dma(hdc_t *hdc) {
+static void start_dma(struct hdc *hdc) {
 	/* Start DMA operation */
 	outb(inb(hdc->bmregbase + BM_COMMAND_REG) | BM_CR_START,
 		 hdc->bmregbase + BM_COMMAND_REG);
 }
 
-static int stop_dma(hdc_t *hdc) {
+static int stop_dma(struct hdc *hdc) {
 	int dmastat;
 
 	/* Stop DMA channel and check DMA status */
@@ -83,8 +83,8 @@ static int stop_dma(hdc_t *hdc) {
 }
 
 static int hd_read_udma(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
+	struct hd *hd;
+	struct hdc *hdc;
 	int sectsleft;
 	int nsects;
 	int result = 0;
@@ -161,8 +161,8 @@ static int hd_read_udma(struct block_dev *bdev, char *buffer, size_t count, blkn
 }
 
 static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
+	struct hd *hd;
+	struct hdc *hdc;
 	int sectsleft;
 	int nsects;
 	int result = 0;
@@ -237,11 +237,11 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 }
 
 static int idedisk_udma_init (void *args) {
-	hd_t *drive;
+	struct hd *drive;
 	double size;
 	char   path[PATH_MAX];
 
-	drive = (hd_t *)args;
+	drive = (struct hd *)args;
 	/* Make new device */
 	if (drive && (drive->media == IDE_DISK) && (drive->udmamode != -1)) {
 		*path = 0;
