@@ -435,7 +435,7 @@ int cdfs_mount(struct nas *root_nas)
 
 	/* Read volume descriptors */
 	cdfs->vdblk = 0;
-	blk = 16;
+	blk = 0x8000/CDFS_BLOCKSIZE;
 	while (1) {
 		cache  = block_dev_cached_read(root_nas->fs->bdev, blk);
 		if (!cache) {
