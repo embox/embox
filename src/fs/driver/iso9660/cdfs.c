@@ -48,6 +48,7 @@
 #include <limits.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <ctype.h>
 
 #include <util/err.h>
 
@@ -551,6 +552,10 @@ static int cdfs_open(struct inode *node, char *name) {
 		return -EROFS;
 	}
 
+	for(int i = 0; name[i]; i++){
+		name[i] = toupper(name[i]);
+	}
+
 	/* Locate file in file system */
 	rc = cdfs_find_file(cdfs, name, strlen(name), &cache, &rec);
 	if (rc < 0) {
@@ -786,12 +791,12 @@ static struct file_operations cdfsfs_fop = {
 };
 
 static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
-	char path [PATH_MAX];
+	char path [PATH_MAX + 1];
 	int res;
 
 	vfs_get_relative_path(node, path, PATH_MAX);
 
-	res = cdfs_open(node, path);
+	res = cdfs_open(node, path + 1);
 	if (res) {
 		return err_ptr(-res);
 	}
@@ -1024,6 +1029,9 @@ static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) 
 			}
 			name[namelen] = 0;
 
+			for(int i = 0; name[i]; i++){
+				name[i] = tolower(name[i]);
+			}
 			node = vfs_subtree_create_child(dir_node, name, S_IFREG);
 			if (!node) {
 				return -ENOMEM;
@@ -1035,7 +1043,9 @@ static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) 
 				return -ENOMEM;
 			}
 
+			fi->size = cdfs_isonum_733(rec->size);
 			inode_priv_set(node, fi);
+			inode_size_set(node, cdfs_isonum_733(rec->size));
  		} else {
 			/* Skip to next block */
 			left -= (cache->data + CDFS_BLOCKSIZE) - p;
@@ -1076,6 +1086,10 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 		if (*name) {
 			dir_node = cdfs_get_dir_node(cdfs, pathrec->parent, root_node);
 
+			for(int i = 0; name[i]; i++){
+				name[i] = tolower(name[i]);
+			}
+
 			node = vfs_subtree_create_child(dir_node, name, S_IFDIR);
 			if (!node) {
 				return -ENOMEM;
@@ -1089,6 +1103,7 @@ static int cdfs_create_dir_entry (struct nas *root_nas) {
 
 			inode_priv_set(node, fi);
 		}
+
 
 		cdfs_create_file_node(node, cdfs, n);
 	}
