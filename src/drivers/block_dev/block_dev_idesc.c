@@ -5,11 +5,15 @@
  * @version 0.1
  * @date 2015-10-01
  */
+#include <util/log.h>
+
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
 #include <stddef.h>
+#include <stdlib.h>
+
 #include <util/err.h>
 
 #include <drivers/block_dev.h>
@@ -33,6 +37,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	size_t blk_no;
 	int res;
 	off_t pos;
+	char *cache_buf = NULL;
 
 	assert(iov);
 	buf = iov->iov_base;
@@ -59,11 +64,31 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 		return 0;
 	}
 
+	if (cnt != bdev->block_size) {
+		cache_buf = malloc(bdev->block_size);
+		if (!cache_buf) {
+			log_error("could not alloc cache_buff (%d)", bdev->block_size );
+			return -ENOMEM;
+		}
+	}
+
 	assert(bdev->driver);
 	assert(bdev->driver->read);
-	res = bdev->driver->read(bdev, buf, nbyte, blk_no);
+	if (cache_buf) {
+		res = bdev->driver->read(bdev, cache_buf, bdev->block_size, blk_no);
+		if (res > 0) {
+			res = nbyte;
+			memcpy(buf, &cache_buf[pos % bdev->block_size], nbyte);
+		}
+	} else {
+		res = bdev->driver->read(bdev, buf, nbyte, blk_no);
+	}
 	if (res > 0) {
 		file_set_pos(file, pos + res);
+	}
+
+	if (!cache_buf) {
+		free(cache_buf);
 	}
 
 	return res;

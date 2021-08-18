@@ -1,6 +1,7 @@
 package embox.driver
 
 module block_dev {
+	option number log_level=1
 	source "block_dev_idesc.c"
 
 	@IncludeExport(path="drivers")
