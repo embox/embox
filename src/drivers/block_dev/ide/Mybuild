@@ -1,7 +1,10 @@
 package embox.driver
 
 module ide {
+	option number log_level=4
+
 	option number dev_quantity = 4
+
 	source "ide_drive.c"
 	source "cdrom.c"
 	source "harddisk_pio.c"

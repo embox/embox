@@ -248,7 +248,7 @@ static int hd_identify(struct hd *hd) {
 	hd->cyls = hd->param.cylinders;
 	hd->heads = hd->param.heads;
 	hd->sectors = hd->param.sectors;
-	hd->use32bits = 0;/*hd->param.usedmovsd != 0; */
+	hd->use32bits = hd->param.usedmovsd != 0;
 	hd->sectbufs = hd->param.buffersize;
 	hd->multsect = hd->param.nsecperint;
 	if (hd->multsect == 0) {
@@ -427,8 +427,7 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 		break;
 	}
 
-	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
-			              && (HD_XFER_IGNORE != hdc->dir)) {
+	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir) ) {
 		hdc->result = 1;
 		waitq_wakeup_all(&hdc->waitq);
 	}
