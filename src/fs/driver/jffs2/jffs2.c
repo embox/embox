@@ -13,10 +13,12 @@
  */
 
 #include <linux/kernel.h>
-#include "nodelist.h"
 #include <linux/pagemap.h>
 #include <linux/crc32.h>
+
+#include "nodelist.h"
 #include "compr.h"
+
 #include <errno.h>
 #include <string.h>
 
@@ -27,19 +29,23 @@
 
 #include <fs/fs_driver.h>
 #include <fs/super_block.h>
+#include <fs/dir_context.h>
+#include <fs/inode_operation.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/hlpr_path.h>
+#include <fs/file_operation.h>
+#include <fs/file_desc.h>
+
 #include <util/array.h>
 #include <util/err.h>
 #include <embox/unit.h>
-#include <drivers/block_dev.h>
+
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 #include <mem/sysmalloc.h>
-#include <fs/file_operation.h>
-#include <fs/super_block.h>
-#include <fs/file_desc.h>
+
+#include <drivers/block_dev.h>
 #include <drivers/flash/flash.h>
 #include <drivers/flash/emulator.h>
 
@@ -52,6 +58,8 @@ POOL_DEF(jffs2_fs_pool, struct jffs2_fs_info,
 /* ext file description pool */
 POOL_DEF(jffs2_file_pool, struct jffs2_file_info,
 		OPTION_GET(NUMBER,inode_quantity));
+
+static int jffs2fs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
 
 static int jffs2_free_fs(struct super_block *sb);
 static int jffs2_read_inode (struct _inode *inode);
@@ -1596,6 +1604,63 @@ static struct super_block_operations jffs2fs_sbops = {
 	.destroy_inode = jffs2fs_destroy_inode,
 };
 
+struct inode_operations jffs2fs_iops = {
+	.iterate = jffs2fs_iterate,
+};
+
+struct inode *jffs2fs_lookup(char const *name, struct inode const *dir) {
+	return NULL;
+}
+
+static int jffs2fs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
+	struct jffs2_inode_info *dir_f;
+	struct jffs2_full_dirent *fd_list;
+	struct _inode *inode = NULL;
+	uint32_t ino = 0;
+	struct _inode *dir_i;
+	struct jffs2_file_info *fi;
+	int idx = 0;
+
+	fi = inode_priv(parent);
+	dir_i = fi->_inode;
+
+	dir_f = JFFS2_INODE_INFO(dir_i);
+
+	for (fd_list = dir_f->dents; NULL != fd_list; fd_list = fd_list->next) {
+		if (fd_list) {
+			ino = fd_list->ino;
+			if (ino) {
+				inode = jffs2_iget(dir_i->i_sb, ino);
+
+				if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
+					continue;
+				}
+				if (NULL == (fi = jffs2_fi_alloc(next, parent->nas->fs))) {
+					return -1;
+				}
+				inode_priv_set(next, fi);
+				fi->_inode = inode;
+
+				next->i_mode = inode->i_mode;
+
+				next->uid = inode->i_uid;
+				next->gid =  inode->i_gid;
+				inode_size_set(next,  inode->i_size);
+
+				strncpy(next_name, (const char *)fd_list->name, NAME_MAX - 1);
+				next_name[NAME_MAX - 1] = '\0';
+
+				dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
+
+				return 0;
+			}
+
+		}
+	}
+
+	return -1;
+}
+
 static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	struct block_dev *bdev;
 	struct jffs2_fs_info *fsi;
@@ -1614,6 +1679,7 @@ static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	memset(fsi, 0, sizeof(struct jffs2_fs_info));
 	sb->sb_data = fsi;
 	sb->sb_ops = &jffs2fs_sbops;
+	sb->sb_iops = &jffs2fs_iops;
 
 	return 0;
 }
@@ -1640,11 +1706,11 @@ static int jffs2fs_mount(struct super_block *sb, struct inode *dest) {
 	inode_priv_set(dest, fi);
 	fsi = sb->sb_data;
 	fi->_inode = fsi->jffs2_sb.s_root;
-
+#if 0
 	if(0 != (rc = mount_vfs_dir_enty(dir_nas))) {
 		goto error;
 	}
-
+#endif
 	return 0;
 
 error:
