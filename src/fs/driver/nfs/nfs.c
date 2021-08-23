@@ -457,6 +457,7 @@ static int nfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &nfs_sbops;
 	sb->sb_iops = &nfs_iops;
+	sb->sb_fops = &nfsfs_fop;
 
 	memset(fsi, 0, sizeof *fsi);
 	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi))) {

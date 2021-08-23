@@ -1680,6 +1680,7 @@ static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &jffs2fs_sbops;
 	sb->sb_iops = &jffs2fs_iops;
+	sb->sb_fops = &jffs2_fop;
 
 	return 0;
 }

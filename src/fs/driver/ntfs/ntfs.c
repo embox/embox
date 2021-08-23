@@ -486,6 +486,7 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 	return 0;
 }
 
+static const struct file_operations ntfs_fop;
 static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	ntfs_volume *vol;
 	struct block_dev *bdev;
@@ -508,6 +509,7 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &ntfs_sbops;
 	sb->sb_iops = &ntfs_iops;
+	sb->sb_fops = &ntfs_fop;
 
 	/* Allocate an ntfs_device structure. */
 	ntfs_dev = ntfs_device_alloc(block_dev_name(bdev), 0, &ntfs_device_bdev_io_ops, NULL);

@@ -849,6 +849,9 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &e2fs_sbops;
 	sb->sb_iops = &ext2_iops;
+	sb->sb_data = fsi;
+	sb->sb_fops = &ext2_fop;
+
 
 	/* presetting that we think */
 	fsi->s_block_size = SBSIZE;

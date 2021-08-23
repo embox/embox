@@ -213,6 +213,7 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
     return 0;
 }
 
+static struct file_operations ext3_fop;
 static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 	int ret;
 
@@ -226,6 +227,7 @@ static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	sb->sb_ops = &ext3fs_sbops;
+	sb->sb_fops = &ext3_fop;
 
 	return 0;
 }

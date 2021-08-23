@@ -768,6 +768,7 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &ext4fs_sbops;
 	sb->sb_iops = &ext4_iops;
+	sb->sb_fops = &ext4_fop;
 
 	return 0;
 }

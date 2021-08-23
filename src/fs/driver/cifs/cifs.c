@@ -264,7 +264,7 @@ static struct inode_operations cifs_iops = {
 //	.lookup   = cifs_lookup,
 	.iterate  = cifs_iterate,
 };
-
+static struct file_operations cifs_fop;
 static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
@@ -296,6 +296,8 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &cifs_sbops;
 	sb->sb_iops = &cifs_iops;
+	sb->sb_fops = &cifs_fop;
+
 
 	return 0;
 }
