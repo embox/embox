@@ -984,7 +984,7 @@ static const struct fs_driver ntfs_driver = {
 	.name     = "ntfs",
 	.fill_sb  = ntfs_fill_sb,
 	.clean_sb = ntfs_clean_sb,
-	.file_op  = &ntfs_fop,
+//	.file_op  = &ntfs_fop,
 	.fsop     = &ntfs_fsop,
 };
 

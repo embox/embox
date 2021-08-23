@@ -678,7 +678,7 @@ static struct fs_driver ext4fs_driver = {
 	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
-	.file_op  = &ext4_fop,
+//	.file_op  = &ext4_fop,
 	.fsop     = &ext4_fsop,
 };
 

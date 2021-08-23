@@ -1462,7 +1462,7 @@ static struct fs_driver jffs2fs_driver = {
 	.format      = jffs2fs_format,
 	.fill_sb = jffs2_fill_sb,
 	.clean_sb = jffs2_clean_sb,
-	.file_op = &jffs2_fop,
+//	.file_op = &jffs2_fop,
 	.fsop = &jffs2_fsop,
 };
 

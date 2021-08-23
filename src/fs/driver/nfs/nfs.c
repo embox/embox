@@ -256,7 +256,7 @@ static struct fs_driver nfsfs_driver = {
 	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
-	.file_op  = &nfsfs_fop,
+//	.file_op  = &nfsfs_fop,
 	.fsop     = &nfsfs_fsop,
 };
 

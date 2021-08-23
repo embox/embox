@@ -69,19 +69,21 @@ static struct super_block_operations ext3fs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = &ext3fs_destroy_inode,
 };
+
+extern struct file_operations ext2_fop;
 /*
  * file_operation
  */
 static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
-	return ext2fs_driver->file_op->open(node, idesc, __oflag);
+	return ext2_fop.open(node, idesc, __oflag);
 }
 
 static int ext3fs_close(struct file_desc *desc) {
-	return ext2fs_driver->file_op->close(desc);
+	return ext2_fop.close(desc);
 }
 
 static size_t ext3fs_read(struct file_desc *desc, void *buff, size_t size) {
-	return ext2fs_driver->file_op->read(desc, buff, size);
+	return ext2_fop.read(desc, buff, size);
 }
 
 static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
@@ -98,7 +100,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	if (!(handle = journal_start(fsi->journal, 4 * ext3_trans_blocks(datablocks)))) {
 		return -1;
 	}
-	res = ext2fs_driver->file_op->write(desc, buff, size);
+	res = ext2_fop.write(desc, buff, size);
 	journal_stop(handle);
 
 	return res;
@@ -349,7 +351,7 @@ static struct fs_driver ext3fs_driver = {
 	.format   = ext3fs_format,
 	.fill_sb = ext3fs_fill_sb,
 	.clean_sb = ext3fs_clean_sb,
-	.file_op = &ext3_fop,
+//	.file_op = &ext3_fop,
 	.fsop = &ext3_fsop,
 };
 

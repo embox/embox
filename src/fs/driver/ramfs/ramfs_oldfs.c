@@ -41,7 +41,7 @@ static struct fs_driver ramfs_driver = {
 	.name    = "ramfs",
 	.format = ramfs_format,
 	.fill_sb = ramfs_fill_sb,
-	.file_op = &ramfs_fops,
+//	.file_op = &ramfs_fops,
 	.fsop    = &ramfs_fsop,
 };
 

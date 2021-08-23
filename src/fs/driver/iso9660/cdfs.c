@@ -854,7 +854,7 @@ static struct fs_driver cdfsfs_driver = {
 	.name = "iso9660",
 	.fill_sb = cdfs_fill_sb,
 	.clean_sb = cdfs_clean_sb,
-	.file_op = &cdfsfs_fop,
+//	.file_op = &cdfsfs_fop,
 	.fsop = &cdfsfs_fsop,
 };
 
