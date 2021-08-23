@@ -33,8 +33,6 @@ struct fsop_desc {
 	int (*umount_entry)(struct inode *node);
 };
 
-struct file_operations;
-
 /**
  * Structure of file system driver.
  * We can mount some file system with name of FS which has been registered in
@@ -45,7 +43,7 @@ struct fs_driver {
 	int (*format)(struct block_dev *bdev, void *priv);
 	int (*fill_sb)(struct super_block *sb, const char *source);
 	int (*clean_sb)(struct super_block *sb);
-	const struct file_operations *file_op;
+
 	const struct fsop_desc       *fsop;
 };
 
