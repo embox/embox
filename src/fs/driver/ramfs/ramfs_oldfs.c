@@ -15,7 +15,11 @@
 
 #include "ramfs.h"
 
-struct inode_operations ramfs_iops;
+extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
+
+struct inode_operations ramfs_iops = {
+	.iterate  = ramfs_iterate,
+};
 
 struct super_block_operations ramfs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,

@@ -33,38 +33,7 @@
 #include "ramfs.h"
 
 extern struct ramfs_file_info ramfs_files[RAMFS_FILES];
-static int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	struct ramfs_fs_info *fsi;
-	int cur_id;
-
-	assert(ctx);
-	assert(next);
-	assert(parent);
-	assert(parent->i_sb);
-
-	cur_id = (int) ctx->fs_ctx;
-	fsi = parent->i_sb->sb_data;
-
-	while (cur_id < RAMFS_FILES) {
-		if (ramfs_files[cur_id].fsi != fsi) {
-			cur_id++;
-			continue;
-		}
-
-		next->i_data = &ramfs_files[cur_id];
-		next->i_no = cur_id;
-		next->length = ramfs_files[cur_id].length;
-		next->i_mode = ramfs_files[cur_id].mode & (S_IFMT | S_IRWXA);
-
-		ctx->fs_ctx = (void *) (cur_id + 1);
-		strncpy(name, (char *) ramfs_files[cur_id].name, NAME_MAX);
-
-		return 0;
-	}
-
-	ctx->fs_ctx = NULL;
-	return -1;
-}
+extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
 
 static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 	struct inode *node;
