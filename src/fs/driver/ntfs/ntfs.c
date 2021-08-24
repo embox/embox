@@ -8,25 +8,35 @@
  *          ci-dessous donc il voudrait encore rester inconnu.
  */
 
-#include <fs/fs_driver.h>
-#include <fs/vfs.h>
-#include <fs/inode.h>
-#include <fs/inode_operation.h>
-#include <fs/file_desc.h>
-#include <fs/file_operation.h>
-#include <drivers/block_dev.h>
+#include <time.h>
 #include <limits.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
-#include <mem/misc/pool.h>
-#include <embox/unit.h>
-#include <fs/hlpr_path.h>
 #include <errno.h>
 #include <endian.h>
+#include <libgen.h>
+
+#include <fs/vfs.h>
+
+#include <fs/fs_driver.h>
+#include <fs/inode.h>
+#include <fs/inode_operation.h>
+#include <fs/file_desc.h>
+#include <fs/file_operation.h>
+#include <fs/hlpr_path.h>
+#include <fs/super_block.h>
+#include <fs/dir_context.h>
+#include <fs/inode_operation.h>
+
+#include <drivers/block_dev.h>
+
+#include <mem/misc/pool.h>
+#include <embox/unit.h>
+
 #include <util/err.h>
 
-#include <time.h>
+
 #define __timespec_defined
 
 #include <ntfs-3g/volume.h>
@@ -50,6 +60,13 @@ struct ntfs_desc_info {
 	ntfs_attr *attr;
 };
 
+struct ntfs_dir_context {
+	char *next_name;
+	struct inode *node;
+	struct dir_ctx *dir_ctx;
+	int idx;
+};
+
 /* ntfs filesystem description pool */
 POOL_DEF(ntfs_fs_pool, struct ntfs_fs_info,
 		OPTION_GET(NUMBER,ntfs_descriptor_quantity));
@@ -62,6 +79,9 @@ POOL_DEF(ntfs_file_pool, struct ntfs_file_info,
 POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
 		OPTION_GET(NUMBER,ntfs_desc_quantity));
 
+
+static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
+		struct dir_ctx *dir_ctx);
 
 static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
 
@@ -294,6 +314,71 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
     return embox_ntfs_simultaneous_mounting_descend(node->nas, ni, true);
 }
 
+static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
+		const int name_len, const int name_type, const s64 pos,
+		const MFT_REF mref, const unsigned dt_type) {
+	struct inode *node;
+	struct ntfs_fs_info *fsi;
+	struct ntfs_file_info *fi;
+	ntfs_inode *ni;
+	mode_t mode;
+	char filename[PATH_MAX];
+	char *filename_ptr = filename;
+	struct ntfs_dir_context *ctx = dirent;
+
+	if (MREF(mref) < FILE_first_user) {
+		return 0;
+	}
+
+	node = dirent;
+
+	if(ntfs_ucstombs(name, name_len, &filename_ptr, PATH_MAX) < 0) {
+		return -1;
+	}
+
+	if (path_is_dotname(filename, strlen(filename))) {
+		return 0;
+	}
+
+	mode = ntfs_type_to_mode_fmt(dt_type);
+	if (!mode) {
+		return 0;
+	}
+
+	node = ctx->node;
+
+	fsi = node->nas->fs->sb_data;
+
+	if (ctx->idx++ < (int)(uintptr_t)ctx->dir_ctx->fs_ctx) {
+		return 0;
+	}
+
+	ni = ntfs_inode_open(fsi->ntfs_vol, mref);
+	if (!ni) {
+		return -1;
+	}
+	node->i_mode = mode;
+	inode_size_set(node, ni->data_size);
+
+	strncpy(ctx->next_name, filename, sizeof(node->name) - 1);
+	ctx->next_name[sizeof(node->name) - 1] = '\0';
+
+	ctx->dir_ctx->fs_ctx = (void *)(uintptr_t)ctx->idx;
+
+	if (NULL == (fi = pool_alloc(&ntfs_file_pool))) {
+	 	ntfs_inode_close(ni);
+		return -1;
+	}
+
+	memset(fi, 0, sizeof(*fi));
+	inode_priv_set(node, fi);
+
+	fi->mref = ni->mft_no;
+
+	ntfs_inode_close(ni);
+	return 1;
+}
+
 static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool close_on_err) {
 	struct ntfs_file_info *fi;
 	s64 pos;
@@ -360,6 +445,48 @@ static struct super_block_operations ntfs_sbops = {
 	.destroy_inode = ntfs_destroy_inode,
 };
 
+static struct inode_operations ntfs_iops = {
+	.iterate = ntfs_iterate,
+};
+
+static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
+		struct dir_ctx *dir_ctx) {
+	struct ntfs_fs_info *fsi;
+	ntfs_volume *vol;
+	ntfs_inode *ni;
+//	struct ntfs_file_info *fi;
+	char dir_path[PATH_MAX];
+	s64 pos = 0;
+	struct ntfs_dir_context ntfs_dir_ctx;
+
+	fsi = parent->i_sb->sb_data;
+	vol = fsi->ntfs_vol;
+
+	vfs_get_relative_path(parent, dir_path, sizeof(dir_path));
+	ni = ntfs_pathname_to_inode(vol, NULL, dir_path);
+	if (ni == NULL) {
+		return -1;
+	}
+
+	next->nas->fs = parent->nas->fs;
+
+	ntfs_dir_ctx.dir_ctx = dir_ctx;
+	ntfs_dir_ctx.next_name = name;
+	ntfs_dir_ctx.node = next;
+	ntfs_dir_ctx.idx = 0;
+	if (0 <= ntfs_readdir(ni, &pos, &ntfs_dir_ctx, embox_ntfs_fill_node)) {
+	 	ntfs_inode_close(ni);
+		return -1;
+	}
+
+
+
+ 	ntfs_inode_close(ni);
+
+	return 0;
+}
+
+static const struct file_operations ntfs_fop;
 static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	ntfs_volume *vol;
 	struct block_dev *bdev;
@@ -381,6 +508,8 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	memset(fsi, 0, sizeof(*fsi));
 	sb->sb_data = fsi;
 	sb->sb_ops = &ntfs_sbops;
+	sb->sb_iops = &ntfs_iops;
+	sb->sb_fops = &ntfs_fop;
 
 	/* Allocate an ntfs_device structure. */
 	ntfs_dev = ntfs_device_alloc(block_dev_name(bdev), 0, &ntfs_device_bdev_io_ops, NULL);
@@ -408,6 +537,7 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 }
 
 static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
+#if 0
 	ntfs_volume *vol;
 	int rc;
 	ntfs_inode *ni;
@@ -432,6 +562,40 @@ error:
 	ntfs_clean_sb(sb);
 
 	return -rc;
+#else
+
+	ntfs_volume *vol;
+	int rc;
+	ntfs_inode *ni;
+	struct ntfs_fs_info *fsi;
+	struct ntfs_file_info *fi;
+
+	fsi = sb->sb_data;
+	vol = fsi->ntfs_vol;
+
+	if (NULL == (ni = ntfs_pathname_to_inode(vol, NULL, "/"))) {
+		rc = errno;
+		goto error;
+	}
+
+	if (NULL == (fi = pool_alloc(&ntfs_file_pool))) {
+		errno = ENOMEM;
+		goto error;
+	}
+
+	memset(fi, 0, sizeof(*fi));
+	inode_priv_set(dest, fi);
+
+	// ToDo: remplir la structure de l'inode
+	// ToDo: en fait, seulement l'utilisateur et le groupe
+	fi->mref = ni->mft_no;
+
+	return 0;
+error:
+	ntfs_clean_sb(sb);
+
+	return -rc;
+#endif
 }
 
 static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __oflag)
@@ -820,7 +984,7 @@ static const struct fs_driver ntfs_driver = {
 	.name     = "ntfs",
 	.fill_sb  = ntfs_fill_sb,
 	.clean_sb = ntfs_clean_sb,
-	.file_op  = &ntfs_fop,
+//	.file_op  = &ntfs_fop,
 	.fsop     = &ntfs_fsop,
 };
 

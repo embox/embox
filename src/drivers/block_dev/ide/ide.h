@@ -273,14 +273,14 @@ struct hdparam  {
 	unsigned short words160_255[96];     /* Reserved words 160-255 */
 };
 
-struct hd;
-
 struct prd {
 	unsigned long addr;
 	int len;
 };
 
-typedef struct hdc  {
+struct hd;
+
+struct hdc {
 	int status;                          /* Controller status */
 
 	int iobase;                          /* I/O port registers base address */
@@ -297,20 +297,20 @@ typedef struct hdc  {
 	unsigned long prds_phys;             /* Physical address of PRD list */
 
 	struct waitq waitq;
-} hdc_t;
+};
 
-typedef struct dev_geometry {
+struct dev_geometry {
 	int cyls;
 	int heads;
 	int spt;
 	int sectorsize;
 	int sectors;
-} dev_geometry_t;
+};
 
-typedef struct hd {
+struct hd {
 	int   idx;
 	void *bdev;                /* Device */
-	hdc_t *hdc;                  /* Controller */
+	struct hdc *hdc;             /* Controller */
 	struct hdparam param;        /* Drive parameter block */
 	int drvsel;                  /* Drive select on controller */
 	int use32bits;               /* Use 32 bit transfers */
@@ -328,20 +328,20 @@ typedef struct hd {
 	unsigned int cyls;                    /* Number of cylinders */
 	unsigned int heads;                   /* Number of heads */
 	unsigned int sectors;                 /* Sectors per track */
-} hd_t;
+};
 
-typedef struct ide_tab {
-	hd_t *drive[HD_DRIVES];
-} ide_tab_t;
+struct ide_tab {
+	struct hd *drive[HD_DRIVES];
+};
 
 extern struct indexator *idedisk_idx;
 
 extern struct ide_tab *ide_get_drive(void);
-extern int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout);
-extern void ide_select_drive(hd_t *hd);
+extern int ide_wait(struct hdc *hdc, unsigned char mask, unsigned int timeout);
+extern void ide_select_drive(struct hd *hd);
 
-extern void pio_write_buffer(hd_t *hd, char *buffer, int size);
-extern void pio_read_buffer(hd_t *hd, char *buffer, int size);
-extern void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects);
+extern void pio_write_buffer(struct hd *hd, char *buffer, int size);
+extern void pio_read_buffer(struct hd *hd, char *buffer, int size);
+extern void hd_setup_transfer(struct hd *hd, blkno_t blkno, int nsects);
 
 #endif /* IDE_H_ */

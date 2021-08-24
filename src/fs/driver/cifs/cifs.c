@@ -7,6 +7,8 @@
  * @author: Vita Loginova
  */
 
+#include <util/log.h>
+
 #include <time.h>
 #include <sys/time.h>
 #include <limits.h>
@@ -185,6 +187,20 @@ struct inode *cifs_lookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
+static void cifs_get_file_url(struct inode *node, char fileurl[PATH_MAX]) {
+	int rc;
+	struct cifs_fs_info *fsi;
+
+	fsi = node->nas->fs->sb_data;
+
+	strncpy(fileurl, fsi->url, PATH_MAX - 1);
+	fileurl[PATH_MAX - 1] = '\0';
+	rc=strlen(fileurl);
+	fileurl[rc] = '/';
+	vfs_get_relative_path(node, &fileurl[rc + 1], PATH_MAX / 2);
+
+}
+
 int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx) {
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
@@ -192,14 +208,15 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 	SMBCCTX *ctx;
 	SMBCFILE * fd_dir;
 	int i = 0;
+	int ret = -1;
 
 	fsi = parent->nas->fs->sb_data;
 	ctx = fsi->ctx;
-	strncpy(smb_path, fsi->url, PATH_MAX - 1);
-	smb_path[PATH_MAX - 1] = '\0';
 
+	cifs_get_file_url(parent, smb_path);
 
 	if ((fd_dir = smbc_getFunctionOpendir (ctx) (ctx, smb_path)) == NULL) {
+		log_error("could not open dir");
 		return -1;
 	}
 
@@ -213,11 +230,15 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 		if (strcmp (dirent->name, "..") == 0) {
 			continue;
 		}
-		if (i == ((intptr_t) dir_ctx->fs_ctx)) {
+
+		if (i++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
+			continue;
+		} else {
 			cifs_fill_node(next, dirent->name, dirent->smbc_type);
 			strncpy(name, dirent->name, NAME_MAX - 1);
 			name[NAME_MAX - 1] = '0';
-			dir_ctx->fs_ctx = (void *)(intptr_t)i + 1;
+			dir_ctx->fs_ctx = (void *)(intptr_t)i;
+			log_debug("found %s", name);
 
 			switch (dirent->smbc_type) {
 			case SMBC_DIR:
@@ -228,21 +249,22 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 			case SMBC_FILE:
 				break;
 			}
+			ret = 0;
 			break;
 		}
-		i++;
+
 	}
 
 	smbc_getFunctionClose (ctx) (ctx, fd_dir);
 
-	return 0;
+	return ret;
 }
 
 static struct inode_operations cifs_iops = {
 //	.lookup   = cifs_lookup,
-//	.iterate  = cifs_iterate,
+	.iterate  = cifs_iterate,
 };
-
+static struct file_operations cifs_fop;
 static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	SMBCCTX *ctx;
 	char smb_path[PATH_MAX] = "smb://";
@@ -274,13 +296,15 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &cifs_sbops;
 	sb->sb_iops = &cifs_iops;
+	sb->sb_fops = &cifs_fop;
+
 
 	return 0;
 }
 
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 
-#if 1
+#if 0
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
 	int rc;
@@ -302,6 +326,16 @@ static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 
 error:
 	return -rc;
+#else
+	struct cifs_fs_info *fsi;
+	char smb_path[PATH_MAX];
+
+	fsi = sb->sb_data;
+
+	fsi->mntto = dir;
+	strcpy(smb_path, fsi->url);
+
+	return 0;
 #endif
 }
 
@@ -506,7 +540,7 @@ static const struct fs_driver cifs_driver = {
 	.fill_sb  = cifs_fill_sb,
 	.clean_sb = cifs_clean_sb,
 	.fsop     = &cifs_fsop,
-	.file_op  = &cifs_fop,
+//	.file_op  = &cifs_fop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);

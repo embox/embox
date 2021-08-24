@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <limits.h>
 
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
@@ -85,7 +86,7 @@ int dvfs_path_next_len(const char *path) {
  * @retval -ENAMETOOLONG path is too long
  */
 int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
-	char buff[DENTRY_NAME_LEN];
+	char buff[NAME_MAX];
 	struct inode *in;
 	int len;
 	struct dentry *d;
@@ -97,7 +98,7 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	}
 
 	len = dvfs_path_next_len(path);
-	if (len >= DENTRY_NAME_LEN) {
+	if (len >= NAME_MAX) {
 		return -ENAMETOOLONG;
 	}
 	memcpy(buff, path, len);

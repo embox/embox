@@ -1,8 +1,8 @@
 PKG_NAME := samba
-PKG_VER  := 3.6.18
+PKG_VER  := 3.6.25
 
 PKG_SOURCES := http://ftp.samba.org/pub/samba/stable/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := c7eec3e83fe4c4750240a8a0a214bbd4
+PKG_MD5     := 76da2fa64edd94a0188531e7ecb27c4e
 
 PKG_PATCHES := patch.txt
 

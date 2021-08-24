@@ -17,20 +17,11 @@
 #undef __linux__
 #endif
 
-#define S_ISVTX 01000
-
 #include <stdio.h>
 
 
 #define __timespec_defined
 
-
-// errno values
-#define EOVERFLOW 1
-#define EMLINK    2
-#define ENODATA   3
-#define EILSEQ    4
-#define E2BIG     5
 
 
 #include <unistd.h>
@@ -62,19 +53,10 @@ struct statfs {
     __SWORD_TYPE f_spare[5];
 };
 
-typedef int sig_atomic_t;
-
-#define UTIME_NOW       ((1l << 30) - 1l)
-#define UTIME_OMIT      ((1l << 30) - 2l)
-
-
-static inline struct group *getgrgid(gid_t gid) {
-	printf(">>> getgrgid %d\n", gid);
-	return NULL;
-}
 
 //XXX redefine malloc through sysmalloc. Revert it!
 #include <stdlib.h>
+
 #define malloc(x)     sysmalloc(x)
 #define free(x)       sysfree(x)
 #define memalign(x,y) sysmemalign(x,y)

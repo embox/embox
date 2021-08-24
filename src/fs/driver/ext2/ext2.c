@@ -145,7 +145,7 @@ static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
 static int ext2_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
 
-static struct file_operations ext2_fop = {
+struct file_operations ext2_fop = {
 	.open = ext2fs_open,
 	.close = ext2fs_close,
 	.read = ext2fs_read,
@@ -573,7 +573,7 @@ static struct fs_driver ext2fs_driver = {
 	.format   = ext2fs_format,
 	.fill_sb  = ext2_fill_sb,
 	.clean_sb = ext2_clean_sb,
-	.file_op  = &ext2_fop,
+//	.file_op  = &ext2_fop,
 	.fsop     = &ext2_fsop,
 };
 
@@ -849,6 +849,9 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &e2fs_sbops;
 	sb->sb_iops = &ext2_iops;
+	sb->sb_data = fsi;
+	sb->sb_fops = &ext2_fop;
+
 
 	/* presetting that we think */
 	fsi->s_block_size = SBSIZE;

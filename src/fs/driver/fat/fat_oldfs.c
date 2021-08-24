@@ -71,7 +71,7 @@ static const struct fs_driver fatfs_driver = {
 	.format = fat_format,
 	.fill_sb  = fat_fill_sb,
 	.clean_sb = fat_clean_sb,
-	.file_op  = &fat_fops,
+//	.file_op  = &fat_fops,
 	.fsop     = &fatfs_fsop,
 };
 

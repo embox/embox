@@ -256,7 +256,7 @@ static struct fs_driver nfsfs_driver = {
 	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
-	.file_op  = &nfsfs_fop,
+//	.file_op  = &nfsfs_fop,
 	.fsop     = &nfsfs_fsop,
 };
 
@@ -428,6 +428,7 @@ static int nfs_iterate(struct inode *next, char *next_name, struct inode *parent
 						break;
 					}
 					dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
+					memcpy(next_name, predesc->file_name.name.data, NAME_MAX);
 					sysfree(rcv_buf);
 					return 0;
 				}
@@ -455,7 +456,8 @@ static int nfs_fill_sb(struct super_block *sb, const char *source) {
 
 	sb->sb_data = fsi;
 	sb->sb_ops = &nfs_sbops;
-//	sb->sb_iops = &nfs_iops;
+	sb->sb_iops = &nfs_iops;
+	sb->sb_fops = &nfsfs_fop;
 
 	memset(fsi, 0, sizeof *fsi);
 	if ((0 > nfs_prepare(fsi, source)) || (0 > nfs_client_init(fsi))) {
@@ -490,12 +492,14 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
-#if 1
+#if 0
 	if (0 >	nfs_create_dir_entry(dest)) { // XXX check the argument
 		rc = -1;
 	} else {
 		return 0;
 	}
+#else
+	return 0;
 #endif
 error:
 	nfs_free_fs(sb);
@@ -570,6 +574,7 @@ static struct inode *nfs_fill_inode(struct inode *node, readdir_desc_t *predesc 
 			return NULL;
 	}
 
+	node->i_mode = mode;
 	inode_priv_set(node, fi);
 	inode_size_set(node, fi->attr.size);
 	return node;

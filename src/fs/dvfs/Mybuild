@@ -21,9 +21,6 @@ module core extends embox.fs.fs_api {
 
 	option boolean use_dcache=false
 
-	option number dentry_name_len=36
-	option number max_path_len=128
-
 	source "dvfs.c"
 	source "dvfs_dentry.c"
 	source "dvfs_idesc_ops.c"

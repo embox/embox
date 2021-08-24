@@ -60,8 +60,8 @@
 #include <drivers/block_dev/partition.h>
 #include <mem/phymem.h>
 
-static hdc_t hdctab[HD_CONTROLLERS];
-static hd_t  hdtab[HD_DRIVES];
+static struct hdc hdctab[HD_CONTROLLERS];
+static struct hd  hdtab[HD_DRIVES];
 static struct ide_tab ide;
 static long tmr_cmd_start_time;
 
@@ -138,7 +138,7 @@ static int tmr_chk_timeout(long timeout) {
 }
 
 
-int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
+int ide_wait(struct hdc *hdc, unsigned char mask, unsigned int timeout) {
 	unsigned char status, error;
 
 	tmr_set_timeout();
@@ -164,11 +164,11 @@ int ide_wait(hdc_t *hdc, unsigned char mask, unsigned int timeout) {
 	return -ETIMEDOUT;
 }
 
-void ide_select_drive(hd_t *hd) {
+void ide_select_drive(struct hd *hd) {
 	outb(hd->drvsel, hd->hdc->iobase + HDC_DRVHD);
 }
 
-void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
+void hd_setup_transfer(struct hd *hd, blkno_t blkno, int nsects) {
 	unsigned int track;
 	unsigned int head;
 	unsigned int sector;
@@ -192,8 +192,8 @@ void hd_setup_transfer(hd_t *hd, blkno_t blkno, int nsects) {
 		 hd->hdc->iobase + HDC_DRVHD);
 }
 
-void pio_read_buffer(hd_t *hd, char *buffer, int size) {
-	hdc_t *hdc = hd->hdc;
+void pio_read_buffer(struct hd *hd, char *buffer, int size) {
+	struct hdc *hdc = hd->hdc;
 
 	if (hd->use32bits) {
 		insl(hdc->iobase + HDC_DATA, buffer, size / 4);
@@ -202,8 +202,8 @@ void pio_read_buffer(hd_t *hd, char *buffer, int size) {
 	}
 }
 
-void pio_write_buffer(hd_t *hd, char *buffer, int size) {
-	hdc_t *hdc = hd->hdc;
+void pio_write_buffer(struct hd *hd, char *buffer, int size) {
+	struct hdc *hdc = hd->hdc;
 
 	if (hd->use32bits) {
 		outsl(hdc->iobase + HDC_DATA, buffer, size / 4);
@@ -213,7 +213,7 @@ void pio_write_buffer(hd_t *hd, char *buffer, int size) {
 }
 
 
-static int hd_identify(hd_t *hd) {
+static int hd_identify(struct hd *hd) {
 	struct block_dev *bdev = hd->bdev;
 	/* Ignore interrupt for identify command */
 	hd->hdc->dir = HD_XFER_IGNORE;
@@ -248,7 +248,7 @@ static int hd_identify(hd_t *hd) {
 	hd->cyls = hd->param.cylinders;
 	hd->heads = hd->param.heads;
 	hd->sectors = hd->param.sectors;
-	hd->use32bits = 0;/*hd->param.usedmovsd != 0; */
+	hd->use32bits = hd->param.usedmovsd != 0;
 	hd->sectbufs = hd->param.buffersize;
 	hd->multsect = hd->param.nsecperint;
 	if (hd->multsect == 0) {
@@ -288,7 +288,7 @@ static int hd_identify(hd_t *hd) {
 	return 0;
 }
 
-static int hd_cmd(hd_t *hd, unsigned int cmd,
+static int hd_cmd(struct hd *hd, unsigned int cmd,
 				  unsigned int feat, unsigned int nsects) {
 	/* Ignore interrupt for command */
 	hd->hdc->dir = HD_XFER_IGNORE;
@@ -309,7 +309,7 @@ static int hd_cmd(hd_t *hd, unsigned int cmd,
 
 int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	struct dev_geometry *geom;
-	hd_t *hd = block_dev_priv(bdev);
+	struct hd *hd = block_dev_priv(bdev);
 
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
@@ -337,7 +337,7 @@ int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static void hd_read_hndl(hdc_t *hdc) {
+static void hd_read_hndl(struct hdc *hdc) {
 	unsigned char error;
 	int nsects;
 	int n;
@@ -363,7 +363,7 @@ static void hd_read_hndl(hdc_t *hdc) {
 	}
 }
 
-static void hd_write_hndl(hdc_t *hdc) {
+static void hd_write_hndl(struct hdc *hdc) {
 	unsigned char error;
 	int nsects;
 	int n;
@@ -398,7 +398,7 @@ static void hd_write_hndl(hdc_t *hdc) {
 }
 
 static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
-	hdc_t *hdc = (hdc_t *) arg;
+	struct hdc *hdc = (struct hdc *) arg;
 
 	switch (hdc->dir) {
 	case HD_XFER_READ:
@@ -427,8 +427,7 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 		break;
 	}
 
-	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir)
-			              && (HD_XFER_IGNORE != hdc->dir)) {
+	if ((0 == hdc->result) && (HD_XFER_IDLE != hdc->dir) ) {
 		hdc->result = 1;
 		waitq_wakeup_all(&hdc->waitq);
 	}
@@ -436,7 +435,7 @@ static irq_return_t hdc_handler(unsigned int irq_num, void *arg) {
 	return IRQ_HANDLED;
 }
 
-static int probe_device(hdc_t *hdc, int drvsel) {
+static int probe_device(struct hdc *hdc, int drvsel) {
 	unsigned char sc, sn;
 
 	/* Probe for device on controller */
@@ -462,7 +461,7 @@ static int probe_device(hdc_t *hdc, int drvsel) {
 	}
 }
 
-static int wait_reset_done(hdc_t *hdc, int drvsel) {
+static int wait_reset_done(struct hdc *hdc, int drvsel) {
 
 	outb(drvsel, hdc->iobase + HDC_DRVHD);
 	idedelay();
@@ -481,7 +480,7 @@ static int wait_reset_done(hdc_t *hdc, int drvsel) {
 	return -EBUSY;
 }
 
-static int get_interface_type(hdc_t *hdc, int drvsel) {
+static int get_interface_type(struct hdc *hdc, int drvsel) {
 	unsigned char sc, sn, cl, ch, st;
 
 	outb(drvsel, hdc->iobase + HDC_DRVHD);
@@ -506,7 +505,7 @@ static int get_interface_type(hdc_t *hdc, int drvsel) {
 	return HDIF_UNKNOWN;
 }
 
-static int setup_controller(hdc_t *hdc, int iobase, int irq,
+static int setup_controller(struct hdc *hdc, int iobase, int irq,
 					int bmregbase, int *masterif, int *slaveif) {
 	int res;
 
@@ -579,7 +578,7 @@ static int setup_controller(hdc_t *hdc, int iobase, int irq,
 	return 0;
 }
 
-static int ide_create_block_dev(hd_t *hd) {
+static int ide_create_block_dev(struct hd *hd) {
 	const struct block_dev_module *bdev;
 
 	switch (hd->media) {
@@ -605,7 +604,7 @@ static int ide_create_block_dev(hd_t *hd) {
 	return 0;
 }
 
-static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
+static void setup_hd(struct hd *hd, struct hdc *hdc, int drvsel,
 			int udmasel, int iftype, int numslot) {
 	int rc;
 
@@ -630,7 +629,7 @@ static void setup_hd(hd_t *hd, hdc_t *hdc, int drvsel,
 			return;
 		}
 	}
-	ide.drive[numslot]  = (hd_t *)hd;
+	ide.drive[numslot]  = (struct hd *)hd;
 
 	/* Determine UDMA mode */
 	if (!hdc->bmregbase) {

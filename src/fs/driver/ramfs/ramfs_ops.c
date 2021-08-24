@@ -1,15 +1,20 @@
 #include <errno.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <stdint.h>
 
 #include <drivers/block_dev.h>
+
 #include <fs/file_desc.h>
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/mount.h>
 #include <fs/super_block.h>
+#include <fs/dir_context.h>
+
 #include <mem/misc/pool.h>
 #include <mem/page.h>
+
 #include <util/indexator.h>
 #include <util/math.h>
 
@@ -160,6 +165,40 @@ POOL_DEF(ramfs_fs_pool, struct ramfs_fs_info, RAMFS_DESCRIPTORS);
 
 extern struct inode_operations ramfs_iops;
 extern struct super_block_operations ramfs_sbops;
+
+int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
+	struct ramfs_fs_info *fsi;
+	int cur_id;
+
+	assert(ctx);
+	assert(next);
+	assert(parent);
+	assert(parent->i_sb);
+
+	cur_id = (int) (uintptr_t)ctx->fs_ctx;
+	fsi = parent->i_sb->sb_data;
+
+	while (cur_id < RAMFS_FILES) {
+		if (ramfs_files[cur_id].fsi != fsi) {
+			cur_id++;
+			continue;
+		}
+
+		inode_priv_set(next, &ramfs_files[cur_id]);
+		next->i_no = cur_id;
+		next->length = ramfs_files[cur_id].length;
+		next->i_mode = ramfs_files[cur_id].mode & (S_IFMT | S_IRWXA);
+
+		ctx->fs_ctx = (void *) (uintptr_t)(cur_id + 1);
+		strncpy(name, (char *) ramfs_files[cur_id].name, NAME_MAX);
+
+		return 0;
+	}
+
+	ctx->fs_ctx = NULL;
+	return -1;
+}
+
 int ramfs_fill_sb(struct super_block *sb, const char *source) {
 	struct ramfs_fs_info *fsi;
 	struct block_dev *bdev;

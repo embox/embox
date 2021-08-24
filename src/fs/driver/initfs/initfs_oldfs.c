@@ -31,7 +31,7 @@
 
 #include "initfs.h"
 
-static struct inode_operations initfs_iops = {
+struct inode_operations initfs_iops = {
 	.iterate = initfs_iterate,
 };
 
@@ -57,6 +57,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 }
 
 extern struct file_operations initfs_fops;
+extern int initfs_fill_sb(struct super_block *sb, const char *source);
 
 struct super_block_operations initfs_sbops = {
 	//.open_idesc = dvfs_file_open_idesc,
@@ -70,7 +71,8 @@ static struct fsop_desc initfs_fsop = {
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
-	.file_op = &initfs_fops,
+	.fill_sb   = initfs_fill_sb,
+//	.file_op = &initfs_fops,
 	.fsop = &initfs_fsop,
 };
 

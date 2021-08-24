@@ -678,7 +678,7 @@ static struct fs_driver ext4fs_driver = {
 	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
-	.file_op  = &ext4_fop,
+//	.file_op  = &ext4_fop,
 	.fsop     = &ext4_fsop,
 };
 
@@ -768,6 +768,7 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data = fsi;
 	sb->sb_ops = &ext4fs_sbops;
 	sb->sb_iops = &ext4_iops;
+	sb->sb_fops = &ext4_fop;
 
 	return 0;
 }

@@ -31,7 +31,7 @@ int create_partitions(struct block_dev *bdev) {
 	const char *bdev_name;
 
 	/* Read partition table */
-	rc = block_dev_read(bdev, (char *)&mbr, bdev->block_size, 0);
+	rc = block_dev_read(bdev, (char *)&mbr, sizeof(mbr), 0);
 	if (rc < 0) {
 		return rc;
 	}

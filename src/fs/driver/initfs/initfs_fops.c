@@ -14,6 +14,8 @@
 #include <fs/file_operation.h>
 #include <fs/file_desc.h>
 #include <fs/inode.h>
+#include <fs/super_block.h>
+
 #include <mem/misc/pool.h>
 #include <util/log.h>
 
@@ -177,6 +179,28 @@ int initfs_destroy_inode(struct inode *inode) {
 	if (inode_priv(inode) != NULL) {
 		initfs_free_inode(inode_priv(inode));
 	}
+
+	return 0;
+}
+
+extern struct super_block_operations initfs_sbops;
+extern struct inode_operations initfs_iops;
+
+int initfs_fill_sb(struct super_block *sb, const char *source) {
+	struct initfs_file_info *fi;
+
+	fi = initfs_alloc_inode();
+	if (fi == NULL) {
+		return -ENOMEM;
+	}
+
+	sb->sb_iops = &initfs_iops;
+	sb->sb_fops = &initfs_fops;
+	sb->sb_ops  = &initfs_sbops;
+	sb->bdev    = NULL;
+
+	memset(fi, 0, sizeof(struct initfs_file_info));
+	inode_priv_set(sb->sb_root, fi);
 
 	return 0;
 }

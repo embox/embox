@@ -10,6 +10,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
+#include <limits.h>
 
 #include <fs/dvfs.h>
 
@@ -18,7 +19,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	char *t;
 	int res;
 
-	char parent[DVFS_MAX_PATH_LEN];
+	char parent[PATH_MAX];
 
 	dvfs_lookup(pathname, &lu);
 
@@ -34,7 +35,7 @@ int mkdir(const char *pathname, mode_t mode) {
 
 	t = strrchr(parent, '/');
 	if (t) {
-		memset(t + 1, '\0', parent + DVFS_MAX_PATH_LEN - t);
+		memset(t + 1, '\0', parent + PATH_MAX - t);
 
 		if ((res = dvfs_lookup(parent, &lu))) {
 			return SET_ERRNO(-res);

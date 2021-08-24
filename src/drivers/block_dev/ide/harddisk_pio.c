@@ -28,8 +28,8 @@
 extern int hd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size);
 static const struct block_dev_ops idedisk_pio_driver;
 static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
+	struct hd *hd;
+	struct hdc *hdc;
 	int sectsleft;
 	int nsects;
 	int result = 0;
@@ -94,8 +94,8 @@ static int hd_read_pio(struct block_dev *bdev, char *buffer, size_t count, blkno
 }
 
 static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno) {
-	hd_t *hd;
-	hdc_t *hdc;
+	struct hd *hd;
+	struct hdc *hdc;
 	int sectsleft;
 	int nsects;
 	int n;
@@ -184,13 +184,13 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 }
 
 static int idedisk_init (void *args) {
-	hd_t *drive;
+	struct hd *drive;
 	size_t size;
 	char path[PATH_MAX];
 	struct block_dev *bdev;
 
 
-	drive = (hd_t *)args;
+	drive = (struct hd *)args;
 	/* Make new device */
 	if (drive && (drive->media == IDE_DISK) && (drive->udmamode == -1)) {
 		*path = 0;

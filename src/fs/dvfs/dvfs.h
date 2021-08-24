@@ -9,8 +9,6 @@
 
 #include <config/embox/fs/dvfs/core.h>
 #include <framework/mod/options.h>
-#define DENTRY_NAME_LEN   OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, dentry_name_len)
-#define DVFS_MAX_PATH_LEN OPTION_MODULE_GET(embox__fs__dvfs__core, NUMBER, max_path_len)
 
 #include <drivers/block_dev.h>
 #include <fs/idesc.h>

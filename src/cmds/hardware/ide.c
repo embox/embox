@@ -19,7 +19,7 @@ static void print_usage(void) {
 }
 
 static void print_drive (struct ide_tab *ide) {
-	hd_t *drive;
+	struct hd *drive;
 	uint64_t dev_size;
 	size_t dev_bsize;
 
@@ -34,7 +34,7 @@ static void print_drive (struct ide_tab *ide) {
 		if (NULL == ide->drive[i]) {
 			printf(" None");
 		} else {
-			drive = (hd_t *) ide->drive[i];
+			drive = (struct hd *) ide->drive[i];
 			assert(drive);
 			dev_bsize = block_dev_block_size(drive->bdev);
 			dev_size = block_dev_size(drive->bdev);

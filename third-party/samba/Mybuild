@@ -5,7 +5,7 @@ module samba_stubs {
 }
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/samba/core/samba-3.6.18/source3/include")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/samba/core/samba-3.6.25/source3/include")
 @BuildDepends(third_party.zlib.libs)
 module core {
 

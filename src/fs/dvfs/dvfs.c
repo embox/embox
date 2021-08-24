@@ -10,6 +10,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <limits.h>
 
 #include <util/err.h>
 
@@ -67,7 +68,7 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		name++;
 	}
 
-	strncpy(d->name, name, DENTRY_NAME_LEN - 1);
+	strncpy(d->name, name, NAME_MAX - 1);
 
 	/* Remove possible trailing slashes */
 	slash = strchr(d->name, '/');
