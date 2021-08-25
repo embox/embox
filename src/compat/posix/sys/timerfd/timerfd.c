@@ -18,7 +18,7 @@
 #include <fcntl.h>
 
 #include <fs/idesc.h>
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 #include <kernel/printk.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/task.h>

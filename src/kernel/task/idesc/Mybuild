@@ -12,3 +12,10 @@ module idesc {
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 }
+
+module idesc_event {
+	source "idesc_event.c"
+
+	@IncludeExport(path="kernel/task/resource")
+	source "idesc_event.h"
+}

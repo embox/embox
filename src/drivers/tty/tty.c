@@ -16,7 +16,7 @@
 #include <string.h>
 #include <fcntl.h>
 
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 
 #include <kernel/thread/thread_sched_wait.h>
 

@@ -17,7 +17,7 @@
 
 #include <hal/ipl.h>
 #include <kernel/sched/sched_lock.h>
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 #include <mem/misc/pool.h>
 #include <net/sock.h>
 #include <net/skbuff.h>

@@ -20,7 +20,7 @@ static module poll_table {
 
 	source "poll_table.c"
 
-	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc_event
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.idesc_table
 }
@@ -51,7 +51,7 @@ static module pipe {
 
 	depends embox.mem.sysmalloc_api
 
-	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc_event
 	depends embox.kernel.task.api
 	depends embox.util.LibUtil
 }
@@ -61,7 +61,7 @@ static module ppty {
 
 	source "pipe_pty.c"
 
-	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc_event
 	depends embox.driver.tty.tty
 	depends embox.kernel.task.api
 }

@@ -5,7 +5,7 @@ module tcp {
 	option number log_level = 0
 	source "tcp.c"
 
-	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc_event
 	depends embox.net.skbuff
 	depends embox.net.sock
 	depends embox.net.lib.tcp

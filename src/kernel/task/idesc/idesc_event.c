@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <kernel/sched.h>
 
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 
 int idesc_wait_prepare(struct idesc *i, struct idesc_wait_link *wl) {
 

@@ -29,7 +29,7 @@
 #include "net_sock.h"
 
 #include <kernel/sched/sched_lock.h>
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 #include <net/sock_wait.h>
 
 #include <util/err.h>

@@ -48,10 +48,6 @@ module idesc {
 	depends embox.kernel.task.resource.idesc_table
 }
 
-module idesc_event {
-	source "idesc_event.c"
-}
-
 @DefaultImpl(no_file_system)
 abstract module fs_api {
 

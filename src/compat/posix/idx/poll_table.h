@@ -9,7 +9,7 @@
 #define POLL_TABLE_H_
 
 #include <framework/mod/options.h>
-#include <fs/idesc_event.h>
+#include <kernel/task/resource/idesc_event.h>
 #include <fs/poll_table.h>
 #include <kernel/task/resource/idesc_table.h>
 
