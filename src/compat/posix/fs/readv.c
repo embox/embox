@@ -13,7 +13,7 @@
 #include <sys/uio.h>
 #include <fcntl.h>
 
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <fs/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 

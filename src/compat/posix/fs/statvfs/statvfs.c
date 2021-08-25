@@ -15,7 +15,7 @@
 
 #include <fs/dvfs.h>
 #include <fs/idesc.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 
 int statvfs(const char *path, struct statvfs *buf) {

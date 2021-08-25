@@ -18,7 +18,7 @@
 #include <net/sock.h>
 #include <kernel/task.h>
 
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <fs/idesc.h>
 #include <net/sock.h>
 #include <net/socket/socket_desc.h>

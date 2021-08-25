@@ -11,7 +11,7 @@
 #include <assert.h>
 
 #include <fs/idesc.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 
 int fstat(int fd, struct stat *buff) {

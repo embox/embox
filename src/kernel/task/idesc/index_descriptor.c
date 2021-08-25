@@ -12,7 +12,7 @@
 #include <kernel/task/resource/idesc_table.h>
 #include <fs/idesc.h>
 
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 
 static inline struct idesc_table *task_self_idesc_table(void) {
 	struct idesc_table *it;

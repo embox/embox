@@ -14,7 +14,7 @@
 #include <fs/idesc.h>
 #include <fs/idesc_event.h>
 #include <fs/poll_table.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 
 #include <kernel/thread.h>
 

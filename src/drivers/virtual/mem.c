@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <drivers/char_dev.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <fs/idesc.h>
 #include <util/err.h>
 

@@ -11,7 +11,7 @@
 
 #include <fs/kfile.h>
 #include <fs/file_desc.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <fs/idesc.h>
 
 #include <kernel/task/resource/idesc_table.h>

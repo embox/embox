@@ -11,7 +11,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc_table.h>
 
