@@ -10,7 +10,7 @@
 #include <kernel/task.h>
 
 #include <kernel/task/resource/idesc_table.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 #include <kernel/task/resource/index_descriptor.h>
 

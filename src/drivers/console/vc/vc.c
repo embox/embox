@@ -13,7 +13,7 @@
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
 #include <drivers/char_dev.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
 

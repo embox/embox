@@ -13,7 +13,7 @@
 #include <fcntl.h>
 
 #include <kernel/task/resource/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/poll_table.h>
 
 #include <kernel/task/resource/idesc_table.h>

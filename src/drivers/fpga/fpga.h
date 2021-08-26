@@ -12,7 +12,7 @@
 #include <stdint.h>
 
 #include <drivers/device.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 struct fpga_ops;
 struct fpga {

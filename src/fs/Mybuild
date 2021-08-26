@@ -35,16 +35,10 @@ module file_desc {
 
 	source "file_xattr.c"
 
-	depends idesc
+	depends eembox.kernel.task.idesc
 	depends xattr
 
 	depends embox.fs.syslib.perm
-	depends embox.kernel.task.resource.idesc_table
-}
-
-module idesc {
-	source "idesc.c"
-
 	depends embox.kernel.task.resource.idesc_table
 }
 

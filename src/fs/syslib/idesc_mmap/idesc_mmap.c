@@ -12,7 +12,7 @@
 #include <sys/mman.h>
 
 #include <kernel/task/resource/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 
 #include <module/embox/fs/syslib/idesc_mmap_api.h>

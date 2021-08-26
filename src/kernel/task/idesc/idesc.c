@@ -14,7 +14,7 @@
 
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 int idesc_init(struct idesc *idesc, const struct idesc_ops *ops, mode_t amode) {
 

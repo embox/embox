@@ -14,7 +14,7 @@
 #include <sys/statvfs.h>
 
 #include <fs/dvfs.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 

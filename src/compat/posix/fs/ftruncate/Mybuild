@@ -2,7 +2,7 @@ package embox.compat.posix.fs
 
 @DefaultImpl(ftruncate_old)
 abstract module ftruncate {
-	depends embox.fs.idesc
+	depends embox.kernel.task.idesc
 	depends embox.kernel.task.api
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.resource.errno

@@ -12,7 +12,7 @@
 #include <kernel/task/resource/security.h>
 #include <security/smac/smac.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 static struct xattr_list *sock_xattr_list(struct idesc *idesc) {
 	struct sock *sock;

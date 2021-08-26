@@ -9,7 +9,7 @@
 #define SRC_FS_DVFS_FILE_DESC_H_
 
 #include <sys/types.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 struct file_operations;
 struct inode;

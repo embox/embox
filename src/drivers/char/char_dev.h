@@ -10,7 +10,7 @@
 #define CHAR_DEV_DVFS_H_
 
 #include <drivers/device.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <util/array.h>
 
 #include <config/embox/driver/char_dev.h>

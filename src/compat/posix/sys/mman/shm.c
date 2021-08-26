@@ -9,7 +9,7 @@
 #include <util/dlist.h>
 
 #include <fs/inode.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/inode_operation.h>
 #include <fs/file_desc.h>
 

@@ -10,7 +10,7 @@
 #define FS_FILE_DESC_H_
 
 #include <sys/types.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 struct inode;
 struct file_operations;

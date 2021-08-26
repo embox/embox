@@ -11,7 +11,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <kernel/task/resource/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/dvfs.h>
 
 int ftruncate(int fd, off_t length) {

@@ -14,7 +14,7 @@
 #include <fcntl.h>
 
 #include <kernel/task/resource/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 
 ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {

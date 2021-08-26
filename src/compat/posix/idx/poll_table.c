@@ -11,7 +11,7 @@
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/thread_sched_wait.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 #include <fs/poll_table.h>
 #include <kernel/task/resource/index_descriptor.h>

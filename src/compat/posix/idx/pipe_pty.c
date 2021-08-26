@@ -23,7 +23,7 @@
 
 #include <drivers/pty.h>
 #include <kernel/task.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 
 #include <kernel/thread/thread_sched_wait.h>

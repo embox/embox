@@ -10,7 +10,7 @@
 #include <fs/xattr.h>
 #include <util/member.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 static int file_idesc_getxattr(struct idesc *idesc, const char *name, void *value,
 		size_t size);

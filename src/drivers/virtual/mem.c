@@ -14,7 +14,7 @@
 #include <sys/mman.h>
 #include <drivers/char_dev.h>
 #include <kernel/task/resource/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <util/err.h>
 
 #define MEM_DEV_NAME "mem"

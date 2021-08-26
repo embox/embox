@@ -13,7 +13,7 @@
 
 #include <fs/kfile.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 
 static void idesc_file_ops_close(struct idesc *idesc) {

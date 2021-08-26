@@ -10,7 +10,7 @@
 #define DEVICE_H_
 
 #include <stddef.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 #define MAX_CDEV_QUANTITY 0
 

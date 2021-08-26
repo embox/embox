@@ -38,7 +38,7 @@
 #include <kernel/sched/sched_lock.h>
 #include <kernel/time/ktime.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 
 #include <embox/net/pack.h>

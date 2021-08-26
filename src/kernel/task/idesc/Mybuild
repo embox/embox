@@ -6,6 +6,11 @@ module idesc {
 	@IncludeExport(path="kernel/task/resource")
 	source "index_descriptor.h"
 
+	source "idesc.c"
+
+	@IncludeExport(path="kernel/task/resource")
+	source "idesc.h"
+
 	depends embox.kernel.task.api
 	@NoRuntime depends embox.kernel.task.resource.idesc_table
 	@NoRuntime depends embox.util.indexator

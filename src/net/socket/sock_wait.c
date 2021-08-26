@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 #include <kernel/time/time.h>
 #include <kernel/sched/sched_lock.h>

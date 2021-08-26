@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <stdint.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <net/sock.h>
 #include <net/l3/ipv4/ip.h>
 #include <security/security.h>
