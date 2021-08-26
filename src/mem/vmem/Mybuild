@@ -24,7 +24,7 @@ module vmem_depends {
 
 	@NoRuntime depends embox.mem.mmap_header
 	@NoRuntime depends embox.mem.mmap
-	depends embox.fs.syslib.idesc_mmap_api
+	depends embox.kernel.task.idesc.idesc_mmap_api
 	@NoRuntime depends vmem_header
 	depends embox.kernel.task.kernel_task
 	depends embox.kernel.task.resource.mmap

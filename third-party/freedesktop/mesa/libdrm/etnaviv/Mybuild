@@ -9,5 +9,5 @@ module libdrm_etnaviv {
 	source "^BUILD/extbld/^MOD_PATH/install/libdrm.a"
 	source "^BUILD/extbld/^MOD_PATH/install/libdrm_etnaviv.a"
 
-	depends embox.fs.syslib.idesc_mmap
+	depends embox.kernel.task.idesc.idesc_mmap
 }

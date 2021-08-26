@@ -21,5 +21,5 @@ module mem {
 	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
 	depends embox.driver.char_dev
-	depends embox.fs.syslib.idesc_mmap
+	depends embox.kernel.task.idesc.idesc_mmap
 }

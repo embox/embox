@@ -1,4 +1,4 @@
-package embox.fs.syslib
+package embox.kernel.task.idesc
 
 @DefaultImpl(idesc_mmap_stub)
 abstract module idesc_mmap_api {
