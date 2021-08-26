@@ -14,7 +14,7 @@
 
 #include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc.h>
-#include <fs/poll_table.h>
+#include <kernel/task/resource/poll_table.h>
 
 #include <kernel/task/resource/idesc_table.h>
 

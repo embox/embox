@@ -24,3 +24,14 @@ module idesc_event {
 	@IncludeExport(path="kernel/task/resource")
 	source "idesc_event.h"
 }
+
+static module poll_table {
+	@IncludeExport(path="kernel/task/resource")
+	source "poll_table.h"
+
+	source "poll_table.c"
+
+	depends embox.kernel.task.idesc_event
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.idesc_table
+}
