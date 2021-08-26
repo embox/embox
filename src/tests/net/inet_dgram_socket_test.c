@@ -7,10 +7,10 @@
  */
 
 #include <arpa/inet.h>
-#include <embox/test.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <framework/mod/options.h>
+#include <stddef.h>
+#include <sys/stat.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -19,12 +19,9 @@
 #include <net/netdevice.h>
 #include <net/l3/route.h>
 
-#include <stddef.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <fs/index_descriptor.h>
-#include <fs/idesc.h>
-#include <kernel/task/resource/idesc_table.h>
+#include <embox/test.h>
+
+#include <framework/mod/options.h>
 
 EMBOX_TEST_SUITE("inet dgram socket test");
 

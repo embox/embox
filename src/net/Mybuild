@@ -48,8 +48,8 @@ module sock {
 	source "socket/sock_wait.c"
 
 	depends embox.net.skbuff
-	depends embox.fs.idesc
-	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.idesc_event
 	depends embox.arch.interrupt
 	depends embox.mem.pool
 	depends family

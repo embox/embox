@@ -12,7 +12,7 @@
 #include <fs/inode.h>
 #include <kernel/task.h>
 #include <fs/xattr.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <net/sock.h>
 #include <security/smac/smac.h>
 

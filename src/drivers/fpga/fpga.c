@@ -6,7 +6,7 @@
  * @date 27.01.2020
  */
 #include <errno.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <limits.h>
 #include <stdio.h>
 #include <sys/uio.h>

@@ -11,7 +11,7 @@
 #include <framework/mod/options.h>
 
 #include <drivers/block_dev.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/file_desc.h>
 #include <util/dlist.h>
 #include <fs/file_operation.h>

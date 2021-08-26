@@ -9,7 +9,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <net/socket/socket_desc.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 extern const struct idesc_ops task_idx_ops_socket;
 

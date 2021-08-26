@@ -11,8 +11,8 @@
 #include <fs/vfs.h>
 #include <fs/perm.h>
 #include <fs/xattr.h>
-#include <fs/index_descriptor.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/index_descriptor.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 
 #include <security/security.h>

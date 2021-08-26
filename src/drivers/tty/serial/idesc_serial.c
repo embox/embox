@@ -12,7 +12,7 @@
 
 #include <mem/misc/pool.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 #include <drivers/tty.h>
 #include <drivers/ttys.h>

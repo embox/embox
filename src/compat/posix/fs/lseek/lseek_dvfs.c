@@ -11,7 +11,7 @@
 #include <unistd.h>
 
 #include <fs/file_desc.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 
 off_t lseek(int fd, off_t offset, int origin) {

@@ -21,7 +21,7 @@ module mmap extends mmap_api {
 
 	source "mmap.c"
 
-	depends embox.fs.syslib.idesc_mmap
+	depends embox.kernel.task.idesc.idesc_mmap
 	depends embox.mem.mmap
 	depends embox.mem.phymem
 	depends embox.kernel.task.resource.phymem
@@ -31,7 +31,7 @@ module mmap_stub extends mmap_api {
 	option number log_level = 0
 
 	source "mmap_stub.c"
-	depends embox.fs.syslib.idesc_mmap_api
+	depends embox.kernel.task.idesc.idesc_mmap_api
 }
 
 module mprotect {

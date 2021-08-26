@@ -8,7 +8,7 @@
 
 #include <string.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 #include <drivers/device.h>
 #include <mem/misc/pool.h>

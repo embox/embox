@@ -19,7 +19,7 @@
 
 #include <util/dlist.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <net/socket/sock_xattr.h>
 #include <net/skbuff.h>
 #include <netinet/in.h>

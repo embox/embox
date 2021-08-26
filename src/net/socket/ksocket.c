@@ -22,7 +22,7 @@
 
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 #include <util/err.h>
 

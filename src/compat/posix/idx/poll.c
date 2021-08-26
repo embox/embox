@@ -12,9 +12,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#include <fs/index_descriptor.h>
-#include <fs/idesc.h>
-#include <fs/poll_table.h>
+#include <kernel/task/resource/index_descriptor.h>
+#include <kernel/task/resource/idesc.h>
+#include <kernel/task/resource/poll_table.h>
 
 #include <kernel/task/resource/idesc_table.h>
 

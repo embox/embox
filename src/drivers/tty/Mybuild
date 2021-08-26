@@ -20,8 +20,8 @@ module tty {
 	option number io_buff_sz = 128
 	option number rx_buff_sz = 100
 
-	depends embox.fs.idesc
-	depends embox.fs.idesc_event
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.idesc_event
 
 	depends embox.kernel.thread.sync /* mutex */
 	depends embox.kernel.thread.sched_wait

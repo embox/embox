@@ -16,7 +16,7 @@
 #include <mem/mmap.h>
 #include <mem/mapping/marea.h>
 #include <kernel/task/resource/mmap.h>
-#include <module/embox/fs/syslib/idesc_mmap_api.h>
+#include <module/embox/kernel/task/idesc/idesc_mmap_api.h>
 #include <util/binalign.h>
 #include <util/log.h>
 

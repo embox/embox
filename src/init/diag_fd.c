@@ -15,7 +15,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>
 
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 static struct idesc diag_idesc;
 

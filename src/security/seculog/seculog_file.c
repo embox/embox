@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <fs/vfs.h>
 #include <security/seculog/seculog.h>
 #include <embox/unit.h>

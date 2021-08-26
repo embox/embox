@@ -22,7 +22,7 @@
 #include <drivers/video/font.h>
 #include <drivers/tty.h>
 #include <drivers/char_dev.h>
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
 #include <mem/objalloc.h>

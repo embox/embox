@@ -15,7 +15,7 @@
 #include <sys/types.h>
 #include <poll.h>
 
-#include <fs/index_descriptor.h>
+#include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>
 
 /* POSIX says, that this way to make read/write nonblocking is old

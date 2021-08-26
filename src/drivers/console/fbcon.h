@@ -12,7 +12,7 @@
 #include <drivers/video/vesa_modes.h>
 #include <drivers/console/mpx.h>
 #include <drivers/video_term.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 
 #define FBCON_INPB 16
 

@@ -24,7 +24,7 @@
 #include <drivers/char_dev.h>
 #include <fs/inode.h>
 #include <fs/file_desc.h>
-#include <fs/idesc.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <kernel/thread.h>
