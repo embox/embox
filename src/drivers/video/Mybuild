@@ -37,18 +37,6 @@ module fb_overlay {
 	depends fonts
 }
 
-module bochs {
-	source "bochs.c"
-
-	@IncludeExport(path="drivers/video")
-	source "vbe.h"
-
-	depends embox.driver.pci
-	@NoRuntime depends fb
-	@NoRuntime depends embox.compat.libc.all
-	depends embox.compat.posix.sys.mman.mmap_api
-}
-
 module raspi_video {
 	option number base_addr = 0x2000B880
 	option number fb_xres = 1024
