@@ -48,6 +48,7 @@ module fb_videomodes {
 
 module vesa_modes {
 	source "vesa_modes.c"
+	source "vesa_videomodes_table.c"
 
 	@IncludeExport(path="drivers/video")
 	source "vesa_modes.h"
