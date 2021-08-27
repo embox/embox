@@ -1,0 +1,29 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver.video
+
+module raspi_video {
+	option number base_addr = 0x2000B880
+	option number fb_xres = 1024
+	option number fb_yres = 768
+	option number fb_bpp = 16
+
+	/**
+	 * Send the address of the frame buffer + fb_vc_bus to the mailbox
+	 *
+	 * By adding fb_vc_bus, we tell the GPU to use memory in the following way
+	 * 
+	 * L1 & L2 Cached 	 - 0x00000000 ; Only mode that works on qemu w. raspi0 emulation
+	 * L2 Cache coherent, non allocating - 0x40000000 ; This mode works with physical unit
+	 * L2 Cached (only)	 - 0x80000000 
+	 * Direct (no cache) - 0xC0000000
+	 */
+	option number fb_vc_bus = 0x00000000
+
+	source "raspi_video.c"
+
+	depends embox.driver.mailbox.bcm2835_mailbox
+	@NoRuntime depends fb
+	@NoRuntime depends embox.compat.libc.all
+	depends embox.mem.vmem_device_memory
+	depends embox.compat.posix.sys.mman.mmap
+}
