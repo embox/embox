@@ -20,6 +20,8 @@
 
 #include "setup_tty.h"
 
+#define STOP_ON_ERROR OPTION_GET(BOOLEAN,stop_on_error)
+
 #define CMD_MAX_ARGV OPTION_GET(NUMBER, cmd_max_argv)
 #define CMD_MAX_LEN  OPTION_GET(NUMBER, cmd_max_len)
 
@@ -34,6 +36,7 @@ int system_start(void) {
 	const struct cmd *cmd;
 	char cmd_line[CMD_MAX_LEN];
 	const char *tty_dev_name;
+	int ret;
 
 	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
 
@@ -51,7 +54,14 @@ int system_start(void) {
 			continue;
 		}
 		cmd = cmd_lookup(argv[0]);
-		cmd_exec(cmd, argc, argv);
+		ret = cmd_exec(cmd, argc, argv);
+		if (ret) {
+			printf("cmd %s failed with error (%d)", argv[0], ret);
+#if STOP_ON_ERROR
+			return ret;
+#endif
+		}
+
 	}
 
 	return 0;

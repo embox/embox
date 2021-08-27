@@ -81,6 +81,7 @@ module system_start_service extends system_start {
 	option string tty_dev=""
 	option number cmd_max_len=64
 	option number cmd_max_argv=10
+	option boolean stop_on_error = false
 
 	@IncludePath("$(CONF_DIR)")
 	source "system_start_service.c"
