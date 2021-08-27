@@ -64,18 +64,6 @@ module raspi_video {
 	depends embox.compat.posix.sys.mman.mmap
 }
 
-module generic {
-	source "generic.c"
-
-	option number vendor_id
-	option number product_id
-
-	option number fb_bar = 0
-
-	depends fb
-	depends embox.driver.pci
-}
-
 module fb_videomodes {
 	source "fb_videomodes.c"
 

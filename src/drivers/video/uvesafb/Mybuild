@@ -1,0 +1,14 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver.video
+
+module generic {
+	source "generic.c"
+
+	option number vendor_id
+	option number product_id
+
+	option number fb_bar = 0
+
+	depends fb
+	depends embox.driver.pci
+}
