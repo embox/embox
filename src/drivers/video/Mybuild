@@ -64,17 +64,6 @@ module raspi_video {
 	depends embox.compat.posix.sys.mman.mmap
 }
 
-module cirrus_logic {
-	source "cirrus_logic.c"
-
-	@IncludeExport(path="drivers/video")
-	source "cirrus_logic.h"
-
-	depends fb
-	depends embox.driver.pci
-	depends embox.compat.posix.sys.mman.mmap_api
-}
-
 module generic {
 	source "generic.c"
 
