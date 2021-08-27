@@ -7,9 +7,9 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <drivers/video/vesa_modes.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_videomodes.h>
+
 #include <embox/unit.h>
 
 #if !OPTION_GET(BOOLEAN, manual_settings)
@@ -34,11 +34,6 @@ EMBOX_UNIT_INIT(mode_init);
 static int mode_init(void) {
 	struct fb_info *fbinfo;
 	const struct fb_videomode *mode;
-	const struct video_resbpp resbpp = {
-		.x = SET_X,
-		.y = SET_Y,
-		.bpp = SET_BPP,
-	};
 	struct fb_var_screeninfo var;
 	int ret;
 
@@ -47,7 +42,7 @@ static int mode_init(void) {
 		return -ENODEV;
 	}
 
-	mode = video_fbmode_by_resbpp(&resbpp);
+	mode = fb_find_videomode(SET_X, SET_Y, SET_BPP);
 	if (mode == NULL) {
 		return -EINVAL;
 	}

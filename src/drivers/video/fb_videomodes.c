@@ -10,9 +10,7 @@
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_videomodes.h>
 
-#include <drivers/video/vesa_modes.h>
-
-const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp) {
+const struct fb_videomode *fb_find_videomode(int xres, int yres, int bpp) {
 	int i;
 	const struct fb_videomode *vmode;
 	int size;
@@ -21,8 +19,7 @@ const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *res
 	size = fb_get_videomode_table_size(NULL);
 
 	for (i = 0; i < size; i ++) {
-		if (resbpp->x == vmode[i].xres
-				&& resbpp->y == vmode[i].yres) {
+		if (xres == vmode[i].xres && yres == vmode[i].yres) {
 			return &vmode[i];
 		}
 	}
