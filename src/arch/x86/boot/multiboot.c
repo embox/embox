@@ -11,10 +11,19 @@
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 
+#include <framework/mod/options.h>
+
+#define VIDEO_MODE_ENABLE OPTION_GET(NUMBER,video_mode_set)
+#define VIDEO_MODE_WIDTH OPTION_GET(NUMBER,video_width)
+#define VIDEO_MODE_HEIGTH OPTION_GET(NUMBER,video_height)
+#define VIDEO_MODE_DEPTH OPTION_GET(NUMBER,video_depth)
+
 /* Check if the bit BIT in FLAGS is set. */
 #define CHECK_FLAG(flags, bit) ((flags) & (1 << (bit)))
 
 static struct multiboot_info *multiboot_info;
+
+static long mb_resx, mb_resy, mb_bpp;
 
 void multiboot_save_info(unsigned long magic, struct multiboot_info *mbi) {
 	if (magic != MULTIBOOT_BOOTLOADER_MAGIC) {
@@ -26,6 +35,11 @@ void multiboot_save_info(unsigned long magic, struct multiboot_info *mbi) {
 
 	if(multiboot_info->flags & MULTIBOOT_INFO_VIDEO_INFO) {
 		/* setup video mode */
+		if (VIDEO_MODE_ENABLE) {
+			mb_resx = VIDEO_MODE_WIDTH;
+			mb_resy = VIDEO_MODE_HEIGTH;
+			mb_bpp  = VIDEO_MODE_DEPTH;
+		}
 	}
 }
 
@@ -124,4 +138,15 @@ void multiboot_check(unsigned long magic, unsigned long addr) {
 				(unsigned) mmap->length_low,
 				(unsigned) mmap->type);
 	}
+}
+
+int platform_get_default_video_mode(int *x, int *y, int *bpp) {
+	if (0 == VIDEO_MODE_ENABLE) {
+		return 0;
+	}
+	*x = VIDEO_MODE_WIDTH;
+	*y = VIDEO_MODE_HEIGTH;
+	*bpp = VIDEO_MODE_DEPTH;
+
+	return 1;
 }
