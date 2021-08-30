@@ -11,11 +11,13 @@ PKG_PATCHES := patch.txt
 
 include $(EXTBLD_LIB)
 
-
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -O2 -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.96/
-MESA_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include -std=gnu++11 -DHAVE_FUNC_ATTRIBUTE_WEAK
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include 
+MESA_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include
+MESA_CPPFLAGS += -I$(ROOT_DIR)/build/base/gen/include
+MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.96/
+MESA_CPPFLAGS += -O2 -std=gnu++11 -DHAVE_FUNC_ATTRIBUTE_WEAK
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
