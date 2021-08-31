@@ -3,5 +3,5 @@
 "netmanager",
 "service telnetd",
 "service httpd",
-"ntpdate 0.europe.pool.ntp.org",
+"source time_setup.sh",
 "tish",
