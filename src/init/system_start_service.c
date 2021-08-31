@@ -29,6 +29,8 @@ static const char *script_commands[] = {
 	#include <system_start.inc>
 };
 
+extern int graphic_init(void);
+
 int system_start(void) {
 	const char *command;
 	char *argv[CMD_MAX_ARGV];
@@ -42,6 +44,8 @@ int system_start(void) {
 
 	printf("Default IO device[%s]\n", tty_dev_name);
 
+	graphic_init();
+
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		strncpy(cmd_line, command, sizeof(cmd_line) - 1);
 		cmd_line[sizeof(cmd_line) - 1] = '\0';
@@ -54,14 +58,19 @@ int system_start(void) {
 			continue;
 		}
 		cmd = cmd_lookup(argv[0]);
+		if (cmd == NULL) {
+			printf("cmd %s did not find\n", argv[0]);
+#if STOP_ON_ERROR
+			return -ENOENT;
+#endif
+		}
 		ret = cmd_exec(cmd, argc, argv);
 		if (ret) {
-			printf("cmd %s failed with error (%d)", argv[0], ret);
+			printf("cmd %s failed with error (%d)\n", argv[0], ret);
 #if STOP_ON_ERROR
 			return ret;
 #endif
 		}
-
 	}
 
 	return 0;
