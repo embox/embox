@@ -13,6 +13,7 @@
 
 struct video_resbpp;
 struct fb_var_screeninfo;
+struct fb_info;
 
 struct fb_videomode {
 	const char *name;	/* optional */
@@ -37,6 +38,9 @@ extern void fb_videomode_to_var(struct fb_var_screeninfo *var,
 extern void fb_var_to_videomode(struct fb_videomode *mode,
 		const struct fb_var_screeninfo *var);
 
-extern const struct fb_videomode *video_fbmode_by_resbpp(const struct video_resbpp *resbpp);
+extern const struct fb_videomode *fb_get_videomode_table(struct fb_info *fb_info);
+extern int fb_get_videomode_table_size(struct fb_info *fb_info);
+
+extern const struct fb_videomode *fb_find_videomode(int xres, int yres, int bpp);
 
 #endif /* VIDEO_FB_VIDEOMODES_H_ */

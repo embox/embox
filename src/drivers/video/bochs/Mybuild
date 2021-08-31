@@ -1,0 +1,14 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver.video
+
+module bochs {
+	source "bochs.c"
+
+	@IncludeExport(path="drivers/video")
+	source "vbe.h"
+
+	depends embox.driver.pci
+	@NoRuntime depends fb
+	@NoRuntime depends embox.compat.libc.all
+	depends embox.compat.posix.sys.mman.mmap_api
+}

@@ -20,12 +20,16 @@
 
 #include "setup_tty.h"
 
+#define STOP_ON_ERROR OPTION_GET(BOOLEAN,stop_on_error)
+
 #define CMD_MAX_ARGV OPTION_GET(NUMBER, cmd_max_argv)
 #define CMD_MAX_LEN  OPTION_GET(NUMBER, cmd_max_len)
 
 static const char *script_commands[] = {
 	#include <system_start.inc>
 };
+
+extern int graphic_init(void);
 
 int system_start(void) {
 	const char *command;
@@ -34,10 +38,13 @@ int system_start(void) {
 	const struct cmd *cmd;
 	char cmd_line[CMD_MAX_LEN];
 	const char *tty_dev_name;
+	int ret;
 
 	tty_dev_name = setup_tty(OPTION_STRING_GET(tty_dev));
 
 	printf("Default IO device[%s]\n", tty_dev_name);
+
+	graphic_init();
 
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		strncpy(cmd_line, command, sizeof(cmd_line) - 1);
@@ -51,7 +58,19 @@ int system_start(void) {
 			continue;
 		}
 		cmd = cmd_lookup(argv[0]);
-		cmd_exec(cmd, argc, argv);
+		if (cmd == NULL) {
+			printf("cmd %s did not find\n", argv[0]);
+#if STOP_ON_ERROR
+			return -ENOENT;
+#endif
+		}
+		ret = cmd_exec(cmd, argc, argv);
+		if (ret) {
+			printf("cmd %s failed with error (%d)\n", argv[0], ret);
+#if STOP_ON_ERROR
+			return ret;
+#endif
+		}
 	}
 
 	return 0;

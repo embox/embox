@@ -1,0 +1,13 @@
+/*FIXME mybuild wrong packet name */
+package embox.driver.video
+
+module cirrus_logic {
+	source "cirrus_logic.c"
+
+	@IncludeExport(path="drivers/video")
+	source "cirrus_logic.h"
+
+	depends fb
+	depends embox.driver.pci
+	depends embox.compat.posix.sys.mman.mmap_api
+}

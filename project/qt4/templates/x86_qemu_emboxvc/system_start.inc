@@ -1,0 +1,5 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"export QT_QPA_FONTDIR=/fonts",
+"texteditor -platform emboxvc",

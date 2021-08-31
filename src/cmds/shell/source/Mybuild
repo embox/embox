@@ -1,0 +1,16 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "source",
+	help = "execute script file",
+	man = '''
+		NAME
+			source
+		SYNOPSIS
+			source source_file
+		AUTHORS
+			Anton Bondarev
+	''')
+module source_cmd {
+	source "source_cmd.c"
+}
