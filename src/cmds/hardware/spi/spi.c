@@ -32,38 +32,38 @@ static int test_poll(struct spi_device *spi, int spi_line, uint8_t *dataOut, uin
 		res = spi_select(spi, spi_line);
 
 		// read/write
-		res = spi_transfer(spi, dataOut, dataIn, 4);
+		res = spi_transfer(spi, dataOut, dataIn, 4, true);
 		// write only
-		res = spi_transfer(spi, dataOut, NULL, 4);
+		res = spi_transfer(spi, dataOut, NULL, 4, true);
 		// read only
-		res = spi_transfer(spi, NULL, dataIn, 4);
+		res = spi_transfer(spi, NULL, dataIn, 4, true);
 		// read/write
-		res = spi_transfer(spi, dataOut, dataIn, 32);
+		res = spi_transfer(spi, dataOut, dataIn, 32, true);
 		// write only
-		res = spi_transfer(spi, dataOut, NULL, 32);
+		res = spi_transfer(spi, dataOut, NULL, 32, true);
 		// read only
-		res = spi_transfer(spi, NULL, dataIn, 32);
+		res = spi_transfer(spi, NULL, dataIn, 32, true);
 
 		//////  SPI_MODE_1
 		spi->flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_1) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
-		res = spi_transfer(spi, dataOut, dataIn, 4);
+		res = spi_transfer(spi, dataOut, dataIn, 4, true);
 
 		//////  SPI_MODE_2
 		spi->flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_2) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
-		res = spi_transfer(spi, dataOut, dataIn, 4);
+		res = spi_transfer(spi, dataOut, dataIn, 4, true);
 
 		//////  SPI_MODE_3
 		spi->flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_3) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
-		res = spi_transfer(spi, dataOut, dataIn, 4);
+		res = spi_transfer(spi, dataOut, dataIn, 4, true);
 		return res;
 }
 
@@ -102,7 +102,7 @@ static int test_interrupt(struct spi_device *dev, int spi_line, uint8_t *dataOut
 	dev->received_data = data_received;
 	ret = spi_select(dev, spi_line);
 	// trigger initiating send interrupt
-	ret = spi_transfer(dev, dataOut, dataIn, bytes);
+	ret = spi_transfer(dev, dataOut, dataIn, bytes, true);
 
 	return ret;
 }
@@ -335,7 +335,7 @@ int main(int argc, char **argv) {
 			// Initiate transfer with callback interrupts
 			ret = spi_transfer(dev, (uint8_t *)cbp_out_first
 				, (uint8_t *)cbp_in_first
-				, DMA_XFER_BLOCKS * ( DMA_XFER_LEN - sizeof(Dma_conbk) ) );	
+				, DMA_XFER_BLOCKS * ( DMA_XFER_LEN - sizeof(Dma_conbk) ), true );	
 	
 			// busy wait until interrupt that DMA is done
 			while(spi_stat == UNKNOWN ) {
@@ -364,7 +364,7 @@ int main(int argc, char **argv) {
 			return ret;
 		}
 		report("\nS", dataOut, bCount);
-		spi_transfer(dev, dataOut, dataIn, bCount);
+		spi_transfer(dev, dataOut, dataIn, bCount, true);
 		report("\nR", dataIn, bCount);
 		break;
 	}
