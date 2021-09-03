@@ -13,18 +13,16 @@
 
 #define ASPRINTF_LEN 1024
 
-int asprintf(char **strp, const char *fmt, ...) {
+int vasprintf(char **strp, const char *fmt, va_list ap) {
 	char *str;
 	*strp = NULL;
 
 	str = malloc(ASPRINTF_LEN);
 	if (str) {
 		int ret;
-		va_list ap;
 
-		va_start(ap, fmt);
 		ret = vsnprintf(str, ASPRINTF_LEN, fmt, ap);
-		va_end(ap);
+
 		*strp = str;
 		if (ret >= ASPRINTF_LEN) {
 			str[ret - 1] = '\n';
@@ -34,5 +32,13 @@ int asprintf(char **strp, const char *fmt, ...) {
 	return -ENOMEM;
 }
 
+int asprintf(char **strp, const char *fmt, ...) {
+	int ret;
+	va_list ap;
 
+	va_start(ap, fmt);
+	ret = vasprintf(strp, fmt, ap);
+	va_end(ap);
 
+	return ret;
+}
