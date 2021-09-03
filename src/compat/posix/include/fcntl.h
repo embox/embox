@@ -47,6 +47,7 @@ extern int fcntl(int fd, int cmd, ...);
 #define F_GETFL            10
 #define F_SETFL            11
 #define F_DUPFD            12
+#define F_DUPFD_CLOEXEC    13
 
 /* fcntl flags */
 #define O_ACCESS_MASK      (O_RDONLY|O_WRONLY|O_RDWR)
