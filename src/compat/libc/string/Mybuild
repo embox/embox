@@ -40,6 +40,8 @@ static module str {
 	source "strlcpy.c"
 	source "strnlen.c"
 	source "ffs.c"
+	source "bcopy.c"
+	source "bzero.c"
 }
 
 static module str_dup {

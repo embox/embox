@@ -48,6 +48,19 @@ extern int strcasecmp(const char *s1, const char *s2);
  */
 extern int strncasecmp(const char *s1, const char *s2, size_t n);
 
+/**
+ * The bcopy() function copies n bytes from src to dest.  The result is correct,
+ *  even when both areas overlap.
+ */
+extern void bcopy(const void *src, void *dest, size_t n);
+
+/**
+ * The bzero() function erases the data in the n bytes of the memory starting
+ * at the location pointed to by s, by writing zeros (bytes containing '\0') to
+ *  that area.
+ */
+extern void bzero(void *s, size_t n);
+
 __END_DECLS
 
 #endif /* STRINGS_H_ */
