@@ -29,20 +29,20 @@
 #if defined(UART6)
 #define USART6_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f1, NUMBER, usart6_irq)
-static_assert(USART6_IRQ == USART6_IRQn);
+static_assert(USART6_IRQ == USART6_IRQn, "");
 #endif
 
 #define USART3_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f1, NUMBER, usart3_irq)
-static_assert(USART3_IRQ == USART3_IRQn);
+static_assert(USART3_IRQ == USART3_IRQn, "");
 
 #define USART2_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f1, NUMBER, usart2_irq)
-static_assert(USART2_IRQ == USART2_IRQn);
+static_assert(USART2_IRQ == USART2_IRQn, "");
 
 #define USART1_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f1, NUMBER, usart1_irq)
-static_assert(USART2_IRQ == USART2_IRQn);
+static_assert(USART2_IRQ == USART2_IRQn, "");
 
 
 #if MODOPS_USARTX == 1

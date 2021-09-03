@@ -15,20 +15,20 @@
 #include <drivers/audio/stm32f7_audio.h>
 
 #define STM32_AUDIO_OUT_DMA_IRQ       OPTION_GET(NUMBER, audio_out_dma_irq)
-static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ);
+static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ, "");
 
 /* Audio Input interrupts */
 #define STM32_DFSDM_TOP_LEFT_IRQ      OPTION_GET(NUMBER, dfsdm_top_left_irq)
-static_assert(STM32_DFSDM_TOP_LEFT_IRQ == DMA2_Stream0_IRQn);
+static_assert(STM32_DFSDM_TOP_LEFT_IRQ == DMA2_Stream0_IRQn, "");
 
 #define STM32_DFSDM_TOP_RIGHT_IRQ     OPTION_GET(NUMBER, dfsdm_top_right_irq)
-static_assert(STM32_DFSDM_TOP_RIGHT_IRQ == DMA2_Stream5_IRQn);
+static_assert(STM32_DFSDM_TOP_RIGHT_IRQ == DMA2_Stream5_IRQn, "");
 
 #define STM32_DFSDM_BOTTOM_LEFT_IRQ   OPTION_GET(NUMBER, dfsdm_bottom_left_irq)
-static_assert(STM32_DFSDM_BOTTOM_LEFT_IRQ == DMA2_Stream6_IRQn);
+static_assert(STM32_DFSDM_BOTTOM_LEFT_IRQ == DMA2_Stream6_IRQn, "");
 
 #define STM32_DFSDM_BOTTOM_RIGHT_IRQ  OPTION_GET(NUMBER, dfsdm_bottom_right_irq)
-static_assert(STM32_DFSDM_BOTTOM_RIGHT_IRQ == DMA2_Stream7_IRQn);
+static_assert(STM32_DFSDM_BOTTOM_RIGHT_IRQ == DMA2_Stream7_IRQn, "");
 
 #define SCRATCH_BUFF_SIZE 1024
 static int32_t audio_scratch_buffer[SCRATCH_BUFF_SIZE] SRAM_NOCACHE_SECTION;

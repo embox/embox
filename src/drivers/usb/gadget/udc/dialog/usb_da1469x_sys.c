@@ -25,8 +25,8 @@
 #define USB_IRQ           OPTION_GET(NUMBER, usb_irq)
 #define VBUS_IRQ          OPTION_GET(NUMBER, vbus_irq)
 
-static_assert(USB_IRQ == USB_IRQn);
-static_assert(VBUS_IRQ == VBUS_IRQn);
+static_assert(USB_IRQ == USB_IRQn, "");
+static_assert(VBUS_IRQ == VBUS_IRQn, "");
 
 extern void USB_Handler(void);
 static irq_return_t usb_da1469x_usb_irq_handler(unsigned int irq_nr,

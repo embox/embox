@@ -21,31 +21,31 @@ EMBOX_UNIT_INIT(stm32_gpio_init);
 #define STM32_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 
 #define EXTI0_IRQ          OPTION_GET(NUMBER, exti0_irq)
-static_assert(EXTI0_IRQ == EXTI0_IRQn);
+static_assert(EXTI0_IRQ == EXTI0_IRQn, "");
 
 #define EXTI1_IRQ          OPTION_GET(NUMBER, exti1_irq)
-static_assert(EXTI1_IRQ == EXTI1_IRQn);
+static_assert(EXTI1_IRQ == EXTI1_IRQn, "");
 
 #define EXTI2_IRQ          OPTION_GET(NUMBER, exti2_irq)
 #if (EXTI2_IRQ != 0)
 #if defined(STM32F303xC)
-static_assert(EXTI2_IRQ == EXTI2_TSC_IRQn);
+static_assert(EXTI2_IRQ == EXTI2_TSC_IRQn, "");
 #else
-static_assert(EXTI2_IRQ == EXTI2_IRQn);
+static_assert(EXTI2_IRQ == EXTI2_IRQn, "");
 #endif
 #endif /*(EXTI2_IRQ != 0)*/
 
 #define EXTI3_IRQ          OPTION_GET(NUMBER, exti3_irq)
-static_assert(EXTI3_IRQ == EXTI3_IRQn);
+static_assert(EXTI3_IRQ == EXTI3_IRQn, "");
 
 #define EXTI4_IRQ          OPTION_GET(NUMBER, exti4_irq)
-static_assert(EXTI4_IRQ == EXTI4_IRQn);
+static_assert(EXTI4_IRQ == EXTI4_IRQn, "");
 
 #define EXTI9_5_IRQ        OPTION_GET(NUMBER, exti9_5_irq)
-static_assert(EXTI9_5_IRQ == EXTI9_5_IRQn);
+static_assert(EXTI9_5_IRQ == EXTI9_5_IRQn, "");
 
 #define EXTI15_10_IRQ     OPTION_GET(NUMBER, exti15_10_irq)
-static_assert(EXTI15_10_IRQ == EXTI15_10_IRQn);
+static_assert(EXTI15_10_IRQ == EXTI15_10_IRQn, "");
 
 static const unsigned char exti_irqs[] = {
 	EXTI0_IRQ, EXTI1_IRQ, EXTI2_IRQ, EXTI3_IRQ, EXTI4_IRQ,

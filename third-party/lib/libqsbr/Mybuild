@@ -1,9 +1,10 @@
-package third_party.lib.npf.deps
+package third_party.lib
 
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libqsbr/libqsbr/src")
 @Build(script="$(EXTERNAL_MAKE)")
 module libqsbr {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
-	source "libmodbus.a"
-
-	depends embox.compat.posix.LibPosix
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/libqsbr/src")
+	source "ebr.c",
+		"gc.c",
+		"qsbr.c"
 }

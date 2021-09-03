@@ -21,7 +21,7 @@
 #define RECORD_SIZE      OPTION_GET(NUMBER,record_size)
 #define RECORD_QUANTITY  OPTION_GET(NUMBER,record_quantity)
 
-static_assert(RECORD_QUANTITY <= 256);
+static_assert(RECORD_QUANTITY <= 256, "");
 
 static char loop_logger_buf[RECORD_SIZE];
 

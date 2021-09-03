@@ -16,12 +16,12 @@
 #include <framework/mod/options.h>
 
 #define STM32_DMA_RX_IRQ   OPTION_GET(NUMBER, dma_rx_irq)
-static_assert(STM32_DMA_RX_IRQ == DMA2_Stream0_IRQn);
+static_assert(STM32_DMA_RX_IRQ == DMA2_Stream0_IRQn, "");
 
 #define STM32_DMA_TX_IRQ   OPTION_GET(NUMBER, dma_tx_irq)
-static_assert(STM32_DMA_TX_IRQ == DMA2_Stream5_IRQn);
+static_assert(STM32_DMA_TX_IRQ == DMA2_Stream5_IRQn, "");
 
 #define STM32_SDMMC_IRQ    OPTION_GET(NUMBER, dma_sdmmc_irq)
-static_assert(STM32_SDMMC_IRQ == SDMMC2_IRQn);
+static_assert(STM32_SDMMC_IRQ == SDMMC2_IRQn, "");
 
 #endif /* STM32F769I_DISCOVERY_SD_H_ */

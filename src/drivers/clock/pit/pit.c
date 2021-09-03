@@ -27,7 +27,7 @@
 #define PIT_HZ 1000
 
 #define PIT_LOAD ((INPUT_CLOCK + PIT_HZ / 2) / PIT_HZ)
-static_assert(PIT_LOAD < 0x10000);
+static_assert(PIT_LOAD < 0x10000, "");
 
 /**
  * The PIT chip uses the following I/O ports:

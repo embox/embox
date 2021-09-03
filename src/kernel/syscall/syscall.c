@@ -110,7 +110,7 @@ struct new_stat
 };
 #endif
 
-static_assert(sizeof(struct new_stat) == 60);
+static_assert(sizeof(struct new_stat) == 60, "");
 
 int sys_newfstat(int fd, void *buf) {
 	struct stat stat;

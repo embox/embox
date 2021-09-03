@@ -25,7 +25,7 @@
 
 #define STM32_TS_INT_PIN   TS_INT_PIN
 #define STM32_TS_IRQ       OPTION_GET(NUMBER, ts_irq)
-static_assert(STM32_TS_IRQ == TS_INT_EXTI_IRQn);
+static_assert(STM32_TS_IRQ == TS_INT_EXTI_IRQn, "");
 
 EMBOX_UNIT_INIT(stm32_ts_init);
 

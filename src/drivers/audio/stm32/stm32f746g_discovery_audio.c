@@ -14,10 +14,10 @@
 #include <drivers/audio/stm32f7_audio.h>
 
 #define STM32_AUDIO_OUT_DMA_IRQ      OPTION_GET(NUMBER, audio_out_dma_irq)
-static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ);
+static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ, "");
 
 #define STM32_AUDIO_IN_DMA_IRQ       OPTION_GET(NUMBER, audio_in_dma_irq)
-static_assert(STM32_AUDIO_IN_DMA_IRQ == AUDIO_IN_SAIx_DMAx_IRQ);
+static_assert(STM32_AUDIO_IN_DMA_IRQ == AUDIO_IN_SAIx_DMAx_IRQ, "");
 
 static irq_return_t stm32_audio_in_dma_interrupt(unsigned int irq_num,
 		void *audio_dev) {

@@ -17,7 +17,7 @@
 #define TIM_CLK_HZ   10000
 
 #define TIM_IRQ  OPTION_GET(NUMBER, irq)
-static_assert(TIM_IRQ == TIM3_IRQn);
+static_assert(TIM_IRQ == TIM3_IRQn, "");
 
 static TIM_HandleTypeDef TimHandle;
 

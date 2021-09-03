@@ -34,7 +34,7 @@
 EMBOX_UNIT_INIT(stm32f7_lcd_init);
 
 #define LTDC_IRQ      OPTION_GET(NUMBER,ltdc_irq)
-static_assert(LTDC_IRQ == LTDC_IRQn);
+static_assert(LTDC_IRQ == LTDC_IRQn, "");
 
 #define USE_FB_SECTION OPTION_GET(BOOLEAN,use_fb_section)
 

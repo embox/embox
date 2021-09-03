@@ -52,7 +52,7 @@ static void SystemClock_Config(void)
 void arch_init(void) {
 	ipl_t ipl = ipl_save();
 
-	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 144000000);
+	static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 144000000, "");
 
 	SystemInit();
 	HAL_Init();
