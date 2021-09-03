@@ -49,7 +49,7 @@ int fcntl(int fd, int cmd, ...) {
 			: -EBADF;
 		if (ret >= 0) {
 			/* set CLOEXEC flag */
-			index_descriptor_cloexec_set(ret, 1);
+			index_descriptor_cloexec_set(ret, FD_CLOEXEC);
 		}
 		break;
 	case F_GETFL:
