@@ -106,7 +106,7 @@ extern void *malloc(size_t size);
 extern void free(void *ptr);
 extern void *realloc(void *ptr, size_t size);
 extern void *memalign(size_t boundary, size_t size);
-
+extern int posix_memalign(void **memptr, size_t alignment, size_t size);
 
 extern void qsort(void *base, size_t nmemb, size_t size,
 		int(*compar)(const void *, const void *));
@@ -219,6 +219,7 @@ extern int atexit(void (*func)(void));
 
 extern size_t mbstowcs(wchar_t *wcstring, const char *mbstring, size_t n);
 extern size_t wcstombs(char *mbstr,  const wchar_t *wcstr, size_t max);
+
 
 __END_DECLS
 

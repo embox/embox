@@ -93,3 +93,9 @@ void *calloc(size_t nmemb, size_t size) {
 		return NULL; /* ok */
 	return mspace_calloc(nmemb, size, task_self_mspace());
 }
+
+int posix_memalign(void **memptr, size_t alignment, size_t size) {
+	*memptr = memalign(alignment, size);
+	return 0;
+}
+
