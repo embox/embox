@@ -634,6 +634,8 @@ $(@source_o_rmk) $(@source_a_rmk) : script  = $(or \
 			$(call get,$(call values_of,$(my_rule_script)),value), \
 			@true)
 
+my_include_header_val := \
+		$(call mybuild_resolve_or_die,mybuild.lang.IncludeHeader.value)
 my_incpath_before_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
 my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
@@ -642,6 +644,7 @@ my_cflags_val := $(call mybuild_resolve_or_die,mybuild.lang.Cflags.value)
 my_instrument_val := \
 		$(call mybuild_resolve_or_die,mybuild.lang.InstrumentProfiling.value)
 
+$(@source_rmk) : includes_header = $(call values_of,$(my_include_header_val))
 $(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
 $(@source_rmk) : includes = $(call values_of,$(my_incpath_val))
 $(@source_rmk) : defines  = $(call values_of,$(my_defmacro_val))
@@ -654,6 +657,7 @@ $(@source_rmk) : check_profiling = $(if $(filter true, $(call get,$1,value)), -f
 $(@source_rmk) : flags_before = $(call trim, \
 			$(call do_flags,-I,$(includes_before)) \
 			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+
 $(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-I,$(includes)) \
 			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
@@ -662,7 +666,10 @@ $(@source_rmk) : flags = $(call trim, \
 						$(mod_path)) \
 			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
 			$(call check_profiling,$(instrument)) \
-			$(call do_flags,,$(additional_cflags)))
+			$(call do_flags,,$(additional_cflags)) \
+			$(call do_flags,-include,$(includes_header)) \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
@@ -812,6 +819,8 @@ __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
 		$(addsuffix $e,$(__source_dirs)))))
 
 include mk/flags.mk  # INCLUDES_FROM_FLAGS
+
+@dist_includes_headers :=
 
 @dist_includes := $(addprefix dist-includes-/,$(sort \
 	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_BASE_DIR)/%, \

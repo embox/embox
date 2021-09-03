@@ -1,0 +1,6 @@
+
+package mybuild.lang
+
+annotation IncludeHeader {
+	string value
+}
