@@ -1,0 +1,10 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libpcap/libpcap")
+@Build(script="$(EXTERNAL_MAKE)")
+module libpcap {
+	//@IncludeHeader("$(ROOT_DIR)/third-party/lib/libpcap/embox_compat.h")
+//	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/libpcap/sljit/sljit_src")
+//	@AddPrefix("^BUILD/extbld/^MOD_PATH/sljit/sljit_src")
+//	source "sljitLir.c"
+}
