@@ -18,9 +18,6 @@
 #define PD_STUB_USE(msg) \
 	PD_STUB("%s" msg, __func__)
 
-#define SIOCGIFFLAGS (PD_STUB("SIOCGIFFLAGS"), 0)
-#define SIOCSIFFLAGS (PD_STUB("SIOCSIFFLAGS"), 1)
-
 #define IPPROTO_IPIP IPPROTO_IP
 #define IPPROTO_GRE  IPPROTO_RAW
 
