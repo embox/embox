@@ -26,7 +26,7 @@
 #define BLOCK_LEN     4096
 #define BLOCKS        16
 #define DATA_LEN      (BLOCKS * BLOCK_LEN)
-static_assert(DATA_LEN <= 64 * 1024);
+static_assert(DATA_LEN <= 64 * 1024, "");
 
 #ifdef DATA_IN_SDRAM
 #define DATA_ADDR     0x60100000

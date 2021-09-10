@@ -1,0 +1,16 @@
+diff -aur libqsbr-e73407cb5dba097e59036e9a4ad8cfe8f5fe50dd/src/qsbr.h ../build/extbld/third_party/lib/libqsbr/libqsbr-e73407cb5dba097e59036e9a4ad8cfe8f5fe50dd/src/qsbr.h
+--- libqsbr-e73407cb5dba097e59036e9a4ad8cfe8f5fe50dd/src/qsbr.h	2019-12-15 16:15:27.000000000 +0300
++++ ../build/extbld/third_party/lib/libqsbr/libqsbr-e73407cb5dba097e59036e9a4ad8cfe8f5fe50dd/src/qsbr.h	2021-09-06 12:54:13.821815126 +0300
+@@ -10,10 +10,11 @@
+ 
+ #include <sys/cdefs.h>
+ #include <stdbool.h>
++#include <stdint.h>
+ 
+ struct qsbr;
+ typedef struct qsbr qsbr_t;
+-typedef unsigned long qsbr_epoch_t;
++typedef uint64_t qsbr_epoch_t;
+ 
+ __BEGIN_DECLS
+ 

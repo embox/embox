@@ -899,12 +899,12 @@ struct dwc_regs {
  * be compiled into nothing.  */
 static inline void _dwc_check_regs(void)
 {
-	static_assert(offsetof(struct dwc_regs, vendor_id) == 0x40);
-	static_assert(offsetof(struct dwc_regs, host_periodic_tx_fifo_size) == 0x100);
-	static_assert(offsetof(struct dwc_regs, host_configuration) == 0x400);
-	static_assert(offsetof(struct dwc_regs, host_port_ctrlstatus) == 0x440);
-	static_assert(offsetof(struct dwc_regs, reserved_0x800) == 0x800);
-	static_assert(offsetof(struct dwc_regs, power) == 0xe00);
+	static_assert(offsetof(struct dwc_regs, vendor_id) == 0x40, "");
+	static_assert(offsetof(struct dwc_regs, host_periodic_tx_fifo_size) == 0x100, "");
+	static_assert(offsetof(struct dwc_regs, host_configuration) == 0x400, "");
+	static_assert(offsetof(struct dwc_regs, host_port_ctrlstatus) == 0x440, "");
+	static_assert(offsetof(struct dwc_regs, reserved_0x800) == 0x800, "");
+	static_assert(offsetof(struct dwc_regs, power) == 0xe00, "");
 }
 
 /**

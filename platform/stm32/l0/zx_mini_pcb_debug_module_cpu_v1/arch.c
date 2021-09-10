@@ -64,7 +64,7 @@ const uint32_t HSE_VALUE = 0;
 
 void arch_init() {
     // Board is always working in max frequency.
-    static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 32000000);
+    static_assert(OPTION_MODULE_GET(embox__arch__system, NUMBER, core_freq) == 32000000, "");
 
     // On HSI (16 MHz).
     RCC->CR |= (1 << 0);

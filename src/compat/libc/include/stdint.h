@@ -339,6 +339,9 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 #undef SIZE_MAX
 #define SIZE_MAX __SIZE_MAX__
 
+#undef SSIZE_MAX
+#define SSIZE_MAX SIZE_MAX/2
+
 #undef WCHAR_MAX
 #define WCHAR_MAX __WCHAR_MAX__
 #undef WCHAR_MIN

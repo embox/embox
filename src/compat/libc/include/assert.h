@@ -53,15 +53,12 @@ __END_DECLS
  *
  * Version before gcc-4.6:
  *
- * #define static_assert(cond) \
+ * #define static_assert(cond, msg) \
  *	  extern void __static_assert(int [!!(cond) - 1])
  *
  */
 #ifndef __cplusplus
-#define static_assert(cond) \
-	_Static_assert(cond, "")
-
-#define static_assertf(cond, msg) \
+#define static_assert(cond, msg) \
 	_Static_assert(cond, msg)
 #endif /* !__cplusplus */
 

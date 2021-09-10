@@ -1,0 +1,16 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libnv/nvlist/src")
+@Build(script="$(EXTERNAL_MAKE)")
+module libnv {
+	@Cflags("-Wno-implicit-function-declaration")
+	@IncludeHeader("$(ROOT_DIR)/third-party/lib/libnv/embox_compat.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/libnv/nvlist/src")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/nvlist/src")
+	source "nvlist.c",
+		"nvpair.c",
+		"cnvlist.c",
+		"dnvlist.c",
+		"msgio.c"
+
+}

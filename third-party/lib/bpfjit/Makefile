@@ -1,0 +1,3 @@
+PKG_SOURCES := git@github.com:rmind/bpfjit.git
+
+include $(EXTBLD_LIB)

@@ -9,6 +9,8 @@
 #ifndef NET_IF_H_
 #define NET_IF_H_
 
+#include <sys/socket.h>
+
 /**
  * Maximum length of interface's name (including \0)
  */
@@ -30,5 +32,28 @@
 #define IFF_MULTICAST   0x1000 /* supports multicast */
 
 extern unsigned int if_nametoindex(const char *);
+
+
+struct ifreq {
+	char    ifr_name[IFNAMSIZ];/* Interface name */
+	union {
+		struct sockaddr ifr_addr;
+		struct sockaddr ifr_dstaddr;
+		struct sockaddr ifr_broadaddr;
+		struct sockaddr ifr_netmask;
+		struct sockaddr ifr_hwaddr;
+
+		short   ifr_flags;
+		int     ifr_ifindex;
+		int     ifr_metric;
+		int     ifr_mtu;
+#if 0
+		struct ifmap ifr_map;
+#endif
+		char    ifr_slave[IFNAMSIZ];
+		char    ifr_newname[IFNAMSIZ];
+		char *  ifr_data;
+	};
+};
 
 #endif /* NET_IF_H_ */

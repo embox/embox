@@ -15,7 +15,7 @@
 
 #define STM32_AUDIO_DMA_IRQ    \
 	OPTION_MODULE_GET(embox__driver__audio__stm32f4_pa_cube, NUMBER, audio_dma_irq)
-static_assert(STM32_AUDIO_DMA_IRQ == I2S3_DMAx_IRQ);
+static_assert(STM32_AUDIO_DMA_IRQ == I2S3_DMAx_IRQ, "");
 
 static irq_return_t stm32_audio_dma_interrupt(unsigned int irq_num,
 		void *dev_id) {

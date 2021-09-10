@@ -1,0 +1,11 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/sljit/sljit-849950aaf60c58b5b137b38769519dec0500f500/sljit_src -DSLJIT_CONFIG_UNSUPPORTED=1")
+@Build(script="$(EXTERNAL_MAKE)")
+module sljit {
+	@Cflags("-Wno-unused")
+	@IncludeHeader("$(ROOT_DIR)/third-party/lib/sljit/embox_compat.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/sljit/sljit-849950aaf60c58b5b137b38769519dec0500f500/sljit_src")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/sljit-849950aaf60c58b5b137b38769519dec0500f500/sljit_src")
+	source "sljitLir.c"
+}

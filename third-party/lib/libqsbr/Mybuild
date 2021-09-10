@@ -1,0 +1,11 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libqsbr/install")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libqsbr/libqsbr-e73407cb5dba097e59036e9a4ad8cfe8f5fe50dd/src")
+@Build(script="$(EXTERNAL_MAKE)")
+module libqsbr {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/libqsbr-e73407cb5dba097e59036e9a4ad8cfe8f5fe50dd/src")
+	source "ebr.c",
+		"gc.c",
+		"qsbr.c"
+}

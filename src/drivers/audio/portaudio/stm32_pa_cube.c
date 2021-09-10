@@ -60,7 +60,7 @@ struct pa_strm {
 	uint16_t out_buf[MAX_BUF_LEN * OUTPUT_CHAN_N * BUF_N];
 	volatile unsigned char out_buf_empty_mask;
 };
-static_assert(BUF_N <= 8);
+static_assert(BUF_N <= 8, "");
 
 static struct thread *pa_thread;
 static struct pa_strm pa_stream;
@@ -100,7 +100,7 @@ static void *pa_thread_hnd(void *arg) {
 
 			empty_mask = strm->out_buf_empty_mask;
 
-			static_assert(BUF_N == 2);
+			static_assert(BUF_N == 2, "");
 			if (empty_mask < 3) {
 				/* 0 - impossible; 1 -> 0; 2 -> 1 */
 				buf_index = empty_mask >> 1;

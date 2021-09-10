@@ -187,6 +187,7 @@ cppflags_fn = \
 	$(if $(value PLATFORM),-I$(call $1,$(PLATFORM_DIR))/$(PLATFORM)/include) \
 	-I$(call $1,$(SRC_DIR))/compat/linux/include \
 	-I$(call $1,$(SRC_DIR))/compat/posix/include \
+	-I$(call $1,$(SRC_DIR))/compat/bsd/include \
 	-I$(call $1,$(SRC_DIR))/compat/libc/include \
 	-I$(abspath $(SRC_DIR)/compat/cxx/include) \
 	-nostdinc \

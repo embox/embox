@@ -65,19 +65,19 @@ static const struct video_resbpp vesa_mode_svga_descriptions[] = {
 
 const struct video_resbpp * video_resbpp_by_vesamode (enum video_vesa_mode mode) {
 	static_assert(VESA_MODE_MDA_80x25 - VESA_MODE_TEXT_40x25x16_M
-			== ARRAY_SIZE(vesa_mode_text_descriptions) - 1);
+			== ARRAY_SIZE(vesa_mode_text_descriptions) - 1, "");
 	if ((mode >= VESA_MODE_TEXT_40x25x16_M) && (mode <= VESA_MODE_MDA_80x25)) {
 		return &vesa_mode_text_descriptions[mode - VESA_MODE_TEXT_40x25x16_M];
 	}
 
 	static_assert(VESA_MODE_VGA_320x200x256 - VESA_MODE_EGA_320x200x16
-			== ARRAY_SIZE(vesa_mode_vga_descriptions) - 1);
+			== ARRAY_SIZE(vesa_mode_vga_descriptions) - 1, "");
 	if ((mode >= VESA_MODE_EGA_320x200x16) && (mode <= VESA_MODE_VGA_320x200x256)) {
 		return &vesa_mode_vga_descriptions[mode - VESA_MODE_EGA_320x200x16];
 	}
 
 	static_assert(VESA_MODE_SVGA_1600x1200x256 - VESA_MODE_SVGA_640x480x256
-			== ARRAY_SIZE(vesa_mode_svga_descriptions) - 1);
+			== ARRAY_SIZE(vesa_mode_svga_descriptions) - 1, "");
 	if ((mode >= VESA_MODE_SVGA_640x480x256) && (mode <= VESA_MODE_SVGA_1600x1200x256)) {
 		return &vesa_mode_svga_descriptions[mode - VESA_MODE_SVGA_640x480x256];
 	}

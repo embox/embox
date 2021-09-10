@@ -18,9 +18,6 @@
 #define PD_STUB_USE(msg) \
 	PD_STUB("%s" msg, __func__)
 
-#define SIOCGIFFLAGS (PD_STUB("SIOCGIFFLAGS"), 0)
-#define SIOCSIFFLAGS (PD_STUB("SIOCSIFFLAGS"), 1)
-
 #define IPPROTO_IPIP IPPROTO_IP
 #define IPPROTO_GRE  IPPROTO_RAW
 
@@ -28,29 +25,6 @@
 
 #define MCL_CURRENT ((void)PD_STUB("MCL_CURRENT"), 0x01)
 #define MCL_FUTURE  (PD_STUB("MCL_FUTURE"), 0x02)
-
-struct ifreq {
-	char    ifr_name[IFNAMSIZ];/* Interface name */
-	union {
-#if 0
-		struct sockaddrifr_addr ifr_addr;
-		struct sockaddrifr_dstaddr ifr_dstaddr;
-		struct sockaddrifr_broadaddr ifr_broadaddr;
-		struct sockaddrifr_netmask ifr_netmask;
-		struct sockaddrifr_hwaddr ifr_hwaddr;
-#endif
-		short   ifr_flags;
-		int     ifr_ifindex;
-		int     ifr_metric;
-		int     ifr_mtu;
-#if 0
-		struct ifmapifr_map ifr_map;
-#endif
-		char    ifr_slave[IFNAMSIZ];
-		char    ifr_newname[IFNAMSIZ];
-		char *  ifr_data;
-	};
-};
 
 #define IFT_ETHER 0
 struct sockaddr_dl {

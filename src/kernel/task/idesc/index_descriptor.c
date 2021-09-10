@@ -52,7 +52,7 @@ int index_descriptor_cloexec_set(int fd, int cloexec) {
 	it = task_resource_idesc_table(task_self());
 	assert(it);
 
-	if (cloexec | FD_CLOEXEC) {
+	if (cloexec & FD_CLOEXEC) {
 		idesc_cloexec_set(it->idesc_table[fd]);
 	} else {
 		idesc_cloexec_clear(it->idesc_table[fd]);

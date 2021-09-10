@@ -1,0 +1,15 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/bpfjit/src")
+@BuildDepends(third_party.lib.sljit)
+@BuildDepends(third_party.lib.libpcap)
+@Build(script="$(EXTERNAL_MAKE)")
+module bpfjit {
+	@IncludeHeader("$(ROOT_DIR)/third-party/lib/bpfjit/embox_compat.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/bpfjit/bpfjit/src")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/bpfjit/src")
+	source "bpfjit.c"
+
+	@NoRuntime depends third_party.lib.sljit
+	@NoRuntime depends third_party.lib.libpcap
+}

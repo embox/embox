@@ -32,10 +32,10 @@
 #define FPU_FPCCR  0xE000EF34
 
 #define PLL_LOCK_IRQ      OPTION_GET(NUMBER, pll_lock_irq)
-static_assert(PLL_LOCK_IRQ == PLL_LOCK_IRQn);
+static_assert(PLL_LOCK_IRQ == PLL_LOCK_IRQn, "");
 
 #define XTAL32M_RDY_IRQ   OPTION_GET(NUMBER, xtal32m_rdy_irq)
-static_assert(XTAL32M_RDY_IRQ == XTAL32M_RDY_IRQn);
+static_assert(XTAL32M_RDY_IRQ == XTAL32M_RDY_IRQn, "");
 
 #define FLASH_SIZE OPTION_GET(NUMBER, flash_size)
 

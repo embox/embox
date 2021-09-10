@@ -26,7 +26,7 @@
 
 #define THREAD_STACK_SZ \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
-static_assert(THREAD_STACK_SZ > sizeof(struct thread));
+static_assert(THREAD_STACK_SZ > sizeof(struct thread), "");
 
 #define POOL_SZ       OPTION_GET(NUMBER, task_quantity)
 

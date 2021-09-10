@@ -28,7 +28,7 @@
 
 EMBOX_UNIT_INIT(smac_init);
 
-static_assert(sizeof(struct smac_task) == OPTION_MODULE_GET(embox__kernel__task__resource__security, NUMBER, security_size));
+static_assert(sizeof(struct smac_task) == OPTION_MODULE_GET(embox__kernel__task__resource__security, NUMBER, security_size), "");
 
 #define SMAC_MAX_ENTS OPTION_GET(NUMBER, max_entries)
 #define SMAC_AUDIT OPTION_GET(NUMBER, audit)

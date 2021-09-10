@@ -127,7 +127,7 @@ typedef enum {
 	FN_DEBUG30, FN_DEBUG31,
 	FN_MAX,
 } k210_fpioa_func_t;
-static_assert(FN_MAX == 256);
+static_assert(FN_MAX == 256, "");
 
 typedef enum {
 	MAIXBIT_IO_JTAG_TCK, MAIXBIT_IO_JTAG_TDI, MAIXBIT_IO_JTAG_TMS, MAIXBIT_IO_JTAG_TDO,
@@ -147,7 +147,7 @@ typedef enum {
 	MAIXBIT_IO_DVP_XCLK, MAIXBIT_IO_DVP_PCLK,
 	MAIXBIT_IO_MAX,
 } maixbit_io_pin;
-static_assert(MAIXBIT_IO_MAX == 48);
+static_assert(MAIXBIT_IO_MAX == 48, "");
 
 typedef struct {
 	uint8_t channel;

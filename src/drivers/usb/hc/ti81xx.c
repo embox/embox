@@ -813,15 +813,15 @@ static int usb_ti81xx_init(void) {
 #if 0
 	struct usb_hcd *hcd;
 
-	static_assert(offsetof(struct ti81xx_usb, m_devctl) == 0x460);
-	static_assert(sizeof(struct ti81xx_endp_csr0) == 16);
-	static_assert(offsetof(struct ti81xx_endp_csr0, count0) == 0x08);
-	static_assert(sizeof(struct ti81xx_endp) == 16);
-	static_assert(offsetof(struct ti81xx_usb, m_hwver) == 0x46c);
-	static_assert(offsetof(struct ti81xx_usb, pad10) == 0x46e);
-	static_assert(offsetof(struct ti81xx_usb, csr0) == 0x500);
-	static_assert(offsetof(struct ti81xx_usb, csr[0]) == 0x510);
-	static_assert(offsetof(struct ti81xx_usb, m_index) == 0x40e);
+	static_assert(offsetof(struct ti81xx_usb, m_devctl) == 0x460, "");
+	static_assert(sizeof(struct ti81xx_endp_csr0) == 16, "");
+	static_assert(offsetof(struct ti81xx_endp_csr0, count0) == 0x08, "");
+	static_assert(sizeof(struct ti81xx_endp) == 16, "");
+	static_assert(offsetof(struct ti81xx_usb, m_hwver) == 0x46c, "");
+	static_assert(offsetof(struct ti81xx_usb, pad10) == 0x46e, "");
+	static_assert(offsetof(struct ti81xx_usb, csr0) == 0x500, "");
+	static_assert(offsetof(struct ti81xx_usb, csr[0]) == 0x510, "");
+	static_assert(offsetof(struct ti81xx_usb, m_index) == 0x40e, "");
 
 	REG_ANDIN(PRCM_P_DEFAULT_RSTCTL, 0xffffff9f);
 

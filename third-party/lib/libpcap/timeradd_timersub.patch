@@ -1,0 +1,34 @@
+diff -aur libpcap-libpcap-1.10.1/portability.h ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/portability.h
+--- libpcap-libpcap-1.10.1/portability.h	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/portability.h	2021-09-09 14:19:30.041295339 +0300
+@@ -112,30 +112,6 @@
+ extern int pcap_vasprintf(char **, const char *, va_list ap);
+ #endif
+ 
+-/* For Solaris before 11. */
+-#ifndef timeradd
+-#define timeradd(a, b, result)                       \
+-  do {                                               \
+-    (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;    \
+-    (result)->tv_usec = (a)->tv_usec + (b)->tv_usec; \
+-    if ((result)->tv_usec >= 1000000) {              \
+-      ++(result)->tv_sec;                            \
+-      (result)->tv_usec -= 1000000;                  \
+-    }                                                \
+-  } while (0)
+-#endif /* timeradd */
+-#ifndef timersub
+-#define timersub(a, b, result)                       \
+-  do {                                               \
+-    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;    \
+-    (result)->tv_usec = (a)->tv_usec - (b)->tv_usec; \
+-    if ((result)->tv_usec < 0) {                     \
+-      --(result)->tv_sec;                            \
+-      (result)->tv_usec += 1000000;                  \
+-    }                                                \
+-  } while (0)
+-#endif /* timersub */
+-
+ #ifdef HAVE_STRTOK_R
+   #define pcap_strtok_r	strtok_r
+ #else

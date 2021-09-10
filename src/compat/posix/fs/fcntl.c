@@ -35,6 +35,22 @@ int fcntl(int fd, int cmd, ...) {
 		ret = idesc_index_valid(uargs.i)
 			? index_descriptor_dupfd(fd, uargs.i)
 			: -EBADF;
+		if (ret >= 0) {
+			/* clean CLOEXEC flag */
+			index_descriptor_cloexec_set(ret, 0);
+		}
+		break;
+	case F_DUPFD_CLOEXEC:
+		va_start(args, cmd);
+		uargs.i = va_arg(args, int);
+		va_end(args);
+		ret = idesc_index_valid(uargs.i)
+			? index_descriptor_dupfd(fd, uargs.i)
+			: -EBADF;
+		if (ret >= 0) {
+			/* set CLOEXEC flag */
+			index_descriptor_cloexec_set(ret, FD_CLOEXEC);
+		}
 		break;
 	case F_GETFL:
 		return index_descriptor_flags_get(fd);

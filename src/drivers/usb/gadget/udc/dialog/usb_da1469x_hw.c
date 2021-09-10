@@ -26,8 +26,8 @@
 #define USB_IRQ           OPTION_GET(NUMBER, usb_irq)
 #define VBUS_IRQ          OPTION_GET(NUMBER, vbus_irq)
 
-static_assert(USB_IRQ == USB_IRQn);
-static_assert(VBUS_IRQ == VBUS_IRQn);
+static_assert(USB_IRQ == USB_IRQn, "");
+static_assert(VBUS_IRQ == VBUS_IRQn, "");
 
 static int usb_da1469x_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(usb_da1469x_reset_lt, usb_da1469x_reset_hnd, 200);

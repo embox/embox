@@ -1693,7 +1693,7 @@ static void dwc_setup_interrupts(struct usb_hcd *hcd) {
 static enum usb_request_status dwc_start_xfer_scheduler(void) {
 	semaphore_init(&chfree_sema, DWC_NUM_CHANNELS);
 
-	static_assert(DWC_NUM_CHANNELS <= 8 * sizeof(chfree));
+	static_assert(DWC_NUM_CHANNELS <= 8 * sizeof(chfree), "");
 	chfree = (1 << DWC_NUM_CHANNELS) - 1;
 
 	return USB_REQ_NOERR;

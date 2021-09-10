@@ -1,0 +1,25 @@
+package third_party.lib
+
+@BuildDepends(third_party.lib.libnv)
+@BuildDepends(third_party.lib.libqsbr)
+@BuildDepends(third_party.lib.thmap)
+@BuildDepends(third_party.lib.liblpm)
+@BuildDepends(third_party.lib.libcdb)
+@BuildDepends(third_party.lib.bpfjit)
+@BuildDepends(third_party.lib.libpcap)
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libnpf/npf/src/libnpf")
+module libnpf {
+	@IncludeHeader("$(ROOT_DIR)/third-party/lib/npf/embox_compat.h")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/libnpf/npf/src/libnpf")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/npf/src/libnpf")
+	source "npf.c"
+
+	@NoRuntime depends third_party.lib.libnv
+	@NoRuntime depends third_party.lib.libqsbr
+	@NoRuntime depends third_party.lib.thmap
+	@NoRuntime depends third_party.lib.liblpm
+	@NoRuntime depends third_party.lib.libcdb
+	@NoRuntime depends third_party.lib.bpfjit
+	@NoRuntime depends third_party.lib.libpcap
+}

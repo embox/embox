@@ -17,13 +17,13 @@
 #include <drivers/audio/stm32h7_audio.h>
 
 #define STM32_AUDIO_OUT_DMA_IRQ      OPTION_GET(NUMBER, audio_out_dma_irq)
-static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ);
+static_assert(STM32_AUDIO_OUT_DMA_IRQ == AUDIO_OUT_SAIx_DMAx_IRQ, "");
 
 #define STM32_AUDIO_IN_DMA_IRQ       OPTION_GET(NUMBER, audio_in_dma_irq)
-static_assert(STM32_AUDIO_IN_DMA_IRQ == AUDIO_IN_SAIx_DMAx_IRQ);
+static_assert(STM32_AUDIO_IN_DMA_IRQ == AUDIO_IN_SAIx_DMAx_IRQ, "");
 
 #define STM32_AUDIO_IN_PDM_DMA_IRQ       OPTION_GET(NUMBER, audio_in_pdm_dma_irq)
-static_assert(STM32_AUDIO_IN_PDM_DMA_IRQ == AUDIO_IN_SAI_PDMx_DMAx_IRQ);
+static_assert(STM32_AUDIO_IN_PDM_DMA_IRQ == AUDIO_IN_SAI_PDMx_DMAx_IRQ, "");
 
 static uint32_t  InState = 0;
 static BSP_AUDIO_Init_t  AudioInInit;

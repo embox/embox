@@ -90,6 +90,8 @@ extern int fprintf(FILE *f, const char *format, ...);
 
 extern int vfprintf(FILE *f, const char *format, va_list args);
 
+extern int dprintf(int fildes, const char *format, ...);
+
 /**
  * Write formatted output to string, according to the format string FORMAT.
  */
@@ -232,6 +234,8 @@ extern void setbuf(FILE *stream, char *buf);
 
 /* #define _GNU_SOURCE  */
 extern int asprintf(char **strp, const char *fmt, ...);
+
+extern int vasprintf(char **strp, const char *fmt, va_list ap);
 
 extern FILE *popen(const char *command, const char *type);
 extern int pclose(FILE *stream);

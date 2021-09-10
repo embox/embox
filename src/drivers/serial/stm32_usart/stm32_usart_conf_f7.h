@@ -28,15 +28,15 @@
 
 #define USART6_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart6_irq)
-static_assert(USART6_IRQ == USART6_IRQn);
+static_assert(USART6_IRQ == USART6_IRQn, "");
 
 #define USART2_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart2_irq)
-static_assert(USART2_IRQ == USART2_IRQn);
+static_assert(USART2_IRQ == USART2_IRQn, "");
 
 #define USART1_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart1_irq)
-static_assert(USART1_IRQ == USART1_IRQn);
+static_assert(USART1_IRQ == USART1_IRQn, "");
 
 #if MODOPS_USARTX == 6
 

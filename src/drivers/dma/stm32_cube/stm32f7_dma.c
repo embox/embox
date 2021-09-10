@@ -20,7 +20,7 @@
 #define DMA_MAX_SIZE (64 * 1024 - 1)
 
 #define DMA2_STREAM0_IRQ   OPTION_GET(NUMBER, dma2_stream0_irq)
-static_assert(DMA2_STREAM0_IRQ == DMA2_Stream0_IRQn);
+static_assert(DMA2_STREAM0_IRQ == DMA2_Stream0_IRQn, "");
 
 static DMA_HandleTypeDef dma_handle;
 
