@@ -18,8 +18,6 @@ package embox.cmd
 @BuildDepends(third_party.freedesktop.mesa.libglu_osmesa)
 @Build(stage=2,script="true")
 module osdemo_fb {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include")
 	source "osdemo_fb.c"
 
 	depends embox.lib.fps
@@ -46,8 +44,6 @@ module osdemo_fb {
 @BuildDepends(third_party.freedesktop.mesa.libglu_etnaviv)
 @Build(stage=2,script="true")
 module osdemo_imx6 {
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_etnaviv/glu-9.0.0/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include")
 	source "osdemo_fb.c"
 
 	depends embox.driver.video.fb_overlay
