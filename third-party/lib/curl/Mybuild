@@ -6,4 +6,5 @@ module curl {
 	source "libcurl.a"
 
 	depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.time.time
 }
