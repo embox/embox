@@ -32,11 +32,11 @@
 #define SDL_VIDEO_OPENGL_ES 0
 
 #include "SDL_egl.h"
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "SDL_scancode.h"
-#include "../SDL_sysvideo.h"
-#include "../src/events/SDL_keyboard_c.h"
-#include "../src/events/SDL_mouse_c.h"
+#include "SDL_sysvideo.h"
+#include "events/SDL_keyboard_c.h"
+#include "events/SDL_mouse_c.h"
 
 #include <drivers/video/fb.h>
 

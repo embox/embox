@@ -25,8 +25,8 @@
 #define MESA_EGL_NO_X11_HEADERS
 
 #include "SDL_egl.h"
-#include "../SDL_sysvideo.h"
-#include "../../SDL_internal.h"
+#include "SDL_sysvideo.h"
+#include "SDL_internal.h"
 
 #include <drivers/video/fb.h>
 #include <sys/mman.h>
