@@ -1,0 +1,35 @@
+diff -aur SDL2-2.0.8/configure.in ../build/extbld/third_party/lib/libSDL2/SDL2-2.0.8/configure.in
+--- SDL2-2.0.8/configure.in	2018-03-01 19:34:41.000000000 +0300
++++ ../build/extbld/third_party/lib/libSDL2/SDL2-2.0.8/configure.in	2021-09-12 20:46:01.798824663 +0300
+@@ -3287,7 +3287,7 @@
+ 
+ dnl Set up the configuration based on the host platform!
+ case "$host" in
+-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
++    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*|*-*-none*)
+         case "$host" in
+             *-*-android*)
+                 # Android
+@@ -3322,6 +3322,7 @@
+             *-*-hpux*)          ARCH=hpux ;;
+             *-*-aix*)           ARCH=aix ;;
+             *-*-minix*)         ARCH=minix ;;
++            *-*-none*)         ARCH=netbsd ;; #Embox
+             *-*-nto*)           ARCH=nto
+                 CheckQNXVideo
+                 ;;
+diff -aur SDL2-2.0.8/src/video/SDL_video.c ../build/extbld/third_party/lib/libSDL2/SDL2-2.0.8/src/video/SDL_video.c
+--- SDL2-2.0.8/src/video/SDL_video.c	2018-03-01 19:34:42.000000000 +0300
++++ ../build/extbld/third_party/lib/libSDL2/SDL2-2.0.8/src/video/SDL_video.c	2021-09-12 20:23:21.563297515 +0300
+@@ -56,8 +56,11 @@
+ #include <emscripten.h>
+ #endif
+ 
++extern VideoBootStrap EMBOX_bootstrap;
++
+ /* Available video drivers */
+ static VideoBootStrap *bootstrap[] = {
++    &EMBOX_bootstrap,
+ #if SDL_VIDEO_DRIVER_COCOA
+     &COCOA_bootstrap,
+ #endif
