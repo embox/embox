@@ -35,7 +35,7 @@ struct dlist_head {
 	struct dlist_head *next;   /**<pointer to next item in the list*/
 	struct dlist_head *prev;   /**<pointer to previous item in the list*/
 
-#if DLIST_DEBUG_VERSION && !defined NDEBUG
+#if DLIST_DEBUG_VERSION
 	uintptr_t          poison; /**< Valid value is zero or ~&head. */
 	/**
 	 * Special implementation field. It's used as flag to indicate whether the
@@ -45,7 +45,7 @@ struct dlist_head {
 #endif
 };
 
-#if DLIST_DEBUG_VERSION && !defined NDEBUG
+#if DLIST_DEBUG_VERSION
 /** The implementation of the #DLIST_INIT macro */
 #define __DLIST_INIT(head) { &(head), &(head), 0, &(head) }
 
