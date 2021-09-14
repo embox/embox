@@ -16,10 +16,11 @@ module sdl2 {
 	option number log_level = 0
 
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/src/mesa/main/")
-	source "embox.c", "gl.c"
+	source "embox_sdl_plugin.c", "gl.c"
+
+	source "embox_sdl_stubs.c"
 
 	depends embox.compat.posix.LibPosix
-	//depends embox.compat.posix.stubs
 	depends embox.driver.video.fb_overlay
 	depends embox.compat.posix.semaphore
 	depends embox.compat.posix.sys.mman.shm_mem

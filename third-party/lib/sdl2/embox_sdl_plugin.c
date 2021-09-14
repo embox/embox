@@ -397,8 +397,3 @@ VideoBootStrap EMBOX_bootstrap = {
 	available, createDevice
 };
 
-#include <pthread.h>
-#include <stddef.h>
-int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
-	return -ENOSYS;
-}
