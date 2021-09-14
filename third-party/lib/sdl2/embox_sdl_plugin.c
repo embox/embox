@@ -50,12 +50,6 @@ extern int glMakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void glDeleteContext(_THIS, SDL_GLContext context);
 extern void glUnloadLibrary(_THIS);
 
-typedef struct {
-    int window;
-    EGLSurface      surface;
-    EGLConfig       conf;
-} window_impl_t;
-
 /**
  * Initializes the QNX video plugin.
  * Creates the Screen context and event handles used for all window operations
