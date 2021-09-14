@@ -220,17 +220,17 @@ static void pumpEvents(_THIS) {
 			if (event->type == MOUSE_BUTTON_LEFT) {
 				/* Left putton press */
 				log_debug("Send mouse left press");
-				SDL_SendMouseButton(0, SDL_TOUCH_MOUSEID * 0, SDL_PRESSED, 1);
+				SDL_SendMouseButton(_this->current_glwin, SDL_TOUCH_MOUSEID * 0, SDL_PRESSED, 1);
 			} else if (event->type == 0 && event->value == 0) {
 				/* Left button release */
 				log_debug("Send mouse left release");
-				SDL_SendMouseButton(0, SDL_TOUCH_MOUSEID * 0, SDL_RELEASED, 1);
+				SDL_SendMouseButton(_this->current_glwin, SDL_TOUCH_MOUSEID * 0, SDL_RELEASED, 1);
 			} else {
 				/* Mouse motion */
 				int16_t dx = (event->value >> 16) & 0xFFFF;
 				int16_t dy = (event->value) & 0xFFFF;
 				log_debug("Send mouse motion %d %d", dx, dy);
-				SDL_SendMouseMotion(0, 0, 1, dx, -dy);
+				SDL_SendMouseMotion(_this->current_glwin, 0, 0, dx, -dy);
 			}
 		}
 
@@ -356,14 +356,14 @@ static SDL_VideoDevice *createDevice(int devindex) {
 	/* Initialize input */
 	struct input_dev *dev;
 
-	dev = input_dev_lookup("keyboard");
+	dev = input_dev_lookup("ps-keyboard");
 	if (dev) {
 		input_dev_open(dev, &sdl_indev_eventhnd);
 	} else {
 		log_error("keyboard not found!");
 	}
 
-	dev = input_dev_lookup("mouse");
+	dev = input_dev_lookup("ps-mouse");
 	if (dev) {
 		input_dev_open(dev, &sdl_indev_eventhnd);
 	} else {
