@@ -16,4 +16,5 @@ module quake3 {
 	depends embox.net.lib.getifaddrs
 	depends third_party.lib.curl
 	depends third_party.lib.sdl2
+	@NoRuntime depends embox.compat.libc.fenv_openlibm
 }

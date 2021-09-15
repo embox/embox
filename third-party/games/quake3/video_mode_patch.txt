@@ -1,0 +1,24 @@
+diff -aur ioq3/code/renderergl1/tr_init.c ../build/extbld/third_party/games/quake3/ioq3/code/renderergl1/tr_init.c
+--- ioq3/code/renderergl1/tr_init.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/renderergl1/tr_init.c	2020-10-20 15:18:25.234560139 +0300
+@@ -269,7 +269,7 @@
+ 	{ "Mode  0: 320x240",		320,	240,	1 },
+ 	{ "Mode  1: 400x300",		400,	300,	1 },
+ 	{ "Mode  2: 512x384",		512,	384,	1 },
+-	{ "Mode  3: 640x480",		640,	480,	1 },
++	{ "Mode  3: 640x480",		320,	240,	1 },
+ 	{ "Mode  4: 800x600",		800,	600,	1 },
+ 	{ "Mode  5: 960x720",		960,	720,	1 },
+ 	{ "Mode  6: 1024x768",		1024,	768,	1 },
+diff -aur ioq3/code/renderergl2/tr_init.c ../build/extbld/third_party/games/quake3/ioq3/code/renderergl2/tr_init.c
+--- ioq3/code/renderergl2/tr_init.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/renderergl2/tr_init.c	2020-10-20 15:18:25.234560139 +0300
+@@ -347,7 +347,7 @@
+ 	{ "Mode  0: 320x240",		320,	240,	1 },
+ 	{ "Mode  1: 400x300",		400,	300,	1 },
+ 	{ "Mode  2: 512x384",		512,	384,	1 },
+-	{ "Mode  3: 640x480",		640,	480,	1 },
++	{ "Mode  3: 640x480",		320,	240,	1 },
+ 	{ "Mode  4: 800x600",		800,	600,	1 },
+ 	{ "Mode  5: 960x720",		960,	720,	1 },
+ 	{ "Mode  6: 1024x768",		1024,	768,	1 },
