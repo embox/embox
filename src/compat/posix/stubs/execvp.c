@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <utime.h>
+#include <unistd.h>
 
 int execvp(const char *file, char *const argv[]) {
 	printk(">>> %s %s %s\n", __func__, file, argv[0]);

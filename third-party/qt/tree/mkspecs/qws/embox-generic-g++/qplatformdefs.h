@@ -71,7 +71,6 @@
 #define QT_NO_LOCALSERVER
 
 #include <stdio.h>
-#define execvp(f,a) printf(">>> execvp(%s,...)\n",f),-1
 
 #include <time.h>
 
