@@ -1,0 +1,17 @@
+diff -aur ioq3/code/qcommon/q_platform.h ../build/extbld/third_party/games/quake3/ioq3/code/qcommon/q_platform.h
+--- ioq3/code/qcommon/q_platform.h	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/qcommon/q_platform.h	2021-09-15 13:54:11.341527091 +0300
+@@ -164,11 +164,11 @@
+ 
+ //================================================================= LINUX ===
+ 
+-#if defined(__linux__) || defined(__FreeBSD_kernel__) || defined(__GNU__)
++#if defined(__linux__) || defined(__FreeBSD_kernel__) || defined(__GNU__) || defined(__EMBOX__)
+ 
+ #include <endian.h>
+ 
+-#if defined(__linux__)
++#if defined(__linux__) || defined(__EMBOX__)
+ #define OS_STRING "linux"
+ #elif defined(__FreeBSD_kernel__)
+ #define OS_STRING "kFreeBSD"

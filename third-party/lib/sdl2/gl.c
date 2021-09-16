@@ -25,8 +25,8 @@
 #define MESA_EGL_NO_X11_HEADERS
 
 #include "SDL_egl.h"
-#include "../SDL_sysvideo.h"
-#include "../../SDL_internal.h"
+#include "SDL_sysvideo.h"
+#include "SDL_internal.h"
 
 #include <drivers/video/fb.h>
 #include <sys/mman.h>
@@ -39,12 +39,6 @@
 #include "get.h"
 
 #include <util/log.h>
-
-typedef struct {
-    int window;
-    EGLSurface      surface;
-    EGLConfig       conf;
-} window_impl_t;
 
 /**
  * Enumerates the supported EGL configurations and chooses a suitable one.
@@ -68,10 +62,8 @@ int glLoadLibrary(_THIS, const char *name) {
 	return 0;
 }
 
-void glUnlockArraysEXT(void);
-void glLockArraysEXT(void);
-
-void _glDrawBuffer(int a);
+extern void glUnlockArraysEXT(void);
+extern void glLockArraysEXT(void);
 
 static struct {
 	char *proc;
@@ -168,42 +160,35 @@ void *glGetProcAddress(_THIS, const char *proc) {
 	return 0; //eglGetProcAddress(proc);
 }
 
-struct embox_sdl_context {
-	int tmp;
-};
-
-static int Width;
-static int Height;
-static struct fb_info *mesa_fbi;
+static int display_width;
+static int display_height;
 
 static void *hw_base = 0;
 static void *sw_base = 0;
 static void *res_base = 0;
 
-static void sdl_init_buffers(void) {
+static void sdl_init_buffers(struct fb_info *mesa_fbi, int xres, int yres) {
 	long int screensize = 0;
+	struct fb_var_screeninfo var;
 
-	mesa_fbi = fb_lookup(0);
+	fb_get_var(mesa_fbi, &var);
 
-	struct fb_var_screeninfo var = {
-		.xres           = 320,
-		.yres           = 240,
-		.bits_per_pixel = 32,
-		.xres_virtual   = 320,
-		.yres_virtual   = 240,
-		.xoffset = 0,
-		.yoffset = 0,
-	};
+	var.xres           = xres,
+	var.yres           = yres,
+	var.xres_virtual   = xres,
+	var.yres_virtual   = yres,
+	var.xoffset = 0,
+	var.yoffset = 0,
 
 	fb_set_var(mesa_fbi, &var);
 
 	printf("%dx%d, %dbpp\n", mesa_fbi->var.xres, mesa_fbi->var.yres,
 			mesa_fbi->var.bits_per_pixel);
 
-	Width = mesa_fbi->var.xres;
-	Height = mesa_fbi->var.yres;
+	display_width = mesa_fbi->var.xres;
+	display_height = mesa_fbi->var.yres;
 
-	screensize = Width * Height * mesa_fbi->var.bits_per_pixel / 8;
+	screensize = display_width * display_height * mesa_fbi->var.bits_per_pixel / 8;
 
 	/* Map the devic	e to memory */
 	hw_base = 0 ? (uint8_t *) mmap_device_memory((void *) mesa_fbi->screen_base,
@@ -218,8 +203,8 @@ static void sdl_init_buffers(void) {
 
 	printf("The framebuffer device was mapped to memory successfully.\n");
 
-	sw_base = malloc(Width * Height * mesa_fbi->var.bits_per_pixel / 8);
-	res_base = malloc(Width * Height * mesa_fbi->var.bits_per_pixel / 8);
+	sw_base = malloc(display_width * display_height * mesa_fbi->var.bits_per_pixel / 8);
+	res_base = malloc(display_width * display_height * mesa_fbi->var.bits_per_pixel / 8);
 
 	fb_overlay_init(mesa_fbi, res_base);
 }
@@ -233,7 +218,10 @@ static void sdl_init_buffers(void) {
  */
 SDL_GLContext glCreateContext(_THIS, SDL_Window *window) {
 	OSMesaContext ctx;
-	sdl_init_buffers();
+	struct fb_info *mesa_fbi;
+
+	mesa_fbi = fb_lookup(0);
+	sdl_init_buffers(mesa_fbi, window->fullscreen_mode.w, window->fullscreen_mode.h);
 
 	GLenum format = OSMESA_BGRA, type = GL_UNSIGNED_BYTE;
 	ctx = OSMesaCreateContextExt( format, 16, 0, 0, NULL );
@@ -243,7 +231,7 @@ SDL_GLContext glCreateContext(_THIS, SDL_Window *window) {
 	}
 
 	/* Bind the buffer to the context and make it current */
-	if (!OSMesaMakeCurrent(ctx, sw_base, type, Width, Height)) {
+	if (!OSMesaMakeCurrent(ctx, sw_base, type, display_width, display_height)) {
 		printf("OSMesaMakeCurrent failed!\n");
 		return 0;
 	}
@@ -269,13 +257,13 @@ int glSetSwapInterval(_THIS, int interval) {
  * @return  0 if successful, -1 on error
  */
 int glSwapWindow(_THIS, SDL_Window *window) {
-	for (int i = 0; i < Height; i++) {
-		memcpy(res_base + i * Width * 4, sw_base + (Height - i) * 4 * Width, Width * 4);
+	for (int i = 0; i < display_height; i++) {
+		memcpy(res_base + i * display_width * 4, sw_base + (display_height - i) * 4 * display_width, display_width * 4);
 	}
 
 	fb_overlay_put_string(0, 0, "Embox OS Quake3 Demo");
 
-	memcpy(hw_base, res_base, 4 * Width * Height);
+	memcpy(hw_base, res_base, 4 * display_width * display_height);
 
 	return 0;
 }

@@ -1,0 +1,7 @@
+package embox.compat.libc
+
+static module fenv_openlibm {
+	@IncludeExport(target_name="fenv.h")
+	source "fenv_openlibm.h"
+	depends third_party.lib.OpenLibm
+}

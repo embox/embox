@@ -1,0 +1,60 @@
+diff -aur ioq3/code/asm/ftola.c ../build/extbld/third_party/games/quake3/ioq3/code/asm/ftola.c
+--- ioq3/code/asm/ftola.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/asm/ftola.c	2021-09-15 14:03:53.003247468 +0300
+@@ -30,22 +30,22 @@
+ 
+ long qftolsse(float f)
+ {
+-  long retval;
+-  
++  long retval = 0;
++  #if 0
+   __asm__ volatile
+   (
+     "cvttss2si %1, %0\n"
+     : "=r" (retval)
+     : "x" (f)
+   );
+-  
++  #endif
+   return retval;
+ }
+ 
+ int qvmftolsse(void)
+ {
+-  int retval;
+-  
++  int retval = 0;
++  #if 0
+   __asm__ volatile
+   (
+     "movss (" EDI ", " EBX ", 4), %%xmm0\n"
+@@ -54,7 +54,7 @@
+     :
+     : "%xmm0"
+   );
+-  
++  #endif
+   return retval;
+ }
+ 
+diff -aur ioq3/code/asm/snapvector.c ../build/extbld/third_party/games/quake3/ioq3/code/asm/snapvector.c
+--- ioq3/code/asm/snapvector.c	2018-10-24 14:04:17.000000000 +0300
++++ ../build/extbld/third_party/games/quake3/ioq3/code/asm/snapvector.c	2021-09-15 14:01:28.256998715 +0300
+@@ -35,6 +35,7 @@
+ 
+ void qsnapvectorsse(vec3_t vec)
+ {
++#if 0
+ 	__asm__ volatile
+ 	(
+ 		"movaps (%0), %%xmm1\n"
+@@ -50,7 +51,7 @@
+ 		: "r" (ssemask), "r" (vec)
+ 		: "memory", "%xmm0", "%xmm1", "%xmm2"
+ 	);
+-	
++#endif	
+ }
+ 
+ #define QROUNDX87(src) \

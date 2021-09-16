@@ -32,11 +32,11 @@
 #define SDL_VIDEO_OPENGL_ES 0
 
 #include "SDL_egl.h"
-#include "../../SDL_internal.h"
+#include "SDL_internal.h"
 #include "SDL_scancode.h"
-#include "../SDL_sysvideo.h"
-#include "../src/events/SDL_keyboard_c.h"
-#include "../src/events/SDL_mouse_c.h"
+#include "SDL_sysvideo.h"
+#include "events/SDL_keyboard_c.h"
+#include "events/SDL_mouse_c.h"
 
 #include <drivers/video/fb.h>
 
@@ -49,12 +49,6 @@ extern int glSwapWindow(_THIS, SDL_Window *window);
 extern int glMakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void glDeleteContext(_THIS, SDL_GLContext context);
 extern void glUnloadLibrary(_THIS);
-
-typedef struct {
-    int window;
-    EGLSurface      surface;
-    EGLConfig       conf;
-} window_impl_t;
 
 /**
  * Initializes the QNX video plugin.
@@ -195,8 +189,10 @@ static int key_to_sdl[] = {
 
 #define EVENT_NUM 1024
 
-static struct input_event event_queue[EVENT_NUM];
-static int cur_evt = 0, next_evt = 0;
+static volatile struct input_event event_queue[EVENT_NUM];
+static int volatile cur_evt = 0;
+static int volatile next_evt = 0;
+
 static void pumpEvents(_THIS) {
 	struct input_event *event;
 	SDL_Scancode    scancode = 0;
@@ -204,7 +200,7 @@ static void pumpEvents(_THIS) {
 
 
 	while (cur_evt != next_evt) {
-		event = &event_queue[cur_evt % EVENT_NUM];
+		event = (struct input_event *)&event_queue[cur_evt % EVENT_NUM];
 		cur_evt++;
 
 		log_debug("process %d\n", cur_evt - 1);
@@ -226,17 +222,17 @@ static void pumpEvents(_THIS) {
 			if (event->type == MOUSE_BUTTON_LEFT) {
 				/* Left putton press */
 				log_debug("Send mouse left press");
-				SDL_SendMouseButton(0, SDL_TOUCH_MOUSEID * 0, SDL_PRESSED, 1);
+				SDL_SendMouseButton(_this->current_glwin, SDL_TOUCH_MOUSEID * 0, SDL_PRESSED, 1);
 			} else if (event->type == 0 && event->value == 0) {
 				/* Left button release */
 				log_debug("Send mouse left release");
-				SDL_SendMouseButton(0, SDL_TOUCH_MOUSEID * 0, SDL_RELEASED, 1);
+				SDL_SendMouseButton(_this->current_glwin, SDL_TOUCH_MOUSEID * 0, SDL_RELEASED, 1);
 			} else {
 				/* Mouse motion */
 				int16_t dx = (event->value >> 16) & 0xFFFF;
 				int16_t dy = (event->value) & 0xFFFF;
 				log_debug("Send mouse motion %d %d", dx, dy);
-				SDL_SendMouseMotion(0, 0, 1, dx, -dy);
+				SDL_SendMouseMotion(_this->current_glwin, 0, 1, dx, -dy);
 			}
 		}
 
@@ -293,7 +289,7 @@ static int sdl_indev_eventhnd(struct input_dev *indev) {
 
 	while (0 == input_dev_event(indev, &event)) {
 		log_debug("%s event #%d %x %x", indev->name, next_evt, event.type, event.value);
-		memcpy(&event_queue[next_evt % EVENT_NUM], &event, sizeof(struct input_event));
+		memcpy((void *)&event_queue[next_evt % EVENT_NUM], &event, sizeof(struct input_event));
 		next_evt++;
 	}
 
@@ -362,14 +358,14 @@ static SDL_VideoDevice *createDevice(int devindex) {
 	/* Initialize input */
 	struct input_dev *dev;
 
-	dev = input_dev_lookup("keyboard");
+	dev = input_dev_lookup("ps-keyboard");
 	if (dev) {
 		input_dev_open(dev, &sdl_indev_eventhnd);
 	} else {
 		log_error("keyboard not found!");
 	}
 
-	dev = input_dev_lookup("mouse");
+	dev = input_dev_lookup("ps-mouse");
 	if (dev) {
 		input_dev_open(dev, &sdl_indev_eventhnd);
 	} else {
@@ -397,8 +393,3 @@ VideoBootStrap EMBOX_bootstrap = {
 	available, createDevice
 };
 
-#include <pthread.h>
-#include <stddef.h>
-int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
-	return -ENOSYS;
-}

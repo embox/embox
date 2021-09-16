@@ -1,5 +1,6 @@
 package third_party.freedesktop.mesa
 
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libglu_etnaviv/glu-9.0.0/include")
 @BuildDepends(third_party.freedesktop.mesa.mesa_etnaviv)
 @Build(script="$(EXTERNAL_MAKE)")
 module  libglu_etnaviv {

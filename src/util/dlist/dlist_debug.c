@@ -9,8 +9,9 @@
 #include <assert.h>
 
 #include <util/dlist.h>
-#include <framework/mod/options.h>
-#if OPTION_GET(NUMBER, debug) && !defined NDEBUG
+
+
+#if DLIST_DEBUG_VERSION
 void __dlist_debug_check(const struct dlist_head *head) {
 	const struct dlist_head *p = head->prev;
 	const struct dlist_head *n = head->next;

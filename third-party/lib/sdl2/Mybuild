@@ -1,24 +1,31 @@
 package third_party.lib
 
 /* It's hardcoded for i386 */
-
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/lib/libSDL2/SDL2-2.0.8/,include src src/video)")
 @Build(script="$(EXTERNAL_MAKE)")
+module libSDL2 {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "libSDL2.a"
+}
+
+@BuildDepends(third_party.freedesktop.mesa.mesa_osmesa)
+@BuildDepends(third_party.freedesktop.mesa.libglu_osmesa)
+@BuildDepends(third_party.lib.libSDL2)
+@Build(stage=2)
 module sdl2 {
 	option number log_level = 0
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	source "libSDL2.a"
-
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libglu_osmesa/glu-9.0.0/include")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include")
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/src/mesa/main/")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/sdl2/SDL2-2.0.8/src/video/qnx/")
-	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/lib/sdl2/SDL2-2.0.8/include/")
-	source "embox.c", "gl.c"
+	source "embox_sdl_plugin.c", "gl.c"
+
+	source "embox_sdl_stubs.c"
 
 	depends embox.compat.posix.LibPosix
-	depends embox.compat.posix.stubs
 	depends embox.driver.video.fb_overlay
 	depends embox.compat.posix.semaphore
 	depends embox.compat.posix.sys.mman.shm_mem
+
+	@NoRuntime depends third_party.freedesktop.mesa.mesa_osmesa
+	@NoRuntime depends third_party.freedesktop.mesa.libglu_osmesa
+	@NoRuntime depends third_party.lib.libSDL2
 }

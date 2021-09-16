@@ -67,11 +67,6 @@ static inline int mkstemps(char *template, int suffixlen) {
 	return -1;
 }
 
-static inline int execvp(const char *file, char *const argv[]) {
-	printf("tcl>>> %s\n", __func__);
-	return -1;
-}
-
 static inline double tan(double x) {
 	printf("tcl>>> %s\n", __func__);
 	return -1;
