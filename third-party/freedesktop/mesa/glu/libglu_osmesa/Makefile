@@ -17,9 +17,9 @@ $(CONFIGURE) :
 			--disable-shared --enable-static \
 			--disable-debug --enable-osmesa \
 			GL_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/install" \
-			GL_CFLAGS="-std=c++11 -O2 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
+			GL_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
 			OSMESA_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/install" \
-			OSMESA_CFLAGS="-std=c++11 -O2 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
+			OSMESA_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include" \
 	)
 	touch $@
 

@@ -17,9 +17,9 @@ $(CONFIGURE) :
 			--disable-shared --enable-static \
 			--disable-debug --enable-osmesa \
 			GL_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/install" \
-			GL_CFLAGS="-std=c++11 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include" \
+			GL_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include" \
 			OSMESA_LIBS="-L$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/install" \
-			OSMESA_CFLAGS="-std=c++11 -I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include" \
+			OSMESA_CFLAGS="-I$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_etnaviv/mesa-18.2.5/include" \
 	)
 	touch $@
 
