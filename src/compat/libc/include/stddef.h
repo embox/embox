@@ -19,6 +19,7 @@
 	__builtin_offsetof(type, member)
 #endif
 
+#ifndef __ASSEMBLER__
 #include <defines/null.h>
 
 #include <defines/size_t.h>
@@ -28,5 +29,6 @@
 #include <defines/ptrdiff_t.h>
 
 typedef long double max_align_t;
+#endif /* __ASSEMBLER__ */
 
 #endif /* STDDEF_H_ */
