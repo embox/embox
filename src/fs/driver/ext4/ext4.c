@@ -1370,12 +1370,13 @@ static int ext4_mount_entry(struct nas *dir_nas) {
 		return rc;
 	}
 
+	fsi = dir_nas->fs->sb_data;
+	
 	if (0 != ext4_open(dir_nas)) {
 		goto out;
 	}
 
 	dir_fi = inode_priv(dir_nas->node);
-	fsi = dir_nas->fs->sb_data;
 
 	dir_nas->node->i_mode = dir_fi->f_di.i_mode;
 	dir_nas->node->uid = dir_fi->f_di.i_uid;
