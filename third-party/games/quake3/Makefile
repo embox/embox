@@ -7,8 +7,9 @@ PKG_MD5     := c1a756ff87bc96bb33e99980f330f11a
 
 PKG_PATCHES := patch.txt \
 			q_platform_patch.txt \
-			video_mode_patch.txt \
 			sys_patch.txt
+
+#PKG_PATCHES += video_mode_patch.txt
 
 PKG_PATCHES += sse_patch.txt
 
