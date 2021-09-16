@@ -189,8 +189,10 @@ static int key_to_sdl[] = {
 
 #define EVENT_NUM 1024
 
-static struct input_event event_queue[EVENT_NUM];
-static int cur_evt = 0, next_evt = 0;
+static volatile struct input_event event_queue[EVENT_NUM];
+static int volatile cur_evt = 0;
+static int volatile next_evt = 0;
+
 static void pumpEvents(_THIS) {
 	struct input_event *event;
 	SDL_Scancode    scancode = 0;
@@ -198,7 +200,7 @@ static void pumpEvents(_THIS) {
 
 
 	while (cur_evt != next_evt) {
-		event = &event_queue[cur_evt % EVENT_NUM];
+		event = (struct input_event *)&event_queue[cur_evt % EVENT_NUM];
 		cur_evt++;
 
 		log_debug("process %d\n", cur_evt - 1);
@@ -230,7 +232,7 @@ static void pumpEvents(_THIS) {
 				int16_t dx = (event->value >> 16) & 0xFFFF;
 				int16_t dy = (event->value) & 0xFFFF;
 				log_debug("Send mouse motion %d %d", dx, dy);
-				SDL_SendMouseMotion(_this->current_glwin, 0, 0, dx, -dy);
+				SDL_SendMouseMotion(_this->current_glwin, 0, 1, dx, -dy);
 			}
 		}
 
@@ -287,7 +289,7 @@ static int sdl_indev_eventhnd(struct input_dev *indev) {
 
 	while (0 == input_dev_event(indev, &event)) {
 		log_debug("%s event #%d %x %x", indev->name, next_evt, event.type, event.value);
-		memcpy(&event_queue[next_evt % EVENT_NUM], &event, sizeof(struct input_event));
+		memcpy((void *)&event_queue[next_evt % EVENT_NUM], &event, sizeof(struct input_event));
 		next_evt++;
 	}
 
