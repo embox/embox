@@ -6,8 +6,11 @@ package third_party.games
 @Cmd(name = "quake3", help = "")
 
 module quake3 {
-	@AddPrefix("^BUILD/extbld/third_party/games/quake3/release-linux-x86_64/")
+/*	@AddPrefix("^BUILD/extbld/third_party/games/quake3/release-linux-x86_64")
 	source "ioquake3.x86_64.a"
+	*/
+	@AddPrefix("^BUILD/extbld/third_party/games/quake3/release-linux-x86")
+	source "ioquake3.x86.a"
 
 	source "compat.c"
 
