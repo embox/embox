@@ -20,4 +20,5 @@ module quake3 {
 	depends third_party.lib.curl
 	depends third_party.lib.sdl2
 	@NoRuntime depends embox.compat.libc.fenv_openlibm
+	depends embox.compat.posix.sys.mman.mprotect
 }
