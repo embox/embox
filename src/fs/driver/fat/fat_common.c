@@ -2011,6 +2011,8 @@ extern struct file_operations fat_fops;
 int fat_fill_sb(struct super_block *sb, const char *source) {
 	struct fat_fs_info *fsi;
 	struct block_dev *bdev;
+	uint32_t pstart, psize;
+	uint8_t pactive, ptype;
 	struct dirinfo *di = NULL;
 	int rc = 0;
 
@@ -2032,7 +2034,14 @@ int fat_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_ops  = &fat_sbops;
 	sb->bdev    = bdev;
 
-	if (fat_get_volinfo(bdev, &fsi->vi, 0)) {
+	/* Obtain pointer to first partition on first (only) unit */
+	pstart = fat_get_ptn_start(bdev, 0, &pactive, &ptype, &psize);
+	if (pstart == 0xffffffff) {
+		rc = -EINVAL;
+		goto error;
+	}
+
+	if (fat_get_volinfo(bdev, &fsi->vi, pstart)) {
 		rc = -EBUSY;
 		goto error;
 	}
