@@ -16,7 +16,7 @@ void *__init_array_end = (void *) 0xdeadbeef;
 void *__preinit_array_start = (void *) 0xdeadbeef;
 void *__preinit_array_end = (void *) 0xdeadbeef;
 
-void S_WriteLinearBlastStereo16 (void) { }
+//void S_WriteLinearBlastStereo16 (void) { }
 
 int __isoc99_sscanf(const char *out, const char *format, ...) {
 	va_list args;
@@ -62,10 +62,6 @@ FILE *freopen64(const char *filename, const char *type, FILE *stream) {
 }
 
 FILE  *fopen64(char *p, char *m) {
-	return 0;
-}
-
-int mprotect(void *addr, size_t len, int prot) {
 	return 0;
 }
 
