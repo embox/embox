@@ -22,6 +22,7 @@ namespace std {
 	using ::strrchr;
 	using ::strstr;
 	using ::strerror;
+	using ::strtok;
 	using ::memcpy;
 	using ::memmove;
 	using ::memset;
