@@ -149,13 +149,20 @@ unsigned char __atomic_exchange_1(volatile void *p, unsigned char val, int memor
 	return prev;
 }
 
-bool __atomic_compare_exchange_4(uint32_t *ptr, uint32_t *expected,
+bool __atomic_compare_exchange_4(volatile void *p, void *e,
 	uint32_t desired, bool weak,
 	int success_memorder, int failure_memorder) {
 	(void) success_memorder;
 	(void) failure_memorder;
 	(void) weak;
 	bool ret;
+	uint32_t *ptr;
+	uint32_t *expected;
+
+
+	ptr = (uint32_t *)p;
+	expected = e;
+
 	spin_lock(&atomic_lock);
 	if (*ptr == *expected) {
 		*ptr = desired;
