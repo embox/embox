@@ -37,6 +37,9 @@ EMBOX_UNIT_INIT(stm32hc_init);
 
 POOL_DEF(stm32_hcds, struct stm32_hcd, USB_MAX_HCD);
 
+static volatile int stm32_hub_inited = 0;
+static volatile int must_notify_hub = 0;
+
 static void *stm32_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	struct stm32_hcd *stm32_hcd = pool_alloc(&stm32_hcds);
 
@@ -49,6 +52,16 @@ static void *stm32_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	stm32_hcd_handler.pData = stm32_hcd;
 	return stm32_hcd;
 }
+
+/**
+ * Called when host_port_status has been updated so that any status change
+ * interrupt transfer that was sent to the root hub can be fulfilled.
+ */
+static void stm32_hcd_port_status_changed(void) {
+	extern void usb_hubs_notify(void);
+	usb_hubs_notify();
+}
+
 
 void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state) {
 	if (urb_state != 1) {
@@ -65,7 +78,22 @@ void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
 
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd) {
 	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+	if(stm32_hcd->port_status == STM32_PORT_IDLE) {
+		if (stm32_hub_inited) {
+			stm32_hcd_port_status_changed();
+		} else {
+			must_notify_hub = 1;
+		}
+	}
 	stm32_hcd->port_status = STM32_PORT_CONNECTED;
+}
+
+void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd) {
+	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+	if(stm32_hcd->port_status != STM32_PORT_IDLE) {
+		stm32_hcd_port_status_changed();
+	}
+	stm32_hcd->port_status = STM32_PORT_IDLE;
 }
 
 static irq_return_t stm32_irq_handler(unsigned int irq_nr, void *data) {
@@ -74,6 +102,8 @@ static irq_return_t stm32_irq_handler(unsigned int irq_nr, void *data) {
 }
 
 static int stm32_hc_start (struct usb_hcd *hcd) {
+	struct usb_dev *udev;
+
 	/* Init HCD_HandleTypeDef structure*/
 	stm32_hcd_handler.Instance = USB_OTG_FS;
     stm32_hcd_handler.Init.Host_channels = 11;
@@ -104,11 +134,19 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
 	HAL_Delay(2000);
 
-	struct usb_dev *udev = usb_new_device(NULL, hcd, 0);
+	/* Create root hub */
+	udev = usb_new_device(NULL, hcd, 0);
+
 	if (!udev) {
-		log_error("uhci_start: usb_new_device failed\n");
+		log_error("usb_new_device failed\n");
 		return -1;
 	}
+
+	if (must_notify_hub) {
+		stm32_hcd_port_status_changed();
+	}
+	stm32_hub_inited = 1;
+
 	return 0;
 }
 
