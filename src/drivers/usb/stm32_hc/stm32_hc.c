@@ -64,12 +64,9 @@ static void stm32_hcd_port_status_changed(void) {
 
 
 void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state) {
-	if (urb_state != 1) {
-		printk("Error while processing URB\n");
-		printk("Error channel number: %d\n", chnum);
-		printk("urb dead\n");
-		//assert(0);
-	}
+
+	/* To be used with OS to sync URB state with the global state machine */
+	/* URB_IDLE URB_NOTREADY URB_DONE */
 }
 
 void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
@@ -117,7 +114,7 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 
 	/* Init USB Core */
     if (HAL_HCD_Init(&stm32_hcd_handler) != HAL_OK) {
-		log_error("stm32_hc_start: HAL_HCD_Init failed");
+		log_error("HAL_HCD_Init failed");
 		return -1;
 	}
 
@@ -126,7 +123,7 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 
 	/* Start USB in Host mode*/
 	if (HAL_HCD_Start(&stm32_hcd_handler) != HAL_OK) {
-		log_error("stm32_hc_start: HAL_HCD_Start failed");
+		log_error("HAL_HCD_Start failed");
 		return -1;
 	}
 
@@ -138,7 +135,7 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 	udev = usb_new_device(NULL, hcd, 0);
 
 	if (!udev) {
-		log_error("usb_new_device failed\n");
+		log_error("usb_new_device failed");
 		return -1;
 	}
 
@@ -167,7 +164,7 @@ static int stm32_common_request(struct usb_request *req) {
 		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
 				STM32_ENDP_BULK_IN, STM32_USB_DEV_ADDR, speed, EP_TYPE_BULK,
 					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("stm32_common_request: error while opening pipe.");
+						log_error("error while opening pipe.");
 						return -1;
 		}
 
@@ -175,7 +172,7 @@ static int stm32_common_request(struct usb_request *req) {
 		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
 				STM32_ENDP_BULK_OUT, STM32_USB_DEV_ADDR, speed, EP_TYPE_BULK,
 					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("stm32_common_request: error while opening pipe.");
+						log_error("error while opening pipe.");
 						return -1;
 		}
 		stm32_hcd->bulk_pipes = STM32_PIPES_OPEN;
@@ -198,7 +195,7 @@ static int stm32_common_request(struct usb_request *req) {
 			if (packet_type == STM32_URB_OUT) {
 				if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
 						0, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
-							log_error("stm32_common_request: error while processing usb request.");
+							log_error("error while processing usb request.");
 							return -1;
 				}
 				HAL_Delay(200);
@@ -208,7 +205,7 @@ static int stm32_common_request(struct usb_request *req) {
 			if (packet_type == STM32_URB_IN) {
 				if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
 						1, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
-							log_error("stm32_common_request: error while processing usb request.");
+							log_error("error while processing usb request.");
 							return -1;
 				}
 				HAL_Delay(200);
@@ -222,7 +219,7 @@ static int stm32_common_request(struct usb_request *req) {
 		if (packet_type == STM32_URB_OUT) {
 			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
 					0, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-						log_error("stm32_common_request: error while processing usb request.");
+						log_error("error while processing usb request.");
 						return -1;
 			}
 			HAL_Delay(200);
@@ -231,7 +228,7 @@ static int stm32_common_request(struct usb_request *req) {
 		if (packet_type == STM32_URB_IN) {
 			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
 					1, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-						log_error("stm32_common_request: error while processing usb request.");
+						log_error("error while processing usb request.");
 						return -1;
 			}
 			HAL_Delay(200);
@@ -255,7 +252,7 @@ static int stm32_control_request(struct usb_request *req) {
 		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_CONTROL_IN,
 				STM32_ENDP_CONTROL_IN, STM32_USB_DEV_ADDR, speed, EP_TYPE_CTRL,
 					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("stm32_control_request: error while opening pipe.");
+						log_error("error while opening pipe.");
 						return -1;
 		}
 
@@ -263,7 +260,7 @@ static int stm32_control_request(struct usb_request *req) {
 		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT,
 				STM32_ENDP_CONTROL_OUT, STM32_USB_DEV_ADDR, speed, EP_TYPE_CTRL,
 					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("stm32_control_request: error while opening pipe.");
+						log_error("error while opening pipe.");
 						return -1;
 		}
 		stm32_hcd->control_pipes = 1;
@@ -273,7 +270,7 @@ static int stm32_control_request(struct usb_request *req) {
 	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT, 0,
 			EP_TYPE_CTRL, 0, (uint8_t*)&req->ctrl_header,
 				sizeof(req->ctrl_header), 0) != HAL_OK) {
-					log_error("stm32_control_request: error while processing request.");
+					log_error("error while processing request.");
 					return -1;
 	}
 	HAL_Delay(200);
@@ -283,7 +280,7 @@ static int stm32_control_request(struct usb_request *req) {
 		if (packet_type == STM32_URB_OUT) {
 			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT,
 					0, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-						log_error("stm32_control_request: error while processing request.");
+						log_error("error while processing request.");
 						return -1;
 			}
 			HAL_Delay(200);
@@ -293,7 +290,7 @@ static int stm32_control_request(struct usb_request *req) {
 		if (packet_type == STM32_URB_IN) {
 			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_IN,
 					1, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-						log_error("stm32_control_request: error while processing request.");
+						log_error("error while processing request.");
 						return -1;
 			}
 			HAL_Delay(200);
@@ -420,7 +417,7 @@ static int stm32hc_init(void) {
 
 	ret = irq_attach(USB_IRQ, stm32_irq_handler, 0, NULL,"");
 	if (ret < 0) {
-		log_error("stm32hc_init: irq_attach failed.\n");
+		log_error("irq_attach failed.");
 		return -1;
 	}
 
