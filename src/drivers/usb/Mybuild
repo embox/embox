@@ -26,6 +26,7 @@ module core {
 
 module hub {
 	option number log_level = 1
+	option boolean use_thread = false
 
 	source "usb_hub.c"
 
