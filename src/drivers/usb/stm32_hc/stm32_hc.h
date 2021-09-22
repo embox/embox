@@ -9,7 +9,8 @@
 /* STM32 USB Port states */
 #define STM32_PORT_IDLE					0
 #define STM32_PORT_CONNECTED			1
-#define STM32_PORT_READY				2
+#define STM32_PORT_ENABLED				2
+#define STM32_PORT_READY				3
 
 /* STM32 USB Pipes states */
 #define STM32_PIPES_CLOSED				0

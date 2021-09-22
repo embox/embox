@@ -6,11 +6,16 @@
  * @date    02.03.2021
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <string.h>
 #include <stdint.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <assert.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include <hal/reg.h>
 #include <kernel/irq.h>
@@ -18,9 +23,6 @@
 #include <kernel/time/ktime.h>
 
 #include <mem/misc/pool.h>
-#include <util/log.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 #include <embox/unit.h>
 
@@ -36,6 +38,11 @@ EMBOX_UNIT_INIT(stm32hc_init);
 #define USB_IRQ OPTION_GET(NUMBER, irq)
 
 POOL_DEF(stm32_hcds, struct stm32_hcd, USB_MAX_HCD);
+
+static inline struct stm32_hcd *hcd_to_stm32hcd(struct usb_hcd *hcd) {
+	assert(hcd);
+	return (struct stm32_hcd *) hcd->hci_specific;
+}
 
 static volatile int stm32_hub_inited = 0;
 static volatile int must_notify_hub = 0;
@@ -70,11 +77,23 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 }
 
 void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
-	printk("STM32 USB: Port Disabled.\n");
+	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+	stm32_hcd->port_status = STM32_PORT_IDLE;
+
+	log_debug("Port Disabled.");
+}
+
+void HAL_HCD_PortEnabled_Callback(HCD_HandleTypeDef *hhcd) {
+	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+	stm32_hcd->port_status = STM32_PORT_CONNECTED;
+	log_debug("");
 }
 
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd) {
 	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+
+	log_error("");
+
 	if(stm32_hcd->port_status == STM32_PORT_IDLE) {
 		if (stm32_hub_inited) {
 			stm32_hcd_port_status_changed();
@@ -87,6 +106,9 @@ void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd) {
 
 void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd) {
 	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+
+	log_error("");
+
 	if(stm32_hcd->port_status != STM32_PORT_IDLE) {
 		stm32_hcd_port_status_changed();
 	}
@@ -323,9 +345,17 @@ static int stm32_request (struct usb_request *req) {
 	return stm32_request_do(req);
 }
 
-static uint32_t stm32_roothub_portstatus() {
-	struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
+static void stm32_port_reset(struct stm32_hcd *stm32_hcd) {
+//	HAL_HCD_ResetPort(stm32_hcd->hhcd);
 
+	log_debug("");
+}
+
+static void stm32_port_set_power(struct stm32_hcd *stm32_hcd, int value) {
+	log_debug("");
+}
+
+static uint32_t stm32_roothub_portstatus(struct stm32_hcd *stm32_hcd) {
 	/* return values from other USB drivers : TODO : make adequate return*/
 	if (stm32_hcd->port_status == STM32_PORT_IDLE) {
 		return 256; /* No device in port */
@@ -347,7 +377,11 @@ static void stm32_get_hub_descriptor(struct usb_desc_hub *desc) {
 }
 
 static int stm32_root_hub_control (struct usb_request *req) {
-	struct usb_control_header *ctrl = &req->ctrl_header;
+	struct stm32_hcd *stm32_hcd;
+	struct usb_control_header *ctrl;
+
+	stm32_hcd = hcd_to_stm32hcd(req->endp->dev->hcd);
+	ctrl = &req->ctrl_header;
 
 	uint32_t type_req = (ctrl->bm_request_type << 8) | ctrl->b_request;
 
@@ -356,13 +390,15 @@ static int stm32_root_hub_control (struct usb_request *req) {
 		stm32_get_hub_descriptor((struct usb_desc_hub *) req->buf);
 		break;
 	case USB_GET_PORT_STATUS:
-		*(uint32_t *)req->buf = stm32_roothub_portstatus();
+		*(uint32_t *)req->buf = stm32_roothub_portstatus(stm32_hcd);
 		break;
 	case USB_SET_PORT_FEATURE:
 		switch (ctrl->w_value) {
 		case USB_PORT_FEATURE_RESET:
+			stm32_port_reset(stm32_hcd);
 			break;
 		case USB_PORT_FEATURE_POWER:
+			stm32_port_set_power(stm32_hcd, 1);
 			break;
 		default:
 			log_error("Unknown port set feature: 0x%x\n", ctrl->w_value);
