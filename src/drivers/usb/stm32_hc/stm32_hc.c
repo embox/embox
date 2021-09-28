@@ -47,6 +47,10 @@ static inline struct stm32_hcd *hcd_to_stm32hcd(struct usb_hcd *hcd) {
 static volatile int stm32_hub_inited = 0;
 static volatile int must_notify_hub = 0;
 
+static int stm32_chan_init(uint8_t ch_num, uint8_t endp_num, uint8_t dev_addr, uint8_t speed, uint8_t ed_type, uint16_t mps){
+	return HAL_HCD_HC_Init(&stm32_hcd_handler,ch_num, endp_num,dev_addr,speed,ed_type, mps);
+}
+
 static void *stm32_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	struct stm32_hcd *stm32_hcd = pool_alloc(&stm32_hcds);
 
@@ -175,30 +179,8 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 }
 
 static int stm32_common_request(struct usb_request *req) {
-	/* Request properties */
-	uint32_t speed = req->endp->dev->speed;
-	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(&stm32_hcd_handler);
+
 	uint32_t packet_type = (req->token & USB_TOKEN_OUT) ? STM32_URB_OUT  : STM32_URB_IN;
-
-	/* Open pipes */
-	if (stm32_hcd->bulk_pipes == STM32_PIPES_CLOSED) {
-		/* Open BULK IN Pipe */
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_BULK_IN,
-				STM32_ENDP_BULK_IN, STM32_USB_DEV_ADDR, speed, EP_TYPE_BULK,
-					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("error while opening pipe.");
-						return -1;
-		}
-
-		/* Open BULK OUT Pipe */
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_BULK_OUT,
-				STM32_ENDP_BULK_OUT, STM32_USB_DEV_ADDR, speed, EP_TYPE_BULK,
-					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("error while opening pipe.");
-						return -1;
-		}
-		stm32_hcd->bulk_pipes = STM32_PIPES_OPEN;
-	}
 
 	if (req->len > STM32_MAX_PACKET_SIZE) {
 		/* If URB > 64 send few URBs */
@@ -263,30 +245,7 @@ static int stm32_common_request(struct usb_request *req) {
 }
 
 static int stm32_control_request(struct usb_request *req) {
-	/* Request properties */
-	uint32_t speed = req->endp->dev->speed;
-	struct stm32_hcd *stm32_hcd = (struct stm32_hcd *)stm32_hcd_handler.pData;
 	uint32_t packet_type = (req->token & USB_TOKEN_OUT) ? STM32_URB_OUT : STM32_URB_IN;
-
-	/* Open pipes */
-	if (stm32_hcd->control_pipes == 0) {
-		/* Open CONTROL IN Pipe */
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_CONTROL_IN,
-				STM32_ENDP_CONTROL_IN, STM32_USB_DEV_ADDR, speed, EP_TYPE_CTRL,
-					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("error while opening pipe.");
-						return -1;
-		}
-
-		/* Open CONTROL OUT Pipe */
-		if (HAL_HCD_HC_Init(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT,
-				STM32_ENDP_CONTROL_OUT, STM32_USB_DEV_ADDR, speed, EP_TYPE_CTRL,
-					STM32_MAX_PACKET_SIZE) != HAL_OK) {
-						log_error("error while opening pipe.");
-						return -1;
-		}
-		stm32_hcd->control_pipes = 1;
-	}
 
 	/* Setup  URB */
 	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, STM32_PIPE_CONTROL_OUT, 0,
@@ -434,8 +393,41 @@ static int stm32_root_hub_control (struct usb_request *req) {
 	return 0;
 }
 
+static void *stm32_endp_alloc(struct usb_endp *endp) {
+	struct stm32_hcd *stm32_hcd;
+
+	stm32_hcd = hcd_to_stm32hcd(endp->dev->hcd);
+	if (endp->address == 0) {
+		switch (stm32_hcd->free_chan_idx) {
+		case 0:
+			stm32_chan_init(STM32_PIPE_CONTROL_OUT, STM32_ENDP_CONTROL_OUT, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
+			stm32_hcd->free_chan_idx ++;
+			break;
+		case 1:
+			stm32_chan_init(STM32_PIPE_CONTROL_IN, STM32_ENDP_CONTROL_IN, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
+			stm32_hcd->free_chan_idx ++;
+			break;
+		}
+		return &stm32_hcd_handler;
+	} else {
+		if (endp->direction == USB_DIRECTION_IN) {
+			stm32_chan_init(STM32_PIPE_BULK_IN, STM32_ENDP_BULK_IN, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
+		} else {
+			stm32_chan_init(STM32_PIPE_BULK_OUT, STM32_ENDP_BULK_OUT, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
+		}
+	}
+
+	return &stm32_hcd_handler;
+}
+
+static void stm32_endp_free(struct usb_endp *endp, void *spec) {
+
+}
+
 static struct usb_hcd_ops stm32_hcd_ops = {
 	.hcd_hci_alloc = stm32_hcd_alloc,
+	.endp_hci_alloc = stm32_endp_alloc,
+	.endp_hci_free = stm32_endp_free,
 	.hcd_start = stm32_hc_start,
 	.hcd_stop = stm32_hc_stop,
 	.root_hub_control = stm32_root_hub_control,

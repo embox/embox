@@ -37,13 +37,12 @@
 
 static HCD_HandleTypeDef stm32_hcd_handler;
 
- struct stm32_hcd {
- 	struct usb_hcd *hcd;
- 	HCD_HandleTypeDef *hhcd;
- 	uint8_t port_status;
- 	uint8_t control_pipes;
- 	uint8_t bulk_pipes;
- };
+struct stm32_hcd {
+	struct usb_hcd *hcd;
+	HCD_HandleTypeDef *hhcd;
+	uint8_t port_status;
+	uint8_t free_chan_idx;
+};
 
  static inline struct stm32_hcd *hhcd2stm_hcd(HCD_HandleTypeDef *hhcd) {
  	return (struct stm32_hcd *)stm32_hcd_handler.pData;
