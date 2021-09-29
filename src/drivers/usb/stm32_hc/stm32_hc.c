@@ -215,7 +215,6 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 
 static int stm32_common_request(struct usb_request *req) {
 	struct stm32_endp *stm32_endp;
-	uint32_t packet_type = (req->token & USB_TOKEN_OUT) ? STM32_URB_OUT  : STM32_URB_IN;
 
 	stm32_endp = req->endp->hci_specific;
 
@@ -232,48 +231,25 @@ static int stm32_common_request(struct usb_request *req) {
 				packet_size = max_size;
 			}
 
-			/* Send OUT URB */
-			if (packet_type == STM32_URB_OUT) {
-				if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-						stm32_endp->endp_dir, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
-							log_error("error while processing usb request.");
-							return -1;
-				}
-				HAL_Delay(200);
+			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
+					stm32_endp->endp_dir, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
+						log_error("error while processing usb request.");
+						return -1;
 			}
-
-			/* Send IN URB */
-			if (packet_type == STM32_URB_IN) {
-				if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-						stm32_endp->endp_dir, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
-							log_error("error while processing usb request.");
-							return -1;
-				}
-				HAL_Delay(200);
-			}
+			HAL_Delay(200);
 
 			tmp += packet_size;
 		}
 
 	} else {
 		/* If URB < 64 send one URB */
-		if (packet_type == STM32_URB_OUT) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-					stm32_endp->endp_dir, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-						log_error("error while processing usb request.");
-						return -1;
-			}
-			HAL_Delay(200);
+		if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
+				stm32_endp->endp_dir, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+					log_error("error while processing usb request.");
+					return -1;
 		}
+		HAL_Delay(200);
 
-		if (packet_type == STM32_URB_IN) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-					stm32_endp->endp_dir, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-						log_error("error while processing usb request.");
-						return -1;
-			}
-			HAL_Delay(200);
-		}
 	}
 
 	req->actual_len = req->len;
@@ -451,7 +427,7 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 			stm32_endp->pipe_idx = STM32_PIPE_CONTROL_OUT;
 			stm32_endp->endp_type = endp->type;
 			stm32_endp->endp_dir = USB_DIRECTION_OUT;
-			stm32_chan_init(STM32_PIPE_CONTROL_OUT, endp->address, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
+			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
 			stm32_hcd->free_chan_idx ++;
 			stm32_hcd->ctlr_endp_out = stm32_endp;
 			break;
@@ -460,7 +436,7 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 			stm32_endp->pipe_idx = STM32_PIPE_CONTROL_IN;
 			stm32_endp->endp_type = endp->type;
 			stm32_endp->endp_dir = USB_DIRECTION_IN;
-			stm32_chan_init(STM32_PIPE_CONTROL_IN, endp->address | 0x80, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
+			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
 			stm32_hcd->free_chan_idx ++;
 			stm32_hcd->ctlr_endp_in = stm32_endp;
 			break;
@@ -472,13 +448,13 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 			stm32_endp->pipe_idx = STM32_PIPE_BULK_IN;
 			stm32_endp->endp_type = endp->type;
 			stm32_endp->endp_dir = USB_DIRECTION_IN;
-			stm32_chan_init(STM32_PIPE_BULK_IN, endp->address | 0x80, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
+			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
 		} else {
 			stm32_endp->endp_addr = endp->address;
 			stm32_endp->pipe_idx = STM32_PIPE_BULK_OUT;
 			stm32_endp->endp_type = endp->type;
 			stm32_endp->endp_dir = USB_DIRECTION_OUT;
-			stm32_chan_init(STM32_PIPE_BULK_OUT, endp->address, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
+			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
 		}
 	}
 

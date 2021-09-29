@@ -18,10 +18,6 @@
 #define STM32_PORT_ENABLED				2
 #define STM32_PORT_READY				3
 
-/* STM32 USB Pipes states */
-#define STM32_PIPES_CLOSED				0
-#define STM32_PIPES_OPEN				1
-
 /* STM32 URB Direction */
 #define STM32_URB_IN					0
 #define STM32_URB_OUT 					1
@@ -31,12 +27,6 @@
 #define STM32_PIPE_CONTROL_OUT			2
 #define STM32_PIPE_BULK_IN				3
 #define STM32_PIPE_BULK_OUT				4
-
-/* STM32 USB Endpoints */
-#define STM32_ENDP_CONTROL_IN			0x80u
-#define STM32_ENDP_CONTROL_OUT			0x00u
-#define STM32_ENDP_BULK_IN				0x81u
-#define STM32_ENDP_BULK_OUT				0x02u
 
 #define STM32_MAX_PACKET_SIZE			64
 #define STM32_USB_DEV_ADDR 				0
