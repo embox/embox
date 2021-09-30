@@ -276,11 +276,14 @@ static int stm32_control_request(struct usb_request *req) {
 	}
 	HAL_Delay(200);
 
-	if (req->len > 1) {
+	if (req->len > 0) {
+		uint8_t *buf;
+
+		buf = (uint8_t*)req->buf;
 		/* Send OUT URB */
 		if (packet_type == STM32_URB_OUT) {
 			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_out->pipe_idx,
-					stm32_endp_out->endp_dir, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+					stm32_endp_out->endp_dir, EP_TYPE_CTRL, 1, buf,req->len, 0) != HAL_OK) {
 						log_error("error while processing request.");
 						return -1;
 			}
@@ -289,13 +292,46 @@ static int stm32_control_request(struct usb_request *req) {
 
 		/* Send IN URB */
 		if (packet_type == STM32_URB_IN) {
+			uint32_t tmp;
+
+			if (req->len < 4) {
+				buf = (uint8_t*)&tmp;
+			}
+
 			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_in->pipe_idx,
-					stm32_endp_in->endp_dir, EP_TYPE_CTRL, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+					stm32_endp_in->endp_dir, EP_TYPE_CTRL, 1, buf,req->len, 0) != HAL_OK) {
 						log_error("error while processing request.");
 						return -1;
 			}
 			HAL_Delay(200);
+
+			if (req->len < 4) {
+				memcpy(req->buf, buf, req->len);
+			}
 		}
+	}
+
+	/* Status  URB */
+	if (req->len > 0 && packet_type == STM32_URB_IN) {
+		if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_out->pipe_idx,
+						stm32_endp_out->endp_dir, EP_TYPE_CTRL, 1, NULL, 0, 0) != HAL_OK) {
+			log_error("error while processing request.");
+			return -1;
+		}
+	} else {
+		if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_in->pipe_idx,
+						stm32_endp_in->endp_dir, EP_TYPE_CTRL, 1, NULL, 0, 0) != HAL_OK) {
+			log_error("error while processing request.");
+			return -1;
+		}
+	}
+	HAL_Delay(200);
+
+	if (req->ctrl_header.b_request == USB_REQ_SET_ADDRESS) {
+		stm32_chan_init(stm32_endp_out->pipe_idx, stm32_endp_out->endp_addr, req->ctrl_header.w_value,
+				req->endp->dev->speed, stm32_endp_out->endp_type, req->endp->max_packet_size);
+		stm32_chan_init(stm32_endp_in->pipe_idx, stm32_endp_in->endp_addr, req->ctrl_header.w_value,
+				req->endp->dev->speed, stm32_endp_in->endp_type, req->endp->max_packet_size);
 	}
 
 	req->actual_len = req->len;
@@ -448,13 +484,13 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 			stm32_endp->pipe_idx = STM32_PIPE_BULK_IN;
 			stm32_endp->endp_type = endp->type;
 			stm32_endp->endp_dir = USB_DIRECTION_IN;
-			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
+			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
 		} else {
 			stm32_endp->endp_addr = endp->address;
 			stm32_endp->pipe_idx = STM32_PIPE_BULK_OUT;
 			stm32_endp->endp_type = endp->type;
 			stm32_endp->endp_dir = USB_DIRECTION_OUT;
-			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, STM32_USB_DEV_ADDR, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
+			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
 		}
 	}
 

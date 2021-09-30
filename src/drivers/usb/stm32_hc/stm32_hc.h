@@ -24,9 +24,9 @@
 
 /* STM32 USB Pipes */
 #define STM32_PIPE_CONTROL_IN			1
-#define STM32_PIPE_CONTROL_OUT			2
+#define STM32_PIPE_CONTROL_OUT			0
 #define STM32_PIPE_BULK_IN				3
-#define STM32_PIPE_BULK_OUT				4
+#define STM32_PIPE_BULK_OUT				2
 
 #define STM32_MAX_PACKET_SIZE			64
 #define STM32_USB_DEV_ADDR 				0
