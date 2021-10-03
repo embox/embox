@@ -131,7 +131,7 @@ void HAL_HCD_PortEnabled_Callback(HCD_HandleTypeDef *hhcd) {
 void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd) {
 	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
 
-	log_error("");
+	log_debug("");
 
 	if(stm32_hcd->port_status == STM32_PORT_IDLE) {
 		if (stm32_hub_inited) {
@@ -146,7 +146,7 @@ void HAL_HCD_Connect_Callback(HCD_HandleTypeDef *hhcd) {
 void HAL_HCD_Disconnect_Callback(HCD_HandleTypeDef *hhcd) {
 	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
 
-	log_error("");
+	log_debug("");
 
 	if(stm32_hcd->port_status != STM32_PORT_IDLE) {
 		stm32_hcd_port_status_changed();
@@ -217,40 +217,13 @@ static int stm32_common_request(struct usb_request *req) {
 	struct stm32_endp *stm32_endp;
 
 	stm32_endp = req->endp->hci_specific;
-
-	if (req->len > STM32_MAX_PACKET_SIZE) {
-		/* If URB > 64 send few URBs */
-		uint8_t *tmp = (uint8_t *)req->buf;
-		uint8_t *end = tmp + req->len; /* end of buffer */
-		uint32_t packet_size;
-		uint32_t max_size = STM32_MAX_PACKET_SIZE;
-
-		while (tmp < end) {
-			packet_size = end - tmp; /* size of remaining data */
-			if (packet_size > max_size) {
-				packet_size = max_size;
-			}
-
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-					stm32_endp->endp_dir, EP_TYPE_BULK, 1, tmp, packet_size, 0) != HAL_OK) {
-						log_error("error while processing usb request.");
-						return -1;
-			}
-			HAL_Delay(200);
-
-			tmp += packet_size;
-		}
-
-	} else {
-		/* If URB < 64 send one URB */
-		if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-				stm32_endp->endp_dir, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-					log_error("error while processing usb request.");
-					return -1;
-		}
-		HAL_Delay(200);
-
+	/* If URB < 64 send one URB */
+	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
+			stm32_endp->endp_dir, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
+				log_error("error while processing usb request.");
+				return -1;
 	}
+	HAL_Delay(200);
 
 	req->actual_len = req->len;
 	usb_request_complete(req);
