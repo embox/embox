@@ -72,10 +72,6 @@ struct dirent *readdir(DIR *dir) {
 		return NULL;
 	}
 
-	if (NULL != dir->prv_dentry) {
-		dentry_ref_dec(dir->prv_dentry);
-	}
-
 	l = (struct lookup) {
 		.parent = dir->dir_dentry,
 	};
@@ -90,8 +86,6 @@ struct dirent *readdir(DIR *dir) {
 	}
 
 	fill_dirent(&dir->dirent, l.item);
-
-	dir->prv_dentry = l.item;
 
 	return &dir->dirent;
 }
