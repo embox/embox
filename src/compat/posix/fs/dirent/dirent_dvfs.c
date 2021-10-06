@@ -87,5 +87,8 @@ struct dirent *readdir(DIR *dir) {
 
 	fill_dirent(&dir->dirent, l.item);
 
+	dentry_ref_dec(l.item);
+	dvfs_destroy_dentry(l.item);
+
 	return &dir->dirent;
 }
