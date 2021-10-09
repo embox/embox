@@ -8,6 +8,8 @@
 
 #include <util/log.h>
 
+#include "stm32_hc.h"
+
 #include <stm32f4xx.h>
 #include <stm32f4xx_hal.h>
 #include <stm32f4xx_hal_hcd.h>
@@ -17,21 +19,15 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd) {
 
 	/* Enable GPIOs clocks */
 	__HAL_RCC_GPIOA_CLK_ENABLE();
-	__HAL_RCC_GPIOG_CLK_ENABLE();
+	STM32_HC_PORT_VBUS_CLK_ENABLE();
 
-#if defined(STM32F429xx)
-/* Ethernet pins configuration ************************************************/
+#if defined(STM32F429xx) || defined(STM32F407xx)
 	/*
 	 USB_ID ----------------------> PA10
-	 USB_VBUS ---------------------> PG6
+	 USB_VBUS ---------------------> STM32_HC_VBUS_PIN
 	 USB_DM -----------------------> PA11
 	 USB_DP -----------------------> PA12
 	 */
-#else
-#error "don't support platform"
-#endif
-
-#if defined(STM32F429xx)
 	GPIO_InitStructure.Pin = GPIO_PIN_11 | GPIO_PIN_12;
 	GPIO_InitStructure.Speed = GPIO_SPEED_HIGH;
 	GPIO_InitStructure.Mode = GPIO_MODE_AF_PP;
@@ -45,11 +41,14 @@ void HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd) {
     GPIO_InitStructure.Alternate = GPIO_AF10_OTG_FS;
     HAL_GPIO_Init(GPIOA, &GPIO_InitStructure);
 
-    GPIO_InitStructure.Pin = GPIO_PIN_6;
+    GPIO_InitStructure.Pin = STM32_HC_VBUS_PIN;
     GPIO_InitStructure.Mode = GPIO_MODE_OUTPUT_PP;
     GPIO_InitStructure.Pull = GPIO_NOPULL;
-    HAL_GPIO_Init(GPIOG, &GPIO_InitStructure);
+    HAL_GPIO_Init(STM32_HC_VBUS_PORT, &GPIO_InitStructure);
+#else
+#error "don't support platform"
 #endif
 	/* Enable USB clock  */
 	__HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 }
+

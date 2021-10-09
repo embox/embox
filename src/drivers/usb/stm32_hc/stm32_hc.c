@@ -50,6 +50,14 @@ static inline struct stm32_hcd *hcd_to_stm32hcd(struct usb_hcd *hcd) {
 static volatile int stm32_hub_inited = 0;
 static volatile int must_notify_hub = 0;
 
+static void stm32_hcd_vbus_enable(void) {
+#if defined(STM32F429xx)
+	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_SET);
+#else
+	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_RESET);
+#endif
+}
+
 static int stm32_chan_init(uint8_t ch_num, uint8_t endp_num, uint8_t dev_addr, uint8_t speed, uint8_t ed_type, uint16_t mps){
 	return HAL_HCD_HC_Init(&stm32_hcd_handler,ch_num, endp_num,dev_addr,speed,ed_type, mps);
 }
@@ -189,7 +197,8 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 	}
 
 	/* Start VBus */
-	HAL_GPIO_WritePin(GPIOG, GPIO_PIN_6, GPIO_PIN_SET);
+	stm32_hcd_vbus_enable();
+
 	HAL_Delay(2000);
 
 	/* Create root hub */
