@@ -26,21 +26,54 @@
 
 #include <embox/unit.h>
 
-#include <stm32f4xx.h>
-#include <stm32f4xx_hal.h>
-#include <stm32f4xx_hal_hcd.h>
-
 #include <drivers/usb/usb.h>
-#include "stm32_hc.h"
+
+#include <drivers/usb/hc/stm32_hc_conf.h>
 
 EMBOX_UNIT_INIT(stm32hc_init);
 
 #define USB_IRQ OPTION_GET(NUMBER, irq)
 
+HCD_HandleTypeDef stm32_hcd_handler;
+
+/* STM32 USB Port states */
+#define STM32_PORT_IDLE	               0
+#define STM32_PORT_CONNECTED           1
+#define STM32_PORT_ENABLED             2
+#define STM32_PORT_READY               3
+
+/* STM32 URB Direction */
+#define STM32_URB_IN                    0
+#define STM32_URB_OUT                   1
+
+/* STM32 USB Pipes */
+#define STM32_PIPE_CONTROL_OUT          0
+#define STM32_PIPE_CONTROL_IN           1
+#define STM32_PIPE_BULK_IN              3
+#define STM32_PIPE_BULK_OUT             2
+
+struct stm32_endp {
+	uint8_t pipe_idx;
+	uint8_t endp_type;
+	uint8_t endp_addr;
+	uint8_t endp_dir;
+};
+
+struct stm32_hcd {
+	struct usb_hcd *hcd;
+	HCD_HandleTypeDef *hhcd;
+	uint8_t port_status;
+	uint8_t free_chan_idx;
+	struct stm32_endp *ctlr_endp_in;
+	struct stm32_endp *ctlr_endp_out;
+};
+
 POOL_DEF(stm32_hcds, struct stm32_hcd, USB_MAX_HCD);
 POOL_DEF(stm32_endp_pool, struct stm32_endp, 11);
 
-HCD_HandleTypeDef stm32_hcd_handler;
+static inline struct stm32_hcd *hhcd2stm_hcd(HCD_HandleTypeDef *hhcd) {
+	return (struct stm32_hcd *)stm32_hcd_handler.pData;
+}
 
 static inline struct stm32_hcd *hcd_to_stm32hcd(struct usb_hcd *hcd) {
 	assert(hcd);
