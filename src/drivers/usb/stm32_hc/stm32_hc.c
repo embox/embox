@@ -84,10 +84,10 @@ static volatile int stm32_hub_inited = 0;
 static volatile int must_notify_hub = 0;
 
 static void stm32_hcd_vbus_enable(void) {
-#if defined(STM32F429xx)
-	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_SET);
-#else
+#if defined(STM32F407xx)
 	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_RESET);
+#else
+	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_SET);
 #endif
 }
 
