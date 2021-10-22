@@ -526,9 +526,34 @@ static struct usb_hcd_ops stm32_hcd_ops = {
 	.request = stm32_request
 };
 
+static void stm32hc_enable_periph_usb_clk(void) {
+#if defined(STM32H745xx)
+	RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+
+	  /* PLL3 for USB Clock */
+
+	PeriphClkInitStruct.PLL3.PLL3M = 5;
+	PeriphClkInitStruct.PLL3.PLL3N = 96;
+	PeriphClkInitStruct.PLL3.PLL3P = 2;
+	PeriphClkInitStruct.PLL3.PLL3Q = 10;
+	PeriphClkInitStruct.PLL3.PLL3R = 18;
+	PeriphClkInitStruct.PLL3.PLL3VCOSEL = RCC_PLL3VCOWIDE;
+	PeriphClkInitStruct.PLL3.PLL3RGE = RCC_PLL3VCIRANGE_2;
+
+	PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USB;
+	PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_PLL3;
+	HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+#endif
+}
+
 static int stm32hc_init(void) {
 	int ret;
 	struct usb_hcd *hcd;
+
+	stm32hc_enable_periph_usb_clk();
+#if defined(STM32H745xx)
+	HAL_PWREx_EnableUSBVoltageDetector();
+#endif
 
 	hcd = usb_hcd_alloc(&stm32_hcd_ops, 0);
 	if (!hcd) {
