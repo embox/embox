@@ -9,6 +9,10 @@
 #include <e2k_api.h>
 
 void ipl_init(void) {
+	/* XXX E2k
+	 * we have comment in e2k_kernel_start()
+	 * XXX Disable FPU. Should be enabled later. */
+	e2k_upsr_write(e2k_upsr_read() | UPSR_FE);
 	e2k_upsr_write(e2k_upsr_read() | (UPSR_IE | UPSR_NMIE));
 }
 
