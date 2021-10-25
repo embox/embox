@@ -39,8 +39,7 @@ HCD_HandleTypeDef stm32_hcd_handler;
 /* STM32 USB Port states */
 #define STM32_PORT_IDLE	               0
 #define STM32_PORT_CONNECTED           1
-#define STM32_PORT_ENABLED             2
-#define STM32_PORT_READY               3
+#define STM32_PORT_READY               2
 
 /* STM32 URB Direction */
 #define STM32_URB_IN                    0
@@ -126,7 +125,6 @@ static inline HCD_URBStateTypeDef stm32_wait_urb_state(HCD_HandleTypeDef *hhcd, 
 
 }
 
-
 static void *stm32_hcd_alloc(struct usb_hcd *hcd, void *args) {
 	struct stm32_hcd *stm32_hcd = pool_alloc(&stm32_hcds);
 
@@ -148,7 +146,6 @@ static void stm32_hcd_port_status_changed(void) {
 	extern void usb_hubs_notify(void);
 	usb_hubs_notify();
 }
-
 
 void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum, HCD_URBStateTypeDef urb_state) {
 
@@ -354,7 +351,7 @@ static int stm32_control_request(struct usb_request *req) {
 	return 0;
 }
 
-static int stm32_request_do(struct usb_request *req) {
+static int stm32_request(struct usb_request *req) {
 	switch (req->endp->type) {
 	case USB_COMM_CONTROL:
 		stm32_control_request(req);
@@ -365,39 +362,40 @@ static int stm32_request_do(struct usb_request *req) {
 		stm32_common_request(req);
 		break;
 	default:
-		panic("stm32_request: Unsupported enpd type %d", req->endp->type);
+		panic("Unsupported enpd type %d", req->endp->type);
 	}
 
 	return 0;
 }
 
-static int stm32_request (struct usb_request *req) {
-	return stm32_request_do(req);
-}
-
-static void stm32_port_reset(struct stm32_hcd *stm32_hcd) {
-//	HAL_HCD_ResetPort(stm32_hcd->hhcd);
-
+static void stm32_port_disconnect(struct stm32_hcd *stm32_hcd) {
 	log_debug("");
+
+	HAL_HCD_ResetPort(stm32_hcd->hhcd);
+	stm32_hcd->port_status = STM32_PORT_READY;
 }
 
 static void stm32_port_set_power(struct stm32_hcd *stm32_hcd, int value) {
 	log_debug("");
 }
 
-static uint32_t stm32_roothub_portstatus(struct stm32_hcd *stm32_hcd) {
+static void stm32_roothub_portstatus(struct stm32_hcd *stm32_hcd, uint16_t port, uint16_t data[2]) {
 	/* return values from other USB drivers : TODO : make adequate return*/
 	if (stm32_hcd->port_status == STM32_PORT_IDLE) {
-		return 256; /* No device in port */
+		/* No device in port */
+		data[0] = 0;
+		data[1] = 0;
 	}
 	if (stm32_hcd->port_status == STM32_PORT_CONNECTED) {
-		return 0x1114371; /* Device in port, not enable */
+		/* Device in port, not enable */
+		data[0] = USB_PORT_STAT_CONNECTION;
+		data[1] = USB_PORT_STAT_CONNECTION;
 	}
-	if (stm32_hcd->port_status == STM32_PORT_READY){
-		return 0x100103; /* Device in port, enable */
+	if (stm32_hcd->port_status == STM32_PORT_READY) {
+		/* Device in port, enable */
+		data[0] = USB_PORT_STAT_ENABLE | USB_PORT_STAT_CONNECTION;
+		data[1] = USB_PORT_STAT_CONNECTION;
 	}
-
-	return 0;
 }
 
 static void stm32_get_hub_descriptor(struct usb_desc_hub *desc) {
@@ -409,23 +407,24 @@ static void stm32_get_hub_descriptor(struct usb_desc_hub *desc) {
 static int stm32_root_hub_control (struct usb_request *req) {
 	struct stm32_hcd *stm32_hcd;
 	struct usb_control_header *ctrl;
+	uint16_t port;
 
 	stm32_hcd = hcd_to_stm32hcd(req->endp->dev->hcd);
 	ctrl = &req->ctrl_header;
 
 	uint32_t type_req = (ctrl->bm_request_type << 8) | ctrl->b_request;
+	port = ctrl->w_index - 1;
 
 	switch (type_req) {
 	case USB_GET_HUB_DESCRIPTOR:
 		stm32_get_hub_descriptor((struct usb_desc_hub *) req->buf);
 		break;
 	case USB_GET_PORT_STATUS:
-		*(uint32_t *)req->buf = stm32_roothub_portstatus(stm32_hcd);
+		stm32_roothub_portstatus(stm32_hcd, port, (uint16_t *)req->buf);
 		break;
 	case USB_SET_PORT_FEATURE:
 		switch (ctrl->w_value) {
 		case USB_PORT_FEATURE_RESET:
-			stm32_port_reset(stm32_hcd);
 			break;
 		case USB_PORT_FEATURE_POWER:
 			stm32_port_set_power(stm32_hcd, 1);
@@ -442,9 +441,10 @@ static int stm32_root_hub_control (struct usb_request *req) {
   			break;
   		case USB_PORT_FEATURE_C_CONNECTION:
 			/* Reset port and change port status in stm32_hcd struct */
-			HAL_HCD_ResetPort(&stm32_hcd_handler);
-			struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(&stm32_hcd_handler);
-			stm32_hcd->port_status = STM32_PORT_READY;
+			//HAL_HCD_ResetPort(&stm32_hcd_handler);
+			//struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(&stm32_hcd_handler);
+			//stm32_hcd->port_status = STM32_PORT_READY;
+			stm32_port_disconnect(stm32_hcd);
   			break;
   		case USB_PORT_FEATURE_C_RESET:
   			break;
