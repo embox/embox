@@ -252,20 +252,34 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 	return 0;
 }
 
-static int stm32_common_request(struct usb_request *req) {
-	struct stm32_endp *stm32_endp;
+static inline int stm32_hc_submit_request(struct stm32_endp *stm32_endp,
+		uint8_t type, uint8_t token, uint8_t *buf, uint16_t len) {
+	int res;
 
-	stm32_endp = req->endp->hci_specific;
-	/* If URB < 64 send one URB */
-	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-			stm32_endp->endp_dir, EP_TYPE_BULK, 1, (uint8_t*)req->buf,req->len, 0) != HAL_OK) {
-				log_error("error while processing usb request.");
-				return -1;
+	res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
+			stm32_endp->endp_dir, type, token, buf, len, 0);
+	if (res != HAL_OK) {
+		return -1;
 	}
 	HAL_Delay(200);
+	return 0;
+}
+
+static int stm32_common_request(struct usb_request *req) {
+	struct stm32_endp *stm32_endp;
+	int res;
+
+	stm32_endp = req->endp->hci_specific;
+
+	res = stm32_hc_submit_request(stm32_endp, EP_TYPE_BULK, 1,(uint8_t *) req->buf,req->len);
+	if (res == -1) {
+		log_error("error while processing usb request.");
+		return -1;
+	}
 
 	req->actual_len = req->len;
 	usb_request_complete(req);
+
 	return 0;
 }
 
@@ -273,6 +287,8 @@ static int stm32_control_request(struct usb_request *req) {
 	struct stm32_hcd *stm32_hcd;
 	struct stm32_endp *stm32_endp_in;
 	struct stm32_endp *stm32_endp_out;
+	struct stm32_endp *stm32_endp = NULL;
+	int res;
 	uint32_t packet_type = (req->token & USB_TOKEN_OUT) ? STM32_URB_OUT : STM32_URB_IN;
 
 	stm32_hcd = hcd_to_stm32hcd(req->endp->dev->hcd);
@@ -280,26 +296,25 @@ static int stm32_control_request(struct usb_request *req) {
 	stm32_endp_out = stm32_hcd->ctlr_endp_out;
 
 	/* Setup  URB */
-	if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_out->pipe_idx,
-			stm32_endp_out->endp_dir, EP_TYPE_CTRL, 0, (uint8_t*)&req->ctrl_header,
-				sizeof(req->ctrl_header), 0) != HAL_OK) {
-					log_error("error while processing request.");
-					return -1;
+	res = stm32_hc_submit_request(stm32_endp_out, EP_TYPE_CTRL, 0,
+			(uint8_t*)&req->ctrl_header, sizeof(req->ctrl_header));
+	if (res == -1) {
+		log_error("error while processing usb request.");
+		return -1;
 	}
-	HAL_Delay(200);
 
 	if (req->len > 0) {
 		uint8_t *buf;
 
 		buf = (uint8_t*)req->buf;
+
 		/* Send OUT URB */
 		if (packet_type == STM32_URB_OUT) {
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_out->pipe_idx,
-					stm32_endp_out->endp_dir, EP_TYPE_CTRL, 1, buf,req->len, 0) != HAL_OK) {
-						log_error("error while processing request.");
-						return -1;
+			res = stm32_hc_submit_request(stm32_endp_out, EP_TYPE_CTRL, 1, buf, req->len);
+			if (res == -1) {
+				log_error("error while processing usb request.");
+				return -1;
 			}
-			HAL_Delay(200);
 		}
 
 		/* Send IN URB */
@@ -310,12 +325,11 @@ static int stm32_control_request(struct usb_request *req) {
 				buf = (uint8_t*)&tmp;
 			}
 
-			if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_in->pipe_idx,
-					stm32_endp_in->endp_dir, EP_TYPE_CTRL, 1, buf,req->len, 0) != HAL_OK) {
-						log_error("error while processing request.");
-						return -1;
+			res = stm32_hc_submit_request(stm32_endp_in, EP_TYPE_CTRL, 1, buf, req->len);
+			if (res == -1) {
+				log_error("error while processing usb request.");
+				return -1;
 			}
-			HAL_Delay(200);
 
 			if (req->len < 4) {
 				memcpy(req->buf, buf, req->len);
@@ -325,19 +339,16 @@ static int stm32_control_request(struct usb_request *req) {
 
 	/* Status  URB */
 	if (req->len > 0 && packet_type == STM32_URB_IN) {
-		if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_out->pipe_idx,
-						stm32_endp_out->endp_dir, EP_TYPE_CTRL, 1, NULL, 0, 0) != HAL_OK) {
-			log_error("error while processing request.");
-			return -1;
-		}
+		stm32_endp = stm32_endp_out;
 	} else {
-		if (HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp_in->pipe_idx,
-						stm32_endp_in->endp_dir, EP_TYPE_CTRL, 1, NULL, 0, 0) != HAL_OK) {
-			log_error("error while processing request.");
-			return -1;
-		}
+		stm32_endp = stm32_endp_in;
 	}
-	HAL_Delay(200);
+
+	res = stm32_hc_submit_request(stm32_endp, EP_TYPE_CTRL, 1, NULL, 0);
+	if (res == -1) {
+		log_error("error while processing usb request.");
+		return -1;
+	}
 
 	if (req->ctrl_header.b_request == USB_REQ_SET_ADDRESS) {
 		stm32_chan_init(stm32_endp_out->pipe_idx, stm32_endp_out->endp_addr, req->ctrl_header.w_value,
