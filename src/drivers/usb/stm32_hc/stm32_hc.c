@@ -82,6 +82,25 @@ static inline struct stm32_hcd *hcd_to_stm32hcd(struct usb_hcd *hcd) {
 static volatile int stm32_hub_inited = 0;
 static volatile int must_notify_hub = 0;
 
+static inline uint8_t convert_type_usb_to_stm(uint8_t usb_type) {
+	assert((usb_type == USB_COMM_CONTROL) ||
+			(usb_type == USB_COMM_INTERRUPT) ||
+			(usb_type == USB_COMM_BULK) ||
+			(usb_type == USB_COMM_ISOCHRON));
+
+	switch(usb_type) {
+	case USB_COMM_CONTROL:
+		return EP_TYPE_CTRL;
+	case USB_COMM_INTERRUPT:
+		return EP_TYPE_INTR;
+	case USB_COMM_BULK:
+		return EP_TYPE_BULK;
+	case USB_COMM_ISOCHRON:
+		return EP_TYPE_ISOC;
+	}
+	return 0;
+}
+
 static void stm32_hcd_vbus_enable(void) {
 #if defined(STM32F407xx)
 	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_RESET);
@@ -253,11 +272,11 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 }
 
 static inline int stm32_hc_submit_request(struct stm32_endp *stm32_endp,
-		uint8_t type, uint8_t token, uint8_t *buf, uint16_t len) {
+			uint8_t token, uint8_t *buf, uint16_t len) {
 	int res;
 
 	res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-			stm32_endp->endp_dir, type, token, buf, len, 0);
+			stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len, 0);
 	if (res != HAL_OK) {
 		return -1;
 	}
@@ -271,7 +290,7 @@ static int stm32_common_request(struct usb_request *req) {
 
 	stm32_endp = req->endp->hci_specific;
 
-	res = stm32_hc_submit_request(stm32_endp, EP_TYPE_BULK, 1,(uint8_t *) req->buf,req->len);
+	res = stm32_hc_submit_request(stm32_endp, 1, (uint8_t *) req->buf,req->len);
 	if (res == -1) {
 		log_error("error while processing usb request.");
 		return -1;
@@ -296,7 +315,7 @@ static int stm32_control_request(struct usb_request *req) {
 	stm32_endp_out = stm32_hcd->ctlr_endp_out;
 
 	/* Setup  URB */
-	res = stm32_hc_submit_request(stm32_endp_out, EP_TYPE_CTRL, 0,
+	res = stm32_hc_submit_request(stm32_endp_out, 0,
 			(uint8_t*)&req->ctrl_header, sizeof(req->ctrl_header));
 	if (res == -1) {
 		log_error("error while processing usb request.");
@@ -310,7 +329,7 @@ static int stm32_control_request(struct usb_request *req) {
 
 		/* Send OUT URB */
 		if (packet_type == STM32_URB_OUT) {
-			res = stm32_hc_submit_request(stm32_endp_out, EP_TYPE_CTRL, 1, buf, req->len);
+			res = stm32_hc_submit_request(stm32_endp_out, 1, buf, req->len);
 			if (res == -1) {
 				log_error("error while processing usb request.");
 				return -1;
@@ -325,7 +344,7 @@ static int stm32_control_request(struct usb_request *req) {
 				buf = (uint8_t*)&tmp;
 			}
 
-			res = stm32_hc_submit_request(stm32_endp_in, EP_TYPE_CTRL, 1, buf, req->len);
+			res = stm32_hc_submit_request(stm32_endp_in, 1, buf, req->len);
 			if (res == -1) {
 				log_error("error while processing usb request.");
 				return -1;
@@ -344,7 +363,7 @@ static int stm32_control_request(struct usb_request *req) {
 		stm32_endp = stm32_endp_in;
 	}
 
-	res = stm32_hc_submit_request(stm32_endp, EP_TYPE_CTRL, 1, NULL, 0);
+	res = stm32_hc_submit_request(stm32_endp, 1, NULL, 0);
 	if (res == -1) {
 		log_error("error while processing usb request.");
 		return -1;
@@ -452,9 +471,6 @@ static int stm32_root_hub_control (struct usb_request *req) {
   			break;
   		case USB_PORT_FEATURE_C_CONNECTION:
 			/* Reset port and change port status in stm32_hcd struct */
-			//HAL_HCD_ResetPort(&stm32_hcd_handler);
-			//struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(&stm32_hcd_handler);
-			//stm32_hcd->port_status = STM32_PORT_READY;
 			stm32_port_disconnect(stm32_hcd);
   			break;
   		case USB_PORT_FEATURE_C_RESET:
@@ -487,7 +503,7 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 		case 0:
 			stm32_endp->endp_addr = endp->address;
 			stm32_endp->pipe_idx = STM32_PIPE_CONTROL_OUT;
-			stm32_endp->endp_type = endp->type;
+			stm32_endp->endp_type = convert_type_usb_to_stm(endp->type);
 			stm32_endp->endp_dir = USB_DIRECTION_OUT;
 			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
 			stm32_hcd->free_chan_idx ++;
@@ -496,7 +512,7 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 		case 1:
 			stm32_endp->endp_addr = endp->address | 0x80;
 			stm32_endp->pipe_idx = STM32_PIPE_CONTROL_IN;
-			stm32_endp->endp_type = endp->type;
+			stm32_endp->endp_type = convert_type_usb_to_stm(endp->type);
 			stm32_endp->endp_dir = USB_DIRECTION_IN;
 			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, endp->type, endp->max_packet_size);
 			stm32_hcd->free_chan_idx ++;
@@ -508,13 +524,13 @@ static void *stm32_endp_alloc(struct usb_endp *endp) {
 		if (endp->direction == USB_DIRECTION_IN) {
 			stm32_endp->endp_addr = endp->address | 0x80;
 			stm32_endp->pipe_idx = STM32_PIPE_BULK_IN;
-			stm32_endp->endp_type = endp->type;
+			stm32_endp->endp_type = convert_type_usb_to_stm(endp->type);
 			stm32_endp->endp_dir = USB_DIRECTION_IN;
 			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
 		} else {
 			stm32_endp->endp_addr = endp->address;
 			stm32_endp->pipe_idx = STM32_PIPE_BULK_OUT;
-			stm32_endp->endp_type = endp->type;
+			stm32_endp->endp_type = convert_type_usb_to_stm(endp->type);
 			stm32_endp->endp_dir = USB_DIRECTION_OUT;
 			stm32_chan_init(stm32_endp->pipe_idx, stm32_endp->endp_addr, endp->dev->addr, endp->dev->speed, EP_TYPE_BULK, endp->max_packet_size);
 		}
