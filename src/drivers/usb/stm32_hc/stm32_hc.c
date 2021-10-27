@@ -136,9 +136,10 @@ static inline HCD_URBStateTypeDef stm32_wait_urb_state(HCD_HandleTypeDef *hhcd, 
 	HCD_URBStateTypeDef st;
 	for(;;) {
 		st = HAL_HCD_HC_GetURBState (hhcd, pipe);
-		if (wait_st == st) {
+		if (wait_st & st) {
 			break;
 		}
+		HAL_Delay(2);
 	}
 	return st;
 
@@ -170,6 +171,7 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 
 	/* To be used with OS to sync URB state with the global state machine */
 	/* URB_IDLE URB_NOTREADY URB_DONE */
+	log_debug("%d", urb_state);
 }
 
 void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
@@ -248,7 +250,7 @@ static int stm32_hc_start (struct usb_hcd *hcd) {
 	/* Start VBus */
 	stm32_hcd_vbus_enable();
 
-	HAL_Delay(2000);
+	HAL_Delay(200);
 
 	/* Create root hub */
 	udev = usb_new_device(NULL, hcd, 0);
@@ -275,12 +277,15 @@ static inline int stm32_hc_submit_request(struct stm32_endp *stm32_endp,
 			uint8_t token, uint8_t *buf, uint16_t len) {
 	int res;
 
+//	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_IDLE);
+
 	res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
 			stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len, 0);
 	if (res != HAL_OK) {
 		return -1;
 	}
-	HAL_Delay(200);
+
+	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_DONE);
 	return 0;
 }
 
