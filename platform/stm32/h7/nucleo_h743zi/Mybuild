@@ -1,7 +1,7 @@
 package platform.stm32.h7.nucleo_h743zi
 
 @Build(stage=1)
-@BuildArtifactPath(cppflags="-DSTM32H745xx -DCORE_CM7")
+@BuildArtifactPath(cppflags="-DSTM32H743xx -DCORE_CM7")
 static module nucleo_h743zi_conf extends third_party.bsp.stmh7cube.stm32h7_conf {
 	@IncludeExport(path="")
 	source "stm32h7xx_hal_conf.h"
