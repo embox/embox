@@ -14,6 +14,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <drivers/block_dev.h>
 #include <fs/dir_context.h>
@@ -897,6 +898,8 @@ uint32_t fat_get_next(struct dirinfo *dir, struct fat_dirent *dirent) {
 /* Same as fat_get_next(), but skip long-name entries with following 8.3-entries */
 uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char *name_buf) {
 	uint32_t ret;
+	char c;
+	int i;
 
 	assert(dir);
 	assert(dir->p_scratch);
@@ -912,21 +915,38 @@ uint32_t fat_get_next_long(struct dirinfo *dir, struct fat_dirent *dirent, char 
 
 	if (dirent->attr != ATTR_LONG_NAME) {
 		if (name_buf != NULL) {
-			char *t;
-			strncpy(name_buf, (char *) dirent->name, MSDOS_NAME);
-
-			/* MSDOS names are padded with spaces,
-			 * so we need to trimmer it */
-			t = name_buf + MSDOS_NAME - 1;
-			while (t >= name_buf) {
-				if (*t == ' ') {
-					*t = '\0';
-				} else {
+			/* Copy name body */
+			for (i = 0; i < 8; i++) {
+				c = dirent->name[i];
+				if (c == ' ') {
 					break;
 				}
 
-				t--;
+				if (isupper(c)) {
+					c += 0x20;
+				}
+
+				*name_buf++ = c;
 			}
+
+			/* Copy name extension */
+			if (dirent->name[8] != ' ') {
+				*name_buf++ = '.';
+				for (i = 8; i < 11; i++) {
+					c = dirent->name[i];
+					if (c == ' ')
+						break;
+
+					if (isupper(c)) {
+						c += 0x20;
+					}
+
+					*name_buf++ = c;
+				}
+			}
+
+			/* Terminate SFN str by a \0 */
+			*name_buf = 0;
 		}
 	} else {
 		while (dirent->attr == ATTR_LONG_NAME) {
