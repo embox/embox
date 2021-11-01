@@ -69,3 +69,18 @@ module stm32h745i_discovery {
 	depends third_party.bsp.stmh7cube.stm32h7_discovery_components
 }
 
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32h7_common {
+	option number log_level = 1
+
+	option number volume = 70
+	option number audio_buf_len = 4096
+
+	source "stm32_audio_h7.c"
+
+	depends embox.driver.audio.portaudio_lib
+	depends embox.driver.audio.audio_dev
+
+	depends third_party.bsp.st_bsp_api
+}
+
