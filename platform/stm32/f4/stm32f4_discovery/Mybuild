@@ -40,6 +40,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildDepends(third_party.bsp.stmh7cube.middlewares.st_audio_pdm_cm4)
 @BuildDepends(bsp)
 static module stm32f4_discovery_bsp_audio {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
@@ -49,12 +50,14 @@ static module stm32f4_discovery_bsp_audio {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
 	source "./STM32CubeF4-1.25.0/Drivers/BSP/Components/cs43l22/cs43l22.c"
 
-	depends pdm_filter_stub
+//	depends pdm_filter_stub
 
+	@NoRuntime depends third_party.bsp.stmh7cube.middlewares.st_audio_pdm_cm4
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends bsp
 }
 
+/*
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
 @BuildDepends(bsp)
@@ -65,3 +68,4 @@ static module pdm_filter_stub {
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends bsp
 }
+*/
