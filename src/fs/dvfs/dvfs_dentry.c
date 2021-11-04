@@ -13,7 +13,6 @@
 #include <string.h>
 #include <limits.h>
 
-#include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
