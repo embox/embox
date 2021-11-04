@@ -5,9 +5,11 @@ abstract module root_file_system {
 }
 
 module rootfs extends root_file_system {
-	source "rootfs.c"
 	option string fstype = "initfs"
 	option string bdev = ""
+
+	source "rootfs.c"
+
 	@NoRuntime depends driver.devfs_old
 	depends driver.repo
 	depends node
@@ -18,12 +20,11 @@ module rootfs extends root_file_system {
 }
 
 module rootfs_dvfs extends root_file_system {
-	source "rootfs_dvfs.c"
 	option string fstype = "initfs"
 	option string bdev = ""
 
-	depends embox.driver.block_dev
-	depends embox.driver.char_dev
+	source "rootfs_dvfs.c"
+
 	depends embox.fs.dvfs.core
 	depends embox.fs.driver.repo
 	depends embox.kernel.task.api

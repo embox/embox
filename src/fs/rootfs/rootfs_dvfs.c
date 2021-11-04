@@ -8,12 +8,13 @@
 
 #include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
+
+#include <util/array.h>
 
 #include <fs/dvfs.h>
-#include <drivers/block_dev.h>
-#include <drivers/char_dev.h>
+
 #include <embox/unit.h>
-#include <util/array.h>
 
 EMBOX_UNIT_INIT(rootfs_mount);
 
