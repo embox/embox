@@ -98,6 +98,15 @@ static int handler(uint32_t nr, void * data) {
 }
 
 static int lkl_task_init(void) {
+	/*	We do some LKL calls here
+		but we don't need current task to have 'lkl_task=1'
+		because here we do these calls directly to LKL, they are not Linux syscalls.
+
+		For common Linux tasks inside of Embox, 'lkl_task=1' will be set by 'load_app'
+		or copied from parent task in case of fork() syscall.
+		Tasks with 'lkl_task=1' will be processed by Embox's handler of Linux syscalls.
+	*/
+
 	long ret = 0;
 	struct lkl_disk disk;
 	unsigned int disk_id, dev;

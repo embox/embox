@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <lkl_host.h>
 #include <lkl.h>
+#include <kernel/task.h>
 
 static inline long os_syscall(int syscall,
 							  unsigned long arg1, unsigned long arg2,
@@ -16,6 +17,20 @@ static inline long os_syscall(int syscall,
 }
 
 int main(int argc, char **argv) {
+	// Temporary. In the future 'task_self()->lkl_task = 1' and 'lkl_fork()' will be executed in 'load_app'.
+	task_self()->lkl_task = 1;
+	// ToDo: place lkl_fork() call here.
+
+	/*
+	Scheme of work:
+	Beginning: '$ load_app some-linux-app' ->
+		'load_app' exectues 'task_self()->lkl_task = 1' and 'lkl_fork()' (lkl_fork creates LKL task and maps it to current Embox task).
+
+	Met 'fork()' syscall in 'some-linux-app' ->
+		go into lkl_task's 'handler()' ->
+		'fork()' handler creates new Embox task and calls 'lkl_fork()'
+	*/
+
 	/*
 	Try to get FD for special file /vda.
 	This file should have been created in src/kernel/task/lkl_task.c.

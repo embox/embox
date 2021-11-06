@@ -22,6 +22,7 @@
 struct thread;
 
 struct task {
+	int lkl_task;
 	int status;
 	int tsk_id;
 
