@@ -52,7 +52,7 @@ static struct stm32_hw stm32_hw_in;
 /* Pointer to record_data */
 uint32_t playbackPtr;
 
-static uint16_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN];
+static uint16_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN] SRAM_NOCACHE_SECTION;
 static uint8_t stm32_audio_out_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
 
 #define AUDIO_FREQUENCY            16000U
