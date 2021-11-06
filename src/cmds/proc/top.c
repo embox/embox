@@ -14,10 +14,10 @@
 int main(int argc, char **argv) {
 	struct task *task;
 
-	printf("PID USER  PR COMMAND\n");
+	printf("LKL_TASK PID USER  PR COMMAND\n");
 
 	task_foreach(task) {
-		printf("%-3d %-4d % 3d %s\n", tid,
+		printf("%-8d %-3d %-4d % 3d %s \n", task->lkl_task, tid,
 				task_resource_u_area(task)->reuid,
 				task_get_priority(task), task_get_name(task));
 	}
