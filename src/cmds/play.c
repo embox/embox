@@ -268,7 +268,12 @@ int main(int argc, char **argv) {
 	}
 
 	sleep_msec = 1000 * (fdata_len /
-	           (bits_per_sample / 8 * sample_rate * chan_n));
+			((bits_per_sample / 8) * sample_rate * chan_n));
+	if (0 == sleep_msec) {
+		sleep_msec = (1000 * fdata_len) /
+				((bits_per_sample / 8) * sample_rate * chan_n);
+	}
+
 	Pa_Sleep(sleep_msec);
 	printf("\n");
 
