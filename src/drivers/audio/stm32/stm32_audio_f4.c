@@ -47,26 +47,36 @@ struct stm32_hw {
 static struct stm32_hw stm32_hw_out;
 static struct stm32_hw stm32_hw_in;
 
+#define STM32_IN_BUF_LEN           128
+#define STM32_IN_PCM_SLOT_SIZE     (STM32_IN_BUF_LEN / 8) * 2 * 2
+
+static uint16_t stm32_pdm_buf[STM32_IN_BUF_LEN] SRAM_NOCACHE_SECTION;
+static int stm32_audio_in_buf_offset = 0;
+
 static uint8_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
 static uint8_t stm32_audio_out_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
 
 static void stm32_audio_in_activate(void) {
-	stm32_hw_in.stm32_audio_running = 0;
+	int res;
 
-	if (0 != BSP_AUDIO_IN_Record((uint16_t *) &stm32_audio_in_bufs[0],
-			STM32_AUDIO_BUF_LEN)) {
+	stm32_hw_in.stm32_audio_running = 0;
+	stm32_audio_in_buf_offset = 0;
+
+	res = BSP_AUDIO_IN_Record(&stm32_pdm_buf[0], sizeof(stm32_pdm_buf) / 2);
+	if (0 != res) {
 		log_error("BSP_AUDIO_IN_Record error");
 	}
 }
 
 static void stm32_audio_out_activate(void) {
-	memset(&stm32_audio_out_bufs[0], 0, sizeof stm32_audio_out_bufs);
+	int res;
+
+	memset(stm32_audio_out_bufs, 0, sizeof(stm32_audio_out_bufs));
 	stm32_hw_out.stm32_audio_running = 0;
 
-//	BSP_AUDIO_OUT_SetVolume(STM32_DEFAULT_VOLUME);
-
-	if (0 != BSP_AUDIO_OUT_Play((uint16_t*) &stm32_audio_out_bufs[0],
-			2 * STM32_AUDIO_BUF_LEN)) {
+	res = BSP_AUDIO_OUT_Play((uint16_t*)stm32_audio_out_bufs,
+			sizeof(stm32_audio_out_bufs));
+	if (0 != res) {
 		log_error("BSP_AUDIO_OUT_Play error");
 	}
 }
@@ -135,13 +145,17 @@ static void stm32_audio_resume_stub(struct audio_dev *dev) {
 
 /******** Functions for INPUT audio device ********/
 static void stm32_audio_in_start(struct audio_dev *dev) {
+	stm32_audio_in_buf_offset = 0;
 	stm32_hw_in.stm32_audio_running = 1;
-	memset(&stm32_audio_out_bufs[0], 0, sizeof stm32_audio_out_bufs);
+
+	memset(stm32_audio_out_bufs, 0, sizeof stm32_audio_out_bufs);
 }
 
 static void stm32_audio_in_stop(struct audio_dev *dev) {
 	stm32_hw_in.stm32_audio_running = 0;
-	memset(&stm32_audio_out_bufs[0], 0, sizeof stm32_audio_out_bufs);
+	stm32_audio_in_buf_offset = 0;
+
+	memset(stm32_audio_out_bufs, 0, sizeof stm32_audio_out_bufs);
 }
 
 static const struct audio_dev_ops stm32_audio_in_ops = {
@@ -154,7 +168,7 @@ static const struct audio_dev_ops stm32_audio_in_ops = {
 
 static struct stm32_audio_dev_priv stm32_adc = {
 	.dev_type = STM32_DIGITAL_IN,
-	.buf      = &stm32_audio_in_bufs[0],
+	.buf      = stm32_audio_in_bufs,
 	.buf_len  = STM32_AUDIO_BUF_LEN,
 };
 
@@ -170,8 +184,22 @@ void audio_dev_open_in_stream(struct audio_dev *audio_dev, void *stream) {
 }
 
 static void stm32_audio_in_update_buffer(int buf_index) {
-	stm32_adc.buf = &stm32_audio_in_bufs[0] + buf_index * STM32_AUDIO_BUF_LEN;
-	Pa_StartStream(stm32_hw_in.stream);
+
+	BSP_AUDIO_IN_PDMToPCM(&stm32_pdm_buf[(STM32_IN_BUF_LEN / 2) * buf_index],
+			(uint16_t*)&stm32_audio_in_bufs[stm32_audio_in_buf_offset]);
+
+	stm32_audio_in_buf_offset += STM32_IN_PCM_SLOT_SIZE;
+
+	if (0 == (stm32_audio_in_buf_offset % STM32_AUDIO_BUF_LEN)) {
+		if (stm32_audio_in_buf_offset == (STM32_AUDIO_BUF_LEN * 2)) {
+			stm32_adc.buf = &stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN];
+			stm32_audio_in_buf_offset = 0;
+		} else {
+			stm32_adc.buf = &stm32_audio_in_bufs[0];
+		}
+
+		Pa_StartStream(stm32_hw_in.stream);
+	}
 }
 
 void BSP_AUDIO_IN_HalfTransfer_CallBack(void) {
