@@ -124,7 +124,7 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 	assert(in_data16 && in_buf);
 
 	for (i = 0; i < framesPerBuffer; i++) {
-		if (cur_ptr > AUDIO_BUFFER_SIZE) {
+		if (cur_ptr >= AUDIO_BUFFER_SIZE) {
 			break;
 		}
 		memcpy(&in_buf[cur_ptr], &in_data16[chan_n * i], 2 * chan_n);
@@ -132,7 +132,7 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 	}
 
 	printf("|");
-	if (cur_ptr > AUDIO_BUFFER_SIZE) {
+	if (cur_ptr >= AUDIO_BUFFER_SIZE) {
 		printf("\n");
 		return paComplete;
 	}
