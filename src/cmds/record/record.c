@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <assert.h>
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <portaudio.h>
 #include <fs/file_format.h>
@@ -23,7 +24,7 @@
 
 /* Maximum recording duration in milliseconds */
 #define MAX_REC_DURATION 50000
-#define AUDIO_BUFFER_SIZE 0x800000
+#define AUDIO_BUFFER_SIZE OPTION_GET(NUMBER, local_buffer_size)
 
 static int sample_rate;
 static int chan_n;
@@ -35,6 +36,7 @@ static void print_usage(void) {
 			"-d - recording duration in msec\n"
 			"-s - \"record\" sin() instead of using microphone\n"
 			"-m - record to memory instead of file \n"
+			"-l - record to the local buffer"
 			"Examples:\n"
 			"  record stereo44100.wav - record stereo44100.wav with default settings\n"
 			"  record -r 8000 -c 1 -d 10000 mono8000.wav - record 10 sec mono 8000hz\n"
@@ -67,7 +69,7 @@ static void write_wave_addr(uint32_t addr, uint8_t *buf, int len) {
 static uint32_t audio_memory_addr = AUDIO_ADDR_UNINITIALIZED;
 
 #if USE_LOCAL_BUFFER
-static uint16_t audio_buf[AUDIO_BUFFER_SIZE];
+static uint16_t audio_buf[AUDIO_BUFFER_SIZE + (sizeof (struct wave_header)/2)];
 static uint16_t *in_buf = audio_buf;
 #else
 static uint16_t *in_buf = NULL;
@@ -100,7 +102,7 @@ static int sin_callback(const void *inputBuffer, void *outputBuffer,
 
 	for (i = 0; i < framesPerBuffer; i++) {
 		double x = 2 * 3.14 * (i % _sin_w) / _sin_w;
-		int tmp = (1. + _sin(x)) * _sin_h;
+		uint16_t tmp = (uint16_t) ((1. + _sin(x)) * _sin_h);
 
 		in_buf[cur_ptr++] = tmp;
 		if (chan_n == 2) {
@@ -122,7 +124,7 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 	assert(in_data16 && in_buf);
 
 	for (i = 0; i < framesPerBuffer; i++) {
-		if (cur_ptr > AUDIO_BUFFER_SIZE) {
+		if (cur_ptr >= AUDIO_BUFFER_SIZE) {
 			break;
 		}
 		memcpy(&in_buf[cur_ptr], &in_data16[chan_n * i], 2 * chan_n);
@@ -130,7 +132,7 @@ static int record_callback(const void *inputBuffer, void *outputBuffer,
 	}
 
 	printf("|");
-	if (cur_ptr > AUDIO_BUFFER_SIZE) {
+	if (cur_ptr >= AUDIO_BUFFER_SIZE) {
 		printf("\n");
 		return paComplete;
 	}
@@ -157,7 +159,7 @@ int main(int argc, char **argv) {
 	chan_n = 2;
 	callback = &record_callback;
 
-	while (-1 != (opt = getopt(argc, argv, "nshd:r:c:m:"))) {
+	while (-1 != (opt = getopt(argc, argv, "nslhd:r:c:m:"))) {
 		switch (opt) {
 		case 'h':
 			print_usage();
@@ -196,6 +198,15 @@ int main(int argc, char **argv) {
 			}
 			audio_memory_addr = (uint32_t) strtoul(optarg, NULL, 0);
 			in_buf = (uint16_t *) (audio_memory_addr + sizeof (struct wave_header));
+			break;
+		case 'l':
+#if USE_LOCAL_BUFFER
+			audio_memory_addr = (uintptr_t)audio_buf;
+			in_buf = (uint16_t *) (audio_memory_addr + sizeof (struct wave_header));
+#else
+			printf("the local buffer is not supported in this configuration");
+			return 0;
+#endif
 			break;
 		default:
 			printf("Unknown argument: %c", opt);

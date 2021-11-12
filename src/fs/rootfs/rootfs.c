@@ -11,6 +11,8 @@
 #include <string.h>
 #include <sys/stat.h>
 
+#include <util/array.h>
+
 #include <fs/mount.h> /* mount */
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>

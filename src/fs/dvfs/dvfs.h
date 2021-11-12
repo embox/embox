@@ -10,7 +10,6 @@
 #include <config/embox/fs/dvfs/core.h>
 #include <framework/mod/options.h>
 
-#include <drivers/block_dev.h>
 #include <kernel/task/resource/idesc.h>
 #include <fs/file_desc.h>
 #include <util/dlist.h>
@@ -42,6 +41,7 @@ struct super_block;
 struct lookup;
 struct inode_operations;
 struct dir_ctx;
+struct block_dev;
 
 extern struct dentry *dvfs_alloc_dentry(void);
 extern int            dvfs_destroy_dentry(struct dentry *dentry);

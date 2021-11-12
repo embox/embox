@@ -5,22 +5,20 @@
  * @date 07.11.2018
  */
 
-#include <util/log.h>
-
 #include <unistd.h>
 #include <errno.h>
 #include <assert.h>
 #include <string.h>
-
+#include <util/log.h>
 #include <embox/unit.h>
-
+#include <util/log.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
 #include <arm/cpu_cache.h>
 
 #include <portaudio.h>
 #include <drivers/audio/audio_dev.h>
-#include <drivers/audio/stm32h7_audio.h>
+#include <drivers/audio/stm32f4_audio.h>
 
 EMBOX_UNIT_INIT(stm32_audio_init);
 
@@ -49,40 +47,42 @@ struct stm32_hw {
 static struct stm32_hw stm32_hw_out;
 static struct stm32_hw stm32_hw_in;
 
-/* Pointer to record_data */
-uint32_t playbackPtr;
+#define STM32_IN_BUF_LEN           128
+#define STM32_IN_PCM_SLOT_SIZE     (STM32_IN_BUF_LEN / 8) * 2 * 2
 
-static uint16_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN] SRAM_NOCACHE_SECTION;
+static uint16_t stm32_pdm_buf[STM32_IN_BUF_LEN] SRAM_NOCACHE_SECTION;
+static int stm32_audio_in_buf_offset = 0;
+
+static uint8_t stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
 static uint8_t stm32_audio_out_bufs[STM32_AUDIO_BUF_LEN * 2] SRAM_NOCACHE_SECTION;
 
-#define AUDIO_FREQUENCY            16000U
-#define AUDIO_IN_PDM_BUFFER_SIZE  (uint32_t)(128*AUDIO_FREQUENCY/16000*2)
-#define AUDIO_BUFF_SIZE           STM32_AUDIO_BUF_LEN
-
-uint16_t recordPDMBuf[AUDIO_IN_PDM_BUFFER_SIZE] __attribute__((aligned(32))) __attribute__((section(".ram_d3")));
-
 static void stm32_audio_in_activate(void) {
-	stm32_hw_in.stm32_audio_running = 0;
+	int res;
 
-	if (0 != BSP_AUDIO_IN_RecordPDM(1, (uint8_t *) &recordPDMBuf[0],
-			2*AUDIO_IN_PDM_BUFFER_SIZE)) {
+	stm32_hw_in.stm32_audio_running = 0;
+	stm32_audio_in_buf_offset = 0;
+
+	res = BSP_AUDIO_IN_Record(&stm32_pdm_buf[0], sizeof(stm32_pdm_buf) / 2);
+	if (0 != res) {
 		log_error("BSP_AUDIO_IN_Record error");
 	}
 }
 
 static void stm32_audio_out_activate(void) {
-	memset(&stm32_audio_out_bufs[0], 0, sizeof stm32_audio_out_bufs);
-	stm32_hw_out.stm32_audio_running = 0;
+	int res;
 
 	memset(stm32_audio_out_bufs, 0, sizeof(stm32_audio_out_bufs));
-	if (0 != BSP_AUDIO_OUT_Play(0, (uint8_t*) &stm32_audio_out_bufs[0],
-			2 * STM32_AUDIO_BUF_LEN)) {
+	stm32_hw_out.stm32_audio_running = 0;
+
+	res = BSP_AUDIO_OUT_Play((uint16_t*)stm32_audio_out_bufs,
+			sizeof(stm32_audio_out_bufs));
+	if (0 != res) {
 		log_error("BSP_AUDIO_OUT_Play error");
 	}
 }
 
 static int stm32_audio_init(void) {
-	stm32h7_audio_init();
+	stm32f4_audio_init();
 
 	/* Now activate and run INPUT and OUTPUT permanently */
 	stm32_audio_out_activate();
@@ -96,13 +96,19 @@ static int stm32_audio_get_rate(void) {
 }
 
 static void stm32_audio_set_rate(int rate) {
-	BSP_AUDIO_IN_Pause(1);
-	BSP_AUDIO_OUT_Pause(0);
-	BSP_AUDIO_OUT_SetSampleRate(0, rate);
-	BSP_AUDIO_IN_Resume(1);
-	BSP_AUDIO_OUT_Resume(0);
+
+//	BSP_AUDIO_IN_Pause();
+//	BSP_AUDIO_OUT_Pause();
+	/* This function BSP_AUDIO_OUT_SetFrequency sets equal frequency
+	 * for both output and input devices since the input device
+	 * is running in synchronous mode with output device.
+	 * By the way, there is no function BSP_AUDIO_IN_SetFrequency */
+//	BSP_AUDIO_OUT_SetFrequency(rate);
+//	BSP_AUDIO_IN_Resume();
+//	BSP_AUDIO_OUT_Resume();
 
 	stm32_audio_rate = rate;
+
 }
 
 static int stm32_audio_ioctl(struct audio_dev *dev, int cmd, void *args) {
@@ -139,11 +145,17 @@ static void stm32_audio_resume_stub(struct audio_dev *dev) {
 
 /******** Functions for INPUT audio device ********/
 static void stm32_audio_in_start(struct audio_dev *dev) {
+	stm32_audio_in_buf_offset = 0;
 	stm32_hw_in.stm32_audio_running = 1;
+
+	memset(stm32_audio_out_bufs, 0, sizeof stm32_audio_out_bufs);
 }
 
 static void stm32_audio_in_stop(struct audio_dev *dev) {
 	stm32_hw_in.stm32_audio_running = 0;
+	stm32_audio_in_buf_offset = 0;
+
+	memset(stm32_audio_out_bufs, 0, sizeof stm32_audio_out_bufs);
 }
 
 static const struct audio_dev_ops stm32_audio_in_ops = {
@@ -156,7 +168,7 @@ static const struct audio_dev_ops stm32_audio_in_ops = {
 
 static struct stm32_audio_dev_priv stm32_adc = {
 	.dev_type = STM32_DIGITAL_IN,
-	.buf      = (uint8_t *)&stm32_audio_in_bufs[0],
+	.buf      = stm32_audio_in_bufs,
 	.buf_len  = STM32_AUDIO_BUF_LEN,
 };
 
@@ -171,74 +183,38 @@ void audio_dev_open_in_stream(struct audio_dev *audio_dev, void *stream) {
 	stm32_hw_in.stream = stream;
 }
 
-#if 0
 static void stm32_audio_in_update_buffer(int buf_index) {
-	stm32_adc.buf = &stm32_audio_in_bufs[0] + buf_index * STM32_AUDIO_BUF_LEN;
-	Pa_StartStream(stm32_hw_in.stream);
-}
 
-void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t Instance) {
-	if (stm32_hw_in.stm32_audio_running) {
-		stm32_audio_in_update_buffer(0);
-	}
-}
+	BSP_AUDIO_IN_PDMToPCM(&stm32_pdm_buf[(STM32_IN_BUF_LEN / 2) * buf_index],
+			(uint16_t*)&stm32_audio_in_bufs[stm32_audio_in_buf_offset]);
 
-void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t Instance) {
-	if (stm32_hw_in.stm32_audio_running) {
-		stm32_audio_in_update_buffer(1);
-	}
-}
-#endif
+	stm32_audio_in_buf_offset += STM32_IN_PCM_SLOT_SIZE;
 
-static void stm32_audio_in_update_buffer(int buf_index) {
-	if (playbackPtr == AUDIO_BUFF_SIZE / 2) {
-		stm32_adc.buf = (uint8_t *)&stm32_audio_in_bufs[playbackPtr];
+	if (0 == (stm32_audio_in_buf_offset % STM32_AUDIO_BUF_LEN)) {
+		if (stm32_audio_in_buf_offset == (STM32_AUDIO_BUF_LEN * 2)) {
+			stm32_adc.buf = &stm32_audio_in_bufs[STM32_AUDIO_BUF_LEN];
+			stm32_audio_in_buf_offset = 0;
+		} else {
+			stm32_adc.buf = &stm32_audio_in_bufs[0];
+		}
+
 		Pa_StartStream(stm32_hw_in.stream);
 	}
-	playbackPtr += AUDIO_IN_PDM_BUFFER_SIZE / 4 / 2;
-	if (playbackPtr >= AUDIO_BUFF_SIZE) {
-		playbackPtr = 0;
-	}
 }
 
-void BSP_AUDIO_IN_HalfTransfer_CallBack(uint32_t Instance) {
+void BSP_AUDIO_IN_HalfTransfer_CallBack(void) {
 	if (stm32_hw_in.stm32_audio_running) {
-		/* Invalidate Data Cache to get the updated content of the SRAM*/
-		SCB_InvalidateDCache_by_Addr((uint32_t*) &recordPDMBuf[0],
-				AUDIO_IN_PDM_BUFFER_SIZE * 2);
-
-		BSP_AUDIO_IN_PDMToPCM(Instance, (uint16_t*) &recordPDMBuf[0],
-				&stm32_audio_in_bufs[playbackPtr]);
-
-		/* Clean Data Cache to update the content of the SRAM */
-		SCB_CleanDCache_by_Addr((uint32_t*) &stm32_audio_in_bufs[playbackPtr],
-				AUDIO_IN_PDM_BUFFER_SIZE / 4);
-
 		stm32_audio_in_update_buffer(0);
-
 	}
 }
 
-void BSP_AUDIO_IN_TransferComplete_CallBack(uint32_t Instance) {
+void BSP_AUDIO_IN_TransferComplete_CallBack(void) {
 	if (stm32_hw_in.stm32_audio_running) {
-		/* Invalidate Data Cache to get the updated content of the SRAM*/
-		SCB_InvalidateDCache_by_Addr(
-				(uint32_t*) &recordPDMBuf[AUDIO_IN_PDM_BUFFER_SIZE / 2],
-				AUDIO_IN_PDM_BUFFER_SIZE * 2);
-
-		BSP_AUDIO_IN_PDMToPCM(Instance,
-				(uint16_t*) &recordPDMBuf[AUDIO_IN_PDM_BUFFER_SIZE / 2],
-				&stm32_audio_in_bufs[playbackPtr]);
-
-		/* Clean Data Cache to update the content of the SRAM */
-		SCB_CleanDCache_by_Addr((uint32_t*) &stm32_audio_in_bufs[playbackPtr],
-				AUDIO_IN_PDM_BUFFER_SIZE / 4);
-
 		stm32_audio_in_update_buffer(1);
 	}
 }
 
-void BSP_AUDIO_IN_Error_CallBack(uint32_t Instance) {
+void BSP_AUDIO_IN_Error_CallBack() {
 	log_error("");
 }
 
@@ -282,18 +258,19 @@ static void stm32_audio_out_update_buffer(int buf_index) {
 	Pa_StartStream(stm32_hw_out.stream);
 }
 
-void BSP_AUDIO_OUT_HalfTransfer_CallBack(uint32_t Instance) {
+void BSP_AUDIO_OUT_HalfTransfer_CallBack(void) {
 	if (stm32_hw_out.stm32_audio_running) {
 		stm32_audio_out_update_buffer(0);
 	}
 }
 
-void BSP_AUDIO_OUT_TransferComplete_CallBack(uint32_t Instance) {
+void BSP_AUDIO_OUT_TransferComplete_CallBack(void) {
 	if (stm32_hw_out.stm32_audio_running) {
 		stm32_audio_out_update_buffer(1);
 	}
+	BSP_AUDIO_OUT_ChangeBuffer((void *) &stm32_audio_out_bufs[0] , STM32_AUDIO_BUF_LEN);
 }
 
-void BSP_AUDIO_OUT_Error_CallBack(uint32_t Instance) {
+void BSP_AUDIO_OUT_Error_CallBack() {
 	log_error("");
 }

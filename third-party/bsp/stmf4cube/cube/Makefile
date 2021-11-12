@@ -6,6 +6,7 @@ PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeF4/archive/$(P
 
 PKG_MD5     := 75abbac68e9fc9af999cb641c8f3ab77
 
-PKG_PATCHES := sd_read.patch
+PKG_PATCHES := sd_read.patch \
+		stm32f4discovery_audio.patch
 
 include $(EXTBLD_LIB)

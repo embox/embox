@@ -17,6 +17,7 @@
 #include <fs/dir_context.h>
 #include <fs/super_block.h>
 #include <fs/file_desc.h>
+#include <fs/perm.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
@@ -106,3 +107,27 @@ void devfs_notify_new_module(struct dev_module *devmod) {
 void devfs_notify_del_module(struct dev_module *devmod) {
 	devfs_del_node(devmod->name);
 }
+
+struct block_dev *bdev_by_path(const char *source) {
+	struct path dev_node;
+	const char *lastpath;
+	struct dev_module *devmod;
+
+	if (source == NULL) {
+		return NULL;
+	}
+
+	if (ENOERR != fs_perm_lookup(source, &lastpath, &dev_node)) {
+		return NULL;
+	}
+
+	if (ENOERR != fs_perm_check(dev_node.node, S_IROTH | S_IXOTH)) {
+		return NULL;
+	}
+
+	/* TODO: check if it's actually part of devfs? */
+	devmod = inode_priv(dev_node.node);
+
+	return dev_module_to_bdev(devmod);
+}
+

@@ -1,0 +1,15 @@
+package third_party.lib.st_audio_pdm
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/st_audio_pdm/libPDMFilter_CM7_GCC_wc32/Addons/PDM/Inc/")
+static module libPDMFilter_CM7_GCC_wc32 {
+	@AddPrefix("^BUILD/extbld/third_party/lib/st_audio_pdm/libPDMFilter_CM7_GCC_wc32/Addons/PDM/Lib/")
+	source "libPDMFilter_CM7_GCC_wc32.a"
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/st_audio_pdm/libPDMFilter_CM4_GCC_wc32/Addons/PDM/Inc/")
+static module libPDMFilter_CM4_GCC_wc32 {
+	@AddPrefix("^BUILD/extbld/third_party/lib/st_audio_pdm/libPDMFilter_CM4_GCC_wc32/Addons/PDM/Lib/")
+	source "libPDMFilter_CM4_GCC_wc32.a"
+}
