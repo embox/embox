@@ -2227,13 +2227,21 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 	}
 
 	switch (res) {
-	case DFS_OK:
-		fat_fill_inode(next, &de, dirinfo);
-		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, name)) {
+	case DFS_OK: {
+		char tmp_name[128];
+
+		if (0 > fat_fill_inode(next, &de, dirinfo)) {
 			return -1;
 		}
+		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, tmp_name)) {
+			return -1;
+		}
+		strncpy(name, tmp_name, NAME_MAX-1);
+		name[NAME_MAX - 1] = '\0';
+
 		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
 		return 0;
+	}
 	case DFS_EOF:
 		/* Fall through */
 	default:

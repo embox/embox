@@ -112,6 +112,7 @@ int usb_create_root_interface(struct usb_dev *dev) {
 	if (iface == NULL) {
 		return -1;
 	}
+	memset(iface, 0, sizeof(struct usb_interface));
 
 	dev->usb_iface[0] = iface;
 	iface->usb_dev = dev;

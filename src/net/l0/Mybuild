@@ -30,6 +30,7 @@ module net_tx {
 	option number log_level = 0
 	source "net_tx.c"
 
+	depends net_entry 
 	depends net_crypt_api
 	depends skbuff
 	depends af_packet_api /* make af_packet socket receive outcoming packets */

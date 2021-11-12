@@ -41,7 +41,7 @@ static struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 	uint8_t tmp_sec;
 	uint32_t tmp_clus;
 	struct inode *node;
-	char tmppath[PATH_MAX];
+	char tmppath[128];
 	int found = 0;
 
 	assert(name);
@@ -62,7 +62,7 @@ static struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 	}
 
 	while (!fat_get_next_long(di, &de, tmppath)) {
-		if (!strncmp(tmppath, name, sizeof(tmppath))) {
+		if (!strncmp(tmppath, name, NAME_MAX - 1)) {
 			found = 1;
 			break;
 		}
