@@ -1,4 +1,6 @@
 #include <string.h>
+#include <stdint.h>
+#include <stddef.h>
 
 #include <asm/io.h>
 #include <e2k_api.h>
@@ -17,7 +19,7 @@ do { \
 
 static int volatile entries_count = 0;
 static int volatile idled_cpus_count = 0;
-static int volatile sync_count = 0;
+//static int volatile sync_count = 0;
 
 static void e2k_kernel_start(void) {
 	extern void kernel_start(void);
@@ -50,7 +52,7 @@ void cpu_idle(void) {
 #include <hal/context.h>
 static struct context cpu_ctx_prev[CPU_COUNT + 1];
 static struct context cpu_ctx[CPU_COUNT + 1];
-static char idle_stack[0x10000] __attribute__((aligned(0x4000)));
+static char idle_stack[CPU_COUNT + 1][0x10000] __attribute__((aligned(0x4000)));
 
 #include <module/embox/kernel/stack.h>
 
@@ -59,6 +61,8 @@ extern char _stack_top;
 
 __attribute__ ((__section__(".e2k_entry")))
 void e2k_entry(struct pt_regs *regs) {
+	int current_entry;
+
 	/* Since we enable exceptions only when all CPUs except the main one
 	 * reached the idle state (cpu_idle), we can rely that order and can
 	 * guarantee exceptions happen strictly after all CPUS entries. */
@@ -76,21 +80,25 @@ void e2k_entry(struct pt_regs *regs) {
 
 	e2k_wait_all();
 
-	entries_count = __e2k_atomic32_add(1, &entries_count);
+	current_entry = __e2k_atomic32_add(1, &entries_count);
 
-	if (entries_count > 1) {
+	if (current_entry > 1) {
 		/* XXX currently we support only single core */
 		/* Run cpu_idle on 2nd CPU */
 
 		/* it's just needed if log_debug enabled in e2k_context module
 		 * else output will be wrong because 2 cpu printing at the same time */
-		while(!sync_count);
+		//while(!sync_count);
 
-		context_init(&cpu_ctx[0], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, cpu_idle, idle_stack, sizeof(idle_stack));
-		context_switch(&cpu_ctx_prev[0], &cpu_ctx[0]);
+		context_init(&cpu_ctx[current_entry],
+				CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, cpu_idle,
+				idle_stack[current_entry], sizeof(idle_stack[current_entry]));
+		context_switch(&cpu_ctx_prev[current_entry], &cpu_ctx[current_entry]);
 	}
+
 	/* Run e2k_kernel_start on 1st CPU */
-	context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE, e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
-	sync_count = __e2k_atomic32_add(1, &sync_count);
+	context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
+			e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
+	//sync_count = __e2k_atomic32_add(1, &sync_count);
 	context_switch(&cpu_ctx_prev[1], &cpu_ctx[1]);
 }
