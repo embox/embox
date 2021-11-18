@@ -48,8 +48,8 @@ void cpu_idle(void) {
 }
 
 #include <hal/context.h>
-static struct context cpu_ctx_prev[2];
-static struct context cpu_ctx[2];/* 2 CPU */
+static struct context cpu_ctx_prev[CPU_COUNT + 1];
+static struct context cpu_ctx[CPU_COUNT + 1];
 static char idle_stack[0x10000] __attribute__((aligned(0x4000)));
 
 #include <module/embox/kernel/stack.h>
