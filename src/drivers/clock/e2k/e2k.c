@@ -5,6 +5,8 @@
  * @version
  * @date 20.12.2017
  */
+#include <util/log.h>
+
 #include <stdint.h>
 #include <asm/io.h>
 
@@ -17,9 +19,9 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time_device.h>
 
-#define E2K_CLOCK_BASE (uintptr_t)0x83200000
-#define IRQ_NR     OPTION_GET(NUMBER, irq_num)
-#define LT_FREQ    OPTION_GET(NUMBER, freq)
+#define E2K_CLOCK_BASE  ((uintptr_t)OPTION_GET(NUMBER, base_addr))
+#define IRQ_NR          OPTION_GET(NUMBER, irq_num)
+#define LT_FREQ         OPTION_GET(NUMBER, freq)
 
 #define E2K_COUNTER_LIMIT	(E2K_CLOCK_BASE + 0x00)
 #define E2K_COUNTER_START_VALUE	(E2K_CLOCK_BASE + 0x04)
@@ -92,7 +94,11 @@ static int e2k_clock_set_periodic(struct clock_source *cs) {
 }
 
 static cycle_t e2k_clock_read(struct clock_source *cs) {
-	return e2k_read64(E2K_POWER_COUNTER);
+	cycle_t res;
+
+	res = e2k_read64(E2K_POWER_COUNTER);
+
+	return res;
 }
 
 static struct time_event_device e2k_clock_event = {
