@@ -96,6 +96,16 @@ void e2k_entry(struct pt_regs *regs) {
 		context_switch(&cpu_ctx_prev[current_entry], &cpu_ctx[current_entry]);
 	}
 
+
+	/* clean .bss */
+	extern int _bss_vma, _bss_len;
+	extern int _data_vma, _data_lma, _data_len;
+	memset(&_bss_vma, 0, (size_t) &_bss_len);
+
+	if (&_data_vma != &_data_lma) {
+		memcpy(&_data_vma, &_data_lma, (size_t) &_data_len);
+	}
+
 	/* Run e2k_kernel_start on 1st CPU */
 	context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
 			e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
