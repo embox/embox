@@ -1,10 +1,10 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl_examples/lv_demos-7.10.0")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lv_demos/lv_demos-7.10.0")
 @BuildArtifactPath(cppflags=" -DLV_EX_CONF_PATH=$(CONF_DIR)/lvgl/lv_ex_conf.h -DLV_LVGL_H_INCLUDE_SIMPLE -DLV_DEMO_CONF_INCLUDE_SIMPLE")
 @BuildDepends(third_party.lib.lvgl)
-static module lvgl_examples {
-	@AddPrefix("^BUILD/extbld/third_party/lib/lvgl_examples/install")
+static module lv_demos {
+	@AddPrefix("^BUILD/extbld/third_party/lib/lv_demos/install")
 	source "liblvglexamples.a"
 }
