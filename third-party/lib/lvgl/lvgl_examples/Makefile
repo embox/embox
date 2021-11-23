@@ -1,9 +1,8 @@
-PKG_NAME := lvgl_examples
+PKG_NAME := lvgl_demos
 PKG_VER := v7.10.0
+PKG_MD5 := 6d7ac30af3fb82c57008f6a49ea2497d
 
-PKG_SOURCES := https://github.com/lvgl/lv_examples/archive/$(PKG_VER).tar.gz
-
-PKG_MD5 := 1187435bc003dc7d4f58df354b0212f8
+PKG_SOURCES := https://github.com/lvgl/lv_demos/archive/$(PKG_VER).tar.gz
 
 include $(EXTBLD_LIB)
 
