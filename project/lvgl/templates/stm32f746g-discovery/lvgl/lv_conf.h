@@ -80,7 +80,7 @@ typedef int16_t lv_coord_t;
 #define LV_MEM_CUSTOM      0
 #if LV_MEM_CUSTOM == 0
 /* Size of the memory used by `lv_mem_alloc` in bytes (>= 2kB)*/
-#  define LV_MEM_SIZE (32 * 1024)
+#  define LV_MEM_SIZE (64 * 1024)
 
 /* Complier prefix for a big array declaration */
 #  define LV_MEM_ATTR
@@ -498,7 +498,11 @@ typedef void * lv_font_user_data_t;
  * `LV_BIDI_DIR_LTR` Left-to-Right
  * `LV_BIDI_DIR_RTL` Right-to-Left
  * `LV_BIDI_DIR_AUTO` detect texts base direction */
+#if LVGL_VERSION_MAJOR == 7
 #define LV_BIDI_BASE_DIR_DEF  LV_BIDI_DIR_AUTO
+#elif LVGL_VERSION_MAJOR == 8
+#define LV_BIDI_BASE_DIR_DEF  LV_BASE_DIR_AUTO
+#endif
 #endif
 
 /* Enable Arabic/Persian processing
