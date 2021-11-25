@@ -1,7 +1,10 @@
 PKG_NAME := lvgl_demos
 
-PKG_VER := v7.10.0
-PKG_MD5 := 6d7ac30af3fb82c57008f6a49ea2497d
+#PKG_VER := v7.10.0
+#PKG_MD5 := 6d7ac30af3fb82c57008f6a49ea2497d
+
+PKG_VER := v7.11.0
+PKG_MD5 := 598e406a7fb295cbf93e887b373fa003
 
 #PKG_VER := v8.1.0
 #PKG_MD5 := 4c4d7dc1e18feddfac77193006764bda

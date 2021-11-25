@@ -1,7 +1,7 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lv_demos/lv_demos-7.10.0")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lv_demos/lv_demos-7.11.0")
 @BuildArtifactPath(cppflags=" -DLV_EX_CONF_PATH=$(CONF_DIR)/lvgl/lv_ex_conf.h -DLV_LVGL_H_INCLUDE_SIMPLE -DLV_DEMO_CONF_INCLUDE_SIMPLE")
 @BuildDepends(third_party.lib.lvgl)
 static module lv_demos {
