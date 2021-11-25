@@ -52,8 +52,8 @@ static void input_dev_touchscreen_handler(lv_timer_t *t) {
 #endif
 
 static int hal_init(void) {
-	lv_disp_drv_t disp_drv;
-	lv_indev_drv_t indev_drv;
+	static lv_disp_drv_t disp_drv;
+	static lv_indev_drv_t indev_drv;
 	lv_indev_t *mouse_indev;
 	lv_obj_t *cursor_obj;
 
@@ -77,6 +77,9 @@ static int hal_init(void) {
 #if LVGL_VERSION_MAJOR == 7
 	disp_drv.buffer = &disp_buf1;
 #else
+    /*Set the resolution of the display*/
+    disp_drv.hor_res = LV_HOR_RES_MAX;
+    disp_drv.ver_res = LV_VER_RES_MAX;
 	disp_drv.draw_buf = &disp_buf1;
 #endif
 	disp_drv.flush_cb = lvgl_port_fbdev_flush;
