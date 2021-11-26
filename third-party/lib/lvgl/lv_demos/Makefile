@@ -1,18 +1,26 @@
-PKG_NAME := lvgl_examples
-PKG_VER := v7.10.0
+PKG_NAME := lvgl_demos
 
-PKG_SOURCES := https://github.com/lvgl/lv_examples/archive/$(PKG_VER).tar.gz
+#PKG_VER := v7.10.0
+#PKG_MD5 := 6d7ac30af3fb82c57008f6a49ea2497d
 
-PKG_MD5 := 1187435bc003dc7d4f58df354b0212f8
+#PKG_VER := v7.11.0
+#PKG_MD5 := 598e406a7fb295cbf93e887b373fa003
+
+PKG_VER := v8.1.0
+PKG_MD5 := 4c4d7dc1e18feddfac77193006764bda
+
+PKG_SOURCES := https://github.com/lvgl/lv_demos/archive/$(PKG_VER).tar.gz
 
 include $(EXTBLD_LIB)
 
 LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(CONF_DIR)/lvgl/lv_conf.h \
                 -DLV_EX_CONF_PATH=$(CONF_DIR)/lvgl/lv_ex_conf.h \
-                -DLV_LVGL_H_INCLUDE_SIMPLE
+                -DLV_DEMO_CONF_PATH=$(CONF_DIR)/lvgl/lv_demo_conf.h \
+                -DLV_LVGL_H_INCLUDE_SIMPLE \
+                -DLV_DEMO_CONF_INCLUDE_SIMPLE
 
 $(BUILD) :
-	cp $(ROOT_DIR)/third-party/lib/lvgl/lvgl_examples/CMakeLists.txt $(PKG_SOURCE_DIR) \
+	cp $(ROOT_DIR)/third-party/lib/lvgl/lv_demos/CMakeLists.txt $(PKG_SOURCE_DIR) \
 	    && cd $(PKG_SOURCE_DIR) && (mkdir build/ || true) && cd build && \
 	cmake \
 	    -D CMAKE_C_FLAGS="$(LVGL_CPP_FLAGS)" \
