@@ -34,16 +34,17 @@ SECTIONS {
 		*(.text)
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)
-	}
+	} SECTION_REGION(text) :text
 
 	/* XXX symbols __exidx_start/end are required by libgcc.a --Alexander */
 	.ARM.exidx : {
 		__exidx_start = .;
 		KEEP(*(.ARM.exidx*));
 		__exidx_end = .;
-	} SECTION_REGION(text)
+	} SECTION_REGION(text) :text
 
 	.ARM.extab : {
 		KEEP(*(.ARM.extab*));
-	} SECTION_REGION(text)
+	} SECTION_REGION(text) :text
+
 }
