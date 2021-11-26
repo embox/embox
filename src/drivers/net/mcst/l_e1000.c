@@ -62,7 +62,7 @@ static const uint8_t l_base_mac_addr[6] = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0x02 }
 static int card_number = 0;
 
 struct l_e1000_dma_area {
-	struct l_e1000_init_block init_block __attribute__((aligned(32)));
+	struct l_e1000_init_block init_block __attribute__((aligned(64)));
 	struct l_e1000_rx_desc    rx_ring[RX_RING_SIZE] __attribute__((aligned(16)));
 	struct l_e1000_tx_desc    tx_ring[TX_RING_SIZE] __attribute__((aligned(16)));
 };
@@ -75,7 +75,7 @@ struct mii_if {
 	unsigned char phy_id;
 };
 
-static struct l_e1000_dma_area e1000_dma_area[E1000_CARD_QUANTITY] __attribute__((aligned(32)));
+static struct l_e1000_dma_area e1000_dma_area[E1000_CARD_QUANTITY] __attribute__((aligned(64)));
 
 struct l_e1000_priv {
 	struct net_device *netdev;
