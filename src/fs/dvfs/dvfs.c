@@ -14,7 +14,6 @@
 
 #include <util/err.h>
 
-#include <drivers/block_dev.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
@@ -23,9 +22,8 @@
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
-extern int            dvfs_update_root(void);
+extern int dvfs_update_root(void);
 extern struct dentry *dvfs_root(void);
-extern int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup);
 extern int dvfs_lookup(const char *path, struct lookup *lookup);
 
 /**
@@ -341,44 +339,6 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	return 0;
 }
 
-struct block_dev *bdev_by_path(const char *dev_name) {
-	struct lookup lookup = {};
-	struct dev_module *devmod;
-	int res;
-
-	if (!dev_name) {
-		return NULL;
-	}
-	if (!strlen(dev_name)) {
-		return NULL;
-	}
-
-	/* Check if devfs is initialized */
-	res = dvfs_lookup("/dev", &lookup);
-	if (res) {
-		/* devfs is not mounted yet */
-		return block_dev_find(dev_name);
-	}
-	dentry_ref_dec(lookup.item);
-
-	/* devfs presents, perform usual mount */
-	memset(&lookup, 0, sizeof(lookup));
-	dvfs_lookup(dev_name, &lookup);
-	if (!lookup.item) {
-		SET_ERRNO(ENOENT);
-		return NULL;
-	}
-
-	assert(lookup.item->d_inode);
-
-	devmod = inode_priv(lookup.item->d_inode);
-
-	dentry_ref_dec(lookup.item);
-
-	return dev_module_to_bdev(devmod);
-}
-
-extern int dvfs_cache_del(struct dentry *dentry);
 extern int set_rootfs_sb(struct super_block *sb);
 /**
  * @brief Mount file system

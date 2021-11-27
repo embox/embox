@@ -23,59 +23,6 @@ module portaudio_lib extends portaudio_api {
 	depends audio_utils
 }
 
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f4_pa_cube extends portaudio_api {
-	option number audio_dma_irq = 47
-	option number volume=70
-	option number sample_rate
-	option number buf_cnt=0x4
-	option number chan_n=2
-	option number slot_n=1
-
-	@IncludeExport(path="drivers/audio", target_name="stm32_audio.h")
-	source "stm32_audio_conf_f4.h"
-
-	source "stm32_pa_cube.c"
-
-	@IncludeExport(path="")
-	source "portaudio.h"
-
-	depends third_party.bsp.st_bsp_api
-	depends embox.util.dlist
-	depends embox.compat.libc.assert
-	depends embox.compat.posix.util.sleep
-	depends embox.mem.pool
-	depends embox.mem.heap_api
-	depends embox.kernel.irq_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f7_pa_cube extends portaudio_api {
-	option number audio_dma_irq = 60
-	option number volume=70
-	option number sample_rate
-	option number buf_cnt=0x4
-	option number chan_n=2
-	option number slot_n=1
-
-	@IncludeExport(path="drivers/audio", target_name="stm32_audio.h")
-	source "stm32_audio_conf_f7.h"
-
-	source "stm32_pa_cube.c"
-
-	@IncludeExport(path="")
-	source "portaudio.h"
-
-	depends third_party.bsp.st_bsp_api
-	depends third_party.bsp.stmf7cube.stm32f7_discovery_components
-	depends embox.util.dlist
-	depends embox.compat.libc.assert
-	depends embox.compat.posix.util.sleep
-	depends embox.mem.pool
-	depends embox.mem.heap_api
-	depends embox.kernel.irq_api
-}
-
 module portaudio_stub extends portaudio_api {
 	source "portaudio_stub.c"
 

@@ -1,0 +1,24 @@
+diff -aur STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c ../build/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c
+--- STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c	2020-03-04 11:10:07.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c	2021-11-03 13:17:05.263171541 +0300
+@@ -130,7 +130,7 @@
+ 
+ /* Includes ------------------------------------------------------------------*/
+ #include "stm32f4_discovery_audio.h"
+-
++#include <pdm2pcm_glo.h>
+ /** @addtogroup BSP
+   * @{
+   */
+diff -aur STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.h ../build/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.h
+--- STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.h	2020-03-04 11:10:07.000000000 +0300
++++ ../build/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.h	2021-11-03 13:16:29.910621899 +0300
+@@ -47,7 +47,7 @@
+ #include "../Components/cs43l22/cs43l22.h"
+ 
+ #include "stm32f4_discovery.h"
+-#include "../../../Middlewares/ST/STM32_Audio/Addons/PDM/Inc/pdm2pcm_glo.h"
++//#include "../../../Middlewares/ST/STM32_Audio/Addons/PDM/Inc/pdm2pcm_glo.h"
+ 
+ /** @addtogroup BSP
+   * @{

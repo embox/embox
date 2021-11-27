@@ -28,8 +28,6 @@
 #include <fs/perm.h>
 #include <fs/vfs.h>
 
-#include <drivers/block_dev.h>
-
 #include <security/security.h>
 
 
@@ -337,29 +335,6 @@ int kformat(const char *pathname, const char *fs_type) {
 	}
 
 	return 0;
-}
-
-struct block_dev *bdev_by_path(const char *source) {
-	struct path dev_node;
-	const char *lastpath;
-	struct dev_module *devmod;
-
-	if (source == NULL) {
-		return NULL;
-	}
-
-	if (ENOERR != fs_perm_lookup(source, &lastpath, &dev_node)) {
-		return NULL;
-	}
-
-	if (ENOERR != fs_perm_check(dev_node.node, S_IROTH | S_IXOTH)) {
-		return NULL;
-	}
-
-	/* TODO: check if it's actually part of devfs? */
-	devmod = inode_priv(dev_node.node);
-
-	return dev_module_to_bdev(devmod);
 }
 
 static int vfs_mount_walker(struct inode *dir) {

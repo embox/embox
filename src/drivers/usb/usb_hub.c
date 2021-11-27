@@ -6,19 +6,27 @@
  * @date    09.12.2019
  */
 
+#include <util/log.h>
+
 #include <unistd.h>
 #include <mem/misc/pool.h>
-#include <embox/unit.h>
+
 #include <util/dlist.h>
-#include <util/log.h>
 #include <util/err.h>
+
 #include <kernel/thread.h>
+#include <kernel/thread/thread_sched_wait.h>
+
 #include <drivers/usb/usb_driver.h>
 #include <drivers/usb/usb.h>
+
+#include <embox/unit.h>
 
 #define USB_HUBS_HANDLE_INTERVAL (1000 * 1000) /* 1 sec */
 #define USB_HUB_PORT_STS_TIMEOUT 1000
 #define USB_CTRL_GET_TIMEOUT     1000
+
+#define USE_THREAD    OPTION_GET(BOOLEAN, use_thread)
 
 EMBOX_UNIT_INIT(usb_hub_driver_init);
 
@@ -27,7 +35,10 @@ POOL_DEF(usb_devs, struct usb_dev, USB_MAX_DEV);
 
 static DLIST_DEFINE(usb_hubs_list);
 static DLIST_DEFINE(usb_devs_list);
-/*static struct thread *usb_hubs_thread;*/
+#if USE_THREAD
+static struct thread *usb_hubs_thread;
+static volatile int port_status_changed = 0;
+#endif
 
 static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 		unsigned int port_nr);
@@ -312,6 +323,7 @@ static void usb_hub_event(struct usb_hub *hub) {
 	mutex_unlock(&hub->mutex);
 }
 
+#if USE_THREAD
 static void usb_hubs_enumerate_if_needed(void) {
 	struct usb_hub *hub;
 
@@ -321,14 +333,27 @@ static void usb_hubs_enumerate_if_needed(void) {
 	}
 }
 
+
 static inline void *usb_hub_event_hnd(void *arg) {
 	while (1) {
+		SCHED_WAIT_TIMEOUT(port_status_changed, 10000);
+		port_status_changed = 0;
 		usb_hubs_enumerate_if_needed();
-		usleep(USB_HUBS_HANDLE_INTERVAL);
+		//usleep(USB_HUBS_HANDLE_INTERVAL);
 	}
 
 	return NULL;
 }
+
+void usb_hubs_notify(void) {
+	port_status_changed = 1;
+	sched_wakeup(&usb_hubs_thread->schedee);
+}
+
+#else
+void usb_hubs_notify(void) {
+}
+#endif
 
 static int usb_hub_get_status(struct usb_hub *hub,
 		uint16_t *status, uint16_t *change) {
@@ -423,10 +448,13 @@ static int usb_hub_probe(struct usb_interface *iface) {
 	dlist_add_next(&hub->lnk, &usb_hubs_list);
 
 	mutex_init(&hub->mutex);
-
+#if USE_THREAD
+	thread_launch(usb_hubs_thread);
+#else
 	/* Try to handle attached devices immediately, without
 	 * waiting for usb_hub_event_hnd thread. */
 	usb_hub_event(hub);
+#endif
 
 	return 0;
 }
@@ -443,10 +471,12 @@ struct usb_driver usb_driver_hub = {
 };
 
 static int usb_hub_driver_init(void) {
-/*	usb_hubs_thread = thread_create(THREAD_FLAG_SUSPENDED, usb_hub_event_hnd, NULL);
+#if USE_THREAD
+	usb_hubs_thread = thread_create(THREAD_FLAG_SUSPENDED, usb_hub_event_hnd, NULL);
 	if (err(usb_hubs_thread)) {
 		return err(usb_hubs_thread);
 	}
-*/
+#endif
+
 	return usb_driver_register(&usb_driver_hub);
 }

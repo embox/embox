@@ -1,7 +1,5 @@
 package embox.arch.e2k
 
-abstract module cpu { }
-
 module arch {
 	option number cpu_count=2
 	option number log_level=0

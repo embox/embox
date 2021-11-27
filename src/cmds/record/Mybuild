@@ -17,6 +17,7 @@ package embox.cmd
 
 module record {
 	option boolean use_local_buffer = true
+	option number local_buffer_size = 0x800000
 
 	source "record.c"
 

@@ -1,0 +1,15 @@
+diff -aur lvgl-8.1.0/CMakeLists.txt ../build/extbld/third_party/lib/lvgl/lvgl-8.1.0/CMakeLists.txt
+--- lvgl-8.1.0/CMakeLists.txt	2021-11-10 14:17:53.000000000 +0300
++++ ../build/extbld/third_party/lib/lvgl/lvgl-8.1.0/CMakeLists.txt	2021-11-22 17:43:11.208832816 +0300
+@@ -36,6 +36,11 @@
+ 
+     endif(CONFIG_LVGL)
+ 
++elseif(LIBLVGL_STATIC)
++
++	file(GLOB_RECURSE SOURCES src/*.c)
++	add_library(lvgl STATIC ${SOURCES})
++
+ else()
+ 
+     file(GLOB_RECURSE SOURCES ${CMAKE_CURRENT_LIST_DIR}/src/*.c)

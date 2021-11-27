@@ -6,14 +6,16 @@
  * @author: Anton Bondarev
  */
 
+#include <stdint.h>
 #include <assert.h>
+
 #include <kernel/irq.h>
 
-extern char __static_irq_table_start;
-extern char __static_irq_table_end;
+extern void *__static_irq_table_start;
+extern void *__static_irq_table_end;
 
 #define STATIC_IRQ_TABLE_SIZE \
-	(((int) &__static_irq_table_end - (int) &__static_irq_table_start) / 4)
+	(((intptr_t) &__static_irq_table_end - (intptr_t) &__static_irq_table_start) / 4)
 
 int irq_attach(unsigned int irq_nr, irq_handler_t handler, unsigned int flags,
 		void *dev_id, const char *dev_name) {

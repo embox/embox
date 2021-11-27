@@ -28,10 +28,13 @@ static module arch extends embox.arch.arch {
 @BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM32F4-Discovery)")
 @BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM324xG_EVAL)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/STM32F4-Discovery")
+	source "stm32f4_discovery.c",
+			"stm32f4_discovery_accelerometer.c"
+
+	/* there is no sd support for STM32F4-Discovery */
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP")
-	source "STM32F4-Discovery/stm32f4_discovery.c",
-			"STM32F4-Discovery/stm32f4_discovery_accelerometer.c",
-			"STM324xG_EVAL/stm324xg_eval_sd.c"
+	source  "STM324xG_EVAL/stm324xg_eval_sd.c"
 
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends stm32f4_discovery_conf
@@ -40,6 +43,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildDepends(third_party.lib.st_audio_pdm.libPDMFilter_CM4_GCC_wc32)
 @BuildDepends(bsp)
 static module stm32f4_discovery_bsp_audio {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
@@ -49,12 +53,14 @@ static module stm32f4_discovery_bsp_audio {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
 	source "./STM32CubeF4-1.25.0/Drivers/BSP/Components/cs43l22/cs43l22.c"
 
-	depends pdm_filter_stub
+//	depends pdm_filter_stub
 
+	@NoRuntime depends third_party.lib.st_audio_pdm.libPDMFilter_CM4_GCC_wc32
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends bsp
 }
 
+/*
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
 @BuildDepends(bsp)
@@ -65,3 +71,4 @@ static module pdm_filter_stub {
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends bsp
 }
+*/

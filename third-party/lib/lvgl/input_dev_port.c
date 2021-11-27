@@ -17,16 +17,21 @@
 static bool left_button_down = false;
 static int16_t last_x = 0, last_y = 0;
 static int inp_fd;
-
+#if LVGL_VERSION_MAJOR == 7
 bool lvgl_port_input_dev_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
+#else
+void lvgl_port_input_dev_read(lv_indev_drv_t *indev_drv, lv_indev_data_t *data) {
+#endif
+
 	(void) indev_drv;      /*Unused*/
 
 	/*Store the collected data*/
 	data->point.x = last_x;
 	data->point.y = last_y;
 	data->state = left_button_down ? LV_INDEV_STATE_PR : LV_INDEV_STATE_REL;
-
+#if LVGL_VERSION_MAJOR == 7
 	return false;
+#endif
 }
 
 int lvgl_port_input_dev_init(const char *path) {

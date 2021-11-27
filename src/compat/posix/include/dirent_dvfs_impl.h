@@ -4,13 +4,15 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
-#include <fs/dvfs.h>
+#include <dirent.h>
+#include <fs/dir_context.h>
+
+struct dentry;
 
 struct DIR_struct {
 	struct dirent dirent;
 	struct dir_ctx ctx;
 	struct dentry *dir_dentry;
-	struct dentry *prv_dentry;
 };
 
 #endif /* DIRENT_IMPL_H_ */
