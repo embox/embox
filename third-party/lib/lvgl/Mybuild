@@ -1,10 +1,12 @@
 package third_party.lib
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/lvgl-8.1.0")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/lib/lvgl/install/include")
 @BuildArtifactPath(cppflags=" -DLV_CONF_PATH=$(abspath $(CONF_DIR))/lvgl/lv_conf.h -I$(abspath $(ROOT_DIR))/third-party/lib/lvgl -Wno-error=undef")
 static module lvgl {
-	@AddPrefix("^BUILD/extbld/third_party/lib/lvgl/install")
+	option string lvgl_version="v8.1.0"
+
+	@AddPrefix("^BUILD/extbld/third_party/lib/lvgl/install/bin")
 	source "liblvgl.a"
 }
 

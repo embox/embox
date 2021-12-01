@@ -1,16 +1,25 @@
 PKG_NAME := lvgl
 
+define option_get_string
+$(shell echo OPTION_STRING_third_party__lib__lvgl__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/lvgl.h -)
+endef
+
+PKG_VER          := $(call option_get_string,lvgl_version)
+
 #PKG_VER := v7.10.0
-#PKG_MD5 := 94d3ab47a72dab33a7b7e2026f38ccab
-#PKG_PATCHES := patch-7.10.0.txt
+PKG_MD5_v7.10.0 := 94d3ab47a72dab33a7b7e2026f38ccab
+PKG_PATCHES_v7.10.0 := patch-7.10.0.txt
 
 #PKG_VER := v7.11.0
-#PKG_MD5 := a863854d61b64536be30d61f9101b009
-##PKG_PATCHES := patch-7.10.0.txt
+PKG_MD5_v7.11.0 := a863854d61b64536be30d61f9101b009
+PKG_PATCHES_v7.11.0 := 
 
-PKG_VER := v8.1.0
-PKG_MD5 := 2e2ce43854ab77ade4f6af0d4b175b0b
-PKG_PATCHES := patch-8.1.0.txt
+#PKG_VER := v8.1.0
+PKG_MD5_v8.1.0 := 2e2ce43854ab77ade4f6af0d4b175b0b
+PKG_PATCHES_v8.1.0 := patch-8.1.0.txt
+
+PKG_PATCHES      := $(PKG_PATCHES_$(PKG_VER))
+PKG_MD5          := $(PKG_MD5_$(PKG_VER))
 
 PKG_SOURCES := https://github.com/lvgl/lvgl/archive/$(PKG_VER).tar.gz
 
@@ -32,5 +41,9 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(PKG_SOURCE_DIR)/build/liblvgl.a $(PKG_INSTALL_DIR)
+	mkdir -p $(PKG_INSTALL_DIR)/bin
+	mkdir -p $(PKG_INSTALL_DIR)/include
+	cp $(PKG_SOURCE_DIR)/*.h $(PKG_INSTALL_DIR)/include
+	cp -r $(PKG_SOURCE_DIR)/src $(PKG_INSTALL_DIR)/include
+	cp $(PKG_SOURCE_DIR)/build/liblvgl.a $(PKG_INSTALL_DIR)/bin
 	touch $@
