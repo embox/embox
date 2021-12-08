@@ -72,6 +72,7 @@ struct usb_request *usb_endp_request_alloc(struct usb_endp *endp,
 	req->len = len;
 	req->notify_hnd = notify_hnd;
 	req->hnd_data = arg;
+	log_debug("endp num (%d) len (%d)", endp->address, len);
 
 	waitq_init(&req->wq);
 
@@ -217,6 +218,9 @@ int usb_endp_bulk(struct usb_endp *endp, usb_request_notify_hnd_t notify_hnd,
 	if (!req) {
 		return -1;
 	}
+
+	log_debug("bus(%d) addr(%d) endpn(%d) len(%d)", endp->dev->bus_idx,
+			endp->dev->addr, endp->address, len);
 
 	return usb_endp_request(endp, req);
 }
