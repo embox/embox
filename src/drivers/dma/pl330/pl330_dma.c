@@ -102,13 +102,14 @@ static uint8_t get_irq_from_channel(uint8_t ch) {
 
 // Allocate and lock memory for use by DMA
 //
-Dma_mem_handle *pl330_dma_malloc(size_t size)
+Dma_mem_handle *pl330_dma_malloc(size_t size, uint32_t flags)
 {
     // Make `size` a multiple of PAGE_SIZE
     size = ((size + PAGE_SIZE() - 1) / PAGE_SIZE()) * PAGE_SIZE();
+    if(flags == 0) flags = BCM2835_MEM_FLAG_DIRECT; /* default option for ARM */
 
     Dma_mem_handle *mem = (Dma_mem_handle *)malloc(sizeof(Dma_mem_handle));
-    mem->mb_handle = (uint32_t)pl330_vc_malloc(size, PAGE_SIZE(), BCM2835_MEM_FLAG_DIRECT);
+    mem->mb_handle = (uint32_t)pl330_vc_malloc(size, PAGE_SIZE(), flags);
     mem->bus_addr = pl330_vc_mem_lock(mem->mb_handle);
     mem->physical_addr = DMA_BUS_TO_PHYS(mem->bus_addr);
     mem->size = size;

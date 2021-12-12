@@ -23,6 +23,11 @@
 #include <asm/addrspace.h>
 #endif
 
+#ifdef __arm__
+#include <drivers/dma/dma.h>
+#include <drivers/mailbox/bcm2835_mailbox_property.h>
+#endif
+
 struct device;
 
 /*
@@ -41,27 +46,37 @@ enum dma_data_direction {
  */
 static inline void *dma_alloc_coherent(struct device *dev, size_t size,
 		dma_addr_t *handle, gfp_t flag) {
-#ifndef NOMMU
-	void *mem = sysmemalign(MMU_PAGE_SIZE, size);
-	mmu_ctx_t ctx = vmem_current_context();
-	int flags = PROT_WRITE | PROT_READ | PROT_NOCACHE;
-
-	vmem_set_flags(ctx, (mmu_vaddr_t) mem, size, flags);
+#ifdef __arm__ /* use dma driver */ 
+	Dma_mem_handle *mem = dma_malloc_opt(size, BCM2835_MEM_FLAG_COHERENT);
+	*handle = (dma_addr_t)mem;
+	return (void *)mem->bus_addr;
 #else
-	void *mem = sysmemalign(sizeof(void *) * 4, size);
-#endif
+	#ifndef NOMMU
+		void *mem = sysmemalign(MMU_PAGE_SIZE, size);
+		mmu_ctx_t ctx = vmem_current_context();
+		int flags = PROT_WRITE | PROT_READ | PROT_NOCACHE;
 
-#ifdef __mips__
-	*handle = (uintptr_t)mem - KSEG0;
-#else
-	*handle = (uintptr_t)mem;
+		vmem_set_flags(ctx, (mmu_vaddr_t) mem, size, flags);
+	#else
+		void *mem = sysmemalign(sizeof(void *) * 4, size);
+	#endif
+
+	#ifdef __mips__
+		*handle = (uintptr_t)mem - KSEG0;
+	#else
+		*handle = (uintptr_t)mem;
+	#endif
 #endif
 	return mem;
 }
 
 static inline void dma_free_coherent(struct device *dev, size_t size,
 		void *cpu_addr, dma_addr_t handle) {
+#ifdef __arm__ /* use dma driver */ 
+	dma_free((Dma_mem_handle *)handle);
+#else
 	sysfree(cpu_addr);
+#endif
 }
 
 static inline dma_addr_t dma_map_single(struct device *dev, void *ptr, size_t size,
