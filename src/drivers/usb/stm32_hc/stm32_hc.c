@@ -136,7 +136,7 @@ static inline HCD_URBStateTypeDef stm32_wait_urb_state(HCD_HandleTypeDef *hhcd, 
 	HCD_URBStateTypeDef st;
 	for(;;) {
 		st = HAL_HCD_HC_GetURBState (hhcd, pipe);
-		if (wait_st & st) {
+		if (wait_st == st) {
 			break;
 		}
 		HAL_Delay(2);
@@ -277,28 +277,44 @@ static inline int stm32_hc_submit_request(struct stm32_endp *stm32_endp,
 			uint8_t token, uint8_t *buf, uint16_t len) {
 	int res;
 
-//	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_IDLE);
-
+	log_debug("pipe_idx(%d) dir(%d) type(%d) token(%d) len(%d) buf(%p)",
+			stm32_endp->pipe_idx, stm32_endp->endp_dir, stm32_endp->endp_type,
+			token, len, buf);
 	res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-			stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len, 0);
+				stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len, 0);
 	if (res != HAL_OK) {
+		log_error("HAL_HCD_HC_SubmitRequest failed with (%d)", res);
 		return -1;
 	}
 
 	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_DONE);
+
 	return 0;
 }
 
 static int stm32_common_request(struct usb_request *req) {
 	struct stm32_endp *stm32_endp;
 	int res;
+	int len;
 
 	stm32_endp = req->endp->hci_specific;
 
-	res = stm32_hc_submit_request(stm32_endp, 1, (uint8_t *) req->buf,req->len);
-	if (res == -1) {
-		log_error("error while processing usb request.");
-		return -1;
+	if (req->endp->max_packet_size >= req->len) {
+		res = stm32_hc_submit_request(stm32_endp, 1, (uint8_t *) req->buf,
+				req->len);
+		if (res == -1) {
+			log_error("error while processing usb request.");
+			return -1;
+		}
+	} else {
+		for (len = 0; len < req->len; len += req->endp->max_packet_size) {
+			res = stm32_hc_submit_request(stm32_endp, 1,
+					(uint8_t *) &req->buf[len], req->endp->max_packet_size);
+			if (res == -1) {
+				log_error("error while processing usb request.");
+				return -1;
+			}
+		}
 	}
 
 	req->actual_len = req->len;
