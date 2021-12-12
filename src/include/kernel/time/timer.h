@@ -15,6 +15,10 @@
 #ifndef KERNEL_TIMER_H_
 #define KERNEL_TIMER_H_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 #include <stdbool.h>
 
@@ -22,6 +26,8 @@
 #include <defines/clock_t.h>
 
 #include <sys/cdefs.h>
+#include <linux/list.h>
+
 __BEGIN_DECLS
 
 struct sys_timer;
@@ -159,6 +165,31 @@ extern int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t tic
  * @param id timer identifier
  */
 extern int timer_close(struct sys_timer *ptimer);
+
+/*
+ */
+struct timer_list
+{
+	/*
+	 * All fields that change during normal runtime grouped to the
+	 * same cacheline
+	 */
+	struct list_head entry;
+	unsigned long	 expires;
+	void		 (*function)(unsigned long data);
+	unsigned long	 data;
+};
+
+void init_timer (struct timer_list *timer);
+
+void add_timer (struct timer_list *timer);
+int del_timer (struct timer_list *timer);
+
+int linuxemu_init_timer (void);
+
+#ifdef __cplusplus
+}
+#endif
 
 __END_DECLS
 
