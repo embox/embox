@@ -1,0 +1,58 @@
+diff --git circle/addon/vc4/interface/bcm_host/bcm_host.c b/addon/vc4/interface/bcm_host/bcm_host.c
+index 7b5c415..df45543 100644
+--- circle/addon/vc4/interface/bcm_host/bcm_host.c
++++ b/addon/vc4/interface/bcm_host/bcm_host.c
+@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include "interface/vcos/vcos.h"
+ #include <vc4/vchiq/vchiq_if.h>
+ #include <vc4/vchi/vchi.h>
+-#include <circle/startup.h>
++//#include <circle/startup.h>
+ #else
+ #include <stdio.h>
+ #include "interface/vmcs_host/vc_dispmanx.h"
+@@ -105,7 +105,7 @@ void bcm_host_init(void)
+    if (vchiq_initialise(&vchiq_instance) != VCHIQ_SUCCESS)
+    {
+       printk("* failed to open vchiq instance\n");
+-      halt();
++      arch_idle();
+    }
+ 
+    vcos_log("vchi_initialise");
+diff --git circle/addon/vc4/interface/vcos/vcos_platform.h b/addon/vc4/interface/vcos/vcos_platform.h
+index 8eb73a8..c089913 100644
+--- circle/addon/vc4/interface/vcos/vcos_platform.h
++++ b/addon/vc4/interface/vcos/vcos_platform.h
+@@ -46,6 +46,7 @@ extern "C" {
+ 
+ #ifdef __circle__
+ #include <stdint.h>
++#include <strings.h>
+ #include <linux/pthread.h>
+ #include <linux/atomic.h>
+ #include <linux/errno.h>
+@@ -54,7 +55,7 @@ extern "C" {
+ #include <linux/semaphore.h>
+ #include <linux/timer.h>
+ #include <linux/jiffies.h>
+-#include <linux/string.h>
++#include <string.h>
+ #include <circle/alloc.h>
+ #else
+ #include <pthread.h>
+diff --git circle/include/circle/sysconfig.h b/include/circle/sysconfig.h
+index 0e9e6df..e563cd7 100644
+--- circle/include/circle/sysconfig.h
++++ b/include/circle/sysconfig.h
+@@ -22,6 +22,10 @@
+ #ifndef _circle_sysconfig_h
+ #define _circle_sysconfig_h
+ 
++#include <embox/unit.h>
++#define RASPPI OPTION_GET(NUMBER,pi)
++#define AARCH OPTION_GET(NUMBER,aarch)
++
+ ///////////////////////////////////////////////////////////////////////
+ //
+ // Memory
