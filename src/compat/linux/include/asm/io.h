@@ -4,6 +4,10 @@
 #include <asm/page.h>
 #include <linux/types.h>
 
+#ifndef __iomem       /* For clean compiles in earlier kernels without __iomem annotations */
+    #define __iomem
+#endif
+
 static inline unsigned long virt_to_phys(volatile void *address)
 {
          return (unsigned long)address;

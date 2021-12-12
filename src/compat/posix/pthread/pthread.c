@@ -11,7 +11,7 @@
 
 #include <kernel/thread.h>
 #include <util/err.h>
-
+#include <mem/vmem.h>
 
 int pthread_attr_destroy(pthread_attr_t *attr) {
 	return ENOERR;
@@ -119,11 +119,19 @@ int pthread_attr_setscope(pthread_attr_t *attr, int contentionscope) {
 int pthread_attr_setstackaddr(pthread_attr_t *attr, void *stackaddr) {
 	return -ENOSYS;
 }
-
-int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
-	return -ENOSYS;
-}
 */
+int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
+#define trunc_page(x)	((x) & (~(MMU_PAGE_MASK)))
+#define round_page(x)	trunc_page((x) + (MMU_PAGE_MASK))
+	if (stacksize < THREAD_DEFAULT_STACK_SIZE ||
+	    stacksize > round_page(stacksize))
+		return (EINVAL);
+
+	attr->stack_size = stacksize;
+
+	return (0);
+}
+
 
 
 int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
