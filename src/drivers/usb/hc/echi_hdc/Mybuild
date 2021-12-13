@@ -1,0 +1,28 @@
+package embox.driver.usb.hc
+
+module ehci_hcd {
+	option number log_level=1
+	option number tt_support=0
+
+	source "ehci_hcd.c"
+	source "ehci_mem.c"
+	source "ehci_q.c"
+	source "ehci_helpers.c"
+
+	@IncludeExport(path="drivers/usb")
+	source "ehci.h", "ehci_regs.h"
+
+	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
+}
+
+module ehci_pci {
+	option number log_level=1
+
+	source "ehci_pci.c"
+
+	depends ehci_hcd
+	depends embox.driver.usb.core
+	depends embox.driver.usb.hub
+	depends embox.driver.pci
+}
