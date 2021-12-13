@@ -14,8 +14,6 @@
 #include <stm32f4xx_hal.h>
 #include <stm32f4xx_hal_hcd.h>
 
-extern HCD_HandleTypeDef stm32_hcd_handler;
-
 void HAL_HCD_MspInit(HCD_HandleTypeDef *hhcd) {
 	GPIO_InitTypeDef GPIO_InitStructure;
 
