@@ -6,6 +6,14 @@
 .*.sw[a-z]
 *~
 /tags
+#QtCreator
+embox.cflags
+embox.config
+embox.creator
+embox.creator.user
+embox.cxxflags
+embox.files
+embox.includes
 
 ## Build
 /*.img
