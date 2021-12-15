@@ -1,0 +1,44 @@
+package platform.stm32.f4.stm32f429i_discovery
+
+@BuildArtifactPath(cppflags="-DSTM32F429xx")
+static module stm32f429i_discovery_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
+	@IncludeExport(path="")
+	source "stm32f4xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module arch extends embox.arch.arch {
+	option boolean errata_spi_wrong_last_bit = false
+
+	source "arch.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+	source "./STM32CubeF4-1.25.0/Projects/STM32F429I-Discovery/Templates/Src/system_stm32f4xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(stm32f429i_discovery_conf)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM32F429I-Discovery)")
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM324xG_EVAL)")
+static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/STM32F429I-Discovery")
+	source "stm32f429i_discovery.c",
+	 "stm32f429i_discovery_sdram.c",
+	 "stm32f429i_discovery_lcd.c",
+	 "stm32f429i_discovery_io.c",
+	 "stm32f429i_discovery_ts.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/Components/ili9341")
+	source  "ili9341.c"
+	
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP/Components/stmpe811")
+	source  "stmpe811.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP")
+	source  "STM324xG_EVAL/stm324xg_eval_sd.c"
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends stm32f429i_discovery_conf
+	@NoRuntime depends arch
+}

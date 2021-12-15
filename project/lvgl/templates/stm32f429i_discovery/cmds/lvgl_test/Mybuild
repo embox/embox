@@ -1,0 +1,14 @@
+package project.lvgl
+
+@AutoCmd
+@Cmd(name="lvgl_test", help="LVGL test stm32f429i", man="")
+@BuildDepends(third_party.lib.lvgl)
+@BuildDepends(third_party.lib.lvgl_display_port_api)
+module lvgl_test {
+	@IncludePath("$(CONF_DIR)")
+	source "lvgl_test.c"
+
+	@NoRuntime depends third_party.lib.lvgl
+	@NoRuntime depends third_party.lib.lvgl_display_port_api
+}
+

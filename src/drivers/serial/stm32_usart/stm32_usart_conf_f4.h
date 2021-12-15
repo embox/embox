@@ -15,7 +15,8 @@
 #if defined(STM32F407xx)
 #include "stm32f4_discovery.h"
 #elif defined (STM32F429xx)
-#include "stm32f4xx_nucleo_144.h"
+//#include "stm32f4xx_nucleo_144.h"
+#include "stm32f429i_discovery.h"
 #else
 #error Unsupported platform
 #endif
@@ -38,6 +39,10 @@ static_assert(USART3_IRQ == USART3_IRQn, "");
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart2_irq)
 static_assert(USART2_IRQ == USART2_IRQn, "");
 
+#define USART1_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, usart1_irq)
+static_assert(USART1_IRQ == USART1_IRQn, "");
+
 #if defined(UART8)
 #define UART8_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f4, NUMBER, uart8_irq)
@@ -50,6 +55,12 @@ static_assert(UART8_IRQ == UART8_IRQn, "");
 
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART6_IRQ
+
+#elif MODOPS_USARTX == 1
+#define USARTx                           USART1
+
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      USART1_IRQ
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2

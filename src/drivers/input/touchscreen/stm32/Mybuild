@@ -25,3 +25,14 @@ module stm32h7cube_ts {
 	depends third_party.bsp.st_bsp_api
 	@NoRuntime depends third_party.bsp.stmh7cube.stm32h7_discovery_components
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f4cube_ts {
+	option number log_level = 1
+	option number ts_irq = 40
+
+	source "stm32f4_cube_touchscreen.c"
+
+	depends embox.driver.input.core
+	depends third_party.bsp.st_bsp_api
+}
