@@ -15,6 +15,8 @@
 #include <stm32f7xx_hal.h>
 #elif defined STM32H745xx
 #include <stm32h7xx_hal.h>
+#elif defined (STM32F429xx)
+#include <stm32f4xx_hal.h>
 #endif
 
 #include "lvgl.h"
@@ -68,7 +70,9 @@ void lvgl_port_fbdev_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area,
 		log_error("Unsupported bits_per_pixel=%d", lv_vinfo.bits_per_pixel);
 	}
 
+#if defined STM32F746xx || defined STM32F769xx || defined STM32H745xx
 	SCB_CleanDCache();
+#endif
 
 	lv_disp_flush_ready(disp_drv);
 }

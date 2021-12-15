@@ -90,6 +90,7 @@ module stm_usart_f3 extends embox.driver.diag.diag_api {
 module stm_usart_f4 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=6
+	option number usart1_irq=37
 	option number usart2_irq=38
 	option number usart3_irq=39
 	option number usart6_irq=71
