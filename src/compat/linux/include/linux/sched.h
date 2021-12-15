@@ -14,5 +14,6 @@
 #define cond_resched() do { } while(0)
 #define signal_pending(x) (0)
 
+inline void flush_signals (void *task) {}
 
 #endif /* __LINUX_SCHED_H_ */
