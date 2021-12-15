@@ -14,7 +14,7 @@
 
 #include <hal/clock.h>
 
-//#define jiffies ((unsigned long) clock_sys_ticks())
+#define jiffies clock_sys_ticks()
 
 #define ERR_PTR(err) ((void*)(err))
 #define PTR_ERR(err) ((unsigned long)(err))
