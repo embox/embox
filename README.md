@@ -47,10 +47,17 @@ It should fail to patch 2 files. Edit them manually:
 1. *arch/lkl/Kconfig* - add `select HAVE_COPY_THREAD_TLS` to the end of `config LKL` section.
 2. *arch/lkl/include/uapi/asm/unistd.h* - add `#define __ARCH_WANT_SYS_CLONE`.
 
-Remove some build artifacts each time you modify LKL:
+Remove some build artifacts **each time you modify LKL**:
 ```
 rm build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/lkl.o build/extbld/third_party/lkl/lib/.installed build/extbld/third_party/lkl/lib/.builded
 ```
+
+Also, particulary this patch requires `make distclean` (first time I see such behaviour):
+```
+(cd build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f && make distclean)
+```
+
+Additional dirty workaround: comment `do_signal(NULL);` in *build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c:188* (this should be removed from patches in future).
 
 Rebuild:
 ```
