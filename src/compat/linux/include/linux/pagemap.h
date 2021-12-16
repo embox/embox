@@ -9,7 +9,7 @@
 #ifndef __LINUX_PAGEMAP_H__
 #define __LINUX_PAGEMAP_H__
 
-#include <asm/bug.h>
+//#include <asm/bug.h>
 #include <asm/page.h>
 #include <mem/sysmalloc.h>
 
