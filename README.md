@@ -47,6 +47,16 @@ It should fail to patch 2 files. Edit them manually:
 1. *arch/lkl/Kconfig* - add `select HAVE_COPY_THREAD_TLS` to the end of `config LKL` section.
 2. *arch/lkl/include/uapi/asm/unistd.h* - add `#define __ARCH_WANT_SYS_CLONE`.
 
+Remove some build artifacts each time you modify LKL:
+```
+rm build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/lkl.o build/extbld/third_party/lkl/lib/.installed build/extbld/third_party/lkl/lib/.builded
+```
+
+Rebuild:
+```
+export CFLAGS="-Wno-error" && make -j8
+```
+
 ### To see current LKL changes
 
 1. Download and extract clean LKL, apply all Embox patches:
