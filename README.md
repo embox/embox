@@ -1,5 +1,50 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
+## LKL info from Anton Ostrouhhov
+
+Clone the repository:
+```
+git clone https://github.com/aostrouhhov/embox.git
+cd embox/
+git checkout lkl-clone-support
+```
+
+Build Embox with LKL (in 32-bit x86 environment!):
+```
+make confload-x86/qemu
+export CFLAGS="-Wno-error" && make -j8
+```
+
+Run Embox:
+```
+sudo ./scripts/qemu/auto_qemu
+```
+
+In Embox run `echotovda`:
+```
+$ echotovda TEST
+```
+
+To see current LKL changes.
+
+1. Download and extract clean LKL, apply all Embox patches:
+```
+mkdir $HOME/clean-lkl
+wget --directory-prefix=$HOME/clean-lkl https://github.com/lkl/linux/archive/7750a5aa74f5867336949371f0e18353704d432f.zip
+
+unzip $HOME/clean-lkl/7750a5aa74f5867336949371f0e18353704d432f.zip -d $HOME/clean-lkl
+rm $HOME/clean-lkl/7750a5aa74f5867336949371f0e18353704d432f.zip
+
+patch -d $HOME/clean-lkl/ -p0 < $HOME/embox/third-party/lkl/lkl-i386-support.patch
+patch -d $HOME/clean-lkl/ -p0 < $HOME/embox/third-party/lkl/lkl-embox-support.patch
+```
+
+2. Now it is possible to see actual diff (assuming you are in the root dir of embox repo):
+```
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur $HOME/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f
+```
+---
+
 ## LKL specific info
 
 LKL can be built only in x86 environment (not x86-64).
