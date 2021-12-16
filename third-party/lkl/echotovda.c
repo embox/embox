@@ -43,6 +43,9 @@ int main(int argc, char **argv) {
 		return 1;
 	}
 
+	int clone_ret = lkl_sys_clone(SIGCHLD, 0 , NULL, NULL, 0);
+	printf("lkl_sys_clone retunred %d\n", clone_ret);
+
 	// Count input length
 	int len = 0;
 	while (argv[1][len] != '\0') {
