@@ -38,6 +38,8 @@ __SYSCALL(__NR_fork, sys_fork)
   - Придумать архитектуру того, как на стороне Embox-а направлять linux вызовы в конкретно нужный нам lkl_task.
 * Реализация своего shell
 
+
+* Поправить условие exception handler на "if lkl_task == 0" как было до моих изменений, а на lkl_task == 1 всё что хочу
 ---
 
 ### Getting started
