@@ -1,7 +1,6 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 ## LKL info from Anton Ostrouhhov
-
 Clone the repository:
 ```
 git clone https://github.com/aostrouhhov/embox.git
@@ -64,7 +63,83 @@ Rebuild:
 export CFLAGS="-Wno-error" && make -j8
 ```
 
-### To see current LKL changes
+### Current status
+First, add `int cret = lkl_sys_clone(SIGCHLD, 0 , NULL, NULL, 0);` into *third-party/lkl/echotovda.c*. Then:
+
+1. In case we add these changes to *build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c*
+```
+static lkl_thread_t thread_create_host(void* pc, void* sp, void* tls, struct lkl_tls_key* task_key, void* task_value)
+{
+        // The same as 'thread_create'
+        pthread_t thread;
+        if (WARN_PTHREAD(pthread_create(&thread, NULL, NULL, NULL)))
+                return 0;
+        else
+                return (lkl_thread_t) thread;
+}
+
+static void thread_destroy_host(lkl_thread_t tid, struct lkl_tls_key* task_key)
+{
+    // Just temporary stub
+}
+
+ struct lkl_host_operations lkl_host_ops = {
+    ...
+	.thread_create_host = thread_create_host,
+	.thread_destroy_host = thread_destroy_host,
+    ...
+```
+we get the following output:
+```
+root@embox:/#echotovda TEST                                                     
+pthread_create(&thread, NULL, NULL, NULL): Try again later
+
+
+  ______
+ |  ____|                                            __          __
+ | |___  _ __ ___            ____  ____  ____  _____/ /   _____ / /
+ |  ___|| '_ ` _ \          / __ \/ __ \/ __ \/ ___/ /   |_____| |
+ | |____| | | | | |_ _ _   / /_/ / /_/ / /_/ (__  )_/    |_____| |
+ |______|_| |_| |_(_|_|_)  \____/\____/ .___/____(_)           | |
+                                     /_/                        \_\
+ ASSERTION FAILED on CPU 0
+	at ./src/include/kernel/spinlock.h:92
+	in function __spin_trylock
+
+lock->owner != cpu_id
+
+	(Recursive lock of a spin owned by this CPU)
+
+
+ --   00001000 * A R    thread 70  task 3 -------------------------------------
+
+ 19 0x0051e45e <__assertion_handle_failure+0xf6> 
+ 18 0x004f89cc <__spin_trylock+0x48> 
+ 17 0x004f8b48 <spin_trylock+0x16> 
+ 16 0x004f8b7e <spin_lock_ipl+0x20> 
+ 15 0x004f8c03 <waitq_add+0x3e> 
+
+...
+```
+2. In case we don't touch *build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c* (don't add `thread_create_host` and `thread_destroy_host`), we get the following output:
+```
+root@embox:/#echotovda TEST                                                     
+EXCEPTION [0x6]: error = 00000000
+EAX=20000000    EBX=008000c0 ECX=3529804d EDX=007bab60
+ GS=00000010     FS=00000010  ES=00000010  DS=00000010
+EDI=010d7e8c    ESI=058ae540 EBP=00000000 EIP=0080a229
+ CS=00000008 EFLAGS=00000a47 ESP=010d7e84  SS=058ae540
+
+
+ --   00001000 * A R    thread 70  task 3 -------------------------------------
+
+  3 0x004f3a10 <exception_handler+0x12a> 
+  2 0x00100079 <excep_stub+0x1c> 
+  1 0x0080a229 <__security_initcall_start+0x2e01> 
+  ...
+```
+
+### To see your changes (diff) in LKL
 
 1. Download and extract clean LKL, apply all Embox patches:
 ```
