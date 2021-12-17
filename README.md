@@ -138,6 +138,23 @@ EDI=010d7e8c    ESI=058ae540 EBP=00000000 EIP=0080a229
   1 0x0080a229 <__security_initcall_start+0x2e01> 
   ...
 ```
+3. In case we add `thread_create_host` and `thread_destroy_host` functions' definitions, but don't add them into `struct lkl_host_operations lkl_host_ops`:
+```
+root@embox:/#echotovda TEST                                                     
+Unknown syscall! It's code is 0
+EXCEPTION [0x6]: error = 00000000
+EAX=20000000    EBX=008000c0 ECX=caf680df EDX=007bab60
+ GS=00000010     FS=00000010  ES=00000010  DS=00000010
+EDI=010d7e8c    ESI=058ae540 EBP=00000000 EIP=0080a229
+ CS=00000008 EFLAGS=00000a47 ESP=010d7e84  SS=058ae540
+
+
+ --   00001000 * A R    thread 70  task 2 -------------------------------------
+
+  3 0x004f39b0 <exception_handler+0x12a> 
+  2 0x00100079 <excep_stub+0x1c> 
+  1 0x0080a229 <__security_initcall_start+0x2e01> 
+```
 
 ### To see your changes (diff) in LKL
 
