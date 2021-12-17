@@ -1,6 +1,17 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 ## LKL info from Anton Ostrouhhov
+### Текущие задачи
+* Переписать `echotovda` таким образом, чтобы он стал переносимым `echo` (запускается и на Linux, и на Embox+LKL)
+* Реализовать `read_from_vda` и `write_to_vda`, создаем новый `echo`. А как создать такую конфигурацию процессов?
+* Научиться запускать Linux процессы
+  - Проверить функциональность fork-нутого процесса
+  - **Текущая задача:** После fork-а новый thread должен выполнять все поступающие вызовы (проверять вызовом `lkl_sys_getpid`, например)
+* Научиться разделять Embox процессы на стороне LKL
+  - Придумать архитектуру того, как на стороне Embox-а направлять linux вызовы в конкретно нужный нам lkl_task.
+* Реализация своего shell
+
+### Getting started
 Clone the repository:
 ```
 git clone https://github.com/aostrouhhov/embox.git
