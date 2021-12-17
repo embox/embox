@@ -1,6 +1,33 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 ## LKL info from Anton Ostrouhhov
+### Сделано
+* Подсистема с ядром Linux как модуль в Embox
+
+* "LKL-Embox workflow" документ:
+  * Разобрался как обрабатывать системные вызовы Linux приложений
+  * Разобрался как работает подсистема с LKL (с ядром Linux)
+  * Разобрался во взаимодействии LKL с окружением посредством device driver-ов ("мостов")
+
+* Сделал "мост" для стандартного вывода- echotovda: https://github.com/aostrouhhov/embox/commit/24d6664615bad38a6bc6bdf104ae86dbbf02cc03
+
+* Сделал поле для идентификации Linux процесса (https://github.com/aostrouhhov/embox/commit/8d62d85bc62e5b86562fedd09eb3be8a8069ea65)
+
+* Создал такой thread, который Linux может планировать (LKL использует thread_create с семафорами и прочей магией)
+  * Для этого нужно было сделать через lkl_sys_fork, чтобы в обработчике lkl_syscall_run были выполнены get и put cpu (ну и прочее)
+  * lkl_sys_fork() начал работать, когда в файл "include/uapi/asm-generic/unistd.h" добавил:
+```
+#define __NR_fork 294
+__SYSCALL(__NR_fork, sys_fork)
+```
+И там же инкрементнуть __NR_syscalls:
+```
+#define __NR_syscalls 295
+```
+Не завелось, сделаем clone
+
+---
+
 ### Текущие задачи
 * Переписать `echotovda` таким образом, чтобы он стал переносимым `echo` (запускается и на Linux, и на Embox+LKL)
 * Реализовать `read_from_vda` и `write_to_vda`, создаем новый `echo`. А как создать такую конфигурацию процессов?
@@ -10,6 +37,8 @@ Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](htt
 * Научиться разделять Embox процессы на стороне LKL
   - Придумать архитектуру того, как на стороне Embox-а направлять linux вызовы в конкретно нужный нам lkl_task.
 * Реализация своего shell
+
+---
 
 ### Getting started
 Clone the repository:
