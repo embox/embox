@@ -12,10 +12,18 @@
 #include "stm32f4xx_hal.h"
 #include "stm32f4xx_hal_gpio.h"
 
+#if defined(STM32F411xE)
+#define STM32_GPIO_PORTS_COUNT 6
+#else
 #define STM32_GPIO_PORTS_COUNT 8
+#endif
 
 static GPIO_TypeDef *stm32_gpio_ports[STM32_GPIO_PORTS_COUNT] = {
-	GPIOA, GPIOB, GPIOC, GPIOD, GPIOE, GPIOF, GPIOG, GPIOH
+	GPIOA, GPIOB, GPIOC, GPIOD, GPIOE,
+#if !defined(STM32F411xE)   
+    GPIOF, GPIOG,
+#endif   
+    GPIOH
 };
 
 static void stm32_gpio_clk_enable(void *gpio_base) {
@@ -25,8 +33,10 @@ static void stm32_gpio_clk_enable(void *gpio_base) {
 	case (int) GPIOC: __HAL_RCC_GPIOC_CLK_ENABLE(); break;
 	case (int) GPIOD: __HAL_RCC_GPIOD_CLK_ENABLE(); break;
 	case (int) GPIOE: __HAL_RCC_GPIOE_CLK_ENABLE(); break;
+#if !defined(STM32F411xE)   
 	case (int) GPIOF: __HAL_RCC_GPIOF_CLK_ENABLE(); break;
 	case (int) GPIOG: __HAL_RCC_GPIOG_CLK_ENABLE(); break;
+#endif    
 	case (int) GPIOH: __HAL_RCC_GPIOH_CLK_ENABLE(); break;
 	}
 }
