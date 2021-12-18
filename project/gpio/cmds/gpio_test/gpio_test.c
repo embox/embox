@@ -1,6 +1,15 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author  Dmitry Kocherygin
+ * @date    15.12.2021
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include <util/array.h>
 #include <drivers/gpio/gpio.h>
@@ -37,11 +46,6 @@ int led_driver_clear(unsigned int nr) {
     return 0;
 }
 
-void sleep (int n) {
-    for (int i = 0; i < n * 10000; ++i) {
-    }
-}
-
 int main(int argc, char *argv[]) {
     int i;
     for (i = 0; i < LEDS_N; i++) {
@@ -51,14 +55,15 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    while (1) {
-        led_driver_clear(0);
-        led_driver_set(1);
-        sleep (1000);
-        led_driver_set(0);
-        led_driver_clear(1);
-        sleep (1000);
+    while (1) {        
+        for (i = 0; i < LEDS_N; i++) {
+            led_driver_set(i);
+            sleep (1);
+            led_driver_clear(i);
+            if (LEDS_N == 1) {
+                sleep (1);                
+            }                
+        }          
     }
-
     return 0;
 }
