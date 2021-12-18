@@ -1,0 +1,31 @@
+package platform.stm32.f4.stm32f411_blackpill
+
+@BuildArtifactPath(cppflags="-DSTM32F411xE")
+static module stm32f411_blackpill_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
+	@IncludeExport(path="")
+	source "stm32f4xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module arch extends embox.arch.arch {
+	option boolean errata_spi_wrong_last_bit = false
+
+	source "arch.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube")
+    source "./STM32CubeF4-1.25.0/Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(stm32f411_blackpill_conf)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/BSP/STM324xG_EVAL)")
+static module bsp extends third_party.bsp.st_bsp_api {
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/BSP")
+	source  "STM324xG_EVAL/stm324xg_eval_sd.c"
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends stm32f411_blackpill_conf
+	@NoRuntime depends arch
+}
