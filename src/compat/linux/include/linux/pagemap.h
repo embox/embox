@@ -28,4 +28,6 @@
 #define ClearPageError(pg)
 #define SetPageUptodate(pg)
 
+#define PAGE_ALIGN(val)		(((val) + PAGE_SIZE-1) & ~(PAGE_SIZE-1))
+
 #endif /* __LINUX_PAGEMAP_H__ */
