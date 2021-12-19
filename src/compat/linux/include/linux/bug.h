@@ -12,7 +12,7 @@ extern "C" {
 #define BUG_ON(exp)	assert (!(exp))
 #define BUG()		assert (0)
 
-void __warn (const char *file, const int line);
+extern void __warn (const char *file, const int line);
 #define __WARN()	__warn (__FILE__, __LINE__)
 
 #define WARN_ON(condition) ({				\
