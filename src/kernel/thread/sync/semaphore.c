@@ -93,3 +93,36 @@ int semaphore_getvalue(struct sem *restrict s, int *restrict sval) {
 
 	return 0;
 }
+
+void semaphore_post_all(struct sem *s) 
+{
+	assert(s);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+
+	sched_lock();
+	{
+		s->value = UINT32_MAX;
+		s->max_value = UINT32_MAX;
+		waitq_wakeup_all(&s->wq);
+	}
+	sched_unlock();	
+}
+void semaphore_reinit(struct sem *s)
+{
+	assert(s);
+	assert(!critical_inside(__CRITICAL_HARDER(CRITICAL_SCHED_LOCK)));
+
+	sched_lock();
+	{
+		s->value = 0;
+	}
+	sched_unlock();		
+}
+int semaphore_timedwaitms(struct sem *s, long unsigned int timeout_ms) {
+        struct timespec time;
+        clock_gettime(CLOCK_REALTIME, &time);
+        time.tv_nsec += timeout_ms * 1E3;
+
+        return semaphore_timedwait(s,&time);
+}
+

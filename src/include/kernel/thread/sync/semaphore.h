@@ -26,4 +26,13 @@ extern int semaphore_timedwait(struct sem *s, const struct timespec *abs_timeout
 
 extern int semaphore_getvalue(struct sem *s, int *sval);
 
+/* Supports a completion use case
+ */
+#define semaphore_wait(s) semaphore_enter(s)
+#define semaphore_trywait(s) semaphore_tryenter(s)
+#define semaphore_post(s) semaphore_leave(s) 
+void semaphore_post_all(struct sem *s);
+void semaphore_reinit(struct sem *s);
+extern int semaphore_timedwaitms(struct sem *s, long unsigned int timeout_ms);
+
 #endif /* KERNEL_THREAD_SYNC_SEMAPHORE_H_ */
