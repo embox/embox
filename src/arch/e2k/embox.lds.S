@@ -1,6 +1,7 @@
 #include <asm-generic/embox.lds.h>
 
 OUTPUT_FORMAT("elf64-e2k", "elf64-e2k", "elf64-e2k")
+//OUTPUT_ARCH(elbrus-v5)
 OUTPUT_ARCH(elbrus-v2)
 ENTRY(_start)
 
