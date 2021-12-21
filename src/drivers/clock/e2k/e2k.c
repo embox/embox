@@ -23,14 +23,21 @@
 #include <e2k_api.h>
 #include <e2k_mas.h>
 
+#if 0 == OPTION_GET(NUMBER, base_addr)
 #define MC_TABLE_ADDRESS 0xff0130
-#define MC_TIMER_SHIFT   0x114
+
+#define MC_TABLE_ADDRESS 0xff0130
+// #define MC_TIMER_SHIFT   0x114       // for 8CB
+#define MC_TIMER_SHIFT   0x088          // for 1C+
 
 #define E2K_CLOCK_BASE   (uintptr_t) E2K_READ_MAS_W \
     ( E2K_READ_MAS_W (MC_TABLE_ADDRESS, MAS_MODE_LOAD_PA)\
     + MC_TIMER_SHIFT, MAS_MODE_LOAD_PA )
 
-// #define E2K_CLOCK_BASE (uintptr_t) 0x20300000 //0x81200000 // 0x80500000 //0x81200000 //0x83200000
+#else
+#define E2K_CLOCK_BASE ((uintptr_t)OPTION_GET(NUMBER, base_addr))
+#endif
+
 // #define IRQ_NR     OPTION_GET(NUMBER, irq_num)
 // #define LT_FREQ    OPTION_GET(NUMBER, freq)
 #define LT_FREQ 2000

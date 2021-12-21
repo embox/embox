@@ -3,7 +3,9 @@ package embox.driver.clock
 module e2k_clock {
 	option number log_level = 1
 
-	option number base_addr=0x83200000
+	/* 0x20300000 0x81200000 0x80500000 0x81200000 0x83200000 */
+	/* if base_addr == 0 the base address is received form MC_TIMER */
+	option number base_addr=0
 	option number irq_num=2
 	option number freq=10
 
