@@ -9,6 +9,8 @@ module vmem_device_memory_stub extends vmem_device_memory {
 }
 
 module vmem_device_memory_full extends vmem_device_memory {
+	option number log_level = 0
+
 	source "vmem_device_memory.c"
 
 	depends embox.mem.mmap
