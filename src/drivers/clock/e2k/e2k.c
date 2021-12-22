@@ -128,7 +128,7 @@ static struct time_event_device e2k_clock_event = {
 
 static struct time_counter_device e2k_clock_counter = {
 	.read     = e2k_clock_read,
-	.cycle_hz = 1000,
+	.cycle_hz = 10000000,
 };
 
 CLOCK_SOURCE_DEF(e2k_clock, e2k_clock_init, NULL,
