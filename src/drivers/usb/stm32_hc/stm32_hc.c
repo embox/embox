@@ -104,6 +104,7 @@ static inline uint8_t convert_type_usb_to_stm(uint8_t usb_type) {
 static void stm32_hcd_vbus_enable(void) {
 #if defined(STM32F407xx)
 	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_RESET);
+#elif defined(STM32F769xx)
 #else
 	HAL_GPIO_WritePin(STM32_HC_VBUS_PORT, STM32_HC_VBUS_PIN, GPIO_PIN_SET);
 #endif
@@ -136,10 +137,16 @@ static inline HCD_URBStateTypeDef stm32_wait_urb_state(HCD_HandleTypeDef *hhcd, 
 	HCD_URBStateTypeDef st;
 	for(;;) {
 		st = HAL_HCD_HC_GetURBState (hhcd, pipe);
-		if (wait_st & st) {
+		if (wait_st == st) {
 			break;
 		}
+
 		HAL_Delay(2);
+#if defined(STM32F769xx)
+		if (st == URB_NOTREADY) {
+			break;
+		}
+#endif
 	}
 	return st;
 
@@ -175,8 +182,8 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 }
 
 void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
-	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
-	stm32_hcd->port_status = STM32_PORT_IDLE;
+//	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+//	stm32_hcd->port_status = STM32_PORT_IDLE;
 
 	log_debug("Port Disabled.");
 }
@@ -218,22 +225,33 @@ static irq_return_t stm32_irq_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int stm32_hc_start (struct usb_hcd *hcd) {
+static int stm32_hc_start(struct usb_hcd *hcd) {
 	struct usb_dev *udev;
 
 	/* Init HCD_HandleTypeDef structure*/
+#if !defined(STM32F769xx)
 	stm32_hcd_handler.Instance = USB_OTG_FS;
-    stm32_hcd_handler.Init.Host_channels = 11;
-    stm32_hcd_handler.Init.dma_enable = 0;
-    stm32_hcd_handler.Init.low_power_enable = 0;
-    stm32_hcd_handler.Init.phy_itface = HCD_PHY_EMBEDDED;
-    stm32_hcd_handler.Init.Sof_enable = 0;
-    stm32_hcd_handler.Init.speed = HCD_SPEED_FULL;
-    stm32_hcd_handler.Init.vbus_sensing_enable = 0;
-    stm32_hcd_handler.Init.lpm_enable = 0;
+	stm32_hcd_handler.Init.phy_itface = HCD_PHY_EMBEDDED;
+	stm32_hcd_handler.Init.speed = HCD_SPEED_FULL;
+
+#else
+
+	stm32_hcd_handler.Instance = USB_OTG_HS;
+	stm32_hcd_handler.Init.phy_itface = HCD_PHY_ULPI;
+	stm32_hcd_handler.Init.speed = HCD_SPEED_HIGH;
+	stm32_hcd_handler.Init.use_external_vbus = 1;
+
+#endif
+
+	stm32_hcd_handler.Init.Host_channels = 11;
+	stm32_hcd_handler.Init.dma_enable = 0;
+	stm32_hcd_handler.Init.low_power_enable = 0;
+	stm32_hcd_handler.Init.Sof_enable = 0;
+	stm32_hcd_handler.Init.vbus_sensing_enable = 0;
+	stm32_hcd_handler.Init.lpm_enable = 0;
 
 	/* Init USB Core */
-    if (HAL_HCD_Init(&stm32_hcd_handler) != HAL_OK) {
+	if (HAL_HCD_Init(&stm32_hcd_handler) != HAL_OK) {
 		log_error("HAL_HCD_Init failed");
 		return -1;
 	}
@@ -274,31 +292,52 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 }
 
 static inline int stm32_hc_submit_request(struct stm32_endp *stm32_endp,
-			uint8_t token, uint8_t *buf, uint16_t len) {
+		uint8_t token, uint8_t *buf, uint16_t len) {
 	int res;
+	HCD_URBStateTypeDef st;
 
-//	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_IDLE);
+	do {
+		log_debug("pipe_idx(%d) dir(%d) type(%d) token(%d) len(%d) buf(%p)",
+				stm32_endp->pipe_idx, stm32_endp->endp_dir,
+				stm32_endp->endp_type, token, len, buf);
+		res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
+				stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len,
+				0);
+		if (res != HAL_OK) {
+			log_error("HAL_HCD_HC_SubmitRequest failed with (%d)", res);
+			return -1;
+		}
 
-	res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-			stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len, 0);
-	if (res != HAL_OK) {
-		return -1;
-	}
+		st = stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx,
+				URB_DONE);
+	} while (st == URB_NOTREADY);
 
-	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_DONE);
 	return 0;
 }
 
 static int stm32_common_request(struct usb_request *req) {
 	struct stm32_endp *stm32_endp;
 	int res;
+	int len;
 
 	stm32_endp = req->endp->hci_specific;
 
-	res = stm32_hc_submit_request(stm32_endp, 1, (uint8_t *) req->buf,req->len);
-	if (res == -1) {
-		log_error("error while processing usb request.");
-		return -1;
+	if (req->endp->max_packet_size >= req->len) {
+		res = stm32_hc_submit_request(stm32_endp, 1, (uint8_t *) req->buf,
+				req->len);
+		if (res == -1) {
+			log_error("error while processing usb request.");
+			return -1;
+		}
+	} else {
+		for (len = 0; len < req->len; len += req->endp->max_packet_size) {
+			res = stm32_hc_submit_request(stm32_endp, 1,
+					(uint8_t *) &req->buf[len], req->endp->max_packet_size);
+			if (res == -1) {
+				log_error("error while processing usb request.");
+				return -1;
+			}
+		}
 	}
 
 	req->actual_len = req->len;

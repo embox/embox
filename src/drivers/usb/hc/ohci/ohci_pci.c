@@ -93,7 +93,7 @@ static void *ohci_ed_alloc(struct usb_endp *ep) {
 	ed->head_td = (uint32_t) sentinel_td;
 	ed->tail_td = (uint32_t) sentinel_td;
 	ed->next_ed = 0;
-	ed->flags = 64 << 16;
+	ed->flags = (ep->max_packet_size << 16) & OHCI_ED_MAX_PKT_SIZE_MASK;
 
 	usb_queue_init(&ed->req_queue);
 

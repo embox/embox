@@ -75,8 +75,8 @@
 #define OHCI_ED_K                     0x00004000
 #define OHCI_ED_F                     0x00008000
 #define OHCI_ED_MAX_PKT_SIZE_MASK     0x07ff0000
-#define OHCI_ED_SCHEDULED             0x80000000 // spec says some bits could be
-                                                 // used by driver
+/* spec says some bits could be used by driver */
+#define OHCI_ED_SCHEDULED             0x80000000
 
 #define OHCI_HCCA_INTERRUPT_LIST_N    32
 #define OHCI_READ(ohcd, _reg) \

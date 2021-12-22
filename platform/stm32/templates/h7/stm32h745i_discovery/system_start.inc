@@ -8,4 +8,7 @@
 //"play -m 0x30000000",
 "mkdir -v /conf",
 "mount -t DumbFS /dev/stm32flash0 /conf",
+"partition",
+"mkdir -v /mnt",
+"mount -t vfat /dev/sda1 /mnt",
 "tish",
