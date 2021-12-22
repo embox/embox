@@ -140,7 +140,13 @@ static inline HCD_URBStateTypeDef stm32_wait_urb_state(HCD_HandleTypeDef *hhcd, 
 		if (wait_st == st) {
 			break;
 		}
+
 		HAL_Delay(2);
+#if defined(STM32F769xx)
+		if (st == URB_NOTREADY) {
+			break;
+		}
+#endif
 	}
 	return st;
 
@@ -176,8 +182,8 @@ void HAL_HCD_HC_NotifyURBChange_Callback(HCD_HandleTypeDef *hhcd, uint8_t chnum,
 }
 
 void HAL_HCD_PortDisabled_Callback(HCD_HandleTypeDef *hhcd) {
-	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
-	stm32_hcd->port_status = STM32_PORT_IDLE;
+//	struct stm32_hcd *stm32_hcd = hhcd2stm_hcd(hhcd);
+//	stm32_hcd->port_status = STM32_PORT_IDLE;
 
 	log_debug("Port Disabled.");
 }
@@ -286,20 +292,25 @@ static int stm32_hc_stop (struct usb_hcd *hcd) {
 }
 
 static inline int stm32_hc_submit_request(struct stm32_endp *stm32_endp,
-			uint8_t token, uint8_t *buf, uint16_t len) {
+		uint8_t token, uint8_t *buf, uint16_t len) {
 	int res;
+	HCD_URBStateTypeDef st;
 
-	log_debug("pipe_idx(%d) dir(%d) type(%d) token(%d) len(%d) buf(%p)",
-			stm32_endp->pipe_idx, stm32_endp->endp_dir, stm32_endp->endp_type,
-			token, len, buf);
-	res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
-				stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len, 0);
-	if (res != HAL_OK) {
-		log_error("HAL_HCD_HC_SubmitRequest failed with (%d)", res);
-		return -1;
-	}
+	do {
+		log_debug("pipe_idx(%d) dir(%d) type(%d) token(%d) len(%d) buf(%p)",
+				stm32_endp->pipe_idx, stm32_endp->endp_dir,
+				stm32_endp->endp_type, token, len, buf);
+		res = HAL_HCD_HC_SubmitRequest(&stm32_hcd_handler, stm32_endp->pipe_idx,
+				stm32_endp->endp_dir, stm32_endp->endp_type, token, buf, len,
+				0);
+		if (res != HAL_OK) {
+			log_error("HAL_HCD_HC_SubmitRequest failed with (%d)", res);
+			return -1;
+		}
 
-	stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx, URB_DONE);
+		st = stm32_wait_urb_state(&stm32_hcd_handler, stm32_endp->pipe_idx,
+				URB_DONE);
+	} while (st == URB_NOTREADY);
 
 	return 0;
 }
