@@ -35,7 +35,7 @@ module stm32h7_hc {
 module stm32f7_hc {
 	option number log_level=1
 	/* OTG_FS_IRQn=101, OTG_HS_IRQn=77 */
-	option number irq = 101
+	option number irq = 77
 
 	source "stm32_hc.c"
 	source "stm32f7cube_hc.c"
