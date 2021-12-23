@@ -21,6 +21,9 @@ module ti81xx extends pci_chip {
 
 module pci_chip_elbrus extends pci_chip {
 	option number log_level=1
+	/* 1C+: 0xff10000 */
+	/* 8CB: 0x200000 */
+	option number pci_cfg_base=0x200000 /* 8CB */
 
 	source "pci_chip_elbrus.c"
 
