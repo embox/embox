@@ -3,10 +3,12 @@ package embox.driver.net.mcst
 module l_e1000 {
 	option number log_level = 1
 
-	option number card_quantity = 4
+	option number card_quantity = 1
 
 	option number log_rx_desc_quantity = 8
 	option number log_tx_desc_quantity = 0
+
+	option number phy_id = 1
 
 	source "l_e1000.c"
 
