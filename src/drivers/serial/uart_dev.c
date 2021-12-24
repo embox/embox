@@ -38,7 +38,7 @@ static int uart_attach_irq(struct uart *uart) {
 	if (!uart->irq_handler) {
 		return -EINVAL;
 	}
-
+	log_debug("setup tty %s irq num %d", uart->dev_name , uart->irq_num);
 	return irq_attach(uart->irq_num, uart->irq_handler, 0, uart,
 			uart->dev_name);
 }
@@ -56,6 +56,7 @@ static int uart_setup(struct uart *uart) {
 	const struct uart_ops *uops = uart->uart_ops;
 
 	if (uops->uart_setup) {
+		log_debug("setup tty %s", uart->dev_name);
 		return uops->uart_setup(uart, &uart->params);
 	}
 
