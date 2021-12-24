@@ -47,16 +47,16 @@
 #define AM85C30_D6       (0x01 << 6)
 #define AM85C30_D7       (0x01 << 7)
 
-#if 0
-#define	NULLCODE	0	/* Null Code */
-#define	POINT_HIGH	0x8	/* Select upper half of registers */
-#define	RES_EXT_INT	0x10	/* Reset Ext. Status Interrupts */
-#define	SEND_ABORT	0x18	/* HDLC Abort */
-#define	RES_RxINT_FC	0x20	/* Reset RxINT on First Character */
-#define	RES_Tx_P	0x28	/* Reset TxINT Pending */
-#define	ERR_RES		0x30	/* Error Reset */
-#define	RES_H_IUS	0x38	/* Reset highest IUS */
-#endif
+
+#define AM85C30_NULLCODE     0    /* Null Code */
+#define AM85C30_POINT_HIGH   0x8  /* Select upper half of registers */
+#define AM85C30_RES_EXT_INT  0x10 /* Reset Ext. Status Interrupts */
+#define AM85C30_SEND_ABORT   0x18 /* HDLC Abort */
+#define AM85C30_RES_RxINT_FC 0x20 /* Reset RxINT on First Character */
+#define AM85C30_RES_Tx_P     0x28 /* Reset TxINT Pending */
+#define AM85C30_ERR_RES      0x30 /* Error Reset */
+#define AM85C30_RES_H_IUS    0x38 /* Reset highest IUS */
+
 
 /* Read Register 1 */
 #define AM85C30_ALL_SNT   0x1  /* All sent */
