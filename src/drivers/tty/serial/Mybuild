@@ -1,6 +1,8 @@
 package embox.driver.tty
 
 module serial {
+	option number log_level=0
+
 	source "ttys_processing.c"
 	source "ttys_term.c"
 	source "ttys.c"

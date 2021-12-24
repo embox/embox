@@ -4,6 +4,7 @@
  * @date 25.04.2016
  * @author Anton Bondarev
  */
+#include <util/log.h>
 
 #include <mem/misc/pool.h>
 #include <util/dlist.h>
@@ -78,6 +79,7 @@ static int uart_rx_action(struct lthread *self) {
 irq_return_t uart_irq_handler(unsigned int irq_nr, void *data) {
 	struct uart *dev = data;
 
+	log_debug("irq_nr %d", irq_nr);
 	uart_rx_buff_put(dev);
 
 	return IRQ_HANDLED;
