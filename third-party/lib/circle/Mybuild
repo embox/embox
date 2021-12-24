@@ -1,15 +1,68 @@
 package third_party.lib
 
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/src/drivers")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/circle/circle/addon/vc4")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/circle/circle/addon")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/circle/circle/include")
-@BuildArtifactPath(cppflags="-D__circle__  -D__VCCOREVER__=0x04000000")
+@BuildArtifactPath(cppflags="-D__circle__  -D__VCCOREVER__=0x04000000 -DSTDLIB_SUPPORT=0")
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
 static module circle {
 }
 
 @BuildDepends(third_party.lib.circle)
+static module libvcos {
+	option number pi
+	option number aarch = 32
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../circle/circle/addon/vc4/interface/vcos")
+	source "vcos_abort.c"
+		,"vcos_backtrace.c"
+		,"vcos_generic_blockpool.c"
+		,"vcos_generic_event_flags.c"
+		,"vcos_generic_named_sem.c"
+		,"vcos_generic_reentrant_mtx.c"
+		,"vcos_generic_safe_string.c"
+		,"vcos_init.c"
+		,"vcos_logcat.c"
+		,"vcos_mem_from_malloc.c"
+		,"vcos_msgqueue.c"
+		,"vcos_pthreads.c"
+
+	depends third_party.lib.circle
+}
+
+@BuildDepends(third_party.lib.circle)
 static module libvchiq {
+	option number pi
+	option number aarch = 32
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../circle/circle/lib")
+	source "synchronize.cpp"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../circle/circle/addon/linux")
+	source "dma-mapping.cpp"
+		,"device.cpp"
+		,"platform_device.cpp"
+		,"raspberrypi-firmware.cpp"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../circle/circle/addon/vc4/vchiq")
+	source "vchiq_arm.c"
+		,"vchiq_2835_arm.c"
+		,"vchiq_core.c"
+		,"vchiq_kern_lib.c"
+		,"vchiq_connected.c"
+		,"vchiq_shim.c"
+		,"vchiq_util.c"
+		,"vchiqdevice.cpp"
+
+	depends third_party.lib.circle
+}
+
+@BuildDepends(third_party.lib.circle)
+static module libvchi {
+	option number pi
+	option number aarch = 32
+
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/../circle/circle/addon/vc4/interface/vmcs_host")
 	source "vc_vchi_dispmanx.c",
 		"vc_vchi_gencmd.c"
@@ -18,6 +71,7 @@ static module libvchiq {
 }
 
 @BuildDepends(third_party.lib.circle)
+@BuildDepends(third_party.lib.libvcos)
 static module libbcm {
 	option number pi
 	option number aarch = 32
@@ -26,9 +80,9 @@ static module libbcm {
 	source "bcm_host.c"
 
 	depends third_party.lib.circle
+	depends third_party.lib.libvcos
 }
 
-/*
 @AutoCmd
 @Cmd(name = "dispmanx",
 	help = "Test OpenManX VC library",
@@ -43,20 +97,18 @@ static module libbcm {
 			raspberry_pi
 	''')
 @BuildDepends(third_party.lib.libvchiq)
+@BuildDepends(third_party.lib.libvchi)
 @BuildDepends(third_party.lib.libbcm)
 @Build(stage=2)
 module dispmanx {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../userland/userland/host_applications/linux/apps/hello_pi/hello_dispmanx")
+	option number pi
+	option number aarch = 32
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../circle/circle/addon/vc4/interface/sample/hello_dispmanx")
 	source "dispmanx.c"
 
 	depends third_party.lib.libvchiq
+	depends third_party.lib.libvchi
 	depends third_party.lib.libbcm
 }
-*/
 
-
-	/*
-	vchiqdevice.o \
-	  vchiq_arm.o vchiq_2835_arm.o vchiq_core.o vchiq_kern_lib.o vchiq_connected.o \
-	  vchiq_shim.o vchiq_util.o
-	*/
