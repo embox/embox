@@ -81,7 +81,8 @@ static struct l_e1000_dma_area e1000_dma_area[E1000_CARD_QUANTITY] __attribute__
 struct l_e1000_priv {
 	struct net_device *netdev;
 
-	struct sk_buff *rx_skbs[RX_RING_SIZE];
+	struct sk_buff *volatile rx_skbs[RX_RING_SIZE];
+	struct sk_buff *volatile tx_skbs[TX_RING_SIZE];
 
 	struct l_e1000_init_block *init_block;
 	struct l_e1000_rx_desc    *rx_ring;
@@ -201,12 +202,12 @@ static void e1000_mii_writereg(struct net_device *dev, int phy_id, int reg_num, 
 	return;
 }
 
-void e1000_phy_mmd_write(void *eth1000_ptr, uint8_t mmd_dev, uint16_t mmd_reg, uint16_t val) {
-
-    e1000_mii_writereg(eth1000_ptr, 0, 0xD, mmd_dev & 0x1F);
-    e1000_mii_writereg(eth1000_ptr, 0, 0xE, mmd_reg);
-    e1000_mii_writereg(eth1000_ptr, 0, 0xD, 0x01 << 14 | mmd_dev & 0x1F);
-    e1000_mii_writereg(eth1000_ptr, 0, 0xE, val);
+static inline void
+e1000_phy_mmd_write(void *eth1000_ptr, uint8_t mmd_dev, uint16_t mmd_reg, uint16_t val) {
+	e1000_mii_writereg(eth1000_ptr, 0, 0xD, mmd_dev & 0x1F);
+	e1000_mii_writereg(eth1000_ptr, 0, 0xE, mmd_reg);
+	e1000_mii_writereg(eth1000_ptr, 0, 0xD, 0x01 << 14 | mmd_dev & 0x1F);
+	e1000_mii_writereg(eth1000_ptr, 0, 0xE, val);
 }
 
 #define SPEED_10   10
@@ -325,6 +326,10 @@ static int e1000_init_block(struct net_device *dev) {
 			log_error("Coudn't alloc sk_buff");
 			return -ENOMEM;
 		}
+	}
+
+	for (i = 0; i < TX_RING_SIZE; i++) {
+		ep->tx_skbs[i] = NULL;
 	}
 
 	ep->tx_ring->status = 0;
@@ -522,6 +527,11 @@ static int l_e1000_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	show_packet(skb_get_data_pointner(skb->data), len, "transmit");
 
+	/* wait until buff is nor free */
+
+	while(ep->tx_skbs[0] != NULL) {
+	}
+
 	ep->tx_ring->base = (uint32_t)(uintptr_t)skb_get_data_pointner(skb->data);
 	ep->tx_ring->buf_length = htole16(-len);
 	ep->tx_ring->misc = 0x00000000;
@@ -529,8 +539,10 @@ static int l_e1000_xmit(struct net_device *dev, struct sk_buff *skb) {
 	ep->tx_ring->status = htole16(status);
 	wmb();
 	e1000_write_e_csr(ep, E_CSR_INEA | E_CSR_TDMD);
-/* we can not to free before the packet have not been sent */
-	skb_free(skb);
+
+	/* TODO now we send only one packet */
+	ep->tx_skbs[0] = skb;
+
 	return 0;
 }
 
@@ -628,7 +640,12 @@ static irq_return_t l_e1000_interrupt(unsigned int irq_num, void *dev_id) {
 			int err_status = le32toh(ep->tx_ring->misc);
 			log_error("Tx error status=%04x err_status=%08x", status, err_status);
 		}
+
 		ep->tx_ring->status = 0;
+		assert(ep->tx_skbs[0]);
+		skb_free(ep->tx_skbs[0]);
+
+		ep->tx_skbs[0] = NULL;
 	}
 
 	if (csr0 & E_CSR_MERR) {
