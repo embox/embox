@@ -34,7 +34,7 @@ static int pci_drv_probe(const struct pci_driver *drv, struct pci_slot_dev *dev)
 
 static int pci_mod_enable(const struct mod *self) {
 	const struct pci_driver *pci_drv = (const struct pci_driver *) self;
-	struct pci_slot_dev *dev;
+	struct pci_slot_dev *dev = NULL;
 
 	printk(PCI_INFO_LABEL "%s driver inserted\n", pci_drv->name);
 

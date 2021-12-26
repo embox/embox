@@ -65,7 +65,7 @@ struct buffer_head *bcache_getblk_locked(struct block_dev *bdev, int block, size
 }
 
 static void free_more_memory(size_t size) {
-	struct buffer_head *bh;
+	struct buffer_head *bh = NULL;
 	struct hashtable_item *ht_item;
 
 	/* Free everything that we can free */

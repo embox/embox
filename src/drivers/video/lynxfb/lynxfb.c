@@ -31,7 +31,7 @@ static struct sm750_share lynxfb_share;
 
 
 static int lynxfb_set_var(struct fb_info *info, const struct fb_var_screeninfo *var) {
-	struct lynxfb_par *par;
+	struct lynxfb_par *par = NULL;
 	struct lynxfb_crtc *crtc;
 	struct lynxfb_output *output;
 

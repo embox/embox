@@ -66,7 +66,7 @@ static void show_mount_list(void) {
 extern struct dlist_head dentry_dlist;
 
 static void show_mount_list(void) {
-	struct dentry *d;
+	struct dentry *d = NULL;
 	static const char *devfs_path = "/dev/";
 	char mount_path[PATH_MAX];
 	char bdev_path[PATH_MAX];

@@ -30,7 +30,7 @@ static void task_phymem_init(const struct task *task, void *phymem_space) {
 static void task_phymem_deinit(const struct task *task) {
 	struct dlist_head *head;
 	void *ptr;
-	struct phymem_link *pl;
+	struct phymem_link *pl = NULL;
 
 	head = (void *)task->resources + task_phymem_offset;
 

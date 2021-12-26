@@ -326,7 +326,7 @@ int mspace_init(struct dlist_head *mspace) {
 }
 
 int mspace_fini(struct dlist_head *mspace) {
-	struct mm_segment *mm;
+	struct mm_segment *mm = NULL;
 
 	dlist_foreach_entry(mm, mspace, link) {
 		mm_segment_free(mm, mm->size / PAGE_SIZE());
@@ -336,7 +336,7 @@ int mspace_fini(struct dlist_head *mspace) {
 }
 
 size_t mspace_deep_copy_size(struct dlist_head *mspace) {
-	struct mm_segment *mm;
+	struct mm_segment *mm = NULL;
 	size_t ret;
 
 	ret = 0;
@@ -348,7 +348,7 @@ size_t mspace_deep_copy_size(struct dlist_head *mspace) {
 
 
 void mspace_deep_store(struct dlist_head *mspace, struct dlist_head *store_space, void *buf) {
-	struct mm_segment *mm;
+	struct mm_segment *mm = NULL;
 	void *p;
 
 	dlist_init(store_space);

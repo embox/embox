@@ -78,7 +78,7 @@ static inline int ip_offset(struct sk_buff *skb) {
 }
 
 static void ttl_handler(struct sys_timer *timer, void *param) {
-	struct dgram_buf *buf;
+	struct dgram_buf *buf = NULL;
 	int i;
 
 	i = 0;
@@ -103,7 +103,7 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 }
 
 static inline struct dgram_buf *ip_find(struct iphdr *iph) {
-	struct dgram_buf *buf;
+	struct dgram_buf *buf = NULL;
 
 	assert(iph);
 

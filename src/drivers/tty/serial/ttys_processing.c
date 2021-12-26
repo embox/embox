@@ -57,7 +57,7 @@ static int uart_rx_buff_put(struct uart *dev) {
 }
 
 static int uart_rx_action(struct lthread *self) {
-	struct uart *uart;
+	struct uart *uart = NULL;
 
 	uart_foreach(uart) {
 		int ch;

@@ -64,7 +64,7 @@ int vmem_map_kernel(void) {
 
 EMBOX_UNIT_INIT(vmem_init);
 static int vmem_init(void) {
-	struct marea *marea;
+	struct marea *marea = NULL;
 	struct emmap *emmap;
 	struct task *task;
 

@@ -115,7 +115,7 @@ void print_inet_sock_info(const struct sock *sk) {
 void print_info(const char *title,
 		const struct sock_proto_ops *p_ops,
 		void (*print_sock_info)(const struct sock *)) {
-	const struct sock *sk;
+	const struct sock *sk = NULL;
 
 	if (title != NULL) {
 		printf("%s\n", title);

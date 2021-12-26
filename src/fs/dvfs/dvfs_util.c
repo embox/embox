@@ -388,7 +388,8 @@ int dentry_disconnect(struct dentry *dentry) {
  * @brief Return dentry to file tree
  */
 int dentry_reconnect(struct dentry *parent, const char *name) {
-	struct dentry *dentry;
+	struct dentry *dentry = NULL;
+
 	dlist_foreach_entry(dentry, &dentry_dlist, d_lnk) {
 		if (!(dentry->flags & DVFS_DISCONNECTED)) {
 			continue;

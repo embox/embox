@@ -56,7 +56,7 @@ static inline void thread_wait_del(struct sys_timer *tmr) {
 }
 
 void thread_wait_deinit(struct thread_wait *tw) {
-	struct sys_timer *tmr;
+	struct sys_timer *tmr = NULL;
 
 	dlist_foreach_entry_safe(tmr, &tw->thread_waitq_list, st_wait_link) {
 		timer_close(tmr);

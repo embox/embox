@@ -137,7 +137,8 @@ int clock_source_set_next_event(struct clock_source *cs,
 }
 
 struct clock_source *clock_source_get_best(enum clock_source_property pr) {
-	struct clock_source *cs, *best;
+	struct clock_source *cs = NULL;
+	struct clock_source *best;
 	int32_t cycle_hz, best_hz, hz;
 
 	best_hz = -1;

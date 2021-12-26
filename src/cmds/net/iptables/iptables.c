@@ -82,7 +82,7 @@ static void print_rule(const struct nf_rule *r) {
 
 static void print_rules(int chain) {
 	struct dlist_head *rules;
-	struct nf_rule *r;
+	struct nf_rule *r = NULL;
 
 	rules = nf_get_chain(chain);
 	if (rules == NULL) {
