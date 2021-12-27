@@ -95,9 +95,7 @@ static void show_usb_desc_interface(struct usb_dev *usb_dev) {
 			usb_dev->usb_iface[0]->iface_desc[0]->i_interface);
 }
 
-static void show_usb_desc_configuration(struct usb_dev *usb_dev) {
-	struct usb_desc_configuration *config = \
-				(struct usb_desc_configuration *) usb_dev->config_buf;
+static void show_usb_desc_configuration(struct usb_desc_configuration *config) {
 	
 	if (!config) {
 		printf(" Configuration Descriptor:\n"
@@ -148,9 +146,23 @@ int main(int argc, char **argv) {
 	while ((usb_dev = usb_dev_iterate(usb_dev))) {
 		show_usb_dev(usb_dev);
 		if(flag) {
+			int conf_cnt = 0;
+			struct usb_desc_configuration *config = usb_dev->config_buf;
+
 			show_usb_desc_device(usb_dev);
-			show_usb_desc_configuration(usb_dev);
-			show_usb_desc_interface(usb_dev);
+
+			for (conf_cnt = 0;
+					conf_cnt < usb_dev->dev_desc.b_num_configurations;
+					conf_cnt ++) {
+
+				show_usb_desc_configuration(config);
+				/* TODO the only first configuration */
+				if (conf_cnt == 0) {
+					show_usb_desc_interface(usb_dev);
+				}
+
+				config = ((void *)config + config->w_total_length);
+			}
 		}
 	}
 
