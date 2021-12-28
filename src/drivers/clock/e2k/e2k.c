@@ -27,8 +27,8 @@
 #define MC_TABLE_ADDRESS 0xff0130
 
 #define MC_TABLE_ADDRESS 0xff0130
-// #define MC_TIMER_SHIFT   0x114       // for 8CB
-#define MC_TIMER_SHIFT   0x088          // for 1C+
+
+#define MC_TIMER_SHIFT   OPTION_GET(NUMBER, mc_timer_shift)
 
 #define E2K_CLOCK_BASE   (uintptr_t) E2K_READ_MAS_W \
     ( E2K_READ_MAS_W (MC_TABLE_ADDRESS, MAS_MODE_LOAD_PA)\
@@ -38,10 +38,8 @@
 #define E2K_CLOCK_BASE ((uintptr_t)OPTION_GET(NUMBER, base_addr))
 #endif
 
-// #define IRQ_NR     OPTION_GET(NUMBER, irq_num)
-// #define LT_FREQ    OPTION_GET(NUMBER, freq)
-#define LT_FREQ 2000
-#define IRQ_NR 2
+#define IRQ_NR     OPTION_GET(NUMBER, irq_num)
+#define LT_FREQ    OPTION_GET(NUMBER, freq)
 
 #define E2K_COUNTER_LIMIT	(E2K_CLOCK_BASE + 0x00)
 #define E2K_COUNTER_START_VALUE	(E2K_CLOCK_BASE + 0x04)

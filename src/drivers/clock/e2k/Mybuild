@@ -8,6 +8,12 @@ module e2k_clock {
 	option number base_addr=0
 	option number irq_num=2
 	option number freq=10
+	/* TODO must be in bootinfo block */
+	/* 
+	8CB: 0x114
+	1C+: 0x88
+	*/
+	option number mc_timer_shift = 0x88
 
 	source "e2k.c"
 
