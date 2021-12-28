@@ -19,9 +19,27 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time_device.h>
 
-#define E2K_CLOCK_BASE  ((uintptr_t)OPTION_GET(NUMBER, base_addr))
-#define IRQ_NR          OPTION_GET(NUMBER, irq_num)
-#define LT_FREQ         OPTION_GET(NUMBER, freq)
+#include <hal/ipl.h>
+#include <e2k_api.h>
+#include <e2k_mas.h>
+
+#if 0 == OPTION_GET(NUMBER, base_addr)
+#define MC_TABLE_ADDRESS 0xff0130
+
+#define MC_TABLE_ADDRESS 0xff0130
+
+#define MC_TIMER_SHIFT   OPTION_GET(NUMBER, mc_timer_shift)
+
+#define E2K_CLOCK_BASE   (uintptr_t) E2K_READ_MAS_W \
+    ( E2K_READ_MAS_W (MC_TABLE_ADDRESS, MAS_MODE_LOAD_PA)\
+    + MC_TIMER_SHIFT, MAS_MODE_LOAD_PA )
+
+#else
+#define E2K_CLOCK_BASE ((uintptr_t)OPTION_GET(NUMBER, base_addr))
+#endif
+
+#define IRQ_NR     OPTION_GET(NUMBER, irq_num)
+#define LT_FREQ    OPTION_GET(NUMBER, freq)
 
 #define E2K_COUNTER_LIMIT	(E2K_CLOCK_BASE + 0x00)
 #define E2K_COUNTER_START_VALUE	(E2K_CLOCK_BASE + 0x04)
@@ -108,7 +126,7 @@ static struct time_event_device e2k_clock_event = {
 
 static struct time_counter_device e2k_clock_counter = {
 	.read     = e2k_clock_read,
-	.cycle_hz = 1000,
+	.cycle_hz = 10000000,
 };
 
 CLOCK_SOURCE_DEF(e2k_clock, e2k_clock_init, NULL,

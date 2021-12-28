@@ -43,6 +43,7 @@
 #define E1000_LOG_TX_BUFFERS       OPTION_GET(NUMBER,log_tx_desc_quantity)
 
 #define E1000_CARD_QUANTITY        OPTION_GET(NUMBER,card_quantity)
+#define E1000_PHY_ID               OPTION_GET(NUMBER,phy_id)
 
 /*
  * Set the number of Tx and Rx buffers, using Log_2(# buffers).
@@ -80,7 +81,8 @@ static struct l_e1000_dma_area e1000_dma_area[E1000_CARD_QUANTITY] __attribute__
 struct l_e1000_priv {
 	struct net_device *netdev;
 
-	struct sk_buff *rx_skbs[RX_RING_SIZE];
+	struct sk_buff *volatile rx_skbs[RX_RING_SIZE];
+	struct sk_buff *volatile tx_skbs[TX_RING_SIZE];
 
 	struct l_e1000_init_block *init_block;
 	struct l_e1000_rx_desc    *rx_ring;
@@ -198,6 +200,14 @@ static void e1000_mii_writereg(struct net_device *dev, int phy_id, int reg_num, 
 	}
 	log_error("Unable to write MGIO_DATA reg: val = 0x%x", wr);
 	return;
+}
+
+static inline void
+e1000_phy_mmd_write(void *eth1000_ptr, uint8_t mmd_dev, uint16_t mmd_reg, uint16_t val) {
+	e1000_mii_writereg(eth1000_ptr, 0, 0xD, mmd_dev & 0x1F);
+	e1000_mii_writereg(eth1000_ptr, 0, 0xE, mmd_reg);
+	e1000_mii_writereg(eth1000_ptr, 0, 0xD, 0x01 << 14 | mmd_dev & 0x1F);
+	e1000_mii_writereg(eth1000_ptr, 0, 0xE, val);
 }
 
 #define SPEED_10   10
@@ -318,6 +328,10 @@ static int e1000_init_block(struct net_device *dev) {
 		}
 	}
 
+	for (i = 0; i < TX_RING_SIZE; i++) {
+		ep->tx_skbs[i] = NULL;
+	}
+
 	ep->tx_ring->status = 0;
 	wmb();
 	ep->tx_ring->base = 0;
@@ -396,7 +410,6 @@ static int l_e1000_reset(struct net_device *dev) {
 static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev, int number) {
 	struct l_e1000_priv *ep;
 	struct l_e1000_dma_area *m;
-	unsigned int soft_reset;
 
 	int fdx, mii, gmii;
 	uint32_t val = 0;
@@ -413,15 +426,21 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev,
 	ep->base_ioaddr = dev->base_addr;
 	ep->netdev = dev;
 
+#if 0 /*soft reset */
 	/* Setup STOP bit; Force e1000 resetting  */
-	e1000_write_e_csr(ep, E_CSR_STOP);
-	/* PHY Resetting */
-	soft_reset = 0;
-	soft_reset |= (L_E1000_RSET_POLARITY | MGIO_CSR_SRST);
-	e1000_write_mgio_csr(ep, soft_reset); /* startup software reset */
-	soft_reset = e1000_read_mgio_csr(ep);
-	soft_reset &= ~(MGIO_CSR_SRST);
-	e1000_write_mgio_csr(ep, soft_reset); /* stop software reset */
+	{
+		unsigned int soft_reset;
+
+		e1000_write_e_csr(ep, E_CSR_STOP);
+		/* PHY Resetting */
+		soft_reset = 0;
+		soft_reset |= (L_E1000_RSET_POLARITY | MGIO_CSR_SRST);
+		e1000_write_mgio_csr(ep, soft_reset); /* startup software reset */
+		soft_reset = e1000_read_mgio_csr(ep);
+		soft_reset &= ~(MGIO_CSR_SRST);
+		e1000_write_mgio_csr(ep, soft_reset); /* stop software reset */
+	}
+#endif /*soft reset */
 
 	for (i = 0; i < 6; i++) {
 		dev->dev_addr[i] = l_base_mac_addr[i];
@@ -433,21 +452,22 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev,
 	ep->mii_if.supports_gmii = gmii;
 	ep->mii_if.phy_id_mask = 0x1f;
 	ep->mii_if.reg_num_mask = 0x1f;
-	ep->mii_if.phy_id = 0x01;
+	ep->mii_if.phy_id = E1000_PHY_ID;
 
 	/* Setup PHY MII/GMII enable */
-	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_AUX_CTRL);
+/*	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_AUX_CTRL);
 	log_boot("PHY reg # 0x12 (AUX_CTRL) : after reset : 0x%x\n", val);
 	val &= ~(RGMII_EN_1 | RGMII_EN_0);
 	e1000_mii_writereg(dev, ep->mii_if.phy_id, PHY_AUX_CTRL, val);
+*/
 	/* Setup PHY 10/100/1000 Link on 10M Link */
-	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_LED_CTRL);
+/*	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_LED_CTRL);
 	log_boot("PHY reg # 0x13 (LED_CTRL) : after reset : 0x%x\n", val);
 	val |= RED_LEN_EN;
 	e1000_mii_writereg(dev, ep->mii_if.phy_id, PHY_LED_CTRL, val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_LED_CTRL);
 	log_boot("PHY reg # 0x13 (LED_CTRL) : after led is : 0x%x\n", val);
-
+*/
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0);
 	log_boot("PHY reg # 0x0  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x1);
@@ -462,19 +482,30 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev,
 	log_boot("PHY reg # 0x14  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x15);
 	log_boot("PHY reg # 0x15  after reset : 0x%x\n", val);
-
+/*
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_BIST_CFG2);
 	log_boot("PHY reg # 0x1a (BIST_CFG2): 0x%x\n", val);
 	val |= LINK_SEL;
 	e1000_mii_writereg(dev, ep->mii_if.phy_id, PHY_BIST_CFG2, val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_BIST_CFG2);
 	log_boot(" read mgio csr #0x04 (BIST_CFG2) : 0x%x\n", val);
+*/
+/* Microchip phy special regs */
+#if 0
+	e1000_phy_mmd_write(dev, 0x0, 0x4, 0x0006);
+	e1000_phy_mmd_write(dev, 0x0, 0x3, 0x1A80);
+#endif
+/* End Microchip phy special regs */
 	/* move e1000 link status select to default 0 link */
+/* Marvel specific */
+#if 0
+	log_boot("move e1000 link status select to default 0 link \n");
 	val = e1000_read_mgio_csr(ep);
 	val &= ~MGIO_CSR_LSTS;
 	val |= MGIO_CSR_SLSP;
 	e1000_write_mgio_csr(ep, val);
 	log_boot(" write mgio csr #0x04 (BIST_CFG2): 0x%x\n", val);
+#endif /* End Marvel specific */
 
 	return 0;
 }
@@ -496,6 +527,11 @@ static int l_e1000_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	show_packet(skb_get_data_pointner(skb->data), len, "transmit");
 
+	/* wait until buff is nor free */
+
+	while(ep->tx_skbs[0] != NULL) {
+	}
+
 	ep->tx_ring->base = (uint32_t)(uintptr_t)skb_get_data_pointner(skb->data);
 	ep->tx_ring->buf_length = htole16(-len);
 	ep->tx_ring->misc = 0x00000000;
@@ -503,6 +539,10 @@ static int l_e1000_xmit(struct net_device *dev, struct sk_buff *skb) {
 	ep->tx_ring->status = htole16(status);
 	wmb();
 	e1000_write_e_csr(ep, E_CSR_INEA | E_CSR_TDMD);
+
+	/* TODO now we send only one packet */
+	ep->tx_skbs[0] = skb;
+
 	return 0;
 }
 
@@ -600,7 +640,12 @@ static irq_return_t l_e1000_interrupt(unsigned int irq_num, void *dev_id) {
 			int err_status = le32toh(ep->tx_ring->misc);
 			log_error("Tx error status=%04x err_status=%08x", status, err_status);
 		}
+
 		ep->tx_ring->status = 0;
+		assert(ep->tx_skbs[0]);
+		skb_free(ep->tx_skbs[0]);
+
+		ep->tx_skbs[0] = NULL;
 	}
 
 	if (csr0 & E_CSR_MERR) {
@@ -654,6 +699,12 @@ static int l_e1000_init(struct pci_slot_dev *pci_dev) {
 			PROT_WRITE | PROT_READ | PROT_NOCACHE,
 			MAP_FIXED,
 			pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK);
+
+	log_debug("bar (%p)\n base (%x) \n poor bar(%x)",
+			(void *) (uintptr_t) (pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK),
+			nic->base_addr,
+			(uint64_t)(pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK));
+			
 	nic_priv = netdev_priv(nic);
 	memset(nic_priv, 0, sizeof(*nic_priv));
 
@@ -672,6 +723,7 @@ static int l_e1000_init(struct pci_slot_dev *pci_dev) {
 
 static const struct pci_id l_e1000_id_table[] = {
 	{ PCI_VENDOR_ID_INTEL, PCI_DEVICE_ID_MCST_ELBRUS_E1000 },
+	{ 0x1FFF, 0x8016},
 };
 
 PCI_DRIVER_TABLE("l_e1000", l_e1000_init, l_e1000_id_table);

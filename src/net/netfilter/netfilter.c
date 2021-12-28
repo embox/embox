@@ -309,7 +309,7 @@ int nf_del_rule(int chain, size_t r_num) {
 
 int nf_clear(int chain) {
 	struct dlist_head *rules;
-	struct nf_rule *r;
+	struct nf_rule *r = NULL;
 
 	rules = nf_get_chain(chain);
 	if (rules == NULL) {

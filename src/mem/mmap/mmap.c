@@ -99,7 +99,7 @@ int mmap_prot(struct emmap *mmap, uintptr_t addr) {
 uintptr_t mmap_alloc(struct emmap *mmap, size_t size) {
 	uintptr_t ptr_s = MAREA_ALIGN_UP(0x1);
 	uintptr_t ptr_e = MAREA_ALIGN_UP(ptr_s + size);
-	struct marea *marea;
+	struct marea *marea = NULL;
 
 	assert(mmap);
 

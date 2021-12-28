@@ -25,7 +25,7 @@
 #define PCI_VENDOR_ID_RED_HAT             0x1b36
 
 #define PCI_VENDOR_ID_MCST_PCIE_BRIDGE    0xe3e3
-#define PCI_VENDOR_ID_MCST_TMP            0x1fff
+#define PCI_VENDOR_ID_MCST_TMP            0x1FFF
 
 /* Cirrus device id's */
 #define PCI_DEV_ID_CIRRUS_5446            0x00b8
@@ -106,6 +106,24 @@
 #define PCI_DEVICE_ID_MCST_PCI_BRIDGE           0x8000
 #define PCI_DEVICE_ID_MCST_PCIE_BRIDGE          0xabcd
 #define PCI_DEVICE_ID_MCST_VIRT_PCI_BRIDGE      0xe3e3
+
+#define PCI_DEVICE_ID_MCST_USB_OHCI_CTRL        0x8008
+#define PCI_DEVICE_ID_MCST_VGA_MGA2             0x8009
+#define PCI_DEVICE_ID_MCST_HD_AUDIO             0x800A
+#define PCI_DEVICE_ID_MCST_IDE_CTRL             0x800B
+#define PCI_DEVICE_ID_MCST_SPMC                 0x800E
+#define PCI_DEVICE_ID_MCST_PCIE_X4              0x8010
+#define PCI_DEVICE_ID_MCST_PCIE_X16             0x8011
+#define PCI_DEVICE_ID_MCST_GPIO_MPV             0x8014
+#define PCI_DEVICE_ID_MCST_GIG_ETHERNET         0x8016
+#define PCI_DEVICE_ID_MCST_VIRT_PCI_BRIDGE2     0x8017
+#define PCI_DEVICE_ID_MCST_I2C_SPI              0x8018
+#define PCI_DEVICE_ID_MCST_PARALLEL_SERIAL      0x8019
+#define PCI_DEVICE_ID_MCST_HOST_BRIDGE          0x801D
+#define PCI_DEVICE_ID_MCST_SATA_CTRL            0x801A
+#define PCI_DEVICE_ID_MCST_USB_EHCI_CTRL        0x801E
+
+
 
 /* Red Hat, Inc. */
 #define PCI_DEVICE_ID_QEMU_PCIE_HOST_BRINGE     0x0008

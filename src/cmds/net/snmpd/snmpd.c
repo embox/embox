@@ -35,7 +35,7 @@ static void print_usage(void) {
 }
 
 static void build_response(struct snmp_desc *snmp) {
-	struct varbind *var;
+	struct varbind *var = NULL;
 	mib_obj_t obj;
 
 	snmp->pdu_type = PDU_GET_RESPONSE;

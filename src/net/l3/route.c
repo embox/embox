@@ -91,7 +91,7 @@ int rt_del_route(struct net_device *dev, in_addr_t dst,
 }
 
 int rt_del_route_if(struct net_device *dev) {
-	struct rt_entry_info *rt_info;
+	struct rt_entry_info *rt_info = NULL;
 	int ret = 0;
 
 	dlist_foreach_entry(rt_info, &rt_entry_info_list, lnk) {
@@ -265,7 +265,7 @@ struct rt_entry * rt_fib_get_next(struct rt_entry *entry) {
  * In this case we'll simply take the first match
  */
 struct rt_entry * rt_fib_get_best(in_addr_t dst, struct net_device *out_dev) {
-	struct rt_entry_info *rt_info;
+	struct rt_entry_info *rt_info = NULL;
 	int mask_len, best_mask_len;
 	struct rt_entry *best_rte;
 

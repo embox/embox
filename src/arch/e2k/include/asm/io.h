@@ -32,6 +32,20 @@
 	__rval; \
 })
 
+#define E2K_WAIT_CORE(num) \
+({ \
+    asm volatile ("wait \tma_c = %0, fl_c = %1, ld_c = %2, "		\
+		"st_c = %3, all_e = %4, all_c = %5"	\
+                  : \
+                  : "i" (((num) & 0x20) >> 5), \
+                    "i" (((num) & 0x10) >> 4), \
+                    "i" (((num) & 0x8)  >> 3), \
+                    "i" (((num) & 0x4)  >> 2), \
+                    "i" (((num) & 0x2)  >> 1), \
+                    "i" (((num) & 0x1)) \
+	 :  "memory" ); \
+})
+
 static inline void e2k_wait_all(void) {
 	_Pragma ("no_asm_inline")
 	asm volatile ("wait \ttrap = %0, ma_c = %1, fl_c = %2, ld_c = %3, "

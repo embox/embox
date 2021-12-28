@@ -12,6 +12,13 @@
 #include <drivers/pci/pci.h>
 #include <asm/io.h>
 
+#include <framework/mod/options.h>
+
+	/* TODO Get pmc 0xd64100 */
+	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
+	/* TODO Get SIC_RT_PCICFG_BASE */
+#define PCI_CFG_BASE    (OPTION_GET(NUMBER, pci_cfg_base))
+
 /* Using for search PCI configuration space start position address */
 #define PCI_REG_ADDR(bus, physdev, fun, where) \
 	(((where) & ~3) | ((fun) << 12) | ((physdev) << 15) | ((bus) << 20))
@@ -27,14 +34,12 @@ static inline uint16_t uint32_to_uint16(uint32_t val, int offset) {
 static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, int size, void *ptr) {
 	uint32_t tmp;
+	unsigned long pci_conf_base;
+	uintptr_t dev_addr;
 
-	/* TODO Get pmc 0xd64100 */
-	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
-	/* TODO Get SIC_RT_PCICFG_BASE */
-	unsigned long pci_conf_base = 0x200000;
-	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
-
+	pci_conf_base = PCI_CFG_BASE;
 	pci_conf_base <<= 12;
+	dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
 	tmp = e2k_read32((dev_addr + pci_conf_base));
 
@@ -58,13 +63,12 @@ static inline uint32_t e2k_pci_config_read(uint32_t bus, uint32_t dev_fn,
 
 static inline uint32_t e2k_pci_config_write(uint32_t bus, uint32_t dev_fn,
 				uint32_t where, int size, uint32_t value) {
-	/* TODO Get pmc 0xd64100 */
-	/* pci_mem_core_t *ppmc = (pci_mem_core_t *) (pMACHINE->pPMC); */
-	/* TODO Get SIC_RT_PCICFG_BASE */
-	unsigned long pci_conf_base = 0x200000;
-	uintptr_t dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
+	unsigned long pci_conf_base;
+	uintptr_t dev_addr;
 
+	pci_conf_base = PCI_CFG_BASE;
 	pci_conf_base <<= 12;
+	dev_addr = PCI_REG_ADDR(bus, dev_fn >> 3, dev_fn & 0x7, where);
 
 	e2k_write32(value, dev_addr + pci_conf_base);
 

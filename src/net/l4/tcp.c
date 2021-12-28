@@ -1347,7 +1347,7 @@ static int tcp_rcv(struct sk_buff *skb) {
 }
 
 static void tcp_timer_handler(struct sys_timer *timer, void *param) {
-	struct sock *sk;
+	struct sock *sk = NULL;
 	struct tcp_sock *tcp_sk;
 
 	(void)timer;

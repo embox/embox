@@ -36,9 +36,17 @@ void *mmap_device_memory(void *addr,
 	 * TODO handle flags anyhow */
 	uintptr_t start = (uintptr_t) (physical & ~MMU_PAGE_MASK);
 	uintptr_t end = binalign_bound(physical + len, MMU_PAGE_SIZE);
+
 	len = end - start;
 
 	if (mmap_place(task_self_resource_mmap(), start, len, prot)) {
+		/* it is not a error because this region can be mapped earlier
+		 *
+		 */
+		/* TODO mmap_device_memory must return shared address it available
+		 log_error("mmap_place() addr(%p), len(%zu) failed",
+				(uintptr_t)physical, len);
+		*/
 		return NULL;
 	}
 
@@ -47,6 +55,7 @@ void *mmap_device_memory(void *addr,
 				start,
 				len,
 				prot);
+	log_debug("phy (0x%" PRIxPTR ") mapped to %p", start, addr);
 
 	return addr;
 }

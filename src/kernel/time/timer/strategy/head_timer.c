@@ -15,7 +15,7 @@
 static DLIST_DEFINE(sys_timers_list); /* list head to timers */
 
 void timer_strat_start(struct sys_timer *tmr) {
-	struct sys_timer *it_tmr;
+	struct sys_timer *it_tmr = NULL;
 	struct dlist_head *next_tmr_lnk = &sys_timers_list;
 	ipl_t ipl;
 
@@ -82,7 +82,7 @@ int timer_strat_get_next_event(clock_t *next_event) {
  * to the counter and the function is executed.
  */
 void timer_strat_sched(clock_t jiffies) {
-	struct sys_timer *timer;
+	struct sys_timer *timer = NULL;
 	ipl_t ipl;
 
 	ipl = ipl_save();

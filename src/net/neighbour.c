@@ -320,7 +320,7 @@ int neighbour_del(unsigned short ptype, const void *paddr,
 }
 
 int neighbour_clean(struct net_device *dev) {
-	struct neighbour *nbr;
+	struct neighbour *nbr = NULL;
 
 	sched_lock();
 	{
@@ -375,7 +375,7 @@ int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 
 int neighbour_foreach(neighbour_foreach_ft func, void *args) {
 	int ret;
-	struct neighbour *nbr;
+	struct neighbour *nbr = NULL;
 
 	if (func == NULL) {
 		return -EINVAL;
@@ -441,7 +441,7 @@ exit:
 }
 
 static void nbr_timer_handler(struct sys_timer *tmr, void *param) {
-	struct neighbour *nbr;
+	struct neighbour *nbr = NULL;
 
 	sched_lock();
 	{

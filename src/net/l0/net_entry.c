@@ -34,7 +34,7 @@ static int netif_tx_action(struct lthread *self);
 static LTHREAD_DEF(netif_tx_handler, netif_tx_action, NETIF_RX_HND_PRIORITY);
 
 static int netif_rx_action(struct lthread *self) {
-	struct net_device *dev;
+	struct net_device *dev = NULL;
 	ipl_t ipl;
 
 	ipl= ipl_save();
@@ -88,7 +88,7 @@ static DLIST_DEFINE(netif_tx_list);
 static struct lthread netif_tx_handler;
 
 static int netif_tx_action(struct lthread *self) {
-	struct net_device *dev;
+	struct net_device *dev = NULL;
 
 	sched_lock();
 	{

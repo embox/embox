@@ -27,7 +27,7 @@ static int snmp_alloc_var(struct varbind *var, char **userbuf, size_t *bufsize);
 
 uint32_t snmp_build(struct snmp_desc *snmp_desc, const char *snmp_packet) {
 	char *cur = (char*)snmp_packet;
-	struct varbind *var;
+	struct varbind *var = NULL;
 	uint32_t packet_len = 0;
 
 	/* Fill SNMP: inclusion: snmp<-pdu<-data */
@@ -182,7 +182,7 @@ static uint8_t pdu_len(struct snmp_desc *snmp_desc) {
 }
 
 static uint8_t data_len(struct snmp_desc *snmp_desc) {
-	struct varbind *var;
+	struct varbind *var = NULL;
 	uint8_t len = 0;
 
 	dlist_foreach_entry(var, &snmp_desc->varbind_list, link) {

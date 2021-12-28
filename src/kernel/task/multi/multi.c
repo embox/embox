@@ -303,7 +303,7 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 }
 
 static void task_make_children_daemons(struct task *task) {
-	struct task *child;
+	struct task *child = NULL;
 	struct task *krn_task = task_kernel_task();
 
 	dlist_foreach_entry(child, &task->child_list, child_lnk) {
@@ -315,7 +315,8 @@ static void task_make_children_daemons(struct task *task) {
 }
 
 void task_do_exit(struct task *task, int status) {
-	struct thread *thr, *main_thr;
+	struct thread *thr = NULL;
+	struct thread *main_thr;
 
 	assert(critical_inside(CRITICAL_SCHED_LOCK));
 
