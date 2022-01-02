@@ -2,14 +2,20 @@ package embox.kernel.thread
 
 @DefaultImpl(thread_local_none)
 abstract module thread_local {
+	option number log_level=4
+
 	option number thread_key_quantity=0x40
 }
 
 module thread_local_none extends thread_local {
+	option number log_level=4
+
 	source "thread_local_none.h"
 }
 
 module thread_local_heap extends thread_local {
+	option number log_level=4
+
 	source "thread_local_heap.c"
 	source "thread_local_heap.h"
 

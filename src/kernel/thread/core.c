@@ -44,6 +44,7 @@
 
 #include <hal/context.h>
 #include <util/err.h>
+#include <util/log.h>
 #include <compiler.h>
 
 extern void thread_context_switch(struct thread *prev, struct thread *next);
@@ -278,6 +279,8 @@ void thread_delete(struct thread *t) {
 	assert(t);
 	assert(t->state & TS_EXITED);
 
+	log_debug("priority %X", t->schedee.priority);
+
 	task_thread_unregister(t->task, t);
 	thread_local_free(t);
 	thread_wait_deinit(&t->thread_wait_list);
@@ -301,6 +304,7 @@ void _NORETURN thread_exit(void *ret) {
 	struct task *task = task_self();
 	struct thread *joining;
 
+	log_debug("current priority %X", current->schedee.priority);
 	/* We can free only not main threads */
 	if (current == task_get_main(task)) {
 		/* We are last thread. */
@@ -321,14 +325,19 @@ void _NORETURN thread_exit(void *ret) {
 	if (joining) {
 		sched_wakeup(&joining->schedee);
 	}
+	log_debug("'after joined' joining:%X ret:%X",joining, ret);
+
 
 	if (current->state & TS_DETACHED)
 		/* No one references this thread anymore. Time to delete it. */
 		thread_delete(current);
 
+	log_debug("'after delete' state:%X", current->state);
+
 	schedule();
 
 	/* NOTREACHED */
+	log_debug("'after schedule()'");
 	sched_unlock();  /* just to be honest */
 	panic("Returning from thread_exit()");
 }
@@ -336,6 +345,8 @@ void _NORETURN thread_exit(void *ret) {
 int thread_join(struct thread *t, void **p_ret) {
 	struct thread *current = thread_self();
 	int ret = 0;
+
+	log_debug("current thread priority: %X", current->schedee.priority);
 
 	assert(t);
 
@@ -349,6 +360,8 @@ int thread_join(struct thread *t, void **p_ret) {
 		if (!(t->state & TS_EXITED)) {
 			assert(!t->joining);
 			t->joining = current;
+			
+			log_debug("thread joining priority: %X, joining %X", t->schedee.priority, t->joining);
 
 			ret = SCHED_WAIT(t->state & TS_EXITED);
 			if (ret) {
