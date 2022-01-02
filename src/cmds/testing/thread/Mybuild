@@ -1,0 +1,23 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "thread_priority",
+     help = "Run threads at different priorities",
+     man  = '''
+     	NAME
+		thread_priority - manual test for threads
+	SYNOPSIS
+	DESCRIPTION
+		manual test for threads
+	OPTIONS
+	AUTHORS
+		kpishere
+	''')
+module thread_priority_test {
+	option number log_level=4
+	option number threads_quantity=3
+	source "thread_priority_test.c"
+
+	depends embox.kernel.thread.core
+	depends embox.framework.LibFramework
+}
