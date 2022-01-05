@@ -182,6 +182,8 @@ static int ohci_start(struct usb_hcd *hcd) {
 
 	ohcd = hcd2ohci(hcd);
 
+	OHCI_WRITE_STATE(ohcd, OHCI_CTRL_FUNC_STATE_RST);
+
 	hc_ctrl = OHCI_READ(ohcd, &ohcd->base->hc_control);
 	hc_state = hc_ctrl & OHCI_CTRL_FUNC_STATE_MASK;
 	need_wait = false;
