@@ -146,7 +146,7 @@ static void show_usb_desc_interface(struct usb_dev *usb_dev) {
 
 static void show_usb_desc_configuration(struct usb_dev *usb_dev) {
 	struct usb_desc_configuration *config =
-		(struct usb_desc_configuration *)usb_dev->config_buf;
+		(struct usb_desc_configuration *)usb_dev->current_config->config_buf;
 
 	if (!config) {
 		printf(" Configuration Descriptor:\n"

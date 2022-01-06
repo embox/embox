@@ -174,7 +174,7 @@ static int usb_create_interface(struct usb_dev *dev, struct usb_desc_interface *
 
 static void usb_dev_fill_config(struct usb_dev *dev) {
 	struct usb_desc_configuration *conf;
-	void *cur = dev->config_buf, *end;
+	void *cur = dev->current_config->config_buf, *end;
 	int i = 0;
 
 	conf = (struct usb_desc_configuration *) cur;
@@ -206,7 +206,7 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 	struct usb_desc_configuration conf;
 
 	/* Check the configuration is not allocated yet. */
-	assert(!dev->config_buf);
+	assert(!dev->current_config->config_buf);
 
 	log_debug("dev(%d:%d) conf=%d", dev->bus_idx, dev->addr, n);
 
@@ -229,8 +229,8 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 
 	/* Now get full configuration. */
 	len = conf.w_total_length;
-	dev->config_buf = sysmalloc(len);
-	if (!dev->config_buf) {
+	dev->current_config->config_buf = sysmalloc(len);
+	if (!dev->current_config->config_buf) {
 		goto err;
 	}
 
@@ -238,7 +238,7 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
 		(USB_DESC_TYPE_CONFIG << 8) + n,
-		0, len, dev->config_buf, 1000);
+		0, len, dev->current_config->config_buf, 1000);
 	if (ret < 0) {
 		goto err;
 	}
@@ -249,8 +249,8 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 
 	return 0;
 err:
-	if (dev->config_buf) {
-		sysfree(dev->config_buf);
+	if (dev->current_config->config_buf) {
+		sysfree(dev->current_config->config_buf);
 	}
 	log_error("failed");
 	return -1;
@@ -287,8 +287,8 @@ void usb_free_configuration(struct usb_dev *dev) {
 	memset(&dev->usb_iface[0]->iface_desc[0], 0, sizeof(struct usb_desc_interface));
 
 	/* Free configuration */
-	sysfree(dev->config_buf);
-	dev->config_buf = NULL;
+	sysfree(dev->current_config->config_buf);
+	dev->current_config->config_buf = NULL;
 }
 
 int usb_get_ep0(struct usb_dev *dev) {

@@ -45,6 +45,9 @@
 #define USB_DEV_MAX_INTERFACES \
     OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_dev_max_interfaces)
 
+#define USB_DEV_MAX_CONFIG \
+	2
+
 #define USB_REQ_HEADER_LEN 8
 #define USB_MAX_ENDP (USB_MAX_DEV * USB_DEV_MAX_ENDP)
 
@@ -112,6 +115,9 @@ struct usb_endp {
 	void *hci_specific;
 };
 
+struct usb_dev_config {
+	void *config_buf;
+};
 struct usb_dev {
 	unsigned short bus_idx;
 	unsigned short addr;
@@ -122,7 +128,8 @@ struct usb_dev {
 
 	struct usb_desc_device dev_desc;
 
-	void *config_buf;
+	struct usb_dev_config usb_dev_configs[USB_DEV_MAX_CONFIG];
+	struct usb_dev_config *current_config;
 
 	struct usb_endp endp0;
 

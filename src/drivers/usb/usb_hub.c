@@ -91,6 +91,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 			goto out_err;
 		}
 
+		dev->current_config = &dev->usb_dev_configs[0];
 		cfg = -1;
 		do {
 			if (++cfg > 0) {

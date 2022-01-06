@@ -147,7 +147,7 @@ int main(int argc, char **argv) {
 		show_usb_dev(usb_dev);
 		if(flag) {
 			int conf_cnt = 0;
-			struct usb_desc_configuration *config = usb_dev->config_buf;
+			struct usb_desc_configuration *config = usb_dev->current_config->config_buf;
 
 			show_usb_desc_device(usb_dev);
 
