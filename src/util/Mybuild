@@ -6,6 +6,8 @@ package embox.util
 */
 
 static module priolist {
+	option number log_level=4
+
 	source "priolist.c"
 }
 

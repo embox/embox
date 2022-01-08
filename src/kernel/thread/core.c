@@ -304,10 +304,10 @@ void _NORETURN thread_exit(void *ret) {
 	struct task *task = task_self();
 	struct thread *joining;
 
-	log_debug("current priority %X", current->schedee.priority);
 	/* We can free only not main threads */
 	if (current == task_get_main(task)) {
 		/* We are last thread. */
+		log_debug("task exiting priority %X", current->schedee.priority);
 		task_exit(ret);
 		/* NOTREACHED */
 	}
@@ -325,19 +325,14 @@ void _NORETURN thread_exit(void *ret) {
 	if (joining) {
 		sched_wakeup(&joining->schedee);
 	}
-	log_debug("'after joined' joining:%X ret:%X",joining, ret);
-
 
 	if (current->state & TS_DETACHED)
 		/* No one references this thread anymore. Time to delete it. */
 		thread_delete(current);
 
-	log_debug("'after delete' state:%X", current->state);
-
 	schedule();
 
 	/* NOTREACHED */
-	log_debug("'after schedule()'");
 	sched_unlock();  /* just to be honest */
 	panic("Returning from thread_exit()");
 }
@@ -345,8 +340,6 @@ void _NORETURN thread_exit(void *ret) {
 int thread_join(struct thread *t, void **p_ret) {
 	struct thread *current = thread_self();
 	int ret = 0;
-
-	log_debug("current thread priority: %X", current->schedee.priority);
 
 	assert(t);
 
@@ -361,7 +354,7 @@ int thread_join(struct thread *t, void **p_ret) {
 			assert(!t->joining);
 			t->joining = current;
 			
-			log_debug("thread joining priority: %X, joining %X", t->schedee.priority, t->joining);
+			log_debug("thread joining priority: %X, joining %X", t->schedee.priority.current_priority, current->schedee.priority.current_priority);
 
 			ret = SCHED_WAIT(t->state & TS_EXITED);
 			if (ret) {

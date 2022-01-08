@@ -20,6 +20,8 @@
 #include <util/err.h>
 #include <util/log.h>
 
+#define PRIORITY_INC 0
+
 #define THREADS_QUANTITY OPTION_GET(NUMBER, threads_quantity)
 #define __str(x) #x
 #define str(x) __str(x)
@@ -44,8 +46,7 @@ int main(int argc, char **argv) {
 
 	log_debug("Main process priority %d", priority);
 
-	for (int i = 0; i < THREADS_QUANTITY; i++) {
-		log_debug("Thread create %d",i);
+	for (int i = 0; i < THREADS_QUANTITY; i++) {		
 
 #ifdef USE_PTHREAD
         status = pthread_create(&t[i], NULL, thread_run, &res[i]);
@@ -55,8 +56,17 @@ int main(int argc, char **argv) {
 #else
 		t[i] = thread_create( THREAD_FLAG_SUSPENDED,
 				thread_run, (void *) (uintptr_t) i);
+		log_debug("Thread create %X %X",i, t[i]->schedee.priority.current_priority);
 		test_assert_zero(err(t[i]));
-		test_assert_zero(schedee_priority_set(&t[i]->schedee, priority+i+1));
+		if(false) {
+			// A thread that fails to schedule, delete it
+			test_assert_zero(schedee_priority_set(&t[i]->schedee, i));
+			log_debug("Thread cancel %X %X",i, t[i]->schedee.priority.current_priority);
+			thread_cancel(t[i]);
+		} else {
+			test_assert_zero(schedee_priority_set(&t[i]->schedee, i+PRIORITY_INC));
+			log_debug("Thread re-prioritize %X %X",i, t[i]->schedee.priority.current_priority);
+		}
 		test_assert_zero(thread_launch(t[i]));
 #endif
 	}
