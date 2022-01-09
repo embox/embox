@@ -214,9 +214,9 @@ int main(int argc, char **argv) {
 		}
 
 		/* Make sure it's CCID device */
-		if (usb_dev->usb_iface[0]->iface_desc[0]
-			&& (usb_dev->usb_iface[0]->iface_desc[0]->b_interface_class == USB_CLASS_CCID)) {
-			handle_ccid_commands(usb_dev->usb_iface[0]);
+		if (usb_dev->current_config->usb_iface[0]->iface_desc[0]
+			&& (usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_class == USB_CLASS_CCID)) {
+			handle_ccid_commands(usb_dev->current_config->usb_iface[0]);
 			return 0;
 		}
 	}

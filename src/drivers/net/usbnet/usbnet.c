@@ -57,7 +57,7 @@ static void usbnet_rcv_notify(struct usb_request *req, void *arg) {
 	struct net_device *nic;
 	struct usb_endp *in_endp;
 
-	nic_priv = (struct usbnet_priv *) req->endp->dev->usb_iface[2]->driver_data;
+	nic_priv = (struct usbnet_priv *) req->endp->dev->current_config->usb_iface[2]->driver_data;
 	assert(nic_priv);
 	nic = nic_priv->nic;
 	assert(nic);
@@ -119,11 +119,11 @@ static int usbnet_probe(struct usb_interface *dev) {
 	int res;
 	struct usb_interface *data_iface;
 
-//	if (dev == dev->usb_dev->usb_iface[0]) {
+//	if (dev == dev->usb_dev->current_config->usb_iface[0]) {
 //		return 0; /*control interface */
 //	}
 
-	data_iface = dev->usb_dev->usb_iface[2];
+	data_iface = dev->usb_dev->current_config->usb_iface[2];
 
 	assert(data_iface);
 

@@ -44,7 +44,7 @@ static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 		unsigned int port_nr);
 
 static struct usb_hub *usb_dev_to_hub(struct usb_dev *dev) {
-	return (struct usb_hub *)dev->usb_iface[0]->driver_data;
+	return (struct usb_hub *)dev->current_config->usb_iface[0]->driver_data;
 }
 
 static int is_rndis(struct usb_desc_interface *desc) {
@@ -103,7 +103,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 				goto out_err;
 			}
 		/* Skip Microsoft's RNDIS */
-		} while (is_rndis(dev->usb_iface[0]->iface_desc[0]));
+		} while (is_rndis(dev->current_config->usb_iface[0]->iface_desc[0]));
 
 		/* Set device default configuration. */
 		/* http://www.usbmadesimple.co.uk/ums_4.htm */
@@ -120,7 +120,7 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 	}
 
 	/* Ok, now we can make USB driver specific stuff. */
-	if (usb_driver_probe(dev->usb_iface[0]) < 0) {
+	if (usb_driver_probe(dev->current_config->usb_iface[0]) < 0) {
 		log_error("Usb driver not found for device ID %04x:%04x",
 			dev->dev_desc.id_vendor,
 			dev->dev_desc.id_product);

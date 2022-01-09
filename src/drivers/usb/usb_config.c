@@ -114,7 +114,7 @@ int usb_create_root_interface(struct usb_dev *dev) {
 	}
 	memset(iface, 0, sizeof(struct usb_interface));
 
-	dev->usb_iface[0] = iface;
+	dev->current_config->usb_iface[0] = iface;
 	iface->usb_dev = dev;
 
 	return 0;
@@ -135,7 +135,7 @@ static int usb_create_interface(struct usb_dev *dev, struct usb_desc_interface *
 
 	memset(iface, 0, sizeof(struct usb_interface));
 
-	dev->usb_iface[iface_num] = iface;
+	dev->current_config->usb_iface[iface_num] = iface;
 	iface->usb_dev = dev;
 	iface->iface_desc[0] = iface_desc;
 
@@ -197,7 +197,7 @@ static void usb_dev_fill_config(struct usb_dev *dev) {
 		cur += usb_create_interface(dev, iface_desc, i);
 		i ++;
 	}
-	dev->usb_iface_num = i;
+	dev->current_config->usb_iface_num = i;
 }
 
 /* Get full device configuration including interfaces and endpoints. */
@@ -245,7 +245,7 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 
 	usb_dev_fill_config(dev);
 
-	log_debug("b_interface_class = 0x%x OK ", dev->usb_iface[0]->iface_desc[0]->b_interface_class);
+	log_debug("b_interface_class = 0x%x OK ", dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_class);
 
 	return 0;
 err:
@@ -278,13 +278,13 @@ void usb_free_configuration(struct usb_dev *dev) {
 	int i;
 
 	/* Free endpoints expect endpoint 0. */
-	for (i = 1; i < dev->usb_iface[0]->endp_n; i++) {
-		usb_endp_free(dev->usb_iface[0]->endpoints[i]);
-		dev->usb_iface[0]->endpoints[i] = NULL;
+	for (i = 1; i < dev->current_config->usb_iface[0]->endp_n; i++) {
+		usb_endp_free(dev->current_config->usb_iface[0]->endpoints[i]);
+		dev->current_config->usb_iface[0]->endpoints[i] = NULL;
 	}
 
 	/* Zero interfaces pointers */
-	memset(&dev->usb_iface[0]->iface_desc[0], 0, sizeof(struct usb_desc_interface));
+	memset(&dev->current_config->usb_iface[0]->iface_desc[0], 0, sizeof(struct usb_desc_interface));
 
 	/* Free configuration */
 	sysfree(dev->current_config->config_buf);

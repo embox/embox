@@ -117,7 +117,11 @@ struct usb_endp {
 
 struct usb_dev_config {
 	void *config_buf;
+
+	struct usb_interface *usb_iface[USB_DEV_MAX_INTERFACES];
+	int usb_iface_num;
 };
+
 struct usb_dev {
 	unsigned short bus_idx;
 	unsigned short addr;
@@ -132,9 +136,6 @@ struct usb_dev {
 	struct usb_dev_config *current_config;
 
 	struct usb_endp endp0;
-
-	struct usb_interface *usb_iface[USB_DEV_MAX_INTERFACES];
-	int usb_iface_num;
 
 	enum usb_speed speed;
 };

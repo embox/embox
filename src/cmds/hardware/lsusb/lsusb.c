@@ -67,7 +67,7 @@ static void show_usb_desc_device(struct usb_dev *usb_dev) {
 }
 
 static void show_usb_desc_interface(struct usb_dev *usb_dev) {
-	if (!usb_dev->usb_iface[0]->iface_desc[0]) {
+	if (!usb_dev->current_config->usb_iface[0]->iface_desc[0]) {
 		printf(" Interface Descriptor:\n"
 			   "   No interfaces\n"
 		);
@@ -84,15 +84,15 @@ static void show_usb_desc_interface(struct usb_dev *usb_dev) {
 			"   b_interface_subclass %5u\n"
 			"   b_interface_protocol %5u\n"
 			"   i_interface          %5u\n",
-			usb_dev->usb_iface[0]->iface_desc[0]->b_length,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_desc_type,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_number,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_alternate_setting,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_num_endpoints,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_class,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_subclass,
-			usb_dev->usb_iface[0]->iface_desc[0]->b_interface_protocol,
-			usb_dev->usb_iface[0]->iface_desc[0]->i_interface);
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_length,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_desc_type,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_number,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_alternate_setting,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_num_endpoints,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_class,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_subclass,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_protocol,
+			usb_dev->current_config->usb_iface[0]->iface_desc[0]->i_interface);
 }
 
 static void show_usb_desc_configuration(struct usb_desc_configuration *config) {
