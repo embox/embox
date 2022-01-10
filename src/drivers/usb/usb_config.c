@@ -114,13 +114,13 @@ int usb_create_root_interface(struct usb_dev *dev) {
 	}
 	memset(iface, 0, sizeof(struct usb_interface));
 
-	dev->current_config->usb_iface[0] = iface;
+	dev->usb_dev_configs[0].usb_iface[0] = iface;
 	iface->usb_dev = dev;
 
 	return 0;
 }
 
-static int usb_create_interface(struct usb_dev *dev, struct usb_desc_interface *iface_desc, int iface_num) {
+static int usb_create_interface(struct usb_dev *dev, int n, struct usb_desc_interface *iface_desc, int iface_num) {
 	struct usb_interface *iface;
 	void *cur = iface_desc;
 	int j;
@@ -135,7 +135,7 @@ static int usb_create_interface(struct usb_dev *dev, struct usb_desc_interface *
 
 	memset(iface, 0, sizeof(struct usb_interface));
 
-	dev->current_config->usb_iface[iface_num] = iface;
+	dev->usb_dev_configs[n].usb_iface[iface_num] = iface;
 	iface->usb_dev = dev;
 	iface->iface_desc[0] = iface_desc;
 
@@ -172,10 +172,12 @@ static int usb_create_interface(struct usb_dev *dev, struct usb_desc_interface *
 	return len;
 }
 
-static void usb_dev_fill_config(struct usb_dev *dev) {
+static void usb_dev_fill_config(struct usb_dev *dev, unsigned int n) {
 	struct usb_desc_configuration *conf;
-	void *cur = dev->current_config->config_buf, *end;
+	void *cur, *end;
 	int i = 0;
+
+	cur = dev->usb_dev_configs[n].config_buf;
 
 	conf = (struct usb_desc_configuration *) cur;
 	end = cur + conf->w_total_length;
@@ -194,19 +196,18 @@ static void usb_dev_fill_config(struct usb_dev *dev) {
 			continue;
 		}
 
-		cur += usb_create_interface(dev, iface_desc, i);
+		cur += usb_create_interface(dev, n, iface_desc, i);
 		i ++;
 	}
-	dev->current_config->usb_iface_num = i;
+	dev->usb_dev_configs[n].usb_iface_num = i;
 }
 
-/* Get full device configuration including interfaces and endpoints. */
-int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
-	int len, ret;
+int usb_get_config_desc(struct usb_dev *dev, unsigned int n) {
+	int ret;
 	struct usb_desc_configuration conf;
 
 	/* Check the configuration is not allocated yet. */
-	assert(!dev->current_config->config_buf);
+	assert(!dev->usb_dev_configs[n].config_buf);
 
 	log_debug("dev(%d:%d) conf=%d", dev->bus_idx, dev->addr, n);
 
@@ -216,7 +217,8 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 		(USB_DESC_TYPE_CONFIG << 8) + n,
 		0, sizeof(struct usb_desc_configuration), &conf, 1000);
 	if (ret) {
-		goto err;
+		log_error("dev(%d:%d) conf=%d failed", dev->bus_idx, dev->addr, n);
+		return -1;
 	}
 
 	log_info("dev(%d:%d) Configuration %d:"
@@ -225,12 +227,18 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 			"\n\t\t  w_total_length=%d"
 			"\n\t\t  b_num_interfaces=%d",
 			dev->bus_idx, dev->addr, n,
-			conf.b_length, conf.b_desc_type, conf.w_total_length, conf.b_num_interfaces);
+			conf.b_length, conf.b_desc_type,
+			conf.w_total_length, conf.b_num_interfaces);
 
-	/* Now get full configuration. */
-	len = conf.w_total_length;
-	dev->current_config->config_buf = sysmalloc(len);
-	if (!dev->current_config->config_buf) {
+	return conf.w_total_length;
+}
+
+/* Get full device configuration including interfaces and endpoints. */
+int usb_get_configuration(struct usb_dev *dev, unsigned int n, int len) {
+	int ret;
+
+	dev->usb_dev_configs[n].config_buf = sysmalloc(len);
+	if (!dev->usb_dev_configs[n].config_buf) {
 		goto err;
 	}
 
@@ -238,19 +246,20 @@ int usb_get_configuration(struct usb_dev *dev, unsigned int n) {
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
 		(USB_DESC_TYPE_CONFIG << 8) + n,
-		0, len, dev->current_config->config_buf, 1000);
+		0, len,dev->usb_dev_configs[n].config_buf, 1000);
 	if (ret < 0) {
 		goto err;
 	}
 
-	usb_dev_fill_config(dev);
+	usb_dev_fill_config(dev, n);
 
-	log_debug("b_interface_class = 0x%x OK ", dev->current_config->usb_iface[0]->iface_desc[0]->b_interface_class);
+	log_debug("b_interface_class = 0x%x OK ",
+			dev->usb_dev_configs[n].usb_iface[0]->iface_desc[0]->b_interface_class);
 
 	return 0;
 err:
-	if (dev->current_config->config_buf) {
-		sysfree(dev->current_config->config_buf);
+	if (dev->usb_dev_configs[n].config_buf) {
+		sysfree(dev->usb_dev_configs[n].config_buf);
 	}
 	log_error("failed");
 	return -1;
