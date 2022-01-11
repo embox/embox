@@ -237,11 +237,6 @@ int usb_get_config_desc(struct usb_dev *dev, unsigned int n) {
 int usb_get_configuration(struct usb_dev *dev, unsigned int n, int len) {
 	int ret;
 
-	dev->usb_dev_configs[n].config_buf = sysmalloc(len);
-	if (!dev->usb_dev_configs[n].config_buf) {
-		goto err;
-	}
-
 	ret = usb_endp_control_wait(&dev->endp0,
 		USB_DIR_IN | USB_REQ_TYPE_STANDARD | USB_REQ_RECIP_DEVICE,
 		USB_REQ_GET_DESCRIPTOR,
@@ -285,19 +280,29 @@ int usb_set_configuration(struct usb_dev *dev, unsigned int n) {
 
 void usb_free_configuration(struct usb_dev *dev) {
 	int i;
+	int cfg;
 
-	/* Free endpoints expect endpoint 0. */
-	for (i = 1; i < dev->current_config->usb_iface[0]->endp_n; i++) {
-		usb_endp_free(dev->current_config->usb_iface[0]->endpoints[i]);
-		dev->current_config->usb_iface[0]->endpoints[i] = NULL;
+	for (cfg = 0; cfg < USB_DEV_MAX_CONFIG; cfg++ ) {
+		struct usb_dev_config *config;
+
+		config = &dev->usb_dev_configs[cfg];
+
+		if (NULL == config->config_buf) {
+			continue;
+		}
+		/* Free endpoints expect endpoint 0. */
+		for (i = 1; i < config->usb_iface[0]->endp_n; i++) {
+			usb_endp_free(config->usb_iface[0]->endpoints[i]);
+			config->usb_iface[0]->endpoints[i] = NULL;
+		}
+
+		/* Zero interfaces pointers */
+		memset(&config->usb_iface[0]->iface_desc[0], 0, sizeof(struct usb_desc_interface));
+
+		/* Free configuration */
+		sysfree(config->config_buf);
+		config->config_buf = NULL;
 	}
-
-	/* Zero interfaces pointers */
-	memset(&dev->current_config->usb_iface[0]->iface_desc[0], 0, sizeof(struct usb_desc_interface));
-
-	/* Free configuration */
-	sysfree(dev->current_config->config_buf);
-	dev->current_config->config_buf = NULL;
 }
 
 int usb_get_ep0(struct usb_dev *dev) {
