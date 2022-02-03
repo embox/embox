@@ -20,10 +20,18 @@
 #define PCI_VENDOR_ID           0x00   /* 16 bits */
 #define PCI_DEVICE_ID           0x02   /* 16 bits */
 #define PCI_COMMAND             0x04   /* 16 bits */
-#define   PCI_COMMAND_IO          0x001   /* Enable response in I/O space */
-#define   PCI_COMMAND_MEMORY      0x002   /* Enable response in Memory space */
-#define   PCI_COMMAND_MASTER      0x004   /* Enable bus mastering */
-#define   PCI_COMMAND_SERR        0x100   /* Enable bus mastering */
+#define   PCI_COMMAND_IO          0x001  /* Enable response in I/O space */
+#define   PCI_COMMAND_MEMORY      0x002  /* Enable response in Memory space */
+#define   PCI_COMMAND_MASTER      0x004  /* Enable bus mastering */
+#define   PCI_COMMAND_SPECIAL     0x008  /* Enable response to special cycles */
+#define   PCI_COMMAND_INVALIDATE  0x010  /* Use memory write and invalidate */
+#define   PCI_COMMAND_VGA_PALETTE 0x020  /* Enable palette snooping */
+#define   PCI_COMMAND_PARITY      0x040  /* Enable parity checking */
+#define   PCI_COMMAND_WAIT        0x080  /* Enable address/data stepping */
+#define   PCI_COMMAND_SERR        0x100  /* Enable SERR */
+#define   PCI_COMMAND_FAST_BACK    0x200  /* Enable back-to-back writes */
+#define   PCI_COMMAND_INTX_DISABLE 0x400  /* INTx Emulation Disable */
+
 #define PCI_STATUS              0x06   /* 16 bits */
 #define  PCI_STATUS_INTERRUPT     0x08    /* Interrupt status */
 #define  PCI_STATUS_CAP_LIST      0x10    /* Support Capability List */
@@ -36,10 +44,11 @@
 #define  PCI_STATUS_DEVSEL_MEDIUM 0x200
 #define  PCI_STATUS_DEVSEL_SLOW   0x400
 #define  PCI_STATUS_SIG_TARGET_ABORT 0x800  /* Set on target abort */
-#define  PCI_STATUS_REC_TARGET_ABOR  0x1000 /* Master ack of " */
+#define  PCI_STATUS_REC_TARGET_ABORT 0x1000 /* Master ack of " */
 #define  PCI_STATUS_REC_MASTER_ABORT 0x2000 /* Set on master abort */
 #define  PCI_STATUS_SIG_SYSTEM_ERROR 0x4000 /* Set when we drive SERR */
 #define  PCI_STATUS_DETECTED_PARITY  0x8000 /* Set on parity error */
+
 #define PCI_REVISION_ID         0x08   /* 8 bits  */
 #define PCI_PROG_IFACE          0x09   /* 8 bits  */
 #define PCI_SUBCLASS_CODE       0x0a   /* 8 bits  */
@@ -112,6 +121,7 @@
 /* Capability lists */
 
 #define PCI_CAP_LIST_ID     0    /* Capability ID */
+#define  PCI_CAP_ID_NULL     0x00
 #define  PCI_CAP_ID_PM       0x01 /* Power Management */
 #define  PCI_CAP_ID_AGP      0x02 /* Accelerated Graphics Port */
 #define  PCI_CAP_ID_VPD      0x03 /* Vital Product Data */
@@ -124,9 +134,11 @@
 #define  PCI_CAP_ID_DBG      0x0A /* Debug port */
 #define  PCI_CAP_ID_CCRC     0x0B /* CompactPCI Central Resource Control */
 #define  PCI_CAP_ID_SHPC     0x0C /* PCI Standard Hot-Plug Controller */
+#define  PCI_CAP_ID_HOTPLUG  PCI_CAP_ID_SHPC
 #define  PCI_CAP_ID_SSVID    0x0D /* Bridge subsystem vendor/device ID */
 #define  PCI_CAP_ID_AGP3     0x0E /* AGP Target PCI-PCI bridge */
 #define  PCI_CAP_ID_SECDEV   0x0F /* Secure Device */
+#define  PCI_CAP_ID_SECURE   PCI_CAP_ID_SECDEV
 #define  PCI_CAP_ID_EXP      0x10 /* PCI Express */
 #define  PCI_CAP_ID_MSIX     0x11 /* MSI-X */
 #define  PCI_CAP_ID_SATA     0x12 /* SATA Data/Index Conf. */
@@ -214,14 +226,17 @@
 #define  PCI_MSI_FLAGS_QSIZE   0x0070 /* Message queue size configured */
 #define  PCI_MSI_FLAGS_64BIT   0x0080 /* 64-bit addresses allowed */
 #define  PCI_MSI_FLAGS_MASKBIT 0x0100 /* Per-vector masking capable */
+#define  PCI_MSI_FLAGS_MASK_BIT PCI_MSI_FLAGS_MASKBIT
 #define PCI_MSI_RFU            3  /* Rest of capability flags */
 #define PCI_MSI_ADDRESS_LO     4  /* Lower 32 bits */
 #define PCI_MSI_ADDRESS_HI     8  /* Upper 32 bits (if PCI_MSI_FLAGS_64BIT set) */
 #define PCI_MSI_DATA_32        8  /* 16 bits of data for 32-bit devices */
 #define PCI_MSI_MASK_32        12 /* Mask bits register for 32-bit devices */
 #define PCI_MSI_PENDING_32     16 /* Pending intrs for 32-bit devices */
+#define PCI_MSI_MASK_BIT_32    PCI_MSI_PENDING_32
 #define PCI_MSI_DATA_64        12 /* 16 bits of data for 64-bit devices */
 #define PCI_MSI_MASK_64        16 /* Mask bits register for 64-bit devices */
+#define PCI_MSI_MASK_BIT_64    PCI_MSI_MASK_64
 #define PCI_MSI_PENDING_64     20 /* Pending intrs for 64-bit devices */
 
 /* MSI-X registers */
