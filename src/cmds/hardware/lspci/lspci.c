@@ -124,6 +124,238 @@ static inline size_t pci_get_region_size(uint32_t region_reg) {
 	}
 }
 
+static inline int get_command(struct pci_slot_dev *pci_dev, uint16_t *val16) {
+	int ret;
+
+	ret = pci_read_config16(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			PCI_COMMAND, val16);
+	if (PCIUTILS_SUCCESS == ret) {
+		return 0;
+	}
+	return -1;
+}
+
+static inline int get_status(struct pci_slot_dev *pci_dev, uint16_t *val16) {
+	int ret;
+
+	ret = pci_read_config16(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			PCI_STATUS, val16);
+	if (PCIUTILS_SUCCESS == ret) {
+		return 0;
+	}
+	return -1;
+}
+
+static inline int get_cap_id(struct pci_slot_dev *pci_dev, uint32_t where, uint8_t *val8) {
+	int ret;
+
+	ret = pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			where + PCI_CAP_LIST_ID, val8);
+	if (PCIUTILS_SUCCESS == ret) {
+		return 0;
+	}
+	return -1;
+}
+
+static inline int get_cap_next(struct pci_slot_dev *pci_dev, uint32_t where, uint8_t *val8) {
+	int ret;
+
+	ret = pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			where + PCI_CAP_LIST_NEXT, val8);
+	if (PCIUTILS_SUCCESS == ret) {
+		*val8 &= ~0x3;
+		return 0;
+	}
+	return -1;
+}
+
+static inline int get_cap_flags(struct pci_slot_dev *pci_dev, uint32_t where, uint16_t *val16) {
+	int ret;
+
+	ret = pci_read_config16(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			where + PCI_CAP_FLAGS, val16);
+	if (PCIUTILS_SUCCESS == ret) {
+		return 0;
+	}
+	return -1;
+}
+
+static void show_capabilities(struct pci_slot_dev *pci_dev) {
+	int can_have_ext_caps = 0;
+	uint32_t where;
+
+	where = PCI_CAPABILITY_LIST;
+
+	while (where) {
+		uint8_t id, next;
+		uint16_t cap;
+		printf("\tCapabilities: ");
+
+		get_cap_id(pci_dev, where, &id);
+		get_cap_next(pci_dev, where, &next);
+		get_cap_flags(pci_dev, where, &cap);
+		printf("[%02x] ", where);
+
+		if (id == 0xff) {
+			printf("<chain broken>\n");
+			break;
+		}
+		switch (id) {
+		case PCI_CAP_ID_NULL:
+			printf("Null\n");
+			break;
+		case PCI_CAP_ID_PM:
+			//cap_pm(d, where, cap);
+			printf("cap_pm\n");
+			break;
+		case PCI_CAP_ID_AGP:
+			//cap_agp(d, where, cap);
+			printf("cap_agp\n");
+			break;
+		case PCI_CAP_ID_VPD:
+			//cap_vpd(d);
+			printf("cap_vpd\n");
+			break;
+		case PCI_CAP_ID_SLOTID:
+			//cap_slotid(cap);
+			printf("cap_slotid\n");
+			break;
+		case PCI_CAP_ID_MSI:
+			//cap_msi(d, where, cap);
+			printf("cap_msi\n");
+			break;
+		case PCI_CAP_ID_CHSWP:
+			printf("CompactPCI hot-swap <?>\n");
+			break;
+		case PCI_CAP_ID_PCIX:
+			//cap_pcix(d, where);
+			printf("cap_pcix\n");
+			can_have_ext_caps = 1;
+			break;
+		case PCI_CAP_ID_HT:
+			//cap_ht(d, where, cap);
+			printf("cap_ht\n");
+			break;
+		case PCI_CAP_ID_VNDR:
+			//show_vendor_caps(d, where, cap);
+			printf("show_vendor_caps\n");
+			break;
+		case PCI_CAP_ID_DBG:
+			//cap_debug_port(cap);
+			printf("cap_debug_port\n");
+			break;
+		case PCI_CAP_ID_CCRC:
+			printf("CompactPCI central resource control <?>\n");
+			break;
+		case PCI_CAP_ID_HOTPLUG:
+			printf("Hot-plug capable\n");
+			break;
+		case PCI_CAP_ID_SSVID:
+			//cap_ssvid(d, where);
+			printf("cap_ssvid\n");
+			break;
+		case PCI_CAP_ID_AGP3:
+			printf("AGP3 <?>\n");
+			break;
+		case PCI_CAP_ID_SECURE:
+			printf("Secure device <?>\n");
+			break;
+		case PCI_CAP_ID_EXP:
+			//type = cap_express(d, where, cap);
+			printf("cap_express\n");
+			can_have_ext_caps = 1;
+			break;
+		case PCI_CAP_ID_MSIX:
+			//cap_msix(d, where, cap);
+			printf("cap_msix\n");
+			break;
+		case PCI_CAP_ID_SATA:
+			//cap_sata_hba(d, where, cap);
+			printf("cap_sata_hba\n");
+			break;
+		case PCI_CAP_ID_AF:
+			//cap_af(d, where);
+			printf("cap_af\n");
+			break;
+		case PCI_CAP_ID_EA:
+			//cap_ea(d, where, cap);
+			printf("cap_ea\n");
+			break;
+		default:
+			printf("Capability ID %#02x [%04x]\n", id, cap);
+		}
+		where = next;
+	}
+
+	if (can_have_ext_caps) {
+		printf("show_ext_caps\n");
+	}
+}
+
+static void show_control(uint16_t val16) {
+	printf("\t  Control: ");
+
+	printf("I/O%c ", val16 & PCI_COMMAND_IO ? '+' : '-');
+	printf("Mem%c ", val16 & PCI_COMMAND_MEMORY ? '+' : '-');
+	printf("BusMaster%c ", val16 & PCI_COMMAND_SPECIAL ? '+' : '-');
+	printf("SpecCycle%c ", val16 & PCI_STATUS_FAST_BACK ? '+' : '-');
+	printf("VGASnoop%c ", val16 & PCI_COMMAND_VGA_PALETTE ? '+' : '-');
+	printf("ParErr%c ", val16 & PCI_COMMAND_PARITY ? '+' : '-');
+	printf("Stepping%c ", val16 & PCI_COMMAND_WAIT ? '+' : '-');
+	printf("SERR%c ", val16 & PCI_COMMAND_SERR ? '+' : '-');
+	printf("FastB2B%c ", val16 & PCI_COMMAND_FAST_BACK ? '+' : '-');
+	printf("DisINTx%c\n", val16 & PCI_COMMAND_INTX_DISABLE ? '+' : '-');
+}
+
+static void show_status(uint16_t val16) {
+	printf("\t  Status: ");
+
+	printf("Cap%c ", val16 & PCI_STATUS_CAP_LIST ? '+' : '-');
+	printf("66MHz%c ", val16 & PCI_STATUS_66MHZ ? '+' : '-');
+	printf("UDF%c ", val16 & PCI_STATUS_UDF ? '+' : '-');
+	printf("FastB2B%c ", val16 & PCI_STATUS_FAST_BACK ? '+' : '-');
+	printf("ParErr%c ", val16 & PCI_STATUS_PARITY ? '+' : '-');
+	printf("DEVSEL=");
+	switch(val16 & PCI_STATUS_DEVSEL_MASK) {
+	case PCI_STATUS_DEVSEL_FAST:
+		printf("fast ");
+		break;
+	case PCI_STATUS_DEVSEL_MEDIUM:
+		printf("med ");
+		break;
+	default:
+		printf("slow ");
+		break;
+	}
+	printf(">TAbort%c ", val16 & PCI_STATUS_SIG_TARGET_ABORT ? '+' : '-');
+	printf("<TAbort%c ", val16 & PCI_STATUS_REC_TARGET_ABORT ? '+' : '-');
+	printf("<MAbort%c ", val16 & PCI_STATUS_REC_MASTER_ABORT ? '+' : '-');
+	printf(">SERR%c ", val16 & PCI_STATUS_SIG_SYSTEM_ERROR ? '+' : '-');
+	printf("<PERR%c ", val16 & PCI_STATUS_DETECTED_PARITY ? '+' : '-');
+	printf("INTx%c\n", val16 & PCI_STATUS_INTERRUPT ? '+' : '-');
+}
+
+static void show_regions(struct pci_slot_dev *pci_dev) {
+	int bar_num;
+
+	for (bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
+		uintptr_t base_addr = pci_dev->bar[bar_num];
+		if (0 == base_addr) {
+			continue;
+		}
+		printf("\t  Region (%s): Base: 0x%" PRIXPTR " [0x%" PRIXPTR "]\n",
+				pci_get_region_type(base_addr),
+				base_addr & ~((1 << 4) - 1),
+				(base_addr & ~((1 << 4) - 1)) +
+				(pci_get_region_size(base_addr) - 1));
+	}
+}
+
 static void show_device(struct pci_slot_dev *pci_dev, int full) {
 	printf("%02" PRId32 ":%2" PRIx8 ".%" PRId8 " (PCI dev %04X:%04X) [%d %d]\n"
 				"\t %s: %s %s (rev %02d)\n",
@@ -139,19 +371,30 @@ static void show_device(struct pci_slot_dev *pci_dev, int full) {
 				find_device_name(pci_dev->device),
 				pci_dev->rev);
 	if (full != 0) {
-		int bar_num;
+		uint16_t status;
+		uint16_t ctrl;
+		int ret;
+
+		ret = get_command(pci_dev, &ctrl);
+		if (ret) {
+			return;
+		}
+
+		ret = get_status(pci_dev, &status);
+		if (ret) {
+			return;
+		}
+
+		show_control(ctrl);
+
+		show_status(status);
+
 		printf("\t  IRQ number: %d\n", pci_dev->irq);
 
-		for (bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
-			uintptr_t base_addr = pci_dev->bar[bar_num];
-			if (0 == base_addr) {
-				continue;
-			}
-			printf("\t  Region (%s): Base: 0x%" PRIXPTR " [0x%" PRIXPTR "]\n",
-					pci_get_region_type(base_addr),
-					base_addr & ~((1 << 4) - 1),
-					(base_addr & ~((1 << 4) - 1)) +
-					(pci_get_region_size(base_addr) - 1));
+		show_regions(pci_dev);
+
+		if (status & PCI_STATUS_CAP_LIST) {
+			show_capabilities(pci_dev);
 		}
 	}
 }
