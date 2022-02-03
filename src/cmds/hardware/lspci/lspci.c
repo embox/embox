@@ -19,6 +19,8 @@
 #include <drivers/pci/pci_repo.h>
 #include <drivers/pci/pci_chip/pci_utils.h>
 
+#include "lspci.h"
+
 struct pci_reg {
 	uint8_t offset;
 	int width;
@@ -185,11 +187,84 @@ static inline int get_cap_flags(struct pci_slot_dev *pci_dev, uint32_t where, ui
 	return -1;
 }
 
+static void cap_msi(struct pci_slot_dev *d, int where, int cap) {
+	int is64;
+	uint32_t t;
+	uint16_t w;
+
+	printf("MSI: Enable%c Count=%d/%d Maskable%c 64bit%c\n",
+			FLAG(cap, PCI_MSI_FLAGS_ENABLE),
+			1 << ((cap & PCI_MSI_FLAGS_QSIZE) >> 4),
+			1 << ((cap & PCI_MSI_FLAGS_QMASK) >> 1),
+			FLAG(cap, PCI_MSI_FLAGS_MASK_BIT), FLAG(cap, PCI_MSI_FLAGS_64BIT));
+
+	is64 = cap & PCI_MSI_FLAGS_64BIT;
+
+	printf("\t\tAddress: ");
+	if (is64) {
+		t = get_conf_long(d, where + PCI_MSI_ADDRESS_HI);
+		w = get_conf_word(d, where + PCI_MSI_DATA_64);
+		printf("%08x", t);
+	} else
+		w = get_conf_word(d, where + PCI_MSI_DATA_32);
+	t = get_conf_long(d, where + PCI_MSI_ADDRESS_LO);
+	printf("%08x  Data: %04x\n", t, w);
+	if (cap & PCI_MSI_FLAGS_MASK_BIT) {
+		uint32_t mask, pending;
+
+		if (is64) {
+
+			mask = get_conf_long(d, where + PCI_MSI_MASK_BIT_64);
+			pending = get_conf_long(d, where + PCI_MSI_PENDING_64);
+		} else {
+
+			mask = get_conf_long(d, where + PCI_MSI_MASK_BIT_32);
+			pending = get_conf_long(d, where + PCI_MSI_PENDING_32);
+		}
+		printf("\t\tMasking: %08x  Pending: %08x\n", mask, pending);
+	}
+}
+
+static void cap_msix(struct pci_slot_dev *d, int where, int cap) {
+	uint32_t off;
+
+	printf("MSI-X: Enable%c Count=%d Masked%c\n", FLAG(cap, PCI_MSIX_ENABLE),
+			(cap & PCI_MSIX_TABSIZE) + 1, FLAG(cap, PCI_MSIX_MASK));
+
+	off = get_conf_long(d, where + PCI_MSIX_TABLE);
+	printf("\t\tVector table: BAR=%d offset=%08x\n", off & PCI_MSIX_BIR,
+			off & ~PCI_MSIX_BIR);
+	off = get_conf_long(d, where + PCI_MSIX_PBA);
+	printf("\t\tPBA: BAR=%d offset=%08x\n", off & PCI_MSIX_BIR,
+			off & ~PCI_MSIX_BIR);
+}
+
+static void cap_slotid(int cap) {
+	int esr = cap & 0xff;
+	int chs = cap >> 8;
+
+	printf("Slot ID: %d slots, First%c, chassis %02x\n",
+			esr & PCI_SID_ESR_NSLOTS, FLAG(esr, PCI_SID_ESR_FIC), chs);
+}
+
+static void cap_debug_port(int cap) {
+	int bar = cap >> 13;
+	int pos = cap & 0x1fff;
+
+	printf("Debug port: BAR=%d offset=%04x\n", bar, pos);
+}
+
 static void show_capabilities(struct pci_slot_dev *pci_dev) {
 	int can_have_ext_caps = 0;
 	uint32_t where;
+	uint8_t val8;
 
-	where = PCI_CAPABILITY_LIST;
+
+	pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			PCI_CAPABILITY_LIST, &val8);
+
+	where = val8;
 
 	while (where) {
 		uint8_t id, next;
@@ -222,12 +297,10 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 			printf("cap_vpd\n");
 			break;
 		case PCI_CAP_ID_SLOTID:
-			//cap_slotid(cap);
-			printf("cap_slotid\n");
+			cap_slotid(cap);
 			break;
 		case PCI_CAP_ID_MSI:
-			//cap_msi(d, where, cap);
-			printf("cap_msi\n");
+			cap_msi(pci_dev, where, cap);
 			break;
 		case PCI_CAP_ID_CHSWP:
 			printf("CompactPCI hot-swap <?>\n");
@@ -246,8 +319,7 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 			printf("show_vendor_caps\n");
 			break;
 		case PCI_CAP_ID_DBG:
-			//cap_debug_port(cap);
-			printf("cap_debug_port\n");
+			cap_debug_port(cap);
 			break;
 		case PCI_CAP_ID_CCRC:
 			printf("CompactPCI central resource control <?>\n");
@@ -271,7 +343,7 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 			can_have_ext_caps = 1;
 			break;
 		case PCI_CAP_ID_MSIX:
-			//cap_msix(d, where, cap);
+			cap_msix(pci_dev, where, cap);
 			printf("cap_msix\n");
 			break;
 		case PCI_CAP_ID_SATA:
@@ -293,7 +365,7 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 	}
 
 	if (can_have_ext_caps) {
-		printf("show_ext_caps\n");
+		printf("\tCapabilities: show_ext_caps\n");
 	}
 }
 
