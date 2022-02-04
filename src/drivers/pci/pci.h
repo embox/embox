@@ -10,8 +10,10 @@
 #define PCI_H_
 
 #include <stdint.h>
-#include <drivers/pci/pci_id.h>
 #include <util/dlist.h>
+
+#include <drivers/pci/pci_regs.h>
+#include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_chip/pci_utils.h>
 
 /**
@@ -31,74 +33,6 @@
 
 #define PCI_DEVFN(slot, func)   ((((slot) & 0x1f) << 3) | ((func) & 0x07))
 
-/**
- * PCI configuration space
- * (Each device on the bus has a 256 bytes configuration space,
- * the first 64 bytes are standardized)
- * (according to PCI Local Bus Specification 2.2
- * DeviceID, VendorID, Status, Command, Class Code,
- * Revision ID, Header Type are required)
- */
-#define PCI_VENDOR_ID           0x00   /* 16 bits */
-#define PCI_DEVICE_ID           0x02   /* 16 bits */
-#define PCI_COMMAND             0x04   /* 16 bits */
-#define   PCI_COMMAND_IO         0x001   /* Enable response in I/O space */
-#define   PCI_COMMAND_MEMORY     0x002   /* Enable response in Memory space */
-#define   PCI_COMMAND_MASTER     0x004   /* Enable bus mastering */
-#define   PCI_COMMAND_SERR       0x100   /* Enable bus mastering */
-#define PCI_STATUS              0x06   /* 16 bits */
-#define PCI_REVISION_ID         0x08   /* 8 bits  */
-#define PCI_PROG_IFACE          0x09   /* 8 bits  */
-#define PCI_SUBCLASS_CODE       0x0a   /* 8 bits  */
-#define PCI_BASECLASS_CODE      0x0b   /* 8 bits  */
-#define PCI_CACHE_LINE_SIZE     0x0C   /* 8 bits  */
-#define PCI_LATENCY_TIMER       0x0D   /* 8 bits  */
-#define PCI_HEADER_TYPE         0x0e   /* 8 bits  */
-#define PCI_BIST                0x0f   /* 8 bits  */
-
-#define PCI_VENDOR_WRONG        0xFFFFFFFF /* device is not found in the slot */
-#define PCI_VENDOR_NONE         0x00000000 /* device is not found in the slot */
-
-/**
- * +------------+------------+---------+-----------+
- * |31         4|           3|2       1|          0|
- * +------------+------------+---------+-----------+
- * |Base Address|Prefetchable|Locatable|region type|
- * +------------+------------+---------+-----------+
- * \___________________________________/
- *           For Memory BARs
- * +--------------------------+--------+-----------+
- * |31                       2|       1|          0|
- * +--------------------------+--------+-----------+
- * |Base Address              |Reserved|region type|
- * +--------------------------+--------+-----------+
- * \___________________________________/
- *           For I/O BARs (Deprecated)
- * region type:  0 = Memory, 1 = I/O (deprecated)
- * Locatable:    0 = any 32-bit, 1 = < 1MiB, 2 = any 64-bit
- * Prefetchable: 0 = no, 1 = yes
- * Base Address: 16-byte aligned
- */
-#define PCI_BASE_ADDR_REG_0     0x10   /* 32 bits */
-#define PCI_BASE_ADDR_REG_1     0x14   /* 32 bits */
-#define PCI_BASE_ADDR_REG_2     0x18   /* 32 bits */
-#define PCI_BASE_ADDR_REG_3     0x1C   /* 32 bits */
-#define PCI_BASE_ADDR_REG_4     0x20   /* 32 bits */
-#define PCI_BASE_ADDR_REG_5     0x24   /* 32 bits */
-#define   PCI_BASE_ADDR_IO_MASK (~0x03)
-#define PCI_CARDBUS_CIS_POINTER 0x28   /* 32 bits */
-#define PCI_SUBSYSTEM_VENDOR_ID 0x2C   /* 16 bits */
-#define PCI_SUBSYSTEM_ID        0x2E   /* 16 bits */
-#define PCI_EXP_ROM_BASE_ADDR   0x30   /* 32 bits */
-#define PCI_CAPAB_POINTER       0x34   /* 8 bits  */
-#define PCI_INTERRUPT_LINE      0x3C   /* 8 bits  */
-#define PCI_INTERRUPT_PIN       0x3D   /* 8 bits  */
-#define PCI_MIN_GNT             0x3E   /* 8 bits  */
-#define PCI_MAX_LAT             0x3F   /* 8 bits  */
-
-#define PCI_PRIMARY_BUS         0x18
-#define PCI_SECONDARY_BUS       0x19
-#define PCI_SUBORDINATE_BUS     0x1a
 
 /** Device classes and subclasses */
 
