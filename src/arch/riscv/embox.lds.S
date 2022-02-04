@@ -15,27 +15,21 @@ PROVIDE(_ram_size = LENGTH(RAM));
 
 SECTIONS {
 	.text : {
-		*(.text.init_start)
-		*(.text .text.*)
+		KEEP(*(.init_start));
+		*(.text)
+		*(.text.*)
 	}
 
-	.rodata : {
-		*(.rodata .rodata.*)
-
-	} >ROM AT>ROM :text
-
+	.global_pointers : {
+		. = ALIGN(4096);
+		PROVIDE( __global_pointer$ = . + 0x800 );
+	} SECTION_REGION(data)
+/*
 	.data : {
 		. = ALIGN(4096);
 		PROVIDE( __global_pointer$ = . + 0x800 );
+
 		*(.sdata .sdata.*) *(.data .data.*)
 
-	} >RAM AT>RAM :data
-
-	.bss :{
-		. = ALIGN(32);
-		PROVIDE( bss_target_start = . );
-		*(.sbss .sbss.*) *(.bss .bss.*)
-		PROVIDE( bss_target_end = . );
-
-	} >RAM AT>RAM :bss
-}
+	} SECTION_REGION(data)
+*/}

@@ -27,7 +27,7 @@ sw \a, ((\b)*REGBYTES)(sp)
 .4byte \a
 .endm
 
-.section .text.init_start,"ax",@progbits
+.section .init_start,"ax",@progbits
 .globl _start
 
 _start:
@@ -65,8 +65,8 @@ _start:
 	add     sp, sp, t0
 
 	/* Zero the BSS segment. */
-	la t1, bss_target_start
-	la t2, bss_target_end
+	la t1, _bss_vma
+	la t2, _bss_end
 
 	bge t1, t2, 2f
 
