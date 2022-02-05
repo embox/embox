@@ -11,7 +11,7 @@ module sifive_uart extends embox.driver.diag.diag_api {
 
 	source "sifive_uart.c"
 
-	depends embox.driver.char_dev
+	depends embox.driver.char_dev_api
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
 }
