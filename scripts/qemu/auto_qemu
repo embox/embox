@@ -128,7 +128,11 @@ get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 guess_load_arg() {
 	NAND_SIZE=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p')
 	if [ ! $NAND_SIZE ]; then
-		echo "-kernel ${KERNEL:-./build/base/bin/embox}"
+		if [ "$AUTOQEMU_ARCH" = "riscv" -o "$AUTOQEMU_ARCH" = "riscv64" ]; then
+			echo "-bios ${KERNEL:-./build/base/bin/embox}"
+		else
+			echo "-kernel ${KERNEL:-./build/base/bin/embox}"
+		fi
 	else
 		if [ ! $AUTOQEMU_NAND_BUILD_SKIP ];  then
 			echo "Making uImage..." >&2
