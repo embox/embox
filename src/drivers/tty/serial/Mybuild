@@ -21,4 +21,7 @@ module serial {
 
 module serial_stub {
 	source "ttys_stub.c"
+
+	@IncludeExport(path="drivers", target_name="ttys.h")
+	source "ttys_stub.h"
 }

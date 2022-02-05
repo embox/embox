@@ -1,7 +1,7 @@
 .equ MAX_HARTS,		4
 .equ STACK_SIZE,	1024
 
-.section .text.init_start,"ax",@progbits
+.section .init_start,"ax",@progbits
 .global _start
 .global die
 
@@ -23,8 +23,8 @@ _start:
 	lla		sp, _stack_top
 
 	# Zero the BSS segment
-	la		t1, bss_target_start
-	la		t2, bss_target_end
+	la		t1, _bss_vma
+	la		t2, _bss_end
 
 	bge		t1, t2, zero_bss_end
 
