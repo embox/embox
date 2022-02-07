@@ -7,6 +7,7 @@
 
 #include<stdio.h>
 #include<string.h>
+#include <inttypes.h>
 #include <drivers/block_dev.h>
 
 static void print_usage(void) {
@@ -30,7 +31,7 @@ static inline struct block_dev* chk_dev_avail(char* dev_name) {
 	return bdev;
 }
 static inline void print_device_info(int count, struct block_dev *bdev) {
-	printf("| %-3d | %-15s | %-15d | %-20lld |\n",
+	printf("| %-3d | %-15s | %-15zu | %-20" PRId64 " |\n",
 			count, block_dev_name(bdev), block_dev_block_size(bdev), block_dev_size(bdev));
 }
 
