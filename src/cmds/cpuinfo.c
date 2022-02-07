@@ -8,6 +8,8 @@
 
 #include <unistd.h>
 #include <stdio.h>
+#include <inttypes.h>
+
 #include <lib/libcpu_info.h>
 
 int main(int argc, char **argv) {
@@ -18,6 +20,6 @@ int main(int argc, char **argv) {
 		printf("CPU %-16s %u\n", info->feature[i].name, info->feature[i].val);
 	}
 	
-	printf("Current time stamp counter: %llu\n", get_cpu_counter());
+	printf("Current time stamp counter: %" PRId64 "\n", get_cpu_counter());
 	return 0;
 }
