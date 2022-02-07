@@ -62,7 +62,7 @@ static void print_cpuinfo(void) {
 		);
 	}
 
-	printf("\tCurrent time stamp counter: %llu\n", get_cpu_counter());
+	printf("\tCurrent time stamp counter: %" PRIu64 "\n", get_cpu_counter());
 	printf("\n\n");
 }
 /* cpuinfo implementation end */
