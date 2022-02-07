@@ -11,7 +11,7 @@
 #include <stddef.h>
 
 struct initfs_file_info {
-	int    start_pos;
+	unsigned int    start_pos;
 	struct cpio_entry *entry;
 
 	/* Following fields are used just for directories */
