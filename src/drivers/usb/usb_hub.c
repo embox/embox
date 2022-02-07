@@ -9,7 +9,9 @@
 #include <util/log.h>
 
 #include <unistd.h>
+
 #include <mem/misc/pool.h>
+#include <mem/sysmalloc.h>
 
 #include <util/dlist.h>
 #include <util/err.h>
@@ -44,13 +46,13 @@ static int usb_hub_port_init(struct usb_hub *hub, struct usb_dev *dev,
 		unsigned int port_nr);
 
 static struct usb_hub *usb_dev_to_hub(struct usb_dev *dev) {
-	return (struct usb_hub *)dev->usb_iface[0]->driver_data;
+	return (struct usb_hub *)dev->usb_dev_configs[0].usb_iface[0]->driver_data;
 }
 
-static int is_rndis(struct usb_desc_interface *desc) {
+static inline int is_rndis(struct usb_desc_interface *desc) {
 	return desc->b_interface_class == 2 /* USB_CLASS_COMM */
-	               && desc->b_interface_subclass == 2
-	               && desc->b_interface_protocol == 0xff;
+			&& desc->b_interface_subclass == 2
+			&& desc->b_interface_protocol == 0xff;
 }
 
 extern int usb_create_root_interface(struct usb_dev *dev);
@@ -91,18 +93,38 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 			goto out_err;
 		}
 
-		cfg = -1;
-		do {
-			if (++cfg > 0) {
-				usb_free_configuration(dev);
+		dev->current_config = &dev->usb_dev_configs[0];
+
+		for (cfg = 0; cfg < dev->dev_desc.b_num_configurations; cfg++) {
+			int len;
+
+			if (USB_DEV_MAX_CONFIG <= cfg) {
+				/* error max_conf is not enough */
+				break;
 			}
 			/* Fill device configuration. */
-			if (usb_get_configuration(dev, cfg) < 0) {
+			len = usb_get_config_desc(dev, cfg);
+			if (len < 0){
+				log_error("usb_get_config_desc failed");
+				goto out_err;
+			}
+			dev->usb_dev_configs[cfg].config_buf = sysmalloc(len);
+			if (!dev->usb_dev_configs[cfg].config_buf) {
+				log_error("couldn't allocate config descriptor");
+				goto out_err;
+			}
+			/* Fill device configuration. */
+			if (usb_get_configuration(dev, cfg, len) < 0) {
 				log_error("usb_get_configuration failed");
 				goto out_err;
 			}
-		/* Skip Microsoft's RNDIS */
-		} while (is_rndis(dev->usb_iface[0]->iface_desc[0]));
+#if 0
+			/* Skip Microsoft's RNDIS */
+			if (is_rndis(dev->usb_dev_configs[cfg].usb_iface[0]->iface_desc[0])) {
+				continue;
+			}
+#endif
+		}
 
 		/* Set device default configuration. */
 		/* http://www.usbmadesimple.co.uk/ums_4.htm */
@@ -110,16 +132,18 @@ struct usb_dev *usb_new_device(struct usb_dev *parent,
 		 * request will have wValue set to 1, which will select the first configuration.
 		 * Set Configuration can also be used, with wValue set to 0, to deconfigure the device.
 		 */
-		if (usb_set_configuration(dev, cfg == 0 ? 1 : cfg) < 0) {
+		if (usb_set_configuration(dev, cfg - 1) < 0) {
 			log_error("usb_set_configuration failed");
 			goto out_err;
 		}
+		dev->current_config = &dev->usb_dev_configs[cfg - 1];
 	} else {
+		dev->current_config = &dev->usb_dev_configs[0];
 		usb_create_root_interface(dev);
 	}
 
 	/* Ok, now we can make USB driver specific stuff. */
-	if (usb_driver_probe(dev->usb_iface[0]) < 0) {
+	if (usb_driver_probe(dev->current_config->usb_iface[0]) < 0) {
 		log_error("Usb driver not found for device ID %04x:%04x",
 			dev->dev_desc.id_vendor,
 			dev->dev_desc.id_product);

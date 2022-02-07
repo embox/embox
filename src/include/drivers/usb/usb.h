@@ -45,6 +45,9 @@
 #define USB_DEV_MAX_INTERFACES \
     OPTION_MODULE_GET(embox__driver__usb__core, NUMBER, usb_dev_max_interfaces)
 
+#define USB_DEV_MAX_CONFIG \
+	2
+
 #define USB_REQ_HEADER_LEN 8
 #define USB_MAX_ENDP (USB_MAX_DEV * USB_DEV_MAX_ENDP)
 
@@ -112,6 +115,13 @@ struct usb_endp {
 	void *hci_specific;
 };
 
+struct usb_dev_config {
+	void *config_buf;
+
+	struct usb_interface *usb_iface[USB_DEV_MAX_INTERFACES];
+	int usb_iface_num;
+};
+
 struct usb_dev {
 	unsigned short bus_idx;
 	unsigned short addr;
@@ -122,12 +132,10 @@ struct usb_dev {
 
 	struct usb_desc_device dev_desc;
 
-	void *config_buf;
+	struct usb_dev_config usb_dev_configs[USB_DEV_MAX_CONFIG];
+	struct usb_dev_config *current_config;
 
 	struct usb_endp endp0;
-
-	struct usb_interface *usb_iface[USB_DEV_MAX_INTERFACES];
-	int usb_iface_num;
 
 	enum usb_speed speed;
 };
@@ -223,7 +231,8 @@ extern struct usb_dev *usb_new_device(struct usb_dev *parent,
 
 extern struct usb_dev *usb_dev_iterate(struct usb_dev *dev);
 
-extern int usb_get_configuration(struct usb_dev *dev, unsigned int n);
+extern int usb_get_config_desc(struct usb_dev *dev, unsigned int n);
+extern int usb_get_configuration(struct usb_dev *dev, unsigned int n, int len);
 extern int usb_set_configuration(struct usb_dev *dev, unsigned int n);
 extern void usb_free_configuration(struct usb_dev *dev);
 extern int usb_set_iface(struct usb_dev *dev, int iface, int alt);

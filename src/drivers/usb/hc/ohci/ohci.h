@@ -53,7 +53,19 @@
 #define OHCI_RH_R_PWR_W_STPWR         0x0100
 #define OHCI_RH_R_LOWSPD_W_CLPWR      0x0200
 
-#define OHCI_RH_PS_CSC   (1 << 16)   /* connect status change */
+/* port status */
+#define OHCI_RH_PS_CCS            0x00000001 /* current connect status */
+#define OHCI_RH_PS_PES            0x00000002 /* port enable status*/
+#define OHCI_RH_PS_PSS            0x00000004 /* port suspend status */
+#define OHCI_RH_PS_POCI           0x00000008 /* port over current indicator */
+#define OHCI_RH_PS_PRS            0x00000010 /* port reset status */
+#define OHCI_RH_PS_PPS            0x00000100 /* port power status */
+#define OHCI_RH_PS_LSDA           0x00000200 /* low speed device attached */
+#define OHCI_RH_PS_CSC            0x00010000 /* (1 << 16) connect status change */
+#define OHCI_RH_PS_PESC           0x00020000 /* port enable status change */
+#define OHCI_RH_PS_PSSC           0x00040000 /* port suspend status change */
+#define OHCI_RH_PS_OCIC           0x00080000 /* over current indicator change */
+#define OHCI_RH_PS_PRSC           0x00100000 /* port reset status change */
 
 #define OHCI_TD_SETUP                 0x00000000
 #define OHCI_TD_OUT                   0x00080000

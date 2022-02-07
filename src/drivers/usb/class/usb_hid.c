@@ -40,7 +40,7 @@ static void usb_hid_intr_request(struct usb_hid_indev *hindev) {
 
 static void usb_hid_notify(struct usb_request *req, void *arg) {
 	struct usb_dev *dev = req->endp->dev;
-	struct usb_class_hid *hid = usb2hiddata(dev->usb_iface[0]);
+	struct usb_class_hid *hid = usb2hiddata(dev->current_config->usb_iface[0]);
 	struct usb_hid_indev *hindev;
 	struct input_event ev;
 
