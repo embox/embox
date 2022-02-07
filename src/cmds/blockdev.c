@@ -51,7 +51,7 @@ int main(int argc, char **argv) {
 			else{
 				bdev = chk_dev_avail(argv[2]);
 				if (bdev) {
-					printf("%d\n", bdev->block_size);
+					printf("%zu\n", bdev->block_size);
 				}
 			}
 	}
