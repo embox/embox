@@ -135,7 +135,9 @@ __END_DECLS
 #define    PRIi32      "li"
 #define    PRIiLEAST32 "li"
 #define    PRIiFAST32  "li"
-#elif defined (i386) || defined (__e2k__) || (defined(__arm__) && !defined(__ARM_ARCH_6M__)) || defined(__aarch64__)
+#elif defined (i386) || defined (__e2k__) || defined(__aarch64__) \
+		|| (defined(__riscv) && defined(__LP64__)) \
+		|| (defined(__arm__) && !defined(__ARM_ARCH_6M__))
 #define    PRId32      "d"
 #define    PRIdLEAST32 "d"
 #define    PRIdFAST32  "d"
