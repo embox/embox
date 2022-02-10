@@ -60,23 +60,20 @@ struct msi_desc {
 	union {
 		/* PCI MSI/X specific data */
 		struct {
-			union {
-				uint32_t msi_mask;
-				uint32_t msix_ctrl;
-			};
+			uint32_t masked;
 			struct {
-				uint32_t is_msix    : 1;
-				uint32_t multiple   : 3;
-				uint32_t multi_cap  : 3;
-				uint32_t can_mask   : 1;
-				uint32_t is_64      : 1;
-				uint32_t is_virtual : 1;
+				uint8_t is_msix     : 1;
+				uint8_t multiple    : 3;
+				uint8_t multi_cap   : 3;
+				uint8_t maskbit     : 1;
+				uint8_t is_64       : 1;
+				uint8_t is_virtual  : 1;
 				uint16_t entry_nr;
 				unsigned default_irq;
 			} msi_attrib;
 			union {
-				uint32_t  mask_pos;
-				void volatile *mask_base;
+				uint8_t  mask_pos;
+				void    *mask_base;
 			};
 		};
 

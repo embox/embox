@@ -5,6 +5,8 @@
  * @author Anton Bondarev
  */
 
+#include <util/dlist.h>
+
 #include <mem/sysmalloc.h>
 
 #include <kernel/irq/irq_msi.h>
@@ -17,6 +19,7 @@ struct msi_desc *msi_entry_alloc(void *dev, int nvec) {
 		return NULL;
 	}
 
+	dlist_head_init(&desc->list);
 	desc->dev = dev;
 	desc->nvec_used = nvec;
 
