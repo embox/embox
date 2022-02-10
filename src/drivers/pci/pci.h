@@ -34,6 +34,14 @@
 #define PCI_DEVFN(slot, func)   ((((slot) & 0x1f) << 3) | ((func) & 0x07))
 
 
+#define PCI_IRQ_LEGACY    (1 << 0) /* allow legacy interrupts */
+#define PCI_IRQ_MSI       (1 << 1) /* allow MSI interrupts */
+#define PCI_IRQ_MSIX      (1 << 2) /* allow MSI-X interrupts */
+#define PCI_IRQ_AFFINITY  (1 << 3) /* auto-assign affinity */
+#define PCI_IRQ_ALL_TYPES \
+	(PCI_IRQ_LEGACY | PCI_IRQ_MSI | PCI_IRQ_MSIX)
+
+
 /** Device classes and subclasses */
 
 #define PCI_CLASS_NOT_DEFINED           0x00
@@ -113,6 +121,11 @@ struct pci_slot_dev {
 	uint8_t secondary;
 	uint8_t subordinate;
 	uint32_t membaselimit;
+
+
+	int msi_enabled;
+	uint8_t msi_cap;	/* MSI capability offset */
+	uint8_t msix_cap;	/* MSI-X capability offset */
 };
 
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
