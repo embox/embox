@@ -1,0 +1,11 @@
+package embox.driver
+
+module pci_msi {
+	option number log_level = 0
+
+	source "pci_msi.c"
+
+	@IncludeExport(path="drivers/pci")
+	source "pci_msi.h"
+
+}
