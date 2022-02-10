@@ -127,4 +127,12 @@ struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 
 extern void pci_set_master(struct pci_slot_dev * slot_dev);
 
+extern int pci_read_config_byte(struct pci_slot_dev *dev, int where, uint8_t *val);
+extern int pci_read_config_word(struct pci_slot_dev *dev, int where, uint16_t *val);
+extern int pci_read_config_dword(struct pci_slot_dev *dev, int where, uint32_t *val);
+
+extern int pci_write_config_byte(struct pci_slot_dev *dev, int where, uint8_t val);
+extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t val);
+extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
+
 #endif /* PCI_H_ */
