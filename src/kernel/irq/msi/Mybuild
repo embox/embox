@@ -1,0 +1,10 @@
+package embox.kernel.msi
+
+module irq_msi {
+	option number log_level = 1
+
+	source "irq_msi.c"
+	
+	@IncludeExport(path="kernel/irq/")
+	source "irq_msi.h"
+}
