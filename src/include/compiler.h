@@ -15,10 +15,14 @@
 #define _PRINTF_FORMAT(format_i, arg_start_i) \
 	__attribute__ ((format (printf, format_i, arg_start_i)))
 
+#define __attribute_const__ __attribute__((pure))
+
 #else /* __GNUC__ */
 
 #define _NORETURN
 #define _PRINTF_FORMAT(format_i, arg_start_i)
+
+#define __attribute_const__
 
 #endif /* __GNUC__ */
 
