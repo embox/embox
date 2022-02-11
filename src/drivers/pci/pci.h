@@ -122,10 +122,11 @@ struct pci_slot_dev {
 	uint8_t subordinate;
 	uint32_t membaselimit;
 
-
+	int msix_enabled;
 	int msi_enabled;
-	uint8_t msi_cap;	/* MSI capability offset */
-	uint8_t msix_cap;	/* MSI-X capability offset */
+	uint8_t msi_cap;            /* MSI capability offset */
+	uint8_t msix_cap;           /* MSI-X capability offset */
+	struct dlist_head msi_list;
 };
 
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
@@ -147,5 +148,8 @@ extern int pci_read_config_dword(struct pci_slot_dev *dev, int where, uint32_t *
 extern int pci_write_config_byte(struct pci_slot_dev *dev, int where, uint8_t val);
 extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t val);
 extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
+
+#define for_each_pci_msi_entry(entry, dev) \
+			dlist_foreach_entry(entry, &dev->msi_list, list)
 
 #endif /* PCI_H_ */

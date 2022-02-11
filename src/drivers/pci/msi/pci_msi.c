@@ -16,6 +16,186 @@
 
 #define msi_desc_to_pci_dev(desc) (desc->dev)
 
+#define msix_table_size(flags)	((flags & PCI_MSIX_FLAGS_QSIZE) + 1)
+
+#ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
+static int pci_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
+{
+	struct irq_domain *domain;
+
+	domain = dev_get_msi_domain(&dev->dev);
+	if (domain && irq_domain_is_hierarchy(domain))
+		return msi_domain_alloc_irqs(domain, &dev->dev, nvec);
+
+	return arch_setup_msi_irqs(dev, nvec, type);
+}
+
+static void pci_msi_teardown_msi_irqs(struct pci_dev *dev)
+{
+	struct irq_domain *domain;
+
+	domain = dev_get_msi_domain(&dev->dev);
+	if (domain && irq_domain_is_hierarchy(domain))
+		msi_domain_free_irqs(domain, &dev->dev);
+	else
+		arch_teardown_msi_irqs(dev);
+}
+#else
+#define pci_msi_setup_msi_irqs		arch_setup_msi_irqs
+#define pci_msi_teardown_msi_irqs	arch_teardown_msi_irqs
+#endif
+
+/* Arch hooks */
+
+int __weak arch_setup_msi_irq(struct pci_slot_dev *dev, struct msi_desc *desc) {
+#if 0
+	struct msi_controller *chip = dev->bus->msi;
+	int err;
+
+	if (!chip || !chip->setup_irq)
+		return -EINVAL;
+
+	err = chip->setup_irq(chip, dev, desc);
+	if (err < 0)
+		return err;
+
+	irq_set_chip_data(desc->irq, chip);
+#endif
+	return 0;
+}
+
+void __weak arch_teardown_msi_irq(unsigned int irq) {
+#if 0
+	struct msi_controller *chip = irq_get_chip_data(irq);
+
+	if (!chip || !chip->teardown_irq)
+		return;
+
+	chip->teardown_irq(chip, irq);
+#endif
+}
+
+int __weak arch_setup_msi_irqs(struct pci_slot_dev *dev, int nvec, int type) {
+#if 0
+	struct msi_controller *chip = dev->bus->msi;
+	struct msi_desc *entry;
+	int ret;
+
+	if (chip && chip->setup_irqs)
+		return chip->setup_irqs(chip, dev, nvec, type);
+	/*
+	 * If an architecture wants to support multiple MSI, it needs to
+	 * override arch_setup_msi_irqs()
+	 */
+	if (type == PCI_CAP_ID_MSI && nvec > 1)
+		return 1;
+
+	for_each_pci_msi_entry(entry, dev) {
+		ret = arch_setup_msi_irq(dev, entry);
+		if (ret < 0)
+			return ret;
+		if (ret > 0)
+			return -ENOSPC;
+	}
+#endif
+	return 0;
+}
+
+/*
+ * We have a default implementation available as a separate non-weak
+ * function, as it is used by the Xen x86 PCI code
+ */
+void default_teardown_msi_irqs(struct pci_slot_dev *dev) {
+#if 0
+	int i;
+	struct msi_desc *entry;
+
+	for_each_pci_msi_entry(entry, dev)
+		if (entry->irq)
+			for (i = 0; i < entry->nvec_used; i++)
+				arch_teardown_msi_irq(entry->irq + i);
+#endif
+}
+
+static void default_restore_msi_irq(struct pci_slot_dev *dev, int irq) {
+#if 0
+	struct msi_desc *entry;
+
+	entry = NULL;
+	if (dev->msix_enabled) {
+		for_each_pci_msi_entry(entry, dev) {
+			if (irq == entry->irq)
+				break;
+		}
+	} else if (dev->msi_enabled)  {
+		entry = irq_get_msi_desc(irq);
+	}
+
+	if (entry)
+		__pci_write_msi_msg(entry, &entry->msg);
+#endif
+}
+
+void default_restore_msi_irqs(struct pci_slot_dev *dev) {
+	struct msi_desc *entry;
+
+	for_each_pci_msi_entry(entry, dev) {
+		default_restore_msi_irq(dev, entry->irq);
+	}
+}
+
+void __weak arch_teardown_msi_irqs(struct pci_slot_dev *dev) {
+	return default_teardown_msi_irqs(dev);
+}
+
+
+void __weak arch_restore_msi_irqs(struct pci_slot_dev *dev) {
+	return default_restore_msi_irqs(dev);
+}
+
+static void free_msi_irqs(struct pci_slot_dev *dev) {
+#if 0
+	struct list_head *msi_list = dev_to_msi_list(&dev->dev);
+	struct msi_desc *entry, *tmp;
+	struct attribute **msi_attrs;
+	struct device_attribute *dev_attr;
+	int i, count = 0;
+
+	for_each_pci_msi_entry(entry, dev)
+		if (entry->irq)
+			for (i = 0; i < entry->nvec_used; i++)
+				BUG_ON(irq_has_action(entry->irq + i));
+
+	pci_msi_teardown_msi_irqs(dev);
+
+	list_for_each_entry_safe(entry, tmp, msi_list, list) {
+		if (entry->msi_attrib.is_msix) {
+			if (list_is_last(&entry->list, msi_list))
+				iounmap(entry->mask_base);
+		}
+
+		list_del(&entry->list);
+		free_msi_entry(entry);
+	}
+
+	if (dev->msi_irq_groups) {
+		sysfs_remove_groups(&dev->dev.kobj, dev->msi_irq_groups);
+		msi_attrs = dev->msi_irq_groups[0]->attrs;
+		while (msi_attrs[count]) {
+			dev_attr = container_of(msi_attrs[count],
+						struct device_attribute, attr);
+			kfree(dev_attr->attr.name);
+			kfree(dev_attr);
+			++count;
+		}
+		kfree(msi_attrs);
+		kfree(dev->msi_irq_groups[0]);
+		kfree(dev->msi_irq_groups);
+		dev->msi_irq_groups = NULL;
+	}
+#endif
+}
+
 static inline __attribute_const__ uint32_t msi_mask(unsigned x)
 {
 	/* Don't shift by >= width of type */
@@ -71,7 +251,6 @@ msi_setup_entry(struct pci_slot_dev *dev, int nvec) {
 	struct msi_desc *entry;
 	uint16_t control;
 
-
 	/* MSI Entry Initialization */
 	entry = msi_entry_alloc(dev, nvec);
 	if (!entry) {
@@ -108,7 +287,7 @@ out:
 
 static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 	struct msi_desc *entry;
-//	int ret;
+	int ret;
 	unsigned mask;
 
 	pci_msi_set_enable(dev, 0);	/* Disable MSI during set up */
@@ -122,8 +301,8 @@ static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 	mask = msi_mask(entry->msi_attrib.multi_cap);
 	msi_mask_irq(entry, mask, mask);
 
-//	list_add_tail(&entry->list, dev_to_msi_list(&dev->dev));
-#if 0
+	dlist_add_next(&entry->list, &dev->msi_list);
+
 	/* Configure MSI capability structure */
 	ret = pci_msi_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
 	if (ret) {
@@ -131,7 +310,7 @@ static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 		free_msi_irqs(dev);
 		return ret;
 	}
-
+#if 0
 	ret = msi_verify_entries(dev);
 	if (ret) {
 		msi_mask_irq(entry, mask, ~mask);
