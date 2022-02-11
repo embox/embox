@@ -32,4 +32,8 @@
 #define inline /* to nothing */
 #endif
 
+#ifndef __weak
+# define __weak      __attribute__((weak))
+#endif
+
 #endif /* COMPILER_H_ */
