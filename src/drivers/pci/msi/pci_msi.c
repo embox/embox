@@ -232,6 +232,10 @@ static int pci_msi_supported(struct pci_slot_dev *dev, int nvec) {
 }
 
 
+static void pci_intx_for_msi(struct pci_slot_dev *dev, int enable) {
+	pci_intx(dev, enable);
+}
+
 int pci_msi_vec_count(struct pci_slot_dev *dev) {
 	int ret;
 	uint16_t msgctl;
@@ -284,13 +288,28 @@ out:
 	return entry;
 }
 
+static int msi_verify_entries(struct pci_slot_dev *dev) {
+	struct msi_desc *entry;
+
+	for_each_pci_msi_entry(entry, dev) {
+#if 0
+		if (!dev->no_64bit_msi || !entry->msg.address_hi) {
+			continue;
+		}
+		log_error(dev, "Device has broken 64-bit MSI but arch"
+			" tried to assign one above 4G");
+		return -EIO;
+#endif
+	}
+	return 0;
+}
 
 static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 	struct msi_desc *entry;
 	int ret;
 	unsigned mask;
 
-	pci_msi_set_enable(dev, 0);	/* Disable MSI during set up */
+	pci_msi_set_enable(dev, 0); /* Disable MSI during set up */
 
 	entry = msi_setup_entry(dev, nvec);
 	if (!entry) {
@@ -310,15 +329,8 @@ static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 		free_msi_irqs(dev);
 		return ret;
 	}
-#if 0
-	ret = msi_verify_entries(dev);
-	if (ret) {
-		msi_mask_irq(entry, mask, ~mask);
-		free_msi_irqs(dev);
-		return ret;
-	}
 
-	ret = populate_msi_sysfs(dev);
+	ret = msi_verify_entries(dev);
 	if (ret) {
 		msi_mask_irq(entry, mask, ~mask);
 		free_msi_irqs(dev);
@@ -330,9 +342,8 @@ static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 	pci_msi_set_enable(dev, 1);
 	dev->msi_enabled = 1;
 
-	pcibios_free_irq(dev);
 	dev->irq = entry->irq;
-#endif
+
 	return 0;
 }
 
