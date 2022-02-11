@@ -140,6 +140,7 @@ struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 		uint32_t devfn, uint32_t vendor_reg);
 
 extern void pci_set_master(struct pci_slot_dev * slot_dev);
+extern void pci_intx(struct pci_slot_dev *pdev, int enable);
 
 extern int pci_read_config_byte(struct pci_slot_dev *dev, int where, uint8_t *val);
 extern int pci_read_config_word(struct pci_slot_dev *dev, int where, uint16_t *val);

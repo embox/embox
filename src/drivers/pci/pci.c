@@ -177,3 +177,19 @@ void pci_set_master(struct pci_slot_dev * slot_dev) {
 		pci_write_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, 64);
 	}
 }
+
+void pci_intx(struct pci_slot_dev *pdev, int enable) {
+	uint16_t pci_command, new;
+
+	pci_read_config_word(pdev, PCI_COMMAND, &pci_command);
+
+	if (enable) {
+		new = pci_command & ~PCI_COMMAND_INTX_DISABLE;
+	} else {
+		new = pci_command | PCI_COMMAND_INTX_DISABLE;
+	}
+
+	if (new != pci_command) {
+		pci_write_config_word(pdev, PCI_COMMAND, new);
+	}
+}
