@@ -38,6 +38,15 @@
 #define PCI_IRQ_MSI       (1 << 1) /* allow MSI interrupts */
 #define PCI_IRQ_MSIX      (1 << 2) /* allow MSI-X interrupts */
 #define PCI_IRQ_AFFINITY  (1 << 3) /* auto-assign affinity */
+
+/*
+ * Virtual interrupts allow for more interrupts to be allocated
+ * than the device has interrupts for. These are not programmed
+ * into the device's MSI-X table and must be handled by some
+ * other driver means.
+ */
+#define PCI_IRQ_VIRTUAL    (1 << 4)
+
 #define PCI_IRQ_ALL_TYPES \
 	(PCI_IRQ_LEGACY | PCI_IRQ_MSI | PCI_IRQ_MSIX)
 
@@ -149,6 +158,13 @@ extern int pci_read_config_dword(struct pci_slot_dev *dev, int where, uint32_t *
 extern int pci_write_config_byte(struct pci_slot_dev *dev, int where, uint8_t val);
 extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t val);
 extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
+
+
+struct msix_entry {
+	uint32_t vector; /* kernel uses to write allocated vector */
+	uint16_t entry;  /* driver uses to specify entry, OS writes */
+};
+
 
 #define for_each_pci_msi_entry(entry, dev) \
 			dlist_foreach_entry(entry, &dev->msi_list, list)

@@ -5,6 +5,8 @@
  * @author Anton Bondarev
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 #include <errno.h>
 
@@ -12,7 +14,13 @@
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_msi.h>
+#include <drivers/pci/pci_regs.h>
 #include <kernel/irq/irq_msi.h>
+
+#include <hal/reg.h>
+
+#define writel(val, addr) REG32_STORE(addr, val)
+#define readl(addr)       REG32_LOAD(addr)
 
 #define msi_desc_to_pci_dev(desc) (desc->dev)
 
@@ -196,6 +204,36 @@ static void free_msi_irqs(struct pci_slot_dev *dev) {
 #endif
 }
 
+static void *pci_msix_desc_addr(struct msi_desc *desc)
+{
+	if (desc->msi_attrib.is_virtual) {
+		return NULL;
+	}
+
+	return desc->mask_base + desc->msi_attrib.entry_nr * PCI_MSIX_ENTRY_SIZE;
+}
+
+uint32_t __pci_msix_desc_mask_irq(struct msi_desc *desc, uint32_t flag)
+{
+	uint32_t mask_bits = desc->masked;
+	void *desc_addr;
+
+
+	desc_addr = pci_msix_desc_addr(desc);
+	if (!desc_addr) {
+		return 0;
+	}
+
+	mask_bits &= ~PCI_MSIX_ENTRY_CTRL_MASKBIT;
+	if (flag & PCI_MSIX_ENTRY_CTRL_MASKBIT) {
+		mask_bits |= PCI_MSIX_ENTRY_CTRL_MASKBIT;
+	}
+
+	writel(mask_bits, desc_addr + PCI_MSIX_ENTRY_VECTOR_CTRL);
+
+	return mask_bits;
+}
+
 static inline __attribute_const__ uint32_t msi_mask(unsigned x)
 {
 	/* Don't shift by >= width of type */
@@ -225,6 +263,11 @@ static uint32_t __pci_msi_desc_mask_irq(struct msi_desc *desc, uint32_t mask, ui
 static void msi_mask_irq(struct msi_desc *desc, uint32_t mask, uint32_t flag)
 {
 	desc->masked = __pci_msi_desc_mask_irq(desc, mask, flag);
+}
+
+static void msix_mask_irq(struct msi_desc *desc, uint32_t flag)
+{
+	desc->masked = __pci_msix_desc_mask_irq(desc, flag);
 }
 
 static int pci_msi_supported(struct pci_slot_dev *dev, int nvec) {
@@ -394,17 +437,259 @@ static int __pci_enable_msi_range(struct pci_slot_dev *dev, int minvec, int maxv
 	}
 }
 
+static void *msix_map_region(struct pci_slot_dev *dev, unsigned nr_entries)
+{
+	return NULL;
+#if 0
+	resource_size_t phys_addr;
+	u32 table_offset;
+	unsigned long flags;
+	u8 bir;
+
+	pci_read_config_dword(dev, dev->msix_cap + PCI_MSIX_TABLE,
+			      &table_offset);
+	bir = (u8)(table_offset & PCI_MSIX_TABLE_BIR);
+	flags = pci_resource_flags(dev, bir);
+	if (!flags || (flags & IORESOURCE_UNSET))
+		return NULL;
+
+	table_offset &= PCI_MSIX_TABLE_OFFSET;
+	phys_addr = pci_resource_start(dev, bir) + table_offset;
+
+	return ioremap_nocache(phys_addr, nr_entries * PCI_MSIX_ENTRY_SIZE);
+#endif
+}
+
+static int msix_setup_entries(struct pci_slot_dev *dev, void *base,
+			struct msix_entry *entries, int nvec) {
+	return 0;
+#if 0
+	struct irq_affinity_desc *curmsk, *masks = NULL;
+	struct msi_desc *entry;
+	int ret, i;
+	int vec_count = pci_msix_vec_count(dev);
+
+	if (affd)
+		masks = irq_create_affinity_masks(nvec, affd);
+
+	for (i = 0, curmsk = masks; i < nvec; i++) {
+		entry = alloc_msi_entry(&dev->dev, 1, curmsk);
+		if (!entry) {
+			if (!i)
+				iounmap(base);
+			else
+				free_msi_irqs(dev);
+			/* No enough memory. Don't try again */
+			ret = -ENOMEM;
+			goto out;
+		}
+
+		entry->msi_attrib.is_msix	= 1;
+		entry->msi_attrib.is_64		= 1;
+		if (entries)
+			entry->msi_attrib.entry_nr = entries[i].entry;
+		else
+			entry->msi_attrib.entry_nr = i;
+
+		entry->msi_attrib.is_virtual =
+			entry->msi_attrib.entry_nr >= vec_count;
+
+		entry->msi_attrib.default_irq	= dev->irq;
+		entry->mask_base		= base;
+
+		list_add_tail(&entry->list, dev_to_msi_list(&dev->dev));
+		if (masks)
+			curmsk++;
+	}
+	ret = 0;
+out:
+	kfree(masks);
+	return ret;
+#endif
+}
+
+static void msix_program_entries(struct pci_slot_dev *dev,
+				struct msix_entry *entries) {
+	struct msi_desc *entry;
+	int i = 0;
+	void *desc_addr;
+
+	for_each_pci_msi_entry(entry, dev) {
+		if (entries) {
+			entries[i++].vector = entry->irq;
+		}
+
+		desc_addr = pci_msix_desc_addr(entry);
+		if (desc_addr) {
+			entry->masked = readl(desc_addr + PCI_MSIX_ENTRY_VECTOR_CTRL);
+		} else {
+			entry->masked = 0;
+		}
+
+		msix_mask_irq(entry, 1);
+	}
+}
+
+static int
+msix_capability_init(struct pci_slot_dev *dev, struct msix_entry *entries,
+				int nvec) {
+	int ret;
+	uint16_t control;
+	void *base;
+
+	/* Ensure MSI-X is disabled while it is set up */
+	pci_msix_clear_and_set_ctrl(dev, PCI_MSIX_FLAGS_ENABLE, 0);
+
+	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &control);
+	/* Request & Map MSI-X table region */
+	base = msix_map_region(dev, msix_table_size(control));
+	if (!base)
+		return -ENOMEM;
+
+	ret = msix_setup_entries(dev, base, entries, nvec);
+	if (ret)
+		return ret;
+
+	ret = pci_msi_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
+	if (ret)
+		goto out_avail;
+
+	/* Check if all MSI entries honor device restrictions */
+	ret = msi_verify_entries(dev);
+	if (ret) {
+		goto out_free;
+	}
+
+	/*
+	 * Some devices require MSI-X to be enabled before we can touch the
+	 * MSI-X registers.  We need to mask all the vectors to prevent
+	 * interrupts coming in before they're fully set up.
+	 */
+	pci_msix_clear_and_set_ctrl(dev, 0,
+				PCI_MSIX_FLAGS_MASKALL | PCI_MSIX_FLAGS_ENABLE);
+
+	msix_program_entries(dev, entries);
+
+	/* Set MSI-X enabled bits and unmask the function */
+	pci_intx_for_msi(dev, 0);
+	dev->msix_enabled = 1;
+	pci_msix_clear_and_set_ctrl(dev, PCI_MSIX_FLAGS_MASKALL, 0);
+
+	return 0;
+
+out_avail:
+	if (ret < 0) {
+		/*
+		 * If we had some success, report the number of IRQs
+		 * we succeeded in setting up.
+		 */
+		struct msi_desc *entry;
+		int avail = 0;
+
+		for_each_pci_msi_entry(entry, dev) {
+			if (entry->irq != 0)
+				avail++;
+		}
+		if (avail != 0)
+			ret = avail;
+	}
+
+out_free:
+	free_msi_irqs(dev);
+
+	return ret;
+}
+
+int pci_msix_vec_count(struct pci_slot_dev *dev) {
+	uint16_t control;
+
+	if (!dev->msix_cap) {
+		return -EINVAL;
+	}
+
+	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &control);
+
+	return msix_table_size(control);
+}
+
+static int
+__pci_enable_msix(struct pci_slot_dev *dev, struct msix_entry *entries,
+						int nvec, int flags) {
+	int nr_entries;
+	int i, j;
+
+	if (!pci_msi_supported(dev, nvec)) {
+		return -EINVAL;
+	}
+
+	nr_entries = pci_msix_vec_count(dev);
+	if (nr_entries < 0) {
+		return nr_entries;
+	}
+	if (nvec > nr_entries && !(flags & PCI_IRQ_VIRTUAL)) {
+		return nr_entries;
+	}
+
+	if (entries) {
+		/* Check for any invalid entries */
+		for (i = 0; i < nvec; i++) {
+			if (entries[i].entry >= nr_entries) {
+				return -EINVAL;		/* invalid entry */
+			}
+			for (j = i + 1; j < nvec; j++) {
+				if (entries[i].entry == entries[j].entry) {
+					return -EINVAL;	/* duplicate entry */
+				}
+			}
+		}
+	}
+
+	/* Check whether driver already requested for MSI IRQ */
+	if (dev->msi_enabled) {
+		log_info("can't enable MSI-X (MSI IRQ already assigned)");
+		return -EINVAL;
+	}
+	return msix_capability_init(dev, entries, nvec);
+}
+
+static int
+__pci_enable_msix_range(struct pci_slot_dev *dev, struct msix_entry *entries,
+							int minvec, int maxvec, int flags) {
+	int rc, nvec = maxvec;
+
+	if (maxvec < minvec) {
+		return -ERANGE;
+	}
+
+	for (;;) {
+
+		rc = __pci_enable_msix(dev, entries, nvec, flags);
+		if (rc == 0) {
+			return nvec;
+		}
+
+		if (rc < 0) {
+			return rc;
+		}
+		if (rc < minvec) {
+			return -ENOSPC;
+		}
+
+		nvec = rc;
+	}
+}
+
 int pci_alloc_irq_vectors(struct pci_slot_dev *dev, unsigned int min_vecs, unsigned int max_vecs, unsigned int flags) {
 	int msix_vecs = -ENOSPC;
 	int msi_vecs = -ENOSPC;
-#if 0
+
 	if (flags & PCI_IRQ_MSIX) {
 		msix_vecs = __pci_enable_msix_range(dev, NULL, min_vecs, max_vecs, flags);
 		if (msix_vecs > 0) {
 			return msix_vecs;
 		}
 	}
-#endif
+
 	if (flags & PCI_IRQ_MSI) {
 		msi_vecs = __pci_enable_msi_range(dev, min_vecs, max_vecs);
 		if (msi_vecs > 0) {

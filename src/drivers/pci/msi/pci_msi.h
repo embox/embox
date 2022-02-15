@@ -24,4 +24,15 @@ static inline void pci_msi_set_enable(struct pci_slot_dev *dev, int enable) {
 	pci_write_config_word(dev, dev->msi_cap + PCI_MSI_FLAGS, control);
 }
 
+static inline void pci_msix_clear_and_set_ctrl(struct pci_slot_dev *dev,
+		uint16_t clear, uint16_t set) {
+	uint16_t ctrl;
+
+	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &ctrl);
+	ctrl &= ~clear;
+	ctrl |= set;
+	pci_write_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, ctrl);
+
+}
+
 #endif /* SRC_DRIVERS_PCI_MSI_PCI_MSI_H_ */
