@@ -412,7 +412,6 @@ int pci_alloc_irq_vectors(struct pci_slot_dev *dev, unsigned int min_vecs, unsig
 		}
 	}
 
-#if 0
 	/* use legacy IRQ if allowed */
 	if (flags & PCI_IRQ_LEGACY) {
 		if (min_vecs == 1 && dev->irq) {
@@ -420,7 +419,6 @@ int pci_alloc_irq_vectors(struct pci_slot_dev *dev, unsigned int min_vecs, unsig
 			return 1;
 		}
 	}
-#endif
 
 	if (msix_vecs == -ENOSPC) {
 		return -ENOSPC;
