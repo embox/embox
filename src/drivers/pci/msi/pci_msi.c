@@ -437,27 +437,19 @@ static int __pci_enable_msi_range(struct pci_slot_dev *dev, int minvec, int maxv
 	}
 }
 
-static void *msix_map_region(struct pci_slot_dev *dev, unsigned nr_entries)
-{
-	return NULL;
-#if 0
-	resource_size_t phys_addr;
-	u32 table_offset;
-	unsigned long flags;
-	u8 bir;
+static void *msix_map_region(struct pci_slot_dev *dev, unsigned nr_entries) {
+	size_t phys_addr;
+	uint32_t table_offset;
+	uint8_t bir;
 
-	pci_read_config_dword(dev, dev->msix_cap + PCI_MSIX_TABLE,
-			      &table_offset);
-	bir = (u8)(table_offset & PCI_MSIX_TABLE_BIR);
-	flags = pci_resource_flags(dev, bir);
-	if (!flags || (flags & IORESOURCE_UNSET))
-		return NULL;
+	pci_read_config_dword(dev, dev->msix_cap + PCI_MSIX_TABLE, &table_offset);
+	bir = (uint8_t)(table_offset & PCI_MSIX_TABLE_BIR);
 
 	table_offset &= PCI_MSIX_TABLE_OFFSET;
 	phys_addr = pci_resource_start(dev, bir) + table_offset;
 
-	return ioremap_nocache(phys_addr, nr_entries * PCI_MSIX_ENTRY_SIZE);
-#endif
+	//return ioremap_nocache(phys_addr, nr_entries * PCI_MSIX_ENTRY_SIZE);
+	return (void*)((uintptr_t)phys_addr);
 }
 
 static int msix_setup_entries(struct pci_slot_dev *dev, void *base,
