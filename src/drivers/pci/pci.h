@@ -160,6 +160,8 @@ extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t v
 extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
 
 
+#define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
+
 struct msix_entry {
 	uint32_t vector; /* kernel uses to write allocated vector */
 	uint16_t entry;  /* driver uses to specify entry, OS writes */
