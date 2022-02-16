@@ -19,12 +19,14 @@
 
 #include <hal/reg.h>
 
-#define writel(val, addr) REG32_STORE(addr, val)
-#define readl(addr)       REG32_LOAD(addr)
+#define writel(val, addr)        REG32_STORE(addr, val)
+#define readl(addr)              REG32_LOAD(addr)
 
 #define msi_desc_to_pci_dev(desc) (desc->dev)
+#define dev_to_msi_list(dev)      (&dev->msi_list)
 
 #define msix_table_size(flags)	((flags & PCI_MSIX_FLAGS_QSIZE) + 1)
+
 
 #ifdef CONFIG_PCI_MSI_IRQ_DOMAIN
 static int pci_msi_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
@@ -363,7 +365,7 @@ static int msi_capability_init(struct pci_slot_dev *dev, int nvec) {
 	mask = msi_mask(entry->msi_attrib.multi_cap);
 	msi_mask_irq(entry, mask, mask);
 
-	dlist_add_next(&entry->list, &dev->msi_list);
+	dlist_add_next(&entry->list, dev_to_msi_list(dev));
 
 	/* Configure MSI capability structure */
 	ret = pci_msi_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSI);
@@ -452,26 +454,36 @@ static void *msix_map_region(struct pci_slot_dev *dev, unsigned nr_entries) {
 	return (void*)((uintptr_t)phys_addr);
 }
 
+int pci_msix_vec_count(struct pci_slot_dev *dev) {
+	uint16_t control;
+
+	if (!dev->msix_cap) {
+		return -EINVAL;
+	}
+
+	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &control);
+
+	return msix_table_size(control);
+}
+
 static int msix_setup_entries(struct pci_slot_dev *dev, void *base,
 			struct msix_entry *entries, int nvec) {
-	return 0;
-#if 0
-	struct irq_affinity_desc *curmsk, *masks = NULL;
 	struct msi_desc *entry;
 	int ret, i;
 	int vec_count = pci_msix_vec_count(dev);
 
-	if (affd)
-		masks = irq_create_affinity_masks(nvec, affd);
-
-	for (i = 0, curmsk = masks; i < nvec; i++) {
-		entry = alloc_msi_entry(&dev->dev, 1, curmsk);
+	for (i = 0; i < nvec; i++) {
+		entry = msi_entry_alloc(dev, 1);
 		if (!entry) {
-			if (!i)
+#if 0
+			if (!i) {
 				iounmap(base);
-			else
-				free_msi_irqs(dev);
+			} else {
+				msi_irqs_free(dev);
+			}
+#endif
 			/* No enough memory. Don't try again */
+			log_error("No enough memory for nvec(%d)", nvec);
 			ret = -ENOMEM;
 			goto out;
 		}
@@ -489,15 +501,12 @@ static int msix_setup_entries(struct pci_slot_dev *dev, void *base,
 		entry->msi_attrib.default_irq	= dev->irq;
 		entry->mask_base		= base;
 
-		list_add_tail(&entry->list, dev_to_msi_list(&dev->dev));
-		if (masks)
-			curmsk++;
+		dlist_add_next(&entry->list, dev_to_msi_list(dev));
+
 	}
 	ret = 0;
 out:
-	kfree(masks);
 	return ret;
-#endif
 }
 
 static void msix_program_entries(struct pci_slot_dev *dev,
@@ -535,16 +544,19 @@ msix_capability_init(struct pci_slot_dev *dev, struct msix_entry *entries,
 	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &control);
 	/* Request & Map MSI-X table region */
 	base = msix_map_region(dev, msix_table_size(control));
-	if (!base)
+	if (!base) {
 		return -ENOMEM;
+	}
 
 	ret = msix_setup_entries(dev, base, entries, nvec);
-	if (ret)
+	if (ret) {
 		return ret;
+	}
 
 	ret = pci_msi_setup_msi_irqs(dev, nvec, PCI_CAP_ID_MSIX);
-	if (ret)
+	if (ret) {
 		goto out_avail;
+	}
 
 	/* Check if all MSI entries honor device restrictions */
 	ret = msi_verify_entries(dev);
@@ -590,18 +602,6 @@ out_free:
 	free_msi_irqs(dev);
 
 	return ret;
-}
-
-int pci_msix_vec_count(struct pci_slot_dev *dev) {
-	uint16_t control;
-
-	if (!dev->msix_cap) {
-		return -EINVAL;
-	}
-
-	pci_read_config_word(dev, dev->msix_cap + PCI_MSIX_FLAGS, &control);
-
-	return msix_table_size(control);
 }
 
 static int
