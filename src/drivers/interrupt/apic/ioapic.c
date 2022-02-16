@@ -15,6 +15,7 @@
 #include "lapic.h"
 
 #include <drivers/irqctrl.h>
+#include <drivers/common/memory.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 
@@ -138,3 +139,5 @@ void irqctrl_eoi(unsigned int irq) {
 }
 
 IRQCTRL_DEF(iopic, NULL);
+
+PERIPH_MEMORY_DEFINE(iopic, IOAPIC_DEF_ADDR, 0x100);
