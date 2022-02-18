@@ -344,7 +344,6 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 			break;
 		case PCI_CAP_ID_MSIX:
 			cap_msix(pci_dev, where, cap);
-			printf("cap_msix\n");
 			break;
 		case PCI_CAP_ID_SATA:
 			//cap_sata_hba(d, where, cap);
