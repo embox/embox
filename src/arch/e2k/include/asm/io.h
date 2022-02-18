@@ -139,4 +139,7 @@ static inline uint8_t e2k_in8(int port) {
 	return e2k_read8((E2K_X86_IO_PORT_BASE + port));
 }
 
+#define out8(val, port)    e2k_out8(val, port)
+#define in8(port)          e2k_read8(port)
+
 #endif /* E2K_IO_H_ */
