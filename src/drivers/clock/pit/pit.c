@@ -12,14 +12,16 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#include <util/array.h>
+
 #include <hal/clock.h>
+
+#include <asm/io.h>
+
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
-#include <util/array.h>
-#include <drivers/clock/pit/regs.h>
-
 
 #define INPUT_CLOCK        1193182L /* clock tick rate, Hz */
 #define IRQ_NR             OPTION_GET(NUMBER,irq_num)
@@ -81,6 +83,14 @@ static_assert(PIT_LOAD < 0x10000, "");
 #define PIT_MSB         0x20    /* r/w counter MSB */
 #define PIT_16BIT       0x30    /* r/w counter 16 bits, LSB first */
 #define PIT_BCD         0x01    /* count in BCD */
+
+static inline void pit_out8(uint8_t val, int port) {
+	out8(val, port);
+}
+
+static inline uint8_t pit_in8(int port) {
+	return in8(port);
+}
 
 static cycle_t i8253_read(struct clock_source *cs) {
 	unsigned char lsb, msb;
