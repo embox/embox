@@ -373,8 +373,8 @@ static void show_control(uint16_t val16) {
 
 	printf("I/O%c ", val16 & PCI_COMMAND_IO ? '+' : '-');
 	printf("Mem%c ", val16 & PCI_COMMAND_MEMORY ? '+' : '-');
-	printf("BusMaster%c ", val16 & PCI_COMMAND_SPECIAL ? '+' : '-');
-	printf("SpecCycle%c ", val16 & PCI_STATUS_FAST_BACK ? '+' : '-');
+	printf("BusMaster%c ", val16 & PCI_COMMAND_MASTER ? '+' : '-');
+	printf("SpecCycle%c ", val16 & PCI_COMMAND_SPECIAL ? '+' : '-');
 	printf("VGASnoop%c ", val16 & PCI_COMMAND_VGA_PALETTE ? '+' : '-');
 	printf("ParErr%c ", val16 & PCI_COMMAND_PARITY ? '+' : '-');
 	printf("Stepping%c ", val16 & PCI_COMMAND_WAIT ? '+' : '-');
