@@ -61,8 +61,9 @@ static int pci_slot_configure(uint32_t busn, uint32_t devfn){
 		/* Read back size */
 		pci_read_config32(busn, devfn, PCI_BASE_ADDR_REG_0 + (bar_num << 2), &bar);
 		/* if no bar available */
-		if (bar == 0)
+		if (bar == 0) {
 			continue;
+		}
 		length = 1 + ~(bar & 0xFFFFFFF0);
 
 		window = space_alloc(&pci_allocator, length, length);
