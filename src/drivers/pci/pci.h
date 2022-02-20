@@ -136,6 +136,8 @@ struct pci_slot_dev {
 	uint8_t msi_cap;            /* MSI capability offset */
 	uint8_t msix_cap;           /* MSI-X capability offset */
 	struct dlist_head msi_list;
+
+	int is_busmaster;
 };
 
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
@@ -159,6 +161,9 @@ extern int pci_write_config_byte(struct pci_slot_dev *dev, int where, uint8_t va
 extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t val);
 extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
 
+
+extern int pci_alloc_irq_vectors(struct pci_slot_dev *dev,
+		unsigned int min_vecs, unsigned int max_vecs, unsigned int flags);
 
 #define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
 
