@@ -165,6 +165,8 @@ extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t 
 extern int pci_alloc_irq_vectors(struct pci_slot_dev *dev,
 		unsigned int min_vecs, unsigned int max_vecs, unsigned int flags);
 
+extern int pci_irq_vector(struct pci_slot_dev *dev, unsigned int nr);
+
 #define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
 
 struct msix_entry {

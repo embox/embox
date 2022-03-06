@@ -707,3 +707,22 @@ int pci_alloc_irq_vectors(struct pci_slot_dev *dev, unsigned int min_vecs, unsig
 
 	return msi_vecs;
 }
+
+int pci_irq_vector(struct pci_slot_dev *dev, unsigned int nr) {
+	if (dev->msix_enabled) {
+		struct msi_desc *entry;
+		int i = 0;
+
+		for_each_pci_msi_entry(entry, dev) {
+			if (i == nr) {
+				return entry->irq;
+			}
+			i++;
+		}
+
+		return -EINVAL;
+	}
+
+	return dev->irq + nr;
+}
+
