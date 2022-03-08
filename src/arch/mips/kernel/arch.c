@@ -16,7 +16,7 @@ void arch_init(void) {
 }
 
 void arch_idle(void) {
-
+	__asm__ __volatile__ ("wait");
 }
 
 void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
