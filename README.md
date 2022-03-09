@@ -1,7 +1,48 @@
 Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](https://travis-ci.org/embox/embox) [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 ## LKL info from Anton Ostrouhhov
+### Сделано
+* Подсистема с ядром Linux как модуль в Embox
 
+* "LKL-Embox workflow" документ:
+  * Разобрался как обрабатывать системные вызовы Linux приложений
+  * Разобрался как работает подсистема с LKL (с ядром Linux)
+  * Разобрался во взаимодействии LKL с окружением посредством device driver-ов ("мостов")
+
+* Сделал "мост" для стандартного вывода- echotovda: https://github.com/aostrouhhov/embox/commit/24d6664615bad38a6bc6bdf104ae86dbbf02cc03
+
+* Сделал поле для идентификации Linux процесса (https://github.com/aostrouhhov/embox/commit/8d62d85bc62e5b86562fedd09eb3be8a8069ea65)
+
+* Создал такой thread, который Linux может планировать (LKL использует thread_create с семафорами и прочей магией)
+  * Для этого нужно было сделать через lkl_sys_fork, чтобы в обработчике lkl_syscall_run были выполнены get и put cpu (ну и прочее)
+  * lkl_sys_fork() начал работать, когда в файл "include/uapi/asm-generic/unistd.h" добавил:
+```
+#define __NR_fork 294
+__SYSCALL(__NR_fork, sys_fork)
+```
+И там же инкрементнуть __NR_syscalls:
+```
+#define __NR_syscalls 295
+```
+Не завелось, сделаем clone
+
+---
+
+### Текущие задачи
+* Переписать `echotovda` таким образом, чтобы он стал переносимым `echo` (запускается и на Linux, и на Embox+LKL)
+* Реализовать `read_from_vda` и `write_to_vda`, создаем новый `echo`. А как создать такую конфигурацию процессов?
+* Научиться запускать Linux процессы
+  - Проверить функциональность fork-нутого процесса
+  - **Текущая задача:** После fork-а новый thread должен выполнять все поступающие вызовы (проверять вызовом `lkl_sys_getpid`, например)
+* Научиться разделять Embox процессы на стороне LKL
+  - Придумать архитектуру того, как на стороне Embox-а направлять linux вызовы в конкретно нужный нам lkl_task.
+* Реализация своего shell
+
+
+* Поправить условие exception handler на "if lkl_task == 0" как было до моих изменений, а на lkl_task == 1 всё что хочу
+---
+
+### Getting started
 Clone the repository:
 ```
 git clone https://github.com/aostrouhhov/embox.git
@@ -47,7 +88,70 @@ It should fail to patch 2 files. Edit them manually:
 1. *arch/lkl/Kconfig* - add `select HAVE_COPY_THREAD_TLS` to the end of `config LKL` section.
 2. *arch/lkl/include/uapi/asm/unistd.h* - add `#define __ARCH_WANT_SYS_CLONE`.
 
-### To see current LKL changes
+Remove some build artifacts **each time you modify LKL**:
+```
+rm build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/lkl.o build/extbld/third_party/lkl/lib/.installed build/extbld/third_party/lkl/lib/.builded
+```
+
+Also, particulary this patch requires `make distclean` (first time I see such behaviour):
+```
+(cd build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f && make distclean)
+```
+
+Additional dirty workaround: comment `do_signal(NULL);` in *build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c:188* (this should be removed from patches in future).
+
+Rebuild:
+```
+export CFLAGS="-Wno-error" && make -j8
+```
+
+### Current status
+First, add `int cret = lkl_sys_clone(SIGCHLD, 0 , NULL, NULL, 0);` into *third-party/lkl/echotovda.c*. Then:
+
+1. In case we add these changes to *build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c*
+```
+void *my_function(void *data)
+{
+}
+
+static lkl_thread_t thread_create_host(void* pc, void* sp, void* tls, struct lkl_tls_key* task_key, void* task_value)
+{
+        pthread_t thread;
+        if (WARN_PTHREAD(pthread_create(&thread, NULL, my_function, NULL)))
+                return 0;
+        else    
+                return (lkl_thread_t) thread;
+}
+
+
+static void thread_destroy_host(lkl_thread_t tid, struct lkl_tls_key* task_key)
+{
+    // Just temporary stub
+}
+
+ struct lkl_host_operations lkl_host_ops = {
+    ...
+	.thread_create_host = thread_create_host,
+	.thread_destroy_host = thread_destroy_host,
+    ...
+```
+we get the following output:
+```
+root@embox:/#echotovda TEST                                                     
+lkl_sys_clone retunred 39
+root@embox:/#echotovda TEST                                                     
+lkl_sys_clone retunred 44
+root@embox:/#echotovda TEST                                                     
+lkl_sys_clone retunred 49
+root@embox:/#echotovda TEST                                                     
+lkl_sys_clone retunred 54
+root@embox:/#echotovda TEST                                                     
+lkl_sys_clone retunred 59
+root@embox:/#echotovda TEST                                                     
+lkl_sys_clone retunred 64
+```
+
+### To see your changes (diff) in LKL
 
 1. Download and extract clean LKL, apply all Embox patches:
 ```
