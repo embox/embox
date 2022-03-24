@@ -20,6 +20,7 @@ static module wchar {
 	source "wcstoll.c"
 	source "wcstoul.c"
 	source "wcstoull.c"
+	source "putwc.c"
 
 	source "wchar_stubs.c"
 }
