@@ -18,6 +18,7 @@ static void print_usage(void) {
 	printf("\t[-h]                    - print this help\n");
 	printf("\t[-v]                    - print verbose output with device, configuration and interface descriptors\n");
 	printf("\t[-s [[bus]:]devnum]     - print by device number and optional bus number (both in decimal)\n");
+	printf("\t[-d [vendor]:[product]] - print by vendor id and/or product id (both in hexadecimal)\n");
 
 }
 
@@ -146,7 +147,12 @@ int main(int argc, char **argv) {
 	uint16_t devnum = 0;
 	int devnum_set = 0;
 
-	while (-1 != (opt = getopt(argc, argv, "s:h:v"))) {
+	uint16_t vendor = 0;
+	int vendor_set = 0;
+	uint16_t product = 0;
+	int product_set = 0;
+
+	while (-1 != (opt = getopt(argc, argv, "s:d:h:v"))) {
 		switch (opt) {
 		case '?':
 		case 'h':
@@ -174,6 +180,22 @@ int main(int argc, char **argv) {
 				}
 			}
 			break;
+		case 'd':
+			cp = strchr(optarg, ':');
+			if (!cp) {
+				print_error();
+				return 0;
+			}
+			*cp++ = 0;
+			if (*optarg) {
+				vendor_set = 1;
+				vendor = strtoul(optarg, NULL, 16);
+			}
+			if (*cp) {
+				product_set = 1;
+				product = strtoul(cp, NULL, 16);
+			}
+			break;
 		default:
 			print_error();
 			return 0;
@@ -183,6 +205,11 @@ int main(int argc, char **argv) {
 	while ((usb_dev = usb_dev_iterate(usb_dev))) {
 		if ((bus_set && bus != usb_dev->bus_idx) ||
 				(devnum_set && devnum != usb_dev->addr)) {
+			continue;
+		}
+
+		if ((vendor_set && vendor != usb_dev->dev_desc.id_vendor) ||
+				(product_set && product != usb_dev->dev_desc.id_product)) {
 			continue;
 		}
 
