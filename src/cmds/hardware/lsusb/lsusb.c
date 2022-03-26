@@ -8,14 +8,17 @@
  */
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <drivers/usb/usb.h>
 
 static void print_usage(void) {
-	printf("Usage: lsusb [-h] [-v]\n");
-	printf("\t[-h]      - print this help\n");
-	printf("\t[-v]      - prints verbose output with device, configuration" 
-		   " and interface descriptors\n");
+	printf("Usage: lsusb [-h] [-v] [-s [[bus]:]devnum] [-d [vendor]:[product]]\n");
+	printf("\t[-h]                    - print this help\n");
+	printf("\t[-v]                    - print verbose output with device, configuration and interface descriptors\n");
+	printf("\t[-s [[bus]:]devnum]     - print by device number and optional bus number (both in decimal)\n");
+	printf("\t[-d [vendor]:[product]] - print by vendor id and/or product id (both in hexadecimal)\n");
 
 }
 
@@ -137,7 +140,19 @@ int main(int argc, char **argv) {
 	struct usb_dev *usb_dev = NULL;
 	int opt, flag = 0;
 
-	while (-1 != (opt = getopt(argc, argv, "h:v"))) {
+	char *cp;
+
+	uint16_t bus = 0;
+	int bus_set = 0;
+	uint16_t devnum = 0;
+	int devnum_set = 0;
+
+	uint16_t vendor = 0;
+	int vendor_set = 0;
+	uint16_t product = 0;
+	int product_set = 0;
+
+	while (-1 != (opt = getopt(argc, argv, "s:d:h:v"))) {
 		switch (opt) {
 		case '?':
 		case 'h':
@@ -146,6 +161,41 @@ int main(int argc, char **argv) {
 		case 'v':
 			flag = 1;
 			break;
+		case 's':
+			cp = strchr(optarg, ':');
+			if (cp) {
+				*cp++ = 0;
+				if (*optarg) {
+					bus_set = 1;
+					bus = strtoul(optarg, NULL, 10);
+				}
+				if (*cp) {
+					devnum_set = 1;
+					devnum = strtoul(cp, NULL, 10);
+				}
+			} else {
+				if (*optarg) {
+					devnum_set = 1;
+					devnum = strtoul(optarg, NULL, 10);
+				}
+			}
+			break;
+		case 'd':
+			cp = strchr(optarg, ':');
+			if (!cp) {
+				print_error();
+				return 0;
+			}
+			*cp++ = 0;
+			if (*optarg) {
+				vendor_set = 1;
+				vendor = strtoul(optarg, NULL, 16);
+			}
+			if (*cp) {
+				product_set = 1;
+				product = strtoul(cp, NULL, 16);
+			}
+			break;
 		default:
 			print_error();
 			return 0;
@@ -153,6 +203,16 @@ int main(int argc, char **argv) {
 	}
 
 	while ((usb_dev = usb_dev_iterate(usb_dev))) {
+		if ((bus_set && bus != usb_dev->bus_idx) ||
+				(devnum_set && devnum != usb_dev->addr)) {
+			continue;
+		}
+
+		if ((vendor_set && vendor != usb_dev->dev_desc.id_vendor) ||
+				(product_set && product != usb_dev->dev_desc.id_product)) {
+			continue;
+		}
+
 		show_usb_dev(usb_dev);
 		if(flag) {
 			int conf_cnt = 0;
