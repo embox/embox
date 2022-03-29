@@ -1,0 +1,5 @@
+package embox.driver
+
+module demo_char_dev {
+	source "demo_char_dev.c"
+}
