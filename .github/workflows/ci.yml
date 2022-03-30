@@ -32,12 +32,13 @@ jobs:
       options: --privileged -v /:/host
     steps:
       - uses: actions/checkout@v1
-      - uses: actions/cache@v2
-        with:
-          path: |
-            mk/.cache
-          key: mybuild-${{ hashFiles('**/Mybuild') }}-${{ hashFiles('**/*.my') }}
-      - run: scripts/continuous/touch-mk-cache.sh
+# x86/test/net fails on caching
+#      - uses: actions/cache@v2
+#        with:
+#          path: |
+#            mk/.cache
+#          key: mybuild-${{ hashFiles('**/Mybuild') }}-${{ hashFiles('**/*.my') }}
+#      - run: scripts/continuous/touch-mk-cache.sh
       - run: chroot /host modprobe nfsd
         if: matrix.template == 'x86/test/fs'
       - run: ./scripts/continuous/prepare.sh ${{matrix.template}}
