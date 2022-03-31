@@ -11,10 +11,7 @@
 
 double modf(double x, double *i_ptr) {
 	return __builtin_modf(x, i_ptr);
-}
-
-double fmod(double x, double y) {
-	return __builtin_fmod(x, y);
+	return 0.0;
 }
 
 int signbit(double x) {
@@ -40,7 +37,8 @@ float roundf(float x) {
 	return __builtin_roundf(x);
 }
 long double roundl(long double x) {
-	return __builtin_roundl(x);
+	//return __builtin_roundl(x);
+	return 0.0;
 }
 
 double pow(double x, double y) {
