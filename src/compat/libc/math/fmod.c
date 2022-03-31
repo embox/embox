@@ -15,6 +15,8 @@
  #include <float.h>
  #include <stdint.h>
 
+#include "math_private.h"
+
 static inline int local_ilogb( double x ) __attribute__ ((always_inline));
 static inline int local_ilogb( double x )
 {
@@ -34,51 +36,6 @@ static inline int local_ilogb( double x )
 
 	return exp - 1023;
 }
-
-static inline  double local_scalbn( double x, int n );
-static inline  double local_scalbn( double x, int n )
-{
-	union{ uint64_t u; double d;} u;
-
-	uint32_t absn = n >> (8*sizeof(n)-1);
-	absn = (n ^ absn) - absn;
-
-	if( absn > 1022 )
-	{
-		// step = copysign( 1022, n )
-		int signMask = n >> (8 * sizeof( int ) - 1);
-		int step = (1022 ^ signMask) - signMask;
-
-		u.u = ( (int64_t) step + 1023ULL) << 52;
-
-		if( n < 0 )
-		{
-			do
-			{
-				x *= u.d;
-				n -= step;
-			}while( n < -1022 );
-		}
-		else
-		{
-			do
-			{
-				x *= u.d;
-				n -= step;
-			}while( n > 1022 );
-		}
-	}
-
-	//create 2**n in double
-	u.u = ( (int64_t) n + 1023ULL) << 52;
-
-	//scale by appropriate power of 2
-	x *= u.d;
-
-	//return result
-	return x;
-}
-
 
 double fmod( double x, double y )
 {

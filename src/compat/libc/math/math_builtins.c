@@ -32,13 +32,7 @@ float roundf(float x) {
 	return __builtin_roundf(x);
 }
 long double roundl(long double x) {
-	//return __builtin_roundl(x);
-	return 0.0;
-}
-
-double pow(double x, double y) {
-	//return __builtin_pow(x,y);
-	return 0.0;
+	return __builtin_roundl(x);
 }
 
 float powf(float x, float y) {
