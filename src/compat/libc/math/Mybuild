@@ -6,7 +6,7 @@ abstract module math {
 
 static module math_builtins extends embox.compat.libc.math {
 	source "math_builtins.c"
-	source "fmod.c"
+	source "fmod.c", "modf.c"
 
 	@IncludeExport(target_name="math.h")
 	source "math_builtins.h"

@@ -9,11 +9,6 @@
 #include <math.h>
 #include <endian.h> /* FIXME __BYTE_ORDER__ */
 
-double modf(double x, double *i_ptr) {
-	return __builtin_modf(x, i_ptr);
-	return 0.0;
-}
-
 int signbit(double x) {
 	return __builtin_signbit(x);
 }
@@ -42,7 +37,8 @@ long double roundl(long double x) {
 }
 
 double pow(double x, double y) {
-	return __builtin_pow(x,y);
+	//return __builtin_pow(x,y);
+	return 0.0;
 }
 
 float powf(float x, float y) {
