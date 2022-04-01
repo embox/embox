@@ -18,7 +18,6 @@
 #elif FLT_EVAL_METHOD==2
 #define EPS LDBL_EPSILON
 #endif
-#define EPS LDBL_EPSILON
 
 static const double_t toint = 1/EPS;
 
