@@ -10,7 +10,27 @@
 
 #include <sys/cdefs.h>
 
-typedef float float_t;
+
+#if !defined(FLT_EVAL_METHOD) && defined(__FLT_EVAL_METHOD__)
+	#define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
+#endif
+#if defined FLT_EVAL_METHOD
+	#if FLT_EVAL_METHOD == 0
+		typedef float  float_t;
+		typedef double double_t;
+	#elif FLT_EVAL_METHOD == 1
+		typedef double float_t;
+		typedef double double_t;
+	#elif FLT_EVAL_METHOD == 2
+		typedef long double float_t;
+		typedef long double double_t;
+	#else
+		#error "Unknown FLT_EVAL_METHOD value"
+	#endif
+#else
+	typedef float  float_t;
+	typedef double double_t;
+#endif
 
 __BEGIN_DECLS
 
