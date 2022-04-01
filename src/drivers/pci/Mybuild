@@ -5,6 +5,7 @@ module pci {
 	option number dev_quantity = 32
 	option number bus_n_to_scan = 256
 	source "pci.c", "pci_repo.c", "pci_driver.c"
+	source "pci_access.c"
 
 	@IncludeExport(path="drivers/pci")
 	source "pci.h"

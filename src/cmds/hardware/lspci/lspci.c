@@ -344,7 +344,6 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 			break;
 		case PCI_CAP_ID_MSIX:
 			cap_msix(pci_dev, where, cap);
-			printf("cap_msix\n");
 			break;
 		case PCI_CAP_ID_SATA:
 			//cap_sata_hba(d, where, cap);
@@ -374,8 +373,8 @@ static void show_control(uint16_t val16) {
 
 	printf("I/O%c ", val16 & PCI_COMMAND_IO ? '+' : '-');
 	printf("Mem%c ", val16 & PCI_COMMAND_MEMORY ? '+' : '-');
-	printf("BusMaster%c ", val16 & PCI_COMMAND_SPECIAL ? '+' : '-');
-	printf("SpecCycle%c ", val16 & PCI_STATUS_FAST_BACK ? '+' : '-');
+	printf("BusMaster%c ", val16 & PCI_COMMAND_MASTER ? '+' : '-');
+	printf("SpecCycle%c ", val16 & PCI_COMMAND_SPECIAL ? '+' : '-');
 	printf("VGASnoop%c ", val16 & PCI_COMMAND_VGA_PALETTE ? '+' : '-');
 	printf("ParErr%c ", val16 & PCI_COMMAND_PARITY ? '+' : '-');
 	printf("Stepping%c ", val16 & PCI_COMMAND_WAIT ? '+' : '-');

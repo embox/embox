@@ -24,6 +24,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/spinlock.h>
 
+#include <drivers/common/memory.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 #include <module/embox/kernel/thread/core.h>
@@ -122,3 +123,5 @@ void resched(void) {
 	sched_post_switch();
 }
 
+/* FIXME this is a code (not device memory) region */
+PERIPH_MEMORY_DEFINE(smp_trampoline, TRAMPOLINE_ADDR, 0x1000);

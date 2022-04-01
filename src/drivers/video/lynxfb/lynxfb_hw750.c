@@ -25,8 +25,6 @@
 void volatile *mmio750;
 
 
-#define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
-
 int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev) {
 	struct lynx_share *share = &spec_share->share;
 	int ret = 0;

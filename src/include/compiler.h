@@ -15,10 +15,14 @@
 #define _PRINTF_FORMAT(format_i, arg_start_i) \
 	__attribute__ ((format (printf, format_i, arg_start_i)))
 
+#define __attribute_const__ __attribute__((pure))
+
 #else /* __GNUC__ */
 
 #define _NORETURN
 #define _PRINTF_FORMAT(format_i, arg_start_i)
+
+#define __attribute_const__
 
 #endif /* __GNUC__ */
 
@@ -26,6 +30,10 @@
 	(!defined(__GNUC_GNU_INLINE__) || !__GNUC_GNU_INLINE__) && \
 	(!defined(__GNUC_STDC_INLINE__) || !__GNUC_STDC_INLINE__)
 #define inline /* to nothing */
+#endif
+
+#ifndef __weak
+# define __weak      __attribute__((weak))
 #endif
 
 #endif /* COMPILER_H_ */

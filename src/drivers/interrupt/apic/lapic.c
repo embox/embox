@@ -12,6 +12,8 @@
 #include <unistd.h>
 #include <stdint.h>
 
+#include <drivers/common/memory.h>
+
 #include "lapic.h"
 
 #ifdef LAPIC_REGS_X86_H_
@@ -145,3 +147,5 @@ int lapic_enable(void) {
 
 	return 0;
 }
+
+PERIPH_MEMORY_DEFINE(local_apic, LOCAL_APIC_DEF_ADDR, 0x1000);

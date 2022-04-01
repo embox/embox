@@ -34,6 +34,23 @@
 #define PCI_DEVFN(slot, func)   ((((slot) & 0x1f) << 3) | ((func) & 0x07))
 
 
+#define PCI_IRQ_LEGACY    (1 << 0) /* allow legacy interrupts */
+#define PCI_IRQ_MSI       (1 << 1) /* allow MSI interrupts */
+#define PCI_IRQ_MSIX      (1 << 2) /* allow MSI-X interrupts */
+#define PCI_IRQ_AFFINITY  (1 << 3) /* auto-assign affinity */
+
+/*
+ * Virtual interrupts allow for more interrupts to be allocated
+ * than the device has interrupts for. These are not programmed
+ * into the device's MSI-X table and must be handled by some
+ * other driver means.
+ */
+#define PCI_IRQ_VIRTUAL    (1 << 4)
+
+#define PCI_IRQ_ALL_TYPES \
+	(PCI_IRQ_LEGACY | PCI_IRQ_MSI | PCI_IRQ_MSIX)
+
+
 /** Device classes and subclasses */
 
 #define PCI_CLASS_NOT_DEFINED           0x00
@@ -113,6 +130,14 @@ struct pci_slot_dev {
 	uint8_t secondary;
 	uint8_t subordinate;
 	uint32_t membaselimit;
+
+	int msix_enabled;
+	int msi_enabled;
+	uint8_t msi_cap;            /* MSI capability offset */
+	uint8_t msix_cap;           /* MSI-X capability offset */
+	struct dlist_head msi_list;
+
+	int is_busmaster;
 };
 
 #define PCI_BAR_BASE(bar)   (bar & 0xFFFFFFF0)
@@ -126,5 +151,31 @@ struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 		uint32_t devfn, uint32_t vendor_reg);
 
 extern void pci_set_master(struct pci_slot_dev * slot_dev);
+extern void pci_intx(struct pci_slot_dev *pdev, int enable);
+
+extern int pci_read_config_byte(struct pci_slot_dev *dev, int where, uint8_t *val);
+extern int pci_read_config_word(struct pci_slot_dev *dev, int where, uint16_t *val);
+extern int pci_read_config_dword(struct pci_slot_dev *dev, int where, uint32_t *val);
+
+extern int pci_write_config_byte(struct pci_slot_dev *dev, int where, uint8_t val);
+extern int pci_write_config_word(struct pci_slot_dev *dev, int where, uint16_t val);
+extern int pci_write_config_dword(struct pci_slot_dev *dev, int where, uint32_t val);
+
+
+extern int pci_alloc_irq_vectors(struct pci_slot_dev *dev,
+		unsigned int min_vecs, unsigned int max_vecs, unsigned int flags);
+
+extern int pci_irq_vector(struct pci_slot_dev *dev, unsigned int nr);
+
+#define pci_resource_start(d, b) (d->bar[(b)] & ~0xF)
+
+struct msix_entry {
+	uint32_t vector; /* kernel uses to write allocated vector */
+	uint16_t entry;  /* driver uses to specify entry, OS writes */
+};
+
+
+#define for_each_pci_msi_entry(entry, dev) \
+			dlist_foreach_entry(entry, &dev->msi_list, list)
 
 #endif /* PCI_H_ */

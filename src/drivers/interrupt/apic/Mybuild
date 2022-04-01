@@ -35,4 +35,5 @@ module lapic {
 
 	depends lapic_regs
 	depends ioapic_regs
+	depends embox.driver.periph_memory
 }

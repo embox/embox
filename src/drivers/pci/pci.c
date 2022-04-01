@@ -11,16 +11,20 @@
  * @author Nikolay Korotky
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <string.h>
+
 #include <util/dlist.h>
 #include <util/array.h>
-#include <util/log.h>
-#include <mem/misc/pool.h>
 #include <embox/unit.h>
+
+#include <mem/misc/pool.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
+#include <drivers/pci/pci_regs.h>
 
 #define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER,bus_n_to_scan)
 #define PCI_IRQ_BASE      OPTION_GET(NUMBER,irq_base)
@@ -42,10 +46,87 @@ uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
 	return vendor;
 }
 
+static inline int get_cap_id(struct pci_slot_dev *pci_dev, uint32_t where, uint8_t *val8) {
+	int ret;
+
+	ret = pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			where + PCI_CAP_LIST_ID, val8);
+	if (PCIUTILS_SUCCESS == ret) {
+		return 0;
+	}
+	return -1;
+}
+
+static inline int get_cap_next(struct pci_slot_dev *pci_dev, uint32_t where, uint8_t *val8) {
+	int ret;
+
+	ret = pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			where + PCI_CAP_LIST_NEXT, val8);
+	if (PCIUTILS_SUCCESS == ret) {
+		*val8 &= ~0x3;
+		return 0;
+	}
+	return -1;
+}
+
+static inline int get_cap_flags(struct pci_slot_dev *pci_dev, uint32_t where, uint16_t *val16) {
+	int ret;
+
+	ret = pci_read_config16(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			where + PCI_CAP_FLAGS, val16);
+	if (PCIUTILS_SUCCESS == ret) {
+		return 0;
+	}
+	return -1;
+}
+
+
+static void __pci_dev_fill_caps(struct pci_slot_dev *pci_dev) {
+	uint32_t where;
+	uint8_t val8;
+
+
+	pci_read_config8(pci_dev->busn,
+			(pci_dev->slot << 3) | pci_dev->func,
+			PCI_CAPABILITY_LIST, &val8);
+
+	where = val8;
+
+	while (where) {
+		uint8_t id, next;
+		uint16_t cap;
+
+		get_cap_id(pci_dev, where, &id);
+		get_cap_next(pci_dev, where, &next);
+		get_cap_flags(pci_dev, where, &cap);
+
+		if (id == 0xff) {
+			break;
+		}
+		switch (id) {
+		case PCI_CAP_ID_MSI:
+			pci_dev->msi_cap = where;
+			dlist_init(&pci_dev->msi_list);
+			break;
+		case PCI_CAP_ID_MSIX:
+			pci_dev->msix_cap = where;
+			dlist_init(&pci_dev->msi_list);
+			break;
+		default:
+			break;
+		}
+		where = next;
+	}
+}
+
 /* receive information about single slot on the pci bus */
 static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	int bar_num;
 	uint32_t devfn = dev->func;
+	uint16_t status;
 
 	pci_read_config8(dev->busn, devfn, PCI_BASECLASS_CODE, &dev->baseclass);
 	pci_read_config8(dev->busn, devfn, PCI_SUBCLASS_CODE, &dev->subclass);
@@ -60,6 +141,11 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	dev->func = PCI_FUNC(devfn);
 	dev->slot = PCI_SLOT(devfn);
 	dev->irq = pci_irq_number(dev);
+
+	pci_read_config16(dev->busn, devfn, PCI_STATUS, &status);
+	if (status & PCI_STATUS_CAP_LIST) {
+		__pci_dev_fill_caps(dev);
+	}
 
 	return 0;
 }
@@ -177,3 +263,20 @@ void pci_set_master(struct pci_slot_dev * slot_dev) {
 		pci_write_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, 64);
 	}
 }
+
+void pci_intx(struct pci_slot_dev *pdev, int enable) {
+	uint16_t pci_command, new;
+
+	pci_read_config_word(pdev, PCI_COMMAND, &pci_command);
+
+	if (enable) {
+		new = pci_command & ~PCI_COMMAND_INTX_DISABLE;
+	} else {
+		new = pci_command | PCI_COMMAND_INTX_DISABLE;
+	}
+
+	if (new != pci_command) {
+		pci_write_config_word(pdev, PCI_COMMAND, new);
+	}
+}
+
