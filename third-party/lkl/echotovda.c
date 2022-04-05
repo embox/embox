@@ -41,16 +41,14 @@ int main(int argc, char **argv) {
 	printf("lkl_sys_gettid() = %d.\n", lkl_sys_gettid());
 
 	// SIGCHLD was here
-	int clone_ret = lkl_sys_clone(0x00000100|0x00000200|0x00000400|0x00000800|0x00010000|0x00040000|0x00080000|0x00100000|0x00200000, 0 , NULL, NULL, 0);
-	printf("lkl_sys_clone() returned %d.\n", clone_ret);
+	// int clone_ret = lkl_sys_clone(0x00000100|0x00000200|0x00000400|0x00000800|0x00010000|0x00040000|0x00080000|0x00100000|0x00200000, 0 , NULL, NULL, 0);
+	// printf("lkl_sys_clone() returned %d.\n", clone_ret);
 
 	// Count input length
 	int len = 0;
 	while (argv[1][len] != '\0') {
 		len++;
 	}
-
-	sleep(1);
 
 	// Write to /vda
 	long ret_write = os_syscall(4, fd, &argv[1][0], len, 0);
