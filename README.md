@@ -19,7 +19,8 @@ docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/e
 ### Getting started
 Clone the repo:
 ```
-git clone
+git clone https://github.com/aostrouhhov/embox.git
+cd embox
 git checkout lkl
 ```
 
@@ -29,7 +30,7 @@ vagrant up
 vagrant ssh
 ```
 
-Build Embox (it takes some time):
+Build Embox (it takes some time due to LKL):
 ```
 cd /embox
 make confload-x86/qemu
@@ -38,11 +39,11 @@ export CFLAGS="-Wno-error" && make -j8
 
 Compile pure Linux program and run it in GNU/Linux environment:
 ```
-gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_hello ../linux_hello.c
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_hello third-party/lkl/linux_hello.c
 conf/rootfs/linux_hello
 ```
 
-Now rebuild Embox and run this program in Embox (over QEMU):
+Rebuild Embox to update rootfs and run this program in Embox (over QEMU):
 ```
 export CFLAGS="-Wno-error" && make -j8
 sudo ./scripts/qemu/auto_qemu
