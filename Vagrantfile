@@ -1,32 +1,19 @@
-
-required_plugins = %w(vagrant-reload)
-
-required_plugins.each do |plugin|
-  puts "#{plugin} not available, run `vagrant plugin install #{plugin}' (affects all vagrants on system)" unless Vagrant.has_plugin? plugin
-end
-
 Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/xenial32"
 
-  config.vm.define "xen", autostart: false do |xen|
-    xen.vm.box = "bento/ubuntu-17.10"
+  config.vm.box_check_update = false
 
-    xen.vm.provision "shell", inline: <<-SHELL
-    DEBIAN_FRONTEND=noninteractive \
-	  apt-get -y update
-    DEBIAN_FRONTEND=noninteractive \
-	  apt-get -y install \
-		  xen-hypervisor-amd64
-
-    echo "cd /embox" >> /home/vagrant/.bashrc
-    echo "export PATH=$PATH:/usr/lib/xen-4.9/bin" >> /home/vagrant/.bashrc
-    SHELL
-
-    xen.vm.provision :reload
-
-    xen.vm.synced_folder ".", "/embox", type: "rsync",
-	    rsync__exclude: ".git/"
-
+  config.vm.provider "virtualbox" do |vb|
+    vb.name = "embox-lkl"
+    vb.memory = "8096"
+    vb.cpus = 4
   end
 
-  config.vm.network "forwarded_port", guest: 1234, host: 1234
+  config.vm.synced_folder ".", "/embox", type: "rsync", rsync__exclude: ".git/"
+
+  # Enable provisioning with a shell script
+  config.vm.provision "shell", inline: <<-SHELL
+    apt-get update
+    apt-get install -y git gdb qemu-system-i386 build-essential gcc-multilib curl libmpc-dev python zip libfuse-dev libarchive-dev xfsprogs bison flex bc
+  SHELL
 end
