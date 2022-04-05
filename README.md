@@ -16,6 +16,39 @@ Test (QEMU) environment:
 docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
 ```
 
+### Getting started
+Clone the repo:
+```
+git clone
+git checkout lkl
+```
+
+Deploy Virtual Machine with Vagrant:
+```
+vagrant up
+vagrant ssh
+```
+
+Build Embox (it takes some time):
+```
+cd /embox
+make confload-x86/qemu
+export CFLAGS="-Wno-error" && make -j8
+```
+
+Compile pure Linux program and run it in GNU/Linux environment:
+```
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_hello ../linux_hello.c
+conf/rootfs/linux_hello
+```
+
+Now rebuild Embox and run this program in Embox (over QEMU):
+```
+export CFLAGS="-Wno-error" && make -j8
+sudo ./scripts/qemu/auto_qemu
+load_app linux_hello
+```
+
 ### Clean Linux in LKL
 ```
 rm build/extbld/third_party/lkl/lib/.{builded,installed}

@@ -5,7 +5,7 @@ PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
 PKG_SOURCES := https://github.com/lkl/linux/archive/$(PKG_VER).zip
 PKG_MD5     := 401776073f33d2f179f0ef1a206b9d9f
 
-PKG_PATCHES := lkl-i386-support.patch lkl-embox-support.patch
+PKG_PATCHES := lkl-i386-support.patch lkl-embox-support.patch 2022-04-05.patch
 
 include $(EXTBLD_LIB)
 

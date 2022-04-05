@@ -1,0 +1,896 @@
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/Kconfig build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/Kconfig
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/Kconfig	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/Kconfig	2022-02-17 15:16:15.773001000 +0000
+@@ -40,6 +40,7 @@
+        select IP_ADVANCED_ROUTER
+        select IPV6_ADVANCED_ROUTER
+        select ARCH_NO_COHERENT_DMA_MMAP
++       select HAVE_COPY_THREAD_TLS
+ 
+ config OUTPUT_FORMAT
+        string "Output format"
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/sched.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/sched.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/sched.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/sched.h	2022-02-17 15:15:44.861001000 +0000
+@@ -12,11 +12,14 @@
+ 		lkl_ops->jmp_buf_set(&current_thread_info()->sched_jb,
+ 				     schedule);
+ 	} else {
+-		lkl_bug("thread_sched_jb() can be used only for host task");
++		lkl_bug("thread_sched_jb() can be used only for host task (current_thread_info()=%p current_thread_info()->flags=%i)\n",
++			current_thread_info(), current_thread_info()->flags);
+ 	}
+ }
+ 
+ void switch_to_host_task(struct task_struct *);
+ int host_task_stub(void *unused);
+ 
++extern struct lkl_tls_key *task_key;
++
+ #endif /*  _ASM_LKL_SCHED_H */
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h	2022-02-17 15:15:44.861001000 +0000
+@@ -1,14 +1,23 @@
+ #ifndef _ASM_LKL_SYSCALLS_H
+ #define _ASM_LKL_SYSCALLS_H
+ 
++/* Initialise system call handling */
+ int syscalls_init(void);
++
++/* Initialise parent host task for all syscalls */
++int host0_init(void);
++
++/* Shutdown system call handling */
+ void syscalls_cleanup(void);
++
++/* Main entry point for LKL system calls */
+ long lkl_syscall(long no, long *params);
++
++/* Trigger idle task */
+ void wakeup_idle_host_task(void);
+ 
+ #define sys_mmap sys_mmap_pgoff
+ #define sys_mmap2 sys_mmap_pgoff
+-#define sys_clone sys_ni_syscall
+ #define sys_vfork sys_ni_syscall
+ #define sys_rt_sigreturn sys_ni_syscall
+ 
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/thread_info.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/thread_info.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/thread_info.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/thread_info.h	2022-02-17 15:15:44.861001000 +0000
+@@ -23,6 +23,12 @@
+ 	lkl_thread_t tid;
+ 	struct task_struct *prev_sched;
+ 	unsigned long stackend;
++	/* The return address from the currently executing syscall. Invalid when
++	 * the thread is not executing a syscall. */
++	void *syscall_ret;
++	/* The task for any child that was created during syscall execution.  Only
++	 * valid on return from a clone-family syscall. */
++	struct task_struct *cloned_child;
+ };
+ 
+ #define INIT_THREAD_INFO(tsk)				\
+@@ -56,6 +62,8 @@
+ #define TIF_NOHZ			6
+ #define TIF_SCHED_JB			7
+ #define TIF_HOST_THREAD			8
++#define TIF_NO_TERMINATION		9 // Do not terminate LKL on exit
++#define TIF_CLONED_HOST_THREAD		10 // This is a host thread created via a clone-family call.
+ 
+ #define __HAVE_THREAD_FUNCTIONS
+ 
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h	2022-03-08 10:35:45.140980969 +0000
+@@ -1,6 +1,21 @@
+ #ifndef _ASM_UAPI_LKL_HOST_OPS_H
+ #define _ASM_UAPI_LKL_HOST_OPS_H
+ 
++/*
++ * LKL will trace all threading and scheduling operations if compiled
++ * with LKL_DEBUG defined.
++ */
++
++#ifdef LKL_DEBUG
++#define LKL_TRACE(x, ...) \
++    lkl_printf("[[    LKL   ]] %s(): " x, __func__, ##__VA_ARGS__);
++#else
++#define LKL_TRACE(...) \
++    do                 \
++    {                  \
++    } while (0)
++#endif
++
+ /* Defined in {posix,nt}-host.c */
+ struct lkl_mutex;
+ struct lkl_sem;
+@@ -23,6 +38,7 @@
+  * @print - optional operation that receives console messages
+  *
+  * @panic - called during a kernel panic
++ * @terminate - shutdown the kernel, returning an exit status and received signal
+  *
+  * @sem_alloc - allocate a host semaphore an initialize it to count
+  * @sem_free - free a host semaphore
+@@ -37,6 +53,13 @@
+  *
+  * @thread_create - create a new thread and run f(arg) in its context; returns a
+  * thread handle or 0 if the thread could not be created
++ * @thread_create_host - create a new thread as the result of a fork-like call
++ * and initialises its register set to the provided program counter, stack
++ * pointer, and TLS area; returns a thread handle or 0 if the thread could not
++ * be created
++ * @thread_destroy_host - destroys the state associated with a host thread that
++ * has exited via an exit system call.  The task_key argument is the TLS
++ * variable containing the task.  The destructor for this must not be run.
+  * @thread_detach - on POSIX systems, free up resources held by
+  * pthreads. Noop on Win32.
+  * @thread_exit - terminates the current thread
+@@ -86,7 +109,9 @@
+ 	const char *virtio_devices;
+ 
+ 	void (*print)(const char *str, int len);
++	struct lkl_tls_key *(*task_tls_key)(void);
+ 	void (*panic)(void);
++	void (*terminate)(int exit_status, int received_signal);
+ 
+ 	struct lkl_sem* (*sem_alloc)(int count);
+ 	void (*sem_free)(struct lkl_sem *sem);
+@@ -99,6 +124,11 @@
+ 	void (*mutex_unlock)(struct lkl_mutex *mutex);
+ 
+ 	lkl_thread_t (*thread_create)(void (*f)(void *), void *arg);
++	lkl_thread_t (*thread_create_host)(void* pc, void* sp, void* tls,
++			struct lkl_tls_key* task_key, void* task_value);
++	void (*thread_destroy_host)(lkl_thread_t tid, struct lkl_tls_key*
++			task_key);
++
+ 	void (*thread_detach)(void);
+ 	void (*thread_exit)(void);
+ 	int (*thread_join)(lkl_thread_t tid);
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/unistd.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/unistd.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/unistd.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/unistd.h	2022-02-17 15:16:43.049001000 +0000
+@@ -2,6 +2,7 @@
+ #define __ARCH_WANT_SYSCALL_DEPRECATED
+ #define __ARCH_WANT_SYSCALL_NO_FLAGS
+ #define __ARCH_WANT_RENAMEAT
++#define __ARCH_WANT_SYS_CLONE
+ 
+ #if __BITS_PER_LONG == 64
+ #define __ARCH_WANT_SYS_NEWFSTATAT
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/setup.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/setup.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/setup.c	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/setup.c	2022-02-17 15:15:42.189001000 +0000
+@@ -85,6 +85,9 @@
+ 	current_thread_info()->tid = lkl_ops->thread_self();
+ 	lkl_cpu_change_owner(current_thread_info()->tid);
+ 
++	/* Create parent host task for system calls with new pid */
++	host0_init();
++
+ 	lkl_cpu_put();
+ 	is_running = 1;
+ 
+@@ -123,8 +126,10 @@
+ 		LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_RESTART, };
+ 
+ 	err = lkl_syscall(__NR_reboot, params);
+-	if (err < 0)
++	if (err < 0) {
++		LKL_TRACE("sys_reboot failed (err=%i)\n", err);
+ 		return err;
++	}
+ 
+ 	is_running = false;
+ 
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c	2022-03-08 10:33:23.008980969 +0000
+@@ -43,8 +43,6 @@
+ 	ret = syscall_table[no](params[0], params[1], params[2], params[3],
+ 				params[4], params[5]);
+ 
+-	task_work_run();
+-
+ 	return ret;
+ }
+ 
+@@ -55,6 +53,34 @@
+ static int host_task_id;
+ static struct task_struct *host0;
+ 
++static void exit_task(void)
++{       
++        LKL_TRACE("enter\n");
++        do_exit(0);
++}
++
++static void del_host_task(void *arg)
++{
++        struct task_struct *task = (struct task_struct *)arg;
++        struct thread_info *ti = task_thread_info(task);
++
++        LKL_TRACE("enter (task=%p/%s ti=%p)\n", task, task->comm, ti);
++
++        if (lkl_cpu_get() < 0) {
++                LKL_TRACE("could not get CPU\n");
++                return;
++        }
++
++        switch_to_host_task(task);
++        host_task_id--;
++        set_ti_thread_flag(ti, TIF_SCHED_JB);
++        set_ti_thread_flag(ti, TIF_NO_TERMINATION);
++
++        lkl_ops->jmp_buf_set(&ti->sched_jb, exit_task);
++}
++
++struct lkl_tls_key *task_key;
++
+ static int new_host_task(struct task_struct **task)
+ {
+ 	pid_t pid;
+@@ -62,8 +88,10 @@
+ 	switch_to_host_task(host0);
+ 
+ 	pid = kernel_thread(host_task_stub, NULL, CLONE_FLAGS);
+-	if (pid < 0)
++	if (pid < 0) {
++		LKL_TRACE("kernel_thread() failed (pid=%i)\n", pid);
+ 		return pid;
++	}
+ 
+ 	rcu_read_lock();
+ 	*task = find_task_by_pid_ns(pid, &init_pid_ns);
+@@ -73,60 +101,160 @@
+ 
+ 	snprintf((*task)->comm, sizeof((*task)->comm), "host%d", host_task_id);
+ 
+-	return 0;
+-}
+-static void exit_task(void)
+-{
+-	do_exit(0);
+-}
+-
+-static void del_host_task(void *arg)
+-{
+-	struct task_struct *task = (struct task_struct *)arg;
+-	struct thread_info *ti = task_thread_info(task);
++	LKL_TRACE("allocated (task=%p/%s) pid=%i\n", *task, (*task)->comm, pid);
+ 
+-	if (lkl_cpu_get() < 0)
+-		return;
++/*                                task_key = lkl_ops->tls_alloc(del_host_task);
++                                if (!task_key) 
++                                        return -1;
+ 
+-	switch_to_host_task(task);
+-	host_task_id--;
+-	set_ti_thread_flag(ti, TIF_SCHED_JB);
+-	lkl_ops->jmp_buf_set(&ti->sched_jb, exit_task);
++*/
++	return 0;
+ }
+ 
+-static struct lkl_tls_key *task_key;
++/* Use this to record an ongoing LKL shutdown */
++_Atomic(bool) lkl_shutdown = false;
+ 
+ long lkl_syscall(long no, long *params)
+ {
+ 	struct task_struct *task = host0;
++	struct thread_info *ti;
+ 	long ret;
+ 
++	LKL_TRACE(
++		"enter (no=%li current=%s host0->TIF host0->TIF_SIGPENDING=%i)\n",
++		no, current->comm, test_tsk_thread_flag(task, TIF_HOST_THREAD),
++		test_tsk_thread_flag(task, TIF_SIGPENDING));
++
+ 	ret = lkl_cpu_get();
+-	if (ret < 0)
++	if (ret < 0) {
++
++		/*
++		 * If we fail to get the LKL CPU here with an error, it likely indicates that we are
++		 * shutting down, and we can no longer handle syscalls. Since this will never
++		 * succeed, exit the current thread.
++		 */
++
++		task = lkl_ops->tls_get(task_key);
++		LKL_TRACE(
++			"lkl_cpu_get() failed -- bailing (no=%li ret=%li task=%s host0=%p host_task_id=%i)\n",
++			no, ret, task ? task->comm : "NULL", host0,
++			host_task_id);
++
++		lkl_ops->thread_exit();
++
++		/* This should not return. */
++		BUG();
+ 		return ret;
++	}
+ 
+ 	if (lkl_ops->tls_get) {
++		printk("LOG: Going to do tls_get; Currently old task_key=%d.\n", task_key);
++		task_key = lkl_ops->task_tls_key();
++		printk("LOG: task_key=%d after assigning lkl_ops->task_tls_key to it.\n", task_key);
++		
++		if (task_key == 0) {
++			printk("LOG: No task_key (==0) for current process => we should create it by calling tls_alloc.\n");
++			if (lkl_ops->tls_alloc) {
++				task_key = lkl_ops->tls_alloc(del_host_task);
++				if (!task_key) 
++					return -1;
++			}
++			printk("LOG: Created task_key for current process. task_key=%d.\n", task_key);
++		}
++
++		printk("LOG: Ready to do 'tls_get' to get LKL's kthread for current Embox pthread.\n");
+ 		task = lkl_ops->tls_get(task_key);
++		// If no kthread was found for current host-thread
+ 		if (!task) {
++			printk("LOG: No LKL kthread was found for current Embox pthread, let's create it by calling 'new_host_task()'.\n");
+ 			ret = new_host_task(&task);
+-			if (ret)
++			if (ret) {
++				LKL_TRACE("new_host_task() failed (ret=%li)\n", ret);
++				goto out;
++			}
++			printk("LOG: Doing 'tls_set' to associate created LKL kthread with current Embox pthread.\n");
++			int tls_set_ret = lkl_ops->tls_set(task_key, task);
++			// If we failed to associate created kthread with current host-task
++			// it means that something gone wrong.
++/*			if (tls_set_ret == -1) {
++				LKL_TRACE("lkl_ops->tls_set failed after lkl_ops->tls_alloc (ret=%d)\n", tls_set_ret);
+ 				goto out;
+-			lkl_ops->tls_set(task_key, task);
++                        }*/
+ 		}
+ 	}
+ 
++	ti = task_thread_info(task);
++	/*
++	 * Store the return address so that it can be used in clone and similar
++	 * calls.  In conventional arch ports, this would happen for free because
++	 * the system call would capture the register state of the callee.
++	 */
++	ti->syscall_ret = __builtin_return_address(0);
++
++	LKL_TRACE("switching to host task (no=%li task=%s current=%s)\n", no,
++		  task->comm, current->comm);
++
+ 	switch_to_host_task(task);
+ 
++	LKL_TRACE("calling run_syscall() (no=%li task=%s current=%s)\n", no,
++		  task->comm, current->comm);
++
+ 	ret = run_syscall(no, params);
+ 
++	LKL_TRACE("returned from run_syscall() (no=%li task=%s current=%s)\n",
++		  no, task->comm, current->comm);
++
++	/*
++	 * Zero the return address so that nothing accidentally sees a stale value.
++	 */
++	ti->syscall_ret = 0;
++	task_work_run();
++
++	/*
++	 * Stop signal handling when LKL is shutting down. We cannot deliver
++	 * signals because we are shutting down the kernel.
++	 */
++	if (!lkl_shutdown) {
++		// do_signal(NULL);
++	}
++
+ 	if (no == __NR_reboot) {
+ 		thread_sched_jb();
+ 		return ret;
+ 	}
+ 
+ out:
++	/*
++	 * If we have created a new host task, make sure that it isn't on the
++	 * scheduler queue when we return.  LKL expects that the only tasks driven
++	 * by the Linux scheduler are kernel threads.  If releasing the CPU lock
++	 * entirely and there are runnable tasks, `lkl_cpu_put` may run the
++	 * scheduler and not release the lock.  The scheduler hands the CPU lock to
++	 * the next running thread and `lkl_cpu_put` expects this to be the idle
++	 * host task (which then releases the lock).  If host tasks are scheduled,
++	 * they will be left running (and owning the CPU lock) and `lkl_cpu_put`
++	 * will return without anything having released the lock.  LKL will then
++	 * deadlock on the next system call.
++	 */
++	if (ti->cloned_child)
++	{
++		struct task_struct *child = ti->cloned_child;
++		ti->cloned_child = NULL;
++		/*
++		 * We can't change the scheduler state of a task that isn't running, so
++		 * switch to the task and then mark it as uninteruptible.
++		 */
++		lkl_cpu_put();
++		switch_to_host_task(child);
++		child->state = TASK_UNINTERRUPTIBLE;
++		/* Switch back to the calling task before we return. */
++		switch_to_host_task(task);
++	}
+ 	lkl_cpu_put();
+ 
++	LKL_TRACE("done (no=%li task=%s current=%s ret=%i)\n", no,
++		  task ? task->comm : "NULL", current->comm, ret);
++
+ 	return ret;
+ }
+ 
+@@ -143,6 +271,8 @@
+ {
+ 	struct thread_info *ti = task_thread_info(current);
+ 
++	LKL_TRACE("enter\n");
++
+ 	snprintf(current->comm, sizeof(current->comm), "idle_host_task");
+ 	set_thread_flag(TIF_HOST_THREAD);
+ 	idle_host_task = current;
+@@ -160,7 +290,9 @@
+ 
+ int syscalls_init(void)
+ {
+-	snprintf(current->comm, sizeof(current->comm), "host0");
++	LKL_TRACE("enter\n");
++
++	snprintf(current->comm, sizeof(current->comm), "init");
+ 	set_thread_flag(TIF_HOST_THREAD);
+ 	host0 = current;
+ 
+@@ -179,8 +311,48 @@
+ 	return 0;
+ }
+ 
++/*
++ * This function create a new kernel task, host0, which acts as the parent
++ * for all dynamically created hosts tasks when handling syscalls. It does
++ * not inherit the pid from init, and therefore can receive arbitrary
++ * signals.
++ *
++ * The function must be called from a context that holds the LKL CPU lock.
++ *
++ */
++int host0_init(void)
++{
++	pid_t pid;
++	struct task_struct* task;
++
++	LKL_TRACE("enter()\n");
++
++	/* Clone host task with new pid */
++	pid = kernel_thread(host_task_stub, NULL, CLONE_FLAGS & ~CLONE_THREAD);
++	if (pid < 0) {
++		LKL_TRACE("kernel_thread(host0) failed (pid=%i)\n", pid);
++		return pid;
++	}
++
++	rcu_read_lock();
++	task = find_task_by_pid_ns(pid, &init_pid_ns);
++	rcu_read_unlock();
++
++	switch_to_host_task(task);
++
++	snprintf(task->comm, sizeof(task->comm), "host0");
++	set_thread_flag(TIF_HOST_THREAD);
++
++	LKL_TRACE("host0 allocated (task=%p/%s) pid=%i\n", task, task->comm, pid);
++
++	host0 = current;
++
++	return 0;
++}
++
+ void syscalls_cleanup(void)
+ {
++	LKL_TRACE("enter\n");
+ 	if (idle_host_task) {
+ 		struct thread_info *ti = task_thread_info(idle_host_task);
+ 
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/threads.c	2022-02-17 15:15:44.861001000 +0000
+@@ -6,8 +6,12 @@
+ #include <asm/cpu.h>
+ #include <asm/sched.h>
+ 
++extern _Atomic(bool) lkl_shutdown;
++
+ static int init_ti(struct thread_info *ti)
+ {
++	LKL_TRACE("enter\n");
++
+ 	ti->sched_sem = lkl_ops->sem_alloc(0);
+ 	if (!ti->sched_sem)
+ 		return -ENOMEM;
+@@ -23,6 +27,8 @@
+ {
+ 	struct thread_info *ti;
+ 
++	LKL_TRACE("enter (task=%s node=%i)\n", task->comm, node);
++
+ 	ti = kmalloc(sizeof(*ti), GFP_KERNEL);
+ 	if (!ti)
+ 		return NULL;
+@@ -46,6 +52,8 @@
+ 	struct thread_info *ti = task_thread_info(p);
+ 	struct thread_info *org_ti = task_thread_info(org);
+ 
++	LKL_TRACE("enter\n");
++
+ 	ti->flags = org_ti->flags;
+ 	ti->preempt_count = org_ti->preempt_count;
+ 	ti->addr_limit = org_ti->addr_limit;
+@@ -53,19 +61,71 @@
+ 
+ static void kill_thread(struct thread_info *ti)
+ {
++	struct task_struct *task = ti->task;
++
++	LKL_TRACE("enter (task=%s task->state=%i task->flags=%i"
++		  "ti=%p ti->flags=%i ti->TIF_NO_TERMINATION=%i )\n",
++		  task->comm, task->state, task->flags, ti, ti->flags,
++		  test_ti_thread_flag(ti, TIF_NO_TERMINATION));
++
++	/* Check if we are killing an applicaton thread */
+ 	if (!test_ti_thread_flag(ti, TIF_HOST_THREAD)) {
+ 		ti->dead = true;
+ 		lkl_ops->sem_up(ti->sched_sem);
+ 		lkl_ops->thread_join(ti->tid);
++	} else {
++		/*
++		 * If this is a task backing a host thread created by clone, then we
++		 * need to destroy the associated host thread, but not exit LKL.
++		 */
++		if (test_ti_thread_flag(ti, TIF_CLONED_HOST_THREAD)) {
++			clear_ti_thread_flag(ti, TIF_CLONED_HOST_THREAD);
++			ti->dead = true;
++			BUG_ON(!lkl_ops->thread_destroy_host);
++			lkl_ops->thread_destroy_host(ti->tid, task_key);
++			ti->tid = 0;
++		/*
++		 * Check if the host thread was killed due to its deallocation when
++		 * the associated application thread terminated gracefully. If not,
++		 * the thread has terminated due to a SYS_exit or a signal. In this
++		 * case, we need to notify the host to initiate an LKL shutdown.
++		 */
++		} else if (!test_ti_thread_flag(ti, TIF_NO_TERMINATION)) {
++			int exit_code = task->exit_code;
++			int exit_status = exit_code >> 8;
++			int received_signal = exit_code & 255;
++			int exit_signal = task->exit_signal;
++
++			LKL_TRACE(
++				"terminating LKL (exit_state=%i exit_code=%i exit_signal=%i exit_status=%i "
++				"received_signal=%i ti->dead=%i task->pid=%i "
++				"task->tgid=%i ti->TIF_SCHED_JB=%i ti->TIF_SIGPENDING=%i)\n",
++				task->exit_state, exit_code, exit_signal,
++				exit_status, received_signal, ti->dead,
++				task->pid, task->tgid,
++				test_ti_thread_flag(ti, TIF_SCHED_JB),
++				test_ti_thread_flag(ti, TIF_SIGPENDING));
++
++			lkl_shutdown = true;
++
++			/* Notify the LKL host to shut down */
++			lkl_ops->terminate(exit_status, received_signal);
++		}
++
++		ti->dead = true;
+ 	}
+ 	lkl_ops->sem_free(ti->sched_sem);
+-
+ }
+ 
+ void free_thread_stack(struct task_struct *tsk)
+ {
+ 	struct thread_info *ti = task_thread_info(tsk);
+ 
++	LKL_TRACE(
++		"enter (task=%s task->TIF_HOST_THREAD=%i task->TIF_SIGPENDING=%i ti=%p current=%s)\n",
++		tsk->comm, test_tsk_thread_flag(tsk, TIF_HOST_THREAD),
++		test_tsk_thread_flag(tsk, TIF_SIGPENDING), ti, current->comm);
++
+ 	kill_thread(ti);
+ 	kfree(ti);
+ }
+@@ -92,6 +152,8 @@
+ 	unsigned long _prev_flags = _prev->flags;
+ 	struct lkl_jmp_buf _prev_jb;
+ 
++	LKL_TRACE("%s=>%s\n", prev->comm, next->comm);
++
+ 	_current_thread_info = task_thread_info(next);
+ 	_next->prev_sched = prev;
+ 	abs_prev = prev;
+@@ -120,11 +182,18 @@
+ 
+ int host_task_stub(void *unused)
+ {
++	LKL_TRACE("enter\n");
+ 	return 0;
+ }
+ 
+ void switch_to_host_task(struct task_struct *task)
+ {
++	LKL_TRACE(
++		"enter (task=%s current=%s task->TIF_HOST_THREAD=%i task->TIF_SIGPENDING=%i)\n",
++		task->comm, current->comm,
++		test_tsk_thread_flag(task, TIF_HOST_THREAD),
++		test_tsk_thread_flag(task, TIF_SIGPENDING));
++
+ 	if (WARN_ON(!test_tsk_thread_flag(task, TIF_HOST_THREAD)))
+ 		return;
+ 
+@@ -135,8 +204,24 @@
+ 
+ 	wake_up_process(task);
+ 	thread_sched_jb();
++
++	LKL_TRACE(
++		"calling sem_down (task=%s task->TIF_HOST_THREAD=%i task->TIF_SIGPENDING=%i)\n",
++		task->comm, test_tsk_thread_flag(task, TIF_HOST_THREAD),
++		test_tsk_thread_flag(task, TIF_SIGPENDING));
+ 	lkl_ops->sem_down(task_thread_info(task)->sched_sem);
++
++	LKL_TRACE(
++		"calling schedule_tail (task=%s task->TIF_HOST_THREAD=%i task->TIF_SIGPENDING=%i abs_prev=%s)\n",
++		task->comm, test_tsk_thread_flag(task, TIF_HOST_THREAD),
++		test_tsk_thread_flag(task, TIF_SIGPENDING), abs_prev->comm);
+ 	schedule_tail(abs_prev);
++
++	LKL_TRACE(
++		"done (task=%s current=%s task->TIF_HOST_THREAD=%i task->TIF_SIGPENDING=%i)\n",
++		task->comm, current->comm,
++		test_tsk_thread_flag(task, TIF_HOST_THREAD),
++		test_tsk_thread_flag(task, TIF_SIGPENDING));
+ }
+ 
+ struct thread_bootstrap_arg {
+@@ -147,6 +232,8 @@
+ 
+ static void thread_bootstrap(void *_tba)
+ {
++	LKL_TRACE("enter\n");
++
+ 	struct thread_bootstrap_arg *tba = (struct thread_bootstrap_arg *)_tba;
+ 	struct thread_info *ti = tba->ti;
+ 	int (*f)(void *) = tba->f;
+@@ -161,9 +248,11 @@
+ 	do_exit(0);
+ }
+ 
+-int copy_thread(unsigned long clone_flags, unsigned long esp,
+-		unsigned long unused, struct task_struct *p)
++int copy_thread_tls(unsigned long clone_flags, unsigned long esp,
++		unsigned long unused, struct task_struct *p, unsigned long tls)
+ {
++	LKL_TRACE("enter\n");
++
+ 	struct thread_info *ti = task_thread_info(p);
+ 	struct thread_bootstrap_arg *tba;
+ 
+@@ -172,6 +261,31 @@
+ 		return 0;
+ 	}
+ 
++	/*
++	 * If we are creating a new userspace thread and are in the middle of a
++	 * system call, create a new host thread coupled with this task.  The
++	 * second check is necessary because we also hit this path when lazily
++	 * binding a host thread to a new task on system call entry.
++	 */
++	void *pc = task_thread_info(current)->syscall_ret;
++	if (pc && !(p->flags & PF_KTHREAD)) {
++		/*
++		 * If we have host support for creating new threads with fine-grained
++		 * control over their initial state, use it to create a new host
++		 * thread.
++		 */
++		if (lkl_ops->thread_create_host) {
++			static unsigned long long clone_count = 0;
++			set_ti_thread_flag(ti, TIF_HOST_THREAD);
++			set_ti_thread_flag(ti, TIF_CLONED_HOST_THREAD);
++			ti->tid = lkl_ops->thread_create_host(pc, (void*)esp, (void*)tls, task_key, p);
++			snprintf(p->comm, sizeof(p->comm), "host_clone%llu", __sync_fetch_and_add(&clone_count, 1));
++			current_thread_info()->cloned_child = p;
++			return (ti->tid == 0) ? -ENOMEM : 0;
++		}
++		return -ENODEV;
++	}
++
+ 	tba = kmalloc(sizeof(*tba), GFP_KERNEL);
+ 	if (!tba)
+ 		return -ENOMEM;
+@@ -191,6 +305,7 @@
+ 
+ void show_stack(struct task_struct *task, unsigned long *esp)
+ {
++	LKL_TRACE("enter\n");
+ }
+ 
+ /**
+@@ -202,9 +317,12 @@
+ 	int ret;
+ 	struct thread_info *ti = &init_thread_union.thread_info;
+ 
++	LKL_TRACE("enter\n");
++
+ 	ret = init_ti(ti);
+-	if (ret < 0)
+-		lkl_printf("lkl: failed to allocate init schedule semaphore\n");
++	if (ret < 0) {
++		lkl_printf("lkl: failed to allocate thread_info struct\n");
++	}
+ 
+ 	ti->tid = lkl_ops->thread_self();
+ }
+@@ -213,6 +331,8 @@
+ {
+ 	struct task_struct *p, *t;
+ 
++	LKL_TRACE("enter\n");
++
+ 	for_each_process_thread(p, t) {
+ 		struct thread_info *ti = task_thread_info(t);
+
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c	2021-12-16 13:32:32.116735034 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c	2022-03-08 10:32:31.968980969 +0000
+@@ -16,6 +16,7 @@
+ #include <lkl_host.h>
+ #include "iomem.h"
+ #include "jmp_buf.h"
++#include <kernel/task.h>
+ 
+ /* Let's see if the host has semaphore.h */
+ #include <unistd.h>
+@@ -184,7 +185,7 @@
+ 	free(_mutex);
+ }
+ 
+-static lkl_thread_t thread_create(void (*fn)(void *), void *arg)
++static lkl_thread_t thread_create_lkl(void (*fn)(void *), void *arg)
+ {
+ 	pthread_t thread;
+ 	if (WARN_PTHREAD(pthread_create(&thread, NULL, (void* (*)(void *))fn, arg)))
+@@ -193,17 +194,17 @@
+ 		return (lkl_thread_t) thread;
+ }
+ 
+-static void thread_detach(void)
++static void thread_detach_lkl(void)
+ {
+ 	WARN_PTHREAD(pthread_detach(pthread_self()));
+ }
+ 
+-static void thread_exit(void)
++static void thread_exit_lkl(void)
+ {
+ 	pthread_exit(NULL);
+ }
+ 
+-static int thread_join(lkl_thread_t tid)
++static int thread_join_lkl(lkl_thread_t tid)
+ {
+ 	if (WARN_PTHREAD(pthread_join((pthread_t)tid, NULL)))
+ 		return -1;
+@@ -211,12 +212,12 @@
+ 		return 0;
+ }
+ 
+-static lkl_thread_t thread_self(void)
++static lkl_thread_t thread_self_lkl(void)
+ {
+ 	return (lkl_thread_t)pthread_self();
+ }
+ 
+-static int thread_equal(lkl_thread_t a, lkl_thread_t b)
++static int thread_equal_lkl(lkl_thread_t a, lkl_thread_t b)
+ {
+ 	return pthread_equal((pthread_t)a, (pthread_t)b);
+ }
+@@ -229,11 +230,15 @@
+ 		free(ret);
+ 		return NULL;
+ 	}
++
++	/* Save created key for current host task */
++	task_self()->lkl_tls_key = ret;
+ 	return ret;
+ }
+ 
+ static void tls_free(struct lkl_tls_key *key)
+ {
++	printf("tls_free\n");
+ 	WARN_PTHREAD(pthread_key_delete(key->key));
+ 	free(key);
+ }
+@@ -241,13 +246,19 @@
+ static int tls_set(struct lkl_tls_key *key, void *data)
+ {
+ 	if (WARN_PTHREAD(pthread_setspecific(key->key, data)))
++	{
++		printf("tls_Set=-1\n");
+ 		return -1;
++	}
++	printf("tls_Set=0\n");
+ 	return 0;
+ }
+ 
+ static void *tls_get(struct lkl_tls_key *key)
+ {
+-	return pthread_getspecific(key->key);
++	void* ret=pthread_getspecific(key->key);
++	printf("tls_Get=%p\n", ret);
++	return ret;
+ }
+ 
+ static unsigned long long time_ns(void)
+@@ -304,6 +315,11 @@
+ 	assert(0);
+ }
+ 
++static struct lkl_tls_key *task_tls_key(void)
++{
++	return task_self()->lkl_tls_key;
++}
++
+ static long _gettid(void)
+ {
+ #ifdef	__FreeBSD__
+@@ -314,14 +330,39 @@
+ #endif
+ }
+ 
++void *my_function(void *data)
++{
++	printf("Hello from new thread!\n");
++	printf("New thread lkl_sys_gettid=%d.\n", lkl_sys_gettid());
++ 	printf("New thread lkl_sys_gettid=%d.\n", lkl_sys_gettid());
++}
++
++static lkl_thread_t thread_create_host(void* pc, void* sp, void* tls, struct lkl_tls_key* task_key, void* task_value)
++{
++        pthread_t thread;
++        if (WARN_PTHREAD(pthread_create(&thread, NULL, my_function, NULL)))
++                return 0;
++        else    
++                return (lkl_thread_t) thread;
++}
++
++
++static void thread_destroy_host(lkl_thread_t tid, struct lkl_tls_key* task_key)
++{
++    // Just temporary stub
++}
++
+ struct lkl_host_operations lkl_host_ops = {
++	.task_tls_key = task_tls_key,
+ 	.panic = panic,
+-	.thread_create = thread_create,
+-	.thread_detach = thread_detach,
+-	.thread_exit = thread_exit,
+-	.thread_join = thread_join,
+-	.thread_self = thread_self,
+-	.thread_equal = thread_equal,
++	.thread_create_host = thread_create_host,
++	.thread_destroy_host = thread_destroy_host,
++	.thread_create = thread_create_lkl,
++	.thread_detach = thread_detach_lkl,
++	.thread_exit = thread_exit_lkl,
++	.thread_join = thread_join_lkl,
++	.thread_self = thread_self_lkl,
++	.thread_equal = thread_equal_lkl,
+ 	.sem_alloc = sem_alloc,
+ 	.sem_free = sem_free,
+ 	.sem_up = sem_up,
