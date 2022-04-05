@@ -9,10 +9,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <kernel/task.h>
 
 #include "lib/libelf.h"
 
 int main(int argc, char **argv) {
+
+	/* we use load_app to run Linux binaries */
+	task_self()->lkl_task = 1;
+	task_self()->lkl_tls_key = NULL;
 
 	if (argc < 1) {
 		return -1;

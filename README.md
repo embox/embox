@@ -4,7 +4,7 @@ Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](htt
 
 LKL can be built only in x86 environment (not x86-64).
 Suitable docker image may be used, i.e. `embox/emdocker-lkl` have all necessary packages installed.
-It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile) 
+It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile)
 
 Build environment:
 ```
@@ -20,6 +20,28 @@ docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/e
 ```
 rm build/extbld/third_party/lkl/lib/.{builded,installed}
 make -C build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl clean
+```
+
+### Check changes made to LKL
+
+1. Download and extract clean LKL, apply all Embox patches:
+```
+mkdir $HOME/clean-lkl
+
+wget --directory-prefix=$HOME/clean-lkl https://github.com/lkl/linux/archive/7750a5aa74f5867336949371f0e18353704d432f.zip
+
+unzip $HOME/clean-lkl/7750a5aa74f5867336949371f0e18353704d432f.zip -d $HOME/clean-lkl
+
+rm $HOME/clean-lkl/7750a5aa74f5867336949371f0e18353704d432f.zip
+
+patch -d $HOME/clean-lkl/ -p0 < $HOME/embox/third-party/lkl/lkl-i386-support.patch
+
+patch -d $HOME/clean-lkl/ -p0 < $HOME/embox/third-party/lkl/lkl-embox-support.patch
+```
+
+2. Now it is possible to see actual diff (assuming you are in the root dir of embox repo):
+```
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur $HOME/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f
 ```
 
 ### Links

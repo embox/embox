@@ -21,6 +21,11 @@
 
 struct thread;
 
+/* This is to keep TLS key (pthread_key) for LKL */
+struct lkl_tls_struct {
+	size_t pthread_key;
+};
+
 struct task {
 	int lkl_task;
 	int status;
@@ -34,6 +39,7 @@ struct task {
 	struct thread *tsk_main;
 	task_priority_t tsk_priority;
 	clock_t tsk_clock;
+	struct lkl_tls_struct *lkl_tls_key;
 	char resources[];
 };
 
