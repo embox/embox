@@ -77,10 +77,10 @@ void e2k_entry(struct pt_regs *regs) {
 		e2k_trap_handler(regs);
 
 		RESTORE_COMMON_REGS(regs);
-#if 0 0
+#if 0
 		E2K_SET_DSREG(tir.lo, 0); /* Copy from boot tt */
 		E2K_SET_DSREG(tir.hi, 0);
-#ednif
+#endif
 		E2K_DONE;
 	}
 
@@ -103,7 +103,6 @@ void e2k_entry(struct pt_regs *regs) {
 				cpu_idle, idle_stack1, sizeof(idle_stack1));
 		context_switch(&cpu_ctx_prev[0], &cpu_ctx[0]);
 	}
-
 
 
 	/* Start kernel on BSP processor */
