@@ -5,9 +5,11 @@
 #include <stddef.h>
 
 #include <asm/io.h>
+#include <asm/mpspec.h>
 #include <e2k_api.h>
 #include <asm/ptrace.h>
 #include <hal/ipl.h>
+
 #include <framework/mod/options.h>
 #include <drivers/interrupt/lapic/regs.h>
 
@@ -48,6 +50,9 @@ static void e2k_kernel_start(void) {
 	e2k_upsr_write(e2k_upsr_read() & ~UPSR_FE);
 
 	entries_count = 8;
+
+	mpspec_init();
+
 	kernel_start();
 }
 
@@ -91,7 +96,7 @@ void e2k_entry(struct pt_regs *regs) {
 	entries_count = __e2k_atomic32_add(1, &entries_count);
 
 
-	if (lapic_read(0xFEE00020)>>24 != 0x0) { // VZ all non-BSP core go to sleep
+	if (lapic_read(0xFEE00020)>>24 != 0x0) { // all non-BSP core go to sleep
 		/* XXX currently we support only single core */
 		/* Run cpu_idle on 2nd CPU */
 
