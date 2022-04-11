@@ -16,7 +16,8 @@
 #include <asm/bootinfo.h>
 #include <asm/mpspec.h>
 
-static uint64_t clock_base = 0;
+static uintptr_t clock_base = 0;
+static uintptr_t uart_base = 0;
 
 int mpspec_init(void) {
 	uintptr_t info = (uintptr_t)E2K_READ_MAS_D(&BOOTBLOCK.info.mp_table_base, MAS_MODE_LOAD_PA);
@@ -79,9 +80,16 @@ int mpspec_init(void) {
 		}
 		break;
 	}
+
+	uart_base = ((uintptr_t)E2K_READ_MAS_W(&BOOTBLOCK.info.serial_base, MAS_MODE_LOAD_PA));
+
 	return 0;
 }
 
 uint64_t mpspec_get_clock_base(void) {
 	return clock_base;
+}
+
+uintptr_t mpspec_get_uart_base(void) {
+	return uart_base;
 }
