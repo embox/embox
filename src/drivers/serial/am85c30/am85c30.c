@@ -9,9 +9,12 @@
 #include <stdint.h>
 
 #include <asm/io.h>
+#include <asm/mpspec.h>
+
 #include <hal/ipl.h>
 #include <e2k_api.h>
 #include <e2k_mas.h>
+
 #include <drivers/common/memory.h>
 #include <drivers/diag.h>
 #include <drivers/serial/uart_dev.h>
@@ -23,9 +26,8 @@
 
 EMBOX_UNIT_INIT(uart_init);
 
-#define UART_BOOTBLOCK_ADDRESS 0xff0138
-/*Elbrus 8CB Addresses: 0x20300040, 0x81200040, 0x80500040, 0x81200040  */
-#define UART_BASE   (uintptr_t) E2K_READ_MAS_W (UART_BOOTBLOCK_ADDRESS, MAS_MODE_LOAD_PA)
+#define UART_BASE     mpspec_get_uart_base()
+
 #define IRQ_NUM     3 /* ZILOG_IRQ_DEFAULT 3 */ /* default IRQ # */
 
 static inline void
@@ -38,7 +40,7 @@ am85c30_com_outb(uintptr_t iomem_addr, uint8_t data)
 static inline uint8_t
 am85c30_com_inb(uintptr_t iomem_addr)
 {
-	unsigned char data_val;
+	uint8_t data_val;
 	data_val = e2k_read8((UART_BASE + 1));
 	rmb();
 	return (data_val);
@@ -50,8 +52,8 @@ am85c30_com_inb_command(uintptr_t iomem_addr, uint8_t reg)
 	uint8_t reg_val;
 	if (reg != 0){
 		e2k_write8(reg, (UART_BASE));
+		wmb();
 	}
-	wmb();
 	reg_val = e2k_read8((UART_BASE));
 	rmb();
 	return (reg_val);
@@ -62,8 +64,8 @@ am85c30_com_outb_command(uintptr_t iomem_addr, uint8_t reg, uint8_t val)
 {
 	if (reg != 0) {
 		e2k_write8(reg, (UART_BASE));
+		wmb();
 	}
-	wmb();
 	e2k_write8(val, (UART_BASE));
 	wmb();
 }
@@ -154,6 +156,6 @@ static const struct uart_params uart_diag_params = {
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 static int uart_init(void) {
-	uart0.base_addr = (UART_BASE );
+	uart0.base_addr = UART_BASE;
 	return uart_register(&uart0, &uart_defparams);
 }
