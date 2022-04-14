@@ -9,7 +9,7 @@ Vagrant.configure("2") do |config|
     vb.cpus = 4
   end
 
-  config.vm.synced_folder ".", "/embox", type: "rsync", rsync__exclude: ".git/"
+  config.vm.synced_folder ".", "/embox", type: "rsync"
 
   # Enable provisioning with a shell script
   config.vm.provision "shell", inline: <<-SHELL
