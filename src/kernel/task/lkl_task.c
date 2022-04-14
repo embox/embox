@@ -78,27 +78,16 @@ static int handler(uint32_t nr, void * data) {
                 break;
 
 		case 4:
-			/*
-			 * This is dirty hack for STDOUT redirection.
-			 * FD #1 is for /vda (which is used to redirect STDOUT into Embox terminal).
-			 * LKL kthreads share FD #1, that is why we should do `lseek` to ensure that /vda will be triggered.
-			 */
-			lkl_sys_lseek(1, 0, 0);
-
-			// Let's do write
 			ret = lkl_sys_write((unsigned int)st->ebx, (const char*)st->ecx, (lkl_size_t)st->edx);
-
-			/*
-			 * Another dirty hack for STDOUT redirection.
-			 * As far as /vda is a BLOCK device, we have to do `fsync` to trigger `blk_request`
-			 */
-			lkl_sys_fsync(1);
-
 			break;
 
 		case 5:
 			ret = lkl_sys_open((const char*)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
 		break;
+
+                case 19:
+                        ret = lkl_sys_lseek((unsigned int)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
+                break;
 
                 case 41:
                         ret = lkl_sys_dup((unsigned int)st->ebx);
@@ -135,7 +124,12 @@ static int lkl_task_init(void) {
 	struct lkl_disk disk;
 	unsigned int disk_id, dev;
 
-	// We will use 'lkl_disk disk' as a "bridge" between LKL and Embox
+	/*
+	 * We use /vda file for STDOUT (File desccriptor #1) in LKL.
+	 * /vda handler redirects everything to Embox terminal.
+	 * /vda is a "special file for block device" --> 'lkl_sys_fsync(1)' is required after 'lkl_sys_write()'.
+	 * LKL has ONE process for everything --> lkl_sys_lseek(1, 0, 0)' is required before 'lkl_sys_write()'.
+	 */
 
 	// Set disk operations
 	disk.ops = &embox_lkl_dev_blk_ops;

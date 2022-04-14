@@ -18,9 +18,22 @@ static inline long os_syscall(int syscall,
 int main(int argc, char **argv) {
 	char* string = "Hello World!\n";
 
-	// Write to STDOUT
+	/* We use special file '/vda' (it points to virtual block device) for STDOUT in LKL.
+	 * '/vda' handler redirects everything to Embox terminal.
+	 */
+
+	// 'lseek(1, 0, 0)' is required for '/vda'
+	//   because it is shared between LKL's kthreads (LKL has one process).
+	// This doesn't matter for Linux 'tty' device.
+	os_syscall(19, 1, 0, 0, 0);
+
+	// Write to STDOUT.
 	os_syscall(4, 1, (unsigned long int)string, 13, 0);
 
-	// Exit
+	// 'fsync(1)' is required to trigger '/vda' handler in LKL.
+	// This doesn't matter for Linux 'tty' device.
+	os_syscall(118, 1, 0, 0, 0);
+
+	// Exit.
 	os_syscall(1, 0, 0, 0, 0);
 }
