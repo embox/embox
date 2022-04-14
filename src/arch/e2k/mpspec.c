@@ -18,11 +18,16 @@
 
 static uintptr_t clock_base = 0;
 static uintptr_t uart_base = 0;
+static uintptr_t pci_conf_base = -1;
 
 int mpspec_init(void) {
-	uintptr_t info = (uintptr_t)E2K_READ_MAS_D(&BOOTBLOCK.info.mp_table_base, MAS_MODE_LOAD_PA);
+	uintptr_t info;
 	uintptr_t mp_table;
 	uint32_t float_sig, conf_sig;
+	uint8_t cpu_type;
+	uint_fast16_t entry_num;
+
+	info = (uintptr_t)E2K_READ_MAS_D(&BOOTBLOCK.info.mp_table_base, MAS_MODE_LOAD_PA);
 
 	float_sig = E2K_READ_MAS_W(&((struct intel_mp_floating *)info)->mpf_signature, MAS_MODE_LOAD_PA);
 
@@ -38,7 +43,8 @@ int mpspec_init(void) {
 		printk(" Error: mpc_signature is %x (need %x), ", conf_sig, SMP_CONFIG_TABLE_SIG);
 		return -1;
 	}
-	uint_fast16_t entry_num = E2K_READ_MAS_H(&((struct mp_config_table *)mp_table)->mpc_oemcount, MAS_MODE_LOAD_PA);
+
+	entry_num = E2K_READ_MAS_H(&((struct mp_config_table *)mp_table)->mpc_oemcount, MAS_MODE_LOAD_PA);
 	mp_table += sizeof (struct mp_config_table);
 	for (uint_fast16_t i = 0; i < entry_num; ++i) {
 		switch (E2K_READ_MAS_B(mp_table, MAS_MODE_LOAD_PA)) {
@@ -83,6 +89,24 @@ int mpspec_init(void) {
 
 	uart_base = ((uintptr_t)E2K_READ_MAS_W(&BOOTBLOCK.info.serial_base, MAS_MODE_LOAD_PA));
 
+	cpu_type = E2K_READ_MAS_B(&BOOTBLOCK.info.bios.cpu_type, MAS_MODE_LOAD_PA);
+	switch (cpu_type) {
+	case CPU_TYPE_E1CP:
+		pci_conf_base = 0xff10000000UL;
+		break;
+	case CPU_TYPE_E3M:
+		pci_conf_base = 0;
+		break;
+	case CPU_TYPE_E2S:
+	case CPU_TYPE_E8C:
+	case CPU_TYPE_E8C2:
+		/* TODO Get SIC_RT_PCICFG_BASE */
+		pci_conf_base = 0x200000000;
+		break;
+	default:
+		pci_conf_base = -1;
+	}
+//	printk("cpu_type(0x%x) pci_conf_base (0x%lx)\n", cpu_type, pci_conf_base);
 	return 0;
 }
 
@@ -92,4 +116,8 @@ uint64_t mpspec_get_clock_base(void) {
 
 uintptr_t mpspec_get_uart_base(void) {
 	return uart_base;
+}
+
+uint64_t mpspec_get_pci_conf_base(void) {
+	return pci_conf_base;
 }

@@ -219,6 +219,16 @@ typedef struct bootblock_struct {
 #define CHIPSET_TYPE_PIIX4             0x01 /* PIIX4 */
 #define CHIPSET_TYPE_IOHUB             0x02 /* IOHUB */
 
+#define CPU_TYPE_E3M         0x1 /* E3M */
+#define CPU_TYPE_E3S         0x2 /* E3S */
+#define CPU_TYPE_E2S        0x03 /* E2S */
+#define CPU_TYPE_E8C        0x07 /* E8C */
+#define CPU_TYPE_E1CP       0x08 /* E1C+ */
+#define CPU_TYPE_E8C2       0x09 /* E8C */
+#define CPU_TYPE_E12C       0x0a /* E12C */
+#define CPU_TYPE_E16C       0x0b /* E16C */
+#define CPU_TYPE_E2C3       0x0c /* E2C3 */
+
 
 extern bootblock_struct_t BOOTBLOCK;
 

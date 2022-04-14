@@ -696,6 +696,7 @@ extern physid_mask_t phys_cpu_offline_map;
 extern int mpspec_init(void);
 extern uint64_t mpspec_get_clock_base(void);
 extern uintptr_t mpspec_get_uart_base(void);
+extern uint64_t mpspec_get_pci_conf_base(void);
 
 #endif	/* __ASSEMBLY__ */
 
