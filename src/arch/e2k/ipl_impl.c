@@ -7,8 +7,10 @@
 
 #include <hal/ipl.h>
 #include <e2k_api.h>
+#include <asm/cpu_regs_types.h>
 
 void ipl_init(void) {
+	e2k_pfpfr_t pfpfr;
 	/* XXX E2k
 	 * we have comment in e2k_kernel_start()
 	 * XXX Disable FPU. Should be enabled later. */

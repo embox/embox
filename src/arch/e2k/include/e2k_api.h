@@ -267,6 +267,8 @@ do { \
 
 #endif /* __ASSEMBLER__ */
 
+#if 0
+now it is defined in asm/cpu_regs_types.h
 /* UPSR register bits */
 #define UPSR_FE   (1UL << 0) /* Enable floating operations */
 #define UPSR_IE   (1UL << 5) /* Enable interrutps */
@@ -277,6 +279,7 @@ do { \
 #define PSR_IE   (1UL << 1) /* Enable interrutps */
 #define PSR_NMIE (1UL << 4) /* Enable non-maskable interrupts */
 #define PSR_UIE  (1UL << 5) /* Allow user to control interrupts */
+#endif
 
 /* We use this macro for Embox as default, and control IPL with UPSR */
 #define PSR_ALL_IRQ_ENABLED (PSR_IE | PSR_NMIE | PSR_UIE | PSR_PM)
@@ -310,10 +313,11 @@ do { \
 
 /* Summary size of both CR0 and CR1 */
 #define SZ_OF_CR0_CR1 32
-
+#if 0
 #define E2_RWAR_R_ENABLE    0x1UL
 #define E2_RWAR_W_ENABLE    0x2UL
 #define E2_RWAR_RW_ENABLE   (E2_RWAR_R_ENABLE | E2_RWAR_W_ENABLE)
+#endif
 
 #ifndef	__ASSEMBLER__
 static inline uint32_t e2k_upsr_read(void) {
@@ -325,6 +329,38 @@ static inline uint32_t e2k_upsr_read(void) {
 static inline void e2k_upsr_write(uint32_t val) {
 	asm volatile ("rws %0, %%upsr" : : "ri"(val));
 }
+
+static inline uint32_t e2k_pfpfr_read(void) {
+	uint32_t pfpfr;
+	asm volatile ("rrs %%pfpfr, %0" : "=r"(pfpfr) :);
+	return pfpfr;
+}
+
+static inline void e2k_pfpfr_write(uint32_t val) {
+	asm volatile ("rws %0, %%pfpfr" : : "ri"(val));
+}
+
+static inline uint32_t e2k_fpsr_read(void) {
+	uint32_t fpsr;
+	asm volatile ("rrs %%fpsr, %0" : "=r"(fpsr) :);
+	return fpsr;
+}
+
+static inline void e2k_fpsr_write(uint32_t val) {
+	asm volatile ("rws %0, %%fpsr" : : "ri"(val));
+}
+
+static inline uint32_t e2k_fpcr_read(void) {
+	uint32_t fpcr;
+	asm volatile ("rrs %%fpcr, %0" : "=r"(fpcr) :);
+	return fpcr;
+}
+
+static inline void e2k_fpcr_write(uint32_t val) {
+	asm volatile ("rws %0, %%fpcr" : : "ri"(val));
+}
+
+
 #endif /* !__ASSEMBLER__ */
 
 #endif /* _E2K_API_H_ */

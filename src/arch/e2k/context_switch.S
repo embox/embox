@@ -9,6 +9,7 @@
 #include <hal/context.h>
 #include <asm/linkage.h>
 #include <e2k_api.h>
+#include <asm/cpu_regs_types.h>
 
 .section ".text", "ax"
 

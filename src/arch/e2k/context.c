@@ -14,6 +14,7 @@
 #include <util/log.h>
 
 #include <e2k_api.h>
+#include <asm/cpu_regs_types.h>
 
 /* This value is used for both stack base and size align. */
 #define E2K_STACK_ALIGN (1UL << 12)

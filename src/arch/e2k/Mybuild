@@ -8,6 +8,7 @@ module arch {
 	source "mpspec.c"
 	source "kernel_entry.S"
 	source "e2k_interrupt.c"
+	source "e2k_trap.c"
 	source "e2k_syscall_handler.c"
 
 	depends locore

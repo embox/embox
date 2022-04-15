@@ -7,6 +7,7 @@
 #include <asm/io.h>
 #include <asm/mpspec.h>
 #include <e2k_api.h>
+#include <asm/cpu_regs_types.h>
 #include <asm/ptrace.h>
 #include <hal/ipl.h>
 
