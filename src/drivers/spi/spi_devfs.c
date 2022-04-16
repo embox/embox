@@ -6,13 +6,16 @@
  * @date 05.12.2018
  */
 
-#include <embox/unit.h>
-#include <drivers/spi.h>
-#include <fs/dvfs.h>
 #include <util/log.h>
 
+#include <stdint.h>
 #include <assert.h>
 #include <sys/uio.h>
+
+//#include <embox/unit.h>
+
+#include <drivers/spi.h>
+#include <fs/dvfs.h>
 
 static void spi_close(struct idesc *desc) {
 }
@@ -59,7 +62,7 @@ static int spi_ioctl(struct idesc *desc, int request, void *data) {
 
 	switch(request) {
 	case SPI_IOCTL_CS:
-		spi_select(dev, (int) data);
+		spi_select(dev, (int)(intptr_t) data);
 		break;
 	case SPI_IOCTL_TRANSFER:
 		transfer_arg = data;
@@ -69,7 +72,7 @@ static int spi_ioctl(struct idesc *desc, int request, void *data) {
 				transfer_arg->count);
 		break;
 	case SPI_IOCTL_CS_MODE:
-		dev->flags = (int) data;
+		dev->flags = (int) (intptr_t)data;
 		break;
 	}
 
