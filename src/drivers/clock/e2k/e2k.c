@@ -15,7 +15,6 @@
 
 #include <hal/clock.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time_device.h>
 
@@ -23,20 +22,13 @@
 #include <e2k_api.h>
 #include <e2k_mas.h>
 
-#if 0 == OPTION_GET(NUMBER, base_addr)
-#define MC_TABLE_ADDRESS 0xff0130
 
-#define MC_TABLE_ADDRESS 0xff0130
 
-#define MC_TIMER_SHIFT   OPTION_GET(NUMBER, mc_timer_shift)
+#include <asm/mpspec.h>
 
-#define E2K_CLOCK_BASE   (uintptr_t) E2K_READ_MAS_W \
-    ( E2K_READ_MAS_W (MC_TABLE_ADDRESS, MAS_MODE_LOAD_PA)\
-    + MC_TIMER_SHIFT, MAS_MODE_LOAD_PA )
+static uint64_t clock_base = 0;
 
-#else
-#define E2K_CLOCK_BASE ((uintptr_t)OPTION_GET(NUMBER, base_addr))
-#endif
+#define E2K_CLOCK_BASE ((uint32_t)clock_base)
 
 #define IRQ_NR     OPTION_GET(NUMBER, irq_num)
 #define LT_FREQ    OPTION_GET(NUMBER, freq)
@@ -97,6 +89,12 @@ static irq_return_t e2k_clock_handler(unsigned int irq_nr, void *dev_id) {
 
 static int e2k_clock_init(struct clock_source *cs) {
 	uint32_t clock_hz = (10000000 + LT_FREQ / 2) / LT_FREQ;
+
+	clock_base = mpspec_get_clock_base();
+	if (clock_base == 0) {
+		log_error(" Error: MP_TIMER record not found, ");
+		return -1;
+	}
 
 	irq_attach(IRQ_NR, e2k_clock_handler, 0, cs, "e2k clock");
 

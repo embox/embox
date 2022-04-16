@@ -42,7 +42,7 @@ Dma_mem_handle *dma_malloc(size_t size) {
     if(dma_dev.malloc == NULL) {
         Dma_mem_handle *memh = malloc(size + sizeof(Dma_mem_handle));
         memh->physical_addr = (void *)( memh + sizeof(Dma_mem_handle) );
-        memh->bus_addr = (uint32_t)memh->physical_addr;
+        memh->bus_addr = (uintptr_t)memh->physical_addr;
         memh->mb_handle = memh->bus_addr;
         memh->size = size;        
         return memh;

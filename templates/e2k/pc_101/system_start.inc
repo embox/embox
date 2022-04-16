@@ -3,7 +3,7 @@
 
 "netmanager",
 "service telnetd",
-"service httpd",
+"service httpd http_admin",
 
 //"source time_setup.sh",
 

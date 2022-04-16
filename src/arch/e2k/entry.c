@@ -5,9 +5,12 @@
 #include <stddef.h>
 
 #include <asm/io.h>
+#include <asm/mpspec.h>
 #include <e2k_api.h>
+#include <asm/cpu_regs_types.h>
 #include <asm/ptrace.h>
 #include <hal/ipl.h>
+
 #include <framework/mod/options.h>
 #include <drivers/interrupt/lapic/regs.h>
 
@@ -48,6 +51,9 @@ static void e2k_kernel_start(void) {
 	e2k_upsr_write(e2k_upsr_read() & ~UPSR_FE);
 
 	entries_count = 8;
+
+	mpspec_init();
+
 	kernel_start();
 }
 
@@ -77,10 +83,10 @@ void e2k_entry(struct pt_regs *regs) {
 		e2k_trap_handler(regs);
 
 		RESTORE_COMMON_REGS(regs);
-#if 0 0
+#if 0
 		E2K_SET_DSREG(tir.lo, 0); /* Copy from boot tt */
 		E2K_SET_DSREG(tir.hi, 0);
-#ednif
+#endif
 		E2K_DONE;
 	}
 
@@ -91,7 +97,7 @@ void e2k_entry(struct pt_regs *regs) {
 	entries_count = __e2k_atomic32_add(1, &entries_count);
 
 
-	if (lapic_read(0xFEE00020)>>24 != 0x0) { // VZ all non-BSP core go to sleep
+	if (lapic_read(0xFEE00020)>>24 != 0x0) { // all non-BSP core go to sleep
 		/* XXX currently we support only single core */
 		/* Run cpu_idle on 2nd CPU */
 
@@ -103,7 +109,6 @@ void e2k_entry(struct pt_regs *regs) {
 				cpu_idle, idle_stack1, sizeof(idle_stack1));
 		context_switch(&cpu_ctx_prev[0], &cpu_ctx[0]);
 	}
-
 
 
 	/* Start kernel on BSP processor */
