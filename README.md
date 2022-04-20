@@ -39,8 +39,8 @@ export CFLAGS="-Wno-error" && make -j8
 
 Compile pure Linux program and run it in GNU/Linux environment:
 ```
-gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_hello third-party/lkl/linux_hello.c
-conf/rootfs/linux_hello "Hello, World!"
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_echo third-party/lkl/linux_echo.c
+conf/rootfs/linux_echo "Hello, World!"
 ```
 
 Rebuild Embox to update rootfs and run this program in Embox (over QEMU):
