@@ -15,8 +15,14 @@ static inline long os_syscall(int syscall,
 	return ret;
 }
 
-int main(int argc, char **argv) {
-	char* string = "Hello World!\n";
+// param_1 is app name, param_2 is a first argument
+int main(char* param_1, char* param_2) {
+
+	// Count string length
+	int len = 0;
+	while(param_2[++len]);
+
+	char* string = param_2;
 
 	/* We use special file '/vda' (it points to virtual block device) for STDOUT in LKL.
 	 * '/vda' handler redirects everything to Embox terminal.
@@ -28,7 +34,8 @@ int main(int argc, char **argv) {
 	os_syscall(19, 1, 0, 0, 0);
 
 	// Write to STDOUT.
-	os_syscall(4, 1, (unsigned long int)string, 13, 0);
+	os_syscall(4, 1, (unsigned long int)string, len, 0);
+	os_syscall(4, 1, (unsigned long int)"\n", 1, 0);
 
 	// 'fsync(1)' is required to trigger '/vda' handler in LKL.
 	// This doesn't matter for Linux 'tty' device.
