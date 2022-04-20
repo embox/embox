@@ -40,14 +40,14 @@ export CFLAGS="-Wno-error" && make -j8
 Compile pure Linux program and run it in GNU/Linux environment:
 ```
 gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_hello third-party/lkl/linux_hello.c
-conf/rootfs/linux_hello
+conf/rootfs/linux_hello "Hello, World!"
 ```
 
 Rebuild Embox to update rootfs and run this program in Embox (over QEMU):
 ```
 export CFLAGS="-Wno-error" && make -j8
 sudo ./scripts/qemu/auto_qemu
-load_app linux_hello
+load_app linux_echo "Hello, World!"
 ```
 
 ### Clean Linux in LKL
