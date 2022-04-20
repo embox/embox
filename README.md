@@ -2,27 +2,20 @@ Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](htt
 =====
 ## LKL specific info
 
-LKL can be built only in x86 environment (not x86-64).
-Suitable docker image may be used, i.e. `embox/emdocker-lkl` have all necessary packages installed.
-It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile)
+This is a proof of concept subsystem for Embox which provides binary compatibility layer with GNU/Linux executables.
 
-Build environment:
-```
-docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
-```
+The idea is to make Linux Kernel Library act like a paravirtualized Linux kernel inside of Embox. This makes it possible to redirect detected Linux syscalls into LKL and process them.
 
-Test (QEMU) environment:
-```
-docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
-```
+### Getting started with Embox+LKL
 
-### Getting started
-Clone the repo:
+Clone the repository:
 ```
 git clone https://github.com/aostrouhhov/embox.git
 cd embox
 git checkout lkl
 ```
+
+LKL can be built only in x86 environment (not x86-64).
 
 Deploy Virtual Machine with Vagrant:
 ```
@@ -37,7 +30,7 @@ make confload-x86/qemu
 export CFLAGS="-Wno-error" && make -j8
 ```
 
-Compile pure Linux program and run it in GNU/Linux environment:
+Compile pure Linux program and make sure it works in a GNU/Linux environment:
 ```
 gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_echo third-party/lkl/linux_echo.c
 conf/rootfs/linux_echo "Hello, World!"
@@ -50,13 +43,30 @@ sudo ./scripts/qemu/auto_qemu
 load_app linux_echo "Hello, World!"
 ```
 
+Also, suitable docker image may be used, i.e. `embox/emdocker-lkl` have all necessary packages installed.
+It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile)
+
+Build environment:
+```
+docker run -it --rm -u $(id -u):$(id -g) -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
+```
+
+Test (QEMU) environment:
+```
+docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/emdocker-lkl
+```
+
 ### Clean Linux in LKL
+
+If changes were made to LKL code, do this before rebuilding Embox image:
 ```
 rm build/extbld/third_party/lkl/lib/.{builded,installed}
 make -C build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl clean
 ```
 
 ### Check changes made to LKL
+
+In case you want to see changes made to LKL, do the folowing.
 
 1. Download and extract clean LKL, apply all Embox patches:
 ```
