@@ -6,6 +6,21 @@ This is a proof of concept subsystem for Embox which provides binary compatibili
 
 The idea is to make Linux Kernel Library act like a paravirtualized Linux kernel inside of Embox. This makes it possible to redirect detected Linux syscalls into LKL and process them.
 
+### Implementation details
+
+Embox `task` struct in *src/kernel/task/multi.h* is enhanced with two fields:
+ * `int lkl_task`. `1` here defines that the task is allowed to trigger an interrupt 0x80 (Linux syscall).
+ * `struct lkl_tls_struct *lkl_tls_key`. LKL uses Thread Local Storage to associate each Embox thread with Linux kthread. `lkl_tls_key` is used to keep TLS key for current process. Values are Linux kthreads.
+
+We build LKL from sources and link it into Embox image. See *third-party/lkl/*.
+
+On Embox startup a special service (*src/kernel/task/lkl_task.c*) initilizes LKL:
+ * `lkl_start_kernel` starts LKL and makes it possible to do `lkl_sys_{syscall}` calls.
+ * Virtual block device and it's special block device file (`/vda`) are created in LKL. This feature redirects STDOUT from LKL to Embox terminal.
+ * In exception table we set our handler for Linux syscalls. This handler, in most cases, translates Linux syscalls into `lkl_sys_{syscall}` calls.
+
+In Embox `load_app` tool is used to run external executables (Linux binraies in our case).
+
 ### Getting started with Embox+LKL
 
 Clone the repository:
