@@ -93,9 +93,9 @@ unzip $HOME/clean-lkl/7750a5aa74f5867336949371f0e18353704d432f.zip -d $HOME/clea
 
 rm $HOME/clean-lkl/7750a5aa74f5867336949371f0e18353704d432f.zip
 
-patch -d $HOME/clean-lkl/ -p0 < $HOME/embox/third-party/lkl/lkl-i386-support.patch
+patch -d $HOME/clean-lkl/ -p0 < /embox/third-party/lkl/lkl-i386-support.patch
 
-patch -d $HOME/clean-lkl/ -p0 < $HOME/embox/third-party/lkl/lkl-embox-support.patch
+patch -d $HOME/clean-lkl/ -p0 < /embox/third-party/lkl/lkl-embox-support.patch
 ```
 
 2. Now it is possible to see actual diff (assuming you are in the root dir of embox repo):
