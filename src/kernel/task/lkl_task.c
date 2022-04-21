@@ -162,6 +162,21 @@ static int lkl_task_init(void) {
 		return -1;
 	}
 
+	// Write to /vda (the data will be pre-written to the cache buffer)
+	ret = lkl_sys_write(fd, "test", 4);
+
+	if (ret < 0) {
+		printk("Can't write to /test: %s\n", lkl_strerror(ret));
+		return -1;
+	}
+
+	// Transfer all data from cache buffer to the block device
+	ret = lkl_sys_fsync(fd);
+
+	if (ret < 0) {
+		printk("lkl_sys_fsync() error: %s\n", lkl_strerror(ret));
+	}
+
 	// Set our handler for Linux syscalls
 	__exception_table[0xd] = handler;
 
