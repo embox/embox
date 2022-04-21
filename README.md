@@ -21,6 +21,8 @@ On Embox startup a special service (*src/kernel/task/lkl_task.c*) initilizes LKL
 
 In Embox `load_app` tool is used to run external executables (Linux binraies in our case).
 
+Also, there is some additional info about how LKL works with host tasks/threads in *third-party/lkl/Threads.txt*
+
 ### Getting started with Embox+LKL
 
 Clone the repository:
