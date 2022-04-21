@@ -155,7 +155,7 @@ static int lkl_task_init(void) {
 	}
 
 	// Open '/vda' to associate file descriptor #1 with it
-	fd = lkl_sys_open("/vda", LKL_O_RDWR, 0);
+	int fd = lkl_sys_open("/vda", LKL_O_RDWR, 0);
 
 	if (fd < 0) {
 		printk("Can't open the /vda file: %s\n", lkl_strerror(fd));
