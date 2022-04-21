@@ -1,0 +1,196 @@
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/asm/syscalls.h	2022-04-21 21:49:27.181132005 +0000
+@@ -1,9 +1,16 @@
+ #ifndef _ASM_LKL_SYSCALLS_H
+ #define _ASM_LKL_SYSCALLS_H
+ 
++/* Initialise system call handling */
+ int syscalls_init(void);
++
++/* Shutdown system call handling */
+ void syscalls_cleanup(void);
++
++/* Main entry point for LKL system calls */
+ long lkl_syscall(long no, long *params);
++
++/* Trigger idle task */
+ void wakeup_idle_host_task(void);
+ 
+ #define sys_mmap sys_mmap_pgoff
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/host_ops.h	2022-04-21 21:53:40.031494000 +0000
+@@ -43,6 +43,8 @@
+  * @thread_join - wait for the given thread to terminate. Returns 0
+  * for success, -1 otherwise
+  *
++ * @task_tls_key - get current host task's thread local storage key; returns not NULL if
++ * key exists for current host task (process)
+  * @tls_alloc - allocate a thread local storage key; returns 0 if successful; if
+  * destructor is not NULL it will be called when a thread terminates with its
+  * argument set to the current thread local storage value
+@@ -105,6 +107,7 @@
+ 	lkl_thread_t (*thread_self)(void);
+ 	int (*thread_equal)(lkl_thread_t a, lkl_thread_t b);
+ 
++	struct lkl_tls_key *(*task_tls_key)(void);
+ 	struct lkl_tls_key *(*tls_alloc)(void (*destructor)(void *));
+ 	void (*tls_free)(struct lkl_tls_key *key);
+ 	int (*tls_set)(struct lkl_tls_key *key, void *data);
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h	2022-04-21 21:29:23.011348007 +0000
+@@ -71,7 +71,6 @@
+ #undef __NR_getdents
+ #undef __NR_select
+ #undef __NR_poll
+-#undef __NR_dup2
+ #undef __NR_futimesat
+ #undef __NR_utimes
+ #undef __NR_ustat
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c	2019-01-30 05:16:23.000000000 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c	2022-04-21 22:06:10.322452004 +0000
+@@ -94,7 +94,7 @@
+ 	lkl_ops->jmp_buf_set(&ti->sched_jb, exit_task);
+ }
+ 
+-static struct lkl_tls_key *task_key;
++struct lkl_tls_key *task_key;
+ 
+ long lkl_syscall(long no, long *params)
+ {
+@@ -106,11 +106,30 @@
+ 		return ret;
+ 
+ 	if (lkl_ops->tls_get) {
++		printk("LOG: Going to do tls_get; Currently old task_key=%d.\n", task_key);
++		task_key = lkl_ops->task_tls_key();
++		printk("LOG: task_key=%d after assigning lkl_ops->task_tls_key to it.\n", task_key);
++
++		if (task_key == 0) {
++			printk("LOG: No task_key (==0) for current process => we should create it by calling tls_alloc.\n");
++			if (lkl_ops->tls_alloc) {
++				task_key = lkl_ops->tls_alloc(del_host_task);
++				if (!task_key)
++					return -1;
++			}
++			printk("LOG: Created task_key for current process. task_key=%d.\n", task_key);
++		}
++
++		printk("LOG: Ready to do 'tls_get' to get LKL's kthread for current Embox pthread.\n");
+ 		task = lkl_ops->tls_get(task_key);
++
++		// If no kthread was found for current host-thread
+ 		if (!task) {
++			printk("LOG: No LKL kthread was found for current Embox pthread, let's create it by calling 'new_host_task()'.\n");
+ 			ret = new_host_task(&task);
+ 			if (ret)
+ 				goto out;
++			printk("LOG: Doing 'tls_set' to associate created LKL kthread with current Embox pthread.\n");
+ 			lkl_ops->tls_set(task_key, task);
+ 		}
+ 	}
+diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c
+--- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c	2022-04-21 23:02:16.544722005 +0000
++++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c	2022-04-21 22:04:52.419520006 +0000
+@@ -16,6 +16,7 @@
+ #include <lkl_host.h>
+ #include "iomem.h"
+ #include "jmp_buf.h"
++#include <kernel/task.h>
+ 
+ /* Let's see if the host has semaphore.h */
+ #include <unistd.h>
+@@ -184,7 +185,7 @@
+ 	free(_mutex);
+ }
+ 
+-static lkl_thread_t thread_create(void (*fn)(void *), void *arg)
++static lkl_thread_t thread_create_lkl(void (*fn)(void *), void *arg)
+ {
+ 	pthread_t thread;
+ 	if (WARN_PTHREAD(pthread_create(&thread, NULL, (void* (*)(void *))fn, arg)))
+@@ -193,17 +194,17 @@
+ 		return (lkl_thread_t) thread;
+ }
+ 
+-static void thread_detach(void)
++static void thread_detach_lkl(void)
+ {
+ 	WARN_PTHREAD(pthread_detach(pthread_self()));
+ }
+ 
+-static void thread_exit(void)
++static void thread_exit_lkl(void)
+ {
+ 	pthread_exit(NULL);
+ }
+ 
+-static int thread_join(lkl_thread_t tid)
++static int thread_join_lkl(lkl_thread_t tid)
+ {
+ 	if (WARN_PTHREAD(pthread_join((pthread_t)tid, NULL)))
+ 		return -1;
+@@ -211,16 +212,21 @@
+ 		return 0;
+ }
+ 
+-static lkl_thread_t thread_self(void)
++static lkl_thread_t thread_self_lkl(void)
+ {
+ 	return (lkl_thread_t)pthread_self();
+ }
+ 
+-static int thread_equal(lkl_thread_t a, lkl_thread_t b)
++static int thread_equal_lkl(lkl_thread_t a, lkl_thread_t b)
+ {
+ 	return pthread_equal((pthread_t)a, (pthread_t)b);
+ }
+ 
++static struct lkl_tls_key *task_tls_key(void)
++{
++	return task_self()->lkl_tls_key;
++}
++
+ static struct lkl_tls_key *tls_alloc(void (*destructor)(void *))
+ {
+ 	struct lkl_tls_key *ret = malloc(sizeof(struct lkl_tls_key));
+@@ -229,6 +235,9 @@
+ 		free(ret);
+ 		return NULL;
+ 	}
++
++	/* Save created key for current host task */
++	task_self()->lkl_tls_key = ret;
+ 	return ret;
+ }
+ 
+@@ -316,12 +325,12 @@
+ 
+ struct lkl_host_operations lkl_host_ops = {
+ 	.panic = panic,
+-	.thread_create = thread_create,
+-	.thread_detach = thread_detach,
+-	.thread_exit = thread_exit,
+-	.thread_join = thread_join,
+-	.thread_self = thread_self,
+-	.thread_equal = thread_equal,
++	.thread_create = thread_create_lkl,
++	.thread_detach = thread_detach_lkl,
++	.thread_exit = thread_exit_lkl,
++	.thread_join = thread_join_lkl,
++	.thread_self = thread_self_lkl,
++	.thread_equal = thread_equal_lkl,
+ 	.sem_alloc = sem_alloc,
+ 	.sem_free = sem_free,
+ 	.sem_up = sem_up,
+@@ -330,6 +339,7 @@
+ 	.mutex_free = mutex_free_lkl,
+ 	.mutex_lock = mutex_lock_lkl,
+ 	.mutex_unlock = mutex_unlock_lkl,
++	.task_tls_key = task_tls_key,
+ 	.tls_alloc = tls_alloc,
+ 	.tls_free = tls_free,
+ 	.tls_set = tls_set,
