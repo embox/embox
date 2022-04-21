@@ -155,10 +155,23 @@ static int lkl_task_init(void) {
 	}
 
 	// Open '/vda' to associate file descriptor #1 with it
-	int fd = lkl_sys_open("/vda", LKL_O_RDWR, 0);
+	int fd_0 = lkl_sys_open("/vda", LKL_O_RDWR, 0);
+
+	if (fd_0 < 0) {
+		printk("Can't open the /vda file: %s\n", lkl_strerror(fd_0));
+		return -1;
+	}
+
+	// STDOUT setup: dup /vda's file descriptor (we know that duplicated fd will be #1)
+	int fd = lkl_sys_dup(fd_0);
 
 	if (fd < 0) {
-		printk("Can't open the /vda file: %s\n", lkl_strerror(fd));
+		printk("Can't dup the /vda's file descriptor: %s\n", lkl_strerror(fd));
+		return -1;
+	}
+
+	if (fd != 1) {
+		printk("Expcected dupplicated file descriptor to be #1 but got something else: %s\n", lkl_strerror(fd));
 		return -1;
 	}
 
