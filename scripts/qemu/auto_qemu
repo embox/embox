@@ -392,11 +392,6 @@ if [ $graphic_n -gt 0 ]; then
 				graphic_lines="-vga std"
 			fi
 		fi
-		if [ $graphic_lines = "-nographic" ]; then
-			if [ $(guess_diag) = "embox__driver__console__vc__vga" ]; then
-				graphic_lines="-vga std"
-			fi
-		fi
 
 	else
 		graphic_lines=$AUTOQEMU_NOGRAPHIC_ARG
