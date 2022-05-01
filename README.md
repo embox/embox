@@ -16,7 +16,7 @@ We build LKL from sources and link it into Embox image. See *third-party/lkl/*.
 
 On Embox startup a special service (*src/kernel/task/lkl_task.c*) initilizes LKL:
  * `lkl_start_kernel` starts LKL and makes it possible to do `lkl_sys_{syscall}` calls.
- * Virtual block device and it's special block device file (`/vda`) are created in LKL. This feature redirects STDOUT from LKL to Embox terminal.
+ * Virtual block device and it's special block device file (`/vda`) are created in LKL. When Linux app writes to STDOUT, virtual block device's handler redirects content to Embox terminal. That is why `lseek` and `fsync` should be used when calling `write` to STDOUT. This makes no sense for Linux 'tty' device. In future 'tty' support should be added to LKL.
  * In exception table we set our handler for Linux syscalls. This handler, in most cases, translates Linux syscalls into `lkl_sys_{syscall}` calls.
 
 In Embox `load_app` tool is used to run external executables (Linux binraies in our case).
@@ -47,18 +47,39 @@ make confload-x86/qemu
 export CFLAGS="-Wno-error" && make -j8
 ```
 
-Compile pure Linux program and make sure it works in a GNU/Linux environment:
+Compile pure Linux binaries:
 ```
 gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_echo third-party/lkl/linux_echo.c
-conf/rootfs/linux_echo "Hello, World!"
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_ls third-party/lkl/linux_ls.c
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_cat third-party/lkl/linux_cat.c
 ```
 
-Rebuild Embox to update rootfs and run this program in Embox (over QEMU):
+Make sure they work in a GNU/Linux environment:
+```
+./conf/rootfs/linux_echo "Hello, Anton!"
+./conf/rootfs/linux_ls /proc
+./conf/rootfs/linux_cat /proc/devices
+```
+
+Rebuild Embox to update rootfs, run QEMU:
 ```
 export CFLAGS="-Wno-error" && make -j8
 sudo ./scripts/qemu/auto_qemu
-load_app linux_echo "Hello, World!"
 ```
+
+Make sure Linux binaries work in Embox with LKL:
+```
+load_app linux_echo "Hello, Anton!"
+load_app linux_ls /proc
+load_app linux_cat /proc/devices
+load_app linux_cat /proc/slabinfo
+...
+```
+`/proc/slabinfo` is suitable to check how `/vda` works with huge output.
+
+Please note that not everything works. For example, `/proc/cpuinfo` won't show anything because its content should be implemented manually.
+
+Mentioned Linux applications are just simple demos, therefore, they miss some checks in code and full functionality.
 
 Also, suitable docker image may be used, i.e. `embox/emdocker-lkl` have all necessary packages installed.
 It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile)
