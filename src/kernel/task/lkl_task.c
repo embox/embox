@@ -72,30 +72,30 @@ static int handler(uint32_t nr, void * data) {
 	long ret = -1;
 
 	switch (st->eax) {
-                case 1:
+		case 1:
 			// Use Embox exit() to really exit the process
 			exit((unsigned int)st->ebx);
-                break;
+			break;
 
 		case 4:
 			ret = lkl_sys_write((unsigned int)st->ebx, (const char*)st->ecx, (lkl_size_t)st->edx);
-		break;
+			break;
 
 		case 5:
 			ret = lkl_sys_open((const char*)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
-		break;
+			break;
 
-                case 19:
-                        ret = lkl_sys_lseek((unsigned int)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
-                break;
+		case 19:
+			ret = lkl_sys_lseek((unsigned int)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
+			break;
 
-                case 41:
-                        ret = lkl_sys_dup((unsigned int)st->ebx);
-                break;
+		case 41:
+			ret = lkl_sys_dup((unsigned int)st->ebx);
+			break;
 
 		case 118:
 			ret = lkl_sys_fsync((unsigned int)st->ebx);
-		break;
+			break;
 
 		default:
 			printk("Unknown syscall! It's code is %d\n", st->eax);
