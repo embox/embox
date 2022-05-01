@@ -65,30 +65,30 @@ diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-
  		return ret;
  
  	if (lkl_ops->tls_get) {
-+		printk("LOG: Going to do tls_get; Currently old task_key=%d.\n", task_key);
++		// printk("LOG: Going to do tls_get; Currently old task_key=%d.\n", task_key);
 +		task_key = lkl_ops->task_tls_key();
-+		printk("LOG: task_key=%d after assigning lkl_ops->task_tls_key to it.\n", task_key);
++		// printk("LOG: task_key=%d after assigning lkl_ops->task_tls_key to it.\n", task_key);
 +
 +		if (task_key == 0) {
-+			printk("LOG: No task_key (==0) for current process => we should create it by calling tls_alloc.\n");
++			// printk("LOG: No task_key (==0) for current process => we should create it by calling tls_alloc.\n");
 +			if (lkl_ops->tls_alloc) {
 +				task_key = lkl_ops->tls_alloc(del_host_task);
 +				if (!task_key)
 +					return -1;
 +			}
-+			printk("LOG: Created task_key for current process. task_key=%d.\n", task_key);
++			// printk("LOG: Created task_key for current process. task_key=%d.\n", task_key);
 +		}
 +
-+		printk("LOG: Ready to do 'tls_get' to get LKL's kthread for current Embox pthread.\n");
++		// printk("LOG: Ready to do 'tls_get' to get LKL's kthread for current Embox pthread.\n");
  		task = lkl_ops->tls_get(task_key);
 +
 +		// If no kthread was found for current host-thread
  		if (!task) {
-+			printk("LOG: No LKL kthread was found for current Embox pthread, let's create it by calling 'new_host_task()'.\n");
++			// printk("LOG: No LKL kthread was found for current Embox pthread, let's create it by calling 'new_host_task()'.\n");
  			ret = new_host_task(&task);
  			if (ret)
  				goto out;
-+			printk("LOG: Doing 'tls_set' to associate created LKL kthread with current Embox pthread.\n");
++			// printk("LOG: Doing 'tls_set' to associate created LKL kthread with current Embox pthread.\n");
  			lkl_ops->tls_set(task_key, task);
  		}
  	}
