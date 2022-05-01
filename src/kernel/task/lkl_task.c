@@ -77,6 +77,10 @@ static int handler(uint32_t nr, void * data) {
 			exit((unsigned int)st->ebx);
 			break;
 
+		case 3:
+			ret = lkl_sys_read((unsigned int)st->ebx, (const char*)st->ecx, (lkl_size_t)st->edx);
+			break;
+
 		case 4:
 			ret = lkl_sys_write((unsigned int)st->ebx, (const char*)st->ecx, (lkl_size_t)st->edx);
 			break;
@@ -95,6 +99,10 @@ static int handler(uint32_t nr, void * data) {
 
 		case 118:
 			ret = lkl_sys_fsync((unsigned int)st->ebx);
+			break;
+
+		case 220:
+			ret = lkl_sys_getdents64((unsigned int)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
 			break;
 
 		default:
@@ -188,6 +196,13 @@ static int lkl_task_init(void) {
 
 	if (ret < 0) {
 		printk("lkl_sys_fsync() error: %s\n", lkl_strerror(ret));
+	}
+
+	// Mount procfs
+	ret = lkl_mount_fs("proc");
+	if (ret < 0) {
+		printk("lkl_mount_fs(\"proc\") error: %s\n", lkl_strerror(ret));
+		return -1;
 	}
 
 	// Set our handler for Linux syscalls
