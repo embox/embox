@@ -2,6 +2,7 @@
 #include <lkl_host.h>
 #include <lkl.h>
 #include <kernel/task.h>
+#include <kernel/task/resource/lkl_resources.h>
 
 static inline long os_syscall(int syscall,
 							  unsigned long arg1, unsigned long arg2,
@@ -21,8 +22,7 @@ int main(int argc, char **argv) {
 	 * In the future 'lkl_task = 1' and 'lkl_tls_key = NULL'
 	 * will be assigned in 'load_app'.
 	 */
-	task_self()->lkl_task = 1;
-	task_self()->lkl_tls_key = NULL;
+	task_lkl_resources(task_self())->lkl_allowed = 1;
 
 	printf("Started 'echotovda' execution.\n");
 	printf("lkl_sys_gettid() = %d.\n", lkl_sys_gettid());

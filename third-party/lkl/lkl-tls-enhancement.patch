@@ -95,11 +95,12 @@ diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-
 diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c
 --- linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c	2022-04-21 23:02:16.544722005 +0000
 +++ linux-7750a5aa74f5867336949371f0e18353704d432f/tools/lkl/lib/posix-host.c	2022-04-21 22:04:52.419520006 +0000
-@@ -16,6 +16,7 @@
+@@ -16,6 +16,8 @@
  #include <lkl_host.h>
  #include "iomem.h"
  #include "jmp_buf.h"
 +#include <kernel/task.h>
++#include <kernel/task/resource/lkl_resources.h>
  
  /* Let's see if the host has semaphore.h */
  #include <unistd.h>
@@ -151,7 +152,7 @@ diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-
  
 +static struct lkl_tls_key *task_tls_key(void)
 +{
-+	return task_self()->lkl_tls_key;
++	return task_lkl_resources(task_self())->lkl_tls_key;
 +}
 +
  static struct lkl_tls_key *tls_alloc(void (*destructor)(void *))
@@ -163,7 +164,7 @@ diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-
  	}
 +
 +	/* Save created key for current host task */
-+	task_self()->lkl_tls_key = ret;
++	task_lkl_resources(task_self())->lkl_tls_key = ret;
  	return ret;
  }
  

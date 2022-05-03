@@ -10,14 +10,14 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <kernel/task.h>
+#include <kernel/task/resource/lkl_resources.h>
 
 #include "lib/libelf.h"
 
 int main(int argc, char **argv) {
 
 	/* we use load_app to run Linux binaries */
-	task_self()->lkl_task = 1;
-	task_self()->lkl_tls_key = NULL;
+	task_lkl_resources(task_self())->lkl_allowed = 1;
 
 	if (argc < 1) {
 		return -1;

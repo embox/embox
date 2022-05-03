@@ -94,7 +94,6 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 			res = -ENOMEM;
 			goto out_threadfree;
 		}
-		self_task->lkl_task = 0;
 
 		tid = task_table_add(self_task);
 		if (tid < 0) {
@@ -246,7 +245,6 @@ void task_init(struct task *tsk, int id, struct task *parent, const char *name,
 	tsk->parent = parent;
 	if (parent) {
 		dlist_add_prev(&tsk->child_lnk, &parent->child_list);
-		tsk->lkl_task = parent->lkl_task;
 	}
 
 	tsk->tsk_priority = priority;
