@@ -21,8 +21,8 @@ __trap_handler __exception_table[0x20];
 
 fastcall void exception_handler(pt_regs_t *st) {
 	if(NULL != __exception_table[st->trapno]) {
-		// Don't handle this if it is a Linux syscall, but the task isn't marked as an LKL task
-		if(!(st->trapno == 0xd && task_lkl_resources(task_self())->lkl_allowed == 0)) {
+		// Handle Linux syscall (0xd) only if the task is allowed to use LKL
+		if(st->trapno != 0xd || task_lkl_resources(task_self())->lkl_allowed == 1) {
 			__exception_table[st->trapno](st->trapno, st);
 			return;
 		}
