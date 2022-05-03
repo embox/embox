@@ -43,7 +43,7 @@ vagrant ssh
 Build Embox (it takes some time due to LKL):
 ```
 cd /embox
-make confload-x86/qemu
+make confload-x86/lkl-qemu
 export CFLAGS="-Wno-error" && make -j8
 ```
 
