@@ -8,8 +8,8 @@ The idea is to make Linux Kernel Library act like a paravirtualized Linux kernel
 
 ### Implementation details
 
-Embox `task` struct in *src/kernel/task/multi.h* is enhanced with two fields:
- * `int lkl_task`. `1` here defines that the task is allowed to trigger an interrupt 0x80 (Linux syscall).
+Embox `task` struct is enhanced with two fields:
+ * `int lkl_allowed`. `1` here defines that the task is allowed to trigger an interrupt 0x80 (Linux syscall).
  * `struct lkl_tls_struct *lkl_tls_key`. LKL uses Thread Local Storage to associate each Embox thread with Linux kthread. `lkl_tls_key` is used to keep TLS key for current process. Values are Linux kthreads.
 
 We build LKL from sources and link it into Embox image. See *third-party/lkl/*.
