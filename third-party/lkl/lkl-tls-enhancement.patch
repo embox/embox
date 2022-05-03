@@ -38,17 +38,6 @@ diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-
  	struct lkl_tls_key *(*tls_alloc)(void (*destructor)(void *));
  	void (*tls_free)(struct lkl_tls_key *key);
  	int (*tls_set)(struct lkl_tls_key *key, void *data);
-diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h
---- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h	2019-01-30 05:16:23.000000000 +0000
-+++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/include/uapi/asm/syscalls.h	2022-04-21 21:29:23.011348007 +0000
-@@ -71,7 +71,6 @@
- #undef __NR_getdents
- #undef __NR_select
- #undef __NR_poll
--#undef __NR_dup2
- #undef __NR_futimesat
- #undef __NR_utimes
- #undef __NR_ustat
 diff -X third-party/lkl/lkl-diff-excludes.txt -ur /home/vagrant/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c
 --- linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c	2019-01-30 05:16:23.000000000 +0000
 +++ linux-7750a5aa74f5867336949371f0e18353704d432f/arch/lkl/kernel/syscalls.c	2022-04-21 22:06:10.322452004 +0000
