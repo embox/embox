@@ -1,3 +1,14 @@
+/*
+ *  This app can be used to test/debug LKL work in Embox.
+ *
+ *  Initially, it writes input string paramteter to LKL's '/vda' file,
+ *    which should redirect text to Embox terminal.
+ *  Also, 'lkl_sys_gettid' is called during app execution.
+ *    TID should be the same during the entire execution.
+ *
+ *  The app uses both INT0x80 and direct 'lkl_sys_{syscall}' calls.
+ */
+
 #include <stdio.h>
 #include <lkl_host.h>
 #include <lkl.h>
@@ -18,10 +29,7 @@ static inline long os_syscall(int syscall,
 }
 
 int main(int argc, char **argv) {
-	/* Temporary.
-	 * In the future 'lkl_task = 1' and 'lkl_tls_key = NULL'
-	 * will be assigned in 'load_app'.
-	 */
+	// Normally, this is done by 'load_app'
 	task_lkl_resources(task_self())->lkl_allowed = 1;
 
 	printf("Started 'echotovda' execution.\n");
@@ -30,7 +38,7 @@ int main(int argc, char **argv) {
 	/*
 	 * Try to get FD for special file /vda.
 	 * This file should have been created in src/kernel/task/lkl_task.c.
-	*/
+	 */
 	long fd = os_syscall(5, "/vda", LKL_O_RDWR, 0, 0);
 
 	if (fd < 0) {
@@ -39,10 +47,6 @@ int main(int argc, char **argv) {
 	}
 	printf("lkl_sys_open() for /vda returned %d.\n", fd);
 	printf("lkl_sys_gettid() = %d.\n", lkl_sys_gettid());
-
-	// SIGCHLD was here
-	// int clone_ret = lkl_sys_clone(0x00000100|0x00000200|0x00000400|0x00000800|0x00010000|0x00040000|0x00080000|0x00100000|0x00200000, 0 , NULL, NULL, 0);
-	// printf("lkl_sys_clone() returned %d.\n", clone_ret);
 
 	// Count input length
 	int len = 0;
@@ -61,7 +65,8 @@ int main(int argc, char **argv) {
 	printf("lkl_sys_write() for /vda returned %d.\n", ret_write);
 	printf("lkl_sys_gettid() = %d.\n", lkl_sys_gettid());
 
-	/* fsync() LKL's /vda device.
+	/*
+	 * fsync() LKL's /vda device.
 	 * /vda driver in src/kernel/task/lkl_task.c will be triggered immediately.
 	 */
 	long ret_fsync = os_syscall(118, fd, 0, 0, 0);
