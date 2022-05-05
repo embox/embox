@@ -179,6 +179,13 @@ else
 confload_list := No templates are available.
 endif # templates
 
+CONF_LINK := $(shell readlink $(CONF_DIR))
+ifeq ($(strip $(CONF_LINK)),)
+	CONF_RM := $(RM) -r
+else
+	CONF_RM := unlink
+endif
+
 # confload-<template>
 .PHONY : $(templates:%=confload-%)
 $(templates:%=confload-%) : confload-% : confclean
@@ -311,8 +318,8 @@ ext_conf:
 .PHONY : clean
 c : clean
 clean :
-	@$(RM) -r $(ROOT_DIR)/build
-	@$(RM) -r $(DIST_DIR)
+	@$(RM) -r $(ROOT_DIR)/build/*
+	@$(RM) -r $(DIST_DIR)/*
 
 define help-clean
 Usage: $(MAKE) clean
@@ -323,7 +330,8 @@ endef # clean
 
 .PHONY : confclean
 confclean : clean
-	@$(RM) -r $(CONF_DIR)
+	@$(RM) -r $(CONF_DIR)/*
+	@$(CONF_RM) $(CONF_DIR)
 
 define help-confclean
 Usage: $(MAKE) confclean

@@ -1,0 +1,29 @@
+#!/bin/bash
+
+path=$1
+#path= ${path:9}  # only if arg would include "confload-"
+mkdir -p work/$path
+mkdir -p work/$path/conf
+mkdir -p work/$path/build
+
+if [ -d conf ]; then
+    echo "-existing configuration still used (to renew it from template, do 'make confclean' and repeat)"
+else
+
+rm -f conf  # ensure that an existing link is removed, otherwise make confload would overwrite
+make confload-$path
+
+if [ -z "$(ls -A work/$path/conf)" ] ; then
+    mv conf/ work/$path
+    echo "-configuration copied from template"
+else
+    echo "-existing configuration still used (to renew it from template, do 'make confclean' and repeat)"
+fi
+rm -rf conf
+ln -s work/$path/conf conf
+
+touch conf/mods.conf  # ensure that CONFIGFILE reads mods.conf (creates files in mk/.cache/)
+rm -rf build
+ln -s work/$path/build build
+
+fi
