@@ -6,24 +6,30 @@ mkdir -p work/$path
 mkdir -p work/$path/conf
 mkdir -p work/$path/build
 
-if [ -d conf ]; then
-    echo "-existing configuration still used (to renew it from template, do 'make confclean' and repeat)"
-else
+if [ ! -L conf ] && [ -d conf ]; then
+    read -p "-'make confload' mode build configuration is present; press 'y' to overwrite this: " response
+    if [ -z $response ]; then exit; fi
+    if [ $response != "y" ] && [ $response != "Y" ]; then exit; fi
+    # next step, folders are removed
+fi
 
-rm -f conf  # ensure that an existing link is removed, otherwise make confload would overwrite
+# (also) ensure that an existing link is removed, otherwise make confload would overwrite the
+# previously activated build configuration
+rm -rf conf  # next make invocation does create a 'conf' folder
+rm -rf build # a link from previous confset must be removed before next command (otherwise build
+             # subfolders in work/$path/build would be removed)
 make confload-$path
 
 if [ -z "$(ls -A work/$path/conf)" ] ; then
     mv conf/ work/$path
-    echo "-configuration copied from template"
+    echo "- configuration was copied from template; build/ & conf/ are unique symlinks"
 else
-    echo "-existing configuration still used (to renew it from template, do 'make confclean' and repeat)"
+    echo "- existing configuration still used; does not (need to) clean build artifacts"
+    echo "  (to renew it from template, do 'make confclean' and repeat)"
 fi
 rm -rf conf
 ln -s work/$path/conf conf
 
 touch conf/mods.conf  # ensure that CONFIGFILE reads mods.conf (creates files in mk/.cache/)
-rm -rf build
 ln -s work/$path/build build
 
-fi
