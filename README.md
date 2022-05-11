@@ -84,17 +84,31 @@ Since Embox is highly configurable project, it is necessary to specify modules t
 All commands described below are called from the `embox` directory, which includes `src/`, `templates/`, ...
 
 #### Configuring the project
-For configuring it is needed to specify params and modules supposed to be included into the system. Embox has several templates prepared, to list them use the following command:
+For configuring it is needed to specify params and modules supposed to be included into the system. Thre are two ways to set up a current config:
+ * 'make confload-<template>'
+ * './confset <template>'
+While 'make confload-<template>' is used files from the template's folder are copied into './conf' folder. You can modify them.
+While 'confset <template>' is used files from the template's folder are copied into './work/<template>/conf' folder and a link './conf' is created to './work/<template>/conf'. This way is suit for quick switching between your templates.
+
+Embox has several templates prepared, to list them use the following command:
 ```
 $ make confload
 ```
 
 The simplest way to load a template is to specify its name in the command:
 ```
+$ ./confset <template>
+```
+or
+```
 $ make confload-<template>
 ```
 
 For the quick overview you can use one of `qemu` templates that exist for most architectures, that is, *`x86/qemu`* for x86:
+```
+$ ./confset x86/qemu
+```
+or
 ```
 $ make confload-x86/qemu
 ```
