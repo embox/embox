@@ -181,16 +181,10 @@ else
 confload_list := No templates are available.
 endif # templates
 
-CONF_LINK := $(shell readlink $(CONF_DIR))
-ifeq ($(strip $(CONF_LINK)),)
-	CONF_RM := $(RM) -r
-else
-	CONF_RM := unlink
-endif
-
 # confload-<template>
 .PHONY : $(templates:%=confload-%)
-$(templates:%=confload-%) : confload-% : confclean
+$(templates:%=confload-%) : confload-% :
+	@$(RM) -fR $(CONF_DIR)   #if this is a link, removes link only
 	@$(MKDIR) $(CONF_DIR)
 	@$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
 	@$(RM) -r $(ROOT_DIR)/build
@@ -334,7 +328,6 @@ endef # clean
 .PHONY : confclean
 confclean :
 	@$(RM) -r $(CONF_DIR)/*
-	@#$(CONF_RM) $(CONF_DIR)   #if this is a link, no unlink is necessary!
 	@#executes effectively clean on static build folder; not on symlink build 'folder'
 	@$(RM) -r $(ROOT_DIR)/build
 	@$(RM) -r $(DIST_DIR)
