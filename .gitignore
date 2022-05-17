@@ -27,6 +27,7 @@ embox.includes
 /conf
 /core
 /dist
+/work
 /.vscode
 /download
 mk/.cache

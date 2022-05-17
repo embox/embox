@@ -1,0 +1,35 @@
+#!/bin/bash
+
+path=$1
+#path= ${path:9}  # only if arg would include "confload-"
+mkdir -p work/$path
+mkdir -p work/$path/conf
+mkdir -p work/$path/build
+
+if [ ! -L conf ] && [ -d conf ]; then
+    read -p "-'make confload' mode build configuration is present; press 'y' to overwrite this: " response
+    if [ -z $response ]; then exit; fi
+    if [ $response != "y" ] && [ $response != "Y" ]; then exit; fi
+    # next step, folders are removed
+fi
+
+# (also) ensure that an existing link is removed, otherwise make confload would overwrite the
+# previously activated build configuration
+rm -rf conf  # next make invocation does create a 'conf' folder
+rm -rf build # a link from previous confset must be removed before next command (otherwise build
+             # subfolders in work/$path/build would be removed)
+make confload-$path
+
+if [ -z "$(ls -A work/$path/conf)" ] ; then
+    mv conf/ work/$path
+    echo "- configuration was copied from template; build/ & conf/ are unique symlinks"
+else
+    echo "- existing configuration still used; does not (need to) clean build artifacts"
+    echo "  (to renew it from template, do 'make confclean' and repeat)"
+fi
+rm -rf conf
+ln -s work/$path/conf conf
+
+touch conf/mods.conf  # ensure that CONFIGFILE reads mods.conf (creates files in mk/.cache/)
+ln -s work/$path/build build
+

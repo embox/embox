@@ -27,6 +27,8 @@ make_mybuild = $(MAKE) -f mk/load.mk
 .PHONY : build b
 b : build
 build :
+	@CONFPATH=`readlink conf` ; if [ -z $${CONFPATH} ] ; then CONFPATH="conf" ; fi ; \
+	echo ">>> Configuration in: $${CONFPATH}/ <<<" ; echo
 	+@$(make_mybuild) $@
 
 define help-build
@@ -181,9 +183,11 @@ endif # templates
 
 # confload-<template>
 .PHONY : $(templates:%=confload-%)
-$(templates:%=confload-%) : confload-% : confclean
+$(templates:%=confload-%) : confload-% :
+	@$(RM) -fR $(CONF_DIR)   #if this is a link, removes link only
 	@$(MKDIR) $(CONF_DIR)
 	@$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
+	@$(RM) -r $(ROOT_DIR)/build
 	@echo 'Config complete'
 
 define help-confload
@@ -310,9 +314,9 @@ ext_conf:
 
 .PHONY : clean
 c : clean
-clean :
-	@$(RM) -r $(ROOT_DIR)/build
-	@$(RM) -r $(DIST_DIR)
+clean : #clean regardless build folder as symlink or not
+	@$(RM) -r $(ROOT_DIR)/build/*
+	@$(RM) -r $(DIST_DIR)/*
 
 define help-clean
 Usage: $(MAKE) clean
@@ -322,8 +326,11 @@ Usage: $(MAKE) clean
 endef # clean
 
 .PHONY : confclean
-confclean : clean
-	@$(RM) -r $(CONF_DIR)
+confclean :
+	@$(RM) -r $(CONF_DIR)/*
+	@#executes effectively clean on static build folder; not on symlink build 'folder'
+	@$(RM) -r $(ROOT_DIR)/build
+	@$(RM) -r $(DIST_DIR)
 
 define help-confclean
 Usage: $(MAKE) confclean
@@ -397,7 +404,8 @@ Configuration targets:
 
 Cleaning targets:
   clean (c)      - Remove most build artifacts (image, libraries, objects, etc.)
-  confclean      - Remove build artifacts and loaded configuration
+  confclean      - Remove loaded configuration (requires redo of configuration setup/load)
+		   Also executes clean when the build folder is static (not a symlink)
   cacheclean     - Flush Mybuild internal cache
   distclean (dc) - clean + confclean + cacheclean
 
