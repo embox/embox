@@ -88,14 +88,16 @@ static int tftp_build_msg_cmd(struct tftp_msg *msg, size_t *msg_len,
 }
 
 static int tftp_build_msg_data(struct tftp_msg *msg, size_t *msg_len,
-		uint8_t *data, uint16_t block_num) {
+		uint8_t *data, int data_len, uint16_t block_num) {
 	msg->opcode = htons(TFTP_DATA);
 	*msg_len = sizeof msg->opcode;
 
 	msg->op.data.block_num = htons(block_num);
 	*msg_len += sizeof msg->op.data.block_num;
 
-	memcpy(msg->op.data.stuff, data, *msg_len);
+	memcpy(msg->op.data.stuff, data, data_len);
+
+	*msg_len += data_len;
 
 	return 0;
 }
@@ -257,13 +259,6 @@ struct tftp_stream *tftp_new_stream(const char *host, const char *file, int dir,
 	}
 
 	if (dir == TFTP_DIR_PUT) {
-		if (-1 == connect(s->sock,
-				(struct sockaddr *) &s->rem_addr,
-				s->rem_addrlen)) {
-			goto fail;
-		}
-
-
 		if (0 != tftp_build_msg_cmd(&s->snd,
 				&s->snd_len,
 				TFTP_WRQ,
@@ -271,13 +266,12 @@ struct tftp_stream *tftp_new_stream(const char *host, const char *file, int dir,
 				get_transfer_mode(binary_mode))) {
 			goto fail;
 		}
-
 	} else {
 		if (0 != tftp_build_msg_cmd(&s->snd,
-					&s->snd_len,
-					TFTP_RRQ,
-					file,
-					get_transfer_mode(binary_mode))) {
+				&s->snd_len,
+				TFTP_RRQ,
+				file,
+				get_transfer_mode(binary_mode))) {
 			goto fail;
 		}
 	}
@@ -342,7 +336,7 @@ int tftp_stream_write(struct tftp_stream *s, uint8_t *buf, size_t len) {
 	}
 
 	/* get next stuff of data */
-	if (0 != tftp_build_msg_data(&s->snd, &s->snd_len, buf, ++s->pkg_number)) {
+	if (0 != tftp_build_msg_data(&s->snd, &s->snd_len, buf, len, ++s->pkg_number)) {
 		goto fail;
 	}
 
