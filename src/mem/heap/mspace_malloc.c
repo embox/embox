@@ -243,6 +243,7 @@ void *mspace_malloc(size_t size, struct dlist_head *mspace) {
 }
 
 int mspace_free(void *ptr, struct dlist_head *mspace) {
+	int res = 0;
 	struct mm_segment *mm;
 
 	assert(ptr);
@@ -264,15 +265,17 @@ int mspace_free(void *ptr, struct dlist_head *mspace) {
 		}
 	} else {
 		/* No segment containing pointer @c ptr was found. */
+		res = -1;
 #ifdef DEBUG
 		printk("***** free(): incorrect address space\n");
 #endif
-		return -1;
+		goto out;
 	}
 
+out:
 	sched_unlock();
 
-	return 0;
+	return res;
 }
 
 void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
