@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <unistd.h>
 
+#include <util/err.h>
+
 #include <kernel/task.h>
 #include <kernel/printk.h>
 #include <kernel/task/kernel_task.h>
@@ -41,7 +43,14 @@ void sysfree(void *ptr) {
 }
 
 void *sysrealloc(void *ptr, size_t size) {
-	return mspace_realloc(ptr, size, kernel_task_mspace());
+	void *ret;
+
+	ret = mspace_realloc(ptr, size, kernel_task_mspace());
+	if (0 > err(ret)) {
+		return NULL;
+	}
+
+	return ret;
 }
 
 void *syscalloc(size_t nmemb, size_t size) {
