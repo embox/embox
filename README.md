@@ -2,84 +2,18 @@ Embox [![Build Status](https://travis-ci.org/embox/embox.svg?branch=master)](htt
 =====
 ## LKL specific info
 
-This is a proof of concept subsystem for Embox which provides binary compatibility layer with GNU/Linux executables.
+This subsystem provides binary compatibility layer with GNU/Linux executables.
 
-The idea is to make Linux Kernel Library act like a paravirtualized Linux kernel inside of Embox. This makes it possible to redirect detected Linux syscalls into LKL and process them.
+The idea is to make [Linux Kernel Library](https://github.com/lkl/linux) act like a paravirtualized Linux kernel inside of Embox. This makes it possible to redirect detected Linux syscalls into LKL and process them. For more info see ["LKL Subsystem"](https://github.com/embox/embox/wiki/LKL-subsystem) wiki page.
 
-### Implementation details
+### Development environment
+Currently, the work takes place in `lkl` branch.
 
-Embox `task` struct is enhanced with two fields:
- * `int lkl_allowed`. `1` here defines that the task is allowed to trigger an interrupt 0x80 (Linux syscall).
- * `struct lkl_tls_struct *lkl_tls_key`. LKL uses Thread Local Storage to associate each Embox thread with Linux kthread. `lkl_tls_key` is used to keep TLS key for current process. Values are Linux kthreads.
-
-We build LKL from sources and link it into Embox image. See *third-party/lkl/*.
-
-On Embox startup a special service (*src/kernel/task/lkl_task.c*) initilizes LKL:
- * `lkl_start_kernel` starts LKL and makes it possible to do `lkl_sys_{syscall}` calls.
- * Virtual block device and it's special block device file (`/vda`) are created in LKL. When Linux app writes to STDOUT, virtual block device's handler redirects content to Embox terminal. That is why `lseek` and `fsync` should be used when calling `write` to STDOUT. This makes no sense for Linux 'tty' device. In future 'tty' support should be added to LKL.
- * In exception table we set our handler for Linux syscalls. This handler, in most cases, translates Linux syscalls into `lkl_sys_{syscall}` calls.
-
-In Embox `load_app` tool is used to run external executables (Linux binraies in our case).
-
-Also, there is some additional info about how LKL works with host tasks/threads in *third-party/lkl/Threads.txt*
-
-### Getting started with Embox+LKL
-
-Clone the repository:
-```
-git clone https://github.com/aostrouhhov/embox.git
-cd embox
-git checkout lkl
-```
-
-LKL can be built only in x86 environment (not x86-64).
-
-Deploy Virtual Machine with Vagrant:
+LKL can be built only in x86 environment (not x86-64). To deploy x86-32 Virtual Machine with Vagrant:
 ```
 vagrant up
 vagrant ssh
 ```
-
-Build Embox (it takes some time due to LKL):
-```
-cd /embox
-make confload-x86/lkl-qemu
-export CFLAGS="-Wno-error" && make -j8
-```
-
-Compile pure Linux binaries:
-```
-gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_echo third-party/lkl/linux_echo.c
-gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_ls third-party/lkl/linux_ls.c
-gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_cat third-party/lkl/linux_cat.c
-```
-
-Make sure they work in a GNU/Linux environment:
-```
-./conf/rootfs/linux_echo "Hello, Anton!"
-./conf/rootfs/linux_ls /proc
-./conf/rootfs/linux_cat /proc/devices
-```
-
-Rebuild Embox to update rootfs, run QEMU:
-```
-export CFLAGS="-Wno-error" && make -j8
-sudo ./scripts/qemu/auto_qemu
-```
-
-Make sure Linux binaries work in Embox with LKL:
-```
-load_app linux_echo "Hello, Anton!"
-load_app linux_ls /proc
-load_app linux_cat /proc/devices
-load_app linux_cat /proc/slabinfo
-...
-```
-`/proc/slabinfo` is suitable to check how `/vda` works with huge output.
-
-Please note that not everything works. For example, `/proc/cpuinfo` won't show anything because its content should be implemented manually.
-
-Mentioned Linux applications are just simple demos, therefore, they miss some checks in code and full functionality.
 
 Also, suitable docker image may be used, i.e. `embox/emdocker-lkl` have all necessary packages installed.
 It's based on `i386/ubuntu`, see https://github.com/embox/emdocker/blob/09df170db6aab92eb7172c2d417c76436cebdc82/lkl/Dockerfile)
@@ -95,7 +29,6 @@ docker run -it --privileged --rm -v $PWD:/ws -w /ws --detach-keys ctrl-_ embox/e
 ```
 
 ### Clean Linux in LKL
-
 If changes were made to LKL code, do this before rebuilding Embox image:
 ```
 rm build/extbld/third_party/lkl/lib/.{builded,installed}
@@ -103,7 +36,6 @@ make -C build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e183537
 ```
 
 ### Check changes made to LKL
-
 In case you want to see changes made to LKL, do the folowing.
 
 1. Download and extract clean LKL, apply all Embox patches:
@@ -127,6 +59,60 @@ patch -d $HOME/clean-lkl/ -p0 < /embox/third-party/lkl/lkl-tls-enhancement.patch
 ```
 diff -X third-party/lkl/lkl-diff-excludes.txt -ur $HOME/clean-lkl/linux-7750a5aa74f5867336949371f0e18353704d432f build/extbld/third_party/lkl/lib/linux-7750a5aa74f5867336949371f0e18353704d432f
 ```
+
+### Getting started
+Clone the repository and switch to `lkl` branch:
+```
+git clone https://github.com/embox/embox.git
+cd embox
+git checkout lkl
+```
+
+Deploy Virtual Machine:
+```
+vagrant up
+vagrant ssh
+```
+
+Build Embox (it takes some time due to LKL):
+```
+cd /embox
+make confload-x86/lkl-qemu
+export CFLAGS="-Wno-error" && make -j8
+```
+
+Compile pure Linux binaries:
+```
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_echo third-party/lkl/linux_echo.c
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_ls third-party/lkl/linux_ls.c
+gcc -nostdlib -emain -fpie -N -o conf/rootfs/linux_cat third-party/lkl/linux_cat.c
+```
+
+Make sure they work in a GNU/Linux environment:
+```
+./conf/rootfs/linux_echo "Hello, World!"
+./conf/rootfs/linux_ls /proc
+./conf/rootfs/linux_cat /proc/devices
+```
+
+Rebuild Embox to update rootfs, run QEMU:
+```
+export CFLAGS="-Wno-error" && make -j8
+sudo ./scripts/qemu/auto_qemu
+```
+
+Make sure Linux binaries work in Embox with LKL:
+```
+load_app linux_echo "Hello, World!"
+load_app linux_ls /proc
+load_app linux_cat /proc/devices
+load_app linux_cat /proc/slabinfo
+...
+```
+
+`/proc/slabinfo` is suitable to check how LKL's `/vda` device (which translates output from LKL to Embox terminal) works with huge output.
+
+Please note that not everything should work. For example, `/proc/cpuinfo` won't show anything because its content should be implemented manually.
 
 ### Links
 
