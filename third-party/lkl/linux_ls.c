@@ -46,69 +46,74 @@ int main(char* param_1, char* param_2) {
 	int fd = os_syscall(5, (unsigned long int)param_2, 0x0000, 0, 0);
 
 	char buf[1024];
+	long buf_len;
 	struct linux_dirent64 *de;
 	de = (struct linux_dirent64*) buf;
 
 	// sys_getdents64
-	long buf_len = os_syscall(220, fd, (unsigned long int)de, sizeof(buf), 0);
+	while (buf_len = os_syscall(220, fd, (unsigned long int)de, sizeof(buf), 0)) {
 
-	// Print TYPE
-	char *pos;
-	for (pos = buf; pos - buf < buf_len; pos += de->d_reclen) {
-		de = (struct linux_dirent64*)pos;
-		// sys_lseek
-		os_syscall(19, 1, 0, 0, 0);
+		// Print TYPE
+		char *pos;
+		for (pos = buf; pos - buf < buf_len; pos += de->d_reclen) {
+			de = (struct linux_dirent64*)pos;
+			// sys_lseek
+			os_syscall(19, 1, 0, 0, 0);
 
-		switch (de->d_type) {
-			case 1:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"fifo          ", 14, 0);
-				break;
-			case 2:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"char dev      ", 14, 0);
-				break;
-			case 4:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"dir           ", 14, 0);
-				break;
-			case 6:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"blk dev       ", 14, 0);
-				break;
-			case 8:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"file          ", 14, 0);
-				break;
-			case 10:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"symlink       ", 14, 0);
-				break;
-			case 12:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"socket        ", 14, 0);
-				break;
-			default:
-				// sys_write
-				os_syscall(4, 1, (unsigned long int)"unknown       ", 14, 0);
-				break;
+			switch (de->d_type) {
+				case 1:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"fifo          ", 14, 0);
+					break;
+				case 2:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"char dev      ", 14, 0);
+					break;
+				case 4:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"dir           ", 14, 0);
+					break;
+				case 6:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"blk dev       ", 14, 0);
+					break;
+				case 8:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"file          ", 14, 0);
+					break;
+				case 10:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"symlink       ", 14, 0);
+					break;
+				case 12:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"socket        ", 14, 0);
+					break;
+				default:
+					// sys_write
+					os_syscall(4, 1, (unsigned long int)"unknown       ", 14, 0);
+					break;
+			}
+			// sys_fsync
+			os_syscall(118, 1, 0, 0, 0);
+
+			// Print NAME
+			int len = 0;
+			while(de->d_name[len+1]) {
+				len++;
+			}
+
+			// sys_lseek
+			os_syscall(19, 1, 0, 0, 0);
+			// sys_write
+			os_syscall(4, 1, (unsigned long int)de->d_name, len+1, 0);
+			os_syscall(4, 1, (unsigned long int)"\n", 1, 0);
+			// sys_fsync
+			os_syscall(118, 1, 0, 0, 0);
 		}
-		// sys_fsync
-		os_syscall(118, 1, 0, 0, 0);
 
-		// Print NAME
-		int len = 0;
-		while(de->d_name[len+1]) {
-			len++;
-		}
-
-		// sys_lseek
-		os_syscall(19, 1, 0, 0, 0);
-		// sys_write
-		os_syscall(4, 1, (unsigned long int)de->d_name, len+1, 0);
-		os_syscall(4, 1, (unsigned long int)"\n", 1, 0);
-		// sys_fsync
-		os_syscall(118, 1, 0, 0, 0);
+		// Set pointer to the beginning of 'buf'
+		de = (struct linux_dirent64*) buf;
 	}
 
 	// sys_exit
