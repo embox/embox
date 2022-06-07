@@ -11,6 +11,8 @@
 #include <asm/linkage.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>
+#include <kernel/task.h>
+#include <kernel/task/resource/lkl_resources.h>
 #include <stddef.h>
 
 #include <asm/hal/env/traps_core.h>
@@ -19,8 +21,11 @@ __trap_handler __exception_table[0x20];
 
 fastcall void exception_handler(pt_regs_t *st) {
 	if(NULL != __exception_table[st->trapno]) {
-		__exception_table[st->trapno](st->trapno, st);
-		return;
+		// Handle Linux syscall (0xd) only if the task is allowed to use LKL
+		if(st->trapno != 0xd || task_lkl_resources(task_self())->lkl_allowed == 1) {
+			__exception_table[st->trapno](st->trapno, st);
+			return;
+		}
 	}
 
 	panic("EXCEPTION [0x%x]: error = %08x\n"

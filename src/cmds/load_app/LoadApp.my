@@ -12,6 +12,7 @@ module load_app {
 
 	depends embox.fs.core
 	depends embox.lib.LibElf
+	depends embox.kernel.task.resource.lkl_resources
 }
 
 @Build(stage=1, script="$(LOADABLE_MAKE) SRC=hello.c DST=loadable_hello_world")

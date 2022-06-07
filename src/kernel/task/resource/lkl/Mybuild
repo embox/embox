@@ -1,0 +1,11 @@
+package embox.kernel.task.resource
+
+module lkl_resources {
+	@IncludeExport(path="kernel/task/resource")
+	source "lkl_resources.h"
+
+	source "lkl_resources.c"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.compat.libc.assert
+}

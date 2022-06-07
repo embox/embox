@@ -9,10 +9,15 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <kernel/task.h>
+#include <kernel/task/resource/lkl_resources.h>
 
 #include "lib/libelf.h"
 
 int main(int argc, char **argv) {
+
+	/* we use load_app to run Linux binaries */
+	task_lkl_resources(task_self())->lkl_allowed = 1;
 
 	if (argc < 1) {
 		return -1;
@@ -22,7 +27,7 @@ int main(int argc, char **argv) {
 	int elf_file;
 	int err;
 
-	elf_file = open(argv[argc - 1], O_RDONLY);
+	elf_file = open(argv[1], O_RDONLY);
 	header = malloc(sizeof(Elf32_Ehdr));
 
 	if ((err = elf_read_header(elf_file, header)) < 0) {
@@ -60,7 +65,7 @@ int main(int argc, char **argv) {
 	int (*functionPtr)();
 	functionPtr = (void *) instructions;
 
-	int ret = functionPtr();
+	int ret = functionPtr(argv[1], argv[2]);
 
 	close(elf_file);
 	free(header);
@@ -68,6 +73,6 @@ int main(int argc, char **argv) {
 	instructions -= offset;
 	free(instructions);
 
-	printf("%d\n", ret);
+	printf("Loaded app returned %d\n", ret);
 	return 0;
 }

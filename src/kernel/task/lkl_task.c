@@ -30,7 +30,14 @@ static int blk_request(struct lkl_disk disk, struct lkl_blk_req *req) {
 	case LKL_DEV_BLK_TYPE_READ:
 		break;
 
-	case LKL_DEV_BLK_TYPE_WRITE:
+	case LKL_DEV_BLK_TYPE_WRITE: ;
+		int i = 0;
+		while (i < req->count) {
+			printk("%.*s", req->buf[i].iov_len, req->buf[i].iov_base);
+			memset(req->buf[i].iov_base, '\0', req->buf[i].iov_len);
+			i++;
+		}
+
 		break;
 
 	case LKL_DEV_BLK_TYPE_FLUSH:
@@ -50,108 +57,156 @@ static int blk_request(struct lkl_disk disk, struct lkl_blk_req *req) {
 }
 
 
+/*
+ * A structure that stores references to specific
+ * implementations of block device operations
+ */
 static struct lkl_dev_blk_ops embox_lkl_dev_blk_ops = {
 	.get_capacity = fd_get_capacity,
 	.request = blk_request,
 };
 
+// We will get here when the Linux system call ('int 0x80') occurs
 static int handler(uint32_t nr, void * data) {
 	pt_regs_t * st = (pt_regs_t*)data;
 	long ret = -1;
 
 	switch (st->eax) {
+		case 1:
+			// Use Embox exit() to really exit the process
+			exit((unsigned int)st->ebx);
+			break;
+
+		case 3:
+			ret = lkl_sys_read((unsigned int)st->ebx, (const char*)st->ecx, (lkl_size_t)st->edx);
+			break;
+
 		case 4:
 			ret = lkl_sys_write((unsigned int)st->ebx, (const char*)st->ecx, (lkl_size_t)st->edx);
 			break;
+
+		case 5:
+			ret = lkl_sys_open((const char*)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
+			break;
+
+		case 19:
+			ret = lkl_sys_lseek((unsigned int)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
+			break;
+
+		case 41:
+			ret = lkl_sys_dup((unsigned int)st->ebx);
+			break;
+
+		case 118:
+			ret = lkl_sys_fsync((unsigned int)st->ebx);
+			break;
+
+		case 220:
+			ret = lkl_sys_getdents64((unsigned int)st->ebx, (unsigned int*)st->ecx, (unsigned int*)st->edx);
+			break;
+
 		default:
 			printk("Unknown syscall! It's code is %d\n", st->eax);
 			break;
 	}
 
-	// return result of lkl syscall to program
+	// Return result of LKL syscall to program
 	st->eax = ret;
 
-	// go to next instruction as handler finished his work
+	// Go to next instruction as handler finished his work
 	st->eip += 2;
 	return 0;
 }
 
 static int lkl_task_init(void) {
 	long ret = 0;
-	char cmdline[64];
-	int fd;
+
+	/*
+	 * We use /vda file for STDOUT (File desccriptor #1) in LKL.
+	 * /vda handler redirects everything to Embox terminal.
+	 * /vda is a block device file --> 'lkl_sys_fsync(1)' is required after 'lkl_sys_write()'.
+	 * LKL tasks share /vda --> lkl_sys_lseek(1, 0, 0)' is required before 'lkl_sys_write()'.
+	 */
 	struct lkl_disk disk;
 	unsigned int disk_id, dev;
 
+	// Set disk operations
 	disk.ops = &embox_lkl_dev_blk_ops;
 
+	// Attach the disk
 	ret = lkl_disk_add(&disk);
+
 	if (ret < 0) {
-		printk("Can't add disk: %s\n", lkl_strerror(ret));
+		printk("lkl_disk_add() failed: %s\n", lkl_strerror(ret));
 		return -1;
 	}
 	disk_id = ret;
 
-	snprintf(cmdline, sizeof(cmdline), "mem=64M loglevel=8"); // loglevel=8 is from tests
-  ret = lkl_start_kernel(&lkl_host_ops, cmdline);
+	// Start LKL
+	ret = lkl_start_kernel(&lkl_host_ops, "mem=64M");
 	if (ret < 0) {
 		printk("Can't start lkl: %s\n", lkl_strerror(ret));
 	}
 
-	intptr_t t = (intptr_t)malloc(4096 * 2);
-	t += 0xFFF;
-	t &= ~0xFFF;
-
-	int fd = lkl_sys_open("/test", LKL_O_RDWR | LKL_O_CREAT, 0777);
-	printk("%d\n", fd);
-
-	for (int q = 0; q < 10; q++) {
-		int err_code = lkl_sys_write(fd, "TESTME", 6);
-		assert(err_code == 6);
-	}
-	
-
-	char * addr = lkl_sys_mmap((void*)t, 4096, 0, 0x10 | 0x02, fd, 0);
-	printk("%p\n", addr);
-
-	for (int q = 0; q < 6; q++) {
-		printk("%c", addr[q]);
-	}
-	printk("\n");
-
+	// Get device id of a 'disk' pointed by 'disk_id' and write it to 'dev'
 	ret = lkl_get_virtio_blkdev(disk_id, 0, &dev);
 
 	if (ret < 0) {
-		printk("lkl_get_virtio_blkdev error: %s\n", lkl_strerror(ret));
+		printk("lkl_get_virtio_blkdev() error: %s\n", lkl_strerror(ret));
 	}
 
+	// Create block device file '/vda' which points to 'dev'
 	ret = lkl_sys_mknod("/vda", LKL_S_IFBLK | 0600, dev);
 
 	if (ret < 0) {
-		printk("lkl_sys_mknod error: %s\n", lkl_strerror(ret));
+		printk("lkl_sys_mknod() error: %s\n", lkl_strerror(ret));
 	}
 
-	fd = lkl_sys_open("/vda", LKL_O_RDWR, 0);
+	// Open '/vda' to associate file descriptor #1 with it
+	int fd_0 = lkl_sys_open("/vda", LKL_O_RDWR, 0);
 
-	if (fd < 0) {
-		printk("Can't open the file: %s\n", lkl_strerror(fd));
+	if (fd_0 < 0) {
+		printk("Can't open the /vda file: %s\n", lkl_strerror(fd_0));
 		return -1;
 	}
 
+	// STDOUT setup: dup /vda's file descriptor (we know that duplicated fd will be #1)
+	int fd = lkl_sys_dup(fd_0);
+
+	if (fd < 0) {
+		printk("Can't dup the /vda's file descriptor: %s\n", lkl_strerror(fd));
+		return -1;
+	}
+
+	if (fd != 1) {
+		printk("Expcected dupplicated file descriptor to be #1 but got something else: %s\n", lkl_strerror(fd));
+		return -1;
+	}
+
+	// Write to /vda (the data will be pre-written to the cache buffer)
 	ret = lkl_sys_write(fd, "test", 4);
 
 	if (ret < 0) {
-		printk("can't write: %s\n", lkl_strerror(ret));
+		printk("Can't write to /test: %s\n", lkl_strerror(ret));
 		return -1;
 	}
 
+	// Transfer all data from cache buffer to the block device
 	ret = lkl_sys_fsync(fd);
 
 	if (ret < 0) {
-		printk("fsync error: %s\n", lkl_strerror(ret));
+		printk("lkl_sys_fsync() error: %s\n", lkl_strerror(ret));
 	}
 
-	// set lkl handlers for syscalls
+	// Mount procfs
+	ret = lkl_mount_fs("proc");
+	if (ret < 0) {
+		printk("lkl_mount_fs(\"proc\") error: %s\n", lkl_strerror(ret));
+		return -1;
+	}
+
+	// Set our handler for Linux syscalls
 	__exception_table[0xd] = handler;
+
 	return 0;
 }
