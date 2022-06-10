@@ -18,6 +18,8 @@
 
 #include <drivers/gpio/gpio_driver.h>
 
+#include <framework/mod/options.h>
+
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 #define BASE_CTRL_ADDR(i) \
 	((uintptr_t) OPTION_GET(NUMBER,base_addr) + (i) * 0x1000)
