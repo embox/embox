@@ -2,5 +2,6 @@
 "export HOME=/",
 "netmanager",
 "service telnetd",
-"service httpd",
+"service httpd http_admin",
+"i2cdetect -r i2c0",
 "tish",

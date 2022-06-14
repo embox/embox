@@ -129,9 +129,16 @@ data_loop:
  	stmia 	r0!, {r4-r7}
  	cmp 	r1, r2
  	blo 	data_loop
-data_loop_done:
+
 #else
+
+	cmp     r0, r1
+	beq     data_loop_done  ;@ Don't copy if same address
+
 	ldr     r2, =_data_len
+
+	cmp     r2, #0
+	beq     data_loop_done  ;@ Don't copy if data len is zero
 data_loop:
 	ldr     r3, [r1]
 	str     r3, [r0]
@@ -140,6 +147,7 @@ data_loop:
 	subs    r2, r2, #4
 	bne     data_loop
 #endif
+data_loop_done:
 
 #if MMU_BOOT
 	bl boot_mmu_finish
