@@ -6,3 +6,11 @@ module wcsncasecmp_test {
 	depends embox.compat.libc.wchar
 	depends embox.framework.LibFramework
 }
+
+module wcslen_test {
+	source "wcslen_test.c"
+
+	depends embox.compat.libc.wchar
+	depends embox.framework.LibFramework
+}
+
