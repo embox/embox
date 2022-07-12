@@ -37,7 +37,7 @@ TEST_CASE("empty static allocated string with character off the string") {
 TEST_CASE("non-empty static allocated string with character off the string") {
 
     char original[] = "To be copied";
-    char tested[] = "Before copy";
+    char tested[] = "Before copying";
 
     void* test;
 
