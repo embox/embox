@@ -37,7 +37,7 @@ TEST_CASE("empty static allocated string with character off the string") {
 TEST_CASE("non-empty static allocated string with character off the string") {
 
     char original[] = "To be copied";
-    char tested[] = "Before copy";
+    char tested[] = "Before copying";
 
     void* test;
 
@@ -64,10 +64,14 @@ TEST_CASE("empty static allocated string with character on the string") {
 
     char original[] = "To be copied";
     char tested[128];
+    char c = 'c';
 
     void* test;
+    test = memccpy(tested, original, c, strlen(original)+1);
 
-    test = memccpy(tested, original, 'c', strlen(original)+1);
+    char* cPos = strchr(original, c);
+    tested[cPos - original] = '\0';
+
     test_assert_zero(strcmp(tested, "To be "));
     test_assert_not_null(test);
 }
@@ -94,12 +98,16 @@ TEST_CASE("dynamic allocated string with character on the string") {
 
     char original[] = "To be copied";
     char* tested;
-    
+    char c = 'c';
+
     tested = malloc(128*sizeof(char));
 
     void* test;
+    test = memccpy(tested, original, c, strlen(original)+1);
 
-    test = memccpy(tested, original, 'c', strlen(original)+1);
+    char* cPos = strchr(original, c);
+    tested[cPos - original] = '\0';
+
     test_assert_zero(strcmp(tested, "To be "));
     test_assert_not_null(test);
 
