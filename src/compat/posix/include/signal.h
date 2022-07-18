@@ -160,9 +160,7 @@ extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
 extern int raise(int signo);
 
-//static inline int sigaction(int sig, const struct sigaction *act,
-		//struct sigaction *oact) { return -1; }
-//static inline int sigfillset(sigset_t *set)
+extern int sigwait(const sigset_t */*restrict*/ set, int */*restrict*/ sig);
 
 extern const char *const sys_siglist[];
 

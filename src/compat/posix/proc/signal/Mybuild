@@ -13,3 +13,7 @@ static module sigset {
 	source "sigset.c"
 	depends embox.util.Bitmap
 }
+
+static module sigwait_stub {
+	source "sigwait_stub.c"
+}
