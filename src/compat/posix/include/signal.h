@@ -12,11 +12,15 @@
 
 #include <errno.h>
 #include <sys/types.h>
+
 #include <util/bitmap.h>
 #include <sys/cdefs.h>
 
-#include <framework/mod/options.h>
-#include <module/embox/kernel/task/resource/sig_table.h>
+#include <defines/_sig_total_define.h>
+#include <defines/sigset_t_define.h>
+#include <defines/stack_t_define.h>
+#include <defines/ucontext_t_define.h>
+
 
 #define SIG_DFL ((sighandler_t) 0x1)
 #define SIG_IGN ((sighandler_t) 0x3)
@@ -62,10 +66,6 @@
 #define SIGRTMIN    32
 #define SIGRTMAX    63
 
-#define _SIG_TOTAL \
-	OPTION_MODULE_GET(embox__kernel__task__resource__sig_table, \
-		NUMBER, sig_table_size)
-
 #define SA_NOCLDSTOP  (0x1ul << 0)
 #define SA_NOCLDWAIT  (0x1ul << 1)
 #define SA_SIGINFO    (0x1ul << 2)
@@ -79,9 +79,6 @@ __BEGIN_DECLS
 typedef int sig_atomic_t;
 
 #define NSIG _SIG_TOTAL
-typedef struct {
-	BITMAP_DECL(bitmap, _SIG_TOTAL);
-} sigset_t;
 
 union sigval {
 	int   sival_int;
@@ -110,24 +107,6 @@ struct sigaction {
 		void (*sa_sigaction)(int, siginfo_t *, void *);
 	} /* unnamed */;
 };
-
-// TODO Consider moving the following two types into ucontext.h -- Eldar
-
-typedef int mcontext_t; // XXX stub
-
-typedef struct {
-	void     *ss_sp;       /* stack base or pointer */
-	size_t    ss_size;     /* stack size */
-	int       ss_flags;    /* flags */
-} stack_t;
-
-struct _ucontext {
-	struct _ucontext *uc_link;     /* resumed when this context returns */
-	sigset_t    uc_sigmask;  /* blocked when this context is active */
-	stack_t     uc_stack;    /* the stack used by this context */
-	mcontext_t  uc_mcontext; /* machine-specific representation */
-};
-typedef struct _ucontext ucontext_t;
 
 /* Non-standard GNU extension. */
 typedef void (*sighandler_t)(int);
@@ -160,9 +139,7 @@ extern int kill(int tid, int signo);
 extern int sigqueue(int tid, int signo, const union sigval value);
 extern int raise(int signo);
 
-//static inline int sigaction(int sig, const struct sigaction *act,
-		//struct sigaction *oact) { return -1; }
-//static inline int sigfillset(sigset_t *set)
+extern int sigwait(const sigset_t */*restrict*/ set, int */*restrict*/ sig);
 
 extern const char *const sys_siglist[];
 
