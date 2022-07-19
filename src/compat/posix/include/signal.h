@@ -12,12 +12,14 @@
 
 #include <errno.h>
 #include <sys/types.h>
+
 #include <util/bitmap.h>
 #include <sys/cdefs.h>
 
 #include <defines/_sig_total_define.h>
 #include <defines/sigset_t_define.h>
 #include <defines/stack_t_define.h>
+#include <defines/ucontext_t_define.h>
 
 
 #define SIG_DFL ((sighandler_t) 0x1)
@@ -105,18 +107,6 @@ struct sigaction {
 		void (*sa_sigaction)(int, siginfo_t *, void *);
 	} /* unnamed */;
 };
-
-// TODO Consider moving the following two types into ucontext.h -- Eldar
-
-typedef int mcontext_t; // XXX stub
-
-struct _ucontext {
-	struct _ucontext *uc_link;     /* resumed when this context returns */
-	sigset_t    uc_sigmask;  /* blocked when this context is active */
-	stack_t     uc_stack;    /* the stack used by this context */
-	mcontext_t  uc_mcontext; /* machine-specific representation */
-};
-typedef struct _ucontext ucontext_t;
 
 /* Non-standard GNU extension. */
 typedef void (*sighandler_t)(int);
