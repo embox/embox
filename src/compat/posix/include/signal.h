@@ -15,8 +15,9 @@
 #include <util/bitmap.h>
 #include <sys/cdefs.h>
 
-#include <framework/mod/options.h>
-#include <module/embox/kernel/task/resource/sig_table.h>
+#include <defines/_sig_total_define.h>
+#include <defines/sigset_t_define.h>
+
 
 #define SIG_DFL ((sighandler_t) 0x1)
 #define SIG_IGN ((sighandler_t) 0x3)
@@ -62,10 +63,6 @@
 #define SIGRTMIN    32
 #define SIGRTMAX    63
 
-#define _SIG_TOTAL \
-	OPTION_MODULE_GET(embox__kernel__task__resource__sig_table, \
-		NUMBER, sig_table_size)
-
 #define SA_NOCLDSTOP  (0x1ul << 0)
 #define SA_NOCLDWAIT  (0x1ul << 1)
 #define SA_SIGINFO    (0x1ul << 2)
@@ -79,9 +76,6 @@ __BEGIN_DECLS
 typedef int sig_atomic_t;
 
 #define NSIG _SIG_TOTAL
-typedef struct {
-	BITMAP_DECL(bitmap, _SIG_TOTAL);
-} sigset_t;
 
 union sigval {
 	int   sival_int;
