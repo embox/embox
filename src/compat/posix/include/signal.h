@@ -17,6 +17,7 @@
 
 #include <defines/_sig_total_define.h>
 #include <defines/sigset_t_define.h>
+#include <defines/stack_t_define.h>
 
 
 #define SIG_DFL ((sighandler_t) 0x1)
@@ -108,12 +109,6 @@ struct sigaction {
 // TODO Consider moving the following two types into ucontext.h -- Eldar
 
 typedef int mcontext_t; // XXX stub
-
-typedef struct {
-	void     *ss_sp;       /* stack base or pointer */
-	size_t    ss_size;     /* stack size */
-	int       ss_flags;    /* flags */
-} stack_t;
 
 struct _ucontext {
 	struct _ucontext *uc_link;     /* resumed when this context returns */
