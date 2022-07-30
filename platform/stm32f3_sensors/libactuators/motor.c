@@ -18,12 +18,12 @@ static void init_pins(GPIO_TypeDef  *GPIOx, uint16_t pins) {
 	GPIO_InitTypeDef  GPIO_InitStruct;
 
 	//TODO Is this required?
-	__GPIOD_CLK_ENABLE();
+	__HAL_RCC_GPIOD_CLK_ENABLE();
 
 	GPIO_InitStruct.Pin = pins;
 	GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 	GPIO_InitStruct.Pull = GPIO_PULLUP;
-	GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+	GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
 
 	HAL_GPIO_Init(GPIOx, &GPIO_InitStruct);
 }
