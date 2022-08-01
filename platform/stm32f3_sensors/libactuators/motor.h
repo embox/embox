@@ -9,6 +9,7 @@
 #define PLATFORM_STM32F3_SENSORS_LIBACTUATORS_MOTOR_H_
 
 #include <stdint.h>
+#include "stm32f3xx_hal.h"
 #include <stm32f3xx_hal_gpio.h>
 
 /* motor 1*/
