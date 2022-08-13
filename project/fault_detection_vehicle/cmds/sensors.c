@@ -24,7 +24,7 @@
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 
-#include <kalman_filter.h>
+#include <filter/kalman_filter.h>
 
 
 static float angles[3];

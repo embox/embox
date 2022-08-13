@@ -4,10 +4,9 @@ package stm32f3_sensors.cmd
 @Cmd(name="sensors", help="Read gyroscope and accelerometer", man="")
 @BuildDepends(third_party.bsp.st_bsp_api)
 module sensors {
-	@IncludePath("$(PROJECT_DIR)/fault_detection_vehicle/include")
 	source "sensors.c"
 
-	depends stm32f3_sensors.utils.kalman
+	depends embox.lib.libkalman
 
 	depends embox.driver.sensors.stm32f3discovery.acc
 	depends embox.driver.sensors.stm32f3discovery.gyro
