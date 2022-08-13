@@ -13,30 +13,28 @@
 #include <kernel/time/ktime.h>
 #include <kernel/thread.h>
 
-#include <framework/mod/options.h>
-
-#include <feather/servo.h>
-
-#include "stm32f3xx_hal.h"
-#include "stm32f3_discovery.h"
+#include <drivers/servo/servo.h>
 
 int main(int argc, char **argv) {
-	int pos = 0;
-	BSP_PB_Init(0, 0);
-	servo_init();
+	struct servo_dev *servo = servo_dev_by_id(0);
+	if (servo == NULL) {
+	  printf("No servo devices are registered\n");
+	  return 0;
+	}
 
-        if (argc > 1) {
-          pos = atoi(argv[1]);
-	  servo_set(pos);
-          return 0;
-        }
+	servo->servo_ops->init(servo);
+	int pos = 0;
+
+	if (argc > 1) {
+		pos = atoi(argv[1]);
+		servo->servo_ops->set_pos(servo, pos);
+		return 0;
+	}
 
 	while (1) {
-		if (BSP_PB_GetState(0)) {
-			pos++;
-                }
-	        servo_set(pos % 100);
-                ksleep(10);
+		pos++;
+		servo->servo_ops->set_pos(servo, pos % 100);
+		ksleep(10);
 	}
 
 	return 0;
