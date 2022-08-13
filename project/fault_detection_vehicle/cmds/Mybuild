@@ -4,13 +4,13 @@ package stm32f3_sensors.cmd
 @Cmd(name="sensors", help="Read gyroscope and accelerometer", man="")
 @BuildDepends(third_party.bsp.st_bsp_api)
 module sensors {
-	@IncludePath("$(PLATFORM_DIR)/stm32f3_sensors/include")
+	@IncludePath("$(PROJECT_DIR)/fault_detection_vehicle/include")
 	source "sensors.c"
 
 	depends stm32f3_sensors.utils.kalman
 
-	depends stm32f3_sensors.libsensors.acc
-	depends stm32f3_sensors.libsensors.gyro
+	depends embox.driver.sensors.stm32f3discovery.acc
+	depends embox.driver.sensors.stm32f3discovery.gyro
 	depends stm32f3_sensors.libmisc.led
 }
 
@@ -22,8 +22,8 @@ module motor_control {
 
 	depends stm32f3_sensors.libfilters.filtered_derivative
 	depends stm32f3_sensors.libfilters.dynamic_window
-	depends stm32f3_sensors.libsensors.acc
-	depends stm32f3_sensors.libsensors.gyro
+	depends embox.driver.sensors.stm32f3discovery.acc
+	depends embox.driver.sensors.stm32f3discovery.gyro
 	depends stm32f3_sensors.libactuators.motor
 	depends stm32f3_sensors.libmisc.led
 	depends stm32f3_sensors.libmisc.button

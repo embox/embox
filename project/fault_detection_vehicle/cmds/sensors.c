@@ -17,8 +17,8 @@
 #include <stm32f3xx.h>
 #include <stm32f3_discovery.h>
 
-#include <libsensors/acc.h>
-#include <libsensors/gyro.h>
+#include <drivers/sensors/acc.h>
+#include <drivers/sensors/gyro.h>
 #include <libmisc/led.h>
 
 #include <hal/clock.h>

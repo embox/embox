@@ -1,0 +1,17 @@
+package embox.driver.sensors.stm32f3discovery
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module gyro {
+	source "stm32f3discovery_gyro.c"
+
+	@IncludeExport(path="drivers/sensors", target_name="gyro.h")
+	source "stm32f3discovery_gyro.h"
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module acc {
+	source "stm32f3discovery_acc.c"
+
+	@IncludeExport(path="drivers/sensors", target_name="acc.h")
+	source "stm32f3discovery_acc.h"
+}

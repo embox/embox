@@ -4,15 +4,17 @@
  * @date 06 july 2015
  * @author Anton Bondarev
  */
+
+
 #include <stdint.h>
 
 #include <stm32f3_discovery_accelerometer.h>
 
-#include <libsensors/acc.h>
-
 #include <kernel/printk.h>
 
 #include <embox/unit.h>
+
+#include "drivers/sensors/acc.h"
 
 EMBOX_UNIT_INIT(acc_init);
 

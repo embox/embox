@@ -10,8 +10,8 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <libsensors/acc.h>
-#include <libsensors/gyro.h>
+#include <drivers/sensors/acc.h>
+#include <drivers/sensors/gyro.h>
 #include <libactuators/motor.h>
 #include <libmisc/led.h>
 #include <libmisc/button.h>

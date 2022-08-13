@@ -10,6 +10,8 @@
 #include <embox/unit.h>
 #include <kernel/printk.h>
 
+#include <drivers/sensors/gyro.h>
+
 EMBOX_UNIT_INIT(gyro_init);
 
 #define PI 3.14159265358979f
