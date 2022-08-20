@@ -9,8 +9,6 @@
 #define PLATFORM_STM32F3_SENSORS_LIBACTUATORS_MOTOR_H_
 
 #include <stdint.h>
-#include "stm32f3xx_hal.h"
-#include <stm32f3xx_hal_gpio.h>
 
 /* motor 1*/
 #define MOTOR_ENABLE1  GPIO_PIN_3
@@ -22,7 +20,7 @@
 #define MOTOR_INPUT4   GPIO_PIN_6
 
 struct motor {
-	GPIO_TypeDef  *GPIOx;
+	void *port;
 	uint16_t enable;
 	uint16_t input[2];
 };
@@ -32,8 +30,7 @@ enum motor_run_direction {
 	MOTOR_RUN_BACKWARD
 };
 
-extern void motor_init(struct motor *m, GPIO_TypeDef  *GPIOx, uint16_t enable,
-		uint16_t in1, uint16_t in2);
+extern void motor_init(struct motor *m);
 
 extern void motor_enable(struct motor *m);
 

@@ -48,7 +48,7 @@ int main(int argc, char *argv[]) {
 
 	led_init(LED3);
 	button_init(BUTTON_USER);
-	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1, MOTOR_INPUT2);
+	motor_init(&motor1);
 
 	motor_enable(&motor1);
 
