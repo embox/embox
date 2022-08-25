@@ -8,7 +8,7 @@ Achievements
 * [VoIP phone on STM32F7Discovery based on PJSIP project](https://github.com/embox/embox/wiki/PJSIP-on-STM32)
 * [Qt on STM32F7Discovery](https://github.com/embox/embox/wiki/Qt-on-STM32)
 * [OpenCV on STM32F769i board](https://github.com/embox/embox/wiki/OpenCV-on-STM32)
-* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua
+* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua, JS, Scheme
 * SSHD based on Dropbear project
 * Mesa3d
 * Quake3
@@ -25,7 +25,7 @@ Key features
 * Popular platforms: STM32, i.MX6, RaPi, ...
 * Provides popular desktop software on MCU (e.g. STM32): Qt, OpenCV, PJSIP, dropbear, ...
 * Unix-like shell utilities: ls, cat, mount, ...
-* Popular programming languages: java, python, lua, tcl, lisp, ruby
+* Popular programming languages: java, python, lua, tcl, lisp, ruby, js, scheme
 
 Contacts
 ---------------
