@@ -14,8 +14,6 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <stm32f3xx.h>
-#include <stm32f3_discovery.h>
 
 #include <drivers/sensors/acc.h>
 #include <drivers/sensors/gyro.h>
@@ -32,13 +30,6 @@ static float speed = 0;
 static int inited = 0;
 
 static struct kalman_filter kalman[3];
-
-static void stm32f3_delay(void) {
-	size_t i = 0;
-
-	for (i = 0; i < 10000; i++)
-		;
-}
 
 static void init_leds(void) {
 	led_init(LED4);
@@ -141,7 +132,7 @@ static void speed_test(void) {
 			led_on(LED3);
 		}
 
-		stm32f3_delay(); //TODO nanosleep/usleep?
+		usleep(10);
 	}
 }
 
@@ -160,7 +151,7 @@ static void gyro_test(void) {
 		y = abs(buf[1]);
 
 		printf("x=%f y=%f z=%f\n", x, y);
-		stm32f3_delay();
+		usleep(10);
 	}
 }
 #endif
