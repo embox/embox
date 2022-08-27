@@ -22,6 +22,6 @@ extern void acc_data_normalize(int16_t *in, float *out);
 
 extern void acc_data_obtain(float *out);
 
-extern void acc_calculate_offset(void);
+//extern void acc_calculate_offset(void);
 
 #endif /* PLATFORM_STM32F3_SENSORS_LIBSENSORS_ACC_H_ */

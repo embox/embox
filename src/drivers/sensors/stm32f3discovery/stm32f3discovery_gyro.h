@@ -13,7 +13,7 @@
 
 extern void gyro_get(float *value);
 
-extern void gyro_data_normalize(float *in, float *out);
+//extern void gyro_data_normalize(float *in, float *out);
 
 extern void gyro_data_obtain(float *out);
 
