@@ -4,14 +4,11 @@
  * @date 06 july 2015
  * @author Anton Bondarev
  */
+#include <unistd.h>
+
 #include <libactuators/motor.h>
 
 #include <drivers/gpio/gpio.h>
-
-static void stm32f3_delay(uint32_t delay) {
-	while(delay--)
-		;
-}
 
 void motor_init(struct motor *m) {
 
@@ -27,11 +24,9 @@ void motor_enable(struct motor *m) {
 	gpio_set(m->port, m->enable, GPIO_PIN_HIGH);
 }
 
-
 void motor_disable(struct motor *m) {
 	gpio_set(m->port, m->enable, GPIO_PIN_LOW);
 }
-
 
 void motor_run(struct motor *m, enum motor_run_direction dir) {
 	uint8_t input_pin;
@@ -39,17 +34,17 @@ void motor_run(struct motor *m, enum motor_run_direction dir) {
 	input_pin = (dir == MOTOR_RUN_FORWARD) ? 1 : 0;
 
 	gpio_set(m->port, m->input[!input_pin], GPIO_PIN_LOW);
-	stm32f3_delay(0xFF); /* FIXME may be it is not needed */
+
 	gpio_set(m->port, m->input[input_pin], GPIO_PIN_HIGH);
 }
 
 void motor_stop(struct motor *m) {
-	stm32f3_delay(1000);
 
 	motor_disable(m);
-	stm32f3_delay(1000);
+
+	usleep(1);
 	gpio_set(m->port, m->input[0], GPIO_PIN_LOW);
-	stm32f3_delay(1000);
+	usleep(1);
 	gpio_set(m->port, m->input[1], GPIO_PIN_LOW);
-	stm32f3_delay(1000);
+	usleep(1);
 }
