@@ -1,0 +1,11 @@
+package embox.compat.posix.curses
+
+module LibTinfo {
+	@IncludePath("$(SRC_DIR)/compat/posix/curses/include")
+	source "setupterm.c",
+		"tinfo_globals.c",
+		"tparm.c",
+		"tputs.c"
+	
+	depends embox.compat.posix.curses.terminfo_database
+}

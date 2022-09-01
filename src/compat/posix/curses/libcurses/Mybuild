@@ -1,0 +1,28 @@
+package embox.compat.posix
+
+module LibCurses {
+	@IncludePath("$(SRC_DIR)/compat/posix/curses/include")
+	source "addch.c",
+		"addstr.c",
+		"attr.c",
+		"beep.c",
+		"bkgd.c",
+		"clear.c",
+		"curses_globals.c",
+		"delch.c",
+		"getch.c",
+		"initscr.c",
+		"inopts.c",
+		"insch.c",
+		"kernel.c",
+		"move.c",
+		"mvcur.c",
+		"outopts.c",
+		"refresh.c",
+		"scroll.c",
+		"touch.c",
+		"window.c"
+	
+	depends embox.compat.posix.curses.util
+	depends embox.compat.posix.curses.LibTinfo
+}
