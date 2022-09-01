@@ -20,6 +20,7 @@ const char *setup_tty(const char *dev_name) {
 	char full_name[PATH_MAX];
 
 	putenv("TERM=emterm");
+  	putenv("TERMINFO=/terminfo");
 
 	if (strlen(dev_name) != 0) {
 		strncpy(full_name, "/dev/", sizeof(full_name));
