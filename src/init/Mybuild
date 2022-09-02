@@ -27,6 +27,8 @@ module no_graphic extends display_mode {
 }
 
 module setup_tty_devfs extends setup_tty_api {
+	option string term_name="emterm"
+	
 	source "setup_tty_devfs.c"
 
 	depends diag_fd
