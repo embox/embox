@@ -25,7 +25,6 @@
 
 typedef struct terminal {
 	struct termtype type;
-	char *name;
 	int fildes;
 #undef TERMINAL
 } TERMINAL;

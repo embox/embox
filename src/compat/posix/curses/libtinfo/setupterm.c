@@ -44,13 +44,7 @@ int setupterm(char *term, int fildes, int *errret) {
 		RET_ERROR(ERROR_OCCURRED, "%s\n", "TERMINFO env variable is not set");
 	}
 
-	sprintf(filename, "%s", path);
-	
-	if (term == NULL) {
-		term = getenv("TERM");
-	}
-	
-	sprintf(filename, "%s/%c/%s", filename, term[0], term);
+	sprintf(filename, "%s/%c/%s", path, term[0], term);
 
 	fp = fopen(filename, "r");
 	if (fp == NULL) {
@@ -107,7 +101,6 @@ int setupterm(char *term, int fildes, int *errret) {
 
 	termp->type.str_table = dst;
 
-	termp->name = term;
 	termp->fildes = fildes;
 
 	set_curterm(termp);

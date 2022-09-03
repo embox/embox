@@ -12,8 +12,6 @@
 
 SCREEN *SP;
 
-bool _curs_init_screen;
-
 struct ctrl_seq *_curs_ctrl_seq;
 
 struct termios _curs_shell_tty;

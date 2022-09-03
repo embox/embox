@@ -8,15 +8,14 @@
 
 #include <curses_priv.h>
 
+#include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 #include <util/math.h>
 
 WINDOW *initscr(void) {
-	if (!_curs_init_screen) {
-		if (NULL == newterm(NULL, stdout, stdin)) {
-			return NULL;
-		}
-		_curs_init_screen = TRUE;
+	if (NULL == newterm(getenv("TERM"), stdout, stdin)) {
+		return NULL;
 	}
 
 	return stdscr;
@@ -46,10 +45,11 @@ bool isendwin(void) {
 }
 
 SCREEN *newterm(char *type, FILE *ofp, FILE *ifp) {
-	if ((cur_term == NULL) || (type != cur_term->name)) {
-		setupterm(type, fileno(ofp), NULL);
-	}
-	
+	static char term_name[NAME_MAX];
+
+	strcpy(term_name, type);
+	setupterm(term_name, fileno(ofp), NULL);
+
 	if (ERR == _curs_ctrl_seq_init()) {
 		return NULL;
 	}

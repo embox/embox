@@ -29,23 +29,23 @@ static int add_ctrl_seq(char *str, int value) {
 			return ERR;
 		}
 
-		if (*str == ptr->ch) {
-			if (ptr->child == NULL) {
-				ptr->child = &ctrl_seq_buf[ctrl_seq_buf_inuse++];
+		if (ptr->ch != 0) {
+			while ((ptr->ch != *str) && (ptr->sibling != NULL)) {
+				ptr = ptr->sibling;
 			}
-			ptr = ptr->child;
-			str++;
-		}
-		else if (ptr->ch != 0) {
-			if (ptr->sibling == NULL) {
-				ptr->sibling = &ctrl_seq_buf[ctrl_seq_buf_inuse++];
-				ptr->sibling->ch = *str;
+			if (ptr->ch == *str) {
+				ptr = ptr->child;
 				str++;
+				continue;
 			}
+			ptr->sibling = &ctrl_seq_buf[ctrl_seq_buf_inuse++];
 			ptr = ptr->sibling;
 		}
-		else {
-			ptr->ch = *str;
+
+		ptr->ch = *str++;
+		if (*str) {
+			ptr->child = &ctrl_seq_buf[ctrl_seq_buf_inuse++];
+			ptr = ptr->child;
 		}
 	}
 

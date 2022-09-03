@@ -32,9 +32,9 @@
 #define NL_MODE     0x001
 #define RAW_MODE    0x002
 #define ECHO_MODE   0x004
-#define DELAY_MODE  0x004
-#define CBREAK_MODE 0x008
-#define CURSES_MODE 0x010
+#define DELAY_MODE  0x008
+#define CBREAK_MODE 0x010
+#define CURSES_MODE 0x020
 
 #define NOCHANGE -1 /* no change on this line */
 
@@ -71,8 +71,6 @@ struct ctrl_seq {
 
 extern SCREEN *_curs_screen_p;
 #define SP _curs_screen_p
-
-extern bool _curs_init_screen;
 
 extern struct ctrl_seq *_curs_ctrl_seq;
 
