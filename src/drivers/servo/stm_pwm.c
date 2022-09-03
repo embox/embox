@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief Manage servo with STM32F4Discovery
+ * @brief Manage servo with STM32
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2016-04-04
@@ -25,7 +25,7 @@ static TIM_OC_InitTypeDef sConfig;
  *
  * @return Zero. Code is too simple for considering any errors
  */
-static int stm32f4_pwm_init(void) {
+static int stm32_pwm_init(void) {
 	CONF_PWM0_CLK_ENABLE_GPIO();
 
 	GPIO_InitTypeDef PORT;
@@ -85,9 +85,9 @@ static int stm32f4_pwm_init(void) {
  * @return Always zero. In case of actual error handle_error()
  * is called
  */
-static int stm32f4_servo_init(struct servo_dev *) {
-	if (stm32f4_pwm_init()) {
-		log_error("Failed to initialize stm32f4servo\n");
+static int stm32_servo_init(struct servo_dev *) {
+	if (stm32_pwm_init()) {
+		log_error("Failed to initialize stm32servo\n");
 		return -1;
 	}
 
@@ -110,7 +110,7 @@ static int stm32f4_servo_init(struct servo_dev *) {
  * @return Always zero.  In case of error board will turn on red LED
  * and stall. Look handle_error() for details.
  */
-static int stm32f4_servo_set(struct servo_dev *, int pos) {
+static int stm32_servo_set(struct servo_dev *, int pos) {
 	if (pos < MIN_POS)
 		pos = MIN_POS;
 
@@ -134,9 +134,9 @@ static int stm32f4_servo_set(struct servo_dev *, int pos) {
 	return 0;
 }
 
-const static struct servo_ops stm32f4_servo_ops = {
-	.init = stm32f4_servo_init,
-	.set_pos = stm32f4_servo_set,
+const static struct servo_ops stm32_servo_ops = {
+	.init = stm32_servo_init,
+	.set_pos = stm32_servo_set,
 };
 
-SERVO_DEV_DEF(&stm32f4_servo_ops, NULL);
+SERVO_DEV_DEF(&stm32_servo_ops, NULL);
