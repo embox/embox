@@ -21,8 +21,11 @@
 
 #define K 10
 
+static struct led led3;
+static struct button user_button;
+
 static inline void fault_handle(void) {
-	led_on(LED3);
+	led_on(&led3);
 }
 
 static int fault_detect(void) {
@@ -46,14 +49,14 @@ static int fault_detect(void) {
 int main(int argc, char *argv[]) {
 	struct motor motor1;
 
-	led_init(LED3);
-	button_init(BUTTON_USER);
+	led_init(&led3, STM_LED3_GPIO_PORT, STM_LED3_PIN);
+	button_init(&user_button, STM_USER_BUTTON_GPIO_PORT, 1 << STM_USER_BUTTON_PIN);
 	motor_init(&motor1);
 
 	motor_enable(&motor1);
 
 	/* Wait until button get pressed */
-	button_wait_set(BUTTON_USER);
+	button_wait_set(&user_button);
 
 	motor_run(&motor1, MOTOR_RUN_FORWARD);
 	{

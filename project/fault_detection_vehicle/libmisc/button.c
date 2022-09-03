@@ -5,17 +5,22 @@
  */
 
 #include "button.h"
+#include <drivers/gpio/gpio.h>
 
-void button_init(Button_TypeDef button) {
-	BSP_PB_Init(button, BUTTON_MODE_GPIO);
+void button_init(struct button *button, int port, int pin) {
+	button->port = port;
+	button->pin = pin;
+	gpio_setup_mode(button->port, button->pin, GPIO_MODE_INPUT);
 }
 
-void button_wait_set(Button_TypeDef button) {
-	while(BSP_PB_GetState(button) != SET) 
+void button_wait_set(struct button * button) {
+	while(gpio_get(button->port, button->pin) == 0) {
 		;
+	}
 }
 
-void button_wait_reset(Button_TypeDef button) {
-	while(BSP_PB_GetState(button) != RESET) 
-		;
+void button_wait_reset(struct button * button) {
+	while(gpio_get(button->port, button->pin) != 0) {
+			;
+		}
 }

@@ -25,6 +25,15 @@
 #include <filter/kalman_filter.h>
 
 
+static struct led led3;
+static struct led led4;
+static struct led led5;
+static struct led led6;
+static struct led led7;
+static struct led led8;
+static struct led led9;
+static struct led led10;
+
 static float angles[3];
 static float speed = 0;
 static int inited = 0;
@@ -32,14 +41,14 @@ static int inited = 0;
 static struct kalman_filter kalman[3];
 
 static void init_leds(void) {
-	led_init(LED4);
-	led_init(LED3);
-	led_init(LED5);
-	led_init(LED7);
-	led_init(LED9);
-	led_init(LED10);
-	led_init(LED8);
-	led_init(LED6);
+	led_init(&led3, STM_LED3_GPIO_PORT, STM_LED3_PIN);
+	led_init(&led4, STM_LED4_GPIO_PORT, STM_LED4_PIN);
+	led_init(&led5, STM_LED5_GPIO_PORT, STM_LED5_PIN);
+	led_init(&led6, STM_LED6_GPIO_PORT, STM_LED6_PIN);
+	led_init(&led7, STM_LED7_GPIO_PORT, STM_LED7_PIN);
+	led_init(&led8, STM_LED8_GPIO_PORT, STM_LED8_PIN);
+	led_init(&led9, STM_LED9_GPIO_PORT, STM_LED9_PIN);
+	led_init(&led10, STM_LED10_GPIO_PORT, STM_LED10_PIN);
 }
 
 
@@ -102,11 +111,11 @@ static void speed_test(void) {
 		time64_t current;
 		float dt, compensation;
 
-		led_off(LED3);
-		led_off(LED4);
-		led_off(LED5);
-		led_off(LED6);
-		led_off(LED7);
+		led_off(&led3);
+		led_off(&led4);
+		led_off(&led5);
+		led_off(&led6);
+		led_off(&led7);
 
 		gyro_data_obtain(gyro);
 		acc_data_obtain(acc);
@@ -121,15 +130,15 @@ static void speed_test(void) {
 		update_speed(acc[0] - compensation, dt);
 
 		if (speed > 50) {
-			led_on(LED7);
+			led_off(&led7);
 		} else if (speed > 10) {
-			led_on(LED5);
+			led_off(&led5);
 		} else if (speed < -50) {
-			led_on(LED6);
+			led_on(&led6);
 		} else if (speed < -10) {
-			led_on(LED4);
+			led_on(&led4);
 		} else {
-			led_on(LED3);
+			led_on(&led3);
 		}
 
 		usleep(10);
@@ -160,7 +169,7 @@ int main(int argc, char *argv[]) {
 	init_leds();
 
 	/* Sensors are initialized */
-	led_on(LED10);
+	led_on(&led10);
 
 	speed_test();
 
