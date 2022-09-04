@@ -97,7 +97,7 @@ extract : $(EXTRACT)
 $(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
 		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(BUILD_DIR);, \
-		$(if $(filter-out %tar.gz,$(filter %gz,$(pkg_ext))), \
+		$(if $(filter-out %tar.gz %tgz,$(filter %gz,$(pkg_ext))), \
 		gzip -dk $(DOWNLOAD_DIR)/$(pkg_archive_name); mv $(DOWNLOAD_DIR)/$(PKG_NAME) $(BUILD_DIR);, \
 		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(BUILD_DIR);)))
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
