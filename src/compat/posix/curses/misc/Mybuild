@@ -1,8 +1,0 @@
-package embox.compat.posix.curses
-
-@Build(stage=1,script="$(EXTERNAL_MAKE) -f terminfo_database.mk download extract build")
-static module terminfo_database {
-	@InitFS
-	@AddPrefix("../../../../../build/extbld/^MOD_PATH")
-	source "terminfo"
-}

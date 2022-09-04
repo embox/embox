@@ -7,5 +7,5 @@ module LibTinfo {
 		"tparm.c",
 		"tputs.c"
 	
-	depends embox.compat.posix.curses.terminfo_database
+	depends third_party.terminfo
 }

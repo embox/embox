@@ -1,0 +1,8 @@
+package third_party
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract build")
+static module terminfo {
+	@InitFS
+	@AddPrefix("../../build/extbld/^MOD_PATH")
+	source "terminfo"
+}
