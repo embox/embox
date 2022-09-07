@@ -74,4 +74,16 @@
 #define CLK_SPI1      __HAL_RCC_SPI1_CLK_ENABLE()
 #define CLK_SPI2      __HAL_RCC_SPI2_CLK_ENABLE()
 
+/* TIM clocks */
+#define CLK_TIM1      __HAL_RCC_TIM1_CLK_ENABLE()
+#define CLK_TIM2      __HAL_RCC_TIM2_CLK_ENABLE()
+#define CLK_TIM3      __HAL_RCC_TIM3_CLK_ENABLE()
+#define CLK_TIM4      __HAL_RCC_TIM4_CLK_ENABLE()
+
+/* TIM channels */
+#define CHANNEL_TIM1      TIM_CHANNEL_1
+#define CHANNEL_TIM2      TIM_CHANNEL_2
+#define CHANNEL_TIM3      TIM_CHANNEL_3
+#define CHANNEL_TIM4      TIM_CHANNEL_4
+
 #endif /* STM32_H_ */

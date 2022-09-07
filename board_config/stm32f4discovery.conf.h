@@ -83,4 +83,23 @@ struct spi_conf spis[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis))
+struct pwm_conf pwms[] = {
+	[0] = {
+		.name = "PWM0",
+		.channel = VAL("CHANNEL_TIM", CHANNEL_TIM1),
+		.instance = VAL("INSTANCE", TIM4),
+		.servo_low = VAL("LOW", 200),
+		.servo_high = VAL("HIGH", 1350),
+		.dev = {
+			.pins = {
+				PIN("TIM",  PB, PIN_6, AF2),
+			},
+			.clocks = {
+				VAL("GPIO",  CLK_GPIOB),
+				VAL("TIM",  CLK_TIM4),
+			}
+		},
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis), PWM(pwms))

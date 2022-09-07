@@ -96,6 +96,8 @@ int main() {
 	const struct uart_conf *uart;
 	struct conf_item *spi_conf = &board_config[SPI_IDX];
 	const struct spi_conf *spi;
+	struct conf_item *pwm_conf = &board_config[PWM_IDX];
+	const struct pwm_conf *pwm;
 
 	config();
 
@@ -104,7 +106,7 @@ int main() {
 
 	/* UART */
 	for (i = 0; i < uart_conf->array_size; i++) {
-		uart = &((const struct uart_conf *) uart_conf->ptr)[i];;
+		uart = &((const struct uart_conf *) uart_conf->ptr)[i];
 
 		if (uart->status != ENABLED) {
 			continue;
@@ -138,7 +140,7 @@ int main() {
 
 	/* SPI */
 	for (i = 0; i < spi_conf->array_size; i++) {
-		spi = &((const struct spi_conf *) spi_conf->ptr)[i];;
+		spi = &((const struct spi_conf *) spi_conf->ptr)[i];
 
 		if (spi->status != ENABLED) {
 			continue;
@@ -163,6 +165,33 @@ int main() {
 		for (j = 0; j < ARRAY_SIZE(spi->dev.clocks); j++) {
 			if (gen_field_func(spi->name,
 					"CLK_ENABLE", &spi->dev.clocks[j]) != 0) {
+				break;
+			}
+		}
+
+		printf("\n");
+	}
+
+	/* PWM */
+	for (i = 0; i < pwm_conf->array_size; i++) {
+		pwm = &((const struct pwm_conf *) pwm_conf->ptr)[i];
+
+		gen_dev_enabled(pwm->name);
+		gen_field_func(pwm->name, "CHANNEL", &pwm->channel);
+		gen_field_func(pwm->name, "TIM", &pwm->instance);
+		gen_field_int(pwm->name, "SERVO_POS", &pwm->servo_low);
+		gen_field_int(pwm->name, "SERVO_POS", &pwm->servo_high);
+
+		for (j = 0; j < ARRAY_SIZE(pwm->dev.pins); j++) {
+			if (gen_field_pin(pwm->name,
+					"PIN", &pwm->dev.pins[j]) != 0) {
+				break;
+			}
+		}
+
+		for (j = 0; j < ARRAY_SIZE(pwm->dev.clocks); j++) {
+			if (gen_field_func(pwm->name,
+					"CLK_ENABLE", &pwm->dev.clocks[j]) != 0) {
 				break;
 			}
 		}

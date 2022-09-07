@@ -61,4 +61,23 @@ struct uart_conf uarts[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts))
+struct pwm_conf pwms[] = {
+	[0] = {
+		.name = "PWM0",
+		.instance = VAL("INSTANCE", TIM2),
+		.channel = VAL("CHANNEL_TIM", CHANNEL_TIM2),
+		.servo_low = VAL("LOW", 430),
+		.servo_high = VAL("HIGH", 2175),
+		.dev = {
+			.pins = {
+				PIN("TIM",  PD, PIN_4, AF2),
+			},
+			.clocks = {
+				VAL("GPIO",  CLK_GPIOD),
+				VAL("TIM",  CLK_TIM2),
+			}
+		},
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), PWM(pwms))
