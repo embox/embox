@@ -36,12 +36,12 @@
 #define CBREAK_MODE 0x010
 #define CURSES_MODE 0x020
 
-#define NOCHANGE -1 /* no change on this line */
+#define NOCHANGE (curs_size_t)(-1) /* no change on this line */
 
 struct line {
 	chtype *text;
-	chtype firstchar;
-	chtype lastchar;
+	curs_size_t firstchar;
+	curs_size_t lastchar;
 };
 
 typedef struct screen {

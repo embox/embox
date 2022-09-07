@@ -16,7 +16,7 @@
 	if (++it == INPUT_FIFO_SIZE) \
 	it = 0
 
-static char input_fifo[INPUT_FIFO_SIZE];
+static signed char input_fifo[INPUT_FIFO_SIZE];
 static size_t input_fifo_beg;
 static size_t input_fifo_end;
 
@@ -45,7 +45,8 @@ int getch(void) {
 }
 
 int wgetch(WINDOW *win) {
-	char ch;
+	int ch;
+	signed char buf;
 	bool reset_mode = FALSE;
 	struct ctrl_seq *tmp = NULL;
 
@@ -74,8 +75,11 @@ int wgetch(WINDOW *win) {
 
 	do {
 		do {
-			if (1 != read(fileno(SP->ifp), &ch, 1)) {
+			if (1 != read(fileno(SP->ifp), &buf, 1)) {
 				ch = EOF;
+			}
+			else {
+				ch = buf;
 			}
 			while (tmp && (ch != tmp->ch)) {
 				tmp = tmp->sibling;
