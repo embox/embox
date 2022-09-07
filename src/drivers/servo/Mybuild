@@ -12,7 +12,10 @@ module stm32f3_pwm {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.4.0/Drivers/STM32F3xx_HAL_Driver/Inc/")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.4.0/Drivers/BSP/STM32F3-Discovery/")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.4.0/Drivers/CMSIS/Device/ST/STM32F3xx/Include/")
-	source "stm32f3_pwm.c"
+	source "stm32f4_pwm.c"
+
+	@IncludeExport(path="drivers/servo", target_name="stm32_servo_conf.h")
+	source "stm32_servo_conf_f3.h"
 
         depends servo
 	depends third_party.bsp.st_bsp_api
@@ -23,6 +26,9 @@ module stm32f3_pwm {
 module stm32f4_pwm {
         @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/Drivers/STM32F4xx_HAL_Driver/Inc/")
 	source "stm32f4_pwm.c"
+
+	@IncludeExport(path="drivers/servo", target_name="stm32_servo_conf.h")
+	source "stm32_servo_conf_f4.h"
 
         depends servo
 	depends third_party.bsp.st_bsp_api

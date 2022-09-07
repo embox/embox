@@ -11,11 +11,11 @@
 #include <string.h>
 #include <hal/reg.h>
 #include <drivers/servo/servo.h>
-#include <stm32f4_discovery.h>
-#include <stm32f4xx_hal.h>
-#include <stm32f4xx_hal_tim.h>
+#include <drivers/servo/stm32_servo_conf.h>
 #include <util/log.h>
 #include <kernel/printk.h>
+
+#include <config/board_config.h>
 
 static TIM_HandleTypeDef TimHandle;
 static TIM_OC_InitTypeDef sConfig;
@@ -26,21 +26,21 @@ static TIM_OC_InitTypeDef sConfig;
  * @return Zero. Code is too simple for considering any errors
  */
 static int stm32f4_pwm_init(void) {
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-	__HAL_RCC_TIM4_CLK_ENABLE();
+	CONF_PWM0_CLK_ENABLE_GPIO();
 
 	GPIO_InitTypeDef PORT;
 	memset(&PORT, 0, sizeof(PORT));
-	PORT.Pin = GPIO_PIN_6;
+	PORT.Pin = CONF_PWM0_PIN_TIM_NR;
 	PORT.Pull = GPIO_PULLUP;
 	PORT.Mode = GPIO_MODE_AF_PP;
 	PORT.Speed = GPIO_SPEED_FREQ_HIGH;
-	PORT.Alternate = GPIO_AF2_TIM4;
-	HAL_GPIO_Init(GPIOB, &PORT);
+	PORT.Alternate = CONF_PWM0_PIN_TIM_AF;
+	HAL_GPIO_Init(CONF_PWM0_PIN_TIM_PORT, &PORT);
 
+	CONF_PWM0_CLK_ENABLE_TIM();
         memset(&TimHandle, 0, sizeof(TimHandle));
 
-        TimHandle.Instance = TIM4;
+        TimHandle.Instance = CONF_PWM0_TIM_INSTANCE();
         TimHandle.Init.Prescaler         = 72;
         TimHandle.Init.Period            = 20000;
         TimHandle.Init.ClockDivision     = 0;
@@ -64,8 +64,8 @@ static int stm32f4_pwm_init(void) {
         sConfig.OCIdleState  = TIM_OCIDLESTATE_RESET;
 
         /* Set the pulse value for channel 1 */
-        sConfig.Pulse = PULSE1_VALUE;
-        if (HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, TIM_CHANNEL_1) != HAL_OK)
+        sConfig.Pulse = 10000;
+        if (HAL_TIM_PWM_ConfigChannel(&TimHandle, &sConfig, CONF_PWM0_CHANNEL_CHANNEL_TIM()) != HAL_OK)
         {
           log_error("Failed to config TIM PWM channel\n");
           return -1;
@@ -94,8 +94,8 @@ static int stm32f4_servo_init(struct servo_dev *) {
 	return 0;
 }
 
-#define SERVO_0    200  /* 180 degrees */
-#define SERVO_180  1350 /* 0   degrees */
+#define SERVO_0    CONF_PWM0_SERVO_POS_LOW  /*   0 degrees */
+#define SERVO_180  CONF_PWM0_SERVO_POS_HIGH /* 180 degrees */
 
 #define MIN_POS 0
 #define MAX_POS 100
@@ -123,11 +123,11 @@ static int stm32f4_servo_set(struct servo_dev *, int pos) {
 
 	if (HAL_TIM_PWM_ConfigChannel(&TimHandle,
 	                              &sConfig,
-	                              TIM_CHANNEL_1) != HAL_OK) {
+	                              CONF_PWM0_CHANNEL_CHANNEL_TIM()) != HAL_OK) {
 		return -1;
 	}
 
-	if (HAL_TIM_PWM_Start(&TimHandle, TIM_CHANNEL_1) != HAL_OK) {
+	if (HAL_TIM_PWM_Start(&TimHandle, CONF_PWM0_CHANNEL_CHANNEL_TIM()) != HAL_OK) {
 		return -1;
 	}
 
