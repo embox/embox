@@ -23,11 +23,11 @@ static void screen(FILE *fp) {
 
 	WINDOW *std;
 	std = initscr();
-	columns = std->endx - std->begx;
+	columns = std->maxx - std->begx;
 	if (columns >= MAX_SCREEN_WIDTH - 1) {
 		columns = MAX_SCREEN_WIDTH - 1;
 	}
-	lines = std->endy - std->begy;
+	lines = std->maxy - std->begy;
 
 	while (1) {
 		for (x = 0; x < lines - 1; x++) {
