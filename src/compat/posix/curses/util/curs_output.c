@@ -28,7 +28,7 @@ int _curs_putc(int ch) {
 	return OK;
 }
 
-int _curs_puts(char *str, size_t len) {
+int _curs_puts(void *str, size_t len) {
 	if (output_buf_inuse + len >= OUTPUT_BUF_SIZE) {
 		if ((len >= OUTPUT_BUF_SIZE) || (ERR == _curs_flush())) {
 			return ERR;
