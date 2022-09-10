@@ -810,3 +810,28 @@ int nodelay(WINDOW *win, bool bf) {
 
 	return -1 != tcsetattr(fileno(screen.in), TCSANOW, &t) ? OK : ERR;
 }
+
+int curs_set(int visibility) {
+	return OK;
+}
+/****common part*****/
+int beep(void) {
+	return OK;
+}
+
+int keypad(WINDOW *win, bool bf) {
+#if 0
+	if (/*(SP == NULL)*/ || (win == NULL)) {
+		return ERR;
+	}
+
+	if (bf) {
+		win->flags |= WIN_KEYPAD;
+	}
+	else {
+		win->flags &= ~WIN_KEYPAD;
+	}
+#endif
+	return OK;
+}
+
