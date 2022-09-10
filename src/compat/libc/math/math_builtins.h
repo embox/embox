@@ -45,9 +45,9 @@ __BEGIN_DECLS
 #define roundf(x) __builtin_roundf(x)
 #define roundl(x) __builtin_roundl(x)
 
-#define pow(x, y) __builtin_pow((x), (y))
-#define powf(x, y) __builtin_powf((x), (y))
-#define powl(x, y) __builtin_powl((x), (y))
+#define pow(...) __builtin_pow(__VA_ARGS__)
+#define powf(...) __builtin_powf(__VA_ARGS__)
+#define powl(...) __builtin_powl(__VA_ARGS__)
 
 #define log10(x) __builtin_log10(x)
 
@@ -71,9 +71,9 @@ __BEGIN_DECLS
 #define atanf(x) __builtin_atanf(x)
 #define atanl(x) __builtin_atanl(x)
 
-#define atan2(y, x) __builtin_atan2((y), (x))
-#define atan2f(y, x) __builtin_atan2f((y), (x))
-#define atan2l(y, x) __builtin_atan2l((y), (x))
+#define atan2(...) __builtin_atan2(__VA_ARGS__)
+#define atan2f(...) __builtin_atan2f(__VA_ARGS__)
+#define atan2l(...) __builtin_atan2l(__VA_ARGS__)
 
 #define cos(x) __builtin_cos(x)
 #define cosf(x) __builtin_cosf(x)
