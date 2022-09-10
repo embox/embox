@@ -15,6 +15,7 @@ static module math_simple {
 	source "fmod.c", "modf.c"
 	source "log.c", "pow.c"
 	source "sqrt.c"
+	source "floor.c"
 	source "round.c", "roundl.c"
 }
 
