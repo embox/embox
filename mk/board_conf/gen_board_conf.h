@@ -68,13 +68,21 @@ struct pwm_conf {
 	struct device_conf dev;
 };
 
+struct led_conf {
+	int status;
+	const char *name;
+	struct field_int port;
+	struct field_int pin;
+};
+
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 #define UART_IDX    0
 #define SPI_IDX     1
 #define I2C_IDX     2
 #define PWM_IDX     3
-#define MAX_IDX     4
+#define LED_IDX     4
+#define MAX_IDX     5
 
 #define EXPORT_CONFIG(...) \
 	struct conf_item board_config[MAX_IDX] = { \
@@ -103,6 +111,12 @@ struct pwm_conf {
 	[PWM_IDX] = { \
 		(void *) &(pwms)[0], \
 		ARRAY_SIZE(pwms), \
+	}
+
+#define LED(leds) \
+	[LED_IDX] = { \
+		(void *) &(leds)[0], \
+		ARRAY_SIZE(leds), \
 	}
 
 #define CONFIG   void config()
