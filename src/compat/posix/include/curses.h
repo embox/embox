@@ -27,7 +27,7 @@
 #define ERR -1
 
 typedef char chtype;
-typedef chtype attr_t;
+typedef uint32_t attr_t;
 typedef uint16_t curs_size_t;
 
 struct line;
@@ -41,6 +41,11 @@ typedef struct window {
 	curs_size_t cury, curx; /* current cursor position */
 
 	uint16_t flags;
+
+	attr_t attrs;
+	chtype bkgd;         /* background color */
+	bool scrollok;       /* may scroll */
+	bool clearok;        /* clear screen on next refresh */
 } WINDOW;
 
 #ifdef CURSES_PRIV_H_
@@ -104,7 +109,7 @@ extern WINDOW *initscr(void);
 extern int endwin(void);
 extern bool isendwin(void);
 extern SCREEN *newterm(char *type, FILE *outfd, FILE *infd);
-void delscreen(SCREEN *screen);
+extern void delscreen(SCREEN *screen);
 
 extern int cbreak(void);
 extern int nocbreak(void);
