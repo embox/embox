@@ -34,146 +34,146 @@
 
 __BEGIN_DECLS
 
-extern double modf(double x, double *i_ptr);
-extern double fmod(double x, double y);
-extern int signbit(double x);
-extern double fabs(double x);
-extern float fabsf(float x);
-extern long double fabsl(long double x);
+#define modf(x, i_ptr) __builtin_modf(x, i_ptr)
+#define fmod(x, y) __builtin_fmod(x, y)
+#define signbit(x) ((x) < 1 ? 1 : 0)
+#define fabs(x) __builtin_fabs(x)
+#define fabsf(x) __builtin_fabsf(x)
+#define fabsl(x) __builtin_fabsl(x)
 
-extern double round(double x);
-extern float roundf(float x);
-extern long double roundl(long double x);
+#define round(x) __builtin_round(x)
+#define roundf(x) __builtin_roundf(x)
+#define roundl(x) __builtin_roundl(x)
 
-extern double pow(double x, double y);
-extern float powf(float x, float y);
-extern long double powl(long double x, long double y);
+#define pow(x, y) __builtin_pow((x), (y))
+#define powf(x, y) __builtin_powf((x), (y))
+#define powl(x, y) __builtin_powl((x), (y))
 
-extern double log10(double x);
+#define log10(x) __builtin_log10(x)
 
-extern double ceil(double x);
-extern float ceilf(float x);
-extern long double ceill(long double x);
+#define ceil(x) __builtin_ceil(x)
+#define ceilf(x) __builtin_ceilf(x)
+#define ceill(x) __builtin_ceill(x)
 
-extern double floor(double x);
-extern float floorf(float x);
-extern long double floorl(long double x);
+#define floor(x) __builtin_floor(x)
+#define floorf(x) __builtin_floorf(x)
+#define floorl(x) __builtin_floorl(x)
 
-extern double acos(double x);
-extern float acosf(float x);
-extern long double acosl(long double x);
+#define acos(x) __builtin_acos(x)
+#define acosf(x) __builtin_acosf(x)
+#define acosl(x) __builtin_acosl(x)
 
-extern double asin(double x);
-extern float asinf(float x);
-extern long double asinl(long double x);
+#define asin(x) __builtin_asin(x)
+#define asinf(x) __builtin_asinf(x)
+#define asinl(x) __builtin_asinl(x)
 
-extern double atan(double x);
-extern float atanf(float x);
-extern long double atanl(long double x);
+#define atan(x) __builtin_atan(x)
+#define atanf(x) __builtin_atanf(x)
+#define atanl(x) __builtin_atanl(x)
 
-extern double atan2(double y, double x);
-extern float atan2f(float y, float x);
-extern long double atan2l(long double y, long double x);
+#define atan2(y, x) __builtin_atan2((y), (x))
+#define atan2f(y, x) __builtin_atan2f((y), (x))
+#define atan2l(y, x) __builtin_atan2l((y), (x))
 
-extern double cos(double x);
-extern float cosf(float x);
-extern long double cosl(long double x);
+#define cos(x) __builtin_cos(x)
+#define cosf(x) __builtin_cosf(x)
+#define cosl(x) __builtin_cosl(x)
 
-extern double cosh(double x);
-extern float coshf(float x);
-extern long double coshl(long double x);
+#define cosh(x) __builtin_cosh(x)
+#define coshf(x) __builtin_coshf(x)
+#define coshl(x) __builtin_coshl(x)
 
-extern double exp(double x);
-extern float expf(float x);
-extern long double expl(long double x);
+#define exp(x) __builtin_exp(x)
+#define expf(x) __builtin_expf(x)
+#define expl(x) __builtin_expl(x)
 
-extern double frexp(double num, int *exp);
-extern float frexpf(float num, int *exp);
-extern long double frexpl(long double num, int *exp);
+#define frexp(x) __builtin_frexp(x)
+#define frexpf(x) __builtin_frexpf(x)
+#define frexpl(x) __builtin_frexpl(x)
 
-extern double ldexp(double x, int exp);
-extern float ldexpf(float x, int exp);
-extern long double ldexpl(long double x, int exp);
+#define ldexp(x) __builtin_ldexp(x)
+#define ldexpf(x) __builtin_ldexpf(x)
+#define ldexpl(x) __builtin_ldexpl(x)
 
-extern double log(double x);
-extern float logf(float x);
-extern long double logl(long double x);
+#define log(x) __builtin_log(x)
+#define logf(x) __builtin_logf(x)
+#define logl(x) __builtin_logl(x)
 
-extern double sin(double x);
-extern float sinf(float x);
-extern long double sinl(long double x);
+#define sin(x) __builtin_sin(x)
+#define sinf(x) __builtin_sinf(x)
+#define sinl(x) __builtin_sinl(x)
 
-extern double sinh(double x);
-extern float sinhf(float x);
-extern long double sinhl(long double x);
+#define sinh(x) __builtin_sinh(x)
+#define sinhf(x) __builtin_sinhf(x)
+#define sinhl(x) __builtin_sinhl(x)
 
-extern double sqrt(double x);
-extern float sqrtf(float x);
-extern long double sqrtl(long double x);
+#define sqrt(x) __builtin_sqrt(x)
+#define sqrtf(x) __builtin_sqrtf(x)
+#define sqrtl(x) __builtin_sqrtl(x)
 
-extern double tan(double x);
-extern float tanf(float x);
-extern long double tanl(long double x);
+#define tan(x) __builtin_tan(x)
+#define tanf(x) __builtin_tanf(x)
+#define tanl(x) __builtin_tanl(x)
 
-extern double tanh(double x);
-extern float tanhf(float x);
-extern long double tanhl(long double x);
+#define tanh(x) __builtin_tanh(x)
+#define tanhf(x) __builtin_tanhf(x)
+#define tanhl(x) __builtin_tanhl(x)
 
-extern long lrintf(float x);
-extern long lrint(double x);
-extern long lrintl(long double x);
-extern long long llrintf(float x);
-extern long long llrint(double x);
-extern long long llrintl(long double x);
-extern float rintf(float x);
-extern double rint(double x);
-extern long double rintl(long double x);
+#define lrintf(x) __builtin_lrintf(x)
+#define lrint(x) __builtin_lrint(x)
+#define lrintl(x) __builtin_lrintl(x)
+#define llrintf(x) __builtin_llrintf(x)
+#define llrint(x) __builtin_llrint(x)
+#define llrintl(x) __builtin_llrintl(x)
+#define rintf(x) __builtin_rintf(x)
+#define rint(x) __builtin_rint(x)
+#define rintl(x) __builtin_rintl(x)
 
-extern float log2f(float x);
-extern double log2(double x);
-extern long double log2l(long double x);
+#define log2f(x) __builtin_log2f(x)
+#define log2(x) __builtin_log2(x)
+#define log2l(x) __builtin_log2l(x)
 
-extern float exp2f(float x);
-extern double exp2(double x);
-extern long double exp2l(long double x);
+#define exp2f(x) __builtin_exp2f(x)
+#define exp2(x) __builtin_exp2(x)
+#define exp2l(x) __builtin_exp2l(x)
 
-extern float truncf(float x);
-extern double trunc(double x);
-extern long double truncl(long double x);
+#define truncf(x) __builtin_truncf(x)
+#define trunc(x) __builtin_trunc(x)
+#define truncl(x) __builtin_truncl(x)
 
-extern float fminf(float x, float y);
-extern double fmin(double x, double y);
-extern long double fminl(long double x, long double y);
+#define fminf(x) __builtin_fminf(x)
+#define fmin(x) __builtin_fmin(x)
+#define fminl(x) __builtin_fminl(x)
 
-extern float fmaxf(float x, float y);
-extern double fmax(double x, double y);
-extern long double fmaxl(long double x, long double y);
+#define fmaxf(x) __builtin_fmaxf(x)
+#define fmax(x) __builtin_fmax(x)
+#define fmaxl(x) __builtin_fmaxl(x)
 
-extern float copysignf(float x, float y);
-extern double copysign(double x, double y);
-extern long double copysignl(long double x, long double y);
+#define copysignf(x) __builtin_copysignf(x)
+#define copysign(x) __builtin_copysign(x)
+#define copysignl(x) __builtin_copysignl(x)
 
-extern long lroundf(float x);
-extern long lround(double x);
-extern long lroundl(long double x);
-extern long long llroundf(float x);
-extern long long llround(double x);
-extern long long llroundl(long double x);
+#define lroundf(x) __builtin_lroundf(x)
+#define lround(x) __builtin_lround(x)
+#define lroundl(x) __builtin_lroundl(x)
+#define llroundf(x) __builtin_llroundf(x)
+#define llround(x) __builtin_llround(x)
+#define llroundl(x) __builtin_llroundl(x)
 
-extern int __isnormal(double d);
-extern int __isnormalf(float f);
-extern int __isnormall(long double f);
-extern int __isfinite(double d);
-extern int __isfinitef(float f);
-extern int __isfinitel(long double e);
+#define __isnormal(x) __builtin___isnormal(x)
+#define __isnormalf(x) __builtin___isnormalf(x)
+#define __isnormall(x) __builtin___isnormall(x)
+#define __isfinite(x) __builtin___isfinite(x)
+#define __isfinitef(x) __builtin___isfinitef(x)
+#define __isfinitel(x) __builtin___isfinitel(x)
 
-extern double hypot(double x, double y);
-extern float hypotf(float x, float y);
-extern long double hypotl(long double x, long double y);
+#define hypot(x) __builtin_hypot(x)
+#define hypotf(x) __builtin_hypotf(x)
+#define hypotl(x) __builtin_hypotl(x)
 
-extern double cbrt(double x);
-extern float cbrtf(float x);
-extern long double cbrtl(long double x);
+#define cbrt(x) __builtin_cbrt(x)
+#define cbrtf(x) __builtin_cbrtf(x)
+#define cbrtl(x) __builtin_cbrtl(x)
 
 __END_DECLS
 
