@@ -36,7 +36,7 @@ __BEGIN_DECLS
 
 #define modf(x, i_ptr) __builtin_modf(x, i_ptr)
 #define fmod(x, y) __builtin_fmod(x, y)
-#define signbit(x) ((x) < 1 ? 1 : 0)
+#define signbit(x) ((x) < 0.0 ? 1 : 0)
 #define fabs(x) __builtin_fabs(x)
 #define fabsf(x) __builtin_fabsf(x)
 #define fabsl(x) __builtin_fabsl(x)
