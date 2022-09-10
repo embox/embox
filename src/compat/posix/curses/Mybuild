@@ -1,0 +1,10 @@
+package embox.compat.posix
+
+@DefaultImpl(libcurses_tiny)
+abstract module LibCurses {
+
+}
+
+module libcurses_tiny extends LibCurses {
+	source "curses.c"
+}

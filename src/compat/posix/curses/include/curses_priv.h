@@ -88,7 +88,7 @@ extern int _curs_curcol;
 extern int _curs_ctrl_seq_init(void);
 
 extern int _curs_putc(int ch);
-extern int _curs_puts(char *str, size_t len);
+extern int _curs_puts(void *str, size_t len);
 extern int _curs_flush(void);
 
 extern int _curs_get_tty_mode(struct termios *t);
