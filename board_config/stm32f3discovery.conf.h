@@ -80,4 +80,47 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), PWM(pwms))
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED3",
+		.port = VAL("", PE),
+		.pin = VAL("", 9),
+	},
+	[1] = {
+		.name = "LED4",
+		.port = VAL("", PE),
+		.pin = VAL("", 8),
+	},
+	[2] = {
+		.name = "LED5",
+		.port = VAL("", PE),
+		.pin = VAL("", 10),
+	},
+	[3] = {
+		.name = "LED6",
+		.port = VAL("PORT", PE),
+		.pin = VAL("PIN", 15),
+	},
+	[4] = {
+		.name = "LED7",
+		.port = VAL("", PE),
+		.pin = VAL("", 11),
+	},
+	[5] = {
+		.name = "LED8",
+		.port = VAL("", PE),
+		.pin = VAL("", 14),
+	},
+	[6] = {
+		.name = "LED9",
+		.port = VAL("", PE),
+		.pin = VAL("", 12),
+	},
+	[7] = {
+		.name = "LED10",
+		.port = VAL("PORT", PE),
+		.pin = VAL("PIN", 13),
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), PWM(pwms), LED(leds))
