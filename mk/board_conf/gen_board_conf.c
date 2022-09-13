@@ -90,6 +90,30 @@ static int gen_field_pin(const char *dev_name,
 	return 0;
 }
 
+static int gen_field_gpio_out(const char *dev_name,
+		const char *prop_name, const struct field_pin *f) {
+	char buf[128];
+	char def[64];
+
+	if (!f->name) {
+		return -1;
+	}
+
+	sprintf(def, "#define CONF_%s_%s_%s_PORT",
+		dev_name, prop_name, f->name);
+	sprintf(buf, "%-50s %s", def, f->port);
+	printf("%s\n", buf);
+
+	sprintf(def, "#define CONF_%s_%s_%s_NR",
+		dev_name, prop_name, f->name);
+	sprintf(buf, "%-50s %s", def, f->n);
+	printf("%s\n", buf);
+
+	printf("%s\n", buf);
+
+	return 0;
+}
+
 int main() {
 	int i, j;
 	struct conf_item *uart_conf = &board_config[UART_IDX];
@@ -98,6 +122,8 @@ int main() {
 	const struct spi_conf *spi;
 	struct conf_item *pwm_conf = &board_config[PWM_IDX];
 	const struct pwm_conf *pwm;
+	struct conf_item *led_conf = &board_config[LED_IDX];
+	const struct led_conf *led;
 
 	config();
 
@@ -195,6 +221,17 @@ int main() {
 				break;
 			}
 		}
+
+		printf("\n");
+	}
+
+	/* LED */
+	for (i = 0; i < led_conf->array_size; i++) {
+		led = &((const struct led_conf *) led_conf->ptr)[i];
+
+		gen_dev_enabled(led->name);
+		gen_field_func(led->name, "GPIO_PORT", &led->port);
+		gen_field_func(led->name, "GPIO_PIN", &led->pin);
 
 		printf("\n");
 	}
