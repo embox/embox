@@ -1,0 +1,30 @@
+/*
+  В cargo.toml необходимо добавить:
+  [build-dependencies]
+  bindgen = "0.60.1"
+*/
+use std::{path::PathBuf, env};
+
+extern crate bindgen;
+
+fn main() {
+    let bindings = bindgen::Builder::default()
+    .header("../embox_rust/src/compat/libc/include/string.h")
+    .header("../embox_rust/src/compat/libc/include/stdio.h")
+    .header("../embox_rust/src/compat/libc/include/stdlib.h")
+    .clang_arg("-I../embox_rust/src/compat/posix/include")
+    .clang_arg("-I../embox_rust/src/compat/libc/include")
+    .clang_arg("-I../embox_rust/src/include")
+    .clang_arg("-I../embox_rust/src/arch/x86/include")
+    .clang_arg("-I../embox_rust/build/base/gen/include")
+    .ctypes_prefix("::core::ffi")
+    .use_core()
+    .emit_builtins()
+    .generate()
+    .expect("Unable to generate bindings");
+
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
+    bindings
+        .write_to_file(out_path.join("bindings.rs"))
+        .expect("Couldn't write bindings!");
+}

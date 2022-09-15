@@ -218,7 +218,10 @@ extern FILE *stdin;
 /* extern FILE *stdout; *
  * There are two implementation of stdout (global and multitask)
  */
+#ifdef __EMBOX__
 #include <module/embox/compat/libc/stdio/stdio_stdstreams.h>
+#endif
+
 extern FILE *stderr;
 
 extern int fileno(FILE *stream);
