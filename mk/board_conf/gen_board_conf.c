@@ -90,25 +90,16 @@ static int gen_field_pin(const char *dev_name,
 	return 0;
 }
 
-static int gen_field_gpio_out(const char *dev_name,
-		const char *prop_name, const struct field_pin *f) {
+static int gen_field_gpio_out(const char *dev_name, const char *port, const char *pin) {
 	char buf[128];
 	char def[64];
 
-	if (!f->name) {
-		return -1;
-	}
-
-	sprintf(def, "#define CONF_%s_%s_%s_PORT",
-		dev_name, prop_name, f->name);
-	sprintf(buf, "%-50s %s", def, f->port);
+	sprintf(def, "#define CONF_%s_GPIO_PORT", dev_name);
+	sprintf(buf, "%-50s %s", def, port);
 	printf("%s\n", buf);
 
-	sprintf(def, "#define CONF_%s_%s_%s_NR",
-		dev_name, prop_name, f->name);
-	sprintf(buf, "%-50s %s", def, f->n);
-	printf("%s\n", buf);
-
+	sprintf(def, "#define CONF_%s_GPIO_PIN", dev_name);
+	sprintf(buf, "%-50s %s", def, pin);
 	printf("%s\n", buf);
 
 	return 0;
@@ -230,8 +221,7 @@ int main() {
 		led = &((const struct led_conf *) led_conf->ptr)[i];
 
 		gen_dev_enabled(led->name);
-		gen_field_func(led->name, "GPIO_PORT", &led->port);
-		gen_field_func(led->name, "GPIO_PIN", &led->pin);
+		gen_field_gpio_out(led->name, led->port.val, led->pin.val);
 
 		printf("\n");
 	}
