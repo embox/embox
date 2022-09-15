@@ -16,6 +16,9 @@
 #include <libmisc/led.h>
 #include <libmisc/button.h>
 
+#include <drivers/gpio/gpio.h>
+#include <config/board_config.h>
+
 #include <libfilters/filtered_derivative.h>
 #include <libfilters/dynamic_window.h>
 
@@ -49,7 +52,7 @@ static int fault_detect(void) {
 int main(int argc, char *argv[]) {
 	struct motor motor1;
 
-	led_init(&led3, STM_LED3_GPIO_PORT, STM_LED3_PIN);
+	led_init(&led3, CONF_LED3_GPIO_PORT, CONF_LED3_GPIO_PIN);
 	button_init(&user_button, STM_USER_BUTTON_GPIO_PORT, 1 << STM_USER_BUTTON_PIN);
 	motor_init(&motor1);
 

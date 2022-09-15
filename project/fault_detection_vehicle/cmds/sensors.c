@@ -19,6 +19,9 @@
 #include <drivers/sensors/gyro.h>
 #include <libmisc/led.h>
 
+#include <drivers/gpio/gpio.h>
+#include <config/board_config.h>
+
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 
@@ -41,14 +44,14 @@ static int inited = 0;
 static struct kalman_filter kalman[3];
 
 static void init_leds(void) {
-	led_init(&led3, STM_LED3_GPIO_PORT, STM_LED3_PIN);
-	led_init(&led4, STM_LED4_GPIO_PORT, STM_LED4_PIN);
-	led_init(&led5, STM_LED5_GPIO_PORT, STM_LED5_PIN);
-	led_init(&led6, STM_LED6_GPIO_PORT, STM_LED6_PIN);
-	led_init(&led7, STM_LED7_GPIO_PORT, STM_LED7_PIN);
-	led_init(&led8, STM_LED8_GPIO_PORT, STM_LED8_PIN);
-	led_init(&led9, STM_LED9_GPIO_PORT, STM_LED9_PIN);
-	led_init(&led10, STM_LED10_GPIO_PORT, STM_LED10_PIN);
+	led_init(&led3, CONF_LED3_GPIO_PORT, CONF_LED3_GPIO_PIN);
+	led_init(&led4, CONF_LED4_GPIO_PORT, CONF_LED4_GPIO_PIN);
+	led_init(&led5, CONF_LED5_GPIO_PORT, CONF_LED5_GPIO_PIN);
+	led_init(&led6, CONF_LED6_GPIO_PORT, CONF_LED6_GPIO_PIN);
+	led_init(&led7, CONF_LED7_GPIO_PORT, CONF_LED7_GPIO_PIN);
+	led_init(&led8, CONF_LED8_GPIO_PORT, CONF_LED8_GPIO_PIN);
+	led_init(&led9, CONF_LED9_GPIO_PORT, CONF_LED9_GPIO_PIN);
+	led_init(&led10, CONF_LED10_GPIO_PORT, CONF_LED10_GPIO_PIN);
 }
 
 
