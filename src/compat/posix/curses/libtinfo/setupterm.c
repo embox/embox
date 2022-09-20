@@ -26,7 +26,7 @@
 #define RET_ERROR(ret_code, fmt, str) \
 	if (errret) {                     \
 		*errret = ret_code;           \
-		return ERR;                   \
+		goto out;                     \
 	}                                 \
 	fprintf(stderr, fmt, str);        \
 	exit(EXIT_FAILURE)
@@ -41,6 +41,7 @@ int setupterm(char *term, int fildes, int *errret) {
 	int16_t str_size, table_size, total_size;
 	char *dst, *src;
 	TERMINAL *termp;
+	int rc = ERR;
 
 	path = getenv("TERMINFO");
 	if (path == NULL) {
@@ -110,11 +111,13 @@ int setupterm(char *term, int fildes, int *errret) {
 
 	set_curterm(termp);
 
+	rc = OK;
 	if (errret) {
 		*errret = ENTRY_FOUND;
 	}
 
-	return OK;
+out:
+	return rc;
 }
 
 TERMINAL *set_curterm(TERMINAL *nterm) {
