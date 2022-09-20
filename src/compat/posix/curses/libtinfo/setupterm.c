@@ -12,6 +12,9 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <string.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #define MAX_ENTRY_SIZE 4097
 #define MAGIC          0432
@@ -23,7 +26,7 @@
 #define RET_ERROR(ret_code, fmt, str) \
 	if (errret) {                     \
 		*errret = ret_code;           \
-		return ERR;                   \
+		goto out;                     \
 	}                                 \
 	fprintf(stderr, fmt, str);        \
 	exit(EXIT_FAILURE)
@@ -31,13 +34,14 @@
 int setupterm(char *term, int fildes, int *errret) {
 	char *path;
 	char filename[PATH_MAX];
-	FILE *fp;
+	int fd;
 	char buf[MAX_ENTRY_SIZE];
 	int16_t *header_section;
 	int16_t name_size, flag_size, num_size;
 	int16_t str_size, table_size, total_size;
 	char *dst, *src;
 	TERMINAL *termp;
+	int rc = ERR;
 
 	path = getenv("TERMINFO");
 	if (path == NULL) {
@@ -46,14 +50,16 @@ int setupterm(char *term, int fildes, int *errret) {
 
 	sprintf(filename, "%s/%c/%s", path, term[0], term);
 
-	fp = fopen(filename, "r");
-	if (fp == NULL) {
-		fclose(fp);
+	fd = open(filename, O_RDONLY);
+	if (fd == -1) {
 		RET_ERROR(ENTRY_NOT_FOUND, "Unknown terminal type `%s`\n", term);
 	}
 
-	fread(buf, 1, sizeof(buf), fp);
-	fclose(fp);
+	if (-1 == read(fd, buf, sizeof(buf))) {
+		close(fd);
+		RET_ERROR(ERROR_OCCURRED, "%s\n", strerror(errno));
+	}
+	close(fd);
 
 	header_section = (int16_t *)buf;
 	if (header_section[0] != MAGIC) {
@@ -105,11 +111,13 @@ int setupterm(char *term, int fildes, int *errret) {
 
 	set_curterm(termp);
 
+	rc = OK;
 	if (errret) {
 		*errret = ENTRY_FOUND;
 	}
 
-	return OK;
+out:
+	return rc;
 }
 
 TERMINAL *set_curterm(TERMINAL *nterm) {
