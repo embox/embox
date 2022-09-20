@@ -28,6 +28,7 @@ static int init_window(WINDOW *win, curs_size_t nlines, curs_size_t ncols,
 	}
 	win->flags |= WIN_CLEAROK;
 	win->flags &= ~WIN_NODELAY;
+	win->flags &= ~WIN_LEAVEOK;
 
 	win->lines = (struct line *)malloc(nlines * sizeof(struct line));
 	if (win->lines == NULL) {
