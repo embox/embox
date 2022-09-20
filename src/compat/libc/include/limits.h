@@ -102,9 +102,10 @@
 /**
  * Pathname Variable Values
  */
-
+#ifdef __EMBOX__
 #include <module/embox/compat/libc/limits.h>
-
+#include <config/embox/kernel/task/resource/atexit_api.h>
+#endif
 /* Maximum number of bytes in a filename (not including \0) */
 #define NAME_MAX \
 	OPTION_MODULE_GET(embox__compat__libc__limits, NUMBER, name_max)
@@ -113,7 +114,6 @@
 #define PATH_MAX \
 	OPTION_MODULE_GET(embox__compat__libc__limits, NUMBER, path_max)
 
-#include <config/embox/kernel/task/resource/atexit_api.h>
 #define ATEXIT_MAX \
 	OPTION_MODULE_GET(embox__kernel__task__resource__atexit_api, NUMBER, atexit_max)
 

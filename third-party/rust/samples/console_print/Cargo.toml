@@ -1,0 +1,13 @@
+[package]
+name = "console_print"
+version = "0.1.0"
+edition = "2021"
+authors = ["t0bro"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[lib]
+name = "console_print"
+crate_type = ["staticlib"]
+
+[dependencies]
+emlibc = { path = "../../emlibc"}

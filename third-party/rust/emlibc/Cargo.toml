@@ -1,0 +1,11 @@
+[package]
+name = "emlibc"
+version = "0.1.0"
+edition = "2021"
+authors = ["t0bro"]
+
+[lib]
+name = "emlibc"
+
+[build-dependencies]
+bindgen = "0.60.1"

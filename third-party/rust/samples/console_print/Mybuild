@@ -1,0 +1,20 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "rcp",
+	help = "rcp",
+	man = '''
+		NAME
+			rcp - rust console print
+		SYNOPSIS
+			rcp
+		AUTHORS
+			test
+	''')
+module console_print {
+	source "^BUILD/extbld/^MOD_PATH/install/console_print.a"
+
+	@NoRuntime depends embox.compat.libc.all
+}

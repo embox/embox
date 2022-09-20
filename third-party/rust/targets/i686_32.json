@@ -1,0 +1,25 @@
+{
+    "llvm-target": "i686-unknown-linux-gnu",
+    "data-layout": "e-m:e-i32:32-f80:128-n8:16:32-S128-p:32:32",
+    "arch": "x86",
+    "target-endian": "little",
+    "target-pointer-width": "32",
+    "target-c-int-width": "32",
+    "os": "none",
+    "executables": true,
+    "linker-flavor": "ld",
+    "linker": "ld",
+    "pre-link-args": {
+      "ld": [
+        "-nostdlib",
+        "-pie",
+        "-m32",
+        "-melf_i386",
+        "--oformat=elf32-i386"
+      ]
+    },
+    "dynamic-linking": true,
+    "panic-strategy": "abort",
+    "disable-redzone": true,
+    "features": "-mmx,-sse,+soft-float"
+  }

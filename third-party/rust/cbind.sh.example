@@ -1,0 +1,23 @@
+#!/bin/bash
+set -x
+# https://clang.llvm.org/docs/SanitizerSpecialCaseList.html
+mkdir ./emlibc
+
+COMMON_ARGS='--builtins --use-core --no-include-path-detection --ctypes-prefix ::core::ffi'
+
+bindgen ../../src/compat/libc/include/string.h $COMMON_ARGS -o ./emlibc/string.rs -- \
+-I../../src/compat/libc/include \
+-I../../src/include \
+-I../../src/include/defines \
+
+bindgen ../../src/compat/libc/include/stdio.h $COMMON_ARGS -o ./emlibc/stdio.rs -- \
+-I../../src/compat/posix/include \
+-I../../src/compat/libc/include \
+-I../../src/include \
+
+bindgen ../../src/compat/libc/include/stdlib.h $COMMON_ARGS -o ./emlibc/stdlib.rs -- \
+-I../../src/compat/posix/include \
+-I../../src/compat/libc/include \
+-I../../src/include \
+-I../../src/arch/x86/include \
+
