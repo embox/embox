@@ -27,7 +27,7 @@ module no_graphic extends display_mode {
 }
 
 module setup_tty_devfs extends setup_tty_api {
-	option string term_name="emterm"
+	option string term_name="xterm-sco"
 	
 	source "setup_tty_devfs.c"
 
