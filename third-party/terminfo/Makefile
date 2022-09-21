@@ -12,6 +12,7 @@ $(shell echo OPTION_STRING_embox__init__setup_tty_devfs__$(1) | gcc -P -E -inclu
 endef
 
 $(BUILD) :
+	mkdir -p $(BUILD_DIR)/terminfo
 	tic -e $(call option_get_string,term_name) \
 		-o $(BUILD_DIR)/terminfo $(BUILD_DIR)/$(PKG_NAME) &> /dev/null
 	touch $@
