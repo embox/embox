@@ -2,35 +2,32 @@
 #include <math.h>
 #include <stdint.h>
 
-int __signbit_float(float x) {
-	uint8_t *bytes = (uint8_t *) (&x);
-	uint8_t last_byte = bytes[sizeof(x) - 1];
+#include "math_private.h"
 
-	if (last_byte & (1 << 7)) {
-		return 1;
-	} else {
-		return 0;
-	}
+int __signbit_float(float x) {
+	int32_t hx;
+
+	GET_FLOAT_WORD(hx, x);
+	return hx & 0x80000000;
 }
 
 int __signbit_double(double x) {
-	uint8_t *bytes = (uint8_t *) (&x);
-	uint8_t last_byte = bytes[sizeof(x) - 1];
+	int32_t hx;
 
-	if (last_byte & (1 << 7)) {
-		return 1;
-	} else {
-		return 0;
-	}
+	GET_HIGH_WORD(hx, x);
+	return hx & 0x80000000;
 }
 
 int __signbit_long_double(long double x) {
-	uint8_t *bytes = (uint8_t *) (&x);
-	uint8_t last_byte = bytes[sizeof(x) - 1];
+#if LDBL_MANT_DIG == 113
+	int64_t msw;
 
-	if (last_byte & (1 << 7)) {
-		return 1;
-	} else {
-		return 0;
-	}
+	GET_LDOUBLE_MSW64 (msw, x);
+	return msw < 0;
+#else
+	int32_t e;
+
+	GET_LDOUBLE_EXP(e, x);
+	return e & 0x8000;
+#endif
 }
