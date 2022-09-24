@@ -1,6 +1,6 @@
 package embox.compat.libc
 
-@DefaultImpl(math_builtins)
+@DefaultImpl(math_simple)
 abstract module math {
 }
 
@@ -9,9 +9,10 @@ static module math_builtins extends embox.compat.libc.math {
 	source "math_builtins.h"
 }
 
-static module math_simple {
-	@NoRuntime depends math_builtins
-
+static module math_simple extends embox.compat.libc.math {
+	@IncludeExport(target_name="math.h")
+	source "math_builtins.h"
+	
 	source "fmod.c", "modf.c"
 	source "log.c", "pow.c"
 	source "sqrt.c"
