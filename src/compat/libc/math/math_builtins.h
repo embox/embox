@@ -36,7 +36,11 @@ __BEGIN_DECLS
 
 #define modf(x, i_ptr) __builtin_modf(x, i_ptr)
 #define fmod(x, y) __builtin_fmod(x, y)
-#define signbit(x) ((x) < 0.0 ? 1 : 0)
+extern int __signbit_float(float x);
+extern int __signbit_double(double x);
+extern int __signbit_long_double(long double x);
+#define signbit(x) (sizeof(x) == sizeof(float) ? __signbit_float(x) : \
+		(sizeof(x) == sizeof(double) ? __signbit_double(x) : __signbit_long_double(x)))
 #define fabs(x) __builtin_fabs(x)
 #define fabsf(x) __builtin_fabsf(x)
 #define fabsl(x) __builtin_fabsl(x)

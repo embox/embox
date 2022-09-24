@@ -17,6 +17,7 @@ static module math_simple {
 	source "sqrt.c"
 	source "floor.c"
 	source "round.c", "roundl.c"
+	source "signbit.c"
 }
 
 static module math_openlibm extends embox.compat.libc.math {
