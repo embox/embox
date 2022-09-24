@@ -256,4 +256,69 @@ union ldshape {
 	}                                         \
 } while(0)
 
+
+
+#if BYTE_ORDER == __BIG_ENDIAN
+typedef union {
+	long double value;
+	struct {
+		unsigned int sign_exponent :16;
+		unsigned int empty :16;
+		uint32_t msw;
+		uint32_t lsw;
+	} parts;
+} ieee_long_double_shape_type;
+#endif
+#if BYTE_ORDER == __LITTLE_ENDIAN
+typedef union {
+	long double value;
+	struct {
+		uint32_t lsw;
+		uint32_t msw;
+		unsigned int sign_exponent :16;
+		unsigned int empty :16;
+	} parts;
+} ieee_long_double_shape_type;
+#endif
+/* Get int from the exponent of a long double.  */
+#define GET_LDOUBLE_EXP(exp,d)                                  \
+do {                                                            \
+  ieee_long_double_shape_type ge_u;                             \
+  ge_u.value = (d);                                             \
+  (exp) = ge_u.parts.sign_exponent;                             \
+} while (0)
+
+#if BYTE_ORDER == __BIG_ENDIAN
+typedef union {
+	long double value;
+	struct {
+		uint64_t msw;
+		uint64_t lsw;
+	} parts64;
+	struct {
+		uint32_t w0, w1, w2, w3;
+	} parts32;
+} ieee_quad_double_shape_type;
+#endif
+#if BYTE_ORDER == __LITTLE_ENDIAN
+typedef union {
+	long double value;
+	struct {
+		uint64_t lsw;
+		uint64_t msw;
+	} parts64;
+	struct {
+		uint32_t w3, w2, w1, w0;
+	} parts32;
+} ieee_quad_double_shape_type;
+#endif
+/* Get most significant 64 bit int from a quad long double.  */
+#define GET_LDOUBLE_MSW64(msw,d)				\
+do {								\
+  ieee_quad_double_shape_type qw_u;				\
+  qw_u.value = (d);						\
+  (msw) = qw_u.parts64.msw;					\
+} while (0)
+
+
 #endif /* SRC_COMPAT_LIBC_MATH_MATH_PRIVATE_H_ */
