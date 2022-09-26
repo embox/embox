@@ -24,6 +24,11 @@ int __signbit_long_double(long double x) {
 
 	GET_LDOUBLE_MSW64 (msw, x);
 	return msw < 0;
+#elif LDBL_MANT_DIG == 53
+	int32_t hx;
+
+	GET_HIGH_WORD(hx, x);
+	return hx & 0x80000000;
 #else
 	int32_t e;
 
