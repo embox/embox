@@ -9,3 +9,11 @@ module strncat_test {
 	source "strncat_test.c"
 	depends embox.compat.libc.str
 }
+
+module memchr_test {
+    source "memchr_test.c"
+}
+
+module memrchr_test {
+    source "memrchr_test.c"
+}
