@@ -7,6 +7,7 @@ fn main() {
     .header("../../../src/compat/libc/include/string.h")
     .header("../../../src/compat/libc/include/stdio.h")
     .header("../../../src/compat/libc/include/stdlib.h")
+    .header("../../../src/compat/posix/include/unistd.h")
     .clang_arg("-I../../../src/compat/posix/include")
     .clang_arg("-I../../../src/compat/libc/include")
     .clang_arg("-I../../../src/include")
@@ -17,7 +18,9 @@ fn main() {
     .use_core()
     .emit_builtins()
     .raw_line("#![no_std]")
-    .raw_line("#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals)]")
+    .raw_line("#![feature(alloc_error_handler)]")
+    .raw_line("#![allow(non_snake_case, non_camel_case_types, non_upper_case_globals, dead_code, unused)]")
+    .raw_line("pub mod std;")
     .generate()
     .expect("Unable to generate bindings");
 
