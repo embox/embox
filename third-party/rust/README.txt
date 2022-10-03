@@ -4,7 +4,8 @@
 1. Установить свежую версию Rust: https://www.rust-lang.org/ru/tools/install
     1.1. Установить Rust-nightly: rustup install nightly
     1.2. Установить target i686-unknown-linux-gnu: rustup target install i686-unknown-linux-gnu
-    1.3. Установить bindgen: cargo install bindgen
+    1.3. Установить nightly sources: rustup component add rust-src --toolchain nightly-x86_64-unknown-linux-gnu
+    1.4. Установить bindgen: cargo install bindgen
 2. Установить clang средствами OS. Например для Debian: sudo apt install clang
 
 ## Запуск примера Rust-приложения console_print
@@ -22,7 +23,6 @@ targets - директория с целями для компиляции rust-
 Про global_allocator. см.: https://doc.rust-lang.org/nightly/std/alloc/#the-global_allocator-attribute
 // ВАЖНО! т.к. emlibc-проект исключительно для подготовки биндингов - обязательно используем хост-цель
 .clang_arg("--target=x86_64-pc-linux-gnu")
-https://gcc.gnu.org/onlinedocs/gccint/Integer-library-routines.html
 
 ## Отладка. 
 // Тут можно прочитать по gdb: http://rus-linux.net/nlib.php?name=/MyLDP/algol/gdb/otladka-s-gdb.html

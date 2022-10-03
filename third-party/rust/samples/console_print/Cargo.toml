@@ -11,3 +11,6 @@ crate_type = ["staticlib"]
 
 [dependencies]
 emlibc = { path = "../../emlibc"}
+
+[profile.release]
+debug = true
