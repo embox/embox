@@ -13,11 +13,10 @@
 .align 4
 
 .global	undef_handler
-.global	data_abt_handler
-.global	prefetch_abt_handler
 .global	fiq_handler
 .global	prefetch_abt_handler
 .global arm_unresolvable_exception
+.global	data_abt_handler
 
 undef_handler:
 #ifdef __ARM_NEON__
