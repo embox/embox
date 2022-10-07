@@ -141,10 +141,7 @@ arm_unresolvable_exception:
 	mrs r1, SPSR
 	stmfd sp!, {r0, r1}
 	mov r0, sp
-	bl arm_exception_handler
-	ldmfd sp!, {r0, r1}
-	ldmfd sp!, {r0-r12, r14}
-	bx lr
+	b arm_exception_handler
 
 data_abt_handler:
 	/* Same as with arm_unresolvable_exception we need
