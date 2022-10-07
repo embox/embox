@@ -1,0 +1,9 @@
+package third_party.cmsis.example
+
+@AutoCmd
+@Cmd(name="cmsis_version", help="Prints cmsis_version")
+@BuildDepends(third_party.cmsis.core)
+module cmsis_version {
+    source "cmsis_version.c"
+    @NoRuntime depends third_party.cmsis.core
+}

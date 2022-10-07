@@ -1,0 +1,9 @@
+package third_party.cmsis
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR)/third_party/cmsis/core/CMSIS_5-5.9.0/CMSIS/Core/Include)")
+module core {
+
+}
+
+
