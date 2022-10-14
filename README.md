@@ -141,9 +141,9 @@ If everything's fine, you can connect to the Embox terminal via `telnet`.
 To exit Qemu type <kbd>ctrl + A</kbd> and <kbd>X</kbd> after that.
 
 ### Debugging
-You can use the same script with *-s -S -no-kvm* flags for debugging:
+You can use the same script with *-s -S -machine accel=tcg* flags for debugging:
 ```
-$ sudo ./scripts/qemu/auto_qemu -s -S -no-kvm
+$ sudo ./scripts/qemu/auto_qemu -s -S -machine accel=tcg
 ```
 After running that QEMU waits for a connection from a gdb-client. Run gdb in the other terminal:
 ```
