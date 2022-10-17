@@ -21,7 +21,7 @@
 static void print_usage(void) {
 	printf("Usage: memmap [-hra]\n");
 }
-
+а
 extern char _ram_base;
 extern char _ram_size;
 
@@ -29,8 +29,8 @@ static void show_regions(void) {
 	printf("| region name |   start    |    end     |    size    |    free    |\n");
 	printf("|  sdram      | 0x%8" PRIxPTR " | 0x%8" PRIxPTR " | 0x%8" PRIxPTR " | 0x%8" PRIxPTR " |\n",
 			(uintptr_t)&_ram_base,
-			(uintptr_t)&_ram_base + (uintptr_t)&_ram_size,
-			(uintptr_t)__phymem_end, (uintptr_t)__phymem_allocator->free);
+			(uintptr_t)&_ram_base + (uintptr_t)&_ram_size /* (uintptr_t)__phymem_end */,
+			(uintptr_t)&_ram_size, (uintptr_t)__phymem_allocator->free);
 }
 
 static void show_all(void) {
