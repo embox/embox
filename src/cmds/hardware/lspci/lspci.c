@@ -118,6 +118,15 @@ static inline char *pci_get_region_type(uint32_t region_reg) {
 		return "Mem";
 	}
 }
+
+static inline uintptr_t pci_get_region_mask(uintptr_t region_reg) {
+	if (region_reg & 0x1) {
+		return region_reg & ~((1 << 2) - 1);
+	} else {
+		return region_reg & ~((1 << 4) - 1);
+	}
+}
+
 static inline size_t pci_get_region_size(uint32_t region_reg) {
 	if (0 == (region_reg & 0x1)) {
 		return 1 << 24;
@@ -416,13 +425,14 @@ static void show_regions(struct pci_slot_dev *pci_dev) {
 
 	for (bar_num = 0; bar_num < ARRAY_SIZE(pci_dev->bar); bar_num ++) {
 		uintptr_t base_addr = pci_dev->bar[bar_num];
+
 		if (0 == base_addr) {
 			continue;
 		}
 		printf("\t  Region (%s): Base: 0x%" PRIXPTR " [0x%" PRIXPTR "]\n",
 				pci_get_region_type(base_addr),
-				base_addr & ~((1 << 4) - 1),
-				(base_addr & ~((1 << 4) - 1)) +
+				pci_get_region_mask(base_addr),
+				pci_get_region_mask(base_addr) +
 				(pci_get_region_size(base_addr) - 1));
 	}
 }
