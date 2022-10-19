@@ -49,6 +49,7 @@ undef_handler_addr:
 	.word undef_handler
 swi_handler_addr:
 	.word swi_handler
+.global prefetch_abt_handler_addr
 prefetch_abt_handler_addr:
 	.word prefetch_abt_handler
 .global data_abt_handler_addr
