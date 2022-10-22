@@ -1,0 +1,8 @@
+package embox.lib
+
+module libkalman {
+	source "kalman_filter.c"
+
+	@IncludeExport(path="filter")
+	source "kalman_filter.h"
+}

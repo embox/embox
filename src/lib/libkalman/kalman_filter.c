@@ -6,7 +6,7 @@
  * @date    28.05.2015
  */
 
-#include <kalman_filter.h>
+#include <filter/kalman_filter.h>
 
 void kalman_filter_init(struct kalman_filter *filter, float value) {
     filter->value = value;

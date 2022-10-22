@@ -14,18 +14,28 @@
 #include <stdio.h>
 #include <math.h>
 
-#include <stm32f3xx.h>
-#include <stm32f3_discovery.h>
 
-#include <libsensors/acc.h>
-#include <libsensors/gyro.h>
+#include <drivers/sensors/acc.h>
+#include <drivers/sensors/gyro.h>
 #include <libmisc/led.h>
+
+#include <drivers/gpio/gpio.h>
+#include <config/board_config.h>
 
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 
-#include <kalman_filter.h>
+#include <filter/kalman_filter.h>
 
+
+static struct led led3;
+static struct led led4;
+static struct led led5;
+static struct led led6;
+static struct led led7;
+static struct led led8;
+static struct led led9;
+static struct led led10;
 
 static float angles[3];
 static float speed = 0;
@@ -33,22 +43,15 @@ static int inited = 0;
 
 static struct kalman_filter kalman[3];
 
-static void stm32f3_delay(void) {
-	size_t i = 0;
-
-	for (i = 0; i < 10000; i++)
-		;
-}
-
 static void init_leds(void) {
-	led_init(LED4);
-	led_init(LED3);
-	led_init(LED5);
-	led_init(LED7);
-	led_init(LED9);
-	led_init(LED10);
-	led_init(LED8);
-	led_init(LED6);
+	led_init(&led3, CONF_LED3_GPIO_PORT, CONF_LED3_GPIO_PIN);
+	led_init(&led4, CONF_LED4_GPIO_PORT, CONF_LED4_GPIO_PIN);
+	led_init(&led5, CONF_LED5_GPIO_PORT, CONF_LED5_GPIO_PIN);
+	led_init(&led6, CONF_LED6_GPIO_PORT, CONF_LED6_GPIO_PIN);
+	led_init(&led7, CONF_LED7_GPIO_PORT, CONF_LED7_GPIO_PIN);
+	led_init(&led8, CONF_LED8_GPIO_PORT, CONF_LED8_GPIO_PIN);
+	led_init(&led9, CONF_LED9_GPIO_PORT, CONF_LED9_GPIO_PIN);
+	led_init(&led10, CONF_LED10_GPIO_PORT, CONF_LED10_GPIO_PIN);
 }
 
 
@@ -111,11 +114,11 @@ static void speed_test(void) {
 		time64_t current;
 		float dt, compensation;
 
-		led_off(LED3);
-		led_off(LED4);
-		led_off(LED5);
-		led_off(LED6);
-		led_off(LED7);
+		led_off(&led3);
+		led_off(&led4);
+		led_off(&led5);
+		led_off(&led6);
+		led_off(&led7);
 
 		gyro_data_obtain(gyro);
 		acc_data_obtain(acc);
@@ -130,18 +133,18 @@ static void speed_test(void) {
 		update_speed(acc[0] - compensation, dt);
 
 		if (speed > 50) {
-			led_on(LED7);
+			led_off(&led7);
 		} else if (speed > 10) {
-			led_on(LED5);
+			led_off(&led5);
 		} else if (speed < -50) {
-			led_on(LED6);
+			led_on(&led6);
 		} else if (speed < -10) {
-			led_on(LED4);
+			led_on(&led4);
 		} else {
-			led_on(LED3);
+			led_on(&led3);
 		}
 
-		stm32f3_delay(); //TODO nanosleep/usleep?
+		usleep(10);
 	}
 }
 
@@ -160,7 +163,7 @@ static void gyro_test(void) {
 		y = abs(buf[1]);
 
 		printf("x=%f y=%f z=%f\n", x, y);
-		stm32f3_delay();
+		usleep(10);
 	}
 }
 #endif
@@ -169,7 +172,7 @@ int main(int argc, char *argv[]) {
 	init_leds();
 
 	/* Sensors are initialized */
-	led_on(LED10);
+	led_on(&led10);
 
 	speed_test();
 

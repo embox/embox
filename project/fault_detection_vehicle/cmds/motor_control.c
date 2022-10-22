@@ -10,19 +10,25 @@
 #include <unistd.h>
 #include <stdlib.h>
 
-#include <libsensors/acc.h>
-#include <libsensors/gyro.h>
+#include <drivers/sensors/acc.h>
+#include <drivers/sensors/gyro.h>
 #include <libactuators/motor.h>
 #include <libmisc/led.h>
 #include <libmisc/button.h>
+
+#include <drivers/gpio/gpio.h>
+#include <config/board_config.h>
 
 #include <libfilters/filtered_derivative.h>
 #include <libfilters/dynamic_window.h>
 
 #define K 10
 
+static struct led led3;
+static struct button user_button;
+
 static inline void fault_handle(void) {
-	led_on(LED3);
+	led_on(&led3);
 }
 
 static int fault_detect(void) {
@@ -46,14 +52,14 @@ static int fault_detect(void) {
 int main(int argc, char *argv[]) {
 	struct motor motor1;
 
-	led_init(LED3);
-	button_init(BUTTON_USER);
-	motor_init(&motor1, GPIOD, MOTOR_ENABLE1, MOTOR_INPUT1, MOTOR_INPUT2);
+	led_init(&led3, CONF_LED3_GPIO_PORT, CONF_LED3_GPIO_PIN);
+	button_init(&user_button, STM_USER_BUTTON_GPIO_PORT, 1 << STM_USER_BUTTON_PIN);
+	motor_init(&motor1);
 
 	motor_enable(&motor1);
 
 	/* Wait until button get pressed */
-	button_wait_set(BUTTON_USER);
+	button_wait_set(&user_button);
 
 	motor_run(&motor1, MOTOR_RUN_FORWARD);
 	{
