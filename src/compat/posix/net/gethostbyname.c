@@ -68,8 +68,8 @@ static struct hostent * get_hostent_from_file(const char *hostname) {
 }
 
 static struct hostent * get_hostent_from_net(const char *hostname) {
-	int ret, addr_len;
-	struct hostent *he;
+	int ret;
+	struct hostent *he = NULL;
 	struct dns_result result;
 	struct dns_rr *rr;
 	size_t i;
@@ -80,30 +80,19 @@ static struct hostent * get_hostent_from_net(const char *hostname) {
 		return NULL;
 	}
 
-	addr_len = result.an->rdlength;
-
-	if (((he = hostent_create()) == NULL)
-			|| (hostent_set_name(he, hostname) != 0)
-			|| (hostent_set_addr_info(he, AF_INET, addr_len) != 0)) {
-		dns_result_free(&result);
-		return NULL;
-	}
-
 	for (i = 0, rr = result.an; i < result.ancount; ++i, ++rr) {
-
-		if (rr->rdlength != addr_len) {
-			continue;
-		}
 
 		switch (rr->rtype) {
 		default:
 			ret = 0;
 			break;
 		case DNS_RR_TYPE_A:
-			ret = hostent_add_addr(he, &rr->rdata.a.address[0]);
+			he = hostent_make(hostname, AF_INET, rr->rdlength, &rr->rdata.a.address[0]);
+			//ret = hostent_add_addr(he, &rr->rdata.a.address[0]);
 			break;
 		case DNS_RR_TYPE_AAAA:
-			ret = hostent_add_addr(he, &rr->rdata.aaaa.address[0]);
+			he = hostent_make(hostname, AF_INET, rr->rdlength, &rr->rdata.aaaa.address[0]);
+			//ret = hostent_add_addr(he, &rr->rdata.aaaa.address[0]);
 			break;
 		}
 
