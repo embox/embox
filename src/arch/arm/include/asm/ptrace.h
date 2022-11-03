@@ -15,9 +15,10 @@
 
 typedef struct pt_regs {
 	int r[13];
-	int lr;
 	int sp;
-	int psr;
+	int lr;
+	int pc;
+	int cpsr;
 } pt_regs_t;
 
 static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
