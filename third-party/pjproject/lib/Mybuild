@@ -1,0 +1,87 @@
+package third_party.pjproject
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpjsip {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libpjsip.a",
+			"libpjsip-simple.a",
+			"libpjsip-ua.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpjsua {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libpjsua.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpjlib_util {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libpjlib-util.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpj {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libpj.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpjmedia {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libpjmedia.a",
+			"libpjmedia-codec.a",
+			"libpjmedia-audiodev.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpjnath {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libpjnath.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(core)
+@Build(stage=2,script="true")
+static module libpj_third_party {
+	@AddPrefix("^BUILD/extbld/third_party/pjproject/core/install/lib")
+	source "libresample.a",
+			"libsrtp.a"
+
+	@NoRuntime depends core
+}
+
+@BuildDepends(libpjsua)
+@BuildDepends(libpjsip)
+@BuildDepends(libpjmedia)
+@BuildDepends(libpj)
+@BuildDepends(libpjlib_util)
+@BuildDepends(libpjnath)
+@BuildDepends(libpj_third_party)
+@Build(stage=2,script="true")
+static module libpj_all {
+	@NoRuntime depends libpjsua,
+			libpjsip,
+			libpjmedia,
+			libpj,
+			libpjlib_util,
+			libpjnath,
+			libpj_third_party
+}
