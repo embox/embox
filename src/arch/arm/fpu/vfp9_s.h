@@ -23,7 +23,7 @@ struct pt_regs_fpu {
 		float  s[32];
 		double d[16];
 	} vfp_regs;
-};
+} __attribute__((packed, aligned(4)));
 
 static inline void arm_fpu_context_init(void *opaque) {
 	memset(opaque, 0, sizeof(uint32_t) * FPU_DATA_LEN);
