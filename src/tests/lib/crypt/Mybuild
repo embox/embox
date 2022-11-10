@@ -1,0 +1,6 @@
+
+package embox.test.lib.crypt
+
+module des_test {
+	source "des_test.c"
+}
