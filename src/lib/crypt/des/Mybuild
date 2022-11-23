@@ -1,0 +1,8 @@
+package embox.lib.libcrypt
+
+static module des {
+	source "des.c"
+
+	@IncludeExport(path="lib/crypt")
+	source "des.h"
+}
