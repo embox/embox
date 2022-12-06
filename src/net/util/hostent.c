@@ -38,6 +38,10 @@ struct hostent * hostent_create(void) {
 	return &hentry_storage;
 }
 
+void hostent_destroy(struct hostent *he) {
+	(void)he;
+}
+
 int hostent_set_name(struct hostent *he, const char *name) {
 	size_t name_sz;
 
