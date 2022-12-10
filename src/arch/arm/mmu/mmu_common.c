@@ -35,6 +35,7 @@ void arm_set_contextidr(uint32_t val);
 #define TTBR0_ADDR_MASK 0xFFFFFF00
 uint32_t arm_get_ttbr0(void);
 void arm_set_ttbr0(uint32_t val);
+void arm_set_ttbr1(uint32_t val);
 
 /**
  * @brief Fill translation table and so on
@@ -128,6 +129,7 @@ void mmu_set_context(mmu_ctx_t ctx) {
 	ttbr0 &= ~TTBR0_ADDR_MASK;
 	ttbr0 |= ctx & TTBR0_ADDR_MASK;
 	arm_set_ttbr0(ttbr0);
+	arm_set_ttbr1(ttbr0);
 }
 
 uint32_t arm_get_contextidr(void);
@@ -293,8 +295,12 @@ void arm_set_ttbcr(uint32_t val) {
 }
 
 void arm_set_ttbr0(uint32_t val) {
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 0" : : "r"(val));
+}
+
+void arm_set_ttbr1(uint32_t val) {
 	__asm__ __volatile__ (
-		"mcr p15, 0, %0, c2, c0, 0" : : "r" (val)
+		"mcr p15, 0, %0, c2, c0, 1" : : "r"(val)
 	);
 }
 
