@@ -37,6 +37,14 @@ uint32_t arm_get_ttbr0(void);
 void arm_set_ttbr0(uint32_t val);
 void arm_set_ttbr1(uint32_t val);
 
+#define TTBCR_PAE_SUPPORT 0x80000000
+void arm_set_ttbcr(uint32_t val);
+uint32_t arm_get_ttbcr();
+
+static void arm_disable_pae_support(void) {
+	arm_set_ttbcr(arm_get_ttbcr() & ~TTBCR_PAE_SUPPORT);
+}
+
 /**
  * @brief Fill translation table and so on
  * @note Assume MMU is off right now
@@ -44,6 +52,8 @@ void arm_set_ttbr1(uint32_t val);
  * @return
  */
 static int mmu_init(void) {
+	arm_disable_pae_support();
+
 	__asm__ __volatile__ (
 		/* setup c3, Domain Access Control Register */
 #if DOMAIN_ACCESS == 1
