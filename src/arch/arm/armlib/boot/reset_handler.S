@@ -17,9 +17,31 @@
 .global reset_handler
 start:
 reset_handler:
-	/* Make sure MMU is off */
+	/* Check if bootloader left MMU on; if so, it's neccessary to flush cache
+	 * to make sure all the data is actually in RAM, not in some buffers */
+	mrc	p15, 0, r0, c1, c0, 0
+	and	r0, r0, #CR_M
+	cmp	r0, #0
+	beq	cpu_modes_prepare
+	ldr	r0, =_data_lma
+	ldr	r1, =_data_len
+	bl	dcache_flush
+	ldr	r0, =_rodata_lma
+	ldr	r1, =_rodata_len
+	bl	dcache_flush
+	ldr	r0, =_text_lma
+	ldr	r1, =_text_len
+	bl	dcache_flush
+
+cpu_modes_prepare:
+	/* Turn off MMU, instruction prediction and caches */
 	mrc p15, 0, r0, c1, c0, 0
 	and r0, r0, #~CR_M
+	and r0, r0, #~CR_W
+	and r0, r0, #~CR_I
+	and r0, r0, #~CR_D
+	and r0, r0, #~CR_Z
+	and r0, r0, #~CR_C
 	mcr p15, 0, r0, c1, c0, 0
 
 	ldr r0, =_stack_top

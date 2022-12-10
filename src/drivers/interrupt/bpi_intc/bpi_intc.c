@@ -8,10 +8,11 @@
 
 #include <assert.h>
 
-#include <kernel/critical.h>
-#include <hal/reg.h>
-#include <hal/ipl.h>
+#include <drivers/common/memory.h>
 #include <drivers/irqctrl.h>
+#include <hal/ipl.h>
+#include <hal/reg.h>
+#include <kernel/critical.h>
 
 #include <kernel/irq.h>
 #include <embox/unit.h>
@@ -149,3 +150,5 @@ void swi_handle(void) {
 }
 
 IRQCTRL_DEF(bpi_intc, bpi_intc_init);
+
+PERIPH_MEMORY_DEFINE(bpi_intc, GIC_BASE, 0x2014);
