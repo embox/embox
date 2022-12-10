@@ -282,6 +282,16 @@ uint32_t arm_get_ttbr0(void) {
 	return val;
 }
 
+uint32_t arm_get_ttbcr(void) {
+	uint32_t val;
+	__asm__ __volatile__("mrc p15, 0, %[out], c2, c0, 2" : [out] "=r"(val) :);
+	return val;
+}
+
+void arm_set_ttbcr(uint32_t val) {
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 2\n\t" : : "r"(val) :);
+}
+
 void arm_set_ttbr0(uint32_t val) {
 	__asm__ __volatile__ (
 		"mcr p15, 0, %0, c2, c0, 0" : : "r" (val)
