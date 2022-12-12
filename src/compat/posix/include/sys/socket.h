@@ -108,6 +108,8 @@ enum {
 #define AF_PACKET PF_PACKET
 	PF_NETLINK = 18,
 #define AF_NETLINK PF_NETLINK
+	PF_RDS     =  19,   /* Reliable Datagram Sockets (RDS) protocol */
+#define AF_RDS     PF_RDS
 	PF_MAX          /* upper bound of protocol family */
 #define AF_MAX    PF_MAX
 };
@@ -136,6 +138,7 @@ enum {
 	SOCK_RAW       =  3, /* raw protocol socket */
 	SOCK_SEQPACKET =  5, /* sequential packet socket */
 	SOCK_PACKET    = 10, /* packet socket */
+	SOCK_RDM       = 20, /* a reliable datagram layer */
 	SOCK_TYPE_MAX        /* i.e. SOCK_PACKET + 1 */
 };
 

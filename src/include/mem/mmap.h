@@ -9,6 +9,8 @@
 #ifndef MEM_MMAP_H_
 #define MEM_MMAP_H_
 
+#include <sys/types.h> /* off_t */
+
 #include <mem/mapping/marea.h>
 #include <mem/mapping/mmap.h>
 

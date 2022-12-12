@@ -1,0 +1,36 @@
+package third_party.pjproject
+
+@AutoCmd
+@Cmd(name="streamutil", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module streamutil {
+	source "^BUILD/extbld/third_party/pjproject/core/install/streamutil.o"
+	depends core
+}
+
+@AutoCmd
+@Cmd(name="pjsua", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module pjsua {
+	source "^BUILD/extbld/third_party/pjproject/core/install/pjsua.o"
+}
+
+@AutoCmd
+@Cmd(name="pjsip_simpleua", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module simpleua {
+	source "^BUILD/extbld/third_party/pjproject/core/install/simpleua.o"
+	depends core
+}
+
+@AutoCmd
+@Cmd(name="simple_pjsua", help="", man="")
+@BuildDepends(core)
+@Build(stage=2,script="true")
+module simple_pjsua {
+	source "^BUILD/extbld/third_party/pjproject/core/install/simple_pjsua.o"
+	depends core
+}

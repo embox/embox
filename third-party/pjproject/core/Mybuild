@@ -1,0 +1,42 @@
+package third_party.pjproject
+
+module pjsip_dependencies {
+	depends embox.net.lib.getifaddrs
+
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.pthread_key
+	depends embox.compat.posix.pthread_rwlock
+	depends embox.compat.posix.semaphore
+	depends embox.compat.posix.fs.fsop
+	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.net.getaddrinfo
+	depends embox.compat.posix.net.gethostbyname
+	depends embox.compat.posix.util.gethostname
+
+	depends embox.compat.posix.proc.pid
+	depends embox.compat.posix.proc.exit
+	depends embox.compat.libc.stdio.fseek
+	depends embox.compat.posix.time.time
+
+	depends embox.kernel.thread.thread_local_heap
+
+	depends embox.driver.audio.portaudio_api
+}
+
+@DefaultImpl(core_c)
+abstract module core { }
+
+@Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=false")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/install/include/")
+module core_c extends core {
+	depends pjsip_dependencies
+}
+
+/* Currently not used. It will be used for PJSUA2 if required. */
+@Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=true")
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/install/include/")
+@BuildDepends(third_party.STLport.libstlportg)
+module core_cxx extends core {
+	depends pjsip_dependencies
+	depends third_party.STLport.libstlportg
+}

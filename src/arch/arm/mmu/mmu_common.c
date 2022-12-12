@@ -35,6 +35,15 @@ void arm_set_contextidr(uint32_t val);
 #define TTBR0_ADDR_MASK 0xFFFFFF00
 uint32_t arm_get_ttbr0(void);
 void arm_set_ttbr0(uint32_t val);
+void arm_set_ttbr1(uint32_t val);
+
+#define TTBCR_PAE_SUPPORT 0x80000000
+void arm_set_ttbcr(uint32_t val);
+uint32_t arm_get_ttbcr();
+
+static void arm_disable_pae_support(void) {
+	arm_set_ttbcr(arm_get_ttbcr() & ~TTBCR_PAE_SUPPORT);
+}
 
 /**
  * @brief Fill translation table and so on
@@ -43,6 +52,8 @@ void arm_set_ttbr0(uint32_t val);
  * @return
  */
 static int mmu_init(void) {
+	arm_disable_pae_support();
+
 	__asm__ __volatile__ (
 		/* setup c3, Domain Access Control Register */
 #if DOMAIN_ACCESS == 1
@@ -128,6 +139,7 @@ void mmu_set_context(mmu_ctx_t ctx) {
 	ttbr0 &= ~TTBR0_ADDR_MASK;
 	ttbr0 |= ctx & TTBR0_ADDR_MASK;
 	arm_set_ttbr0(ttbr0);
+	arm_set_ttbr1(ttbr0);
 }
 
 uint32_t arm_get_contextidr(void);
@@ -282,9 +294,23 @@ uint32_t arm_get_ttbr0(void) {
 	return val;
 }
 
+uint32_t arm_get_ttbcr(void) {
+	uint32_t val;
+	__asm__ __volatile__("mrc p15, 0, %[out], c2, c0, 2" : [out] "=r"(val) :);
+	return val;
+}
+
+void arm_set_ttbcr(uint32_t val) {
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 2\n\t" : : "r"(val) :);
+}
+
 void arm_set_ttbr0(uint32_t val) {
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 0" : : "r"(val));
+}
+
+void arm_set_ttbr1(uint32_t val) {
 	__asm__ __volatile__ (
-		"mcr p15, 0, %0, c2, c0, 0" : : "r" (val)
+		"mcr p15, 0, %0, c2, c0, 1" : : "r"(val)
 	);
 }
 
