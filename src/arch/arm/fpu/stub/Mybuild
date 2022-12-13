@@ -1,0 +1,10 @@
+package embox.arch.arm.fpu
+
+@DefaultImpl(fpu_stub)
+abstract module fpu {
+}
+
+module fpu_stub extends fpu {
+	@IncludeExport(path="arm")
+	source "fpu.h", "fpu_macro.s"
+}

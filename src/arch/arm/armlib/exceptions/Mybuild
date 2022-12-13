@@ -2,8 +2,7 @@ package embox.arch.arm.armlib
 
 module exceptions {
 	option number log_level=0
-	option boolean keep_going=false /* Don't stall on unresolvable exception */
-	
+
 	source "entry.S"
 	source "undef_handler.c"
 	source "pabt_handler.c"

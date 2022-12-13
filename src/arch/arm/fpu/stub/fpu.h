@@ -6,14 +6,8 @@
  * @date 28.03.2018
  */
 
-#ifndef ARM_FPU_STUB_H_
-#define ARM_FPU_STUB_H_
-
-/* Do nothing on context switch */
-#define ARM_FPU_CONTEXT_SAVE_INC(tmp, stack)
-#define ARM_FPU_CONTEXT_LOAD_INC(tmp, stack)
-#define ARM_FPU_CONTEXT_SAVE_DEC(tmp, stack)
-#define ARM_FPU_CONTEXT_LOAD_DEC(tmp, stack)
+#ifndef ARM_FPU_H_
+#define ARM_FPU_H_
 
 #define FPU_DATA_LEN 0
 
@@ -23,9 +17,11 @@ static inline void arm_fpu_context_init(void *opaque) {
 }
 
 static inline int try_vfp_instructions(void) {
+	/* Do nothing */
 	return 0;
 }
-
+#else
+#include <arm/fpu_macro.s>
 #endif /* __ASSEMBLER__ */
 
-#endif /* ARM_FPU_STUB_H_ */
+#endif /* ARM_FPU_H_ */

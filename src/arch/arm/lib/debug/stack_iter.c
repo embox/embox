@@ -25,8 +25,8 @@ int stack_iter_next(stack_iter_t *f) {
 }
 
 void stack_iter_context(stack_iter_t *f, struct context *ctx) {
-	f->fp = (void*) ctx->system_r[11];	/* R11 is frame pointer */
-	f->lr = (void*) ctx->lr;		/* R14 is link register */
+	f->fp = (void*) ctx->ptregs.r[11];	/* R11 is frame pointer */
+	f->lr = (void*) ctx->ptregs.lr;	/* R14 is link register */
 }
 
 void stack_iter_current(stack_iter_t *f) {

@@ -1,0 +1,10 @@
+package embox.arch.arm.fpu
+
+module vfp9_s extends fpu {
+	option number log_level = 0
+
+	@IncludeExport(path="arm")
+	source "fpu.h", "fpu_macro.s"
+
+	source "fpu.c"
+}

@@ -12,14 +12,13 @@
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
+
+#include <asm/ptrace.h>
 #include <arm/fpu.h>
 
 struct context {
-	uint32_t system_r[13];
-	uint32_t sp;
-	uint32_t lr;
-	uint32_t cpsr;
-	uint32_t fpu_data[FPU_DATA_LEN];
+	pt_regs_t ptregs;
+	fpu_context_t fpu_context;
 };
 
 #endif /* __ASSEMBLER__ */
