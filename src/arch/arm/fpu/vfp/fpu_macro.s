@@ -10,6 +10,17 @@
 #error "Do not include this file directly!"
 #endif /* ARM_FPU_H_ */
 
+/**
+ * Purpose
+ * : store/load struct fpu_context on/from the stack
+ *
+ * Params
+ * : inst = ldm or stm
+ * : tmp = temporary register
+ * : stack = stack pointer
+ * : upd = if 0, then the stack param will not be updated
+ * : force = if 0, then will not store regs when fpu is off
+ */
 .macro _save_load_fpu inst, tmp, stack, upd, force
 .if \inst == stm
 	mrc     p15, 0, \tmp, c1, c0, 2
