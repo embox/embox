@@ -6,16 +6,13 @@
  * @date 06.11.22
  */
 
-#include "exception_priv.h"
-
 #include <kernel/printk.h>
 
-void arm_fiq_handler(struct pt_regs *pt_regs) {
-	printk("\nUnresolvable fiq exception!\n");
-	PRINT_PTREGS(pt_regs);
+#include "exceptions.h"
 
-#if KEEP_GOING
+void _NORETURN arm_fiq_handler(excpt_context_t *ctx) {
+	printk("\nUnresolvable fiq exception!\n");
+	PRINT_PTREGS(&ctx->ptregs);
 	while (1)
 		;
-#endif
 }

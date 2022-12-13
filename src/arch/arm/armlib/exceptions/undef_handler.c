@@ -6,21 +6,16 @@
  * @date 06.11.22
  */
 
-#include "exception_priv.h"
-
 #include <arm/fpu.h>
 #include <kernel/printk.h>
 
-void arm_undef_handler(struct pt_regs *pt_regs) {
-	if (try_vfp_instructions()) {
-		return;
+#include "exceptions.h"
+
+void arm_undef_handler(excpt_context_t *ctx) {
+	if (!try_vfp_instructions(&ctx->fpu_context)) {
+		printk("\nUnresolvable undefined exception!\n");
+		PRINT_PTREGS(&ctx->ptregs);
+		while (1)
+			;
 	}
-
-	printk("\nUnresolvable undefined exception!\n");
-	PRINT_PTREGS(pt_regs);
-
-#if KEEP_GOING
-	while (1)
-		;
-#endif
 }

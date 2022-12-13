@@ -6,19 +6,21 @@
  * @date 06.11.22
  */
 
-#include "exception_priv.h"
-
 #include <inttypes.h>
 
 #include <kernel/printk.h>
 
-void arm_dabt_handler(struct pt_regs *pt_regs, uint32_t status) {
-	printk("\nUnresolvable data abort exception!\n");
-	printk("DFSR = %#08" PRIx32 "\n", status);
-	PRINT_PTREGS(pt_regs);
+#include "exceptions.h"
 
-#if KEEP_GOING
+extern uint32_t _get_mmu_data_fault_status(void);
+
+void _NORETURN arm_dabt_handler(excpt_context_t *ctx) {
+	uint32_t fault_status;
+
+	fault_status = _get_mmu_data_fault_status();
+	printk("\nUnresolvable data abort exception!\n");
+	printk("Fault status = %" PRIu32 "\n", fault_status);
+	PRINT_PTREGS(&ctx->ptregs);
 	while (1)
 		;
-#endif
 }

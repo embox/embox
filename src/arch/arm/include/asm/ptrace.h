@@ -9,16 +9,18 @@
 #ifndef ARM__PTRACE_H_
 #define ARM__PTRACE_H_
 
+#define PTREGS_SIZE (17 * 4)
+
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
 
 typedef struct pt_regs {
-	int r[13];
-	int sp;
-	int lr;
-	int pc;
-	int cpsr;
+	uint32_t r[13];
+	uint32_t sp;
+	uint32_t lr;
+	uint32_t pc;
+	uint32_t cpsr;
 } pt_regs_t;
 
 static inline void ptregs_retcode(struct pt_regs *ptregs, int retcode) {
