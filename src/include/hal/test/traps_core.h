@@ -27,6 +27,7 @@ enum fault_type {
 	MMU_DATA_SECUR,
 	MMU_DATA_MISS,
 	DIV_ZERO,
+	BREAKPOINT
 };
 
 /**
