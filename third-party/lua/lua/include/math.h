@@ -2,7 +2,7 @@
 #define LUA_MATH_H_
 
 #include <sys/cdefs.h>
-
+#if 0
 #define HUGE_VAL (__builtin_huge_val())
 
 __BEGIN_DECLS
@@ -20,6 +20,7 @@ static inline double ldexp(double x, int exp) {
 }
 
 __END_DECLS
+#endif
 
 #include_next <math.h>
 
