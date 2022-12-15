@@ -17,10 +17,7 @@ double floor(double x) {
 	return floorl(x);
 }
 
-long double ceill(long double x) {
-	return floorl(x + 1);
+float floorf(float x) {
+	return floorl(x);
 }
 
-double ceil(double x) {
-	return ceill(x);
-}

@@ -10,7 +10,6 @@
 
 #include <sys/cdefs.h>
 
-
 #if !defined(FLT_EVAL_METHOD) && defined(__FLT_EVAL_METHOD__)
 	#define FLT_EVAL_METHOD __FLT_EVAL_METHOD__
 #endif
@@ -34,25 +33,52 @@
 
 __BEGIN_DECLS
 
-#define modf(x, i_ptr) __builtin_modf(x, i_ptr)
-#define fmod(x, y) __builtin_fmod(x, y)
+extern double modf(double x, double *iptr);
+extern double fmod( double x, double y );
+extern double log(double x);
+extern double log10(double x);
+extern double pow(double x, double y);
+extern double sqrt(double x);
+
+extern long double floorl(long double x);
+extern double floor(double x);
+extern float floorf(float x);
+
+extern long double ceill(long double x);
+extern double ceil(double x);
+extern float ceilf(float x);
+
+extern double round(double x);
+extern long double roundl(long double x);
+
 extern int __signbit_float(float x);
 extern int __signbit_double(double x);
 extern int __signbit_long_double(long double x);
 #define signbit(x) (sizeof(x) == sizeof(float) ? __signbit_float(x) : \
 		(sizeof(x) == sizeof(double) ? __signbit_double(x) : __signbit_long_double(x)))
+
+#if 0
+#define modf(x, i_ptr) __builtin_modf(x, i_ptr)
+#define fmod(x, y) __builtin_fmod(x, y)
+#endif
+
 #define fabs(x) __builtin_fabs(x)
 #define fabsf(x) __builtin_fabsf(x)
 #define fabsl(x) __builtin_fabsl(x)
 
-#define round(x) __builtin_round(x)
 #define roundf(x) __builtin_roundf(x)
+
+#if 0
+#define round(x) __builtin_round(x)
 #define roundl(x) __builtin_roundl(x)
 
 #define pow(...) __builtin_pow(__VA_ARGS__)
+#endif
+
 #define powf(...) __builtin_powf(__VA_ARGS__)
 #define powl(...) __builtin_powl(__VA_ARGS__)
 
+#if 0
 #define log10(x) __builtin_log10(x)
 
 #define ceil(x) __builtin_ceil(x)
@@ -62,6 +88,7 @@ extern int __signbit_long_double(long double x);
 #define floor(x) __builtin_floor(x)
 #define floorf(x) __builtin_floorf(x)
 #define floorl(x) __builtin_floorl(x)
+#endif
 
 #define acos(x) __builtin_acos(x)
 #define acosf(x) __builtin_acosf(x)
@@ -91,15 +118,17 @@ extern int __signbit_long_double(long double x);
 #define expf(x) __builtin_expf(x)
 #define expl(x) __builtin_expl(x)
 
-#define frexp(x) __builtin_frexp(x)
-#define frexpf(x) __builtin_frexpf(x)
-#define frexpl(x) __builtin_frexpl(x)
+#define frexp(x, exp) __builtin_frexp(x, exp)
+#define frexpf(x, exp) __builtin_frexpf(x, exp)
+#define frexpl(x, exp) __builtin_frexpl(x, exp)
 
-#define ldexp(x) __builtin_ldexp(x)
-#define ldexpf(x) __builtin_ldexpf(x)
-#define ldexpl(x) __builtin_ldexpl(x)
+#define ldexp(x, exp) __builtin_ldexp(x, exp)
+#define ldexpf(x, exp) __builtin_ldexpf(x, exp)
+#define ldexpl(x, exp) __builtin_ldexpl(x, exp)
 
+#if 0
 #define log(x) __builtin_log(x)
+#endif
 #define logf(x) __builtin_logf(x)
 #define logl(x) __builtin_logl(x)
 
@@ -111,7 +140,9 @@ extern int __signbit_long_double(long double x);
 #define sinhf(x) __builtin_sinhf(x)
 #define sinhl(x) __builtin_sinhl(x)
 
+#if 0
 #define sqrt(x) __builtin_sqrt(x)
+#endif
 #define sqrtf(x) __builtin_sqrtf(x)
 #define sqrtl(x) __builtin_sqrtl(x)
 
@@ -210,10 +241,11 @@ __END_DECLS
     : (sizeof (x) == sizeof (double)) ? __isnormal(x)	\
     : __isnormall(x))
 
-#define	HUGE_VALF	__builtin_huge_valf()
-#define	HUGE_VALL	__builtin_huge_vall()
-#define	INFINITY	__builtin_inff()
-#define	NAN		__builtin_nanf("")
+#define HUGE_VAL   (__builtin_huge_val())
+#define HUGE_VALF  __builtin_huge_valf()
+#define HUGE_VALL  __builtin_huge_vall()
+#define INFINITY   __builtin_inff()
+#define NAN        __builtin_nanf("")
 
 #define	M_E		2.7182818284590452354	/* e */
 #define	M_LOG2E		1.4426950408889634074	/* log 2e */
