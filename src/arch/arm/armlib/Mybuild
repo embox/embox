@@ -34,3 +34,7 @@ module armv7_monitor_mode {
 	source "monitor_exception_table.S"
 	source "monitor_armv7.c"
 }
+
+module testtrap extends embox.arch.testtrap {
+	source "traps_core.c"
+}
