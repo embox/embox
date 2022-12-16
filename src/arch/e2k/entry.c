@@ -6,9 +6,11 @@
 
 #include <asm/io.h>
 #include <asm/mpspec.h>
-#include <e2k_api.h>
+#include <asm/atomic_api.h>
 #include <asm/cpu_regs_types.h>
 #include <asm/ptrace.h>
+#include <e2k_api.h>
+
 #include <hal/ipl.h>
 
 #include <framework/mod/options.h>
@@ -17,11 +19,6 @@
 extern void e2k_trap_handler(struct pt_regs *regs);
 
 #define CPU_COUNT OPTION_GET(NUMBER, cpu_count)
-
-#define E2K_DONE \
-do { \
-    asm volatile ("{nop 3} {done}" ::: "ctpr3"); \
-} while (0)
 
 
 static int volatile entries_count = 0;
@@ -59,7 +56,7 @@ static void e2k_kernel_start(void) {
 
 __attribute__ ((__section__(".cpu_idle")))
 void cpu_idle(void) {
-	idled_cpus_count = __e2k_atomic32_add(1, &idled_cpus_count);
+	__api_atomic32_add_oldval_lock(1, &idled_cpus_count);
 	while(1)
 		;
 }
@@ -92,9 +89,9 @@ void e2k_entry(struct pt_regs *regs) {
 
 	/* It wasn't exception, so we decide this usual program execution,
 	 * that is, Embox started on CPU0 or CPU1 */
-	e2k_wait_all();
+	E2K_WAIT_ALL;
 
-	entries_count = __e2k_atomic32_add(1, &entries_count);
+	__api_atomic32_add_oldval_lock(1, &entries_count);
 
 
 	if (lapic_read(0xFEE00020)>>24 != 0x0) { // all non-BSP core go to sleep
@@ -125,7 +122,7 @@ void e2k_entry(struct pt_regs *regs) {
 
 		context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
 				e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
-		sync_count = __e2k_atomic32_add(1, &sync_count);
+		__api_atomic32_add_oldval_lock(1, &sync_count);
 		context_switch(&cpu_ctx_prev[1], &cpu_ctx[1]);
 	}
 }
