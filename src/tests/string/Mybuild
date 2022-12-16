@@ -17,3 +17,7 @@ module memchr_test {
 module memrchr_test {
     source "memrchr_test.c"
 }
+
+module strerror_test {
+	source "strerror_test.c"
+}
