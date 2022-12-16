@@ -1,6 +1,8 @@
 #ifndef _E2K_API_H_
 #define _E2K_API_H_
 
+#define NOT_VOLATILE
+
 #include <e2k_mas.h>
 #include <stdint.h>
 
@@ -36,7 +38,7 @@
 })
 
 /**
- * Чтение/запись (Read/write).
+ * Read/write
  */
 #define _E2K_READ(addr, type, size_letter) \
 ({ \
@@ -126,9 +128,27 @@
 # define WMB_AFTER_ATOMIC	/* E2K_WAIT_ST_C_SAS() */ \
 				".word 0x00008001\n" \
 				".word 0x30000084\n"
+#define MB_AFTER_ATOMIC_LOCK_MB  /* E2K_WAIT_ST_C_SAS() */ \
+		".word 0x00008001\n" \
+		".word 0x30000084\n"
 #else
 # define WMB_AFTER_ATOMIC
+#define MB_AFTER_ATOMIC_LOCK_MB
 #endif
+
+#define MB_BEFORE_ATOMIC_LOCK_MB
+
+#define MB_BEFORE_ATOMIC_STRONG_MB   WMB_BEFORE_ATOMIC
+#define MB_AFTER_ATOMIC_STRONG_MB    WMB_AFTER_ATOMIC
+
+#define MB_BEFORE_ATOMIC_RELEASE_MB  WMB_BEFORE_ATOMIC
+#define MB_AFTER_ATOMIC_RELEASE_MB
+
+#define MB_BEFORE_ATOMIC_ACQUIRE_MB
+#define MB_AFTER_ATOMIC_ACQUIRE_MB   WMB_AFTER_ATOMIC
+
+#define MB_BEFORE_ATOMIC_RELAXED_MB
+#define MB_AFTER_ATOMIC_RELAXED_MB
 
 #define E2K_WAIT(num) \
 ({ \
@@ -267,19 +287,6 @@ do { \
 
 #endif /* __ASSEMBLER__ */
 
-#if 0
-now it is defined in asm/cpu_regs_types.h
-/* UPSR register bits */
-#define UPSR_FE   (1UL << 0) /* Enable floating operations */
-#define UPSR_IE   (1UL << 5) /* Enable interrutps */
-#define UPSR_NMIE (1UL << 7) /* Enable non-maskable interrupts */
-
-/* PSR register bits */
-#define PSR_PM   (1UL << 0) /* Privileged mode */
-#define PSR_IE   (1UL << 1) /* Enable interrutps */
-#define PSR_NMIE (1UL << 4) /* Enable non-maskable interrupts */
-#define PSR_UIE  (1UL << 5) /* Allow user to control interrupts */
-#endif
 
 /* We use this macro for Embox as default, and control IPL with UPSR */
 #define PSR_ALL_IRQ_ENABLED (PSR_IE | PSR_NMIE | PSR_UIE | PSR_PM)
@@ -313,11 +320,105 @@ now it is defined in asm/cpu_regs_types.h
 
 /* Summary size of both CR0 and CR1 */
 #define SZ_OF_CR0_CR1 32
-#if 0
-#define E2_RWAR_R_ENABLE    0x1UL
-#define E2_RWAR_W_ENABLE    0x2UL
-#define E2_RWAR_RW_ENABLE   (E2_RWAR_R_ENABLE | E2_RWAR_W_ENABLE)
+
+#if defined (CONFIG_CPU_ISET)
+#if CONFIG_CPU_ISET >= 5
+# define ACQUIRE_MB_ATOMIC_CHANNEL	"5"
+# define RELAXED_MB_ATOMIC_CHANNEL	"5"
+#else	/* CONFIG_CPU_ISET < 5 */
+# define ACQUIRE_MB_ATOMIC_CHANNEL	"2"
+# define RELAXED_MB_ATOMIC_CHANNEL	"2"
+#endif	/* CONFIG_CPU_ISET >= 5 */
+#define RELEASE_MB_ATOMIC_CHANNEL	"2"
+#define STRONG_MB_ATOMIC_CHANNEL	"2"
+#define LOCK_MB_ATOMIC_CHANNEL		ACQUIRE_MB_ATOMIC_CHANNEL
+
+#if CONFIG_CPU_ISET >= 6
+# define LOCK_MB_ATOMIC_MAS	"0x2"
+# define ACQUIRE_MB_ATOMIC_MAS	"0x2"
+# define RELEASE_MB_ATOMIC_MAS	"0x73"
+# define STRONG_MB_ATOMIC_MAS	"0x73"
+# define RELAXED_MB_ATOMIC_MAS	"0x2"
+#else
+# define LOCK_MB_ATOMIC_MAS	"0x2"
+# define ACQUIRE_MB_ATOMIC_MAS	"0x2"
+# define RELEASE_MB_ATOMIC_MAS	"0x2"
+# define STRONG_MB_ATOMIC_MAS	"0x2"
+# define RELAXED_MB_ATOMIC_MAS	"0x2"
+#endif /* !CONFIG_CPU_ISET */
+
+#else /* CONFIG_CPU_ISET */
+
+# define ACQUIRE_MB_ATOMIC_CHANNEL   "2"
+# define LOCK_MB_ATOMIC_CHANNEL       ACQUIRE_MB_ATOMIC_CHANNEL
+
+# define LOCK_MB_ATOMIC_MAS	"0x2"
+
 #endif
+
+#define CLOBBERS_LOCK_MB	: "memory"
+#define CLOBBERS_ACQUIRE_MB	: "memory"
+#define CLOBBERS_RELEASE_MB	: "memory"
+#define CLOBBERS_STRONG_MB	: "memory"
+#define CLOBBERS_RELAXED_MB
+
+
+/*
+ * mem_model - one of the following:
+ * LOCK_MB
+ * ACQUIRE_MB
+ * RELEASE_MB
+ * STRONG_MB
+ * RELAXED_MB
+ */
+#define NATIVE_ATOMIC_OP(__val, __addr, __rval, \
+			size_letter, op, mem_model) \
+do { \
+	asm NOT_VOLATILE ( \
+		MB_BEFORE_ATOMIC_##mem_model \
+		"\n1:" \
+		"\n{"\
+		"\nnop 4"\
+		"\nld" #size_letter ",0 %[addr], %[rval], mas=0x7" \
+		"\n}" \
+		"\n{"\
+		"\n" op " %[rval], %[val], %[rval]" \
+		"\n}" \
+		"\n{"\
+		"\nst" #size_letter "," mem_model##_ATOMIC_CHANNEL \
+			" %[addr], %[rval], mas=" mem_model##_ATOMIC_MAS \
+		"\nibranch 1b ? %%MLOCK" \
+		"\n}" \
+		MB_AFTER_ATOMIC_##mem_model \
+		: [rval] "=&r" (__rval), [addr] "+m" (*(__addr)) \
+		: [val] "ir" (__val) \
+		CLOBBERS_##mem_model); \
+} while (0)
+
+#define NATIVE_ATOMIC_FETCH_OP(__val, __addr, __rval, __tmp, \
+			size_letter, op, mem_model) \
+do { \
+	asm NOT_VOLATILE ( \
+		MB_BEFORE_ATOMIC_##mem_model \
+		"\n1:" \
+		"\n{"\
+		"\nnop 4"\
+		"\nld" #size_letter ",0 %[addr], %[rval], mas=0x7" \
+		"\n}" \
+		"\n{"\
+		"\n" op " %[rval], %[val], %[tmp]" \
+		"\n}" \
+		"\n{"\
+		"\nst" #size_letter "," mem_model##_ATOMIC_CHANNEL \
+			" %[addr], %[tmp], mas=" mem_model##_ATOMIC_MAS \
+		"\nibranch 1b ? %%MLOCK" \
+		"\n}" \
+		MB_AFTER_ATOMIC_##mem_model \
+		: [tmp] "=&r" (__tmp), [addr] "+m" (*(__addr)), \
+		  [rval] "=&r" (__rval) \
+		: [val] "ir" (__val) \
+		CLOBBERS_##mem_model); \
+} while (0)
 
 #ifndef	__ASSEMBLER__
 static inline uint32_t e2k_upsr_read(void) {
