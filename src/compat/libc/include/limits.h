@@ -26,11 +26,11 @@
 #endif /* CHAR_MAX */
 
 #ifndef SCHAR_MIN
-#define SCHAR_MIN 	-127
+#define SCHAR_MIN 	-128
 #endif /* SCHAR_MIN */
 
 #ifndef SCHAR_MAX
-#define SCHAR_MAX 	128
+#define SCHAR_MAX 	127
 #endif /* SCHAR_MAX */
 
 #ifndef UCHAR_MAX

@@ -14,8 +14,8 @@
 #define CHAR_BIT 	8
 #define CHAR_MIN 	SCHAR_MIN
 #define CHAR_MAX 	SCHAR_MAX
-#define SCHAR_MIN 	-127
-#define SCHAR_MAX 	128
+#define SCHAR_MIN 	-128
+#define SCHAR_MAX 	127
 #define UCHAR_MAX 	255
 
 #define WORD_BIT 	32
