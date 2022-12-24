@@ -71,6 +71,7 @@ int index_descriptor_flags_get(int fd) {
 	return idesc->idesc_flags & ~O_ACCESS_MASK;
 }
 
+#define SETFL_MASK (O_APPEND | O_NONBLOCK | O_NDELAY | O_DIRECT)
 int index_descriptor_flags_set(int fd, int flags) {
 	struct idesc *idesc;
 
@@ -79,8 +80,7 @@ int index_descriptor_flags_set(int fd, int flags) {
 		return -ENOENT;
 	}
 
-	flags &= ~O_ACCESS_MASK;
-	idesc->idesc_flags |= flags;
+    idesc->idesc_flags = (flags & SETFL_MASK) | (idesc->idesc_flags & ~SETFL_MASK);
 
 	return 0;
 }
