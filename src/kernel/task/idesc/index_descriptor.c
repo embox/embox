@@ -80,7 +80,7 @@ int index_descriptor_flags_set(int fd, int flags) {
 		return -ENOENT;
 	}
 
-    idesc->idesc_flags = (flags & SETFL_MASK) | (idesc->idesc_flags & ~SETFL_MASK);
+	idesc->idesc_flags = (flags & SETFL_MASK) | (idesc->idesc_flags & ~SETFL_MASK);
 
 	return 0;
 }
