@@ -1,0 +1,23 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name="gdbserver",
+	 help="Remote server for the GNU debugger",
+	 man='''
+		NAME
+			gdbserver -- remote server for the GNU debugger
+		SYNOPSIS
+			gdbserver [HOST]:[PORT] [PROG] [ARGS ...]
+	 ''')
+module gdbserver {
+	option number breakpoint_count=32
+	option number packet_size=1024
+	
+	source "breakpoint.c"
+	source "gdbstub.c"
+	source "remote.c"
+	source "arch.c"
+	source "main.c"
+
+	depends embox.compat.posix.net.socket
+}
