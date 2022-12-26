@@ -20,4 +20,5 @@ module gdbserver {
 	source "main.c"
 
 	depends embox.compat.posix.net.socket
+	depends embox.arch.testtrap
 }
