@@ -9,6 +9,7 @@
 #include <inttypes.h>
 
 #include <kernel/printk.h>
+#include <debug/whereami.h>
 #include <hal/test/traps_core.h>
 
 #include "exceptions.h"
@@ -28,6 +29,7 @@ void arm_dabt_handler(excpt_context_t *ctx) {
 		printk("\nUnresolvable data abort exception!\n");
 		printk("Fault status = %" PRIu32 "\n", fault_status);
 		PRINT_PTREGS(&ctx->ptregs);
+		whereami();
 		while (1)
 			;
 	}
