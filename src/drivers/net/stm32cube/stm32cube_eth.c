@@ -28,7 +28,7 @@ EMBOX_UNIT_INIT(stm32eth_init);
 #define STM32ETH_IRQ   OPTION_GET(NUMBER, irq)
 
 static ETH_HandleTypeDef stm32_eth_handler;
-#ifdef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 static ETH_TxPacketConfig TxConfig;
 #endif
 
@@ -45,10 +45,10 @@ static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
 #endif
 
 #ifdef TX_NO_BUFF
-#ifndef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
-#endif /* STM32H7_CUBE */
+#endif /* defined (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))*/
 static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
 	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
 #else /* TX_NO_BUFF */
@@ -65,7 +65,7 @@ static void low_level_init(unsigned char mac[6]) {
 	stm32_eth_handler.Instance = (ETH_TypeDef *) ETH_BASE;
 	/* Fill ETH_InitStructure parametrs */
 	stm32_eth_handler.Init.MACAddr = mac;
-#ifdef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 	stm32_eth_handler.Init.MediaInterface = HAL_ETH_RMII_MODE;
 	stm32_eth_handler.Init.RxDesc = DMARxDscrTab;
 	stm32_eth_handler.Init.TxDesc = DMATxDscrTab;
@@ -83,7 +83,7 @@ static void low_level_init(unsigned char mac[6]) {
 	if (HAL_OK != HAL_ETH_Init(&stm32_eth_handler)) {
 		log_error("HAL_ETH_Init error\n");
 	}
-#ifdef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 	if (stm32_eth_handler.gState == HAL_ETH_STATE_READY) {
 
 	}
@@ -133,7 +133,7 @@ static struct sk_buff *low_level_input(void) {
 	int len;
 	uint8_t *buffer;
 
-#ifdef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 	ETH_BufferTypeDef RxBuff;
 	uint32_t framelength = 0;
 	if (!HAL_ETH_IsRxDataAvailable(&stm32_eth_handler)) {
@@ -173,7 +173,7 @@ static struct sk_buff *low_level_input(void) {
 	} else {
 		log_error("skb_alloc failed\n");
 	}
-#ifndef STM32H7_CUBE
+#if !defined (STM32H7_CUBE) || !(defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 	{
 		uint32_t i = 0;
 		__IO ETH_DMADescTypeDef *dmarxdesc;
@@ -236,7 +236,7 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 
 #ifdef TX_NO_BUFF
 static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
-#ifdef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 #define ETH_DMA_TRANSMIT_TIMEOUT                (20U)
 	uint32_t  framelen = 0;
 	ETH_BufferTypeDef Txbuffer;
@@ -295,7 +295,7 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 	if (!nic_p) {
 		return IRQ_NONE;
 	}
-#ifdef STM32H7_CUBE
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 	/* Packet received */
 	if (__HAL_ETH_DMA_GET_IT(heth, ETH_DMACSR_RI))
 	{
