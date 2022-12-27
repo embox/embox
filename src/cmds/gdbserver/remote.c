@@ -88,12 +88,6 @@ int remote_open(const char *host, const char *port) {
 		goto out;
 	}
 
-	if (-1 == setsockopt(listen_fd, SOL_SOCKET, SO_REUSEADDR, &(int){1},
-	                     sizeof(int))) {
-		ret = -errno;
-		goto out;
-	}
-
 	sockaddr.sin_family = AF_INET;
 	sockaddr.sin_port = htons(in_port);
 	sockaddr.sin_addr.s_addr = in_addr;
@@ -114,10 +108,12 @@ int remote_open(const char *host, const char *port) {
 	}
 
 out:
+	shutdown(listen_fd, SHUT_RDWR);
 	close(listen_fd);
 	return ret;
 }
 
 void remote_close(void) {
+	shutdown(remote_fd, SHUT_RDWR);
 	close(remote_fd);
 }
