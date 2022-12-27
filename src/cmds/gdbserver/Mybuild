@@ -1,5 +1,6 @@
 package embox.cmd
 
+@App
 @AutoCmd
 @Cmd(name="gdbserver",
 	 help="Remote server for the GNU debugger",
