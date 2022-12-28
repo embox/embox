@@ -1,8 +1,8 @@
 PKG_NAME := efm
-PKG_VER  := v1.0.0-alpha
+PKG_VER  := ed4a16901b347762c2a2a21eba2f84d06317ed07
 
-PKG_SOURCES := https://github.com/t0bro/efm/archive/refs/tags/$(PKG_VER).tar.gz
-PKG_MD5     := 8805ada164ce0ad6bb80f44ca82b92cd
+PKG_SOURCES := https://github.com/embox/efm/archive/$(PKG_VER).zip
+PKG_MD5     := edd02177de489eb969fa49791d118361
 
 include $(EXTBLD_LIB)
 
