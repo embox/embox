@@ -1,0 +1,19 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "efm",
+	help = "Embedded file manager",
+	man = '''
+		NAME
+			efm - Embedded file manager
+		SYNOPSIS
+			efm [OPTIONS] ...
+		AUTHORS
+			Yury Bobrov (ubobrov@yandex.ru), github.com/t0bro
+	''')
+module efm {
+	source "^BUILD/extbld/^MOD_PATH/install/efm.o"
+}
+
