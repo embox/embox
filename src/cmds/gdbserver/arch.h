@@ -32,8 +32,9 @@
 	"<reg name=\"sp\" bitsize=\"32\" type=\"data_ptr\"/>"       \
 	"<reg name=\"lr\" bitsize=\"32\"/>"                         \
 	"<reg name=\"pc\" bitsize=\"32\" type=\"code_ptr\"/>"       \
-	"<reg name=\"cpsr\" bitsize=\"32\" regnum=\"25\"/> </feature></target>"
+	"<reg name=\"cpsr\" bitsize=\"32\" regnum=\"25\"/></feature></target>"
 #define REG_LIST_SZ (17 * 4)
+#define SP_OFFSET   (13 * 4)
 #define PC_OFFSET   (15 * 4)
 #endif
 

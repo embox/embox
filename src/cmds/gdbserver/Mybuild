@@ -12,7 +12,7 @@ package embox.cmd
 	 ''')
 module gdbserver {
 	option number breakpoint_count=32
-	option number packet_size=1024
+	option number packet_size=840
 	
 	source "breakpoint.c"
 	source "gdbstub.c"
