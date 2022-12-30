@@ -22,11 +22,12 @@
 
 #define PACKET_SIZE OPTION_GET(NUMBER, packet_size)
 
-int gdbstub_err;
-
 static const char hexchars[] = "0123456789abcdef";
 
+static void *stack_top;
 static bool is_running = false;
+
+int gdbstub_err;
 
 static char *pack_str(char *dst, const char *src, uint8_t *checksum) {
 	while (*src) {
@@ -36,12 +37,13 @@ static char *pack_str(char *dst, const char *src, uint8_t *checksum) {
 	return dst;
 }
 
-static char *pack_hex(char *dst, const void *src, size_t n, uint8_t *checksum) {
+static char *pack_hex(char *dst, const void *src, size_t nbytes,
+                      uint8_t *checksum) {
 	uint8_t *ptr;
 	char hi;
 	char lo;
 
-	for (ptr = (uint8_t *)src; n > 0; n--, ptr++) {
+	for (ptr = (uint8_t *)src; nbytes; nbytes--, ptr++) {
 		hi = hexchars[*ptr >> 4];
 		lo = hexchars[*ptr & 0xf];
 		*checksum += hi;
@@ -61,18 +63,17 @@ int gdbstub(uint32_t nr, void *regs) {
 
 	if (!is_running) {
 		remove_breakpoint(*(void **)((uint8_t *)regs + PC_OFFSET));
+		stack_top = *(void **)((uint8_t *)regs + SP_OFFSET);
 	}
 
 	for (;;) {
 		if (is_running) {
-			request = "$?#3f";
+			request = "$?";
 			is_running = false;
 		}
 		else {
 			n = remote_read(buf, sizeof(buf));
-			if (n < 0) {
-				remove_all_breakpoints();
-				gdbstub_err = n;
+			if (n <= 0) {
 				break;
 			}
 
@@ -91,8 +92,11 @@ int gdbstub(uint32_t nr, void *regs) {
 			break;
 
 		case 'c':
-			is_running = true;
-			break;
+			goto out;
+
+		case 'D':
+			remove_all_breakpoints();
+			goto out;
 
 		case 'g':
 			buf_ptr = pack_hex(buf_ptr, regs, REG_LIST_SZ, &checksum);
@@ -103,12 +107,19 @@ int gdbstub(uint32_t nr, void *regs) {
 			break;
 
 		case 'm': {
-			size_t addr;
+			void *addr;
 			size_t len;
 
-			addr = strtoul(request + 2, &request, 16);
+			addr = (void *)strtoul(request + 2, &request, 16);
 			len = strtoul(request + 1, NULL, 16);
-			buf_ptr = pack_hex(buf_ptr, (void *)addr, len, &checksum);
+			if (addr > stack_top) {
+				memset(buf_ptr, '0', len * 2);
+				buf_ptr[len * 2] = '\0';
+				buf_ptr = pack_str(buf_ptr, buf_ptr, &checksum);
+			}
+			else {
+				buf_ptr = pack_hex(buf_ptr, addr, len, &checksum);
+			}
 			break;
 		}
 
@@ -139,14 +150,14 @@ int gdbstub(uint32_t nr, void *regs) {
 				break;
 
 			case 'S':
-				if (!memcmp(request + 2, "Supported", 9)) {
+				if (!memcmp(request + 2, "Symbol", 6)) {
+					buf_ptr = pack_str(buf_ptr, "OK", &checksum);
+				}
+				else if (!memcmp(request + 2, "Supported", 9)) {
 					buf_ptr = pack_str(buf_ptr,
 					                   "qXfer:features:read+;"
 					                   "PacketSize=" MACRO_STRING(PACKET_SIZE),
 					                   &checksum);
-				}
-				else if (!memcmp(request + 2, "Symbol", 6)) {
-					buf_ptr = pack_str(buf_ptr, "OK", &checksum);
 				}
 				break;
 
@@ -160,9 +171,9 @@ int gdbstub(uint32_t nr, void *regs) {
 
 		case 'z':
 			if (request[2] == '0') {
-				size_t addr;
+				void *addr;
 
-				addr = strtoul(request + 4, NULL, 16);
+				addr = (void *)strtoul(request + 4, NULL, 16);
 				if (remove_breakpoint((void *)addr)) {
 					buf_ptr = pack_str(buf_ptr, "OK", &checksum);
 				}
@@ -174,9 +185,9 @@ int gdbstub(uint32_t nr, void *regs) {
 
 		case 'Z':
 			if (request[2] == '0') {
-				size_t addr;
+				void *addr;
 
-				addr = strtoul(request + 4, NULL, 16);
+				addr = (void *)strtoul(request + 4, NULL, 16);
 				if (insert_breakpoint((void *)addr)) {
 					buf_ptr = pack_str(buf_ptr, "OK", &checksum);
 				}
@@ -187,29 +198,23 @@ int gdbstub(uint32_t nr, void *regs) {
 			break;
 		}
 
-		if (is_running) {
-			n = remote_write("+", 1);
-			if (n < 0) {
-				remove_all_breakpoints();
-				gdbstub_err = n;
-			}
+		*buf_ptr++ = '#';
+		*buf_ptr++ = hexchars[checksum >> 4];
+		*buf_ptr++ = hexchars[checksum & 0xf];
+
+		buf[0] = '+';
+		buf[1] = '$';
+
+		n = remote_write(buf, buf_ptr - buf);
+		if (n <= 0) {
 			break;
 		}
-		else {
-			*buf_ptr++ = '#';
-			*buf_ptr++ = hexchars[checksum >> 4];
-			*buf_ptr++ = hexchars[checksum & 0xf];
-
-			buf[0] = '+';
-			buf[1] = '$';
-
-			n = remote_write(buf, buf_ptr - buf);
-			if (n < 0) {
-				remove_all_breakpoints();
-				gdbstub_err = n;
-				break;
-			}
-		}
 	}
+
+	remove_all_breakpoints();
+	gdbstub_err = n;
+
+out:
+	is_running = true;
 	return 0;
 }
