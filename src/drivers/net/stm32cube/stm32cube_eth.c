@@ -34,9 +34,10 @@ static ETH_TxPacketConfig TxConfig;
 
 static ETH_DMADescTypeDef DMARxDscrTab[ETH_RXBUFNB] \
 	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
-
+#if !(defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
 	 __attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+#endif /* !(defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0)) */
 
 #if ETH_TXBUFNB == 0
 #undef  ETH_TXBUFNB
@@ -45,7 +46,7 @@ static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
 #endif
 
 #ifdef TX_NO_BUFF
-#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#if defined (STM32H7_CUBE)// || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif /* defined (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))*/
@@ -84,6 +85,7 @@ static void low_level_init(unsigned char mac[6]) {
 		log_error("HAL_ETH_Init error\n");
 	}
 #if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#if defined (STM32H7_CUBE)
 	if (stm32_eth_handler.gState == HAL_ETH_STATE_READY) {
 
 	}
@@ -91,6 +93,7 @@ static void low_level_init(unsigned char mac[6]) {
 	{
 		HAL_ETH_DescAssignMemory(&stm32_eth_handler, idx, Rx_Buff[idx], NULL);
 	}
+#endif /* defined (STM32H7_CUBE) */
 
 	/* Set Tx packet config common parameters */
 	memset(&TxConfig, 0, sizeof(ETH_TxPacketConfig));
@@ -133,7 +136,7 @@ static struct sk_buff *low_level_input(void) {
 	int len;
 	uint8_t *buffer;
 
-#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#if defined (STM32H7_CUBE) //|| (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
 	ETH_BufferTypeDef RxBuff;
 	uint32_t framelength = 0;
 	if (!HAL_ETH_IsRxDataAvailable(&stm32_eth_handler)) {
@@ -151,7 +154,13 @@ static struct sk_buff *low_level_input(void) {
 	buffer = RxBuff.buffer;
 	len = framelength;
 
+#elif (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#define  ETH_DMARXDESC_FRAMELENGTHSHIFT            ((uint32_t)16)
+	uint32_t dmarxdesc;
 
+	HAL_ETH_ReadData(&stm32_eth_handler, (void **)&buffer);
+	dmarxdesc = stm32_eth_handler.RxDescList.pRxLastRxDesc;
+	len = ((dmarxdesc & ETH_DMARXDESC_FL) >> ETH_DMARXDESC_FRAMELENGTHSHIFT) - 4U;
 #else
 	/* get received frame */
 	if (HAL_ETH_GetReceivedFrame_IT(&stm32_eth_handler) != HAL_OK) {
@@ -173,7 +182,7 @@ static struct sk_buff *low_level_input(void) {
 	} else {
 		log_error("skb_alloc failed\n");
 	}
-#if !defined (STM32H7_CUBE) || !(defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#if !defined (STM32H7_CUBE) && !((defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0)))
 	{
 		uint32_t i = 0;
 		__IO ETH_DMADescTypeDef *dmarxdesc;
@@ -248,7 +257,7 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	TxConfig.Length = framelen;
 	TxConfig.TxBuffer = &Txbuffer;
 	HAL_ETH_Transmit(&stm32_eth_handler, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
-
+	HAL_ETH_ReleaseTxPacket(&stm32_eth_handler);
 #else
 	__IO ETH_DMADescTypeDef *dma_tx_desc;
 
@@ -296,6 +305,15 @@ static irq_return_t stm32eth_interrupt(unsigned int irq_num, void *dev_id) {
 		return IRQ_NONE;
 	}
 #if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#ifndef ETH_DMACSR_RI
+#define ETH_DMACSR_RI ETH_DMASR_RS
+#endif
+#ifndef ETH_DMACIER_RIE
+#define ETH_DMACIER_RIE ETH_DMAIER_RIE
+#endif
+#ifndef ETH_DMACSR_NIS
+#define ETH_DMACSR_NIS ETH_DMASR_NIS
+#endif
 	/* Packet received */
 	if (__HAL_ETH_DMA_GET_IT(heth, ETH_DMACSR_RI))
 	{
