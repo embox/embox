@@ -1,12 +1,12 @@
 
 PKG_NAME := stm32cubef7
 
-PKG_VER  := v1.16.0
-PKG_MD5     := 9586ec0996e154c21dbb31f92834c3aa
-PKG_PATCHES := sd_read_1_16_0.patch
+#PKG_VER  := v1.16.0
+#PKG_MD5     := 9586ec0996e154c21dbb31f92834c3aa
+#PKG_PATCHES := sd_read_1_16_0.patch
 
-#PKG_VER  := v1.17.0
-#PKG_MD5     := b5b0f62b5cbcda9f21abdf8e82e247ba
+PKG_VER  := v1.17.0
+PKG_MD5     := b5b0f62b5cbcda9f21abdf8e82e247ba
 
 PKG_SOURCES := https://github.com/STMicroelectronics/STM32CubeF7/archive/refs/tags/$(PKG_VER).zip
 
