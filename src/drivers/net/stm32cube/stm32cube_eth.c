@@ -46,7 +46,7 @@ static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
 #endif
 
 #ifdef TX_NO_BUFF
-#if defined (STM32H7_CUBE)// || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+#if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && !defined(STM32F7_CUBE_1_17_0))
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 #endif /* defined (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))*/
