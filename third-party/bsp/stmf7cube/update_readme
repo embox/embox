@@ -1,0 +1,15 @@
+In 'third-party/bsp/stmh7cube/cube/Makefile' update 
+PKG_VER  := v1.16.0
+PKG_MD5     := 9586ec0996e154c21dbb31f92834c3aa
+and comment
+# PKG_PATCHES := sd_read.patch
+
+Modify with new version following files
+third-party/bsp/stmh7cube/cube/Mybuild
+platform/stm32/f7/stm32f746g_discovery/Mybuild
+platform/stm32/f7/stm32f769i_discovery/Mybuild
+third-party/bsp/stmh7cube/components/Mybuild
+third-party/bsp/stmh7cube/middlewares/Mybuild
+third-party/bsp/stmh7cube/utilities/Mybuild
+
+each STM32CubeF7-1.16.0 -> STM32CubeF7-1.17.0
