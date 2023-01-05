@@ -49,16 +49,20 @@ static uint8_t Rx_Buff[ETH_RXBUFNB][ETH_RX_BUF_SIZE] \
 #if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && !defined(STM32F7_CUBE_1_17_0))
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
+#undef TX_NO_BUFF
+#define TX_NO_BUFF  1
+#else
+#undef TX_NO_BUFF
+#define TX_NO_BUFF  0
 #endif /* defined (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))*/
-static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
-	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
 #else /* TX_NO_BUFF */
 static uint8_t Tx_Buff[ETH_TXBUFNB][ETH_TX_BUF_SIZE] \
 	__attribute__ ((aligned (4))) SRAM_NOCACHE_SECTION;
 
+#endif /* TX_NO_BUFF */
+
 static ETH_DMADescTypeDef DMATxDscrTab[ETH_TXBUFNB] \
 	__attribute__ ((aligned (4))) SRAM_DEVICE_MEM_SECTION;
-#endif /* TX_NO_BUFF */
 
 static void low_level_init(unsigned char mac[6]) {
 	memset(&stm32_eth_handler, 0, sizeof(stm32_eth_handler));
@@ -243,9 +247,9 @@ static int stm32eth_set_mac(struct net_device *dev, const void *addr) {
 	return ENOERR;
 }
 
-#ifdef TX_NO_BUFF
-static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
+
 #if defined (STM32H7_CUBE) || (defined(STM32F7_CUBE) && defined(STM32F7_CUBE_1_17_0))
+static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 #define ETH_DMA_TRANSMIT_TIMEOUT                (20U)
 	uint32_t  framelen = 0;
 	ETH_BufferTypeDef Txbuffer;
@@ -258,7 +262,13 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	TxConfig.TxBuffer = &Txbuffer;
 	HAL_ETH_Transmit(&stm32_eth_handler, &TxConfig, ETH_DMA_TRANSMIT_TIMEOUT);
 	HAL_ETH_ReleaseTxPacket(&stm32_eth_handler);
-#else
+
+	skb_free(skb);
+
+	return 0;
+}
+#elif defined (TX_NO_BUFF) && TX_NO_BUFF == 0
+static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	__IO ETH_DMADescTypeDef *dma_tx_desc;
 
 	dma_tx_desc = stm32_eth_handler.TxDesc;
@@ -270,10 +280,9 @@ static int stm32eth_xmit(struct net_device *dev, struct sk_buff *skb) {
 		log_error("HAL_ETH_TransmitFrame failed\n");
 		return -1;
 	}
-	/* Wait until paacket transmitted and descriptor released. */
+	/* Wait until packet transmitted and descriptor released. */
 	while (dma_tx_desc->Status & ETH_DMATXDESC_OWN)
 		;
-#endif
 	skb_free(skb);
 
 	return 0;
