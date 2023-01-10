@@ -9,6 +9,7 @@
 #include <arm/fpu.h>
 #include <asm/cp15.h>
 #include <asm/modes.h>
+#include <asm/ptrace.h>
 
 /**
  * Purpose
@@ -51,7 +52,7 @@
 	msr     CPSR, #(ARM_MODE_SYS | I_BIT | F_BIT)
 
 	@ Load struct pt_regs and return from exception
-	add     r0, sp, #(17 * 4)
+	add     r0, sp, #PTREGS_SIZE
 	ldmdb   r0!, {r1, r2}
 	ldmdb   r0!, {r3, lr}
 	mov     sp, r3
