@@ -19,15 +19,12 @@
  * : tmp = temporary register
  * : stack = stack pointer
  * : upd = if 0, then the stack param will not be updated
- * : force = if 0, then will not store regs when fpu is off
  */
-.macro _save_load_fpu inst, tmp, stack, upd, force
+.macro _save_load_fpu inst, tmp, stack, upd
 	ldr     \tmp, =FPU_CPACR
 	ldr     \tmp, [\tmp]
-.if !\force
 	tst     \tmp, #0xf00000
 	beq     1f
-.endif
 	add     \tmp, \stack, #4
 	v\inst\()ia \tmp, {s0-s31}
 1:
@@ -36,20 +33,20 @@
 .endif
 .endm
 
-.macro save_fpu_inc tmp, stack, upd=0, force=0
-	_save_load_fpu stm \tmp, \stack, \upd \force
+.macro save_fpu_inc tmp, stack, upd=0
+	_save_load_fpu stm \tmp, \stack, \upd
 .endm
 
-.macro load_fpu_inc tmp, stack, upd=0, force=0
-	_save_load_fpu ldm \tmp, \stack, \upd \force
+.macro load_fpu_inc tmp, stack, upd=0
+	_save_load_fpu ldm \tmp, \stack, \upd
 .endm
 
-.macro save_fpu_dec tmp, stack, upd=0, force=0
+.macro save_fpu_dec tmp, stack, upd=0
 	sub     sp, sp, #(FPU_DATA_LEN * 4)
-	_save_load_fpu stm \tmp, \stack, !\upd \force
+	_save_load_fpu stm \tmp, \stack, !\upd
 .endm
 
-.macro load_fpu_dec tmp, stack, upd=0, force=0
+.macro load_fpu_dec tmp, stack, upd=0
 	sub     sp, sp, #(FPU_DATA_LEN * 4)
-	_save_load_fpu ldm \tmp, \stack, !\upd \force
+	_save_load_fpu ldm \tmp, \stack, !\upd
 .endm

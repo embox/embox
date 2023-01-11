@@ -9,6 +9,7 @@
 #include <arm/fpu.h>
 #include <asm/cp15.h>
 #include <asm/modes.h>
+#include <asm/ptrace.h>
 
 /**
  * Purpose
@@ -23,13 +24,10 @@
 	sub     lr, lr, #\correction
 .endif
 	@ Move sp, lr, spsr to temp regs
-	stmfd   sp!, {r0-r2}
+	stmfd   sp, {r0-r2}
 	mov     r0, sp
 	mov     r1, lr
 	mrs     r2, SPSR
-
-	@ Return stack pointer to prev value
-	add     sp, sp, #(3 * 4)
 
 	@ Return to previous CPU mode with disabled interrupts
 	msr     CPSR, #(ARM_MODE_SYS | I_BIT | F_BIT)
@@ -38,7 +36,7 @@
 	stmfd   sp!, {r1, r2}
 	add     r1, sp, #(2 * 4)
 	stmfd   sp!, {r1, lr}
-	ldmfd   r0, {r0-r2}
+	ldmdb   r0, {r0-r2}
 	stmfd   sp!, {r0-r12}
 .endm
 
@@ -54,7 +52,7 @@
 	msr     CPSR, #(ARM_MODE_SYS | I_BIT | F_BIT)
 
 	@ Load struct pt_regs and return from exception
-	add     r0, sp, #(17 * 4)
+	add     r0, sp, #PTREGS_SIZE
 	ldmdb   r0!, {r1, r2}
 	ldmdb   r0!, {r3, lr}
 	mov     sp, r3
