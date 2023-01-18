@@ -12,14 +12,20 @@
 #define FPU_DATA_LEN 0
 
 #ifndef __ASSEMBLER__
+
+typedef struct fpu_context {
+
+} fpu_context_t;
+
 static inline void arm_fpu_context_init(void *opaque) {
 	/* Do nothing */
 }
 
-static inline int try_vfp_instructions(void) {
+static inline int try_vfp_instructions(fpu_context_t *vfp) {
 	/* Do nothing */
 	return 0;
 }
+
 #else
 #include <arm/fpu_macro.s>
 #endif /* __ASSEMBLER__ */

@@ -18,9 +18,4 @@ package embox.cmd
 	''')
 module lspci {
 	source "lspci.c"
-
-	depends embox.compat.libc.all
-	//depends embox.compat.posix.LibPosix
-	depends embox.driver.pci
-	depends embox.framework.LibFramework
 }
