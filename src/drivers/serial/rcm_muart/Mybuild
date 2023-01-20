@@ -1,0 +1,45 @@
+package embox.driver.serial
+
+module rcm_muart_simple_diag extends embox.driver.diag.diag_api {
+	option number base_addr = 0x01044000
+	option number baud_rate = 115200
+
+	source "muart_simple_diag.c"
+}
+
+module rcm_muart_uart {
+	source "muart_uart.c"
+
+	depends core
+}
+
+module rcm_muart_uart_diag extends embox.driver.diag.diag_api {
+	option number base_addr = 0x01044000
+	option number baud_rate = 115200
+	option number irq_num=44
+
+	source "muart_uart_diag.c"
+
+	depends rcm_muart_uart
+	depends diag
+}
+
+module rcm_muart_uart_ttys0 {
+	option number base_addr = 0x01044000
+	option number baud_rate = 115200
+	option number irq_num=76
+
+	source "muart_uart_ttys0.c"
+
+	depends rcm_muart_uart
+}
+
+module rcm_muart_uart_ttys1 {
+	option number base_addr = 0x01045000
+	option number baud_rate = 115200
+	option number irq_num=77
+
+	source "muart_uart_ttys1.c"
+
+	depends rcm_muart_uart
+}
