@@ -93,13 +93,13 @@ int main(int argc, char **argv) {
 	pin = (1 << arg);
 
 	if (!strcmp("toggle", argv[opt])) {
-		gpio_setup_mode(gpio, pin, GPIO_MODE_OUTPUT);
+		gpio_setup_mode(gpio, pin, GPIO_MODE_OUT);
 		gpio_toggle(gpio, pin);
 	} else if (!strcmp("set", argv[opt])) {
-		gpio_setup_mode(gpio, pin, GPIO_MODE_OUTPUT);
+		gpio_setup_mode(gpio, pin, GPIO_MODE_OUT);
 		gpio_set(gpio, pin, GPIO_PIN_HIGH);
 	} else if (!strcmp("reset", argv[opt]) || !strcmp("unset", argv[opt])) {
-		gpio_setup_mode(gpio, pin, GPIO_MODE_OUTPUT);
+		gpio_setup_mode(gpio, pin, GPIO_MODE_OUT);
 		gpio_set(gpio, pin, GPIO_PIN_LOW);
 	} else if (!strcmp("get", argv[opt])) {
 		gpio_mask_t ret = gpio_get(gpio, pin);
@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 			printf("low\n");
 		}
 	} else if (!strcmp("blink", argv[opt])) {
-		gpio_setup_mode(gpio, pin, GPIO_MODE_OUTPUT);
+		gpio_setup_mode(gpio, pin, GPIO_MODE_OUT);
 		while (1) {
 			gpio_toggle(gpio, pin);
 			sleep(1);

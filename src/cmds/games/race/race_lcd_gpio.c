@@ -42,6 +42,6 @@ void race_print_score(const int score) {
 }
 
 int race_is_car_moved(void) {
-	gpio_setup_mode(GPIO_PORT_A, 0xff << 0, GPIO_MODE_INPUT);
+	gpio_setup_mode(GPIO_PORT_A, 0xff << 0, GPIO_MODE_IN);
 	return gpio_get(GPIO_PORT_A, 0xff << 0) & 0x01;
 }

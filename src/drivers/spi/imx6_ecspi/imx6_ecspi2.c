@@ -48,7 +48,7 @@ static void imx_ecspi2_pins_init(void) {
 
 		gpio_n = imx6_ecspi2.cs_array[i][0];
 		port   = imx6_ecspi2.cs_array[i][1];
-		gpio_setup_mode(gpio_n, 1 << port, GPIO_MODE_OUTPUT);
+		gpio_setup_mode(gpio_n, 1 << port, GPIO_MODE_OUT);
 		gpio_set(gpio_n, 1 << port, 1);
 	}
 

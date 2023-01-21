@@ -55,12 +55,12 @@ static int rdc_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
 		return -1;
 	}
 
-	if (mode & GPIO_MODE_INPUT) {
+	if (mode & GPIO_MODE_IN) {
 		/* raise logic level to turn off pull-down */
 		set_data(pins);
 		/* select as GPIO function */
 		set_control(pins);
-	} else if (mode & GPIO_MODE_OUTPUT) {
+	} else if (mode & GPIO_MODE_OUT) {
 		set_control(pins);
 	}
 

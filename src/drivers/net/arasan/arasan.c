@@ -456,7 +456,7 @@ static irq_return_t arasan_int_handler(unsigned int irq_num, void *dev_id) {
 static void arasan_phy_reset(void) {
 	volatile int i;
 
-	gpio_setup_mode(PHY_RESET_PORT, 1 << PHY_RESET_PIN, GPIO_MODE_OUTPUT);
+	gpio_setup_mode(PHY_RESET_PORT, 1 << PHY_RESET_PIN, GPIO_MODE_OUT);
 
 	for (i=100000; i > 0; i--) {
 	}

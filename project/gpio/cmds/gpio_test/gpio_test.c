@@ -50,7 +50,7 @@ int main(int argc, char *argv[]) {
     int i;
     for (i = 0; i < LEDS_N; i++) {
         if (0 != gpio_setup_mode(leds[i].gpio, leds[i].pin,
-                                 GPIO_MODE_OUTPUT)) {
+                                 GPIO_MODE_OUT)) {
             return -EINVAL;
         }
     }

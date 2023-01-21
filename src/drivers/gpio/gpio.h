@@ -15,23 +15,8 @@ typedef volatile unsigned long gpio_mask_t;
 
 #define GPIO_MODE_IN_SECTION          0x000000FF
 #define GPIO_MODE_OUT_SECTION         0x0000FF00
+/* Alternate function number. Bits: 17 ... 22 */
 #define GPIO_MODE_INT_SECTION         0xFF000000
-
-#ifndef GPIO_MODE_INPUT
-#define GPIO_MODE_INPUT             (1 << 0)
-#endif
-
-#ifndef GPIO_MODE_IN_PULL_UP
-#define GPIO_MODE_IN_PULL_UP        (1 << 1)
-#endif
-
-#ifndef GPIO_MODE_IN_PULL_DOWN
-#define GPIO_MODE_IN_PULL_DOWN      (1 << 2)
-#endif
-
-#ifndef GPIO_MODE_IN_SCHMITT
-#define GPIO_MODE_IN_SCHMITT        (1 << 3)
-#endif
 
 /* 4 .. 7 port number*/
 #define GPIO_PORT(port)  ((port) & 0xf)
@@ -40,73 +25,49 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_CHIP0 (0 << 4)
 #define GPIO_CHIP1 (1 << 4)
 
+/* #define GPIO_MODE_IN_SECTION          0x000000FF */
+#define GPIO_MODE_IN                (1 << 0)
+#define GPIO_MODE_IN_PULL_UP        (1 << 1)
+#define GPIO_MODE_IN_PULL_DOWN      (1 << 2)
+#define GPIO_MODE_IN_SCHMITT        (1 << 3)
 
-#ifndef GPIO_MODE_OUTPUT
-#define GPIO_MODE_OUTPUT            (1 << 16)
-#endif
-
-#ifndef GPIO_MODE_OUT_PUSH_PULL
+/* #define GPIO_MODE_OUT_SECTION         0x0000FF00 */
+#define GPIO_MODE_OUT               (1 << 16)
 #define GPIO_MODE_OUT_PUSH_PULL     (1 << 15)
-#endif
-
-#ifndef GPIO_MODE_OUT_OPEN_DRAIN
 #define GPIO_MODE_OUT_OPEN_DRAIN    (1 << 14)
-#endif
-
-#ifndef GPIO_MODE_OUT_ALTERNATE
 #define GPIO_MODE_OUT_ALTERNATE     (1 << 13)
-#endif
-
-#ifndef GPIO_MODE_VDD_LEVEL
 #define GPIO_MODE_VDD_LEVEL         (1 << 12)
-#endif
 
 
 /* Alternate function number. Bits: 17 ... 22 */
 #define GPIO_GET_ALTERNATE(mode) (((mode) & 0x7e0000) >> 17)
 #define GPIO_ALTERNATE(af) (((af) << 17) & 0x7e0000)
 
-#ifndef GPIO_MODE_IN_INT_EN
+/* #define GPIO_MODE_INT_SECTION         0xFF000000 */
 #define GPIO_MODE_IN_INT_EN         (1 << 31)
-#endif
-
-#ifndef GPIO_MODE_INT_MODE_RISING
 #define GPIO_MODE_INT_MODE_RISING   (1 << 30)
-#endif
-
-#ifndef GPIO_MODE_INT_MODE_FALLING
 #define GPIO_MODE_INT_MODE_FALLING  (1 << 29)
-#endif
-
+#define GPIO_MODE_INT_MODE_LEVEL0   (1 << 28)
+#define GPIO_MODE_INT_MODE_LEVEL1   (1 << 27)
+#define GPIO_MODE_IN_INT_DIS        (1 << 26)
 #define GPIO_MODE_INT_MODE_RISING_FALLING \
 	(GPIO_MODE_INT_MODE_RISING | GPIO_MODE_INT_MODE_FALLING)
 
-#ifndef GPIO_MODE_INT_MODE_LEVEL0
-#define GPIO_MODE_INT_MODE_LEVEL0   (1 << 28)
-#endif
 
-#ifndef GPIO_MODE_INT_MODE_LEVEL1
-#define GPIO_MODE_INT_MODE_LEVEL1   (1 << 27)
-#endif
+#define GPIO_PORT_A     0
+#define GPIO_PORT_B     1
+#define GPIO_PORT_C     2
+#define GPIO_PORT_D     3
+#define GPIO_PORT_E     4
+#define GPIO_PORT_F     5
+#define GPIO_PORT_G     6
+#define GPIO_PORT_H     7
+#define GPIO_PORT_I     8
+#define GPIO_PORT_J     9
+#define GPIO_PORT_K    10
 
-#ifndef GPIO_MODE_IN_INT_DIS
-#define GPIO_MODE_IN_INT_DIS        (1 << 26)
-#endif
-
-#define GPIO_PORT_A 0
-#define GPIO_PORT_B 1
-#define GPIO_PORT_C 2
-#define GPIO_PORT_D 3
-#define GPIO_PORT_E 4
-#define GPIO_PORT_F 5
-#define GPIO_PORT_G 6
-#define GPIO_PORT_H 7
-#define GPIO_PORT_I 8
-#define GPIO_PORT_J 9
-#define GPIO_PORT_K 10
-
-#define GPIO_PIN_LOW  0
-#define GPIO_PIN_HIGH 1
+#define GPIO_PIN_LOW    0
+#define GPIO_PIN_HIGH   1
 
 /* Each GPIO port must be (GPIO_CHIP_N | GPIO_PORT_M).
  * Be default, GPIO_PORT_N is default system GPIO controller number 0 */

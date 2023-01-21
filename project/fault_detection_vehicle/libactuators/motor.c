@@ -17,7 +17,7 @@ void motor_init(struct motor *m) {
 	m->input[0] = MOTOR_INPUT1;
 	m->input[1] = MOTOR_INPUT2;
 
-	gpio_setup_mode(m->port, m->enable | m->input[0] | m->input[1], GPIO_MODE_OUTPUT);
+	gpio_setup_mode(m->port, m->enable | m->input[0] | m->input[1], GPIO_MODE_OUT);
 }
 
 void motor_enable(struct motor *m) {

@@ -47,10 +47,10 @@ static int imx_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode) {
 	log_debug("Set GPIO%d;mask=0x%08x;mode=%d", port, mask, mode);
 
 	switch (mode) {
-	case GPIO_MODE_INPUT:
+	case GPIO_MODE_IN:
 		val = mask * GPIO_DIR_IN;
 		break;
-	case GPIO_MODE_OUTPUT:
+	case GPIO_MODE_OUT:
 		val = mask * GPIO_DIR_OUT;
 		break;
 	default:

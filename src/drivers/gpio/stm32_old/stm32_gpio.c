@@ -68,11 +68,11 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 		return -1;
 	}
 
-	if (mode & GPIO_MODE_INPUT) {
+	if (mode & GPIO_MODE_IN) {
 
 		mode_val = 4;
 		/* mask inputs flag only without GPIO_MODE_INPUT */
-		if ((mode & GPIO_MODE_IN_SECTION) & ~GPIO_MODE_INPUT) {
+		if ((mode & GPIO_MODE_IN_SECTION) & ~GPIO_MODE_IN) {
 			mode_val = 8;
 
 			if (mode & GPIO_MODE_IN_PULL_UP) {
@@ -83,7 +83,7 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 				REG32_STORE(&(gpio->brr), mask);
 			}
 		}
-	} else if (mode & GPIO_MODE_OUTPUT) {
+	} else if (mode & GPIO_MODE_OUT) {
 
 		mode_val = 3;
 
