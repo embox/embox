@@ -36,7 +36,7 @@ static struct gpio_chip k210_gpio_chip = {
 static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
 	assert(port < K210_GPIO_PORTS_COUNT);
 
-	if(mode & GPIO_MODE_OUTPUT) {
+	if(mode & GPIO_MODE_OUT) {
 		k210_gpio_set_dir(pins, 1);
 	} else if (mode & GPIO_MODE_IN){
 		log_error("GPIO input mode is not implemented");
@@ -97,20 +97,20 @@ static void maix_bit_gpio_config(void){
 	// builtin RGB LEDs
 	k210_fpioa_set_func(MAIXBIT_IO_LED_R, FN_GPIO0);
 	k210_fpioa_set_pull(MAIXBIT_IO_LED_R, FPIOA_PULL_DOWN);
-	k210_gpio_setup_mode(0, 1 << 0, GPIO_MODE_OUTPUT);
+	k210_gpio_setup_mode(0, 1 << 0, GPIO_MODE_OUT);
 
 	k210_fpioa_set_func(MAIXBIT_IO_LED_G, FN_GPIO1);
 	k210_fpioa_set_pull(MAIXBIT_IO_LED_G, FPIOA_PULL_DOWN);
-	k210_gpio_setup_mode(0, 1 << 1, GPIO_MODE_OUTPUT);
+	k210_gpio_setup_mode(0, 1 << 1, GPIO_MODE_OUT);
 
 	k210_fpioa_set_func(MAIXBIT_IO_LED_B, FN_GPIO2);
 	k210_fpioa_set_pull(MAIXBIT_IO_LED_B, FPIOA_PULL_DOWN);
-	k210_gpio_setup_mode(0, 1 << 2, GPIO_MODE_OUTPUT);
+	k210_gpio_setup_mode(0, 1 << 2, GPIO_MODE_OUT);
 
 	// IO24
 	k210_fpioa_set_func(MAIXBIT_IO24, FN_GPIO3);
 	k210_fpioa_set_pull(MAIXBIT_IO24, FPIOA_PULL_DOWN);
-	k210_gpio_setup_mode(0, 1 << 3, GPIO_MODE_OUTPUT);
+	k210_gpio_setup_mode(0, 1 << 3, GPIO_MODE_OUT);
 
 	/* we set up GPIO 0..3 to low level */
 	k210_gpio_set(0, 0x0F, GPIO_PIN_LOW);

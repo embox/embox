@@ -60,7 +60,7 @@ static int rdc_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
 		set_data(pins);
 		/* select as GPIO function */
 		set_control(pins);
-	} else if (mode & GPIO_MODE_OUTPUT) {
+	} else if (mode & GPIO_MODE_OUT) {
 		set_control(pins);
 	}
 

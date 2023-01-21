@@ -32,7 +32,7 @@ typedef volatile unsigned long gpio_mask_t;
 
 #define GPIO_MODE_IN_SCHMITT        (1 << 3)
 
-#define GPIO_MODE_OUTPUT            (1 << 16)
+#define GPIO_MODE_OUT            (1 << 16)
 
 #define GPIO_MODE_OUT_PUSH_PULL     (1 << 15)
 

@@ -46,7 +46,7 @@ static int dwapb_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode)
 	ctl &= ~mask;
 	REG32_STORE(&gpio_port->ctl, ctl); /* all hardware pins */
 	switch (mode) {
-	case GPIO_MODE_OUTPUT:
+	case GPIO_MODE_OUT:
 		break;
 	default:
 		log_error("wrong gpio mode");

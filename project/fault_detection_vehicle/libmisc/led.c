@@ -10,7 +10,7 @@
 void led_init(struct led *led, int port, int pin) {
 	led->port = port;
 	led->pin = pin;
-	gpio_setup_mode(led->port, PIN_MASK(led->pin), GPIO_MODE_OUTPUT);
+	gpio_setup_mode(led->port, PIN_MASK(led->pin), GPIO_MODE_OUT);
 }
 
 void led_on(struct led *led) {

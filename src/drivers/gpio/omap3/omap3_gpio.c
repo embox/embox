@@ -40,7 +40,7 @@ static int omap3_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 
 	if (mode & GPIO_MODE_IN) {
 		gpio_reg_write(gpio_base, GPIO_OE, mask);
-	} else if (mode & GPIO_MODE_OUTPUT) {
+	} else if (mode & GPIO_MODE_OUT) {
 		l = gpio_reg_read(gpio_base, GPIO_OE);
 		gpio_reg_write(gpio_base, GPIO_OE, l & ~mask);
 	}

@@ -83,7 +83,7 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 				REG32_STORE(&(gpio->brr), mask);
 			}
 		}
-	} else if (mode & GPIO_MODE_OUTPUT) {
+	} else if (mode & GPIO_MODE_OUT) {
 
 		mode_val = 3;
 

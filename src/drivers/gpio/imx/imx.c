@@ -50,7 +50,7 @@ static int imx_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode) {
 	case GPIO_MODE_IN:
 		val = mask * GPIO_DIR_IN;
 		break;
-	case GPIO_MODE_OUTPUT:
+	case GPIO_MODE_OUT:
 		val = mask * GPIO_DIR_OUT;
 		break;
 	default:

@@ -58,7 +58,7 @@ static int lcd_read(int reg) {
 }
 
 static void lcd_write(int reg, int val) {
-	gpio_setup_mode(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUTPUT);
+	gpio_setup_mode(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_OUT);
 	gpio_set(DATA_PORT, 0xff << DATA_PINS_OFFSET, 0);
 	gpio_set(CTRL_PORT, RS, reg);
 	gpio_set(CTRL_PORT, RW, 0);
@@ -139,7 +139,7 @@ static int lcd_test(void) {
 	char demo[] = "      Embox     \n   Rev unknown  ";
 
 	gpio_set(CTRL_PORT, E | RS | RW, 0);
-	gpio_setup_mode(CTRL_PORT, RS | E | RW, GPIO_MODE_OUTPUT);
+	gpio_setup_mode(CTRL_PORT, RS | E | RW, GPIO_MODE_OUT);
 
 	lcd_write(0, 0x38);
 	nsdelay(39000);

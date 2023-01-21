@@ -40,7 +40,7 @@ static void dw_spi_write(struct dw_spi *dw_spi, int offset, uint32_t val) {
 /* Init hook for DE0 Nano SOC board. SPI and I2C share
  * same pins, so we need to switch to SPI. */
 static void __attribute__((used)) spi1_de0_nano_soc_init(void) {
-	gpio_setup_mode(GPIO_PORT_B, 1 << 11, GPIO_MODE_OUTPUT);
+	gpio_setup_mode(GPIO_PORT_B, 1 << 11, GPIO_MODE_OUT);
 	gpio_set(GPIO_PORT_B, 1 << 11, GPIO_PIN_LOW);
 }
 

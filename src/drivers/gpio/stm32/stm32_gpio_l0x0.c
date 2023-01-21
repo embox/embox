@@ -180,7 +180,7 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 
     set_gpio_high_spped(GPIO, pins);
 
-    if (mode & GPIO_MODE_OUTPUT) {
+    if (mode & GPIO_MODE_OUT) {
         set_gpio_mode_output(GPIO, pins);
 
         if (mode & GPIO_MODE_OUT_OPEN_DRAIN)    set_gpio_mode_open_drain(GPIO, pins);
