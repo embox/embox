@@ -10,7 +10,7 @@
 void button_init(struct button *button, int port, int pin) {
 	button->port = port;
 	button->pin = pin;
-	gpio_setup_mode(button->port, button->pin, GPIO_MODE_INPUT);
+	gpio_setup_mode(button->port, button->pin, GPIO_MODE_IN);
 }
 
 void button_wait_set(struct button * button) {

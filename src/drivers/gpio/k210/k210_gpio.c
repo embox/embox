@@ -38,7 +38,7 @@ static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
 
 	if(mode & GPIO_MODE_OUTPUT) {
 		k210_gpio_set_dir(pins, 1);
-	} else if (mode & GPIO_MODE_INPUT){
+	} else if (mode & GPIO_MODE_IN){
 		log_error("GPIO input mode is not implemented");
 		return -1;
 	} else {

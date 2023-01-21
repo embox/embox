@@ -38,7 +38,7 @@ static int omap3_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 		return -1;
 	}
 
-	if (mode & GPIO_MODE_INPUT) {
+	if (mode & GPIO_MODE_IN) {
 		gpio_reg_write(gpio_base, GPIO_OE, mask);
 	} else if (mode & GPIO_MODE_OUTPUT) {
 		l = gpio_reg_read(gpio_base, GPIO_OE);

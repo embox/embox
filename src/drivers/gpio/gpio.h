@@ -24,9 +24,7 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_CHIP0 (0 << 4)
 #define GPIO_CHIP1 (1 << 4)
 
-#ifndef GPIO_MODE_INPUT
-#define GPIO_MODE_INPUT             (1 << 0)
-#endif
+#define GPIO_MODE_IN             (1 << 0)
 
 #define GPIO_MODE_IN_PULL_UP        (1 << 1)
 

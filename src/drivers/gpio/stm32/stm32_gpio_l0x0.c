@@ -186,7 +186,7 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
         if (mode & GPIO_MODE_OUT_OPEN_DRAIN)    set_gpio_mode_open_drain(GPIO, pins);
         if (mode & GPIO_MODE_OUT_PUSH_PULL)        set_gpio_mode_push_pull(GPIO, pins);
         reset_exti_interrupt(port, pins);
-    } else if (mode & GPIO_MODE_INPUT) {
+    } else if (mode & GPIO_MODE_IN) {
         set_gpio_mode_input(GPIO, pins);
 
         if (mode & GPIO_MODE_IN_PULL_UP)         set_gpio_mode_pull_up(GPIO, pins);

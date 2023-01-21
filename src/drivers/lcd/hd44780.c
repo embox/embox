@@ -44,7 +44,7 @@ static inline void nsdelay(int ns) {
 
 static int lcd_read(int reg) {
 	int val;
-	gpio_setup_mode(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_INPUT);
+	gpio_setup_mode(DATA_PORT, 0xff << DATA_PINS_OFFSET, GPIO_MODE_IN);
 	gpio_set(CTRL_PORT, RS, reg);
 	gpio_set(CTRL_PORT, RW, 1);
 

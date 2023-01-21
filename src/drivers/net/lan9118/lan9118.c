@@ -353,7 +353,7 @@ static int lan9118_open(struct net_device *dev) {
 #if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO
 	gpio_setup_mode(LAN9118_PORT, 1 << LAN9118_PIN,
 		GPIO_MODE_INT_MODE_LEVEL1 |
-		GPIO_MODE_INPUT |
+		GPIO_MODE_IN |
 		GPIO_MODE_IN_INT_EN);
 
 	gpio_irq_attach(LAN9118_PORT, 1 << LAN9118_PIN,

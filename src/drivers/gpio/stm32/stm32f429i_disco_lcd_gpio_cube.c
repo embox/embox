@@ -73,7 +73,7 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 		if (mode & GPIO_MODE_OUT_PUSH_PULL) {
 			GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
 		}
-	} else if (mode & GPIO_MODE_INPUT) {
+	} else if (mode & GPIO_MODE_IN) {
 		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
 
 		if (mode & GPIO_MODE_IN_PULL_UP) {
