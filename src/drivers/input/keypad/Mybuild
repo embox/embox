@@ -1,0 +1,33 @@
+package embox.driver.input
+
+module keypad {
+	//option number log_level = 1		//	???
+
+	option number rows = 4
+	option number cols = 4
+
+	option number kp_poll_period = 10
+	option number kp_hold_ticks = 3
+
+	option number kp_col0_port = 2
+	option number kp_col0_pino = 8
+	option number kp_col1_port = 2
+	option number kp_col1_pino = 9
+	option number kp_col2_port = 2
+	option number kp_col2_pino = 10
+	option number kp_col3_port = 2
+	option number kp_col3_pino = 11
+	option number kp_row0_port = 2
+	option number kp_row0_pino = 12
+	option number kp_row1_port = 3
+	option number kp_row1_pino = 2
+	option number kp_row2_port = 6
+	option number kp_row2_pino = 2
+	option number kp_row3_port = 6
+	option number kp_row3_pino = 3
+
+	source "keypad.c"
+
+	depends embox.driver.input.core
+	depends embox.driver.gpio.api
+}
