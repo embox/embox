@@ -49,7 +49,7 @@
 extern void thread_context_switch(struct thread *prev, struct thread *next);
 extern void thread_ack_switched(void);
 
-static int id_counter = 0; // TODO make it an indexator
+static int id_counter = 1; // TODO make it an indexator
 
 static struct thread *__current_thread __cpudata__;
 
