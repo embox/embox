@@ -5,14 +5,17 @@
  * @date 8.02.2018
  */
 
+#include <util/log.h>
+
 #include <errno.h>
 #include <assert.h>
 
 #include <kernel/lthread/lthread.h>
 #include <mem/misc/pool.h>
+
 #include <util/bit.h>
 #include <util/dlist.h>
-#include <util/log.h>
+#include <util/array.h>
 
 #include <drivers/gpio/gpio.h>
 #include <drivers/gpio/gpio_driver.h>
@@ -20,6 +23,9 @@
 #define GPIO_CHIPS_COUNT  OPTION_GET(NUMBER,gpio_chips_count)
 #define GPIO_IRQS_COUNT   OPTION_GET(NUMBER,gpio_irqs_count)
 #define GPIO_HND_PRIORITY OPTION_GET(NUMBER,gpio_hnd_prio)
+
+
+ARRAY_SPREAD_DEF(struct gpio_chip *, __gpio_chip_registry);
 
 #define DO_IPL_LOCKED(job)       \
 	{                            \
@@ -65,7 +71,18 @@ int gpio_register_chip(struct gpio_chip *chip, unsigned char chip_id) {
 }
 
 static struct gpio_chip *gpio_get_chip(unsigned char chip_nr) {
-	return chip_nr < GPIO_CHIPS_COUNT ? gpio_chip_registry[chip_nr] : NULL;
+
+	if ((GPIO_CHIPS_COUNT - 1) < chip_nr) {
+		return NULL;
+	}
+	if (NULL != gpio_chip_registry[chip_nr]) {
+		return gpio_chip_registry[chip_nr];
+	}
+
+	if (ARRAY_SPREAD_SIZE(__gpio_chip_registry) != 0) {
+		return __gpio_chip_registry[0];
+	}
+	return NULL;
 }
 
 int gpio_setup_mode(unsigned short port, gpio_mask_t pins, int mode) {
