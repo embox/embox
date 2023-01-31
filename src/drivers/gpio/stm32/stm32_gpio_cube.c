@@ -13,6 +13,8 @@
 #include <util/bit.h>
 #include <util/array.h>
 
+#include <kernel/irq.h>
+
 #include <drivers/gpio/stm32.h>
 #include <drivers/gpio/gpio_driver.h>
 
