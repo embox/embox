@@ -99,7 +99,7 @@ int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]) {
 		/*0x7e325b1b */
 		seq_len = 4;
 		ascii_buff[2] = 0x32;
-		ascii_buff[2] = 0x7e;
+		ascii_buff[3] = 0x7e;
 		break;
 	case KEY_HOME:
 		/* 0x485b1b */
@@ -115,13 +115,13 @@ int keymap_to_ascii(struct input_event *event, unsigned char ascii_buff[4]) {
 		/* 0x7e355b1b */
 		seq_len = 4;
 		ascii_buff[2] = 0x35;
-		ascii_buff[2] = 0x7e;
+		ascii_buff[3] = 0x7e;
 		break;
 	case KEY_PGDN:
 		/* 0x7e365b1b */
 		seq_len = 4;
 		ascii_buff[2] = 0x36;
-		ascii_buff[2] = 0x7e;
+		ascii_buff[3] = 0x7e;
 		break;
 	case KEY_UP:
 		/* 0x415b1b */
