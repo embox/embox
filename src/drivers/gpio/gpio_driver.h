@@ -25,4 +25,9 @@ extern int gpio_register_chip(struct gpio_chip *gpio_chip, unsigned char chip_id
 extern void gpio_handle_irq(struct gpio_chip *chip, uint8_t port,
                             gpio_mask_t pins);
 
+#include <util/array.h>
+#define GPIO_CHIP_DEF(chip) \
+		ARRAY_SPREAD_DECLARE(struct gpio_chip *, __gpio_chip_registry); \
+		ARRAY_SPREAD_ADD(__gpio_chip_registry, chip)
+
 #endif /* DRIVERS_GPIO_DRIVER_H_ */

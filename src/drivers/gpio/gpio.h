@@ -9,8 +9,6 @@
 #ifndef DRIVERS_GPIO_H_
 #define DRIVERS_GPIO_H_
 
-#include <kernel/irq.h>
-
 typedef volatile unsigned long gpio_mask_t;
 
 #define GPIO_MODE_IN_SECTION          0x000000FF
@@ -84,6 +82,7 @@ extern gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins);
 
 extern int gpio_irq_attach(unsigned short port, uint32_t pin,
 		void (*pin_handler)(void *), void *data);
+
 extern int gpio_irq_detach(unsigned short port, uint32_t pin);
 
 #endif /* DRIVERS_GPIO_H_ */
