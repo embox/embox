@@ -5,6 +5,8 @@ module el24d1_uart extends embox.driver.diag.diag_api {
 	option number irq_num=58
 	option number baud_rate=115200
 
+	option number pins_init = 0 
+
 	source "el24d1.c"
 
 	depends core
