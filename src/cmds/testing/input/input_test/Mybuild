@@ -17,9 +17,6 @@ package embox.cmd.testing.input
 module input_test {
 	source "input_test.c"
 
-	depends embox.compat.libc.all
-	depends embox.compat.posix.LibPosix
 	depends embox.driver.input.core
-	depends embox.framework.LibFramework
 }
 
