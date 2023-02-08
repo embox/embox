@@ -5,6 +5,7 @@ module pl050_keyboard {
 
 	option number base_addr = 0x18000000
 	option number irq_num = 3
+	option boolean translate_to_set1 = true
 
 	source "pl050_keyboard.c"
 
