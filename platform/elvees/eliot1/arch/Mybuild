@@ -1,0 +1,6 @@
+package platform.elvees.eliot1
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+	source "clkctr.c"
+}

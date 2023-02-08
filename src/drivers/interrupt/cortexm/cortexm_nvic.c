@@ -30,11 +30,11 @@
 
 EMBOX_UNIT_INIT(nvic_init);
 
-#ifndef STATIC_IRQ_EXTENTION
-static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
-
 extern void *trap_table_start;
 extern void *trap_table_end;
+
+#ifndef STATIC_IRQ_EXTENTION
+static uint32_t exception_table[EXCEPTION_TABLE_SZ] __attribute__ ((aligned (128 * sizeof(int))));
 
 extern void arm_m_irq_entry(void);
 
@@ -71,6 +71,13 @@ void nvic_irq_handle(void) {
 }
 #else /* STATIC_IRQ_EXTENTION */
 static int nvic_init(void) {
+	ipl_t ipl;
+
+	ipl = ipl_save();
+
+	REG_STORE(SCB_VTOR, (uintptr_t)&trap_table_start);
+
+	ipl_restore(ipl);
 	return 0;
 }
 #endif /* STATIC_IRQ_EXTENTION */
