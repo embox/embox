@@ -9,6 +9,8 @@
 #ifndef DRIVERS_GPIO_H_
 #define DRIVERS_GPIO_H_
 
+#include <stdint.h>
+
 typedef volatile unsigned long gpio_mask_t;
 
 #define GPIO_MODE_IN_SECTION          0x000000FF

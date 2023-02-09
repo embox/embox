@@ -24,8 +24,7 @@
 #define GPIO_IRQS_COUNT   OPTION_GET(NUMBER,gpio_irqs_count)
 #define GPIO_HND_PRIORITY OPTION_GET(NUMBER,gpio_hnd_prio)
 
-
-ARRAY_SPREAD_DEF(struct gpio_chip *, __gpio_chip_registry);
+ARRAY_SPREAD_DECLARE(struct gpio_chip *, __gpio_chip_registry);
 
 #define DO_IPL_LOCKED(job)       \
 	{                            \
