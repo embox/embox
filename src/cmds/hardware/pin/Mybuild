@@ -19,11 +19,6 @@ package embox.cmd.hardware
 		Denis Deryugin <deryugin.denis@gmail.com>
 	''')
 
-@BuildDepends(third_party.bsp.st_bsp_api)
 module pin {
 	source "pin.c"
-
-	depends embox.compat.libc.stdio.printf
-	depends embox.compat.posix.util.getopt
-	depends embox.driver.gpio.core
 }
