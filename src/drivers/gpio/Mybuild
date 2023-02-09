@@ -15,6 +15,7 @@ module core {
 	source "gpio_driver.h"
 
 	source "gpio.c"
+	source "gpio_repo.c"
 
 	depends embox.kernel.lthread.lthread
 }
