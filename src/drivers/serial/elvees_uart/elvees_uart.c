@@ -6,15 +6,12 @@
  * @date 14.11.2016
  */
 
-#include <drivers/common/memory.h>
-#include <drivers/diag.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
-#include <embox/unit.h>
+
 #include <framework/mod/options.h>
 
-
-EMBOX_UNIT_INIT(elvees_uart_init);
 
 #define UART_BASE      OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
@@ -117,33 +114,9 @@ static int elvees_uart_putc(struct uart *dev, int ch) {
 	return 0;
 }
 
-static const struct uart_ops elvees_uart_uart_ops = {
+const struct uart_ops elvees_uart_uart_ops = {
 		.uart_getc = elvees_uart_getc,
 		.uart_putc = elvees_uart_putc,
 		.uart_hasrx = elvees_uart_has_symbol,
 		.uart_setup = elvees_uart_setup,
 };
-
-static struct uart uart0 = {
-		.uart_ops = &elvees_uart_uart_ops,
-		.irq_num = IRQ_NUM,
-		.base_addr = UART_BASE,
-};
-
-static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
-};
-
-static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
-};
-
-DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
-
-static int elvees_uart_init(void) {
-	return uart_register(&uart0, &uart_defparams);
-}
-
-PERIPH_MEMORY_DEFINE(elvees_uart, UART_BASE, 0xB0);

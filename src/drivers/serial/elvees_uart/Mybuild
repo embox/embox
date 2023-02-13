@@ -8,6 +8,22 @@ module elvees_uart extends embox.driver.diag.diag_api {
 	option number pins_init = 0 
 
 	source "elvees_uart.c"
+	source "elvees_uart_diag.c"
+
+	depends core
+	depends diag
+}
+
+module elvees_uart_ttys0 {
+	option number base_addr=0x38028000
+	option number irq_num=58
+	option number baud_rate=115200
+
+	option number pins_init = 0 
+
+	source "elvees_uart_ttys0.c"
+
+	depends elvees_uart
 
 	depends core
 	depends diag
