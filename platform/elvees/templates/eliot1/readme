@@ -1,0 +1,1 @@
+./bin/openocd -f interface/cmsis-dap.cfg -f board/eliot1.cfg
