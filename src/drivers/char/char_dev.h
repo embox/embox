@@ -21,6 +21,7 @@
 #define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
 	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
 	ARRAY_SPREAD_ADD(__char_device_registry, { \
+			.dev_id = DEVID_CDEV,\
 			.name = chname, \
 			.dev_priv = priv, \
 			.dev_iops = idesc_op, \

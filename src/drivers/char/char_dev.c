@@ -31,6 +31,31 @@ struct dev_module **get_cdev_tab(void) {
 }
 extern void devfs_notify_new_module(struct dev_module *devmod);
 extern void devfs_notify_del_module(struct dev_module *devmod);
+
+static int char_dev_register_static(struct dev_module *cdev) {
+	int cdev_id;
+
+	assert(cdev);
+
+	/* This index is not supposed to be freed */
+	cdev_id = index_alloc(&char_dev_idx, INDEX_MIN);
+	if (cdev_id == INDEX_NONE) {
+		log_error("Failed to register char dev %s", cdev->name ? cdev->name : "");
+		return -ENOMEM;
+	}
+
+	devtab[cdev_id] = cdev;
+
+	/* XXX Since cdevs were probably allocated as read-only in array spread
+	 * we cannot modify its dev_id. Since dev_id is unused currently
+	 * it's safely do not assign it at all. */
+	/* cdev->dev_id = cdev_id; */
+
+	devfs_notify_new_module(cdev);
+
+	return 0;
+}
+
 int char_dev_register(struct dev_module *cdev) {
 	int cdev_id;
 
@@ -55,6 +80,8 @@ int char_dev_register(struct dev_module *cdev) {
 
 	return 0;
 }
+
+
 
 int char_dev_unregister(struct dev_module *cdev) {
 	assert(cdev);
@@ -88,7 +115,7 @@ int char_dev_init_all(void) {
 	struct dev_module *cdev;
 
 	array_spread_foreach_ptr(cdev, __char_device_registry) {
-		char_dev_register(cdev);
+		char_dev_register_static(cdev);
 	}
 
 	return 0;
