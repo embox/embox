@@ -5,14 +5,12 @@
  * @author Anton Bondarev
  */
 
-#include <drivers/serial/uart_dev.h>
-#include <drivers/serial/diag_serial.h>
+#include <kernel/irq.h>
 
-#include <drivers/diag.h>
+#include <drivers/serial/uart_dev.h>
+#include <drivers/ttys.h>
 
 #include <drivers/common/memory.h>
-
-#include <framework/mod/options.h>
 
 #include <framework/mod/options.h>
 
@@ -20,6 +18,8 @@
 #define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
 
 #define PINS_INIT      OPTION_GET(NUMBER, pins_init)
+
+#define TTY_NAME    "ttyS1"
 
 extern int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params);
 extern int elvees_uart_has_symbol(struct uart *dev);
@@ -60,17 +60,22 @@ static const struct uart_ops elvees_uart_uart_ops = {
 		.uart_setup = elvees_uart_setup,
 };
 
-static struct uart uart0 = {
+extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
+
+
+
+static struct uart uart_ttyS1 = {
 		.uart_ops = &elvees_uart_uart_ops,
 		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,
-};
-
-static const struct uart_params uart_diag_params = {
+		.params =  {
 		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
+		},
 };
-
-DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
 
 PERIPH_MEMORY_DEFINE(elvees_uart, UART_BASE, 0x1000);
+
+STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart_ttyS1);
+
+TTYS_DEF(TTY_NAME, &uart_ttyS1);

@@ -1,17 +1,24 @@
 package embox.driver.serial
 
-module elvees_uart extends embox.driver.diag.diag_api {
+module elvees_uart {
+	source "elvees_uart.c"
+
+	depends core
+	depends diag
+}
+
+module elvees_uart_diag extends embox.driver.diag.diag_api {
 	option number base_addr=0x38028000
 	option number irq_num=58
 	option number baud_rate=115200
 
-	option number pins_init = 0 
+	option number pins_init = 0
+	option number pin_rx_port
+	option number pin_rx_pin
+	option number pin_tx_port
+	option number pin_tx_pin
 
-	source "elvees_uart.c"
 	source "elvees_uart_diag.c"
-
-	depends core
-	depends diag
 }
 
 module elvees_uart_ttys0 {
@@ -19,12 +26,29 @@ module elvees_uart_ttys0 {
 	option number irq_num=58
 	option number baud_rate=115200
 
-	option number pins_init = 0 
+	option number pins_init = 0
+	option number pin_rx_port
+	option number pin_rx_pin
+	option number pin_tx_port
+	option number pin_tx_pin
 
 	source "elvees_uart_ttys0.c"
 
 	depends elvees_uart
+}
 
-	depends core
-	depends diag
+module elvees_uart_ttys1 {
+	option number base_addr=0x38028000
+	option number irq_num=58
+	option number baud_rate=115200
+
+	option number pins_init = 0
+	option number pin_rx_port
+	option number pin_rx_pin
+	option number pin_tx_port
+	option number pin_tx_pin
+
+	source "elvees_uart_ttys1.c"
+
+	depends elvees_uart
 }

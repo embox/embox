@@ -17,12 +17,52 @@
 #define UART_BASE      OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
 
-extern const struct uart_ops elvees_uart_uart_ops;
-extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
+#define PINS_INIT      OPTION_GET(NUMBER, pins_init)
 
 #define TTY_NAME    "ttyS0"
 
-static struct uart uart0 = {
+extern int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params);
+extern int elvees_uart_has_symbol(struct uart *dev);
+extern int elvees_uart_getc(struct uart *dev);
+extern int elvees_uart_putc(struct uart *dev, int ch);
+
+#if PINS_INIT == 0
+
+static int elvees_uart_setup(struct uart *dev, const struct uart_params *params) {
+	return 0;
+}
+
+#else
+
+#include <drivers/gpio/gpio_driver.h>
+
+#define PIN_RX_PORT      OPTION_GET(NUMBER, pin_rx_port)
+#define PIN_RX_PIN       OPTION_GET(NUMBER, pin_rx_pin)
+#define PIN_TX_PORT      OPTION_GET(NUMBER, pin_tx_port)
+#define PIN_TX_PIN       OPTION_GET(NUMBER, pin_tx_pin)
+
+static int elvees_uart_setup(struct uart *dev, const struct uart_params *params) {
+#define GPIO_ALT_FUNC_UART   (4)
+
+	gpio_setup_mode(PIN_RX_PORT, 1 << PIN_RX_PIN, GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GPIO_ALT_FUNC_UART));
+	gpio_setup_mode(PIN_TX_PORT, 1 << PIN_TX_PIN, GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GPIO_ALT_FUNC_UART));
+
+	elvees_uart_setup_common(dev, params);
+
+	return 0;
+}
+#endif
+
+static const struct uart_ops elvees_uart_uart_ops = {
+		.uart_getc = elvees_uart_getc,
+		.uart_putc = elvees_uart_putc,
+		.uart_hasrx = elvees_uart_has_symbol,
+		.uart_setup = elvees_uart_setup,
+};
+
+extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
+
+static struct uart uart_ttyS0 = {
 		.uart_ops = &elvees_uart_uart_ops,
 		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,
@@ -34,6 +74,6 @@ static struct uart uart0 = {
 
 PERIPH_MEMORY_DEFINE(elvees_uart, UART_BASE, 0x1000);
 
-STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart0);
+STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart_ttyS0);
 
-TTYS_DEF(TTY_NAME, &uart0);
+TTYS_DEF(TTY_NAME, &uart_ttyS0);
