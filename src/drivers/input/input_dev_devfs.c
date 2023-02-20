@@ -110,7 +110,7 @@ int input_dev_private_register(struct input_dev *inpdev) {
 
 	memset(dev, 0, sizeof(*dev));
 
-	strncat(dev->name, inpdev->name, sizeof dev->name);
+	strncat(dev->name, inpdev->name, sizeof(dev->name) - 1);
 
 	dev->dev_iops = &input_dev_fs_iops;
 	dev->dev_open = input_dev_fs_open;
