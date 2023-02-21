@@ -1,0 +1,7 @@
+package embox.kernel
+
+module kgdb {
+	source "kgdb.c"
+
+	depends embox.lib.debug.gdbstub
+}
