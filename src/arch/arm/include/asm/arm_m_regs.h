@@ -8,6 +8,8 @@
 #ifndef ARCH_ARM_ASM_ARM_M_REGS_H_
 #define ARCH_ARM_ASM_ARM_M_REGS_H_
 
+#define BIT(nr)                     (1UL << (nr))
+
 #define ARM_M_SCS_BASE              0xe000e000
 
 /************ System Control Block registers (SCB) ************/
@@ -15,26 +17,26 @@
 #define ARM_M_SCB_BASE              (ARM_M_SCS_BASE + 0xd00)
 
 #define SCB_ICSR                    (ARM_M_SCB_BASE + 0x04)
-# define SCB_ICSR_RETTOBASE         (1 << 11)
-# define SCB_ICSR_PENDSVSET         (1 << 28)
+# define SCB_ICSR_RETTOBASE         BIT(11)
+# define SCB_ICSR_PENDSVSET         BIT(28)
 
 #define SCB_VTOR                    (ARM_M_SCB_BASE + 0x08)
-# define SCB_VTOR_IN_RAM            (1 << 29)
+# define SCB_VTOR_IN_RAM            BIT(29)
 
 /* Configuration Control Register */
 #define SCB_CCR                     (ARM_M_SCB_BASE + 0x14)
-# define SCB_CCR_IC                 (1 << 17) /* I-cache enable */
-# define SCB_CCR_DC                 (1 << 16) /* D-cache enable */
+# define SCB_CCR_IC                 BIT(17) /* I-cache enable */
+# define SCB_CCR_DC                 BIT(16) /* D-cache enable */
 
 /* System Handler Control and State Register */
 #define SCB_SHCSR                   (ARM_M_SCB_BASE + 0x24)
-# define SCB_SHCSR_MEMFAULTENA      (1 << 16)
+# define SCB_SHCSR_MEMFAULTENA      BIT(16)
 
 #define SCB_MEM_FAULT_STATUS        (ARM_M_SCB_BASE + 0x28)
-# define SCB_MEM_FAULT_MMARVALID    (1 << 7)
+# define SCB_MEM_FAULT_MMARVALID    BIT(7)
 
 #define SCB_BUS_FAULT_STATUS        (ARM_M_SCB_BASE + 0x29)
-# define SCB_BUS_FAULT_BFARVALID    (1 << 7)
+# define SCB_BUS_FAULT_BFARVALID    BIT(7)
 
 #define SCB_USAGE_FAULT_STATUS      (ARM_M_SCB_BASE + 0x2A)
 #define SCB_HARD_FAULT_STATUS       (ARM_M_SCB_BASE + 0x2C)
@@ -65,9 +67,9 @@
 #define MPU_TYPE                    (ARM_M_MPU_BASE + 0x00)
 
 #define MPU_CTRL                    (ARM_M_MPU_BASE + 0x04)
-# define MPU_CTRL_PRIVDEFENA        (1 << 2)
-# define MPU_CTRL_HFNMIENA          (1 << 1)
-# define MPU_CTRL_ENABLE            (1 << 0)
+# define MPU_CTRL_PRIVDEFENA        BIT(2)
+# define MPU_CTRL_HFNMIENA          BIT(1)
+# define MPU_CTRL_ENABLE            BIT(0)
 
 #define MPU_RNR                     (ARM_M_MPU_BASE + 0x08)
 
@@ -83,6 +85,27 @@
 # define MPU_RASR_SRD_POS           8
 # define MPU_RASR_SIZE_POS          1
 # define MPU_RASR_ENABLE_POS        0
+
+/*** Flash Patch and Breakpoint registers (FPB) ***/
+#define ARM_M_FPB_BASE              0xe0002000
+/* FlashPatch Control Register */
+#define FP_CTRL                     (ARM_M_FPB_BASE + 0x00) 
+/* FlashPatch Remap Register */
+#define FP_REMAP                    (ARM_M_FPB_BASE + 0x04) 
+/* FlashPatch Comparator Registers */
+#define FP_COMP(n)                  (ARM_M_FPB_BASE + 0x08 + 0x04 * n)
+/* FlashPatch Lock Access Register */
+#define FP_LAR                      (ARM_M_FPB_BASE + 0xfb0)
+# define FP_LAR_UNLOCK_KEY           0xc5acce55
+
+/*** Debug Control Block Registers (DCB) ***/
+#define ARM_M_DCB_BASE              0xe000edf0
+#define DCB_DHCSR                   (ARM_M_DCB_BASE + 0x00) 
+#define DCB_DCRSR                   (ARM_M_DCB_BASE + 0x04) 
+#define DCB_DCRDR                   (ARM_M_DCB_BASE + 0x08) 
+#define DCB_DEMCR                   (ARM_M_DCB_BASE + 0x0c) 
+# define DCB_DEMCR_MON_EN           BIT(16) /* Enable DebugMonitor Exception */
+#define DCB_DSCSR                   (ARM_M_DCB_BASE + 0x18) 
 
 #define isb() \
 	__asm__ volatile ("isb")

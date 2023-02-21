@@ -18,8 +18,6 @@
 .syntax unified
 
 #define PSR_RESET_VALUE 0x01000000
-#define SAVED_FPU_REGS_SIZE  (16 * 4 + 4 + 4)
-#define SAVED_CORE_REGS_SIZE (8 * 4)
 
 #ifndef STATIC_IRQ_EXTENTION
 .thumb_func

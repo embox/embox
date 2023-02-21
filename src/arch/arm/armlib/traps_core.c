@@ -11,12 +11,6 @@
 #include <asm/modes.h>
 #include <hal/test/traps_core.h>
 
-#define FAULT_DEBUG       2
-#define FAULT_TRANSL_SECT 5
-#define FAULT_TRANSL_PAGE 7
-#define FAULT_PERMIT_SECT 13
-#define FAULT_PERMIT_PAGE 15
-
 extern fault_handler_t __fault_table[0x10];
 extern fault_handler_t __ifault_table[0x10];
 
