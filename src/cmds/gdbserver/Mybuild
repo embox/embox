@@ -1,9 +1,8 @@
 package embox.cmd
 
-@App
 @AutoCmd
 @Cmd(name="gdbserver",
-	 help="Remote server for the GNU debugger",
+	 help="Debug cmd program",
 	 man='''
 		NAME
 			gdbserver -- remote server for the GNU debugger
@@ -11,15 +10,8 @@ package embox.cmd
 			gdbserver [HOST]:[PORT] [PROG] [ARGS ...]
 	 ''')
 module gdbserver {
-	option number breakpoint_count=32
-	option number packet_size=840
-	
-	source "breakpoint.c"
-	source "gdbstub.c"
-	source "remote.c"
-	source "arch.c"
-	source "main.c"
+	source "gdbserver.c"
 
+	depends	embox.lib.debug.gdbstub
 	depends embox.compat.posix.net.socket
-	depends embox.arch.testtrap
 }
