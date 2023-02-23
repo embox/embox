@@ -104,6 +104,7 @@ extern int getch(void);
 extern int wgetch(WINDOW *win);
 extern int mvgetch(int y, int x);
 extern int mvwgetch(WINDOW *win, int y, int x);
+extern int ungetch(int ch);
 
 extern WINDOW *initscr(void);
 extern int endwin(void);
@@ -130,6 +131,7 @@ extern int def_shell_mode(void);
 extern int reset_prog_mode(void);
 extern int reset_shell_mode(void);
 extern int curs_set(int visibility);
+extern int napms(int ms);
 
 extern int move(int y, int x);
 extern int wmove(WINDOW *win, int y, int x);
@@ -143,10 +145,13 @@ extern int scrollok(WINDOW *win, bool bf);
 extern int nl(void);
 extern int nonl(void);
 
+extern int mvwprintw(WINDOW *win, int y, int x, char *fmt, ...);
+
 extern int refresh(void);
 extern int wrefresh(WINDOW *win);
 extern int wnoutrefresh(WINDOW *win);
 extern int doupdate(void);
+extern int wredrawln(WINDOW *win, int beg_line, int num_lines);
 
 extern int scroll(WINDOW *win);
 extern int scrl(int n);

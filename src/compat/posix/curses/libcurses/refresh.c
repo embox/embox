@@ -93,8 +93,8 @@ int wnoutrefresh(WINDOW *win) {
 			first += win->begx;
 			last += win->begx;
 
-			if ((first < curscr->lines[dst_line].firstchar) ||
-			    (curscr->lines[dst_line].firstchar == NOCHANGE)) {
+			if ((first < curscr->lines[dst_line].firstchar)
+			    || (curscr->lines[dst_line].firstchar == NOCHANGE)) {
 				curscr->lines[dst_line].firstchar = first;
 			}
 
@@ -172,5 +172,19 @@ int doupdate(void) {
 
 	_curs_flush();
 
+	return OK;
+}
+
+int wredrawln(WINDOW *win, int beg_line, int num_lines) {
+	curs_size_t y;
+
+	if (win == NULL) {
+		return ERR;
+	}
+
+	for (y = beg_line; y < beg_line + num_lines; y++) {
+		win->lines[y].firstchar = 0;
+		win->lines[y].lastchar = win->maxx - 1;
+	}
 	return OK;
 }

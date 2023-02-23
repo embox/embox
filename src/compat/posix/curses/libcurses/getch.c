@@ -128,3 +128,7 @@ int mvwgetch(WINDOW *win, int y, int x) {
 
 	return wgetch(win);
 }
+
+int ungetch(int ch) {
+	return ungetc(ch, SP->ifp);
+}
