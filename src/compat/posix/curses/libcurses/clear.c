@@ -23,3 +23,24 @@ int clear(void) {
 int wclear(WINDOW *win) {
 	return clearok(win, TRUE);
 }
+
+int wclrtoeol(WINDOW *win) {
+	curs_size_t y, x;
+
+	if (win == NULL) {
+		return ERR;
+	}
+
+	y = win->cury;
+	x = win->curx;
+
+	if (x < win->lines[y].firstchar) {
+		win->lines[y].firstchar = x;
+	}
+	win->lines[y].lastchar = win->maxx - 1;
+
+	for (; x < win->maxx; x++) {
+		win->lines[y].text[x] = ' ';
+	}
+	return OK;
+}

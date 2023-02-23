@@ -8,6 +8,8 @@
 
 #include <curses_priv.h>
 
+#include <time.h>
+
 int def_prog_mode(void) {
 	return _curs_get_tty_mode(&SP->prog_tty);
 }
@@ -47,4 +49,13 @@ int curs_set(int visibility) {
 	}
 
 	return rc;
+}
+
+int napms(int ms) {
+	struct timespec ts;
+
+	ts.tv_sec = ms / 1000;
+	ts.tv_nsec = (ms % 1000) * 1000000;
+	nanosleep(&ts, NULL);
+	return OK;
 }
