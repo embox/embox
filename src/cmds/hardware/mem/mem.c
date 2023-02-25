@@ -121,8 +121,6 @@ int main(int argc, char **argv) {
 	}
 
 	align = (uintptr_t) address & 0xF;
-	/*address = (unsigned int *) ((int) address & ~(sizeof(address) - 1));*/
-	/*length = (length + sizeof(address) - 1) / sizeof(address);*/
 	while (length--) {
 		if (0 == (((uintptr_t)address - align) & 0xF)) {
 			printf("\n0x%0" PRIxPTR ":\t", (uintptr_t) address);
