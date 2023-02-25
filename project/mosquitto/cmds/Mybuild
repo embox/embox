@@ -1,0 +1,15 @@
+package project.mosquitto.cmd
+
+@AutoCmd
+@Cmd(name="mosqto_start", help="LVGL demo", man="")
+@BuildDepends(third_party.lib.lvgl)
+@BuildDepends(third_party.lib.lv_demos)
+@BuildDepends(third_party.lib.lvgl_display_port_api)
+module lvgl_demo {
+	source "lvgl_demo.c",
+		"mouse_cursor_icon.c"
+
+	@NoRuntime depends third_party.lib.lvgl
+	@NoRuntime depends third_party.lib.lv_demos
+	@NoRuntime depends third_party.lib.lvgl_display_port_api
+}

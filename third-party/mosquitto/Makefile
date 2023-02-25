@@ -17,7 +17,12 @@ $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX) CPPFLAGS=$(MOSQUITTO_CPPFLAGS) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 	)
-	touch $@
+
+# $(BUILD) :
+# 	cd $(PKG_SOURCE_DIR) && ( \
+# 		$(MAKE) CC=$(arm-none-eabi-gcc) CXX=$(arm-none-eabi-g++) LD=$(arm-none-eabi-ld) CFLAGS="$(EMBOX_IMPORTED_CFLAGS)" CPPFLAGS="$(EMBOX_IMPORTED_CPPFLAGS)"  WITH_CJSON=no WITH_DOCS=no WITH_TLS=no WITH_TLS_PSK=no \
+# 	)
+# 	touch $@
 
 $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/src/mosquitto $(PKG_INSTALL_DIR)/mosquitto.o
