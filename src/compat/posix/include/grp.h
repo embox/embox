@@ -8,6 +8,7 @@
 #ifndef GRP_H_
 #define GRP_H_
 
+#include <stdio.h>
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
