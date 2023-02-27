@@ -1,12 +1,23 @@
 package embox.driver.gpio
 
-module elvees_gpio extends api {
+module elvees_ioctr {
 	option number log_level=1
 
 	option number base_addr = 0x40030000
 	option number gpio_ports = 4
 
+	source "elvees_ioctr.c"
+
+}
+
+module elvees_gpio extends api {
+	option number log_level=1
+
+	option number base_addr = 0x40010A000
+	option number gpio_ports = 4
+
 	source "elvees_gpio.c"
 
 	depends embox.driver.gpio.core
+	depends elvees_ioctr
 }
