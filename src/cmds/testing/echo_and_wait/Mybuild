@@ -1,0 +1,10 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "echo_and_wait",
+	help = "send string to a char dev and wait a string"
+)
+
+module echo_and_wait {
+	source "echo_and_wait.c"
+}
