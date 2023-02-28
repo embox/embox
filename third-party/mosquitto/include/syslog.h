@@ -36,28 +36,7 @@
 #define LOG_LOCAL6   (22<<3)    //Reserved for local use.
 #define LOG_LOCAL7   (23<<3)    //Reserved for local use.
 
-#define LOG_PID   0x01
-#define LOG_CONS   0x02
-#define LOG_ODELAY   0x04
-#define LOG_NDELAY   0x08
-#define LOG_NOWAIT   0x10
-#define LOG_PERROR   0x20
-
-#define DPRINT() printf(">>> mosq CALL %s\n", __FUNCTION__)
-
-static inline
-void  closelog(void) {
-	DPRINT();
-}
-static inline
-void  openlog(const char *ident, int option, int facility) {
-	DPRINT();
-	printf("Opening log: %s (%i, %i)\n", ident, option, facility);
-}
-static inline
-void  syslog(int prio, const char *format, ...) {
-	DPRINT();
-	printf("mosq:>> %s\n", format);
+static inline void syslog(int prio, const char *format, ...) {
 }
 
 #endif /* SYSLOG_H_ */

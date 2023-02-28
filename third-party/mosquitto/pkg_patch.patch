@@ -132,3 +132,29 @@ diff -aur mosquitto-2.0.15/plugins/payload-modification/Makefile ../build/extbld
 -	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
 +${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
 +	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
+# diff -aur mosquitto-2.0.15/src/conf.c ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/src/conf.c
+# --- mosquitto-2.0.15/src/conf.c	2022-08-16 09:32:59.000000000 -0400
+# +++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/src/conf.c	2023-02-27 21:15:38.485965406 -0500
+# @@ -38,10 +38,6 @@
+#  #  include <ws2tcpip.h>
+#  #endif
+ 
+# -#if !defined(WIN32) && !defined(__CYGWIN__)
+# -#  include <syslog.h>
+# -#endif
+# -
+#  #include "mosquitto_broker_internal.h"
+#  #include "memory_mosq.h"
+#  #include "misc_mosq.h"
+diff -aur mosquitto-2.0.15/src/config.mk ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk
+--- mosquitto-2.0.15/config.mk	2022-08-16 09:32:59.000000000 -0400
++++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk	2023-02-27 22:31:48.030243322 -0500
+@@ -21,7 +21,7 @@
+ # Disabling this will also mean that passwords must be stored in plain text. It
+ # is strongly recommended that you only disable WITH_TLS if you are not using
+ # password authentication at all.
+-WITH_TLS:=yes
++# WITH_TLS:=yes
+ 
+ # Comment out to disable TLS/PSK support in the broker and client. Requires
+ # WITH_TLS=yes.
