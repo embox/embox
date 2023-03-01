@@ -18,7 +18,8 @@ module nano {
 
 	@NoRuntime depends embox.compat.posix.regex
 
-	depends embox.compat.posix.LibCurses
+	depends embox.compat.posix.libcurses_full
 	depends embox.compat.posix.fs.realpath
+	depends embox.compat.libc.stdlib.mktemp
 }
 
