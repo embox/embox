@@ -207,6 +207,7 @@ extern int clearenv(void);
 extern int system(const char *command);
 
 extern int mkstemp(char *path_template);
+extern int mkstemps(char *path_template, int suffixlen);
 
 extern char *realpath(const char *file_name, char *resolved_name);
 

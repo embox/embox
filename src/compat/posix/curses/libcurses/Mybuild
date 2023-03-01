@@ -18,11 +18,13 @@ module libcurses_full extends LibCurses {
 		"move.c",
 		"mvcur.c",
 		"outopts.c",
+		"printw.c",
 		"refresh.c",
 		"scroll.c",
 		"touch.c",
 		"window.c"
 	
 	depends embox.compat.posix.curses.util
+	depends embox.compat.posix.util.nanosleep
 	depends embox.compat.posix.curses.LibTinfo
 }

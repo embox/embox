@@ -1,9 +1,9 @@
 
 PKG_NAME := nano
-PKG_VER  := 2.2.6
+PKG_VER  := 7.2
 
-PKG_SOURCES := http://www.nano-editor.org/dist/v2.2/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := 03233ae480689a008eb98feb1b599807
+PKG_SOURCES := http://www.nano-editor.org/dist/v7/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_MD5     := 2fc38daa9075b7e29f69085c63a5aa8a
 
 PKG_PATCHES := pkg_patch.txt
 
@@ -15,32 +15,20 @@ $(CONFIGURE) :
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--enable-tiny \
-			--disable-shared \
-			--disable-static \
-			--disable-largefile \
-			--disable-rpath \
 			--disable-nls \
-			--disable-extra \
-			--disable-browser \
-			--disable-help \
-			--disable-justify \
-			--disable-mouse \
-			--disable-operatingdir \
-			--disable-speller \
-			--disable-tabcomp \
-			--disable-wrapping \
-			--disable-wrapping-as-root \
-			--disable-color \
+			--disable-utf8 \
+			--disable-rpath \
+			--disable-largefile \
 			--disable-multibuffer \
-			--disable-nanorc \
-			--disable-glibtest \
+			--without-included-regex \
 			CC=$(EMBOX_GCC) \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	cd $(PKG_SOURCE_DIR)/src && ( \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+			nano_LDADD='' nano_DEPENDENCIES='' LIBS='' \
 	)
 	touch $@
 

@@ -13,3 +13,10 @@ int mkstemp(char *path_template) {
 	log_error("");
 	return -1;
 }
+
+int mkstemps(char *path_template, int suffixlen) {
+	(void)path_template;
+	(void)suffixlen;
+	log_error("");
+	return -1;
+}
