@@ -16,8 +16,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#define MAX_ENTRY_SIZE 4097
-#define MAGIC          0432
+#define BUF_SZ 2048
+#define MAGIC  0432
 
 #define ENTRY_FOUND     1
 #define ENTRY_NOT_FOUND 0
@@ -35,7 +35,7 @@ int setupterm(char *term, int fildes, int *errret) {
 	char *path;
 	char filename[PATH_MAX];
 	int fd;
-	char buf[MAX_ENTRY_SIZE];
+	char buf[BUF_SZ];
 	int16_t *header_section;
 	int16_t name_size, flag_size, num_size;
 	int16_t str_size, table_size, total_size;
