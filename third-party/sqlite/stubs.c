@@ -9,11 +9,6 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 
-int getrusage(int who, struct rusage *r_usage) {
-	printk(">>> %s %d %p\n", __func__, who, r_usage);
-	memset(r_usage, 0, sizeof *r_usage);
-	return SET_ERRNO(ENOSYS);
-}
 #if 0
 FILE * popen(const char *command, const char *mode) {
 	printk(">>> %s %s %s\n", __func__, command, mode);
