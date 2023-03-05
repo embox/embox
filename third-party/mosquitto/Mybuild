@@ -13,6 +13,12 @@ package third_party.cmd
 		AUTHORS
 			Yuriy Paramonov - Adaptation for Embox
 	''')
+
+
 module mosquitto {
 	source "^BUILD/extbld/^MOD_PATH/install/mosquitto.o"
+	
+	@NoRuntime depends embox.compat.posix.LibPosix
+	depends embox.compat.posix.stubs
+	depends embox.compat.libc.math_simple
 }
