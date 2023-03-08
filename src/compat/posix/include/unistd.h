@@ -171,6 +171,8 @@ extern int fsync(int);
 extern pid_t fork(void);
 extern pid_t vfork(void);
 
+extern int daemon(int nochdir , int noclose); 
+
 extern int nice(int incr);
 
 extern int execv(const char *path, char *const argv[]);
