@@ -21,6 +21,9 @@ module sqlite3 {
 	@NoRuntime depends embox.framework.cmd
 	@NoRuntime depends embox.lib.readline_api
 
+	depends embox.compat.posix.proc.rusage_api
+	depends embox.compat.posix.sys.mman.mmap_api
+
 	@InitFS
 	source "demo_create.sql", "demo_insert.sql"
 }

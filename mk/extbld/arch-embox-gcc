@@ -28,13 +28,11 @@ esac
 case " $@ " in
 	*" -c "*) ARG_LINE="$C_CXX_FLAGS";;
 	*" -E "*) ARG_LINE=;;
-	*" -shared "*) echo "Can't build shared objects"; exit 1;;
-	*" -lm "*) echo -e "\n\nERROR!!! Linking with libm\n\n"; exit 1;;
-	*" -l"*) echo -e "\n\nWARNING!!! You're linking something with it\n\n";;
+	*" -shared "*) echo -e "\n\nCan't build shared objects\n\n"; exit 1;;
+	*" -l"*) $0 $(for i in "$@"; do echo ${i/#-l*/}; done); exit $?;;
 esac
 
 PWD_ARG_LINE="$(for i in $ARG_LINE; do echo ${i/$PWD/.}; done)"
-# echo "$EMBOX_CROSS_COMPILE${cmd#arch-embox-} $@ $PWD_ARG_LINE" >&2
 
 if [[ "$cmd" == *clang ]]; then
 	clang "$@" -target arm-none-eabi $PWD_ARG_LINE

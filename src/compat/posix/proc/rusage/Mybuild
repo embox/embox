@@ -1,0 +1,9 @@
+package embox.compat.posix.proc
+
+@DefaultImpl(rusage_stub)
+abstract module rusage_api {
+}
+
+static module rusage_stub extends rusage_api {
+	source "rusage_stub.c"
+}

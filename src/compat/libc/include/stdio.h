@@ -246,6 +246,9 @@ extern int pclose(FILE *stream);
 extern FILE *tmpfile(void);
 extern char *tmpnam(char *s);
 
+extern ssize_t getdelim(char **buf, size_t *bufsiz, int delimiter, FILE *fp);
+extern ssize_t getline(char **buf, size_t *bufsiz, FILE *fp);
+
 __END_DECLS
 
 #endif /* STDIO_H_ */

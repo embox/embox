@@ -213,3 +213,7 @@ static module div {
 static module asprintf {
 	source "asprintf.c"
 }
+
+static module getline {
+	source "getline.c"
+}

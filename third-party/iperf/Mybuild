@@ -1,7 +1,8 @@
 package third_party.cmd
 
-@Build(stage=2,script="$(EXTERNAL_MAKE)")
 @App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
 @Cmd(name = "iperf",
 	help = "iperf is a tool for measuring maximum TCP and UDP bandwidth performance",
 	man = '''
@@ -15,25 +16,11 @@ package third_party.cmd
 			Andrey Gazukin
 	''')
 module iperf {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
-	source "strip.iperf.o"
+	source "^BUILD/extbld/^MOD_PATH/install/iperf.o"
 
-	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends iperf_stubs
-	@NoRuntime depends embox.compat.posix.net.inet_addr
+	@NoRuntime depends embox.compat.posix.util.nanosleep
 	@NoRuntime depends embox.compat.posix.pthreads
-	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.compat.libc.type
-	@NoRuntime depends embox.lib.libgcc
-}
 
-module iperf_stubs {
-	@IncludePathBefore("$(THIRDPARTY_DIR)/iperf/include")
-	source "stubs.c"
-
+	depends embox.compat.posix.proc.daemon_api
 	depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.lib.Printk
 }
