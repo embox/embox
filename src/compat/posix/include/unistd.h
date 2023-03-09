@@ -34,11 +34,7 @@
 #define _SC_NPROCESSORS_CONF  _SC_NPROCESSORS_ONLN
 #define _SC_PHYS_PAGES        104
 
-<<<<<<< HEAD
 #define _SC_OPEN_MAX          20
-=======
-#define _SC_OPEN_MAX          1024
->>>>>>> 1. Made temporary changes that has to be removed after integration of mosquitto will be completed.  Included third_party.cmd.mosquitto into:
 
 /*
 _SC_2_C_BIND

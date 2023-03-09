@@ -247,3 +247,16 @@ diff -aur mosquitto-2.0.15/src/conf_includedir.c ../build/extbld/third_party/cmd
  #endif
  
  #include "mosquitto_broker_internal.h"
+diff -aur mosquitto-2.0.15/mosquitto.conf ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/mosquitto.conf
+--- mosquitto-2.0.15/mosquitto.conf	2022-08-16 09:32:59.000000000 -0400
++++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/mosquitto.conf	2023-03-07 08:36:57.281024324 -0500
+@@ -244,7 +244,7 @@
+ # force the listener to only use IPv6. If you want support for both IPv4 and
+ # IPv6, then do not use the socket_domain option.
+ #
+-#socket_domain
++socket_domain ipv4
+ 
+ # Bind the listener to a specific interface. This is similar to
+ # the [ip address/host name] part of the listener definition, but is useful
+
