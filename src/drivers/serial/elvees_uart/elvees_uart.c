@@ -69,7 +69,7 @@ int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params)
 	UART(FCR) = 0; /* without fifo */
 	UART(LCR) = LCR_DLS_8BITS; /* 8 bit */
 
-	elvees_uart_setup_baud_rate(dev, 115200);
+	elvees_uart_setup_baud_rate(dev, params->baud_rate);
 
 	/*enable rx interrupt*/
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
