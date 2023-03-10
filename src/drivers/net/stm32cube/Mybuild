@@ -5,7 +5,7 @@ module stm32f4cube_eth {
 	option number irq = 61
 
 	source "stm32cube_eth.c"
-	source "stm32f4cube_eth.c"
+	source "stm32f4cube_eth_msp.c"
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
 	source "stm32f4cube_eth.h"
 
@@ -24,7 +24,7 @@ module stm32f7cube_eth {
 	option number irq = 61
 
 	source "stm32f7cube_eth.c"
-	source "stm32cube_eth.c"
+	source "stm32cube_eth_msp.c"
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
 	source "stm32f7cube_eth.h"
 
