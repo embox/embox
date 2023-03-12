@@ -30,6 +30,8 @@ long int sysconf(int name) {
 	case _SC_PHYS_PAGES:
 		//FIXME
 		return 0x1000;
+	case _SC_OPEN_MAX:
+		return _SC_OPEN_MAX;
 	default:
 		return -EINVAL;
 	}
