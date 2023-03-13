@@ -36,6 +36,12 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
+	if (!S_ISDIR(l.item->flags)) {
+		dentry_ref_dec(l.item);
+		SET_ERRNO(ENOTDIR);
+		return NULL;
+	}
+
 	if (!(d = pool_alloc(&dir_pool))) {
 		dentry_ref_dec(l.item);
 		SET_ERRNO(ENOMEM);
