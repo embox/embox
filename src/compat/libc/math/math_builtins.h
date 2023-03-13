@@ -38,6 +38,7 @@ extern double fmod( double x, double y );
 extern double log(double x);
 extern double log10(double x);
 extern double pow(double x, double y);
+extern double exp(double x);
 extern double sqrt(double x);
 
 extern long double floorl(long double x);
