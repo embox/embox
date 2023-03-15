@@ -116,6 +116,7 @@ module stm_usart_f7 extends embox.driver.diag.diag_api {
 	option number usartx=1
 	option number usart1_irq=37
 	option number usart2_irq=38
+	option number usart3_irq=39
 	option number usart6_irq=71
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")

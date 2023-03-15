@@ -14,6 +14,8 @@
 
 #if defined STM32F746xx
 #include "stm32746g_discovery.h"
+#elif defined STM32F767xx
+#include "stm32f7xx_nucleo_144.h"
 #elif defined STM32F769xx
 #include "stm32f769i_discovery.h"
 #else
@@ -30,6 +32,10 @@
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart6_irq)
 static_assert(USART6_IRQ == USART6_IRQn, "");
 
+#define USART3_IRQ    \
+	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart3_irq)
+static_assert(USART3_IRQ == USART3_IRQn, "");
+
 #define USART2_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f7, NUMBER, usart2_irq)
 static_assert(USART2_IRQ == USART2_IRQn, "");
@@ -43,6 +49,13 @@ static_assert(USART1_IRQ == USART1_IRQn, "");
 #define USARTx                           USART6
 /* Definition for USARTx's NVIC */
 #define USARTx_IRQn                      USART6_IRQ
+
+#elif MODOPS_USARTX == 3
+#define USARTx                           USART3
+
+
+/* Definition for USARTx's NVIC */
+#define USARTx_IRQn                      USART3_IRQ
 
 #elif MODOPS_USARTX == 2
 #define USARTx                           USART2
