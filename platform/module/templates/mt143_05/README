@@ -1,0 +1,5 @@
+You can use u-boot to load Embox image from SD-card with folloing command
+  ```
+  ext4load mmc 0:2 0x80000000 /boot/embox; bootelf 0x80000000
+  ```
+  
