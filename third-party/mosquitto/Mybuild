@@ -20,5 +20,8 @@ module mosquitto {
 	
 	@NoRuntime depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.stubs
-	depends embox.compat.libc.math_simple
+	depends embox.compat.libc.math_openlibm
+
+	depends embox.compat.posix.idx.poll
+    depends embox.net.lib.getifaddrs
 }

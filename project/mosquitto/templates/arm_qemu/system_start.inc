@@ -1,0 +1,5 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"ntpdate 0.europe.pool.ntp.org",
+"tish",
