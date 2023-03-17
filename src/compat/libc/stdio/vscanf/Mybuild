@@ -1,5 +1,9 @@
 package embox.compat.libc.stdio
 
-static module vscanf {
-	source "vscanf_stub.c"
+@DefaultImpl(vscanf_stub)
+abstract module vscanf {
+}
+
+static module vscanf_stub extends vscanf {
+  source "vscanf_stub.c"
 }
