@@ -21,7 +21,7 @@
 static void print_usage(void) {
 	printf("Usage: memmap [-hra]\n");
 }
-а
+
 extern char _ram_base;
 extern char _ram_size;
 
@@ -41,6 +41,9 @@ static void show_vmem_translation(void) {
 	struct marea *marea;
 	struct emmap *emmap;
 	uintptr_t voff;
+	uintptr_t vaddr_start = -1;
+	uintptr_t paddr_start = -1;
+	ssize_t region_size = 0;
 	uintptr_t paddr;
 	struct mmu_translate_info mmu_translate_info;
 
@@ -49,10 +52,21 @@ static void show_vmem_translation(void) {
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
 		printf("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")\n",
 				marea->start, marea->size, marea->flags);
+		vaddr_start = marea->start;
+		paddr_start = vmem_translate(emmap->ctx, marea->start, &mmu_translate_info);
+		region_size = 0;
 		for (voff = 0; voff < marea->size; voff += MMU_PAGE_SIZE) {
 			paddr = vmem_translate(emmap->ctx, marea->start + voff, &mmu_translate_info);
-			printf("0x%16x -> 0x%16x \n", marea->start + voff, paddr);
+			if (paddr != paddr_start + region_size) {
+				printf("0x%16x .. 0x%16x -> 0x%16x \n", vaddr_start, vaddr_start + region_size - 1, paddr_start);
+				region_size = 0;
+				paddr_start = paddr;
+				vaddr_start = marea->size + voff;
+			}
+			region_size += MMU_PAGE_SIZE;
 		}
+
+		printf("0x%16x .. 0x%16x -> 0x%16x \n", vaddr_start, vaddr_start + region_size - 1, paddr_start);
 	}
 }
 
