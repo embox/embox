@@ -5,7 +5,7 @@
  * @date 13.02.09
  * @author Alexey Fomin
  * @author Anton Kozlov
- * 	- access_type added
+ * @author Eldar Abusalimov
  */
 
 #include <inttypes.h>
@@ -29,6 +29,11 @@ enum access_type {
 	MEM_AT_LONG,
 };
 
+enum operation_mode {
+	MEM_MODE_READ,
+	MEM_MODE_WRITE,
+};
+
 static const char *fmts[] = {
 	"0x%02lx  ",
 	"0x%04lx  ",
@@ -42,7 +47,7 @@ static const size_t aalign[] = {
 };
 
 static void print_usage(void) {
-	printf("Usage: mem [-h] [-l -s -c] addr [-n count]\n");
+	printf("Usage: mem [-h] [-l -s -c] addr [-n count | -w value_to_write ]\n");
 }
 
 static int parse_option(char *optarg, int opt, long unsigned int *number) {
@@ -70,13 +75,18 @@ int main(int argc, char **argv) {
 	unsigned long val;
 	size_t length = DEFAULT_LENGTH;
 	size_t align;
-	bool length_passed = false;
+	bool access_type_passed = false;
 	enum access_type at = MEM_AT_LONG;
+	enum operation_mode mode = MEM_MODE_READ;
 
-	while (-1 != (opt = getopt(argc, argv, "n:hcsl"))) {
+	if (argc == 1) {
+		print_usage();
+		return 0;
+	}
+
+	while (-1 != (opt = getopt(argc, argv, "n:hcslw:"))) {
 		switch (opt) {
 		case 'n':
-			length_passed = true;
 			ret = parse_option(optarg, opt, (unsigned long int *) &length);
 			if (ret != 0) {
 				return ret;
@@ -84,15 +94,24 @@ int main(int argc, char **argv) {
 			break;
 
 		case 'l':
+			access_type_passed = true;
 			at = MEM_AT_LONG;
 			break;
 		case 's':
+			access_type_passed = true;
 			at = MEM_AT_SHORT;
 			break;
 		case 'c':
+			access_type_passed = true;
 			at = MEM_AT_CHAR;
 			break;
-
+		case 'w':
+			mode = MEM_MODE_WRITE;
+			ret = parse_option(optarg, opt, (unsigned long int *) &val);
+			if (ret != 0) {
+				return ret;
+			}
+			break;
 		case '?':
 		case 'h':
 			print_usage();
@@ -103,10 +122,10 @@ int main(int argc, char **argv) {
 	}
 
 	errno = 0;
-	if (length_passed) {
-		address = (void *) strtoul(argv[argc - 3], 0, 0);
+	if (access_type_passed) {
+		address = (void *) strtoul(argv[3], 0, 0);
 	} else  {
-		address = (void *) strtoul(argv[argc - 1], 0, 0);
+		address = (void *) strtoul(argv[1], 0, 0);
 	}
 
 	if (errno != 0) {
@@ -116,34 +135,49 @@ int main(int argc, char **argv) {
 	}
 
 	if ((uintptr_t) address & ((1 << at) - 1)) {
-		printf("address is not aligned to selected mem access\n");
+		printf("address is not aligned to selected mem access %08x %08x\n", (int) address, (1 << at) - 1);
 		return -EINVAL;
 	}
 
-	align = (uintptr_t) address & 0xF;
-	while (length--) {
-		if (0 == (((uintptr_t)address - align) & 0xF)) {
-			printf("\n0x%0" PRIxPTR ":\t", (uintptr_t) address);
-		}
-
+	if (mode == MEM_MODE_WRITE) {
 		switch (at) {
 		default:
 		case MEM_AT_LONG:
-			val = *(unsigned long *) address;
+			*(unsigned long *) address = val;
 			break;
 		case MEM_AT_SHORT:
-			val = *(unsigned short *) address;
+			*(unsigned short *) address = val;
 			break;
 		case MEM_AT_CHAR:
-			val = *(unsigned char *) address;
+			*(unsigned char *) address = val;
 			break;
 		}
+	} else {
+		align = (uintptr_t) address & 0xF;
+		while (length--) {
+			if (0 == (((uintptr_t)address - align) & 0xF)) {
+				printf("\n0x%0" PRIxPTR ":\t", (uintptr_t) address);
+			}
 
-		printf(fmts[at], val);
+			switch (at) {
+			default:
+			case MEM_AT_LONG:
+				val = *(unsigned long *) address;
+				break;
+			case MEM_AT_SHORT:
+				val = *(unsigned short *) address;
+				break;
+			case MEM_AT_CHAR:
+				val = *(unsigned char *) address;
+				break;
+			}
 
-		address += aalign[at];
+			printf(fmts[at], val);
+
+			address += aalign[at];
+		}
+		printf("\n");
 	}
-	printf("\n");
 
 	return 0;
 }

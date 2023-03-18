@@ -21,7 +21,7 @@
 static void print_usage(void) {
 	printf("Usage: memmap [-hra]\n");
 }
-а
+
 extern char _ram_base;
 extern char _ram_size;
 
