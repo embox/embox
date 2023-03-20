@@ -1,0 +1,13 @@
+package embox.driver.clock.allwinner
+
+module sun4i_timer {
+	option number log_level = 1
+
+	option number base_addr = 0x01C20C00
+	option number irq_num = 50
+
+	source "sun4i_timer.c"
+
+	@NoRuntime depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.irqctrl_api
+}

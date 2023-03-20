@@ -30,6 +30,7 @@ struct dlist_head *uart_get_list(void) {
 }
 
 static int uart_attach_irq(struct uart *uart) {
+	int r;
 
 	if (!(uart->params.uart_param_flags & UART_PARAM_FLAGS_USE_IRQ)) {
 		return 0;
@@ -38,9 +39,12 @@ static int uart_attach_irq(struct uart *uart) {
 	if (!uart->irq_handler) {
 		return -EINVAL;
 	}
-	log_debug("setup tty %s irq num %d", uart->dev_name , uart->irq_num);
-	return irq_attach(uart->irq_num, uart->irq_handler, 0, uart,
-			uart->dev_name);
+
+	r = irq_attach(uart->irq_num, uart->irq_handler, 0, uart, uart->dev_name);
+
+	log_debug("setup tty %s irq num %d result %d", uart->dev_name , uart->irq_num, r);
+
+	return r;
 }
 
 static int uart_detach_irq(struct uart *uart) {
@@ -73,6 +77,7 @@ static void uart_internal_init(struct uart *uart) {
 	if (uart_state_test(uart, UART_STATE_INITED)) {
 		return;
 	}
+
 	uart_state_set(uart, UART_STATE_INITED);
 
 	ring_buff_init(&uart->uart_rx_ring, sizeof(uart->uart_rx_buff[0]),
@@ -119,7 +124,6 @@ int uart_open(struct uart *uart) {
 	if (uart_state_test(uart, UART_STATE_OPEN)) {
 		return -EINVAL;
 	}
-
 	uart_state_set(uart, UART_STATE_OPEN);
 
 	uart_internal_init(uart);
