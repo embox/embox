@@ -135,7 +135,7 @@ int main(int argc, char **argv) {
 	}
 
 	if ((uintptr_t) address & ((1 << at) - 1)) {
-		printf("address is not aligned to selected mem access %08x %08x\n", (int) address, (1 << at) - 1);
+		printf("address is not aligned to selected mem access %p %08x\n", address, (1 << at) - 1);
 		return -EINVAL;
 	}
 
