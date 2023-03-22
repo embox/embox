@@ -19,6 +19,7 @@ module elvees_uart_diag extends embox.driver.diag.diag_api {
 	option number pin_tx_pin
 
 	source "elvees_uart_diag.c"
+	depends elvees_uart
 }
 
 module elvees_uart_ttys0 {
