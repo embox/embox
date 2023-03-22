@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <stdint.h>
 #include <assert.h>
-#include <fcntl.h>
 #include <string.h>
 
 #include <kernel/task/resource/idesc.h>
