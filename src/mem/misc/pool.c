@@ -14,7 +14,6 @@
 #include <mem/misc/pool.h>
 
 #include <assert.h>
-#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <util/member.h>
