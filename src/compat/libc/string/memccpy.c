@@ -6,7 +6,6 @@
  *  @author Giannis Zapantis (github name: tech-gian)
 */
 
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
