@@ -8,8 +8,9 @@
  */
 
 #include <string.h>
-#include <stdio.h>
 #include <assert.h>
+
+#include <util/log.h>
 
 #define IS_NOT_ASCII (1u << 7)
 
@@ -22,7 +23,7 @@ size_t strxfrm(char *dest, const char *src, size_t n) {
 
 	while (!(*sp++ & (IS_NOT_ASCII)) && buff--);
 	if ((*(--sp)) & (IS_NOT_ASCII)) {
-		printf("strxfrm: error: not ASCII character\n");
+		log_error("strxfrm: error: not ASCII character\n");
 		assert(0);
 	}
 
