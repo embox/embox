@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <sys/cdefs.h>
 
-#include <stdio.h>
+#include <sys/stat.h>
 
 __BEGIN_DECLS
 

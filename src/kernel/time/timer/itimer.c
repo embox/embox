@@ -9,7 +9,6 @@
 
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
-#include <stdio.h>
 
 #include <kernel/time/itimer.h>
 #include <hal/clock.h>
