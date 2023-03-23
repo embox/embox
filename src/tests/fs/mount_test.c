@@ -9,6 +9,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <stdio.h>
+
 #include <embox/test.h>
 #include <framework/mod/options.h>
 
