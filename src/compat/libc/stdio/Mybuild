@@ -2,6 +2,7 @@ package embox.compat.libc.stdio
 
 static module print {
 	option number support_floating = 1
+	option number stub = 0
 
 	source "printf_impl.c"
 	source "printf_impl.h"

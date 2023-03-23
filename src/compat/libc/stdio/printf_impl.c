@@ -7,18 +7,26 @@
  * @author Ilia Vaprol
  */
 
+#include "printf_impl.h"
+
+#include <framework/mod/options.h>
+#include <stdarg.h>
+#if OPTION_GET(NUMBER, stub)
+int __print(int (*printchar_handler)(struct printchar_handler_data *d, int c),
+		struct printchar_handler_data *printchar_data,
+		const char *format, va_list args) {
+	return 1;
+}
+#else
+
 #include <assert.h>
 #include <ctype.h>
 #include <stddef.h>
 #include <math.h>
-#include <stdarg.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 #include <util/math.h>
-#include <framework/mod/options.h>
-
-#include "printf_impl.h"
 
 /**
  * Format specifiers
@@ -553,3 +561,6 @@ after_flags:
 
 	return pc;
 }
+
+#endif // OPTION_GET(NUMBER, stub)
+
