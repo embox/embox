@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <endian.h>
 #include <libgen.h>
+#include <unistd.h>
+#include <stdio.h>
 
 #include <fs/vfs.h>
 
