@@ -14,6 +14,7 @@
 #include <sys/cdefs.h>
 
 #include <sys/stat.h>
+#include <stdarg.h>
 
 __BEGIN_DECLS
 
