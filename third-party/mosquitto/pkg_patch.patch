@@ -259,4 +259,24 @@ diff -aur mosquitto-2.0.15/mosquitto.conf ../build/extbld/third_party/cmd/mosqui
  
  # Bind the listener to a specific interface. This is similar to
  # the [ip address/host name] part of the listener definition, but is useful
-
+# diff -aur mosquitto-2.0.15/src/config.mk ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk
+# --- mosquitto-2.0.15/config.mk	2023-03-27 13:05:55.869965741 -0400
+# +++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk	2023-03-27 13:17:42.238541008 -0400
+# @@ -67,7 +67,7 @@
+#  WITH_SRV:=no
+ 
+#  # Build with websockets support on the broker.
+# -WITH_WEBSOCKETS:=no
+# +WITH_WEBSOCKETS:=yes
+ 
+#  # Use elliptic keys in broker
+#  WITH_EC:=yes
+# @@ -105,7 +105,7 @@
+#  WITH_COVERAGE:=no
+ 
+#  # Build with unix domain socket support
+# -WITH_UNIX_SOCKETS:=yes
+# +WITH_UNIX_SOCKETS:=no
+ 
+#  # Build mosquitto_sub with cJSON support
+#  WITH_CJSON:=no
