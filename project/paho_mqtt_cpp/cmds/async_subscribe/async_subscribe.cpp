@@ -189,6 +189,7 @@ int main(int argc, char* argv[])
 	try {
 		std::cout << "Connecting to the MQTT server..." << std::flush;
 		cli.connect(connOpts, nullptr, cb);
+		std::cout << "\nConnected to the MQTT server..." << std::flush;
 	}
 	catch (const mqtt::exception& exc) {
 		std::cerr << "\nERROR: Unable to connect to MQTT server: '"
