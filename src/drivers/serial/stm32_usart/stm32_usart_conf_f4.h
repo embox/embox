@@ -12,8 +12,10 @@
 #include "stm32f4xx_hal_usart.h"
 #include "stm32f4xx_hal_uart.h"
 
-#if defined(STM32F407xx)
+#if defined(STM32F407xx) && defined(USE_STM32F4_DISCO)
 #include "stm32f4_discovery.h"
+#elif defined(STM32F407xx) && defined(USE_STM32F4VE)
+/* #define NOTHING */
 #elif defined(STM32F429xx) && defined(USE_STM32F4XX_NUCLEO_144)
 #include "stm32f4xx_nucleo_144.h"
 #elif defined(STM32F429xx)
