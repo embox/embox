@@ -46,9 +46,11 @@ static_assert(EXTI4_IRQ == EXTI4_IRQn, "");
 #define EXTI9_5_IRQ        OPTION_GET(NUMBER, exti9_5_irq)
 static_assert(EXTI9_5_IRQ == EXTI9_5_IRQn, "");
 
-#define EXTI15_10_IRQ     OPTION_GET(NUMBER, exti15_10_irq)
-static_assert(EXTI15_10_IRQ == EXTI15_10_IRQn, "");
 
+#define EXTI15_10_IRQ     OPTION_GET(NUMBER, exti15_10_irq)
+#if (EXTI15_10_IRQ != 0)
+static_assert(EXTI15_10_IRQ == EXTI15_10_IRQn, "");
+#endif
 static const unsigned char exti_irqs[] = {
 	EXTI0_IRQ, EXTI1_IRQ, EXTI2_IRQ, EXTI3_IRQ, EXTI4_IRQ,
 	EXTI9_5_IRQ, EXTI15_10_IRQ,
@@ -187,4 +189,7 @@ STATIC_IRQ_ATTACH(EXTI2_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI3_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI4_IRQ, stm32_gpio_irq_handler, NULL);
 STATIC_IRQ_ATTACH(EXTI9_5_IRQ, stm32_gpio_irq_handler, NULL);
+#if (EXTI15_10_IRQ != 0)
 STATIC_IRQ_ATTACH(EXTI15_10_IRQ, stm32_gpio_irq_handler, NULL);
+#endif
+
