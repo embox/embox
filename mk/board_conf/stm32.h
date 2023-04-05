@@ -73,6 +73,10 @@
 /* SPI clocks */
 #define CLK_SPI1      __HAL_RCC_SPI1_CLK_ENABLE()
 #define CLK_SPI2      __HAL_RCC_SPI2_CLK_ENABLE()
+#define CLK_SPI3      __HAL_RCC_SPI3_CLK_ENABLE()
+#define CLK_SPI4      __HAL_RCC_SPI4_CLK_ENABLE()
+#define CLK_SPI5      __HAL_RCC_SPI5_CLK_ENABLE()
+#define CLK_SPI6      __HAL_RCC_SPI6_CLK_ENABLE()
 
 /* TIM clocks */
 #define CLK_TIM1      __HAL_RCC_TIM1_CLK_ENABLE()
