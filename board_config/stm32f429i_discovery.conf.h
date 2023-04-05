@@ -100,6 +100,25 @@ struct spi_conf spis[] = {
 			}
 		},
 	},
+	[5] = {
+		.status = DISABLED,
+		.name = "SPI5",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PF, PIN_7, AF5),
+				PIN("MISO", PF, PIN_8, AF5),
+				PIN("MOSI", PF, PIN_9, AF5),
+				PIN("CS",   PC, PIN_1, NOAF),
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOF),
+				VAL("MISO", CLK_GPIOF),
+				VAL("MOSI", CLK_GPIOF),
+				VAL("CS",   CLK_GPIOC),
+				VAL("SPI",  CLK_SPI5),
+			}
+		},
+	},
 };
 
 EXPORT_CONFIG(UART(uarts), SPI(spis))
