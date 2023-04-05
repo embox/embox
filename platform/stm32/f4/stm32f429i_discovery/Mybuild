@@ -1,6 +1,6 @@
 package platform.stm32.f4.stm32f429i_discovery
 
-@BuildArtifactPath(cppflags="-DSTM32F429xx")
+@BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F429I_DISCOVERY")
 static module stm32f429i_discovery_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
 	source "stm32f4xx_hal_conf.h"
