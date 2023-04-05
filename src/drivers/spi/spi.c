@@ -23,13 +23,17 @@ struct spi_device spi_device0 __attribute__((weak));
 struct spi_device spi_device1 __attribute__((weak));
 struct spi_device spi_device2 __attribute__((weak));
 struct spi_device spi_device3 __attribute__((weak));
+struct spi_device spi_device4 __attribute__((weak));
+struct spi_device spi_device5 __attribute__((weak));
 
 /* Note: it's array of pointers, not structures as usual */
 struct spi_device *spi_device_registry[] = {
 	&spi_device0,
 	&spi_device1,
 	&spi_device2,
-	&spi_device3
+	&spi_device3,
+	&spi_device4,
+	&spi_device5
 };
 
 /**
