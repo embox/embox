@@ -164,7 +164,7 @@ static void arm_cpu_dcache_enable(void) {
 	isb();
 }
 
-extern void dcache_flush_all(void) {
+void dcache_flush_all(void) {
 	uint32_t ccsidr, sets, ways;
 
 	/* Level 1 data cache */
