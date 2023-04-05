@@ -8,6 +8,8 @@
  * @author Anton Kozlov
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 #include <assert.h>
 #include <string.h>
@@ -17,7 +19,6 @@
 #include <util/math.h>
 
 #include <mem/page.h>
-#include <embox/unit.h>
 
 //TODO page : have no synchronization
 
@@ -134,13 +135,18 @@ struct page_allocator *page_allocator_init(char *start, size_t len, size_t page_
 		}
 	}
 
+
 	allocator = (struct page_allocator *) start;
+	log_debug("allocator(%p)", allocator);
+
 	allocator->pages_start = pages_start;
 	allocator->pages_n = pages;
 	allocator->page_size = page_size;
 	allocator->free = pages * page_size;
 	allocator->bitmap_len = bitmap_len;
 	allocator->bitmap = (unsigned long *)((uintptr_t)&allocator->bitmap + sizeof(allocator->bitmap));
+
+	log_debug("allocator->bitmap(%p) bitmap_len(%=%zu)", allocator->bitmap, bitmap_len);
 
 	memset(allocator->bitmap, 0, bitmap_len);
 	bitmap_set_bit(allocator->bitmap, pages);

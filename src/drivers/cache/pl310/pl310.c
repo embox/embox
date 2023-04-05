@@ -67,6 +67,39 @@ static void _reg_dump(char *s) {
 	log_debug("=====================================\n");
 }
 
+void pl310_cache_sync(void) {
+	REG_STORE(L2X0_CACHE_SYNC, 0);
+}
+
+static void pl310_background_op_all_ways(uintptr_t op_reg) {
+	uint32_t assoc_16, associativity, way_mask;
+
+	assoc_16 = REG32_LOAD(L2X0_AUX_CTRL) &
+			L310_AUX_CTRL_ASSOCIATIVITY_16;
+	if (assoc_16) {
+		associativity = 16;
+	} else {
+		associativity = 8;
+	}
+
+	way_mask = (1 << associativity) - 1;
+	/* Invalidate all ways */
+	REG32_STORE (op_reg, way_mask);
+	/* Wait for all ways to be invalidated */
+	while (REG32_LOAD(op_reg) && way_mask){
+		;
+	}
+	pl310_cache_sync();
+}
+
+void pl310_outer_cache_inval_all(void) {
+	pl310_background_op_all_ways(L2X0_INV_WAY);
+}
+
+void pl310_outer_cache_flush_all(void) {
+	pl310_background_op_all_ways(L2X0_CLEAN_INV_WAY);
+}
+
 static int pl310_init(void) {
 	REG_STORE(L2X0_CTRL, 0);
 
@@ -74,7 +107,7 @@ static int pl310_init(void) {
 	REG_ORIN(L2X0_AUX_CTRL, L2X0_AUX_DATA_PREFETCH);
 
 	REG_STORE(L70_INVAL, 0xFFF);
-	REG_STORE(PL310_BASE + 0x730, 0);
+	REG_STORE(L2X0_CACHE_SYNC, 0);
 
 	ksleep(50);
 
