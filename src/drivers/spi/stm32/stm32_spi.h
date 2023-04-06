@@ -12,6 +12,8 @@
 
 #if defined(STM32F407xx)
 #include "stm32f4_discovery.h"
+#elif defined (USE_STM32F429I_DISCOVERY)
+#include "stm32f429i_discovery.h"
 #elif defined (STM32F429xx)
 #include "stm32f4xx_nucleo_144.h"
 #elif defined (STM32L476xx)

@@ -9,4 +9,5 @@ CONFIG {
 	/* spis */
 	spis[1].status  = DISABLED;
 	spis[2].status  = DISABLED; /* Overlaps some Ethernet pins */
+	spis[5].status  = ENABLED;
 }
