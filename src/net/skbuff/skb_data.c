@@ -53,7 +53,7 @@ struct sk_buff_data_fixed {
 	int alloc_type;
 
 	char __ip_align[IP_ALIGN_SIZE];
-	unsigned char data[MODOPS_DATA_SIZE];
+	unsigned char data[MODOPS_DATA_SIZE] DATA_ATTR;
 	char __data_pad[DATA_PAD_SIZE];
 };
 
