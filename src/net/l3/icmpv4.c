@@ -324,6 +324,10 @@ static int icmp_rcv(struct sk_buff *skb) {
 
 int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		...) {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-variable-sized-type-not-at-end"
+#endif
 	struct {
 		union {
 			struct icmpbody_dest_unreach dest_unreach;
@@ -334,6 +338,9 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		} __attribute__((packed));
 		char __body_msg_storage[ICMP_DISCARD_MAX_SIZE];
 	} __attribute__((packed)) body;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 	va_list extra;
 	uint8_t *body_msg;
 	size_t body_msg_sz;
@@ -357,6 +364,10 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		return 0; /* error: inappropriate packet */
 	}
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wvarargs"
+#endif
 	switch (type) {
 	default:
 		assertf(0, "bad type for discard");
@@ -404,6 +415,9 @@ int icmp_discard(struct sk_buff *skb, uint8_t type, uint8_t code,
 		body_msg = &body.param_prob.msg[0];
 		break;
 	}
+#ifdef __clang__
+#pragma clang diagnostic pop // -Wvarargs
+#endif
 
 	body_msg_sz = min(ip_data_length(ip_hdr(skb)),
 			sizeof body.__body_msg_storage);

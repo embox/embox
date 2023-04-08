@@ -69,11 +69,18 @@ int ndp_send(uint8_t type, uint8_t code, const void *body,
 }
 
 int ndp_discover(struct net_device *dev, const void *tpa) {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wgnu-variable-sized-type-not-at-end"
+#endif
 	struct {
 		struct ndpbody_neighbor_solicit body;
 		struct ndpoptions_ll_addr ops;
 		char __ops_ll_addr_storage[MAX_ADDR_LEN];
 	} __attribute__((packed)) nbr_solicit;
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 
 	nbr_solicit.body.zero = 0;
 	memcpy(&nbr_solicit.body.target, tpa, sizeof(nbr_solicit.body.target));
