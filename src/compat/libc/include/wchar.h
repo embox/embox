@@ -17,6 +17,7 @@
 
 #define WEOF      ((wint_t)(-1))
 
+#ifndef WCHAR_MIN
 #if defined (__WCHAR_MIN__)
 #define WCHAR_MIN __WCHAR_MIN__
 #elif defined (__WCHAR_UNSIGNED__)
@@ -24,7 +25,9 @@
 #else
 #define WCHAR_MIN (-0x7FFFFFFF-1)
 #endif
+#endif /* WCHAR_MIN */
 
+#ifndef WCHAR_MAX
 #if defined (__WCHAR_MAX__)
 #define WCHAR_MAX __WCHAR_MAX__
 #elif defined (__WCHAR_UNSIGNED__)
@@ -32,6 +35,7 @@
 #else
 #define WCHAR_MAX 0x7FFFFFFFUL
 #endif
+#endif /* WCHAR_MAX */
 
 typedef int mbstate_t;
 
