@@ -81,6 +81,7 @@ uint64_t __atomic_fetch_add_8(void *mem, uint64_t val, int model) {
 	return ret;
 }
 
+#ifndef __clang__
 uint8_t __sync_val_compare_and_swap_1(volatile void *ptr, uint8_t soldval,
 		uint8_t snewval) {
 	spin_lock(&atomic_lock);
@@ -135,6 +136,7 @@ uint32_t __sync_fetch_and_add_4(void *mem, uint32_t val) {
 uint32_t __sync_fetch_and_sub_4(void *mem, uint32_t val) {
 	return __atomic_fetch_sub_4(mem, val, 0);
 }
+#endif /* !__clang__ */
 
 unsigned char __atomic_exchange_1(volatile void *p, unsigned char val, int memorder) {
 	unsigned char prev;
