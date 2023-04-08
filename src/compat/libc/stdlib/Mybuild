@@ -1,8 +1,11 @@
 package embox.compat.libc.stdlib
 
 static module rand {
+	@Cflags("-Wno-deprecated-non-prototype")
 	source "rand.c"
+	@Cflags("-Wno-deprecated-non-prototype")
 	source "random.c"
+	@Cflags("-Wno-deprecated-non-prototype")
 	source "random_r.c"
 }
 
