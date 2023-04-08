@@ -737,11 +737,6 @@ static uint32_t fat_get_free_fat(struct fat_fs_info *fsi, uint8_t *p_scratch) {
 	return DFS_BAD_CLUS;
 }
 
-static inline int dir_is_root(uint8_t *name) {
-	return !strlen((char *) name) ||
-		((strlen((char *) name) == 1) && (name[0] == DIR_SEPARATOR));
-}
-
 uint32_t fat_open_rootdir(struct fat_fs_info *fsi, struct dirinfo *dirinfo) {
 	struct volinfo *volinfo;
 	uint32_t ret;
