@@ -17,26 +17,6 @@
 
 #include "math_private.h"
 
-static inline int local_ilogb( double x ) __attribute__ ((always_inline));
-static inline int local_ilogb( double x )
-{
-	union{ double d; uint64_t u;}u = {x};
-
-	u.u &= 0x7fffffffffffffffULL;
-	int32_t exp = (int32_t) (u.u >> 52);
-
-	if( __builtin_expect( (uint32_t) exp - 1U >= 2046, 0 ) )
-	{ // +-denorm, the other possibilities: +0 +-inf, NaN are screend out by caller
-		u.u |= 0x3ff0000000000000ULL;
-		u.d -= 1.0;
-		exp = (int32_t) (u.u >> 52);
-
-		return exp - (1023+1022);
-	}
-
-	return exp - 1023;
-}
-
 double fmod( double x, double y )
 {
 	union{ double d; uint64_t u;}ux = {x};
