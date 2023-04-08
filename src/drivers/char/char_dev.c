@@ -40,7 +40,7 @@ static int char_dev_register_static(struct dev_module *cdev) {
 	/* This index is not supposed to be freed */
 	cdev_id = index_alloc(&char_dev_idx, INDEX_MIN);
 	if (cdev_id == INDEX_NONE) {
-		log_error("Failed to register char dev %s", cdev->name ? cdev->name : "");
+		log_error("Failed to register char dev %s", cdev->name);
 		return -ENOMEM;
 	}
 
@@ -64,7 +64,7 @@ int char_dev_register(struct dev_module *cdev) {
 	/* This index is not supposed to be freed */
 	cdev_id = index_alloc(&char_dev_idx, INDEX_MIN);
 	if (cdev_id == INDEX_NONE) {
-		log_error("Failed to register char dev %s", cdev->name ? cdev->name : "");
+		log_error("Failed to register char dev %s", cdev->name);
 		return -ENOMEM;
 	}
 	cdev->dev_id = DEVID_CDEV | cdev_id;
