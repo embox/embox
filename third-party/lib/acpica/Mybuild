@@ -9,6 +9,7 @@ module acpica {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20210331/source/include")
 	source "init.c", "osemboxxf.c"
 
+	@Cflags("-Wno-unused")
 	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20210331/source/include")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/acpica-unix-20210331/source/components")

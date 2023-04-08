@@ -13,7 +13,9 @@
  * can be not supported in cross-compiler
  */
 #ifndef __e2k__
+#ifndef __clang__
 #define HAVE_CC_INHIBIT_LOOP_TO_LIBCALL 1
+#endif /* __clang__ */
 #endif /* __e2k__ */
 
 #ifdef HAVE_CC_INHIBIT_LOOP_TO_LIBCALL

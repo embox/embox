@@ -143,26 +143,22 @@ failed: test_assert_not_equal(<#actual>, <#expected>): <actual>
 					#expected ")"))
 
 #define test_assert_str_equal(actual, expected) \
-	__test_assertion_handle(((actual) == (expected)) \
-			|| (0 == strcmp((actual), (expected))), \
+	__test_assertion_handle((0 == strcmp((actual), (expected))), \
 			__test_assertion_point_ref( "test_assert_str_equal(" \
 					 #actual ", " #expected ")"))
 
 #define test_assert_str_not_equal(actual, expected) \
-	__test_assertion_handle(((actual) != (expected)) \
-			&& (0 != strcmp((actual), (expected))), \
+	__test_assertion_handle((0 != strcmp((actual), (expected))), \
 			__test_assertion_point_ref( "test_assert_str_not_equal(" \
 					#actual ", " #expected ")"))
 
 #define test_assert_strn_equal(actual, expected, n) \
-	__test_assertion_handle(((actual) == (expected)) \
-			|| (0 == strncmp((actual), (expected), (n))), \
+	__test_assertion_handle((0 == strncmp((actual), (expected), (n))), \
 			__test_assertion_point_ref( "test_assert_strn_equal(" \
 					#actual ", " #expected ", " #n ")"))
 
 #define test_assert_strn_not_equal(actual, expected, n) \
-	__test_assertion_handle(((actual) != (expected)) \
-			&& (0 != strncmp((actual), (expected), (n))), \
+	__test_assertion_handle((0 != strncmp((actual), (expected), (n))), \
 			__test_assertion_point_ref( "test_assert_strn_not_equal(" \
 					#actual ", " #expected ", " #n ")"))
 

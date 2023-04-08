@@ -172,8 +172,9 @@ int ip_forward(struct sk_buff *skb) {
 		struct sk_buff *s_new = skb_copy(skb);
 		if (s_new) {
 			if (best_route->rt_gateway == INADDR_ANY) {
+				in_addr_t daddr = iph->daddr; /* Extract addr to avoid unaligned pointer dereference */
 				icmp_discard(s_new, ICMP_REDIRECT,
-						ICMP_HOST_REDIRECT, &iph->daddr);
+						ICMP_HOST_REDIRECT, &daddr);
 			}
 			else {
 				icmp_discard(s_new, ICMP_REDIRECT,

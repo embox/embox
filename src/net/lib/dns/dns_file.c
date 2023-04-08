@@ -25,7 +25,7 @@ const char *dns_get_nameserver(void) {
 	char buf[128];
 	FILE *input;
 	int ret;
-	char *res;
+	char *res = NULL;
 	unsigned char ip4_addr[sizeof(struct in_addr)];
 
 	if (nameserver_inited) {

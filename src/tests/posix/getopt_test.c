@@ -99,7 +99,11 @@ static void getopt_test(int argc, char *argv[], const char *opts,
 		test_assert_equal(snap->index, optind);
 		test_assert_equal(snap->option, optopt);
 		test_assert_equal(snap->error, opterr);
-		test_assert_str_equal(snap->argument, optarg);
+		if (optarg == NULL) {
+			test_assert_null(snap->argument);
+		} else {
+			test_assert_str_equal(snap->argument, optarg);
+		}
 	} while (ret != -1);
 }
 
