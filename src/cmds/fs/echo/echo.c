@@ -35,7 +35,6 @@ int main(int argc, char **argv) {
 	}
 
 	if (argc > 3) {
-		size_t write_items_count;
 		int res;
 
 		mode = O_WRONLY;
@@ -60,13 +59,11 @@ int main(int argc, char **argv) {
 			close(fd);
 			return -EIO;
 		}
-		write_items_count = res;
 		res = write(fd, (const void *) "\n", 1);
 		if (0 > res) {
 			close(fd);
 			return -EIO;
 		}
-		write_items_count += res;
 
 		close(fd);
 		return 0;
