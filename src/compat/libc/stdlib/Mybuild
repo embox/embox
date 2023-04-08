@@ -18,6 +18,7 @@ static module config {
 
 static module core {
 	source "bsearch.c"
+	@Cflags("-Wno-deprecated-non-prototype")
 	source "qsort.c"
 	source "strtod.c"
 	source "strtof.c"
