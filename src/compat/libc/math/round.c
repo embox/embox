@@ -48,3 +48,11 @@ double round(double x)
 		y = -y;
 	return y;
 }
+
+float roundf(float x) {
+	return round(x);
+}
+
+long double roundl(long double x) {
+	return round(x);
+}

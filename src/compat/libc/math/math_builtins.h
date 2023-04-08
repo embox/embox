@@ -51,6 +51,7 @@ extern long double ceill(long double x);
 extern double ceil(double x);
 extern float ceilf(float x);
 
+extern float roundf(float x);
 extern double round(double x);
 extern long double roundl(long double x);
 
@@ -68,14 +69,6 @@ extern int __signbit_long_double(long double x);
 extern double fabs(double x);
 extern float fabsf(float x);
 extern long double fabsl(long double x);
-
-#define roundf(x) __builtin_roundf(x)
-
-#if 0
-#define round(x) __builtin_round(x)
-#define roundl(x) __builtin_roundl(x)
-
-#endif
 
 #if 0
 #define log10(x) __builtin_log10(x)
