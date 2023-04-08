@@ -50,6 +50,8 @@ extern float expf(float x);
 extern long double expl(long double x);
 
 extern double sqrt(double x);
+extern float sqrtf(float x);
+extern long double sqrtl(long double x);
 
 extern long double floorl(long double x);
 extern double floor(double x);
@@ -120,8 +122,6 @@ extern long double fabsl(long double x);
 #if 0
 #define sqrt(x) __builtin_sqrt(x)
 #endif
-#define sqrtf(x) __builtin_sqrtf(x)
-#define sqrtl(x) __builtin_sqrtl(x)
 
 #define tan(x) __builtin_tan(x)
 #define tanf(x) __builtin_tanf(x)
