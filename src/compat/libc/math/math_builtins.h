@@ -63,9 +63,9 @@ extern int __signbit_long_double(long double x);
 #define fmod(x, y) __builtin_fmod(x, y)
 #endif
 
-#define fabs(x) __builtin_fabs(x)
-#define fabsf(x) __builtin_fabsf(x)
-#define fabsl(x) __builtin_fabsl(x)
+extern double fabs(double x);
+extern float fabsf(float x);
+extern long double fabsl(long double x);
 
 #define roundf(x) __builtin_roundf(x)
 

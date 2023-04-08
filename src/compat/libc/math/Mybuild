@@ -13,6 +13,7 @@ static module math_simple extends embox.compat.libc.math {
 	@IncludeExport(target_name="math.h")
 	source "math_builtins.h"
 
+	source "abs.c"
 	source "fmod.c", "modf.c"
 	source "log.c", "pow.c"
 	source "sqrt.c"
