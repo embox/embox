@@ -38,6 +38,8 @@ extern double fmod( double x, double y );
 extern double log(double x);
 extern double log10(double x);
 extern double pow(double x, double y);
+extern float powf(float x, float y);
+extern long double powl(long double x, long double y);
 extern double exp(double x);
 extern double sqrt(double x);
 
@@ -73,11 +75,7 @@ extern long double fabsl(long double x);
 #define round(x) __builtin_round(x)
 #define roundl(x) __builtin_roundl(x)
 
-#define pow(...) __builtin_pow(__VA_ARGS__)
 #endif
-
-#define powf(...) __builtin_powf(__VA_ARGS__)
-#define powl(...) __builtin_powl(__VA_ARGS__)
 
 #if 0
 #define log10(x) __builtin_log10(x)
