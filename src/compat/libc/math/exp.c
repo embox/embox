@@ -1,6 +1,13 @@
 #include "math_builtins.h"
 
-double exp(double x)
-{
-    return pow(M_E, x);
+long double expl(long double x) {
+    return powl(M_E, x);
+}
+
+float expf(float x) {
+    return expl(x);
+}
+
+double exp(double x) {
+    return expl(x);
 }

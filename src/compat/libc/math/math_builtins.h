@@ -44,7 +44,11 @@ extern double log10(double x);
 extern double pow(double x, double y);
 extern float powf(float x, float y);
 extern long double powl(long double x, long double y);
+
 extern double exp(double x);
+extern float expf(float x);
+extern long double expl(long double x);
+
 extern double sqrt(double x);
 
 extern long double floorl(long double x);
@@ -92,10 +96,6 @@ extern long double fabsl(long double x);
 #define cosh(x) __builtin_cosh(x)
 #define coshf(x) __builtin_coshf(x)
 #define coshl(x) __builtin_coshl(x)
-
-#define exp(x) __builtin_exp(x)
-#define expf(x) __builtin_expf(x)
-#define expl(x) __builtin_expl(x)
 
 #define frexp(x, exp) __builtin_frexp(x, exp)
 #define frexpf(x, exp) __builtin_frexpf(x, exp)
