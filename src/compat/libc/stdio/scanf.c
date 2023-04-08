@@ -79,7 +79,6 @@ static int scan_int(const char **in, int base, int width, int *res, int *pc_ptr)
 	int neg = 0;
 	int dst = 0;
 	int ch;
-	int i;
 	int not_empty = 0;
 
 	if (EOF == (ch = trim_leading(in, pc_ptr))) {
@@ -93,7 +92,7 @@ static int scan_int(const char **in, int base, int width, int *res, int *pc_ptr)
 		dst = 0;
 	}
 
-	for (i = 0; (ch = (int) __stdio_scanchar(in, pc_ptr)) != EOF; i++) {
+	for (; (ch = (int) __stdio_scanchar(in, pc_ptr)) != EOF;) {
 		if (!(base == 10 ? isdigit(ch) : isxdigit(ch)) || (0 == width)) {
 			__stdio_unscanchar(in, ch, pc_ptr);
 			/*end conversion*/
