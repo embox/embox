@@ -35,7 +35,11 @@ __BEGIN_DECLS
 
 extern double modf(double x, double *iptr);
 extern double fmod( double x, double y );
+
 extern double log(double x);
+extern float logf(float x);
+extern long double logl(long double x);
+
 extern double log10(double x);
 extern double pow(double x, double y);
 extern float powf(float x, float y);
@@ -61,26 +65,9 @@ extern int __signbit_long_double(long double x);
 #define signbit(x) (sizeof(x) == sizeof(float) ? __signbit_float(x) : \
 		(sizeof(x) == sizeof(double) ? __signbit_double(x) : __signbit_long_double(x)))
 
-#if 0
-#define modf(x, i_ptr) __builtin_modf(x, i_ptr)
-#define fmod(x, y) __builtin_fmod(x, y)
-#endif
-
 extern double fabs(double x);
 extern float fabsf(float x);
 extern long double fabsl(long double x);
-
-#if 0
-#define log10(x) __builtin_log10(x)
-
-#define ceil(x) __builtin_ceil(x)
-#define ceilf(x) __builtin_ceilf(x)
-#define ceill(x) __builtin_ceill(x)
-
-#define floor(x) __builtin_floor(x)
-#define floorf(x) __builtin_floorf(x)
-#define floorl(x) __builtin_floorl(x)
-#endif
 
 #define acos(x) __builtin_acos(x)
 #define acosf(x) __builtin_acosf(x)
@@ -121,8 +108,6 @@ extern long double fabsl(long double x);
 #if 0
 #define log(x) __builtin_log(x)
 #endif
-#define logf(x) __builtin_logf(x)
-#define logl(x) __builtin_logl(x)
 
 #define sin(x) __builtin_sin(x)
 #define sinf(x) __builtin_sinf(x)

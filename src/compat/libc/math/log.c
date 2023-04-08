@@ -1,9 +1,9 @@
 #include <math.h>
 
-double log(double x) {
-	double multiplier = 1.;
-	double res = 1.;
-	double t = M_E;
+long double logl(long double x) {
+	long double multiplier = 1.;
+	long double res = 1.;
+	long double t = M_E;
 	if (x <= 0) {
 		return -MAXFLOAT;
 	}
@@ -18,6 +18,14 @@ double log(double x) {
 	return res * multiplier;
 }
 
+float logf(float x) {
+	return log(x);
+}
+
+double log(double x) {
+	return logl(x);
+}
+
 double log10(double x) {
-	return __builtin_log(x) * __builtin_log(10.);
+	return log(x) * log(10.);
 }
