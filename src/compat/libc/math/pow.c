@@ -296,3 +296,11 @@ pow(double x, double y)
 	else SET_HIGH_WORD(z,j);
 	return s*z;
 }
+
+float powf(float x, float y) {
+	return pow(x, y);
+}
+
+long double powl(long double x, long double y) {
+	return pow(x, y);
+}
