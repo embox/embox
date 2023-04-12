@@ -21,4 +21,6 @@ $(BUILD) :
 
 $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/src/mosquitto $(PKG_INSTALL_DIR)/mosquitto.o
+	cp $(PKG_SOURCE_DIR)/client/mosquitto_pub $(PKG_INSTALL_DIR)/mosquitto_pub.o
+	cp $(PKG_SOURCE_DIR)/client/mosquitto_sub $(PKG_INSTALL_DIR)/mosquitto_sub.o
 	touch $@
