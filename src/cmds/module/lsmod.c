@@ -17,7 +17,7 @@
 #include <framework/mod/integrity.h>
 
 static void print_usage(void) {
-	printf("Usage: lsmod [-qdlhp:n:]\n");
+	printf("Usage: lsmod [-dlhp:n:]\n");
 }
 
 static void mod_print(const struct mod *mod) {
@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	int print_deps = 0, show_label = 0, integrity_check = 0;
 	int opt;
 
-	while (-1 != (opt = getopt(argc, argv, "qdclhp:n:"))) {
+	while (-1 != (opt = getopt(argc, argv, "dclhp:n:"))) {
 		switch (opt) {
 		case 'd':
 			print_deps = 1;
