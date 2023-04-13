@@ -44,9 +44,7 @@ static int phymem_init(void) {
 			(uint64_t)((uintptr_t) phymem_alloc_start));
 
 	if (va) {
-		log_boot("va=%p size=%zu page_size=%0x%x\n", va, mem_len, PAGE_SIZE());
 		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
-		log_boot("__phymem_allocator=%p\n", __phymem_allocator);
 	}
 	log_boot_stop();
 	return phymem_alloc_start == va ? 0 : -EIO;

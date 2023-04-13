@@ -44,8 +44,8 @@
 #define CTRL_DATA                 0x10
 
 
-extern void rcm_mdio_init(uint32_t mdio_base);
-extern void rcm_mdio_en(uint32_t mdio_base, int en) ;
-extern void rcm_mdio_write(uint32_t mdio_addr,uint32_t reg_addr,uint32_t write_data);
+extern void rcm_mdio_init(int dev_num);
+extern void rcm_mdio_en(int dev_num, int en) ;
+extern void rcm_mdio_write(int dev_num, uint32_t reg_addr,uint32_t write_data);
 
 #endif /* SRC_DRIVERS_NET_RCM_MGETH_RCM_MDIO_H_ */
