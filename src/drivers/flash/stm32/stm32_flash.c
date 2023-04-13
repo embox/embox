@@ -119,9 +119,12 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 
 		for (rep = 3; rep >= 0; rep --) {
 
-#ifdef STM32H7_CUBE
+#if defined(STM32H7_CUBE)
 			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, (uint32_t )&data32[i])) {
+#elif defined(STM32L475xx)
+			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, dest, *(uint64_t*)&data32[i])) {
 #else
+			assert(STM32_FLASH_WORD == 4);
 			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, data32[i])) {
 #endif
 				flash_err = HAL_FLASH_GetError();
