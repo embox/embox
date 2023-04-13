@@ -37,7 +37,7 @@ static int mips_gic_ctrl_init(void) {
 		}
 		 /* only 1 cpu core */
 		REG32_STORE(MIPS_GIC_BASE + GIC_SH_MAP_CORE31_0(i), 0x1);
-		REG32_STORE(MIPS_GIC_BASE + GIC_SH_MAP_PIN(i), MIPS_GIC_INTERRUPT_PIN | 1 << 31);
+		REG32_STORE(MIPS_GIC_BASE + GIC_SH_MAP_PIN(i), MIPS_GIC_INTERRUPT_PIN | 1u << 31);
 	}
 	return 0;
 }

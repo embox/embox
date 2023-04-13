@@ -140,25 +140,25 @@
  */
 
 /** Auto-Speed Detection Enable. */
-#define E1000_REG_CTRL_ASDE	(1 << 5)
+#define E1000_REG_CTRL_ASDE	(1u << 5)
 
 /** Link Reset. */
-#define E1000_REG_CTRL_LRST	(1 << 3)
+#define E1000_REG_CTRL_LRST	(1u << 3)
 
 /** Set Link Up. */
-#define E1000_REG_CTRL_SLU	(1 << 6)
+#define E1000_REG_CTRL_SLU	(1u << 6)
 
 /** Invert Los Of Signal. */
-#define E1000_REG_CTRL_ILOS	(1 << 7)
+#define E1000_REG_CTRL_ILOS	(1u << 7)
 
 /** Device Reset. */
-#define E1000_REG_CTRL_RST	(1 << 26)
+#define E1000_REG_CTRL_RST	(1u << 26)
 
 /** VLAN Mode Enable. */
-#define E1000_REG_CTRL_VME	(1 << 30)
+#define E1000_REG_CTRL_VME	(1u << 30)
 
 /** PHY Reset. */
-#define E1000_REG_CTRL_PHY_RST	(1 << 31)
+#define E1000_REG_CTRL_PHY_RST	(1u << 31)
 
 /**
  * @}
@@ -309,7 +309,7 @@
  */
 
 /** Receive Address Valid. */
-#define E1000_REG_RAH_AV	(1 << 31)
+#define E1000_REG_RAH_AV	(1u << 31)
 
 /**
  * @}

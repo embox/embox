@@ -31,33 +31,33 @@
 	(((SYS_CLOCK * 10) / (BAUD_RATE * 8) - 5) / 10)
 
 /* status register bit masks */
-#define UART_STAT_DR (1 << 0) /**< Data is available for read in RX register*/
-#define UART_STAT_TS (1 << 1) /**< TX shift register is empty */
-#define UART_STAT_TE (1 << 2) /**< TX FIFO is empty */
-#define UART_STAT_BR (1 << 3) /**< BREAK received */
-#define UART_STAT_OV (1 << 4) /**< 1 or more bytes lossed over overflow */
-#define UART_STAT_PE (1 << 5) /**< error in parity control */
-#define UART_STAT_FE (1 << 6) /**< error in frame */
-#define UART_STAT_TH (1 << 7) /**< TX FIFO is half-full */
-#define UART_STAT_RH (1 << 8) /**< RX FIFO is half-full */
-#define UART_STAT_TF (1 << 9) /**< TX FIFO is full */
-#define UART_STAT_RF (1 << 10)/**< RX FIFO is full */
+#define UART_STAT_DR (1u << 0) /**< Data is available for read in RX register*/
+#define UART_STAT_TS (1u << 1) /**< TX shift register is empty */
+#define UART_STAT_TE (1u << 2) /**< TX FIFO is empty */
+#define UART_STAT_BR (1u << 3) /**< BREAK received */
+#define UART_STAT_OV (1u << 4) /**< 1 or more bytes lossed over overflow */
+#define UART_STAT_PE (1u << 5) /**< error in parity control */
+#define UART_STAT_FE (1u << 6) /**< error in frame */
+#define UART_STAT_TH (1u << 7) /**< TX FIFO is half-full */
+#define UART_STAT_RH (1u << 8) /**< RX FIFO is half-full */
+#define UART_STAT_TF (1u << 9) /**< TX FIFO is full */
+#define UART_STAT_RF (1u << 10)/**< RX FIFO is full */
 
 /* control register bit masks */
-#define UART_CTRL_RE (1 << 0)  /**< receiver enable */
-#define UART_CTRL_TE (1 << 1)  /**< transmitter enable */
-#define UART_CTRL_RI (1 << 2)  /**< interrupt after receiving frame */
-#define UART_CTRL_TI (1 << 3)  /**< interrupt after transmitting frame */
-#define UART_CTRL_PS (1 << 4)  /**< parity check (0 - oddness, 1 - evenness) */
-#define UART_CTRL_PE (1 << 5)  /**< parity control enable */
-#define UART_CTRL_FL (1 << 6)  /**< flow control with CTS/RTS enable (don't use) */
-#define UART_CTRL_LB (1 << 7)  /**< loopback enable */
-#define UART_CTRL_EC (1 << 8)  /**< external clock enable */
-#define UART_CTRL_TF (1 << 9)  /**< enable interrupt on FIFO transmitter layer */
-#define UART_CTRL_RF (1 << 10) /**< enable interrupt on FIFO receiver layer */
-#define UART_CTRL_DB (1 << 11) /**< debug mode enable (don't available) */
-#define UART_CTRL_OE (1 << 12) /**< output transmitter enable */
-#define UART_CTRL_FA (1 << 31) /**< set on when FIFO TX and RX are available */
+#define UART_CTRL_RE (1u << 0)  /**< receiver enable */
+#define UART_CTRL_TE (1u << 1)  /**< transmitter enable */
+#define UART_CTRL_RI (1u << 2)  /**< interrupt after receiving frame */
+#define UART_CTRL_TI (1u << 3)  /**< interrupt after transmitting frame */
+#define UART_CTRL_PS (1u << 4)  /**< parity check (0 - oddness, 1 - evenness) */
+#define UART_CTRL_PE (1u << 5)  /**< parity control enable */
+#define UART_CTRL_FL (1u << 6)  /**< flow control with CTS/RTS enable (don't use) */
+#define UART_CTRL_LB (1u << 7)  /**< loopback enable */
+#define UART_CTRL_EC (1u << 8)  /**< external clock enable */
+#define UART_CTRL_TF (1u << 9)  /**< enable interrupt on FIFO transmitter layer */
+#define UART_CTRL_RF (1u << 10) /**< enable interrupt on FIFO receiver layer */
+#define UART_CTRL_DB (1u << 11) /**< debug mode enable (don't available) */
+#define UART_CTRL_OE (1u << 12) /**< output transmitter enable */
+#define UART_CTRL_FA (1u << 31) /**< set on when FIFO TX and RX are available */
 #define UART_DISABLE_ALL 0
 
 struct apbuart_regs {

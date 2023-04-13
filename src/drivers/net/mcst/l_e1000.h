@@ -176,10 +176,10 @@ struct l_e1000_tx_desc {
 #define TD_ENP      (1 << 8)
 
 /* TX Descriptor misc bits */
-#define TD_RTRY         (1 << 26)
-#define TD_LCAR         (1 << 27)
-#define TD_LCOL         (1 << 28)
-#define TD_UFLO         (1 << 30)
-#define TD_BUFF         (1 << 31)
+#define TD_RTRY         (1u << 26)
+#define TD_LCAR         (1u << 27)
+#define TD_LCOL         (1u << 28)
+#define TD_UFLO         (1u << 30)
+#define TD_BUFF         (1u << 31)
 
 #endif /* SRC_DRIVERS_NET_MCST_L_E1000_H_ */

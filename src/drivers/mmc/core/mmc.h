@@ -96,31 +96,31 @@
 	c : clear by read
  */
 
-#define R1_OUT_OF_RANGE		(1 << 31)	/* er, c */
-#define R1_ADDRESS_ERROR	(1 << 30)	/* erx, c */
-#define R1_BLOCK_LEN_ERROR	(1 << 29)	/* er, c */
-#define R1_ERASE_SEQ_ERROR      (1 << 28)	/* er, c */
-#define R1_ERASE_PARAM		(1 << 27)	/* ex, c */
-#define R1_WP_VIOLATION		(1 << 26)	/* erx, c */
-#define R1_CARD_IS_LOCKED	(1 << 25)	/* sx, a */
-#define R1_LOCK_UNLOCK_FAILED	(1 << 24)	/* erx, c */
-#define R1_COM_CRC_ERROR	(1 << 23)	/* er, b */
-#define R1_ILLEGAL_COMMAND	(1 << 22)	/* er, b */
-#define R1_CARD_ECC_FAILED	(1 << 21)	/* ex, c */
-#define R1_CC_ERROR		(1 << 20)	/* erx, c */
-#define R1_ERROR		(1 << 19)	/* erx, c */
-#define R1_UNDERRUN		(1 << 18)	/* ex, c */
-#define R1_OVERRUN		(1 << 17)	/* ex, c */
-#define R1_CID_CSD_OVERWRITE	(1 << 16)	/* erx, c, CID/CSD overwrite */
-#define R1_WP_ERASE_SKIP	(1 << 15)	/* sx, c */
-#define R1_CARD_ECC_DISABLED	(1 << 14)	/* sx, a */
-#define R1_ERASE_RESET		(1 << 13)	/* sr, c */
+#define R1_OUT_OF_RANGE		(1u << 31)	/* er, c */
+#define R1_ADDRESS_ERROR	(1u << 30)	/* erx, c */
+#define R1_BLOCK_LEN_ERROR	(1u << 29)	/* er, c */
+#define R1_ERASE_SEQ_ERROR      (1u << 28)	/* er, c */
+#define R1_ERASE_PARAM		(1u << 27)	/* ex, c */
+#define R1_WP_VIOLATION		(1u << 26)	/* erx, c */
+#define R1_CARD_IS_LOCKED	(1u << 25)	/* sx, a */
+#define R1_LOCK_UNLOCK_FAILED	(1u << 24)	/* erx, c */
+#define R1_COM_CRC_ERROR	(1u << 23)	/* er, b */
+#define R1_ILLEGAL_COMMAND	(1u << 22)	/* er, b */
+#define R1_CARD_ECC_FAILED	(1u << 21)	/* ex, c */
+#define R1_CC_ERROR		(1u << 20)	/* erx, c */
+#define R1_ERROR		(1u << 19)	/* erx, c */
+#define R1_UNDERRUN		(1u << 18)	/* ex, c */
+#define R1_OVERRUN		(1u << 17)	/* ex, c */
+#define R1_CID_CSD_OVERWRITE	(1u << 16)	/* erx, c, CID/CSD overwrite */
+#define R1_WP_ERASE_SKIP	(1u << 15)	/* sx, c */
+#define R1_CARD_ECC_DISABLED	(1u << 14)	/* sx, a */
+#define R1_ERASE_RESET		(1u << 13)	/* sr, c */
 #define R1_STATUS(x)            (x & 0xFFF9A000)
 #define R1_CURRENT_STATE(x)	((x & 0x00001E00) >> 9)	/* sx, b (4 bits) */
-#define R1_READY_FOR_DATA	(1 << 8)	/* sx, a */
-#define R1_SWITCH_ERROR		(1 << 7)	/* sx, c */
-#define R1_EXCEPTION_EVENT	(1 << 6)	/* sr, a */
-#define R1_APP_CMD		(1 << 5)	/* sr, c */
+#define R1_READY_FOR_DATA	(1u << 8)	/* sx, a */
+#define R1_SWITCH_ERROR		(1u << 7)	/* sx, c */
+#define R1_EXCEPTION_EVENT	(1u << 6)	/* sr, a */
+#define R1_APP_CMD		(1u << 5)	/* sr, c */
 
 #define R1_STATE_IDLE	0
 #define R1_STATE_READY	1

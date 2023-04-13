@@ -9,21 +9,21 @@
 #define SRC_DRIVERS_NET_DWC_GMAC_DWC_GMAC_H_
 
 #define DWC_GMAC_CONFIG          0x00000000  /* Configuration */
-#define  DWC_GMAC_CONF_JD       (1 << 22)    /* jabber timer disable */
-#define  DWC_GMAC_CONF_BE       (1 << 21)    /* Frame Burst Enable */
-#define  DWC_GMAC_CONF_PS       (1 << 15)    /* GMII/MII */
-#define  DWC_GMAC_CONF_FES      (1 << 14)    /* MII speed select */
-#define  DWC_GMAC_CONF_DM       (1 << 11)    /* Full Duplex Enable */
-#define  DWC_GMAC_CONF_ACS      (1 << 7)
-#define  DWC_GMAC_CONF_TE       (1 << 3)
-#define  DWC_GMAC_CONF_RE       (1 << 2)
+#define  DWC_GMAC_CONF_JD       (1u << 22)    /* jabber timer disable */
+#define  DWC_GMAC_CONF_BE       (1u << 21)    /* Frame Burst Enable */
+#define  DWC_GMAC_CONF_PS       (1u << 15)    /* GMII/MII */
+#define  DWC_GMAC_CONF_FES      (1u << 14)    /* MII speed select */
+#define  DWC_GMAC_CONF_DM       (1u << 11)    /* Full Duplex Enable */
+#define  DWC_GMAC_CONF_ACS      (1u << 7)
+#define  DWC_GMAC_CONF_TE       (1u << 3)
+#define  DWC_GMAC_CONF_RE       (1u << 2)
 #define DWC_GMAC_FRAME_FILTER       0x00000004 /* Frame Filter */
-#define  DWC_GMAC_FRAME_FILTER_RA   (1 << 31) /* Receive All */
-#define  DWC_GMAC_FRAME_FILTER_HPF  (1 << 10) /* Hash or Perfect Filter */
-#define  DWC_GMAC_FRAME_FILTER_PM   (1 << 4)  /* Pass multicast */
-#define  DWC_GMAC_FRAME_FILTER_HMC  (1 << 2)
-#define  DWC_GMAC_FRAME_FILTER_HUC  (1 << 1)
-#define  DWC_GMAC_FRAME_FILTER_PR   (1 << 0)  /* All Incoming Frames */
+#define  DWC_GMAC_FRAME_FILTER_RA   (1u << 31) /* Receive All */
+#define  DWC_GMAC_FRAME_FILTER_HPF  (1u << 10) /* Hash or Perfect Filter */
+#define  DWC_GMAC_FRAME_FILTER_PM   (1u << 4)  /* Pass multicast */
+#define  DWC_GMAC_FRAME_FILTER_HMC  (1u << 2)
+#define  DWC_GMAC_FRAME_FILTER_HUC  (1u << 1)
+#define  DWC_GMAC_FRAME_FILTER_PR   (1u << 0)  /* All Incoming Frames */
 
 #define DWC_GMAC_MII_ADDR        0x00000010 /* MII Address */
 #define  DWC_GMAC_GMII_ADDRESS_PA_MASK   0x1f		/* Phy device */

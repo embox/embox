@@ -148,7 +148,7 @@ static int cadence_gem_start(struct net_device *dev) {
 	dma_desc_tx.flags = DESC_1_USED & DESC_1_TX_WRAP & DESC_1_TX_LAST;
 	dma_desc_tx.addr = 0;
 	dma_desc_tx.flags = 0;
-	dma_desc_tx.flags = (0 << 31) | GEM_TXDESC_WRAP;
+	dma_desc_tx.flags = (0u << 31) | GEM_TXDESC_WRAP;
 
 	dma_desc_rx.addr = (uint32_t)rx_buff | DESC_0_RX_WRAP;
 	dma_desc_rx.flags = 0;
@@ -226,7 +226,7 @@ static int cadence_gem_rx(struct net_device *dev) {
 	return 0;
 }
 
-static irq_return_t cadence_gem_interrupt_handler(unsigned int irq, 
+static irq_return_t cadence_gem_interrupt_handler(unsigned int irq,
 												  void *dev_id) {
 	struct net_device *dev = dev_id;
 	uint32_t istatus;
@@ -236,9 +236,9 @@ static irq_return_t cadence_gem_interrupt_handler(unsigned int irq,
 	riscv_write32(istatus, ((uint32_t)BASE_ADDR + (uint32_t)GEM_INTR_STAT));
 	riscv_write32(istatus, ((uint32_t)BASE_ADDR + (uint32_t)GEM_RX_STAT));
 	riscv_write32(0xf, ((uint32_t)BASE_ADDR + (uint32_t)GEM_RX_STAT));
-	
+
 	cadence_gem_rx(dev);
-	
+
 	return 0;
 }
 

@@ -130,17 +130,17 @@
 
 
 /* DMA descriptor fields */
-#define DMA_RDES0_OWN_BIT      (1 << 31)
-#define DMA_RDES0_FD           (1 << 30)
-#define DMA_RDES0_LD           (1 << 29)
+#define DMA_RDES0_OWN_BIT      (1u << 31)
+#define DMA_RDES0_FD           (1u << 30)
+#define DMA_RDES0_LD           (1u << 29)
 
-#define DMA_RDES1_EOR          (1 << 26)
+#define DMA_RDES1_EOR          (1u << 26)
 
-#define DMA_TDES0_OWN_BIT      (1 << 31)
-#define DMA_TDES1_IOC          (1 << 31)
-#define DMA_TDES1_LS           (1 << 30)
-#define DMA_TDES1_FS           (1 << 29)
-#define DMA_TDES1_EOR          (1 << 26)
+#define DMA_TDES0_OWN_BIT      (1u << 31)
+#define DMA_TDES1_IOC          (1u << 31)
+#define DMA_TDES1_LS           (1u << 30)
+#define DMA_TDES1_FS           (1u << 29)
+#define DMA_TDES1_EOR          (1u << 26)
 
 extern void dcache_inval(const void *p, size_t size);
 extern void dcache_flush(const void *p, size_t size);
