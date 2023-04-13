@@ -150,8 +150,10 @@ int initfs_iterate(struct inode *next, char *name, struct inode *parent, struct 
 	}
 
 	while ((prev = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
-		if (!memcmp(di->path, entry.name, di->path_len) &&
-			entry.name[di->path_len] != '\0' &&
+		if (di->path && memcmp(di->path, entry.name, di->path_len)) {
+			continue;
+		}
+		if (entry.name[di->path_len] != '\0' &&
 			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
 
 			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
