@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef PLATFORM_MODULE_DRIVER_RCM_SCTL_RCM_SCTL_H_
-#define PLATFORM_MODULE_DRIVER_RCM_SCTL_RCM_SCTL_H_
+#ifndef PLATFORM_RC_MODULE_DRIVER_RCM_SCTL_RCM_SCTL_H_
+#define PLATFORM_RC_MODULE_DRIVER_RCM_SCTL_RCM_SCTL_H_
 
 #include <stdint.h>
 
@@ -22,4 +22,4 @@ extern uint32_t rcm_sctl_read_reg(int reg);
 
 extern void rcm_sctl_write_reg(int reg, uint32_t val);
 
-#endif /* PLATFORM_MODULE_DRIVER_RCM_SCTL_RCM_SCTL_H_ */
+#endif /* PLATFORM_RC_MODULE_DRIVER_RCM_SCTL_RCM_SCTL_H_ */
