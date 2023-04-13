@@ -110,7 +110,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	data32 = (uint32_t *) data;
 
 	HAL_FLASH_Unlock();
-	for (i = 0; i < len / STM32_FLASH_WORD; i += (STM32_FLASH_WORD / sizeof(*data32)) ) {
+	for (i = 0; i < len / sizeof(*data32); i += (STM32_FLASH_WORD / sizeof(*data32)) ) {
 		uint32_t flash_err;
 		int rep;
 
