@@ -51,3 +51,7 @@ module no_gdbstub extends gdbstub_api {
 	@IncludeExport(path="debug", target_name="gdbstub.h")
 	source "no_gdbstub.h"
 }
+
+module ubsan  {
+	source "ubsan.c"
+}
