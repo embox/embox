@@ -95,7 +95,10 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	int err = -1;
 
 	if (!stm32_flash_check_word_aligned(base, len)
-			|| ((uintptr_t) data & (STM32_FLASH_WORD - 1)) != 0) {
+// (Andrew Bursian) here is no need for alignment to STM32_FLASH_WORD
+// it must be checked for STM32H7 series
+//			|| ((uintptr_t) data & (STM32_FLASH_WORD - 1)) != 0) {
+			|| ((uintptr_t) data & 3) != 0) {
 		err = -EINVAL;
 		goto err_exit;
 	}
