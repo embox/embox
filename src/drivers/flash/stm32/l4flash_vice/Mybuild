@@ -1,0 +1,16 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "l475_flash_test")
+module l475_flash_test {
+	source "l475_flash_test.c"
+
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
+	depends embox.driver.flash.core
+	depends embox.driver.block_dev
+	depends embox.util.pretty_print
+	depends embox.lib.LibCrypt
+}
+
