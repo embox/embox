@@ -14,7 +14,7 @@
 
 #define STOP_ON_HANDLE       OPTION_GET(BOOLEAN,stop_on_handle)
 
-void print_ubsan_data(void *data) {
+static void print_ubsan_data(void *data) {
 	/* Assume every handler-specific data member starts with location */
 	struct location *l = data;
 	printk("%s:%d\n", l->file, l->line);
