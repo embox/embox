@@ -31,6 +31,21 @@ module stm32f7cube {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
+module stm32l4cube {
+	option number log_level = 1
+	option number flash_size=0x02000
+
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
+
+	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
+	source "stm32l4flash.h"
+
+	depends third_party.bsp.st_bsp_api
+	depends core
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4cube {
 	option number log_level = 1
 	option number flash_size=0xc000
