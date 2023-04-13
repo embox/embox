@@ -53,5 +53,6 @@ module no_gdbstub extends gdbstub_api {
 }
 
 module ubsan  {
+	option boolean stop_on_handle = false
 	source "ubsan.c"
 }

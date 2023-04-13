@@ -7,13 +7,20 @@
  */
 
 #include <debug/whereami.h>
+#include <framework/mod/options.h>
+#include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <util/location.h>
+
+#define STOP_ON_HANDLE       OPTION_GET(BOOLEAN,stop_on_handle)
 
 void print_ubsan_data(void *data) {
 	/* Assume every handler-specific data member starts with location */
 	struct location *l = data;
 	printk("%s:%d\n", l->file, l->line);
+	if (STOP_ON_HANDLE) {
+		panic("UbSan handle\n");
+	}
 }
 
 void __ubsan_handle_add_overflow(void *data, void *lhs, void *rhs) {
