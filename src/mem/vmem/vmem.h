@@ -29,7 +29,7 @@ struct mmu_translate_info {
 #define VMEM_PAGE_SIZE        MMU_PAGE_SIZE
 #define VMEM_PAGE_MASK        MMU_PAGE_MASK
 
-#define VMEM_PAGE_USERMODE    (1 << 6)
+#define VMEM_PAGE_USERMODE    (1u << 6)
 
 extern int vmem_create_context(mmu_ctx_t *ctx);
 extern mmu_ctx_t vmem_current_context(void);
@@ -48,19 +48,19 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int
 #define MMU_LAST_LEVEL (MMU_LEVELS - 1)
 
 #ifndef __MMU_SHIFT_1
-#define __MMU_SHIFT_1 0
+#define __MMU_SHIFT_1 0u
 #endif
 
 #ifndef __MMU_SHIFT_2
-#define __MMU_SHIFT_2 0
+#define __MMU_SHIFT_2 0u
 #endif
 
 #ifndef __MMU_SHIFT_3
-#define __MMU_SHIFT_3 0
+#define __MMU_SHIFT_3 0u
 #endif
 
 #ifndef MMU_VADDR_WIDTH
-#define MMU_VADDR_WIDTH (8 * sizeof(uintptr_t))
+#define MMU_VADDR_WIDTH (8u * sizeof(uintptr_t))
 #endif
 
 #define MMU_SHIFT(i) ((i == -1) ? MMU_VADDR_WIDTH : \
@@ -68,11 +68,11 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int
 			(i) == 1 ? __MMU_SHIFT_1 : \
 			(i) == 2 ? __MMU_SHIFT_2 : __MMU_SHIFT_3)
 
-#define MMU_ENTRIES(i) (1 << (MMU_SHIFT(i - 1) - MMU_SHIFT((i))))
+#define MMU_ENTRIES(i) (1u << (MMU_SHIFT(i - 1) - MMU_SHIFT((i))))
 #define MMU_MASK(i) ((MMU_ENTRIES(i) - 1) << MMU_SHIFT(i))
 #define MMU_SIZE(i) (MMU_ENTRIES(i + 1) * sizeof(mmu_vaddr_t))
 
-#define MMU_PAGE_SIZE  (1 << MMU_SHIFT(MMU_LAST_LEVEL))
+#define MMU_PAGE_SIZE  (1u << MMU_SHIFT(MMU_LAST_LEVEL))
 #define MMU_PAGE_MASK  (MMU_PAGE_SIZE - 1)
 
 #endif /* MEM_VMEM_H_ */
