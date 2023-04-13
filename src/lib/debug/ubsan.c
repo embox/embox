@@ -73,7 +73,7 @@ void __ubsan_handle_nonnull_arg(void *data) {
 }
 
 void __ubsan_handle_shift_out_of_bounds(void *data, void *lhs, void *rhs) {
-	printk("UbSan shift out of bounds ");
+	printk("UbSan shift out of bounds (value = %p; shift = %p) ", lhs, rhs);
 	print_ubsan_data(data);
 }
 
