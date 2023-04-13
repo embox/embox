@@ -1,0 +1,19 @@
+package embox.compat.posix
+
+@DefaultImpl(passwd_db_initfs_files)
+abstract module passwd_db_files {
+}
+
+module passwd_db_initfs_files extends passwd_db_files {
+	@InitFS
+	source "passwd",
+		"group",
+		"adduser.conf"
+
+	@InitFS(chmod="0600")
+	source "shadow"
+}
+
+module passwd_db_rootfs_files extends passwd_db_files {
+	/* just use your custom files */ 
+}
