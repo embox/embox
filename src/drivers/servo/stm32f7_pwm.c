@@ -77,7 +77,9 @@ static int stm32f7_pwm_init(void) {
  * @return Always zero. In case of actual error handle_error()
  * is called
  */
-static int stm32f7_servo_init(struct servo_dev *) {
+static int stm32f7_servo_init(struct servo_dev *dev) {
+	(void)dev;
+
 	if (stm32f7_pwm_timer_init()) {
 		return -1;
 	}
@@ -107,7 +109,9 @@ static int stm32f7_servo_init(struct servo_dev *) {
  * @return Always zero.  In case of error board will turn on red LED
  * and stall. Look handle_error() for details.
  */
-static int stm32f7_servo_set(struct servo_dev *, int pos) {
+static int stm32f7_servo_set(struct servo_dev *dev, int pos) {
+	(void) dev;
+
 	if (pos < MIN_POS)
 		pos = MIN_POS;
 
