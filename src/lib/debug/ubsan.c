@@ -63,7 +63,7 @@ void __ubsan_handle_type_mismatch_v1(void *data, void *type) {
 	print_ubsan_data(data);
 }
 
-#if defined __GNUC__ && __GNUC__ < 10
+#if defined __GNUC__ && __GNUC__ < 6
 void __ubsan_handle_nonnull_arg(void *data, int num) {
 #else
 void __ubsan_handle_nonnull_arg(void *data) {
