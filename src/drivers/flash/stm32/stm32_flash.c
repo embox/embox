@@ -122,7 +122,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, data32[i])) {
 #endif
 				flash_err = HAL_FLASH_GetError();
-				log_error("base=0x08%x,len=0x%x, flash_err 0x%x", dest, len, flash_err);
+				log_error("dest=0x%x,len=0x%x, flash_err 0x%x", dest, len, flash_err);
 				err = -EBUSY;
 
 				continue;
@@ -141,7 +141,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	HAL_FLASH_Lock();
 	return len;
 err_exit:
-	log_error("base=0x08%x,data=%p,len=0x%x", base, data, len);
+	log_error("base=0x%x,data=%p,len=0x%x", base, data, len);
 	return err;
 }
 
