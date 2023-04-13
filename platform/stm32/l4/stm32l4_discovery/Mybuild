@@ -1,6 +1,6 @@
 package platform.stm32.l4.stm32l4_discovery
 
-@BuildArtifactPath(cppflags="-DSTM32L475xx")
+@BuildArtifactPath(cppflags="-DSTM32L475xx -DUSE_BL475EIOT01A")
 static module stm32l4_discovery_conf extends third_party.bsp.stml4cube.stm32l4_conf {
 	@IncludeExport(path="")
 	source "stm32l4xx_hal_conf.h"
@@ -17,7 +17,17 @@ static module arch extends embox.arch.arch {
 @Build(stage=1)
 @BuildDepends(stm32l4_discovery_conf)
 @BuildDepends(third_party.bsp.stml4cube.cube)
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/,Drivers/BSP/B-L475E-IOT01)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/Drivers/BSP/B-L475E-IOT01")
+	source "stm32l475e_iot01.c",
+			"stm32l475e_iot01_qspi.c"
+//			"stm32l475e_iot01_accelero.c",
+//			"stm32l475e_iot01_gyro.c",
+//			"stm32l475e_iot01_hsensor.c",
+//			"stm32l475e_iot01_magneto.c",
+//			"stm32l475e_iot01_psensor.c",
+//			"stm32l475e_iot01_tsensor.c"
 	@NoRuntime depends third_party.bsp.stml4cube.cube
 	@NoRuntime depends stm32l4_discovery_conf
 	@NoRuntime depends arch
