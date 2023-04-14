@@ -10,11 +10,12 @@
 
 #include <framework/mod/options.h>
 
-#define STM32_FLASH_FLASH_SIZE         OPTION_GET(NUMBER,flash_size)
-#define STM32_ADDR_FLASH_SECTOR_0      ((uint32_t)0x08000000)
-#define STM32_FLASH_SECTOR_SIZE        (2 * 1024)
-#define STM32_FLASH_SECTORS_COUNT      512
-#define STM32_FLASH_WORD               (8)
+#define STM32_FLASH_FLASH_SIZE		OPTION_GET(NUMBER,flash_size)
+#define STM32_ADDR_FLASH_SECTOR_0	((uint32_t)0x08000000)
+#define STM32_FLASH_SECTOR_SIZE		(2 * 1024)
+#define STM32_FLASH_SECTORS_COUNT	512
+#define STM32_FLASH_WORD         	(8)
+#define STM32L475SKIP_DUMMY_WRITE	OPTION_GET(NUMBER,skip_dummy_write)
 
 #ifndef __ASSEMBLER__
 #include <stm32l4xx_hal.h>

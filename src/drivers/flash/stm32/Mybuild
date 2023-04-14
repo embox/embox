@@ -34,6 +34,7 @@ module stm32f7cube {
 module stm32l4cube {
 	option number log_level = 1
 	option number flash_size=0x02000
+	option number skip_dummy_write = 1
 
 	source "stm32_flash.c"
 	source "stm32_flash.lds.S"
