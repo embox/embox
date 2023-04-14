@@ -98,7 +98,12 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 			for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
 				/* Clean rbuf first */
 				memset(rbuf, 0x0, FLASH_RW_LEN);
-				flash_write(fdev, offset, wbuf, FLASH_RW_LEN);
+				if (0 > flash_write(fdev, offset, wbuf, FLASH_RW_LEN)) {
+					printf("Flash device test flash_write() failed\n");
+					printf("  fdev=%s, block=%"PRIu32", offset within block=%zu\n",
+							block_dev_name(fdev->bdev), k, j);
+					return -1;
+				}
 				flash_read(fdev, offset, rbuf, FLASH_RW_LEN);
 				if (0 != memcmp(wbuf, rbuf, FLASH_RW_LEN)) {
 					printf("Flash device test failed:\n");
