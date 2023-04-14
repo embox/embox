@@ -98,7 +98,7 @@ int main(int argc, char **argv)
   flash_write(fdev, FLASH_PAGE*2, b, FLASH_PAGE);
   print_npages(4);
 
-  printf("Writing all FF in the 4th page (all FFs over all FFs\n");
+  printf("Writing all FF in the 4th page (all FFs over all FFs)\n");
   for(int i=0;i<FLASH_PAGE;i++) {b[i]=0xFF;}
   flash_write(fdev, FLASH_PAGE*3, b, FLASH_PAGE);
   print_npages(4);

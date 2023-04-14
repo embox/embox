@@ -1,7 +1,7 @@
 package embox.cmd.testing
 
 @AutoCmd
-@Cmd(name = "l475_flash_test")
+@Cmd(name = "l475_flash_test", help = "Test for STM32L475 internal flash r/w operations")
 module l475_flash_test {
 	source "l475_flash_test.c"
 
