@@ -88,23 +88,6 @@ static int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, si
 	return len;
 }
 
-#if defined(STM32L475xx)
-static inline int same_addr_writing(uint32_t faddr) { // faddr - offset inside .flash section
-	static int prev_block=0xFFFFFFFF;
-	static uint32_t wbitfield[STM32_FLASH_SECTOR_SIZE/32];
-	int block=faddr/STM32_FLASH_SECTOR_SIZE;
-	if (block != prev_block) {
-		log_debug("Write block %d", block); 
-		prev_block=block;
-		memset(wbitfield, 0x0, STM32_FLASH_SECTOR_SIZE/8);
-	}
-	int off=faddr%STM32_FLASH_SECTOR_SIZE;
-	if (wbitfield[off >> 5] & (1 << (off & 0x1f))) return 1;	
-	wbitfield[off >> 5] |= (1 << (off & 0x1f));
-	return 0;
-}	
-#endif
-
 static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data, size_t len) {
 	int i;
 	uint32_t dest;
@@ -112,10 +95,7 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 	int err = -1;
 
 	if (!stm32_flash_check_word_aligned(base, len)
-// (Andrew Bursian) here is no need for alignment to STM32_FLASH_WORD
-// it must be checked for STM32H7 series
-//			|| ((uintptr_t) data & (STM32_FLASH_WORD - 1)) != 0) {
-			|| ((uintptr_t) data & 3) != 0) {
+			|| ((uintptr_t) data & (sizeof(*data32)-1)) != 0) { // Check alignment to uint32_t boundary
 		err = -EINVAL;
 		goto err_exit;
 	}
@@ -139,19 +119,6 @@ static int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void 
 #if defined(STM32H7_CUBE)
 			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest, (uint32_t )&data32[i])) {
 #elif defined(STM32L475xx)
-			if (same_addr_writing(dest - STM32_FLASH_START)) {
-				if ((data32[i] == *(uint32_t *)dest) &&
-					(data32[i+1] == *(uint32_t *)(dest+4)) &&
-					STM32L475SKIP_DUMMY_WRITE) {
-				err = 0;
-				break;
-				} else {
-				log_error("%08x%08x over %08x%08x @ %08x",
-					data32[i+1], data32[i], *(uint32_t *)(dest+4), *(uint32_t *)dest, dest);
-				err = -EBUSY;
-				break;
-				}
-			}
 			if (HAL_OK != HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, dest, *(uint64_t*)&data32[i])) {
 #else
 			assert(STM32_FLASH_WORD == 4);
