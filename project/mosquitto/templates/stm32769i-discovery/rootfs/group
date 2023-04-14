@@ -1,0 +1,7 @@
+root::0:root
+user::1000:user
+mosquitto::1001:mosquitto
+nobody::1002:nobody
+service::1003:service
+secret::1004:secret
+confidentially::1005:confidentially
