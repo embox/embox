@@ -56,24 +56,24 @@
 #define ST0_SOFTIRQ_NUM     0x2
 
 #define ST0_IM     0x0000ff00
-#define ST0_IP0   (1 << (ST0_IRQ_MASK_OFFSET + 0))    /* soft interrupt 0 */
-#define ST0_IP1   (1 << (ST0_IRQ_MASK_OFFSET + 1))    /* soft interrupt 1 */
-#define ST0_IP2   (1 << (ST0_IRQ_MASK_OFFSET + 2))    /* UART1 interrupt flag */
-#define ST0_IP3   (1 << (ST0_IRQ_MASK_OFFSET + 3))    /* UART2 interrupt flag */
-#define ST0_IP6   (1 << (ST0_IRQ_MASK_OFFSET + 6))    /* RTC interrupt flag */
+#define ST0_IP0   (1u << (ST0_IRQ_MASK_OFFSET + 0))    /* soft interrupt 0 */
+#define ST0_IP1   (1u << (ST0_IRQ_MASK_OFFSET + 1))    /* soft interrupt 1 */
+#define ST0_IP2   (1u << (ST0_IRQ_MASK_OFFSET + 2))    /* UART1 interrupt flag */
+#define ST0_IP3   (1u << (ST0_IRQ_MASK_OFFSET + 3))    /* UART2 interrupt flag */
+#define ST0_IP6   (1u << (ST0_IRQ_MASK_OFFSET + 6))    /* RTC interrupt flag */
 #define ST0_IP7   (0x1 << (ST0_IRQ_MASK_OFFSET + MIPS_IRQN_TIMER))  /* timer interrupt flag */
 
 
 #define ST0_IE       0x00000001                     /* interrupts enable mask */
 #define ST0_EXL      0x00000002                     /* exception level mask */
 #define ST0_ERL      0x00000004                     /* error level mask */
-#define ST0_BEV      (1 << 22)                        /* Boot exception vectors */
+#define ST0_BEV      (1u << 22)                        /* Boot exception vectors */
 
-#define CAUSE_IV     (1 << 23)   /* vectored interrupt table */
-#define CAUSE_PCI    (1 << 26)   /* performance counter interrupt */
-#define CAUSE_DC     (1 << 27)   /* stop counter */
-#define CAUSE_TI     (1 << 30)   /* timer interrupt */
-#define CAUSE_BD     (1 << 31)   /* branch delay */
+#define CAUSE_IV     (1u << 23)   /* vectored interrupt table */
+#define CAUSE_PCI    (1u << 26)   /* performance counter interrupt */
+#define CAUSE_DC     (1u << 27)   /* stop counter */
+#define CAUSE_TI     (1u << 30)   /* timer interrupt */
+#define CAUSE_BD     (1u << 31)   /* branch delay */
 #define CAUSE_IM     0x0000ff00 /* interrupts mask */
 
 #define INTCTL_VS    0x000003E0

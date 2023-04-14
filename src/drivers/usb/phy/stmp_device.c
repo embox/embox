@@ -16,8 +16,8 @@
 #define STMP_OFFSET_REG_CLR    0x8
 #define STMP_OFFSET_REG_TOG    0xc
 
-#define STMP_MODULE_CLKGATE    (1 << 30)
-#define STMP_MODULE_SFTRST     (1 << 31)
+#define STMP_MODULE_CLKGATE    (1u << 30)
+#define STMP_MODULE_SFTRST     (1u << 31)
 
 static inline void udelay(volatile int usec) {
 	usec *= 1000;

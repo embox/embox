@@ -57,7 +57,7 @@ static int ipu_mem_reset(struct ipu_soc *ipu) {
 	ipu_cm_write(ipu, 0x807FFFFF, IPU_MEM_RST);
 
 	while (i-- > 0) {
-		if (!(ipu_cm_read(ipu, IPU_MEM_RST) & (1 << 31)))
+		if (!(ipu_cm_read(ipu, IPU_MEM_RST) & (1u << 31)))
 			break;
 	}
 

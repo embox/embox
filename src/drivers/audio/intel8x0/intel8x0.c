@@ -125,8 +125,8 @@ static struct intel_ac_hw_dev intel_ac_hw_dev;
 #define INTEL_AC_SAMPLE_SZ 2  /* Bytes */
 #define INTEL_AC_BUFFER_SZ 32 /* Buffer descriptors */
 
-#define DESC_IOC (1 << 31)
-#define DESC_BUP (1 << 30)
+#define DESC_IOC (1u << 31)
+#define DESC_BUP (1u << 30)
 
 #define INTEL_AC_DESC_LEN    OPTION_GET(NUMBER, buffer_size)
 #define INTEL_AC_MAX_BUF_LEN (INTEL_AC_SAMPLE_SZ * INTEL_AC_BUFFER_SZ * INTEL_AC_DESC_LEN)

@@ -14,7 +14,7 @@
 
 #define STOP_ON_HANDLE       OPTION_GET(BOOLEAN,stop_on_handle)
 
-void print_ubsan_data(void *data) {
+static void print_ubsan_data(void *data) {
 	/* Assume every handler-specific data member starts with location */
 	struct location *l = data;
 	printk("%s:%d\n", l->file, l->line);
@@ -63,7 +63,7 @@ void __ubsan_handle_type_mismatch_v1(void *data, void *type) {
 	print_ubsan_data(data);
 }
 
-#if defined __GNUC__ && __GNUC__ < 10
+#if defined __GNUC__ && __GNUC__ < 6
 void __ubsan_handle_nonnull_arg(void *data, int num) {
 #else
 void __ubsan_handle_nonnull_arg(void *data) {
@@ -73,7 +73,7 @@ void __ubsan_handle_nonnull_arg(void *data) {
 }
 
 void __ubsan_handle_shift_out_of_bounds(void *data, void *lhs, void *rhs) {
-	printk("UbSan shift out of bounds ");
+	printk("UbSan shift out of bounds (value = %p; shift = %p) ", lhs, rhs);
 	print_ubsan_data(data);
 }
 

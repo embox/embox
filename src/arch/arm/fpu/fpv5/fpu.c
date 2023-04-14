@@ -52,7 +52,7 @@ static int fpv5_init(void) {
 	    (((mvfr0 >> 8) & 0xf) == 0x0) ? "no" : "Unknown",
 	    (((mvfr0 >> 0) & 0xf) == 0x1) ? "16 x 64-bit registers" : "Unknown",
 	    REG_LOAD(FPU_MVFR1), REG_LOAD(FPU_CPACR), fpccr,
-	    (fpccr & (1 << 31)) ? "yes" : "no", (fpccr & (1 << 30)) ? "yes" : "no");
+	    (fpccr & (1u << 31)) ? "yes" : "no", (fpccr & (1u << 30)) ? "yes" : "no");
 	log_boot_stop();
 
 	return 0;

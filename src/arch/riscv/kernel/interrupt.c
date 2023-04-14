@@ -20,7 +20,7 @@
 
 EMBOX_UNIT_INIT(riscv_interrupt_init);
 
-#define CLEAN_IRQ_BIT (~(1 << 31))
+#define CLEAN_IRQ_BIT (~(1u << 31))
 
 extern int irqctrl_get_num(void);
 

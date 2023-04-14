@@ -4,7 +4,7 @@
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version 0.1
  * @date 2016-06-12
- * 
+ *
  * @author Evgeny Svirin <eugenysvirin@gmail.com>
  * @date 2021-04-9
  */
@@ -40,19 +40,19 @@
 
 #define GPT_IR_INT1   (1 << 0)     /* Enable interruption on OutputCompare1 */
 #define GPT_CR_MASK   (0b10000011) /* Enable interruptable periodic timer mode */
-#define GPT_SR_CLR    (0)          /* Clear status mask */ 
+#define GPT_SR_CLR    (0)          /* Clear status mask */
 
-#define GPT_CR_EN     (1 <<  0)
-#define GPT_CR_ENMOD  (1 <<  1)
-#define GPT_CR_DBGEN  (1 <<  2)
-#define GPT_CR_WAITEN (1 <<  3)
-#define GPT_CR_DOZEEN (1 <<  4)
-#define GPT_CR_STOPEN (1 <<  5)
-#define GPT_CR_FRR    (1 <<  9)
-#define GPT_CR_SWR    (1 << 15)
-#define GPT_CR_FO1    (1 << 29)
-#define GPT_CR_FO2    (1 << 30)
-#define GPT_CR_FO3    (1 << 31)
+#define GPT_CR_EN     (1u <<  0)
+#define GPT_CR_ENMOD  (1u <<  1)
+#define GPT_CR_DBGEN  (1u <<  2)
+#define GPT_CR_WAITEN (1u <<  3)
+#define GPT_CR_DOZEEN (1u <<  4)
+#define GPT_CR_STOPEN (1u <<  5)
+#define GPT_CR_FRR    (1u <<  9)
+#define GPT_CR_SWR    (1u << 15)
+#define GPT_CR_FO1    (1u << 29)
+#define GPT_CR_FO2    (1u << 30)
+#define GPT_CR_FO3    (1u << 31)
 
 #define GPT_CR_CLKSRC_OFFT  6
 #define GPT_CR_IM1_OFFT    16
@@ -72,7 +72,7 @@
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(data);
-	
+
 	REG32_CLEAR(GPT_SR, GPT_SR_CLR);
 	return IRQ_HANDLED;
 }

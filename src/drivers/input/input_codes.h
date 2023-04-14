@@ -37,7 +37,7 @@
 #define TS_TOUCH_2_RELEASED     4
 #define TS_TOUCH_PRESSURE       5
 /* TODO Should we move it to the common part input_dev.h? */
-#define TS_EVENT_NEXT           (1 << 31)
+#define TS_EVENT_NEXT           (1u << 31)
 
 /* Mouse */
 #define MOUSE_BUTTON_PRESSED    0x7

@@ -26,20 +26,20 @@
 /* for periodic/async schedules and qtd lists, mark end of list */
 #define EHCI_LIST_END(ehci) (0x1) /* "null pointer" to hw */
 
-#define EHCI_QTD_TOGGLE      (1 << 31)         /* data toggle */
+#define EHCI_QTD_TOGGLE      (1u << 31)         /* data toggle */
 #define EHCI_QTD_LENGTH(tok) (((tok)>>16) & 0x7fff)
-#define EHCI_QTD_IOC         (1 << 15)         /* interrupt on complete */
+#define EHCI_QTD_IOC         (1u << 15)         /* interrupt on complete */
 #define EHCI_QTD_CERR(tok)   (((tok)>>10) & 0x3)
 # define EHCI_QTD_CERR_SHIFT   10
 #define EHCI_QTD_PID(tok)    (((tok)>>8) & 0x3)
-#define EHCI_QTD_STS_ACTIVE  (1 << 7)   /* HC may execute this */
-#define EHCI_QTD_STS_HALT    (1 << 6)   /* halted on error */
-#define EHCI_QTD_STS_DBE     (1 << 5)   /* data buffer error (in HC) */
-#define EHCI_QTD_STS_BABBLE  (1 << 4)   /* device was babbling (qtd halted) */
-#define EHCI_QTD_STS_XACT    (1 << 3)   /* device gave illegal response */
-#define EHCI_QTD_STS_MMF     (1 << 2)   /* incomplete split transaction */
-#define EHCI_QTD_STS_STS     (1 << 1)   /* split transaction state */
-#define EHCI_QTD_STS_PING    (1 << 0)   /* issue PING? */
+#define EHCI_QTD_STS_ACTIVE  (1u << 7)   /* HC may execute this */
+#define EHCI_QTD_STS_HALT    (1u << 6)   /* halted on error */
+#define EHCI_QTD_STS_DBE     (1u << 5)   /* data buffer error (in HC) */
+#define EHCI_QTD_STS_BABBLE  (1u << 4)   /* device was babbling (qtd halted) */
+#define EHCI_QTD_STS_XACT    (1u << 3)   /* device gave illegal response */
+#define EHCI_QTD_STS_MMF     (1u << 2)   /* incomplete split transaction */
+#define EHCI_QTD_STS_STS     (1u << 1)   /* split transaction state */
+#define EHCI_QTD_STS_PING    (1u << 0)   /* issue PING? */
 
 #define EHCI_QTD_PID_OUT     0
 #define EHCI_QTD_PID_IN      1

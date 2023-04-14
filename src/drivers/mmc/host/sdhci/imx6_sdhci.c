@@ -300,7 +300,7 @@ static void imx6_usdhc_reset(void) {
 
 	log_info("DLL setup finish");
 
-	REG32_STORE(USDHC_VEND_SPEC, REG32_LOAD(USDHC_VEND_SPEC) | (1 << 31) | (1 << 14) | (1 << 13));
+	REG32_STORE(USDHC_VEND_SPEC, REG32_LOAD(USDHC_VEND_SPEC) | (1u << 31) | (1u << 14) | (1u << 13));
 	REG32_STORE(USDHC_VEND_SPEC, 0x20007809);
 	_reg_dump();
 

@@ -116,7 +116,7 @@ struct dwc_regs {
 	/**
 	 * TODO
 	 */
-#define DWC_AHB_MASTER_IDLE (1 << 31)
+#define DWC_AHB_MASTER_IDLE (1u << 31)
 
 	/**
 	 * Write 1 to this location in the Core Reset Register to start a soft

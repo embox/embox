@@ -21,9 +21,9 @@ int mmc_try_sd(struct mmc_host *host) {
 
 	mmc_send_cmd(host, 8, 0x1AA, MMC_RSP_R7 , resp);
 
-#define OCR_HCS           (1 << 30) /* Flag for high-capacity storage.
+#define OCR_HCS           (1u << 30) /* Flag for high-capacity storage.
 				     * We assume that HC supports it */
-#define OCR_READY         (1 << 31) /* When set to 1, SD card powerup is finished */
+#define OCR_READY         (1u << 31) /* When set to 1, SD card powerup is finished */
 #define SD_VOLTAGE_WINDOW 0xFF8000
 #define CMD55_VALID_RESP  0x120
 	do {

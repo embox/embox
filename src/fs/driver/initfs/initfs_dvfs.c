@@ -45,8 +45,10 @@ static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	struct initfs_file_info *fi = inode_priv(dir);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
-		if (!memcmp(fi->path, entry.name, fi->path_len) &&
-		    !strncmp(name,
+		if (fi->path && memcmp(fi->path, entry.name, fi->path_len)) {
+			continue;
+		}
+		if (!strncmp(name,
 		             entry.name + fi->path_len + (*(entry.name + fi->path_len) == '/' ? 1 : 0),
 		             strlen(name)) &&
 			strrchr(entry.name + fi->path_len + 1, '/') == NULL) {

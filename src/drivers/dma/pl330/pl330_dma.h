@@ -61,12 +61,12 @@
 //
 // Channels 0 thru E - Control and Status
 //
-/* DMA Channel Reset: W1SC Writing a 1 to this bit will reset 
+/* DMA Channel Reset: W1SC Writing a 1 to this bit will reset
  * the DMA. The bit cannot be read, and will self clear.
  */
-#define DMA_CS_RESET        ( 1 << 31 )
-/* Abort DMA Writing: W1SC a 1 to this bit will abort the 
- * current DMA CB. The DMA will load the next CB and 
+#define DMA_CS_RESET        ( 1u << 31 )
+/* Abort DMA Writing: W1SC a 1 to this bit will abort the
+ * current DMA CB. The DMA will load the next CB and
  * attempt to continue. The bit cannot be read, and will
  * self clear.
  */
