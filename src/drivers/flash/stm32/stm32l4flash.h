@@ -15,7 +15,6 @@
 #define STM32_FLASH_SECTOR_SIZE		(2 * 1024)
 #define STM32_FLASH_SECTORS_COUNT	512
 #define STM32_FLASH_WORD         	(8)
-#define STM32L475SKIP_DUMMY_WRITE	OPTION_GET(NUMBER,skip_dummy_write)
 
 #ifndef __ASSEMBLER__
 #include <stm32l4xx_hal.h>
