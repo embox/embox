@@ -1,0 +1,23 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "prolist",
+     help = "Test add/remove to priority list",
+     man  = '''
+     	NAME
+		prolist - manual test for priority list
+	SYNOPSIS
+	DESCRIPTION
+		manual test for priority list
+	OPTIONS
+	AUTHORS
+		kpishere
+	''')
+module prolist_test {
+	option number log_level=4
+	option number listsize=3
+
+	source "prolist_test.c"
+
+	depends embox.util.priolist
+}

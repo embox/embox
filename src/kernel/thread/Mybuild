@@ -1,6 +1,7 @@
 package embox.kernel.thread
 
 module thread_none {
+	option number log_level=4
 	@IncludeExport(path="kernel/thread", target_name="types.h")
 	source "thread_none.h"
 }
@@ -9,6 +10,7 @@ module core {
 	option number thread_stack_align=8
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
+	option number log_level=4
 
 	source "core.c"
 	source "thread_switch.c"
@@ -47,6 +49,7 @@ module sched_wait {
 abstract module signal_api { }
 
 module signal_stub extends signal_api {
+	option number log_level=4
 	source "signal_stub.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate_stub
 	@NoRuntime depends embox.kernel.thread.signal.siginfoq_stub
@@ -54,6 +57,7 @@ module signal_stub extends signal_api {
 }
 
 module signal_impl extends signal_api {
+	option number log_level=4
 	source "signal.c"
 	@NoRuntime depends embox.kernel.thread.signal.sigstate
 	@NoRuntime depends embox.kernel.thread.signal.siginfoq
@@ -63,13 +67,16 @@ module signal_impl extends signal_api {
 
 @DefaultImpl(fixed_stack)
 abstract module stack_api {
+	option number log_level=4
 }
 
 module stack_none extends stack_api {
+	option number log_level=4
 	source "stack_none.h"
 }
 
 module fixed_stack extends stack_api {
+	option number log_level=4
 	source "fixed_stack.c"
 	source "fixed_stack.h"
 }

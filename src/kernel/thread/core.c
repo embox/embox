@@ -44,6 +44,7 @@
 
 #include <hal/context.h>
 #include <util/err.h>
+#include <util/log.h>
 #include <compiler.h>
 
 extern void thread_context_switch(struct thread *prev, struct thread *next);
@@ -278,6 +279,8 @@ void thread_delete(struct thread *t) {
 	assert(t);
 	assert(t->state & TS_EXITED);
 
+	log_debug("priority %X", t->schedee.priority);
+
 	task_thread_unregister(t->task, t);
 	thread_local_free(t);
 	thread_wait_deinit(&t->thread_wait_list);
@@ -304,6 +307,7 @@ void _NORETURN thread_exit(void *ret) {
 	/* We can free only not main threads */
 	if (current == task_get_main(task)) {
 		/* We are last thread. */
+		log_debug("task exiting priority %X", current->schedee.priority);
 		task_exit(ret);
 		/* NOTREACHED */
 	}
@@ -349,6 +353,8 @@ int thread_join(struct thread *t, void **p_ret) {
 		if (!(t->state & TS_EXITED)) {
 			assert(!t->joining);
 			t->joining = current;
+			
+			log_debug("thread joining priority: %X, joining %X", t->schedee.priority.current_priority, current->schedee.priority.current_priority);
 
 			ret = SCHED_WAIT(t->state & TS_EXITED);
 			if (ret) {

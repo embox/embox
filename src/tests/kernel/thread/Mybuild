@@ -1,6 +1,7 @@
 package embox.test.kernel.thread
 
 module thread_test {
+	option number log_level=4
 	source "thread_test.c"
 
 	depends embox.kernel.thread.core
@@ -8,6 +9,7 @@ module thread_test {
 }
 
 module thread_running_test {
+	option number log_level=4
 	option number delay = 5000000
 
 	source "thread_running_test.c"
@@ -17,6 +19,7 @@ module thread_running_test {
 }
 
 module thread_priority_test {
+	option number log_level=4
 	option number threads_quantity=256
 	source "thread_priority_test.c"
 
@@ -24,7 +27,17 @@ module thread_priority_test {
 	depends embox.framework.LibFramework
 }
 
+module thread_join_test {
+	option number log_level=4
+	option number threads_quantity=16
+	source "thread_join_test.c"
+
+	depends embox.kernel.thread.core
+	depends embox.framework.LibFramework
+}
+
 module stack_protect_test {
+	option number log_level=4
 	source "stack_protect_test.c"
 
 	depends embox.kernel.thread.stack_protect

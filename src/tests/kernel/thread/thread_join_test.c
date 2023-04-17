@@ -3,8 +3,8 @@
  *
  * @brief Testing interface for thread with different priority
  *
- * @date Oct 17, 2012
- * @author: Anton Bondarev
+ * @date 2021.12.27
+ * @author: Kevin Peck
  */
 
 #include <embox/test.h>
@@ -14,39 +14,39 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <framework/mod/options.h>
-
+#include <kernel/printk.h>
 #include <util/err.h>
 #include <util/log.h>
 
-EMBOX_TEST_SUITE("test for different priority threads");
+EMBOX_TEST_SUITE("test for joining threads");
 
 #define THREADS_QUANTITY OPTION_GET(NUMBER, threads_quantity)
 #define __str(x) #x
 #define str(x) __str(x)
 
 static void *thread_run(void *arg) {
-	ksleep(2 * 1000);
+	int v = 2;
+	for(int i=0; i < 1<<18; i++) {
+		// some work
+		v *= i;
+	};
 	return 0;
 }
 
 TEST_CASE("Create " str(THREADS_QUANTITY) " threads with"
-		" different priority") {
-	void *res[THREADS_QUANTITY];
+		" different priority, then join them") {
 	struct thread *t[THREADS_QUANTITY];
-	int ref_priority = thread_self()->schedee.priority.current_priority;
-
-	log_debug("Main process priority %d", ref_priority);
+	void *res[THREADS_QUANTITY];
 
 	for (int i = 0; i < THREADS_QUANTITY; i++) {
-		log_debug("Thread create %d",i);
-		t[i] = thread_create( THREAD_FLAG_SUSPENDED,
+		log_debug("Create thread %d",i);
+		t[i] = thread_create( THREAD_FLAG_SUSPENDED | THREAD_FLAG_JOINABLE,
 				thread_run, (void *) (uintptr_t) i);
 		test_assert_zero(err(t[i]));
-		test_assert_zero(schedee_priority_set(&t[i]->schedee, ref_priority-(i+1)));
 		test_assert_zero(thread_launch(t[i]));
 	}
 	for (int i = 0; i < THREADS_QUANTITY; i++) {
-		test_assert_zero(thread_join(t[i],&res[i]));
-		log_debug("Thread joined %d",i);
+		thread_join(t[i],&res[i]);
+		log_debug("Join thread %d.",i);
 	}
 }
