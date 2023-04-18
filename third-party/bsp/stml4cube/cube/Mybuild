@@ -1,6 +1,7 @@
 package third_party.bsp.stml4cube
 
-@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/,Drivers/STM32L4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include)")
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32L4_CUBE -DSTM32L4_CUBE_1_14_0")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/,Drivers/STM32L4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L4xx/Include Drivers/CMSIS/Include)")
 module cube_cppflags {
 
 }
