@@ -3,5 +3,3 @@ iface eth0 inet static
 	netmask 255.255.255.0
 	gateway 192.168.254.254
 	hwaddress aa:bb:cc:dd:ee:02
-
-#iface eth0 inet dhcp
