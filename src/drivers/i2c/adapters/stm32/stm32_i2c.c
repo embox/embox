@@ -137,12 +137,23 @@ int stm32_i2c_common_init(struct stm32_i2c *adapter) {
 
 	i2c_handle->Instance             = i2c;
 
+#if defined(STM32F4_CUBE)
 	i2c_handle->Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
 	i2c_handle->Init.ClockSpeed      = 400000;
 	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
 	i2c_handle->Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
 	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
+#elif defined(STM32L4_CUBE)
+	i2c_handle->Init.Timing = DISCOVERY_I2Cx_TIMING;
+	i2c_handle->Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
+	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+	i2c_handle->Init.OwnAddress2Masks = I2C_OA2_NOMASK;
+	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
+#else
+#error Unsupported platform
+#endif
 
 	return stm32_i2c_irq_attach(adapter, i2c_handle);
 }

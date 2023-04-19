@@ -10,14 +10,14 @@
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
-#include <module/embox/driver/i2c/stm32_i2c_f4.h>
+#include <drivers/i2c/stm32_i2c_conf.h>
 
 #include "stm32_i2c.h"
 
 EMBOX_UNIT_INIT(stm32_i2c2_init);
 
 #define USE_I2C_IRQ \
-	OPTION_MODULE_GET(embox__driver__i2c__stm32_i2c_f4, BOOLEAN, use_i2c_irq)
+	OPTION_MODULE_GET(embox__driver__i2c__stm32_i2c, BOOLEAN, use_i2c_irq)
 
 static I2C_HandleTypeDef i2c2_handle;
 
