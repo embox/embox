@@ -14,6 +14,8 @@
 
 #define RLIMIT_STACK 0
 #define RLIMIT_CORE  1
+#define RLIMIT_NOFILE 128
+#define RLIM_INFINITY 0
 
 #define PRIO_PROCESS 0
 #define PRIO_PGRP    1
