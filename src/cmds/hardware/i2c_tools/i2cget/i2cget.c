@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	long busn = 0;
 	long chip_addr = 0;
 	long data_addr = -1;
-	uint16_t buf;
+	uint16_t buf=0;
 	int mode = 1, ret;
 
 	if (argc < 2) {
