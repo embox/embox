@@ -1,0 +1,9 @@
+package project.mosquitto.cmd
+
+@AutoCmd
+@Cmd(name="mosquitto_start", help="Start Mosquitto Broker", man="")
+@BuildDepends(third_party.cmd.mosquitto)
+module start_broker {
+
+	@NoRuntime depends third_party.cmd.mosquitto
+}
