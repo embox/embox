@@ -10,8 +10,7 @@ PKG_PATCHES := pkg_patch.patch
 include $(EXTBLD_LIB)
 
 MOSQUITTO_CPPFLAGS = "-include $(ROOT_DIR)/third-party/mosquitto/mosquitto_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/mosquitto/include \
-    ${EMBOX_IMPORTED_CPPFLAGS}"
+	-I$(ROOT_DIR)/third-party/mosquitto/include"
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
@@ -23,4 +22,5 @@ $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/src/mosquitto $(PKG_INSTALL_DIR)/mosquitto.o
 	cp $(PKG_SOURCE_DIR)/client/mosquitto_pub $(PKG_INSTALL_DIR)/mosquitto_pub.o
 	cp $(PKG_SOURCE_DIR)/client/mosquitto_sub $(PKG_INSTALL_DIR)/mosquitto_sub.o
+	cp $(PKG_SOURCE_DIR)/lib/libmosquitto.a $(PKG_INSTALL_DIR)/libmosquitto.a
 	touch $@

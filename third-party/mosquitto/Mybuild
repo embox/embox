@@ -1,23 +1,7 @@
-package third_party.cmd
+package third_party
 
-@App
-@AutoCmd
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
-@Cmd(name = "mosquitto",
-	help = "mosquitto is a broker for the MQTT protocol version 5.0/3.1.1/3.1.",
-	man = '''
-		NAME
-			mosquitto - MQTT Broker
-		SYNOPSIS
-			mosquitto [-c config file] [ -d | --daemon ] [-p port number] [-v]
-		AUTHORS
-			Yuriy Paramonov - Adaptation for Embox
-	''')
-
-
-module mosquitto {
-	source "^BUILD/extbld/^MOD_PATH/install/mosquitto.o"
-	
+module mosquitto_build {
 	@NoRuntime depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.stubs
 	depends embox.compat.libc.math_openlibm
@@ -25,74 +9,3 @@ module mosquitto {
 	depends embox.compat.posix.idx.poll
     depends embox.net.lib.getifaddrs
 }
-
-@App
-@AutoCmd
-@BuildDepends(third_party.cmd.mosquitto)
-@Build(stage=2)
-@Cmd(name = "mosquitto_sub",
-	help = "an MQTT version 5/3.1.1/3.1 client for subscribing to topics",
-	man = '''
-		NAME
-			mosquitto_sub - client that will subscribe to topics and print the messages that it receives
-		SYNOPSIS
-			mosquitto_sub { [-h hostname] [--unix socket path] [-p port-number] [-u username] [-P password] -t message-topic... | -L URL [-t message-
-			topic...] } [-A bind-address] [-c] [-C msg-count] [-d] [-D command identifier value] [-E] [-i client-id] [-I client-id-prefix] [-k 
-			keepalive-time] [-N] [--nodelay] [--pretty] [-q message-QoS] [--random-filter chance] [--remove-retained] [ -R | --retained-only ] [--retain-as-
-			published] [-S] [-T filter-out...] [-U unsub-topic...] [-v] [-V protocol-version] [-W message-processing-timeout] [-x session-expiry-interval] [--
-			proxy socks-url] [--quiet] [ --will-topic topic [--will-payload payload] [--will-qos qos] [--will-retain] ] [[ { --cafile file | --capath dir } 
-			[--cert file] [--key file] [--tls-version version] [--tls-alpn protocol] [--tls-engine engine] [--keyform { pem | engine }] [--tls-engine-kpass-sha1 kpass-
-			sha1] [--tls-use-os-certs] [--insecure] ] | [ --psk hex-key --psk-identity identity [--tls-version version] ]]
-
-			mosquitto_sub [--help]
-		AUTHORS
-			Yuriy Paramonov - Adaptation for Embox
-	''')
-
-module mosquitto_sub {
-	source "^BUILD/extbld/third_party/cmd/mosquitto/install/mosquitto_sub.o"
-	
-	// @NoRuntime depends embox.compat.posix.LibPosix
-	// depends embox.compat.posix.stubs
-	// depends embox.compat.libc.math_openlibm
-	depends third_party.cmd.mosquitto
-
-	// depends embox.compat.posix.idx.poll
-    // depends embox.net.lib.getifaddrs
-}
-
-@App
-@AutoCmd
-@BuildDepends(third_party.cmd.mosquitto)
-@Build(stage=2)
-@Cmd(name = "mosquitto_pub",
-	help = "an MQTT version 5/3.1.1/3.1 client for publishing simple messages",
-	man = '''
-		NAME
-			mosquitto_pub - client that will publish a single message on a topic and exit
-		SYNOPSIS
-			mosquitto_pub { [-h hostname] [--unix socket path] [-p port-number] [-u username] [-P password] -t message-topic... | -L URL } [-A bind-
-			address] [-c] [-d] [-D command identifier value] [-i client-id] [-I client-id-prefix] [-k keepalive-time] [--nodelay] [-q message-QoS] [--
-			quiet] [-r] [--repeat count] [--repeat-delay seconds] [-S] [-V protocol-version] [-x session-expiry-interval] { -f file | -l | -m message | 
-			-n | -s } [ --will-topic topic [--will-payload payload] [--will-qos qos] [--will-retain] ] [[ { --cafile file | --capath dir } [--
-			cert file] [--key file] [--ciphers ciphers] [--tls-version version] [--tls-alpn protocol] [--tls-engine engine] [--keyform { pem | engine }] [--tls-engine-
-			kpass-sha1 kpass-sha1] [--tls-use-os-certs] [--insecure] ] | [ --psk hex-key --psk-identity identity [--ciphers ciphers] [--tls-version version] ]] 
-			[--proxy socks-url]
-
-			mosquitto_pub [--help]
-		AUTHORS
-			Yuriy Paramonov - Adaptation for Embox
-	''')
-
-module mosquitto_pub {
-	source "^BUILD/extbld/third_party/cmd/mosquitto/install/mosquitto_pub.o"
-	
-	// @NoRuntime depends embox.compat.posix.LibPosix
-	// depends embox.compat.posix.stubs
-	// depends embox.compat.libc.math_openlibm
-	depends third_party.cmd.mosquitto
-
-	// depends embox.compat.posix.idx.poll
-    // depends embox.net.lib.getifaddrs
-}
-
