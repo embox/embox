@@ -1,154 +1,33 @@
-diff -aur mosquitto-2.0.15/plugins/auth-by-ip/Makefile ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/auth-by-ip/Makefile
---- mosquitto-2.0.15/plugins/auth-by-ip/Makefile	2022-08-16 09:32:59.000000000 -0400
-+++ ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/auth-by-ip/Makefile	2023-02-26 17:33:14.866814078 -0500
-@@ -1,27 +1,12 @@
- include ../../config.mk
+diff -aur mosquitto-2.0.15/client/Makefile ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/client/Makefile
+--- mosquitto-2.0.15/client/Makefile	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/client/Makefile	2023-04-20 18:27:43.951892738 +0300
+@@ -14,19 +14,19 @@
+ endif
+ endif
  
--.PHONY : all binary check clean reallyclean test install uninstall
-+.PHONY : all binary
+-all : ${ALL_DEPS}
++all : ${ALL_DEPS} ../lib/libmosquitto.a
  
- PLUGIN_NAME=mosquitto_auth_by_ip
+ static : static_pub static_sub static_rr
+ 	# This makes mosquitto_pub/sub/rr versions that are statically linked with
+ 	# libmosquitto only.
  
- all : binary
+-static_pub : pub_client.o pub_shared.o client_props.o client_shared.o ../lib/libmosquitto.a
++static_pub : pub_client.o pub_shared.o client_props.o client_shared.o
+ 	${CROSS_COMPILE}${CC} $^ -o mosquitto_pub ${CLIENT_LDFLAGS} ${STATIC_LIB_DEPS} ${CLIENT_STATIC_LDADD}
  
--binary : ${PLUGIN_NAME}.so
-+binary : ${PLUGIN_NAME}.o
+-static_sub : sub_client.o sub_client_output.o client_props.o client_shared.o ../lib/libmosquitto.a
++static_sub : sub_client.o sub_client_output.o client_props.o client_shared.o
+ 	${CROSS_COMPILE}${CC} $^ -o mosquitto_sub ${CLIENT_LDFLAGS} ${STATIC_LIB_DEPS} ${CLIENT_STATIC_LDADD}
  
--${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
--	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
--
--reallyclean : clean
--clean:
--	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
--
--check: test
--test:
--
--install: ${PLUGIN_NAME}.so
--	# Don't install, these are examples only.
--	#$(INSTALL) -d "${DESTDIR}$(libdir)"
--	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
--
--uninstall :
--	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
-+${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
-+	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
-diff -aur mosquitto-2.0.15/plugins/deny-protocol-version/Makefile ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/deny-protocol-version/Makefile
---- mosquitto-2.0.15/plugins/deny-protocol-version/Makefile	2022-08-16 09:32:59.000000000 -0400
-+++ ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/deny-protocol-version/Makefile	2023-02-26 17:33:14.866814078 -0500
-@@ -8,22 +8,7 @@
+-static_rr : rr_client.o client_props.o client_shared.o pub_shared.o sub_client_output.o ../lib/libmosquitto.a
++static_rr : rr_client.o client_props.o client_shared.o pub_shared.o sub_client_output.o
+ 	${CROSS_COMPILE}${CC} $^ -o mosquitto_rr ${CLIENT_LDFLAGS} ${STATIC_LIB_DEPS} ${CLIENT_STATIC_LDADD}
  
- all : binary
- 
--binary : ${PLUGIN_NAME}.so
-+binary : ${PLUGIN_NAME}.o
- 
--${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
--	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
--
--reallyclean : clean
--clean:
--	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
--
--check: test
--test:
--
--install: ${PLUGIN_NAME}.so
--	# Don't install, these are examples only.
--	#$(INSTALL) -d "${DESTDIR}$(libdir)"
--	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
--
--uninstall :
--	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
-+${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
-+	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
-diff -aur mosquitto-2.0.15/plugins/message-timestamp/Makefile ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/message-timestamp/Makefile
---- mosquitto-2.0.15/plugins/message-timestamp/Makefile	2022-08-16 09:32:59.000000000 -0400
-+++ ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/message-timestamp/Makefile	2023-02-26 17:33:14.866814078 -0500
-@@ -1,27 +1,12 @@
- include ../../config.mk
- 
--.PHONY : all binary check clean reallyclean test install uninstall
-+.PHONY : all binary
- 
- PLUGIN_NAME=mosquitto_message_timestamp
- 
- all : binary
- 
--binary : ${PLUGIN_NAME}.so
-+binary : ${PLUGIN_NAME}.o
- 
--${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
--	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
--
--reallyclean : clean
--clean:
--	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
--
--check: test
--test:
--
--install: ${PLUGIN_NAME}.so
--	# Don't install, these are examples only.
--	#$(INSTALL) -d "${DESTDIR}$(libdir)"
--	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
--
--uninstall :
--	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
-+${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
-+	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
-diff -aur mosquitto-2.0.15/plugins/payload-modification/Makefile ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/payload-modification/Makefile
---- mosquitto-2.0.15/plugins/payload-modification/Makefile	2023-02-26 19:55:15.996788407 -0500
-+++ ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/plugins/payload-modification/Makefile	2023-02-26 21:42:39.338024192 -0500
-@@ -1,27 +1,12 @@
- include ../../config.mk
- 
--.PHONY : all binary check clean reallyclean test install uninstall
-+.PHONY : all binary
- 
- PLUGIN_NAME=mosquitto_payload_modification
- 
- all : binary
- 
--binary : ${PLUGIN_NAME}.so
-+binary : ${PLUGIN_NAME}.o
- 
--${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
--	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
--
--reallyclean : clean
--clean:
--	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
--
--check: test
--test:
--
--install: ${PLUGIN_NAME}.so
--	# Don't install, these are examples only.
--	#$(INSTALL) -d "${DESTDIR}$(libdir)"
--	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
--
--uninstall :
--	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
-+${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
-+	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
-# diff -aur mosquitto-2.0.15/src/conf.c ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/src/conf.c
-# --- mosquitto-2.0.15/src/conf.c	2022-08-16 09:32:59.000000000 -0400
-# +++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/src/conf.c	2023-02-27 21:15:38.485965406 -0500
-# @@ -38,10 +38,6 @@
-#  #  include <ws2tcpip.h>
-#  #endif
- 
-# -#if !defined(WIN32) && !defined(__CYGWIN__)
-# -#  include <syslog.h>
-# -#endif
-# -
-#  #include "mosquitto_broker_internal.h"
-#  #include "memory_mosq.h"
-#  #include "misc_mosq.h"
-diff -aur mosquitto-2.0.15/src/config.mk ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk
---- mosquitto-2.0.15/config.mk	2022-08-16 09:32:59.000000000 -0400
-+++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk	2023-02-27 22:31:48.030243322 -0500
+ mosquitto_pub : pub_client.o pub_shared.o client_shared.o client_props.o
+diff -aur mosquitto-2.0.15/config.mk ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/config.mk
+--- mosquitto-2.0.15/config.mk	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/config.mk	2023-04-20 18:27:43.951892738 +0300
 @@ -21,15 +21,15 @@
  # Disabling this will also mean that passwords must be stored in plain text. It
  # is strongly recommended that you only disable WITH_TLS if you are not using
@@ -234,22 +113,23 @@ diff -aur mosquitto-2.0.15/src/config.mk ../build/extbld/third_party/cmd/mosquit
  endif
  
  ifeq ($(WITH_SHARED_LIBRARIES),yes)
-
-diff -aur mosquitto-2.0.15/src/conf_includedir.c ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/src/conf_includedir.c
---- mosquitto-2.0.15/src/conf_includedir.c	2022-08-16 09:32:59.000000000 -0400
-+++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/src/conf_includedir.c	2023-02-28 13:51:30.176033365 -0500
-@@ -42,7 +42,7 @@
- #if defined(__HAIKU__)
- #  include <syslog.h>
- #elif !defined(WIN32) && !defined(__CYGWIN__) && !defined(__QNX__)
--#  include <sys/syslog.h>
-+#  include <syslog.h>
- #endif
+diff -aur mosquitto-2.0.15/lib/loop.c ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/lib/loop.c
+--- mosquitto-2.0.15/lib/loop.c	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/lib/loop.c	2023-04-20 18:27:43.951892738 +0300
+@@ -32,10 +32,6 @@
+ #include "tls_mosq.h"
+ #include "util_mosq.h"
  
- #include "mosquitto_broker_internal.h"
-diff -aur mosquitto-2.0.15/mosquitto.conf ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/mosquitto.conf
---- mosquitto-2.0.15/mosquitto.conf	2022-08-16 09:32:59.000000000 -0400
-+++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/mosquitto.conf	2023-03-07 08:36:57.281024324 -0500
+-#if !defined(WIN32) && !defined(__SYMBIAN32__) && !defined(__QNX__)
+-#define HAVE_PSELECT
+-#endif
+-
+ int mosquitto_loop(struct mosquitto *mosq, int timeout, int max_packets)
+ {
+ #ifdef HAVE_PSELECT
+diff -aur mosquitto-2.0.15/mosquitto.conf ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/mosquitto.conf
+--- mosquitto-2.0.15/mosquitto.conf	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/mosquitto.conf	2023-04-20 18:27:43.955892782 +0300
 @@ -244,7 +244,7 @@
  # force the listener to only use IPv6. If you want support for both IPv4 and
  # IPv6, then do not use the socket_domain option.
@@ -259,24 +139,225 @@ diff -aur mosquitto-2.0.15/mosquitto.conf ../build/extbld/third_party/cmd/mosqui
  
  # Bind the listener to a specific interface. This is similar to
  # the [ip address/host name] part of the listener definition, but is useful
-# diff -aur mosquitto-2.0.15/src/config.mk ../build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk
-# --- mosquitto-2.0.15/config.mk	2023-03-27 13:05:55.869965741 -0400
-# +++ ./build/extbld/third_party/cmd/mosquitto/mosquitto-2.0.15/config.mk	2023-03-27 13:17:42.238541008 -0400
-# @@ -67,7 +67,7 @@
-#  WITH_SRV:=no
+diff -aur mosquitto-2.0.15/plugins/auth-by-ip/Makefile ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/auth-by-ip/Makefile
+--- mosquitto-2.0.15/plugins/auth-by-ip/Makefile	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/auth-by-ip/Makefile	2023-04-20 18:27:43.955892782 +0300
+@@ -1,27 +1,12 @@
+ include ../../config.mk
  
-#  # Build with websockets support on the broker.
-# -WITH_WEBSOCKETS:=no
-# +WITH_WEBSOCKETS:=yes
+-.PHONY : all binary check clean reallyclean test install uninstall
++.PHONY : all binary
  
-#  # Use elliptic keys in broker
-#  WITH_EC:=yes
-# @@ -105,7 +105,7 @@
-#  WITH_COVERAGE:=no
+ PLUGIN_NAME=mosquitto_auth_by_ip
  
-#  # Build with unix domain socket support
-# -WITH_UNIX_SOCKETS:=yes
-# +WITH_UNIX_SOCKETS:=no
+ all : binary
  
-#  # Build mosquitto_sub with cJSON support
-#  WITH_CJSON:=no
+-binary : ${PLUGIN_NAME}.so
++binary : ${PLUGIN_NAME}.o
+ 
+-${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
+-	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
+-
+-reallyclean : clean
+-clean:
+-	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
+-
+-check: test
+-test:
+-
+-install: ${PLUGIN_NAME}.so
+-	# Don't install, these are examples only.
+-	#$(INSTALL) -d "${DESTDIR}$(libdir)"
+-	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
+-
+-uninstall :
+-	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
++${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
++	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
+diff -aur mosquitto-2.0.15/plugins/deny-protocol-version/Makefile ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/deny-protocol-version/Makefile
+--- mosquitto-2.0.15/plugins/deny-protocol-version/Makefile	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/deny-protocol-version/Makefile	2023-04-20 18:27:43.955892782 +0300
+@@ -8,22 +8,7 @@
+ 
+ all : binary
+ 
+-binary : ${PLUGIN_NAME}.so
++binary : ${PLUGIN_NAME}.o
+ 
+-${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
+-	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
+-
+-reallyclean : clean
+-clean:
+-	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
+-
+-check: test
+-test:
+-
+-install: ${PLUGIN_NAME}.so
+-	# Don't install, these are examples only.
+-	#$(INSTALL) -d "${DESTDIR}$(libdir)"
+-	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
+-
+-uninstall :
+-	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
++${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
++	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
+diff -aur mosquitto-2.0.15/plugins/message-timestamp/Makefile ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/message-timestamp/Makefile
+--- mosquitto-2.0.15/plugins/message-timestamp/Makefile	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/message-timestamp/Makefile	2023-04-20 18:27:43.955892782 +0300
+@@ -1,27 +1,12 @@
+ include ../../config.mk
+ 
+-.PHONY : all binary check clean reallyclean test install uninstall
++.PHONY : all binary
+ 
+ PLUGIN_NAME=mosquitto_message_timestamp
+ 
+ all : binary
+ 
+-binary : ${PLUGIN_NAME}.so
++binary : ${PLUGIN_NAME}.o
+ 
+-${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
+-	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
+-
+-reallyclean : clean
+-clean:
+-	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
+-
+-check: test
+-test:
+-
+-install: ${PLUGIN_NAME}.so
+-	# Don't install, these are examples only.
+-	#$(INSTALL) -d "${DESTDIR}$(libdir)"
+-	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
+-
+-uninstall :
+-	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
++${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
++	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
+diff -aur mosquitto-2.0.15/plugins/payload-modification/Makefile ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/payload-modification/Makefile
+--- mosquitto-2.0.15/plugins/payload-modification/Makefile	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/plugins/payload-modification/Makefile	2023-04-20 18:27:43.955892782 +0300
+@@ -1,27 +1,12 @@
+ include ../../config.mk
+ 
+-.PHONY : all binary check clean reallyclean test install uninstall
++.PHONY : all binary
+ 
+ PLUGIN_NAME=mosquitto_payload_modification
+ 
+ all : binary
+ 
+-binary : ${PLUGIN_NAME}.so
++binary : ${PLUGIN_NAME}.o
+ 
+-${PLUGIN_NAME}.so : ${PLUGIN_NAME}.c
+-	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) -fPIC -shared $< -o $@
+-
+-reallyclean : clean
+-clean:
+-	-rm -f *.o ${PLUGIN_NAME}.so *.gcda *.gcno
+-
+-check: test
+-test:
+-
+-install: ${PLUGIN_NAME}.so
+-	# Don't install, these are examples only.
+-	#$(INSTALL) -d "${DESTDIR}$(libdir)"
+-	#$(INSTALL) ${STRIP_OPTS} ${PLUGIN_NAME}.so "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
+-
+-uninstall :
+-	-rm -f "${DESTDIR}${libdir}/${PLUGIN_NAME}.so"
++${PLUGIN_NAME}.o : ${PLUGIN_NAME}.c
++	$(CROSS_COMPILE)$(CC) $(PLUGIN_CPPFLAGS) $(PLUGIN_CFLAGS) $(PLUGIN_LDFLAGS) $< -o $@
+diff -aur mosquitto-2.0.15/src/Makefile ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/src/Makefile
+--- mosquitto-2.0.15/src/Makefile	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/src/Makefile	2023-04-20 18:28:06.016140164 +0300
+@@ -13,36 +13,20 @@
+ 		context.o \
+ 		control.o \
+ 		database.o \
+-		handle_auth.o \
+-		handle_connack.o \
+ 		handle_connect.o \
+-		handle_disconnect.o \
+-		handle_ping.o \
+-		handle_pubackcomp.o \
+-		handle_publish.o \
+-		handle_pubrec.o \
+-		handle_pubrel.o \
+-		handle_suback.o \
+ 		handle_subscribe.o \
+-		handle_unsuback.o \
+ 		handle_unsubscribe.o \
+ 		keepalive.o \
+ 		logging.o \
+ 		loop.o \
+ 		memory_mosq.o \
+ 		memory_public.o \
+-		misc_mosq.o \
+ 		mux.o \
+ 		mux_epoll.o \
+ 		mux_poll.o \
+ 		net.o \
+-		net_mosq.o \
+-		net_mosq_ocsp.o \
+-		packet_datatypes.o \
+-		packet_mosq.o \
+ 		password_mosq.o \
+ 		property_broker.o \
+-		property_mosq.o \
+ 		persist_read.o \
+ 		persist_read_v234.o \
+ 		persist_read_v5.o \
+@@ -50,35 +34,22 @@
+ 		persist_write_v5.o \
+ 		plugin.o \
+ 		plugin_public.o \
+-		read_handle.o \
+ 		retain.o \
+ 		security.o \
+ 		security_default.o \
+ 		send_auth.o \
+ 		send_connack.o \
+-		send_connect.o \
+-		send_disconnect.o \
+-		send_mosq.o \
+-		send_publish.o \
+ 		send_suback.o \
+-		send_subscribe.o \
+ 		send_unsuback.o \
+-		send_unsubscribe.o \
+ 		service.o \
+ 		session_expiry.o \
+ 		signals.o \
+-		strings_mosq.o \
+ 		subs.o \
+ 		sys_tree.o \
+-		time_mosq.o \
+ 		topic_tok.o \
+ 		tls_mosq.o \
+-		utf8_mosq.o \
+-		util_mosq.o \
+-		util_topic.o \
+ 		websockets.o \
+ 		will_delay.o \
+-		will_mosq.o \
+ 		xtreport.o
+ 
+ mosquitto : ${OBJS}
+diff -aur mosquitto-2.0.15/src/conf_includedir.c ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/src/conf_includedir.c
+--- mosquitto-2.0.15/src/conf_includedir.c	2022-08-16 16:32:59.000000000 +0300
++++ ../build/extbld/third_party/mosquitto_build/mosquitto-2.0.15/src/conf_includedir.c	2023-04-20 18:27:43.955892782 +0300
+@@ -42,7 +42,7 @@
+ #if defined(__HAIKU__)
+ #  include <syslog.h>
+ #elif !defined(WIN32) && !defined(__CYGWIN__) && !defined(__QNX__)
+-#  include <sys/syslog.h>
++#  include <syslog.h>
+ #endif
+ 
+ #include "mosquitto_broker_internal.h"

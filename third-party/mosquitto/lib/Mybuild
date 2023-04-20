@@ -1,0 +1,9 @@
+package third_party.lib
+
+@BuildDepends(third_party.mosquitto_build)
+@Build(stage=2)
+module mosquitto {
+	source "^BUILD/extbld/third_party/mosquitto_build/install/libmosquitto.a"
+	
+    depends third_party.mosquitto_build
+}
