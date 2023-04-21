@@ -15,7 +15,7 @@ static module lps22hb_i2c extends lps22hb {
 	source "lps22hb_i2c.c"
 }
 
-/* not tested now tested
+/* not tested now!
 static module lps22hb_spi extends lps22hb {
 	option number log_level = 1
 	option number spi_bus = 0

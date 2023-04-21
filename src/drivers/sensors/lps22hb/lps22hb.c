@@ -42,22 +42,23 @@ extern struct lps22hb_dev lps22hb_dev0;
 
 int32_t lps22hb_get_pressure_4096(void) {
 	struct lps22hb_dev *dev = &lps22hb_dev0;
-	uint8_t p[4];
+	union {int32_t val; uint8_t b[4];} p;
 
-	lps22hb_readb(dev, LPS22HB_PRESS_OUT_XL,&p[0]);
-	lps22hb_readb(dev, LPS22HB_PRESS_OUT_L, &p[1]);
-	lps22hb_readb(dev, LPS22HB_PRESS_OUT_H, &p[2]);
-	p[3]=0;
+	lps22hb_readb(dev, LPS22HB_PRESS_OUT_XL,&(p.b[0]));
+	lps22hb_readb(dev, LPS22HB_PRESS_OUT_L, &(p.b[1]));
+	lps22hb_readb(dev, LPS22HB_PRESS_OUT_H, &(p.b[2]));
+	p.b[3] = (p.b[2] & 0x80)? 0xff: 0; // sign spread
 
-	return le32toh(*(int32_t *)p);
+	return le32toh(p.val);
 }
 
 int16_t lps22hb_get_temp_x100(void) {
 	struct lps22hb_dev *dev = &lps22hb_dev0;
-	uint8_t t[2];
-	lps22hb_readb(dev, LPS22HB_TEMP_OUT_L, &t[0]);
-	lps22hb_readb(dev, LPS22HB_TEMP_OUT_H, &t[1]);
-	return le16toh(*(int16_t *)t);
+	union {int16_t val; uint8_t b[2];}t;
+	lps22hb_readb(dev, LPS22HB_TEMP_OUT_L, &(t.b[0]));
+	lps22hb_readb(dev, LPS22HB_TEMP_OUT_H, &(t.b[1]));
+
+	return le16toh(t.val);
 }
 
 int lps22hb_init(void) {

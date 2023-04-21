@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="lps22hb", help="lps22hb sensor demo")
+module lps22hb {
+	source "lps22hb.c"
+}
