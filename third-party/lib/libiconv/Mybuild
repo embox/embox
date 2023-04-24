@@ -1,0 +1,10 @@
+package third_party.libs
+
+@Build(script="$(EXTERNAL_MAKE)")
+static module libiconv {
+	depends embox.compat.libc.all
+	depends embox.compat.posix.LibPosix
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	source "libcharset.a", "libiconv.a", "libiconv.a.x/relocatable.o", "libiconv.a.x/localcharset.o", "libiconv.a.x/iconv.o", "libcharset.a.x/relocatable-stub.o", "libcharset.a.x/localcharset.o", "libicrt.a"
+}

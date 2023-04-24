@@ -1,0 +1,219 @@
+diff --color -aur libiconv-1.17/configure libiconv-1.17-patched/configure
+--- libiconv-1.17/configure	2022-05-15 15:58:59.000000000 +0300
++++ libiconv-1.17-patched/configure	2023-04-18 18:31:55.088887436 +0300
+@@ -5140,8 +5140,9 @@
+ 
+ { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error 77 "C compiler cannot create executables
+-See \`config.log' for more details" "$LINENO" 5; }
++#as_fn_error 77 "C compiler cannot create executables
++#See \`config.log' for more details" "$LINENO" 5; }
++}
+ else $as_nop
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ printf "%s\n" "yes" >&6; }
+@@ -5184,8 +5185,9 @@
+ else $as_nop
+   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot compute suffix of executables: cannot compile and link
+-See \`config.log' for more details" "$LINENO" 5; }
++#as_fn_error $? "cannot compute suffix of executables: cannot compile and link
++#See \`config.log' for more details" "$LINENO" 5; }
++}
+ fi
+ rm -f conftest conftest$ac_cv_exeext
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_exeext" >&5
+diff --color -aur libiconv-1.17/libcharset/configure libiconv-1.17-patched/libcharset/configure
+--- libiconv-1.17/libcharset/configure	2022-05-15 15:59:11.000000000 +0300
++++ libiconv-1.17-patched/libcharset/configure	2023-04-18 18:31:55.090887466 +0300
+@@ -3158,8 +3158,9 @@
+ 
+ { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error 77 "C compiler cannot create executables
+-See \`config.log' for more details" "$LINENO" 5; }
++#as_fn_error 77 "C compiler cannot create executables
++#See \`config.log' for more details" "$LINENO" 5; }
++}
+ else $as_nop
+   { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ printf "%s\n" "yes" >&6; }
+@@ -3202,8 +3203,9 @@
+ else $as_nop
+   { { printf "%s\n" "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+ printf "%s\n" "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot compute suffix of executables: cannot compile and link
+-See \`config.log' for more details" "$LINENO" 5; }
++#as_fn_error $? "cannot compute suffix of executables: cannot compile and link
++#See \`config.log' for more details" "$LINENO" 5; }
++}
+ fi
+ rm -f conftest conftest$ac_cv_exeext
+ { printf "%s\n" "$as_me:${as_lineno-$LINENO}: result: $ac_cv_exeext" >&5
+diff --color -aur libiconv-1.17/srclib/getprogname.c libiconv-1.17-patched/srclib/getprogname.c
+--- libiconv-1.17/srclib/getprogname.c	2022-01-04 11:33:29.000000000 +0300
++++ libiconv-1.17-patched/srclib/getprogname.c	2023-04-18 18:31:55.090887466 +0300
+@@ -288,7 +288,8 @@
+     }
+   return "?";
+ # else
+-#  error "getprogname module not ported to this OS"
++  return "?";
++//#  error "getprogname module not ported to this OS"
+ # endif
+ }
+ 
+diff --color -aur libiconv-1.17/srclib/signal.in.h libiconv-1.17-patched/srclib/signal.in.h
+--- libiconv-1.17/srclib/signal.in.h	2022-01-04 11:33:30.000000000 +0300
++++ libiconv-1.17-patched/srclib/signal.in.h	2023-04-18 18:35:29.864115130 +0300
+@@ -203,7 +203,7 @@
+ 
+ /* This code supports only 32 signals.  */
+ #  if !GNULIB_defined_verify_NSIG_constraint
+-typedef int verify_NSIG_constraint[NSIG <= 32 ? 1 : -1];
++typedef int verify_NSIG_constraint[NSIG <= 64 ? 1 : -1];
+ #   define GNULIB_defined_verify_NSIG_constraint 1
+ #  endif
+ 
+diff --color -aur libiconv-1.17/srclib/sigprocmask.c libiconv-1.17-patched/srclib/sigprocmask.c
+--- libiconv-1.17/srclib/sigprocmask.c	2022-01-04 11:33:30.000000000 +0300
++++ libiconv-1.17-patched/srclib/sigprocmask.c	2023-04-18 18:34:53.550569396 +0300
+@@ -15,6 +15,8 @@
+    You should have received a copy of the GNU Lesser General Public License
+    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
+ 
++//#include <bits/types/sigset_t.h>
++#include <defines/sigset_t_define.h>
+ #include <config.h>
+ 
+ /* Specification.  */
+@@ -110,6 +112,7 @@
+ # define signal ext_signal
+ #endif
+ 
++/*
+ int
+ sigismember (const sigset_t *set, int sig)
+ {
+@@ -180,6 +183,7 @@
+   *set = ((2U << (NSIG - 1)) - 1) & ~ SIGABRT_COMPAT_MASK;
+   return 0;
+ }
++*/
+ 
+ /* Set of currently blocked signals.  */
+ static volatile sigset_t blocked_set /* = 0 */;
+@@ -204,12 +208,15 @@
+ int
+ sigpending (sigset_t *set)
+ {
+-  sigset_t pending = 0;
++//  sigset_t pending = 0;
++  sigset_t pending;
++  sigemptyset(&pending);
+   int sig;
+ 
+   for (sig = 0; sig < NSIG; sig++)
+     if (pending_array[sig])
+-      pending |= 1U << sig;
++      sigaddset(&pending, sig);
++//    pending |= (1U << sig);
+   *set = pending;
+   return 0;
+ }
+@@ -218,6 +225,7 @@
+    Only the array elements corresponding to blocked signals are relevant.  */
+ static volatile handler_t old_handlers[NSIG];
+ 
++/*
+ int
+ sigprocmask (int operation, const sigset_t *set, sigset_t *old_set)
+ {
+@@ -233,31 +241,37 @@
+       switch (operation)
+         {
+         case SIG_BLOCK:
+-          new_blocked_set = blocked_set | *set;
++			new_blocked_set = bitmap_or(blocked_set, *set);
++//          new_blocked_set = blocked_set | *set;
+           break;
+         case SIG_SETMASK:
+           new_blocked_set = *set;
+           break;
+         case SIG_UNBLOCK:
+-          new_blocked_set = blocked_set & ~*set;
++		  new_blocked_set = bitmap_and(blocked_set, bitmap_not(*set));
++//          new_blocked_set = blocked_set & ~*set;
+           break;
+         default:
+           errno = EINVAL;
+           return -1;
+         }
+-      to_unblock = blocked_set & ~new_blocked_set;
+-      to_block = new_blocked_set & ~blocked_set;
++	  to_unblock = bitmap_and(blocked_set, bitmap_not(new_blocked_set));
++//      to_unblock = blocked_set & ~new_blocked_set;
++      to_block = bitmap_and(new_blocked_set, bitmap_not(blocked_set));
++//      to_block = new_blocked_set & ~blocked_set;
+ 
+       if (to_block != 0)
+         {
+           int sig;
+ 
+           for (sig = 0; sig < NSIG; sig++)
+-            if ((to_block >> sig) & 1)
++//            if ((to_block >> sig) & 1)
++            if (sigismember(to_block, sig))
+               {
+                 pending_array[sig] = 0;
+                 if ((old_handlers[sig] = signal (sig, blocked_handler)) != SIG_ERR)
+-                  blocked_set |= 1U << sig;
++//                  blocked_set |= 1U << sig;
++				  sigaddset(&blocked_set, sig);
+               }
+         }
+ 
+@@ -273,9 +287,11 @@
+                   /* The application changed a signal handler while the signal
+                      was blocked, bypassing our rpl_signal replacement.
+                      We don't support this.  */
+-                  abort ();
++/*                  abort ();
+                 received[sig] = pending_array[sig];
+-                blocked_set &= ~(1U << sig);
++//                blocked_set &= ~(1U << sig);
++                sigdelset(&blocked_set, sig);
++
+                 pending_array[sig] = 0;
+               }
+             else
+@@ -288,6 +304,7 @@
+     }
+   return 0;
+ }
++*/
+ 
+ /* Install the handler FUNC for signal SIG, and return the previous
+    handler.  */
+@@ -304,7 +321,8 @@
+         sig = SIGABRT;
+       #endif
+ 
+-      if (blocked_set & (1U << sig))
++//      if (blocked_set & (1U << sig))
++        if (sigismember(&blocked_set, sig))
+         {
+           /* POSIX states that sigprocmask and signal are both
+              async-signal-safe.  This is not true of our
+@@ -334,7 +352,8 @@
+ int
+ _gl_raise_SIGPIPE (void)
+ {
+-  if (blocked_set & (1U << SIGPIPE))
++//  if (blocked_set & (1U << SIGPIPE))
++  if (sigismember(blocked_set, SIGPIPE))
+     pending_array[SIGPIPE] = 1;
+   else
+     {
