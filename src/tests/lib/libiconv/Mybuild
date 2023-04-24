@@ -1,5 +1,8 @@
 package embox.test.iconv
 
+@BuildDepends(third_party.libs.libiconv)
+@Build(stage=2,script="true")
 module iconv_test {
 	source "libiconv_test.c"
+	depends third_party.libs.libiconv
 }
