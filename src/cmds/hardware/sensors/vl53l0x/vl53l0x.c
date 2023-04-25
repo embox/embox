@@ -32,7 +32,7 @@ static int VL53L0X_PROXIMITY_Init(void);
 extern void SENSOR_IO_Init(void);
 
 extern I2C_HandleTypeDef hI2cHandler;
-VL53L0X_Dev_t Dev =
+static VL53L0X_Dev_t Dev =
 {
   .I2cHandle = &hI2cHandler,
   .I2cDevAddr = PROXIMITY_I2C_ADDRESS
