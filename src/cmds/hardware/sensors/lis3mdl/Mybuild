@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="lis3mdl", help="lis3mdl sensor demo")
+module lis3mdl {
+	source "lis3mdl.c"
+}
