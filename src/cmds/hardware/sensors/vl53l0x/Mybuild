@@ -1,0 +1,12 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="vl53l0x", help="vl53l0x sensor demo")
+@BuildDepends(third_party.bsp.st_bsp_api)
+module vl53l0x {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/Projects/B-L475E-IOT01A/Applications/Proximity/Src/vl53l0x")
+	@Cflags("-DSTDINT_H")	
+	source "vl53l0x.c"
+
+	depends third_party.bsp.st_bsp_api
+}

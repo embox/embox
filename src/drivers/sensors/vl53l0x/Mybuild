@@ -1,0 +1,32 @@
+package embox.driver.sensors
+
+abstract module vl53l0x {
+	@IncludeExport(path="drivers/sensors", target_name="vl53l0x.h")
+	source "vl53l0x.h"
+
+	source "vl53l0x.c"
+}
+
+static module vl53l0x_i2c extends vl53l0x {
+	option number log_level = 1
+	option number i2c_bus = 0
+	source "vl53l0x_i2c.c"
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+static module cube_vl53l0x {
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/Projects/B-L475E-IOT01A/Applications/Proximity/Src/vl53l0x")
+	@Cflags("-DSTDINT_H")	
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stml4cube/cube/STM32CubeL4-1.14.0/Projects/B-L475E-IOT01A/Applications/Proximity/Src/vl53l0x")
+	source
+		"vl53l0x_api.c",
+		"vl53l0x_api_calibration.c",
+		"vl53l0x_api_core.c",
+		"vl53l0x_api_ranging.c",
+		"vl53l0x_api_strings.c",
+		"vl53l0x_platform_log.c",
+		"vl53l0x_tof.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+

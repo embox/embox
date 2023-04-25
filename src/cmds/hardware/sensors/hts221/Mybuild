@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="hts221", help="hts221 sensor demo")
+module hts221 {
+	source "hts221.c"
+}

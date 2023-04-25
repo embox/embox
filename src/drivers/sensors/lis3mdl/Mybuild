@@ -1,0 +1,25 @@
+package embox.driver.sensors
+
+/* TODO There can be both I2C and SPI versions in one config,
+ * this must be removed after we will add sensors API. */
+abstract module lis3mdl {
+	@IncludeExport(path="drivers/sensors", target_name="lis3mdl.h")
+	source "lis3mdl.h"
+
+	source "lis3mdl.c"
+}
+
+static module lis3mdl_i2c extends lis3mdl {
+	option number log_level = 1
+	option number i2c_bus = 0
+	source "lis3mdl_i2c.c"
+}
+
+/* not tested now!
+static module lis3mdl_spi extends lis3mdl {
+	option number log_level = 1
+	option number spi_bus = 0
+
+	source "lis3mdl_spi.c"
+}
+*/

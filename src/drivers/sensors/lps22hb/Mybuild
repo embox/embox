@@ -1,0 +1,25 @@
+package embox.driver.sensors
+
+/* TODO There can be both I2C and SPI versions in one config,
+ * this must be removed after we will add sensors API. */
+abstract module lps22hb {
+	@IncludeExport(path="drivers/sensors", target_name="lps22hb.h")
+	source "lps22hb.h"
+
+	source "lps22hb.c"
+}
+
+static module lps22hb_i2c extends lps22hb {
+	option number log_level = 1
+	option number i2c_bus = 0
+	source "lps22hb_i2c.c"
+}
+
+/* not tested now!
+static module lps22hb_spi extends lps22hb {
+	option number log_level = 1
+	option number spi_bus = 0
+
+	source "lps22hb_spi.c"
+}
+*/

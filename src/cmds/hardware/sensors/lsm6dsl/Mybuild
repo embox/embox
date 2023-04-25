@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="lsm6dsl", help="lsm6dsl sensor demo")
+module lsm6dsl {
+	source "lsm6dsl.c"
+}
