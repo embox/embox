@@ -42,7 +42,7 @@
 
 extern struct lsm6dsl_dev lsm6dsl_dev0;
 
-extern void lsm6dsl_get_data(struct lsm6dsl_s *data) {
+void lsm6dsl_get_data(struct lsm6dsl_s *data) {
 	struct lsm6dsl_dev *dev = &lsm6dsl_dev0;
 	union {int16_t val; uint8_t b[2];}m;
 	lsm6dsl_readb(dev, LSM6DSL_OUT_X_L_G, &(m.b[0]));
@@ -65,7 +65,7 @@ extern void lsm6dsl_get_data(struct lsm6dsl_s *data) {
 	data->xl_z = le16toh(m.val);
 }
 
-extern int16_t lsm6dsl_get_temp_x256(void) {
+int16_t lsm6dsl_get_temp_x256(void) {
 	struct lsm6dsl_dev *dev = &lsm6dsl_dev0;
 	union {int16_t val; uint8_t b[2];}t;
 	lsm6dsl_readb(dev, LSM6DSL_OUT_TEMP_L, &(t.b[0]));
@@ -74,7 +74,7 @@ extern int16_t lsm6dsl_get_temp_x256(void) {
 	return le16toh(t.val) + LSM6DSL_TEMP_OFFSET;
 }
 
-extern int32_t lsm6dsl_get_timestamp_us(void) {
+int32_t lsm6dsl_get_timestamp_us(void) {
 	struct lsm6dsl_dev *dev = &lsm6dsl_dev0;
 	union {int32_t val; uint8_t b[4];}t;
 	lsm6dsl_readb(dev, LSM6DSL_TIMESTAMP0_REG, &(t.b[0]));

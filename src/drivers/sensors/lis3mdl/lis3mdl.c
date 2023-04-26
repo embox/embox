@@ -43,7 +43,7 @@ extern struct lis3mdl_dev lis3mdl_dev0;
 
 static int sens;
 
-extern void lis3mdl_get_data(struct lis3mdl_s *data) {
+void lis3mdl_get_data(struct lis3mdl_s *data) {
 	struct lis3mdl_dev *dev = &lis3mdl_dev0;
 	union {int16_t val; uint8_t b[2];}m;
 	lis3mdl_readb(dev, LIS3MDL_OUT_X_L, &(m.b[0]));
