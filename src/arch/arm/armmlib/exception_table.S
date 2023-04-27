@@ -14,6 +14,7 @@
 #include <debug/gdbstub.h>
 
 #define IRQ_STACK_SIZE OPTION_GET(NUMBER, irq_stack_size)
+#define IRQ_STACK_IN_BSS OPTION_GET(NUMBER, irq_stack_in_bss)
 
 .type start, %function
 .type exp_default_entry, %function
@@ -116,6 +117,7 @@ EXC_HANDLER_NAME(DEBUG_MONITOR):
 	bx lr
 #endif
 
+#if IRQ_STACK_IN_BSS == 0
 .data
 .align 3
 irq_stack_start:
@@ -123,3 +125,12 @@ irq_stack_start:
 	.byte   0x50
 	.endr
 irq_stack_top:
+#else
+.bss
+.align 3
+irq_stack_start:
+	.rept   IRQ_STACK_SIZE
+	.byte 0x0
+	.endr
+irq_stack_top:
+#endif
