@@ -26,31 +26,7 @@
 
 ARRAY_SPREAD_DECLARE(struct gpio_chip *, __gpio_chip_registry);
 
-#define DO_IPL_LOCKED(job)       \
-	{                            \
-		ipl_t _ipl = ipl_save(); \
-		job;                     \
-		ipl_restore(_ipl);       \
-	}
-
-struct gpio_irq_handler {
-	struct gpio_chip *chip;
-	unsigned char port;
-	uint32_t pin;
-	void *data;
-	void (*handler)(void *);
-	struct dlist_head link;
-};
-
-static int gpio_lthread_irq_hnd(struct lthread *self);
-static LTHREAD_DEF(gpio_lthread, gpio_lthread_irq_hnd, GPIO_HND_PRIORITY);
-
 static struct gpio_chip *gpio_chip_registry[GPIO_CHIPS_COUNT];
-
-POOL_DEF(gpio_irq_pool, struct gpio_irq_handler, GPIO_IRQS_COUNT);
-
-static DLIST_DEFINE(gpio_irq_list);
-static DLIST_DEFINE(gpio_pending_irq_list);
 
 int gpio_register_chip(struct gpio_chip *chip, unsigned char chip_id) {
 	assert(chip);
@@ -157,6 +133,31 @@ void gpio_toggle(unsigned short port, gpio_mask_t pins) {
 	chip->set(port, ~state & pins, 1); /* Up all pins that were LOW */
 }
 
+#if (GPIO_IRQS_COUNT > 0)
+#define DO_IPL_LOCKED(job)       \
+	{                            \
+		ipl_t _ipl = ipl_save(); \
+		job;                     \
+		ipl_restore(_ipl);       \
+	}
+
+struct gpio_irq_handler {
+	struct gpio_chip *chip;
+	unsigned char port;
+	uint32_t pin;
+	void *data;
+	void (*handler)(void *);
+	struct dlist_head link;
+};
+
+static int gpio_lthread_irq_hnd(struct lthread *self);
+static LTHREAD_DEF(gpio_lthread, gpio_lthread_irq_hnd, GPIO_HND_PRIORITY);
+
+POOL_DEF(gpio_irq_pool, struct gpio_irq_handler, GPIO_IRQS_COUNT);
+
+static DLIST_DEFINE(gpio_irq_list);
+static DLIST_DEFINE(gpio_pending_irq_list);
+
 int gpio_irq_attach(unsigned short port, uint32_t pin,
 		void (*pin_handler)(void *), void *data) {
 	struct gpio_irq_handler *gpio_hnd;
@@ -259,3 +260,4 @@ void gpio_handle_irq(struct gpio_chip *chip, uint8_t port, gpio_mask_t pins) {
 		lthread_launch(&gpio_lthread);
 	}
 }
+#endif
