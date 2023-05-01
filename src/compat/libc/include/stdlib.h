@@ -221,6 +221,7 @@ extern int atexit(void (*func)(void));
 extern size_t mbstowcs(wchar_t *wcstring, const char *mbstring, size_t n);
 extern size_t wcstombs(char *mbstr,  const wchar_t *wcstr, size_t max);
 
+extern char *gcvt(double number, size_t ndigit, char *buf);
 
 __END_DECLS
 

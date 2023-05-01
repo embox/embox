@@ -53,11 +53,16 @@ static module mktemp {
 	source "mkstemp.c"
 }
 
+static module gcvt {
+	source "gcvt.c"
+}
+
 static module all {
 	depends core,
 		config,
 		rand,
 		system,
 		multibyte,
-		mktemp
+		mktemp,
+		gcvt
 }
