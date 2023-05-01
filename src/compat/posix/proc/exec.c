@@ -19,6 +19,7 @@
 #include <hal/vfork.h>
 
 #include <errno.h>
+#include <stdarg.h>
 
 static const char * exec_cmd_name(const char *path) {
 	size_t path_len;
@@ -154,3 +155,21 @@ int execve(const char *path, char *const argv[], char *const envp[]) {
 	return execv(path, argv);
 }
 
+int execl(const char *path, const char *arg, ...) {
+	char *buf[16];
+	int i;
+	va_list args;
+	
+	*buf = (char *)arg;
+	i = 0;
+	
+	va_start(args, arg);
+	while (buf[i] != NULL) {
+		if (++i == 16) {
+			return -1;
+		}
+		buf[i] = (char *)va_arg(args, const char *);
+	}
+	va_end(args);
+	return execv(path, buf);
+}
