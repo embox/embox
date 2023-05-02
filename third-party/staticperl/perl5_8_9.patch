@@ -1,0 +1,56 @@
+--- Makefile.SH-old	2023-04-27 13:40:29.554289739 +0300
++++ Makefile.SH	2023-04-27 13:41:13.574223503 +0300
+@@ -469,7 +469,7 @@
+ .c.s:
+ 	$(CCCMDSRC) -S $*.c
+ 
+-all: $(FIRSTMAKEFILE) miniperl$(EXE_EXT) extra.pods $(private) $(unidatafiles) $(public) $(dynamic_ext) $(nonxs_ext) extras.make
++all: $(FIRSTMAKEFILE) miniperl$(EXE_EXT) extra.pods $(private) $(unidatafiles) $(public) $(dynamic_ext) $(nonxs_ext) extras.make $(LIBPERL) ext.libs
+ 	@echo " ";
+ 	@echo "	Everything is up to date. Type '$(MAKE) test' to run test suite."
+ 
+@@ -704,11 +704,9 @@
+ 		;;
+ 	*)
+ 		$spitshell >>Makefile <<'!NO!SUBS!'
+-miniperl$(EXE_EXT): $& miniperlmain$(OBJ_EXT) $(obj) opmini$(OBJ_EXT)
++miniperl$(EXE_EXT):
+ 	-@rm -f miniperl.xok
+-	$(LDLIBPTH) $(CC) $(CLDFLAGS) -o miniperl \
+-	    `echo $(obj) | sed 's/ op$(OBJ_EXT) / /'` \
+-	    miniperlmain$(OBJ_EXT) opmini$(OBJ_EXT) $(libs)
++	cp -f ../../../perl_bins/miniperl miniperl
+ 	$(LDLIBPTH) $(RUN) ./miniperl -w -Ilib -MExporter -e '<?>' || $(MAKE) minitest
+ !NO!SUBS!
+ 		;;
+@@ -716,9 +714,9 @@
+ 
+ 	$spitshell >>Makefile <<'!NO!SUBS!'
+ 
+-perl$(EXE_EXT): $& perlmain$(OBJ_EXT) $(LIBPERL) $(static_ext) ext.libs $(PERLEXPORT)
++perl$(EXE_EXT):
+ 	-@rm -f miniperl.xok
+-	$(SHRPENV) $(LDLIBPTH) $(CC) -o perl$(PERL_SUFFIX) $(PERL_PROFILE_LDFLAGS) $(CLDFLAGS) $(CCDLFLAGS) perlmain$(OBJ_EXT) $(static_ext) $(LLIBPERL) `cat ext.libs` $(libs)
++	cp -f ../../../perl_bins/perl perl
+ 
+ # Purify/Quantify Perls.
+ 
+@@ -970,6 +968,7 @@
+ 	else :; \
+ 	fi
+ 	$(LDLIBPTH) $(RUN) ./perl installperl --destdir=$(DESTDIR) $(INSTALLFLAGS) $(STRIPFLAGS)
++	cp -frT ../../../perl_bins ../../perl/bin
+ 	-@test ! -s extras.lst || $(MAKE) extras.install
+ 
+ install.man:	all installman
+--- ext/Errno/Errno_pm.PL_old	2023-04-26 16:44:41.593191228 +0300
++++ ext/Errno/Errno_pm.PL	2023-04-26 16:45:37.145465395 +0300
+@@ -140,7 +140,7 @@
+ 	if ($dep =~ /(\S+errno\.h)/) {
+ 	     $file{$1} = 1;
+ 	}
+-    } elsif ($^O eq 'linux' &&
++    } elsif ($Config{archname} eq 'linux' &&
+ 	      $Config{gccversion} ne '' && 
+ 	      $Config{gccversion} !~ /intel/i
+ 	      # might be using, say, Intel's icc
