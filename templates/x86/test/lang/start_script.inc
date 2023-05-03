@@ -32,4 +32,4 @@
 
 "duk fib.js",
 
-"perl fib.pl",
+/* "perl fib.pl", */
