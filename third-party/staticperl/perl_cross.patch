@@ -1,0 +1,798 @@
+--- cnf/configure-old	2023-04-27 12:36:04.636745469 +0300
++++ cnf/configure	2023-04-27 12:33:41.711316870 +0300
+@@ -7,10 +7,10 @@
+ newcfglog() { mv "$cfglog" "$1"; cfglog="$1"; }
+ appendlog() { cat "$cfglog" >> "$1"; rm -f "$cfglog"; cfglog="$1"; }
+ 
+-config="config.sh.$$"
+-echo "#!/bin/sh" > $config
+-echo "" >> $config
+-setconfig() { mv "$config" "$1"; config="$1"; }
++config="config.sh"
++# echo "#!/bin/sh" > $config
++# echo "" >> $config
++setconfig() {}
+ delconfig() { rm "$config"; }
+ 
+ . $base/configure__f.sh
+@@ -102,11 +102,11 @@
+ 
+ if [ "$mode" = 'native' -o "$mode" = 'buildmini' -o "$mode" = "target" ]; then
+ 	test "$mode" = "target" && define usecrosscompile 'define'
+-	define targetarch "$targetarch"
++	# define targetarch "$targetarch"
+ 
+-	. $base/configure_version.sh
++	# . $base/configure_version.sh
+ 	. $base/configure_tool.sh
+-	. $base/configure_hint.sh
++	# . $base/configure_hint.sh
+ 	. $base/configure_hdrs.sh
+ 	. $base/configure_type.sh
+ 	. $base/configure_type_ext.sh
+@@ -120,81 +120,91 @@
+ 	. $base/configure_func_ext.sh
+ 	. $base/configure_func_sel.sh
+ 	. $base/configure_attr.sh
+-	. $base/configure_path.sh
++	# . $base/configure_path.sh
+ 	. $base/configure_thrd.sh
+ 	. $base/configure_pfmt.sh
+-	. $base/configure_mods.sh
+-	. $base/configure_misc.sh
++	# . $base/configure_mods.sh
++	# . $base/configure_misc.sh
+ fi
+ 
+-test -f ./config_h.SH || die "Not in perl base directory, aborting"
+-
+-if [ "$mode" = 'native' ]; then
+-	echo "Generating config.h"
+-	./config_h.SH
+-	echo "Generating Makefile.config"
+-	./Makefile.config.SH
+-
+-	echo
+-	echo "Configuration completed for native build"
+-	echo
+-	echo "            platform:  $archname"
+-	echo "          c compiler:  $cc"
+-	echo "                  ld:  $ld"
+-	echo "                  ar:  $ar"
+-	echo "              ranlib:  $ranlib"
+-	echo
+-	echo "              prefix:  $prefix"
+-	echo " installation prefix:  $installprefix"
+-	echo "         executables:  $bin"
+-	echo "             scripts:  $bin"
+-	echo "             privlib:  $privlib"
+-	echo "             archlib:  $archlib"
+-	echo " section 1 man pages:  $man1dir  (with '$man1ext' extension)"
+-	echo " section 3 man pages:  $man3dir  (with '$man3ext' extension)"
+-	echo
+-elif [ "$mode" = 'cross' ]; then
+-	echo "Generating config.h and xconfig.h"
+-	CONFIG_SH=config.sh  CONFIG_H=config.h  ./config_h.SH
+-	CONFIG_SH=xconfig.sh CONFIG_H=xconfig.h ./config_h.SH
+-	echo "Generating Makefile.config"
+-	./Makefile.config.SH
+-	echo
+-	echo "Configuration completed for cross build"
+-	echo
+-	. ./xconfig.sh
+-	echo "      build platform:  $archname"
+-	echo "          C compiler:  $cc"
+-	echo "              linker:  $ld"
+-	echo "                  ar:  $ar"
+-	echo "              ranlib:  $ranlib"
+-	echo "             objdump:  $objdump"
+-	echo
+-	. ./config.sh
+-	echo "     target platform:  $archname"
+-	echo "          C compiler:  $cc"
+-	echo "                  ld:  $ld"
+-	echo "                  ar:  $ar"
+-	echo "              ranlib:  $ranlib"
+-	echo "             objdump:  $objdump"
+-	echo
+-	echo "              prefix:  $prefix"
+-	echo "             sysroot:  $sysroot"
+-	echo " installation prefix:  $installprefix"
+-	echo "         executables:  $bin"
+-	echo "             scripts:  $bin"
+-	echo "             privlib:  $privlib"
+-	echo "             archlib:  $archlib"
+-	echo " section 1 man pages:  $man1dir  (with '$man1ext' extension)"
+-	echo " section 3 man pages:  $man3dir  (with '$man3ext' extension)"
+-	echo
+-elif [ "$mode" = "regen" ]; then
+-	if [ -f config.sh ]; then
+-		CONFIG_SH=config.sh  CONFIG_H=config.h  ./config_h.SH
+-	fi
+-	if [ -f xconfig.sh ]; then
+-		CONFIG_SH=xconfig.sh CONFIG_H=xconfig.h ./config_h.SH
+-	fi
+-	echo "Generating Makefile.config"
+-	./Makefile.config.SH
+-fi
++tac $config | awk '{
++	line = $0
++	sub(/#.*/, "")
++	if (match($0, /([[:alnum:]_]+)=/)) {
++		varname = substr($0, RSTART, RLENGTH - 1)
++		if (! seen[varname]++) print line
++	} else print line
++}' | tac > $config.tmp
++mv -f $config.tmp $config
++
++# test -f ./config_h.SH || die "Not in perl base directory, aborting"
++
++# if [ "$mode" = 'native' ]; then
++# 	echo "Generating config.h"
++# 	./config_h.SH
++# 	echo "Generating Makefile.config"
++# 	./Makefile.config.SH
++
++# 	echo
++# 	echo "Configuration completed for native build"
++# 	echo
++# 	echo "            platform:  $archname"
++# 	echo "          c compiler:  $cc"
++# 	echo "                  ld:  $ld"
++# 	echo "                  ar:  $ar"
++# 	echo "              ranlib:  $ranlib"
++# 	echo
++# 	echo "              prefix:  $prefix"
++# 	echo " installation prefix:  $installprefix"
++# 	echo "         executables:  $bin"
++# 	echo "             scripts:  $bin"
++# 	echo "             privlib:  $privlib"
++# 	echo "             archlib:  $archlib"
++# 	echo " section 1 man pages:  $man1dir  (with '$man1ext' extension)"
++# 	echo " section 3 man pages:  $man3dir  (with '$man3ext' extension)"
++# 	echo
++# elif [ "$mode" = 'cross' ]; then
++# 	echo "Generating config.h and xconfig.h"
++# 	CONFIG_SH=config.sh  CONFIG_H=config.h  ./config_h.SH
++# 	CONFIG_SH=xconfig.sh CONFIG_H=xconfig.h ./config_h.SH
++# 	echo "Generating Makefile.config"
++# 	./Makefile.config.SH
++# 	echo
++# 	echo "Configuration completed for cross build"
++# 	echo
++# 	. ./xconfig.sh
++# 	echo "      build platform:  $archname"
++# 	echo "          C compiler:  $cc"
++# 	echo "              linker:  $ld"
++# 	echo "                  ar:  $ar"
++# 	echo "              ranlib:  $ranlib"
++# 	echo "             objdump:  $objdump"
++# 	echo
++# 	. ./config.sh
++# 	echo "     target platform:  $archname"
++# 	echo "          C compiler:  $cc"
++# 	echo "                  ld:  $ld"
++# 	echo "                  ar:  $ar"
++# 	echo "              ranlib:  $ranlib"
++# 	echo "             objdump:  $objdump"
++# 	echo
++# 	echo "              prefix:  $prefix"
++# 	echo "             sysroot:  $sysroot"
++# 	echo " installation prefix:  $installprefix"
++# 	echo "         executables:  $bin"
++# 	echo "             scripts:  $bin"
++# 	echo "             privlib:  $privlib"
++# 	echo "             archlib:  $archlib"
++# 	echo " section 1 man pages:  $man1dir  (with '$man1ext' extension)"
++# 	echo " section 3 man pages:  $man3dir  (with '$man3ext' extension)"
++# 	echo
++# elif [ "$mode" = "regen" ]; then
++# 	if [ -f config.sh ]; then
++# 		CONFIG_SH=config.sh  CONFIG_H=config.h  ./config_h.SH
++# 	fi
++# 	if [ -f xconfig.sh ]; then
++# 		CONFIG_SH=xconfig.sh CONFIG_H=xconfig.h ./config_h.SH
++# 	fi
++# 	echo "Generating Makefile.config"
++# 	./Makefile.config.SH
++# fi
+diff -aur perl-cross-1.4/cnf/configure_args.sh ../build/extbld/third_party/perl/cross_config/perl-cross-1.4/cnf/configure_args.sh
+--- perl-cross-1.4/cnf/configure_args.sh	2022-03-15 15:52:29.000000000 +0300
++++ cnf/configure_args.sh	2023-04-19 12:34:50.634195605 +0300
+@@ -47,9 +47,9 @@
+ 	eval "$@"
+ }
+ 
+-define config_arg0 "$0"
+-define config_argc $#
+-define config_args "$*"
++# define config_arg0 "$0"
++# define config_argc $#
++# define config_args "$*"
+ 
+ alist=''
+ 
+diff -aur perl-cross-1.4/cnf/configure_func.sh ../build/extbld/third_party/perl/cross_config/perl-cross-1.4/cnf/configure_func.sh
+--- perl-cross-1.4/cnf/configure_func.sh	2022-03-15 15:52:29.000000000 +0300
++++ cnf/configure_func.sh	2023-04-19 12:34:50.634195605 +0300
+@@ -26,24 +26,16 @@
+ includes=''
+ checkfunc d__fwalk '_fwalk'
+ checkfunc d_accept4 'accept4' "0,NULL,NULL,0" 'sys/socket.h sys/types.h'
+-checkfunc d_access 'access' "NULL,0" 'unistd.h'
+ checkfunc d_accessx 'accessx'
+ checkfunc d_aintl 'aintl'
+ checkfunc d_alarm 'alarm' "0" 'unistd.h'
+ checkfunc d_asctime64 'asctime64'
+ checkfunc d_atolf 'atolf'
+ checkfunc d_atoll 'atoll'
+-checkfunc d_backtrace 'backtrace' 'NULL, 0' 'execinfo.h'
+ checkfunc d_bcmp 'bcmp' "NULL,NULL,0" 'string.h'
+-checkfunc d_bcopy 'bcopy' "NULL,NULL,0" 'string.h'
+-checkfunc d_bzero 'bzero' "NULL,0" 'string.h'
+-checkfunc d_chown 'chown' "NULL,0,0" 'unistd.h'
+ checkfunc d_chroot 'chroot' "NULL" 'unistd.h'
+ checkfunc d_chsize 'chsize' "0,0"
+ checkfunc d_class 'class'
+-checkfunc d_clearenv 'clearenv' "" 'stdlib.h'
+-checkfunc d_closedir 'closedir' "NULL"
+-checkfunc d_crypt 'crypt'
+ checkfunc d_ctermid 'ctermid'
+ checkfunc d_ctime64 'ctime64'
+ checkfunc d_cuserid 'cuserid'
+@@ -54,120 +46,60 @@
+ checkfunc d_dlerror 'dlerror'
+ checkfunc d_dlopen 'dlopen'
+ checkfunc d_drand48 'drand48'
+-checkfunc d_dup2 'dup2' "0,0" 'unistd.h'
+ checkfunc d_dup3 'dup3' "0,0,0" 'fcntl.h unistd.h'
+ checkfunc d_duplocale 'duplocale' '0' 'locale.h'
+ checkfunc d_eaccess 'eaccess'
+-checkfunc d_endgrent 'endgrent'
+-checkfunc d_endhent 'endhostent'
+-checkfunc d_endnent 'endnetent'
+-checkfunc d_endpent 'endprotoent'
+ checkfunc d_endpwent 'endpwent'
+-checkfunc d_endservent 'endservent'
+ checkfunc d_fchdir 'fchdir' "0" 'unistd.h'
+ checkfunc d_fchmod 'fchmod' "0,0" 'unistd.h'
+ checkfunc d_fchmodat 'fchmodat' "0,NULL,0,0" 'unistd.h'
+ checkfunc d_fchown 'fchown' "0,0,0" 'unistd.h'
+-checkfunc d_fcntl 'fcntl' "0,0" 'unistd.h fcntl.h'
+ checkfunc d_fdclose 'fdclose'
+ checkfunc d_ffs 'ffs' 'strings.h'
+ checkfunc d_ffsl 'ffsl' 'strings.h'
+-checkfunc d_fgetpos 'fgetpos' "NULL, 0" 'stdio.h'
+-checkfunc d_flock 'flock' "0,0" 'unistd.h'
+ checkfunc d_fork 'fork' "" 'unistd.h'
+ checkfunc d_fp_class 'fp_class'
+ checkfunc d_fpathconf 'fpathconf' "0,0" 'unistd.h'
+ checkfunc d_freelocale 'freelocale' '0' 'locale.h'
+-checkfunc d_fseeko 'fseeko' 'NULL,0,0'
+-checkfunc d_fsetpos 'fsetpos' 'NULL,0'
+ checkfunc d_fstatfs 'fstatfs'
+ checkfunc d_fstatvfs 'fstatvfs'
+-checkfunc d_fsync 'fsync'
+-checkfunc d_ftello 'ftello'
+ checkfunc d_futimes 'futimes'
+-checkfunc d_gai_strerror 'gai_strerror' '0' 'sys/types.h sys/socket.h netdb.h'
+-checkfunc d_getaddrinfo 'getaddrinfo'
+ checkfunc d_get_current_dir_name 'get_current_dir_name'
+-checkfunc d_getcwd 'getcwd' 'NULL,0'
+ checkfunc d_getespwnam 'getespwnam'
+ checkfunc d_getfsstat 'getfsstat'
+-checkfunc d_getgrent 'getgrent'
+ checkfunc d_getgrps 'getgroups'
+-checkfunc d_gethbyaddr 'gethostbyaddr'
+-checkfunc d_gethbyname 'gethostbyname'
+-checkfunc d_getnbyaddr 'getnetbyaddr' '0,0' 'netdb.h'
+-checkfunc d_getnbyname 'getnetbyname' 'NULL' 'netdb.h'
+-checkfunc d_gethent 'gethostent'
+-checkfunc d_gethname 'gethostname'
+ checkfunc d_getitimer 'getitimer'
+ checkfunc d_getlogin 'getlogin'
+ checkfunc d_getmnt 'getmnt'
+ checkfunc d_getmntent 'getmntent'
+-checkfunc d_getnameinfo 'getnameinfo'
+-checkfunc d_getnent 'getnetent'
+-checkfunc d_getnetbyaddr 'getnetbyaddr'
+-checkfunc d_getnetbyname 'getnetbyname'
+-checkfunc d_getpagsz 'getpagesize'
+ checkfunc d_getpbyaddr 'getprotobyaddr'
+-checkfunc d_getpbyname 'getprotobyname'
+-checkfunc d_getpbynumber 'getprotobynumber'
+-checkfunc d_getpent 'getprotoent'
+ checkfunc d_getpgid 'getpgid'
+ checkfunc d_getpgrp 'getpgrp' "" 'unistd.h'
+ checkfunc d_getpgrp2 'getpgrp2'
+ checkfunc d_getppid 'getppid'
+-checkfunc d_getprior 'getpriority' "0,0" 'sys/time.h sys/resource.h'
+ checkfunc d_getprpwnam 'getprpwnam'
+ checkfunc d_getpwent 'getpwent'
+ checkfunc d_getsbyaddr 'getservbyaddr'
+-checkfunc d_getsbyname 'getservbyname'
+-checkfunc d_getsbyport 'getservbyport'
+-checkfunc d_getsent 'getservent'
+-checkfunc d_setsent 'setservent'
+-checkfunc d_endsent 'endservent'
+-checkfunc d_getspnam 'getspnam'
+-checkfunc d_gettimeod 'gettimeofday' 'NULL,NULL'
+ checkfunc d_gmtime64 'gmtime64'
+ checkfunc d_hasmntopt 'hasmntopt'
+-checkfunc d_htonl 'htonl' "0" 'stdio.h sys/types.h netinet/in.h arpa/inet.h'
+ checkfunc d_ilogbl 'ilogbl'
+ checkfunc d_index 'index' "NULL,0" 'string.h strings.h'
+-checkfunc d_inetaton 'inet_aton'
+-checkfunc d_inetntop 'inet_ntop'
+-checkfunc d_inetpton 'inet_pton'
+-checkfunc d_isascii 'isascii' "'A'" 'stdio.h ctype.h'
+-checkfunc d_isblank 'isblank' "' '" 'stdio.h ctype.h'
+ checkfunc d_killpg 'killpg'
+ checkfunc d_lchown 'lchown' "NULL, 0, 0" 'unistd.h'
+ checkfunc d_link 'link' 'NULL,NULL'
+ checkfunc d_linkat 'linkat' '0,NULL,0,NULL,0'
+ checkfunc d_localtime64 'localtime64'
+ checkfunc d_localeconv_l 'localeconv_l' 'NULL' 'locale.h'
+-checkfunc d_locconv 'localeconv'
+ checkfunc d_lockf 'lockf'
+-checkfunc d_lstat 'lstat'
+ checkfunc d_madvise 'madvise'
+ checkfunc d_malloc_good_size 'malloc_good_size'
+ checkfunc d_malloc_size 'malloc_size'
+-checkfunc d_mblen 'mblen' '"", 0' 'stdlib.h'
+-checkfunc d_mbstowcs 'mbstowcs'
+-checkfunc d_mbtowc 'mbtowc' 'NULL, NULL, 0' 'stdlib.h'
+ checkfunc d_mbrlen 'mbrlen' 'NULL, 0, NULL' 'wchar.h'
+ checkfunc d_mbrtowc 'mbrtowc' 'NULL, NULL, 0, NULL' 'wchar.h'
+-checkfunc d_memchr 'memchr' "NULL, 0, 0" 'string.h'
+-checkfunc d_memcmp 'memcmp' "NULL, NULL, 0" 'string.h'
+-checkfunc d_memcpy 'memcpy' "NULL, NULL, 0" 'string.h'
+ checkfunc d_memmem 'memmem' "NULL, 0, NULL, 0" 'string.h'
+-checkfunc d_memmove 'memmove' "NULL, NULL, 0" 'string.h'
+-checkfunc d_memrchr 'memrchr' "NULL, 0, 0" 'string.h'
+-checkfunc d_memset 'memset' "NULL, 0, 0" 'string.h'
+-checkfunc d_mkdir 'mkdir' 'NULL, 0'
+ checkfunc d_mkdtemp 'mkdtemp'
+ checkfunc d_mkfifo 'mkfifo'
+ checkfunc d_mkostemp 'mkostemp' 'NULL,0' 'stdlib.h'
+-checkfunc d_mkstemp 'mkstemp' 'NULL'
+-checkfunc d_mkstemps 'mkstemps'
+-checkfunc d_mktime 'mktime' 'NULL'
+ checkfunc d_mktime64 'mktime64'
+ checkfunc d_mmap 'mmap'
+ checkfunc d_mprotect 'mprotect'
+@@ -178,135 +110,203 @@
+ checkfunc d_msync 'msync'
+ checkfunc d_munmap 'munmap'
+ checkfunc d_newlocale 'newlocale' '0,NULL,0' 'locale.h'
+-checkfunc d_nice 'nice' '0'
+ checkfunc d_nl_langinfo 'nl_langinfo'
+ checkfunc d_nl_langinfo_l 'nl_langinfo_l'
+-checkfunc d_open 'open' "NULL,0,0" 'sys/types.h sys/stat.h fcntl.h'
+ checkfunc d_openat 'openat' "0,NULL,0,0" 'sys/types.h sys/stat.h fcntl.h'
+ checkfunc d_pathconf 'pathconf'
+ checkfunc d_pause 'pause'
+-checkfunc d_pipe 'pipe' 'NULL' 'fcntl.h unistd.h'
+ checkfunc d_pipe2 'pipe' 'NULL,0' 'fcntl.h unistd.h'
+-checkfunc d_poll 'poll'
+ checkfunc d_prctl 'prctl'
+ checkfunc d_pthread_atfork 'pthread_atfork'
+ checkfunc d_pthread_attr_setscope 'pthread_attr_setscope'
+ checkfunc d_pthread_yield 'pthread_yield'
+ checkfunc d_querylocale 'querylocale'
+ checkfunc d_qgcvt 'qgcvt' '1.0,1,NULL'
+-checkfunc d_rand 'rand'
+-checkfunc d_random 'random'
+ checkfunc d_re_comp 're_comp'
+-checkfunc d_readdir 'readdir' 'NULL'
+ checkfunc d_readlink 'readlink'
+ checkfunc d_realpath 'realpath'
+-checkfunc d_readv 'readv'
+-checkfunc d_recvmsg 'recvmsg'
+ checkfunc d_regcmp 'regcmp'
+ checkfunc d_regcomp 'regcomp'
+-checkfunc d_rename 'rename' 'NULL,NULL'
+ checkfunc d_renameat 'renameat' '0,NULL,0,NULL'
+-checkfunc d_rewinddir 'rewinddir'
+-checkfunc d_rmdir 'rmdir' 'NULL'
+-checkfunc d_sched_yield 'sched_yield'
+ checkfunc d_seekdir 'seekdir'
+-checkfunc d_select 'select' '0,NULL,NULL,NULL,NULL'
+ checkfunc d_semctl 'semctl'
+ checkfunc d_semget 'semget'
+ checkfunc d_semop 'semop'
+-checkfunc d_sendmsg 'sendmsg'
+-checkfunc d_setegid 'setegid'
+-checkfunc d_setent 'setservent'
+-checkfunc d_setenv 'setenv'
+-checkfunc d_seteuid 'seteuid'
+-checkfunc d_setgrent 'setgrent'
+ checkfunc d_setgrps 'setgroups'
+-checkfunc d_sethent 'sethostent'
+ checkfunc d_setitimer 'setitimer'
+ checkfunc d_setlinebuf 'setlinebuf'
+-checkfunc d_setlocale 'setlocale' "0,NULL" 'locale.h'
+-checkfunc d_setnent 'setnetent'
+-checkfunc d_setpent 'setprotoent'
+ checkfunc d_setpgid 'setpgid'
+ checkfunc d_setpgrp 'setpgrp'
+ checkfunc d_setpgrp2 'setpgrp2'
+-checkfunc d_setprior 'setpriority'
+ checkfunc d_setproctitle 'setproctitle'
+ checkfunc d_setpwent 'setpwent'
+-checkfunc d_setregid 'setregid'
+ checkfunc d_setresgid 'setresgid'
+ checkfunc d_setresuid 'setresuid'
+-checkfunc d_setreuid 'setreuid'
+ checkfunc d_setrgid 'setrgid'
+ checkfunc d_setruid 'setruid'
+ checkfunc d_setsid 'setsid'
+-checkfunc d_setvbuf 'setvbuf' 'NULL,NULL,0,0'
+ checkfunc d_sfreserve 'sfreserve' "" 'sfio.h'
+ checkfunc d_shmat 'shmat'
+ checkfunc d_shmctl 'shmctl'
+ checkfunc d_shmdt 'shmdt'
+ checkfunc d_shmget 'shmget'
+-checkfunc d_sigaction 'sigaction'
+ checkfunc d_sigprocmask 'sigprocmask'
+ checkfunc d_sigsetjmp 'sigsetjmp' "NULL,0" 'setjmp.h'
+-checkfunc d_snprintf 'snprintf'
+ checkfunc d_sockatmark 'sockatmark'
+-checkfunc d_socket 'socket' "0,0,0" 'sys/types.h sys/socket.h'
+ checkfunc d_sockpair 'socketpair'
+ checkfunc d_socks5_init 'socks5_init'
+-checkfunc d_stat 'stat'
+ checkfunc d_statvfs 'statvfs'
+-checkfunc d_strchr 'strchr' "NULL,0" 'string.h strings.h'
+-checkfunc d_strcoll 'strcoll' "NULL,NULL" 'string.h'
+-checkfunc d_strerror 'strerror' "0" 'string.h stdlib.h'
+ checkfunc d_strerror_l 'strerror_l'
+-checkfunc d_strftime 'strftime' "NULL,0,NULL,NULL" 'time.h'
+ checkfunc d_strlcat 'strlcat'
+-checkfunc d_strlcpy 'strlcpy'
+-checkfunc d_strnlen 'strnlen' '"",0' 'string.h'
+-checkfunc d_strtod 'strtod' 'NULL,NULL'
+ checkfunc d_strtod_l 'strtod_l'
+-checkfunc d_strtol 'strtol' 'NULL,NULL,0'
+ checkfunc d_strtold 'strtold'
+ checkfunc d_strtold_l 'strtold_l'
+-checkfunc d_strtoll 'strtoll'
+-checkfunc d_strtoq 'strtoq'
+-checkfunc d_strtoul 'strtoul' 'NULL,NULL,0'
+-checkfunc d_strtoull 'strtoull' 'NULL,NULL,0'
+-checkfunc d_strtouq 'strtouq'
+-checkfunc d_strxfrm 'strxfrm'
+ checkfunc d_strxfrm_l 'strxfrm_l'
+ checkfunc d_symlink 'symlink'
+ checkfunc d_syscall 'syscall'
+-checkfunc d_sysconf 'sysconf' '0'
+-checkfunc d_system 'system' 'NULL'
+-checkfunc d_tcgetpgrp 'tcgetpgrp'
+-checkfunc d_tcsetpgrp 'tcsetpgrp'
+ checkfunc d_telldir 'telldir'
+-checkfunc d_time 'time' 'NULL'
+ checkfunc d_timegm 'timegm'
+ checkfunc d_times 'times' 'NULL'
+-checkfunc d_towlower 'towlower' '0' 'wctype.h'
+-checkfunc d_towupper 'towupper' '0' 'wctype.h'
+-checkfunc d_truncate 'truncate' 'NULL,0'
+ checkfunc d_ualarm 'ualarm'
+-checkfunc d_umask 'umask' '0'
+-checkfunc d_uname 'uname'
+ checkfunc d_unlinkat 'unlinkat' '0,NULL,0'
+ checkfunc d_unordered 'unordered'
+-checkfunc d_unsetenv 'unsetenv'
+ checkfunc d_uselocale 'uselocale' '0' 'locale.h'
+-checkfunc d_usleep 'usleep'
+ checkfunc d_ustat 'ustat'
+-define d_vfork 'undef' # unnecessary
+-checkfunc d_vprintf 'vprintf' 'NULL,0'
+-checkfunc d_vsnprintf 'vsnprintf'
+-checkfunc d_wait4 'wait4'
+-checkfunc d_waitpid 'waitpid' '0,NULL,0'
+ checkfunc d_wcrtomb 'wcrtomb'
+-checkfunc d_wcscmp 'wcscmp'
+-checkfunc d_wcstombs 'wcstombs' 'NULL,NULL,0'
+ checkfunc d_wcsxfrm 'wcsxfrm'
+-checkfunc d_wctomb 'wctomb'
+-checkfunc d_writev 'writev'
++define d_access 'define'
++define d_backtrace 'define'
++define d_bcopy 'define'
++define d_bzero 'define'
++define d_chown 'define'
++define d_clearenv 'define'
++define d_closedir 'define'
++define d_crypt 'define'
++define d_dup2 'define'
++define d_endgrent 'define'
++define d_endhent 'define'
++define d_endnent 'define'
++define d_endpent 'define'
++define d_endservent 'define'
++define d_fcntl 'define'
++define d_fgetpos 'define'
++define d_flock 'define'
++define d_fseeko 'define'
++define d_fsetpos 'define'
++define d_fsync 'define'
++define d_ftello 'define'
++define d_gai_strerror 'define'
++define d_getaddrinfo 'define'
++define d_getcwd 'define'
++define d_getgrent 'define'
++define d_gethbyaddr 'define'
++define d_gethbyname 'define'
++define d_getnbyaddr 'define'
++define d_getnbyname 'define'
++define d_gethent 'define'
++define d_gethname 'define'
++define d_getnameinfo 'define'
++define d_getnent 'define'
++define d_getnetbyaddr 'define'
++define d_getnetbyname 'define'
++define d_getpagsz 'define'
++define d_getpbyname 'define'
++define d_getpbynumber 'define'
++define d_getpent 'define'
++define d_getprior 'define'
++define d_getsbyname 'define'
++define d_getsbyport 'define'
++define d_getsent 'define'
++define d_setsent 'define'
++define d_endsent 'define'
++define d_getspnam 'define'
++define d_gettimeod 'define'
++define d_htonl 'define'
++define d_inetaton 'define'
++define d_inetntop 'define'
++define d_inetpton 'define'
++define d_isascii 'define'
++define d_isblank 'define'
++define d_locconv 'define'
++define d_lstat 'define'
++define d_mblen 'define'
++define d_mbstowcs 'define'
++define d_mbtowc 'define'
++define d_memchr 'define'
++define d_memcmp 'define'
++define d_memcpy 'define'
++define d_memmove 'define'
++define d_memrchr 'define'
++define d_memset 'define'
++define d_mkdir 'define'
++define d_mkstemp 'define'
++define d_mkstemps 'define'
++define d_mktime 'define'
++define d_nice 'define'
++define d_open 'define'
++define d_pipe 'define'
++define d_poll 'define'
++define d_rand 'define'
++define d_random 'define'
++define d_readdir 'define'
++define d_readv 'define'
++define d_recvmsg 'define'
++define d_rename 'define'
++define d_rewinddir 'define'
++define d_rmdir 'define'
++define d_sched_yield 'define'
++define d_select 'define'
++define d_sendmsg 'define'
++define d_setegid 'define'
++define d_setent 'define'
++define d_setenv 'define'
++define d_seteuid 'define'
++define d_setgrent 'define'
++define d_sethent 'define'
++define d_setlocale 'define'
++define d_setnent 'define'
++define d_setpent 'define'
++define d_setprior 'define'
++define d_setregid 'define'
++define d_setreuid 'define'
++define d_setvbuf 'define'
++define d_sigaction 'define'
++define d_snprintf 'define'
++define d_socket 'define'
++define d_stat 'define'
++define d_strchr 'define'
++define d_strcoll 'define'
++define d_strerror 'define'
++define d_strftime 'define'
++define d_strlcpy 'define'
++define d_strnlen 'define'
++define d_strtod 'define'
++define d_strtol 'define'
++define d_strtoll 'define'
++define d_strtoq 'define'
++define d_strtoul 'define'
++define d_strtoull 'define'
++define d_strtouq 'define'
++define d_strxfrm 'define'
++define d_sysconf 'define'
++define d_system 'define'
++define d_tcgetpgrp 'define'
++define d_tcsetpgrp 'define'
++define d_time 'define'
++define d_towlower 'define'
++define d_towupper 'define'
++define d_truncate 'define'
++define d_umask 'define'
++define d_uname 'define'
++define d_unsetenv 'define'
++define d_usleep 'define'
++define d_vprintf 'define'
++define d_vsnprintf 'define'
++define d_wait4 'define'
++define d_waitpid 'define'
++define d_wcscmp 'define'
++define d_wcstombs 'define'
++define d_wctomb 'define'
++define d_writev 'define'
++define d_vfork 'define'
+ unset includes
+diff -aur perl-cross-1.4/cnf/configure_tool.sh ../build/extbld/third_party/perl/cross_config/perl-cross-1.4/cnf/configure_tool.sh
+--- perl-cross-1.4/cnf/configure_tool.sh	2022-03-15 15:52:29.000000000 +0300
++++ cnf/configure_tool.sh	2023-04-19 12:34:50.634195605 +0300
+@@ -153,11 +153,11 @@
+ define _exe ''
+ 
+ # Used only for modules
+-define cccdlflags '-fPIC -Wno-unused-function'
+-define ccdlflags '-Wl,-E'
++define cccdlflags ''
++define ccdlflags ''
+ 
+ # Misc flags setup
+-predef lddlflags "-shared"	# modules
++predef lddlflags ""	# modules
+ predef ccflags ''		# perl and modules
+ predef ldflags ''		# perl only?
+ predef cppflags ''		# unused?
+@@ -304,9 +304,9 @@
+ if [ "$cctype" = 'gcc' ]; then
+ 	case "$ccversion" in
+ 		1.*|2.*|3.*) ;;
+-		4.9*) append 'optimize' '-fwrapv -fno-strict-aliasing' ;;
++		4.9*) append '' ;;
+ 		4.*) ;;
+-		*) append 'optimize' '-fwrapv -fno-strict-aliasing' ;;
++		*) append '' ;;
+ 	esac
+ fi
+ enddef optimize
+@@ -316,7 +316,7 @@
+ # For newer gcc-s, -E alone is *not* enough! Perl expects cpp not to break
+ # lines, but gcc injects #line directives in-between tokens, subtly breaking
+ # try_preproc and Errno.pm
+-define cpp "$cc -E -P"
++define cpp "$cc -E"
+ define cpprun "$cpp"
+ define cppstdin "$cpp"
+ 
+--- cnf/configure_func_dbl.sh-old	2023-04-27 17:13:10.063748088 +0300
++++ cnf/configure_func_dbl.sh	2023-04-27 17:13:43.916003382 +0300
+@@ -1,73 +1,73 @@
+ # Same tests as with non-FP routines, but these all require math.h.
+ 
+ includes='math.h'
+-checkfunc d_acosh 'acosh' '0.0'
+-checkfunc d_asinh 'asinh' '0.0'
+-checkfunc d_atanh 'atanh' '0.0'
+-checkfunc d_cbrt 'cbrt' '0.0'
+-checkfunc d_copysign 'copysign' '0.0, 0.0'
+ checkfunc d_copysignl 'copysignl' "0.0,0.0"
+-checkfunc d_erf 'erf' '0.0'
+-checkfunc d_erfc 'erfc' '0.0'
+-checkfunc d_exp2 'exp2' '0.0'
+-checkfunc d_expm1 'expm1' '0.0'
+-checkfunc d_fdim 'fdim' '0.0, 0.0'
+ checkfunc d_fegetround 'fegetround' '' 'fenv.h'
+-checkfunc d_finite 'finite' "0.0"
+-checkfunc d_finitel 'finitel' "0.0"
+-checkfunc d_fma 'fma' '0.0, 0.0, 0.0'
+-checkfunc d_fmax 'fmax' '0.0, 0.0'
+-checkfunc d_fmin 'fmin' '0.0, 0.0'
+ checkfunc d_fp_classify 'fp_classify' '0.0'
+ checkfunc d_fp_classl 'fp_classl' '0.0'
+ # d_fpclass see below
+ # d_fpclassify see below
+ checkfunc d_fpclassl 'fpclassl' "1.0" 'ieeefp.h'
+ checkfunc d_fpgetround 'fpgetround' '' 'fenv.h'
+-checkfunc d_frexpl 'frexpl' '0,NULL'
+-checkfunc d_hypot 'hypot' '0.0, 0.0'
+-checkfunc d_ilogb 'ilogb' '0.0'
+-checkfunc d_isfinite 'isfinite' "0.0"
+ checkfunc d_isfinitel 'isfinitel' '0.0'
+-checkfunc d_isinf 'isinf' "0.0"
+ checkfunc d_isinfl 'isinfl' '0.0'
+-checkfunc d_isless 'isless' '0.0, 0.0'
+-checkfunc d_isnan 'isnan' "0.0"
+ checkfunc d_isnanl 'isnanl' "0.0"
+-checkfunc d_isnormal 'isnormal' '0.0'
+-checkfunc d_j0 'j0' '0.0'
+ checkfunc d_j0l 'j0l' '0.0'
+-checkfunc d_ldexpl 'ldexpl' '0.0, 0'
+-checkfunc d_lgamma 'lgamma' '0.0'
+-checkfunc d_lgamma_r 'lgamma_r' '0.0, NULL'
+ checkfunc d_llabs 'llabs' '0LL'
+-checkfunc d_llrint 'llrint' '0.0'
+ checkfunc d_llrintl 'llrintl' '0.0'
+-checkfunc d_llround 'llround' '0.0'
+ checkfunc d_llroundl 'llroundl' '0.0'
+-checkfunc d_log1p 'log1p' '0.0'
+-checkfunc d_log2 'log2' '0.0'
+-checkfunc d_logb 'logb' '0.0'
+-checkfunc d_lrint 'lrint' '0.0'
+ checkfunc d_lrintl 'lrintl' '0.0'
+-checkfunc d_lround 'lround' '0.0'
+ checkfunc d_lroundl 'lroundl' '0.0'
+ checkfunc d_modfl 'modfl' "0.0,NULL"
+-checkfunc d_nan 'nan' 'NULL' 'stdlib.h math.h'
+-checkfunc d_nearbyint 'nearbyint' '0.0'
+-checkfunc d_nextafter 'nextafter' '0.0, 0.0'
+-checkfunc d_nexttoward 'nexttoward' '0.0, 0.0'
+-checkfunc d_remainder 'remainder' '0.0, 0.0'
+-checkfunc d_remquo 'remquo' '0.0, 0.0, NULL'
+-checkfunc d_rint 'rint' '0.0'
+-checkfunc d_round 'round' '0.0'
+-checkfunc d_scalbn 'scalbn' '0.0, 0'
+-checkfunc d_scalbnl 'scalbnl' "0.0,0"
+-checkfunc d_signbit 'signbit' '.0'
+-checkfunc d_sqrtl 'sqrtl' "0.0"
+-checkfunc d_tgamma 'tgamma' '0.0'
+-checkfunc d_trunc 'trunc' '0.0'
+-checkfunc d_truncl 'truncl' '0.0'
++define d_acosh 'define'
++define d_asinh 'define'
++define d_atanh 'define'
++define d_cbrt 'define'
++define d_copysign 'define'
++define d_erf 'define'
++define d_erfc 'define'
++define d_exp2 'define'
++define d_expm1 'define'
++define d_fdim 'define'
++define d_finite 'define'
++define d_finitel 'define'
++define d_fma 'define'
++define d_fmax 'define'
++define d_fmin 'define'
++define d_frexpl 'define'
++define d_hypot 'define'
++define d_ilogb 'define'
++define d_isfinite 'define'
++define d_isinf 'define'
++define d_isless 'define'
++define d_isnan 'define'
++define d_isnormal 'define'
++define d_j0 'define'
++define d_ldexpl 'define'
++define d_lgamma 'define'
++define d_lgamma_r 'define'
++define d_llrint 'define'
++define d_llround 'define'
++define d_log1p 'define'
++define d_log2 'define'
++define d_logb 'define'
++define d_lrint 'define'
++define d_lround 'define'
++define d_nan 'define'
++define d_nearbyint 'define'
++define d_nextafter 'define'
++define d_nexttoward 'define'
++define d_remainder 'define'
++define d_remquo 'define'
++define d_rint 'define'
++define d_round 'define'
++define d_scalbn 'define'
++define d_scalbnl 'define'
++define d_signbit 'define'
++define d_sqrtl 'define'
++define d_tgamma 'define'
++define d_trunc 'define'
++define d_truncl 'define'
+ unset includes
+ 
+ # Extended test for fpclassify. Linking alone is not enough apparently,
