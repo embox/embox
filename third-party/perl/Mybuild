@@ -9,7 +9,7 @@ package third_party.cmd
 @BuildDepends(third_party.staticperl.build)
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 module perl {
-	option string modules=""
+	option string perl_modules=""
 	
 	source "^BUILD/extbld/^MOD_PATH/install/perl.o"
 	

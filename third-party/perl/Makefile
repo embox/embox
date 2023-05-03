@@ -11,7 +11,7 @@ $(CONFIGURE) :
 $(BUILD) :
 	cd $(PKG_INSTALL_DIR) && ( \
 		$(EXTERNAL_BUILD_DIR)/third_party/staticperl/build/install/staticperl.sh \
-			mkperl $(addprefix -M,$(call option_get_string,modules)) \
+			mkperl $(addprefix -M,$(call option_get_string,perl_modules)) \
 	)
 	touch $@
 
