@@ -31,3 +31,5 @@
 "tclsh tcludp_localhost.tcl",
 
 "duk fib.js",
+
+"perl fib.pl",
