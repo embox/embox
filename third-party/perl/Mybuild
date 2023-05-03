@@ -3,7 +3,7 @@ package third_party.cmd
 @App
 @AutoCmd
 @Cmd(name="perl",
-	help="perl",
+	help="Interpreter of the Perl programming language",
 	man='''
 	''')
 @BuildDepends(third_party.staticperl.build)
