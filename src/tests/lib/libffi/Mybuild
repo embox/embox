@@ -1,0 +1,9 @@
+package embox.test.ffi
+
+@BuildDepends(third_party.libs.libffi)
+@Build(stage=2,script="true")
+module ffi_test {
+	source "libffi_test.c"
+
+	depends third_party.libs.libffi
+}
