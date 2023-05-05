@@ -1,6 +1,6 @@
 package platform.stm32.l4.stm32l4_discovery
 
-@BuildArtifactPath(cppflags="-DSTM32L475xx -DUSE_BL475EIOT01A")
+@BuildArtifactPath(cppflags="-DSTM32L475xx -DUSE_STM32L475E_IOT01")
 static module stm32l4_discovery_conf extends third_party.bsp.stml4cube.stm32l4_conf {
 	@IncludeExport(path="")
 	source "stm32l4xx_hal_conf.h"

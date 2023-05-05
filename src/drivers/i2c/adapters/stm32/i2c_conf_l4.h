@@ -8,11 +8,12 @@
 #ifndef SRC_DRIVERS_ADAPTERS_STM32_I2C_CONF_L4_H_
 #define SRC_DRIVERS_ADAPTERS_STM32_I2C_CONF_L4_H_
 
-#if defined(USE_BL475EIOT01A)
+#if defined(USE_STM32L475E_IOT01)
 #include "stm32l475e_iot01.h"
 #else
 #error Unsupported platform
 #endif
+
 #include <drivers/gpio/gpio.h>
 #include <assert.h>
 #include <framework/mod/options.h>
