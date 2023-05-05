@@ -2,7 +2,7 @@ package third_party.cmd
 
 @App
 @AutoCmd
-@BuildDepends(third_party.lib.mosquitto)
+@BuildDepends(third_party.mosquitto_build)
 @Build(stage=2)
 @Cmd(name = "mosquitto",
 	help = "mosquitto is a broker for the MQTT protocol version 5.0/3.1.1/3.1.",
@@ -16,13 +16,13 @@ package third_party.cmd
 	''')
 module mosquitto {
 	source "^BUILD/extbld/third_party/mosquitto_build/install/mosquitto.o"
-	
-	depends third_party.lib.mosquitto
+
+	depends third_party.mosquitto_build
 }
 
 @App
 @AutoCmd
-@BuildDepends(third_party.lib.mosquitto)
+@BuildDepends(third_party.mosquitto_build)
 @Build(stage=2)
 @Cmd(name = "mosquitto_sub",
 	help = "an MQTT version 5/3.1.1/3.1 client for subscribing to topics",
@@ -44,13 +44,14 @@ module mosquitto {
 	''')
 module mosquitto_sub {
 	source "^BUILD/extbld/third_party/mosquitto_build/install/mosquitto_sub.o"
-	
-	depends third_party.lib.mosquitto
+
+	@NoRuntime depends third_party.lib.mosquitto
+	depends third_party.mosquitto_build
 }
 
 @App
 @AutoCmd
-@BuildDepends(third_party.lib.mosquitto)
+@BuildDepends(third_party.mosquitto_build)
 @Build(stage=2)
 @Cmd(name = "mosquitto_pub",
 	help = "an MQTT version 5/3.1.1/3.1 client for publishing simple messages",
@@ -72,7 +73,7 @@ module mosquitto_sub {
 	''')
 module mosquitto_pub {
 	source "^BUILD/extbld/third_party/mosquitto_build/install/mosquitto_pub.o"
-	
-	depends third_party.lib.mosquitto
-	depends embox.compat.posix.util.nanosleep
+
+	@NoRuntime depends third_party.lib.mosquitto
+	depends third_party.mosquitto_build
 }

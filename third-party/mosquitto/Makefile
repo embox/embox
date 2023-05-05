@@ -10,11 +10,13 @@ PKG_PATCHES := pkg_patch.patch
 include $(EXTBLD_LIB)
 
 MOSQUITTO_CPPFLAGS = "-include $(ROOT_DIR)/third-party/mosquitto/mosquitto_embox_compat.h \
-	-I$(ROOT_DIR)/third-party/mosquitto/include"
+	-I$(ROOT_DIR)/third-party/mosquitto/include \
+	-Dproperty__get_remaining_length=mosquitto_broken_function"
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
-		$(MAKE) CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX) CPPFLAGS=$(MOSQUITTO_CPPFLAGS) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+			CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX) CPPFLAGS=$(MOSQUITTO_CPPFLAGS) \
 	)
 	touch $@
 

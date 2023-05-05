@@ -8,7 +8,6 @@
 #ifndef MOSQUITTO_EMBOX_COMPAT_H_
 #define MOSQUITTO_EMBOX_COMPAT_H_
 
-
 #ifdef linux
 #undef linux
 #endif
@@ -29,7 +28,6 @@
 
 #include <ctype.h>
 
-
 #include <errno.h>
 
 __BEGIN_DECLS
@@ -37,8 +35,8 @@ __BEGIN_DECLS
 #include <pthread.h>
 
 static inline int initgroups(const char *user, gid_t group) {
-	(void) user;
-	(void) group;
+	(void)user;
+	(void)group;
 	return 0;
 }
 
@@ -47,12 +45,10 @@ static inline pid_t setsid(void) {
 	return -1;
 }
 
-static inline
-pid_t getppid(void) {
+static inline pid_t getppid(void) {
 	DPRINT();
 	return 0;
 }
-
 
 static inline pid_t fork() {
 	printf(">>> fork()\n");
@@ -62,8 +58,7 @@ static inline pid_t fork() {
 
 #include <sys/socket.h>
 
-static inline
-int socketpair(int domain, int type, int protocol, int sv[2]) {
+static inline int socketpair(int domain, int type, int protocol, int sv[2]) {
 	(void)domain;
 	(void)type;
 	(void)protocol;
@@ -72,8 +67,7 @@ int socketpair(int domain, int type, int protocol, int sv[2]) {
 	return -1;
 }
 
-static inline
-unsigned int alarm(unsigned int seconds) {
+static inline unsigned int alarm(unsigned int seconds) {
 	return 0;
 }
 
