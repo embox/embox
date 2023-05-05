@@ -1,6 +1,6 @@
 package third_party
 
-@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
 module mosquitto_build {
 	@NoRuntime depends embox.compat.posix.LibPosix
 	@NoRuntime depends embox.compat.posix.stubs

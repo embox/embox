@@ -45,7 +45,7 @@ module mosquitto {
 module mosquitto_sub {
 	source "^BUILD/extbld/third_party/mosquitto_build/install/mosquitto_sub.o"
 
-	@NoRuntime depends third_party.lib.mosquitto
+	@NoRuntime depends third_party.lib.LibMosquitto
 	depends third_party.mosquitto_build
 }
 
@@ -74,6 +74,6 @@ module mosquitto_sub {
 module mosquitto_pub {
 	source "^BUILD/extbld/third_party/mosquitto_build/install/mosquitto_pub.o"
 
-	@NoRuntime depends third_party.lib.mosquitto
+	@NoRuntime depends third_party.lib.LibMosquitto
 	depends third_party.mosquitto_build
 }
