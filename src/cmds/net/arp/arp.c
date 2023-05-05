@@ -10,6 +10,7 @@
 
 #include <stdio.h>
 #include <unistd.h>
+#include <string.h>
 #include <arpa/inet.h>
 
 #include <net/util/macaddr.h>
@@ -17,16 +18,15 @@
 #include <net/l3/arp.h>
 #include <net/neighbour.h>
 #include <net/inetdevice.h>
-#include <string.h>
 
 static void print_usage(void) {
 	printf("Usage: arp [-h] [-i if] [-s addr hwaddr|-d addr]\n");
 }
 
-static int print_arp_entity(const struct neighbour *n,
-		struct in_device *in_dev) {
+static int print_arp_entity(const struct neighbour *n, void *args) {
 	unsigned char hw_addr[18];
 	char addr[INET6_ADDRSTRLEN];
+	struct in_device *in_dev = args;
 
 	assert(n != NULL);
 
@@ -48,7 +48,7 @@ static int print_arp_entity(const struct neighbour *n,
 
 static void print_arp_cache(struct in_device *in_dev) {
 	printf("Address         HWtype  HWaddress         Flags Iface\n");
-	neighbour_foreach((neighbour_foreach_ft)&print_arp_entity, in_dev);
+	neighbour_foreach(print_arp_entity, in_dev);
 }
 
 int main(int argc, char **argv) {
