@@ -62,13 +62,11 @@ struct mgeth_priv {
 	struct mgeth_regs *regs;
 
 	struct rcm_mgeth_long_desc rxbd_base[MGETH_RXBD_CNT + 1] __attribute__ ((aligned (16)));
-	struct rcm_mgeth_long_desc txbd_base[MGETH_TXBD_CNT + 1] __attribute__ ((aligned (16)));
-
 	int rxbd_no;
 	uint8_t rx_buffs[MGETH_RXBD_CNT][MGETH_RXBUF_SIZE] __attribute__ ((aligned (8)));
 
-	volatile struct sk_buff *rx_active_skb[MGETH_RXBD_CNT];
 
+	struct rcm_mgeth_long_desc txbd_base[MGETH_TXBD_CNT + 1] __attribute__ ((aligned (16)));
 	int txbd_no;
 	volatile struct sk_buff *tx_active_skb[MGETH_TXBD_CNT];
 
@@ -234,12 +232,16 @@ static int mgeth_send(struct mgeth_priv *priv, struct sk_buff *skb) {
 	struct mgeth_tx_regs *mgeth_tx_regs = &priv->regs->tx[0];
 	int len = skb->len;
 
-
 	/* copy to internal buffer if size less than min */
 	if (len < ETH_ZLEN) {
 		len = ETH_ZLEN;
 	}
 
+//	irq_lock();
+//	if (priv->txbd_no != 0) {
+//
+//	}
+//	irq_unlock();
 	dcache_flush(skb->mac.raw, len);
 
 	/* wait for completion of previous transfer */
@@ -288,48 +290,47 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 			dcache_inval(curr_bd, sizeof(struct rcm_mgeth_long_desc));
 
 			if (!(curr_bd->flags_length & MGETH_BD_OWN)) {
+				//log_error("sbreak curr_bd->flags_length & MGETH_BD_OWN %d", priv->rxbd_no);
 				break;
 			}
 
 			if (curr_bd->flags_length & MGETH_BD_LINK) {
-				mgeth_rxd_init(priv, priv->rxbd_no);
+
+				mgeth_rxd_init(priv, MGETH_RXBD_CNT);
 				priv->rxbd_no = 0;
+				//log_error("continue MGETH_BD_LINK %d", priv->rxbd_no);
 				continue;
 			}
 
 			len = curr_bd->flags_length & MGETH_BD_LEN_MASK;
 
-			if (len == 0) {
-				mgeth_rxd_init(priv, priv->rxbd_no);
-				priv->rxbd_no++;
-				continue;
+			if (len != 0) {
+
+				buf = (void *)((uintptr_t)(curr_bd->memptr));
+				dcache_inval(buf, len);
+
+				skb = skb_alloc(len);
+
+				if (skb == NULL) {
+					log_error("skb_alloc failed drop an ethernet frame");
+					show_packet(buf, len, "dropped rx");
+					continue;
+				} else {
+
+					memcpy(skb->mac.raw, buf, len);
+					skb->dev = nic_p;
+
+					rx_skb[cnt] = skb;
+					cnt++;
+				}
+			} else {
+				//log_error("rx desc len =0 %d", priv->rxbd_no);
 			}
 
-			buf = (void *)((uintptr_t)(curr_bd->memptr));
-			dcache_inval(buf, len);
-
-			skb = skb_alloc(len);
-
-			if (skb == NULL) {
-				log_error("skb_alloc failed drop an ethernet frame");
-				show_packet(buf, skb->len, "rx");
-
-				mgeth_rxd_init(priv, priv->rxbd_no);
-				priv->rxbd_no ++;
-				continue;
-			}
-
-			memcpy(skb->mac.raw, buf, len);
-			skb->dev = nic_p;
-
-			rx_skb[cnt] = skb;
-			cnt++;
-
-//			show_packet(skb->mac.raw, skb->len, "rx");
-//
-//			netif_rx(skb);
 			mgeth_rxd_init(priv, priv->rxbd_no);
 			priv->rxbd_no ++;
+			priv->rxbd_no %= (MGETH_RXBD_CNT + 1);
+			//log_error("ok %d ",priv->rxbd_no);
 		}
 
 	}
@@ -345,12 +346,15 @@ static void mgeth_xmit_complite(struct mgeth_priv *mgeth_priv, int i) {
 	dma_status = REG32_LOAD(&mgeth_priv->regs->tx[i].dma_regs.status);
 	log_debug("tx_chan (%i) dma status (0x%x)", i, dma_status);
 
+	irq_lock();
 //	dcache_inval(&mgeth_priv->txbd_base[0], sizeof(struct rcm_mgeth_long_desc));
 	skb = (struct sk_buff *)mgeth_priv->tx_active_skb[0];
 
-	skb_free(skb);
-
 	mgeth_priv->tx_active_skb[0] = NULL;
+
+	irq_unlock();
+
+	skb_free(skb);
 }
 
 static irq_return_t mgeth_irq_handler(unsigned int irq_num, void *dev_id) {
@@ -380,6 +384,7 @@ static irq_return_t mgeth_irq_handler(unsigned int irq_num, void *dev_id) {
 				int j;
 				struct sk_buff *rx_skb[MGETH_RXBD_CNT];
 				rx_cnt = mgeth_rx_chan(nic_p, i, rx_skb);
+				//log_error("got %d, ind=%d)", rx_cnt, mgeth_priv->rxbd_no);
 				for (j = 0; j < rx_cnt; j ++) {
 					struct sk_buff *skb = rx_skb[j];
 
