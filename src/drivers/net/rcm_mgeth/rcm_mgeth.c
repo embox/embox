@@ -290,17 +290,19 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 			dcache_inval(curr_bd, sizeof(struct rcm_mgeth_long_desc));
 
 			if (!(curr_bd->flags_length & MGETH_BD_OWN)) {
-				//log_error("sbreak curr_bd->flags_length & MGETH_BD_OWN %d", priv->rxbd_no);
+				//log_error("break rx_bd idx %d", priv->rxbd_no);
 				break;
 			}
 
 			if (curr_bd->flags_length & MGETH_BD_LINK) {
-
+				//log_error("continue MGETH_BD_LINK %d", priv->rxbd_no);
 				mgeth_rxd_init(priv, MGETH_RXBD_CNT);
 				priv->rxbd_no = 0;
-				//log_error("continue MGETH_BD_LINK %d", priv->rxbd_no);
+
 				continue;
 			}
+
+			assert(priv->rxbd_no < MGETH_RXBD_CNT);
 
 			len = curr_bd->flags_length & MGETH_BD_LEN_MASK;
 
@@ -324,13 +326,12 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 					cnt++;
 				}
 			} else {
-				//log_error("rx desc len =0 %d", priv->rxbd_no);
+				log_debug("rx desc len =0 %d", priv->rxbd_no);
 			}
 
 			mgeth_rxd_init(priv, priv->rxbd_no);
-			priv->rxbd_no ++;
-			priv->rxbd_no %= (MGETH_RXBD_CNT + 1);
-			//log_error("ok %d ",priv->rxbd_no);
+			priv->rxbd_no++;
+
 		}
 
 	}
