@@ -153,7 +153,7 @@ static int ifconfig_print_long_hdr(void) {
 
 static int ifconfig_print_long_info(struct in_device *iface) {
 	struct net_device_stats *stat;
-	unsigned char mac[] = "xx:xx:xx:xx:xx:xx";
+	unsigned char mac[32] = {0}; /* "xx:xx:xx:xx:xx:xx" */
 	struct in_addr in;
 	char s_in[INET_ADDRSTRLEN], s_in6[INET6_ADDRSTRLEN];
 
