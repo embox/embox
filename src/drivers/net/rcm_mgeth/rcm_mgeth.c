@@ -37,8 +37,6 @@
 #define BIT(b) ( 1 << (b))
 
 #define MGPIO0_BASE    (0x01084000)
-//#define MDIO0_BASE     (0x01080000)
-
 
 EMBOX_UNIT_INIT(mgeth_init);
 
@@ -52,7 +50,7 @@ extern void dcache_flush(const void *p, size_t size);
 
 #define ETH_PHY_ID                0xBBCD
 
-#define AN_EN          0
+#define AUTONEGOTIATION_EN          0
 
 #define MGETH_RXBD_CNT 8 /* CNT + link */
 #define MGETH_TXBD_CNT 4 /* CNT + link */
@@ -64,16 +62,15 @@ struct mgeth_priv {
 	struct mgeth_regs *regs;
 
 	struct rcm_mgeth_long_desc rxbd_base[MGETH_RXBD_CNT + 1] __attribute__ ((aligned (16)));
-	struct rcm_mgeth_long_desc txbd_base[MGETH_TXBD_CNT + 1] __attribute__ ((aligned (16)));
-
 	int rxbd_no;
 	uint8_t rx_buffs[MGETH_RXBD_CNT][MGETH_RXBUF_SIZE] __attribute__ ((aligned (8)));
 
+
+	struct rcm_mgeth_long_desc txbd_base[MGETH_TXBD_CNT + 1] __attribute__ ((aligned (16)));
 	int txbd_no;
-	volatile struct sk_buff *tx_active_skb[MGETH_RXBD_CNT];
+	volatile struct sk_buff *tx_active_skb[MGETH_TXBD_CNT];
 
 };
-
 
 
 static int mgeth_xmit(struct net_device *dev, struct sk_buff *skb);
@@ -235,12 +232,16 @@ static int mgeth_send(struct mgeth_priv *priv, struct sk_buff *skb) {
 	struct mgeth_tx_regs *mgeth_tx_regs = &priv->regs->tx[0];
 	int len = skb->len;
 
-
 	/* copy to internal buffer if size less than min */
 	if (len < ETH_ZLEN) {
 		len = ETH_ZLEN;
 	}
 
+//	irq_lock();
+//	if (priv->txbd_no != 0) {
+//
+//	}
+//	irq_unlock();
 	dcache_flush(skb->mac.raw, len);
 
 	/* wait for completion of previous transfer */
@@ -263,22 +264,24 @@ static int mgeth_send(struct mgeth_priv *priv, struct sk_buff *skb) {
 	return 0;
 }
 
-static void mgeth_rx_chan(struct net_device *nic_p, int i) {
+static int mgeth_rx_chan(struct net_device *nic_p, int chan,
+		struct sk_buff *rx_skb[MGETH_RXBD_CNT]) {
 	uint32_t dma_status;
+	int cnt = 0;
 	struct mgeth_priv *priv = nic_p->priv;
 
-	dma_status = REG32_LOAD(&priv->regs->rx[i].dma_regs.status);
-	log_debug("rx_chan (%i) dma status (0x%x)", i, dma_status);
+	dma_status = REG32_LOAD(&priv->regs->rx[chan].dma_regs.status);
+	log_debug("rx_chan (%i) dma status (0x%x)", chan, dma_status);
 
 	if (!(dma_status & (1 << 2))) {
-		return;
+		return 0;
 	}
 
 	irq_lock();
 	{
 		struct rcm_mgeth_long_desc *curr_bd;
 
-		while (1) {
+		while (cnt < MGETH_RXBD_CNT) {
 			int len;
 			struct sk_buff *skb;
 			unsigned char *buf;
@@ -287,50 +290,54 @@ static void mgeth_rx_chan(struct net_device *nic_p, int i) {
 			dcache_inval(curr_bd, sizeof(struct rcm_mgeth_long_desc));
 
 			if (!(curr_bd->flags_length & MGETH_BD_OWN)) {
+				//log_error("break rx_bd idx %d", priv->rxbd_no);
 				break;
 			}
 
 			if (curr_bd->flags_length & MGETH_BD_LINK) {
-				mgeth_rxd_init(priv, priv->rxbd_no);
+				//log_error("continue MGETH_BD_LINK %d", priv->rxbd_no);
+				mgeth_rxd_init(priv, MGETH_RXBD_CNT);
 				priv->rxbd_no = 0;
+
 				continue;
 			}
+
+			assert(priv->rxbd_no < MGETH_RXBD_CNT);
 
 			len = curr_bd->flags_length & MGETH_BD_LEN_MASK;
 
-			if (len == 0) {
-				mgeth_rxd_init(priv, priv->rxbd_no);
-				priv->rxbd_no++;
-				continue;
+			if (len != 0) {
+
+				buf = (void *)((uintptr_t)(curr_bd->memptr));
+				dcache_inval(buf, len);
+
+				skb = skb_alloc(len);
+
+				if (skb == NULL) {
+					log_error("skb_alloc failed drop an ethernet frame");
+					show_packet(buf, len, "dropped rx");
+					continue;
+				} else {
+
+					memcpy(skb->mac.raw, buf, len);
+					skb->dev = nic_p;
+
+					rx_skb[cnt] = skb;
+					cnt++;
+				}
+			} else {
+				log_debug("rx desc len =0 %d", priv->rxbd_no);
 			}
 
-			buf = (void *)((uintptr_t)(curr_bd->memptr));
-			dcache_inval(buf, len);
-
-			/* We allocate a pbuf chain of pbufs from the Lwip buffer pool */
-			skb = skb_alloc(len);
-
-			if (skb == NULL) {
-				log_error("skb_alloc failed drop an ethernet frame");
-				show_packet(buf, skb->len, "rx");
-
-				mgeth_rxd_init(priv, priv->rxbd_no);
-				priv->rxbd_no ++;
-				continue;
-			}
-			/* copy received frame to pbuf chain */
-			memcpy(skb->mac.raw, buf, len);
 			mgeth_rxd_init(priv, priv->rxbd_no);
-			priv->rxbd_no ++;
+			priv->rxbd_no++;
 
-			skb->dev = nic_p;
-			show_packet(skb->mac.raw, skb->len, "rx");
-
-			netif_rx(skb);
-		};
+		}
 
 	}
 	irq_unlock();
+
+	return cnt;
 }
 
 static void mgeth_xmit_complite(struct mgeth_priv *mgeth_priv, int i) {
@@ -340,12 +347,15 @@ static void mgeth_xmit_complite(struct mgeth_priv *mgeth_priv, int i) {
 	dma_status = REG32_LOAD(&mgeth_priv->regs->tx[i].dma_regs.status);
 	log_debug("tx_chan (%i) dma status (0x%x)", i, dma_status);
 
+	irq_lock();
 //	dcache_inval(&mgeth_priv->txbd_base[0], sizeof(struct rcm_mgeth_long_desc));
 	skb = (struct sk_buff *)mgeth_priv->tx_active_skb[0];
 
-	skb_free(skb);
-
 	mgeth_priv->tx_active_skb[0] = NULL;
+
+	irq_unlock();
+
+	skb_free(skb);
 }
 
 static irq_return_t mgeth_irq_handler(unsigned int irq_num, void *dev_id) {
@@ -353,6 +363,7 @@ static irq_return_t mgeth_irq_handler(unsigned int irq_num, void *dev_id) {
 	uint32_t global_status;
 	struct mgeth_priv *mgeth_priv;
 	int i;
+
 
 	if (!nic_p) {
 		return IRQ_NONE;
@@ -363,18 +374,28 @@ static irq_return_t mgeth_irq_handler(unsigned int irq_num, void *dev_id) {
 	global_status = REG32_LOAD(&mgeth_priv->regs->global_status);
 	log_debug("global status (0x%x)", global_status);
 
-	irq_lock();
+//	irq_lock();
 	{
 		for (i = 0; i < RCM_MGETH_MAX_DMA_CHANNELS; i++) {
 			if (global_status & BIT(i)) {
 				mgeth_xmit_complite(mgeth_priv, i);
 			}
 			if (global_status & BIT(i + 16)) {
-				mgeth_rx_chan(nic_p, i);
+				int rx_cnt;
+				int j;
+				struct sk_buff *rx_skb[MGETH_RXBD_CNT];
+				rx_cnt = mgeth_rx_chan(nic_p, i, rx_skb);
+				//log_error("got %d, ind=%d)", rx_cnt, mgeth_priv->rxbd_no);
+				for (j = 0; j < rx_cnt; j ++) {
+					struct sk_buff *skb = rx_skb[j];
+
+					show_packet(skb->mac.raw, skb->len, "rx");
+					netif_rx(skb);
+				}
 			}
 		}
 	}
-	irq_unlock();
+//	irq_unlock();
 
 	return IRQ_HANDLED;
 }
@@ -473,11 +494,11 @@ static int mgeth_init(void) {
 	usleep(100000);
 //	log_error("line %d", __LINE__);
 	for(i = 0; i < 4; i ++) {
-		rcm_mdio_en(i, AN_EN);
+		rcm_mdio_en(i, AUTONEGOTIATION_EN);
 	}
 	usleep(100000);
 //	log_error("line %d", __LINE__);
-	phy_rcm_sgmii_init(AN_EN);
+	phy_rcm_sgmii_init(AUTONEGOTIATION_EN);
 	log_error("line %d", __LINE__);
 
 	return inetdev_register_dev(nic);
