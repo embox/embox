@@ -11,14 +11,17 @@
 #include <unistd.h>
 #include <string.h>
 
-int   opterr = 1;
-int   optind = 1;
-int   optopt = 0;
-char  *optarg = NULL;
+int   opterr;// = 1;
+int   optind;// = 1;
+int   optopt;// = 0;
+char  *optarg;// = NULL;
 
-static int sp = 1;
-static int not_opt = 0;
+static int sp;// = 1;
+static int not_opt;// = 0;
 
+#include <framework/mod/options.h>
+
+#if OPTION_GET(NUMBER, use_getopt)
 /**
  * @param argc is the number of arguments on cmdline
  * @param argv is the pointer to array of cmdline arguments
@@ -89,6 +92,7 @@ int getopt(int argc, char *const argv[], const char *opts) {
 	}
 	return c;
 }
+#endif
 
 void getopt_init() {
 	opterr = 1;
