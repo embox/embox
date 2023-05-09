@@ -10,6 +10,10 @@
 #include <string.h>
 #include <getopt.h>
 
+#include <framework/mod/options.h>
+
+#if OPTION_GET(NUMBER, use_getopt)
+
 static int getopt_try_long(int argl, char *const arg[], const struct option *longopts,
 		const struct option **out_lopt) {
 	const struct option *lopt;
@@ -75,4 +79,4 @@ int getopt_long(int argc, char * const argv[],
 
 	return -1;
 }
-
+#endif

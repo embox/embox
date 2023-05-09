@@ -8,6 +8,7 @@
 
 #include <framework/cmd/api.h>
 #include <framework/cmd/types.h>
+#include <framework/mod/options.h>
 
 #include <ctype.h>
 #include <stddef.h>
@@ -15,7 +16,7 @@
 #include <string.h>
 
 #include <util/array.h>
-#include <util/getopt.h>
+//#include <util/getopt.h>
 
 ARRAY_SPREAD_DEF(const struct cmd * const, __cmd_registry);
 
@@ -29,7 +30,10 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 	if (err)
 		return err;
 
+#if OPTION_GET(NUMBER, use_getopt_init)
+	extern void getopt_init(void);
 	getopt_init();
+#endif
 
 	err = cmd->exec(argc, argv);
 

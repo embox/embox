@@ -10,7 +10,7 @@
 #include <drivers/diag.h>
 #include <stdarg.h>
 
-#include <module/embox/compat/libc/stdio/print.h>
+#include <module/embox/compat/libc/stdio/print_impl.h>
 
 static int printk_printchar(struct printchar_handler_data *d, int c) {
 	diag_putc(c);
