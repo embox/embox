@@ -56,7 +56,15 @@ static inline int isprint(int c) { return __ismask(c) & (_CTYPE_P | _CTYPE_U | _
  * or an alphanumeric character. */
 static inline int ispunct(int c) { return __ismask(c) & (_CTYPE_P); }
 /* Checks for white-space characters. */
-extern int isspace(int c);
+//FIXME enable different variants for isspace
+//extern int isspace(int c);
+//int isspace(int c) {
+//	return __ismask(c) & (_CTYPE_S);
+//}
+static inline int isspace(int c) {
+	return (c == '\t' || c == '\n' ||
+			c == '\v' || c == '\f' || c == '\r' || c == ' ' ? 1 : 0);
+}
 /* Checks for an uppercase letter. */
 static inline int isupper(int c) { return __ismask(c) & (_CTYPE_U); }
 /* Checks for a hexadecimal digits. */
