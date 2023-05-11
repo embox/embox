@@ -591,6 +591,30 @@ static int tcp_shutdown(struct sock *sk, int how) {
 	return 0;
 }
 
+static int tcp_getsockopt(struct sock *sk, int level, int optname,
+        	void *optval, socklen_t *optlen) {
+	int val;	
+
+	switch (optname) {
+	case TCP_NODELAY:
+		val = 0;
+		break;
+	case TCP_MAXSEG:
+		val = 1460;
+		break;
+	default:
+		return -ENOPROTOOPT;
+	}
+
+	if (*optlen < sizeof(val)) {
+		return -EINVAL;
+	}
+	memcpy(optval, &val, sizeof(val));
+	*optlen = sizeof(val);
+
+	return 0;
+}
+
 static int tcp_setsockopt(struct sock *sk, int level, int optname,
 			const void *optval, socklen_t optlen) {
 
@@ -616,6 +640,7 @@ static const struct sock_proto_ops tcp_sock_ops_struct = {
 	.accept     = tcp_accept,
 	.sendmsg    = tcp_sendmsg,
 	.recvmsg    = tcp_recvmsg,
+	.getsockopt = tcp_getsockopt,
 	.setsockopt = tcp_setsockopt,
 	.shutdown   = tcp_shutdown,
 	.sock_pool  = &tcp_sock_pool,

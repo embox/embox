@@ -7,9 +7,3 @@ abstract module daemon_api {
 static module daemon_stub extends daemon_api {
 	source "daemon_stub.c"
 }
-
-static module daemon extends daemon_api {
-	source "daemon.c"
-	
-	depends embox.driver.virtual.null
-}
