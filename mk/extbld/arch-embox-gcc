@@ -30,6 +30,7 @@ case " $@ " in
 	*" -E "*) ARG_LINE=;;
 	*" -shared "*) echo -e "\n\nCan't build shared objects\n\n"; exit 1;;
 	*" -l"*) $0 $(for i in "$@"; do echo ${i/#-l*/}; done); exit $?;;
+	*" -I/usr/"*) $0 $(for i in "$@"; do echo ${i/#-I\/usr\/*/}; done); exit $?;;
 esac
 
 PWD_ARG_LINE="$(for i in $ARG_LINE; do echo ${i/$PWD/.}; done)"
