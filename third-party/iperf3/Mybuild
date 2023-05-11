@@ -1,0 +1,66 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@Cmd(name = "iperf3",
+	help = "Perform network throughput tests",
+	man = '''
+		NAME
+			iperf3 - perform network throughput tests
+
+		SYNOPSIS
+			iperf3 -s [options]
+			iperf3 -c server [options]
+
+		DESCRIPTION
+			iperf3 is a tool for performing network throughput measurements. It
+			can test TCP, UDP, or SCTP throughput. To perform an iperf3 test the
+			user must establish both a server and a client.
+	''')
+module iperf3 {
+	source "^BUILD/extbld/^MOD_PATH/install/iperf3.o"
+
+	@NoRuntime depends embox.compat.posix.LibPosix
+	@NoRuntime depends embox.compat.libc.stdio.getline
+
+	depends embox.compat.posix.sys.mman.mmap_api
+	depends embox.compat.posix.proc.rusage_api
+	depends embox.compat.posix.proc.daemon_api
+}
+
+/* root@embox:/#iperf3 --server
+warning: this system does not seem to support IPv6 - trying IPv4
+-----------------------------------------------------------
+Server listening on 5201 (test #1)
+-----------------------------------------------------------
+Accepted connection from 10.0.2.10, port 59462
+[  5] local 10.0.2.16 port 5201 connected to 10.0.2.10 port 59470
+[ ID] Interval           Transfer     Bitrate
+[  5]   0.00-1.00   sec  32.2 KBytes   264 Kbits/sec                  
+[  5]   1.00-2.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   2.00-3.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   3.00-4.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   4.00-5.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   5.00-6.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   6.00-7.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   7.00-8.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   8.00-9.00   sec  0.00 Bytes  0.00 bits/sec                  
+[  5]   9.00-10.00  sec  0.00 Bytes  0.00 bits/sec                  
+[  5]  10.00-10.94  sec  0.00 Bytes  0.00 bits/sec
+ */
+/* 
+$ iperf3 --repeating-payload -c 10.0.2.16
+Connecting to host 10.0.2.16, port 5201
+[  5] local 10.0.2.10 port 59470 connected to 10.0.2.16 port 5201
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   162 KBytes  1.33 Mbits/sec    2    536 Bytes       
+[  5]   1.00-2.00   sec  0.00 Bytes  0.00 bits/sec    1    536 Bytes       
+[  5]   2.00-3.00   sec  0.00 Bytes  0.00 bits/sec    0    536 Bytes       
+[  5]   3.00-4.00   sec  0.00 Bytes  0.00 bits/sec    1    536 Bytes       
+[  5]   4.00-5.00   sec  0.00 Bytes  0.00 bits/sec    0    536 Bytes       
+[  5]   5.00-6.00   sec  0.00 Bytes  0.00 bits/sec    0    536 Bytes       
+[  5]   6.00-7.00   sec  0.00 Bytes  0.00 bits/sec    1    536 Bytes       
+[  5]   7.00-8.00   sec  0.00 Bytes  0.00 bits/sec    0    536 Bytes       
+[  5]   8.00-9.00   sec  0.00 Bytes  0.00 bits/sec    0    536 Bytes  
+ */
