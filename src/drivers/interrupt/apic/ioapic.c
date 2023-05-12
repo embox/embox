@@ -104,6 +104,10 @@ void irqctrl_enable(unsigned int irq) {
 		return ;
 	}
 
+	if (irq >= 24) {
+		/* msi irq */
+		return;
+	}
 	low = irq_redir_low(irq);
 	high = lapic_id() << 24;
 
@@ -117,6 +121,10 @@ void irqctrl_disable(unsigned int irq) {
 	if (irq == 0) {
 		/* LAPIC timer interrupt */
 		return ;
+	}
+	if (irq >= 24) {
+		/* msi irq */
+		return;
 	}
 
 	low = ioapic_read(IOAPIC_REDIR_TABLE + irq * 2);
@@ -135,6 +143,11 @@ int irqctrl_pending(unsigned int irq) {
 
 void irqctrl_eoi(unsigned int irq) {
 	//TODO: irq >= 16
+	if (irq >= 24) {
+		/* msi irq */
+		return;
+	}
+
 	lapic_send_eoi();
 }
 
