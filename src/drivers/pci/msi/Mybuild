@@ -8,4 +8,6 @@ module pci_msi {
 	@IncludeExport(path="drivers/pci")
 	source "pci_msi.h"
 
+	@NoRuntime depends embox.kernel.msi.irq_msi
+
 }
