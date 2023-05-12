@@ -13,6 +13,8 @@ module ioapic_regs_e2k extends ioapic_regs {
 }
 
 module ioapic extends irqctrl_api {
+	option number msi_support=0
+
 	source "ioapic.c", "ioapic.h"
 
 	depends lapic
