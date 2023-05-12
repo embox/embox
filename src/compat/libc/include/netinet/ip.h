@@ -13,6 +13,7 @@
 #define IPTOS_RELIABILITY 0x40
 
 #define IP_TOS            0x01
+#define IP_TTL            0x02
 /* Socket option.
  * The obvious way to tell the IP layer not to prepend its own header
  * is by calling the setsockopt() syscall and setting the IP_HDRINCL.

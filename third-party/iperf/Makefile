@@ -1,21 +1,27 @@
 
 PKG_NAME := iperf
-PKG_VER  := 2.1.8
+PKG_VER  := 2.1.9
 
 PKG_SOURCES := https://sourceforge.net/projects/iperf2/files/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := 52d38af7208c64755066a9d4fd970360
+PKG_MD5     := e6f8ca3ff2d6911da24ac3f1a319b799
 
 PKG_PATCHES := pkg_patch.txt
 
 include $(EXTBLD_LIB)
 
+IPERF_CPPFLAGS := "-I$(ROOT_DIR)/third-party/iperf/include"
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \
-		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
+		./configure \
+			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
-			CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX) \
-			CPPFLAGS=-DIP_TTL=1 \
+			--enable-debuginfo \
+			--enable-static-bin \
+			CC=$(EMBOX_GCC) \
+			CXX=$(EMBOX_GXX) \
+			CPPFLAGS=$(IPERF_CPPFLAGS) \
 	)
 	touch $@
 
