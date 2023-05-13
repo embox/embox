@@ -8,6 +8,14 @@
 #include <ctype.h>
 #include <defines/null.h>
 
+#include <framework/mod/options.h>
+
+#if OPTION_GET(NUMBER, use_simple_isspace)
+static inline int isspace(int c) {
+	return (c == '\t' || c == '\n' ||
+			c == '\v' || c == '\f' || c == '\r' || c == ' ' ? 1 : 0);
+}
+#else
 /**< ASCII table */
 const unsigned char _ctype_[] = {
 _CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,_CTYPE_C,                        /* 0-7 */
@@ -48,6 +56,7 @@ int32_t **__ctype_toupper_loc(void) {
 	return NULL;
 }
 
-//int isspace(int c) {
-//	return __ismask(c) & (_CTYPE_S);
-//}
+int isspace(int c) {
+	return __ismask(c) & (_CTYPE_S);
+}
+#endif /* OPTION_GET(NUMBER, use_simple_isspace) */
