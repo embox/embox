@@ -1,0 +1,541 @@
+diff --color -aur ncurses-6.3/configure ncurses-6.3-patched/configure
+--- ncurses-6.3/configure	2021-10-17 18:12:23.000000000 +0300
++++ ncurses-6.3-patched/configure	2023-05-14 14:13:11.086043379 +0300
+@@ -4647,35 +4647,35 @@
+ else
+ 
+ 	cf_cv_makeflags=''
+-	for cf_option in '-${MAKEFLAGS}' '${MFLAGS}'
+-	do
+-		cat >cf_makeflags.tmp <<CF_EOF
+-SHELL = $SHELL
+-all :
+-	@ echo '.$cf_option'
+-CF_EOF
+-		cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp 2>/dev/null | ${FGREP-fgrep} -v "ing directory" | sed -e 's,[ 	]*$,,'`
+-		case "$cf_result" in
+-		(.*k|.*kw)
+-			cf_result="`${MAKE:-make} -k -f cf_makeflags.tmp CC=cc 2>/dev/null`"
+-			case "$cf_result" in
+-			(.*CC=*)	cf_cv_makeflags=
+-				;;
+-			(*)	cf_cv_makeflags=$cf_option
+-				;;
+-			esac
+-			break
+-			;;
+-		(.-)
+-			;;
+-		(*)
+-
+-echo "${as_me:-configure}:4673: testing given option \"$cf_option\",no match \"$cf_result\" ..." 1>&5
+-
+-			;;
+-		esac
+-	done
+-	rm -f cf_makeflags.tmp
++#	for cf_option in '-${MAKEFLAGS}' '${MFLAGS}'
++#	do
++#		cat >cf_makeflags.tmp <<CF_EOF
++#SHELL = $SHELL
++#all :
++#	@ echo '.$cf_option'
++#CF_EOF
++#		cf_result=`${MAKE:-make} -k -f cf_makeflags.tmp 2>/dev/null | ${FGREP-fgrep} -v "ing directory" | sed -e 's,[ 	]*$,,'`
++#		case "$cf_result" in
++#		(.*k|.*kw)
++#			cf_result="`${MAKE:-make} -k -f cf_makeflags.tmp CC=cc 2>/dev/null`"
++#			case "$cf_result" in
++#			(.*CC=*)	cf_cv_makeflags=
++#				;;
++#			(*)	cf_cv_makeflags=$cf_option
++#				;;
++#			esac
++#			break
++#			;;
++#		(.-)
++#			;;
++#		(*)
++#
++#echo "${as_me:-configure}:4673: testing given option \"$cf_option\",no match \"$cf_result\" ..." 1>&5
++#
++#			;;
++#		esac
++#	done
++#	rm -f cf_makeflags.tmp
+ 
+ fi
+ echo "$as_me:4681: result: $cf_cv_makeflags" >&5
+@@ -21373,7 +21373,8 @@
+    test "x$cf_with_progs$cf_with_tests" != xnono; then
+ 	{ { echo "$as_me:21374: error: getopt is required for building programs" >&5
+ echo "$as_me: error: getopt is required for building programs" >&2;}
+-   { (exit 1); exit 1; }; }
++#   { (exit 1); exit 1; }; }
++}
+ fi
+ 
+ if test "x$with_safe_sprintf" = xyes
+diff --color -aur ncurses-6.3/include/tic.h ncurses-6.3-patched/include/tic.h
+--- ncurses-6.3/include/tic.h	2021-08-21 03:24:45.000000000 +0300
++++ ncurses-6.3-patched/include/tic.h	2023-05-14 14:13:11.086043379 +0300
+@@ -153,7 +153,7 @@
+  */
+ 
+ #define BOOLEAN 0		/* Boolean capability */
+-#define NUMBER 1		/* Numeric capability */
++#define NCURSES_NUMBER 1		/* Numeric capability */
+ #define STRING 2		/* String-valued capability */
+ #define CANCEL 3		/* Capability to be cancelled in following tc's */
+ #define NAMES  4		/* The names for a terminal type */
+diff --color -aur ncurses-6.3/ncurses/Makefile.in ncurses-6.3-patched/ncurses/Makefile.in
+--- ncurses-6.3/ncurses/Makefile.in	2021-08-20 02:43:40.000000000 +0300
++++ ncurses-6.3-patched/ncurses/Makefile.in	2023-05-14 14:19:51.044140902 +0300
+@@ -274,18 +274,18 @@
+ ./expanded.c : $(srcdir)/curses.priv.h $(serial)/MKexpanded.sh
+ 	$(SHELL) -e $(serial)/MKexpanded.sh "$(CPP)" $(CPPFLAGS) > $@
+ 
+-./comp_captab.c: \
+-		make_hash$(BUILD_EXEEXT) \
+-		../include/hashsize.h \
+-		$(tinfo)/MKcaptab.sh \
+-		$(tinfo)/MKcaptab.awk
+-	$(SHELL) -e $(tinfo)/MKcaptab.sh $(AWK) $(USE_BIG_STRINGS) $(tinfo)/MKcaptab.awk $(CAPLIST) > $@
++#./comp_captab.c: \
++#		make_hash$(BUILD_EXEEXT) \
++#		../include/hashsize.h \
++#		$(tinfo)/MKcaptab.sh \
++#		$(tinfo)/MKcaptab.awk
++#	$(SHELL) -e $(tinfo)/MKcaptab.sh $(AWK) $(USE_BIG_STRINGS) $(tinfo)/MKcaptab.awk $(CAPLIST) > $@
+ 
+-./comp_userdefs.c: \
+-		make_hash$(BUILD_EXEEXT) \
+-		../include/hashsize.h \
+-		$(tinfo)/MKuserdefs.sh
+-	$(SHELL) -e $(tinfo)/MKuserdefs.sh $(AWK) $(USE_BIG_STRINGS) $(CAPLIST) > $@
++#./comp_userdefs.c: \
++#		make_hash$(BUILD_EXEEXT) \
++#		../include/hashsize.h \
++#		$(tinfo)/MKuserdefs.sh
++#	$(SHELL) -e $(tinfo)/MKuserdefs.sh $(AWK) $(USE_BIG_STRINGS) $(CAPLIST) > $@
+ 
+ ./lib_keyname.c: keys.list $(base)/MKkeyname.awk
+ 	$(AWK) -f $(base)/MKkeyname.awk bigstrings=$(USE_BIG_STRINGS) keys.list > $@
+diff --color -aur ncurses-6.3/ncurses/tinfo/alloc_ttype.c ncurses-6.3-patched/ncurses/tinfo/alloc_ttype.c
+--- ncurses-6.3/ncurses/tinfo/alloc_ttype.c	2021-06-18 00:11:08.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/alloc_ttype.c	2023-05-14 14:13:11.086043379 +0300
+@@ -189,7 +189,7 @@
+     case BOOLEAN:
+ 	first = 0;
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	first = tp->ext_Booleans;
+ 	break;
+     case STRING:
+@@ -214,7 +214,7 @@
+     case BOOLEAN:
+ 	last = tp->ext_Booleans;
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	last = (unsigned) (tp->ext_Booleans + tp->ext_Numbers);
+ 	break;
+     default:
+@@ -254,7 +254,7 @@
+     case BOOLEAN:
+ 	n += (tp->num_Booleans - tp->ext_Booleans);
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	n += (tp->num_Numbers - tp->ext_Numbers)
+ 	    - (tp->ext_Booleans);
+ 	break;
+@@ -291,7 +291,7 @@
+ 	    tp->ext_Booleans--;
+ 	    tp->num_Booleans--;
+ 	    break;
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    last = tp->num_Numbers - 1;
+ 	    for (j = first; j < last; j++)
+ 		tp->Numbers[j] = tp->Numbers[j + 1];
+@@ -347,7 +347,7 @@
+ 	for (k = (unsigned) (tp->num_Booleans - 1); k > j; k--)
+ 	    tp->Booleans[k] = tp->Booleans[k - 1];
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	tp->ext_Numbers++;
+ 	tp->num_Numbers++;
+ 	TYPE_REALLOC(NCURSES_INT2, tp->num_Numbers, tp->Numbers);
+@@ -384,22 +384,22 @@
+ 	if (to->Strings[j + j_str] == CANCELLED_STRING) {
+ 	    if (_nc_find_ext_name(from, to->ext_Names[j], BOOLEAN) >= 0) {
+ 		if (_nc_del_ext_name(to, name, STRING)
+-		    || _nc_del_ext_name(to, name, NUMBER)) {
++		    || _nc_del_ext_name(to, name, NCURSES_NUMBER)) {
+ 		    k = _nc_ins_ext_name(to, name, BOOLEAN);
+ 		    to->Booleans[k] = FALSE;
+ 		} else {
+ 		    j++;
+ 		}
+-	    } else if (_nc_find_ext_name(from, to->ext_Names[j], NUMBER) >= 0) {
++	    } else if (_nc_find_ext_name(from, to->ext_Names[j], NCURSES_NUMBER) >= 0) {
+ 		if (_nc_del_ext_name(to, name, STRING)
+ 		    || _nc_del_ext_name(to, name, BOOLEAN)) {
+-		    k = _nc_ins_ext_name(to, name, NUMBER);
++		    k = _nc_ins_ext_name(to, name, NCURSES_NUMBER);
+ 		    to->Numbers[k] = CANCELLED_NUMERIC;
+ 		} else {
+ 		    j++;
+ 		}
+ 	    } else if (_nc_find_ext_name(from, to->ext_Names[j], STRING) >= 0) {
+-		if (_nc_del_ext_name(to, name, NUMBER)
++		if (_nc_del_ext_name(to, name, NCURSES_NUMBER)
+ 		    || _nc_del_ext_name(to, name, BOOLEAN)) {
+ 		    k = _nc_ins_ext_name(to, name, STRING);
+ 		    to->Strings[k] = CANCELLED_STRING;
+diff --color -aur ncurses-6.3/ncurses/tinfo/comp_parse.c ncurses-6.3-patched/ncurses/tinfo/comp_parse.c
+--- ncurses-6.3/ncurses/tinfo/comp_parse.c	2021-05-08 18:03:42.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/comp_parse.c	2023-05-14 14:13:11.086043379 +0300
+@@ -294,7 +294,7 @@
+     } else {
+ 	limit += p->ext_Numbers;
+ 	if (limit != 0 && which < limit) {
+-	    result = NUMBER;
++	    result = NCURSES_NUMBER;
+ 	} else {
+ 	    limit += p->ext_Strings;
+ 	    if (limit != 0 && which < limit) {
+@@ -315,7 +315,7 @@
+     case BOOLEAN:
+ 	result = "boolean";
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	result = "number";
+ 	break;
+     case STRING:
+diff --color -aur ncurses-6.3/ncurses/tinfo/comp_scan.c ncurses-6.3-patched/ncurses/tinfo/comp_scan.c
+--- ncurses-6.3/ncurses/tinfo/comp_scan.c	2021-10-05 02:56:28.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/comp_scan.c	2023-05-14 14:13:11.087043394 +0300
+@@ -686,7 +686,7 @@
+ 		}
+ 		_nc_curr_token.tk_name = tok_buf;
+ 		_nc_curr_token.tk_valnumber = (int) number;
+-		type = NUMBER;
++		type = NCURSES_NUMBER;
+ 		break;
+ 
+ 	    case '=':
+@@ -728,7 +728,7 @@
+ 		    _nc_curr_token.tk_name);
+ 	    break;
+ 
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    _tracef("Token: Number;  name='%s', value=%d",
+ 		    _nc_curr_token.tk_name,
+ 		    _nc_curr_token.tk_valnumber);
+diff --color -aur ncurses-6.3/ncurses/tinfo/lib_termcap.c ncurses-6.3-patched/ncurses/tinfo/lib_termcap.c
+--- ncurses-6.3/ncurses/tinfo/lib_termcap.c	2020-02-03 02:34:34.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/lib_termcap.c	2023-05-14 14:13:11.087043394 +0300
+@@ -297,7 +297,7 @@
+ 	struct name_table_entry const *entry_ptr;
+ 	int j = -1;
+ 
+-	entry_ptr = _nc_find_type_entry(id, NUMBER, TRUE);
++	entry_ptr = _nc_find_type_entry(id, NCURSES_NUMBER, TRUE);
+ 	if (entry_ptr != 0) {
+ 	    j = entry_ptr->nte_index;
+ 	}
+diff --color -aur ncurses-6.3/ncurses/tinfo/lib_ti.c ncurses-6.3-patched/ncurses/tinfo/lib_ti.c
+--- ncurses-6.3/ncurses/tinfo/lib_ti.c	2020-02-03 02:34:34.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/lib_ti.c	2023-05-14 14:13:11.087043394 +0300
+@@ -107,7 +107,7 @@
+ 	struct name_table_entry const *entry_ptr;
+ 	int j = -1;
+ 
+-	entry_ptr = _nc_find_type_entry(str, NUMBER, FALSE);
++	entry_ptr = _nc_find_type_entry(str, NCURSES_NUMBER, FALSE);
+ 	if (entry_ptr != 0) {
+ 	    j = entry_ptr->nte_index;
+ 	}
+diff --color -aur ncurses-6.3/ncurses/tinfo/make_hash.c ncurses-6.3-patched/ncurses/tinfo/make_hash.c
+--- ncurses-6.3/ncurses/tinfo/make_hash.c	2020-02-03 02:34:34.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/make_hash.c	2023-05-14 14:13:11.087043394 +0300
+@@ -326,7 +326,7 @@
+ 	    SetType(nn, BOOLEAN);
+ 	    name_table[nn].ute_index = BoolCount++;
+ 	} else if (!strcmp(list[2], "num")) {
+-	    SetType(nn, NUMBER);
++	    SetType(nn, NCURSES_NUMBER);
+ 	    name_table[nn].ute_index = NumCount++;
+ 	} else if (!strcmp(list[2], "str")) {
+ 	    SetType(nn, STRING);
+diff --color -aur ncurses-6.3/ncurses/tinfo/parse_entry.c ncurses-6.3-patched/ncurses/tinfo/parse_entry.c
+--- ncurses-6.3/ncurses/tinfo/parse_entry.c	2021-09-04 13:54:35.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tinfo/parse_entry.c	2023-05-14 14:13:11.087043394 +0300
+@@ -81,7 +81,7 @@
+ 	offset = tp->ext_Booleans;
+ 	tindex = tp->num_Booleans;
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	first = tp->ext_Booleans;
+ 	last = tp->ext_Numbers + first;
+ 	offset = (unsigned) (tp->ext_Booleans + tp->ext_Numbers);
+@@ -100,7 +100,7 @@
+ 		if (n > (unsigned) (tp->ext_Booleans + tp->ext_Numbers)) {
+ 		    token_type = STRING;
+ 		} else if (n > tp->ext_Booleans) {
+-		    token_type = NUMBER;
++		    token_type = NCURSES_NUMBER;
+ 		} else {
+ 		    token_type = BOOLEAN;
+ 		}
+@@ -127,7 +127,7 @@
+ 	    case BOOLEAN:
+ 		tindex += BOOLCOUNT;
+ 		break;
+-	    case NUMBER:
++	    case NCURSES_NUMBER:
+ 		tindex += NUMCOUNT;
+ 		break;
+ 	    case STRING:
+@@ -150,7 +150,7 @@
+ 	    for_each_value(tp->num_Booleans)
+ 		tp->Booleans[last] = tp->Booleans[last - 1];
+ 	    break;
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    tp->ext_Numbers++;
+ 	    tp->num_Numbers++;
+ 	    TYPE_REALLOC(NCURSES_INT2, tp->num_Numbers, tp->Numbers);
+@@ -186,7 +186,7 @@
+     const char *result = "unknown";
+     if (mask & (1 << BOOLEAN)) {
+ 	result = "boolean";
+-    } else if (mask & (1 << NUMBER)) {
++    } else if (mask & (1 << NCURSES_NUMBER)) {
+ 	result = "number";
+     } else if (mask & (1 << STRING)) {
+ 	result = "string";
+@@ -450,7 +450,7 @@
+ 		 * Prefer terminfo in this (long-obsolete) ambiguity:
+ 		 */
+ 		if (!strcmp("ma", _nc_curr_token.tk_name)) {
+-		    entry_ptr = _nc_find_type_entry("ma", NUMBER,
++		    entry_ptr = _nc_find_type_entry("ma", NCURSES_NUMBER,
+ 						    _nc_syntax != 0);
+ 		    assert(entry_ptr != 0);
+ 		}
+@@ -465,10 +465,10 @@
+ 		 * type, this will do the job.
+ 		 */
+ 
+-		if (token_type == NUMBER
++		if (token_type == NCURSES_NUMBER
+ 		    && !strcmp("ma", _nc_curr_token.tk_name)) {
+ 		    /* tell max_attributes from arrow_key_map */
+-		    entry_ptr = _nc_find_type_entry("ma", NUMBER,
++		    entry_ptr = _nc_find_type_entry("ma", NCURSES_NUMBER,
+ 						    _nc_syntax != 0);
+ 		    assert(entry_ptr != 0);
+ 
+@@ -494,7 +494,7 @@
+ 			case STRING:
+ 			    type_name = "string";
+ 			    break;
+-			case NUMBER:
++			case NCURSES_NUMBER:
+ 			    type_name = "numeric";
+ 			    break;
+ 			default:
+@@ -516,7 +516,7 @@
+ 		    entryp->tterm.Booleans[entry_ptr->nte_index] = CANCELLED_BOOLEAN;
+ 		    break;
+ 
+-		case NUMBER:
++		case NCURSES_NUMBER:
+ 		    entryp->tterm.Numbers[entry_ptr->nte_index] = CANCELLED_NUMERIC;
+ 		    break;
+ 
+@@ -530,7 +530,7 @@
+ 		entryp->tterm.Booleans[entry_ptr->nte_index] = TRUE;
+ 		break;
+ 
+-	    case NUMBER:
++	    case NCURSES_NUMBER:
+ #if !NCURSES_EXT_NUMBERS
+ 		if (_nc_curr_token.tk_valnumber > MAX_NUMBER) {
+ 		    entryp->tterm.Numbers[entry_ptr->nte_index] = MAX_NUMBER;
+@@ -1090,7 +1090,7 @@
+ 	case STRING:
+ 	    names = strfnames;
+ 	    break;
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    names = numfnames;
+ 	    break;
+ 	default:
+diff --color -aur ncurses-6.3/ncurses/tty/lib_mvcur.c ncurses-6.3-patched/ncurses/tty/lib_mvcur.c
+--- ncurses-6.3/ncurses/tty/lib_mvcur.c	2021-09-04 13:29:15.000000000 +0300
++++ ncurses-6.3-patched/ncurses/tty/lib_mvcur.c	2023-05-14 14:13:11.088043409 +0300
+@@ -1272,7 +1272,7 @@
+ 			       np->nte_name, np->nte_index);
+ 		    break;
+ 
+-		case NUMBER:
++		case NCURSES_NUMBER:
+ 		    cur_term->type.Numbers[np->nte_index] = ABSENT_NUMERIC;
+ 		    (void) printf("Number capability `%s' (%d) set to -1.\n",
+ 				  np->nte_name, np->nte_index);
+diff --color -aur ncurses-6.3/progs/dump_entry.c ncurses-6.3-patched/progs/dump_entry.c
+--- ncurses-6.3/progs/dump_entry.c	2021-09-04 13:29:59.000000000 +0300
++++ ncurses-6.3-patched/progs/dump_entry.c	2023-05-14 14:13:11.088043409 +0300
+@@ -176,7 +176,7 @@
+ 	    NameTrans(bool_from_termcap, boolcodes);
+ 	    break;
+ 
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    NameTrans(num_from_termcap, numcodes);
+ 	    break;
+ 
+@@ -309,7 +309,7 @@
+ 	return (cur_type->Booleans[idx] == FALSE)
+ 	    ? FAIL : cur_type->Booleans[idx];
+ 
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	return (cur_type->Numbers[idx] == ABSENT_NUMERIC)
+ 	    ? FAIL : cur_type->Numbers[idx];
+ 
+@@ -350,7 +350,7 @@
+ 	switch (type) {
+ 	case BOOLEAN:
+ 	    return ((idx <= BOOL_IDX(xon_xoff)) ? TRUE : FALSE);
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    return ((idx <= NUM_IDX(width_status_line)) ? TRUE : FALSE);
+ 	case STRING:
+ 	    return ((idx <= STR_IDX(prtr_non)) ? TRUE : FALSE);
+@@ -361,7 +361,7 @@
+ 	switch (type) {
+ 	case BOOLEAN:
+ 	    return ((idx <= BOOL_IDX(xon_xoff)) ? TRUE : FALSE);
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    return ((idx <= NUM_IDX(label_width)) ? TRUE : FALSE);
+ 	case STRING:
+ 	    if (idx <= STR_IDX(prtr_non))
+@@ -381,7 +381,7 @@
+ 	switch (type) {
+ 	case BOOLEAN:
+ 	    return ((idx <= BOOL_IDX(xon_xoff)) ? TRUE : FALSE);
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    return ((idx <= NUM_IDX(width_status_line)) ? TRUE : FALSE);
+ 	case STRING:
+ 	    if (idx <= STR_IDX(prtr_non))
+@@ -400,7 +400,7 @@
+ 	switch (type) {
+ 	case BOOLEAN:
+ 	    return is_termcap(bool);
+-	case NUMBER:
++	case NCURSES_NUMBER:
+ 	    return is_termcap(num);
+ 	case STRING:
+ 	    return is_termcap(str);
+@@ -985,12 +985,12 @@
+ 	name = ExtNumname(tterm, (int) i, num_names);
+ 	assert(strlen(name) < sizeof(buffer) - EXTRA_CAP);
+ 
+-	if (!version_filter(NUMBER, i))
++	if (!version_filter(NCURSES_NUMBER, i))
+ 	    continue;
+ 	else if (isObsolete(outform, name))
+ 	    continue;
+ 
+-	predval = pred(NUMBER, i);
++	predval = pred(NCURSES_NUMBER, i);
+ 	if (predval != FAIL) {
+ 	    if (tterm->Numbers[i] < 0) {
+ 		_nc_SPRINTF(buffer, _nc_SLIMIT(sizeof(buffer))
+diff --color -aur ncurses-6.3/progs/infocmp.c ncurses-6.3-patched/progs/infocmp.c
+--- ncurses-6.3/progs/infocmp.c	2021-06-18 00:11:08.000000000 +0300
++++ ncurses-6.3-patched/progs/infocmp.c	2023-05-14 14:13:11.088043409 +0300
+@@ -218,7 +218,7 @@
+ 		return (FAIL);
+ 	}
+ 
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	{
+ 	    int value = ABSENT_NUMERIC;
+ 
+diff --color -aur ncurses-6.3/progs/tic.c ncurses-6.3-patched/progs/tic.c
+--- ncurses-6.3/progs/tic.c	2021-10-05 11:07:05.000000000 +0300
++++ ncurses-6.3-patched/progs/tic.c	2023-05-14 14:13:11.089043425 +0300
+@@ -2944,7 +2944,7 @@
+     case BOOLEAN:
+ 	result = "boolean";
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	result = "number";
+ 	break;
+     case STRING:
+@@ -3009,7 +3009,7 @@
+ 	check_user_capability_type(ExtBoolname(tp, (int) j, strnames), BOOLEAN);
+     }
+     for_each_ext_number(j, tp) {
+-	check_user_capability_type(ExtNumname(tp, (int) j, strnames), NUMBER);
++	check_user_capability_type(ExtNumname(tp, (int) j, strnames), NCURSES_NUMBER);
+     }
+     for_each_ext_string(j, tp) {
+ 	check_user_capability_type(ExtStrname(tp, (int) j, strnames), STRING);
+diff --color -aur ncurses-6.3/progs/tput.c ncurses-6.3-patched/progs/tput.c
+--- ncurses-6.3/progs/tput.c	2021-10-02 21:09:23.000000000 +0300
++++ ncurses-6.3-patched/progs/tput.c	2023-05-14 14:13:11.089043425 +0300
+@@ -134,7 +134,7 @@
+     case BOOLEAN:
+ 	result = !value;	/* TRUE=0, FALSE=1 */
+ 	break;
+-    case NUMBER:
++    case NCURSES_NUMBER:
+ 	result = 0;		/* always zero */
+ 	break;
+     case STRING:
+@@ -201,7 +201,7 @@
+ 	return exit_code(BOOLEAN, status);
+     } else if ((status = tigetnum(name)) != CANCELLED_NUMERIC) {
+ 	(void) printf("%d\n", status);
+-	return exit_code(NUMBER, 0);
++	return exit_code(NCURSES_NUMBER, 0);
+     } else if ((s = tigetstr(name)) == CANCELLED_STRING) {
+ #if !PURE_TERMINFO
+ 	if (!termcap) {
+@@ -214,7 +214,7 @@
+ 		    name = boolnames[np->nte_index];
+ 		    break;
+ 
+-		case NUMBER:
++		case NCURSES_NUMBER:
+ 		    name = numnames[np->nte_index];
+ 		    break;
+ 
+diff --color -aur ncurses-6.3/test/test_arrays.c ncurses-6.3-patched/test/test_arrays.c
+--- ncurses-6.3/test/test_arrays.c	2020-02-03 02:34:34.000000000 +0300
++++ ncurses-6.3-patched/test/test_arrays.c	2023-05-14 14:13:11.089043425 +0300
+@@ -88,7 +88,7 @@
+ }
+ 
+ #define STRING(opts, name) if (opts) { printf("%s\"%s\"", c++ ? "," : "", name); }
+-#define NUMBER(opts, value) if (opts) { printf("%s%d", c++ ? "," : "", value); }
++#define NCURSES_NUMBER(opts, value) if (opts) { printf("%s%d", c++ ? "," : "", value); }
+ 
+ static void
+ dump_table(void)
