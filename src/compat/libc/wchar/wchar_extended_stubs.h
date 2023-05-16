@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef SRC_COMPAT_LIBC_WCHAR_WCHAR_EXTENDED_STUB_H_
-#define SRC_COMPAT_LIBC_WCHAR_WCHAR_EXTENDED_STUB_H_
+#ifndef SRC_COMPAT_LIBC_WCHAR_WCHAR_EXTENDED_STUBS_H_
+#define SRC_COMPAT_LIBC_WCHAR_WCHAR_EXTENDED_STUBS_H_
 
 extern wint_t getwchar(void);
 extern wint_t fgetwc(FILE *stream);
@@ -40,4 +40,4 @@ extern int wscanf(const wchar_t *format, ... );
 extern size_t mbrlen(const char * s, size_t n, mbstate_t * ps);
 
 
-#endif /* SRC_COMPAT_LIBC_WCHAR_WCHAR_EXTENDED_STUB_H_ */
+#endif /* SRC_COMPAT_LIBC_WCHAR_WCHAR_EXTENDED_STUBS_H_ */
