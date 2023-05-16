@@ -1,0 +1,24 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(	name = "qspi_erase",
+	help = "Erase QSPI memory for supported boards",
+	man  = '''
+     	NAME
+		qspi_erase - Erase QSPI memory for supported boards
+	SYNOPSIS
+		qspi_loader [-h] [-t] [-s start] [-c count]
+			-h - help
+			-t - time trace for every block
+			-s <start block>
+			-c <block count>
+	AUTHORS
+		Andrew Bursian
+	''')
+@BuildDepends(third_party.bsp.st_bsp_api)
+module qspi_erase {
+	source "qspi_erase.c"
+
+	depends embox.driver.flash.stm32_qspi
+	depends third_party.bsp.st_bsp_api
+}

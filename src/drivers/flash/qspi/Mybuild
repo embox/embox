@@ -1,14 +1,22 @@
 package embox.driver.flash
 
+@DefaultImpl(NO_stm32_qspi)
+abstract module stm32_qspi {
+}
+
+module NO_stm32_qspi extends stm32_qspi {
+	source "NO_stm32_qspi_implementation.c"
+}
+
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32l4_qspi {
+module stm32l4_qspi extends stm32_qspi {
 	source "stm32l4_qspi.c"
 
 	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f7_qspi {
+module stm32f7_qspi extends stm32_qspi {
 	source "stm32f7_qspi.c"
 
 	depends third_party.bsp.st_bsp_api
@@ -19,4 +27,16 @@ module stm32h7_qspi {
 	source "stm32h7_qspi.c"
 
 	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_qspi_flash_dev {
+	option number log_level = 1
+	option number flash_cut=0
+	option number erase_check=0
+
+	source "stm32_qspi_flash_dev.c"
+
+	depends third_party.bsp.st_bsp_api
+	depends stm32_qspi
 }
