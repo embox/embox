@@ -178,8 +178,8 @@ static int block_dev_test(struct block_dev *bdev, uint64_t s_block, uint64_t n_b
 		blocks = total_blocks;
 	}
 
-	read_buf = malloc(blk_sz * m_blocks);
-	write_buf = malloc(blk_sz * m_blocks);
+	read_buf = calloc(m_blocks, blk_sz);
+	write_buf = calloc(m_blocks, blk_sz);
 
 	if (read_buf == NULL || write_buf == NULL) {
 		printf("Failed to allocate memory for buffer!\n");
