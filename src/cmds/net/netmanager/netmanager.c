@@ -219,7 +219,7 @@ static int netmanager_store_config(char *ifname, int dhcp) {
 	if (iface_dev) {
 		strcat(file_buf, "\n\thwaddress ");
 		macaddr_print((unsigned char *)buf, iface_dev->dev->dev_addr);
-		strcat(file_buf, tmp);
+		strcat(file_buf, buf);
 	}
 
 	strcat(file_buf, "\n\n");
