@@ -88,6 +88,10 @@ static void *ohci_ed_alloc(struct usb_endp *ep) {
 	struct ohci_td *sentinel_td = ohci_td_alloc();
 	struct ohci_ed *ed = pool_alloc(&ohci_eds);
 
+	if (!sentinel_td || !ed) {
+		return NULL;
+	}
+
 	memset(ed, 0, sizeof(struct ohci_ed));
 
 	ed->head_td = (uint32_t) sentinel_td;
