@@ -58,44 +58,52 @@ struct com {
         UART_REG(osc_12m_sel);  /* 13*/
 };
 
-#define COM3 ((volatile struct com *)COM_BASE)
-#define COM3_RBR (COM3->rbr)
-#define COM3_LSR (COM3->lsr)
-
 EMBOX_UNIT_INIT(ns16550_init);
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		COM3->ier |= NS16550_IER_RX_IRQ;
+		dev_regs->ier |= NS16550_IER_RX_IRQ;
 	}
 	return 0;
 }
 
 static int ns16550_irq_en(struct uart *dev, const struct uart_params *params) {
-	COM3->ier |= NS16550_IER_RX_IRQ;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	dev_regs->ier |= NS16550_IER_RX_IRQ;
 	return 0;
 }
 
 static int ns16550_irq_dis(struct uart *dev, const struct uart_params *params) {
-	COM3->ier &= ~NS16550_IER_RX_IRQ;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	dev_regs->ier &= ~NS16550_IER_RX_IRQ;
 	return 0;
 }
 
 static int ns16550_putc(struct uart *dev, int ch) {
-	while ((COM3_LSR & UART_LSR_THRE) == 0);
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
 
-	COM3_RBR = ch;
+	while ((dev_regs->lsr & UART_LSR_THRE) == 0);
+
+	dev_regs->rbr = ch;
 
 	return 0;
 }
 
 static int ns16550_getc(struct uart *dev) {
-	return COM3_RBR;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	return dev_regs->rbr;
 
 }
 
 static int ns16550_has_symbol(struct uart *dev) {
-	return COM3_LSR & UART_LSR_DR;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	return dev_regs->lsr & UART_LSR_DR;
 }
 
 
