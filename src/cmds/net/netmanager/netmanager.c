@@ -216,9 +216,11 @@ static int netmanager_store_config(char *ifname, int dhcp) {
 	strcat(file_buf, tmp);
 
 	iface_dev = inetdev_get_by_name(i_ifa->ifa_name);
-	strcat(file_buf, "\n\thwaddress ");
-	macaddr_print((unsigned char *)buf, iface_dev->dev->dev_addr);
-	strcat(file_buf, tmp);
+	if (iface_dev) {
+		strcat(file_buf, "\n\thwaddress ");
+		macaddr_print((unsigned char *)buf, iface_dev->dev->dev_addr);
+		strcat(file_buf, buf);
+	}
 
 	strcat(file_buf, "\n\n");
 	switch(dhcp) {

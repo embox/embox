@@ -886,6 +886,9 @@ static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
 	struct ext2_file_info *fi;
 
 	fi= ext2_fi_alloc(dest, sb);
+	if (!fi) {
+		return 0;
+	}
 
 	if (0 != ext2_open(dest->nas)) {
 		return 0;

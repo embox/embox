@@ -60,6 +60,9 @@ static void window_init(WINDOW *win, uint16_t begy, uint16_t begx,
 	assert(win != NULL);
 
 	win->lines = pool_alloc(&line_pool);
+	if (win->lines == NULL) {
+		return;
+	}
 
 	win->begy = win->cury = begy;
 	win->begx = win->curx = begx;

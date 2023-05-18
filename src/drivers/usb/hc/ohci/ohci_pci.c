@@ -86,7 +86,15 @@ static void ohci_td_free(struct ohci_td *td) {
 
 static void *ohci_ed_alloc(struct usb_endp *ep) {
 	struct ohci_td *sentinel_td = ohci_td_alloc();
+	if (!sentinel_td) {
+		return NULL;
+	}
+
 	struct ohci_ed *ed = pool_alloc(&ohci_eds);
+	if (!ed) {
+		ohci_td_free(sentinel_td);
+		return NULL;
+	}
 
 	memset(ed, 0, sizeof(struct ohci_ed));
 
