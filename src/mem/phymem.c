@@ -71,7 +71,7 @@ static uintptr_t find_sections_end(void *vmas[], unsigned int lens[]) {
 	return l;
 }
 
-char * const phymem_allocated_start(void) {
+char *phymem_allocated_start(void) {
 	extern char _reserve_end;
 
 	extern void *sections_text_vma[];
@@ -107,7 +107,7 @@ char * const phymem_allocated_start(void) {
 	return (char *) binalign_bound(sections_end, PAGE_SIZE());
 }
 
-char *const phymem_allocated_end(void) {
+char *phymem_allocated_end(void) {
 	return (char *)
 			binalign_bound((uintptr_t) &_ram_base + (size_t) &_ram_size, PAGE_SIZE());
 }
