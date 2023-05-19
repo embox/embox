@@ -6,24 +6,18 @@
  * @date    12.10.2012
  */
 
-#include <hal/reg.h>
 #include <drivers/common/memory.h>
-#include <drivers/diag.h>
-#include <embox/unit.h>
+
 #include <framework/mod/options.h>
-#include <hal/mmu.h>
-#include <mem/vmem.h>
-#include <util/binalign.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
 #define REG_WIDTH     OPTION_GET(NUMBER,reg_width)
 #define MEM32_ACCESS  OPTION_GET(NUMBER,mem32_access)
-#define COM0_IRQ_NUM  OPTION_GET(NUMBER,irq_num)
 
 #define UART_LSR_DR     0x01            /* Data ready */
 #define UART_LSR_THRE   0x20            /* Xmit holding register empty */
-#define COM_BASE (OPTION_GET(NUMBER, base_addr))
 
 
 #if MEM32_ACCESS
@@ -58,48 +52,53 @@ struct com {
         UART_REG(osc_12m_sel);  /* 13*/
 };
 
-#define COM3 ((volatile struct com *)COM_BASE)
-#define COM3_RBR (COM3->rbr)
-#define COM3_LSR (COM3->lsr)
-
-EMBOX_UNIT_INIT(ns16550_init);
-
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		COM3->ier |= NS16550_IER_RX_IRQ;
+		dev_regs->ier |= NS16550_IER_RX_IRQ;
 	}
 	return 0;
 }
 
 static int ns16550_irq_en(struct uart *dev, const struct uart_params *params) {
-	COM3->ier |= NS16550_IER_RX_IRQ;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	dev_regs->ier |= NS16550_IER_RX_IRQ;
 	return 0;
 }
 
 static int ns16550_irq_dis(struct uart *dev, const struct uart_params *params) {
-	COM3->ier &= ~NS16550_IER_RX_IRQ;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	dev_regs->ier &= ~NS16550_IER_RX_IRQ;
 	return 0;
 }
 
 static int ns16550_putc(struct uart *dev, int ch) {
-	while ((COM3_LSR & UART_LSR_THRE) == 0);
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
 
-	COM3_RBR = ch;
+	while ((dev_regs->lsr & UART_LSR_THRE) == 0);
+
+	dev_regs->rbr = ch;
 
 	return 0;
 }
 
 static int ns16550_getc(struct uart *dev) {
-	return COM3_RBR;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	return dev_regs->rbr;
 
 }
 
 static int ns16550_has_symbol(struct uart *dev) {
-	return COM3_LSR & UART_LSR_DR;
+	volatile struct com *dev_regs = (void *)(uintptr_t)dev->base_addr;
+
+	return dev_regs->lsr & UART_LSR_DR;
 }
 
-
-static const struct uart_ops ns16550_uart_ops = {
+const struct uart_ops ns16550_uart_ops = {
 		.uart_getc = ns16550_getc,
 		.uart_putc = ns16550_putc,
 		.uart_hasrx = ns16550_has_symbol,
@@ -107,27 +106,3 @@ static const struct uart_ops ns16550_uart_ops = {
 		.uart_irq_en = ns16550_irq_en,
 		.uart_irq_dis = ns16550_irq_dis,
 };
-
-static struct uart uart0 = {
-		.uart_ops = &ns16550_uart_ops,
-		.irq_num = COM0_IRQ_NUM,
-		.base_addr = COM_BASE,
-};
-
-static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
-};
-
-static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
-};
-
-DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
-
-static int ns16550_init(void) {
-	return uart_register(&uart0, &uart_defparams);
-}
-
-PERIPH_MEMORY_DEFINE(ns16550, COM_BASE, 0x1000);
