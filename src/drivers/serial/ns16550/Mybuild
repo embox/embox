@@ -17,3 +17,11 @@ module ns16550 extends embox.driver.diag.diag_api {
 	depends diag
 	depends embox.driver.char_dev_api
 }
+
+module ns16550_ttys1 {
+	option number base_addr 
+	option number irq_num
+	option number baud_rate = 115200
+
+	source "ns16550_ttys1.c"
+}
