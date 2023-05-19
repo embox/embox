@@ -166,8 +166,9 @@ static void handle_ccid_commands(struct usb_interface *udev) {
 		while (str != NULL) {
 			unsigned int c;
 
-			sscanf(str, "%x", &c);
-			cmd_buf[cmd_len++] = c;
+			if (sscanf(str, "%x", &c) == 1) {
+				cmd_buf[cmd_len++] = c;
+			}
 			str = strtok(NULL, " ");
 		}
 
@@ -196,13 +197,13 @@ int main(int argc, char **argv) {
 	}
 
 	ret = sscanf(argv[argc - 2], "%d", &bus);
-	if (ret < 0) {
+	if (ret != 1) {
 		fprintf(stderr, "Bad usb bus number\n");
 		print_usage();
 		return -1;
 	}
 	ret = sscanf(argv[argc - 1], "%d", &addr);
-	if (ret < 0) {
+	if (ret != 1) {
 		fprintf(stderr, "Bad usb device number\n");
 		print_usage();
 		return -1;
