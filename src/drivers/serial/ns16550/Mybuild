@@ -9,6 +9,8 @@ module ns16550 extends embox.driver.diag.diag_api {
 	option number mem32_access = 0
 
 	source "ns16550.c"
+	source "ns16550_diag.c"
+	source "ns16550_ttys0.c"
 
 	depends embox.driver.periph_memory
 	depends core
