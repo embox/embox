@@ -89,11 +89,13 @@ static void uart_internal_init(struct uart *uart) {
 int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
 	int res;
+	size_t allocated_idx;
 
-	uart->idx = index_alloc(&serial_indexator, INDEX_MIN);
-	if(uart->idx < 0) {
+	allocated_idx = index_alloc(&serial_indexator, INDEX_MIN);
+	if (allocated_idx == INDEX_NONE) {
 		return -EBUSY;
 	}
+	uart->idx = (unsigned char)allocated_idx;
 
 	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", uart->idx);
 
