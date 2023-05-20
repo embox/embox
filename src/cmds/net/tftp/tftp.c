@@ -129,7 +129,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on, void *
 		}
 
 		if (addr == NULL) {
-			if (0 > fwrite(buf, 1, bytes, fp)) {
+			if (bytes > fwrite(buf, 1, bytes, fp)) {
 				tftp_delete_stream(s);
 				return -2;
 			}
