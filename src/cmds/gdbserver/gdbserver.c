@@ -22,6 +22,8 @@
 #include <framework/cmd/api.h>
 #include <framework/cmd/types.h>
 
+extern int diag_fd(void);
+
 static int gdb_fd;
 
 static ssize_t get_packet(char *dst, size_t nbyte) {
@@ -131,24 +133,29 @@ static int prepare_serial(const char *tty) {
 
 	printf("Remote debugging using %s\n", tty);
 
-	gdb_fd = open(tty, O_RDWR);
-	if (gdb_fd == -1) {
-		return -errno;
+	if (!strcmp(tty, "diag")) {
+		gdb_fd = diag_fd();
 	}
+	else {
+		gdb_fd = open(tty, O_RDWR);
+		if (gdb_fd == -1) {
+			return -errno;
+		}
 
-	if (-1 == tcgetattr(gdb_fd, &t)) {
-		return -errno;
-	}
+		if (-1 == tcgetattr(gdb_fd, &t)) {
+			return -errno;
+		}
 
-	t.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
-	t.c_oflag &= ~(OPOST);
-	t.c_cflag |= (CS8);
-	t.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
-	t.c_cc[VMIN] = 1;
-	t.c_cc[VTIME] = 0;
+		t.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+		t.c_oflag &= ~(OPOST);
+		t.c_cflag |= (CS8);
+		t.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+		t.c_cc[VMIN] = 1;
+		t.c_cc[VTIME] = 0;
 
-	if (-1 == tcsetattr(gdb_fd, TCSANOW, &t)) {
-		return -errno;
+		if (-1 == tcsetattr(gdb_fd, TCSANOW, &t)) {
+			return -errno;
+		}
 	}
 
 	return 0;
