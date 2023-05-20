@@ -8,40 +8,62 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <termios.h>
 #include <arpa/inet.h>
+#include <sys/poll.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 
-#include <debug/gdbstub.h>
+#include <lib/gdb.h>
 #include <framework/cmd/api.h>
 #include <framework/cmd/types.h>
 
-static int remote_fd;
+static int gdb_fd;
 
-static void get_packet(char *dst, size_t nbyte) {
-	char buf[2];
+static ssize_t get_packet(char *dst, size_t nbyte) {
+	ssize_t nread;
+	char *ptr;
+
+	for (;;) {
+		nread = read(gdb_fd, dst, nbyte);
+		if (nread > 0) {
+			ptr = memchr(dst, '$', nread);
+			if (!ptr) {
+				continue;
+			}
+			nread -= ptr - dst;
+			memcpy(dst, ptr, nread);
+		}
+		break;
+	}
+	return nread;
+}
+
+static ssize_t get_packet2(char *dst, size_t nbyte) {
+	ssize_t nread;
 
 	do {
-		read(remote_fd, buf, 1);
-	} while (buf[0] != '$');
+		read(gdb_fd, dst, 1);
+	} while (*dst != '$');
 
-	while (nbyte--) {
-		read(remote_fd, buf, 1);
-		*dst++ = buf[0];
-		if (buf[0] == '#') {
+	for (nread = 1; nread < nbyte; nread++) {
+		read(gdb_fd, ++dst, 1);
+		if (*dst == '#') {
 			break;
 		}
 	}
-	read(remote_fd, buf, 2);
+	return nread;
 }
 
-static void put_packet(const char *src, size_t nbyte) {
-	write(remote_fd, src, nbyte);
+static ssize_t put_packet(const char *src, size_t nbyte) {
+	return write(gdb_fd, src, nbyte);
 }
 
-static int prepare_connection(const char *host_port) {
+static int prepare_tcp(const char *host_port) {
 	struct sockaddr_in sockaddr;
 	in_addr_t addr;
 	in_port_t port;
@@ -51,6 +73,7 @@ static int prepare_connection(const char *host_port) {
 	int ret;
 
 	listen_fd = -1;
+	ret = 0;
 
 	delim = strchr(host_port, ':');
 	if ((delim == NULL) || (delim[1] == '\n')) {
@@ -93,23 +116,50 @@ static int prepare_connection(const char *host_port) {
 
 	printf("Listening on port %hu\n", port);
 
-	ret = accept(listen_fd, NULL, NULL);
-	if (ret == -1) {
+	gdb_fd = accept(listen_fd, NULL, NULL);
+	if (gdb_fd == -1) {
 		ret = -errno;
 	}
 
 out:
-	shutdown(listen_fd, SHUT_RDWR);
 	close(listen_fd);
 	return ret;
 }
 
+static int prepare_serial(const char *tty) {
+	struct termios t;
+
+	printf("Remote debugging using %s\n", tty);
+
+	gdb_fd = open(tty, O_RDWR);
+	if (gdb_fd == -1) {
+		return -errno;
+	}
+
+	if (-1 == tcgetattr(gdb_fd, &t)) {
+		return -errno;
+	}
+
+	t.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
+	t.c_oflag &= ~(OPOST);
+	t.c_cflag |= (CS8);
+	t.c_lflag &= ~(ECHO | ICANON | IEXTEN | ISIG);
+	t.c_cc[VMIN] = 1;
+	t.c_cc[VTIME] = 0;
+
+	if (-1 == tcsetattr(gdb_fd, TCSANOW, &t)) {
+		return -errno;
+	}
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
-	struct gdbstub_state state;
+	struct gdb_ops gdb_ops;
 	const struct cmd *cmd;
 	int ret;
 
-	ret = 0;
+	gdb_fd = -1;
 
 	if (argc < 3) {
 		ret = -EINVAL;
@@ -122,25 +172,31 @@ int main(int argc, char *argv[]) {
 		goto out;
 	}
 
-	remote_fd = prepare_connection(argv[1]);
-	if (remote_fd < 0) {
-		ret = remote_fd;
+	if (isdigit(*argv[1])) {
+		gdb_ops.get_packet = get_packet;
+		gdb_ops.put_packet = put_packet;
+		ret = prepare_tcp(argv[1]);
+	}
+	else {
+		gdb_ops.get_packet = get_packet2;
+		gdb_ops.put_packet = put_packet;
+		ret = prepare_serial(argv[1]);
+	}
+	if (ret < 0) {
 		goto out;
 	}
 
-	state.connected = false;
-	state.ops.get_packet = get_packet;
-	state.ops.put_packet = put_packet;
-
-	gdb_start_debugging(&state, cmd->exec);
-	cmd_exec(cmd, argc - 2, &argv[2]);
-	gdb_stop_debugging(&state);
+	gdb_prepare(&gdb_ops);
+	{
+		gdb_set_bpt(cmd->exec);
+		cmd_exec(cmd, argc - 2, &argv[2]);
+	}
+	gdb_cleanup();
 
 out:
 	if (ret == -EINVAL) {
 		printf("Usage: %s [HOST]:[PORT] [PROG] [ARGS ...]\n", argv[0]);
 	}
-	shutdown(remote_fd, SHUT_RDWR);
-	close(remote_fd);
+	close(gdb_fd);
 	return ret;
 }
