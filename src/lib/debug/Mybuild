@@ -33,25 +33,6 @@ module buildinfo {
 	source "buildinfo.lds.S"
 }
 
-@Mandatory
-@DefaultImpl(no_gdbstub)
-abstract module gdbstub_api {
-}
-
-module gdbstub extends gdbstub_api {
-	option number max_bpts=16
-	
-	@IncludeExport(path="debug")
-	source "gdbstub.h"
-	
-	source "gdbstub.c"
-}
-
-module no_gdbstub extends gdbstub_api {
-	@IncludeExport(path="debug", target_name="gdbstub.h")
-	source "no_gdbstub.h"
-}
-
 module ubsan  {
 	option boolean stop_on_handle = false
 	source "ubsan.c"
