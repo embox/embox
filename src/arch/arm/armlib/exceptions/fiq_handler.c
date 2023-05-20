@@ -7,8 +7,7 @@
  */
 
 #include <kernel/printk.h>
-
-#include "exceptions.h"
+#include <arm/exception.h>
 
 void _NORETURN arm_fiq_handler(excpt_context_t *ctx) {
 	printk("\nUnresolvable fiq exception!\n");

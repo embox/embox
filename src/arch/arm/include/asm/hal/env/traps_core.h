@@ -11,12 +11,6 @@
 
 #include <stdint.h>
 
-#define FAULT_DEBUG       2
-#define FAULT_TRANSL_SECT 5
-#define FAULT_TRANSL_PAGE 7
-#define FAULT_PERMIT_SECT 13
-#define FAULT_PERMIT_PAGE 15
-
 /** Defines handler for traps_dispatcher in arm archecture */
 typedef int (*__trap_handler)(uint32_t nr, void *data);
 

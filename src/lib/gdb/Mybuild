@@ -1,0 +1,20 @@
+package embox.lib
+
+module gdb {
+	@IncludeExport(path="lib")
+	source "gdb.h"
+
+	source "gdb_common.c"
+	source "gdb_util.c"
+
+	depends embox.arch.gdb
+	depends gdbstub
+}
+
+@DefaultImpl(gdbstub_minimal)
+abstract module gdbstub {
+}
+
+module gdbstub_minimal extends gdbstub {
+	source "gdbstub_minimal.c"
+}

@@ -12,7 +12,6 @@
 #include <kernel/printk.h>
 #include <hal/reg.h>
 #include <asm/arm_m_regs.h>
-#include <debug/gdbstub.h>
 
 
 /* Context saved by CPU on exception entering */
@@ -58,9 +57,3 @@ void exc_default_handler(struct exc_saved_base_ctx *ctx, int ipsr) {
 	print_fault_status();
 	panic("\n%s\n", __func__);
 }
-
-#if GDBSTUB_IMPL
-void exc_debug_monitor(void *regs) {
-	gdb_serial_stub(regs);
-}
-#endif

@@ -1,7 +1,8 @@
 package embox.arch.arm.armlib
 
 module exceptions {
-	option number log_level=0
+	@IncludeExport(path="arm")
+	source "exception.h"
 
 	source "entry.S"
 	source "undef_handler.c"
