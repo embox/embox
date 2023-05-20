@@ -62,12 +62,12 @@ struct mgeth_priv {
 	struct mgeth_regs *regs;
 
 	struct rcm_mgeth_long_desc rxbd_base[MGETH_RXBD_CNT + 1] __attribute__ ((aligned (16)));
-	int rxbd_no;
+	int rxbd_idx;
 	uint8_t rx_buffs[MGETH_RXBD_CNT][MGETH_RXBUF_SIZE] __attribute__ ((aligned (8)));
 
 
 	struct rcm_mgeth_long_desc txbd_base[MGETH_TXBD_CNT + 1] __attribute__ ((aligned (16)));
-	int txbd_no;
+	int txbd_idx;
 	volatile struct sk_buff *tx_active_skb[MGETH_TXBD_CNT];
 
 };
@@ -182,22 +182,23 @@ static int mgeth_start(struct net_device *dev) {
 			mgeth_rxd_init(priv, i);
 		}
 		/* initiate indexes */
-		priv->rxbd_no = 0;
+		priv->rxbd_idx = 0;
 
 		/* Set pointer to rx descriptor areas */
 		REG32_STORE(&priv->regs->rx[0].dma_regs.settings,
 				MGETH_CHAN_DESC_LONG | MGETH_CHAN_ADD_INFO |
 				(sizeof(struct rcm_mgeth_long_desc) << MGETH_CHAN_DESC_GAP_SHIFT));
-		REG32_STORE(&priv->regs->rx[0].dma_regs.desc_addr, (uint32_t )(uintptr_t)(&priv->rxbd_base[0]));
+		REG32_STORE(&priv->regs->rx[0].dma_regs.desc_addr,
+				(uint32_t )(uintptr_t)(&priv->rxbd_base[0]));
 
-		REG32_STORE(&priv->regs->rx[0].dma_regs.irq_mask, (1 << 2));
+		REG32_STORE(&priv->regs->rx[0].dma_regs.irq_mask, MDMA_IRQ_INT_DESC);
 
 		/* enable rx */
 		REG32_STORE(&priv->regs->rx[0].dma_regs.enable, MGETH_ENABLE);
 	}
 
 
-	/* setup RX queues */
+	/* setup TX queues */
 	{
 		/* Initiate tx descriptors */
 		for (i = 0; i < (MGETH_TXBD_CNT ); i++) {
@@ -205,12 +206,12 @@ static int mgeth_start(struct net_device *dev) {
 		}
 		memset(priv->tx_active_skb, 0, sizeof(priv->tx_active_skb));
 
-		priv->txbd_no = 0;
+		priv->txbd_idx = 0;
 
 		REG32_STORE(&priv->regs->tx[0].dma_regs.settings,
 			MGETH_CHAN_DESC_LONG | MGETH_CHAN_ADD_INFO |
 				(sizeof(struct rcm_mgeth_long_desc) << MGETH_CHAN_DESC_GAP_SHIFT));
-		REG32_STORE(&priv->regs->tx[0].dma_regs.irq_mask, (1 << 2));
+		REG32_STORE(&priv->regs->tx[0].dma_regs.irq_mask, MDMA_IRQ_INT_DESC);
 	}
 
 
@@ -273,7 +274,7 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 	dma_status = REG32_LOAD(&priv->regs->rx[chan].dma_regs.status);
 	log_debug("rx_chan (%i) dma status (0x%x)", chan, dma_status);
 
-	if (!(dma_status & (1 << 2))) {
+	if (!(dma_status & MDMA_IRQ_INT_DESC)) {
 		return 0;
 	}
 
@@ -286,7 +287,7 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 			struct sk_buff *skb;
 			unsigned char *buf;
 
-			curr_bd = &priv->rxbd_base[priv->rxbd_no];
+			curr_bd = &priv->rxbd_base[priv->rxbd_idx];
 			dcache_inval(curr_bd, sizeof(struct rcm_mgeth_long_desc));
 
 			if (!(curr_bd->flags_length & MGETH_BD_OWN)) {
@@ -297,12 +298,12 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 			if (curr_bd->flags_length & MGETH_BD_LINK) {
 				//log_error("continue MGETH_BD_LINK %d", priv->rxbd_no);
 				mgeth_rxd_init(priv, MGETH_RXBD_CNT);
-				priv->rxbd_no = 0;
+				priv->rxbd_idx = 0;
 
 				continue;
 			}
 
-			assert(priv->rxbd_no < MGETH_RXBD_CNT);
+			assert(priv->rxbd_idx < MGETH_RXBD_CNT);
 
 			len = curr_bd->flags_length & MGETH_BD_LEN_MASK;
 
@@ -326,11 +327,11 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 					cnt++;
 				}
 			} else {
-				log_debug("rx desc len =0 %d", priv->rxbd_no);
+				log_debug("rx desc len =0 %d", priv->rxbd_idx);
 			}
 
-			mgeth_rxd_init(priv, priv->rxbd_no);
-			priv->rxbd_no++;
+			mgeth_rxd_init(priv, priv->rxbd_idx);
+			priv->rxbd_idx++;
 
 		}
 

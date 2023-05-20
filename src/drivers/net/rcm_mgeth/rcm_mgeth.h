@@ -35,7 +35,7 @@
 #define RXx_ETH_MASK_ACTIV_0 -0x0080
 #define RXx_ETH_MASK_ACTIV_d     0x4
 #define RXx_ETH_MASK_ACTIV_c      32
-
+#if 0
 // Receive channels
 #define MGETH_RECV_CH_0       0x0300
 #define MGETH_RECV_CH_d        0x200
@@ -50,7 +50,9 @@
 #define IRQ_MASK_x              0x14
 #define STATUS_x                0x18
 #define DESC_ADDR_x             0x20
+#endif
 
+#define MDMA_IRQ_INT_DESC      (1 << 2)
 
 typedef volatile uint32_t rwreg32;
 
