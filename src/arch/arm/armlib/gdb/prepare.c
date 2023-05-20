@@ -19,13 +19,13 @@ extern void gdb_stub(void *regs);
 
 static int handle_debug_fault(uint32_t nr, void *data) {
 	gdb_stub(&(((excpt_context_t *)data)->ptregs));
-	// ICACHE_INVAL();
+	ICACHE_INVAL();
 	return 0;
 }
 
 void gdb_prepare_arch(void) {
 	arm_inst_fault_table[DEBUG_FAULT] = handle_debug_fault;
-	// ICACHE_INVAL();
+	ICACHE_INVAL();
 }
 
 void gdb_cleanup_arch(void) {
