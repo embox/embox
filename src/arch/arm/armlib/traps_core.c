@@ -10,31 +10,25 @@
 
 #include <asm/modes.h>
 #include <hal/test/traps_core.h>
-
-extern fault_handler_t __fault_table[0x10];
-extern fault_handler_t __ifault_table[0x10];
+#include <arm/exception.h>
 
 void set_fault_handler(enum fault_type type, fault_handler_t handler) {
 	switch (type) {
 	case MMU_DATA_MISS:
-		__fault_table[FAULT_TRANSL_SECT] = handler;
-		__fault_table[FAULT_TRANSL_PAGE] = handler;
-		__ifault_table[FAULT_TRANSL_SECT] = handler;
-		__ifault_table[FAULT_TRANSL_PAGE] = handler;
+		arm_data_fault_table[SECT_TRANSLATION_FAULT] = handler;
+		arm_data_fault_table[PAGE_TRANSLATION_FAULT] = handler;
+		arm_inst_fault_table[SECT_TRANSLATION_FAULT] = handler;
+		arm_inst_fault_table[PAGE_TRANSLATION_FAULT] = handler;
 		break;
-
 	case MMU_DATA_SECUR:
-		__fault_table[FAULT_PERMIT_SECT] = handler;
-		__fault_table[FAULT_PERMIT_PAGE] = handler;
-		__ifault_table[FAULT_PERMIT_SECT] = handler;
-		__ifault_table[FAULT_PERMIT_PAGE] = handler;
+		arm_data_fault_table[SECT_PERMISSION_FAULT] = handler;
+		arm_data_fault_table[PAGE_PERMISSION_FAULT] = handler;
+		arm_inst_fault_table[SECT_PERMISSION_FAULT] = handler;
+		arm_inst_fault_table[PAGE_PERMISSION_FAULT] = handler;
 		break;
-
 	case BREAKPOINT:
-		__fault_table[FAULT_DEBUG] = handler;
-		__ifault_table[FAULT_DEBUG] = handler;
+		arm_inst_fault_table[DEBUG_FAULT] = handler;
 		break;
-
 	default:
 		break;
 	}
