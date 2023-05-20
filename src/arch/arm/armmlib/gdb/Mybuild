@@ -1,0 +1,11 @@
+package embox.arch.arm.armmlib
+
+module gdb extends embox.arch.gdb {
+	source "gdb.h"
+
+	source "breakpoint.c"
+	source "prepare.c"
+	source "reg.c"
+
+	source "debug_monitor.S"
+}
