@@ -46,6 +46,12 @@ module stm32_spi2 {
 }
 
 @BuildDepends(stm32_cube)
+module stm32_spi3 {
+	option number log_level=1
+	source "stm32_spi3.c"
+}
+
+@BuildDepends(stm32_cube)
 module stm32_spi5 {
 	option number log_level=1
 	source "stm32_spi5.c"
