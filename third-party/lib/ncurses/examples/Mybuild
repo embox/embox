@@ -1,0 +1,16 @@
+package third_party.libs.ncurses
+
+@BuildDepends(third_party.libs.ncurses.libncurses)
+@Build(stage=2,script="true")
+@App
+@AutoCmd
+@Cmd(name = "ncurses_hello_world",
+	help = "ncurses_hello_world",
+	man = '''
+
+	''')
+module ncurses_hello_world {
+	source "ncurses_hello_world.c"
+
+	depends third_party.libs.ncurses.libncurses
+}
