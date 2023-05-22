@@ -42,4 +42,64 @@ struct uart_conf uarts[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts))
+struct spi_conf spis[] = {
+	[1] = {
+		.status = DISABLED,
+		.name = "SPI1",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PA, PIN_5, AF5),
+				PIN("MISO", PA, PIN_6, AF5),
+				PIN("MOSI", PA, PIN_7, AF5),
+				PIN("CS",   PA, PIN_15, NOAF),
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOA),
+				VAL("MISO", CLK_GPIOA),
+				VAL("MOSI", CLK_GPIOA),
+				VAL("CS",   CLK_GPIOA),
+				VAL("SPI",  CLK_SPI1),
+			}
+		},
+	},
+	[2] = {
+		.status = DISABLED,
+		.name = "SPI2",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PB, PIN_10, AF5),
+				PIN("MISO", PB, PIN_14, AF5),
+				PIN("MOSI", PB, PIN_15, AF5),
+				PIN("CS",   PB, PIN_12, NOAF),
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOB),
+				VAL("MISO", CLK_GPIOB),
+				VAL("MOSI", CLK_GPIOB),
+				VAL("CS",   CLK_GPIOB),
+				VAL("SPI",  CLK_SPI2),
+			}
+		},
+	},
+	[3] = {
+		.status = DISABLED,
+		.name = "SPI3",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PC, PIN_10, AF6),
+				PIN("MISO", PC, PIN_11, AF6),
+				PIN("MOSI", PC, PIN_12, AF6),
+				PIN("CS",   PE, PIN_1, NOAF),	// for WiFi module
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOC),
+				VAL("MISO", CLK_GPIOC),
+				VAL("MOSI", CLK_GPIOC),
+				VAL("CS",   CLK_GPIOE),		// for WiFi module
+				VAL("SPI",  CLK_SPI3),
+			}
+		},
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis))
