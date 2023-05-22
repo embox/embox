@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'k': {
 			thread_id_t thread_id;
-			if ((optarg == NULL) || (!sscanf(optarg, "%d", &thread_id))) {
+			if ((optarg == NULL) || (sscanf(optarg, "%d", &thread_id) != 1)) {
 				print_usage();
 				break;
 			}
