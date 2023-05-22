@@ -29,6 +29,8 @@ extern struct gdb_ops _gdb_ops;
 extern void gdb_pack_str(struct gdb_packet *pkt, const char *str);
 extern void gdb_pack_mem(struct gdb_packet *pkt, const void *mem, size_t nbyte);
 
+extern void gdb_read_mem(struct gdb_packet *pkt);
+
 extern size_t gdb_get_reg(void *regs, unsigned int regnum, void *regval);
 
 extern void gdb_prepare_arch(void);

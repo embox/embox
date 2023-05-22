@@ -1,16 +1,3 @@
-/**
- * @file
- * @brief
- *
- * @date 27.02.23
- * @author Aleksey Zhmulin
- */
-#include <stdio.h>
-#include <stddef.h>
-#include <stdlib.h>
-
-/* The following code adopted from NetBSD's getline.c */
-
 /*-
  * Copyright (c) 2011 The NetBSD Foundation, Inc.
  * All rights reserved.
@@ -39,6 +26,19 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+/**
+ * @file
+ * @brief
+ *
+ * @date 27.02.23
+ * @author Aleksey Zhmulin
+ */
+#include <stdio.h>
+#include <stddef.h>
+#include <stdlib.h>
+#include <sys/types.h>
+
 ssize_t getdelim(char **buf, size_t *bufsiz, int delimiter, FILE *fp) {
 	char *ptr, *eptr;
 
