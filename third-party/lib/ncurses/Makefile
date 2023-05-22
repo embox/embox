@@ -16,6 +16,9 @@ $(CONFIGURE) :
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--prefix=$(PKG_INSTALL_DIR) \
 			--enable-static=yes \
+			--without-cxx \
+			CC=$(EMBOX_GCC) \
+			CXX=$(EMBOX_GXX) \
 	)
 	touch $@
 

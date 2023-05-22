@@ -1,5 +1,13 @@
 package embox.compat.posix
 
+@DefaultImpl(getpgrp_stub)
+abstract module getpgrp {
+}
+
+static module getpgrp_stub extends getpgrp {
+	source "getpgrp.c"
+}
+
 static module stubs {
 	source
 		"daemon.c",
@@ -12,10 +20,11 @@ static module stubs {
 		"getdtablesize.c",
 		"getgroups.c",
 		"getppid.c",
-		"getpgrp.c",
 		"link.c",
 		"readlinkat.c",
 		"readlink.c",
 		"setpgid.c",
 		"sigsuspend.c"
+
+		depends embox.compat.posix.getpgrp
 }
