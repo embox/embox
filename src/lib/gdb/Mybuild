@@ -17,4 +17,14 @@ abstract module gdbstub {
 
 module gdbstub_minimal extends gdbstub {
 	source "gdbstub_minimal.c"
+
+	depends gdbstub_mem
+}
+
+@DefaultImpl(gdbstub_vmem)
+abstract module gdbstub_mem {
+}
+
+module gdbstub_vmem extends gdbstub_mem {
+	source "gdbstub_vmem.c"
 }

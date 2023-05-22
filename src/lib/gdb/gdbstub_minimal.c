@@ -15,27 +15,6 @@
 
 #include "gdb_priv.h"
 
-static void handle_read_mem(struct gdb_packet *pkt) {
-	extern char _stack_top;
-
-	struct thread *th;
-	char *endptr;
-	void *addr;
-	size_t len;
-
-	th = thread_self();
-
-	addr = (void *)strtoul(&pkt->buf[2], &endptr, 16);
-	if ((th && (addr < th->stack.stack + th->stack.stack_sz)) ||
-	    (!th && (addr < (void *)&_stack_top))) {
-		len = strtoul(endptr + 1, NULL, 16);
-		gdb_pack_mem(pkt, addr, len);
-	}
-	else {
-		gdb_pack_str(pkt, "E01");
-	}
-}
-
 static void handle_get_reg(struct gdb_packet *pkt, void *regs) {
 	unsigned long regval;
 	unsigned int regnum;
@@ -132,7 +111,7 @@ static int process_packet(struct gdb_packet *pkt, void *regs) {
 		gdb_pack_str(pkt, "OK");
 		break;
 	case 'm':
-		handle_read_mem(pkt);
+		gdb_read_mem(pkt);
 		break;
 	case 'p':
 		handle_get_reg(pkt, regs);
