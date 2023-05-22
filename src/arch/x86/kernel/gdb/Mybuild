@@ -1,0 +1,11 @@
+package embox.arch.x86.kernel
+
+module gdb extends embox.arch.gdb {
+	option number max_breakpoints=32
+
+	source "gdb.h"
+
+	source "breakpoint.c"
+	source "prepare.c"
+	source "reg.c"
+}
