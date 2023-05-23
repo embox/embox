@@ -34,9 +34,9 @@ static void skip_commented_line(FILE *file) {
 
 static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name) {
 	int err = 0;
-	int if_netmask;
-	int if_ipv4_addr;
-	int if_net;
+	uint32_t if_ipv4_netmask;
+	uint32_t if_ipv4_addr;
+	int if_ipv4_net;
 	char cmd_line[BUFF_SZ];
 	char ipv4_addr[32] = "";
 	char netmask[32] = "255.255.255.255";
@@ -62,14 +62,14 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 			printf("WARNING: Unknown iface parameter: %s\n", buf);
 	}
 
-	if (1 != inet_pton(AF_INET, netmask, &if_netmask)) {
-		printf("netmanager: iface(%s) wrong netmask %s", iface_name, netmask);
+	if (1 != inet_pton(AF_INET, netmask, &if_ipv4_netmask)) {
+		printf("netmanager: iface(%s) wrong netmask %s\n", iface_name, netmask);
 	}
 	if (1 != inet_pton(AF_INET, ipv4_addr, &if_ipv4_addr)) {
-		printf("netmanager: iface(%s) wrong ipaddr %s", iface_name, ipv4_addr);
+		printf("netmanager: iface(%s) wrong ipaddr %s\n", iface_name, ipv4_addr);
 	}
-	if_net = if_ipv4_addr & if_netmask;
-	if (NULL == inet_ntop(AF_INET, &if_net, net, sizeof(net))) {
+	if_ipv4_net = if_ipv4_addr & if_ipv4_netmask;
+	if (NULL == inet_ntop(AF_INET, &if_ipv4_net, net, sizeof(net))) {
 		printf("netmanager: iface(%s) wrong net", iface_name);
 	}
 
