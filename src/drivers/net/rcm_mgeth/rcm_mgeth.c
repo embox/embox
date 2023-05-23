@@ -1,6 +1,9 @@
-//--------------------------------------------------------------
-// @author  V. Syrtsov
-//--------------------------------------------------------------
+/**
+ * @file
+ *
+ * @date Apr 3, 2023
+ * @author Anton Bondarev
+ */
 
 #include <util/log.h>
 
@@ -36,8 +39,6 @@
 
 #define BIT(b) ( 1 << (b))
 
-#define MGPIO0_BASE    (0x01084000)
-
 EMBOX_UNIT_INIT(mgeth_init);
 
 #define BASE_ADDR   OPTION_GET(NUMBER, base_addr)
@@ -69,15 +70,12 @@ struct mgeth_priv {
 	struct rcm_mgeth_long_desc txbd_base[MGETH_TXBD_CNT + 1] __attribute__ ((aligned (16)));
 	int txbd_idx;
 	volatile struct sk_buff *tx_active_skb[MGETH_TXBD_CNT];
-
 };
-
 
 static int mgeth_xmit(struct net_device *dev, struct sk_buff *skb);
 static int mgeth_open(struct net_device *dev);
 static int mgeth_close(struct net_device *dev);
 static int mgeth_set_mac(struct net_device *dev, const void *addr);
-
 
 static int mgeth_rxd_init(struct mgeth_priv *priv, int idx) {
 	priv->rxbd_base[idx].usrdata_h = 0;
@@ -443,7 +441,7 @@ static int mgeth_set_mac(struct net_device *dev, const void *addr) {
 	return ENOERR;
 }
 
-extern void rcm_mgpio_init(uint32_t mgpio_base);
+extern void rcm_mgpio_init(void);
 
 static const struct net_driver rcm_mgeth_ops = {
 		.xmit = mgeth_xmit,
@@ -485,22 +483,20 @@ static int mgeth_init(void) {
 		return res;
 	}
 
-	//log_error("line %d", __LINE__);
-	rcm_mgpio_init(MGPIO0_BASE);
+	rcm_mgpio_init();
 	usleep(100000);
-//	log_error("line %d", __LINE__);
+
 	for(i = 0; i < 4; i ++) {
 		rcm_mdio_init(i);
 	}
 	usleep(100000);
-//	log_error("line %d", __LINE__);
+
 	for(i = 0; i < 4; i ++) {
 		rcm_mdio_en(i, AUTONEGOTIATION_EN);
 	}
 	usleep(100000);
-//	log_error("line %d", __LINE__);
+
 	phy_rcm_sgmii_init(AUTONEGOTIATION_EN);
-	log_error("line %d", __LINE__);
 
 	return inetdev_register_dev(nic);
 }
@@ -509,5 +505,3 @@ static int mgeth_init(void) {
 STATIC_IRQ_ATTACH(MGETH_IRQ, mgeth_irq_handler, mgeth_netdev);
 
 PERIPH_MEMORY_DEFINE(mgeth, BASE_ADDR, 0x1000);
-
-PERIPH_MEMORY_DEFINE(mgpio0, MGPIO0_BASE, 0x2000);
