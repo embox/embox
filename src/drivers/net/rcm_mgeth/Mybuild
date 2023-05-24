@@ -8,8 +8,6 @@ module rcm_mgeth {
 
 	source "rcm_mgeth.c"
 
-	source "rcm_mgpio.c"
-
 	depends embox.kernel.irq_api
 	depends embox.net.dev
 	depends embox.net.entry_api
@@ -19,6 +17,15 @@ module rcm_mgeth {
 	@NoRuntime depends platform.rc_module.driver.rcm_sctl
 	@NoRuntime depends embox.driver.net.phy_rcm_sgmii
 	@NoRuntime depends rcm_mdio
+	@NoRuntime depends rcm_mgpio
+}
+
+module rcm_mgpio {
+	option number log_level=1
+
+	option number base_addr=0x01084000
+
+	source "rcm_mgpio.c"
 }
 
 module rcm_mdio {

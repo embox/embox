@@ -130,29 +130,26 @@ static int str_to_inet(const char *buff, struct in_addr *in) {
 	addr = 0UL;
 	max_val = ULONG_MAX;
 
-	for (i = 0; i < ARRAY_SIZE(in->s_addr8); ++i, ++buff,
-			max_val >>= CHAR_BIT) {
-		SET_ERRNO(0);
+	for (i = 0; i < sizeof(in->s_addr8); i++) {
+
+		errno = 0;
 		val = strtoul(buff, (char **)&buff, 0);
-		if (errno != 0) {
-			return 1; /* error: see errno */
+		if (val == ULONG_MAX) {
+			if (errno != 0) {
+				return 1; /* error: see errno */
+			}
 		}
 		if (val > max_val) {
 			return 1; /* error: invalid address format */
 		}
-		addr |= *buff == '.'
-				? val << (CHAR_BIT * (ARRAY_SIZE(in->s_addr8) - i - 1))
-				: val;
 		if (*buff != '.') {
+			addr |= val;
 			break;
 		}
-		else if (val > UCHAR_MAX) {
-			return 1; /* error: invalid address format */
-		}
-	}
 
-	if (i == ARRAY_SIZE(in->s_addr8)) {
-		return 1; /* error: invalid address format */
+		addr |= val << (CHAR_BIT * (sizeof(in->s_addr8) - i - 1));
+		buff ++;
+		max_val >>= CHAR_BIT;
 	}
 
 	in->s_addr = htonl(addr);

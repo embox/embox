@@ -53,6 +53,7 @@
 #endif
 
 #define MDMA_IRQ_INT_DESC      (1 << 2)
+#define MDMA_IRQ_STOP_DESC     (1 << 4)
 
 typedef volatile uint32_t rwreg32;
 
