@@ -156,6 +156,18 @@ static inline void mgeth_init_mac(const struct mgeth_regs *regs, int speed, int 
 	REG32_STORE(&regs->mg_control, ctrl);
 }
 
+static inline void mgeth_start_rx_dma(struct mgeth_priv *priv, int chan) {
+	/* initiate indexes */
+	priv->rxbd_idx = 0;
+
+	REG32_STORE(&priv->regs->rx[chan].dma_regs.desc_addr,
+			(uint32_t )(uintptr_t)(&priv->rxbd_base[chan]));
+
+	/* enable rx */
+	REG32_STORE(&priv->regs->rx[chan].dma_regs.enable, MGETH_ENABLE);
+	log_debug("rx dma enable chan[%d]", chan);
+}
+
 /* init/start hardware and allocate descriptor buffers for rx side
  *
  */
@@ -179,20 +191,15 @@ static int mgeth_start(struct net_device *dev) {
 		for (i = 0; i <= (MGETH_RXBD_CNT); i++) {
 			mgeth_rxd_init(priv, i);
 		}
-		/* initiate indexes */
-		priv->rxbd_idx = 0;
 
 		/* Set pointer to rx descriptor areas */
 		REG32_STORE(&priv->regs->rx[0].dma_regs.settings,
 				MGETH_CHAN_DESC_LONG | MGETH_CHAN_ADD_INFO |
 				(sizeof(struct rcm_mgeth_long_desc) << MGETH_CHAN_DESC_GAP_SHIFT));
-		REG32_STORE(&priv->regs->rx[0].dma_regs.desc_addr,
-				(uint32_t )(uintptr_t)(&priv->rxbd_base[0]));
-
 		REG32_STORE(&priv->regs->rx[0].dma_regs.irq_mask, MDMA_IRQ_INT_DESC);
 
-		/* enable rx */
-		REG32_STORE(&priv->regs->rx[0].dma_regs.enable, MGETH_ENABLE);
+		mgeth_start_rx_dma(priv, 0);
+
 	}
 
 
@@ -273,7 +280,7 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 	log_debug("rx_chan (%i) dma status (0x%x)", chan, dma_status);
 
 	if (!(dma_status & MDMA_IRQ_INT_DESC)) {
-		return 0;
+		goto out;
 	}
 
 	irq_lock();
@@ -289,12 +296,12 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 			dcache_inval(curr_bd, sizeof(struct rcm_mgeth_long_desc));
 
 			if (!(curr_bd->flags_length & MGETH_BD_OWN)) {
-				//log_error("break rx_bd idx %d", priv->rxbd_no);
+				log_debug("break rx_bd idx %d", priv->rxbd_idx);
 				break;
 			}
 
 			if (curr_bd->flags_length & MGETH_BD_LINK) {
-				//log_error("continue MGETH_BD_LINK %d", priv->rxbd_no);
+				log_debug("continue MGETH_BD_LINK %d", priv->rxbd_idx);
 				mgeth_rxd_init(priv, MGETH_RXBD_CNT);
 				priv->rxbd_idx = 0;
 
@@ -335,7 +342,10 @@ static int mgeth_rx_chan(struct net_device *nic_p, int chan,
 
 	}
 	irq_unlock();
-
+out:
+	if (dma_status & MDMA_IRQ_STOP_DESC) {
+		mgeth_start_rx_dma(priv, 0);
+	}
 	return cnt;
 }
 
@@ -384,7 +394,7 @@ static irq_return_t mgeth_irq_handler(unsigned int irq_num, void *dev_id) {
 				int j;
 				struct sk_buff *rx_skb[MGETH_RXBD_CNT];
 				rx_cnt = mgeth_rx_chan(nic_p, i, rx_skb);
-				//log_error("got %d, ind=%d)", rx_cnt, mgeth_priv->rxbd_no);
+				log_debug("got %d, ind=%d)", rx_cnt, mgeth_priv->rxbd_idx);
 				for (j = 0; j < rx_cnt; j ++) {
 					struct sk_buff *skb = rx_skb[j];
 
