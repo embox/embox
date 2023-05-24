@@ -11,6 +11,8 @@
 
 #include <stdint.h>
 
+#include <sys/cdefs.h>
+
 typedef volatile unsigned long gpio_mask_t;
 
 #define GPIO_MODE_IN_SECTION          0x000000FF
@@ -69,6 +71,7 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_PIN_LOW    0
 #define GPIO_PIN_HIGH   1
 
+__BEGIN_DECLS
 /* Each GPIO port must be (GPIO_CHIP_N | GPIO_PORT_M).
  * Be default, GPIO_PORT_N is default system GPIO controller number 0 */
 
@@ -86,5 +89,6 @@ extern int gpio_irq_attach(unsigned short port, uint32_t pin,
 		void (*pin_handler)(void *), void *data);
 
 extern int gpio_irq_detach(unsigned short port, uint32_t pin);
+__END_DECLS
 
 #endif /* DRIVERS_GPIO_H_ */
