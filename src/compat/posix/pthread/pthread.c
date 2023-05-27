@@ -180,6 +180,9 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 		 *
 		 * The pthread_create() function will not return an error code of [EINTR].
 		 */
+		if (NULL == attr) {
+			pthread_attr_destroy(&def_attr);
+		}
 		return -EAGAIN;
 	}
 
@@ -190,6 +193,9 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 	thread_launch(t);
 	*thread = t;
 
+	if (NULL == attr) {
+		pthread_attr_destroy(&def_attr);
+	}
 	return ENOERR;
 }
 
