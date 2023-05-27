@@ -10,6 +10,8 @@
 #include <pthread.h>
 
 #include <kernel/thread.h>
+#include <kernel/thread/types.h>
+#include <kernel/thread/thread_stack.h>
 #include <util/err.h>
 
 
@@ -72,6 +74,17 @@ int pthread_attr_init(pthread_attr_t *attr) {
 	attr->sched_param.sched_priority = SCHED_PRIORITY_NORMAL;
 
 	return ENOERR;
+}
+
+int pthread_getattr_np(pthread_t thread, pthread_attr_t *attr) {
+	attr->stack_size = thread_stack_get_size(thread);
+	attr->stack = thread_stack_get(thread);
+	attr->flags = 0;
+	if (thread->state & TS_DETACHED) {
+		attr->flags |= THREAD_FLAG_DETACHED;
+	}
+
+	return 0;
 }
 
 int pthread_attr_setdetachstate(pthread_attr_t *attr, int detachstate) {

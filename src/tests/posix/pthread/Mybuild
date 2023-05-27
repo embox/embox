@@ -59,3 +59,7 @@ module pthread_cond_timedwait_test {
 module pthread_mutex_timedlock {
 	source "pthread_mutex_timedlock_test.c"
 }
+
+module pthread_attributes {
+	source "pthread_attributes_test.c"
+}
