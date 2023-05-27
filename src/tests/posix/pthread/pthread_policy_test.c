@@ -31,9 +31,9 @@ TEST_CASE("SCHED_FIFO corectness") {
 	medium_param.sched_priority = medium_p;
 	high_param.sched_priority = high_p;
 
-	pthread_attr_init(&low_attr);
-	pthread_attr_init(&medium_attr);
-	pthread_attr_init(&high_attr);
+	test_assert_zero(pthread_attr_init(&low_attr));
+	test_assert_zero(pthread_attr_init(&medium_attr));
+	test_assert_zero(pthread_attr_init(&high_attr));
 
 	pthread_attr_setschedparam(&low_attr, &low_param);
 	pthread_attr_setschedparam(&medium_attr, &medium_param);
@@ -50,6 +50,10 @@ TEST_CASE("SCHED_FIFO corectness") {
 	test_assert_zero(pthread_join(medium, NULL));
 	test_assert_zero(pthread_join(high, NULL));
 	test_assert_emitted("abcdefg");
+
+	test_assert_zero(pthread_attr_destroy(&low_attr));
+	test_assert_zero(pthread_attr_destroy(&medium_attr));
+	test_assert_zero(pthread_attr_destroy(&high_attr));
 }
 
 static void *low_run(void *arg) {
