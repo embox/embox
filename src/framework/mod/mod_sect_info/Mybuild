@@ -1,0 +1,8 @@
+package embox.framework
+
+module mod_sect_info {
+	source "mod_sect_info.c"
+
+	@IncludeExport(path="framework/mod")
+	source "mod_sect_info.h"
+}
