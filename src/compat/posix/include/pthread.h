@@ -129,8 +129,10 @@ extern int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
 extern int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
 extern int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);
 //extern int   pthread_attr_getscope(const pthread_attr_t *, int *);
-//extern int   pthread_attr_getstackaddr(const pthread_attr_t *, void **);
-//extern int   pthread_attr_getstacksize(const pthread_attr_t *, size_t *);
+extern int   pthread_attr_getstackaddr(const pthread_attr_t *, void **);
+extern int   pthread_attr_getstacksize(const pthread_attr_t *, size_t *);
+extern int   pthread_attr_getstack(pthread_attr_t *attr,
+                                        void **stackaddr, size_t *stacksize);
 extern int pthread_getattr_np(pthread_t thread, pthread_attr_t *attr);
 extern int   pthread_attr_init(pthread_attr_t *);
 extern int   pthread_attr_setdetachstate(pthread_attr_t *, int);
