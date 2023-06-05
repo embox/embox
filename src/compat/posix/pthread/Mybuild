@@ -29,8 +29,11 @@ static module pthread_barrier {
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.semaphore
 }
+@DefaultImpl(pthread_stack_stub)
+abstract module pthread_stack {	
+}
 
-static module pthread_stack_stub {
+static module pthread_stack_stub extends pthread_stack {
 	source "pthread_stack_stub.c"
 }
 
