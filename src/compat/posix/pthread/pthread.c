@@ -51,14 +51,6 @@ int pthread_attr_getschedpolicy(const pthread_attr_t *attr, int *policy) {
 int pthread_attr_getscope(const pthread_attr_t *attr, int *contentionscope) {
 	return -ENOSYS;
 }
-
-int pthread_attr_getstackaddr(const pthread_attr_t *attr, void **stackaddr) {
-	return -ENOSYS;
-}
-
-int pthread_attr_getstacksize(const pthread_attr_t *attr, size_t *stacksize) {
-	return -ENOSYS;
-}
 */
 int pthread_attr_init(pthread_attr_t *attr) {
 	attr->flags = 0;
