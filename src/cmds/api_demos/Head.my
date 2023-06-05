@@ -1,0 +1,24 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "head",
+	help = "head util()",
+	man = '''
+		NAME
+			head - head util(outputs a fixed number of lines in the file)
+		SYNOPSIS
+			head [OPTIONS] [PARAMETER_FOR_OPTION] [FILE_NAME]
+
+		DESCRIPTION
+			Displays the fixed number of lines in the file
+		OPTIONS
+			-n [N] 
+				displays N lines of file
+
+			(without options displays 10 lines of file)
+		AUTHORS
+			Filipp Chubukov
+	''')
+module head {
+	source "head.c"
+}
