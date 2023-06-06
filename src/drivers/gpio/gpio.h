@@ -34,11 +34,11 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_MODE_IN_SCHMITT        (1 << 3)
 
 /* #define GPIO_MODE_OUT_SECTION         0x0000FF00 */
-#define GPIO_MODE_OUT               (1 << 16)
-#define GPIO_MODE_OUT_PUSH_PULL     (1 << 15)
-#define GPIO_MODE_OUT_OPEN_DRAIN    (1 << 14)
-#define GPIO_MODE_OUT_ALTERNATE     (1 << 13)
-#define GPIO_MODE_VDD_LEVEL         (1 << 12)
+#define GPIO_MODE_OUT               (1 << 15)
+#define GPIO_MODE_OUT_PUSH_PULL     (1 << 14)
+#define GPIO_MODE_OUT_OPEN_DRAIN    (1 << 13)
+#define GPIO_MODE_OUT_ALTERNATE     (1 << 12)
+#define GPIO_MODE_VDD_LEVEL         (1 << 11)
 
 
 /* Alternate function number. Bits: 17 ... 22 */
