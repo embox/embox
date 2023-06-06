@@ -1,0 +1,8 @@
+package embox.platform.NIIET.k1921vk035
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.k1921vk035_system)
+module arch extends embox.arch.arch {
+	source "arch.c"
+	depends third_party.bsp.k1921vk_sdk.k1921vk035_system
+}
+

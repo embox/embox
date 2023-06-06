@@ -1,0 +1,24 @@
+--- a/platform/Device/NIIET/K1921VK035/Source/system_K1921VK035.c
++++ framework-k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Source/system_K1921VK035.c
+@@ -19,12 +19,20 @@
+  */
+ 
+ //-- Includes ------------------------------------------------------------------
++#ifdef __EMBOX__
++#include <framework/mod/options.h>
++#include <module/embox/arch/system.h>
++#include <module/third_party/bsp/k1921vk_sdk/k1921vk035_system.h>
++
++#define OSECLK_VAL OPTION_GET(NUMBER,external_clk_freq)
++#define SYSCLK_PLL
++#endif
++
+ #include "system_K1921VK035.h"
+ #include "K1921VK035.h"
+ 
+ //-- Variables -----------------------------------------------------------------
+ uint32_t SystemCoreClock; // System Clock Frequency (Core Clock)
+-
+ //-- Functions -----------------------------------------------------------------
+ void SystemCoreClockUpdate(void)
+ {
