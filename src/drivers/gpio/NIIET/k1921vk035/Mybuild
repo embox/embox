@@ -1,0 +1,13 @@
+package embox.driver.gpio
+
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035 extends api {
+	option number gpio_chip_id = 0
+
+	source "k1921vk035_gpio.c"
+
+	depends embox.driver.gpio.core
+	depends third_party.bsp.k1921vk_sdk.plib035
+}
+

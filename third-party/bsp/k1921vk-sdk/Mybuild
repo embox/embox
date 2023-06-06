@@ -24,7 +24,7 @@ static module plib035 {
 
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
-	@AddPrefix("^BUILD/extbld/third_party/sdk/k1921vk_sdk/k1921vk035_system/framework-k1921vk-sdk-1.7.3/platform/plib035/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/k1921vk_sdk/k1921vk035_system/framework-k1921vk-sdk-1.7.3/platform/plib035/src")
 	source "plib035_adc.c",
 	"plib035_can.c",
 	"plib035_dma.c",
