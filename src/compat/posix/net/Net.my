@@ -147,7 +147,8 @@ static module herror {
 }
 
 static module inet_addr {
-	source "inet_addr.c"
+	source "netinet_in.c"
+	source "arpa_inet.c"
 
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.stdio.sprintf
