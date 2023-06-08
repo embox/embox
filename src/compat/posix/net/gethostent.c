@@ -8,16 +8,18 @@
 
 #include <arpa/inet.h>
 #include <ctype.h>
-#include <framework/mod/options.h>
-#include <net/util/hostent.h>
 #include <netdb.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 
+#include <net/util/hostent.h>
+
+#include <framework/mod/options.h>
+
 #define MODOPS_PATH_TO_HOSTS OPTION_STRING_GET(path_to_hosts)
 
-#define HOSTENT_BUFF_SZ 512
+#define HOSTENT_BUFF_SZ      256
 
 static FILE *hosts = NULL;
 static int is_disposable;
@@ -37,7 +39,7 @@ void endhostent(void) {
 #define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
 #define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
 
-struct hostent * gethostent(void) {
+struct hostent *gethostent(void) {
 	char hostent_buff[HOSTENT_BUFF_SZ];
 	struct hostent *he, *result;
 	char *tmp, *ip_str, *name;
