@@ -63,12 +63,29 @@ static module gethostbyname {
 	depends embox.net.util.hostent
 }
 
-static module gethostent {
+@DefaultImpl(gethostent_with_file)
+abstract module gethostent {
+}
+
+
+static module gethostent_with_file extends gethostent {
 	option string path_to_hosts="/hosts"
 	source "gethostent.c"
 	@InitFS
 	source "hosts"
 
+	depends embox.compat.posix.net.inet_addr
+	depends embox.compat.libc.stdio.open
+	depends embox.net.util.hostent
+}
+
+static module gethostent_without_file extends gethostent {
+	option string path_to_hosts="/hosts"
+	source "gethostent.c"
+/*
+	@InitFS
+	source "hosts"
+*/
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.libc.stdio.open
 	depends embox.net.util.hostent
