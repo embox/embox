@@ -239,6 +239,27 @@ extern clock_t thread_get_running_time(struct thread *thread);
 
 extern int thread_priority_by_flags(unsigned int flags);
 
+static inline int fatal_signal_pending (struct thread *task)
+{
+        return 0;
+}
+
+/*
+ * set_current_state() includes a barrier so that the write of current->state
+ * is correctly serialised wrt the caller's subsequent test of whether to
+ * actually sleep:
+ *
+ *  set_current_state(TASK_UNINTERRUPTIBLE);
+ *  if (do_i_need_to_sleep())
+ *      schedule();
+ *
+ * If the caller does not need such serialisation then use __set_current_state()
+ */
+#define __set_current_state(state_value)            \
+    do { thread_self()->state = (state_value); } while (0)
+#define set_current_state(state_value)      \
+    set_mb(current->state, (state_value))
+
 __END_DECLS
 
 #endif /* KERNEL_THREAD_API_H_ */

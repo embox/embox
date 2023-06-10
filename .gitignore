@@ -53,3 +53,4 @@ cmake-build-debug/
 src/.idea/
 src/CMakeLists.txt
 src/cmake-build-debug/
+*.rule.mk

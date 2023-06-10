@@ -38,7 +38,7 @@ int dma_in_progress_status(int dma_chan, uint32_t *error_flags) {
 }
 
 // Default implementation is to just use malloc
-Dma_mem_handle *dma_malloc(size_t size) {
+Dma_mem_handle *dma_malloc_opt(size_t size, uint32_t flags) {
     if(dma_dev.malloc == NULL) {
         Dma_mem_handle *memh = malloc(size + sizeof(Dma_mem_handle));
         memh->physical_addr = (void *)( memh + sizeof(Dma_mem_handle) );
@@ -47,7 +47,7 @@ Dma_mem_handle *dma_malloc(size_t size) {
         memh->size = size;        
         return memh;
     }
-    return dma_dev.malloc(size);
+    return dma_dev.malloc(size,flags);
 }
 // Default implementation is to just use free
 void dma_free(Dma_mem_handle *mem) {

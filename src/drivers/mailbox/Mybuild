@@ -4,16 +4,9 @@ module bcm2835_mailbox {
 	option number base_addr = 0x2000B880
 
 	@IncludeExport(path="drivers/mailbox")
-	source "bcm2835_mailbox.h"
+	source "bcm2835_mailbox_property.h"
+	, "bcm2835_mailbox.h"
 
 	source "bcm2835_mailbox.c"
-}
-
-module bcm2835_mailbox_property {
-	@IncludeExport(path="drivers/mailbox")
-
-	source "bcm2835_mailbox_property.h"
-	source "bcm2835_mailbox_property.c"
-
-	depends embox.driver.mailbox.bcm2835_mailbox
+	, "bcm2835_mailbox_property.c"
 }

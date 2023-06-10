@@ -1,0 +1,2442 @@
+diff --git circle/addon/linux/barrier.h circle/addon/linux/barrier.h
+index 4696742..9b17c97 100644
+--- circle/addon/linux/barrier.h
++++ circle/addon/linux/barrier.h
+@@ -1,6 +1,8 @@
+ #ifndef _linux_barrier_h
+ #define _linux_barrier_h
+ 
++#include <circle/sysconfig.h>
++
+ #if RASPPI == 1
+ #define dsb()		asm volatile ("mcr p15, 0, %0, c7, c10, 4" : : "r" (0) : "memory")
+ #define dmb() 		asm volatile ("mcr p15, 0, %0, c7, c10, 5" : : "r" (0) : "memory")
+diff --git circle/addon/linux/bug.cpp circle/addon/linux/bug.cpp
+deleted file mode 100644
+index 1cb39ba..0000000
+--- circle/addon/linux/bug.cpp
++++ /dev/null
+@@ -1,11 +0,0 @@
+-#include <linux/bug.h>
+-#include <circle/logger.h>
+-#include <circle/string.h>
+-
+-void __warn (const char *file, const int line)
+-{
+-	CString Source;
+-	Source.Format ("%s(%d)", file, line);
+-
+-	CLogger::Get ()->Write (Source, LogWarning, "WARN_ON failed");
+-}
+diff --git circle/addon/linux/bug.h circle/addon/linux/bug.h
+deleted file mode 100644
+index 6b80534..0000000
+--- circle/addon/linux/bug.h
++++ /dev/null
+@@ -1,56 +0,0 @@
+-#ifndef _linux_bug_h
+-#define _linux_bug_h
+-
+-#include <linux/compiler.h>
+-#include <linux/printk.h>
+-#include <assert.h>
+-
+-#ifdef __cplusplus
+-extern "C" {
+-#endif
+-
+-#define BUG_ON(exp)	assert (!(exp))
+-#define BUG()		assert (0)
+-
+-void __warn (const char *file, const int line);
+-#define __WARN()	__warn (__FILE__, __LINE__)
+-
+-#define WARN_ON(condition) ({				\
+-	int __ret_warn_on = !!(condition);		\
+-	if (unlikely(__ret_warn_on))			\
+-		__WARN();				\
+-	unlikely(__ret_warn_on);			\
+-})
+-
+-#define WARN(condition, format...) ({			\
+-	int __ret_warn_on = !!(condition);		\
+-	if (unlikely(__ret_warn_on))			\
+-		printk(format);				\
+-	unlikely(__ret_warn_on);			\
+-})
+-
+-#define WARN_ON_ONCE(condition)	({			\
+-	static int __warned;				\
+-	int __ret_warn_once = !!(condition);		\
+-	if (unlikely(__ret_warn_once && !__warned)) {	\
+-		__warned = 1;				\
+-		__WARN();				\
+-	}						\
+-	unlikely(__ret_warn_once);			\
+-})
+-
+-#define WARN_ONCE(condition, format...)	({		\
+-	static int __warned;				\
+-	int __ret_warn_once = !!(condition);		\
+-	if (unlikely(__ret_warn_once && !__warned)) {	\
+-		__warned = 1;				\
+-		WARN(1, format);			\
+-	}						\
+-	unlikely(__ret_warn_once);			\
+-})
+-
+-#ifdef __cplusplus
+-}
+-#endif
+-
+-#endif
+diff --git circle/addon/linux/compiler.h circle/addon/linux/compiler.h
+index 350e587..f8bf50f 100644
+--- circle/addon/linux/compiler.h
++++ circle/addon/linux/compiler.h
+@@ -4,8 +4,8 @@
+ #ifdef __GNUC__
+ 	#define __must_check	__attribute__ ((warn_unused_result))
+ 
+-	#define likely(exp)	__builtin_expect (!!(exp), 1)
+-	#define unlikely(exp)	__builtin_expect (!!(exp), 0)
++//	#define likely(exp)	__builtin_expect (!!(exp), 1)
++//	#define unlikely(exp)	__builtin_expect (!!(exp), 0)
+ #else
+ 	#define __must_check
+ 
+diff --git circle/addon/linux/device.cpp circle/addon/linux/device.cpp
+index 1a30d05..ed49b6c 100644
+--- circle/addon/linux/device.cpp
++++ circle/addon/linux/device.cpp
+@@ -1,5 +1,6 @@
+ #include <linux/device.h>
+-#include <circle/logger.h>
++#include <stdarg.h>
++//#include <circle/logger.h>
+ 
+ static const char FromDevice[] = "device";
+ 
+@@ -19,7 +20,7 @@ void dev_err (const struct device *dev, const char *fmt, ...)
+ 	va_list var;
+ 	va_start (var, fmt);
+ 
+-	CLogger::Get ()->WriteV (FromDevice, LogError, fmt, var);
++//	CLogger::Get ()->WriteV (FromDevice, LogError, fmt, var);
+ 
+ 	va_end (var);
+ }
+@@ -29,7 +30,7 @@ void dev_warn (const struct device *dev, const char *fmt, ...)
+ 	va_list var;
+ 	va_start (var, fmt);
+ 
+-	CLogger::Get ()->WriteV (FromDevice, LogWarning, fmt, var);
++//	CLogger::Get ()->WriteV (FromDevice, LogWarning, fmt, var);
+ 
+ 	va_end (var);
+ }
+diff --git circle/addon/linux/device.h circle/addon/linux/device.h
+index 9b19746..3c55f0a 100644
+--- circle/addon/linux/device.h
++++ circle/addon/linux/device.h
+@@ -2,8 +2,9 @@
+ #define _linux_device_h
+ 
+ #include <linux/ioport.h>
+-#include <linux/interrupt.h>
+-#include <linux/err.h>
++#include <kernel/irq.h>
++#include <err.h>
++#include <linux/compiler.h>
+ #include <linux/types.h>
+ 
+ #ifdef __cplusplus
+@@ -18,7 +19,7 @@ struct device
+ 	void *pInterruptSystem;		// opaque pointer
+ 
+ 	struct resource dma_mem;	// internally used
+-	struct irqaction irqaction[1];	// internally used
++//	struct irqaction irqaction[1];	// internally used
+ };
+ 
+ void __iomem *devm_ioremap_resource (struct device *dev, struct resource *res);
+diff --git circle/addon/linux/dma-mapping.h circle/addon/linux/dma-mapping.h
+index 808f843..5527c8b 100644
+--- circle/addon/linux/dma-mapping.h
++++ circle/addon/linux/dma-mapping.h
+@@ -2,7 +2,7 @@
+ #define _linux_dma_mapping_h
+ 
+ #include <linux/device.h>
+-#include <linux/types.h>
++#include <sys/types.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git circle/addon/linux/interrupt.cpp circle/addon/linux/interrupt.cpp
+index 35cd61a..b35806c 100644
+--- circle/addon/linux/interrupt.cpp
++++ circle/addon/linux/interrupt.cpp
+@@ -1,6 +1,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/device.h>
+ #include <linux/bug.h>
++#include <circle/sysconfig.h>
+ #include <circle/interrupt.h>
+ 
+ static void irq_stub (void *param)
+diff --git circle/addon/linux/ioport.h circle/addon/linux/ioport.h
+index 5075b3e..c95a347 100644
+--- circle/addon/linux/ioport.h
++++ circle/addon/linux/ioport.h
+@@ -5,8 +5,8 @@
+ 
+ struct resource
+ {
+-	uintptr	 start;
+-	uintptr	 end;
++	uintptr_t	 start;
++	uintptr_t	 end;
+ 
+ 	unsigned flags;
+ #define IORESOURCE_MEM		0x200
+diff --git circle/addon/linux/platform_device.cpp circle/addon/linux/platform_device.cpp
+index 6493bdf..a077f83 100644
+--- circle/addon/linux/platform_device.cpp
++++ circle/addon/linux/platform_device.cpp
+@@ -1,4 +1,5 @@
+ #include <linux/platform_device.h>
++#include <linux/errno.h>
+ 
+ struct resource *platform_get_resource (struct platform_device *pdev, unsigned flags, unsigned index)
+ {
+diff --git circle/addon/linux/raspberrypi-firmware.cpp circle/addon/linux/raspberrypi-firmware.cpp
+index 724d0c2..35cc747 100644
+--- circle/addon/linux/raspberrypi-firmware.cpp
++++ circle/addon/linux/raspberrypi-firmware.cpp
+@@ -7,10 +7,10 @@
+ struct TPropertyTagGeneric
+ {
+ 	TPropertyTag	Tag;
+-	u32		Data[0];
++	uint32_t		Data[0];
+ };
+ 
+-int rpi_firmware_property (struct rpi_firmware *fw, u32 tag, void *data, size_t len)
++int rpi_firmware_property (struct rpi_firmware *fw, uint32_t tag, void *data, size_t len)
+ {
+ 	if (len > 2048)
+ 	{
+diff --git circle/addon/linux/raspberrypi-firmware.h circle/addon/linux/raspberrypi-firmware.h
+index 972948d..1e52214 100644
+--- circle/addon/linux/raspberrypi-firmware.h
++++ circle/addon/linux/raspberrypi-firmware.h
+@@ -9,7 +9,8 @@
+ #ifndef __SOC_RASPBERRY_FIRMWARE_H__
+ #define __SOC_RASPBERRY_FIRMWARE_H__
+ 
+-#include <linux/types.h>
++#include <sys/types.h>
++#include <stdint.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+@@ -114,7 +115,7 @@ enum rpi_firmware_property_tag
+ 	RPI_FIRMWARE_GET_DMA_CHANNELS =                       0x00060001,
+ };
+ 
+-int rpi_firmware_property (struct rpi_firmware *fw, u32 tag, void *data, size_t len);
++int rpi_firmware_property (struct rpi_firmware *fw, uint32_t tag, void *data, size_t len);
+ 
+ #ifdef __cplusplus
+ }
+diff --git circle/addon/linux/uaccess.h circle/addon/linux/uaccess.h
+index d0467be..73f01cc 100644
+--- circle/addon/linux/uaccess.h
++++ circle/addon/linux/uaccess.h
+@@ -2,7 +2,7 @@
+ #define _linux_uaccess_h
+ 
+ #include <linux/compiler.h>
+-#include <circle/util.h>
++#include <string.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {
+diff --git circle/addon/vc4/interface/bcm_host/bcm_host.c circle/addon/vc4/interface/bcm_host/bcm_host.c
+index 7b5c415..df45543 100644
+--- circle/addon/vc4/interface/bcm_host/bcm_host.c
++++ circle/addon/vc4/interface/bcm_host/bcm_host.c
+@@ -32,7 +32,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include "interface/vcos/vcos.h"
+ #include <vc4/vchiq/vchiq_if.h>
+ #include <vc4/vchi/vchi.h>
+-#include <circle/startup.h>
++//#include <circle/startup.h>
+ #else
+ #include <stdio.h>
+ #include "interface/vmcs_host/vc_dispmanx.h"
+@@ -105,7 +105,7 @@ void bcm_host_init(void)
+    if (vchiq_initialise(&vchiq_instance) != VCHIQ_SUCCESS)
+    {
+       printk("* failed to open vchiq instance\n");
+-      halt();
++      arch_idle();
+    }
+ 
+    vcos_log("vchi_initialise");
+diff --git circle/addon/vc4/interface/sample/hello_dispmanx/dispmanx.c circle/addon/vc4/interface/sample/hello_dispmanx/dispmanx.c
+index bf217cb..fd3f9d3 100644
+--- circle/addon/vc4/interface/sample/hello_dispmanx/dispmanx.c
++++ circle/addon/vc4/interface/sample/hello_dispmanx/dispmanx.c
+@@ -31,16 +31,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+ #include <assert.h>
++#include <time.h>
+ #else
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <stdarg.h>
+ #include <assert.h>
+-#include <unistd.h>
+ #include <sys/time.h>
++#include <unistd.h>
+ #endif
+ 
+-#include "bcm_host.h"
++#include <interface/bcm_host/bcm_host.h>
++
+ 
+ #define WIDTH   200
+ #define HEIGHT  200
+@@ -80,7 +82,7 @@ static void FillRect( VC_IMAGE_TYPE_T type, void *image, int pitch, int aligned_
+     }
+ }
+ 
+-int _main(void)
++int main(int argc, char **argv)
+ {
+     RECT_VARS_T    *vars;
+     uint32_t        screen = 0;
+@@ -151,7 +153,7 @@ int _main(void)
+     assert( ret == 0 );
+ 
+     printk( "Sleeping for 10 seconds...\n" );
+-    msleep( 10*1000 );
++    nanosleep((const struct timespec[]){{10, 0L}}, NULL);
+ 
+     vars->update = vc_dispmanx_update_start( 10 );
+     assert( vars->update );
+diff --git circle/addon/vc4/interface/vcos/vcos_abort.c circle/addon/vc4/interface/vcos/vcos_abort.c
+index 5626e8c..7e1e187 100644
+--- circle/addon/vc4/interface/vcos/vcos_abort.c
++++ circle/addon/vc4/interface/vcos/vcos_abort.c
+@@ -27,7 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ #include "interface/vcos/vcos.h"
+ #ifdef __circle__
+-#include <circle/startup.h>
++//#include <circle/startup.h>
+ #else
+ #ifdef __VIDEOCORE__
+ #include "host_support/include/vc_debug_sym.h"
+@@ -83,7 +83,7 @@ void vcos_abort(void)
+ #if defined __VIDEOCORE__ && !defined(NDEBUG)
+    while(1); /* allow us to attach a debugger after the fact and see where we came from. */
+ #elif defined (__circle__)
+-   halt();
++   arch_idle();
+ #else
+    abort(); /* on vc this ends up in _exit_halt which doesn't give us any stack backtrace */
+ #endif
+diff --git circle/addon/vc4/interface/vcos/vcos_generic_safe_string.c circle/addon/vc4/interface/vcos/vcos_generic_safe_string.c
+index ad78265..b907ea6 100644
+--- circle/addon/vc4/interface/vcos/vcos_generic_safe_string.c
++++ circle/addon/vc4/interface/vcos/vcos_generic_safe_string.c
+@@ -28,7 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include "interface/vcos/vcos.h"
+ 
+ #ifdef __circle__
+-#include <circle/stdarg.h>
++//#include <circle/stdarg.h>
+ #else
+ #if defined( __KERNEL__ )
+ #include <linux/string.h>
+diff --git circle/addon/vc4/interface/vcos/vcos_platform.h circle/addon/vc4/interface/vcos/vcos_platform.h
+index 8eb73a8..c2ad39c 100644
+--- circle/addon/vc4/interface/vcos/vcos_platform.h
++++ circle/addon/vc4/interface/vcos/vcos_platform.h
+@@ -46,15 +46,18 @@ extern "C" {
+ 
+ #ifdef __circle__
+ #include <stdint.h>
++#include <strings.h>
+ #include <linux/pthread.h>
+ #include <linux/atomic.h>
+ #include <linux/errno.h>
+ #include <linux/sched.h>
+ #include <linux/delay.h>
+-#include <linux/semaphore.h>
++#include <kernel/thread/sync/semaphore.h>
+ #include <linux/timer.h>
+-#include <linux/jiffies.h>
+-#include <linux/string.h>
++#include <kernel/time/time.h>
++//#include <linux/jiffies.h>
++#include <linux/kernel.h>
++#include <string.h>
+ #include <circle/alloc.h>
+ #else
+ #include <pthread.h>
+@@ -98,7 +101,7 @@ extern "C" {
+ 
+ #define VCOS_ALWAYS_WANT_LOGGING
+ 
+-typedef struct semaphore      VCOS_SEMAPHORE_T;
++typedef struct sem      VCOS_SEMAPHORE_T;
+ typedef uint32_t              VCOS_UNSIGNED;
+ typedef uint32_t              VCOS_OPTION;
+ typedef pthread_key_t         VCOS_TLS_KEY_T;
+@@ -120,7 +123,7 @@ typedef pthread_mutex_t       VCOS_MUTEX_T;
+ typedef struct
+ {
+    VCOS_MUTEX_T     mutex;
+-   struct semaphore sem;
++   struct sem sem;
+ } VCOS_EVENT_T;
+ 
+ #define VCOS_ONCE_INIT        PTHREAD_ONCE_INIT
+@@ -259,13 +262,13 @@ typedef struct {
+ 
+ VCOS_INLINE_IMPL
+ VCOS_STATUS_T vcos_semaphore_wait(VCOS_SEMAPHORE_T *sem) {
+-   down (sem);
++   semaphore_wait (sem);
+    return VCOS_SUCCESS;
+ }
+ 
+ VCOS_INLINE_IMPL
+ VCOS_STATUS_T vcos_semaphore_trywait(VCOS_SEMAPHORE_T *sem) {
+-   if (down_trylock (sem) == 0)
++   if (semaphore_trywait (sem) == 0)
+       return VCOS_SUCCESS;
+    else
+       return VCOS_EAGAIN;
+@@ -275,7 +278,7 @@ VCOS_INLINE_IMPL
+ VCOS_STATUS_T vcos_semaphore_create(VCOS_SEMAPHORE_T *sem,
+                                     const char *name,
+                                     VCOS_UNSIGNED initial_count) {
+-   sema_init (sem, (int) initial_count);
++   semaphore_init (sem, (int) initial_count);
+    (void)name;
+    return VCOS_SUCCESS;
+ }
+@@ -287,7 +290,7 @@ void vcos_semaphore_delete(VCOS_SEMAPHORE_T *sem) {
+ 
+ VCOS_INLINE_IMPL
+ VCOS_STATUS_T vcos_semaphore_post(VCOS_SEMAPHORE_T *sem) {
+-   up (sem);
++   semaphore_post (sem);
+    return VCOS_SUCCESS;
+ }
+ 
+@@ -432,7 +435,7 @@ VCOS_THREAD_T *vcos_thread_current(void) {
+ 
+ VCOS_INLINE_IMPL
+ void vcos_sleep(uint32_t ms) {
+-#ifdef __circle__
++#if 0
+    msleep(ms);
+ #else
+    struct timespec ts;
+@@ -612,7 +615,7 @@ VCOS_STATUS_T vcos_event_create(VCOS_EVENT_T *event, const char *debug_name)
+ {
+    VCOS_STATUS_T status;
+ 
+-   sema_init(&event->sem, 0);
++   semaphore_init(&event->sem, 0);
+ 
+    status = vcos_mutex_create(&event->mutex, debug_name);
+    if (status != VCOS_SUCCESS) {
+@@ -631,9 +634,9 @@ void vcos_event_signal(VCOS_EVENT_T *event)
+    if (vcos_mutex_lock(&event->mutex) != VCOS_SUCCESS)
+       goto fail_mtx;
+ 
+-   value = atomic_read (&event->sem.count);
++   semaphore_getvalue(&event->sem, &value);
+    if (value == 0)
+-      up (&event->sem);
++      semaphore_post (&event->sem);
+ 
+    ok = 1;
+    vcos_mutex_unlock(&event->mutex);
+@@ -644,14 +647,14 @@ fail_mtx:
+ VCOS_INLINE_IMPL
+ VCOS_STATUS_T vcos_event_wait(VCOS_EVENT_T *event)
+ {
+-   down (&event->sem);
++   semaphore_wait (&event->sem);
+    return VCOS_SUCCESS;
+ }
+ 
+ VCOS_INLINE_IMPL
+ VCOS_STATUS_T vcos_event_try(VCOS_EVENT_T *event)
+ {
+-   if (down_trylock (&event->sem) != 0)
++   if (semaphore_trywait (&event->sem) != 0)
+       return VCOS_EAGAIN;
+    else
+       return VCOS_SUCCESS;
+@@ -842,7 +845,7 @@ VCOS_STATUS_T vcos_timer_create(VCOS_TIMER_T *timer,
+ 
+ VCOS_INLINE_IMPL
+ void vcos_timer_set(VCOS_TIMER_T *timer, VCOS_UNSIGNED delay_ms) {
+-   timer->timer.expires = jiffies + msecs_to_jiffies (delay_ms);
++   timer->timer.expires = jiffies + ms2jiffies (delay_ms);
+    add_timer (&timer->timer);
+ }
+ 
+@@ -854,7 +857,7 @@ void vcos_timer_cancel(VCOS_TIMER_T *timer) {
+ VCOS_INLINE_IMPL
+ void vcos_timer_reset(VCOS_TIMER_T *timer, VCOS_UNSIGNED delay) {
+    del_timer (&timer->timer);
+-   timer->timer.expires = jiffies + msecs_to_jiffies (delay);
++   timer->timer.expires = jiffies + ms2jiffies (delay);
+    add_timer (&timer->timer);
+ }
+ 
+diff --git circle/addon/vc4/interface/vcos/vcos_pthreads.c circle/addon/vc4/interface/vcos/vcos_pthreads.c
+index 18a4a23..b96e8da 100644
+--- circle/addon/vc4/interface/vcos/vcos_pthreads.c
++++ circle/addon/vc4/interface/vcos/vcos_pthreads.c
+@@ -30,8 +30,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #include "interface/vcos/vcos_msgqueue.h"
+ #ifdef __circle__
+ #include <linux/kernel.h>
+-#include <circle/startup.h>
++//#include <circle/startup.h>
+ #include <errno.h>
++#include <stdio.h>
+ #else
+ #include <string.h>
+ #include <stdarg.h>
+@@ -591,7 +592,7 @@ void vcos_pthreads_logging_assert(const char *file, const char *func, unsigned i
+    if (vcos_backtrace_self)
+       vcos_backtrace_self();
+ #endif
+-   halt();
++   arch_idle();
+ }
+ 
+ #else
+diff --git circle/addon/vc4/interface/vmcs_host/vc_vchi_dispmanx.c circle/addon/vc4/interface/vmcs_host/vc_vchi_dispmanx.c
+index eac285d..69327ef 100644
+--- circle/addon/vc4/interface/vmcs_host/vc_vchi_dispmanx.c
++++ circle/addon/vc4/interface/vmcs_host/vc_vchi_dispmanx.c
+@@ -31,6 +31,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ 
+ #include "vchost_platform_config.h"
+ #include "vchost.h"
++#include <linux/kernel.h>
+ 
+ #include "interface/vcos/vcos.h"
+ #include "vc_dispservice_x_defs.h"
+diff --git circle/addon/vc4/interface/vmcs_host/vc_vchi_gencmd.c circle/addon/vc4/interface/vmcs_host/vc_vchi_gencmd.c
+index d4a142e..0f4545e 100644
+--- circle/addon/vc4/interface/vmcs_host/vc_vchi_gencmd.c
++++ circle/addon/vc4/interface/vmcs_host/vc_vchi_gencmd.c
+@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ #ifdef __circle__
+ #include <linux/kernel.h>
+ #include <circle/util.h>
++#include <stdio.h>
+ #else
+ #include <string.h>
+ #include <stdio.h>
+diff --git circle/addon/vc4/vchiq/vchiq_2835_arm.c circle/addon/vc4/vchiq/vchiq_2835_arm.c
+index 79343b5..8411de8 100644
+--- circle/addon/vc4/vchiq/vchiq_2835_arm.c
++++ circle/addon/vc4/vchiq/vchiq_2835_arm.c
+@@ -34,12 +34,18 @@
+ #include <linux/kernel.h>
+ #include <linux/types.h>
+ #include <linux/errno.h>
+-#include <linux/interrupt.h>
+ #include <linux/pagemap.h>
+ #include <linux/dma-mapping.h>
+-#include <linux/io.h>
++#include <circle/sysconfig.h>
++#include <asm/io.h>
++#include <linux/bug.h>
+ #include <linux/platform_device.h>
+ #include <linux/uaccess.h>
++#include <linux/barrier.h>
++#include <kernel/sched/current.h>
++#include <linux/slab.h>
++#include <mailbox/bcm2835_mailbox_property.h>
++#include <kernel/irq.h>
+ #ifndef __circle__
+ #include <linux/version.h>
+ #include <linux/of.h>
+@@ -99,12 +105,12 @@ extern int vchiq_arm_log_level;
+ static DEFINE_SEMAPHORE(g_free_fragments_mutex);
+ #endif
+ 
+-static irqreturn_t
+-vchiq_doorbell_irq(int irq, void *dev_id);
++static irq_return_t
++vchiq_doorbell_irq(unsigned int irq, void *dev_id);
+ 
+ static int
+ create_pagelist(char __user *buf, size_t count, unsigned short type,
+-                struct task_struct *task, PAGELIST_T ** ppagelist);
++                struct schedee *task, PAGELIST_T ** ppagelist);
+ 
+ static void
+ free_pagelist(PAGELIST_T *pagelist, int actual);
+@@ -112,7 +118,7 @@ free_pagelist(PAGELIST_T *pagelist, int actual);
+ int vchiq_platform_init(struct platform_device *pdev, VCHIQ_STATE_T *state)
+ {
+ 	struct device *dev = &pdev->dev;
+-	struct rpi_firmware *fw = platform_get_drvdata(pdev);
++	//struct rpi_firmware *fw = platform_get_drvdata(pdev);
+ 	VCHIQ_SLOT_ZERO_T *vchiq_slot_zero;
+ 	struct resource *res;
+ 	void *slot_mem;
+@@ -189,8 +195,12 @@ int vchiq_platform_init(struct platform_device *pdev, VCHIQ_STATE_T *state)
+ 		return irq;
+ 	}
+ 
++	err = irq_attach(irq, vchiq_doorbell_irq,
++		0, state, "VCHIQ doorbell");
++	#if 0
+ 	err = devm_request_irq(dev, irq, vchiq_doorbell_irq, IRQF_IRQPOLL,
+ 			       "VCHIQ doorbell", state);
++	#endif
+ 	if (err) {
+ 		dev_err(dev, "failed to register irq=%d\n", irq);
+ 		return err;
+@@ -198,12 +208,16 @@ int vchiq_platform_init(struct platform_device *pdev, VCHIQ_STATE_T *state)
+ 
+ 	/* Send the base address of the slots to VideoCore */
+ 	channelbase = slot_phys;
++	bcm2835_property_value32((bcm2835_mailbox_tag_t *)(bcm2835_mailbox_tag_t[]){TAG_VCHIQ_INIT, TAG_PROPERTY_END}
++		, (uint32_t *)&channelbase );
++	#if 0
+ 	err = rpi_firmware_property(fw, RPI_FIRMWARE_VCHIQ_INIT,
+ 				    &channelbase, sizeof(channelbase));
+ 	if (err || channelbase) {
+ 		dev_err(dev, "failed to set channelbase\n");
+ 		return err ? : -ENXIO;
+ 	}
++	#endif
+ 
+ 	vchiq_log_info(vchiq_arm_log_level,
+ 		"vchiq_init - done (slots %x, phys %pad)",
+@@ -233,7 +247,7 @@ vchiq_platform_get_arm_state(VCHIQ_STATE_T *state)
+ {
+    if(!((VCHIQ_2835_ARM_STATE_T*)state->platform_state)->inited)
+    {
+-      BUG();
++      assert(0);
+    }
+    return &((VCHIQ_2835_ARM_STATE_T*)state->platform_state)->arm_state;
+ }
+@@ -278,7 +292,7 @@ vchiq_prepare_bulk_data(VCHIQ_BULK_T *bulk, VCHI_MEM_HANDLE_T memhandle,
+ 			(dir == VCHIQ_BULK_RECEIVE)
+ 			? PAGELIST_READ
+ 			: PAGELIST_WRITE,
+-			current,
++			schedee_get_current(),
+ 			&pagelist);
+ 	if (ret != 0)
+ 		return VCHIQ_ERROR;
+@@ -307,7 +321,7 @@ vchiq_transfer_bulk(VCHIQ_BULK_T *bulk)
+ 	 * This should only be called on the master (VideoCore) side, but
+ 	 * provide an implementation to avoid the need for ifdefery.
+ 	 */
+-	BUG();
++	assert(0);
+ }
+ 
+ #ifndef __circle__
+@@ -369,11 +383,11 @@ vchiq_platform_handle_timeout(VCHIQ_STATE_T *state)
+  * Local functions
+  */
+ 
+-static irqreturn_t
+-vchiq_doorbell_irq(int irq, void *dev_id)
++static irq_return_t
++vchiq_doorbell_irq(unsigned int irq, void *dev_id)
+ {
+ 	VCHIQ_STATE_T *state = dev_id;
+-	irqreturn_t ret = IRQ_NONE;
++	int ret = IRQ_NONE;
+ 	unsigned int status;
+ 
+ 	/* Read (and clear) the doorbell */
+@@ -411,7 +425,7 @@ struct page {};
+ 
+ static int
+ create_pagelist(char __user *buf, size_t count, unsigned short type,
+-	struct task_struct *task, PAGELIST_T ** ppagelist)
++	struct schedee *task, PAGELIST_T ** ppagelist)
+ {
+ 	PAGELIST_T *pagelist;
+ 	struct page **pages;
+@@ -472,14 +486,14 @@ create_pagelist(char __user *buf, size_t count, unsigned short type,
+ 		*need_release = 0; /* do not try and release vmalloc pages */
+ #ifndef __circle__
+ 	} else {
+-		down_read(&task->mm->mmap_sem);
++		spin_lock(&task->lock);
+ 		actual_pages = get_user_pages(
+ 				          (unsigned int)buf & ~(PAGE_SIZE - 1),
+ 					  num_pages,
+ 					  (type == PAGELIST_READ) ? FOLL_WRITE : 0,
+ 					  pages,
+ 					  NULL /*vmas */);
+-		up_read(&task->mm->mmap_sem);
++		spin_unlock(&task->lock);
+ 
+ 		if (actual_pages != num_pages) {
+ 			vchiq_log_info(vchiq_arm_log_level,
+diff --git circle/addon/vc4/vchiq/vchiq_arm.c circle/addon/vc4/vchiq/vchiq_arm.c
+index d2a0441..bde5aea 100644
+--- circle/addon/vc4/vchiq/vchiq_arm.c
++++ circle/addon/vc4/vchiq/vchiq_arm.c
+@@ -38,9 +38,12 @@
+ #include <linux/errno.h>
+ #include <linux/device.h>
+ #include <linux/bug.h>
+-#include <linux/semaphore.h>
+ #include <linux/list.h>
+ #include <linux/platform_device.h>
++#include <kernel/time/time.h>
++#include <stdio.h>
++#include <kernel/thread.h>
++#include <kernel/thread/sync/semaphore.h>
+ #ifndef __circle__
+ #include <linux/cdev.h>
+ #include <linux/fs.h>
+@@ -1630,7 +1633,7 @@ vchiq_keepalive_vchiq_callback(VCHIQ_REASON_T reason,
+ 	return 0;
+ }
+ 
+-static int
++static void *
+ vchiq_keepalive_thread_func(void *v)
+ {
+ 	VCHIQ_STATE_T *state = (VCHIQ_STATE_T *) v;
+@@ -1670,13 +1673,16 @@ vchiq_keepalive_thread_func(void *v)
+ 
+ 	while (1) {
+ 		long rc = 0, uc = 0;
+-		if (wait_for_completion_interruptible(&arm_state->ka_evt)
++		semaphore_wait(&arm_state->ka_evt);
++		#if 0
++		if (semaphore_wait(&arm_state->ka_evt)
+ 				!= 0) {
+ 			vchiq_log_error(vchiq_susp_log_level,
+ 				"%s interrupted", __func__);
+-			flush_signals(current);
++			//flush_signals(current);
+ 			continue;
+ 		}
++		#endif
+ 
+ 		/* read and clear counters.  Do release_count then use_count to
+ 		 * prevent getting more releases than uses */
+@@ -1720,27 +1726,27 @@ vchiq_arm_init_state(VCHIQ_STATE_T *state, VCHIQ_ARM_STATE_T *arm_state)
+ 	if (arm_state) {
+ 		rwlock_init(&arm_state->susp_res_lock);
+ 
+-		init_completion(&arm_state->ka_evt);
++		semaphore_init(&arm_state->ka_evt,UINT32_MAX);
+ 		atomic_set(&arm_state->ka_use_count, 0);
+ 		atomic_set(&arm_state->ka_use_ack_count, 0);
+ 		atomic_set(&arm_state->ka_release_count, 0);
+ 
+-		init_completion(&arm_state->vc_suspend_complete);
++		semaphore_init(&arm_state->vc_suspend_complete,UINT32_MAX);
+ 
+-		init_completion(&arm_state->vc_resume_complete);
++		semaphore_init(&arm_state->vc_resume_complete,UINT32_MAX);
+ 		/* Initialise to 'done' state.  We only want to block on resume
+ 		 * completion while videocore is suspended. */
+ 		set_resume_state(arm_state, VC_RESUME_RESUMED);
+ 
+-		init_completion(&arm_state->resume_blocker);
++		semaphore_init(&arm_state->resume_blocker,UINT32_MAX);
+ 		/* Initialise to 'done' state.  We only want to block on this
+ 		 * completion while resume is blocked */
+-		complete_all(&arm_state->resume_blocker);
++		semaphore_post_all(&arm_state->resume_blocker);
+ 
+-		init_completion(&arm_state->blocked_blocker);
++		semaphore_init(&arm_state->blocked_blocker,UINT32_MAX);
+ 		/* Initialise to 'done' state.  We only want to block on this
+ 		 * completion while things are waiting on the resume blocker */
+-		complete_all(&arm_state->blocked_blocker);
++		semaphore_post_all(&arm_state->blocked_blocker);
+ 
+ 		arm_state->suspend_timer_timeout = SUSPEND_TIMER_TIMEOUT_MS;
+ 		arm_state->suspend_timer_running = 0;
+@@ -1820,18 +1826,18 @@ set_suspend_state(VCHIQ_ARM_STATE_T *arm_state,
+ 	/* state specific additional actions */
+ 	switch (new_state) {
+ 	case VC_SUSPEND_FORCE_CANCELED:
+-		complete_all(&arm_state->vc_suspend_complete);
++		semaphore_post_all(&arm_state->vc_suspend_complete);
+ 		break;
+ 	case VC_SUSPEND_REJECTED:
+-		complete_all(&arm_state->vc_suspend_complete);
++		semaphore_post_all(&arm_state->vc_suspend_complete);
+ 		break;
+ 	case VC_SUSPEND_FAILED:
+-		complete_all(&arm_state->vc_suspend_complete);
++		semaphore_post_all(&arm_state->vc_suspend_complete);
+ 		arm_state->vc_resume_state = VC_RESUME_RESUMED;
+-		complete_all(&arm_state->vc_resume_complete);
++		semaphore_post_all(&arm_state->vc_resume_complete);
+ 		break;
+ 	case VC_SUSPEND_IDLE:
+-		reinit_completion(&arm_state->vc_suspend_complete);
++		semaphore_reinit(&arm_state->vc_suspend_complete);
+ 		break;
+ 	case VC_SUSPEND_REQUESTED:
+ 		break;
+@@ -1839,10 +1845,10 @@ set_suspend_state(VCHIQ_ARM_STATE_T *arm_state,
+ 		set_resume_state(arm_state, VC_RESUME_IDLE);
+ 		break;
+ 	case VC_SUSPEND_SUSPENDED:
+-		complete_all(&arm_state->vc_suspend_complete);
++		semaphore_post_all(&arm_state->vc_suspend_complete);
+ 		break;
+ 	default:
+-		BUG();
++		assert(0);
+ 		break;
+ 	}
+ }
+@@ -1859,18 +1865,18 @@ set_resume_state(VCHIQ_ARM_STATE_T *arm_state,
+ 	case VC_RESUME_FAILED:
+ 		break;
+ 	case VC_RESUME_IDLE:
+-		reinit_completion(&arm_state->vc_resume_complete);
++		semaphore_reinit(&arm_state->vc_resume_complete);
+ 		break;
+ 	case VC_RESUME_REQUESTED:
+ 		break;
+ 	case VC_RESUME_IN_PROGRESS:
+ 		break;
+ 	case VC_RESUME_RESUMED:
+-		complete_all(&arm_state->vc_resume_complete);
++		semaphore_post_all(&arm_state->vc_resume_complete);
+ 		set_suspend_state(arm_state, VC_SUSPEND_IDLE);
+ 		break;
+ 	default:
+-		BUG();
++		assert(0);
+ 		break;
+ 	}
+ }
+@@ -1882,7 +1888,7 @@ start_suspend_timer(VCHIQ_ARM_STATE_T *arm_state)
+ {
+ 	del_timer(&arm_state->suspend_timer);
+ 	arm_state->suspend_timer.expires = jiffies +
+-		msecs_to_jiffies(arm_state->
++		ms2jiffies(arm_state->
+ 			suspend_timer_timeout);
+ 	add_timer(&arm_state->suspend_timer);
+ 	arm_state->suspend_timer_running = 1;
+@@ -1912,7 +1918,7 @@ block_resume(VCHIQ_ARM_STATE_T *arm_state)
+ {
+ 	int status = VCHIQ_SUCCESS;
+ 	const unsigned long timeout_val =
+-				msecs_to_jiffies(FORCE_SUSPEND_TIMEOUT_MS);
++				ms2jiffies(FORCE_SUSPEND_TIMEOUT_MS);
+ 	int resume_count = 0;
+ 
+ 	/* Allow any threads which were blocked by the last force suspend to
+@@ -1921,22 +1927,22 @@ block_resume(VCHIQ_ARM_STATE_T *arm_state)
+ 	 * (which only happens when blocked_count hits 0) then those threads
+ 	 * will have to wait until next time around */
+ 	if (arm_state->blocked_count) {
+-		reinit_completion(&arm_state->blocked_blocker);
+-		write_unlock_bh(&arm_state->susp_res_lock);
++		semaphore_reinit(&arm_state->blocked_blocker);
++		rwlock_write_down(&arm_state->susp_res_lock);
+ 		vchiq_log_info(vchiq_susp_log_level, "%s wait for previously "
+ 			"blocked clients", __func__);
+-		if (wait_for_completion_interruptible_timeout(
++		if (semaphore_timedwaitms(
+ 				&arm_state->blocked_blocker, timeout_val)
+ 					<= 0) {
+ 			vchiq_log_error(vchiq_susp_log_level, "%s wait for "
+ 				"previously blocked clients failed" , __func__);
+ 			status = VCHIQ_ERROR;
+-			write_lock_bh(&arm_state->susp_res_lock);
++			rwlock_write_up(&arm_state->susp_res_lock);
+ 			goto out;
+ 		}
+ 		vchiq_log_info(vchiq_susp_log_level, "%s previously blocked "
+ 			"clients resumed", __func__);
+-		write_lock_bh(&arm_state->susp_res_lock);
++		rwlock_write_up(&arm_state->susp_res_lock);
+ 	}
+ 
+ 	/* We need to wait for resume to complete if it's in process */
+@@ -1948,10 +1954,10 @@ block_resume(VCHIQ_ARM_STATE_T *arm_state)
+ 				"many times for resume" , __func__);
+ 			goto out;
+ 		}
+-		write_unlock_bh(&arm_state->susp_res_lock);
++		rwlock_write_down(&arm_state->susp_res_lock);
+ 		vchiq_log_info(vchiq_susp_log_level, "%s wait for resume",
+ 			__func__);
+-		if (wait_for_completion_interruptible_timeout(
++		if (semaphore_timedwaitms(
+ 				&arm_state->vc_resume_complete, timeout_val)
+ 					<= 0) {
+ 			vchiq_log_error(vchiq_susp_log_level, "%s wait for "
+@@ -1959,14 +1965,14 @@ block_resume(VCHIQ_ARM_STATE_T *arm_state)
+ 				resume_state_names[arm_state->vc_resume_state +
+ 							VC_RESUME_NUM_OFFSET]);
+ 			status = VCHIQ_ERROR;
+-			write_lock_bh(&arm_state->susp_res_lock);
++			rwlock_write_up(&arm_state->susp_res_lock);
+ 			goto out;
+ 		}
+ 		vchiq_log_info(vchiq_susp_log_level, "%s resumed", __func__);
+-		write_lock_bh(&arm_state->susp_res_lock);
++		rwlock_write_up(&arm_state->susp_res_lock);
+ 		resume_count++;
+ 	}
+-	reinit_completion(&arm_state->resume_blocker);
++	semaphore_reinit(&arm_state->resume_blocker);
+ 	arm_state->resume_blocked = 1;
+ 
+ out:
+@@ -1976,7 +1982,7 @@ out:
+ static inline void
+ unblock_resume(VCHIQ_ARM_STATE_T *arm_state)
+ {
+-	complete_all(&arm_state->resume_blocker);
++	semaphore_post_all(&arm_state->resume_blocker);
+ 	arm_state->resume_blocked = 0;
+ }
+ 
+@@ -2043,13 +2049,13 @@ vchiq_platform_check_suspend(VCHIQ_STATE_T *state)
+ 
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 	if (arm_state->vc_suspend_state == VC_SUSPEND_REQUESTED &&
+ 			arm_state->vc_resume_state == VC_RESUME_RESUMED) {
+ 		set_suspend_state(arm_state, VC_SUSPEND_IN_PROGRESS);
+ 		susp = 1;
+ 	}
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ 	if (susp)
+ 		vchiq_platform_suspend(state);
+@@ -2117,7 +2123,7 @@ vchiq_arm_force_suspend(VCHIQ_STATE_T *state)
+ 
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 
+ 	status = block_resume(arm_state);
+ 	if (status != VCHIQ_SUCCESS)
+@@ -2157,13 +2163,13 @@ vchiq_arm_force_suspend(VCHIQ_STATE_T *state)
+ 		goto unblock_resume;
+ 
+ 	do {
+-		write_unlock_bh(&arm_state->susp_res_lock);
++		rwlock_write_down(&arm_state->susp_res_lock);
+ 
+-		rc = wait_for_completion_interruptible_timeout(
++		rc = semaphore_timedwaitms(
+ 				&arm_state->vc_suspend_complete,
+-				msecs_to_jiffies(FORCE_SUSPEND_TIMEOUT_MS));
++				ms2jiffies(FORCE_SUSPEND_TIMEOUT_MS));
+ 
+-		write_lock_bh(&arm_state->susp_res_lock);
++		rwlock_write_up(&arm_state->susp_res_lock);
+ 		if (rc < 0) {
+ 			vchiq_log_warning(vchiq_susp_log_level, "%s "
+ 				"interrupted waiting for suspend", __func__);
+@@ -2208,7 +2214,7 @@ unblock_resume:
+ 	unblock_resume(arm_state);
+ 
+ unlock:
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ out:
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s exit %d", __func__, status);
+@@ -2225,13 +2231,13 @@ vchiq_check_suspend(VCHIQ_STATE_T *state)
+ 
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 	if (arm_state->vc_suspend_state != VC_SUSPEND_SUSPENDED &&
+ 			arm_state->first_connect &&
+ 			!vchiq_videocore_wanted(state)) {
+ 		vchiq_arm_vcsuspend(state);
+ 	}
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ out:
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s exit", __func__);
+@@ -2251,13 +2257,15 @@ vchiq_arm_allow_resume(VCHIQ_STATE_T *state)
+ 
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 	unblock_resume(arm_state);
+ 	resume = vchiq_check_resume(state);
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ 	if (resume) {
+-		if (wait_for_completion_interruptible(
++		semaphore_wait(&arm_state->vc_resume_complete);
++		#if 0
++		if (semaphore_wait(
+ 			&arm_state->vc_resume_complete) < 0) {
+ 			vchiq_log_error(vchiq_susp_log_level,
+ 				"%s interrupted", __func__);
+@@ -2265,9 +2273,10 @@ vchiq_arm_allow_resume(VCHIQ_STATE_T *state)
+ 			 * state, so exit early. */
+ 			goto out;
+ 		}
++		#endif
+ 	}
+ 
+-	read_lock_bh(&arm_state->susp_res_lock);
++	rwlock_read_up(&arm_state->susp_res_lock);
+ 	if (arm_state->vc_suspend_state == VC_SUSPEND_SUSPENDED) {
+ 		vchiq_log_info(vchiq_susp_log_level,
+ 				"%s: Videocore remains suspended", __func__);
+@@ -2276,7 +2285,7 @@ vchiq_arm_allow_resume(VCHIQ_STATE_T *state)
+ 				"%s: Videocore resumed", __func__);
+ 		ret = 0;
+ 	}
+-	read_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_read_down(&arm_state->susp_res_lock);
+ out:
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s exit %d", __func__, ret);
+ 	return ret;
+@@ -2316,7 +2325,7 @@ vchiq_platform_check_resume(VCHIQ_STATE_T *state)
+ 
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 	if (arm_state->wake_address == 0) {
+ 		vchiq_log_info(vchiq_susp_log_level,
+ 					"%s: already awake", __func__);
+@@ -2338,7 +2347,7 @@ vchiq_platform_check_resume(VCHIQ_STATE_T *state)
+ 							VC_RESUME_NUM_OFFSET]);
+ 
+ unlock:
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ 	if (res)
+ 		vchiq_platform_resume(state);
+@@ -2381,7 +2390,7 @@ vchiq_use_internal(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service,
+ 		goto out;
+ 	}
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 	while (arm_state->resume_blocked) {
+ 		/* If we call 'use' while force suspend is waiting for suspend,
+ 		 * then we're about to block the thread which the force is
+@@ -2394,32 +2403,35 @@ vchiq_use_internal(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service,
+ 			break;
+ 		}
+ 		/* If suspend is already in progress then we need to block */
+-		if (!try_wait_for_completion(&arm_state->resume_blocker)) {
++		if (!semaphore_trywait(&arm_state->resume_blocker)) {
+ 			/* Indicate that there are threads waiting on the resume
+ 			 * blocker.  These need to be allowed to complete before
+ 			 * a _second_ call to force suspend can complete,
+ 			 * otherwise low priority threads might never actually
+ 			 * continue */
+ 			arm_state->blocked_count++;
+-			write_unlock_bh(&arm_state->susp_res_lock);
++			rwlock_write_down(&arm_state->susp_res_lock);
+ 			vchiq_log_info(vchiq_susp_log_level, "%s %s resume "
+ 				"blocked - waiting...", __func__, entity);
+-			if (wait_for_completion_killable(
++			semaphore_wait(&arm_state->resume_blocker);
++			#if 0
++			if (semaphore_wait(
+ 					&arm_state->resume_blocker) != 0) {
+ 				vchiq_log_error(vchiq_susp_log_level, "%s %s "
+ 					"wait for resume blocker interrupted",
+ 					__func__, entity);
+ 				ret = VCHIQ_ERROR;
+-				write_lock_bh(&arm_state->susp_res_lock);
++				rwlock_write_up(&arm_state->susp_res_lock);
+ 				arm_state->blocked_count--;
+-				write_unlock_bh(&arm_state->susp_res_lock);
++				rwlock_write_down(&arm_state->susp_res_lock);
+ 				goto out;
+ 			}
++			#endif
+ 			vchiq_log_info(vchiq_susp_log_level, "%s %s resume "
+ 				"unblocked", __func__, entity);
+-			write_lock_bh(&arm_state->susp_res_lock);
++			rwlock_write_up(&arm_state->susp_res_lock);
+ 			if (--arm_state->blocked_count == 0)
+-				complete_all(&arm_state->blocked_blocker);
++				semaphore_post_all(&arm_state->blocked_blocker);
+ 		}
+ 	}
+ 
+@@ -2447,20 +2459,23 @@ vchiq_use_internal(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service,
+ 			__func__, entity, *entity_uc, local_uc);
+ 
+ 
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ 	/* Completion is in a done state when we're not suspended, so this won't
+ 	 * block for the non-suspended case. */
+-	if (!try_wait_for_completion(&arm_state->vc_resume_complete)) {
++	if (!semaphore_trywait(&arm_state->vc_resume_complete)) {
+ 		vchiq_log_info(vchiq_susp_log_level, "%s %s wait for resume",
+ 			__func__, entity);
+-		if (wait_for_completion_killable(
++		semaphore_wait(&arm_state->vc_resume_complete);
++		#if 0
++		if (semaphore_wait(
+ 				&arm_state->vc_resume_complete) != 0) {
+ 			vchiq_log_error(vchiq_susp_log_level, "%s %s wait for "
+ 				"resume interrupted", __func__, entity);
+ 			ret = VCHIQ_ERROR;
+ 			goto out;
+ 		}
++		#endif
+ 		vchiq_log_info(vchiq_susp_log_level, "%s %s resumed", __func__,
+ 			entity);
+ 	}
+@@ -2508,7 +2523,7 @@ vchiq_release_internal(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service)
+ 		entity_uc = &arm_state->peer_use_count;
+ 	}
+ 
+-	write_lock_bh(&arm_state->susp_res_lock);
++	rwlock_write_up(&arm_state->susp_res_lock);
+ 	if (!arm_state->videocore_use_count || !(*entity_uc)) {
+ 		/* Don't use BUG_ON - don't allow user thread to crash kernel */
+ 		WARN_ON(!arm_state->videocore_use_count);
+@@ -2539,7 +2554,7 @@ vchiq_release_internal(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service)
+ 			arm_state->videocore_use_count);
+ 
+ unlock:
+-	write_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_write_down(&arm_state->susp_res_lock);
+ 
+ out:
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s exit %d", __func__, ret);
+@@ -2552,7 +2567,7 @@ vchiq_on_remote_use(VCHIQ_STATE_T *state)
+ 	VCHIQ_ARM_STATE_T *arm_state = vchiq_platform_get_arm_state(state);
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 	atomic_inc(&arm_state->ka_use_count);
+-	complete(&arm_state->ka_evt);
++	semaphore_post(&arm_state->ka_evt);
+ }
+ 
+ void
+@@ -2561,7 +2576,7 @@ vchiq_on_remote_release(VCHIQ_STATE_T *state)
+ 	VCHIQ_ARM_STATE_T *arm_state = vchiq_platform_get_arm_state(state);
+ 	vchiq_log_trace(vchiq_susp_log_level, "%s", __func__);
+ 	atomic_inc(&arm_state->ka_release_count);
+-	complete(&arm_state->ka_evt);
++	semaphore_post(&arm_state->ka_evt);
+ }
+ 
+ VCHIQ_STATUS_T
+@@ -2701,7 +2716,7 @@ vchiq_dump_service_use_state(VCHIQ_STATE_T *state)
+ 	if (!arm_state)
+ 		return;
+ 
+-	read_lock_bh(&arm_state->susp_res_lock);
++	rwlock_read_up(&arm_state->susp_res_lock);
+ 	vc_suspend_state = arm_state->vc_suspend_state;
+ 	vc_resume_state  = arm_state->vc_resume_state;
+ 	peer_count = arm_state->peer_use_count;
+@@ -2726,7 +2741,7 @@ vchiq_dump_service_use_state(VCHIQ_STATE_T *state)
+ 		}
+ 	}
+ 
+-	read_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_read_down(&arm_state->susp_res_lock);
+ 
+ 	vchiq_log_warning(vchiq_susp_log_level,
+ 		"-- Videcore suspend state: %s --",
+@@ -2770,10 +2785,10 @@ vchiq_check_service(VCHIQ_SERVICE_T *service)
+ 
+ 	arm_state = vchiq_platform_get_arm_state(service->state);
+ 
+-	read_lock_bh(&arm_state->susp_res_lock);
++	rwlock_read_up(&arm_state->susp_res_lock);
+ 	if (service->service_use_count)
+ 		ret = VCHIQ_SUCCESS;
+-	read_unlock_bh(&arm_state->susp_res_lock);
++	rwlock_read_down(&arm_state->susp_res_lock);
+ 
+ 	if (ret == VCHIQ_ERROR) {
+ 		vchiq_log_error(vchiq_susp_log_level,
+@@ -2803,26 +2818,25 @@ void vchiq_platform_conn_state_changed(VCHIQ_STATE_T *state,
+ 	vchiq_log_info(vchiq_susp_log_level, "%d: %s->%s", state->id,
+ 		get_conn_state_name(oldstate), get_conn_state_name(newstate));
+ 	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTED) {
+-		write_lock_bh(&arm_state->susp_res_lock);
++		rwlock_write_up(&arm_state->susp_res_lock);
+ 		if (!arm_state->first_connect) {
+ 			char threadname[10];
+ 			arm_state->first_connect = 1;
+-			write_unlock_bh(&arm_state->susp_res_lock);
++			rwlock_write_down(&arm_state->susp_res_lock);
+ 			snprintf(threadname, sizeof(threadname), "VCHIQka-%d",
+ 				state->id);
+-			arm_state->ka_thread = kthread_create(
++			arm_state->ka_thread = thread_create(THREAD_FLAG_SUSPENDED,
+ 				&vchiq_keepalive_thread_func,
+-				(void *)state,
+-				threadname);
++				(void *)state);
+ 			if (arm_state->ka_thread == NULL) {
+ 				vchiq_log_error(vchiq_susp_log_level,
+ 					"vchiq: FATAL: couldn't create thread %s",
+ 					threadname);
+ 			} else {
+-				wake_up_process(arm_state->ka_thread);
++				thread_launch(arm_state->ka_thread);
+ 			}
+ 		} else
+-			write_unlock_bh(&arm_state->susp_res_lock);
++			rwlock_write_down(&arm_state->susp_res_lock);
+ 	}
+ }
+ 
+diff --git circle/addon/vc4/vchiq/vchiq_arm.h circle/addon/vc4/vchiq/vchiq_arm.h
+index 2da242f..f5607cc 100644
+--- circle/addon/vc4/vchiq/vchiq_arm.h
++++ circle/addon/vc4/vchiq/vchiq_arm.h
+@@ -35,12 +35,14 @@
+ #ifndef VCHIQ_ARM_H
+ #define VCHIQ_ARM_H
+ 
+-#include <linux/mutex.h>
++//#include <linux/mutex.h>
+ #include <linux/platform_device.h>
+ #include <linux/semaphore.h>
+ #include <linux/atomic.h>
+ #include <linux/completion.h>
+ #include <linux/timer.h>
++#include <pthread.h>
++#include <kernel/thread/sync/semaphore.h>
+ #include "vchiq_core.h"
+ #ifndef __circle__
+ #include "vchiq_debugfs.h"
+@@ -80,14 +82,14 @@ enum USE_TYPE_E {
+ 
+ typedef struct vchiq_arm_state_struct {
+ 	/* Keepalive-related data */
+-	struct task_struct *ka_thread;
+-	struct completion ka_evt;
++	struct thread *ka_thread;
++	struct sem ka_evt;
+ 	atomic_t ka_use_count;
+ 	atomic_t ka_use_ack_count;
+ 	atomic_t ka_release_count;
+ 
+-	struct completion vc_suspend_complete;
+-	struct completion vc_resume_complete;
++	struct sem vc_suspend_complete;
++	struct sem vc_resume_complete;
+ 
+ 	rwlock_t susp_res_lock;
+ 	enum vc_suspend_status vc_suspend_state;
+@@ -114,9 +116,9 @@ typedef struct vchiq_arm_state_struct {
+ 	/* Flag to indicate whether resume is blocked.  This happens when the
+ 	** ARM is suspending
+ 	*/
+-	struct completion resume_blocker;
++	struct sem resume_blocker;
+ 	int resume_blocked;
+-	struct completion blocked_blocker;
++	struct sem blocked_blocker;
+ 	int blocked_count;
+ 
+ 	int autosuspend_override;
+diff --git circle/addon/vc4/vchiq/vchiq_connected.c circle/addon/vc4/vchiq/vchiq_connected.c
+index 5efc62f..03f846c 100644
+--- circle/addon/vc4/vchiq/vchiq_connected.c
++++ circle/addon/vc4/vchiq/vchiq_connected.c
+@@ -35,7 +35,8 @@
+ #include "vchiq_core.h"
+ #include "vchiq_killable.h"
+ #include <linux/module.h>
+-#include <linux/mutex.h>
++//#include <linux/mutex.h>
++#include <linux/bug.h>
+ 
+ #define  MAX_CALLBACKS  10
+ 
+diff --git circle/addon/vc4/vchiq/vchiq_core.c circle/addon/vc4/vchiq/vchiq_core.c
+index 8c7a8ab..98a1c29 100644
+--- circle/addon/vc4/vchiq/vchiq_core.c
++++ circle/addon/vc4/vchiq/vchiq_core.c
+@@ -31,6 +31,11 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
++#include <linux/bug.h>
++#include <linux/slab.h>
++#include <linux/barrier.h>
++#include <kernel/sched/schedee_priority.h>
++#include <kernel/thread.h>
+ #include "vchiq_core.h"
+ #include "vchiq_killable.h"
+ 
+@@ -187,7 +192,7 @@ find_service_by_handle(VCHIQ_SERVICE_HANDLE_T handle)
+ 
+ 	if (!service)
+ 		vchiq_log_info(vchiq_core_log_level,
+-			"Invalid service handle 0x%x", handle);
++			"Invalid service handle 0x%x", (unsigned int)handle);
+ 
+ 	return service;
+ }
+@@ -232,7 +237,7 @@ find_service_for_instance(VCHIQ_INSTANCE_T instance,
+ 
+ 	if (!service)
+ 		vchiq_log_info(vchiq_core_log_level,
+-			"Invalid service handle 0x%x", handle);
++			"Invalid service handle 0x%x", (unsigned int)handle);
+ 
+ 	return service;
+ }
+@@ -257,7 +262,7 @@ find_closed_service_for_instance(VCHIQ_INSTANCE_T instance,
+ 
+ 	if (!service)
+ 		vchiq_log_info(vchiq_core_log_level,
+-			"Invalid service handle 0x%x", handle);
++			"Invalid service handle 0x%x", (unsigned int)handle);
+ 
+ 	return service;
+ }
+@@ -370,7 +375,7 @@ mark_service_closing_internal(VCHIQ_SERVICE_T *service, int sh_thread)
+ 
+ 	/* Unblock any sending thread. */
+ 	service_quota = &state->service_quotas[service->localport];
+-	up(&service_quota->quota_event);
++	semaphore_post(&service_quota->quota_event);
+ }
+ 
+ static void
+@@ -392,7 +397,7 @@ make_service_callback(VCHIQ_SERVICE_T *service, VCHIQ_REASON_T reason,
+ 	if (status == VCHIQ_ERROR) {
+ 		vchiq_log_warning(vchiq_core_log_level,
+ 			"%d: ignoring ERROR from callback to service %x",
+-			service->state->id, service->handle);
++			service->state->id, (unsigned int)service->handle);
+ 		status = VCHIQ_SUCCESS;
+ 	}
+ 	return status;
+@@ -415,7 +420,7 @@ remote_event_create(REMOTE_EVENT_T *event)
+ 	event->armed = 0;
+ 	/* Don't clear the 'fired' flag because it may already have been set
+ 	** by the other side. */
+-	sema_init((struct semaphore *)(uintptr_t)event->event, 0);
++	semaphore_init((struct sem *)(uintptr_t)event->event, 0);
+ }
+ 
+ static inline void
+@@ -431,10 +436,13 @@ remote_event_wait(REMOTE_EVENT_T *event)
+ 		event->armed = 1;
+ 		dsb();
+ 		if (!event->fired) {
+-			if (down_interruptible((struct semaphore *)(uintptr_t)event->event) != 0) {
++			semaphore_wait((struct sem *)(uintptr_t)event->event);
++			#if 0
++			if (semaphore_wait((struct sem *)(uintptr_t)event->event) != 0) {
+ 				event->armed = 0;
+ 				return 0;
+ 			}
++			#endif
+ 		}
+ 		event->armed = 0;
+ 		wmb();
+@@ -448,7 +456,7 @@ static inline void
+ remote_event_signal_local(REMOTE_EVENT_T *event)
+ {
+ 	event->armed = 0;
+-	up((struct semaphore *)(uintptr_t)event->event);
++	semaphore_post((struct sem *)(uintptr_t)event->event);
+ }
+ 
+ static inline void
+@@ -575,7 +583,7 @@ reserve_space(VCHIQ_STATE_T *state, int space, int is_blocking)
+ 
+ 		/* If there is no free slot... */
+ 
+-		if (down_trylock(&state->slot_available_event) != 0) {
++		if (semaphore_trywait(&state->slot_available_event) != 0) {
+ 			/* ...wait for one. */
+ 
+ 			VCHIQ_STATS_INC(state, slot_stalls);
+@@ -584,11 +592,14 @@ reserve_space(VCHIQ_STATE_T *state, int space, int is_blocking)
+ 			state->local_tx_pos = tx_pos;
+ 			local->tx_pos = tx_pos;
+ 			remote_event_signal(&state->remote->trigger);
+-
++			#if 0
+ 			if (!is_blocking ||
+-				(down_interruptible(
+-				&state->slot_available_event) != 0))
+-				return NULL; /* No space available */
++                (down_interruptible(
++                &state->slot_available_event) != 0))
++                return NULL; /* No space available */
++			#endif
++			if (!is_blocking) return NULL; /* No space available */
++			semaphore_wait(&state->slot_available_event);
+ 		}
+ 
+ 		BUG_ON(tx_pos ==
+@@ -662,7 +673,7 @@ process_free_queue(VCHIQ_STATE_T *state)
+ 					/* Signal the service that it
+ 					** has dropped below its quota
+ 					*/
+-					up(&service_quota->quota_event);
++					semaphore_post(&service_quota->quota_event);
+ 				else if (count == 0) {
+ 					vchiq_log_error(vchiq_core_log_level,
+ 						"service %d "
+@@ -693,7 +704,7 @@ process_free_queue(VCHIQ_STATE_T *state)
+ 						/* Signal the service in case
+ 						** it has dropped below its
+ 						** quota */
+-						up(&service_quota->quota_event);
++						semaphore_post(&service_quota->quota_event);
+ 						vchiq_log_trace(
+ 							vchiq_core_log_level,
+ 							"%d: pfq:%d %x@%x - "
+@@ -744,13 +755,13 @@ process_free_queue(VCHIQ_STATE_T *state)
+ 					count - 1;
+ 			spin_unlock(&quota_spinlock);
+ 			if (count == state->data_quota)
+-				up(&state->data_quota_event);
++				semaphore_post(&state->data_quota_event);
+ 		}
+ 
+ 		mb();
+ 
+ 		state->slot_queue_available = slot_queue_available;
+-		up(&state->slot_available_event);
++		semaphore_post(&state->slot_available_event);
+ 	}
+ }
+ 
+@@ -807,9 +818,12 @@ queue_message(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service,
+ 			spin_unlock(&quota_spinlock);
+ 			mutex_unlock(&state->slot_mutex);
+ 
+-			if (down_interruptible(&state->data_quota_event)
++			semaphore_wait(&state->data_quota_event);
++			#if 0
++			if (semaphore_wait(&state->data_quota_event)
+ 				!= 0)
+ 				return VCHIQ_RETRY;
++			#endif
+ 
+ 			mutex_lock(&state->slot_mutex);
+ 			spin_lock(&quota_spinlock);
+@@ -818,7 +832,7 @@ queue_message(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service,
+ 			if ((tx_end_index == state->previous_data_index) ||
+ 				(state->data_use_count < state->data_quota)) {
+ 				/* Pass the signal on to other waiters */
+-				up(&state->data_quota_event);
++				semaphore_post(&state->data_quota_event);
+ 				break;
+ 			}
+ 		}
+@@ -838,9 +852,12 @@ queue_message(VCHIQ_STATE_T *state, VCHIQ_SERVICE_T *service,
+ 				service_quota->slot_use_count);
+ 			VCHIQ_SERVICE_STATS_INC(service, quota_stalls);
+ 			mutex_unlock(&state->slot_mutex);
+-			if (down_interruptible(&service_quota->quota_event)
++			semaphore_wait(&service_quota->quota_event);
++			#if 0
++			if (semaphore_wait(&service_quota->quota_event)
+ 				!= 0)
+ 				return VCHIQ_RETRY;
++			#endif
+ 			if (service->closing)
+ 				return VCHIQ_ERROR;
+ 			if (mutex_lock_interruptible(&state->slot_mutex) != 0)
+@@ -1224,7 +1241,7 @@ notify_bulks(VCHIQ_SERVICE_T *service, VCHIQ_BULK_QUEUE_T *queue,
+ 					waiter = bulk->userdata;
+ 					if (waiter) {
+ 						waiter->actual = bulk->actual;
+-						up(&waiter->event);
++						semaphore_post(&waiter->event);
+ 					}
+ 					spin_unlock(&bulk_waiter_spinlock);
+ 				} else if (bulk->mode ==
+@@ -1247,7 +1264,7 @@ notify_bulks(VCHIQ_SERVICE_T *service, VCHIQ_BULK_QUEUE_T *queue,
+ 			}
+ 
+ 			queue->remove++;
+-			up(&service->bulk_remove_event);
++			semaphore_post(&service->bulk_remove_event);
+ 		}
+ 		if (!retry_poll)
+ 			status = VCHIQ_SUCCESS;
+@@ -1758,7 +1775,7 @@ parse_rx_slots(VCHIQ_STATE_T *state)
+ 				service->remoteport = remoteport;
+ 				vchiq_set_service_state(service,
+ 					VCHIQ_SRVSTATE_OPEN);
+-				up(&service->remove_event);
++				semaphore_post(&service->remove_event);
+ 			} else
+ 				vchiq_log_error(vchiq_core_log_level,
+ 					"OPENACK received in state %s",
+@@ -1815,7 +1832,7 @@ parse_rx_slots(VCHIQ_STATE_T *state)
+ 				state->id, (unsigned int)(uintptr_t)header);
+ 			state->version_common = ((VCHIQ_SLOT_ZERO_T *)
+ 						 state->slot_data)->version;
+-			up(&state->connect);
++			semaphore_post(&state->connect);
+ 			break;
+ 		case VCHIQ_MSG_BULK_RX:
+ 		case VCHIQ_MSG_BULK_TX: {
+@@ -2036,7 +2053,7 @@ bail_not_ready:
+ }
+ 
+ /* Called by the slot handler thread */
+-static int
++static void *
+ slot_handler_func(void *v)
+ {
+ 	VCHIQ_STATE_T *state = (VCHIQ_STATE_T *) v;
+@@ -2105,7 +2122,7 @@ slot_handler_func(void *v)
+ 					vchiq_log_error(vchiq_core_log_level,
+ 						"Failed to send RESUME "
+ 						"message");
+-					BUG();
++					assert(0);
+ 				}
+ 				break;
+ 
+@@ -2128,7 +2145,7 @@ slot_handler_func(void *v)
+ 
+ 
+ /* Called by the recycle thread */
+-static int
++static void *
+ recycle_func(void *v)
+ {
+ 	VCHIQ_STATE_T *state = (VCHIQ_STATE_T *) v;
+@@ -2144,7 +2161,7 @@ recycle_func(void *v)
+ 
+ 
+ /* Called by the sync thread */
+-static int
++static void *
+ sync_func(void *v)
+ {
+ 	VCHIQ_STATE_T *state = (VCHIQ_STATE_T *) v;
+@@ -2214,7 +2231,7 @@ sync_func(void *v)
+ 				vchiq_set_service_state(service,
+ 					VCHIQ_SRVSTATE_OPENSYNC);
+ 				service->sync = 1;
+-				up(&service->remove_event);
++				semaphore_post(&service->remove_event);
+ 			}
+ 			release_message_sync(state, header);
+ 			break;
+@@ -2432,33 +2449,33 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+ 		initialize events and mutexes
+ 	 */
+ 
+-	sema_init(&state->connect, 0);
++	semaphore_init(&state->connect, 0);
+ 	mutex_init(&state->mutex);
+-	sema_init(&state->trigger_event, 0);
+-	sema_init(&state->recycle_event, 0);
+-	sema_init(&state->sync_trigger_event, 0);
+-	sema_init(&state->sync_release_event, 0);
++	semaphore_init(&state->trigger_event, 0);
++	semaphore_init(&state->recycle_event, 0);
++	semaphore_init(&state->sync_trigger_event, 0);
++	semaphore_init(&state->sync_release_event, 0);
+ 
+ 	mutex_init(&state->slot_mutex);
+ 	mutex_init(&state->recycle_mutex);
+ 	mutex_init(&state->sync_mutex);
+ 	mutex_init(&state->bulk_transfer_mutex);
+ 
+-	sema_init(&state->slot_available_event, 0);
+-	sema_init(&state->slot_remove_event, 0);
+-	sema_init(&state->data_quota_event, 0);
++	semaphore_init(&state->slot_available_event, 0);
++	semaphore_init(&state->slot_remove_event, 0);
++	semaphore_init(&state->data_quota_event, 0);
+ 
+ 	state->slot_queue_available = 0;
+ 
+ 	for (i = 0; i < VCHIQ_MAX_SERVICES; i++) {
+ 		VCHIQ_SERVICE_QUOTA_T *service_quota =
+ 			&state->service_quotas[i];
+-		sema_init(&service_quota->quota_event, 0);
++		semaphore_init(&service_quota->quota_event, 0);
+ 	}
+ 
+ 	for (i = local->slot_first; i <= local->slot_last; i++) {
+ 		local->slot_queue[state->slot_queue_available++] = i;
+-		up(&state->slot_available_event);
++		semaphore_post(&state->slot_available_event);
+ 	}
+ 
+ 	state->default_slot_quota = state->slot_queue_available/2;
+@@ -2513,9 +2530,9 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+ 		bring up slot handler thread
+ 	 */
+ 	snprintf(threadname, sizeof(threadname), "VCHIQ-%d", state->id);
+-	state->slot_handler_thread = kthread_create(&slot_handler_func,
+-		(void *)state,
+-		threadname);
++	state->slot_handler_thread = thread_create(THREAD_FLAG_SUSPENDED,
++		&slot_handler_func,
++		(void *)state);
+ 
+ 	if (state->slot_handler_thread == NULL) {
+ 		vchiq_loud_error_header();
+@@ -2523,34 +2540,34 @@ vchiq_init_state(VCHIQ_STATE_T *state, VCHIQ_SLOT_ZERO_T *slot_zero,
+ 		vchiq_loud_error_footer();
+ 		return VCHIQ_ERROR;
+ 	}
+-	set_user_nice(state->slot_handler_thread, -19);
+-	wake_up_process(state->slot_handler_thread);
++	schedee_priority_set(&state->slot_handler_thread->schedee, -19);
++	thread_launch(state->slot_handler_thread);
+ 
+ 	snprintf(threadname, sizeof(threadname), "VCHIQr-%d", state->id);
+-	state->recycle_thread = kthread_create(&recycle_func,
+-		(void *)state,
+-		threadname);
++	state->recycle_thread = thread_create(THREAD_FLAG_SUSPENDED,
++		&recycle_func,
++		(void *)state);
+ 	if (state->recycle_thread == NULL) {
+ 		vchiq_loud_error_header();
+ 		vchiq_loud_error("couldn't create thread %s", threadname);
+ 		vchiq_loud_error_footer();
+ 		return VCHIQ_ERROR;
+ 	}
+-	set_user_nice(state->recycle_thread, -19);
+-	wake_up_process(state->recycle_thread);
++	schedee_priority_set(&state->recycle_thread->schedee, -19);
++	thread_launch(state->recycle_thread);
+ 
+ 	snprintf(threadname, sizeof(threadname), "VCHIQs-%d", state->id);
+-	state->sync_thread = kthread_create(&sync_func,
+-		(void *)state,
+-		threadname);
++	state->sync_thread = thread_create(THREAD_FLAG_SUSPENDED,
++		&sync_func,
++		(void *)state);
+ 	if (state->sync_thread == NULL) {
+ 		vchiq_loud_error_header();
+ 		vchiq_loud_error("couldn't create thread %s", threadname);
+ 		vchiq_loud_error_footer();
+ 		return VCHIQ_ERROR;
+ 	}
+-	set_user_nice(state->sync_thread, -20);
+-	wake_up_process(state->sync_thread);
++	schedee_priority_set(&state->sync_thread->schedee, -20);
++	thread_launch(state->sync_thread);
+ 
+ 	BUG_ON(state->id >= VCHIQ_MAX_STATES);
+ 	vchiq_states[state->id] = state;
+@@ -2596,8 +2613,8 @@ vchiq_add_service_internal(VCHIQ_STATE_T *state,
+ 		service->service_use_count = 0;
+ 		init_bulk_queue(&service->bulk_tx);
+ 		init_bulk_queue(&service->bulk_rx);
+-		sema_init(&service->remove_event, 0);
+-		sema_init(&service->bulk_remove_event, 0);
++		semaphore_init(&service->remove_event, 0);
++		semaphore_init(&service->bulk_remove_event, 0);
+ 		mutex_init(&service->bulk_mutex);
+ 		memset(&service->stats, 0, sizeof(service->stats));
+ 	} else {
+@@ -2717,10 +2734,14 @@ vchiq_open_service_internal(VCHIQ_SERVICE_T *service, int client_id)
+ 		&body, 1, sizeof(payload), QMFLAGS_IS_BLOCKING);
+ 	if (status == VCHIQ_SUCCESS) {
+ 		/* Wait for the ACK/NAK */
+-		if (down_interruptible(&service->remove_event) != 0) {
++		semaphore_wait(&service->remove_event);
++		#if 0
++		if (semaphore_wait(&service->remove_event) != 0) {
+ 			status = VCHIQ_RETRY;
+ 			vchiq_release_service_internal(service);
+-		} else if ((service->srvstate != VCHIQ_SRVSTATE_OPEN) &&
++		} else
++		#endif
++		if ((service->srvstate != VCHIQ_SRVSTATE_OPEN) &&
+ 			(service->srvstate != VCHIQ_SRVSTATE_OPENSYNC)) {
+ 			if (service->srvstate != VCHIQ_SRVSTATE_CLOSEWAIT)
+ 				vchiq_log_error(vchiq_core_log_level,
+@@ -2846,7 +2867,7 @@ close_service_complete(VCHIQ_SERVICE_T *service, int failstate)
+ 	default:
+ 		vchiq_log_error(vchiq_core_log_level,
+ 			"close_service_complete(%x) called in state %s",
+-			service->handle, srvstate_names[service->srvstate]);
++			(unsigned int)service->handle, srvstate_names[service->srvstate]);
+ 		WARN(1, "close_service_complete in unexpected state\n");
+ 		return VCHIQ_ERROR;
+ 	}
+@@ -2872,7 +2893,7 @@ close_service_complete(VCHIQ_SERVICE_T *service, int failstate)
+ 			if (is_server)
+ 				service->closing = 0;
+ 
+-			up(&service->remove_event);
++			semaphore_post(&service->remove_event);
+ 		}
+ 	} else
+ 		vchiq_set_service_state(service, failstate);
+@@ -2913,7 +2934,7 @@ vchiq_close_service_internal(VCHIQ_SERVICE_T *service, int close_recvd)
+ 					vchiq_set_service_state(service,
+ 						VCHIQ_SRVSTATE_LISTENING);
+ 			}
+-			up(&service->remove_event);
++			semaphore_post(&service->remove_event);
+ 		} else
+ 			vchiq_free_service_internal(service);
+ 		break;
+@@ -2922,7 +2943,7 @@ vchiq_close_service_internal(VCHIQ_SERVICE_T *service, int close_recvd)
+ 			/* The open was rejected - tell the user */
+ 			vchiq_set_service_state(service,
+ 				VCHIQ_SRVSTATE_CLOSEWAIT);
+-			up(&service->remove_event);
++			semaphore_post(&service->remove_event);
+ 		} else {
+ 			/* Shutdown mid-open - let the other side know */
+ 			status = queue_message(state, service,
+@@ -3058,7 +3079,7 @@ vchiq_free_service_internal(VCHIQ_SERVICE_T *service)
+ 
+ 	vchiq_set_service_state(service, VCHIQ_SRVSTATE_FREE);
+ 
+-	up(&service->remove_event);
++	semaphore_post(&service->remove_event);
+ 
+ 	/* Release the initial lock */
+ 	unlock_service(service);
+@@ -3090,11 +3111,14 @@ vchiq_connect_internal(VCHIQ_STATE_T *state, VCHIQ_INSTANCE_T instance)
+ 	}
+ 
+ 	if (state->conn_state == VCHIQ_CONNSTATE_CONNECTING) {
+-		if (down_interruptible(&state->connect) != 0)
++		semaphore_wait(&state->connect);
++		#if 0
++		if (semaphore_wait(&state->connect) != 0)
+ 			return VCHIQ_RETRY;
++		#endif
+ 
+ 		vchiq_set_conn_state(state, VCHIQ_CONNSTATE_CONNECTED);
+-		up(&state->connect);
++		semaphore_post(&state->connect);
+ 	}
+ 
+ 	return VCHIQ_SUCCESS;
+@@ -3179,7 +3203,7 @@ vchiq_close_service(VCHIQ_SERVICE_HANDLE_T handle)
+ 
+ 	mark_service_closing(service);
+ 
+-	if (current == service->state->slot_handler_thread) {
++	if (thread_self() == service->state->slot_handler_thread) {
+ 		status = vchiq_close_service_internal(service,
+ 			0/*!close_recvd*/);
+ 		BUG_ON(status == VCHIQ_RETRY);
+@@ -3189,10 +3213,13 @@ vchiq_close_service(VCHIQ_SERVICE_HANDLE_T handle)
+ 	}
+ 
+ 	while (1) {
+-		if (down_interruptible(&service->remove_event) != 0) {
++		semaphore_wait(&service->remove_event);
++		#if 0
++		if (semaphore_wait(&service->remove_event) != 0) {
+ 			status = VCHIQ_RETRY;
+ 			break;
+ 		}
++		#endif
+ 
+ 		if ((service->srvstate == VCHIQ_SRVSTATE_FREE) ||
+ 			(service->srvstate == VCHIQ_SRVSTATE_LISTENING) ||
+@@ -3237,7 +3264,7 @@ vchiq_remove_service(VCHIQ_SERVICE_HANDLE_T handle)
+ 	mark_service_closing(service);
+ 
+ 	if ((service->srvstate == VCHIQ_SRVSTATE_HIDDEN) ||
+-		(current == service->state->slot_handler_thread)) {
++		(thread_self() == service->state->slot_handler_thread)) {
+ 		/* Make it look like a client, because it must be removed and
+ 		   not left in the LISTENING state. */
+ 		service->public_fourcc = VCHIQ_FOURCC_INVALID;
+@@ -3250,10 +3277,13 @@ vchiq_remove_service(VCHIQ_SERVICE_HANDLE_T handle)
+ 		request_poll(service->state, service, VCHIQ_POLL_REMOVE);
+ 	}
+ 	while (1) {
+-		if (down_interruptible(&service->remove_event) != 0) {
++		semaphore_wait(&service->remove_event);
++		#if 0
++		if (semaphore_wait(&service->remove_event) != 0) {
+ 			status = VCHIQ_RETRY;
+ 			break;
+ 		}
++		#endif
+ 
+ 		if ((service->srvstate == VCHIQ_SRVSTATE_FREE) ||
+ 			(service->srvstate == VCHIQ_SRVSTATE_OPEN))
+@@ -3309,7 +3339,7 @@ vchiq_bulk_transfer(VCHIQ_SERVICE_HANDLE_T handle,
+ 		break;
+ 	case VCHIQ_BULK_MODE_BLOCKING:
+ 		bulk_waiter = (struct bulk_waiter *)userdata;
+-		sema_init(&bulk_waiter->event, 0);
++		semaphore_init(&bulk_waiter->event, 0);
+ 		bulk_waiter->actual = 0;
+ 		bulk_waiter->bulk = NULL;
+ 		break;
+@@ -3335,11 +3365,14 @@ vchiq_bulk_transfer(VCHIQ_SERVICE_HANDLE_T handle,
+ 		VCHIQ_SERVICE_STATS_INC(service, bulk_stalls);
+ 		do {
+ 			mutex_unlock(&service->bulk_mutex);
+-			if (down_interruptible(&service->bulk_remove_event)
++			semaphore_wait(&service->bulk_remove_event);
++			#if 0
++			if (semaphore_wait(&service->bulk_remove_event)
+ 				!= 0) {
+ 				status = VCHIQ_RETRY;
+ 				goto error_exit;
+ 			}
++			#endif
+ 			if (mutex_lock_interruptible(&service->bulk_mutex)
+ 				!= 0) {
+ 				status = VCHIQ_RETRY;
+@@ -3418,9 +3451,13 @@ waiting:
+ 
+ 	if (bulk_waiter) {
+ 		bulk_waiter->bulk = bulk;
+-		if (down_interruptible(&bulk_waiter->event) != 0)
++		semaphore_wait(&bulk_waiter->event);
++		#if 0
++		if (semaphore_wait(&bulk_waiter->event) != 0)
+ 			status = VCHIQ_RETRY;
+-		else if (bulk_waiter->actual == VCHIQ_BULK_ACTUAL_ABORTED)
++		else 
++		#endif
++		if (bulk_waiter->actual == VCHIQ_BULK_ACTUAL_ABORTED)
+ 			status = VCHIQ_ERROR;
+ 	}
+ 
+@@ -3605,7 +3642,7 @@ vchiq_set_service_option(VCHIQ_SERVICE_HANDLE_T handle,
+ 					 service_quota->message_use_count)) {
+ 					/* Signal the service that it may have
+ 					** dropped below its quota */
+-					up(&service_quota->quota_event);
++					semaphore_post(&service_quota->quota_event);
+ 				}
+ 				status = VCHIQ_SUCCESS;
+ 			}
+@@ -3626,7 +3663,7 @@ vchiq_set_service_option(VCHIQ_SERVICE_HANDLE_T handle,
+ 					service_quota->slot_use_count))
+ 					/* Signal the service that it may have
+ 					** dropped below its quota */
+-					up(&service_quota->quota_event);
++					semaphore_post(&service_quota->quota_event);
+ 				status = VCHIQ_SUCCESS;
+ 			}
+ 		} break;
+diff --git circle/addon/vc4/vchiq/vchiq_core.h circle/addon/vc4/vchiq/vchiq_core.h
+index 05307a9..f3e73ab 100644
+--- circle/addon/vc4/vchiq/vchiq_core.h
++++ circle/addon/vc4/vchiq/vchiq_core.h
+@@ -34,12 +34,12 @@
+ #ifndef VCHIQ_CORE_H
+ #define VCHIQ_CORE_H
+ 
+-#include <linux/mutex.h>
+-#include <linux/semaphore.h>
++#include <kernel/thread/sync/mutex.h>
++#include <kernel/thread/sync/semaphore.h>
+ #include <linux/kthread.h>
+ #include <linux/atomic.h>
+ #include <linux/spinlock.h>
+-#include <linux/printk.h>
++#include <kernel/printk.h>
+ #include <linux/kernel.h>
+ 
+ #include "vchiq_cfg.h"
+@@ -273,7 +273,7 @@ typedef struct remote_event_struct {
+ 	int armed;
+ 	int fired;
+ #if AARCH == 32
+-	struct semaphore *event;
++	struct sem *event;
+ #else
+ 	unsigned event;		/* Must be 32 bit */
+ #endif
+@@ -320,8 +320,8 @@ typedef struct vchiq_service_struct {
+ 	VCHIQ_BULK_QUEUE_T bulk_tx;
+ 	VCHIQ_BULK_QUEUE_T bulk_rx;
+ 
+-	struct semaphore remove_event;
+-	struct semaphore bulk_remove_event;
++	struct sem remove_event;
++	struct sem bulk_remove_event;
+ 	struct mutex bulk_mutex;
+ 
+ 	struct service_stats_struct {
+@@ -350,7 +350,7 @@ typedef struct vchiq_service_quota_struct {
+ 	unsigned short slot_use_count;
+ 	unsigned short message_quota;
+ 	unsigned short message_use_count;
+-	struct semaphore quota_event;
++	struct sem quota_event;
+ 	int previous_tx_index;
+ } VCHIQ_SERVICE_QUOTA_T;
+ 
+@@ -424,32 +424,32 @@ struct vchiq_state_struct {
+ 	unsigned short default_message_quota;
+ 
+ 	/* Event indicating connect message received */
+-	struct semaphore connect;
++	struct sem connect;
+ 
+ 	/* Mutex protecting services */
+ 	struct mutex mutex;
+ 	VCHIQ_INSTANCE_T *instance;
+ 
+ 	/* Processes incoming messages */
+-	struct task_struct *slot_handler_thread;
++	struct thread *slot_handler_thread;
+ 
+ 	/* Processes recycled slots */
+-	struct task_struct *recycle_thread;
++	struct thread *recycle_thread;
+ 
+ 	/* Processes synchronous messages */
+-	struct task_struct *sync_thread;
++	struct thread *sync_thread;
+ 
+ 	/* Local implementation of the trigger remote event */
+-	struct semaphore trigger_event;
++	struct sem trigger_event;
+ 
+ 	/* Local implementation of the recycle remote event */
+-	struct semaphore recycle_event;
++	struct sem recycle_event;
+ 
+ 	/* Local implementation of the sync trigger remote event */
+-	struct semaphore sync_trigger_event;
++	struct sem sync_trigger_event;
+ 
+ 	/* Local implementation of the sync release remote event */
+-	struct semaphore sync_release_event;
++	struct sem sync_release_event;
+ 
+ 	char *tx_data;
+ 	char *rx_data;
+@@ -495,12 +495,12 @@ struct vchiq_state_struct {
+ 	int unused_service;
+ 
+ 	/* Signalled when a free slot becomes available. */
+-	struct semaphore slot_available_event;
++	struct sem slot_available_event;
+ 
+-	struct semaphore slot_remove_event;
++	struct sem slot_remove_event;
+ 
+ 	/* Signalled when a free data slot becomes available. */
+-	struct semaphore data_quota_event;
++	struct sem data_quota_event;
+ 
+ 	/* Incremented when there are bulk transfers which cannot be processed
+ 	 * whilst paused and must be processed on resume */
+@@ -523,7 +523,7 @@ struct vchiq_state_struct {
+ 
+ struct bulk_waiter {
+ 	VCHIQ_BULK_T *bulk;
+-	struct semaphore event;
++	struct sem event;
+ 	int actual;
+ };
+ 
+diff --git circle/addon/vc4/vchiq/vchiq_kern_lib.c circle/addon/vc4/vchiq/vchiq_kern_lib.c
+index b8f1b9b..e9e8ec0 100644
+--- circle/addon/vc4/vchiq/vchiq_kern_lib.c
++++ circle/addon/vc4/vchiq/vchiq_kern_lib.c
+@@ -35,8 +35,11 @@
+ 
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+-#include <linux/mutex.h>
++//#include <linux/mutex.h>
+ #include <linux/list.h>
++#include <linux/slab.h>
++#include <linux/pagemap.h>
++#include <kernel/thread.h>
+ 
+ #include "vchiq_core.h"
+ #include "vchiq_arm.h"
+@@ -86,7 +89,7 @@ VCHIQ_STATUS_T vchiq_initialise(VCHIQ_INSTANCE_T *instanceOut)
+ 		state = vchiq_get_state();
+ 		if (state)
+ 			break;
+-		udelay(500);
++		nanosleep((const struct timespec[]){{0, 500e3L}}, NULL);
+ 	}
+ 	if (i==VCHIQ_INIT_RETRIES) {
+ 		vchiq_log_error(vchiq_core_log_level,
+@@ -290,7 +293,7 @@ VCHIQ_STATUS_T vchiq_open_service(
+ 
+ 	if (service) {
+ 		*phandle = service->handle;
+-		status = vchiq_open_service_internal(service, current->pid);
++		status = vchiq_open_service_internal(service, thread_self()->id);
+ 		if (status != VCHIQ_SUCCESS) {
+ 			vchiq_remove_service(service->handle);
+ 			*phandle = VCHIQ_SERVICE_HANDLE_INVALID;
+@@ -396,7 +399,7 @@ vchiq_blocking_bulk_transfer(VCHIQ_SERVICE_HANDLE_T handle, void *data,
+ 	mutex_lock(&instance->bulk_waiter_list_mutex);
+ 	list_for_each(pos, &instance->bulk_waiter_list) {
+ 		if (list_entry(pos, struct bulk_waiter_node,
+-				list)->pid == current->pid) {
++				list)->pid == thread_self()->id) {
+ 			waiter = list_entry(pos,
+ 				struct bulk_waiter_node,
+ 				list);
+@@ -434,7 +437,7 @@ vchiq_blocking_bulk_transfer(VCHIQ_SERVICE_HANDLE_T handle, void *data,
+ 	status = vchiq_bulk_transfer(handle, VCHI_MEM_HANDLE_INVALID,
+ 		data, size, &waiter->bulk_waiter, VCHIQ_BULK_MODE_BLOCKING,
+ 		dir);
+-	if ((status != VCHIQ_RETRY) || fatal_signal_pending(current) ||
++	if ((status != VCHIQ_RETRY) || fatal_signal_pending(thread_self()) ||
+ 		!waiter->bulk_waiter.bulk) {
+ 		VCHIQ_BULK_T *bulk = waiter->bulk_waiter.bulk;
+ 		if (bulk) {
+@@ -446,13 +449,13 @@ vchiq_blocking_bulk_transfer(VCHIQ_SERVICE_HANDLE_T handle, void *data,
+ 		}
+ 		kfree(waiter);
+ 	} else {
+-		waiter->pid = current->pid;
++		waiter->pid = thread_self()->id;
+ 		mutex_lock(&instance->bulk_waiter_list_mutex);
+ 		list_add(&waiter->list, &instance->bulk_waiter_list);
+ 		mutex_unlock(&instance->bulk_waiter_list_mutex);
+ 		vchiq_log_info(vchiq_arm_log_level,
+ 				"saved bulk_waiter %x for pid %d",
+-				(unsigned int)(uintptr_t)waiter, current->pid);
++				(unsigned int)(uintptr_t)waiter, thread_self()->id);
+ 	}
+ 
+ 	return status;
+diff --git circle/addon/vc4/vchiq/vchiq_killable.h circle/addon/vc4/vchiq/vchiq_killable.h
+index a7661a9..e568459 100644
+--- circle/addon/vc4/vchiq/vchiq_killable.h
++++ circle/addon/vc4/vchiq/vchiq_killable.h
+@@ -34,13 +34,13 @@
+ #ifndef VCHIQ_KILLABLE_H
+ #define VCHIQ_KILLABLE_H
+ 
+-#include <linux/mutex.h>
+-#include <linux/semaphore.h>
++#include <kernel/thread/sync/mutex.h>
++#include <kernel/thread/sync/semaphore.h>
+ #include <linux/compiler.h>
+ 
+ #define SHUTDOWN_SIGS   (sigmask(SIGKILL) | sigmask(SIGINT) | sigmask(SIGQUIT) | sigmask(SIGTRAP) | sigmask(SIGSTOP) | sigmask(SIGCONT))
+ 
+-static inline int __must_check down_interruptible_killable(struct semaphore *sem)
++static inline int __must_check down_interruptible_killable(struct sem *sem)
+ {
+ #ifndef __circle__
+ 	/* Allow interception of killable signals only. We don't want to be interrupted by harmless signals like SIGALRM */
+@@ -48,11 +48,11 @@ static inline int __must_check down_interruptible_killable(struct semaphore *sem
+ 	sigset_t blocked, oldset;
+ 	siginitsetinv(&blocked, SHUTDOWN_SIGS);
+ 	sigprocmask(SIG_SETMASK, &blocked, &oldset);
+-	ret = down_interruptible(sem);
++	ret = semaphore_wait(sem);
+ 	sigprocmask(SIG_SETMASK, &oldset, NULL);
+ 	return ret;
+ #else
+-	down(sem);
++	semaphore_wait(sem);
+ 	return 0;
+ #endif
+ }
+diff --git circle/addon/vc4/vchiq/vchiq_shim.c circle/addon/vc4/vchiq/vchiq_shim.c
+index 9583e22..c379f93 100644
+--- circle/addon/vc4/vchiq/vchiq_shim.c
++++ circle/addon/vc4/vchiq/vchiq_shim.c
+@@ -32,6 +32,9 @@
+  */
+ #include <linux/module.h>
+ #include <linux/types.h>
++#include <linux/bug.h>
++#include <linux/slab.h>
++#include <linux/pagemap.h>
+ 
+ #ifndef __circle__
+ #include "interface/vchi/vchi.h"
+@@ -51,6 +54,8 @@
+ 
+ #define vchiq_status_to_vchi(status) ((int32_t)status)
+ 
++void __warn (const char *file, const int line) {}
++
+ typedef struct {
+ 	VCHIQ_SERVICE_HANDLE_T handle;
+ 
+@@ -187,7 +192,8 @@ int32_t vchi_msg_queue(VCHI_SERVICE_HANDLE_T handle,
+ 	** to block until queued
+ 	*/
+ 	while (status == VCHIQ_RETRY) {
+-		msleep(1);
++		nanosleep((const struct timespec[]){{0, 1E3L}}, NULL);
++
+ 		status = vchiq_queue_message(service->handle, &element, 1);
+ 	}
+ 
+@@ -245,7 +251,7 @@ int32_t vchi_bulk_queue_receive(VCHI_SERVICE_HANDLE_T handle,
+ 	** to block until queued
+ 	*/
+ 	while (status == VCHIQ_RETRY) {
+-		msleep(1);
++		nanosleep((const struct timespec[]){{0, 1E3L}}, NULL);
+ 		status = vchiq_bulk_receive(service->handle, data_dst,
+ 			data_size, bulk_handle, mode);
+ 	}
+@@ -305,7 +311,7 @@ int32_t vchi_bulk_queue_transmit(VCHI_SERVICE_HANDLE_T handle,
+ 	** to block until queued
+ 	*/
+ 	while (status == VCHIQ_RETRY) {
+-		msleep(1);
++		nanosleep((const struct timespec[]){{0, 1E3L}}, NULL);
+ 		status = vchiq_bulk_transmit(service->handle, data_src,
+ 			data_size, bulk_handle, mode);
+ 	}
+diff --git circle/addon/vc4/vchiq/vchiq_util.c circle/addon/vc4/vchiq/vchiq_util.c
+index c2b4df0..5025fb1 100644
+--- circle/addon/vc4/vchiq/vchiq_util.c
++++ circle/addon/vc4/vchiq/vchiq_util.c
+@@ -31,8 +31,10 @@
+  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  */
+ 
+-#include <linux/barrier.h>
+ #include <linux/bug.h>
++#include <linux/pagemap.h>
++#include <linux/slab.h>
++#include <linux/barrier.h>
+ 
+ #include "vchiq_util.h"
+ #include "vchiq_killable.h"
+@@ -51,8 +53,8 @@ int vchiu_queue_init(VCHIU_QUEUE_T *queue, int size)
+ 	queue->write = 0;
+ 	queue->initialized = 1;
+ 
+-	sema_init(&queue->pop, 0);
+-	sema_init(&queue->push, 0);
++	semaphore_init(&queue->pop, 0);
++	semaphore_init(&queue->push, 0);
+ 
+ 	queue->storage = kzalloc(size * sizeof(VCHIQ_HEADER_T *), GFP_KERNEL);
+ 	if (queue->storage == NULL) {
+@@ -84,9 +86,12 @@ void vchiu_queue_push(VCHIU_QUEUE_T *queue, VCHIQ_HEADER_T *header)
+ 		return;
+ 
+ 	while (queue->write == queue->read + queue->size) {
+-		if (down_interruptible(&queue->pop) != 0) {
++		semaphore_wait(&queue->pop);
++		#if 0
++		if (semaphore_wait(&queue->pop) != 0) {
+ 			flush_signals(current);
+ 		}
++		#endif
+ 	}
+ 
+ 	/*
+@@ -105,18 +110,21 @@ void vchiu_queue_push(VCHIU_QUEUE_T *queue, VCHIQ_HEADER_T *header)
+ 
+ 	queue->write++;
+ 
+-	up(&queue->push);
++	semaphore_post(&queue->push);
+ }
+ 
+ VCHIQ_HEADER_T *vchiu_queue_peek(VCHIU_QUEUE_T *queue)
+ {
+ 	while (queue->write == queue->read) {
+-		if (down_interruptible(&queue->push) != 0) {
++		semaphore_wait(&queue->push);
++		#if 0
++		if (semaphore_wait(&queue->push) != 0) {
+ 			flush_signals(current);
+ 		}
++		#endif
+ 	}
+ 
+-	up(&queue->push); // We haven't removed anything from the queue.
++	semaphore_post(&queue->push); // We haven't removed anything from the queue.
+ 
+ 	/*
+ 	 * Read from queue->storage must be visible after read from
+@@ -133,7 +141,7 @@ VCHIQ_HEADER_T *vchiu_queue_pop(VCHIU_QUEUE_T *queue)
+ 
+ 	while (queue->write == queue->read) {
+ 		if (down_interruptible(&queue->push) != 0) {
+-			flush_signals(current);
++			//flush_signals(current);
+ 		}
+ 	}
+ 
+@@ -153,7 +161,7 @@ VCHIQ_HEADER_T *vchiu_queue_pop(VCHIU_QUEUE_T *queue)
+ 
+ 	queue->read++;
+ 
+-	up(&queue->pop);
++	semaphore_post(&queue->pop);
+ 
+ 	return header;
+ }
+diff --git circle/addon/vc4/vchiq/vchiq_util.h circle/addon/vc4/vchiq/vchiq_util.h
+index ec11b12..7bf29c3 100644
+--- circle/addon/vc4/vchiq/vchiq_util.h
++++ circle/addon/vc4/vchiq/vchiq_util.h
+@@ -35,17 +35,17 @@
+ #define VCHIQ_UTIL_H
+ 
+ #include <linux/types.h>
+-#include <linux/semaphore.h>
+-#include <linux/mutex.h>
++#include <kernel/thread/sync/semaphore.h>
++//#include <linux/mutex.h>
+ #include <linux/kthread.h>
+-#include <linux/jiffies.h>
++//#include <linux/jiffies.h>
+ #include <linux/delay.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
+-#include <linux/interrupt.h>
++#include <kernel/irq.h>
+ #include <linux/sched.h>
+ #include <linux/uaccess.h>
+-#include <linux/slab.h>
++//#include <linux/slab.h>
+ #ifndef __circle__
+ #include <linux/bitops.h>
+ #include <linux/wait.h>
+@@ -63,8 +63,8 @@ typedef struct {
+ 	int write;
+ 	int initialized;
+ 
+-	struct semaphore pop;
+-	struct semaphore push;
++	struct sem pop;
++	struct sem push;
+ 
+ 	VCHIQ_HEADER_T **storage;
+ } VCHIU_QUEUE_T;
+diff --git circle/addon/vc4/vchiq/vchiqdevice.cpp circle/addon/vc4/vchiq/vchiqdevice.cpp
+index 0af56e1..3955e26 100644
+--- circle/addon/vc4/vchiq/vchiqdevice.cpp
++++ circle/addon/vc4/vchiq/vchiqdevice.cpp
+@@ -1,13 +1,28 @@
+ //
+ // vchiqdevice.cpp
+ //
+-#include <vc4/vchiq/vchiqdevice.h>
++#include <circle/sysconfig.h>
+ #include <circle/bcm2835.h>
+ #include <circle/bcm2835int.h>
+-#include <circle/sysconfig.h>
++//#include <circle/memory.h>
++#include <circle/interrupt.h>
++#include <circle/timer.h>
++#include <vc4/vchiq/vchiqdevice.h>
++
++#include <embox/unit.h>
+ 
+ extern "C" int vchiq_probe (struct platform_device *pdev);
+ 
++CTimer *m_Timer;
++CVCHIQDevice *m_VCHIQ;
++
++static int CVCHIQDevice_init(void) {
++	static CInterruptSystem m_Interrupt;
++	m_Timer = new CTimer(&m_Interrupt);
++	m_VCHIQ = new CVCHIQDevice(CMemorySystem::Get (), &m_Interrupt);
++	return 0;
++}
++
+ CVCHIQDevice::CVCHIQDevice (CMemorySystem *pMemory, CInterruptSystem *pInterrupt)
+ :	CLinuxDevice (pMemory, pInterrupt, vchiq_probe)
+ {
+@@ -17,3 +32,5 @@ CVCHIQDevice::CVCHIQDevice (CMemorySystem *pMemory, CInterruptSystem *pInterrupt
+ 	SetDMAMemory (pMemory->GetCoherentPage (COHERENT_SLOT_VCHIQ_START),
+ 		      pMemory->GetCoherentPage (COHERENT_SLOT_VCHIQ_END) + PAGE_SIZE-1);
+ }
++
++EMBOX_UNIT_INIT(CVCHIQDevice_init);
+diff --git circle/include/circle/interrupt.h circle/include/circle/interrupt.h
+index 70b8b96..7463656 100644
+--- circle/include/circle/interrupt.h
++++ circle/include/circle/interrupt.h
+@@ -20,6 +20,7 @@
+ #ifndef _circle_interrupt_h
+ #define _circle_interrupt_h
+ 
++#include <circle/sysconfig.h>
+ #include <circle/bcm2835int.h>
+ #include <circle/exceptionstub.h>
+ #include <circle/types.h>
+diff --git circle/include/circle/macros.h circle/include/circle/macros.h
+index a1cc3ac..c4614c9 100644
+--- circle/include/circle/macros.h
++++ circle/include/circle/macros.h
+@@ -28,8 +28,8 @@
+ #define MAXOPT		__attribute__ ((optimize (3)))
+ #define WEAK		__attribute__ ((weak))
+ 
+-#define likely(exp)	__builtin_expect (!!(exp), 1)
+-#define unlikely(exp)	__builtin_expect (!!(exp), 0)
++//#define likely(exp)	__builtin_expect (!!(exp), 1)
++//#define unlikely(exp)	__builtin_expect (!!(exp), 0)
+ 
+ #define BIT(n)		(1U << (n))
+ 
+diff --git circle/include/circle/synchronize.h circle/include/circle/synchronize.h
+index 917e550..b6b3cde 100644
+--- circle/include/circle/synchronize.h
++++ circle/include/circle/synchronize.h
+@@ -20,6 +20,9 @@
+ #ifndef _circle_synchronize_h
+ #define _circle_synchronize_h
+ 
++#include <circle/sysconfig.h>
++#include <kernel/irq_lock.h>
++
+ #if AARCH == 64
+ 	#include <circle/synchronize64.h>
+ #else
+@@ -43,13 +46,13 @@ unsigned CurrentExecutionLevel (void);
+ //
+ // Interrupt control
+ //
+-#define	EnableIRQs()		asm volatile ("cpsie i")
+-#define	DisableIRQs()		asm volatile ("cpsid i")
++#define	EnableIRQs()		irq_unlock()
++#define	DisableIRQs()		irq_lock()
+ #define	EnableInterrupts()	EnableIRQs()			// deprecated
+ #define	DisableInterrupts()	DisableIRQs()			// deprecated
+ 
+-#define	EnableFIQs()		asm volatile ("cpsie f")
+-#define	DisableFIQs()		asm volatile ("cpsid f")
++#define	EnableFIQs()		EnableIRQs()
++#define	DisableFIQs()		DisableIRQs()
+ 
+ // EnterCritical() can be nested with same or increasing nTargetLevel
+ void EnterCritical (unsigned nTargetLevel = IRQ_LEVEL);
+diff --git circle/include/circle/sysconfig.h circle/include/circle/sysconfig.h
+index 0e9e6df..802f37e 100644
+--- circle/include/circle/sysconfig.h
++++ circle/include/circle/sysconfig.h
+@@ -22,6 +22,15 @@
+ #ifndef _circle_sysconfig_h
+ #define _circle_sysconfig_h
+ 
++#include <embox/unit.h>
++#define RASPPI OPTION_GET(NUMBER,pi)
++#define AARCH OPTION_GET(NUMBER,aarch)
++
++#ifdef PAGE_SIZE
++#undef PAGE_SIZE
++#endif
++#define PAGE_SIZE (1<<12)
++
+ ///////////////////////////////////////////////////////////////////////
+ //
+ // Memory
+@@ -365,6 +374,6 @@
+ 
+ ///////////////////////////////////////////////////////////////////////
+ 
+-#include <circle/memorymap.h>
++//#include <circle/memorymap.h>
+ 
+ #endif
+diff --git circle/include/circle/types.h circle/include/circle/types.h
+index 6548f99..728f577 100644
+--- circle/include/circle/types.h
++++ circle/include/circle/types.h
+@@ -21,6 +21,7 @@
+ #define _circle_types_h
+ 
+ #include <assert.h>
++#include <circle/sysconfig.h>
+ 
+ typedef unsigned char		u8;
+ typedef unsigned short		u16;
+diff --git circle/lib/synchronize.cpp circle/lib/synchronize.cpp
+index f30f05c..d3e833f 100644
+--- circle/lib/synchronize.cpp
++++ circle/lib/synchronize.cpp
+@@ -47,6 +47,7 @@ unsigned CurrentExecutionLevel (void)
+ static volatile unsigned s_nCriticalLevel[CORES] = {0};
+ static volatile u32 s_nCPSR[CORES][MAX_CRITICAL_LEVEL];
+ 
++#if 0
+ void EnterCritical (unsigned nTargetLevel)
+ {
+ 	assert (nTargetLevel == IRQ_LEVEL || nTargetLevel == FIQ_LEVEL);
+@@ -89,12 +90,13 @@ void LeaveCritical (void)
+ 
+ 	asm volatile ("msr cpsr_c, %0" :: "r" (nCPSR));
+ }
+-
++#endif
+ #else
+ 
+ static volatile unsigned s_nCriticalLevel = 0;
+ static volatile u32 s_nCPSR[MAX_CRITICAL_LEVEL];
+ 
++#if 0
+ void EnterCritical (unsigned nTargetLevel)
+ {
+ 	assert (nTargetLevel == IRQ_LEVEL || nTargetLevel == FIQ_LEVEL);
+@@ -129,6 +131,7 @@ void LeaveCritical (void)
+ 
+ 	asm volatile ("msr cpsr_c, %0" :: "r" (nCPSR));
+ }
++#endif
+ 
+ #endif
+ 

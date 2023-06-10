@@ -62,4 +62,10 @@ __END_DECLS
 	_Static_assert(cond, msg)
 #endif /* !__cplusplus */
 
+#ifndef __cplusplus
+	#define ASSERT_STATIC(expr)	extern int assert_static[(expr) ? 1 : -1]
+#else
+	#define ASSERT_STATIC(expr)	static_assert (expr)
+#endif
+
 #endif /* ASSERT_H_ */

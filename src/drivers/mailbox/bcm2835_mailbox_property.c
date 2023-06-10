@@ -31,7 +31,7 @@ void bcm2835_property_init( void )
     pt_index = 2;
 
     /* NULL tag to terminate tag list */
-    pt[pt_index] = 0;
+    pt[pt_index] = TAG_PROPERTY_END;
 }
 
 /**
@@ -55,9 +55,10 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_GET_ARM_MEMORY:
         case TAG_GET_VC_MEMORY:
         case TAG_GET_DMA_CHANNELS:
+        case TAG_VCHIQ_INIT:
             /* Provide an 8-byte buffer for the response */
             pt[pt_index++] = 8;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt_index += 2;
             break;
 
@@ -65,13 +66,13 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_GET_COMMAND_LINE:
             /* Provide a 256-byte buffer */
             pt[pt_index++] = 256;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt_index += 256 >> 2;
             break;
 
         case TAG_GET_EDID_BLOCK:
             pt[pt_index++] = 136;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt[pt_index++] = va_arg( vl, int );
             pt_index += (136 - sizeof(uint32_t));
             break;
@@ -94,7 +95,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_RELEASE_MEMORY:
         case TAG_GET_DISPMANX_MEM_HANDLE:
             pt[pt_index++] = 8;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt[pt_index++] = va_arg( vl, int );
             pt[pt_index++] = 0;
             break;
@@ -102,7 +103,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_SET_CLOCK_RATE:
         case TAG_ALLOCATE_MEMORY:
             pt[pt_index++] = 12;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt[pt_index++] = va_arg( vl, int ); /* Clock ID / size */
             pt[pt_index++] = va_arg( vl, int ); /* Rate (in Hz) / alignment */
             pt[pt_index++] = va_arg( vl, int ); /* Skip turbo setting if == 1 / flags */
@@ -110,7 +111,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
 
         case TAG_EXECUTE_CODE:
             pt[pt_index++] = 28;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt[pt_index++] = va_arg( vl, int ); /* function pointer */
             pt[pt_index++] = va_arg( vl, int ); /* r0 */
             pt[pt_index++] = va_arg( vl, int ); /* r1 */
@@ -122,7 +123,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
 
         case TAG_SET_CURSOR_INFO:
             pt[pt_index++] = 24;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt[pt_index++] = va_arg( vl, int ); /* width */
             pt[pt_index++] = va_arg( vl, int ); /* height */
             pt[pt_index++] = va_arg( vl, int ); /* (unused) */
@@ -133,7 +134,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
     
         case TAG_SET_CURSOR_STATE:
             pt[pt_index++] = 16;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             pt[pt_index++] = va_arg( vl, int ); /* enable */
             pt[pt_index++] = va_arg( vl, int ); /* x */
             pt[pt_index++] = va_arg( vl, int ); /* y */
@@ -153,7 +154,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_SET_TURBO:
         case TAG_SET_VOLTAGE:
             pt[pt_index++] = 8;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
 
             if( ( tag == TAG_SET_PHYSICAL_SIZE ) ||
                 ( tag == TAG_SET_VIRTUAL_SIZE ) ||
@@ -183,7 +184,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_GET_PITCH:
         case TAG_BLANK_SCREEN:
             pt[pt_index++] = 4;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
 
             if( ( tag == TAG_SET_DEPTH ) ||
                 ( tag == TAG_SET_PIXEL_ORDER ) ||
@@ -202,7 +203,7 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
         case TAG_GET_OVERSCAN:
         case TAG_SET_OVERSCAN:
             pt[pt_index++] = 16;
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
 
             if( ( tag == TAG_SET_OVERSCAN ) )
             {
@@ -219,17 +220,46 @@ void bcm2835_property_add_tag( bcm2835_mailbox_tag_t tag, ... )
 
         case TAG_RELEASE_BUFFER:
             pt[pt_index++] = 0; /* no arguments */
-            pt[pt_index++] = 0; /* Request */
+            pt[pt_index++] = TAG_PROPERTY_END; /* Request */
             break;
 
         default:
             /* Unsupported tags, just remove the tag from the list */
+            /* TODO: Following message structures are unknown.  Add in this structure
+                     to use.
+
+                TAG_GET_STC = 0x3000B,
+                TAG_GET_CUSTOMER_OTP = 0x30021,
+                TAG_SET_CUSTOMER_OTP = 0x38021,
+                TAG_GET_DOMAIN_STATE = 0x30030,
+                TAG_SET_DOMAIN_STATE = 0x38030,
+                TAG_GET_GPIO_STATE = 0x30041,
+                TAG_SET_GPIO_STATE = 0x38041,
+                TAG_GET_THROTTLED = 0x30046,
+                TAG_GET_CLOCK_MEASURED = 0x30047,
+                TAG_NOTIFY_REBOOT = 0x30048,
+                TAG_SET_SDHOST_CLOCK = 0x38042,
+                TAG_GET_GPIO_CONFIG = 0x30043,
+                TAG_SET_GPIO_CONFIG = 0x38043,
+                TAG_GET_PERIPH_REG = 0x30045,
+                TAG_SET_PERIPH_REG = 0x38045,
+                TAG_GET_POE_HAT_VAL = 0x30049,
+                TAG_SET_POE_HAT_VAL = 0x30050,
+                TAG_NOTIFY_XHCI_RESET = 0x30058,
+                TAG_GET_TOUCHBUF = 0x4000f,
+                TAG_SET_BACKLIGHT = 0x4800f,
+                TAG_SET_TOUCHBUF = 0x4801f,
+                TAG_GET_GPIOVIRTBUF = 0x40010,
+                TAG_SET_GPIOVIRTBUF = 0x48020,
+                TAG_TEST_VSYNC = 0x4400e,
+                TAG_SET_VSYNC = 0x4800e,
+            */
             pt_index--;
             break;
     }
 
     /* Make sure the tags are 0 terminated to end the list and update the buffer size */
-    pt[pt_index] = 0;
+    pt[pt_index] = TAG_PROPERTY_END;
 
     va_end( vl );
 }
@@ -240,7 +270,7 @@ int bcm2835_property_process( void )
 
     /* Fill in the size of the buffer */
     pt[PT_OSIZE] = ( pt_index + 1 ) << 2;
-    pt[PT_OREQUEST_OR_RESPONSE] = 0;
+    pt[PT_OREQUEST_OR_RESPONSE] = TAG_PROPERTY_END;
 
     bcm2835_mailbox_write((unsigned int)pt, BCM2835_TAGS_ARM_TO_VC);
     
@@ -252,7 +282,7 @@ int bcm2835_property_process( void )
 bcm2835_mailbox_property_t* bcm2835_property_get( bcm2835_mailbox_tag_t tag )
 {
     static bcm2835_mailbox_property_t property;
-    int* tag_buffer = 0;
+    int* tag_buffer = TAG_PROPERTY_END;
 
     property.tag = tag;
 
@@ -273,7 +303,7 @@ bcm2835_mailbox_property_t* bcm2835_property_get( bcm2835_mailbox_tag_t tag )
     }
 
     /* Return NULL of the property tag cannot be found in the buffer */
-    if( tag_buffer == 0 )
+    if( tag_buffer == TAG_PROPERTY_END )
         return 0;
 
     /* Return the required data */
@@ -290,12 +320,12 @@ void bcm2835_property_value32(bcm2835_mailbox_tag_t *props, uint32_t *value32) {
     bcm2835_mailbox_property_t *resp;
 
     bcm2835_property_init();
-    for(int i = 0; props[i] != 0x0; i++) {
+    for(int i = 0; props[i] != TAG_PROPERTY_END; i++) {
         bcm2835_property_add_tag( props[i] );
 
     }
     bcm2835_property_process();
-    for(int i = 0; props[i] != 0x0; i++) {
+    for(int i = 0; props[i] != TAG_PROPERTY_END; i++) {
         resp = bcm2835_property_get( props[i] );
         value32[i] = resp->data.value_32;
     }
