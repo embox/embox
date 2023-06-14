@@ -101,6 +101,7 @@ extern const struct idesc_ops spi_iops;
 	struct spi_device MACRO_CONCAT(spi_device, idx) = { \
 		.spi_ops = spi_dev_ops, \
 		.priv    = dev_priv, \
+		.flags   =0, \
 	}; \
 	CHAR_DEV_DEF(dev_name, NULL, NULL, &spi_iops, &MACRO_CONCAT(spi_device, idx)) \
 
