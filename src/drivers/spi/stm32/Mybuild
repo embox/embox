@@ -48,6 +48,10 @@ module stm32_spi2 {
 @BuildDepends(stm32_cube)
 module stm32_spi3 {
 	option number log_level=1
+	option number datasize=8
+	option number baudrateprescaler=16
+	option number pullup=1
+
 	source "stm32_spi3.c"
 }
 

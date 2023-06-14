@@ -15,9 +15,6 @@
 #include <kernel/irq.h>
 #include <util/log.h>
 
-#include <drivers/gpio/gpio.h>
-#include <drivers/gpio/gpio_driver.h>
-
 static int stm32_spi_setup(struct stm32_spi *dev, void *instance, bool is_master) {
 	SPI_HandleTypeDef *handle = &dev->handle;
 
