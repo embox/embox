@@ -89,7 +89,7 @@ struct spi_conf spis[] = {
 				PIN("SCK",  PC, PIN_10, AF6),
 				PIN("MISO", PC, PIN_11, AF6),
 				PIN("MOSI", PC, PIN_12, AF6),
-				PIN("CS",   PE, PIN_1, NOAF),	// for WiFi module
+				PIN("CS",   PE, PIN_0, NOAF),	// for WiFi module
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOC),
