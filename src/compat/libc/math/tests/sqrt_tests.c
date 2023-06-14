@@ -21,3 +21,18 @@ TEST_CASE("Test for sqrt(4.0)") {
 	test_assert(sqrt(4.0) == 2.0);
 }
 
+TEST_CASE("Test for sqrt(0.0)") {
+	test_assert(sqrt(0.0) == 0.0);
+}
+
+TEST_CASE("Test for sqrt(+INFINITY)") {
+	test_assert(isinf(sqrt(INFINITY)));
+}
+
+TEST_CASE("Test for sqrt(NaN)") {
+	test_assert(isnan(sqrt(NAN)));
+}
+
+TEST_CASE("Test for sqrt(-0.0)") {
+	test_assert(sqrt(-0.0) == -0.0);
+}
