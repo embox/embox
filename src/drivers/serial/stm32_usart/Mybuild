@@ -43,11 +43,11 @@ module stm_usart_f0 extends embox.driver.diag.diag_api {
 	depends embox.driver.serial.diag
 }
 
-module stm32_usart extends embox.driver.diag.diag_api {
+module stm32_usart_vl extends embox.driver.diag.diag_api {
 	option number baud_rate
 	/*option boolean hw_flow = false*/
 
-	source "stm32_usart.c"
+	source "stm32_usart_vl.c"
 
 	depends embox.driver.gpio.stm32
 	depends core
