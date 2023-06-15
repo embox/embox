@@ -10,6 +10,7 @@
 #include <string.h>
 
 #include <hal/reg.h>
+#include <kernel/irq.h>
 
 #include <drivers/serial/diag_serial.h>
 #include <drivers/serial/uart_dev.h>
