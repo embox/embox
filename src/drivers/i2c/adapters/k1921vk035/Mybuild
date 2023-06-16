@@ -1,0 +1,12 @@
+package embox.driver.i2c
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035 {
+	option number i2c_frequency=125000
+
+	source "k1921vk035_i2c.c"
+	source "I2C_driver/I2C_driver.c"
+
+	depends embox.driver.i2c
+    depends third_party.bsp.k1921vk_sdk.plib035
+}
