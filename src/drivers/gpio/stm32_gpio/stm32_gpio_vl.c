@@ -6,14 +6,14 @@
  * @date    07.04.2012
  */
 
+#include "stm32_gpio_vl.h"
+
 #include <assert.h>
 #include <stdint.h>
 
 #include <drivers/gpio/gpio_driver.h>
 
 #include <hal/reg.h>
-
-#include "stm32_gpio.h"
 
 #include <embox/unit.h>
 

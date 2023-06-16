@@ -1,37 +1,5 @@
 package embox.driver.gpio
 
-module stm32_gpio_l0x0 extends api {
-    option number log_level = 0
-    option number gpio_chip_id = 0
-    option number exti0_1_irq = 5
-    option number exti2_3_irq = 6
-    option number exti4_15_irq = 7
-
-    option number reg_rcc_address = 0x40021000
-
-    source "stm32_gpio_conf_l0x0.h"
-    source "stm32_gpio_common_struct.h"
-    source "stm32_gpio_l0x0.c"
-
-    depends embox.driver.gpio.core
-}
-
-module stm32_gpio_f0 extends api {
-	option number log_level = 0
-	option number gpio_chip_id = 0
-	option number exti0_1_irq = 5
-	option number exti2_3_irq = 6
-	option number exti4_15_irq = 7
-
-    option number reg_rcc_address = 0x40021000
-
-	source "stm32_gpio_conf_f0.h"
-	source "stm32_gpio_common_struct.h"
-	source "stm32_gpio_f0.c"
-
-	depends embox.driver.gpio.core
-}
-
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f1 extends api {
 	option number log_level = 0

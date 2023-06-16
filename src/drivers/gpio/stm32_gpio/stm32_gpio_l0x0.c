@@ -12,6 +12,8 @@
 #include <embox/unit.h>
 #include <util/array.h>
 
+#include <kernel/irq.h>
+
 #include <drivers/gpio/gpio_driver.h>
 
 #include "stm32_gpio_conf_l0x0.h"

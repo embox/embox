@@ -1,196 +1,55 @@
 package embox.driver.serial
 
 module stm_usart_l0x0 extends embox.driver.diag.diag_api {
-    option number baud_rate
-    option number usartx=2
-    
-    option number port_tx
-    option number port_rx
-    option number pin_tx
-    option number pin_rx
-    option number pin_tx_af
-    option number pin_rx_af
-    
-    option number usart2_irq=28
+	option number baud_rate
+	option number usartx=2
 
-    source "stm32_usart_conf_l0x0.h"
-    source "stm_usart_l0x0.c"
+	option number port_tx
+	option number port_rx
+	option number pin_tx
+	option number pin_rx
+	option number pin_tx_af
+	option number pin_rx_af
 
-    depends embox.driver.serial.core
-    depends embox.driver.serial.diag
+	option number usart2_irq=28
+
+	source "stm32_usart_conf_l0x0.h"
+	source "stm_usart_l0x0.c"
+
+	depends embox.driver.serial.core
+	depends embox.driver.serial.diag
 }
+
 
 module stm_usart_f0 extends embox.driver.diag.diag_api {
-    option number baud_rate
-    option number usartx=1
-    
-    option number port_tx
-    option number port_rx
-    option number pin_tx
-    option number pin_rx
-    option number pin_tx_af
-    option number pin_rx_af
-    
-    option number usart1_irq=27
-    option number usart2_irq=28
-    option number usart3_4_5_6_irq=29
-
-    source "stm32_usart_conf_f0.h"
-    source "stm_usart_f0.c"
-
-    depends embox.driver.serial.core
-    depends embox.driver.serial.diag
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm_usart_f1 extends embox.driver.diag.diag_api {
 	option number baud_rate
 	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
 
-	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
-	source "stm32_usart_conf_f1.h"
+	option number port_tx
+	option number port_rx
+	option number pin_tx
+	option number pin_rx
+	option number pin_tx_af
+	option number pin_rx_af
 
-	source "stm_hal_msp.c"
-	source "stm_diag.c"
-	source "stm_usart.c"
+	option number usart1_irq=27
+	option number usart2_irq=28
+	option number usart3_4_5_6_irq=29
 
-	//depends embox.driver.char_dev
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm_usart_f3 extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-
-	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
-	source "stm32_usart_conf_f3.h"
-
-	source "stm_hal_msp.c"
-	source "stm_diag.c"
-	source "stm_usart.c"
-
-	depends embox.driver.char_dev
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm_usart_f4 extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number usartx=6
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-	option number usart6_irq=71
-	option number uart8_irq=83
-
-	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
-	source "stm32_usart_conf_f4.h"
-
-	source "stm_hal_msp.c"
-	source "stm_diag.c"
-	source "stm_usart.c"
-
-	depends embox.driver.char_dev
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm_usart_f7 extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-	option number usart6_irq=71
-
-	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
-	source "stm32_usart_conf_f7.h"
-
-	source "stm_hal_msp.c"
-	source "stm_diag.c"
-	source "stm_usart.c"
+	source "stm32_usart_conf_f0.h"
+	source "stm_usart_f0.c"
 
 	depends embox.driver.serial.core
 	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_bsp_api
 }
 
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm_usart_h7 extends embox.driver.diag.diag_api {
+module stm32_usart_vl extends embox.driver.diag.diag_api {
 	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-	option number usart6_irq=71
+	/*option boolean hw_flow = false*/
 
-	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
-	source "stm32_usart_conf_h7.h"
+	source "stm32_usart_vl.c"
 
-	source "stm_hal_msp.c"
-	source "stm_diag.c"
-	source "stm_usart.c"
-
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm_usart_l4 extends embox.driver.diag.diag_api {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-
-	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
-	source "stm32_usart_conf_l4.h"
-
-	source "stm_hal_msp.c"
-	source "stm_diag.c"
-	source "stm_usart.c"
-
-	depends embox.driver.char_dev
-	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
-
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(embox.driver.diag.diag_api)
-module stm_ttyS0 {
-	option number baud_rate
-	option number usartx=6
-
-	source "stm_ttyS0.c"
-
-	depends embox.driver.diag.diag_api
-}
-
-@BuildDepends(embox.driver.diag.diag_api)
-module stm_ttyS1 {
-	option number baud_rate
-	option number usartx=6
-
-	source "stm_ttyS1.c"
-
-	depends embox.driver.diag.diag_api
+	depends embox.driver.gpio.stm32_vl
+	depends core
+	depends diag
 }

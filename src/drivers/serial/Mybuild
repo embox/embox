@@ -39,17 +39,6 @@ module at91_uart extends embox.driver.diag.diag_api {
 	source "at91_uart.c"
 }
 
-module stm32_usart extends embox.driver.diag.diag_api {
-	option number baud_rate
-	/*option boolean hw_flow = false*/
-
-	source "stm32_usart.c"
-
-	depends embox.driver.gpio.stm32
-	depends core
-	depends diag
-}
-
 module mspdebug_console extends embox.driver.diag.diag_api {
 	source "mspdebug_simio.c"
 }
