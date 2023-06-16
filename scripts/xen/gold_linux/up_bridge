@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# dom0: up bridge xenbr0  
+sudo ip link add name xenbr0 type bridge
+sudo ip addr add dev xenbr0 192.168.2.1/24
+sudo ip link set xenbr0 up
+bridge link
+
+# Enable routing
+sudo sh -c 'echo "1" > /proc/sys/net/ipv4/ip_forward'
+
+# Configuring NAT
+# TODO change hardcoded '10.0.2.15' to eth0 ip address
+sudo iptables -t nat -A POSTROUTING ! -d 192.168.2.0/24 -o eth0 -j SNAT --to-source 10.0.2.15
+

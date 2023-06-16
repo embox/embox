@@ -3,6 +3,10 @@
 
 #include <barrier.h>
 #include <traps.h>
+#include <xen/event.h>
+#include <kernel/printk.h>
+// headers below have xen_ prefix added to name 
+#include <xen_barrier.h>
 
 #if defined(__i386__)
 #include <xen_hypercall-x86_32.h>
@@ -111,6 +115,10 @@ void do_hypervisor_callback(struct pt_regs *regs)
 			/* Combine the two offsets to get the port */
 			evtchn_port_t port = (pending_selector << 5) + event_offset;
 			/* Handler the event */
+			if(port==8 || port == 9)
+			{
+				//printk(">>>>>IRQ=%u from {8, 9} is called\n", port);
+			}
 			handle(port);
 		}
 	}

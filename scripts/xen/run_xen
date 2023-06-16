@@ -10,6 +10,7 @@ ROOD_DIR="$DIR/../../"
 SRC_DOMCONFIG="$DIR/embox.cfg"
 DOMCONFIG="/tmp/xen_embox.cfg"
 
+
 # copy image to well-known location, hardcoded in xen embox.cfg
 cp $ROOD_DIR/build/base/bin/embox /tmp/xen_embox
 # copy config to well-accessable location, avoid problems with sshfs and sudo

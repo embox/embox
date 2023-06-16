@@ -1,0 +1,16 @@
+package embox.driver.net
+
+module xen {
+	source "xen_net.c",
+			"netfront.c",
+			"xs_info.c"
+
+
+	depends embox.arch.xen.xenstore
+	depends embox.net.l2.ethernet
+	depends embox.net.core
+	depends embox.compat.libc.str_dup
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.arch.xen.xen_memory
+}

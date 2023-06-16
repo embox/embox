@@ -1,0 +1,37 @@
+#!/bin/sh
+# run as root-user(not sudo) => (sudo su; ./gdbsxloop;)
+
+BASE=$(dirname $0)
+
+LCK=gdbsx.lck
+PORT=1234
+BITNESS=32
+GDBSX=/usr/lib/xen-4.9/bin/gdbsx
+
+touch $LCK
+
+emboxdomid() {
+	xl list | awk '$1 == "embox" { print $2 }'
+}
+
+gdbsxbg() {
+	echo GDBXSBG: Looking for embox domain...
+	DOM=$(emboxdomid)
+	while [ -z $DOM ]; do
+		sleep 0.5
+		DOM=$(emboxdomid)
+	done
+	echo GDBXSBG: Embox domain id is $DOM
+	$GDBSX -a $DOM $BITNESS $PORT
+}
+
+while [ -f $LCK ]; do
+	gdbsxbg &
+	gdbsxloopid=$!
+
+	$BASE/run_xen -p 
+
+	xl destroy embox
+	killall $GDBSX
+	kill $gdbsxloopid
+done

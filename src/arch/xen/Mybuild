@@ -8,7 +8,7 @@ module xen_header {
 module boot {
 	source "boot.S",
 		"kernel_init.c"
-        depends xenstore
+		depends xenstore
 }
 
 module traps {
@@ -16,7 +16,7 @@ module traps {
 }
 
 module xenstore {
-        source "xenstore.c"
+		source "xenstore.c"
 }
 
 module xenstore_test {
@@ -29,4 +29,18 @@ module event {
 
 module ipl extends embox.arch.interrupt {
 	source "ipl.c", "ipl.h"
+}
+
+module grant_table {
+	source "grant_table.c"
+}
+
+module xen_memory {
+	source "xen_memory.c"
+	depends embox.mem.vmem_device_memory
+	depends embox.arch.xen.grant_table
+}
+
+module locore extends embox.arch.locore {
+
 }

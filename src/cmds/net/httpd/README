@@ -1,0 +1,21 @@
+To run httpd on the alpine domU:
+
+1) On the dom0
+
+Make it with static linking:
+# make STATIC=1
+
+Share executable file with web server:
+# python3 -m http.server
+
+2) On the domU:
+
+Donwload httpd from dom0:
+# wget 192.168.2.1:8000/httpd
+
+Change access rights:
+# chmod +x ./httpd
+
+Run it:
+# ./httpd .
+

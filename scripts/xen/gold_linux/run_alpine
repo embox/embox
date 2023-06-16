@@ -1,0 +1,14 @@
+#!/bin/sh
+
+# Getting alpine linux image
+sudo mkdir -p /data
+sudo wget -c dl-cdn.alpinelinux.org/alpine/v3.9/releases/x86_64/alpine-virt-3.9.2-x86_64.iso -O /data/alpine.iso
+sudo mkdir -p /media/cdrom
+sudo mount -t iso9660 -o loop /data/alpine.iso /media/cdrom
+
+# Creating alpine domU disk
+# sudo dd if=/dev/zero of=/data/alpine_disk.img bs=1M count=3000
+
+# Creating machine with linux
+sudo xl -vvv create -c -f $(dirname $0)/alpine.cfg
+
