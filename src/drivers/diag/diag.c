@@ -42,11 +42,6 @@ int diag_init(void) {
 }
 
 char diag_getc(void) {
-	//TODO: remove
-	//long long int a;
-	while(1){
-		//printk("%lld\n",a++);
-	}
 	char ch;
 
 	if (!cdiag->ops->getc) {
