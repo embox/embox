@@ -49,7 +49,7 @@ module stm32_usart_vl extends embox.driver.diag.diag_api {
 
 	source "stm32_usart_vl.c"
 
-	depends embox.driver.gpio.stm32
+	depends embox.driver.gpio.stm32_vl
 	depends core
 	depends diag
 }
