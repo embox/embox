@@ -84,6 +84,8 @@ struct spi_conf spis[] = {
 	[3] = {
 		.status = DISABLED,
 		.name = "SPI3",
+		.bits_per_word = 16,
+		.clk_div = 8,
 		.dev = {
 			.pins = {
 				PIN("SCK",  PC, PIN_10, AF6),
