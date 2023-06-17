@@ -18,11 +18,16 @@
 #include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32_spi3_init);
 
+#define BITS_PER_WORD    OPTION_GET(NUMBER, baudrateprescaler)
+#define CLK_DIV          OPTION_GET(NUMBER, baudrateprescaler)
+
 static struct stm32_spi stm32_spi3 = {
 #if defined(CONF_SPI3_PIN_CS_PORT)
 	.nss_port = CONF_SPI3_PIN_CS_PORT,
 	.nss_pin  = CONF_SPI3_PIN_CS_NR,
 #endif
+	.bits_per_word = BITS_PER_WORD,
+	.clk_div       = CLK_DIV,
 };
 
 static int stm32_spi3_init(void) {
@@ -73,8 +78,8 @@ static int stm32_spi3_init(void) {
 	HAL_GPIO_WritePin(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR, GPIO_PIN_SET);
 #endif //defined(CONF_SPI3_PIN_CS_PORT)
 
-//	stm32_spi_init(&stm32_spi3, SPI3);
-
+	stm32_spi_init(&stm32_spi3, SPI3);
+#if 0
 	memset(&stm32_spi3.handle, 0, sizeof(stm32_spi3.handle));
 
 	stm32_spi3.handle.Instance               = SPI3;
@@ -140,7 +145,7 @@ static int stm32_spi3_init(void) {
 		log_error("Failed to init SPI!");
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 
