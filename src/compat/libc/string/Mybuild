@@ -19,7 +19,6 @@ static module str {
 	source "strcmp.c"
 	source "strcoll.c"
 	source "strxfrm.c"
-	source "stpcpy.c"
 	source "strcpy.c"
 	source "strcspn.c"
 	@NoRuntime depends strerror
@@ -42,6 +41,10 @@ static module str {
 	source "ffs.c"
 	source "bcopy.c"
 	source "bzero.c"
+}
+
+static module stpcpy {
+	source "stpcpy.c"
 }
 
 static module str_dup {
