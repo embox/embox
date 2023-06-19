@@ -15,7 +15,7 @@
 #include <util/array.h>
 #include <util/macro.h>
 #include <kernel/irq.h>
-#include <drivers/dma/dma.h>
+//#include <drivers/dma/dma.h>
 
 struct spi_ops;
 
@@ -44,6 +44,8 @@ struct spi_device {
 	int       bits_per_word;
 	struct dev_module *dev;
 	struct spi_ops *spi_ops;
+	void    *priv;
+
 	irq_spi_event_t send_complete;
 	irq_spi_event_t received_data;
 	irq_handler_t dma_complete;
@@ -53,19 +55,20 @@ struct spi_device {
 	int      dma_chan_out;
 	int      dma_chan_in;
 	uint32_t dma_levels;
-	void    *priv;
 };
 
+struct dma_ctrl_blk;
+struct dma_mem_handle;
 struct spi_ops {
 	int (*init)(struct spi_device *dev);
 	int (*select)(struct spi_device *dev, int cs);
 	int (*set_mode)(struct spi_device *dev, bool is_master);
 	int (*transfer)(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
 
-	Dma_conbk *(*init_dma_block_spi_in)(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
-		, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
-	Dma_conbk *(*init_dma_block_spi_out)(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
-		, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
+	struct dma_ctrl_blk *(*init_dma_block_spi_in)(struct spi_device *dev, struct dma_mem_handle *mem_handle,
+			uint32_t offset, void *src, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
+	struct dma_ctrl_blk *(*init_dma_block_spi_out)(struct spi_device *dev, struct dma_mem_handle *mem_handle,
+			uint32_t offset, void *dest, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
 };
 
 extern struct spi_device *spi_dev_by_id(int id);
@@ -150,8 +153,9 @@ struct spi_transfer_arg {
  * @param next_conbk - pointer to next conbk, null if this is last one 
  * @param int_enable - enable interrupt at end of transmission/receipt for conbk
  */
-extern Dma_conbk *init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
-	, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
+extern struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev,
+		struct dma_mem_handle *mem_handle, uint32_t offset, void *src, uint32_t bytes,
+		struct dma_ctrl_blk *next_conbk, bool int_enable);
 
 /* Initializes a control block in the dma allocated memory with sensible default values
  * for a single block transfer to receive to.
@@ -164,7 +168,8 @@ extern Dma_conbk *init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *
  * @param next_conbk - pointer to next conbk, null if this is last one 
  * @param int_enable - enable interrupt at end of transmission/receipt for conbk
  */
-extern Dma_conbk *init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
-	, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable);
+extern struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_device *dev,
+		struct dma_mem_handle *mem_handle, uint32_t offset, void *dest, uint32_t bytes,
+		struct dma_ctrl_blk *next_conbk, bool int_enable);
 
 #endif /* DRIVERS_SPI_H_ */
