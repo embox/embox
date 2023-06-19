@@ -13,6 +13,7 @@
 #include <util/array.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
+#include <kernel/irq.h>
 
 #include <framework/mod/options.h>
 #include "bcm283x_gpio.h"
