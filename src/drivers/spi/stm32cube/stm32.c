@@ -21,13 +21,43 @@ static int stm32_spi_setup(struct stm32_spi *dev, void *instance, bool is_master
 	memset(handle, 0, sizeof(*handle));
 
 	handle->Instance               = instance;
-	handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+	switch (dev->clk_div) {
+	case 2:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+		break;
+	case 4:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
+		break;
+	case 8:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
+		break;
+	case 32:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+		break;
+	case 64:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
+		break;
+	case 128:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_128;
+		break;
+	case 256:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_256;
+		break;
+	case 16:
+	default:
+		handle->Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+		break;
+	}
 	handle->Init.Direction         = SPI_DIRECTION_2LINES;
 	handle->Init.CLKPhase          = SPI_PHASE_1EDGE;
 	handle->Init.CLKPolarity       = SPI_POLARITY_LOW;
 	handle->Init.CRCCalculation    = SPI_CRCCALCULATION_DISABLE;
 	handle->Init.CRCPolynomial     = 7;
-	handle->Init.DataSize          = SPI_DATASIZE_8BIT;
+	if (dev->bits_per_word == 16) {
+		handle->Init.DataSize          = SPI_DATASIZE_16BIT;
+	} else {
+		handle->Init.DataSize          = SPI_DATASIZE_8BIT;
+	}
 	handle->Init.FirstBit          = SPI_FIRSTBIT_MSB;
 	handle->Init.NSS               = SPI_NSS_SOFT;
 	handle->Init.TIMode            = SPI_TIMODE_DISABLE;

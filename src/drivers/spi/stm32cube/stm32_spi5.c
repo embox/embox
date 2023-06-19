@@ -23,6 +23,8 @@ static struct stm32_spi stm32_spi5 = {
 	.nss_port = CONF_SPI5_PIN_CS_PORT,
 	.nss_pin  = CONF_SPI5_PIN_CS_NR,
 #endif
+	.bits_per_word = CONF_SPI5_BITS_PER_WORD,
+	.clk_div       = CONF_SPI5_CLK_DIV,
 };
 
 static int stm32_spi5_init(void) {

@@ -22,6 +22,8 @@ static struct stm32_spi stm32_spi2 = {
 	.nss_port = CONF_SPI2_PIN_CS_PORT,
 	.nss_pin  = CONF_SPI2_PIN_CS_NR,
 #endif
+	.bits_per_word = CONF_SPI2_BITS_PER_WORD,
+	.clk_div       = CONF_SPI2_CLK_DIV,
 };
 
 static int stm32_spi2_init(void) {

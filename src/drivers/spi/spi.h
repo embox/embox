@@ -39,20 +39,21 @@ struct spi_device;
 typedef void (*irq_spi_event_t)(struct spi_device *data);
 
 struct spi_device {
-	int    flags;
+	uint32_t  flags;
+	bool      is_master;
+	int       bits_per_word;
 	struct dev_module *dev;
 	struct spi_ops *spi_ops;
-	bool is_master;
-	void  *priv;
 	irq_spi_event_t send_complete;
 	irq_spi_event_t received_data;
 	irq_handler_t dma_complete;
 	uint8_t *in;
 	uint8_t *out;
-	int count;
-	int dma_chan_out;
-	int dma_chan_in;
+	int      count;
+	int      dma_chan_out;
+	int      dma_chan_in;
 	uint32_t dma_levels;
+	void    *priv;
 };
 
 struct spi_ops {
@@ -115,13 +116,13 @@ struct spi_transfer_arg {
 };
 
 /* CS modes */
-#define SPI_CS_ACTIVE   (1 << 0)
-#define SPI_CS_INACTIVE (1 << 1)
-#define SPI_CS_MODE(x)	( ( (x) & 0x03) << 2)		/* x is one of enum spi_pol_phase_t */
-#define SPI_CS_IRQD  	(1 << 4)					
-#define SPI_CS_IRQR  	(1 << 5)	
-#define SPI_CS_DMAEN	(1 << 6)				
-#define SPI_CS_DIVSOR(x) ( ( (x) & 0xFFFF) << 16 ) 	/* Upper 16 bits used to set clock divisor */
+#define SPI_CS_ACTIVE    (1 << 0)
+#define SPI_CS_INACTIVE  (1 << 1)
+#define SPI_CS_MODE(x)   ( ( (x) & 0x03) << 2)     /* x is one of enum spi_pol_phase_t */
+#define SPI_CS_IRQD      (1 << 4)
+#define SPI_CS_IRQR      (1 << 5)
+#define SPI_CS_DMAEN     (1 << 6)
+#define SPI_CS_DIVSOR(x) ( ( (x) & 0xFFFF) << 16 ) /* Upper 16 bits used to set clock divisor */
 
 /* DMA Levels 
  * rcPanic: DMA Read Panic Threshold. Generate the Panic signal to 

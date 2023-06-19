@@ -19,6 +19,15 @@ static int gen_dev_enabled(const char *dev_name) {
 	printf("%s\n", buf);
 }
 
+static int gen_prop_ival(const char *dev_name, const char *pr_name, int val) {
+	char buf[128];
+	char def[64];
+
+	sprintf(def, "#define CONF_%s_%s", dev_name, pr_name);
+	sprintf(buf, "%-50s %d", def, val);
+	printf("%s\n", buf);
+}
+
 static int gen_field_int(const char *dev_name,
 		const char *prop_name, const struct field_int *f) {
 	char buf[128];
@@ -164,6 +173,9 @@ int main() {
 		}
 
 		gen_dev_enabled(spi->name);
+
+		gen_prop_ival(spi->name, "BITS_PER_WORD", spi->bits_per_word);
+		gen_prop_ival(spi->name, "CLK_DIV", spi->clk_div);
 
 		for (j = 0; j < ARRAY_SIZE(spi->dev.irqs); j++) {
 			if (gen_field_int(spi->name,
