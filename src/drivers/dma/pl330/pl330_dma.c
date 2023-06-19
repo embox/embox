@@ -31,7 +31,7 @@
 #define REGS_DMA_STATUS ((volatile uint32_t *)( DMA_0_BASE + 0x0fe0))
 #define REGS_DMA_ENABLE ((volatile uint32_t *)( DMA_0_BASE + 0x0ff0))
 
-static volatile Dma_conbk shared_conbk; 
+static volatile struct dma_ctrl_blk shared_conbk;
 
 // Returns a handle to the allocated memory
 //
@@ -156,7 +156,7 @@ int pl330_dma_config(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_o
 // Start DMA
 // dma_chan - integer 0-15
 // conbk - pointer to data type in physical memory
-int pl330_dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
+int pl330_dma_transfer_conbk(int dma_chan, volatile struct dma_ctrl_blk *conbk) {
     assert(dma_chan <= DMA_CHANNELS);
 
     REGS_DMA(dma_chan)->conblk_ad = (uint32_t)DMA_PHYS_TO_BUS(conbk);  

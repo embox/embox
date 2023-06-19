@@ -25,7 +25,7 @@ int dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {
     return dma_dev.transfer(dma_chan, dst, src, words);
 }
 
-int dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
+int dma_transfer_conbk(int dma_chan, volatile struct dma_ctrl_blk *conbk) {
     assert(dma_dev.transfer_conbk != NULL);
 
     return dma_dev.transfer_conbk(dma_chan,conbk);

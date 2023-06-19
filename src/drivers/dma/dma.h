@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <kernel/irq.h>
 
-typedef struct {
+typedef struct dma_mem_handle {
     void *physical_addr; // Physical (ARM direct) base address of the page
     uint32_t bus_addr;  // Bus adress of the page, this is not a pointer because it does not point to valid physical address
     uint32_t mb_handle; // Used by mailbox property interface
@@ -42,20 +42,20 @@ typedef struct {
 } Dma;
 
 // DMA PL330 Control block
-typedef struct {
-    volatile uint32_t ti;
-    volatile uint32_t source_ad;
-    volatile uint32_t dest_ad; 
-    volatile uint32_t txfr_len;
-    volatile uint32_t stride;
-    volatile uint32_t nextconbk;
-    volatile uint32_t debug[2];
+typedef struct dma_ctrl_blk {
+	volatile uint32_t ti;
+	volatile uint32_t source_ad;
+	volatile uint32_t dest_ad;
+	volatile uint32_t txfr_len;
+	volatile uint32_t stride;
+	volatile uint32_t nextconbk;
+	volatile uint32_t debug[2];
 } Dma_conbk;
 
 struct dma_ops {
     int (*config_extended)(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_opts);
     int (*transfer)(int dma_chan, uint32_t dst, uint32_t src, int words);
-    int (*transfer_conbk)(int dma_chan, volatile Dma_conbk *conbk);
+    int (*transfer_conbk)(int dma_chan, volatile struct dma_ctrl_blk *conbk);
     int (*in_progress_status)(int dma_chan, uint32_t *error_flags);
 
     // Some DMA engines require memory allocated by specific mechanism to function reliably
@@ -68,7 +68,7 @@ struct dma_ops {
 extern struct dma_ops dma_dev;
 
 extern int dma_config_extended(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_opts);
-extern int dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk);
+extern int dma_transfer_conbk(int dma_chan, volatile struct dma_ctrl_blk *conbk);
 extern int dma_in_progress_status(int dma_chan, uint32_t *error_flags);
 
 extern int dma_config(int dma_chan);
