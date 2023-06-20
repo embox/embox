@@ -14,14 +14,6 @@ module core {
 	depends embox.driver.dma.dma_api
 }
 
-module spi_dma {
-	option number log_level=0
-
-	source "spi_dma.c"
-
-	depends embox.driver.dma.dma_api
-}
-
 /* This module extends core and provide SPI
  * devices as a specific case for char devices */
 module spi {
