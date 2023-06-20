@@ -31,7 +31,7 @@
 #define REGS_DMA_STATUS ((volatile uint32_t *)( DMA_0_BASE + 0x0fe0))
 #define REGS_DMA_ENABLE ((volatile uint32_t *)( DMA_0_BASE + 0x0ff0))
 
-static volatile Dma_conbk shared_conbk; 
+static volatile struct dma_ctrl_blk shared_conbk;
 
 // Returns a handle to the allocated memory
 //
@@ -102,12 +102,12 @@ static uint8_t get_irq_from_channel(uint8_t ch) {
 
 // Allocate and lock memory for use by DMA
 //
-Dma_mem_handle *pl330_dma_malloc(size_t size)
+struct dma_mem_handle *pl330_dma_malloc(size_t size)
 {
     // Make `size` a multiple of PAGE_SIZE
     size = ((size + PAGE_SIZE() - 1) / PAGE_SIZE()) * PAGE_SIZE();
 
-    Dma_mem_handle *mem = (Dma_mem_handle *)malloc(sizeof(Dma_mem_handle));
+    Dma_mem_handle *mem = (struct dma_mem_handle  *)malloc(sizeof(struct dma_mem_handle ));
     mem->mb_handle = (uint32_t)pl330_vc_malloc(size, PAGE_SIZE(), BCM2835_MEM_FLAG_DIRECT);
     mem->bus_addr = pl330_vc_mem_lock(mem->mb_handle);
     mem->physical_addr = DMA_BUS_TO_PHYS(mem->bus_addr);
@@ -119,7 +119,7 @@ Dma_mem_handle *pl330_dma_malloc(size_t size)
 
 // Unlock and deallocate memory
 //
-void pl330_dma_free(Dma_mem_handle *mem)
+void pl330_dma_free(struct dma_mem_handle  *mem)
 {
     if (mem->physical_addr == NULL)
         return;
@@ -156,7 +156,7 @@ int pl330_dma_config(int dma_chan, irq_handler_t irqhandler, uint32_t cs_panic_o
 // Start DMA
 // dma_chan - integer 0-15
 // conbk - pointer to data type in physical memory
-int pl330_dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
+int pl330_dma_transfer_conbk(int dma_chan, volatile struct dma_ctrl_blk *conbk) {
     assert(dma_chan <= DMA_CHANNELS);
 
     REGS_DMA(dma_chan)->conblk_ad = (uint32_t)DMA_PHYS_TO_BUS(conbk);  

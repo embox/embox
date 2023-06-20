@@ -25,7 +25,7 @@ int dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words) {
     return dma_dev.transfer(dma_chan, dst, src, words);
 }
 
-int dma_transfer_conbk(int dma_chan, volatile Dma_conbk *conbk) {
+int dma_transfer_conbk(int dma_chan, volatile struct dma_ctrl_blk *conbk) {
     assert(dma_dev.transfer_conbk != NULL);
 
     return dma_dev.transfer_conbk(dma_chan,conbk);
@@ -38,10 +38,10 @@ int dma_in_progress_status(int dma_chan, uint32_t *error_flags) {
 }
 
 // Default implementation is to just use malloc
-Dma_mem_handle *dma_malloc(size_t size) {
+struct dma_mem_handle  *dma_malloc(size_t size) {
     if(dma_dev.malloc == NULL) {
-        Dma_mem_handle *memh = malloc(size + sizeof(Dma_mem_handle));
-        memh->physical_addr = (void *)( memh + sizeof(Dma_mem_handle) );
+        struct dma_mem_handle  *memh = malloc(size + sizeof(struct dma_mem_handle ));
+        memh->physical_addr = (void *)( memh + sizeof(struct dma_mem_handle ) );
         memh->bus_addr = (uintptr_t)memh->physical_addr;
         memh->mb_handle = memh->bus_addr;
         memh->size = size;        
@@ -50,7 +50,7 @@ Dma_mem_handle *dma_malloc(size_t size) {
     return dma_dev.malloc(size);
 }
 // Default implementation is to just use free
-void dma_free(Dma_mem_handle *mem) {
+void dma_free(struct dma_mem_handle  *mem) {
     if(dma_dev.free == NULL) {
         if(mem->physical_addr != NULL) {
             free(mem);

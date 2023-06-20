@@ -22,9 +22,9 @@ static void fill_test(uint32_t *memLoc, uint32_t bytes) {
 // DMA memory-to-memory test
 static int dma_test_mem_transfer(Dma_mem_handle *mem)
 {
-    Dma_conbk *cbp = mem->physical_addr;
+	struct dma_ctrl_blk *cbp = mem->physical_addr;
     // Pointers for DMA 
-    uint32_t srce = ((uint32_t)(mem->physical_addr)+sizeof(Dma_conbk));
+    uint32_t srce = ((uint32_t)(mem->physical_addr)+sizeof(struct dma_ctrl_blk));
     uint32_t dest = srce + CPY_BLK;
 
     // ARM uses physical addr pointer to same memory

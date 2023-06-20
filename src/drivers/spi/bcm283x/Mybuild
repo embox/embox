@@ -11,12 +11,20 @@ module bcm283x_spi0 {
 	option number log_level = 0
 
 	source "bcm283x_spi0.c"
-	source "bcm283x_spi0.h"
 
 	@IncludeExport(path="drivers")
 	source "bcm283x_spi0.h"
 
 	depends core
+	depends embox.driver.spi.spi_dma
 	depends embox.driver.periph_memory
 	depends embox.driver.gpio.api
+}
+
+module spi_dma {
+	option number log_level=0
+
+	source "spi_dma.c"
+
+	depends embox.driver.dma.dma_api
 }
