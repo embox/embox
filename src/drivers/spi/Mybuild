@@ -10,6 +10,13 @@ module core {
 	source "spi.h"
 
 	source "spi.c"
+
+	depends embox.driver.dma.dma_api
+}
+
+module spi_dma {
+	option number log_level=0
+
 	source "spi_dma.c"
 
 	depends embox.driver.dma.dma_api

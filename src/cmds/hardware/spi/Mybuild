@@ -35,13 +35,13 @@ package embox.cmd.hardware
             Denis Deryugin
     ''')
 module spi {
-    source "spi.c"
+	source "spi.c"
 
-    depends embox.driver.spi.core
-    depends embox.util.pretty_print
-    depends embox.compat.libc.stdio.printf
-    depends embox.compat.libc.str
-    depends embox.compat.posix.util.getopt
+	depends embox.driver.spi.core
+	depends embox.util.pretty_print
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
 }
 
 @AutoCmd
@@ -66,10 +66,6 @@ module spi {
             -l      list spi devices
             -s      slave mode
             -m      master mode
-            -t p    by polling method (all tests as master)
-               i    by interrupt 
-               w    interrupt input only, wait for input
-               d    by use of DMA 
             -d XXX    clock divisor 0-65534 to define speed of device
                     based upon CPU clock
         EXAMPLES
@@ -79,11 +75,12 @@ module spi {
             Denis Deryugin
     ''')
 module spi_dma {
-    source "spi_dma.c"
+	source "spi_dma.c"
 
-    depends embox.driver.spi.core
-    depends embox.compat.libc.stdio.printf
-    depends embox.compat.libc.str
-    depends embox.compat.posix.util.getopt
+	depends embox.driver.spi.core
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.libc.str
+	depends embox.compat.posix.util.getopt
 	depends embox.driver.dma.dma_api
+	depends embox.driver.spi.spi_dma
 }
