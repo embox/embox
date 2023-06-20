@@ -64,11 +64,6 @@ struct spi_ops {
 	int (*select)(struct spi_device *dev, int cs);
 	int (*set_mode)(struct spi_device *dev, bool is_master);
 	int (*transfer)(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
-
-	struct dma_ctrl_blk *(*init_dma_block_spi_in)(struct spi_device *dev, struct dma_mem_handle *mem_handle,
-			uint32_t offset, void *src, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
-	struct dma_ctrl_blk *(*init_dma_block_spi_out)(struct spi_device *dev, struct dma_mem_handle *mem_handle,
-			uint32_t offset, void *dest, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
 };
 
 extern struct spi_device *spi_dev_by_id(int id);

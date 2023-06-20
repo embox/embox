@@ -374,8 +374,8 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf, uint8_t
 struct spi_ops bcm283x_spi0_ops = {
     .select   = bcm283x_spi0_select,
     .transfer = bcm283x_spi0_transfer,
-    .init_dma_block_spi_in = bcm283x_init_dma_block_spi_in,
-    .init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
+//    .init_dma_block_spi_in = bcm283x_init_dma_block_spi_in,
+//    .init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
 };
 
 PERIPH_MEMORY_DEFINE(bcm283x_spi0, PBASE, sizeof(struct bcm283x_spi_regs));
