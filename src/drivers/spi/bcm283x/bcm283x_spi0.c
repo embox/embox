@@ -30,6 +30,31 @@
 #define SPI_BUS_CLOCK_DIVISOR     OPTION_GET(NUMBER,spi_bus_clock_divisor)
 #define SPI_INT0                  OPTION_GET(NUMBER,spi_int)
 
+struct bcm283x_spi_regs;
+
+typedef struct dma_ctrl_blk *(*init_dma_block_spi_func_t) (
+		struct spi_device *dev,
+		Dma_mem_handle *mem_handle, uint32_t offset, void *src, uint32_t bytes,
+		struct dma_ctrl_blk *next_conbk, bool int_enable);
+
+struct bcm283x_spi_dev {
+	struct bcm283x_spi_regs *regs;
+
+	irq_spi_event_t send_complete;
+	irq_spi_event_t received_data;
+	irq_handler_t dma_complete;
+	uint8_t *in;
+	uint8_t *out;
+	int      count;
+	int      dma_chan_out;
+	int      dma_chan_in;
+	uint32_t dma_levels;
+
+	init_dma_block_spi_func_t init_dma_block_spi_in;
+	init_dma_block_spi_func_t init_dma_block_spi_out;
+};
+
+
 // command block must be 256 bit aligned in memory
 #define MEM_ALGN_256 (0x00000020)
 
@@ -49,7 +74,7 @@
  */
 #define DLEN_NO_DMA_VALUE 2;
 
-typedef struct {
+struct bcm283x_spi_regs {
     uint32_t cs; /* SPI Master Control and Status */
     
 /* RW: DMA Mode (DMAEN set)
@@ -81,13 +106,15 @@ typedef struct {
     defined levels and need servicing. The Panic signals instruct the external DMA engine 
     to raise the priority of its AXI requests.*/
     uint32_t dc; /* SPI DMA DREQ Controls */
-} Bcm283x_spi0;
+};
 
-#define REGS_SPI0 ((Bcm283x_spi0 *)(PBASE))
+#define REGS_SPI0 ((struct bcm283x_spi_regs *)(PBASE))
 #define BCM283X_SPI0_TX_FIFO_LEN (16*sizeof(uint32_t))
 #define BCM283X_SPI0_RX_FIFO_LEN (16*sizeof(uint32_t))
 #define BCM283X_SPI0_TX_FIFO_FL  (4*sizeof(uint32_t))
 #define BCM283X_SPI0_RX_FIFO_HW  (3*sizeof(uint32_t))
+
+#define BCM283X_PRIV(x) ((struct bcm283x_spi_dev *)(x)->priv)
 
 static int bcm283x_spi0_init(void) {
     uint32_t pins_spi_Alt0 =( 1 << 7 ) | ( 1 << 8 ) | ( 1 << 9 ) | ( 1 << 10 ) | ( 1 << 11 );    
@@ -107,7 +134,7 @@ static int bcm283x_spi0_init(void) {
     return 0;
 }
 
-irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data);
+static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data);
 
 static int bcm283x_spi0_attach(struct spi_device *dev) {
     int res = 0;
@@ -147,23 +174,24 @@ static int bcm283x_spi0_select(struct spi_device *dev, int cs) {
     // Enable DMA
     if( dev->flags & SPI_CS_DMAEN 
         && !(REGS_SPI0->cs & SPI0_CS_DMAEN) ) {
-        assert( dev->dma_chan_out != dev->dma_chan_in );
+        assert( BCM283X_PRIV(dev)->dma_chan_out != BCM283X_PRIV(dev)->dma_chan_in );
 
         REGS_SPI0->cs |= SPI0_CS_DMAEN;
-        REGS_SPI0->dc = dev->dma_levels;
+        REGS_SPI0->dc = BCM283X_PRIV(dev)->dma_levels;
 
         /* Set Panic and Priority levels at High 2/3rds and then Low 1/3rd respectively
          * If they are not set, DMA_LEVELS() must be about double higher.
          */
-        dma_config_extended(dev->dma_chan_in, NULL, DMA_CS_PANIC_PRIORITY(0x0C) | DMA_CS_PRIORITY(0x06) );    
+        dma_config_extended(BCM283X_PRIV(dev)->dma_chan_in, NULL, DMA_CS_PANIC_PRIORITY(0x0C) | DMA_CS_PRIORITY(0x06) );
         // Channel out receives data from SPI fifo to memory in    
-        dma_config_extended(dev->dma_chan_out, dev->dma_complete, DMA_CS_PANIC_PRIORITY(0x0C) | DMA_CS_PRIORITY(0x06));
+        dma_config_extended(BCM283X_PRIV(dev)->dma_chan_out, BCM283X_PRIV(dev)->dma_complete,
+        		DMA_CS_PANIC_PRIORITY(0x0C) | DMA_CS_PRIORITY(0x06));
     }
 
 
     // If no flags set for interrupt, cause interrupt to detatch
     if( !(dev->flags & SPI_CS_DMAEN) && (REGS_SPI0->cs & SPI0_CS_DMAEN) ) {
-        dma_config_extended(dev->dma_chan_out, NULL, 0x00);        
+        dma_config_extended(BCM283X_PRIV(dev)->dma_chan_out, NULL, 0x00);
         REGS_SPI0->cs &= ~( SPI0_CS_DMAEN );
     }
 
@@ -233,32 +261,43 @@ static int bcm283x_spi0_do_transfer(struct spi_device *dev, uint8_t *inbuf
 }
 
 // Interrupt for data send required or complete
-irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data) {
-    irq_return_t ret = IRQ_HANDLED;
-    struct spi_device *dev = (struct spi_device *)data;
+static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data) {
+	irq_return_t ret = IRQ_HANDLED;
+	struct spi_device *dev = (struct spi_device*) data;
 
-    // Transmit and receive with CS asserted
-    if( (REGS_SPI0->cs & (SPI0_CS_DONE | SPI0_CS_TA)) && dev->count > 0 ) {
-        dev->count -= bcm283x_spi0_do_transfer(dev, dev->in, dev->out, min(BCM283X_SPI0_TX_FIFO_FL,dev->count)
-            , min(BCM283X_SPI0_TX_FIFO_FL,dev->count));
-        if(dev->count <= 0) REGS_SPI0->cs &= ~SPI0_CS_TA; // De-assert
-        if(dev->send_complete && dev->count <= 0 ) dev->send_complete(dev);
-    }
-    
-    // Receive with CS un-asserted
-    if( (REGS_SPI0->cs & SPI0_CS_RXR) ) {
-        dev->count = bcm283x_spi0_do_transfer(dev, dev->in, dev->out, min(BCM283X_SPI0_RX_FIFO_HW,dev->count)
-            , min(BCM283X_SPI0_RX_FIFO_HW,dev->count));
-        if(dev->received_data && dev->count > 0 ) dev->send_complete(dev);
-    }
-    return ret;
+	// Transmit and receive with CS asserted
+	if ((REGS_SPI0->cs & (SPI0_CS_DONE | SPI0_CS_TA))
+			&& BCM283X_PRIV(dev)->count > 0) {
+		BCM283X_PRIV(dev)->count -= bcm283x_spi0_do_transfer(dev,
+		BCM283X_PRIV(dev)->in, BCM283X_PRIV(dev)->out,
+				min(BCM283X_SPI0_TX_FIFO_FL, BCM283X_PRIV(dev)->count),
+				min(BCM283X_SPI0_TX_FIFO_FL, BCM283X_PRIV(dev)->count));
+		if (BCM283X_PRIV(dev)->count <= 0) {
+			REGS_SPI0->cs &= ~SPI0_CS_TA; // De-assert
+		}
+		if (BCM283X_PRIV(dev)->send_complete && BCM283X_PRIV(dev)->count <= 0) {
+			BCM283X_PRIV(dev)->send_complete(dev);
+		}
+	}
+
+	// Receive with CS un-asserted
+	if ((REGS_SPI0->cs & SPI0_CS_RXR)) {
+		BCM283X_PRIV(dev)->count = bcm283x_spi0_do_transfer(dev,
+				BCM283X_PRIV(dev)->in, BCM283X_PRIV(dev)->out,
+					min(BCM283X_SPI0_RX_FIFO_HW, BCM283X_PRIV(dev)->count),
+					min(BCM283X_SPI0_RX_FIFO_HW, BCM283X_PRIV(dev)->count));
+		if (BCM283X_PRIV(dev)->received_data && BCM283X_PRIV(dev)->count > 0) {
+			BCM283X_PRIV(dev)->send_complete(dev);
+		}
+	}
+	return ret;
 }
 
-Dma_conbk *bcm283x_init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle
-, uint32_t offset, void *src, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable) {
+static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle
+, uint32_t offset, void *src, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable) {
     assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
 
-    Dma_conbk *cbp = (Dma_conbk *)(mem_handle->physical_addr + offset);
+    struct dma_ctrl_blk *cbp = (struct dma_ctrl_blk *)(mem_handle->physical_addr + offset);
     cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_TX) | DMA_TI_SRC_INC | DMA_TI_DEST_DREQ | DMA_TI_WAIT_RESP;
     cbp->dest_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
     cbp->stride = 0x0;
@@ -273,11 +312,11 @@ Dma_conbk *bcm283x_init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle 
     return cbp;
 }
 
-Dma_conbk *bcm283x_init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
-, void *dest, uint32_t bytes, Dma_conbk *next_conbk, bool int_enable) {
+static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
+, void *dest, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable) {
     assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
 
-    Dma_conbk *cbp = (Dma_conbk *)(mem_handle->physical_addr + offset);
+    struct dma_ctrl_blk *cbp = (struct dma_ctrl_blk *)(mem_handle->physical_addr + offset);
     cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_RX) | DMA_TI_DEST_INC | DMA_TI_SRC_DREQ | DMA_TI_WAIT_RESP;
     cbp->source_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
     cbp->stride = 0x0;
@@ -306,15 +345,15 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
     if( ( (REGS_SPI0->cs & SPI0_CS_INTD) || (REGS_SPI0->cs & SPI0_CS_INTR) ) ) {
         if(count < 0) {
             // count < 0 is signal to trigger interrupt and return
-            dev->count = -1 * count;    /* set the target amount to output in series of interrupt transfers */
-            dev->in = inbuf;
-            dev->out = outbuf;
+            BCM283X_PRIV(dev)->count = -1 * count;    /* set the target amount to output in series of interrupt transfers */
+            BCM283X_PRIV(dev)->in = inbuf;
+            BCM283X_PRIV(dev)->out = outbuf;
             REGS_SPI0->dlen = DLEN_NO_DMA_VALUE;
             REGS_SPI0->cs |= SPI0_CS_CLEAR( SPI0_tx_fifo | SPI0_rx_fifo ) | SPI0_CS_TA; // clear FIFO and Assert
             return 0;
         } else {
             // called in interrupt handler to send/receive data
-            dev->count -= bcm283x_spi0_do_transfer(dev, inbuf, outbuf, min(BCM283X_SPI0_TX_FIFO_FL,count), BCM283X_SPI0_RX_FIFO_HW);
+            BCM283X_PRIV(dev)->count -= bcm283x_spi0_do_transfer(dev, inbuf, outbuf, min(BCM283X_SPI0_TX_FIFO_FL,count), BCM283X_SPI0_RX_FIFO_HW);
             REGS_SPI0->cs &= ~SPI0_CS_TA; // De-assert
             return 0;
         }
@@ -325,9 +364,9 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
         REGS_SPI0->dlen = count;    
 
         // Receive - start dma transfer
-        dma_transfer_conbk(dev->dma_chan_out, (volatile Dma_conbk *)outbuf);
+        dma_transfer_conbk(BCM283X_PRIV(dev)->dma_chan_out, (volatile struct dma_ctrl_blk *)outbuf);
         // Transmit - start dma transfer
-        dma_transfer_conbk(dev->dma_chan_in, (volatile Dma_conbk *)inbuf);
+        dma_transfer_conbk(BCM283X_PRIV(dev)->dma_chan_in, (volatile struct dma_ctrl_blk *)inbuf);
         // Activate SPI
         REGS_SPI0->cs |= SPI0_CS_ADCS | SPI0_CS_CLEAR( SPI0_tx_fifo | SPI0_rx_fifo ) | SPI0_CS_TA; // clear FIFO and Assert
     } else { 
@@ -350,8 +389,14 @@ struct spi_ops bcm283x_spi0_ops = {
     .init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
 };
 
-PERIPH_MEMORY_DEFINE(bcm283x_spi0, PBASE, sizeof(Bcm283x_spi0));
+PERIPH_MEMORY_DEFINE(bcm283x_spi0, PBASE, sizeof(struct bcm283x_spi_regs));
 
-SPI_DEV_DEF("spi0", &bcm283x_spi0_ops, REGS_SPI0, 0);
+static struct bcm283x_spi_dev bcm283x_spi_dev = {
+		.regs = REGS_SPI0,
+		.init_dma_block_spi_in = bcm283x_init_dma_block_spi_in,
+		.init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
+};
+
+SPI_DEV_DEF("spi0", &bcm283x_spi0_ops, &bcm283x_spi_dev, 0);
 
 EMBOX_UNIT_INIT(bcm283x_spi0_init);
