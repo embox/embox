@@ -254,7 +254,7 @@ static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *dat
 			REGS_SPI0->cs &= ~SPI0_CS_TA; // De-assert
 		}
 		if (BCM283X_PRIV(dev)->send_complete && BCM283X_PRIV(dev)->count <= 0) {
-			BCM283X_PRIV(dev)->send_complete(dev);
+			BCM283X_PRIV(dev)->send_complete(dev, BCM283X_PRIV(dev)->count);
 		}
 	}
 
@@ -265,7 +265,7 @@ static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *dat
 					min(BCM283X_SPI0_RX_FIFO_HW, BCM283X_PRIV(dev)->count),
 					min(BCM283X_SPI0_RX_FIFO_HW, BCM283X_PRIV(dev)->count));
 		if (BCM283X_PRIV(dev)->received_data && BCM283X_PRIV(dev)->count > 0) {
-			BCM283X_PRIV(dev)->send_complete(dev);
+			BCM283X_PRIV(dev)->send_complete(dev, BCM283X_PRIV(dev)->count);
 		}
 	}
 	return ret;
@@ -374,8 +374,6 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf, uint8_t
 struct spi_ops bcm283x_spi0_ops = {
     .select   = bcm283x_spi0_select,
     .transfer = bcm283x_spi0_transfer,
-//    .init_dma_block_spi_in = bcm283x_init_dma_block_spi_in,
-//    .init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
 };
 
 PERIPH_MEMORY_DEFINE(bcm283x_spi0, PBASE, sizeof(struct bcm283x_spi_regs));
