@@ -258,7 +258,7 @@ int main(int argc, char **argv) {
 			struct dma_ctrl_blk *cbp_in, *cbp_in_first = NULL;
 			uint32_t error_flags = 0x00;
 
-		    Dma_mem_handle *mem_handle = dma_malloc(DMA_MEM);
+			struct dma_mem_handle *mem_handle = dma_malloc(DMA_MEM);
 
 			fill_test(mem_handle->physical_addr, DMA_MEM / 2);
 

@@ -59,8 +59,8 @@ struct dma_ops {
     int (*in_progress_status)(int dma_chan, uint32_t *error_flags);
 
     // Some DMA engines require memory allocated by specific mechanism to function reliably
-    Dma_mem_handle *(*malloc)(size_t size);
-    void (*free)(Dma_mem_handle *mem);
+    struct dma_mem_handle *(*malloc)(size_t size);
+    void (*free)(struct dma_mem_handle *mem);
 
     uint32_t (*channels_free)(void);
 };
@@ -75,8 +75,8 @@ extern int dma_config(int dma_chan);
 extern int dma_transfer(int dma_chan, uint32_t dst, uint32_t src, int words);
 inline int dma_in_progress(int dma_chan) { return dma_in_progress_status(dma_chan, NULL); };
 
-extern Dma_mem_handle *dma_malloc(size_t size);
-extern void dma_free(Dma_mem_handle *mem);
+extern struct dma_mem_handle  *dma_malloc(size_t size);
+extern void dma_free(struct dma_mem_handle  *mem);
 
 extern uint32_t dma_channels_free(void);
 
