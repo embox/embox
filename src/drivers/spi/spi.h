@@ -39,22 +39,14 @@ struct spi_device;
 typedef void (*irq_spi_event_t)(struct spi_device *data, int cnt);
 
 struct spi_device {
+	struct dev_module *dev;
+
 	uint32_t  flags;
 	bool      is_master;
 	int       bits_per_word;
-	struct dev_module *dev;
+
 	struct spi_ops *spi_ops;
 	void    *priv;
-
-//	irq_spi_event_t send_complete;
-//	irq_spi_event_t received_data;
-	//irq_handler_t dma_complete;
-//	uint8_t *in;
-//	uint8_t *out;
-
-//	int      dma_chan_out;
-//	int      dma_chan_in;
-//	uint32_t dma_levels;
 };
 
 struct dma_ctrl_blk;
