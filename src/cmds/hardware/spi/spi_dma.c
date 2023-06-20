@@ -73,13 +73,13 @@ typedef enum {
 volatile static SPI_status spi_stat = UNKNOWN;
 volatile static int spi_bytes = 0;
 
-static void data_sent(struct spi_device *data) {
-	spi_bytes = data->count;
+static void data_sent(struct spi_device *data, int cnt) {
+	spi_bytes = cnt;
 	spi_stat = SEND_COMPLETE;
 };
 
-static void data_received(struct spi_device *data) {
-	spi_bytes = data->count;
+static void data_received(struct spi_device *data, int cnt) {
+	spi_bytes = cnt;
 	spi_stat = DATA_RECEIVED;
 };
 
@@ -97,8 +97,9 @@ static int test_interrupt(struct spi_device *dev, int spi_line, uint8_t *dataOut
 
 	dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
 		| SPI_CS_IRQD | SPI_CS_IRQR;
-	dev->send_complete = data_sent;
-	dev->received_data = data_received;
+
+	spi_irq_prepare(dev, data_sent, data_received);
+
 	ret = spi_select(dev, spi_line);
 	// trigger initiating send interrupt
 	ret = spi_transfer(dev, dataOut, dataIn, bytes);
@@ -265,15 +266,15 @@ int main(int argc, char **argv) {
 			// Configure SPI
 			dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
 				| SPI_CS_DMAEN;
-			dev->dma_complete = data_block_complete;
-			dev->dma_chan_out = DMA_CHAN_OUT; // Receiving from SPI
-			dev->dma_chan_in = DMA_CHAN_IN; // Sending to SPI
+			spi_dma_prepare(dev,
+					data_block_complete, DMA_CHAN_OUT, DMA_CHAN_IN,
+					DMA_LEVELS(12, 4, 12, 4));
 
 			// Note: These values are important to tune and check in multi-block transfers
 			// A symtom of improper values is the receipt memory locations are missing 
 			// values but retain their correct position in memory from the transmit memory
 			// values.
-			dev->dma_levels = DMA_LEVELS(12, 4, 12, 4);
+			//dev->dma_levels = DMA_LEVELS(12, 4, 12, 4);
 
 			ret = spi_select(dev, spi_line);
 
@@ -341,8 +342,14 @@ int main(int argc, char **argv) {
 				// busy polling wait
 				// TODO: This polling check should not be necessary, the interrupt should
 				// be firing and setting spi_stat to indicate transfer is complete
-				if(!dma_in_progress_status(dev->dma_chan_out, &error_flags)) break;
-				if(error_flags) printf("DMA_DEBUG_FLAGS %x\n", error_flags);
+#if 0
+				if(!dma_in_progress_status(dev->dma_chan_out, &error_flags)) {
+					break;
+				}
+#endif
+				if(error_flags) {
+					printf("DMA_DEBUG_FLAGS %x\n", error_flags);
+				}
 			};
 
 			dma_free(mem_handle);
