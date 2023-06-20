@@ -25,34 +25,12 @@
 #include <drivers/spi.h>
 
 #include "bcm283x_spi0.h"
+#include "bcm283x_spi_dev.h"
 
 #define PBASE                     OPTION_GET(NUMBER,base_addr)
 #define SPI_BUS_CLOCK_DIVISOR     OPTION_GET(NUMBER,spi_bus_clock_divisor)
 #define SPI_INT0                  OPTION_GET(NUMBER,spi_int)
 
-struct bcm283x_spi_regs;
-
-typedef struct dma_ctrl_blk *(*init_dma_block_spi_func_t) (
-		struct spi_device *dev,
-		Dma_mem_handle *mem_handle, uint32_t offset, void *src, uint32_t bytes,
-		struct dma_ctrl_blk *next_conbk, bool int_enable);
-
-struct bcm283x_spi_dev {
-	struct bcm283x_spi_regs *regs;
-
-	irq_spi_event_t send_complete;
-	irq_spi_event_t received_data;
-	irq_handler_t dma_complete;
-	uint8_t *in;
-	uint8_t *out;
-	int      count;
-	int      dma_chan_out;
-	int      dma_chan_in;
-	uint32_t dma_levels;
-
-	init_dma_block_spi_func_t init_dma_block_spi_in;
-	init_dma_block_spi_func_t init_dma_block_spi_out;
-};
 
 
 // command block must be 256 bit aligned in memory
@@ -293,42 +271,54 @@ static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *dat
 	return ret;
 }
 
-static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_in(struct spi_device *dev, Dma_mem_handle *mem_handle
-, uint32_t offset, void *src, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable) {
-    assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
+static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_in(struct spi_device *dev,
+		struct dma_mem_handle  *mem_handle, uint32_t offset, void *src, uint32_t bytes,
+		struct dma_ctrl_blk *next_conbk, bool int_enable) {
 
-    struct dma_ctrl_blk *cbp = (struct dma_ctrl_blk *)(mem_handle->physical_addr + offset);
-    cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_TX) | DMA_TI_SRC_INC | DMA_TI_DEST_DREQ | DMA_TI_WAIT_RESP;
-    cbp->dest_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
-    cbp->stride = 0x0;
+	assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
 
-    cbp->source_ad = (uint32_t)DMA_PHYS_TO_BUS((uint32_t)src);
-    cbp->txfr_len = bytes;
-    cbp->nextconbk = ( next_conbk == NULL ? 0x00 : (uint32_t)DMA_PHYS_TO_BUS((uint32_t)next_conbk) );
+	struct dma_ctrl_blk *cbp = (struct dma_ctrl_blk *)(mem_handle->physical_addr + offset);
+	cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_TX) | DMA_TI_SRC_INC | DMA_TI_DEST_DREQ | DMA_TI_WAIT_RESP;
+	cbp->dest_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
+	cbp->stride = 0x0;
 
-    if(int_enable) cbp->ti |= DMA_TI_INTEN;
-    else cbp->ti &= ~DMA_TI_INTEN;
+	cbp->source_ad = (uint32_t)DMA_PHYS_TO_BUS((uint32_t)src);
+	cbp->txfr_len = bytes;
+	cbp->nextconbk = ( next_conbk == NULL ? 0x00 : (uint32_t)DMA_PHYS_TO_BUS((uint32_t)next_conbk) );
 
-    return cbp;
+	if(int_enable){
+		cbp->ti |= DMA_TI_INTEN;
+	}
+	else {
+		cbp->ti &= ~DMA_TI_INTEN;
+	}
+
+	return cbp;
 }
 
-static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_device *dev, Dma_mem_handle *mem_handle, uint32_t offset
-, void *dest, uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable) {
-    assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
+static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_device *dev,
+		struct dma_mem_handle  *mem_handle, uint32_t offset, void *dest, uint32_t bytes,
+		struct dma_ctrl_blk *next_conbk, bool int_enable) {
 
-    struct dma_ctrl_blk *cbp = (struct dma_ctrl_blk *)(mem_handle->physical_addr + offset);
-    cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_RX) | DMA_TI_DEST_INC | DMA_TI_SRC_DREQ | DMA_TI_WAIT_RESP;
-    cbp->source_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
-    cbp->stride = 0x0;
+	assert( (((uint32_t)(mem_handle->physical_addr) + offset) & ~MEM_ALGN_256 ) == ((uint32_t)(mem_handle->physical_addr) + offset));
 
-    cbp->dest_ad = (uint32_t)DMA_PHYS_TO_BUS((uint32_t)dest);
-    cbp->txfr_len = bytes;
-    cbp->nextconbk = ( next_conbk == NULL ? 0x00 : (uint32_t)DMA_PHYS_TO_BUS((uint32_t)next_conbk) );
+	struct dma_ctrl_blk *cbp = (struct dma_ctrl_blk *)(mem_handle->physical_addr + offset);
+	cbp->ti = DMA_TI_PERMAP(DMA_PERMAP_SPI_RX) | DMA_TI_DEST_INC | DMA_TI_SRC_DREQ | DMA_TI_WAIT_RESP;
+	cbp->source_ad = (uint32_t)DMA_PERF_TO_BUS((uint32_t)&(REGS_SPI0->fifo));
+	cbp->stride = 0x0;
 
-    if(int_enable) cbp->ti |= DMA_TI_INTEN;
-    else cbp->ti &= ~DMA_TI_INTEN;
+	cbp->dest_ad = (uint32_t)DMA_PHYS_TO_BUS((uint32_t)dest);
+	cbp->txfr_len = bytes;
+	cbp->nextconbk = ( next_conbk == NULL ? 0x00 : (uint32_t)DMA_PHYS_TO_BUS((uint32_t)next_conbk) );
 
-    return cbp;
+	if(int_enable) {
+		cbp->ti |= DMA_TI_INTEN;
+	}
+	else {
+		cbp->ti &= ~DMA_TI_INTEN;
+	}
+
+	return cbp;
 }
 
 /*
@@ -338,8 +328,7 @@ static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_device *de
  * (the bottom eight bits) for TA = 1, CS, CPOL, CPHA 
 */
 
-static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf
-        , uint8_t *outbuf, int count) {
+static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf, uint8_t *outbuf, int count) {
 
     // Interrupt mode
     if( ( (REGS_SPI0->cs & SPI0_CS_INTD) || (REGS_SPI0->cs & SPI0_CS_INTR) ) ) {
