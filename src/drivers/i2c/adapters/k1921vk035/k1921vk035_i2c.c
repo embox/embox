@@ -57,4 +57,5 @@ irq_return_t i2c_irq_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
+#define I2C_IRQn 36
 STATIC_IRQ_ATTACH(I2C_IRQn, i2c_irq_handler, NULL);
