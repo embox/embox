@@ -68,7 +68,7 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int
 			(i) == 1 ? __MMU_SHIFT_1 : \
 			(i) == 2 ? __MMU_SHIFT_2 : __MMU_SHIFT_3)
 
-#define MMU_ENTRIES(i) (1u << (MMU_SHIFT(i - 1) - MMU_SHIFT((i))))
+#define MMU_ENTRIES(i) (1ul << (MMU_SHIFT(i - 1) - MMU_SHIFT((i))))
 #define MMU_MASK(i) ((MMU_ENTRIES(i) - 1) << MMU_SHIFT(i))
 #define MMU_SIZE(i) (MMU_ENTRIES(i + 1) * sizeof(mmu_vaddr_t))
 
