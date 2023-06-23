@@ -1,29 +1,68 @@
 /**
- * @file skeleton_spi_common.c
+ * @file skeleton_spi.c
  * @brief
  * @author Andrew Bursian
  * @version
- * @date 20.06.2023
+ * @date 22.06.2023
  */
 
 #include <drivers/spi.h>
-#include <util/log.h>
 
-#include "skeleton_spi.h"
+//#include "skeleton_spi.h"
+
+#include <drivers/gpio/gpio.h>
+#include <config/board_config.h>
+//#include <your-system-defines.h>
+#define SPI0_BASE_ADDR	NULL
+#define SPI1_BASE_ADDR	NULL
+
+struct spi_ops skeleton_spi_ops;
+
+struct skeleton_spi { // This is an example
+	void *instance;
+	unsigned short nss_port;
+	gpio_mask_t nss_pin;
+	uint16_t clk_div;
+	uint16_t bits_per_word;
+};
+
+#define SKELETON_SPI_DEV_DEF(idx) \
+	static struct skeleton_spi skeleton_spi##idx = {\
+		.instance = SPI##idx##_BASE_ADDR,	\
+	}
+
+#ifdef CONF_SPI0_ENABLED
+SKELETON_SPI_DEV_DEF(0);
+SPI_DEV_DEF("spi0", &skeleton_spi_ops, &skeleton_spi0, 0);
+#endif
+
+#ifdef CONF_SPI1_ENABLED
+SKELETON_SPI_DEV_DEF(1);
+SPI_DEV_DEF("spi1", &skeleton_spi_ops, &skeleton_spi1, 1);
+#endif
+
+// It may be "skeleton_spi.h" up to this line
 
 static int skeleton_spi_setup(struct skeleton_spi *dev, bool is_master) {
-	/* Set up your harware here */
+
+	/* Set up your hardware here */
 
 	return 0;
 }
 
-int skeleton_spi_init(struct skeleton_spi *dev) {
-	return skeleton_spi_setup(dev, true);
+static int skeleton_spi_init(struct spi_device *spi_dev) {
+	struct skeleton_spi *dev = spi_dev->priv;
+
+	/* Initialize your hardware here */
+
+	skeleton_spi_setup(dev, true);
+
+	return 0;
 }
 
 static int skeleton_spi_select(struct spi_device *spi_dev, int cs) {
-	log_debug("NIY");
-
+	struct skeleton_spi *dev = spi_dev->priv;
+	gpio_set(dev->nss_port, dev->nss_pin, cs);
 	return 0;
 }
 
@@ -54,6 +93,7 @@ static int skeleton_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 }
 
 struct spi_ops skeleton_spi_ops = {
+	.init     = skeleton_spi_init,
 	.select   = skeleton_spi_select,
 	.set_mode = skeleton_spi_set_mode,
 	.transfer = skeleton_spi_transfer
