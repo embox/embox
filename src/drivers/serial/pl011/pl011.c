@@ -60,57 +60,57 @@ static void pl011_set_baudrate(struct uart *dev) {
 	 * See 2.4.3 UART operation.  */
 	ibrd = (UARTCLK / (16 * BAUD_RATE));
 	fbrd = ((UARTCLK % (16 * BAUD_RATE)) * 64) / (16 * BAUD_RATE);
-	REG_STORE(UART_IBRD, ibrd);
-	REG_STORE(UART_FBRD, fbrd);
+	REG32_STORE(UART_IBRD, ibrd);
+	REG32_STORE(UART_FBRD, fbrd);
 #endif
 }
 
 static int pl011_irq_enable(struct uart *dev, const struct uart_params *params) {
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		REG_STORE(UART_IMSC, IMSC_RXIM);
+		REG32_STORE(UART_IMSC, IMSC_RXIM);
 	}
 	return 0;
 }
 
 static int pl011_irq_disable(struct uart *dev, const struct uart_params *params) {
-	REG_STORE(UART_IMSC, 0);
+	REG32_STORE(UART_IMSC, 0);
 
 	return 0;
 }
 
 static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 	/* Disable uart. */
-	REG_STORE(UART_CR, 0);
+	REG32_STORE(UART_CR, 0);
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		REG_STORE(UART_IMSC, IMSC_RXIM);
+		REG32_STORE(UART_IMSC, IMSC_RXIM);
 	}
 
 	pl011_set_baudrate(dev);
 
 	/* Word len 8 bit. */
-	REG_STORE(UART_LCRH, UART_WLEN_8BIT << UART_WLEN_SHIFT);
+	REG32_STORE(UART_LCRH, UART_WLEN_8BIT << UART_WLEN_SHIFT);
 
 	/* Enable uart. */
-	REG_STORE(UART_CR, UART_UARTEN | UART_TXE | UART_RXE);
+	REG32_STORE(UART_CR, UART_UARTEN | UART_TXE | UART_RXE);
 
 	return 0;
 }
 
 static int pl011_putc(struct uart *dev, int ch) {
-	while (REG_LOAD(UART_FR) & FR_TXFF) ;
+	while (REG32_LOAD(UART_FR) & FR_TXFF) ;
 
-	REG_STORE(UART_DR, (uint32_t)ch);
+	REG32_STORE(UART_DR, (uint32_t)ch);
 
 	return 0;
 }
 
 static int pl011_getc(struct uart *dev) {
-	return REG_LOAD(UART_DR);
+	return REG32_LOAD(UART_DR);
 }
 
 static int pl011_has_symbol(struct uart *dev) {
-	return !(REG_LOAD(UART_FR) & FR_RXFE);
+	return !(REG32_LOAD(UART_FR) & FR_RXFE);
 }
 
 static const struct uart_ops pl011_uart_ops = {
