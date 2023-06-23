@@ -122,6 +122,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 
 static int aarch64_mmu_init(void) {
 	uint64_t tcr;
+	uint64_t mmfr0;
 
 	switch (aarch64_current_el()) {
 	case 2:
@@ -158,6 +159,14 @@ static int aarch64_mmu_init(void) {
 		aarch64_tcr_el2_write(tcr);
 		break;
 	case 1:
+		mmfr0 = aarch64_id_aa64mmfr0_read();
+
+		/* Set maximum PA range */
+		tcr |= TCR_IPS(mmfr0 & ID_AA64MMFR0_EL1_PARANGE_MASK);
+
+		/* Set 48bit VA range */
+		tcr |= TCR_TZ0SZ(16);
+
 		aarch64_tcr_el1_write(tcr);
 		break;
 	default:

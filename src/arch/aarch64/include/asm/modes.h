@@ -25,9 +25,14 @@
 /* TCR bits */
 #define TCR_TG0_MASK 0x0000C000LL
 #define TCR_TG1_MASK 0xC0000000LL
+#define TCR_TZ0SZ(x)  ((x) << 0)
+#define TCR_IPS(x)    (((unsigned long) x) << 32)
 
 #define TCR_TG0_4KB  (0x0LL << 14)
 #define TCR_TG0_64KB (0x1LL << 14)
 #define TCR_TG0_16KB (0x2LL << 14)
+
+/* ID_AA64MMFR0_EL1 bits */
+#define ID_AA64MMFR0_EL1_PARANGE_MASK	((1UL << 5) - 1)
 
 #endif /* AARCH_ASM_MODES_H_ */
