@@ -1,0 +1,13 @@
+package embox.driver.serial
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035 extends embox.driver.diag.diag_api {
+
+	option number baud_rate = 115200
+
+	source "k1921vk035_uart.c"
+
+	depends embox.driver.serial.core
+	depends embox.driver.serial.diag
+}
+
