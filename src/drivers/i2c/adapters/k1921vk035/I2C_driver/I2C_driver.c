@@ -1,11 +1,3 @@
-/*==============================================================================
- * Драйвер интерфейса I2C для МК К1921ВК035
- *------------------------------------------------------------------------------
- * ДЦЭ Vostok г.Владивосток 2022г., Лебедев Михаил <micha030201@gmail.com>,
- * ДЦЭ Vostok г.Владивосток 2022г., Войтенко Алексей <alexeyvoytenko.2000@gmail.com>,
- *==============================================================================
- */
-
 #include "I2C_driver.h"
 
 typedef struct {
@@ -45,6 +37,7 @@ void I2C_driver_init(uint32_t freq) {
 }
 
 void restart_or_stop() {
+    // TODO if state == ERROR
     if (++I2C_driver.operations_start == I2C_driver.operations_size) {
         I2C_StopCmd();
         I2C_driver.state = I2C_DRIVER_OK;
@@ -56,12 +49,12 @@ void restart_or_stop() {
 
 void I2C_IRQHandler() {
     switch (I2C_GetState()) {
-        case I2C_State_STDONE: /*!< FS мастер - Сформировано состояние СТАРТа */
-        case I2C_State_RSDONE: /*!< FS мастер - Сформировано состояние повторного СТАРТа */
+        case I2C_State_STDONE: // start/
+        case I2C_State_RSDONE: // repeated start
             I2C_SetData(I2C_driver.operations[I2C_driver.operations_start].address);
             I2C_driver.state = I2C_DRIVER_BUSY;
             break;
-        case I2C_State_MTADPA: /*!< FS мастер передача - Отправлен адрес ведомого, ACK */
+        case I2C_State_MTADPA: // writing -- device address sent, ack
             if (I2C_driver.operations[I2C_driver.operations_start].size) {
                 I2C_SetData(I2C_driver.operations[I2C_driver.operations_start]
                                 .data[I2C_driver.operations[I2C_driver.operations_start].start++]);
@@ -70,7 +63,7 @@ void I2C_IRQHandler() {
                 restart_or_stop();
             }
             break;
-        case I2C_State_MTDAPA: /*!< FS мастер передача - Отправлен байт данных, ACK */
+        case I2C_State_MTDAPA: // writing -- data byte sent, ack
             if (I2C_driver.operations[I2C_driver.operations_start].start
                 != I2C_driver.operations[I2C_driver.operations_start].size) { // FIXME hard to read with this styleguide
                 I2C_SetData(I2C_driver.operations[I2C_driver.operations_start]
@@ -80,7 +73,7 @@ void I2C_IRQHandler() {
                 restart_or_stop();
             }
             break;
-        case I2C_State_MRADPA: /*!< FS мастер приём - Отправлен адрес ведомого, ACK */
+        case I2C_State_MRADPA: // reading -- device address sent, ack
             if (I2C_driver.operations[I2C_driver.operations_start].size == 1) {
                 I2C_NACKCmd();
                 I2C_driver.state = I2C_DRIVER_BUSY;
@@ -91,7 +84,7 @@ void I2C_IRQHandler() {
                 I2C_driver.state = I2C_DRIVER_BUSY;
             }
             break;
-        case I2C_State_MRDAPA: /*!< FS мастер приём - Принят байт данных, ACK */
+        case I2C_State_MRDAPA: // reading -- data byte received, ack
             if (I2C_driver.operations[I2C_driver.operations_start].start
                 != I2C_driver.operations[I2C_driver.operations_start].size) {
                 I2C_driver.operations[I2C_driver.operations_start]
@@ -105,7 +98,7 @@ void I2C_IRQHandler() {
                 I2C_driver.state = I2C_DRIVER_ERROR;
             }
             break;
-        case I2C_State_MRDANA: /*!< FS мастер приём - Принят байт данных, NACK */
+        case I2C_State_MRDANA: // reading -- data byte received, nack
             if (I2C_driver.operations[I2C_driver.operations_start].start
                 == I2C_driver.operations[I2C_driver.operations_start].size - 1) {
                 I2C_driver.operations[I2C_driver.operations_start]
@@ -115,12 +108,12 @@ void I2C_IRQHandler() {
                 I2C_driver.state = I2C_DRIVER_ERROR;
             }
             break;
-        case I2C_State_IDLE: /*!< Общий - Idle, нет доступной статусной информации */
-        case I2C_State_IDLARL: /*!< FS мастер - Потеря арбитража, переход в режим безадресного ведомого */
-        case I2C_State_MTADNA: /*!< FS мастер передача - Отправлен адрес ведомого, NACK */
-        case I2C_State_MTDANA: /*!< FS мастер передача - Отправлен байт данных, NACK */
-        case I2C_State_MRADNA: /*!< FS мастер приём - Отправлен адрес ведомого, NACK */
-        case I2C_State_MTMCER: /*!< FS мастер - Отправлен код мастера, обнаружена ошибка, ACK */
+        case I2C_State_IDLE: // idle, no information about status
+        case I2C_State_IDLARL: // losing arbitrage
+        case I2C_State_MTADNA: // writing -- device address sent, nack
+        case I2C_State_MTDANA: // writing -- data byte sent, nack
+        case I2C_State_MRADNA: // reading -- device address sent, nack
+        case I2C_State_MTMCER: // speed change code sent, error
         default:
             I2C_StopCmd();
             I2C_driver.state = I2C_DRIVER_ERROR;

@@ -1,11 +1,3 @@
-/*==============================================================================
- * Драйвер интерфейса I2C для МК К1921ВК035
- *------------------------------------------------------------------------------
- * ДЦЭ Vostok г.Владивосток 2022г., Лебедев Михаил <micha030201@gmail.com>,
- * ДЦЭ Vostok г.Владивосток 2022г., Войтенко Алексей <alexeyvoytenko.2000@gmail.com>,
- *==============================================================================
- */
-
 #ifndef _I2C_DRIVER
 #define _I2C_DRIVER
 
@@ -21,67 +13,67 @@
 #define I2C_DRIVER_WRITE_FLAG 0
 
 /**
- * Код возврата операций I2C.
+ * State of the I2C driver.
  */
 typedef enum __attribute__((__packed__)) {
-    I2C_DRIVER_BUSY = 0, /**< Операция ещё выполняется */
-    I2C_DRIVER_OK,       /**< Операция выполнилась успешно */
-    I2C_DRIVER_ERROR     /**< Операция выполнилась с ошибкой */
+    I2C_DRIVER_BUSY = 0, /**< Operations still in progress */
+    I2C_DRIVER_OK,       /**< All operations successful */
+    I2C_DRIVER_ERROR     /**< Error encountered in one of the operations */
 } I2C_driver_state_t;
 
 /**
- * Операция чтения или записи на шине I2C.
+ * Read or write I2C operation.
  */
 typedef struct {
-    uint8_t address; /**< Сдвинутый адрес устройства. Младший бит отвечает за тип операции -- 0 запись, 1 чтение */
-    uint8_t size;    /**< Количество байт для чтения или записи */
-    uint8_t start;   /**< Начало буфера чтения или записи, обычно 0 */
-    uint8_t* data; /**< Буфер чтения или записи. Должен быть размером как минимум start + size */
+    uint8_t address; /**< Shifted device address. Lowest bit is responsible for the type of the operation -- 0 to write, 1 to read */
+    uint8_t size;    /**< Number of bytes to read or write */
+    uint8_t start;   /**< Start of the buffer, usually 0 */
+    uint8_t* data;   /**< Buffer to read from or write to. Must be at least start + size bytes */
 } I2C_driver_operation_t;
 
 // Initialization:
 
 /**
- * @brief Инициализирует тактирование блока I2C, настраивает GPIO и прерывания.
+ * @brief Initializes the I2C block and sets up clocking, configures GPIO and interrupts.
  *
- * @param freq Частота шины I2C
+ * @param freq I2C bus frequency
  */
 void I2C_driver_init(uint32_t freq);
 
 // Low-level API:
 
 /**
- * @brief Последовательно выполняет операции чтения и/или записи, выполняя повторный старт между операциями.
+ * @brief Executes the operations in order, performing repeated start between them.
  *
- * @param operations Массив операций
- * @param size Размер массива операций
+ * @param operations Array of operations
+ * @param size Length of the array of operations
  */
 void I2C_driver_execute(I2C_driver_operation_t* operations, uint8_t size);
 
 /**
- * @brief Проверяет состояние выполнения операций.
+ * @brief Checks the status of the executing operations.
  *
- * @return Код возврата.
+ * @return Return code.
  */
 I2C_driver_state_t I2C_driver_is_done();
 
 // Slightly higher-level API:
 
 /**
- * @brief Производит одну операцию чтения.
+ * @brief Executes one write operation.
  *
- * @param address Несдвинутый адрес устройства
- * @param data Буфер данных для записи
- * @param size Размер буфера данных для записи
+ * @param address Device address (not shifted)
+ * @param data Buffer to read from
+ * @param size Length of the buffer
  */
 void I2C_driver_write(uint8_t address, const uint8_t* data, uint8_t size);
 
 /**
- * @brief Производит одну операцию записи.
+ * @brief Executes one read operation.
  *
- * @param address Несдвинутый адрес устройства
- * @param data Буфер для прочитанных данных
- * @param size Размер буфера для прочитанных данных
+ * @param address Device address (not shifted)
+ * @param data Buffer to write the data to
+ * @param size Length of the buffer
  */
 void I2C_driver_read(uint8_t address, uint8_t* data, uint8_t size);
 // Still need is_done for it though
