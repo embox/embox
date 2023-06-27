@@ -12,16 +12,6 @@
 #include "stm32f7xx_hal_usart.h"
 #include "stm32f7xx_hal_uart.h"
 
-#if defined STM32F746xx
-#include "stm32746g_discovery.h"
-#elif defined STM32F767xx
-#include "stm32f7xx_nucleo_144.h"
-#elif defined STM32F769xx
-#include "stm32f769i_discovery.h"
-#else
-#error Unsupported platform
-#endif
-
 #include <assert.h>
 #include <framework/mod/options.h>
 #include <module/embox/driver/serial/stm_usart_f7.h>
