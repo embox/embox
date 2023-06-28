@@ -17,7 +17,6 @@
 .global EXC_HANDLER_NAME(DEBUG_MONITOR)
 EXC_HANDLER_NAME(DEBUG_MONITOR):
 	@ Move top of excpt stack to r0
-	@ mrs r1, IPSR
 	ldr     r1, =SCB_ICSR
 	ldr     r0, [r1]
 	tst     r0, #SCB_ICSR_RETTOBASE
@@ -46,10 +45,10 @@ EXC_HANDLER_NAME(DEBUG_MONITOR):
 	ldmfd   r0, {r0-r3}
 	stmfd   sp!, {r0-r3}
 
-	@ Call gdb_stub
+	@ Call arm_debug_monitor_handler
 	mov     r0, sp
 	stmfd   sp!, {lr}
-	bl      gdb_stub
+	bl      arm_debug_monitor_handler
 	ldmfd   sp!, {lr}
 
 	@ Load regs and exit

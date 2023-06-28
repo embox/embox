@@ -1,0 +1,10 @@
+package embox.lib
+
+abstract module gdbstub {
+	option boolean vmem=false
+
+	source "gdbstub.c"
+
+	@IncludeExport(path="debug")
+	source "gdbstub.h"
+}

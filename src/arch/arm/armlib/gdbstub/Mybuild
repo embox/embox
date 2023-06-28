@@ -1,0 +1,8 @@
+package embox.arch.arm.armlib
+
+module gdbstub extends embox.lib.gdbstub {
+	source "gdbstub.c"
+	source "gdbstub.h"
+}
+
+	

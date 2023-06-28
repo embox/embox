@@ -101,10 +101,13 @@
 /*** Debug Control Block Registers (DCB) ***/
 #define ARM_M_DCB_BASE              0xe000edf0
 #define DCB_DHCSR                   (ARM_M_DCB_BASE + 0x00) 
+# define DCB_DCRSR_DBGKEY           (0xa05fUL << 16)
+# define DCB_DCRSR_C_DEBUGEN        BIT(0)
 #define DCB_DCRSR                   (ARM_M_DCB_BASE + 0x04) 
 #define DCB_DCRDR                   (ARM_M_DCB_BASE + 0x08) 
 #define DCB_DEMCR                   (ARM_M_DCB_BASE + 0x0c) 
 # define DCB_DEMCR_MON_EN           BIT(16) /* Enable DebugMonitor Exception */
+# define DCB_DEMCR_TRCENA           BIT(24)
 #define DCB_DSCSR                   (ARM_M_DCB_BASE + 0x18) 
 
 #define isb() \
