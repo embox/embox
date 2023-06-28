@@ -12,20 +12,6 @@
 #include "stm32f4xx_hal_usart.h"
 #include "stm32f4xx_hal_uart.h"
 
-#if defined(STM32F407xx) && defined(USE_STM32F4_DISCO)
-#include "stm32f4_discovery.h"
-#elif defined(STM32F407xx) && defined(USE_STM32F4VE)
-/* #define NOTHING */
-#elif defined(STM32F429xx) && defined(USE_STM32F4XX_NUCLEO_144)
-#include "stm32f4xx_nucleo_144.h"
-#elif defined(STM32F429xx)
-#include "stm32f429i_discovery.h"
-#elif defined(STM32F411xE)
-#include "stm32f411xe.h"
-#else
-#error Unsupported platform
-#endif
-
 #include <assert.h>
 #include <framework/mod/options.h>
 #include <module/embox/driver/serial/stm_usart_f4.h>
