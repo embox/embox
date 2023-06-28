@@ -1,0 +1,19 @@
+package embox.kernel
+
+@DefaultImpl(no_kgdb)
+abstract module kgdb_api {
+}
+
+module kgdb extends kgdb_api {
+	source "kgdb.c"
+
+	@IncludeExport(path="kernel")
+	source "kgdb.h"
+
+	depends embox.lib.gdbstub
+}
+
+module no_kgdb extends kgdb_api {
+	@IncludeExport(path="kernel", target_name="kgdb.h")
+	source "no_kgdb.h"
+}
