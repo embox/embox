@@ -122,6 +122,17 @@ void uart_deregister(struct uart *uart) {
 	index_free(&serial_indexator, uart->idx);
 }
 
+ struct uart *uart_dev_lookup(const char *name) {
+	struct uart *uart = NULL;
+
+	uart_foreach(uart) {
+		if (0 == strcmp(uart->dev_name, name) ) {
+			return uart;
+		}
+	}
+	return NULL;
+ }
+
 int uart_open(struct uart *uart) {
 	if (uart_state_test(uart, UART_STATE_OPEN)) {
 		return -EINVAL;
