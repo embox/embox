@@ -16,9 +16,7 @@
 #include <drivers/serial/diag_serial.h>
 
 #include <framework/mod/options.h>
-#include <embox/unit.h>
 
-EMBOX_UNIT_INIT(uart_init);
 
 #define UART_BASE OPTION_GET(NUMBER,base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER,irq_num)
@@ -113,7 +111,7 @@ static int pl011_has_symbol(struct uart *dev) {
 	return !(REG32_LOAD(UART_FR) & FR_RXFE);
 }
 
-static const struct uart_ops pl011_uart_ops = {
+const struct uart_ops pl011_uart_ops = {
 		.uart_getc = pl011_getc,
 		.uart_putc = pl011_putc,
 		.uart_hasrx = pl011_has_symbol,
@@ -122,26 +120,10 @@ static const struct uart_ops pl011_uart_ops = {
 		.uart_irq_dis = pl011_irq_disable,
 };
 
-static struct uart uart0 = {
+struct uart uart0 = {
 		.uart_ops = &pl011_uart_ops,
 		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,
 };
 
-static const struct uart_params uart_defparams = {
-		.baud_rate = BAUD_RATE,
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
-};
 
-static const struct uart_params uart_diag_params = {
-		.baud_rate = BAUD_RATE,
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
-};
-
-DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
-
-static int uart_init(void) {
-	return uart_register(&uart0, &uart_defparams);
-}
-
-PERIPH_MEMORY_DEFINE(pl011, UART_BASE, 0x48);
