@@ -15,6 +15,7 @@
 #include <util/indexator.h>
 #include <util/dlist.h>
 #include <util/ring_buff.h>
+#include <util/array.h>
 
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
@@ -22,6 +23,8 @@
 #include <drivers/device.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_dev.h>
+
+ARRAY_SPREAD_DEF(struct uart *const, __uart_device_registry);
 
 DLIST_DEFINE(uart_list);
 
@@ -90,6 +93,14 @@ int uart_register(struct uart *uart,
 		const struct uart_params *uart_defparams) {
 	int res;
 	size_t allocated_idx;
+	struct uart * existed_uart_dev;
+
+	array_spread_foreach(existed_uart_dev, __uart_device_registry)  {
+		if (uart == existed_uart_dev) {
+			/* uart has been inited statically */
+			return 0;
+		}
+	}
 
 	allocated_idx = index_alloc(&serial_indexator, INDEX_MIN);
 	if (allocated_idx == INDEX_NONE) {
