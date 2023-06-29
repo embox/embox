@@ -28,7 +28,15 @@ extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 extern const struct uart_ops pl011_uart_ops;
 
-extern struct uart uart0;
+static struct uart uart0 = {
+		.uart_ops = &pl011_uart_ops,
+		.irq_num = IRQ_NUM,
+		.base_addr = UART_BASE,
+		.params = {
+				.baud_rate = BAUD_RATE,
+				.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
+		}
+};
 
 static const struct uart_params uart_defparams = {
 		.baud_rate = BAUD_RATE,
@@ -41,6 +49,6 @@ static int uart_init(void) {
 
 PERIPH_MEMORY_DEFINE(pl011, UART_BASE, 0x48);
 
-//STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart0);
+STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart0);
 
-//TTYS_DEF(TTY_NAME, &uart0);
+TTYS_DEF(TTY_NAME, &uart0);
