@@ -186,7 +186,7 @@ static inline void uart_state_clear(struct uart *uart, int mask) {
 
 extern struct dlist_head *uart_get_list(void);
 
-#define uart_foreach(uart_dev) \
+#define uart_opened_foreach(uart_dev) \
 	dlist_foreach_entry(uart_dev, uart_get_list(), uart_lnk)
 
 #endif /* UART_DEVICE_H_ */

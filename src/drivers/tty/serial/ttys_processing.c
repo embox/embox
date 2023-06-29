@@ -59,7 +59,7 @@ static int uart_rx_buff_put(struct uart *dev) {
 static int uart_rx_action(struct lthread *self) {
 	struct uart *uart = NULL;
 
-	uart_foreach(uart) {
+	uart_opened_foreach(uart) {
 		int ch;
 		
 		if (uart_state_test(uart, UART_STATE_RX_ACTIVE)) {

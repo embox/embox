@@ -136,7 +136,7 @@ void uart_deregister(struct uart *uart) {
  struct uart *uart_dev_lookup(const char *name) {
 	struct uart *uart = NULL;
 
-	uart_foreach(uart) {
+	uart_opened_foreach(uart) {
 		if (0 == strcmp(uart->dev_name, name) ) {
 			return uart;
 		}
