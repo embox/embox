@@ -29,6 +29,7 @@ extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 extern const struct uart_ops pl011_uart_ops;
 
 static struct uart uart0 = {
+		.dev_name = TTY_NAME,
 		.uart_ops = &pl011_uart_ops,
 		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,
@@ -36,6 +37,7 @@ static struct uart uart0 = {
 				.baud_rate = BAUD_RATE,
 				.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 		}
+
 };
 
 static const struct uart_params uart_defparams = {
