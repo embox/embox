@@ -15,6 +15,7 @@
 #include <util/indexator.h>
 #include <util/dlist.h>
 #include <util/ring_buff.h>
+#include <util/array.h>
 
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
@@ -22,6 +23,8 @@
 #include <drivers/device.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_dev.h>
+
+ARRAY_SPREAD_DEF(struct uart *const, __uart_device_registry);
 
 DLIST_DEFINE(uart_list);
 
@@ -67,12 +70,6 @@ static int uart_setup(struct uart *uart) {
 	return 0;
 }
 
-#define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
-
-INDEX_DEF(serial_indexator, 0, UART_MAX_N);
-
-extern int ttys_register(const char *name, void *dev_info);
-
 static void uart_internal_init(struct uart *uart) {
 	if (uart_state_test(uart, UART_STATE_INITED)) {
 		return;
@@ -84,42 +81,6 @@ static void uart_internal_init(struct uart *uart) {
 			UART_RX_BUFF_SZ, uart->uart_rx_buff);
 
 	dlist_add_next(&uart->uart_lnk, &uart_list);
-}
-
-int uart_register(struct uart *uart,
-		const struct uart_params *uart_defparams) {
-	int res;
-	size_t allocated_idx;
-
-	allocated_idx = index_alloc(&serial_indexator, INDEX_MIN);
-	if (allocated_idx == INDEX_NONE) {
-		return -EBUSY;
-	}
-	uart->idx = (unsigned char)allocated_idx;
-
-	snprintf(uart->dev_name, UART_NAME_MAXLEN, "ttyS%d", uart->idx);
-
-	if (uart_defparams) {
-		memcpy(&uart->params, uart_defparams, sizeof(struct uart_params));
-	} else {
-		memset(&uart->params, 0, sizeof(struct uart_params));
-	}
-
-	res = ttys_register(uart->dev_name, uart);
-	if (0 != res) {
-		log_error("Failed to register tty %s", uart->dev_name);
-		index_free(&serial_indexator, uart->idx);
-		return res;
-	}
-
-	return 0;
-}
-
-void uart_deregister(struct uart *uart) {
-
-	dlist_del(&uart->uart_lnk);
-
-	index_free(&serial_indexator, uart->idx);
 }
 
 int uart_open(struct uart *uart) {
