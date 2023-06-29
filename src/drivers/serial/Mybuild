@@ -1,31 +1,5 @@
 package embox.driver.serial
 
-@DefaultImpl(core_tty)
-abstract module core {
-	option number uart_max_n = 4
-	option number log_level = 1
-
-	source "uart_dev.c"
-
-	@IncludeExport(path="drivers/serial")
-	source "uart_dev.h"
-
-	@NoRuntime depends embox.util.indexator
-	@NoRuntime depends embox.util.dlist
-	@NoRuntime depends embox.util.log
-	@NoRuntime depends embox.mem.pool
-}
-
-module core_tty extends core {
-	@NoRuntime depends embox.driver.tty.serial
-	@NoRuntime depends embox.driver.common
-}
-
-module core_notty extends core {
-	@NoRuntime depends embox.driver.tty.serial_stub
-	@NoRuntime depends embox.driver.common
-}
-
 module diag {
 	source "diag_serial.c"
 
