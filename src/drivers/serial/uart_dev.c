@@ -73,6 +73,7 @@ static int uart_setup(struct uart *uart) {
 #define UART_MAX_N OPTION_GET(NUMBER,uart_max_n)
 
 INDEX_DEF(serial_indexator, 0, UART_MAX_N);
+static struct uart *__uart_device_dynamic_registry[UART_MAX_N];
 
 extern int ttys_register(const char *name, void *dev_info);
 
@@ -123,6 +124,8 @@ int uart_register(struct uart *uart,
 		return res;
 	}
 
+	__uart_device_dynamic_registry[uart->idx ] = uart;
+
 	return 0;
 }
 
@@ -133,14 +136,25 @@ void uart_deregister(struct uart *uart) {
 	index_free(&serial_indexator, uart->idx);
 }
 
- struct uart *uart_dev_lookup(const char *name) {
+struct uart *uart_dev_lookup(const char *name) {
+	int i;
 	struct uart *uart = NULL;
 
-	uart_opened_foreach(uart) {
+	array_spread_foreach(uart, __uart_device_registry) {
 		if (0 == strcmp(uart->dev_name, name) ) {
 			return uart;
 		}
 	}
+	for(i = 0 ; i < ARRAY_SIZE(__uart_device_dynamic_registry); i++) {
+		if (NULL == __uart_device_dynamic_registry[i]) {
+			continue;
+		}
+		uart = __uart_device_dynamic_registry[i];
+		if (0 == strcmp(uart->dev_name, name) ) {
+			return uart;
+		}
+	}
+
 	return NULL;
  }
 
