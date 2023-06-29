@@ -18,7 +18,12 @@
 
 extern const struct uart_ops pl011_uart_ops;
 
-extern struct uart uart0;
+static struct uart uart0 = {
+		.uart_ops = &pl011_uart_ops,
+		.irq_num = IRQ_NUM,
+		.base_addr = UART_BASE,
+};
+
 
 static const struct uart_params uart_diag_params = {
 		.baud_rate = BAUD_RATE,

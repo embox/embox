@@ -120,10 +120,3 @@ const struct uart_ops pl011_uart_ops = {
 		.uart_irq_dis = pl011_irq_disable,
 };
 
-struct uart uart0 = {
-		.uart_ops = &pl011_uart_ops,
-		.irq_num = IRQ_NUM,
-		.base_addr = UART_BASE,
-};
-
-
