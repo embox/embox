@@ -1,0 +1,26 @@
+package embox.driver.spi
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035 {
+	option number init_freq_div=20
+
+	option number pin_cs0=-1
+	option number port_cs0=-1
+
+	option number pin_cs1=-1
+	option number port_cs1=-1
+
+	option number pin_cs2=-1
+	option number port_cs2=-1
+
+	option number pin_cs3=-1
+	option number port_cs3=-1
+
+	option number pin_cs4=-1
+	option number port_cs4=-1
+
+	source "k1921vk035_spi.c"
+
+	depends embox.driver.spi
+    depends third_party.bsp.k1921vk_sdk.plib035
+}
