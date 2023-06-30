@@ -21,6 +21,7 @@ extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 #define TTY_NAME    "ttyS0"
 
 static struct uart stm32_ttySx = {
+		.dev_name = TTY_NAME,
 		.uart_ops = &stm32_uart_ops,
 		.irq_num = USARTx_IRQn,
 		.base_addr = (unsigned long) USARTx,
