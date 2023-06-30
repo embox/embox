@@ -8,6 +8,8 @@ module pl011 extends embox.driver.diag.diag_api {
 	option number uartclk = 0
 
 	source "pl011.c"
+	source "pl011_diag.c"
+	source "pl011_ttys0.c"
 
 	depends core
 	depends diag

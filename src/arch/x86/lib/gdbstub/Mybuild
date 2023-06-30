@@ -1,0 +1,6 @@
+package embox.arch.x86
+
+module gdbstub extends embox.lib.gdbstub {
+	source "gdbstub.c"
+	source "gdbstub.h"
+}

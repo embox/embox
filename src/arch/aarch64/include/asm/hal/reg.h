@@ -263,4 +263,8 @@ static inline void aarch64_tcr_el2_write(uint64_t reg) {
 	write_system_reg(TCR_EL2, reg);
 }
 
+static inline uint64_t aarch64_id_aa64mmfr0_read(void) {
+	return read_system_reg(ID_AA64MMFR0_EL1);
+}
+
 #endif /* AARCH_HAL_REG_ */

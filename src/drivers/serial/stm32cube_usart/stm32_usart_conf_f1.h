@@ -14,12 +14,6 @@
 #include "stm32f1xx_hal_usart.h"
 #include "stm32f1xx_hal_uart.h"
 
-#if defined(STM32F100xB)
-#include "stm32vl_discovery.h"
-#else
-#error Unsupported platform
-#endif
-
 #include <assert.h>
 #include <framework/mod/options.h>
 #include <module/embox/driver/serial/stm_usart_f1.h>
@@ -42,7 +36,7 @@ static_assert(USART2_IRQ == USART2_IRQn, "");
 
 #define USART1_IRQ    \
 	OPTION_MODULE_GET(embox__driver__serial__stm_usart_f1, NUMBER, usart1_irq)
-static_assert(USART2_IRQ == USART2_IRQn, "");
+static_assert(USART1_IRQ == USART1_IRQn, "");
 
 
 #if MODOPS_USARTX == 1

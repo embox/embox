@@ -22,5 +22,5 @@ module gdbserver {
 	source "gdbserver.c"
 
 	depends embox.compat.posix.net.socket
-	depends embox.lib.gdb
+	depends embox.lib.gdbstub
 }

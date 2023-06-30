@@ -14,6 +14,7 @@
 #include <drivers/irqctrl.h>
 #include <embox/runlevel.h>
 #include <kernel/printk.h>
+#include <kernel/kgdb.h>
 
 static void kernel_init(void);
 static int init(void);
@@ -24,6 +25,8 @@ extern int system_start(void);
 void kernel_start(void) {
 
 	kernel_init();
+
+	kgdb_init(init);
 
 	init();
 
