@@ -1,0 +1,24 @@
+package embox.cmd.hardware
+
+@App
+@AutoCmd
+@Cmd(name = "tty_test")
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module tty_test {
+	source "tty_test.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+
+@App
+@AutoCmd
+@Cmd(name = "uart_test")
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module uart_test {
+	source "uart_test.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+
