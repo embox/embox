@@ -17,8 +17,10 @@
 #include <plib035_spi.h>
 #include <plib035_rcu.h>
 
-#define K1921VK035_SPI_INIT_FREQ_DIV OPTION_GET(NUMBER,init_freq_div)
 
+#define K1921VK035_SPI_DEFAULT_FREQ_DIV OPTION_GET(NUMBER,default_freq_div)
+
+#define K1921VK035_SPI_CS_UNDEFINED 255
 #define K1921VK035_SPI_MAX_CS 5
 #define K1921VK035_SPI_CS_MAP_PORT 0
 #define K1921VK035_SPI_CS_MAP_PIN 1
@@ -27,31 +29,31 @@ typedef struct  {
 	uint8_t cs_map[K1921VK035_SPI_MAX_CS][2];
 }k1921vk035_spi_dev_t;
 
-k1921vk035_spi_dev_t k1921vk035_spi0_dev = {
-    .cs = 0,
-    .cs_map = [
-        {OPTION_GET(NUMBER,port_cs0), OPTION_GET(NUMBER,pin_cs0)},
-        {OPTION_GET(NUMBER,port_cs1), OPTION_GET(NUMBER,pin_cs1)},
-        {OPTION_GET(NUMBER,port_cs2), OPTION_GET(NUMBER,pin_cs2)},
-        {OPTION_GET(NUMBER,port_cs3), OPTION_GET(NUMBER,pin_cs3)},
-        {OPTION_GET(NUMBER,port_cs4), OPTION_GET(NUMBER,pin_cs4)}
-    ]
-}
+k1921vk035_spi_dev_t k1921vk035_spi0_dev = {.cs = 0,
+                                            .cs_map = {{OPTION_GET(NUMBER, port_cs0), OPTION_GET(NUMBER, pin_cs0)},
+                                                       {OPTION_GET(NUMBER, port_cs1), OPTION_GET(NUMBER, pin_cs1)},
+                                                       {OPTION_GET(NUMBER, port_cs2), OPTION_GET(NUMBER, pin_cs2)},
+                                                       {OPTION_GET(NUMBER, port_cs3), OPTION_GET(NUMBER, pin_cs3)},
+                                                       {OPTION_GET(NUMBER, port_cs4), OPTION_GET(NUMBER, pin_cs4)}}};
 
-void k1921vk035_spi_config(int flags){
+void k1921vk035_spi_config(struct spi_device *dev){
     int clk_div;
+
     SPI_Cmd(DISABLE);
     SPI_DataWidthConfig(SPI_DataWidth_8);
     SPI_FrameFormatConfig(SPI_FrameFormat_SPI);
     SPI_ModeConfig(SPI_Mode_Master);
     SPI_SCKPhase_TypeDef SPI_SCKPhase =
-        (flags & SPI_CS_MODE(SPI_MODE_1)) > 0 ? SPI_SCKPhase_CaptureFall : SPI_SCKPhase_CaptureRise;
+        (dev->flags & SPI_CS_MODE(SPI_MODE_1)) > 0 ? SPI_SCKPhase_CaptureFall : SPI_SCKPhase_CaptureRise;
     SPI_SCKPolarity_TypeDef SPI_SCKPolarity =
-        (flags & SPI_CS_MODE(SPI_MODE_2)) > 0 ? SPI_SCKPolarity_SteadyHigh : SPI_SCKPolarity_SteadyLow;
+        (dev->flags & SPI_CS_MODE(SPI_MODE_2)) > 0 ? SPI_SCKPolarity_SteadyHigh : SPI_SCKPolarity_SteadyLow;
     SPI_SCKConfig(SPI_SCKPhase, SPI_SCKPolarity);
 
-    clk_div = (flags >> 16) & 0xFFFF;
-    assert(clk_div > 1 & clk_div <= 512);
+    clk_div = (dev->flags >> 16) & 0xFFFF;
+    if (clk_div == 0){
+        clk_div = K1921VK035_SPI_DEFAULT_FREQ_DIV;
+    }
+    assert(clk_div > 1 && clk_div <= 512);
     if (clk_div > 1) {
         SPI_SCKDivConfig((clk_div / 2) - 1,2);
     }
@@ -66,7 +68,8 @@ static int k1921vk035_spi_init(struct spi_device *dev) {
     gpio_setup_mode(GPIO_PORT_B, ( 1 << 5 ) | ( 1 << 6 ) | ( 1 << 7 ), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
 
     for (int i = 0; i < K1921VK035_SPI_MAX_CS; i++) {
-        if (k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PORT] >= 0 && k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PIN] >= 0) {
+        if (k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PORT] != K1921VK035_SPI_CS_UNDEFINED 
+        && k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PIN] != K1921VK035_SPI_CS_UNDEFINED ) {
         gpio_setup_mode(k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PORT], 
                         k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PIN], GPIO_MODE_OUT_PUSH_PULL);
         gpio_set(k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PORT], 
@@ -77,8 +80,9 @@ static int k1921vk035_spi_init(struct spi_device *dev) {
     RCU_SPIClkConfig(RCU_PeriphClk_PLLClk, 0, DISABLE);
     RCU_SPIRstCmd(ENABLE);
     RCU_SPIClkCmd(ENABLE);
+    dev->flags = SPI_CS_DIVSOR(K1921VK035_SPI_DEFAULT_FREQ_DIV);
 
-    k1921vk035_spi_config(SPI_CS_DIVSOR(K1921VK035_SPI_INIT_FREQ_DIV));
+    k1921vk035_spi_config(dev);
 
     return 0;
 }
@@ -92,7 +96,7 @@ static void k1921vk035_spi_set_cs(const k1921vk035_spi_dev_t* k1921vk035_spi_dev
     pin = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PIN];
     port = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PORT];
     
-    assert(pin > -1 && port > -1);
+    assert(pin != K1921VK035_SPI_CS_UNDEFINED  && pin != K1921VK035_SPI_CS_UNDEFINED);
     
     gpio_set(port, 1 << pin, state);
 }
@@ -100,7 +104,7 @@ static void k1921vk035_spi_set_cs(const k1921vk035_spi_dev_t* k1921vk035_spi_dev
 static int k1921vk035_spi_select(struct spi_device *dev, int cs) {
     k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
     int res = 0;
-    int gpio_n = 0;
+    int pin = 0;
     int port = 0;
 
     pin = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PIN];
@@ -110,13 +114,13 @@ static int k1921vk035_spi_select(struct spi_device *dev, int cs) {
         log_error("Only cs=0..4 are avalable!");
         return -EINVAL;
     }
-    if(pin < 0 && port < 0){
+    if(pin == K1921VK035_SPI_CS_UNDEFINED && port == K1921VK035_SPI_CS_UNDEFINED){
         log_error("cs=%d, not configured. port_cs=%d, pin_cs=%d", 
                   cs, port, pin);
         return -EINVAL;
     }
     k1921vk035_spi_dev->cs = cs;
-    k1921vk035_spi_config(dev->flags);
+    k1921vk035_spi_config(dev);
     return res;
 }
 
@@ -159,4 +163,4 @@ struct spi_ops k1921vk035_spi_ops = {
 };
 
 
-SPI_DEV_DEF("spi0", &k1921vk035_spi_ops, k1921vk035_spi0_dev, 0);
+SPI_DEV_DEF("spi0", &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
