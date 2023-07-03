@@ -9,14 +9,12 @@
 #include <embox/unit.h>
 #include "kernel/irq.h"
 
-// EMBOX_UNIT_INIT(uart_init);
+EMBOX_UNIT_INIT(uart_init);
 
-// This definitions in termbits.h conflicts with K1921VK035.h
-#undef CR0
-#undef CR1
 #include "plib035_uart.h"
 
 #define BAUD_RATE OPTION_GET(NUMBER, baud_rate)
+#define USE_UART0_AS_DIAG OPTION_GET(BOOLEAN, use_uart0_as_diag)
 
 #define UART_GPIO			GPIO_PORT_B
 #define UART0_GPIO_TX_mask		(1<<10)
@@ -24,17 +22,19 @@
 #define UART1_GPIO_TX_mask		(1<<8)
 #define UART1_GPIO_RX_mask		(1<<9)
 
-
 static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *params) {
     UART_TypeDef* uart = (void* )dev->base_addr;
     UART_Num_TypeDef uart_num;
+    short uart_irq_num;
     gpio_mask_t uart_gpio_mask;
     if(uart == UART0) {
         uart_num = UART0_Num;
+        uart_irq_num = UART0_RX_IRQn;
         uart_gpio_mask = UART0_GPIO_TX_mask | UART0_GPIO_RX_mask;
     }
     else {
         uart_num = UART1_Num;
+        uart_irq_num = UART1_RX_IRQn;
         uart_gpio_mask = UART1_GPIO_TX_mask | UART1_GPIO_RX_mask;
     }
 
@@ -62,6 +62,10 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
 
     UART_Init(uart, &uart_init_struct);
     UART_Cmd(uart, ENABLE);
+    if(params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+        NVIC_EnableIRQ(uart_irq_num);
+        UART_ITCmd(uart, UART_IMSC_RXIM_Msk, ENABLE);
+    }
 
 	return 0;
 }
@@ -109,19 +113,44 @@ static const struct uart_ops k1921vk035_uart_ops = {
 		.uart_irq_dis = k1921vk035_uart_irq_dis,
 };
 
-static const struct uart_params uart_diag_params = {
-		.baud_rate = BAUD_RATE,
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
+#if USE_UART0_AS_DIAG
+static struct uart uart0 = {
+		.uart_ops = &k1921vk035_uart_ops,
+		// .irq_num = UART0_RX_IRQn, used for diag device, does not use interrupts
+		.base_addr = (uint32_t)UART0,
+        .params = {
+            .baud_rate = BAUD_RATE,
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
+        },
 };
+
+DIAG_SERIAL_DEF(&uart0, &uart0.params);
+#else
+// User can provide callback
+// extern irq_return_t uart0_handler(unsigned int irq_nr, void *data);
+__weak irq_return_t uart0_handler(unsigned int irq_nr, void *data) {
+    return IRQ_HANDLED;
+}
 
 static struct uart uart0 = {
 		.uart_ops = &k1921vk035_uart_ops,
 		.irq_num = UART0_RX_IRQn, // TODO: Which irq should we use?
 		.base_addr = (uint32_t)UART0,
+        .irq_handler = uart0_handler,
+        .params = {
+            .baud_rate = BAUD_RATE,
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ, 
+        },
 };
 
-#if 1
-irq_return_t test_handler(unsigned int a, void* b) {
+// NOTE: UART0_RX_IRQn is 26
+STATIC_IRQ_ATTACH(26, uart0_handler, &uart0);
+
+#endif // USE_UART0_AS_DIAG
+
+// User can provide callback
+// extern irq_return_t uart1_handler(unsigned int irq_nr, void *data);
+__weak irq_return_t uart1_handler(unsigned int irq_nr, void *data) {
     return IRQ_HANDLED;
 }
 
@@ -129,24 +158,27 @@ static struct uart uart1 = {
 		.uart_ops = &k1921vk035_uart_ops,
 		.irq_num = UART1_RX_IRQn, // TODO: Which irq should we use?
 		.base_addr = (uint32_t)UART1,
-        .irq_handler = test_handler,
+        .irq_handler = uart1_handler,
         .params = {
             .baud_rate = BAUD_RATE,
-            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ,
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ, 
         },
 };
-#define TTY_NAME "ttyS0"
-TTYS_DEF(TTY_NAME, &uart1);
-#endif
 
+// NOTE: UART1_RX_IRQn is 30
+STATIC_IRQ_ATTACH(30, uart1_handler, &uart1);
 
-DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
-
-/*
 static int uart_init(void) {
-    // TODO: can we use uart as both uart device and diag device?
-    // TODO: Should we register uart? As far as I can tell, this is not called in stm32 uart example
-	// return uart_register(&uart1, &uart_diag_params) && uart_register(&uart0, &uart_diag_params);
+#if USE_UART0_AS_DIAG
+    // In this case we only open uart1 
+    int retval = uart_register(&uart1, &uart1.params) || uart_open(&uart1);
+#else
+    // In this case we open both uarts
+    int retval = uart_register(&uart0, &uart0.params) || uart_open(&uart0) ||
+                 uart_register(&uart1, &uart1.params) || uart_open(&uart1);
+#endif // USE_UART0_AS_DIAG
+	return retval; 
 }
-*/
+
+
 
