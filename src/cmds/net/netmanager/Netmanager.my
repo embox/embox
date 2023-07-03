@@ -25,7 +25,7 @@ module netmanager {
 	depends embox.cmd.net.route
 
 	depends embox.compat.libc.stdio.open
-	depends embox.compat.libc.stdio.print
+	depends embox.compat.libc.stdio.print_impl
 	depends embox.compat.libc.stdio.scanf
 	depends embox.compat.libc.stdlib.system
 	depends embox.compat.libc.str
@@ -58,7 +58,7 @@ module net_service {
 	depends embox.net.af_netlink
 
 	depends embox.compat.libc.stdio.open
-	depends embox.compat.libc.stdio.print
+	depends embox.compat.libc.stdio.print_impl
 	depends embox.compat.libc.stdio.scanf
 	depends embox.compat.libc.stdlib.system
 	depends embox.compat.libc.str
