@@ -27,7 +27,7 @@ typedef struct  {
 	uint8_t cs_map[K1921VK035_SPI_MAX_CS][2];
 }k1921vk035_spi_dev_t;
 
-k1921vk035_spi_dev_t k1921vk035_spi_dev = {
+k1921vk035_spi_dev_t k1921vk035_spi0_dev = {
     .cs = 0,
     .cs_map = [
         {OPTION_GET(NUMBER,port_cs0), OPTION_GET(NUMBER,pin_cs0)},
@@ -60,8 +60,9 @@ void k1921vk035_spi_config(int flags){
 
 
 }
-static int k1921vk035_spi_init(const k1921vk035_spi_dev_t* k1921vk035_spi_dev) {
+static int k1921vk035_spi_init(struct spi_device *dev) {
     //Init SPI_TX - PB7, SPI_RX - PB6 , SPI_SCK - PB5
+    k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
     gpio_setup_mode(GPIO_PORT_B, ( 1 << 5 ) | ( 1 << 6 ) | ( 1 << 7 ), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
 
     for (int i = 0; i < K1921VK035_SPI_MAX_CS; i++) {
@@ -152,14 +153,10 @@ static int k1921vk035_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 }
 
 struct spi_ops k1921vk035_spi_ops = {
+    .init     = k1921vk035_spi_init,
     .select   = k1921vk035_spi_select,
     .transfer = k1921vk035_spi_transfer
 };
 
 
-SPI_DEV_DEF("spi", &k1921vk035_spi_ops, k1921vk035_spi_dev, 0);
-
-EMBOX_UNIT_INIT(k1921vk035_spi0_init);
-static int k1921vk035_spi0_init() {
-    return k1921vk035_spi_init(&k1921vk035_spi_dev);
-}
+SPI_DEV_DEF("spi0", &k1921vk035_spi_ops, k1921vk035_spi0_dev, 0);
