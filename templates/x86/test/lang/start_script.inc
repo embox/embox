@@ -20,11 +20,12 @@
 
 "mruby fib.rb",
 
-"lua fib.lua",
-"lua doit.lua",
-"lua tofi_mod.lua /tmp/new_file.txt",
+"lua lua/fib.lua",
+"lua lua/doit.lua",
+"lua lua/tofi_mod.lua /tmp/new_file.txt",
 "cat /tmp/new_file.txt",
-"lua http_request.lua http://example.com",
+
+"lua lua/luasocket/http_request.lua http://example.com",
 
 "tclsh run_embox_cmd.tcl",
 "tclsh fib.tcl",
