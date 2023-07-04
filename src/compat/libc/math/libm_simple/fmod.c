@@ -14,6 +14,10 @@
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
+<<<<<<< HEAD
+=======
+#include <inttypes.h>
+>>>>>>> e02a5bbfc (Update fmod.c)
 
 #include "math_private.h"
 
