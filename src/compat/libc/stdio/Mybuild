@@ -30,7 +30,7 @@ static module sprintf {
 	source "sprintf.c"
 	source "snprintf.c"
 
-	@NoRuntime depends print
+	@NoRuntime depends print_impl
 	@NoRuntime depends embox.lib.libgcc
 }
 
@@ -70,7 +70,7 @@ static module printf {
 static module fwrite {
 	source "fwrite.c"
 
-	depends embox.compat.posix.fs.write
+	//depends embox.compat.posix.fs.write
 	depends embox.kernel.task.resource.errno
 
 	depends funopen

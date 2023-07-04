@@ -3,5 +3,5 @@ package embox.lib
 static module Printk {
 	source "printk.c"
 
-	@NoRuntime depends embox.compat.libc.stdio.print
+	@NoRuntime depends embox.compat.libc.stdio.print_impl
 }
