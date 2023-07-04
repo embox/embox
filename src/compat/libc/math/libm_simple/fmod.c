@@ -14,7 +14,6 @@
 #include <math.h>
 #include <float.h>
 #include <stdint.h>
-#include <inttypes.h>
 
 #include "math_private.h"
 
