@@ -25,16 +25,13 @@ EMBOX_UNIT_INIT(uart_init);
 static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *params) {
     UART_TypeDef* uart = (void* )dev->base_addr;
     UART_Num_TypeDef uart_num;
-    short uart_irq_num;
     gpio_mask_t uart_gpio_mask;
     if(uart == UART0) {
         uart_num = UART0_Num;
-        uart_irq_num = UART0_RX_IRQn;
         uart_gpio_mask = UART0_GPIO_TX_mask | UART0_GPIO_RX_mask;
     }
     else {
         uart_num = UART1_Num;
-        uart_irq_num = UART1_RX_IRQn;
         uart_gpio_mask = UART1_GPIO_TX_mask | UART1_GPIO_RX_mask;
     }
 
@@ -63,7 +60,6 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     UART_Init(uart, &uart_init_struct);
     UART_Cmd(uart, ENABLE);
     if(params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-        NVIC_EnableIRQ(uart_irq_num);
         UART_ITCmd(uart, UART_IMSC_RXIM_Msk, ENABLE);
     }
 
