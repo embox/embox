@@ -21,6 +21,13 @@ package embox.cmd
 module gdbserver {
 	source "gdbserver.c"
 
+	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.idx.poll
+
+	depends embox.compat.posix.proc.exec
+	depends embox.compat.posix.proc.vfork
+	depends embox.compat.posix.proc.waitpid
+
 	depends embox.compat.posix.net.socket
 	depends embox.lib.gdbstub
 }
