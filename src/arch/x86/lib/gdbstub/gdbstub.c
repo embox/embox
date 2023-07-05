@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <asm/ptrace.h>
 #include <debug/gdbstub.h>
@@ -32,7 +33,7 @@ static struct {
 	uint8_t orig;
 } sw_breakpoints[MAX_SW_BREAKPOINTS];
 
-static int x86_insert_bpt(void *addr, int type) {
+static bool x86_insert_bpt(void *addr, int type) {
 	int i;
 
 	for (i = 0; i < MAX_SW_BREAKPOINTS; i++) {
@@ -47,7 +48,7 @@ static int x86_insert_bpt(void *addr, int type) {
 	return (i != MAX_SW_BREAKPOINTS);
 }
 
-static int x86_remove_bpt(void *addr, int type) {
+static bool x86_remove_bpt(void *addr, int type) {
 	int i;
 
 	for (i = 0; i < MAX_SW_BREAKPOINTS; i++) {
