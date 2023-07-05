@@ -9,6 +9,7 @@ module acpica {
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20210331/source/include")
 	source "init.c", "osemboxxf.c"
 
+    @Cflags("-fno-sanitize=undefined")
 	@Cflags("-Wno-unused")
 	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20210331/source/include")
