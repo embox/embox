@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <stdbool.h>
 
 #include <hal/reg.h>
 #include <debug/gdbstub.h>
@@ -22,7 +23,7 @@ static size_t max_hw_breakpoints;
 
 static void (*gdb_entry)(struct gdb_regs *);
 
-static int arm_insert_bpt(void *addr, int type) {
+static bool arm_insert_bpt(void *addr, int type) {
 	int i;
 
 	for (i = 0; i < max_hw_breakpoints; i++) {
@@ -34,7 +35,7 @@ static int arm_insert_bpt(void *addr, int type) {
 	return (i != max_hw_breakpoints);
 }
 
-static int arm_remove_bpt(void *addr, int type) {
+static bool arm_remove_bpt(void *addr, int type) {
 	int i;
 
 	for (i = 0; i < max_hw_breakpoints; i++) {

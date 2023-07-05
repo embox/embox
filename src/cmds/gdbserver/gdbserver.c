@@ -14,11 +14,13 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <termios.h>
-#include <arpa/inet.h>
 #include <sys/poll.h>
 #include <sys/types.h>
+#include <arpa/inet.h>
 #include <sys/socket.h>
 
+#include <util/err.h>
+#include <cmd/shell.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <debug/gdbstub.h>
@@ -26,17 +28,15 @@
 #include <framework/cmd/types.h>
 #include <kernel/thread/thread_sched_wait.h>
 
-extern int diag_fd(void);
+static int gdbfd;
 
-static int gdb_fd = -1;
+static void *extra_bpt;
 
-static bool gdb_running = false;
-static bool gdb_interrupted = false;
+static bool prog_running;
 
 static struct gdbstub_env *env_ptr;
 
-static struct thread *monitored_thread;
-static struct thread *gdbserver_thread;
+static struct thread *interrupt_handler;
 
 static ssize_t (*read_packet)(char *dst, size_t nbyte);
 
@@ -45,7 +45,7 @@ static ssize_t read_packet1(char *dst, size_t nbyte) {
 	char *ptr;
 
 	for (;;) {
-		nread = read(gdb_fd, dst, nbyte);
+		nread = read(gdbfd, dst, nbyte);
 		if (nread > 0) {
 			ptr = memchr(dst, '$', nread);
 			if (!ptr) {
@@ -61,18 +61,19 @@ static ssize_t read_packet1(char *dst, size_t nbyte) {
 
 static ssize_t read_packet2(char *dst, size_t nbyte) {
 	ssize_t nread;
-	char tmp[4];
 
 	do {
-		nread = read(gdb_fd, dst, 1);
+		nread = read(gdbfd, dst, 1);
 	} while ((nread == 1) && (*dst != '$'));
 
 	if (nread == 1) {
-		for (; nread < nbyte; nread++) {
-			read(gdb_fd, ++dst, 1);
-			if (*dst == '#') {
-				read(gdb_fd, tmp, sizeof(tmp));
+		while (nread < nbyte) {
+			if (1 != read(gdbfd, ++dst, 1)) {
 				break;
+			}
+			nread++;
+			if ((*dst == '#') && (nread + 2 < nbyte)) {
+				nbyte = nread + 2;
 			}
 		}
 	}
@@ -80,7 +81,7 @@ static ssize_t read_packet2(char *dst, size_t nbyte) {
 }
 
 static ssize_t write_packet(const char *src, size_t nbyte) {
-	return write(gdb_fd, src, nbyte);
+	return write(gdbfd, src, nbyte);
 }
 
 static int prepare_tcp(const char *host_port) {
@@ -136,8 +137,8 @@ static int prepare_tcp(const char *host_port) {
 
 	printf("Listening on port %hu\n", port);
 
-	gdb_fd = accept(listen_fd, NULL, NULL);
-	if (gdb_fd == -1) {
+	gdbfd = accept(listen_fd, NULL, NULL);
+	if (gdbfd == -1) {
 		ret = -errno;
 	}
 
@@ -148,16 +149,19 @@ out:
 
 static int prepare_serial(const char *tty) {
 	struct termios t;
+	int ret;
 
-	printf("Remote debugging using %s\n", tty);
+	ret = 0;
 
-	gdb_fd = open(tty, O_RDWR);
-	if (gdb_fd == -1) {
-		return -errno;
+	gdbfd = open(tty, O_RDWR);
+	if (gdbfd == -1) {
+		ret = -errno;
+		goto out;
 	}
 
-	if (-1 == tcgetattr(gdb_fd, &t)) {
-		return -errno;
+	if (-1 == tcgetattr(gdbfd, &t)) {
+		ret = -errno;
+		goto out;
 	}
 
 	t.c_iflag &= ~(BRKINT | ICRNL | INPCK | ISTRIP | IXON);
@@ -167,99 +171,131 @@ static int prepare_serial(const char *tty) {
 	t.c_cc[VMIN] = 1;
 	t.c_cc[VTIME] = 0;
 
-	if (-1 == tcsetattr(gdb_fd, TCSANOW, &t)) {
-		return -errno;
+	if (-1 == tcsetattr(gdbfd, TCSANOW, &t)) {
+		ret = -errno;
+		goto out;
 	}
 
-	return 0;
+	printf("Remote debugging using %s\n", tty);
+
+out:
+	return ret;
 }
 
-static void gdb_handle_debug_excpt(struct gdb_regs *regs) {
-	monitored_thread = thread_self();
+static void handle_breakpoint(struct gdb_regs *regs) {
+	struct gdb_packet *pkt;
+
+	pkt = &env_ptr->packet;
 	env_ptr->regs = regs;
 
-	if (gdb_running | gdb_interrupted) {
-		if (gdb_interrupted) {
-			env_ptr->arch->remove_bpt(sched_finish_switch, 0);
-		}
-
-		gdb_running = false;
-		gdb_interrupted = false;
-
-		env_ptr->packet.buf[1] = '?';
-		gdb_process_packet(env_ptr);
-		write_packet(env_ptr->packet.buf, env_ptr->packet.size);
+	if (extra_bpt) {
+		env_ptr->arch->remove_bpt(extra_bpt, 0);
+		extra_bpt = NULL;
 	}
-	else {
-		env_ptr->arch->remove_all_bpts();
+
+	if (prog_running) {
+		prog_running = false;
+
+		pkt->buf[1] = 'c';
+		gdb_process_packet(env_ptr);
+		write_packet(pkt->buf, pkt->size);
 	}
 
 	for (;;) {
-		read_packet(env_ptr->packet.buf, sizeof(env_ptr->packet.buf));
-		write_packet("+", 1);
-
-		gdb_process_packet(env_ptr);
-
-		if (env_ptr->cmd != GDBSTUB_SEND_REPLY) {
-			if (env_ptr->cmd == GDBSTUB_DETACH) {
-				env_ptr->arch->remove_all_bpts();
-			}
+		if (0 >= read_packet(pkt->buf, sizeof(pkt->buf))) {
+			env_ptr->arch->remove_all_bpts();
 			break;
 		}
 
-		write_packet(env_ptr->packet.buf, env_ptr->packet.size);
+		write_packet("+", 1);
+		gdb_process_packet(env_ptr);
+
+		if (env_ptr->cmd == GDBSTUB_DETACH) {
+			env_ptr->arch->remove_all_bpts();
+			break;
+		}
+
+		if (env_ptr->cmd == GDBSTUB_CONT) {
+			break;
+		}
+
+		write_packet(pkt->buf, pkt->size);
 	}
 
-	gdb_running = true;
-	sched_wakeup(&gdbserver_thread->schedee);
+	prog_running = true;
+
+	if (thread_self() != interrupt_handler) {
+		sched_wakeup(&interrupt_handler->schedee);
+	}
 }
 
-static void *gdb_handle_interrupt(void *arg) {
-	struct gdbstub_env env;
-	struct gdb_arch arch;
-	struct pollfd pfd;
+static void trigger_breakpoint(void) {
+}
 
-	pfd.fd = gdb_fd;
-	pfd.events = POLLIN;
-	pfd.revents = 0;
+static void *handle_gdb_interrupt(void *pipefd) {
+	struct pollfd pfd[2];
 
-	gdb_arch_init(&arch);
-	env.arch = &arch;
-	env_ptr = &env;
+	pfd[0].fd = *(int *)pipefd;
+	pfd[0].events = POLLIN;
+
+	pfd[1].fd = gdbfd;
+	pfd[1].events = POLLIN;
 
 	for (;;) {
-		SCHED_WAIT(gdb_running);
+		SCHED_WAIT(prog_running);
 
-		if (-1 == poll(&pfd, 1, -1)) {
+		if (-1 == poll(pfd, 2, -1)) {
+			env_ptr->arch->remove_all_bpts();
 			break;
 		}
 
-		sched_lock();
-		{
-			if (gdb_running) {
-				gdb_running = false;
-				gdb_interrupted = true;
-				env_ptr->arch->insert_bpt(sched_finish_switch, 0);
-			}
+		if (pfd[0].revents == POLLIN) {
+			break;
 		}
-		sched_unlock();
+
+		if (prog_running) {
+			extra_bpt = trigger_breakpoint;
+			env_ptr->arch->insert_bpt(extra_bpt, 0);
+
+			trigger_breakpoint();
+		}
 	}
-	return 0;
+
+	return NULL;
 }
 
 int main(int argc, char *argv[]) {
+	const struct shell *sh;
 	const struct cmd *cmd;
+	struct gdbstub_env env;
+	struct gdb_arch arch;
+	int pipefd[2];
+	pid_t pid;
 	int ret;
+
+	gdbfd = -1;
+	env_ptr = &env;
+	prog_running = false;
+
+	pipefd[0] = -1;
+	pipefd[1] = -1;
 
 	if (argc < 3) {
 		ret = -EINVAL;
 		goto out;
 	}
 
-	cmd = cmd_lookup(argv[2]);
-	if (cmd == NULL) {
-		ret = -ENOENT;
-		goto out;
+	sh = shell_lookup(argv[2]);
+	if (sh) {
+		extra_bpt = sh->run;
+	}
+	else {
+		cmd = cmd_lookup(argv[2]);
+		if (!cmd) {
+			ret = -ENOENT;
+			goto out;
+		}
+		extra_bpt = cmd->exec;
 	}
 
 	if (isdigit(*argv[1])) {
@@ -274,23 +310,50 @@ int main(int argc, char *argv[]) {
 		goto out;
 	}
 
-	gdbserver_thread = thread_create(0, gdb_handle_interrupt, NULL);
-	gdb_arch_prepare(gdb_handle_debug_excpt);
-
-	while (!env_ptr) {
+	if (-1 == pipe(pipefd)) {
+		ret = -errno;
+		goto out;
 	}
 
-	env_ptr->arch->insert_bpt(cmd->exec, 0);
-	cmd_exec(cmd, argc - 2, &argv[2]);
+	interrupt_handler = thread_create(0, handle_gdb_interrupt, pipefd);
+	if (err(interrupt_handler)) {
+		ret = err(interrupt_handler);
+		goto out;
+	}
 
+	gdb_arch_init(&arch);
+	env.arch = &arch;
+
+	gdb_arch_prepare(handle_breakpoint);
+	arch.insert_bpt(extra_bpt, 0);
+
+	pid = vfork();
+	if (pid < 0) {
+		ret = -errno;
+	}
+	else if (pid == 0) {
+		execv(argv[2], &argv[2]);
+		exit(1);
+	}
+	else {
+		waitpid(pid, NULL, 0);
+	}
+
+	arch.remove_all_bpts();
 	gdb_arch_cleanup();
-	thread_delete(gdbserver_thread);
+
+	write(pipefd[1], "\x03", 1);
+	thread_join(interrupt_handler, NULL);
 
 out:
 	if (ret == -EINVAL) {
 		printf("Usage: %s [HOST]:[PORT] [PROG] [PROG_ARGS ...]\n", argv[0]);
 		printf("       %s [TTY_DEV] [PROG] [PROG_ARGS ...]\n", argv[0]);
 	}
-	close(gdb_fd);
+
+	close(gdbfd);
+	close(pipefd[0]);
+	close(pipefd[1]);
+
 	return ret;
 }

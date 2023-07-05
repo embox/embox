@@ -24,8 +24,8 @@ static void read_packet(char *dst, size_t nbyte) {
 
 	for (i = 1; i < nbyte; i++) {
 		dst[i] = diag_getc();
-		if (dst[i] == '#') {
-			break;
+		if ((dst[i] == '#') && (i + 3 < nbyte)) {
+			nbyte = i + 3;
 		}
 	}
 }
@@ -36,7 +36,7 @@ static void write_packet(const char *src, size_t nbyte) {
 	}
 }
 
-static void kgdb_handle_debug_excpt(struct gdb_regs *regs) {
+static void handle_breakpoint(struct gdb_regs *regs) {
 	static bool connected = false;
 
 	struct gdbstub_env env;
@@ -45,7 +45,7 @@ static void kgdb_handle_debug_excpt(struct gdb_regs *regs) {
 	env.regs = regs;
 
 	if (connected) {
-		env.packet.buf[1] = '?';
+		env.packet.buf[1] = 'c';
 		gdb_process_packet(&env);
 		write_packet(env.packet.buf, env.packet.size);
 	}
@@ -60,10 +60,12 @@ static void kgdb_handle_debug_excpt(struct gdb_regs *regs) {
 
 		gdb_process_packet(&env);
 
-		if (env.cmd != GDBSTUB_SEND_REPLY) {
-			if (env.cmd == GDBSTUB_DETACH) {
-				env.arch->remove_all_bpts();
-			}
+		if (env.cmd == GDBSTUB_DETACH) {
+			env.arch->remove_all_bpts();
+			break;
+		}
+
+		if (env.cmd == GDBSTUB_CONT) {
 			break;
 		}
 
@@ -74,7 +76,7 @@ static void kgdb_handle_debug_excpt(struct gdb_regs *regs) {
 void kgdb_init(void *entry) {
 	printk("Remote debugging using diag\n");
 
-	gdb_arch_prepare(kgdb_handle_debug_excpt);
 	gdb_arch_init(&gdb_arch);
+	gdb_arch_prepare(handle_breakpoint);
 	gdb_arch.insert_bpt(entry, 0);
 }
