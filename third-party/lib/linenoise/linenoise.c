@@ -115,6 +115,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <sys/ioctl.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include "linenoise.h"
 
@@ -143,6 +144,7 @@ static linenoiseHintsCallback *hintsCallback = NULL;
 static linenoiseFreeHintsCallback *freeHintsCallback = NULL;
 
 static struct termios orig_termios; /* In order to restore at exit.*/
+static int orig_ifd_flags;
 static int maskmode = 0; /* Show "***" instead of input. For passwords. */
 static int rawmode = 0; /* For atexit() function to check if restore is needed*/
 static int mlmode = 0;  /* Multi line mode. Default is single line. */
@@ -278,6 +280,12 @@ static int enableRawMode(int fd) {
 
     /* put terminal in raw mode after flushing */
     if (tcsetattr(fd,TCSAFLUSH,&raw) < 0) goto fatal;
+
+	orig_ifd_flags = fcntl(fd, F_GETFL, 0);
+	if (fcntl(fd, F_SETFL, orig_ifd_flags & ~O_NONBLOCK) == -1) {
+		return -1;
+	}
+
     rawmode = 1;
     return 0;
 
@@ -288,8 +296,10 @@ fatal:
 
 static void disableRawMode(int fd) {
     /* Don't even check the return value as it's too late. */
-    if (rawmode && tcsetattr(fd,TCSAFLUSH,&orig_termios) != -1)
-        rawmode = 0;
+	if (rawmode && tcsetattr(fd,TCSAFLUSH,&orig_termios) != -1 &&
+			fcntl(fd, F_SETFL, orig_ifd_flags) != -1) {
+		rawmode = 0;
+	}
 }
 #ifndef __EMBOX__
 /* Use the ESC [6n escape sequence to query the horizontal cursor position
