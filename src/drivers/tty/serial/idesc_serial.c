@@ -174,7 +174,9 @@ struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
 	tu->uart = uart;
 	uart->tty = &tu->tty;
 	uart->tty->idesc = &tu->idesc;
-	uart->irq_handler = uart_irq_handler;
+	if (uart->irq_handler == NULL) {
+		uart->irq_handler = uart_irq_handler;
+	}
 
 	idesc_init(&tu->idesc, idesc_serial_get_ops(), __oflags);
 
