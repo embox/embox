@@ -4,7 +4,8 @@ package embox.driver.serial
 module k1921vk035 extends embox.driver.diag.diag_api {
 
     option boolean use_uart0_as_diag = true
-	option number baud_rate = 115200
+	option number uart0_baudrate = 115200
+	option number uart1_baudrate = 115200
 
 	source "k1921vk035_uart.c"
 

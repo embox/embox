@@ -13,7 +13,8 @@ EMBOX_UNIT_INIT(uart_init);
 
 #include "plib035_uart.h"
 
-#define BAUD_RATE OPTION_GET(NUMBER, baud_rate)
+#define UART0_BAUDRATE OPTION_GET(NUMBER, uart0_baudrate)
+#define UART1_BAUDRATE OPTION_GET(NUMBER, uart1_baudrate)
 #define USE_UART0_AS_DIAG OPTION_GET(BOOLEAN, use_uart0_as_diag)
 
 #define UART_GPIO			GPIO_PORT_B
@@ -115,7 +116,7 @@ static struct uart uart0 = {
 		// .irq_num = UART0_RX_IRQn, used for diag device, does not use interrupts
 		.base_addr = (uint32_t)UART0,
         .params = {
-            .baud_rate = BAUD_RATE,
+            .baud_rate = UART0_BAUDRATE,
             .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
         },
 };
@@ -134,7 +135,7 @@ static struct uart uart0 = {
 		.base_addr = (uint32_t)UART0,
         .irq_handler = uart0_handler,
         .params = {
-            .baud_rate = BAUD_RATE,
+            .baud_rate = UART0_BAUDRATE,
             .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ, 
         },
 };
@@ -156,7 +157,7 @@ static struct uart uart1 = {
 		.base_addr = (uint32_t)UART1,
         .irq_handler = uart1_handler,
         .params = {
-            .baud_rate = BAUD_RATE,
+            .baud_rate = UART1_BAUDRATE,
             .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ, 
         },
 };
