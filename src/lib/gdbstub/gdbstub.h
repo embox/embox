@@ -10,6 +10,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <sys/cdefs.h>
 
 #include <module/embox/lib/gdbstub.h>
@@ -29,17 +30,17 @@ struct gdb_packet {
 };
 
 struct gdb_arch {
-	int (*insert_bpt)(void *addr, int type);
-	int (*remove_bpt)(void *addr, int type);
+	bool (*insert_bpt)(void *addr, int type);
+	bool (*remove_bpt)(void *addr, int type);
 	void (*remove_all_bpts)(void);
 	size_t (*read_reg)(struct gdb_regs *regs, unsigned regnum, void *regval);
 };
 
 struct gdbstub_env {
-	enum gdbstub_cmd cmd;
 	struct gdb_arch *arch;
 	struct gdb_regs *regs;
 	struct gdb_packet packet;
+	enum gdbstub_cmd cmd;
 };
 
 __BEGIN_DECLS

@@ -30,12 +30,16 @@ static void gdb_pack_str(struct gdb_packet *pkt, const char *str) {
 
 static void gdb_pack_mem(struct gdb_packet *pkt, const void *mem,
     size_t nbyte) {
-	int i;
+	const uint8_t *ptr;
+	const uint8_t *end;
 	uint8_t byte;
 	char ch;
 
-	for (i = 0; i < nbyte; i++) {
-		byte = *(uint8_t *)(mem + i);
+	ptr = (const uint8_t *)mem;
+	end = ptr + nbyte;
+
+	while (ptr != end) {
+		byte = *ptr++;
 		ch = HEXCHARS[byte >> 4];
 		pkt->checksum += ch;
 		pkt->buf[pkt->size++] = ch;
@@ -93,7 +97,8 @@ static void gdb_read_mem_cmd(struct gdbstub_env *env) {
 	addr = strtoul(env->packet.buf + 2, &endptr, 16);
 
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
-		if ((marea->start <= addr) && (addr < marea->start + marea->size) &&
+		if (addr && (marea->start <= addr) &&
+		    (addr < marea->start + marea->size) &&
 		    (marea->flags & PROT_WRITE)) {
 			len = strtoul(endptr + 1, NULL, 16);
 			gdb_pack_mem(&env->packet, (void *)addr, len);
@@ -107,36 +112,48 @@ static void gdb_read_mem_cmd(struct gdbstub_env *env) {
 	extern char _text_vma, _rodata_vma, _data_vma, _bss_vma;
 	extern char _text_len, _rodata_len, _data_len, _bss_len_with_reserve;
 
+	struct {
+		uintptr_t base;
+		uintptr_t len;
+	} sect[4] = {
+	    {(uintptr_t)&_bss_vma, (uintptr_t)&_bss_len_with_reserve},
+	    {(uintptr_t)&_text_vma, (uintptr_t)&_text_len},
+	    {(uintptr_t)&_data_vma, (uintptr_t)&_data_len},
+	    {(uintptr_t)&_rodata_vma, (uintptr_t)&_rodata_len},
+	};
+
 	char *endptr;
 	uintptr_t addr;
 	size_t len;
+	int i;
 
 	addr = strtoul(env->packet.buf + 2, &endptr, 16);
-	if ((((uintptr_t)&_bss_vma <= addr) &&
-	        (addr < (uintptr_t)&_bss_vma + (uintptr_t)&_bss_len_with_reserve)) ||
-	    (((uintptr_t)&_data_vma <= addr) &&
-	        (addr < (uintptr_t)&_data_vma + (uintptr_t)&_data_len)) ||
-	    (((uintptr_t)&_text_vma <= addr) &&
-	        (addr < (uintptr_t)&_text_vma + (uintptr_t)&_text_len)) ||
-	    (((uintptr_t)&_rodata_vma <= addr) &&
-	        (addr < (uintptr_t)&_rodata_vma + (uintptr_t)&_rodata_len))) {
-		len = strtoul(endptr + 1, NULL, 16);
-		gdb_pack_mem(&env->packet, (void *)addr, len);
+	if (addr) {
+		for (i = 0; i < 4; i++) {
+			if ((sect[i].base <= addr) && (addr < sect[i].base + sect[i].len)) {
+				len = strtoul(endptr + 1, NULL, 16);
+				gdb_pack_mem(&env->packet, (void *)addr, len);
+				return;
+			}
+		}
 	}
-	else {
-		gdb_pack_str(&env->packet, "E01");
-	}
+
+	gdb_pack_str(&env->packet, "E01");
 }
 #endif
 
 static void gdb_bpt_cmd(struct gdbstub_env *env) {
-	int (*fn)(void *addr, int type);
+	bool (*fn)(void *addr, int type);
 	char *endptr;
 	void *addr;
 	int type;
 
-	fn = (env->packet.buf[1] == 'Z') ? env->arch->insert_bpt
-	                                 : env->arch->remove_bpt;
+	if (env->packet.buf[1] == 'Z') {
+		fn = env->arch->insert_bpt;
+	}
+	else {
+		fn = env->arch->remove_bpt;
+	}
 
 	addr = (void *)strtoul(env->packet.buf + 4, &endptr, 16);
 	type = strtoul(endptr + 1, NULL, 16);
@@ -211,6 +228,7 @@ void gdb_process_packet(struct gdbstub_env *env) {
 		break;
 	case 'c': /* continue */
 	case 's': /* step */
+		gdb_pack_str(pkt, "S05");
 		env->cmd = GDBSTUB_CONT;
 		break;
 	case 'D': /* detach */
