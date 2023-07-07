@@ -1,0 +1,51 @@
+# This test works in three steps:
+# 1. Execute 'rlogin -l <host_username> <host_ip>' on Embox and check if 
+# connection established.
+# 2. Try to log in with <host_passwd> password.
+# 3. Execute 'ls -l' and fetch 'total *' output from ls,
+# then on prompt exit rlogin session and logout from embox.
+# Important: This test requires rlogind to run on host and accept connections
+# (tested with rsh-redone-server package)
+# You will need to specify host_username and host_passwd below for test to be
+# able to login (there was an to make use of $HOME/.rhosts file, but the daemon
+# refused to work with it unfortunately. Might be a TODO)
+
+# Set the host username
+set host_username ""
+# Set the password for username
+set host_passwd ""
+set host_prompt {\$ $} 
+
+TEST_CASE {Embox rlogin to host and ls} {
+	global host_ip
+	global host_username
+	global host_passwd
+	global host_prompt
+	global embox_prompt
+
+    send "rlogin -l $host_username $host_ip\r"
+    expect {
+        timeout {
+            puts "Rlogin connection error" 
+            exit 1
+        }
+        "Password: " {
+            send "$host_passwd\r"
+            exp_continue
+        }
+        "Authentication failure" {
+            puts "Failed to login with credentials\n"
+            exit 1
+        }
+        "Error...*" {
+            puts "Couldn't connect\r"
+            exit 1
+        }
+        -re $host_prompt {}
+    }
+    send "ls -l\r"
+    test_expect_strings "total" $host_prompt
+    send "exit\r"
+    test_expect_strings "logout" $embox_prompt
+    send "logout\r"
+}
