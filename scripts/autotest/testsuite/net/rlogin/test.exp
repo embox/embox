@@ -25,13 +25,20 @@ TEST_CASE {Embox rlogin to host and ls} {
 
     send "rlogin -l $host_username $host_ip\r"
     expect {
-        timeout { puts "Rlogin connection error" }
+        timeout {
+            puts "Rlogin connection error" 
+            exit 1
+        }
         "Password: " {
             send "$host_passwd\r"
             exp_continue
         }
         "Authentication failure" {
             puts "Failed to login with credentials\n"
+            exit 1
+        }
+        "Error...*" {
+            puts "Couldn't connect\r"
             exit 1
         }
         -re $host_prompt {}
