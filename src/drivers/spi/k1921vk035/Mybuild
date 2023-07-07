@@ -22,5 +22,6 @@ module k1921vk035 {
 	source "k1921vk035_spi.c"
 
 	depends core
+	depends embox.driver.gpio.core
     depends third_party.bsp.k1921vk_sdk.plib035
 }

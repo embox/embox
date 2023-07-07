@@ -61,7 +61,7 @@ void k1921vk035_spi_config(struct spi_device *dev){
 
 }
 static int k1921vk035_spi_init(struct spi_device *dev) {
-	//Init SPI_TX - PB7, SPI_RX - PB6 , SPI_SCK - PB5
+	
 	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
 	int pin = 0;
 	int port = 0;
@@ -69,6 +69,7 @@ static int k1921vk035_spi_init(struct spi_device *dev) {
 	pin = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PIN];
 	port = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PORT];
 
+	//Init SPI_TX - PB7, SPI_RX - PB6 , SPI_SCK - PB5
 	gpio_setup_mode(GPIO_PORT_B, ( 1 << 5 ) | ( 1 << 6 ) | ( 1 << 7 ), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
 
 	for (int i = 0; i < K1921VK035_SPI_MAX_CS; i++) {
