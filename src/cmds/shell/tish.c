@@ -43,6 +43,8 @@
 
 #define RICH_PROMPT_SUPPORT OPTION_GET(NUMBER, rich_prompt_support)
 
+#define UNSET_NODELAY_MODE OPTION_GET(NUMBER, unset_nodelay_mode)
+
 #define BUILTIN_COMMANDS OPTION_STRING_GET(builtin_commands)
 
 #define PROMPT_BUF_LEN 32
@@ -348,7 +350,9 @@ static void tish_run(void) {
 	rl_attempted_completion_function = cmd_completion;
 	rl_bind_key('\t', rl_complete);
 
-	sh_unset_nodelay_mode();
+	if (UNSET_NODELAY_MODE) {
+		sh_unset_nodelay_mode();
+	}
 
 #if 0
 	/**
@@ -395,7 +399,10 @@ static void tish_run(void) {
 		}
 
 		tish_collect_bg_childs();
-		sh_unset_nodelay_mode();
+		
+		if (UNSET_NODELAY_MODE) {
+			sh_unset_nodelay_mode();
+		}
 
 		/* TODO now linenoise use sysalloc for memory allocation */
 		sysfree(line);

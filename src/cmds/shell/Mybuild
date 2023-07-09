@@ -26,6 +26,7 @@ abstract module shell_api {
 	''')
 module tish extends shell_api {
 	option number rich_prompt_support = 0
+	option number unset_nodelay_mode = 0
 
 	option string builtin_commands = "cd export exit logout"
 
