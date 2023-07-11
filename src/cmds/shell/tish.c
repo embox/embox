@@ -329,6 +329,7 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 	return 0;
 }
 
+#if UNSET_NODELAY_MODE
 static void sh_unset_nodelay_mode(void) {
 	int orig_ifd_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
 	if (orig_ifd_flags & O_NONBLOCK) {
@@ -337,6 +338,7 @@ static void sh_unset_nodelay_mode(void) {
 		}
 	}
 }
+#endif
 
 static void tish_run(void) {
 	char *line;
@@ -352,9 +354,9 @@ static void tish_run(void) {
 	rl_attempted_completion_function = cmd_completion;
 	rl_bind_key('\t', rl_complete);
 
-	if (UNSET_NODELAY_MODE) {
-		sh_unset_nodelay_mode();
-	}
+#if UNSET_NODELAY_MODE
+	sh_unset_nodelay_mode();
+#endif
 
 #if 0
 	/**
@@ -402,9 +404,9 @@ static void tish_run(void) {
 
 		tish_collect_bg_childs();
 		
-		if (UNSET_NODELAY_MODE) {
-			sh_unset_nodelay_mode();
-		}
+#if UNSET_NODELAY_MODE
+		sh_unset_nodelay_mode();
+#endif
 
 		/* TODO now linenoise use sysalloc for memory allocation */
 		sysfree(line);
