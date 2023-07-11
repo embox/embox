@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <hal/reg.h>
+#include <kernel/irq.h>
 
 #include <drivers/gpio/gpio_driver.h>
 
@@ -21,6 +22,15 @@ static int k1921vk035_gpio_clock_setup(unsigned char port) {
 	return 0;
 }
 
+static int k1921vk035_gpio_int_setup(unsigned char port) {
+	if (port == GPIO_PORT_A) {
+		NVIC_EnableIRQ(GPIOA_IRQn);
+	} else { // GPIO_PORT_B
+		NVIC_EnableIRQ(GPIOB_IRQn);
+	}
+	return 0;
+}
+
 static int k1921vk035_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
 	/* Enable port */
 	k1921vk035_gpio_clock_setup(port);
@@ -30,21 +40,45 @@ static int k1921vk035_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int 
 	GPIO_Init_TypeDef gpio_init_struct;
 	GPIO_StructInit(&gpio_init_struct);
 	gpio_init_struct.Pin = pins;
-	gpio_init_struct.Out = (mode & GPIO_MODE_OUT_SECTION) > 0 ? ENABLE : DISABLE;
-	gpio_init_struct.AltFunc = (mode & GPIO_MODE_OUT_ALTERNATE) > 0 ? ENABLE : DISABLE;
-	gpio_init_struct.OutMode = (mode & GPIO_MODE_OUT_OPEN_DRAIN) > 0 ? GPIO_OutMode_OD : GPIO_OutMode_PP;
-	gpio_init_struct.InMode = (mode & GPIO_MODE_IN_SCHMITT) > 0 ? GPIO_InMode_Schmitt : GPIO_InMode_CMOS;
-	gpio_init_struct.PullMode = (mode & GPIO_MODE_IN_PULL_UP) > 0 ? GPIO_PullMode_PU :
-		(mode & GPIO_MODE_IN_PULL_DOWN) > 0 ? GPIO_PullMode_PD : GPIO_PullMode_Disable;
-	gpio_init_struct.DriveMode = GPIO_DriveMode_HighFast;
+	gpio_init_struct.Out = (mode & GPIO_MODE_OUT_SECTION) ? ENABLE : DISABLE;
+	gpio_init_struct.AltFunc = (mode & GPIO_MODE_OUT_ALTERNATE) ? ENABLE : DISABLE;
+	gpio_init_struct.OutMode = (mode & GPIO_MODE_OUT_OPEN_DRAIN) ? GPIO_OutMode_OD : GPIO_OutMode_PP;
+	gpio_init_struct.InMode = (mode & GPIO_MODE_IN_SCHMITT) ? GPIO_InMode_Schmitt : GPIO_InMode_CMOS;
+	gpio_init_struct.PullMode = (mode & GPIO_MODE_IN_PULL_UP) ? GPIO_PullMode_PU :
+		(mode & GPIO_MODE_IN_PULL_DOWN) ? GPIO_PullMode_PD : GPIO_PullMode_Disable;
+	if (port == GPIO_PORT_A) {
+		gpio_init_struct.DriveMode = GPIO_DriveMode_LowFast;
+	} else {
+		gpio_init_struct.DriveMode = GPIO_DriveMode_HighFast;
+	}
 	gpio_init_struct.Digital = ENABLE;
 	GPIO_Init(GPIO, &gpio_init_struct);
+
+	k1921vk035_gpio_int_setup(port);
+
+	GPIO_IntType_TypeDef GPIO_IntType =
+		((mode & GPIO_MODE_INT_MODE_LEVEL0) || (mode & GPIO_MODE_INT_MODE_LEVEL1)
+			? GPIO_IntType_Level : GPIO_IntType_Edge);
+	GPIO_IntEdge_TypeDef GPIO_IntEdge =
+		(((mode & GPIO_MODE_INT_MODE_RISING) && (mode & GPIO_MODE_INT_MODE_FALLING))
+			? GPIO_IntEdge_Any : GPIO_IntEdge_Polarity);
+	GPIO_IntPol_TypeDef GPIO_IntPol =
+		((mode & GPIO_MODE_INT_MODE_RISING) || (mode & GPIO_MODE_INT_MODE_LEVEL1)
+			? GPIO_IntPol_Positive : GPIO_IntPol_Negative);
+
+	GPIO_ITPolConfig(GPIO, pins, GPIO_IntPol);
+	GPIO_ITEdgeConfig(GPIO, pins, GPIO_IntEdge);
+	GPIO_ITTypeConfig(GPIO, pins, GPIO_IntType);
+
+	// XXX GPIO_MODE_IN_INT_DIS unused (default)
+	GPIO_ITCmd(GPIO, pins, (mode & GPIO_MODE_IN_INT_EN) != 0);
+
 	return 0;
 }
 
 static void k1921vk035_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
 	GPIO_TypeDef* GPIO = port == GPIO_PORT_A ? GPIOA : GPIOB;
-	if (level){
+	if (level) {
 		GPIO_SetBits(GPIO, pins);
 	} else {
 		GPIO_ClearBits(GPIO, pins);
@@ -63,3 +97,23 @@ static struct gpio_chip k1921vk035_gpio_chip = {
 	.nports = 2};
 
 GPIO_CHIP_DEF(&k1921vk035_gpio_chip);
+
+irq_return_t gpioa_irq_handler(unsigned int irq_nr, void *data) {
+	uint32_t mask = GPIOA->INTSTATUS;
+	gpio_handle_irq(&k1921vk035_gpio_chip, GPIO_PORT_A, mask);
+	GPIO_ITStatusClear(GPIOA, mask);
+	return IRQ_HANDLED;
+}
+
+irq_return_t gpiob_irq_handler(unsigned int irq_nr, void *data) {
+	uint32_t mask = GPIOB->INTSTATUS;
+	gpio_handle_irq(&k1921vk035_gpio_chip, GPIO_PORT_B, mask);
+	GPIO_ITStatusClear(GPIOB, mask);
+	return IRQ_HANDLED;
+}
+
+#define GPIOA_IRQn 3
+#define GPIOB_IRQn 4
+
+STATIC_IRQ_ATTACH(GPIOA_IRQn, gpioa_irq_handler, NULL);
+STATIC_IRQ_ATTACH(GPIOB_IRQn, gpiob_irq_handler, NULL);
