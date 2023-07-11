@@ -25,40 +25,40 @@ print_usage() {
 	echo -e "  export PATCHES_APPLY_BEFORE=third_party/fuse/patch1.txt:third_party/fuse/patch2.txt"
 }
 
-if [ -z $APP_ARCHIVE_PATH ] || [ -z $APP_PATH ]; then
+if [ -z "$APP_ARCHIVE_PATH" ] || [ -z "$APP_PATH" ]; then
 	print_usage
 	exit 1
 fi
 
 shift 2
-DIFF_OPTIONS=$@
+DIFF_OPTIONS=( "$@" )
 
 EXTRACT_FOLDER=.orig_archive
 
 mkdir -p $EXTRACT_FOLDER
 
-ARCHIVE_BASENAME=$(basename $APP_ARCHIVE_PATH)
+ARCHIVE_BASENAME=$(basename "$APP_ARCHIVE_PATH")
 case $ARCHIVE_BASENAME in
 	*tar|*tar.gz|*tar.xz|*tar.bz2|*tgz|*tbz)
-		tar -xf $APP_ARCHIVE_PATH -C $EXTRACT_FOLDER ;;
+		tar -xf "$APP_ARCHIVE_PATH" -C "$EXTRACT_FOLDER" ;;
 	*zip)
-		unzip -qq $APP_ARCHIVE_PATH -d $EXTRACT_FOLDER ;;
+		unzip -qq "$APP_ARCHIVE_PATH" -d "$EXTRACT_FOLDER" ;;
 	*)
 		echo "Unsupported archive extension"; exit 1 ;;
 esac
 
-pushd $EXTRACT_FOLDER > /dev/null
+(
+    cd "$EXTRACT_FOLDER" || { echo "Changing dir to $EXTRACT_FOLDER failed"; exit 1; }
 
-# Apply patches if any
-if [ ! -z "$PATCHES_APPLY_BEFORE" ]; then
+    # Apply patches if any
+    if [ -n "$PATCHES_APPLY_BEFORE" ]; then
 	IFS=:
 	for i in ${PATCHES_APPLY_BEFORE}
 	do
-		patch -s -p0 < $ROOT_DIR/$i
+		patch -s -p0 < "$ROOT_DIR"/"$i"
 	done
-fi
-LC_ALL=C diff -aur $DIFF_OPTIONS * ../$APP_PATH | grep -v '^Only in'
-
-popd > /dev/null
+    fi
+    LC_ALL=C diff -aur "${DIFF_OPTIONS[@]}" ./* ../"$APP_PATH" | grep -v '^Only in'
+)
 
 rm -rf $EXTRACT_FOLDER
