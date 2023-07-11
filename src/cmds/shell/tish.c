@@ -17,6 +17,7 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <termios.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <pwd.h>
 
@@ -41,6 +42,8 @@
 #define PROMPT_FMT OPTION_STRING_GET(prompt)
 
 #define RICH_PROMPT_SUPPORT OPTION_GET(NUMBER, rich_prompt_support)
+
+#define UNSET_NODELAY_MODE OPTION_GET(NUMBER, unset_nodelay_mode)
 
 #define BUILTIN_COMMANDS OPTION_STRING_GET(builtin_commands)
 
@@ -326,6 +329,17 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 	return 0;
 }
 
+#if UNSET_NODELAY_MODE
+static void sh_unset_nodelay_mode(void) {
+	int orig_ifd_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
+	if (orig_ifd_flags & O_NONBLOCK) {
+		if (fcntl(STDIN_FILENO, F_SETFL, orig_ifd_flags & ~O_NONBLOCK) == -1) {
+			printf("cant unset_nodelay_mode\n");
+		}
+	}
+}
+#endif
+
 static void tish_run(void) {
 	char *line;
 	char prompt_buf[PROMPT_BUF_LEN];
@@ -339,6 +353,10 @@ static void tish_run(void) {
 	readline_init();
 	rl_attempted_completion_function = cmd_completion;
 	rl_bind_key('\t', rl_complete);
+
+#if UNSET_NODELAY_MODE
+	sh_unset_nodelay_mode();
+#endif
 
 #if 0
 	/**
@@ -385,6 +403,10 @@ static void tish_run(void) {
 		}
 
 		tish_collect_bg_childs();
+		
+#if UNSET_NODELAY_MODE
+		sh_unset_nodelay_mode();
+#endif
 
 		/* TODO now linenoise use sysalloc for memory allocation */
 		sysfree(line);
