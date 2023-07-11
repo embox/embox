@@ -331,8 +331,10 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 
 static void sh_unset_nodelay_mode(void) {
 	int orig_ifd_flags = fcntl(STDIN_FILENO, F_GETFL, 0);
-	if (fcntl(STDIN_FILENO, F_SETFL, orig_ifd_flags & ~O_NONBLOCK) == -1) {
-		printf("cant unset_nodelay_mode\n");
+	if (orig_ifd_flags & O_NONBLOCK) {
+		if (fcntl(STDIN_FILENO, F_SETFL, orig_ifd_flags & ~O_NONBLOCK) == -1) {
+			printf("cant unset_nodelay_mode\n");
+		}
 	}
 }
 
