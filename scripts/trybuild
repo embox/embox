@@ -16,9 +16,9 @@ VC=git
 
 # end of params
 
-if [ -z $TOPDIR ]; then
+if [ -z "$TOPDIR" ]; then
 	TOPDIR=$PWD
 fi
 
 $BUILDBOT try --connect=$CONNECT --master=$MASTER --user=$USER --passwd=$PASSWD \
-	--vc=$VC --topdir=$TOPDIR --who=$TRYWHO "$@"
+	--vc=$VC --topdir="$TOPDIR" --who=$TRYWHO "$@"
