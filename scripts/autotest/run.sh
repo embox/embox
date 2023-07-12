@@ -1,8 +1,8 @@
 #!/bin/bash
 
-BASEDIR=$(realpath ${BASH_SOURCE%/*})
+BASEDIR=$(realpath "${BASH_SOURCE%/*}")
 TESTSUITE_DIR=$BASEDIR/testsuite
-TESTSUITE_LIST=$(ls $TESTSUITE_DIR)
+TESTSUITE_LIST=$(ls "$TESTSUITE_DIR")
 
 TESTCASE_DIR=
 TESTCASE_LIST=
@@ -25,24 +25,24 @@ fi
 
 TESTSUITE=$1
 
-if [ -z $TESTSUITE ]; then
+if [ -z "$TESTSUITE" ]; then
 	show_available_testsuites
 	exit 1
 fi
 
 TESTCASE_DIR=$BASEDIR/testsuite/$TESTSUITE
-TESTCASE_LIST=$(for i in $(ls -d $TESTCASE_DIR/*/); do basename $i; done)
+TESTCASE_LIST=$(for i in $(ls -d "$TESTCASE_DIR"/*/); do basename "$i"; done)
 
 shift
-TESTCASES=$@
+TESTCASES=( "$@" )
 
-if [ -z "$TESTCASES" ]; then
+if [ ${#TESTCASES[@]} -eq 0 ]; then
 	show_available_testcases
 	exit 1
 fi
 
-for testcase in $TESTCASES; do
-	if [ -z "$(echo $TESTCASE_LIST | fgrep -w $testcase)" ]; then
+for testcase in "${TESTCASES[@]}"; do
+	if ! echo $TESTCASE_LIST | grep -q -F -w "$testcase"; then
 		echo "Test '$testcase' is not part of testsuite '$TESTSUITE'"
 		exit 1
 	fi
@@ -64,7 +64,7 @@ if [ -z "$TEST_CURRENT_CONFIG" ]; then
 	exit 1
 fi
 
-printf "\nCurrent configuration: \"$TEST_CURRENT_CONFIG\"\n"
+printf "\nCurrent configuration: \"%s\"\n" "$TEST_CURRENT_CONFIG"
 
 if [ -z "$TEST_PRINT_ALL" ]; then
 	TEST_PRINT_ALL=1
@@ -72,19 +72,19 @@ fi
 
 echo "Starting testsuite $TESTSUITE ..."
 
-rm -f $TESTSUITE.log
+rm -f "$TESTSUITE.log"
 
 testsuite_res=0
 summary=
-for testcase in $TESTCASES; do
+for testcase in "${TESTCASES[@]}"; do
 	echo "  Starting test $TESTSUITE/$testcase ..."
 
-	if [ ${TEST_PRINT_ALL} -eq 0 ]; then
-		expect $BASEDIR/framework/core.exp $BASEDIR/testsuite/$TESTSUITE $testcase \
-			$EMBOX_IP $HOST_IP $EMBOX_PROMPT > ${TESTSUITE}_$testcase.log
+	if [ "${TEST_PRINT_ALL}" -eq 0 ]; then
+		expect "$BASEDIR/framework/core.exp" "$BASEDIR/testsuite/$TESTSUITE" "$testcase" \
+			"$EMBOX_IP" "$HOST_IP" "$EMBOX_PROMPT" > "${TESTSUITE}_$testcase.log"
 	else
-		expect $BASEDIR/framework/core.exp $BASEDIR/testsuite/$TESTSUITE $testcase \
-			$EMBOX_IP $HOST_IP $EMBOX_PROMPT
+		expect "$BASEDIR/framework/core.exp" "$BASEDIR/testsuite/$TESTSUITE" "$testcase" \
+			"$EMBOX_IP" "$HOST_IP" "$EMBOX_PROMPT"
 	fi
 	rc=$?
 
