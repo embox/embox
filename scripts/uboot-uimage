@@ -4,7 +4,7 @@ EMBOX_BIN=${1:-"./build/base/bin/embox.bin"}
 UIMAGE=${2:-uImage}
 MKIMAGE=$(which mkimage)
 
-if [ ! $MKIMAGE ]; then
+if [ ! "$MKIMAGE" ]; then
 	echo "!!!!!!!  ERROR !!!!!!!!!!!!! please install mkimage or uboot-tools"   >&2
 	exit 1
 fi
@@ -32,10 +32,10 @@ PADDED_BIN=".embox-padded.bin"
 
 PAD_SIZE=32K
 
-dd if=/dev/zero of=$PAD_FILE_NAME bs=1 count=$PAD_SIZE
+dd if=/dev/zero of="$PAD_FILE_NAME" bs=1 count=$PAD_SIZE
 
-cat $PAD_FILE_NAME $EMBOX_BIN > $PADDED_BIN
+cat "$PAD_FILE_NAME" "$EMBOX_BIN" > "$PADDED_BIN"
 
-$MKIMAGE -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e $ENTRY_ADDR -d $PADDED_BIN $UIMAGE
+"$MKIMAGE" -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e "$ENTRY_ADDR" -d "$PADDED_BIN" "$UIMAGE"
 
-rm $PAD_FILE_NAME $PADDED_BIN
+rm "$PAD_FILE_NAME" "$PADDED_BIN"
