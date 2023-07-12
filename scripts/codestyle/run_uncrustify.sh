@@ -1,7 +1,7 @@
 #!/bin/bash
 
 TEMPDIR="out"
-UNCRUSTIFY_BASE=$(dirname $0)
+UNCRUSTIFY_BASE=$(dirname "$0")
 
 verbose="true"
 
@@ -35,12 +35,12 @@ done
 
 # the rest will go to git diff directly
 shift $(($OPTIND - 1))
-diffargs="$@"
+diffargs=( "$@" )
 
 tmpundiff=$TEMPDIR/diff
 mkdir -p $tmpundiff
 
-git diff --no-prefix $diffargs -- 'src/*.[ch]' | awk -v outpref=$tmpundiff -f $UNCRUSTIFY_BASE/undiff.awk
+git diff --no-prefix "${diffargs[@]}" -- 'src/*.[ch]' | awk -v outpref="$tmpundiff" -f "$UNCRUSTIFY_BASE"/undiff.awk
 
 result=0
 
@@ -50,19 +50,19 @@ else
 	fixdiffarg="--quiet"
 fi
 
-for f in $(cd $tmpundiff; find -type f); do
-	from=$tmpundiff/$f 
+for f in $(cd $tmpundiff; find . -type f); do
+	from=$tmpundiff/$f
 	to=$TEMPDIR/fixed/$f
-	mkdir -p $(dirname $to)
+	mkdir -p "$(dirname "$to")"
 
-	uncrustify --frag -c $UNCRUSTIFY_BASE/uncrustify_cfg.ini -f $from > $to 2>/dev/null
-	if [ ! -s $to ]; then 
+	uncrustify --frag -c "$UNCRUSTIFY_BASE"/uncrustify_cfg.ini -f "$from" > "$to" 2>/dev/null
+	if [ ! -s "$to" ]; then
 		continue
 	fi
 
 
-	git diff $fixdiffarg --no-index -- $from $to | tail -n +3
-	if [ ${PIPESTATUS[0]} != 0 ]; then
+	git diff $fixdiffarg --no-index -- "$from" "$to" | tail -n +3
+	if [ "${PIPESTATUS[0]}" != 0 ]; then
 		[ $verbose ] || echo "Codestyle issue: $f"
 		result=1
 	fi

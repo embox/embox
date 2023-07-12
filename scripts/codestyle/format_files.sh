@@ -7,17 +7,14 @@ if [ -z "$1" ]; then
 	exit
 fi
 
-files=$(cat $1)
-
 mkdir -p out
 
-for item in $files ; do
-
-	dn=$(dirname $item)
-	mkdir -p out/$dn
-	uncrustify -f $item -c uncrustify_cfg.ini > out/$item
-
-done
+while read -r item;
+do
+	dn=$(dirname "$item")
+	mkdir -p "out/$dn"
+	uncrustify -f "$item" -c uncrustify_cfg.ini > "out/$item"
+done < "$1"
 
 find out -type f -empty -delete
 rsync -ah out/ ./
