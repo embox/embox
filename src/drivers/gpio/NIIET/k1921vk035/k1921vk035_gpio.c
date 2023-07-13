@@ -98,22 +98,17 @@ static struct gpio_chip k1921vk035_gpio_chip = {
 
 GPIO_CHIP_DEF(&k1921vk035_gpio_chip);
 
-irq_return_t gpioa_irq_handler(unsigned int irq_nr, void *data) {
-	uint32_t mask = GPIOA->INTSTATUS;
-	gpio_handle_irq(&k1921vk035_gpio_chip, GPIO_PORT_A, mask);
-	GPIO_ITStatusClear(GPIOA, mask);
-	return IRQ_HANDLED;
-}
-
-irq_return_t gpiob_irq_handler(unsigned int irq_nr, void *data) {
-	uint32_t mask = GPIOB->INTSTATUS;
-	gpio_handle_irq(&k1921vk035_gpio_chip, GPIO_PORT_B, mask);
-	GPIO_ITStatusClear(GPIOB, mask);
+static irq_return_t gpio_irq_handler(unsigned int irq_nr, void *gpio_) {
+	GPIO_TypeDef* gpio = (GPIO_TypeDef*)gpio_;
+	uint32_t mask = gpio->INTSTATUS;
+	// GPIO_PORT_A = 0; GPIO_PORT_B = 1
+	gpio_handle_irq(&k1921vk035_gpio_chip, gpio == GPIOB, mask);
+	GPIO_ITStatusClear(gpio, mask);
 	return IRQ_HANDLED;
 }
 
 #define GPIOA_IRQn 3
 #define GPIOB_IRQn 4
 
-STATIC_IRQ_ATTACH(GPIOA_IRQn, gpioa_irq_handler, NULL);
-STATIC_IRQ_ATTACH(GPIOB_IRQn, gpiob_irq_handler, NULL);
+STATIC_IRQ_ATTACH(GPIOA_IRQn, gpio_irq_handler, GPIOA);
+STATIC_IRQ_ATTACH(GPIOB_IRQn, gpio_irq_handler, GPIOB);
