@@ -200,10 +200,21 @@ EMBOX_EXPORT_CPPFLAGS = $(call cppflags_fn,abspath)
 EMBOX_EXPORT_CPPFLAGS += $(filter-out -D%" -D%',$(cppflags))
 
 override COMMON_FLAGS := -pipe
-debug_prefix_map_supported:=$(shell $(CPP) /dev/zero --debug-prefix-map=./= 2>/dev/null && echo true)
+
+PREFIX_MAP:=TRUE
+ifdef PREFIX_MAP
+# check whether option is supported by sending all errors to /dev/null
+# if not supported 'echo true' will be ANDed with zero output
+# else it is supported
+# backslashed pwd at execution time in shell will produce root embox directory
+# this flag makes the pathnames to sources for debug symbols relative
+# to the the root embox directory, keep that in mind in order for the debugger
+# to properly find sources at runtime. If you don't want relative pathnames
+# for sources, comment the line PREFIX_MAP:=TRUE above
+debug_prefix_map_supported:=$(shell $(CPP) /dev/zero -fdebug-prefix-map=./=. 2>/dev/null && echo true)
 ifneq ($(debug_prefix_map_supported),)
-override COMMON_FLAGS += --debug-prefix-map=`pwd`=
-override COMMON_FLAGS += --debug-prefix-map=./=
+override COMMON_FLAGS += -fdebug-prefix-map=`pwd`=.
+endif
 endif
 
 # Assembler flags
