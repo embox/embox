@@ -16,6 +16,8 @@ EMBOX_UNIT_INIT(uart_init);
 #define UART0_BAUDRATE OPTION_GET(NUMBER, uart0_baudrate)
 #define UART1_BAUDRATE OPTION_GET(NUMBER, uart1_baudrate)
 #define USE_UART0_AS_DIAG OPTION_GET(BOOLEAN, use_uart0_as_diag)
+#define UART0_IRQ_EN OPTION_GET(BOOLEAN, uart0_irq_en)
+#define UART1_IRQ_EN OPTION_GET(BOOLEAN, uart1_irq_en)
 
 #define UART_GPIO			GPIO_PORT_B
 #define UART0_GPIO_TX_mask		(1<<10)
@@ -50,10 +52,10 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     // TODO: Read DataWidth from uart_params?
     uart_init_struct.DataWidth = UART_DataWidth_8;
     // TODO: Should we enable FIFO?
-    uart_init_struct.FIFO = DISABLE;
+    uart_init_struct.FIFO = ENABLE;
     // TODO: Read ParityBit from uart_params?
     uart_init_struct.ParityBit = UART_ParityBit_Disable;
-    uart_init_struct.StopBit = 
+    uart_init_struct.StopBit =
         (params->uart_param_flags & UART_PARAM_FLAGS_2_STOP) ? UART_StopBit_2 : UART_StopBit_1;
     uart_init_struct.Rx = ENABLE;
     uart_init_struct.Tx = ENABLE;
@@ -136,12 +138,18 @@ static struct uart uart0 = {
         .irq_handler = uart0_handler,
         .params = {
             .baud_rate = UART0_BAUDRATE,
-            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ, 
+#if UART0_IRQ_EN
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ,
+#else
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
+#endif
         },
 };
 
 // NOTE: UART0_RX_IRQn is 26
+#if UART0_IRQ_EN
 STATIC_IRQ_ATTACH(26, uart0_handler, &uart0);
+#endif // UART0_IRQ_EN
 
 #endif // USE_UART0_AS_DIAG
 
@@ -158,23 +166,29 @@ static struct uart uart1 = {
         .irq_handler = uart1_handler,
         .params = {
             .baud_rate = UART1_BAUDRATE,
-            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ, 
+#if UART1_IRQ_EN
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART | UART_PARAM_FLAGS_USE_IRQ,
+#else
+            .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
+#endif
         },
 };
 
 // NOTE: UART1_RX_IRQn is 30
+#if UART1_IRQ_EN
 STATIC_IRQ_ATTACH(30, uart1_handler, &uart1);
+#endif // UART1_IRQ_EN
 
 static int uart_init(void) {
 #if USE_UART0_AS_DIAG
-    // In this case we only open uart1 
+    // In this case we only open uart1
     int retval = uart_register(&uart1, &uart1.params) || uart_open(&uart1);
 #else
     // In this case we open both uarts
     int retval = uart_register(&uart0, &uart0.params) || uart_open(&uart0) ||
                  uart_register(&uart1, &uart1.params) || uart_open(&uart1);
 #endif // USE_UART0_AS_DIAG
-	return retval; 
+	return retval;
 }
 
 
