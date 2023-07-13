@@ -570,9 +570,9 @@ static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct dfs_dir_entry dirent;
 
 	assert(inode);
+	dfs_read_dirent(inode->i_no, &dirent);
 
 	if (flags & DVFS_NAME) {
-		dfs_read_dirent(inode->i_no, &dirent);
 		strcpy(buf, (char *) dirent.name);
 	} else {
 		*buf = '/';
