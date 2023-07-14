@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 
 function myreadlink() {
-	(cd "$1" && echo "$(pwd -P)")
+	(cd "$1" && pwd -P)
 }
 
-dr=$(dirname $0)/docker_run.sh
-EMBOX_LOC=$(myreadlink $(dirname $0)/../../)
+dr=$(dirname "$0")/docker_run.sh
+EMBOX_LOC=$(myreadlink "$(dirname "$0")"/../../)
 
 on_sig() {
 	intr=1
@@ -16,7 +16,7 @@ for i in 1 2 3 9 14 15; do
 	trap "on_sig $i;" $i
 done
 
-$dr PROJECT_LOC=$EMBOX_LOC gdbwrapper2 <&0 "$@" &
+$dr PROJECT_LOC="$EMBOX_LOC" gdbwrapper2 <&0 "$@" &
 
 PID=$!
 
