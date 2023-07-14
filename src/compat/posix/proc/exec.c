@@ -6,6 +6,7 @@
  * @date    02.06.2014
  */
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <framework/cmd/api.h>
@@ -80,10 +81,13 @@ int execv(const char *path, char *const argv[]) {
     const struct cmd *cmd;
 
     /* check whether a valid executable command name is given */
-    cmd = cmd_lookup(path);
-    if(!cmd){
-        errno = ENOENT;
-        return -1;
+    const struct shell *sh = shell_lookup(path);
+    if (!sh) {
+        cmd = cmd_lookup(path);
+        if (!cmd) {
+            errno = ENOENT;
+            return -1;
+        }
     }
 
 	/* save starting arguments for the task */

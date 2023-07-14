@@ -12,16 +12,27 @@ ARRAY_SPREAD_DEF(const struct shell, __shell_registry);
 
 const struct shell *shell_lookup(const char *shell_name) {
 	const struct shell *shell;
+    const char tish_cmd[] = "tish";
 
 	if (!strncmp(shell_name, "/bin/", strlen("/bin/"))) {
 		shell_name += strlen("/bin/");
 	}
 
-	array_spread_foreach_ptr(shell, __shell_registry) {
-		if (0 == strcmp(shell->name, shell_name)) {
-			return shell;
-		}
-	}
+    /* Make a hardlink /bin/sh to tish, until a more solid solution*/
+    if (strcmp(shell_name, "sh") == 0) {
+        array_spread_foreach_ptr(shell, __shell_registry) {
+            if (0 == strcmp(shell->name, tish_cmd)) {
+                return shell;
+            }
+        }
+    }
+    else {
+        array_spread_foreach_ptr(shell, __shell_registry) {
+            if (0 == strcmp(shell->name, shell_name)) {
+                return shell;
+            }
+        }
+    }
 
 	return NULL;
 }
