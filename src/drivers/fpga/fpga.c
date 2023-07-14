@@ -107,7 +107,6 @@ struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 		.priv = priv,
 		.dev  = dev_module_create(name,
 				fpga_idesc_open,
-				fpga_idesc_close,
 				&fpga_iops,
 				&fpga_tab[id]),
 	};

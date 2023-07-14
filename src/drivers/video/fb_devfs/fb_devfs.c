@@ -130,7 +130,6 @@ int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
 
 	cdev = dev_module_create(name,
 			char_dev_default_open,
-			char_dev_default_close,
 			&fb_idesc_ops,
 			fbi);
 
