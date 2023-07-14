@@ -77,35 +77,29 @@ int execv(const char *path, char *const argv[]) {
 	int i;
 	size_t len;
 	char cmd_name[MAX_TASK_NAME_LEN];
+    const struct cmd *cmd;
+
+    /* check whether a valid executable command name is given */
+    cmd = cmd_lookup(path);
+    if(!cmd){
+        errno = ENOENT;
+        return -1;
+    }
 
 	/* save starting arguments for the task */
 	task = task_self();
 	task_resource_exec(task, path, argv);
 
 	cmd_name[0] = '\0';
-
 	if (argv != NULL) {
-		for (i = 0; argv[i] != NULL; i ++) {
-			len = strlen(cmd_name);
-			if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
-				break;
-			}
-			strncat(cmd_name, argv[i], MAX_TASK_NAME_LEN - len - 1);
-			if (argv[i + 1] == NULL) {
-				break;
-			}
-
-			/* this code is required the only if argv is not NULL terminated */
-			if (i >= 3){
-				// TODO for protection from a lot of arguments
-				break;
-			}
-
-			len = strlen(cmd_name);
-			if (MAX_TASK_NAME_LEN - len - 1 <= 0) {
-				break;
-			}
-			strncat(cmd_name, " ", MAX_TASK_NAME_LEN - len - 1);
+        /* number of arguments constrained by 3*/
+        for(i=0; argv[i]!=NULL && i<4; i++){
+            len = strlen(cmd_name);
+            if(MAX_TASK_NAME_LEN-len-1 <= 0)
+                break;
+            if(i>0) /* No space in the begining */
+                strncat(cmd_name, " ", MAX_TASK_NAME_LEN-len-1);
+			strncat(cmd_name, argv[i], MAX_TASK_NAME_LEN-len-1);
 		}
 	} else {
 		strncpy(cmd_name, path, MAX_TASK_NAME_LEN - 1);

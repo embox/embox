@@ -38,67 +38,66 @@ static void print_usage(void) {
 			"service service_name stop - deactivate the service\n");
 }
 
+/* Lookup service node in the list by name */
+static struct service_list *service_lookup_by_name(const char *name) {
+    struct service_list *tmp;
+
+    dlist_foreach_entry(tmp, &head, dlist_item) {
+        if (strcmp(tmp->service_name, name) == 0)
+            return tmp;
+    }
+    return NULL;
+}
+
+/* Add service node to running services list */
 static void service_add(const char *name, pid_t service_pid) {
   	struct service_list *new_element;
-	struct service_list *tmp;
-
-	dlist_foreach_entry(tmp, &head, dlist_item) {
-		if (strcmp(tmp->service_name, name) == 0) {
-			printf("Service is already running.\n");
-			return;
-		}
-	}
 
 	new_element = pool_alloc(&pool);
 
 	if (new_element == NULL) {
-		printf("could not add service (the pool is full)\n");
+		printf("Could not add service (the pool is full)\n");
 		return;
 	}
 
 	strncpy(new_element->service_name, name, SERVICE_NAME_LEN - 1);
 	new_element->service_name[SERVICE_NAME_LEN - 1] = '\0';
-
 	new_element->pid = service_pid;
-
   	dlist_init(&new_element->dlist_item);
-
 	dlist_add_next(&new_element->dlist_item, &head);
 }
 
-static void service_delete(const char *name) {
-	struct service_list *tmp;
+/* Delete service node from running services list */
+static void service_delete(struct service_list *service_node) {
+    printf("Killing the process:");
+    int kill_result = kill(service_node->pid, SIGKILL);
+    if (kill_result != 0) {
+        printf("error: kill process exited with code %d\n", kill_result);
+        printf("Service is probably shut down. Removing from the list anyway\n");
+    }
+    else
+        printf("OK\n");
 
-	dlist_foreach_entry(tmp, &head, dlist_item) {
-		if (strcmp(tmp->service_name, name) == 0) {
-			int kill_result = kill(tmp->pid, SIGKILL);
-
-			if (kill_result != 0) {
-				printf("Error: the service was launched but is not working now.\n");
-				return;
-			}
-
-			dlist_del_init(&tmp->dlist_item);
-			pool_free(&pool, tmp);
-
-			printf("Successful service shutdown.\n");
-			return;
-		}
-	}
-	printf("This service doesn't work.\n");
-	return;
+    printf("Removing from running services list...");
+    dlist_del_init(&service_node->dlist_item);
+    pool_free(&pool, service_node);
+    printf("done\n");
 }
 
+/* Print out running services */
 static void listprint(void) {
 	struct service_list *tmp;
 
 	dlist_foreach_entry(tmp, &head, dlist_item) {
-		printf("%s\n", tmp->service_name);
+        printf("[PID=%d]\t%s\n", tmp->pid, tmp->service_name);
 	}
 }
 
+/* Run given service */
 static int service_run(const char *path, char *const argv[]) {
 	pid_t pid;
+    int res = 0;
+
 	pid = vfork();
 
 	if (pid < 0) {
@@ -107,19 +106,32 @@ static int service_run(const char *path, char *const argv[]) {
 		return -err;
 	}
 
-	if (pid == 0) {
-		execv(path, argv);
-		exit(1);
-	}
-	service_add(path, pid);
-
-	return 0;
+    if (pid == 0) {
+        /* That is considered a bad manner to have child altering any variables,
+         * except for pid, since it shares memory space with the parent.
+         * However, without fork() and wait() we have to manage somehow.
+         * Until a better solution is around, this is the option we can use, to
+         * understand if the child successfully launched needed service. 
+         * Probably needs a fix in future*/
+        res = execv(path, argv);
+        exit(1);
+    }
+    else {
+        if(res < 0) {
+            printf("service: No such executable\n");
+            return -1;
+        }
+        service_add(path, pid);
+    }
+    return 0;
 }
 
+/* Service.c: Main */
 int main(int argc, char **argv) {
 	int opt;
+    struct service_list *service_node = NULL;
 	const char *command;
-	int arg_offset = 1;
+    int arg_offset = 1;
 
 	if (argc == 0) {
 		return -EINVAL;
@@ -147,22 +159,39 @@ int main(int argc, char **argv) {
 			rlp.rlim_max = stack_size;
 			rlp.rlim_cur = stack_size;
 			setrlimit(RLIMIT_STACK, &rlp);
-			printf("service will be launched with %d stack size\n", stack_size);
+			printf("Service will be launched with %d stack size\n", stack_size);
 			arg_offset = 3;
 			break;
-
 		}
 	}
 
 	command = argv[arg_offset];
 
-	if ((argc > (arg_offset + 1)) && strcmp(argv[arg_offset + 1], "stop") == 0) {
-		service_delete(command);
-		return 0;
-	}
+    /* Stop command */
+    if (arg_offset+1 < argc)
+        if (strcmp(argv[arg_offset+1], "stop") == 0) {
+            service_node = service_lookup_by_name(command);
+            if (service_node)
+                service_delete(service_node);
+            else
+                printf("Cannot stop %s, no such service running\n", command);
+            return 0;
+        }
 
-	argv[argc] = NULL;
-	printf("Starting service: %s\n", command);
+    /* Start process */
+    service_node = service_lookup_by_name(command);
+    if (service_node) {
+        printf("Service is already running\n");
+        return 0;
+    }
+    else {
+        argv[argc] = NULL;
+        printf("Starting service: %s\n", command);
 
-	return service_run(command, &argv[arg_offset]);
+        if(service_run(command, &argv[arg_offset]) < 0)
+            printf("Couldn't start service %s\n", argv[1]);
+        else
+            printf("Succefully started\n");
+        return 0;
+    }
 }
