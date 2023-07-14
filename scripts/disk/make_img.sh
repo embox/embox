@@ -2,7 +2,7 @@
 # Gotta have a grub 0.97-like installed on your system
 #
 
-cd "$(dirname "$0")"
+cd "$(dirname "$0")" || { echo "Failed to cd to $(dirname "$0")"; exit 1; }
 
 KERNEL_NAME="embox"
 BIN_DIR="../../build/base/bin"
