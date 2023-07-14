@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 ip=$(which ip)
 
 $ip link add name br0 type bridge
