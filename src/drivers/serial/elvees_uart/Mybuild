@@ -4,10 +4,10 @@ module elvees_uart {
 	source "elvees_uart.c"
 
 	depends core
-	depends diag
+	//depends diag
 }
 
-module elvees_uart_diag extends embox.driver.diag.diag_api {
+module elvees_uart_diag extends embox.driver.serial.diag {
 	option number base_addr=0x38028000
 	option number irq_num=58
 	option number baud_rate=115200

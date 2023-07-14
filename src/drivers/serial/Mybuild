@@ -1,6 +1,6 @@
 package embox.driver.serial
 
-module diag {
+module diag extends embox.driver.diag.diag_api {
 	source "diag_serial.c"
 
 	@IncludeExport(path="drivers/serial")
