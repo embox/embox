@@ -11,7 +11,7 @@ print_help() {
 MAP=$1
 PATTERN=$2
 
-if [ -z $MAP ] || [ -z $PATTERN ]; then
+if [ -z "$MAP" ] || [ -z "$PATTERN" ]; then
 	print_help
 	exit 1
 fi
@@ -24,7 +24,7 @@ fi
 
 export PATTERN_VAR="$PATTERN"
 
-cat $MAP | \
+cat "$MAP" | \
 	$AWK '($0 ~ ENVIRON["PATTERN_VAR"] || prev ~ ENVIRON["PATTERN_VAR"]) && /\.o/ \
 	     { printf "%-20x%-20d%s\n", $(NF-1), $(NF-1), $NF }; { prev=$0 }' | sort -n -k2 | \
 	$AWK 'BEGIN { printf "%-20s%-20s%s\n", "Size (hex)", "Size (dec)", "File" }
