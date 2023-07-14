@@ -14,4 +14,4 @@ fi
 ./scripts/qemu/auto_qemu \
 	-drive id=my_usb_disk,file=$image_file_name,if=none,format=raw \
 	-device usb-storage,drive=my_usb_disk \
-	$@
+	"$@"

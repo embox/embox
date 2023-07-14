@@ -18,4 +18,4 @@ fi
 	-drive if=none,id=usbdisk,file=$image_file_name,format=raw \
 	-device usb-hub,bus=ohci.0,port=$HUB_PORT \
 	-device usb-storage,bus=ohci.0,port=$HUB_PORT.$USBDISK_HUB_PORT,drive=usbdisk \
-	$@
+	"$@"
