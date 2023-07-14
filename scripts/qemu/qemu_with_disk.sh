@@ -8,25 +8,22 @@ MODS_CONF=$CONFDIR/mods.conf
 LDS_CONF=$CONFDIR/lds.conf
 BUILD_CONF=$CONFDIR/build.conf
 
-ARCHs=()
-NICs=()
-
 info() {
-	echo $@ >&2
+	echo "$@" >&2
 }
 
 error() {
-	echo $@ >&2
+	echo "$@" >&2
 	exit 1
 }
 
 guessed_info() {
-	info Guessed $1 is: ${!1}
+	info Guessed "$1" is: "${!1}"
 }
 
 error_empty() {
 	if [ -z "${!1}" ]; then
-		error $1 is not defined
+		error "$1" is not defined
 	fi
 }
 
@@ -41,7 +38,7 @@ get_user_empty_guess() {
 get_user_undef_guess() {
 	if [ -z "${!1+defined}" ]; then
 		eval "$1=\"$($2)\""
-		guessed_info $1
+		guessed_info "$1"
 	fi
 }
 
@@ -50,8 +47,8 @@ get_user_empty_guess AUTOQEMU_ARCH guess_arch
 
 guess_mem() {
 	ram=$(sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p' $LDS_CONF)
-	if [ $ram ]; then
-		echo $ram
+	if [ "$ram" ]; then
+		echo "$ram"
 	else
 		echo 128
 	fi
@@ -64,36 +61,32 @@ get_user_undef_guess AUTOQEMU_NICS guess_nics
 guess_kvm() {
 	ret=""
 	# Build kvm argument
-	if [ $AUTOQEMU_ARCH = "x86" ]; then
-		egrep '(vmx|svm)' /proc/cpuinfo > /dev/null
-		if [ $? -eq 0 ]; then
+	if [ "$AUTOQEMU_ARCH" = "x86" ]; then
+		if grep -q -E '(vmx|svm)' /proc/cpuinfo; then
 			ret="-enable-kvm"
 		else
 			info VT is not supported by CPU
 		fi
 
-		dmesg | tail | grep "kvm: disabled by bios" > /dev/null
-		if [ $? -eq 0 ]; then
+		if dmesg | tail | grep -q -F "kvm: disabled by bios"; then
 			info "kvm disabled by bios. You can enable VT in bios"
 			ret=
 		fi
 
-		lsmod | egrep '(kvm_intel|kvm_amd)' > /dev/null
-		if [ $? -ne 0 ]; then
+		if ! lsmod | grep -q -E '(kvm_intel|kvm_amd)'; then
 			info no kvm kernel module loaded
 			ret=
 		fi
 	fi
-	echo $ret;
+	echo "$ret";
 }
 get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 
 guess_load_arg() {
-	if [ $AUTOQEMU_ARCH != "arm" ]; then
+	if [ "$AUTOQEMU_ARCH" != "arm" ]; then
 		echo "-kernel $KERNEL"
 	else
-		./scripts/uboot-uimage >/dev/null
-		if [ 0 -ne $? ]; then
+		if ! ./scripts/ubobot-uimage; then
 			exit 1
 		fi
 		./scripts/qemu/beagle/run.sh beagle_nand.img ./uImage >/dev/null 2>/dev/null
@@ -147,7 +140,7 @@ HDD_IMAGE="qemu_ext2_image.img"
 mkdir qemu_tmp_dir
 ./scripts/continuous/fs/img-manage.sh $FS_TYPE $HDD_IMAGE build "qemu_tmp_dir"
 rmdir qemu_tmp_dir
-ARG_LINE="$sudo $AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]} $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} -hda $HDD_IMAGE $@"
+ARG_LINE="$sudo $AUTOQEMU_PREFIX${ARCH2QEMU[$AUTOQEMU_ARCH]} $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $nic_lines ${AUTOQEMU_NOGRAPHIC_ARG--nographic} -hda $HDD_IMAGE $*"
 
 info "$ARG_LINE"
 $ARG_LINE
