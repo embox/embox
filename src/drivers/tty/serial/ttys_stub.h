@@ -13,7 +13,7 @@
 #define TTYS_DEF(name, uart_dev) \
 	ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry); \
 	ARRAY_SPREAD_ADD(__uart_device_registry, uart_dev); \
-	CHAR_DEV_DEF(name, NULL, NULL, NULL, uart_dev)
+	CHAR_DEV_DEF(name, NULL, NULL, uart_dev)
 
 
 #endif /* SRC_DRIVERS_TTY_SERIAL_TTYS_STUB_H_ */

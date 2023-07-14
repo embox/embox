@@ -67,4 +67,4 @@ static struct idesc *mem_open(struct dev_module *cdev, void *priv) {
 	return char_dev_idesc_create(cdev);
 }
 
-CHAR_DEV_DEF(MEM_DEV_NAME, mem_open, NULL, &mem_ops, NULL);
+CHAR_DEV_DEF(MEM_DEV_NAME, mem_open, &mem_ops, NULL);

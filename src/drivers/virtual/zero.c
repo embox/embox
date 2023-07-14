@@ -59,4 +59,4 @@ static struct idesc *zero_open(struct dev_module *cdev, void *priv) {
 	return char_dev_idesc_create(cdev);
 }
 
-CHAR_DEV_DEF(ZERO_DEV_NAME, zero_open, NULL, &zero_ops, NULL);
+CHAR_DEV_DEF(ZERO_DEV_NAME, zero_open, &zero_ops, NULL);
