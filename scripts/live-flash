@@ -3,13 +3,12 @@
 SYSLINUX_ROOT=/usr/lib/syslinux
 SYSLINUX_MBR=$(find $SYSLINUX_ROOT -name mbr.bin)
 SYSLINUX_BIOS_DIR=$(find $SYSLINUX_ROOT -type d -name bios)
-SYSLINUX_SHARE=${SYSLINUX_ROOT}/usr/share/syslinux
 
 EMBOX_MULTIBOOT=./build/base/bin/embox
 
 MOUNT_POINT=/media/embox-live
 
-DATA_DIR=$(dirname $0)/bootloader_cfgs
+DATA_DIR=$(dirname "$0")/bootloader_cfgs
 
 usage() {
 	echo "Make live usb."
@@ -33,35 +32,35 @@ usage() {
 
 grub1_do () {
 	DRIVE=$1
-	sudo grub-install --root-directory=$MOUNT_POINT $DRIVE
+	sudo grub-install --root-directory=$MOUNT_POINT "$DRIVE"
 
-	sudo cp $DATA_DIR/grub1-config $MOUNT_POINT/boot/grub/menu.lst
+	sudo cp "$DATA_DIR"/grub1-config $MOUNT_POINT/boot/grub/menu.lst
 }
 
 grub2_do () {
 	DRIVE=$1
 
 	[ -d $MOUNT_POINT/boot ] || sudo mkdir -p $MOUNT_POINT/boot
-	sudo grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot $DRIVE
+	sudo grub-install --target=i386-pc --boot-directory=$MOUNT_POINT/boot "$DRIVE"
 
-	sudo cp $DATA_DIR/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
+	sudo cp "$DATA_DIR"/grub2-config $MOUNT_POINT/boot/grub/grub.cfg
 }
 
 syslinux_do() {
 	DRIVE=$1
 	MP=$2
-	SYSLINUX_DIR=$MP/boot/syslinux
+	SYSLINUX_DIR="$MP"/boot/syslinux
 
-	[ -d $SYSLINUX_DIR ] || sudo mkdir -p $SYSLINUX_DIR
+	[ -d "$SYSLINUX_DIR" ] || sudo mkdir -p "$SYSLINUX_DIR"
 
 	# Based on https://wiki.archlinux.org/index.php/Syslinux#Manual_install
 
-	sudo extlinux --install $SYSLINUX_DIR
+	sudo extlinux --install "$SYSLINUX_DIR"
 
-	sudo dd if=$SYSLINUX_MBR of=$DRIVE bs=440 count=1 conv=notrunc
-	sudo cp ${SYSLINUX_BIOS_DIR}/*.c32 $SYSLINUX_DIR/
+	sudo dd if="$SYSLINUX_MBR" of="$DRIVE" bs=440 count=1 conv=notrunc
+	sudo cp "${SYSLINUX_BIOS_DIR}"/*.c32 "$SYSLINUX_DIR"/
 
-	sudo cp $DATA_DIR/syslinux-config $MP/boot/syslinux/syslinux.cfg
+	sudo cp "$DATA_DIR"/syslinux-config "$MP"/boot/syslinux/syslinux.cfg
 }
 
 if [ ! $# = 2 ]; then
@@ -69,7 +68,7 @@ if [ ! $# = 2 ]; then
 	exit 1
 fi
 
-if [ -z $LIVEFLASH_CPONLY ]; then
+if [ -z "$LIVEFLASH_CPONLY" ]; then
 	case $1 in
 		grub|grub2|syslinux) ;; # ok
 		*) # error
@@ -85,32 +84,32 @@ DRIVE=$2
 LOOPDEV=
 PARTITION=${DRIVE}1
 [ -d $MOUNT_POINT ] || sudo mkdir $MOUNT_POINT
-sudo umount $PARTITION
+sudo umount "$PARTITION"
 
-if [ -z $LIVEFLASH_CPONLY ]; then
-	if [ ! -b $DRIVE ]; then
-		dd if=/dev/zero of=$DRIVE bs=1M count=512
-		LOOPDEV=`losetup -f`
+if [ -z "$LIVEFLASH_CPONLY" ]; then
+	if [ ! -b "$DRIVE" ]; then
+		dd if=/dev/zero of="$DRIVE" bs=1M count=512
+		LOOPDEV=$(losetup -f)
 		PARTITION=${LOOPDEV}p1
-		echo ",,L,*" | sfdisk $DRIVE
-		sudo losetup -P $LOOPDEV $DRIVE
+		echo ",,L,*" | sfdisk "$DRIVE"
+		sudo losetup -P "$LOOPDEV" "$DRIVE"
 	else
 		# I am not sure if this required or not, just derived
 		# from older commits.
-		dd if=/dev/zero of=$DRIVE bs=512 count=1
-		echo "60,,L,*" | sfdisk $DRIVE
+		dd if=/dev/zero of="$DRIVE" bs=512 count=1
+		echo "60,,L,*" | sfdisk "$DRIVE"
 
 	fi
-	MKE2FS_DEVICE_SECTSIZE=512 sudo mke2fs $PARTITION -b 1024 -v
+	MKE2FS_DEVICE_SECTSIZE=512 sudo mke2fs "$PARTITION" -b 1024 -v
 fi
 
-sudo mount $PARTITION $MOUNT_POINT
+sudo mount "$PARTITION" $MOUNT_POINT
 
-if [ -z $LIVEFLASH_CPONLY ]; then
+if [ -z "$LIVEFLASH_CPONLY" ]; then
 	case $1 in
-		grub)      grub1_do $DRIVE $MOUNT_POINT ;;
-		grub2)     grub2_do $DRIVE $MOUNT_POINT ;;
-		syslinux)  syslinux_do $DRIVE $MOUNT_POINT ;;
+		grub)      grub1_do "$DRIVE" $MOUNT_POINT ;;
+		grub2)     grub2_do "$DRIVE" $MOUNT_POINT ;;
+		syslinux)  syslinux_do "$DRIVE" $MOUNT_POINT ;;
 	esac
 fi
 
@@ -119,6 +118,6 @@ sudo cp $EMBOX_MULTIBOOT $MOUNT_POINT/boot/embox
 sudo umount $MOUNT_POINT
 sudo rm -rf $MOUNT_POINT
 
-if [ ! -b $DRIVE ]; then
-	sudo losetup -d $LOOPDEV
+if [ ! -b "$DRIVE" ]; then
+	sudo losetup -d "$LOOPDEV"
 fi
