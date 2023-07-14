@@ -1,22 +1,3 @@
 package embox.driver.diag
 
 module diag_api {}
-
-module xen_diag extends diag_api {
-	source "xen_diag.c"
-}
-
-module mem_diag extends diag_api {
-	option number buffer_len = 128
-	option number buffer_addr = 0
-	source "mem_diag.c"
-}
-
-module diag_stub extends diag_api {
-	source "diag_stub.c"
-}
-
-module usermode extends diag_api {
-	source "usermode.c"
-}
-

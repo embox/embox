@@ -1,0 +1,5 @@
+package embox.driver.diag
+
+module usermode extends diag_api {
+	source "usermode.c"
+}
