@@ -20,11 +20,11 @@ expose_ports_args() {
 
 docker run -d --privileged \
 	--name emdocker \
-	-v $PWD:/embox \
+	-v "$PWD":/embox \
 	$(expose_ports_args $(localport $EMBOX_PORTS)) \
 	${dockerimage:-embox/emdocker}
 
-. $(dirname $0)/docker_rc.sh
+. "$(dirname "$0")"/docker_rc.sh
 
 # wait till docker started, otherwise getting "No 'user' user found"
 waittries=${DOCKER_START_WAIT_TIME_SEC:-10}
@@ -38,7 +38,7 @@ while [ 0 -lt $waittries ]; do
 	waittries=$(($waittries - 1))
 done
 
-if [ x0 = x$started ]; then
+if [ 0 = $started ]; then
 	echo "Container is not stated for some time, trying one more time in verbose mode" >&2
 	echo "If it fail, try to change timeout specifying DOCKER_START_WAIT_TIME_SEC env, like" >&2
 	echo "" >&2
@@ -46,7 +46,7 @@ if [ x0 = x$started ]; then
 	dr true && started=1
 fi
 
-if [ x0 = x$started ]; then
+if [ 0 = $started ]; then
 	echo "Can't start container" >&2
 	exit 1
 fi
