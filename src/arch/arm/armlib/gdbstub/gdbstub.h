@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#define PACKET_SIZE 0x80
+#define PACKET_SIZE 0x88UL
 
 #define FEATURE_STR "l<target><architecture>arm</architecture></target>"
 
