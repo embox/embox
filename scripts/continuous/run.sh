@@ -41,10 +41,10 @@ atml2run=(
 	['x86/smp']=default_run
 	['x86/user_apps']=default_run
 	['x86/test/lang']=default_run
-	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
-	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
+	['x86/test/fs']="$(dirname "$0")/fs/run.sh $ATML"
+	['x86/test/net']="$(dirname "$0")/net/run.sh $ATML"
 	['x86/test/packetdrill']=packetdrill_run
-	['x86/test/qt-vnc']="$(dirname $0)/qt/run.sh $ATML"
+	['x86/test/qt-vnc']="$(dirname "$0")/qt/run.sh $ATML"
 	['sparc/qemu']=default_run
 	['mips/qemu']=default_run
 	['ppc/qemu']=default_run
@@ -61,7 +61,7 @@ atml2run=(
 
 sudo_var_pass() {
 	if [ ${!1+defined} ]; then
-		echo $1=${!1}
+		echo "$1=${!1}"
 	else
 		#output is passed to sudo that not likes empty arguments
 		echo __T=
@@ -85,8 +85,8 @@ run_bg() {
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
 		['x86/smp']="$RUN_QEMU -smp 2"
-		['sparc/debug']="$(dirname $0)/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
-		['usermode86/debug']="$(dirname $0)/../usermode_start.sh"
+		['sparc/debug']="$(dirname "$0")/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
+		['usermode86/debug']="$(dirname "$0")/../usermode_start.sh"
 	)
 
 	run_cmd=${atml2sim[$ATML]}
@@ -107,7 +107,7 @@ run_bg() {
 
 	export OUTPUT_FILE
 	export -f run_check
-	timeout $TIMEOUT bash -c '
+	timeout "$TIMEOUT" bash -c '
 			while run_check; [ $? == 2 ]; do
 				sleep 1
 			done' && \
@@ -121,7 +121,7 @@ kill_bg() {
 	then
 		echo "warning: No background process running"
 	else
-		pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
+		pstree -A -p "$sim_bg" | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 	fi
 
 	cat $OUTPUT_FILE
@@ -189,7 +189,7 @@ restore_conf() {
 	fi
 }
 
-if ! echo ${!atml2run[@]} | grep $ATML &>/dev/null; then
+if ! echo "${!atml2run[@]}" | grep "$ATML" &>/dev/null; then
 	echo Warning: template testing not supported >&2
 	exit 0
 fi
