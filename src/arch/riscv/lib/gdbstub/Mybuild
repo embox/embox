@@ -1,0 +1,6 @@
+package embox.arch.riscv
+
+module gdbstub extends embox.lib.gdbstub {
+	source "gdbstub.c"
+	source "gdbstub.h"
+}
