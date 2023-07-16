@@ -5,6 +5,7 @@
  * @author Aleksey Zhmulin
  * @date 15.05.23
  */
+#include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -194,8 +195,9 @@ static void gdb_query_cmd(struct gdbstub_env *env) {
 		break;
 	case 'S':
 		if (!memcmp(request, "Supported", 9)) {
-			gdb_pack_str(&env->packet, "qXfer:features:read+;"
-			                           "PacketSize=" MACRO_STRING(PACKET_SIZE));
+			gdb_pack_str(&env->packet, "qXfer:features:read+;PacketSize=");
+			sprintf(env->packet.buf + env->packet.size, "%lx", PACKET_SIZE);
+			gdb_pack_str(&env->packet, env->packet.buf + env->packet.size);
 		}
 		else if (!memcmp(request, "Symbol", 6)) {
 			gdb_pack_str(&env->packet, "OK");
