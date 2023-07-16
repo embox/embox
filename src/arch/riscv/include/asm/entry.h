@@ -10,98 +10,94 @@
 #ifndef RISCV_ENTRY_H_
 #define RISCV_ENTRY_H_
 
+#include <asm/asm.h>
 #include <asm/ptrace.h>
 
-#ifndef __ASSEMBLER__
+#ifdef __ASSEMBLER__
 
-#else /* __ASSEMBLER__ */
+.macro SAVE_ALL
+	addi    sp, sp, -PT_SIZE
+	PTR_S   t6, PT_R31(sp)
+	addi    t6, sp, PT_SIZE
 
-	.macro SAVE_ALL
+	PTR_S   ra, PT_RA(sp)
+	PTR_S   t6, PT_SP(sp)
+	PTR_S   gp, PT_GP(sp)
+	PTR_S   tp, PT_TP(sp)
+	PTR_S   t0, PT_R5(sp)
+	PTR_S   t1, PT_R6(sp)
+	PTR_S   t2, PT_R7(sp)
+	PTR_S   s0, PT_R8(sp)
+	PTR_S   s1, PT_R9(sp)
+	PTR_S   a0, PT_R10(sp)
+	PTR_S   a1, PT_R11(sp)
+	PTR_S   a2, PT_R12(sp)
+	PTR_S   a3, PT_R13(sp)
+	PTR_S   a4, PT_R14(sp)
+	PTR_S   a5, PT_R15(sp)
+	PTR_S   a6, PT_R16(sp)
+	PTR_S   a7, PT_R17(sp)
+	PTR_S   s2, PT_R18(sp)
+	PTR_S   s3, PT_R19(sp)
+	PTR_S   s4, PT_R20(sp)
+	PTR_S   s5, PT_R21(sp)
+	PTR_S   s6, PT_R22(sp)
+	PTR_S   s7, PT_R23(sp)
+	PTR_S   s8, PT_R24(sp)
+	PTR_S   s9, PT_R25(sp)
+	PTR_S   s10, PT_R26(sp)
+	PTR_S   s11, PT_R27(sp)
+	PTR_S   t3, PT_R28(sp)
+	PTR_S   t4, PT_R29(sp)
+	PTR_S   t5, PT_R30(sp)
 
-		addi    sp, sp, -PT_SIZE
-		sw      t6, PT_R31(sp)
-		sw      sp, PT_SP(sp)
-		sw      ra, PT_RA(sp)
-		sw      gp, PT_GP(sp)
-		sw      tp, PT_TP(sp)
-		sw      t0, PT_R5(sp)
-		sw      t1, PT_R6(sp)
-		sw      t2, PT_R7(sp)
-		sw      s0, PT_R8(sp)
-		sw      s1, PT_R9(sp)
-		sw      a0, PT_R10(sp)
-		sw      a1, PT_R11(sp)
-		sw      a2, PT_R12(sp)
-		sw      a3, PT_R13(sp)
-		sw      a4, PT_R14(sp)
-		sw      a5, PT_R15(sp)
-		sw      a6, PT_R16(sp)
-		sw      a7, PT_R17(sp)
-		sw      s2, PT_R18(sp)
-		sw      s3, PT_R19(sp)
-		sw      s4, PT_R20(sp)
-		sw      s5, PT_R21(sp)
-		sw      s6, PT_R22(sp)
-		sw      s7, PT_R23(sp)
-		sw      s8, PT_R24(sp)
-		sw      s9, PT_R25(sp)
-		sw      s10, PT_R26(sp)
-		sw      s11, PT_R27(sp)
-		sw      t3, PT_R28(sp)
-		sw      t4, PT_R29(sp)
-		sw      t5, PT_R30(sp)
+	csrr    t6, mstatus
+	PTR_S   t6, PT_MSTATUS(sp)
+	csrr    t6, mepc
+	PTR_S   t6, PT_PC(sp)
+.endm
 
-		csrr    t6, mstatus
-		sw      t6, PT_MSTATUS(sp)
-		csrr    t6, mepc
-		sw      t6, PT_PC(sp)
+.macro RESTORE_ALL
+	PTR_L   ra, PT_RA(sp)
+	PTR_L   gp, PT_GP(sp)
+	PTR_L   tp, PT_TP(sp)
+	PTR_L   t0, PT_R5(sp)
+	PTR_L   t1, PT_R6(sp)
+	PTR_L   t2, PT_R7(sp)
+	PTR_L   s0, PT_R8(sp)
+	PTR_L   s1, PT_R9(sp)
+	PTR_L   a0, PT_R10(sp)
+	PTR_L   a1, PT_R11(sp)
+	PTR_L   a2, PT_R12(sp)
+	PTR_L   a3, PT_R13(sp)
+	PTR_L   a4, PT_R14(sp)
+	PTR_L   a5, PT_R15(sp)
+	PTR_L   a6, PT_R16(sp)
+	PTR_L   a7, PT_R17(sp)
+	PTR_L   s2, PT_R18(sp)
+	PTR_L   s3, PT_R19(sp)
+	PTR_L   s4, PT_R20(sp)
+	PTR_L   s5, PT_R21(sp)
+	PTR_L   s6, PT_R22(sp)
+	PTR_L   s7, PT_R23(sp)
+	PTR_L   s8, PT_R24(sp)
+	PTR_L   s9, PT_R25(sp)
+	PTR_L   s10, PT_R26(sp)
+	PTR_L   s11, PT_R27(sp)
+	PTR_L   t3, PT_R28(sp)
+	PTR_L   t4, PT_R29(sp)
+	PTR_L   t5, PT_R30(sp)
 
-	.endm
+	PTR_L   t6, PT_MSTATUS(sp)
+	csrw    mstatus, t6
 
-	.macro RESTORE_ALL
+	PTR_L   t6, PT_PC(sp)
+	csrw    mepc, t6
 
-		lw      ra, PT_RA(sp)
-		lw      gp, PT_GP(sp)
-		lw      tp, PT_TP(sp)
-		lw      t0, PT_R5(sp)
-		lw      t1, PT_R6(sp)
-		lw      t2, PT_R7(sp)
-		lw      s0, PT_R8(sp)
-		lw      s1, PT_R9(sp)
-		lw      a0, PT_R10(sp)
-		lw      a1, PT_R11(sp)
-		lw      a2, PT_R12(sp)
-		lw      a3, PT_R13(sp)
-		lw      a4, PT_R14(sp)
-		lw      a5, PT_R15(sp)
-		lw      a6, PT_R16(sp)
-		lw      a7, PT_R17(sp)
-		lw      s2, PT_R18(sp)
-		lw      s3, PT_R19(sp)
-		lw      s4, PT_R20(sp)
-		lw      s5, PT_R21(sp)
-		lw      s6, PT_R22(sp)
-		lw      s7, PT_R23(sp)
-		lw      s8, PT_R24(sp)
-		lw      s9, PT_R25(sp)
-		lw      s10, PT_R26(sp)
-		lw      s11, PT_R27(sp)
-		lw      t3, PT_R28(sp)
-		lw      t4, PT_R29(sp)
-		lw      t5, PT_R30(sp)
+	PTR_L   t6, PT_R31(sp)
 
-		lw      t6, PT_MSTATUS(sp)
-		csrw    mstatus, t6
-
-		lw      t6, PT_PC(sp)
-		csrw    mepc, t6
-
-		lw      t6, PT_R31(sp)
-
-		lw      sp, PT_SP(sp)
-		addi    sp, sp, PT_SIZE
-
-	.endm
+	PTR_L   sp, PT_SP(sp)
+.endm
 
 #endif /* __ASSEMBLER __ */
 

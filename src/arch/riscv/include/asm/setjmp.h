@@ -12,49 +12,27 @@
 #ifndef __ASSEMBLER__
 
 typedef struct {
-	unsigned int s[12];     /* static registers */
-	unsigned int ra;       /* return address */
-	unsigned int sp;       /* stack pointer */
+	unsigned long s[12]; /* static registers */
+	unsigned long ra;    /* return address */
+	unsigned long sp;    /* stack pointer */
 } __jmp_buf[1];
 
-#else /* __ASSEMBLER__ */
-#if __riscv_xlen == 32
+#else /* !__ASSEMBLER__ */
 
-#define SETJMP_S0    0x00
-#define SETJMP_S1    0x04
-#define SETJMP_S2    0x08
-#define SETJMP_S3    0x0C
-#define SETJMP_S4    0x10
-#define SETJMP_S5    0x14
-#define SETJMP_S6    0x18
-#define SETJMP_S7    0x1C
-#define SETJMP_S8    0x20
-#define SETJMP_S9    0x24
-#define SETJMP_S10   0x28
-#define SETJMP_S11   0x2C
-#define SETJMP_RA    0x30
-#define SETJMP_SP    0x34
-
-#elif __riscv_xlen == 64
-
-#define SETJMP_S0    0x00
-#define SETJMP_S1    0x08
-#define SETJMP_S2    0x10
-#define SETJMP_S3    0x18
-#define SETJMP_S4    0x20
-#define SETJMP_S5    0x28
-#define SETJMP_S6    0x30
-#define SETJMP_S7    0x38
-#define SETJMP_S8    0x40
-#define SETJMP_S9    0x48
-#define SETJMP_S10   0x50
-#define SETJMP_S11   0x58
-#define SETJMP_RA    0x60
-#define SETJMP_SP    0x68
-
-#else
-#error Unsupported arch
-#endif
+#define SETJMP_S0  (SZREG * 0)
+#define SETJMP_S1  (SZREG * 1)
+#define SETJMP_S2  (SZREG * 2)
+#define SETJMP_S3  (SZREG * 3)
+#define SETJMP_S4  (SZREG * 4)
+#define SETJMP_S5  (SZREG * 5)
+#define SETJMP_S6  (SZREG * 6)
+#define SETJMP_S7  (SZREG * 7)
+#define SETJMP_S8  (SZREG * 8)
+#define SETJMP_S9  (SZREG * 9)
+#define SETJMP_S10 (SZREG * 10)
+#define SETJMP_S11 (SZREG * 11)
+#define SETJMP_RA  (SZREG * 12)
+#define SETJMP_SP  (SZREG * 13)
 
 #endif /* __ASSEMBLER__ */
 

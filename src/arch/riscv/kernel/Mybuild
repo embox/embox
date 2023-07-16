@@ -2,7 +2,6 @@ package embox.arch.riscv.kernel
 
 module boot extends embox.arch.boot {
 	source "boot.S"
-/*	source "trap.c"*/
 }
 
 module arch extends embox.arch.arch {
@@ -10,15 +9,19 @@ module arch extends embox.arch.arch {
 }
 
 module locore extends embox.arch.locore {
-	depends entry,
-		interrupt
+	depends entry
+	depends interrupt
+	depends exceptions
 }
 
 module interrupt extends embox.arch.interrupt {
-	source "interrupt.c", "ipl_impl.c", "ipl_impl.h"
-	depends embox.kernel.irq
-
 	option number plic_addr=0x0C000000
+
+	source "ipl_impl.c"
+	source "ipl_impl.h"
+	source "interrupt_handler.c"
+
+	depends embox.kernel.irq
 }
 
 module entry extends embox.arch.entry {
@@ -26,5 +29,11 @@ module entry extends embox.arch.entry {
 }
 
 module context extends embox.arch.context {
-	source "context.c", "context_switch.S", "context.h"
+	source "context.c"
+	source "context.h"
+	source "context_switch.S"
+}
+
+module exceptions {
+	source "exception_handler.c"
 }

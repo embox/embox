@@ -6,28 +6,27 @@
  * @date 29.11.2019
  * @author Nastya Nizharadze
  */
-
+#include <asm/asm.h>
 #include <asm/entry.h>
 #include <asm/ptrace.h>
 
-.align 4
-.global trap_handler
-trap_handler:
+.section .text
 
+.global riscv_trap_handler
+
+.align 2
+riscv_trap_handler:
 	SAVE_ALL
-	csrr    t6, mcause
-	srli    t6, t6, 31
-	beqz    t6, riscv_exception_handler
+	la      ra, riscv_trap_exit
+	csrr    a1, mcause
+	srli    t0, a1, (__riscv_xlen - 1)
+	beqz    t0, 1f
+	j       riscv_interrupt_handler
+1:
 	mv      a0, sp
-	jal     riscv_interrupt_handler
-	RESTORE_ALL
-	mret
+	j       riscv_exception_handler
 
-.align 4
-riscv_exception_handler:
-
-	lw      t6, PT_PC(sp)
-	addi    t6, t6, 4
-	sw      t6, PT_PC(sp)
+.align 2
+riscv_trap_exit:
 	RESTORE_ALL
 	mret

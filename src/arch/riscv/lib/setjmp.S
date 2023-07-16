@@ -1,61 +1,53 @@
-// based on U-Boot code (https://github.com/u-boot/u-boot/blob/master/arch/riscv/lib/setjmp.S)
+#include <asm/asm.h>
 
-#if __riscv_xlen == 64
-#define STORE_IDX(reg, idx)  sd reg, (idx*8)(a0)
-#define LOAD_IDX(reg, idx)   ld reg, (idx*8)(a0)
-#elif __riscv_xlen == 32
-#define STORE_IDX(reg, idx)  sw reg, (idx*4)(a0)
-#define LOAD_IDX(reg, idx)   lw reg, (idx*4)(a0)
-#else
-#error Unsupported arch
-#endif
+.section .text
 
-.pushsection .text.setjmp, "ax"
 .global setjmp
+.global longjmp
+
+.align 2
 setjmp:
 	/* Preserve all callee-saved registers and the SP */
-	STORE_IDX(s0, 0)
-	STORE_IDX(s1, 1)
-	STORE_IDX(s2, 2)
-	STORE_IDX(s3, 3)
-	STORE_IDX(s4, 4)
-	STORE_IDX(s5, 5)
-	STORE_IDX(s6, 6)
-	STORE_IDX(s7, 7)
-	STORE_IDX(s8, 8)
-	STORE_IDX(s9, 9)
-	STORE_IDX(s10, 10)
-	STORE_IDX(s11, 11)
-	STORE_IDX(ra, 12)
-	STORE_IDX(sp, 13)
-	li  a0, 0
-	ret
-.popsection
+	PTR_S   s0, (SZREG * 0)(a0)
+	PTR_S   s1, (SZREG * 1)(a0)
+	PTR_S   s2, (SZREG * 2)(a0)
+	PTR_S   s3, (SZREG * 3)(a0)
+	PTR_S   s4, (SZREG * 4)(a0)
+	PTR_S   s5, (SZREG * 5)(a0)
+	PTR_S   s6, (SZREG * 6)(a0)
+	PTR_S   s7, (SZREG * 7)(a0)
+	PTR_S   s8, (SZREG * 8)(a0)
+	PTR_S   s9, (SZREG * 9)(a0)
+	PTR_S   s10, (SZREG * 10)(a0)
+	PTR_S   s11, (SZREG * 11)(a0)
+	PTR_S   ra, (SZREG * 12)(a0)
+	PTR_S   sp, (SZREG * 13)(a0)
 
-.pushsection .text.longjmp, "ax"
-.global longjmp
+	li      a0, 0
+	ret
+
+.align 2
 longjmp:
-	LOAD_IDX(s0, 0)
-	LOAD_IDX(s1, 1)
-	LOAD_IDX(s2, 2)
-	LOAD_IDX(s3, 3)
-	LOAD_IDX(s4, 4)
-	LOAD_IDX(s5, 5)
-	LOAD_IDX(s6, 6)
-	LOAD_IDX(s7, 7)
-	LOAD_IDX(s8, 8)
-	LOAD_IDX(s9, 9)
-	LOAD_IDX(s10, 10)
-	LOAD_IDX(s11, 11)
-	LOAD_IDX(ra, 12)
-	LOAD_IDX(sp, 13)
+	PTR_L   s0, (SZREG * 0)(a0)
+	PTR_L   s1, (SZREG * 1)(a0)
+	PTR_L   s2, (SZREG * 2)(a0)
+	PTR_L   s3, (SZREG * 3)(a0)
+	PTR_L   s4, (SZREG * 4)(a0)
+	PTR_L   s5, (SZREG * 5)(a0)
+	PTR_L   s6, (SZREG * 6)(a0)
+	PTR_L   s7, (SZREG * 7)(a0)
+	PTR_L   s8, (SZREG * 8)(a0)
+	PTR_L   s9, (SZREG * 9)(a0)
+	PTR_L   s10, (SZREG * 10)(a0)
+	PTR_L   s11, (SZREG * 11)(a0)
+	PTR_L   ra, (SZREG * 12)(a0)
+	PTR_L   sp, (SZREG * 13)(a0)
 
 	/* Move the return value in place, but return 1 if passed 0. */
-	beq a1, zero, longjmp_1
-	mv a0, a1
+	beq     a1, zero, longjmp_1
+	mv      a0, a1
 	ret
 
-	longjmp_1:
-	li a0, 1
+longjmp_1:
+	li      a0, 1
 	ret
-.popsection
