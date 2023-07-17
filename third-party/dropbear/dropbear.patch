@@ -1,6 +1,18 @@
-diff -aur dropbear-2022.83/debug.h ../../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h
+diff -aur dropbear-2022.83/Makefile.in ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in
+--- dropbear-2022.83/Makefile.in	2022-11-14 20:30:00.000000000 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in	2023-07-17 15:08:55.831321280 +0600
+@@ -12,6 +12,8 @@
+ 	PROGRAMS=dropbear dbclient dropbearkey dropbearconvert
+ endif
+ 
++CPPFLAGS+=-DDROPBEAR_EMBOX_BUILD
++
+ STATIC_LTC=libtomcrypt/libtomcrypt.a
+ STATIC_LTM=libtommath/libtommath.a
+ 
+diff -aur dropbear-2022.83/debug.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h
 --- dropbear-2022.83/debug.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h	2023-07-17 13:35:42.812306751 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h	2023-07-17 15:00:27.728009909 +0600
 @@ -89,7 +89,7 @@
  /* To debug with GDB it is easier to run with no forking of child processes.
     You will need to pass "-F" as well. */
@@ -10,9 +22,9 @@ diff -aur dropbear-2022.83/debug.h ../../build/extbld/third_party/dropbear/dropb
  #endif
  
  
-diff -aur dropbear-2022.83/includes.h ../../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h
+diff -aur dropbear-2022.83/includes.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h
 --- dropbear-2022.83/includes.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h	2023-07-17 13:38:12.201957179 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h	2023-07-17 15:00:27.728009909 +0600
 @@ -28,9 +28,15 @@
  #include "options.h"
  #include "debug.h"
@@ -49,9 +61,9 @@ diff -aur dropbear-2022.83/includes.h ../../build/extbld/third_party/dropbear/dr
  
  #ifdef HAVE_NETINET_TCP_H
  #include <netinet/tcp.h>
-diff -aur dropbear-2022.83/sysoptions.h ../../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h
+diff -aur dropbear-2022.83/sysoptions.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h
 --- dropbear-2022.83/sysoptions.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-17 13:40:26.323849687 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-17 15:00:27.728009909 +0600
 @@ -75,7 +75,11 @@
  /* Each port might have at least a v4 and a v6 address */
  #define MAX_LISTEN_ADDR (DROPBEAR_MAX_PORTS*3)
