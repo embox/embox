@@ -11,34 +11,37 @@
 #define ARCH_RISCV_CONTEXT_H_
 
 #include <stdint.h>
+#include <asm/asm.h>
 
 #ifndef __ASSEMBLER__
 
 struct context {
-	uint32_t ra;
-	uint32_t sp;
-	uint32_t s[12];
-	uint32_t mstatus;
+	unsigned long ra;
+	unsigned long sp;
+	unsigned long s[12];
+	unsigned long mstatus;
 };
 
-#endif
+#else /* !__ASSEMBLER__ */
 
-#define CTX_RA      0x00
-#define CTX_SP      0x04
-#define CTX_S0      0x08
-#define CTX_S1      0x0C
-#define CTX_S2      0x10
-#define CTX_S3      0x14
-#define CTX_S4      0x18
-#define CTX_S5      0x1C
-#define CTX_S6      0x20
-#define CTX_S7      0x24
-#define CTX_S8      0x28
-#define CTX_S9      0x2C
-#define CTX_S10     0x30
-#define CTX_S11     0x34
-#define CTX_MSTATUS 0x38
+#define CTX_RA      (SZREG * 0)
+#define CTX_SP      (SZREG * 1)
+#define CTX_S0      (SZREG * 2)
+#define CTX_S1      (SZREG * 3)
+#define CTX_S2      (SZREG * 4)
+#define CTX_S3      (SZREG * 5)
+#define CTX_S4      (SZREG * 6)
+#define CTX_S5      (SZREG * 7)
+#define CTX_S6      (SZREG * 8)
+#define CTX_S7      (SZREG * 9)
+#define CTX_S8      (SZREG * 10)
+#define CTX_S9      (SZREG * 11)
+#define CTX_S10     (SZREG * 12)
+#define CTX_S11     (SZREG * 13)
+#define CTX_MSTATUS (SZREG * 14)
 
-#define CTX_SIZE    0x3c
+#define CTX_SIZE (SZREG * 15)
+
+#endif /* __ASSEMBLER__ */
 
 #endif /* ARCH_RISCV_CONTEXT_H_ */

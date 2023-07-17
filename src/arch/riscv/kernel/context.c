@@ -17,8 +17,8 @@ void context_init(struct context *ctx, unsigned int flags,
 		void (*routine_fn)(void), void *sp) {
 	memset(ctx, 0, sizeof(*ctx));
 
-	ctx->sp = (uint32_t) sp;
-	ctx->ra = (uint32_t) routine_fn;
+	ctx->sp = (unsigned long) sp;
+	ctx->ra = (unsigned long) routine_fn;
 	ctx->mstatus = read_csr(mstatus);
 
 	if (flags & CONTEXT_IRQDISABLE) {

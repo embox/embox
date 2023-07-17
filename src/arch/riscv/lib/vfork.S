@@ -6,12 +6,15 @@
  * @date 28.01.2020
  * @author Nastya Nizharadze
  */
+#include <asm/asm.h>
+#include <asm/entry.h>
 
- #include <asm/entry.h>
+.section .text
 
-.align 4
 .global vfork
+
+.align 2
 vfork:
 	SAVE_ALL
 	mv      a0, sp
-	j vfork_body
+	j       vfork_body

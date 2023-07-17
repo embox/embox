@@ -24,18 +24,18 @@ EMBOX_UNIT_INIT(riscv_interrupt_init);
 
 extern int irqctrl_get_num(void);
 
-void riscv_interrupt_handler(pt_regs_t *regs) {
+void riscv_interrupt_handler(void) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		uint32_t pending;
-		uint32_t interrupt_id;
+		long pending;
+		long interrupt_id;
 
 		pending = (read_csr(mcause)) & CLEAN_IRQ_BIT;
 		interrupt_id = pending;
 
-		if (pending == MACHINE_TIMER_INTERRUPT) {
+		if (pending == IRQ_MACHINE_TIMER) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
 			if (__riscv_timer_handler) {
@@ -43,7 +43,7 @@ void riscv_interrupt_handler(pt_regs_t *regs) {
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
-		} else if (pending == MACHINE_EXTERNAL_INTERRUPT) {
+		} else if (pending == IRQ_MACHINE_EXTERNAL) {
 			/* the ID of the highest-priority pending interrupt */
 			interrupt_id = irqctrl_get_num();
 			if (interrupt_id == 0) {
