@@ -74,6 +74,10 @@ static const struct uart_params diag_defparams = {
 
 DIAG_SERIAL_DEF(&acm_diag, &diag_defparams);
 
+#include <util/macro.h>
+
+#define TTY_NAME   ttyACM0
+
 static struct uart acm_ttyS0 = {
 		.uart_ops = &acm_uart_ops,
 		//.irq_num = IRQ_NUM,
@@ -84,7 +88,7 @@ static struct uart acm_ttyS0 = {
 		}
 };
 
-TTYS_DEF("ttyACM0", &acm_ttyS0);
+TTYS_DEF(TTY_NAME, &acm_ttyS0);
 
 int acm_rx_complete(struct usb_gadget_ep *ep, struct usb_gadget_request *req) {
 	return 0;

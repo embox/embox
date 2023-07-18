@@ -80,4 +80,4 @@ PERIPH_MEMORY_DEFINE(elvees_uart, UART_BASE, 0x1000);
 
 STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart_ttyS1);
 
-TTYS_DEF(MACRO_STRING(TTY_NAME), &uart_ttyS1);
+TTYS_DEF(TTY_NAME, &uart_ttyS1);

@@ -40,4 +40,4 @@ PERIPH_MEMORY_DEFINE(muart_uart, UART_BASE, 0x1000);
 
 STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &muart_uart_ttyS1);
 
-TTYS_DEF(MACRO_STRING(TTY_NAME), &muart_uart_ttyS1);
+TTYS_DEF(TTY_NAME, &muart_uart_ttyS1);

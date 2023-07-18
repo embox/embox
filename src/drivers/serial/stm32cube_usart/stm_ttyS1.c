@@ -32,6 +32,6 @@ static struct uart stm32_ttySx = {
 		}
 };
 
-TTYS_DEF(MACRO_STRING(TTY_NAME), &stm32_ttySx);
+TTYS_DEF(TTY_NAME, &stm32_ttySx);
 
 STATIC_IRQ_ATTACH(USARTx_IRQn, uart_irq_handler, &stm32_ttySx);

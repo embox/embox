@@ -174,4 +174,4 @@ static struct uart sifive_ttyS0 = {
 		}
 };
 
-TTYS_DEF(MACRO_STRING(TTY_NAME), &sifive_ttyS0);
+TTYS_DEF(TTY_NAME, &sifive_ttyS0);
