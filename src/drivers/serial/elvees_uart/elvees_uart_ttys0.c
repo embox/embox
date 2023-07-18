@@ -7,6 +7,8 @@
 
 #include <kernel/irq.h>
 
+#include <util/macro.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
@@ -19,7 +21,7 @@
 
 #define PINS_INIT      OPTION_GET(NUMBER, pins_init)
 
-#define TTY_NAME    "ttyS0"
+#define TTY_NAME    ttyS0
 
 extern int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params);
 extern int elvees_uart_has_symbol(struct uart *dev);
@@ -76,4 +78,4 @@ PERIPH_MEMORY_DEFINE(elvees_uart, UART_BASE, 0x1000);
 
 STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &uart_ttyS0);
 
-TTYS_DEF(TTY_NAME, &uart_ttyS0);
+TTYS_DEF(MACRO_STRING(TTY_NAME), &uart_ttyS0);

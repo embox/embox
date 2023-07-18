@@ -7,6 +7,8 @@
 
 #include <kernel/irq.h>
 
+#include <util/macro.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
@@ -18,7 +20,7 @@
 #define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
 #define BAUD_RATE      OPTION_GET(NUMBER,baud_rate)
 
-#define TTY_NAME    "ttyS0"
+#define TTY_NAME    ttyS0
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
@@ -38,4 +40,4 @@ PERIPH_MEMORY_DEFINE(ns16550, UART_BASE, 0x1000);
 
 STATIC_IRQ_ATTACH(IRQ_NUM, uart_irq_handler, &ns16550_ttyS0);
 
-TTYS_DEF(TTY_NAME, &ns16550_ttyS0);
+TTYS_DEF(MACRO_STRING(TTY_NAME), &ns16550_ttyS0);

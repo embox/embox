@@ -10,18 +10,21 @@
 
 #include <kernel/irq.h>
 
+#include <util/macro.h>
+
 #include <drivers/serial/stm_usart.h>
 
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
+
 extern const struct uart_ops stm32_uart_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-#define TTY_NAME    "ttyS0"
+#define TTY_NAME    ttyS0
 
 static struct uart stm32_ttySx = {
-		.dev_name = TTY_NAME,
+		.dev_name = MACRO_STRING(TTY_NAME),
 		.uart_ops = &stm32_uart_ops,
 		.irq_num = USARTx_IRQn,
 		.base_addr = (unsigned long) USARTx,
@@ -31,6 +34,6 @@ static struct uart stm32_ttySx = {
 		}
 };
 
-TTYS_DEF(TTY_NAME, &stm32_ttySx);
+TTYS_DEF(MACRO_STRING(TTY_NAME), &stm32_ttySx);
 
 STATIC_IRQ_ATTACH(USARTx_IRQn, uart_irq_handler, &stm32_ttySx);
