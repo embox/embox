@@ -28,6 +28,6 @@ extern const struct idesc_ops idesc_serial_ops;
 #define TTYS_DEF(name, uart_dev) \
 		ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry); \
 		ARRAY_SPREAD_ADD(__uart_device_registry, uart_dev); \
-		CHAR_DEV_DEF(MACRO_STRING(name), uart_cdev_open, &idesc_serial_ops, uart_dev)
+		CHAR_DEV_DEF(name, uart_cdev_open, &idesc_serial_ops, uart_dev)
 
 #endif /* TTYS_H_ */

@@ -55,4 +55,4 @@ static struct idesc *tty_stub_open(struct dev_module *cdev, void *priv) {
 	return char_dev_idesc_create(cdev);
 }
 
-CHAR_DEV_DEF(MACRO_STRING(TTY_NAME), tty_stub_open, &tty_stub_ops, NULL);
+CHAR_DEV_DEF(TTY_NAME, tty_stub_open, &tty_stub_ops, NULL);

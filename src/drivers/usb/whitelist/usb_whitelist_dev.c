@@ -318,4 +318,4 @@ static struct idesc_ops usb_whitelist_iops = {
 	.close = usb_whitelist_close,
 };
 
-CHAR_DEV_DEF(MACRO_STRING(USB_WHITELIST_DEV_NAME), usb_whitelist_open, &usb_whitelist_iops, NULL);
+CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, usb_whitelist_open, &usb_whitelist_iops, NULL);
