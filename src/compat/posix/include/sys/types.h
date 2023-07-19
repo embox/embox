@@ -59,6 +59,7 @@ static inline unsigned int minor(dev_t dev) {
 
 #include <defines/clockid_t.h>
 
+typedef int key_t;
 
 typedef unsigned int ino_t;
 
