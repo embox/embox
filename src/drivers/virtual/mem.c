@@ -16,8 +16,9 @@
 #include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc.h>
 #include <util/err.h>
+#include <util/macro.h>
 
-#define MEM_DEV_NAME "mem"
+#define MEM_DEV_NAME mem
 
 static void mem_close(struct idesc *desc) {
 }
@@ -67,4 +68,4 @@ static struct idesc *mem_open(struct dev_module *cdev, void *priv) {
 	return char_dev_idesc_create(cdev);
 }
 
-CHAR_DEV_DEF(MEM_DEV_NAME, mem_open, &mem_ops, NULL);
+CHAR_DEV_DEF(MACRO_STRING(MEM_DEV_NAME), mem_open, &mem_ops, NULL);

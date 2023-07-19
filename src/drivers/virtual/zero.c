@@ -14,8 +14,9 @@
 #include <drivers/char_dev.h>
 
 #include <util/err.h>
+#include <util/macro.h>
 
-#define ZERO_DEV_NAME "zero"
+#define ZERO_DEV_NAME     zero
 
 static void zero_close(struct idesc *desc) {
 }
@@ -59,4 +60,4 @@ static struct idesc *zero_open(struct dev_module *cdev, void *priv) {
 	return char_dev_idesc_create(cdev);
 }
 
-CHAR_DEV_DEF(ZERO_DEV_NAME, zero_open, &zero_ops, NULL);
+CHAR_DEV_DEF(MACRO_STRING(ZERO_DEV_NAME), zero_open, &zero_ops, NULL);

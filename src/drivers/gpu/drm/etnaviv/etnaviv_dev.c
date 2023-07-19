@@ -19,6 +19,7 @@
 #include <sys/mman.h>
 
 #include <util/err.h>
+#include <util/macro.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/common/memory.h>
@@ -48,7 +49,8 @@
 #define VERSION_DESC      "DEADBEEF"
 #define VERSION_DESC_LEN  8
 
-#define ETNAVIV_DEV_NAME "card"
+#define ETNAVIV_DEV_NAME     card
+
 /* Interrupt numbers */
 #define GPU3D_IRQ	OPTION_GET(NUMBER,gpu3d_irq)
 #define R2D_GPU2D_IRQ	OPTION_GET(NUMBER,r2d_gpu2d_irq)
@@ -401,7 +403,7 @@ static struct idesc_ops etnaviv_dev_idesc_ops = {
 	.idesc_mmap = etnaviv_dev_idesc_mmap,
 };
 
-CHAR_DEV_DEF(ETNAVIV_DEV_NAME, etnaviv_dev_open, &etnaviv_dev_idesc_ops, NULL);
+CHAR_DEV_DEF(MACRO_STRING(ETNAVIV_DEV_NAME), etnaviv_dev_open, &etnaviv_dev_idesc_ops, NULL);
 
 PERIPH_MEMORY_DEFINE(vivante2d, VIVANTE_2D_BASE, 0x4000);
 PERIPH_MEMORY_DEFINE(vivante3d, VIVANTE_3D_BASE, 0x4000);

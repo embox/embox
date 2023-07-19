@@ -14,8 +14,9 @@
 #include <drivers/char_dev.h>
 
 #include <util/err.h>
+#include <util/macro.h>
 
-#define NULL_DEV_NAME "null"
+#define NULL_DEV_NAME     null
 
 static void null_close(struct idesc *desc) {
 }
@@ -47,4 +48,4 @@ static struct idesc * null_open(struct dev_module *cdev, void *priv) {
 	return char_dev_idesc_create(cdev);
 }
 
-CHAR_DEV_DEF(NULL_DEV_NAME, null_open, &null_ops, NULL);
+CHAR_DEV_DEF(MACRO_STRING(NULL_DEV_NAME), null_open, &null_ops, NULL);
