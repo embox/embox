@@ -81,4 +81,6 @@ static int stm32_spi3_init(void) {
 	return 0;
 }
 
-SPI_DEV_DEF("stm32_spi_3", &stm32_spi_ops, &stm32_spi3, 3);
+#define SPI_DEV_NAME      stm32_spi_1
+
+SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi3, 3);

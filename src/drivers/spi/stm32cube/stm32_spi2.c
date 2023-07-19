@@ -68,4 +68,6 @@ static int stm32_spi2_init(void) {
 	return 0;
 }
 
-SPI_DEV_DEF("stm32_spi_2", &stm32_spi_ops, &stm32_spi2, 2);
+#define SPI_DEV_NAME      stm32_spi_1
+
+SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi2, 2);

@@ -170,28 +170,30 @@ struct spi_ops dw_spi_ops = {
 #define DW_SPI2_BASE OPTION_GET(NUMBER, base_addr2)
 #define DW_SPI3_BASE OPTION_GET(NUMBER, base_addr3)
 
+#define SPI_DEV_NAME     dw_spi
+
 #if DW_SPI0_BASE != 0
 static struct dw_spi dw_spi0;
 PERIPH_MEMORY_DEFINE(dw_spi0, DW_SPI0_BASE, 0x100);
-SPI_DEV_DEF("dw_spi", &dw_spi_ops, &dw_spi0, 0);
+SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi0, 0);
 #endif
 
 #if DW_SPI1_BASE != 0
 static struct dw_spi dw_spi1;
 PERIPH_MEMORY_DEFINE(dw_spi1, DW_SPI1_BASE, 0x100);
-SPI_DEV_DEF("dw_spi", &dw_spi_ops, &dw_spi1, 1);
+SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi1, 1);
 #endif
 
 #if DW_SPI2_BASE != 0
 static struct dw_spi dw_spi2;
 PERIPH_MEMORY_DEFINE(dw_spi2, DW_SPI2_BASE, 0x100);
-SPI_DEV_DEF("dw_spi", &dw_spi_ops, &dw_spi2, 2);
+SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi2, 2);
 #endif
 
 #if DW_SPI3_BASE != 0
 static struct dw_spi dw_spi3;
 PERIPH_MEMORY_DEFINE(dw_spi3, DW_SPI3_BASE, 0x100);
-SPI_DEV_DEF("dw_spi", &dw_spi_ops, &dw_spi3, 3);
+SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi3, 3);
 #endif
 
 EMBOX_UNIT_INIT(dw_spi_module_init);
