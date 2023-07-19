@@ -52,4 +52,5 @@ module dropbear {
 	depends embox.compat.posix.crypt
 	depends embox.compat.posix.fs.chown_api
 	depends embox.compat.posix.proc.rlimit
+	depends embox.compat.posix.util.nanosleep
 }
