@@ -1,6 +1,6 @@
-diff -aur dropbear-2022.83/Makefile.in ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in
+diff -aur dropbear-2022.83/Makefile.in .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in
 --- dropbear-2022.83/Makefile.in	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in	2023-07-17 15:08:55.831321280 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in	2023-07-20 14:38:00.203596087 +0600
 @@ -12,6 +12,8 @@
  	PROGRAMS=dropbear dbclient dropbearkey dropbearconvert
  endif
@@ -10,21 +10,9 @@ diff -aur dropbear-2022.83/Makefile.in ../build/extbld/third_party/dropbear/drop
  STATIC_LTC=libtomcrypt/libtomcrypt.a
  STATIC_LTM=libtommath/libtommath.a
  
-diff -aur dropbear-2022.83/debug.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h
---- dropbear-2022.83/debug.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h	2023-07-17 15:00:27.728009909 +0600
-@@ -89,7 +89,7 @@
- /* To debug with GDB it is easier to run with no forking of child processes.
-    You will need to pass "-F" as well. */
- #ifndef DEBUG_NOFORK
--#define DEBUG_NOFORK 0
-+#define DEBUG_NOFORK 1
- #endif
- 
- 
-diff -aur dropbear-2022.83/includes.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h
+diff -aur dropbear-2022.83/includes.h .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h
 --- dropbear-2022.83/includes.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h	2023-07-17 15:00:27.728009909 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h	2023-07-20 14:38:00.207596007 +0600
 @@ -28,9 +28,15 @@
  #include "options.h"
  #include "debug.h"
@@ -61,10 +49,109 @@ diff -aur dropbear-2022.83/includes.h ../build/extbld/third_party/dropbear/dropb
  
  #ifdef HAVE_NETINET_TCP_H
  #include <netinet/tcp.h>
-diff -aur dropbear-2022.83/sysoptions.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h
+diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c
+--- dropbear-2022.83/svr-main.c	2022-11-14 20:30:00.000000000 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c	2023-07-20 15:21:11.181614845 +0600
+@@ -131,7 +131,9 @@
+ 	int listensocks[MAX_LISTEN_ADDR];
+ 	size_t listensockcount = 0;
+ 	FILE *pidfile = NULL;
++#ifndef DROPBEAR_EMBOX_BUILD
+ 	int execfd = -1;
++#endif
+ 
+ 	int childpipes[MAX_UNAUTH_CLIENTS];
+ 	char * preauth_addrs[MAX_UNAUTH_CLIENTS];
+@@ -165,7 +167,7 @@
+ 		FD_SET(listensocks[i], &fds);
+ 	}
+ 
+-#if DROPBEAR_DO_REEXEC
++#if DROPBEAR_DO_REEXEC && !DROPBEAR_EMBOX_BUILD
+ 	if (multipath) {
+ 		execfd = open(multipath, O_CLOEXEC|O_RDONLY);
+ 	} else {
+@@ -304,9 +306,13 @@
+ 
+ #if DEBUG_NOFORK
+ 			fork_ret = 0;
+-#else
++#else /* DEBUG_NOFORK*/
++#ifndef DROPBEAR_EMBOX_BUILD
+ 			fork_ret = fork();
+-#endif
++#else /*DROPBEAR_EMBOX_BUILD*/
++            fork_ret = vfork();
++#endif  /*DROPBEAR_EMBOX_BUILD*/
++#endif /*DEBUG_NOFORK*/
+ 			if (fork_ret < 0) {
+ 				dropbear_log(LOG_WARNING, "Error forking: %s", strerror(errno));
+ 				goto out;
+@@ -324,12 +330,12 @@
+ 
+ 			} else {
+ 
++#ifndef DROPBEAR_EMBOX_BUILD
+ 				/* child */
+ 				getaddrstring(&remoteaddr, NULL, &remote_port, 0);
+ 				dropbear_log(LOG_INFO, "Child connection from %s:%s", remote_host, remote_port);
+ 				m_free(remote_host);
+ 				m_free(remote_port);
+-
+ #if !DEBUG_NOFORK
+ 				if (setsid() < 0) {
+ 					dropbear_exit("setsid: %s", strerror(errno));
+@@ -343,20 +349,23 @@
+ 
+ 				m_close(childpipe[0]);
+ 
+-				if (execfd >= 0) {
++				if (execfd >= 0)
++#endif /*DROPBEAR_EMBOX_BUILD*/
++                {
+ #if DROPBEAR_DO_REEXEC
+ 					/* Add "-2 childpipe[1]" to the args and re-execute ourself. */
+ 					char **new_argv = m_malloc(sizeof(char*) * (argc+4));
+ 					char buf[10];
+ 					int pos0 = 0, new_argc = argc+2;
+ 
++#ifndef DROPBEAR_EMBOX_BUILD
+ 					/* We need to specially handle "dropbearmulti dropbear". */
+ 					if (multipath) {
+ 						new_argv[0] = (char*)multipath;
+ 						pos0 = 1;
+ 						new_argc++;
+ 					}
+-
++#endif /*DROPBEAR_EMBOX_BUILD*/
+ 					memcpy(&new_argv[pos0], argv, sizeof(char*) * argc);
+ 					new_argv[new_argc-2] = "-2";
+ 					snprintf(buf, sizeof(buf), "%d", childpipe[1]);
+@@ -370,7 +379,11 @@
+ 						TRACE(("cloexec for childsock %d failed: %s", childsock, strerror(errno)))
+ 					}
+ 					/* Re-execute ourself */
++#ifndef DROPBEAR_EMBOX_BUILD
+ 					fexecve(execfd, new_argv, environ);
++#else
++					execve("dropbear", new_argv, environ);
++#endif  /*DROPBEAR_EMBOX_BUILD*/
+ 					/* Not reached on success */
+ 
+ 					/* Fall back on plain fork otherwise.
+diff -aur dropbear-2022.83/sysoptions.h .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h
 --- dropbear-2022.83/sysoptions.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-17 15:00:27.728009909 +0600
-@@ -75,7 +75,11 @@
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-20 15:09:49.206431893 +0600
+@@ -32,6 +32,8 @@
+ /* Would probably work on freebsd but hasn't been tested */
+ #if defined(HAVE_FEXECVE) && DROPBEAR_REEXEC && defined(__linux__)
+ #define DROPBEAR_DO_REEXEC 1
++#elif defined(DROPBEAR_EMBOX_BUILD)
++#define DROPBEAR_DO_REEXEC 1
+ #else
+ #define DROPBEAR_DO_REEXEC 0
+ #endif
+@@ -75,7 +77,11 @@
  /* Each port might have at least a v4 and a v6 address */
  #define MAX_LISTEN_ADDR (DROPBEAR_MAX_PORTS*3)
  
@@ -76,7 +163,7 @@ diff -aur dropbear-2022.83/sysoptions.h ../build/extbld/third_party/dropbear/dro
  
  #define _PATH_CP "/bin/cp"
  
-@@ -299,9 +303,13 @@
+@@ -299,9 +305,13 @@
  
  /* Source for randomness. This must be able to provide hundreds of bytes per SSH
   * connection without blocking. */
