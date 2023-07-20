@@ -386,7 +386,7 @@ diff -aur dropbear-2022.83/cli-channel.c .././build/extbld/third_party/dropbear/
  		TRACE(("leave recv_msg_channel_extended_data: wrong datatype: %d",
 diff -aur dropbear-2022.83/cli-chansession.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-chansession.c
 --- dropbear-2022.83/cli-chansession.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-chansession.c	2023-07-20 16:07:01.667758300 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-chansession.c	2023-07-20 17:14:52.404045027 +0600
 @@ -61,11 +61,11 @@
  
  	TRACE(("enter cli_chansessreq"))
@@ -520,6 +520,15 @@ diff -aur dropbear-2022.83/cli-chansession.c .././build/extbld/third_party/dropb
  	}
  
  	encrypt_packet();
+@@ -342,7 +342,7 @@
+ 	channel->errfd = STDERR_FILENO;
+ 	setnonblocking(STDERR_FILENO);
+ 
+-	channel->extrabuf = cbuf_new(opts.recv_window);
++	channel->extrabuf = cbuf_new(opts->recv_window);
+ 	channel->bidir_fd = 0;
+ 	return 0;
+ }
 @@ -400,13 +400,13 @@
  		dropbear_exit("Couldn't open initial channel");
  	}
@@ -718,7 +727,16 @@ diff -aur dropbear-2022.83/cli-kex.c .././build/extbld/third_party/dropbear/drop
  	}
 diff -aur dropbear-2022.83/cli-main.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-main.c
 --- dropbear-2022.83/cli-main.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-main.c	2023-07-20 16:07:05.295692723 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-main.c	2023-07-20 17:14:54.140017510 +0600
+@@ -60,7 +60,7 @@
+ 	cli_getopts(argc, argv);
+ 
+ #ifndef DISABLE_SYSLOG
+-	if (opts.usingsyslog) {
++	if (opts->usingsyslog) {
+ 		startsyslog("dbclient");
+ 	}
+ #endif
 @@ -106,7 +106,7 @@
  	char *usershell;
  
@@ -728,9 +746,131 @@ diff -aur dropbear-2022.83/cli-main.c .././build/extbld/third_party/dropbear/dro
  	dropbear_exit("Failed to run '%s'\n", cmd);
  }
  
+diff -aur dropbear-2022.83/cli-runopts.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-runopts.c
+--- dropbear-2022.83/cli-runopts.c	2022-11-14 20:30:00.000000000 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-runopts.c	2023-07-20 17:13:31.325328964 +0600
+@@ -158,7 +158,7 @@
+ 	cli_opts.disable_trivial_auth = 0;
+ #if DROPBEAR_CLI_LOCALTCPFWD
+ 	cli_opts.localfwds = list_new();
+-	opts.listen_fwd_all = 0;
++	opts->listen_fwd_all = 0;
+ #endif
+ #if DROPBEAR_CLI_REMOTETCPFWD
+ 	cli_opts.remotefwds = list_new();
+@@ -174,22 +174,22 @@
+ 	cli_opts.bind_address = NULL;
+ 	cli_opts.bind_port = NULL;
+ #ifndef DISABLE_ZLIB
+-	opts.compress_mode = DROPBEAR_COMPRESS_ON;
++	opts->compress_mode = DROPBEAR_COMPRESS_ON;
+ #endif
+ #if DROPBEAR_USER_ALGO_LIST
+-	opts.cipher_list = NULL;
+-	opts.mac_list = NULL;
++	opts->cipher_list = NULL;
++	opts->mac_list = NULL;
+ #endif
+ #ifndef DISABLE_SYSLOG
+-	opts.usingsyslog = 0;
++	opts->usingsyslog = 0;
+ #endif
+ 	/* not yet
+-	opts.ipv4 = 1;
+-	opts.ipv6 = 1;
++	opts->ipv4 = 1;
++	opts->ipv6 = 1;
+ 	*/
+-	opts.recv_window = DEFAULT_RECV_WINDOW;
+-	opts.keepalive_secs = DEFAULT_KEEPALIVE;
+-	opts.idle_timeout_secs = DEFAULT_IDLE_TIMEOUT;
++	opts->recv_window = DEFAULT_RECV_WINDOW;
++	opts->keepalive_secs = DEFAULT_KEEPALIVE;
++	opts->idle_timeout_secs = DEFAULT_IDLE_TIMEOUT;
+ 
+ 	fill_own_user();
+ 
+@@ -251,7 +251,7 @@
+ 					opt = OPT_LOCALTCPFWD;
+ 					break;
+ 				case 'g':
+-					opts.listen_fwd_all = 1;
++					opts->listen_fwd_all = 1;
+ 					break;
+ #endif
+ #if DROPBEAR_CLI_REMOTETCPFWD
+@@ -295,10 +295,10 @@
+ #endif
+ #if DROPBEAR_USER_ALGO_LIST
+ 				case 'c':
+-					next = &opts.cipher_list;
++					next = &opts->cipher_list;
+ 					break;
+ 				case 'm':
+-					next = &opts.mac_list;
++					next = &opts->mac_list;
+ 					break;
+ #endif
+ #if DEBUG_TRACE
+@@ -327,7 +327,7 @@
+ 					next = &bind_arg;
+ 					break;
+ 				case 'z':
+-					opts.disable_ip_tos = 1;
++					opts->disable_ip_tos = 1;
+ 					break;
+ 				default:
+ 					fprintf(stderr,
+@@ -465,7 +465,7 @@
+ 		if (m_str_to_uint(keepalive_arg, &val) == DROPBEAR_FAILURE) {
+ 			dropbear_exit("Bad keepalive '%s'", keepalive_arg);
+ 		}
+-		opts.keepalive_secs = val;
++		opts->keepalive_secs = val;
+ 	}
+ 
+ 	if (idle_timeout_arg) {
+@@ -473,7 +473,7 @@
+ 		if (m_str_to_uint(idle_timeout_arg, &val) == DROPBEAR_FAILURE) {
+ 			dropbear_exit("Bad idle_timeout '%s'", idle_timeout_arg);
+ 		}
+-		opts.idle_timeout_secs = val;
++		opts->idle_timeout_secs = val;
+ 	}
+ 
+ #if DROPBEAR_CLI_NETCAT
+@@ -565,8 +565,8 @@
+ 		total += m_snprintf(ret+total, len-total, "-J '%s' ", cli_opts.proxycmd);
+ 	}
+ 
+-	if (opts.recv_window != DEFAULT_RECV_WINDOW) {
+-		total += m_snprintf(ret+total, len-total, "-W %u ", opts.recv_window);
++	if (opts->recv_window != DEFAULT_RECV_WINDOW) {
++		total += m_snprintf(ret+total, len-total, "-W %u ", opts->recv_window);
+ 	}
+ 
+ #if DROPBEAR_CLI_PUBKEY_AUTH
+@@ -649,7 +649,7 @@
+ 				passthrough_args, remainder);
+ #ifndef DISABLE_ZLIB
+ 		/* The stream will be incompressible since it's encrypted. */
+-		opts.compress_mode = DROPBEAR_COMPRESS_OFF;
++		opts->compress_mode = DROPBEAR_COMPRESS_OFF;
+ #endif
+ 		m_free(passthrough_args);
+ 	}
+@@ -910,7 +910,7 @@
+ 
+ #ifndef DISABLE_SYSLOG
+ 	if (match_extendedopt(&optstr, "UseSyslog") == DROPBEAR_SUCCESS) {
+-		opts.usingsyslog = parse_flag_value(optstr);
++		opts->usingsyslog = parse_flag_value(optstr);
+ 		return;
+ 	}
+ #endif
 diff -aur dropbear-2022.83/cli-session.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-session.c
 --- dropbear-2022.83/cli-session.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-session.c	2023-07-20 16:05:07.317825693 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-session.c	2023-07-20 17:13:04.077759877 +0600
 @@ -103,7 +103,7 @@
  	}
  	myses->sock_in = myses->sock_out = sock;
@@ -829,6 +969,15 @@ diff -aur dropbear-2022.83/cli-session.c .././build/extbld/third_party/dropbear/
  		/* We might reach here if we have partial packet reads or have
  		 * received SSG_MSG_IGNORE etc. Just skip it */
  		TRACE2(("donefirstkex false\n"))
+@@ -271,7 +271,7 @@
+ 
+ 		case USERAUTH_SUCCESS_RCVD:
+ #ifndef DISABLE_SYSLOG
+-			if (opts.usingsyslog) {
++			if (opts->usingsyslog) {
+ 				dropbear_log(LOG_INFO, "Authentication succeeded.");
+ 			}
+ #endif
 @@ -313,7 +313,7 @@
  			return;
  
@@ -882,9 +1031,27 @@ diff -aur dropbear-2022.83/cli-session.c .././build/extbld/third_party/dropbear/
  		snprintf(fullmsg, sizeof(fullmsg), "Exited: %s", exitmsg);
  	} else {
  		snprintf(fullmsg, sizeof(fullmsg), 
+@@ -478,7 +478,7 @@
+ 	vsnprintf(printbuf, sizeof(printbuf), format, param);
+ 
+ #ifndef DISABLE_SYSLOG
+-	if (opts.usingsyslog) {
++	if (opts->usingsyslog) {
+ 		syslog(priority, "%s", printbuf);
+ 	}
+ #endif
 diff -aur dropbear-2022.83/cli-tcpfwd.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-tcpfwd.c
 --- dropbear-2022.83/cli-tcpfwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-tcpfwd.c	2023-07-20 16:05:26.525478365 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-tcpfwd.c	2023-07-20 17:13:23.949445641 +0600
+@@ -124,7 +124,7 @@
+ 	}
+ 	else
+ 	{
+-		if (opts.listen_fwd_all) {
++		if (opts->listen_fwd_all) {
+ 			tcpinfo->listenaddr = m_strdup("");
+ 		} else {
+ 			tcpinfo->listenaddr = m_strdup("localhost");
 @@ -151,11 +151,11 @@
  	TRACE(("enter send_msg_global_request_remotetcp"))
  
@@ -911,6 +1078,15 @@ diff -aur dropbear-2022.83/cli-tcpfwd.c .././build/extbld/third_party/dropbear/d
  				if (allocport > 0) {
  					fwd->listenport = allocport;
  					dropbear_log(LOG_INFO, "Allocated port %d for remote forward to %s:%d", 
+@@ -216,7 +216,7 @@
+ 		{
+ 			/* we store the addresses so that we can compare them
+ 			   when the server sends them back */
+-			if (opts.listen_fwd_all) {
++			if (opts->listen_fwd_all) {
+ 				fwd->listenaddr = m_strdup("");
+ 			} else {
+ 				fwd->listenaddr = m_strdup("localhost");
 @@ -237,8 +237,8 @@
  	char portstring[NI_MAXSERV];
  	int err = SSH_OPEN_ADMINISTRATIVELY_PROHIBITED;
@@ -924,7 +1100,7 @@ diff -aur dropbear-2022.83/cli-tcpfwd.c .././build/extbld/third_party/dropbear/d
  	in case they want to forward different ports separately ... */
 diff -aur dropbear-2022.83/common-channel.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-channel.c
 --- dropbear-2022.83/common-channel.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-channel.c	2023-07-20 16:07:23.695360152 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-channel.c	2023-07-20 17:15:01.691897787 +0600
 @@ -70,12 +70,12 @@
  void chaninitialise(const struct ChanType *chantypes[]) {
  
@@ -999,6 +1175,17 @@ diff -aur dropbear-2022.83/common-channel.c .././build/extbld/third_party/dropbe
  		}
  
  	}
+@@ -155,8 +155,8 @@
+ 	newchan->errfd = FD_CLOSED; /* this isn't always set to start with */
+ 	newchan->await_open = 0;
+ 
+-	newchan->writebuf = cbuf_new(opts.recv_window);
+-	newchan->recvwindow = opts.recv_window;
++	newchan->writebuf = cbuf_new(opts->recv_window);
++	newchan->recvwindow = opts->recv_window;
+ 
+ 	newchan->extrabuf = NULL; /* The user code can set it up */
+ 	newchan->recvdonelen = 0;
 @@ -164,8 +164,8 @@
  
  	newchan->prio = DROPBEAR_PRIO_NORMAL;
@@ -1082,6 +1269,15 @@ diff -aur dropbear-2022.83/common-channel.c .././build/extbld/third_party/dropbe
  
  	encrypt_packet();
  
+@@ -526,7 +526,7 @@
+ 		channel->recvdonelen = 0;
+ 	}
+ 
+-	dropbear_assert(channel->recvwindow <= opts.recv_window);
++	dropbear_assert(channel->recvwindow <= opts->recv_window);
+ 	dropbear_assert(channel->recvwindow <= cbuf_getavail(channel->writebuf));
+ 	dropbear_assert(channel->extrabuf == NULL ||
+ 			channel->recvwindow <= cbuf_getavail(channel->extrabuf));
 @@ -543,9 +543,9 @@
  	unsigned int i;
  	struct Channel * channel;
@@ -1204,7 +1400,12 @@ diff -aur dropbear-2022.83/common-channel.c .././build/extbld/third_party/dropbe
  	TRACE(("length %d", datalen))
  
  	maxdata = cbuf_getavail(cbuf);
-@@ -824,10 +824,10 @@
+@@ -820,14 +820,14 @@
+ 
+ 	dropbear_assert(channel->recvwindow >= datalen);
+ 	channel->recvwindow -= datalen;
+-	dropbear_assert(channel->recvwindow <= opts.recv_window);
++	dropbear_assert(channel->recvwindow <= opts->recv_window);
  
  	/* Attempt to write the data immediately without having to put it in the circular buffer */
  	consumed = datalen;
@@ -1357,7 +1558,7 @@ diff -aur dropbear-2022.83/common-channel.c .././build/extbld/third_party/dropbe
 +	buf_putbyte(ses->writepayload, SSH_MSG_CHANNEL_OPEN);
 +	buf_putstring(ses->writepayload, type->name, strlen(type->name));
 +	buf_putint(ses->writepayload, chan->index);
-+	buf_putint(ses->writepayload, opts.recv_window);
++	buf_putint(ses->writepayload, opts->recv_window);
 +	buf_putint(ses->writepayload, RECV_MAX_CHANNEL_DATA_LEN);
  
  	TRACE(("leave send_msg_channel_open_init()"))
@@ -1419,7 +1620,7 @@ diff -aur dropbear-2022.83/common-channel.c .././build/extbld/third_party/dropbe
  }
 diff -aur dropbear-2022.83/common-kex.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-kex.c
 --- dropbear-2022.83/common-kex.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-kex.c	2023-07-20 16:05:04.313880014 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-kex.c	2023-07-20 17:13:02.281788270 +0600
 @@ -55,65 +55,65 @@
  void send_msg_kexinit() {
  
@@ -1609,7 +1810,8 @@ diff -aur dropbear-2022.83/common-kex.c .././build/extbld/third_party/dropbear/d
 -	ses.compress_algos = ssh_nocompress;
 +	ses->compress_algos = ssh_nocompress;
  #else
- 	switch (opts.compress_mode)
+-	switch (opts.compress_mode)
++	switch (opts->compress_mode)
  	{
  		case DROPBEAR_COMPRESS_DELAYED:
 -			ses.compress_algos = ssh_delaycompress;
@@ -2360,9 +2562,71 @@ diff -aur dropbear-2022.83/common-kex.c .././build/extbld/third_party/dropbear/d
  	}
  	return;
  
+diff -aur dropbear-2022.83/common-runopts.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-runopts.c
+--- dropbear-2022.83/common-runopts.c	2022-11-14 20:30:00.000000000 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-runopts.c	2023-07-20 17:13:29.301360983 +0600
+@@ -31,7 +31,7 @@
+ #include "algo.h"
+ #include "dbrandom.h"
+ 
+-runopts opts; /* GLOBAL */
++runopts *opts; /* GLOBAL */
+ 
+ /* returns success or failure, and the keytype in *type. If we want
+  * to restrict the type, type can contain a type to return */
+@@ -65,27 +65,27 @@
+ void
+ parse_ciphers_macs() {
+ 	int printed_help = 0;
+-	if (opts.cipher_list) {
+-		if (strcmp(opts.cipher_list, "help") == 0) {
++	if (opts->cipher_list) {
++		if (strcmp(opts->cipher_list, "help") == 0) {
+ 			char *ciphers = algolist_string(sshciphers);
+ 			dropbear_log(LOG_INFO, "Available ciphers: %s", ciphers);
+ 			m_free(ciphers);
+ 			printed_help = 1;
+ 		} else {
+-			if (check_user_algos(opts.cipher_list, sshciphers, "cipher") == 0) {
++			if (check_user_algos(opts->cipher_list, sshciphers, "cipher") == 0) {
+ 				dropbear_exit("No valid ciphers specified for '-c'");
+ 			}
+ 		}
+ 	}
+ 
+-	if (opts.mac_list) {
+-		if (strcmp(opts.mac_list, "help") == 0) {
++	if (opts->mac_list) {
++		if (strcmp(opts->mac_list, "help") == 0) {
+ 			char *macs = algolist_string(sshhashes);
+ 			dropbear_log(LOG_INFO, "Available MACs: %s", macs);
+ 			m_free(macs);
+ 			printed_help = 1;
+ 		} else {
+-			if (check_user_algos(opts.mac_list, sshhashes, "MAC") == 0) {
++			if (check_user_algos(opts->mac_list, sshhashes, "MAC") == 0) {
+ 				dropbear_exit("No valid MACs specified for '-m'");
+ 			}
+ 		}
+@@ -107,12 +107,12 @@
+ 	ret = m_str_to_uint(recv_window_arg, &rw);
+ 	if (ret == DROPBEAR_FAILURE || rw == 0 || rw > MAX_RECV_WINDOW) {
+ 		if (rw > MAX_RECV_WINDOW) {
+-			opts.recv_window = MAX_RECV_WINDOW;
++			opts->recv_window = MAX_RECV_WINDOW;
+ 		}
+ 		dropbear_log(LOG_WARNING, "Bad recv window '%s', using %d",
+-			recv_window_arg, opts.recv_window);
++			recv_window_arg, opts->recv_window);
+ 	} else {
+-		opts.recv_window = rw;
++		opts->recv_window = rw;
+ 	}
+ 
+ }
 diff -aur dropbear-2022.83/common-session.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-session.c
 --- dropbear-2022.83/common-session.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-session.c	2023-07-20 16:37:57.203008522 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-session.c	2023-07-20 17:13:25.389422864 +0600
 @@ -41,7 +41,7 @@
  static int ident_readln(int fd, char* buf, int count);
  static void read_session_identification(void);
@@ -2813,13 +3077,13 @@ diff -aur dropbear-2022.83/common-session.c .././build/extbld/third_party/dropbe
  	}
  	
 -	if (opts.keepalive_secs > 0 && ses.authstate.authdone) {
-+	if (opts.keepalive_secs > 0 && ses->authstate.authdone) {
++	if (opts->keepalive_secs > 0 && ses->authstate.authdone) {
  		/* Avoid sending keepalives prior to auth - those are
  		not valid pre-auth packet types */
  
  		/* Send keepalives if we've been idle */
 -		if (now - ses.last_packet_time_any_sent >= opts.keepalive_secs) {
-+		if (now - ses->last_packet_time_any_sent >= opts.keepalive_secs) {
++		if (now - ses->last_packet_time_any_sent >= opts->keepalive_secs) {
  			send_msg_keepalive();
  		}
  
@@ -2827,21 +3091,23 @@ diff -aur dropbear-2022.83/common-session.c .././build/extbld/third_party/dropbe
  		if the remote end hasn't sent us anything */
 -		if (now - ses.last_packet_time_keepalive_recv >= opts.keepalive_secs
 -			&& now - ses.last_packet_time_keepalive_sent >= opts.keepalive_secs) {
-+		if (now - ses->last_packet_time_keepalive_recv >= opts.keepalive_secs
-+			&& now - ses->last_packet_time_keepalive_sent >= opts.keepalive_secs) {
++		if (now - ses->last_packet_time_keepalive_recv >= opts->keepalive_secs
++			&& now - ses->last_packet_time_keepalive_sent >= opts->keepalive_secs) {
  			send_msg_keepalive();
  		}
  
 -		if (now - ses.last_packet_time_keepalive_recv 
+-			>= opts.keepalive_secs * DEFAULT_KEEPALIVE_LIMIT) {
 +		if (now - ses->last_packet_time_keepalive_recv 
- 			>= opts.keepalive_secs * DEFAULT_KEEPALIVE_LIMIT) {
++			>= opts->keepalive_secs * DEFAULT_KEEPALIVE_LIMIT) {
  			dropbear_exit("Keepalive timeout");
  		}
  	}
  
- 	if (opts.idle_timeout_secs > 0 
+-	if (opts.idle_timeout_secs > 0 
 -			&& now - ses.last_packet_time_idle >= opts.idle_timeout_secs) {
-+			&& now - ses->last_packet_time_idle >= opts.idle_timeout_secs) {
++	if (opts->idle_timeout_secs > 0 
++			&& now - ses->last_packet_time_idle >= opts->idle_timeout_secs) {
  		dropbear_close("Idle timeout");
  	}
  }
@@ -2863,15 +3129,16 @@ diff -aur dropbear-2022.83/common-session.c .././build/extbld/third_party/dropbe
  	}
  
 -	if (ses.authstate.authdone) {
-+	if (ses->authstate.authdone) {
- 		update_timeout(opts.keepalive_secs, now, 
+-		update_timeout(opts.keepalive_secs, now, 
 -			MAX(ses.last_packet_time_keepalive_recv, ses.last_packet_time_keepalive_sent),
++	if (ses->authstate.authdone) {
++		update_timeout(opts->keepalive_secs, now, 
 +			MAX(ses->last_packet_time_keepalive_recv, ses->last_packet_time_keepalive_sent),
  			&timeout);
  	}
  
 -	update_timeout(opts.idle_timeout_secs, now, ses.last_packet_time_idle,
-+	update_timeout(opts.idle_timeout_secs, now, ses->last_packet_time_idle,
++	update_timeout(opts->idle_timeout_secs, now, ses->last_packet_time_idle,
  		&timeout);
  
  	/* clamp negative timeouts to zero - event has already triggered */
@@ -2987,7 +3254,7 @@ diff -aur dropbear-2022.83/debug.h .././build/extbld/third_party/dropbear/dropbe
  #define CHECKCLEARTOWRITE()
 diff -aur dropbear-2022.83/fuzz/fuzz-common.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzz-common.c
 --- dropbear-2022.83/fuzz/fuzz-common.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzz-common.c	2023-07-20 16:07:13.443545449 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzz-common.c	2023-07-20 17:07:32.270983424 +0600
 @@ -104,7 +104,7 @@
  
  void fuzz_svr_hook_preloop() {
@@ -2997,6 +3264,49 @@ diff -aur dropbear-2022.83/fuzz/fuzz-common.c .././build/extbld/third_party/drop
          fill_passwd("root");
      }
  }
+@@ -157,13 +157,13 @@
+ 
+     TRACE(("load fixed hostkeys"))
+ 
+-    svr_opts.hostkey = new_sign_key();
++    svr_opts->hostkey = new_sign_key();
+ 
+     buf_setlen(b, 0);
+     buf_putbytes(b, keyr, keyr_len);
+     buf_setpos(b, 0);
+     type = DROPBEAR_SIGNKEY_RSA;
+-    if (buf_get_priv_key(b, svr_opts.hostkey, &type) == DROPBEAR_FAILURE) {
++    if (buf_get_priv_key(b, svr_opts->hostkey, &type) == DROPBEAR_FAILURE) {
+         dropbear_exit("failed fixed rsa hostkey");
+     }
+ 
+@@ -171,7 +171,7 @@
+     buf_putbytes(b, keyd, keyd_len);
+     buf_setpos(b, 0);
+     type = DROPBEAR_SIGNKEY_DSS;
+-    if (buf_get_priv_key(b, svr_opts.hostkey, &type) == DROPBEAR_FAILURE) {
++    if (buf_get_priv_key(b, svr_opts->hostkey, &type) == DROPBEAR_FAILURE) {
+         dropbear_exit("failed fixed dss hostkey");
+     }
+ 
+@@ -179,7 +179,7 @@
+     buf_putbytes(b, keye, keye_len);
+     buf_setpos(b, 0);
+     type = DROPBEAR_SIGNKEY_ECDSA_NISTP256;
+-    if (buf_get_priv_key(b, svr_opts.hostkey, &type) == DROPBEAR_FAILURE) {
++    if (buf_get_priv_key(b, svr_opts->hostkey, &type) == DROPBEAR_FAILURE) {
+         dropbear_exit("failed fixed ecdsa hostkey");
+     }
+ 
+@@ -187,7 +187,7 @@
+     buf_putbytes(b, keyed25519, keyed25519_len);
+     buf_setpos(b, 0);
+     type = DROPBEAR_SIGNKEY_ED25519;
+-    if (buf_get_priv_key(b, svr_opts.hostkey, &type) == DROPBEAR_FAILURE) {
++    if (buf_get_priv_key(b, svr_opts->hostkey, &type) == DROPBEAR_FAILURE) {
+         dropbear_exit("failed fixed ed25519 hostkey");
+     }
+ 
 @@ -195,8 +195,8 @@
  }
  
@@ -3032,7 +3342,7 @@ diff -aur dropbear-2022.83/fuzz/fuzz-common.c .././build/extbld/third_party/drop
      genrandom((void*)&wrapseed, sizeof(wrapseed));
 diff -aur dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c
 --- dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c	2023-07-20 16:07:14.703522675 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c	2023-07-20 17:07:33.598962608 +0600
 @@ -20,7 +20,7 @@
  	keep_newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
  	keep_newkeys->algo_kex = fuzz_get_algo(sshkex, "curve25519-sha256");
@@ -3056,8 +3366,9 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c .././build/extbld/third_p
  		buffer * ecdh_qs = buf_getstringbuf(fuzz.input);
  
 -		ses.kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
+-		kexcurve25519_comb_key(curve25519_param, ecdh_qs, svr_opts.hostkey);
 +		ses->kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
- 		kexcurve25519_comb_key(curve25519_param, ecdh_qs, svr_opts.hostkey);
++		kexcurve25519_comb_key(curve25519_param, ecdh_qs, svr_opts->hostkey);
  
 -		mp_clear(ses.dh_K);
 -		m_free(ses.dh_K);
@@ -3074,7 +3385,7 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c .././build/extbld/third_p
  		m_malloc_free_epoch(1, 0);
 diff -aur dropbear-2022.83/fuzz/fuzzer-kexdh.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexdh.c
 --- dropbear-2022.83/fuzz/fuzzer-kexdh.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexdh.c	2023-07-20 16:07:16.119497082 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexdh.c	2023-07-20 17:07:34.938941604 +0600
 @@ -19,7 +19,7 @@
  	keep_newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
  	keep_newkeys->algo_kex = fuzz_get_algo(sshkex, "diffie-hellman-group14-sha256");
@@ -3098,8 +3409,9 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexdh.c .././build/extbld/third_party/dro
  		}
  
 -		ses.kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
+-		kexdh_comb_key(dh_param, &dh_e, svr_opts.hostkey);
 +		ses->kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
- 		kexdh_comb_key(dh_param, &dh_e, svr_opts.hostkey);
++		kexdh_comb_key(dh_param, &dh_e, svr_opts->hostkey);
  
 -		mp_clear(ses.dh_K);
 -		m_free(ses.dh_K);
@@ -3116,7 +3428,7 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexdh.c .././build/extbld/third_party/dro
  		m_malloc_free_epoch(1, 0);
 diff -aur dropbear-2022.83/fuzz/fuzzer-kexecdh.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexecdh.c
 --- dropbear-2022.83/fuzz/fuzzer-kexecdh.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexecdh.c	2023-07-20 16:07:13.271548558 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexecdh.c	2023-07-20 17:07:32.130985618 +0600
 @@ -27,12 +27,12 @@
  	assert(ecdh[1]);
  	assert(ecdh[2]);
@@ -3151,8 +3463,9 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexecdh.c .././build/extbld/third_party/d
  		buffer * ecdh_qs = buf_getstringbuf(fuzz.input);
  
 -		ses.kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
+-		kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts.hostkey);
 +		ses->kexhashbuf = buf_new(KEXHASHBUF_MAX_INTS);
- 		kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts.hostkey);
++		kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts->hostkey);
  
 -		mp_clear(ses.dh_K);
 -		m_free(ses.dh_K);
@@ -3332,7 +3645,7 @@ diff -aur dropbear-2022.83/listener.c .././build/extbld/third_party/dropbear/dro
  }
 diff -aur dropbear-2022.83/netio.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/netio.c
 --- dropbear-2022.83/netio.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/netio.c	2023-07-20 16:05:29.985415803 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/netio.c	2023-07-20 17:13:28.137379396 +0600
 @@ -110,7 +110,7 @@
  			}
  		}
@@ -3381,6 +3694,15 @@ diff -aur dropbear-2022.83/netio.c .././build/extbld/third_party/dropbear/dropbe
  		int val;
  		socklen_t vallen = sizeof(val);
  		struct dropbear_progress_connection *c = iter->item;
+@@ -378,7 +378,7 @@
+ 	/* Don't log ENOTSOCK errors so that this can harmlessly be called
+ 	 * on a client '-J' proxy pipe */
+ 
+-	if (opts.disable_ip_tos == 0) {
++	if (opts->disable_ip_tos == 0) {
+ #ifdef IP_TOS
+ 	/* Set the DSCP field for outbound IP packet priority.
+ 	rfc4594 has some guidance to meanings.
 diff -aur dropbear-2022.83/packet.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/packet.c
 --- dropbear-2022.83/packet.c	2022-11-14 20:30:00.000000000 +0600
 +++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/packet.c	2023-07-20 16:07:00.235784184 +0600
@@ -4101,10 +4423,31 @@ diff -aur dropbear-2022.83/process-packet.c .././build/extbld/third_party/dropbe
  
  	encrypt_packet();
  }
+diff -aur dropbear-2022.83/runopts.h .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/runopts.h
+--- dropbear-2022.83/runopts.h	2022-11-14 20:30:00.000000000 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/runopts.h	2023-07-20 17:11:58.062802678 +0600
+@@ -61,7 +61,7 @@
+ 
+ } runopts;
+ 
+-extern runopts opts;
++extern runopts *opts;
+ 
+ int readhostkey(const char * filename, sign_key * hostkey, 
+ 	enum signkey_type *type);
+@@ -140,7 +140,7 @@
+ 
+ } svr_runopts;
+ 
+-extern svr_runopts svr_opts;
++extern svr_runopts *svr_opts;
+ 
+ void svr_getopts(int argc, char ** argv);
+ void loadhostkeys(void);
 diff -aur dropbear-2022.83/session.h .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/session.h
 --- dropbear-2022.83/session.h	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/session.h	2023-07-20 16:01:59.893216193 +0600
-@@ -339,7 +339,7 @@
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/session.h	2023-07-20 16:50:03.575166454 +0600
+@@ -339,10 +339,10 @@
  };
  
  /* Global structs storing the state */
@@ -4112,7 +4455,11 @@ diff -aur dropbear-2022.83/session.h .././build/extbld/third_party/dropbear/drop
 +extern struct sshsession *ses;
  
  #if DROPBEAR_SERVER
- extern struct serversession svr_ses;
+-extern struct serversession svr_ses;
++extern struct serversession *svr_ses;
+ #endif /* DROPBEAR_SERVER */
+ 
+ #if DROPBEAR_CLIENT
 diff -aur dropbear-2022.83/svr-agentfwd.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-agentfwd.c
 --- dropbear-2022.83/svr-agentfwd.c	2022-11-14 20:30:00.000000000 +0600
 +++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-agentfwd.c	2023-07-20 16:05:25.265501148 +0600
@@ -4140,7 +4487,7 @@ diff -aur dropbear-2022.83/svr-agentfwd.c .././build/extbld/third_party/dropbear
  #endif
 diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-auth.c
 --- dropbear-2022.83/svr-auth.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-auth.c	2023-07-20 16:07:23.071371430 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-auth.c	2023-07-20 17:07:40.514854193 +0600
 @@ -40,13 +40,13 @@
  
  /* initialise the first time for a session, resetting all parameters */
@@ -4152,8 +4499,9 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
 +	ses->authstate.authtypes |= AUTH_TYPE_PUBKEY;
  #endif
  #if DROPBEAR_SVR_PASSWORD_AUTH || DROPBEAR_SVR_PAM_AUTH
- 	if (!svr_opts.noauthpass) {
+-	if (!svr_opts.noauthpass) {
 -		ses.authstate.authtypes |= AUTH_TYPE_PASSWORD;
++	if (!svr_opts->noauthpass) {
 +		ses->authstate.authtypes |= AUTH_TYPE_PASSWORD;
  	}
  #endif
@@ -4171,7 +4519,7 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  
  	encrypt_packet();
  
-@@ -79,10 +79,10 @@
+@@ -79,24 +79,24 @@
  	TRACE(("enter recv_msg_userauth_request"))
  
  	/* for compensating failure delay */
@@ -4184,8 +4532,16 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  		TRACE(("leave recv_msg_userauth_request: authdone already"))
  		return;
  	}
-@@ -94,9 +94,9 @@
- 		svr_opts.banner = NULL;
+ 
+ 	/* send the banner if it exists, it will only exist once */
+-	if (svr_opts.banner) {
+-		send_msg_userauth_banner(svr_opts.banner);
+-		buf_free(svr_opts.banner);
+-		svr_opts.banner = NULL;
++	if (svr_opts->banner) {
++		send_msg_userauth_banner(svr_opts->banner);
++		buf_free(svr_opts->banner);
++		svr_opts->banner = NULL;
  	}
  
 -	username = buf_getstring(ses.payload, &userlen);
@@ -4197,41 +4553,51 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  
  	/* only handle 'ssh-connection' currently */
  	if (servicelen != SSH_SERVICE_CONNECTION_LEN
-@@ -126,12 +126,12 @@
+@@ -124,15 +124,15 @@
+ 				AUTH_METHOD_NONE_LEN) == 0) {
+ 		TRACE(("recv_msg_userauth_request: 'none' request"))
  		if (valid_user
- 				&& svr_opts.allowblankpass
- 				&& !svr_opts.noauthpass
+-				&& svr_opts.allowblankpass
+-				&& !svr_opts.noauthpass
 -				&& !(svr_opts.norootpass && ses.authstate.pw_uid == 0) 
 -				&& ses.authstate.pw_passwd[0] == '\0') 
-+				&& !(svr_opts.norootpass && ses->authstate.pw_uid == 0) 
++				&& svr_opts->allowblankpass
++				&& !svr_opts->noauthpass
++				&& !(svr_opts->norootpass && ses->authstate.pw_uid == 0) 
 +				&& ses->authstate.pw_passwd[0] == '\0') 
  		{
  			dropbear_log(LOG_NOTICE, 
  					"Auth succeeded with blank password for '%s' from %s",
 -					ses.authstate.pw_name,
+-					svr_ses.addrstring);
 +					ses->authstate.pw_name,
- 					svr_ses.addrstring);
++					svr_ses->addrstring);
  			send_msg_userauth_success();
  			goto out;
-@@ -146,7 +146,7 @@
+ 		}
+@@ -145,8 +145,8 @@
+ 	}
  	
  #if DROPBEAR_SVR_PASSWORD_AUTH
- 	if (!svr_opts.noauthpass &&
+-	if (!svr_opts.noauthpass &&
 -			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
-+			!(svr_opts.norootpass && ses->authstate.pw_uid == 0) ) {
++	if (!svr_opts->noauthpass &&
++			!(svr_opts->norootpass && ses->authstate.pw_uid == 0) ) {
  		/* user wants to try password auth */
  		if (methodlen == AUTH_METHOD_PASSWORD_LEN &&
  				strncmp(methodname, AUTH_METHOD_PASSWORD,
-@@ -159,7 +159,7 @@
+@@ -158,8 +158,8 @@
+ #endif
  
  #if DROPBEAR_SVR_PAM_AUTH
- 	if (!svr_opts.noauthpass &&
+-	if (!svr_opts.noauthpass &&
 -			!(svr_opts.norootpass && ses.authstate.pw_uid == 0) ) {
-+			!(svr_opts.norootpass && ses->authstate.pw_uid == 0) ) {
++	if (!svr_opts->noauthpass &&
++			!(svr_opts->norootpass && ses->authstate.pw_uid == 0) ) {
  		/* user wants to try password auth */
  		if (methodlen == AUTH_METHOD_PASSWORD_LEN &&
  				strncmp(methodname, AUTH_METHOD_PASSWORD,
-@@ -243,49 +243,49 @@
+@@ -243,70 +243,70 @@
  		dropbear_exit("Attempted username with a null byte");
  	}
  
@@ -4284,7 +4650,7 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  
  	/* check for non-root if desired */
 -	if (svr_opts.norootlogin && ses.authstate.pw_uid == 0) {
-+	if (svr_opts.norootlogin && ses->authstate.pw_uid == 0) {
++	if (svr_opts->norootlogin && ses->authstate.pw_uid == 0) {
  		TRACE(("leave checkusername: root login disabled"))
  		dropbear_log(LOG_WARNING, "root login rejected");
 -		ses.authstate.checkusername_failed = 1;
@@ -4292,17 +4658,19 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  		return DROPBEAR_FAILURE;
  	}
  
-@@ -293,20 +293,20 @@
+ 	/* check for login restricted to certain group if desired */
  #ifdef HAVE_GETGROUPLIST
- 	if (svr_opts.restrict_group) {
- 		if (check_group_membership(svr_opts.restrict_group_gid,
+-	if (svr_opts.restrict_group) {
+-		if (check_group_membership(svr_opts.restrict_group_gid,
 -				ses.authstate.pw_name, ses.authstate.pw_gid) == DROPBEAR_FAILURE) {
++	if (svr_opts->restrict_group) {
++		if (check_group_membership(svr_opts->restrict_group_gid,
 +				ses->authstate.pw_name, ses->authstate.pw_gid) == DROPBEAR_FAILURE) {
  			dropbear_log(LOG_WARNING,
  				"Logins are restricted to the group %s but user '%s' is not a member",
 -				svr_opts.restrict_group, ses.authstate.pw_name);
 -			ses.authstate.checkusername_failed = 1;
-+				svr_opts.restrict_group, ses->authstate.pw_name);
++				svr_opts->restrict_group, ses->authstate.pw_name);
 +			ses->authstate.checkusername_failed = 1;
  			return DROPBEAR_FAILURE;
  		}
@@ -4404,7 +4772,7 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  	}
  
 -	if (ses.authstate.failcount >= svr_opts.maxauthtries) {
-+	if (ses->authstate.failcount >= svr_opts.maxauthtries) {
++	if (ses->authstate.failcount >= svr_opts->maxauthtries) {
  		char * userstr;
  		/* XXX - send disconnect ? */
  		TRACE(("Max auth tries reached, exiting"))
@@ -4418,7 +4786,7 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  		}
  		dropbear_exit("Max auth tries reached - user '%s'",
  				userstr);
-@@ -449,17 +449,17 @@
+@@ -449,23 +449,23 @@
  
  	CHECKCLEARTOWRITE();
  
@@ -4441,9 +4809,16 @@ diff -aur dropbear-2022.83/svr-auth.c .././build/extbld/third_party/dropbear/dro
  	}
  
  	/* Remove from the list of pre-auth sockets. Should be m_close(), since if
+ 	 * we fail, we might end up leaking connection slots, and disallow new
+ 	 * logins - a nasty situation. */							
+-	m_close(svr_ses.childpipe);
++	m_close(svr_ses->childpipe);
+ 
+ 	TRACE(("leave send_msg_userauth_success"))
+ 
 diff -aur dropbear-2022.83/svr-authpam.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpam.c
 --- dropbear-2022.83/svr-authpam.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpam.c	2023-07-20 16:07:07.227657802 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpam.c	2023-07-20 17:07:29.523026494 +0600
 @@ -197,28 +197,28 @@
  	unsigned char changepw;
  
@@ -4479,32 +4854,62 @@ diff -aur dropbear-2022.83/svr-authpam.c .././build/extbld/third_party/dropbear/
  	} else {
  		printable_user = "<invalid username>";
  	}
-@@ -279,18 +279,18 @@
+@@ -237,7 +237,7 @@
+ 		goto cleanup;
+ 	}
+ 
+-	if ((rc = pam_set_item(pamHandlep, PAM_RHOST, svr_ses.remotehost)) != PAM_SUCCESS) {
++	if ((rc = pam_set_item(pamHandlep, PAM_RHOST, svr_ses->remotehost)) != PAM_SUCCESS) {
+ 		dropbear_log(LOG_WARNING, "pam_set_item() failed, rc=%d, %s",
+ 				rc, pam_strerror(pamHandlep, rc));
+ 		goto cleanup;
+@@ -256,7 +256,7 @@
+ 		dropbear_log(LOG_WARNING,
+ 				"Bad PAM password attempt for '%s' from %s",
+ 				printable_user,
+-				svr_ses.addrstring);
++				svr_ses->addrstring);
+ 		send_msg_userauth_failure(0, 1);
+ 		goto cleanup;
+ 	}
+@@ -267,7 +267,7 @@
+ 		dropbear_log(LOG_WARNING,
+ 				"Bad PAM password attempt for '%s' from %s",
+ 				printable_user,
+-				svr_ses.addrstring);
++				svr_ses->addrstring);
+ 		send_msg_userauth_failure(0, 1);
+ 		goto cleanup;
+ 	}
+@@ -279,19 +279,19 @@
  		goto cleanup;
  	}
  
 -	if (svr_opts.multiauthmethod && (ses.authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
-+	if (svr_opts.multiauthmethod && (ses->authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
++	if (svr_opts->multiauthmethod && (ses->authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
  			/* successful PAM password authentication, but extra auth required */
  			dropbear_log(LOG_NOTICE,
  					"PAM password auth succeeded for '%s' from %s, extra auth required",
 -					ses.authstate.pw_name,
-+					ses->authstate.pw_name,
- 					svr_ses.addrstring);
+-					svr_ses.addrstring);
 -			ses.authstate.authtypes &= ~AUTH_TYPE_PASSWORD; /* PAM password auth ok, delete the method flag */
++					ses->authstate.pw_name,
++					svr_ses->addrstring);
 +			ses->authstate.authtypes &= ~AUTH_TYPE_PASSWORD; /* PAM password auth ok, delete the method flag */
  			send_msg_userauth_failure(1, 0);  /* Send partial success */
  		} else {
  			/* successful authentication */
  			dropbear_log(LOG_NOTICE, "PAM password auth succeeded for '%s' from %s",
 -				ses.authstate.pw_name,
+-				svr_ses.addrstring);
 +				ses->authstate.pw_name,
- 				svr_ses.addrstring);
++				svr_ses->addrstring);
  			send_msg_userauth_success();
  		}
+ 		
 diff -aur dropbear-2022.83/svr-authpasswd.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpasswd.c
 --- dropbear-2022.83/svr-authpasswd.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpasswd.c	2023-07-20 16:07:10.371600974 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpasswd.c	2023-07-20 17:07:30.963003925 +0600
 @@ -57,17 +57,17 @@
  	unsigned int changepw;
  
@@ -4526,15 +4931,17 @@ diff -aur dropbear-2022.83/svr-authpasswd.c .././build/extbld/third_party/dropbe
  		testcrypt = crypt(password, passwdcrypt);
  	}
  	m_burn(password, passwordlen);
-@@ -83,7 +83,7 @@
+@@ -83,8 +83,8 @@
  	if (passwordlen > DROPBEAR_MAX_PASSWORD_LEN) {
  		dropbear_log(LOG_WARNING,
  				"Too-long password attempt for '%s' from %s",
 -				ses.authstate.pw_name,
+-				svr_ses.addrstring);
 +				ses->authstate.pw_name,
- 				svr_ses.addrstring);
++				svr_ses->addrstring);
  		send_msg_userauth_failure(0, 1);
  		return;
+ 	}
 @@ -92,7 +92,7 @@
  	if (testcrypt == NULL) {
  		/* crypt() with an invalid salt like "!!" */
@@ -4544,7 +4951,7 @@ diff -aur dropbear-2022.83/svr-authpasswd.c .././build/extbld/third_party/dropbe
  		send_msg_userauth_failure(0, 1);
  		return;
  	}
-@@ -100,32 +100,32 @@
+@@ -100,33 +100,33 @@
  	/* check for empty password */
  	if (passwdcrypt[0] == '\0') {
  		dropbear_log(LOG_WARNING, "User '%s' has blank password, rejected",
@@ -4556,14 +4963,15 @@ diff -aur dropbear-2022.83/svr-authpasswd.c .././build/extbld/third_party/dropbe
  
  	if (constant_time_strcmp(testcrypt, passwdcrypt) == 0) {
 -		if (svr_opts.multiauthmethod && (ses.authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
-+		if (svr_opts.multiauthmethod && (ses->authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
++		if (svr_opts->multiauthmethod && (ses->authstate.authtypes & ~AUTH_TYPE_PASSWORD)) {
  			/* successful password authentication, but extra auth required */
  			dropbear_log(LOG_NOTICE,
  					"Password auth succeeded for '%s' from %s, extra auth required",
 -					ses.authstate.pw_name,
-+					ses->authstate.pw_name,
- 					svr_ses.addrstring);
+-					svr_ses.addrstring);
 -			ses.authstate.authtypes &= ~AUTH_TYPE_PASSWORD; /* password auth ok, delete the method flag */
++					ses->authstate.pw_name,
++					svr_ses->addrstring);
 +			ses->authstate.authtypes &= ~AUTH_TYPE_PASSWORD; /* password auth ok, delete the method flag */
  			send_msg_userauth_failure(1, 0);  /* Send partial success */
  		} else {
@@ -4571,21 +4979,24 @@ diff -aur dropbear-2022.83/svr-authpasswd.c .././build/extbld/third_party/dropbe
  			dropbear_log(LOG_NOTICE, 
  					"Password auth succeeded for '%s' from %s",
 -					ses.authstate.pw_name,
+-					svr_ses.addrstring);
 +					ses->authstate.pw_name,
- 					svr_ses.addrstring);
++					svr_ses->addrstring);
  			send_msg_userauth_success();
  		}
  	} else {
  		dropbear_log(LOG_WARNING,
  				"Bad password attempt for '%s' from %s",
 -				ses.authstate.pw_name,
+-				svr_ses.addrstring);
 +				ses->authstate.pw_name,
- 				svr_ses.addrstring);
++				svr_ses->addrstring);
  		send_msg_userauth_failure(0, 1);
  	}
+ }
 diff -aur dropbear-2022.83/svr-authpubkey.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkey.c
 --- dropbear-2022.83/svr-authpubkey.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkey.c	2023-07-20 16:05:33.953344056 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkey.c	2023-07-20 17:06:27.332000393 +0600
 @@ -101,11 +101,11 @@
  
  	/* 0 indicates user just wants to check if key can be used, 1 is an
@@ -4602,11 +5013,18 @@ diff -aur dropbear-2022.83/svr-authpubkey.c .././build/extbld/third_party/dropbe
  
  	if (!valid_user) {
  		/* Return failure once we have read the contents of the packet
-@@ -130,17 +130,17 @@
+@@ -126,21 +126,21 @@
+ 	keyalgo = signkey_name_from_type(keytype, &keyalgolen);
+ 
+ #if DROPBEAR_PLUGIN
+-        if (svr_ses.plugin_instance != NULL) {
++        if (svr_ses->plugin_instance != NULL) {
              char *options_buf;
-             if (svr_ses.plugin_instance->checkpubkey(
-                         svr_ses.plugin_instance,
+-            if (svr_ses.plugin_instance->checkpubkey(
+-                        svr_ses.plugin_instance,
 -                        &ses.plugin_session,
++            if (svr_ses->plugin_instance->checkpubkey(
++                        svr_ses->plugin_instance,
 +                        &ses->plugin_session,
                          keyalgo,
                          keyalgolen,
@@ -4673,15 +5091,16 @@ diff -aur dropbear-2022.83/svr-authpubkey.c .././build/extbld/third_party/dropbe
 -	if (buf_verify(ses.payload, key, sigtype, signbuf) == DROPBEAR_SUCCESS) {
 -		if (svr_opts.multiauthmethod && (ses.authstate.authtypes & ~AUTH_TYPE_PUBKEY)) {
 +	if (buf_verify(ses->payload, key, sigtype, signbuf) == DROPBEAR_SUCCESS) {
-+		if (svr_opts.multiauthmethod && (ses->authstate.authtypes & ~AUTH_TYPE_PUBKEY)) {
++		if (svr_opts->multiauthmethod && (ses->authstate.authtypes & ~AUTH_TYPE_PUBKEY)) {
  			/* successful pubkey authentication, but extra auth required */
  			dropbear_log(LOG_NOTICE,
  					"Pubkey auth succeeded for '%s' with %s key %s from %s, extra auth required",
 -					ses.authstate.pw_name,
 +					ses->authstate.pw_name,
  					signkey_name_from_type(keytype, NULL), fp,
- 					svr_ses.addrstring);
+-					svr_ses.addrstring);
 -			ses.authstate.authtypes &= ~AUTH_TYPE_PUBKEY; /* pubkey auth ok, delete the method flag */
++					svr_ses->addrstring);
 +			ses->authstate.authtypes &= ~AUTH_TYPE_PUBKEY; /* pubkey auth ok, delete the method flag */
  			send_msg_userauth_failure(1, 0); /* Send partial success */
  		} else {
@@ -4691,22 +5110,23 @@ diff -aur dropbear-2022.83/svr-authpubkey.c .././build/extbld/third_party/dropbe
 -					ses.authstate.pw_name,
 +					ses->authstate.pw_name,
  					signkey_name_from_type(keytype, NULL), fp,
- 					svr_ses.addrstring);
+-					svr_ses.addrstring);
++					svr_ses->addrstring);
  			send_msg_userauth_success();
  		}
  #if DROPBEAR_PLUGIN
 -                if ((ses.plugin_session != NULL) && (svr_ses.plugin_instance->auth_success != NULL)) {
-+                if ((ses->plugin_session != NULL) && (svr_ses.plugin_instance->auth_success != NULL)) {
++                if ((ses->plugin_session != NULL) && (svr_ses->plugin_instance->auth_success != NULL)) {
                      /* Was authenticated through the external plugin. tell plugin that signature verification was ok */
 -                    svr_ses.plugin_instance->auth_success(ses.plugin_session);
-+                    svr_ses.plugin_instance->auth_success(ses->plugin_session);
++                    svr_ses->plugin_instance->auth_success(ses->plugin_session);
                  }
  #endif
  	} else {
  		dropbear_log(LOG_WARNING,
  				"Pubkey auth bad signature for '%s' with key %s from %s",
 -				ses.authstate.pw_name, fp, svr_ses.addrstring);
-+				ses->authstate.pw_name, fp, svr_ses.addrstring);
++				ses->authstate.pw_name, fp, svr_ses->addrstring);
  		send_msg_userauth_failure(0, 1);
  	}
  	m_free(fp);
@@ -5048,8 +5468,16 @@ diff -aur dropbear-2022.83/svr-authpubkeyoptions.c .././build/extbld/third_party
  		}
 diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-chansession.c
 --- dropbear-2022.83/svr-chansession.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-chansession.c	2023-07-20 16:07:19.959427676 +0600
-@@ -96,7 +96,7 @@
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-chansession.c	2023-07-20 17:07:37.602899844 +0600
+@@ -89,14 +89,14 @@
+ /* There's a particular race we have to watch out for: if the forked child
+  * executes, exits, and this signal-handler is called, all before the parent
+  * gets to run, then the childpids[] array won't have the pid in it. Hence we
+- * use the svr_ses.lastexit struct to hold the exit, which is then compared by
++ * use the svr_ses->lastexit struct to hold the exit, which is then compared by
+  * the parent when it runs. This work correctly at least in the case of a
+  * single shell spawned (ie the usual case) */
+ void svr_chansess_checksignal(void) {
  	int status;
  	pid_t pid;
  
@@ -5058,6 +5486,29 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  		return;
  	}
  
+@@ -107,10 +107,10 @@
+ 
+ 		ex = NULL;
+ 		/* find the corresponding chansess */
+-		for (i = 0; i < svr_ses.childpidsize; i++) {
+-			if (svr_ses.childpids[i].pid == pid) {
++		for (i = 0; i < svr_ses->childpidsize; i++) {
++			if (svr_ses->childpids[i].pid == pid) {
+ 				TRACE(("found match session"));
+-				ex = &svr_ses.childpids[i].chansess->exit;
++				ex = &svr_ses->childpids[i].chansess->exit;
+ 				break;
+ 			}
+ 		}
+@@ -119,7 +119,7 @@
+ 		 * above. So we just store the info for the parent to deal with */
+ 		if (ex == NULL) {
+ 			TRACE(("using lastexit"));
+-			ex = &svr_ses.lastexit;
++			ex = &svr_ses->lastexit;
+ 		}
+ 
+ 		ex->exitpid = pid;
 @@ -151,7 +151,7 @@
  	while (1) {
  		/* isserver is just a random byte to write. We can't do anything
@@ -5107,15 +5558,37 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  
  	encrypt_packet();
  }
-@@ -284,7 +284,7 @@
+@@ -284,8 +284,8 @@
  static struct logininfo* 
  chansess_login_alloc(const struct ChanSess *chansess) {
  	struct logininfo * li;
 -	li = login_alloc_entry(chansess->pid, ses.authstate.username,
+-			svr_ses.remotehost, chansess->tty);
 +	li = login_alloc_entry(chansess->pid, ses->authstate.username,
- 			svr_ses.remotehost, chansess->tty);
++			svr_ses->remotehost, chansess->tty);
  	return li;
  }
+ 
+@@ -345,13 +345,13 @@
+ #endif
+ 
+ 	/* clear child pid entries */
+-	for (i = 0; i < svr_ses.childpidsize; i++) {
+-		if (svr_ses.childpids[i].chansess == chansess) {
+-			dropbear_assert(svr_ses.childpids[i].pid > 0);
+-			TRACE(("closing pid %d", svr_ses.childpids[i].pid))
++	for (i = 0; i < svr_ses->childpidsize; i++) {
++		if (svr_ses->childpids[i].chansess == chansess) {
++			dropbear_assert(svr_ses->childpids[i].pid > 0);
++			TRACE(("closing pid %d", svr_ses->childpids[i].pid))
+ 			TRACE(("exitpid is %d", chansess->exit.exitpid))
+-			svr_ses.childpids[i].pid = -1;
+-			svr_ses.childpids[i].chansess = NULL;
++			svr_ses->childpids[i].pid = -1;
++			svr_ses->childpids[i].chansess = NULL;
+ 		}
+ 	}
+ 				
 @@ -372,8 +372,8 @@
  
  	TRACE(("enter chansessionrequest"))
@@ -5215,6 +5688,22 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  
  			if (cmdlen > MAX_CMD_LEN) {
  				m_free(chansess->cmd);
+@@ -701,13 +701,13 @@
+ 	
+ 
+ 	/* take global command into account */
+-	if (svr_opts.forced_command) {
++	if (svr_opts->forced_command) {
+ 		if (chansess->cmd) {
+ 			chansess->original_command = chansess->cmd;
+ 		} else {
+ 			chansess->original_command = m_strdup("");
+ 		}
+-		chansess->cmd = m_strdup(svr_opts.forced_command);
++		chansess->cmd = m_strdup(svr_opts->forced_command);
+ 	} else {
+ 		/* take public key option 'command' into account */
+ 		svr_pubkey_set_forced_command(chansess);
 @@ -717,10 +717,10 @@
  #if LOG_COMMANDS
  	if (chansess->cmd) {
@@ -5228,7 +5717,7 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  	}
  #endif
  
-@@ -769,9 +769,9 @@
+@@ -769,24 +769,24 @@
  		return ret;
  	}
  
@@ -5241,7 +5730,33 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  	channel->bidir_fd = 0;
  
  	addchildpid(chansess, chansess->pid);
-@@ -867,10 +867,10 @@
+ 
+-	if (svr_ses.lastexit.exitpid != -1) {
++	if (svr_ses->lastexit.exitpid != -1) {
+ 		unsigned int i;
+-		TRACE(("parent side: lastexitpid is %d", svr_ses.lastexit.exitpid))
++		TRACE(("parent side: lastexitpid is %d", svr_ses->lastexit.exitpid))
+ 		/* The child probably exited and the signal handler triggered
+ 		 * possibly before we got around to adding the childpid. So we fill
+ 		 * out its data manually */
+-		for (i = 0; i < svr_ses.childpidsize; i++) {
+-			if (svr_ses.childpids[i].pid == svr_ses.lastexit.exitpid) {
++		for (i = 0; i < svr_ses->childpidsize; i++) {
++			if (svr_ses->childpids[i].pid == svr_ses->lastexit.exitpid) {
+ 				TRACE(("found match for lastexitpid"))
+-				svr_ses.childpids[i].chansess->exit = svr_ses.lastexit;
+-				svr_ses.lastexit.exitpid = -1;
++				svr_ses->childpids[i].chansess->exit = svr_ses->lastexit;
++				svr_ses->lastexit.exitpid = -1;
+ 				break;
+ 			}
+ 		}
+@@ -863,14 +863,14 @@
+ 		close(chansess->slave);
+ 
+ #if DO_MOTD
+-		if (svr_opts.domotd && !chansess->cmd) {
++		if (svr_opts->domotd && !chansess->cmd) {
  			/* don't show the motd if ~/.hushlogin exists */
  
  			/* 12 == strlen("/.hushlogin\0") */
@@ -5263,6 +5778,57 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  		channel->bidir_fd = 1;
  
  		setnonblocking(chansess->master);
+@@ -924,22 +924,22 @@
+ static void addchildpid(struct ChanSess *chansess, pid_t pid) {
+ 
+ 	unsigned int i;
+-	for (i = 0; i < svr_ses.childpidsize; i++) {
+-		if (svr_ses.childpids[i].pid == -1) {
++	for (i = 0; i < svr_ses->childpidsize; i++) {
++		if (svr_ses->childpids[i].pid == -1) {
+ 			break;
+ 		}
+ 	}
+ 
+ 	/* need to increase size */
+-	if (i == svr_ses.childpidsize) {
+-		svr_ses.childpids = (struct ChildPid*)m_realloc(svr_ses.childpids,
+-				sizeof(struct ChildPid) * (svr_ses.childpidsize+1));
+-		svr_ses.childpidsize++;
++	if (i == svr_ses->childpidsize) {
++		svr_ses->childpids = (struct ChildPid*)m_realloc(svr_ses->childpids,
++				sizeof(struct ChildPid) * (svr_ses->childpidsize+1));
++		svr_ses->childpidsize++;
+ 	}
+ 	
+ 	TRACE(("addchildpid %d pid %d for chansess %p", i, pid, chansess))
+-	svr_ses.childpids[i].pid = pid;
+-	svr_ses.childpids[i].chansess = chansess;
++	svr_ses->childpids[i].pid = pid;
++	svr_ses->childpids[i].chansess = chansess;
+ 
+ }
+ 
+@@ -958,8 +958,8 @@
+ 	 * hostkey. can't think of a workaround to clear it */
+ #if !DROPBEAR_VFORK
+ 	/* wipe the hostkey */
+-	sign_key_free(svr_opts.hostkey);
+-	svr_opts.hostkey = NULL;
++	sign_key_free(svr_opts->hostkey);
++	svr_opts->hostkey = NULL;
+ 
+ 	/* overwrite the prng state */
+ 	seedrandom();
+@@ -968,7 +968,7 @@
+ 	/* clear environment if -e was not set */
+ 	/* if we're debugging using valgrind etc, we need to keep the LD_PRELOAD
+ 	 * etc. This is hazardous, so should only be used for debugging. */
+-	if ( !svr_opts.pass_on_env) {
++	if ( !svr_opts->pass_on_env) {
+ #ifndef DEBUG_VALGRIND
+ #ifdef HAVE_CLEARENV
+ 		clearenv();
 @@ -985,12 +985,12 @@
  	/* We can only change uid/gid as root ... */
  	if (getuid() == 0) {
@@ -5333,9 +5899,26 @@ diff -aur dropbear-2022.83/svr-chansession.c .././build/extbld/third_party/dropb
  
  	/* only reached on error */
  	dropbear_exit("Child failed");
+@@ -1079,11 +1079,11 @@
+ 	struct sigaction sa_chld;
+ 
+ 	/* single child process intially */
+-	svr_ses.childpids = (struct ChildPid*)m_malloc(sizeof(struct ChildPid));
+-	svr_ses.childpids[0].pid = -1; /* unused */
+-	svr_ses.childpids[0].chansess = NULL;
+-	svr_ses.childpidsize = 1;
+-	svr_ses.lastexit.exitpid = -1; /* Nothing has exited yet */
++	svr_ses->childpids = (struct ChildPid*)m_malloc(sizeof(struct ChildPid));
++	svr_ses->childpids[0].pid = -1; /* unused */
++	svr_ses->childpids[0].chansess = NULL;
++	svr_ses->childpidsize = 1;
++	svr_ses->lastexit.exitpid = -1; /* Nothing has exited yet */
+ 	sa_chld.sa_handler = sesssigchild_handler;
+ 	sa_chld.sa_flags = SA_NOCLDSTOP;
+ 	sigemptyset(&sa_chld.sa_mask);
 diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-kex.c
 --- dropbear-2022.83/svr-kex.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-kex.c	2023-07-20 16:05:07.485822655 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-kex.c	2023-07-20 17:06:07.824305538 +0600
 @@ -51,15 +51,15 @@
  	buffer *ecdh_qs = NULL;
  
@@ -5384,16 +5967,52 @@ diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/drop
  	TRACE(("leave recv_msg_kexdh_init"))
  }
  
-@@ -107,7 +107,7 @@
+@@ -107,8 +107,8 @@
  
  	const char* fn = NULL;
  	char *expand_fn = NULL;
 -	enum signkey_type type = ses.newkeys->algo_hostkey;
+-	void **hostkey = signkey_key_ptr(svr_opts.hostkey, type);
 +	enum signkey_type type = ses->newkeys->algo_hostkey;
- 	void **hostkey = signkey_key_ptr(svr_opts.hostkey, type);
++	void **hostkey = signkey_key_ptr(svr_opts->hostkey, type);
  	int ret = DROPBEAR_FAILURE;
  
-@@ -206,11 +206,11 @@
+ 	if (hostkey && *hostkey) {
+@@ -145,7 +145,7 @@
+ 
+ 	expand_fn = expand_homedir_path(fn);
+ 
+-	ret = readhostkey(expand_fn, svr_opts.hostkey, &type);
++	ret = readhostkey(expand_fn, svr_opts->hostkey, &type);
+ 	if (ret == DROPBEAR_SUCCESS) {
+ 		goto out;
+ 	}
+@@ -155,13 +155,13 @@
+ 	}
+ 	
+ 	/* Read what we just generated (or another process raced us) */
+-	ret = readhostkey(expand_fn, svr_opts.hostkey, &type);
++	ret = readhostkey(expand_fn, svr_opts->hostkey, &type);
+ 
+ 	if (ret == DROPBEAR_SUCCESS) {
+ 		char *fp = NULL;
+ 		unsigned int len;
+ 		buffer *key_buf = buf_new(MAX_PUBKEY_SIZE);
+-		buf_put_pub_key(key_buf, svr_opts.hostkey, type);
++		buf_put_pub_key(key_buf, svr_opts->hostkey, type);
+ 		buf_setpos(key_buf, 4);
+ 		len = key_buf->len - key_buf->pos;
+ 		fp = sign_key_fingerprint(buf_getptr(key_buf, len), len);
+@@ -193,7 +193,7 @@
+ 	CHECKCLEARTOWRITE();
+ 
+ #if DROPBEAR_DELAY_HOSTKEY
+-	if (svr_opts.delay_hostkey)
++	if (svr_opts->delay_hostkey)
+ 	{
+ 		svr_ensure_hostkey();
+ 	}
+@@ -206,19 +206,19 @@
  	}
  #endif
  
@@ -5401,7 +6020,7 @@ diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/drop
 -	buf_put_pub_key(ses.writepayload, svr_opts.hostkey,
 -			ses.newkeys->algo_hostkey);
 +	buf_putbyte(ses->writepayload, SSH_MSG_KEXDH_REPLY);
-+	buf_put_pub_key(ses->writepayload, svr_opts.hostkey,
++	buf_put_pub_key(ses->writepayload, svr_opts->hostkey,
 +			ses->newkeys->algo_hostkey);
  
 -	switch (ses.newkeys->algo_kex->mode) {
@@ -5409,8 +6028,9 @@ diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/drop
  #if DROPBEAR_NORMAL_DH
  		case DROPBEAR_KEX_NORMAL_DH:
  			{
-@@ -218,7 +218,7 @@
- 			kexdh_comb_key(dh_param, dh_e, svr_opts.hostkey);
+ 			struct kex_dh_param * dh_param = gen_kexdh_param();
+-			kexdh_comb_key(dh_param, dh_e, svr_opts.hostkey);
++			kexdh_comb_key(dh_param, dh_e, svr_opts->hostkey);
  
  			/* put f */
 -			buf_putmpint(ses.writepayload, &dh_param->pub);
@@ -5418,18 +6038,24 @@ diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/drop
  			free_kexdh_param(dh_param);
  			}
  			break;
-@@ -229,7 +229,7 @@
+@@ -227,9 +227,9 @@
+ 		case DROPBEAR_KEX_ECDH:
+ 			{
  			struct kex_ecdh_param *ecdh_param = gen_kexecdh_param();
- 			kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts.hostkey);
+-			kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts.hostkey);
++			kexecdh_comb_key(ecdh_param, ecdh_qs, svr_opts->hostkey);
  
 -			buf_put_ecc_raw_pubkey_string(ses.writepayload, &ecdh_param->key);
 +			buf_put_ecc_raw_pubkey_string(ses->writepayload, &ecdh_param->key);
  			free_kexecdh_param(ecdh_param);
  			}
  			break;
-@@ -240,7 +240,7 @@
+@@ -238,9 +238,9 @@
+ 		case DROPBEAR_KEX_CURVE25519:
+ 			{
  			struct kex_curve25519_param *param = gen_kexcurve25519_param();
- 			kexcurve25519_comb_key(param, ecdh_qs, svr_opts.hostkey);
+-			kexcurve25519_comb_key(param, ecdh_qs, svr_opts.hostkey);
++			kexcurve25519_comb_key(param, ecdh_qs, svr_opts->hostkey);
  
 -			buf_putstring(ses.writepayload, param->pub, CURVE25519_LEN);
 +			buf_putstring(ses->writepayload, param->pub, CURVE25519_LEN);
@@ -5442,7 +6068,7 @@ diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/drop
  	/* calc the signature */
 -	buf_put_sign(ses.writepayload, svr_opts.hostkey, 
 -			ses.newkeys->algo_signature, ses.hash);
-+	buf_put_sign(ses->writepayload, svr_opts.hostkey, 
++	buf_put_sign(ses->writepayload, svr_opts->hostkey, 
 +			ses->newkeys->algo_signature, ses->hash);
  
  	/* the SSH_MSG_KEXDH_REPLY is done */
@@ -5466,7 +6092,7 @@ diff -aur dropbear-2022.83/svr-kex.c .././build/extbld/third_party/dropbear/drop
  
 diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c
 --- dropbear-2022.83/svr-main.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c	2023-07-20 16:39:43.025223431 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c	2023-07-20 17:20:06.491048046 +0600
 @@ -30,6 +30,7 @@
  #include "runopts.h"
  #include "dbrandom.h"
@@ -5475,17 +6101,56 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  
  static size_t listensockets(int *sock, size_t sockcount, int *maxfd);
  static void sigchld_handler(int dummy);
-@@ -62,6 +63,9 @@
- 	/* get commandline options */
- 	svr_getopts(argc, argv);
+@@ -59,19 +60,28 @@
+ 		dropbear_exit("Bad argc");
+ 	}
  
 +    ses = malloc(sizeof(struct sshsession));
 +    memset(ses, 0, sizeof(struct sshsession));
++    svr_ses = malloc(sizeof(struct serversession));
++    memset(svr_ses, 0, sizeof(struct serversession));
++    svr_opts = malloc(sizeof(struct svr_runopts));
++    memset(svr_opts, 0, sizeof(struct svr_runopts));
++    opts = malloc(sizeof(struct runopts));
++    memset(opts, 0, sizeof(struct runopts));
 +
+ 	/* get commandline options */
+ 	svr_getopts(argc, argv);
+ 
  #if INETD_MODE
  	/* service program mode */
- 	if (svr_opts.inetdmode) {
-@@ -131,7 +135,9 @@
+-	if (svr_opts.inetdmode) {
++	if (svr_opts->inetdmode) {
+ 		main_inetd();
+ 		/* notreached */
+ 	}
+ #endif
+ 
+ #if DROPBEAR_DO_REEXEC
+-	if (svr_opts.reexec_childpipe >= 0) {
++	if (svr_opts->reexec_childpipe >= 0) {
+ #ifdef PR_SET_NAME
+ 		/* Fix the "Name:" in /proc/pid/status, otherwise it's
+ 		a FD number from fexecve.
+@@ -102,7 +112,7 @@
+ 
+ 	seedrandom();
+ 
+-	if (svr_opts.reexec_childpipe < 0) {
++	if (svr_opts->reexec_childpipe < 0) {
+ 		/* In case our inetd was lax in logging source addresses */
+ 		get_socket_address(0, NULL, NULL, &host, &port, 0);
+ 			dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
+@@ -116,7 +126,7 @@
+ 	}
+ 
+ 	/* -1 for childpipe in the inetd case is discarded */
+-	svr_session(0, svr_opts.reexec_childpipe);
++	svr_session(0, svr_opts->reexec_childpipe);
+ 
+ 	/* notreached */
+ }
+@@ -131,7 +141,9 @@
  	int listensocks[MAX_LISTEN_ADDR];
  	size_t listensockcount = 0;
  	FILE *pidfile = NULL;
@@ -5495,7 +6160,7 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  
  	int childpipes[MAX_UNAUTH_CLIENTS];
  	char * preauth_addrs[MAX_UNAUTH_CLIENTS];
-@@ -165,7 +171,7 @@
+@@ -165,7 +177,7 @@
  		FD_SET(listensocks[i], &fds);
  	}
  
@@ -5504,16 +6169,48 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  	if (multipath) {
  		execfd = open(multipath, O_CLOEXEC|O_RDONLY);
  	} else {
-@@ -224,7 +230,7 @@
+@@ -178,10 +190,10 @@
+ #endif
+ 
+ 	/* fork */
+-	if (svr_opts.forkbg) {
++	if (svr_opts->forkbg) {
+ 		int closefds = 0;
+ #if !DEBUG_TRACE
+-		if (!opts.usingsyslog) {
++		if (!opts->usingsyslog) {
+ 			closefds = 1;
+ 		}
+ #endif
+@@ -191,14 +203,14 @@
+ 	}
+ 
+ 	/* should be done after syslog is working */
+-	if (svr_opts.forkbg) {
++	if (svr_opts->forkbg) {
+ 		dropbear_log(LOG_INFO, "Running in background");
+ 	} else {
+ 		dropbear_log(LOG_INFO, "Not backgrounding");
+ 	}
+ 
+ 	/* create a PID file so that we can be killed easily */
+-	pidfile = fopen(svr_opts.pidfile, "w");
++	pidfile = fopen(svr_opts->pidfile, "w");
+ 	if (pidfile) {
+ 		fprintf(pidfile, "%d\n", getpid());
+ 		fclose(pidfile);
+@@ -224,8 +236,8 @@
  
  		val = select(maxsock+1, &fds, NULL, NULL, NULL);
  
 -		if (ses.exitflag) {
+-			unlink(svr_opts.pidfile);
 +		if (ses->exitflag) {
- 			unlink(svr_opts.pidfile);
++			unlink(svr_opts->pidfile);
  			dropbear_exit("Terminated by signal");
  		}
-@@ -304,9 +310,13 @@
+ 
+@@ -304,9 +316,13 @@
  
  #if DEBUG_NOFORK
  			fork_ret = 0;
@@ -5529,7 +6226,7 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  			if (fork_ret < 0) {
  				dropbear_log(LOG_WARNING, "Error forking: %s", strerror(errno));
  				goto out;
-@@ -324,12 +334,12 @@
+@@ -324,12 +340,12 @@
  
  			} else {
  
@@ -5543,7 +6240,7 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  #if !DEBUG_NOFORK
  				if (setsid() < 0) {
  					dropbear_exit("setsid: %s", strerror(errno));
-@@ -343,20 +353,23 @@
+@@ -343,20 +359,23 @@
  
  				m_close(childpipe[0]);
  
@@ -5569,7 +6266,7 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  					memcpy(&new_argv[pos0], argv, sizeof(char*) * argc);
  					new_argv[new_argc-2] = "-2";
  					snprintf(buf, sizeof(buf), "%d", childpipe[1]);
-@@ -370,7 +383,11 @@
+@@ -370,7 +389,11 @@
  						TRACE(("cloexec for childsock %d failed: %s", childsock, strerror(errno)))
  					}
  					/* Re-execute ourself */
@@ -5581,7 +6278,7 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  					/* Not reached on success */
  
  					/* Fall back on plain fork otherwise.
-@@ -428,7 +445,7 @@
+@@ -428,7 +451,7 @@
  /* catch ctrl-c or sigterm */
  static void sigintterm_handler(int UNUSED(unused)) {
  
@@ -5590,6 +6287,571 @@ diff -aur dropbear-2022.83/svr-main.c .././build/extbld/third_party/dropbear/dro
  }
  
  /* Things used by inetd and non-inetd modes */
+@@ -436,7 +459,7 @@
+ 
+ 	struct sigaction sa_chld;
+ #ifndef DISABLE_SYSLOG
+-	if (opts.usingsyslog) {
++	if (opts->usingsyslog) {
+ 		startsyslog(PROGNAME);
+ 	}
+ #endif
+@@ -476,19 +499,19 @@
+ 	size_t sockpos = 0;
+ 	int nsock;
+ 
+-	TRACE(("listensockets: %d to try", svr_opts.portcount))
++	TRACE(("listensockets: %d to try", svr_opts->portcount))
+ 
+-	for (i = 0; i < svr_opts.portcount; i++) {
++	for (i = 0; i < svr_opts->portcount; i++) {
+ 
+-		TRACE(("listening on '%s:%s'", svr_opts.addresses[i], svr_opts.ports[i]))
++		TRACE(("listening on '%s:%s'", svr_opts->addresses[i], svr_opts->ports[i]))
+ 
+-		nsock = dropbear_listen(svr_opts.addresses[i], svr_opts.ports[i], &socks[sockpos], 
++		nsock = dropbear_listen(svr_opts->addresses[i], svr_opts->ports[i], &socks[sockpos], 
+ 				sockcount - sockpos,
+ 				&errstring, maxfd);
+ 
+ 		if (nsock < 0) {
+ 			dropbear_log(LOG_WARNING, "Failed listening on '%s': %s", 
+-							svr_opts.ports[i], errstring);
++							svr_opts->ports[i], errstring);
+ 			m_free(errstring);
+ 			continue;
+ 		}
+diff -aur dropbear-2022.83/svr-runopts.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-runopts.c
+--- dropbear-2022.83/svr-runopts.c	2022-11-14 20:30:00.000000000 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-runopts.c	2023-07-20 17:14:54.352014149 +0600
+@@ -32,7 +32,7 @@
+ 
+ #include <grp.h>
+ 
+-svr_runopts svr_opts; /* GLOBAL */
++svr_runopts *svr_opts; /* GLOBAL */
+ 
+ static void printhelp(const char * progname);
+ static void addportandaddress(const char* spec);
+@@ -149,60 +149,60 @@
+ 
+ 
+ 	/* see printhelp() for options */
+-	svr_opts.bannerfile = NULL;
+-	svr_opts.banner = NULL;
+-	svr_opts.forced_command = NULL;
+-	svr_opts.forkbg = 1;
+-	svr_opts.norootlogin = 0;
++	svr_opts->bannerfile = NULL;
++	svr_opts->banner = NULL;
++	svr_opts->forced_command = NULL;
++	svr_opts->forkbg = 1;
++	svr_opts->norootlogin = 0;
+ #ifdef HAVE_GETGROUPLIST
+-	svr_opts.restrict_group = NULL;
+-	svr_opts.restrict_group_gid = 0;
++	svr_opts->restrict_group = NULL;
++	svr_opts->restrict_group_gid = 0;
+ #endif
+-	svr_opts.noauthpass = 0;
+-	svr_opts.norootpass = 0;
+-	svr_opts.allowblankpass = 0;
+-	svr_opts.multiauthmethod = 0;
+-	svr_opts.maxauthtries = MAX_AUTH_TRIES;
+-	svr_opts.inetdmode = 0;
+-	svr_opts.portcount = 0;
+-	svr_opts.hostkey = NULL;
+-	svr_opts.delay_hostkey = 0;
+-	svr_opts.pidfile = expand_homedir_path(DROPBEAR_PIDFILE);
++	svr_opts->noauthpass = 0;
++	svr_opts->norootpass = 0;
++	svr_opts->allowblankpass = 0;
++	svr_opts->multiauthmethod = 0;
++	svr_opts->maxauthtries = MAX_AUTH_TRIES;
++	svr_opts->inetdmode = 0;
++	svr_opts->portcount = 0;
++	svr_opts->hostkey = NULL;
++	svr_opts->delay_hostkey = 0;
++	svr_opts->pidfile = expand_homedir_path(DROPBEAR_PIDFILE);
+ #if DROPBEAR_SVR_LOCALTCPFWD
+-	svr_opts.nolocaltcp = 0;
++	svr_opts->nolocaltcp = 0;
+ #endif
+ #if DROPBEAR_SVR_REMOTETCPFWD
+-	svr_opts.noremotetcp = 0;
++	svr_opts->noremotetcp = 0;
+ #endif
+ #if DROPBEAR_PLUGIN
+-        svr_opts.pubkey_plugin = NULL;
+-        svr_opts.pubkey_plugin_options = NULL;
++        svr_opts->pubkey_plugin = NULL;
++        svr_opts->pubkey_plugin_options = NULL;
+ #endif
+-	svr_opts.pass_on_env = 0;
+-	svr_opts.reexec_childpipe = -1;
++	svr_opts->pass_on_env = 0;
++	svr_opts->reexec_childpipe = -1;
+ 
+ #ifndef DISABLE_ZLIB
+-	opts.compress_mode = DROPBEAR_COMPRESS_DELAYED;
++	opts->compress_mode = DROPBEAR_COMPRESS_DELAYED;
+ #endif 
+ 
+ 	/* not yet
+-	opts.ipv4 = 1;
+-	opts.ipv6 = 1;
++	opts->ipv4 = 1;
++	opts->ipv6 = 1;
+ 	*/
+ #if DO_MOTD
+-	svr_opts.domotd = 1;
++	svr_opts->domotd = 1;
+ #endif
+ #ifndef DISABLE_SYSLOG
+-	opts.usingsyslog = 1;
++	opts->usingsyslog = 1;
+ #endif
+-	opts.recv_window = DEFAULT_RECV_WINDOW;
+-	opts.keepalive_secs = DEFAULT_KEEPALIVE;
+-	opts.idle_timeout_secs = DEFAULT_IDLE_TIMEOUT;
++	opts->recv_window = DEFAULT_RECV_WINDOW;
++	opts->keepalive_secs = DEFAULT_KEEPALIVE;
++	opts->idle_timeout_secs = DEFAULT_IDLE_TIMEOUT;
+ 	
+ #if DROPBEAR_SVR_REMOTETCPFWD
+-	opts.listen_fwd_all = 0;
++	opts->listen_fwd_all = 0;
+ #endif
+-	opts.disable_ip_tos = 0;
++	opts->disable_ip_tos = 0;
+ 
+ 	for (i = 1; i < (unsigned int)argc; i++) {
+ 		if (argv[i][0] != '-' || argv[i][1] == '\0')
+@@ -211,46 +211,46 @@
+ 		for (j = 1; (c = argv[i][j]) != '\0' && !next && !nextisport; j++) {
+ 			switch (c) {
+ 				case 'b':
+-					next = &svr_opts.bannerfile;
++					next = &svr_opts->bannerfile;
+ 					break;
+ 				case 'c':
+-					next = &svr_opts.forced_command;
++					next = &svr_opts->forced_command;
+ 					break;
+ 				case 'd':
+ 				case 'r':
+ 					next = &keyfile;
+ 					break;
+ 				case 'R':
+-					svr_opts.delay_hostkey = 1;
++					svr_opts->delay_hostkey = 1;
+ 					break;
+ 				case 'F':
+-					svr_opts.forkbg = 0;
++					svr_opts->forkbg = 0;
+ 					break;
+ #ifndef DISABLE_SYSLOG
+ 				case 'E':
+-					opts.usingsyslog = 0;
++					opts->usingsyslog = 0;
+ 					break;
+ #endif
+ 				case 'e':
+-					svr_opts.pass_on_env = 1;
++					svr_opts->pass_on_env = 1;
+ 					break;
+ 
+ #if DROPBEAR_SVR_LOCALTCPFWD
+ 				case 'j':
+-					svr_opts.nolocaltcp = 1;
++					svr_opts->nolocaltcp = 1;
+ 					break;
+ #endif
+ #if DROPBEAR_SVR_REMOTETCPFWD
+ 				case 'k':
+-					svr_opts.noremotetcp = 1;
++					svr_opts->noremotetcp = 1;
+ 					break;
+ 				case 'a':
+-					opts.listen_fwd_all = 1;
++					opts->listen_fwd_all = 1;
+ 					break;
+ #endif
+ #if INETD_MODE
+ 				case 'i':
+-					svr_opts.inetdmode = 1;
++					svr_opts->inetdmode = 1;
+ 					break;
+ #endif
+ #if DROPBEAR_DO_REEXEC && NON_INETD_MODE
+@@ -263,20 +263,20 @@
+ 					nextisport = 1;
+ 					break;
+ 				case 'P':
+-					next = &svr_opts.pidfile;
++					next = &svr_opts->pidfile;
+ 					break;
+ #if DO_MOTD
+ 				/* motd is displayed by default, -m turns it off */
+ 				case 'm':
+-					svr_opts.domotd = 0;
++					svr_opts->domotd = 0;
+ 					break;
+ #endif
+ 				case 'w':
+-					svr_opts.norootlogin = 1;
++					svr_opts->norootlogin = 1;
+ 					break;
+ #ifdef HAVE_GETGROUPLIST
+ 				case 'G':
+-					next = &svr_opts.restrict_group;
++					next = &svr_opts->restrict_group;
+ 					break;
+ #endif
+ 				case 'W':
+@@ -293,16 +293,16 @@
+ 					break;
+ #if DROPBEAR_SVR_PASSWORD_AUTH || DROPBEAR_SVR_PAM_AUTH
+ 				case 's':
+-					svr_opts.noauthpass = 1;
++					svr_opts->noauthpass = 1;
+ 					break;
+ 				case 'g':
+-					svr_opts.norootpass = 1;
++					svr_opts->norootpass = 1;
+ 					break;
+ 				case 'B':
+-					svr_opts.allowblankpass = 1;
++					svr_opts->allowblankpass = 1;
+ 					break;
+ 				case 't':
+-					svr_opts.multiauthmethod = 1;
++					svr_opts->multiauthmethod = 1;
+ 					break;
+ #endif
+ 				case 'h':
+@@ -327,7 +327,7 @@
+ 					exit(EXIT_SUCCESS);
+ 					break;
+ 				case 'z':
+-					opts.disable_ip_tos = 1;
++					opts->disable_ip_tos = 1;
+ 					break;
+ 				default:
+ 					fprintf(stderr, "Invalid option -%c\n", c);
+@@ -366,17 +366,17 @@
+ 	}
+ 
+ 	/* Set up listening ports */
+-	if (svr_opts.portcount == 0) {
+-		svr_opts.ports[0] = m_strdup(DROPBEAR_DEFPORT);
+-		svr_opts.addresses[0] = m_strdup(DROPBEAR_DEFADDRESS);
+-		svr_opts.portcount = 1;
++	if (svr_opts->portcount == 0) {
++		svr_opts->ports[0] = m_strdup(DROPBEAR_DEFPORT);
++		svr_opts->addresses[0] = m_strdup(DROPBEAR_DEFADDRESS);
++		svr_opts->portcount = 1;
+ 	}
+ 
+-	if (svr_opts.bannerfile) {
++	if (svr_opts->bannerfile) {
+ 		struct stat buf;
+-		if (stat(svr_opts.bannerfile, &buf) != 0) {
++		if (stat(svr_opts->bannerfile, &buf) != 0) {
+ 			dropbear_exit("Error opening banner file '%s'",
+-					svr_opts.bannerfile);
++					svr_opts->bannerfile);
+ 		}
+ 		
+ 		if (buf.st_size > MAX_BANNER_SIZE) {
+@@ -384,22 +384,22 @@
+ 					MAX_BANNER_SIZE);
+ 		}
+ 
+-		svr_opts.banner = buf_new(buf.st_size);
+-		if (buf_readfile(svr_opts.banner, svr_opts.bannerfile)!=DROPBEAR_SUCCESS) {
++		svr_opts->banner = buf_new(buf.st_size);
++		if (buf_readfile(svr_opts->banner, svr_opts->bannerfile)!=DROPBEAR_SUCCESS) {
+ 			dropbear_exit("Error reading banner file '%s'",
+-					svr_opts.bannerfile);
++					svr_opts->bannerfile);
+ 		}
+-		buf_setpos(svr_opts.banner, 0);
++		buf_setpos(svr_opts->banner, 0);
+ 	}
+ 
+ #ifdef HAVE_GETGROUPLIST
+-	if (svr_opts.restrict_group) {
+-		struct group *restrictedgroup = getgrnam(svr_opts.restrict_group);
++	if (svr_opts->restrict_group) {
++		struct group *restrictedgroup = getgrnam(svr_opts->restrict_group);
+ 
+ 		if (restrictedgroup){
+-			svr_opts.restrict_group_gid = restrictedgroup->gr_gid;
++			svr_opts->restrict_group_gid = restrictedgroup->gr_gid;
+ 		} else {
+-			dropbear_exit("Cannot restrict logins to group '%s' as the group does not exist", svr_opts.restrict_group);
++			dropbear_exit("Cannot restrict logins to group '%s' as the group does not exist", svr_opts->restrict_group);
+ 		}
+ 	}
+ #endif
+@@ -414,7 +414,7 @@
+ 			|| val == 0) {
+ 			dropbear_exit("Bad maxauthtries '%s'", maxauthtries_arg);
+ 		}
+-		svr_opts.maxauthtries = val;
++		svr_opts->maxauthtries = val;
+ 	}
+ 
+ 
+@@ -423,7 +423,7 @@
+ 		if (m_str_to_uint(keepalive_arg, &val) == DROPBEAR_FAILURE) {
+ 			dropbear_exit("Bad keepalive '%s'", keepalive_arg);
+ 		}
+-		opts.keepalive_secs = val;
++		opts->keepalive_secs = val;
+ 	}
+ 
+ 	if (idle_timeout_arg) {
+@@ -431,23 +431,23 @@
+ 		if (m_str_to_uint(idle_timeout_arg, &val) == DROPBEAR_FAILURE) {
+ 			dropbear_exit("Bad idle_timeout '%s'", idle_timeout_arg);
+ 		}
+-		opts.idle_timeout_secs = val;
++		opts->idle_timeout_secs = val;
+ 	}
+ 
+-	if (svr_opts.forced_command) {
+-		dropbear_log(LOG_INFO, "Forced command set to '%s'", svr_opts.forced_command);
++	if (svr_opts->forced_command) {
++		dropbear_log(LOG_INFO, "Forced command set to '%s'", svr_opts->forced_command);
+ 	}
+ 
+ 	if (reexec_fd_arg) {
+-		if (m_str_to_uint(reexec_fd_arg, &svr_opts.reexec_childpipe) == DROPBEAR_FAILURE
+-			|| svr_opts.reexec_childpipe < 0) {
++		if (m_str_to_uint(reexec_fd_arg, &svr_opts->reexec_childpipe) == DROPBEAR_FAILURE
++			|| svr_opts->reexec_childpipe < 0) {
+ 			dropbear_exit("Bad -2");
+ 		}
+ 	}
+ 
+ #if INETD_MODE
+-	if (svr_opts.inetdmode && (
+-		opts.usingsyslog == 0
++	if (svr_opts->inetdmode && (
++		opts->usingsyslog == 0
+ #if DEBUG_TRACE
+ 		|| debug_trace
+ #endif
+@@ -457,19 +457,19 @@
+ 	}
+ #endif
+ 
+-	if (svr_opts.multiauthmethod && svr_opts.noauthpass) {
++	if (svr_opts->multiauthmethod && svr_opts->noauthpass) {
+ 		dropbear_exit("-t and -s are incompatible");
+ 	}
+ 
+ #if DROPBEAR_PLUGIN
+ 	if (pubkey_plugin) {
+-		svr_opts.pubkey_plugin = m_strdup(pubkey_plugin);
+-		char *args = strchr(svr_opts.pubkey_plugin, ',');
++		svr_opts->pubkey_plugin = m_strdup(pubkey_plugin);
++		char *args = strchr(svr_opts->pubkey_plugin, ',');
+ 		if (args) {
+ 			*args='\0';
+ 			++args;
+ 		}
+-		svr_opts.pubkey_plugin_options = args;
++		svr_opts->pubkey_plugin_options = args;
+ 	}
+ #endif
+ }
+@@ -477,7 +477,7 @@
+ static void addportandaddress(const char* spec) {
+ 	char *port = NULL, *address = NULL;
+ 
+-	if (svr_opts.portcount >= DROPBEAR_MAX_PORTS) {
++	if (svr_opts->portcount >= DROPBEAR_MAX_PORTS) {
+ 		return;
+ 	}
+ 
+@@ -500,9 +500,9 @@
+ 		/* empty port -> exit */
+ 		dropbear_exit("Bad port");
+ 	}
+-	svr_opts.ports[svr_opts.portcount] = port;
+-	svr_opts.addresses[svr_opts.portcount] = address;
+-	svr_opts.portcount++;
++	svr_opts->ports[svr_opts->portcount] = port;
++	svr_opts->addresses[svr_opts->portcount] = address;
++	svr_opts->portcount++;
+ }
+ 
+ static void disablekey(int type) {
+@@ -534,7 +534,7 @@
+ 	char *expand_path = expand_homedir_path(keyfile);
+ 	enum signkey_type type = DROPBEAR_SIGNKEY_ANY;
+ 	if (readhostkey(expand_path, read_key, &type) == DROPBEAR_FAILURE) {
+-		if (!svr_opts.delay_hostkey) {
++		if (!svr_opts->delay_hostkey) {
+ 			dropbear_log(LOG_WARNING, "Failed loading %s", expand_path);
+ 		}
+ 	}
+@@ -542,37 +542,37 @@
+ 
+ #if DROPBEAR_RSA
+ 	if (type == DROPBEAR_SIGNKEY_RSA) {
+-		loadhostkey_helper("RSA", (void**)&read_key->rsakey, (void**)&svr_opts.hostkey->rsakey, fatal_duplicate);
++		loadhostkey_helper("RSA", (void**)&read_key->rsakey, (void**)&svr_opts->hostkey->rsakey, fatal_duplicate);
+ 	}
+ #endif
+ 
+ #if DROPBEAR_DSS
+ 	if (type == DROPBEAR_SIGNKEY_DSS) {
+-		loadhostkey_helper("DSS", (void**)&read_key->dsskey, (void**)&svr_opts.hostkey->dsskey, fatal_duplicate);
++		loadhostkey_helper("DSS", (void**)&read_key->dsskey, (void**)&svr_opts->hostkey->dsskey, fatal_duplicate);
+ 	}
+ #endif
+ 
+ #if DROPBEAR_ECDSA
+ #if DROPBEAR_ECC_256
+ 	if (type == DROPBEAR_SIGNKEY_ECDSA_NISTP256) {
+-		loadhostkey_helper("ECDSA256", (void**)&read_key->ecckey256, (void**)&svr_opts.hostkey->ecckey256, fatal_duplicate);
++		loadhostkey_helper("ECDSA256", (void**)&read_key->ecckey256, (void**)&svr_opts->hostkey->ecckey256, fatal_duplicate);
+ 	}
+ #endif
+ #if DROPBEAR_ECC_384
+ 	if (type == DROPBEAR_SIGNKEY_ECDSA_NISTP384) {
+-		loadhostkey_helper("ECDSA384", (void**)&read_key->ecckey384, (void**)&svr_opts.hostkey->ecckey384, fatal_duplicate);
++		loadhostkey_helper("ECDSA384", (void**)&read_key->ecckey384, (void**)&svr_opts->hostkey->ecckey384, fatal_duplicate);
+ 	}
+ #endif
+ #if DROPBEAR_ECC_521
+ 	if (type == DROPBEAR_SIGNKEY_ECDSA_NISTP521) {
+-		loadhostkey_helper("ECDSA521", (void**)&read_key->ecckey521, (void**)&svr_opts.hostkey->ecckey521, fatal_duplicate);
++		loadhostkey_helper("ECDSA521", (void**)&read_key->ecckey521, (void**)&svr_opts->hostkey->ecckey521, fatal_duplicate);
+ 	}
+ #endif
+ #endif /* DROPBEAR_ECDSA */
+ 
+ #if DROPBEAR_ED25519
+ 	if (type == DROPBEAR_SIGNKEY_ED25519) {
+-		loadhostkey_helper("ed25519", (void**)&read_key->ed25519key, (void**)&svr_opts.hostkey->ed25519key, fatal_duplicate);
++		loadhostkey_helper("ed25519", (void**)&read_key->ed25519key, (void**)&svr_opts->hostkey->ed25519key, fatal_duplicate);
+ 	}
+ #endif
+ 
+@@ -581,11 +581,11 @@
+ }
+ 
+ static void addhostkey(const char *keyfile) {
+-	if (svr_opts.num_hostkey_files >= MAX_HOSTKEYS) {
++	if (svr_opts->num_hostkey_files >= MAX_HOSTKEYS) {
+ 		dropbear_exit("Too many hostkeys");
+ 	}
+-	svr_opts.hostkey_files[svr_opts.num_hostkey_files] = m_strdup(keyfile);
+-	svr_opts.num_hostkey_files++;
++	svr_opts->hostkey_files[svr_opts->num_hostkey_files] = m_strdup(keyfile);
++	svr_opts->num_hostkey_files++;
+ }
+ 
+ 
+@@ -596,16 +596,16 @@
+ 	int loaded_any_ecdsa = 0;
+ #endif
+ 
+-	svr_opts.hostkey = new_sign_key();
++	svr_opts->hostkey = new_sign_key();
+ 
+-	for (i = 0; i < svr_opts.num_hostkey_files; i++) {
+-		char *hostkey_file = svr_opts.hostkey_files[i];
++	for (i = 0; i < svr_opts->num_hostkey_files; i++) {
++		char *hostkey_file = svr_opts->hostkey_files[i];
+ 		loadhostkey(hostkey_file, 1);
+ 		m_free(hostkey_file);
+ 	}
+ 
+ 	/* Only load default host keys if a host key is not specified by the user */
+-	if (svr_opts.num_hostkey_files == 0) {
++	if (svr_opts->num_hostkey_files == 0) {
+ #if DROPBEAR_RSA
+ 		loadhostkey(RSA_PRIV_FILENAME, 0);
+ #endif
+@@ -623,7 +623,7 @@
+ 	}
+ 
+ #if DROPBEAR_RSA
+-	if (!svr_opts.delay_hostkey && !svr_opts.hostkey->rsakey) {
++	if (!svr_opts->delay_hostkey && !svr_opts->hostkey->rsakey) {
+ 		disablekey(DROPBEAR_SIGNKEY_RSA);
+ 	} else {
+ 		any_keys = 1;
+@@ -631,7 +631,7 @@
+ #endif
+ 
+ #if DROPBEAR_DSS
+-	if (!svr_opts.delay_hostkey && !svr_opts.hostkey->dsskey) {
++	if (!svr_opts->delay_hostkey && !svr_opts->hostkey->dsskey) {
+ 		disablekey(DROPBEAR_SIGNKEY_DSS);
+ 	} else {
+ 		any_keys = 1;
+@@ -648,43 +648,43 @@
+ 	loaded_any_ecdsa = 
+ 		0
+ #if DROPBEAR_ECC_256
+-		|| svr_opts.hostkey->ecckey256
++		|| svr_opts->hostkey->ecckey256
+ #endif
+ #if DROPBEAR_ECC_384
+-		|| svr_opts.hostkey->ecckey384
++		|| svr_opts->hostkey->ecckey384
+ #endif
+ #if DROPBEAR_ECC_521
+-		|| svr_opts.hostkey->ecckey521
++		|| svr_opts->hostkey->ecckey521
+ #endif
+ 		;
+ 	any_keys |= loaded_any_ecdsa;
+ 
+ 	/* Or an ecdsa key could be generated at runtime */
+-	any_keys |= svr_opts.delay_hostkey;
++	any_keys |= svr_opts->delay_hostkey;
+ 
+ 	/* At most one ecdsa key size will be left enabled */
+ #if DROPBEAR_ECC_256
+-	if (!svr_opts.hostkey->ecckey256
+-		&& (!svr_opts.delay_hostkey || loaded_any_ecdsa || ECDSA_DEFAULT_SIZE != 256 )) {
++	if (!svr_opts->hostkey->ecckey256
++		&& (!svr_opts->delay_hostkey || loaded_any_ecdsa || ECDSA_DEFAULT_SIZE != 256 )) {
+ 		disablekey(DROPBEAR_SIGNKEY_ECDSA_NISTP256);
+ 	}
+ #endif
+ #if DROPBEAR_ECC_384
+-	if (!svr_opts.hostkey->ecckey384
+-		&& (!svr_opts.delay_hostkey || loaded_any_ecdsa || ECDSA_DEFAULT_SIZE != 384 )) {
++	if (!svr_opts->hostkey->ecckey384
++		&& (!svr_opts->delay_hostkey || loaded_any_ecdsa || ECDSA_DEFAULT_SIZE != 384 )) {
+ 		disablekey(DROPBEAR_SIGNKEY_ECDSA_NISTP384);
+ 	}
+ #endif
+ #if DROPBEAR_ECC_521
+-	if (!svr_opts.hostkey->ecckey521
+-		&& (!svr_opts.delay_hostkey || loaded_any_ecdsa || ECDSA_DEFAULT_SIZE != 521 )) {
++	if (!svr_opts->hostkey->ecckey521
++		&& (!svr_opts->delay_hostkey || loaded_any_ecdsa || ECDSA_DEFAULT_SIZE != 521 )) {
+ 		disablekey(DROPBEAR_SIGNKEY_ECDSA_NISTP521);
+ 	}
+ #endif
+ #endif /* DROPBEAR_ECDSA */
+ 
+ #if DROPBEAR_ED25519
+-	if (!svr_opts.delay_hostkey && !svr_opts.hostkey->ed25519key) {
++	if (!svr_opts->delay_hostkey && !svr_opts->hostkey->ed25519key) {
+ 		disablekey(DROPBEAR_SIGNKEY_ED25519);
+ 	} else {
+ 		any_keys = 1;
 diff -aur dropbear-2022.83/svr-service.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-service.c
 --- dropbear-2022.83/svr-service.c	2022-11-14 20:30:00.000000000 +0600
 +++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-service.c	2023-07-20 16:05:35.221321129 +0600
@@ -5624,23 +6886,136 @@ diff -aur dropbear-2022.83/svr-service.c .././build/extbld/third_party/dropbear/
  
 diff -aur dropbear-2022.83/svr-session.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-session.c
 --- dropbear-2022.83/svr-session.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-session.c	2023-07-20 16:07:21.687396444 +0600
-@@ -115,7 +115,7 @@
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-session.c	2023-07-20 17:15:00.207921315 +0600
+@@ -45,7 +45,7 @@
+ static void svr_remoteclosed(void);
+ static void svr_algos_initialise(void);
+ 
+-struct serversession svr_ses; /* GLOBAL */
++struct serversession *svr_ses; /* GLOBAL */
+ 
+ static const packettype svr_packettypes[] = {
+ 	{SSH_MSG_CHANNEL_DATA, recv_msg_channel_data},
+@@ -84,20 +84,20 @@
+ 	/* free potential public key options */
+ 	svr_pubkey_options_cleanup();
+ 
+-	m_free(svr_ses.addrstring);
+-	m_free(svr_ses.remotehost);
+-	m_free(svr_ses.childpids);
+-	svr_ses.childpidsize = 0;
++	m_free(svr_ses->addrstring);
++	m_free(svr_ses->remotehost);
++	m_free(svr_ses->childpids);
++	svr_ses->childpidsize = 0;
+ 
+ #if DROPBEAR_PLUGIN
+-        if (svr_ses.plugin_handle != NULL) {
+-            if (svr_ses.plugin_instance) {
+-                svr_ses.plugin_instance->delete_plugin(svr_ses.plugin_instance);
+-                svr_ses.plugin_instance = NULL;
++        if (svr_ses->plugin_handle != NULL) {
++            if (svr_ses->plugin_instance) {
++                svr_ses->plugin_instance->delete_plugin(svr_ses->plugin_instance);
++                svr_ses->plugin_instance = NULL;
+             }
+ 
+-            dlclose(svr_ses.plugin_handle);
+-            svr_ses.plugin_handle = NULL;
++            dlclose(svr_ses->plugin_handle);
++            svr_ses->plugin_handle = NULL;
+         }
+ #endif
+ }
+@@ -109,24 +109,24 @@
+ 	common_session_init(sock, sock);
+ 
+ 	/* Initialise server specific parts of the session */
+-	svr_ses.childpipe = childpipe;
++	svr_ses->childpipe = childpipe;
+ #if DROPBEAR_VFORK
+-	svr_ses.server_pid = getpid();
++	svr_ses->server_pid = getpid();
  #endif
  
  	/* for logging the remote address */
 -	get_socket_address(ses.sock_in, NULL, NULL, &host, &port, 0);
 +	get_socket_address(ses->sock_in, NULL, NULL, &host, &port, 0);
  	len = strlen(host) + strlen(port) + 2;
- 	svr_ses.addrstring = m_malloc(len);
- 	snprintf(svr_ses.addrstring, len, "%s:%s", host, port);
+-	svr_ses.addrstring = m_malloc(len);
+-	snprintf(svr_ses.addrstring, len, "%s:%s", host, port);
++	svr_ses->addrstring = m_malloc(len);
++	snprintf(svr_ses->addrstring, len, "%s:%s", host, port);
+ 	m_free(host);
+ 	m_free(port);
+ 
+ #if DROPBEAR_PLUGIN
+         /* Initializes the PLUGIN Plugin */
+-        svr_ses.plugin_handle = NULL;
+-        svr_ses.plugin_instance = NULL;
+-        if (svr_opts.pubkey_plugin) {
++        svr_ses->plugin_handle = NULL;
++        svr_ses->plugin_instance = NULL;
++        if (svr_opts->pubkey_plugin) {
+ #if DEBUG_TRACE
+             const int verbose = debug_trace;
+ #else
+@@ -135,35 +135,35 @@
+             PubkeyExtPlugin_newFn  pluginConstructor;
+ 
+             /* RTLD_NOW: fails if not all the symbols are resolved now. Better fail now than at run-time */
+-            svr_ses.plugin_handle = dlopen(svr_opts.pubkey_plugin, RTLD_NOW);
+-            if (svr_ses.plugin_handle == NULL) {
+-                dropbear_exit("failed to load external pubkey plugin '%s': %s", svr_opts.pubkey_plugin, dlerror());
++            svr_ses->plugin_handle = dlopen(svr_opts->pubkey_plugin, RTLD_NOW);
++            if (svr_ses->plugin_handle == NULL) {
++                dropbear_exit("failed to load external pubkey plugin '%s': %s", svr_opts->pubkey_plugin, dlerror());
+             }
+-            pluginConstructor = (PubkeyExtPlugin_newFn)dlsym(svr_ses.plugin_handle, DROPBEAR_PUBKEY_PLUGIN_FNNAME_NEW);
++            pluginConstructor = (PubkeyExtPlugin_newFn)dlsym(svr_ses->plugin_handle, DROPBEAR_PUBKEY_PLUGIN_FNNAME_NEW);
+             if (!pluginConstructor) {
+                 dropbear_exit("plugin constructor method not found in external pubkey plugin");
+             }
+ 
+             /* Create an instance of the plugin */
+-            svr_ses.plugin_instance = pluginConstructor(verbose, svr_opts.pubkey_plugin_options, svr_ses.addrstring);
+-            if (svr_ses.plugin_instance == NULL) {
++            svr_ses->plugin_instance = pluginConstructor(verbose, svr_opts->pubkey_plugin_options, svr_ses->addrstring);
++            if (svr_ses->plugin_instance == NULL) {
+                 dropbear_exit("external plugin initialization failed");
+             }
+             /* Check if the plugin is compatible */
+-            if ( (svr_ses.plugin_instance->api_version[0] != DROPBEAR_PLUGIN_VERSION_MAJOR) ||
+-                 (svr_ses.plugin_instance->api_version[1] < DROPBEAR_PLUGIN_VERSION_MINOR) ) {
++            if ( (svr_ses->plugin_instance->api_version[0] != DROPBEAR_PLUGIN_VERSION_MAJOR) ||
++                 (svr_ses->plugin_instance->api_version[1] < DROPBEAR_PLUGIN_VERSION_MINOR) ) {
+                 dropbear_exit("plugin version check failed: "
+                               "Dropbear=%d.%d, plugin=%d.%d",
+                         DROPBEAR_PLUGIN_VERSION_MAJOR, DROPBEAR_PLUGIN_VERSION_MINOR,
+-                        svr_ses.plugin_instance->api_version[0], svr_ses.plugin_instance->api_version[1]);
++                        svr_ses->plugin_instance->api_version[0], svr_ses->plugin_instance->api_version[1]);
+             }
+-            if (svr_ses.plugin_instance->api_version[1] > DROPBEAR_PLUGIN_VERSION_MINOR) {
++            if (svr_ses->plugin_instance->api_version[1] > DROPBEAR_PLUGIN_VERSION_MINOR) {
+                 dropbear_log(LOG_WARNING, "plugin API newer than dropbear API: "
+                               "Dropbear=%d.%d, plugin=%d.%d",
+                         DROPBEAR_PLUGIN_VERSION_MAJOR, DROPBEAR_PLUGIN_VERSION_MINOR,
+-                        svr_ses.plugin_instance->api_version[0], svr_ses.plugin_instance->api_version[1]);
++                        svr_ses->plugin_instance->api_version[0], svr_ses->plugin_instance->api_version[1]);
+             }
+-            dropbear_log(LOG_INFO, "successfully loaded and initialized pubkey plugin '%s'", svr_opts.pubkey_plugin);
++            dropbear_log(LOG_INFO, "successfully loaded and initialized pubkey plugin '%s'", svr_opts->pubkey_plugin);
+         }
+ #endif
+ 
 @@ -172,20 +172,20 @@
  	svr_chansessinitialise();
  	svr_algos_initialise();
  
 -	get_socket_address(ses.sock_in, NULL, NULL, 
+-			&svr_ses.remotehost, NULL, 1);
 +	get_socket_address(ses->sock_in, NULL, NULL, 
- 			&svr_ses.remotehost, NULL, 1);
++			&svr_ses->remotehost, NULL, 1);
  
  	/* set up messages etc */
 -	ses.remoteclosed = svr_remoteclosed;
@@ -5661,21 +7036,34 @@ diff -aur dropbear-2022.83/svr-session.c .././build/extbld/third_party/dropbear/
  
  	/* exchange identification, version etc */
  	send_session_identification();
-@@ -217,10 +217,10 @@
+@@ -217,38 +217,38 @@
  	int add_delay = 0;
  
  #if DROPBEAR_PLUGIN
 -	if ((ses.plugin_session != NULL)) {
 -		svr_ses.plugin_instance->delete_session(ses.plugin_session);
 +	if ((ses->plugin_session != NULL)) {
-+		svr_ses.plugin_instance->delete_session(ses->plugin_session);
++		svr_ses->plugin_instance->delete_session(ses->plugin_session);
  	}
 -	ses.plugin_session = NULL;
+-	svr_opts.pubkey_plugin_options = NULL;
+-	m_free(svr_opts.pubkey_plugin);
 +	ses->plugin_session = NULL;
- 	svr_opts.pubkey_plugin_options = NULL;
- 	m_free(svr_opts.pubkey_plugin);
++	svr_opts->pubkey_plugin_options = NULL;
++	m_free(svr_opts->pubkey_plugin);
  #endif
-@@ -236,19 +236,19 @@
+ 
+ 	/* Render the formatted exit message */
+ 	vsnprintf(exitmsg, sizeof(exitmsg), format, param);
+ 
+-	/* svr_ses.addrstring may not be set for some early exits, or for
++	/* svr_ses->addrstring may not be set for some early exits, or for
+ 	the listener process */
+ 	fromaddr[0] = '\0';
+-	if (svr_ses.addrstring) {
+-	    snprintf(fromaddr, sizeof(fromaddr), " from <%s>", svr_ses.addrstring);
++	if (svr_ses->addrstring) {
++	    snprintf(fromaddr, sizeof(fromaddr), " from <%s>", svr_ses->addrstring);
      }
  
  	/* Add the prefix depending on session/auth state */
@@ -5700,6 +7088,52 @@ diff -aur dropbear-2022.83/svr-session.c .././build/extbld/third_party/dropbear/
  		add_delay = 1;
  	} else {
  		/* before userauth */
+@@ -279,7 +279,7 @@
+ #if DROPBEAR_VFORK
+ 	/* For uclinux only the main server process should cleanup - we don't want
+ 	 * forked children doing that */
+-	if (svr_ses.server_pid == getpid())
++	if (svr_ses->server_pid == getpid())
+ #endif
+ 	{
+ 		/* must be after we've done with username etc */
+@@ -293,13 +293,13 @@
+     }
+ #endif
+ 
+-	if (svr_opts.hostkey) {
+-		sign_key_free(svr_opts.hostkey);
+-		svr_opts.hostkey = NULL;
++	if (svr_opts->hostkey) {
++		sign_key_free(svr_opts->hostkey);
++		svr_opts->hostkey = NULL;
+ 	}
+ 	for (i = 0; i < DROPBEAR_MAX_PORTS; i++) {
+-		m_free(svr_opts.addresses[i]);
+-		m_free(svr_opts.ports[i]);
++		m_free(svr_opts->addresses[i]);
++		m_free(svr_opts->ports[i]);
+ 	}
+ 
+     
+@@ -318,7 +318,7 @@
+ 	vsnprintf(printbuf, sizeof(printbuf), format, param);
+ 
+ #ifndef DISABLE_SYSLOG
+-	if (opts.usingsyslog) {
++	if (opts->usingsyslog) {
+ 		syslog(priority, "%s", printbuf);
+ 	}
+ #endif
+@@ -329,7 +329,7 @@
+ 	havetrace = debug_trace;
+ #endif
+ 
+-	if (!opts.usingsyslog || havetrace) {
++	if (!opts->usingsyslog || havetrace) {
+ 		struct tm * local_tm = NULL;
+ 		timesec = time(NULL);
+ 		local_tm = localtime(&timesec);
 @@ -347,12 +347,12 @@
  /* called when the remote side closes the connection */
  static void svr_remoteclosed() {
@@ -5720,7 +7154,7 @@ diff -aur dropbear-2022.83/svr-session.c .././build/extbld/third_party/dropbear/
  }
 diff -aur dropbear-2022.83/svr-tcpfwd.c .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-tcpfwd.c
 --- dropbear-2022.83/svr-tcpfwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-tcpfwd.c	2023-07-20 16:05:09.349788948 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-tcpfwd.c	2023-07-20 17:13:05.893731167 +0600
 @@ -43,8 +43,8 @@
  
  	TRACE(("recv_msg_global_request_remotetcp: remote tcp forwarding not compiled in"))
@@ -5732,7 +7166,13 @@ diff -aur dropbear-2022.83/svr-tcpfwd.c .././build/extbld/third_party/dropbear/d
  	if (wantreply) {
  		send_msg_request_failure();
  	}
-@@ -84,8 +84,8 @@
+@@ -79,13 +79,13 @@
+ 
+ 	TRACE(("enter recv_msg_global_request_remotetcp"))
+ 
+-	if (svr_opts.noremotetcp || !svr_pubkey_allows_tcpfwd()) {
++	if (svr_opts->noremotetcp || !svr_pubkey_allows_tcpfwd()) {
+ 		TRACE(("leave recv_msg_global_request_remotetcp: remote tcp forwarding disabled"))
  		goto out;
  	}
  
@@ -5795,7 +7235,22 @@ diff -aur dropbear-2022.83/svr-tcpfwd.c .././build/extbld/third_party/dropbear/d
  			TRACE(("can't assign port < 1024 for non-root"))
  			goto out;
  		}
-@@ -267,21 +267,21 @@
+@@ -207,7 +207,7 @@
+ 	tcpinfo->tcp_type = forwarded;
+ 
+ 	tcpinfo->request_listenaddr = request_addr;
+-	if (!opts.listen_fwd_all || (strcmp(request_addr, "localhost") == 0) ) {
++	if (!opts->listen_fwd_all || (strcmp(request_addr, "localhost") == 0) ) {
+ 		/* NULL means "localhost only" */
+ 		tcpinfo->listenaddr = NULL;
+ 	}
+@@ -262,26 +262,26 @@
+ 
+ 	TRACE(("newtcpdirect channel %d", channel->index))
+ 
+-	if (svr_opts.nolocaltcp || !svr_pubkey_allows_tcpfwd()) {
++	if (svr_opts->nolocaltcp || !svr_pubkey_allows_tcpfwd()) {
+ 		TRACE(("leave newtcpdirect: local tcp forwarding disabled"))
  		goto out;
  	}
  
@@ -5852,7 +7307,7 @@ diff -aur dropbear-2022.83/svr-x11fwd.c .././build/extbld/third_party/dropbear/d
  		return DROPBEAR_SUCCESS;
 diff -aur dropbear-2022.83/sysoptions.h .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h
 --- dropbear-2022.83/sysoptions.h	2022-11-14 20:30:00.000000000 +0600
-+++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-20 16:10:27.824033279 +0600
++++ .././build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-20 17:15:05.103843689 +0600
 @@ -32,6 +32,8 @@
  /* Would probably work on freebsd but hasn't been tested */
  #if defined(HAVE_FEXECVE) && DROPBEAR_REEXEC && defined(__linux__)
@@ -5873,6 +7328,15 @@ diff -aur dropbear-2022.83/sysoptions.h .././build/extbld/third_party/dropbear/d
 +#endif
  
  #define _PATH_CP "/bin/cp"
+ 
+@@ -213,7 +219,7 @@
+ #define TRANS_MAX_WINDOW 500000000 /* 500MB is sufficient, stopping overflow */
+ #define TRANS_MAX_WIN_INCR 500000000 /* overflow prevention */
+ 
+-#define RECV_WINDOWEXTEND (opts.recv_window / 3) /* We send a "window extend" every
++#define RECV_WINDOWEXTEND (opts->recv_window / 3) /* We send a "window extend" every
+ 								RECV_WINDOWEXTEND bytes */
+ #define MAX_RECV_WINDOW (10*1024*1024) /* 10 MB should be enough */
  
 @@ -299,9 +305,13 @@
  
