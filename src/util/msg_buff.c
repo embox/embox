@@ -31,6 +31,7 @@ size_t msg_buff_enqueue(struct msg_buff *buf, const void *src, size_t nbyte) {
 size_t msg_buff_dequeue(struct msg_buff *buf, void *dst, size_t nbyte) {
 	size_t msg_size;
 	size_t nread;
+	char tmp[16];
 
 	if (msg_buff_empty(buf)) {
 		nread = 0;
@@ -38,7 +39,11 @@ size_t msg_buff_dequeue(struct msg_buff *buf, void *dst, size_t nbyte) {
 	else {
 		ring_buff_dequeue(&buf->rbuf, &msg_size, sizeof(size_t));
 		if (nbyte < msg_size) {
-			nread = 0;
+			nread = ring_buff_dequeue(&buf->rbuf, dst, nbyte);
+			msg_size -= nbyte;
+			while (msg_size) {
+				msg_size -= ring_buff_dequeue(&buf->rbuf, tmp, sizeof(tmp));
+			}
 		}
 		else {
 			nread = ring_buff_dequeue(&buf->rbuf, dst, msg_size);
