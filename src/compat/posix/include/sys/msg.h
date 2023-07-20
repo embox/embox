@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief https://pubs.opengroup.org/onlinepubs/7908799/xsh/sysmsg.h.html
  *
  * @author Aleksey Zhmulin
  * @date 19.07.23
@@ -12,18 +12,21 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
-struct msqid_ds {
-	struct ipc_perm msg_perm; /* Ownership and permissions */
+/* Message operation flags */
+#define MSG_NOERROR 010000 /* No error if message is too big */
 
-	// time_t msg_stime;         /* Time of last `msgsnd` */
-	// time_t msg_rtime;         /* Time of last `msgrcv` */
-	// time_t msg_ctime;         /* Time of last change */
-	// size_t msg_qbytes;        /* Maximum number of bytes allowed in queue */
-	// size_t msg_qnum;          /* Current number of messages in queue */
-	// pid_t msg_lspid;          /* PID of last `msgsnd` */
-	// pid_t msg_lrpid;          /* PID of last `msgrcv` */
-	// unsigned long msg_cbytes; /* Current number of bytes in
-	//                              iqueue (nonstandard) */
+typedef unsigned long msgqnum_t;
+typedef unsigned long msglen_t;
+
+struct msqid_ds {
+	struct ipc_perm msg_perm; /* Operation permission structure */
+	msgqnum_t msg_qnum;       /* Number of messages currently on queue */
+	msglen_t msg_qbytes;      /* Maximum number of bytes allowed on queue */
+	pid_t msg_lspid;          /* Process ID of last msgsnd() */
+	pid_t msg_lrpid;          /* Process ID of last msgrcv() */
+	time_t msg_stime;         /* Time of last msgsnd() */
+	time_t msg_rtime;         /* Time of last msgrcv() */
+	time_t msg_ctime;         /* Time of last change */
 };
 
 __BEGIN_DECLS

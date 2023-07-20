@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief
+ * @brief https://pubs.opengroup.org/onlinepubs/7908799/xsh/sysipc.h.html
  *
  * @author Aleksey Zhmulin
  * @date 19.07.23
@@ -11,31 +11,39 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
-/* Mode bits for `msgget', `semget', and `shmget'. */
-#define IPC_CREAT 01000 /* Create key if key does not exist. */
-#define IPC_EXCL  02000 /* Fail if key exists. */
+/* Mode bits */
+#define IPC_CREAT  01000 /* Create key if key does not exist */
+#define IPC_EXCL   02000 /* Fail if key exists */
+#define IPC_NOWAIT 04000 /* Error if request must wait */
 
-/* Mode bits for `msgrcv' and `semsnd'. */
-#define IPC_NOWAIT  04000  /* Return error on wait. */
-#define MSG_NOERROR 010000 /* No error if message is too big */
+/* Control commands */
+#define IPC_RMID 0 /* Remove identifier */
+#define IPC_SET  1 /* Set options */
+#define IPC_STAT 2 /* Get options */
 
-/* Control commands for `msgctl', `semctl', and `shmctl'. */
-#define IPC_RMID 0 /* Remove identifier. */
-#define IPC_SET  1 /* Set `ipc_perm' options. */
-#define IPC_STAT 2 /* Get `ipc_perm' options. */
-
-/* Special key values. */
-#define IPC_PRIVATE ((key_t)0) /* Private key. */
+/* Special key values */
+#define IPC_PRIVATE ((key_t)0) /* Private key */
 
 struct ipc_perm {
-	key_t key; /* Key supplied to `msgget', `semget', or `shmget'. */
-
-	// uid_t uid;           /* Effective UID of owner */
-	// gid_t gid;           /* Effective GID of owner */
-	// uid_t cuid;          /* Effective UID of creator */
-	// gid_t cgid;          /* Effective GID of creator */
-	// unsigned short mode; /* Permissions */
-	// unsigned short seq;  /* Sequence number */
+	uid_t uid;   /* Owner's user ID */
+	gid_t gid;   /* Owner's group ID */
+	uid_t cuid;  /* Creator's user ID */
+	gid_t cgid;  /* Creator's group ID */
+	mode_t mode; /* Read/write permission */
 };
+
+__BEGIN_DECLS
+
+/**
+ * @brief Generate an IPC key.
+ *
+ * @param path
+ * @param id
+ *
+ * @return
+ */
+extern key_t ftok(const char *path, int id);
+
+__END_DECLS
 
 #endif /* SYS_IPC_H_ */
