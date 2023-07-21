@@ -134,7 +134,7 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf) {
 			ret = SET_ERRNO(EFAULT);
 			goto out;
 		}
-		buf = &queue->ds;
+		memcpy(buf, &queue->ds, sizeof(struct msqid_ds));
 		break;
 
 	case IPC_SET:
