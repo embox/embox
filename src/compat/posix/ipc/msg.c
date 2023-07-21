@@ -242,7 +242,7 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 		nread = msg_buff_dequeue(&queue->buf, msgp, msgbuf_size);
 
 		if (nread) {
-			queue->ds.msg_qnum += 1;
+			queue->ds.msg_qnum -= 1;
 
 			if (queue->state == MSG_QUEUE_FULL) {
 				queue->state = MSG_QUEUE_OTHER;
@@ -277,10 +277,20 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 			}
 		}
 		else {
-			if (msgflg & MSG_NOERROR) {
+			if (!(msgflg & MSG_NOERROR)) {
 				ret = SET_ERRNO(E2BIG);
 				goto out;
 			}
+
+			queue->ds.msg_qnum -= 1;
+
+			if (queue->state == MSG_QUEUE_FULL) {
+				queue->state = MSG_QUEUE_OTHER;
+				wakeup_waiting_threads(&queue->senders);
+			}
+
+			ret = msgsz;
+			goto out;
 		}
 	}
 
