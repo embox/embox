@@ -21,31 +21,41 @@
 /* Assume we have 4 SPI devices at most */
 #if SPI_REGISTRY_SZ >0
 struct spi_device spi_device0 __attribute__((weak));
-#elif SPI_REGISTRY_SZ >1
+#endif
+#if SPI_REGISTRY_SZ >1
 struct spi_device spi_device1 __attribute__((weak));
-#elif SPI_REGISTRY_SZ >2
+#endif
+#if SPI_REGISTRY_SZ >2
 struct spi_device spi_device2 __attribute__((weak));
-#elif SPI_REGISTRY_SZ >3
+#endif
+#if SPI_REGISTRY_SZ >3
 struct spi_device spi_device3 __attribute__((weak));
-#elif SPI_REGISTRY_SZ >4
+#endif
+#if SPI_REGISTRY_SZ >4
 struct spi_device spi_device4 __attribute__((weak));
-#elif SPI_REGISTRY_SZ >5
+#endif
+#if SPI_REGISTRY_SZ >5
 struct spi_device spi_device5 __attribute__((weak));
 #endif
 
 /* Note: it's array of pointers, not structures as usual */
-struct spi_device *spi_device_registry[] = {
+struct spi_device *spi_device_registry[SPI_REGISTRY_SZ] = {
 	#if SPI_REGISTRY_SZ >0
 	&spi_device0,
-	#elif SPI_REGISTRY_SZ >1
+	#endif
+	#if SPI_REGISTRY_SZ >1
 	&spi_device1,
-	#elif SPI_REGISTRY_SZ >2
+	#endif
+	#if SPI_REGISTRY_SZ >1
 	&spi_device2,
-	#elif SPI_REGISTRY_SZ >3
+	#endif
+	#if SPI_REGISTRY_SZ >1
 	&spi_device3,
-	#elif SPI_REGISTRY_SZ >4
+	#endif
+	#if SPI_REGISTRY_SZ >1
 	&spi_device4,
-	#elif SPI_REGISTRY_SZ >5
+	#endif
+	#if SPI_REGISTRY_SZ >1
 	&spi_device5
 	#endif
 };
