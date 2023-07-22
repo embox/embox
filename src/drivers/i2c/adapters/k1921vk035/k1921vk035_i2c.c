@@ -48,7 +48,7 @@ EMBOX_UNIT_INIT(k1921vk035_i2c_init);
 
 static int k1921vk035_i2c_init() {
 	I2C_driver_init(I2C_FREQUENCY);
-	return i2c_bus_register(&k1921vk035_i2c_adap, 1, "i2c");
+	return i2c_bus_register(&k1921vk035_i2c_adap, 0, "i2c");
 }
 
 
