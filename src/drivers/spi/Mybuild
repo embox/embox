@@ -6,6 +6,8 @@ package embox.driver.spi
 module core {
 	option string log_level="LOG_NONE"
 
+	option number spi_quantity = 6
+
 	@IncludeExport(path="drivers")
 	source "spi.h"
 
