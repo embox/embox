@@ -18,7 +18,7 @@
 
 #define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev, NUMBER, dev_quantity)
 
-#if 0
+#if 1
 #define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
 	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
 	ARRAY_SPREAD_ADD(__char_device_registry, { \
