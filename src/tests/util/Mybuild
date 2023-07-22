@@ -57,5 +57,11 @@ module indexator_test {
 
 	depends embox.util.indexator
 	depends embox.framework.LibFramework
+}
 
+module msg_buff_test {
+	source "msg_buff_test.c"
+
+	depends embox.util.msg_buff
+	depends embox.framework.LibFramework
 }
