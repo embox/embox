@@ -1,5 +1,11 @@
 package embox.kernel.task.resource
 
+module dropbear_res {
+	source "dropbear_res.c"
+
+	depends embox.kernel.task.task_resource
+}
+
 module errno {
 	source "errno.c"
 
