@@ -49,7 +49,7 @@ int clock_settime(clockid_t clk_id, const struct timespec *ts) {
 time_t time(time_t *t) {
 	struct timespec ts;
 
-	ktime_get_timespec(&ts);
+	getnsofday(&ts, NULL);
 
 	if (t != NULL) {
 		*t = ts.tv_sec;
