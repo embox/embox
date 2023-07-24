@@ -9,12 +9,11 @@
 #define DROPBEAR_RES_H_
 
 #include <kernel/task.h>
-
-typedef unsigned int addr_t;
+#include "stdint.h"
 
 
 struct drpbr_ses{
-    addr_t ses_struct_addr[4]; /* array for storing adresses of 4 global
+    uintptr_t ses_struct_addr[4]; /* array for storing adresses of 4 global
                                 session structures for each particular
                                 dropbear session */
 };
