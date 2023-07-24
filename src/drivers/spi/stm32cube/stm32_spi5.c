@@ -69,5 +69,6 @@ static int stm32_spi5_init(void) {
 	return 0;
 }
 
-SPI_DEV_DEF("stm32_spi_5", &stm32_spi_ops, &stm32_spi5, 5);
+#define SPI_DEV_NAME      stm32_spi_5
 
+SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi5, 5);

@@ -53,4 +53,6 @@ static int skeleton_spi1_init(void) {
 	return 0;
 }
 
-SPI_DEV_DEF("skeleton_spi_1", &skeleton_spi_ops, &skeleton_spi1, 1);
+#define SPI_DEV_NAME      skeleton_spi_1
+
+SPI_DEV_DEF(SPI_DEV_NAME, &skeleton_spi_ops, &skeleton_spi1, 1);

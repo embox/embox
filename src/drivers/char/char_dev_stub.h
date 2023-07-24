@@ -16,14 +16,14 @@
 
 #ifdef __GNUC__
 	/* Avoid warning for unused parameters with ((unused)) attribute */
-	#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv) \
+	#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
 		__attribute__((unused)) static struct { \
 			void *o, *c, *i, *p; \
 		} unused##__LINE__ = { \
 			.o = open_fn, .c = close_fn, .i = (void *)idesc_op, .p = priv \
 		};
 #else
-	#define CHAR_DEV_DEF(chname, open_fn, close_fn, idesc_op, priv)
+	#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv)
 #endif /* __GNUC__ */
 
 struct dev_module;

@@ -1,0 +1,5 @@
+package embox.driver.diag
+
+module diag_stub extends diag_api {
+	source "diag_stub.c"
+}

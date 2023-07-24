@@ -16,6 +16,7 @@
 #include <drivers/char_dev.h>
 #include <sys/ioctl.h>
 #include <util/math.h>
+#include <util/macro.h>
 #include <mem/misc/pool.h>
 
 #include <drivers/usb/usb_whitelist_dev.h>
@@ -317,4 +318,4 @@ static struct idesc_ops usb_whitelist_iops = {
 	.close = usb_whitelist_close,
 };
 
-CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, usb_whitelist_open, NULL, &usb_whitelist_iops, NULL);
+CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, usb_whitelist_open, &usb_whitelist_iops, NULL);

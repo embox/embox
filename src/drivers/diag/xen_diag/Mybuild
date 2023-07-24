@@ -1,0 +1,5 @@
+package embox.driver.diag
+
+module xen_diag extends diag_api {
+	source "xen_diag.c"
+}

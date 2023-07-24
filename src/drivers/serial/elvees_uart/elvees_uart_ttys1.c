@@ -7,6 +7,8 @@
 
 #include <kernel/irq.h>
 
+#include <util/macro.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
@@ -19,7 +21,7 @@
 
 #define PINS_INIT      OPTION_GET(NUMBER, pins_init)
 
-#define TTY_NAME    "ttyS1"
+#define TTY_NAME    ttyS1
 
 extern int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params);
 extern int elvees_uart_has_symbol(struct uart *dev);

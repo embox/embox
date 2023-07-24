@@ -28,7 +28,7 @@ POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
 struct dev_module *dev_module_init(struct dev_module *devmod,
 	const char *name,
 	struct idesc * (*open)  (struct dev_module *, void *),
-	void           (*close) (struct idesc *),
+	/* void           (*close) (struct idesc *), */
 	const struct idesc_ops *dev_iops,
 	void *privdata
 ) {
@@ -42,7 +42,7 @@ struct dev_module *dev_module_init(struct dev_module *devmod,
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
 	devmod->dev_iops = dev_iops;
 	devmod->dev_open = open;
-	devmod->dev_close = close;
+	/* devmod->dev_close = close; */
 	devmod->dev_priv = privdata;
 
 	devfs_notify_new_module(devmod);
@@ -62,7 +62,7 @@ struct dev_module *dev_module_init(struct dev_module *devmod,
 struct dev_module *dev_module_create(
 	const char *name,
 	struct idesc * (*open)  (struct dev_module *, void *),
-	void           (*close) (struct idesc *),
+	/* void           (*close) (struct idesc *), */
 	const struct idesc_ops *dev_iops,
 	void *privdata
 ) {
@@ -73,7 +73,7 @@ struct dev_module *dev_module_create(
 		return NULL;
 	}
 
-	return dev_module_init(devmod, name, open, close, dev_iops, privdata);
+	return dev_module_init(devmod, name, open, dev_iops, privdata);
 }
 
 /**

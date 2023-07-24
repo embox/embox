@@ -116,5 +116,7 @@ static int stm32_spi1_init(void) {
 	return 0;
 };
 
-SPI_DEV_DEF("stm32_spi_1", &stm32_spi_ops, &stm32_spi1, 1);
+#define SPI_DEV_NAME      stm32_spi_1
+
+SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi1, 1);
 EMBOX_UNIT_INIT(stm32_spi1_init);

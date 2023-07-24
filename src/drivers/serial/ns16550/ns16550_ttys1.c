@@ -7,6 +7,8 @@
 
 #include <kernel/irq.h>
 
+#include <util/macro.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
@@ -18,7 +20,7 @@
 #define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
 #define BAUD_RATE      OPTION_GET(NUMBER,baud_rate)
 
-#define TTY_NAME    "ttyS1"
+#define TTY_NAME    ttyS1
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 

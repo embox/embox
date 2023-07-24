@@ -1,7 +1,7 @@
 package embox.driver.serial
 
 
-module apbuart extends embox.driver.diag.diag_api {
+module apbuart extends embox.driver.serial.diag {
 	option number baud_rate
 	option number apbuart_base=0x80000100
 	option number irq_num=2
@@ -13,5 +13,5 @@ module apbuart extends embox.driver.diag.diag_api {
 	depends embox.driver.periph_memory
 
 	depends core
-	depends diag
+	//depends diag
 }

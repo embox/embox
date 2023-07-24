@@ -9,6 +9,7 @@
 #define TTYS_H_
 
 #include <util/array.h>
+#include <util/macro.h>
 
 #include <kernel/task/resource/idesc.h>
 #include <drivers/tty.h>
@@ -22,10 +23,11 @@ struct tty_uart {
 };
 
 extern struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv);
+extern const struct idesc_ops idesc_serial_ops;
 
 #define TTYS_DEF(name, uart_dev) \
 		ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry); \
 		ARRAY_SPREAD_ADD(__uart_device_registry, uart_dev); \
-		CHAR_DEV_DEF(name, uart_cdev_open, NULL, NULL, uart_dev)
+		CHAR_DEV_DEF(name, uart_cdev_open, &idesc_serial_ops, uart_dev)
 
 #endif /* TTYS_H_ */

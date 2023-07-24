@@ -66,7 +66,7 @@ static const struct idesc_ops demo_char_dev_iops = {
 int demo_char_dev_register(struct demo_char_dev_priv *priv) {
 	struct dev_module *dev;
 
-	dev = dev_module_create(priv->name, demo_char_dev_idesc_open, NULL, &demo_char_dev_iops, priv);
+	dev = dev_module_create(priv->name, demo_char_dev_idesc_open, &demo_char_dev_iops, priv);
 	if (!dev) {
 		log_error("failed to allocate new char device \"%s\"", priv->name);
 		return -1;

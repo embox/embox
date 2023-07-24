@@ -28,7 +28,7 @@ struct usb_whitelist_rule {
 #define USB_WHITELIST_IO_FLUSH  _IO('u', 2)
 #define USB_WHITELIST_IO_GETN  _IOR('u', 3, int)
 
-#define USB_WHITELIST_DEV_NAME "usb_whitelist"
+#define USB_WHITELIST_DEV_NAME     usb_whitelist
 
 #endif /* USB_WHITELIST_DEV_H_ */
 

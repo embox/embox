@@ -160,6 +160,10 @@ static const struct uart_params diag_defparams = {
 
 DIAG_SERIAL_DEF(&sifive_diag, &diag_defparams);
 
+#include <util/macro.h>
+
+#define TTY_NAME   ttyS0
+
 static struct uart sifive_ttyS0 = {
 		.uart_ops = &sifive_uart_ops,
 		.irq_num = IRQ_NUM,
@@ -170,4 +174,4 @@ static struct uart sifive_ttyS0 = {
 		}
 };
 
-TTYS_DEF("ttyS0", &sifive_ttyS0);
+TTYS_DEF(TTY_NAME, &sifive_ttyS0);

@@ -1,7 +1,7 @@
 package embox.driver.serial
 
 
-module i8250 extends embox.driver.diag.diag_api {
+module i8250 extends embox.driver.serial.diag {
 	option number base_addr = 0x3f8
 	option number irq_num = 4
 	option number baud_rate
@@ -11,6 +11,6 @@ module i8250 extends embox.driver.diag.diag_api {
 	source "8250.h"
 
 	depends core
-	depends diag
+	//depends diag
 	depends embox.util.LibUtil
 }

@@ -6,6 +6,8 @@
 
 #include <kernel/irq.h>
 
+#include <util/macro.h>
+
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
@@ -22,14 +24,14 @@ EMBOX_UNIT_INIT(uart_init);
 #define UARTCLK   OPTION_GET(NUMBER,uartclk)
 #define BAUD_RATE OPTION_GET(NUMBER,baud_rate)
 
-#define TTY_NAME    "ttyS0"
+#define TTY_NAME    ttyS0
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 extern const struct uart_ops pl011_uart_ops;
 
 static struct uart uart0 = {
-		.dev_name = TTY_NAME,
+		.dev_name = MACRO_STRING(TTY_NAME),
 		.uart_ops = &pl011_uart_ops,
 		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,

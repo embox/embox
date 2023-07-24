@@ -33,7 +33,7 @@ POOL_DEF(uart_ttys, struct tty_uart, MAX_IDESC_SERIALS);
 #define idesc_to_uart(desc) \
 	(((struct tty_uart *) desc)->uart)
 
-static const struct idesc_ops idesc_serial_ops;
+const struct idesc_ops idesc_serial_ops;
 
 static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	void *buf;
@@ -194,7 +194,7 @@ static void idesc_serial_close(struct idesc *idesc) {
 	pool_free(&uart_ttys, tu);
 }
 
-static const struct idesc_ops idesc_serial_ops = {
+const struct idesc_ops idesc_serial_ops = {
 	.id_readv = serial_read,
 	.id_writev = serial_write,
 	.ioctl = serial_ioctl,

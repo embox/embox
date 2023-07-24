@@ -16,6 +16,7 @@
 #include <lib/crypt/crc32.h>
 
 #include <drivers/usb/usb_whitelist_dev.h>
+#include <util/macro.h>
 
 #define USB_WL_DUMP_HDR_MAGIC_LEN 4
 static const char usb_wl_dump_hdr_magic[] = "UWLD";
@@ -265,7 +266,7 @@ int main(int argc, char *argv[]) {
 	usb_wl_dev_path[sizeof(usb_wl_dev_path) - 1] = '\0';
 
 	strncat(usb_wl_dev_path,
-			USB_WHITELIST_DEV_NAME,
+			MACRO_STRING(USB_WHITELIST_DEV_NAME),
 			sizeof(usb_wl_dev_path) - 1 - strlen(USB_WL_DEVFS_PREFIX));
 
 	fdwl = open(usb_wl_dev_path, O_RDONLY);
