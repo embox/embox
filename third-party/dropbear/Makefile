@@ -16,6 +16,8 @@ DROPBEAR_CPPFLAGS += -DLTC_NO_BSWAP
 
 $(CONFIGURE) :
 	cp stubs.h $(PKG_SOURCE_DIR)
+	cp embox_drpbr.c $(PKG_SOURCE_DIR)
+	cp embox_drpbr.h $(PKG_SOURCE_DIR)
 	cp $(PKG_SOURCE_DIR)/default_options.h $(PKG_SOURCE_DIR)/localoptions.h
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \
