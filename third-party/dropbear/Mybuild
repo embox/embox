@@ -36,6 +36,7 @@ module dropbear {
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.type
 	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.kernel.task.resource.dropbear_res
 
 	@InitFS
 	source "etc"

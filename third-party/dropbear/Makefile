@@ -8,7 +8,7 @@ PKG_SOURCES := https://matt.ucc.asn.au/dropbear/releases/$(PKG_NAME)-$(PKG_VER).
 #PKG_MD5     := c3912f7fcdcc57c99937e4a79480d2c2
 PKG_MD5 := a75a34bcc03cacf71a2db9da3b7c94a5
 
-PKG_PATCHES := dropbear.patch
+PKG_PATCHES := dropbear-mpres.patch
 
 include $(EXTBLD_LIB)
 
@@ -16,6 +16,8 @@ DROPBEAR_CPPFLAGS += -DLTC_NO_BSWAP
 
 $(CONFIGURE) :
 	cp stubs.h $(PKG_SOURCE_DIR)
+	cp embox_drpbr.c $(PKG_SOURCE_DIR)
+	cp embox_drpbr.h $(PKG_SOURCE_DIR)
 	cp $(PKG_SOURCE_DIR)/default_options.h $(PKG_SOURCE_DIR)/localoptions.h
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \
