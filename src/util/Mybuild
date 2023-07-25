@@ -70,10 +70,3 @@ static module pretty_print {
 	
 	source "pretty_print.c"
 }
-
-static module msg_buff {
-	source "msg_buff.c"
-	
-	depends ring
-}
-	
