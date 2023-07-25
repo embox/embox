@@ -20,3 +20,11 @@ void dropbear_embox_switch_desc() {
     svr_opts = (struct svr_runopts*)this_ses_res->ses_struct_addr[2];
     opts = (struct runopts*)this_ses_res->ses_struct_addr[3];
 }
+
+void dropbear_embox_free_ses(){
+    struct drpbr_ses *this_ses_res = task_self_resource_dropbear();
+    free((struct sshsession*)this_ses_res->ses_struct_addr[0]);
+    free((struct serversession*)this_ses_res->ses_struct_addr[1]);
+    free((struct svr_runopts*)this_ses_res->ses_struct_addr[2]);
+    free((struct runopts*)this_ses_res->ses_struct_addr[3]);
+}

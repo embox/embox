@@ -1,6 +1,6 @@
 diff -aur dropbear-2022.83/Makefile.in ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in
 --- dropbear-2022.83/Makefile.in	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in	2023-07-24 17:19:44.965060915 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/Makefile.in	2023-07-24 17:57:54.350135483 +0600
 @@ -12,6 +12,9 @@
  	PROGRAMS=dropbear dbclient dropbearkey dropbearconvert
  endif
@@ -23,7 +23,7 @@ diff -aur dropbear-2022.83/Makefile.in ../build/extbld/third_party/dropbear/drop
  		svr-authpasswd.o svr-authpubkey.o svr-authpubkeyoptions.o svr-session.o svr-service.o \
 diff -aur dropbear-2022.83/cli-agentfwd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-agentfwd.c
 --- dropbear-2022.83/cli-agentfwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-agentfwd.c	2023-07-21 15:11:21.769094786 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-agentfwd.c	2023-07-24 17:57:54.354135350 +0600
 @@ -89,7 +89,7 @@
  
  	setnonblocking(fd);
@@ -44,7 +44,7 @@ diff -aur dropbear-2022.83/cli-agentfwd.c ../build/extbld/third_party/dropbear/d
  
 diff -aur dropbear-2022.83/cli-auth.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-auth.c
 --- dropbear-2022.83/cli-auth.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-auth.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-auth.c	2023-07-24 17:57:54.354135350 +0600
 @@ -36,12 +36,12 @@
  void cli_auth_getmethods() {
  	TRACE(("enter cli_auth_getmethods"))
@@ -196,7 +196,7 @@ diff -aur dropbear-2022.83/cli-auth.c ../build/extbld/third_party/dropbear/dropb
  			cli_auth_password();
 diff -aur dropbear-2022.83/cli-authinteract.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authinteract.c
 --- dropbear-2022.83/cli-authinteract.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authinteract.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authinteract.c	2023-07-24 17:57:54.354135350 +0600
 @@ -84,13 +84,13 @@
  	}
  	cli_ses.interact_request_received = 1;
@@ -282,7 +282,7 @@ diff -aur dropbear-2022.83/cli-authinteract.c ../build/extbld/third_party/dropbe
  	cli_ses.interact_request_received = 0;
 diff -aur dropbear-2022.83/cli-authpasswd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authpasswd.c
 --- dropbear-2022.83/cli-authpasswd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authpasswd.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authpasswd.c	2023-07-24 17:57:54.354135350 +0600
 @@ -138,20 +138,20 @@
  		password = getpass_or_cancel(prompt);
  	}
@@ -312,7 +312,7 @@ diff -aur dropbear-2022.83/cli-authpasswd.c ../build/extbld/third_party/dropbear
  	m_burn(password, strlen(password));
 diff -aur dropbear-2022.83/cli-authpubkey.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authpubkey.c
 --- dropbear-2022.83/cli-authpubkey.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authpubkey.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-authpubkey.c	2023-07-24 17:57:54.354135350 +0600
 @@ -64,7 +64,7 @@
  
  	TRACE(("enter recv_msg_userauth_pk_ok"))
@@ -385,7 +385,7 @@ diff -aur dropbear-2022.83/cli-authpubkey.c ../build/extbld/third_party/dropbear
  	}
 diff -aur dropbear-2022.83/cli-channel.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-channel.c
 --- dropbear-2022.83/cli-channel.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-channel.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-channel.c	2023-07-24 17:57:54.354135350 +0600
 @@ -45,7 +45,7 @@
  		return; /* we just ignore it */
  	}
@@ -397,7 +397,7 @@ diff -aur dropbear-2022.83/cli-channel.c ../build/extbld/third_party/dropbear/dr
  		TRACE(("leave recv_msg_channel_extended_data: wrong datatype: %d",
 diff -aur dropbear-2022.83/cli-chansession.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-chansession.c
 --- dropbear-2022.83/cli-chansession.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-chansession.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-chansession.c	2023-07-24 17:57:54.354135350 +0600
 @@ -61,11 +61,11 @@
  
  	TRACE(("enter cli_chansessreq"))
@@ -560,7 +560,7 @@ diff -aur dropbear-2022.83/cli-chansession.c ../build/extbld/third_party/dropbea
  	TRACE(("leave cli_send_netcat_request"))
 diff -aur dropbear-2022.83/cli-kex.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-kex.c
 --- dropbear-2022.83/cli-kex.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-kex.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-kex.c	2023-07-24 17:57:54.354135350 +0600
 @@ -53,47 +53,47 @@
  	}
  #endif
@@ -738,7 +738,7 @@ diff -aur dropbear-2022.83/cli-kex.c ../build/extbld/third_party/dropbear/dropbe
  	}
 diff -aur dropbear-2022.83/cli-main.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-main.c
 --- dropbear-2022.83/cli-main.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-main.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-main.c	2023-07-24 17:57:54.354135350 +0600
 @@ -60,7 +60,7 @@
  	cli_getopts(argc, argv);
  
@@ -759,7 +759,7 @@ diff -aur dropbear-2022.83/cli-main.c ../build/extbld/third_party/dropbear/dropb
  
 diff -aur dropbear-2022.83/cli-runopts.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-runopts.c
 --- dropbear-2022.83/cli-runopts.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-runopts.c	2023-07-21 15:11:21.773094717 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-runopts.c	2023-07-24 17:57:54.358135217 +0600
 @@ -158,7 +158,7 @@
  	cli_opts.disable_trivial_auth = 0;
  #if DROPBEAR_CLI_LOCALTCPFWD
@@ -881,7 +881,7 @@ diff -aur dropbear-2022.83/cli-runopts.c ../build/extbld/third_party/dropbear/dr
  #endif
 diff -aur dropbear-2022.83/cli-session.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-session.c
 --- dropbear-2022.83/cli-session.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-session.c	2023-07-21 15:11:21.777094647 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-session.c	2023-07-24 17:57:54.358135217 +0600
 @@ -103,7 +103,7 @@
  	}
  	myses->sock_in = myses->sock_out = sock;
@@ -1053,7 +1053,7 @@ diff -aur dropbear-2022.83/cli-session.c ../build/extbld/third_party/dropbear/dr
  #endif
 diff -aur dropbear-2022.83/cli-tcpfwd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-tcpfwd.c
 --- dropbear-2022.83/cli-tcpfwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-tcpfwd.c	2023-07-21 15:11:21.777094647 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/cli-tcpfwd.c	2023-07-24 17:57:54.358135217 +0600
 @@ -124,7 +124,7 @@
  	}
  	else
@@ -1111,7 +1111,7 @@ diff -aur dropbear-2022.83/cli-tcpfwd.c ../build/extbld/third_party/dropbear/dro
  	in case they want to forward different ports separately ... */
 diff -aur dropbear-2022.83/common-channel.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-channel.c
 --- dropbear-2022.83/common-channel.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-channel.c	2023-07-21 15:11:21.777094647 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-channel.c	2023-07-24 17:57:54.358135217 +0600
 @@ -70,12 +70,12 @@
  void chaninitialise(const struct ChanType *chantypes[]) {
  
@@ -1631,7 +1631,7 @@ diff -aur dropbear-2022.83/common-channel.c ../build/extbld/third_party/dropbear
  }
 diff -aur dropbear-2022.83/common-kex.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-kex.c
 --- dropbear-2022.83/common-kex.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-kex.c	2023-07-21 15:11:21.777094647 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-kex.c	2023-07-24 17:57:54.358135217 +0600
 @@ -55,65 +55,65 @@
  void send_msg_kexinit() {
  
@@ -2575,7 +2575,7 @@ diff -aur dropbear-2022.83/common-kex.c ../build/extbld/third_party/dropbear/dro
  
 diff -aur dropbear-2022.83/common-runopts.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-runopts.c
 --- dropbear-2022.83/common-runopts.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-runopts.c	2023-07-21 16:13:32.230969847 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-runopts.c	2023-07-24 17:57:54.358135217 +0600
 @@ -31,7 +31,7 @@
  #include "algo.h"
  #include "dbrandom.h"
@@ -2637,7 +2637,7 @@ diff -aur dropbear-2022.83/common-runopts.c ../build/extbld/third_party/dropbear
  }
 diff -aur dropbear-2022.83/common-session.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-session.c
 --- dropbear-2022.83/common-session.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-session.c	2023-07-22 10:36:20.626998298 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/common-session.c	2023-07-24 17:57:54.362135085 +0600
 @@ -22,6 +22,7 @@
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE. */
@@ -3268,7 +3268,7 @@ diff -aur dropbear-2022.83/common-session.c ../build/extbld/third_party/dropbear
  
 diff -aur dropbear-2022.83/debug.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h
 --- dropbear-2022.83/debug.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h	2023-07-21 15:11:21.785094508 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/debug.h	2023-07-24 17:57:54.362135085 +0600
 @@ -36,8 +36,8 @@
  /* All functions writing to the cleartext payload buffer call
   * CHECKCLEARTOWRITE() before writing. This is only really useful if you're
@@ -3282,7 +3282,7 @@ diff -aur dropbear-2022.83/debug.h ../build/extbld/third_party/dropbear/dropbear
  #define CHECKCLEARTOWRITE()
 diff -aur dropbear-2022.83/fuzz/fuzz-common.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzz-common.c
 --- dropbear-2022.83/fuzz/fuzz-common.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzz-common.c	2023-07-21 15:11:21.785094508 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzz-common.c	2023-07-24 17:57:54.362135085 +0600
 @@ -104,7 +104,7 @@
  
  void fuzz_svr_hook_preloop() {
@@ -3370,7 +3370,7 @@ diff -aur dropbear-2022.83/fuzz/fuzz-common.c ../build/extbld/third_party/dropbe
      genrandom((void*)&wrapseed, sizeof(wrapseed));
 diff -aur dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c
 --- dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c	2023-07-21 15:11:21.785094508 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c	2023-07-24 17:57:54.362135085 +0600
 @@ -20,7 +20,7 @@
  	keep_newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
  	keep_newkeys->algo_kex = fuzz_get_algo(sshkex, "curve25519-sha256");
@@ -3413,7 +3413,7 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexcurve25519.c ../build/extbld/third_par
  		m_malloc_free_epoch(1, 0);
 diff -aur dropbear-2022.83/fuzz/fuzzer-kexdh.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexdh.c
 --- dropbear-2022.83/fuzz/fuzzer-kexdh.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexdh.c	2023-07-21 15:11:21.789094439 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexdh.c	2023-07-24 17:57:54.362135085 +0600
 @@ -19,7 +19,7 @@
  	keep_newkeys = (struct key_context*)m_malloc(sizeof(struct key_context));
  	keep_newkeys->algo_kex = fuzz_get_algo(sshkex, "diffie-hellman-group14-sha256");
@@ -3456,7 +3456,7 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexdh.c ../build/extbld/third_party/dropb
  		m_malloc_free_epoch(1, 0);
 diff -aur dropbear-2022.83/fuzz/fuzzer-kexecdh.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexecdh.c
 --- dropbear-2022.83/fuzz/fuzzer-kexecdh.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexecdh.c	2023-07-21 15:11:21.789094439 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/fuzz/fuzzer-kexecdh.c	2023-07-24 17:57:54.362135085 +0600
 @@ -27,12 +27,12 @@
  	assert(ecdh[1]);
  	assert(ecdh[2]);
@@ -3510,7 +3510,7 @@ diff -aur dropbear-2022.83/fuzz/fuzzer-kexecdh.c ../build/extbld/third_party/dro
  		m_malloc_free_epoch(1, 0);
 diff -aur dropbear-2022.83/includes.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h
 --- dropbear-2022.83/includes.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h	2023-07-21 15:11:21.789094439 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/includes.h	2023-07-24 17:57:54.362135085 +0600
 @@ -28,9 +28,15 @@
  #include "options.h"
  #include "debug.h"
@@ -3549,7 +3549,7 @@ diff -aur dropbear-2022.83/includes.h ../build/extbld/third_party/dropbear/dropb
  #include <netinet/tcp.h>
 diff -aur dropbear-2022.83/listener.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/listener.c
 --- dropbear-2022.83/listener.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/listener.c	2023-07-21 15:11:21.789094439 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/listener.c	2023-07-24 17:57:54.362135085 +0600
 @@ -30,9 +30,9 @@
  void listeners_initialise() {
  
@@ -3673,7 +3673,7 @@ diff -aur dropbear-2022.83/listener.c ../build/extbld/third_party/dropbear/dropb
  }
 diff -aur dropbear-2022.83/netio.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/netio.c
 --- dropbear-2022.83/netio.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/netio.c	2023-07-21 15:11:21.789094439 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/netio.c	2023-07-24 17:57:54.366134952 +0600
 @@ -110,7 +110,7 @@
  			}
  		}
@@ -3733,7 +3733,7 @@ diff -aur dropbear-2022.83/netio.c ../build/extbld/third_party/dropbear/dropbear
  	rfc4594 has some guidance to meanings.
 diff -aur dropbear-2022.83/packet.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/packet.c
 --- dropbear-2022.83/packet.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/packet.c	2023-07-22 10:39:17.214268866 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/packet.c	2023-07-24 17:57:54.366134952 +0600
 @@ -68,11 +68,11 @@
  #endif
  	
@@ -4333,7 +4333,7 @@ diff -aur dropbear-2022.83/packet.c ../build/extbld/third_party/dropbear/dropbea
  #endif
 diff -aur dropbear-2022.83/process-packet.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/process-packet.c
 --- dropbear-2022.83/process-packet.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/process-packet.c	2023-07-21 15:11:21.789094439 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/process-packet.c	2023-07-24 17:57:54.366134952 +0600
 @@ -48,11 +48,11 @@
  
  	TRACE2(("enter process_packet"))
@@ -4453,7 +4453,7 @@ diff -aur dropbear-2022.83/process-packet.c ../build/extbld/third_party/dropbear
  }
 diff -aur dropbear-2022.83/runopts.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/runopts.h
 --- dropbear-2022.83/runopts.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/runopts.h	2023-07-21 17:30:52.945362835 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/runopts.h	2023-07-24 17:57:54.366134952 +0600
 @@ -61,7 +61,7 @@
  
  } runopts;
@@ -4474,7 +4474,7 @@ diff -aur dropbear-2022.83/runopts.h ../build/extbld/third_party/dropbear/dropbe
  void loadhostkeys(void);
 diff -aur dropbear-2022.83/session.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/session.h
 --- dropbear-2022.83/session.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/session.h	2023-07-21 17:30:28.269833382 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/session.h	2023-07-24 17:57:54.366134952 +0600
 @@ -339,10 +339,10 @@
  };
  
@@ -4490,7 +4490,7 @@ diff -aur dropbear-2022.83/session.h ../build/extbld/third_party/dropbear/dropbe
  #if DROPBEAR_CLIENT
 diff -aur dropbear-2022.83/svr-agentfwd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-agentfwd.c
 --- dropbear-2022.83/svr-agentfwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-agentfwd.c	2023-07-21 15:11:21.793094369 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-agentfwd.c	2023-07-24 17:57:54.366134952 +0600
 @@ -156,8 +156,8 @@
  		 * for themselves */
  		uid = getuid();
@@ -4515,7 +4515,7 @@ diff -aur dropbear-2022.83/svr-agentfwd.c ../build/extbld/third_party/dropbear/d
  #endif
 diff -aur dropbear-2022.83/svr-auth.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-auth.c
 --- dropbear-2022.83/svr-auth.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-auth.c	2023-07-21 15:11:21.793094369 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-auth.c	2023-07-24 17:57:54.366134952 +0600
 @@ -40,13 +40,13 @@
  
  /* initialise the first time for a session, resetting all parameters */
@@ -4846,7 +4846,7 @@ diff -aur dropbear-2022.83/svr-auth.c ../build/extbld/third_party/dropbear/dropb
  
 diff -aur dropbear-2022.83/svr-authpam.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpam.c
 --- dropbear-2022.83/svr-authpam.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpam.c	2023-07-21 15:11:21.793094369 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpam.c	2023-07-24 17:57:54.370134819 +0600
 @@ -197,28 +197,28 @@
  	unsigned char changepw;
  
@@ -4937,7 +4937,7 @@ diff -aur dropbear-2022.83/svr-authpam.c ../build/extbld/third_party/dropbear/dr
  		
 diff -aur dropbear-2022.83/svr-authpasswd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpasswd.c
 --- dropbear-2022.83/svr-authpasswd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpasswd.c	2023-07-21 15:11:21.793094369 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpasswd.c	2023-07-24 17:57:54.370134819 +0600
 @@ -57,17 +57,17 @@
  	unsigned int changepw;
  
@@ -5024,7 +5024,7 @@ diff -aur dropbear-2022.83/svr-authpasswd.c ../build/extbld/third_party/dropbear
  }
 diff -aur dropbear-2022.83/svr-authpubkey.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkey.c
 --- dropbear-2022.83/svr-authpubkey.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkey.c	2023-07-21 15:11:21.793094369 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkey.c	2023-07-24 17:57:54.370134819 +0600
 @@ -101,11 +101,11 @@
  
  	/* 0 indicates user just wants to check if key can be used, 1 is an
@@ -5260,7 +5260,7 @@ diff -aur dropbear-2022.83/svr-authpubkey.c ../build/extbld/third_party/dropbear
  		TRACE(("leave checkfileperm: failure perms/owner"))
 diff -aur dropbear-2022.83/svr-authpubkeyoptions.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkeyoptions.c
 --- dropbear-2022.83/svr-authpubkeyoptions.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkeyoptions.c	2023-07-21 15:11:21.793094369 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-authpubkeyoptions.c	2023-07-24 17:57:54.370134819 +0600
 @@ -53,8 +53,8 @@
  /* Returns 1 if pubkey allows agent forwarding,
   * 0 otherwise */
@@ -5496,7 +5496,7 @@ diff -aur dropbear-2022.83/svr-authpubkeyoptions.c ../build/extbld/third_party/d
  		}
 diff -aur dropbear-2022.83/svr-chansession.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-chansession.c
 --- dropbear-2022.83/svr-chansession.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-chansession.c	2023-07-21 15:11:21.797094300 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-chansession.c	2023-07-24 17:57:54.370134819 +0600
 @@ -89,14 +89,14 @@
  /* There's a particular race we have to watch out for: if the forked child
   * executes, exits, and this signal-handler is called, all before the parent
@@ -5946,7 +5946,7 @@ diff -aur dropbear-2022.83/svr-chansession.c ../build/extbld/third_party/dropbea
  	sigemptyset(&sa_chld.sa_mask);
 diff -aur dropbear-2022.83/svr-kex.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-kex.c
 --- dropbear-2022.83/svr-kex.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-kex.c	2023-07-21 15:11:21.797094300 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-kex.c	2023-07-24 17:57:54.370134819 +0600
 @@ -51,15 +51,15 @@
  	buffer *ecdh_qs = NULL;
  
@@ -6120,7 +6120,7 @@ diff -aur dropbear-2022.83/svr-kex.c ../build/extbld/third_party/dropbear/dropbe
  
 diff -aur dropbear-2022.83/svr-main.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c
 --- dropbear-2022.83/svr-main.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c	2023-07-24 16:37:01.531303786 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-main.c	2023-07-24 17:57:54.370134819 +0600
 @@ -22,6 +22,7 @@
   * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   * SOFTWARE. */
@@ -6373,7 +6373,7 @@ diff -aur dropbear-2022.83/svr-main.c ../build/extbld/third_party/dropbear/dropb
  		}
 diff -aur dropbear-2022.83/svr-runopts.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-runopts.c
 --- dropbear-2022.83/svr-runopts.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-runopts.c	2023-07-21 16:14:15.950174908 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-runopts.c	2023-07-24 17:57:54.374134686 +0600
 @@ -32,7 +32,7 @@
  
  #include <grp.h>
@@ -6904,7 +6904,7 @@ diff -aur dropbear-2022.83/svr-runopts.c ../build/extbld/third_party/dropbear/dr
  		any_keys = 1;
 diff -aur dropbear-2022.83/svr-service.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-service.c
 --- dropbear-2022.83/svr-service.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-service.c	2023-07-21 15:11:21.797094300 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-service.c	2023-07-24 17:57:54.374134686 +0600
 @@ -41,7 +41,7 @@
  
  	TRACE(("enter recv_msg_service_request"))
@@ -6936,7 +6936,7 @@ diff -aur dropbear-2022.83/svr-service.c ../build/extbld/third_party/dropbear/dr
  
 diff -aur dropbear-2022.83/svr-session.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-session.c
 --- dropbear-2022.83/svr-session.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-session.c	2023-07-21 16:13:52.466601781 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-session.c	2023-07-25 13:36:57.579082710 +0600
 @@ -45,7 +45,7 @@
  static void svr_remoteclosed(void);
  static void svr_algos_initialise(void);
@@ -7147,7 +7147,7 @@ diff -aur dropbear-2022.83/svr-session.c ../build/extbld/third_party/dropbear/dr
  #endif
  	{
  		/* must be after we've done with username etc */
-@@ -293,13 +293,13 @@
+@@ -293,16 +293,20 @@
      }
  #endif
  
@@ -7166,7 +7166,14 @@ diff -aur dropbear-2022.83/svr-session.c ../build/extbld/third_party/dropbear/dr
  	}
  
      
-@@ -318,7 +318,7 @@
++#ifdef DROPBEAR_EMBOX_BUILD
++    dropbear_embox_free_ses();
++#endif
++
+ 	exit(exitcode);
+ 
+ }
+@@ -318,7 +322,7 @@
  	vsnprintf(printbuf, sizeof(printbuf), format, param);
  
  #ifndef DISABLE_SYSLOG
@@ -7175,7 +7182,7 @@ diff -aur dropbear-2022.83/svr-session.c ../build/extbld/third_party/dropbear/dr
  		syslog(priority, "%s", printbuf);
  	}
  #endif
-@@ -329,7 +329,7 @@
+@@ -329,7 +333,7 @@
  	havetrace = debug_trace;
  #endif
  
@@ -7184,7 +7191,7 @@ diff -aur dropbear-2022.83/svr-session.c ../build/extbld/third_party/dropbear/dr
  		struct tm * local_tm = NULL;
  		timesec = time(NULL);
  		local_tm = localtime(&timesec);
-@@ -347,12 +347,12 @@
+@@ -347,12 +351,12 @@
  /* called when the remote side closes the connection */
  static void svr_remoteclosed() {
  
@@ -7204,7 +7211,7 @@ diff -aur dropbear-2022.83/svr-session.c ../build/extbld/third_party/dropbear/dr
  }
 diff -aur dropbear-2022.83/svr-tcpfwd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-tcpfwd.c
 --- dropbear-2022.83/svr-tcpfwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-tcpfwd.c	2023-07-21 15:11:21.801094230 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-tcpfwd.c	2023-07-24 17:57:54.374134686 +0600
 @@ -43,8 +43,8 @@
  
  	TRACE(("recv_msg_global_request_remotetcp: remote tcp forwarding not compiled in"))
@@ -7328,7 +7335,7 @@ diff -aur dropbear-2022.83/svr-tcpfwd.c ../build/extbld/third_party/dropbear/dro
  	if (origport > 65535 || destport > 65535) {
 diff -aur dropbear-2022.83/svr-x11fwd.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-x11fwd.c
 --- dropbear-2022.83/svr-x11fwd.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-x11fwd.c	2023-07-21 15:11:21.801094230 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/svr-x11fwd.c	2023-07-24 17:57:54.374134686 +0600
 @@ -75,10 +75,10 @@
  		return DROPBEAR_FAILURE;
  	}
@@ -7357,7 +7364,7 @@ diff -aur dropbear-2022.83/svr-x11fwd.c ../build/extbld/third_party/dropbear/dro
  		return DROPBEAR_SUCCESS;
 diff -aur dropbear-2022.83/sysoptions.h ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h
 --- dropbear-2022.83/sysoptions.h	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-21 15:11:21.801094230 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/sysoptions.h	2023-07-24 17:57:54.374134686 +0600
 @@ -32,6 +32,8 @@
  /* Would probably work on freebsd but hasn't been tested */
  #if defined(HAVE_FEXECVE) && DROPBEAR_REEXEC && defined(__linux__)
@@ -7415,7 +7422,7 @@ diff -aur dropbear-2022.83/sysoptions.h ../build/extbld/third_party/dropbear/dro
  
 diff -aur dropbear-2022.83/tcp-accept.c ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/tcp-accept.c
 --- dropbear-2022.83/tcp-accept.c	2022-11-14 20:30:00.000000000 +0600
-+++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/tcp-accept.c	2023-07-21 15:11:21.801094230 +0600
++++ ../build/extbld/third_party/dropbear/dropbear/dropbear-2022.83/tcp-accept.c	2023-07-24 17:57:54.374134686 +0600
 @@ -87,13 +87,13 @@
  		if (addr == NULL) {
  			addr = "localhost";

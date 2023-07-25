@@ -10,6 +10,6 @@
 
 
 void dropbear_embox_switch_desc();
-
 void dropbear_embox_store_ses();
+void dropbear_embox_free_ses();
 #endif /*DROPBEAR_EMBOX_DRPBR_H_*/
