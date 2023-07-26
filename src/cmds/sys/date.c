@@ -63,6 +63,7 @@ static void set_date(char *new_date) {
 
 	end -= 2;
 	sscanf(end, "%d", &date.tm_mon);
+	date.tm_mon -= 1;
 	*end = '\0';
 
 	end -= 4;
