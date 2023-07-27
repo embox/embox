@@ -8,6 +8,7 @@
 
 #include <embox/unit.h>
 #include "kernel/irq.h"
+#include "plib035.h"
 
 EMBOX_UNIT_INIT(uart_init);
 
@@ -51,7 +52,7 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     // TODO: Read DataWidth from uart_params?
     uart_init_struct.DataWidth = UART_DataWidth_8;
     // TODO: Should we enable FIFO?
-    uart_init_struct.FIFO = ENABLE;
+    uart_init_struct.FIFO = DISABLE;
     // TODO: Read ParityBit from uart_params?
     uart_init_struct.ParityBit = UART_ParityBit_Disable;
     uart_init_struct.StopBit =

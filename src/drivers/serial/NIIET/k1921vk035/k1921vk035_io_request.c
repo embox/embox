@@ -4,6 +4,8 @@
 #include <drivers/ttys.h>
 #include "plib035_uart.h"
 #include "semaphore.h"
+#include "util/ring_buff.h"
+#include <embox/unit.h>
 
 #define BAUDRATE OPTION_GET(NUMBER, baudrate)
 
@@ -23,27 +25,35 @@ typedef struct {
     struct uart* uart;
 } io_request_t;
 
+#include <kernel/printk.h>
+void io_request_clean();
 irq_return_t uart1_handler(unsigned int irq_nr, void *data) {
     io_request_t* io_req = (io_request_t* )data;
-    int ch = uart_getc(io_req->uart);
-#if 1
-    switch(io_req->type) {
-        case IO_REQUEST_NONE:
-            return IRQ_HANDLED;
+    while(uart_hasrx(io_req->uart)) {
+        irq_lock();
+        int ch = uart_getc(io_req->uart);
+        switch(io_req->type) {
+            case IO_REQUEST_NONE:
+                /* store in intermediate buffer */
+                ring_buff_enqueue(&io_req->uart->uart_rx_ring, &ch, 1);
+                break;
 
-        case IO_REQUEST_READ:
-            io_req->buffer[0] = ch;
-            io_req->buffer++;
-            io_req->count--;
-            if(io_req->count == 0) {
-                sem_post(&io_req->semaphore);
-            }
+            case IO_REQUEST_READ:
+                io_req->buffer[0] = ch;
+                io_req->buffer++;
+                io_req->count--;
+                if(io_req->count == 0) {
+                    io_request_clean();
+                    /* TODO: I'm not sure if this is safe todo in irq handler */
+                    sem_post(&io_req->semaphore);
+                }
+                break;
 
-        case IO_REQUEST_WRITE:
-            return IRQ_HANDLED;
+            case IO_REQUEST_WRITE:
+                break;
+        }
     }
-#endif
-
+    irq_unlock();
     return IRQ_HANDLED;
 }
 
@@ -74,10 +84,25 @@ void io_request_clean() {
 int io_request_read(char* buf, size_t count) {
     irq_lock();
     {
-        io_request.type = IO_REQUEST_READ;
-        io_request.buffer = buf;
-        io_request.count = count;
+        /* use buffer first */
+        int ring_count = ring_buff_get_cnt(&io_request.uart->uart_rx_ring);
+        if(ring_count >= count) {
+            /* we can satisfy call right now */
+            for(int i = 0; i < count; i++) {
+                ring_buff_dequeue(&io_request.uart->uart_rx_ring, buf + i, 1);
+            }
+            irq_unlock();
+            return count;
+        } else {
+            for(int i = 0; i < ring_count; i++) {
+                ring_buff_dequeue(&io_request.uart->uart_rx_ring, buf + i, 1);
+            }
+            io_request.type = IO_REQUEST_READ;
+            io_request.buffer = buf + ring_count;
+            io_request.count = count - ring_count;
+        }
     }
+
     irq_unlock();
     // sched_wait_timeout(clock_t timeout, clock_t *remain);
     sem_wait(&io_request.semaphore);
@@ -85,12 +110,16 @@ int io_request_read(char* buf, size_t count) {
     return count;
 }
 
-void io_request_init() {
+EMBOX_UNIT_INIT(io_request_init);
+
+static int io_request_init() {
     sem_init(&io_request.semaphore, 0, 0);
     io_request.type = IO_REQUEST_NONE;
     io_request.buffer = NULL;
     io_request.count = 0;
     io_request.uart = &uart1;
+    int retval = uart_register(&uart1, &uart1.params) || uart_open(&uart1);
+    return retval;
 }
 
 STATIC_IRQ_ATTACH(30, uart1_handler, &io_request);
