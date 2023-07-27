@@ -59,7 +59,7 @@ irq_return_t uart1_handler(unsigned int irq_nr, void *data) {
 
 static struct uart uart1 = {
 		.uart_ops = &k1921vk035_uart_ops,
-		.irq_num = UART1_RX_IRQn, // TODO: Which irq should we use?
+		.irq_num = UART1_RX_IRQn,
 		.base_addr = (uint32_t)UART1,
         .irq_handler = uart1_handler,
         .params = {
