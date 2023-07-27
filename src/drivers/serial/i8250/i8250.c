@@ -7,21 +7,12 @@
  */
 
 #include <stdint.h>
+
 #include <asm/io.h>
-#include <drivers/diag.h>
-#include <drivers/serial/8250.h>
+
 #include <drivers/serial/uart_dev.h>
-#include <drivers/serial/diag_serial.h>
-#include <embox/unit.h>
 
-EMBOX_UNIT_INIT(uart_init);
-
-/** Default I/O addresses
- * NOTE: The actual I/O addresses used are stored
- *       in a table in the BIOS data area 0000:0400.
- */
-#define COM0_PORT_BASE      OPTION_GET(NUMBER,base_addr)
-#define COM0_IRQ_NUM        OPTION_GET(NUMBER,irq_num)
+#include "i8250.h"
 
 static uint8_t calc_line_stat(const struct uart_params *params) {
 	uint8_t line_stat;
@@ -104,7 +95,7 @@ static int i8250_getc(struct uart *dev) {
 	return in8(dev->base_addr + UART_RX);
 }
 
-static const struct uart_ops i8250_uart_ops = {
+const struct uart_ops i8250_uart_ops = {
 		.uart_getc = i8250_getc,
 		.uart_putc = i8250_putc,
 		.uart_hasrx = i8250_has_symbol,
@@ -113,24 +104,3 @@ static const struct uart_ops i8250_uart_ops = {
 		.uart_irq_dis = i8250_irq_dis,
 };
 
-static struct uart uart0 = {
-		.uart_ops = &i8250_uart_ops,
-		.irq_num = COM0_IRQ_NUM,
-		.base_addr = COM0_PORT_BASE,
-};
-
-static const struct uart_params uart_defparams = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
-};
-
-static const struct uart_params uart_diag_params = {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
-};
-
-DIAG_SERIAL_DEF(&uart0, &uart_diag_params);
-
-static int uart_init(void) {
-	return uart_register(&uart0, &uart_defparams);
-}
