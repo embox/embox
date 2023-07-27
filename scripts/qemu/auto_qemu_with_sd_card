@@ -13,7 +13,7 @@ fi
 
 ./scripts/qemu/auto_qemu \
 	-drive if=sd,format=raw,file=$image_file_name \
-	$@
+	"$@"
 #./scripts/qemu/auto_qemu \
 #	-drive id=sd1,format=raw,file=$image_file_name \
 #	-device sd-card,drive=sd1 \
