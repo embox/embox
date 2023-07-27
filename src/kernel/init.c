@@ -19,6 +19,8 @@
 static void kernel_init(void);
 static int init(void);
 extern int system_start(void);
+extern int system_abs_time_init(void);
+
 /**
  * The setup of the system, the run level and execution of the idle function.
  */
@@ -30,6 +32,8 @@ void kernel_start(void) {
 
 	init();
 
+	system_abs_time_init();
+	
 	system_start();
 
 	while (1) {

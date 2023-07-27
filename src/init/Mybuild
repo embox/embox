@@ -8,6 +8,14 @@ abstract module display_mode {
 abstract module setup_tty_api {
 }
 
+@DefaultImpl(system_abs_time_rtc)
+abstract module system_abs_time_api {
+}
+
+module system_abs_time_rtc extends system_abs_time_api {
+	source "system_abs_time_rtc.c"
+}
+
 module graphic_init extends display_mode {
 	option boolean manual_settings = false
 
