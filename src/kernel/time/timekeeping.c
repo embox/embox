@@ -17,15 +17,18 @@ static struct itimer timekeep_g_itimer;
 
 #ifndef NO_RTC_SUPPORT
 static void rtc_update(time_t time) {
-
 	struct rtc_device *rtc;
 	struct tm tm = {0};
 	time_t sec;
 
 	rtc = rtc_get_device(NULL);
-	sec = time;
-	gmtime_r(&sec, &tm);
-	rtc_set_time(rtc, &tm);
+	rtc_get_time(rtc, &tm);
+	sec = difftime(time, mktime(&tm));
+	if (sec != 0 /* && sec != 1 */) {
+		sec = time;
+		gmtime_r(&sec, &tm);
+		rtc_set_time(rtc, &tm);
+	}
 }
 #else
 #define rtc_update(time)
