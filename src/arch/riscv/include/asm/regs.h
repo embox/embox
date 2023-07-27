@@ -32,6 +32,19 @@
 #define MCONTROL_STORE   (1UL << 1)
 #define MCONTROL_LOAD    (1UL << 0)
 
+#define MCONTROL_ACTION_DEBUG_EXCEPTION (0UL << 12)
+#define MCONTROL_ACTION_DEBUG_MODE      (1UL << 12)
+#define MCONTROL_ACTION_TRACE_START     (2UL << 12)
+#define MCONTROL_ACTION_TRACE_STOP      (3UL << 12)
+#define MCONTROL_ACTION_TRACE_EMIT      (4UL << 12)
+
+#define MCONTROL_MATCH_EQUAL     (0UL << 7)
+#define MCONTROL_MATCH_NAPOT     (1UL << 7)
+#define MCONTROL_MATCH_GE        (2UL << 7)
+#define MCONTROL_MATCH_LT        (3UL << 7)
+#define MCONTROL_MATCH_MASK_LOW  (4UL << 7)
+#define MCONTROL_MATCH_MASK_HIGH (5UL << 7)
+
 /* Machine Cause (mcause) */
 /* Asynchronous causes */
 #define IRQ_MACHINE_SOFTWARE 3
