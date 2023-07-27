@@ -23,7 +23,7 @@ SECTIONS {
 		KEEP(*(.init));
 		*(.text)
 		*(.text.*)
-	}
+	} SECTION_REGION(text) :text
 
 	.global_pointers : {
 		. = ALIGN(4096);
