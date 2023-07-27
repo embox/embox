@@ -13,7 +13,6 @@ EMBOX_UNIT_INIT(uart_init);
 
 #include "plib035_uart.h"
 
-#define UART0_BAUDRATE OPTION_GET(NUMBER, uart0_baudrate)
 #define UART1_BAUDRATE OPTION_GET(NUMBER, uart1_baudrate)
 #define USE_UART0_AS_DIAG OPTION_GET(BOOLEAN, use_uart0_as_diag)
 #define UART0_IRQ_EN OPTION_GET(BOOLEAN, uart0_irq_en)
@@ -85,8 +84,16 @@ static int k1921vk035_uart_hasrx(struct uart *dev) {
 
 static int k1921vk035_uart_getc(struct uart *dev) {
     UART_TypeDef* uart = (void* )dev->base_addr;
-
-	return (int) UART_RecieveData(uart);
+#if 0
+    uint32_t dr = uart->DR;
+    if(dr & 0x0F00) {
+        return -1; /* Error */
+    } else {
+        return (int) UART_RecieveData(uart);
+    }
+#else
+    return (int) UART_RecieveData(uart);
+#endif
 }
 
 static int k1921vk035_uart_irq_en(struct uart *dev, const struct uart_params *params) {
@@ -103,7 +110,7 @@ static int k1921vk035_uart_irq_dis(struct uart *dev, const struct uart_params *p
 	return 0;
 }
 
-static const struct uart_ops k1921vk035_uart_ops = {
+const struct uart_ops k1921vk035_uart_ops = {
 		.uart_setup = k1921vk035_uart_setup,
 		.uart_putc  = k1921vk035_uart_putc,
 		.uart_hasrx = k1921vk035_uart_hasrx,
@@ -112,6 +119,7 @@ static const struct uart_ops k1921vk035_uart_ops = {
 		.uart_irq_dis = k1921vk035_uart_irq_dis,
 };
 
+#if 0
 #if USE_UART0_AS_DIAG
 static struct uart uart0 = {
 		.uart_ops = &k1921vk035_uart_ops,
@@ -127,9 +135,11 @@ DIAG_SERIAL_DEF(&uart0, &uart0.params);
 #else
 // User can provide callback
 // extern irq_return_t uart0_handler(unsigned int irq_nr, void *data);
+#if 0
 __weak irq_return_t uart0_handler(unsigned int irq_nr, void *data) {
     return IRQ_HANDLED;
 }
+#endif
 
 static struct uart uart0 = {
 		.uart_ops = &k1921vk035_uart_ops,
@@ -152,6 +162,7 @@ STATIC_IRQ_ATTACH(26, uart0_handler, &uart0);
 #endif // UART0_IRQ_EN
 
 #endif // USE_UART0_AS_DIAG
+#endif
 
 // User can provide callback
 // extern irq_return_t uart1_handler(unsigned int irq_nr, void *data);

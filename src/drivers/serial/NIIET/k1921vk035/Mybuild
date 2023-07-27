@@ -1,7 +1,7 @@
 package embox.driver.serial
 
 @BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
-module k1921vk035 extends embox.driver.diag.diag_api {
+module k1921vk035_uart {
 
     option boolean use_uart0_as_diag = true
     option boolean uart0_irq_en = false
@@ -12,6 +12,28 @@ module k1921vk035 extends embox.driver.diag.diag_api {
 	source "k1921vk035_uart.c"
 
 	depends embox.driver.serial.core
-	depends embox.driver.serial.diag
 }
 
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035_diag extends embox.driver.diag.diag_api {
+
+	option number baudrate = 115200
+
+	source "k1921vk035_diag.c"
+
+	depends embox.driver.serial.diag
+    depends k1921vk035_uart
+}
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035_io_request {
+
+	option number baudrate = 115200
+
+	@IncludeExport(path="drivers/serial")
+	source "k1921vk035_io_request.h"
+
+	source "k1921vk035_io_request.c"
+
+    depends k1921vk035_uart
+}
