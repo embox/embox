@@ -35,5 +35,8 @@ module context extends embox.arch.context {
 }
 
 module exception {
+	@IncludeExport(path="riscv")
+	source "exception.h"
+
 	source "exception.c"
 }
