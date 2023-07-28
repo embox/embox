@@ -6,6 +6,7 @@
  * @date 06.07.23
  */
 #include <asm/asm.h>
+#include <hal/cpu.h>
 
 .section .init, "ax"
 
@@ -37,8 +38,12 @@ _start:
 	la      t0, riscv_trap_handler
 	csrw    mtvec, t0
 
+	/**
+	 * Continue on hart lottery winner, others branch to
+	 * secondary_hart_loop.
+	 */
 	csrr    t0, mhartid
-	bnez    t0, die
+	bnez    t0, secondary_hart_loop
 
 	/* Set up stack pointer. */
 	la      sp, _stack_top
@@ -57,5 +62,9 @@ zero_bss_end:
 	call    kernel_start
 .cfi_endproc
 
-die:
-	j       die
+secondary_hart_loop:
+	wfi
+#ifdef SMP	
+	/* TODO: SMP support */
+#endif
+	j       secondary_hart_loop

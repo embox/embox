@@ -10,8 +10,8 @@
 
 #include <stdint.h>
 
-#define PACKET_SIZE (sizeof(long) * 33 * 2)
+#define GDB_PACKET_SIZE (sizeof(long) * 33 * 2)
 
-#define FEATURE_STR "l<target><architecture>riscv</architecture></target>"
+#define GDB_FEATURE_STR "l<target><architecture>riscv</architecture></target>"
 
 #endif /* RISCV_LIB_GDBSTUB_H_ */

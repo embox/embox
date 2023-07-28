@@ -196,7 +196,7 @@ static void gdb_query_cmd(struct gdbstub_env *env) {
 	case 'S':
 		if (!memcmp(request, "Supported", 9)) {
 			gdb_pack_str(&env->packet, "qXfer:features:read+;PacketSize=");
-			sprintf(env->packet.buf + env->packet.size, "%lx", PACKET_SIZE);
+			sprintf(env->packet.buf + env->packet.size, "%lx", GDB_PACKET_SIZE);
 			gdb_pack_str(&env->packet, env->packet.buf + env->packet.size);
 		}
 		else if (!memcmp(request, "Symbol", 6)) {
@@ -205,7 +205,7 @@ static void gdb_query_cmd(struct gdbstub_env *env) {
 		break;
 	case 'X':
 		if (!memcmp(request, "Xfer:features:read", 18)) {
-			gdb_pack_str(&env->packet, FEATURE_STR);
+			gdb_pack_str(&env->packet, GDB_FEATURE_STR);
 		}
 		break;
 	default:

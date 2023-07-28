@@ -11,7 +11,7 @@ module arch extends embox.arch.arch {
 module locore extends embox.arch.locore {
 	depends entry
 	depends interrupt
-	depends exceptions
+	depends exception
 }
 
 module interrupt extends embox.arch.interrupt {
@@ -19,7 +19,7 @@ module interrupt extends embox.arch.interrupt {
 
 	source "ipl_impl.c"
 	source "ipl_impl.h"
-	source "interrupt_handler.c"
+	source "interrupt.c"
 
 	depends embox.kernel.irq
 }
@@ -34,6 +34,9 @@ module context extends embox.arch.context {
 	source "context_switch.S"
 }
 
-module exceptions {
-	source "exception_handler.c"
+module exception {
+	@IncludeExport(path="riscv")
+	source "exception.h"
+
+	source "exception.c"
 }
