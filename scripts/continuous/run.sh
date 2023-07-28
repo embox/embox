@@ -10,10 +10,9 @@
 # ATML == arch + template, i.e. x86/debug
 ATML="$1"
 SIM_ARG="$2"
-shift 2
-OTHER_ARGS="$@"
+PID_FILE="$3"
 
-TIMEOUT=${CONTINIOUS_RUN_TIMEOUT-60}
+TIMEOUT=${CONTINIOUS_RUN_TIMEOUT:-60}
 
 EMCONF=./conf
 EMKERNEL=./build/base/bin/embox
@@ -41,10 +40,10 @@ atml2run=(
 	['x86/smp']=default_run
 	['x86/user_apps']=default_run
 	['x86/test/lang']=default_run
-	['x86/test/fs']="$(dirname $0)/fs/run.sh $ATML"
-	['x86/test/net']="$(dirname $0)/net/run.sh $ATML"
+	['x86/test/fs']="$(dirname "$0")/fs/run.sh $ATML"
+	['x86/test/net']="$(dirname "$0")/net/run.sh $ATML"
 	['x86/test/packetdrill']=packetdrill_run
-	['x86/test/qt-vnc']="$(dirname $0)/qt/run.sh $ATML"
+	['x86/test/qt-vnc']="$(dirname "$0")/qt/run.sh $ATML"
 	['sparc/qemu']=default_run
 	['mips/qemu']=default_run
 	['ppc/qemu']=default_run
@@ -61,7 +60,7 @@ atml2run=(
 
 sudo_var_pass() {
 	if [ ${!1+defined} ]; then
-		echo $1=${!1}
+		echo "$1=${!1}"
 	else
 		#output is passed to sudo that not likes empty arguments
 		echo __T=
@@ -85,8 +84,8 @@ run_bg() {
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
 		['x86/smp']="$RUN_QEMU -smp 2"
-		['sparc/debug']="$(dirname $0)/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
-		['usermode86/debug']="$(dirname $0)/../usermode_start.sh"
+		['sparc/debug']="$(dirname "$0")/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
+		['usermode86/debug']="$(dirname "$0")/../usermode_start.sh"
 	)
 
 	run_cmd=${atml2sim[$ATML]}
@@ -95,7 +94,7 @@ run_bg() {
 	fi
 
 	set +ve
-	sudo PATH=$PATH \
+	sudo PATH="$PATH" \
 		AUTOQEMU_KVM_ARG="$AUTOQEMU_KVM_ARG" \
 		AUTOQEMU_NOGRAPHIC_ARG="$AUTOQEMU_NOGRAPHIC_ARG" \
 		"$(sudo_var_pass AUTOQEMU_NICS)" \
@@ -107,7 +106,7 @@ run_bg() {
 
 	export OUTPUT_FILE
 	export -f run_check
-	timeout $TIMEOUT bash -c '
+	timeout "$TIMEOUT" bash -c '
 			while run_check; [ $? == 2 ]; do
 				sleep 1
 			done' && \
@@ -121,6 +120,11 @@ kill_bg() {
 	then
 		echo "warning: No background process running"
 	else
+	        # This quite a cryptic line actually does the following:
+	        #   1. It draws a subtree of processes rooted at a process with a PID contained in $sim_bg
+	        #   2. Then it cleans resulting lines from everything except processes' PIDs
+	        #   3. Finally it kills processes having PIDs it has found
+	        # In other words this line kills a process and all its descendents.
 		pstree -A -p $sim_bg | sed 's/[0-9a-z{}_\.+`-]*(\([0-9]\+\))/\1 /g' | xargs sudo kill
 	fi
 
@@ -164,12 +168,12 @@ run_bg_wrapper() {
 		exit $ret
 	fi
 
-	echo $sim_bg > $OTHER_ARGS
+	echo $sim_bg > "$PID_FILE"
 	return 0
 }
 
 kill_bg_wrapper() {
-	sim_bg=$(cat $OTHER_ARGS)
+	sim_bg=$(cat "$PID_FILE")
 	echo "==================="
 	echo "Embox output on end"
 	echo "==================="
@@ -189,7 +193,7 @@ restore_conf() {
 	fi
 }
 
-if ! echo ${!atml2run[@]} | grep $ATML &>/dev/null; then
+if ! [ -v "atml2run[$ATML]" ]; then
 	echo Warning: template testing not supported >&2
 	exit 0
 fi
