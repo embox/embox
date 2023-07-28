@@ -10,8 +10,8 @@
 
 #include <stdint.h>
 
-#define PACKET_SIZE 0x80
+#define GDB_PACKET_SIZE 0x80
 
-#define FEATURE_STR "l<target><architecture>i386</architecture></target>"
+#define GDB_FEATURE_STR "l<target><architecture>i386</architecture></target>"
 
 #endif /* X86_LIB_GDBSTUB_H_ */

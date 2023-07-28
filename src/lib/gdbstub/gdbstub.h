@@ -26,7 +26,7 @@ enum gdbstub_cmd {
 struct gdb_packet {
 	size_t size;
 	uint8_t checksum;
-	char buf[PACKET_SIZE + 4];
+	char buf[GDB_PACKET_SIZE + 4];
 };
 
 struct gdb_arch {
