@@ -20,6 +20,8 @@
 #define HOUR_LENGHT 3600
 #define MIN_LENGHT  60
 
+#define DAYS_IN_1970 719499
+
 static long days_of_month(int year, int month);
 static bool is_leap_year(int year);
 
@@ -98,21 +100,21 @@ struct tm *gmtime(const time_t *timep) {
 }
 
 time_t mktime(struct tm *tm) {
-	time_t time = 0;
-	int year, month;
+	int mon = tm->tm_mon + 1;
+	int year = tm->tm_year + 1900;
+	int days, hours;
 
-	for (year = EPOCH_START; year < YEAR_1900 + tm->tm_year; year++) {
-		time += year_length(year);
+	mon -= 2;
+	if (0 >= (int)mon) {	/* 1..12 -> 11, 12, 1..10 */
+		mon += 12;	/* Puts Feb last since it has leap day */
+		year -= 1;
 	}
-	for (month = 1; month <= tm->tm_mon; month++) {
-		time += days_of_month(tm->tm_year, month);
-	}
-	time += DAY_LENGHT * (tm->tm_mday - 1);
-	time += HOUR_LENGHT * tm->tm_hour;
-	time += MIN_LENGHT * tm->tm_min;
-	time += tm->tm_sec;
 
-	return time;
+	days = (year / 4 - year / 100 + year / 400 +
+			367 * mon / 12 + tm->tm_mday) +
+			year * 365 - DAYS_IN_1970;
+	hours = days * 24 + tm->tm_hour;
+	return (hours * 60 + tm->tm_min) * 60 + tm->tm_sec;
 }
 
 static long days_of_month(int year, int month) {
