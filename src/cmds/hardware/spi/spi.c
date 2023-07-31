@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
 
 		spi_transfer(dev, &buf_out, &buf_in, 1);
 
-		printf(" %02x", buf_in);
+		printf(" 0x%02x", buf_in);
 	}
 
 	printf("\n");
