@@ -6,11 +6,9 @@ module i8250 extends embox.driver.serial.diag {
 	option number irq_num = 4
 	option number baud_rate
 
-	source "8250.c"
-	@IncludeExport(path="drivers/serial")
-	source "8250.h"
+	source "i8250.c"
+	source "i8250_diag.c"
+	source "i8250_ttys0.c"
 
 	depends core
-	//depends diag
-	depends embox.util.LibUtil
 }
