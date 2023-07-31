@@ -33,7 +33,6 @@ TEST_CASE_HOST {Connect through SSH to Embox and execute "help" once} {
 	return 0
 }
 
-TEST_CASE_DECLARE_FIXME {
 TEST_CASE_HOST {Connect and exit several times SSH} {
 	variable embox_ip
 	set SSH_PROMPT ":/#"
@@ -61,5 +60,4 @@ TEST_CASE_HOST {Connect and exit several times SSH} {
 	}
 
 	return 0
-}
 }
