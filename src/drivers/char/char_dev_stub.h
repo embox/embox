@@ -14,24 +14,30 @@
 
 #define MAX_CDEV_QUANTITY 0
 
+struct dev_module;
+
 #ifdef __GNUC__
 	/* Avoid warning for unused parameters with ((unused)) attribute */
 	#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
 		__attribute__((unused)) static struct { \
 			void *o, *c, *i, *p; \
 		} unused##__LINE__ = { \
-			.o = open_fn, .c = close_fn, .i = (void *)idesc_op, .p = priv \
-		};
+			.o = open_fn, .i = (void *)idesc_op, .p = priv \
+		}; \
+		const struct dev_module *const MACRO_CONCAT(__char_device_registry_ptr_, chname) = NULL
+
 #else
-	#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv)
+	#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
+			const struct dev_module *const MACRO_CONCAT(__char_device_registry_ptr_, chname) = NULL
+
 #endif /* __GNUC__ */
 
 struct dev_module;
-
 struct idesc;
+
 struct idesc_dev {
 	struct idesc idesc;
-	void *dev;
+	struct dev_module *dev;
 };
 
 extern int char_dev_init_all(void);
