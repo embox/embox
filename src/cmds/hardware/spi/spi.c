@@ -102,14 +102,14 @@ int main(int argc, char **argv) {
 	}
 
 	printf("Received bytes:");
-	for (int i = 3; i < argc; i++) {
+	for (int i = 3 + offt; i < argc; i++) {
 		uint8_t buf_in, buf_out;
 
-		buf_out = strtol(argv[i + offt], NULL, 0);
+		buf_out = strtol(argv[i], NULL, 0);
 
 		spi_transfer(dev, &buf_out, &buf_in, 1);
 
-		printf(" %02x", buf_in);
+		printf(" 0x%02x", buf_in);
 	}
 
 	printf("\n");
