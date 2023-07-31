@@ -21,24 +21,10 @@
 #define MIN_LENGHT  60
 
 #define DAYS_IN_1970 719499
-
-static long days_of_month(int year, int month);
-static bool is_leap_year(int year);
+#define JD_OF_EPOCH 2440588    /* Julian Date of noon, J1970 */
 
 #define year_length(year) \
 		(is_leap_year(year) ? 31622400 : 31536000)
-
-static bool is_leap_year(int year) {
-	if (year % 400 == 0) {
-		return true;
-	} else if (year % 100 == 0) {
-	   return false;
-	} else if (year % 4 == 0) {
-	   return true;
-	}
-
-	return false;
-}
 
 char *ctime_r(const time_t *t, char *buff) {
 	struct tm *time = gmtime(t);
@@ -56,40 +42,59 @@ char *ctime(const time_t *t) {
 	return ctime_r(t, &__buff[0]);
 }
 
+static void clock_utc2gregorian(time_t jd, int *year, int *month, int *day)
+{
+	long l, n, i, j, d, m, y;
+
+	l = jd + 68569;
+	n = (4 * l) / 146097;
+	l = l - (146097 * n + 3) / 4;
+	i = (4000 * (l + 1)) / 1461001;
+	l = l - (1461 * i) / 4 + 31;
+	j = (80 * l) / 2447;
+	d = l - (2447 * j) / 80;
+	l = j / 11;
+	m = j + 2 - 12 * l;
+	y = 100 * (n - 49) + i + l;
+
+	*year  = y;
+	*month = m;
+	*day   = d;
+}
+
 struct tm *gmtime_r(const time_t *timep, struct tm *result) {
-	time_t time = *timep;
-	long day_of_month = MONTH_31;
+	time_t epoch, jdn;
+	int year, month, day, hour, min, sec;
 
-	result->tm_year = EPOCH_START - YEAR_1900;
-	result->tm_mon = 0;
-	result->tm_mday = 1;
-	result->tm_hour = 0;
-	result->tm_min = 0;
-	result->tm_sec = 0;
+	/* Get the seconds since the EPOCH */
 
-	while (time - year_length(result->tm_year + YEAR_1900) >= 0) {
-		time -= year_length(result->tm_year + YEAR_1900);
-		result->tm_year++;
-	}
-	while (time - day_of_month >= 0) {
-		time -= day_of_month;
-		result->tm_mon++;
-		day_of_month = days_of_month(result->tm_year, result->tm_mon + 1 /*0..11 -> 1..12*/);
-	}
-	while (time - DAY_LENGHT >= 0) {
-		time -= DAY_LENGHT;
-		result->tm_mday++;
-	}
-	while (time - HOUR_LENGHT >= 0) {
-		time -= HOUR_LENGHT;
-		result->tm_hour++;
-	}
-	while (time - MIN_LENGHT >= 0) {
-		time -= MIN_LENGHT;
-		result->tm_min++;
-	}
+	epoch = *timep;
 
-	result->tm_sec = time;
+	/* Convert to days, hours, minutes, and seconds since the EPOCH */
+
+	jdn = epoch / DAY_LENGHT;
+	epoch -= DAY_LENGHT * jdn;
+
+	hour = epoch / HOUR_LENGHT;
+	epoch -= HOUR_LENGHT * hour;
+
+	min = epoch / MIN_LENGHT;
+	epoch -= MIN_LENGHT * min;
+
+	sec = epoch;
+
+	/* Convert the days since the EPOCH to calendar day */
+
+	clock_utc2gregorian(jdn + JD_OF_EPOCH, &year, &month, &day);
+
+	/* Then return the struct tm contents */
+
+	result->tm_year   = year - YEAR_1900; /* Relative to 1900 */
+	result->tm_mon    = month - 1;           /* zero-based */
+	result->tm_mday   = day;                 /* one-based */
+	result->tm_hour   = hour;
+	result->tm_min    = min;
+	result->tm_sec    = sec;
 
 	return result;
 }
@@ -116,21 +121,6 @@ time_t mktime(struct tm *tm) {
 	hours = days * 24 + tm->tm_hour;
 	return (hours * 60 + tm->tm_min) * 60 + tm->tm_sec;
 }
-
-static long days_of_month(int year, int month) {
-	long days_of_month;
-
-	if (month == 2) {
-		days_of_month = (year % 4) ? MONTH_28 : MONTH_29;
-	} else if (month < 8) {
-		days_of_month = (month % 2) ? MONTH_31 : MONTH_30;
-	} else {
-		days_of_month = (month % 2) ? MONTH_30 : MONTH_31;
-	}
-
-	return days_of_month;
-}
-
 
 char *asctime(const struct tm *timeptr) {
     static char wday_name[7][4] = {
