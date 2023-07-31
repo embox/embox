@@ -18,22 +18,10 @@
 
 #define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev, NUMBER, dev_quantity)
 
-#if 0
-#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
-	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
-	ARRAY_SPREAD_ADD(__char_device_registry, { \
-			.dev_id = DEVID_CDEV,\
-			.name = MACRO_STRING(chname), \
-			.dev_priv = priv, \
-			.dev_iops = idesc_op, \
-			.dev_open = open_fn, \
-			 })
-#else
-
 #define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
 	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
 	ARRAY_SPREAD_ADD_NAMED(__char_device_registry, \
-			__char_device_registry_##chname_##ptr, \
+			MACRO_CONCAT(__char_device_registry_ptr_, chname), \
 			{ \
 			.dev_id = DEVID_CDEV,\
 			.name = MACRO_STRING(chname), \
@@ -41,18 +29,6 @@
 			.dev_iops = idesc_op, \
 			.dev_open = open_fn, \
 			 } )
-
-
-	/* const struct dev_module const __char_device_registry_##chname = { \
-			.dev_id = DEVID_CDEV,\
-			.name = MACRO_STRING(chname), \
-			.dev_priv = priv, \
-			.dev_iops = idesc_op, \
-			.dev_open = open_fn, \
-			 }; \
-	ARRAY_SPREAD_ADD(__char_device_registry, __char_device_registry_##chname)
-	*/
-#endif
 
 struct dev_module;
 
