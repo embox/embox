@@ -16,7 +16,14 @@
 static void print_help(char **argv) {
 	printf("Transfer bytes via SPI bus\n");
 	printf("Usage:\n");
-	printf("%s bus_number line_number byte0 [byte1 [byte2 [...]]]\n", argv[0]);
+	printf("%s [-s] [-m] [-b] bus_number line_number data0 [data1 [data2 [...]]]\n", argv[0]);
+	printf("%s [-l] [-h]\n", argv[0]);
+	printf("\t -s - slave mode\n");
+	printf("\t -m - master mode\n");
+	printf("\t -f - full time cs\n");
+	printf("\t -x - 16 bit output format\n");
+	printf("\t -l - list SPI buses\n");
+	printf("\t -h - this help\n");
 }
 
 static void list_spi_devices(void) {
@@ -40,21 +47,25 @@ static void list_spi_devices(void) {
 
 int main(int argc, char **argv) {
 	int spi_bus, spi_line;
-	int ret, opt, offt = 0;
-	bool set_mode = false, master_mode = false;
+	int ret, opt;
+	bool set_mode = false, master_mode = false, full_time_cs = false, format_16bit=false;
 	struct spi_device *dev;
 
-	while (-1 != (opt = getopt(argc, argv, "lhsm"))) {
+	while (-1 != (opt = getopt(argc, argv, "lhsmfx"))) {
 		switch(opt) {
 		case 's':
 			set_mode = true;
 			master_mode = false;
-			offt++;
 			break;
 		case 'm':
 			set_mode = true;
 			master_mode = true;
-			offt++;
+			break;
+		case 'f':
+			full_time_cs = true;
+			break;
+		case 'x':
+			format_16bit = true;
 			break;
 		case 'l':
 			list_spi_devices();
@@ -65,19 +76,20 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (argc < 4 + offt) {
+	if (argc < 3 + optind) {
 		print_help(argv);
 		return 0;
 	}
 
-	spi_bus = strtol(argv[1 + offt], NULL, 0);
-	spi_line = strtol(argv[2 + offt], NULL, 0);
+	spi_bus = strtol(argv[optind], NULL, 0);
+	spi_line = strtol(argv[optind + 1], NULL, 0);
 
 	dev = spi_dev_by_id(spi_bus);
 	if (dev == NULL) {
 		printf("Failed to select bus #%d\n", spi_bus);
 		return -ENOENT;
 	}
+	dev->is_master = true;
 
 	if (set_mode) {
 		if (master_mode) {
@@ -94,24 +106,24 @@ int main(int argc, char **argv) {
 	}
 
 	dev->flags |= SPI_CS_ACTIVE;
-	dev->flags |= SPI_CS_INACTIVE;
+	if (full_time_cs)	dev->flags &= ~SPI_CS_INACTIVE;
+	else			dev->flags |= SPI_CS_INACTIVE;
+
 	ret = spi_select(dev, spi_line);
 	if (ret < 0) {
 		printf("Failed to select line #%d!\n", spi_line);
 		return ret;
 	}
 
-	printf("Received bytes:");
-	for (int i = 3 + offt; i < argc; i++) {
-		uint8_t buf_in, buf_out;
-
+	printf("Received data:");
+	for (int i = optind + 2; i < argc; i++) {
+		uint16_t buf_in, buf_out;
 		buf_out = strtol(argv[i], NULL, 0);
-
-		spi_transfer(dev, &buf_out, &buf_in, 1);
-
-		printf(" 0x%02x", buf_in);
+		if (i + 1 == argc) dev->flags |= SPI_CS_INACTIVE;
+		spi_transfer(dev, (uint8_t*)&buf_out, (uint8_t*)&buf_in, 1);
+		if (format_16bit)	printf(" 0x%04x", buf_in);
+		else			printf(" 0x%02x", buf_in);
 	}
-
 	printf("\n");
 
 	return 0;
