@@ -42,7 +42,7 @@ char *ctime(const time_t *t) {
 	return ctime_r(t, &__buff[0]);
 }
 
-static void clock_utc2gregorian(time_t jd, int *year, int *month, int *day)
+static void days_to_date(time_t jd, int *year, int *month, int *day)
 {
 	long l, n, i, j, d, m, y;
 
@@ -66,11 +66,7 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result) {
 	time_t epoch, jdn;
 	int year, month, day, hour, min, sec;
 
-	/* Get the seconds since the EPOCH */
-
-	epoch = *timep;
-
-	/* Convert to days, hours, minutes, and seconds since the EPOCH */
+	epoch = *timep; /* Get the seconds since the EPOCH */
 
 	jdn = epoch / DAY_LENGHT;
 	epoch -= DAY_LENGHT * jdn;
@@ -83,11 +79,7 @@ struct tm *gmtime_r(const time_t *timep, struct tm *result) {
 
 	sec = epoch;
 
-	/* Convert the days since the EPOCH to calendar day */
-
-	clock_utc2gregorian(jdn + JD_OF_EPOCH, &year, &month, &day);
-
-	/* Then return the struct tm contents */
+	days_to_date(jdn + JD_OF_EPOCH, &year, &month, &day);
 
 	result->tm_year   = year - YEAR_1900; /* Relative to 1900 */
 	result->tm_mon    = month - 1;           /* zero-based */
