@@ -10,9 +10,6 @@ typedef struct {
 static I2C_driver_t I2C_driver;
 
 void I2C_driver_init(uint32_t freq) {
-    NVIC_EnableIRQ(I2C_IRQn);
-    NVIC_SetPriority(I2C_IRQn, 0);
-
     RCU_AHBClkCmd(RCU_AHBClk_GPIOA, ENABLE);
     RCU_AHBRstCmd(RCU_AHBRst_GPIOA, ENABLE);
 

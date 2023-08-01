@@ -2,12 +2,14 @@
 #include <framework/mod/options.h>
 #include <embox/unit.h>
 
+#include <plib035_i2c.h>
 #include "I2C_driver/I2C_driver.h"
 
 #include <drivers/i2c/i2c.h>
 
 
 #define I2C_FREQUENCY OPTION_GET(NUMBER, i2c_frequency)
+#define I2C_INTERRUPTS OPTION_GET(BOOLEAN, i2c_interrupts)
 
 static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs, int num) {
 	I2C_driver_operation_t ops[num];
@@ -27,7 +29,14 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 	I2C_driver_execute(ops, num);
 
 	I2C_driver_state_t s;
-	while (!(s = I2C_driver_is_done())) {}
+	while (!(s = I2C_driver_is_done())) {
+		// TODO sleep
+#ifndef I2C_INTERRUPTS
+		if (I2C_ITStatus()) {
+			I2C_IRQHandler();
+		}
+#endif
+	}
 
 	if (s == I2C_DRIVER_OK) {
 		return msgs[num - 1].len;
@@ -47,10 +56,15 @@ static struct i2c_adapter k1921vk035_i2c_adap = {
 EMBOX_UNIT_INIT(k1921vk035_i2c_init);
 
 static int k1921vk035_i2c_init() {
+#ifdef I2C_INTERRUPTS
+	NVIC_EnableIRQ(I2C_IRQn);
+	NVIC_SetPriority(I2C_IRQn, 0);
+#endif
 	I2C_driver_init(I2C_FREQUENCY);
 	return i2c_bus_register(&k1921vk035_i2c_adap, 0, "i2c");
 }
 
+#ifdef I2C_INTERRUPTS
 
 irq_return_t i2c_irq_handler(unsigned int irq_nr, void *data) {
 	I2C_IRQHandler();
@@ -59,3 +73,5 @@ irq_return_t i2c_irq_handler(unsigned int irq_nr, void *data) {
 
 #define I2C_IRQn 36
 STATIC_IRQ_ATTACH(I2C_IRQn, i2c_irq_handler, NULL);
+
+#endif
