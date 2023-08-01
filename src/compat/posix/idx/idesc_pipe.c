@@ -55,6 +55,7 @@ struct pipe {
 
 	struct idesc_pipe read_desc;    /**< Reading end of pipe */
 	struct idesc_pipe write_desc;   /**< Writing end of pipe */
+    int write_close_event;          /* When write end of pipe closed set to 1 */
 };
 
 static const struct idesc_ops idesc_pipe_ops;
@@ -92,6 +93,7 @@ static void pipe_close(struct idesc *idesc) {
 		other = &pipe->write_desc;
 	} else {
 		assert(cur == &pipe->write_desc);
+        pipe->write_close_event = 1; /*set this for read end notification*/
 		other = &pipe->read_desc;
 	}
 
@@ -229,6 +231,10 @@ static int idesc_pipe_status(struct idesc *idesc, int mask) {
 	case POLLIN:
 		/* how many we can read */
 		res = ring_buff_get_cnt(pipe->buff);
+        if(!res) {
+            res = pipe->write_close_event; /*after write-end is closed, read-end
+                                            will always be ready to read*/
+        }
 		goto out;
 	case POLLOUT:
 		/* how many we can write */
@@ -308,6 +314,7 @@ static struct pipe *pipe_alloc(void) {
 	pipe->buff = pipe_buff;
 	pipe->buf_size = DEFAULT_PIPE_BUFFER_SIZE - 1;
 	ring_buff_init(pipe_buff, 1, DEFAULT_PIPE_BUFFER_SIZE, storage);
+    pipe->write_close_event = 0;
 
 	mutex_init(&pipe->mutex);
 
