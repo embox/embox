@@ -11,11 +11,6 @@
 #include <stdbool.h>
 
 #define YEAR_1900 1900
-#define EPOCH_START 1970
-#define MONTH_28    2419200
-#define MONTH_29    2505600
-#define MONTH_30    2592000
-#define MONTH_31    2678400
 #define DAY_LENGHT  86400
 #define HOUR_LENGHT 3600
 #define MIN_LENGHT  60

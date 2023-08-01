@@ -10,9 +10,6 @@
 #include <string.h>
 #include <time.h>
 
-#define OLD_LENGHTH 994190401
-#define CTIME_LENGHTH 994204801
-
 EMBOX_TEST_SUITE("time/mktime");
 
 TEST_CASE("mktime() ") {
@@ -28,5 +25,5 @@ TEST_CASE("mktime() ") {
 	time_str.tm_isdst = -1;
 
 	t = mktime(&time_str);
-	test_assert(t == CTIME_LENGHTH);
+	test_assert(t == 994204801);
 }
