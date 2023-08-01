@@ -8,6 +8,10 @@ module mktime_test {
 	source "mktime_test.c"
 }
 
+module gmtime_test {
+	source "gmtime_test.c"
+}
+
 module time_test {
 	source "time_test.c"
 }
