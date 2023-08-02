@@ -232,7 +232,7 @@ override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
 ifeq ($(COMPILER),clang)
 	override COMMON_CCFLAGS += -Wno-gnu-designator
 else
-	override GCC_VERSION := $(word 3,$(shell $(CC) --version 2>&1 | grep -e "^gcc"))
+	override GCC_VERSION := $(word 3,$(shell $(CC) --version 2>&1 | head -n1))
 	override GCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(GCC_VERSION)))
 
 ifeq ($(GCC_VERSION_MAJOR),7)
