@@ -11,32 +11,15 @@
 #include <stdbool.h>
 
 #define YEAR_1900 1900
-#define EPOCH_START 1970
-#define MONTH_28    2419200
-#define MONTH_29    2505600
-#define MONTH_30    2592000
-#define MONTH_31    2678400
 #define DAY_LENGHT  86400
 #define HOUR_LENGHT 3600
 #define MIN_LENGHT  60
 
-static long days_of_month(int year, int month);
-static bool is_leap_year(int year);
+#define DAYS_IN_1970 719499
+#define JD_OF_EPOCH 2440588    /* Julian Date of noon, J1970 */
 
 #define year_length(year) \
 		(is_leap_year(year) ? 31622400 : 31536000)
-
-static bool is_leap_year(int year) {
-	if (year % 400 == 0) {
-		return true;
-	} else if (year % 100 == 0) {
-	   return false;
-	} else if (year % 4 == 0) {
-	   return true;
-	}
-
-	return false;
-}
 
 char *ctime_r(const time_t *t, char *buff) {
 	struct tm *time = gmtime(t);
@@ -54,40 +37,51 @@ char *ctime(const time_t *t) {
 	return ctime_r(t, &__buff[0]);
 }
 
+static void days_to_date(time_t jd, int *year, int *month, int *day)
+{
+	long l, n, i, j, d, m, y;
+
+	l = jd + 68569;
+	n = (4 * l) / 146097;
+	l = l - (146097 * n + 3) / 4;
+	i = (4000 * (l + 1)) / 1461001;
+	l = l - (1461 * i) / 4 + 31;
+	j = (80 * l) / 2447;
+	d = l - (2447 * j) / 80;
+	l = j / 11;
+	m = j + 2 - 12 * l;
+	y = 100 * (n - 49) + i + l;
+
+	*year  = y;
+	*month = m;
+	*day   = d;
+}
+
 struct tm *gmtime_r(const time_t *timep, struct tm *result) {
-	time_t time = *timep;
-	long day_of_month = MONTH_31;
+	time_t epoch, jdn;
+	int year, month, day, hour, min, sec;
 
-	result->tm_year = EPOCH_START - YEAR_1900;
-	result->tm_mon = 0;
-	result->tm_mday = 1;
-	result->tm_hour = 0;
-	result->tm_min = 0;
-	result->tm_sec = 0;
+	epoch = *timep; /* Get the seconds since the EPOCH */
 
-	while (time - year_length(result->tm_year + YEAR_1900) >= 0) {
-		time -= year_length(result->tm_year + YEAR_1900);
-		result->tm_year++;
-	}
-	while (time - day_of_month >= 0) {
-		time -= day_of_month;
-		result->tm_mon++;
-		day_of_month = days_of_month(result->tm_year, result->tm_mon + 1 /*0..11 -> 1..12*/);
-	}
-	while (time - DAY_LENGHT >= 0) {
-		time -= DAY_LENGHT;
-		result->tm_mday++;
-	}
-	while (time - HOUR_LENGHT >= 0) {
-		time -= HOUR_LENGHT;
-		result->tm_hour++;
-	}
-	while (time - MIN_LENGHT >= 0) {
-		time -= MIN_LENGHT;
-		result->tm_min++;
-	}
+	jdn = epoch / DAY_LENGHT;
+	epoch -= DAY_LENGHT * jdn;
 
-	result->tm_sec = time;
+	hour = epoch / HOUR_LENGHT;
+	epoch -= HOUR_LENGHT * hour;
+
+	min = epoch / MIN_LENGHT;
+	epoch -= MIN_LENGHT * min;
+
+	sec = epoch;
+
+	days_to_date(jdn + JD_OF_EPOCH, &year, &month, &day);
+
+	result->tm_year   = year - YEAR_1900; /* Relative to 1900 */
+	result->tm_mon    = month - 1;           /* zero-based */
+	result->tm_mday   = day;                 /* one-based */
+	result->tm_hour   = hour;
+	result->tm_min    = min;
+	result->tm_sec    = sec;
 
 	return result;
 }
@@ -98,37 +92,22 @@ struct tm *gmtime(const time_t *timep) {
 }
 
 time_t mktime(struct tm *tm) {
-	time_t time = 0;
-	int year, month;
+	int mon = tm->tm_mon + 1;
+	int year = tm->tm_year + 1900;
+	int days, hours;
 
-	for (year = EPOCH_START; year < YEAR_1900 + tm->tm_year; year++) {
-		time += year_length(year);
+	mon -= 2;
+	if (0 >= (int)mon) {	/* 1..12 -> 11, 12, 1..10 */
+		mon += 12;	/* Puts Feb last since it has leap day */
+		year -= 1;
 	}
-	for (month = 1; month <= tm->tm_mon; month++) {
-		time += days_of_month(tm->tm_year, month);
-	}
-	time += DAY_LENGHT * (tm->tm_mday - 1);
-	time += HOUR_LENGHT * tm->tm_hour;
-	time += MIN_LENGHT * tm->tm_min;
-	time += tm->tm_sec;
 
-	return time;
+	days = (year / 4 - year / 100 + year / 400 +
+			367 * mon / 12 + tm->tm_mday) +
+			year * 365 - DAYS_IN_1970;
+	hours = days * 24 + tm->tm_hour;
+	return (hours * 60 + tm->tm_min) * 60 + tm->tm_sec;
 }
-
-static long days_of_month(int year, int month) {
-	long days_of_month;
-
-	if (month == 2) {
-		days_of_month = (year % 4) ? MONTH_28 : MONTH_29;
-	} else if (month < 8) {
-		days_of_month = (month % 2) ? MONTH_31 : MONTH_30;
-	} else {
-		days_of_month = (month % 2) ? MONTH_30 : MONTH_31;
-	}
-
-	return days_of_month;
-}
-
 
 char *asctime(const struct tm *timeptr) {
     static char wday_name[7][4] = {

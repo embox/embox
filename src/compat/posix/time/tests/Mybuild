@@ -1,5 +1,4 @@
-
-package embox.test.posix.time
+package embox.compat.posix.time.tests
 
 module asctime_test {
 	source "asctime_test.c"
@@ -7,6 +6,10 @@ module asctime_test {
 
 module mktime_test {
 	source "mktime_test.c"
+}
+
+module gmtime_test {
+	source "gmtime_test.c"
 }
 
 module time_test {

@@ -25,5 +25,5 @@ TEST_CASE("mktime() ") {
 	time_str.tm_isdst = -1;
 
 	t = mktime(&time_str);
-	test_assert(t == 994190401);
+	test_assert(t == 994204801);
 }
