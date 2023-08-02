@@ -13,40 +13,58 @@ print_usage() {
 [ $# = 0 ] && print_usage && exit
 
 IMG=$1
-PARTS=$2 
-FS=$3
-SIZE=$4
+PARTS=${2:-4}
+FS=${3:-fat}
+SIZE=${4:-128}
 
-[ "$PARTS" == "" ] && PARTS=4
-[ "$FS" == "" ] && FS="fat"
-[ "$SIZE" == "" ] && SIZE=128
+# Check that parent dir of $IMG exists and it's possible to create a new file in it
+IMG_DIR=$(dirname "$IMG")
+if ! [ -d "$IMG_DIR" ] || ! [ -w "$IMG_DIR" ]; then
+    echo "The path $IMG_DIR does not exist or isn't writeable. Can't create file $IMG"
+    exit 1
+fi
 
-if [[ ! $PARTS = 1 && ! $PARTS = 2 && ! $PARTS = 3 && ! $PARTS = 4 ]]; then
+# Check that the number of partitions is correct
+if [[ $PARTS -lt 1 ]] || [[ $PARTS -gt 4 ]]; then
 	echo "MBR may have up to 4 partitions!"
 	exit 1
 fi
 
-MKFS_PATH=`sudo which mkfs.$FS 2> /dev/null`
-[ "$MKFS_PATH" == "" ] && echo "Command mkfs.$FS not found" && exit
+# Check that $FS refers to known filesystem
+if ! command -v "mkfs.$FS" >/dev/null; then
+    echo "Command mkfs.$FS not found"
+    exit 1
+fi
 
-dd if=/dev/zero of=$IMG count=$SIZE bs=1M
-sudo parted $IMG -s mktable msdos || exit
+dd if=/dev/zero "of=$IMG" "count=$SIZE" bs=1M
+sudo parted "$IMG" -s mktable msdos || { echo "Failed to create a partition table in $IMG"; exit 1; }
 
+PARTITION_SIZE=$(( SIZE / PARTS ))
+OFFSET=0
 for i in $(seq 1 $PARTS)
 do
-	sudo parted $IMG -s mkpart primary fat32 \
-		$(( $i * $SIZE / ($PARTS + 1) )) $(( (1 + $i) * $SIZE / ($PARTS + 1) ))
+	# 'mkpart' subcommand  usage (from 'man parted'):
+	#     mkpart [part-type name fs-type] start end
+
+	sudo parted "$IMG" -s mkpart primary fat32 $OFFSET $(( OFFSET + PARTITION_SIZE ))
+	OFFSET=$(( OFFSET + PARTITION_SIZE ))
 done
 
-sudo kpartx -d $IMG || exit
+sudo kpartx -d "$IMG" || { echo "Failed to delete mappings: 'kpartx -d $IMG' failed"; exit 1; }
 
-LOOPDEV=$(sudo kpartx -av $IMG | head -n 1 | awk "{ print \$3"})
+# Output of kpartx look like this
+#  add map loop0p1 (254:1): 0 62500 linear 7:0 1
+#  add map loop0p2 (254:2): 0 62500 linear 7:0 62501
+#  add map loop0p3 (254:3): 0 62500 linear 7:0 125001
+#  add map loop0p4 (254:4): 0 61440 linear 7:0 188416
+LOOPDEV=$(sudo kpartx -av "$IMG" | head -n 1 | awk "{ print \$3 }")
+# this cuts off the last symbol
 LOOPDEV=${LOOPDEV::-1}
 
 for i in $(seq 1 $PARTS)
 do
-	sudo mkfs.$FS -n "PART$i" -I /dev/mapper/$LOOPDEV$i
-	sudo mount /dev/mapper/$LOOPDEV$i /mnt
+	sudo "mkfs.$FS" -n "PART$i" -I "/dev/mapper/$LOOPDEV$i"
+	sudo mount "/dev/mapper/$LOOPDEV$i" /mnt
 	sudo bash -c "echo Partition $i file >> /mnt/part$i\_file"
 	sudo umount /mnt
 	sync
