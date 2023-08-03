@@ -53,8 +53,8 @@ struct dma_mem_handle  *dma_malloc(size_t size) {
 void dma_free(struct dma_mem_handle  *mem) {
     if(dma_dev.free == NULL) {
         if(mem->physical_addr != NULL) {
-            free(mem);
             mem->physical_addr = NULL;
+            free(mem);
         }
     } else {
         dma_dev.free(mem);
