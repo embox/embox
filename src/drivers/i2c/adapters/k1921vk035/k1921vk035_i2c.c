@@ -9,7 +9,10 @@
 
 
 #define I2C_FREQUENCY OPTION_GET(NUMBER, i2c_frequency)
-#define I2C_INTERRUPTS OPTION_GET(BOOLEAN, i2c_interrupts)
+#define I2C_INTERRUPTS_ENABLE OPTION_GET(BOOLEAN, i2c_interrupts)
+#if I2C_INTERRUPTS_ENABLE
+#define I2C_INTERRUPTS
+#endif
 
 static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs, int num) {
 	I2C_driver_operation_t ops[num];
