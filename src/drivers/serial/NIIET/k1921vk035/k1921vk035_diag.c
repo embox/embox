@@ -9,14 +9,13 @@
 
 extern const struct uart_ops k1921vk035_uart_ops;
 
-static struct uart uart0 = {
+static struct uart uart_diag = {
 		.uart_ops = &k1921vk035_uart_ops,
-		// .irq_num = UART0_RX_IRQn, used for diag device, does not use interrupts
-		.base_addr = (uint32_t)UART0,
+		.base_addr = (uint32_t)UART1,
         .params = {
             .baud_rate = BAUDRATE,
             .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
         },
 };
 
-DIAG_SERIAL_DEF(&uart0, &uart0.params);
+DIAG_SERIAL_DEF(&uart_diag, &uart_diag.params);
