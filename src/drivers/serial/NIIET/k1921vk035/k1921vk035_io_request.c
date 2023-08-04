@@ -2,10 +2,14 @@
 #include <drivers/serial/diag_serial.h>
 #include <drivers/gpio/gpio.h>
 #include <drivers/ttys.h>
+#include "errno.h"
+#include "kernel/irq_lock.h"
 #include "plib035_uart.h"
 #include "semaphore.h"
+#include "time.h"
 #include "util/ring_buff.h"
 #include <embox/unit.h>
+#include <kernel/time/ktime.h>
 
 #define BAUDRATE OPTION_GET(NUMBER, baudrate)
 #define RX_BUFFER_SIZE OPTION_GET(NUMBER, rx_buffer_size)
@@ -15,7 +19,6 @@ extern const struct uart_ops k1921vk035_uart_ops;
 typedef enum {
     IO_REQUEST_NONE = 0,
     IO_REQUEST_READ = 1,
-    IO_REQUEST_WRITE = 2,
 } io_type;
 
 RING_BUFFER_DEF(rx_ring_buff, char, RX_BUFFER_SIZE);
@@ -47,18 +50,16 @@ irq_return_t uart_io_request_handler(unsigned int irq_nr, void *data) {
             } break;
 
             case IO_REQUEST_READ:
+            {
                 io_req->buffer[0] = ch;
                 io_req->buffer++;
                 io_req->count--;
                 if(io_req->count == 0) {
                     io_request_clean();
-                    /* TODO: I'm not sure if this is safe todo in irq handler */
                     sem_post(&io_req->semaphore);
                 }
-                break;
+            } break;
 
-            case IO_REQUEST_WRITE:
-                break;
         }
     }
     irq_unlock();
@@ -112,9 +113,49 @@ int io_request_read(char* buf, size_t count) {
     }
 
     irq_unlock();
-    // sched_wait_timeout(clock_t timeout, clock_t *remain);
     sem_wait(&io_request.semaphore);
-    // sem_timedwait(&io_request.semaphore);
+    return count;
+}
+
+int io_request_read_timeout(char* buf, size_t count, int32_t timeout_ms) {
+    irq_lock();
+    int ring_count = ring_buff_get_cnt(io_request.rx_buff);
+    int read_count = ring_count > count ? count : ring_count;
+    if(timeout_ms < 0) {
+        /* No timeout, flush all we got */
+        for(int i = 0; i < read_count; i++) {
+            ring_buff_dequeue(io_request.rx_buff, buf + i, 1);
+        }
+        irq_unlock();
+        return read_count;
+    } else {
+        if(ring_count >= count) {
+            /* we can satisfy call right now */
+            for(int i = 0; i < count; i++) {
+                ring_buff_dequeue(io_request.rx_buff, buf + i, 1);
+            }
+            irq_unlock();
+            return count;
+        } else {
+            for(int i = 0; i < ring_count; i++) {
+                ring_buff_dequeue(io_request.rx_buff, buf + i, 1);
+            }
+            io_request.type = IO_REQUEST_READ;
+            io_request.buffer = buf + ring_count;
+            io_request.count = count - ring_count;
+        }
+    }
+
+    irq_unlock();
+    // sched_wait_timeout(clock_t timeout, clock_t *remain);
+    struct timespec current_time = {};
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    struct timespec wait_time = timespec_add(current_time, ns_to_timespec((uint64_t)(timeout_ms) * 1000000));\
+    int wait_res = sem_timedwait(&io_request.semaphore, &wait_time);
+    if(wait_res == -ETIMEDOUT) {
+        io_request_clean();
+        return count - 1;
+    }
     return count;
 }
 
