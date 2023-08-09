@@ -125,7 +125,7 @@ CONFIGURE  := $(BUILD_DIR)/.configured
 configure : $(CONFIGURE)
 $(CONFIGURE): $(PATCH) | $(BUILD_DIR)
 
-BUILD  := $(BUILD_DIR)/.builded
+BUILD  := $(BUILD_DIR)/.built
 build : $(BUILD)
 $(BUILD): $(CONFIGURE) | $(BUILD_DIR)
 

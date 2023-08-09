@@ -22,7 +22,7 @@ endif
 
 all: build install
 
-BUILD  := $(BUILD_DIR)/.builded
+BUILD  := $(BUILD_DIR)/.built
 build : $(BUILD)
 $(BUILD):
 	export RUSTFLAGS='--print=link-args -Clink-args=$(OBJ_DIR)/module/embox/compat/libc/str.a -L$(OBJ_DIR)/module/embox/compat/libc'; \
