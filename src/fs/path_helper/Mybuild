@@ -1,0 +1,5 @@
+package embox.fs
+
+module path_helper {
+	source "hlpr_path.c"
+}

@@ -62,10 +62,6 @@ module xattr_list {
 	source "xattr_list.c"
 }
 
-module path_helper {
-	source "hlpr_path.c"
-}
-
 module core extends fs_api {
 	source "vfs.c"
 
