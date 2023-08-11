@@ -1,6 +1,6 @@
 package embox.fs.driver
 
-@DefaultImpl(devfs_old)
+@DefaultImpl(devfs_stub)
 abstract module devfs {
 }
 
