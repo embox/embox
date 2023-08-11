@@ -22,5 +22,5 @@ module record {
 	source "record.c"
 
 	depends embox.driver.audio.portaudio_api
-	depends embox.fs.file_format
+	depends embox.lib.file_format
 }
