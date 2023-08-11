@@ -4,10 +4,12 @@ package embox.driver.i2c
 module k1921vk035 {
 	option number i2c_frequency=125000
 	option boolean i2c_interrupts=false
+	option boolean i2c_threadsafe=true
 
 	source "k1921vk035_i2c.c"
 	source "I2C_driver/I2C_driver.c"
 
 	depends embox.driver.i2c
     depends third_party.bsp.k1921vk_sdk.plib035
+    depends embox.compat.posix.pthreads
 }

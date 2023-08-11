@@ -9,9 +9,19 @@
 
 
 #define I2C_FREQUENCY OPTION_GET(NUMBER, i2c_frequency)
+
 #define I2C_INTERRUPTS_ENABLE OPTION_GET(BOOLEAN, i2c_interrupts)
 #if I2C_INTERRUPTS_ENABLE
 #define I2C_INTERRUPTS
+#endif
+
+#define I2C_THREADSAFE OPTION_GET(BOOLEAN, i2c_threadsafe)
+
+#if I2C_THREADSAFE
+
+#include <pthread.h>
+static pthread_mutex_t lock;
+
 #endif
 
 static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs, int num) {
@@ -29,6 +39,10 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 		ops[i].start = 0;
 	}
 
+#if I2C_THREADSAFE
+	pthread_mutex_lock(&lock);
+#endif
+
 	I2C_driver_execute(ops, num);
 
 	I2C_driver_state_t s;
@@ -40,6 +54,10 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 		}
 #endif
 	}
+
+#if I2C_THREADSAFE
+	pthread_mutex_unlock(&lock);
+#endif
 
 	if (s == I2C_DRIVER_OK) {
 		return msgs[num - 1].len;
@@ -59,6 +77,9 @@ static struct i2c_adapter k1921vk035_i2c_adap = {
 EMBOX_UNIT_INIT(k1921vk035_i2c_init);
 
 static int k1921vk035_i2c_init() {
+#if I2C_THREADSAFE
+        pthread_mutex_init(&lock, NULL);
+#endif
 #ifdef I2C_INTERRUPTS
 	NVIC_EnableIRQ(I2C_IRQn);
 	NVIC_SetPriority(I2C_IRQn, 0);
