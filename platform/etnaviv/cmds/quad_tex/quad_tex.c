@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_overlay.h>
 #include <lib/fps.h>
@@ -337,7 +338,6 @@ static void close_prog(struct program *p)
 	FREE(p);
 }
 
-void dcache_flush(const void *p, size_t size);
 static void draw(struct program *p) {
 	const struct pipe_sampler_state *samplers[] = {&p->sampler};
 	int step = 0;

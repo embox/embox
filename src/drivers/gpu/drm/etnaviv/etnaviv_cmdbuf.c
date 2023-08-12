@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 
+#include <arch/generic/dcache.h>
 #include <kernel/thread/sync/mutex.h>
 #include <util/binalign.h>
 #include <util/bitmap.h>
@@ -44,7 +45,6 @@ struct etnaviv_cmdbuf_suballoc {
 	BITMAP_DECL(bitmap, SUBALLOC_GRANULES);
 };
 
-void dcache_flush(const void *p, size_t size);
 struct etnaviv_cmdbuf_suballoc *
 etnaviv_cmdbuf_suballoc_new(struct etnaviv_gpu * gpu) {
 	struct etnaviv_cmdbuf_suballoc *suballoc;

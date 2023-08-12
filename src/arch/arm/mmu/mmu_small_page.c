@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <sys/mman.h>
 
+#include <arch/generic/dcache.h>
 #include <asm/hal/mmu.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
@@ -19,8 +20,6 @@
 #define L1_ADDR_MASK    0xFFFFFC00
 #define L2_ADDR_MASK    0xFFFFF000
 #define TTBR0_ADDR_MASK 0xFFFFFF00
-
-extern void dcache_flush(const void *p, size_t size);
 
 uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 	switch (lvl) {

@@ -21,7 +21,6 @@
 #include <etnaviv_xml/state_hi.xml.h>
 #include <etnaviv_xml/cmdstream.xml.h>
 
-extern void dcache_flush(const void *p, size_t size);
 int etnaviv_gpu_get_param(struct etnaviv_gpu *gpu, uint32_t param, uint64_t *value) {
 	switch (param) {
 	case ETNAVIV_PARAM_GPU_MODEL:

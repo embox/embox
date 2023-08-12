@@ -6,6 +6,7 @@
  */
 #include <util/log.h>
 
+#include <arch/generic/dcache.h>
 #include <errno.h>
 #include <stdint.h>
 #include <sys/mman.h>
@@ -632,8 +633,6 @@ static void ehci_qh_fill(struct ehci_hcd *ehci, struct ehci_req *ehci_req,
 
 	hw->hw_qtd_next = (uintptr_t)qtd;
 }
-
-extern void dcache_flush(const void *p, size_t size);
 
 void ehci_submit_async(struct ehci_hcd *ehci, struct ehci_req *ehci_req) {
 	struct ehci_qh *endp_qh;

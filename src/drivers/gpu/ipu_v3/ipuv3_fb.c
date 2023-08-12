@@ -9,8 +9,9 @@
 
 #include <string.h>
 
-#include <embox/unit.h>
+#include <arch/generic/dcache.h>
 #include <drivers/video/fb.h>
+#include <embox/unit.h>
 #include <kernel/irq.h>
 
 #include "ipu_regs.h"
@@ -98,7 +99,6 @@ static struct fb_ops mxcfb_ops = {
 	.fb_set_base = mxcfb_set_base,
 };
 
-extern void dcache_flush(const void *p, size_t size);
 static irq_return_t mxcfb_irq_handler(unsigned int irq, void *data) {
 	struct ipu_soc *ipu = mxc_fbi.ipu;
 	int i;

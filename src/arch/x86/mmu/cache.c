@@ -6,10 +6,12 @@
  */
 #include <stddef.h>
 
-void dcache_inval(const void *p, size_t size) {
+#include <arch/generic/dcache.h>
+
+void dcache_inval(const void *data, size_t size) {
 	/* FIXME cache*/
 }
 
-void dcache_flush(const void *p, size_t size) {
+void dcache_flush(const void *data, size_t size) {
 	/* FIXME cache*/
 }

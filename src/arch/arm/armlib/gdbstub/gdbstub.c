@@ -10,8 +10,9 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <asm/cp14.h>
+#include <arch/generic/dcache.h>
 #include <arm/exception.h>
+#include <asm/cp14.h>
 #include <debug/gdbstub.h>
 
 #define MAX_SW_BREAKPOINTS 32
@@ -29,8 +30,6 @@ struct gdb_regs {
 	uint32_t r[16];
 	uint32_t psr;
 };
-
-extern void dcache_flush(const void *p, size_t size);
 
 static const uint32_t bpt_instr = 0xe1200070;
 

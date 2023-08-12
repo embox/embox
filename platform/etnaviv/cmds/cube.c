@@ -13,6 +13,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/video/fb.h>
 #include <hal/mmu.h>
 
@@ -31,9 +32,6 @@
 #include "viv_compat.h"
 
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
 
 #define VERTEX_BUFFER_SIZE 0x60000
 static struct etna_device *dev;

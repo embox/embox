@@ -16,6 +16,7 @@
 
 #include <mem/misc/pool.h>
 
+#include <arch/generic/dcache.h>
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 #include <drivers/common/memory.h>
@@ -34,8 +35,6 @@
 
 #include <embox/unit.h>
 
-extern void dcache_flush(const void *p, size_t size);
-extern void dcache_inval(const void *p, size_t size);
 #define BASE_ADDR OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
 #define SLOTS_QUANTITY OPTION_GET(NUMBER, slots_quantity)
