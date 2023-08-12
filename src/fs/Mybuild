@@ -71,7 +71,7 @@ module journal {
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 
-	depends buffer_cache
+	depends embox.fs.buffer_cache
 	depends embox.mem.slab
 
 	depends embox.util.dlist
@@ -84,7 +84,6 @@ module buffer_cache {
 
 	depends embox.mem.pool
 	depends embox.kernel.thread.mutex
-	depends embox.driver.block_dev
 
 	depends embox.mem.sysmalloc_api
 
