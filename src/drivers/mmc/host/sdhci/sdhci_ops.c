@@ -10,6 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/mmc/mmc_core.h>
 #include <drivers/mmc/mmc_host.h>
 #include <util/log.h>
@@ -175,9 +176,6 @@ static int sdhci_get_cd(struct mmc_host *host) {
 		return 0;
 	}
 }
-
-void dcache_inval(const void *p, size_t size);
-void dcache_flush(const void *p, size_t size);
 
 static uint8_t _buf[512] __attribute__ ((aligned(128))); /* Workaround for unaligned buffer */
 static void sdhci_mmc_request(struct mmc_host *mmc_host, struct mmc_request *req) {

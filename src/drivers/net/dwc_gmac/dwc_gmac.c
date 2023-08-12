@@ -11,6 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/common/memory.h>
 #include <drivers/common/periph_memory_alloc.h>
 
@@ -33,9 +34,6 @@
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
 
 EMBOX_UNIT_INIT(dwc_init);
 

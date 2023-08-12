@@ -11,6 +11,7 @@
 
 #include <util/log.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/gpio/gpio.h>
 #include <drivers/common/memory.h>
 #include <hal/reg.h>
@@ -141,10 +142,6 @@
 #define DMA_TDES1_LS           (1u << 30)
 #define DMA_TDES1_FS           (1u << 29)
 #define DMA_TDES1_EOR          (1u << 26)
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
-
 
 static void time_delay( int delay) {
 	volatile int i = delay * 0x100;

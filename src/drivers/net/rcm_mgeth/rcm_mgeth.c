@@ -14,6 +14,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <arch/generic/dcache.h>
 #include <kernel/irq.h>
 
 #include <hal/reg.h>
@@ -43,11 +44,6 @@ EMBOX_UNIT_INIT(mgeth_init);
 
 #define BASE_ADDR   OPTION_GET(NUMBER, base_addr)
 #define MGETH_IRQ   OPTION_GET(NUMBER, irq_num)
-
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
-
 
 #define ETH_PHY_ID                0xBBCD
 
@@ -457,7 +453,7 @@ static int mgeth_open(struct net_device *dev) {
 static int mgeth_close(struct net_device *dev) {
 	if (dev == NULL) {
 		return -EINVAL;
-	}	
+	}
 	mgeth_stop(dev);
 
 	return ENOERR;

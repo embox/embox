@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
+#include <arch/generic/dcache.h>
 #include <util/log.h>
 #include <hal/mem_barriers.h>
 
@@ -34,11 +35,11 @@ static uint32_t get_cache_line_size(void) {
 #endif
 }
 
-void dcache_inval(const void *p, size_t size) {
+void dcache_inval(const void *data, size_t size) {
 	uint32_t start, end, line_size;
 
-	start = (uint32_t)(uintptr_t)p;
-	end = (uint32_t)(uintptr_t)p + size;
+	start = (uint32_t)(uintptr_t)data;
+	end = (uint32_t)(uintptr_t)data + size;
 
 	line_size = get_cache_line_size();
 	if (start & ~(line_size - 1)) {
@@ -51,11 +52,11 @@ void dcache_inval(const void *p, size_t size) {
 	}
 }
 
-void dcache_flush(const void *p, size_t size) {
+void dcache_flush(const void *data, size_t size) {
 	uint32_t start, end, line_size;
 
-	start = (uint32_t)(uintptr_t)p;
-	end = (uint32_t)(uintptr_t)p + size;
+	start = (uint32_t)(uintptr_t)data;
+	end = (uint32_t)(uintptr_t)data + size;
 
 	line_size = get_cache_line_size();
 	if (start & ~(line_size - 1)) {
@@ -71,4 +72,4 @@ void dcache_flush(const void *p, size_t size) {
 void icache_inval(void) {
 	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r"(0) : "memory");
 	isb();
-}	
+}

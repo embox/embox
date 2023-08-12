@@ -10,6 +10,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include <arch/generic/dcache.h>
 #include <asm/ptrace.h>
 #include <debug/gdbstub.h>
 #include <asm/hal/env/traps_core.h>
@@ -21,8 +22,6 @@ struct gdb_regs {
 };
 
 extern __trap_handler __exception_table[0x20];
-
-extern void dcache_flush(const void *p, size_t size);
 
 static const uint8_t bpt_instr = 0xcc;
 

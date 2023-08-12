@@ -6,12 +6,13 @@
  * @date 01.05.2017
  */
 
+#include <arch/generic/dcache.h>
 #include <drivers/block_dev.h>
 #include <drivers/common/memory.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
-#include <string.h>
 #include <net/util/show_packet.h>
+#include <string.h>
 #include <util/log.h>
 
 #define BASE_ADDR OPTION_GET(NUMBER, base_addr)
@@ -315,10 +316,6 @@ static void imx6_usdhc_set_block_len(size_t len) {
 	tmp = len | (1 << 16);
 	REG32_STORE(USDHC_BLK_ATT, tmp);
 }
-
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
 
 static uint8_t _buf[BLK_LEN] __attribute__ ((aligned(128))); /* Workaround for unaligned buffer */
 static int imx6_usdhc_read(struct block_dev *bdev, char *buffer, size_t count,

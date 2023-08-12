@@ -21,6 +21,7 @@
 #include <util/err.h>
 #include <util/macro.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/char_dev.h>
 #include <drivers/common/memory.h>
 #include <drivers/power/imx.h>
@@ -196,7 +197,6 @@ static irq_return_t etna_irq_handler(unsigned int irq, void *data)
 	return ret;
 }
 
-void dcache_flush(const void *p, size_t size);
 static int etnaviv_ref = 0;
 static struct idesc *etnaviv_dev_open(struct dev_module *cdev, void *priv) {
 	struct file_desc *file;

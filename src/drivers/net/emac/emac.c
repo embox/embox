@@ -13,6 +13,7 @@
 
 #include <embox/unit.h>
 
+#include <arch/generic/dcache.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <hal/reg.h>
@@ -40,9 +41,6 @@
 #include "emac_desc.h"
 
 #include <framework/mod/options.h>
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
 
 EMBOX_UNIT_INIT(ti816x_init);
 

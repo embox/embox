@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <arch/generic/dcache.h>
 #include <drivers/common/memory.h>
 
 #include <hal/reg.h>
@@ -68,9 +69,6 @@ static void fec_reg_dump(const char * title) {
 	log_debug("ENET_TDSR %10x %10x", ENET_TDSR, REG32_LOAD(ENET_TDSR));
 	log_debug("ENET_MRBR %10x %10x", ENET_MRBR, REG32_LOAD(ENET_MRBR));
 }
-
-extern void dcache_inval(const void *p, size_t size);
-extern void dcache_flush(const void *p, size_t size);
 
 static void emac_set_macaddr(unsigned char _macaddr[6]) {
 	uint32_t mac_hi, mac_lo;
