@@ -18,6 +18,6 @@ module seculog_file {
 
 	depends seculog
 	depends embox.compat.posix.fs.creat
-	depends embox.fs.file_desc
+	depends embox.fs.file_desc_oldfs
 	depends embox.fs.syslib.file
 }

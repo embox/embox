@@ -26,21 +26,6 @@ module filesystem {
 	depends embox.fs.driver.repo
 }
 
-module file_desc {
-	option number fdesc_quantity=32
-
-	@IncludeExport(path="fs")
-	source "file_desc.h"
-	source "file_desc.c"
-
-	source "file_xattr.c"
-
-	depends embox.kernel.task.idesc
-	depends xattr
-
-	depends embox.fs.syslib.perm
-	depends embox.kernel.task.resource.idesc_table
-}
 
 @DefaultImpl(no_file_system)
 abstract module fs_api {
@@ -65,7 +50,7 @@ module xattr_list {
 module core extends fs_api {
 	source "vfs.c"
 
-	depends file_desc
+	depends embox.fs.file_desc_oldfs
 	depends filesystem
 	depends path_helper
 	depends node

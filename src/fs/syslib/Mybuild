@@ -11,7 +11,7 @@ module fs_full extends file {
 
 	depends embox.compat.libc.assert
 	depends embox.fs.core
-	depends embox.fs.file_desc
+	depends embox.fs.file_desc_oldfs
 	depends embox.security.api
 	depends embox.compat.posix.util.gettimeofday /* kfile_change_stat */
 	depends perm
@@ -41,7 +41,7 @@ module file_system_full extends file_system {
 	depends embox.driver.common
 	depends embox.fs.core
 	depends embox.fs.driver.repo
-	depends embox.fs.file_desc
+	depends embox.fs.file_desc_oldfs
 	depends embox.fs.syslib.fs_full
 	depends embox.kernel.thread.mutex
 	depends embox.compat.libc.str_dup
