@@ -1,5 +1,9 @@
 package embox.arch.arm
 
+module cache {
+	source "cache.c"
+}
+
 module mmu_section extends embox.mem.vmem {
 	option number page_size=0x100000
 	option number domain_access=3
@@ -7,11 +11,11 @@ module mmu_section extends embox.mem.vmem {
 
 	source "mmu.h"
 
-	source "cache.c"
 	source "mmu_common.c"
 
 	source "mmu_section.c"
 
+	depends embox.arch.arm.cache
 	depends embox.mem.vmem_header
 	depends embox.mem.vmem_alloc_pool
 	depends embox.mem.vmem_depends
@@ -25,11 +29,11 @@ module mmu_small_page extends embox.mem.vmem {
 
 	source "mmu.h"
 
-	source "cache.c"
 	source "mmu_common.c"
 
 	source "mmu_small_page.c"
 
+	depends embox.arch.arm.cache
 	depends embox.mem.vmem_header
 	depends embox.mem.vmem_alloc_pool
 	depends embox.mem.vmem_depends

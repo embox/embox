@@ -24,4 +24,5 @@ module reset_handler {
 	source "reset_handler.S"
 
 	depends setup_exception_table
+	depends embox.arch.arm.cache
 }
