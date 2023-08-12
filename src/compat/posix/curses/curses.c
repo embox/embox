@@ -83,9 +83,6 @@ static void window_setch(WINDOW *win, chtype ch, uint16_t cury,
 	assert((cury >= win->begy) && (cury < win->maxy));
 	assert((curx >= win->begx) && (cury < win->maxx));
 
-	if (ch == '#') {
-		ch = '#';
-	}
 	*(win->lines->text + cury * COLS + curx) = ch;
 }
 
