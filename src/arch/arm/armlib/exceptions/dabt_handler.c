@@ -8,18 +8,15 @@
 
 #include <inttypes.h>
 
-#include <kernel/printk.h>
-#include <hal/test/traps_core.h>
+#include <asm/cp15.h>
 #include <arm/exception.h>
-
-extern uint32_t _get_mmu_data_fault_status(void);
+#include <hal/test/traps_core.h>
+#include <kernel/printk.h>
 
 fault_handler_t arm_data_fault_table[0x10];
 
 void arm_dabt_handler(excpt_context_t *ctx) {
-	uint32_t fault_status;
-
-	fault_status = _get_mmu_data_fault_status() & 0xf;
+	uint32_t fault_status = cp15_get_data_fault_status() & 0xf;
 	if (arm_data_fault_table[fault_status]) {
 		arm_data_fault_table[fault_status](fault_status, ctx);
 	}

@@ -12,6 +12,7 @@
 
 #include <arch/generic/dcache.h>
 #include <asm/hal/mmu.h>
+#include <asm/cp15.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>
 
@@ -125,11 +126,9 @@ uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
 /* vmem_info */
 #include <kernel/printk.h>
 
-extern uint32_t arm_get_ttbr0(void);
-
 static uint32_t *get_l1_desc(uint32_t virt_addr)
 {
-	uint32_t *_translation_table = (void *) (arm_get_ttbr0() & TTBR0_ADDR_MASK);
+	uint32_t *_translation_table = (void *) (cp15_get_ttbr0() & TTBR0_ADDR_MASK);
 	int l1_idx = virt_addr >> 20;
 	return &_translation_table[l1_idx];
 }
@@ -150,7 +149,7 @@ uint32_t vmem_info(uint32_t vaddr)
     vaddr &= ~0xFFF;
 
     printk("vmem info: base %p; vaddr %p",
-		    (void *) (arm_get_ttbr0() & TTBR0_ADDR_MASK),
+		    (void *) (cp15_get_ttbr0() & TTBR0_ADDR_MASK),
 		    (void *) vaddr);
 
     if (*l1_desc == 0x0) {

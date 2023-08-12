@@ -107,6 +107,429 @@ static inline uint32_t cp15_get_vbar(void) {
 	return val;
 }
 
+/* Software accessible MMU registers */
+static inline uint32_t cp15_get_mmu_tlb_type(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 3" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+
+static inline uint32_t cp15_get_translation_table_base_0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c2, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_translation_table_base_1(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c2, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_domain_access_control(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c3, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_data_fault_status(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c5, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_instruction_fault_status(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c5, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_data_fault_address(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c6, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_instruction_fault_address(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c6, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_tlb_lockdown(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c10, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_primary_region_remap(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c10, c2, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline uint32_t cp15_get_normal_memory_remap(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c10, c2, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_fsce_pid(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c13, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_contextidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c13, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline void arm_set_contextidr(uint32_t val) {
+	__asm__ __volatile__ (
+		"mcr p15, 0, %0, c13, c0, 1\n\t"
+		: : "r" (val) :
+	);
+}
+
+#define TTBR0_ADDR_MASK 0xFFFFFF00
+static inline uint32_t cp15_get_ttbr0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c2, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+#define TTBCR_PAE_SUPPORT 0x80000000
+static inline uint32_t cp15_get_ttbcr(void) {
+	uint32_t val;
+	__asm__ __volatile__("mrc p15, 0, %[out], c2, c0, 2" : [out] "=r"(val) :);
+	return val;
+}
+
+static inline void cp15_set_ttbcr(uint32_t val) {
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 2\n\t" : : "r"(val) :);
+}
+
+static inline void cp15_set_ttbr0(uint32_t val) {
+	__asm__ __volatile__("mcr p15, 0, %0, c2, c0, 0" : : "r"(val));
+}
+
+static inline void cp15_set_ttbr1(uint32_t val) {
+	__asm__ __volatile__ (
+		"mcr p15, 0, %0, c2, c0, 1" : : "r"(val)
+	);
+}
+
+#ifdef CORTEX_A9
+/* CP15 c15 implemented */
+static inline int32_t cp15_get_mmu_peripheral_port_memory_remap(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c2, 4" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_mmu_tlb_lockdown_index(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c4, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_mmu_tlb_lockdown_va(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c5, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_mmu_tlb_lockdown_pa(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c6, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_mmu_tlb_lockdown_attributes(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c15, c7, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+#endif
+
+#ifdef CORTEX_A9
+/* CP15 c11, Reserved for TCM DMA registers */
+static inline int32_t cp15_get_pleidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c11, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_pleasr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c11, c0, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_plesfr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c11, c0, 4" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_pleuar(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c11, c1, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+static inline int32_t cp15_get_plepcr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c11, c1, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+#endif
+
+/*******************************
+ Identification registers
+ *******************************/
+/* Main ID Register */
+static inline int32_t cp15_get_midr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+/* Cache Type Register */
+static inline int32_t cp15_get_ctr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+/* TCM Type Register */
+static inline int32_t cp15_get_tcmtr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+/* TLB Type Register */
+static inline int32_t cp15_get_tlbtr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 3" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+/* Multiprocessor Affinity Register */
+static inline int32_t cp15_get_mpidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 5" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+/* Revision ID register */
+static inline int32_t cp15_get_revidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c0, 6" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Processor Feature Register 0 */
+static inline int32_t cp15_get_pfr0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Processor Feature Register 1 */
+static inline int32_t cp15_get_pfr1(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Debug Feature Register 0 */
+static inline int32_t cp15_get_dfr0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Auxiliary Feature Register 0 */
+static inline int32_t cp15_get_afr0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 3" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Memory Model Feature Register 0 */
+static inline int32_t cp15_get_mmfr0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 4" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Memory Model Feature Register 1 */
+static inline int32_t cp15_get_mmfr1(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 5" : [out] "=r" (val) :
+	);
+	return val;
+}
+/*Memory Model Feature Register 2 */
+static inline int32_t cp15_get_mmfr2(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 6" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Memory Model Feature Register 3 */
+static inline int32_t cp15_get_mmfr3(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c1, 7" : [out] "=r" (val) :
+	);
+	return val;
+}
+
+/* Instruction Set Attribute Register 0 */
+static inline int32_t cp15_get_isar0(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c2, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Instruction Set Attribute Register 1 */
+static inline int32_t cp15_get_isar1(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c2, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Instruction Set Attribute Register 2 */
+static inline int32_t cp15_get_isar2(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c2, 2" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Instruction Set Attribute Register 0 */
+static inline int32_t cp15_get_isar3(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c2, 3" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Instruction Set Attribute Register 4 */
+static inline int32_t cp15_get_isar4(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 0, %[out], c0, c2, 4" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Cache Size Identification Register */
+static inline int32_t cp15_get_ccsidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 1, %[out], c0, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Cache Level ID Register */
+static inline int32_t cp15_get_clidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 1, %[out], c0, c0, 1" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Auxiliary ID Register */
+static inline int32_t cp15_get_aidr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 1, %[out], c0, c0, 7" : [out] "=r" (val) :
+	);
+	return val;
+}
+/* Cache Size Selection Register */
+static inline int32_t cp15_get_csselr(void) {
+	uint32_t val;
+	__asm__ __volatile__ (
+		"mrc p15, 2, %[out], c0, c0, 0" : [out] "=r" (val) :
+	);
+	return val;
+}
+
 #endif
 
 /**
