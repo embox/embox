@@ -9,6 +9,19 @@
 #include <kernel/time/time.h>
 #include <time.h>
 
+/**
+ * Assigns number of seconds and nanoseconds to a \ref timespec.
+ *
+ * Values are @a normalized before assigning: they are adjusted in a way
+ * that the overall value they represent remains the same, but the number
+ * of nanoseconds becomes more than zero and less than the number of
+ * nanoseconds in second, i.e. seconds "included" in nanoseconds value
+ * are "moved" from it to the seconds value.
+ *
+ * @param ts pointer to a timespec to assign values to
+ * @param sec number of seconds
+ * @param nsec number of nanoseconds
+ */
 static void set_normalized_timespec(struct timespec *ts,
 		time_t sec, long nsec) {
 	while (nsec >= NSEC_PER_SEC) {
