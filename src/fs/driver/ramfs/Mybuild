@@ -11,6 +11,7 @@ abstract module ramfs {
 
 	depends embox.mem.pool
 	depends embox.driver.ramdisk
+	depends embox.fs.driver.devfs
 }
 
 module ramfs_old extends ramfs {

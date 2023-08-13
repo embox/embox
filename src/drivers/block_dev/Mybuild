@@ -15,8 +15,17 @@ module block_dev {
 	depends embox.compat.posix.fs.libgen
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
-	depends embox.fs.buffer_crypt_api
+	depends embox.driver.buffer_crypt_api
 	depends embox.mem.phymem
 	depends embox.mem.heap_place
 	depends embox.driver.common
+}
+
+
+@DefaultImpl(buffer_no_crypt)
+abstract module buffer_crypt_api {
+}
+
+module buffer_no_crypt extends buffer_crypt_api {
+	source "buffer_no_crypt.c"
 }

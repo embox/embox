@@ -44,7 +44,7 @@ module smac_user_dynamic_db extends smac_user_db {
 
 	source "smac_user_dynamic_init.c"
 
-	depends embox.fs.rootfs
+	depends embox.fs.rootfs_oldfs
 	depends embox.fs.driver.ramfs
 	depends embox.cmd.fs.cp
 	depends embox.cmd.chmod

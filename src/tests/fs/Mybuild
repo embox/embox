@@ -41,7 +41,7 @@ module InitFsTest {
 	@InitFS
 	source "initfs_test_file.txt"
 
-	depends embox.fs.rootfs
+	depends embox.fs.rootfs_oldfs
 }
 
 module permissions {

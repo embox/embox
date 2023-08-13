@@ -1,0 +1,10 @@
+package embox.lib
+
+module file_format {
+	@IncludeExport(path="fs")
+	source "file_format.h"
+
+	source "file_format.c"
+
+	depends embox.compat.libc.all
+}

@@ -25,5 +25,5 @@ module play {
 	source "play.c"
 
 	depends embox.driver.audio.portaudio_api
-	depends embox.fs.file_format
+	@NoRuntime depends embox.lib.file_format
 }

@@ -1,6 +1,6 @@
 package embox.fs.driver
 
-@DefaultImpl(devfs_old)
+@DefaultImpl(devfs_stub)
 abstract module devfs {
 }
 
@@ -8,9 +8,9 @@ module devfs_old extends devfs {
 	source "devfs_oldfs.c"
 	source "devfs_common.c"
 
-	depends embox.fs.core
-	depends embox.fs.rootfs
-	depends embox.driver.flash.core
+//	depends embox.fs.core
+//	depends embox.fs.rootfs_oldfs
+//	depends embox.driver.flash.core
 	@NoRuntime depends embox.driver.char_dev
 }
 

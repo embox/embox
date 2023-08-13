@@ -1,0 +1,28 @@
+package embox.fs
+
+module file_desc_dvfs { 
+	@IncludeExport(path="fs", target_name="file_desc.h")
+	source "file_desc_dvfs.h"
+
+	source "file_desc_dvfs.c"
+}
+
+
+module file_desc_oldfs {
+	option number fdesc_quantity=32
+
+	@IncludeExport(path="fs", target_name="file_desc.h")
+	source "file_desc_oldfs.h"
+
+	source "file_desc_oldfs.c"
+
+	source "file_xattr_oldfs.c"
+
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.idesc_table
+
+	depends embox.fs.xattr
+
+	depends embox.fs.syslib.perm
+
+}
