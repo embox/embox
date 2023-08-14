@@ -61,4 +61,22 @@ struct uart_conf uarts[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts))
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 0),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 7),
+	},
+	[2] = {
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 14),
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), LED(leds))
