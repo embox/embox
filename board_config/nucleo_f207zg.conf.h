@@ -79,4 +79,27 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), LED(leds))
+struct spi_conf spis[] = {
+	[1] = {
+		.status = DISABLED,
+		.name = "SPI1",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PA, PIN_5, AF5),
+				PIN("MISO", PA, PIN_6, AF5),
+				PIN("MOSI", PA, PIN_7, AF5),
+				PIN("CS",   PD, PIN_14, NOAF),
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOA),
+				VAL("MISO", CLK_GPIOA),
+				VAL("MOSI", CLK_GPIOA),
+				VAL("CS",   CLK_GPIOD),
+				VAL("SPI",  CLK_SPI1),
+			}
+		},
+	},
+
+};
+
+EXPORT_CONFIG(UART(uarts), LED(leds), SPI(spis))
