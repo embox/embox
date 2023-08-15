@@ -34,7 +34,9 @@ static int stm32_spi3_init(void) {
 	CONF_SPI3_CLK_ENABLE_SCK();
 	CONF_SPI3_CLK_ENABLE_MISO();
 	CONF_SPI3_CLK_ENABLE_MOSI();
+#if defined(CONF_SPI3_PIN_CS_PORT)
 	CONF_SPI3_CLK_ENABLE_CS();
+#endif
 	CONF_SPI3_CLK_ENABLE_SPI();
 
 	memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
