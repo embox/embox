@@ -10,18 +10,35 @@
 
 #include <stdint.h>
 
-#if defined(STM32F407xx)
-#include "stm32f4_discovery.h"
-#elif defined (USE_STM32F429I_DISCOVERY)
-#include "stm32f429i_discovery.h"
-#elif defined (STM32F429xx)
-#include "stm32f4xx_nucleo_144.h"
-#elif defined (STM32L476xx)
-#include "stm32l4xx_nucleo.h"
-#elif defined (STM32L475xx)
-#include "stm32l475e_iot01.h"
+//#if defined(STM32F407xx)
+//#include "stm32f4_discovery.h"
+//#elif defined (USE_STM32F429I_DISCOVERY)
+//#include "stm32f429i_discovery.h"
+//#elif defined (STM32F429xx)
+//#include "stm32f4xx_nucleo_144.h"
+//#elif defined (STM32L476xx)
+//#include "stm32l4xx_nucleo.h"
+//#elif defined (STM32L475xx)
+//#include "stm32l475e_iot01.h"
+//#else
+//#error Unsupported platform
+//#endif
+
+#if defined (STM32F3_CUBE)
+# include "stm32f3xx_hal.h"
+#elif defined (STM32F4_CUBE)
+# include "stm32f4xx_hal.h"
+#elif defined (STM32F7_CUBE)
+# include "stm32f7xx_hal.h"
+#elif defined (STM32L4_CUBE)
+#include "stm32l4xx_hal.h"
 #else
 #error Unsupported platform
+#endif
+
+/* For STM32F3 */
+#ifndef GPIO_SPEED_FAST
+# define GPIO_SPEED_FAST GPIO_SPEED_FREQ_HIGH
 #endif
 
 struct stm32_spi {

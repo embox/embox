@@ -42,7 +42,9 @@ static int stm32_spi1_init(void) {
 	CONF_SPI1_CLK_ENABLE_SCK();
 	CONF_SPI1_CLK_ENABLE_MISO();
 	CONF_SPI1_CLK_ENABLE_MOSI();
+#if defined(CONF_SPI1_PIN_CS_PORT)
 	CONF_SPI1_CLK_ENABLE_CS();
+#endif
 	CONF_SPI1_CLK_ENABLE_SPI();
 
 	stm32_spi_init(&stm32_spi1, SPI1);

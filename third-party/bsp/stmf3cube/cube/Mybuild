@@ -1,6 +1,7 @@
 package third_party.bsp.stmf3cube
 
-@BuildArtifactPath(cppflags="-DUSE_RTOS=0 -DUSE_HAL_DRIVER $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0/Drivers/,STM32F3xx_HAL_Driver/Inc CMSIS/Device/ST/STM32F3xx/Include CMSIS/Include)")
+@BuildArtifactPath(cppflags="-DUSE_RTOS=0 -DUSE_HAL_DRIVER -DSTM32F3_CUBE -DSTM32F3_CUBE_1_11_0")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0/Drivers/,STM32F3xx_HAL_Driver/Inc CMSIS/Device/ST/STM32F3xx/Include CMSIS/Include)")
 module cube_cppflags {
 
 }

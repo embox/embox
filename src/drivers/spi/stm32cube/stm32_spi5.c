@@ -33,7 +33,9 @@ static int stm32_spi5_init(void) {
 	CONF_SPI5_CLK_ENABLE_SCK();
 	CONF_SPI5_CLK_ENABLE_MISO();
 	CONF_SPI5_CLK_ENABLE_MOSI();
+#if defined(CONF_SPI5_PIN_CS_PORT)
 	CONF_SPI5_CLK_ENABLE_CS();
+#endif
 	CONF_SPI5_CLK_ENABLE_SPI();
 
 	stm32_spi_init(&stm32_spi5, SPI5);

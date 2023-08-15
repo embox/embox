@@ -123,4 +123,27 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), PWM(pwms), LED(leds))
+struct spi_conf spis[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "SPI1",
+		.dev = {
+			.pins = {
+				PIN("SCK",  PB, PIN_5, AF5),
+				PIN("MISO", PB, PIN_6, AF5),
+				PIN("MOSI", PB, PIN_7, AF5),
+				/* PIN("CS",   PB, PIN_2, NOAF), */
+			},
+			.clocks = {
+				VAL("SCK",  CLK_GPIOA),
+				VAL("MISO", CLK_GPIOA),
+				VAL("MOSI", CLK_GPIOA),
+				/* VAL("CS",   CLK_GPIOB), */
+				VAL("SPI",  CLK_SPI1),
+			}
+		},
+	},
+
+};
+
+EXPORT_CONFIG(UART(uarts), PWM(pwms), LED(leds), SPI(spis))
