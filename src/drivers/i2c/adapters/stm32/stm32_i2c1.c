@@ -5,7 +5,10 @@
  * @author  Alexander Kalmuk
  */
 #include <string.h>
+
 #include <drivers/i2c/i2c.h>
+#include <drivers/gpio/gpio.h>
+
 #include <kernel/irq.h>
 
 #include <embox/unit.h>

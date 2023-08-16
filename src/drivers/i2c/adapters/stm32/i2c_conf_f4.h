@@ -15,7 +15,7 @@
 #else
 #error Unsupported platform
 #endif
-#include <drivers/gpio/gpio.h>
+
 #include <assert.h>
 #include <framework/mod/options.h>
 #include <module/embox/driver/i2c/stm32_i2c_f4.h>
