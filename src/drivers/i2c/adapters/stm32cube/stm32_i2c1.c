@@ -40,12 +40,14 @@ static struct i2c_adapter stm32_i2c1_adap = {
 
 static void stm32_i2c_gpio_init(I2C_HandleTypeDef *hi2c) {
 
-	gpio_setup_mode(I2C1_SCL_PORT, I2C1_SCL_PIN,
-		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(I2C1_SCL_AF) |
+	/* CONF_I2C1_CLK_ENABLE_SCL(); */
+	gpio_setup_mode(CONF_I2C1_PIN_SCL_PORT, CONF_I2C1_PIN_SCL_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_I2C1_PIN_SCL_AF) |
 		GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
 
-	gpio_setup_mode(I2C1_SDA_PORT, I2C1_SDA_PIN,
-		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(I2C1_SDA_AF) |
+	/* CONF_I2C1_CLK_ENABLE_SDA(); */
+	gpio_setup_mode(CONF_I2C1_PIN_SDA_PORT, CONF_I2C1_PIN_SDA_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_I2C1_PIN_SDA_AF) |
 		GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
 }
 
@@ -56,7 +58,7 @@ static int stm32_i2c1_init(void) {
 
 	stm32_i2c_gpio_init(&i2c1_handle);
 
-	__HAL_RCC_I2C1_CLK_ENABLE();
+	CONF_I2C1_CLK_ENABLE_I2C();
 
 	return i2c_bus_register(&stm32_i2c1_adap, 1, "i2c1");
 }
