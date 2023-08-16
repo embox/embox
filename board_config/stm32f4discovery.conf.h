@@ -93,8 +93,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR_IRQ", 32),
 			},
 			.pins = {
-				PIN("SCL", PB, PIN_6, AF4),
-				PIN("SDA", PB, PIN_9, AF4),
+				PIN("SCL", GPIO_PORT_B, PIN_6, AF4),
+				PIN("SDA", GPIO_PORT_B, PIN_9, AF4),
 			},
 			.clocks = {
 				VAL("SCL", CLK_GPIOB),
@@ -112,8 +112,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR_IRQ", 34),
 			},
 			.pins = {
-				PIN("SCL", PB, PIN_10, AF4),
-				PIN("SDA", PB, PIN_11, AF4),
+				PIN("SCL", GPIO_PORT_B, PIN_10, AF4),
+				PIN("SDA", GPIO_PORT_B, PIN_11, AF4),
 			},
 			.clocks = {
 				VAL("SCL", CLK_GPIOB),
