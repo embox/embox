@@ -8,13 +8,7 @@
 #ifndef SRC_DRIVERS_ADAPTERS_STM32_I2C_CONF_F4_H_
 #define SRC_DRIVERS_ADAPTERS_STM32_I2C_CONF_F4_H_
 
-#if defined(STM32F407xx)
-#include "stm32f4_discovery.h"
-#elif defined (STM32F429xx)
-#include "stm32f4xx_nucleo_144.h"
-#else
-#error Unsupported platform
-#endif
+#include "stm32f4xx_hal.h"
 
 #include <assert.h>
 #include <framework/mod/options.h>
