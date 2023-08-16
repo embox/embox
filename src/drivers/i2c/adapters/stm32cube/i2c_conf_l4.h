@@ -8,11 +8,12 @@
 #ifndef SRC_DRIVERS_ADAPTERS_STM32_I2C_CONF_L4_H_
 #define SRC_DRIVERS_ADAPTERS_STM32_I2C_CONF_L4_H_
 
-#if defined(USE_STM32L475E_IOT01)
-#include "stm32l475e_iot01.h"
-#else
-#error Unsupported platform
-#endif
+#include "stm32l4xx_hal.h"
+
+/* FIXME from cube B-L475E-IOT01/stm32l475e_iot01.h */
+#ifndef DISCOVERY_I2Cx_TIMING
+#define DISCOVERY_I2Cx_TIMING                     ((uint32_t)0x00702681)
+#endif /* DISCOVERY_I2Cx_TIMING */
 
 #include <assert.h>
 #include <framework/mod/options.h>
