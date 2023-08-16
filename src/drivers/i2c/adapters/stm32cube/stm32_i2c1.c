@@ -17,6 +17,8 @@
 
 #include "stm32_i2c.h"
 
+#include <config/board_config.h>
+
 EMBOX_UNIT_INIT(stm32_i2c1_init);
 
 #define USE_I2C_IRQ \
@@ -37,6 +39,7 @@ static struct i2c_adapter stm32_i2c1_adap = {
 };
 
 static void stm32_i2c_gpio_init(I2C_HandleTypeDef *hi2c) {
+
 	gpio_setup_mode(I2C1_SCL_PORT, I2C1_SCL_PIN,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(I2C1_SCL_AF) |
 		GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
@@ -51,9 +54,9 @@ static int stm32_i2c1_init(void) {
 		return -1;
 	}
 
-	i2c1_enable_gpio_clocks();
 	stm32_i2c_gpio_init(&i2c1_handle);
-	i2c1_enable_i2c_clocks();
+
+	__HAL_RCC_I2C1_CLK_ENABLE();
 
 	return i2c_bus_register(&stm32_i2c1_adap, 1, "i2c1");
 }

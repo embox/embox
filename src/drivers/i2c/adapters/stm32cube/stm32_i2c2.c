@@ -17,6 +17,8 @@
 
 #include "stm32_i2c.h"
 
+#include <config/board_config.h>
+
 EMBOX_UNIT_INIT(stm32_i2c2_init);
 
 #define USE_I2C_IRQ \
@@ -51,9 +53,9 @@ static int stm32_i2c2_init(void) {
 		return -1;
 	}
 
-	i2c2_enable_gpio_clocks();
 	stm32_i2c_gpio_init(&i2c2_handle);
-	i2c2_enable_i2c_clocks();
+
+	__HAL_RCC_I2C2_CLK_ENABLE();
 
 	return i2c_bus_register(&stm32_i2c2_adap, 2, "i2c2");
 }
