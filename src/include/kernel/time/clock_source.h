@@ -83,8 +83,13 @@ static inline uint64_t clock_source_ticks2cycles(struct clock_source *cs,
  * @param cs - clock source read from
  * @return count of nanoseconds from moment when clock source started
  */
-extern struct timespec clock_source_read(struct clock_source *cs);
 //extern time64_t clock_source_counter_read(struct clock_source *cs);
+
+/**
+ * Returns a new \ref timespec representing the duration of time since
+ * the clock source was started.
+ */
+extern struct timespec clock_source_read(struct clock_source *cs);
 
 extern int clock_source_register(struct clock_source *cs);
 extern int clock_source_unregister(struct clock_source *cs);

@@ -45,11 +45,32 @@ __BEGIN_DECLS
 extern void setnsofday(const struct timespec *ts, const struct timezone *tz);
 extern void getnsofday(struct timespec *t, struct timezone *tz);
 
+/**
+ * Returns a new \ref timespec representing the time given as input
+ *
+ * @param nsec a time in nanoseconds to be converted to timespec
+*/
 extern struct timespec ns_to_timespec(const __s64 nsec);
+/**
+ * Returns a new \ref timeval representing the time given as input
+ *
+ * @param nsec a time in nanoseconds to be converted to timeval
+*/
 extern struct timeval ns_to_timeval(const __s64 nsec);
 
+/**
+ * Returns a new \ref timespec representing the result of summing up
+ * given timespecs
+ */
 extern struct timespec timespec_add(struct timespec t1,
 		struct timespec t2);
+/**
+ * Returns a new \ref timespec representing the result of subtraction
+ * of two given timespecs.
+ *
+ * @param t1 timespec to subtract from
+ * @param t2 timespec to be subtracted
+ */
 extern struct timespec timespec_sub(struct timespec t1,
 		struct timespec t2);
 #if 0
