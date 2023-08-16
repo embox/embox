@@ -6,6 +6,7 @@
 #include "I2C_driver/I2C_driver.h"
 
 #include <drivers/i2c/i2c.h>
+#include <kernel/sched.h>
 
 
 #define I2C_FREQUENCY OPTION_GET(NUMBER, i2c_frequency)
@@ -40,7 +41,8 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 	}
 
 #if I2C_THREADSAFE
-	pthread_mutex_lock(&lock);
+	// pthread_mutex_lock(&lock);
+	sched_lock();
 #endif
 
 	I2C_driver_execute(ops, num);
@@ -56,7 +58,8 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 	}
 
 #if I2C_THREADSAFE
-	pthread_mutex_unlock(&lock);
+	// pthread_mutex_unlock(&lock);
+	sched_unlock();
 #endif
 
 	if (s == I2C_DRIVER_OK) {
