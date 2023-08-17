@@ -2,7 +2,10 @@ package embox.arch.arm.armlib
 
 module gdbstub extends embox.lib.gdbstub {
 	source "gdbstub.c"
-	source "gdbstub.h"
-}
+	source "sw_breakpoint.c"
+	source "hw_breakpoint.c"
 
+	source "gdbstub.h"
 	
+	depends embox.arch.arm.cache
+}
