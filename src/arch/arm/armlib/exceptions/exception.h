@@ -5,6 +5,8 @@
  * @date 06.11.22
  * @author Aleksey Zhmulin
  */
+#ifndef ARCH_ARM_ARMLIB_EXCEPTION_H_
+#define ARCH_ARM_ARMLIB_EXCEPTION_H_
 
 #include <inttypes.h>
 
@@ -50,3 +52,5 @@ extern fault_handler_t arm_inst_fault_table[0x10];
 	    (ptregs)->r[8], (ptregs)->r[9], (ptregs)->r[10], (ptregs)->r[11], \
 	    (ptregs)->r[12], (ptregs)->sp, (ptregs)->lr, (ptregs)->pc,        \
 	    (ptregs)->cpsr)
+
+#endif /* ARCH_ARM_ARMLIB_EXCEPTION_H_ */

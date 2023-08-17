@@ -7,56 +7,111 @@
  */
 #include <stddef.h>
 #include <stdint.h>
+#include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 
-#include <hal/reg.h>
 #include <debug/gdbstub.h>
-#include <asm/arm_m_regs.h>
+#include <framework/mod/options.h>
 
-struct gdb_regs {
-	uint32_t r[16];
-	uint32_t psr;
-};
+#define SW_BREAKPOINTS OPTION_GET(BOOLEAN, sw_breakpoints)
+#define HW_BREAKPOINTS OPTION_GET(BOOLEAN, hw_breakpoints)
+#define WATCHPOINTS    OPTION_GET(BOOLEAN, watchpoints)
 
-static size_t max_hw_breakpoints;
+extern bool arm_m_set_hw_bpt(void *addr);
+extern bool arm_m_remove_hw_bpt(void *addr);
+extern void arm_m_remove_hw_bpts(void);
+extern void arm_m_activate_hw_bpts(void);
+extern void arm_m_deactivate_hw_bpts(void);
+extern void arm_m_enable_hw_bpts(void);
+extern void arm_m_disable_hw_bpts(void);
 
-static void (*gdb_entry)(struct gdb_regs *);
+static gdb_handler_t __gdb_handler;
 
-static bool arm_insert_bpt(void *addr, int type) {
-	int i;
+void arm_debug_monitor_handler(struct gdb_regs *regs) {
+	assert(__gdb_handler);
 
-	for (i = 0; i < max_hw_breakpoints; i++) {
-		if ((REG32_LOAD(FP_COMP(i)) & ~0x1) == 0) {
-			REG32_STORE(FP_COMP(i), (uint32_t)addr | 0x1);
-			break;
-		}
-	}
-	return (i != max_hw_breakpoints);
+	__gdb_handler(regs);
 }
 
-static bool arm_remove_bpt(void *addr, int type) {
-	int i;
-
-	for (i = 0; i < max_hw_breakpoints; i++) {
-		if ((REG32_LOAD(FP_COMP(i)) & ~0x1) == (uint32_t)addr) {
-			REG32_STORE(FP_COMP(i), 0);
-			break;
-		}
-	}
-	return (i != max_hw_breakpoints);
+void gdb_set_handler(gdb_handler_t handler) {
+	__gdb_handler = handler;
 }
 
-static void arm_remove_all_bpts(void) {
-	int i;
+bool gdb_set_bpt(int type, void *addr, int kind) {
+	bool ret;
 
-	for (i = 0; i < max_hw_breakpoints; i++) {
-		REG32_CLEAR(FP_COMP(i), 0x1);
+	switch (type) {
+	case GDB_BPT_TYPE_HARD:
+		ret = arm_m_set_hw_bpt(addr);
+		break;
+
+	default:
+		ret = false;
+		break;
+	}
+
+	return ret;
+}
+
+bool gdb_remove_bpt(int type, void *addr, int kind) {
+	bool ret;
+
+	switch (type) {
+	case GDB_BPT_TYPE_HARD:
+		ret = arm_m_remove_hw_bpt(addr);
+		break;
+
+	default:
+		ret = false;
+		break;
+	}
+
+	return ret;
+}
+
+void gdb_remove_all_bpts(void) {
+	arm_m_remove_hw_bpts();
+}
+
+void gdb_activate_all_bpts(void) {
+	arm_m_activate_hw_bpts();
+}
+
+void gdb_deactivate_all_bpts(void) {
+	arm_m_deactivate_hw_bpts();
+}
+
+bool gdb_enable_bpts(int type) {
+	bool ret;
+
+	switch (type) {
+#if HW_BREAKPOINTS
+	case GDB_BPT_TYPE_HARD:
+		arm_m_enable_hw_bpts();
+		ret = true;
+		break;
+#endif
+	default:
+		ret = false;
+		break;
+	}
+
+	return ret;
+}
+
+void gdb_disable_bpts(int type) {
+	switch (type) {
+	case GDB_BPT_TYPE_HARD:
+		arm_m_disable_hw_bpts();
+		break;
+
+	default:
+		break;
 	}
 }
 
-static size_t arm_read_reg(struct gdb_regs *regs, unsigned regnum,
-    void *regval) {
+size_t gdb_read_reg(struct gdb_regs *regs, int regnum, void *regval) {
 	size_t regsize;
 
 	if (regnum < 16) {
@@ -70,38 +125,6 @@ static size_t arm_read_reg(struct gdb_regs *regs, unsigned regnum,
 	else {
 		regsize = 0;
 	}
+
 	return regsize;
-}
-
-void arm_debug_monitor_handler(struct gdb_regs *regs) {
-	gdb_entry(regs);
-}
-
-void gdb_arch_init(struct gdb_arch *arch) {
-	arch->insert_bpt = arm_insert_bpt;
-	arch->remove_bpt = arm_remove_bpt;
-	arch->remove_all_bpts = arm_remove_all_bpts;
-	arch->read_reg = arm_read_reg;
-}
-
-void gdb_arch_prepare(void (*entry)(struct gdb_regs *)) {
-	uint32_t fp_ctrl;
-
-	gdb_entry = entry;
-
-	fp_ctrl = REG32_LOAD(FP_CTRL);
-	max_hw_breakpoints = (((fp_ctrl >> 12) & 0x7) << 4) |
-	                     ((fp_ctrl >> 4) & 0xf);
-
-	REG32_STORE(FP_LAR, FP_LAR_UNLOCK_KEY);
-	REG32_STORE(FP_CTRL, fp_ctrl | 0x3);
-	REG32_ORIN(DCB_DEMCR, DCB_DEMCR_MON_EN);
-}
-
-void gdb_arch_cleanup(void) {
-	arm_remove_all_bpts();
-
-	REG32_STORE(FP_CTRL, (REG32_LOAD(FP_CTRL) & ~0x1) | 0x2);
-	REG32_STORE(FP_LAR, 0);
-	REG32_CLEAR(DCB_DEMCR, DCB_DEMCR_MON_EN);
 }

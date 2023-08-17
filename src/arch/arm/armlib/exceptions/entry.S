@@ -10,6 +10,7 @@
 #include <asm/cp15.h>
 #include <asm/modes.h>
 #include <asm/ptrace.h>
+#include <kernel/kgdb.h>
 
 /**
  * Purpose
@@ -99,6 +100,10 @@ irq_handler:
 	excpt_entry correction=4
 	save_fpu_dec tmp=r0, stack=sp, upd=1
 	bl      interrupt_handle
+#if KGDB
+	mov     r0, sp
+	bl      kgdb_break_pending
+#endif
 	load_fpu_inc tmp=r0, stack=sp, upd=1
 	excpt_exit prev_mode=ARM_MODE_IRQ
 

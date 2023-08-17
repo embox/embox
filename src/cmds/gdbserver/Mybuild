@@ -1,5 +1,24 @@
 package embox.cmd
 
+@DefaultImpl(gdbserver_net)
+abstract module gdbserver_api {
+	source "gdbserver_common.c"
+
+	depends embox.lib.gdbstub
+}
+
+module gdbserver_net extends gdbserver_api {
+	source "gdbserver_net.c"
+
+	depends embox.compat.posix.net.socket
+}
+
+module gdbserver_serial extends gdbserver_api {
+	source "gdbserver_serial.c"
+
+	depends embox.compat.posix.termios
+}
+
 @AutoCmd
 @Cmd(name="gdbserver",
 	 help="Remote Server for the GNU Debugger",
@@ -8,26 +27,17 @@ package embox.cmd
 			gdbserver - Remote Server for the GNU Debugger
 
 		SYNOPSIS
-			gdbserver [HOST]:[PORT] [PROG] [PROG_ARGS ...]
-			gdbserver [TTY_DEV] [PROG] [PROG_ARGS ...]
-
-		DESCRIPTION
-			gdbserver is a program that allows you to run GDB on a different
-			machine than the one which is running the program being debugged
+			gdbserver [HOST]:[PORT]
+			gdbserver [TTY_DEV]
 
 		AUTHORS
 			Aleksey Zhmulin
 	 ''')
 module gdbserver {
-	source "gdbserver.c"
+	source "main.c"
 
-	depends embox.compat.posix.idx.pipe
-	depends embox.compat.posix.idx.poll
-
+	depends gdbserver_api
 	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.proc.vfork
 	depends embox.compat.posix.proc.waitpid
-
-	depends embox.compat.posix.net.socket
-	depends embox.lib.gdbstub
 }

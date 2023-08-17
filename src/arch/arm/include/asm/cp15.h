@@ -530,6 +530,11 @@ static inline int32_t cp15_get_csselr(void) {
 	return val;
 }
 
+static inline void cp15_icache_inval(void) {
+	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r"(0) : "memory");
+	isb();
+}
+
 #endif
 
 /**

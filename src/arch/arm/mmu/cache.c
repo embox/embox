@@ -12,7 +12,6 @@
 
 #include <arch/generic/dcache.h>
 #include <util/log.h>
-#include <hal/mem_barriers.h>
 
 static uint32_t get_cache_line_size(void) {
 #if __ARM_ARCH == 6 || __ARM_ARCH == 5
@@ -67,9 +66,4 @@ void dcache_flush(const void *data, size_t size) {
 		asm volatile ("mcr p15, 0, %0, c7, c14, 1" : : "r" (start));
 		start += line_size;
 	}
-}
-
-void icache_inval(void) {
-	__asm__ __volatile__("mcr p15, 0, %0, c7, c5, 0" : : "r"(0) : "memory");
-	isb();
 }

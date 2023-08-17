@@ -2,7 +2,9 @@ package embox.arch.arm.armmlib
 
 module gdbstub extends embox.lib.gdbstub {
 	source "gdbstub.c"
-	source "gdbstub.h"
+	source "hw_breakpoint.c"
 
 	source "debug_monitor.S"
+
+	source "gdbstub.h"
 }

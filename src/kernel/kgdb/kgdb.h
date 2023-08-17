@@ -8,6 +8,12 @@
 #ifndef KERNEL_KGDB_H_
 #define KERNEL_KGDB_H_
 
-extern void kgdb_init(void *entry);
+#define KGDB 1
+
+#ifndef __ASSEMBLER__
+
+extern void kgdb_start(void *entry);
+
+#endif /* !__ASSEMBLER__ */
 
 #endif /* KERNEL_KGDB_H_ */

@@ -15,41 +15,49 @@
 
 #include <module/embox/lib/gdbstub.h>
 
-struct gdb_regs;
+#define GDB_BPT_TYPE_SOFT  0
+#define GDB_BPT_TYPE_HARD  1
+#define GDB_BPT_TYPE_WATCH 2
 
-enum gdbstub_cmd {
-	GDBSTUB_CONT,
-	GDBSTUB_DETACH,
-	GDBSTUB_SEND_REPLY
-};
+#define GDB_CMD_CONT   0
+#define GDB_CMD_DETACH 1
+#define GDB_CMD_TERM   2
+#define GDB_CMD_OTHER  3
+
+#define GDB_INTERRUPT_CHAR '\x03'
 
 struct gdb_packet {
+	char buf[GDB_PACKET_SIZE + 4];
 	size_t size;
 	uint8_t checksum;
-	char buf[GDB_PACKET_SIZE + 4];
-};
-
-struct gdb_arch {
-	bool (*insert_bpt)(void *addr, int type);
-	bool (*remove_bpt)(void *addr, int type);
-	void (*remove_all_bpts)(void);
-	size_t (*read_reg)(struct gdb_regs *regs, unsigned regnum, void *regval);
 };
 
 struct gdbstub_env {
-	struct gdb_arch *arch;
 	struct gdb_regs *regs;
-	struct gdb_packet packet;
-	enum gdbstub_cmd cmd;
 };
+
+typedef void (*gdb_handler_t)(struct gdb_regs *regs);
 
 __BEGIN_DECLS
 
-extern void gdb_process_packet(struct gdbstub_env *env);
+extern int gdb_process_packet(struct gdb_packet *pkt);
+extern void gdb_process_cmd(int cmd, struct gdb_packet *pkt);
 
-extern void gdb_arch_init(struct gdb_arch *arch);
-extern void gdb_arch_prepare(void (*entry)(struct gdb_regs *));
-extern void gdb_arch_cleanup(void);
+extern void gdbstub_env_save(struct gdbstub_env *env);
+extern void gdbstub_env_restore(struct gdbstub_env *env);
+
+extern void gdb_set_handler(gdb_handler_t handler);
+
+extern bool gdb_set_bpt(int type, void *addr, int kind);
+extern bool gdb_remove_bpt(int type, void *addr, int kind);
+extern void gdb_remove_all_bpts(void);
+extern void gdb_activate_all_bpts(void);
+extern void gdb_deactivate_all_bpts(void);
+extern bool gdb_enable_bpts(int type);
+extern void gdb_disable_bpts(int type);
+
+extern size_t gdb_read_reg(struct gdb_regs *regs, int regnum, void *regval);
+extern size_t gdb_write_reg(struct gdb_regs *regs, int regnum, void *regval);
 
 __END_DECLS
 

@@ -25,22 +25,20 @@ extern int system_abs_time_init(void);
  * The setup of the system, the run level and execution of the idle function.
  */
 void kernel_start(void) {
-
 	kernel_init();
 
-	kgdb_init(init);
+	kgdb_start(init);
 
 	init();
 
 	system_abs_time_init();
-	
+
 	system_start();
 
 	while (1) {
 		arch_idle();
 	}
 }
-
 
 /**
  * The initialization functions are called to set up interrupts, perform
