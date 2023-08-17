@@ -41,8 +41,13 @@ static int gen_field_int(const char *dev_name,
 		sprintf(def, "#define CONF_%s_%s",
 			dev_name, prop_name);
 	} else {
-		sprintf(def, "#define CONF_%s_%s_%s",
-			dev_name, prop_name, f->name);
+		if (prop_name != NULL && strlen(prop_name) != 0) {
+			sprintf(def, "#define CONF_%s_%s_%s",
+					dev_name, prop_name, f->name);
+		} else {
+			sprintf(def, "#define CONF_%s_%s",
+					dev_name, f->name);
+		}
 	}
 	sprintf(buf, "%-50s %s", def, f->val);
 	printf("%s\n", buf);
