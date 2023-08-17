@@ -17,6 +17,11 @@
 
 #define I2C_XMIT_TIMEOUT 1000
 
+/* FIXME from cube B-L475E-IOT01/stm32l475e_iot01.h */
+#ifndef DISCOVERY_I2Cx_TIMING
+#define DISCOVERY_I2Cx_TIMING                     ((uint32_t)0x00702681)
+#endif /* DISCOVERY_I2Cx_TIMING */
+
 static int stm32_i2c_slave_select(struct stm32_i2c *adapter, int slave_addr) {
 	I2C_HandleTypeDef *i2c_handle = adapter->i2c_handle;
 

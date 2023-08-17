@@ -5,19 +5,22 @@
  * @author  Alexander Kalmuk
  */
 #include <string.h>
+#include <assert.h>
 
 #include <drivers/i2c/i2c.h>
 #include <drivers/gpio/gpio.h>
 
 #include <kernel/irq.h>
 
-#include <embox/unit.h>
-#include <framework/mod/options.h>
-#include <drivers/i2c/stm32_i2c_conf.h>
-
 #include "stm32_i2c.h"
 
 #include <config/board_config.h>
+
+#include <bsp/stm32cube_hal.h>
+
+#include <embox/unit.h>
+#include <framework/mod/options.h>
+#include <module/embox/driver/i2c/stm32_i2c.h>
 
 EMBOX_UNIT_INIT(stm32_i2c1_init);
 
@@ -29,8 +32,8 @@ static I2C_HandleTypeDef i2c1_handle;
 static struct stm32_i2c stm32_i2c1_priv = {
 	.i2c_handle = &i2c1_handle,
 	.i2c = I2C1,
-	.event_irq = I2C1_EVENT_IRQ,
-	.error_irq = I2C1_ERROR_IRQ,
+	.event_irq = CONF_I2C1_EVENT_IRQ,
+	.error_irq = CONF_I2C1_ERROR_IRQ,
 };
 
 static struct i2c_adapter stm32_i2c1_adap = {
@@ -39,7 +42,6 @@ static struct i2c_adapter stm32_i2c1_adap = {
 };
 
 static void stm32_i2c_gpio_init(I2C_HandleTypeDef *hi2c) {
-
 	/* CONF_I2C1_CLK_ENABLE_SCL(); */
 	gpio_setup_mode(CONF_I2C1_PIN_SCL_PORT, CONF_I2C1_PIN_SCL_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_I2C1_PIN_SCL_AF) |
@@ -67,6 +69,9 @@ static int stm32_i2c1_init(void) {
 extern irq_return_t i2c_ev_irq_handler(unsigned int irq_nr, void *data);
 extern irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data);
 
-STATIC_IRQ_ATTACH(I2C1_EVENT_IRQ, i2c_ev_irq_handler, &i2c1_handle);
-STATIC_IRQ_ATTACH(I2C1_ERROR_IRQ, i2c_er_irq_handler, &i2c1_handle);
+static_assert(CONF_I2C1_EVENT_IRQ == I2C1_EV_IRQn, "");
+static_assert(CONF_I2C1_ERROR_IRQ == I2C1_EV_IRQn, "");
+
+STATIC_IRQ_ATTACH(CONF_I2C1_EVENT_IRQ, i2c_ev_irq_handler, &i2c1_handle);
+STATIC_IRQ_ATTACH(CONF_I2C1_ERROR_IRQ, i2c_er_irq_handler, &i2c1_handle);
 #endif
