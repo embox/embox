@@ -1,5 +1,8 @@
 package embox.driver.sensors.stm32f3discovery
 
+/* L3GD20 and LSM303DLHC are used */
+/* L3GD20 and LSM303DLHC are used */
+/* I3G4250D and LSM303AGR are used  in E02 revision */ 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module gyro {
 	option number log_level = 1
