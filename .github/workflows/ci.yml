@@ -27,6 +27,7 @@ jobs:
           - ppc/qemu
           - microblaze/qemu
           - usermode86/debug
+          - riscv64/qemu
     container:
       image: embox/emdocker-test
       options: --privileged -v /:/host
