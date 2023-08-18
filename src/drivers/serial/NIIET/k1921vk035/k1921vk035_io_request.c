@@ -45,7 +45,7 @@ irq_return_t uart_io_request_handler(unsigned int irq_nr, void *data) {
                 /* store in intermediate buffer */
                 int res = ring_buff_enqueue(io_req->rx_buff, &ch, 1);
                 if(res == 0) {
-                    printk("sKAJD:DJS\n");
+                    /* TODO: no one wants to read out data so intermediate buffer is overflowed, what do we do? */
                 }
             } break;
 
@@ -154,6 +154,7 @@ int io_request_read_timeout(char* buf, size_t count, int32_t timeout_ms) {
     int wait_res = sem_timedwait(&io_request.semaphore, &wait_time);
     if(wait_res == -ETIMEDOUT) {
         io_request_clean();
+        /* TODO: hack - we should calculate how much we actially read */
         return count - 1;
     }
     return count;
