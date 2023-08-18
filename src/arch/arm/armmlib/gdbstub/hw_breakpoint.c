@@ -127,7 +127,7 @@ void arm_m_enable_hw_bpts(void) {
 	REG32_ORIN(DCB_DEMCR, DCB_DEMCR_MON_EN);
 
 	hw_bpts_enabled = true;
-	hw_bpts_activated = true;
+	hw_bpts_activated = false;
 }
 
 void arm_m_disable_hw_bpts(void) {
