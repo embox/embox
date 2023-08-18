@@ -122,6 +122,8 @@ void arm_deactivate_sw_bpts(void) {
 		}
 	}
 
+	cp15_icache_inval();
+
 	sw_bpts_activated = false;
 }
 
