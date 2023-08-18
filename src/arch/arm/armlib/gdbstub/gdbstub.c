@@ -11,9 +11,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <arch/generic/dcache.h>
 #include <arm/exception.h>
-#include <asm/cp15.h>
 #include <debug/gdbstub.h>
 
 #include <framework/mod/options.h>
@@ -44,7 +42,6 @@ int arm_debug_fault_handler(uint32_t nr, void *data) {
 	assert(__gdb_handler);
 
 	__gdb_handler((void *)&((excpt_context_t *)data)->ptregs);
-	cp15_icache_inval();
 
 	return 0;
 }

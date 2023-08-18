@@ -10,6 +10,8 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include <asm/cp15.h>
+#include <arch/generic/dcache.h>
 #include <framework/mod/options.h>
 
 #define SW_BPT_COUNT OPTION_GET(NUMBER, sw_breakpoint_count)
@@ -18,8 +20,6 @@ struct sw_breakpoint {
 	void *addr;
 	uint32_t orig;
 };
-
-extern void dcache_flush(const void *p, size_t size);
 
 static const uint32_t bpt_instr = 0xe1200070;
 
@@ -103,6 +103,8 @@ void arm_activate_sw_bpts(void) {
 		}
 	}
 
+	cp15_icache_inval();
+
 	sw_bpts_activated = true;
 }
 
@@ -125,7 +127,7 @@ void arm_deactivate_sw_bpts(void) {
 
 void arm_enable_sw_bpts(void) {
 	sw_bpts_enabled = true;
-	sw_bpts_activated = true;
+	sw_bpts_activated = false;
 }
 
 void arm_disable_sw_bpts(void) {

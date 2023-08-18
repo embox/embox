@@ -203,7 +203,7 @@ void arm_enable_hw_bpts(void) {
 	CP14_STORE(DBGDSCRext, dbgdscr);
 
 	hw_bpts_enabled = true;
-	hw_bpts_activated = true;
+	hw_bpts_activated = false;
 }
 
 void arm_disable_hw_bpts(void) {

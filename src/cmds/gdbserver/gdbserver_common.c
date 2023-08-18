@@ -97,7 +97,9 @@ void gdbserver_start(int fd, void *entry) {
 	gdbfd = fd;
 
 	gdb_set_handler(gdbserver_bpt_handler);
+
 	assert(gdb_set_bpt(default_bpt_type, entry, 0));
+	gdb_activate_all_bpts();
 }
 
 void gdbserver_stop(void) {
