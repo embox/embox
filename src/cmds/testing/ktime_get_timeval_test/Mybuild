@@ -1,0 +1,6 @@
+package embox.cmd.testing
+@AutoCmd
+@Cmd(name = "ktime_gettv_test", help="ktime_get_timeval test")
+module ktime_gettv_test{
+    source "ktime_gettv_test.c"
+}
