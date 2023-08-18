@@ -14,6 +14,9 @@ static module cube {
 	option number eth_rx_packet_count = 4
 	option number eth_tx_packet_count = 0
 
+	@IncludeExport(path="bsp")
+	source "stm32cube_hal.h"
+
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeH7-1.8.0/Drivers/STM32H7xx_HAL_Driver/Src")

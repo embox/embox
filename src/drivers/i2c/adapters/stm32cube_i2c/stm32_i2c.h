@@ -9,7 +9,7 @@
 #ifndef SRC_DRIVERS_ADAPTERS_I2C_STM32_I2C_H_
 #define SRC_DRIVERS_ADAPTERS_I2C_STM32_I2C_H_
 
-#include <drivers/i2c/stm32_i2c_conf.h>
+#include <bsp/stm32cube_hal.h>
 
 struct stm32_i2c {
 	I2C_HandleTypeDef *i2c_handle;

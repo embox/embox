@@ -78,6 +78,14 @@
 #define CLK_SPI5      __HAL_RCC_SPI5_CLK_ENABLE()
 #define CLK_SPI6      __HAL_RCC_SPI6_CLK_ENABLE()
 
+/* I2C clocks */
+#define CLK_I2C1      __HAL_RCC_I2C1_CLK_ENABLE()
+#define CLK_I2C2      __HAL_RCC_I2C2_CLK_ENABLE()
+#define CLK_I2C3      __HAL_RCC_I2C3_CLK_ENABLE()
+#define CLK_I2C4      __HAL_RCC_I2C4_CLK_ENABLE()
+#define CLK_I2C5      __HAL_RCC_I2C5_CLK_ENABLE()
+#define CLK_I2C6      __HAL_RCC_I2C6_CLK_ENABLE()
+
 /* TIM clocks */
 #define CLK_TIM1      __HAL_RCC_TIM1_CLK_ENABLE()
 #define CLK_TIM2      __HAL_RCC_TIM2_CLK_ENABLE()

@@ -17,6 +17,11 @@
 
 #define I2C_XMIT_TIMEOUT 1000
 
+/* FIXME from cube B-L475E-IOT01/stm32l475e_iot01.h */
+#ifndef DISCOVERY_I2Cx_TIMING
+#define DISCOVERY_I2Cx_TIMING                     ((uint32_t)0x00702681)
+#endif /* DISCOVERY_I2Cx_TIMING */
+
 static int stm32_i2c_slave_select(struct stm32_i2c *adapter, int slave_addr) {
 	I2C_HandleTypeDef *i2c_handle = adapter->i2c_handle;
 
@@ -137,20 +142,16 @@ int stm32_i2c_common_init(struct stm32_i2c *adapter) {
 
 	i2c_handle->Instance             = i2c;
 
-#if defined(STM32F4_CUBE)
 	i2c_handle->Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-	i2c_handle->Init.ClockSpeed      = 400000;
 	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
-	i2c_handle->Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
 	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
+#if defined(STM32F4_CUBE)
+	i2c_handle->Init.ClockSpeed      = 400000;
+	i2c_handle->Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
 #elif defined(STM32L4_CUBE)
 	i2c_handle->Init.Timing = DISCOVERY_I2Cx_TIMING;
-	i2c_handle->Init.AddressingMode  = I2C_ADDRESSINGMODE_7BIT;
-	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
 	i2c_handle->Init.OwnAddress2Masks = I2C_OA2_NOMASK;
-	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
-	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
 #else
 #error Unsupported platform
 #endif

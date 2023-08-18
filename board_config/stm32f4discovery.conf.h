@@ -83,6 +83,48 @@ struct spi_conf spis[] = {
 	},
 };
 
+struct i2c_conf i2cs[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "I2C1",
+		.dev = {
+			.irqs = {
+				VAL("EVENT_IRQ", 31),
+				VAL("ERROR_IRQ", 32),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, PIN_6, AF4),
+				PIN("SDA", GPIO_PORT_B, PIN_9, AF4),
+			},
+			.clocks = {
+				VAL("SCL", CLK_GPIOB),
+				VAL("SDA", CLK_GPIOB),
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+	},
+	[2] = {
+		.status = DISABLED,
+		.name = "I2C2",
+		.dev = {
+			.irqs = {
+				VAL("EVENT_IRQ", 33),
+				VAL("ERROR_IRQ", 34),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, PIN_10, AF4),
+				PIN("SDA", GPIO_PORT_B, PIN_11, AF4),
+			},
+			.clocks = {
+				VAL("SCL", CLK_GPIOB),
+				VAL("SDA", CLK_GPIOB),
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+	},
+
+};
+
 struct pwm_conf pwms[] = {
 	[0] = {
 		.name = "PWM0",
@@ -102,4 +144,4 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), PWM(pwms))
+EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs), PWM(pwms))

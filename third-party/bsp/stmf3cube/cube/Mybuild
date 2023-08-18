@@ -11,6 +11,9 @@ module cube_cppflags {
 @BuildDepends(third_party.bsp.stmf3cube.stm32f3_conf)
 static module cube {
 
+	@IncludeExport(path="bsp")
+	source "stm32cube_hal.h"
+
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF3-1.11.0/Drivers/STM32F3xx_HAL_Driver/Src/")
