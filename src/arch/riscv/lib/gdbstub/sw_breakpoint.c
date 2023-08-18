@@ -10,25 +10,29 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <asm/cp15.h>
-#include <arch/generic/dcache.h>
+#include <asm/cache.h>
+
 #include <framework/mod/options.h>
 
 #define SW_BPT_COUNT OPTION_GET(NUMBER, sw_breakpoint_count)
 
+#ifdef __riscv_c
+static const uint16_t bpt_instr = 0x9002; /* c.ebreak */
+#else
+static const uint32_t bpt_instr = 0x00100073; /* ebreak */
+#endif
+
 struct sw_breakpoint {
 	void *addr;
-	uint32_t orig;
+	uint8_t orig[sizeof(bpt_instr)];
 };
-
-static const uint32_t bpt_instr = 0xe1200070;
 
 static bool sw_bpts_enabled = false;
 static bool sw_bpts_activated = false;
 
 static struct sw_breakpoint sw_bpts[SW_BPT_COUNT];
 
-bool arm_set_sw_bpt(void *addr) {
+bool riscv_set_sw_bpt(void *addr) {
 	int i;
 
 	if (!sw_bpts_enabled) {
@@ -41,7 +45,6 @@ bool arm_set_sw_bpt(void *addr) {
 			memcpy(&sw_bpts[i].orig, addr, sizeof(bpt_instr));
 			if (sw_bpts_activated) {
 				memcpy(addr, &bpt_instr, sizeof(bpt_instr));
-				dcache_flush(addr, sizeof(bpt_instr));
 			}
 			break;
 		}
@@ -50,7 +53,7 @@ bool arm_set_sw_bpt(void *addr) {
 	return (i != SW_BPT_COUNT);
 }
 
-bool arm_remove_sw_bpt(void *addr) {
+bool riscv_remove_sw_bpt(void *addr) {
 	int i;
 
 	if (!sw_bpts_enabled) {
@@ -62,7 +65,6 @@ bool arm_remove_sw_bpt(void *addr) {
 			sw_bpts[i].addr = NULL;
 			if (sw_bpts_activated) {
 				memcpy(addr, &sw_bpts[i].orig, sizeof(bpt_instr));
-				dcache_flush(addr, sizeof(bpt_instr));
 			}
 			break;
 		}
@@ -71,7 +73,7 @@ bool arm_remove_sw_bpt(void *addr) {
 	return (i != SW_BPT_COUNT);
 }
 
-void arm_remove_sw_bpts(void) {
+void riscv_remove_sw_bpts(void) {
 	int i;
 
 	if (!sw_bpts_enabled) {
@@ -82,14 +84,13 @@ void arm_remove_sw_bpts(void) {
 		if (sw_bpts[i].addr != NULL) {
 			if (sw_bpts_activated) {
 				memcpy(sw_bpts[i].addr, &sw_bpts[i].orig, sizeof(bpt_instr));
-				dcache_flush(sw_bpts[i].addr, sizeof(bpt_instr));
 			}
 			sw_bpts[i].addr = NULL;
 		}
 	}
 }
 
-void arm_activate_sw_bpts(void) {
+void riscv_activate_sw_bpts(void) {
 	int i;
 
 	if (!sw_bpts_enabled) {
@@ -99,16 +100,15 @@ void arm_activate_sw_bpts(void) {
 	for (i = 0; i < SW_BPT_COUNT; i++) {
 		if (sw_bpts[i].addr != NULL) {
 			memcpy(sw_bpts[i].addr, &bpt_instr, sizeof(bpt_instr));
-			dcache_flush(sw_bpts[i].addr, sizeof(bpt_instr));
 		}
 	}
 
-	cp15_icache_inval();
+	riscv_icache_flush();
 
 	sw_bpts_activated = true;
 }
 
-void arm_deactivate_sw_bpts(void) {
+void riscv_deactivate_sw_bpts(void) {
 	int i;
 
 	if (!sw_bpts_enabled) {
@@ -118,20 +118,18 @@ void arm_deactivate_sw_bpts(void) {
 	for (i = 0; i < SW_BPT_COUNT; i++) {
 		if (sw_bpts[i].addr != NULL) {
 			memcpy(sw_bpts[i].addr, &sw_bpts[i].orig, sizeof(bpt_instr));
-			dcache_flush(sw_bpts[i].addr, sizeof(bpt_instr));
 		}
 	}
 
-	cp15_icache_inval();
+	riscv_icache_flush();
 
 	sw_bpts_activated = false;
 }
 
-void arm_enable_sw_bpts(void) {
+void riscv_enable_sw_bpts(void) {
 	sw_bpts_enabled = true;
-	sw_bpts_activated = false;
 }
 
-void arm_disable_sw_bpts(void) {
+void riscv_disable_sw_bpts(void) {
 	sw_bpts_enabled = false;
 }

@@ -6,79 +6,150 @@
  * @date 13.05.23
  */
 #include <stddef.h>
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdbool.h>
 
 #include <asm/regs.h>
 #include <debug/gdbstub.h>
+#include <riscv/exception.h>
 
-#define RISCV_MAX_TRIGGERS 32
+#include <framework/mod/options.h>
 
-struct gdb_regs {
-	unsigned long r[31];
-	unsigned long mstatus;
-	unsigned long pc;
-};
+#define SW_BREAKPOINTS OPTION_GET(BOOLEAN, sw_breakpoints)
+#define HW_BREAKPOINTS OPTION_GET(BOOLEAN, hw_breakpoints)
+#define WATCHPOINTS    OPTION_GET(BOOLEAN, watchpoints)
 
-extern int (*riscv_excpt_table[16])(uint32_t nr, void *data);
+extern bool riscv_set_sw_bpt(void *addr);
+extern bool riscv_remove_sw_bpt(void *addr);
+extern void riscv_remove_sw_bpts(void);
+extern void riscv_activate_sw_bpts(void);
+extern void riscv_deactivate_sw_bpts(void);
+extern void riscv_enable_sw_bpts(void);
+extern void riscv_disable_sw_bpts(void);
 
-static void *triggers[RISCV_MAX_TRIGGERS];
-static unsigned long trigger_count;
+extern bool riscv_set_hw_bpt(void *addr);
+extern bool riscv_remove_hw_bpt(void *addr);
+extern void riscv_remove_hw_bpts(void);
+extern void riscv_activate_hw_bpts(void);
+extern void riscv_deactivate_hw_bpts(void);
+extern void riscv_enable_hw_bpts(void);
+extern void riscv_disable_hw_bpts(void);
 
-static void (*gdb_entry)(struct gdb_regs *);
+static gdb_handler_t __gdb_handler;
 
-static bool riscv_insert_bpt(void *addr, int type) {
-	unsigned long tdata1;
-	unsigned long i;
+int riscv_bpt_excpt_handler(long unsigned nr, void *data) {
+	assert(__gdb_handler);
 
-	for (i = 0; i < trigger_count; i++) {
-		if (triggers[i] == NULL) {
-			triggers[i] = addr;
-			write_csr(tselect, i);
-			tdata1 = read_csr(tdata1);
-			tdata1 |= MCONTROL_EXECUTE;
-			tdata1 |= MCONTROL_M;
-			tdata1 &= ~MCONTROL_MATCH;
-			tdata1 &= ~MCONTROL_ACTION;
-			tdata1 &= ~MCONTROL_SIZELO;
-			write_csr(tdata1, tdata1);
-			write_csr(tdata2, (unsigned long)addr);
-			break;
-		}
-	}
-	return (i != trigger_count);
+	__gdb_handler((void *)&((excpt_context_t *)data)->ptregs);
+
+	return 0;
 }
 
-static bool riscv_remove_bpt(void *addr, int type) {
-	unsigned long i;
-
-	for (i = 0; i < trigger_count; i++) {
-		if (triggers[i] == addr) {
-			triggers[i] = NULL;
-			write_csr(tselect, i);
-			write_csr(tdata1, 0);
-			break;
-		}
-	}
-	return (i != trigger_count);
+void gdb_set_handler(gdb_handler_t handler) {
+	__gdb_handler = handler;
 }
 
-static void riscv_remove_all_bpts(void) {
-	unsigned long i;
+bool gdb_set_bpt(int type, void *addr, int kind) {
+	bool ret;
 
-	for (i = 0; i < trigger_count; i++) {
-		if (triggers[i] != NULL) {
-			triggers[i] = NULL;
-			write_csr(tselect, i);
-			write_csr(tdata1, 0);
-			break;
-		}
+	switch (type) {
+	case GDB_BPT_TYPE_SOFT:
+		ret = riscv_set_sw_bpt(addr);
+		break;
+
+	case GDB_BPT_TYPE_HARD:
+		ret = riscv_set_hw_bpt(addr);
+		break;
+
+	default:
+		ret = false;
+		break;
+	}
+
+	return ret;
+}
+
+bool gdb_remove_bpt(int type, void *addr, int kind) {
+	bool ret;
+
+	switch (type) {
+	case GDB_BPT_TYPE_SOFT:
+		ret = riscv_remove_sw_bpt(addr);
+		break;
+
+	case GDB_BPT_TYPE_HARD:
+		ret = riscv_remove_hw_bpt(addr);
+		break;
+
+	default:
+		ret = false;
+		break;
+	}
+
+	return ret;
+}
+
+void gdb_remove_all_bpts(void) {
+	riscv_remove_sw_bpts();
+	riscv_remove_hw_bpts();
+}
+
+void gdb_activate_all_bpts(void) {
+	riscv_activate_sw_bpts();
+	riscv_activate_hw_bpts();
+}
+
+void gdb_deactivate_all_bpts(void) {
+	riscv_deactivate_sw_bpts();
+	riscv_deactivate_hw_bpts();
+}
+
+bool gdb_enable_bpts(int type) {
+	bool ret;
+
+	riscv_excpt_table[EXC_BREAKPOINT] = riscv_bpt_excpt_handler;
+
+	switch (type) {
+#if SW_BREAKPOINTS
+	case GDB_BPT_TYPE_SOFT:
+		riscv_enable_sw_bpts();
+		ret = true;
+		break;
+#endif
+#if HW_BREAKPOINTS
+	case GDB_BPT_TYPE_HARD:
+		riscv_enable_hw_bpts();
+		ret = true;
+		break;
+#endif
+	default:
+		ret = false;
+		break;
+	}
+
+	return ret;
+}
+
+void gdb_disable_bpts(int type) {
+	riscv_excpt_table[EXC_BREAKPOINT] = NULL;
+
+	switch (type) {
+	case GDB_BPT_TYPE_SOFT:
+		riscv_disable_sw_bpts();
+		break;
+
+	case GDB_BPT_TYPE_HARD:
+		riscv_disable_hw_bpts();
+		break;
+
+	default:
+		break;
 	}
 }
 
-static size_t riscv_read_reg(struct gdb_regs *regs, unsigned regnum,
-    void *regval) {
+size_t gdb_read_reg(struct gdb_regs *regs, int regnum, void *regval) {
 	size_t regsize;
 
 	if (regnum == 0) {
@@ -96,47 +167,6 @@ static size_t riscv_read_reg(struct gdb_regs *regs, unsigned regnum,
 	else {
 		regsize = 0;
 	}
+
 	return regsize;
-}
-
-static int riscv_handle_bpt_excpt(uint32_t nr, void *data) {
-	((struct gdb_regs *)data)->r[33] -= 4;
-	gdb_entry(data);
-	return 0;
-}
-
-void gdb_arch_init(struct gdb_arch *arch) {
-	arch->insert_bpt = riscv_insert_bpt;
-	arch->remove_bpt = riscv_remove_bpt;
-	arch->remove_all_bpts = riscv_remove_all_bpts;
-	arch->read_reg = riscv_read_reg;
-}
-
-void gdb_arch_prepare(void (*entry)(struct gdb_regs *)) {
-	unsigned long tselect;
-	unsigned long tdata1;
-	int type;
-
-	gdb_entry = entry;
-	riscv_excpt_table[EXC_BREAKPOINT] = riscv_handle_bpt_excpt;
-
-	for (trigger_count = 0; trigger_count < RISCV_MAX_TRIGGERS;
-	     trigger_count++) {
-		write_csr(tselect, trigger_count);
-		tselect = read_csr(tselect);
-		tselect &= ~(1UL << (__riscv_xlen - 1));
-		if (tselect != trigger_count) {
-			break;
-		}
-		tdata1 = read_csr(tdata1);
-		type = (tdata1 >> (__riscv_xlen - 4)) & 0xf;
-		if (type == 0) {
-			break;
-		}
-	}
-}
-
-void gdb_arch_cleanup(void) {
-	gdb_entry = NULL;
-	riscv_excpt_table[EXC_BREAKPOINT] = NULL;
 }
