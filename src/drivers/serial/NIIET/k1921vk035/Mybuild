@@ -37,4 +37,5 @@ module k1921vk035_io_request {
 	source "k1921vk035_io_request.c"
 
     depends k1921vk035_uart
+	depends embox.compat.posix.semaphore
 }
