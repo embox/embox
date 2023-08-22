@@ -1,0 +1,15 @@
+TEST_CASE {Connect with modbus_test_client and read packets from modbus_test_server 1000 times} {
+	global spawn_id
+	global embox_ip
+
+    exec ./make_test_client.sh
+
+	spawn ./test_client/mb_test_client $embox_ip 1000
+    expect {
+        -re "Failure" {
+            return 1
+        }
+        -re "Success" {
+        }
+    }
+}
