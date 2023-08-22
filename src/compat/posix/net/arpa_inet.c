@@ -19,10 +19,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/array.h>
 
-const struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
-const struct in6_addr in6addr_loopback = IN6ADDR_LOOPBACK_INIT;
+#include <util/array.h>
 
 static int inet_to_str(const struct in_addr *in, char *buff,
 		socklen_t buff_sz) {
@@ -276,14 +274,20 @@ int inet_pton(int af, const char *buff, void *addr) {
 struct in_addr inet_makeaddr(in_addr_t net, in_addr_t host) {
 	struct in_addr in;
 
-	if (net < 128)
+	if (net < 128) {
 		in.s_addr = (net << IN_CLASSA_NSHIFT) | (host & IN_CLASSA_HOST);
-	else if (net < 65536)
+	}
+	else if (net < 65536) {
 		in.s_addr = (net << IN_CLASSB_NSHIFT) | (host & IN_CLASSB_HOST);
-	else if (net < 16777216L)
+	}
+	else if (net < 16777216L) {
 		in.s_addr = (net << IN_CLASSC_NSHIFT) | (host & IN_CLASSC_HOST);
-	else
+	}
+	else {
 		in.s_addr = net | host;
+	}
+
 	in.s_addr = htonl(in.s_addr);
+
 	return in;
 }

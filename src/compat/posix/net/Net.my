@@ -63,17 +63,6 @@ static module gethostbyname {
 	depends embox.net.util.hostent
 }
 
-static module gethostent {
-	option string path_to_hosts="/hosts"
-	source "gethostent.c"
-	@InitFS
-	source "hosts"
-
-	depends embox.compat.posix.net.inet_addr
-	depends embox.compat.libc.stdio.open
-	depends embox.net.util.hostent
-}
-
 static module getnetbyaddr {
 	source "getnetbyaddr.c"
 
@@ -147,7 +136,8 @@ static module herror {
 }
 
 static module inet_addr {
-	source "inet_addr.c"
+	source "netinet_in.c"
+	source "arpa_inet.c"
 
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.stdio.sprintf
