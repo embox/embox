@@ -4,5 +4,5 @@ static module dlist {
 	source "dlist_debug.h"
 	source "dlist_debug.c"
 
-	option number debug=1
+	option number debug=0
 }

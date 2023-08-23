@@ -181,7 +181,7 @@ static inline void dlist_del_init(struct dlist_head *head) {
 	dlist_del(head);
 	dlist_init(head);
 }
-#else
+#else /* !DLIST_DEBUG_VERSION */
 
 /** The implementation of the #DLIST_INIT macro */
 #define __DLIST_INIT(head) { &(head), &(head)}
@@ -278,6 +278,6 @@ static inline void dlist_del_init(struct dlist_head *head) {
 	dlist_init(head);
 }
 
-#endif
+#endif /* DLIST_DEBUG_VERSION */
 
 #endif /* DLIST_DEBUG_H_ */
