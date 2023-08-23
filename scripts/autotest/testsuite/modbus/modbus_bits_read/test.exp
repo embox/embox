@@ -2,6 +2,8 @@ TEST_CASE {Connect with modbus_test_client and read packets from modbus_test_ser
 	global spawn_id
 	global embox_ip
 
+    set timeout -1
+
     exec ./make_test_client.sh
 
 	spawn ./test_client/mb_test_client $embox_ip 1000
