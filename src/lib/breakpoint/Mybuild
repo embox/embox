@@ -1,0 +1,22 @@
+package embox.lib
+
+abstract module breakpoint {
+	option number bpt_count=64
+
+	source "breakpoint.c"
+
+	@IncludeExport(path="debug")
+	source "breakpoint.h"
+}
+
+@DefaultImpl(sw_breakpoint_ops_stub)
+abstract module sw_breakpoint_ops {
+}
+
+@DefaultImpl(hw_breakpoint_ops_stub)
+abstract module hw_breakpoint_ops {
+}
+
+@DefaultImpl(watchpoint_ops_stub)
+abstract module watchpoint_ops {
+}

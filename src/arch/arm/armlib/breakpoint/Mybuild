@@ -1,0 +1,20 @@
+package embox.arch.arm.armlib
+
+module breakpoint extends embox.lib.breakpoint {
+	source "breakpoint.c"
+	source "breakpoint.h"
+
+	depends embox.lib.sw_breakpoint_ops
+	depends embox.lib.hw_breakpoint_ops
+	depends embox.lib.watchpoint_ops
+}
+
+module sw_breakpoint_ops extends embox.lib.sw_breakpoint_ops {
+	source "sw_breakpoint_ops.c"
+
+	depends embox.arch.arm.cache
+}
+
+module hw_breakpoint_ops extends embox.lib.hw_breakpoint_ops {
+	source "hw_breakpoint_ops.c"
+}

@@ -61,5 +61,3 @@ abstract module vfork_entry { }
 abstract module fork_entry { }
 
 abstract module mem_barriers { }
-
-abstract module gdb { }

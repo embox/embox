@@ -2,8 +2,7 @@ package embox.arch.riscv
 
 module gdbstub extends embox.lib.gdbstub {
 	source "gdbstub.c"
-	source "sw_breakpoint.c"
-	source "hw_breakpoint.c"
-	
 	source "gdbstub.h"
+
+	depends embox.arch.riscv.breakpoint
 }

@@ -13,6 +13,7 @@
 #include <drivers/diag.h>
 #include <kernel/printk.h>
 #include <debug/gdbstub.h>
+#include <debug/breakpoint.h>
 
 static int default_bpt_type;
 
@@ -37,18 +38,13 @@ static void kgdb_write(const char *src, size_t nbyte) {
 	}
 }
 
-static void kgdb_bpt_handler(struct gdb_regs *regs) {
+static void kgdb_bpt_handler(struct bpt_context *ctx) {
 	static bool connected = false;
 
-	struct gdbstub_env env;
 	struct gdb_packet pkt;
 	int cmd;
 
-	gdbstub_env_save(&env);
-	env.regs = regs;
-	gdbstub_env_restore(&env);
-
-	gdb_deactivate_all_bpts();
+	bpt_disable_all();
 
 	if (connected) {
 		gdb_process_cmd(GDB_CMD_CONT, &pkt);
@@ -62,7 +58,7 @@ static void kgdb_bpt_handler(struct gdb_regs *regs) {
 		kgdb_read(pkt.buf, sizeof(pkt.buf));
 		kgdb_write("+", 1);
 
-		cmd = gdb_process_packet(&pkt);
+		cmd = gdb_process_packet(&pkt, ctx);
 
 		if (cmd == GDB_CMD_CONT) {
 			break;
@@ -70,15 +66,15 @@ static void kgdb_bpt_handler(struct gdb_regs *regs) {
 
 		if (cmd == GDB_CMD_DETACH) {
 			connected = false;
-			gdb_remove_all_bpts();
+			bpt_remove_all();
 			break;
 		}
 
 		kgdb_write(pkt.buf, pkt.size);
 	}
 
-	gdb_remove_bpt(default_bpt_type, GDB_REGS_PC(regs), 0);
-	gdb_activate_all_bpts();
+	bpt_remove(default_bpt_type, GDB_BPT_CTX_PC(ctx));
+	bpt_enable_all();
 }
 
 static bool kgdb_break_required(void) {
@@ -93,23 +89,23 @@ static bool kgdb_break_required(void) {
 
 void kgdb_break_pending(void *irq_ctx) {
 	if (kgdb_break_required()) {
-		assert(gdb_set_bpt(default_bpt_type, IRQ_CONTEXT_PC(irq_ctx), 0));
+		assert(bpt_set(default_bpt_type, GDB_IRQ_CTX_PC(irq_ctx)));
 	}
 }
 
 void kgdb_start(void *entry) {
+	struct bpt_env env;
+
 	printk("Remote debugging using diag\n");
 
-	if (gdb_enable_bpts(GDB_BPT_TYPE_HARD)) {
-		default_bpt_type = GDB_BPT_TYPE_HARD;
+	bpt_env_init(&env, kgdb_bpt_handler, true);
+	bpt_env_restore(&env);
+
+	if (bpt_set(BPT_TYPE_SOFT, entry)) {
+		default_bpt_type = BPT_TYPE_SOFT;
 	}
 	else {
-		assert(gdb_enable_bpts(GDB_BPT_TYPE_SOFT));
-		default_bpt_type = GDB_BPT_TYPE_SOFT;
+		assert(bpt_set(BPT_TYPE_HARD, entry));
+		default_bpt_type = BPT_TYPE_HARD;
 	}
-
-	gdb_set_handler(kgdb_bpt_handler);
-
-	assert(gdb_set_bpt(default_bpt_type, entry, 0));
-	gdb_activate_all_bpts();
 }

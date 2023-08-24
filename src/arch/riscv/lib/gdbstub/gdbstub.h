@@ -8,22 +8,16 @@
 #ifndef RISCV_LIB_GDBSTUB_H_
 #define RISCV_LIB_GDBSTUB_H_
 
-#include <stdint.h>
+#include <debug/breakpoint.h>
 
 #define GDB_PACKET_SIZE (sizeof(long) * 33 * 2)
 
 #define GDB_FEATURE_STR "l<target><architecture>riscv</architecture></target>"
 
-#define GDB_REGS_PC(regs) (void *)((regs)->pc)
+#define GDB_BPT_CTX_PC(ctx) (void *)(((struct bpt_context *)(ctx))->pc)
 
-#define GDB_REGS_SP(regs) (void *)((regs)->r[1])
+#define GDB_BPT_CTX_SP(ctx) (void *)(((struct bpt_context *)(ctx))->r[1])
 
-#define IRQ_CONTEXT_PC(ctx) NULL
-
-struct gdb_regs {
-	unsigned long r[31];
-	unsigned long mstatus;
-	unsigned long pc;
-};
+#define GDB_IRQ_CTX_PC(ctx) GDB_BPT_CTX_PC(ctx)
 
 #endif /* RISCV_LIB_GDBSTUB_H_ */
