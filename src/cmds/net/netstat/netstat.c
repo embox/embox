@@ -7,6 +7,7 @@
  * @author Alexandr Chernakov
  */
 
+#include "stdint.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -23,9 +24,15 @@
 
 #define NETSTAT_LISTENING		0x0001
 #define NETSTAT_NONLISTENING	0x0002
+#define NETSTAT_HIER            0x0003
 #define NETSTAT_OUTPUT_FLAGS	0x000F
 
 static int netstat_flags;
+
+#define MAX_STATE_STR_LEN 13+1
+#define MAX_ADDR_STR_LEN INET_ADDRSTRLEN+1
+#define MAX_PORT_STR_LEN 5+1
+#define MAX_PROTO_STR_LEN 5+1
 
 static const char * sock_state_str(enum sock_state st) {
 	switch (st) {
@@ -65,67 +72,100 @@ static const char * tcp_sock_state_str(enum tcp_sock_state st) {
 	return NULL;
 }
 
-void print_inet_sock_info(const struct sock *sk) {
+void print_inet_sock_info(const struct sock *sk, int hier_mode) {
 	const struct inet_sock *in_sk;
 
 	in_sk = (const struct inet_sock *)sk;
 	assert(in_sk != NULL);
 	assert(in_sk->sk.opt.so_domain == AF_INET);
 
-	if (netstat_flags & NETSTAT_OUTPUT_FLAGS) {
-		if ((sk->state == SS_LISTENING && ~(netstat_flags & NETSTAT_LISTENING)) ||
-			(sk->state != SS_LISTENING && ~(netstat_flags & NETSTAT_NONLISTENING))) {
-			return;
-		}
-	}
+    if (netstat_flags & NETSTAT_OUTPUT_FLAGS) {
+        if (!(netstat_flags & NETSTAT_HIER)) {
+            if ((sk->state == SS_LISTENING && ~(netstat_flags & NETSTAT_LISTENING)) ||
+                    (sk->state != SS_LISTENING && ~(netstat_flags & NETSTAT_NONLISTENING))) {
+                return;
+            }
+        }
+    }
 
-	printf("%-5s ", in_sk->sk.opt.so_protocol == IPPROTO_TCP ? "tcp"
+	printf("%*s", MAX_PROTO_STR_LEN, in_sk->sk.opt.so_protocol == IPPROTO_TCP ? "tcp"
 			: in_sk->sk.opt.so_protocol == IPPROTO_UDP ? "udp"
 			: "unknown");
 
 	if (in_sk->src_in.sin_family == AF_INET) {
-		printf("%*s:%-5d ", INET_ADDRSTRLEN,
+		printf("%*s:%*d", MAX_ADDR_STR_LEN, 
 				inet_ntoa(in_sk->src_in.sin_addr),
+                MAX_PORT_STR_LEN,
 				ntohs(in_sk->src_in.sin_port));
 	}
 	else {
 		/* FIXME */
 		assert(in_sk->src_in.sin_family == AF_UNSPEC);
-		printf("%*s:%-5c ", INET_ADDRSTRLEN, "0.0.0.0", '*');
+		printf("%*s:%*c", MAX_ADDR_STR_LEN, "0.0.0.0", MAX_PORT_STR_LEN, '*');
 	}
 
 
 	if (in_sk->dst_in.sin_family == AF_INET) {
-		printf("%s:%d ", inet_ntoa(in_sk->dst_in.sin_addr),
+		printf("%*s:%*d", MAX_ADDR_STR_LEN,
+                inet_ntoa(in_sk->dst_in.sin_addr),
+                MAX_PORT_STR_LEN,
 				ntohs(in_sk->dst_in.sin_port));
 	}
 	else {
 		/* FIXME */
 		assert(in_sk->src_in.sin_family == AF_UNSPEC);
-		printf("%*s:%-5c ", INET_ADDRSTRLEN, "0.0.0.0", '*');
+		printf("%*s:%*c", MAX_ADDR_STR_LEN, "0.0.0.0", MAX_PORT_STR_LEN, '*');
 	}
 
-	printf("%s", in_sk->sk.opt.so_protocol == IPPROTO_TCP
+	printf("%*s", MAX_STATE_STR_LEN,
+            in_sk->sk.opt.so_protocol == IPPROTO_TCP
 			? tcp_sock_state_str(to_tcp_sock(&(in_sk->sk))->state)
 			: sock_state_str(sock_get_state(&in_sk->sk)));
+
+    if(hier_mode) {
+        if (to_tcp_sock(sk)->parent == NULL) {
+            printf("\tParent");
+        } else {
+            printf("\t|-Child");
+        }
+    }
 
 	printf("\n");
 }
 
-void print_info(const char *title,
+void print_proto_connections(const char *title,
 		const struct sock_proto_ops *p_ops,
-		void (*print_sock_info)(const struct sock *)) {
+		void (*print_sock_info)(const struct sock *, int hier_mode),
+        int hier_mode) {
 	const struct sock *sk = NULL;
+    const struct sock *child_sk = NULL;
 
 	if (title != NULL) {
 		printf("%s\n", title);
 	}
 
-	if (p_ops != NULL) {
-		sock_foreach(sk, p_ops) {
-			(*print_sock_info)(sk);
-		}
-	}
+    if (p_ops != NULL) {
+        if(hier_mode) {
+            sock_foreach(sk, p_ops) {
+                struct tcp_sock *sk_tcp = to_tcp_sock(sk);
+                /* looking for tcp listening sockets: */
+                if((sk->state==SS_LISTENING) && sk_tcp) {
+                    (*print_sock_info)(sk, hier_mode);
+                    /* looking for it's child sockets */
+                    sock_foreach(child_sk, p_ops) {
+                        if (to_tcp_sock(child_sk)->parent == sk_tcp) {
+                            (*print_sock_info)(child_sk, hier_mode);
+                        }
+                    }
+                    printf("\n");
+                }
+            }
+        } else {
+            sock_foreach(sk, p_ops) {
+                (*print_sock_info)(sk, hier_mode);
+            }
+        }
+    }
 }
 
 int main(int argc, char **argv) {
@@ -133,7 +173,7 @@ int main(int argc, char **argv) {
 
 	netstat_flags = 0;
 
-	while ((c = getopt(argc, argv, "cl")) != -1) {
+	while ((c = getopt(argc, argv, "cl0")) != -1) {
 		switch (c) {
 			case 'c':
 				netstat_flags |= NETSTAT_CONT;
@@ -141,20 +181,25 @@ int main(int argc, char **argv) {
 			case 'l':
 				netstat_flags |= NETSTAT_LISTENING;
 				break;
-			case 'a':
-				netstat_flags |= NETSTAT_LISTENING | NETSTAT_NONLISTENING;
-				break;
+            case '0':
+                netstat_flags &= ~NETSTAT_LISTENING; /* override this flag*/
+                netstat_flags |= NETSTAT_HIER;
+                break;
 			default:
 				break;
 		}
 	}
 
 	do {
-		print_info(
-				"Active Internet connections\n"
-				"Proto   Local Address   Foreign Address   State\n",
-				tcp_sock_ops, &print_inet_sock_info);
-		print_info(NULL, udp_sock_ops, &print_inet_sock_info);
+        printf("Active connections\n");
+        printf("%*s%*s%*s%*s\n",
+                MAX_PROTO_STR_LEN, "Proto",
+                MAX_ADDR_STR_LEN+MAX_PORT_STR_LEN+1, "Local Address:port",
+                MAX_ADDR_STR_LEN+MAX_PORT_STR_LEN+1, "Foreign Address:port",
+                MAX_STATE_STR_LEN, "State");
+		print_proto_connections(NULL, tcp_sock_ops, &print_inet_sock_info, netstat_flags&NETSTAT_HIER);
+        /* No hierarchy possible for UDP, so print in normal mode anyway*/
+		print_proto_connections(NULL, udp_sock_ops, &print_inet_sock_info, 0);
 		if (netstat_flags & NETSTAT_CONT)
 			sleep(1);
 	} while (netstat_flags & NETSTAT_CONT);
