@@ -1,7 +1,0 @@
-package embox.lib
-
-module gdbstub_breakpoint_test {
-	source "breakpoint_test.c"
-
-	depends embox.lib.gdbstub
-}

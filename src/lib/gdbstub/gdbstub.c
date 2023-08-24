@@ -14,22 +14,18 @@
 #include <stdbool.h>
 
 #include <debug/gdbstub.h>
+#include <debug/breakpoint.h>
 
-extern void gdb_pack_str(struct gdb_packet *pkt, const char *str);
-extern void gdb_pack_mem(struct gdb_packet *pkt, const void *mem, size_t nbyte);
-extern void gdb_pack_begin(struct gdb_packet *pkt);
-extern void gdb_pack_end(struct gdb_packet *pkt);
-extern bool gdb_check_mem(uintptr_t addr);
+#include "utils.h"
 
-static struct gdbstub_env __env;
-
-static void gdb_read_gen_regs_cmd(struct gdb_packet *pkt) {
+static void gdb_read_gen_regs_cmd(struct gdb_packet *pkt,
+    struct bpt_context *ctx) {
 	unsigned long regval;
 	size_t regsize;
 	int regnum;
 
 	for (regnum = 0;; regnum++) {
-		regsize = gdb_read_reg(__env.regs, regnum, &regval);
+		regsize = gdb_read_reg(ctx, regnum, &regval);
 		if (!regsize) {
 			break;
 		}
@@ -37,13 +33,13 @@ static void gdb_read_gen_regs_cmd(struct gdb_packet *pkt) {
 	}
 }
 
-static void gdb_read_reg_cmd(struct gdb_packet *pkt) {
+static void gdb_read_reg_cmd(struct gdb_packet *pkt, struct bpt_context *ctx) {
 	unsigned long regval;
 	size_t regsize;
 	int regnum;
 
 	regnum = strtoul(pkt->buf + 2, NULL, 16);
-	regsize = gdb_read_reg(__env.regs, regnum, &regval);
+	regsize = gdb_read_reg(ctx, regnum, &regval);
 
 	if (regsize) {
 		gdb_pack_mem(pkt, &regval, regsize);
@@ -70,21 +66,18 @@ static void gdb_read_mem_cmd(struct gdb_packet *pkt) {
 }
 
 static void gdb_bpt_cmd(struct gdb_packet *pkt) {
-	bool (*fn)(int, void *, int);
-	char *endptr;
+	bool (*bpt_fn)(int, void *);
 	void *addr;
 	int type;
-	int kind;
 	bool res;
 
 	type = pkt->buf[2] - '0';
-	addr = (void *)strtoul(pkt->buf + 4, &endptr, 16);
-	kind = strtoul(endptr + 1, NULL, 16);
-	fn = (pkt->buf[1] == 'Z') ? gdb_set_bpt : gdb_remove_bpt;
+	addr = (void *)strtoul(pkt->buf + 4, NULL, 16);
+	bpt_fn = (pkt->buf[1] == 'Z') ? bpt_set : bpt_remove;
 
-	res = fn(type, addr, kind);
-	if (!res && (type == GDB_BPT_TYPE_SOFT)) {
-		res = fn(GDB_BPT_TYPE_HARD, addr, kind);
+	res = bpt_fn(type, addr);
+	if (!res && (type == BPT_TYPE_SOFT)) {
+		res = bpt_fn(BPT_TYPE_HARD, addr);
 	}
 
 	if (res) {
@@ -147,7 +140,7 @@ static void gdb_query_cmd(struct gdb_packet *pkt) {
 	}
 }
 
-int gdb_process_packet(struct gdb_packet *pkt) {
+int gdb_process_packet(struct gdb_packet *pkt, struct bpt_context *ctx) {
 	int cmd;
 
 	cmd = GDB_CMD_OTHER;
@@ -169,7 +162,7 @@ int gdb_process_packet(struct gdb_packet *pkt) {
 		break;
 
 	case 'g': /* read general registers */
-		gdb_read_gen_regs_cmd(pkt);
+		gdb_read_gen_regs_cmd(pkt, ctx);
 		break;
 
 	case 'H': /* set thread */
@@ -181,7 +174,7 @@ int gdb_process_packet(struct gdb_packet *pkt) {
 		break;
 
 	case 'p': /* read register */
-		gdb_read_reg_cmd(pkt);
+		gdb_read_reg_cmd(pkt, ctx);
 		break;
 
 	case 'q': /* query command */
@@ -223,12 +216,4 @@ void gdb_process_cmd(int cmd, struct gdb_packet *pkt) {
 	}
 
 	gdb_pack_end(pkt);
-}
-
-void gdbstub_env_save(struct gdbstub_env *env) {
-	memcpy(env, &__env, sizeof(struct gdbstub_env));
-}
-
-void gdbstub_env_restore(struct gdbstub_env *env) {
-	memcpy(&__env, env, sizeof(struct gdbstub_env));
 }

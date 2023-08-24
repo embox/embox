@@ -1,0 +1,13 @@
+package embox.lib
+
+module sw_breakpoint_ops_stub extends sw_breakpoint_ops {
+	source "sw_breakpoint_ops_stub.c"
+}
+
+module hw_breakpoint_ops_stub extends hw_breakpoint_ops {
+	source "hw_breakpoint_ops_stub.c"
+}
+
+module watchpoint_ops_stub extends watchpoint_ops {
+	source "watchpoint_ops_stub.c"
+}

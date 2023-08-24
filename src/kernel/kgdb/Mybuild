@@ -11,6 +11,7 @@ module kgdb extends kgdb_api {
 	source "kgdb.h"
 
 	depends embox.lib.gdbstub
+	depends embox.lib.breakpoint
 }
 
 module no_kgdb extends kgdb_api {

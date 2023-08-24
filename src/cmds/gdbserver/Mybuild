@@ -5,6 +5,7 @@ abstract module gdbserver_api {
 	source "gdbserver_common.c"
 
 	depends embox.lib.gdbstub
+	depends embox.lib.breakpoint
 }
 
 module gdbserver_net extends gdbserver_api {

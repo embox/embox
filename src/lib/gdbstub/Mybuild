@@ -1,12 +1,6 @@
 package embox.lib
 
 abstract module gdbstub {
-	option boolean sw_breakpoints=true
-	option boolean hw_breakpoints=true
-	option boolean watchpoints=true
-
-	option number sw_breakpoint_count=32
-
 	source "gdbstub.c"
 	source "utils.c"
 

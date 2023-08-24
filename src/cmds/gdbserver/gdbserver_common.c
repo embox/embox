@@ -17,6 +17,7 @@
 #include <hal/ipl.h>
 #include <hal/arch.h>
 #include <debug/gdbstub.h>
+#include <debug/breakpoint.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/index_descriptor.h>
@@ -29,17 +30,12 @@ static int default_bpt_type;
 
 static bool connected;
 
-static void gdbserver_bpt_handler(struct gdb_regs *regs) {
-	struct gdbstub_env env;
+static void gdbserver_bpt_handler(struct bpt_context *ctx) {
 	struct gdb_packet pkt;
 	ssize_t nread;
 	int cmd;
 
-	gdbstub_env_save(&env);
-	env.regs = regs;
-	gdbstub_env_restore(&env);
-
-	gdb_deactivate_all_bpts();
+	bpt_disable_all();
 
 	sched_lock();
 	ipl_enable();
@@ -56,20 +52,20 @@ static void gdbserver_bpt_handler(struct gdb_regs *regs) {
 		nread = gdbserver_read(gdbfd, pkt.buf, sizeof(pkt.buf));
 
 		if (nread <= 0) {
-			gdb_remove_all_bpts();
+			bpt_remove_all();
 			break;
 		}
 
 		gdbserver_write(gdbfd, "+", 1);
 
-		cmd = gdb_process_packet(&pkt);
+		cmd = gdb_process_packet(&pkt, ctx);
 
 		if (cmd == GDB_CMD_CONT) {
 			break;
 		}
 
 		if (cmd == GDB_CMD_DETACH) {
-			gdb_remove_all_bpts();
+			bpt_remove_all();
 			break;
 		}
 
@@ -79,27 +75,27 @@ static void gdbserver_bpt_handler(struct gdb_regs *regs) {
 	ipl_disable();
 	sched_unlock();
 
-	gdb_remove_bpt(default_bpt_type, GDB_REGS_PC(regs), 0);
-	gdb_activate_all_bpts();
+	bpt_remove(default_bpt_type, GDB_BPT_CTX_PC(ctx));
+	bpt_enable_all();
 }
 
 void gdbserver_start(int fd, void *entry) {
+	struct bpt_env env;
+
 	assert(!connected);
 
-	if (gdb_enable_bpts(GDB_BPT_TYPE_SOFT)) {
-		default_bpt_type = GDB_BPT_TYPE_SOFT;
+	bpt_env_init(&env, gdbserver_bpt_handler, true);
+	bpt_env_restore(&env);
+
+	if (bpt_set(BPT_TYPE_SOFT, entry)) {
+		default_bpt_type = BPT_TYPE_SOFT;
 	}
 	else {
-		assert(gdb_enable_bpts(GDB_BPT_TYPE_HARD));
-		default_bpt_type = GDB_BPT_TYPE_HARD;
+		assert(bpt_set(BPT_TYPE_HARD, entry));
+		default_bpt_type = BPT_TYPE_HARD;
 	}
 
 	gdbfd = fd;
-
-	gdb_set_handler(gdbserver_bpt_handler);
-
-	assert(gdb_set_bpt(default_bpt_type, entry, 0));
-	gdb_activate_all_bpts();
 }
 
 void gdbserver_stop(void) {
@@ -107,8 +103,8 @@ void gdbserver_stop(void) {
 
 	connected = false;
 
-	gdb_remove_all_bpts();
-	gdb_disable_bpts(default_bpt_type);
+	bpt_disable_all();
+	bpt_remove_all();
 
 	gdb_process_cmd(GDB_CMD_TERM, &pkt);
 	gdbserver_write(gdbfd, pkt.buf, pkt.size);
