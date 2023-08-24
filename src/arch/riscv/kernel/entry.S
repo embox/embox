@@ -9,6 +9,7 @@
 #include <asm/asm.h>
 #include <asm/entry.h>
 #include <asm/ptrace.h>
+// #include <kernel/kgdb.h>
 
 .section .text
 
@@ -17,16 +18,22 @@
 .align 2
 riscv_trap_handler:
 	SAVE_ALL
-	la      ra, riscv_trap_exit
 	csrr    a1, mcause
 	srli    t0, a1, (__riscv_xlen - 1)
-	beqz    t0, 1f
-	j       riscv_interrupt_handler
-1:
-	mv      a0, sp
-	j       riscv_exception_handler
+	bnez    t0, 1f
 
-.align 2
+	/* exception handling */
+	mv      a0, sp
+	call    riscv_exception_handler
+	j       riscv_trap_exit
+1:
+	/* interrupt handling */
+	call    riscv_interrupt_handler
+// #if KGDB
+// 	mv      a0, sp
+// 	call    kgdb_break_pending
+// #endif
+
 riscv_trap_exit:
 	RESTORE_ALL
 	mret

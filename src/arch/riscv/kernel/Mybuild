@@ -26,6 +26,8 @@ module interrupt extends embox.arch.interrupt {
 
 module entry extends embox.arch.entry {
 	source "entry.S"
+
+	// depends embox.kernel.kgdb_api
 }
 
 module context extends embox.arch.context {
