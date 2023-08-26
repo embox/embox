@@ -176,40 +176,40 @@ void _print_mmu_regs(void) {
 	log_boot("ACTRL:                     %#10x\n", cp15_get_actrl());
 	log_boot("CPACR:                     %#10x\n", cp15_get_cpacr());
 	log_boot("Non-Secure Access Control: %#10x\n", cp15_get_nsacr());
-	log_boot("Translation Table Base 0:  %#10x\n", cp15_get_mmu_translation_table_base_0());
-	log_boot("Translation Table Base 1:  %#10x\n", cp15_get_mmu_translation_table_base_1());
-	log_boot("Domain Access Conrol:      %#10x\n", cp15_get_mmu_domain_access_control());
+	log_boot("Translation Table Base 0:  %#10x\n", cp15_get_translation_table_base_0());
+	log_boot("Translation Table Base 1:  %#10x\n", cp15_get_translation_table_base_1());
+	log_boot("Domain Access Conrol:      %#10x\n", cp15_get_domain_access_control());
 
-	fault_status = _get_mmu_data_fault_status();
+	fault_status = cp15_get_data_fault_status();
 	log_boot("Data Fault Status:         %#10x\n", fault_status);
 	if (fault_status) {
-		log_boot("Data Fault Address:        %#10x\n",  cp15_get_mmu_data_fault_address());
+		log_boot("Data Fault Address:        %#10x\n",  cp15_get_data_fault_address());
 	}
 
-	fault_status = _get_mmu_instruction_fault_status();
+	fault_status = cp15_get_instruction_fault_status();
 	log_boot("Instruction Fault Status:  %#10x\n", fault_status);
 	if (fault_status) {
-		log_boot("Instruction Fault Address: %#10x\n", cp15_get_mmu_instruction_fault_address());
+		log_boot("Instruction Fault Address: %#10x\n", cp15_get_instruction_fault_address());
 	}
 
-	log_boot("TLB lockdown:              %#10x\n", cp15_get_mmu_tlb_lockdown());
+	log_boot("TLB lockdown:              %#10x\n", cp15_get_tlb_lockdown());
 
-	log_boot("Primary Region Remap:      %#10x\n", cp15_get_mmu_primary_region_remap());
-	log_boot("Normal Memory Remap:       %#10x\n", cp15_get_mmu_normal_memory_remap());
+	log_boot("Primary Region Remap:      %#10x\n", cp15_get_primary_region_remap());
+	log_boot("Normal Memory Remap:       %#10x\n", cp15_get_normal_memory_remap());
 
-	log_boot("FSCE PID:                  %#10x\n", cp15_get_mmu_fsce_pid());
+	log_boot("FSCE PID:                  %#10x\n", cp15_get_fsce_pid());
 
 	log_boot("Context ID:                %#10x\n", cp15_get_contextidr());
 #ifdef CORTEX_A9
 	/* CP15 c15 implemented */
 	log_boot("Peripheral port remap:     %#10x\n", cp15_get_mmu_peripheral_port_memory_remap());
 
-	log_boot("TLB Lockdown Index:        %#10x\n", cp15_get_mmu_tlb_lockdown_index());
-	log_boot("TLB Lockdown VA:           %#10x\n", cp15_get_mmu_tlb_lockdown_va());
-	log_boot("TLB Lockdown PA:           %#10x\n", cp15_get_mmu_tlb_lockdown_pa());
-	log_boot("TLB Lockdown Attribues:    %#10x\n", cp15_get_mmu_tlb_lockdown_attributes());
+	log_boot("TLB Lockdown Index:        %#10x\n", cp15_get_tlb_lockdown_index());
+	log_boot("TLB Lockdown VA:           %#10x\n", cp15_get_tlb_lockdown_va());
+	log_boot("TLB Lockdown PA:           %#10x\n", cp15_get_tlb_lockdown_pa());
+	log_boot("TLB Lockdown Attribues:    %#10x\n", cp15_get_tlb_lockdown_attributes());
 	/* CP15 c11, Reserved for TCM DMA registers */
-	log_boot("PLEIDR:                    %#10x\n", _get_pleidr());
+	log_boot("PLEIDR:                    %#10x\n", cp15_get_pleidr());
 
 	if (_get_pleidr()) {
 		log_boot("PLEASR:                    %#10x\n", cp15_get_pleasr());
