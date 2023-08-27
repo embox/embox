@@ -11,5 +11,4 @@ module exceptions {
 	source "fiq_handler.c"
 
 	depends embox.arch.arm.fpu.fpu
-	// depends embox.kernel.kgdb_api
 }
