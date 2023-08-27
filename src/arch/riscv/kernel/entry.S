@@ -9,7 +9,6 @@
 #include <asm/asm.h>
 #include <asm/entry.h>
 #include <asm/ptrace.h>
-// #include <kernel/kgdb.h>
 
 .section .text
 
@@ -29,10 +28,6 @@ riscv_trap_handler:
 1:
 	/* interrupt handling */
 	call    riscv_interrupt_handler
-// #if KGDB
-// 	mv      a0, sp
-// 	call    kgdb_break_pending
-// #endif
 
 riscv_trap_exit:
 	RESTORE_ALL
