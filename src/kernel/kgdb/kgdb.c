@@ -77,6 +77,7 @@ static void kgdb_bpt_handler(struct bpt_context *ctx) {
 	bpt_enable_all();
 }
 
+#if 0
 static bool kgdb_break_required(void) {
 	while (diag_kbhit()) {
 		if (diag_getc() == GDB_INTERRUPT_CHAR) {
@@ -86,12 +87,7 @@ static bool kgdb_break_required(void) {
 
 	return false;
 }
-
-void kgdb_break_pending(void *irq_ctx) {
-	if (kgdb_break_required()) {
-		assert(bpt_set(default_bpt_type, GDB_IRQ_CTX_PC(irq_ctx)));
-	}
-}
+#endif
 
 void kgdb_start(void *entry) {
 	struct bpt_env env;
