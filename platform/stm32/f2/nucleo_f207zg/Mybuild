@@ -11,6 +11,7 @@ static module nucleo_f207zg_conf extends third_party.bsp.stmf2cube.stm32f2_conf 
 @BuildDepends(third_party.bsp.stmf2cube.cube)
 module arch extends embox.arch.arch {
 	source "arch.c"
+	source "stm32cube_compat.c"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/")
 	source "Projects/NUCLEO-F207ZG/Templates/Src/system_stm32f2xx.c"
