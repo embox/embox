@@ -18,6 +18,7 @@
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <kernel/spinlock.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/thread_sched_wait.h>
 
@@ -38,15 +39,10 @@ struct msgbuf {
 	char mtext[0];
 };
 
-struct waiting_thread {
-	struct dlist_head list_item;
-	struct thread *th;
-};
-
 struct msg_queue {
 	struct dlist_head list_item;
-	struct dlist_head receivers;
-	struct dlist_head senders;
+	struct waitq receivers;
+	struct waitq senders;
 	struct msg_buff buf;
 	struct msqid_ds ds;
 	enum msq_state state;
@@ -59,14 +55,6 @@ struct msg_queue {
 POOL_DEF(msq_pool, struct msg_queue, MSG_QUEUE_COUNT);
 
 static DLIST_DEFINE(msq_list_head);
-
-static void wakeup_waiting_threads(struct dlist_head *list) {
-	struct waiting_thread *tmp;
-
-	dlist_foreach_entry(tmp, list, list_item) {
-		sched_wakeup(&tmp->th->schedee);
-	}
-}
 
 static struct msg_queue *msg_queue_get(int msqid) {
 	struct msg_queue *tmp;
@@ -91,8 +79,8 @@ static struct msg_queue *msg_queue_create(key_t key) {
 		spin_init(&queue->lock, __SPIN_UNLOCKED);
 		msg_buff_init(&queue->buf, queue->storage, MSG_QUEUE_BUF_SIZE);
 
-		dlist_init(&queue->receivers);
-		dlist_init(&queue->senders);
+		waitq_init(&queue->receivers);
+		waitq_init(&queue->senders);
 
 		queue->id = msqid_counter++;
 		queue->key = key;
@@ -154,8 +142,9 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf) {
 	case IPC_RMID:
 		msg_queue_free(queue);
 		queue->state = MSQ_DELETED;
-		wakeup_waiting_threads(&queue->receivers);
-		wakeup_waiting_threads(&queue->senders);
+
+		waitq_wakeup_all(&queue->receivers);
+		waitq_wakeup_all(&queue->senders);
 		break;
 
 	default:
@@ -216,8 +205,8 @@ out:
 }
 
 ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
-	struct waiting_thread receiver;
 	struct msg_queue *queue;
+	struct waitq_link wql;
 	size_t msgbuf_size;
 	size_t nread;
 	ipl_t ipl;
@@ -249,7 +238,7 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 
 			if (queue->state == MSQ_FULL) {
 				queue->state = MSQ_OTHER;
-				wakeup_waiting_threads(&queue->senders);
+				waitq_wakeup_all(&queue->senders);
 			}
 
 			ret = nread - sizeof(long);
@@ -257,22 +246,23 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 		}
 
 		if (msg_buff_empty(&queue->buf)) {
+			queue->state = MSQ_EMPTY;
+
 			if (msgflg & IPC_NOWAIT) {
 				ret = SET_ERRNO(ENOMSG);
 				goto out;
 			}
 
-			queue->state = MSQ_EMPTY;
-
-			receiver.th = thread_self();
-			dlist_init(&receiver.list_item);
-			dlist_add_next(&receiver.list_item, &queue->receivers);
+			waitq_link_init(&wql);
+			waitq_wait_prepare(&queue->receivers, &wql);
 
 			spin_unlock_ipl(&queue->lock, ipl);
 
 			SCHED_WAIT(queue->state != MSQ_EMPTY);
 
 			ipl = spin_lock_ipl(&queue->lock);
+
+			waitq_wait_cleanup(&queue->receivers, &wql);
 
 			if (queue->state & MSQ_DELETED) {
 				ret = SET_ERRNO(EIDRM);
@@ -289,7 +279,7 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 
 			if (queue->state == MSQ_FULL) {
 				queue->state = MSQ_OTHER;
-				wakeup_waiting_threads(&queue->senders);
+				waitq_wakeup_all(&queue->senders);
 			}
 
 			ret = msgsz;
@@ -304,9 +294,9 @@ out:
 }
 
 int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
-	struct waiting_thread sender;
 	const struct msgbuf *msgbuf;
 	struct msg_queue *queue;
+	struct waitq_link wql;
 	size_t msgbuf_size;
 	size_t nwritten;
 	ipl_t ipl;
@@ -337,7 +327,7 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
 
 			if (queue->state == MSQ_EMPTY) {
 				queue->state = MSQ_OTHER;
-				wakeup_waiting_threads(&queue->receivers);
+				waitq_wakeup_all(&queue->receivers);
 			}
 
 			ret = 0;
@@ -352,15 +342,16 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
 			msgbuf_size -= nwritten;
 			queue->state = MSQ_FULL;
 
-			sender.th = thread_self();
-			dlist_init(&sender.list_item);
-			dlist_add_next(&sender.list_item, &queue->senders);
+			waitq_link_init(&wql);
+			waitq_wait_prepare(&queue->senders, &wql);
 
 			spin_unlock_ipl(&queue->lock, ipl);
 
 			SCHED_WAIT(queue->state != MSQ_FULL);
 
 			ipl = spin_lock_ipl(&queue->lock);
+
+			waitq_wait_cleanup(&queue->senders, &wql);
 
 			if (queue->state == MSQ_DELETED) {
 				ret = SET_ERRNO(EIDRM);
