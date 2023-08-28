@@ -18,37 +18,36 @@
 #include <kernel/sched.h>
 #include <kernel/thread.h>
 #include <kernel/spinlock.h>
+#include <kernel/sched/waitq.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/thread_sched_wait.h>
+
 #include <framework/mod/options.h>
 
 #define MSG_QUEUE_COUNT    OPTION_GET(NUMBER, msg_queue_count)
 #define MSG_QUEUE_BUF_SIZE OPTION_GET(NUMBER, msg_queue_buf_size)
 
-#define MSG_QUEUE_FULL    1
-#define MSG_QUEUE_EMPTY   2
-#define MSG_QUEUE_DELETED 3
-#define MSG_QUEUE_OTHER   4
+enum msq_state {
+	MSQ_FULL,
+	MSQ_EMPTY,
+	MSQ_DELETED,
+	MSQ_OTHER
+};
 
 struct msgbuf {
 	long mtype;
 	char mtext[0];
 };
 
-struct waiting_thread {
-	struct dlist_head dlist_item;
-	struct thread *th;
-};
-
 struct msg_queue {
-	struct dlist_head dlist_item;
-	struct dlist_head receivers;
-	struct dlist_head senders;
+	struct dlist_head list_item;
+	struct waitq receivers;
+	struct waitq senders;
 	struct msg_buff buf;
 	struct msqid_ds ds;
+	enum msq_state state;
 	spinlock_t lock;
 	key_t key;
-	int state;
 	int id;
 	char storage[MSG_QUEUE_BUF_SIZE];
 };
@@ -57,18 +56,10 @@ POOL_DEF(msq_pool, struct msg_queue, MSG_QUEUE_COUNT);
 
 static DLIST_DEFINE(msq_list_head);
 
-static void wakeup_waiting_threads(struct dlist_head *list) {
-	struct waiting_thread *tmp;
-
-	dlist_foreach_entry(tmp, list, dlist_item) {
-		sched_wakeup(&tmp->th->schedee);
-	}
-}
-
 static struct msg_queue *msg_queue_get(int msqid) {
 	struct msg_queue *tmp;
 
-	dlist_foreach_entry(tmp, &msq_list_head, dlist_item) {
+	dlist_foreach_entry(tmp, &msq_list_head, list_item) {
 		if (msqid == tmp->id) {
 			return tmp;
 		}
@@ -88,24 +79,24 @@ static struct msg_queue *msg_queue_create(key_t key) {
 		spin_init(&queue->lock, __SPIN_UNLOCKED);
 		msg_buff_init(&queue->buf, queue->storage, MSG_QUEUE_BUF_SIZE);
 
-		dlist_init(&queue->receivers);
-		dlist_init(&queue->senders);
+		waitq_init(&queue->receivers);
+		waitq_init(&queue->senders);
 
 		queue->id = msqid_counter++;
 		queue->key = key;
-		queue->state = MSG_QUEUE_EMPTY;
+		queue->state = MSQ_EMPTY;
 
 		queue->ds.msg_qnum = 0;
 
-		dlist_init(&queue->dlist_item);
-		dlist_add_next(&queue->dlist_item, &msq_list_head);
+		dlist_init(&queue->list_item);
+		dlist_add_next(&queue->list_item, &msq_list_head);
 	}
 
 	return queue;
 }
 
 static void msg_queue_free(struct msg_queue *queue) {
-	dlist_del_init(&queue->dlist_item);
+	dlist_del_init(&queue->list_item);
 	pool_free(&msq_pool, queue);
 }
 
@@ -123,7 +114,7 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf) {
 		goto out;
 	}
 
-	if (queue->state == MSG_QUEUE_DELETED) {
+	if (queue->state == MSQ_DELETED) {
 		ret = SET_ERRNO(EIDRM);
 		goto out;
 	}
@@ -150,9 +141,10 @@ int msgctl(int msqid, int cmd, struct msqid_ds *buf) {
 
 	case IPC_RMID:
 		msg_queue_free(queue);
-		queue->state = MSG_QUEUE_DELETED;
-		wakeup_waiting_threads(&queue->receivers);
-		wakeup_waiting_threads(&queue->senders);
+		queue->state = MSQ_DELETED;
+
+		waitq_wakeup_all(&queue->receivers);
+		waitq_wakeup_all(&queue->senders);
 		break;
 
 	default:
@@ -183,7 +175,7 @@ int msgget(key_t key, int msgflg) {
 		goto out;
 	}
 
-	dlist_foreach_entry(queue, &msq_list_head, dlist_item) {
+	dlist_foreach_entry(queue, &msq_list_head, list_item) {
 		if (key == queue->key) {
 			if ((msgflg & IPC_CREAT) && (msgflg & IPC_EXCL)) {
 				ret = SET_ERRNO(EEXIST);
@@ -213,8 +205,8 @@ out:
 }
 
 ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
-	struct waiting_thread receiver;
 	struct msg_queue *queue;
+	struct waitq_link wql;
 	size_t msgbuf_size;
 	size_t nread;
 	ipl_t ipl;
@@ -233,7 +225,7 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 		goto out;
 	}
 
-	if (queue->state == MSG_QUEUE_DELETED) {
+	if (queue->state == MSQ_DELETED) {
 		ret = SET_ERRNO(EIDRM);
 		goto out;
 	}
@@ -244,9 +236,9 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 		if (nread) {
 			queue->ds.msg_qnum -= 1;
 
-			if (queue->state == MSG_QUEUE_FULL) {
-				queue->state = MSG_QUEUE_OTHER;
-				wakeup_waiting_threads(&queue->senders);
+			if (queue->state == MSQ_FULL) {
+				queue->state = MSQ_OTHER;
+				waitq_wakeup_all(&queue->senders);
 			}
 
 			ret = nread - sizeof(long);
@@ -254,24 +246,25 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 		}
 
 		if (msg_buff_empty(&queue->buf)) {
+			queue->state = MSQ_EMPTY;
+
 			if (msgflg & IPC_NOWAIT) {
 				ret = SET_ERRNO(ENOMSG);
 				goto out;
 			}
 
-			queue->state = MSG_QUEUE_EMPTY;
-
-			receiver.th = thread_self();
-			dlist_init(&receiver.dlist_item);
-			dlist_add_next(&receiver.dlist_item, &queue->receivers);
+			waitq_link_init(&wql);
+			waitq_wait_prepare(&queue->receivers, &wql);
 
 			spin_unlock_ipl(&queue->lock, ipl);
 
-			SCHED_WAIT(queue->state != MSG_QUEUE_EMPTY);
+			SCHED_WAIT(queue->state != MSQ_EMPTY);
 
 			ipl = spin_lock_ipl(&queue->lock);
 
-			if (queue->state & MSG_QUEUE_DELETED) {
+			waitq_wait_cleanup(&queue->receivers, &wql);
+
+			if (queue->state & MSQ_DELETED) {
 				ret = SET_ERRNO(EIDRM);
 				goto out;
 			}
@@ -284,9 +277,9 @@ ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg) {
 
 			queue->ds.msg_qnum -= 1;
 
-			if (queue->state == MSG_QUEUE_FULL) {
-				queue->state = MSG_QUEUE_OTHER;
-				wakeup_waiting_threads(&queue->senders);
+			if (queue->state == MSQ_FULL) {
+				queue->state = MSQ_OTHER;
+				waitq_wakeup_all(&queue->senders);
 			}
 
 			ret = msgsz;
@@ -301,9 +294,9 @@ out:
 }
 
 int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
-	struct waiting_thread sender;
 	const struct msgbuf *msgbuf;
 	struct msg_queue *queue;
+	struct waitq_link wql;
 	size_t msgbuf_size;
 	size_t nwritten;
 	ipl_t ipl;
@@ -321,7 +314,7 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
 		goto out;
 	}
 
-	if (queue->state == MSG_QUEUE_DELETED) {
+	if (queue->state == MSQ_DELETED) {
 		ret = SET_ERRNO(EIDRM);
 		goto out;
 	}
@@ -332,9 +325,9 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
 		if (nwritten == msgbuf_size) {
 			queue->ds.msg_qnum += 1;
 
-			if (queue->state == MSG_QUEUE_EMPTY) {
-				queue->state = MSG_QUEUE_OTHER;
-				wakeup_waiting_threads(&queue->receivers);
+			if (queue->state == MSQ_EMPTY) {
+				queue->state = MSQ_OTHER;
+				waitq_wakeup_all(&queue->receivers);
 			}
 
 			ret = 0;
@@ -347,19 +340,20 @@ int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg) {
 			}
 
 			msgbuf_size -= nwritten;
-			queue->state = MSG_QUEUE_FULL;
+			queue->state = MSQ_FULL;
 
-			sender.th = thread_self();
-			dlist_init(&sender.dlist_item);
-			dlist_add_next(&sender.dlist_item, &queue->senders);
+			waitq_link_init(&wql);
+			waitq_wait_prepare(&queue->senders, &wql);
 
 			spin_unlock_ipl(&queue->lock, ipl);
 
-			SCHED_WAIT(queue->state != MSG_QUEUE_FULL);
+			SCHED_WAIT(queue->state != MSQ_FULL);
 
 			ipl = spin_lock_ipl(&queue->lock);
 
-			if (queue->state == MSG_QUEUE_DELETED) {
+			waitq_wait_cleanup(&queue->senders, &wql);
+
+			if (queue->state == MSQ_DELETED) {
 				ret = SET_ERRNO(EIDRM);
 				goto out;
 			}

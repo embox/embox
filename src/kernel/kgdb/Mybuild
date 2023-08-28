@@ -10,8 +10,10 @@ module kgdb extends kgdb_api {
 	@IncludeExport(path="kernel")
 	source "kgdb.h"
 
-	depends embox.lib.gdbstub
-	depends embox.lib.breakpoint
+	@NoRuntime depends embox.lib.gdbstub
+	@NoRuntime depends embox.lib.breakpoint
+	@NoRuntime depends embox.driver.diag
+	@NoRuntime depends embox.driver.serial.diag
 }
 
 module no_kgdb extends kgdb_api {
