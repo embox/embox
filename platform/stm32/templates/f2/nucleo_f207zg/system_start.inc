@@ -1,2 +1,4 @@
 
+"netmanager",
+"service telnetd",
 "tish",
