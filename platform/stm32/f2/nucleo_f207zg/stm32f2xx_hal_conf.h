@@ -182,8 +182,19 @@
 /* Definition of the Ethernet driver buffers size and count */   
 #define ETH_RX_BUF_SIZE                   ETH_MAX_PACKET_SIZE /* buffer size for receive               */
 #define ETH_TX_BUF_SIZE                   ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
+#if defined(__EMBOX__)
+#include <framework/mod/options.h>
+#include <module/third_party/bsp/stmf2cube/cube.h>
+
+#define ETH_RXBUFNB \
+	OPTION_MODULE_GET(third_party__bsp__stmf2cube__cube, NUMBER, eth_rx_packet_count)
+#define ETH_TXBUFNB \
+	OPTION_MODULE_GET(third_party__bsp__stmf2cube__cube, NUMBER, eth_tx_packet_count)
+#else
+
 #define ETH_RXBUFNB                       5U       /* 5 Rx buffers of size ETH_RX_BUF_SIZE  */
 #define ETH_TXBUFNB                       5U       /* 5 Tx buffers of size ETH_TX_BUF_SIZE  */
+#endif /*__EMBOX__*/
 
 /* Section 2: PHY configuration section */
 
