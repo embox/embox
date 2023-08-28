@@ -1,15 +1,22 @@
-In 'third-party/bsp/stmh7cube/cube/Makefile' update 
-PKG_VER  := v1.16.0
+In 'third-party/bsp/stmf7cube/cube/Makefile' update 
+PKG_VER     := v1.16.0
 PKG_MD5     := 9586ec0996e154c21dbb31f92834c3aa
-and comment
-# PKG_PATCHES := sd_read.patch
+PKG_PATCHES := sd_read_1_16_0.patch
 
 Modify with new version following files
-third-party/bsp/stmh7cube/cube/Mybuild
-platform/stm32/f7/stm32f746g_discovery/Mybuild
+third-party/bsp/stmf7cube/cube/Mybuild
+platform/stm32/f7/stm32746g_discovery/Mybuild
 platform/stm32/f7/stm32f769i_discovery/Mybuild
-third-party/bsp/stmh7cube/components/Mybuild
-third-party/bsp/stmh7cube/middlewares/Mybuild
-third-party/bsp/stmh7cube/utilities/Mybuild
+platform/stm32/f7/nucleo_f767zi/Mybuild
+third-party/bsp/stmf7cube/components/Mybuild
+third-party/bsp/stmf7cube/middlewares/Mybuild
+third-party/bsp/stmf7cube/utilities/Mybuild
 
 each STM32CubeF7-1.16.0 -> STM32CubeF7-1.17.0
+each sd_read_1_16_0.patch -> sd_read_1_17_0.patch
+
+third-party/bsp/stmf7cube/cube/Mybuild/sd_read_1_16_0.patch -> sd_read_1_17_0.patch
+
+platform/stm32/f7/stm32746g_discovery/stm32f7xx_hal_conf_1.16.0.h -> stm32f7xx_hal_conf_1.17.0.h
+platform/stm32/f7/stm32f769i_discovery/stm32f7xx_hal_conf_1.16.0.h -> stm32f7xx_hal_conf_1.17.0.h
+platform/stm32/f7/nucleo_f767zi/stm32f7xx_hal_conf_1.16.0.h -> stm32f7xx_hal_conf_1.17.0.h
