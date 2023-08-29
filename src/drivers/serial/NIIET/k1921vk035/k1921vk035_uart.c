@@ -12,10 +12,6 @@
 
 #include "plib035_uart.h"
 
-#define UART1_BAUDRATE OPTION_GET(NUMBER, uart1_baudrate)
-#define USE_UART0_AS_DIAG OPTION_GET(BOOLEAN, use_uart0_as_diag)
-#define UART0_IRQ_EN OPTION_GET(BOOLEAN, uart0_irq_en)
-#define UART1_IRQ_EN OPTION_GET(BOOLEAN, uart1_irq_en)
 
 #define UART_GPIO			GPIO_PORT_B
 #define UART0_GPIO_TX_mask		(1<<10)

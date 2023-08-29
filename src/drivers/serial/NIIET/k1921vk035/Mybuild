@@ -18,6 +18,7 @@ module k1921vk035_uart {
 @BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
 module k1921vk035_diag extends embox.driver.serial.diag {
 
+	option number uart_num = 0
 	option number baudrate = 115200
 
 	source "k1921vk035_diag.c"
