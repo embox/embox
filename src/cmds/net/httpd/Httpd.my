@@ -29,8 +29,8 @@ module httpd {
 	source "httpd_util.c"
 	depends httpd_cgi_interface
 
-	depends embox.compat.libc.all
-	depends embox.compat.posix.LibPosix
+//	depends embox.compat.libc.all
+//	depends embox.compat.posix.LibPosix
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.waitpid
 	depends embox.framework.LibFramework
