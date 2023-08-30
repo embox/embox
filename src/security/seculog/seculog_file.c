@@ -62,7 +62,7 @@ static int seculog_file_cb(struct seculog_subscb *subcb, struct seculog_record *
 		}
 	}
 
-	kwrite(record->msg, strlen(record->msg), audit_log_desc);
+	kwrite(audit_log_desc, record->msg, strlen(record->msg));
 
 	return 0;
 }

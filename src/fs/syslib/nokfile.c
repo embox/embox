@@ -17,7 +17,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 	return NULL;
 }
 
-ssize_t kwrite(const void *buf, size_t size, struct file_desc *file) {
+ssize_t kwrite(struct file_desc *file, const void *buf, size_t size) {
 	return -ENOSYS;
 }
 
