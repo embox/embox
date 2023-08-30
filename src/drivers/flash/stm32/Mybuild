@@ -74,3 +74,19 @@ module stm32f3cube {
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f2cube {
+	option number log_level = 1
+	option number flash_size=0xc000
+
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
+
+	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
+	source "stm32f2flash.h"
+
+	depends third_party.bsp.st_bsp_api
+	depends core
+}
+

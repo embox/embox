@@ -23,6 +23,26 @@ module stm_usart_f1 extends embox.driver.serial.diag {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
+module stm_usart_f2 extends embox.driver.serial.diag {
+	option number baud_rate
+	option number usartx=1
+	option number usart1_irq=37
+	option number usart2_irq=38
+	option number usart3_irq=39
+
+	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
+	source "stm32_usart_conf_f2.h"
+
+	source "stm_hal_msp.c"
+	source "stm_diag.c"
+	source "stm_usart.c"
+
+	depends embox.driver.serial.core
+
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f3 extends embox.driver.serial.diag {
 	option number baud_rate
 	option number usartx=1

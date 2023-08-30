@@ -1,0 +1,7 @@
+"mkdir -v /conf",
+"mount -t DumbFS /dev/stm32flash0 /conf",
+"conf_setup",
+"netmanager",
+"service httpd /http_admin",
+"service telnetd",
+"tish",

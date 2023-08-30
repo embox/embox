@@ -1,0 +1,48 @@
+package third_party.bsp.stmf2cube
+
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32F2_CUBE")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/, Drivers/STM32F2xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F2xx/Include Drivers/CMSIS/Include)")
+module cube_cppflags {
+
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildDepends(cube_cppflags)
+@BuildDepends(third_party.bsp.stmf2cube.stm32f2_conf)
+static module cube {
+	option number eth_rx_packet_count = 4
+	option number eth_tx_packet_count = 2
+
+	@IncludeExport(path="bsp")
+	source "stm32cube_hal.h"
+
+//	@Cflags("-Wno-unused")
+//	@Cflags("-Wno-undef")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF2-1.9.4/Drivers/STM32F2xx_HAL_Driver/Src")
+	source 
+		"stm32f2xx_hal.c",
+		"stm32f2xx_hal_cortex.c",
+		"stm32f2xx_hal_adc.c",
+		"stm32f2xx_hal_can.c",
+		"stm32f2xx_hal_crc.c",
+		"stm32f2xx_hal_dac.c",
+		"stm32f2xx_hal_dma.c",
+		"stm32f2xx_hal_eth.c",
+		"stm32f2xx_hal_exti.c",
+		"stm32f2xx_hal_flash.c",
+		"stm32f2xx_hal_flash_ex.c",
+		"stm32f2xx_hal_gpio.c",
+		"stm32f2xx_hal_i2c.c",
+		"stm32f2xx_hal_iwdg.c",
+		"stm32f2xx_hal_pwr.c",
+		"stm32f2xx_hal_rcc.c",
+		"stm32f2xx_hal_rtc.c",
+		"stm32f2xx_hal_spi.c",
+		"stm32f2xx_hal_tim.c",
+		"stm32f2xx_hal_usart.c",
+		"stm32f2xx_hal_uart.c",
+		"stm32f2xx_hal_wwdg.c"
+
+	@NoRuntime depends third_party.bsp.stmf2cube.stm32f2_conf
+	@NoRuntime depends cube_cppflags
+}
