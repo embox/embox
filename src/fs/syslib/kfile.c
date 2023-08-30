@@ -138,7 +138,7 @@ end:
 	return ret;
 }
 
-ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
+ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 	ssize_t ret;
 
 	if (NULL == desc) {

@@ -21,7 +21,7 @@ ssize_t kwrite(struct file_desc *file, const void *buf, size_t size) {
 	return -ENOSYS;
 }
 
-ssize_t kread(void *buf, size_t size, struct file_desc *desc) {
+ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 	return -ENOSYS;
 }
 
