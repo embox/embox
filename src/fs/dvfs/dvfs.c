@@ -9,22 +9,18 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <limits.h>
 
 #include <util/err.h>
 
 #include <fs/dvfs.h>
-#include <fs/hlpr_path.h>
-#include <kernel/task/resource/vfs.h>
+#include <fs/super_block.h>
+#include <fs/dentry.h>
+
 #include <util/log.h>
-#include <util/math.h>
 
 /* Utility functions */
 extern int inode_fill(struct super_block *, struct inode *, struct dentry *);
 extern int dvfs_update_root(void);
-extern struct dentry *dvfs_root(void);
-extern int dvfs_lookup(const char *path, struct lookup *lookup);
 
 /**
  * @brief Create new inode
@@ -222,121 +218,6 @@ int dvfs_remove(const char *path) {
 	}
 
 	return res;
-}
-
-/**
- * @brief Uninitialize file descriptor
- * @param desc File descriptor to be uninitialized
- *
- * @return Negative error code
- * @retval  0 Ok
- * @retval -1 Descriptor fields are inconsistent
- */
-int dvfs_close(struct file_desc *desc) {
-	if (!desc || !desc->f_inode || !desc->f_dentry)
-		return -1;
-
-	if (!(desc->f_dentry->flags & VFS_DIR_VIRTUAL)) {
-		assert(desc->f_ops);
-	}
-
-	if (desc->f_ops && desc->f_ops->close) {
-		desc->f_ops->close(desc);
-	}
-
-	if (!dentry_ref_dec(desc->f_dentry))
-		dvfs_destroy_dentry(desc->f_dentry);
-
-	dvfs_destroy_file(desc);
-	return 0;
-}
-
-/**
- * @brief Application level interface to write the file
- * @param desc  File to be written
- * @param buf   Source of the data
- * @param count Length of the data
- *
- * @return Bytes written or negative error code
- * @retval       0 Ok
- * @retval -ENOSYS Function is not implemented in file system driver
- */
-int dvfs_write(struct file_desc *desc, char *buf, int count) {
-	int res = 0; /* Assign to avoid compiler warning when use -O2 */
-	int retcode = count;
-	struct inode *inode;
-
-	if (!desc) {
-		return -EINVAL;
-	}
-
-	inode = desc->f_inode;
-	assert(inode);
-
-	if (inode->length - desc->pos < count && !(inode->i_mode & DVFS_NO_LSEEK)) {
-		if (inode->i_ops && inode->i_ops->truncate) {
-			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
-			if (res) {
-				retcode = -EFBIG;
-			}
-		} else {
-			retcode = -EFBIG;
-		}
-	}
-
-	if (desc->f_ops && desc->f_ops->write) {
-		res = desc->f_ops->write(desc, buf, count);
-	} else {
-		retcode = -ENOSYS;
-	}
-
-	if (res > 0) {
-		desc->pos += res;
-	}
-
-	return retcode;
-}
-
-/**
- * @brief Application level interface to read the file
- * @param desc  File to be read
- * @param buf   Destination
- * @param count Length of the data
- *
- * @return Bytes read or negative error code
- * @retval       0 Ok
- * @retval -ENOSYS Function is not implemented in file system driver
- */
-int dvfs_read(struct file_desc *desc, char *buf, int count) {
-	int res;
-	int sz;
-	if (!desc)
-		return -1;
-
-	sz = min(count, desc->f_inode->length - desc->pos);
-
-	if (sz <= 0)
-		return 0;
-
-	if (desc->f_ops && desc->f_ops->read)
-		res = desc->f_ops->read(desc, buf, count);
-	else
-		return -ENOSYS;
-
-	if (res > 0)
-		desc->pos += res;
-
-	return res;
-}
-
-int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
-	*sb = (struct stat) {
-		.st_size = desc->f_inode->length,
-		.st_mode = desc->f_inode->i_mode,
-		.st_uid = 0,
-		.st_gid = 0
-	};
-	return 0;
 }
 
 extern int set_rootfs_sb(struct super_block *sb);
