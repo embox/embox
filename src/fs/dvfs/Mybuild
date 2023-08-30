@@ -1,5 +1,10 @@
 package embox.fs.dvfs
 
+module compat {
+	source "compat.c"
+	depends embox.fs.fuse.fuse_api
+}
+
 module core extends embox.fs.fs_api {
 	option number log_level = 1
 

@@ -11,8 +11,3 @@ module trivial extends cache_strategy {
 module polynomial extends cache_strategy {
 	source "dcache_polynomial.c"
 }
-
-module compat {
-	source "compat.c"
-	depends embox.fs.fuse.fuse_api
-}
