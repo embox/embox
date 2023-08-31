@@ -1,4 +1,3 @@
-
 package embox.arch.arm.cortexa8
 
 module bundle {
@@ -12,6 +11,5 @@ module bundle {
 	depends embox.arch.arm.armlib.locore
 	
 	depends embox.arch.arm.armlib.arch
-	depends embox.arch.arm.armlib.armv7_monitor_mode
+	// depends embox.arch.arm.armlib.armv7_monitor_mode
 }
-
