@@ -1,8 +1,9 @@
-
 package embox.arch.arm.armv6
 
 module arm11 extends embox.arch.arm.armlib.cpu {
-	depends embox.arch.arm.armlib.arch
-	depends embox.arch.arm.armlib.low_excpt_table
+	source "cpu_reset.S"
+
 	depends embox.arch.generic.arch
+	depends embox.arch.arm.armlib.arch
+	depends embox.arch.arm.armlib.static_excpt_table
 }
