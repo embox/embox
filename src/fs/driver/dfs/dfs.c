@@ -34,7 +34,6 @@ static struct flash_dev *dfs_flashdev;
 #define USE_RAM_AS_CACHE       OPTION_GET(BOOLEAN, use_ram_as_cache)
 #define USE_RAM_SECTION        OPTION_GET(BOOLEAN, use_ram_section)
 
-extern struct super_block *dfs_sb(void);
 static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr);
 
 #define DFS_DENTRY_OFFSET(N) \
@@ -50,6 +49,11 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr);
 static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 #endif
+
+static struct super_block *dfs_super;
+static struct super_block *dfs_get_sb(void) {
+	return dfs_super;
+}
 
 static inline int dfs_erase_flash(unsigned int block) {
 	return flash_erase(dfs_flashdev, block);
@@ -236,7 +240,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 	assert(buff);
 
-	sbi = dfs_sb()->sb_data;
+	sbi = dfs_get_sb()->sb_data;
 	buff_bk = sbi->buff_bk;
 	pos %= NAND_BLOCK_SIZE;
 
@@ -295,7 +299,7 @@ static int dfs_format(struct block_dev *bdev, void *priv) {
 		}
 	}
 
-	sbi = dfs_sb()->sb_data;
+	sbi = dfs_get_sb()->sb_data;
 	/* Empty FS */
 	*sbi = (struct dfs_sb_info) {
 		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
@@ -478,7 +482,7 @@ static int dfs_itruncate(struct inode *inode, off_t new_len) {
 		return -1;
 	}
 
-	sbi = dfs_sb()->sb_data;
+	sbi = dfs_get_sb()->sb_data;
 
 	if (new_len > sbi->max_len) {
 		return -1;
@@ -504,7 +508,7 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 	assert(path);
 	assert(dir);
 
-	inode = dvfs_alloc_inode(dfs_sb());
+	inode = dvfs_alloc_inode(dfs_get_sb());
 
 	if (!inode) {
 		return NULL;
@@ -550,7 +554,7 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 				.i_no   = i,
 				.i_data = (void *) (uintptr_t) dirent.pos_start,
 				.length = dirent.len,
-				.i_sb   = dfs_sb(),
+				.i_sb   = dfs_get_sb(),
 				.i_ops  = &dfs_iops,
 				.i_mode = dirent.flags,
 			};
@@ -620,7 +624,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	assert(desc->f_inode);
 	assert(buf);
 
-	sbi = dfs_sb()->sb_data;
+	sbi = dfs_get_sb()->sb_data;
 
 	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	l = min(size, sbi->max_len - desc->pos);
@@ -663,18 +667,12 @@ static struct file_operations dfs_fops = {
 };
 
 static struct dfs_sb_info dfs_info;
-static struct super_block *dfs_super;
-static const struct fs_driver dfs_dumb_driver;
-
-struct super_block *dfs_sb(void) {
-	return dfs_super;
-}
 
 static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	struct dfs_dir_entry dtr;
 
 	dfs_super = sb;
-	sb->fs_drv     = &dfs_dumb_driver;
+
 	sb->sb_ops     = &dfs_sbops;
 	sb->sb_iops    = &dfs_iops;
 	sb->sb_fops    = &dfs_fops;
@@ -686,7 +684,7 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	dfs_set_dev(flash_by_id(0));
-	dfs_read_sb_info(dfs_sb()->sb_data);
+	dfs_read_sb_info(dfs_get_sb()->sb_data);
 
 	dfs_read_dirent(0, &dtr);
 
