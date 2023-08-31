@@ -23,8 +23,6 @@
 
 #include <framework/mod/options.h>
 
-static struct flash_dev *dfs_flashdev;
-
 #define DFS_MAGIC_0 0x0D
 #define DFS_MAGIC_1 0xF5
 
@@ -33,8 +31,6 @@ static struct flash_dev *dfs_flashdev;
 #define MIN_FILE_SZ            OPTION_GET(NUMBER, minimum_file_size)
 #define USE_RAM_AS_CACHE       OPTION_GET(BOOLEAN, use_ram_as_cache)
 #define USE_RAM_SECTION        OPTION_GET(BOOLEAN, use_ram_section)
-
-static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr);
 
 #define DFS_DENTRY_OFFSET(N) \
 	((sizeof(struct dfs_sb_info)) + N * (sizeof(struct dfs_dir_entry)))
@@ -50,12 +46,14 @@ static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 #endif
 
+static struct flash_dev *dfs_flashdev;
+
 static struct super_block *dfs_super;
 static struct super_block *dfs_get_sb(void) {
 	return dfs_super;
 }
 
-static inline int dfs_erase_flash(unsigned int block) {
+static inline int dfs_erase_flash(struct flash_dev *flashdev, unsigned int block) {
 	return flash_erase(dfs_flashdev, block);
 }
 
@@ -176,12 +174,12 @@ static inline int dfs_copy_flash(unsigned long to, unsigned long from, int len) 
 }
 
 static inline int dfs_blkcpy_flash(unsigned int to, unsigned long from) {
-	dfs_erase_flash(to);
+	dfs_erase_flash(dfs_flashdev, to);
 	return dfs_copy_flash(to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
 }
 
 #if USE_RAM_AS_CACHE
-static int dfs_cache_erase(uint32_t addr) {
+static int dfs_cache_erase(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
 }
 
@@ -212,12 +210,12 @@ static inline int dfs_cache_write(uint32_t offset, const void *buff, size_t len)
 }
 
 static inline int dfs_cache_restore(uint32_t to, uint32_t from) {
-	dfs_erase_flash(to);
+	dfs_erase_flash(dfs_flashdev, to);
 	return dfs_write_flash(to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
 }
 #define CACHE_OFFSET                  ((uintptr_t)cache_block_buffer)
 #else
-#define dfs_cache_erase(block)         dfs_erase_flash(block)
+#define dfs_cache_erase(flashdev, block)     dfs_erase_flash(flashdev, block)
 #define dfs_cache(to, from, len)       dfs_copy_flash(to,from,len)
 #define dfs_cache_write(off,buf, len)  dfs_write_flash(off,buf, len)
 #define dfs_cache_restore(to, from)    dfs_blkcpy_flash(to,from)
@@ -246,7 +244,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 
 	err = 0;
 
-	dfs_cache_erase(buff_bk);
+	dfs_cache_erase(dfs_flashdev, buff_bk);
 	dfs_cache(CACHE_OFFSET, start_bk * NAND_BLOCK_SIZE, pos);
 
 	if (start_bk == last_bk) {
@@ -261,14 +259,14 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 		pos = (pos + size) % NAND_BLOCK_SIZE;
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
-			dfs_erase_flash(bk);
+			dfs_erase_flash(dfs_flashdev, bk);
 			if ((err = dfs_write_flash(bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
 				return err;
 			}
 			buff += NAND_BLOCK_SIZE;
 		}
 
-		dfs_erase_flash(buff_bk);
+		dfs_erase_flash(dfs_flashdev, buff_bk);
 		dfs_write_flash(CACHE_OFFSET, buff, pos);
 	}
 
@@ -292,7 +290,7 @@ static int dfs_format(struct block_dev *bdev, void *priv) {
 	k = 0;
 	for (j = 0; j < dfs_flashdev->num_block_infos; j++) {
 		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
-			if ((err = dfs_erase_flash(k))) {
+			if ((err = dfs_erase_flash(dfs_flashdev, k))) {
 				return err;
 			}
 			k++;
@@ -335,10 +333,6 @@ static inline int dfs_set_dev(struct flash_dev *new_dev) {
 	assert(new_dev);
 	dfs_flashdev = new_dev;
 	return 0;
-}
-
-static inline struct flash_dev *dfs_get_dev(void) {
-	return dfs_flashdev;
 }
 
 /*---------------------------------*\
