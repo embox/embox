@@ -274,7 +274,7 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	return 0;
 }
 
-static int dfs_format(void) {
+static int dfs_format(struct block_dev *bdev, void *priv) {
 	struct dfs_sb_info *sbi;
 	struct dfs_dir_entry root;
 	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
@@ -351,7 +351,7 @@ static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 	}
 	dfs_sb_status = ACTUAL;
 	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
-		dfs_format();
+		dfs_format(NULL, NULL);
 	}
 
 	return 0;
@@ -701,6 +701,7 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 static const struct fs_driver dfs_dumb_driver = {
 	.name      = "DumbFS",
 	.fill_sb   = &dfs_fill_sb,
+	.format    = dfs_format,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(dfs_dumb_driver);
