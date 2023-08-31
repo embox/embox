@@ -285,14 +285,13 @@ static int dfs_format(struct block_dev *bdev, void *priv) {
 		return -ENOENT;
 	}
 
-
-	for (j = 0, k = 0; j < dfs_flashdev->num_block_infos; j++) {
+	k = 0;
+	for (j = 0; j < dfs_flashdev->num_block_infos; j++) {
 		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
 			if ((err = dfs_erase_flash(k))) {
 				return err;
 			}
 			k++;
-			i++;
 		}
 	}
 
