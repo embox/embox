@@ -104,7 +104,7 @@ void interrupt_handle(void) {
 
 	/* Writing VIC_ADDR register clears the respective interrupt in the internal
 	interrupt priority hardware */
-	irq = REG32_LOAD(VIC_ADDR);
+	REG32_STORE(VIC_ADDR, irq);
 }
 
 void swi_handle(void) {
