@@ -33,7 +33,7 @@ static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov,
 	buf = iov->iov_base;
 	nbyte = iov->iov_len;
 
-	return kread(buf, nbyte, (struct file_desc *)idesc);
+	return kread((struct file_desc *)idesc, buf, nbyte);
 }
 
 static ssize_t idesc_file_ops_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
@@ -47,7 +47,7 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc, const struct iovec *iov
 	buf = iov->iov_base;
 	nbyte = iov->iov_len;
 
-	return kwrite(buf, nbyte, (struct file_desc *)idesc);
+	return kwrite((struct file_desc *)idesc, buf, nbyte);
 }
 
 

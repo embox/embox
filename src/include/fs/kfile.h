@@ -19,9 +19,9 @@ struct inode;
 
 extern struct idesc * kopen(struct inode *node, int flag);
 
-extern ssize_t kwrite(const void *buf, size_t size, struct file_desc *file);
+extern ssize_t kwrite(struct file_desc *file, const void *buf, size_t size);
 
-extern ssize_t kread(void *buf, size_t size, struct file_desc *desc);
+extern ssize_t kread(struct file_desc *desc, void *buf, size_t size);
 
 extern void kclose(struct file_desc *desc);
 

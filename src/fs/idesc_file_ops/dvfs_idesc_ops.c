@@ -13,12 +13,14 @@
 #include <sys/uio.h>
 
 #include <fs/dvfs.h>
-#include <kernel/task.h>
+
+#include <kernel/task/resource/idesc.h>
 
 extern const struct idesc_ops idesc_file_ops;
 
 static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
+
 	dvfs_close((struct file_desc *)idesc);
 }
 
@@ -57,18 +59,21 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc, const struct iovec *iov
 static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return dvfs_fstat((struct file_desc *)idesc, buf);;
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return ((struct file_desc *)idesc)->f_ops->ioctl((struct file_desc *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	return 1;
 }
 
@@ -80,4 +85,3 @@ const struct idesc_ops idesc_file_ops = {
 	.fstat = idesc_file_ops_stat,
 	.status = idesc_file_ops_status,
 };
-

@@ -1,5 +1,10 @@
 package embox.fs.dvfs
 
+module compat {
+	source "compat.c"
+	depends embox.fs.fuse.fuse_api
+}
+
 module core extends embox.fs.fs_api {
 	option number log_level = 1
 
@@ -23,6 +28,7 @@ module core extends embox.fs.fs_api {
 	option boolean use_dcache=false
 
 	source "dvfs.c"
+	source "dvfs_kfile.c"
 	source "dvfs_dentry.c"
 	depends embox.fs.dvfs_idesc_ops
 	source "dvfs_util.c"

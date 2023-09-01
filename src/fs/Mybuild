@@ -1,32 +1,5 @@
 package embox.fs
 
-module node {
-	option number fnode_quantity=64
-
-	source "inode.c"
-	source "dentry.c"
-
-	@IncludeExport(path="fs")
-	source "inode.h"
-	@IncludeExport(path="fs")
-	source "dentry.h"
-
-	depends embox.driver.block_dev
-	depends embox.kernel.thread.mutex
-	@NoRuntime depends embox.util.tree
-}
-
-module filesystem {
-	option number fs_quantity=32
-	option number mount_desc_quantity=16
-
-	source "super_block.c"
-	source "mount_table.c"
-
-	depends embox.fs.driver.repo
-}
-
-
 @DefaultImpl(no_file_system)
 abstract module fs_api {
 
@@ -37,33 +10,6 @@ module no_file_system extends fs_api{
 	depends embox.fs.syslib.file_system_none
 }
 
-module xattr {
-	source "xattr.c"
-
-	depends embox.security.api
-}
-
-module xattr_list {
-	source "xattr_list.c"
-}
-
-module core extends fs_api {
-	source "vfs.c"
-
-	depends embox.fs.file_desc_oldfs
-	depends filesystem
-	depends path_helper
-	depends node
-
-	depends embox.compat.libc.str
-	depends embox.compat.posix.util.environ
-	depends embox.util.tree
-	depends embox.compat.posix.proc.uid
-
-	depends embox.kernel.task.resource.vfs
-
-	depends embox.kernel.task.api //vfs_get_leaf: environment should be initialized
-}
 
 module journal {
 	source "journal.c"
