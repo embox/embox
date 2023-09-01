@@ -235,18 +235,14 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
  *
  * @returns Bytes written or negative error code
  */
-static int dfs_write_raw(int pos, void *buff, size_t size) {
+static int dfs_write_buffered(int pos, void *buff, size_t size, uint32_t buff_bk) {
 	int start_bk = pos / NAND_BLOCK_SIZE;
 	int last_bk = (pos + size) / NAND_BLOCK_SIZE;
-	struct dfs_sb_info *sbi;
-	uint32_t buff_bk;
 	int bk;
 	int err;
 
 	assert(buff);
 
-	sbi = dfs_get_sb()->sb_data;
-	buff_bk = sbi->buff_bk;
 	pos %= NAND_BLOCK_SIZE;
 
 	err = 0;
@@ -283,8 +279,8 @@ static int dfs_write_raw(int pos, void *buff, size_t size) {
 	return 0;
 }
 
-static int dfs_format(struct block_dev *bdev, void *priv) {
-	struct dfs_sb_info *sbi;
+int dfs_format(struct block_dev *bdev, void *priv) {
+	struct dfs_sb_info sbi;
 	struct dfs_dir_entry root;
 	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
 	int i, j, k;
@@ -304,11 +300,10 @@ static int dfs_format(struct block_dev *bdev, void *priv) {
 		}
 	}
 
-	sbi = dfs_get_sb()->sb_data;
 	/* Empty FS */
-	*sbi = (struct dfs_sb_info) {
+	sbi = (struct dfs_sb_info) {
 		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
-		.inode_count = 0,
+		.inode_count = 1, /* Configure root directory */
 		.max_inode_count = DFS_INODES_MAX + 1, /* + root folder with i_no 0 */
 		.max_len = MIN_FILE_SZ,
 		/* Set buffer block to the last one */
@@ -321,17 +316,17 @@ static int dfs_format(struct block_dev *bdev, void *priv) {
 	};
 
 	/* Configure root directory */
-	sbi->inode_count++;
+	//sbi->inode_count++;
 
 	strcpy((char *) root.name, "/");
-	root.pos_start = sbi->free_space;
+	root.pos_start = sbi.free_space;
 	root.len       = DFS_INODES_MAX;
 	root.flags     = S_IFDIR;
 
-	memcpy(write_buf, sbi, sizeof(struct dfs_sb_info));
+	memcpy(write_buf, &sbi, sizeof(struct dfs_sb_info));
 	memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
 
-	dfs_write_raw(0, write_buf, sizeof(write_buf));
+	dfs_write_buffered(0, write_buf, sizeof(write_buf), sbi.buff_bk);
 
 	return 0;
 }
@@ -353,10 +348,13 @@ static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 	if (dfs_sb_status == EMPTY) {
 		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
 	}
-	dfs_sb_status = ACTUAL;
+
 	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
 		dfs_format(NULL, NULL);
+		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
 	}
+
+	dfs_sb_status = ACTUAL;
 
 	return 0;
 }
@@ -364,7 +362,7 @@ static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 static int dfs_write_sb_info(struct dfs_sb_info *sbi) {
 	assert(sbi);
 	if (dfs_sb_status == DIRTY) {
-		dfs_write_raw(0, sbi, sizeof(struct dfs_sb_info));
+		dfs_write_buffered(0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
 		dfs_sb_status = ACTUAL;
 	}
 	return 0;
@@ -386,10 +384,11 @@ static int dfs_read_dirent(int n, struct dfs_dir_entry *dtr) {
 
 static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
 	uint32_t offt = DFS_DENTRY_OFFSET(n);
+	struct dfs_sb_info *sbi = dfs_get_sb()->sb_data;
 
 	assert(dtr);
 
-	dfs_write_raw(offt, dtr, sizeof(struct dfs_dir_entry));
+	dfs_write_buffered(offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
 	return 0;
 }
 
@@ -634,7 +633,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_write_raw(pos, buf, l);
+	dfs_write_buffered(pos, buf, l, sbi->buff_bk);
 
 	return l;
 }
