@@ -1,0 +1,21 @@
+/**
+ * @file
+ * @brief
+ *
+ * @date 16.06.23
+ * @author Aleksey Zhmulin
+ */
+#include <hal/arch.h>
+
+void arch_init(void) {
+}
+
+void arch_idle(void) {
+	__asm__ __volatile__("mov r0, #0\n\t"
+	                     "mcr p15, 0, r0, c7, c0, 4");
+}
+
+void arch_shutdown(arch_shutdown_mode_t mode) {
+	while (1)
+		;
+}

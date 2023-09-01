@@ -1,19 +1,18 @@
 package embox.arch.arm.armlib
 
-@DefaultImpl(static_excpt_table)
+@DefaultImpl(low_excpt_table)
 abstract module setup_exception_table { }
 
+/* The image should be loaded at 0x0 */
 module low_excpt_table extends setup_exception_table {
 	source "low_excpt_table.S"
-	source "copy_excpt_table.S"
-	source "low_excpt_table_vmem_def.c"
 }
 
 module high_excpt_table extends setup_exception_table {
 	source "high_excpt_table.S"
-	source "copy_excpt_table.S"
 }
 
+/* Security extension must be enabled */
 module static_excpt_table extends setup_exception_table {
 	source "static_excpt_table.S"
 }
@@ -23,6 +22,7 @@ module reset_handler {
 
 	source "reset_handler.S"
 
+	depends cpu_reset
 	depends setup_exception_table
 	depends embox.arch.arm.cache
 }

@@ -1,38 +1,33 @@
 package embox.arch.arm.armlib
 
-abstract module cpu { }
+@DefaultImpl(cpu_reset_stub)
+abstract module cpu_reset {}
 
-module arch {
+module cpu_reset_stub extends cpu_reset {}
+
+module all {
 	depends embox.arch.arm.armlib.locore
 	depends embox.arch.arm.armlib.interrupt
 	depends embox.arch.arm.armlib.context
 	depends embox.arch.arm.armlib.mem_barriers
-	depends embox.arch.arm.libarch
 }
-
 
 module locore extends embox.arch.locore {
 	option number log_level=0
 
 	depends exceptions
-	depends embox.arch.arm.head
 	depends reset_handler
-	depends setup_exception_table
+	depends embox.arch.arm.head
 }
 
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
+
 	depends locore
 }
 
-
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
-}
-
-module armv7_monitor_mode {
-	source "monitor_exception_table.S"
-	source "monitor_armv7.c"
 }
 
 module testtrap extends embox.arch.testtrap {

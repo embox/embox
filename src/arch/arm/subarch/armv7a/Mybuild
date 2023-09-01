@@ -1,15 +1,16 @@
-package embox.arch.arm.cortexa8
+package embox.arch.arm.armv7a
 
-module bundle {
-	option number multi_processing = 0
+module cpu_reset extends embox.arch.arm.armlib.cpu_reset {
+	option number multi_processing=0
 
 	source "cpu_reset.S"
+}
 
-	depends embox.arch.arm.head
-	depends embox.arch.arm.armlib.context
-	depends embox.arch.arm.armlib.interrupt
-	depends embox.arch.arm.armlib.locore
-	
-	depends embox.arch.arm.armlib.arch
-	// depends embox.arch.arm.armlib.armv7_monitor_mode
+module arch extends embox.arch.arch {
+	source "arch.S"
+}
+
+module monitor_mode {
+	source "monitor_armv7.c"
+	source "monitor_exception_table.S"
 }

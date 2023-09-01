@@ -1,4 +1,4 @@
-package embox.arch.arm.armv6
+package embox.arch.arm.armv5te
 
 module arch extends embox.arch.arch {
 	source "arch.c"
