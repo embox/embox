@@ -287,7 +287,7 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 	int err;
 
 	if (!dfs_flashdev) {
-		return -ENOENT;
+		dfs_flashdev = flash_by_id(0);
 	}
 
 	k = 0;
