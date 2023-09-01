@@ -315,9 +315,6 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
 
-	/* Configure root directory */
-	//sbi->inode_count++;
-
 	strcpy((char *) root.name, "/");
 	root.pos_start = sbi.free_space;
 	root.len       = DFS_INODES_MAX;
@@ -326,7 +323,8 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 	memcpy(write_buf, &sbi, sizeof(struct dfs_sb_info));
 	memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
 
-	dfs_write_buffered(0, write_buf, sizeof(write_buf), sbi.buff_bk);
+	// dfs_write_buffered(0, write_buf, sizeof(write_buf), sbi.buff_bk);
+	dfs_write_flash(dfs_flashdev, 0, write_buf, sizeof(write_buf));
 
 	return 0;
 }
@@ -348,13 +346,6 @@ static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 	if (dfs_sb_status == EMPTY) {
 		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
 	}
-
-	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
-		dfs_format(NULL, NULL);
-		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
-	}
-
-	dfs_sb_status = ACTUAL;
 
 	return 0;
 }
@@ -670,6 +661,7 @@ static struct dfs_sb_info dfs_info;
 
 static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	struct dfs_dir_entry dtr;
+	struct dfs_sb_info *sbi;
 
 	dfs_super = sb;
 
@@ -683,8 +675,17 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 		sb->bdev = dfs_flashdev->bdev;
 	}
 
+	sbi = sb->sb_data;
+
 	dfs_set_dev(flash_by_id(0));
-	dfs_read_sb_info(dfs_get_sb()->sb_data);
+	dfs_read_sb_info(sbi);
+
+	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
+		dfs_format(NULL, NULL);
+		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
+	}
+
+	dfs_sb_status = ACTUAL;
 
 	dfs_read_dirent(0, &dtr);
 
