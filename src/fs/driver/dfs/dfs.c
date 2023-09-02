@@ -275,8 +275,8 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 }
 
 int dfs_format(struct block_dev *bdev, void *priv) {
-	struct dfs_sb_info sbi;
-	struct dfs_dir_entry root;
+	struct dfs_sb_info *sbi;
+	struct dfs_dir_entry *root;
 	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
 	int i, j, k;
 	int err;
@@ -295,8 +295,11 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		}
 	}
 
+	sbi  = (struct dfs_sb_info *)&write_buf[0];
+	root = (struct dfs_dir_entry *)&write_buf[sizeof(struct dfs_sb_info)];
+	
 	/* Empty FS */
-	sbi = (struct dfs_sb_info) {
+	*sbi = (struct dfs_sb_info) {
 		.magic = {DFS_MAGIC_0, DFS_MAGIC_1},
 		.inode_count = 1, /* Configure root directory */
 		.max_inode_count = DFS_INODES_MAX + 1, /* + root folder with i_no 0 */
@@ -310,13 +313,13 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
 
-	strcpy((char *) root.name, "/");
-	root.pos_start = sbi.free_space;
-	root.len       = DFS_INODES_MAX;
-	root.flags     = S_IFDIR;
+	strcpy((char *) root->name, "/");
+	root->pos_start = sbi->free_space;
+	root->len       = DFS_INODES_MAX;
+	root->flags     = S_IFDIR;
 
-	memcpy(write_buf, &sbi, sizeof(struct dfs_sb_info));
-	memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
+	//memcpy(write_buf, &sbi, sizeof(struct dfs_sb_info));
+	//memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
 
 	dfs_write_flash(dfs_flashdev, 0, write_buf, sizeof(write_buf));
 
