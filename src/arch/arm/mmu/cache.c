@@ -25,7 +25,7 @@ static uint32_t get_cache_line_size(void) {
 	 * P.S. It is added because of ARM1176JZF-S (Ra Pi model B rev 2.0)
 	 */
 	return 32;
-#elif __ARM_ARCH >= 7
+#elif __ARM_ARCH >= 7 || __ARM_ARCH == 4
 	uint32_t csir;
 	asm volatile ("mrc p15, 1, %0, c0, c0, 0" : "=r" (csir));
 	return (1 << ((csir & 7) + 2)) * 4;

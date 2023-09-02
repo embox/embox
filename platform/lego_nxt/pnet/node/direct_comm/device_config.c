@@ -21,9 +21,9 @@
 int _memcmp(const void *p1, const void *p2, unsigned int size) {
     unsigned int i;
     for(i = 0; i < size; ++ i) {
-        if(*((char*)p1 + i) > *((char*)p1 + i))
+        if(*((char*)p1 + i) > *((char*)p2 + i))
             return 1;
-        if(*((char*)p1 + i) < *((char*)p1 + i))
+        if(*((char*)p1 + i) < *((char*)p2 + i))
             return -1;
     }
     return 0;
