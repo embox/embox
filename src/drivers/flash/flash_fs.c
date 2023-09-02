@@ -156,7 +156,7 @@ static int decode_flash_cmd(int cmd) {
 static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		void *buf, size_t size) {
 	struct flash_dev *dev;
-	flash_ioctl_erase_t *e;
+	struct flash_ioctl_erase *e;
 	uint32_t startpos, endpos;
 	flash_ioctl_devsize_t *ds;
 	flash_ioctl_devaddr_t *da;
@@ -171,7 +171,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 
 	switch (cmd) {
 	case FLASH_IOCTL_ERASE:
-		e = (flash_ioctl_erase_t *) buf;
+		e = (struct flash_ioctl_erase *) buf;
 		startpos = e->offset;
 
 		/* Unlike some other cases we _do_ do bounds checking on this all the time, because

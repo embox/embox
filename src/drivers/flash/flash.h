@@ -34,12 +34,12 @@ struct flash_dev_drv {
 	                       uint32_t base_to, uint32_t base_from, size_t len);
 };
 
-typedef struct {
+struct flash_ioctl_erase {
 	uint32_t offset;
 	size_t len;
 	int flasherr;
 	uint32_t err_address;
-} flash_ioctl_erase_t;
+};
 
 typedef struct {
 	size_t dev_size;
