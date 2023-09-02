@@ -1,0 +1,5 @@
+package embox.arch.arm.fpu
+
+@DefaultImpl(fpu_stub)
+abstract module fpu {
+}
