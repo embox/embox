@@ -14,6 +14,8 @@ abstract module system_abs_time_api {
 
 module system_abs_time_rtc extends system_abs_time_api {
 	source "system_abs_time_rtc.c"
+
+	depends embox.driver.rtc.rtc_api
 }
 
 module graphic_init extends display_mode {

@@ -13,5 +13,6 @@ module running extends timing {
 	source "running_time.c"
 
  	depends embox.compat.posix.util.time
+	depends embox.kernel.task.api
 }
 
