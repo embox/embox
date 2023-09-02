@@ -54,7 +54,6 @@ EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 #define MAX_HEADER_SIZE    (IP_MIN_HEADER_SIZE + IP_MAX_OPTLEN + \
 		TCP_MIN_HEADER_SIZE + ETH_HEADER_SIZE + 128 /* 128 is max size of tcp options length */)
 
-
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
 	static const struct tcp_wind self_wind_default = {
@@ -76,9 +75,10 @@ static int tcp_init(struct sock *sk) {
 	tcp_sk->parent = NULL;
 	INIT_LIST_HEAD(&tcp_sk->conn_lnk);
 	/* INIT_LIST_HEAD(&tcp_sk->conn_ready); */
-	INIT_LIST_HEAD(&tcp_sk->conn_wait);
-	INIT_LIST_HEAD(&tcp_sk->conn_free);
-	tcp_sk->free_wait_queue_len = tcp_sk->free_wait_queue_max = 0;
+    tcp_sk->listening.is_listening = 0;
+    tcp_sk->accepted = 0;
+	INIT_LIST_HEAD(&tcp_sk->listening.conn_wait);
+	INIT_LIST_HEAD(&tcp_sk->listening.conn_free);
 	tcp_sk->lock = 0;
 	/* timerclear(&sock.tcp_sk->syn_time); */
 	timerclear(&tcp_sk->ack_time);
@@ -237,41 +237,49 @@ static int tcp_connect(struct sock *sk,
 	return ret;
 }
 
-static int tcp_sock_alloc_missing_backlog(struct tcp_sock *tcp_sk) {
-	int to_alloc;
+/* tcp_sock_listen_fetch() returns the next free allocated socket for
+ * the new connection 
+ * is called from tcp layer, from tcp_st_listen()*/
+struct tcp_sock *tcp_sock_listen_fetch(struct tcp_sock *tcp_sk) {
+    assert(tcp_sk->listening.wait_queue_len > 0);
 
+    tcp_sk->listening.wait_queue_len--;
+    struct tcp_sock *tcp_newsk = mcast_out(tcp_sk->listening.conn_free.next,
+            struct tcp_sock, conn_lnk);
+    list_del_init(&tcp_newsk->conn_lnk);
+
+    return tcp_newsk;
+}
+
+/* tcp_sock_listen_alloc() allocate a new socket for accepting a new connection*/
+int tcp_sock_listen_alloc(struct tcp_sock *tcp_sk) {
 	assert(tcp_sk != NULL);
+    struct tcp_listen_info *listen = &tcp_sk->listening;
+
+    if (listen->wait_queue_len == listen->backlog) {
+        return 0;
+    }
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	{
-		to_alloc = tcp_sk->free_wait_queue_max - tcp_sk->free_wait_queue_len;
-		/* to_alloc allowed to be negative. It could be if backlog had set and then
-		 * was reduced.
-		 */
+        struct sock *newsk;
+        struct tcp_sock *tcp_newsk;
 
-		while (to_alloc > 0) {
-			struct sock *newsk;
-			struct tcp_sock *tcp_newsk;
+        newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
+                SOCK_STREAM, IPPROTO_TCP);
+        if (err(newsk) != 0) {
+            log_info("could not sock_create() err(%d)", err(newsk));
+        }
 
-			newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
-					SOCK_STREAM, IPPROTO_TCP);
-			if (err(newsk) != 0) {
-				log_info("could not sock_create() err(%d)", err(newsk));
-				break;
-			}
+        tcp_newsk = to_tcp_sock(newsk);
+        tcp_newsk->parent = tcp_sk;
 
-			to_alloc--;
-
-			tcp_newsk = to_tcp_sock(newsk);
-			tcp_newsk->parent = tcp_sk;
-
-			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_free);
-			tcp_sk->free_wait_queue_len++;
-		}
+        list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->listening.conn_free);
+        listen->wait_queue_len++; /* one more socket in queue ready for accept*/
 	}
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
-	return tcp_sk->free_wait_queue_len;
+	return listen->wait_queue_len;
 }
 
 static int tcp_listen(struct sock *sk, int backlog) {
@@ -296,9 +304,10 @@ static int tcp_listen(struct sock *sk, int backlog) {
 				ret = -EINVAL; /* error: invalid backlog */
 				break;
 			}
-			tcp_sk->free_wait_queue_max = backlog;
-			/* this could be not first listen call, adjusting backlog queue */
-			tcp_sock_alloc_missing_backlog(tcp_sk);
+            tcp_sk->listening.is_listening = 1;
+            tcp_sk->listening.backlog = backlog;
+            tcp_sk->listening.wait_queue_len = 0;
+            /*tcp_sock_listen_alloc(tcp_sk);*/
 			tcp_sock_set_state(tcp_sk, TCP_LISTEN);
 			ret = 0;
 			break;
@@ -327,8 +336,7 @@ static inline struct tcp_sock *accept_get_connection(struct tcp_sock *tcp_sk) {
 
 	/* delete new socket from list */
 	list_del_init(&tcp_newsk->conn_lnk);
-	assert(tcp_sk->free_wait_queue_len > 0);
-	--tcp_sk->free_wait_queue_len;
+    tcp_newsk->accepted = 1;
 
 	return tcp_newsk;
 }
@@ -353,9 +361,11 @@ static int tcp_accept(struct sock *sk, struct sockaddr *addr,
 		return -EINVAL; /* error: the socket is not accepting connections */
 	}
 
-	if (0 == tcp_sock_alloc_missing_backlog(tcp_sk)) {
+    /* Previously here, if no sockets for a queue could be allocated
+     * we returned -ENOBUFS, which doesn't seem reasonable */
+	/*if (0 == tcp_sock_alloc_missing_backlog(tcp_sk)) {
 		return -ENOBUFS;
-	}
+	}*/
 
 	/* waiting anyone */
 	tcp_newsk = NULL;

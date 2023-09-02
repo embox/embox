@@ -84,6 +84,14 @@ struct tcp_seq_state {
 	struct tcp_wind wind;
 };
 
+struct tcp_listen_info{
+    int is_listening; /* 0/1 socket is listening */
+    unsigned int backlog; /* backlog option from listen, basically max number of connections*/
+    unsigned int wait_queue_len; /* how much more connections can handle*/
+    struct list_head conn_wait; /* Queue of incoming waiting connections */
+    struct list_head conn_free; /* Queue of free sockets for incoming connections */
+};
+
 typedef struct tcp_sock {
 	struct proto_sock p_sk;     /* Base proto_sock class (MUST BE FIRST) */
 	enum tcp_sock_state state;  /* Socket state */
@@ -96,10 +104,8 @@ typedef struct tcp_sock {
 		struct list_head conn_lnk;   /* Link for conn_xxx lists */
 		struct list_head conn_ready; /* Queue of incoming ready connections */
 	};
-	struct list_head conn_wait; /* Queue of incoming waiting connections */
-	struct list_head conn_free; /* Queue of free sockets for incoming connections */
-	unsigned int free_wait_queue_len; /* @a conn_wait length plus @a conn_free length */
-	unsigned int free_wait_queue_max; /* Maximum @a conn_wait length plus @a conn_free length */
+    struct tcp_listen_info listening;  /* Information for a listening socket*/
+    unsigned int accepted; /*when a child socket becomes active on accept()*/
 	unsigned int lock;          /* Tool for synchronization */
 	struct timeval syn_time;    /* The time when synchronization started */
 	struct timeval ack_time;    /* The time when message was ACKed */

@@ -8,6 +8,8 @@
  * @author Anton Kozlov
  * @author Ilia Vaprol
  */
+#include <kernel/printk.h>
+#include <stdio.h>
 #include <util/log.h>
 
 #include <stdint.h>
@@ -56,6 +58,9 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 #else
 #define TCP_DEBUG 0
 #endif
+
+/* set to 1 to see all the changing states of tcp sockets */
+#define TCP_PRINT_STATE_INFO 0
 
 /** TODO
  * +1. Create default socket for resetting
@@ -252,6 +257,11 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 			"TCP_TIMEWAIT"
 	};
 	struct sock *sk = to_sock(tcp_sk);
+
+#if TCP_PRINT_STATE_INFO
+    printk("tcp_sk = 0x%08x\t set state %s\n", (uintptr_t)tcp_sk,
+            str_state[new_state]);
+#endif
 
 	switch (new_state) {
 	default:
@@ -483,6 +493,18 @@ void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb) {
 	}
 }
 
+/* Helper to determine if the entry is in specific list */
+static inline int is_in_list(struct list_head *entry, struct list_head *head) {
+    struct list_head *pos;
+
+    list_for_each(pos, head) {
+        if (pos == entry)
+            return 1;
+    }
+
+    return 0;
+}
+
 void tcp_sock_release(struct tcp_sock *tcp_sk) {
 	struct tcp_sock *anticipant;
 
@@ -490,27 +512,35 @@ void tcp_sock_release(struct tcp_sock *tcp_sk) {
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			list_for_each_entry(anticipant,
-					&tcp_sk->conn_wait, conn_lnk) {
+					&tcp_sk->listening.conn_wait, conn_lnk) {
 				sock_release(to_sock(anticipant));
 			}
 			list_for_each_entry(anticipant, &tcp_sk->conn_ready, conn_lnk) {
 				sock_release(to_sock(anticipant));
 			}
-			list_for_each_entry(anticipant, &tcp_sk->conn_free, conn_lnk) {
+			list_for_each_entry(anticipant, &tcp_sk->listening.conn_free, conn_lnk) {
 				sock_release(to_sock(anticipant));
 			}
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 	}
 	else {
+        /*If this is not a parent socket => it is either a socket that was at
+         * established connection or it was for some reason dropped from the
+         * waiting connections queue.*/
 		tcp_sock_lock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
-		{
-			if (!list_empty(&tcp_sk->conn_lnk)) {
-				list_del(&tcp_sk->conn_lnk);
-				assert(tcp_sk->parent->free_wait_queue_len > 0);
-				--tcp_sk->parent->free_wait_queue_len;
-			}
-		}
+        {
+            /* If it is in the queue */
+            if (!list_empty(&tcp_sk->conn_lnk)) {
+                /* Doesn't seem possible, but if that's a socket from conn_free
+                 * queue we need to decrease listening socket's wait_queue_len*/
+                if(is_in_list(&tcp_sk->conn_lnk, &tcp_sk->parent->listening.conn_free)) {
+                    assert(tcp_sk->parent->listening.wait_queue_len > 0);
+                    tcp_sk->parent->listening.wait_queue_len--;
+                }
+                list_del(&tcp_sk->conn_lnk);
+            }
+        }
 		tcp_sock_unlock(tcp_sk->parent, TCP_SYNC_CONN_QUEUE);
 	}
 
@@ -530,6 +560,10 @@ static enum tcp_ret_code tcp_st_closed(struct tcp_sock *tcp_sk,
 	return TCP_RET_RST;
 }
 
+/* From tcp_sock layer */
+extern int tcp_sock_listen_alloc(struct tcp_sock *tcp_sk);
+extern struct tcp_sock *tcp_sock_listen_fetch(struct tcp_sock *tcp_s);
+
 static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		const struct tcphdr *tcph, struct sk_buff *skb,
 		struct tcphdr *out_tcph) {
@@ -546,10 +580,8 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		/* Check max length of accept queue and reserve 1 place */
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
-			if (!list_empty(&tcp_sk->conn_free)) {
-				tcp_newsk = mcast_out(tcp_sk->conn_free.next, struct tcp_sock, conn_lnk);
-				list_del_init(&tcp_newsk->conn_lnk);
-				/* will add it to conn_wait list, no free_wait_queue_len adjustment */
+            if (tcp_sock_listen_alloc(tcp_sk) > 0) {
+                tcp_newsk = tcp_sock_listen_fetch(tcp_sk); /* will add it to conn_wait list */
 			} else {
 				log_error("tcp_st_listen: can't alloc socket\n");
 				tcp_newsk = NULL;
@@ -599,7 +631,7 @@ static enum tcp_ret_code tcp_st_listen(struct tcp_sock *tcp_sk,
 		tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		{
 			tcp_newsk->parent = tcp_sk;
-			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->conn_wait);
+			list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->listening.conn_wait);
 		}
 		tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 		/* Handling skb */
