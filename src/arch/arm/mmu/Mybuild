@@ -37,6 +37,7 @@ module mmu_small_page extends embox.mem.vmem {
 	depends embox.mem.vmem_header
 	depends embox.mem.vmem_alloc_pool
 	depends embox.mem.vmem_depends
+	depends embox.arch.arm.armlib.mem_barriers
 }
 
 module mmuinfo extends embox.arch.mmuinfo {
