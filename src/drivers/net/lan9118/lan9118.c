@@ -291,7 +291,7 @@ repeat:
 	irq_unlock();
 }
 
-irq_return_t lan9118_irq_handler(int irq_nr, void *nic) {
+irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
 	uint32_t l = lan9118_reg_read(nic, LAN9118_INT_STS);
 
 	if (l & _LAN9118_INT_STS_RSFL_INT) {
