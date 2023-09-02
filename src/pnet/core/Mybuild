@@ -22,6 +22,8 @@ module core {
 
 	depends prior_path
 	depends pack.PnetPackFactory
+
+	depends embox.net.net_namespace
 }
 
 module dev {

@@ -5,6 +5,8 @@
  * @author Anton Kozlov
  * @date 17.08.2015
  */
+#include <asm/cp15.h>
+
 .section .text
 
 .global setup_excpt_table

@@ -96,7 +96,8 @@ static int process_msg(struct bc_msg_body *msg) {
 		out_msg.type = MSG_PIN_CODE;
 		memcpy(&out_msg.content, &(msg->content), 7);
 		memset(out_msg.content + 7, 0, 17);
-		memcpy(out_msg.content + 7, CONFIG_BLUETOOTH_PIN, 16);
+		const int config_len = strlen(CONFIG_BLUETOOTH_PIN);
+		memcpy(out_msg.content + 7, CONFIG_BLUETOOTH_PIN, config_len);
 		break;
 	case MSG_REQUEST_CONNECTION:
 		out_msg.type = MSG_ACCEPT_CONNECTION;
