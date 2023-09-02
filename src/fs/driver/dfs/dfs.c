@@ -235,7 +235,7 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
  *
  * @returns Bytes written or negative error code
  */
-static int dfs_write_buffered(int pos, void *buff, size_t size, uint32_t buff_bk) {
+static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, size_t size, uint32_t buff_bk) {
 	int start_bk = pos / NAND_BLOCK_SIZE;
 	int last_bk = (pos + size) / NAND_BLOCK_SIZE;
 	int bk;
@@ -247,34 +247,34 @@ static int dfs_write_buffered(int pos, void *buff, size_t size, uint32_t buff_bk
 
 	err = 0;
 
-	dfs_cache_erase(dfs_flashdev, buff_bk);
-	dfs_cache(dfs_flashdev, CACHE_OFFSET, start_bk * NAND_BLOCK_SIZE, pos);
+	dfs_cache_erase(flashdev, buff_bk);
+	dfs_cache(flashdev, CACHE_OFFSET, start_bk * NAND_BLOCK_SIZE, pos);
 
 	if (start_bk == last_bk) {
-		if ((err = dfs_cache_write(dfs_flashdev, CACHE_OFFSET + pos, buff, size))) {
+		if ((err = dfs_cache_write(flashdev, CACHE_OFFSET + pos, buff, size))) {
 			return err;
 		}
 		pos += size;
 	} else {
-		dfs_write_flash(dfs_flashdev, CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
-		dfs_blkcpy_flash(dfs_flashdev, start_bk, buff_bk);
+		dfs_write_flash(flashdev, CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
+		dfs_blkcpy_flash(flashdev, start_bk, buff_bk);
 		buff += NAND_BLOCK_SIZE - pos;
 		pos = (pos + size) % NAND_BLOCK_SIZE;
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
-			dfs_erase_flash(dfs_flashdev, bk);
-			if ((err = dfs_write_flash(dfs_flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
+			dfs_erase_flash(flashdev, bk);
+			if ((err = dfs_write_flash(flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
 				return err;
 			}
 			buff += NAND_BLOCK_SIZE;
 		}
 
-		dfs_erase_flash(dfs_flashdev, buff_bk);
-		dfs_write_flash(dfs_flashdev, CACHE_OFFSET, buff, pos);
+		dfs_erase_flash(flashdev, buff_bk);
+		dfs_write_flash(flashdev, CACHE_OFFSET, buff, pos);
 	}
 
-	dfs_cache(dfs_flashdev, CACHE_OFFSET + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
-	dfs_cache_restore(dfs_flashdev, last_bk, buff_bk);
+	dfs_cache(flashdev, CACHE_OFFSET + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
+	dfs_cache_restore(flashdev, last_bk, buff_bk);
 
 	return 0;
 }
@@ -323,7 +323,6 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 	memcpy(write_buf, &sbi, sizeof(struct dfs_sb_info));
 	memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
 
-	// dfs_write_buffered(0, write_buf, sizeof(write_buf), sbi.buff_bk);
 	dfs_write_flash(dfs_flashdev, 0, write_buf, sizeof(write_buf));
 
 	return 0;
@@ -353,7 +352,7 @@ static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
 static int dfs_write_sb_info(struct dfs_sb_info *sbi) {
 	assert(sbi);
 	if (dfs_sb_status == DIRTY) {
-		dfs_write_buffered(0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
+		dfs_write_buffered(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
 		dfs_sb_status = ACTUAL;
 	}
 	return 0;
@@ -379,7 +378,7 @@ static int dfs_write_dirent(int n, struct dfs_dir_entry *dtr) {
 
 	assert(dtr);
 
-	dfs_write_buffered(offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
+	dfs_write_buffered(dfs_flashdev, offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
 	return 0;
 }
 
@@ -624,7 +623,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_write_buffered(pos, buf, l, sbi->buff_bk);
+	dfs_write_buffered(dfs_flashdev, pos, buf, l, sbi->buff_bk);
 
 	return l;
 }
