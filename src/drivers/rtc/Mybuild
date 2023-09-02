@@ -10,6 +10,8 @@ module rtc extends rtc_api {
 	source "rtc.c"
 	@IncludeExport(path="drivers")
 	source "rtc.h"
+
+	depends embox.kernel.lthread.lthread
 }
 
 module no_rtc extends rtc_api {
