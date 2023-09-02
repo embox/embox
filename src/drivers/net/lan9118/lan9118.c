@@ -291,7 +291,7 @@ repeat:
 	irq_unlock();
 }
 
-irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
+irq_return_t lan9118_irq_handler(int irq_nr, void *nic) {
 	uint32_t l = lan9118_reg_read(nic, LAN9118_INT_STS);
 
 	if (l & _LAN9118_INT_STS_RSFL_INT) {
@@ -301,6 +301,16 @@ irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
 	lan9118_reg_write(nic, LAN9118_INT_STS, l);
 
 	return IRQ_HANDLED;
+}
+
+void lan9118_gpio_irq_handler(void *nic) {
+	uint32_t l = lan9118_reg_read(nic, LAN9118_INT_STS);
+
+	if (l & _LAN9118_INT_STS_RSFL_INT) {
+		lan9118_rx(nic);
+	}
+
+	lan9118_reg_write(nic, LAN9118_INT_STS, l);
 }
 
 static void mdelay(int value) {
@@ -357,7 +367,7 @@ static int lan9118_open(struct net_device *dev) {
 		GPIO_MODE_IN_INT_EN);
 
 	gpio_irq_attach(LAN9118_PORT, 1 << LAN9118_PIN,
-				lan9118_irq_handler,
+				lan9118_gpio_irq_handler,
 				dev);
 #else
 	irq_attach(LAN9118_IRQ_NR, lan9118_irq_handler, 0, dev, "lan9118 INTERRUPT");
