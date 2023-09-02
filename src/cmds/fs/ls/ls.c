@@ -99,7 +99,8 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 	while (NULL != (dent = readdir(dir))) {
 		int pathlen = strlen(path);
 		int dent_namel = strlen(dent->d_name);
-		line = (char*)malloc(sizeof(char) * (pathlen + dent_namel + 3));
+		const int line_size = sizeof(char) * (pathlen + dent_namel + 3);
+		line = (char *)malloc(line_size);
 		if (line == NULL) {
 			printf("Failed to allocate memory for buffer!\n");
 			return;
@@ -107,7 +108,16 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 		struct stat sb;
 
 		if (pathlen > 0) {
+#ifdef __GNUC__
+#pragma GCC diagnostic push
+#if __GNUC__ > 12
+#pragma GCC diagnostic ignored "-Wformat-overflow" /* It can't really overflow, 'line' is big enough */
+#endif
+#endif
 			sprintf(line, "%s/%s", path, dent->d_name);
+#ifdef __GNUC__
+#pragma GCC diagnostic pop
+#endif
 		} else {
 			strcpy(line, dent->d_name);
 		}
@@ -185,7 +195,7 @@ int main(int argc, char **argv) {
 			}
 
 			print(dir_name, dir, recursive, printer);
-	
+
 			closedir(dir);
 		} while (optind++ < argc - 1);
 	} else {
