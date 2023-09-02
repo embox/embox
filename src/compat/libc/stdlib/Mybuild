@@ -37,6 +37,7 @@ static module core {
 static module system {
 	source "system.c"
 	depends embox.cmd.sh.shell_registry
+	depends embox.lib.Tokenizer
 }
 
 static module multibyte {
