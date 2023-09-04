@@ -1,9 +1,8 @@
 /**
- * @file vfp.h
- * @brief
- * @author Denis Deryugin <deryugin.denis@gmail.com>
- * @version
- * @date 28.03.2018
+ * @file
+ *
+ * @date May 24, 2018
+ * @author Anton Bondarev
  */
 
 #ifndef ARM_FPU_H_
@@ -11,18 +10,20 @@
 
 #define ARM_FPU_VFP
 
-/* One word for coprocessor state and 64 words for VFP registers */
-#define FPU_DATA_LEN (64 + 1)
+/* One word for coprocessor state and 32 words for VPF registers */
+#define FPU_DATA_LEN (32 + 1)
+
+#define VFP_FPEXC_EN (1 << 30)
 
 #ifndef __ASSEMBLER__
 #include <string.h>
 #include <stdint.h>
 
 typedef struct fpu_context {
-	uint32_t fpexc; /* cpacr actually */
+	uint32_t fpexc;
 	union {
-		float s[64];
-		double d[32];
+		float s[32];
+		double d[16];
 	} vfp_regs;
 } __attribute__((packed, aligned(4))) fpu_context_t;
 
