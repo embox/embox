@@ -174,7 +174,7 @@ static int stm32_flash_init(void *arg) {
 	flash->drv = &stm32_flash_drv;
 	flash->size = STM32_FLASH_END - STM32_FLASH_START;
 	flash->num_block_infos = 1;
-	flash->block_info[0] = (flash_block_info_t) {
+	flash->block_info[0] = (struct flash_block_info) {
 		.block_size = STM32_FLASH_SECTOR_SIZE,
 		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
 	};

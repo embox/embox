@@ -71,10 +71,10 @@ int flash_max_id(void) {
 	return MAX_BDEV_QUANTITY;
 }
 
-ARRAY_SPREAD_DEF(const flash_dev_module_t, __flash_dev_registry);
+ARRAY_SPREAD_DEF(const struct flash_dev_module, __flash_dev_registry);
 int flash_devs_init(void) {
 	int ret;
-	const flash_dev_module_t *fdev_module;
+	const struct flash_dev_module *fdev_module;
 
 	if (flash_initialized) {
 		return 0;

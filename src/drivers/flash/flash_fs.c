@@ -158,9 +158,9 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 	struct flash_dev *dev;
 	struct flash_ioctl_erase *e;
 	uint32_t startpos, endpos;
-	flash_ioctl_devsize_t *ds;
-	flash_ioctl_devaddr_t *da;
-	flash_ioctl_blocksize_t *bs;
+	struct flash_ioctl_devsize *ds;
+	struct flash_ioctl_devaddr *da;
+	struct flash_ioctl_blocksize *bs;
 
 	assert(bdev);
 
@@ -187,7 +187,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_DEVSIZE:
-		ds = (flash_ioctl_devsize_t *) buf;
+		ds = (struct flash_ioctl_devsize *) buf;
 
 		if (NULL == ds) {
 			return (dev->size + 1);
@@ -198,7 +198,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_DEVADDR:
-		da = (flash_ioctl_devaddr_t *)buf;
+		da = (struct flash_ioctl_devaddr *)buf;
 
 		if (NULL == da) {
 			return 0;
@@ -209,7 +209,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_BLOCKSIZE:
-		bs = (flash_ioctl_blocksize_t *)buf;
+		bs = (struct flash_ioctl_blocksize *)buf;
 
 		if (NULL == bs) {
 			return (dev->block_info[0].block_size);

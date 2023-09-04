@@ -41,22 +41,22 @@ struct flash_ioctl_erase {
 	uint32_t err_address;
 };
 
-typedef struct {
+struct flash_ioctl_devsize {
 	size_t dev_size;
-} flash_ioctl_devsize_t;
+};
 
-typedef struct {
+struct flash_ioctl_devaddr {
 	uint32_t dev_addr;
-} flash_ioctl_devaddr_t;
+};
 
-typedef struct {
+struct flash_ioctl_blocksize {
 	size_t block_size;
-} flash_ioctl_blocksize_t;
+};
 
-typedef struct flash_block_info {
+struct flash_block_info {
 	size_t           block_size;
 	uint32_t         blocks;
-} flash_block_info_t;
+};
 
 /* Structure of flash device info */
 #define FLASH_BLOCK_INFO_MAX \
@@ -67,7 +67,7 @@ struct flash_dev {
 	const struct flash_dev_drv *drv;
 	uint32_t                    size; /* Bytes */
 	uint32_t                    num_block_infos;
-	flash_block_info_t          block_info[FLASH_BLOCK_INFO_MAX];
+	struct flash_block_info     block_info[FLASH_BLOCK_INFO_MAX];
 	void                       *privdata;
 };
 
@@ -81,15 +81,15 @@ extern int flash_copy(struct flash_dev *flashdev, uint32_t to,
 		uint32_t from, size_t len);
 
 typedef int (* flash_dev_module_init_ft)(void *args);
-typedef struct flash_dev_module {
+struct flash_dev_module {
 	const char *name;
 	const struct flash_dev_drv *dev_drv;
 	const flash_dev_module_init_ft init;
 	void *arg;
-} flash_dev_module_t;
+};
 
 #define FLASH_DEV_DEF(name, flash_dev_drv, init_func) \
-	ARRAY_SPREAD_DECLARE(const flash_dev_module_t, __flash_dev_registry); \
+	ARRAY_SPREAD_DECLARE(const struct flash_dev_module, __flash_dev_registry); \
 	ARRAY_SPREAD_ADD(__flash_dev_registry, {name, flash_dev_drv, init_func})
 
 /* ======== 0x600 FLASH ===============================

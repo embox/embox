@@ -169,7 +169,7 @@ static int qspi_flash_init(void *arg) {
 	flash->drv = &qspi_flash_drv;
 	flash->size = QSPI_FLASH_SIZE;
 	flash->num_block_infos = 1;
-	flash->block_info[0] = (flash_block_info_t) {
+	flash->block_info[0] = (struct flash_block_info) {
 		.block_size = QSPI_BLOCK_SIZE,
 		.blocks = QSPI_FLASH_SIZE / QSPI_BLOCK_SIZE,
 	};
