@@ -6,6 +6,8 @@
  * @author Alexander Kalmuk
  */
 
+#include "kernel/task/resource/errno.h"
+#include "kernel/task/task_table.h"
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
@@ -32,6 +34,21 @@ struct service_list {
 POOL_DEF(pool, struct service_list, SERVICES_COUNT);
 
 static DLIST_DEFINE(head);
+
+/* helper to check that service is up running*/
+static int is_service_up(struct service_list *item) {
+    struct task *tsk = task_table_get(item->pid);
+
+    if (tsk){
+        char name_cpy[SERVICE_NAME_LEN];
+        char *first_word;
+        strcpy(name_cpy, tsk->tsk_name);
+        first_word = strtok(name_cpy, " ");
+        if(strcmp(first_word, item->service_name) == 0)
+            return 1;
+    }
+    return 0;
+}
 
 static void print_usage(void) {
 	printf("USAGE: service - print list of available services\n"
@@ -91,7 +108,7 @@ static void listprint(void) {
 
 	dlist_foreach_entry(tmp, &head, dlist_item) {
         /* Check that the service is still running, if not remove from list*/
-        if (task_table_get(tmp->pid) == NULL) {
+        if (!is_service_up(tmp)) {
             dlist_del_init(&tmp->dlist_item);
             pool_free(&pool, tmp);
             printf("[ Task Id=%d ]\t%s\t [ exited ]\n", tmp->pid, tmp->service_name);
@@ -181,7 +198,7 @@ int main(int argc, char **argv) {
             service_node = service_lookup_by_name(command);
             if (service_node){
                 /* Is the task still up or it has exited since last start */
-                if (task_table_get(service_node->pid) == NULL) {
+                if (!is_service_up(service_node)) {
                     dlist_del_init(&service_node->dlist_item);
                     pool_free(&pool, service_node);
                     printf("Service has exited\n");
@@ -197,7 +214,7 @@ int main(int argc, char **argv) {
     /* Start process */
     service_node = service_lookup_by_name(command);
     if (service_node) {
-        if (task_table_get(service_node->pid) != NULL) {
+        if (is_service_up(service_node)) {
             printf("Service is already running\n");
             return 0;
         } else { /* exited since last start */
