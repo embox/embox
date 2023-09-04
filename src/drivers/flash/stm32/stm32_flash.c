@@ -148,17 +148,10 @@ err_exit:
 	return err;
 }
 
-static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
-				uint32_t base_src, size_t len) {
-	return stm32_flash_program(dev, base_dst,
-		(void *) STM32_FLASH_START + base_src, len);
-}
-
 static const struct flash_dev_drv stm32_flash_drv = {
 	.flash_read = stm32_flash_read,
 	.flash_erase_block = stm32_flash_erase_block,
 	.flash_program = stm32_flash_program,
-	.flash_copy = stm32_flash_copy,
 };
 
 static int stm32_flash_init(void *arg) {

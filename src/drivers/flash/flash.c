@@ -127,12 +127,3 @@ int flash_erase(struct flash_dev *flashdev, uint32_t block) {
 
 	return flashdev->drv->flash_erase_block(flashdev, block);
 }
-
-int flash_copy(struct flash_dev *flashdev, uint32_t to,
-		uint32_t from, size_t len) {
-	assert(flashdev);
-	assert(flashdev->drv);
-	assert(flashdev->drv->flash_copy);
-
-	return flashdev->drv->flash_copy(flashdev, to, from, len);
-}

@@ -30,8 +30,6 @@ struct flash_dev_drv {
 	                          const void* data, size_t len);
 	int	(*flash_read) (struct flash_dev *dev, uint32_t base,
 	                       void* data, size_t len);
-	int	(*flash_copy) (struct flash_dev *dev,
-	                       uint32_t base_to, uint32_t base_from, size_t len);
 };
 
 struct flash_ioctl_erase {

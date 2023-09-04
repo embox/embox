@@ -145,17 +145,10 @@ log_debug("Ok");
 	return len;
 }
 
-static int qspi_flash_copy(struct flash_dev *dev, uint32_t base_dst,
-				uint32_t base_src, size_t len) {
-	log_error("QSPI copy is not realized");
-	return -1;
-}
-
 static const struct flash_dev_drv qspi_flash_drv = {
 	.flash_read = qspi_flash_read,
 	.flash_erase_block = qspi_flash_erase_block,
 	.flash_program = qspi_flash_write,
-	.flash_copy = qspi_flash_copy,
 };
 
 static int qspi_flash_init(void *arg) {
