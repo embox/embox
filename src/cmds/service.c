@@ -18,6 +18,7 @@
 #include <util/dlist.h>
 #include <mem/misc/pool.h>
 #include <framework/mod/options.h>
+#include <kernel/task.h>
 
 #define SERVICE_NAME_LEN OPTION_GET(NUMBER,service_name_len)
 #define SERVICES_COUNT OPTION_GET(NUMBER,services_count)
@@ -89,7 +90,14 @@ static void listprint(void) {
 	struct service_list *tmp;
 
 	dlist_foreach_entry(tmp, &head, dlist_item) {
-        printf("[PID=%d]\t%s\n", tmp->pid, tmp->service_name);
+        /* Check that the service is still running, if not remove from list*/
+        if (task_table_get(tmp->pid) == NULL) {
+            dlist_del_init(&tmp->dlist_item);
+            pool_free(&pool, tmp);
+            printf("[ Task Id=%d ]\t%s\t [ exited ]\n", tmp->pid, tmp->service_name);
+        } else {
+            printf("[ Task Id=%d ]\t%s\n", tmp->pid, tmp->service_name);
+        }
 	}
 }
 
@@ -171,27 +179,40 @@ int main(int argc, char **argv) {
     if (arg_offset+1 < argc)
         if (strcmp(argv[arg_offset+1], "stop") == 0) {
             service_node = service_lookup_by_name(command);
-            if (service_node)
-                service_delete(service_node);
-            else
+            if (service_node){
+                /* Is the task still up or it has exited since last start */
+                if (task_table_get(service_node->pid) == NULL) {
+                    dlist_del_init(&service_node->dlist_item);
+                    pool_free(&pool, service_node);
+                    printf("Service has exited\n");
+                } else { /* If up then stop */
+                    service_delete(service_node);
+                }
+            } else {
                 printf("Cannot stop %s, no such service running\n", command);
+            }
             return 0;
         }
 
     /* Start process */
     service_node = service_lookup_by_name(command);
     if (service_node) {
-        printf("Service is already running\n");
-        return 0;
+        if (task_table_get(service_node->pid) != NULL) {
+            printf("Service is already running\n");
+            return 0;
+        } else { /* exited since last start */
+            dlist_del_init(&service_node->dlist_item);
+            pool_free(&pool, service_node);
+            printf("Service has previously exited...restarting\n");
+        }
     }
-    else {
-        argv[argc] = NULL;
-        printf("Starting service: %s\n", command);
+    /* Normal starting routine */
+    argv[argc] = NULL;
+    printf("Starting service: %s\n", command);
 
-        if(service_run(command, &argv[arg_offset]) < 0)
-            printf("Couldn't start service %s\n", argv[1]);
-        else
-            printf("Succefully started\n");
-        return 0;
-    }
+    if(service_run(command, &argv[arg_offset]) < 0)
+        printf("Couldn't start service %s\n", argv[1]);
+    else
+        printf("Succefully started\n");
+    return 0;
 }
