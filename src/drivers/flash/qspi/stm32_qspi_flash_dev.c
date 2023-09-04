@@ -145,11 +145,7 @@ log_debug("Ok");
 	return len;
 }
 
-static const struct flash_dev_drv qspi_flash_drv = {
-	.flash_read = qspi_flash_read,
-	.flash_erase_block = qspi_flash_erase_block,
-	.flash_program = qspi_flash_write,
-};
+static const struct flash_dev_drv qspi_flash_drv;
 
 static int qspi_flash_init(void *arg) {
 	struct flash_dev *flash;
@@ -170,4 +166,11 @@ static int qspi_flash_init(void *arg) {
 	return 0;
 }
 
-FLASH_DEV_DEF("qspiflash", &qspi_flash_drv, qspi_flash_init);
+static const struct flash_dev_drv qspi_flash_drv = {
+	.flash_init = qspi_flash_init,
+	.flash_read = qspi_flash_read,
+	.flash_erase_block = qspi_flash_erase_block,
+	.flash_program = qspi_flash_write,
+};
+
+FLASH_DEV_DEF("qspiflash", &qspi_flash_drv);

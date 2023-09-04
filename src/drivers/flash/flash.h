@@ -75,17 +75,17 @@ extern int flash_write(struct flash_dev *flashdev, unsigned long offset,
 		const void *buf, size_t len);
 extern int flash_erase(struct flash_dev *flashdev, uint32_t block);
 
-typedef int (* flash_dev_module_init_ft)(void *args);
+
 struct flash_dev_module {
 	const char *name;
 	const struct flash_dev_drv *dev_drv;
-	const flash_dev_module_init_ft init;
+
 	void *arg;
 };
 
-#define FLASH_DEV_DEF(name, flash_dev_drv, init_func) \
+#define FLASH_DEV_DEF(name, flash_dev_drv) \
 	ARRAY_SPREAD_DECLARE(const struct flash_dev_module, __flash_dev_registry); \
-	ARRAY_SPREAD_ADD(__flash_dev_registry, {name, flash_dev_drv, init_func})
+	ARRAY_SPREAD_ADD(__flash_dev_registry, {name, flash_dev_drv})
 
 /* ======== 0x600 FLASH ===============================
  * Get/Set configuration 'key' values for FLASH drivers

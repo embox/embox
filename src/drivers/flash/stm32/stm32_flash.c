@@ -148,11 +148,7 @@ err_exit:
 	return err;
 }
 
-static const struct flash_dev_drv stm32_flash_drv = {
-	.flash_read = stm32_flash_read,
-	.flash_erase_block = stm32_flash_erase_block,
-	.flash_program = stm32_flash_program,
-};
+static const struct flash_dev_drv stm32_flash_drv;
 
 static int stm32_flash_init(void *arg) {
 	struct flash_dev *flash;
@@ -191,4 +187,11 @@ static int stm32_flash_init(void *arg) {
 	return 0;
 }
 
-FLASH_DEV_DEF("stm32flash", &stm32_flash_drv, stm32_flash_init);
+static const struct flash_dev_drv stm32_flash_drv = {
+	.flash_init = stm32_flash_init,
+	.flash_read = stm32_flash_read,
+	.flash_erase_block = stm32_flash_erase_block,
+	.flash_program = stm32_flash_program,
+};
+
+FLASH_DEV_DEF("stm32flash", &stm32_flash_drv);
