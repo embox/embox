@@ -15,6 +15,7 @@
 #include <hal/reg.h>
 #include <drivers/amba_pnp.h>
 #include <net/l0/net_entry.h>
+#include <drivers/common/memory.h>
 
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
@@ -24,38 +25,40 @@
 #include <net/util/show_packet.h>
 #include <util/binalign.h>
 
-
 #include <kernel/printk.h>
 
+#include <framework/mod/options.h>
 
-EMBOX_UNIT_INIT(greth_init);
+#define GRETH_BASE    OPTION_GET(NUMBER, greth_base)
+#define GRETH_IRQ_NUM OPTION_GET(NUMBER, irq_num)
 
 #define GRETH_DB_QUANTITY 128 /* 1kbyte / 8 (2 word) */
 
 /* control register bits */
-#define GRETH_CTRL_TX_EN    (1 << 0)
-#define GRETH_CTRL_RX_EN    (1 << 1)
-#define GRETH_CTRL_TX_INT   (1 << 2)
-#define GRETH_CTRL_RX_INT   (1 << 3)
+#define GRETH_CTRL_TX_EN  (1 << 0)
+#define GRETH_CTRL_RX_EN  (1 << 1)
+#define GRETH_CTRL_TX_INT (1 << 2)
+#define GRETH_CTRL_RX_INT (1 << 3)
 
-#define GRETH_CTRL_FD         0x00000010 /* full duplex */
-#define GRETH_CTRL_PROMISC    0x00000020
-#define GRETH_CTRL_RESET      0x00000040
-#define GRETH_CTRL_SPEED      0x00000080
-#define GRETH_CTRL_GB         0x00000100
-#define GRETH_CTRL_PSTATIEN   0x00000400
-#define GRETH_CTRL_MCEN       0x00000800
-#define GRETH_CTRL_DISDUPLEX  0x00001000
+#define GRETH_CTRL_FD        0x00000010 /* full duplex */
+#define GRETH_CTRL_PROMISC   0x00000020
+#define GRETH_CTRL_RESET     0x00000040
+#define GRETH_CTRL_SPEED     0x00000080
+#define GRETH_CTRL_GB        0x00000100
+#define GRETH_CTRL_PSTATIEN  0x00000400
+#define GRETH_CTRL_MCEN      0x00000800
+#define GRETH_CTRL_DISDUPLEX 0x00001000
 
 /*
  * descriptor status registers bits both for rx and tx
  */
-#define GRETH_BD_EN       0x0800
-#define GRETH_BD_WR       0x1000
-#define GRETH_BD_IE       0x2000
+#define GRETH_BD_EN 0x0800
+#define GRETH_BD_WR 0x1000
+#define GRETH_BD_IE 0x2000
 
 #define GRETH_BD_LEN_MASK 0x07FF
 
+EMBOX_UNIT_INIT(greth_init);
 
 /* GRETH buffer descriptor */
 struct greth_bd {
@@ -76,7 +79,6 @@ struct greth_regs {
 	uint32_t hash_lsb;
 };
 
-
 struct greth_dev {
 	struct greth_regs *base;
 
@@ -94,7 +96,8 @@ static struct sk_buff *rx_skb[GRETH_DB_QUANTITY];
 
 static struct greth_dev greth_dev;
 
-static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff *skb) {
+static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev,
+    struct sk_buff *skb) {
 	struct greth_bd *bd = dev->base->rx_desc_p;
 
 	assert(binalign_check_bound((uintptr_t)skb->mac.raw, 4));
@@ -109,7 +112,8 @@ static struct greth_bd *greth_alloc_rx_bd(struct greth_dev *dev, struct sk_buff 
 	return bd;
 }
 
-static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev, struct sk_buff *skb) {
+static struct greth_bd *greth_alloc_tx_bd(struct greth_dev *dev,
+    struct sk_buff *skb) {
 	struct greth_bd *bd = dev->base->tx_desc_p;
 
 	assert(binalign_check_bound((uintptr_t)skb->mac.raw, 4));
@@ -136,11 +140,9 @@ static void greth_rings_init(struct greth_dev *dev) {
 	dev->tx_bd = 0;
 	dev->tx_next = 0;
 
-
 	/* initialize rx ring buffer descriptors */
 	skb = skb_alloc(ETH_FRAME_LEN);
 	greth_alloc_rx_bd(dev, skb);
-
 }
 
 static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
@@ -149,7 +151,8 @@ static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	bd = greth_alloc_tx_bd(&greth_dev, skb);
 	REG_ORIN(&greth_dev.base->control, GRETH_CTRL_TX_EN);
 	show_packet(skb->mac.raw, skb->len, "transmite");
-	while(bd->status & GRETH_BD_EN);
+	while (bd->status & GRETH_BD_EN)
+		;
 
 	skb_free(skb);
 
@@ -163,8 +166,8 @@ static int greth_set_mac_address(struct net_device *dev, const void *addr) {
 		return -EINVAL;
 	}
 	REG_STORE(&regs->mac_msb, dev->dev_addr[0] << 8 | dev->dev_addr[1]);
-	REG_STORE(&regs->mac_lsb, dev->dev_addr[2] << 24 |
-			dev->dev_addr[3] << 16 | dev->dev_addr[4] << 8 | dev->dev_addr[5]);
+	REG_STORE(&regs->mac_lsb, dev->dev_addr[2] << 24 | dev->dev_addr[3] << 16
+	                              | dev->dev_addr[4] << 8 | dev->dev_addr[5]);
 
 	return ENOERR;
 }
@@ -178,7 +181,7 @@ static int greth_reset(void) {
 	/* Wait for MAC to reset itself */
 	sleep(1);
 
-	if(REG_LOAD(regs->control) & GRETH_CTRL_RESET) {
+	if (REG_LOAD(&regs->control) & GRETH_CTRL_RESET) {
 		return -ETIMEDOUT;
 	}
 
@@ -202,15 +205,13 @@ static int greth_stop(struct net_device *dev) {
 }
 
 static const struct net_driver greth_ops = {
-	.xmit = greth_xmit,
-	.start = greth_open,
-	.stop = greth_stop,
-	.set_macaddr = greth_set_mac_address
-
+    .xmit = greth_xmit,
+    .start = greth_open,
+    .stop = greth_stop,
+    .set_macaddr = greth_set_mac_address,
 };
 
-
-static irq_return_t greth_received(struct net_device * dev) {
+static irq_return_t greth_received(struct net_device *dev) {
 	struct sk_buff *skb, *skb_new;
 	unsigned int len;
 
@@ -220,12 +221,11 @@ static irq_return_t greth_received(struct net_device * dev) {
 	skb->len = len;
 	skb->dev = dev;
 
-	greth_dev.rx_bd ++;
+	greth_dev.rx_bd++;
 	greth_dev.rx_bd %= GRETH_DB_QUANTITY;
 	skb_new = skb_alloc(ETH_FRAME_LEN);
 	greth_alloc_rx_bd(&greth_dev, skb_new);
 	REG_ORIN(&greth_dev.base->control, GRETH_CTRL_RX_INT | GRETH_CTRL_RX_EN);
-
 
 	show_packet(skb->mac.raw, len, "received");
 
@@ -238,32 +238,28 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *dev_id) {
 	return greth_received(dev_id);
 }
 
-#ifdef DRIVER_AMBAPP
-#include <kernel/printk.h>
 static int dev_regs_init(unsigned int *irq_nr) {
+	assert(NULL != irq_nr);
+
+#ifdef DRIVER_AMBAPP
 	amba_dev_t amba_dev;
 
-	assert(NULL != irq_nr);
-	if (-1 == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
-			AMBAPP_DEVICE_GAISLER_ETHMAC, false, false)) {
+	if (-1
+	    == capture_amba_dev(&amba_dev, AMBAPP_VENDOR_GAISLER,
+	        AMBAPP_DEVICE_GAISLER_ETHMAC, false, false)) {
 		printk("can't capture apb dev venID=0x%X, devID=0x%X\n",
-				AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_ETHMAC);
+		    AMBAPP_VENDOR_GAISLER, AMBAPP_DEVICE_GAISLER_ETHMAC);
 		return -ENODEV;
 	}
-	greth_dev.base = (struct greth_regs *) amba_dev.bar[0].start;
+	greth_dev.base = (struct greth_regs *)amba_dev.bar[0].start;
 	*irq_nr = amba_dev.dev_info.irq;
+#else  /* DRIVER_AMBAPP */
+	greth_dev.base = (void *)GRETH_BASE;
+	*irq_nr = GRETH_IRQ_NUM;
+#endif /* !DRIVER_AMBAPP */
+
 	return 0;
 }
-#elif OPTION_DEFINED(NUMBER,greth_base)
-static int dev_regs_init(unsigned int *irq_nr) {
-	assert(NULL != irq_nr);
-	greth_dev.base = (struct greth_regs *) OPTION_GET(NUMBER,greth_base);
-	*irq_nr = OPTION_GET(NUMBER,irq_num);
-	return 0;
-}
-#else
-# error "Either DRIVER_AMBAPP or gptimer_base must be defined"
-#endif /* DRIVER_AMBAPP */
 
 /*
  * initializing procedure
@@ -272,7 +268,7 @@ static int greth_init(void) {
 	struct net_device *nic;
 	int res;
 	unsigned int irq;
-	char hw_addr[] = {0x0,0x0,0x7a,0xcc,0x0,0x13};
+	char hw_addr[] = {0x0, 0x0, 0x7a, 0xcc, 0x0, 0x13};
 
 	res = dev_regs_init(&irq);
 	if (res != 0) {
@@ -296,10 +292,8 @@ static int greth_init(void) {
 
 	greth_set_mac_address(nic, nic->dev_addr);
 
-
 	/* Clear all pending interrupts except PHY irq */
 	REG_STORE(&greth_dev.base->status, 0xFF);
-
 
 	res = irq_attach(nic->irq, greth_irq_handler, 0, nic, "greth");
 	if (res < 0) {
@@ -311,3 +305,4 @@ static int greth_init(void) {
 	return inetdev_register_dev(nic);
 }
 
+PERIPH_MEMORY_DEFINE(greth, GRETH_BASE, 0x1000);
