@@ -24,7 +24,6 @@ struct flash_dev;
 /* Structure of device driver */
 struct flash_dev_drv {
 	int	(*flash_init) (void *arg);
-	size_t	(*flash_query) (struct flash_dev *dev, void * data, size_t len);
 	int	(*flash_erase_block) (struct flash_dev *dev, uint32_t block_base);
 	int	(*flash_program) (struct flash_dev *dev, uint32_t base,
 	                          const void* data, size_t len);
@@ -75,8 +74,6 @@ extern int flash_read(struct flash_dev *flashdev, unsigned long offset,
 extern int flash_write(struct flash_dev *flashdev, unsigned long offset,
 		const void *buf, size_t len);
 extern int flash_erase(struct flash_dev *flashdev, uint32_t block);
-extern int flash_copy(struct flash_dev *flashdev, uint32_t to,
-		uint32_t from, size_t len);
 
 typedef int (* flash_dev_module_init_ft)(void *args);
 struct flash_dev_module {

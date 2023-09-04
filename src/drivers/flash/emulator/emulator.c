@@ -32,11 +32,6 @@ int flash_emu_init (void *arg) {
 	return 0;
 }
 
-static size_t flash_emu_query(struct flash_dev *dev, void *data, size_t len) {
-	/* Not implemented yet */
-	return 0;
-}
-
 static int flash_emu_erase_block(struct flash_dev *dev, uint32_t block_base) {
 	struct flash_emulator_priv *priv;
 	uint8_t *mem;
@@ -108,7 +103,6 @@ static int flash_emu_read (struct flash_dev *dev,
 
 static struct flash_dev_drv flash_emu_drv = {
 	flash_emu_init,
-	flash_emu_query,
 	flash_emu_erase_block,
 	flash_emu_program,
 	flash_emu_read
