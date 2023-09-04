@@ -8,6 +8,7 @@
  * @author Roman Oderov
  */
 
+#include "signal.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <assert.h>
@@ -53,7 +54,7 @@ static void print_stat(void) {
 	int total;
 	struct task *task;
 
-	printf(" %4s %8s %8s %10s %12s %16s\n", "Id", "Priority", "State", "Time", "Stack size", "Task ID/Name");
+	printf(" %9s %8s %8s %10s %12s %16s\n", "Thread Id", "Priority", "State", "Time", "Stack size", "Task ID/Name");
 
 	running = sleeping = suspended = 0;
 
@@ -62,7 +63,7 @@ static void print_stat(void) {
 
 		task_foreach(task) {
 			task_foreach_thread(t, task) {
-				PRINTF(" %4d %8d %2c %c %c %c %9lds %9zu %8d/%-11s\n",
+				PRINTF(" %9d %8d %2c %c %c %c %9lds %9zu %8d/%-11s\n",
 					t->id, schedee_priority_get(&t->schedee),
 					(t == thread_self()) ? '*' : ' ',
 					sched_active(&t->schedee) ? 'A' : ' ',
@@ -111,14 +112,19 @@ out:
 }
 
 static void kill_thread(thread_id_t thread_id) {
-	struct thread *thread;
+	struct thread *thread = thread_lookup(thread_id);
 
-	if (!(thread = thread_lookup(thread_id))) {
+	if (!thread) {
 		printf("No thread with id: %d\n", thread_id);
 		return;
 	}
 
-	printf("Thread %d killed\n", thread_id);
+    int res = kill(thread->task->tsk_id, SIGKILL);
+    printf("Kill signal with return code: %d\n", res);
+    if(res == 0)
+        printf("Thread %d killed\n", thread_id);
+    else
+        printf("Error: %s\n", strerror(errno));
 }
 
 int main(int argc, char **argv) {
