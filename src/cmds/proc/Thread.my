@@ -13,8 +13,8 @@ package embox.cmd.proc
 			Prints usage
 		-s
 			Prints threads statistics
-		-k id
-			Stops the thread with the specified id
+		-k thread_id
+			Stops the task to which this thread belongs
 		AUTHORS
 			Gleb Efimov, Alina Kramar, Roman Oderov
 	''')
