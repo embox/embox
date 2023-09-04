@@ -14,4 +14,5 @@ module greth {
 	depends embox.net.core
 	depends embox.net.util.show_packet
 	depends embox.compat.posix.util.sleep
+	depends embox.driver.periph_memory
 }
