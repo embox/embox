@@ -64,11 +64,12 @@ int main(int argc, char **argv) {
         modbus_close(mb_);
         modbus_free(mb_);
 
-        printf("Packet number %d\n", p);
+        printf("Packet number %d bits:\n", p);
+        printf("( ");
         for (int k=0; k<8; k++) {
-            printf("[0x%02x] ", tab_bits[k] );
+            printf("%d ", tab_bits[k] );
         }
-        printf("\n");
+        printf(")\n");
         p=p+1;
     }
     printf("Finished reading. Failed %d/%d\n", N_fails, N_times);

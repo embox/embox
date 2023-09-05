@@ -151,6 +151,7 @@ TEST_CASE("accept() returns first connected client") {
 	test_assert_equal(1, recv(a, buf, 2, 0));
 	test_assert_equal('a', buf[0]);
 
+    close(a);
 	close(other_c);
 }
 
