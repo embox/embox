@@ -261,7 +261,7 @@ int tcp_sock_listen_alloc(struct tcp_sock *tcp_sk) {
     }
 
 	tcp_sock_lock(tcp_sk, TCP_SYNC_CONN_QUEUE);
-	{
+	do{
         struct sock *newsk;
         struct tcp_sock *tcp_newsk;
 
@@ -269,6 +269,7 @@ int tcp_sock_listen_alloc(struct tcp_sock *tcp_sk) {
                 SOCK_STREAM, IPPROTO_TCP);
         if (err(newsk) != 0) {
             log_info("could not sock_create() err(%d)", err(newsk));
+            break;
         }
 
         tcp_newsk = to_tcp_sock(newsk);
@@ -276,7 +277,7 @@ int tcp_sock_listen_alloc(struct tcp_sock *tcp_sk) {
 
         list_add_tail(&tcp_newsk->conn_lnk, &tcp_sk->listening.conn_free);
         listen->wait_queue_len++; /* one more socket in queue ready for accept*/
-	}
+	}while(0);
 	tcp_sock_unlock(tcp_sk, TCP_SYNC_CONN_QUEUE);
 
 	return listen->wait_queue_len;
