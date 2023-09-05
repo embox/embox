@@ -9,18 +9,20 @@
 #include <errno.h>
 #include <string.h>
 
+#include <drivers/block_dev.h>
+
 #include <framework/mod/options.h>
 #include <drivers/flash/flash.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 #include <util/err.h>
 
-#define MAX_BDEV_QUANTITY OPTION_GET(NUMBER,dev_quantity)
+#define MAX_FLASHDEV_QUANTITY      OPTION_GET(NUMBER,dev_quantity)
 
-POOL_DEF(flash_pool, struct flash_dev, MAX_BDEV_QUANTITY);
-INDEX_DEF(flash_idx, 0, MAX_BDEV_QUANTITY);
+POOL_DEF(flash_pool, struct flash_dev, MAX_FLASHDEV_QUANTITY);
+INDEX_DEF(flash_idx, 0, MAX_FLASHDEV_QUANTITY);
 
-static struct flash_dev *flashdev_tab[MAX_BDEV_QUANTITY];
+static struct flash_dev *flashdev_tab[MAX_FLASHDEV_QUANTITY];
 
 struct flash_dev *flash_alloc(void) {
 	struct flash_dev *flash;
@@ -56,7 +58,7 @@ int flash_free(struct flash_dev *dev) {
 
 static int flash_initialized = 0;
 struct flash_dev *flash_by_id(int idx) {
-	if (idx < 0 || idx >= MAX_BDEV_QUANTITY) {
+	if (idx < 0 || idx >= MAX_FLASHDEV_QUANTITY) {
 		return NULL;
 	}
 
@@ -68,7 +70,7 @@ struct flash_dev *flash_by_id(int idx) {
 }
 
 int flash_max_id(void) {
-	return MAX_BDEV_QUANTITY;
+	return MAX_FLASHDEV_QUANTITY;
 }
 
 ARRAY_SPREAD_DEF(const struct flash_dev_module, __flash_dev_registry);
@@ -126,4 +128,8 @@ int flash_erase(struct flash_dev *flashdev, uint32_t block) {
 	assert(flashdev->drv->flash_erase_block);
 
 	return flashdev->drv->flash_erase_block(flashdev, block);
+}
+
+struct flash_dev *flash_by_bdev(struct block_dev *bdev) {
+	return bdev->dev_module.dev_priv;
 }

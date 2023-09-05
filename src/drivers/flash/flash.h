@@ -20,6 +20,7 @@
 #include <util/array.h>
 
 struct flash_dev;
+struct block_dev;
 
 /* Structure of device driver */
 struct flash_dev_drv {
@@ -68,6 +69,8 @@ struct flash_dev {
 	void                       *privdata;
 };
 
+extern struct flash_dev *flash_by_bdev(struct block_dev *bdev);
+
 /* Handlers to check ranges and call device-specific funcions */
 extern int flash_read(struct flash_dev *flashdev, unsigned long offset,
 		void *buf, size_t len);
@@ -111,5 +114,7 @@ extern int flash_delete(struct flash_dev *dev);
 extern struct flash_dev *flash_alloc(void);
 extern int flash_free(struct flash_dev *dev);
 extern int flash_devs_init(void);
+
+
 
 #endif /* FLASH_H_ */
