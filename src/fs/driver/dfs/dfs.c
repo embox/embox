@@ -46,12 +46,6 @@ static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 #endif
 
-static struct flash_dev *dfs_flashdev;
-
-static inline int dfs_erase_flash(struct flash_dev *flashdev, unsigned int block) {
-	return flash_erase(dfs_flashdev, block);
-}
-
 static int dfs_read_flash(struct flash_dev *flashdev, unsigned long offset, void *buff, size_t len) {
 	int i;
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
@@ -169,7 +163,7 @@ static inline int dfs_copy_flash(struct flash_dev *flashdev, unsigned long to, u
 }
 
 static int dfs_blkcpy_flash(struct flash_dev *flashdev, unsigned int to, unsigned long from) {
-	dfs_erase_flash(flashdev, to);
+	flash_erase(flashdev, to);
 	return dfs_copy_flash(flashdev, to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
 }
 
@@ -206,7 +200,7 @@ static inline int dfs_cache_write(struct flash_dev *flashdev, uint32_t offset, c
 }
 
 static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uint32_t from) {
-	dfs_erase_flash(flashdev, to);
+	flash_erase(flashdev, to);
 	return dfs_write_flash(flashdev, to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
 }
 
@@ -214,7 +208,7 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
 
 #else /* !USE_RAM_AS_CACHE */
 
-#define dfs_cache_erase(flashdev, block)        dfs_erase_flash(flashdev, block)
+#define dfs_cache_erase(flashdev, block)        flash_erase(flashdev, block)
 #define dfs_cache(flashdev, to, from, len)      dfs_copy_flash(flashdev, to,from,len)
 #define dfs_cache_write(flashdev, off,buf, len) dfs_write_flash(flashdev, off,buf, len)
 #define dfs_cache_restore(flashdev, to, from)   dfs_blkcpy_flash(flashdev, to,from)
@@ -257,14 +251,14 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 		pos = (pos + size) % NAND_BLOCK_SIZE;
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
-			dfs_erase_flash(flashdev, bk);
+			flash_erase(flashdev, bk);
 			if ((err = dfs_write_flash(flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
 				return err;
 			}
 			buff += NAND_BLOCK_SIZE;
 		}
 
-		dfs_erase_flash(flashdev, buff_bk);
+		flash_erase(flashdev, buff_bk);
 		dfs_write_flash(flashdev, CACHE_OFFSET, buff, pos);
 	}
 
@@ -275,20 +269,19 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 }
 
 int dfs_format(struct block_dev *bdev, void *priv) {
+	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
 	struct dfs_sb_info *sbi;
 	struct dfs_dir_entry *root;
-	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
+	struct flash_dev *fdev;
 	int i, j, k;
 	int err;
 
-	if (!dfs_flashdev) {
-		dfs_flashdev = flash_by_id(0);
-	}
+	fdev = flash_by_bdev(bdev);
 
 	k = 0;
-	for (j = 0; j < dfs_flashdev->num_block_infos; j++) {
-		for (i = 0; i < dfs_flashdev->block_info[j].blocks; i++) {
-			if ((err = dfs_erase_flash(dfs_flashdev, k))) {
+	for (j = 0; j < fdev->num_block_infos; j++) {
+		for (i = 0; i < fdev->block_info[j].blocks; i++) {
+			if ((err = flash_erase(fdev, k))) {
 				return err;
 			}
 			k++;
@@ -308,7 +301,7 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 #if USE_RAM_AS_CACHE
 		.buff_bk = ((uintptr_t)cache_block_buffer),
 #else
-		.buff_bk = dfs_flashdev->block_info[0].blocks - 1,
+		.buff_bk = fdev->block_info[0].blocks - 1,
 #endif
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
@@ -318,17 +311,8 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 	root->len       = DFS_INODES_MAX;
 	root->flags     = S_IFDIR;
 
-	//memcpy(write_buf, &sbi, sizeof(struct dfs_sb_info));
-	//memcpy(&write_buf[sizeof(struct dfs_sb_info)], &root, sizeof(struct dfs_dir_entry));
+	dfs_write_flash(fdev, 0, write_buf, sizeof(write_buf));
 
-	dfs_write_flash(dfs_flashdev, 0, write_buf, sizeof(write_buf));
-
-	return 0;
-}
-
-static inline int dfs_set_dev(struct flash_dev *new_dev) {
-	assert(new_dev);
-	dfs_flashdev = new_dev;
 	return 0;
 }
 
@@ -338,30 +322,46 @@ static inline int dfs_set_dev(struct flash_dev *new_dev) {
 
 static enum { EMPTY, DIRTY, ACTUAL } dfs_sb_status = EMPTY;
 
-static int dfs_read_sb_info(struct dfs_sb_info *sbi) {
+static int dfs_read_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
+	struct flash_dev *fdev;
+
+	assert(sb);
 	assert(sbi);
+
+	fdev = flash_by_bdev(sb->bdev);
+
 	if (dfs_sb_status == EMPTY) {
-		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
+		dfs_read_flash(fdev, 0, sbi, sizeof(struct dfs_sb_info));
 	}
 
 	return 0;
 }
 
-static int dfs_write_sb_info(struct dfs_sb_info *sbi) {
+static int dfs_write_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
+	struct flash_dev *fdev;
+
+	assert(sb);
 	assert(sbi);
+
+	fdev = flash_by_bdev(sb->bdev);
+	
 	if (dfs_sb_status == DIRTY) {
-		dfs_write_buffered(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
+		dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
 		dfs_sb_status = ACTUAL;
 	}
+
 	return 0;
 }
 
 static int dfs_read_dirent(struct super_block *sb, int n, struct dfs_dir_entry *dtr) {
+	struct flash_dev *fdev;
 	uint32_t offt = DFS_DENTRY_OFFSET(n);
 
 	assert(dtr);
 
-	dfs_read_flash(dfs_flashdev, offt, dtr, sizeof(struct dfs_dir_entry));
+	fdev = flash_by_bdev(sb->bdev);
+
+	dfs_read_flash(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
 
 	if (dtr->name[0] == '\0') {
 		return -ENOENT;
@@ -372,11 +372,15 @@ static int dfs_read_dirent(struct super_block *sb, int n, struct dfs_dir_entry *
 
 static int dfs_write_dirent(struct super_block *sb, int n, struct dfs_dir_entry *dtr) {
 	uint32_t offt = DFS_DENTRY_OFFSET(n);
-	struct dfs_sb_info *sbi = sb->sb_data;
+	struct dfs_sb_info *sbi;
+	struct flash_dev *fdev;
 
 	assert(dtr);
 
-	dfs_write_buffered(dfs_flashdev, offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
+	sbi = sb->sb_data;
+	fdev = flash_by_bdev(sb->bdev);
+
+	dfs_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
 	return 0;
 }
 
@@ -417,7 +421,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 		return -1;
 	}
 
-	dfs_read_sb_info(sbi);
+	dfs_read_sb_info(sb, sbi);
 
 	if (sbi->inode_count > sbi->max_inode_count) {
 		return -ENOMEM;
@@ -446,7 +450,7 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	sbi->free_space += MIN_FILE_SZ;
 
 	dfs_sb_status = DIRTY;
-	dfs_write_sb_info(sbi);
+	dfs_write_sb_info(sb, sbi);
 
 	return 0;
 }
@@ -616,6 +620,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	int l;
 	struct super_block *sb;
 	struct dfs_sb_info *sbi;
+	struct flash_dev *fdev;
 
 	assert(desc);
 	assert(desc->f_inode);
@@ -623,6 +628,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 	sb = desc->f_inode->i_sb;
 	sbi = sb->sb_data;
+	fdev = flash_by_bdev(sb->bdev);
 
 	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	l = min(size, sbi->max_len - desc->pos);
@@ -631,7 +637,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_write_buffered(dfs_flashdev, pos, buf, l, sbi->buff_bk);
+	dfs_write_buffered(fdev, pos, buf, l, sbi->buff_bk);
 
 	return l;
 }
@@ -639,10 +645,15 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 static size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	int pos;
 	int l;
+	struct super_block *sb;
+	struct flash_dev *fdev;
 
 	assert(desc);
 	assert(desc->f_inode);
 	assert(buf);
+
+	sb = desc->f_inode->i_sb;
+	fdev = flash_by_bdev(sb->bdev);
 
 	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
 	l = min(size, file_get_size(desc) - desc->pos);
@@ -651,7 +662,7 @@ static size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_read_flash(dfs_flashdev, pos, buf, l);
+	dfs_read_flash(fdev, pos, buf, l);
 
 	return l;
 }
@@ -676,18 +687,13 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_data    = &dfs_info;
 	sb->bdev       = bdev_by_path(source);
 
-	if (!sb->bdev) {
-		sb->bdev = dfs_flashdev->bdev;
-	}
-
 	sbi = sb->sb_data;
 
-	dfs_set_dev(flash_by_id(0));
-	dfs_read_sb_info(sbi);
+	dfs_read_sb_info(sb, sbi);
 
 	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
-		dfs_format(NULL, NULL);
-		dfs_read_flash(dfs_flashdev, 0, sbi, sizeof(struct dfs_sb_info));
+		dfs_format(sb->bdev, NULL);
+		dfs_read_sb_info(sb, sbi);
 	}
 
 	dfs_sb_status = ACTUAL;
