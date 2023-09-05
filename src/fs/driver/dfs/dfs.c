@@ -320,8 +320,6 @@ int dfs_format(struct block_dev *bdev, void *priv) {
  	File System Interface
 \*---------------------------------*/
 
-static enum { EMPTY, DIRTY, ACTUAL } dfs_sb_status = EMPTY;
-
 static int dfs_read_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 	struct flash_dev *fdev;
 
@@ -330,9 +328,7 @@ static int dfs_read_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 
 	fdev = flash_by_bdev(sb->bdev);
 
-	if (dfs_sb_status == EMPTY) {
-		dfs_read_flash(fdev, 0, sbi, sizeof(struct dfs_sb_info));
-	}
+	dfs_read_flash(fdev, 0, sbi, sizeof(struct dfs_sb_info));
 
 	return 0;
 }
@@ -345,10 +341,7 @@ static int dfs_write_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 
 	fdev = flash_by_bdev(sb->bdev);
 	
-	if (dfs_sb_status == DIRTY) {
-		dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
-		dfs_sb_status = ACTUAL;
-	}
+	dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
 
 	return 0;
 }
@@ -449,7 +442,6 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 	sbi->inode_count++;
 	sbi->free_space += MIN_FILE_SZ;
 
-	dfs_sb_status = DIRTY;
 	dfs_write_sb_info(sb, sbi);
 
 	return 0;
@@ -695,8 +687,6 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 		dfs_format(sb->bdev, NULL);
 		dfs_read_sb_info(sb, sbi);
 	}
-
-	dfs_sb_status = ACTUAL;
 
 	dfs_read_dirent(sb, 0, &dtr);
 
