@@ -43,7 +43,6 @@ struct block_dev {
 };
 
 struct block_dev_ops {
-	char *name;
 
 	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
 	int (*read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);

@@ -23,10 +23,9 @@ static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, bl
 static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
 static const struct block_dev_ops flashbdev_pio_driver = {
-	"flash_drv",
-	flashbdev_ioctl,
-	flashbdev_read,
-	flashbdev_write
+	.ioctl = flashbdev_ioctl,
+	.read = flashbdev_read,
+	.write = flashbdev_write,
 };
 
 struct flash_dev *flash_create(const char *name, size_t size) {

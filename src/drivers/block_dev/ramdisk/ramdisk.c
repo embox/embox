@@ -73,10 +73,9 @@ int rmadisk_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 }
 
 static const struct block_dev_ops ramdisk_pio_driver = {
-	.name  = "ramdisk_drv",
 	.ioctl = rmadisk_ioctl,
 	.read = ramdisk_read_sectors,
-	.write = ramdisk_write_sectors
+	.write = ramdisk_write_sectors,
 };
 
 /* XXX not stores index if path have no index placeholder, like * or # */
