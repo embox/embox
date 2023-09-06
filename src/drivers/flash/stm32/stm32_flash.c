@@ -36,6 +36,9 @@ extern char _flash_start, _flash_end;
 
 static unsigned int stm32_flash_first_sector;
 
+static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD] 
+			__attribute__ ((aligned(STM32_FLASH_WORD)));
+
 static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
 	return STM32_FLASH_START + base + len <= STM32_FLASH_END;
 }
@@ -167,7 +170,9 @@ static int stm32_flash_init(void *arg) {
 		.block_size = STM32_FLASH_SECTOR_SIZE,
 		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
 	};
-
+	flash->fld_aligned_word = stm32_flash_aligned_word;
+	flash->fld_word_size = STM32_FLASH_WORD;
+	
 	stm32_flash_first_sector =
 		(STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) /
 		STM32_FLASH_SECTOR_SIZE;

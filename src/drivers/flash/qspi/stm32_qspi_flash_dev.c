@@ -148,6 +148,7 @@ log_debug("Ok");
 static const struct flash_dev_drv qspi_flash_drv;
 
 static int qspi_flash_init(void *arg) {
+	static uint32_t qspi_flash_aligned_word;
 	struct flash_dev *flash;
 
 	flash = flash_create("qspiflash", QSPI_FLASH_SIZE);
@@ -162,6 +163,8 @@ static int qspi_flash_init(void *arg) {
 		.block_size = QSPI_BLOCK_SIZE,
 		.blocks = QSPI_FLASH_SIZE / QSPI_BLOCK_SIZE,
 	};
+	flash->fld_aligned_word = &qspi_flash_aligned_word;
+	flash->fld_word_size = 4;
 
 	return 0;
 }

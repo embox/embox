@@ -13,6 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
+#include <stdint.h
 
 #include <drivers/block_dev.h>
 #include <drivers/flash/flash.h>
@@ -21,10 +22,15 @@
 #include <util/log.h>
 #include <util/err.h>
 
+#define EMU_FLASH_WORD_SIZE  4
+
 struct flash_emulator_priv {
 	uint8_t *base;
 	size_t block_sz;
 	size_t size;
+
+	uint8_t aligned_word[EMU_FLASH_WORD_SIZE] 
+			__attribute__ ((aligned(EMU_FLASH_WORD_SIZE)));
 };
 
 int flash_emu_init (void *arg) {
@@ -141,6 +147,8 @@ int flash_emu_dev_create(const char *name, int blocks, size_t block_size) {
 	flash->block_info[0].blocks = blocks;
 
 	flash->size = priv->size;
+	flash->fld_aligned_word = priv->aligned_word;
+	flash->fld_word_size = EMU_FLASH_WORD_SIZE;
 
 	flash->drv = &flash_emu_drv;
 
