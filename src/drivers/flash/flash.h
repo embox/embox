@@ -15,9 +15,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <util/array.h>
+
 #include <framework/mod/options.h>
 #include <config/embox/driver/flash/core.h>
-#include <util/array.h>
+
+
+#define FLASH_BLOCK_INFO_MAX \
+	OPTION_MODULE_GET(embox__driver__flash__core, NUMBER, block_info_max)
 
 struct flash_dev;
 struct block_dev;
@@ -57,13 +62,13 @@ struct flash_block_info {
 };
 
 /* Structure of flash device info */
-#define FLASH_BLOCK_INFO_MAX \
-	OPTION_MODULE_GET(embox__driver__flash__core, NUMBER, block_info_max)
 struct flash_dev {
 	struct block_dev           *bdev;
 	int                         idx;
 	const struct flash_dev_drv *drv;
 	uint32_t                    size; /* Bytes */
+	uint32_t                    fld_word_size;
+	void *                      fld_aligned_word;
 	uint32_t                    num_block_infos;
 	struct flash_block_info     block_info[FLASH_BLOCK_INFO_MAX];
 	void                       *privdata;
