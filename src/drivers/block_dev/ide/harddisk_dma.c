@@ -266,11 +266,10 @@ static int idedisk_udma_init (void *args) {
 }
 
 static const struct block_dev_ops idedisk_udma_driver = {
-	"idedisk_udma_drv",
-	hd_ioctl,
-	hd_read_udma,
-	hd_write_udma,
-	idedisk_udma_init,
+	.ioctl = hd_ioctl,
+	.read = hd_read_udma,
+	.write = hd_write_udma,
+	.probe = idedisk_udma_init,
 };
 
 BLOCK_DEV_DRIVER_DEF("idedisk_udma", &idedisk_udma_driver);

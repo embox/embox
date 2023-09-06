@@ -242,11 +242,10 @@ static int idecd_init (void *args) {
 }
 
 static const struct block_dev_ops idecd_pio_driver = {
-	"idecd_drv",
-	cd_ioctl,
-	cd_read,
-	cd_write,
-	idecd_init,
+	.ioctl = cd_ioctl,
+	.read = cd_read,
+	.write = cd_write,
+	.probe = idecd_init,
 };
 
 BLOCK_DEV_DRIVER_DEF("idecd", &idecd_pio_driver);

@@ -47,7 +47,6 @@ static int static_ramdisk_init (void *args) {
 }
 
 static const struct block_dev_ops static_ramdisk_pio_driver = {
-		.name  = "ramdisk_drv",
 		.ioctl = rmadisk_ioctl,
 		.read = ramdisk_read_sectors,
 		.write = ramdisk_write_sectors,

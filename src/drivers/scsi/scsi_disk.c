@@ -162,8 +162,7 @@ static int scsi_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) 
 }
 
 const struct block_dev_ops bdev_driver_scsi = {
-	"scsi disk",
-	scsi_ioctl,
-	scsi_read,
-	scsi_write
+	.ioctl = scsi_ioctl,
+	.read = scsi_read,
+	.write = scsi_write
 };

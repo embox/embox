@@ -216,11 +216,10 @@ static int idedisk_init (void *args) {
 }
 
 static const struct block_dev_ops idedisk_pio_driver = {
-	"idedisk_drv",
-	hd_ioctl,
-	hd_read_pio,
-	hd_write_pio,
-	idedisk_init,
+	.ioctl = hd_ioctl,
+	.read = hd_read_pio,
+	.write = hd_write_pio,
+	.probe = idedisk_init,
 };
 
 BLOCK_DEV_DRIVER_DEF("idedisk", &idedisk_pio_driver);

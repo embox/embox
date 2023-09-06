@@ -106,7 +106,6 @@ static int mmc_block_probe(void *args) {
 }
 
 static const struct block_dev_ops mmc_block_driver = {
-	.name = "MMC driver",
 	.ioctl = mmc_block_ioctl,
 	.read = mmc_block_read,
 	.write = mmc_block_write,

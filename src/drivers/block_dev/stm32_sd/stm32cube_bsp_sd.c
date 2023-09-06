@@ -295,7 +295,6 @@ static int stm32f7_sd_init(void *arg) {
 }
 
 static const struct block_dev_ops stm32f7_sd_driver = {
-	.name  = STM32F7_SD_DEVNAME,
 	.ioctl = stm32f7_sd_ioctl,
 	.read  = stm32f7_sd_read,
 	.write = stm32f7_sd_write,
