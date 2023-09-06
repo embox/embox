@@ -1,0 +1,27 @@
+package embox.driver.interrupt
+
+abstract module vic_impl {
+}
+
+module vic_pl190 extends vic_impl {
+	source "pl190.h"
+}
+
+module vic_pl192 extends vic_impl {
+	source "pl192.h"
+}
+
+module vic extends embox.driver.interrupt.irqctrl_api {
+	option number device_count=0
+
+	option number vic0=0x0
+	option number vic1=0x0
+
+	source "vic.c"
+	source "vic_util.c"
+
+	source "vic.h"
+
+	depends vic_impl
+	depends embox.driver.periph_memory
+}
