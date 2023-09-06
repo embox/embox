@@ -49,6 +49,9 @@ struct flash_dev *flash_create(const char *name, size_t size) {
 
 	flash->bdev->size = size;
 
+	flash->fld_word_size = 4;
+	flash->fld_aligned_word = NULL;
+
 	return flash;
 }
 
