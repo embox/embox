@@ -21,7 +21,9 @@ $(CONFIGURE) :
 			--with-libiconv=gnu \
 			--prefix=$(PKG_INSTALL_DIR) \
 			--enable-static=yes \
-			--disable-FEATURE --disable-option-checking --disable-maintainer-mode --disable-dependency-tracking --disable-mem-pools --disable-largefile --disable-selinux --disable-fam --disable-xattr --disable-libelf --with-pcre=internal --with-threads=posix \
+			--disable-FEATURE --disable-option-checking --disable-maintainer-mode --disable-dependency-tracking --disable-mem-pools --disable-largefile --disable-selinux --disable-fam --disable-xattr --disable-libelf --with-pcre=internal --with-threads=posix ; \
+		echo "extern char **rpl_environ(void);" >> config.h; \
+		echo "#define SOMAXCONN 4" >> config.h ; \
 	)
 	touch $@
 
@@ -40,7 +42,8 @@ $(INSTALL) :
 		$(MAKE) install; \
 	); \
 	cp $(PKG_INSTALL_DIR)/lib/lib*.a $(PKG_INSTALL_DIR) ; \
-	cp -r $(PKG_INSTALL_DIR)/include/* $(INCUDE_INSTALL_DIR) ; \
+	cp -r $(PKG_INSTALL_DIR)/include/glib-2.0/* $(INCUDE_INSTALL_DIR) ; \
 	cp $(PKG_INSTALL_DIR)/lib/glib-2.0/include/* $(INCUDE_INSTALL_DIR) ;
 	
 	touch $@
+

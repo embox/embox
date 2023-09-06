@@ -1,24 +1,11 @@
 package third_party.libs
 
-static module build_deps {
-	depends embox.compat.libc.all
-	depends embox.compat.posix.fs.statvfs
-	depends embox.compat.posix.stubs
-	depends embox.compat.posix.pthreads
-
-	depends third_party.zlib.libs
-	depends third_party.libs.libffi
-	depends third_party.libs.libiconv
-//	depends third_party.lib.pcre
-	depends third_party.lib.coap
-}
-
-@BuildDepends(build_deps)
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/libs/glib")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 static module glib {
 	depends embox.compat.posix.LibPosix
-	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.proc.fork
+	depends embox.compat.posix.pthread_rwlock
 	depends embox.compat.libc.all
 	depends embox.compat.posix.fs.statvfs
 	depends embox.compat.posix.stubs
@@ -28,7 +15,6 @@ static module glib {
 	depends third_party.zlib.libs
 	depends third_party.libs.libffi
 	depends third_party.libs.libiconv
-//	depends third_party.lib.pcre
 
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")

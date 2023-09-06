@@ -1,10 +1,14 @@
+/**
+ * @file
+ *
+ * @date May 29, 2014
+ * @author: Anton Bondarev
+ */
 #include <errno.h>
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 #include <netinet/in.h>
-
-#define SOMAXCONN 4 
 
 struct ip_mreq_source {
 	struct in_addr imr_multiaddr;  /* IP multicast group
@@ -38,5 +42,3 @@ void seekdir(DIR *dirp, long offset);
 long telldir(DIR *dirp);
 
 int fnmatch(const char *pattern, const char *string, int flags);
-
-int fork(void);

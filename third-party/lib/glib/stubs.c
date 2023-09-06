@@ -53,6 +53,3 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 	return -1;
 }
 
-int fork(void) {
-	return -1;
-}
