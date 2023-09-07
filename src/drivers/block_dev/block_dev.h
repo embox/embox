@@ -48,7 +48,7 @@ struct block_dev_ops {
 	int (*bdo_read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 	int (*bdo_write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
-	int (*bdo_probe)(void *args);
+	int (*bdo_probe)(struct block_dev *bdev, void *args);
 };
 
 struct block_dev_module {

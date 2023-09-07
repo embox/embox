@@ -236,7 +236,7 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 	return result == 0 ? count : result;
 }
 
-static int idedisk_udma_init (void *args) {
+static int idedisk_udma_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	double size;
 	char   path[PATH_MAX];

@@ -399,7 +399,7 @@ static uint32_t sdhc_get_size(uint32_t rca) {
 	return 256 * 1024 * (t + 1);
 }
 
-static int imx6_usdhc_probe(void *args) {
+static int imx6_usdhc_probe(struct block_dev *bdev, void *args) {
 	struct block_dev *bdev;
 	uint32_t tmp;
 

@@ -183,7 +183,7 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	return result == 0 ? count : result;
 }
 
-static int idedisk_init (void *args) {
+static int idedisk_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	size_t size;
 	char path[PATH_MAX];

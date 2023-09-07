@@ -30,7 +30,7 @@ static uint8_t static_ramdisk_buffer[STATIC_RAMDISK_SIZE] __attribute__ ((aligne
 
 static const struct block_dev_ops static_ramdisk_pio_driver;
 
-static int static_ramdisk_init (void *args) {
+static int static_ramdisk_init (struct block_dev *bdev, void *args) {
 	struct block_dev *bdev;
 
 	static_ramdisk.p_start_addr = (char *)static_ramdisk_buffer;

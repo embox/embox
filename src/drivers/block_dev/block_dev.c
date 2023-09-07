@@ -74,7 +74,7 @@ int block_devs_init(void) {
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
 		if (bdev_module->dev_drv->bdo_probe != NULL) {
-			ret = bdev_module->dev_drv->bdo_probe(NULL);
+			ret = bdev_module->dev_drv->bdo_probe(NULL, NULL);
 			if (ret != 0) {
 				return ret;
 			}

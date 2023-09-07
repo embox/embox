@@ -100,7 +100,7 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 	return bdev->block_size;
 }
 
-static int mmc_block_probe(void *args) {
+static int mmc_block_probe(struct block_dev *bdev, void *args) {
 	log_debug("NIY");
 	return 0;
 }

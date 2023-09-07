@@ -211,7 +211,7 @@ static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static int idecd_init (void *args) {
+static int idecd_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	size_t size;
 	char   path[PATH_MAX];
