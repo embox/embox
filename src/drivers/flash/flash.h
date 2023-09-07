@@ -15,6 +15,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <util/math.h>
+
 #include <util/array.h>
 
 #include <framework/mod/options.h>
@@ -109,10 +111,25 @@ struct flash_dev_module {
 
 #define SET_CONFIG_FLASH_FIS_NAME         0x680
 
+
+
+extern int flash_read_aligned(struct flash_dev *flashdev,
+				unsigned long offset, void *buff, size_t len);
+
+extern int flash_write_aligned(struct flash_dev *flashdev,
+					unsigned long offset, const void *buff, size_t len);
+
+extern int flash_copy_aligned(struct flash_dev *flashdev,
+				unsigned long to, unsigned long from, int len);
+
+extern int flash_copy_block(struct flash_dev *flashdev,
+				unsigned int to, unsigned long from);
+
 extern struct flash_dev *flash_create(const char *name, size_t size);
 extern struct flash_dev *flash_by_id(int idx);
 extern int flash_max_id(void);
 extern int flash_delete(struct flash_dev *dev);
+
 
 /* These two functions are for internal use and generally
  * should not be called from user space */
