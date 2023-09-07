@@ -1,0 +1,775 @@
+diff --color -aur glib-2.57.1/configure glib-2.57.1-patched/configure
+--- glib-2.57.1/configure	2018-05-23 00:21:32.000000000 +0300
++++ glib-2.57.1-patched/configure	2023-09-06 20:19:06.199234735 +0300
+@@ -7663,9 +7663,9 @@
+       ;;
+   esac
+ 
+-  if test "x$found_iconv" = "xno" ; then
+-     as_fn_error $? "*** No iconv() implementation found in C library or libiconv" "$LINENO" 5
+-  fi
++#  if test "x$found_iconv" = "xno" ; then
++#!!     as_fn_error $? "*** No iconv() implementation found in C library or libiconv" "$LINENO" 5
++#  fi
+ 
+ fi
+ 
+@@ -8678,12 +8678,12 @@
+ 	< $srcdir/po/POTFILES.in > po/POTFILES
+ 
+ 
+-if test "$gt_cv_have_gettext" != "yes" ; then
+-  as_fn_error $? "
+-*** You must have either have gettext support in your C library, or use the
+-*** GNU gettext library. (http://www.gnu.org/software/gettext/gettext.html)
+-" "$LINENO" 5
+-fi
++#!!if test "$gt_cv_have_gettext" != "yes" ; then
++#  as_fn_error $? "
++#*** You must have either have gettext support in your C library, or use the
++#*** GNU gettext library. (http://www.gnu.org/software/gettext/gettext.html)
++#" "$LINENO" 5
++#fi
+ 
+ LIBS="$INTLLIBS $LIBS"
+ 
+@@ -22322,10 +22322,11 @@
+ else
+ 
+         if test "$cross_compiling" = yes; then :
+-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot run test program while cross compiling
+-See \`config.log' for more details" "$LINENO" 5; }
++#  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
++#$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
++#!!as_fn_error $? "cannot run test program while cross compiling
++#See \`config.log' for more details" "$LINENO" 5; }
++#}
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+@@ -24192,7 +24193,7 @@
+   return 0;
+ }
+ _ACEOF
+-if ac_fn_c_try_compile "$LINENO"; then :
++if true; then #!!ac_fn_c_try_compile "$LINENO"; then :
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+ $as_echo "no" >&6; }
+ else
+@@ -24213,8 +24214,8 @@
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+ $as_echo "yes" >&6; }
+                                           NAMESER_COMPAT_INCLUDE="#include <arpa/nameser_compat.h>"
+-else
+-  as_fn_error $? "could not compile test program either way" "$LINENO" 5
++else :
++#!!  as_fn_error $? "could not compile test program either way" "$LINENO" 5
+ fi
+ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+ fi
+@@ -24288,7 +24289,8 @@
+ $as_echo "in -lbind" >&6; }
+                                          NETWORK_LIBS="-lbind $NETWORK_LIBS"
+ else
+-  as_fn_error $? "not found" "$LINENO" 5
++	:
++#!!  as_fn_error $? "not found" "$LINENO" 5
+ fi
+ rm -f core conftest.err conftest.$ac_objext \
+     conftest$ac_exeext conftest.$ac_ext
+@@ -25911,10 +25913,11 @@
+ else
+ 
+ 		if test "$cross_compiling" = yes; then :
+-  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+-as_fn_error $? "cannot run test program while cross compiling
+-See \`config.log' for more details" "$LINENO" 5; }
++#  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
++#$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
++#!!as_fn_error $? "cannot run test program while cross compiling
++#See \`config.log' for more details" "$LINENO" 5; }
++#}
+ else
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+ /* end confdefs.h.  */
+@@ -25943,9 +25946,9 @@
+ fi
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $glib_cv_uscore" >&5
+ $as_echo "$glib_cv_uscore" >&6; }
+-        if test "x${glib_cv_uscore+set}" != "xset" ; then
+-  as_fn_error $? "glib_cv_uscore must be set in cache file when cross-compiling." "$LINENO" 5
+-fi
++#        if test "x${glib_cv_uscore+set}" != "xset" ; then
++#  as_fn_error $? "glib_cv_uscore must be set in cache file when cross-compiling." "$LINENO" 5
++#fi
+ 
+ 	if test "x$glib_cv_uscore" = "xyes"; then
+   		G_MODULE_NEED_USCORE=1
+@@ -26005,9 +26008,9 @@
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: .$glib_gmodule_suffix" >&5
+ $as_echo ".$glib_gmodule_suffix" >&6; }
+ # any reason it may fail?
+-if test "x$glib_gmodule_suffix" = x; then
+-	as_fn_error $? "Cannot determine shared library suffix from libtool" "$LINENO" 5
+-fi
++#!!if test "x$glib_gmodule_suffix" = x; then
++#	as_fn_error $? "Cannot determine shared library suffix from libtool" "$LINENO" 5
++#fi
+ 
+ 
+ 
+@@ -26864,9 +26867,9 @@
+ $as_echo "yes" >&6; }
+ 	have_libmount=yes
+ fi
+-if test $have_libmount = no ; then
+-   as_fn_error $? "*** Could not find libmount" "$LINENO" 5
+-fi
++#!!if test $have_libmount = no ; then
++#   as_fn_error $? "*** Could not find libmount" "$LINENO" 5
++#fi
+ 
+ fi
+ 
+diff --color -aur glib-2.57.1/gio/gapplicationcommandline.c glib-2.57.1-patched/gio/gapplicationcommandline.c
+--- glib-2.57.1/gio/gapplicationcommandline.c	2018-01-09 00:34:19.000000000 +0300
++++ glib-2.57.1-patched/gio/gapplicationcommandline.c	2023-09-06 20:19:06.200234748 +0300
+@@ -16,6 +16,7 @@
+  *
+  * Authors: Ryan Lortie <desrt@desrt.ca>
+  */
++#include <strings.h>
+ 
+ #include "config.h"
+ 
+@@ -232,7 +233,7 @@
+   GVariantDict *options_dict;
+   gchar *cwd;  /* in GLib filename encoding, not UTF-8 */
+ 
+-  gchar **environ;
++  gchar **environ_p;
+   gint exit_status;
+ };
+ 
+@@ -260,8 +261,8 @@
+ 
+     else if (strcmp (key, "environ") == 0)
+       {
+-        if (!cmdline->priv->environ)
+-          cmdline->priv->environ =
++        if (!cmdline->priv->environ_p)
++          cmdline->priv->environ_p =
+             g_variant_dup_bytestring_array (value, NULL);
+       }
+ 
+@@ -372,7 +373,7 @@
+     g_variant_unref (cmdline->priv->arguments);
+ 
+   g_free (cmdline->priv->cwd);
+-  g_strfreev (cmdline->priv->environ);
++  g_strfreev (cmdline->priv->environ_p);
+ 
+   G_OBJECT_CLASS (g_application_command_line_parent_class)
+     ->finalize (object);
+@@ -396,8 +397,8 @@
+   if (!cmdline->priv->cwd)
+     cmdline->priv->cwd = g_get_current_dir ();
+ 
+-  if (!cmdline->priv->environ)
+-    cmdline->priv->environ = g_get_environ ();
++  if (!cmdline->priv->environ_p)
++    cmdline->priv->environ_p = g_get_environ ();
+ }
+ 
+ static void
+@@ -590,7 +591,7 @@
+ const gchar * const *
+ g_application_command_line_get_environ (GApplicationCommandLine *cmdline)
+ {
+-  return (const gchar **)cmdline->priv->environ;
++  return (const gchar **)cmdline->priv->environ_p;
+ }
+ 
+ /**
+@@ -622,11 +623,11 @@
+   gint i;
+ 
+   /* TODO: expand on windows */
+-  if (cmdline->priv->environ)
+-    for (i = 0; cmdline->priv->environ[i]; i++)
+-      if (strncmp (cmdline->priv->environ[i], name, length) == 0 &&
+-          cmdline->priv->environ[i][length] == '=')
+-        return cmdline->priv->environ[i] + length + 1;
++  if (cmdline->priv->environ_p)
++    for (i = 0; cmdline->priv->environ_p[i]; i++)
++      if (strncmp (cmdline->priv->environ_p[i], name, length) == 0 &&
++          cmdline->priv->environ_p[i][length] == '=')
++        return cmdline->priv->environ_p[i] + length + 1;
+ 
+   return NULL;
+ }
+diff --color -aur glib-2.57.1/gio/ginetaddress.c glib-2.57.1-patched/gio/ginetaddress.c
+--- glib-2.57.1/gio/ginetaddress.c	2017-07-14 02:03:38.000000000 +0300
++++ glib-2.57.1-patched/gio/ginetaddress.c	2023-09-06 20:19:06.200234748 +0300
+@@ -18,6 +18,8 @@
+  * Authors: Christian Kellner <gicmo@gnome.org>
+  *          Samuel Cormier-Iijima <sciyoshi@gmail.com>
+  */
++#define	IN_CLASSD(a)		((((long int) (a)) & 0xf0000000) == 0xe0000000)
++#define	IN_MULTICAST(a)		IN_CLASSD(a)
+ 
+ #include <config.h>
+ 
+@@ -818,11 +820,12 @@
+ g_inet_address_get_is_mc_global (GInetAddress *address)
+ {
+   g_return_val_if_fail (G_IS_INET_ADDRESS (address), FALSE);
+-
+-  if (address->priv->family == AF_INET)
++  return FALSE;
++/*  if (address->priv->family == AF_INET)
+     return FALSE;
+   else
+     return IN6_IS_ADDR_MC_GLOBAL (&address->priv->addr.ipv6);
++	*/
+ }
+ 
+ /**
+@@ -839,11 +842,12 @@
+ g_inet_address_get_is_mc_link_local (GInetAddress *address)
+ {
+   g_return_val_if_fail (G_IS_INET_ADDRESS (address), FALSE);
+-
+-  if (address->priv->family == AF_INET)
++  return FALSE;
++/*  if (address->priv->family == AF_INET)
+     return FALSE;
+   else
+     return IN6_IS_ADDR_MC_LINKLOCAL (&address->priv->addr.ipv6);
++	*/
+ }
+ 
+ /**
+@@ -860,11 +864,12 @@
+ g_inet_address_get_is_mc_node_local (GInetAddress *address)
+ {
+   g_return_val_if_fail (G_IS_INET_ADDRESS (address), FALSE);
+-
+-  if (address->priv->family == AF_INET)
++  return FALSE;
++/*  if (address->priv->family == AF_INET)
+     return FALSE;
+   else
+     return IN6_IS_ADDR_MC_NODELOCAL (&address->priv->addr.ipv6);
++	*/
+ }
+ 
+ /**
+@@ -881,11 +886,12 @@
+ g_inet_address_get_is_mc_org_local  (GInetAddress *address)
+ {
+   g_return_val_if_fail (G_IS_INET_ADDRESS (address), FALSE);
+-
+-  if (address->priv->family == AF_INET)
++  return FALSE;
++/*  if (address->priv->family == AF_INET)
+     return FALSE;
+   else
+     return IN6_IS_ADDR_MC_ORGLOCAL (&address->priv->addr.ipv6);
++	*/
+ }
+ 
+ /**
+@@ -902,11 +908,12 @@
+ g_inet_address_get_is_mc_site_local (GInetAddress *address)
+ {
+   g_return_val_if_fail (G_IS_INET_ADDRESS (address), FALSE);
+-
+-  if (address->priv->family == AF_INET)
++  return FALSE;
++/*  if (address->priv->family == AF_INET)
+     return FALSE;
+   else
+     return IN6_IS_ADDR_MC_SITELOCAL (&address->priv->addr.ipv6);
++	*/
+ }
+ 
+ /**
+diff --color -aur glib-2.57.1/gio/glocalfile.c glib-2.57.1-patched/gio/glocalfile.c
+--- glib-2.57.1/gio/glocalfile.c	2018-05-02 15:30:40.000000000 +0300
++++ glib-2.57.1-patched/gio/glocalfile.c	2023-09-06 20:19:06.200234748 +0300
+@@ -17,6 +17,7 @@
+  *
+  * Author: Alexander Larsson <alexl@redhat.com>
+  */
++#define USE_STATVFS
+ 
+ #include "config.h"
+ 
+diff --color -aur glib-2.57.1/gio/glocalfileenumerator.c glib-2.57.1-patched/gio/glocalfileenumerator.c
+--- glib-2.57.1/gio/glocalfileenumerator.c	2017-07-14 02:03:38.000000000 +0300
++++ glib-2.57.1-patched/gio/glocalfileenumerator.c	2023-09-06 20:19:06.200234748 +0300
+@@ -279,7 +279,9 @@
+ static GFileType
+ file_type_from_dirent (char d_type)
+ {
+-  switch (d_type)
++	return G_FILE_TYPE_UNKNOWN;
++
++/*  switch (d_type)
+     {
+     case DT_BLK:
+     case DT_CHR:
+@@ -295,7 +297,7 @@
+     case DT_UNKNOWN:
+     default:
+       return G_FILE_TYPE_UNKNOWN;
+-    }
++    }*/
+ }
+ #endif
+ 
+diff --color -aur glib-2.57.1/gio/gnetworkmonitornetlink.c glib-2.57.1-patched/gio/gnetworkmonitornetlink.c
+--- glib-2.57.1/gio/gnetworkmonitornetlink.c	2018-05-02 15:30:40.000000000 +0300
++++ glib-2.57.1-patched/gio/gnetworkmonitornetlink.c	2023-09-06 20:19:06.200234748 +0300
+@@ -120,7 +120,7 @@
+       return FALSE;
+     }
+ 
+-  if (!g_socket_set_option (nl->priv->sock, SOL_SOCKET, SO_PASSCRED,
++  /*if (!g_socket_set_option (nl->priv->sock, SOL_SOCKET, SO_PASSCRED,
+ 			    TRUE, NULL))
+     {
+       int errsv = errno;
+@@ -129,7 +129,8 @@
+                    g_strerror (errsv));
+       return FALSE;
+     }
+-
++*/
++  return FALSE;
+   /* Request the current state */
+   if (!request_dump (nl, error))
+     return FALSE;
+@@ -157,7 +158,7 @@
+ request_dump (GNetworkMonitorNetlink  *nl,
+               GError                 **error)
+ {
+-  struct nlmsghdr *n;
++/*  struct nlmsghdr *n;
+   struct rtgenmsg *gen;
+   gchar buf[NLMSG_SPACE (sizeof (*gen))];
+ 
+@@ -178,7 +179,8 @@
+     }
+ 
+   nl->priv->dump_networks = g_ptr_array_new_with_free_func (g_object_unref);
+-  return TRUE;
++  return TRUE;*/
++	return FALSE;
+ }
+ 
+ static gboolean
+@@ -342,7 +344,7 @@
+   /* If the sender port id is 0 (not fakeable) then the message is from the kernel */
+   if (source_sockaddr.nl_pid != 0)
+     goto done;
+-
++/*
+   msg = (struct nlmsghdr *) iv.buffer;
+   for (; len > 0; msg = NLMSG_NEXT (msg, len))
+     {
+@@ -380,11 +382,11 @@
+ 
+           if (dest || gateway || oif)
+             {
+-              /* Unless we're processing the results of a dump, ignore
++              *//* Unless we're processing the results of a dump, ignore
+                * IPv6 link-local multicast routes, which are added and
+                * removed all the time for some reason.
+                */
+-#define UNALIGNED_IN6_IS_ADDR_MC_LINKLOCAL(a)           \
++/*#define UNALIGNED_IN6_IS_ADDR_MC_LINKLOCAL(a)           \
+               ((a[0] == 0xff) && ((a[1] & 0xf) == 0x2))
+ 
+               if (!nl->priv->dump_networks &&
+@@ -419,7 +421,7 @@
+           retval = FALSE;
+           goto done;
+         }
+-    }
++    }*/
+ 
+  done:
+   g_free (iv.buffer);
+diff --color -aur glib-2.57.1/gio/gsocket.c glib-2.57.1-patched/gio/gsocket.c
+--- glib-2.57.1/gio/gsocket.c	2018-05-02 15:30:40.000000000 +0300
++++ glib-2.57.1-patched/gio/gsocket.c	2023-09-06 20:19:06.201234761 +0300
+@@ -24,6 +24,7 @@
+  *          Alexander Larsson <alexl@redhat.com>
+  *          Philip Withnall <philip.withnall@collabora.co.uk>
+  */
++#include "stubs.h"
+ 
+ #include "config.h"
+ 
+@@ -2381,11 +2382,11 @@
+       {
+ #ifdef IP_ADD_SOURCE_MEMBERSHIP
+ 
+-#ifdef BROKEN_IP_MREQ_SOURCE_STRUCT
+-#define S_ADDR_FIELD(src) src.imr_interface
+-#else
++//#ifdef BROKEN_IP_MREQ_SOURCE_STRUCT
++//#define S_ADDR_FIELD(src) src.imr_interface
++//#else
+ #define S_ADDR_FIELD(src) src.imr_interface.s_addr
+-#endif
++//#endif
+ 
+         gint optname;
+         struct ip_mreq_source mc_req_src;
+diff --color -aur glib-2.57.1/gio/gthreadedresolver.c glib-2.57.1-patched/gio/gthreadedresolver.c
+--- glib-2.57.1/gio/gthreadedresolver.c	2018-04-07 04:54:57.000000000 +0300
++++ glib-2.57.1-patched/gio/gthreadedresolver.c	2023-09-06 20:19:06.202234773 +0300
+@@ -17,6 +17,7 @@
+  * You should have received a copy of the GNU Lesser General
+  * Public License along with this library; if not, see <http://www.gnu.org/licenses/>.
+  */
++#include "stubs.c"
+ 
+ #include "config.h"
+ #include <glib.h>
+diff --color -aur glib-2.57.1/gio/gunixconnection.c glib-2.57.1-patched/gio/gunixconnection.c
+--- glib-2.57.1/gio/gunixconnection.c	2017-08-07 17:58:31.000000000 +0300
++++ glib-2.57.1-patched/gio/gunixconnection.c	2023-09-06 20:19:06.203234786 +0300
+@@ -163,9 +163,7 @@
+       gint i;
+ 
+       g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+-        ngettext("Expecting 1 control message, got %d",
+-                 "Expecting 1 control message, got %d",
+-                 nscm),
++        gettext("Expecting 1 control message, got %d"),
+         nscm);
+ 
+       for (i = 0; i < nscm; i++)
+@@ -197,9 +195,7 @@
+       gint i;
+ 
+       g_set_error (error, G_IO_ERROR, G_IO_ERROR_FAILED,
+-                   ngettext("Expecting one fd, but got %d\n",
+-                            "Expecting one fd, but got %d\n",
+-                            nfd),
++                   gettext("Expecting one fd, but got %d\n"),
+                    nfd);
+ 
+       for (i = 0; i < nfd; i++)
+@@ -560,9 +556,7 @@
+           g_set_error (error,
+                        G_IO_ERROR,
+                        G_IO_ERROR_FAILED,
+-                       ngettext("Expecting 1 control message, got %d",
+-                                "Expecting 1 control message, got %d",
+-                                nscm),
++                       gettext("Expecting 1 control message, got %d"),
+                        nscm);
+           goto out;
+         }
+diff --color -aur glib-2.57.1/gio/gunixmounts.c glib-2.57.1-patched/gio/gunixmounts.c
+--- glib-2.57.1/gio/gunixmounts.c	2018-05-22 14:42:46.000000000 +0300
++++ glib-2.57.1-patched/gio/gunixmounts.c	2023-09-06 20:19:06.206234824 +0300
+@@ -923,7 +923,7 @@
+ 
+ /* Common code {{{2 */
+ #else
+-#error No _g_get_unix_mounts() implementation for system
++//#error No _g_get_unix_mounts() implementation for system
+ #endif
+ 
+ /* GUnixMountPoints (ie: fstab) implementations {{{1 */
+@@ -1446,36 +1446,37 @@
+ 
+ /* Common code {{{2 */
+ #else
+-#error No g_get_mount_table() implementation for system
++//#error No g_get_mount_table() implementation for system
+ #endif
+ 
+ static guint64
+ get_mounts_timestamp (void)
+ {
+-  const char *monitor_file;
++  /*const char *monitor_file;
+   struct stat buf;
+ 
+   monitor_file = get_mtab_monitor_file ();
+-  /* Don't return mtime for /proc/ files */
+-  if (monitor_file && !g_str_has_prefix (monitor_file, "/proc/"))
++  *//* Don't return mtime for /proc/ files */
++  /*if (monitor_file && !g_str_has_prefix (monitor_file, "/proc/"))
+     {
+       if (stat (monitor_file, &buf) == 0)
+         return (guint64)buf.st_mtime;
+     }
+   else if (proc_mounts_watch_is_running ())
+     {
+-      /* it's being monitored by poll, so return mount_poller_time */
+-      return mount_poller_time;
++     *//* it's being monitored by poll, so return mount_poller_time */
++  /*    return mount_poller_time;
+     }
+   else
+     {
+-      /* Case of /proc/ file not being monitored - Be on the safe side and
++      *//* Case of /proc/ file not being monitored - Be on the safe side and
+        * send a new timestamp to force g_unix_mounts_changed_since() to
+        * return TRUE so any application caches depending on it (like eg.
+        * the one in GIO) get invalidated and don't hold possibly outdated
+        * data - see Bug 787731 */
+-     return (guint64) g_get_monotonic_time ();
++    /* return (guint64) g_get_monotonic_time ();
+     }
++  */
+   return 0;
+ }
+ 
+@@ -1806,15 +1807,15 @@
+       g_signal_connect (fstab_monitor, "changed", (GCallback)fstab_file_changed, NULL);
+     }
+ 
+-  if (get_mtab_monitor_file () != NULL)
++  /*if (get_mtab_monitor_file () != NULL)
+     {
+       const gchar *mtab_path;
+ 
+-      mtab_path = get_mtab_monitor_file ();
++      mtab_path = get_mtab_monitor_file ();*/
+       /* Monitoring files in /proc/ is special - can't just use GFileMonitor.
+        * See 'man proc' for more details.
+        */
+-      if (g_str_has_prefix (mtab_path, "/proc/"))
++      /*if (g_str_has_prefix (mtab_path, "/proc/"))
+         {
+           GIOChannel *proc_mounts_channel;
+           GError *error = NULL;
+@@ -1845,8 +1846,8 @@
+           g_signal_connect (mtab_monitor, "changed", (GCallback)mtab_file_changed, NULL);
+         }
+     }
+-  else
+-    {
++  else*/
++    //{
+       proc_mounts_watch_source = g_timeout_source_new_seconds (3);
+       mount_poller_mounts = _g_get_unix_mounts ();
+       mount_poller_time = (guint64)g_get_monotonic_time ();
+@@ -1856,7 +1857,7 @@
+       g_source_attach (proc_mounts_watch_source,
+                        g_main_context_get_thread_default ());
+       g_source_unref (proc_mounts_watch_source);
+-    }
++//    }
+ }
+ 
+ static void
+diff --color -aur glib-2.57.1/glib/genviron.c glib-2.57.1-patched/glib/genviron.c
+--- glib-2.57.1/glib/genviron.c	2018-01-22 23:28:02.000000000 +0300
++++ glib-2.57.1-patched/glib/genviron.c	2023-09-06 20:52:55.830852144 +0300
+@@ -21,8 +21,8 @@
+  * files for a list of changes.  These files are distributed with
+  * GLib at ftp://ftp.gtk.org/pub/gtk/. 
+  */
+-
+ #include "config.h"
++#include <unistd.h>
+ 
+ #include "genviron.h"
+ 
+@@ -310,6 +310,8 @@
+  * in any system header, although unistd.h often declares it.
+  */
+ extern char **environ;
++//char **rpl_environ(void) {return &environ;}
++#define g_environ environ
+ #endif
+ 
+ /**
+@@ -349,7 +351,7 @@
+   /* Mess directly with the environ array.
+    * This seems to be the only portable way to do this.
+    */
+-  g_environ_unsetenv_internal (environ, variable, FALSE);
++  g_environ_unsetenv_internal (g_environ, variable, FALSE);
+ #endif /* !HAVE_UNSETENV */
+ }
+ 
+@@ -377,15 +379,16 @@
+   gchar **result, *eq;
+   gint len, i, j;
+ 
+-  len = g_strv_length (environ);
++  len = g_strv_length (g_environ);
++  len = 0;
+   result = g_new0 (gchar *, len + 1);
+ 
+   j = 0;
+   for (i = 0; i < len; i++)
+     {
+-      eq = strchr (environ[i], '=');
++      eq = strchr (g_environ[i], '=');
+       if (eq)
+-        result[j++] = g_strndup (environ[i], eq - environ[i]);
++        result[j++] = g_strndup (g_environ[i], eq - g_environ[i]);
+     }
+ 
+   result[j] = NULL;
+@@ -415,7 +418,7 @@
+ gchar **
+ g_get_environ (void)
+ {
+-  return g_strdupv (environ);
++  return g_strdupv (g_environ);
+ }
+ 
+ /* Win32 implementation {{{1 */
+diff --color -aur glib-2.57.1/glib/gfileutils.c glib-2.57.1-patched/glib/gfileutils.c
+--- glib-2.57.1/glib/gfileutils.c	2018-05-02 15:30:40.000000000 +0300
++++ glib-2.57.1-patched/glib/gfileutils.c	2023-09-06 20:19:06.207234836 +0300
+@@ -54,7 +54,7 @@
+ 
+ #ifdef HAVE_LINUX_MAGIC_H /* for btrfs check */
+ #include <linux/magic.h>
+-#include <sys/vfs.h>
++#include <sys/statvfs.h>
+ #endif
+ 
+ 
+@@ -1097,15 +1097,15 @@
+ 
+ #ifdef BTRFS_SUPER_MAGIC
+   {
+-    struct statfs buf;
++    struct statvfs buf;
+ 
+     /* On Linux, on btrfs, skip the fsync since rename-over-existing is
+      * guaranteed to be atomic and this is the only case in which we
+      * would fsync() anyway.
+      */
+ 
+-    if (fstatfs (fd, &buf) == 0 && buf.f_type == BTRFS_SUPER_MAGIC)
+-      goto no_fsync;
++//    if (fstatvfs (fd, &buf) == 0 && buf.f_type == BTRFS_SUPER_MAGIC)
++//      goto no_fsync;
+   }
+ #endif
+ 
+diff --color -aur glib-2.57.1/glib/ggettext.c glib-2.57.1-patched/glib/ggettext.c
+--- glib-2.57.1/glib/ggettext.c	2017-07-14 02:03:39.000000000 +0300
++++ glib-2.57.1-patched/glib/ggettext.c	2023-09-06 20:19:06.208234849 +0300
+@@ -40,7 +40,7 @@
+ 
+ #include <string.h>
+ #include <locale.h>
+-#include <libintl.h>
++#include "libintl.h"
+ 
+ #ifdef G_OS_WIN32
+ 
+diff --color -aur glib-2.57.1/glib/glib-init.c glib-2.57.1-patched/glib/glib-init.c
+--- glib-2.57.1/glib/glib-init.c	2018-01-10 07:42:06.000000000 +0300
++++ glib-2.57.1-patched/glib/glib-init.c	2023-09-06 20:19:06.208234849 +0300
+@@ -28,6 +28,7 @@
+ #include "gmem.h"       /* for g_mem_gc_friendly */
+ 
+ #include <string.h>
++#include <strings.h>
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <ctype.h>
+diff --color -aur glib-2.57.1/glib/grand.c glib-2.57.1-patched/glib/grand.c
+--- glib-2.57.1/glib/grand.c	2017-07-14 02:03:39.000000000 +0300
++++ glib-2.57.1-patched/glib/grand.c	2023-09-06 20:19:06.208234849 +0300
+@@ -259,7 +259,7 @@
+       seed[0] = now.tv_sec;
+       seed[1] = now.tv_usec;
+       seed[2] = getpid ();
+-      seed[3] = getppid ();
++      seed[3] = 0;//getppid ();
+     }
+ #else /* G_OS_WIN32 */
+   /* rand_s() is only available since Visual Studio 2005 and
+diff --color -aur glib-2.57.1/glib/gspawn.c glib-2.57.1-patched/glib/gspawn.c
+--- glib-2.57.1/glib/gspawn.c	2018-03-12 19:23:37.000000000 +0300
++++ glib-2.57.1-patched/glib/gspawn.c	2023-09-06 21:44:55.298225140 +0300
+@@ -19,6 +19,7 @@
+  */
+ 
+ #include "config.h"
++#include "gio/stubs.h"
+ 
+ #include <sys/time.h>
+ #include <sys/types.h>
+@@ -1382,7 +1383,7 @@
+   if (standard_error && !g_unix_open_pipe (stderr_pipe, FD_CLOEXEC, error))
+     goto cleanup_and_fail;
+ 
+-  pid = fork ();
++  pid = -1;//fork ();
+ 
+   if (pid < 0)
+     {
+@@ -1432,7 +1433,7 @@
+            */
+           GPid grandchild_pid;
+ 
+-          grandchild_pid = fork ();
++          grandchild_pid = -1; //fork ();
+ 
+           if (grandchild_pid < 0)
+             {
+diff --color -aur glib-2.57.1/glib/gstrfuncs.c glib-2.57.1-patched/glib/gstrfuncs.c
+--- glib-2.57.1/glib/gstrfuncs.c	2018-05-02 15:30:40.000000000 +0300
++++ glib-2.57.1-patched/glib/gstrfuncs.c	2023-09-06 20:19:06.209234862 +0300
+@@ -25,6 +25,7 @@
+ /*
+  * MT safe
+  */
++#include <strings.h>
+ 
+ #include "config.h"
+ 
+diff --color -aur glib-2.57.1/glib/gtestutils.c glib-2.57.1-patched/glib/gtestutils.c
+--- glib-2.57.1/glib/gtestutils.c	2018-05-02 15:30:40.000000000 +0300
++++ glib-2.57.1-patched/glib/gtestutils.c	2023-09-06 21:43:52.468432123 +0300
+@@ -17,6 +17,7 @@
+  */
+ 
+ #include "config.h"
++#include "gio/stubs.h"
+ 
+ #include "gtestutils.h"
+ #include "gfileutils.h"
+@@ -2917,7 +2918,7 @@
+       errsv = errno;
+       g_error ("failed to create pipes to fork test program: %s", g_strerror (errsv));
+     }
+-  test_trap_last_pid = fork ();
++  test_trap_last_pid = -1;//fork ();
+   errsv = errno;
+   if (test_trap_last_pid < 0)
+     g_error ("failed to fork test program: %s", g_strerror (errsv));
+diff --color -aur glib-2.57.1/glib/gthread-posix.c glib-2.57.1-patched/glib/gthread-posix.c
+--- glib-2.57.1/glib/gthread-posix.c	2018-02-06 19:05:56.000000000 +0300
++++ glib-2.57.1-patched/glib/gthread-posix.c	2023-09-06 20:19:06.210234874 +0300
+@@ -36,7 +36,6 @@
+  * The thread manipulation functions (create, exit, join, etc.) have
+  * more freedom -- they can do as they please.
+  */
+-
+ #include "config.h"
+ 
+ #include "gthread.h"

@@ -1,0 +1,9 @@
+package embox.test.glib
+
+@BuildDepends(third_party.libs.glib)
+@Build(stage=2,script="true")
+module glib_test {
+	source "glib_test.c"
+
+	depends third_party.libs.glib
+}
