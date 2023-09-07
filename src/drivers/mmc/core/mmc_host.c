@@ -106,10 +106,10 @@ static int mmc_block_probe(void *args) {
 }
 
 static const struct block_dev_ops mmc_block_driver = {
-	.ioctl = mmc_block_ioctl,
-	.read = mmc_block_read,
-	.write = mmc_block_write,
-	.probe = mmc_block_probe,
+	.bdo_ioctl = mmc_block_ioctl,
+	.bdo_read = mmc_block_read,
+	.bdo_write = mmc_block_write,
+	.bdo_probe = mmc_block_probe,
 };
 
 struct mmc_host *mmc_alloc_host(void) {

@@ -47,10 +47,10 @@ static int static_ramdisk_init (void *args) {
 }
 
 static const struct block_dev_ops static_ramdisk_pio_driver = {
-		.ioctl = rmadisk_ioctl,
-		.read = ramdisk_read_sectors,
-		.write = ramdisk_write_sectors,
-		.probe = static_ramdisk_init
+		.bdo_ioctl = rmadisk_ioctl,
+		.bdo_read = ramdisk_read_sectors,
+		.bdo_write = ramdisk_write_sectors,
+		.bdo_probe = static_ramdisk_init
 };
 
 BLOCK_DEV_DRIVER_DEF(STATIC_RAMDISK_NAME, &static_ramdisk_pio_driver);

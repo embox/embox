@@ -83,9 +83,9 @@ static void free_more_memory(size_t size) {
 
 			if (buffer_dirty(bh)) {
 				assert(bh->bdev && bh->bdev->driver);
-				assert(bh->bdev->driver->write);
+				assert(bh->bdev->driver->bdo_write);
 				/* Write directly to disk */
-				bh->bdev->driver->write(bh->bdev, bh->data, bh->blocksize, bh->block);
+				bh->bdev->driver->bdo_write(bh->bdev, bh->data, bh->blocksize, bh->block);
 			}
 
 			dlist_del(&bh->bh_next);
