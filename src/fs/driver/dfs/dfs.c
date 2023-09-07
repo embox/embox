@@ -46,20 +46,30 @@ static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 #endif
 
-static int dfs_read_flash(struct flash_dev *flashdev, unsigned long offset, void *buff, size_t len) {
+int flash_read_aligned(struct flash_dev *flashdev, unsigned long offset, void *buff, size_t len) {
 	int i;
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
+	char *b; 
+	uint32_t word32;
 	int head;
+	int word_size;
 
 	assert(buff);
 
-	head = offset % NAND_PAGE_SIZE;
+	if (flashdev->fld_aligned_word) {
+		b = flashdev->fld_aligned_word;
+		word_size = flashdev->fld_word_size;
+	} else {
+		b = (void *)&word32;
+		word_size = sizeof(word32);
+	}
+
+	head = offset % word_size;
 
 	if (head) {
-		size_t head_cnt = min(len, NAND_PAGE_SIZE - head);
+		size_t head_cnt = min(len, word_size - head);
 
 		offset -= head;
-		flash_read(flashdev, offset, b, NAND_PAGE_SIZE);
+		flash_read(flashdev, offset, b, word_size);
 		memcpy(buff, b + head, head_cnt);
 
 		if (len <= head_cnt) {
@@ -67,21 +77,21 @@ static int dfs_read_flash(struct flash_dev *flashdev, unsigned long offset, void
 		}
 
 		buff   += head_cnt;
-		offset += NAND_PAGE_SIZE;
+		offset += word_size;
 		len    -= head_cnt;
 	}
 
-	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
-		flash_read(flashdev, offset, b, NAND_PAGE_SIZE);
-		memcpy(buff, b, NAND_PAGE_SIZE);
+	for (i = 0; len >= word_size; i++) {
+		flash_read(flashdev, offset, b, word_size);
+		memcpy(buff, b, word_size);
 
-		offset += NAND_PAGE_SIZE;
-		buff   += NAND_PAGE_SIZE;
-		len    -= NAND_PAGE_SIZE;
+		offset += word_size;
+		buff   += word_size;
+		len    -= word_size;
 	}
 
 	if (len > 0) {
-		flash_read(flashdev, offset, b, NAND_PAGE_SIZE);
+		flash_read(flashdev, offset, b, word_size);
 		memcpy(buff, b, len);
 	}
 
@@ -95,62 +105,82 @@ static int dfs_read_flash(struct flash_dev *flashdev, unsigned long offset, void
  *
  * @returns Bytes written or negative error code
  */
-static int dfs_write_flash(struct flash_dev *flashdev, unsigned long offset, const void *buff, size_t len) {
+int flash_write_aligned(struct flash_dev *flashdev, unsigned long offset, const void *buff, size_t len) {
 	int i;
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
+	char *b; 
+	uint32_t word32;
 	int head;
+	int word_size;
 
 	assert(buff);
 
-	head = offset % NAND_PAGE_SIZE;
+	if (flashdev->fld_aligned_word) {
+		b = flashdev->fld_aligned_word;
+		word_size = flashdev->fld_word_size;
+	} else {
+		b = (void *)&word32;
+		word_size = sizeof(word32);
+	}
+
+	head = offset % word_size;
 
 	if (head) {
-		size_t head_write_cnt = min(len, NAND_PAGE_SIZE - head);
+		size_t head_write_cnt = min(len, word_size - head);
 
 		offset -= head;
-		flash_read(flashdev, offset, b, NAND_PAGE_SIZE);
+		flash_read(flashdev, offset, b, word_size);
 		memcpy(b + head, buff, head_write_cnt);
-		flash_write(flashdev, offset, b, NAND_PAGE_SIZE);
+		flash_write(flashdev, offset, b, word_size);
 
 		if (len <= head_write_cnt) {
 			return 0;
 		}
 
 		buff   += head_write_cnt;
-		offset += NAND_PAGE_SIZE;
+		offset += word_size;
 		len    -= head_write_cnt;
 	}
 
-	for (i = 0; len >= NAND_PAGE_SIZE; i++) {
-		memcpy(b, buff, NAND_PAGE_SIZE);
-		flash_write(flashdev, offset, b, NAND_PAGE_SIZE);
+	for (i = 0; len >= word_size; i++) {
+		memcpy(b, buff, word_size);
+		flash_write(flashdev, offset, b, word_size);
 
-		offset += NAND_PAGE_SIZE;
-		buff   += NAND_PAGE_SIZE;
-		len    -= NAND_PAGE_SIZE;
+		offset += word_size;
+		buff   += word_size;
+		len    -= word_size;
 	}
 
 	if (len > 0) {
-		flash_read(flashdev, offset, b, NAND_PAGE_SIZE);
+		flash_read(flashdev, offset, b, word_size);
 		memcpy(b, buff, len);
-		flash_write(flashdev, offset, b, NAND_PAGE_SIZE);
+		flash_write(flashdev, offset, b, word_size);
 	}
 
 	return 0;
 }
 
-static inline int dfs_copy_flash(struct flash_dev *flashdev, unsigned long to, unsigned long from, int len) {
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
+int flash_copy_aligned(struct flash_dev *flashdev, unsigned long to, unsigned long from, int len) {
+	char *b; 
+	uint32_t word32;
+	int word_size;
+
+	if (flashdev->fld_aligned_word) {
+		b = flashdev->fld_aligned_word;
+		word_size = flashdev->fld_word_size;
+	} else {
+		b = (void *)&word32;
+		word_size = sizeof(word32);
+	}
 
 	while (len > 0) {
 		int tmp_len;
 
-		tmp_len = min(len, sizeof(b));
+		tmp_len = min(len, word_size);
 
-		if (0 > dfs_read_flash(flashdev, from, b, tmp_len)) {
+		if (0 > flash_read_aligned(flashdev, from, b, tmp_len)) {
 			return -1;
 		}
-		if (0 > dfs_write_flash(flashdev, to, b, tmp_len)) {
+		if (0 > flash_write_aligned(flashdev, to, b, tmp_len)) {
 			return -1;
 		}
 
@@ -162,9 +192,14 @@ static inline int dfs_copy_flash(struct flash_dev *flashdev, unsigned long to, u
 	return 0;
 }
 
-static int dfs_blkcpy_flash(struct flash_dev *flashdev, unsigned int to, unsigned long from) {
+int flash_copy_block(struct flash_dev *flashdev, unsigned int to, unsigned long from) {
+	uint32_t block_size;
+
+	block_size = flashdev->block_info[0].block_size;
+
 	flash_erase(flashdev, to);
-	return dfs_copy_flash(flashdev, to * NAND_BLOCK_SIZE, from * NAND_BLOCK_SIZE, NAND_BLOCK_SIZE);
+
+	return flash_copy_aligned(flashdev, to * block_size, from * block_size, block_size);
 }
 
 #if USE_RAM_AS_CACHE
@@ -181,7 +216,7 @@ static int dfs_cache(struct flash_dev *flashdev, uint32_t to, uint32_t from, int
 
 		tmp_len = min(len, sizeof(b));
 
-		if (0 > dfs_read_flash(flashdev, from, b, tmp_len)) {
+		if (0 > flash_read_aligned(flashdev, from, b, tmp_len)) {
 			return -1;
 		}
 		memcpy((void *)((uintptr_t)to), b, tmp_len);
@@ -201,7 +236,7 @@ static inline int dfs_cache_write(struct flash_dev *flashdev, uint32_t offset, c
 
 static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uint32_t from) {
 	flash_erase(flashdev, to);
-	return dfs_write_flash(flashdev, to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
+	return flash_write_aligned(flashdev, to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
 }
 
 #define CACHE_OFFSET                  ((uintptr_t)cache_block_buffer)
@@ -209,9 +244,9 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
 #else /* !USE_RAM_AS_CACHE */
 
 #define dfs_cache_erase(flashdev, block)        flash_erase(flashdev, block)
-#define dfs_cache(flashdev, to, from, len)      dfs_copy_flash(flashdev, to,from,len)
+#define dfs_cache(flashdev, to, from, len)      flash_copy_aligned(flashdev, to,from,len)
 #define dfs_cache_write(flashdev, off,buf, len) dfs_write_flash(flashdev, off,buf, len)
-#define dfs_cache_restore(flashdev, to, from)   dfs_blkcpy_flash(flashdev, to,from)
+#define dfs_cache_restore(flashdev, to, from)   flash_copy_block(flashdev, to,from)
 
 #define CACHE_OFFSET                  (buff_bk * NAND_BLOCK_SIZE)
 
@@ -245,21 +280,21 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 		}
 		pos += size;
 	} else {
-		dfs_write_flash(flashdev, CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
-		dfs_blkcpy_flash(flashdev, start_bk, buff_bk);
+		flash_write_aligned(flashdev, CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
+		flash_copy_block(flashdev, start_bk, buff_bk);
 		buff += NAND_BLOCK_SIZE - pos;
 		pos = (pos + size) % NAND_BLOCK_SIZE;
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
 			flash_erase(flashdev, bk);
-			if ((err = dfs_write_flash(flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
+			if ((err = flash_write_aligned(flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
 				return err;
 			}
 			buff += NAND_BLOCK_SIZE;
 		}
 
 		flash_erase(flashdev, buff_bk);
-		dfs_write_flash(flashdev, CACHE_OFFSET, buff, pos);
+		flash_write_aligned(flashdev, CACHE_OFFSET, buff, pos);
 	}
 
 	dfs_cache(flashdev, CACHE_OFFSET + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
@@ -311,7 +346,7 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 	root->len       = DFS_INODES_MAX;
 	root->flags     = S_IFDIR;
 
-	dfs_write_flash(fdev, 0, write_buf, sizeof(write_buf));
+	flash_write_aligned(fdev, 0, write_buf, sizeof(write_buf));
 
 	return 0;
 }
@@ -328,7 +363,7 @@ static int dfs_read_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 
 	fdev = flash_by_bdev(sb->bdev);
 
-	dfs_read_flash(fdev, 0, sbi, sizeof(struct dfs_sb_info));
+	flash_read_aligned(fdev, 0, sbi, sizeof(struct dfs_sb_info));
 
 	return 0;
 }
@@ -354,7 +389,7 @@ static int dfs_read_dirent(struct super_block *sb, int n, struct dfs_dir_entry *
 
 	fdev = flash_by_bdev(sb->bdev);
 
-	dfs_read_flash(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
+	flash_read_aligned(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
 
 	if (dtr->name[0] == '\0') {
 		return -ENOENT;
@@ -654,7 +689,7 @@ static size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_read_flash(fdev, pos, buf, l);
+	flash_read_aligned(fdev, pos, buf, l);
 
 	return l;
 }
