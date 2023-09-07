@@ -88,10 +88,17 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
 
 #else /* !USE_RAM_AS_CACHE */
 
-#define dfs_cache_erase(flashdev, block)        flash_erase(flashdev, block)
-#define dfs_cache(flashdev, to, from, len)      flash_copy_aligned(flashdev, to,from,len)
-#define dfs_cache_write(flashdev, off,buf, len) dfs_write_flash(flashdev, off,buf, len)
-#define dfs_cache_restore(flashdev, to, from)   flash_copy_block(flashdev, to,from)
+#define dfs_cache_erase(flashdev, block)        \
+						flash_erase(flashdev, block)
+
+#define dfs_cache(flashdev, to, from, len)      \
+						flash_copy_aligned(flashdev, to,from,len)
+
+#define dfs_cache_write(flashdev, off,buf, len) \
+						flash_write_aligned(flashdev, off, buf, len)
+
+#define dfs_cache_restore(flashdev, to, from)   \
+						flash_copy_block(flashdev, to,from)
 
 #define CACHE_OFFSET                  (buff_bk * NAND_BLOCK_SIZE)
 
