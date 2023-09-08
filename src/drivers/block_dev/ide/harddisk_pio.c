@@ -187,8 +187,6 @@ static int idedisk_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	size_t size;
 	char path[PATH_MAX];
-	struct block_dev *bdev;
-
 
 	drive = (struct hd *)args;
 	/* Make new device */
