@@ -63,16 +63,19 @@ void interrupt_handle(void) {
 	}
 	irqctrl_enable(irq);
 	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
 
+	/* Disable software interrupt. If the current interrupt is hardware, it has
+	no effect. */
 	VIC_REG_STORE(irq / VIC_IRQ_COUNT, VIC_SOFT_DISABLE,
 	    1U << (irq % VIC_IRQ_COUNT));
 
 	/* Writing VIC_ADDR register clears the respective interrupt in the internal
-	interrupt priority hardware */
+	interrupt priority hardware. */
 	for (i = 0; i < VIC_DEVICE_COUNT; i++) {
 		VIC_REG_STORE(i, VIC_ADDR, irq);
 	}
+
+	critical_dispatch_pending();
 }
 
 void swi_handle(void) {
