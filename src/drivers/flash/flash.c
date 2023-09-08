@@ -13,9 +13,11 @@
 
 #include <framework/mod/options.h>
 #include <drivers/flash/flash.h>
+
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 #include <util/err.h>
+#include <util/math.h>
 
 #define MAX_FLASHDEV_QUANTITY      OPTION_GET(NUMBER,dev_quantity)
 
