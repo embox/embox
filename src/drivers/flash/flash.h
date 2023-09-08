@@ -89,8 +89,6 @@ extern int flash_erase(struct flash_dev *flashdev, uint32_t block);
 struct flash_dev_module {
 	const char *name;
 	const struct flash_dev_drv *dev_drv;
-
-	void *arg;
 };
 
 #define FLASH_DEV_DEF(name, flash_dev_drv) \
