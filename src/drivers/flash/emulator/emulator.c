@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
-#include <stdint.h
+#include <stdint.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/flash/flash.h>
@@ -33,7 +33,7 @@ struct flash_emulator_priv {
 			__attribute__ ((aligned(EMU_FLASH_WORD_SIZE)));
 };
 
-int flash_emu_init (void *arg) {
+int flash_emu_init (struct flash_dev *dev, void *arg) {
 	/* Do nothing */
 	return 0;
 }
