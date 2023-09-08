@@ -44,10 +44,6 @@
 #if USE_RAM_AS_CACHE
 static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
-#endif
-
-
-#if USE_RAM_AS_CACHE
 
 static int dfs_cache_erase(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
