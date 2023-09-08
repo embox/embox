@@ -153,7 +153,7 @@ err_exit:
 
 static const struct flash_dev_drv stm32_flash_drv;
 
-static int stm32_flash_init(void *arg) {
+static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	struct flash_dev *flash;
 
 	assert((STM32_FLASH_FLASH_SIZE % STM32_FLASH_SECTOR_SIZE) == 0);

@@ -147,7 +147,7 @@ log_debug("Ok");
 
 static const struct flash_dev_drv qspi_flash_drv;
 
-static int qspi_flash_init(void *arg) {
+static int qspi_flash_init(struct flash_dev *dev, void *arg) {
 	static uint32_t qspi_flash_aligned_word;
 	struct flash_dev *flash;
 

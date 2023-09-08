@@ -87,7 +87,7 @@ int flash_devs_init(void) {
 	/* TODO pass some device-specific data to init funcion? */
 	array_spread_foreach_ptr(fdev_module, __flash_dev_registry) {
 		if (fdev_module->dev_drv->flash_init != NULL) {
-			ret = fdev_module->dev_drv->flash_init(NULL);
+			ret = fdev_module->dev_drv->flash_init(NULL, NULL);
 			if (ret != 0) {
 				return ret;
 			}

@@ -31,12 +31,12 @@ struct block_dev;
 
 /* Structure of device driver */
 struct flash_dev_drv {
-	int	(*flash_init) (void *arg);
+	int	(*flash_init) (struct flash_dev *dev, void *arg);
 	int	(*flash_erase_block) (struct flash_dev *dev, uint32_t block_base);
-	int	(*flash_program) (struct flash_dev *dev, uint32_t base,
-	                          const void* data, size_t len);
-	int	(*flash_read) (struct flash_dev *dev, uint32_t base,
-	                       void* data, size_t len);
+	int	(*flash_program) (struct flash_dev *dev,
+							uint32_t base, const void* data, size_t len);
+	int	(*flash_read) (struct flash_dev *dev,
+							uint32_t base, void* data, size_t len);
 };
 
 struct flash_ioctl_erase {
