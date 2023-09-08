@@ -73,8 +73,8 @@ int block_devs_init(void) {
 	const struct block_dev_module *bdev_module;
 
 	array_spread_foreach_ptr(bdev_module, __block_dev_registry) {
-		if (bdev_module->dev_drv->probe != NULL) {
-			ret = bdev_module->dev_drv->probe(NULL);
+		if (bdev_module->dev_drv->bdo_probe != NULL) {
+			ret = bdev_module->dev_drv->bdo_probe(NULL, NULL);
 			if (ret != 0) {
 				return ret;
 			}
@@ -132,7 +132,7 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 	assert(bdev);
 	assert(bdev->driver);
 
-	if (NULL == bdev->driver->read) {
+	if (NULL == bdev->driver->bdo_read) {
 		return -ENOSYS;
 	}
 	if (offset + count > bdev->size) {
@@ -147,7 +147,7 @@ int block_dev_read_buffered(struct block_dev *bdev, char *buffer, size_t count, 
 		bh = bcache_getblk_locked(bdev, blkno + i, blksize);
 		{
 			if (buffer_new(bh)) {
-				if (blksize != (res = bdev->driver->read(bdev, bh->data, blksize, blkno + i))
+				if (blksize != (res = bdev->driver->bdo_read(bdev, bh->data, blksize, blkno + i))
 						|| 0 != (res = buffer_decrypt(bh))) {
 					bcache_buffer_unlock(bh);
 					return res;
@@ -169,7 +169,7 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 
 	assert(bdev);
 
-	if (NULL == bdev->driver->write) {
+	if (NULL == bdev->driver->bdo_write) {
 		return -ENOSYS;
 	}
 	if (offset + count > bdev->size) {
@@ -186,7 +186,7 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 		{
 			if (buffer_new(bh)) {
 				if (cplen < blksize) {
-					if (blksize != (res = bdev->driver->read(bdev, bh->data, blksize, blkno + i))
+					if (blksize != (res = bdev->driver->bdo_read(bdev, bh->data, blksize, blkno + i))
 							|| 0 != (res = buffer_decrypt(bh))) {
 						bcache_buffer_unlock(bh);
 						return res;
@@ -200,7 +200,7 @@ int block_dev_write_buffered(struct block_dev *bdev, const char *buffer, size_t 
 			 * Therefore first we encrypt block, then write it onto disk and then decrypt block.
 			 */
 			buffer_encrypt(bh);
-			if (blksize != (res = bdev->driver->write(bdev, bh->data,
+			if (blksize != (res = bdev->driver->bdo_write(bdev, bh->data,
 					blksize, blkno + i))) {
 				buffer_decrypt(bh);
 				bcache_buffer_unlock(bh);
@@ -277,10 +277,10 @@ int block_dev_ioctl(void *dev, int cmd, void *args, size_t size) {
 		return bdev->block_size;
 	default:
 		assert(bdev->driver);
-		if (NULL == bdev->driver->ioctl)
+		if (NULL == bdev->driver->bdo_ioctl)
 			return -ENOSYS;
 
-		return bdev->driver->ioctl(bdev, cmd, args, 0);
+		return bdev->driver->bdo_ioctl(bdev, cmd, args, 0);
 	}
 }
 

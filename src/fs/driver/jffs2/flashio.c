@@ -149,7 +149,7 @@ int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 
 bool jffs2_flash_erase(struct jffs2_sb_info * c,
 			   struct jffs2_eraseblock * jeb) {
-	flash_ioctl_erase_t e;
+	struct flash_ioctl_erase e;
 	uint32_t err_addr;
 	int err;
 	uint32_t len = sizeof (e);

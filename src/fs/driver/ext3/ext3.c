@@ -181,7 +181,7 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
     assert(jp->j_disk_sectorsize >= 512);
 
     /* Load superblock from the log. */
-    if (!jp->j_dev->driver->read(jp->j_dev, buf,
+    if (!jp->j_dev->driver->bdo_read(jp->j_dev, buf,
     		4096, start)) {
     	return -1;
     }

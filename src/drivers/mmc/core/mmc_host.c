@@ -100,17 +100,16 @@ static int mmc_block_write(struct block_dev *bdev, char *buffer, size_t count, b
 	return bdev->block_size;
 }
 
-static int mmc_block_probe(void *args) {
+static int mmc_block_probe(struct block_dev *bdev, void *args) {
 	log_debug("NIY");
 	return 0;
 }
 
 static const struct block_dev_ops mmc_block_driver = {
-	.name = "MMC driver",
-	.ioctl = mmc_block_ioctl,
-	.read = mmc_block_read,
-	.write = mmc_block_write,
-	.probe = mmc_block_probe,
+	.bdo_ioctl = mmc_block_ioctl,
+	.bdo_read = mmc_block_read,
+	.bdo_write = mmc_block_write,
+	.bdo_probe = mmc_block_probe,
 };
 
 struct mmc_host *mmc_alloc_host(void) {

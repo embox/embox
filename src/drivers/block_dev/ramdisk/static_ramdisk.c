@@ -30,9 +30,7 @@ static uint8_t static_ramdisk_buffer[STATIC_RAMDISK_SIZE] __attribute__ ((aligne
 
 static const struct block_dev_ops static_ramdisk_pio_driver;
 
-static int static_ramdisk_init (void *args) {
-	struct block_dev *bdev;
-
+static int static_ramdisk_init (struct block_dev *bdev, void *args) {
 	static_ramdisk.p_start_addr = (char *)static_ramdisk_buffer;
 	bdev = block_dev_create(STATIC_RAMDISK_PATH, &static_ramdisk_pio_driver, &static_ramdisk);
 	if (NULL == bdev) {
@@ -47,11 +45,10 @@ static int static_ramdisk_init (void *args) {
 }
 
 static const struct block_dev_ops static_ramdisk_pio_driver = {
-		.name  = "ramdisk_drv",
-		.ioctl = rmadisk_ioctl,
-		.read = ramdisk_read_sectors,
-		.write = ramdisk_write_sectors,
-		.probe = static_ramdisk_init
+		.bdo_ioctl = rmadisk_ioctl,
+		.bdo_read = ramdisk_read_sectors,
+		.bdo_write = ramdisk_write_sectors,
+		.bdo_probe = static_ramdisk_init
 };
 
 BLOCK_DEV_DRIVER_DEF(STATIC_RAMDISK_NAME, &static_ramdisk_pio_driver);

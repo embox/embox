@@ -248,7 +248,7 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 }
 
 static const struct block_dev_ops stm32f7_sd_driver;
-static int stm32f7_sd_init(void *arg) {
+static int stm32f7_sd_init(struct block_dev *bdev, void *arg) {
 	struct block_dev *bdev;
 
 	if (!block_dev_lookup(STM32F7_SD_DEVNAME)) {
@@ -295,11 +295,10 @@ static int stm32f7_sd_init(void *arg) {
 }
 
 static const struct block_dev_ops stm32f7_sd_driver = {
-	.name  = STM32F7_SD_DEVNAME,
-	.ioctl = stm32f7_sd_ioctl,
-	.read  = stm32f7_sd_read,
-	.write = stm32f7_sd_write,
-	.probe = stm32f7_sd_init,
+	.bdo_ioctl = stm32f7_sd_ioctl,
+	.bdo_read  = stm32f7_sd_read,
+	.bdo_write = stm32f7_sd_write,
+	.bdo_probe = stm32f7_sd_init,
 };
 
 BLOCK_DEV_DRIVER_DEF(STM32F7_SD_DEVNAME, &stm32f7_sd_driver);

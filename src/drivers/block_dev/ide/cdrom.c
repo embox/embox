@@ -211,7 +211,7 @@ static int cd_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 	return -ENOSYS;
 }
 
-static int idecd_init (void *args) {
+static int idecd_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	size_t size;
 	char   path[PATH_MAX];
@@ -242,11 +242,10 @@ static int idecd_init (void *args) {
 }
 
 static const struct block_dev_ops idecd_pio_driver = {
-	"idecd_drv",
-	cd_ioctl,
-	cd_read,
-	cd_write,
-	idecd_init,
+	.bdo_ioctl = cd_ioctl,
+	.bdo_read = cd_read,
+	.bdo_write = cd_write,
+	.bdo_probe = idecd_init,
 };
 
 BLOCK_DEV_DRIVER_DEF("idecd", &idecd_pio_driver);

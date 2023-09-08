@@ -145,20 +145,10 @@ log_debug("Ok");
 	return len;
 }
 
-static int qspi_flash_copy(struct flash_dev *dev, uint32_t base_dst,
-				uint32_t base_src, size_t len) {
-	log_error("QSPI copy is not realized");
-	return -1;
-}
+static const struct flash_dev_drv qspi_flash_drv;
 
-static const struct flash_dev_drv qspi_flash_drv = {
-	.flash_read = qspi_flash_read,
-	.flash_erase_block = qspi_flash_erase_block,
-	.flash_program = qspi_flash_write,
-	.flash_copy = qspi_flash_copy,
-};
-
-static int qspi_flash_init(void *arg) {
+static int qspi_flash_init(struct flash_dev *dev, void *arg) {
+	static uint32_t qspi_flash_aligned_word;
 	struct flash_dev *flash;
 
 	flash = flash_create("qspiflash", QSPI_FLASH_SIZE);
@@ -169,12 +159,21 @@ static int qspi_flash_init(void *arg) {
 	flash->drv = &qspi_flash_drv;
 	flash->size = QSPI_FLASH_SIZE;
 	flash->num_block_infos = 1;
-	flash->block_info[0] = (flash_block_info_t) {
+	flash->block_info[0] = (struct flash_block_info) {
 		.block_size = QSPI_BLOCK_SIZE,
 		.blocks = QSPI_FLASH_SIZE / QSPI_BLOCK_SIZE,
 	};
+	flash->fld_aligned_word = &qspi_flash_aligned_word;
+	flash->fld_word_size = 4;
 
 	return 0;
 }
 
-FLASH_DEV_DEF("qspiflash", &qspi_flash_drv, qspi_flash_init);
+static const struct flash_dev_drv qspi_flash_drv = {
+	.flash_init = qspi_flash_init,
+	.flash_read = qspi_flash_read,
+	.flash_erase_block = qspi_flash_erase_block,
+	.flash_program = qspi_flash_write,
+};
+
+FLASH_DEV_DEF("qspiflash", &qspi_flash_drv);

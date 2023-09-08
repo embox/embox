@@ -183,12 +183,10 @@ static int hd_write_pio(struct block_dev *bdev, char *buffer, size_t count, blkn
 	return result == 0 ? count : result;
 }
 
-static int idedisk_init (void *args) {
+static int idedisk_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	size_t size;
 	char path[PATH_MAX];
-	struct block_dev *bdev;
-
 
 	drive = (struct hd *)args;
 	/* Make new device */
@@ -216,11 +214,10 @@ static int idedisk_init (void *args) {
 }
 
 static const struct block_dev_ops idedisk_pio_driver = {
-	"idedisk_drv",
-	hd_ioctl,
-	hd_read_pio,
-	hd_write_pio,
-	idedisk_init,
+	.bdo_ioctl = hd_ioctl,
+	.bdo_read = hd_read_pio,
+	.bdo_write = hd_write_pio,
+	.bdo_probe = idedisk_init,
 };
 
 BLOCK_DEV_DRIVER_DEF("idedisk", &idedisk_pio_driver);

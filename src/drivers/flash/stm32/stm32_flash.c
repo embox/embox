@@ -36,6 +36,9 @@ extern char _flash_start, _flash_end;
 
 static unsigned int stm32_flash_first_sector;
 
+static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD] 
+			__attribute__ ((aligned(STM32_FLASH_WORD)));
+
 static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
 	return STM32_FLASH_START + base + len <= STM32_FLASH_END;
 }
@@ -148,20 +151,9 @@ err_exit:
 	return err;
 }
 
-static int stm32_flash_copy(struct flash_dev *dev, uint32_t base_dst,
-				uint32_t base_src, size_t len) {
-	return stm32_flash_program(dev, base_dst,
-		(void *) STM32_FLASH_START + base_src, len);
-}
+static const struct flash_dev_drv stm32_flash_drv;
 
-static const struct flash_dev_drv stm32_flash_drv = {
-	.flash_read = stm32_flash_read,
-	.flash_erase_block = stm32_flash_erase_block,
-	.flash_program = stm32_flash_program,
-	.flash_copy = stm32_flash_copy,
-};
-
-static int stm32_flash_init(void *arg) {
+static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	struct flash_dev *flash;
 
 	assert((STM32_FLASH_FLASH_SIZE % STM32_FLASH_SECTOR_SIZE) == 0);
@@ -174,11 +166,13 @@ static int stm32_flash_init(void *arg) {
 	flash->drv = &stm32_flash_drv;
 	flash->size = STM32_FLASH_END - STM32_FLASH_START;
 	flash->num_block_infos = 1;
-	flash->block_info[0] = (flash_block_info_t) {
+	flash->block_info[0] = (struct flash_block_info) {
 		.block_size = STM32_FLASH_SECTOR_SIZE,
 		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
 	};
-
+	flash->fld_aligned_word = stm32_flash_aligned_word;
+	flash->fld_word_size = STM32_FLASH_WORD;
+	
 	stm32_flash_first_sector =
 		(STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) /
 		STM32_FLASH_SECTOR_SIZE;
@@ -198,4 +192,11 @@ static int stm32_flash_init(void *arg) {
 	return 0;
 }
 
-FLASH_DEV_DEF("stm32flash", &stm32_flash_drv, stm32_flash_init);
+static const struct flash_dev_drv stm32_flash_drv = {
+	.flash_init = stm32_flash_init,
+	.flash_read = stm32_flash_read,
+	.flash_erase_block = stm32_flash_erase_block,
+	.flash_program = stm32_flash_program,
+};
+
+FLASH_DEV_DEF("stm32flash", &stm32_flash_drv);

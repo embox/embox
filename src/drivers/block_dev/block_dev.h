@@ -43,13 +43,12 @@ struct block_dev {
 };
 
 struct block_dev_ops {
-	char *name;
 
-	int (*ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
-	int (*read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-	int (*write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*bdo_ioctl)(struct block_dev *bdev, int cmd, void *args, size_t size);
+	int (*bdo_read)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+	int (*bdo_write)(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
-	int (*probe)(void *args);
+	int (*bdo_probe)(struct block_dev *bdev, void *args);
 };
 
 struct block_dev_module {

@@ -379,10 +379,9 @@ static int imx6_usdhc_write(struct block_dev *bdev, char *buffer, size_t count,
 static int imx6_usdhc_probe(void *args);
 
 struct block_dev_ops imx6_usdhc_driver = {
-	.name  = "imx6_usdhc_driver",
-	.probe = imx6_usdhc_probe,
-	.read  = imx6_usdhc_read,
-	.write = imx6_usdhc_write
+	.bdo_probe = imx6_usdhc_probe,
+	.bdo_read  = imx6_usdhc_read,
+	.bdo_write = imx6_usdhc_write
 };
 
 BLOCK_DEV_DRIVER_DEF("imx6_usdhc", &imx6_usdhc_driver);
@@ -400,7 +399,7 @@ static uint32_t sdhc_get_size(uint32_t rca) {
 	return 256 * 1024 * (t + 1);
 }
 
-static int imx6_usdhc_probe(void *args) {
+static int imx6_usdhc_probe(struct block_dev *bdev, void *args) {
 	struct block_dev *bdev;
 	uint32_t tmp;
 

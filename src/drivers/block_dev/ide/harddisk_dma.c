@@ -236,7 +236,7 @@ static int hd_write_udma(struct block_dev *bdev, char *buffer, size_t count, blk
 	return result == 0 ? count : result;
 }
 
-static int idedisk_udma_init (void *args) {
+static int idedisk_udma_init (struct block_dev *bdev, void *args) {
 	struct hd *drive;
 	double size;
 	char   path[PATH_MAX];
@@ -266,11 +266,10 @@ static int idedisk_udma_init (void *args) {
 }
 
 static const struct block_dev_ops idedisk_udma_driver = {
-	"idedisk_udma_drv",
-	hd_ioctl,
-	hd_read_udma,
-	hd_write_udma,
-	idedisk_udma_init,
+	.bdo_ioctl = hd_ioctl,
+	.bdo_read = hd_read_udma,
+	.bdo_write = hd_write_udma,
+	.bdo_probe = idedisk_udma_init,
 };
 
 BLOCK_DEV_DRIVER_DEF("idedisk_udma", &idedisk_udma_driver);

@@ -23,10 +23,9 @@ static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, bl
 static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
 
 static const struct block_dev_ops flashbdev_pio_driver = {
-	"flash_drv",
-	flashbdev_ioctl,
-	flashbdev_read,
-	flashbdev_write
+	.bdo_ioctl = flashbdev_ioctl,
+	.bdo_read = flashbdev_read,
+	.bdo_write = flashbdev_write,
 };
 
 struct flash_dev *flash_create(const char *name, size_t size) {
@@ -49,6 +48,9 @@ struct flash_dev *flash_create(const char *name, size_t size) {
 	}
 
 	flash->bdev->size = size;
+
+	flash->fld_word_size = 4;
+	flash->fld_aligned_word = NULL;
 
 	return flash;
 }
@@ -156,11 +158,11 @@ static int decode_flash_cmd(int cmd) {
 static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		void *buf, size_t size) {
 	struct flash_dev *dev;
-	flash_ioctl_erase_t *e;
+	struct flash_ioctl_erase *e;
 	uint32_t startpos, endpos;
-	flash_ioctl_devsize_t *ds;
-	flash_ioctl_devaddr_t *da;
-	flash_ioctl_blocksize_t *bs;
+	struct flash_ioctl_devsize *ds;
+	struct flash_ioctl_devaddr *da;
+	struct flash_ioctl_blocksize *bs;
 
 	assert(bdev);
 
@@ -171,7 +173,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 
 	switch (cmd) {
 	case FLASH_IOCTL_ERASE:
-		e = (flash_ioctl_erase_t *) buf;
+		e = (struct flash_ioctl_erase *) buf;
 		startpos = e->offset;
 
 		/* Unlike some other cases we _do_ do bounds checking on this all the time, because
@@ -187,7 +189,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_DEVSIZE:
-		ds = (flash_ioctl_devsize_t *) buf;
+		ds = (struct flash_ioctl_devsize *) buf;
 
 		if (NULL == ds) {
 			return (dev->size + 1);
@@ -198,7 +200,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_DEVADDR:
-		da = (flash_ioctl_devaddr_t *)buf;
+		da = (struct flash_ioctl_devaddr *)buf;
 
 		if (NULL == da) {
 			return 0;
@@ -209,7 +211,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_BLOCKSIZE:
-		bs = (flash_ioctl_blocksize_t *)buf;
+		bs = (struct flash_ioctl_blocksize *)buf;
 
 		if (NULL == bs) {
 			return (dev->block_info[0].block_size);

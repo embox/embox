@@ -3,7 +3,7 @@ package embox.driver.flash
 @DefaultImpl(embox.driver.flash.flash_nofs)
 abstract module core {
 	option number dev_quantity = 4
-	option number block_info_max = 4
+	option number block_info_max = 1
 
 	source "flash.c"
 

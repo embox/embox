@@ -73,15 +73,15 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	}
 
 	assert(bdev->driver);
-	assert(bdev->driver->read);
+	assert(bdev->driver->bdo_read);
 	if (cache_buf) {
-		res = bdev->driver->read(bdev, cache_buf, bdev->block_size, blk_no);
+		res = bdev->driver->bdo_read(bdev, cache_buf, bdev->block_size, blk_no);
 		if (res > 0) {
 			res = nbyte;
 			memcpy(buf, &cache_buf[pos % bdev->block_size], nbyte);
 		}
 	} else {
-		res = bdev->driver->read(bdev, buf, nbyte, blk_no);
+		res = bdev->driver->bdo_read(bdev, buf, nbyte, blk_no);
 	}
 	if (res > 0) {
 		file_set_pos(file, pos + res);
@@ -127,8 +127,8 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	}
 
 	assert(bdev->driver);
-	assert(bdev->driver->write);
-	res = bdev->driver->write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
+	assert(bdev->driver->bdo_write);
+	res = bdev->driver->bdo_write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
 	if (res > 0) {
 		file_set_pos(file, pos + res);
 	}
@@ -158,10 +158,10 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 			bdev = bdev->parent_bdev;
 		}
 		assert(bdev->driver);
-		if (NULL == bdev->driver->ioctl)
+		if (NULL == bdev->driver->bdo_ioctl)
 			return -ENOSYS;
 
-		return bdev->driver->ioctl(bdev, cmd, args, 0);
+		return bdev->driver->bdo_ioctl(bdev, cmd, args, 0);
 	}
 }
 
