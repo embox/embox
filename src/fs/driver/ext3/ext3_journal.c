@@ -74,7 +74,7 @@ uint32_t ext3_journal_bmap(journal_t *jp, block_t block) {
 		return spec->ext3_journal_inode->i_block[block];
 	}
 
-	jp->j_dev->driver->read(jp->j_dev, (char *)buf, jp->j_blocksize,
+	jp->j_dev->driver->bdo_read(jp->j_dev, (char *)buf, jp->j_blocksize,
 			2 * spec->ext3_journal_inode->i_block[NDADDR]);
 
 	return buf[block - NDADDR];
