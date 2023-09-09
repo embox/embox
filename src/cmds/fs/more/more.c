@@ -18,7 +18,7 @@
 #define MAX_SCREEN_WIDTH 256
 
 static void screen(FILE *fp) {
-	char buff[MAX_SCREEN_WIDTH];
+	char buff[MAX_SCREEN_WIDTH + 1];
 	int cmd = 0, columns, lines, x, y, i;
 
 	WINDOW *std;
@@ -26,6 +26,9 @@ static void screen(FILE *fp) {
 	columns = std->maxx - std->begx;
 	if (columns >= MAX_SCREEN_WIDTH - 1) {
 		columns = MAX_SCREEN_WIDTH - 1;
+	}
+	if (columns < 1) {
+		columns = 1;
 	}
 	lines = std->maxy - std->begy;
 
