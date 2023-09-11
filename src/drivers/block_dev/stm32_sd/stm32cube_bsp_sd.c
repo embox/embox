@@ -249,7 +249,6 @@ static int stm32f7_sd_write(struct block_dev *bdev, char *buf, size_t count, blk
 
 static const struct block_dev_ops stm32f7_sd_driver;
 static int stm32f7_sd_init(struct block_dev *bdev, void *arg) {
-	struct block_dev *bdev;
 
 	if (!block_dev_lookup(STM32F7_SD_DEVNAME)) {
 		log_error("Block device not found");
