@@ -52,6 +52,7 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 		net_proto_handle_error_none);
 
 #define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
+#define TCP_FINWAIT2_TIMEOUT OPTION_GET(NUMBER, tcp_finwait2_timeout_ms)
 
 #if OPTION_GET(NUMBER, log_level) >= LOG_DEBUG
 #define TCP_DEBUG 1
@@ -1387,6 +1388,7 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 
 	sock_foreach(sk, tcp_sock_ops) {
 		tcp_sk = to_tcp_sock(sk);
+        /* release TIMEWAIT socket after typically 2msl*/
 		if ((tcp_sk->state == TCP_TIMEWAIT)
 				&& tcp_is_expired(&tcp_sk->rcv_time, TCP_TIMEWAIT_DELAY)) {
 
@@ -1409,5 +1411,18 @@ static void tcp_timer_handler(struct sys_timer *timer, void *param) {
 			tcp_sk->rexmit_mode = 1;
 			tcp_rexmit(tcp_sk);
 		}
+        /* release socket resource wich is stuck in finwait2 state
+         * violates specification, but seems reasonable (linux has it similar way)*/
+        else {
+            if (TCP_FINWAIT2_TIMEOUT != 0) {
+                if ((tcp_sk->state == TCP_FINWAIT_2)
+                        && tcp_is_expired(&tcp_sk->rcv_time, TCP_FINWAIT2_TIMEOUT)) {
+
+                    log_debug("release finwait2 sk %p after %dms", to_sock(tcp_sk),
+                            TCP_FINWAIT2_TIMEOUT);
+                    tcp_sock_release(tcp_sk);
+                }
+            }
+        }
 	}
 }
