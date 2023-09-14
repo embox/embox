@@ -41,6 +41,81 @@ static int stm32_uart_getc(struct uart *dev) {
 	return (uint8_t)(STM32_USART_RXDATA(uart) & 0xFF);
 }
 
+static void stm32cube_fill_uart_init_param(const struct uart_params *params, UART_InitTypeDef *init) {
+	uint32_t flags;
+	
+	flags = params->uart_param_flags;
+
+	switch (UART_PARAM_FLAGS_PARITY_MASK(flags)) {
+		case UART_PARAM_FLAGS_PARITY_ODD:
+			init->Parity = UART_PARITY_ODD;
+			break;
+		case UART_PARAM_FLAGS_PARITY_EVEN:
+			init->Parity = UART_PARITY_EVEN;
+			break;
+		case UART_PARAM_FLAGS_PARITY_NONE:
+		default:
+			init->Parity = UART_PARITY_NONE;
+			break;
+	}
+
+	switch (UART_PARAM_FLAGS_BIT_WORD_MASK(flags)) {
+#if defined (UART_WORDLENGTH_7B)
+		case UART_PARAM_FLAGS_7BIT_WORD:
+			init->WordLength = UART_WORDLENGTH_7B;
+			break;
+#endif
+		case UART_PARAM_FLAGS_9BIT_WORD:
+			init->WordLength = UART_WORDLENGTH_9B;
+			break;
+		case UART_PARAM_FLAGS_8BIT_WORD:
+		default:
+			init->WordLength = UART_WORDLENGTH_8B;
+			break;
+	}
+
+
+	switch (UART_PARAM_FLAGS_STOPS_MASK(flags)) {
+#if defined (UART_STOPBITS_0_5)
+		case UART_PARAM_FLAGS_0_5_STOP:
+			init->StopBits = UART_STOPBITS_0_5;
+			break;
+#endif
+#if defined (UART_STOPBITS_1_5)
+		case UART_PARAM_FLAGS_1_5_STOP:
+			init->StopBits = UART_STOPBITS_1_5;
+			break;
+#endif
+		case UART_PARAM_FLAGS_2_STOP:
+			init->StopBits = UART_STOPBITS_2;
+			break;
+		case UART_PARAM_FLAGS_1_STOP:
+		default:
+			init->StopBits = UART_STOPBITS_1;
+			break;
+	}
+
+	switch (UART_PARAM_FLAGS_HWCTRL_MASK(flags)) {
+		case UART_PARAM_FLAGS_HWCRTL_CTS:
+			init->HwFlowCtl = UART_HWCONTROL_CTS;
+			break;
+		case UART_PARAM_FLAGS_HWCRTL_RTS:
+			init->HwFlowCtl = UART_HWCONTROL_RTS;
+			break;
+		case UART_PARAM_FLAGS_HWCRTL_BOTH:
+			init->HwFlowCtl = UART_HWCONTROL_RTS_CTS;
+			break;
+		case UART_PARAM_FLAGS_HWCRTL_NONE:
+		default:
+			init->HwFlowCtl = UART_HWCONTROL_NONE;
+			break;
+	}
+
+	init->BaudRate = params->baud_rate;
+	init->Mode = UART_MODE_TX_RX;
+
+}
+
 static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) {
 	UART_HandleTypeDef UartHandle;
 
@@ -48,12 +123,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 
 	UartHandle.Instance = (void*) dev->base_addr;
 
-	UartHandle.Init.BaudRate = params->baud_rate;
-	UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-	UartHandle.Init.StopBits = UART_STOPBITS_1;
-	UartHandle.Init.Parity = UART_PARITY_NONE;
-	UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-	UartHandle.Init.Mode = UART_MODE_TX_RX;
+	stm32cube_fill_uart_init_param(params, &UartHandle.Init);
 
 	if (HAL_UART_Init(&UartHandle) != HAL_OK) {
 		return -1;
@@ -75,13 +145,8 @@ static int stm32_uart_irq_en(struct uart *dev, const struct uart_params *params)
 
 		UartHandle.Instance = (void*) dev->base_addr;
 
-		UartHandle.Init.BaudRate = params->baud_rate;
-		UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-		UartHandle.Init.StopBits = UART_STOPBITS_1;
-		UartHandle.Init.Parity = UART_PARITY_NONE;
-		UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-		UartHandle.Init.Mode = UART_MODE_TX_RX;
-
+		stm32cube_fill_uart_init_param(params, &UartHandle.Init);
+	
 	    /* Enable the UART Data Register not empty Interrupt */
 	    __HAL_UART_ENABLE_IT(&UartHandle, UART_IT_RXNE);
 	}
@@ -96,12 +161,7 @@ static int stm32_uart_irq_dis(struct uart *dev, const struct uart_params *params
 
 		UartHandle.Instance = (void*) dev->base_addr;
 
-		UartHandle.Init.BaudRate = params->baud_rate;
-		UartHandle.Init.WordLength = UART_WORDLENGTH_8B;
-		UartHandle.Init.StopBits = UART_STOPBITS_1;
-		UartHandle.Init.Parity = UART_PARITY_NONE;
-		UartHandle.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-		UartHandle.Init.Mode = UART_MODE_TX_RX;
+		stm32cube_fill_uart_init_param(params, &UartHandle.Init);
 
 		__HAL_UART_DISABLE_IT(&UartHandle, UART_IT_RXNE);
 	}
