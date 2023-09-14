@@ -156,6 +156,7 @@ module stm_ttyS0 {
 	option number usartx
 
 	source "stm_ttyS0.c"
+	option string ttys_name = "ttyS0"
 
 	depends stm32_usart_ops
 }
@@ -166,6 +167,7 @@ module stm_ttyS1 {
 	option number usartx
 
 	source "stm_ttyS1.c"
+	option string ttys_name = "ttyS1"
 
 	depends stm32_usart_ops
 }

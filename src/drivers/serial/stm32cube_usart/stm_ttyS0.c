@@ -17,11 +17,15 @@
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 
+#include <framework/mod/options.h>
+
 
 extern const struct uart_ops stm32_uart_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-#define TTY_NAME    ttyS0
+//#define TTY_NAME    ttyS0
+
+#define TTY_NAME      OPTION_GET(STRING, ttys_name)
 
 static struct uart stm32_ttySx = {
 		.dev_name = MACRO_STRING(TTY_NAME),
