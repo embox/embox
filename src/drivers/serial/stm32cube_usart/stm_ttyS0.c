@@ -12,7 +12,7 @@
 
 #include <util/macro.h>
 
-#include <drivers/serial/stm_usart.h>
+#include "stm32cube_conf.h"
 
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
