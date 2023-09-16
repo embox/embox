@@ -131,3 +131,47 @@ module stm_ttyS1 {
 
 	depends stm32_usart_ops
 }
+
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS2 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS2.c"
+	option string ttys_name = "ttyS2"
+
+	depends stm32_usart_ops
+}
+
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS3 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS3.c"
+	option string ttys_name = "ttyS3"
+
+	depends stm32_usart_ops
+}
+	
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS4 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS4.c"
+	option string ttys_name = "ttyS4"
+
+	depends stm32_usart_ops
+}
+
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS5 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS5.c"
+	option string ttys_name = "ttyS5"
+
+	depends stm32_usart_ops
+}
