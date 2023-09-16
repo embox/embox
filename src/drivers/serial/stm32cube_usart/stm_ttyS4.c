@@ -23,7 +23,7 @@
 extern const struct uart_ops stm32_uart_ops;
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-//#define TTY_NAME    ttyS0
+//#define TTY_NAME    ttyS4
 
 #define TTY_NAME      OPTION_GET(STRING, ttys_name)
 

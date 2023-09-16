@@ -7,7 +7,7 @@
 
 #include <assert.h>
 
-#include <drivers/serial/stm_usart.h>
+#include <bsp/stm32cube_hal.h>
 
 #include <config/board_config.h>
 

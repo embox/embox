@@ -16,15 +16,18 @@
 
 static uint8_t calc_line_stat(const struct uart_params *params) {
 	uint8_t line_stat;
+	uint32_t flags;
 
 	line_stat = 0;
-	if(!(params->uart_param_flags & UART_PARAM_FLAGS_AUTO_PARITY)) {
+	flags = params->uart_param_flags;
+
+	if((flags & UART_PARAM_FLAGS_PARITY_NONE)) {
 		line_stat |= UART_NO_PARITY;
 	}
-	if(params->uart_param_flags & UART_PARAM_FLAGS_8BIT_WORD) {
+	if(flags & UART_PARAM_FLAGS_8BIT_WORD) {
 		line_stat |= UART_8BITS_WORD;
 	}
-	if((params->uart_param_flags & UART_PARAM_FLAGS_2_STOP)) {
+	if((flags & UART_PARAM_FLAGS_2_STOP)) {
 		line_stat |= UART_2_STOP_BIT;
 	} else {
 		line_stat |= UART_1_STOP_BIT;

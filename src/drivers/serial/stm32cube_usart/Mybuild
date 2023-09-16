@@ -6,11 +6,6 @@ abstract module stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f1 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f1.h"
@@ -25,11 +20,6 @@ module stm_usart_f1 extends stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f2 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f2.h"
@@ -44,11 +34,6 @@ module stm_usart_f2 extends stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f3 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f3.h"
@@ -56,7 +41,6 @@ module stm_usart_f3 extends stm32_usart_ops {
 	source "stm_hal_msp.c"
 	source "stm_usart.c"
 
-	depends embox.driver.char_dev
 	depends embox.driver.serial.core
 
 	depends third_party.bsp.st_bsp_api
@@ -64,13 +48,6 @@ module stm_usart_f3 extends stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f4 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=6
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-	option number usart6_irq=71
-	option number uart8_irq=83
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f4.h"
@@ -85,12 +62,6 @@ module stm_usart_f4 extends stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_f7 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-	option number usart6_irq=71
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_f7.h"
@@ -105,12 +76,6 @@ module stm_usart_f7 extends stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_h7 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
-	option number usart3_irq=39
-	option number usart6_irq=71
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_h7.h"
@@ -125,10 +90,6 @@ module stm_usart_h7 extends stm32_usart_ops {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_l4 extends stm32_usart_ops {
-	option number baud_rate
-	option number usartx=1
-	option number usart1_irq=37
-	option number usart2_irq=38
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
 	source "stm32_usart_conf_l4.h"
@@ -136,7 +97,6 @@ module stm_usart_l4 extends stm32_usart_ops {
 	source "stm_hal_msp.c"
 	source "stm_usart.c"
 
-	depends embox.driver.char_dev
 	depends embox.driver.serial.core
 
 	depends third_party.bsp.st_bsp_api
@@ -145,7 +105,7 @@ module stm_usart_l4 extends stm32_usart_ops {
 @BuildDepends(stm32_usart_ops)
 module stm_diag extends embox.driver.serial.diag {
 	option number baud_rate
-	option number usartx=1
+	option number usartx
 	
 	source "stm_diag.c"
 }
@@ -153,9 +113,10 @@ module stm_diag extends embox.driver.serial.diag {
 @BuildDepends(stm32_usart_ops)
 module stm_ttyS0 {
 	option number baud_rate
-	option number usartx=6
+	option number usartx
 
 	source "stm_ttyS0.c"
+	option string ttys_name = "ttyS0"
 
 	depends stm32_usart_ops
 }
@@ -163,9 +124,54 @@ module stm_ttyS0 {
 @BuildDepends(stm32_usart_ops)
 module stm_ttyS1 {
 	option number baud_rate
-	option number usartx=6
+	option number usartx
 
 	source "stm_ttyS1.c"
+	option string ttys_name = "ttyS1"
+
+	depends stm32_usart_ops
+}
+
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS2 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS2.c"
+	option string ttys_name = "ttyS2"
+
+	depends stm32_usart_ops
+}
+
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS3 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS3.c"
+	option string ttys_name = "ttyS3"
+
+	depends stm32_usart_ops
+}
+	
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS4 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS4.c"
+	option string ttys_name = "ttyS4"
+
+	depends stm32_usart_ops
+}
+
+@BuildDepends(stm32_usart_ops)
+module stm_ttyS5 {
+	option number baud_rate
+	option number usartx
+
+	source "stm_ttyS5.c"
+	option string ttys_name = "ttyS5"
 
 	depends stm32_usart_ops
 }
