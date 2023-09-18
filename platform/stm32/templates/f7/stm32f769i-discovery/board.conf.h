@@ -3,5 +3,5 @@
 CONFIG {
 	uarts[1].status = ENABLED;
 	uarts[2].status = DISABLED;
-	uarts[6].status = DISABLED;
+	uarts[6].status = ENABLED;
 }
