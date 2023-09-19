@@ -8,7 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 
 extern void flush_dcache_range(unsigned long start_addr, unsigned long stop);
 extern void invalidate_dcache_range(unsigned long start_addr, unsigned long stop);

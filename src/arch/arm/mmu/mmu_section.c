@@ -10,7 +10,7 @@
 #include <string.h>
 #include <sys/mman.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <asm/hal/mmu.h>
 #include <hal/mmu.h>
 #include <mem/vmem.h>

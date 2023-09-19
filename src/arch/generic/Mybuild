@@ -33,3 +33,7 @@ module onecpu extends embox.arch.cpu {
 module arch extends embox.arch.arch {
 	source "arch.c"
 }
+
+module cache_stub extends embox.arch.cache {
+	source "cache_stub.c"
+}

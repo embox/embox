@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <util/log.h>
 
 static uint32_t get_cache_line_size(void) {

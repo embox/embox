@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/mman.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/video/fb.h>
 #include <drivers/video/fb_overlay.h>
 #include <lib/fps.h>

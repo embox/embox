@@ -13,7 +13,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/video/fb.h>
 #include <hal/mmu.h>
 

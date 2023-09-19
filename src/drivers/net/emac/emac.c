@@ -13,7 +13,7 @@
 
 #include <embox/unit.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <hal/reg.h>

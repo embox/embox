@@ -11,7 +11,7 @@
 
 #include <util/log.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/gpio/gpio.h>
 #include <drivers/common/memory.h>
 #include <hal/reg.h>

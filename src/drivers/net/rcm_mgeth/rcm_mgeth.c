@@ -14,7 +14,7 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <kernel/irq.h>
 
 #include <hal/reg.h>

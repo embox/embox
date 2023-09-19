@@ -6,7 +6,7 @@
  */
 #include <util/log.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <errno.h>
 #include <stdint.h>
 #include <sys/mman.h>

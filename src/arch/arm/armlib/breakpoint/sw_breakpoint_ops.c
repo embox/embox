@@ -7,7 +7,7 @@
  */
 #include <asm/cp15.h>
 #include <debug/breakpoint.h>
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 
 static const bpt_instr_t bpt_instr = 0xe1200070;
 

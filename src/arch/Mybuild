@@ -61,3 +61,6 @@ abstract module vfork_entry { }
 abstract module fork_entry { }
 
 abstract module mem_barriers { }
+
+@DefaultImpl(embox.arch.generic.cache_stub)
+abstract module cache { }

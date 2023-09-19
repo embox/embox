@@ -11,7 +11,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/common/memory.h>
 #include <drivers/common/periph_memory_alloc.h>
 

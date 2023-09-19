@@ -10,7 +10,7 @@
 #include <inttypes.h>
 #include <sys/mman.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <asm/hal/mmu.h>
 #include <asm/cp15.h>
 #include <hal/mmu.h>

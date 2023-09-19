@@ -1,6 +1,6 @@
 package embox.arch.arm
 
-module cache {
+module cache extends embox.arch.cache {
 	source "cache.c"
 }
 

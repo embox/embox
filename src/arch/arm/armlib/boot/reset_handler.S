@@ -4,7 +4,7 @@
  * @date May 9, 2018
  * @author Anton Bondarev
  */
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <asm/modes.h>
 #include <asm/regs.h>
 #include <asm/cp15.h>
