@@ -177,10 +177,10 @@ int phy_autoneg(struct net_device *dev, int fixed_speed) {
 	/* Find out best speed */
 		if ((ret = phy_try_speed(dev, NET_1000FULL | NET_1000HALF))) {
 			if (ret & NET_1000FULL) {
-				log_boot("\t1000 Mpbs FULL");
+				log_boot("\t1000 Mpbs FULL\n");
 				dev->drv_ops->set_speed(dev, NET_1000FULL);
 			} else {
-				log_boot("\t1000 Mpbs HALF");
+				log_boot("\t1000 Mpbs HALF\n");
 				dev->drv_ops->set_speed(dev, NET_1000HALF);
 			}
 			return 0;
