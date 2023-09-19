@@ -6,7 +6,7 @@
  * @date 01.05.2017
  */
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/block_dev.h>
 #include <drivers/common/memory.h>
 #include <framework/mod/options.h>

@@ -6,7 +6,7 @@
  */
 #include <stddef.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 
 void dcache_inval(const void *data, size_t size) {
 	/* FIXME cache*/

@@ -21,7 +21,7 @@
 #include <util/err.h>
 #include <util/macro.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/char_dev.h>
 #include <drivers/common/memory.h>
 #include <drivers/power/imx.h>

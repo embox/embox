@@ -17,7 +17,7 @@
 #include <stdio.h>
 #include <sys/mman.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <kernel/thread/sync/mutex.h>
 #include <util/binalign.h>
 #include <util/bitmap.h>

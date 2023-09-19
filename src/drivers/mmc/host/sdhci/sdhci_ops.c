@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/mmc/mmc_core.h>
 #include <drivers/mmc/mmc_host.h>
 #include <util/log.h>

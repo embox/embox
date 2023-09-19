@@ -9,7 +9,7 @@
 
 #include <string.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/video/fb.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>

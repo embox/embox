@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdbool.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <asm/ptrace.h>
 #include <debug/gdbstub.h>
 #include <asm/hal/env/traps_core.h>

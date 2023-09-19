@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <drivers/common/memory.h>
 
 #include <hal/reg.h>

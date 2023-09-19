@@ -16,7 +16,7 @@
 
 #include <mem/misc/pool.h>
 
-#include <arch/generic/dcache.h>
+#include <hal/cache.h>
 #include <hal/clock.h>
 #include <kernel/time/time.h>
 #include <drivers/common/memory.h>
