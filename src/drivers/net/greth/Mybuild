@@ -1,7 +1,7 @@
 package embox.driver.net
 
-module greth {
-	source "greth.c"
+module greth_old {
+	source "greth_old.c"
 
 	option number greth_base=0x80000900
 	option number irq_num=1
@@ -15,4 +15,41 @@ module greth {
 	depends embox.net.util.show_packet
 	depends embox.compat.posix.util.sleep
 	depends embox.driver.periph_memory
+}
+
+@DefaultImpl(greth_init_static)
+abstract module greth_init_api {
+	option number log_level=1
+}
+
+module greth_init_static extends greth_init_api {
+	source "greth_init_static.c"
+
+	depends embox.driver.periph_memory
+}
+
+module greth_init_amba_pnp extends greth_init_api {
+	source "greth_init_amba_pnp.c"
+
+	depends embox.driver.amba_registry
+}
+
+module greth {
+	option number log_level=1
+
+	option number base_addr=0x0
+	option number irq_num=0
+
+	source "greth.c"
+
+	depends greth_init_api
+	depends embox.net.dev
+	depends embox.net.core
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.net.util.show_packet
+	depends embox.net.entry_api
+	depends embox.arch.cache
+	depends embox.kernel.irq
+	depends embox.compat.posix.util.sleep
 }
