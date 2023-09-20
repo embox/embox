@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author Aleksey Zhmulin
+ * @date 09.09.23
+ */
 #include <net/netdevice.h>
 #include <drivers/common/memory.h>
 #include <framework/mod/options.h>

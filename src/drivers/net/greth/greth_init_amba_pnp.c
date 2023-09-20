@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author Aleksey Zhmulin
+ * @date 09.09.23
+ */
 #include <util/log.h>
 #include <net/netdevice.h>
 #include <drivers/amba_pnp.h>

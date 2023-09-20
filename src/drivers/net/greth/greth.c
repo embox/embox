@@ -1,3 +1,10 @@
+/**
+ * @file
+ * @brief
+ *
+ * @author Aleksey Zhmulin
+ * @date 09.09.23
+ */
 #include <time.h>
 #include <errno.h>
 #include <stddef.h>
@@ -28,27 +35,17 @@
 
 EMBOX_UNIT_INIT(greth_init);
 
-static void greth_bd_save(struct greth_priv *greth, struct greth_bd *src,
-    unsigned int nr, bool rx) {
-	struct greth_bd *dst;
-
-	dst = (rx) ? greth->rxbd_base : greth->txbd_base;
-	dst += nr;
-
+static void greth_bd_save(struct greth_priv *greth, struct greth_bd *dst,
+    const struct greth_bd *src) {
 	REG32_STORE(&dst->addr, htobe32(src->addr));
 	REG32_STORE(&dst->stat, htobe32(src->stat));
 
-	dcache_flush(dst, sizeof(dst));
+	dcache_flush(dst, sizeof(struct greth_bd));
 }
 
 static void greth_bd_load(struct greth_priv *greth, struct greth_bd *dst,
-    unsigned int nr, bool rx) {
-	struct greth_bd *src;
-
-	src = (rx) ? greth->rxbd_base : greth->txbd_base;
-	src += nr;
-
-	dcache_inval(src, sizeof(src));
+    const struct greth_bd *src) {
+	dcache_inval(src, sizeof(struct greth_bd));
 
 	dst->addr = be32toh(REG32_LOAD(&src->addr));
 	dst->stat = be32toh(REG32_LOAD(&src->stat));
@@ -181,9 +178,9 @@ static int greth_set_speed(struct net_device *dev, int speed) {
 
 static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	struct greth_priv *greth;
+	struct greth_bd bd;
 	void *data;
 	size_t len;
-	struct greth_bd bd;
 
 	log_debug("Trying to send a packet");
 
@@ -203,14 +200,13 @@ static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	GRETH_FIELD_SAVE(bd.stat, GRETH_BD_LE, len);
 
 	/* Store current transmit descriptor */
-	greth_bd_save(greth, &bd, 0, false);
+	greth_bd_save(greth, greth->txbd_base, &bd);
 
 	/* Enable transmitter */
 	REG32_ORIN(&GRETH_REGS(dev)->control, GRETH_CTRL_TE);
-
 	/* Wait for data to be sent */
 	do {
-		greth_bd_load(greth, &bd, 0, false);
+		greth_bd_load(greth, &bd, greth->txbd_base);
 	} while (bd.stat & GRETH_BD_EN);
 
 	show_packet(data, len, "transmitted");
@@ -252,7 +248,7 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *_dev) {
 	greth = netdev_priv(dev);
 
 	/* Load current receive descriptor */
-	greth_bd_load(greth, &bd, greth->rxbd_curr, true);
+	greth_bd_load(greth, &bd, greth->rxbd_base + greth->rxbd_curr);
 
 	/* Stop if no more packets received */
 	if (bd.stat & GRETH_BD_EN) {
@@ -260,7 +256,7 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *_dev) {
 	}
 
 	/* Clear rx status */
-	// REG32_STORE(&GRETH_REGS(dev)->status, GRETH_STAT_RE | GRETH_STAT_RI);
+	REG32_STORE(&GRETH_REGS(dev)->status, GRETH_STAT_RE | GRETH_STAT_RI);
 
 	data = (void *)bd.addr;
 	len = GRETH_FIELD_LOAD(bd.stat, GRETH_BD_LE);
@@ -277,7 +273,7 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *_dev) {
 		log_error("Alignment error");
 	}
 	if (bd.stat & GRETH_RXBD_FT) {
-		log_error("Frame too long");
+		log_error("Frame too long error");
 	}
 	if (bd.stat & GRETH_RXBD_CE) {
 		log_error("CRC error");
@@ -290,6 +286,7 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *_dev) {
 	}
 
 	/* Pass packet on to network subsystem */
+	skb->dev = dev;
 	skb->len = len;
 	netif_rx(skb);
 
@@ -304,7 +301,7 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *_dev) {
 		greth->rxbd_curr = 0;
 	}
 
-	greth_bd_save(greth, &bd, bd_nr, true);
+	greth_bd_save(greth, greth->rxbd_base + bd_nr, &bd);
 
 	/* Enable receiver */
 	REG32_ORIN(&GRETH_REGS(dev)->control, GRETH_CTRL_RE | GRETH_CTRL_RI);
@@ -332,7 +329,7 @@ static void greth_init_phy(struct net_device *dev) {
 	for (i = 0; i < 32; i++) {
 		greth_set_phyid(dev, i);
 		if (greth_mdio_read(dev, MII_PHYSID1) != 0xffff) {
-			log_error("PHY address = %i", i);
+			log_debug("PHY address = %i", i);
 			break;
 		}
 	}
@@ -410,9 +407,6 @@ static void greth_reset(struct net_device *dev) {
 
 	/* Init PHY */
 	greth_init_phy(dev);
-
-	/* Clear status */
-	// REG32_STORE(&regs->status, 0xff);
 }
 
 static int greth_dev_init(struct net_device *dev) {
@@ -447,7 +441,7 @@ out:
 	return err;
 }
 
-static void greth_init_bd(struct net_device *dev) {
+static void greth_real_init(struct net_device *dev) {
 	struct greth_priv *greth;
 	struct greth_regs *regs;
 	struct greth_bd bd;
@@ -465,7 +459,7 @@ static void greth_init_bd(struct net_device *dev) {
 			bd.stat |= GRETH_BD_WR;
 		}
 
-		greth_bd_save(greth, &bd, i, false);
+		greth_bd_save(greth, greth->txbd_base + i, &bd);
 	}
 
 	/* Init rx decriptors */
@@ -473,14 +467,14 @@ static void greth_init_bd(struct net_device *dev) {
 		/* Allocate socket buffers */
 		greth->rxbuf_base[i] = skb_alloc(ETH_FRAME_LEN);
 
-		bd.stat = GRETH_BD_EN;
+		bd.stat = GRETH_BD_EN | GRETH_BD_IE;
 		bd.addr = (uint32_t)skb_data_cast_in(greth->rxbuf_base[i]->data);
 
 		if (i == GRETH_RXBD_CNT - 1) {
 			bd.stat |= GRETH_BD_WR;
 		}
 
-		greth_bd_save(greth, &bd, i, true);
+		greth_bd_save(greth, greth->rxbd_base + i, &bd);
 	}
 
 	/* Set current receive descriptor number */
@@ -492,7 +486,7 @@ static void greth_init_bd(struct net_device *dev) {
 
 	/* Enable receiver */
 	log_debug("Enable receiver");
-	REG32_ORIN(&GRETH_REGS(dev)->control, GRETH_CTRL_RE | GRETH_CTRL_RI);
+	REG32_ORIN(&regs->control, GRETH_CTRL_RE | GRETH_CTRL_RI);
 }
 
 static int greth_init(void) {
@@ -513,7 +507,7 @@ static int greth_init(void) {
 	}
 
 	greth_reset(dev);
-	greth_init_bd(dev);
+	greth_real_init(dev);
 
 	err = irq_attach(dev->irq, greth_irq_handler, 0, dev, "greth");
 	if (err) {
