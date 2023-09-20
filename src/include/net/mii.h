@@ -8,27 +8,27 @@
 #ifndef MII_H_
 #define MII_H_
 
-#define MII_BMCR          0x00 /* Basic mode control register */
-#define MII_BMSR          0x01 /* Basic mode status register */
-#define MII_PHYSID1       0x02 /* PHYS ID 1 */
-#define MII_PHYSID2       0x03 /* PHYS ID 2 */
-#define MII_ADVERTISE     0x04 /* Advertisement control reg */
-#define MII_LPA           0x05 /* Link partner ability reg */
-#define MII_EXPANSION     0x06 /* Expansion register */
-#define MII_CTRL1000      0x09 /* 1000BASE-T control */
-#define MII_STAT1000      0x0a /* 1000BASE-T status */
-#define MII_ESTATUS       0x0f /* Extended Status */
-#define MII_DCOUNTER      0x12 /* Disconnect counter  */
-#define MII_FCSCOUNTER    0x13 /* False carrier counter */
-#define MII_NWAYTEST      0x14 /* N-way auto-neg test reg */
-#define MII_RERRCOUNTER   0x15 /* Receive error counter */
-#define MII_SREVISION     0x16 /* Silicon revision */
-#define MII_RESV1         0x17 /* Reserved... */
-#define MII_LBRERROR      0x18 /* Lpback, rx, bypass error */
-#define MII_PHYADDR       0x19 /* PHY address */
-#define MII_RESV2         0x1a /* Reserved...  */
-#define MII_TPISTATUS     0x1b /* TPI status for 10mbps */
-#define MII_NCONFIG       0x1c /* Network interface config */
+#define MII_BMCR        0x00 /* Basic mode control register */
+#define MII_BMSR        0x01 /* Basic mode status register */
+#define MII_PHYSID1     0x02 /* PHYS ID 1 */
+#define MII_PHYSID2     0x03 /* PHYS ID 2 */
+#define MII_ADVERTISE   0x04 /* Advertisement control reg */
+#define MII_LPA         0x05 /* Link partner ability reg */
+#define MII_EXPANSION   0x06 /* Expansion register */
+#define MII_CTRL1000    0x09 /* 1000BASE-T control */
+#define MII_STAT1000    0x0a /* 1000BASE-T status */
+#define MII_ESTATUS     0x0f /* Extended Status */
+#define MII_DCOUNTER    0x12 /* Disconnect counter */
+#define MII_FCSCOUNTER  0x13 /* False carrier counter */
+#define MII_NWAYTEST    0x14 /* N-way auto-neg test reg */
+#define MII_RERRCOUNTER 0x15 /* Receive error counter */
+#define MII_SREVISION   0x16 /* Silicon revision */
+#define MII_RESV1       0x17 /* Reserved... */
+#define MII_LBRERROR    0x18 /* Lpback, rx, bypass error */
+#define MII_PHYADDR     0x19 /* PHY address */
+#define MII_RESV2       0x1a /* Reserved... */
+#define MII_TPISTATUS   0x1b /* TPI status for 10mbps */
+#define MII_NCONFIG     0x1c /* Network interface config */
 
 /* Link partner ability register. */
 #define LPA_SLCT            0x001f /* Same as advertise selector */
@@ -48,10 +48,10 @@
 #define LPA_LPACK           0x4000 /* Link partner acked us */
 #define LPA_NPAGE           0x8000 /* Next page bit */
 
-#define LPA_DUPLEX         (LPA_10FULL | LPA_100FULL)
-#define LPA_10             (LPA_10FULL | LPA_10HALF)
-#define LPA_100            (LPA_100FULL | LPA_100HALF)
-#define LPA_1000           (LPA_1000XFULL | LPA_1000XHALF)
+#define LPA_DUPLEX (LPA_10FULL | LPA_100FULL)
+#define LPA_10     (LPA_10FULL | LPA_10HALF)
+#define LPA_100    (LPA_100FULL | LPA_100HALF)
+#define LPA_1000   (LPA_1000XFULL | LPA_1000XHALF)
 
 /* 1000BASE-T Status register */
 #define LPA_1000LOCALRXOK 0x2000 /* Link partner local receiver status */
@@ -60,17 +60,17 @@
 #define LPA_1000HALF      0x0400 /* Link partner 1000BASE-T half duplex */
 
 /* Basic mode control register. */
-#define BMCR_RESV         0x003f /* Unused... */
-#define BMCR_SPEED1000    0x0040 /* MSB of Speed (1000) */
-#define BMCR_CTST         0x0080 /* Collision test */
-#define BMCR_FULLDPLX     0x0100 /* Full duplex */
-#define BMCR_ANRESTART    0x0200 /* Auto negotiation restart */
-#define BMCR_ISOLATE      0x0400 /* Disconnect DP83840 from MII */
-#define BMCR_PDOWN        0x0800 /* Powerdown the DP83840 */
-#define BMCR_ANENABLE     0x1000 /* Enable auto negotiation */
-#define BMCR_SPEED100     0x2000 /* Select 100Mbps */
-#define BMCR_LOOPBACK     0x4000 /* TXD loopback bits */
-#define BMCR_RESET        0x8000 /* Reset the DP83840 */
+#define BMCR_RESV      0x003f /* Unused... */
+#define BMCR_SPEED1000 0x0040 /* MSB of Speed (1000) */
+#define BMCR_CTST      0x0080 /* Collision test */
+#define BMCR_FULLDPLX  0x0100 /* Full duplex */
+#define BMCR_ANRESTART 0x0200 /* Auto negotiation restart */
+#define BMCR_ISOLATE   0x0400 /* Disconnect DP83840 from MII */
+#define BMCR_PDOWN     0x0800 /* Powerdown the DP83840 */
+#define BMCR_ANENABLE  0x1000 /* Enable auto negotiation */
+#define BMCR_SPEED100  0x2000 /* Select 100Mbps */
+#define BMCR_LOOPBACK  0x4000 /* TXD loopback bits */
+#define BMCR_RESET     0x8000 /* Reset the DP83840 */
 
 /* Basic mode status register. */
 #define BMSR_ERCAP        0x0001 /* Ext-reg capability */
@@ -110,25 +110,23 @@
 
 #define ADVERTISE_FULL (ADVERTISE_100FULL | ADVERTISE_10FULL | ADVERTISE_CSMA)
 
-#define ADVERTISE_ALL  (ADVERTISE_10HALF |  \
-						ADVERTISE_10FULL | \
-						ADVERTISE_100HALF | \
-						ADVERTISE_100FULL)
+#define ADVERTISE_ALL                                        \
+	(ADVERTISE_10HALF | ADVERTISE_10FULL | ADVERTISE_100HALF \
+	    | ADVERTISE_100FULL)
 
 /* 1000BASE-T Control register */
 #define ADVERTISE_1000FULL 0x0200 /* Advertise 1000BASE-T full duplex */
 #define ADVERTISE_1000HALF 0x0100 /* Advertise 1000BASE-T half duplex */
 
 /* Some values interleave for 10/1000 modes, so wee need another numeration */
-#define NET_10HALF    (1 << 0)
-#define NET_10FULL    (1 << 1)
-#define NET_100HALF   (1 << 2)
-#define NET_100FULL   (1 << 3)
-#define NET_1000HALF  (1 << 4)
-#define NET_1000FULL  (1 << 5)
+#define NET_10HALF   (1 << 0)
+#define NET_10FULL   (1 << 1)
+#define NET_100HALF  (1 << 2)
+#define NET_100FULL  (1 << 3)
+#define NET_1000HALF (1 << 4)
+#define NET_1000FULL (1 << 5)
 
-#define NET_GBIT      (NET_1000HALF | NET_1000FULL)
-
+#define NET_GBIT (NET_1000HALF | NET_1000FULL)
 
 /**
  * mii_nway_result
@@ -136,15 +134,15 @@
  *
  * Given a set of MII abilities, check each bit and returns the
  * currently supported media, in the priority order defined by
- * IEEE 802.3u.  We use LPA_xxx constants but note this is not the
+ * IEEE 802.3u. We use LPA_xxx constants but note this is not the
  * value of LPA solely, as described above.
  *
  * The one exception to IEEE 802.3u is that 100baseT4 is placed
- * between 100T-full and 100T-half.  If your phy does not support
- * 100T4 this is fine.  If your phy places 100T4 elsewhere in the
+ * between 100T-full and 100T-half. If your phy does not support
+ * 100T4 this is fine. If your phy places 100T4 elsewhere in the
  * priority order, you will need to roll your own function.
  */
-static inline unsigned int mii_nway_result (unsigned int negotiated) {
+static inline unsigned int mii_nway_result(unsigned int negotiated) {
 	unsigned int ret;
 
 	if (negotiated & LPA_100FULL)
@@ -162,12 +160,24 @@ static inline unsigned int mii_nway_result (unsigned int negotiated) {
 }
 static inline int net_speed_to_adv(int speed) {
 	int res = 0;
-	if (speed & NET_10HALF) { res |= ADVERTISE_10HALF; }
-	if (speed & NET_10FULL) { res |= ADVERTISE_10FULL; }
-	if (speed & NET_100HALF) { res |= ADVERTISE_100HALF; }
-	if (speed & NET_100FULL) { res |= ADVERTISE_100FULL; }
-	if (speed & NET_1000HALF) { res |= ADVERTISE_1000XHALF; }
-	if (speed & NET_1000FULL) { res |= ADVERTISE_1000XFULL; }
+	if (speed & NET_10HALF) {
+		res |= ADVERTISE_10HALF;
+	}
+	if (speed & NET_10FULL) {
+		res |= ADVERTISE_10FULL;
+	}
+	if (speed & NET_100HALF) {
+		res |= ADVERTISE_100HALF;
+	}
+	if (speed & NET_100FULL) {
+		res |= ADVERTISE_100FULL;
+	}
+	if (speed & NET_1000HALF) {
+		res |= ADVERTISE_1000XHALF;
+	}
+	if (speed & NET_1000FULL) {
+		res |= ADVERTISE_1000XFULL;
+	}
 
 	return res;
 }
@@ -175,13 +185,26 @@ static inline int net_speed_to_adv(int speed) {
 static inline int adv_to_net_speed(int adv, int is_gigabit) {
 	int res = 0;
 	if (is_gigabit) {
-		if (adv & ADVERTISE_1000XHALF) { res |= NET_1000HALF; }
-		if (adv & ADVERTISE_1000XFULL) { res |= NET_1000FULL; }
-	} else {
-		if (adv & ADVERTISE_10HALF) { res |= NET_10HALF; }
-		if (adv & ADVERTISE_10FULL) { res |= NET_10FULL; }
-		if (adv & ADVERTISE_100HALF) { res |= NET_100HALF; }
-		if (adv & ADVERTISE_100FULL) { res |= NET_100FULL; }
+		if (adv & ADVERTISE_1000XHALF) {
+			res |= NET_1000HALF;
+		}
+		if (adv & ADVERTISE_1000XFULL) {
+			res |= NET_1000FULL;
+		}
+	}
+	else {
+		if (adv & ADVERTISE_10HALF) {
+			res |= NET_10HALF;
+		}
+		if (adv & ADVERTISE_10FULL) {
+			res |= NET_10FULL;
+		}
+		if (adv & ADVERTISE_100HALF) {
+			res |= NET_100HALF;
+		}
+		if (adv & ADVERTISE_100FULL) {
+			res |= NET_100FULL;
+		}
 	}
 
 	return res;
@@ -222,15 +245,20 @@ static inline int net_is_fullduplex(int net_speed) {
 static inline int net_top_speed(int net_speed) {
 	if (net_speed & NET_1000FULL) {
 		return NET_1000FULL;
-	} else if (net_speed & NET_1000HALF) {
+	}
+	else if (net_speed & NET_1000HALF) {
 		return NET_1000HALF;
-	} else if (net_speed & NET_100FULL) {
+	}
+	else if (net_speed & NET_100FULL) {
 		return NET_100FULL;
-	} else if (net_speed & NET_100HALF) {
+	}
+	else if (net_speed & NET_100HALF) {
 		return NET_100HALF;
-	} else if (net_speed & NET_10FULL) {
+	}
+	else if (net_speed & NET_10FULL) {
 		return NET_10FULL;
-	} else if (net_speed & NET_10HALF) {
+	}
+	else if (net_speed & NET_10HALF) {
 		return NET_10HALF;
 	}
 
