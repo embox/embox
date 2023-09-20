@@ -9,10 +9,6 @@
 #define SRC_DRIVERS_SERIAL_STM32_USART_STM32_USART_CONF_F4_H_
 
 #include <bsp/stm32cube_hal.h>
-/* TODO RM these. I hope it's enough to update CUbe version */
-#include <stm32f4xx_hal_usart.h>
-#include <stm32f4xx_hal_uart.h>
-
 
 #define STM32_USART_FLAGS(uart)   uart->SR
 #define STM32_USART_RXDATA(uart)  uart->DR
