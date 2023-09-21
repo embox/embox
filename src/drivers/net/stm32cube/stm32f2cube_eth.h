@@ -9,7 +9,7 @@
 #define SRC_DRIVERS_NET_STM32CUBE_STM32F2CUBE_ETH_H_
 
 
-#include <stm32f2xx_hal.h>
+#include <bsp/stm32cube_hal.h>
 
 //#define PHY_ADDRESS       0x00U
 #define PHY_ADDRESS       LAN8742A_PHY_ADDRESS

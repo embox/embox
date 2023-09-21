@@ -8,7 +8,7 @@
 #ifndef STM32F7CUBE_ETH_H_
 #define STM32F7CUBE_ETH_H_
 
-#include <stm32f7xx_hal.h>
+#include <bsp/stm32cube_hal.h>
 
 #define PHY_ADDRESS       0x00
 

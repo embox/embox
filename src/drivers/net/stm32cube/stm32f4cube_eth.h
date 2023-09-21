@@ -8,9 +8,7 @@
 #ifndef STM32F4CUBE_ETH_H_
 #define STM32F4CUBE_ETH_H_
 
-#include <stm32f4xx.h>
-#include <stm32f4xx_hal.h>
-#include <stm32f4xx_hal_eth.h>
+#include <bsp/stm32cube_hal.h>
 
 #if defined(STM32F407xx)
 #define PHY_ADDRESS       DP83848_PHY_ADDRESS /* FIXME Relative to STM324xG-EVAL Board */
