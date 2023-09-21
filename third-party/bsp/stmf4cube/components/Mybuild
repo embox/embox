@@ -1,0 +1,11 @@
+package third_party.bsp.stmf4cube.components
+
+@Build(stage=1)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module cs43l22 {
+    @IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/Components/cs43l22")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
+	source "Drivers/BSP/Components/cs43l22/cs43l22.c"
+
+	depends third_party.bsp.stmf4cube.cube
+}

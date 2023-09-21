@@ -43,15 +43,14 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
+@BuildDepends(third_party.bsp.stmf4cube.components.cs43l22)
 @BuildDepends(third_party.lib.st_audio_pdm.libPDMFilter_CM4_GCC_wc32)
 @BuildDepends(bsp)
 static module stm32f4_discovery_bsp_audio {
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
 	source "Drivers/BSP/STM32F4-Discovery/stm32f4_discovery_audio.c"
 
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/Components/cs43l22")
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-	source "Drivers/BSP/Components/cs43l22/cs43l22.c"
+	@NoRuntime depends third_party.bsp.stmf4cube.components.cs43l22
 
 //	depends pdm_filter_stub
 
