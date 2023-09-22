@@ -64,7 +64,7 @@
 #else
 /* since 1.27.1 version use ETH_LEGACY version*/
 /* #define HAL_ETH_MODULE_ENABLED */
-#define HAL_ETH_LEGACY_MODULE_ENABLED
+/* #define HAL_ETH_LEGACY_MODULE_ENABLED */
 #endif /* STM32F4_CUBE_1_25_0 */
 
 #define HAL_FLASH_MODULE_ENABLED
