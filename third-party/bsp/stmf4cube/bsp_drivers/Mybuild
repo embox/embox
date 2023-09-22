@@ -1,0 +1,12 @@
+package third_party.bsp.stmf4cube.bsp_drivers
+
+@Build(stage=1)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM324xG_EVAL")
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module stm324xg_eval_sd {
+    
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
+	source  "Drivers/BSP/STM324xG_EVAL/stm324xg_eval_sd.c"
+
+	depends third_party.bsp.stmf4cube.cube
+}
