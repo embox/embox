@@ -1,0 +1,19 @@
+In 'third-party/bsp/stmf4cube/cube/Makefile' update 
+PKG_VER     := 
+PKG_MD5     := 
+PKG_PATCHES := 
+
+Modify with new version following files
+third-party/bsp/stmf7cube/cube/Mybuild
+
+platform/stm32/f4/nucleo_f429zi/Mybuild
+platform/stm32/f4/stm32f429i_discovery/Mybuild
+platform/stm32/f4/stm32f4ve/Mybuild
+platform/stm32/f4/stm32f411_blackpill/Mybuild
+platform/stm32/f4/stm32f4_discovery/Mybuild
+platform/stm32/f4/nucleo_f411re/Mybuild
+platform/stm32/f4/nucleo_f410rb/Mybuild
+
+third-party/bsp/stmf4cube/components/Mybuild
+third-party/bsp/stmf4cube/bsp_drivers/Mybuild
+

@@ -1,7 +1,8 @@
 package third_party.bsp.stmf4cube
 
-@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32F4_CUBE -DSTM32F4_CUBE_1_25_0")
-@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.25.0/,Drivers/STM32F4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include)")
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32F4_CUBE")
+@BuildArtifactPath(cppflags="-DSTM32F4_CUBE_1_27_1")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/,Drivers/STM32F4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include)")
 module cube_cppflags {
 
 }
@@ -18,7 +19,7 @@ static module cube {
 
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF4-1.25.0/Drivers/STM32F4xx_HAL_Driver/Src")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF4-1.27.1/Drivers/STM32F4xx_HAL_Driver/Src")
 	source
 		"stm32f4xx_hal.c",
 		"stm32f4xx_hal_adc.c",
@@ -37,7 +38,8 @@ static module cube {
 		"stm32f4xx_hal_dma2d.c",
 		"stm32f4xx_hal_dma_ex.c",
 		"stm32f4xx_hal_dsi.c",
-		"stm32f4xx_hal_eth.c",
+		/* "stm32f4xx_hal_eth.c",*/
+		"Legacy/stm32f4xx_hal_eth.c",
 		"stm32f4xx_hal_flash.c",
 		"stm32f4xx_hal_flash_ex.c",
 		"stm32f4xx_hal_gpio.c",

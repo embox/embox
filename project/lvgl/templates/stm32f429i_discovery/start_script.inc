@@ -1,1 +1,1 @@
-"lvgl_test &"
+"lvgl_gpio_test &"
