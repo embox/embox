@@ -67,9 +67,9 @@ irq_return_t uart_io_request_handler(unsigned int irq_nr, void *data) {
 }
 
 static struct uart uart_io_request = {
-		.uart_ops = &k1921vk035_uart_ops,
-		.irq_num = UART0_RX_IRQn,
-		.base_addr = (uint32_t)UART0,
+        .uart_ops = NULL,  // set at runtime
+        .irq_num = UART0_RX_IRQn,
+        .base_addr = (uint32_t)UART0,
         .irq_handler = uart_io_request_handler,
         .params = {
             .baud_rate = BAUDRATE,
@@ -160,6 +160,57 @@ int io_request_read_timeout(char* buf, size_t count, int32_t timeout_ms) {
     return count;
 }
 
+#define UART_GPIO			GPIO_PORT_B
+#define UART0_GPIO_TX_mask		(1<<10)
+#define UART0_GPIO_RX_mask		(1<<11)
+#define UART1_GPIO_TX_mask		(1<<8)
+#define UART1_GPIO_RX_mask		(1<<9)
+
+static int k1921vk035_uart_setup_io_request(struct uart *dev, const struct uart_params *params) {
+    UART_TypeDef* uart = (void* )dev->base_addr;
+    UART_Num_TypeDef uart_num;
+    gpio_mask_t uart_gpio_mask;
+    if (uart == UART0) {
+        uart_num = UART0_Num;
+        uart_gpio_mask = UART0_GPIO_TX_mask | UART0_GPIO_RX_mask;
+    } else {
+        uart_num = UART1_Num;
+        uart_gpio_mask = UART1_GPIO_TX_mask | UART1_GPIO_RX_mask;
+    }
+
+    RCU_UARTClkConfig(uart_num, RCU_PeriphClk_PLLClk, 0, DISABLE);
+    RCU_UARTClkCmd(uart_num, ENABLE);
+    RCU_UARTRstCmd(uart_num, ENABLE);
+
+    // This also enables gpio port
+    gpio_setup_mode(GPIO_PORT_B, uart_gpio_mask, GPIO_MODE_OUT_ALTERNATE);
+
+    UART_Init_TypeDef uart_init_struct;
+    UART_StructInit(&uart_init_struct);
+
+    uart_init_struct.BaudRate = params->baud_rate;
+
+    uart_init_struct.DataWidth = UART_DataWidth_8;
+    uart_init_struct.FIFO = ENABLE;
+    uart_init_struct.ParityBit = UART_ParityBit_Disable;
+
+    uart_init_struct.StopBit =
+        (params->uart_param_flags & UART_PARAM_FLAGS_2_STOP) ? UART_StopBit_2 : UART_StopBit_1;
+    uart_init_struct.Rx = ENABLE;
+    uart_init_struct.Tx = ENABLE;
+
+    UART_Init(uart, &uart_init_struct);
+    UART_Cmd(uart, ENABLE);
+    if(params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+        UART_ITFIFOLevelRxConfig(uart, UART_FIFOLevel_1_8);
+        UART_ITCmd(uart, UART_ITSource_RecieveTimeout | UART_ITSource_RxFIFOLevel, ENABLE);
+    }
+
+    return 0;
+}
+
+struct uart_ops k1921vk035_uart_ops_io_request;
+
 EMBOX_UNIT_INIT(io_request_init);
 
 static int io_request_init() {
@@ -169,8 +220,14 @@ static int io_request_init() {
     io_request.buffer = NULL;
     io_request.count = 0;
     io_request.uart = &uart_io_request;
+
+    k1921vk035_uart_ops_io_request = k1921vk035_uart_ops;
+    k1921vk035_uart_ops_io_request.uart_setup = k1921vk035_uart_setup_io_request;
+
+    uart_io_request.uart_ops = &k1921vk035_uart_ops_io_request;
+
     int retval = uart_register(&uart_io_request, &uart_io_request.params) || uart_open(&uart_io_request);
     return retval;
 }
 
-STATIC_IRQ_ATTACH(26, uart_io_request_handler, &io_request);
+STATIC_IRQ_ATTACH(28, uart_io_request_handler, &io_request);
