@@ -193,3 +193,10 @@ module wcslen_test {
 	depends embox.compat.libc.wchar
 	depends embox.framework.LibFramework
 }
+
+module memset_test {
+	source "memset.c"
+
+	depends embox.compat.libc.stdlib.core
+	depends embox.framework.LibFramework
+}
