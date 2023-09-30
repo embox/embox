@@ -1,4 +1,4 @@
-package embox.test.str
+package embox.compat.libc.str.tests
 
 module strcat_test {
 	source "strcat_test.c"
