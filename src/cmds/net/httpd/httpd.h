@@ -20,7 +20,6 @@
 #endif
 
 #define HTTPD_MAX_PATH 128
-#define CGI_PREFIX  "/cgi-bin/"
 
 struct client_info {
 	struct sockaddr ci_addr;

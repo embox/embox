@@ -17,6 +17,11 @@
 #include <errno.h>
 
 #include "httpd.h"
+#ifdef __EMBUILD_MOD__
+#	include <framework/mod/options.h>
+# define CGI_PREFIX  OPTION_STRING_GET(cgi_prefix)
+#endif /* __EMBUILD_MOD__ */
+
 
 static char httpd_g_envbuf[256];
 
