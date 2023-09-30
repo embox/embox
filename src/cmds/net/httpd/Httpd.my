@@ -17,6 +17,7 @@ package embox.cmd.net
 			Ilia Vaprol
 	''')
 module httpd {
+	option boolean use_index_as_404=false
 	option number log_level=1 /* error */
 	option number use_ip_ver=4
 	option boolean use_real_cmd=false
