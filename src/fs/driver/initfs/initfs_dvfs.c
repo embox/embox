@@ -48,9 +48,8 @@ static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 		if (fi->path && memcmp(fi->path, entry.name, fi->path_len)) {
 			continue;
 		}
-		if (!strncmp(name,
-		             entry.name + fi->path_len + (*(entry.name + fi->path_len) == '/' ? 1 : 0),
-		             strlen(name)) &&
+		if (!strcmp(name,
+		             entry.name + fi->path_len + (*(entry.name + fi->path_len) == '/' ? 1 : 0)) &&
 			strrchr(entry.name + fi->path_len + 1, '/') == NULL) {
 
 			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
