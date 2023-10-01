@@ -17,17 +17,16 @@ package embox.cmd.net
 			Ilia Vaprol
 	''')
 module httpd {
+	option boolean use_index_as_404=false
 	option number log_level=1 /* error */
 	option number use_ip_ver=4
-	option boolean use_real_cmd=false
-	option boolean use_parallel_cgi=true
 
 	source "httpd.c"
 	source "httpd_file.c"
 	source "httpd_parselib.c"
 	source "httpd_parselib2.c"
 	source "httpd_util.c"
-	depends httpd_cgi_interface
+	depends httpd_processor_interface
 
 //	depends embox.compat.libc.all
 //	depends embox.compat.posix.LibPosix
@@ -72,14 +71,18 @@ module httpd_pthread {
 }
 
 @DefaultImpl(httpd_no_cgi)
-abstract module httpd_cgi_interface { }
+abstract module httpd_processor_interface { }
 
-module httpd_cgi extends httpd_cgi_interface {
+module httpd_cgi extends httpd_processor_interface {
 	option number log_level=1
+	option string cgi_prefix="/cgi-bin/"
+	option boolean use_real_cmd=false
+	option boolean use_parallel_cgi=true
 	source "httpd_cgi.c"
+	source "httpd_util.c"
 	depends embox.compat.posix.proc.vfork
 }
 
-module httpd_no_cgi extends httpd_cgi_interface {
+module httpd_no_cgi extends httpd_processor_interface {
 	source "httpd_no_cgi.c"
 }

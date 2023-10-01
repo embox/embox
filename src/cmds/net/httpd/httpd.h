@@ -20,7 +20,6 @@
 #endif
 
 #define HTTPD_MAX_PATH 128
-#define CGI_PREFIX  "/cgi-bin/"
 
 struct client_info {
 	struct sockaddr ci_addr;
@@ -48,8 +47,7 @@ extern char *httpd_parse_request(char *str, struct http_req *hreq);
 extern int httpd_build_request(struct client_info *cinfo, struct http_req *req,
 		char *buf, size_t buf_sz);
 
-extern pid_t httpd_try_respond_script(const struct client_info *cinfo, const struct http_req *hreq);
-extern pid_t httpd_try_respond_cmd(const struct client_info *cinfo, const struct http_req *hreq);
+extern pid_t httpd_try_process(const struct client_info *cinfo, const struct http_req *hreq);
 extern int httpd_try_respond_file(const struct client_info *cinfo, const struct http_req *hreq,
 		char *buf, size_t buf_sz);
 

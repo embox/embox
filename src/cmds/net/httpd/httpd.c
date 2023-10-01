@@ -23,9 +23,6 @@
 #ifdef __EMBUILD_MOD__
 #	include <framework/mod/options.h>
 #	define USE_IP_VER       OPTION_GET(NUMBER,use_ip_ver)
-#	define USE_CGI          OPTION_GET(BOOLEAN,use_cgi)
-#	define USE_REAL_CMD     OPTION_GET(BOOLEAN,use_real_cmd)
-#	define USE_PARALLEL_CGI OPTION_GET(BOOLEAN,use_parallel_cgi)
 #endif /* __EMBUILD_MOD__ */
 
 #define BUFF_SZ     1024
@@ -33,35 +30,8 @@
 static char httpd_g_inbuf[BUFF_SZ];
 static char httpd_g_outbuf[BUFF_SZ];
 
-static int httpd_wait_cgi_child(pid_t target, int opts) {
-	pid_t child;
-
-	do {
-		child = waitpid(target, NULL, opts);
-	} while (child == -1 && errno == EINTR);
-
-	if (child == -1) {
-		int err = errno;
-		httpd_error("waitpid() : %s", strerror(err));
-		return -err;
-	}
-
-	return child;
-}
-
-static void httpd_on_cgi_child(const struct client_info *cinfo, pid_t child) {
-	if (child > 0) {
-	       if (!USE_PARALLEL_CGI) {
-		       httpd_wait_cgi_child(child, 0);
-	       }
-	} else {
-		httpd_header(cinfo, 500, strerror(-child));
-	}
-}
-
 static void httpd_client_process(struct client_info *cinfo) {
 	struct http_req hreq;
-	pid_t cgi_child;
 	int err;
 
 	if (0 > (err = httpd_build_request(cinfo, &hreq, httpd_g_inbuf, sizeof(httpd_g_inbuf)))) {
@@ -71,13 +41,11 @@ static void httpd_client_process(struct client_info *cinfo) {
 	httpd_debug("method=%s uri_target=%s uri_query=%s",
 			   hreq.method, hreq.uri.target, hreq.uri.query);
 
-	if ((cgi_child = httpd_try_respond_script(cinfo, &hreq))) {
-		httpd_on_cgi_child(cinfo, cgi_child);
-	} else if (USE_REAL_CMD && (cgi_child = httpd_try_respond_cmd(cinfo, &hreq))) {
-		httpd_on_cgi_child(cinfo, cgi_child);
-	} else if (httpd_try_respond_file(cinfo, &hreq,
+	if (httpd_try_process(cinfo, &hreq)) {
+		// processor handled request, nothing to do
+	}	else if (httpd_try_respond_file(cinfo, &hreq,
 				httpd_g_outbuf, sizeof(httpd_g_outbuf))) {
-		/* file sent, nothing to do */
+		// file sent, nothing to do 
 	} else {
 		httpd_header(cinfo, 404, "");
 	}
@@ -138,12 +106,6 @@ int main(int argc, char **argv) {
 		}
 		assert(ci.ci_addrlen == sizeof(inaddr));
 		ci.ci_basedir = basedir;
-
-		if (USE_PARALLEL_CGI) {
-			while (0 < httpd_wait_cgi_child(-1, WNOHANG)) {
-				/* wait another one */
-			}
-		}
 
 		httpd_client_process(&ci);
 
