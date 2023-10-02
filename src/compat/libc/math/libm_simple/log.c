@@ -4,9 +4,21 @@ long double logl(long double x) {
 	long double multiplier = 1.;
 	long double res = 1.;
 	long double t = M_E;
-	if (x <= 0) {
-		return -MAXFLOAT;
+	/*special and non-positive arguments */
+	if (x < 0.0) {
+		return NAN;
 	}
+	if (x == 0.0) {
+		return -INFINITY;
+	}
+	if (isinf(x)) {
+		return INFINITY;
+	}
+	if (isnan(x)) {
+		return NAN;
+	}
+	
+	/*positive arguments*/
 	if (x < 1.0) {
 		x = 1 / x;
 		multiplier = -1;
@@ -27,5 +39,5 @@ double log(double x) {
 }
 
 double log10(double x) {
-	return log(x) * log(10.);
+	return log(x) / log(10.);
 }
