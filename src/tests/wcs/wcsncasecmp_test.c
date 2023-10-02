@@ -75,12 +75,12 @@ TEST_CASE("wcsncasecmp compare wide-character strings of different lengths (ws1 
     wchar_t ws1[] = L"Hello";
     wchar_t ws2[] = L"Hello World";
 
-    test_assert_less_than(wcsncasecmp(ws1, ws2, 6), 0);
+    test_assert_equal(wcsncasecmp(ws1, ws2, 6), -' ');
 }
 
 TEST_CASE("wcsncasecmp compare wide-character strings of different lengths (ws1 > ws2)") {
     wchar_t ws1[] = L"Hello World";
     wchar_t ws2[] = L"Hello";
 
-    test_assert_greater_than(wcsncasecmp(ws1, ws2, 6), 0);
+    test_assert_equal(wcsncasecmp(ws1, ws2, 6), ' ');
 }
