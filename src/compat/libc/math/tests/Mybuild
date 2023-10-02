@@ -1,9 +1,50 @@
-package embox.compat.libc.libm.tests
+package embox.compat.libc.test
 
-module sqrt_tests {
-	source "sqrt_tests.c"
+module math_test_fp {
+	source "math_test_fp.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
 }
 
-module fmod_tests {
+module math_test {
+	source "math_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module fpu_context_consistency_test {
+	source "fpu_context_consistency_test.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.compat.posix.pthreads
+	depends embox.framework.LibFramework
+}
+
+module log10_test {
+	source "log10_test.c"
+	
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module sqrt_test {
+	source "sqrt_tests.c"
+	
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module fmod_test {
 	source "fmod_tests.c"
+	
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
 }
