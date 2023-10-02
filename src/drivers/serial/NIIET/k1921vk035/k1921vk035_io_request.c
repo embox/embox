@@ -14,6 +14,9 @@
 #define BAUDRATE OPTION_GET(NUMBER, baudrate)
 #define RX_BUFFER_SIZE OPTION_GET(NUMBER, rx_buffer_size)
 
+#define UART0_RX_IRQn 26
+#define UART0_E_RT_IRQn 28
+
 extern const struct uart_ops k1921vk035_uart_ops;
 
 typedef enum {
@@ -199,6 +202,9 @@ static int k1921vk035_uart_setup_io_request(struct uart *dev, const struct uart_
     uart_init_struct.Rx = ENABLE;
     uart_init_struct.Tx = ENABLE;
 
+    NVIC_EnableIRQ(UART0_E_RT_IRQn);
+    NVIC_SetPriority(UART0_E_RT_IRQn, 0);
+
     UART_Init(uart, &uart_init_struct);
     UART_Cmd(uart, ENABLE);
     if(params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
@@ -230,4 +236,5 @@ static int io_request_init() {
     return retval;
 }
 
-STATIC_IRQ_ATTACH(28, uart_io_request_handler, &io_request);
+STATIC_IRQ_ATTACH(UART0_RX_IRQn, uart_io_request_handler, &io_request);
+STATIC_IRQ_ATTACH(UART0_E_RT_IRQn, uart_io_request_handler, &io_request);
