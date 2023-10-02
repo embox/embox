@@ -32,3 +32,19 @@ module log10_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module sqrt_test {
+	source "sqrt_tests.c"
+	
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module fmod_test {
+	source "fmod_tests.c"
+	
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}

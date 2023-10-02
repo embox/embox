@@ -1,9 +1,0 @@
-package embox.compat.libc.libm.tests
-
-module sqrt_tests {
-	source "sqrt_tests.c"
-}
-
-module fmod_tests {
-	source "fmod_tests.c"
-}
