@@ -27,6 +27,7 @@ EXAMPLES
 AUTHORS
 	Vita Loginova
 ''')
+@BuildDepends(embox.cmd.user.utils)
 module useradd {
 	source "useradd.c"
 

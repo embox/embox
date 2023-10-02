@@ -15,6 +15,7 @@ EXAMPLES
 AUTHORS
 	Vita Loginova
 ''')
+@BuildDepends(embox.cmd.user.utils)
 module userdel {
 	source "userdel.c"
 

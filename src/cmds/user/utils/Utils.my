@@ -1,5 +1,6 @@
 package embox.cmd.user
 
+@BuildArtifactPath(cppflags="-I$(SRC_DIR)/cmds/user/utils/")
 module utils {
 	source "utils.c"
 
