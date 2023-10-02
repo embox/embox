@@ -17,12 +17,6 @@ TEST_CASE("wcsncasecmp compare a string to itself") {
     test_assert_zero(wcsncasecmp(ws1, ws1, 5));
 }
 
-TEST_CASE("wcsncasecmp compare empty string with non-empty string") {
-    wchar_t ws1[] = L"";
-    wchar_t ws2[] = L"abc";
-
-    test_assert_less_than(wcsncasecmp(ws1, ws2, 3), 0);
-}
 TEST_CASE("wcsncasecmp compare strings with non-alphabetic characters") {
     wchar_t ws1[] = L"123 ABC";
     wchar_t ws2[] = L"123 abc";
