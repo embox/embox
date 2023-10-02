@@ -46,9 +46,9 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     // TODO: Read DataWidth from uart_params?
     uart_init_struct.DataWidth = UART_DataWidth_8;
     // TODO: Should we enable FIFO?
-    uart_init_struct.FIFO = DISABLE;
+    uart_init_struct.FIFO = ENABLE;
     // TODO: Read ParityBit from uart_params?
-    uart_init_struct.ParityBit = UART_ParityBit_Disable;
+    uart_init_struct.ParityBit = UART_ParityBit_Even;
     uart_init_struct.StopBit =
         (params->uart_param_flags & UART_PARAM_FLAGS_2_STOP) ? UART_StopBit_2 : UART_StopBit_1;
     uart_init_struct.Rx = ENABLE;

@@ -40,3 +40,21 @@ module k1921vk035_io_request {
 	depends k1921vk035_uart
 	depends embox.compat.posix.semaphore
 }
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035_raw_uart0 {
+
+	option number baudrate = 115200
+	source "k1921vk035_raw_uart0.c"
+
+    depends k1921vk035_uart
+}
+
+@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+module k1921vk035_raw_uart1 {
+
+	option number baudrate = 115200
+	source "k1921vk035_raw_uart1.c"
+
+    depends k1921vk035_uart
+}
