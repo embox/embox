@@ -65,8 +65,10 @@ int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
 	stat_buff->st_blocks = stat_buff->st_size;
 
         if (node->i_sb->bdev) {
-                stat_buff->st_blocks /= block_dev_block_size(node->i_sb->bdev);
+        	stat_buff->st_blocks /= block_dev_block_size(node->i_sb->bdev);
+	       	stat_buff->st_blocks += (stat_buff->st_blocks % block_dev_block_size(node->i_sb->bdev) != 0);	
         }
+
 	return 0;
 }
 
