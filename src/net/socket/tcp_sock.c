@@ -89,6 +89,44 @@ static int tcp_init(struct sock *sk) {
 	return 0;
 }
 
+/* Form and send reset packet to interrupt connection */
+int send_rst_from_socket(struct tcp_sock *tcp_sk){
+    struct sk_buff *skb;
+    in_port_t dst_port;
+    in_port_t src_port;
+    struct tcphdr *tcph;
+
+    skb = NULL; /* alloc new pkg */
+    int ret = alloc_prep_skb(tcp_sk, 0, NULL, &skb);
+    if (ret) {
+        return ret; /* error: see ret */
+    }
+
+    tcph = tcp_hdr(skb);
+    dst_port = sock_inet_get_dst_port(to_sock(tcp_sk));
+    src_port = sock_inet_get_src_port(to_sock(tcp_sk));
+    tcp_build(tcph, dst_port, src_port, TCP_MIN_HEADER_SIZE,
+            tcp_sk->self.wind.value);
+    tcph->rst = 1;
+    tcp_sk->rem.seq++;
+    tcp_set_ack_field(tcph, tcp_sk->rem.seq);
+    send_seq_from_sock(tcp_sk, skb);
+    skb_free(skb);
+
+    return 0;
+}
+
+/* Reset established connections that weren't accepted on listening socket*/
+static void reset_unaccepted_ready(struct tcp_sock *parent){
+    struct tcp_sock *sock_tcp;
+
+    list_for_each_entry(sock_tcp, &parent->conn_ready, conn_lnk) {
+        send_rst_from_socket(sock_tcp);
+        tcp_sock_set_state(sock_tcp, TCP_CLOSED);
+    }
+    return;
+}
+
 static int tcp_close(struct sock *sk) {
 	int ret;
 	struct sk_buff *skb;
@@ -112,6 +150,7 @@ static int tcp_close(struct sock *sk) {
 			ret = 0;
 			break;
 		case TCP_LISTEN:
+            reset_unaccepted_ready(tcp_sk);
 		case TCP_SYN_SENT:
 		case TCP_SYN_RECV_PRE:
 			tcp_sock_set_state(tcp_sk, TCP_CLOSED);
