@@ -1,9 +1,8 @@
-PKG_NAME := acpica-unix
-PKG_VER  := 20210331
+PKG_NAME := acpica
+PKG_VER  := R06_28_23
 
-PKG_SOURCES := http://acpica.org/sites/acpica/files/$(PKG_NAME)-$(PKG_VER).tar.gz \
-	https://downloadmirror.intel.com/774870/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := bf54ef57eeff1c3be04669d9526a29b3
+PKG_SOURCES := https://github.com/acpica/$(PKG_NAME)/archive/refs/tags/$(PKG_VER).tar.gz
+PKG_MD5     := ca8425f76b1b42cb4956e81025c1df6d
 
 PKG_PATCHES := acenv.h.patch
 
