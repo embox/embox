@@ -157,12 +157,21 @@ static int serial_status(struct idesc *idesc, int mask) {
 	return res;
 }
 
-extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
-extern struct tty_ops uart_tty_ops;
-struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
+struct idesc *idesc_serial_open(struct uart *uart, int __oflags) {
+	extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
+	extern struct tty_ops uart_tty_ops;
+
 	struct tty_uart *tu;
+	int res;
 
 	assert(uart);
+
+	if (uart->tty) {
+		tu = member_cast_out(uart->tty, struct tty_uart, tty);
+		if (pool_belong(&uart_ttys, tu)) {
+			goto out;
+		}
+	}
 
 	tu = pool_alloc(&uart_ttys);
 	if (!tu) {
@@ -170,6 +179,8 @@ struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
 	}
 
 	tty_init(&tu->tty, &uart_tty_ops);
+	tu->tty.termios.c_ispeed = uart->params.baud_rate;
+	tu->tty.termios.c_ospeed = uart->params.baud_rate;
 
 	tu->uart = uart;
 	uart->tty = &tu->tty;
@@ -180,6 +191,12 @@ struct idesc *idesc_serial_create(struct uart *uart, int __oflags) {
 
 	idesc_init(&tu->idesc, idesc_serial_get_ops(), __oflags);
 
+	res = uart_open(uart);
+	if (res) {
+		return err_ptr(-res);
+	}
+
+out:
 	return &tu->idesc;
 }
 
