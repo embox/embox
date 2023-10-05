@@ -1,5 +1,5 @@
 /**
- * @file memmove_test.c
+ * @file
  *
  * @date June 30, 2020
  * @author: KOUAM Ledoux

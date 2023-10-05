@@ -2,12 +2,10 @@ package embox.compat.libc.str.tests
 
 module strcat_test {
 	source "strcat_test.c"
-	depends embox.compat.libc.str
 }
 
 module strncat_test {
 	source "strncat_test.c"
-	depends embox.compat.libc.str
 }
 
 module memchr_test {
@@ -20,4 +18,24 @@ module memrchr_test {
 
 module strerror_test {
 	source "strerror_test.c"
+}
+
+module memcpy_test {
+	source "memcpy_test.c"
+}
+
+module strcmp_test {
+	source "strcmp_test.c"
+}
+
+module memmove_test {
+	source "memmove_test.c"
+}
+
+module memcmp_test {
+	source "memcmp_test.c"
+}
+
+module strcpy_test {
+	source "strcpy_test.c"
 }
