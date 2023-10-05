@@ -35,7 +35,7 @@ module usermode extends embox.arch.usermode {
 
 module arch extends embox.arch.arch {
 	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-unix-20150204/source/include/")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-R06_28_23/source/include/")
 	source "arch.c"
 
 	source "cpu_triple_reset.S"

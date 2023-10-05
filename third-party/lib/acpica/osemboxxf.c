@@ -108,7 +108,7 @@ void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
                 Where)) {
 		return NULL;
 	}
-	return ACPI_PHYSADDR_TO_PTR(Where);
+	return ACPI_TO_POINTER(Where);
 }
 
 void AcpiOsUnmapMemory(void *LogicalAddress, ACPI_SIZE Size) {

@@ -1,6 +1,6 @@
-diff -aur acpica-unix-20210331/source/include/platform/acenv.h ../build/extbld/third_party/lib/acpica/acpica-unix-20210331/source/include/platform/acenv.h
---- acpica-unix-20210331/source/include/platform/acenv.h	2021-03-31 23:04:44.000000000 +0300
-+++ ../build/extbld/third_party/lib/acpica/acpica-unix-20210331/source/include/platform/acenv.h	2021-04-11 21:00:41.622420979 +0300
+diff -aur acpica-R06_28_23/source/include/platform/acenv.h ../build/extbld/third_party/lib/acpica/acpica-R06_28_23/source/include/platform/acenv.h 
+--- acpica-R06_28_23/source/include/platform/acenv.h    2023-06-29 00:11:26.000000000 +0300
++++ ../build/extbld/third_party/lib/acpica/acpica-R06_28_23/source/include/platform/acenv.h       2023-10-02 20:53:56.384424860 +0300
 @@ -350,6 +350,9 @@
  #elif defined(__QNX__)
  #include "acqnx.h"
@@ -11,4 +11,3 @@ diff -aur acpica-unix-20210331/source/include/platform/acenv.h ../build/extbld/t
  /*
   * EFI applications can be built with -nostdlib, in this case, it must be
   * included after including all other host environmental definitions, in
- 
