@@ -212,6 +212,9 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 	case TIOCSETA:
 		memcpy(&t->termios, data, sizeof(struct termios));
 		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
+		if (t->ops->setup) {
+			t->ops->setup(t, &t->termios);
+		}
 		break;
 	case TIOCGPGRP:
 		memcpy(data, &t->pgrp, sizeof(pid_t));
