@@ -208,6 +208,8 @@ static void idesc_serial_close(struct idesc *idesc) {
 	uart->tty->idesc = NULL;
 
 	tu = member_cast_out(uart->tty, struct tty_uart, tty);
+	uart->tty = NULL;
+
 	pool_free(&uart_ttys, tu);
 }
 
