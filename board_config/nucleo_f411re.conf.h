@@ -40,25 +40,6 @@ struct uart_conf uarts[] = {
 		},
 		.baudrate = 115200,
 	},
-    [3] = {
-		.status = DISABLED,
-		.name = "USART3",
-		.dev = {
-			.irqs = {
-				VAL("", 39),
-			},
-			.pins = {
-				PIN("TX", PD, PIN_8, AF7),
-				PIN("RX", PD, PIN_9, AF7),
-			},
-			.clocks = {
-				VAL("TX",   CLK_GPIOD),
-				VAL("RX",   CLK_GPIOD),
-				VAL("UART", CLK_USART3),
-			}
-		},
-		.baudrate = 115200,
-	},
 	[6] = {
 		.status = DISABLED,
 		.name = "USART6",
