@@ -12,6 +12,7 @@
 
 #include <fs/file_desc.h>
 #include <fs/dentry.h>
+#include <drivers/block_dev.h>
 
 /**
  * @brief Uninitialize file descriptor
@@ -125,5 +126,13 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 		.st_uid = 0,
 		.st_gid = 0
 	};
+
+	sb->st_blocks = sb->st_size;
+
+	if (desc->f_inode->i_sb->bdev) {
+        	sb->st_blocks /= block_dev_block_size(desc->f_inode->i_sb->bdev);
+	       	sb->st_blocks += (sb->st_blocks % block_dev_block_size(desc->f_inode->i_sb->bdev) != 0);
+        }
+
 	return 0;
 }
