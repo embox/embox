@@ -3,39 +3,39 @@ package embox.driver.serial
 @BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
 module k1921vk035_uart {
 
-    option boolean use_uart0_as_diag = true
-    option boolean uart0_irq_en = false
-    option boolean uart1_irq_en = false
+	option boolean use_uart0_as_diag = true
+	option boolean uart0_irq_en = false
+	option boolean uart1_irq_en = false
 	option number uart0_baudrate = 115200
 	option number uart1_baudrate = 115200
 
 	source "k1921vk035_uart.c"
 
 	depends embox.driver.serial.core
+	depends embox.driver.serial.uart_repo
 }
 
 @BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
-module k1921vk035_diag extends embox.driver.diag.diag_api {
+module k1921vk035_diag extends embox.driver.serial.diag {
 
 	option number baudrate = 115200
 
 	source "k1921vk035_diag.c"
 
-	depends embox.driver.serial.diag
-    depends k1921vk035_uart
+	depends k1921vk035_uart
 }
 
 @BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
 module k1921vk035_io_request {
 
 	option number baudrate = 57600
-    option number rx_buffer_size = 64
+	option number rx_buffer_size = 64
 
 	@IncludeExport(path="drivers/serial")
 	source "k1921vk035_io_request.h"
 
 	source "k1921vk035_io_request.c"
 
-    depends k1921vk035_uart
+	depends k1921vk035_uart
 	depends embox.compat.posix.semaphore
 }

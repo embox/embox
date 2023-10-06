@@ -61,7 +61,7 @@ void k1921vk035_spi_config(struct spi_device *dev){
 
 }
 static int k1921vk035_spi_init(struct spi_device *dev) {
-	
+
 	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
 	int pin = 0;
 	int port = 0;
@@ -98,9 +98,9 @@ static void k1921vk035_spi_set_cs(const k1921vk035_spi_dev_t* k1921vk035_spi_dev
 
 	pin = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PIN];
 	port = k1921vk035_spi_dev->cs_map[k1921vk035_spi_dev->cs][K1921VK035_SPI_CS_MAP_PORT];
-	
+
 	assert(pin != K1921VK035_SPI_CS_UNDEFINED  && pin != K1921VK035_SPI_CS_UNDEFINED);
-	
+
 	gpio_set(port, 1 << pin, state);
 }
 
@@ -119,7 +119,7 @@ static int k1921vk035_spi_select(struct spi_device *dev, int cs) {
 	port = k1921vk035_spi_dev->cs_map[cs][K1921VK035_SPI_CS_MAP_PORT];
 
 	if(pin == K1921VK035_SPI_CS_UNDEFINED && port == K1921VK035_SPI_CS_UNDEFINED){
-		log_error("cs=%d, not configured. port_cs=%d, pin_cs=%d", 
+		log_error("cs=%d, not configured. port_cs=%d, pin_cs=%d",
 				  cs, port, pin);
 		return -EINVAL;
 	}
@@ -168,4 +168,4 @@ struct spi_ops k1921vk035_spi_ops = {
 };
 
 
-SPI_DEV_DEF("spi0", &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
+SPI_DEV_DEF(spi0, &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
