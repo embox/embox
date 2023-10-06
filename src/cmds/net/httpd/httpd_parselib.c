@@ -19,6 +19,7 @@ static const struct http_header_desc {
 } http_headers[] = {
 	{ .name = "Content-Length: ", .hreq_offset = offsetof(struct http_req, content_len), },
 	{ .name = "Content-Type: ", .hreq_offset = offsetof(struct http_req, content_type), },
+	{ .name = "Authorization: ", .hreq_offset = offsetof(struct http_req, authorization ), },
 };
 
 static char *httpd_parse_uri(char *str, struct http_req_uri *huri) {

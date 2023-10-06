@@ -40,6 +40,7 @@ struct http_req {
 	char *method;
 	char *content_len;
 	char *content_type;
+	char *authorization;
 };
 
 extern char *httpd_parse_request(char *str, struct http_req *hreq);
