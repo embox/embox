@@ -35,9 +35,10 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 	uart_get_params(uart_dev, &params);
 
 	/* TODO baud rate is ospeed. What's with ispeed ? */
-	params.baud_rate = termios->c_ospeed;
-
-	uart_set_params(uart_dev, &params);
+	if (params.baud_rate != termios->c_ospeed) {
+		params.baud_rate = termios->c_ospeed;
+		uart_set_params(uart_dev, &params);
+	}
 }
 
 struct tty_ops uart_tty_ops = {
