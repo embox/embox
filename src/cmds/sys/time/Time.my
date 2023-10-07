@@ -16,4 +16,6 @@ package embox.cmd.sys
 	''')
 module time {
 	source "time.c"
+
+	depends embox.compat.libc.stdlib.system
 }
