@@ -47,7 +47,11 @@ static int run_script(void) {
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		int ret;
 
-		printf("> %s \n", command);
+		if (command[0]=='@'){
+			command++;
+		} else{
+			printf("> %s \n", command);
+		}
 
 		ret = shell_exec(shell, command);
 
