@@ -62,7 +62,23 @@ DisableFormat: false
 ExperimentalAutoDetectBinPacking: false
 FixNamespaceComments: true
 
-IncludeBlocks: Preserve
+IncludeBlocks: Regroup
+IncludeCategories:
+  # Headers in ""
+  - Regex:           '^".*"'
+    Priority:        4
+  # Embox module/config headers
+  - Regex:           '^<(module|config)/'
+    Priority:        3
+  # Standard headers
+  - Regex:           '^<([A-Za-z0-9_\-\.])+>'
+    Priority:        1
+  - Regex:           '^<(sys|linux|netinet|netpacket|arpa|defines|byteorder|mtd)/([A-Za-z0-9_\-\.])+>'
+    Priority:        1
+  # Other Embox specific headers
+  - Regex:           '^<.*>'
+    Priority:        2
+
 IndentCaseLabels: false
 IndentPPDirectives: None
 IndentWidth: 4
@@ -91,7 +107,7 @@ PenaltyReturnTypeOnItsOwnLine: 30
 
 PointerAlignment: Right
 ReflowComments: false
-SortIncludes: false
+SortIncludes: CaseInsensitive
 SortUsingDeclarations: false
 SpaceAfterCStyleCast: false
 SpaceAfterTemplateKeyword: true
