@@ -27,14 +27,10 @@ hardware_init_hook:
 	bne     mp_halt
 #endif
 
-	/* setup interrupt vector */
-	ldr     r0, =arm_trap_table
-	mcr     p15, 0, r0, c12, c0, 0
-
-#ifdef CORTEX_A9
-	ldr     r0, =_monitor_vectors
-	mcr     p15, 0, r0, c12, c0, 1
-#endif
+// #ifdef CORTEX_A9
+// 	ldr     r0, =_monitor_vectors
+// 	mcr     p15, 0, r0, c12, c0, 1
+// #endif
 
 	/* setup c1, Control Register */
 	mrc     p15, 0, r0, c1, c0, 0
