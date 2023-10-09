@@ -15,7 +15,7 @@
 #include "muart.h"
 
 static int muart_uart_setup(struct uart *dev, const struct uart_params *params) {
-	struct muart_regs *regs = (struct muart_regs *)(uintptr_t)dev->base_addr;
+	struct muart_regs *regs = (struct muart_regs *)dev->base_addr;
 
 	REG32_STORE(&regs->bdiv, 50000000UL/params->baud_rate);
 
@@ -35,7 +35,7 @@ static int muart_uart_setup(struct uart *dev, const struct uart_params *params) 
 }
 
 static int muart_uart_has_symbol(struct uart *dev) {
-	struct muart_regs *regs = (struct muart_regs *)(uintptr_t)dev->base_addr;
+	struct muart_regs *regs = (struct muart_regs *)dev->base_addr;
 	uint16_t rx_state;
 
 	rx_state = REG16_LOAD(&regs->fifo_status.rx_num);
@@ -44,7 +44,7 @@ static int muart_uart_has_symbol(struct uart *dev) {
 }
 
 static int muart_uart_getc(struct uart *dev) {
-	struct muart_regs *regs = (struct muart_regs *)(uintptr_t)dev->base_addr;
+	struct muart_regs *regs = (struct muart_regs *)dev->base_addr;
 	int ch;
 
 	ch = (int)(REG32_LOAD(&regs->drec) & 0xFF);
@@ -58,7 +58,7 @@ static int muart_uart_getc(struct uart *dev) {
 }
 
 static int muart_uart_putc(struct uart *dev, int ch) {
-	struct muart_regs *regs = (struct muart_regs *)(uintptr_t)dev->base_addr;
+	struct muart_regs *regs = (struct muart_regs *)dev->base_addr;
 
 	while ( REG16_LOAD(&regs->fifo_status.tx_num)) {
 	}

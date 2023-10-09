@@ -10,7 +10,7 @@
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
-#define UART(x)        (*(volatile uint32_t *)((uintptr_t)dev->base_addr + (x)))
+#define UART(x)        (*(volatile uint32_t *)(dev->base_addr + (x)))
 
 #define RBR  0x00
 #define THR  0x00
