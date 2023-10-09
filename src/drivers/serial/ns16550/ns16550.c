@@ -83,50 +83,39 @@ static_assert(REG_WIDTH > 0, "");
 #endif
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
-	void *base_addr = (void *)(uintptr_t)dev->base_addr;
-
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		UART_REG_ORIN(UART_IER(base_addr), UART_IER_DR);
+		UART_REG_ORIN(UART_IER(dev->base_addr), UART_IER_DR);
 	}
 
 	return 0;
 }
 
 static int ns16550_irq_en(struct uart *dev, const struct uart_params *params) {
-	void *base_addr = (void *)(uintptr_t)dev->base_addr;
-
-	UART_REG_ORIN(UART_IER(base_addr), UART_IER_DR);
+	UART_REG_ORIN(UART_IER(dev->base_addr), UART_IER_DR);
 
 	return 0;
 }
 
 static int ns16550_irq_dis(struct uart *dev, const struct uart_params *params) {
-	void *base_addr = (void *)(uintptr_t)dev->base_addr;
-
-	UART_REG_CLEAR(UART_IER(base_addr), UART_IER_DR);
+	UART_REG_CLEAR(UART_IER(dev->base_addr), UART_IER_DR);
 
 	return 0;
 }
 
 static int ns16550_putc(struct uart *dev, int ch) {
-	void *base_addr = (void *)(uintptr_t)dev->base_addr;
+	while (!(UART_REG_LOAD(UART_LSR(dev->base_addr)) & UART_LSR_THRE)) {}
 
-	while (!(UART_REG_LOAD(UART_LSR(base_addr)) & UART_LSR_THRE)) {}
-	UART_REG_STORE(UART_THR(base_addr), ch);
+	UART_REG_STORE(UART_THR(dev->base_addr), ch);
 
 	return 0;
 }
 
 static int ns16550_getc(struct uart *dev) {
-	void *base_addr = (void *)(uintptr_t)dev->base_addr;
-
-	return UART_REG_LOAD(UART_RHR(base_addr));
+	return UART_REG_LOAD(UART_RHR(dev->base_addr));
 }
 
 static int ns16550_has_symbol(struct uart *dev) {
-	void *base_addr = (void *)(uintptr_t)dev->base_addr;
-
-	return UART_REG_LOAD(UART_LSR(base_addr)) & UART_LSR_DR;
+	return UART_REG_LOAD(UART_LSR(dev->base_addr)) & UART_LSR_DR;
 }
 
 const struct uart_ops ns16550_uart_ops = {
