@@ -90,7 +90,7 @@ struct uart {
 	/* declarative */
 	const struct uart_ops *uart_ops;
 	short irq_num;
-	uint32_t base_addr;
+	uintptr_t base_addr;
 	irq_handler_t irq_handler;
 
 	/* management */
