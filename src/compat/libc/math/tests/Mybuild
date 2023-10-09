@@ -48,3 +48,11 @@ module fmod_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module pow_tests {
+	source "pow_tests.c"
+	
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
