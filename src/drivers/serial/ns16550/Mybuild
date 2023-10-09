@@ -1,12 +1,12 @@
 package embox.driver.serial
 
 module ns16550 extends embox.driver.serial.diag {
-	option number base_addr = 0x49020000
-	option number irq_num = 0
-	option number baud_rate = 115200
+	option boolean mem32_access=false
 
-	option number reg_width = 4
-	option number mem32_access = 0
+	option number base_addr=0x49020000
+	option number irq_num=0
+	option number baud_rate=115200
+	option number reg_width=4
 
 	source "ns16550.c"
 	source "ns16550_diag.c"
