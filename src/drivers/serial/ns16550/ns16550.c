@@ -90,14 +90,14 @@ static_assert(REG_WIDTH > 0, "");
 #endif
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
-	uint16_t baud_divisor;
-	uint8_t lcr;
-
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		UART_REG_ORIN(UART_IER(dev->base_addr), UART_IER_DR);
 	}
 
-#ifdef CLK_FREQ
+#if CLK_FREQ
+	uint16_t baud_divisor;
+	uint8_t lcr;
+
 	baud_divisor = (CLK_FREQ + (params->baud_rate * 8))
 	               / (params->baud_rate * 16);
 
