@@ -14,6 +14,7 @@
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
+#define CLK_FREQ     OPTION_GET(NUMBER, clk_freq)
 #define REG_WIDTH    OPTION_GET(NUMBER, reg_width)
 #define MEM32_ACCESS OPTION_GET(BOOLEAN, mem32_access)
 
@@ -41,6 +42,12 @@
 #define UART_IER_MS   (1U << 3) /* Modem Status */
 #define UART_IER_TE   (1U << 6) /* DMA Rx End */
 #define UART_IER_RE   (1U << 7) /* DMA Tx End */
+
+#define UART_LCR_PE   (1U << 3) /* Parity Enable */
+#define UART_LCR_EP   (1U << 4) /* Even Parity */
+#define UART_LCR_FP   (1U << 5) /* Force Parity */
+#define UART_LCR_SB   (1U << 6) /* Set Break */
+#define UART_LCR_DLAB (1U << 7) /* Divisor Latch Access Bit */
 
 #define UART_LSR_DR   (1U << 0) /* Data Ready */
 #define UART_LSR_OE   (1U << 1) /* Overrun Error */
@@ -83,9 +90,23 @@ static_assert(REG_WIDTH > 0, "");
 #endif
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
+	uint16_t baud_divisor;
+	uint8_t lcr;
+
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		UART_REG_ORIN(UART_IER(dev->base_addr), UART_IER_DR);
 	}
+
+#ifdef CLK_FREQ
+	baud_divisor = (CLK_FREQ + (params->baud_rate * 8))
+	               / (params->baud_rate * 16);
+
+	lcr = UART_REG_LOAD(UART_LCR(dev->base_addr));
+	UART_REG_STORE(UART_LCR(dev->base_addr), lcr | UART_LCR_DLAB);
+	UART_REG_STORE(UART_DLL(dev->base_addr), baud_divisor & 0xff);
+	UART_REG_STORE(UART_DLM(dev->base_addr), (baud_divisor >> 8) & 0xff);
+	UART_REG_STORE(UART_LCR(dev->base_addr), lcr);
+#endif
 
 	return 0;
 }

@@ -3,6 +3,7 @@ package embox.driver.serial
 module ns16550 {
 	option boolean mem32_access=false
 	option number reg_width=4
+	option number clk_freq
 
 	source "ns16550.c"
 
