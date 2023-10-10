@@ -49,7 +49,6 @@ module fmod_test {
 	depends embox.framework.LibFramework
 }
 
-<<<<<<< HEAD
 module pow_tests {
 	source "pow_tests.c"
 	
@@ -57,7 +56,7 @@ module pow_tests {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
-=======
+
 module exp_test {
     source "exp_test.c"
 
@@ -65,4 +64,3 @@ module exp_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
->>>>>>> 9681b065e (test: Add tests for exp() from math.h)
