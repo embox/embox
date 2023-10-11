@@ -2,18 +2,12 @@ package embox.lib.breakpoint_test
 
 module sw_breakpoint_test {
 	source "sw_breakpoint_test.c"
-
-	depends embox.lib.breakpoint
 }
 
 module hw_breakpoint_test {
 	source "hw_breakpoint_test.c"
-
-	depends embox.lib.breakpoint
 }
 
 module watchpoint_test {
 	source "watchpoint_test.c"
-
-	depends embox.lib.breakpoint
 }
