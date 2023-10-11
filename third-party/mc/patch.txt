@@ -1,0 +1,151 @@
+diff --color -aur mc-4.8.21/configure mc-4.8.21_patched/configure
+--- mc-4.8.21/configure	2018-06-03 11:57:25.000000000 +0300
++++ mc-4.8.21_patched/configure	2023-09-26 15:28:32.382273262 +0300
+@@ -17480,7 +17480,7 @@
+ if ${ac_cv_search_has_colors+:} false; then :
+ 
+ else
+-  ac_cv_search_has_colors=no
++  ac_cv_search_has_colors=yes
+ fi
+ rm conftest.$ac_ext
+ LIBS=$ac_func_search_save_LIBS
+@@ -17549,8 +17549,8 @@
+ if test "$ac_res" != no; then :
+   test "$ac_res" = "none required" || LIBS="$ac_res $LIBS"
+   MCLIBS="$MCLIBS $LIBS"
+-else
+-  as_fn_error $? "Cannot find a library providing stdscr" "$LINENO" 5
++#else
++#  as_fn_error $? "Cannot find a library providing stdscr" "$LINENO" 5
+ fi
+ 
+ 
+@@ -18408,8 +18408,8 @@
+ 
+ # Standard set of common directories for X headers.
+ # Check X11 before X11Rn because it is often a symlink to the current release.
+-ac_x_header_dirs='
+-/usr/X11/include
++ac_x_header_dirs=''
++asdasd='/usr/X11/include
+ /usr/X11R7/include
+ /usr/X11R6/include
+ /usr/X11R5/include
+@@ -18518,7 +18518,7 @@
+ esac
+ fi
+ ;; #(
+-    *) have_x=yes;;
++    *) have_x=no;;
+   esac
+   eval "$ac_cv_have_x"
+ fi # $with_x != no
+@@ -20853,17 +20853,17 @@
+   esac
+ fi
+ 
+-if test -z "$ac_list_mounted_fs"; then
+-  as_fn_error $? "could not determine how to read list of mounted file systems" "$LINENO" 5
++#if test -z "$ac_list_mounted_fs"; then
++#  as_fn_error $? "could not determine how to read list of mounted file systems" "$LINENO" 5
+   # FIXME -- no need to abort building the whole package
+   # Can't build mountlist.c or anything that needs its functions
+-fi
++#fi
+ 
+-if test $ac_list_mounted_fs = found; then :
+-  gl_cv_list_mounted_fs=yes
+-else
++#if test $ac_list_mounted_fs = found; then :
++#  gl_cv_list_mounted_fs=yes
++#else
+   gl_cv_list_mounted_fs=no
+-fi
++#fi
+ 
+ 
+ 
+@@ -21566,21 +21566,21 @@
+   esac
+ fi
+ 
+-if test -z "$ac_list_mounted_fs"; then
+-  as_fn_error $? "could not determine how to read list of mounted file systems" "$LINENO" 5
++#if test -z "$ac_list_mounted_fs"; then
++#  as_fn_error $? "could not determine how to read list of mounted file systems" "$LINENO" 5
+   # FIXME -- no need to abort building the whole package
+   # Can't build mountlist.c or anything that needs its functions
+-fi
++#fi
+ 
+-if test $ac_list_mounted_fs = found; then :
++#if test $ac_list_mounted_fs = found; then :
+ 
+ 
+-$as_echo "#define HAVE_INFOMOUNT_LIST 1" >>confdefs.h
++#$as_echo "#define HAVE_INFOMOUNT_LIST 1" >>confdefs.h
+ 
+-else
++#else
+   { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: could not determine how to read list of mounted fs" >&5
+ $as_echo "$as_me: WARNING: could not determine how to read list of mounted fs" >&2;}
+-fi
++#fi
+ 
+ 
+ 
+diff --color -aur mc-4.8.21/lib/mcconfig/paths.c mc-4.8.21_patched/lib/mcconfig/paths.c
+--- mc-4.8.21/lib/mcconfig/paths.c	2018-05-27 22:56:21.000000000 +0300
++++ mc-4.8.21_patched/lib/mcconfig/paths.c	2023-10-09 15:03:27.632779350 +0300
+@@ -319,12 +319,13 @@
+     }
+     else
+     {
++		char *dir = "/";
+         mc_config_str =
+-            mc_config_init_one_config_path (g_get_user_config_dir (), MC_USERCONF_DIR, mcerror);
++            mc_config_init_one_config_path (dir, MC_USERCONF_DIR, mcerror);//g_get_user_config_dir (), MC_USERCONF_DIR, mcerror);
+         mc_cache_str =
+-            mc_config_init_one_config_path (g_get_user_cache_dir (), MC_USERCONF_DIR, mcerror);
++            mc_config_init_one_config_path (dir, MC_USERCONF_DIR, mcerror);//g_get_user_cache_dir (), MC_USERCONF_DIR, mcerror);
+         mc_data_str =
+-            mc_config_init_one_config_path (g_get_user_data_dir (), MC_USERCONF_DIR, mcerror);
++            mc_config_init_one_config_path (dir, MC_USERCONF_DIR, mcerror);//g_get_user_data_dir (), MC_USERCONF_DIR, mcerror);
+     }
+ 
+     mc_config_fix_migrated_rules ();
+diff --color -aur mc-4.8.21/lib/widget/dialog.c mc-4.8.21_patched/lib/widget/dialog.c
+--- mc-4.8.21/lib/widget/dialog.c	2018-05-27 22:56:21.000000000 +0300
++++ mc-4.8.21_patched/lib/widget/dialog.c	2023-10-09 23:52:45.868663704 +0300
+@@ -1226,6 +1226,7 @@
+ void
+ dlg_save_history (WDialog * h)
+ {
++	return;
+     char *profile;
+     int i;
+ 
+diff --color -aur mc-4.8.21/src/filemanager/ext.c mc-4.8.21_patched/src/filemanager/ext.c
+--- mc-4.8.21/src/filemanager/ext.c	2018-05-27 22:56:21.000000000 +0300
++++ mc-4.8.21_patched/src/filemanager/ext.c	2023-09-26 15:29:52.201280729 +0300
+@@ -36,6 +36,7 @@
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <strings.h>
+ #include <unistd.h>
+ 
+ #include "lib/global.h"
+diff --color -aur mc-4.8.21/src/filemanager/filegui.c mc-4.8.21_patched/src/filemanager/filegui.c
+--- mc-4.8.21/src/filemanager/filegui.c	2018-05-27 22:56:21.000000000 +0300
++++ mc-4.8.21_patched/src/filemanager/filegui.c	2023-09-26 15:33:31.552049338 +0300
+@@ -57,7 +57,7 @@
+          || (! defined HAVE_STRUCT_STATFS_F_FSTYPENAME)))
+ #define USE_STATVFS 1
+ #else
+-#define USE_STATVFS 0
++#define USE_STATVFS 1
+ #endif
+ 
+ #include <errno.h>
