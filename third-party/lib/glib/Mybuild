@@ -1,6 +1,6 @@
 package third_party.libs
 
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/libs/glib")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/libs/glib/install/include/glib-2.0 -I$(EXTERNAL_BUILD_DIR)/third_party/libs/glib/install/lib/glib-2.0/include")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 static module glib {
 	depends embox.compat.posix.LibPosix
@@ -17,6 +17,6 @@ static module glib {
 	depends third_party.libs.libiconv
 
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libglib-2.0.a"
 }
