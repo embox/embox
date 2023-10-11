@@ -29,7 +29,4 @@ static void arm_sw_bpt_remove(struct bpt *bpt) {
 SW_BREAKPOINT_OPS_DEF({
     .set = arm_sw_bpt_set,
     .remove = arm_sw_bpt_remove,
-    .enable = NULL,
-    .disable = NULL,
-    .count = NULL,
 });

@@ -5,13 +5,13 @@
  * @author Aleksey Zhmulin
  * @date 15.05.23
  */
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
-#include <util/dlist.h>
-#include <mem/misc/pool.h>
 #include <debug/breakpoint.h>
 #include <framework/mod/options.h>
+#include <mem/misc/pool.h>
+#include <util/dlist.h>
 
 #define BPT_COUNT OPTION_GET(NUMBER, bpt_count)
 
@@ -75,23 +75,17 @@ void bpt_env_restore(struct bpt_env *env) {
 
 bool bpt_set(int type, void *addr) {
 	struct bpt *bpt;
-	int i;
-
-	if (__bpt_ops[type]->count) {
-		i = 0;
-		dlist_foreach_entry(bpt, &__bpt_env.bpt_list[type], list_item) {
-			++i;
-		}
-		if (i >= __bpt_ops[type]->count()) {
-			return false;
-		}
-	}
 
 	if (!__bpt_ops[type]->set || !(bpt = pool_alloc(&bpt_pool))) {
 		return false;
 	}
 
 	bpt->addr = addr;
+
+	if (__bpt_ops[type]->prepare && !__bpt_ops[type]->prepare(bpt)) {
+		pool_free(&bpt_pool, bpt);
+		return false;
+	}
 
 	dlist_init(&bpt->list_item);
 	dlist_add_next(&bpt->list_item, &__bpt_env.bpt_list[type]);
@@ -114,6 +108,10 @@ bool bpt_remove(int type, void *addr) {
 		if (addr == bpt->addr) {
 			if (__bpt_env.bpts_enabled) {
 				__bpt_ops[type]->remove(bpt);
+			}
+
+			if (__bpt_ops[type]->cleanup) {
+				__bpt_ops[type]->cleanup(bpt);
 			}
 
 			dlist_del(&bpt->list_item);
@@ -176,12 +174,12 @@ void bpt_disable_all(void) {
 			continue;
 		}
 
-		if (__bpt_ops[type]->disable) {
-			__bpt_ops[type]->disable();
-		}
-
 		dlist_foreach_entry(bpt, &__bpt_env.bpt_list[type], list_item) {
 			__bpt_ops[type]->remove(bpt);
+		}
+
+		if (__bpt_ops[type]->disable) {
+			__bpt_ops[type]->disable();
 		}
 	}
 

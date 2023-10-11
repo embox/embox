@@ -7,15 +7,17 @@
  */
 #include <stddef.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <asm/cp14.h>
 #include <asm/debug.h>
-#include <util/bitmap.h>
 #include <debug/breakpoint.h>
+#include <util/bitmap.h>
 
 #define MAX_HW_BPTS 16
 
-static BITMAP_DECL(hw_bpt_usage_table, MAX_HW_BPTS);
+static uint32_t hw_bpt_count;
+static BITMAP_DECL(hw_bpt_table, MAX_HW_BPTS);
 
 static void store_debug_regs(int num, uint32_t dbgbvr, uint32_t dbgbcr) {
 	switch (num) {
@@ -88,18 +90,31 @@ static void store_debug_regs(int num, uint32_t dbgbvr, uint32_t dbgbcr) {
 	}
 }
 
-static void arm_hw_bpt_set(struct bpt *bpt) {
-	bpt->num = bitmap_find_zero_bit(hw_bpt_usage_table, MAX_BPT_TYPES, 0);
-	bitmap_set_bit(hw_bpt_usage_table, bpt->num);
+static bool arm_hw_bpt_prepare(struct bpt *bpt) {
+	short bpt_num;
 
+	bpt_num = bitmap_find_zero_bit(hw_bpt_table, MAX_BPT_TYPES, 0);
+	if (bpt_num >= hw_bpt_count) {
+		return false;
+	}
+
+	bitmap_set_bit(hw_bpt_table, bpt_num);
+	bpt->num = bpt_num;
+
+	return true;
+}
+
+static void arm_hw_bpt_cleanup(struct bpt *bpt) {
+	bitmap_clear_bit(hw_bpt_table, bpt->num);
+}
+
+static void arm_hw_bpt_set(struct bpt *bpt) {
 	store_debug_regs(bpt->num, (uint32_t)bpt->addr,
 	    DBGBCR_EN | DBGBCR_PMC_ANY | DBGBCR_BAS_ANY);
 }
 
 static void arm_hw_bpt_remove(struct bpt *bpt) {
 	store_debug_regs(bpt->num, 0, 0);
-
-	bitmap_clear_bit(hw_bpt_usage_table, bpt->num);
 }
 
 static void arm_hw_bpt_enable(void) {
@@ -109,20 +124,19 @@ static void arm_hw_bpt_enable(void) {
 	dbgdscr &= ~DBGDSCR_EXTDCCMODE_MASK;
 	dbgdscr |= DBGDSCR_MDBGEN | DBGDSCR_ITREN | DBGDSCR_EXTDCCMODE_STALL;
 	CP14_STORE(DBGDSCRext, dbgdscr);
+
+	hw_bpt_count = ((CP14_LOAD(DBGDIDR) >> 24) & 0b1111) + 1;
 }
 
 static void arm_hw_bpt_disable(void) {
 	CP14_CLEAR(DBGDSCRext, DBGDSCR_MDBGEN | DBGDSCR_ITREN);
 }
 
-static size_t arm_hw_bpt_count(void) {
-	return ((CP14_LOAD(DBGDIDR) >> 24) & 0b1111) + 1;
-}
-
 HW_BREAKPOINT_OPS_DEF({
+    .prepare = arm_hw_bpt_prepare,
+    .cleanup = arm_hw_bpt_cleanup,
     .set = arm_hw_bpt_set,
     .remove = arm_hw_bpt_remove,
     .enable = arm_hw_bpt_enable,
     .disable = arm_hw_bpt_disable,
-    .count = arm_hw_bpt_count,
 });

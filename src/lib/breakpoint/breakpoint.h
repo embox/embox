@@ -8,11 +8,12 @@
 #ifndef SRC_LIB_BREAKPOINT_H_
 #define SRC_LIB_BREAKPOINT_H_
 
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <sys/cdefs.h>
 
 #include <util/dlist.h>
+
 #include <module/embox/lib/breakpoint.h>
 
 #define BPT_TYPE_SOFT  0
@@ -44,11 +45,12 @@ struct bpt {
 };
 
 struct bpt_ops {
+	bool (*prepare)(struct bpt *bpt);
+	void (*cleanup)(struct bpt *bpt);
 	void (*set)(struct bpt *bpt);
 	void (*remove)(struct bpt *bpt);
 	void (*enable)(void);
 	void (*disable)(void);
-	size_t (*count)(void);
 };
 
 struct bpt_env {
