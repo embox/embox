@@ -1,0 +1,31 @@
+package third_party.cmd
+
+@BuildDepends(third_party.libs.ncurses.libncurses)
+@BuildDepends(third_party.libs.glib)
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@App
+@AutoCmd
+@Cmd(name = "mc",
+	help = "Midnight Commander",
+	man = '''
+
+	''')
+module mc {
+
+	source "stub.c"
+	depends third_party.libs.glib
+	depends third_party.libs.ncurses.libncurses
+	depends third_party.libs.libiconv
+
+	depends embox.compat.posix.fs.statvfs_stub
+	depends embox.driver.usb.hc.ohci_pci
+
+
+	source "^BUILD/extbld/^MOD_PATH/install/mc.o"
+	
+	@InitFS(target_dir="mc")
+	source "ini", "mc.lib", "mc.keymap", "panels.ini", "menu"
+
+	@InitFS(target_dir="mc/skins")
+	source "default.ini"
+}

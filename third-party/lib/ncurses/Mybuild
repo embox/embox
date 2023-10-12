@@ -23,5 +23,6 @@ static module libncurses extends embox.compat.posix.LibCurses  {
 		"libpanel_g.a"
 */
 
+	depends third_party.terminfo
 	depends embox.compat.posix.getpgrp
 }
