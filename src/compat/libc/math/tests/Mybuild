@@ -56,3 +56,11 @@ module pow_tests {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module exp_test {
+    source "exp_test.c"
+
+    depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
