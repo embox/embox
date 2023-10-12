@@ -3,7 +3,6 @@ package embox.arch.arm
 
 static module libarch extends embox.arch.libarch {
 	source "setjmp.S"
-
 	source "stack_ptr.S"
 	source "ptregs_jmp.S"
 }

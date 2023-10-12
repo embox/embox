@@ -1,6 +1,0 @@
-
-package embox.arch.arm.test
-
-module armv7_debug {
-	source "armv7_debug.c"
-}

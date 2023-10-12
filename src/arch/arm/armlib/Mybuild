@@ -5,16 +5,7 @@ abstract module cpu_reset {}
 
 module cpu_reset_stub extends cpu_reset {}
 
-module all {
-	depends embox.arch.arm.armlib.locore
-	depends embox.arch.arm.armlib.interrupt
-	depends embox.arch.arm.armlib.context
-	depends embox.arch.arm.armlib.mem_barriers
-}
-
 module locore extends embox.arch.locore {
-	option number log_level=0
-
 	depends exceptions
 	depends reset_handler
 	depends embox.arch.arm.head
