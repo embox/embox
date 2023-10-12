@@ -7,10 +7,4 @@
  */
 #include <debug/breakpoint.h>
 
-SW_BREAKPOINT_OPS_DEF({
-    .set = NULL,
-    .remove = NULL,
-    .enable = NULL,
-    .disable = NULL,
-    .count = NULL,
-});
+SW_BREAKPOINT_OPS_DEF({});

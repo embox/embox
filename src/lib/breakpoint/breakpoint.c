@@ -5,13 +5,13 @@
  * @author Aleksey Zhmulin
  * @date 15.05.23
  */
-#include <stddef.h>
 #include <stdbool.h>
+#include <stddef.h>
 
-#include <util/dlist.h>
-#include <mem/misc/pool.h>
 #include <debug/breakpoint.h>
 #include <framework/mod/options.h>
+#include <mem/misc/pool.h>
+#include <util/dlist.h>
 
 #define BPT_COUNT OPTION_GET(NUMBER, bpt_count)
 
@@ -39,6 +39,21 @@ static const struct bpt_ops *__bpt_ops[3] = {
     &BPT_OPS_NAME(BPT_TYPE_HARD),
     &BPT_OPS_NAME(BPT_TYPE_WATCH),
 };
+
+size_t bpt_get_count(int type) {
+	const struct bpt_info *info;
+	size_t count;
+
+	if (!__bpt_ops[type]->info) {
+		count = 0;
+	}
+	else {
+		info = __bpt_ops[type]->info();
+		count = (info->count >= 0) ? info->count : BPT_COUNT;
+	}
+
+	return count;
+}
 
 void bpt_env_init(struct bpt_env *env, bpt_handler_t handler, bool enable) {
 	struct bpt_env tmp = {
@@ -74,20 +89,28 @@ void bpt_env_restore(struct bpt_env *env) {
 }
 
 bool bpt_set(int type, void *addr) {
+	const struct bpt_info *info;
 	struct bpt *bpt;
-	int i;
+	short inuse;
 
-	if (__bpt_ops[type]->count) {
-		i = 0;
-		dlist_foreach_entry(bpt, &__bpt_env.bpt_list[type], list_item) {
-			++i;
-		}
-		if (i >= __bpt_ops[type]->count()) {
-			return false;
-		}
+	if (!__bpt_ops[type]->set || !__bpt_ops[type]->info) {
+		return false;
 	}
 
-	if (!__bpt_ops[type]->set || !(bpt = pool_alloc(&bpt_pool))) {
+	inuse = 0;
+	info = __bpt_ops[type]->info();
+
+	if (info->count > 0) {
+		dlist_foreach_entry(bpt, &__bpt_env.bpt_list[type], list_item) {
+			++inuse;
+		}
+	}
+	if ((inuse == info->count) || (addr < info->start) || (addr >= info->end)) {
+		return false;
+	}
+
+	bpt = pool_alloc(&bpt_pool);
+	if (!bpt) {
 		return false;
 	}
 
@@ -176,12 +199,12 @@ void bpt_disable_all(void) {
 			continue;
 		}
 
-		if (__bpt_ops[type]->disable) {
-			__bpt_ops[type]->disable();
-		}
-
 		dlist_foreach_entry(bpt, &__bpt_env.bpt_list[type], list_item) {
 			__bpt_ops[type]->remove(bpt);
+		}
+
+		if (__bpt_ops[type]->disable) {
+			__bpt_ops[type]->disable();
 		}
 	}
 

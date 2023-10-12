@@ -7,10 +7,4 @@
  */
 #include <debug/breakpoint.h>
 
-WATCHPOINT_OPS_DEF({
-    .set = NULL,
-    .remove = NULL,
-    .enable = NULL,
-    .disable = NULL,
-	.count = NULL,
-});
+WATCHPOINT_OPS_DEF({});
