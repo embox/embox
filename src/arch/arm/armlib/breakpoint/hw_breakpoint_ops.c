@@ -5,13 +5,14 @@
  * @author Aleksey Zhmulin
  * @date 22.08.23
  */
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <asm/cp14.h>
 #include <asm/debug.h>
-#include <util/bitmap.h>
 #include <debug/breakpoint.h>
+#include <util/bitmap.h>
 
 #define MAX_HW_BPTS 16
 
@@ -89,7 +90,7 @@ static void store_debug_regs(int num, uint32_t dbgbvr, uint32_t dbgbcr) {
 }
 
 static void arm_hw_bpt_set(struct bpt *bpt) {
-	bpt->num = bitmap_find_zero_bit(hw_bpt_usage_table, MAX_BPT_TYPES, 0);
+	bpt->num = bitmap_find_zero_bit(hw_bpt_usage_table, MAX_HW_BPTS, 0);
 	bitmap_set_bit(hw_bpt_usage_table, bpt->num);
 
 	store_debug_regs(bpt->num, (uint32_t)bpt->addr,
@@ -115,8 +116,20 @@ static void arm_hw_bpt_disable(void) {
 	CP14_CLEAR(DBGDSCRext, DBGDSCR_MDBGEN | DBGDSCR_ITREN);
 }
 
-static size_t arm_hw_bpt_count(void) {
-	return ((CP14_LOAD(DBGDIDR) >> 24) & 0b1111) + 1;
+static const struct bpt_info *arm_hw_bpt_info(void) {
+	extern char _text_vma, _text_len;
+
+	static bool initialized = false;
+	static struct bpt_info info;
+
+	if (!initialized) {
+		info.count = ((CP14_LOAD(DBGDIDR) >> 24) & 0b1111) + 1;
+		info.start = (void *)&_text_vma;
+		info.end = (void *)&_text_vma + (uintptr_t)&_text_len;
+		initialized = true;
+	}
+
+	return &info;
 }
 
 HW_BREAKPOINT_OPS_DEF({
@@ -124,5 +137,5 @@ HW_BREAKPOINT_OPS_DEF({
     .remove = arm_hw_bpt_remove,
     .enable = arm_hw_bpt_enable,
     .disable = arm_hw_bpt_disable,
-    .count = arm_hw_bpt_count,
+    .info = arm_hw_bpt_info,
 });
