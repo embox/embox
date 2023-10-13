@@ -1,4 +1,4 @@
-package iocontrol.modbus.cmd
+package embox.cmd
 
 @AutoCmd
 @Build(script="true")
