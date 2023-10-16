@@ -25,11 +25,10 @@ module httpd {
 	source "httpd_file.c"
 	source "httpd_parselib.c"
 	source "httpd_parselib2.c"
-	source "httpd_util.c"
-	depends httpd_processor_interface
 
-//	depends embox.compat.libc.all
-//	depends embox.compat.posix.LibPosix
+	depends httpd_processor_interface
+	@NoRuntime depends httpd_util
+	
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.proc.waitpid
 	depends embox.framework.LibFramework
@@ -70,16 +69,23 @@ module httpd_pthread {
 	depends embox.net.lib.getifaddrs
 }
 
+static module httpd_util {
+	option number log_level=1
+	source "httpd_util.c"
+}
+
 @DefaultImpl(httpd_no_cgi)
 abstract module httpd_processor_interface { }
 
 module httpd_cgi extends httpd_processor_interface {
 	option number log_level=1
+
 	option string cgi_prefix="/cgi-bin/"
 	option boolean use_real_cmd=false
 	option boolean use_parallel_cgi=true
+
 	source "httpd_cgi.c"
-	source "httpd_util.c"
+
 	depends embox.compat.posix.proc.vfork
 }
 
