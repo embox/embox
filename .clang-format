@@ -78,6 +78,7 @@ IncludeCategories:
   # Other Embox specific headers
   - Regex:           '^<.*>'
     Priority:        2
+IncludeIsMainRegex: false
 
 IndentCaseLabels: false
 IndentPPDirectives: None
