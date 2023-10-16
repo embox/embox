@@ -7,10 +7,10 @@
  */
 #include <assert.h>
 
+#include <drivers/irqctrl.h>
+#include <kernel/critical.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
-#include <kernel/critical.h>
-#include <drivers/irqctrl.h>
 
 #include <module/embox/driver/interrupt/vic_impl.h>
 
@@ -26,18 +26,20 @@ static int vic_irqctrl_init(void) {
 IRQCTRL_DEF(vic, vic_irqctrl_init);
 
 void irqctrl_enable(unsigned int irq) {
-	assert(irq < __IRQCTRL_IRQS_TOTAL);
+	assert(irq_nr_valid(irq));
 
 	__irqctrl_enable(irq);
 }
 
 void irqctrl_disable(unsigned int irq) {
-	assert(irq < __IRQCTRL_IRQS_TOTAL);
+	assert(irq_nr_valid(irq));
 
 	__irqctrl_disable(irq);
 }
 
 void irqctrl_force(unsigned int irq) {
+	assert(irq_nr_valid(irq));
+
 	VIC_REG_STORE(irq / VIC_IRQ_COUNT, VIC_SOFT_ENABLE,
 	    1U << (irq % VIC_IRQ_COUNT));
 }
