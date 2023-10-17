@@ -47,6 +47,7 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 
 	I2C_driver_execute(ops, num);
 
+	uint32_t timeout = 20000;
 	I2C_driver_state_t s;
 	while (!(s = I2C_driver_is_done())) {
 		// TODO sleep
@@ -55,6 +56,11 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 			I2C_IRQHandler();
 		}
 #endif
+		if (!timeout) {
+			s = I2C_DRIVER_ERROR;
+			break;
+		}
+		timeout--;
 	}
 
 #if I2C_THREADSAFE
