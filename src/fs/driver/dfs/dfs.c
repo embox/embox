@@ -108,19 +108,25 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
  * @returns Bytes written or negative error code
  */
 static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, size_t size, uint32_t buff_bk) {
-	int start_bk = pos / NAND_BLOCK_SIZE;
-	int last_bk = (pos + size) / NAND_BLOCK_SIZE;
+	int start_bk;
+	int last_bk;
 	int bk;
 	int err;
+	int flash_block_size;
 
 	assert(buff);
 
-	pos %= NAND_BLOCK_SIZE;
+	flash_block_size = flashdev->block_info[0].block_size;
+
+	start_bk = pos / flash_block_size;
+	last_bk = (pos + size) / flash_block_size;
+
+	pos %= flash_block_size;
 
 	err = 0;
 
 	dfs_cache_erase(flashdev, buff_bk);
-	dfs_cache(flashdev, CACHE_OFFSET, start_bk * NAND_BLOCK_SIZE, pos);
+	dfs_cache(flashdev, CACHE_OFFSET, start_bk * flash_block_size, pos);
 
 	if (start_bk == last_bk) {
 		if ((err = dfs_cache_write(flashdev, CACHE_OFFSET + pos, buff, size))) {
@@ -128,24 +134,24 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 		}
 		pos += size;
 	} else {
-		flash_write_aligned(flashdev, CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
+		flash_write_aligned(flashdev, CACHE_OFFSET + pos, buff, flash_block_size - pos);
 		flash_copy_block(flashdev, start_bk, buff_bk);
-		buff += NAND_BLOCK_SIZE - pos;
-		pos = (pos + size) % NAND_BLOCK_SIZE;
+		buff += flash_block_size - pos;
+		pos = (pos + size) % flash_block_size;
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
 			flash_erase(flashdev, bk);
-			if ((err = flash_write_aligned(flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
+			if ((err = flash_write_aligned(flashdev, bk * flash_block_size, buff, flash_block_size))) {
 				return err;
 			}
-			buff += NAND_BLOCK_SIZE;
+			buff += flash_block_size;
 		}
 
 		flash_erase(flashdev, buff_bk);
 		flash_write_aligned(flashdev, CACHE_OFFSET, buff, pos);
 	}
 
-	dfs_cache(flashdev, CACHE_OFFSET + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
+	dfs_cache(flashdev, CACHE_OFFSET + pos, last_bk * flash_block_size + pos, flash_block_size - pos);
 	dfs_cache_restore(flashdev, last_bk, buff_bk);
 
 	return 0;
