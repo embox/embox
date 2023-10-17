@@ -29,6 +29,7 @@ env:
     - TEMPLATE=ppc/qemu
     - TEMPLATE=microblaze/qemu
     - TEMPLATE=usermode86/debug
+    - TEMPLATE=riscv64/qemu
 #matrix:
 #  include:
 #  - env: UNCRUSTIFY
