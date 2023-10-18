@@ -45,11 +45,11 @@
 static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
-static int dfs_cache_erase(struct flash_dev *flashdev, uint32_t block) {
+static int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
 }
 
-static int dfs_cache(struct flash_dev *flashdev, uint32_t to, uint32_t from, int len) {
+static int flash_cache_load(struct flash_dev *flashdev, uint32_t to, uint32_t from, int len) {
 	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
 	while (len > 0) {
@@ -84,10 +84,10 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
 
 #else /* !USE_RAM_AS_CACHE */
 
-#define dfs_cache_erase(flashdev, block)        \
+#define flash_cache_clean(flashdev, block)        \
 						flash_erase(flashdev, block)
 
-#define dfs_cache(flashdev, to, from, len)      \
+#define flash_cache_load(flashdev, to, from, len)      \
 						flash_copy_aligned(flashdev, to,from,len)
 
 #define dfs_cache_write(flashdev, off,buf, len) \
@@ -125,8 +125,9 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 
 	err = 0;
 
-	dfs_cache_erase(flashdev, buff_bk);
-	dfs_cache(flashdev, CACHE_OFFSET, start_bk * flash_block_size, pos);
+	flash_cache_clean(flashdev, buff_bk);
+
+	flash_cache_load(flashdev, CACHE_OFFSET, start_bk * flash_block_size, pos);
 
 	if (start_bk == last_bk) {
 		if ((err = dfs_cache_write(flashdev, CACHE_OFFSET + pos, buff, size))) {
@@ -151,7 +152,7 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 		flash_write_aligned(flashdev, CACHE_OFFSET, buff, pos);
 	}
 
-	dfs_cache(flashdev, CACHE_OFFSET + pos, last_bk * flash_block_size + pos, flash_block_size - pos);
+	flash_cache_load(flashdev, CACHE_OFFSET + pos, last_bk * flash_block_size + pos, flash_block_size - pos);
 	dfs_cache_restore(flashdev, last_bk, buff_bk);
 
 	return 0;
