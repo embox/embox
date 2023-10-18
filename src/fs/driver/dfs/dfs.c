@@ -35,13 +35,14 @@
 #define DFS_DENTRY_OFFSET(N) \
 	((sizeof(struct dfs_sb_info)) + N * (sizeof(struct dfs_dir_entry)))
 
+#if USE_RAM_AS_CACHE
+
 #if USE_RAM_SECTION
 #define CACHE_SECTION      __attribute__((section(".dfs_cache_section")))
 #else
 #define CACHE_SECTION
 #endif
 
-#if USE_RAM_AS_CACHE
 static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
@@ -199,13 +200,6 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		.max_inode_count = DFS_INODES_MAX + 1, /* + root folder with i_no 0 */
 		.max_len = MIN_FILE_SZ,
 		/* Set buffer block to the last one */
-/*
-#if USE_RAM_AS_CACHE
-		.buff_bk = ((uintptr_t)cache_block_buffer),
-#else
-		.buff_bk = fdev->block_info[0].blocks - 1,
-#endif
-*/
 		.buff_bk = flash_cache_addr(fdev),
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
