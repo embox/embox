@@ -45,6 +45,10 @@
 static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
 								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
 
+static uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
+	return cache_block_buffer;
+}
+
 static int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
 }
@@ -86,6 +90,13 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
 
 #define flash_cache_clean(flashdev, block)        \
 						flash_erase(flashdev, block)
+
+/* #define flash_cache_addr(flashdev) \
+ 				flashdev->block_info[0].blocks - 1
+*/
+static uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
+	return flashdev->block_info[0].blocks - 1;
+}
 
 #define flash_cache_load(flashdev, to, from, len)      \
 						flash_copy_aligned(flashdev, to,from,len)
@@ -188,11 +199,14 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		.max_inode_count = DFS_INODES_MAX + 1, /* + root folder with i_no 0 */
 		.max_len = MIN_FILE_SZ,
 		/* Set buffer block to the last one */
+/*
 #if USE_RAM_AS_CACHE
 		.buff_bk = ((uintptr_t)cache_block_buffer),
 #else
 		.buff_bk = fdev->block_info[0].blocks - 1,
 #endif
+*/
+		.buff_bk = flash_cache_addr(fdev),
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
 
