@@ -75,12 +75,12 @@ static int flash_cache_load(struct flash_dev *flashdev, uint32_t to, uint32_t fr
 	return 0;
 }
 
-static inline int dfs_cache_write(struct flash_dev *flashdev, uint32_t offset, const void *buff, size_t len) {
+static inline int flash_cache_write(struct flash_dev *flashdev, uint32_t offset, const void *buff, size_t len) {
 	memcpy((void *)((uintptr_t)offset), buff, len);
 	return 0;
 }
 
-static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uint32_t from) {
+static inline int flash_cache_restore(struct flash_dev *flashdev, uint32_t to, uint32_t from) {
 	flash_erase(flashdev, to);
 	return flash_write_aligned(flashdev, to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
 }
@@ -92,9 +92,6 @@ static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uin
 #define flash_cache_clean(flashdev, block)        \
 						flash_erase(flashdev, block)
 
-/* #define flash_cache_addr(flashdev) \
- 				flashdev->block_info[0].blocks - 1
-*/
 static uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
 	return flashdev->block_info[0].blocks - 1;
 }
@@ -102,10 +99,10 @@ static uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
 #define flash_cache_load(flashdev, to, from, len)      \
 						flash_copy_aligned(flashdev, to,from,len)
 
-#define dfs_cache_write(flashdev, off,buf, len) \
+#define flash_cache_write(flashdev, off,buf, len) \
 						flash_write_aligned(flashdev, off, buf, len)
 
-#define dfs_cache_restore(flashdev, to, from)   \
+#define flash_cache_restore(flashdev, to, from)   \
 						flash_copy_block(flashdev, to,from)
 
 #define CACHE_OFFSET                  (buff_bk * NAND_BLOCK_SIZE)
@@ -142,7 +139,7 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 	flash_cache_load(flashdev, CACHE_OFFSET, start_bk * flash_block_size, pos);
 
 	if (start_bk == last_bk) {
-		if ((err = dfs_cache_write(flashdev, CACHE_OFFSET + pos, buff, size))) {
+		if ((err = flash_cache_write(flashdev, CACHE_OFFSET + pos, buff, size))) {
 			return err;
 		}
 		pos += size;
@@ -165,7 +162,7 @@ static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, s
 	}
 
 	flash_cache_load(flashdev, CACHE_OFFSET + pos, last_bk * flash_block_size + pos, flash_block_size - pos);
-	dfs_cache_restore(flashdev, last_bk, buff_bk);
+	flash_cache_restore(flashdev, last_bk, buff_bk);
 
 	return 0;
 }
