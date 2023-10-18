@@ -129,13 +129,14 @@ static uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
  *
  * @returns Bytes written or negative error code
  */
-static int dfs_write_buffered(struct flash_dev *flashdev,
-					int pos, void *buff, size_t size, uint32_t buff_bk) {
+int dfs_write_buffered(struct flash_dev *flashdev,
+					int pos, void *buff, size_t size) {
 	int start_bk;
 	int last_bk;
 	int bk;
 	int err;
 	int flash_block_size;
+	uint32_t buff_bk = flashdev->fld_cache;
 
 	assert(buff);
 
@@ -154,8 +155,9 @@ static int dfs_write_buffered(struct flash_dev *flashdev,
 				CACHE_OFFSET(flashdev), start_bk * flash_block_size, pos);
 
 	if (start_bk == last_bk) {
-		if ((err = flash_cache_write(flashdev,
-							CACHE_OFFSET(flashdev) + pos, buff, size))) {
+		err = flash_cache_write(flashdev,
+							CACHE_OFFSET(flashdev) + pos, buff, size);
+		if (err) {
 			return err;
 		}
 		pos += size;
@@ -168,8 +170,10 @@ static int dfs_write_buffered(struct flash_dev *flashdev,
 
 		for (bk = start_bk + 1; bk < last_bk; bk++) {
 			flash_erase(flashdev, bk);
-			if ((err = flash_write_aligned(flashdev,
-							 bk * flash_block_size, buff, flash_block_size))) {
+
+			err = flash_write_aligned(flashdev,
+							 bk * flash_block_size, buff, flash_block_size);
+			if(err) {
 				return err;
 			}
 			buff += flash_block_size;
@@ -259,7 +263,7 @@ static int dfs_write_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 
 	fdev = flash_by_bdev(sb->bdev);
 	
-	dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
+	dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info));
 
 	return 0;
 }
@@ -283,15 +287,15 @@ static int dfs_read_dirent(struct super_block *sb, int n, struct dfs_dir_entry *
 
 static int dfs_write_dirent(struct super_block *sb, int n, struct dfs_dir_entry *dtr) {
 	uint32_t offt = DFS_DENTRY_OFFSET(n);
-	struct dfs_sb_info *sbi;
+	//struct dfs_sb_info *sbi;
 	struct flash_dev *fdev;
 
 	assert(dtr);
 
-	sbi = sb->sb_data;
+	//sbi = sb->sb_data;
 	fdev = flash_by_bdev(sb->bdev);
 
-	dfs_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
+	dfs_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
 	return 0;
 }
 
@@ -547,7 +551,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_write_buffered(fdev, pos, buf, l, sbi->buff_bk);
+	dfs_write_buffered(fdev, pos, buf, l);
 
 	return l;
 }
