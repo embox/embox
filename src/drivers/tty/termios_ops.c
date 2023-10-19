@@ -262,7 +262,7 @@ char *termios_read(const struct termios *t,
 			b->canon_ring), b->buflen, end - next))) {
 
 		/* No processing is required to read raw data. */
-		memcpy(curr, b->buff + raw_ring.tail, block_size);
+		memcpy(next, b->buff + raw_ring.tail, block_size);
 		next += block_size;
 
 		ring_just_read(b->ring, b->buflen, block_size);
