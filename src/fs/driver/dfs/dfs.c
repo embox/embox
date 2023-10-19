@@ -222,7 +222,7 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		.max_inode_count = DFS_INODES_MAX + 1, /* + root folder with i_no 0 */
 		.max_len = MIN_FILE_SZ,
 		/* Set buffer block to the last one */
-		.buff_bk = flash_cache_addr(fdev),
+		//.buff_bk = flash_cache_addr(fdev),
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
 
@@ -232,8 +232,6 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 	root->flags     = S_IFDIR;
 
 	flash_write_aligned(fdev, 0, write_buf, sizeof(write_buf));
-	/* TODO move to flash driver */
-	fdev->fld_cache = flash_cache_addr(fdev);
 
 	return 0;
 }
@@ -287,12 +285,10 @@ static int dfs_read_dirent(struct super_block *sb, int n, struct dfs_dir_entry *
 
 static int dfs_write_dirent(struct super_block *sb, int n, struct dfs_dir_entry *dtr) {
 	uint32_t offt = DFS_DENTRY_OFFSET(n);
-	//struct dfs_sb_info *sbi;
 	struct flash_dev *fdev;
 
 	assert(dtr);
 
-	//sbi = sb->sb_data;
 	fdev = flash_by_bdev(sb->bdev);
 
 	dfs_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
@@ -594,6 +590,7 @@ static struct dfs_sb_info dfs_info;
 static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	struct dfs_dir_entry dtr;
 	struct dfs_sb_info *sbi;
+	struct flash_dev *fdev;
 
 	sb->sb_ops     = &dfs_sbops;
 	sb->sb_iops    = &dfs_iops;
@@ -602,6 +599,11 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->bdev       = bdev_by_path(source);
 
 	sbi = sb->sb_data;
+
+	fdev = flash_by_bdev(sb->bdev);
+
+	/* TODO move to flash driver */
+	fdev->fld_cache = flash_cache_addr(fdev);
 
 	dfs_read_sb_info(sb, sbi);
 
