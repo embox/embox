@@ -59,3 +59,32 @@ int umount(char *dir) {
 
 	return dvfs_umount(lu.item);
 }
+
+#include <drivers/block_dev.h>
+#include <fs/fsop.h>
+
+int mkfs(const char *blk_name, const char *fs_type, char *fs_spec) {
+	const struct fs_driver *drv = fs_driver_find(fs_type);
+	struct block_dev *bdev;
+	struct lookup lu = {};
+	int err;
+
+	if (!drv) {
+		return -EINVAL;
+	}
+
+	if ((err = dvfs_lookup(blk_name, &lu))) {
+		return err;
+	}
+
+	if (!lu.item) {
+		return -ENOENT;
+	}
+
+	assert(lu.item->d_inode);
+	assert(lu.item->d_inode->i_data);
+
+	bdev = dev_module_to_bdev(lu.item->d_inode->i_data);
+
+	return drv->format(bdev, fs_spec);
+}
