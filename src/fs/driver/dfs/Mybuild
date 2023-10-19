@@ -6,11 +6,13 @@ module dfs {
 
 	source "dfs.c"
 
-	option number page_size = 4
-	option number block_size = 131072 /* 128kb */
 	option number minimum_file_size = 2048
 	option number inode_count = 4
 	option number max_name_len = 16
+
+	source "flash_cache.c"
+	option number page_size = 4
+	option number block_size = 131072 /* 128kb */
 	option boolean use_ram_as_cache = false
 	option boolean use_ram_section = false
 }
