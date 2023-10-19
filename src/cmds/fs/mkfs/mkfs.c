@@ -14,12 +14,11 @@
 #include <string.h>
 #include <fcntl.h>
 
+#include <fs/fsop.h> /* mkfs() */
+
 #include <fs/kfsop.h>
 #include <fs/fs_driver.h>
 #include <drivers/block_dev.h>
-#include <drivers/block_dev/ramdisk/ramdisk.h>
-
-#include <mem/page.h>
 
 #include <util/err.h>
 
@@ -31,16 +30,32 @@
 #define DEFAULT_FS_NAME  "vfat"
 #define DEFAULT_FS_TYPE  12
 
+#include <framework/mod/options.h>
+
+#if OPTION_GET(NUMBER, with_ramdisk)
+
+#include <drivers/block_dev/ramdisk/ramdisk.h>
+#include <mem/page.h>
+
+static int mkfs_create_ramdisk(char *path, int blocks) {
+	return err(ramdisk_create(path, blocks * PAGE_SIZE()));
+}
+#else
+static int mkfs_create_ramdisk(char *path, int blocks) {
+	return -ENOTSUP;
+}
+#endif
+
 #include <module/embox/fs/fs_api.h>
 
 #ifdef __MODULE__embox__fs__core__H_
 static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		unsigned int fs_type, unsigned int operation_flag, char *fs_specific) {
-	//int rezult;
+	int rezult;
 
 	if (operation_flag & MKFS_CREATE_RAMDISK) {
-		if (0 == (err(ramdisk_create(path, blocks * PAGE_SIZE())))) {
-			return -errno;
+		if (0 != (rezult = mkfs_create_ramdisk(path, blocks))) {
+			return rezult;
 		}
 	}
 
@@ -93,10 +108,6 @@ static int check_invalid(int min_argc, int argc, char **argv) {
 	} else {
 		return 0;
 	}
-}
-
-static int mkfs_create_ramdisk(char *path, int blocks) {
-	return err(ramdisk_create(path, blocks * PAGE_SIZE()));
 }
 
 int main(int argc, char **argv) {
