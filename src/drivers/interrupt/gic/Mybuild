@@ -1,0 +1,17 @@
+package embox.driver.interrupt
+
+module gic extends embox.driver.interrupt.irqctrl_api {
+	option number log_level=3
+
+	option number version=1
+	option number gicd_base /* GIC distributor base address */
+	option number gicr_base /* GIC redistributor base address */
+	option number gicc_base /* GIC CPU interface base address */
+	option number gicv_base /* GIC virtual CPU interface base address */
+	option number gich_base /* GIC virtual interface base address */
+
+	source "gic.c"
+	source "gic.h"
+
+	depends embox.driver.periph_memory
+}
