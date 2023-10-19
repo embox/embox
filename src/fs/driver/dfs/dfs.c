@@ -37,7 +37,7 @@ extern int dfs_write_buffered(struct flash_dev *flashdev,
 					int pos, void *buff, size_t size);
 extern uintptr_t flash_cache_addr(struct flash_dev *flashdev);
 
-int dfs_format(struct block_dev *bdev, void *priv) {
+static int dfs_format(struct block_dev *bdev, void *priv) {
 	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
 	struct dfs_sb_info *sbi;
 	struct dfs_dir_entry *root;
