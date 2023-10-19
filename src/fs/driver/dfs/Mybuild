@@ -10,6 +10,8 @@ module dfs {
 	option number inode_count = 4
 	option number max_name_len = 16
 
+	option number format_during_fill_sb = 1
+
 	source "flash_cache.c"
 	option number page_size = 4
 	option number block_size = 131072 /* 128kb */

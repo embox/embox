@@ -453,8 +453,12 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	dfs_read_sb_info(sb, sbi);
 
 	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
+#if OPTION_GET(NUMBER, format_during_fill_sb)
 		dfs_format(sb->bdev, NULL);
 		dfs_read_sb_info(sb, sbi);
+#else
+		return -EINVAL;
+#endif /* OPTION_GET(NUMBER, format_during_fill_sb) */
 	}
 
 	dfs_read_dirent(sb, 0, &dtr);
