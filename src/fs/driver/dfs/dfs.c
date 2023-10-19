@@ -33,7 +33,7 @@
 #define DFS_DENTRY_OFFSET(N) \
 	((sizeof(struct dfs_sb_info)) + N * (sizeof(struct dfs_dir_entry)))
 
-extern int dfs_write_buffered(struct flash_dev *flashdev,
+extern int flash_write_buffered(struct flash_dev *flashdev,
 					int pos, void *buff, size_t size);
 extern uintptr_t flash_cache_addr(struct flash_dev *flashdev);
 
@@ -106,7 +106,7 @@ static int dfs_write_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 
 	fdev = flash_by_bdev(sb->bdev);
 	
-	dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info));
+	flash_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info));
 
 	return 0;
 }
@@ -136,7 +136,7 @@ static int dfs_write_dirent(struct super_block *sb, int n, struct dfs_dir_entry 
 
 	fdev = flash_by_bdev(sb->bdev);
 
-	dfs_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
+	flash_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
 	return 0;
 }
 
@@ -392,7 +392,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_write_buffered(fdev, pos, buf, l);
+	flash_write_buffered(fdev, pos, buf, l);
 
 	return l;
 }

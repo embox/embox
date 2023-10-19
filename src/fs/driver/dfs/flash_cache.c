@@ -114,7 +114,7 @@ uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
  *
  * @returns Bytes written or negative error code
  */
-int dfs_write_buffered(struct flash_dev *flashdev,
+int flash_write_buffered(struct flash_dev *flashdev,
 					int pos, void *buff, size_t size) {
 	int start_bk;
 	int last_bk;
