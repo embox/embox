@@ -253,23 +253,13 @@ int flash_write_aligned(struct flash_dev *flashdev,
 
 int flash_copy_aligned(struct flash_dev *flashdev,
 				unsigned long to, unsigned long from, int len) {
-	char *b; 
-	uint32_t word32;
-	int word_size;
-
-	if (flashdev->fld_aligned_word) {
-		b = flashdev->fld_aligned_word;
-		word_size = flashdev->fld_word_size;
-	} else {
-		b = (void *)&word32;
-		word_size = sizeof(word32);
-	}
+	char b[32]; 
 
 	while (len > 0) {
 		int tmp_len;
 
-		tmp_len = min(len, word_size);
-
+		tmp_len = min(len, sizeof(b));
+		
 		if (0 > flash_read_aligned(flashdev, from, b, tmp_len)) {
 			return -1;
 		}

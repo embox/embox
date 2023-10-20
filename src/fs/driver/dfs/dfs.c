@@ -26,132 +26,18 @@
 #define DFS_MAGIC_0 0x0D
 #define DFS_MAGIC_1 0xF5
 
-#define NAND_PAGE_SIZE         OPTION_GET(NUMBER, page_size)
-#define NAND_BLOCK_SIZE        OPTION_GET(NUMBER, block_size)
+
 #define MIN_FILE_SZ            OPTION_GET(NUMBER, minimum_file_size)
-#define USE_RAM_AS_CACHE       OPTION_GET(BOOLEAN, use_ram_as_cache)
-#define USE_RAM_SECTION        OPTION_GET(BOOLEAN, use_ram_section)
+
 
 #define DFS_DENTRY_OFFSET(N) \
 	((sizeof(struct dfs_sb_info)) + N * (sizeof(struct dfs_dir_entry)))
 
-#if USE_RAM_SECTION
-#define CACHE_SECTION      __attribute__((section(".dfs_cache_section")))
-#else
-#define CACHE_SECTION
-#endif
+extern int flash_write_buffered(struct flash_dev *flashdev,
+					int pos, void *buff, size_t size);
+extern uintptr_t flash_cache_addr(struct flash_dev *flashdev);
 
-#if USE_RAM_AS_CACHE
-static uint8_t cache_block_buffer[NAND_BLOCK_SIZE]
-								  CACHE_SECTION  __attribute__ ((aligned(NAND_PAGE_SIZE)));
-
-static int dfs_cache_erase(struct flash_dev *flashdev, uint32_t block) {
-	return 0;
-}
-
-static int dfs_cache(struct flash_dev *flashdev, uint32_t to, uint32_t from, int len) {
-	char b[NAND_PAGE_SIZE] __attribute__ ((aligned(NAND_PAGE_SIZE)));
-
-	while (len > 0) {
-		int tmp_len;
-
-		tmp_len = min(len, sizeof(b));
-
-		if (0 > flash_read_aligned(flashdev, from, b, tmp_len)) {
-			return -1;
-		}
-		memcpy((void *)((uintptr_t)to), b, tmp_len);
-
-		len -= tmp_len;
-		to += tmp_len;
-		from += tmp_len;
-	}
-
-	return 0;
-}
-
-static inline int dfs_cache_write(struct flash_dev *flashdev, uint32_t offset, const void *buff, size_t len) {
-	memcpy((void *)((uintptr_t)offset), buff, len);
-	return 0;
-}
-
-static inline int dfs_cache_restore(struct flash_dev *flashdev, uint32_t to, uint32_t from) {
-	flash_erase(flashdev, to);
-	return flash_write_aligned(flashdev, to * NAND_BLOCK_SIZE, (void *)((uintptr_t)from), NAND_BLOCK_SIZE);
-}
-
-#define CACHE_OFFSET                  ((uintptr_t)cache_block_buffer)
-
-#else /* !USE_RAM_AS_CACHE */
-
-#define dfs_cache_erase(flashdev, block)        \
-						flash_erase(flashdev, block)
-
-#define dfs_cache(flashdev, to, from, len)      \
-						flash_copy_aligned(flashdev, to,from,len)
-
-#define dfs_cache_write(flashdev, off,buf, len) \
-						flash_write_aligned(flashdev, off, buf, len)
-
-#define dfs_cache_restore(flashdev, to, from)   \
-						flash_copy_block(flashdev, to,from)
-
-#define CACHE_OFFSET                  (buff_bk * NAND_BLOCK_SIZE)
-
-#endif /* USE_RAM_AS_CACHE */
-
-/* @brief Write non-aligned raw data to \b non-erased NAND flash
- * @param pos  Start position on disk
- * @param buff Source of the data
- * @param size Length of the data in bytes
- *
- * @returns Bytes written or negative error code
- */
-static int dfs_write_buffered(struct flash_dev *flashdev, int pos, void *buff, size_t size, uint32_t buff_bk) {
-	int start_bk = pos / NAND_BLOCK_SIZE;
-	int last_bk = (pos + size) / NAND_BLOCK_SIZE;
-	int bk;
-	int err;
-
-	assert(buff);
-
-	pos %= NAND_BLOCK_SIZE;
-
-	err = 0;
-
-	dfs_cache_erase(flashdev, buff_bk);
-	dfs_cache(flashdev, CACHE_OFFSET, start_bk * NAND_BLOCK_SIZE, pos);
-
-	if (start_bk == last_bk) {
-		if ((err = dfs_cache_write(flashdev, CACHE_OFFSET + pos, buff, size))) {
-			return err;
-		}
-		pos += size;
-	} else {
-		flash_write_aligned(flashdev, CACHE_OFFSET + pos, buff, NAND_BLOCK_SIZE - pos);
-		flash_copy_block(flashdev, start_bk, buff_bk);
-		buff += NAND_BLOCK_SIZE - pos;
-		pos = (pos + size) % NAND_BLOCK_SIZE;
-
-		for (bk = start_bk + 1; bk < last_bk; bk++) {
-			flash_erase(flashdev, bk);
-			if ((err = flash_write_aligned(flashdev, bk * NAND_BLOCK_SIZE, buff, NAND_BLOCK_SIZE))) {
-				return err;
-			}
-			buff += NAND_BLOCK_SIZE;
-		}
-
-		flash_erase(flashdev, buff_bk);
-		flash_write_aligned(flashdev, CACHE_OFFSET, buff, pos);
-	}
-
-	dfs_cache(flashdev, CACHE_OFFSET + pos, last_bk * NAND_BLOCK_SIZE + pos, NAND_BLOCK_SIZE - pos);
-	dfs_cache_restore(flashdev, last_bk, buff_bk);
-
-	return 0;
-}
-
-int dfs_format(struct block_dev *bdev, void *priv) {
+static int dfs_format(struct block_dev *bdev, void *priv) {
 	uint8_t write_buf[sizeof(struct dfs_sb_info) + sizeof(struct dfs_dir_entry)];
 	struct dfs_sb_info *sbi;
 	struct dfs_dir_entry *root;
@@ -181,11 +67,7 @@ int dfs_format(struct block_dev *bdev, void *priv) {
 		.max_inode_count = DFS_INODES_MAX + 1, /* + root folder with i_no 0 */
 		.max_len = MIN_FILE_SZ,
 		/* Set buffer block to the last one */
-#if USE_RAM_AS_CACHE
-		.buff_bk = ((uintptr_t)cache_block_buffer),
-#else
-		.buff_bk = fdev->block_info[0].blocks - 1,
-#endif
+		//.buff_bk = flash_cache_addr(fdev),
 		.free_space = DFS_DENTRY_OFFSET(DFS_INODES_MAX),
 	};
 
@@ -224,7 +106,7 @@ static int dfs_write_sb_info(struct super_block *sb, struct dfs_sb_info *sbi) {
 
 	fdev = flash_by_bdev(sb->bdev);
 	
-	dfs_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info), sbi->buff_bk);
+	flash_write_buffered(fdev, 0, sbi, sizeof(struct dfs_sb_info));
 
 	return 0;
 }
@@ -248,15 +130,13 @@ static int dfs_read_dirent(struct super_block *sb, int n, struct dfs_dir_entry *
 
 static int dfs_write_dirent(struct super_block *sb, int n, struct dfs_dir_entry *dtr) {
 	uint32_t offt = DFS_DENTRY_OFFSET(n);
-	struct dfs_sb_info *sbi;
 	struct flash_dev *fdev;
 
 	assert(dtr);
 
-	sbi = sb->sb_data;
 	fdev = flash_by_bdev(sb->bdev);
 
-	dfs_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry), sbi->buff_bk);
+	flash_write_buffered(fdev, offt, dtr, sizeof(struct dfs_dir_entry));
 	return 0;
 }
 
@@ -512,7 +392,7 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 		return -1;
 	}
 
-	dfs_write_buffered(fdev, pos, buf, l, sbi->buff_bk);
+	flash_write_buffered(fdev, pos, buf, l);
 
 	return l;
 }
@@ -555,6 +435,7 @@ static struct dfs_sb_info dfs_info;
 static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	struct dfs_dir_entry dtr;
 	struct dfs_sb_info *sbi;
+	struct flash_dev *fdev;
 
 	sb->sb_ops     = &dfs_sbops;
 	sb->sb_iops    = &dfs_iops;
@@ -564,11 +445,20 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 
 	sbi = sb->sb_data;
 
+	fdev = flash_by_bdev(sb->bdev);
+
+	/* TODO move to flash driver */
+	fdev->fld_cache = flash_cache_addr(fdev);
+
 	dfs_read_sb_info(sb, sbi);
 
 	if (!(sbi->magic[0] == DFS_MAGIC_0 && sbi->magic[1] == DFS_MAGIC_1)) {
+#if OPTION_GET(NUMBER, format_during_fill_sb)
 		dfs_format(sb->bdev, NULL);
 		dfs_read_sb_info(sb, sbi);
+#else
+		return -EINVAL;
+#endif /* OPTION_GET(NUMBER, format_during_fill_sb) */
 	}
 
 	dfs_read_dirent(sb, 0, &dtr);

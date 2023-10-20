@@ -73,6 +73,7 @@ struct flash_dev {
 	void *                      fld_aligned_word;
 	uint32_t                    num_block_infos;
 	struct flash_block_info     block_info[FLASH_BLOCK_INFO_MAX];
+	uintptr_t                   fld_cache; /* blknum or buf addr */
 	void                       *privdata;
 };
 

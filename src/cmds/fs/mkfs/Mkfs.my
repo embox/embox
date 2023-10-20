@@ -16,11 +16,13 @@ package embox.cmd.fs
 			Andrey Gazukin
 	''')
 module mkfs {
+	option number with_ramdisk = 1
+
 	source "mkfs.c"
 
-	depends embox.compat.libc.all
+	//depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
-	depends embox.driver.ramdisk
+	//depends embox.driver.ramdisk
 	//depends embox.fs.driver.repo
 	depends embox.framework.LibFramework
 	//depends embox.fs.filesystem
