@@ -95,23 +95,8 @@ module ffs_test {
 	depends embox.framework.LibFramework
 }
 
-module strcmp_test {
-	source "strcmp_test.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
 module strlwr_test {
 	source "strlwr.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module memmove_test
-{
-	source "memmove_test.c"
 
 	depends embox.compat.libc.stdlib.core
 	depends embox.framework.LibFramework
@@ -121,27 +106,6 @@ module strupr_test {
 	source "strupr.c"
 
 	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module memcpy_test {
-	source "memcpy.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module memcmp_test {
-	source "memcmp_test.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strcpy_test {
-	source "strcpy.c"
-
-	depends embox.compat.libc.str
 	depends embox.framework.LibFramework
 }
 

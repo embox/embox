@@ -1,0 +1,41 @@
+package embox.compat.libc.str.tests
+
+module strcat_test {
+	source "strcat_test.c"
+}
+
+module strncat_test {
+	source "strncat_test.c"
+}
+
+module memchr_test {
+    source "memchr_test.c"
+}
+
+module memrchr_test {
+    source "memrchr_test.c"
+}
+
+module strerror_test {
+	source "strerror_test.c"
+}
+
+module memcpy_test {
+	source "memcpy_test.c"
+}
+
+module strcmp_test {
+	source "strcmp_test.c"
+}
+
+module memmove_test {
+	source "memmove_test.c"
+}
+
+module memcmp_test {
+	source "memcmp_test.c"
+}
+
+module strcpy_test {
+	source "strcpy_test.c"
+}
