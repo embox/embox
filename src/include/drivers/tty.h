@@ -48,8 +48,6 @@ struct tty {
 	struct ring       o_ring;
 	char              o_buff[TTY_IO_BUFF_SZ];
 	pid_t             pgrp; /* process group (TODO: lonely process now) */
-
-    uint8_t init;   /* see comment in tty_ioctl() in tty.c */
 };
 
 struct tty_ops {
