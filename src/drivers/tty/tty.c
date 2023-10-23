@@ -212,10 +212,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 	case TIOCSETA:
 		memcpy(&t->termios, data, sizeof(struct termios));
 		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
-        /* This check for init is a workaround to make current realization
-         * work and not cause shutdown if it tries to initialize several times.
-         * That probably needs a clean solution in the future*/
-		if ((t->ops->setup)&&(!t->init)) {
+		if (t->ops->setup) {
 			t->ops->setup(t, &t->termios);
 		}
 		break;
@@ -266,7 +263,6 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 
 	t->idesc = NULL;
 	t->ops = ops;
-    t->init = 0;
 
 	termios_init(&t->termios);
 
