@@ -131,7 +131,7 @@ static int lan91c111_tx_try(struct smc_local *smc, struct sk_buff *skb) {
 	lan91c111_set_bank(2);
 
 	if (!(REG8_LOAD(BANK_INTERRUPT_STATUS) & ALLOC_MASK)) {
-		log_debug("Failed to allocate packet for TX");
+		lan91c111_add_pending(smc, skb);
 		return -EBUSY;
 	}
 
@@ -211,7 +211,7 @@ static int lan91c111_tx_pend(struct net_device *dev) {
 	smc = netdev_priv(dev);
 
 	while (NULL != (skb = skb_queue_pop(&smc->pending_queue))) {
-		ret = lan91c111_tx_try(smc, skb);
+		ret = lan91c111_send_hw(skb);
 		if (ret) {
 			return ret;
 		}
