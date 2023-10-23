@@ -39,6 +39,8 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 		params.baud_rate = termios->c_ospeed;
 		uart_set_params(uart_dev, &params);
 	}
+
+    tty->init = 1;
 }
 
 struct tty_ops uart_tty_ops = {
