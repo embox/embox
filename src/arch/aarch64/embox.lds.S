@@ -2,7 +2,7 @@
 
 OUTPUT_FORMAT("elf64-littleaarch64", "elf64-littleaarch64", "elf64-littleaarch64")
 OUTPUT_ARCH(aarch64)
-ENTRY(aarch64_exception_table)
+ENTRY(aarch64_trap_table)
 
 MEMORY {
 	#include <regions.lds.h>

@@ -1,0 +1,5 @@
+package embox.arch.aarch64
+
+module exceptions {
+	source "entry.S"
+}

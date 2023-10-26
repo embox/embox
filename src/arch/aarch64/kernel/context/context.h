@@ -5,16 +5,17 @@
  * @author  Anton Kozlov
  * @date    25.10.2012
  */
-
-#ifndef SRC_ARCH_ARM_CORTEXA8_KERNEL_CONTEXT_H_
-#define SRC_ARCH_ARM_CORTEXA8_KERNEL_CONTEXT_H_
+#ifndef ARCH_AARCH64_CONTEXT_H_
+#define ARCH_AARCH64_CONTEXT_H_
 
 #ifndef __ASSEMBLER__
 
 #include <stdint.h>
 
 struct context {
-	uint64_t x[31];
+	uint64_t x[10] /* X19-X28 */;
+	uint64_t fp;
+	uint64_t lr;
 	uint64_t sp;
 	uint64_t spsr;
 	uint64_t daif;
@@ -22,4 +23,4 @@ struct context {
 
 #endif /* __ASSEMBLER__ */
 
-#endif /* SRC_ARCH_ARM_CORTEXA8_KERNEL_CONTEXT_H_ */
+#endif /* ARCH_AARCH64_CONTEXT_H_ */

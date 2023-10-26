@@ -11,11 +11,8 @@ module interrupt extends embox.arch.interrupt {
 }
 
 module locore extends embox.arch.locore {
-	depends exception_table
-}
-
-module exception_table {
-	source "exception_table.S"
+	depends exceptions
+	depends reset_handler
 }
 
 module mem_barriers extends embox.arch.mem_barriers {
