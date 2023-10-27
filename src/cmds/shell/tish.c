@@ -401,15 +401,14 @@ static void tish_run(void) {
 		} else if (line[0] == '/') {
 			printf("Unreconized command: %s\n", line);
 		}
+		
+		readline_free(line);
 
 		tish_collect_bg_childs();
 		
 #if UNSET_NODELAY_MODE
 		sh_unset_nodelay_mode();
 #endif
-
-		/* TODO now linenoise use sysalloc for memory allocation */
-		sysfree(line);
 	}
 }
 
