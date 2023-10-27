@@ -118,28 +118,23 @@
 #include <unistd.h>
 #include "linenoise.h"
 
-#ifdef __EMBOX__
-
-#include <mem/sysmalloc.h>
-#define malloc   sysmalloc
-#define free     sysfree
-#define strdup   sysstrdup
-
-static char * sysstrdup(const char *s) {
-	size_t slen = strlen(s) + 1;
-	char *r = sysmalloc(slen);
-	if (r)
-		memcpy(r, s, slen);
-	return r;
-}
-
-#endif /* __EMBOX__ */
-
 static char *unsupported_term[] = {"dumb","cons25","emacs",NULL};
 static linenoiseCompletionCallback *completionCallback = NULL;
 static linenoiseHintsCallback *hintsCallback = NULL;
 static linenoiseFreeHintsCallback *freeHintsCallback = NULL;
 
+#ifdef __EMBOX__
+#include <kernel/task/resource/linenoise.h>
+
+#define orig_termios (task_self_resource_linenoise()->orig_termios)
+#define maskmode (task_self_resource_linenoise()->maskmode)
+#define rawmode (task_self_resource_linenoise()->rawmode)
+#define mlmode (task_self_resource_linenoise()->mlmode)
+#define atexit_registered (task_self_resource_linenoise()->atexit_registered)
+#define history_max_len (task_self_resource_linenoise()->history_max_len)
+#define history_len (task_self_resource_linenoise()->history_len)
+#define history (task_self_resource_linenoise()->history)
+#else
 static struct termios orig_termios; /* In order to restore at exit.*/
 static int maskmode = 0; /* Show "***" instead of input. For passwords. */
 static int rawmode = 0; /* For atexit() function to check if restore is needed*/
@@ -148,6 +143,7 @@ static int atexit_registered = 0; /* Register atexit just 1 time. */
 static int history_max_len = LINENOISE_DEFAULT_HISTORY_MAX_LEN;
 static int history_len = 0;
 static char **history = NULL;
+#endif /* __EMBOX__ */
 
 /* The linenoiseState structure represents the state during line editing.
  * We pass this state to functions implementing specific editing
