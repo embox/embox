@@ -4,7 +4,6 @@ package embox.lib
 abstract module readline_api { }
 
 module rl_linenoise extends readline_api {
-	@IncludePath("$(THIRDPARTY_DIR)/lib/linenoise")
 	source "rl_linenoise.c"
 
 	@IncludeExport(path="readline")
