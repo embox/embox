@@ -16,7 +16,7 @@ package embox.cmd.fs
 			Andrey Gazukin
 	''')
 module mkfs {
-	option number with_ramdisk = 1
+	option number with_ramdisk = 0
 
 	source "mkfs.c"
 
