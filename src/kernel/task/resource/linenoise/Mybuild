@@ -1,0 +1,10 @@
+package embox.kernel.task.resource
+
+module linenoise {
+	source "linenoise.c"
+
+	@IncludeExport(path="kernel/task/resource")
+	source "linenoise.h"
+
+	depends embox.kernel.task.task_resource
+}
