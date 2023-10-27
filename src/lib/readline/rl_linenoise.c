@@ -6,22 +6,18 @@
  * @date 04.04.13
  */
 
-
 #include <ctype.h>
 #include <dirent.h>
 #include <errno.h>
+#include <limits.h>
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
-
-#include <readline/history.h>
-#include <readline/readline.h>
-
-#include <linenoise.h>
 
 #include <cmd/shell.h>
-
+#include <lib/linenoise.h>
+#include <readline/history.h>
+#include <readline/readline.h>
 
 #define DEFAULT_HISTORY_FILE "~/.history"
 
@@ -32,12 +28,17 @@ static rl_command_func_t *complcb_function;
 static const char *complcb_text;
 static linenoiseCompletions *complcb_lc;
 
-char * readline(const char *prompt) {
+char *readline(const char *prompt) {
 	return linenoise(prompt != NULL ? prompt : "");
 }
 
-static void completion_callback(const char *text,
-		linenoiseCompletions *lc) {
+void readline_free(char *line) {
+	if (line) {
+		linenoiseFree(line);
+	}
+}
+
+static void completion_callback(const char *text, linenoiseCompletions *lc) {
 	complcb_text = text;
 	complcb_lc = lc;
 	complcb_function(0, '\t');
@@ -70,8 +71,7 @@ int rl_complete(int ignore, int invoking_key) {
 	start = ++last_word - complcb_text;
 
 	if (rl_attempted_completion_function != NULL) {
-		matches = rl_attempted_completion_function(last_word,
-				start, end);
+		matches = rl_attempted_completion_function(last_word, start, end);
 	}
 	else {
 		matches = NULL;
@@ -79,9 +79,9 @@ int rl_complete(int ignore, int invoking_key) {
 
 	if (matches == NULL) {
 		matches = rl_completion_matches(last_word,
-				rl_completion_entry_function != NULL
-					? rl_completion_entry_function
-					: rl_filename_completion_function);
+		    (rl_completion_entry_function != NULL)
+		        ? rl_completion_entry_function
+		        : rl_filename_completion_function);
 		if (matches == NULL) {
 			return 0;
 		}
@@ -98,8 +98,8 @@ int rl_complete(int ignore, int invoking_key) {
 	return 0;
 }
 
-char ** rl_completion_matches(const char *text,
-		rl_compentry_func_t *entry_func) {
+char **rl_completion_matches(const char *text,
+    rl_compentry_func_t *entry_func) {
 	int ind;
 	char **matches, **tmp, *match;
 	size_t matches_sz;
@@ -139,8 +139,7 @@ char ** rl_completion_matches(const char *text,
 	return matches;
 }
 
-char * rl_filename_completion_function(const char *text,
-		int state) {
+char *rl_filename_completion_function(const char *text, int state) {
 	static DIR *dir = NULL;
 	static char path[PATH_MAX], name[NAME_MAX];
 	static size_t path_len, name_len;
@@ -202,15 +201,27 @@ void stifle_history(int max) {
 }
 
 int read_history(const char *filename) {
-	return -1 != linenoiseHistoryLoad(filename != NULL
-				? (char *)filename : DEFAULT_HISTORY_FILE)
-			? 0 : errno;
+	if (!filename) {
+		filename = DEFAULT_HISTORY_FILE;
+	}
+
+	if (-1 == linenoiseHistoryLoad(filename)) {
+		return errno;
+	}
+
+	return 0;
 }
 
 int write_history(const char *filename) {
-	return -1 != linenoiseHistorySave(filename != NULL
-				? (char *)filename : DEFAULT_HISTORY_FILE)
-			? 0 : errno;
+	if (!filename) {
+		filename = DEFAULT_HISTORY_FILE;
+	}
+
+	if (-1 == linenoiseHistorySave(filename)) {
+		return errno;
+	}
+
+	return 0;
 }
 
 void readline_init(void) {

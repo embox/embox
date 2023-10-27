@@ -10,17 +10,8 @@
 
 #include <stdint.h>
 
-#include <net/skbuff.h>
 #include <net/netdevice.h>
-
-#define GRETH_FIELD_SAVE(reg, field, val)                           \
-	({                                                              \
-		reg &= ~field##_MASK;                                       \
-		reg |= (((uint32_t)(val) << field##_SHIFT) & field##_MASK); \
-	})
-
-#define GRETH_FIELD_LOAD(reg, field) \
-	(((uint32_t)reg & field##_MASK) >> field##_SHIFT)
+#include <net/skbuff.h>
 
 /**
  * Control register
@@ -64,15 +55,15 @@
 #define GRETH_MDIO_NV (1UL << 4) /* Not valid */
 
 #define GRETH_MDIO_RA       /* Register address */
-#define GRETH_MDIO_RA_MASK  (0x1fUL << GRETH_MDIO_RA_SHIFT)
+#define GRETH_MDIO_RA_MASK  0x1fU
 #define GRETH_MDIO_RA_SHIFT 6
 
 #define GRETH_MDIO_PA       /* PHY address */
-#define GRETH_MDIO_PA_MASK  (0x1fUL << GRETH_MDIO_PA_SHIFT)
+#define GRETH_MDIO_PA_MASK  0x1fU
 #define GRETH_MDIO_PA_SHIFT 11
 
 #define GRETH_MDIO_DT       /* Data */
-#define GRETH_MDIO_DT_MASK  (0xffffUL << GRETH_MDIO_DT_SHIFT)
+#define GRETH_MDIO_DT_MASK  0xffffU
 #define GRETH_MDIO_DT_SHIFT 16
 
 #define GRETH_REGS(dev) ((struct greth_regs *)((dev)->base_addr))
@@ -105,7 +96,7 @@ struct greth_regs {
 #define GRETH_RXBD_LE (1UL << 18) /* Length error */
 
 #define GRETH_BD_LE       /* Length */
-#define GRETH_BD_LE_MASK  (0x7ffUL << GRETH_BD_LE_SHIFT)
+#define GRETH_BD_LE_MASK  0x7ffU
 #define GRETH_BD_LE_SHIFT 0
 
 struct greth_bd {

@@ -5,28 +5,29 @@
  * @author Aleksey Zhmulin
  * @date 09.09.23
  */
-#include <time.h>
+#include <endian.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
-#include <endian.h>
-#include <stdbool.h>
+#include <time.h>
+#include <unistd.h>
 
-#include <hal/reg.h>
-#include <hal/cache.h>
-#include <net/mii.h>
-#include <net/skbuff.h>
-#include <net/netdevice.h>
-#include <net/inetdevice.h>
-#include <net/l2/ethernet.h>
-#include <net/l0/net_entry.h>
-#include <net/util/show_packet.h>
-#include <util/log.h>
 #include <embox/unit.h>
+#include <hal/cache.h>
+#include <hal/reg.h>
 #include <kernel/irq.h>
+#include <net/inetdevice.h>
+#include <net/l0/net_entry.h>
+#include <net/l2/ethernet.h>
+#include <net/mii.h>
+#include <net/netdevice.h>
+#include <net/skbuff.h>
+#include <net/util/show_packet.h>
+#include <util/field.h>
+#include <util/log.h>
 
 #include "greth.h"
 
@@ -73,8 +74,8 @@ static int greth_mdio_read(struct net_device *dev, uint8_t reg) {
 	greth = netdev_priv(dev);
 
 	ctrl = GRETH_MDIO_RD;
-	GRETH_FIELD_SAVE(ctrl, GRETH_MDIO_RA, reg);
-	GRETH_FIELD_SAVE(ctrl, GRETH_MDIO_PA, greth->phy_id);
+	ctrl = FIELD_SET(ctrl, GRETH_MDIO_RA, reg);
+	ctrl = FIELD_SET(ctrl, GRETH_MDIO_PA, greth->phy_id);
 
 	greth_wait_bit_reset(&GRETH_REGS(dev)->mdio, GRETH_MDIO_BU);
 	REG32_STORE(&GRETH_REGS(dev)->mdio, ctrl);
@@ -86,7 +87,7 @@ static int greth_mdio_read(struct net_device *dev, uint8_t reg) {
 		log_error("Not valid data");
 	}
 
-	return GRETH_FIELD_LOAD(ctrl, GRETH_MDIO_DT);
+	return FIELD_GET(ctrl, GRETH_MDIO_DT);
 }
 
 static int greth_mdio_write(struct net_device *dev, uint8_t reg,
@@ -97,9 +98,9 @@ static int greth_mdio_write(struct net_device *dev, uint8_t reg,
 	greth = netdev_priv(dev);
 
 	ctrl = GRETH_MDIO_WR;
-	GRETH_FIELD_SAVE(ctrl, GRETH_MDIO_DT, data);
-	GRETH_FIELD_SAVE(ctrl, GRETH_MDIO_RA, reg);
-	GRETH_FIELD_SAVE(ctrl, GRETH_MDIO_PA, greth->phy_id);
+	ctrl = FIELD_SET(ctrl, GRETH_MDIO_DT, data);
+	ctrl = FIELD_SET(ctrl, GRETH_MDIO_RA, reg);
+	ctrl = FIELD_SET(ctrl, GRETH_MDIO_PA, greth->phy_id);
 
 	log_debug("0x%08X < 0x%08X [p:%d a:%d d:0x%04X]",
 	    (uint32_t)&GRETH_REGS(dev)->mdio, ctrl, greth->phy_id, reg, data);
@@ -197,7 +198,7 @@ static int greth_xmit(struct net_device *dev, struct sk_buff *skb) {
 	/* Set up descriptor to wrap around to it self */
 	bd.addr = (uint32_t)data;
 	bd.stat = GRETH_BD_EN | GRETH_BD_WR;
-	GRETH_FIELD_SAVE(bd.stat, GRETH_BD_LE, len);
+	bd.stat = FIELD_SET(bd.stat, GRETH_BD_LE, len);
 
 	/* Store current transmit descriptor */
 	greth_bd_save(greth, greth->txbd_base, &bd);
@@ -259,7 +260,7 @@ static irq_return_t greth_irq_handler(unsigned int irq_num, void *_dev) {
 	REG32_STORE(&GRETH_REGS(dev)->status, GRETH_STAT_RE | GRETH_STAT_RI);
 
 	data = (void *)bd.addr;
-	len = GRETH_FIELD_LOAD(bd.stat, GRETH_BD_LE);
+	len = FIELD_GET(bd.stat, GRETH_BD_LE);
 	bd_nr = greth->rxbd_curr;
 	skb = greth->rxbuf_base[bd_nr];
 
