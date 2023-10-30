@@ -20,13 +20,15 @@
 #include <embox/unit.h>
 
 #define PLIC_ADDR                 OPTION_GET(NUMBER, base_addr)
+#define PRIORITY_THRESHOLD_OFFSET OPTION_GET(NUMBER, threshold_offset)
+#define INTERRUPT_ENABLE_OFFSRT   OPTION_GET(NUMBER, interrupt_enable_offset)
 
 #define IPL_ADDR(num)            (PLIC_ADDR + (num * 4))
 
-#define PRIORITY_THRESHOLD_ADDR  (PLIC_ADDR + 0x200000U)
-#define CLAIM_COMPLETE_ADDR      (PLIC_ADDR + 0x200004U) /* offset for hart 0 claim/complere reg */
-#define INTERRUPT_ENABLE_REG_1   (PLIC_ADDR + 0x2000U)
-#define INTERRUPT_ENABLE_REG_2   (PLIC_ADDR + 0x2004U)
+#define PRIORITY_THRESHOLD_ADDR  (PLIC_ADDR + PRIORITY_THRESHOLD_OFFSET)
+#define CLAIM_COMPLETE_ADDR      (PLIC_ADDR + PRIORITY_THRESHOLD_OFFSET + 0x4U) /* offset for hart 0 claim/complere reg */
+#define INTERRUPT_ENABLE_REG_1   (PLIC_ADDR + INTERRUPT_ENABLE_OFFSRT)
+#define INTERRUPT_ENABLE_REG_2   (PLIC_ADDR + INTERRUPT_ENABLE_OFFSRT + 0x4U)
 
 
 static int plic_init(void) {

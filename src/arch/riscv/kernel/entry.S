@@ -17,7 +17,7 @@
 .align 2
 riscv_trap_handler:
 	SAVE_ALL
-	csrr    a1, mcause
+	csrr    a1, CAUSE_REG
 	srli    t0, a1, (__riscv_xlen - 1)
 	bnez    t0, 1f
 
@@ -31,4 +31,4 @@ riscv_trap_handler:
 
 riscv_trap_exit:
 	RESTORE_ALL
-	mret
+	RET_INSTR

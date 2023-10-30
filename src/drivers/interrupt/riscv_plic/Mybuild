@@ -2,6 +2,8 @@ package embox.driver.interrupt
 
 module riscv_plic extends irqctrl_api {
 	option number base_addr = 0x0C000000
+	option number threshold_offset = 0x200000
+	option number interrupt_enable_offset = 0x2000
 
 	source "riscv_plic.c", "riscv_plic.h"
 }

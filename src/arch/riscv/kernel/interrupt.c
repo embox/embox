@@ -32,10 +32,10 @@ void riscv_interrupt_handler(void) {
 		long pending;
 		long interrupt_id;
 
-		pending = (read_csr(mcause)) & CLEAN_IRQ_BIT;
+		pending = (read_csr(CAUSE_REG)) & CLEAN_IRQ_BIT;
 		interrupt_id = pending;
 
-		if (pending == IRQ_MACHINE_TIMER) {
+		if (pending == IRQ_TIMER) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
 			if (__riscv_timer_handler) {
@@ -43,7 +43,7 @@ void riscv_interrupt_handler(void) {
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
-		} else if (pending == IRQ_MACHINE_EXTERNAL) {
+		} else if (pending == IRQ_EXTERNAL) {
 			/* the ID of the highest-priority pending interrupt */
 			interrupt_id = irqctrl_get_num();
 			if (interrupt_id == 0) {

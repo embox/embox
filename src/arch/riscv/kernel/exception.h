@@ -6,6 +6,7 @@
  * @date 28.07.23
  */
 #include <asm/ptrace.h>
+#include <asm/regs.h>
 #include <kernel/printk.h>
 #include <hal/test/traps_core.h>
 
@@ -20,7 +21,7 @@ extern trap_handler_t riscv_excpt_table[0x10];
 	       "sp      = %#lx\n"                                   \
 	       "gp      = %#lx\n"                                   \
 	       "tp      = %#lx\n"                                   \
-	       "mstatus = %#lx\n"                                   \
+	       MACRO_STRING(STATUS_REG) " = %#lx\n"                 \
 	       "pc      = %#lx\n",                                  \
 	    (ptregs)->ra, (ptregs)->sp, (ptregs)->gp, (ptregs)->tp, \
 	    (ptregs)->mstatus, (ptregs)->pc)
