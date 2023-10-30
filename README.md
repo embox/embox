@@ -1,14 +1,14 @@
 Embox [![Coverity Scan Build Status](https://scan.coverity.com/projects/700/badge.svg)](https://scan.coverity.com/projects/700)
 =====
 
-Embox is a configurable RTOS designed for resource constrained and embedded systems. Embox main idea is using Linux software without Linux.
+Embox is a configurable RTOS designed for resource constrained and embedded systems. Embox's main idea is to use Linux software without Linux.
 
 Achievements
 -------------
 * [VoIP phone on STM32F7Discovery based on PJSIP project](https://github.com/embox/embox/wiki/PJSIP-on-STM32)
 * [Qt on STM32F7Discovery](https://github.com/embox/embox/wiki/Qt-on-STM32)
 * [OpenCV on STM32F769i board](https://github.com/embox/embox/wiki/OpenCV-on-STM32)
-* A lot of programming languages available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua, JS, Scheme
+* A lot of programming languages are available: Python, Lisp, Java (phoneme), TCL, Ruby, Lua, JS, Scheme
 * SSHD based on Dropbear project
 * Mesa3d
 * Quake3
@@ -84,7 +84,7 @@ Since Embox is highly configurable project, it is necessary to specify modules t
 All commands described below are called from the `embox` directory, which includes `src/`, `templates/`, ...
 
 #### Configuring the project
-For configuring it is needed to specify params and modules supposed to be included into the system. There are two ways to set up a current config:
+For configuring it is necessary to specify parameters and modules supposed to be included into the system. There are two ways to set up a current config:
 
 * `make confload-<template> -` build artefacts generated in a fixed place
 * `./confset <template> -` build artefacts maintained in project dependent working paths
