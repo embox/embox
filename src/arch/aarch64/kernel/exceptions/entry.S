@@ -72,6 +72,7 @@ excpt_stub:
 
 .global aarch64_trap_table
 
+/* Vector tables must be placed at a 2KB-aligned address */
 .align 11
 aarch64_trap_table:
 /* All handlers are aligned by 128 bytes */
