@@ -23,7 +23,7 @@ static inline void ipl_init(void) {
 }
 
 static inline __ipl_t ipl_save(void) {
-	uint64_t r = get_daif();
+	__ipl_t r = get_daif();
 	set_daif(r | DAIF_I_BIT | DAIF_F_BIT);
 	return r;
 }
