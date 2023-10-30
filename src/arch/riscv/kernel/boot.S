@@ -48,15 +48,29 @@ _start:
 	/* Set up stack pointer. */
 	la      sp, _stack_top
 
-	/* Zero the BSS segment. */
-	la      t1, _bss_vma
-	la      t2, _bss_end
-	bge     t1, t2, zero_bss_end
+	/* Zero the BSS section. */
+	la      t0, _bss_vma
+	la      t1, _bss_end
+	bge     t0, t1, zero_bss_end
 zero_bss:
-	sw      x0, 0(t1)
-	addi    t1, t1, 4
-	blt     t1, t2, zero_bss
+	PTR_S   zero, 0(t0)
+	addi    t0, t0, SZREG
+	blt     t0, t1, zero_bss
 zero_bss_end:
+
+	/* Copy data section. */
+	la      t0, _data_lma
+	la      t1, _data_vma
+	beq     t0, t1, copy_data_end
+	la      t2, _data_len
+	add     t2, t2, t0
+copy_data:
+	PTR_L   t3, 0(t0)
+	PTR_S   t3, 0(t1)
+	addi    t0, t0, SZREG
+	addi    t1, t1, SZREG
+	blt     t0, t2, copy_data
+copy_data_end:
 
 	/* Start kernel. */
 	call    kernel_start
@@ -64,7 +78,7 @@ zero_bss_end:
 
 secondary_hart_loop:
 	wfi
-#ifdef SMP	
+#ifdef SMP
 	/* TODO: SMP support */
 #endif
 	j       secondary_hart_loop
