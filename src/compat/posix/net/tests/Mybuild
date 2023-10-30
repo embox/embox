@@ -1,0 +1,7 @@
+package embox.test.net
+
+module inet_pton_test {
+	source "inet_pton_test.c"
+
+	depends embox.framework.test
+}
