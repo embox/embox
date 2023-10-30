@@ -13,33 +13,29 @@
 
 static inline uint64_t get_daif(void) {
 	volatile uint64_t reg;
-	__asm__ __volatile__ ("mrs %0, daif;\n\t"
-		: "=r"(reg)
-	);
+	__asm__ __volatile__("mrs %0, daif;\n\t" : "=r"(reg));
 	return reg;
 }
 
 static inline void set_daif(uint64_t reg) {
-	__asm__ __volatile__ ("msr daif, %0; \n\t"
-		:
-		: "r"(reg)
-	);
+	__asm__ __volatile__("msr daif, %0; \n\t" : : "r"(reg));
 }
 
-#define read_system_reg(name) ({ \
-		volatile uint64_t reg; \
-		asm volatile("mrs  %0, "#name";" \
-			"isb;" \
-			: "=r"(reg) \
-		); \
-		reg; \
+#define read_system_reg(name)              \
+	({                                     \
+		volatile uint64_t reg;             \
+		asm volatile("mrs  %0, " #name ";" \
+		             "isb;"                \
+		             : "=r"(reg));         \
+		reg;                               \
 	})
 
-#define write_system_reg(name, reg) do { \
-		asm volatile("msr "#name", %0;" \
-			"isb;" \
-			: : "r"(reg) \
-		); \
+#define write_system_reg(name, reg)               \
+	do {                                          \
+		__asm__ __volatile__("msr " #name ", %0;" \
+		                     "isb;"               \
+		                     :                    \
+		                     : "r"(reg));         \
 	} while (0)
 
 static inline uint64_t icc_ctlr_el1_read(void) {
@@ -167,8 +163,8 @@ static inline uint64_t aarch64_current_el_read(void) {
 static inline int aarch64_current_el(void) {
 #define CURRENT_EL_OFFSET 2
 #define CURRENT_EL_MASK   0xC
-	return (int) ((aarch64_current_el_read() & CURRENT_EL_MASK)
-			>> CURRENT_EL_OFFSET);
+	return (int)((aarch64_current_el_read() & CURRENT_EL_MASK)
+	             >> CURRENT_EL_OFFSET);
 }
 
 static inline uint64_t aarch64_hcr_el2_read(void) {
