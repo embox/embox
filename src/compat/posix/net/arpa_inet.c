@@ -118,95 +118,156 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 	return 0;
 }
 
-static int str_to_inet(const char *buff, struct in_addr *in) {
+/* convert strinf of dots-and-decimals ip v4 address to binary network order 
+ * return 0 - success, 1 - failure*/
+static int str_to_inet(const char *str, struct in_addr *in) {
 	size_t i;
-	unsigned long addr, val, max_val;
+	unsigned long addr, val;
 
-	assert(buff != NULL);
-	assert(in != NULL);
+    const char *buff = str;
+
+    assert(buff != NULL);
+    assert(in != NULL);
 
 	addr = 0UL;
-	max_val = ULONG_MAX;
 
-	for (i = 0; i < sizeof(in->s_addr8); i++) {
+    for (i = 0; i < sizeof(struct in_addr); i++) {
+        /* if we came across EOL early, out*/
+        if(!*buff)
+            return 1;
+        /* first symbol not a digit - we're out*/
+        if(!isdigit(buff[0]))
+            return 1;
+        /* somewhy padding with 0 in linux isn't accepted, we'll stick to that*/
+        if((isdigit(buff[1])) && buff[0] == '0')
+            return 1;
+        SET_ERRNO(0);
+        val = strtoul(buff, (char **)&buff, 10);
+        if((errno) || (val>UINT8_MAX))
+            return 1; /*we're out if stroul had an error or val > 8 bit max*/
+        /* after stroul buff points to first non digit
+         * and it should be either a '.' or EOL
+         * if not we're out*/
+        if((*buff != '.') && (*buff))
+            return 1;
 
-		errno = 0;
-		val = strtoul(buff, (char **)&buff, 0);
-		if (val == ULONG_MAX) {
-			if (errno != 0) {
-				return 1; /* error: see errno */
-			}
-		}
-		if (val > max_val) {
-			return 1; /* error: invalid address format */
-		}
-		if (*buff != '.') {
-			addr |= val;
-			break;
-		}
-
-		addr |= val << (CHAR_BIT * (sizeof(in->s_addr8) - i - 1));
-		buff ++;
-		max_val >>= CHAR_BIT;
-	}
+        /* build up address in 32 bits */
+        addr |= val << (CHAR_BIT * (sizeof(in->s_addr) - i - 1));
+        /* hop over '.' but if we're at the end of line
+         * stay. If EOL is too early we'll catch with the first condition ^
+         * if */
+        if (*buff)
+            buff++;
+    }
+    /* if *buff !=0 then the address string contains smth else
+     * which is a format error*/
+    if(*buff)
+        return 1;
+    /* catch a trailing '.', that ruins everything =) */
+    if(!isdigit(*(--buff)))
+        return 1;
 
 	in->s_addr = htonl(addr);
-
 	return 0;
 }
 
-static int str_to_inet6(const char *buff, struct in6_addr *in6) {
-	size_t i, zs_ind;
-	unsigned long val;
+/* convert string representation of ip v6 address to network order binary*/
+#define COLON_NONE 16 /* value in denote colon hasn't been found yet*/
+#define DBCL_NONE 8   /* value to denote double colon hasn't been found yet*/
+#define N_16_WORDS 8
+static int str_to_inet6(const char *str, struct in6_addr *in6){
+    uint8_t i;
+    uint8_t i_num = 0; /* curently being parsed numeral index */
+    uint8_t double_colon_at = DBCL_NONE; /*position of double colon in 16b words*/
+    uint8_t prev_colon = COLON_NONE; /*position of the last colon we had in chars*/
+    uint8_t colons = 0; /* number of colons in the string address*/
+    uint8_t dots = 0; /* is string address formated with dots */
+    uint16_t tmp_buf[8] = {0};
+    unsigned long val = 0;
 
-	assert(buff != NULL);
-	assert(in6 != NULL);
+    char *endptr; /*for stroul */
 
-	zs_ind = ARRAY_SIZE(in6->s6_addr16);
-	memset(in6, 0, sizeof *in6);
+    assert(str != NULL);
+    assert(in6 != NULL);
 
-	for (i = 0; i < ARRAY_SIZE(in6->s6_addr16); ++i, ++buff) {
-		if (*buff == ':') {
-			if (zs_ind != ARRAY_SIZE(in6->s6_addr16)) {
-				return 1; /* error: invalid address format */
-			}
-			if ((i == 0) && (*++buff != ':')) {
-				return 1; /* error: invalid address format */
-			}
-			zs_ind = i;
-			++buff;
-			if (*buff == '\0') {
-				break; /* ...:: */
-			}
-		}
-		SET_ERRNO(0);
-		val = strtoul(buff, (char **)&buff, 16);
-		if (errno != 0) {
-			return 1; /* error: see errno */
-		}
-		if (val > USHRT_MAX) {
-			return 1; /* error: invalid address format */
-		}
-		in6->s6_addr16[i] = htons(val);
-		if (*buff != ':') {
-			break;
-		}
-	}
+    for(i=0; str[i]!=0; i++){
+        switch (str[i]) {
+            case ':':
+                prev_colon = i; /*we'll need it to correctly parse dots-part*/
+                colons++; /*keep counting to check format in dots-part*/
+                if(i == 0)
+                    break; /*skip further checks at the begining*/
+                /* check if we have double-colon and save position */
+                if(str[i-1] == ':'){
+                    if(double_colon_at == DBCL_NONE){
+                        double_colon_at = i_num;
+                        break;
+                    }
+                    /* in case we already have double colon - fmt error*/
+                    return 1;
+                }
+                break;
+            case '.': 
+                if(colons>6) /* if we already had more than 6 colons - fmt error*/
+                    return 1;
+                if((double_colon_at == DBCL_NONE) && (colons != 6))
+                    return 1; /*If we're at the dot,  and there were no double
+                                colons, then we should have come across exactly
+                                6 colons before - otherwise fmt error*/
+                if(prev_colon != COLON_NONE){
+                    /* we have to return to previous numeral and reinterpret it
+                     * as the begining of dotted part*/
+                    i_num--;
+                    i = prev_colon+1;
+                    if(!isdigit(str[i])) /*we're axpecting a decimal here */
+                        return 1;        /* otherwise fmt error*/
+                    /* feed the rest to the v4 str_to_inet function*/
+                    if(str_to_inet(&str[i], (struct in_addr *)&tmp_buf[i_num]))
+                        return 1; /* if it didn't succed - we're out*/
+                    i_num += 2;  /*finished with the last 2 16b words */
+                    for(;str[i+1] != 0;) /* come out of the whole cycle-we're done*/
+                        i++;
+                    dots++;
+                    break;
+                } 
+                return 1; /* there were no colons before dots - fmt error*/
+            default:  
+                /* we're looking for a hex digit, if it isn't we're out - fmt error*/
+                if(!isxdigit(str[i]))
+                    return 1;
+                SET_ERRNO(0);
+                val = strtoul(&str[i], &endptr,16);
+                if((errno) || (val>USHRT_MAX))
+                    return 1; /*we're out if stroul had an error or val > 16 bit max*/
+                tmp_buf[i_num++] = htons(val);
+                i += endptr - &str[i] - 1;  /*skip to the next delimiter*/
+        } 
+    }
 
-	if ((zs_ind == ARRAY_SIZE(in6->s6_addr16))
-			&& (i != ARRAY_SIZE(in6->s6_addr16))) {
-		return 1; /* error: invalid address format */
-	}
-
-	memmove(&in6->s6_addr16[ARRAY_SIZE(in6->s6_addr16) - (i - zs_ind + 1)],
-			&in6->s6_addr16[zs_ind],
-			(i - zs_ind + 1) * sizeof in6->s6_addr16[0]);
-	memset(&in6->s6_addr16[zs_ind], 0,
-			(ARRAY_SIZE(in6->s6_addr16) - i - 1) * sizeof in6->s6_addr16[0]);
-
-	return 0;
+    /* fill out output structure */
+    if(double_colon_at == DBCL_NONE){ /* if there was no double colon - simple case*/
+        if((colons == 7) || ((colons == 6) && dots)){
+            memcpy(in6, tmp_buf, sizeof(struct in6_addr));
+            return 0;
+        } else 
+            return 1; /* If there were no double colon, then it should have
+                         either 7 colons and not dots-part or 6 colons 
+                         and dots-part. Otherwise - fmt error*/
+    }
+    /* if there was double colon notation */
+    int k=0, l=0;
+    int zeros = N_16_WORDS - i_num;
+    for (; k<double_colon_at; l++, k++){
+        in6->s6_addr16[k] = tmp_buf[l];
+    }
+    for (; k<double_colon_at+zeros; k++){
+        in6->s6_addr16[k] = 0;
+    }
+    for (; k<N_16_WORDS; k++, l++){
+        in6->s6_addr16[k] = tmp_buf[l];
+    }
+    return 0;
 }
-
 char * inet_ntoa(struct in_addr in) {
 	static char buff[INET_ADDRSTRLEN];
 	return 0 == inet_to_str(&in, &buff[0], ARRAY_SIZE(buff))
