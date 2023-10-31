@@ -19,9 +19,9 @@ void context_init(struct context *ctx, unsigned int flags,
 
 	ctx->sp = (unsigned long) sp;
 	ctx->ra = (unsigned long) routine_fn;
-	ctx->mstatus = read_csr(mstatus);
+	ctx->mstatus = read_csr(STATUS_REG);
 
 	if (flags & CONTEXT_IRQDISABLE) {
-		ctx->mstatus &= ~(MSTATUS_MIE);
+		ctx->mstatus &= ~(STATUS(IE));
 	}
 }

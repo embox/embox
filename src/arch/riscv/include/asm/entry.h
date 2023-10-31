@@ -11,6 +11,7 @@
 #define RISCV_ENTRY_H_
 
 #include <asm/asm.h>
+#include <asm/regs.h>
 #include <asm/ptrace.h>
 
 #ifdef __ASSEMBLER__
@@ -51,9 +52,9 @@
 	PTR_S   t4, PT_R29(sp)
 	PTR_S   t5, PT_R30(sp)
 
-	csrr    t6, mstatus
+	csrr    t6, STATUS_REG
 	PTR_S   t6, PT_MSTATUS(sp)
-	csrr    t6, mepc
+	csrr    t6, EPC_REG
 	PTR_S   t6, PT_PC(sp)
 .endm
 
@@ -89,10 +90,10 @@
 	PTR_L   t5, PT_R30(sp)
 
 	PTR_L   t6, PT_MSTATUS(sp)
-	csrw    mstatus, t6
+	csrw    STATUS_REG, t6
 
 	PTR_L   t6, PT_PC(sp)
-	csrw    mepc, t6
+	csrw    EPC_REG, t6
 
 	PTR_L   t6, PT_R31(sp)
 

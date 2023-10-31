@@ -6,6 +6,7 @@
  * @date 06.07.23
  */
 #include <asm/asm.h>
+#include <asm/regs.h>
 #include <hal/cpu.h>
 
 .section .init, "ax"
@@ -36,13 +37,17 @@ _start:
 	 * register.
 	 */
 	la      t0, riscv_trap_handler
-	csrw    mtvec, t0
+	csrw    TRAP_VECTOR_REG, t0
 
 	/**
 	 * Continue on hart lottery winner, others branch to
 	 * secondary_hart_loop.
 	 */
+#if SMODE
+	add     t0, a0, 0
+#else
 	csrr    t0, mhartid
+#endif
 	bnez    t0, secondary_hart_loop
 
 	/* Set up stack pointer. */

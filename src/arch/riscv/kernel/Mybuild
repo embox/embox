@@ -6,6 +6,7 @@ module boot extends embox.arch.boot {
 
 module arch extends embox.arch.arch {
 	source "arch.c"
+    option boolean smode = false
 }
 
 module locore extends embox.arch.locore {
