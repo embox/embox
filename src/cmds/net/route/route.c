@@ -17,6 +17,7 @@
 
 #include <net/l3/route.h>
 #include <net/inetdevice.h>
+#include "stdlib.h"
 
 #define FLAG_N 0x01
 
@@ -62,6 +63,7 @@ int main(int argc, char **argv) {
 	enum target_type tar_t = NET;
 	int d_flags = 0x0, i;
 	char **tmp;
+
 
 	for (tmp = argv; *tmp != NULL; tmp++) {
 		if (!strcmp(*tmp, "-net") || !strcmp(*tmp, "-host")) {
@@ -118,6 +120,20 @@ int main(int argc, char **argv) {
 	if (!argc) {
 		printf("Missing target.\n");
 		return -EINVAL;
+	}
+
+	/* Check if the address contains mask and save netmask if given */
+	char *slash = strchr(argv[0], '/');
+	if (slash != NULL) {
+		char *endptr;
+		*slash++ = '\0';
+		errno = 0;
+		int preflen = strtoul(slash, &endptr, 10);
+		if ((errno) || (preflen < 0) || (preflen > 32) || (*endptr)) {
+			printf("Bad prefixlen or CIDR notation\n");
+			return -EINVAL;
+		}
+		netmask = htonl(~(0xffffffffU >> preflen));
 	}
 
 	if (!strcmp(argv[0], "default")) {
