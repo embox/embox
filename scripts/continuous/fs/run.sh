@@ -61,8 +61,11 @@ run_qemu_fs() {
 		iso9660)
 			img_mount="\"mount -t $FS /dev/cd0 /mnt/fs_test\","
 			;;
-		cifs | nfs)
+		nfs)
 			img_mount="\"mount -t $FS 10.0.2.10:$IMG /mnt/fs_test\","
+			;;
+		cifs)
+			img_mount="\"mount -t $FS 10.0.2.10$IMG /mnt/fs_test\","
 			;;
 	esac
 
