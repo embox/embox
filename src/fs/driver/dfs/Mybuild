@@ -21,7 +21,12 @@ module dfs {
 	depends flash_cache
 }
 
-module flash_cache {
+@DefaultImpl(flash_cache_block)
+abstract module flash_cache {
+
+}
+
+module flash_cache_block extends flash_cache {
 	source "flash_cache.c"
 	option number page_size = 4
 	option number block_size = 131072 /* 128kb */
@@ -29,3 +34,10 @@ module flash_cache {
 	option boolean use_ram_section = false
 }
 
+module flash_cache_ram extends flash_cache {
+	source "flash_cache.c"
+	option number page_size = 4
+	option number block_size = 131072 /* 128kb */
+	option boolean use_ram_as_cache = false
+	option boolean use_ram_section = false
+}
