@@ -64,7 +64,7 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 		timeout--;
 	}
 
-	if (s != I2C_DRIVER_OK) {
+	if (s == I2C_DRIVER_BUS_ERROR) {
 		I2C_driver_recover_from_error();
 	}
 
