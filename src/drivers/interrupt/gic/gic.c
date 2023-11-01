@@ -34,31 +34,55 @@
 #define GIC_SPURIOUS_IRQ 0x3FF
 
 static int gic_ctrl_init(void) {
-	uint32_t reg;
-	size_t num;
+	uint64_t reg64;
+	uint32_t reg32;
 
+#if GIC_VERSION == 3
+	/* Distributor configuration */
+	REG32_ORIN(GICD_CTLR,
+	    GICD_CTLR_ARE_NS | GICD_CTLR_GRP1_NS | GICD_CTLR_GRP0);
+	/* Redistributor configuration */
+	REG32_CLEAR(GICR_WAKER, GICR_WAKER_PS);
+	// while (!(REG32_LOAD(GICR_WAKER) & GICR_WAKER_CA)) {}
+
+	/* CPU interface configuration */
+#if __aarch64__
+	reg64 = icc_sre_el1_read();
+	icc_sre_el1_write(reg64 | ICC_SRE_EN);
+	reg64 = icc_sre_el2_read();
+	icc_sre_el2_write(reg64 | ICC_SRE_EN);
+	icc_pmr_el1_write(0xFF);
+	reg64 = icc_ctlr_el1_read();
+	icc_ctlr_el1_write(reg64 | 0x1);
+	icc_igrpen0_el1_write(0x1);
+	icc_igrpen1_el1_write(0x3);
+#else  /* __aarch64__ */
+/* TODO: aarch32 support */
+#endif /* __aarch64__ */
+#else  /* GIC_VERSION */
 	/* Enable interrupts of all priorities */
-	reg = REG32_LOAD(GICC_PMR);
-	reg = FIELD_SET(reg, GICD_PMR_PRIOR, 0xff);
-	REG32_STORE(GICC_PMR, reg);
+	reg32 = REG32_LOAD(GICC_PMR);
+	reg32 = FIELD_SET(reg32, GICD_PMR_PRIOR, 0xff);
+	REG32_STORE(GICC_PMR, reg32);
 
 	/* Configure control registers */
 	REG32_ORIN(GICD_CTLR, GICD_CTLR_EN);
 	REG32_ORIN(GICC_CTLR, GICC_CTLR_EN);
+#endif /* GIC_VERSION */
 
-	/* Print info */
-	reg = REG32_LOAD(GICD_TYPER);
-	num = FIELD_GET(reg, GICD_TYPER_ITLINES);
-	log_info("Number of SPI: %zi", num);
-	num = FIELD_GET(reg, GICD_TYPER_CPU);
-	log_info("Number of supported CPU interfaces: %zi", num);
-	log_info("Secutity Extension %s implemented",
-	    (reg & GICD_TYPER_SECEXT) ? "" : "not");
-	if (reg & GICD_TYPER_SECEXT) {
-		num = FIELD_GET(reg, GICD_TYPER_LSPI);
-		log_info("Number of LSPI: %zi", num);
+	/* Print info if log_levle >= 3 */
+	reg32 = REG32_LOAD(GICD_TYPER);
+
+	log_info("Number of SPI: %i", (int)FIELD_GET(reg32, GICD_TYPER_ITLINES));
+	log_info("Number of supported CPU interfaces: %i",
+	    (int)FIELD_GET(reg32, GICD_TYPER_CPU));
+
+	if (reg32 & GICD_TYPER_SECEXT) {
+		log_info("Secutity Extension implemented");
+		log_info("Number of LSPI: %i", (int)FIELD_GET(reg32, GICD_TYPER_LSPI));
 	}
 	else {
+		log_info("Secutity Extension not implemented");
 		log_info("LSPI not implemented");
 	}
 
@@ -112,16 +136,65 @@ int irqctrl_pending(unsigned int irq) {
 void irqctrl_eoi(unsigned int irq) {
 	assert(irq_nr_valid(irq));
 
+#if GIC_VERSION == 3
+#if __aarch64__
+	icc_eoir1_el1_write(irq);
+#else  /* __aarch64__ */
+/* TODO: aarch32 support */
+#endif /* __aarch64__ */
+#else  /* GIC_VERSION */
 	REG32_STORE(GICC_EOIR, irq);
+#endif /* GIC_VERSION */
 }
 
+static int gic_irqctrl_init(void) {
+	__irqctrl_init();
+
+	return 0;
+}
+
+IRQCTRL_DEF(gic, gic_irqctrl_init);
+
+void irqctrl_enable(unsigned int irq) {
+	assert(irq_nr_valid(irq));
+
+	__irqctrl_enable(irq);
+}
+
+void irqctrl_disable(unsigned int irq) {
+	assert(irq_nr_valid(irq));
+
+	__irqctrl_disable(irq);
+}
+
+void irqctrl_force(unsigned int irq) {
+}
+
+int irqctrl_pending(unsigned int irq) {
+	return 0;
+}
+
+/* Sends an EOI (end of interrupt) signal to the PICs. */
+void irqctrl_eoi(unsigned int irq) {
+	assert(irq_nr_valid(irq));
+
+	__irqctrl_eoi(irq);
+}
 void interrupt_handle(void) {
 	unsigned int irq;
 
+#if GIC_VERSION == 3
+#if __aarch64__
+	irq = icc_iar1_el1_read() & 0xffffff;
+#else  /* __aarch64__ */
+/* TODO: aarch32 support */
+#endif /* __aarch64__ */
+#else  /* GIC_VERSION */
 	irq = REG32_LOAD(GICC_IAR);
 	if (irq == GIC_SPURIOUS_IRQ) {
 		return;
 	}
+#endif /* GIC_VERSION */
 
 	assert(irq_nr_valid(irq));
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
@@ -146,10 +219,9 @@ void swi_handle(void) {
 }
 
 PERIPH_MEMORY_DEFINE(gicd, GICD_BASE, 0x1000);
+
+#if GIC_VERSION < 3
 PERIPH_MEMORY_DEFINE(gicc, GICC_BASE, 0x2000);
-
-#if GIC_VERSION >= 3
-PERIPH_MEMORY_DEFINE(gicr, GICR_BASE, 0xc0000);
+#else
+PERIPH_MEMORY_DEFINE(gicr, GICR_BASE, 0x2000);
 #endif
-
-IRQCTRL_DEF(gic, gic_ctrl_init);

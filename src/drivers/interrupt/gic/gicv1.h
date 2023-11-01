@@ -28,6 +28,16 @@
 #define GICD_SGIR          (GICD_BASE + 0xf00)         /* Software Generated Interrupt Register */
 #define GICD_CPENDSGIR(n)  (GICD_BASE + 0xf10 + 4 * n) /* SGI Clear-Pending Registers */
 #define GICD_SPENDSGIR(n)  (GICD_BASE + 0xf20 + 4 * n) /* SGI Set-Pending Registers */
+
+#define GICC_CTLR  (GICC_BASE + 0x0000) /* CPU Interface Control Register */
+#define GICC_PMR   (GICC_BASE + 0x0004) /* Interrupt Priority Mask Register */
+#define GICC_BPR   (GICC_BASE + 0x0008) /* Binary Point Register */
+#define GICC_IAR   (GICC_BASE + 0x000C) /* Interrupt Acknowledge Register */
+#define GICC_EOIR  (GICC_BASE + 0x0010) /* End of Interrupt Register */
+#define GICC_RPR   (GICC_BASE + 0x0014) /* Running Priority Register */
+#define GICC_HPPIR (GICC_BASE + 0x0018) /* Highest Priority Pending Interrupt Register */
+#define GICC_ABPR  (GICC_BASE + 0x001C) /* Aliased Binary Point Register */
+#define GICC_IIDR  (GICC_BASE + 0x00FC) /* CPU Interface Identification Register */
 /* clang-format on */
 
 /* GICD_CTLR */
@@ -48,18 +58,6 @@
 #define GICD_TYPER_ITLINES       /* Max number of interrupt: 32(N+1) */
 #define GICD_TYPER_ITLINES_MASK  0x1fU
 #define GICD_TYPER_ITLINES_SHIFT 0
-
-/* clang-format off */
-#define GICC_CTLR  (GICC_BASE + 0x0000) /* CPU Interface Control Register */
-#define GICC_PMR   (GICC_BASE + 0x0004) /* Interrupt Priority Mask Register */
-#define GICC_BPR   (GICC_BASE + 0x0008) /* Binary Point Register */
-#define GICC_IAR   (GICC_BASE + 0x000C) /* Interrupt Acknowledge Register */
-#define GICC_EOIR  (GICC_BASE + 0x0010) /* End of Interrupt Register */
-#define GICC_RPR   (GICC_BASE + 0x0014) /* Running Priority Register */
-#define GICC_HPPIR (GICC_BASE + 0x0018) /* Highest Priority Pending Interrupt Register */
-#define GICC_ABPR  (GICC_BASE + 0x001C) /* Aliased Binary Point Register */
-#define GICC_IIDR  (GICC_BASE + 0x00FC) /* CPU Interface Identification Register */
-/* clang-format on */
 
 /* GICC_CTLR */
 #define GICC_CTLR_EN (1U << 0) /* Enable signaling of interrupts */
