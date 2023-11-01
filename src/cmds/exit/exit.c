@@ -5,21 +5,29 @@
  * @author  Anton Kozlov
  * @date    30.06.2014
  */
-
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdio.h>
+
+#include <hal/arch.h>
+#include <kernel/task.h>
+#include <kernel/task/kernel_task.h>
 
 int main(int argc, char *argv[]) {
-	int ecode = 0;
+	char *endptr;
+	int ecode;
 
-	if ((0 == strcmp(argv[0], "exit")) && argc != 1) {
-		char *eptr;
+	if (task_self() == task_kernel_task()) {
+		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+	}
 
-		ecode = strtol(argv[1], &eptr, 0);
-		if (*eptr != '\0') {
-			ecode = 255;
+	ecode = 0;
+
+	if (argc > 1) {
+		ecode = strtol(argv[1], &endptr, 0);
+		if (*endptr != '\0') {
 			fprintf(stderr, "exit: exit code should be numerical value\n");
+			ecode = 255;
 		}
 	}
 
