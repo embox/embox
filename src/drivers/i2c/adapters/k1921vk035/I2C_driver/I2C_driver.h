@@ -16,9 +16,10 @@
  * State of the I2C driver.
  */
 typedef enum __attribute__((__packed__)) {
-    I2C_DRIVER_BUSY = 0, /**< Operations still in progress */
-    I2C_DRIVER_OK,       /**< All operations successful */
-    I2C_DRIVER_ERROR     /**< Error encountered in one of the operations */
+    I2C_DRIVER_BUSY = 0,     /**< Operations still in progress */
+    I2C_DRIVER_OK,           /**< All operations successful */
+    I2C_DRIVER_DEVICE_ERROR, /**< Error encountered in one of the operations */
+    I2C_DRIVER_BUS_ERROR     /**< Error encountered in one of the operations */
 } I2C_driver_state_t;
 
 /**
@@ -79,5 +80,7 @@ void I2C_driver_read(uint8_t address, uint8_t* data, uint8_t size);
 // Still need is_done for it though
 
 void I2C_IRQHandler();
+
+I2C_driver_state_t I2C_driver_recover_from_error();
 
 #endif //_I2C_DRIVER

@@ -46,7 +46,7 @@ void restart_or_stop() {
 
 void I2C_IRQHandler() {
     switch (I2C_GetState()) {
-        case I2C_State_STDONE: // start/
+        case I2C_State_STDONE: // start
         case I2C_State_RSDONE: // repeated start
             I2C_SetData(I2C_driver.operations[I2C_driver.operations_start].address);
             I2C_driver.state = I2C_DRIVER_BUSY;
@@ -92,7 +92,7 @@ void I2C_IRQHandler() {
                 }
                 I2C_driver.state = I2C_DRIVER_BUSY;
             } else {
-                I2C_driver.state = I2C_DRIVER_ERROR;
+                I2C_driver.state = I2C_DRIVER_BUS_ERROR;
             }
             break;
         case I2C_State_MRDANA: // reading -- data byte received, nack
@@ -102,18 +102,21 @@ void I2C_IRQHandler() {
                     .data[I2C_driver.operations[I2C_driver.operations_start].start++] = I2C_GetData();
                 restart_or_stop();
             } else {
-                I2C_driver.state = I2C_DRIVER_ERROR;
+                I2C_driver.state = I2C_DRIVER_BUS_ERROR;
             }
             break;
-        case I2C_State_IDLE: // idle, no information about status
-        case I2C_State_IDLARL: // losing arbitrage
         case I2C_State_MTADNA: // writing -- device address sent, nack
         case I2C_State_MTDANA: // writing -- data byte sent, nack
         case I2C_State_MRADNA: // reading -- device address sent, nack
+            I2C_driver.state = I2C_DRIVER_DEVICE_ERROR;
+            I2C_StopCmd();
+            break;
+        case I2C_State_IDLE: // idle, no information about status
+        case I2C_State_IDLARL: // losing arbitrage
         case I2C_State_MTMCER: // speed change code sent, error
         default:
-            I2C_StopCmd();
-            I2C_driver.state = I2C_DRIVER_ERROR;
+            // no point trying to send stop, we've lost master status
+            I2C_driver.state = I2C_DRIVER_BUS_ERROR;
             break;
     }
     I2C_ITStatusClear();
@@ -137,6 +140,55 @@ I2C_driver_state_t I2C_driver_is_done() {
         }
     }
     return I2C_driver.state;
+}
+
+I2C_driver_state_t I2C_driver_recover_from_error() {
+    I2C_ITCmd(DISABLE);
+
+    I2C_Cmd(DISABLE);
+    I2C_Cmd(ENABLE);
+    I2C_SlaveCmd(DISABLE);
+
+    if (!I2C->CST_bit.TSDA) {
+        I2C->CST_bit.TGSCL = 1;
+        while (I2C->CST_bit.TGSCL)
+            ;
+    }
+
+    if (!I2C->CST_bit.TSDA) {
+        return I2C_DRIVER_BUS_ERROR;
+    }
+
+    I2C_StartCmd();
+
+    while (!I2C_ITStatus())
+        ;
+
+    if (I2C_GetState() != I2C_State_STDONE) {
+        return I2C_DRIVER_BUS_ERROR;
+    }
+
+    I2C_SetData(2); // reserved i2c address
+    I2C_ITStatusClear();
+
+    while (!I2C_ITStatus())
+        ;
+
+    if (I2C_GetState() != I2C_State_MTADNA) {
+        return I2C_DRIVER_BUS_ERROR;
+    }
+
+    I2C_StopCmd();
+    I2C_ITStatusClear();
+
+    while (I2C->CTL0_bit.STOP)
+        ;
+
+    I2C_ITStatusClear();
+
+    I2C_ITCmd(ENABLE);
+
+    return I2C_DRIVER_OK;
 }
 
 // Slightly higher-level API:

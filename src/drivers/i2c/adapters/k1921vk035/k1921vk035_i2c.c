@@ -25,6 +25,7 @@ static pthread_mutex_t lock;
 
 #endif
 
+
 static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs, int num) {
 	I2C_driver_operation_t ops[num];
 
@@ -57,10 +58,14 @@ static int k1921vk035_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_ms
 		}
 #endif
 		if (!timeout) {
-			s = I2C_DRIVER_ERROR;
+			s = I2C_DRIVER_BUS_ERROR;
 			break;
 		}
 		timeout--;
+	}
+
+	if (s != I2C_DRIVER_OK) {
+		I2C_driver_recover_from_error();
 	}
 
 #if I2C_THREADSAFE
