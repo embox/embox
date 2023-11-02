@@ -21,6 +21,7 @@ int main(int argc, char *argv[]) {
 	char *ramdisk_path = "/dev/ramdisk#";
 	struct ramdisk *rd;
 	int opt;
+	int exit_code;
 
 	while (-1 != (opt = getopt(argc, argv, "s:"))) {
 		switch (opt) {
@@ -37,10 +38,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	rd = ramdisk_create(ramdisk_path, ramdisk_size);
+	
+	exit_code = err(rd);
 
-	if (NULL != rd) {
+	if (!exit_code) {
 		printf("%s\n", block_dev_name(rd->bdev));
 	}
 
-	return err(rd);
+	return exit_code;
 }
