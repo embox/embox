@@ -22,6 +22,12 @@
 				OPTION_MODULE_GET(embox__driver__flash__flash_cache_ram, \
 								BOOLEAN, use_ram_section)
 
+#if FLASH_CACHE_USE_RAM_SECTION
+#define FLASH_CACHE_SECTION      __attribute__((section(".dfs_cache_section")))
+#else
+#define FLASH_CACHE_SECTION
+#endif
+
 static inline int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
 }

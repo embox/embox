@@ -18,6 +18,8 @@
 #include <drivers/flash/flash.h>
 #include <framework/mod/options.h>
 
+extern uintptr_t flash_cache_addr(struct flash_dev *dev);
+
 #if defined USE_STM32L475E_IOT01
 #include "stm32l475e_iot01.h"
 #include "stm32l475e_iot01_qspi.h" // includes "../Components/mx25r6435f/mx25r6435f.h"
@@ -165,6 +167,8 @@ static int qspi_flash_init(struct flash_dev *dev, void *arg) {
 	};
 	flash->fld_aligned_word = &qspi_flash_aligned_word;
 	flash->fld_word_size = 4;
+
+	flash->fld_cache = flash_cache_addr(flash);
 
 	return 0;
 }

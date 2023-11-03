@@ -31,6 +31,8 @@
 
 extern char _flash_start, _flash_end;
 
+extern uintptr_t flash_cache_addr(struct flash_dev *dev);
+
 #define STM32_FLASH_START ((uint32_t) &_flash_start)
 #define STM32_FLASH_END   ((uint32_t) &_flash_end)
 
@@ -172,6 +174,7 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	};
 	flash->fld_aligned_word = stm32_flash_aligned_word;
 	flash->fld_word_size = STM32_FLASH_WORD;
+	flash->fld_cache = flash_cache_addr(flash);
 	
 	stm32_flash_first_sector =
 		(STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) /
