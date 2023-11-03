@@ -9,12 +9,9 @@
 #ifndef _FLASH_CACHE_BLOCK_H_
 #define _FLASH_CACHE_BLOCK_H_
 
-#include <stdint.h>
-#include <string.h>
-
-#include <util/math.h>
-
 #include <drivers/flash/flash.h>
+
+#define FLASH_CACHE_DEF(name, word_size, block_size)
 
 #define flash_cache_clean(flashdev, block)        \
 						flash_erase(flashdev, block)

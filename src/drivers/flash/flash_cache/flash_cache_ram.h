@@ -28,6 +28,11 @@
 #define FLASH_CACHE_SECTION
 #endif
 
+#define FLASH_CACHE_DEF(name, word_size, block_size) \
+			static uint8_t name ## _block_buffer[word_size] \
+						FLASH_CACHE_SECTION	\
+						__attribute__ ((aligned(block_size)))
+
 static inline int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
 }
