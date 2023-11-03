@@ -16,6 +16,12 @@
 
 #include <drivers/flash/flash.h>
 
+#define FLASH_CACHE_IN_RAM     1
+
+#define FLASH_CACHE_USE_RAM_SECTION \
+				OPTION_MODULE_GET(embox__driver__flash__flash_cache_ram, \
+								BOOLEAN, use_ram_section)
+
 static inline int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
 	return 0;
 }
