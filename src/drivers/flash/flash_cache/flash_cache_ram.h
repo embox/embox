@@ -10,9 +10,6 @@
 #define _FLASH_CACHE_RAM_H_
 
 #include <stdint.h>
-#include <string.h>
-
-#include <util/math.h>
 
 #include <drivers/flash/flash.h>
 
@@ -32,6 +29,9 @@
 			static uint8_t name ## _block_buffer[word_size] \
 						FLASH_CACHE_SECTION	\
 						__attribute__ ((aligned(block_size)))
+
+#define FLASH_CACHE_GET(fdev, cache_name) \
+				((uintptr_t) cache_name ## _block_buffer)
 
 extern int flash_cache_clean(struct flash_dev *flashdev, uint32_t block);
 
