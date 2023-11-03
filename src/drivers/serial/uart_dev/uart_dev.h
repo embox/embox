@@ -39,13 +39,13 @@ struct uart_params {
 
 
 #define UART_PARAM_FLAGS_PARITY(parity)    ((parity & 0x3) << 0)
-#define UART_PARAM_FLAGS_PARITY_MASK(fl)   ((fl & 0x3) << 0)
+#define UART_PARAM_FLAGS_PARITY_MASK(fl)   (fl & (0x3 << 0))
 #define UART_PARAM_FLAGS_PARITY_NONE          UART_PARAM_FLAGS_PARITY(0x0)
 #define UART_PARAM_FLAGS_PARITY_ODD           UART_PARAM_FLAGS_PARITY(0x1)
 #define UART_PARAM_FLAGS_PARITY_EVEN          UART_PARAM_FLAGS_PARITY(0x2)
 
 #define UART_PARAM_FLAGS_HWCRTL(type)      ((type & 0x3) << 2)
-#define UART_PARAM_FLAGS_HWCTRL_MASK(fl)   ((fl & 0x3) << 2)
+#define UART_PARAM_FLAGS_HWCTRL_MASK(fl)   (fl & (0x3 << 2))
 #define UART_PARAM_FLAGS_HWCRTL_NONE          UART_PARAM_FLAGS_HWCRTL(0x0)
 #define UART_PARAM_FLAGS_HWCRTL_CTS           UART_PARAM_FLAGS_HWCRTL(0x1)
 #define UART_PARAM_FLAGS_HWCRTL_RTS           UART_PARAM_FLAGS_HWCRTL(0x2)
@@ -54,14 +54,14 @@ struct uart_params {
 #define UART_PARAM_FLAGS_USE_IRQ           (0x1 << 4)
 
 #define UART_PARAM_FLAGS_STOPS(len)        (((len) & 0x3) << 5)
-#define UART_PARAM_FLAGS_STOPS_MASK(fl)    ((fl & 0x3) << 5)
+#define UART_PARAM_FLAGS_STOPS_MASK(fl)    (fl & (0x3 << 5))
 #define UART_PARAM_FLAGS_1_STOP               UART_PARAM_FLAGS_STOPS(0x0)
 #define UART_PARAM_FLAGS_2_STOP               UART_PARAM_FLAGS_STOPS(0x1)
 #define UART_PARAM_FLAGS_0_5_STOP             UART_PARAM_FLAGS_STOPS(0x2)
 #define UART_PARAM_FLAGS_1_5_STOP             UART_PARAM_FLAGS_STOPS(0x3)
 
 #define UART_PARAM_FLAGS_BIT_WORD(len)     (((len - 4) & 0x7) << 8)
-#define UART_PARAM_FLAGS_BIT_WORD_MASK(fl) ((fl & 0x7) << 8)
+#define UART_PARAM_FLAGS_BIT_WORD_MASK(fl) (fl & (0x7 << 8))
 #define UART_PARAM_FLAGS_5BIT_WORD            UART_PARAM_FLAGS_BIT_WORD(5)
 #define UART_PARAM_FLAGS_6BIT_WORD            UART_PARAM_FLAGS_BIT_WORD(6)
 #define UART_PARAM_FLAGS_7BIT_WORD            UART_PARAM_FLAGS_BIT_WORD(7)
@@ -70,7 +70,7 @@ struct uart_params {
 #define UART_PARAM_FLAGS_10BIT_WORD           UART_PARAM_FLAGS_BIT_WORD(10)
 
 #define UART_PARAM_FLAGS_DEV_TYPE(type)    ((type & 0xF) << 16)
-#define UART_PARAM_FLAGS_DEV_TYPE_MASK(fl) ((fl & 0xF) << 16)
+#define UART_PARAM_FLAGS_DEV_TYPE_MASK(fl) (fl & (0xF << 16))
 #define UART_PARAM_FLAGS_DEV_TYPE_UART        UART_PARAM_FLAGS_DEV_TYPE(0)
 #define UART_PARAM_FLAGS_DEV_TYPE_RS485       UART_PARAM_FLAGS_DEV_TYPE(1)
 #define UART_PARAM_FLAGS_DEV_TYPE_ISO7816     UART_PARAM_FLAGS_DEV_TYPE(2)
