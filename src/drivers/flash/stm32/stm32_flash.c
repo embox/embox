@@ -19,24 +19,34 @@
  * @date    23.10.2014
  */
 
+#include <util/log.h>
+
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+
+#include <util/macro.h>
 #include <util/math.h>
-#include <util/log.h>
 
 #include <drivers/flash/flash.h>
+#include <drivers/flash/flash_cache.h>
+
 #include <drivers/block_dev/flash/stm32flash.h>
 
-extern char _flash_start, _flash_end;
+#define FLASH_NAME     stm32flash
 
-extern uintptr_t flash_cache_addr(struct flash_dev *dev);
+FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, STM32_FLASH_SECTOR_SIZE);
+
+extern char _flash_start, _flash_end;
 
 #define STM32_FLASH_START ((uint32_t) &_flash_start)
 #define STM32_FLASH_END   ((uint32_t) &_flash_end)
 
-static unsigned int stm32_flash_first_sector;
+
+#define FLASH_START_SECTOR \
+			((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / \
+						STM32_FLASH_SECTOR_SIZE)
 
 static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD] 
 			__attribute__ ((aligned(STM32_FLASH_WORD)));
@@ -62,7 +72,7 @@ static int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	/* block is relative to flash beginning with not
 	 * the actual ROM start address. So calculate the new sector
 	 * in terms of ROM start address. */
-	block += stm32_flash_first_sector;
+	block += FLASH_START_SECTOR;
 	log_debug("Erase global block %d\n", block);
 
 	stm32_fill_flash_erase_struct(&erase_struct, block);
@@ -160,7 +170,7 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 
 	assert((STM32_FLASH_FLASH_SIZE % STM32_FLASH_SECTOR_SIZE) == 0);
 
-	flash = flash_create("stm32flash", STM32_FLASH_FLASH_SIZE);
+	flash = flash_create(MACRO_STRING(FLASH_NAME), STM32_FLASH_FLASH_SIZE);
 	if (flash == NULL) {
 		log_error("Failed to create flash device!");
 		return -1;
@@ -174,19 +184,17 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	};
 	flash->fld_aligned_word = stm32_flash_aligned_word;
 	flash->fld_word_size = STM32_FLASH_WORD;
-	flash->fld_cache = flash_cache_addr(flash);
+
+	flash->fld_cache = FLASH_CACHE_GET(flash, FLASH_NAME);
 	
-	stm32_flash_first_sector =
-		(STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) /
-		STM32_FLASH_SECTOR_SIZE;
 	/* We are using only first STM32_FLASH_SECTORS_COUNT sectors */
-	assert((flash->block_info[0].blocks + stm32_flash_first_sector) <=
+	assert((flash->block_info[0].blocks + FLASH_START_SECTOR) <=
 		(STM32_FLASH_SECTOR_SIZE * STM32_FLASH_SECTORS_COUNT));
 
 	log_debug("");
 	log_debug("Flash info:");
 	log_debug("  Flash start address = 0x%08x", STM32_FLASH_START);
-	log_debug("  Flash start sector  = %d", stm32_flash_first_sector);
+	log_debug("  Flash start sector  = %d", FLASH_START_SECTOR);
 	log_debug("  Flash size   = 0x%x", flash->size);
 	log_debug("  Block size   = 0x%x", flash->block_info[0].block_size);
 	log_debug("  Blocks count = 0x%x", flash->block_info[0].blocks);
@@ -202,4 +210,4 @@ static const struct flash_dev_drv stm32_flash_drv = {
 	.flash_program = stm32_flash_program,
 };
 
-FLASH_DEV_DEF("stm32flash", &stm32_flash_drv);
+FLASH_DEV_DEF(MACRO_STRING(FLASH_NAME), &stm32_flash_drv);
