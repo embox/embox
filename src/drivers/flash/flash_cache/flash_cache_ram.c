@@ -16,14 +16,9 @@
 
 #include <framework/mod/options.h>
 
-#define NAND_PAGE_SIZE         OPTION_GET(NUMBER, page_size)
-#define NAND_BLOCK_SIZE        OPTION_GET(NUMBER, block_size)
+//#define NAND_PAGE_SIZE         OPTION_GET(NUMBER, page_size)
+//#define NAND_BLOCK_SIZE        OPTION_GET(NUMBER, block_size)
 
-FLASH_CACHE_DEF(cache, NAND_PAGE_SIZE, NAND_BLOCK_SIZE);
-
-uintptr_t flash_cache_addr(struct flash_dev *flashdev) {
-	return (uintptr_t) FLASH_CACHE_GET(flashdev, cache);
-}
 
 int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
 	return 0;

@@ -7,12 +7,8 @@
 
 #include <stdint.h>
 #include <stddef.h>
-//#include <string.h>
-
-//#include <util/math.h>
 
 #include <drivers/flash/flash.h>
-
 #include <drivers/flash/flash_cache.h>
 
 
