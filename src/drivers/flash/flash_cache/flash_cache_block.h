@@ -13,7 +13,7 @@
 
 #include <drivers/flash/flash.h>
 
-#define FLASH_CACHE_DEF(name, word_size, block_size)
+#define FLASH_CACHE_DEF(cache_name, word_size, block_size)
 
 #define FLASH_CACHE_GET(fdev, cache_name) \
 			((uintptr_t)fdev->block_info[0].blocks - 1)
