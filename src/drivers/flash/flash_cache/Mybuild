@@ -1,0 +1,30 @@
+package embox.driver.flash
+
+@DefaultImpl(flash_cache_block)
+abstract module flash_cache {
+
+}
+
+module flash_cache_block extends flash_cache {
+	source "flash_cache.c"
+	source "flash_cache_block.c"
+
+	@IncludeExport(path="drivers/flash", target_name="flash_cache.h")
+	source "flash_cache_block.h"
+
+	option number page_size = 4
+	option number block_size = 131072 /* 128kb */
+}
+
+module flash_cache_ram extends flash_cache {
+	source "flash_cache.c"
+	source "flash_cache_ram.c"
+
+	@IncludeExport(path="drivers/flash", target_name="flash_cache.h")
+	source "flash_cache_ram.h"
+
+	option number page_size = 4
+	option number block_size = 131072 /* 128kb */
+	option boolean use_ram_as_cache = false
+	option boolean use_ram_section = false
+}

@@ -124,6 +124,10 @@ extern int flash_copy_aligned(struct flash_dev *flashdev,
 extern int flash_copy_block(struct flash_dev *flashdev,
 				unsigned int to, unsigned long from);
 
+/* write through flash_cache */
+extern int flash_write_buffered(struct flash_dev *flashdev,
+					int pos, void *buff, size_t size);
+
 extern struct flash_dev *flash_create(const char *name, size_t size);
 extern struct flash_dev *flash_by_id(int idx);
 extern int flash_max_id(void);

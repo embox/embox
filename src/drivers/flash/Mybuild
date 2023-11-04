@@ -12,6 +12,8 @@ abstract module core {
 
 	depends embox.mem.pool
 	depends embox.util.indexator
+
+	depends embox.driver.flash.flash_cache
 }
 
 module flash_fs extends core {

@@ -5,18 +5,25 @@
  * @date 05.05.2023
  */
 
+#include <util/log.h>
+
 #include <stdio.h>
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+
 #include <util/math.h>
-#include <util/log.h>
+#include <util/macro.h>
 
 //#include <arm/cpu_cache.h>
 #include <drivers/flash/flash.h>
+#include <drivers/flash/flash_cache.h>
+
 #include <framework/mod/options.h>
+
+#define FLASH_NAME     qspiflash
 
 #if defined USE_STM32L475E_IOT01
 #include "stm32l475e_iot01.h"
@@ -37,6 +44,8 @@
 #else
 #error Unsupported platform
 #endif // defined USE_XXX
+
+FLASH_CACHE_DEF(FLASH_NAME, sizeof(uint32_t), QSPI_BLOCK_SIZE);
 
 /* reduce flash volume to check it fast */
 #define	FLASH_CUT OPTION_GET(NUMBER,flash_cut)
@@ -151,7 +160,7 @@ static int qspi_flash_init(struct flash_dev *dev, void *arg) {
 	static uint32_t qspi_flash_aligned_word;
 	struct flash_dev *flash;
 
-	flash = flash_create("qspiflash", QSPI_FLASH_SIZE);
+	flash = flash_create(MACRO_STRING(FLASH_NAME), QSPI_FLASH_SIZE);
 	if (flash == NULL) {
 		log_error("Failed to create flash device!");
 		return -1;
@@ -164,7 +173,9 @@ static int qspi_flash_init(struct flash_dev *dev, void *arg) {
 		.blocks = QSPI_FLASH_SIZE / QSPI_BLOCK_SIZE,
 	};
 	flash->fld_aligned_word = &qspi_flash_aligned_word;
-	flash->fld_word_size = 4;
+	flash->fld_word_size = sizeof(qspi_flash_aligned_word);
+
+	flash->fld_cache = FLASH_CACHE_GET(flash, FLASH_NAME);
 
 	return 0;
 }
@@ -176,4 +187,4 @@ static const struct flash_dev_drv qspi_flash_drv = {
 	.flash_program = qspi_flash_write,
 };
 
-FLASH_DEV_DEF("qspiflash", &qspi_flash_drv);
+FLASH_DEV_DEF(MACRO_STRING(FLASH_NAME), &qspi_flash_drv);
