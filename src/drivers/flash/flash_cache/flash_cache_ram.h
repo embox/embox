@@ -13,7 +13,8 @@
 
 #include <drivers/flash/flash.h>
 
-#define FLASH_CACHE_IN_RAM     1
+#include <framework/mod/options.h>
+#include <module/embox/driver/flash/flash_cache_ram.h>
 
 #define FLASH_CACHE_USE_RAM_SECTION \
 				OPTION_MODULE_GET(embox__driver__flash__flash_cache_ram, \
