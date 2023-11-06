@@ -64,3 +64,11 @@ module exp_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module math_test_sin {
+        source "math_test_sin.c"
+
+        depends embox.compat.libc.all
+        depends embox.compat.libc.math
+        depends embox.framework.LibFramework
+}
