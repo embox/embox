@@ -42,8 +42,31 @@ static int inet_to_str(const struct in_addr *in, char *buff,
 	return 0;
 }
 
+/* attach substring - helper to reuse code in inet6_to_str */
+static int inet6_to_str_attach(char **buff, socklen_t *buff_sz,
+    const char *format, ...) {
+
+	int ret;
+	va_list args;
+
+	va_start(args, format);
+	ret = vsnprintf(*buff, *buff_sz, format, args);
+	va_end(args);
+
+	if (ret < 0) {
+		return -EIO;
+	}
+	else if (ret >= *buff_sz) {
+		return -ENOSPC;
+	}
+	*buff += ret;
+	*buff_sz -= ret;
+
+	return ret;
+}
+
 static int inet6_to_str(const struct in6_addr *in6, char *buff,
-		socklen_t buff_sz) {
+    socklen_t buff_sz) {
 	int ret;
 	size_t i, zs_ind, zs_len, zs_max_ind, zs_max_len;
 
@@ -70,49 +93,57 @@ static int inet6_to_str(const struct in6_addr *in6, char *buff,
 		}
 	}
 
+	/* special case - when only last three(with 6th being 0xffff)
+     * or two words specified, address string is formatted in mixed
+     * colons-dots format */
+	uint8_t special_case =
+	    ((zs_max_ind == 0)
+	        && (((zs_max_len == 5) && (in6->s6_addr16[5] == 0xffff))
+	            || (zs_max_len == 6)))
+	        ? 1 : 0;
+	if (special_case) {
+		ret = inet6_to_str_attach(&buff, &buff_sz, "::");
+		if (ret < 0)
+			return ret;
+
+		if (zs_max_len == 5) {
+			ret = inet6_to_str_attach(&buff, &buff_sz,
+			    "%x:", ntohs(in6->s6_addr16[5]));
+			if (ret < 0)
+				return ret;
+		}
+		ret = inet_to_str((struct in_addr *)&in6->s6_addr32[3], buff, buff_sz);
+		return ret;
+	}
+
 	if ((i == ARRAY_SIZE(in6->s6_addr16)) && (zs_len > zs_max_len)) {
 		zs_max_len = zs_len;
 		zs_max_ind = zs_ind;
 	}
 
 	for (i = 0; i < zs_max_ind; ++i) {
-		ret = snprintf(buff, buff_sz, "%" PRIu16 ":", ntohs(in6->s6_addr16[i]));
-		if (ret < 0) {
-			return -EIO;
-		}
-		else if (ret >= buff_sz) {
-			return -ENOSPC;
-		}
-		buff += ret;
-		buff_sz -= ret;
+		ret = inet6_to_str_attach(&buff, &buff_sz,
+		    "%x:", ntohs(in6->s6_addr16[i]));
+		if (ret < 0)
+			return ret;
 	}
 
-	ret = zs_max_len <= 1 ? snprintf(buff, buff_sz, "%" PRIu16, ntohs(in6->s6_addr16[i]))
-			: i + zs_max_len == ARRAY_SIZE(in6->s6_addr16) ? i == 0
-				? snprintf(buff, buff_sz, "::")
-				: snprintf(buff, buff_sz, ":")
-			: zs_max_ind == 0 ? snprintf(buff, buff_sz, ":")
-			: 0;
-	if (ret < 0) {
-		return -EIO;
-	}
-	else if (ret >= buff_sz) {
-		return -ENOSPC;
-	}
-	buff += ret;
-	buff_sz -= ret;
+	ret = zs_max_len <= 1 ? inet6_to_str_attach(&buff, &buff_sz, "%x",
+	          ntohs(in6->s6_addr16[i]))
+	      : i + zs_max_len == ARRAY_SIZE(in6->s6_addr16)
+	          ? i == 0 ? inet6_to_str_attach(&buff, &buff_sz, "::")
+	                   : inet6_to_str_attach(&buff, &buff_sz, ":")
+	      : zs_max_ind == 0 ? inet6_to_str_attach(&buff, &buff_sz, ":")
+	                        : 0;
+	if (ret < 0)
+		return ret;
 	i += zs_max_len <= 1 ? 1 : zs_max_len;
 
 	for (; i < ARRAY_SIZE(in6->s6_addr16); ++i) {
-		ret = snprintf(buff, buff_sz, ":%" PRIu16, ntohs(in6->s6_addr16[i]));
-		if (ret < 0) {
-			return -EIO;
-		}
-		else if (ret >= buff_sz) {
-			return -ENOSPC;
-		}
-		buff += ret;
-		buff_sz -= ret;
+		ret = inet6_to_str_attach(&buff, &buff_sz, ":%x",
+		    ntohs(in6->s6_addr16[i]));
+		if (ret < 0)
+			return ret;
 	}
 
 	return 0;
