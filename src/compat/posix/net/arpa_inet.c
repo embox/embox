@@ -124,7 +124,6 @@ enum conv_style {
 	ATON_STYLE = 1,
 	PTON_STYLE = 2
 };
-#define UINT24_MAX 16777215
 static int str_to_inet(const char *str, struct in_addr *in,
     enum conv_style style) {
 	size_t i;
