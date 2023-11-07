@@ -12,6 +12,8 @@
 
 #include "plib035_uart.h"
 
+#define USE_E_RT_IRQ OPTION_GET(BOOLEAN, use_e_rt_irq)
+#define USE_FIFO OPTION_GET(BOOLEAN, use_fifo)
 
 #define UART_GPIO			GPIO_PORT_B
 #define UART0_GPIO_TX_mask		(1<<10)
@@ -23,13 +25,15 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     UART_TypeDef* uart = (void* )dev->base_addr;
     UART_Num_TypeDef uart_num;
     gpio_mask_t uart_gpio_mask;
-    if(uart == UART0) {
+    uint8_t uart_e_rt_irqn;
+    if (uart == UART0) {
         uart_num = UART0_Num;
         uart_gpio_mask = UART0_GPIO_TX_mask | UART0_GPIO_RX_mask;
-    }
-    else {
+        uart_e_rt_irqn = UART0_E_RT_IRQn;
+    } else {
         uart_num = UART1_Num;
         uart_gpio_mask = UART1_GPIO_TX_mask | UART1_GPIO_RX_mask;
+        uart_e_rt_irqn = UART1_E_RT_IRQn;
     }
 
     RCU_UARTClkConfig(uart_num, RCU_PeriphClk_PLLClk, 0, DISABLE);
@@ -43,21 +47,52 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     UART_StructInit(&uart_init_struct);
 
     uart_init_struct.BaudRate = params->baud_rate;
-    // TODO: Read DataWidth from uart_params?
     uart_init_struct.DataWidth = UART_DataWidth_8;
-    // TODO: Should we enable FIFO?
+#if USE_FIFO
     uart_init_struct.FIFO = ENABLE;
-    // TODO: Read ParityBit from uart_params?
-    uart_init_struct.ParityBit = UART_ParityBit_Even;
-    uart_init_struct.StopBit =
-        (params->uart_param_flags & UART_PARAM_FLAGS_2_STOP) ? UART_StopBit_2 : UART_StopBit_1;
+#else
+    uart_init_struct.FIFO = DISABLE;
+#endif
+
+	switch (UART_PARAM_FLAGS_PARITY_MASK(params->uart_param_flags)) {
+		case UART_PARAM_FLAGS_PARITY_ODD:
+			uart_init_struct.ParityBit = UART_ParityBit_Odd;
+			break;
+		case UART_PARAM_FLAGS_PARITY_EVEN:
+			uart_init_struct.ParityBit = UART_ParityBit_Even;
+			break;
+		case UART_PARAM_FLAGS_PARITY_NONE:
+		default:
+			uart_init_struct.ParityBit = UART_ParityBit_Disable;
+			break;
+    }
+
+	switch (UART_PARAM_FLAGS_STOPS_MASK(params->uart_param_flags)) {
+		case UART_PARAM_FLAGS_2_STOP:
+			uart_init_struct.StopBit = UART_StopBit_2;
+			break;
+		case UART_PARAM_FLAGS_1_STOP:
+		default:
+			uart_init_struct.StopBit = UART_StopBit_1;
+			break;
+    }
     uart_init_struct.Rx = ENABLE;
     uart_init_struct.Tx = ENABLE;
 
     UART_Init(uart, &uart_init_struct);
     UART_Cmd(uart, ENABLE);
     if(params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+#if USE_E_RT_IRQ
+        NVIC_EnableIRQ(uart_e_rt_irqn);
+        NVIC_SetPriority(uart_e_rt_irqn, 0);
+        UART_ITCmd(uart, UART_IMSC_RTIM_Msk | UART_IMSC_RXIM_Msk, ENABLE);
+#else
         UART_ITCmd(uart, UART_IMSC_RXIM_Msk, ENABLE);
+#endif
+
+#if USE_FIFO
+        UART_ITFIFOLevelRxConfig(uart, UART_FIFOLevel_1_8);
+#endif
     }
 
 	return 0;
@@ -113,4 +148,3 @@ const struct uart_ops k1921vk035_uart_ops = {
 		.uart_irq_en = k1921vk035_uart_irq_en,
 		.uart_irq_dis = k1921vk035_uart_irq_dis,
 };
-
