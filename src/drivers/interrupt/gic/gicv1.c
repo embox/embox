@@ -19,23 +19,12 @@
 #include <util/field.h>
 #include <util/log.h>
 
-#define GIC_VERSION OPTION_GET(NUMBER, version)
-
-#if GIC_VERSION == 1
 #include "gicv1.h"
-#elif GIC_VERSION == 2
-#include "gicv2.h"
-#elif GIC_VERSION == 3
-#include "gicv3.h"
-#else
-#error "Unsupported GIC version"
-#endif
 
 #define GIC_SPURIOUS_IRQ 0x3FF
 
-static int gic_ctrl_init(void) {
+static int gic_irqctrl_init(void) {
 	uint32_t reg;
-	size_t num;
 
 	/* Enable interrupts of all priorities */
 	reg = REG32_LOAD(GICC_PMR);
@@ -48,17 +37,19 @@ static int gic_ctrl_init(void) {
 
 	/* Print info */
 	reg = REG32_LOAD(GICD_TYPER);
-	num = FIELD_GET(reg, GICD_TYPER_ITLINES);
-	log_info("Number of SPI: %zi", num);
-	num = FIELD_GET(reg, GICD_TYPER_CPU);
-	log_info("Number of supported CPU interfaces: %zi", num);
-	log_info("Secutity Extension %s implemented",
-	    (reg & GICD_TYPER_SECEXT) ? "" : "not");
+
+	log_info("Number of SPI: %zi",
+	    (size_t)(FIELD_GET(reg, GICD_TYPER_ITLINES) * 32));
+	log_info("Number of supported CPU interfaces: %zi",
+	    (size_t)FIELD_GET(reg, GICD_TYPER_CPU));
+
 	if (reg & GICD_TYPER_SECEXT) {
-		num = FIELD_GET(reg, GICD_TYPER_LSPI);
-		log_info("Number of LSPI: %zi", num);
+		log_info("Secutity Extension implemented");
+		log_info("Number of LSPI: %zi",
+		    (size_t)FIELD_GET(reg, GICD_TYPER_LSPI));
 	}
 	else {
+		log_info("Secutity Extension not implemented");
 		log_info("LSPI not implemented");
 	}
 
@@ -145,11 +136,7 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
+IRQCTRL_DEF(gic, gic_irqctrl_init);
+
 PERIPH_MEMORY_DEFINE(gicd, GICD_BASE, 0x1000);
-PERIPH_MEMORY_DEFINE(gicc, GICC_BASE, 0x2000);
-
-#if GIC_VERSION >= 3
-PERIPH_MEMORY_DEFINE(gicr, GICR_BASE, 0xc0000);
-#endif
-
-IRQCTRL_DEF(gic, gic_ctrl_init);
+PERIPH_MEMORY_DEFINE(gicc, GICC_BASE, 0x2020);

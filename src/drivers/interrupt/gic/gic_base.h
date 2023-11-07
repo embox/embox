@@ -10,10 +10,16 @@
 
 #include <framework/mod/options.h>
 
+#if OPTION_DEFINED(NUMBER, gicd_base)
 #define GICD_BASE OPTION_GET(NUMBER, gicd_base)
+#endif
+
+#if OPTION_DEFINED(NUMBER, gicr_base)
 #define GICR_BASE OPTION_GET(NUMBER, gicr_base)
+#endif
+
+#if OPTION_DEFINED(NUMBER, gicc_base)
 #define GICC_BASE OPTION_GET(NUMBER, gicc_base)
-#define GICV_BASE OPTION_GET(NUMBER, gicv_base)
-#define GICH_BASE OPTION_GET(NUMBER, gich_base)
+#endif
 
 #endif /* DRIVERS_INTERRUPT_GIC_GIC_UTIL_H_ */
