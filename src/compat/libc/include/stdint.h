@@ -231,6 +231,22 @@ typedef __UINTPTR_TYPE__ uintptr_t;
 # define UINT16_MAX __UINT16_MAX__
 #endif
 
+# undef INT24_MAX
+#ifndef __INT24_MAX__
+# define INT24_MAX 0x7fffff
+#else
+# define INT24_MAX __INT24_MAX__
+#endif
+# undef INT24_MIN
+# define INT24_MIN (-INT24_MAX - 1)
+
+# undef UINT24_MAX
+#ifndef __UINT24_MAX__
+# define UINT24_MAX 0xffffff
+#else
+# define UINT24_MAX __UINT24_MAX__
+#endif
+
 # undef INT32_MAX
 #ifndef __INT32_MAX__
 # define INT32_MAX 0x7fffffff
