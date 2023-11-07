@@ -11,6 +11,7 @@
 #include <kernel/printk.h>
 
 #include "arpa_inet_test.h"
+#include "sys/socket.h"
 
 EMBOX_TEST_SUITE("inet_pton and inet_aton behaviour testsuite");
 
@@ -23,7 +24,6 @@ TEST_CASE("embox inet_aton results against linux version") {
 		res = inet_aton(v4_test_ref[i].test_string, &v4_in);
 		test_assert_equal(res, v4_test_ref[i].aton_pass);
 		test_assert_equal(v4_in.s_addr, v4_test_ref[i].aton_val.s_addr);
-        printk(".");
 	}
 }
 
@@ -37,7 +37,6 @@ TEST_CASE("inet_pton af=AF_INET results against linux version") {
 		res = inet_pton(af, v4_test_ref[i].test_string, &v4_in);
 		test_assert_equal(res, v4_test_ref[i].pton_pass);
 		test_assert_equal(v4_in.s_addr, v4_test_ref[i].pton_val.s_addr);
-        printk(".");
 	}
 }
 
@@ -61,6 +60,32 @@ TEST_CASE("inet_pton af=AF_INET6 results against linux version") {
 		    v6_test_ref[i].true_val.s6_addr32[2]);
 		test_assert_equal(v6_in.s6_addr32[3],
 		    v6_test_ref[i].true_val.s6_addr32[3]);
-		printk(".");
+	}
+}
+
+TEST_CASE("inet_ntoa inet_ntop v4 against linux version") {
+	char *res;
+	char buf[20];
+
+	for (int i = 0; i < V4_TESTS; i++) {
+		if (v4_test_ref[i].aton_pass) {
+			res = inet_ntoa(v4_test_ref[i].aton_val);
+			test_assert_str_equal(v4_test_ref[i].true_ntoa, res);
+		}
+		if (v4_test_ref[i].pton_pass) {
+			inet_ntop(AF_INET, &v4_test_ref[i].pton_val, buf, 20);
+			test_assert_str_equal(v4_test_ref[i].true_ntop, buf);
+		}
+	}
+}
+
+TEST_CASE("inet_ntoa inet_ntop v6 againt linux version") {
+	char buf[50];
+
+	for (int i = 0; i < V6_TESTS; i++) {
+		if (v6_test_ref[i].pass) {
+			inet_ntop(AF_INET6, &v6_test_ref[i].true_val, buf, 50);
+			test_assert_str_equal(v6_test_ref[i].true_ntop, buf);
+		}
 	}
 }
