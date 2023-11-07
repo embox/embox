@@ -38,13 +38,15 @@ static int gic_irqctrl_init(void) {
 	/* Print info */
 	reg = REG32_LOAD(GICD_TYPER);
 
-	log_info("Number of SPI: %i", (int)FIELD_GET(reg, GICD_TYPER_ITLINES));
-	log_info("Number of supported CPU interfaces: %i",
-	    (int)FIELD_GET(reg, GICD_TYPER_CPU));
+	log_info("Number of SPI: %zi",
+	    (size_t)(FIELD_GET(reg, GICD_TYPER_ITLINES) * 32));
+	log_info("Number of supported CPU interfaces: %zi",
+	    (size_t)FIELD_GET(reg, GICD_TYPER_CPU));
 
 	if (reg & GICD_TYPER_SECEXT) {
 		log_info("Secutity Extension implemented");
-		log_info("Number of LSPI: %i", (int)FIELD_GET(reg, GICD_TYPER_LSPI));
+		log_info("Number of LSPI: %zi",
+		    (size_t)FIELD_GET(reg, GICD_TYPER_LSPI));
 	}
 	else {
 		log_info("Secutity Extension not implemented");
@@ -137,4 +139,4 @@ void swi_handle(void) {
 IRQCTRL_DEF(gic, gic_irqctrl_init);
 
 PERIPH_MEMORY_DEFINE(gicd, GICD_BASE, 0x1000);
-PERIPH_MEMORY_DEFINE(gicc, GICC_BASE, 0x2000);
+PERIPH_MEMORY_DEFINE(gicc, GICC_BASE, 0x2020);

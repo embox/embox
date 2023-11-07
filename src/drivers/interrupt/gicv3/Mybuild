@@ -1,6 +1,6 @@
 package embox.driver.interrupt
 
-module gicv3 extends embox.driver.interrupt.irqctrl_api {
+module gicv3_old extends embox.driver.interrupt.irqctrl_api {
 	option number redistributor_base_addr
 	option number distributor_base_addr
 	option number log_level=0
