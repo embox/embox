@@ -8,7 +8,7 @@
 #ifndef SRC_DRIVERS_GPIO_STM32_STM32_GPIO_CONF_F1_H_
 #define SRC_DRIVERS_GPIO_STM32_STM32_GPIO_CONF_F1_H_
 
-#define STM32F1_CUBE_GPIO  1
+//#define STM32F1_CUBE_GPIO  1
 
 #if 0
 #if defined(STM32F101xE) || defined(STM32F103xE) || defined(STM32F101xG) || defined(STM32F103xG)
