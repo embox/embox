@@ -14,6 +14,7 @@
 #include <string.h>
 #include <util/array.h>
 #include <unistd.h>
+#include <stdio.h>
 
 char *** task_self_environ_ptr(void) {
 	return &task_self_resource_env()->envs;
@@ -66,7 +67,12 @@ int putenv(char *string) {
 	struct task_env *env;
 
 	assert(string != NULL);
-	assert(*string != '=');
+	//assert(*string != '=');
+	if(*string == '=') {
+		printf("Exported variable cannot be null\n");
+		return -1;
+	}
+
 	assert(strchr(string, '=') != NULL);
 
 	env = task_self_resource_env();
