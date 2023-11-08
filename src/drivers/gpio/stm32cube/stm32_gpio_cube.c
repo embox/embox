@@ -18,8 +18,6 @@
 
 #include <bsp/stm32cube_hal.h>
 
-//#include <drivers/gpio/stm32.h>
-
 #include <drivers/gpio/gpio_driver.h>
 
 EMBOX_UNIT_INIT(stm32_gpio_init);

@@ -43,47 +43,6 @@ module stm32_gpio_f2 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_f4 extends api {
-	option number log_level = 0
-
-	option number gpio_chip_id = 0
-
-	option number exti0_irq = 6
-	option number exti1_irq = 7
-	option number exti2_irq = 8
-	option number exti3_irq = 9
-	option number exti4_irq = 10
-	option number exti9_5_irq = 23
-	option number exti15_10_irq = 40
-
-	source "stm32_gpio_cube.c"
-
-	depends embox.driver.gpio.core
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_l4 extends api {
-	option number log_level = 0
-
-	option number gpio_chip_id = 0
-
-	option number exti0_irq = 6
-	option number exti1_irq = 7
-	option number exti2_irq = 8
-	option number exti3_irq = 9
-	option number exti4_irq = 10
-	option number exti4_irq = 10
-	option number exti9_5_irq = 23
-	option number exti15_10_irq = 40
-
-	source "stm32_gpio_cube.c"
-
-	depends embox.driver.gpio.core
-	depends third_party.bsp.st_bsp_api
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f3 extends api {
 	option number log_level = 0
 
@@ -105,6 +64,26 @@ module stm32_gpio_f3 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_gpio_f4 extends api {
+	option number log_level = 0
+
+	option number gpio_chip_id = 0
+
+	option number exti0_irq = 6
+	option number exti1_irq = 7
+	option number exti2_irq = 8
+	option number exti3_irq = 9
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
+
+	source "stm32_gpio_cube.c"
+
+	depends embox.driver.gpio.core
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f7 extends api {
 	option number log_level = 0
 
@@ -123,6 +102,27 @@ module stm32_gpio_f7 extends api {
 	depends third_party.bsp.st_bsp_api
 
 	depends embox.driver.gpio.core
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32_gpio_l4 extends api {
+	option number log_level = 0
+
+	option number gpio_chip_id = 0
+
+	option number exti0_irq = 6
+	option number exti1_irq = 7
+	option number exti2_irq = 8
+	option number exti3_irq = 9
+	option number exti4_irq = 10
+	option number exti4_irq = 10
+	option number exti9_5_irq = 23
+	option number exti15_10_irq = 40
+
+	source "stm32_gpio_cube.c"
+
+	depends embox.driver.gpio.core
+	depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
