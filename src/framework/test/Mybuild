@@ -5,6 +5,6 @@ module test {
 	@DefineMacro("__FRAMEWORK__")
 	source "emit.c", "registry.c", "run.c"
 
-	depends embox.lib.Printk
+	depends embox.lib.printk
 	depends embox.arch.libarch
 }

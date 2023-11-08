@@ -56,7 +56,7 @@ module acpi_shutdown extends shutdown {
 	source "acpi_shutdown.c"
 
 	depends third_party.lib.acpica
-	depends embox.lib.Printk
+	depends embox.lib.printk
 }
 
 module noacpi_shutdown extends shutdown {
