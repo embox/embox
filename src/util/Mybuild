@@ -23,17 +23,12 @@ static module SListNDebug extends SList {
 }
 
 static module log {
+	source "log.c"
+
 	@IncludeExport(path="util")
 	source "log.h"
 
-	depends logging
-}
-
-static module logging {
-	@IncludeExport(path="util")
-	source "logging.h"
-
-	source "logging.c"
+	depends embox.lib.printk
 }
 
 static module ring {

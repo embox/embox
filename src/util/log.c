@@ -10,16 +10,11 @@
 #include <stdarg.h>
 
 #include <kernel/printk.h>
-#include <util/logging.h>
+#include <util/log.h>
 
-char *log_levels[LOG_DEBUG] = {
-	"error",
-	"warning",
-	"info",
-	"debug"
-};
+char *log_levels[LOG_DEBUG] = {"error", "warning", "info", "debug"};
 
-void logging_raw(struct logging *logging, int level, const char* fmt, ...) {
+void logging_raw(struct logging *logging, int level, const char *fmt, ...) {
 	assert(logging);
 
 	if (level <= logging->level) {
