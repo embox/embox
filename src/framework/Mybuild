@@ -9,7 +9,7 @@ module runlevel {
 	source "runlevel.c", "unit.c"
 
 	depends mod
-	depends embox.lib.Printk
+	depends embox.lib.printk
 	depends embox.compat.libc.str
 }
 

@@ -34,5 +34,5 @@ module sqlite3_stubs {
 
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.lib.Printk
+	@NoRuntime depends embox.lib.printk
 }
