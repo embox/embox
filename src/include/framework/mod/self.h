@@ -35,7 +35,6 @@
 // well, this is rather bad idea
 // TODO it would be better to use something like weakref or alias. -- Eldar
 #define mod_self __MOD(__EMBUILD_MOD__)
-#define mod_logger __MOD_LOGGER(__EMBUILD_MOD__)
 
 /** The #mod structure corresponding to the self mod. */
 //extern struct mod mod_self __attribute__((weak));

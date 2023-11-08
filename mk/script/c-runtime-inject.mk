@@ -139,14 +139,6 @@ $(foreach m,$(modules),$(foreach n,$(basename $m), \
 	$(info MOD_SEC_LABEL_DEF($(call fqn2id,$n));)))
 $(info )
 
-$(info /* Loggers. */)
-_gen_logger_def = \
-	$(if $1,$(info MOD_LOGGER_DEF($(call fqn2id,$n), \
-		$(or $1,0));))
-$(foreach m,$(modules),$(foreach n,$(basename $m), \
-	$(call _gen_logger_def,$(call invoke,$m,getOptionValueStringByName,log_level))))
-$(info )
-
 $(info /* Applications. */)
 $(foreach m,$(app_modules),$(foreach n,$(basename $m), \
 	$(info MOD_APP_DEF($(call fqn2id,$n));)))

@@ -9,7 +9,6 @@ static module priolist {
 	source "priolist.c"
 }
 
-
 @DefaultImpl(SListDebug)
 abstract module SList {
 }
@@ -23,6 +22,9 @@ static module SListNDebug extends SList {
 }
 
 static module log {
+	option number log_level_default=3
+	option number log_level_max=4
+
 	source "log.c"
 
 	@IncludeExport(path="util")
@@ -62,6 +64,6 @@ static module indexator {
 static module pretty_print {
 	@IncludeExport(path="util")
 	source "pretty_print.h"
-	
+
 	source "pretty_print.c"
 }
