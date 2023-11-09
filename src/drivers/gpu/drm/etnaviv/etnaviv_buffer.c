@@ -121,10 +121,6 @@ void etnaviv_buffer_dump(struct etnaviv_gpu *gpu,
 	log_debug("virt %p phys 0x%08"PRIu32" free 0x%08"PRIu32"\n", ptr,
 			etnaviv_cmdbuf_get_va(buf) + off, size - len * 4 - off);
 
-	if (mod_logger.logging.level == 0) {
-		return;
-	}
-
 	for (i = 0; i < len / 4; i++) {
 		if (i && !(i % 8))
 			printk("\n");
