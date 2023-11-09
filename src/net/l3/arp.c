@@ -31,9 +31,6 @@
 #include <net/util/macaddr.h>
 #include <util/log.h>
 
-#include <framework/mod/options.h>
-#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
-
 static void log_arp_hnd_request(const struct arphdr *rarph,
 		uint8_t *dst_paddr, uint8_t *dst_haddr);
 static void log_arp_hnd_reply(const struct arphdr *rarph,
