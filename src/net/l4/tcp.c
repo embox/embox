@@ -54,7 +54,7 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 #define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
 #define TCP_FINWAIT2_TIMEOUT OPTION_GET(NUMBER, tcp_finwait2_timeout_ms)
 
-#if OPTION_GET(NUMBER, log_level) >= LOG_DEBUG
+#if LOG_LEVEL >= LOG_DEBUG
 #define TCP_DEBUG 1
 #else
 #define TCP_DEBUG 0
@@ -258,6 +258,8 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 			"TCP_TIMEWAIT"
 	};
 	struct sock *sk = to_sock(tcp_sk);
+
+	(void)str_state;
 
 #if TCP_PRINT_STATE_INFO
     printk("tcp_sk = 0x%08x\t set state %s\n", (uintptr_t)tcp_sk,
