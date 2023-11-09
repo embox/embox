@@ -6,6 +6,6 @@ static module assert {
 	source "assert.c"
 	source "assert_impl.h"
 
-	@NoRuntime depends embox.lib.Printk
+	@NoRuntime depends embox.lib.printk
 	@NoRuntime depends embox.compat.libc.stdio.sprintf
 }

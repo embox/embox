@@ -59,7 +59,7 @@ void dcache_flush(const void *data, size_t size) {
 
 	line_size = get_cache_line_size();
 	if (start & ~(line_size - 1)) {
-		log_error("Unaligned start = 0x%08"PRIu32"", start);
+		log_warning("Unaligned start = 0x%08"PRIu32"", start);
 	}
 	start &= ~(line_size - 1);
 	while (start < end) {

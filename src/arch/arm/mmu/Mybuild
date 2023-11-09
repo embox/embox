@@ -1,6 +1,8 @@
 package embox.arch.arm
 
 module cache extends embox.arch.cache {
+	option number log_level=1
+
 	source "cache.c"
 }
 

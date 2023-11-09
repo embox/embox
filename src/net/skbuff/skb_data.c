@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <util/math.h>
 #include <util/log.h>

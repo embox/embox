@@ -60,6 +60,7 @@
 #define _KERNEL_LTHREAD_H_
 
 #include <stddef.h>
+#include <stdbool.h>
 
 #include <kernel/sched.h>
 #include <kernel/lthread/lthread_sched_wait.h>
