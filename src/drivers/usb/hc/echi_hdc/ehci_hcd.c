@@ -537,10 +537,11 @@ dead:
 }
 extern void ehci_qtd_show(struct ehci_qtd_hw *qtd, int log_level);
 void ehci_asinc_show(struct ehci_hcd *ehci, int log_level) {
-	if (!&mod_logger)
+	if (LOG_LEVEL == LOG_NONE) {
 		return;
+	}
 
-	if (mod_logger.logging.level >= log_level) {
+	if (LOG_LEVEL >= log_level) {
 		struct ehci_qh_hw *qh_hw;
 		struct ehci_qh_hw *qh_hw_head;
 
