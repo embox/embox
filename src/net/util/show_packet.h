@@ -9,19 +9,19 @@
 #ifndef SHOW_PACKET_H
 #define SHOW_PACKET_H
 
-#include <util/log.h>
 #include <stdint.h>
 
+#include <framework/mod/options.h>
+#include <util/log.h>
 
 #define STR_BYTES 16
 
-
 static inline void show_packet(uint8_t *raw, int size, char *title) {
-	if (!&mod_logger)
+	if (LOG_LEVEL == LOG_NONE) {
 		return;
+	}
 
-	if (mod_logger.logging.level >= LOG_DEBUG - 1) {
-
+	if (LOG_LEVEL >= LOG_DEBUG - 1) {
 		log_raw(LOG_DEBUG, "PACKET(%d) %s:\n", size, title);
 		int rows = (size + STR_BYTES - 1) / STR_BYTES;
 		for (int i = 0; i < rows; i++) {
@@ -38,7 +38,7 @@ static inline void show_packet(uint8_t *raw, int size, char *title) {
 			for (int j = 0; j < STR_BYTES; j++) {
 				int pos = i * STR_BYTES + j;
 				if (pos < size) {
-					char c = (char) *(raw + pos);
+					char c = (char)*(raw + pos);
 					if (c < 33 || c > 126)
 						c = '.';
 
