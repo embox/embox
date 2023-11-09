@@ -17,6 +17,7 @@
 
 #include <drivers/device.h>
 
+#include <fs/fs_driver.h>
 #include <fs/dvfs.h>
 #include <util/math.h>
 #include <util/log.h>
@@ -109,6 +110,7 @@ extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
 extern int fat_format(struct block_dev *dev, void *priv);
+
 static const struct fs_driver dfs_fat_driver = {
 	.name      = "vfat",
 	.fill_sb   = fat_fill_sb,
