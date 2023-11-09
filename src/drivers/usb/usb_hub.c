@@ -237,7 +237,7 @@ static int usb_hub_port_reset(struct usb_hub *hub, unsigned int port) {
 		}
 	}
 
-	log_debug("%s", !ret ? "OK" : "ERROR");
+	log_debug("%s", (!ret ? "OK" : "ERROR"));
 
 	return ret;
 }
@@ -376,7 +376,7 @@ static int usb_hub_get_status(struct usb_hub *hub,
 		USB_DIR_IN | USB_RT_HUB, USB_REQ_GET_STATUS,
 		0, 0, 4, hubstatus, USB_HUB_PORT_STS_TIMEOUT);
 	if (ret) {
-		log_error("%s: failed with %d", ret);
+		log_error("failed with %d", ret);
 		return ret;
 	}
 
