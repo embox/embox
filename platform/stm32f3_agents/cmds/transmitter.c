@@ -16,6 +16,8 @@
 #include <drivers/serial/stm_usart.h>
 #include <framework/mod/options.h>
 
+#include <stm32f3_discovery.h>
+
 #include <feather/servo.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
