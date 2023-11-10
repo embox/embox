@@ -13,7 +13,7 @@ module transmitter {
 	source "transmitter.c"
 
 	depends embox.driver.diag
-	depends stm32f3_agents.communication
+
 	depends third_party.bsp.st_bsp_api
 	depends embox.driver.serial.stm_usart_f3
 	depends stm32f3_agents.servo

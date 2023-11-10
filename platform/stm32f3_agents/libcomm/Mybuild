@@ -1,6 +1,0 @@
-package stm32f3_agents
-
-module communication {
-	@IncludeExport(path="agents")
-	source "communication.h"
-}
