@@ -1,0 +1,13 @@
+package stm32f3_agents
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module libleds {
+	@IncludeExport(path="feather")
+	source "libleds.h"
+
+	@IncludePath("$(CONF_DIR)")
+	source "libleds.c"
+
+	depends embox.driver.gpio.api
+	depends third_party.bsp.st_bsp_api
+}
