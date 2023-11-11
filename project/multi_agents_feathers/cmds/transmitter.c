@@ -8,8 +8,6 @@
 
 #include <unistd.h>
 
-#include <kernel/task.h>
-#include <kernel/time/ktime.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 
@@ -30,14 +28,16 @@ static int current_state[UART_NUM + 1];
 
 static void leds_off(void) {
 	int i;
-	for (i = 0; i < sizeof(leds); i++)
+	for (i = 0; i < sizeof(leds); i++) {
 		BSP_LED_Off(i);
+	}
 }
 
 static void init_leds(void) {
 	int i;
-	for (i = 0; i < sizeof(leds); i++)
+	for (i = 0; i < sizeof(leds); i++) {
 		BSP_LED_Init(i);
+	}
 
 	leds_off();
 }
@@ -47,6 +47,7 @@ struct mutex led_mutex;
 static int leds_cnt = 0;
 
 static void leds_next(void) {
+
 	mutex_lock(&led_mutex);
 	if (++leds_cnt == sizeof(leds) + 1) {
 		leds_cnt = 0;
@@ -64,8 +65,11 @@ static void leds_next(void) {
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
 	BSP_LED_Off(leds[leds_cnt]);
-	if (--leds_cnt < 0)
+	
+	if (--leds_cnt < 0) {
 		leds_cnt = 0;
+	}
+
 	mutex_unlock(&led_mutex);
 	current_state[UART_NUM] = leds_cnt;
 
@@ -81,8 +85,9 @@ static USART_TypeDef *uart_base[] = {
 extern void schedule();
 static void transmit_delay(void) {
 	int t = 0x16FF / UART_NUM;
-	while(t--)
+	while(t--) {
 		schedule();
+	}
 }
 
 static double get_data(void) {
@@ -138,10 +143,11 @@ static void process_message(char *msg) {
 	if (from_neighbour(msg)) {
 		mutex_lock(&led_mutex);
 		current_state[msg[1]] = msg[2];
-		if (get_data() > leds_cnt)
+		if (get_data() > leds_cnt) {
 			leds_next();
-		else if (get_data() < leds_cnt)
+		} else if (get_data() < leds_cnt) {
 			leds_prev();
+		}
 		mutex_unlock(&led_mutex);
 	}
 
@@ -170,8 +176,9 @@ static void *receiver_thread_run(void *arg) {
 		tt++;
 		if (tt % 0x180 == 0) {
 			tt = 1;
-			if (BSP_PB_GetState(0))
+			if (BSP_PB_GetState(0)) {
 				leds_next();
+			}
 		}
 
 		for (i = 0; i < UART_NUM; i++) {
@@ -233,8 +240,9 @@ int main() {
 	//leds_next();
 	leds_prev();
 
-	for (i = 0; i < UART_NUM; i++)
+	for (i = 0; i < UART_NUM; i++) {
 		current_state[i] = -1;
+	}
 
 	current_state[UART_NUM] = 0;
 

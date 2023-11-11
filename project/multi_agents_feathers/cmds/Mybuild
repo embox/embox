@@ -6,13 +6,10 @@ package stm32f3_agents.cmd
 module transmitter {
 	option number agent_id = 0
 	option number usartx = 1
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.4.0/Drivers/STM32F3xx_HAL_Driver/Inc/")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.4.0/Drivers/BSP/STM32F3-Discovery/")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/core/STM32Cube_FW_F3_V1.4.0/Drivers/CMSIS/Device/ST/STM32F3xx/Include/")
-	@IncludePath("$(PLATFORM_DIR)/stm32f3_agents/include")
+
 	source "transmitter.c"
 
-	depends embox.driver.diag
+//	depends embox.driver.diag
 
 	depends third_party.bsp.st_bsp_api
 	depends embox.driver.serial.stm_usart_f3
