@@ -54,7 +54,7 @@ struct uart_conf uarts[] = {
 			.clocks = {
 				VAL("TX",   CLK_GPIOB),
 				VAL("RX",   CLK_GPIOB),
-				VAL("UART", CLK_USART6),
+				VAL("UART", CLK_USART3),
 			}
 		},
 		.baudrate = 115200,

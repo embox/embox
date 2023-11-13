@@ -1,0 +1,16 @@
+package project.multi_agents_feathers.cmd
+
+@AutoCmd
+@Cmd(name="transmitter", help="Periodically run motor right or left", man="")
+@BuildDepends(third_party.bsp.st_bsp_api)
+module transmitter {
+	option number agent_id = 0
+
+	source "transmitter.c"
+
+	depends project.multi_agents_feathers.servo
+	depends project.multi_agents_feathers.libleds
+	depends project.multi_agents_feathers.libbutton
+
+	depends third_party.bsp.st_bsp_api
+}

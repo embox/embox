@@ -8,35 +8,33 @@
 
 #include <unistd.h>
 
-#include <kernel/task.h>
-#include <kernel/time/ktime.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
 
 #include <drivers/serial/stm_usart.h>
 #include <framework/mod/options.h>
 
+#include <feather/libleds.h>
 #include <feather/servo.h>
+#include <feather/libbutton.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
+
 #define UART_NUM	3
 #define MSG_LEN		4
-
-static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
 
 static int current_state[UART_NUM + 1];
 
 static void leds_off(void) {
 	int i;
-	for (i = 0; i < sizeof(leds); i++)
-		BSP_LED_Off(i);
+
+	for (i = 0; i < libleds_leds_quantity(); i++) {
+		libleds_led_off(i);
+	}
 }
 
 static void init_leds(void) {
-	int i;
-	for (i = 0; i < sizeof(leds); i++)
-		BSP_LED_Init(i);
-
+	libleds_init();
 	leds_off();
 }
 
@@ -45,12 +43,13 @@ struct mutex led_mutex;
 static int leds_cnt = 0;
 
 static void leds_next(void) {
+
 	mutex_lock(&led_mutex);
-	if (++leds_cnt == sizeof(leds) + 1) {
+	if (++leds_cnt == libleds_leds_quantity() + 1) {
 		leds_cnt = 0;
 		leds_off();
 	} else {
-		BSP_LED_On(leds[leds_cnt]);
+		libleds_led_on(leds_cnt);
 	}
 	mutex_unlock(&led_mutex);
 
@@ -61,10 +60,12 @@ static void leds_next(void) {
 
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
-	BSP_LED_Off(leds[leds_cnt]);
-	if (--leds_cnt < 0)
+	libleds_led_off(leds_cnt);
+	if (--leds_cnt < 0) {
 		leds_cnt = 0;
+	}
 	mutex_unlock(&led_mutex);
+
 	current_state[UART_NUM] = leds_cnt;
 
 	servo_set(leds_cnt * 100 / 8);
@@ -79,8 +80,9 @@ static USART_TypeDef *uart_base[] = {
 extern void schedule();
 static void transmit_delay(void) {
 	int t = 0x16FF / UART_NUM;
-	while(t--)
+	while(t--) {
 		schedule();
+	}
 }
 
 static double get_data(void) {
@@ -136,10 +138,11 @@ static void process_message(char *msg) {
 	if (from_neighbour(msg)) {
 		mutex_lock(&led_mutex);
 		current_state[msg[1]] = msg[2];
-		if (get_data() > leds_cnt)
+		if (get_data() > leds_cnt) {
 			leds_next();
-		else if (get_data() < leds_cnt)
+		} else if (get_data() < leds_cnt) {
 			leds_prev();
+		}
 		mutex_unlock(&led_mutex);
 	}
 
@@ -168,8 +171,9 @@ static void *receiver_thread_run(void *arg) {
 		tt++;
 		if (tt % 0x180 == 0) {
 			tt = 1;
-			if (BSP_PB_GetState(0))
+			if (libbutton_get_state()) {
 				leds_next();
+			}
 		}
 
 		for (i = 0; i < UART_NUM; i++) {
@@ -204,7 +208,6 @@ static void *receiver_thread_run(void *arg) {
 	return NULL;
 }
 
-extern void HAL_UART_MspInit(UART_HandleTypeDef *);
 static void init_uart(void) {
 	int i;
 	UART_HandleTypeDef UartHandle;
@@ -224,15 +227,18 @@ static void init_uart(void) {
 
 int main() {
 	int i;
-	BSP_PB_Init(0, 0);
+
+	libbutton_init();
+
 	init_leds();
 	servo_init();
 	init_uart();
 	//leds_next();
 	leds_prev();
 
-	for (i = 0; i < UART_NUM; i++)
+	for (i = 0; i < UART_NUM; i++) {
 		current_state[i] = -1;
+	}
 
 	current_state[UART_NUM] = 0;
 

@@ -1,0 +1,12 @@
+package project.multi_agents_feathers
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module libbutton {
+	@IncludeExport(path="feather")
+	source "libbutton.h"
+
+	source "libbutton.c"
+
+	depends embox.driver.gpio.api
+	depends third_party.bsp.st_bsp_api
+}
