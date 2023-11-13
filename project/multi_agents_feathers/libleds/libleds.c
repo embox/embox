@@ -18,18 +18,21 @@ static const struct leddrv_pin_desc leds[] = {
 	#include <leds_config.inc>
 };
 
-
 void libleds_init(void) {
 	int i;
-	for (i = 0; i < sizeof(leds)/sizeof(leds[0]); i++) {
+	for (i = 0; i < libleds_leds_quantity(); i++) {
 		gpio_setup_mode(leds[i].gpio, leds[i].pin, GPIO_MODE_OUT);
 	}
 }
 
-void libleds_on(int led_num) {
+int libleds_leds_quantity(void) {
+	return sizeof(leds)/sizeof(leds[0]);
+}
+
+void libleds_led_on(int led_num) {
 	gpio_set(leds[led_num].gpio, leds[led_num].pin, GPIO_PIN_HIGH);
 }
 
-void libleds_off(int led_num) {
+void libleds_led_off(int led_num) {
 	gpio_set(leds[led_num].gpio, leds[led_num].pin,GPIO_PIN_LOW);
 }
