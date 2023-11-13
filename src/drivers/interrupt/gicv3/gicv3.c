@@ -89,16 +89,14 @@ static int gic_init(void) {
 	icc_pmr_el1_write(0xFF);
 
 	tmp = REG32_LOAD(GICD_TYPER);
-	log_boot_start();
-	log_boot("Number of SPI: %"PRIu32"\n", GICD_TYPER_ITLINES(tmp) * 32);
-	log_boot("Number of supported CPU interfaces: %"PRIu32"\n", 1 + GICD_TYPER_CPUNR(tmp));
-	log_boot("Secutity Extension %s implemented\n", GICD_TYPER_SECEXT(tmp) ? "" : "not ");
+	log_info("Number of SPI: %"PRIu32"\n", GICD_TYPER_ITLINES(tmp) * 32);
+	log_info("Number of supported CPU interfaces: %"PRIu32"\n", 1 + GICD_TYPER_CPUNR(tmp));
+	log_info("Secutity Extension %s implemented\n", GICD_TYPER_SECEXT(tmp) ? "" : "not ");
 	if (tmp & (1 << 10)) {
-		log_boot("Number of LSPI: %"PRIu32, GICD_TYPER_LSPI(tmp));
+		log_info("Number of LSPI: %"PRIu32, GICD_TYPER_LSPI(tmp));
 	} else {
-		log_boot("LSPI not implemented");
+		log_info("LSPI not implemented");
 	}
-	log_boot_stop();
 
 	REG32_STORE(GICR_WAKER, REG32_LOAD(GICR_WAKER) & ~2);
 	REG32_STORE(GICR_IGROUPR0, ~0);

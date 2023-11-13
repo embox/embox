@@ -96,7 +96,6 @@ static void probe_l2(void) {
 #endif
 
 static int mips_cache_init(void) {
-	log_boot_start();
 #ifdef USE_CACHE_SIZE_AUTO
 	unsigned long conf1, il, dl;
 
@@ -109,13 +108,12 @@ static int mips_cache_init(void) {
 	l1d_line_size = dl ? (2 << dl) : 0;
 #endif
 
-	log_boot("cache L1: instr line size (%d) data line size (%d)\n",
+	log_info("cache L1: instr line size (%d) data line size (%d)\n",
 				icache_line_size(), dcache_line_size());
 #if USE_L2_CACHE
 	probe_l2();
-	log_boot("cache L2: line size (%d)\n", scache_line_size());
+	log_info("cache L2: line size (%d)\n", scache_line_size());
 #endif
-	log_boot_stop();
 	return 0;
 }
 

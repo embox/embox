@@ -49,10 +49,8 @@ static int mips_gic_init(void) {
 	c0 |= (1 << (MIPS_GIC_INTERRUPT_PIN + ST0_IRQ_MASK_OFFSET + ST0_SOFTIRQ_NUM));
 	mips_write_c0_status(c0);
 
-	log_boot_start();
-	log_boot("mips_gic config %x\n", REG_LOAD(MIPS_GIC_BASE + GIC_SH_CONFIG));
-	log_boot("mips_gic revision %x\n", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
-	log_boot_stop();
+	log_info("mips_gic config %x\n", REG_LOAD(MIPS_GIC_BASE + GIC_SH_CONFIG));
+	log_info("mips_gic revision %x\n", REG_LOAD(MIPS_GIC_BASE + GIC_SH_REVID));
 	return 0;
 }
 

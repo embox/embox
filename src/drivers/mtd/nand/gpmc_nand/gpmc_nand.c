@@ -34,14 +34,12 @@ static const struct nand_dev_ops gpmc_nand_dev_ops = {
 int gpmc_nand_init(void) {
 	int i;
 
-	log_boot_start();
-
 	for (i = 0; i < GPMC_CS_NUM; i++) {
 		uint32_t id;
 		uint32_t base;
 
 		if (gpmc_cs_enabled(i)) {
-			log_boot("gpmc cs %d inited\n",i);
+			log_info("gpmc cs %d inited\n",i);
 			gpmc_cs_init(i, &base, 0x1000000);
 		}
 
@@ -49,12 +47,10 @@ int gpmc_nand_init(void) {
 		gpmc_cs_reg_write(i, GPMC_CS_NAND_COMMAND, NAND_CMD_READID);
 		id = gpmc_cs_reg_read(i, GPMC_CS_NAND_DATA);
 		if (id != 0) {
-			log_boot("create nand flash on cs %d id 0x%X\n",i , id);
+			log_info("create nand flash on cs %d id 0x%X\n",i , id);
 			nand_create("gpmc_nand", &gpmc_nand_dev_ops);
 		}
 	}
-
-	log_boot_stop();
 
 	return 0;
 }

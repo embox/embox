@@ -456,39 +456,39 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev,
 
 	/* Setup PHY MII/GMII enable */
 /*	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_AUX_CTRL);
-	log_boot("PHY reg # 0x12 (AUX_CTRL) : after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x12 (AUX_CTRL) : after reset : 0x%x\n", val);
 	val &= ~(RGMII_EN_1 | RGMII_EN_0);
 	e1000_mii_writereg(dev, ep->mii_if.phy_id, PHY_AUX_CTRL, val);
 */
 	/* Setup PHY 10/100/1000 Link on 10M Link */
 /*	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_LED_CTRL);
-	log_boot("PHY reg # 0x13 (LED_CTRL) : after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x13 (LED_CTRL) : after reset : 0x%x\n", val);
 	val |= RED_LEN_EN;
 	e1000_mii_writereg(dev, ep->mii_if.phy_id, PHY_LED_CTRL, val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_LED_CTRL);
-	log_boot("PHY reg # 0x13 (LED_CTRL) : after led is : 0x%x\n", val);
+	log_info("PHY reg # 0x13 (LED_CTRL) : after led is : 0x%x\n", val);
 */
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0);
-	log_boot("PHY reg # 0x0  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x0  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x1);
-	log_boot("PHY reg # 0x1  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x1  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x1);
-	log_boot("PHY reg # 0x1  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x1  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x10);
-	log_boot("PHY reg # 0x10  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x10  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x11);
-	log_boot("PHY reg # 0x11  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x11  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x14);
-	log_boot("PHY reg # 0x14  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x14  after reset : 0x%x\n", val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, 0x15);
-	log_boot("PHY reg # 0x15  after reset : 0x%x\n", val);
+	log_info("PHY reg # 0x15  after reset : 0x%x\n", val);
 /*
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_BIST_CFG2);
-	log_boot("PHY reg # 0x1a (BIST_CFG2): 0x%x\n", val);
+	log_info("PHY reg # 0x1a (BIST_CFG2): 0x%x\n", val);
 	val |= LINK_SEL;
 	e1000_mii_writereg(dev, ep->mii_if.phy_id, PHY_BIST_CFG2, val);
 	val = e1000_mii_readreg(dev, ep->mii_if.phy_id, PHY_BIST_CFG2);
-	log_boot(" read mgio csr #0x04 (BIST_CFG2) : 0x%x\n", val);
+	log_info(" read mgio csr #0x04 (BIST_CFG2) : 0x%x\n", val);
 */
 /* Microchip phy special regs */
 #if 0
@@ -499,12 +499,12 @@ static int l_e1000_hw_init(struct pci_slot_dev *pci_dev, struct net_device *dev,
 	/* move e1000 link status select to default 0 link */
 /* Marvel specific */
 #if 0
-	log_boot("move e1000 link status select to default 0 link \n");
+	log_info("move e1000 link status select to default 0 link \n");
 	val = e1000_read_mgio_csr(ep);
 	val &= ~MGIO_CSR_LSTS;
 	val |= MGIO_CSR_SLSP;
 	e1000_write_mgio_csr(ep, val);
-	log_boot(" write mgio csr #0x04 (BIST_CFG2): 0x%x\n", val);
+	log_info(" write mgio csr #0x04 (BIST_CFG2): 0x%x\n", val);
 #endif /* End Marvel specific */
 
 	return 0;
@@ -678,8 +678,6 @@ static int l_e1000_init(struct pci_slot_dev *pci_dev) {
 	struct l_e1000_priv *nic_priv;
 	int number;
 
-	log_boot_start();
-
 	if (card_number == E1000_CARD_QUANTITY) {
 		return 0;
 	}
@@ -715,8 +713,6 @@ static int l_e1000_init(struct pci_slot_dev *pci_dev) {
 
 	pci_set_master(pci_dev);
 	l_e1000_hw_init(pci_dev, nic, number);
-
-	log_boot_stop();
 
 	return inetdev_register_dev(nic);
 }
