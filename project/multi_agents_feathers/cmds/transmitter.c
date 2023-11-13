@@ -14,8 +14,6 @@
 #include <drivers/serial/stm_usart.h>
 #include <framework/mod/options.h>
 
-#include <stm32f3_discovery.h>
-
 #include <feather/libleds.h>
 #include <feather/servo.h>
 #include <feather/libbutton.h>
@@ -25,24 +23,17 @@
 #define UART_NUM	3
 #define MSG_LEN		4
 
-//static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
-
 static int current_state[UART_NUM + 1];
 
 static void leds_off(void) {
 	int i;
-	//for (i = 0; i < sizeof(leds); i++) {
+
 	for (i = 0; i < libleds_leds_quantity(); i++) {
-		//BSP_LED_Off(i);
 		libleds_led_off(i);
 	}
 }
 
 static void init_leds(void) {
-	// int i;
-	// for (i = 0; i < sizeof(leds); i++) {
-	// 	BSP_LED_Init(i);
-	// }
 	libleds_init();
 	leds_off();
 }
@@ -54,12 +45,10 @@ static int leds_cnt = 0;
 static void leds_next(void) {
 
 	mutex_lock(&led_mutex);
-	//if (++leds_cnt == sizeof(leds) + 1) {
 	if (++leds_cnt == libleds_leds_quantity() + 1) {
 		leds_cnt = 0;
 		leds_off();
 	} else {
-		//BSP_LED_On(leds[leds_cnt]);
 		libleds_led_on(leds_cnt);
 	}
 	mutex_unlock(&led_mutex);
@@ -71,14 +60,12 @@ static void leds_next(void) {
 
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
-	//BSP_LED_Off(leds[leds_cnt]);
 	libleds_led_off(leds_cnt);
-	
 	if (--leds_cnt < 0) {
 		leds_cnt = 0;
 	}
-
 	mutex_unlock(&led_mutex);
+
 	current_state[UART_NUM] = leds_cnt;
 
 	servo_set(leds_cnt * 100 / 8);
@@ -184,7 +171,6 @@ static void *receiver_thread_run(void *arg) {
 		tt++;
 		if (tt % 0x180 == 0) {
 			tt = 1;
-			//if (BSP_PB_GetState(0)) {
 			if (libbutton_get_state()) {
 				leds_next();
 			}
@@ -242,9 +228,8 @@ static void init_uart(void) {
 int main() {
 	int i;
 
-	//BSP_PB_Init(0, 0);
 	libbutton_init();
-	
+
 	init_leds();
 	servo_init();
 	init_uart();
