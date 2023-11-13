@@ -1,4 +1,4 @@
-package stm32f3_agents
+package project.multi_agents_feathers
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module servo {

@@ -1,4 +1,4 @@
-package stm32f3_agents.cmd
+package project.multi_agents_feathers.cmd
 
 @AutoCmd
 @Cmd(name="transmitter", help="Periodically run motor right or left", man="")
@@ -8,9 +8,9 @@ module transmitter {
 
 	source "transmitter.c"
 
-	depends stm32f3_agents.servo
-	depends stm32f3_agents.libleds
-	depends stm32f3_agents.libbutton
+	depends project.multi_agents_feathers.servo
+	depends project.multi_agents_feathers.libleds
+	depends project.multi_agents_feathers.libbutton
 
 	depends third_party.bsp.st_bsp_api
 }
