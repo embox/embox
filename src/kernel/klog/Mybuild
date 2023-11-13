@@ -1,0 +1,30 @@
+package embox.kernel
+
+@DefaultImpl(klog_mod)
+abstract module klog_api {
+}
+
+module klog_mod extends klog_api {
+	source "klog_mod.c"
+
+	@IncludeExport(path="kernel")
+	source "klog.h"
+
+	@NoRuntime depends embox.lib.printk
+	@NoRuntime depends embox.util.log
+}
+
+module klog_glob extends klog_api {
+	source "klog_glob.c"
+
+	@IncludeExport(path="kernel")
+	source "klog.h"
+
+	@NoRuntime depends embox.lib.printk
+	@NoRuntime depends embox.util.log
+}
+
+module no_klog extends klog_api {
+	@IncludeExport(path="kernel", target_name="klog.h")
+	source "no_klog.h"
+}
