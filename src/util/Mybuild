@@ -22,20 +22,6 @@ static module SListNDebug extends SList {
 //	source "slist_impl.h"
 }
 
-static module log {
-	@IncludeExport(path="util")
-	source "log.h"
-
-	depends logging
-}
-
-static module logging {
-	@IncludeExport(path="util")
-	source "logging.h"
-
-	source "logging.c"
-}
-
 static module ring {
 	source "ring.c"
 	source "ring_buff.c"
