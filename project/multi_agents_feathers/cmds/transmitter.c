@@ -18,6 +18,7 @@
 
 #include <feather/libleds.h>
 #include <feather/servo.h>
+#include <feather/libbutton.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
 
@@ -183,7 +184,8 @@ static void *receiver_thread_run(void *arg) {
 		tt++;
 		if (tt % 0x180 == 0) {
 			tt = 1;
-			if (BSP_PB_GetState(0)) {
+			//if (BSP_PB_GetState(0)) {
+			if (libbutton_get_state()) {
 				leds_next();
 			}
 		}
@@ -239,7 +241,10 @@ static void init_uart(void) {
 
 int main() {
 	int i;
-	BSP_PB_Init(0, 0);
+
+	//BSP_PB_Init(0, 0);
+	libbutton_init();
+	
 	init_leds();
 	servo_init();
 	init_uart();

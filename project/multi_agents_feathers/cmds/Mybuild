@@ -16,6 +16,7 @@ module transmitter {
 
 	depends stm32f3_agents.servo
 	depends stm32f3_agents.libleds
+	depends stm32f3_agents.libbutton
 
 	depends third_party.bsp.st_bsp_api
 }
