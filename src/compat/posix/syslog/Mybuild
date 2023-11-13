@@ -1,0 +1,9 @@
+package embox.compat.posix
+
+static module syslog {
+	source "closelog.c"
+	source "openlog.c"
+	source "setlogmask.c"
+	source "syslog.c"
+	source "vsyslog.c"
+}
