@@ -16,29 +16,33 @@
 
 #include <stm32f3_discovery.h>
 
+#include <feather/libleds.h>
 #include <feather/servo.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
+
 #define UART_NUM	3
 #define MSG_LEN		4
 
-static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
+//static Led_TypeDef leds[] = { 0, 2, 4, 6, 7, 5, 3, 1 };
 
 static int current_state[UART_NUM + 1];
 
 static void leds_off(void) {
 	int i;
-	for (i = 0; i < sizeof(leds); i++) {
-		BSP_LED_Off(i);
+	//for (i = 0; i < sizeof(leds); i++) {
+	for (i = 0; i < libleds_leds_quantity(); i++) {
+		//BSP_LED_Off(i);
+		libleds_led_off(i);
 	}
 }
 
 static void init_leds(void) {
-	int i;
-	for (i = 0; i < sizeof(leds); i++) {
-		BSP_LED_Init(i);
-	}
-
+	// int i;
+	// for (i = 0; i < sizeof(leds); i++) {
+	// 	BSP_LED_Init(i);
+	// }
+	libleds_init();
 	leds_off();
 }
 
@@ -49,11 +53,13 @@ static int leds_cnt = 0;
 static void leds_next(void) {
 
 	mutex_lock(&led_mutex);
-	if (++leds_cnt == sizeof(leds) + 1) {
+	//if (++leds_cnt == sizeof(leds) + 1) {
+	if (++leds_cnt == libleds_leds_quantity() + 1) {
 		leds_cnt = 0;
 		leds_off();
 	} else {
-		BSP_LED_On(leds[leds_cnt]);
+		//BSP_LED_On(leds[leds_cnt]);
+		libleds_led_on(leds_cnt);
 	}
 	mutex_unlock(&led_mutex);
 
@@ -64,7 +70,8 @@ static void leds_next(void) {
 
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
-	BSP_LED_Off(leds[leds_cnt]);
+	//BSP_LED_Off(leds[leds_cnt]);
+	libleds_led_off(leds_cnt);
 	
 	if (--leds_cnt < 0) {
 		leds_cnt = 0;
@@ -213,7 +220,6 @@ static void *receiver_thread_run(void *arg) {
 	return NULL;
 }
 
-extern void HAL_UART_MspInit(UART_HandleTypeDef *);
 static void init_uart(void) {
 	int i;
 	UART_HandleTypeDef UartHandle;
