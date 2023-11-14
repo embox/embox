@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module mipsnet {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr=0x4200
 	option number irq_num=2

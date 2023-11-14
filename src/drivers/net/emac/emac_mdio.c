@@ -163,25 +163,21 @@ void emac_autonegotiate(void) {
 	tmp = emac_mdio_readreg(MII_LPA);
 	tmp &= emac_mdio_readreg(MII_ADVERTISE);
 
-	log_boot_start();
-
 	if (tmp & ADVERTISE_100FULL) {
-		log_boot("\t100 Mbps FULL");
+		log_info("\t100 Mbps FULL");
 		emac_set_macctrl(1 | 0x20 | (1 << 15));
 	} else if (tmp & ADVERTISE_100HALF) {
-		log_boot("\t100 Mbps HALF");
+		log_info("\t100 Mbps HALF");
 		emac_set_macctrl(0 | 0x20 | (1 << 15));
 	} else if (tmp & ADVERTISE_10FULL) {
-		log_boot("\t10 Mbps FULL");
+		log_info("\t10 Mbps FULL");
 		emac_set_macctrl(1 | 0x20);
 	} else if (tmp & ADVERTISE_10HALF) {
-		log_boot("\t10 Mbps HALF");
+		log_info("\t10 Mbps HALF");
 		emac_set_macctrl(0 | 0x20);
 	} else {
-		log_boot("Auto negotiatie error");
+		log_info("Auto negotiatie error");
 	}
-
-	log_boot_stop();
 }
 
 void emac_mdio_config(void) {

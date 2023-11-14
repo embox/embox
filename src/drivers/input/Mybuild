@@ -24,7 +24,7 @@ abstract module input_dev_handler {
 }
 
 module input_dev_nofs extends input_dev_handler {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number hnd_priority = 200
 
 	source "input_dev_nofs.c"
@@ -33,7 +33,7 @@ module input_dev_nofs extends input_dev_handler {
 }
 
 module input_dev_devfs extends input_dev_handler {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number input_dev_cnt = 4
 
 	source "input_dev_devfs.c"

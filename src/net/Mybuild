@@ -18,7 +18,7 @@ abstract module core {
 }
 
 module core_no_net_ns extends core {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "inetdev.c"
 
@@ -29,7 +29,7 @@ module core_no_net_ns extends core {
 }
 
 module core_net_ns extends core {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "inetdev_net_ns.c"
 	depends dev /* for dev.c */
@@ -39,7 +39,7 @@ module core_net_ns extends core {
 }
 
 module sock {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "sock.c"
 	source "socket/sock_hash.c"
@@ -76,7 +76,7 @@ module sock_noxattr extends sock_xattr_api {
 }
 
 module neighbour {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	option number neighbour_amount=10
 	option number neighbour_attempt=3
 	option number neighbour_expire=60000

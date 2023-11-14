@@ -2,7 +2,7 @@ package embox.arch.e2k
 
 module arch {
 	option number cpu_count=2
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "entry.c"
 	source "mpspec.c"
@@ -20,7 +20,7 @@ module interrupt extends embox.arch.interrupt {
 }
 
 module context extends embox.arch.context {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	source "context.c", "context_switch.S", "context.h"
 }
 

@@ -4,7 +4,7 @@ package embox.driver.dma
 module stm32f7_dma extends dma_api {
 	option number dma2_stream0_irq = 2
 
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "stm32f7_dma.c"
 

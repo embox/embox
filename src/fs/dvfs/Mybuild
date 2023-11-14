@@ -6,7 +6,7 @@ module compat {
 }
 
 module core extends embox.fs.fs_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="fs")
 	source "dvfs.h"

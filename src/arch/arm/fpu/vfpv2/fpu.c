@@ -21,8 +21,6 @@ static int vfp_init(void) {
 	uint32_t ctrl;
 	uint32_t sid;
 
-	log_boot_start();
-
 	/* Enable VFP extensions */
 	asm volatile(".fpu vfpv2");
 	asm volatile("FMRX %0, FPEXC" : "=r"(ctrl));
@@ -31,7 +29,7 @@ static int vfp_init(void) {
 	/* Print VFP info */
 	asm volatile("FMRX %0, FPSID" : "=r"(sid));
 
-	log_boot("VPF info:\n"
+	log_info("VPF info:\n"
 	         "\t\t\t %s\n"
 	         "\t\t\t Implementer =        0x%02x (%s)\n"
 	         "\t\t\t Subarch:             VFPv%d\n"
@@ -42,8 +40,6 @@ static int vfp_init(void) {
 	    sid >> 24, ((sid >> 24) == 0x41) ? "ARM" : "Unknown",
 	    ((sid >> 16) & 0x7F) + 1, (sid >> 8) & 0xFF, (sid >> 4) & 0xF,
 	    sid & 0xF);
-
-	log_boot_stop();
 
 	/* Return to previos state */
 	asm volatile("FMXR FPEXC, %0" : : "r"(ctrl));

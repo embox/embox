@@ -31,7 +31,7 @@
 #include <util/log.h>
 
 #include <framework/mod/options.h>
-#define LOG_LEVEL OPTION_GET(NUMBER, log_level)
+#define LOG_LEVEL OPTION_GET(STRING, log_level)
 
 // Forward declarations
 static void log_rarp_hnd_request(const struct arphdr *rarph,

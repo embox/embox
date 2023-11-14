@@ -10,14 +10,14 @@ abstract module lps22hb {
 }
 
 static module lps22hb_i2c extends lps22hb {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number i2c_bus = 0
 	source "lps22hb_i2c.c"
 }
 
 /* not tested now!
 static module lps22hb_spi extends lps22hb {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number spi_bus = 0
 
 	source "lps22hb_spi.c"

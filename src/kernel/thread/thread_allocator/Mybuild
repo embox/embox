@@ -6,7 +6,7 @@ abstract module thread_allocator {
 }
 
 module thread_allocator_pool extends thread_allocator {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	option number thread_user_stack=0
 
 	option number use_thread_section=0
@@ -15,7 +15,7 @@ module thread_allocator_pool extends thread_allocator {
 }
 
 module thread_allocator_heap extends thread_allocator {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	option number thread_user_stack=1
 
 	option number use_thread_section=0

@@ -2,7 +2,7 @@
 package embox.driver.usb
 
 module ci_hdrc_imx {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	/*usb1*/
 	option number base_addr = 0x02184200

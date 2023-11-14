@@ -5,7 +5,7 @@ package embox.driver.sensors.stm32f3discovery
 /* I3G4250D and LSM303AGR are used  in E02 revision */ 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module gyro {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "stm32f3discovery_gyro.c"
 
@@ -15,7 +15,7 @@ module gyro {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module acc {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "stm32f3discovery_acc.c"
 

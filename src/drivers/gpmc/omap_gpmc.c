@@ -86,13 +86,9 @@ int gpmc_cs_init(int cs, uint32_t *base, uint32_t size) {
 static int gpmc_init(void) {
 	uint32_t l;
 
-	log_boot_start();
-
 	l = gpmc_reg_read(GPMC_REVISION);
 
 	log_info("GPMC rev (major = %d minor = %d)", GPMC_REVISION_MAJOR(l), GPMC_REVISION_MINOR(l));
-
-	log_boot_stop();
 
 	return 0;
 }

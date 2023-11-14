@@ -1,7 +1,7 @@
 package embox.driver.gpu.drm
 
 module drm_dev {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 	@IncludeExport(path="embox_drm")
 	source "drm_priv.h", "drm_gem.h"
 

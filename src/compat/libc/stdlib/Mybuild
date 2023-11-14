@@ -49,7 +49,7 @@ static module multibyte {
 }
 
 static module mktemp {
-	option number log_level=4
+	option string log_level="LOG_DEBUG"
 
 	source "mkstemp.c"
 }

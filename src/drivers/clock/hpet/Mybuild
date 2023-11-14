@@ -2,7 +2,7 @@ package embox.driver.clock
 
 @BuildDepends(third_party.lib.acpica)
 module hpet {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "hpet.c"
 

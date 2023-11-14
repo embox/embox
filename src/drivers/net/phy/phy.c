@@ -157,19 +157,19 @@ int phy_autoneg(struct net_device *dev, int fixed_speed) {
 	switch (fixed_speed) {
 	case 1000:
 		if (phy_try_speed(dev, NET_1000FULL)) {
-			log_boot("\t1000 Mbps FULL\n");
+			log_info("\t1000 Mbps FULL\n");
 			dev->drv_ops->set_speed(dev, NET_1000FULL);
 		}
 		break;
 	case 100:
 		if (phy_try_speed(dev, NET_100FULL)) {
-			log_boot("\t100 Mbps FULL\n");
+			log_info("\t100 Mbps FULL\n");
 			dev->drv_ops->set_speed(dev, NET_100FULL);
 		}
 		break;
 	case 10:
 		if (phy_try_speed(dev, NET_10FULL)) {
-			log_boot("\t10 Mbps FULL\n");
+			log_info("\t10 Mbps FULL\n");
 			dev->drv_ops->set_speed(dev, NET_10FULL);
 		}
 		break;
@@ -177,10 +177,10 @@ int phy_autoneg(struct net_device *dev, int fixed_speed) {
 	/* Find out best speed */
 		if ((ret = phy_try_speed(dev, NET_1000FULL | NET_1000HALF))) {
 			if (ret & NET_1000FULL) {
-				log_boot("\t1000 Mpbs FULL\n");
+				log_info("\t1000 Mpbs FULL\n");
 				dev->drv_ops->set_speed(dev, NET_1000FULL);
 			} else {
-				log_boot("\t1000 Mpbs HALF\n");
+				log_info("\t1000 Mpbs HALF\n");
 				dev->drv_ops->set_speed(dev, NET_1000HALF);
 			}
 			return 0;
@@ -193,7 +193,7 @@ int phy_autoneg(struct net_device *dev, int fixed_speed) {
 			}
 
 
-			log_boot("\t%d Mbps %s\n", net_to_mbps(ret),
+			log_info("\t%d Mbps %s\n", net_to_mbps(ret),
 					net_is_fullduplex(ret) ? "FULL" : "HALF");
 
 			assert(dev->drv_ops->set_speed);

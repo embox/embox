@@ -3,7 +3,7 @@ package embox.fs.driver
 @Build(stage=2,script="true")
 @BuildDepends(third_party.samba.core)
 module cifs {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number cifs_descriptor_quantity=4
 

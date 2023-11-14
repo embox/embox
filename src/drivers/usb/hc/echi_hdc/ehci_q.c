@@ -18,7 +18,7 @@ void ehci_qtd_show(struct ehci_qtd_hw *qtd, int log_level) {
 		return;
 
 	if (mod_logger.logging.level >= log_level) {
-		log_raw(log_level, "\tqtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x\n",
+		log_send_msg(log_level, "\tqtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x\n",
 			qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
 	}
 }

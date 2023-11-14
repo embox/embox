@@ -2,7 +2,7 @@ package embox.driver.spi
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32cube_spi {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "stm32.c"
 
@@ -12,19 +12,19 @@ module stm32cube_spi {
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi1 {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	source "stm32_spi1.c"
 }
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi2 {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	source "stm32_spi2.c"
 }
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi3 {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number pullup=1
 
@@ -33,6 +33,6 @@ module stm32cube_spi3 {
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi5 {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	source "stm32_spi5.c"
 }

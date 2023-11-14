@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module dwc_gmac {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number base_addr
 	option number irq_num

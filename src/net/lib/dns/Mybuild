@@ -13,7 +13,7 @@ module dns_fixed extends dns {
 }
 
 module dns_file extends dns {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	option string resolv_file="/resolv.conf"
 
 	source "dns_file.c"
@@ -23,7 +23,7 @@ module dns_file extends dns {
 
 module dns_query {
 	option number dns_query_timeout=5000
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "dns.c"
 

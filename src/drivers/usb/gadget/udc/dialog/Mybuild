@@ -2,7 +2,7 @@ package embox.driver.usb.gadget.udc
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 module da1469x_udc {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@Cflags("-Wno-undef")
 
@@ -18,7 +18,7 @@ abstract module usb_dev_api { }
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module usb_dev_hw extends usb_dev_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number usb_irq = 15
 	option number vbus_irq = 21
 
@@ -31,7 +31,7 @@ static module usb_dev_hw extends usb_dev_api {
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 static module usb_dev_sys extends usb_dev_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number usb_irq = 15
 	option number vbus_irq = 21
 

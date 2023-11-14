@@ -2,7 +2,7 @@ package embox.driver.flash
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7cube {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_size=0x40000
 
 	source "stm32_flash.c"
@@ -17,7 +17,7 @@ module stm32h7cube {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7cube {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_size=0x18000
 
 	source "stm32_flash.c"
@@ -32,7 +32,7 @@ module stm32f7cube {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32l4cube {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_size=0x02000
 
 	source "stm32_flash.c"
@@ -47,7 +47,7 @@ module stm32l4cube {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4cube {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_size=0xc000
 
 	source "stm32_flash.c"
@@ -62,7 +62,7 @@ module stm32f4cube {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f3cube {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_size=0x10000
 
 	source "stm32_flash.c"
@@ -77,7 +77,7 @@ module stm32f3cube {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f2cube {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_size=0xc000
 
 	source "stm32_flash.c"

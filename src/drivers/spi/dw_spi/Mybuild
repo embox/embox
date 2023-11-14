@@ -8,7 +8,7 @@ module dw_spi {
 
 	option boolean spi_de0_nano_soc = false
 
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "dw_spi.c"
 

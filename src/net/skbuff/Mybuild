@@ -1,7 +1,7 @@
 package embox.net
 
 module skbuff {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number amount_skb=4000
 
@@ -14,7 +14,7 @@ module skbuff {
 }
 
 module skbuff_data {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option boolean ip_align=false
 

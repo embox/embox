@@ -5,7 +5,7 @@ module mmu extends embox.mem.vmem {
 	source "mmu.h"
 
 	option number granule = 4 /* size of pages, in kiB, can be 4, 16 or 64 */
-	option number log_level = 3
+	option string log_level="LOG_INFO"
 
 	depends embox.mem.vmem_alloc
 	depends embox.mem.vmem_depends

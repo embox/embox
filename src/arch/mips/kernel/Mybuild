@@ -29,7 +29,7 @@ module exception {
 }
 
 module interrupt extends embox.arch.interrupt {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "interrupt.c", "ipl_impl.h"
 	depends exception

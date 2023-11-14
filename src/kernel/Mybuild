@@ -14,6 +14,7 @@ module Kernel {
 	depends embox.arch.cpu
 	depends embox.kernel.stack
 	depends embox.kernel.kgdb_api
+	depends embox.kernel.klog_api
 	depends embox.init.system_abs_time_api
 
 	depends embox.framework.runlevel

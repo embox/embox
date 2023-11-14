@@ -2,7 +2,7 @@
 package embox.driver.usb.phy
 
 module phy_mxs_usb {
-	option number log_level = 4
+	option string log_level="LOG_DEBUG"
 
 	source "phy_mxs_usb.c"
 	source "stmp_device.c"

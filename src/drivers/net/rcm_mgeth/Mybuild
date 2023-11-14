@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module rcm_mgeth {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr=0x01014000
 	option number irq_num=51
@@ -21,7 +21,7 @@ module rcm_mgeth {
 }
 
 module rcm_mgpio {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr=0x01084000
 
@@ -29,7 +29,7 @@ module rcm_mgpio {
 }
 
 module rcm_mdio {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr=0x01080000
 
@@ -39,7 +39,7 @@ module rcm_mdio {
 }
 
 module phy_rcm_sgmii {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr=0x01086000
 

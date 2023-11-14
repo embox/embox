@@ -16,7 +16,7 @@ module fb {
 	source "fb.c"
 
 	option number fb_amount=2
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	depends fb_header
 	depends embox.mem.pool

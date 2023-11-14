@@ -4,7 +4,7 @@ package embox.driver.spi
 /* This is a minimal module which doesn't
  * depends on char_dev or file system */
 module core {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	@IncludeExport(path="drivers")
 	source "spi.h"
@@ -17,7 +17,7 @@ module core {
 /* This module extends core and provide SPI
  * devices as a specific case for char devices */
 module spi {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 	source "spi_devfs.c"
 
 	depends core

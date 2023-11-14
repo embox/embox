@@ -5,7 +5,7 @@ abstract module uart_repo {
 }
 
 module uart_repo_with_dynamic extends uart_repo {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number uart_max_n = 4
 
 	source "uart_dev_dynamic_repo.c"
@@ -15,14 +15,14 @@ module uart_repo_with_dynamic extends uart_repo {
 }
 
 module uart_repo_static extends uart_repo {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "uart_dev_static_repo.c"
 }
 
 @DefaultImpl(core_tty)
 abstract module core {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "uart_dev.c"
 

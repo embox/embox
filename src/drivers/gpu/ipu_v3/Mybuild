@@ -1,7 +1,7 @@
 package embox.driver.gpu
 
 module ipu_v3 {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	option number base_addr
 	option number xres=1024

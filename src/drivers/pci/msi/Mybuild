@@ -1,7 +1,7 @@
 package embox.driver
 
 module pci_msi {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "pci_msi.c"
 

@@ -115,12 +115,12 @@ struct ehci_mxc_usbphy {
 static struct ehci_mxc_usbphy ehci_mxc_usbphys[USB_PHY_QUANTITY];
 
 static inline void ehci_mxc_regdump(struct ehci_mxc_usbphy *usbphy) {
-	log_boot("========= PHY REGISTERS =========\n");
-	log_boot("USBPHY%d_PWD     %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_PWD(usbphy->phy_num)));
-	log_boot("USBPHY%d_TX      %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_TX(usbphy->phy_num)));
-	log_boot("USBPHY%d_RX      %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_RX(usbphy->phy_num)));
-	log_boot("USBPHY%d_CTRL    %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_CTRL(usbphy->phy_num)));
-	log_boot("USBPHY%d_STATUS  %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_STATUS(usbphy->phy_num)));
+	log_info("========= PHY REGISTERS =========\n");
+	log_info("USBPHY%d_PWD     %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_PWD(usbphy->phy_num)));
+	log_info("USBPHY%d_TX      %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_TX(usbphy->phy_num)));
+	log_info("USBPHY%d_RX      %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_RX(usbphy->phy_num)));
+	log_info("USBPHY%d_CTRL    %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_CTRL(usbphy->phy_num)));
+	log_info("USBPHY%d_STATUS  %08x\n", usbphy->phy_num, REG32_LOAD(USBPHY_STATUS(usbphy->phy_num)));
 }
 
 struct ehci_mxc_usbphy *imx_usb_phy_create(int i) {

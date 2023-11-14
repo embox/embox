@@ -2,7 +2,7 @@ package embox.driver.gpio
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32cube_gpio extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -23,7 +23,7 @@ module stm32cube_gpio extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f1 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -44,7 +44,7 @@ module stm32_gpio_f1 extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f2 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -65,7 +65,7 @@ module stm32_gpio_f2 extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f3 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -86,7 +86,7 @@ module stm32_gpio_f3 extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f4 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -106,7 +106,7 @@ module stm32_gpio_f4 extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_f7 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -127,7 +127,7 @@ module stm32_gpio_f7 extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_l4 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 
@@ -148,7 +148,7 @@ module stm32_gpio_l4 extends api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_gpio_h7 extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 

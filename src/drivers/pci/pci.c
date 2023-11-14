@@ -184,9 +184,9 @@ struct pci_slot_dev *pci_insert_dev(char configured,
 	log_debug("Add pci >> bc %d, sc %d, rev %d, irq %d",
 			new_dev->baseclass, new_dev->subclass, new_dev->rev, new_dev->irq);
 	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num ++) {
-		log_raw(LOG_DEBUG, "bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
+		log_debug("bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
 	}
-	log_raw(LOG_DEBUG, "\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
+	log_debug("\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
 	return new_dev;
 }
 

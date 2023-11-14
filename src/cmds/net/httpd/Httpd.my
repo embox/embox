@@ -18,7 +18,7 @@ package embox.cmd.net
 	''')
 module httpd {
 	option boolean use_index_as_404=false
-	option number log_level=1 /* error */
+	option string log_level="LOG_ERR" /* error */
 	option number use_ip_ver=4
 
 	source "httpd.c"
@@ -70,7 +70,7 @@ module httpd_pthread {
 }
 
 static module httpd_util {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	source "httpd_util.c"
 }
 
@@ -78,7 +78,7 @@ static module httpd_util {
 abstract module httpd_processor_interface { }
 
 module httpd_cgi extends httpd_processor_interface {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option string cgi_prefix="/cgi-bin/"
 	option boolean use_real_cmd=false

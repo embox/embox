@@ -2,7 +2,7 @@ package embox.driver.gpio
 
 module dwapb_gpio extends api {
 	option number gpio_chip_id = 0
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr
 	option number gpio_ports

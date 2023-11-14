@@ -1,7 +1,7 @@
 package embox.lib
 
 static module loop_file_logger_lib {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	option string file_name
 	option number record_size
 	option number record_quantity

@@ -1,7 +1,7 @@
 package embox.net.lib
 
 module rpc {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 	option number amount_clnt=4
 	option number amount_auth=4
 	source "clnt.c", "clnt_udp.c", "clnt_tcp.c", "clnt_factory.c"

@@ -34,8 +34,7 @@ static int phymem_init(void) {
 		return -1;
 	}
 
-	log_boot_start();
-	log_boot("start=%p end=%p size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
+	log_info("start=%p end=%p size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
 
 	va = mmap_device_memory(phymem_alloc_start,
 			mem_len,
@@ -46,7 +45,6 @@ static int phymem_init(void) {
 	if (va) {
 		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
 	}
-	log_boot_stop();
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
 

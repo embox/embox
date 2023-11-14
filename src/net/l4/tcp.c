@@ -54,7 +54,7 @@ EMBOX_NET_PROTO(ETH_P_IPV6, IPPROTO_TCP, tcp_rcv,
 #define MODOPS_VERIFY_CHKSUM OPTION_GET(BOOLEAN, verify_chksum)
 #define TCP_FINWAIT2_TIMEOUT OPTION_GET(NUMBER, tcp_finwait2_timeout_ms)
 
-#if OPTION_GET(NUMBER, log_level) >= LOG_DEBUG
+#if OPTION_GET(STRING, log_level) >= LOG_DEBUG
 #define TCP_DEBUG 1
 #else
 #define TCP_DEBUG 0

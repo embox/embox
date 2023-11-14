@@ -545,20 +545,20 @@ void ehci_asinc_show(struct ehci_hcd *ehci, int log_level) {
 		struct ehci_qh_hw *qh_hw_head;
 
 		qh_hw_head = qh_hw = (void *) (uintptr_t)ehci_read(ehci, &ehci->ehci_regs->async_next);
-		log_raw(log_level, "Start asinc list %p:\n", qh_hw_head);
+		log_send_msg(log_level, "Start asinc list %p:\n", qh_hw_head);
 		do {
 			struct ehci_qtd_hw *qtd;
 
-			log_raw(log_level, "qh_hw=%p, hw_info1=0x%08x, hw_info2=0x%08x, token=0x%08x, next=0x%08x\n qtd list:\n",
+			log_send_msg(log_level, "qh_hw=%p, hw_info1=0x%08x, hw_info2=0x%08x, token=0x%08x, next=0x%08x\n qtd list:\n",
 					qh_hw, qh_hw->hw_info1, qh_hw->hw_info2, qh_hw->hw_token, qh_hw->hw_next);
 
 			for (qtd = (void *) (uintptr_t)qh_hw->hw_qtd_next; 0 == (((uintptr_t)qtd) & 0x1); qtd = (void *) (uintptr_t)qtd->hw_next) {
 				ehci_qtd_show(qtd, log_level);
 			}
-			log_raw(log_level, " qdt list end qh_hw=%p\n", qh_hw);
+			log_send_msg(log_level, " qdt list end qh_hw=%p\n", qh_hw);
 			qh_hw = (void *)(uintptr_t)(qh_hw->hw_next & ~0xF);
 		} while (qh_hw_head != qh_hw);
-		log_raw(log_level, "End asinc list %p:\n", qh_hw_head);
+		log_send_msg(log_level, "End asinc list %p:\n", qh_hw_head);
 	}
 }
 

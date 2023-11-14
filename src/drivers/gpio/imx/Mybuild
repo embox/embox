@@ -4,7 +4,7 @@ module imx extends api {
 	option number gpio_chip_id = 0
 	option number base_addr=0x0209c000
 	option number gpio_ports = 4
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "imx.c"
 

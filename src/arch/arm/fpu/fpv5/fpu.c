@@ -32,8 +32,7 @@ static int fpv5_init(void) {
 	mvfr0 = REG32_LOAD(FPU_MVFR0);
 	fpccr = REG32_LOAD(FPU_FPCCR);
 
-	log_boot_start();
-	log_boot("FPv4/FPv5 info:\n"
+	log_info("FPv4/FPv5 info:\n"
 	         "\t\t\t MVFR0 (Media and VFP Feature Register 0) = 0x%08x\n"
 	         "\t\t\t\t Single precision support = %s\n"
 	         "\t\t\t\t Double precision support = %s\n"
@@ -52,7 +51,6 @@ static int fpv5_init(void) {
 	    REG32_LOAD(FPU_MVFR1), REG32_LOAD(FPU_CPACR), fpccr,
 	    (fpccr & (1u << 31)) ? "yes" : "no",
 	    (fpccr & (1u << 30)) ? "yes" : "no");
-	log_boot_stop();
 
 	return 0;
 }

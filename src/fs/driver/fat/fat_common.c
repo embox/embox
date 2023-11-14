@@ -31,7 +31,7 @@
 
 #define FAT_USE_LONG_NAMES OPTION_GET(BOOLEAN, fat_max_sector_size)
 
-#if OPTION_GET(NUMBER,log_level) >= 4
+#if OPTION_GET(STRING, log_level) >= 4
 void fat_volinfo_print(struct volinfo *volinfo) {
 	log_debug("volinfo->label(%s)", volinfo->label);
 	log_debug("volinfo->unit(%x)", volinfo->unit);

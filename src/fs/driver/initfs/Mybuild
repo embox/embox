@@ -9,7 +9,7 @@ abstract module initfs {
 }
 
 module initfs_old extends initfs {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number file_quantity=128
 
@@ -21,7 +21,7 @@ module initfs_old extends initfs {
 }
 
 module initfs_dvfs extends initfs {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number file_quantity=128
 

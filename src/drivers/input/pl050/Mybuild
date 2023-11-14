@@ -1,7 +1,7 @@
 package embox.driver.input
 
 module pl050 {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="drivers")
 	source "pl050.h"

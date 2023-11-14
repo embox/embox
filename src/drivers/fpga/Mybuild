@@ -1,7 +1,7 @@
 package embox.driver.fpga
 
 module core {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	option number fpga_pool_sz=1
 
 	@IncludeExport(path="drivers/")

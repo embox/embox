@@ -15,7 +15,7 @@ module cortex_m4_fp {
 }
 
 module fpv5 extends fpu {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	@IncludeExport(path="arm")
 	source "fpu.h", "fpu_macro.s"

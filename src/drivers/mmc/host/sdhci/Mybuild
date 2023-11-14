@@ -1,13 +1,13 @@
 package embox.driver.mmc.host
 
 static module sdhci_ops {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "sdhci_ops.c"
 }
 
 module sdhci {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr
 	option number irq_num
@@ -21,7 +21,7 @@ module sdhci {
 }
 
 module imx_usdhc {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr
 	option number irq_num
@@ -35,7 +35,7 @@ module imx_usdhc {
 module imx6_sdhci {
 	option number base_addr
 
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "imx6_sdhci.c"
 

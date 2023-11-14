@@ -1,7 +1,7 @@
 package embox.driver.audio
 
 module audio_dev {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	source "audio_dev.c"
 
 	@IncludeExport(path="drivers/audio")

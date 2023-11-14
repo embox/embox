@@ -19,7 +19,7 @@ module greth_old {
 
 @DefaultImpl(greth_init_static)
 abstract module greth_init_api {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 }
 
 module greth_init_static extends greth_init_api {
@@ -35,7 +35,7 @@ module greth_init_amba_pnp extends greth_init_api {
 }
 
 module greth {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number base_addr=0x0
 	option number irq_num=0

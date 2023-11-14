@@ -15,7 +15,7 @@ abstract module lvgl_display_port_api {
 }
 
 static module lvgl_display_port_memcpy extends lvgl_display_port_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "display_port.c",
 	       "display_port_memcpy.c"
@@ -23,7 +23,7 @@ static module lvgl_display_port_memcpy extends lvgl_display_port_api {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 static module lvgl_display_port_stm32 extends lvgl_display_port_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "display_port.c",
 	       "display_port_stm32.c"
@@ -33,7 +33,7 @@ static module lvgl_display_port_stm32 extends lvgl_display_port_api {
 
 @BuildDepends(lvgl)
 static module lvgl_input_dev_port {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "input_dev_port.c"
 }

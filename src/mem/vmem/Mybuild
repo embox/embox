@@ -11,7 +11,7 @@ module vmem_nommu extends embox.arch.mmu {
 }
 
 module vmem extends embox.arch.mmu {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "vmem.c"
 	source "mapper.c"

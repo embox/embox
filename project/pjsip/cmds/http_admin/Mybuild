@@ -15,7 +15,7 @@ module http_admin {
 @BuildDepends(third_party.lib.cjson)
 @Build(stage=2)
 module http_admin_accounts {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	@IncludePath("$(CONF_DIR)")
 	source "http_admin_accounts.c"

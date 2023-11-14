@@ -5,7 +5,7 @@ abstract module vmem_alloc {
 }
 
 module vmem_alloc_single_pool extends vmem_alloc {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number mmu_tables_max = 4096
 
@@ -13,14 +13,14 @@ module vmem_alloc_single_pool extends vmem_alloc {
 }
 
 module vmem_alloc_pool extends vmem_alloc {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	
 	source "vmem_alloc_pool.c"
 	source "vmem_page.lds.S"
 }
 
 module vmem_alloc_phymem extends vmem_alloc {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "vmem_alloc_phymem.c"
 }

@@ -3,7 +3,7 @@ package embox.driver.spi
 module stm32_spi1_l0x0 {
 	option number reg_rcc_address = 0x40021000
 
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number port_mosi=1
 	option number port_miso=1
