@@ -1,0 +1,11 @@
+diff -aur ./libpcap-libpcap-1.10.1/pcap-linux.c ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap-linux.c
+--- ./libpcap-libpcap-1.10.1/pcap-linux.c       2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap-linux.c 2023-11-14 18:28:32.128463948 +0300
+@@ -97,6 +97,7 @@
+ #include <dirent.h>
+ #include <sys/eventfd.h>
+ 
++#include <linux/types.h>
+ #include "pcap-int.h"
+ #include "pcap/sll.h"
+ #include "pcap/vlan.h"
