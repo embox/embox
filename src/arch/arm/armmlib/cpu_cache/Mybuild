@@ -11,7 +11,7 @@ module cpu_cache_none extends cpu_cache_api {
 }
 
 module armv7m_cpu_cache extends cpu_cache_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number sram_nocache_section_size = 0x0
 

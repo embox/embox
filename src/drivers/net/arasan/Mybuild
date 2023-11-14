@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module arasan {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 	source "arasan.c"
 
 	option number base_addr

@@ -9,7 +9,7 @@ module stm32f2cube_eth {
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
 	source "stm32f2cube_eth.h"
 
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq_api
@@ -28,7 +28,7 @@ module stm32f4cube_eth {
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
 	source "stm32f4cube_eth.h"
 
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq_api
@@ -47,7 +47,7 @@ module stm32f7cube_eth {
 	@IncludeExport(path="drivers/net", target_name="stm32cube_eth.h")
 	source "stm32f7cube_eth.h"
 
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.kernel.irq_api
@@ -60,7 +60,7 @@ module stm32f7cube_eth {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7cube_eth_nucleo {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number irq = 61
 
@@ -83,7 +83,7 @@ module stm32h7cube_eth_nucleo {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7cube_eth_745i_discovery {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number irq = 61
 
@@ -106,7 +106,7 @@ module stm32h7cube_eth_745i_discovery {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7cube_eth_common {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number irq = 61
 

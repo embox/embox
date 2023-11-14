@@ -87,7 +87,7 @@ module no_system_start extends system_start {
 }
 
 module system_start_service extends system_start {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	option string tty_dev=""
 	option number cmd_max_len=64
@@ -102,7 +102,7 @@ module system_start_service extends system_start {
 }
 
 module system_start_cmd extends system_start {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 	option string cmd=""
 
 	source "system_start_cmd.c"

@@ -10,7 +10,7 @@ module NoPage extends page_api {
 }
 
 module bitmask extends page_api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "bitmask.c"
 	source "bitmask.h"

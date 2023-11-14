@@ -3,7 +3,7 @@ package stm32f4_multibot.libs
 /* Derived from https://github.com/kehribar/nrf24L01_plus */
 static module nrf24 {
 	option number rx_buf_sz = 512
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="libs")
 	source "nrf24.h"
@@ -19,7 +19,7 @@ static module nrf24 {
 @BuildDepends(third_party.bsp.st_bsp_api)
 static module nrf24_cube_layer {
 	option number spi=2
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="libs")
 	source "nrf24_stm32_cube.h"

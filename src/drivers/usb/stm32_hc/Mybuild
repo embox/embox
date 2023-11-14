@@ -2,7 +2,7 @@ package embox.driver.usb.stm32_hc
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4_hc {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	option number irq = 67 //OTG_FS_IRQn
 
 	source "stm32_hc.c"
@@ -17,7 +17,7 @@ module stm32f4_hc {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7_hc {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	/* OTG_FS_IRQn=101, OTG_HS_IRQn=77 */
 	option number irq = 101
 
@@ -33,7 +33,7 @@ module stm32h7_hc {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7_hc {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	/* OTG_FS_IRQn=101, OTG_HS_IRQn=77 */
 	option number irq = 77
 

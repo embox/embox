@@ -2,7 +2,7 @@
 package embox.driver.usb.hc
 
 module uhci_pci {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "uhci_pci.c"
 

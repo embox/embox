@@ -112,7 +112,7 @@ static module truncate {
 }
 
 static module realpath {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "realpath.c"
 }

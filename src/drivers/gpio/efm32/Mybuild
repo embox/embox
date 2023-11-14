@@ -2,7 +2,7 @@ package embox.driver.gpio
 
 @BuildDepends(platform.efm32.efm32_bsp)
 module efm32_gpio extends api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
 	option number gpio_ports_number = 2

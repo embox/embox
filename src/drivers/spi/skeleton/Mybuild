@@ -1,7 +1,7 @@
 package embox.driver.spi
 
 module skeleton_common {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "skeleton_spi_common.c"
 
@@ -9,7 +9,7 @@ module skeleton_common {
 }
 
 module skeleton_spi1 {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "skeleton_spi1.c"
 

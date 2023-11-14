@@ -1,7 +1,7 @@
 package embox.driver
 
 module scsi {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "scsi.c"
 	@IncludeExport(path="drivers")

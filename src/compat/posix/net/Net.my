@@ -26,7 +26,7 @@ static module gai_strerror {
 }
 
 static module getaddrinfo {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number addrinfo_pool_size = 10
 
@@ -146,7 +146,7 @@ static module inet_addr {
 }
 
 static module socket {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "socket.c"
 	depends embox.kernel.task.idesc

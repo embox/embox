@@ -1,7 +1,7 @@
 package embox.driver.usb
 
 module core {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number usb_req_hnd_priority = 200
 
 	/* Global options */
@@ -25,7 +25,7 @@ module core {
 }
 
 module hub {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option boolean use_thread = false
 
 	source "usb_hub.c"

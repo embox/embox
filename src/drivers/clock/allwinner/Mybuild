@@ -1,7 +1,7 @@
 package embox.driver.clock.allwinner
 
 module sun4i_timer {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number base_addr = 0x01C20C00
 	option number irq_num = 50

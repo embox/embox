@@ -7,7 +7,7 @@ static module ccid_sources {
 
 @BuildDepends(ccid_sources)
 module ccid {
-	option number log_level    = 1
+	option string log_level="LOG_ERR"
 	option number slots        = 1
 
 	@Cflags("-Wno-undef")
@@ -25,7 +25,7 @@ abstract module ccid_card_api {
 
 @BuildDepends(ccid_sources)
 module ccid_card_emulated extends ccid_card_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@Cflags("-Wno-undef")
 

@@ -1,7 +1,7 @@
 package embox.driver
 
 module ide {
-	option number log_level=4
+	option string log_level="LOG_DEBUG"
 
 	option number dev_quantity = 4
 

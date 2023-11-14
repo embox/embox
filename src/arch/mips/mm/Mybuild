@@ -9,7 +9,7 @@ module cache_stub extends cache_api {
 }
 
 module cache extends cache_api {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option boolean use_l2_cache=true
 	option boolean use_auto_cache_size=true

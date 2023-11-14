@@ -3,7 +3,7 @@ package embox.driver.gpmc
 abstract module gpmc_api { }
 
 module omap3_gpmc extends gpmc_api {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="drivers")
 	source "omap_gpmc.h"

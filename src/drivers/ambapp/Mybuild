@@ -11,7 +11,7 @@ module ambapp extends ambapp_api {
 }
 
 module amba_registry {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	@IncludeExport(path="drivers")
 	source "amba_registry.h"

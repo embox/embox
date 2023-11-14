@@ -4,7 +4,7 @@ abstract module lan9118 {}
 
 /* Version of LAN9118 driver with usual interrupt controller */
 module lan9118_non_gpio_irq extends lan9118 {
-	option number log_level=3 /* info */
+	option string log_level="LOG_INFO" /* info */
 
 	source "lan9118.c"
 
@@ -25,7 +25,7 @@ module lan9118_non_gpio_irq extends lan9118 {
 
 /* Version of LAN9118 driver with GPIO irq */
 module lan9118_gpio_irq extends lan9118 {
-	option number log_level=3 /* info */
+	option string log_level="LOG_INFO" /* info */
 
 	source "lan9118.c"
 

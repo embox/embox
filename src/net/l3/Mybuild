@@ -1,7 +1,7 @@
 package embox.net
 
 module arp {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	source "arp.c"
 
 	@NoRuntime depends embox.net.net_pack
@@ -15,7 +15,7 @@ module arp {
 }
 
 module icmpv4 {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	source "icmpv4.c"
 
 	depends proto
@@ -26,7 +26,7 @@ module icmpv4 {
 }
 
 module icmpv6 {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	source "icmpv6.c"
 
 	depends embox.net.proto
@@ -50,7 +50,7 @@ module ndp {
 }
 
 module rarp {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	source "rarp.c"
 
 	@NoRuntime depends embox.net.net_pack

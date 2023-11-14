@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module phy {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	@IncludeExport(path="net")
 	source "phy.h"

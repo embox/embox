@@ -10,14 +10,14 @@ abstract module hts221 {
 }
 
 static module hts221_i2c extends hts221 {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number i2c_bus = 0
 	source "hts221_i2c.c"
 }
 
 /* not tested now!
 static module hts221_spi extends hts221 {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number spi_bus = 0
 
 	source "hts221_spi.c"

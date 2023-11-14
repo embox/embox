@@ -15,7 +15,7 @@ module audio_utils {
 module portaudio_lib extends portaudio_api {
 	option number max_dev_count=4
 	option number pa_stream_count=2
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "portaudio_lib.c"
 	source "portaudio_info.c"

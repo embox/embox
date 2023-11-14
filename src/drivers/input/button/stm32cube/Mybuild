@@ -1,7 +1,7 @@
 package embox.driver.input.button
 
 module stm32cube_button {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number pin_port = 0
 	option number pin_num = 0

@@ -5,7 +5,7 @@ module f_rndis {
 }
 
 module rndis_gadget {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "rndis_gadget.c"
 

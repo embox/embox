@@ -35,7 +35,7 @@ module usart {
 
 module blue_core extends embox.driver.Bluetooth {
 	depends embox.driver.Bluetooth
-	option number log_level=0
+	option string log_level="LOG_NONE"
 	@IncludeExport(path="drivers/bluetooth/lego")
 	source "blue_core4.h"
 

@@ -1,7 +1,7 @@
 package embox.driver.input
 
 module keypad {
-	//option number log_level = 1		//	???
+	//option string log_level="LOG_ERR"		//	???
 
 	option number rows = 4
 	option number cols = 4

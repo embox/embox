@@ -1,7 +1,7 @@
 package embox.driver
 
 module pci {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	option number dev_quantity = 32
 	option number bus_n_to_scan = 256
 	source "pci.c", "pci_repo.c", "pci_driver.c"
@@ -30,7 +30,7 @@ abstract module pci_bios_api { }
 module pci_bios_stub extends pci_bios_api { }
 
 module pci_bios extends pci_bios_api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	option number pci_space_base
 	option number pci_space_size
 	option number pci_window_size
@@ -40,7 +40,7 @@ module pci_bios extends pci_bios_api {
 }
 
 module pci_tlp {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 	source "pci_tlp.c"
 
 	@IncludeExport(path="drivers/pci")

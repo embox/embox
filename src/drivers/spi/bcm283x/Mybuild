@@ -8,7 +8,7 @@ module bcm283x_spi0 {
 	A safe starting default value may be 40
  */
 	option number spi_bus_clock_divisor = 40
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "bcm283x_spi0.c"
 
@@ -22,7 +22,7 @@ module bcm283x_spi0 {
 }
 
 module spi_dma {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "spi_dma.c"
 

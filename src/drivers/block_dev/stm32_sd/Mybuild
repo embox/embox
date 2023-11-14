@@ -2,7 +2,7 @@ package embox.driver.sd
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4_sd {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number dma_sdmmc_irq = 40
 	option number dma_rx_irq    = 59
@@ -25,7 +25,7 @@ module stm32f4_sd {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f746g_discovery_sd {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number dma_sdmmc_irq = 49
 	option number dma_rx_irq    = 59
@@ -48,7 +48,7 @@ module stm32f746g_discovery_sd {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f769i_discovery_sd {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number dma_sdmmc_irq = 103
 	option number dma_rx_irq    = 56

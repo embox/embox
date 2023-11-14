@@ -2,7 +2,7 @@ package embox.driver.video
 
 
 module dw_hdmi {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	option number base_addr
 

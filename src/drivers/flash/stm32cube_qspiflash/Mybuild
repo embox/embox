@@ -31,7 +31,7 @@ module stm32h7_qspi {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32_qspi_flash_dev {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number flash_cut=0
 	option number erase_check=0
 

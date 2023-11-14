@@ -10,13 +10,13 @@ abstract module l3g4200d {
 }
 
 static module l3g4200d_i2c extends l3g4200d {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number i2c_bus = 0
 	source "l3g4200d_i2c.c"
 }
 
 static module l3g4200d_spi extends l3g4200d {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number spi_bus = 0
 
 	source "l3g4200d_spi.c"

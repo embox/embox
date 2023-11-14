@@ -5,7 +5,7 @@ package embox.service
 @Cmd(name="http_admin_iface_list", help="", man="")
 @BuildDepends(third_party.lib.cjson)
 module http_admin_iface_list {
-	option number log_level = 3
+	option string log_level="LOG_INFO"
 
 	option boolean is_readonly=true
 	option boolean use_netmanager=false

@@ -10,7 +10,7 @@ module etnaviv_drm {
 	option number vivante_2d_base=0x134000
 	option number vivante_3d_base=0x130000
 
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv/")

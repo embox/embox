@@ -2,7 +2,7 @@
 package embox.driver.usb.class
 
 module hid {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "usb_class_hid.c"
 	source "usb_hid.c"
@@ -12,7 +12,7 @@ module hid {
 }
 
 module mass_storage {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	source "usb_mass_storage.c"
 	@IncludeExport(path="drivers/usb/class")

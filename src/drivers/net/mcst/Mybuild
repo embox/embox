@@ -1,7 +1,7 @@
 package embox.driver.net.mcst
 
 module l_e1000 {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number card_quantity = 1
 

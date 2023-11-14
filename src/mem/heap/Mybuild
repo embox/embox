@@ -20,7 +20,7 @@ module boundary_markers {
 }
 
 module mspace_malloc {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	/* Each task tries to allocate as much memory as possible */
 	option boolean task_is_greed = false
 
@@ -46,7 +46,7 @@ module heap_bm extends heap_api {
 }
 
 module heap_simple extends heap_api {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 	source "heap_simple.c"
 
 	depends embox.mem.heap_place

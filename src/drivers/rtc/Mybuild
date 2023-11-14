@@ -5,7 +5,7 @@ abstract module rtc_api {
 }
 
 module rtc extends rtc_api {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "rtc.c"
 	@IncludeExport(path="drivers")

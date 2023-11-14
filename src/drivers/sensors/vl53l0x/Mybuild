@@ -8,7 +8,7 @@ abstract module vl53l0x {
 }
 
 static module vl53l0x_i2c extends vl53l0x {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number i2c_bus = 0
 	source "vl53l0x_i2c.c"
 }

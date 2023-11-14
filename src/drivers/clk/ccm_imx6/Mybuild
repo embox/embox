@@ -2,7 +2,7 @@ package embox.driver.clk
 
 
 module ccm_imx6 {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	option number base_addr=0x020C4000
 	option number analog_addr=0x020C8000

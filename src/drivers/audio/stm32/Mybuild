@@ -2,7 +2,7 @@ package embox.driver.audio
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f4_discovery {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number volume = 70
 	option number audio_buf_len = 512
@@ -24,7 +24,7 @@ module stm32f4_discovery {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f746g_discovery {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number volume = 70
 	option number audio_buf_len = 4096
 	option number audio_out_dma_irq = 60
@@ -45,7 +45,7 @@ module stm32f746g_discovery {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f769i_discovery {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number volume = 70
 	option number audio_buf_len = 4096
 	option number audio_out_dma_irq      = 57
@@ -69,7 +69,7 @@ module stm32f769i_discovery {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h745i_discovery {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number volume = 70
 
@@ -93,7 +93,7 @@ module stm32h745i_discovery {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7_common {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number volume = 70
 	option number audio_buf_len = 4096

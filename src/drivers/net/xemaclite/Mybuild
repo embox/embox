@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module xemaclite {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	option number xemaclite_base
 	option number irq_num

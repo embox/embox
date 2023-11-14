@@ -3,7 +3,7 @@ package embox.driver.video
 
 @BuildDepends(platform.efm32.efm32_bsp)
 module efm32_lcd {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number start_with_logo = 1
 

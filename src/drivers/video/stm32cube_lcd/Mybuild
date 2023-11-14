@@ -2,7 +2,7 @@ package embox.driver.video
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f429i_lcd {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number fb_base = 0xD0000000
 	option number ltdc_irq = 88
@@ -20,7 +20,7 @@ module stm32f429i_lcd {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7_lcd {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number fb_base = 0xc0000000
 	option number ltdc_irq = 88
@@ -39,7 +39,7 @@ module stm32f7_lcd {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7_lcd {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number fb_base = 0xD0000000
 	option number ltdc_irq = 88
@@ -58,7 +58,7 @@ module stm32h7_lcd {
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32f7_custom_lcd {
-	option number log_level=1
+	option string log_level="LOG_ERR"
 
 	option number fb_base = 0xc0000000
 	option number ltdc_irq = 88

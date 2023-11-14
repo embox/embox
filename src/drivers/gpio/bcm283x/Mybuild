@@ -45,7 +45,7 @@ module bcm283x_gpio extends api {
 	option number gpu_pullup_portb_down  = 0x00000FE3
 	option number gpu_pullup_portb_up    = 0x003FC01C
 
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "bcm283x_gpio.c"
 	source "bcm283x_gpio.h"

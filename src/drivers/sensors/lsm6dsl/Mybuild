@@ -10,14 +10,14 @@ abstract module lsm6dsl {
 }
 
 static module lsm6dsl_i2c extends lsm6dsl {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number i2c_bus = 0
 	source "lsm6dsl_i2c.c"
 }
 
 /* not tested now!
 static module lsm6dsl_spi extends lsm6dsl {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number spi_bus = 0
 
 	source "lsm6dsl_spi.c"

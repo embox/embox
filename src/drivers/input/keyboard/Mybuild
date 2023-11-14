@@ -5,7 +5,7 @@ module keymap {
 }
 
 module ps_keyboard {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="drivers")
 	source "ps_keyboard.h"

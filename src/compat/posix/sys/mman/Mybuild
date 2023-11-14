@@ -1,7 +1,7 @@
 package embox.compat.posix.sys.mman
 
 static module msync {
-	option number log_level = 3
+	option string log_level="LOG_INFO"
 
 	source "msync.c"
 
@@ -17,7 +17,7 @@ abstract module mmap_api {
 }
 
 module mmap extends mmap_api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "mmap.c"
 
@@ -28,7 +28,7 @@ module mmap extends mmap_api {
 }
 
 module mmap_stub extends mmap_api {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	source "mmap_stub.c"
 	depends embox.kernel.task.idesc.idesc_mmap_api

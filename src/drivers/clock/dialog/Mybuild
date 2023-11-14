@@ -2,7 +2,7 @@ package embox.driver.clock
 
 @BuildDepends(third_party.bsp.dialog.da14695.sdk)
 module da1469x_timer_sdk {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 	option number irq      /* timer irq */
 	option number timer_n  /* timer (1, 2, 3, or 4) */
 	option number hz       /* timer frequency */

@@ -2,7 +2,7 @@ package embox.driver.mmc
 
 module mmc_core {
 	option number dev_quantity = 64
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	@IncludeExport(path="drivers/mmc")
 	source "mmc_core.h"

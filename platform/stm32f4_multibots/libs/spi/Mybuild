@@ -2,7 +2,7 @@ package stm32f4_multibot.libs
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module spi {
-	option number log_level=0
+	option string log_level="LOG_NONE"
 
 	source "spi_hal_msp.c"
 

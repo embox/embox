@@ -4,7 +4,7 @@ package stm32f4_multibot.cmd
 @Cmd(name="nrf24_connect_boards", help="NRF24 connect two boards")
 @BuildDepends(third_party.bsp.st_bsp_api)
 module nrf24_connect_boards {
-	option number log_level = 3
+	option string log_level="LOG_INFO"
 
 	source "nrf24_connect_boards.c"
 

@@ -22,7 +22,7 @@ module pl330_dma extends dma_api {
 	 */
 	option number dma_default_chan = 3
 	option number dma_default_irq = 19
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	source "pl330_dma.c"
 

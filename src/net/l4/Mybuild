@@ -2,7 +2,7 @@ package embox.net
 
 module tcp {
 	option boolean verify_chksum=true
-	option number log_level = 0
+	option string log_level="LOG_NONE"
     /* finwait2 timoeout in ms / 0=wait forever */
     option number tcp_finwait2_timeout_ms = 60000
 	source "tcp.c"

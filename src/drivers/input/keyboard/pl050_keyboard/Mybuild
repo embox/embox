@@ -1,7 +1,7 @@
 package embox.driver.input.keyboard
 
 module pl050_keyboard {
-	option number log_level = 1
+	option string log_level="LOG_ERR"
 
 	option number base_addr = 0x18000000
 	option number irq_num = 3

@@ -13,7 +13,7 @@ module libSDL2 {
 @BuildDepends(third_party.lib.libSDL2)
 @Build(stage=2)
 module sdl2 {
-	option number log_level = 0
+	option string log_level="LOG_NONE"
 
 	@IncludePath("$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/src/mesa/main/")
 	source "embox_sdl_plugin.c", "gl.c"
