@@ -25,7 +25,7 @@
 
 #define DOMAIN_ACCESS OPTION_GET(NUMBER, domain_access)
 #define CTX_NUMBER    32 /* TODO: make it related to number of tasks */
-#define LOG_LEVEL     OPTION_GET(NUMBER, log_level)
+#define LOG_LEVEL     OPTION_GET(STRING, log_level)
 
 #define KERNEL_ASID 0
 void arm_set_asid(uint32_t asid);
