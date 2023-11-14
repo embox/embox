@@ -16,7 +16,6 @@ $(CONFIGURE) :
 			CC=$(EMBOX_GCC) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
-			CFLAGS="-include linux/types.h" \
 			$(DISABLE_FEATURES:%=--disable-%) \
 	)
 	touch $@
