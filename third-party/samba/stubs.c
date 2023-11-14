@@ -9,13 +9,6 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
-void  syslog(int prio, const char *format, ...) {
-}
-
-void openlog(const char *ident, int option, int facility) {
-}
-
-
 int dn_expand(unsigned char *msg, unsigned char *eomorig,
               unsigned char *comp_dn, char *exp_dn,
               int length) {

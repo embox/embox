@@ -14,6 +14,7 @@ module LibPosix {
 	depends embox.compat.posix.utime
 	depends sched
 	depends termios
+	depends syslog
 	depends embox.kernel.task.resource.errno
 }
 
