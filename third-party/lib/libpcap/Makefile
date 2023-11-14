@@ -6,6 +6,7 @@ PKG_SOURCES := https://github.com/the-tcpdump-group/libpcap/archive/refs/tags/$(
 
 PKG_MD5     := 81fc402b01ccacac7fff08518c4458ec
 PKG_PATCHES := timeradd_timersub.patch
+PKG_PATCHES += fix_linux_types_place.patch
 
 include $(EXTBLD_LIB)
 
