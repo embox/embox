@@ -1,0 +1,10 @@
+package embox.project.libpcap.cmd
+
+@AutoCmd
+@Cmd(name = "libpcap_demo", help="Libpcap demo")
+@BuildDepends(third_party.lib.libpcap)
+@Build(stage=2)
+module libpcap_demo {
+    source "libpcap_demo.c"
+    depends third_party.lib.libpcap
+}
