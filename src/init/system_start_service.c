@@ -49,7 +49,7 @@ int system_start(void) {
 	array_foreach(command, script_commands, ARRAY_SIZE(script_commands)) {
 		strncpy(cmd_line, command, sizeof(cmd_line) - 1);
 		cmd_line[sizeof(cmd_line) - 1] = '\0';
-#if OPTION_GET(NUMBER,log_level) >= LOG_INFO
+#if OPTION_GET(STRING, log_level) >= LOG_INFO
 		printf(">%s\n", cmd_line);
 #endif
 		argc = cmdline_tokenize((char *)cmd_line, argv);
