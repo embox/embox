@@ -259,6 +259,8 @@ void tcp_sock_set_state(struct tcp_sock *tcp_sk,
 	};
 	struct sock *sk = to_sock(tcp_sk);
 
+	(void)str_state; /* This var may not be used if max_log_level < LOG_DEBUG */
+
 #if TCP_PRINT_STATE_INFO
     printk("tcp_sk = 0x%08x\t set state %s\n", (uintptr_t)tcp_sk,
             str_state[new_state]);
