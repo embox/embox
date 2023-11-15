@@ -41,9 +41,9 @@ void dcache_inval(const void *data, size_t size) {
 	end = (uint32_t)(uintptr_t)data + size;
 
 	line_size = get_cache_line_size();
-	if (start & ~(line_size - 1)) {
-		log_error("Unaligned start = 0x%08"PRIu32"", start);
-	}
+	// if (start & ~(line_size - 1)) {
+	// 	log_warning("Unaligned start = 0x%08"PRIu32"", start);
+	// }
 	start &= ~(line_size - 1);
 	while (start < end) {
 		asm volatile ("mcr p15, 0, %0, c7, c6, 1" : : "r" (start));
@@ -58,9 +58,9 @@ void dcache_flush(const void *data, size_t size) {
 	end = (uint32_t)(uintptr_t)data + size;
 
 	line_size = get_cache_line_size();
-	if (start & ~(line_size - 1)) {
-		log_warning("Unaligned start = 0x%08"PRIu32"", start);
-	}
+	// if (start & ~(line_size - 1)) {
+	// 	log_warning("Unaligned start = 0x%08"PRIu32"", start);
+	// }
 	start &= ~(line_size - 1);
 	while (start < end) {
 		asm volatile ("mcr p15, 0, %0, c7, c14, 1" : : "r" (start));

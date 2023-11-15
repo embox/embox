@@ -1,6 +1,6 @@
 package embox.compat.posix
 
-module libcurses_full extends LibCurses {
+static module libcurses_full extends LibCurses {
 	@IncludePath("$(SRC_DIR)/compat/posix/curses/include")
 	source "addch.c",
 		"addstr.c",
