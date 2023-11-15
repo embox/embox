@@ -24,7 +24,7 @@ hardware_init_hook:
 	mrc     p15, 0, r0, c0, c0, 5
 	ubfx    r0, r0, #0, #2
 	cmp     r0, #0
-	bne     mp_halt
+	bne     smp_halt
 #endif
 
 // #ifdef CORTEX_A9
@@ -47,10 +47,10 @@ hardware_init_hook:
 	mov     pc, lr
 
 #if MULTIPROCESSING
-mp_halt:
+smp_halt:
 	wfe
 #ifdef SMP
 	/* TODO: SMP support */
 #endif
-	b       smpmp_halt
+	b       smp_halt
 #endif
