@@ -12,18 +12,17 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stddef.h>
-#include <string.h>
 #include <setjmp.h>
+#include <stddef.h>
 #include <stdint.h>
-
-#include <kernel/printk.h>
-#include <kernel/panic.h>
-#include <util/location.h>
+#include <string.h>
 
 #include <framework/test/api.h>
 #include <framework/test/assert.h>
 #include <framework/test/emit.h>
+#include <kernel/panic.h>
+#include <kernel/printk.h>
+#include <util/location.h>
 
 /**
  * Runtime context for a test case.
@@ -40,18 +39,18 @@ static struct test_run_context *current;
 static char emit_buffer[EMIT_BUFFER_SZ];
 
 static int test_case_run(const struct test_case *test_case,
-		const struct __test_fixture_ops *fixtures);
+    const struct __test_fixture_ops *fixtures);
 static const struct __test_assertion_point *test_run(test_case_run_t run);
 
 static void handle_suite_fixture_failure(const struct test_suite *, int code,
-		int setup);
+    int setup);
 static void handle_suite_result(const struct test_suite *, int failures,
-		int total);
+    int total);
 
 static void handle_case_fixture_failure(const struct test_case *, int code,
-		int setup);
+    int setup);
 static void handle_case_result(const struct test_case *,
-		const struct __test_assertion_point *failure);
+    const struct __test_assertion_point *failure);
 
 int test_suite_run(const struct test_suite *test) {
 	const struct test_case *test_case;
@@ -95,7 +94,7 @@ int test_suite_run(const struct test_suite *test) {
 }
 
 static int test_case_run(const struct test_case *test_case,
-		const struct __test_fixture_ops *fixtures) {
+    const struct __test_fixture_ops *fixtures) {
 	const struct __test_assertion_point *failure;
 	__test_fixture_op_t fx_op;
 	int ret;
@@ -128,7 +127,7 @@ static const struct __test_assertion_point *test_run(test_case_run_t run) {
 	}
 	current = NULL;
 
-	return (const struct __test_assertion_point *) (uintptr_t) caught;
+	return (const struct __test_assertion_point *)(uintptr_t)caught;
 }
 
 struct test_emit_buffer *__test_emit_buffer_current(void) {
@@ -137,7 +136,7 @@ struct test_emit_buffer *__test_emit_buffer_current(void) {
 }
 
 void __test_assertion_handle(int pass,
-		const struct __test_assertion_point *point) {
+    const struct __test_assertion_point *point) {
 	if (pass) {
 		return;
 	}
@@ -145,43 +144,42 @@ void __test_assertion_handle(int pass,
 	assert(point);
 
 	if (current) {
-		longjmp(current->before_run, (intptr_t) point);
-
-	} else {
+		longjmp(current->before_run, (intptr_t)point);
+	}
+	else {
 		handle_case_result(NULL, point);
 		panic("\n\ttest_assert failed inside fixture\n");
 	}
 }
 
 static void handle_suite_fixture_failure(const struct test_suite *test_suite,
-		int code, int setup) {
+    int code, int setup) {
 	printk("\n\tsuite fixture %s failed with code %d: %s\n",
-			setup ? "setup" : "tear down", code, strerror(-code));
+	    setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_suite_result(const struct test_suite *test_suite,
-		int failures, int total) {
+    int failures, int total) {
 	if (failures > 0) {
 		printk("\n\ttesting %s (%s) failed\n"
-				"\t\t%d/%d failures\n",
-				test_name(test_suite), test_suite->description,
-				failures, total);
-	} else if (!failures) {
+		       "\t\t%d/%d failures\n",
+		    test_name(test_suite), test_suite->description, failures, total);
+	}
+	else if (!failures) {
 		printk(" done\n");
 	}
-
 }
 
 static void handle_case_fixture_failure(const struct test_case *test_case,
-		int code, int setup) {
+    int code, int setup) {
 	printk("\n\tcase fixture %s failed with code %d: %s\n",
-			setup ? "setup" : "tear down", code, strerror(-code));
+	    setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_case_result(const struct test_case *test_case,
-		const struct __test_assertion_point *failure) {
-	const struct location __attribute__ ((unused)) *test_loc;
-	const struct location_func __attribute__ ((unused)) *fail_loc;
+    const struct __test_assertion_point *failure) {
+	const struct location __attribute__((unused)) * test_loc;
+	const struct location_func __attribute__((unused)) * fail_loc;
 
 	if (!failure) {
 		printk(".");
@@ -190,14 +188,13 @@ static void handle_case_result(const struct test_case *test_case,
 
 	fail_loc = &failure->location;
 	printk("\n\tfailure at %s : %d, in function %s\n"
-			"\t\t%s\n",
-			fail_loc->at.file, fail_loc->at.line, fail_loc->func,
-			failure->reason);
+	       "\t\t%s\n",
+	    fail_loc->at.file, fail_loc->at.line, fail_loc->func, failure->reason);
 
 	if (test_case) {
 		test_loc = &test_case->location;
 		printk("\t   case at %s : %d\n"
-				"\t\t\"%s\"\n\t",
-				test_loc->file, test_loc->line, test_case->description);
+		       "\t\t\"%s\"\n\t",
+		    test_loc->file, test_loc->line, test_case->description);
 	}
 }
