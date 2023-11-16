@@ -12,24 +12,25 @@
  *         - Distinguishing test suites and test cases
  */
 
-#include <framework/test/api.h>
-
 #include <stddef.h>
 #include <string.h>
 
 #include <framework/mod/ops.h>
+#include <framework/test/api.h>
 #include <util/array.h>
 
 static int test_mod_enable(const struct mod *mod);
 
 const struct mod_ops __test_mod_ops = {
-	.enable = &test_mod_enable,
+    .enable = &test_mod_enable,
 };
 
-ARRAY_SPREAD_DEF(const struct test_suite * const, __test_registry);
+ARRAY_SPREAD_DEF(const struct test_suite *const, __test_registry);
 
 static int test_mod_enable(const struct mod *mod) {
-	struct test_mod *test_mod = (struct test_mod *) mod;
+	struct test_mod *test_mod;
+
+	test_mod = (struct test_mod *)mod;
 
 	if (!test_mod->suite.autorun) {
 		return 0;
