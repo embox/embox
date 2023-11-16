@@ -21,8 +21,8 @@
 #include <framework/test/assert.h>
 #include <framework/test/emit.h>
 #include <kernel/panic.h>
-#include <kernel/printk.h>
 #include <util/location.h>
+#include <util/log.h>
 
 /**
  * Runtime context for a test case.
@@ -65,7 +65,7 @@ int test_suite_run(const struct test_suite *test) {
 
 	fixture_ops = &test->suite_fixture_ops;
 
-	printk("\ttest: running %s.%s ", test_package(test), test_name(test));
+	log_info("test: running %s.%s", test_package(test), test_name(test));
 
 	if ((fx_op = *fixture_ops->p_setup) && (ret = fx_op()) != 0) {
 		handle_suite_fixture_failure(test, ret, 1);
@@ -148,31 +148,27 @@ void __test_assertion_handle(int pass,
 	}
 	else {
 		handle_case_result(NULL, point);
-		panic("\n\ttest_assert failed inside fixture\n");
+		panic("\ntest_assert failed inside fixture\n");
 	}
 }
 
 static void handle_suite_fixture_failure(const struct test_suite *test_suite,
     int code, int setup) {
-	printk("\n\tsuite fixture %s failed with code %d: %s\n",
+	log_error("suite fixture %s failed with code %d: %s",
 	    setup ? "setup" : "tear down", code, strerror(-code));
 }
 
 static void handle_suite_result(const struct test_suite *test_suite,
     int failures, int total) {
 	if (failures > 0) {
-		printk("\n\ttesting %s (%s) failed\n"
-		       "\t\t%d/%d failures\n",
-		    test_name(test_suite), test_suite->description, failures, total);
-	}
-	else if (!failures) {
-		printk(" done\n");
+		log_error("testing \"%s\": %d/%d failures", test_suite->description,
+		    failures, total);
 	}
 }
 
 static void handle_case_fixture_failure(const struct test_case *test_case,
     int code, int setup) {
-	printk("\n\tcase fixture %s failed with code %d: %s\n",
+	log_error("case fixture %s failed with code %d: %s",
 	    setup ? "setup" : "tear down", code, strerror(-code));
 }
 
@@ -182,19 +178,9 @@ static void handle_case_result(const struct test_case *test_case,
 	const struct location_func __attribute__((unused)) * fail_loc;
 
 	if (!failure) {
-		printk(".");
 		return;
 	}
 
 	fail_loc = &failure->location;
-	printk("\n\tfailure at %s : %d, in function %s\n"
-	       "\t\t%s\n",
-	    fail_loc->at.file, fail_loc->at.line, fail_loc->func, failure->reason);
-
-	if (test_case) {
-		test_loc = &test_case->location;
-		printk("\t   case at %s : %d\n"
-		       "\t\t\"%s\"\n\t",
-		    test_loc->file, test_loc->line, test_case->description);
-	}
+	log_error("failure at %s:%d", fail_loc->at.file, fail_loc->at.line);
 }
