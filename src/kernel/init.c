@@ -16,6 +16,7 @@
 #include <kernel/kgdb.h>
 #include <kernel/klog.h>
 #include <kernel/printk.h>
+#include <util/log.h>
 
 static void kernel_init(void);
 static int init(void);
@@ -57,7 +58,7 @@ static void kernel_init(void) {
 	klog_init();
 
 	irqctrl_init();
-	printk("Interrupt controller: %s\n", irqctrl_get()->name);
+	log_info("Interrupt controller: %s", irqctrl_get()->name);
 }
 
 /**
@@ -68,7 +69,7 @@ static int init(void) {
 	int ret;
 	const runlevel_nr_t target_level = RUNLEVEL_NRS_ENABLED - 1;
 
-	printk("\nEmbox kernel start\n");
+	log_info("Embox kernel start");
 
 	ret = runlevel_set(target_level);
 
