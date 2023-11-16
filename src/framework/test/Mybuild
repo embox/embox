@@ -1,10 +1,12 @@
 package embox.framework
 
 module test {
+	option string log_level="LOG_INFO"
+
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")
 	source "emit.c", "registry.c", "run.c"
 
-	depends embox.lib.printk
+	depends embox.util.log
 	depends embox.arch.libarch
 }
