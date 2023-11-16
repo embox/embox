@@ -14,12 +14,9 @@
 #include "ehci.h"
 
 void ehci_qtd_show(struct ehci_qtd_hw *qtd, int log_level) {
-	if (!&mod_logger)
-		return;
-
 	if (mod_logger.logging.level >= log_level) {
-		log_send_msg(log_level, "\tqtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x\n",
-			qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
+		log_debug(log_level, "qtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x",
+		    qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
 	}
 }
 
