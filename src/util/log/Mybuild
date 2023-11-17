@@ -11,9 +11,11 @@ abstract module log {
 }
 
 module log_full extends log {
+	source "log_full.c"
 	source "log_full.h"
 }
 
 module log_light extends log {
+	source "log_light.c"
 	source "log_light.h"
 }

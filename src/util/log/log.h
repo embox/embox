@@ -16,113 +16,92 @@
 
 #include <module/embox/util/log.h>
 
-#define LOG_PREFIX      (1U << 8)
-#define LOG_POSTFIX     (1U << 9)
-#define LOG_PRIO(flags) (log_prio_t)(flags)
-
-#define __LOG_RAW       0U
-#define __LOG_START     LOG_PREFIX
-#define __LOG_STOP      LOG_POSTFIX
-#define __LOG_MSG       (LOG_PREFIX | LOG_POSTFIX)
+#define LOG_RAW 0U
+#define LOG_BEG (1U << 8)
+#define LOG_END (1U << 9)
+#define LOG_MSG (LOG_BEG | LOG_END)
 
 #if __MAX_LOG_LEVEL >= LOG_EMERG
-#define __log_emerg(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_EMERG | type, fmt, ##__VA_ARGS__)
+#define __LOG_EMERG(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_emerg(type, fmt, ...)
+#define __LOG_EMERG(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_ALERT
-#define __log_alert(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_ALERT | type, fmt, ##__VA_ARGS__)
+#define __LOG_ALERT(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_alert(type, fmt, ...)
+#define __LOG_ALERT(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_CRIT
-#define __log_crit(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_CRIT | type, fmt, ##__VA_ARGS__)
+#define __LOG_CRIT(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_crit(type, fmt, ...)
+#define __LOG_CRIT(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_ERR
-#define __log_error(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_ERR | type, fmt, ##__VA_ARGS__)
+#define __LOG_ERR(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_error(type, fmt, ...)
+#define __LOG_ERR(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_WARNING
-#define __log_warning(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_WARNING | type, fmt, ##__VA_ARGS__)
+#define __LOG_WARNING(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_warning(type, fmt, ...)
+#define __LOG_WARNING(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_NOTICE
-#define __log_notice(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_NOTICE | type, fmt, ##__VA_ARGS__)
+#define __LOG_NOTICE(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_notice(type, fmt, ...)
+#define __LOG_NOTICE(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_INFO
-#define __log_info(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_INFO | type, fmt, ##__VA_ARGS__)
+#define __LOG_INFO(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_info(type, fmt, ...)
+#define __LOG_INFO(flags, fmt, ...)
 #endif
 
 #if __MAX_LOG_LEVEL >= LOG_DEBUG
-#define __log_debug(type, fmt, ...) \
-	__log_handle(&mod_logger, LOG_DEBUG | type, fmt, ##__VA_ARGS__)
+#define __LOG_DEBUG(flags, fmt, ...) __log_handle(flags, fmt, ##__VA_ARGS__)
 #else
-#define __log_debug(type, fmt, ...)
+#define __LOG_DEBUG(flags, fmt, ...)
 #endif
 
-#define log_raw(fn, ...)      __##fn(__LOG_RAW, fmt, ##__VA_ARGS__)
-#define log_start(fn, ...)    __##fn(__LOG_START, fmt, ##__VA_ARGS__)
-#define log_stop(fn, ...)     __##fn(__LOG_STOP, fmt, ##__VA_ARGS__)
+#define log_raw(prio, fmt, ...) __##prio(LOG_RAW | prio, fmt, ##__VA_ARGS__)
+#define log_beg(prio, fmt, ...) __##prio(LOG_BEG | prio, fmt, ##__VA_ARGS__)
+#define log_end(prio, fmt, ...) __##prio(LOG_END | prio, fmt, ##__VA_ARGS__)
+#define log_msg(prio, fmt, ...) __##prio(LOG_MSG | prio, fmt, ##__VA_ARGS__)
 
-#define log_emerg(fmt, ...)   __log_emerg(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_alert(fmt, ...)   __log_alert(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_crit(fmt, ...)    __log_crit(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_error(fmt, ...)   __log_error(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_warning(fmt, ...) __log_warning(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_notice(fmt, ...)  __log_notice(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_info(fmt, ...)    __log_info(__LOG_MSG, fmt, ##__VA_ARGS__)
-#define log_debug(fmt, ...)   __log_debug(__LOG_MSG, fmt, ##__VA_ARGS__)
+#define log_emerg(fmt, ...)     log_msg(LOG_EMERG, fmt, ##__VA_ARGS__)
+#define log_alert(fmt, ...)     log_msg(LOG_ALERT, fmt, ##__VA_ARGS__)
+#define log_crit(fmt, ...)      log_msg(LOG_CRIT, fmt, ##__VA_ARGS__)
+#define log_error(fmt, ...)     log_msg(LOG_ERR, fmt, ##__VA_ARGS__)
+#define log_warning(fmt, ...)   log_msg(LOG_WARNING, fmt, ##__VA_ARGS__)
+#define log_notice(fmt, ...)    log_msg(LOG_NOTICE, fmt, ##__VA_ARGS__)
+#define log_info(fmt, ...)      log_msg(LOG_INFO, fmt, ##__VA_ARGS__)
+#define log_debug(fmt, ...)     log_msg(LOG_DEBUG, fmt, ##__VA_ARGS__)
+
+#define log_level_self()        __LOG_LEVEL_SELF
 
 typedef uint8_t log_prio_t;
 
-typedef void (*log_handler_t)(struct logger *logger, unsigned flags,
+#define LOG_PRIO(flags) (log_prio_t)(flags)
+
+typedef void (*log_handler_t)(struct logger *logger, uint16_t flags,
     const char *fmt, va_list args);
 
-/**
- * Logging params
- */
-struct logging {
-	log_prio_t level; /**< Filtering log level */
-};
-
-/**
- * Logger structure binding a specific module and logging params
- */
 struct logger {
 	const struct mod *mod;
-	struct logging logging;
+	log_prio_t level;
 };
 
-/**
- * Declares logger of the module from which macro is called.
- */
-extern struct logger mod_logger __attribute__((weak));
-
-extern const char *log_get_prefix(log_prio_t prio);
+extern const char *log_prio2str(log_prio_t prio);
 extern void log_set_handler(log_handler_t handler);
+extern log_handler_t log_get_handler(void);
 
-extern void __log_handle(struct logger *logger, unsigned flags, const char *fmt,
-    ...);
+/* Declares logger of the module from which macro is called. */
+extern struct logger mod_logger __attribute__((weak));
 
 #endif /* UTIL_LOG_H_ */
