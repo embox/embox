@@ -402,6 +402,8 @@ int thread_launch(struct thread *t) {
 	}
 	sched_unlock();
 
+	sched_post_switch();
+
 	return ret;
 }
 
