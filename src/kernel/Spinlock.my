@@ -3,5 +3,5 @@ package embox.kernel
 
 @Mandatory
 module spinlock {
-	option boolean spin_debug = true
+	option boolean spin_debug=false
 }
