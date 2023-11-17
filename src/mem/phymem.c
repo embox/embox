@@ -4,15 +4,14 @@
  * @date Oct 5, 2012
  * @author: Anton Bondarev
  */
-#include <util/log.h>
-
 #include <stdint.h>
 #include <sys/mman.h>
-#include <mem/phymem.h>
-#include <mem/page.h>
-#include <util/binalign.h>
 
 #include <embox/unit.h>
+#include <mem/page.h>
+#include <mem/phymem.h>
+#include <util/binalign.h>
+#include <util/log.h>
 
 EMBOX_UNIT_INIT(phymem_init);
 
@@ -28,22 +27,21 @@ static int phymem_init(void) {
 	void *va;
 
 	if (phymem_alloc_start > phymem_alloc_end) {
-		log_error("phymem_start (%p) > phymem_end (%p)",
-		           phymem_alloc_start, phymem_alloc_end);
+		log_error("phymem_start (%p) > phymem_end (%p)", phymem_alloc_start,
+		    phymem_alloc_end);
 
 		return -1;
 	}
 
-	log_info("start=%p end=%p size=%zu\n", phymem_alloc_start, phymem_alloc_end, mem_len);
+	log_info("start=%p end=%p size=%zu", phymem_alloc_start, phymem_alloc_end,
+	    mem_len);
 
-	va = mmap_device_memory(phymem_alloc_start,
-			mem_len,
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			(uint64_t)((uintptr_t) phymem_alloc_start));
+	va = mmap_device_memory(phymem_alloc_start, mem_len, PROT_WRITE | PROT_READ,
+	    MAP_FIXED, (uint64_t)((uintptr_t)phymem_alloc_start));
 
 	if (va) {
-		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len, PAGE_SIZE());
+		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len,
+		    PAGE_SIZE());
 	}
 	return phymem_alloc_start == va ? 0 : -EIO;
 }
@@ -53,14 +51,14 @@ static uintptr_t find_sections_end(void *vmas[], unsigned int lens[]) {
 	int i = 0;
 	uintptr_t l = 0, end, ram_end;
 
-	ram_end = (uintptr_t) &_ram_base + (size_t) &_ram_size;
+	ram_end = (uintptr_t)&_ram_base + (size_t)&_ram_size;
 
 	while (vmas[i]) {
 		if (lens[i]) {
-			end = (uintptr_t) vmas[i] + lens[i];
+			end = (uintptr_t)vmas[i] + lens[i];
 
 			if (end <= ram_end && end > l) {
-				l = (uintptr_t) vmas[i] + lens[i];
+				l = (uintptr_t)vmas[i] + lens[i];
 			}
 		}
 		i++;
@@ -84,16 +82,16 @@ char *phymem_allocated_start(void) {
 		void **vmas;
 		unsigned int *lens;
 	} sect[4] = {
-		{ sections_text_vma, sections_text_len },
-		{ sections_rodata_vma, sections_rodata_len },
-		{ sections_data_vma, sections_data_len },
-		{ sections_bss_vma, sections_bss_len },
+	    {sections_text_vma, sections_text_len},
+	    {sections_rodata_vma, sections_rodata_len},
+	    {sections_data_vma, sections_data_len},
+	    {sections_bss_vma, sections_bss_len},
 	};
 
 	uintptr_t sections_end, tmp;
 	int i;
 
-	sections_end = (uintptr_t) &_reserve_end;
+	sections_end = (uintptr_t)&_reserve_end;
 
 	for (i = 0; i < 4; i++) {
 		tmp = find_sections_end(sect[i].vmas, sect[i].lens);
@@ -102,12 +100,12 @@ char *phymem_allocated_start(void) {
 		}
 	}
 
-	return (char *) binalign_bound(sections_end, PAGE_SIZE());
+	return (char *)binalign_bound(sections_end, PAGE_SIZE());
 }
 
 char *phymem_allocated_end(void) {
-	return (char *)
-			binalign_bound((uintptr_t) &_ram_base + (size_t) &_ram_size, PAGE_SIZE());
+	return (char *)binalign_bound((uintptr_t)&_ram_base + (size_t)&_ram_size,
+	    PAGE_SIZE());
 }
 
 void *phymem_alloc(size_t page_number) {
