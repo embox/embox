@@ -25,12 +25,6 @@ module pic32mx_uart extends embox.driver.diag.diag_api {
 	source "pic32mx_uart.c"
 }
 
-module bpi extends embox.driver.diag.diag_api {
-	option number base_addr = 0x01C28000
-
-	source "bpi_uart.c"
-}
-
 @BuildDepends(third_party.bsp.multiclet.core)
 module multiclet extends embox.driver.diag.diag_api {
 	option number baud_rate

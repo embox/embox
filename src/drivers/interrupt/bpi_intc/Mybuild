@@ -1,5 +1,0 @@
-package embox.driver.interrupt
-
-module bpi_intc extends irqctrl_api {
-	source "bpi_intc.c", "bpi_intc.h"
-}
