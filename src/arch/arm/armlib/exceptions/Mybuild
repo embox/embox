@@ -1,6 +1,8 @@
 package embox.arch.arm.armlib
 
 module exceptions {
+	option string log_level="LOG_EMERG"
+
 	@IncludeExport(path="arm")
 	source "exception.h"
 
