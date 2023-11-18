@@ -22,7 +22,9 @@ void thread_ack_switched(void) {
 	ADDR_SPACE_FINISH_SWITCH();
 	sched_finish_switch(&cpudata_var(saved_prev)->schedee);
 	ipl_enable();
-	sched_timing_start(&thread_self()->schedee);
+	/* we add first timer the same behavious as sched_ticker_update*/
+	sched_ticker_add();
+	sched_timing_start(&thread_self()->schedee);	
 	sched_unlock();
 }
 
