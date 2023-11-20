@@ -6,48 +6,52 @@
  * @date 2016-09-21
  */
 
-#ifndef SHOW_PACKET_H
-#define SHOW_PACKET_H
-
-#include <util/log.h>
 #include <stdint.h>
 
+#include <util/log.h>
 
 #define STR_BYTES 16
 
-
 static inline void show_packet(uint8_t *raw, int size, char *title) {
-	if (!&mod_logger)
+	int rows;
+	int pos;
+	int i, j;
+	char ch;
+
+	if (log_level_self() < LOG_DEBUG) {
 		return;
+	}
 
-	if (mod_logger.logging.level >= LOG_DEBUG - 1) {
+	log_debug("PACKET(%d) %s:", size, title);
 
-		log_debug("PACKET(%d) %s:\n", size, title);
-		int rows = (size + STR_BYTES - 1) / STR_BYTES;
-		for (int i = 0; i < rows; i++) {
-			for (int j = 0; j < STR_BYTES; j++) {
-				int pos = i * STR_BYTES + j;
-				if (pos < size) {
-					log_debug(" %02hhX", *(raw + pos));
-				}
-				else {
-					log_debug("   ");
-				}
+	rows = (size + STR_BYTES - 1) / STR_BYTES;
+
+	for (i = 0; i < rows; i++) {
+		log_beg(LOG_DEBUG, "\t");
+
+		for (j = 0; j < STR_BYTES; j++) {
+			pos = i * STR_BYTES + j;
+			if (pos < size) {
+				log_raw(LOG_DEBUG, " %02hhX", *(raw + pos));
 			}
-			log_debug("   ");
-			for (int j = 0; j < STR_BYTES; j++) {
-				int pos = i * STR_BYTES + j;
-				if (pos < size) {
-					char c = (char) *(raw + pos);
-					if (c < 33 || c > 126)
-						c = '.';
-
-					log_debug("%c", c);
-				}
+			else {
+				log_raw(LOG_DEBUG, "   ");
 			}
-			log_debug("\n");
 		}
+
+		log_raw(LOG_DEBUG, "   ");
+
+		for (j = 0; j < STR_BYTES; j++) {
+			pos = i * STR_BYTES + j;
+			if (pos < size) {
+				ch = (char)*(raw + pos);
+				if (ch < 33 || ch > 126) {
+					ch = '.';
+				}
+				log_raw(LOG_DEBUG, "%c", ch);
+			}
+		}
+
+		log_end(LOG_DEBUG, "");
 	}
 }
-
-#endif /* SHOW_PACKET_H */
