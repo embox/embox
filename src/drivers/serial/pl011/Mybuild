@@ -1,20 +1,31 @@
 package embox.driver.serial
 
-module pl011 extends embox.driver.serial.diag {
-	option number baud_rate
-	option number base_addr
-	option number irq_num
+module pl011 {
 	/* FIXME Set UARTCLK to 0 since it is not used in many templates */
-	option number uartclk = 0
+	option number uartclk=0
 
 	source "pl011.c"
+
+	depends embox.driver.serial.core
+}
+
+module pl011_diag extends embox.driver.serial.diag {
+	option number base_addr
+	option number baud_rate=115200
+
 	source "pl011_diag.c"
+
+	depends pl011
+	depends embox.driver.periph_memory
+}
+
+module pl011_ttyS0 {
+	option number base_addr
+	option number irq_num
+	option number baud_rate=115200
+
 	source "pl011_ttys0.c"
 
-	depends core
-	//depends diag
-	depends embox.driver.char_dev_api
+	depends pl011
 	depends embox.driver.periph_memory
-
-	@NoRuntime depends embox.util.dlist
 }
