@@ -6,14 +6,12 @@
  * @date 10.11.23
  */
 #include <stdarg.h>
-#include <stdio.h>
+#include <syslog.h>
 
 void syslog(int priority, const char *message, ...) {
 	va_list args;
 
 	va_start(args, message);
-	vprintf(message, args);
+	vsyslog(priority, message, args);
 	va_end(args);
-
-	printf("\n");
 }
