@@ -6,7 +6,6 @@
  */
 
 #include <drivers/pci/pci.h>
-
 #include <drivers/pci/pci_chip/pci_utils.h>
 
 int pci_read_config_byte(struct pci_slot_dev *dev, int where, uint8_t *val) {
@@ -20,7 +19,8 @@ int pci_read_config_byte(struct pci_slot_dev *dev, int where, uint8_t *val) {
 int pci_read_config_word(struct pci_slot_dev *dev, int where, uint16_t *val) {
 	int ret;
 
-	ret = pci_read_config16(dev->busn, (dev->slot << 3) | dev->func, where, val);
+	ret = pci_read_config16(dev->busn, (dev->slot << 3) | dev->func, where,
+	    val);
 
 	return ret;
 }
@@ -28,7 +28,8 @@ int pci_read_config_word(struct pci_slot_dev *dev, int where, uint16_t *val) {
 int pci_read_config_dword(struct pci_slot_dev *dev, int where, uint32_t *val) {
 	int ret;
 
-	ret = pci_read_config32(dev->busn, (dev->slot << 3) | dev->func, where, val);
+	ret = pci_read_config32(dev->busn, (dev->slot << 3) | dev->func, where,
+	    val);
 
 	return ret;
 }

@@ -11,27 +11,24 @@
  * @author Nikolay Korotky
  */
 
-#include <util/log.h>
-
 #include <errno.h>
 #include <string.h>
-
-#include <util/dlist.h>
-#include <util/array.h>
-#include <embox/unit.h>
-
-#include <mem/misc/pool.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <drivers/pci/pci_regs.h>
+#include <embox/unit.h>
+#include <mem/misc/pool.h>
+#include <util/array.h>
+#include <util/dlist.h>
+#include <util/log.h>
 
-#define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER,bus_n_to_scan)
-#define PCI_IRQ_BASE      OPTION_GET(NUMBER,irq_base)
+#define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER, bus_n_to_scan)
+#define PCI_IRQ_BASE      OPTION_GET(NUMBER, irq_base)
 
 EMBOX_UNIT_INIT(pci_init);
 
-POOL_DEF(devs_pool, struct pci_slot_dev, OPTION_GET(NUMBER,dev_quantity));
+POOL_DEF(devs_pool, struct pci_slot_dev, OPTION_GET(NUMBER, dev_quantity));
 
 /* repository */
 DLIST_DEFINE(__pci_devs_list);
@@ -41,29 +38,29 @@ uint32_t pci_get_vendor_id(uint32_t bus, uint32_t devfn) {
 	uint32_t vendor;
 	pci_read_config32(bus, devfn, PCI_VENDOR_ID, &vendor);
 	if ((vendor == PCI_VENDOR_NONE) || (vendor == PCI_VENDOR_WRONG)) {
-		return (uint32_t) -1;
+		return (uint32_t)-1;
 	}
 	return vendor;
 }
 
-static inline int get_cap_id(struct pci_slot_dev *pci_dev, uint32_t where, uint8_t *val8) {
+static inline int get_cap_id(struct pci_slot_dev *pci_dev, uint32_t where,
+    uint8_t *val8) {
 	int ret;
 
-	ret = pci_read_config8(pci_dev->busn,
-			(pci_dev->slot << 3) | pci_dev->func,
-			where + PCI_CAP_LIST_ID, val8);
+	ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func,
+	    where + PCI_CAP_LIST_ID, val8);
 	if (PCIUTILS_SUCCESS == ret) {
 		return 0;
 	}
 	return -1;
 }
 
-static inline int get_cap_next(struct pci_slot_dev *pci_dev, uint32_t where, uint8_t *val8) {
+static inline int get_cap_next(struct pci_slot_dev *pci_dev, uint32_t where,
+    uint8_t *val8) {
 	int ret;
 
-	ret = pci_read_config8(pci_dev->busn,
-			(pci_dev->slot << 3) | pci_dev->func,
-			where + PCI_CAP_LIST_NEXT, val8);
+	ret = pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func,
+	    where + PCI_CAP_LIST_NEXT, val8);
 	if (PCIUTILS_SUCCESS == ret) {
 		*val8 &= ~0x3;
 		return 0;
@@ -71,27 +68,24 @@ static inline int get_cap_next(struct pci_slot_dev *pci_dev, uint32_t where, uin
 	return -1;
 }
 
-static inline int get_cap_flags(struct pci_slot_dev *pci_dev, uint32_t where, uint16_t *val16) {
+static inline int get_cap_flags(struct pci_slot_dev *pci_dev, uint32_t where,
+    uint16_t *val16) {
 	int ret;
 
-	ret = pci_read_config16(pci_dev->busn,
-			(pci_dev->slot << 3) | pci_dev->func,
-			where + PCI_CAP_FLAGS, val16);
+	ret = pci_read_config16(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func,
+	    where + PCI_CAP_FLAGS, val16);
 	if (PCIUTILS_SUCCESS == ret) {
 		return 0;
 	}
 	return -1;
 }
 
-
 static void __pci_dev_fill_caps(struct pci_slot_dev *pci_dev) {
 	uint32_t where;
 	uint8_t val8;
 
-
-	pci_read_config8(pci_dev->busn,
-			(pci_dev->slot << 3) | pci_dev->func,
-			PCI_CAPABILITY_LIST, &val8);
+	pci_read_config8(pci_dev->busn, (pci_dev->slot << 3) | pci_dev->func,
+	    PCI_CAPABILITY_LIST, &val8);
 
 	where = val8;
 
@@ -134,9 +128,9 @@ static int pci_get_slot_info(struct pci_slot_dev *dev) {
 	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_LINE, &dev->irq_line);
 	pci_read_config8(dev->busn, devfn, PCI_INTERRUPT_PIN, &dev->irq_pin);
 
-	for (bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num ++) {
+	for (bar_num = 0; bar_num < ARRAY_SIZE(dev->bar); bar_num++) {
 		pci_read_config32(dev->busn, devfn,
-			PCI_BASE_ADDR_REG_0 + (bar_num << 2), &dev->bar[bar_num]);
+		    PCI_BASE_ADDR_REG_0 + (bar_num << 2), &dev->bar[bar_num]);
 	}
 	dev->func = PCI_FUNC(devfn);
 	dev->slot = PCI_SLOT(devfn);
@@ -157,33 +151,33 @@ static size_t dev_cnt = 0;
 static inline int pci_add_dev(struct pci_slot_dev *dev) {
 	dlist_head_init(&dev->lst);
 	dlist_add_prev(&dev->lst, &__pci_devs_list);
-	dev_cnt ++;
+	dev_cnt++;
 	return 0;
 }
 
-struct pci_slot_dev *pci_insert_dev(char configured,
-			uint32_t bus, uint32_t devfn, uint32_t vendor_reg) {
+struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
+    uint32_t devfn, uint32_t vendor_reg) {
 	struct pci_slot_dev *new_dev;
 
-	if(NULL == (new_dev = pool_alloc(&devs_pool))) {
+	if (NULL == (new_dev = pool_alloc(&devs_pool))) {
 		log_debug("pci dev pool overflow");
 		return NULL;
 	}
 
 	memset(new_dev, 0, sizeof(*new_dev));
 
-	new_dev->busn = (uint8_t) bus;
-	new_dev->func = (uint8_t) devfn;
+	new_dev->busn = (uint8_t)bus;
+	new_dev->func = (uint8_t)devfn;
 
-	new_dev->vendor = (uint16_t) vendor_reg & 0xffff;
-	new_dev->device = (uint16_t) (vendor_reg >> 16) & 0xffff;
+	new_dev->vendor = (uint16_t)vendor_reg & 0xffff;
+	new_dev->device = (uint16_t)(vendor_reg >> 16) & 0xffff;
 	if (configured) {
 		pci_get_slot_info(new_dev);
 	}
 	pci_add_dev(new_dev);
-	log_debug("Add pci >> bc %d, sc %d, rev %d, irq %d",
-			new_dev->baseclass, new_dev->subclass, new_dev->rev, new_dev->irq);
-	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num ++) {
+	log_debug("Add pci >> bc %d, sc %d, rev %d, irq %d", new_dev->baseclass,
+	    new_dev->subclass, new_dev->rev, new_dev->irq);
+	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num++) {
 		log_debug("bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
 	}
 	log_debug("\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
@@ -205,7 +199,6 @@ static int pci_scan_start(void) {
 
 	for (bus = 0; bus < PCI_BUS_N_TO_SCAN; ++bus) {
 		for (devfn = MIN_DEVFN; devfn < MAX_DEVFN; ++devfn) {
-
 			/* Devices are required to implement function 0, so if
 			 * it's missing then there is no device here. */
 			if (PCI_FUNC(devfn) && !is_multi) {
@@ -243,10 +236,9 @@ static int pci_init(void) {
 	pci_scan_start();
 
 	return 0;
-
 }
 
-void pci_set_master(struct pci_slot_dev * slot_dev) {
+void pci_set_master(struct pci_slot_dev *slot_dev) {
 	uint16_t cmd;
 	uint8_t lat;
 	uint16_t devfn = PCI_DEVFN(slot_dev->slot, slot_dev->func);
@@ -259,7 +251,7 @@ void pci_set_master(struct pci_slot_dev * slot_dev) {
 	pci_read_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, &lat);
 	if (lat < 16) {
 		log_info("Increasing latency timer of device %02x:%02x to 64\n",
-				slot_dev->busn, devfn);
+		    slot_dev->busn, devfn);
 		pci_write_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, 64);
 	}
 }
@@ -271,7 +263,8 @@ void pci_intx(struct pci_slot_dev *pdev, int enable) {
 
 	if (enable) {
 		new = pci_command & ~PCI_COMMAND_INTX_DISABLE;
-	} else {
+	}
+	else {
 		new = pci_command | PCI_COMMAND_INTX_DISABLE;
 	}
 
@@ -279,4 +272,3 @@ void pci_intx(struct pci_slot_dev *pdev, int enable) {
 		pci_write_config_word(pdev, PCI_COMMAND, new);
 	}
 }
-
