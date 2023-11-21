@@ -180,7 +180,7 @@ struct pci_slot_dev *pci_insert_dev(char configured, uint32_t bus,
 	for (int bar_num = 0; bar_num < ARRAY_SIZE(new_dev->bar); bar_num++) {
 		log_debug("bar[%d] 0x%X ", bar_num, new_dev->bar[bar_num]);
 	}
-	log_debug("\n fu %d, slot %d \n", new_dev->func, new_dev->slot);
+	log_debug("fu %d, slot %d", new_dev->func, new_dev->slot);
 	return new_dev;
 }
 
@@ -250,7 +250,7 @@ void pci_set_master(struct pci_slot_dev *slot_dev) {
 	}
 	pci_read_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, &lat);
 	if (lat < 16) {
-		log_info("Increasing latency timer of device %02x:%02x to 64\n",
+		log_info("Increasing latency timer of device %02x:%02x to 64",
 		    slot_dev->busn, devfn);
 		pci_write_config8(slot_dev->busn, devfn, PCI_LATENCY_TIMER, 64);
 	}

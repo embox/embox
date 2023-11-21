@@ -12,10 +12,8 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <framework/mod/api.h>
-#include <kernel/printk.h>
 #include <util/array.h>
-
-#define PCI_INFO_LABEL "\tpci: "
+#include <util/log.h>
 
 static int pci_drv_probe(const struct pci_driver *drv,
     struct pci_slot_dev *dev) {
@@ -35,14 +33,13 @@ static int pci_mod_enable(const struct mod *self) {
 	const struct pci_driver *pci_drv = (const struct pci_driver *)self;
 	struct pci_slot_dev *dev = NULL;
 
-	printk(PCI_INFO_LABEL "%s driver inserted\n", pci_drv->name);
+	log_info("pci: %s driver inserted", pci_drv->name);
 
 	pci_foreach_dev(dev) {
 		if (!dev->pci_drv) {
 			if (!pci_drv_probe(pci_drv, dev)) {
-				printk(PCI_INFO_LABEL "%s handles %04x:%04x "
-				                      "bus %" PRId32 " slot %" PRId8
-				                      " func %" PRId8 "\n",
+				log_info("pci: %s handles %04x:%04x "
+				         "bus %" PRId32 " slot %" PRId8 " func %" PRId8,
 				    pci_drv->name, dev->vendor, dev->device, dev->busn,
 				    dev->slot, dev->func);
 
