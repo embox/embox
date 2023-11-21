@@ -251,9 +251,7 @@
 #define __MOD_LOGGER_DEF(mod_nm, log_level) \
 	struct logger __MOD_LOGGER(mod_nm) = { \
 		.mod   = &__MOD(mod_nm), \
-		.logging = { \
-			.level = log_level, \
-		}, \
+		.level = log_level, \
 	}
 #endif /* __MOD_LOGGER_DEF */
 
