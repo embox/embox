@@ -4,24 +4,22 @@
  * @date Aug 13, 2019
  * @author Anton Bondrev
  */
-#include <util/log.h>
-
 #include <stdint.h>
 #include <string.h>
 
 #include <drivers/usb/usb.h>
+#include <util/log.h>
 
 #include "ehci.h"
 
 void ehci_qtd_show(struct ehci_qtd_hw *qtd, int log_level) {
-	if (mod_logger.logging.level >= log_level) {
-		log_debug(log_level, "qtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x",
-		    qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
-	}
+	log_debug(log_level, "qtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x", qtd,
+	    qtd->hw_buf, qtd->hw_token, qtd->hw_next);
 }
 
 /* fill a qtd, returning how much of the buffer we were able to queue up */
-int ehci_qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t buf, size_t len, int token, int maxpacket) {
+int ehci_qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t buf,
+    size_t len, int token, int maxpacket) {
 	int i, count;
 	uint64_t addr = buf;
 
@@ -30,24 +28,26 @@ int ehci_qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t buf,
 	assert(len <= (5 * 4096));
 
 	/* one buffer entry per 4K ... first might be short or unaligned */
-	qtd->hw_buf[0] = (uint32_t) addr;
-	qtd->hw_buf_hi[0] = (uint32_t) (addr >> 32);
-	count = 0x1000 - (buf & 0x0fff);/* rest of that page */
-	if (len < count) { /* ... iff needed */
+	qtd->hw_buf[0] = (uint32_t)addr;
+	qtd->hw_buf_hi[0] = (uint32_t)(addr >> 32);
+	count = 0x1000 - (buf & 0x0fff); /* rest of that page */
+	if (len < count) {               /* ... iff needed */
 		count = len;
-	} else {
-		buf +=  0x1000;
+	}
+	else {
+		buf += 0x1000;
 		buf &= ~0x0fff;
 
 		/* per-qtd limit: from 16K to 20K (best alignment) */
 		for (i = 1; count < len && i < 5; i++) {
 			addr = buf;
-			qtd->hw_buf[i] = (uint32_t) addr;
-			qtd->hw_buf_hi[i] = (uint32_t) (addr >> 32);
+			qtd->hw_buf[i] = (uint32_t)addr;
+			qtd->hw_buf_hi[i] = (uint32_t)(addr >> 32);
 			buf += 0x1000;
 			if ((count + 0x1000) < len) {
 				count += 0x1000;
-			} else {
+			}
+			else {
 				count = len;
 			}
 		}
@@ -57,7 +57,7 @@ int ehci_qtd_fill(struct ehci_hcd *ehci, struct ehci_qtd_hw *qtd, uintptr_t buf,
 			count -= (count % maxpacket);
 		}
 	}
-	qtd->hw_token = (uint32_t) ((count << 16) | token);
+	qtd->hw_token = (uint32_t)((count << 16) | token);
 
 	return count;
 }
@@ -69,13 +69,12 @@ static void async_handle_next(struct ehci_hcd *ehci) {
 
 	if (!usb_queue_empty(&ehci->req_queue)) {
 		ehci_req = member_cast_out(usb_queue_first(&ehci->req_queue),
-			struct ehci_req, req_link);
+		    struct ehci_req, req_link);
 		ehci_submit_async(ehci, ehci_req);
 	}
 }
 
-static unsigned
-qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
+static unsigned qh_completions(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	struct usb_request *req;
 	struct ehci_qh_hw *hw;
 	struct ehci_qtd_hw *qtd;
@@ -101,7 +100,7 @@ qh_completions (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 			break;
 		}
 
-		qtd = (struct ehci_qtd_hw *) hw_next;
+		qtd = (struct ehci_qtd_hw *)hw_next;
 	}
 	if (nontransferred) {
 		log_error("nontransferred = %d", nontransferred);
@@ -135,9 +134,10 @@ void scan_async(struct ehci_hcd *ehci) {
 	qh_scan_next = ehci->async->qh_next.qh;
 	log_debug("****");
 	command = ehci_read(ehci, &ehci->ehci_regs->command);
-	ehci_write(ehci, command & ~EHCI_CMD_ASE,  &ehci->ehci_regs->command);
+	ehci_write(ehci, command & ~EHCI_CMD_ASE, &ehci->ehci_regs->command);
 
-	while (0 != (ehci_read(ehci, &ehci->ehci_regs->status) & EHCI_STS_ASS));
+	while (0 != (ehci_read(ehci, &ehci->ehci_regs->status) & EHCI_STS_ASS))
+		;
 
 	ehci->async->hw->hw_next = EHCI_QH_NEXT(ehci_hcd, ehci->async->qh_dma);
 	ehci->async->hw->hw_info1 = EHCI_QH_HEAD;
@@ -156,8 +156,7 @@ void scan_async(struct ehci_hcd *ehci) {
 	}
 }
 
-static unsigned
-qh_handle_error (struct ehci_hcd *ehci, struct ehci_qh *qh) {
+static unsigned qh_handle_error(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	struct usb_request *req;
 	struct ehci_qh_hw *hw;
 	struct ehci_qtd_hw *qtd;
@@ -182,7 +181,7 @@ qh_handle_error (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 			break;
 		}
 
-		qtd = (struct ehci_qtd_hw *) hw_next;
+		qtd = (struct ehci_qtd_hw *)hw_next;
 	}
 	log_error("*** endoflist***");
 
@@ -192,7 +191,7 @@ qh_handle_error (struct ehci_hcd *ehci, struct ehci_qh *qh) {
 	return 0;
 }
 
-void handle_async_error (struct ehci_hcd *ehci) {
+void handle_async_error(struct ehci_hcd *ehci) {
 	struct ehci_qh *qh;
 	struct ehci_qh *qh_scan_next;
 
