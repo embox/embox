@@ -18,7 +18,7 @@ module mc {
 	depends third_party.libs.libiconv
 
 	depends embox.compat.posix.fs.statvfs_stub
-	depends embox.driver.usb.hc.ohci_pci
+//	depends embox.driver.usb.hc.ohci_pci
 
 
 	source "^BUILD/extbld/^MOD_PATH/install/mc.o"
