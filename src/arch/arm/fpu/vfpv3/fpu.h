@@ -17,8 +17,8 @@
 #define VFP_FPEXC_EN (1 << 30)
 
 #ifndef __ASSEMBLER__
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 typedef struct fpu_context {
 	uint32_t fpexc; /* cpacr actually */

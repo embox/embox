@@ -5,11 +5,13 @@ module LibFramework {
 }
 
 module runlevel {
+	option string log_level="LOG_INFO"
+
 	@DefineMacro("__FRAMEWORK__")
 	source "runlevel.c", "unit.c"
 
 	depends mod
-	depends embox.lib.printk
+	depends embox.util.log
 	depends embox.compat.libc.str
 }
 

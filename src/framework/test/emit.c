@@ -7,7 +7,6 @@
  */
 
 #include <framework/test/emit.h>
-
 #include <hal/ipl.h>
 
 void test_emit_into(struct test_emit_buffer *b, char ch) {
@@ -20,10 +19,12 @@ void test_emit_into(struct test_emit_buffer *b, char ch) {
 		if (!test_emit_buffer_full(b)) {
 			*b->ptr++ = ch;
 			*b->ptr = '\0';
-		} else {
+		}
+		else {
 			/* do overflow */
 			b->ptr++;
 		}
 	}
-	out: ipl_restore(ipl);
+out:
+	ipl_restore(ipl);
 }

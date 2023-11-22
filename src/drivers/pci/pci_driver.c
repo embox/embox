@@ -6,25 +6,22 @@
  */
 
 #include <errno.h>
-#include <string.h>
 #include <inttypes.h>
-
-#include <util/array.h>
+#include <string.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <framework/mod/api.h>
-#include <kernel/printk.h>
+#include <util/array.h>
+#include <util/log.h>
 
-#define PCI_INFO_LABEL "\tpci: "
-
-static int pci_drv_probe(const struct pci_driver *drv, struct pci_slot_dev *dev) {
+static int pci_drv_probe(const struct pci_driver *drv,
+    struct pci_slot_dev *dev) {
 	int i;
 
 	for (i = 0; i < drv->id_table_n; i++) {
-		if (dev->vendor == drv->id_table[i].ven_id &&
-				dev->device == drv->id_table[i].dev_id &&
-				!drv->init(dev)) {
+		if (dev->vendor == drv->id_table[i].ven_id
+		    && dev->device == drv->id_table[i].dev_id && !drv->init(dev)) {
 			return 0;
 		}
 	}
@@ -33,20 +30,18 @@ static int pci_drv_probe(const struct pci_driver *drv, struct pci_slot_dev *dev)
 }
 
 static int pci_mod_enable(const struct mod *self) {
-	const struct pci_driver *pci_drv = (const struct pci_driver *) self;
+	const struct pci_driver *pci_drv = (const struct pci_driver *)self;
 	struct pci_slot_dev *dev = NULL;
 
-	printk(PCI_INFO_LABEL "%s driver inserted\n", pci_drv->name);
+	log_info("pci: %s driver inserted", pci_drv->name);
 
 	pci_foreach_dev(dev) {
 		if (!dev->pci_drv) {
-
 			if (!pci_drv_probe(pci_drv, dev)) {
-
-				printk(PCI_INFO_LABEL "%s handles %04x:%04x "
-						"bus %" PRId32 " slot %" PRId8 " func %" PRId8 "\n",
-						pci_drv->name, dev->vendor, dev->device,
-						dev->busn, dev->slot, dev->func);
+				log_info("pci: %s handles %04x:%04x "
+				         "bus %" PRId32 " slot %" PRId8 " func %" PRId8,
+				    pci_drv->name, dev->vendor, dev->device, dev->busn,
+				    dev->slot, dev->func);
 
 				dev->pci_drv = pci_drv;
 			}
@@ -57,7 +52,7 @@ static int pci_mod_enable(const struct mod *self) {
 }
 
 static int pci_mod_disable(const struct mod *self) {
-	const struct pci_driver *pci_drv = (const struct pci_driver *) self;
+	const struct pci_driver *pci_drv = (const struct pci_driver *)self;
 	struct pci_slot_dev *dev;
 
 	pci_foreach_dev(dev) {
@@ -70,6 +65,6 @@ static int pci_mod_disable(const struct mod *self) {
 }
 
 const struct mod_ops __pci_mod_ops = {
-	.enable = pci_mod_enable,
-	.disable = pci_mod_disable,
+    .enable = pci_mod_enable,
+    .disable = pci_mod_disable,
 };

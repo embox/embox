@@ -7,47 +7,48 @@
  */
 
 #include <stdint.h>
-#include <util/array.h>
+
+#include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_repo.h>
-#include <drivers/pci/pci.h>
+#include <util/array.h>
 
 typedef struct pci_vendor {
-	uint16_t    ven_id;
+	uint16_t ven_id;
 	const char *ven_name;
 } pci_vendor_t;
 
 typedef struct pci_device {
-	uint16_t    ven_id;
-	uint16_t    dev_id;
+	uint16_t ven_id;
+	uint16_t dev_id;
 	const char *dev_name;
 } pci_device_t;
 
 typedef struct pci_baseclass {
-	uint8_t     baseclass;
+	uint8_t baseclass;
 	const char *name;
 } pci_baseclass_t;
 
 typedef struct pci_subclass {
-	uint8_t     baseclass;
-	uint8_t     subclass;
+	uint8_t baseclass;
+	uint8_t subclass;
 	const char *name;
 } pci_subclass_t;
 
 static pci_vendor_t const pci_vendors[] = {
-	#include "pci_vendors_table.inc"
+#include "pci_vendors_table.inc"
 };
 
 static pci_device_t const pci_devices[] = {
-	#include "pci_devices_table.inc"
+#include "pci_devices_table.inc"
 };
 
 static pci_baseclass_t const pci_baseclasses[] = {
-	#include "pci_baseclass_table.inc"
+#include "pci_baseclass_table.inc"
 };
 
 static pci_subclass_t const pci_subclasses[] = {
-	#include "pci_subclass_table.inc"
+#include "pci_subclass_table.inc"
 };
 
 const char *find_vendor_name(uint16_t ven_id) {
@@ -73,8 +74,8 @@ const char *find_device_name(uint16_t dev_id) {
 const char *find_class_name(uint8_t base, uint8_t sub) {
 	size_t i;
 	for (i = 0; i < ARRAY_SIZE(pci_subclasses); i++) {
-		if (pci_subclasses[i].baseclass == base &&
-		    pci_subclasses[i].subclass == sub) {
+		if (pci_subclasses[i].baseclass == base
+		    && pci_subclasses[i].subclass == sub) {
 			return pci_subclasses[i].name;
 		}
 	}

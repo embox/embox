@@ -3,6 +3,8 @@ package embox.kernel
 
 @Mandatory
 module Kernel {
+	option string log_level="LOG_INFO"
+
 	/* FIXME
 	 * 1.it depends from embox.prom.printf (for init.c)
 	 */

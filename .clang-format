@@ -1,6 +1,6 @@
 # https://clang.llvm.org/docs/ClangFormatStyleOptions.html
 
-# Intended for clang-format >= 9
+# Intended for clang-format >= 10
 
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
@@ -84,6 +84,7 @@ IncludeCategories:
 IncludeIsMainRegex: false
 
 IndentCaseLabels: false
+IndentGotoLabels: false # clang-format-10
 IndentPPDirectives: None
 IndentWidth: 4
 IndentWrappedFunctionNames: false

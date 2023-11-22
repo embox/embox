@@ -11,8 +11,13 @@
 
 #include <arpa/inet.h>
 #include <assert.h>
-#include <embox/net/pack.h>
 #include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <embox/net/pack.h>
+#include <framework/mod/options.h>
 #include <net/if.h>
 #include <net/inetdevice.h>
 #include <net/l0/net_tx.h>
@@ -22,28 +27,20 @@
 #include <net/neighbour.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-#include <stddef.h>
-#include <stdint.h>
-#include <string.h>
-#include <util/math.h>
-
-#include <arpa/inet.h>
 #include <net/util/macaddr.h>
 #include <util/log.h>
+#include <util/math.h>
 
-#include <framework/mod/options.h>
-#define LOG_LEVEL OPTION_GET(STRING, log_level)
-
-static void log_arp_hnd_request(const struct arphdr *rarph,
-		uint8_t *dst_paddr, uint8_t *dst_haddr);
+static void log_arp_hnd_request(const struct arphdr *rarph, uint8_t *dst_paddr,
+    uint8_t *dst_haddr);
 static void log_arp_hnd_reply(const struct arphdr *rarph,
-		const struct arpbody *rarpb);
+    const struct arpbody *rarpb);
 
 EMBOX_NET_PACK(ETH_P_ARP, arp_rcv);
 
-static int arp_send(struct sk_buff *skb, struct net_device *dev,
-		uint16_t pro, uint8_t pln, uint16_t op, const void *sha,
-		const void *spa, const void *tha, const void *tpa) {
+static int arp_send(struct sk_buff *skb, struct net_device *dev, uint16_t pro,
+    uint8_t pln, uint16_t op, const void *sha, const void *spa, const void *tha,
+    const void *tpa) {
 	int ret;
 	struct net_header_info hdr_info;
 
@@ -74,9 +71,8 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 		return ret;
 	}
 
-	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln,
-			op, sha, spa, tha, tpa);
-
+	arp_build(arp_hdr(skb), dev->type, pro, dev->addr_len, pln, op, sha, spa,
+	    tha, tpa);
 
 	net_tx_direct(skb);
 
@@ -84,18 +80,16 @@ static int arp_send(struct sk_buff *skb, struct net_device *dev,
 }
 
 static int arp_update_neighbour(const struct arphdr *arph,
-		const struct arpbody *arpb, struct net_device *dev) {
+    const struct arpbody *arpb, struct net_device *dev) {
 	assert(arph != NULL);
 	assert(arpb != NULL);
 
-	return neighbour_add(ntohs(arph->ar_pro), arpb->ar_spa,
-			arph->ar_pln, dev, ntohs(arph->ar_hrd), arpb->ar_sha,
-			arph->ar_hln, 0);
+	return neighbour_add(ntohs(arph->ar_pro), arpb->ar_spa, arph->ar_pln, dev,
+	    ntohs(arph->ar_hrd), arpb->ar_sha, arph->ar_hln, 0);
 }
 
 static int arp_hnd_request(const struct arphdr *arph,
-		const struct arpbody *arpb, struct sk_buff *skb,
-		struct net_device *dev) {
+    const struct arpbody *arpb, struct sk_buff *skb, struct net_device *dev) {
 	uint8_t src_paddr[MAX_ADDR_LEN];
 	uint8_t dst_haddr[MAX_ADDR_LEN], dst_paddr[MAX_ADDR_LEN];
 	struct in_device *in_dev;
@@ -104,7 +98,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 	assert(in_dev != NULL);
 
 	if ((arph->ar_pro != htons(ETH_P_IP))
-			|| (arph->ar_pln != sizeof in_dev->ifa_address)) {
+	    || (arph->ar_pln != sizeof in_dev->ifa_address)) {
 		log_error("only IPv4 is supported");
 		return -ENOSUPP; /* FIXME error: only IPv4 is supported */
 	}
@@ -113,8 +107,7 @@ static int arp_hnd_request(const struct arphdr *arph,
 		log_error("can't update neighbour");
 	}
 
-	if (0 != memcmp(arpb->ar_tpa, &in_dev->ifa_address,
-				arph->ar_pln)) {
+	if (0 != memcmp(arpb->ar_tpa, &in_dev->ifa_address, arph->ar_pln)) {
 		log_error("not for us");
 		return -EINVAL;
 	}
@@ -133,14 +126,12 @@ static int arp_hnd_request(const struct arphdr *arph,
 
 	log_arp_hnd_request(arph, &dst_paddr[0], &dst_haddr[0]);
 
-	return arp_send(skb, dev, ntohs(arph->ar_pro), arph->ar_pln,
-			ARP_OP_REPLY, &dev->dev_addr[0], &src_paddr[0],
-			&dst_haddr[0], &dst_paddr[0]);
+	return arp_send(skb, dev, ntohs(arph->ar_pro), arph->ar_pln, ARP_OP_REPLY,
+	    &dev->dev_addr[0], &src_paddr[0], &dst_haddr[0], &dst_paddr[0]);
 }
 
-static int arp_hnd_reply(const struct arphdr *arph,
-		const struct arpbody *arpb, struct sk_buff *skb,
-		struct net_device *dev) {
+static int arp_hnd_reply(const struct arphdr *arph, const struct arpbody *arpb,
+    struct sk_buff *skb, struct net_device *dev) {
 	int ret;
 
 	ret = arp_update_neighbour(arph, arpb, dev);
@@ -154,44 +145,46 @@ static int arp_hnd_reply(const struct arphdr *arph,
 	return 0;
 }
 
-static void log_arp_hnd_request(const struct arphdr *arph,
-		uint8_t *dst_paddr, uint8_t *dst_haddr) {
+static void log_arp_hnd_request(const struct arphdr *arph, uint8_t *dst_paddr,
+    uint8_t *dst_haddr) {
 	log_debug("send reply with ");
 	if (arph->ar_pro == ntohs(ETH_P_IP)) {
 		struct in_addr in;
 		assert(arph->ar_pln == sizeof in);
 		memcpy(&in, dst_paddr, sizeof in);
 		log_debug("%s", inet_ntoa(in));
-	} else {
+	}
+	else {
 		log_debug("unknown(%x)", htons(arph->ar_pro));
 	}
 
 	if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
 		assert(arph->ar_hln == ETH_ALEN);
-		log_debug("[" MACADDR_FMT "]",
-			MACADDR_FMT_ARG(dst_haddr));
-	} else {
+		log_debug("[" MACADDR_FMT "]", MACADDR_FMT_ARG(dst_haddr));
+	}
+	else {
 		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
 	}
 }
 
 static void log_arp_hnd_reply(const struct arphdr *arph,
-		const struct arpbody *arpb) {
+    const struct arpbody *arpb) {
 	log_debug("receive reply with ");
 	if (arph->ar_pro == ntohs(ETH_P_IP)) {
 		struct in_addr in;
 		assert(arph->ar_pln == sizeof in);
 		memcpy(&in, arpb->ar_spa, sizeof in);
 		log_debug("%s", inet_ntoa(in));
-	} else {
+	}
+	else {
 		log_debug("unknown(%x)", htons(arph->ar_pro));
 	}
 
 	if (arph->ar_hrd == ntohs(ARP_HRD_ETHERNET)) {
 		assert(arph->ar_hln == ETH_ALEN);
-		log_debug("[" MACADDR_FMT "]",
-			MACADDR_FMT_ARG(arpb->ar_sha));
-	} else {
+		log_debug("[" MACADDR_FMT "]", MACADDR_FMT_ARG(arpb->ar_sha));
+	}
+	else {
 		log_debug("[unknown(%x)]", htons(arph->ar_hrd));
 	}
 }
@@ -217,8 +210,7 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 		return 0;
 	}
 
-	if ((arph->ar_hrd != htons(dev->type))
-			|| (arph->ar_hln != dev->addr_len)) {
+	if ((arph->ar_hrd != htons(dev->type)) || (arph->ar_hln != dev->addr_len)) {
 		log_error("invalid hardware type or address length");
 		skb_free(skb);
 		return 0;
@@ -249,8 +241,8 @@ static int arp_rcv(struct sk_buff *skb, struct net_device *dev) {
 	}
 }
 
-int arp_discover(struct net_device *dev, uint16_t pro,
-		uint8_t pln, const void *spa, const void *tpa) {
+int arp_discover(struct net_device *dev, uint16_t pro, uint8_t pln,
+    const void *spa, const void *tpa) {
 	size_t size;
 	int ret;
 	struct sk_buff *skb;
@@ -272,8 +264,8 @@ int arp_discover(struct net_device *dev, uint16_t pro,
 	skb->dev = dev;
 	skb->nh.raw = skb->mac.raw + dev->hdr_len;
 
-	ret = arp_send(skb, dev, pro, pln, ARP_OP_REQUEST,
-			&dev->dev_addr[0], spa, &dev->broadcast[0], tpa);
+	ret = arp_send(skb, dev, pro, pln, ARP_OP_REQUEST, &dev->dev_addr[0], spa,
+	    &dev->broadcast[0], tpa);
 
 	/* If there are no errors, skb was passed to net stack,
 	 * so we don't need to free it */
