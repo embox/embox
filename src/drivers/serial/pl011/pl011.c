@@ -44,14 +44,16 @@ static void pl011_set_baudrate(struct uart *dev) {
 	/* FIXME Init baud rate only if UARTCLK is really used.
 	 * Currenly it is not so for the teplates which use pl011. */
 #if UARTCLK != 0
+	uint32_t baud_rate;
 	int ibrd, fbrd;
 
 	/* Baud Rate Divisor = UARTCLK/(16×Baud Rate) = BRDI + BRDF,
 	 * See 2.4.3 UART operation.  */
-	ibrd = (UARTCLK / (16 * BAUD_RATE));
-	fbrd = ((UARTCLK % (16 * BAUD_RATE)) * 64) / (16 * BAUD_RATE);
-	REG32_STORE(UART_IBRD, ibrd);
-	REG32_STORE(UART_FBRD, fbrd);
+	baud_rate = dev->params.baud_rate;
+	ibrd = (UARTCLK / (16 * baud_rate));
+	fbrd = ((UARTCLK % (16 * baud_rate)) * 64) / (16 * baud_rate);
+	REG32_STORE(UART_IBRD(dev->base_addr), ibrd);
+	REG32_STORE(UART_FBRD(dev->base_addr), fbrd);
 #endif
 }
 
