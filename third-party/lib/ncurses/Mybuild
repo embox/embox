@@ -2,7 +2,7 @@ package third_party.libs.ncurses
 
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/libs/ncurses/libncurses/install/include/ncurses")
-@Build(script="$(EXTERNAL_MAKE)")
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
 static module libncurses extends embox.compat.posix.LibCurses  {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libncurses.a"
