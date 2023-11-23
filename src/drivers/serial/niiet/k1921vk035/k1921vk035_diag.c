@@ -6,7 +6,7 @@
 #include "plib035_uart.h"
 
 #define UART_NUM OPTION_GET(NUMBER, uart_num)
-#define BAUDRATE OPTION_GET(NUMBER, baudrate)
+#define BAUDRATE OPTION_GET(NUMBER, baud_rate)
 
 #define CONCAT(a, b) a ## b
 #define CONCAT_EXPANDED(a, b) CONCAT(a, b)
