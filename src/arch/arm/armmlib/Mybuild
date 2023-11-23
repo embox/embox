@@ -16,6 +16,8 @@ module lthread_own_stack {
 }
 
 module exception_entry {
+	option string log_level="LOG_EMERG"
+
 	option number irq_stack_size = 1024
 	option number irq_stack_in_bss = 0
 
