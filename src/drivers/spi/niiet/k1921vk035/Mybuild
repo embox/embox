@@ -1,6 +1,6 @@
 package embox.driver.spi
 
-@BuildDepends(third_party.bsp.k1921vk_sdk.plib035)
+@BuildDepends(third_party.bsp.niiet.plib035)
 module k1921vk035 {
 	option number default_freq_div = 20
 
@@ -23,5 +23,5 @@ module k1921vk035 {
 
 	depends core
 	depends embox.driver.gpio.core
-    depends third_party.bsp.k1921vk_sdk.plib035
+	depends third_party.bsp.niiet.plib035
 }
