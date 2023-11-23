@@ -1,8 +1,8 @@
 package embox.platform.vostok.vostok_uno_vn035
 
-@BuildDepends(third_party.bsp.k1921vk_sdk.k1921vk035_system)
+@BuildDepends(third_party.bsp.niiet.k1921vk035_system)
 module arch extends embox.arch.arch {
 	source "arch.c"
-	depends third_party.bsp.k1921vk_sdk.k1921vk035_system
+	depends third_party.bsp.niiet.k1921vk035_system
 }
 
