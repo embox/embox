@@ -25,7 +25,7 @@ enum gic_irq_t {
 	GIC_SGI,
 	GIC_PPI,
 	GIC_SPI,
-	GIC_INVALID_TYPE
+	GIC_INVALID_TYPE,
 };
 
 static void gic_wait_for_rwp(uintptr_t reg32, uint32_t rwp_mask) {
@@ -100,7 +100,7 @@ static void gic_dist_init(void) {
 	affinity = (mpidr & 0xffffff) | ((mpidr >> 8) & 0xff000000);
 	for (i = 0; i <= itlines; i++) {
 		for (j = 0; j < 32; j++) {
-			REG32_STORE(GICD_IROUTER(32 * i + j), affinity);
+			REG64_STORE(GICD_IROUTER(32 * i + j), affinity);
 		}
 	}
 }
@@ -126,7 +126,7 @@ static void gic_redist_init(void) {
 
 	/* Set priority for SGIs/PPIs */
 	for (i = 0; i < 8; i++) {
-		REG32_STORE(GICD_IPRIORITYR(i), 0xa0a0a0a0);
+		REG32_STORE(GICR_IPRIORITYR(i), 0xa0a0a0a0);
 	}
 
 	/* Deactivate and disable SPIs */
@@ -145,9 +145,9 @@ static void gic_cpu_init(void) {
 		icc_sre_el1_write(reg | ICC_SRE_EN);
 	}
 
-	icc_pmr_el1_write(0xa0);
+	icc_pmr_el1_write(0xff);
 	icc_ctlr_el1_write(0x0);
-	icc_igrpen0_el1_write(0x1);
+	icc_igrpen1_el1_write(0x1);
 }
 
 static int gic_irqctrl_init(void) {
@@ -168,6 +168,9 @@ void irqctrl_enable(unsigned int irq) {
 	value = 1U << (irq & 0x1f);
 
 	if (gic_irq_type(irq) == GIC_SPI) {
+		REG32_STORE(GICD_ISENABLER(reg_nr), value);
+		REG32_STORE(GICD_ICENABLER(reg_nr), value);
+		REG64_STORE(GICD_IROUTER(irq), 0x0);
 		REG32_STORE(GICD_ISENABLER(reg_nr), value);
 	}
 	else {
@@ -233,7 +236,7 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-IRQCTRL_DEF(gic, gic_irqctrl_init);
+IRQCTRL_DEF(gicv3, gic_irqctrl_init);
 
 PERIPH_MEMORY_DEFINE(gicd, GICD_BASE, 0x10000);
 PERIPH_MEMORY_DEFINE(gicr, GICR_BASE, 0x20000);

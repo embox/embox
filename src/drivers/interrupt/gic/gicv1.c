@@ -136,7 +136,7 @@ void swi_handle(void) {
 	printk("swi!\n");
 }
 
-IRQCTRL_DEF(gic, gic_irqctrl_init);
+IRQCTRL_DEF(gicv1, gic_irqctrl_init);
 
 PERIPH_MEMORY_DEFINE(gicd, GICD_BASE, 0x1000);
 PERIPH_MEMORY_DEFINE(gicc, GICC_BASE, 0x2020);
