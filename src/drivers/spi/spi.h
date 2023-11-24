@@ -84,7 +84,7 @@ extern int spi_set_slave_mode(struct spi_device *dev);
 
 extern const struct idesc_ops spi_iops;
 
-#define SPI_REGISTRY_SZ 6
+#define SPI_REGISTRY_SZ  OPTION_GET(NUMBER,spi_quantity)
 
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */

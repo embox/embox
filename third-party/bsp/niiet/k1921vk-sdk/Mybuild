@@ -1,0 +1,45 @@
+package third_party.bsp.niiet
+
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/niiet/k1921vk035_system/framework-k1921vk-sdk-1.7.3/,platform/Device/NIIET/K1921VK035/Include platform/plib035/inc)")
+module k1921vk_sdk_cppflags {
+}
+
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildDepends(k1921vk_sdk_cppflags)
+@BuildDepends(third_party.cmsis.core)
+static module k1921vk035_system {
+	option number external_clk_freq=12000000
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/framework-k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Source")
+	source "system_K1921VK035.c"
+	
+	@NoRuntime depends k1921vk_sdk_cppflags
+	@NoRuntime depends third_party.cmsis.core
+}
+
+
+@BuildDepends(k1921vk035_system)
+static module plib035 {
+
+	@Cflags("-Wno-unused")
+	@Cflags("-Wno-undef")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/niiet/k1921vk035_system/framework-k1921vk-sdk-1.7.3/platform/plib035/src")
+	source "plib035_adc.c",
+		"plib035_can.c",
+		"plib035_dma.c",
+		"plib035_ecap.c",
+		"plib035_gpio.c",
+		"plib035_i2c.c",
+		"plib035_mflash.c",
+		"plib035_pmu.c",
+		"plib035_pwm.c",
+		"plib035_qep.c",
+		"plib035_rcu.c",
+		"plib035_spi.c",
+		"plib035_tmr.c",
+		"plib035_uart.c",
+		"plib035_wdt.c"
+
+	depends k1921vk035_system
+}

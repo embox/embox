@@ -1,0 +1,58 @@
+package embox.driver.serial
+
+@BuildDepends(third_party.bsp.niiet.plib035)
+module k1921vk035_uart {
+
+	option boolean use_fifo = true
+	option boolean use_e_rt_irq = true
+
+	source "k1921vk035_uart.c"
+
+	depends embox.driver.serial.core
+	depends embox.driver.serial.uart_repo
+}
+
+@BuildDepends(third_party.bsp.niiet.plib035)
+module k1921vk035_diag extends embox.driver.serial.diag {
+
+	option number uart_num = 0
+	option number baud_rate = 115200
+
+	source "k1921vk035_diag.c"
+
+	depends k1921vk035_uart
+}
+
+@BuildDepends(third_party.bsp.niiet.plib035)
+module k1921vk035_io_request {
+
+	@IncludeExport(path="drivers/serial")
+	source "k1921vk035_io_request.h"
+
+	source "k1921vk035_io_request.c"
+
+	depends k1921vk035_uart
+	depends embox.compat.posix.semaphore
+}
+
+@BuildDepends(third_party.bsp.niiet.plib035)
+module k1921vk035_io_request0 {
+
+	option number baud_rate = 57600
+	option number rx_buffer_size = 64
+
+	source "k1921vk035_io_request0.c"
+
+	depends k1921vk035_io_request
+}
+
+@BuildDepends(third_party.bsp.niiet.plib035)
+module k1921vk035_io_request1 {
+
+	option number baud_rate = 57600
+	option number rx_buffer_size = 64
+
+	source "k1921vk035_io_request1.c"
+
+	depends k1921vk035_io_request
+}
