@@ -11,5 +11,5 @@ module k1921vk035 {
 
 	depends embox.driver.i2c
 	depends third_party.bsp.niiet.plib035
-	depends embox.compat.posix.pthreads
+	//depends embox.compat.posix.pthreads
 }
