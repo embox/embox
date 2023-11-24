@@ -163,7 +163,7 @@ guess_machine() {
 			fi
 			;;
 		aarch64)
-			echo "-M virt -cpu cortex-a53"
+			echo "-M virt,gic_version=3 -cpu cortex-a53"
 			;;
 		microblaze)
 			echo "-M petalogix-s3adsp1800"

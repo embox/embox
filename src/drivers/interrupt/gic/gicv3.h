@@ -17,13 +17,13 @@
 #define RD_BASE            GICR_BASE
 #define SGI_BASE           GICR_BASE + 0x10000
 
-#define GICD_TYPER2        (GICR_BASE + 0x000C)           /* Interrupt controller Type Register 2 */
-#define GICD_STATUSR       (GICR_BASE + 0x0010)           /* Error Reporting Status Register, optional */
-#define GICD_SETSPI_NSR    (GICR_BASE + 0x0040)           /* Set SPI Register */
-#define GICD_CLRSPI_NSR    (GICR_BASE + 0x0048)           /* Clear SPI Register */
-#define GICD_SETSPI_SR     (GICR_BASE + 0x0050)           /* Set SPI, Secure Register */
-#define GICD_CLRSPI_SR     (GICR_BASE + 0x0058)           /* Clear SPI, Secure Register */
-#define GICD_IROUTER(n)    (GICR_BASE + 0x6000 + 8 * (n)) /* Interrupt Routing Registers */
+#define GICD_TYPER2        (GICD_BASE + 0x000C) /* Interrupt controller Type Register 2 */
+#define GICD_STATUSR       (GICD_BASE + 0x0010) /* Error Reporting Status Register, optional */
+#define GICD_SETSPI_NSR    (GICD_BASE + 0x0040) /* Set SPI Register */
+#define GICD_CLRSPI_NSR    (GICD_BASE + 0x0048) /* Clear SPI Register */
+#define GICD_SETSPI_SR     (GICD_BASE + 0x0050) /* Set SPI, Secure Register */
+#define GICD_CLRSPI_SR     (GICD_BASE + 0x0058) /* Clear SPI, Secure Register */
+#define GICD_IROUTER(n)    (GICD_BASE + 0x6000 + 8 * (n)) /* Interrupt Routing Registers */
 
 #define GICR_CTLR          (RD_BASE + 0x0000) /* Redistributor Control Register */
 #define GICR_IIDR          (RD_BASE + 0x0004) /* Implementer Identification Register */
@@ -42,7 +42,7 @@
 #define GICR_ICPENDR0      (SGI_BASE + 0x0280) /* Interrupt Clear-Pend Register 0 */
 #define GICR_ISACTIVER0    (SGI_BASE + 0x0300) /* Interrupt Set-Active Register 0 */
 #define GICR_ICACTIVER0    (SGI_BASE + 0x0380) /* Interrupt Clear-Active Register 0 */
-#define GICR_IPRIORITYR(n) (SGI_BASE + 0x0400) /* Interrupt Priority Registers */
+#define GICR_IPRIORITYR(n) (SGI_BASE + 0x0400 + 4 * (n)) /* Interrupt Priority Registers */
 #define GICR_ICFGR0        (SGI_BASE + 0x0C00) /* SGI Configuration Register */
 #define GICR_ICFGR1        (SGI_BASE + 0x0C04) /* PPI Configuration Register */
 #define GICR_IGRPMODR0     (SGI_BASE + 0x0D00) /* Interrupt Group Modifier Register 0 */
