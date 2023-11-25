@@ -258,6 +258,6 @@ void mmc_dump_cid(uint32_t *cid) {
 
 	log_debug("Date             %s %d", mon_name[man_mon], man_year);
 
-	/* Avoid warnings if log_level = 0 */
+	/* Avoid warnings if log_level is low */
 	(void) man_year, (void) man_mon, (void) mon_name;
 }
