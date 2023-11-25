@@ -1,6 +1,10 @@
 
 PKG_NAME := mruby
+#PKG_VER  := 1.1.0
 PKG_VER  := 3.2.0
+
+#PKG_SOURCES := https://github.com/mruby/mruby/archive/$(PKG_VER).tar.gz
+#PKG_MD5     := 60d75ea704c9285f3c80b3ad1d2b68de
 PKG_SOURCES := https://github.com/mruby/mruby/archive/refs/tags/$(PKG_VER).tar.gz
 PKG_MD5     := fbb67cc8a1ecfb9cdc1307ec1c02b489
 
@@ -23,7 +27,6 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	cp $(PKG_SOURCE_DIR)/build/embox/bin/mrbc $(PKG_INSTALL_DIR)/mrbc.o
 	cp $(PKG_SOURCE_DIR)/build/embox/bin/mirb $(PKG_INSTALL_DIR)/mibc.o
 	cp $(PKG_SOURCE_DIR)/build/embox/bin/mruby $(PKG_INSTALL_DIR)/mruby.o
 	touch $@
