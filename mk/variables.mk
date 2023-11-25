@@ -32,7 +32,7 @@ export SRCGEN_DIR      = $(GEN_DIR)
 export MKGEN_DIR       = $(GEN_DIR)
 export AUTOCONF_DIR    = $(GEN_DIR)
 
-export INCUDE_INSTALL_DIR  = $(DIST_BASE_DIR)/include
+export INCLUDE_INSTALL_DIR  = $(DIST_BASE_DIR)/include
 
 
 export ROOTFS_DIR      = $(OBJ_DIR)/rootfs

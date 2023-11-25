@@ -39,9 +39,9 @@ $(INSTALL) :
 		cp libcharset/include/libcharset.h.inst $(PKG_INSTALL_DIR)/libcharset.h; \
 		cp include/iconv.h.inst $(PKG_INSTALL_DIR)/iconv.h; \
 		\
-		cp $(PKG_INSTALL_DIR)/localcharset.h $(INCUDE_INSTALL_DIR)/localcharset.h; \
-		cp $(PKG_INSTALL_DIR)/libcharset.h $(INCUDE_INSTALL_DIR)/libcharset.h; \
-		cp $(PKG_INSTALL_DIR)/iconv.h $(INCUDE_INSTALL_DIR)/iconv.h; \
+		cp $(PKG_INSTALL_DIR)/localcharset.h $(INCLUDE_INSTALL_DIR)/localcharset.h; \
+		cp $(PKG_INSTALL_DIR)/libcharset.h $(INCLUDE_INSTALL_DIR)/libcharset.h; \
+		cp $(PKG_INSTALL_DIR)/iconv.h $(INCLUDE_INSTALL_DIR)/iconv.h; \
 		$(EMBOX_GCC) $(PKG_INSTALL_DIR)/iconv.o -o $(PKG_INSTALL_DIR)/iconv $(PKG_INSTALL_DIR)/libicrt.a $(PKG_INSTALL_DIR)/libiconv.a -Wl,-rpath -Wl,$(PKG_INSTALL_DIR) -Wl,-rpath -Wl,$(PKG_INSTALL_DIR); \
 	)
 	touch $@

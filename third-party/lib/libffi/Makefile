@@ -31,7 +31,7 @@ $(INSTALL) :
 		cp $(AUTOCONF_TARGET_TRIPLET)/include/ffi.h $(PKG_INSTALL_DIR)/ffi.h; \
 		cp $(AUTOCONF_TARGET_TRIPLET)/include/ffitarget.h $(PKG_INSTALL_DIR)/ffitarget.h; \
 		\
-		cp $(AUTOCONF_TARGET_TRIPLET)/include/ffi.h $(INCUDE_INSTALL_DIR)/ffi.h; \
-		cp $(AUTOCONF_TARGET_TRIPLET)/include/ffitarget.h $(INCUDE_INSTALL_DIR)/ffitarget.h; \
+		cp $(AUTOCONF_TARGET_TRIPLET)/include/ffi.h $(INCLUDE_INSTALL_DIR)/ffi.h; \
+		cp $(AUTOCONF_TARGET_TRIPLET)/include/ffitarget.h $(INCLUDE_INSTALL_DIR)/ffitarget.h; \
 	)
 	touch $@

@@ -35,6 +35,6 @@ $(INSTALL) :
 	echo "install:" > $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/test/Makefile ;
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) install MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' ; \
-		cp -r $(PKG_INSTALL_DIR)/include/ncurses $(INCUDE_INSTALL_DIR) ; \
+		cp -r $(PKG_INSTALL_DIR)/include/ncurses $(INCLUDE_INSTALL_DIR) ; \
 	)
 	touch $@

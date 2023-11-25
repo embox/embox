@@ -10,7 +10,7 @@ include $(EXTBLD_LIB)
 
 $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
-		test -d $(INCUDE_INSTALL_DIR)/xen && rm -rf $(INCUDE_INSTALL_DIR)/xen; \
-		cp -r xen/include/public $(INCUDE_INSTALL_DIR)/xen \
+		test -d $(INCLUDE_INSTALL_DIR)/xen && rm -rf $(INCLUDE_INSTALL_DIR)/xen; \
+		cp -r xen/include/public $(INCLUDE_INSTALL_DIR)/xen \
 	)
 	touch $@
