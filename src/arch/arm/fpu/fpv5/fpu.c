@@ -51,6 +51,8 @@ static int fpv5_init(void) {
 	    REG32_LOAD(FPU_MVFR1), REG32_LOAD(FPU_CPACR), fpccr,
 	    (fpccr & (1u << 31)) ? "yes" : "no",
 	    (fpccr & (1u << 30)) ? "yes" : "no");
+	(void) mvfr0;
+	(void) fpccr;
 
 	return 0;
 }

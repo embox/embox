@@ -26,7 +26,7 @@ $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
 		cp minigzip $(PKG_INSTALL_DIR)/minigzip.o; \
 		cp libz.a $(PKG_INSTALL_DIR); \
-		cp zlib.h $(INCUDE_INSTALL_DIR); \
-		cp zconf.h $(INCUDE_INSTALL_DIR); \
+		cp zlib.h $(INCLUDE_INSTALL_DIR); \
+		cp zconf.h $(INCLUDE_INSTALL_DIR); \
 	)
 	touch $@

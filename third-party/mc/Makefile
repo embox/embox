@@ -32,7 +32,7 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cp -r ./include/* $(INCUDE_INSTALL_DIR)/
+	cp -r ./include/* $(INCLUDE_INSTALL_DIR)/
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)

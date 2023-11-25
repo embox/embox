@@ -41,8 +41,8 @@ $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) install; \
 	); \
-	cp -r $(PKG_INSTALL_DIR)/include/glib-2.0/* $(INCUDE_INSTALL_DIR) ; \
-	cp $(PKG_INSTALL_DIR)/lib/glib-2.0/include/* $(INCUDE_INSTALL_DIR) ;
+	cp -r $(PKG_INSTALL_DIR)/include/glib-2.0/* $(INCLUDE_INSTALL_DIR) ; \
+	cp $(PKG_INSTALL_DIR)/lib/glib-2.0/include/* $(INCLUDE_INSTALL_DIR) ;
 	
 	touch $@
 

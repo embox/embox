@@ -746,7 +746,7 @@ $(@source_gen) :
 source_include_install_dir=$(call get,$(call source_annotation_values,$s,$(my_include_install_dir)),value)
 source_include_install_target_name=$(or $(strip \
 	$(call get,$(call source_annotation_values,$s,$(my_include_install_target_name)),value)),$(call get,$s,fileName))
-source_include_install_out = $(addprefix $$(INCUDE_INSTALL_DIR)/, \
+source_include_install_out = $(addprefix $$(INCLUDE_INSTALL_DIR)/, \
 	       $(foreach s,$1,$(source_include_install_dir)/$(source_include_install_target_name)))
 
 $(@source_include_install) : out = $(call source_include_install_out,$@)

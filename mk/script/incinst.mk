@@ -19,13 +19,13 @@ cp_T_if_supported := $(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && ec
 
 
 ############################
-$(INCUDE_INSTALL_DIR)/%/. : | $(INCUDE_INSTALL_DIR)/.
+$(INCLUDE_INSTALL_DIR)/%/. : | $(INCLUDE_INSTALL_DIR)/.
 	@mkdir -p $(@D)
 	@touch $@
 
-$(INCUDE_INSTALL_DIR)/% : | $(INCUDE_INSTALL_DIR)/.
+$(INCLUDE_INSTALL_DIR)/% : | $(INCLUDE_INSTALL_DIR)/.
 	$(CP) -r $(cp_T_if_supported) $(src_file) $@
 
-$(INCUDE_INSTALL_DIR)/. :
+$(INCLUDE_INSTALL_DIR)/. :
 	@$(MKDIR) $(@D)
 #################################
