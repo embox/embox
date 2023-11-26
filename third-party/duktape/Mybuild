@@ -16,9 +16,6 @@ package third_party.cmd
 module duktape {
 	source "^BUILD/extbld/^MOD_PATH/install/duk.o"
 
-	@InitFS
-	source "fib.js"
-
 	depends embox.compat.libc.math
 	depends embox.compat.posix.time.time
 }
