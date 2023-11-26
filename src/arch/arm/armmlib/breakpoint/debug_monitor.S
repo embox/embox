@@ -15,6 +15,7 @@
 
 .type EXC_HANDLER_NAME(DEBUG_MONITOR), %function
 .global EXC_HANDLER_NAME(DEBUG_MONITOR)
+
 EXC_HANDLER_NAME(DEBUG_MONITOR):
 	@ Move top of excpt stack to r0
 	ldr     r1, =SCB_ICSR
@@ -45,10 +46,10 @@ EXC_HANDLER_NAME(DEBUG_MONITOR):
 	ldmfd   r0, {r0-r3}
 	stmfd   sp!, {r0-r3}
 
-	@ Call arm_debug_monitor_handler
+	@ Call arm_m_debug_monitor_handler
 	mov     r0, sp
 	stmfd   sp!, {lr}
-	bl      arm_debug_monitor_handler
+	bl      arm_m_debug_monitor_handler
 	ldmfd   sp!, {lr}
 
 	@ Load regs and exit
