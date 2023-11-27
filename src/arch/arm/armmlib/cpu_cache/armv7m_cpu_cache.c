@@ -83,7 +83,7 @@ static void arm_mpu_init_nocache_regions(void) {
 
 	/* Process non-cacheble SRAM section */
 	if (sram_nocache_size > 0) {
-		log_debug("\nSRAM section non-cacheble: start=0x%08x, region size=0x%x",
+		log_debug("SRAM section non-cacheble: start=0x%08x, region size=0x%x",
 			sram_nocache_start, sram_nocache_size);
 
 		/* Non-cacheable region with full read/write access */
@@ -96,7 +96,7 @@ static void arm_mpu_init_nocache_regions(void) {
 			if (sram_device_size != (1 << logsize)) {
 				logsize++;
 			}
-			log_debug("\nSRAM device memory: start=0x%08x, region size=0x%x",
+			log_debug("SRAM device memory: start=0x%08x, region size=0x%x",
 				sram_device_start, (1 << logsize));
 
 			arm_mpu_configure(region++, sram_device_start, logsize,
@@ -111,7 +111,7 @@ static void arm_mpu_init_nocache_regions(void) {
 			continue;
 		}
 
-		log_debug("\nRegion%d non-cacheble: start=0x%08x, region size=0x%x",
+		log_debug("Region%d non-cacheble: start=0x%08x, region size=0x%x",
 			i, regions[i].addr, regions[i].size);
 
 		logsize = calc_log2(regions[i].size);
