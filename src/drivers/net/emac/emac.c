@@ -406,7 +406,7 @@ static irq_return_t ti816x_interrupt_macrxthr0(unsigned int irq_num,
 	assert(DEFAULT_MASK == REG_LOAD(EMAC_CTRL_BASE
 				+ EMAC_R_CMRXTHRESHINTSTAT));
 
-	log_debug("ti816x_interrupt_macrxthr0: unhandled interrupt\n");
+	log_debug("ti816x_interrupt_macrxthr0: unhandled interrupt");
 
 	emac_eoi(EMAC_MACEOIVEC_RXTHRESHEOI);
 
@@ -559,18 +559,20 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		unsigned long macstatus;
 
 		macstatus = REG_LOAD(EMAC_BASE + EMAC_R_MACSTATUS);
-		log_error("\tMACSTATUS: %#lx\n"
-				"\t\tidle %lx\n"
-				"\t\ttxerrcode %lx; txerrch %lx\n"
-				"\t\trxerrcode %lx; rxerrch %lx\n"
-				"\t\trgmiigig %lx; rgmiifullduplex %lx\n"
-				"\t\trxqosact %lx; rxflowact %lx; txflowact %lx\n",
-				macstatus,
-				EMAC_MACSTAT_IDLE(macstatus),
-				EMAC_MACSTAT_TXERRCODE(macstatus), EMAC_MACSTAT_TXERRCH(macstatus),
-				EMAC_MACSTAT_RXERRCODE(macstatus), EMAC_MACSTAT_RXERRCH(macstatus),
-				EMAC_MACSTAT_RGMIIGIG(macstatus), EMAC_MACSTAT_RGMIIFULLDUPLEX(macstatus),
-				EMAC_MACSTAT_RXQOSACT(macstatus), EMAC_MACSTAT_RXFLOWACT(macstatus), EMAC_MACSTAT_TXFLOWACT(macstatus));
+		log_raw(LOG_ERR,
+		    "\tMACSTATUS: %#lx\n"
+		    "\t\tidle %lx\n"
+		    "\t\ttxerrcode %lx; txerrch %lx\n"
+		    "\t\trxerrcode %lx; rxerrch %lx\n"
+		    "\t\trgmiigig %lx; rgmiifullduplex %lx\n"
+		    "\t\trxqosact %lx; rxflowact %lx; txflowact %lx\n",
+		    macstatus, EMAC_MACSTAT_IDLE(macstatus),
+		    EMAC_MACSTAT_TXERRCODE(macstatus), EMAC_MACSTAT_TXERRCH(macstatus),
+		    EMAC_MACSTAT_RXERRCODE(macstatus), EMAC_MACSTAT_RXERRCH(macstatus),
+		    EMAC_MACSTAT_RGMIIGIG(macstatus),
+		    EMAC_MACSTAT_RGMIIFULLDUPLEX(macstatus),
+		    EMAC_MACSTAT_RXQOSACT(macstatus), EMAC_MACSTAT_RXFLOWACT(macstatus),
+		    EMAC_MACSTAT_TXFLOWACT(macstatus));
 
 		emac_reset();
 		ti816x_config((struct net_device *)dev_id);
@@ -582,11 +584,11 @@ static irq_return_t ti816x_interrupt_macmisc0(unsigned int irq_num,
 		macinvector &= ~(EMAC_MACINV_RXPEND | EMAC_MACINV_TXPEND);
 	}
 	if (macinvector) {
-		log_debug("ti816x_interrupt_macmisc0: unhandled interrupt\n"
-				"\tMACINVECTOR: %#lx\n"
-				"\tCMMISCINTSTAT: %#lx\n",
-				macinvector,
-				REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
+		log_raw(LOG_DEBUG,
+		    "ti816x_interrupt_macmisc0: unhandled interrupt\n"
+		    "\tMACINVECTOR: %#lx\n"
+		    "\tCMMISCINTSTAT: %#lx\n",
+		    macinvector, REG_LOAD(EMAC_CTRL_BASE + EMAC_R_CMMISCINTSTAT));
 	}
 
 	emac_eoi(EMAC_MACEOIVEC_MISCEOI);
