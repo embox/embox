@@ -13,7 +13,7 @@
 #include <debug/breakpoint.h>
 #include <debug/gdbstub.h>
 #include <drivers/diag.h>
-#include <kernel/printk.h>
+#include <util/log.h>
 
 static int default_bpt_type;
 
@@ -91,21 +91,21 @@ static bool kgdb_break_required(void) {
 
 void kgdb_start(void *entry) {
 	struct bpt_env env;
-	size_t count;
+	size_t __attribute__((unused)) count;
 
-	printk("kgdb: Remote debugging via serial port\n");
+	log_info("kgdb: Remote debugging via serial port");
 
 	bpt_env_init(&env, kgdb_bpt_handler, true);
 	bpt_env_restore(&env);
 
 	count = bpt_get_count(BPT_TYPE_SOFT);
-	printk("kgdb: soft breakpoints: %zi\n", count);
+	log_info("kgdb: soft breakpoints: %zi", count);
 
 	count = bpt_get_count(BPT_TYPE_HARD);
-	printk("kgdb: hard breakpoints: %zi\n", count);
+	log_info("kgdb: hard breakpoints: %zi", count);
 
 	count = bpt_get_count(BPT_TYPE_WATCH);
-	printk("kgdb: watchpoints: %zi\n", count);
+	log_info("kgdb: watchpoints: %zi", count);
 
 	if (bpt_set(BPT_TYPE_SOFT, entry)) {
 		default_bpt_type = BPT_TYPE_SOFT;
