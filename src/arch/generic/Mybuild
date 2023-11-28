@@ -37,3 +37,5 @@ module arch extends embox.arch.arch {
 module cache_stub extends embox.arch.cache {
 	source "cache_stub.c"
 }
+
+module no_libarch extends embox.arch.libarch { }
