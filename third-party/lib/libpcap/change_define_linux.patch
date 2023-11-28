@@ -1,0 +1,60 @@
+diff -aur ./libpcap-libpcap-1.10.1/bpf_filter.c ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/bpf_filter.c
+--- ./libpcap-libpcap-1.10.1/bpf_filter.c	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/bpf_filter.c	2023-11-25 15:23:33.319674640 +0300
+@@ -60,7 +60,7 @@
+ 
+ #include <stdlib.h>
+ 
+-#ifdef __linux__
++#ifdef __EMBOX__
+ #include <linux/types.h>
+ #include <linux/if_packet.h>
+ #include <linux/filter.h>
+diff -aur ./libpcap-libpcap-1.10.1/bpf_image.c ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/bpf_image.c
+--- ./libpcap-libpcap-1.10.1/bpf_image.c	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/bpf_image.c	2023-11-25 15:23:33.319674640 +0300
+@@ -28,7 +28,7 @@
+ #include <stdio.h>
+ #include <string.h>
+ 
+-#ifdef __linux__
++#ifdef __EMBOX__
+ #include <linux/types.h>
+ #include <linux/if_packet.h>
+ #include <linux/filter.h>
+diff -aur ./libpcap-libpcap-1.10.1/pcap/pcap.h ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap/pcap.h
+--- ./libpcap-libpcap-1.10.1/pcap/pcap.h	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap/pcap.h	2023-11-25 15:23:33.323674817 +0300
+@@ -448,7 +448,7 @@
+ PCAP_AVAILABLE_1_2
+ PCAP_API const char *pcap_tstamp_type_val_to_description(int);
+ 
+-#ifdef __linux__
++#ifdef __EMBOX__
+ PCAP_AVAILABLE_1_9
+ PCAP_API int	pcap_set_protocol_linux(pcap_t *, int);
+ #endif
+diff -aur ./libpcap-libpcap-1.10.1/pcap-int.h ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap-int.h
+--- ./libpcap-libpcap-1.10.1/pcap-int.h	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap-int.h	2023-11-25 15:30:38.013589375 +0300
+@@ -156,7 +156,7 @@
+ 	/*
+ 	 * Platform-dependent options.
+ 	 */
+-#ifdef __linux__
++#ifdef __EMBOX__
+ 	int	protocol;	/* protocol to use when creating PF_PACKET socket */
+ #endif
+ #ifdef _WIN32
+diff -aur ./libpcap-libpcap-1.10.1/pcap.c ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap.c
+--- ./libpcap-libpcap-1.10.1/pcap.c	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap.c	2023-11-25 15:30:22.177097323 +0300
+@@ -2518,7 +2518,7 @@
+ 	/*
+ 	 * Platform-dependent options.
+ 	 */
+-#ifdef __linux__
++#ifdef __EMBOX__
+ 	p->opt.protocol = 0;
+ #endif
+ #ifdef _WIN32

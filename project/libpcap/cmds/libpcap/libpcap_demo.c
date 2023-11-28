@@ -1,5 +1,5 @@
 #include <stdio.h>
-#include <libpcap.h>
+#include <pcap.h>
 
 int main(int argc, char **argv) {
     pcap_if_t *alldevs; /* Name of devices (e.g. eth0, wlan0) */

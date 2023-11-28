@@ -1,0 +1,34 @@
+diff -aur ./libpcap-libpcap-1.10.1/pcap/bpf.h ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap/bpf.h
+--- ./libpcap-libpcap-1.10.1/pcap/bpf.h	2021-06-09 22:12:02.000000000 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap/bpf.h	2023-11-25 17:50:49.332851776 +0300
+@@ -76,6 +76,8 @@
+  *
+  * This also provides our own multiple-include protection.
+  */
++#include <linux/types.h>
++
+ #if !defined(_NET_BPF_H_) && !defined(_NET_BPF_H_INCLUDED) && !defined(_BPF_H_) && !defined(_H_BPF) && !defined(lib_pcap_bpf_h)
+ #define lib_pcap_bpf_h
+ 
+diff -aur ./libpcap-libpcap-1.10.1/pcap/pcap.h ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap/pcap.h
+--- ./libpcap-libpcap-1.10.1/pcap/pcap.h	2023-11-25 17:54:38.725238895 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap/pcap.h	2023-11-25 17:50:11.704129916 +0300
+@@ -68,6 +68,7 @@
+ 
+ #ifndef lib_pcap_pcap_h
+ #define lib_pcap_pcap_h
++#include <linux/types.h>
+ 
+ /*
+  * Some software that uses libpcap/WinPcap/Npcap defines _MSC_VER before
+diff -aur ./libpcap-libpcap-1.10.1/pcap-int.h ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap-int.h
+--- ./libpcap-libpcap-1.10.1/pcap-int.h	2023-11-25 17:54:38.725238895 +0300
++++ ../build/extbld/third_party/lib/libpcap/libpcap-libpcap-1.10.1/pcap-int.h	2023-11-25 17:49:14.143023874 +0300
+@@ -34,6 +34,7 @@
+ #ifndef pcap_int_h
+ #define	pcap_int_h
+ 
++#include <linux/types.h>
+ #include <stddef.h>
+ 
+ #include <signal.h>
