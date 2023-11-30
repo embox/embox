@@ -16,7 +16,6 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
-#include <asm/hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <util/log.h>
