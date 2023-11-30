@@ -3,6 +3,8 @@ package embox.arch.msp430.kernel
 
 module arch extends embox.arch.arch {
 	source "arch.c"
+
+	depends reg
 }
 
 module boot {

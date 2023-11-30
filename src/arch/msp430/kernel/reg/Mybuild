@@ -1,0 +1,5 @@
+package embox.arch.msp430.kernel
+
+module reg extends embox.arch.reg {
+	source "reg.h"
+}
