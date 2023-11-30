@@ -4,7 +4,7 @@
 #include <sys/socket.h>
 #include <net/if_packet.h>
 
-#define SO_ATTACH_FILTER (SO_POSIX_MAX + 0)
+#define SO_ATTACH_FILTER 26
 
 struct sockaddr_ll {
 	unsigned short sll_family;   /* Always AF_PACKET */

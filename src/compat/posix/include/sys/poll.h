@@ -23,6 +23,7 @@ __BEGIN_DECLS
 #define POLLERR    0x08
 #define POLLHUP    0x10
 #define POLLNVAL   0x20
+#define POLLRDHUP	0x2000
 
 /* Data structure describing a polling request */
 struct pollfd {
