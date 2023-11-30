@@ -5,7 +5,7 @@
  * @author Anton Kozlov
  * @date 17.08.2015
  */
-#include <asm/cp15.h>
+#include <hal/reg.h>
 
 .section .text
 
@@ -20,7 +20,7 @@ setup_excpt_table:
 	stmia   r0!, {r2-r9}
 1:
 	mrc     p15, 0, r0, c1, c0, 0
-	orr     r0, r0, #CR_V
+	orr     r0, r0, #SCTLR_V
 	mcr     p15, 0, r0, c1, c0, 0
 
 	bx      lr

@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 #include <arm/exception.h>
-#include <asm/cp15.h>
+#include <hal/reg.h>
 #include <hal/test/traps_core.h>
 #include <util/log.h>
 
@@ -19,7 +19,7 @@ fault_handler_t arm_inst_fault_table[0x10];
 void arm_pabt_handler(excpt_context_t *ctx) {
 	uint32_t fault_status;
 
-	fault_status = cp15_get_instruction_fault_status() & 0xf;
+	fault_status = ARCH_REG_LOAD(IFSR) & 0xf;
 
 	if (arm_inst_fault_table[fault_status]) {
 		arm_inst_fault_table[fault_status](fault_status, ctx);

@@ -8,9 +8,10 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <asm/cp15.h>
 #include <debug/breakpoint.h>
 #include <hal/cache.h>
+#include <hal/mem_barriers.h>
+#include <hal/reg.h>
 #include <util/math.h>
 
 static const bpt_instr_t bpt_instr = 0xe1200070;
@@ -20,14 +21,20 @@ static void arm_sw_bpt_set(struct bpt *bpt) {
 	*(bpt_instr_t *)bpt->addr = bpt_instr;
 
 	dcache_flush(bpt->addr, sizeof(bpt_instr_t));
-	cp15_icache_inval();
+
+	/* Invalidate instruction cache */
+	ARCH_REG_STORE(ICIALLU, 0);
+	isb();
 }
 
 static void arm_sw_bpt_remove(struct bpt *bpt) {
 	*(bpt_instr_t *)bpt->addr = bpt->orig;
 
 	dcache_flush(bpt->addr, sizeof(bpt_instr_t));
-	cp15_icache_inval();
+
+	/* Invalidate instruction cache */
+	ARCH_REG_STORE(ICIALLU, 0);
+	isb();
 }
 
 static const struct bpt_info *arm_sw_bpt_info(void) {

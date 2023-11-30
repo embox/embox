@@ -6,6 +6,7 @@ abstract module cpu_reset {}
 module cpu_reset_stub extends cpu_reset {}
 
 module locore extends embox.arch.locore {
+	depends reg
 	depends exceptions
 	depends reset_handler
 	depends embox.arch.arm.head

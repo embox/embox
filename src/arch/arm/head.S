@@ -15,7 +15,8 @@
 .weak kernel_start
 
 #if MMU_BOOT
-#include <asm/cp15.h>
+#include <hal/reg.h>
+
 /* Put tables to text section to avoid setting it to zero during clearing bss */
 .section .text.bootcode
 .align 14
@@ -32,13 +33,13 @@ boot_mmu_setup:
 	mov     r2, #0x1000
 l1:
 	/* Build supersection desc in R3 */
-	orr     r3, r1, # 0x6
-	orr     r3, r3, # 0xC00
+	orr     r3, r1, #0x6
+	orr     r3, r3, #0xC00
 
 	/* Write supersection desc */
 	str     r3, [r0]
 
-	add     r1, r1, # 0x00100000
+	add     r1, r1, #0x00100000
 	add     r0, r0, #4
 	subs    r2, r2, #1
 	bne     l1
@@ -54,14 +55,14 @@ l1:
 	mrc     p15, 0, r0, c2, c0, 0
 	/* Turn on MMU */
 	mrc     p15, 0, r0, c1, c0, 0
-	orr     r0, r0, #CR_M
+	orr     r0, r0, #SCTLR_M
 	mcr     p15, 0, r0, c1, c0, 0
 
 	mov     pc, lr
 
 boot_mmu_finish:
 	mrc     p15, 0, r0, c1, c0, 0
-	and     r0, r0, #~CR_M
+	and     r0, r0, #~SCTLR_M
 	mcr     p15, 0, r0, c1, c0, 0
 
 	mov     pc, lr
