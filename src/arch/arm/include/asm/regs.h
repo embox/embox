@@ -20,13 +20,6 @@
 
 #endif /* __ASSEMBLER__ */
 
-/**
- * c1, Auxiliary Control Register
- * read: MRC p15, 0, <Rd>, c1, c0, 1
- * write: MCR p15, 0, <Rd>, c1, c0, 1
- */
-#define ACR_L2EN 0x2 /* L2 cache enabled */
-
 #ifndef __ASSEMBLER__
 static inline void *cpu_get_stack(void) {
 	void * ret;

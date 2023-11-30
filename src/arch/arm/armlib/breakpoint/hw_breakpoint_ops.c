@@ -9,9 +9,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <asm/cp14.h>
 #include <asm/debug.h>
 #include <debug/breakpoint.h>
+#include <hal/reg.h>
 #include <util/bitmap.h>
 
 #define MAX_HW_BPTS 16
@@ -21,68 +21,68 @@ static BITMAP_DECL(hw_bpt_usage_table, MAX_HW_BPTS);
 static void store_debug_regs(int num, uint32_t dbgbvr, uint32_t dbgbcr) {
 	switch (num) {
 	case 0:
-		CP14_STORE(DBGBVR0, dbgbvr);
-		CP14_STORE(DBGBCR0, dbgbcr);
+		ARCH_REG_STORE(DBGBVR0, dbgbvr);
+		ARCH_REG_STORE(DBGBCR0, dbgbcr);
 		break;
 	case 1:
-		CP14_STORE(DBGBVR1, dbgbvr);
-		CP14_STORE(DBGBCR1, dbgbcr);
+		ARCH_REG_STORE(DBGBVR1, dbgbvr);
+		ARCH_REG_STORE(DBGBCR1, dbgbcr);
 		break;
 	case 2:
-		CP14_STORE(DBGBVR2, dbgbvr);
-		CP14_STORE(DBGBCR2, dbgbcr);
+		ARCH_REG_STORE(DBGBVR2, dbgbvr);
+		ARCH_REG_STORE(DBGBCR2, dbgbcr);
 		break;
 	case 3:
-		CP14_STORE(DBGBVR3, dbgbvr);
-		CP14_STORE(DBGBCR3, dbgbcr);
+		ARCH_REG_STORE(DBGBVR3, dbgbvr);
+		ARCH_REG_STORE(DBGBCR3, dbgbcr);
 		break;
 	case 4:
-		CP14_STORE(DBGBVR4, dbgbvr);
-		CP14_STORE(DBGBCR4, dbgbcr);
+		ARCH_REG_STORE(DBGBVR4, dbgbvr);
+		ARCH_REG_STORE(DBGBCR4, dbgbcr);
 		break;
 	case 5:
-		CP14_STORE(DBGBVR5, dbgbvr);
-		CP14_STORE(DBGBCR5, dbgbcr);
+		ARCH_REG_STORE(DBGBVR5, dbgbvr);
+		ARCH_REG_STORE(DBGBCR5, dbgbcr);
 		break;
 	case 6:
-		CP14_STORE(DBGBVR6, dbgbvr);
-		CP14_STORE(DBGBCR6, dbgbcr);
+		ARCH_REG_STORE(DBGBVR6, dbgbvr);
+		ARCH_REG_STORE(DBGBCR6, dbgbcr);
 		break;
 	case 7:
-		CP14_STORE(DBGBVR7, dbgbvr);
-		CP14_STORE(DBGBCR7, dbgbcr);
+		ARCH_REG_STORE(DBGBVR7, dbgbvr);
+		ARCH_REG_STORE(DBGBCR7, dbgbcr);
 		break;
 	case 8:
-		CP14_STORE(DBGBVR8, dbgbvr);
-		CP14_STORE(DBGBCR8, dbgbcr);
+		ARCH_REG_STORE(DBGBVR8, dbgbvr);
+		ARCH_REG_STORE(DBGBCR8, dbgbcr);
 		break;
 	case 9:
-		CP14_STORE(DBGBVR9, dbgbvr);
-		CP14_STORE(DBGBCR9, dbgbcr);
+		ARCH_REG_STORE(DBGBVR9, dbgbvr);
+		ARCH_REG_STORE(DBGBCR9, dbgbcr);
 		break;
 	case 10:
-		CP14_STORE(DBGBVR10, dbgbvr);
-		CP14_STORE(DBGBCR10, dbgbcr);
+		ARCH_REG_STORE(DBGBVR10, dbgbvr);
+		ARCH_REG_STORE(DBGBCR10, dbgbcr);
 		break;
 	case 11:
-		CP14_STORE(DBGBVR11, dbgbvr);
-		CP14_STORE(DBGBCR11, dbgbcr);
+		ARCH_REG_STORE(DBGBVR11, dbgbvr);
+		ARCH_REG_STORE(DBGBCR11, dbgbcr);
 		break;
 	case 12:
-		CP14_STORE(DBGBVR12, dbgbvr);
-		CP14_STORE(DBGBCR12, dbgbcr);
+		ARCH_REG_STORE(DBGBVR12, dbgbvr);
+		ARCH_REG_STORE(DBGBCR12, dbgbcr);
 		break;
 	case 13:
-		CP14_STORE(DBGBVR13, dbgbvr);
-		CP14_STORE(DBGBCR13, dbgbcr);
+		ARCH_REG_STORE(DBGBVR13, dbgbvr);
+		ARCH_REG_STORE(DBGBCR13, dbgbcr);
 		break;
 	case 14:
-		CP14_STORE(DBGBVR14, dbgbvr);
-		CP14_STORE(DBGBCR14, dbgbcr);
+		ARCH_REG_STORE(DBGBVR14, dbgbvr);
+		ARCH_REG_STORE(DBGBCR14, dbgbcr);
 		break;
 	case 15:
-		CP14_STORE(DBGBVR15, dbgbvr);
-		CP14_STORE(DBGBCR15, dbgbcr);
+		ARCH_REG_STORE(DBGBVR15, dbgbvr);
+		ARCH_REG_STORE(DBGBCR15, dbgbcr);
 		break;
 	default:
 		break;
@@ -106,14 +106,14 @@ static void arm_hw_bpt_remove(struct bpt *bpt) {
 static void arm_hw_bpt_enable(void) {
 	uint32_t dbgdscr;
 
-	dbgdscr = CP14_LOAD(DBGDSCRext);
+	dbgdscr = ARCH_REG_LOAD(DBGDSCRext);
 	dbgdscr &= ~DBGDSCR_EXTDCCMODE_MASK;
 	dbgdscr |= DBGDSCR_MDBGEN | DBGDSCR_ITREN | DBGDSCR_EXTDCCMODE_STALL;
-	CP14_STORE(DBGDSCRext, dbgdscr);
+	ARCH_REG_STORE(DBGDSCRext, dbgdscr);
 }
 
 static void arm_hw_bpt_disable(void) {
-	CP14_CLEAR(DBGDSCRext, DBGDSCR_MDBGEN | DBGDSCR_ITREN);
+	ARCH_REG_CLEAR(DBGDSCRext, DBGDSCR_MDBGEN | DBGDSCR_ITREN);
 }
 
 static const struct bpt_info *arm_hw_bpt_info(void) {
@@ -123,7 +123,7 @@ static const struct bpt_info *arm_hw_bpt_info(void) {
 	static struct bpt_info info;
 
 	if (!initialized) {
-		info.count = ((CP14_LOAD(DBGDIDR) >> 24) & 0b1111) + 1;
+		info.count = ((ARCH_REG_LOAD(DBGDIDR) >> 24) & 0b1111) + 1;
 		info.start = (void *)&_text_vma;
 		info.end = (void *)&_text_vma + (uintptr_t)&_text_len;
 		initialized = true;

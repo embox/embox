@@ -8,9 +8,9 @@
 
 #include <string.h>
 
-#include <asm/modes.h>
-#include <hal/test/traps_core.h>
 #include <arm/exception.h>
+#include <hal/reg.h>
+#include <hal/test/traps_core.h>
 
 void set_fault_handler(enum fault_type type, fault_handler_t handler) {
 	switch (type) {
@@ -41,7 +41,7 @@ inline void mmu_drop_privileges(void) {
 	                     "msr cpsr, r0\n\t"
 	                     "mov r0, r0\n\t"
 	                     :
-	                     : [mode] "J"(ARM_MODE_USR));
+	                     : [mode] "J"(PSR_M_USR));
 }
 
 inline void mmu_sys_privileges(void) {
@@ -51,5 +51,5 @@ inline void mmu_sys_privileges(void) {
 	                     "msr cpsr, r0\n\t"
 	                     "mov r0, r0\n\t"
 	                     :
-	                     : [mode] "J"(ARM_MODE_SYS));
+	                     : [mode] "J"(PSR_M_SYS));
 }

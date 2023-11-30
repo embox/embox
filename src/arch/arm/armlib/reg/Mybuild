@@ -1,0 +1,7 @@
+package embox.arch.arm.armlib
+
+module reg extends embox.arch.reg {
+	source "psr.h"
+	source "cp14.h"
+	source "cp15.h"
+}

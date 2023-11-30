@@ -6,9 +6,8 @@
  * @author Aleksey Zhmulin
  */
 #include <arm/fpu.h>
-#include <asm/cp15.h>
-#include <asm/modes.h>
 #include <asm/ptrace.h>
+#include <hal/reg.h>
 
 /**
  * Purpose
@@ -29,7 +28,7 @@
 	mrs     r2, SPSR
 
 	@ Return to previous CPU mode with disabled interrupts
-	msr     CPSR, #(ARM_MODE_SYS | I_BIT | F_BIT)
+	msr     CPSR, #(PSR_M_SYS | PSR_I | PSR_F)
 
 	@ Store struct pt_regs on the stack
 	stmfd   sp!, {r1, r2}
@@ -48,14 +47,14 @@
  */
 .macro excpt_exit prev_mode
 	@ Return to previous CPU mode with disabled interrupts
-	msr     CPSR, #(ARM_MODE_SYS | I_BIT | F_BIT)
+	msr     CPSR, #(PSR_M_SYS | PSR_I | PSR_F)
 
 	@ Load struct pt_regs and return from exception
 	add     r0, sp, #PTREGS_SIZE
 	ldmdb   r0!, {r1, r2}
 	ldmdb   r0!, {r3, lr}
 	mov     sp, r3
-	msr     CPSR, #(\prev_mode | I_BIT | F_BIT)
+	msr     CPSR, #(\prev_mode | PSR_I | PSR_F)
 	msr     SPSR, r2
 	stmfd   sp!, {r1}
 	ldmdb   r0, {r0-r12}
@@ -69,14 +68,14 @@ undef_handler:
 	mov     r0, sp
 	bl      arm_undef_handler
 	load_fpu_inc tmp=r0, stack=sp, upd=1
-	excpt_exit prev_mode=ARM_MODE_UND
+	excpt_exit prev_mode=PSR_M_UND
 
 swi_handler:
 	excpt_entry correction=4
 	save_fpu_dec tmp=r0, stack=sp, upd=1
 	bl      swi_handle
 	load_fpu_inc tmp=r0, stack=sp, upd=1
-	excpt_exit prev_mode=ARM_MODE_SVC
+	excpt_exit prev_mode=PSR_M_SVC
 
 pabt_handler:
 	excpt_entry correction=4
@@ -84,7 +83,7 @@ pabt_handler:
 	mov     r0, sp
 	bl      arm_pabt_handler
 	load_fpu_inc tmp=r0, stack=sp, upd=1
-	excpt_exit prev_mode=ARM_MODE_ABT
+	excpt_exit prev_mode=PSR_M_ABT
 
 dabt_handler:
 	excpt_entry correction=8
@@ -92,14 +91,14 @@ dabt_handler:
 	mov     r0, sp
 	bl      arm_dabt_handler
 	load_fpu_inc tmp=r0, stack=sp, upd=1
-	excpt_exit prev_mode=ARM_MODE_ABT
+	excpt_exit prev_mode=PSR_M_ABT
 
 irq_handler:
 	excpt_entry correction=4
 	save_fpu_dec tmp=r0, stack=sp, upd=1
 	bl      interrupt_handle
 	load_fpu_inc tmp=r0, stack=sp, upd=1
-	excpt_exit prev_mode=ARM_MODE_IRQ
+	excpt_exit prev_mode=PSR_M_IRQ
 
 fiq_handler:
 	excpt_entry correction=4
@@ -107,7 +106,7 @@ fiq_handler:
 	mov     r0, sp
 	bl      arm_fiq_handler
 	load_fpu_inc tmp=r0, stack=sp, upd=1
-	excpt_exit prev_mode=ARM_MODE_FIQ
+	excpt_exit prev_mode=PSR_M_FIQ
 
 /**
  * Exceptions table (general for all ARM cores)

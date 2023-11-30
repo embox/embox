@@ -15,6 +15,7 @@ module locore extends embox.arch.locore {
 	source "traps.c"
 	source "winflush.S"
 
+	depends reg
 	depends boot
 	depends leon3
 	depends embox.arch.sparc.testtrap

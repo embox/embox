@@ -12,55 +12,51 @@ abstract module cpu {
 }
 
 @Mandatory
+@DefaultImpl(embox.arch.generic.nommu)
+abstract module mmu {
+	option number page_size
+}
+
+@Mandatory
 @DefaultImpl(embox.arch.generic.interrupt_stub)
 abstract module interrupt { }
-
-abstract module libarch { }
-abstract module locore { }
-abstract module arch { }
-abstract module entry { }
-abstract module boot { }
-abstract module lds { }
-
-module no_libarch extends libarch { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nocontext)
 abstract module context { }
 
 @Mandatory
-@DefaultImpl(embox.arch.generic.nommu)
-abstract module mmu {
-	option number page_size
-}
-
-abstract module mmuinfo {
-}
-
-@Mandatory
 @DefaultImpl(embox.arch.generic.syscall_stub)
 abstract module syscall { }
-
-abstract module syscall_caller { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nousermode)
 abstract module usermode { }
 
-abstract module stackframe { }
-
-abstract module testtrap { }
-
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp { }
 
-abstract module cpu_info { }
-
-abstract module vfork_entry { }
-abstract module fork_entry { }
-
-abstract module mem_barriers { }
+@Mandatory
+@DefaultImpl(embox.arch.generic.reg_stub)
+abstract module reg { }
 
 @DefaultImpl(embox.arch.generic.cache_stub)
 abstract module cache { }
+
+@DefaultImpl(embox.arch.generic.no_libarch)
+abstract module libarch { }
+
+abstract module locore { }
+abstract module arch { }
+abstract module entry { }
+abstract module boot { }
+abstract module lds { }
+abstract module mmuinfo { }
+abstract module mem_barriers { }
+abstract module syscall_caller { }
+abstract module stackframe { }
+abstract module testtrap { }
+abstract module cpu_info { }
+abstract module vfork_entry { }
+abstract module fork_entry { }

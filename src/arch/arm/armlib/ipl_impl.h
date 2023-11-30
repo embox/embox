@@ -12,23 +12,22 @@
 
 #include <stdint.h>
 
-#include <asm/modes.h>
-#include <asm/hal/reg.h>
+#include <hal/reg.h>
 
 typedef uint32_t __ipl_t;
 
 static inline void ipl_init(void) {
-	set_cpsr(get_cpsr() & ~(I_BIT | F_BIT));
+	ARCH_REG_CLEAR(CPSR, PSR_I | PSR_F);
 }
 
 static inline __ipl_t ipl_save(void) {
-	uint32_t r = get_cpsr();
-	set_cpsr(r | I_BIT | F_BIT);
-	return r;
+	__ipl_t ipl = ARCH_REG_LOAD(CPSR);
+	ARCH_REG_STORE(CPSR, ipl | PSR_I | PSR_F);
+	return ipl;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
-	set_cpsr(ipl);
+	ARCH_REG_STORE(CPSR, ipl);
 }
 
 #endif /* __ASSEMBLER__ */
