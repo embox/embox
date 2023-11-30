@@ -9,7 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <asm/debug.h>
 #include <debug/breakpoint.h>
 #include <hal/reg.h>
 #include <util/bitmap.h>
