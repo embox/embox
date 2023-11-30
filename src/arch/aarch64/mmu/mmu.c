@@ -8,11 +8,11 @@
 
 #include <assert.h>
 
+#include <asm/hal/reg.h>
 #include <asm/modes.h>
 #include <embox/unit.h>
 #include <hal/arch.h>
 #include <hal/mmu.h>
-#include <hal/reg.h>
 #include <hal/test/traps_core.h>
 #include <mem/vmem.h>
 #include <util/log.h>
@@ -33,8 +33,7 @@ void mmu_on(void) {
 		aarch64_sctlr_el1_write(r | SCTLR_M);
 		break;
 	default:
-		log_error("%s doesn't support EL%d\n",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
 	}
 }
 
@@ -51,8 +50,7 @@ void mmu_off(void) {
 		aarch64_sctlr_el1_write(r & ~SCTLR_M);
 		break;
 	default:
-		log_error("%s doesn't support EL%d\n",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
 	}
 }
 
@@ -62,14 +60,14 @@ void mmu_off(void) {
 #define ASID_OFFSET  48
 #define ASID_MASK    (0xFFFFLL << ASID_OFFSET)
 mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
-	if ((uintptr_t) pgd & ASID_MASK) {
+	if ((uintptr_t)pgd & ASID_MASK) {
 		log_error("16 most-significant bits of pgd should be zero, "
-				"but we have: %p", pgd);
+		          "but we have: %p",
+		    pgd);
 		return 0;
 	}
 
-
-	return ((uintptr_t) pgd) | (DEFAULT_ASID << ASID_OFFSET);
+	return ((uintptr_t)pgd) | (DEFAULT_ASID << ASID_OFFSET);
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
@@ -81,29 +79,27 @@ void mmu_set_context(mmu_ctx_t ctx) {
 		aarch64_ttbr0_el1_write(ctx);
 		break;
 	default:
-		log_error("%s doesn't support EL%d",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d", __func__, aarch64_current_el());
 	}
 }
 
 uintptr_t *mmu_get_root(mmu_ctx_t ctx) {
-	return (uintptr_t *) (ctx & ~ASID_MASK);
+	return (uintptr_t *)(ctx & ~ASID_MASK);
 }
 
 void mmu_flush_tlb(void) {
 	switch (aarch64_current_el()) {
 	case 3:
-		asm volatile ("tlbi alle3");
+		asm volatile("tlbi alle3");
 		break;
 	case 2:
-		asm volatile ("tlbi alle2");
+		asm volatile("tlbi alle2");
 		break;
 	case 1:
-		asm volatile ("tlbi vmalle1");
+		asm volatile("tlbi vmalle1");
 		break;
 	default:
-		log_error("%s doesn't support EL%d",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d", __func__, aarch64_current_el());
 	}
 }
 
@@ -114,8 +110,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 	case 1:
 		return aarch64_far_el1_read();
 	default:
-		log_error("%s doesn't support EL%d",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d", __func__, aarch64_current_el());
 	}
 	return 0;
 }
@@ -132,10 +127,8 @@ static int aarch64_mmu_init(void) {
 		tcr = aarch64_tcr_el1_read();
 		break;
 	default:
-		log_error("%s doesn't support EL%d\n",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
 		return 0;
-
 	}
 
 	tcr &= ~TCR_TG0_MASK;
@@ -170,8 +163,7 @@ static int aarch64_mmu_init(void) {
 		aarch64_tcr_el1_write(tcr);
 		break;
 	default:
-		log_error("%s doesn't support EL%d\n",
-				__func__, aarch64_current_el());
+		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
 	}
 
 	return 0;
@@ -183,7 +175,7 @@ uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 		return 0;
 	}
 
-	return (uintptr_t *) (*entry & ~MMU_PAGE_MASK);
+	return (uintptr_t *)(*entry & ~MMU_PAGE_MASK);
 }
 
 void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
@@ -194,14 +186,15 @@ void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
 
 	if (lvl < 0 || lvl >= MMU_LEVELS) {
 		log_error("Wrong MMU level: %d "
-				"(should be in range [0; %d)",
-				lvl, MMU_LEVELS);
+		          "(should be in range [0; %d)",
+		    lvl, MMU_LEVELS);
 		return;
 	}
 
 	if (lvl == MMU_LEVELS - 1) {
 		*entry = value | AARCH64_MMU_TYPE_TABLE;
-	} else {
+	}
+	else {
 		*entry = value | AARCH64_MMU_TYPE_PAGE;
 	}
 }
@@ -214,8 +207,8 @@ void mmu_unset(int lvl, uintptr_t *entry) {
 
 	if (lvl < 0 || lvl >= MMU_LEVELS) {
 		log_error("Wrong MMU level: %d "
-				"(should be in range [0; %d)",
-				lvl, MMU_LEVELS);
+		          "(should be in range [0; %d)",
+		    lvl, MMU_LEVELS);
 		return;
 	}
 
@@ -226,17 +219,17 @@ uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
 	uintptr_t ret;
 
 	if (addr & MMU_PAGE_MASK) {
-		log_error("address %p doesn't match mask %p",
-				(void *) addr, (void *) MMU_PAGE_MASK);
+		log_error("address %p doesn't match mask %p", (void *)addr,
+		    (void *)MMU_PAGE_MASK);
 		addr &= MMU_PAGE_MASK;
 	}
 
-	ret = addr | AARCH64_MMU_TYPE_PAGE
-	           | AARCH64_MMU_PROPERTY_AF;
+	ret = addr | AARCH64_MMU_TYPE_PAGE | AARCH64_MMU_PROPERTY_AF;
 
 	if (prot & PROT_WRITE) {
 		ret |= AARCH64_MMU_PROPERTY_AP_RW;
-	} else {
+	}
+	else {
 		ret |= AARCH64_MMU_PROPERTY_AP_RO;
 	}
 
@@ -246,7 +239,8 @@ uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
 
 	if (prot & PROT_NOCACHE) {
 		ret |= AARCH64_MMU_PROPERTY_MEM_ATTR_DEVICE;
-	} else {
+	}
+	else {
 		ret |= AARCH64_MMU_PROPERTY_MEM_ATTR_NORMAL;
 	}
 
