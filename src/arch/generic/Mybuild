@@ -39,3 +39,5 @@ module cache_stub extends embox.arch.cache {
 }
 
 module no_libarch extends embox.arch.libarch { }
+
+module reg_stub extends embox.arch.reg { }

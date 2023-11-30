@@ -37,6 +37,10 @@ abstract module usermode { }
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp { }
 
+@Mandatory
+@DefaultImpl(embox.arch.generic.reg_stub)
+abstract module reg { }
+
 @DefaultImpl(embox.arch.generic.cache_stub)
 abstract module cache { }
 
