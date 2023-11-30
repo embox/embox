@@ -10,12 +10,20 @@
 #define DRIVERS_SPI_H_
 
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 #include <drivers/char_dev.h>
+#include <framework/mod/options.h>
+#include <kernel/irq.h>
 #include <util/array.h>
 #include <util/macro.h>
-#include <kernel/irq.h>
-//#include <drivers/dma/dma.h>
+/* #include <drivers/dma/dma.h> */
+
+#include <config/embox/driver/spi/core.h>
+
+#define SPI_REGISTRY_SZ \
+	OPTION_MODULE_GET(embox__driver__spi__core, NUMBER, spi_quantity)
 
 struct spi_ops;
 
@@ -28,10 +36,10 @@ enum spi_mode_t {
 };
 
 enum spi_pol_phase_t {
-	SPI_MODE_0 = 0x00,	/* CPOL = 0, CPHA = 0 */
-	SPI_MODE_1 = 0x01,  /* CPOL = 0, CPHA = 1 */
-	SPI_MODE_2 = 0x02,  /* CPOL = 1, CPHA = 0 */
-	SPI_MODE_3 = 0x03,  /* CPOL = 1, CPHA = 1 */
+	SPI_MODE_0 = 0x00, /* CPOL = 0, CPHA = 0 */
+	SPI_MODE_1 = 0x01, /* CPOL = 0, CPHA = 1 */
+	SPI_MODE_2 = 0x02, /* CPOL = 1, CPHA = 0 */
+	SPI_MODE_3 = 0x03, /* CPOL = 1, CPHA = 1 */
 };
 
 struct spi_device;
@@ -41,12 +49,12 @@ typedef void (*irq_spi_event_t)(struct spi_device *data, int cnt);
 struct spi_device {
 	struct dev_module *dev;
 
-	uint32_t  flags;
-	bool      is_master;
-	int       bits_per_word;
+	uint32_t flags;
+	bool is_master;
+	int bits_per_word;
 
 	struct spi_ops *spi_ops;
-	void    *priv;
+	void *priv;
 };
 
 struct dma_ctrl_blk;
@@ -74,7 +82,8 @@ extern int spi_dev_id(struct spi_device *dev);
  *   - count must not be larger than 16 bytes for sending within interrupt call 
  *   - takes 12 bytes received to trigger interrupt
  */
-extern int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
+extern int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out,
+    int cnt);
 
 /* Set extra options in struct *dev before calling this function 
  */
@@ -84,18 +93,16 @@ extern int spi_set_slave_mode(struct spi_device *dev);
 
 extern const struct idesc_ops spi_iops;
 
-#define SPI_REGISTRY_SZ  OPTION_GET(NUMBER,spi_quantity)
-
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
-#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, idx) \
-	struct spi_device MACRO_CONCAT(spi_device, idx); \
+#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, idx)                    \
+	struct spi_device MACRO_CONCAT(spi_device, idx);                         \
 	CHAR_DEV_DEF(dev_name, NULL, &spi_iops, &MACRO_CONCAT(spi_device, idx)); \
-	struct spi_device  MACRO_CONCAT(spi_device, idx) = { \
-			.spi_ops = spi_dev_ops, \
-			.priv    = dev_priv, \
-			.dev     = (void *)MACRO_CONCAT(__char_device_registry_ptr_, dev_name), \
-		}
+	struct spi_device MACRO_CONCAT(spi_device, idx) = {                      \
+	    .spi_ops = spi_dev_ops,                                              \
+	    .priv = dev_priv,                                                    \
+	    .dev = (void *)MACRO_CONCAT(__char_device_registry_ptr_, dev_name),  \
+	}
 
 /* IOCTL-related stuff */
 #define SPI_IOCTL_CS       0x1
@@ -110,11 +117,13 @@ struct spi_transfer_arg {
 /* CS modes */
 #define SPI_CS_ACTIVE    (1 << 0)
 #define SPI_CS_INACTIVE  (1 << 1)
-#define SPI_CS_MODE(x)   ( ( (x) & 0x03) << 2)     /* x is one of enum spi_pol_phase_t */
+/* x is one of enum spi_pol_phase_t */
+#define SPI_CS_MODE(x)   ((0x03 & (x)) << 2)
 #define SPI_CS_IRQD      (1 << 4)
 #define SPI_CS_IRQR      (1 << 5)
 #define SPI_CS_DMAEN     (1 << 6)
-#define SPI_CS_DIVSOR(x) ( ( (x) & 0xFFFF) << 16 ) /* Upper 16 bits used to set clock divisor */
+/* Upper 16 bits used to set clock divisor */
+#define SPI_CS_DIVSOR(x) (((x)&0xFFFF) << 16)
 
 /* DMA Levels 
  * rcPanic: DMA Read Panic Threshold. Generate the Panic signal to 
@@ -127,9 +136,9 @@ struct spi_transfer_arg {
  * wrReq: DMA Write Request Threshold. Generate a DREQ signal to the TX DMA 
  * 		engine whenever the TX FIFO level is less than or equal to this amount.
  */
-#define DMA_LEVELS(rdPanic, rdReq, wrPanic, wrReq) ( (rdPanic & 0xFF) << 24 | (rdReq & 0xFF) << 16 \
-	|  (wrPanic & 0xff) << 8 | (wrReq & 0xff) ) 
-
+#define DMA_LEVELS(rdPanic, rdReq, wrPanic, wrReq)                         \
+	((rdPanic & 0xFF) << 24 | (rdReq & 0xFF) << 16 | (wrPanic & 0xff) << 8 \
+	    | (wrReq & 0xff))
 
 /* Initializes a control block in the dma allocated memory with sensible default values
  * for a single block transfer to send.
@@ -143,8 +152,8 @@ struct spi_transfer_arg {
  * @param int_enable - enable interrupt at end of transmission/receipt for conbk
  */
 extern struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev,
-		struct dma_mem_handle *mem_handle, uint32_t offset, void *src, uint32_t bytes,
-		struct dma_ctrl_blk *next_conbk, bool int_enable);
+    struct dma_mem_handle *mem_handle, uint32_t offset, void *src,
+    uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
 
 /* Initializes a control block in the dma allocated memory with sensible default values
  * for a single block transfer to receive to.
@@ -158,15 +167,14 @@ extern struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev,
  * @param int_enable - enable interrupt at end of transmission/receipt for conbk
  */
 extern struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_device *dev,
-		struct dma_mem_handle *mem_handle, uint32_t offset, void *dest, uint32_t bytes,
-		struct dma_ctrl_blk *next_conbk, bool int_enable);
+    struct dma_mem_handle *mem_handle, uint32_t offset, void *dest,
+    uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
 
 extern int spi_dma_prepare(struct spi_device *dev,
-		irq_return_t (*dma_complete)(unsigned int,  void *),
-		int dma_chan_out, int dma_chan_in,
-		uint32_t dma_levels);
+    irq_return_t (*dma_complete)(unsigned int, void *), int dma_chan_out,
+    int dma_chan_in, uint32_t dma_levels);
 
 extern int spi_irq_prepare(struct spi_device *dev,
-		irq_spi_event_t send_complete, irq_spi_event_t received_data);
+    irq_spi_event_t send_complete, irq_spi_event_t received_data);
 
 #endif /* DRIVERS_SPI_H_ */
