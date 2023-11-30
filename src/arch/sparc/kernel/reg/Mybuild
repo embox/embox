@@ -1,0 +1,5 @@
+package embox.arch.sparc.kernel
+
+module reg extends embox.arch.reg {
+	source "reg.h"
+}
