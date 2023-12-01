@@ -11,6 +11,7 @@ module interrupt extends embox.arch.interrupt {
 }
 
 module locore extends embox.arch.locore {
+	depends reg
 	depends exceptions
 	depends reset_handler
 }

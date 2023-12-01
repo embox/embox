@@ -1,0 +1,10 @@
+package embox.arch.aarch64
+
+module reg extends embox.arch.reg {
+	source "reg.h"
+	source "tlb.h"
+	source "cache.h"
+	source "sysreg.h"
+	source "specreg.h"
+	source "translation.h"
+}
