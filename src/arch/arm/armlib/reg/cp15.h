@@ -29,88 +29,115 @@
 		                     : clobbers);                                  \
 	})
 
-#define MIDR                              /* [RO] Main ID Register */
+/** [RO] Main ID Register */
+#define MIDR                              MIDR
 #define __ARCH_REG_LOAD__MIDR()           __MRC15(0, c0, c0, 0, )
 
-#define CTR                               /* [RO] Cache Type Register */
+/** [RO] Cache Type Register */
+#define CTR                               CTR
 #define __ARCH_REG_LOAD__CTR()            __MRC15(0, c0, c0, 1, )
 
-#define TCMTR                             /* [RO] TCM Type Register */
+/** [RO] TCM Type Register */
+#define TCMTR                             TCMTR
 #define __ARCH_REG_LOAD__TCMTR()          __MRC15(0, c0, c0, 2, )
 
-#define TLBTR                             /* [RO] TLB Type Register */
+/** [RO] TLB Type Register */
+#define TLBTR                             TLBTR
 #define __ARCH_REG_LOAD__TLBTR()          __MRC15(0, c0, c0, 3, )
 
-#define MPIDR                             /* [RO] Multiprocessor Affinity Register */
+/** [RO] Multiprocessor Affinity Register */
+#define MPIDR                             MPIDR
 #define __ARCH_REG_LOAD__MPIDR()          __MRC15(0, c0, c0, 5, )
 
-#define REVIDR                            /* [RO] Revision ID Register */
+/** [RO] Revision ID Register */
+#define REVIDR                            REVIDR
 #define __ARCH_REG_LOAD__REVIDR()         __MRC15(0, c0, c0, 6, )
 
-#define PFR0                              /* [RO] Processor Feature Register 0 */
+/** [RO] Processor Feature Register 0 */
+#define PFR0                              PFR0
 #define __ARCH_REG_LOAD__PFR0()           __MRC15(0, c0, c1, 0, )
 
-#define PFR1                              /* [RO] Processor Feature Register 1 */
+/** [RO] Processor Feature Register 1 */
+#define PFR1                              PFR1
 #define __ARCH_REG_LOAD__PFR1()           __MRC15(0, c0, c1, 1, )
 
-#define DFR0                              /* [RO] Debug Feature Register 0 */
+/** [RO] Debug Feature Register 0 */
+#define DFR0                              DFR0
 #define __ARCH_REG_LOAD__DFR0()           __MRC15(0, c0, c1, 2, )
 
-#define AFR0                              /* [RO] Auxiliary Feature Register 0 */
+/** [RO] Auxiliary Feature Register 0 */
+#define AFR0                              AFR0
 #define __ARCH_REG_LOAD__AFR0()           __MRC15(0, c0, c1, 3, )
 
-#define MMFR0                             /* [RO] Memory Model Feature Register 0 */
+/** [RO] Memory Model Feature Register 0 */
+#define MMFR0                             MMFR0
 #define __ARCH_REG_LOAD__MMFR0()          __MRC15(0, c0, c1, 4, )
 
-#define MMFR1                             /* [RO] Memory Model Feature Register 1 */
+/** [RO] Memory Model Feature Register 1 */
+#define MMFR1                             MMFR1
 #define __ARCH_REG_LOAD__MMFR1()          __MRC15(0, c0, c1, 5, )
 
-#define MMFR2                             /* [RO] Memory Model Feature Register 2 */
+/** [RO] Memory Model Feature Register 2 */
+#define MMFR2                             MMFR2
 #define __ARCH_REG_LOAD__MMFR2()          __MRC15(0, c0, c1, 6, )
 
-#define MMFR3                             /* [RO] Memory Model Feature Register 3 */
+/** [RO] Memory Model Feature Register 3 */
+#define MMFR3                             MMFR3
 #define __ARCH_REG_LOAD__MMFR3()          __MRC15(0, c0, c1, 7, )
 
-#define ISAR0                             /* [RO] Instruction Set Attribute Register 0 */
+/** [RO] Instruction Set Attribute Register 0 */
+#define ISAR0                             ISAR0
 #define __ARCH_REG_LOAD__ISAR0()          __MRC15(0, c0, c2, 0, )
 
-#define ISAR1                             /* [RO] Instruction Set Attribute Register 1 */
+/** [RO] Instruction Set Attribute Register 1 */
+#define ISAR1                             ISAR1
 #define __ARCH_REG_LOAD__ISAR1()          __MRC15(0, c0, c2, 1, )
 
-#define ISAR2                             /* [RO] Instruction Set Attribute Register 2 */
+/** [RO] Instruction Set Attribute Register 2 */
+#define ISAR2                             ISAR2
 #define __ARCH_REG_LOAD__ISAR2()          __MRC15(0, c0, c2, 2, )
 
-#define ISAR3                             /* [RO] Instruction Set Attribute Register 3 */
+/** [RO] Instruction Set Attribute Register 3 */
+#define ISAR3                             ISAR3
 #define __ARCH_REG_LOAD__ISAR3()          __MRC15(0, c0, c2, 3, )
 
-#define ISAR4                             /* [RO] Instruction Set Attribute Register 4 */
+/** [RO] Instruction Set Attribute Register 4 */
+#define ISAR4                             ISAR4
 #define __ARCH_REG_LOAD__ISAR4()          __MRC15(0, c0, c2, 4, )
 
-#define ISAR5                             /* [RO] Instruction Set Attribute Register 5 */
+/** [RO] Instruction Set Attribute Register 5 */
+#define ISAR5                             ISAR5
 #define __ARCH_REG_LOAD__ISAR5()          __MRC15(0, c0, c2, 5, )
 
-#define CCSIDR                            /* [RO] Cache Size ID Registers */
+/** [RO] Cache Size ID Registers */
+#define CCSIDR                            CCSIDR
 #define __ARCH_REG_LOAD__CCSIDR()         __MRC15(1, c0, c0, 0, )
 
-#define CLIDR                             /* [RO] Cache Level ID Register */
+/** [RO] Cache Level ID Register */
+#define CLIDR                             CLIDR
 #define __ARCH_REG_LOAD__CLIDR()          __MRC15(1, c0, c0, 1, )
 
-#define AIDR                              /* [RO] Auxiliary ID Register */
+/** [RO] Auxiliary ID Register */
+#define AIDR                              AIDR
 #define __ARCH_REG_LOAD__AIDR()           __MRC15(1, c0, c0, 7, )
 
-#define CSSELR                            /* Cache Size Selection Register */
+/** Cache Size Selection Register */
+#define CSSELR                            CSSELR
 #define __ARCH_REG_LOAD__CSSELR()         __MRC15(2, c0, c0, 0, )
 #define __ARCH_REG_STORE__CSSELR(val)     __MCR15(2, c0, c0, 0, , val)
 
-#define VPIDR                             /* Virtualization Processor ID Register */
+/** Virtualization Processor ID Register */
+#define VPIDR                             VPIDR
 #define __ARCH_REG_LOAD__VPIDR()          __MRC15(4, c0, c0, 0, )
 #define __ARCH_REG_STORE__VPIDR(val)      __MCR15(4, c0, c0, 0, , val)
 
-#define VPIDR                             /* Virtualization Processor ID Register */
+/** Virtualization Processor ID Register */
+#define VPIDR                             VPIDR
 #define __ARCH_REG_LOAD__VPIDR()          __MRC15(4, c0, c0, 0, )
 #define __ARCH_REG_STORE__VPIDR(val)      __MCR15(4, c0, c0, 0, , val)
 
-#define SCTLR                             /* System Control Register */
+/** System Control Register */
+#define SCTLR                             SCTLR
 #define __ARCH_REG_LOAD__SCTLR()          __MRC15(0, c1, c0, 0, "cc")
 #define __ARCH_REG_STORE__SCTLR(val)      __MCR15(0, c1, c0, 0, "cc", val)
 
@@ -134,274 +161,344 @@
 #define SCTLR_AFE                         (1U << 29) /* Access flag enable */
 #define SCTLR_TE                          (1U << 30) /* Thumb exception enable */
 
-#define ACTLR                             /* Auxiliary Control Register */
+/** Auxiliary Control Register */
+#define ACTLR                             ACTLR
 #define __ARCH_REG_LOAD__ACTLR()          __MRC15(0, c1, c0, 1, "cc")
 #define __ARCH_REG_STORE__ACTLR(val)      __MCR15(0, c1, c0, 1, "cc", val)
 
 #define ACTLR_L2EN                        (1U << 1) /* L2 prefetch enabled */
 #define ACTLR_L1EN                        (1U << 2) /* L1 prefetch enabled */
 
-#define CPACR                             /* Coprocessor Access Control Register */
+/** Coprocessor Access Control Register */
+#define CPACR                             CPACR
 #define __ARCH_REG_LOAD__CPACR()          __MRC15(0, c1, c0, 2, "cc")
 #define __ARCH_REG_STORE__CPACR(val)      __MCR15(0, c1, c0, 2, "cc", val)
 
-#define SCR                               /* Secure Configuration Register */
+/** Secure Configuration Register */
+#define SCR                               SCR
 #define __ARCH_REG_LOAD__SCR()            __MRC15(0, c1, c1, 0, "cc")
 #define __ARCH_REG_STORE__SCR(val)        __MCR15(0, c1, c1, 0, "cc", val)
 
-#define SDER                              /* Secure Debug Enable Register */
+/** Secure Debug Enable Register */
+#define SDER                              SDER
 #define __ARCH_REG_LOAD__SDER()           __MRC15(0, c1, c1, 1, "cc")
 #define __ARCH_REG_STORE__SDER(val)       __MCR15(0, c1, c1, 1, "cc", val)
 
-#define NSACR                             /* Non-Secure Access Control Register */
+/** Non-Secure Access Control Register */
+#define NSACR                             NSACR
 #define __ARCH_REG_LOAD__NSACR()          __MRC15(0, c1, c1, 2, "cc")
 #define __ARCH_REG_STORE__NSACR(val)      __MCR15(0, c1, c1, 2, "cc", val)
 
-#define VCR                               /* Virtualization Control Register */
+/** Virtualization Control Register */
+#define VCR                               VCR
 #define __ARCH_REG_LOAD__VCR()            __MRC15(0, c1, c1, 3, )
 #define __ARCH_REG_STORE__VCR(val)        __MCR15(0, c1, c1, 3, , val)
 
-#define HSCTLR                            /* Hyp System Control Register */
+/** Hyp System Control Register */
+#define HSCTLR                            HSCTLR
 #define __ARCH_REG_LOAD__HSCTLR()         __MRC15(4, c1, c0, 0, )
 #define __ARCH_REG_STORE__HSCTLR(val)     __MCR15(4, c1, c0, 0, , val)
 
-#define HACTLR                            /* Hyp Auxiliary Control Register */
+/** Hyp Auxiliary Control Register */
+#define HACTLR                            HACTLR
 #define __ARCH_REG_LOAD__HACTLR()         __MRC15(4, c1, c0, 1, )
 #define __ARCH_REG_STORE__HACTLR(val)     __MCR15(4, c1, c0, 1, , val)
 
-#define HCR                               /* Hyp Configuration Register */
+/** Hyp Configuration Register */
+#define HCR                               HCR
 #define __ARCH_REG_LOAD__HCR()            __MRC15(4, c1, c1, 0, )
 #define __ARCH_REG_STORE__HCR(val)        __MCR15(4, c1, c1, 0, , val)
 
-#define HDCR                              /* Hyp Debug Configuration Register */
+/** Hyp Debug Configuration Register */
+#define HDCR                              HDCR
 #define __ARCH_REG_LOAD__HDCR()           __MRC15(4, c1, c1, 1, )
 #define __ARCH_REG_STORE__HDCR(val)       __MCR15(4, c1, c1, 1, , val)
 
-#define HCPTR                             /* Hyp Coprocessor Trap Register */
+/** Hyp Coprocessor Trap Register */
+#define HCPTR                             HCPTR
 #define __ARCH_REG_LOAD__HCPTR()          __MRC15(4, c1, c1, 2, )
 #define __ARCH_REG_STORE__HCPTR(val)      __MCR15(4, c1, c1, 2, , val)
 
-#define HSTR                              /* Hyp System Trap Register */
+/** Hyp System Trap Register */
+#define HSTR                              HSTR
 #define __ARCH_REG_LOAD__HSTR()           __MRC15(4, c1, c1, 3, )
 #define __ARCH_REG_STORE__HSTR(val)       __MCR15(4, c1, c1, 3, , val)
 
-#define HACR                              /* Hyp Auxiliary Configuration Register */
+/** Hyp Auxiliary Configuration Register */
+#define HACR                              HACR
 #define __ARCH_REG_LOAD__HACR()           __MRC15(4, c1, c1, 7, )
 #define __ARCH_REG_STORE__HACR(val)       __MCR15(4, c1, c1, 7, , val)
 
-#define TTBR0                             /* Translation Table Base Register 0 */
+/** Translation Table Base Register 0 */
+#define TTBR0                             TTBR0
 #define __ARCH_REG_LOAD__TTBR0()          __MRC15(0, c2, c0, 0, )
 #define __ARCH_REG_STORE__TTBR0(val)      __MCR15(0, c2, c0, 0, , val)
 
 #define TTBR0_ADDR_MASK                   0xFFFFFF00
 
-#define TTBR1                             /* Translation Table Base Register 1 */
+/** Translation Table Base Register 1 */
+#define TTBR1                             TTBR1
 #define __ARCH_REG_LOAD__TTBR1()          __MRC15(0, c2, c0, 1, )
 #define __ARCH_REG_STORE__TTBR1(val)      __MCR15(0, c2, c0, 1, , val)
 
-#define TTBCR                             /* Translation Table Base Control Register */
+/** Translation Table Base Control Register */
+#define TTBCR                             TTBCR
 #define __ARCH_REG_LOAD__TTBCR()          __MRC15(0, c2, c0, 2, )
 #define __ARCH_REG_STORE__TTBCR(val)      __MCR15(0, c2, c0, 2, , val)
 
 #define TTBCR_PAE_SUPPORT                 0x80000000
 
-#define HTCR                              /* Hyp Translation Control Register */
+/** Hyp Translation Control Register */
+#define HTCR                              HTCR
 #define __ARCH_REG_LOAD__HTCR()           __MRC15(4, c2, c0, 2, )
 #define __ARCH_REG_STORE__HTCR(val)       __MCR15(4, c2, c0, 2, , val)
 
-#define VTCR                              /* Virtualization Translation Control Register */
+/** Virtualization Translation Control Register */
+#define VTCR                              VTCR
 #define __ARCH_REG_LOAD__VTCR()           __MRC15(4, c2, c1, 2, )
 #define __ARCH_REG_STORE__VTCR(val)       __MCR15(4, c2, c1, 2, , val)
 
-#define DACR                              /* Domain Access Control Register */
+/** Domain Access Control Register */
+#define DACR                              DACR
 #define __ARCH_REG_LOAD__DACR()           __MRC15(0, c3, c0, 0, )
 #define __ARCH_REG_STORE__DACR(val)       __MCR15(0, c3, c0, 0, , val)
 
-#define DFSR                              /* Data Fault Status Register */
+/** Data Fault Status Register */
+#define DFSR                              DFSR
 #define __ARCH_REG_LOAD__DFSR()           __MRC15(0, c5, c0, 0, )
 #define __ARCH_REG_STORE__DFSR(val)       __MCR15(0, c5, c0, 0, , val)
 
-#define IFSR                              /* Instruction Fault Status Register */
+/** Instruction Fault Status Register */
+#define IFSR                              IFSR
 #define __ARCH_REG_LOAD__IFSR()           __MRC15(0, c5, c0, 1, )
 #define __ARCH_REG_STORE__IFSR(val)       __MCR15(0, c5, c0, 1, , val)
 
-#define ADFSR                             /* Auxiliary Data Fault Status Register */
+/** Auxiliary Data Fault Status Register */
+#define ADFSR                             ADFSR
 #define __ARCH_REG_LOAD__ADFSR()          __MRC15(0, c5, c1, 0, )
 #define __ARCH_REG_STORE__ADFSR(val)      __MCR15(0, c5, c1, 0, , val)
 
-#define AIFSR                             /* Auxiliary Instruction Fault Status Register */
+/** Auxiliary Instruction Fault Status Register */
+#define AIFSR                             AIFSR
 #define __ARCH_REG_LOAD__AIFSR()          __MRC15(0, c5, c1, 1, )
 #define __ARCH_REG_STORE__AIFSR(val)      __MCR15(0, c5, c1, 1, , val)
 
-#define HADFSR                            /* Hyp Auxiliary Data Fault Syndrome Register */
+/** Hyp Auxiliary Data Fault Syndrome Register */
+#define HADFSR                            HADFSR
 #define __ARCH_REG_LOAD__HADFSR()         __MRC15(4, c5, c1, 0, )
 #define __ARCH_REG_STORE__HADFSR(val)     __MCR15(4, c5, c1, 0, , val)
 
-#define HAIFSR                            /* Hyp Auxiliary Instruction Fault Syndrome Register */
+/** Hyp Auxiliary Instruction Fault Syndrome Register */
+#define HAIFSR                            HAIFSR
 #define __ARCH_REG_LOAD__HAIFSR()         __MRC15(4, c5, c1, 1, )
 #define __ARCH_REG_STORE__HAIFSR(val)     __MCR15(4, c5, c1, 1, , val)
 
-#define HSR                               /* Hyp Syndrome Register */
+/** Hyp Syndrome Register */
+#define HSR                               HSR
 #define __ARCH_REG_LOAD__HSR()            __MRC15(4, c5, c2, 0, )
 #define __ARCH_REG_STORE__HSR(val)        __MCR15(4, c5, c2, 0, , val)
 
-#define DFAR                              /* Data Fault Address Register */
+/** Data Fault Address Register */
+#define DFAR                              DFAR
 #define __ARCH_REG_LOAD__DFAR()           __MRC15(0, c6, c0, 0, )
 #define __ARCH_REG_STORE__DFAR(val)       __MCR15(0, c6, c0, 0, , val)
 
-#define IFAR                              /* Instruction Fault Address Register */
+/** Instruction Fault Address Register */
+#define IFAR                              IFAR
 #define __ARCH_REG_LOAD__IFAR()           __MRC15(0, c6, c0, 2, )
 #define __ARCH_REG_STORE__IFAR(val)       __MCR15(0, c6, c0, 2, , val)
 
-#define HDFAR                             /* Hyp Data Fault Address Register */
+/** Hyp Data Fault Address Register */
+#define HDFAR                             HDFAR
 #define __ARCH_REG_LOAD__HDFAR()          __MRC15(4, c6, c0, 0, )
 #define __ARCH_REG_STORE__HDFAR(val)      __MCR15(4, c6, c0, 0, , val)
 
-#define HIFAR                             /* Hyp Instruction Fault Address Register */
+/** Hyp Instruction Fault Address Register */
+#define HIFAR                             HIFAR
 #define __ARCH_REG_LOAD__HIFAR()          __MRC15(4, c6, c0, 2, )
 #define __ARCH_REG_STORE__HIFAR(val)      __MCR15(4, c6, c0, 2, , val)
 
-#define HPFAR                             /* Hyp IPA Fault Address Register */
+/** Hyp IPA Fault Address Register */
+#define HPFAR                             HPFAR
 #define __ARCH_REG_LOAD__HPFAR()          __MRC15(4, c6, c0, 4, )
 #define __ARCH_REG_STORE__HPFAR(val)      __MCR15(4, c6, c0, 4, , val)
 
-#define HPFAR                             /* Hyp IPA Fault Address Register */
+/** Hyp IPA Fault Address Register */
+#define HPFAR                             HPFAR
 #define __ARCH_REG_LOAD__HPFAR()          __MRC15(4, c6, c0, 4, )
 #define __ARCH_REG_STORE__HPFAR(val)      __MCR15(4, c6, c0, 4, , val)
 
-#define WFI                               /* [WO] Wait For Interrupt */
+/** [WO] Wait For Interrupt */
+#define WFI                               WFI
 #define __ARCH_REG_STORE__WFI(val)        __MCR15(0, c7, c0, 4, , val)
 
-#define ICIALLUIS                         /* [WO] Invalidate all instruction caches Inner Shareable to PoU */
+/** [WO] Invalidate all instruction caches Inner Shareable to PoU */
+#define ICIALLUIS                         ICIALLUIS
 #define __ARCH_REG_STORE__ICIALLUIS(val)  __MCR15(0, c7, c1, 0, "memory", val)
 
-#define BPIALLIS                          /* [WO] Invalidate all entries from branch predictors Inner Shareable */
+/** [WO] Invalidate all entries from branch predictors Inner Shareable */
+#define BPIALLIS                          BPIALLIS
 #define __ARCH_REG_STORE__BPIALLIS(val)   __MCR15(0, c7, c1, 6, "memory", val)
 
-#define PAR                               /* Physical Address Register */
+/** Physical Address Register */
+#define PAR                               PAR
 #define __ARCH_REG_LOAD__PAR()            __MRC15(0, c7, c4, 0, )
 #define __ARCH_REG_STORE__PAR(val)        __MCR15(0, c7, c4, 0, , val)
 
-#define ICIALLU                           /* [WO] Invalidate all instruction caches to PoU */
+/** [WO] Invalidate all instruction caches to PoU */
+#define ICIALLU                           ICIALLU
 #define __ARCH_REG_STORE__ICIALLU(val)    __MCR15(0, c7, c5, 0, "memory", val)
 
-#define ICIMVAU                           /* [WO] Invalidate instruction cache line by MVA to PoU */
+/** [WO] Invalidate instruction cache line by MVA to PoU */
+#define ICIMVAU                           ICIMVAU
 #define __ARCH_REG_STORE__ICIMVAU(val)    __MCR15(0, c7, c5, 1, "memory", val)
 
-#define BPIALL                            /* [WO] Invalidate all entries from branch predictors */
+/** [WO] Invalidate all entries from branch predictors */
+#define BPIALL                            BPIALL
 #define __ARCH_REG_STORE__BPIALL(val)     __MCR15(0, c7, c5, 6, "memory", val)
 
-#define DCIMVAC                           /* [WO] Invalidate data or unified cache line by MVA to PoC */
+/** [WO] Invalidate data or unified cache line by MVA to PoC */
+#define DCIMVAC                           DCIMVAC
 #define __ARCH_REG_STORE__DCIMVAC(val)    __MCR15(0, c7, c6, 1, "memory", val)
 
-#define DCISW                             /* [WO] Invalidate data or unified cache line by set/way */
+/** [WO] Invalidate data or unified cache line by set/way */
+#define DCISW                             DCISW
 #define __ARCH_REG_STORE__DCISW(val)      __MCR15(0, c7, c6, 2, "memory", val)
 
-#define DCCMVAC                           /* [WO] Clean data or unified cache line by MVA to PoC */
+/** [WO] Clean data or unified cache line by MVA to PoC */
+#define DCCMVAC                           DCCMVAC
 #define __ARCH_REG_STORE__DCCMVAC(val)    __MCR15(0, c7, c10, 1, "memory", val)
 
-#define DCCSW                             /* [WO] Clean data or unified cache line by set/way */
+/** [WO] Clean data or unified cache line by set/way */
+#define DCCSW                             DCCSW
 #define __ARCH_REG_STORE__DCCSW(val)      __MCR15(0, c7, c10, 2, "memory", val)
 
-#define DCCMVAU                           /* [WO] Clean data or unified cache line by MVA to PoU */
+/** [WO] Clean data or unified cache line by MVA to PoU */
+#define DCCMVAU                           DCCMVAU
 #define __ARCH_REG_STORE__DCCMVAU(val)    __MCR15(0, c7, c11, 1, "memory", val)
 
-#define DCCIMVAC                          /* [WO] Clean and Invalidate data or unified cache line by MVA to PoC */
+/** [WO] Clean and Invalidate data or unified cache line by MVA to PoC */
+#define DCCIMVAC                          DCCIMVAC
 #define __ARCH_REG_STORE__DCCIMVAC(val)   __MCR15(0, c7, c14, 1, "memory", val)
 
-#define DCCISW                            /* [WO] Clean and Invalidate data or unified cache line by set/way */
+/** [WO] Clean and Invalidate data or unified cache line by set/way */
+#define DCCISW                            DCCISW
 #define __ARCH_REG_STORE__DCCISW(val)     __MCR15(0, c7, c14, 2, "memory", val)
 
-#define TLBLR                             /* TLB Lockdown Register */
+/** TLB Lockdown Register */
+#define TLBLR                             TLBLR
 #define __ARCH_REG_LOAD__TLBLR()          __MRC15(0, c10, c0, 0, )
 #define __ARCH_REG_STORE__TLBLR(val)      __MCR15(0, c10, c0, 0, , val)
 
-#define PRRR                              /* Primary Region Remap Register */
+/** Primary Region Remap Register */
+#define PRRR                              PRRR
 #define __ARCH_REG_LOAD__PRRR()           __MRC15(0, c10, c2, 0, )
 #define __ARCH_REG_STORE__PRRR(val)       __MCR15(0, c10, c2, 0, , val)
 
-#define NRRR                              /* Normal Memory Remap Register */
+/** Normal Memory Remap Register */
+#define NRRR                              NRRR
 #define __ARCH_REG_LOAD__NRRR()           __MRC15(0, c10, c2, 1, )
 #define __ARCH_REG_STORE__NRRR(val)       __MCR15(0, c10, c2, 1, , val)
 
-#define PLEIDR                            /* PLE ID Register */
+/** PLE ID Register */
+#define PLEIDR                            PLEIDR
 #define __ARCH_REG_LOAD__PLEIDR()         __MRC15(0, c11, c0, 0, )
 #define __ARCH_REG_STORE__PLEIDR(val)     __MCR15(0, c11, c0, 0, , val)
 
-#define PLEASR                            /* PLE Activity Status Register */
+/** PLE Activity Status Register */
+#define PLEASR                            PLEASR
 #define __ARCH_REG_LOAD__PLEASR()         __MRC15(0, c11, c0, 2, )
 #define __ARCH_REG_STORE__PLEASR(val)     __MCR15(0, c11, c0, 2, , val)
 
-#define PLEFSR                            /* PLE FIFO Status Register */
+/** PLE FIFO Status Register */
+#define PLEFSR                            PLEFSR
 #define __ARCH_REG_LOAD__PLEFSR()         __MRC15(0, c11, c0, 4, )
 #define __ARCH_REG_STORE__PLEFSR(val)     __MCR15(0, c11, c0, 4, , val)
 
-#define PLEUAR                            /* Preload Engine User Accessibility Register */
+/** Preload Engine User Accessibility Register */
+#define PLEUAR                            PLEUAR
 #define __ARCH_REG_LOAD__PLEUAR()         __MRC15(0, c11, c1, 0, )
 #define __ARCH_REG_STORE__PLEUAR(val)     __MCR15(0, c11, c1, 0, , val)
 
-#define PLEPCR                            /* Preload Engine Parameters Control Register */
+/** Preload Engine Parameters Control Register */
+#define PLEPCR                            PLEPCR
 #define __ARCH_REG_LOAD__PLEPCR()         __MRC15(0, c11, c1, 1, )
 #define __ARCH_REG_STORE__PLEPCR(val)     __MCR15(0, c11, c1, 1, , val)
 
-#define VBAR                              /* Vector Base Address Register */
+/** Vector Base Address Register */
+#define VBAR                              VBAR
 #define __ARCH_REG_LOAD__VBAR()           __MRC15(0, c12, c0, 0, "cc")
 #define __ARCH_REG_STORE__VBAR(val)       __MCR15(0, c12, c0, 0, "cc", val)
 
-#define MVBAR                             /* Monitor Vector Base Address Register */
+/** Monitor Vector Base Address Register */
+#define MVBAR                             MVBAR
 #define __ARCH_REG_LOAD__MVBAR()          __MRC15(0, c12, c0, 1, "cc")
 #define __ARCH_REG_STORE__MVBAR(val)      __MCR15(0, c12, c0, 1, "cc", val)
 
-#define ISR                               /* [RO] Interrupt Status Register */
+/** [RO] Interrupt Status Register */
+#define ISR                               ISR
 #define __ARCH_REG_LOAD__ISR()            __MRC15(0, c12, c1, 0, )
 
-#define VIR                               /* Virtualization Interrupt Register */
+/** Virtualization Interrupt Register */
+#define VIR                               VIR
 #define __ARCH_REG_LOAD__VIR()            __MRC15(0, c12, c1, 1, )
 #define __ARCH_REG_STORE__VIR(val)        __MCR15(0, c12, c1, 1, , val)
 
-#define HVBAR                             /* Hyp Vector Base Address Register */
+/** Hyp Vector Base Address Register */
+#define HVBAR                             HVBAR
 #define __ARCH_REG_LOAD__HVBAR()          __MRC15(4, c12, c0, 0, )
 #define __ARCH_REG_STORE__HVBAR(val)      __MCR15(4, c12, c0, 0, , val)
 
-#define FCSEIDR                           /* FCSE Process ID Register */
+/** FCSE Process ID Register */
+#define FCSEIDR                           FCSEIDR
 #define __ARCH_REG_LOAD__FCSEIDR()        __MRC15(0, c13, c0, 0, )
 #define __ARCH_REG_STORE__FCSEIDR(val)    __MCR15(0, c13, c0, 0, , val)
 
-#define CONTEXTIDR                        /* Context ID Register */
+/** Context ID Register */
+#define CONTEXTIDR                        CONTEXTIDR
 #define __ARCH_REG_LOAD__CONTEXTIDR()     __MRC15(0, c13, c0, 1, )
 #define __ARCH_REG_STORE__CONTEXTIDR(val) __MCR15(0, c13, c0, 1, , val)
 
-#define TPIDRURW                          /* User Read/Write Thread ID Register */
+/** User Read/Write Thread ID Register */
+#define TPIDRURW                          TPIDRURW
 #define __ARCH_REG_LOAD__TPIDRURW()       __MRC15(0, c13, c0, 2, )
 #define __ARCH_REG_STORE__TPIDRURW(val)   __MCR15(0, c13, c0, 2, , val)
 
-#define TPIDRURO                          /* User Read-Only Thread ID Register */
+/** User Read-Only Thread ID Register */
+#define TPIDRURO                          TPIDRURO
 #define __ARCH_REG_LOAD__TPIDRURO()       __MRC15(0, c13, c0, 3, )
 #define __ARCH_REG_STORE__TPIDRURO(val)   __MCR15(0, c13, c0, 3, , val)
 
-#define TPIDRPRW                          /* PL1 only Thread ID Register */
+/** PL1 only Thread ID Register */
+#define TPIDRPRW                          TPIDRPRW
 #define __ARCH_REG_LOAD__TPIDRPRW()       __MRC15(0, c13, c0, 4, )
 #define __ARCH_REG_STORE__TPIDRPRW(val)   __MCR15(0, c13, c0, 4, , val)
 
-#define HTPIDR                            /* Hyp Software Thread ID Register */
+/** Hyp Software Thread ID Register */
+#define HTPIDR                            HTPIDR
 #define __ARCH_REG_LOAD__HTPIDR()         __MRC15(4, c13, c0, 2, )
 #define __ARCH_REG_STORE__HTPIDR(val)     __MCR15(4, c13, c0, 2, , val)
 
-#define SLTLBER                           /* [WO] Select Lockdown TLB Entry for read */
+/** [WO] Select Lockdown TLB Entry for read */
+#define SLTLBER                           SLTLBER
 #define __ARCH_REG_STORE__SLTLBER(val)    __MCR15(5, c15, c4, 2, , val)
 
-#define SLTLBEW                           /* [WO] Select Lockdown TLB Entry for write */
+/** [WO] Select Lockdown TLB Entry for write */
+#define SLTLBEW                           SLTLBEW
 #define __ARCH_REG_STORE__SLTLBEW(val)    __MCR15(5, c15, c4, 4, , val)
 
-#define MTLBVAR                           /* Main TLB VA Register */
+/** Main TLB VA Register */
+#define MTLBVAR                           MTLBVAR
 #define __ARCH_REG_LOAD__MTLBVAR()        __MRC15(5, c15, c5, 2, )
 #define __ARCH_REG_STORE__MTLBVAR(val)    __MCR15(5, c15, c5, 2, , val)
 
-#define MTLBPAR                           /* Main TLB PA Register */
+/** Main TLB PA Register */
+#define MTLBPAR                           MTLBPAR
 #define __ARCH_REG_LOAD__MTLBPAR()        __MRC15(5, c15, c6, 2, )
 #define __ARCH_REG_STORE__MTLBPAR(val)    __MCR15(5, c15, c6, 2, , val)
 
-#define MTLBATR                           /* Main TLB Attribute Register */
+/** Main TLB Attribute Register */
+#define MTLBATR                           MTLBATR
 #define __ARCH_REG_LOAD__MTLBATR()        __MRC15(5, c15, c7, 2, )
 #define __ARCH_REG_STORE__MTLBATR(val)    __MCR15(5, c15, c7, 2, , val)
 
