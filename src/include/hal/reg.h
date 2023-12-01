@@ -17,21 +17,14 @@
  * Architecture-specific registers.
  */
 
-#define ARCH_REG_STORE(reg, val) __ARCH_REG_STORE__##reg(val)
-
-#define ARCH_REG_LOAD(reg)       __ARCH_REG_LOAD__##reg()
-
-#define ARCH_REG_ORIN(reg, mask) \
-	__ARCH_REG_STORE__##reg(__ARCH_REG_LOAD__##reg() | (mask))
-
-#define ARCH_REG_ANDIN(reg, mask) \
-	__ARCH_REG_STORE__##reg(__ARCH_REG_LOAD__##reg() & (mask))
-
-#define ARCH_REG_CLEAR(reg, mask) \
-	__ARCH_REG_STORE__##reg(__ARCH_REG_LOAD__##reg() & ~(mask))
+#define ARCH_REG_STORE(reg, val)  __ARCH_REG_STORE(reg, val)
+#define ARCH_REG_LOAD(reg)        __ARCH_REG_LOAD(reg)
+#define ARCH_REG_ORIN(reg, mask)  __ARCH_REG_ORIN(reg, mask)
+#define ARCH_REG_ANDIN(reg, mask) __ARCH_REG_ANDIN(reg, mask)
+#define ARCH_REG_CLEAR(reg, mask) __ARCH_REG_CLEAR(reg, mask)
 
 /**
- * Mapped into the address space registers.
+ * Registers mapped into the address space.
  */
 
 #define MMAP_REG_STORE(inttype, addr, val)                \
@@ -54,30 +47,30 @@
 	    MMAP_REG_LOAD(inttype, addr) & ~((inttype)mask))
 
 #ifndef __REG_STORE
-#define __REG_STORE(reg, value) MMAP_REG_STORE(unsigned long, reg, value)
+#define __REG_STORE(addr, value) MMAP_REG_STORE(unsigned long, addr, value)
 #endif /* __REG_STORE */
 
 #ifndef __REG_LOAD
-#define __REG_LOAD(reg) MMAP_REG_LOAD(unsigned long, reg)
+#define __REG_LOAD(addr) MMAP_REG_LOAD(unsigned long, addr)
 #endif /* __REG_LOAD */
 
 #ifndef __REG_ORIN
-#define __REG_ORIN(reg, mask) MMAP_REG_ORIN(unsigned long, reg, mask)
+#define __REG_ORIN(addr, mask) MMAP_REG_ORIN(unsigned long, addr, mask)
 #endif /* __REG_ORIN */
 
 #ifndef __REG_ANDIN
-#define __REG_ANDIN(reg, mask) MMAP_REG_ANDIN(unsigned long, reg, mask)
+#define __REG_ANDIN(addr, mask) MMAP_REG_ANDIN(unsigned long, addr, mask)
 #endif /* __REG_ANDIN */
 
 #ifndef __REG_CLEAR
-#define __REG_CLEAR(reg, mask) MMAP_REG_CLEAR(unsigned long, reg, mask)
+#define __REG_CLEAR(addr, mask) MMAP_REG_CLEAR(unsigned long, addr, mask)
 #endif /* __REG_ANDIN */
 
-#define REG_STORE(reg, value)    __REG_STORE(reg, value)
-#define REG_LOAD(reg)            __REG_LOAD(reg)
-#define REG_ORIN(reg, mask)      __REG_ORIN(reg, mask)
-#define REG_ANDIN(reg, mask)     __REG_ANDIN(reg, mask)
-#define REG_CLEAR(reg, mask)     __REG_CLEAR(reg, mask)
+#define REG_STORE(addr, value)   __REG_STORE(addr, value)
+#define REG_LOAD(addr)           __REG_LOAD(addr)
+#define REG_ORIN(addr, mask)     __REG_ORIN(addr, mask)
+#define REG_ANDIN(addr, mask)    __REG_ANDIN(addr, mask)
+#define REG_CLEAR(addr, mask)    __REG_CLEAR(addr, mask)
 
 #define REG64_STORE(addr, value) MMAP_REG_STORE(uint64_t, addr, value)
 #define REG64_LOAD(addr)         MMAP_REG_LOAD(uint64_t, addr)
