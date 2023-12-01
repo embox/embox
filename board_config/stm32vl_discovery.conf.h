@@ -10,8 +10,8 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", PB, PIN_9, AF7),
-				PIN("RX", PB, PIN_10, AF7),
+				PIN("TX", PA, PIN_9, AF7),
+				PIN("RX", PA, PIN_10, AF7),
 			},
 			.clocks = {
 				VAL("TX",   CLK_GPIOA),
@@ -36,6 +36,25 @@ struct uart_conf uarts[] = {
 				VAL("TX",   CLK_GPIOA),
 				VAL("RX",   CLK_GPIOA),
 				VAL("UART", CLK_USART2),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[3] = {
+		.status = ENABLED,
+		.name = "USART3",
+		.dev = {
+			.irqs = {
+				VAL("", 39),
+			},
+			.pins = {
+				PIN("TX", PB, PIN_10, AF7),
+				PIN("RX", PB, PIN_11, AF7),
+			},
+			.clocks = {
+				VAL("TX",   CLK_GPIOB),
+				VAL("RX",   CLK_GPIOB),
+				VAL("UART", CLK_USART3),
 			}
 		},
 		.baudrate = 115200,
