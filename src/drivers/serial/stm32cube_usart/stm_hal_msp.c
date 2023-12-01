@@ -496,15 +496,18 @@ void HAL_UART_MspInit(UART_HandleTypeDef *huart) {
 	GPIO_InitStruct.Speed     = GPIO_SPEED_FREQ_HIGH;
 #ifndef STM32F1_CUBE
 	GPIO_InitStruct.Alternate = USART_TX_AF(uart_base);
-#endif
+#else
+	GPIO_InitStruct.Pull      = GPIO_PULLUP;
+#endif /* STM32F1_CUBE */
 	HAL_GPIO_Init(USART_TX_GPIO_PORT(uart_base), &GPIO_InitStruct);
 
 	/* UART RX GPIO pin configuration  */
 	GPIO_InitStruct.Pin = USART_RX_PIN(uart_base);
 #ifndef STM32F1_CUBE
 	GPIO_InitStruct.Alternate = USART_RX_AF(uart_base);
-#endif
-
+#else
+	GPIO_InitStruct.Mode      = GPIO_MODE_INPUT;
+#endif /* STM32F1_CUBE */
 	HAL_GPIO_Init(USART_RX_GPIO_PORT(uart_base), &GPIO_InitStruct);
 	/* TODO ##-3- Configure the NVIC for UART ########################################*/
 }
