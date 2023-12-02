@@ -1,0 +1,8 @@
+package embox.lib.crypt
+
+static module md5 {
+	source "md5.c"
+
+	@IncludeExport(path="lib/crypt")
+	source "md5.h"
+}

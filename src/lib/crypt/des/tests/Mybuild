@@ -1,5 +1,5 @@
 
-package embox.test.lib.crypt
+package embox.lib.libcrypt
 
 module des_test {
 	source "des_test.c"

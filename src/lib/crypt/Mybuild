@@ -1,17 +1,8 @@
 package embox.lib
 
 static module LibCrypt {
-	source "crc32.c"
-	source "crc16.c"
-	source "md5.c"
-	source "b64.c"
-
-	@IncludeExport(path="lib/crypt")
-	source "crc32.h"
-	@IncludeExport(path="lib/crypt")
-	source "crc16.h"
-	@IncludeExport(path="lib/crypt")
-	source "md5.h"
-	@IncludeExport(path="lib/crypt")
-	source "b64.h"
+	depends embox.lib.crypt.md5
+	depends embox.lib.crypt.crc32
+	depends embox.lib.crypt.crc16
+	depends embox.lib.crypt.b64
 }
