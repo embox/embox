@@ -1,0 +1,8 @@
+package embox.lib.crypt
+
+static module crc32 {
+	source "crc32.c"
+
+	@IncludeExport(path="lib/crypt")
+	source "crc32.h"
+}
