@@ -1,0 +1,8 @@
+package embox.lib.crypt
+
+static module b64 {
+	source "b64.c"
+
+	@IncludeExport(path="lib/crypt")
+	source "b64.h"
+}
