@@ -17,9 +17,12 @@
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <util/field.h>
-#include <util/log.h>
 
 #include "gicv3.h"
+
+#define PPI_PRIOR          0xa0U
+#define SPI_PRIOR          0xa0U
+#define CPU_PRIOR_MASK_LVL 0xffU
 
 enum gic_irq_t {
 	GIC_SGI,
@@ -32,13 +35,12 @@ static void gic_wait_for_rwp(uintptr_t reg32, uint32_t rwp_mask) {
 	volatile unsigned long delay;
 	volatile unsigned long i;
 
-	delay = 100000;
+	delay = 1000000;
 
 	while (REG32_LOAD(reg32) & rwp_mask) {
 		i = 0;
 		while (i < delay) {
 			i++;
-			__asm__ __volatile__("nop");
 		}
 	}
 }
@@ -62,7 +64,7 @@ static void gic_dist_init(void) {
 	uint32_t affinity;
 	int i, j;
 
-	itlines = FIELD_GET(GICD_TYPER, GICD_TYPER_ITLINES);
+	itlines = FIELD_GET(REG32_LOAD(GICD_TYPER), GICD_TYPER_ITLINES);
 
 	/* Disable the distributor */
 	REG32_STORE(GICD_CTLR, 0);
@@ -79,7 +81,9 @@ static void gic_dist_init(void) {
 
 		/* Set priority for SPIs */
 		for (j = 0; j < 8; j++) {
-			REG32_STORE(GICD_IPRIORITYR(8 * i + j), 0xa0a0a0a0);
+			REG32_STORE(GICD_IPRIORITYR(8 * i + j),
+			    (SPI_PRIOR << 24) | (SPI_PRIOR << 16) | (SPI_PRIOR << 8)
+			        | SPI_PRIOR);
 		}
 	}
 
@@ -95,9 +99,8 @@ static void gic_dist_init(void) {
 	gic_wait_for_rwp(GICD_CTLR, GICD_CTLR_RWP);
 
 	/* Set SPIs to current CPU only */
-	__asm__ __volatile__("mrs %0, MPIDR_EL1" : "=r"(mpidr));
-	mpidr &= 0xff00ffffffU;
-	affinity = (mpidr & 0xffffff) | ((mpidr >> 8) & 0xff000000);
+	mpidr = ARCH_REG_LOAD(MPIDR_EL1);
+	affinity = (mpidr & 0x00ffffff) | ((mpidr >> 8) & 0xff000000);
 	for (i = 0; i <= itlines; i++) {
 		for (j = 0; j < 32; j++) {
 			REG64_STORE(GICD_IROUTER(32 * i + j), affinity);
@@ -126,7 +129,8 @@ static void gic_redist_init(void) {
 
 	/* Set priority for SGIs/PPIs */
 	for (i = 0; i < 8; i++) {
-		REG32_STORE(GICR_IPRIORITYR(i), 0xa0a0a0a0);
+		REG32_STORE(GICR_IPRIORITYR(i), (PPI_PRIOR << 24) | (PPI_PRIOR << 16)
+		                                    | (PPI_PRIOR << 8) | PPI_PRIOR);
 	}
 
 	/* Deactivate and disable SPIs */
@@ -140,14 +144,15 @@ static void gic_cpu_init(void) {
 	uint64_t reg;
 
 	/* CPU interface configuration */
-	reg = icc_sre_el1_read();
-	if (!(reg & ICC_SRE_EN)) {
-		icc_sre_el1_write(reg | ICC_SRE_EN);
+	reg = ARCH_REG_LOAD(ICC_SRE_EL1);
+	if (!(reg & ICC_SRE_SRE)) {
+		ARCH_REG_STORE(ICC_SRE_EL1, reg | ICC_SRE_SRE);
 	}
 
-	icc_pmr_el1_write(0xff);
-	icc_ctlr_el1_write(0x0);
-	icc_igrpen1_el1_write(0x1);
+	ARCH_REG_STORE(ICC_PMR_EL1, CPU_PRIOR_MASK_LVL);
+	/* EOI deactivates interrupt (mode 0) */
+	ARCH_REG_CLEAR(ICC_CTLR_EL1, ICC_CTLR_EL1_EOImode);
+	ARCH_REG_STORE(ICC_IGRPEN1_EL1, ICC_IGRPEN1_EL1_EN);
 }
 
 static int gic_irqctrl_init(void) {
@@ -168,9 +173,6 @@ void irqctrl_enable(unsigned int irq) {
 	value = 1U << (irq & 0x1f);
 
 	if (gic_irq_type(irq) == GIC_SPI) {
-		REG32_STORE(GICD_ISENABLER(reg_nr), value);
-		REG32_STORE(GICD_ICENABLER(reg_nr), value);
-		REG64_STORE(GICD_IROUTER(irq), 0x0);
 		REG32_STORE(GICD_ISENABLER(reg_nr), value);
 	}
 	else {
@@ -206,13 +208,13 @@ int irqctrl_pending(unsigned int irq) {
 void irqctrl_eoi(unsigned int irq) {
 	assert(irq_nr_valid(irq));
 
-	icc_eoir1_el1_write(irq);
+	ARCH_REG_STORE(ICC_EOIR1_EL1, irq);
 }
 
 void interrupt_handle(void) {
 	unsigned int irq;
 
-	irq = icc_iar1_el1_read() & 0xffffff;
+	irq = ARCH_REG_LOAD(ICC_IAR1_EL1) & ICC_IAR1_EL1_INTID_MASK;
 
 	assert(irq_nr_valid(irq));
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
@@ -234,6 +236,11 @@ void interrupt_handle(void) {
 
 void swi_handle(void) {
 	printk("swi!\n");
+}
+
+void gicv3_init_el3(void) {
+	REG32_STORE(GICD_CTLR, GICD_CTLR_DS);
+	ARCH_REG_STORE(ICC_IGRPEN1_EL3, ICC_IGRPEN1_EL3_EN1NS);
 }
 
 IRQCTRL_DEF(gicv3, gic_irqctrl_init);
