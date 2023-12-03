@@ -13,23 +13,22 @@
 
 #include <stdint.h>
 
-#include <asm/hal/reg.h>
-#include <asm/modes.h>
+#include <hal/reg.h>
 
 typedef uint64_t __ipl_t;
 
 static inline void ipl_init(void) {
-	set_daif(get_daif() & ~(DAIF_I_BIT | DAIF_F_BIT));
+	ARCH_REG_STORE(DAIFClr, DAIF_I_imm | DAIF_F_imm);
 }
 
 static inline __ipl_t ipl_save(void) {
-	__ipl_t r = get_daif();
-	set_daif(r | DAIF_I_BIT | DAIF_F_BIT);
+	__ipl_t r = ARCH_REG_LOAD(DAIF);
+	ARCH_REG_STORE(DAIFSet, DAIF_I_imm | DAIF_F_imm);
 	return r;
 }
 
 static inline void ipl_restore(__ipl_t ipl) {
-	set_daif(ipl);
+	ARCH_REG_STORE(DAIF, ipl);
 }
 
 #endif /* __ASSEMBLER__ */
