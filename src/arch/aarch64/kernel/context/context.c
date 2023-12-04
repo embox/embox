@@ -5,15 +5,11 @@
  * @version
  * @date 19.07.2019
  */
-#include <assert.h>
-#include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 #include <string.h>
 
-#include <asm/hal/reg.h>
-#include <asm/modes.h>
 #include <hal/context.h>
+#include <hal/reg.h>
 
 void context_init(struct context *ctx, unsigned int flags,
     void (*routine_fn)(void), void *sp) {
@@ -23,6 +19,6 @@ void context_init(struct context *ctx, unsigned int flags,
 	ctx->sp = (uint64_t)sp;
 
 	if (!(flags & CONTEXT_IRQDISABLE)) {
-		ctx->daif |= DAIF_I_BIT | DAIF_F_BIT;
+		ctx->daif |= DAIF_I | DAIF_F;
 	}
 }
