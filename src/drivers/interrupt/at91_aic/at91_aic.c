@@ -9,7 +9,6 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <asm/modes.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/irqctrl.h>
 #include <embox/unit.h>
