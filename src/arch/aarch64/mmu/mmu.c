@@ -5,52 +5,101 @@
  * @version
  * @date 07.08.2019
  */
-
 #include <assert.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include <asm/hal/reg.h>
-#include <asm/modes.h>
-#include <embox/unit.h>
-#include <hal/arch.h>
 #include <hal/mmu.h>
+#include <hal/reg.h>
 #include <hal/test/traps_core.h>
 #include <mem/vmem.h>
+#include <util/field.h>
 #include <util/log.h>
 
-static int aarch64_mmu_init();
+static int aarch64_mmu_init(void) {
+	uint64_t tcr;
+	uint64_t tcr_tg0;
+	uint64_t mmfr0;
+	int current_el;
+
+	current_el = FIELD_GET(ARCH_REG_LOAD(CurrentEL), CurrentEL_EL);
+
+	switch (AARCH64_MMU_GRANULE) {
+	case 4:
+		tcr_tg0 = TCR_ELn_TG0_4KB;
+		break;
+	case 16:
+		tcr_tg0 = TCR_ELn_TG0_16KB;
+		break;
+	case 64:
+		tcr_tg0 = TCR_ELn_TG0_64KB;
+		break;
+	default:
+		tcr_tg0 = TCR_ELn_TG0_4KB;
+		log_crit("mmu: Wrong granule configuration");
+	}
+
+	switch (current_el) {
+	case 1:
+		tcr = ARCH_REG_LOAD(TCR_EL1);
+		/* Set Granule Size */
+		tcr = FIELD_SET(tcr, TCR_ELn_TG0, tcr_tg0);
+		/* Set maximum PA range */
+		mmfr0 = ARCH_REG_LOAD(ID_AA64MMFR0_EL1);
+		tcr = FIELD_SET(tcr, TCR_EL1_IPS,
+		    (FIELD_GET(mmfr0, ID_AA64MMFR0_EL1_PAR)));
+		/* Set 48bit VA range */
+		tcr = FIELD_SET(tcr, TCR_ELn_T0SZ, 64 - 48);
+		ARCH_REG_STORE(TCR_EL1, tcr);
+		break;
+	case 2:
+		tcr = ARCH_REG_LOAD(TCR_EL2);
+		/* Set Granule Size */
+		tcr = FIELD_SET(tcr, TCR_ELn_TG0, tcr_tg0);
+		ARCH_REG_STORE(TCR_EL2, tcr);
+		break;
+	default:
+		log_crit("mmu: EL%i not supported", current_el);
+	}
+
+	return 0;
+}
+
 void mmu_on(void) {
-	uint64_t r;
+	int current_el;
+
+	current_el = FIELD_GET(ARCH_REG_LOAD(CurrentEL), CurrentEL_EL);
 
 	aarch64_mmu_init();
 
-	switch (aarch64_current_el()) {
-	case 2:
-		r = aarch64_sctlr_el2_read();
-		aarch64_sctlr_el2_write(r | SCTLR_M);
-		break;
+	switch (current_el) {
 	case 1:
-		r = aarch64_sctlr_el1_read();
-		aarch64_sctlr_el1_write(r | SCTLR_M);
+		ARCH_REG_ORIN(SCTLR_EL1, SCTLR_ELn_M);
+		break;
+	case 2:
+		ARCH_REG_ORIN(SCTLR_EL2, SCTLR_ELn_M);
 		break;
 	default:
-		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
+		log_crit("mmu: EL%i not supported", current_el);
 	}
 }
 
 void mmu_off(void) {
-	uint64_t r;
+	int current_el;
+
+	current_el = FIELD_GET(ARCH_REG_LOAD(CurrentEL), CurrentEL_EL);
+
 	/* TODO: flush tlb */
-	switch (aarch64_current_el()) {
-	case 2:
-		r = aarch64_sctlr_el2_read();
-		aarch64_sctlr_el2_write(r & ~SCTLR_M);
-		break;
+
+	switch (current_el) {
 	case 1:
-		r = aarch64_sctlr_el1_read();
-		aarch64_sctlr_el1_write(r & ~SCTLR_M);
+		ARCH_REG_CLEAR(SCTLR_EL1, SCTLR_ELn_M);
+		break;
+	case 2:
+		ARCH_REG_CLEAR(SCTLR_EL2, SCTLR_ELn_M);
 		break;
 	default:
-		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
+		log_crit("mmu: EL%i not supported", current_el);
 	}
 }
 
@@ -61,8 +110,8 @@ void mmu_off(void) {
 #define ASID_MASK    (0xFFFFLL << ASID_OFFSET)
 mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 	if ((uintptr_t)pgd & ASID_MASK) {
-		log_error("16 most-significant bits of pgd should be zero, "
-		          "but we have: %p",
+		log_error("16 most-significant bits of pgd should be zero, but we "
+		          "have: %p",
 		    pgd);
 		return 0;
 	}
@@ -71,15 +120,19 @@ mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
-	switch (aarch64_current_el()) {
-	case 2:
-		aarch64_ttbr0_el2_write(ctx);
-		break;
+	int current_el;
+
+	current_el = FIELD_GET(ARCH_REG_LOAD(CurrentEL), CurrentEL_EL);
+
+	switch (current_el) {
 	case 1:
-		aarch64_ttbr0_el1_write(ctx);
+		ARCH_REG_STORE(TTBR0_EL1, ctx);
+		break;
+	case 2:
+		ARCH_REG_STORE(TTBR0_EL2, ctx);
 		break;
 	default:
-		log_error("%s doesn't support EL%d", __func__, aarch64_current_el());
+		log_crit("mmu: EL%i not supported", current_el);
 	}
 }
 
@@ -88,82 +141,34 @@ uintptr_t *mmu_get_root(mmu_ctx_t ctx) {
 }
 
 void mmu_flush_tlb(void) {
-	switch (aarch64_current_el()) {
-	case 3:
-		asm volatile("tlbi alle3");
+	int current_el;
+
+	current_el = FIELD_GET(ARCH_REG_LOAD(CurrentEL), CurrentEL_EL);
+
+	switch (current_el) {
+	case 1:
+		ARCH_REG_STORE(TLBI_VMALLE1, 0);
 		break;
 	case 2:
-		asm volatile("tlbi alle2");
-		break;
-	case 1:
-		asm volatile("tlbi vmalle1");
+		ARCH_REG_STORE(TLBI_ALLE2, 0);
 		break;
 	default:
-		log_error("%s doesn't support EL%d", __func__, aarch64_current_el());
+		log_crit("mmu: EL%i not supported", current_el);
 	}
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
-	switch (aarch64_current_el()) {
-	case 2:
-		return aarch64_far_el2_read();
+	int current_el;
+
+	current_el = FIELD_GET(ARCH_REG_LOAD(CurrentEL), CurrentEL_EL);
+
+	switch (current_el) {
 	case 1:
-		return aarch64_far_el1_read();
-	default:
-		log_error("%s doesn't support EL%d", __func__, aarch64_current_el());
-	}
-	return 0;
-}
-
-static int aarch64_mmu_init(void) {
-	uint64_t tcr;
-	uint64_t mmfr0;
-
-	switch (aarch64_current_el()) {
+		return ARCH_REG_LOAD(FAR_EL1);
 	case 2:
-		tcr = aarch64_tcr_el2_read();
-		break;
-	case 1:
-		tcr = aarch64_tcr_el1_read();
-		break;
+		return ARCH_REG_LOAD(FAR_EL2);
 	default:
-		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
-		return 0;
-	}
-
-	tcr &= ~TCR_TG0_MASK;
-
-	switch (AARCH64_MMU_GRANULE) {
-	case 4:
-		tcr |= TCR_TG0_4KB;
-		break;
-	case 16:
-		tcr |= TCR_TG0_16KB;
-		break;
-	case 64:
-		tcr |= TCR_TG0_64KB;
-		break;
-	default:
-		log_error("Wrong granule configuration");
-	}
-
-	switch (aarch64_current_el()) {
-	case 2:
-		aarch64_tcr_el2_write(tcr);
-		break;
-	case 1:
-		mmfr0 = aarch64_id_aa64mmfr0_read();
-
-		/* Set maximum PA range */
-		tcr |= TCR_IPS(mmfr0 & ID_AA64MMFR0_EL1_PARANGE_MASK);
-
-		/* Set 48bit VA range */
-		tcr |= TCR_TZ0SZ(16);
-
-		aarch64_tcr_el1_write(tcr);
-		break;
-	default:
-		log_error("%s doesn't support EL%d\n", __func__, aarch64_current_el());
+		log_crit("mmu: EL%i not supported", current_el);
 	}
 
 	return 0;
