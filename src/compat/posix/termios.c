@@ -29,20 +29,6 @@ int tcsetattr(int fd, int opt, const struct termios *termios) {
 	}
 }
 
-pid_t tcgetpgrp(int fd) {
-	pid_t pid;
-
-	if (-1 == ioctl(fd, TIOCGPGRP, &pid)) {
-		return -1;
-	}
-
-	return pid;
-}
-
-int tcsetpgrp(int fd, pid_t pgrp) {
-	return ioctl(fd, TIOCSPGRP, &pgrp);
-}
-
 int tcflush(int fd, int queue_selector) {
 	int arg = 0;
 	switch (queue_selector) {
@@ -60,4 +46,28 @@ int tcflush(int fd, int queue_selector) {
 			return -1;
 	}
 	return ioctl(fd, I_FLUSH, (void *) &arg);
+}
+
+void cfmakeraw(struct termios *termios) {
+	termios->c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL|IXON);
+	termios->c_oflag &= ~OPOST;
+	termios->c_lflag &= ~(ECHO|ECHONL|ICANON|ISIG|IEXTEN);
+	termios->c_cflag &= ~(CSIZE|PARENB);
+	termios->c_cflag |= CS8;
+	termios->c_cc[VMIN] = 1;
+	termios->c_cc[VTIME] = 0;
+}
+
+pid_t tcgetpgrp(int fd) {
+	pid_t pid;
+
+	if (-1 == ioctl(fd, TIOCGPGRP, &pid)) {
+		return -1;
+	}
+
+	return pid;
+}
+
+int tcsetpgrp(int fd, pid_t pgrp) {
+	return ioctl(fd, TIOCSPGRP, &pgrp);
 }

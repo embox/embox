@@ -1,0 +1,43 @@
+diff -aur picocom-master/Makefile ../build/extbld/third_party/cmd/picocom/picocom-master/Makefile
+--- picocom-master/Makefile	2018-04-12 07:16:04.000000000 -0500
++++ ../build/extbld/third_party/cmd/picocom/picocom-master/Makefile	2020-03-03 22:16:41.957565939 -0500
+@@ -31,11 +31,11 @@
+ #CPPFLAGS += -DUUCP_LOCK_DIR=\"$(UUCP_LOCK_DIR)\"
+ 
+ ## Comment these out to disable "linenoise"-library support
+-HISTFILE = .picocom_history
+-CPPFLAGS += -DHISTFILE=\"$(HISTFILE)\" \
+-	    -DLINENOISE
+-OBJS += linenoise-1.0/linenoise.o
+-linenoise-1.0/linenoise.o : linenoise-1.0/linenoise.c linenoise-1.0/linenoise.h
++#HISTFILE = .picocom_history
++#CPPFLAGS += -DHISTFILE=\"$(HISTFILE)\" \
++#	    -DLINENOISE
++#OBJS += linenoise-1.0/linenoise.o
++#linenoise-1.0/linenoise.o : linenoise-1.0/linenoise.c linenoise-1.0/linenoise.h
+ 
+ ## Comment this in to enable (force) custom baudrate support
+ ## even on systems not enabled by default.
+diff -aur picocom-master/picocom.c ../build/extbld/third_party/cmd/picocom/picocom-master/picocom.c
+--- picocom-master/picocom.c	2018-04-12 07:16:04.000000000 -0500
++++ ../build/extbld/third_party/cmd/picocom/picocom-master/picocom.c	2020-03-04 04:18:21.034703101 -0500
+@@ -56,6 +56,7 @@
+ #endif
+ 
+ #include "custbaud.h"
++#include "impl.h"
+ 
+ /**********************************************************************/
+ 
+diff -aur picocom-master/term.c ../build/extbld/third_party/cmd/picocom/picocom-master/term.c
+--- picocom-master/term.c	2018-04-12 07:16:04.000000000 -0500
++++ ../build/extbld/third_party/cmd/picocom/picocom-master/term.c	2020-03-03 22:16:41.957565939 -0500
+@@ -39,6 +39,8 @@
+ #include <sys/file.h>
+ #endif
+ 
++#include "impl.h"
++
+ /* glibc for MIPS has its own bits/termios.h which does not define
+  * CMSPAR, so we use the value from the generic bits/termios.h
+  */
