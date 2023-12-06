@@ -14,8 +14,8 @@
 /* clang-format off */
 
 /* Each Redistributor defines two 64KB frames in the physical address map */
-#define RD_BASE            GICR_BASE
-#define SGI_BASE           GICR_BASE + 0x10000
+#define RD_BASE            GICR_BASE  /* For controlling the overall behavior of the Redistributor */
+#define SGI_BASE           (GICR_BASE + 0x10000) /* For controlling and generating PPIs and SGIs */
 
 #define GICD_TYPER2        (GICD_BASE + 0x000C) /* Interrupt controller Type Register 2 */
 #define GICD_STATUSR       (GICD_BASE + 0x0010) /* Error Reporting Status Register, optional */
@@ -53,6 +53,7 @@
 #define GICD_CTLR_GRP1_S   (1U << 2)  /* Enable Secure Group 1 interrupts */
 #define GICD_CTLR_ARE_S    (1U << 4)  /* Affinity Routing Enable, Secure state */
 #define GICD_CTLR_ARE_NS   (1U << 5)  /* Affinity Routing Enable, Non-secure state */
+#define GICD_CTLR_DS       (1U << 6)  /* Disable Security */
 #define GICD_CTLR_RWP      (1U << 31) /* Register Write Pending */
 
 #define GICR_WAKER_PS      (1U << 1) /* Indicates whether the Redistributor can assert the WakeRequest signal */
@@ -60,11 +61,6 @@
 
 #define GICR_CTLR_RWP      (1U << 3) /* Register Write Pending */
 
-#define ICC_SRE_EN         (1U << 0) /* System Register Enable */
-#define ICC_SRE_DFB        (1U << 1) /* Disable FIQ bypass */
-#define ICC_SRE_DIB        (1U << 1) /* Disable IRQ bypass */
-
-#define ICC_CTLR_EL1_EOIM  (1U << 1) /* EOI mode for the current Security state */
 /* clang-format on */
 
 #endif /* DRIVERS_INTERRUPT_GIC_GICV3_H_ */

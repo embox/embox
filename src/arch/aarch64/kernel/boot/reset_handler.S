@@ -5,50 +5,118 @@
  * @date 17.10.23
  * @author Aleksey Zhmulin
  */
+#include <hal/reg.h>
+
+.weak gicv3_init_el3
 
 .section .text
 .global aarch64_reset_handler
 
 aarch64_reset_handler:
-	/* Get current exception level. */
+	/* Mask Interrupts, System Errors and Debug */
+	msr     daifset, #(DAIF_D_imm | DAIF_D_imm | DAIF_I_imm | DAIF_F_imm)
+
+	/* Get current exception level */
 	mrs     x0, CurrentEL
-	cmp     x0, #0x8
+	cmp     x0, #0b1000 /* EL, bits [3:2] */
+	bgt     el3_entry
 	beq     el2_entry
 	blo     el1_entry
+	b       die
 
-	/* EL3 entry */
-	msr     sctlr_el2, xzr
+el3_entry:
+	/* Disable the MMU for EL3 */
+	dsb     sy
+	mrs     x0, sctlr_el3
+	bic     x0, x0, SCTLR_ELn_M
+	msr     sctlr_el3, x0
+	isb
+
+	/* Initialize SCTLR_EL2 and HCR_EL2 */
+	ldr     x0, =(SCTLR_EL2_RES1)
+	msr     sctlr_el2, x0
 	msr     hcr_el2, xzr
-	/* Determine the EL2 Execution state. */
-	mrs     x0, scr_el3
-	orr     x0, x0, #(1 << 10) /* RW=1 EL2 Execution state is AArch64. */
-	orr     x0, x0, #(1 << 0) /* NS EL1 is Non-secure world. */
+
+	/* EL2 Execution state is AArch64, EL0 and EL1 are in Non-Secure state */
+	mov     x0, #(SCR_EL3_RW | SCR_EL3_NS)
 	msr     scr_el3, x0
-	mov     x0, #0b01001
+
+	/* Exception taken from AArch64 EL2h */
+	mov     x0, #(SPSR_ELn_D | SPSR_ELn_A | SPSR_ELn_I | SPSR_ELn_F | SPSR_ELn_M_EL2h)
 	msr     spsr_el3, x0
-	/* Determine EL2 entry. */
+
+	/* Configure GICv3 */
+	ldr     x0, =_stack_top
+	mov     sp, x0
+	ldr     x0, =gicv3_init_el3
+	cmp     x0, #0
+	beq     1f
+	blr     x0
+
+1:
+	/* Determine EL2 entry */
 	adr     x0, el2_entry
 	msr     elr_el3, x0
+	isb
+
+	/* Drop to EL2 */
 	eret
 
 el2_entry:
-	/* Enable FP/SIMD */
-	mov     x0, #0x33ff
-	msr     cptr_el2, x0
-	/* Set up exception vectors */
-	adr     x0, aarch64_trap_table
-	msr     vbar_el2, x0
-	b       0f
+	/* Disable the MMU for EL2 */
+	dsb     sy
+	mrs     x0, sctlr_el2
+	bic     x0, x0, SCTLR_ELn_M
+	msr     sctlr_el2, x0
+	isb
+
+	/* EL1 Execution state is AArch64 */
+	mov     x0, #(HCR_EL2_RW)
+	msr     hcr_el2, x0
+
+	/* Initialize SCTLR_EL1 */
+	ldr     x0, =(SCTLR_EL1_RES1)
+	msr     sctlr_el1, x2
+
+	/* Don't trap to EL2 for CP15 traps */
+	msr     hstr_el2, xzr
+
+	/* Exception taken from AArch64 EL1h */
+	mov     x0, #(SPSR_ELn_D | SPSR_ELn_A | SPSR_ELn_I | SPSR_ELn_F | SPSR_ELn_M_EL1h)
+	msr     spsr_el2, x0
+
+	/* Enable access to the physical timers at EL1 */
+	mrs     x0, cnthctl_el2
+	orr     x0, x0, #(CNTHCTL_EL2_EL1PCTEN | CNTHCTL_EL2_EL1PCEN)
+	msr     cnthctl_el2, x0
+
+	/* Set the address to return to our return address */
+	adr     x0, el1_entry
+	msr     elr_el2, x0
+	isb
+
+	/* Drop to EL1 */
+	eret
 
 el1_entry:
-	/* Enable FP/SIMD */
-	mov     x0, #(0x3 << 20)
-	msr     cpacr_el1, x0
+	/* Disable the MMU for EL0 and EL1 */
+	dsb     sy
+	mrs     x0, sctlr_el1
+	bic     x0, x0, SCTLR_ELn_M
+	msr     sctlr_el1, x0
+	isb
+
 	/* Set up exception vectors */
 	adr     x0, aarch64_trap_table
 	msr     vbar_el1, x0
 
-0:
+	/* Unmask System Errors */
+	msr     daifclr, #(DAIF_A_imm)
+
+	/* Enable FP/SIMD */
+	mov     x0, #(0x3 << 20)
+	msr     cpacr_el1, x0
+
 	/* Setup stack. Note: you can't write SP directly */
 	ldr     x0, =_stack_top
 	add     sp, x0, #0
