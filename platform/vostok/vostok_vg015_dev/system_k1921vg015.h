@@ -1,4 +1,4 @@
-#ifdef SYSTEM_K1921VG015_H
+#ifndef SYSTEM_K1921VG015_H
 #define SYSTEM_K1921VG015_H
 
 #include <stdint.h>
@@ -129,7 +129,7 @@ struct GPIO_REG {
 #define TMR0_CAPCOM0_VAL   *(( volatile uint32_t          *) 0x3000101CUL)
 
 #define RCU_BASE      (0x3000E000UL)
-#define RCU          ((volatile struct RCU_REG *) RCU_BASE)
+#define RCU          ((volatile struct rcu_reg *) RCU_BASE)
 
 #define RCU_UARTCLKCFG_CLKSEL_PLL0 (0b10)
 

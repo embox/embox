@@ -5,5 +5,7 @@ module arch extends embox.arch.arch {
 
 	@IncludeExport(path="")
 	source "system_k1921vg015.h"
+
+	source "system_k1921vg015.c"
 }
 

@@ -9,8 +9,15 @@
 #include <framework/mod/options.h>
 #include <module/embox/arch/system.h>
 
+extern void SystemInit(void);
 void arch_init(void) {
+	ipl_t ipl = ipl_save();
 
+	SystemInit();
+
+	//SystemClock_Config();
+
+	ipl_restore(ipl);
 }
 
 void arch_idle(void) {
