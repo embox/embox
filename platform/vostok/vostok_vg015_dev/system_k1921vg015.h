@@ -46,6 +46,32 @@ struct rcu_reg {
 } ;
 
 
+#define RCU_CLKSTAT_SRC_MASK        (0x3)
+#define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
+#define  RCU_CLKSTAT_SRC_HSECLK      (0x1)
+#define  RCU_CLKSTAT_SRC_SYSPLL0CLK  (0x2)
+#define  RCU_CLKSTAT_SRC_LSICLK      (0x3)
+
+#define RCU_SYSCLKCFG_SRC_MASK        (0x3)
+#define  RCU_SYSCLKCFG_SRC_HSICLK      (0x0)
+#define  RCU_SYSCLKCFG_SRC_HSECLK      (0x1)
+#define  RCU_SYSCLKCFG_SRC_SYSPLL0CLK  (0x2)
+#define  RCU_SYSCLKCFG_SRC_LSICLK      (0x3)
+
+#define RCU_PLLSYSSTAT_LOCK         (0x1)
+
+
+#define RCU_PLLSYSCFG0_PLLEN        (0x1 << 0)
+#define RCU_PLLSYSCFG0_BYP_MASK     (0x3 << 1)
+#define RCU_PLLSYSCFG0_DACEN        (0x1 << 3)
+#define RCU_PLLSYSCFG0_DSMEN        (0x1 << 4)
+#define RCU_PLLSYSCFG0_FOUTEN_MASK  (0x3 << 5)
+#define  RCU_PLLSYSCFG0_FOUT0_EN     (0x1 << 5)
+#define  RCU_PLLSYSCFG0_FOUT1_EN     (0x2 << 5)
+#define RCU_PLLSYSCFG0_REFDIV_MASK  (0x3F << 7) /* 7-12*/
+#define RCU_PLLSYSCFG0_REFDIV_VAL(val)   ((val & 0x3F) << 7) /* 7-12*/
+
+
 struct GPIO_REG {
     uint32_t 	GPIO_DATA_reg;
     uint32_t 	GPIO_DATAOUT_reg;
