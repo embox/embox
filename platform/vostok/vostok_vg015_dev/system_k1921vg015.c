@@ -2,13 +2,13 @@
 #include <stdint.h>
 
 #include <system_k1921vg015.h>
-
+#if 0
 uint32_t SystemPll0Clock;
 uint32_t SystemPll1Clock;
 uint32_t SystemCoreClock;
 
 static void SystemCoreClockUpdate(void) {
-#if 0
+
 	uint32_t current_sysclk;
 	uint32_t pll_refclk, pll_refdiv, pll_frac, pll_fbdiv, pll_pd0a, pll_pd0b;
 	uint32_t pll_pd1a, pll_pd1b = 1;
@@ -46,9 +46,9 @@ static void SystemCoreClockUpdate(void) {
 		SystemCoreClock = LSICLK_VAL;
 		break;
 	}
-#endif
-}
 
+}
+#endif
 static void clk_init(void) {
  //   uint32_t timeout_counter = 0;
     uint32_t sysclk_source;
@@ -208,5 +208,5 @@ if ((RCU->RCU_CLKSTAT_reg & RCU_CLKSTAT_SRC_MASK) == RCU_CLKSTAT_SRC_SYSPLL0CLK)
 
 void SystemInit(void) {
     clk_init();
-    SystemCoreClockUpdate();
+    //SystemCoreClockUpdate();
 }
