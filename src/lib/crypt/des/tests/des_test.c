@@ -29,7 +29,7 @@ static const uint8_t encript_1[] = {0xD5,0xD4,0x4F,0xF7,0x20,0x68,0x3D,0x0D};
 #define ENCRYPT_1 (void*)encript_1
 
 TEST_CASE("des encrypt") {
-	uint8_t result[sizeof(ENCRYPT_1)];
+	uint8_t result[sizeof(encript_1)];
 
 	des_encrypt(DATA_1, KEY_1, result);
 
@@ -37,7 +37,7 @@ TEST_CASE("des encrypt") {
 }
 
 TEST_CASE("des decrypt") {
-	uint8_t result[sizeof(DECRYPT_1)];
+	uint8_t result[sizeof(encript_1)];
 
 	des_decrypt(DATA_1, KEY_1, result);
 
