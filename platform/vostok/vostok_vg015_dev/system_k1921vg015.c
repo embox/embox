@@ -177,7 +177,7 @@ if ((RCU->RCU_CLKSTAT_reg & RCU_CLKSTAT_SRC_MASK) == RCU_CLKSTAT_SRC_SYSPLL0CLK)
 #error "Please define HSECLK_VAL with correct values!"
 #endif
     RCU->RCU_PLLSYSCFG0_reg |= RCU_PLLSYSCFG0_PLLEN; //.RCU_PLLSYSCFG0_PLLEN = 1; 	// PLL Enable
-    RCU->RCU_PLLSYSCFG0_reg |= RCU_PLLSYSCFG0_FOUT1_EN; //.RCU_PLLSYSCFG0_FOUTEN = 1; 	// Fout0 Enable
+    RCU->RCU_PLLSYSCFG0_reg |= RCU_PLLSYSCFG0_FOUT0_EN; //.RCU_PLLSYSCFG0_FOUTEN = 1; 	// Fout0 Enable
 
     //Waiting for PLL to stabilize
     while (!(RCU->RCU_PLLSYSSTAT_reg & RCU_PLLSYSSTAT_LOCK)){

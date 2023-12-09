@@ -45,6 +45,13 @@ struct rcu_reg {
     uint32_t 	RCU_RSTSYS_reg;      /* 0x0C0 */
 } ;
 
+#define RCU_CGCFGAHB_GPIOAEN        (1 << 8)
+#define RCU_CGCFGAHB_GPIOBEN        (1 << 9)
+#define RCU_CGCFGAHB_GPIOCEN        (1 << 10)
+
+#define RCU_RSTDISAHB_GPIOAEN        (1 << 8)
+#define RCU_RSTDISAHB_GPIOBEN        (1 << 9)
+#define RCU_RSTDISAHB_GPIOCEN        (1 << 10)
 
 #define RCU_CLKSTAT_SRC_MASK        (0x3)
 #define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
@@ -72,22 +79,23 @@ struct rcu_reg {
 #define RCU_PLLSYSCFG0_REFDIV_VAL(val)   ((val & 0x3F) << 7) /* 7-12*/
 
 
-struct GPIO_REG {
-    uint32_t 	GPIO_DATA_reg;
-    uint32_t 	GPIO_DATAOUT_reg;
-    uint32_t 	GPIO_DATAOUTSET_reg;
-    uint32_t 	GPIO_DATAOUTCLR_reg;
-    uint32_t 	GPIO_DATAOUTTGL_reg;
-    uint32_t reserved0[2];
-    uint32_t 	GPIO_INMODE_reg;
-    uint32_t 	GPIO_PULLMODE_reg;
-    uint32_t 	GPIO_OUTMODE_reg;
-    uint32_t reserved1[1];
-    uint32_t 	GPIO_OUTENSET_reg;
-    uint32_t 	GPIO_OUTENCLR_reg;
-    uint32_t 	GPIO_ALTFUNCSET_reg;
-    uint32_t 	GPIO_ALTFUNCCLR_reg;
-    uint32_t 	GPIO_ALTFUNCNUM_reg;
+struct gpio_reg {
+    uint32_t 	GPIO_DATA_reg;        /* 0x00 */
+    uint32_t 	GPIO_DATAOUT_reg;     /* 0x04 */
+    uint32_t 	GPIO_DATAOUTSET_reg;  /* 0x08 */
+    uint32_t 	GPIO_DATAOUTCLR_reg;  /* 0x0C */
+    uint32_t 	GPIO_DATAOUTTGL_reg;  /* 0x10 */
+    uint32_t 	GPIO_DENSET_reg;      /* 0x14 */
+    uint32_t 	GPIO_DENCLR_reg;      /* 0x18 */
+    uint32_t 	GPIO_INMODE_reg;      /* 0x1C */
+    uint32_t 	GPIO_PULLMODE_reg;    /* 0x20 */
+    uint32_t 	GPIO_OUTMODE_reg;     /* 0x24 */
+    uint32_t 	GPIO_DRIVEMODE_reg;   /* 0x28 */
+    uint32_t 	GPIO_OUTENSET_reg;    /* 0x2C */
+    uint32_t 	GPIO_OUTENCLR_reg;    /* 0x30 */
+    uint32_t 	GPIO_ALTFUNCSET_reg;  /* 0x34 */
+    uint32_t 	GPIO_ALTFUNCCLR_reg;  /* 0x38 */
+    uint32_t 	GPIO_ALTFUNCNUM_reg;  /* 0x3C */
     uint32_t reserved2[1];
     uint32_t 	GPIO_SYNCSET_reg;
     uint32_t 	GPIO_SYNCCLR_reg;
@@ -120,9 +128,9 @@ struct GPIO_REG {
 #define GPIOB_BASE              0x28001000UL
 #define GPIOC_BASE              0x28002000UL
 
-#define GPIOA                ((volatile struct GPIO_REG *) GPIOA_BASE)
-#define GPIOB                ((volatile struct GPIO_REG *) GPIOB_BASE)
-#define GPIOC                ((volatile struct GPIO_REG *) GPIOC_BASE)
+#define GPIOA                ((volatile struct gpio_reg *) GPIOA_BASE)
+#define GPIOB                ((volatile struct gpio_reg *) GPIOB_BASE)
+#define GPIOC                ((volatile struct gpio_reg *) GPIOC_BASE)
 
 
 #define UART0_BASE              0x30006000UL
