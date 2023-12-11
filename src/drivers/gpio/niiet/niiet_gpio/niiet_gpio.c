@@ -17,8 +17,9 @@
 
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 
-//#define GPIOA				0x40010000
-//#define GPIOB				0x40011000
+#if 0
+#define GPIOA				0x40010000
+#define GPIOB				0x40011000
 #define GPIO_OFFSET_DATAOUTSET		0x08
 #define GPIO_OFFSET_DATAOUTCLR		0x0C
 #define GPIO_OFFSET_DENSET		0x14
@@ -33,6 +34,7 @@
 #define RCU_HRSTCFG			0x40041104
 #define RCU_HRSTCFG_GPIOAEN_mask	0x00000001
 #define RCU_HRSTCFG_GPIOBEN_mask	0x00000002
+#endif
 
 static int niiet_gpio_clock_setup(unsigned char port) {
 	switch (port) {
@@ -66,7 +68,7 @@ static int niiet_gpio_clock_setup(unsigned char port) {
 	return 0;
 #endif
 }
-static inline volatile struct gpio_reg *niiet_gpio_get_gpio(unsigned char port) {
+static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char port) {
 		switch (port) {
 		case 0:
 			return GPIOA;
@@ -83,17 +85,34 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio(unsigned char port) 
 
 	return 0;
 }
+
 static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
 	volatile struct gpio_reg *gpio_reg;
 
-	gpio_reg = niiet_gpio_get_gpio(port);
+	gpio_reg = niiet_gpio_get_gpio_port(port);
 	if (gpio_reg == NULL) {
 		return -1;
 	}
 	/* Enable port */
 	niiet_gpio_clock_setup(port);
 
+	gpio_reg->GPIO_DENSET_reg |= pins;
+
+	if (mode & GPIO_MODE_IN) {
+		gpio_reg->GPIO_OUTENCLR_reg |= pins;
+	}
+	if (mode & GPIO_MODE_OUT) {
+		//REG32_STORE(GPIO + GPIO_OFFSET_OUTENSET, pins);
+		gpio_reg->GPIO_OUTENSET_reg |= pins;
+	
+	}
+	if (mode & GPIO_MODE_OUT_ALTERNATE) {
+		/* Enable ALTFUNC */
+		gpio_reg->GPIO_ALTFUNCSET_reg |= pins;
+	}
+
 	return 0;
+
 #if 0
 	unsigned long GPIO = GPIOA + (GPIOB-GPIOA)*port;
 	/* Enable digital functionality */
@@ -120,11 +139,16 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 static void niiet_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
 	volatile struct gpio_reg *gpio_reg;
 
-	gpio_reg = niiet_gpio_get_gpio(port);
+	gpio_reg = niiet_gpio_get_gpio_port(port);
 	if (gpio_reg == NULL) {
 		return;
 	}
 
+	if (level) {
+		gpio_reg->GPIO_DATAOUTSET_reg |= pins;
+	} else {		
+		gpio_reg->GPIO_DATAOUTCLR_reg |= pins;
+	}
 #if 0
 	if (level) {
 		REG32_STORE(GPIOA + (GPIOB-GPIOA)*port + GPIO_OFFSET_DATAOUTSET, pins);
@@ -137,11 +161,12 @@ static void niiet_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
 static gpio_mask_t niiet_gpio_get(unsigned char port, gpio_mask_t pins) {
 	volatile struct gpio_reg *gpio_reg;
 
-	gpio_reg = niiet_gpio_get_gpio(port);
+	gpio_reg = niiet_gpio_get_gpio_port(port);
 	if (gpio_reg == NULL) {
 		return -1;
 	}
-	return 0;
+
+	return gpio_reg->GPIO_DATA_reg & pins;
 #if 0
 	return REG_LOAD(GPIOA + (GPIOB-GPIOA)*port) & pins;
 #endif
