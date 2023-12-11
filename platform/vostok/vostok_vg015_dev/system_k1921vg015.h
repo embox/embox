@@ -45,9 +45,23 @@ struct rcu_reg {
     uint32_t 	RCU_RSTSYS_reg;      /* 0x0C0 */
 } ;
 
+#define RCU_CGCFGAPB_UART_EN(port)  (1 << (6 + port))
+#define RCU_CGCFGAPB_UART0EN        (1 << 6)
+#define RCU_CGCFGAPB_UART1EN        (1 << 7)
+#define RCU_CGCFGAPB_UART2EN        (1 << 8)
+#define RCU_CGCFGAPB_UART3EN        (1 << 9)
+#define RCU_CGCFGAPB_UART4EN        (1 << 10)
+
 #define RCU_CGCFGAHB_GPIOAEN        (1 << 8)
 #define RCU_CGCFGAHB_GPIOBEN        (1 << 9)
 #define RCU_CGCFGAHB_GPIOCEN        (1 << 10)
+
+#define RCU_RSTDISAPB_UART_EN(port)  (1 << (6 + port))
+#define RCU_RSTDISAPB_UART0EN        (1 << 6)
+#define RCU_RSTDISAPB_UART1EN        (1 << 7)
+#define RCU_RSTDISAPB_UART2EN        (1 << 8)
+#define RCU_RSTDISAPB_UART3EN        (1 << 9)
+#define RCU_RSTDISAPB_UART4EN        (1 << 10)
 
 #define RCU_RSTDISAHB_GPIOAEN        (1 << 8)
 #define RCU_RSTDISAHB_GPIOBEN        (1 << 9)
@@ -78,6 +92,11 @@ struct rcu_reg {
 #define RCU_PLLSYSCFG0_REFDIV_MASK  (0x3F << 7) /* 7-12*/
 #define RCU_PLLSYSCFG0_REFDIV_VAL(val)   ((val & 0x3F) << 7) /* 7-12*/
 
+#define RCU_UARTCLKCFG0_CLKEN_MASK	 	 	 	0x00000001UL
+#define RCU_UARTCLKCFG0_RSTDIS_MASK	 	 	 	0x00000100UL
+#define RCU_UARTCLKCFG0_CLKSEL_MASK	 	 	 	0x00030000UL
+#define RCU_UARTCLKCFG0_DIVEN_MASK	 	 	 	0x00100000UL
+#define RCU_UARTCLKCFG0_DIVN_MASK	 	 	 	0x3f000000UL
 
 struct gpio_reg {
     uint32_t 	GPIO_DATA_reg;        /* 0x00 */
