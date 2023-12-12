@@ -1,0 +1,32 @@
+--- libiec61850-1.5.1/hal/ethernet/linux/ethernet_linux.c	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/hal/socket/ethernet/ethernet_linux.c	2023-12-04 08:57:55.155133334 +0300
+@@ -24,8 +24,8 @@
+ #include <sys/socket.h>
+ #include <sys/ioctl.h>
+ #include <poll.h>
+-#include <linux/filter.h>
+-#include <linux/if_packet.h>
++#include <netpacket/packet.h>
++#include <net/if_packet.h>
+ #include <linux/if_ether.h>
+ #include <linux/if_arp.h>
+ #include <arpa/inet.h>
+@@ -41,6 +41,9 @@
+ #define DEBUG_SOCKET 0
+ #endif
+ 
++#define	SIOCGIFINDEX	_IOWR('i', 32, struct ifreq)	/* get IF index */
++#define	SIOCGIFHWADDR	0
++
+ struct sEthernetSocket {
+     int rawSocket;
+     bool isBind;
+@@ -207,7 +210,7 @@
+ 
+         ethernetSocket->socketAddress.sll_ifindex = ifcIdx;
+ 
+-        ethernetSocket->socketAddress.sll_hatype =  ARPHRD_ETHER;
++        ethernetSocket->socketAddress.sll_hatype =  ARP_HRD_ETHERNET;
+         ethernetSocket->socketAddress.sll_pkttype = PACKET_OTHERHOST;
+ 
+         ethernetSocket->socketAddress.sll_halen = ETH_ALEN;
