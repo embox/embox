@@ -1,0 +1,17 @@
+package embox.project.server61850.cmd
+
+@AutoCmd
+@Cmd(name = "basic_io",
+    help = "IEC61850 server basic i/o",
+    man = '''
+        AUTHOR
+            Valery Iline ported to embox.
+    ''')
+@BuildDepends(third_party.lib.libiec61850)
+@Build(stage=2)
+module basic_io {
+	source "server_example_basic_io.c"
+	source "static_model.c"
+	@NoRuntime depends third_party.lib.libiec61850
+}
+

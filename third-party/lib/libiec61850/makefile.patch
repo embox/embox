@@ -1,0 +1,59 @@
+--- libiec61850-1.5.1/Makefile	2023-11-28 12:12:05.249661038 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/Makefile	2023-12-08 09:06:12.213743423 +0300
+@@ -1,6 +1,26 @@
+ LIBIEC_HOME=.
+ 
++ifeq ($(TARGET), EMBOX)
++TOOLCHAIN_PREFIX=$(CROSS_COMPILE)
++CFLAGS += $(EMBOX_CFLAGS)
++CFLAGS += -fno-stack-protector
++CFLAGS += -Wno-error
++CFLAGS += -Wno-format
++
++LDFLAG += $(EMBOX_LDFLAGS)
++
++HAL_IMPL = POSIX
++LDLIBS = -lpthread
++LIB_OBJS_DIR = $(LIBIEC_HOME)/build
++LIB_NAME = $(LIB_OBJS_DIR)/libiec61850.a
++
++CC=$(EMBOX_GCC)
++CPP=$(TOOLCHAIN_PREFIX)g++
++AR=$(TOOLCHAIN_PREFIX)ar
++RANLIB=$(TOOLCHAIN_PREFIX)ranlib
++else
+ include make/target_system.mk
++endif
+ 
+ LIB_SOURCE_DIRS = src/mms/iso_acse
+ LIB_SOURCE_DIRS += src/mms/iso_acse/asn1c
+@@ -86,6 +106,12 @@
+ CFLAGS += -D'CONFIG_MMS_SUPPORT_TLS=1'
+ endif
+ 
++ifeq ($(TARGET), EMBOX)
++LIB_INCLUDE_DIRS += $(SRC_DIR)/compat/posix/include
++LIB_INCLUDE_DIRS += $(SRC_DIR)/compat/linux/include
++LIB_INCLUDE_DIRS += $(SRC_DIR)/include
++endif
++
+ LIB_INCLUDES = $(addprefix -I,$(LIB_INCLUDE_DIRS))
+ 
+ ifndef INSTALL_PREFIX
+@@ -129,6 +155,7 @@
+ 
+ LIB_OBJS = $(call src_to,.o,$(LIB_SOURCES))
+ 
++ifneq ($(TARGET), EMBOX)
+ CFLAGS += -std=gnu99
+ CFLAGS += -Wno-error=format 
+ CFLAGS += -Wstrict-prototypes
+@@ -148,6 +175,8 @@
+ #CFLAGS += -Wconditional-uninitialized
+ #CFLAGS += -Werror  
+ 
++endif
++
+ all:	lib
+ 
+ static_checks:	lib

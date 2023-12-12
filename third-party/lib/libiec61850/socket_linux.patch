@@ -1,0 +1,46 @@
+--- libiec61850-1.5.1/hal/socket/linux/socket_linux.c	2023-11-29 18:33:29.350127569 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/hal/socket/linux/socket_linux_embox.c	2023-11-29 18:34:54.860864218 +0300
+@@ -126,7 +126,7 @@
+ 
+                 if (sock) {
+                     self->fds[i].fd = sock->fd;
+-                    self->fds[i].events = POLL_IN;
++                    self->fds[i].events = POLLIN;
+                 }
+             }
+         }
+@@ -279,7 +279,7 @@
+ 
+         int optionReuseAddr = 1;
+         setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, (char *) &optionReuseAddr, sizeof(int));
+-
++/*
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
+         int tcpUserTimeout = 10000;
+         int result = setsockopt(fd, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
+@@ -291,7 +291,7 @@
+ #else
+ #warning "TCP_USER_TIMEOUT not supported by linux kernel"
+ #endif
+-
++*/
+         if (bind(fd, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) >= 0) {
+             serverSocket = (ServerSocket) GLOBAL_MALLOC(sizeof(struct sServerSocket));
+             serverSocket->fd = fd;
+@@ -402,7 +402,7 @@
+         if (self) {
+             self->fd = sock;
+             self->connectTimeout = 5000;
+-
++/*
+ #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
+             int tcpUserTimeout = 10000;
+             int result = setsockopt(sock, SOL_TCP,  TCP_USER_TIMEOUT, &tcpUserTimeout, sizeof(tcpUserTimeout));
+@@ -412,6 +412,7 @@
+                     printf("SOCKET: failed to set TCP_USER_TIMEOUT (errno=%i)\n", errno);
+             }
+ #endif
++*/
+         }
+         else {
+             /* out of memory */

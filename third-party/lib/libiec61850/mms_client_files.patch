@@ -1,0 +1,11 @@
+--- libiec61850-1.5.1/src/mms/iso_mms/client/mms_client_files.c	2023-11-24 16:53:58.332419121 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/src/mms/iso_mms/client/mms_client_files.c	2023-11-24 16:32:05.271893055 +0300
+@@ -722,7 +722,7 @@
+ }
+ 
+ bool
+-mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int frsmId, bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
++mmsMsg_parseFileReadResponse(uint8_t* buffer, int bufPos, int maxBufPos, uint32_t invokeId, int32_t frsmId, bool* moreFollows, MmsConnection_FileReadHandler handler, void* handlerParameter)
+ {
+     int length;
+     uint8_t* data = NULL;

@@ -1,0 +1,34 @@
+--- libiec61850-1.5.1/src/common/conversions.c	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/src/common/conversions.c	2023-12-11 06:34:30.469182246 +0300
+@@ -265,31 +265,7 @@
+ 
+ 
+     time_t t = 0;
+-
+-    switch (*parsePos) {
+-    case 0: /* treat time as localtime */
+-        t = mktime(&tmTime);
+-        break;
+-    case 'Z': /* treat time as GMT(UTC) time */
+-        t = timegm(&tmTime);
+-        break;
+-    case '+': /* subtract offset */
+-        {
+-            t = timegm(&tmTime);
+-            int secondsOffset = getSecondsOffset(parsePos + 1);
+-            t = t - secondsOffset;
+-        }
+-        break;
+-    case '-': /* add offset */
+-        {
+-            t = timegm(&tmTime);
+-            int secondsOffset = getSecondsOffset(parsePos + 1);
+-            t = t + secondsOffset;
+-        }
+-        break;
+-    default:
+-        return -1;
+-    }
++    t = mktime(&tmTime);
+ 
+     uint64_t msTime = (uint64_t) t * 1000LL;
