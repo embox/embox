@@ -2,4 +2,6 @@ package embox.arch.aarch64
 
 module reset_handler {
 	source "reset_handler.S"
+
+	depends embox.arch.aarch64.cache
 }
