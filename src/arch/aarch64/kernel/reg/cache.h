@@ -10,10 +10,10 @@
 
 #include <stdint.h>
 
-#define __DC(reg, val)                                          \
-	({                                                          \
-		register uint64_t __val = val;                          \
-		__asm__ __volatile__("DC " #reg ",%x0" : : "r"(__val)); \
+#define __DC(reg, val)                                                     \
+	({                                                                     \
+		register uint64_t __val = val;                                     \
+		__asm__ __volatile__("DC " #reg ",%x0" : : "r"(__val) : "memory"); \
 	})
 
 #define __IC0(reg) __asm__ __volatile__("IC " #reg)

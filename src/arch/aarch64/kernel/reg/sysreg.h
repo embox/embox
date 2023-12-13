@@ -125,6 +125,10 @@
 #define CTR_EL0                                CTR_EL0
 #define __ARCH_REG_LOAD__CTR_EL0()             __MRS_SYS(CTR_EL0)
 
+#define CTR_EL0_DLINE                          /* Log2 of the number of words in DCache line */
+#define CTR_EL0_DLINE_MASK                     0b1111U
+#define CTR_EL0_DLINE_SHIFT                    16
+
 /** Domain Access Control Register */
 #define DACR32_EL2                             DACR32_EL2
 #define __ARCH_REG_LOAD__DACR32_EL2()          __MRS_SYS(DACR32_EL2)

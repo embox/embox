@@ -14,7 +14,7 @@
 
 aarch64_reset_handler:
 	/* Mask Interrupts, System Errors and Debug */
-	msr     daifset, #(DAIF_D_imm | DAIF_D_imm | DAIF_I_imm | DAIF_F_imm)
+	msr     daifset, #(DAIF_D_imm | DAIF_A_imm | DAIF_I_imm | DAIF_F_imm)
 
 	/* Get current exception level */
 	mrs     x0, CurrentEL
@@ -25,11 +25,15 @@ aarch64_reset_handler:
 	b       die
 
 el3_entry:
+	/* Setup stack */
+	ldr     x0, =_stack_top
+	mov     sp, x0
+
 	/* Disable the MMU for EL3 */
 	dsb     sy
 	mrs     x0, sctlr_el3
-	bic     x0, x0, SCTLR_ELn_M
-	msr     sctlr_el3, x0
+	bl      flush_cache_if_mmu_on
+	msr     sctlr_el3, xzr
 	isb
 
 	/* Initialize SCTLR_EL2 and HCR_EL2 */
@@ -46,14 +50,11 @@ el3_entry:
 	msr     spsr_el3, x0
 
 	/* Configure GICv3 */
-	ldr     x0, =_stack_top
-	mov     sp, x0
 	ldr     x0, =gicv3_init_el3
 	cmp     x0, #0
-	beq     1f
+	beq     0f
 	blr     x0
-
-1:
+0:
 	/* Determine EL2 entry */
 	adr     x0, el2_entry
 	msr     elr_el3, x0
@@ -63,11 +64,15 @@ el3_entry:
 	eret
 
 el2_entry:
+	/* Setup stack */
+	ldr     x0, =_stack_top
+	mov     sp, x0
+
 	/* Disable the MMU for EL2 */
 	dsb     sy
 	mrs     x0, sctlr_el2
-	bic     x0, x0, SCTLR_ELn_M
-	msr     sctlr_el2, x0
+	bl      flush_cache_if_mmu_on
+	msr     sctlr_el2, xzr
 	isb
 
 	/* EL1 Execution state is AArch64 */
@@ -76,7 +81,7 @@ el2_entry:
 
 	/* Initialize SCTLR_EL1 */
 	ldr     x0, =(SCTLR_EL1_RES1)
-	msr     sctlr_el1, x2
+	msr     sctlr_el1, x0
 
 	/* Don't trap to EL2 for CP15 traps */
 	msr     hstr_el2, xzr
@@ -99,11 +104,15 @@ el2_entry:
 	eret
 
 el1_entry:
+	/* Setup stack */
+	ldr     x0, =_stack_top
+	mov     sp, x0
+
 	/* Disable the MMU for EL0 and EL1 */
 	dsb     sy
 	mrs     x0, sctlr_el1
-	bic     x0, x0, SCTLR_ELn_M
-	msr     sctlr_el1, x0
+	bl      flush_cache_if_mmu_on
+	msr     sctlr_el1, xzr
 	isb
 
 	/* Set up exception vectors */
@@ -116,10 +125,6 @@ el1_entry:
 	/* Enable FP/SIMD */
 	mov     x0, #(0x3 << 20)
 	msr     cpacr_el1, x0
-
-	/* Setup stack. Note: you can't write SP directly */
-	ldr     x0, =_stack_top
-	add     sp, x0, #0
 
 	/* Zero .bss */
 	ldr     x0, =_bss_vma
@@ -146,6 +151,27 @@ data_loop:
 	/* Jump to arch-independent part */
 	bl      kernel_start
 
-	/* returning from kernel_start */
+	/* Returning from kernel_start */
 die:
 	b       die
+
+flush_cache_if_mmu_on:
+	/* Check if bootloader left MMU on; if so, it's neccessary to flush cache
+	 * to make sure all the data is actually in RAM, not in some buffers */
+	mov     x19, lr
+	ands    x0, x0, SCTLR_ELn_M
+	beq     0f
+
+	ldr     x0, =_data_lma
+	ldr     x1, =_data_len
+	bl      dcache_flush
+
+	ldr     x0, =_rodata_lma
+	ldr     x1, =_rodata_len
+	bl      dcache_flush
+
+	ldr     x0, =_text_lma
+	ldr     x1, =_text_len
+	bl      dcache_flush
+0:
+	ret     x19
