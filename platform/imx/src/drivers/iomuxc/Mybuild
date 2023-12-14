@@ -1,0 +1,10 @@
+package platform.imx.drivers
+
+module iomuxc {
+	option string log_level="LOG_NONE"
+	option number base_addr = 0x020E0000
+
+	@IncludeExport(path="drivers")
+	source "iomuxc.h"
+	source "iomuxc.c"
+}
