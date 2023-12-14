@@ -12,5 +12,5 @@ module imx_uart {
 	depends core
 	depends diag
 	depends embox.driver.periph_memory
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends platform.imx.drivers.iomuxc
 }
