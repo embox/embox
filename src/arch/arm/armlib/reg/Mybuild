@@ -1,5 +1,6 @@
 package embox.arch.arm.armlib
 
+@NoCode
 module reg extends embox.arch.reg {
 	source "reg.h"
 	source "psr.h"

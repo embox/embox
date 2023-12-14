@@ -1,5 +1,6 @@
 package embox.arch.arm.at91sam7
 
+@NoCode
 module headers {
 	@IncludeExport(path="drivers")
 	source "at91sam7_aic.h"
