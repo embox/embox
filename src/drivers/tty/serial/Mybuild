@@ -8,7 +8,7 @@ module serial {
 	source "ttys.c"
 	source "idesc_serial.c"
 
-	@IncludeExport(path="drivers", target_name="ttys.h")
+	@IncludeExport(path="drivers")
 	source "ttys.h"
 
 	option number serial_quantity = 1
