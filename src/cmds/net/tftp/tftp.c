@@ -15,16 +15,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <lib/tftp.h>
 
 static char *get_file_mode_r(char binary_on) {
 	return binary_on ? "rb" : "r";
 }
-
+#if 0
 static char *get_file_mode_w(char binary_on) {
 	return binary_on ? "wb" : "w";
 }
+#endif
 
 static int open_file(char *filename, char *mode, FILE **out_fp) {
 	FILE *fp;
@@ -98,6 +100,8 @@ static int tftp_send_file(char *filename, char *out_file, char *hostname,
 		}
 	}
 
+	close_file(fp);
+
 	tftp_delete_stream(s);
 
 	return 0;
@@ -105,8 +109,9 @@ static int tftp_send_file(char *filename, char *out_file, char *hostname,
 
 static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 							char binary_on, void *addr) {
-	struct tftp_stream *s;	
-	FILE *fp = NULL;
+	struct tftp_stream *s;
+	int res;
+	int fd;
 	int bytes;
 	uint8_t buf[TFTP_SEGSIZE];
 
@@ -116,9 +121,10 @@ static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 		if (out_file == NULL) {
 			out_file = filename;
 		}
-		if (0 != open_file(out_file, get_file_mode_w(binary_on), &fp)) {
+		fd = open(out_file, O_WRONLY | O_CREAT | O_TRUNC);
+		if (fd < 0) {
 			tftp_delete_stream(s);
-			return -1;
+			return fd;
 		}
 	}
 
@@ -138,8 +144,8 @@ static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 		}
 
 		if (addr == NULL) {
-			if (bytes > fwrite(buf, 1, bytes, fp)) {
-				tftp_delete_stream(s);
+			res = write(fd, buf, bytes);
+			if (res < 0) {
 				return -2;
 			}
 		} else {
@@ -149,7 +155,7 @@ static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 	}
 
 	if (addr == NULL) {
-		close_file(fp);
+		close(fd);
 	}
 
 	tftp_delete_stream(s);
