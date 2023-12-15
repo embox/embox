@@ -15,16 +15,18 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <lib/tftp.h>
 
 static char *get_file_mode_r(char binary_on) {
 	return binary_on ? "rb" : "r";
 }
-
+#if 0
 static char *get_file_mode_w(char binary_on) {
 	return binary_on ? "wb" : "w";
 }
+#endif
 
 static int open_file(char *filename, char *mode, FILE **out_fp) {
 	FILE *fp;
@@ -63,12 +65,15 @@ static int read_file(FILE *fp, char *buff, size_t buff_sz, size_t *out_bytes) {
 	return 0;
 }
 
-static int tftp_send_file(char *filename, char *hostname, char binary_on, void *addr) {
-	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_PUT, (bool) binary_on);
+static int tftp_send_file(char *filename, char *out_file, char *hostname,
+								char binary_on, void *addr) {
+	struct tftp_stream *s;
 	FILE *fp = NULL;
 	size_t bytes = 0;
 	int ret = 0;
 	uint8_t buf[TFTP_SEGSIZE];
+
+	s = tftp_new_stream(hostname, filename, TFTP_DIR_PUT, (bool) binary_on);
 
 	if (0 != open_file(filename, get_file_mode_r(binary_on), &fp)) {
 		tftp_delete_stream(s);
@@ -95,21 +100,31 @@ static int tftp_send_file(char *filename, char *hostname, char binary_on, void *
 		}
 	}
 
+	close_file(fp);
+
 	tftp_delete_stream(s);
 
 	return 0;
 }
 
-static int tftp_recv_file(char *filename, char *hostname, char binary_on, void *addr) {
-	struct tftp_stream *s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, (bool) binary_on);
-	FILE *fp = NULL;
+static int tftp_recv_file(char *filename, char *out_file, char *hostname,
+							char binary_on, void *addr) {
+	struct tftp_stream *s;
+	int res;
+	int fd;
 	int bytes;
 	uint8_t buf[TFTP_SEGSIZE];
 
+	s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, (bool) binary_on);
+
 	if (addr == NULL) {
-		if (0 != open_file(filename, get_file_mode_w(binary_on), &fp)) {
+		if (out_file == NULL) {
+			out_file = filename;
+		}
+		fd = open(out_file, O_WRONLY | O_CREAT | O_TRUNC);
+		if (fd < 0) {
 			tftp_delete_stream(s);
-			return -1;
+			return fd;
 		}
 	}
 
@@ -129,8 +144,8 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on, void *
 		}
 
 		if (addr == NULL) {
-			if (bytes > fwrite(buf, 1, bytes, fp)) {
-				tftp_delete_stream(s);
+			res = write(fd, buf, bytes);
+			if (res < 0) {
 				return -2;
 			}
 		} else {
@@ -140,7 +155,7 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on, void *
 	}
 
 	if (addr == NULL) {
-		close_file(fp);
+		close(fd);
 	}
 
 	tftp_delete_stream(s);
@@ -150,14 +165,15 @@ static int tftp_recv_file(char *filename, char *hostname, char binary_on, void *
 int main(int argc, char **argv) {
 	int ret, i;
 	char param_ascii, param_binary, param_get, param_put;
-	int (*file_hnd)(char *, char *, char, void *);
+	int (*file_hnd)(char *, char*, char *, char, void *);
 	void *addr = NULL;
+	char *out_file = NULL;
 
 	/* Initialize objects */
 	param_ascii = param_binary = param_get = param_put = 0;
 
 	/* Get options */
-	while ((ret = getopt(argc, argv, "habgpm:")) != -1) {
+	while ((ret = getopt(argc, argv, "habgpm:o:")) != -1) {
 		switch (ret) {
 		default:
 		case '?':
@@ -165,7 +181,7 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Try -h for more information\n");
 			return -EINVAL;
 		case 'h':
-			fprintf(stdout, "Usage: %s [-hab] -[g [-m addr] | p] files destination\n", argv[0]);
+			fprintf(stdout, "Usage: %s [-hab] -[g [-m addr] [-o output file] | p] files destination\n", argv[0]);
 			return 0;
 		case 'a':
 		case 'b':
@@ -187,6 +203,9 @@ int main(int argc, char **argv) {
 			break;
 		case 'm':
 			addr = (void *) strtol(optarg, NULL, 0);
+			break;
+		case 'o':
+			out_file = optarg;
 			break;
 		}
 	}
@@ -212,7 +231,7 @@ int main(int argc, char **argv) {
 	/* Handling */
 	file_hnd = param_get ? &tftp_recv_file : &tftp_send_file;
 	for (i = optind + 1; i < argc - 1; ++i) {
-		ret = (*file_hnd)(argv[i], argv[argc - 1], param_binary, addr);
+		ret = (*file_hnd)(argv[i], out_file, argv[argc - 1], param_binary, addr);
 		if (ret != 0) {
 			fprintf(stderr, "%s: error: error occured when handled file '%s`\n",
 					argv[0], argv[i]);

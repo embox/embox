@@ -22,6 +22,8 @@ package embox.cmd.net
 			-p           put files to remote machine
 			-m           write to memory location instead of file
 			             (works only with -g)
+			-o           local file (only single) can be blockdev
+			             (works only with -g)
 		EXAMPLES
 			Save 'hello.html' from 10.0.2.10 to current directory:
 				tftp -g hello.html 10.0.2.10
@@ -35,9 +37,5 @@ package embox.cmd.net
 module tftp {
 	source "tftp.c"
 
-	depends embox.lib.tftp
-	depends embox.compat.libc.all
-	depends embox.compat.posix.net.socket
-	depends embox.compat.posix.util.getopt
-	depends embox.framework.LibFramework
+	@NoRuntime depends embox.lib.tftp
 }
