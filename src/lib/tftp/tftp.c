@@ -42,22 +42,19 @@ struct tftp_msg {
 } __attribute__ ((packed));
 
 struct tftp_stream {
-	FILE *fp;
-	void *addr;
-
 	char filename[PATH_MAX];
 
 	int pkg_number;
 
-	struct tftp_msg snd, rcv;
-	size_t snd_len, rcv_len;
+	struct tftp_msg snd;
+	struct tftp_msg rcv;
+	size_t snd_len;
+	size_t rcv_len;
 
 	struct sockaddr_storage rem_addr;
 	socklen_t rem_addrlen;
 
 	int sock;
-
-	int dst_port;
 
 	bool transmission_end;
 };
