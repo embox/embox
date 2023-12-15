@@ -1,4 +1,4 @@
-package embox.arch.arm.imx
+package platform.imx.drivers
 
 module iomuxc {
 	option string log_level="LOG_NONE"

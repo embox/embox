@@ -13,13 +13,13 @@
 #include <drivers/common/memory.h>
 #include <embox/unit.h>
 #include <hal/reg.h>
-#include <kernel/printk.h>
+#include <util/log.h>
 
 EMBOX_UNIT_INIT(imx_cpuinfo_init);
 
 /* Chip identifaction data is stored in USB registers, so we map and use it */
 
-#define USB_ANALOG_BASE OPTION_GET(NUMBER,usb_analog_base)
+#define USB_ANALOG_BASE OPTION_GET(NUMBER, usb_analog_base)
 
 #define REV_REG (USB_ANALOG_BASE + 0x260)
 
@@ -27,8 +27,7 @@ static uint32_t _imx_revision(void) {
 	return REG32_LOAD(REV_REG);
 }
 
-const char *_imx_type(uint32_t id)
-{
+const char *_imx_type(uint32_t id) {
 	switch (id) {
 	case MXC_CPU_MX7S:
 		return "7S";
@@ -66,14 +65,17 @@ const char *_imx_type(uint32_t id)
 }
 
 void print_imx_cpuinfo() {
-	uint32_t rev = _imx_revision();
-	printk("\t\tCPU identification:\n");
-	printk("\t\t    i.MX%s\n", _imx_type((rev >> 16) & 0xFF));
-	printk("\t\t    Revision: %"PRIu32".%"PRIu32"\n", (rev >> 8) & 0xFF, rev & 0xFF);
+	uint32_t rev;
+
+	rev = _imx_revision();
+
+	log_info("imx: CPU identification:");
+	log_info("imx: i.MX%s", _imx_type((rev >> 16) & 0xFF));
+	log_info("imx: Revision: %" PRIu32 ".%" PRIu32, (rev >> 8) & 0xFF,
+	    rev & 0xFF);
 }
 
 static int imx_cpuinfo_init(void) {
-	printk("\n");
 	print_imx_cpuinfo();
 	return 0;
 }

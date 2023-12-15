@@ -6,7 +6,7 @@ module imx_i2c {
 	source "imx_i2c.c"
 
 	depends embox.driver.i2c
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends platform.imx.drivers.iomuxc
 }
 
 module imx_i2c1 {
@@ -20,7 +20,7 @@ module imx_i2c1 {
 
 	@NoRuntime depends imx_i2c
 	depends embox.driver.i2c
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends platform.imx.drivers.iomuxc
 }
 
 module imx_i2c2 {
@@ -34,7 +34,7 @@ module imx_i2c2 {
 
 	@NoRuntime depends imx_i2c
 	depends embox.driver.i2c
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends platform.imx.drivers.iomuxc
 }
 
 module imx_i2c3 {
@@ -48,5 +48,5 @@ module imx_i2c3 {
 
 	@NoRuntime depends imx_i2c
 	depends embox.driver.i2c
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends platform.imx.drivers.iomuxc
 }

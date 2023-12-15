@@ -9,29 +9,30 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <drivers/char_dev.h>
+#include <drivers/device.h>
+#include <drivers/serial/uart_dev.h>
+#include <framework/mod/options.h>
+#include <mem/misc/pool.h>
 #include <util/err.h>
 #include <util/indexator.h>
 
-#include <mem/misc/pool.h>
-#include <drivers/char_dev.h>
-#include <drivers/serial/uart_dev.h>
-#include <drivers/device.h>
-
 #include "idesc_serial.h"
+
+#define SERIAL_POOL_SIZE OPTION_GET(NUMBER, serial_quantity)
+
+POOL_DEF(cdev_serials_pool, struct dev_module, SERIAL_POOL_SIZE);
 
 struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
 	struct idesc *idesc;
 
-	idesc = idesc_serial_open(cdev->dev_priv, (uintptr_t) priv);
+	idesc = idesc_serial_open(cdev->dev_priv, (uintptr_t)priv);
 	if (err(idesc)) {
 		return NULL;
 	}
 
 	return idesc;
 }
-
-#define SERIAL_POOL_SIZE OPTION_GET(NUMBER, serial_quantity)
-POOL_DEF(cdev_serials_pool, struct dev_module, SERIAL_POOL_SIZE);
 
 int ttys_register(const char *name, void *dev_info) {
 	struct dev_module *cdev;

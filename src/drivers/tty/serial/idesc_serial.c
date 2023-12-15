@@ -5,37 +5,33 @@
  * @author: Anton Bondarev
  */
 #include <assert.h>
+#include <fcntl.h>
 #include <poll.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
-#include <fcntl.h>
 
-#include <mem/misc/pool.h>
-
-#include <kernel/task/resource/idesc.h>
-
-#include <drivers/tty.h>
-#include <drivers/ttys.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_dev.h>
+#include <drivers/tty.h>
+#include <drivers/ttys.h>
+#include <framework/mod/options.h>
+#include <kernel/panic.h>
+#include <kernel/task/resource/idesc.h>
+#include <mem/misc/pool.h>
 #include <util/err.h>
 
 #include "idesc_serial.h"
 
-#include <framework/mod/options.h>
-#include <kernel/panic.h>
-
-#define MAX_IDESC_SERIALS \
-	OPTION_GET(NUMBER, idesc_serial_quantity)
+#define MAX_IDESC_SERIALS OPTION_GET(NUMBER, idesc_serial_quantity)
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_IDESC_SERIALS);
 
-#define idesc_to_uart(desc) \
-	(((struct tty_uart *) desc)->uart)
+#define idesc_to_uart(desc) (((struct tty_uart *)desc)->uart)
 
 const struct idesc_ops idesc_serial_ops;
 
-static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	void *buf;
 	size_t nbyte;
 	struct uart *uart;
@@ -58,10 +54,11 @@ static ssize_t serial_read(struct idesc *idesc, const struct iovec *iov, int cnt
 	assert(uart);
 	assert(uart->tty);
 
-	return tty_read(uart->tty, (char *) buf, nbyte);
+	return tty_read(uart->tty, (char *)buf, nbyte);
 }
 
-static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t serial_write(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	void *buf;
 	size_t nbyte;
 	int ch;
@@ -214,14 +211,14 @@ static void idesc_serial_close(struct idesc *idesc) {
 }
 
 const struct idesc_ops idesc_serial_ops = {
-	.id_readv = serial_read,
-	.id_writev = serial_write,
-	.ioctl = serial_ioctl,
-	.close = serial_close,
-	.status = serial_status,
-	.fstat = char_dev_idesc_fstat,
+    .id_readv = serial_read,
+    .id_writev = serial_write,
+    .ioctl = serial_ioctl,
+    .close = serial_close,
+    .status = serial_status,
+    .fstat = char_dev_idesc_fstat,
 };
 
-const struct idesc_ops *idesc_serial_get_ops(void){
+const struct idesc_ops *idesc_serial_get_ops(void) {
 	return &idesc_serial_ops;
 }

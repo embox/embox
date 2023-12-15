@@ -1,14 +1,16 @@
-package embox.arch.arm.imx
+package platform.imx
 
 module arch extends embox.arch.arch {
 	source "arch.c"
 }
 
 module cpuinfo {
-	@IncludeExport(path="arch/arm/imx")
-	source "cpuinfo.h"
+	option string log_level="LOG_INFO"
 
 	source "cpuinfo.c"
+
+	@IncludeExport(path="arch/arm/imx")
+	source "cpuinfo.h"
 
 	option number usb_analog_base=0x20C8000
 

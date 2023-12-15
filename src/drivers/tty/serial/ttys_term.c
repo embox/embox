@@ -1,14 +1,13 @@
 /**
  * @file
  *
- * @data 29.04.2016
+ * @date 29.04.2016
  * @author: Anton Bondarev
  */
 
+#include <drivers/serial/uart_dev.h>
 #include <drivers/tty.h>
 #include <drivers/ttys.h>
-#include <drivers/serial/uart_dev.h>
-
 
 static inline struct uart *tty2uart(struct tty *tty) {
 	struct tty_uart *tu;
@@ -23,7 +22,7 @@ static void uart_out_wake(struct tty *t) {
 	irq_lock();
 
 	while ((ich = tty_out_getc(t)) != -1)
-		uart_putc(uart_dev, (char) ich);
+		uart_putc(uart_dev, (char)ich);
 
 	irq_unlock();
 }
@@ -42,6 +41,6 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 }
 
 struct tty_ops uart_tty_ops = {
-	.setup = uart_term_setup,
-	.out_wake = uart_out_wake,
+    .setup = uart_term_setup,
+    .out_wake = uart_out_wake,
 };
