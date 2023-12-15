@@ -1,0 +1,12 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/mbedtls/install/include")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+
+module mbedtls {
+
+@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+    source  "libmbedtls.a",
+			"libmbedcrypto.a",
+			"libmbedx509.a"
+}

@@ -1,0 +1,11 @@
+--- mbedtls-2.16.12/library/timing.c	2020-04-14 15:58:27.000000000 +0300
++++ ../build/extbld/third_party/lib/mbedtls/mbedtls-2.16.12/library/timing.c	2023-12-15 09:01:19.974184834 +0300
+@@ -325,7 +325,7 @@
+ {
+     mbedtls_timing_alarmed = 0;
+     signal( SIGALRM, sighandler );
+-    alarm( seconds );
++    //alarm( seconds ); //should be fixed later
+     if( seconds == 0 )
+     {
+         /* alarm(0) cancelled any previous pending alarm, but the
