@@ -1,0 +1,11 @@
+--- mbedtls-2.16.12/programs/ssl/ssl_server2.c	2020-04-14 15:58:28.000000000 +0300
++++ ../build/extbld/third_party/lib/mbedtls/mbedtls-2.16.12/programs/ssl/ssl_server2.c	2023-12-14 11:48:37.860206901 +0300
+@@ -1546,7 +1546,7 @@
+ #if defined(_MSC_VER)
+             opt.renego_period = _strtoui64( q, NULL, 10 );
+ #else
+-            if( sscanf( q, "%" SCNu64, &opt.renego_period ) != 1 )
++            if( sscanf( q, "%llu", &opt.renego_period ) != 1 )
+                 goto usage;
+ #endif /* _MSC_VER */
+             if( opt.renego_period < 2 )
