@@ -165,38 +165,35 @@ static int msg_with_correct_len(struct tftp_msg *msg, size_t msg_len) {
 	return !left_sz;
 }
 
-static int tftp_msg_send(struct tftp_msg *msg, size_t msg_len, struct tftp_stream *s) {
+static int 
+tftp_msg_send(struct tftp_msg *msg, size_t msg_len, struct tftp_stream *s) {
+	int res;
+
 	assert(s);
 	assert(msg);
-	assert(msg_with_correct_len(msg, msg_len)); /* debug msg_with_correct_len */
+	 /* debug msg_with_correct_len */
+	assert(msg_with_correct_len(msg, msg_len));
 
-	if (-1 == sendto(s->sock,
-				(char *)msg,
-				msg_len,
-				0,
-				(struct sockaddr *) &s->rem_addr, s->rem_addrlen)) {
+	res = sendto(s->sock, (char *)msg, msg_len, 0,
+					(struct sockaddr *) &s->rem_addr, s->rem_addrlen);
+	if (res == -1) {
 		log_error("tftp: send() failure");
 		return -errno;
 	}
 
-
-
 	return 0;
 }
 
-static int tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len, struct tftp_stream *s) {
+static int 
+tftp_msg_recv(struct tftp_msg *msg, size_t *msg_len, struct tftp_stream *s) {
 	ssize_t ret;
 
 	assert(s);
 	assert(msg);
 	assert(msg_len);
 
-	ret = recvfrom(s->sock,
-			(char *) msg,
-			sizeof *msg,
-			0,
-			(struct sockaddr *)&s->rem_addr,
-			&s->rem_addrlen);
+	ret = recvfrom(s->sock, (char *) msg, sizeof (*msg), 0,
+						(struct sockaddr *)&s->rem_addr, &s->rem_addrlen);
 	if (ret == -1) {
 		log_error("tftp: recv() failure");
 		return -errno;
@@ -229,7 +226,7 @@ static int make_remote_addr(const char *hostname,
 	return 0;
 }
 
-int tftp_resend_cmd(struct tftp_stream *s) {
+static int tftp_resend_cmd(struct tftp_stream *s) {
 	if (0 != tftp_msg_send(&s->snd, s->snd_len, s)) {
 		return -1;
 	}
