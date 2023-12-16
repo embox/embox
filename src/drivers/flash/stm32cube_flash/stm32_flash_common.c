@@ -63,7 +63,7 @@ int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	uint32_t page_err;
 	FLASH_EraseInitTypeDef erase_struct;
 
-	assert(block < STM32_FLASH_SECTORS_COUNT);
+	assert(block < dev->block_info[0].blocks);
 	assert(dev->num_block_infos == 1);
 
 	/* block is relative to flash beginning with not
@@ -90,7 +90,7 @@ int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 }
 
 int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len) {
-	if (base + len > STM32_FLASH_END - STM32_FLASH_START) {
+	if (base + len > dev->size) {
 		log_error("End address is out of range. Base=0x%x,len=0x%x",
 			base, len);
 		return -1;
