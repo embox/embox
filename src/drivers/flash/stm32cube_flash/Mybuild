@@ -6,6 +6,7 @@ module stm32h7cube {
 	option number flash_size=0x40000
 
 	source "stm32_flash.c"
+	source "stm32_flash_common.c"
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
@@ -21,6 +22,7 @@ module stm32f7cube {
 	option number flash_size=0x18000
 
 	source "stm32_flash.c"
+	source "stm32_flash_common.c"
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
@@ -36,6 +38,7 @@ module stm32l4cube {
 	option number flash_size=0x02000
 
 	source "stm32_flash.c"
+	source "stm32_flash_common.c"
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
@@ -51,6 +54,7 @@ module stm32f4cube {
 	option number flash_size=0xc000
 
 	source "stm32_flash.c"
+	source "stm32_flash_common.c"
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
@@ -66,6 +70,7 @@ module stm32f3cube {
 	option number flash_size=0x10000
 
 	source "stm32_flash.c"
+	source "stm32_flash_common.c"
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
@@ -81,6 +86,7 @@ module stm32f2cube {
 	option number flash_size=0xc000
 
 	source "stm32_flash.c"
+	source "stm32_flash_common.c"
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
