@@ -106,6 +106,17 @@ void irqctrl_eoi(unsigned int irq) {
 	REG32_STORE(GICC_EOIR, irq);
 }
 
+unsigned int irqctrl_get_intid(void) {
+	unsigned int irq;
+
+	irq = REG32_LOAD(GICC_IAR);
+	if (irq == GIC_SPURIOUS_IRQ) {
+		irq = -1;
+	}
+
+	return irq;
+}
+
 void interrupt_handle(void) {
 	unsigned int irq;
 
