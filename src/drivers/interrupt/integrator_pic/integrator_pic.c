@@ -49,6 +49,21 @@ int irqctrl_pending(unsigned int irq) {
 void irqctrl_eoi(unsigned int irq) {
 }
 
+unsigned int irqctrl_get_intid(void) {
+	unsigned int stat;
+	unsigned int irq;
+
+	stat = REG32_LOAD(ICU_IRQSTS);
+
+	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
+		if (stat & (uint32_t)(1 << irq)) {
+			return irq;
+		}
+	}
+
+	return -1;
+}
+
 void interrupt_handle(void) {
 	unsigned int stat;
 	unsigned int irq;
