@@ -117,36 +117,6 @@ unsigned int irqctrl_get_intid(void) {
 	return irq;
 }
 
-void interrupt_handle(void) {
-	unsigned int irq;
-
-	irq = REG32_LOAD(GICC_IAR);
-	if (irq == GIC_SPURIOUS_IRQ) {
-		return;
-	}
-
-	assert(irq_nr_valid(irq));
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-
-	irqctrl_disable(irq);
-	irqctrl_eoi(irq);
-	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(irq);
-
-		ipl_disable();
-	}
-	irqctrl_enable(irq);
-	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
-}
-
-void swi_handle(void) {
-	printk("swi!\n");
-}
-
 IRQCTRL_DEF(gicv1, gic_irqctrl_init);
 
 PERIPH_MEMORY_DEFINE(gicd, GICD_BASE, 0x1000);
