@@ -18,6 +18,7 @@
 #include "imx_uart_regs.h"
 
 #define PIN_CONFIG OPTION_GET(BOOLEAN, pin_config)
+#define UART_CLK   OPTION_GET(NUMBER, uart_clk)
 
 static void imx_uart_configure_pins(void) {
 	/* We need to configure UART pins to use them as
@@ -64,14 +65,17 @@ static void imx_uart_configure_pins(void) {
 
 static int imx_uart_setup(struct uart *dev, const struct uart_params *params) {
 	uint32_t uart_reg;
+	int denom;
+
+	denom = UART_CLK / params->baud_rate;
 
 	imx_uart_configure_pins();
 
 	/* Reset */
+	REG32_STORE(IMX_UCR1(dev->base_addr), 0);
 	REG32_STORE(IMX_UCR2(dev->base_addr), 0);
 	while (REG32_LOAD(IMX_UTS(dev->base_addr)) & IMX_UTS_SOFTRST) {}
 
-	REG32_STORE(IMX_UCR1(dev->base_addr), IMX_UCR1_UARTEN);
 	REG32_STORE(IMX_UCR2(dev->base_addr), IMX_UCR2_VALUE);
 	REG32_STORE(IMX_UCR3(dev->base_addr), IMX_UCR3_VALUE);
 	REG32_STORE(IMX_UCR4(dev->base_addr), 0);
@@ -86,13 +90,17 @@ static int imx_uart_setup(struct uart *dev, const struct uart_params *params) {
 	REG32_STORE(IMX_UBIR(dev->base_addr), uart_reg);
 
 	uart_reg = REG32_LOAD(IMX_UBMR(dev->base_addr));
-	uart_reg = FIELD_SET(uart_reg, IMX_UBMR_MOD, 0x15b);
+	uart_reg = FIELD_SET(uart_reg, IMX_UBMR_MOD, denom);
 	REG32_STORE(IMX_UBMR(dev->base_addr), uart_reg);
 
 	REG32_STORE(IMX_UMCR(dev->base_addr), 0);
 
-	if (params && (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ)) {
-		REG32_ORIN(IMX_UCR1(dev->base_addr), IMX_UCR1_RRDYEN);
+	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
+		REG32_STORE(IMX_UCR1(dev->base_addr),
+		    IMX_UCR1_UARTEN | IMX_UCR1_RRDYEN);
+	}
+	else {
+		REG32_STORE(IMX_UCR1(dev->base_addr), IMX_UCR1_UARTEN);
 	}
 
 	return 0;

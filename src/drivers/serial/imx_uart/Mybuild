@@ -19,6 +19,7 @@ package embox.driver.serial
 
 module imx_uart {
 	option boolean pin_config=false
+	option number uart_clk=40000000
 
 	source "imx_uart.c"
 
