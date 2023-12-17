@@ -9,7 +9,7 @@
 
 .weak gicv3_init_el3
 
-.section .text
+.section .bootcode
 .global aarch64_reset_handler
 
 aarch64_reset_handler:
