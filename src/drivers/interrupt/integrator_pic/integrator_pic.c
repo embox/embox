@@ -64,37 +64,6 @@ unsigned int irqctrl_get_intid(void) {
 	return -1;
 }
 
-void interrupt_handle(void) {
-	unsigned int stat;
-	unsigned int irq;
-
-	stat = REG32_LOAD(ICU_IRQSTS);
-
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
-		if (stat & (uint32_t)(1 << irq))
-			break;
-	}
-
-	irqctrl_disable(irq);
-
-	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(irq);
-
-		ipl_disable();
-	}
-	irqctrl_enable(irq);
-	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
-}
-
-void swi_handle(void) {
-	printk("swi!\n");
-}
-
 IRQCTRL_DEF(integrator_pic, integrator_pic_init);
 
 PERIPH_MEMORY_DEFINE(icu, ICU_BASE, 0x10);
