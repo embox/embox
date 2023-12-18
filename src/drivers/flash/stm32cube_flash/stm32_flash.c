@@ -67,6 +67,7 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	flash->size = STM32_FLASH_END - STM32_FLASH_START;
 	flash->num_block_infos = 1;
 	flash->block_info[0] = (struct flash_block_info) {
+		.fbi_start_id = STM32_FLASH_START,
 		.block_size = STM32_FLASH_SECTOR_SIZE,
 		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
 	};

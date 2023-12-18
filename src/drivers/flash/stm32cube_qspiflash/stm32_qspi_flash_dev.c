@@ -169,6 +169,7 @@ static int qspi_flash_init(struct flash_dev *dev, void *arg) {
 	flash->size = QSPI_FLASH_SIZE;
 	flash->num_block_infos = 1;
 	flash->block_info[0] = (struct flash_block_info) {
+		.fbi_start_id = 0,
 		.block_size = QSPI_BLOCK_SIZE,
 		.blocks = QSPI_FLASH_SIZE / QSPI_BLOCK_SIZE,
 	};
