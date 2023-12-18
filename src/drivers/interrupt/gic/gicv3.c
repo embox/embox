@@ -211,31 +211,8 @@ void irqctrl_eoi(unsigned int irq) {
 	ARCH_REG_STORE(ICC_EOIR1_EL1, irq);
 }
 
-void interrupt_handle(void) {
-	unsigned int irq;
-
-	irq = ARCH_REG_LOAD(ICC_IAR1_EL1) & ICC_IAR1_EL1_INTID_MASK;
-
-	assert(irq_nr_valid(irq));
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-
-	irqctrl_disable(irq);
-	irqctrl_eoi(irq);
-	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(irq);
-
-		ipl_disable();
-	}
-	irqctrl_enable(irq);
-	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
-}
-
-void swi_handle(void) {
-	printk("swi!\n");
+unsigned int irqctrl_get_intid(void) {
+	return ARCH_REG_LOAD(ICC_IAR1_EL1) & ICC_IAR1_EL1_INTID_MASK;
 }
 
 void gicv3_init_el3(void) {

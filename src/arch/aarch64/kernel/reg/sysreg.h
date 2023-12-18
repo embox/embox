@@ -153,6 +153,23 @@
 #define __ARCH_REG_LOAD__ESR_EL3()             __MRS_SYS(ESR_EL3)
 #define __ARCH_REG_STORE__ESR_EL3(val)         __MSR_SYS(ESR_EL3, val)
 
+#define ESR_ELn_EC                             /* Exception class */
+#define ESR_ELn_EC_MASK                        0b111111U
+#define ESR_ELn_EC_SHIFT                       26
+#define ESR_ELn_EC_UNKNOWN                     0x00
+#define ESR_ELn_EC_SIMD                        0x07
+#define ESR_ELn_EC_INST_ABT                    0x21
+#define ESR_ELn_EC_DATA_ABT                    0x25
+#define ESR_ELn_EC_SERROR                      0x2f
+#define ESR_ELn_EC_BPT                         0x31
+#define ESR_ELn_EC_WPT                         0x35
+#define ESR_ELn_EC_BKPT                        0x38
+#define ESR_ELn_EC_BRK                         0x3c
+
+#define ESR_ELn_ISS                            /* Instruction specific syndrome */
+#define ESR_ELn_ISS_MASK                       0xffffffU
+#define ESR_ELn_ISS_SHIFT                      0
+
 /** Fault Address Register (EL1) */
 #define FAR_EL1                                FAR_EL1
 #define __ARCH_REG_LOAD__FAR_EL1()             __MRS_SYS(FAR_EL1)

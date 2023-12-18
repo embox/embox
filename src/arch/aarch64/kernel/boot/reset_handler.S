@@ -9,7 +9,7 @@
 
 .weak gicv3_init_el3
 
-.section .text
+.section .bootcode
 .global aarch64_reset_handler
 
 aarch64_reset_handler:
@@ -83,8 +83,9 @@ el2_entry:
 	ldr     x0, =(SCTLR_EL1_RES1)
 	msr     sctlr_el1, x0
 
-	/* Don't trap to EL2 for CP15 traps */
+	/* Don't trap to EL2 from EL1 */
 	msr     hstr_el2, xzr
+	msr     cptr_el2, xzr
 
 	/* Exception taken from AArch64 EL1h */
 	mov     x0, #(SPSR_ELn_D | SPSR_ELn_A | SPSR_ELn_I | SPSR_ELn_F | SPSR_ELn_M_EL1h)
@@ -116,7 +117,7 @@ el1_entry:
 	isb
 
 	/* Set up exception vectors */
-	adr     x0, aarch64_trap_table
+	adr     x0, aarch64_kernel_vectors
 	msr     vbar_el1, x0
 
 	/* Unmask System Errors */

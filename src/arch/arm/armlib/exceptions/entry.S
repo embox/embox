@@ -73,7 +73,7 @@ undef_handler:
 swi_handler:
 	excpt_entry correction=4
 	save_fpu_dec tmp=r0, stack=sp, upd=1
-	bl      swi_handle
+	bl      arm_swi_handler
 	load_fpu_inc tmp=r0, stack=sp, upd=1
 	excpt_exit prev_mode=PSR_M_SVC
 
@@ -96,7 +96,7 @@ dabt_handler:
 irq_handler:
 	excpt_entry correction=4
 	save_fpu_dec tmp=r0, stack=sp, upd=1
-	bl      interrupt_handle
+	bl      arm_irq_handler
 	load_fpu_inc tmp=r0, stack=sp, upd=1
 	excpt_exit prev_mode=PSR_M_IRQ
 

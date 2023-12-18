@@ -49,35 +49,19 @@ int irqctrl_pending(unsigned int irq) {
 void irqctrl_eoi(unsigned int irq) {
 }
 
-void interrupt_handle(void) {
+unsigned int irqctrl_get_intid(void) {
 	unsigned int stat;
 	unsigned int irq;
 
 	stat = REG32_LOAD(ICU_IRQSTS);
 
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
-		if (stat & (uint32_t)(1 << irq))
-			break;
+		if (stat & (uint32_t)(1 << irq)) {
+			return irq;
+		}
 	}
 
-	irqctrl_disable(irq);
-
-	critical_enter(CRITICAL_IRQ_HANDLER);
-	{
-		ipl_enable();
-
-		irq_dispatch(irq);
-
-		ipl_disable();
-	}
-	irqctrl_enable(irq);
-	critical_leave(CRITICAL_IRQ_HANDLER);
-	critical_dispatch_pending();
-}
-
-void swi_handle(void) {
-	printk("swi!\n");
+	return -1;
 }
 
 IRQCTRL_DEF(integrator_pic, integrator_pic_init);

@@ -17,8 +17,7 @@
  * @note Implementation should provide @c __IRQCTRL_IRQS_TOTAL definition
  * indicating positive constant.
  */
-#define IRQCTRL_IRQS_TOTAL \
-	((unsigned int) __IRQCTRL_IRQS_TOTAL)
+#define IRQCTRL_IRQS_TOTAL ((unsigned int)__IRQCTRL_IRQS_TOTAL)
 
 /**
  * Enables the specified IRQ.
@@ -72,18 +71,24 @@ extern void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio);
  */
 extern unsigned int irqctrl_get_prio(unsigned int interrupt_nr);
 
+/**
+ * Get the ID of the currently active interrupt.
+ *
+ * @retval -1 If there are no currently active interrupts
+ */
+extern unsigned int irqctrl_get_intid(void);
+
 struct irqctrl {
 	const char *name;
 	int (*init)(void);
 };
 
-#define IRQCTRL_NAME \
-	__global_irqctrl
+#define IRQCTRL_NAME __global_irqctrl
 
-#define IRQCTRL_DEF(_name, _init) \
+#define IRQCTRL_DEF(_name, _init)   \
 	struct irqctrl IRQCTRL_NAME = { \
-		.name = #_name, \
-		.init = _init, \
+	    .name = #_name,             \
+	    .init = _init,              \
 	};
 
 static inline int irqctrl_init(void) {
