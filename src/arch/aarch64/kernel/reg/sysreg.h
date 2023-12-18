@@ -278,6 +278,42 @@
 #define __ARCH_REG_LOAD__MAIR_EL3()            __MRS_SYS(MAIR_EL3)
 #define __ARCH_REG_STORE__MAIR_EL3(val)        __MSR_SYS(MAIR_EL3, val)
 
+#define MAIR_ELn_ATTR0                         /* Memory Attribute 0 */
+#define MAIR_ELn_ATTR0_MASK                    0xffUL
+#define MAIR_ELn_ATTR0_SHIFT                   0
+
+#define MAIR_ELn_ATTR1                         /* Memory Attribute 1 */
+#define MAIR_ELn_ATTR1_MASK                    0xffUL
+#define MAIR_ELn_ATTR1_SHIFT                   8
+
+#define MAIR_ELn_ATTR2                         /* Memory Attribute 2 */
+#define MAIR_ELn_ATTR2_MASK                    0xffUL
+#define MAIR_ELn_ATTR2_SHIFT                   16
+
+#define MAIR_ELn_ATTR3                         /* Memory Attribute 3 */
+#define MAIR_ELn_ATTR3_MASK                    0xffUL
+#define MAIR_ELn_ATTR3_SHIFT                   24
+
+#define MAIR_ELn_ATTR4                         /* Memory Attribute 4 */
+#define MAIR_ELn_ATTR4_MASK                    0xffUL
+#define MAIR_ELn_ATTR4_SHIFT                   32
+
+#define MAIR_ELn_ATTR5                         /* Memory Attribute 5 */
+#define MAIR_ELn_ATTR5_MASK                    0xffUL
+#define MAIR_ELn_ATTR5_SHIFT                   40
+
+#define MAIR_ELn_ATTR6                         /* Memory Attribute 6 */
+#define MAIR_ELn_ATTR6_MASK                    0xffUL
+#define MAIR_ELn_ATTR6_SHIFT                   48
+
+#define MAIR_ELn_ATTR7                         /* Memory Attribute 7 */
+#define MAIR_ELn_ATTR7_MASK                    0xffUL
+#define MAIR_ELn_ATTR7_SHIFT                   56
+
+/* Device Memory (non-Gathering, non-Reordering, No Early write acknowledgement) */
+#define MAIR_ELn_ATTRn_DEVICE_nGnRnE           0x00UL
+#define MAIR_ELn_ATTRn_NORMAL                  0xffUL /* Normal Memory (Cacheable) */
+
 /** [RO] Main ID Register */
 #define MIDR_EL1                               MIDR_EL1
 #define __ARCH_REG_LOAD__MIDR_EL1()            __MRS_SYS(MIDR_EL1)
@@ -388,6 +424,8 @@
 #define __ARCH_REG_LOAD__TCR_EL1()             __MRS_SYS(TCR_EL1)
 #define __ARCH_REG_STORE__TCR_EL1(val)         __MSR_SYS(TCR_EL1, val)
 
+#define TCR_EL1_A1                             (1UL << 22) /* TTBR0_EL1 or TTBR1_EL1 defines the ASID */
+
 #define TCR_EL1_TG1                            /* TTBR1_EL1 Granule Size */
 #define TCR_EL1_TG1_MASK                       0b11UL
 #define TCR_EL1_TG1_SHIFT                      30
@@ -418,6 +456,10 @@
 #define TCR_ELn_T0SZ                           /* The size offset of the memory region addressed by TTBR0 (2^(64-T0SZ)) */
 #define TCR_ELn_T0SZ_MASK                      0b111111UL
 #define TCR_ELn_T0SZ_SHIFT                     0
+
+#define TCR_ELn_T1SZ                           /* The size offset of the memory region addressed by TTBR1 (2^(64-T0SZ)) */
+#define TCR_ELn_T1SZ_MASK                      0b111111UL
+#define TCR_ELn_T1SZ_SHIFT                     16
 
 #define TCR_ELn_TG0                            /* Granule Size for the corresponding TTBR0 register */
 #define TCR_ELn_TG0_MASK                       0b11UL
@@ -470,6 +512,14 @@
 #define TTBR1_EL1                              TTBR1_EL1
 #define __ARCH_REG_LOAD__TTBR1_EL1()           __MRS_SYS(TTBR1_EL1)
 #define __ARCH_REG_STORE__TTBR1_EL1(val)       __MSR_SYS(TTBR1_EL1, val)
+
+#define TTBRn_EL1_ASID                         /* Address Space Identifier */
+#define TTBRn_EL1_ASID_MASK                    0xffffUL
+#define TTBRn_EL1_ASID_SHIFT                   48
+
+#define TTBRn_ELn_BADDR                        /* Translation table base address */
+#define TTBRn_ELn_BADDR_MASK                   0xffffffffffffUL
+#define TTBRn_ELn_BADDR_SHIFT                  0
 
 /** Vector Base Address Register (EL1) */
 #define VBAR_EL1                               VBAR_EL1
