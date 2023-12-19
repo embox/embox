@@ -38,10 +38,6 @@
 
 //FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, STM32_FLASH_SECTOR_SIZE);
 
-extern char _flash_start;
-
-#define STM32_FLASH_START ((uint32_t) &_flash_start)
-
 static inline int stm32_flash_check_word_aligned(unsigned long base, size_t len) {
 	return ((uintptr_t) base & (STM32_FLASH_WORD - 1)) == 0 &&
 			((uintptr_t) len & (STM32_FLASH_WORD - 1)) == 0;
@@ -92,7 +88,7 @@ stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len) {
 		return -1;
 	}
 	/* read can be unaligned */
-	memcpy(data, (void *) STM32_FLASH_START + base, len);
+	memcpy(data, (void *)(dev->block_info[0].fbi_start_id) + base, len);
 
 	return len;
 }
@@ -116,7 +112,7 @@ int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data, 
 	}
 
 	/* Copy by word */
-	dest = STM32_FLASH_START + base;
+	dest = dev->block_info[0].fbi_start_id + base;
 	data32 = (uint32_t *) data;
 
 	HAL_FLASH_Unlock();
