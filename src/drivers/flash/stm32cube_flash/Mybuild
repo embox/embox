@@ -6,6 +6,9 @@ module stm32cube_flash_common {
 
 	source "stm32_flash_common.c"
 
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "stm32_in_chip_flash.h"
+
 	depends third_party.bsp.st_bsp_api
 }
  

@@ -33,6 +33,7 @@
 #include <drivers/flash/flash_cache.h>
 
 #include <drivers/block_dev/flash/stm32flash.h>
+#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
 
 #define FLASH_NAME     stm32flash
 
