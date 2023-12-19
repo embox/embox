@@ -48,13 +48,15 @@ extern char _flash_start, _flash_end;
 			((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / \
 						STM32_FLASH_SECTOR_SIZE)
 
-static inline int stm32_flash_check_range(struct flash_dev *dev, unsigned long base, size_t len) {
-	return STM32_FLASH_START + base + len <= STM32_FLASH_END;
-}
-
 static inline int stm32_flash_check_word_aligned(unsigned long base, size_t len) {
 	return ((uintptr_t) base & (STM32_FLASH_WORD - 1)) == 0 &&
 			((uintptr_t) len & (STM32_FLASH_WORD - 1)) == 0;
+}
+
+static inline int stm32_flash_get_start_sector(struct flash_dev *dev) {
+	return ((dev->block_info[0].fbi_start_id - STM32_ADDR_FLASH_SECTOR_0) /
+							dev->block_info[0].block_size);
+
 }
 
 int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
@@ -69,7 +71,7 @@ int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	/* block is relative to flash beginning with not
 	 * the actual ROM start address. So calculate the new sector
 	 * in terms of ROM start address. */
-	block += FLASH_START_SECTOR;
+	block += stm32_flash_get_start_sector(dev);
 	log_debug("Erase global block %d\n", block);
 
 	stm32_fill_flash_erase_struct(&erase_struct, block);
@@ -89,14 +91,16 @@ int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	return ret;
 }
 
-int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len) {
+int 
+stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len) {
+
 	if (base + len > dev->size) {
-		log_error("End address is out of range. Base=0x%x,len=0x%x",
-			base, len);
+		log_error("Address is out of range. Base=0x%x,len=0x%x", base, len);
 		return -1;
 	}
 	/* read can be unaligned */
 	memcpy(data, (void *) STM32_FLASH_START + base, len);
+
 	return len;
 }
 
@@ -112,7 +116,8 @@ int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data, 
 		goto err_exit;
 	}
 
-	if (!stm32_flash_check_range(dev, base, len)) {
+	if (base + len > dev->size) {
+		log_error("Address is out of range. Base=0x%x,len=0x%x", base, len);
 		err = -EFBIG;
 		goto err_exit;
 	}
