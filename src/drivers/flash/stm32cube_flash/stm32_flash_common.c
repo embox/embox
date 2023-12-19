@@ -38,15 +38,9 @@
 
 //FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, STM32_FLASH_SECTOR_SIZE);
 
-extern char _flash_start, _flash_end;
+extern char _flash_start;
 
 #define STM32_FLASH_START ((uint32_t) &_flash_start)
-#define STM32_FLASH_END   ((uint32_t) &_flash_end)
-
-
-#define FLASH_START_SECTOR \
-			((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / \
-						STM32_FLASH_SECTOR_SIZE)
 
 static inline int stm32_flash_check_word_aligned(unsigned long base, size_t len) {
 	return ((uintptr_t) base & (STM32_FLASH_WORD - 1)) == 0 &&
@@ -54,9 +48,8 @@ static inline int stm32_flash_check_word_aligned(unsigned long base, size_t len)
 }
 
 static inline int stm32_flash_get_start_sector(struct flash_dev *dev) {
-	return ((dev->block_info[0].fbi_start_id - STM32_ADDR_FLASH_SECTOR_0) /
+	return ( (dev->block_info[0].fbi_start_id - STM32_ADDR_FLASH_SECTOR_0) /
 							dev->block_info[0].block_size);
-
 }
 
 int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
