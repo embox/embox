@@ -36,9 +36,8 @@ el3_entry:
 	msr     sctlr_el3, xzr
 	isb
 
-	/* Initialize SCTLR_EL2 and HCR_EL2 */
-	ldr     x0, =(SCTLR_EL2_RES1)
-	msr     sctlr_el2, x0
+	/* Reset SCTLR_EL2 and HCR_EL2 */
+	msr     sctlr_el2, xzr
 	msr     hcr_el2, xzr
 
 	/* EL2 Execution state is AArch64, EL0 and EL1 are in Non-Secure state */
@@ -75,17 +74,20 @@ el2_entry:
 	msr     sctlr_el2, xzr
 	isb
 
+	/* EL1 stage 2 address translation disabled */
 	/* EL1 Execution state is AArch64 */
 	mov     x0, #(HCR_EL2_RW)
 	msr     hcr_el2, x0
 
-	/* Initialize SCTLR_EL1 */
-	ldr     x0, =(SCTLR_EL1_RES1)
-	msr     sctlr_el1, x0
+	/* Reset SCTLR_EL1 */
+	msr     sctlr_el1, xzr
 
 	/* Don't trap to EL2 from EL1 */
 	msr     hstr_el2, xzr
 	msr     cptr_el2, xzr
+
+	/* Reset VTTBR_EL2 because TLB invalidation depends on the VMID */
+	msr     vttbr_el2, xzr
 
 	/* Exception taken from AArch64 EL1h */
 	mov     x0, #(SPSR_ELn_D | SPSR_ELn_A | SPSR_ELn_I | SPSR_ELn_F | SPSR_ELn_M_EL1h)
