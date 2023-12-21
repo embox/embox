@@ -1,0 +1,10 @@
+package embox.driver.gpio
+
+module niiet_gpio extends api {
+	option number gpio_chip_id = 0
+
+	source "niiet_gpio.c"
+
+	depends embox.driver.gpio.core
+}
+
