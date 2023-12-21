@@ -47,8 +47,10 @@ abstract module cache { }
 @DefaultImpl(embox.arch.generic.no_libarch)
 abstract module libarch { }
 
-abstract module locore { }
+/* Deprecated */
 abstract module arch { }
+
+abstract module locore { }
 abstract module entry { }
 abstract module boot { }
 abstract module lds { }
