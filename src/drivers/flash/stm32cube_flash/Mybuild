@@ -6,12 +6,20 @@ module stm32cube_flash_common {
 
 	source "stm32_flash_common.c"
 
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_flash_in_chip {
+	option string log_level="LOG_ERR"
+	option number flash_size
+
 	@IncludeExport(path="drivers/block_dev/flash")
 	source "stm32_in_chip_flash.h"
 
 	depends third_party.bsp.st_bsp_api
 }
- 
+
 @BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7cube {
 	option string log_level="LOG_ERR"
@@ -24,6 +32,7 @@ module stm32h7cube {
 	source "stm32h7flash.h"
 
 	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -41,6 +50,7 @@ module stm32l4cube {
 	source "stm32l4flash.h"
 
 	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -58,6 +68,7 @@ module stm32f7cube {
 	source "stm32f7flash.h"
 
 	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -75,6 +86,7 @@ module stm32f4cube {
 	source "stm32f4flash.h"
 
 	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -92,6 +104,7 @@ module stm32f3cube {
 	source "stm32f3flash.h"
 
 	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -109,6 +122,7 @@ module stm32f2cube {
 	source "stm32f2flash.h"
 
 	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
