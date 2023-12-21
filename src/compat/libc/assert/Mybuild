@@ -8,4 +8,5 @@ static module assert {
 
 	@NoRuntime depends embox.lib.printk
 	@NoRuntime depends embox.compat.libc.stdio.sprintf
+	@NoRuntime depends platform.platform_shutdown
 }
