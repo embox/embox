@@ -59,6 +59,7 @@ struct flash_ioctl_blocksize {
 };
 
 struct flash_block_info {
+	uintptr_t        fbi_start_id;
 	size_t           block_size;
 	uint32_t         blocks;
 };

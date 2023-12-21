@@ -1,21 +1,10 @@
 /**
  * @file
  *
- * @brief Flash driver for stm32 F3/F4/F7
- *
- * @details F4 and F7 have sectors of different sizes.
- *   For example, STM32F4-Discovery:
- *      - 4 16Kb sectors
- *      - 1 64Kb sector
- *      - 7 128Kb sector
- *   So we use only first 4 64Kb sectors.
- *   For example, STM32F3-Discovery:
- *      - 256 2Kb sectors (they are called pages)
- *   So we use only first 256 2Kb sectors.
+ * @brief Flash driver for stm32
  *
  * @author  Anton Kozlov
  * @author  Alexander Kalmuk
- *             Fixes and adoptation to new STM32Cube
  * @date    23.10.2014
  */
 
@@ -33,21 +22,19 @@
 #include <drivers/flash/flash_cache.h>
 
 #include <drivers/block_dev/flash/stm32flash.h>
-#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
 
-#define FLASH_NAME     stm32flash
+#define FLASH_NAME     flash_fix
 
 FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, STM32_FLASH_SECTOR_SIZE);
 
-extern char _flash_start, _flash_end;
-
-#define STM32_FLASH_START ((uint32_t) &_flash_start)
-#define STM32_FLASH_END   ((uint32_t) &_flash_end)
-
+#define FLASH_START (OPTION_GET(NUMBER,flash_start_addr))
+#define FIX_FLASH_END   (OPTION_GET(NUMBER,flash_end_addr))
 
 #define FLASH_START_SECTOR \
-			((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / \
+			((FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / \
 						STM32_FLASH_SECTOR_SIZE)
+
+#define FLASH_SIZE      (FIX_FLASH_END - FLASH_START)
 
 static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD] 
 			__attribute__ ((aligned(STM32_FLASH_WORD)));
@@ -57,33 +44,29 @@ static const struct flash_dev_drv stm32_flash_drv;
 static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	struct flash_dev *flash;
 
-	assert((STM32_FLASH_FLASH_SIZE % STM32_FLASH_SECTOR_SIZE) == 0);
+	assert((FLASH_SIZE % STM32_FLASH_SECTOR_SIZE) == 0);
 
-	flash = flash_create(MACRO_STRING(FLASH_NAME), STM32_FLASH_FLASH_SIZE);
+	flash = flash_create(MACRO_STRING(FLASH_NAME), FLASH_SIZE);
 	if (flash == NULL) {
 		log_error("Failed to create flash device!");
 		return -1;
 	}
 	flash->drv = &stm32_flash_drv;
-	flash->size = STM32_FLASH_END - STM32_FLASH_START;
+	flash->size = FIX_FLASH_END - FLASH_START;
 	flash->num_block_infos = 1;
 	flash->block_info[0] = (struct flash_block_info) {
-		.fbi_start_id = STM32_FLASH_START,
+		.fbi_start_id = FLASH_START,
 		.block_size = STM32_FLASH_SECTOR_SIZE,
-		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
+		.blocks = FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
 	};
 	flash->fld_aligned_word = stm32_flash_aligned_word;
 	flash->fld_word_size = STM32_FLASH_WORD;
 
 	flash->fld_cache = FLASH_CACHE_GET(flash, FLASH_NAME);
 	
-	/* We are using only first STM32_FLASH_SECTORS_COUNT sectors */
-	assert((flash->block_info[0].blocks + FLASH_START_SECTOR) <=
-		(STM32_FLASH_SECTOR_SIZE * STM32_FLASH_SECTORS_COUNT));
-
 	log_debug("");
 	log_debug("Flash info:");
-	log_debug("  Flash start address = 0x%08x", STM32_FLASH_START);
+	log_debug("  Flash start address = 0x%08x", FLASH_START);
 	log_debug("  Flash start sector  = %d", FLASH_START_SECTOR);
 	log_debug("  Flash size   = 0x%x", flash->size);
 	log_debug("  Block size   = 0x%x", flash->block_info[0].block_size);

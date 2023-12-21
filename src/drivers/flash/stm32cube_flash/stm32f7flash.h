@@ -8,9 +8,6 @@
 #ifndef SRC_DRIVERS_FLASH_STM32F7FLASH_H_
 #define SRC_DRIVERS_FLASH_STM32F7FLASH_H_
 
-#include <framework/mod/options.h>
-
-#define STM32_FLASH_FLASH_SIZE         OPTION_GET(NUMBER,flash_size)
 #define STM32_ADDR_FLASH_SECTOR_0      ((uint32_t)0x08000000)
 /* First 4 sectors of STM32F4-Discovery flash are 32Kb */
 #define STM32_FLASH_SECTOR_SIZE        (32 * 1024)
