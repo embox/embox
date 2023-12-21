@@ -1,0 +1,10 @@
+package platform
+
+@DefaultImpl(platform.generic.deprecated_platform_idle)
+abstract module platform_idle { }
+
+@DefaultImpl(platform.generic.deprecated_platform_init)
+abstract module platform_init { }
+
+@DefaultImpl(platform.generic.deprecated_platform_shutdown)
+abstract module platform_shutdown { }

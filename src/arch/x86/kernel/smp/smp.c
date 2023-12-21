@@ -6,31 +6,27 @@
  * @author Anton Bulychev
  */
 
-#include <embox/unit.h>
-
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdint.h>
 
-#include <asm/msr.h>
 #include <asm/ap.h>
-
-#include <hal/arch.h>
-
-#include <kernel/panic.h>
+#include <asm/msr.h>
+#include <drivers/common/memory.h>
+#include <embox/unit.h>
+#include <hal/platform.h>
 #include <kernel/cpu/cpu.h>
-#include <kernel/thread.h>
+#include <kernel/panic.h>
+#include <kernel/spinlock.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
-#include <kernel/spinlock.h>
-
-#include <drivers/common/memory.h>
+#include <kernel/thread.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 #include <module/embox/kernel/thread/core.h>
 
-#define THREAD_STACK_SIZE OPTION_MODULE_GET(embox__kernel__thread__core, \
-			NUMBER,thread_stack_size)
+#define THREAD_STACK_SIZE \
+	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -38,7 +34,7 @@ EMBOX_UNIT_INIT(unit_init);
 extern void idt_load(void);
 
 static char ap_stack[NCPU][THREAD_STACK_SIZE]
-		__attribute__((aligned(THREAD_STACK_SIZE)));
+    __attribute__((aligned(THREAD_STACK_SIZE)));
 static int ap_ack;
 static spinlock_t startup_lock = SPIN_STATIC_UNLOCKED;
 
@@ -57,7 +53,7 @@ void startup_ap(void) {
 	lapic_enable();
 
 	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
-			SCHED_PRIORITY_MIN, bs_idle_run, NULL);
+	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);
 	cpu_init(self_id, bs_idle);
 	task_thread_register(task_kernel_task(), bs_idle);
 	thread_set_current(bs_idle);
@@ -68,9 +64,9 @@ void startup_ap(void) {
 	__spin_unlock(&startup_lock);
 	ipl_enable();
 
-
-	while (1)
-		arch_idle();
+	while (1) {
+		platform_idle();
+	}
 }
 
 static inline void init_trampoline(void) {
@@ -78,8 +74,8 @@ static inline void init_trampoline(void) {
 	memcpy(__ap_gdt, gdt, sizeof(gdt));
 	gdt_set_gdtr(&__ap_gdtr, __ap_gdt);
 
-	memcpy((void *) TRAMPOLINE_ADDR, &__ap_trampoline,
-			(uint32_t) &__ap_trampoline_end - (uint32_t) &__ap_trampoline);
+	memcpy((void *)TRAMPOLINE_ADDR, &__ap_trampoline,
+	    (uint32_t)&__ap_trampoline_end - (uint32_t)&__ap_trampoline);
 }
 
 /* TODO: FIX THIS! */

@@ -1,6 +1,5 @@
 /**
- * @file
- * @brief Defines ARCH interface
+ * @brief Defines ARCH interface (deprecated)
  *
  * @date 25.11.09
  * @author Eldar Abusalimov
@@ -9,20 +8,17 @@
 #ifndef HAL_ARCH_H_
 #define HAL_ARCH_H_
 
-#include <asm/hal/arch.h>
 #include <compiler.h>
 
-typedef enum {
-	ARCH_SHUTDOWN_MODE_HALT,
-	ARCH_SHUTDOWN_MODE_REBOOT,
-	ARCH_SHUTDOWN_MODE_ABORT,
-} arch_shutdown_mode_t;
+#include <asm/hal/arch.h>
+#include <hal/platform.h>
 
-/**
- * Performs basic machine-dependent initialization.
- *
- * @note Implementation have to setup such low-level features as e.g. cache.
- */
+#define ARCH_SHUTDOWN_MODE_HALT   SHUTDOWN_MODE_HALT
+#define ARCH_SHUTDOWN_MODE_REBOOT SHUTDOWN_MODE_REBOOT
+#define ARCH_SHUTDOWN_MODE_ABORT  SHUTDOWN_MODE_ABORT
+
+typedef shutdown_mode_t arch_shutdown_mode_t;
+
 extern void arch_init(void);
 
 extern void arch_idle(void);

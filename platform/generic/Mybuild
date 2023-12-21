@@ -1,0 +1,19 @@
+package platform.generic
+
+module deprecated_platform_idle extends platform.platform_idle {
+	source "deprecated_platform_idle.c"
+
+	@NoRuntime depends embox.arch.arch
+}
+
+module deprecated_platform_init extends platform.platform_init {
+	source "deprecated_platform_init.c"
+
+	@NoRuntime depends embox.arch.arch
+}
+
+module deprecated_platform_shutdown extends platform.platform_shutdown {
+	source "deprecated_platform_shutdown.c"
+
+	@NoRuntime depends embox.arch.arch
+}
