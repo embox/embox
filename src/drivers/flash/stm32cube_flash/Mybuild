@@ -128,3 +128,17 @@ module stm32f2cube {
 	depends core
 }
 
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_fix_addr {
+	option string log_level="LOG_ERR"
+
+	option number flash_start_addr
+	option number flash_end_addr
+
+	source "stm32_flash_fix_addr.c"
+
+	depends stm32cube_flash_common
+
+	depends third_party.bsp.st_bsp_api
+	depends core
+}
