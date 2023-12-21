@@ -8,21 +8,18 @@
  */
 
 #include <assert.h>
-#include <asm/regs.h>
-#include <kernel/irq.h>
-#include <asm/ptrace.h>
-#include <asm/interrupts.h>
+
 #include <asm/entry.h>
-
-#include <kernel/printk.h>
-
+#include <asm/interrupts.h>
+#include <asm/ptrace.h>
+#include <asm/regs.h>
 #include <embox/unit.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
 
 EMBOX_UNIT_INIT(riscv_interrupt_init);
 
 #define CLEAN_IRQ_BIT (~(1u << 31))
-
-extern int irqctrl_get_num(void);
 
 void riscv_interrupt_handler(void) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
@@ -43,9 +40,10 @@ void riscv_interrupt_handler(void) {
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
-		} else if (pending == IRQ_EXTERNAL) {
+		}
+		else if (pending == IRQ_EXTERNAL) {
 			/* the ID of the highest-priority pending interrupt */
-			interrupt_id = irqctrl_get_num();
+			interrupt_id = irqctrl_get_intid();
 			if (interrupt_id == 0) {
 				critical_leave(CRITICAL_IRQ_HANDLER);
 				return;
@@ -65,5 +63,6 @@ void riscv_interrupt_handler(void) {
 
 static int riscv_interrupt_init(void) {
 	enable_interrupts();
+
 	return 0;
 }
