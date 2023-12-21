@@ -15,7 +15,6 @@
 #include <hal/reg.h>
 #include <kernel/critical.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <util/field.h>
 
 #include "gicv3.h"
@@ -110,10 +109,6 @@ static void gic_dist_init(void) {
 
 static void gic_redist_init(void) {
 	int i;
-
-	/* Make sure this CPU redistributor is quiescen */
-	REG32_ORIN(GICR_WAKER, GICR_WAKER_PS);
-	while (!(REG32_LOAD(GICR_WAKER) & GICR_WAKER_CA)) {}
 
 	/* Wake up this CPU redistributor */
 	REG32_CLEAR(GICR_WAKER, GICR_WAKER_PS);

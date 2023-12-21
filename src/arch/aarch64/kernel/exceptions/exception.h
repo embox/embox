@@ -10,7 +10,7 @@
 #include <stdint.h>
 
 struct excpt_context {
-	uint64_t x[29];
+	uint64_t x[30];
 	uint64_t lr;
 	uint64_t sp;
 	uint64_t pc;
