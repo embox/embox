@@ -18,4 +18,5 @@ module smp extends embox.arch.smp {
 	depends embox.kernel.thread.core
 	@NoRuntime depends embox.kernel.sched.affinity.smp
 	depends embox.driver.periph_memory
+	@NoRuntime depends platform.platform_idle
 }
