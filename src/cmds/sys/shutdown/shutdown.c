@@ -10,14 +10,22 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <hal/arch.h>
+
+#include <hal/platform.h>
 
 static void print_usage(void) {
-	printf("Usage:" "\n"
-			"shutdown -p" "\n"
-			"\t" "turn off the system" "\n"
-			"shutdown -r" "\n"
-			"\t" "reboot the system" "\n");
+	printf("Usage:"
+	       "\n"
+	       "shutdown -p"
+	       "\n"
+	       "\t"
+	       "turn off the system"
+	       "\n"
+	       "shutdown -r"
+	       "\n"
+	       "\t"
+	       "reboot the system"
+	       "\n");
 }
 
 int main(int argc, char **argv) {
@@ -27,10 +35,12 @@ int main(int argc, char **argv) {
 	}
 
 	if (strcmp(argv[1], "-p") == 0) {
-		arch_shutdown(ARCH_SHUTDOWN_MODE_HALT);
-	} else if (strcmp(argv[1], "-r") == 0) {
-		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
-	} else {
+		platform_shutdown(SHUTDOWN_MODE_HALT);
+	}
+	else if (strcmp(argv[1], "-r") == 0) {
+		platform_shutdown(SHUTDOWN_MODE_REBOOT);
+	}
+	else {
 		print_usage();
 	}
 
