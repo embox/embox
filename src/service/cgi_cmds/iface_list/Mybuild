@@ -1,6 +1,5 @@
 package embox.service
 
-
 @AutoCmd
 @Cmd(name="http_admin_iface_list", help="", man="")
 @BuildDepends(third_party.lib.cjson)
@@ -15,6 +14,7 @@ module http_admin_iface_list {
 
 	depends third_party.lib.cjson
 	depends embox.compat.libc.stdlib.system
+	@NoRuntime depends platform.platform_shutdown
 }
 
 module http_admin_iface_html {

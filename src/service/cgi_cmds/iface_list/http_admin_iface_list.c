@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include <framework/mod/options.h>
-#include <hal/arch.h>
+#include <hal/platform.h>
 #include <net/inetdevice.h>
 #include <net/l3/route.h>
 #include <net/util/macaddr.h>
@@ -217,12 +217,12 @@ static void http_admin_post(char *post_data) {
 		system(buf);
 		log_info("\nNet configuration is successfully saved");
 		log_info("\tRebooting now to apply new net config...");
-		arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+		platform_shutdown(SHUTDOWN_MODE_REBOOT);
 #else  /*not netmanager */
 		if (!system("flash_settings store net")) {
 			log_info("\nNet configuration is successfully saved");
 			log_info("\tRebooting now to apply new net config...");
-			arch_shutdown(ARCH_SHUTDOWN_MODE_REBOOT);
+			platform_shutdown(SHUTDOWN_MODE_REBOOT);
 		}
 		else {
 			log_error("\nNet configuration saving failed");
