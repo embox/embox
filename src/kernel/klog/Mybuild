@@ -5,6 +5,8 @@ abstract module klog_api {
 }
 
 module klog extends klog_api {
+	option boolean print_mod_name=true
+	
 	source "klog.c"
 
 	@IncludeExport(path="kernel")
