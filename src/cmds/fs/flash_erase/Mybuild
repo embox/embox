@@ -1,0 +1,12 @@
+package embox.cmd.fs
+
+@AutoCmd
+@Cmd(name = "flash_erase",
+	help = "Erase blocks of the specified flash device",
+	man = '''
+		SYNOPSIS
+			flash_erase [FLASH_DEV]
+	''')
+module flash_erase {
+	source "flash_erase.c"
+}
