@@ -44,7 +44,7 @@ static int mmu_init(void) {
 		break;
 	default:
 		tmp = TCR_ELn_TG0_4KB;
-		log_crit("mmu: Wrong granule configuration '%i'", AARCH64_MMU_GRANULE);
+		log_crit("Wrong granule configuration '%i'", AARCH64_MMU_GRANULE);
 	}
 
 	/* Set Granule Size */
@@ -106,7 +106,7 @@ mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 	/* Assume mmu_ctx_t and ttbr0 are the same values for aarch64, so just set
 	   ASID=0 for now (as we have a single address space system-wide) */
 	if (DEFAULT_ASID != FIELD_GET(ctx, TTBRn_EL1_ASID)) {
-		log_crit("mmu: 16 most-sign bits of pgd should be zero (pgd=%p)", pgd);
+		log_crit("16 most-sign bits of pgd should be zero (pgd=%p)", pgd);
 		ctx = FIELD_SET(ctx, TTBRn_EL1_ASID, DEFAULT_ASID);
 		return 0;
 	}
@@ -136,7 +136,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 
 uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 	if (!entry) {
-		log_error("mmu: Entry is NULL!");
+		log_error("Entry is NULL!");
 		return 0;
 	}
 
@@ -145,12 +145,12 @@ uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
 
 void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
 	if (!entry) {
-		log_error("mmu: entry is NULL!");
+		log_error("entry is NULL!");
 		return;
 	}
 
 	if ((lvl < 0) || (lvl > MMU_LAST_LEVEL)) {
-		log_error("mmu: wrong MMU level: %i (max %i)", lvl, MMU_LAST_LEVEL);
+		log_error("wrong MMU level: %i (max %i)", lvl, MMU_LAST_LEVEL);
 		return;
 	}
 
@@ -159,12 +159,12 @@ void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
 
 void mmu_unset(int lvl, uintptr_t *entry) {
 	if (!entry) {
-		log_error("mmu: entry is NULL!");
+		log_error("entry is NULL!");
 		return;
 	}
 
 	if ((lvl < 0) || (lvl > MMU_LAST_LEVEL)) {
-		log_error("mmu: wrong MMU level: %i (max %i)", lvl, MMU_LAST_LEVEL);
+		log_error("wrong MMU level: %i (max %i)", lvl, MMU_LAST_LEVEL);
 		return;
 	}
 
@@ -175,7 +175,7 @@ uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
 	uintptr_t pte;
 
 	if (addr & MMU_PAGE_MASK) {
-		log_error("mmu: address %p doesn't match mask %p", (void *)addr,
+		log_error("address %p doesn't match mask %p", (void *)addr,
 		    (void *)MMU_PAGE_MASK);
 		addr &= MMU_PAGE_MASK;
 	}
@@ -190,7 +190,7 @@ uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
 	}
 
 	if (!(prot & PROT_READ)) {
-		log_error("mmu: Setting page non-readable WTF");
+		log_error("Setting page non-readable WTF");
 	}
 
 	if (prot & PROT_NOCACHE) {
@@ -219,7 +219,7 @@ int mmu_pte_set(uintptr_t *entry, uintptr_t value) {
 
 uintptr_t mmu_pte_get(uintptr_t *entry) {
 	if (entry == NULL) {
-		log_error("mmu: Entry is NULL!");
+		log_error("Entry is NULL!");
 		return 0;
 	}
 
@@ -228,7 +228,7 @@ uintptr_t mmu_pte_get(uintptr_t *entry) {
 
 int mmu_present(int lvl, uintptr_t *entry) {
 	if (entry == NULL) {
-		log_error("mmu: Entry is NULL!");
+		log_error("Entry is NULL!");
 		return 0;
 	}
 
@@ -241,7 +241,7 @@ uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
 	assert(flags);
 
 	if (!(pte & MMU_DESC_VD) || !(pte & MMU_DESC_TP)) {
-		log_error("mmu: Trying to unpack corrupted PTE");
+		log_error("Trying to unpack corrupted PTE");
 	}
 
 	*flags = 0;
@@ -259,7 +259,7 @@ uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
 		*flags |= PROT_READ;
 		break;
 	default:
-		log_error("mmu: Corrupted PTE access properties");
+		log_error("Corrupted PTE access properties");
 	}
 
 	tmp = FIELD_GET(pte, MMU_DESC_ATTRINDX);
@@ -270,7 +270,7 @@ uintptr_t mmu_pte_unpack(uintptr_t pte, int *flags) {
 	case MEM_NORMAL_ATTRINDX:
 		break;
 	default:
-		log_error("mmu: Corrupted PTE cache properties");
+		log_error("Corrupted PTE cache properties");
 	}
 
 	return pte & ~MMU_PAGE_MASK;
