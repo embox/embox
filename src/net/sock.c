@@ -101,11 +101,17 @@ static struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int 
 }
 
 int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	const unsigned long timeout = sock_calc_timeout(sk);
+	unsigned long timeout;
 	struct sk_buff *skb;
 	int err, nrecv;
 
 	assert(sk != NULL);
+
+	timeout = sock_calc_timeout(sk);
+
+	if (msg->msg_flags & MSG_DONTWAIT) {
+		timeout = 0;
+	}
 
 	skb = sock_get_skb(sk, timeout, &err);
 
@@ -148,6 +154,10 @@ int sock_stream_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	err = 0;
 	while (bp < bufend) {
 		size_t len;
+
+		if (msg->msg_flags & MSG_DONTWAIT) {
+			timeout = 0;
+		}
 
 		skb = sock_get_skb(sk, timeout, &err);
 		if (!skb) {
