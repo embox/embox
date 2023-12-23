@@ -33,13 +33,13 @@ static int pci_mod_enable(const struct mod *self) {
 	const struct pci_driver *pci_drv = (const struct pci_driver *)self;
 	struct pci_slot_dev *dev = NULL;
 
-	log_info("pci: %s driver inserted", pci_drv->name);
+	log_info("%s driver inserted", pci_drv->name);
 
 	pci_foreach_dev(dev) {
 		if (!dev->pci_drv) {
 			if (!pci_drv_probe(pci_drv, dev)) {
-				log_info("pci: %s handles %04x:%04x "
-				         "bus %" PRId32 " slot %" PRId8 " func %" PRId8,
+				log_info("%s handles %04x:%04x bus %" PRId32 " slot %" PRId8
+				         " func %" PRId8,
 				    pci_drv->name, dev->vendor, dev->device, dev->busn,
 				    dev->slot, dev->func);
 
