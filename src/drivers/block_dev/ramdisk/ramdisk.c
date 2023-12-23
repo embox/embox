@@ -7,36 +7,32 @@
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  */
 
+#include <ctype.h>
 #include <errno.h>
-#include <string.h>
+#include <libgen.h>
 #include <limits.h>
 #include <stdio.h>
-#include <ctype.h>
-#include <libgen.h>
-
-#include <util/err.h>
-#include <embox/unit.h>
-
-#include <mem/page.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
-
-#include <util/indexator.h>
-#include <util/binalign.h>
+#include <string.h>
 
 #include <drivers/block_dev.h>
-
 #include <drivers/block_dev/ramdisk/ramdisk.h>
+#include <embox/unit.h>
+#include <mem/misc/pool.h>
+#include <mem/page.h>
+#include <mem/phymem.h>
+#include <util/binalign.h>
+#include <util/err.h>
+#include <util/indexator.h>
 
-#define MAX_RAMDISK_QUANTITY OPTION_GET(NUMBER,ramdisk_quantity)
-#define RAMDISK_SIZE OPTION_GET(NUMBER,size)
-#define RAMDISK_BLOCK_SIZE OPTION_GET(NUMBER,block_size)
+#define MAX_RAMDISK_QUANTITY OPTION_GET(NUMBER, ramdisk_quantity)
+#define RAMDISK_SIZE         OPTION_GET(NUMBER, size)
+#define RAMDISK_BLOCK_SIZE   OPTION_GET(NUMBER, block_size)
 
-POOL_DEF(ramdisk_pool,struct ramdisk,MAX_RAMDISK_QUANTITY);
+POOL_DEF(ramdisk_pool, struct ramdisk, MAX_RAMDISK_QUANTITY);
 INDEX_DEF(ramdisk_idx, 0, MAX_RAMDISK_QUANTITY);
 
-int ramdisk_read_sectors(struct block_dev *bdev,
-		char *buffer, size_t count, blkno_t blkno) {
+int ramdisk_read_sectors(struct block_dev *bdev, char *buffer, size_t count,
+    blkno_t blkno) {
 	struct ramdisk *ramdisk;
 	char *read_addr;
 
@@ -47,9 +43,8 @@ int ramdisk_read_sectors(struct block_dev *bdev,
 	return count;
 }
 
-
-int ramdisk_write_sectors(struct block_dev *bdev,
-		char *buffer, size_t count, blkno_t blkno) {
+int ramdisk_write_sectors(struct block_dev *bdev, char *buffer, size_t count,
+    blkno_t blkno) {
 	struct ramdisk *ramdisk;
 	char *write_addr;
 
@@ -61,7 +56,6 @@ int ramdisk_write_sectors(struct block_dev *bdev,
 }
 
 int rmadisk_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
-
 	switch (cmd) {
 	case IOCTL_GETDEVSIZE:
 		return bdev->size / bdev->block_size;
@@ -73,9 +67,9 @@ int rmadisk_ioctl(struct block_dev *bdev, int cmd, void *args, size_t size) {
 }
 
 static const struct block_dev_ops ramdisk_pio_driver = {
-	.bdo_ioctl = rmadisk_ioctl,
-	.bdo_read = ramdisk_read_sectors,
-	.bdo_write = ramdisk_write_sectors,
+    .bdo_ioctl = rmadisk_ioctl,
+    .bdo_read = ramdisk_read_sectors,
+    .bdo_write = ramdisk_write_sectors,
 };
 
 /* XXX not stores index if path have no index placeholder, like * or # */

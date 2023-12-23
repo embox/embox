@@ -13,8 +13,8 @@
 
 struct ramdisk {
 	struct block_dev *bdev;
-	char             *p_start_addr;
-	int               idx;
+	char *p_start_addr;
+	int idx;
 };
 
 extern struct ramdisk *ramdisk_create(char *path, size_t size);
