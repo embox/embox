@@ -23,4 +23,7 @@ module static_ramdisk {
 	option number block_size = 512
 
 	source "static_ramdisk.c"
+
+	@NoRuntime depends ramdisk
+	depends embox.driver.block_dev
 }
