@@ -6,20 +6,25 @@
  * @author Ilia Vaprol
  * @author Anton Kozlov
  */
+#include <stddef.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <sys/uio.h>
 
-#include <mem/misc/pool.h>
+#include <drivers/char_dev.h>
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
-#include <drivers/char_dev.h>
-#include <kernel/task/resource/idesc.h>
+#include <embox/unit.h>
 #include <fs/file_desc.h>
 #include <fs/file_operation.h>
+#include <kernel/task/resource/idesc.h>
+#include <mem/misc/pool.h>
 
-#include <embox/unit.h>
+#define VC_DEV_NAME  "vc"
 
-#define VC_DEV_NAME "vc"
+#define VC_POOL_SIZE OPTION_GET(NUMBER, vc_quantity)
+
+POOL_DEF(cdev_vc_pool, struct dev_module, VC_POOL_SIZE);
 
 EMBOX_UNIT_INIT(vc_init);
 
@@ -38,17 +43,17 @@ static ssize_t vc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	assert(cnt == 1);
 	nbyte = iov->iov_len;
 
-	return tty_read(&vc_vterm.tty, (char *) buf, nbyte);
+	return tty_read(&vc_vterm.tty, (char *)buf, nbyte);
 }
 
-static ssize_t vc_write(struct idesc *desc,  const struct iovec *iov, int cnt) {
+static ssize_t vc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
 	int i;
 	char *b;
 
 	assert(iov);
 	assert(cnt == 1);
 
-	b = (char *) iov->iov_base;
+	b = (char *)iov->iov_base;
 	for (i = iov->iov_len; i > 0; i--) {
 		vterm_putc(&vc_vterm, *b++);
 	}
@@ -64,15 +69,6 @@ static int vc_status(struct idesc *idesc, int mask) {
 	return tty_status(&vc_vterm.tty, mask);
 }
 
-static const struct idesc_ops idesc_vc_ops = {
-	.id_readv  = vc_read,
-	.id_writev = vc_write,
-	.ioctl     = vc_ioctl,
-	.close     = vc_close,
-	.status    = vc_status,
-	.fstat     = char_dev_idesc_fstat,
-};
-
 static struct idesc *vc_open(struct dev_module *mod, void *dev_priv) {
 	struct vterm_video *vc_vga;
 
@@ -85,22 +81,31 @@ static struct idesc *vc_open(struct dev_module *mod, void *dev_priv) {
 	return char_dev_idesc_create(mod);
 }
 
-#define VC_POOL_SIZE OPTION_GET(NUMBER, vc_quantity)
-POOL_DEF(cdev_vc_pool, struct dev_module, VC_POOL_SIZE);
-
 static int vc_init(void) {
+	static const struct idesc_ops vc_idesc_ops;
+
 	struct dev_module *vc_dev;
 
 	vc_dev = pool_alloc(&cdev_vc_pool);
 	if (!vc_dev) {
 		return -ENOMEM;
 	}
+
 	memset(vc_dev, 0, sizeof(*vc_dev));
 	strncpy(vc_dev->name, VC_DEV_NAME, sizeof(vc_dev->name));
 	vc_dev->name[sizeof(vc_dev->name) - 1] = '\0';
 
-	vc_dev->dev_iops = &idesc_vc_ops;
+	vc_dev->dev_iops = &vc_idesc_ops;
 	vc_dev->dev_open = vc_open;
 
 	return char_dev_register(vc_dev);
 }
+
+static const struct idesc_ops vc_idesc_ops = {
+    .id_readv = vc_read,
+    .id_writev = vc_write,
+    .ioctl = vc_ioctl,
+    .close = vc_close,
+    .status = vc_status,
+    .fstat = char_dev_idesc_fstat,
+};
