@@ -48,4 +48,8 @@ static const struct idesc_ops null_idesc_ops = {
     .fstat = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(NULL_DEV_NAME, null_cdev_open, &null_idesc_ops, NULL);
+static const struct dev_module_ops null_cdev_ops = {
+    .dev_open = null_cdev_open,
+};
+
+CHAR_DEV_DEF(NULL_DEV_NAME, &null_cdev_ops, &null_idesc_ops, NULL);
