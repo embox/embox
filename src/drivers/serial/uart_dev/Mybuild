@@ -37,10 +37,10 @@ abstract module core {
 
 module core_tty extends core {
 	@NoRuntime depends embox.driver.tty.serial
-	@NoRuntime depends embox.driver.common
+	@NoRuntime depends embox.device.common
 }
 
 module core_notty extends core {
 	@NoRuntime depends embox.driver.tty.serial_stub
-	@NoRuntime depends embox.driver.common
+	@NoRuntime depends embox.device.common
 }
