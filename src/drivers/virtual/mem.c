@@ -70,4 +70,8 @@ static const struct idesc_ops mem_idesc_ops = {
     .idesc_mmap = mem_mmap,
 };
 
-CHAR_DEV_DEF(MEM_DEV_NAME, mem_cdev_open, &mem_idesc_ops, NULL);
+static const struct dev_module_ops mem_cdev_ops = {
+    .dev_open = mem_cdev_open,
+};
+
+CHAR_DEV_DEF(MEM_DEV_NAME, &mem_cdev_ops, &mem_idesc_ops, NULL);
