@@ -18,7 +18,7 @@ module block_dev {
 	depends embox.driver.buffer_crypt_api
 	depends embox.mem.phymem
 	depends embox.mem.heap_place
-	depends embox.driver.common
+	depends embox.device.common
 }
 
 
