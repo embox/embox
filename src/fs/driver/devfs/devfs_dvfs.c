@@ -13,27 +13,26 @@
  * or whereever did you mount devfs. Future release should fix it, probably
  */
 #include <errno.h>
-#include <string.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <string.h>
+#include <sys/stat.h>
 
-#include <util/err.h>
-
-#include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
+#include <drivers/char_dev.h>
 #include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
-
 #include <util/array.h>
+#include <util/err.h>
 
 extern struct idesc_ops idesc_bdev_ops;
 extern int devfs_destroy_inode(struct inode *inode);
+extern int devfs_fill_sb(struct super_block *sb, const char *source);
 
 /* Call device-specific open() handler */
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
-	struct inode  *i_no;
+	struct inode *i_no;
 	struct dev_module *dev;
 	struct idesc *desc;
 
@@ -54,30 +53,14 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	}
 
 	assert(dev);
-	if(__oflag & O_PATH) {
+	if (__oflag & O_PATH) {
 		return char_dev_idesc_create(NULL);
 	}
 	assert(dev->dev_open);
-	desc = dev->dev_open(dev, (void *)(uintptr_t) __oflag);
+	desc = dev->dev_open(dev, (void *)(uintptr_t)__oflag);
 
 	return desc;
 }
-
-struct super_block_operations devfs_sbops = {
-	.open_idesc = devfs_open_idesc,
-	.destroy_inode = devfs_destroy_inode,
-};
-
-extern int devfs_fill_sb(struct super_block *sb, const char *source);
-
-static const struct fs_driver devfs_dumb_driver = {
-	.name      = "devfs",
-	.fill_sb   = devfs_fill_sb,
-};
-
-DECLARE_FILE_SYSTEM_DRIVER(devfs_dumb_driver);
-
-FILE_SYSTEM_AUTOMOUNT("/dev", devfs_dumb_driver);
 
 struct block_dev *bdev_by_path(const char *dev_name) {
 	struct lookup lookup = {};
@@ -116,3 +99,16 @@ struct block_dev *bdev_by_path(const char *dev_name) {
 	return dev_module_to_bdev(devmod);
 }
 
+struct super_block_operations devfs_sbops = {
+    .open_idesc = devfs_open_idesc,
+    .destroy_inode = devfs_destroy_inode,
+};
+
+static const struct fs_driver devfs_dumb_driver = {
+    .name = "devfs",
+    .fill_sb = devfs_fill_sb,
+};
+
+DECLARE_FILE_SYSTEM_DRIVER(devfs_dumb_driver);
+
+FILE_SYSTEM_AUTOMOUNT("/dev", devfs_dumb_driver);
