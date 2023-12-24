@@ -282,9 +282,10 @@ static void tun_deinit(void) {
 	}
 }
 
-static int tun_init(void) {
-	static const struct idesc_ops tun_idesc_ops;
+static const struct dev_module_ops tun_dev_ops;
+static const struct idesc_ops tun_idesc_ops;
 
+static int tun_init(void) {
 	int err;
 	struct net_device *tdev;
 	char tun_name[16];
@@ -320,7 +321,7 @@ static int tun_init(void) {
 		memset(cdev, 0, sizeof(*cdev));
 		memcpy(cdev->name, tun_name, sizeof(cdev->name));
 
-		cdev->dev_open = tun_dev_open;
+		cdev->dev_ops = &tun_dev_ops;
 		cdev->dev_iops = &tun_idesc_ops;
 		cdev->dev_priv = tdev;
 
@@ -340,6 +341,10 @@ err_deinit:
 	tun_deinit();
 	return err;
 }
+
+static const struct dev_module_ops tun_dev_ops = {
+    .dev_open = tun_dev_open,
+};
 
 static const struct idesc_ops tun_idesc_ops = {
     .id_readv = tun_dev_read,
