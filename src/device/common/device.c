@@ -8,9 +8,8 @@
 
 #include <string.h>
 
-#include <kernel/task/resource/idesc.h>
-
 #include <drivers/device.h>
+#include <kernel/task/resource/idesc.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
 
@@ -25,13 +24,10 @@ POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
  *
  * @return
  */
-struct dev_module *dev_module_init(struct dev_module *devmod,
-	const char *name,
-	struct idesc * (*open)  (struct dev_module *, void *),
-	/* void           (*close) (struct idesc *), */
-	const struct idesc_ops *dev_iops,
-	void *privdata
-) {
+struct dev_module *dev_module_init(struct dev_module *devmod, const char *name,
+    struct idesc *(*open)(struct dev_module *, void *),
+    /* void           (*close) (struct idesc *), */
+    const struct idesc_ops *dev_iops, void *privdata) {
 	assert(devmod);
 	assert(dev_iops);
 	assert(name);
@@ -59,13 +55,10 @@ struct dev_module *dev_module_init(struct dev_module *devmod,
  *
  * @return
  */
-struct dev_module *dev_module_create(
-	const char *name,
-	struct idesc * (*open)  (struct dev_module *, void *),
-	/* void           (*close) (struct idesc *), */
-	const struct idesc_ops *dev_iops,
-	void *privdata
-) {
+struct dev_module *dev_module_create(const char *name,
+    struct idesc *(*open)(struct dev_module *, void *),
+    /* void           (*close) (struct idesc *), */
+    const struct idesc_ops *dev_iops, void *privdata) {
 	struct dev_module *devmod;
 
 	devmod = pool_alloc(&dev_module_pool);
