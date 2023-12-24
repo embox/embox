@@ -16,7 +16,7 @@ module serial {
 
 	depends tty
 	depends embox.driver.char_dev
-	depends embox.driver.common
+	depends embox.device.common
 }
 
 module serial_stub {
