@@ -81,9 +81,10 @@ static struct idesc *vc_open(struct dev_module *mod, void *dev_priv) {
 	return char_dev_idesc_create(mod);
 }
 
-static int vc_init(void) {
-	static const struct idesc_ops vc_idesc_ops;
+static const struct dev_module_ops vc_dev_ops;
+static const struct idesc_ops vc_idesc_ops;
 
+static int vc_init(void) {
 	struct dev_module *vc_dev;
 
 	vc_dev = pool_alloc(&cdev_vc_pool);
@@ -95,11 +96,15 @@ static int vc_init(void) {
 	strncpy(vc_dev->name, VC_DEV_NAME, sizeof(vc_dev->name));
 	vc_dev->name[sizeof(vc_dev->name) - 1] = '\0';
 
+	vc_dev->dev_ops = vc_dev_ops;
 	vc_dev->dev_iops = &vc_idesc_ops;
-	vc_dev->dev_open = vc_open;
 
 	return char_dev_register(vc_dev);
 }
+
+static const struct dev_module_ops vc_dev_ops = {
+    .dev_open = vc_open,
+};
 
 static const struct idesc_ops vc_idesc_ops = {
     .id_readv = vc_read,
