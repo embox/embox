@@ -95,9 +95,10 @@ static struct idesc *input_dev_fs_open(struct dev_module *mod, void *dev_priv) {
 	return idesc;
 }
 
-int input_dev_private_register(struct input_dev *inpdev) {
-	static const struct idesc_ops input_dev_fs_iops;
+static const struct dev_module_ops input_dev_fs_ops;
+static const struct idesc_ops input_dev_fs_iops;
 
+int input_dev_private_register(struct input_dev *inpdev) {
 	struct dev_module *dev;
 
 	dev = pool_alloc(&cdev_input_pool);
@@ -110,7 +111,7 @@ int input_dev_private_register(struct input_dev *inpdev) {
 
 	strncat(dev->name, inpdev->name, sizeof(dev->name) - 1);
 
-	dev->dev_ops = input_dev_fs_open;
+	dev->dev_ops = &input_dev_fs_ops;
 	dev->dev_iops = &input_dev_fs_iops;
 	dev->dev_priv = inpdev;
 
@@ -136,6 +137,10 @@ int input_dev_private_notify(struct input_dev *inpdev, struct input_event *ev) {
 
 	return 0;
 }
+
+static const struct dev_module_ops input_dev_fs_ops = {
+    .dev_open = input_dev_fs_open,
+};
 
 static const struct idesc_ops input_dev_fs_iops = {
     .close = input_dev_fs_close,
