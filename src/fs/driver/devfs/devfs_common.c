@@ -31,12 +31,12 @@ static struct idesc *devfs_open(struct inode *node, struct idesc *desc,
 	}
 
 	dev = inode_priv(node);
-	assert(dev->dev_open);
+	assert(dev->dev_ops->dev_open);
 
 	if (__oflag & O_PATH) {
 		return char_dev_idesc_create(NULL);
 	}
-	return dev->dev_open(dev, dev_module_to_bdev(dev));
+	return dev->dev_ops->dev_open(dev, dev_module_to_bdev(dev));
 }
 
 static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
