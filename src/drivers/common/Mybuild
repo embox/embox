@@ -1,19 +1,5 @@
 package embox.driver
 
-module common {
-	option number device_name_len=16
-	option number max_dev_module_count=8
-
-	@IncludeExport(path="drivers")
-	source "device.h"
-
-	source "device.c"
-
-	depends embox.fs.driver.devfs /* devfs_notify_new_module() */
-	depends embox.compat.libc.str
-	depends embox.util.indexator
-}
-
 @DefaultImpl(periph_memory_mmap)
 abstract module periph_memory { }
 
