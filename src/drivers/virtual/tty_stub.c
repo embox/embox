@@ -55,4 +55,8 @@ static const struct idesc_ops tty_stub_idesc_ops = {
     .fstat = char_dev_idesc_fstat,
 };
 
-CHAR_DEV_DEF(TTY_NAME, tty_stub_open, &tty_stub_idesc_ops, NULL);
+static const struct dev_module_ops tty_stub_cdev_ops = {
+    .dev_open = tty_stub_cdev_open,
+};
+
+CHAR_DEV_DEF(TTY_NAME, &tty_stub_cdev_ops, &tty_stub_idesc_ops, NULL);
