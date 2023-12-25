@@ -65,13 +65,14 @@ static int demo_char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
 
+static const struct dev_module_ops demo_char_dev_ops;
 static const struct idesc_ops demo_char_dev_iops;
 
 int demo_char_dev_register(struct demo_char_dev_priv *priv) {
 	struct dev_module *dev;
 
-	dev = dev_module_create(priv->name, demo_char_dev_idesc_open,
-	    &demo_char_dev_iops, priv);
+	dev = dev_module_create(priv->name, &demo_char_dev_ops, &demo_char_dev_iops,
+	    priv);
 	if (!dev) {
 		log_error("failed to allocate new char device \"%s\"", priv->name);
 		return -1;
@@ -129,6 +130,10 @@ int demo_char_dev_destroy(struct dev_module *dev) {
 	dev_module_destroy(dev);
 	return 0;
 }
+
+static const struct dev_module_ops demo_char_dev_ops = {
+    .dev_open = demo_char_dev_idesc_open,
+};
 
 static const struct idesc_ops demo_char_dev_iops = {
     .close = demo_char_dev_idesc_close,
