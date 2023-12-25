@@ -3,6 +3,9 @@
  *
  * automatically generated from simpleIO_direct_control.cid
  */
+
+#include "server61850_config.h"
+
 #include "static_model.h"
 
 static void initializeValues();

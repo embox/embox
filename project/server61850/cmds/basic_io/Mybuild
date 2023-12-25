@@ -10,8 +10,11 @@ package embox.project.server61850.cmd
 @BuildDepends(third_party.lib.libiec61850)
 @Build(stage=2)
 module basic_io {
+	option number use_mms_tls = 0
+
 	source "server_example_basic_io.c"
 	source "static_model.c"
+
 	@NoRuntime depends third_party.lib.libiec61850
 }
 

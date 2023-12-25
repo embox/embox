@@ -6,8 +6,11 @@
  *  - Using the IedServerConfig object to configure stack features
  */
 
+#include "server61850_config.h"
+
 #include "iec61850_server.h"
 #include "hal_thread.h"
+
 #include <signal.h>
 #include <stdlib.h>
 #include <stdio.h>
