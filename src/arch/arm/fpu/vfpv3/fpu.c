@@ -27,14 +27,13 @@ static int vfp_init(void) {
 	/* Print VFP info */
 	__asm__ __volatile__("VMRS %0, FPSID" : "=r"(sid));
 
-	log_info("vfp: %s",
+	log_info("%s",
 	    ((sid >> 23) & 0x1) ? "software FP emulation" : "hardware FP support");
-	log_info("vfp: implementer = %s",
-	    ((sid >> 24) == 0x41) ? "ARM" : "Unknown");
-	log_info("vfp: subarch     = VFPv%d", ((sid >> 16) & 0x7F) + 1);
-	log_info("vfp: part number = 0x%02x", (sid >> 8) & 0xFF);
-	log_info("vfp: variant     = 0x%02x", (sid >> 4) & 0xF);
-	log_info("vfp: revision    = 0x%02x", sid & 0xF);
+	log_info("implementer = %s", ((sid >> 24) == 0x41) ? "ARM" : "Unknown");
+	log_info("subarch     = VFPv%d", ((sid >> 16) & 0x7F) + 1);
+	log_info("part number = 0x%02x", (sid >> 8) & 0xFF);
+	log_info("variant     = 0x%02x", (sid >> 4) & 0xF);
+	log_info("revision    = 0x%02x", sid & 0xF);
 
 	/* Return to previos state */
 	__asm__ __volatile__("VMSR FPEXC, %0" : : "r"(ctrl));
