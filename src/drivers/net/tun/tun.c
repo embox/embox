@@ -7,27 +7,29 @@
  */
 
 #include <errno.h>
-#include <string.h>
+#include <stddef.h>
 #include <stdio.h>
-#include <util/math.h>
-#include <net/netdevice.h>
+#include <string.h>
+#include <sys/types.h>
+
+#include <drivers/char_dev.h>
+#include <embox/unit.h>
+#include <fs/file_desc.h>
+#include <fs/inode.h>
+#include <kernel/sched/sched_lock.h>
+#include <kernel/sched/waitq.h>
+#include <kernel/task/resource/idesc.h>
+#include <kernel/thread.h>
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/thread_sched_wait.h>
+#include <mem/misc/pool.h>
 #include <net/inetdevice.h>
 #include <net/l0/net_entry.h>
 #include <net/l2/ethernet.h>
 #include <net/l3/arp.h>
-#include <embox/unit.h>
+#include <net/netdevice.h>
 #include <util/err.h>
-#include <mem/misc/pool.h>
-
-#include <kernel/thread/sync/mutex.h>
-#include <kernel/sched/sched_lock.h>
-#include <drivers/char_dev.h>
-#include <fs/inode.h>
-#include <fs/file_desc.h>
-#include <kernel/task/resource/idesc.h>
-#include <kernel/sched/waitq.h>
-#include <kernel/thread/thread_sched_wait.h>
-#include <kernel/thread.h>
+#include <util/math.h>
 
 #define TUN_N 1
 
@@ -59,14 +61,13 @@ static inline void tun_user_unlock(struct tun *tun) {
 	mutex_unlock(&tun->mtx_use);
 }
 
-
 static int tun_xmit(struct net_device *dev, struct sk_buff *skb);
 static int tun_open(struct net_device *dev);
 static int tun_set_mac(struct net_device *dev, const void *addr);
 static const struct net_driver tun_ops = {
-	.xmit = tun_xmit,
-	.start = tun_open,
-	.set_macaddr = tun_set_mac,
+    .xmit = tun_xmit,
+    .start = tun_open,
+    .set_macaddr = tun_set_mac,
 };
 
 static int tun_open(struct net_device *dev) {
@@ -94,25 +95,15 @@ static int tun_xmit(struct net_device *dev, struct sk_buff *skb) {
 }
 
 static int tun_setup(struct net_device *dev) {
-	dev->mtu      = (16 * 1024) + 20 + 20 + 12;
-	dev->hdr_len  = ETH_HEADER_SIZE;
+	dev->mtu = (16 * 1024) + 20 + 20 + 12;
+	dev->hdr_len = ETH_HEADER_SIZE;
 	dev->addr_len = ETH_ALEN;
-	dev->type     = ARP_HRD_LOOPBACK;
-	dev->flags    = IFF_NOARP | IFF_RUNNING;
-	dev->drv_ops  = &tun_ops;
-	dev->ops      = &ethernet_ops;
+	dev->type = ARP_HRD_LOOPBACK;
+	dev->flags = IFF_NOARP | IFF_RUNNING;
+	dev->drv_ops = &tun_ops;
+	dev->ops = &ethernet_ops;
 	return 0;
 }
-
-static struct idesc *tun_dev_open(struct dev_module *cdev, void *priv);
-static void    tun_dev_close(struct idesc *idesc);
-static ssize_t tun_dev_read(struct idesc *idesc, const struct iovec *iov, int cnt);
-static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov, int cnt);
-static const struct idesc_ops tun_iops = {
-	.id_readv  = tun_dev_read,
-	.id_writev = tun_dev_write,
-	.close = tun_dev_close,
-};
 
 static inline struct net_device *tun_netdev_by_name(const char *name) {
 	int i;
@@ -125,7 +116,7 @@ static inline struct net_device *tun_netdev_by_name(const char *name) {
 }
 
 static inline int tun_netdev_by_idesc(struct idesc *idesc,
-		struct net_device **netdev, struct tun **tun) {
+    struct net_device **netdev, struct tun **tun) {
 	struct dev_module *cdev;
 
 	cdev = idesc_to_dev_module(idesc);
@@ -147,7 +138,7 @@ static struct idesc *tun_dev_open(struct dev_module *cdev, void *priv) {
 	struct net_device *netdev;
 	struct tun *tun;
 
-	netdev = (struct net_device *) cdev->dev_priv;
+	netdev = (struct net_device *)cdev->dev_priv;
 	if (!netdev) {
 		return err_ptr(ENOENT);
 	}
@@ -162,9 +153,7 @@ static struct idesc *tun_dev_open(struct dev_module *cdev, void *priv) {
 	waitq_init(&tun->wq);
 
 	tun_krnl_lock(tun);
-	{
-		skb_queue_init(&tun->rx_q);
-	}
+	{ skb_queue_init(&tun->rx_q); }
 	tun_krnl_unlock(tun);
 
 	return char_dev_idesc_create(cdev);
@@ -183,7 +172,8 @@ static void tun_dev_close(struct idesc *idesc) {
 	tun_user_unlock(tun);
 }
 
-static ssize_t tun_dev_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t tun_dev_read(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	struct waitq_link *wql = &thread_self()->schedee.waitq_link;
 	struct net_device *netdev;
 	struct tun *tun;
@@ -215,14 +205,15 @@ static ssize_t tun_dev_read(struct idesc *idesc, const struct iovec *iov, int cn
 			ret = 0;
 
 			for (int i = 0; i < cnt && len > 0; ++i) {
-				int min_len = (len < iov[i].iov_len)? len : iov[i].iov_len;
+				int min_len = (len < iov[i].iov_len) ? len : iov[i].iov_len;
 				memcpy(iov[i].iov_base, raw, min_len);
 				len -= min_len;
 				raw += min_len;
 				ret += min_len;
 			}
 			break;
-		} else {
+		}
+		else {
 			ret = sched_wait_timeout(SCHED_TIMEOUT_INFINITE, NULL);
 		}
 	} while (ret == 0);
@@ -230,7 +221,8 @@ static ssize_t tun_dev_read(struct idesc *idesc, const struct iovec *iov, int cn
 	return ret;
 }
 
-static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	struct net_device *netdev;
 	struct tun *tun;
 	struct sk_buff *skb;
@@ -249,7 +241,7 @@ static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov, int c
 	if (cnt == 0) {
 		return -EINVAL;
 	}
-	
+
 	for (int i = 0; i < cnt; ++i) {
 		size += iov[i].iov_len;
 	}
@@ -263,7 +255,7 @@ static ssize_t tun_dev_write(struct idesc *idesc, const struct iovec *iov, int c
 	ethh->h_proto = htons(ETH_P_IP);
 	memcpy(ethh->h_dest, netdev->dev_addr, ETH_ALEN);
 	memset(ethh->h_source, 0, ETH_ALEN);
-	
+
 	raw = skb->mac.raw + ETH_HLEN;
 	for (int i = 0; i < cnt; ++i) {
 		memcpy(raw, iov[i].iov_base, iov[i].iov_len);
@@ -289,6 +281,9 @@ static void tun_deinit(void) {
 		netdev_free(tun_g_array[i]);
 	}
 }
+
+static const struct dev_module_ops tun_dev_ops;
+static const struct idesc_ops tun_idesc_ops;
 
 static int tun_init(void) {
 	int err;
@@ -317,16 +312,19 @@ static int tun_init(void) {
 		mutex_init(&tun->mtx_use);
 
 		tun_g_array[i] = tdev;
-		
+
 		cdev = pool_alloc(&cdev_tun_pool);
 		if (!cdev) {
 			return -ENOMEM;
 		}
+
 		memset(cdev, 0, sizeof(*cdev));
 		memcpy(cdev->name, tun_name, sizeof(cdev->name));
-		cdev->dev_open = tun_dev_open;
-		cdev->dev_iops = &tun_iops;
+
+		cdev->dev_ops = &tun_dev_ops;
+		cdev->dev_iops = &tun_idesc_ops;
 		cdev->dev_priv = tdev;
+
 		err = char_dev_register(cdev);
 		if (err != 0) {
 			goto err_inetdev_deregister;
@@ -342,5 +340,14 @@ err_netdev_free:
 err_deinit:
 	tun_deinit();
 	return err;
-
 }
+
+static const struct dev_module_ops tun_dev_ops = {
+    .dev_open = tun_dev_open,
+};
+
+static const struct idesc_ops tun_idesc_ops = {
+    .id_readv = tun_dev_read,
+    .id_writev = tun_dev_write,
+    .close = tun_dev_close,
+};

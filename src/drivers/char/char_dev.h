@@ -10,25 +10,26 @@
 #define CHAR_DEV_DVFS_H_
 
 #include <drivers/device.h>
+#include <framework/mod/options.h>
 #include <kernel/task/resource/idesc.h>
 #include <util/array.h>
 
 #include <config/embox/driver/char_dev.h>
-#include <framework/mod/options.h>
 
-#define MAX_CDEV_QUANTITY OPTION_MODULE_GET(embox__driver__char_dev, NUMBER, dev_quantity)
+#define MAX_CDEV_QUANTITY \
+	OPTION_MODULE_GET(embox__driver__char_dev, NUMBER, dev_quantity)
 
-#define CHAR_DEV_DEF(chname, open_fn, idesc_op, priv) \
+#define CHAR_DEV_DEF(cdev_name, device_ops, idesc_ops, priv)               \
 	ARRAY_SPREAD_DECLARE(const struct dev_module, __char_device_registry); \
-	ARRAY_SPREAD_ADD_NAMED(__char_device_registry, \
-			MACRO_CONCAT(__char_device_registry_ptr_, chname), \
-			{ \
-			.dev_id = DEVID_CDEV,\
-			.name = MACRO_STRING(chname), \
-			.dev_priv = priv, \
-			.dev_iops = idesc_op, \
-			.dev_open = open_fn, \
-			 } )
+	ARRAY_SPREAD_ADD_NAMED(__char_device_registry,                         \
+	    MACRO_CONCAT(__char_device_registry_ptr_, cdev_name),              \
+	    {                                                                  \
+	        .dev_id = DEVID_CDEV,                                          \
+	        .name = MACRO_STRING(cdev_name),                               \
+	        .dev_ops = device_ops,                                         \
+	        .dev_iops = idesc_ops,                                         \
+	        .dev_priv = priv,                                              \
+	    })
 
 struct dev_module;
 
@@ -44,7 +45,7 @@ extern int char_dev_idesc_fstat(struct idesc *idesc, void *buff);
 extern struct idesc *char_dev_idesc_create(struct dev_module *cdev);
 
 static inline struct dev_module *idesc_to_dev_module(struct idesc *desc) {
-	struct idesc_dev *d = (struct idesc_dev *) desc;
+	struct idesc_dev *d = (struct idesc_dev *)desc;
 
 	return d->dev;
 }

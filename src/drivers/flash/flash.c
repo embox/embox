@@ -10,16 +10,14 @@
 #include <string.h>
 
 #include <drivers/block_dev.h>
-
-#include <framework/mod/options.h>
 #include <drivers/flash/flash.h>
-
+#include <framework/mod/options.h>
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
 #include <util/err.h>
+#include <util/indexator.h>
 #include <util/math.h>
 
-#define MAX_FLASHDEV_QUANTITY      OPTION_GET(NUMBER,dev_quantity)
+#define MAX_FLASHDEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 
 POOL_DEF(flash_pool, struct flash_dev, MAX_FLASHDEV_QUANTITY);
 INDEX_DEF(flash_idx, 0, MAX_FLASHDEV_QUANTITY);
@@ -100,8 +98,8 @@ int flash_devs_init(void) {
 }
 
 /* Handlers to check ranges and call device-specific functions */
-int flash_read(struct flash_dev *flashdev, unsigned long offset,
-		void *buf, size_t len) {
+int flash_read(struct flash_dev *flashdev, unsigned long offset, void *buf,
+    size_t len) {
 	assert(buf);
 	assert(flashdev);
 	assert(flashdev->drv);
@@ -113,7 +111,7 @@ int flash_read(struct flash_dev *flashdev, unsigned long offset,
 }
 
 int flash_write(struct flash_dev *flashdev, unsigned long offset,
-		const void *buf, size_t len) {
+    const void *buf, size_t len) {
 	assert(buf);
 	assert(flashdev);
 	assert(flashdev->drv);
@@ -136,10 +134,10 @@ struct flash_dev *flash_by_bdev(struct block_dev *bdev) {
 	return bdev->dev_module.dev_priv;
 }
 
-int flash_read_aligned(struct flash_dev *flashdev,
-				unsigned long offset, void *buff, size_t len) {
+int flash_read_aligned(struct flash_dev *flashdev, unsigned long offset,
+    void *buff, size_t len) {
 	int i;
-	char *b; 
+	char *b;
 	uint32_t word32;
 	int head;
 	int word_size;
@@ -149,7 +147,8 @@ int flash_read_aligned(struct flash_dev *flashdev,
 	if (flashdev->fld_aligned_word) {
 		b = flashdev->fld_aligned_word;
 		word_size = flashdev->fld_word_size;
-	} else {
+	}
+	else {
 		b = (void *)&word32;
 		word_size = sizeof(word32);
 	}
@@ -167,9 +166,9 @@ int flash_read_aligned(struct flash_dev *flashdev,
 			return 0;
 		}
 
-		buff   += head_cnt;
+		buff += head_cnt;
 		offset += word_size;
-		len    -= head_cnt;
+		len -= head_cnt;
 	}
 
 	for (i = 0; len >= word_size; i++) {
@@ -177,8 +176,8 @@ int flash_read_aligned(struct flash_dev *flashdev,
 		memcpy(buff, b, word_size);
 
 		offset += word_size;
-		buff   += word_size;
-		len    -= word_size;
+		buff += word_size;
+		len -= word_size;
 	}
 
 	if (len > 0) {
@@ -196,10 +195,10 @@ int flash_read_aligned(struct flash_dev *flashdev,
  *
  * @returns Bytes written or negative error code
  */
-int flash_write_aligned(struct flash_dev *flashdev,
-				unsigned long offset, const void *buff, size_t len) {
+int flash_write_aligned(struct flash_dev *flashdev, unsigned long offset,
+    const void *buff, size_t len) {
 	int i;
-	char *b; 
+	char *b;
 	uint32_t word32;
 	int head;
 	int word_size;
@@ -209,7 +208,8 @@ int flash_write_aligned(struct flash_dev *flashdev,
 	if (flashdev->fld_aligned_word) {
 		b = flashdev->fld_aligned_word;
 		word_size = flashdev->fld_word_size;
-	} else {
+	}
+	else {
 		b = (void *)&word32;
 		word_size = sizeof(word32);
 	}
@@ -228,9 +228,9 @@ int flash_write_aligned(struct flash_dev *flashdev,
 			return 0;
 		}
 
-		buff   += head_write_cnt;
+		buff += head_write_cnt;
 		offset += word_size;
-		len    -= head_write_cnt;
+		len -= head_write_cnt;
 	}
 
 	for (i = 0; len >= word_size; i++) {
@@ -238,8 +238,8 @@ int flash_write_aligned(struct flash_dev *flashdev,
 		flash_write(flashdev, offset, b, word_size);
 
 		offset += word_size;
-		buff   += word_size;
-		len    -= word_size;
+		buff += word_size;
+		len -= word_size;
 	}
 
 	if (len > 0) {
@@ -251,15 +251,15 @@ int flash_write_aligned(struct flash_dev *flashdev,
 	return 0;
 }
 
-int flash_copy_aligned(struct flash_dev *flashdev,
-				unsigned long to, unsigned long from, int len) {
-	char b[32]; 
+int flash_copy_aligned(struct flash_dev *flashdev, unsigned long to,
+    unsigned long from, int len) {
+	char b[32];
 
 	while (len > 0) {
 		int tmp_len;
 
 		tmp_len = min(len, sizeof(b));
-		
+
 		if (0 > flash_read_aligned(flashdev, from, b, tmp_len)) {
 			return -1;
 		}
@@ -275,13 +275,14 @@ int flash_copy_aligned(struct flash_dev *flashdev,
 	return 0;
 }
 
-int flash_copy_block(struct flash_dev *flashdev,
-				unsigned int to, unsigned long from) {
+int flash_copy_block(struct flash_dev *flashdev, unsigned int to,
+    unsigned long from) {
 	uint32_t block_size;
 
 	block_size = flashdev->block_info[0].block_size;
 
 	flash_erase(flashdev, to);
 
-	return flash_copy_aligned(flashdev, to * block_size, from * block_size, block_size);
+	return flash_copy_aligned(flashdev, to * block_size, from * block_size,
+	    block_size);
 }

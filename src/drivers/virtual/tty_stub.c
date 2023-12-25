@@ -7,15 +7,15 @@
  */
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <sys/uio.h>
 #include <sys/stat.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
-#include <util/err.h>
 #include <drivers/char_dev.h>
 #include <framework/mod/options.h>
+#include <util/err.h>
 
-#define TTY_NAME     OPTION_MODULE_GET(__EMBUILD_MOD__,STRING,tty_name)
+#define TTY_NAME OPTION_MODULE_GET(__EMBUILD_MOD__, STRING, tty_name)
 
 static void tty_stub_close(struct idesc *desc) {
 }
@@ -43,7 +43,11 @@ static int tty_stub_ioctl(struct idesc *idesc, int request, void *data) {
 	return 0;
 }
 
-static const struct idesc_ops tty_stub_ops = {
+static struct idesc *tty_stub_cdev_open(struct dev_module *cdev, void *priv) {
+	return char_dev_idesc_create(cdev);
+}
+
+static const struct idesc_ops tty_stub_idesc_ops = {
     .id_readv = tty_stub_read,
     .id_writev = tty_stub_write,
     .ioctl = tty_stub_ioctl,
@@ -51,8 +55,8 @@ static const struct idesc_ops tty_stub_ops = {
     .fstat = char_dev_idesc_fstat,
 };
 
-static struct idesc *tty_stub_open(struct dev_module *cdev, void *priv) {
-	return char_dev_idesc_create(cdev);
-}
+static const struct dev_module_ops tty_stub_cdev_ops = {
+    .dev_open = tty_stub_cdev_open,
+};
 
-CHAR_DEV_DEF(TTY_NAME, tty_stub_open, &tty_stub_ops, NULL);
+CHAR_DEV_DEF(TTY_NAME, &tty_stub_cdev_ops, &tty_stub_idesc_ops, NULL);

@@ -6,26 +6,28 @@
  * @author Denis Deryugin
  */
 
+#include <ctype.h>
 #include <errno.h>
-#include <string.h>
 #include <limits.h>
 #include <stdio.h>
-#include <ctype.h>
-
-#include <util/err.h>
+#include <string.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/flash/flash.h>
+#include <util/err.h>
 
 /* Interface for block device in devfs */
-static int flashbdev_ioctl(struct block_dev *bdev, int cmd, void *buf, size_t size);
-static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
-static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count, blkno_t blkno);
+static int flashbdev_ioctl(struct block_dev *bdev, int cmd, void *buf,
+    size_t size);
+static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count,
+    blkno_t blkno);
+static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count,
+    blkno_t blkno);
 
 static const struct block_dev_ops flashbdev_pio_driver = {
-	.bdo_ioctl = flashbdev_ioctl,
-	.bdo_read = flashbdev_read,
-	.bdo_write = flashbdev_write,
+    .bdo_ioctl = flashbdev_ioctl,
+    .bdo_read = flashbdev_read,
+    .bdo_write = flashbdev_write,
 };
 
 struct flash_dev *flash_create(const char *name, size_t size) {
@@ -62,8 +64,8 @@ int flash_delete(struct flash_dev *dev) {
 }
 
 /* Calls for access via devfs */
-static int flashbdev_read(struct block_dev *bdev,
-		char *buffer, size_t count, blkno_t blkno) {
+static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count,
+    blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t offset;
 
@@ -79,8 +81,8 @@ static int flashbdev_read(struct block_dev *bdev,
 	return flash_read(flash, offset, buffer, count);
 }
 
-static int flashbdev_write(struct block_dev *bdev,
-		char *buffer, size_t count, blkno_t blkno) {
+static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count,
+    blkno_t blkno) {
 	struct flash_dev *flash;
 	uint32_t offset;
 
@@ -95,8 +97,8 @@ static int flashbdev_write(struct block_dev *bdev,
 	return flash_write(flash, offset, buffer, count);
 }
 
-static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
-                size_t len, uint32_t *err_address) {
+static int flashbdev_erase(struct flash_dev *dev, uint32_t flash_base,
+    size_t len, uint32_t *err_address) {
 	uint32_t block, end_addr;
 	size_t erase_count;
 	int stat = 0;
@@ -106,7 +108,7 @@ static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
 	assert(dev->drv);
 	assert(dev->num_block_infos == 1); /* NIY for num_block_infos > 1 */
 
-	if((!dev->drv) || (!dev->drv->flash_erase_block)) {
+	if ((!dev->drv) || (!dev->drv->flash_erase_block)) {
 		return -EINVAL;
 	}
 
@@ -116,16 +118,16 @@ static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
 	 */
 	if (len > (dev->size + 1 - flash_base)) {
 		end_addr = dev->size;
-	} else {
+	}
+	else {
 		end_addr = flash_base + len - 1;
 	}
 	/* erase can only happen on a block boundary, so adjust for this */
 	block = flash_base;
-	erase_count   = (end_addr + 1) - block;
+	erase_count = (end_addr + 1) - block;
 	block_size = dev->block_info[0].block_size;
 
 	while (erase_count > 0) {
-
 		if (erase_count < block_size) {
 			erase_count = block_size;
 		}
@@ -138,14 +140,14 @@ static int flashbdev_erase(struct flash_dev * dev, uint32_t flash_base,
 			}
 			break;
 		}
-		block       += block_size;
+		block += block_size;
 		erase_count -= block_size;
 	}
 	return stat;
 }
 
 static int decode_flash_cmd(int cmd) {
-	switch(cmd) {
+	switch (cmd) {
 	case IOCTL_GETBLKSIZE:
 		return FLASH_IOCTL_BLOCKSIZE;
 	case IOCTL_GETDEVSIZE:
@@ -155,8 +157,8 @@ static int decode_flash_cmd(int cmd) {
 	}
 }
 
-static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
-		void *buf, size_t size) {
+static int flashbdev_ioctl(struct block_dev *bdev, int cmd, void *buf,
+    size_t size) {
 	struct flash_dev *dev;
 	struct flash_ioctl_erase *e;
 	uint32_t startpos, endpos;
@@ -173,7 +175,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 
 	switch (cmd) {
 	case FLASH_IOCTL_ERASE:
-		e = (struct flash_ioctl_erase *) buf;
+		e = (struct flash_ioctl_erase *)buf;
 		startpos = e->offset;
 
 		/* Unlike some other cases we _do_ do bounds checking on this all the time, because
@@ -181,7 +183,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		*/
 		endpos = startpos + e->len - 1;
 
-		if ( endpos > dev->size ) {
+		if (endpos > dev->size) {
 			return -EINVAL;
 		}
 
@@ -189,7 +191,7 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd,
 		return ENOERR;
 
 	case FLASH_IOCTL_DEVSIZE:
-		ds = (struct flash_ioctl_devsize *) buf;
+		ds = (struct flash_ioctl_devsize *)buf;
 
 		if (NULL == ds) {
 			return (dev->size + 1);

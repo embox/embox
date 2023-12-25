@@ -8,12 +8,13 @@
 #include <assert.h>
 #include <string.h>
 #include <sys/uio.h>
-#include <drivers/input/input_dev.h>
+
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
-#include <mem/misc/pool.h>
+#include <drivers/input/input_dev.h>
 #include <kernel/task/resource/idesc_event.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <mem/misc/pool.h>
 #include <util/log.h>
 
 #define INPUT_DEV_CNT OPTION_GET(NUMBER, input_dev_cnt)
@@ -31,11 +32,13 @@ static void input_dev_fs_close(struct idesc *desc) {
 static int input_dev_fs_wait(struct idesc *desc, int flags) {
 	struct idesc_wait_link wl;
 
-	return IDESC_WAIT_LOCKED(/* no unlock */,
-		desc, &wl, flags, SCHED_TIMEOUT_INFINITE, /* no lock */);
+	return IDESC_WAIT_LOCKED(/* no unlock */, desc, &wl, flags,
+	    SCHED_TIMEOUT_INFINITE,
+	    /* no lock */);
 }
 
-static ssize_t input_dev_fs_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t input_dev_fs_read(struct idesc *desc, const struct iovec *iov,
+    int cnt) {
 	struct input_dev *inpdev = idesc_to_dev_module(desc)->dev_priv;
 	ssize_t sz, ret_size = 0;
 	struct input_event *ev;
@@ -44,7 +47,7 @@ static ssize_t input_dev_fs_read(struct idesc *desc, const struct iovec *iov, in
 	do {
 		for (i = 0; i < cnt; i++) {
 			sz = iov[i].iov_len;
-			ev = (struct input_event *) iov[i].iov_base;
+			ev = (struct input_event *)iov[i].iov_base;
 
 			while ((sz >= sizeof *ev) && !input_dev_event(inpdev, ev)) {
 				sz -= sizeof *ev;
@@ -80,13 +83,6 @@ static int input_dev_fs_status(struct idesc *desc, int mask) {
 	return res;
 }
 
-static const struct idesc_ops input_dev_fs_iops = {
-	.close     = input_dev_fs_close,
-	.id_readv  = input_dev_fs_read,
-	.status    = input_dev_fs_status,
-	.fstat     = char_dev_idesc_fstat,
-};
-
 static struct idesc *input_dev_fs_open(struct dev_module *mod, void *dev_priv) {
 	struct input_dev *inpdev = mod->dev_priv;
 	struct idesc *idesc;
@@ -98,6 +94,9 @@ static struct idesc *input_dev_fs_open(struct dev_module *mod, void *dev_priv) {
 
 	return idesc;
 }
+
+static const struct dev_module_ops input_dev_fs_ops;
+static const struct idesc_ops input_dev_fs_iops;
 
 int input_dev_private_register(struct input_dev *inpdev) {
 	struct dev_module *dev;
@@ -112,8 +111,8 @@ int input_dev_private_register(struct input_dev *inpdev) {
 
 	strncat(dev->name, inpdev->name, sizeof(dev->name) - 1);
 
+	dev->dev_ops = &input_dev_fs_ops;
 	dev->dev_iops = &input_dev_fs_iops;
-	dev->dev_open = input_dev_fs_open;
 	dev->dev_priv = inpdev;
 
 	if (0 != char_dev_register(dev)) {
@@ -127,12 +126,25 @@ int input_dev_private_register(struct input_dev *inpdev) {
 
 int input_dev_private_notify(struct input_dev *inpdev, struct input_event *ev) {
 	if (inpdev->fs_data) {
-		idesc_notify((struct idesc *) inpdev->fs_data, POLLIN);
-	} else if (inpdev->event_cb) {
+		idesc_notify((struct idesc *)inpdev->fs_data, POLLIN);
+	}
+	else if (inpdev->event_cb) {
 		inpdev->event_cb(inpdev);
-	} else {
+	}
+	else {
 		log_error("input device has not been opend \"%s\"", inpdev->name);
 	}
 
 	return 0;
 }
+
+static const struct dev_module_ops input_dev_fs_ops = {
+    .dev_open = input_dev_fs_open,
+};
+
+static const struct idesc_ops input_dev_fs_iops = {
+    .close = input_dev_fs_close,
+    .id_readv = input_dev_fs_read,
+    .status = input_dev_fs_status,
+    .fstat = char_dev_idesc_fstat,
+};

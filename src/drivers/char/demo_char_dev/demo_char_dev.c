@@ -5,44 +5,55 @@
  * @author Anton Bondarev
  */
 
-#include <util/log.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
-
+#include <embox/unit.h>
 #include <mem/misc/pool.h>
 #include <util/indexator.h>
-
-#include <embox/unit.h>
+#include <util/log.h>
 
 EMBOX_UNIT_INIT(demo_char_dev_module_init);
 
+#define DEMO_CHAR_DEV_MAX  2
 
-
-#define DEMO_CHAR_DEV_MAX   2
-
-#define DEMO_CHAR_DEV_NAME  "demo_char_dev"
-INDEX_DEF(demo_char_dev_idx, 0, DEMO_CHAR_DEV_MAX);
+#define DEMO_CHAR_DEV_NAME "demo_char_dev"
 
 struct demo_char_dev_priv {
 	int idx;
 	char name[16];
 };
 
+INDEX_DEF(demo_char_dev_idx, 0, DEMO_CHAR_DEV_MAX);
+
 POOL_DEF(priv_pool, struct demo_char_dev_priv, DEMO_CHAR_DEV_MAX);
 
-static struct idesc *demo_char_dev_idesc_open(struct dev_module *dev_mod, void *priv) {
+static int demo_char_dev_module_init(void) {
+	int i;
+
+	for (i = 0; i < DEMO_CHAR_DEV_MAX; i++) {
+		demo_char_dev_create();
+	}
+	return 0;
+}
+
+static struct idesc *demo_char_dev_idesc_open(struct dev_module *dev_mod,
+    void *priv) {
 	return NULL;
 }
 
 static void demo_char_dev_idesc_close(struct idesc *desc) {
 }
 
-static ssize_t demo_char_dev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t demo_char_dev_idesc_read(struct idesc *desc,
+    const struct iovec *iov, int cnt) {
 	return 0;
 }
 
-static ssize_t demo_char_dev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t demo_char_dev_idesc_write(struct idesc *desc,
+    const struct iovec *iov, int cnt) {
 	return 0;
 }
 
@@ -54,19 +65,14 @@ static int demo_char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
 
-static const struct idesc_ops demo_char_dev_iops = {
-	.close     = demo_char_dev_idesc_close,
-	.id_readv  = demo_char_dev_idesc_read,
-	.id_writev = demo_char_dev_idesc_write,
-	.ioctl     = demo_char_dev_idesc_ioctl,
-	.fstat     = demo_char_dev_idesc_fstat
-};
-
+static const struct dev_module_ops demo_char_dev_ops;
+static const struct idesc_ops demo_char_dev_iops;
 
 int demo_char_dev_register(struct demo_char_dev_priv *priv) {
 	struct dev_module *dev;
 
-	dev = dev_module_create(priv->name, demo_char_dev_idesc_open, &demo_char_dev_iops, priv);
+	dev = dev_module_create(priv->name, &demo_char_dev_ops, &demo_char_dev_iops,
+	    priv);
 	if (!dev) {
 		log_error("failed to allocate new char device \"%s\"", priv->name);
 		return -1;
@@ -125,12 +131,14 @@ int demo_char_dev_destroy(struct dev_module *dev) {
 	return 0;
 }
 
-static int demo_char_dev_module_init(void) {
-	int i;
+static const struct dev_module_ops demo_char_dev_ops = {
+    .dev_open = demo_char_dev_idesc_open,
+};
 
-
-	for (i = 0; i < DEMO_CHAR_DEV_MAX; i++) {
-		demo_char_dev_create();
-	}
-	return 0;
-}
+static const struct idesc_ops demo_char_dev_iops = {
+    .close = demo_char_dev_idesc_close,
+    .id_readv = demo_char_dev_idesc_read,
+    .id_writev = demo_char_dev_idesc_write,
+    .ioctl = demo_char_dev_idesc_ioctl,
+    .fstat = demo_char_dev_idesc_fstat,
+};

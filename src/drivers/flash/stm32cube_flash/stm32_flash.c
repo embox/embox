@@ -19,38 +19,33 @@
  * @date    23.10.2014
  */
 
-#include <util/log.h>
-
 #include <assert.h>
-#include <string.h>
-#include <stdbool.h>
 #include <errno.h>
+#include <stdbool.h>
+#include <string.h>
 
+#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
+#include <drivers/block_dev/flash/stm32flash.h>
+#include <drivers/flash/flash.h>
+#include <drivers/flash/flash_cache.h>
+#include <util/log.h>
 #include <util/macro.h>
 #include <util/math.h>
 
-#include <drivers/flash/flash.h>
-#include <drivers/flash/flash_cache.h>
-
-#include <drivers/block_dev/flash/stm32flash.h>
-#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
-
-#define FLASH_NAME     stm32flash
+#define FLASH_NAME stm32flash
 
 FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, STM32_FLASH_SECTOR_SIZE);
 
 extern char _flash_start, _flash_end;
 
-#define STM32_FLASH_START ((uint32_t) &_flash_start)
-#define STM32_FLASH_END   ((uint32_t) &_flash_end)
-
+#define STM32_FLASH_START ((uint32_t)&_flash_start)
+#define STM32_FLASH_END   ((uint32_t)&_flash_end)
 
 #define FLASH_START_SECTOR \
-			((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / \
-						STM32_FLASH_SECTOR_SIZE)
+	((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / STM32_FLASH_SECTOR_SIZE)
 
-static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD] 
-			__attribute__ ((aligned(STM32_FLASH_WORD)));
+static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD]
+    __attribute__((aligned(STM32_FLASH_WORD)));
 
 static const struct flash_dev_drv stm32_flash_drv;
 
@@ -67,19 +62,19 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	flash->drv = &stm32_flash_drv;
 	flash->size = STM32_FLASH_END - STM32_FLASH_START;
 	flash->num_block_infos = 1;
-	flash->block_info[0] = (struct flash_block_info) {
-		.fbi_start_id = STM32_FLASH_START,
-		.block_size = STM32_FLASH_SECTOR_SIZE,
-		.blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE
+	flash->block_info[0] = (struct flash_block_info){
+	    .fbi_start_id = STM32_FLASH_START,
+	    .block_size = STM32_FLASH_SECTOR_SIZE,
+	    .blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE,
 	};
 	flash->fld_aligned_word = stm32_flash_aligned_word;
 	flash->fld_word_size = STM32_FLASH_WORD;
 
 	flash->fld_cache = FLASH_CACHE_GET(flash, FLASH_NAME);
-	
+
 	/* We are using only first STM32_FLASH_SECTORS_COUNT sectors */
-	assert((flash->block_info[0].blocks + FLASH_START_SECTOR) <=
-		(STM32_FLASH_SECTOR_SIZE * STM32_FLASH_SECTORS_COUNT));
+	assert((flash->block_info[0].blocks + FLASH_START_SECTOR)
+	       <= (STM32_FLASH_SECTOR_SIZE * STM32_FLASH_SECTORS_COUNT));
 
 	log_debug("");
 	log_debug("Flash info:");
@@ -93,20 +88,19 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	return 0;
 }
 
-extern int 
-stm32_flash_erase_block(struct flash_dev *dev, uint32_t block);
+extern int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block);
 
-extern int 
-stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data, size_t len);
+extern int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data,
+    size_t len);
 
-extern int 
-stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data, size_t len);
+extern int stm32_flash_program(struct flash_dev *dev, uint32_t base,
+    const void *data, size_t len);
 
 static const struct flash_dev_drv stm32_flash_drv = {
-	.flash_init = stm32_flash_init,
-	.flash_read = stm32_flash_read,
-	.flash_erase_block = stm32_flash_erase_block,
-	.flash_program = stm32_flash_program,
+    .flash_init = stm32_flash_init,
+    .flash_read = stm32_flash_read,
+    .flash_erase_block = stm32_flash_erase_block,
+    .flash_program = stm32_flash_program,
 };
 
 FLASH_DEV_DEF(MACRO_STRING(FLASH_NAME), &stm32_flash_drv);
