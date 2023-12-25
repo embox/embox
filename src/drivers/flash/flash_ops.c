@@ -14,6 +14,21 @@
 
 #include <util/math.h>
 
+struct flash_block_info *
+flash_block_info_by_block(struct flash_dev *flashdev, int block) {
+	int i;
+	int cur = 0;
+
+	for (i = 0; i < flashdev->num_block_infos; i ++) {
+		if (cur <= block && block < (cur + flashdev->block_info[i].blocks) ) {
+			return &flashdev->block_info[i];
+		}
+		cur += flashdev->block_info[i].blocks;
+	}
+
+	return 0;
+}
+
 /* Handlers to check ranges and call device-specific functions */
 int flash_read(struct flash_dev *flashdev, unsigned long offset, void *buf,
     size_t len) {
@@ -196,8 +211,10 @@ int flash_copy_aligned(struct flash_dev *flashdev, unsigned long to,
 int flash_copy_block(struct flash_dev *flashdev, unsigned int to,
     unsigned long from) {
 	uint32_t block_size;
+	struct flash_block_info *to_fi = flash_block_info_by_block(flashdev, to);
 
-	block_size = flashdev->block_info[0].block_size;
+	//block_size = flashdev->block_info[0].block_size;
+	block_size = to_fi->block_size;
 
 	flash_erase(flashdev, to);
 
