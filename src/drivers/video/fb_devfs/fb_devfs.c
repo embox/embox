@@ -2,25 +2,24 @@
  * @file
  *
  * @date Jul 1, 2017
- * author Anton Bondarev
+ * @author Anton Bondarev
  */
 
 #include <errno.h>
+#include <linux/fb.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/uio.h>
 
-#include <drivers/video/fb.h>
-#include <linux/fb.h>
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
+#include <drivers/video/fb.h>
 #include <mem/misc/pool.h>
 
-static void *
-fb_idesc_mmap(struct idesc *desc, void *addr, size_t len, int prot, int flags,
-		int fd, off_t off) {
+static void *fb_idesc_mmap(struct idesc *desc, void *addr, size_t len, int prot,
+    int flags, int fd, off_t off) {
 	struct dev_module *devmod;
 	struct fb_info *info;
 
@@ -47,14 +46,14 @@ static int fb_device_ioctl(struct idesc *desc, int request, void *data) {
 
 	assert(info);
 
-	switch(request) {
+	switch (request) {
 	case FBIOGET_VSCREENINFO:
 		memcpy(data, &info->var, sizeof(struct fb_var_screeninfo));
 		break;
 	case FBIOGET_FSCREENINFO:
 		finfo = data;
 		finfo->line_length = info->var.xres * (info->var.bits_per_pixel / 8);
-		finfo->smem_start = (uintptr_t) info->screen_base;
+		finfo->smem_start = (uintptr_t)info->screen_base;
 		finfo->smem_len = info->screen_size;
 		break;
 	default:
@@ -64,7 +63,8 @@ static int fb_device_ioctl(struct idesc *desc, int request, void *data) {
 	return ENOERR;
 }
 
-static ssize_t fb_id_readv(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t fb_id_readv(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	assert(idesc);
 	assert(iov);
 
@@ -78,17 +78,18 @@ static ssize_t fb_id_readv(struct idesc *idesc, const struct iovec *iov, int cnt
 
 	assert(info);
 
-	ptr = (uint8_t *) info->screen_base;
+	ptr = (uint8_t *)info->screen_base;
 
 	for (i = 0; i < cnt; i++) {
 		memcpy(iov[i].iov_base, ptr, iov[i].iov_len);
 		ptr += iov[i].iov_len;
 	}
 
-	return (size_t) (ptr - (uint8_t *) info->screen_base);
+	return (size_t)(ptr - (uint8_t *)info->screen_base);
 }
 
-static ssize_t fb_id_writev(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t fb_id_writev(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	assert(idesc);
 	assert(iov);
 
@@ -102,25 +103,19 @@ static ssize_t fb_id_writev(struct idesc *idesc, const struct iovec *iov, int cn
 
 	assert(info);
 
-	ptr = (uint8_t *) info->screen_base;
+	ptr = (uint8_t *)info->screen_base;
 
 	for (i = 0; i < cnt; i++) {
 		memcpy(ptr, iov[i].iov_base, iov[i].iov_len);
 		ptr += iov[i].iov_len;
 	}
 
-	return (size_t) (ptr - (uint8_t *) info->screen_base);
+	return (size_t)(ptr - (uint8_t *)info->screen_base);
 }
 
-static const struct idesc_ops fb_idesc_ops = {
-	.ioctl      = fb_device_ioctl,
-	.idesc_mmap = fb_idesc_mmap,
-	.id_readv   = fb_id_readv,
-	.id_writev  = fb_id_writev,
-	.close      = char_dev_default_close
-};
-
 int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
+	static const struct idesc_ops fb_idesc_ops;
+
 	struct dev_module *cdev;
 	char name[16];
 
@@ -128,12 +123,17 @@ int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
 
 	assert(fbi);
 
-	cdev = dev_module_create(name,
-			char_dev_default_open,
-			&fb_idesc_ops,
-			fbi);
+	cdev = dev_module_create(name, char_dev_default_open, &fb_idesc_ops, fbi);
 
 	char_dev_register(cdev);
 
 	return 0;
 }
+
+static const struct idesc_ops fb_idesc_ops = {
+    .ioctl = fb_device_ioctl,
+    .idesc_mmap = fb_idesc_mmap,
+    .id_readv = fb_id_readv,
+    .id_writev = fb_id_writev,
+    .close = char_dev_default_close,
+};
