@@ -6,6 +6,7 @@ abstract module core {
 	option number block_info_max = 1
 
 	source "flash.c"
+	source "flash_ops.c"
 
 	@IncludeExport(path="drivers/flash")
 	source "flash.h"
