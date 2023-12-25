@@ -25,6 +25,7 @@
 static struct fpga fpga_tab[FPGA_MAX];
 INDEX_DEF(fpga_idx, 0, FPGA_MAX);
 
+static const struct dev_module_ops fpga_dev_ops;
 static const struct idesc_ops fpga_iops;
 
 static struct idesc *fpga_idesc_open(struct dev_module *dev_mod, void *priv) {
@@ -99,7 +100,7 @@ struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	    .id = id,
 	    .ops = ops,
 	    .priv = priv,
-	    .dev = dev_module_create(name, fpga_idesc_open, &fpga_iops,
+	    .dev = dev_module_create(name, &fpga_dev_ops, &fpga_iops,
 	        &fpga_tab[id]),
 	};
 
@@ -150,6 +151,10 @@ struct fpga *fpga_by_id(size_t id) {
 size_t fpga_max_id(void) {
 	return FPGA_MAX;
 }
+
+static const struct dev_module_ops fpga_dev_ops = {
+    .dev_open = fpga_idesc_open,
+};
 
 static const struct idesc_ops fpga_iops = {
     .close = fpga_idesc_close,
