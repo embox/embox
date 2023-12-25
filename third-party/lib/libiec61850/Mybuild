@@ -2,10 +2,8 @@ package third_party.lib
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/libiec61850/install/include")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
-
 module libiec61850 {
 
-@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
-    @Cflags("-Wno-implicit")
+    @AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
     source "libiec61850.a"
 }
