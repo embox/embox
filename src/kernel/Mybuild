@@ -17,7 +17,7 @@ module Kernel {
 	depends embox.kernel.kgdb_api
 	depends embox.kernel.klog_api
 	depends embox.init.system_abs_time_api
-	depends embox.framework.runlevel
+	depends embox.framework.unit
 	depends embox.compat.libc.assert
 	depends embox.init.system_start
 	

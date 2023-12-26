@@ -1,10 +1,10 @@
 package embox.framework
 
 module LibFramework {
-	depends cmd, mod, test, runlevel
+	depends cmd, mod, test, unit
 }
 
-module runlevel {
+module unit {
 	option string log_level="LOG_INFO"
 
 	@DefineMacro("__FRAMEWORK__")
