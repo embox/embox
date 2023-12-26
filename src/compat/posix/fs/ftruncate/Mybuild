@@ -10,7 +10,8 @@ abstract module ftruncate {
 
 static module ftruncate_old extends ftruncate {
 	source "ftruncate_oldfs.c"
-	depends embox.fs.index_operation
+
+	depends embox.fs.oldfs_idesc_file_ops
 }
 
 static module ftruncate_dvfs extends ftruncate {
