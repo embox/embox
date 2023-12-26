@@ -5,20 +5,18 @@
  * @version 0.1
  * @date 2015-10-05
  */
-#include <util/log.h>
-
 #include <errno.h>
-#include <sys/stat.h>
 #include <fcntl.h>
+#include <stddef.h>
+#include <sys/stat.h>
 
+#include <drivers/char_dev.h>
 #include <drivers/device.h>
+#include <framework/mod/options.h>
+#include <mem/misc/pool.h>
 #include <util/array.h>
 #include <util/indexator.h>
-
-#include <mem/misc/pool.h>
-#include <drivers/char_dev.h>
-
-#include <framework/mod/options.h>
+#include <util/log.h>
 
 #define IDEV_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)
 POOL_DEF(idev_pool, struct idesc, IDEV_POOL_SIZE);
@@ -81,8 +79,6 @@ int char_dev_register(struct dev_module *cdev) {
 	return 0;
 }
 
-
-
 int char_dev_unregister(struct dev_module *cdev) {
 	assert(cdev);
 
@@ -139,8 +135,8 @@ static void char_dev_idesc_close(struct idesc *idesc) {
 }
 
 static const struct idesc_ops idesc_char_dev_def_ops = {
-		.close = char_dev_idesc_close,
-		.fstat = char_dev_idesc_fstat,
+    .close = char_dev_idesc_close,
+    .fstat = char_dev_idesc_fstat,
 };
 
 struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
@@ -154,7 +150,8 @@ struct idesc *char_dev_idesc_create(struct dev_module *cdev) {
 
 	if (cdev) {
 		idesc_init(&idev->idesc, cdev->dev_iops, O_RDWR);
-	} else {
+	}
+	else {
 		idesc_init(&idev->idesc, &idesc_char_dev_def_ops, O_RDWR);
 	}
 	idev->dev = cdev;
