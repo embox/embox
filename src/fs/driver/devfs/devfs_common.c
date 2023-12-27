@@ -6,6 +6,7 @@
  * @date 30.01.2020
  */
 #include <fcntl.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/stat.h>
 
@@ -20,9 +21,13 @@
 #include <fs/super_block.h>
 #include <util/array.h>
 
-extern struct idesc_ops idesc_bdev_ops;
+extern struct dev_module **get_cdev_tab(void);
+extern struct block_dev **get_bdev_tab(void);
+
 static struct idesc *devfs_open(struct inode *node, struct idesc *desc,
     int __oflag) {
+	extern struct idesc_ops idesc_bdev_ops;
+
 	struct dev_module *dev;
 
 	if (S_ISBLK(node->i_mode)) {
@@ -52,10 +57,7 @@ struct file_operations devfs_fops = {
     .ioctl = devfs_ioctl,
 };
 
-extern struct dev_module **get_cdev_tab(void);
-extern struct block_dev **get_bdev_tab(void);
-
-void devfs_fill_inode(struct inode *inode, struct dev_module *devmod,
+static void devfs_fill_inode(struct inode *inode, struct dev_module *devmod,
     int flags) {
 	assert(inode);
 	assert(devmod);

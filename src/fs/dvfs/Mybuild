@@ -30,10 +30,11 @@ module core extends embox.fs.fs_api {
 	source "dvfs.c"
 	source "dvfs_kfile.c"
 	source "dvfs_dentry.c"
-	depends embox.fs.dvfs_idesc_ops
 	source "dvfs_util.c"
 	source "super_block.c"
 	source "inode.c"
+
+	depends embox.fs.dvfs_idesc_file_ops
 
 	depends embox.fs.path_helper
 	@NoRuntime depends embox.fs.rootfs_dvfs

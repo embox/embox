@@ -10,10 +10,11 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <stddef.h>
+#include <sys/types.h>
 #include <sys/uio.h>
 
 #include <fs/dvfs.h>
-
 #include <kernel/task/resource/idesc.h>
 
 extern const struct idesc_ops idesc_file_ops;
@@ -24,7 +25,8 @@ static void idesc_file_ops_close(struct idesc *idesc) {
 	dvfs_close((struct file_desc *)idesc);
 }
 
-static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov,
+    int cnt) {
 	void *buf;
 	size_t nbyte;
 
@@ -37,10 +39,11 @@ static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov,
 	buf = iov->iov_base;
 	nbyte = iov->iov_len;
 
-	return dvfs_read((struct file_desc *) idesc, buf, nbyte);
+	return dvfs_read((struct file_desc *)idesc, buf, nbyte);
 }
 
-static ssize_t idesc_file_ops_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
+static ssize_t idesc_file_ops_write(struct idesc *idesc,
+    const struct iovec *iov, int cnt) {
 	void *buf;
 	size_t nbyte;
 
@@ -60,14 +63,16 @@ static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
 
-	return dvfs_fstat((struct file_desc *)idesc, buf);;
+	return dvfs_fstat((struct file_desc *)idesc, buf);
+	;
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
 
-	return ((struct file_desc *)idesc)->f_ops->ioctl((struct file_desc *)idesc, request, data);
+	return ((struct file_desc *)idesc)
+	    ->f_ops->ioctl((struct file_desc *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {
@@ -78,10 +83,10 @@ static int idesc_file_ops_status(struct idesc *idesc, int mask) {
 }
 
 const struct idesc_ops idesc_file_ops = {
-	.close = idesc_file_ops_close,
-	.id_readv  = idesc_file_ops_read,
-	.id_writev = idesc_file_ops_write,
-	.ioctl = idesc_file_ops_ioctl,
-	.fstat = idesc_file_ops_stat,
-	.status = idesc_file_ops_status,
+    .close = idesc_file_ops_close,
+    .id_readv = idesc_file_ops_read,
+    .id_writev = idesc_file_ops_write,
+    .ioctl = idesc_file_ops_ioctl,
+    .fstat = idesc_file_ops_stat,
+    .status = idesc_file_ops_status,
 };
