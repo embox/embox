@@ -278,13 +278,23 @@ int flash_copy_aligned(struct flash_dev *flashdev, unsigned long to,
 int flash_copy_block(struct flash_dev *flashdev, unsigned int to,
     unsigned long from) {
 	uint32_t block_size;
-	struct flash_block_info *to_fi = flash_block_info_by_block(flashdev, to);
+	uint8_t buf[64];
+	int off;
+	unsigned long off_to;
+	unsigned long off_from;
 
-	//block_size = flashdev->block_info[0].block_size;
-	block_size = to_fi->block_size;
+	block_size = flash_get_block_size(flashdev, to);
+	assert(block_size == flash_get_block_size(flashdev, from));
+
+	off_to = flash_get_offset_by_block(flashdev, to);
+	off_from = flash_get_offset_by_block(flashdev, from);
 
 	flash_erase(flashdev, to);
 
-	return flash_copy_aligned(flashdev, to * block_size, from * block_size,
-	    block_size);
+	for (off = 0; off < block_size; off += sizeof(buf)) {
+		flash_read(flashdev, off_from + off, buf, sizeof(buf));
+		flash_write(flashdev, off_to + off, buf, sizeof(buf));
+	}
+
+	return 0;
 }
