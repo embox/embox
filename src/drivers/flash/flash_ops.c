@@ -59,8 +59,26 @@ flash_get_block_by_offset(struct flash_dev *flashdev, unsigned long offset) {
 			cur += flashdev->block_info[i].block_size;
 			bl++;
 		}
+	}
 
-		cur += flashdev->block_info[i].blocks;
+	return -EINVAL;
+}
+
+int
+flash_get_offset_by_block(struct flash_dev *flashdev, int block) {
+	int i, j;
+	int bl = 0;
+	unsigned long cur = 0;
+
+	for (i = 0; i < flashdev->num_block_infos; i++) {
+		for (j = 0; j < flashdev->block_info[i].blocks; j++) {
+			if (bl <= block &&
+						block < (bl + flashdev->block_info[i].blocks) ) {
+				return (int) cur;
+			}
+			cur += flashdev->block_info[i].block_size;
+			bl++;
+		}
 	}
 
 	return -EINVAL;
