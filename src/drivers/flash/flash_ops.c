@@ -5,7 +5,7 @@
  * @author Andrey Gazukin
  * @author Denis Deryugin
  */
-
+#include <errno.h>
 #include <errno.h>
 #include <string.h>
 
@@ -27,6 +27,43 @@ flash_block_info_by_block(struct flash_dev *flashdev, int block) {
 	}
 
 	return NULL;
+}
+
+int
+flash_get_block_size(struct flash_dev *flashdev, int block) {
+	int i;
+	int cur = 0;
+
+	for (i = 0; i < flashdev->num_block_infos; i ++) {
+		if (cur <= block && block < (cur + flashdev->block_info[i].blocks) ) {
+			return flashdev->block_info[i].block_size;
+		}
+		cur += flashdev->block_info[i].blocks;
+	}
+
+	return -EINVAL;
+}
+
+int
+flash_get_block_by_offset(struct flash_dev *flashdev, unsigned long offset) {
+	int i, j;
+	int bl = 0;
+	unsigned long cur = 0;
+
+	for (i = 0; i < flashdev->num_block_infos; i++) {
+		for (j = 0; j < flashdev->block_info[i].blocks; j++) {
+			if (cur <= offset && 
+						offset < (cur + flashdev->block_info[i].block_size) ) {
+				return bl;
+			}
+			cur += flashdev->block_info[i].block_size;
+			bl++;
+		}
+
+		cur += flashdev->block_info[i].blocks;
+	}
+
+	return -EINVAL;
 }
 
 int
