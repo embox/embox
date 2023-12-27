@@ -26,7 +26,19 @@ flash_block_info_by_block(struct flash_dev *flashdev, int block) {
 		cur += flashdev->block_info[i].blocks;
 	}
 
-	return 0;
+	return NULL;
+}
+
+int
+flash_get_blocks_num(struct flash_dev *flashdev) {
+	int i;
+	int num = 0;
+
+	for (i = 0; i < flashdev->num_block_infos; i ++) {
+		num += flashdev->block_info[i].blocks;
+	}
+
+	return num;
 }
 
 /* Handlers to check ranges and call device-specific functions */
