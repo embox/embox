@@ -1,4 +1,4 @@
-package embox.cmd.fs
+package embox.cmd.hw
 
 @AutoCmd
 @Cmd(name = "flash_erase",
