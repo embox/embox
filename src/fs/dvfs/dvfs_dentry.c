@@ -5,18 +5,18 @@
 * @version 0.1
 * @date 2015-06-01
 */
-#include <util/log.h>
-
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
 #include <limits.h>
+#include <stddef.h>
+#include <string.h>
 
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
+#include <util/log.h>
 
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
@@ -29,8 +29,11 @@
  * @return
  */
 int dentry_full_path(struct dentry *dentry, char *buf) {
-	int cur_len = 0;
+	int cur_len;
 	size_t nlen;
+
+	cur_len = 0;
+
 	do {
 		nlen = strlen(dentry->name);
 		if (cur_len) {
@@ -64,11 +67,15 @@ extern struct dentry *local_lookup(struct dentry *parent, char *name);
  * @revtal -1 Error
  */
 int dvfs_path_next_len(const char *path) {
-	int len = strlen(path);
-	int off = 0;
+	int len;
+	int off;
 
-	while ((path[off] != '/') && (off < len))
+	len = strlen(path);
+	off = 0;
+
+	while ((path[off] != '/') && (off < len)) {
 		off++;
+	}
 
 	return off;
 }
@@ -84,11 +91,13 @@ int dvfs_path_next_len(const char *path) {
  * @retval      -ENOTDIR Intermediate part of the path is not a directory
  * @retval -ENAMETOOLONG path is too long
  */
-int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *lookup) {
+int dvfs_path_walk(const char *path, struct dentry *parent,
+    struct lookup *lookup) {
 	char buff[NAME_MAX];
-	struct inode *in;
-	int len;
+	struct inode *inode;
 	struct dentry *d;
+	int len;
+
 	assert(parent);
 	assert(path);
 
@@ -100,14 +109,15 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	if (len >= NAME_MAX) {
 		return -ENAMETOOLONG;
 	}
+
 	memcpy(buff, path, len);
 	buff[len] = '\0';
 
 	if (buff[0] == '\0') {
 		dentry_ref_inc(parent);
-		*lookup = (struct lookup) {
-			.item   = parent,
-			.parent = parent->parent,
+		*lookup = (struct lookup){
+		    .item = parent,
+		    .parent = parent->parent,
 		};
 		return 0;
 	}
@@ -133,22 +143,22 @@ int dvfs_path_walk(const char *path, struct dentry *parent, struct lookup *looku
 	assert(parent->d_sb->sb_iops);
 	assert(parent->d_sb->sb_iops->lookup);
 
-	if (!(in = parent->d_sb->sb_iops->lookup(buff, parent->d_inode))) {
-		*lookup = (struct lookup) {
-			.item   = NULL,
-			.parent = parent,
+	inode = parent->d_sb->sb_iops->lookup(buff, parent->d_inode);
+	if (!inode) {
+		*lookup = (struct lookup){
+		    .item = NULL,
+		    .parent = parent,
 		};
 		return -ENOENT;
-	} else {
-		struct dentry *d;
-		d = dvfs_alloc_dentry();
-		in->i_dentry = parent;
-		dentry_fill(parent->d_sb, in, d, parent);
-		strcpy(d->name, buff);
-		d->flags = in->i_mode;
 	}
 
-	return dvfs_path_walk(path + strlen(buff), in->i_dentry, lookup);
+	d = dvfs_alloc_dentry();
+	inode->i_dentry = parent;
+	dentry_fill(parent->d_sb, inode, d, parent);
+	strcpy(d->name, buff);
+	d->flags = inode->i_mode;
+
+	return dvfs_path_walk(path + strlen(buff), inode->i_dentry, lookup);
 }
 
 /* DVFS interface */
@@ -175,19 +185,21 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	if (*path == '/') {
 		dentry = task_fs()->root;
 		path++;
-	} else {
+	}
+	else {
 		if (lookup->item == NULL) {
 			dentry = task_fs()->pwd;
-		} else {
+		}
+		else {
 			dentry = lookup->item;
 		}
 	}
 
 	if (*path == '\0') {
 		dentry_ref_inc(dentry);
-		*lookup = (struct lookup) {
-			.item = dentry,
-			.parent = dentry->parent,
+		*lookup = (struct lookup){
+		    .item = dentry,
+		    .parent = dentry->parent,
 		};
 		return 0;
 	}
@@ -200,9 +212,9 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	/* TODO preprocess path ? Delete "/../" */
 
 	if ((res = dvfs_cache_lookup(path, dentry))) {
-		*lookup = (struct lookup) {
-			.item = res,
-			.parent = res->parent,
+		*lookup = (struct lookup){
+		    .item = res,
+		    .parent = res->parent,
 		};
 		return 0;
 	}
