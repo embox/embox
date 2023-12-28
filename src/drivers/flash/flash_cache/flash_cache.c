@@ -36,7 +36,7 @@ int flash_write_buffered(struct flash_dev *flashdev,
 	while(size) {
 		block_size = flashdev->block_info[0].block_size;
 
-		flash_cache_clean(flashdev, flashdev->fld_cache);
+		flash_cache_clean(flashdev);
 
 		if ( 0 != (pos % block_size)) {
 			/* load into the cache unchanged bytes from the block */

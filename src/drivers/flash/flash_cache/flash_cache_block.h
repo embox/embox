@@ -18,8 +18,7 @@
 #define FLASH_CACHE_GET(fdev, cache_name) \
 			((uintptr_t)fdev->block_info[0].blocks - 1)
 
-#define flash_cache_clean(flashdev, block)        \
-						flash_erase(flashdev, block)
+extern int flash_cache_clean(struct flash_dev *flashdev);
 
 #define flash_cache_load(flashdev, to, from, len)      \
 						flash_copy_aligned(flashdev, to,from,len)

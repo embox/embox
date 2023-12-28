@@ -12,7 +12,7 @@
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_cache.h>
 
-int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
+int flash_cache_clean(struct flash_dev *flashdev) {
 	return 0;
 }
 

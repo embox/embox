@@ -34,7 +34,7 @@
 #define FLASH_CACHE_GET(fdev, cache_name) \
 				((uintptr_t) cache_name ## _block_buffer)
 
-extern int flash_cache_clean(struct flash_dev *flashdev, uint32_t block);
+extern int flash_cache_clean(struct flash_dev *flashdev);
 
 extern int flash_cache_load(struct flash_dev *flashdev,
 							 uint32_t to, uint32_t from, int len);
