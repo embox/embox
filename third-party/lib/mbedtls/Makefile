@@ -20,10 +20,17 @@ $(info EMBOX_CFLAGS: $(EMBOX_CFLAGS))
 $(info EMBOX_LDLAGS: $(EMBOX_LDFLAGS))
 $(info EMBOX_ARCH:   $(EMBOX_ARCH))
 
+define option_get_string
+$(shell echo OPTION_STRING_third_party__lib__mbedtls__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/mbedtls.h -)
+endef
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full
 
 $(BUILD) :
+
+	cp config/$(call option_get_string,tls_config).h $(PKG_SOURCE_DIR)/include/mbedtls/config.h
+
 	cd $(PKG_SOURCE_DIR) && ( \
 	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' lib; \
 	)
