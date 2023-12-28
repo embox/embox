@@ -20,7 +20,6 @@ module core extends embox.fs.fs_api {
 
 	depends embox.fs.file_desc_dvfs
 
-	option number superblock_pool_size=4
 	option number inode_pool_size=64
 	option number dentry_pool_size=64
 	option number file_pool_size=64
@@ -31,8 +30,9 @@ module core extends embox.fs.fs_api {
 	source "dvfs_kfile.c"
 	source "dvfs_dentry.c"
 	source "dvfs_util.c"
-	source "super_block.c"
 	source "inode.c"
+
+	@NoRuntime depends embox.fs.dvfs.super_block
 
 	depends embox.fs.dvfs_idesc_file_ops
 
