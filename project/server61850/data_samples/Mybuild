@@ -1,0 +1,26 @@
+package platform.server61850.data_samples
+
+module client1_cer {
+	@InitFS(target_name="client1.cer")
+	source "client1.cer"
+}
+
+module client2_cer {
+	@InitFS(target_name="client2.cer")
+	source "client2.cer"
+}
+
+module root_cer {
+	@InitFS(target_name="root.cer")
+	source "root.cer"
+}
+
+module server_pem {
+	@InitFS(target_name="server-key.pem")
+	source "server-key.pem"
+}
+
+module server_cer {
+	@InitFS(target_name="server.cer")
+	source "server.cer"
+}
