@@ -1,9 +1,7 @@
 /*
- *  server_example_basic_io.c
+ *  tls_server_example.c
  *
- *  - How to use simple control models
- *  - How to serve analog measurement data
- *  - Using the IedServerConfig object to configure stack features
+ *  How to configure a TLS server
  */
 
 #include "iec61850_server.h"
@@ -80,24 +78,31 @@ connectionHandler (IedServer self, ClientConnection connection, bool connected, 
 }
 
 static void
-rcbEventHandler(void* parameter, ReportControlBlock* rcb, ClientConnection connection, IedServer_RCBEventType event, const char* parameterName, MmsDataAccessError serviceError)
+printAppTitle(ItuObjectIdentifier* oid)
 {
-    printf("RCB: %s event: %i\n", ReportControlBlock_getName(rcb), event);
+    int i;
 
-    if ((event == RCB_EVENT_SET_PARAMETER) || (event == RCB_EVENT_GET_PARAMETER)) {
-        printf("  param:  %s\n", parameterName);
-        printf("  result: %i\n", serviceError);
+    for (i = 0; i < oid->arcCount; i++) {
+        printf("%i", oid->arc[i]);
+
+        if (i != (oid->arcCount - 1))
+            printf(".");
+    }
+}
+
+static bool
+clientAuthenticator(void* parameter, AcseAuthenticationParameter authParameter, void** securityToken, IsoApplicationReference* appRef)
+{
+    printf("ACSE Authenticator:\n");
+    printf("  client ap-title: "); printAppTitle(&(appRef->apTitle)); printf("\n");
+    printf("  client ae-qualifier: %i\n", appRef->aeQualifier);
+    printf("  auth-mechanism: %i\n", authParameter->mechanism);
+
+    if (authParameter->mechanism == ACSE_AUTH_TLS) {
+        printf("  Has certificate with size: %i\n", authParameter->value.certificate.length);
     }
 
-    if (event == RCB_EVENT_ENABLE) {
-        char* rptId = ReportControlBlock_getRptID(rcb);
-        printf("   rptID:  %s\n", rptId);
-        char* dataSet = ReportControlBlock_getDataSet(rcb);
-        printf("   datSet: %s\n", dataSet);
-
-        free(rptId);
-        free(dataSet);
-    }
+    return true;
 }
 
 int
@@ -105,38 +110,43 @@ main(int argc, char** argv)
 {
     printf("Using libIEC61850 version %s\n", LibIEC61850_getVersionString());
 
-    /* Create new server configuration object */
-    IedServerConfig config = IedServerConfig_create();
+    TLSConfiguration tlsConfig = TLSConfiguration_create();
 
-    /* Set buffer size for buffered report control blocks to 200000 bytes */
-    IedServerConfig_setReportBufferSize(config, 200000);
+    TLSConfiguration_setChainValidation(tlsConfig, false);
+    TLSConfiguration_setAllowOnlyKnownCertificates(tlsConfig, true);
 
-    /* Set stack compliance to a specific edition of the standard (WARNING: data model has also to be checked for compliance) */
-    IedServerConfig_setEdition(config, IEC_61850_EDITION_2);
+    if (!TLSConfiguration_setOwnKeyFromFile(tlsConfig, "server-key.pem", NULL)) {
+        printf("Failed to load private key!\n");
+        return 0;
+    }
 
-    /* Set the base path for the MMS file services */
-    IedServerConfig_setFileServiceBasePath(config, "./vmd-filestore/");
+    if (!TLSConfiguration_setOwnCertificateFromFile(tlsConfig, "server.cer")) {
+        printf("ERROR: Failed to load own certificate!\n");
+        return 0;
+    }
 
-    /* disable MMS file service */
-    IedServerConfig_enableFileService(config, false);
+    if (!TLSConfiguration_addCACertificateFromFile(tlsConfig, "root.cer")) {
+        printf("ERROR: Failed to load root certificate\n");
+        return 0;
+    }
 
-    /* enable dynamic data set service */
-    IedServerConfig_enableDynamicDataSetService(config, true);
+    /**
+     * Configure two allowed clients
+     */
 
-    /* disable log service */
-    IedServerConfig_enableLogService(config, false);
+    if (!TLSConfiguration_addAllowedCertificateFromFile(tlsConfig, "client1.cer")) {
+        printf("ERROR: Failed to load allowed client certificate\n");
+        return 0;
+    }
 
-    /* set maximum number of clients */
-    IedServerConfig_setMaxMmsConnections(config, 2);
+    if (!TLSConfiguration_addAllowedCertificateFromFile(tlsConfig, "client2.cer")) {
+        printf("ERROR: Failed to load allowed client certificate\n");
+        return 0;
+    }
 
-    /* Create a new IEC 61850 server instance */
-    iedServer = IedServer_createWithConfig(&iedModel, NULL, config);
+    iedServer = IedServer_createWithTlsSupport(&iedModel, tlsConfig);
 
-    /* configuration object is no longer required */
-    IedServerConfig_destroy(config);
-
-    /* set the identity values for MMS identify service */
-    IedServer_setServerIdentity(iedServer, "MZ", "basic io", "1.4.2");
+    IedServer_setAuthenticator(iedServer, clientAuthenticator, NULL);
 
     /* Install handler for operate command */
     IedServer_setControlHandler(iedServer, IEDMODEL_GenericIO_GGIO1_SPCSO1,
@@ -157,19 +167,11 @@ main(int argc, char** argv)
 
     IedServer_setConnectionIndicationHandler(iedServer, (IedConnectionIndicationHandler) connectionHandler, NULL);
 
-    IedServer_setRCBEventHandler(iedServer, rcbEventHandler, NULL);
-
-    /* By default access to variables with FC=DC and FC=CF is not allowed.
-     * This allow to write to simpleIOGenericIO/GGIO1.NamPlt.vendor variable used
-     * by iec61850_client_example1.
-     */
-    IedServer_setWriteAccessPolicy(iedServer, IEC61850_FC_DC, ACCESS_POLICY_ALLOW);
-
-    /* MMS server will be instructed to start listening for client connections. */
-    IedServer_start(iedServer, 102);
+    /* MMS server will be instructed to start listening to client connections. */
+    IedServer_start(iedServer, -1);
 
     if (!IedServer_isRunning(iedServer)) {
-        printf("Starting server failed (maybe need root permissions or another server is already using the port)! Exit.\n");
+        printf("Starting server failed! Exit.\n");
         IedServer_destroy(iedServer);
         exit(-1);
     }
@@ -186,9 +188,11 @@ main(int argc, char** argv)
         t += 0.1f;
 
         float an1 = t;//sinf(t);
-        float an2 = t + 1;//sinf(t + 1.f);
-        float an3 = t + 2;//sinf(t + 2.f);
-        float an4 = t + 3;//sinf(t + 3.f);
+        float an2 = t + 1.f;//sinf(t + 1.f);
+        float an3 = t + 2.f;//sinf(t + 2.f);
+        float an4 = t + 3.f;//sinf(t + 3.f);
+
+        IedServer_lockDataModel(iedServer);
 
         Timestamp iecTimestamp;
 
@@ -199,8 +203,6 @@ main(int argc, char** argv)
         /* toggle clock-not-synchronized flag in timestamp */
         if (((int) t % 2) == 0)
             Timestamp_setClockNotSynchronized(&iecTimestamp, true);
-
-        IedServer_lockDataModel(iedServer);
 
         IedServer_updateTimestampAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_t, &iecTimestamp);
         IedServer_updateFloatAttributeValue(iedServer, IEDMODEL_GenericIO_GGIO1_AnIn1_mag_f, an1);
@@ -224,6 +226,8 @@ main(int argc, char** argv)
 
     /* Cleanup - free all resources */
     IedServer_destroy(iedServer);
+
+    TLSConfiguration_destroy(tlsConfig);
 
     return 0;
 } /* main() */
