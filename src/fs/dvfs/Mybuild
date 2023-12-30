@@ -15,9 +15,6 @@ module core extends embox.fs.fs_api {
 	@IncludeExport(path="fs")
 	source "dentry.h"
 
-	@IncludeExport(path="fs")
-	source  "fs_driver.h"
-
 	depends embox.fs.file_desc_dvfs
 
 	option number inode_pool_size=64
@@ -33,6 +30,7 @@ module core extends embox.fs.fs_api {
 	source "inode.c"
 
 	@NoRuntime depends embox.fs.dvfs.super_block
+	@NoRuntime depends embox.fs.dvfs.fs_driver
 
 	depends embox.fs.dvfs_idesc_file_ops
 
