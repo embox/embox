@@ -63,10 +63,57 @@
 #define ADDR_FLASH_SECTOR_9     ((uint32_t)0x08140000) /* Base address of Sector 9, 256 Kbytes */
 #define ADDR_FLASH_SECTOR_10    ((uint32_t)0x08180000) /* Base address of Sector 10, 256 Kbytes */
 #define ADDR_FLASH_SECTOR_11    ((uint32_t)0x081C0000) /* Base address of Sector 11, 256 Kbytes */
+
+
+#define SIZE_FLASH_SECTOR_0     ((uint32_t)0x00008000) /* Base address of Sector 0, 32 Kbytes */
+#define SIZE_FLASH_SECTOR_1     ((uint32_t)0x00008000) /* Base address of Sector 1, 32 Kbytes */
+#define SIZE_FLASH_SECTOR_2     ((uint32_t)0x00008000) /* Base address of Sector 2, 32 Kbytes */
+#define SIZE_FLASH_SECTOR_3     ((uint32_t)0x00008000) /* Base address of Sector 3, 32 Kbytes */
+#define SIZE_FLASH_SECTOR_4     ((uint32_t)0x00020000) /* Base address of Sector 4, 128 Kbytes */
+#define SIZE_FLASH_SECTOR_5     ((uint32_t)0x00040000) /* Base address of Sector 5, 256 Kbytes */
+#define SIZE_FLASH_SECTOR_6     ((uint32_t)0x00040000) /* Base address of Sector 6, 256 Kbytes */
+#define SIZE_FLASH_SECTOR_7     ((uint32_t)0x00040000) /* Base address of Sector 7, 256 Kbytes */
+#define SIZE_FLASH_SECTOR_8     ((uint32_t)0x00040000) /* Base address of Sector 8, 256 Kbytes */
+#define SIZE_FLASH_SECTOR_9     ((uint32_t)0x00040000) /* Base address of Sector 9, 256 Kbytes */
+#define SIZE_FLASH_SECTOR_10    ((uint32_t)0x00040000) /* Base address of Sector 10, 256 Kbytes */
+#define SIZE_FLASH_SECTOR_11    ((uint32_t)0x00040000) /* Base address of Sector 11, 256 Kbytes */
+
 #endif /* DUAL_BANK */
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>
+
+static inline int stm32_flash_sector_size_by_addr(uint32_t addr) {
+	switch(addr) {
+		case ADDR_FLASH_SECTOR_0:
+			return SIZE_FLASH_SECTOR_0;
+		case ADDR_FLASH_SECTOR_1:
+			return SIZE_FLASH_SECTOR_1;
+		case ADDR_FLASH_SECTOR_2:
+			return SIZE_FLASH_SECTOR_2;
+		case ADDR_FLASH_SECTOR_3:
+			return SIZE_FLASH_SECTOR_3;
+		case ADDR_FLASH_SECTOR_4:
+			return SIZE_FLASH_SECTOR_4;
+		case ADDR_FLASH_SECTOR_5:
+			return SIZE_FLASH_SECTOR_5;
+		case ADDR_FLASH_SECTOR_6:
+			return SIZE_FLASH_SECTOR_6;
+		case ADDR_FLASH_SECTOR_7:
+			return SIZE_FLASH_SECTOR_7;
+		case ADDR_FLASH_SECTOR_8:
+			return SIZE_FLASH_SECTOR_8;
+		case ADDR_FLASH_SECTOR_9:
+			return SIZE_FLASH_SECTOR_9;
+		case ADDR_FLASH_SECTOR_10:
+			return SIZE_FLASH_SECTOR_10;
+		case ADDR_FLASH_SECTOR_11:
+			return SIZE_FLASH_SECTOR_11;
+		default:
+			return -1;
+	}
+	return -1;
+}
 
 static inline int stm32_flash_sector_by_addr(uint32_t addr) {
 	switch(addr) {
@@ -75,25 +122,25 @@ static inline int stm32_flash_sector_by_addr(uint32_t addr) {
 		case ADDR_FLASH_SECTOR_1:
 			return 1;
 		case ADDR_FLASH_SECTOR_2:
-			return 3;
+			return 2;
 		case ADDR_FLASH_SECTOR_3:
-			return 4;
+			return 3;
 		case ADDR_FLASH_SECTOR_4:
-			return 5;
+			return 4;
 		case ADDR_FLASH_SECTOR_5:
-			return 6;
+			return 5;
 		case ADDR_FLASH_SECTOR_6:
-			return 7;
+			return 6;
 		case ADDR_FLASH_SECTOR_7:
-			return 8;
+			return 7;
 		case ADDR_FLASH_SECTOR_8:
-			return 9;
+			return 8;
 		case ADDR_FLASH_SECTOR_9:
-			return 10;
+			return 9;
 		case ADDR_FLASH_SECTOR_10:
-			return 11;
+			return 10;
 		case ADDR_FLASH_SECTOR_11:
-			return 0;
+			return 11;
 		default:
 			return -1;
 	}
