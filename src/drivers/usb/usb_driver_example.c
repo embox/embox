@@ -12,7 +12,7 @@
 #include <drivers/usb/usb_dev_desc.h>
 #include <drivers/usb/usb_driver.h>
 #include <embox/unit.h>
-#include <fs/file_operation.h>
+#include <fs/file_desc.h>
 #include <util/err.h>
 
 EMBOX_UNIT_INIT(usb_example_init);
@@ -82,6 +82,7 @@ static size_t example_write(struct file_desc *desc, void *buf, size_t size) {
 
 	return size;
 }
+
 static struct file_operations example_file_ops = {
     .open = example_open,
     .close = example_close,
