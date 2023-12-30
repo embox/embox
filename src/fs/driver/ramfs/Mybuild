@@ -18,7 +18,6 @@ module ramfs_old extends ramfs {
 	source "ramfs_oldfs.c"
 
 	depends embox.fs.node
-	depends embox.fs.driver.repo
 }
 
 module ramfs_dvfs extends ramfs {

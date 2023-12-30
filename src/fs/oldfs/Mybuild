@@ -22,8 +22,6 @@ module filesystem {
 
 	source "super_block.c"
 	source "mount_table.c"
-
-	depends embox.fs.driver.repo
 }
 
 module xattr {

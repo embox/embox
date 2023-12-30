@@ -13,7 +13,7 @@ module jffs2 {
 	option number inode_quantity=64
 	option number jffs2_descriptor_quantity=4
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.driver.fat
 	depends embox.mem.page_api
 	depends embox.mem.pool

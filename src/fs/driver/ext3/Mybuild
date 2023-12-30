@@ -5,7 +5,7 @@ module ext3 {
 	option number inode_quantity=64
 	option number ext3_descriptor_quantity=4
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.driver.ext2
 	depends embox.mem.page_api
 	depends embox.mem.pool

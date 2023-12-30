@@ -10,7 +10,7 @@ module ext2 {
 	@IncludeExport(path="fs")
 	source "ext2.h"
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.journal
 	depends embox.mem.page_api
 	depends embox.mem.pool

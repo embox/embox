@@ -10,7 +10,7 @@ module cdfs {
 	option number inode_quantity=2048
 	option number cdfs_descriptor_quantity=4
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.mem.page_api
 	depends embox.mem.pool
 }
