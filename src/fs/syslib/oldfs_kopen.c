@@ -12,7 +12,6 @@
 #include <util/err.h>
 
 #include <fs/inode.h>
-#include <fs/file_operation.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 
