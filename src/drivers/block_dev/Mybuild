@@ -21,9 +21,10 @@ module block_dev {
 	depends embox.device.common
 }
 
-
 @DefaultImpl(buffer_no_crypt)
 abstract module buffer_crypt_api {
+	@IncludeExport(path="fs")
+	source "buffer_head.h"
 }
 
 module buffer_no_crypt extends buffer_crypt_api {
