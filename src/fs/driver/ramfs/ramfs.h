@@ -11,8 +11,7 @@
 
 #include <stdint.h>
 
-#include <fs/file_operation.h>
-
+#include <fs/file_desc.h>
 #include <framework/mod/options.h>
 #include <module/embox/fs/driver/ramfs.h>
 

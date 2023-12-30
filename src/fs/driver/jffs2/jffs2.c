@@ -34,7 +34,6 @@
 #include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/hlpr_path.h>
-#include <fs/file_operation.h>
 #include <fs/file_desc.h>
 
 #include <util/array.h>
