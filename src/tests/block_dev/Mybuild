@@ -5,7 +5,7 @@ module ramdisk_test {
 	source "ramdisk_test.c"
 
 	depends embox.driver.ramdisk
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
 	depends embox.mem.pool
