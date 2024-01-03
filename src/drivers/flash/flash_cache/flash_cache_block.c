@@ -14,4 +14,6 @@
 // 	return ((uintptr_t)fdev->block_info[0].blocks - 1);
 //}
 
-
+int flash_cache_clean(struct flash_dev *flashdev) {
+	return flash_erase(flashdev, flashdev->block_info[0].blocks - 1);
+}

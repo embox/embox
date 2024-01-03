@@ -10,9 +10,9 @@
 #include <stdio.h>
 
 #include <drivers/flash/flash.h>
-#include <fs/dvfs.h>
 
 struct block_dev;
+extern struct block_dev *bdev_by_path(const char *source);
 
 static void flash_erase_print_usage(void) {
 	printf("Usage: flash_erase [FLASH_DEV]\n");
@@ -38,8 +38,12 @@ int main(int argc, char **argv) {
 	}
 
 	fdev = flash_by_bdev(bdev);
+	if (fdev == NULL) {
+		err = -EINVAL;
+		goto out;
+	}
 
-	for (i = 0; i < fdev->block_info[0].blocks; i++) {
+	for (i = 0; i < flash_get_blocks_num(fdev); i++) {
 		fdev->drv->flash_erase_block(fdev, i);
 	}
 

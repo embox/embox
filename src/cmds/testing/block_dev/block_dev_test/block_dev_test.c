@@ -70,7 +70,7 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 	uint8_t wbuf[FLASH_RW_LEN];
 	uint32_t blocks, total_blocks;
 
-	total_blocks = fdev->block_info[0].blocks;
+	total_blocks = flash_get_blocks_num(fdev);
 	if (n_blocks) {
 		blocks = min(s_block + n_blocks, total_blocks);
 	} else {
@@ -90,12 +90,14 @@ static int flash_dev_test(struct flash_dev *fdev, uint32_t s_block, uint32_t n_b
 	for (uint32_t i = s_block; i < blocks; i += m_blocks) {
 
 		for(uint32_t k = i; k < min(blocks, i + m_blocks); k++) {
+			int blk_size = flash_get_block_size(fdev, k);
+
 			flash_erase(fdev, k);
 
-			offset = k * fdev->block_info[0].block_size;
+			offset = flash_get_offset_by_block(fdev, k);
 
 			/* Write, then read back and check result */
-			for (size_t j = 0; j < fdev->block_info[0].block_size; j += FLASH_RW_LEN) {
+			for (size_t j = 0; j < blk_size; j += FLASH_RW_LEN) {
 				/* Clean rbuf first */
 				memset(rbuf, 0x0, FLASH_RW_LEN);
 				if (0 > flash_write(fdev, offset, wbuf, FLASH_RW_LEN)) {

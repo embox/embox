@@ -74,9 +74,8 @@ static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count,
 	flash = block_dev_priv(bdev);
 	assert(flash);
 
-	assert(flash->num_block_infos == 1); /* NIY for num_block_infos > 1 */
-
-	offset = blkno * flash->block_info[0].block_size;
+	//offset = flash_get_offset_by_block(flash, blkno);
+	offset = bdev->block_size * blkno;
 
 	return flash_read(flash, offset, buffer, count);
 }
@@ -90,23 +89,19 @@ static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count,
 
 	flash = block_dev_priv(bdev);
 	assert(flash);
-	assert(flash->num_block_infos == 1); /* NIY for num_block_infos > 1 */
 
-	offset = blkno * flash->block_info[0].block_size;
+	//offset = flash_get_offset_by_block(flash, blkno);
+	offset = bdev->block_size * blkno;
 
 	return flash_write(flash, offset, buffer, count);
 }
 
 static int flashbdev_erase(struct flash_dev *dev, uint32_t flash_base,
     size_t len, uint32_t *err_address) {
-	uint32_t block, end_addr;
-	size_t erase_count;
+	uint32_t cur_off, end_addr;
 	int stat = 0;
-	size_t block_size;
 
 	assert(dev);
-	assert(dev->drv);
-	assert(dev->num_block_infos == 1); /* NIY for num_block_infos > 1 */
 
 	if ((!dev->drv) || (!dev->drv->flash_erase_block)) {
 		return -EINVAL;
@@ -116,33 +111,30 @@ static int flashbdev_erase(struct flash_dev *dev, uint32_t flash_base,
 	 * to the next one. If so the next device will be handled by a
 	 * recursive call later on.
 	 */
-	if (len > (dev->size + 1 - flash_base)) {
-		end_addr = dev->size;
+	if ((dev->size - flash_base) < len) {
+		end_addr = flash_base + dev->size;
 	}
 	else {
-		end_addr = flash_base + len - 1;
+		end_addr = flash_base + len;
 	}
 	/* erase can only happen on a block boundary, so adjust for this */
-	block = flash_base;
-	erase_count = (end_addr + 1) - block;
-	block_size = dev->block_info[0].block_size;
+	for (cur_off = flash_base; cur_off < end_addr; ) {
+		int blk;
+		
+		blk = flash_get_block_by_offset(dev, cur_off);
+		/* TODO we must be sure that it is start address of the block */
+		assert(cur_off == flash_get_offset_by_block(dev, blk));
 
-	while (erase_count > 0) {
-		if (erase_count < block_size) {
-			erase_count = block_size;
-		}
-
-		stat = dev->drv->flash_erase_block(dev, block);
-
+		stat = dev->drv->flash_erase_block(dev, blk);
 		if (0 != stat) {
 			if (err_address) {
-				*err_address = block;
+				*err_address = cur_off;
 			}
 			break;
 		}
-		block += block_size;
-		erase_count -= block_size;
+		cur_off += flash_get_block_size(dev, blk);
 	}
+
 	return stat;
 }
 
@@ -214,12 +206,14 @@ static int flashbdev_ioctl(struct block_dev *bdev, int cmd, void *buf,
 
 	case FLASH_IOCTL_BLOCKSIZE:
 		bs = (struct flash_ioctl_blocksize *)buf;
-
+		/* NIY for num_block_infos > 1 */
+		assert(dev->num_block_infos == 1); 
 		if (NULL == bs) {
-			return (dev->block_info[0].block_size);
+			/* FIXME FLASH block_size(0)*/
+			return flash_get_block_size(dev, 0);
 		}
-
-		bs->block_size = dev->block_info[0].block_size;
+		/* FIXME FLASH block_size(0)*/
+		bs->block_size = flash_get_block_size(dev, 0);
 		return ENOERR;
 
 	default:

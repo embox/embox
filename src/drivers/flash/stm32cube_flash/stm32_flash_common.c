@@ -37,10 +37,17 @@ static inline int stm32_flash_check_word_aligned(unsigned long base,
 	       && ((uintptr_t)len & (STM32_FLASH_WORD - 1)) == 0;
 }
 
+
+#if defined(STM32_FLASH_VAR_BLOCK_SIZE) && (STM32_FLASH_VAR_BLOCK_SIZE == 1)
+static inline int stm32_flash_get_start_sector(struct flash_dev *dev) {
+	return stm32_flash_sector_by_addr(dev->block_info[0].fbi_start_id);
+}
+#else
 static inline int stm32_flash_get_start_sector(struct flash_dev *dev) {
 	return ((dev->block_info[0].fbi_start_id - STM32_ADDR_FLASH_SECTOR_0)
 	        / dev->block_info[0].block_size);
 }
+#endif /* defined(STM32_FLASH_VAR_BLOCK_SIZE) */
 
 int stm32_flash_erase_block(struct flash_dev *dev, uint32_t block) {
 	int ret = 0;

@@ -52,7 +52,7 @@ int main(int argc, char **argv)
   fdev = get_flash_dev(bdev);
   if (!fdev) {printf("Flash device stm32flash0 not found\n");return -EINVAL;}
 
-  printf("stm32flash0:\n%d blocks of %d bytes each\n\n", fdev->block_info[0].blocks, fdev->block_info[0].block_size);
+  printf("stm32flash0:\n%d blocks of %d bytes each\n\n", flash_get_blocks_num(fdev), flash_get_block_size(fdev, 0));
   printf("Initial at 0 offset\n");
   print_npages(4);
   printf("Erasing block 0\n");
