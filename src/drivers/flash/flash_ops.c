@@ -72,8 +72,7 @@ flash_get_offset_by_block(struct flash_dev *flashdev, int block) {
 
 	for (i = 0; i < flashdev->num_block_infos; i++) {
 		for (j = 0; j < flashdev->block_info[i].blocks; j++) {
-			if (bl <= block &&
-						block < (bl + flashdev->block_info[i].blocks) ) {
+			if (bl == block ) {
 				return (int) cur;
 			}
 			cur += flashdev->block_info[i].block_size;
