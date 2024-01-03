@@ -1,0 +1,13 @@
+package embox.fs.vfs.driver
+
+module virtfs {
+	option string log_level="LOG_ERR"
+	option number sb_pool_size=1
+	option number node_pool_size=16
+
+	source "virtfs.c"
+
+	@NoRuntime depends embox.fs.vfs.core
+	@NoRuntime depends embox.fs.vfs.dir_idesc
+	@NoRuntime depends embox.lib.libds
+}

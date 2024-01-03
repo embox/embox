@@ -1,0 +1,38 @@
+package embox.fs.vfs.posix
+
+static module file_system extends embox.compat.posix.file_system {
+	option string log_level="LOG_WARNING"
+	option number dir_pool_size=4 /* DIR (dirent.h) */
+
+	source "open.c"
+	source "stat.c"
+	source "dirent.c"
+	source "umask.c"
+	source "remove.c"
+	source "mkdir.c"
+	source "mount.c"
+
+	source "stubs/chdir_stub.c"
+	source "stubs/chmod_stub.c"
+	source "stubs/chown_stub.c"
+	source "stubs/creat_stub.c"
+	source "stubs/flock_stub.c"
+	source "stubs/fsync_stub.c"
+	source "stubs/ftruncate_stub.c"
+	source "stubs/getcwd_stub.c"
+	source "stubs/lseek_stub.c"
+	source "stubs/mknod_stub.c"
+	source "stubs/pread_stub.c"
+	source "stubs/pwrite_stub.c"
+	source "stubs/realpath_stub.c"
+	source "stubs/rename_stub.c"
+	source "stubs/rewinddir_stub.c"
+	source "stubs/rmdir_stub.c"
+	source "stubs/truncate_stub.c"
+	source "stubs/unlink_stub.c"
+	source "stubs/utime_stub.c"
+	source "stubs/xattr_stub.c"
+
+	@NoRuntime depends embox.fs.vfs.core
+	@NoRuntime depends embox.kernel.task.resource.umask
+}

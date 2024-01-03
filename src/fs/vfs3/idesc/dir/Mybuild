@@ -1,0 +1,10 @@
+package embox.fs.vfs
+
+module dir_idesc {
+	option string log_level="LOG_ERR"
+	option number idesc_pool_size=8
+
+	@IncludeExport(path="vfs")
+	source "dir_idesc.h"
+	source "dir_idesc.c"
+}
