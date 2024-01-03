@@ -9,7 +9,7 @@ module ext4 {
 	option number inode_quantity=64
 	option number ext4_descriptor_quantity=4
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.driver.ext2
 	depends third_party.e2fsprogs.mke2fs /* ext4fs_format */
 	depends embox.mem.page_api

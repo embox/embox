@@ -56,7 +56,7 @@ int chdir(const char *path) {
 		return -1;
 	}
 
-	if ((t = task_fs()) == NULL) {
+	if ((t = task_self_resource_vfs()) == NULL) {
 		log_error("task VFS structure is NULL");
 		return SET_ERRNO(EIO);
 	}

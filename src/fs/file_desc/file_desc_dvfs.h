@@ -8,18 +8,38 @@
 #ifndef SRC_FS_DVFS_FILE_DESC_H_
 #define SRC_FS_DVFS_FILE_DESC_H_
 
+#include <stddef.h>
 #include <sys/types.h>
+
 #include <kernel/task/resource/idesc.h>
 
-struct file_operations;
 struct inode;
 struct dentry;
+struct file_desc;
+
+/**
+ * NOTE ON FILE OPEN
+ *
+ * Basically,  in  regular  file  systems  file  open  driver  function  should
+ * just  return  the same  idesc  that  was  passed as second  parameter.  This
+ * feature  is  required for device-dependent operations, otherwise just return
+ * the second argument.
+ */
+
+struct file_operations {
+	struct idesc *(
+	    *open)(struct inode *node, struct idesc *file_desc, int __oflag);
+	int (*close)(struct file_desc *desc);
+	size_t (*read)(struct file_desc *desc, void *buf, size_t size);
+	size_t (*write)(struct file_desc *desc, void *buf, size_t size);
+	int (*ioctl)(struct file_desc *desc, int request, void *data);
+};
 
 struct file_desc {
 	struct idesc f_idesc;
 
 	struct dentry *f_dentry;
-	struct inode  *f_inode;
+	struct inode *f_inode;
 
 	off_t pos;
 

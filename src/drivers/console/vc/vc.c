@@ -16,7 +16,6 @@
 #include <drivers/video_term.h>
 #include <embox/unit.h>
 #include <fs/file_desc.h>
-#include <fs/file_operation.h>
 #include <kernel/task/resource/idesc.h>
 #include <mem/misc/pool.h>
 

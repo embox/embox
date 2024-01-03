@@ -1,0 +1,8 @@
+package embox.kernel.task.resource
+
+module vfs {
+	source "vfs.c"
+
+	@IncludeExport(path="kernel/task/resource")
+	source "vfs.h"
+}

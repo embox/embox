@@ -22,8 +22,6 @@ module filesystem {
 
 	source "super_block.c"
 	source "mount_table.c"
-
-	depends embox.fs.driver.repo
 }
 
 module xattr {
@@ -36,8 +34,19 @@ module xattr_list {
 	source "xattr_list.c"
 }
 
+module fs_driver {
+	option number drivers_quantity=16
+
+	source "fs_driver.c"
+
+	@IncludeExport(path="fs")
+	source "fs_driver.h"
+}
+
 module core extends fs_api {
 	source "vfs.c"
+
+	@NoRuntime depends fs_driver
 
 	depends embox.fs.file_desc_oldfs
 	depends filesystem

@@ -17,7 +17,6 @@
 #include <util/err.h>
 
 #include <fs/file_desc.h>
-#include <fs/file_operation.h>
 #include <fs/super_block.h>
 #include <fs/fs_driver.h>
 #include <fs/inode_operation.h>

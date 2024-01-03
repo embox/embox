@@ -5,9 +5,8 @@
  * @author Denis Deryugin
  */
 
-#ifndef FILE_TABLE_H_
-#define FILE_TABLE_H_
-
+#ifndef KERNEL_TASK_RESOURCE_VFS_
+#define KERNEL_TASK_RESOURCE_VFS_
 
 #include <kernel/task.h>
 
@@ -20,9 +19,6 @@ struct task_vfs {
 
 extern struct task_vfs *task_resource_vfs(const struct task *task);
 
-extern struct task* task_self(void);
-static inline struct task_vfs *task_fs(void) {
-	return task_resource_vfs(task_self());
-}
+#define task_self_resource_vfs() task_resource_vfs(task_self())
 
-#endif /* FILE_TABLE_H_ */
+#endif /* KERNEL_TASK_RESOURCE_VFS_ */

@@ -19,7 +19,7 @@
 #include <fs/inode.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
-#include <fs/file_operation.h>
+#include <fs/file_desc.h>
 #include <sys/time.h>
 #include <utime.h>
 #include <drivers/block_dev.h>

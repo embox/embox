@@ -23,7 +23,6 @@ module mkfs {
 	//depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	//depends embox.driver.ramdisk
-	//depends embox.fs.driver.repo
 	depends embox.framework.LibFramework
 	//depends embox.fs.filesystem
 }

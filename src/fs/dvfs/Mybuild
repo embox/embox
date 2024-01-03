@@ -15,12 +15,8 @@ module core extends embox.fs.fs_api {
 	@IncludeExport(path="fs")
 	source "dentry.h"
 
-	@IncludeExport(path="fs")
-	source  "fs_driver.h"
-
 	depends embox.fs.file_desc_dvfs
 
-	option number superblock_pool_size=4
 	option number inode_pool_size=64
 	option number dentry_pool_size=64
 	option number file_pool_size=64
@@ -31,8 +27,10 @@ module core extends embox.fs.fs_api {
 	source "dvfs_kfile.c"
 	source "dvfs_dentry.c"
 	source "dvfs_util.c"
-	source "super_block.c"
 	source "inode.c"
+
+	@NoRuntime depends embox.fs.dvfs.super_block
+	@NoRuntime depends embox.fs.dvfs.fs_driver
 
 	depends embox.fs.dvfs_idesc_file_ops
 
@@ -43,7 +41,6 @@ module core extends embox.fs.fs_api {
 
 	depends embox.fs.dvfs.cache_strategy
 	depends embox.fs.dvfs.compat
-	depends embox.fs.driver.repo
 	depends embox.kernel.task.idesc
 	@NoRuntime depends embox.kernel.task.resource.vfs
 }

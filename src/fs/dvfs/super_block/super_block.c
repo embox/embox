@@ -5,24 +5,22 @@
  * @author Anton Bondarev
  */
 
-#include <util/log.h>
-
 #include <stddef.h>
 #include <sys/stat.h>
 
-#include <mem/misc/pool.h>
-
+#include <framework/mod/options.h>
+#include <fs/fs_driver.h>
 #include <fs/inode.h>
 #include <fs/super_block.h>
-#include <fs/fs_driver.h>
+#include <mem/misc/pool.h>
+#include <util/log.h>
 
-#include <framework/mod/options.h>
+#define SUPER_BLOCK_POOL_SZ OPTION_GET(NUMBER, super_block_pool_sz)
 
-#define SUPERBLOCK_POOL_SIZE OPTION_GET(NUMBER, superblock_pool_size)
+POOL_DEF(super_block_pool, struct super_block, SUPER_BLOCK_POOL_SZ);
 
-POOL_DEF(superblock_pool, struct super_block, SUPERBLOCK_POOL_SIZE);
-
-/* @brief Try to allocate superblock using file system driver and given device
+/**
+ * @brief Try to allocate superblock using file system driver and given device
  * @param drv Name of file system driver
  * @param dest Path to device (e.g. /dev/sda1)
  *
@@ -41,12 +39,12 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 		return NULL;
 	}
 
-	if (NULL == (sb = pool_alloc(&superblock_pool))) {
+	if (NULL == (sb = pool_alloc(&super_block_pool))) {
 		return NULL;
 	}
 
-	*sb = (struct super_block) {
-		.fs_drv    = drv,
+	*sb = (struct super_block){
+	    .fs_drv = drv,
 	};
 
 	node = dvfs_alloc_inode(sb);
@@ -54,9 +52,9 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 		super_block_free(sb);
 		return NULL;
 	}
-	*node = (struct inode) {
-		.i_mode   = S_IFDIR,
-		.i_sb     = sb,
+	*node = (struct inode){
+	    .i_mode = S_IFDIR,
+	    .i_sb = sb,
 	};
 
 	sb->sb_root = node;
@@ -64,7 +62,7 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	if (drv->fill_sb) {
 		if (0 != drv->fill_sb(sb, source)) {
 			dvfs_destroy_inode(node);
-			pool_free(&superblock_pool, sb);
+			pool_free(&super_block_pool, sb);
 			return NULL;
 		}
 	}
@@ -91,7 +89,7 @@ int super_block_free(struct super_block *sb) {
 		err = sb->fs_drv->clean_sb(sb);
 	}
 
-	pool_free(&superblock_pool, sb);
+	pool_free(&super_block_pool, sb);
 
 	return err;
 }

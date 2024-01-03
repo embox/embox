@@ -14,7 +14,7 @@ module nfs {
 	option number nfs_descriptor_quantity=4
 
 	depends embox.net.lib.rpc
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
 	depends embox.mem.pool

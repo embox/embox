@@ -4,13 +4,14 @@
  * @date Nov 3, 2020
  * @author Anton Bondarev
  */
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 
-#include <fs/file_operation.h>
+extern int stdio_scan(const char **in, const char *fmt, va_list args);
 
 FILE *__fscanf_file;
-extern int stdio_scan(const char **in, const char *fmt, va_list args);
+
 int fscanf(FILE *stream, const char *format, ...) {
 	va_list args;
 	int rv;
@@ -39,11 +40,13 @@ void __stdio_unscanchar(const char **str, int ch, int *pc_ptr) {
 	if (ch != EOF) {
 		(*pc_ptr)--;
 	}
-	if ((uintptr_t) str >= 2) {
-		(*str) --;
-	} else if ((uintptr_t) str == 1) {
+	if ((uintptr_t)str >= 2) {
+		(*str)--;
+	}
+	else if ((uintptr_t)str == 1) {
 		ungetc(ch, __fscanf_file);
-	} else {
+	}
+	else {
 		ungetc(ch, stdin);
 	}
 }
@@ -55,9 +58,11 @@ int __stdio_scanchar(const char **str, int *pc_ptr) {
 		ch = **str;
 		(*str)++;
 		ch = (ch == '\0' ? EOF : ch);
-	} else if ((uintptr_t)str == 1) {
+	}
+	else if ((uintptr_t)str == 1) {
 		ch = getc(__fscanf_file);
-	} else {
+	}
+	else {
 		if ('\n' == (ch = getchar())) {
 			ch = EOF;
 		}
@@ -68,4 +73,3 @@ int __stdio_scanchar(const char **str, int *pc_ptr) {
 	}
 	return ch;
 }
-

@@ -32,7 +32,6 @@
 #include <fs/hlpr_path.h>
 #include <fs/super_block.h>
 #include <fs/file_desc.h>
-#include <fs/file_operation.h>
 
 #include "ext3_journal.h"
 

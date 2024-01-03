@@ -43,7 +43,6 @@ module file_system_full extends file_system {
 
 	depends embox.device.common
 	depends embox.fs.core
-	depends embox.fs.driver.repo
 	depends embox.fs.file_desc_oldfs
 	depends embox.fs.syslib.fs_full
 	depends embox.kernel.thread.mutex

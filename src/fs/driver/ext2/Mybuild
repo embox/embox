@@ -1,12 +1,16 @@
 package embox.fs.driver
 
 module ext2 {
-	source "ext2.c"
-	source "ext2_balloc.c"
 	option number inode_quantity=64
 	option number ext2_descriptor_quantity=4
 
-	depends embox.fs.node, embox.fs.driver.repo
+	source "ext2.c"
+	source "ext2_balloc.c"
+
+	@IncludeExport(path="fs")
+	source "ext2.h"
+
+	depends embox.fs.node
 	depends embox.fs.journal
 	depends embox.mem.page_api
 	depends embox.mem.pool
