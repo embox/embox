@@ -74,7 +74,8 @@ static int flashbdev_read(struct block_dev *bdev, char *buffer, size_t count,
 	flash = block_dev_priv(bdev);
 	assert(flash);
 
-	offset = flash_get_block_size(flash, blkno);
+	//offset = flash_get_offset_by_block(flash, blkno);
+	offset = bdev->block_size * blkno;
 
 	return flash_read(flash, offset, buffer, count);
 }
@@ -88,8 +89,9 @@ static int flashbdev_write(struct block_dev *bdev, char *buffer, size_t count,
 
 	flash = block_dev_priv(bdev);
 	assert(flash);
-	
-	offset = flash_get_block_size(flash, blkno);
+
+	//offset = flash_get_offset_by_block(flash, blkno);
+	offset = bdev->block_size * blkno;
 
 	return flash_write(flash, offset, buffer, count);
 }
