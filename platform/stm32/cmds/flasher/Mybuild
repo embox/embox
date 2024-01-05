@@ -1,0 +1,22 @@
+package platform.stm32.cmd
+
+
+@LinkerSection(text="flasher_text",rodata="flasher_rodata",data="flasher_data",bss="flasher_bss")
+@AutoCmd
+@Cmd(name = "stm32_flasher",
+	help = "Flash a image from a high flash addr",
+	man  = '''
+		NAME
+			
+		AUTHORS
+			Anton Bondarev
+	''')
+module stm32_flasher {
+	option number image_addr
+	option number buf_page_start
+	option number buf_page_size
+
+	source "stm32_flasher.c"
+
+	depends embox.mem.loadsect
+}
