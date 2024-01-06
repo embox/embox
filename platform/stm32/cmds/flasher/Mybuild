@@ -17,6 +17,7 @@ module stm32_flasher {
 	option number buf_page_size
 
 	source "stm32_flasher.c"
+	source "libflash.c"
 
 	depends embox.mem.loadsect
 }
