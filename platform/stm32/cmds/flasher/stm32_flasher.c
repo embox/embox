@@ -26,11 +26,25 @@ extern char _flash_start, _flash_end;
 #define STM32_FLASH_END   ((uint32_t)&_flash_end)
 
 static void flasher_copy_blocks(void) {
-	uint32_t sector = stm32_flash_sector_by_addr(IMAGE_ADDR);
+	uint64_t buf[16];
+	uint32_t wr_addr = IMAGE_ADDR;//STM32_ADDR_FLASH_SECTOR_0;
+	uint32_t rd_addr = IMAGE_ADDR;
+	uint32_t sec_nr;
+	int sec_size;
+	int i, j;
 
+	/* first sector includes stm32_flash0 don't touch it */
+	sec_nr = stm32_flash_sector_by_addr(wr_addr);
+	sec_size = stm32_flash_sector_size_by_addr(wr_addr);
 	libflash_flash_unlock();
-	libflash_erase_sector(sector);
+	libflash_erase_sector(sec_nr);
 	libflash_flash_lock();
+	for (i = 0; i < sec_size; i += sizeof(buf)) {
+		for(j = 0; j < sizeof(buf)/ sizeof(buf[0]); j += sizeof(buf[0])) {
+			buf[j] = *( volatile uint64_t *)(rd_addr + j);
+		}
+	}
+
 }
 
 int main(int argc, char **argv) {
@@ -42,6 +56,7 @@ int main(int argc, char **argv) {
 		flasher_copy_blocks();
 	}
 	ipl_enable();
+
 
 	return 0;
 }
