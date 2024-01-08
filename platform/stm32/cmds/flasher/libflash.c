@@ -333,7 +333,8 @@ static void FLASH_Program_DoubleWord(uint32_t Address, uint64_t Data)
   * 
   * @retval None
   */
-void libflash_erase_sector(uint32_t Sector, uint8_t voltage) {
+void libflash_erase_sector(uint32_t Sector) {
+  uint8_t voltage = FLASH_VOLTAGE_RANGE_3; 
 	uint32_t tmp_psize = 0;
 
 	if (voltage == FLASH_VOLTAGE_RANGE_1) {
