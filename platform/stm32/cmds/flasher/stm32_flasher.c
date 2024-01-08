@@ -19,6 +19,7 @@
 extern int libflash_flash_unlock(void);
 extern int libflash_flash_lock(void);
 extern void libflash_erase_sector(uint32_t sector);
+extern void libflash_program_64(uint32_t add, uint64_t data);
 
 extern char _flash_start, _flash_end;
 #define STM32_FLASH_START ((uint32_t)&_flash_start)

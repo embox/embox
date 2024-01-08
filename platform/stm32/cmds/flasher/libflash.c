@@ -277,7 +277,7 @@ HAL_StatusTypeDef FLASH_WaitForLastOperation(uint32_t Timeout)
   
 }
 #endif
-#if 0
+
 /**
   * @brief  Program a double word (64-bit) at a specified address.
   * @note   This function must be used when the device voltage range is from
@@ -290,10 +290,7 @@ HAL_StatusTypeDef FLASH_WaitForLastOperation(uint32_t Timeout)
   * @param  Data specifies the data to be programmed.
   * @retval None
   */
-static void FLASH_Program_DoubleWord(uint32_t Address, uint64_t Data)
-{
-  /* Check the parameters */
-  assert_param(IS_FLASH_ADDRESS(Address));
+void libflash_program_64(uint32_t add, uint64_t data) {
   
   /* If the previous operation is completed, proceed to program the new data */
   FLASH->CR &= CR_PSIZE_MASK;
@@ -301,35 +298,25 @@ static void FLASH_Program_DoubleWord(uint32_t Address, uint64_t Data)
   FLASH->CR |= FLASH_CR_PG;
 
   /* Program first word */
-  *(__IO uint32_t*)Address = (uint32_t)Data;
+  *(volatile uint32_t*)add = (uint32_t)data;
   /* Barrier to ensure programming is performed in 2 steps, in right order
     (independently of compiler optimization behavior) */
   __ISB();
 
   /* Program second word */
-  *(__IO uint32_t*)(Address+4) = (uint32_t)(Data >> 32);
+  *(volatile uint32_t*)(add + 4) = (uint32_t)(data >> 32);
 
   /* Data synchronous Barrier (DSB) Just after the write operation
      This will force the CPU to respect the sequence of instruction (no optimization).*/
   __DSB();
 }
-#endif
+
 
 
 /**
   * @brief  Erase the specified FLASH memory sector
   * @param  Sector FLASH sector to erase
   *         The value of this parameter depend on device used within the same series      
-  * @param  voltage The device voltage range which defines the erase parallelism.  
-  *          This parameter can be one of the following values:
-  *            @arg FLASH_VOLTAGE_RANGE_1: when the device voltage range is 1.8V to 2.1V, 
-  *                                  the operation will be done by byte (8-bit) 
-  *            @arg FLASH_VOLTAGE_RANGE_2: when the device voltage range is 2.1V to 2.7V,
-  *                                  the operation will be done by half word (16-bit)
-  *            @arg FLASH_VOLTAGE_RANGE_3: when the device voltage range is 2.7V to 3.6V,
-  *                                  the operation will be done by word (32-bit)
-  *            @arg FLASH_VOLTAGE_RANGE_4: when the device voltage range is 2.7V to 3.6V + External Vpp, 
-  *                                  the operation will be done by double word (64-bit)
   * 
   * @retval None
   */
@@ -367,83 +354,3 @@ void libflash_erase_sector(uint32_t Sector) {
      (no optimization).*/
 	__DSB();
 }
-
-#if 0
-/**
-  * @brief  Perform a mass erase or erase the specified FLASH memory sectors 
-  * @param[in]  pEraseInit pointer to an FLASH_EraseInitTypeDef structure that
-  *         contains the configuration information for the erasing.
-  * 
-  * @param[out]  SectorError pointer to variable  that
-  *         contains the configuration information on faulty sector in case of error 
-  *         (0xFFFFFFFF means that all the sectors have been correctly erased)
-  * 
-  * @retval HAL Status
-  */
-HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *pEraseInit, uint32_t *SectorError)
-{
-  HAL_StatusTypeDef status = HAL_ERROR;
-  uint32_t index = 0;
-  
-  /* Process Locked */
-  __HAL_LOCK(&pFlash);
-
-  /* Check the parameters */
-  assert_param(IS_FLASH_TYPEERASE(pEraseInit->TypeErase));
-
-  /* Wait for last operation to be completed */
-  status = FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE);
-
-  if(status == HAL_OK)
-  {
-    /*Initialization of SectorError variable*/
-    *SectorError = 0xFFFFFFFFU;
-    
-    if(pEraseInit->TypeErase == FLASH_TYPEERASE_MASSERASE)
-    {
-      /*Mass erase to be done*/
-#if defined (FLASH_OPTCR_nDBANK)      
-      FLASH_MassErase((uint8_t) pEraseInit->VoltageRange, pEraseInit->Banks);
-#else
-      FLASH_MassErase((uint8_t) pEraseInit->VoltageRange);      
-#endif /* FLASH_OPTCR_nDBANK */
-                      
-      /* Wait for last operation to be completed */
-      status = FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE);
-      
-      /* if the erase operation is completed, disable the MER Bit */
-      FLASH->CR &= (~FLASH_MER_BIT);
-    }
-    else
-    {
-      /* Check the parameters */
-      assert_param(IS_FLASH_NBSECTORS(pEraseInit->NbSectors + pEraseInit->Sector));
-
-      /* Erase by sector by sector to be done*/
-      for(index = pEraseInit->Sector; index < (pEraseInit->NbSectors + pEraseInit->Sector); index++)
-      {
-        FLASH_Erase_Sector(index, (uint8_t) pEraseInit->VoltageRange);
-
-        /* Wait for last operation to be completed */
-        status = FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE);
-        
-        /* If the erase operation is completed, disable the SER Bit and SNB Bits */
-        CLEAR_BIT(FLASH->CR, (FLASH_CR_SER | FLASH_CR_SNB)); 
-
-        if(status != HAL_OK) 
-        {
-          /* In case of error, stop erase procedure and return the faulty sector*/
-          *SectorError = index;
-          break;
-        }
-      }
-    }
-  }
-
-  /* Process Unlocked */
-  __HAL_UNLOCK(&pFlash);
-
-  return status;
-}
-
-#endif
