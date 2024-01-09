@@ -13,6 +13,8 @@ package platform.stm32.cmd
 	''')
 module stm32_flasher {
 	option number image_addr=0x08100000
+	option number image_size=0x00100000
+
 	option number buf_page_start
 	option number buf_page_size
 
