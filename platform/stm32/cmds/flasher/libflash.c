@@ -121,6 +121,29 @@ struct flash_ctrl {
 #define FLASH_SR_BSY_Msk              (0x1UL << FLASH_SR_BSY_Pos)               /*!< 0x00010000 */
 #define FLASH_SR_BSY                  FLASH_SR_BSY_Msk
 
+
+/** @defgroup FLASH_Flag_definition FLASH Flag definition
+  * @brief Flag definition
+  * @{
+  */
+#define FLASH_FLAG_EOP                 FLASH_SR_EOP            /*!< FLASH End of Operation flag               */
+#define FLASH_FLAG_OPERR               FLASH_SR_OPERR          /*!< FLASH operation Error flag                */
+#define FLASH_FLAG_WRPERR              FLASH_SR_WRPERR         /*!< FLASH Write protected error flag          */
+#define FLASH_FLAG_PGAERR              FLASH_SR_PGAERR         /*!< FLASH Programming Alignment error flag    */
+#define FLASH_FLAG_PGPERR              FLASH_SR_PGPERR         /*!< FLASH Programming Parallelism error flag  */
+#define FLASH_FLAG_ERSERR              FLASH_SR_ERSERR         /*!< FLASH Erasing Sequence error flag         */
+#define FLASH_FLAG_BSY                 FLASH_SR_BSY            /*!< FLASH Busy flag                           */
+
+#if defined (FLASH_OPTCR2_PCROP)
+#define FLASH_FLAG_RDERR               FLASH_SR_RDERR          /*!< FLASH Read protection error flag          */
+#define FLASH_FLAG_ALL_ERRORS     (FLASH_FLAG_OPERR   | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | \
+                                   FLASH_FLAG_PGPERR  | FLASH_FLAG_ERSERR | FLASH_FLAG_RDERR)
+#else
+#define FLASH_FLAG_ALL_ERRORS     (FLASH_FLAG_OPERR   | FLASH_FLAG_WRPERR | FLASH_FLAG_PGAERR | \
+                                   FLASH_FLAG_PGPERR  | FLASH_FLAG_ERSERR)
+#endif /* FLASH_OPTCR2_PCROP */
+
+
 /*******************  Bits definition for FLASH_CR register  ******************/
 #define FLASH_CR_PG_Pos               (0U)
 #define FLASH_CR_PG_Msk               (0x1UL << FLASH_CR_PG_Pos)                /*!< 0x00000001 */
@@ -192,55 +215,29 @@ int libflash_flash_lock(void) {
   
   return 0;  
 }
-#if 0
+
 /**
   * @brief  Wait for a FLASH operation to complete.
   * @param  Timeout maximum flash operationtimeout
   * @retval HAL Status
   */
-HAL_StatusTypeDef FLASH_WaitForLastOperation(uint32_t Timeout)
-{ 
-  uint32_t tickstart = 0;
-  
-  /* Clear Error Code */
-  pFlash.ErrorCode = HAL_FLASH_ERROR_NONE;
-  
-  /* Wait for the FLASH operation to complete by polling on BUSY flag to be reset.
-     Even if the FLASH operation fails, the BUSY flag will be reset and an error
-     flag will be set */
-  /* Get tick */
-  tickstart = HAL_GetTick();
+static inline int libflash_flash_wait_for_op(void) {
+	while ( (FLASH->SR & FLASH_FLAG_BSY) != 0){
+	}
 
-  while(__HAL_FLASH_GET_FLAG(FLASH_FLAG_BSY) != RESET) 
-  { 
-    if(Timeout != HAL_MAX_DELAY)
-    {
-      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
-      {
-        return HAL_TIMEOUT;
-      }
-    } 
-  }
-  
-  if(__HAL_FLASH_GET_FLAG(FLASH_FLAG_ALL_ERRORS) != RESET)
-  {
-    /*Save the error code*/
-    FLASH_SetErrorCode();
-    return HAL_ERROR;
-  }
-  
-  /* Check FLASH End of Operation flag  */
-  if (__HAL_FLASH_GET_FLAG(FLASH_FLAG_EOP) != RESET)
-  {
-    /* Clear FLASH End of Operation pending bit */
-    __HAL_FLASH_CLEAR_FLAG(FLASH_FLAG_EOP);
-  }
+	if ( (FLASH->SR & FLASH_FLAG_ALL_ERRORS) != 0) {
+			return -1;
+	}
 
-  /* If there is an error flag set */
-  return HAL_OK;
-  
+	/* Check FLASH End of Operation flag  */
+	if ( (FLASH->SR & FLASH_FLAG_EOP) != 0) {
+			/* Clear FLASH End of Operation pending bit */
+			FLASH->SR &= ~FLASH_FLAG_EOP;
+	}
+
+	/* If there is an error flag set */
+	return 0;
 }
-#endif
 
 /**
   * @brief  Program a double word (64-bit) at a specified address.
@@ -317,4 +314,11 @@ void libflash_erase_sector(uint32_t Sector) {
      This will force the CPU to respect the sequence of instruction
      (no optimization).*/
 	__DSB();
+
+
+  /* Wait for last operation to be completed */
+  libflash_flash_wait_for_op();
+
+  /* If the erase operation is completed, disable the SER Bit and SNB Bits */
+  FLASH->CR &= ~(FLASH_CR_SER | FLASH_CR_SNB); 
 }
