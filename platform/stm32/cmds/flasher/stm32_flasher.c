@@ -12,6 +12,8 @@
 
 #include <drivers/block_dev/flash/stm32flash.h>
 
+//#include "stm32_sys_helper.h"
+
 #include <framework/mod/options.h>
 
 #define IMAGE_ADDR   OPTION_GET(NUMBER,image_addr)
@@ -20,6 +22,20 @@ extern int libflash_flash_unlock(void);
 extern int libflash_flash_lock(void);
 extern void libflash_erase_sector(uint32_t sector);
 extern void libflash_program_64(uint32_t add, uint64_t data);
+
+__NO_RETURN __STATIC_INLINE void __stm32_system_reset(void) {
+  __DSB();                                                          /* Ensure all outstanding memory accesses included
+                                                                     buffered write are completed before reset */
+  SCB->AIRCR  = (uint32_t)((0x5FAUL << SCB_AIRCR_VECTKEY_Pos)    |
+                           (SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) |
+                            SCB_AIRCR_SYSRESETREQ_Msk    );         /* Keep priority group unchanged */
+  __DSB();                                                          /* Ensure completion of memory access */
+
+  for(;;)                                                        /* wait until reset */
+  {
+    __NOP();
+  }
+}
 
 extern char _flash_start, _flash_end;
 #define STM32_FLASH_START ((uint32_t)&_flash_start)
@@ -57,6 +73,7 @@ int main(int argc, char **argv) {
 	}
 	ipl_enable();
 
+	__NVIC_SystemReset();
 
 	return 0;
 }

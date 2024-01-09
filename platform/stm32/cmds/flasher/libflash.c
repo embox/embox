@@ -7,43 +7,7 @@
 
 #include <stdint.h>
 
-#ifndef   __STATIC_FORCEINLINE             
-  #define __STATIC_FORCEINLINE                   \
-              __attribute__((always_inline)) static inline
-#endif
-
-/**
-  \brief   Instruction Synchronization Barrier
-  \details Instruction Synchronization Barrier flushes the pipeline in the processor,
-           so that all instructions following the ISB are fetched from cache or memory,
-           after the instruction has been completed.
- */
-__STATIC_FORCEINLINE void __ISB(void)
-{
-  __asm volatile ("isb 0xF":::"memory");
-}
-
-
-/**
-  \brief   Data Synchronization Barrier
-  \details Acts as a special kind of Data Memory Barrier.
-           It completes when all explicit memory accesses before this instruction complete.
- */
-__STATIC_FORCEINLINE void __DSB(void)
-{
-  __asm volatile ("dsb 0xF":::"memory");
-}
-
-
-/**
-  \brief   Data Memory Barrier
-  \details Ensures the apparent order of the explicit memory operations before
-           and after the instruction, without ensuring their completion.
- */
-__STATIC_FORCEINLINE void __DMB(void)
-{
-  __asm volatile ("dmb 0xF":::"memory");
-}
+#include "stm32_sys_helper.h"
 
 
 /**
