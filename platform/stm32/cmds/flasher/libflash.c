@@ -189,14 +189,14 @@ struct flash_ctrl {
   * @retval HAL Status
   */
 int libflash_flash_unlock(void) {
-  int status = 0;
+	int status = 0;
 
 	if (FLASH->CR & FLASH_CR_LOCK) {
-    /* Authorize the FLASH Registers access */
-    FLASH->KEYR = FLASH_KEY1;
-    FLASH->KEYR = FLASH_KEY2;
+		/* Authorize the FLASH Registers access */
+		FLASH->KEYR = FLASH_KEY1;
+		FLASH->KEYR = FLASH_KEY2;
 
-    /* Verify Flash is unlocked */
+		/* Verify Flash is unlocked */
 		if (FLASH->CR & FLASH_CR_LOCK) {
 			status = -1;
 		}
@@ -210,10 +210,10 @@ int libflash_flash_unlock(void) {
   * @retval HAL Status
   */
 int libflash_flash_lock(void) {
-  /* Set the LOCK Bit to lock the FLASH Registers access */
-  FLASH->CR |= FLASH_CR_LOCK;
-  
-  return 0;  
+	/* Set the LOCK Bit to lock the FLASH Registers access */
+	FLASH->CR |= FLASH_CR_LOCK;
+
+	return 0;
 }
 
 /**
@@ -222,17 +222,16 @@ int libflash_flash_lock(void) {
   * @retval HAL Status
   */
 static inline int libflash_flash_wait_for_op(void) {
-	while ( (FLASH->SR & FLASH_FLAG_BSY) != 0){
-	}
+	while ((FLASH->SR & FLASH_FLAG_BSY) != 0) {}
 
-	if ( (FLASH->SR & FLASH_FLAG_ALL_ERRORS) != 0) {
-			return -1;
+	if ((FLASH->SR & FLASH_FLAG_ALL_ERRORS) != 0) {
+		return -1;
 	}
 
 	/* Check FLASH End of Operation flag  */
-	if ( (FLASH->SR & FLASH_FLAG_EOP) != 0) {
-			/* Clear FLASH End of Operation pending bit */
-			FLASH->SR &= ~FLASH_FLAG_EOP;
+	if ((FLASH->SR & FLASH_FLAG_EOP) != 0) {
+		/* Clear FLASH End of Operation pending bit */
+		FLASH->SR &= ~FLASH_FLAG_EOP;
 	}
 
 	/* If there is an error flag set */
@@ -244,7 +243,7 @@ static inline int libflash_flash_wait_for_op(void) {
   * @note   This function must be used when the device voltage range is from
   *         2.7V to 3.6V and an External Vpp is present.
   *
-  * @note   If an erase and a program operations are requested simultaneously,    
+  * @note   If an erase and a program operations are requested simultaneously,
   *         the erase operation is performed before the program one.
   *  
   * @param  Address specifies the address to be programmed.
@@ -252,37 +251,45 @@ static inline int libflash_flash_wait_for_op(void) {
   * @retval None
   */
 void libflash_program_64(uint32_t add, uint64_t data) {
-  
-  /* If the previous operation is completed, proceed to program the new data */
-  FLASH->CR &= CR_PSIZE_MASK;
-  FLASH->CR |= FLASH_PSIZE_DOUBLE_WORD;
-  FLASH->CR |= FLASH_CR_PG;
+	/* Wait for last operation to be completed */
+	libflash_flash_wait_for_op();
 
-  /* Program first word */
-  *(volatile uint32_t*)add = (uint32_t)data;
-  /* Barrier to ensure programming is performed in 2 steps, in right order
+	/* If the previous operation is completed, proceed to program the new data */
+	FLASH->CR &= CR_PSIZE_MASK;
+	FLASH->CR |= FLASH_PSIZE_DOUBLE_WORD;
+	FLASH->CR |= FLASH_CR_PG;
+
+	/* Program first word */
+	*(volatile uint32_t *)add = (uint32_t)data;
+	/* Barrier to ensure programming is performed in 2 steps, in right order
     (independently of compiler optimization behavior) */
-  __ISB();
+	__ISB();
 
-  /* Program second word */
-  *(volatile uint32_t*)(add + 4) = (uint32_t)(data >> 32);
+	/* Program second word */
+	*(volatile uint32_t *)(add + 4) = (uint32_t)(data >> 32);
 
-  /* Data synchronous Barrier (DSB) Just after the write operation
-     This will force the CPU to respect the sequence of instruction (no optimization).*/
-  __DSB();
+	/* Data synchronous Barrier (DSB) Just after the write operation
+     This will force the CPU to respect the sequence of instruction
+     (no optimization).*/
+	__DSB();
+
+	/* Wait for last operation to be completed */
+	libflash_flash_wait_for_op();
+
+	/* If the program operation is completed, disable the PG Bit */
+	FLASH->CR &= (~FLASH_CR_PG);
 }
-
-
 
 /**
   * @brief  Erase the specified FLASH memory sector
   * @param  Sector FLASH sector to erase
-  *         The value of this parameter depend on device used within the same series      
+  *         The value of this parameter depend on device used within the
+  *         same series
   * 
   * @retval None
   */
 void libflash_erase_sector(uint32_t Sector) {
-  uint8_t voltage = FLASH_VOLTAGE_RANGE_3; 
+	uint8_t voltage = FLASH_VOLTAGE_RANGE_3;
 	uint32_t tmp_psize = 0;
 
 	if (voltage == FLASH_VOLTAGE_RANGE_1) {
@@ -315,10 +322,9 @@ void libflash_erase_sector(uint32_t Sector) {
      (no optimization).*/
 	__DSB();
 
+	/* Wait for last operation to be completed */
+	libflash_flash_wait_for_op();
 
-  /* Wait for last operation to be completed */
-  libflash_flash_wait_for_op();
-
-  /* If the erase operation is completed, disable the SER Bit and SNB Bits */
-  FLASH->CR &= ~(FLASH_CR_SER | FLASH_CR_SNB); 
+	/* If the erase operation is completed, disable the SER Bit and SNB Bits */
+	FLASH->CR &= ~(FLASH_CR_SER | FLASH_CR_SNB);
 }
