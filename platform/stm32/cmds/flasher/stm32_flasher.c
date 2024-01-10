@@ -7,17 +7,19 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <inttypes.h>
 
 #include <hal/ipl.h>
 
 #include <drivers/block_dev/flash/stm32flash.h>
 
-//#include "stm32_sys_helper.h"
-
 #include <framework/mod/options.h>
 
+#define DEBUGGING    1
+
 #define IMAGE_ADDR   OPTION_GET(NUMBER,image_addr)
-#define IMAGE_SIZE   OPTION_GET(NUMBER,image_size)
+#define IMAGE_SIZE   0x8000
+ //OPTION_GET(NUMBER,image_size)
 #define IMAGE_END    (IMAGE_ADDR + IMAGE_SIZE)
 
 extern int libflash_flash_unlock(void);
@@ -48,7 +50,11 @@ static inline void flash_write_line(uint32_t wr_addr, uint64_t buf[16]) {
 
 	libflash_flash_unlock();
 	for (i = 0; i < 16; i++) {
-		//libflash_program_64(wr_addr, buf[i]);
+#if DEBUGGING != 1
+		libflash_program_64(wr_addr, buf[i]);
+#else
+		printf("wr_addr (%x) val (%" PRIx64 ")\n", wr_addr,  buf[i]);
+#endif
 		wr_addr += sizeof(buf[0]);
 	}
 	libflash_flash_lock();
@@ -58,11 +64,11 @@ static void flasher_copy_blocks(void) {
 	uint64_t buf[16];
 	uint32_t wr_addr = STM32_ADDR_FLASH_SECTOR_0;
 	uint32_t rd_addr = IMAGE_ADDR;
-	//uint32_t sec_nr;
+	uint32_t sec_nr;
 	int sec_size;
-	int i, j;
+	int i;
 
-	for (; rd_addr < IMAGE_END;) {
+	for (; rd_addr < (uint32_t)IMAGE_END;) {
 
 		if (wr_addr == STM32_FLASH_START) {
 			/* first sector includes stm32_flash0 don't touch it */
@@ -70,22 +76,34 @@ static void flasher_copy_blocks(void) {
 			rd_addr += (STM32_FLASH_END - STM32_FLASH_START);
 		}
 
-		//sec_nr = stm32_flash_sector_by_addr(wr_addr);
+		sec_nr = stm32_flash_sector_by_addr(wr_addr);
+		if(sec_nr == -1) {
+			return;
+		}
 		sec_size = stm32_flash_sector_size_by_addr(wr_addr);
 
 		libflash_flash_unlock();
-		//libflash_erase_sector(sec_nr);
+#if DEBUGGING != 1
+		libflash_erase_sector(sec_nr);
+#endif
 		libflash_flash_lock();
 
+		//printf("sec (%d) sec size (%x)\n", sec_nr, sec_size);
+
 		for (i = 0; i < sec_size; i += sizeof(buf)) {
-			for(j = 0; j < sizeof(buf)/ sizeof(buf[0]); j += sizeof(buf[0])) {
-				buf[j] = ((volatile uint64_t *)(rd_addr))[j];
+			int j;
+
+			for(j = 0; j < (sizeof(buf) / sizeof(buf[0]) ); j ++) {
+				//printf("rd_addr (%x) val (%" PRIx64 ")\n", rd_addr, *(volatile uint64_t *)(rd_addr));
+				buf[j] = *(volatile uint64_t *)(rd_addr);
+				//printf("rd_addr (%x) buf[%d] (%" PRIx64 ")\n", rd_addr, j,  buf[j]);
+				rd_addr += sizeof(buf[0]);
 			}
 
 			flash_write_line(wr_addr, buf);
 
-			wr_addr += sizeof(buf);
-			rd_addr += sizeof(buf);
+			wr_addr += sizeof(buf);	
+		//	printf("i (%d) sec size (%d)\n", i,  sec_size);
 		}
 	}
 
