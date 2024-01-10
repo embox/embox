@@ -215,6 +215,7 @@ int libflash_flash_lock(void) {
 
 	return 0;
 }
+#include <stdio.h>
 
 /**
   * @brief  Wait for a FLASH operation to complete.
@@ -222,9 +223,11 @@ int libflash_flash_lock(void) {
   * @retval HAL Status
   */
 static inline int libflash_flash_wait_for_op(void) {
+	//printf("FLASH->SR (%x)\n", FLASH->SR);
 	while ((FLASH->SR & FLASH_FLAG_BSY) != 0) {}
 
 	if ((FLASH->SR & FLASH_FLAG_ALL_ERRORS) != 0) {
+		//printf("ERROR FLASH->SR (%x) (%x)\n", FLASH->SR, FLASH_FLAG_ALL_ERRORS);
 		return -1;
 	}
 
@@ -250,7 +253,7 @@ static inline int libflash_flash_wait_for_op(void) {
   * @param  Data specifies the data to be programmed.
   * @retval None
   */
-void libflash_program_64(uint32_t add, uint64_t data) {
+void libflash_program_64(uint32_t addr, uint64_t data) {
 	/* Wait for last operation to be completed */
 	libflash_flash_wait_for_op();
 
@@ -259,18 +262,44 @@ void libflash_program_64(uint32_t add, uint64_t data) {
 	FLASH->CR |= FLASH_PSIZE_DOUBLE_WORD;
 	FLASH->CR |= FLASH_CR_PG;
 
+
+
+//	*(volatile uint64_t *)addr = data;
 	/* Program first word */
-	*(volatile uint32_t *)add = (uint32_t)data;
+	*(volatile uint32_t *)addr = (uint32_t)data;
 	/* Barrier to ensure programming is performed in 2 steps, in right order
     (independently of compiler optimization behavior) */
 	__ISB();
 
 	/* Program second word */
-	*(volatile uint32_t *)(add + 4) = (uint32_t)(data >> 32);
+	*(volatile uint32_t *)(addr + 4) = (uint32_t)(data >> 32);
 
 	/* Data synchronous Barrier (DSB) Just after the write operation
      This will force the CPU to respect the sequence of instruction
      (no optimization).*/
+	__DSB();
+
+
+	/* Wait for last operation to be completed */
+	libflash_flash_wait_for_op();
+
+	/* If the program operation is completed, disable the PG Bit */
+	FLASH->CR &= (~FLASH_CR_PG);
+}
+
+void libflash_program_32(uint32_t addr, uint32_t data) {
+	/* Wait for last operation to be completed */
+	libflash_flash_wait_for_op();
+
+	/* If the previous operation is completed, proceed to program the new data */
+	FLASH->CR &= CR_PSIZE_MASK;
+	FLASH->CR |= FLASH_PSIZE_WORD;
+	FLASH->CR |= FLASH_CR_PG;
+
+	*(volatile uint32_t *)addr = data;
+
+	/* Data synchronous Barrier (DSB) Just after the write operation
+     This will force the CPU to respect the sequence of instruction (no optimization).*/
 	__DSB();
 
 	/* Wait for last operation to be completed */
