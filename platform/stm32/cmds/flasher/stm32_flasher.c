@@ -15,7 +15,7 @@
 
 #include <framework/mod/options.h>
 
-#define DEBUGGING    1
+#define DEBUGGING    0
 
 #define IMAGE_ADDR   OPTION_GET(NUMBER,image_addr)
 #define IMAGE_SIZE   0x8000
@@ -26,6 +26,7 @@ extern int libflash_flash_unlock(void);
 extern int libflash_flash_lock(void);
 extern void libflash_erase_sector(uint32_t sector);
 extern void libflash_program_64(uint32_t add, uint64_t data);
+extern void libflash_program_32(uint32_t add, uint32_t data);
 
 __NO_RETURN __STATIC_INLINE void __stm32_system_reset(void) {
   __DSB();                                                          /* Ensure all outstanding memory accesses included
@@ -45,13 +46,14 @@ extern char _flash_start, _flash_end;
 #define STM32_FLASH_START ((uint32_t)&_flash_start)
 #define STM32_FLASH_END   ((uint32_t)&_flash_end)
 
-static inline void flash_write_line(uint32_t wr_addr, uint64_t buf[16]) {
+static inline void flash_write_line(uint32_t wr_addr, uint32_t buf[16]) {
 	int i;
 
 	libflash_flash_unlock();
 	for (i = 0; i < 16; i++) {
-#if DEBUGGING != 1
-		libflash_program_64(wr_addr, buf[i]);
+#if DEBUGGING == 0
+		
+		libflash_program_32(wr_addr, buf[i]);
 #else
 		printf("wr_addr (%x) val (%" PRIx64 ")\n", wr_addr,  buf[i]);
 #endif
@@ -61,7 +63,7 @@ static inline void flash_write_line(uint32_t wr_addr, uint64_t buf[16]) {
 }
 
 static void flasher_copy_blocks(void) {
-	uint64_t buf[16];
+	uint32_t buf[16];
 	uint32_t wr_addr = STM32_ADDR_FLASH_SECTOR_0;
 	uint32_t rd_addr = IMAGE_ADDR;
 	uint32_t sec_nr;
@@ -83,20 +85,19 @@ static void flasher_copy_blocks(void) {
 		sec_size = stm32_flash_sector_size_by_addr(wr_addr);
 
 		libflash_flash_unlock();
-#if DEBUGGING != 1
+#if DEBUGGING == 0
 		libflash_erase_sector(sec_nr);
+#else
+		printf("sec (%d) sec size (%x)\n", sec_nr, sec_size);
 #endif
 		libflash_flash_lock();
-
-		//printf("sec (%d) sec size (%x)\n", sec_nr, sec_size);
 
 		for (i = 0; i < sec_size; i += sizeof(buf)) {
 			int j;
 
 			for(j = 0; j < (sizeof(buf) / sizeof(buf[0]) ); j ++) {
-				//printf("rd_addr (%x) val (%" PRIx64 ")\n", rd_addr, *(volatile uint64_t *)(rd_addr));
 				buf[j] = *(volatile uint64_t *)(rd_addr);
-				//printf("rd_addr (%x) buf[%d] (%" PRIx64 ")\n", rd_addr, j,  buf[j]);
+				
 				rd_addr += sizeof(buf[0]);
 			}
 
