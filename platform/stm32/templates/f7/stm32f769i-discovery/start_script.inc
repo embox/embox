@@ -13,3 +13,7 @@
 */
 "fb_direct_access",
 "tinypy fib.py"
+/*
+"flash_erase /dev/flash_fix1",
+"tftp -g -o /dev/flash_fix1 embox.bin 192.168.2.1",
+*/
