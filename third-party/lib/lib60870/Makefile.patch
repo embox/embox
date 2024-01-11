@@ -1,0 +1,58 @@
+--- lib60870-2.3.1/lib60870-C/Makefile	2021-12-22 21:46:44.000000000 +0300
++++ ../build/extbld/third_party/lib/lib60870/lib60870-2.3.1/lib60870-C/Makefile	2023-12-30 07:26:45.528018465 +0300
+@@ -1,6 +1,27 @@
+ LIB60870_HOME=.
+ 
++ifneq ($(TARGET), EMBOX)
+ include make/target_system.mk
++else
++TOOLCHAIN_PREFIX=$(CROSS_COMPILE)
++TOOLCHAIN_PREFIX=$(CROSS_COMPILE)
++CFLAGS += $(EMBOX_CFLAGS)
++CFLAGS += -fno-stack-protector
++CFLAGS += -Wno-error
++CFLAGS += -Wno-format
++
++LDFLAG += $(EMBOX_LDFLAGS)
++
++HAL_IMPL = POSIX
++LDLIBS = -lpthread
++LIB_OBJS_DIR = $(LIB60870_HOME)/build
++LIB_NAME = $(LIB_OBJS_DIR)/lib60870.a
++
++CC=$(EMBOX_GCC)
++CPP=$(TOOLCHAIN_PREFIX)g++
++AR=$(TOOLCHAIN_PREFIX)ar
++RANLIB=$(TOOLCHAIN_PREFIX)ranlib
++endif
+ 
+ ifndef WITHOUT_COMMON
+ 
+@@ -32,15 +53,25 @@
+ LIB_SOURCE_DIRS += src/hal/thread/bsd
+ LIB_SOURCE_DIRS += src/hal/time/unix
+ LIB_SOURCE_DIRS += src/hal/memory
++
+ endif
+ 
+ ifdef WITH_MBEDTLS
+-LIB_SOURCE_DIRS += dependencies/mbedtls-2.16.12/library
++
++ifneq ($(TARGET), EMBOX)
++LIB_SOURCE_DIRS += third_party/lib/mbedtls/mbedtls-2.16.12/library
+ LIB_SOURCE_DIRS += src/hal/tls/mbedtls
+ LIB_INCLUDE_DIRS += src/hal/tls/mbedtls
+-LIB_INCLUDE_DIRS += dependencies/mbedtls-2.16.12/include
++LIB_INCLUDE_DIRS += third_party/lib/mbedtls/mbedtls-2.16.12/include
++else
++LIB_SOURCE_DIRS += mbedtls-2.16.10/library
++LIB_SOURCE_DIRS += src/hal/tls/mbedtls
++LIB_INCLUDE_DIRS += src/hal/tls/mbedtls
++LIB_INCLUDE_DIRS += dependencies/mbedtls-2.16.10/include
++endif
+ CFLAGS += -D'MBEDTLS_CONFIG_FILE="mbedtls_config.h"'
+ CFLAGS += -D'CONFIG_CS104_SUPPORT_TLS=1'
++
+ endif
+ 
+ endif
