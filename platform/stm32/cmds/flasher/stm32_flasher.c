@@ -24,7 +24,6 @@
 extern int libflash_flash_unlock(void);
 extern int libflash_flash_lock(void);
 extern void libflash_erase_sector(uint32_t sector);
-extern void libflash_program_64(uint32_t add, uint64_t data);
 extern void libflash_program_32(uint32_t add, uint32_t data);
 
 __NO_RETURN __STATIC_INLINE void __stm32_system_reset(void) {
@@ -54,7 +53,8 @@ static inline void flash_write_line(uint32_t wr_addr, uint32_t buf[16]) {
 		
 		libflash_program_32(wr_addr, buf[i]);
 #else
-		printf("wr_addr (%x) val (%" PRIx64 ")\n", wr_addr,  buf[i]);
+		printf("wr_addr (%x) val (%" PRIx32 ")\n", wr_addr,  buf[i]);
+
 #endif
 		wr_addr += sizeof(buf[0]);
 	}
@@ -95,7 +95,7 @@ static void flasher_copy_blocks(void) {
 			int j;
 
 			for(j = 0; j < (sizeof(buf) / sizeof(buf[0]) ); j ++) {
-				buf[j] = *(volatile uint64_t *)(rd_addr);
+				buf[j] = *(volatile uint32_t *)(rd_addr);
 				
 				rd_addr += sizeof(buf[0]);
 			}
