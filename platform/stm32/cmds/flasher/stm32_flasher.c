@@ -18,8 +18,7 @@
 #define DEBUGGING    0
 
 #define IMAGE_ADDR   OPTION_GET(NUMBER,image_addr)
-#define IMAGE_SIZE   0x8000
- //OPTION_GET(NUMBER,image_size)
+#define IMAGE_SIZE   OPTION_GET(NUMBER,image_size)
 #define IMAGE_END    (IMAGE_ADDR + IMAGE_SIZE)
 
 extern int libflash_flash_unlock(void);
