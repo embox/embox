@@ -1,5 +1,6 @@
 package embox.compat.libc
 
+@NoCode	
 static module fenv_openlibm {
 	@IncludeExport(target_name="fenv.h")
 	source "fenv_openlibm.h"

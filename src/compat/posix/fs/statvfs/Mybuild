@@ -10,6 +10,7 @@ static module statvfs_dvfs extends statvfs {
 	source "statvfs.h"
 }
 
+@NoCode
 static module statvfs_stub extends statvfs {
 	@IncludeExport(path="sys")
 	source "statvfs.h"

@@ -1,5 +1,6 @@
 package embox.compat.posix.fs
 
+@NoCode
 @DefaultImpl(ftruncate_old)
 abstract module ftruncate {
 	depends embox.kernel.task.idesc

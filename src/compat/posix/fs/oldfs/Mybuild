@@ -1,5 +1,6 @@
 package embox.compat.posix.fs
 
+@NoCode
 module all_old extends all {
 	depends file,
 		chdir,
@@ -13,6 +14,7 @@ module all_old extends all {
 		chown_old
 }
 
+@NoCode
 static module file_old extends file {
 	depends file_ops
 	depends lseek

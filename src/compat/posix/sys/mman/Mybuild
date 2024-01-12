@@ -8,6 +8,7 @@ static module msync {
 	depends embox.util.log
 }
 
+@NoCode
 static module libmman {
 	depends msync
 }

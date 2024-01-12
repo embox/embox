@@ -95,14 +95,14 @@ abstract module stdio_stdstreams {
 
 static module stdio_streams_global extends embox.compat.libc.stdio.stdio_stdstreams {
 	source "stdin_stderr.c"
-	
+
 	source "stdout_global.h"
 	source "stdout_global.c"
 }
 
 static module stdio_streams_task_resource extends embox.compat.libc.stdio.stdio_stdstreams {
 	source "stdin_stderr.c"
-	
+
 	source "stdout_task_resource.h"
 
 	depends embox.kernel.task.resource.stdout
@@ -114,13 +114,13 @@ static module funopen {
 	depends file_pool
 }
 
+@NoCode
 static module file_struct_header {
 	@IncludeExport(path="stdio/internal")
 	source "file_struct.h"
 }
 
 static module file_ops {
-
 	source "fgetc.c"
 	source "ungetc.c"
 	source "fgets.c"
@@ -156,7 +156,6 @@ static module file_ops {
 }
 
 @DefaultImpl(rename_old)
-
 abstract module rename {
 }
 
@@ -173,6 +172,7 @@ static module rename_dvfs extends rename {
 	depends file_ops
 }
 
+@NoCode	
 static module all {
 	@NoRuntime depends rename
 	@NoRuntime depends sprintf
@@ -189,7 +189,6 @@ static module all {
 @DefaultImpl(tmpfile_stub)
 abstract module tmpfile {
 }
-
 
 static module tmpfile_stub extends tmpfile {
 	source "tmpfile_stub.c"
