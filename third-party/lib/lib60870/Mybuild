@@ -8,6 +8,7 @@ package third_party.lib
 module lib60870 {
 	option boolean iec61850=false
 	option boolean tls_enable=false
+	option string  config="default"
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
     @Cflags("-Wno-implicit")

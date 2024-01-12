@@ -28,7 +28,7 @@
  
  ifndef WITHOUT_COMMON
  
-@@ -32,15 +53,25 @@
+@@ -32,15 +53,34 @@
  LIB_SOURCE_DIRS += src/hal/thread/bsd
  LIB_SOURCE_DIRS += src/hal/time/unix
  LIB_SOURCE_DIRS += src/hal/memory
@@ -50,6 +50,15 @@
 +LIB_INCLUDE_DIRS += src/hal/tls/mbedtls
 +LIB_INCLUDE_DIRS += dependencies/mbedtls-2.16.10/include
 +endif
++CFLAGS += -D'MBEDTLS_CONFIG_FILE="mbedtls_config.h"'
++CFLAGS += -D'CONFIG_CS104_SUPPORT_TLS=1'
++
++endif
++
++else
++ 
++ifdef WITH_MBEDTLS
++
  CFLAGS += -D'MBEDTLS_CONFIG_FILE="mbedtls_config.h"'
  CFLAGS += -D'CONFIG_CS104_SUPPORT_TLS=1'
 +
