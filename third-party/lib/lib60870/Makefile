@@ -14,19 +14,28 @@ export EMBOX_CFLAGS
 export EMBOX_LDFLAGS
 export EMBOX_GCC
 
+define option_get_boolean
+$(shell echo OPTION_BOOLEAN_third_party__lib__lib60870__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/lib60870.h -)
+endef
+
+export TARGET=EMBOX
+ifeq ($(call option_get_boolean,iec61850), 1)
+	export WITHOUT_COMMON=1
+	export WITHOUT_HAL=1
+endif
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full
 
 $(BUILD) :
-
 	cd $(PKG_SOURCE_DIR)/lib60870-C && ( \
-	$(MAKE) TARGET=EMBOX MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
  
 $(INSTALL) :
 	cd $(PKG_SOURCE_DIR)/lib60870-C  && ( \
-	$(MAKE) TARGET=EMBOX INSTALL_PREFIX='$(PKG_INSTALL_DIR)' install; \
+	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' INSTALL_PREFIX='$(PKG_INSTALL_DIR)' install; \
 	)
 	touch $@
 

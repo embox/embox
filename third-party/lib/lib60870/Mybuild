@@ -5,6 +5,8 @@ package third_party.lib
 @BuildDepends(embox.compat.posix.semaphore)
 
 module lib60870 {
+	option boolean iec61850=true
+
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
     @Cflags("-Wno-implicit")
     source "lib60870.a"
