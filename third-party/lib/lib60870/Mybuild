@@ -3,9 +3,11 @@ package third_party.lib
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/lib60870/install/include")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @BuildDepends(embox.compat.posix.semaphore)
+@BuildDepends(third_party.lib.mbedtls)
 
 module lib60870 {
-	option boolean iec61850=true
+	option boolean iec61850=false
+	option boolean tls_enable=false
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
     @Cflags("-Wno-implicit")

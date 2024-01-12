@@ -24,6 +24,10 @@ ifeq ($(call option_get_boolean,iec61850), 1)
 	export WITHOUT_HAL=1
 endif
 
+ifeq ($(call option_get_boolean,tls_enable), 1)
+	export WITH_MBEDTLS=1
+endif
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full
 
