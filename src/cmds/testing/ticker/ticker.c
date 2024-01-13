@@ -4,6 +4,7 @@
  * @date Jun 7, 2018
  * @author Anton Bondarev
  */
+#include <ctype.h>
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@ int main(int argc, char **argv) {
 				while (*(++dot)) {
 					if (!isdigit(*dot)) {
 						printf("Failed to parse "
-							"-i argument\n");
+						       "-i argument\n");
 
 						return -EINVAL;
 					}
@@ -54,10 +55,12 @@ int main(int argc, char **argv) {
 
 	for (i = 1; i <= count || step == 0; i++) {
 		if (usec % USEC_PER_SEC == 0) {
-			printf("%ld sec\n",  i * usec / USEC_PER_SEC);
-		} else if (usec % MSEC_PER_SEC == 0) {
+			printf("%ld sec\n", i * usec / USEC_PER_SEC);
+		}
+		else if (usec % MSEC_PER_SEC == 0) {
 			printf("%ld msec\n", i * usec / MSEC_PER_SEC);
-		} else {
+		}
+		else {
 			printf("%ld usec\n", i * usec);
 		}
 
