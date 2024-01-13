@@ -1,0 +1,16 @@
+package embox.project.server60870.cmd
+
+@AutoCmd
+@Cmd(name = "server104",
+    help = "IEC60870 simple server",
+    man = '''
+        AUTHOR
+            Valery Iline ported to embox.
+    ''')
+@BuildDepends(third_party.lib.lib60870)
+@Build(stage=2)
+module server104 {
+	source "simple_server.c"
+	depends third_party.lib.lib60870
+}
+

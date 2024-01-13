@@ -65,3 +65,13 @@
  endif
  
  endif
+@@ -58,7 +98,8 @@
+ INSTALL_PREFIX = ./.install
+ endif
+ 
+-LIB_API_HEADER_FILES = src/hal/inc/hal_time.h 
++LIB_API_HEADER_FILES = src/hal/inc/hal_base.h 
++LIB_API_HEADER_FILES += src/hal/inc/hal_time.h 
+ LIB_API_HEADER_FILES += src/hal/inc/hal_thread.h
+ LIB_API_HEADER_FILES += src/hal/inc/hal_socket.h
+ LIB_API_HEADER_FILES += src/hal/inc/hal_serial.h
