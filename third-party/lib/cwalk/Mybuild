@@ -1,0 +1,22 @@
+package third_party.lib
+
+static module cwalk {
+	@IncludeExport(path="lib")
+	source "cwalk.h"
+
+	source "cwalk_priv.c"
+	source "absolute.c"
+	source "basename.c"
+	source "dirname.c"
+	source "extension.c"
+	source "intersection.c"
+	source "join.c"
+	source "normalize.c"
+	source "relative.c"
+	source "root.c"
+	source "check.c"
+	source "rename.c"
+	source "segment.c"
+
+	@NoRuntime depends embox.compat.libc.all
+}
