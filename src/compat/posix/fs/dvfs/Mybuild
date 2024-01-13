@@ -1,5 +1,6 @@
 package embox.compat.posix.fs
 
+@NoCode
 module all_dvfs extends all {
 	depends file_dvfs,
 		chdir,
@@ -14,6 +15,7 @@ module all_dvfs extends all {
 		mknod_dvfs
 }
 
+@NoCode
 static module file_dvfs extends file {
 	depends embox.compat.posix.fs.file_ops
 	depends ftruncate_dvfs

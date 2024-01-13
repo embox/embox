@@ -4,6 +4,7 @@ package embox.compat.posix
 abstract module passwd_db_files {
 }
 
+@NoCode
 module passwd_db_initfs_files extends passwd_db_files {
 	@InitFS
 	source "passwd",

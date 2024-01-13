@@ -58,6 +58,7 @@ static module gcvt {
 	source "gcvt.c"
 }
 
+@NoCode
 static module all {
 	depends core,
 		config,

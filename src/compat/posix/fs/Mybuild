@@ -76,6 +76,7 @@ static module stat {
 	source "stat.c"
 }
 
+@NoCode
 module file_ops {
 	depends read, write, fcntl, ioctl, close
 	depends fstat, fsync, readv, writev

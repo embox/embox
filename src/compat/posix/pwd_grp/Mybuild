@@ -1,8 +1,6 @@
-
 package embox.compat.posix
 
 static module passwd {
-
 	source "pwd_grp.c"
 
 	depends passwd_db
@@ -13,8 +11,8 @@ static module passwd {
 @DefaultImpl(passwd_db_static)
 abstract module passwd_db { }
 
+@NoCode
 module passwd_db_static extends passwd_db {
-
 	source "db_static.h"
 
 	depends embox.compat.posix.passwd_db_files
