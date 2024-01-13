@@ -11,10 +11,10 @@
 #ifndef STDIO_H_
 #define STDIO_H_
 
-/*va_list As described in <stdarg.h>. */
 #include <defines/null.h>
 #include <defines/size_t.h>
-#include <stdarg.h>
+#include <limits.h>
+#include <stdarg.h> /* va_list */
 #include <sys/types.h>
 
 #define EOF          (-1)
@@ -23,8 +23,8 @@
 #define _IOFBF       1
 #define _IOLBF       2
 #define BUFSIZ       256
-#define L_tmpnam     0x20
-#define FILENAME_MAX 0x20
+#define L_tmpnam     PATH_MAX
+#define FILENAME_MAX PATH_MAX /* Maximum length of the full path to the file */
 
 #define P_tmpdir     "/tmp"
 
