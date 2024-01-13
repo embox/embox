@@ -146,7 +146,8 @@ static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 		if (addr == NULL) {
 			res = write(fd, buf, bytes);
 			if (res < 0) {
-				return -2;
+				fprintf(stderr, "Failed to write file: %m\n");
+				return res;
 			}
 		} else {
 			memcpy(addr, buf, bytes);
