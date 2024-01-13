@@ -151,8 +151,11 @@ static inline size_t ring_fixup_head(struct ring *r, size_t r_size) {
 static inline size_t ring_just_read(struct ring *r, size_t r_size,
 		size_t read_size) {
 	assert(read_size <= ring_can_read(r, r_size, read_size));
-	r->tail += read_size;
-	ring_fixup_tail(r, r_size);
+	if (r->tail + read_size >= r_size) {
+		r->tail += read_size - r_size;	
+	} else {
+		r->tail += read_size;
+	}
 	return read_size;
 }
 
@@ -160,8 +163,11 @@ static inline size_t ring_just_read(struct ring *r, size_t r_size,
 static inline size_t ring_just_write(struct ring *r, size_t r_size,
 		size_t write_size) {
 	assert(write_size <= ring_can_write(r, r_size, write_size));
-	r->head += write_size;
-	ring_fixup_head(r, r_size);
+	if (r->head + write_size >= r_size) {
+		r->head += write_size - r_size;	
+	} else {
+		r->head += write_size;
+	}
 	return write_size;
 }
 
