@@ -115,6 +115,7 @@ static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 	int bytes;
 	uint8_t buf[TFTP_SEGSIZE];
 
+	fd = -1;
 	s = tftp_new_stream(hostname, filename, TFTP_DIR_GET, (bool) binary_on);
 
 	if (addr == NULL) {
