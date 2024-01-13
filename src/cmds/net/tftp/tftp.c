@@ -163,6 +163,10 @@ static int tftp_recv_file(char *filename, char *out_file, char *hostname,
 	return 0;
 }
 
+static void print_help(const char *cmd_name) {
+	fprintf(stdout, "Usage: %s [-hab] -[g [-m addr] [-o output file] | p] files destination\n", cmd_name);
+}
+
 int main(int argc, char **argv) {
 	int ret, i;
 	char param_ascii, param_binary, param_get, param_put;
@@ -170,6 +174,10 @@ int main(int argc, char **argv) {
 	void *addr = NULL;
 	char *out_file = NULL;
 
+	if (argc <= 1) {
+		print_help(argv[0]);
+		return 0;
+	}
 	/* Initialize objects */
 	param_ascii = param_binary = param_get = param_put = 0;
 
@@ -182,7 +190,7 @@ int main(int argc, char **argv) {
 			fprintf(stderr, "Try -h for more information\n");
 			return -EINVAL;
 		case 'h':
-			fprintf(stdout, "Usage: %s [-hab] -[g [-m addr] [-o output file] | p] files destination\n", argv[0]);
+			print_help(argv[0]);
 			return 0;
 		case 'a':
 		case 'b':
@@ -223,7 +231,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* Check presence of files names and address of remote machine */
-	if (argc - (--optind) < 2) {
+	if (argc - optind < 2) {
 		fprintf(stderr, "%s: erorr: please specify at least one file and address of remote host\n",
 				argv[0]);
 		return -EINVAL;
@@ -231,7 +239,7 @@ int main(int argc, char **argv) {
 
 	/* Handling */
 	file_hnd = param_get ? &tftp_recv_file : &tftp_send_file;
-	for (i = optind + 1; i < argc - 1; ++i) {
+	for (i = optind; i < argc - 1; ++i) {
 		ret = (*file_hnd)(argv[i], out_file, argv[argc - 1], param_binary, addr);
 		if (ret != 0) {
 			fprintf(stderr, "%s: error: error occured when handled file '%s`\n",
