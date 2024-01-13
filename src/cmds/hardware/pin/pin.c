@@ -6,6 +6,7 @@
  * @date 2016-02-10
  */
 
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
