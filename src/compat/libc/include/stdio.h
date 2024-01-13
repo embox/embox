@@ -12,29 +12,26 @@
 #define STDIO_H_
 
 /*va_list As described in <stdarg.h>. */
+#include <defines/null.h>
+#include <defines/size_t.h>
 #include <stdarg.h>
 #include <sys/types.h>
 
-#include <defines/size_t.h>
-#include <defines/null.h>
+#define EOF          (-1)
 
+#define _IONBF       0
+#define _IOFBF       1
+#define _IOLBF       2
+#define BUFSIZ       256
+#define L_tmpnam     0x20
+#define FILENAME_MAX 0x20
 
-#define EOF (-1)
-
-#define _IONBF        0
-#define _IOFBF        1
-#define _IOLBF        2
-#define BUFSIZ        256
-#define L_tmpnam      0x20
-#define FILENAME_MAX  0x20
-
-#define P_tmpdir   "/tmp"
-
+#define P_tmpdir     "/tmp"
 
 /* Values for the WHENCE argument to lseek. */
-#define SEEK_SET        0   /* Seek from beginning of file. */
-#define SEEK_CUR        1   /* Seek from current position. */
-#define SEEK_END        2   /* Seek from end of file. */
+#define SEEK_SET     0 /* Seek from beginning of file. */
+#define SEEK_CUR     1 /* Seek from current position. */
+#define SEEK_END     2 /* Seek from end of file. */
 
 typedef long int fpos_t;
 
@@ -52,7 +49,6 @@ extern int fputc(int c, FILE *f);
 
 extern int fgetc(FILE *f);
 extern int getc(FILE *f);
-
 
 /**
  * Writes the string s and a trailing newline to stdout.
@@ -100,17 +96,18 @@ extern int sprintf(char *s, const char *format, ...);
 extern int vsprintf(char *s, const char *format, va_list args);
 
 /**
- * Write formatted output to string with specific size, according to the format string FORMAT.
+ * Write formatted output to string with specific size, according to the format
+ * string FORMAT.
  */
 extern int snprintf(char *s, size_t n, const char *format, ...);
 
 extern int vsnprintf(char *s, size_t n, const char *format, va_list args);
 
-extern int vfscanf(FILE */*restrict*/ stream, const char */*restrict*/ format,
-       va_list arg);
-extern int vscanf(const char */*restrict*/ format, va_list arg);
-extern int vsscanf(const char */*restrict*/ s, const char */*restrict*/ format,
-       va_list arg);
+extern int vfscanf(FILE * /*restrict*/ stream, const char * /*restrict*/ format,
+    va_list arg);
+extern int vscanf(const char * /*restrict*/ format, va_list arg);
+extern int vsscanf(const char * /*restrict*/ s,
+    const char * /*restrict*/ format, va_list arg);
 
 /**
  * Read formatted input from stdin according to the format string FORMAT.
@@ -141,11 +138,9 @@ extern FILE *fopen(const char *path, const char *mode);
  *
  * @return FILE *
  */
-extern FILE *funopen(const void *cookie,
-		int (*readfn)(void *, char *, int),
-		int (*writefn)(void *, const char *, int),
-		fpos_t (*seekfn)(void *, fpos_t, int),
-		int (*closefn)(void *));
+extern FILE *funopen(const void *cookie, int (*readfn)(void *, char *, int),
+    int (*writefn)(void *, const char *, int),
+    fpos_t (*seekfn)(void *, fpos_t, int), int (*closefn)(void *));
 /**
  * Opens the file whose file descriptor is the fd
  * and associates a stream with it.
@@ -200,7 +195,8 @@ extern int fgetpos(FILE *stream, fpos_t *pos);
 extern int fsetpos(FILE *stream, const fpos_t *pos);
 
 /**
- * Sets the file position indicator for the stream pointed to by stream to the beginning of the file.
+ * Sets the file position indicator for the stream pointed to by stream to the
+ * beginning of the file.
  */
 extern void rewind(FILE *stream);
 
