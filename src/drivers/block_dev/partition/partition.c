@@ -6,17 +6,17 @@
  * @author Andrey Gazukin
  */
 
+#include <ctype.h>
 #include <errno.h>
-#include <string.h>
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <mem/misc/pool.h>
-
-#include <fs/mbr.h>
 #include <drivers/block_dev.h>
 #include <drivers/block_dev/partition.h>
 #include <framework/mod/options.h>
+#include <fs/mbr.h>
+#include <mem/misc/pool.h>
 
 #define PART_NAME_MAX 64
 
@@ -47,27 +47,29 @@ int create_partitions(struct block_dev *bdev) {
 		last_digit = 1;
 	}
 
-	for (part_n = 0; part_n < 4; part_n ++) {
-
-		if(mbr.ptable[part_n].type == 0) {
+	for (part_n = 0; part_n < 4; part_n++) {
+		if (mbr.ptable[part_n].type == 0) {
 			return part_n;
 		}
 
-		sprintf(part_name, "/dev/%s%s%d", bdev_name, last_digit ? "p" : "", part_n + 1);
+		sprintf(part_name, "/dev/%s%s%d", bdev_name, last_digit ? "p" : "",
+		    part_n + 1);
 		part_bdev = block_dev_create(part_name, bdev->driver, NULL);
 		if (!part_bdev) {
 			return -ENOMEM;
 		}
 
-		part_bdev->start_offset = (int64_t) ((uint32_t)(mbr.ptable[part_n].start_3) << 24 |
-				(uint32_t)(mbr.ptable[part_n].start_2) << 16 |
-				(uint32_t)(mbr.ptable[part_n].start_1) << 8 |
-				(uint32_t)(mbr.ptable[part_n].start_0) << 0);
+		part_bdev->start_offset =
+		    (int64_t)((uint32_t)(mbr.ptable[part_n].start_3) << 24
+		              | (uint32_t)(mbr.ptable[part_n].start_2) << 16
+		              | (uint32_t)(mbr.ptable[part_n].start_1) << 8
+		              | (uint32_t)(mbr.ptable[part_n].start_0) << 0);
 
-		part_bdev->size = (int64_t) ((uint32_t)(mbr.ptable[part_n].size_3) << 24 |
-				(uint32_t)(mbr.ptable[part_n].size_2) << 16 |
-				(uint32_t)(mbr.ptable[part_n].size_1) << 8 |
-				(uint32_t)(mbr.ptable[part_n].size_0) << 0);
+		part_bdev->size =
+		    (int64_t)((uint32_t)(mbr.ptable[part_n].size_3) << 24
+		              | (uint32_t)(mbr.ptable[part_n].size_2) << 16
+		              | (uint32_t)(mbr.ptable[part_n].size_1) << 8
+		              | (uint32_t)(mbr.ptable[part_n].size_0) << 0);
 
 		part_bdev->size *= bdev->block_size;
 
