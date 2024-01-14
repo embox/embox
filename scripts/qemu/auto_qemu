@@ -158,6 +158,8 @@ guess_machine() {
 				echo "-M sabrelite"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
 				echo "-M lm3s811evb"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry" > /dev/null; then
+				echo "-M raspi1ap"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry2" > /dev/null; then
 				echo "-M raspi2"
 			fi
