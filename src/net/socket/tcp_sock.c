@@ -51,7 +51,11 @@ const struct sock_proto_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
 EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
 EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
 
+#if OPTION_GET(NUMBER, def_tcp_win_val) == 0
 #define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
+#else
+#define TCP_WINDOW_VALUE_DEFAULT    (OPTION_GET(NUMBER, def_tcp_win_val))
+#endif
 #define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
 
 #define MAX_TCP_OPT_SIZE        128  /* 128 is max size of tcp options length */

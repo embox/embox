@@ -17,6 +17,7 @@ module tcp_sock {
 	source "tcp_sock.c"
 	option number amount_tcp_sock=20
 	option number max_simultaneous_tx_pack = 0
+	option number def_tcp_win_val = 16384
 
 	depends route
 	depends sock
