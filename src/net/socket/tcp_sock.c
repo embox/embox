@@ -35,27 +35,28 @@
 #include <util/err.h>
 
 #include <framework/mod/options.h>
-#define MODOPS_AMOUNT_TCP_SOCK OPTION_GET(NUMBER, amount_tcp_sock)
+
+#define MODOPS_AMOUNT_TCP_SOCK    OPTION_GET(NUMBER, amount_tcp_sock)
+#define MAX_SIMULTANEOUS_TX_PACK  OPTION_GET(NUMBER, max_simultaneous_tx_pack)
 
 #include <config/embox/net/socket.h>
 #define MODOPS_CONNECT_TIMEOUT \
 	OPTION_MODULE_GET(embox__net__socket, NUMBER, connect_timeout)
 
-#define MAX_SIMULTANEOUS_TX_PACK OPTION_GET(NUMBER, max_simultaneous_tx_pack)
-static const struct sock_proto_ops tcp_sock_ops_struct;
-const struct sock_proto_ops *const tcp_sock_ops
-		= &tcp_sock_ops_struct;
 
-EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
-		tcp_sock_ops_struct);
-EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
-		tcp_sock_ops_struct);
+static const struct sock_proto_ops tcp_sock_ops_struct;
+
+const struct sock_proto_ops *const tcp_sock_ops = &tcp_sock_ops_struct;
+
+EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
+EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1, tcp_sock_ops_struct);
 
 #define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
 #define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
 
+#define MAX_TCP_OPT_SIZE        128  /* 128 is max size of tcp options length */
 #define MAX_HEADER_SIZE    (IP_MIN_HEADER_SIZE + IP_MAX_OPTLEN + \
-		TCP_MIN_HEADER_SIZE + ETH_HEADER_SIZE + 128 /* 128 is max size of tcp options length */)
+		TCP_MIN_HEADER_SIZE + ETH_HEADER_SIZE + MAX_TCP_OPT_SIZE)
 
 /************************ Socket's functions ***************************/
 static int tcp_init(struct sock *sk) {
@@ -476,7 +477,7 @@ static int tcp_write(struct tcp_sock *tcp_sk, struct msghdr * msg) {
 			in_port_t src_port, dst_port;
 
 			cp_off = 0;
-			skb_len = min((full_len - tran_len), IP_MAX_PACKET_LEN - MAX_HEADER_SIZE);
+			skb_len = min((full_len - tran_len), (IP_MAX_PACKET_LEN - MAX_HEADER_SIZE));
 			skb = NULL; /* alloc new pkg */
 
 			ret = alloc_prep_skb(tcp_sk, 0, &skb_len, &skb);
