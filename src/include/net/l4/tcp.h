@@ -26,7 +26,7 @@ typedef struct tcphdr {
 	__be32 seq;
 	__be32 ack_seq;
 #if  __BYTE_ORDER == __LITTLE_ENDIAN
-	__u16 res1:4,
+	uint16_t res1:4,
 		doff:4,
 		fin:1,
 		syn:1,
@@ -37,7 +37,7 @@ typedef struct tcphdr {
 		ece:1,
 		cwr:1;
 #elif  __BYTE_ORDER == __BIG_ENDIAN
-	__u16 doff:4,
+	uint16_t doff:4,
 		res1:4,
 		cwr:1,
 		ece:1,
@@ -51,7 +51,7 @@ typedef struct tcphdr {
 	__be16 window;
 	__be16 check;
 	__be16 urg_ptr;
-	__u32 options[]; /* 32bit aligned options */
+	uint32_t options[]; /* 32bit aligned options */
 } __attribute__((packed)) tcphdr_t;
 
 #define TCP_MIN_HEADER_SIZE  sizeof(struct tcphdr)
@@ -92,7 +92,7 @@ struct tcp_listen_info{
     struct list_head conn_free; /* Queue of free sockets for incoming connections */
 };
 
-typedef struct tcp_sock {
+struct tcp_sock {
 	struct proto_sock p_sk;     /* Base proto_sock class (MUST BE FIRST) */
 	enum tcp_sock_state state;  /* Socket state */
 	struct tcp_seq_state self;  /* Some informations about this socket */
@@ -112,10 +112,9 @@ typedef struct tcp_sock {
 	struct timeval rcv_time;    /* The time when last message was received (ONLY FOR TCP_TIMEWAIT) */
 	unsigned int dup_ack;       /* Amount of duplicated packets */
 	unsigned int rexmit_mode;   /* Socket in rexmit mode */
-} tcp_sock_t;
+};
 
-static inline struct tcp_sock * to_tcp_sock(
-		const struct sock *sk) {
+static inline struct tcp_sock * to_tcp_sock( const struct sock *sk) {
 	return (struct tcp_sock *)sk->p_sk;
 }
 
@@ -134,9 +133,6 @@ enum {
 #define TCP_SYNC_TIMEOUT      5000  /* Synchronization timeout */
 
 #define TCP_REXMIT_DUP_ACK       5  /* Rexmit after n duplicate ack */
-
-#define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
-#define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
 
 /* Synchronization flags */
 #define TCP_SYNC_WRITE_QUEUE  0x01 /* Synchronization flag for socket sk_write_queue */
@@ -171,6 +167,5 @@ extern int alloc_prep_skb(struct tcp_sock *tcp_sk, size_t opt_len,
 		size_t *data_len, struct sk_buff **out_skb);
 extern void send_seq_from_sock(struct tcp_sock *tcp_sk, struct sk_buff *skb);
 extern int tcp_sock_get_status(struct tcp_sock *tcp_sk);
-extern void debug_print(__u8 code, const char *msg, ...);
 
 #endif /* NET_L4_TCP_H_ */
