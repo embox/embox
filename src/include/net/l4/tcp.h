@@ -135,9 +135,6 @@ enum {
 
 #define TCP_REXMIT_DUP_ACK       5  /* Rexmit after n duplicate ack */
 
-#define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
-#define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
-
 /* Synchronization flags */
 #define TCP_SYNC_WRITE_QUEUE  0x01 /* Synchronization flag for socket sk_write_queue */
 #define TCP_SYNC_STATE        0x02 /* Synchronization flag for socket sk_state */

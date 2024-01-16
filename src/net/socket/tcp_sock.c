@@ -51,6 +51,9 @@ EMBOX_NET_SOCK(AF_INET, SOCK_STREAM, IPPROTO_TCP, 1,
 EMBOX_NET_SOCK(AF_INET6, SOCK_STREAM, IPPROTO_TCP, 1,
 		tcp_sock_ops_struct);
 
+#define TCP_WINDOW_VALUE_DEFAULT  16384 /* Default size of widnow */
+#define TCP_WINDOW_FACTOR_DEFAULT     7 /* Default factor of widnow */
+
 #define MAX_HEADER_SIZE    (IP_MIN_HEADER_SIZE + IP_MAX_OPTLEN + \
 		TCP_MIN_HEADER_SIZE + ETH_HEADER_SIZE + 128 /* 128 is max size of tcp options length */)
 
