@@ -29,7 +29,7 @@ static struct uart uart0 = {
 
 static const struct uart_params uart_diag_params = {
 		.baud_rate = BAUD_RATE,
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART,
+		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_DEV_TYPE_UART
 };
 
 DIAG_SERIAL_DEF(&uart0, &uart_diag_params);

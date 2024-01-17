@@ -1,7 +1,7 @@
 package embox.driver.serial
 
 module niiet_uart {
-	option number uartclk = 100000000
+	option number uartclk = 50000000
 	source "niiet_uart.c"
 
 	depends embox.driver.serial.core
@@ -11,7 +11,6 @@ module niiet_uart {
 module niiet_uart_diag extends embox.driver.serial.diag {
 	option number base_addr = 0x40045000
 	option number irq_num = 0
-	option number uartclk = 100000000
 	option number baud_rate = 115200
 
 	source "niiet_uart_diag.c"
@@ -22,7 +21,7 @@ module niiet_uart_diag extends embox.driver.serial.diag {
 module niiet_uart_ttyS0 {
 	option number base_addr = 0x40045000
 	option number irq_num = 0
-	option number uartclk = 100000000
+	option number uartclk = 50000000
 	option number baud_rate = 115200
 
 //	source "niiet_uart_ttys0.c"

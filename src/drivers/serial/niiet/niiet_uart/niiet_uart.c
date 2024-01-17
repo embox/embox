@@ -17,14 +17,9 @@
 
 #include <framework/mod/options.h>
 
-#define UART_BASE OPTION_GET(NUMBER, base_addr)
-#define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
-
 #define UARTCLK   OPTION_GET(NUMBER, uartclk)
-#define BAUD_RATE OPTION_GET(NUMBER, baud_rate)
-
-#define BAUD_ICOEF (UARTCLK / (16 * BAUD_RATE))
-#define BAUD_FCOEF ((UARTCLK / (16.0f * BAUD_RATE) - BAUD_ICOEF) * 64 + 0.5f)
+#define BAUD_ICOEF(baud_rate) (UARTCLK / (16 * baud_rate))
+#define BAUD_FCOEF(baud_rate) ((UARTCLK / (16.0f * baud_rate) - BAUD_ICOEF(baud_rate)) * 64 + 0.5f)
 #if 0
 #define RCU				0x40041000
 
@@ -104,8 +99,8 @@ static void niiet_uart_set_baudrate(struct uart *dev) {
 	/* Baud Rate Divisor = UARTCLK/(16×Baud Rate) = BRDI + BRDF,
 	 * See 2.4.3 UART operation.  */
 	baud_rate = dev->params.baud_rate;
-	ibrd = (UARTCLK / (16 * baud_rate));
-	fbrd = ((UARTCLK % (16 * baud_rate)) * 64) / (16 * baud_rate);
+	ibrd = BAUD_ICOEF(baud_rate);
+	fbrd = BAUD_FCOEF(baud_rate);
 	REG32_STORE(UART_IBRD(dev->base_addr), ibrd);
 	REG32_STORE(UART_FBRD(dev->base_addr), fbrd);
 #endif
@@ -125,8 +120,8 @@ static inline void niiet_uart_set_rcu(struct uart *dev) {
 	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_UART_EN(uart_num);
 	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_UART_EN(uart_num);
 
-	RCU->RCU_UARTCLKCFG0_reg &= ~(RCU_CLKSTAT_SRC_MASK);
-	RCU->RCU_UARTCLKCFG0_reg |= (RCU->RCU_CLKSTAT_reg & RCU_CLKSTAT_SRC_MASK) ;
+	RCU->RCU_UARTCLKCFG0_reg = 0;
+	RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_CLKSEL_SYSPLL0CLK_MASK;
 
 	RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_CLKEN_MASK;
     RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_RSTDIS_MASK;
@@ -135,7 +130,7 @@ static inline void niiet_uart_set_rcu(struct uart *dev) {
 static inline void niiet_uart_set_pins(struct uart *dev) {
 	gpio_setup_mode(UART_GPIO_PORT,
 			(1 << UART_GPIO_TX_PIN) | (1 << UART_GPIO_RX_PIN),
-			 GPIO_MODE_OUT_ALTERNATE);
+			 GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1));
 }
 
 static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) {

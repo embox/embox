@@ -16,7 +16,7 @@
 #include <framework/mod/options.h>
 
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
-
+#define GPIO_PINS_NUMBER 16
 #if 0
 #define GPIOA				0x40010000
 #define GPIOB				0x40011000
@@ -110,6 +110,15 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 		/* Enable ALTFUNC */
 		gpio_reg->GPIO_ALTFUNCSET_reg |= pins;
 	}
+	if (GPIO_GET_ALTERNATE(mode) != 0){
+		for (int i = 0; i < GPIO_PINS_NUMBER; i++){ // TODO use bit_ctz()
+			if (pins & (1 << i)) {
+				gpio_reg->GPIO_ALTFUNCNUM_reg |= GPIO_GET_ALTERNATE(mode) << i*2;
+			}
+		}
+	}
+
+	
 
 	return 0;
 
