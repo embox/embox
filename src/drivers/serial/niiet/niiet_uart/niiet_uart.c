@@ -107,8 +107,8 @@ static void niiet_uart_set_baudrate(struct uart *dev) {
 }
 
 #define UART_GPIO_PORT         GPIO_PORT_A
-#define UART_GPIO_TX_PIN		(1 << 0)
-#define UART_GPIO_RX_PIN		(1 << 1)
+#define UART_GPIO_TX_PIN		(1)
+#define UART_GPIO_RX_PIN		(0)
 
 static inline int niiet_uart_nr_by_addr(uintptr_t base_addr) {
 	return 0;
@@ -130,7 +130,7 @@ static inline void niiet_uart_set_rcu(struct uart *dev) {
 static inline void niiet_uart_set_pins(struct uart *dev) {
 	gpio_setup_mode(UART_GPIO_PORT,
 			(1 << UART_GPIO_TX_PIN) | (1 << UART_GPIO_RX_PIN),
-			 GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1));
+			 GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1) | GPIO_MODE_IN);
 }
 
 static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) {
