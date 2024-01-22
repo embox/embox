@@ -38,16 +38,21 @@
  * @date 7.05.23
  * @author Aleksey Zhmulin
  */
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <string.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 int mkstemps(char *template, int suffixlen) {
-	int start, i;
 	pid_t val;
+	int start;
+	int fd;
+	int i;
+
 	val = getpid();
 	start = strlen(template) - suffixlen - 1;
+
 	while (template[start] == 'X') {
 		template[start] = '0' + val % 10;
 		val /= 10;
@@ -55,7 +60,6 @@ int mkstemps(char *template, int suffixlen) {
 	}
 
 	do {
-		int fd;
 		fd = open(template, O_RDWR | O_CREAT | O_EXCL, 0600);
 		if (fd >= 0 || errno != EEXIST) {
 			return fd;
