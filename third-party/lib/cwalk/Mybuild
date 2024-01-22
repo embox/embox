@@ -18,5 +18,6 @@ static module cwalk {
 	source "rename.c"
 	source "segment.c"
 
-	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.compat.libc.assert
 }
