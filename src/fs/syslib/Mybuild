@@ -49,7 +49,7 @@ module file_system_full extends file_system {
 	depends embox.compat.libc.str_dup
 	depends embox.compat.posix.fs.open
 	depends embox.compat.posix.util.environ
-	depends embox.util.tree
+	@NoRuntime depends embox.util.LibUtil
 
 	option number flock_quantity=128
 }
