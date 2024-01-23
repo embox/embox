@@ -8,7 +8,7 @@ module raw_sock {
 	depends embox.compat.libc.str
 	depends embox.net.skbuff
 	depends embox.net.sock
-	depends embox.util.dlist
+	@NoRuntime depends embox.util.LibUtil
 }
 
 module tcp_sock {
@@ -38,8 +38,7 @@ module udp_sock {
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
 	depends embox.net.lib.udp
-	depends embox.util.indexator
-	depends embox.util.dlist
+	@NoRuntime depends embox.util.LibUtil
 }
 
 module af_inet {
@@ -49,7 +48,7 @@ module af_inet {
 	depends sock
 	depends route
 	depends family
-	depends embox.util.indexator
+	@NoRuntime depends embox.util.LibUtil
 	depends net_sock
 }
 
@@ -59,7 +58,7 @@ module af_inet6 {
 
 	depends sock
 	depends family
-	depends embox.util.indexator
+	@NoRuntime depends embox.util.LibUtil
 	depends net_sock
 }
 
@@ -133,7 +132,7 @@ module socket {
 	depends embox.compat.libc.str
 	depends embox.net.sock
 	depends embox.net.dev //ksocket, netdev_get_by_name
-	depends embox.util.log
+	@NoRuntime depends embox.util.LibUtil
 	@NoRuntime depends embox.compat.posix.net.socket // for task_idx_ops_socket
 	depends embox.kernel.task.resource.idesc_table
 }
@@ -141,12 +140,12 @@ module socket {
 module family {
 	source "family.c"
 
-	depends embox.util.Array
+	@NoRuntime depends embox.util.LibUtil
 }
 
 module net_sock {
 	source "net_sock.c"
 
-	depends embox.util.Array
+	@NoRuntime depends embox.util.LibUtil
 }
 

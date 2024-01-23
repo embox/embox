@@ -24,6 +24,6 @@ module emac {
 	depends embox.kernel.irq
 	depends embox.net.dev
 	depends embox.net.entry_api
-	depends embox.util.dlist
+	@NoRuntime depends embox.util.LibUtil
 	depends embox.net.util.show_packet
 }

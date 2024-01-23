@@ -1,6 +1,7 @@
 package embox.util
 
-static module Array {
+@NoCode
+static module array_spread {
 	source "array_impl.h"
 	source "array_spread.lds.S"
 }

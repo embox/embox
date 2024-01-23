@@ -1,7 +1,0 @@
-package embox.util
-
-static module msg_buff {
-	source "msg_buff.c"
-
-	depends ring
-}

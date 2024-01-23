@@ -11,10 +11,10 @@ module NoPage extends page_api {
 
 module bitmask extends page_api {
 	option string log_level="LOG_NONE"
+	option number page_size=4096
 
 	source "bitmask.c"
 	source "bitmask.h"
 
-	depends embox.util.Bitmap
-	option number page_size=4096
+	@NoRuntime depends embox.util.LibUtil
 }

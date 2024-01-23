@@ -9,7 +9,6 @@ module virtio {
 	source "virtio_ring.h"
 	source "virtio_ring.c"
 	depends embox.compat.libc.assert
-	/* depends embox.util.binalign */
 
 	@IncludeExport(path="drivers/virtio")
 	source "virtio_queue.h"

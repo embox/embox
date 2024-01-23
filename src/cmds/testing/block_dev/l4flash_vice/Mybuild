@@ -10,7 +10,7 @@ module l475_flash_test {
 	depends embox.compat.posix.util.getopt
 	depends embox.driver.flash.core
 	depends embox.driver.block_dev
-	depends embox.util.pretty_print
+	@NoRuntime depends embox.util.LibUtil
 	depends embox.lib.LibCrypt
 }
 

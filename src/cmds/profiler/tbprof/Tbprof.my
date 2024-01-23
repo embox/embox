@@ -27,6 +27,6 @@ module tbprof {
 
 	depends embox.profiler.tracing
 	depends embox.kernel.timer.itimer
-	depends embox.util.hashtable
+	@NoRuntime depends embox.util.LibUtil
 	depends embox.lib.debug.symbol
 }

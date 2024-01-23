@@ -7,6 +7,6 @@ module test {
 	@DefineMacro("__FRAMEWORK__")
 	source "emit.c", "registry.c", "run.c"
 
-	depends embox.util.log
+	@NoRuntime depends embox.util.LibUtil
 	depends embox.arch.libarch
 }

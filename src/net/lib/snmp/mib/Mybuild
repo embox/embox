@@ -12,7 +12,7 @@ module mib {
 	source "mib.c"
 
 	depends embox.mem.objalloc
-	depends embox.util.LibUtil
+	@NoRuntime depends embox.util.LibUtil
 }
 
 module all_mibs {

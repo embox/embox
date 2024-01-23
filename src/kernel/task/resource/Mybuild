@@ -56,6 +56,6 @@ module thread_key_table {
 	@NoRuntime depends embox.kernel.thread.mutex
 	@NoRuntime depends embox.kernel.thread.thread_local
 	@NoRuntime depends embox.compat.libc.assert
-	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.util.LibUtil
 }
 

@@ -1,8 +1,8 @@
 package embox.util
 
 static module dlist {
+	option number debug=0
+
 	source "dlist_debug.h"
 	source "dlist_debug.c"
-
-	option number debug=0
 }

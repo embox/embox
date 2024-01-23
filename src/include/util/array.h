@@ -31,7 +31,7 @@
 #ifndef UTIL_ARRAY_H_
 #define UTIL_ARRAY_H_
 
-#include <module/embox/util/Array.h>
+#include <module/embox/util/array_spread.h>
 
 /* Foreach iterators for generic arrays: with given size or null-terminated. */
 

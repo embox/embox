@@ -5,7 +5,7 @@ static module msync {
 
 	source "msync.c"
 
-	depends embox.util.log
+	@NoRuntime depends embox.util.LibUtil
 }
 
 @NoCode
