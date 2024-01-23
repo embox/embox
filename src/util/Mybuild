@@ -1,58 +1,52 @@
 package embox.util
 
-/*
-   Modules here are true libraries without init functions.
-   So it's safe and natural to have it static
-*/
-
-static module priolist {
-	source "priolist.c"
-}
-
-
-@DefaultImpl(SListDebug)
-abstract module SList {
-}
-static module SListDebug extends SList {
-//	source "slist_debug.c"
-//	source "slist_impl.h"
-}
-static module SListNDebug extends SList {
-//	source "slist_ndebug.h"
-//	source "slist_impl.h"
-}
-
-static module ring {
-	source "ring.c"
-	source "ring_buff.c"
-}
-
 static module LibUtil {
-	depends log
-	depends ring
-	depends tree
+	source "bit/bit_clz.c"
+	source "bit/bit_ctz.c"
 
-	depends Array
-	depends dlist
-	depends SList
-	depends Bit
-}
+	source "bitmap/bitmap_find_bit.c"
+	source "bitmap/bitmap_find_zero_bit.c"
 
-static module tree {
-	source "tree.c"
-}
+	source "hashtable/hashtable_del.c"
+	source "hashtable/hashtable_destroy.c"
+	source "hashtable/hashtable_get.c"
+	source "hashtable/hashtable_get_key_first.c"
+	source "hashtable/hashtable_get_key_next.c"
+	source "hashtable/hashtable_init.c"
+	source "hashtable/hashtable_item_init.c"
+	source "hashtable/hashtable_put.c"
 
-static module indexator {
-	source "indexator.c"
+	source "indexator/index_alloc.c"
+	source "indexator/index_clamp.c"
+	source "indexator/index_clean.c"
+	source "indexator/index_find.c"
+	source "indexator/index_info.c"
+	source "indexator/index_init.c"
+	source "indexator/index_lock.c"
+	source "indexator/index_priv.c"
 
-	depends embox.compat.libc.assert
-	depends embox.compat.libc.stdlib.core
-	depends embox.compat.libc.str
-}
+	source "msg_buff/msg_buff_dequeue.c"
+	source "msg_buff/msg_buff_empty.c"
+	source "msg_buff/msg_buff_enqueue.c"
+	source "msg_buff/msg_buff_init.c"
+	source "msg_buff/msg_buff_space.c"
 
-static module pretty_print {
-	@IncludeExport(path="util")
-	source "pretty_print.h"
-	
-	source "pretty_print.c"
+	source "pretty_print/pretty_print.c"
+
+	source "priolist/priolist.c"
+
+	source "ring/ring.c"
+
+	source "ring_buff/ring_buff.c"
+
+	source "tree/tree_children.c"
+	source "tree/tree_link.c"
+	source "tree/tree_lookup.c"
+	source "tree/tree_postorder.c"
+
+	@NoRuntime depends embox.util.array_spread
+	@NoRuntime depends embox.util.dlist
+	@NoRuntime depends embox.util.log
+
+	/* TODO: depends libc */
 }
