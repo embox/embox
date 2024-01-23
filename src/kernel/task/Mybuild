@@ -37,7 +37,7 @@ module task_resource {
 	source "task_resource.c", "task_resource.lds.S"
 
 	@NoRuntime depends embox.compat.libc.assert
-	@NoRuntime depends embox.util.Array
+	@NoRuntime depends embox.util.LibUtil
 
 /* FIXME atexit contains option atexit_max which used in limits.h
  * #include <config/embox/kernel/task/resource/atexit.h>
