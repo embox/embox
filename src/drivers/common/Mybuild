@@ -11,7 +11,7 @@ module periph_memory_mmap extends periph_memory {
 
 	@NoRuntime depends embox.mem.mmap
 	depends embox.kernel.task.kernel_task
-	depends embox.util.Array
+	@NoRuntime depends embox.util.LibUtil
 }
 
 module periph_memory_stub extends periph_memory {

@@ -18,7 +18,7 @@ module stm32cube_gpio extends api {
 
 	depends embox.driver.gpio.core
 	depends third_party.bsp.st_bsp_api
-	@NoRuntime depends embox.util.Bit
+	@NoRuntime depends embox.util.LibUtil
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
@@ -39,7 +39,7 @@ module stm32_gpio_f1 extends api {
 
 	depends embox.driver.gpio.core
 	depends third_party.bsp.st_bsp_api
-	@NoRuntime depends embox.util.Bit
+	@NoRuntime depends embox.util.LibUtil
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
@@ -60,7 +60,7 @@ module stm32_gpio_f2 extends api {
 
 	depends embox.driver.gpio.core
 	depends third_party.bsp.st_bsp_api
-	@NoRuntime depends embox.util.Bit
+	@NoRuntime depends embox.util.LibUtil
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)

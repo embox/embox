@@ -11,7 +11,7 @@ module ramdisk {
 
 	depends embox.mem.pool
 	depends embox.mem.phymem
-	depends embox.util.indexator
+	@NoRuntime depends embox.util.LibUtil
 
 	depends embox.driver.block_dev
 }

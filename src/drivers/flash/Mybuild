@@ -12,7 +12,7 @@ abstract module core {
 	source "flash.h"
 
 	depends embox.mem.pool
-	depends embox.util.indexator
+	@NoRuntime depends embox.util.LibUtil
 
 	depends embox.driver.flash.flash_cache
 }

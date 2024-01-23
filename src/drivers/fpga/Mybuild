@@ -11,6 +11,5 @@ module core {
 
 	depends embox.device.common
 	depends embox.mem.pool
-	depends embox.util.indexator
-	depends embox.util.log
+	@NoRuntime depends embox.util.LibUtil
 }
