@@ -12,8 +12,7 @@ module mod {
 	@Generated(script="$(MAKE) -f mk/script/apps-build-deps.mk")
 	source "apps_build_deps.c"
 
-	depends embox.util.Array
-	depends embox.util.log
+	@NoRuntime depends embox.util.LibUtil
 
 	option boolean security_label = true
 
