@@ -28,6 +28,6 @@ module ls {
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.fs.dirent
 	depends embox.compat.posix.fs.stat
-	depends embox.util.LibUtil
+	@NoRuntime depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 }

@@ -24,7 +24,7 @@ module mv {
 
 	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
-	depends embox.util.LibUtil
+	@NoRuntime depends embox.util.LibUtil
 	depends embox.framework.LibFramework
 	depends embox.compat.libc.str_dup
 }
