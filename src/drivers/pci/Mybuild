@@ -20,7 +20,7 @@ module pci {
 
 	depends embox.mem.pool
 	depends embox.kernel.irq
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.driver.pci_chip.pci_chip
 	depends embox.driver.pci_bios_api
 }
