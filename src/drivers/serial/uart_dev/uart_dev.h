@@ -9,8 +9,8 @@
 #define UART_DEVICE_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
-#include <util/ring_buff.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/ring_buff.h>
 #include <kernel/irq.h>
 
 #define UART_NAME_MAXLEN  8
