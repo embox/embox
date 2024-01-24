@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <util/err.h>
 #include <unistd.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>

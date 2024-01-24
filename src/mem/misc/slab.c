@@ -14,8 +14,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <util/dlist.h>
-#include <util/slist.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/slist.h>
 #include <util/binalign.h>
 
 #include <mem/misc/slab.h>

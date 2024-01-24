@@ -9,7 +9,7 @@
 #define MAREA_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct marea {
 	uintptr_t start;

@@ -10,7 +10,7 @@
 #define MSPACE_MALLOC_H_
 
 #include <defines/size_t.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 extern void *mspace_memalign(size_t boundary, size_t size, struct dlist_head *mspace);
 extern void *mspace_malloc(size_t size, struct dlist_head *mspace);
