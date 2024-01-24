@@ -13,9 +13,9 @@
 #include <kernel/lthread/lthread.h>
 #include <mem/misc/pool.h>
 
-#include <util/bit.h>
-#include <util/dlist.h>
-#include <util/array.h>
+#include <lib/libds/bit.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/array.h>
 
 #include <drivers/gpio/gpio.h>
 #include <drivers/gpio/gpio_driver.h>
