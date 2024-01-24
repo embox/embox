@@ -17,7 +17,7 @@
 #include <framework/mod/options.h>
 #include <kernel/task/resource/idesc.h>
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 #include <util/log.h>
 
 #define FPGA_MAX OPTION_GET(NUMBER, fpga_pool_sz)

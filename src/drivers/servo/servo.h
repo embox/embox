@@ -9,7 +9,7 @@
 #ifndef DRIVERS_SERVO_H_
 #define DRIVERS_SERVO_H_
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct servo_dev;
 

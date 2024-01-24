@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <drivers/console/mpx.h>
 #include <drivers/input/input_dev.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(vc_mpx_init);

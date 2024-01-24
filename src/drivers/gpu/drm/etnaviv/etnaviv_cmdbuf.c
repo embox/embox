@@ -20,7 +20,7 @@
 #include <hal/cache.h>
 #include <kernel/thread/sync/mutex.h>
 #include <util/binalign.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <mem/vmem.h>
 
 #include "etnaviv_compat.h"

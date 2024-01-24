@@ -12,7 +12,7 @@
 #include <termios.h>
 
 #include <kernel/panic.h>
-#include <util/ring.h>
+#include <lib/libds/ring.h>
 #include <drivers/diag.h>
 #include <drivers/tty/termios_ops.h>
 
