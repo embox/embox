@@ -10,7 +10,7 @@ module rpc {
 	source "pmap.c"
 	source "rpc_msg.c"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.kernel.time.kernel_time
 	depends embox.compat.libc.all
 }

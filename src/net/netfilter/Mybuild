@@ -5,5 +5,5 @@ module netfilter {
 	option number amount_rules=10
 
 	depends embox.mem.pool
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
