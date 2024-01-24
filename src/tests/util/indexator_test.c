@@ -10,7 +10,7 @@
 #include <embox/test.h>
 #include <errno.h>
 #include <stddef.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 EMBOX_TEST_SUITE("util/indexator_text");
 

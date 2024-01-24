@@ -8,7 +8,7 @@
 #include <embox/test.h>
 
 #include <string.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 
 EMBOX_TEST_SUITE("util/bitmap test");
 

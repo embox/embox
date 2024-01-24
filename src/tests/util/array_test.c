@@ -9,7 +9,7 @@
 #include <embox/test.h>
 
 #include <stdint.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 EMBOX_TEST_SUITE("util/array test");
 
