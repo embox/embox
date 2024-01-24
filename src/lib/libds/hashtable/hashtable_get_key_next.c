@@ -11,8 +11,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/dlist.h>
-#include <util/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/hashtable.h>
 #include <util/member.h>
 
 void *hashtable_get_key_next(struct hashtable *ht, void *prev_key) {

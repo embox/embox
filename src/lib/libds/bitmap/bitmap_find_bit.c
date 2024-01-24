@@ -6,8 +6,8 @@
  */
 #include <limits.h>
 
-#include <util/bit.h>
-#include <util/bitmap.h>
+#include <lib/libds/bit.h>
+#include <lib/libds/bitmap.h>
 
 unsigned int bitmap_find_bit(const unsigned long *bitmap, unsigned int nbits,
     unsigned int start) {

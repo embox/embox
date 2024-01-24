@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 int ind_check(struct indexator *ind, size_t idx) {
 	assert(ind);

@@ -9,8 +9,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/dlist.h>
-#include <util/tree.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/tree.h>
 
 struct tree_link *tree_lookup_child(struct tree_link *node,
     tree_predicate_t predicate, void *arg) {

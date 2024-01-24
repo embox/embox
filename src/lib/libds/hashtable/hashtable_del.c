@@ -12,8 +12,8 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <util/dlist.h>
-#include <util/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/hashtable.h>
 
 struct hashtable_item *hashtable_del(struct hashtable *ht, void *key) {
 	size_t idx;

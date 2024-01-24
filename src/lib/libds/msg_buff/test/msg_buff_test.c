@@ -8,7 +8,7 @@
 #include <stddef.h>
 
 #include <embox/test.h>
-#include <util/msg_buff.h>
+#include <lib/libds/msg_buff.h>
 
 EMBOX_TEST_SUITE("tests for msg_buff");
 

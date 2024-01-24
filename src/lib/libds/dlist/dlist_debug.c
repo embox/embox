@@ -8,7 +8,7 @@
 #include <inttypes.h>
 #include <assert.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #if DLIST_DEBUG_VERSION
 void __dlist_debug_check(const struct dlist_head *head) {

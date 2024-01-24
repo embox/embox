@@ -7,8 +7,8 @@
  */
 #include <stddef.h>
 
-#include <util/msg_buff.h>
-#include <util/ring_buff.h>
+#include <lib/libds/msg_buff.h>
+#include <lib/libds/ring_buff.h>
 
 size_t msg_buff_enqueue(struct msg_buff *buf, const void *src, size_t nbyte) {
 	size_t nwritten;

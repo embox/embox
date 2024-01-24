@@ -10,8 +10,8 @@
 
 #include <string.h>
 
-#include <util/dlist.h>
-#include <util/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/hashtable.h>
 
 struct hashtable *hashtable_init(struct hashtable *ht, unsigned int table_size,
     ht_hash_ft get_hash, ht_cmp_ft cmp) {

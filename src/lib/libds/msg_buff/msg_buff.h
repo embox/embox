@@ -11,7 +11,7 @@
 #include <stddef.h>
 #include <sys/cdefs.h>
 
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 
 struct msg_buff {
 	struct ring_buff rbuf;

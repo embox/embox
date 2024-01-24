@@ -5,7 +5,7 @@
  * @author Eldar Abusalimov
  */
 
-#include <util/ring.h>
+#include <lib/libds/ring.h>
 
 #include <string.h>
 

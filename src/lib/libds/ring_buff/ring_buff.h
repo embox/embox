@@ -11,7 +11,7 @@
 #define UTIL_RING_BUFF_H_
 
 #include <stddef.h>
-#include <util/ring.h>
+#include <lib/libds/ring.h>
 
 /**
  * Since ring from <util/ring.h> is used, one element is always reserved

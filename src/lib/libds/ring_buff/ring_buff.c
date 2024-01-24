@@ -9,8 +9,8 @@
 
 #include <stddef.h>
 #include <string.h>
-#include <util/ring.h>
-#include <util/ring_buff.h>
+#include <lib/libds/ring.h>
+#include <lib/libds/ring_buff.h>
 
 int ring_buff_get_cnt(struct ring_buff *buf) {
 	return ring_data_size(&buf->ring, buf->capacity);

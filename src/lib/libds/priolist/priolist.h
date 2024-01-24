@@ -24,7 +24,7 @@
 #define UTIL_PRIOLIST_H_
 
 #include <util/member.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct priolist {
 	struct dlist_head node_list;

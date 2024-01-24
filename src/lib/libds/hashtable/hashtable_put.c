@@ -12,8 +12,8 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include <util/dlist.h>
-#include <util/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/hashtable.h>
 
 int hashtable_put(struct hashtable *ht, struct hashtable_item *ht_item) {
 	size_t idx;

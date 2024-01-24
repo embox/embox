@@ -9,7 +9,7 @@
 
 #include <stddef.h>
 
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 extern int ind_check(struct indexator *ind, size_t idx);
 

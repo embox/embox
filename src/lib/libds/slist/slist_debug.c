@@ -12,7 +12,7 @@
 
 #include <assert.h>
 
-#include <util/slist.h>
+#include <lib/libds/slist.h>
 #include <util/member.h>
 
 struct slist_link *slist_link_init(struct slist_link *link) {

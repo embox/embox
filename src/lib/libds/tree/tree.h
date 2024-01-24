@@ -11,7 +11,7 @@
 
 #include <util/member.h>
 #include <util/macro.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #define tree_element(link, element_type, link_member) \
 	(link == NULL ? NULL \

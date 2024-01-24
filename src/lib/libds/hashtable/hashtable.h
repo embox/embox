@@ -109,7 +109,7 @@ extern void *hashtable_get_key_first(struct hashtable *ht);
 extern void *hashtable_get_key_next(struct hashtable *ht, void *prev_key);
 
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct hashtable_item {
 	struct dlist_head lnk;

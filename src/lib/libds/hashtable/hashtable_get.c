@@ -11,8 +11,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/dlist.h>
-#include <util/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/hashtable.h>
 
 void *hashtable_get(struct hashtable *ht, void *key) {
 	size_t idx;

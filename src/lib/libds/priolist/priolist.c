@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/priolist.h>
+#include <lib/libds/priolist.h>
 
 void priolist_add(struct priolist_link *link, struct priolist *list) {
 	struct dlist_head *next_node_link = &list->node_list;

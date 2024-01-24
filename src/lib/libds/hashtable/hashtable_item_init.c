@@ -10,8 +10,8 @@
 
 #include <assert.h>
 
-#include <util/dlist.h>
-#include <util/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/hashtable.h>
 
 struct hashtable_item *hashtable_item_init(struct hashtable_item *ht_item,
     void *key, void *value) {

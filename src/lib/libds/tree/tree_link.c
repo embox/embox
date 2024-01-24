@@ -9,8 +9,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include <util/dlist.h>
-#include <util/tree.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/tree.h>
 
 struct tree_link *tree_link_init(struct tree_link *link) {
 	assert(link != NULL);
