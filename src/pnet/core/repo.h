@@ -10,7 +10,7 @@
 #ifndef PNET_REPO_H_
 #define PNET_REPO_H_
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/macro.h>
 #include <pnet/core/types.h>
 

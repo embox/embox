@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <mem/objalloc.h>
 
 #include <pnet/pack/pnet_pack.h>

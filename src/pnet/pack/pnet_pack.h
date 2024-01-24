@@ -10,7 +10,7 @@
 #ifndef PNET_PACK_H_
 #define PNET_PACK_H_
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <stdint.h>
 
 struct pnet_pack_desc {

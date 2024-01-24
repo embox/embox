@@ -8,7 +8,7 @@
  */
 
 #include <embox/unit.h>
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 #include <stdio.h>
 
 #include <kernel/thread.h>
