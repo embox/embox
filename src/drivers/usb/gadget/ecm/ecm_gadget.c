@@ -9,7 +9,7 @@
 #include <assert.h>
 #include <string.h>
 #include <util/log.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 

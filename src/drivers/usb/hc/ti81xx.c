@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <util/math.h>
-#include <util/bit.h>
+#include <lib/libds/bit.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>

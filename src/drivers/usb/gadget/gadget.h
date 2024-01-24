@@ -9,7 +9,7 @@
 #ifndef DRIVERS_USB_GADGET_GADGET_H_
 #define DRIVERS_USB_GADGET_GADGET_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <drivers/usb/usb_desc.h>
 
 #define USB_GADGET_CONFIGS_MAX      2
