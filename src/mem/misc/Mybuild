@@ -15,12 +15,12 @@ abstract module pool {}
 module pool_ndebug extends pool {
 	source "pool.c"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 module pool_debug extends pool {
 	source "pool_debug.c"
 	source "pool_debug.h"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
