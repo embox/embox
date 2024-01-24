@@ -18,7 +18,7 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #define BUFF_SZ 1024
 static char buff[BUFF_SZ];

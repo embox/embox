@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <linux/etherdevice.h>
 #include <net/if.h>

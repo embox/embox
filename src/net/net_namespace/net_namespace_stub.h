@@ -1,7 +1,7 @@
 #ifndef NET_NAMESPACE_H_
 #define NET_NAMESPACE_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <limits.h>
 
 typedef struct net_namespace {

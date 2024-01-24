@@ -22,7 +22,7 @@
 #include <net/socket/raw.h>
 #include <net/netdevice.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include "net_sock.h"
 #include <embox/net/pack.h>

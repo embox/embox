@@ -9,7 +9,7 @@
 
 #include "net_sock.h"
 #include <stddef.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DEF(const struct net_sock, __net_sock_registry);
 

@@ -12,7 +12,7 @@
 #include <framework/mod/options.h>
 #include <net/lib/snmp_mib.h>
 #include <embox/unit.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DEF(const mib_register_func, __mib_register);
 OBJALLOC_DEF(mib_obj_pool, struct mib_obj, OPTION_GET(NUMBER, max_obj_count));
