@@ -10,7 +10,7 @@
 #define _DRIVERS_COMMON_MEMORY_H
 
 #include <stdint.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct periph_memory_desc {
 	uintptr_t start;

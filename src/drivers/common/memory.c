@@ -23,7 +23,7 @@
 #include <mem/misc/pool.h>
 #include <mem/mmap.h>
 #include <embox/unit.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DEF(struct periph_memory_desc *, __periph_mem_registry);
 
