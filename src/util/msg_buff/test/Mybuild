@@ -1,5 +1,0 @@
-package embox.util
-
-module msg_buff_test {
-	source "msg_buff_test.c"
-}
