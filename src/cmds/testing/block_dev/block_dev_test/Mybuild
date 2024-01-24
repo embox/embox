@@ -22,6 +22,6 @@ module block_dev_test {
 	depends embox.compat.posix.util.getopt
 	depends embox.driver.flash.core
 	depends embox.driver.block_dev
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.lib.LibCrypt
 }
