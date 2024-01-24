@@ -11,7 +11,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <string.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <debug/symbol.h>
 
 extern int coverage_getstat(const struct symbol **sym_table,

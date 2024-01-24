@@ -19,7 +19,7 @@
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
 #include <net/util/macaddr.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct ifconfig_args {
 	char with_a;

@@ -13,7 +13,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_repo.h>

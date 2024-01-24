@@ -15,7 +15,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_chip/pci_utils.h>

@@ -28,7 +28,7 @@
 #include <cmd/cmdline.h>
 #include <cmd/shell.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <framework/cmd/api.h>
 #include <embox/unit.h>

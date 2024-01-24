@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <errno.h>
 #include <util/log.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <framework/mod/self.h>
 
 #include <framework/mod/options.h>

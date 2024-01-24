@@ -14,7 +14,7 @@
 
 #include <net/util/macaddr.h>
 #include <arpa/inet.h>
-#include <util/hashtable.h>
+#include <lib/libds/hashtable.h>
 
 #include <pnet/node/skbuff_match/netfilter/match_lin.h>
 #include <pnet/core/core.h>

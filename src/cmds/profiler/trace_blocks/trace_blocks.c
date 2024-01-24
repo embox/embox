@@ -14,7 +14,7 @@
 #include <unistd.h>
 
 #include <debug/symbol.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <profiler/tracing/trace.h>
 

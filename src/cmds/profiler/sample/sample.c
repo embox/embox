@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 #include <unistd.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <profiler/sampling/sample.h>
 
 typedef enum {START_PROFILING, STOP_PROFILING, SHOW_INFO} action;
