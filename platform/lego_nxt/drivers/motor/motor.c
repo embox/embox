@@ -12,7 +12,7 @@
 #include <drivers/pins.h>
 #include <embox/unit.h>
 #include <drivers/nxt/motor.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #define PWM_FREQ 8 /* KHz */
 
