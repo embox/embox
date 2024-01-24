@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <string.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <framework/service/types.h>
 
