@@ -14,7 +14,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/location.h>
 
 #include <kernel/time/clock_source.h>

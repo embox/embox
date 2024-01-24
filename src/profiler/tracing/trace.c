@@ -15,9 +15,9 @@
 
 #include <hal/context.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/location.h>
-#include <util/hashtable.h>
+#include <lib/libds/hashtable.h>
 
 #include <mem/misc/pool.h>
 
