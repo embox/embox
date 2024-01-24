@@ -14,8 +14,8 @@
 #include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
-#include <util/array.h>
-#include <util/indexator.h>
+#include <lib/libds/array.h>
+#include <lib/libds/indexator.h>
 #include <util/log.h>
 
 #define IDEV_POOL_SIZE OPTION_GET(NUMBER, cdev_idesc_quantity)

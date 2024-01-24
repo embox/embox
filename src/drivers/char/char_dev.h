@@ -12,7 +12,7 @@
 #include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <kernel/task/resource/idesc.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <config/embox/driver/char_dev.h>
 

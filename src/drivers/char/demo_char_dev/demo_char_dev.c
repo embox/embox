@@ -12,7 +12,7 @@
 #include <drivers/device.h>
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 #include <util/log.h>
 
 EMBOX_UNIT_INIT(demo_char_dev_module_init);
