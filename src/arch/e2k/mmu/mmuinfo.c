@@ -7,7 +7,7 @@
 
 #include <string.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/math.h>
 
 #include <hal/mmu.h>
