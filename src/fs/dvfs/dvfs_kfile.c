@@ -9,9 +9,11 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include <drivers/block_dev.h>
+#include <drivers/block_dev.h> /* block_dev_block_size */
 #include <fs/dentry.h>
 #include <fs/file_desc.h>
+#include <fs/kfile.h>
+
 #include <util/math.h>
 
 /**
