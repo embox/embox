@@ -14,7 +14,6 @@
 #include <sys/types.h>
 #include <sys/uio.h>
 
-#include <fs/dvfs.h>
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc.h>
 
@@ -71,8 +70,7 @@ static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
 
-	return ((struct file_desc *)idesc)
-	    ->f_ops->ioctl((struct file_desc *)idesc, request, data);
+	return dvfs_ioctl((struct file_desc *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {
