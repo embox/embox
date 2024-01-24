@@ -26,7 +26,7 @@
 #include <fs/dir_context.h>
 #include <fs/inode_operation.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/err.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>

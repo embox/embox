@@ -15,8 +15,8 @@
 #include <fs/dvfs.h>
 #include <drivers/flash/flash.h>
 
-#include <util/array.h>
-#include <util/bitmap.h>
+#include <lib/libds/array.h>
+#include <lib/libds/bitmap.h>
 #include <util/math.h>
 
 #include <fs/dfs.h>

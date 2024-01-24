@@ -12,7 +12,7 @@
 #include <limits.h>
 
 #include <fs/dvfs.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct dentry {
 	char name[NAME_MAX];

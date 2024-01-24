@@ -18,7 +18,7 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/super_block.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 extern struct dev_module **get_cdev_tab(void);
 extern struct block_dev **get_bdev_tab(void);

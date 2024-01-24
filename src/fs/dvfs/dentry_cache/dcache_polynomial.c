@@ -12,7 +12,7 @@
 #include <fs/dvfs.h>
 #include <kernel/printk.h>
 #include <mem/misc/pool.h>
-#include <util/hashtable.h>
+#include <lib/libds/hashtable.h>
 
 /* TODO remove this */
 #define DENTRY_POOL_SIZE 64

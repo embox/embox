@@ -13,8 +13,8 @@
 #include <sys/stat.h>
 #include <limits.h>
 
-#include <util/slist.h>
-#include <util/tree.h>
+#include <lib/libds/slist.h>
+#include <lib/libds/tree.h>
 
 #include <kernel/thread/sync/mutex.h>
 

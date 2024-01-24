@@ -15,7 +15,7 @@
 #include <mem/misc/pool.h>
 #include <mem/page.h>
 
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 #include <util/math.h>
 
 #include "ramfs.h"

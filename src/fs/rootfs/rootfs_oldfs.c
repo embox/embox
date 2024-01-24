@@ -11,7 +11,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <fs/mount.h> /* mount */
 #include <fs/fs_driver.h>

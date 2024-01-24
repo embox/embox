@@ -23,7 +23,7 @@
 #include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/err.h>
 
 extern struct idesc_ops idesc_bdev_ops;

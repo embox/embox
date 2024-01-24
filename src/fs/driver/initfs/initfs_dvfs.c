@@ -33,7 +33,7 @@
 
 #include <fs/dvfs.h>
 #include <mem/misc/pool.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include "initfs.h"
 

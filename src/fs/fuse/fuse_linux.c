@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <unistd.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <fs/dvfs.h>
 #include <kernel/task.h>

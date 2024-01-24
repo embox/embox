@@ -10,7 +10,7 @@
 #include <errno.h>
 
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <mem/misc/pool.h>
 
 #include <fs/inode.h>

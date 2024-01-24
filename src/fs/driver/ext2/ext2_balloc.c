@@ -29,7 +29,7 @@
 #include <fs/inode.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/misc/pool.h>
