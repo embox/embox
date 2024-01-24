@@ -9,7 +9,7 @@
 #ifndef THREAD_WAIT_H_
 #define THREAD_WAIT_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct thread_wait {
 	struct dlist_head thread_waitq_list;

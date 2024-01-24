@@ -40,7 +40,7 @@ struct net_pack {
 
 extern const struct net_pack * net_pack_lookup(unsigned short type);
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DECLARE(const struct net_pack, __net_pack_registry);
 

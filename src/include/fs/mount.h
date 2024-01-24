@@ -9,7 +9,7 @@
 #define FS_MOUNT_H_
 
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct inode;
 struct path;

@@ -27,7 +27,7 @@ extern const struct net_proto * net_proto_lookup(
 static inline void net_proto_handle_error_none(
 		const struct sk_buff *skb, int error_info) { }
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DECLARE(const struct net_proto, __net_proto_registry);
 

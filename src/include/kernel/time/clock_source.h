@@ -13,13 +13,13 @@
 #define KERNEL_CLOCK_SOURCE_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <embox/unit.h>
 #include <kernel/time/time_device.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/time.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 enum clock_source_property {
 	CS_WITH_IRQ = 0,

@@ -10,7 +10,7 @@
 #ifndef FRAMEWORK_TEST_API_H_
 #define FRAMEWORK_TEST_API_H_
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/member.h>
 
 #include <framework/mod/api.h>

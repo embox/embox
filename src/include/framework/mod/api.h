@@ -11,7 +11,7 @@
 
 #include <stdbool.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include "types.h"
 

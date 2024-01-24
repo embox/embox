@@ -13,7 +13,7 @@
 # error "Do not include <mod/embuild.h> outside of EMBuild-generated code!"
 #endif /* __EMBUILD__ */
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 
 #include <framework/mod/decls.h>

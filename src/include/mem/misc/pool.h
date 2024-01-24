@@ -13,8 +13,8 @@
 
 #include <stddef.h>
 #include <util/macro.h>
-#include <util/slist.h>
-#include <util/bitmap.h>
+#include <lib/libds/slist.h>
+#include <lib/libds/bitmap.h>
 
 #include <module/embox/mem/pool.h>
 

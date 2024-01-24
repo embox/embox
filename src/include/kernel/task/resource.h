@@ -9,7 +9,7 @@
 #define KERNEL_TASK_RESOURCE_H_
 
 #include <stddef.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct task;
 struct thread;
