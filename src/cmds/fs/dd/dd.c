@@ -18,7 +18,7 @@
 #include <limits.h>
 #include <stddef.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #define DD_DEFAULT_BS        512
 

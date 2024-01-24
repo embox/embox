@@ -36,7 +36,7 @@
 #include <fs/hlpr_path.h>
 #include <fs/file_desc.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/err.h>
 #include <embox/unit.h>
 

@@ -15,7 +15,7 @@
 
 #include <drivers/device.h>
 #include <framework/mod/options.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/member.h>
 
 #include <config/embox/driver/block_dev.h>

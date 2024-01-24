@@ -12,7 +12,7 @@
 
 #include <stddef.h>
 #include <stdbool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct test_allocated_obj {
 	struct dlist_head list_link;

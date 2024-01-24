@@ -13,7 +13,7 @@
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/log.h>
 
 #define INODE_POOL_SIZE OPTION_GET(NUMBER, inode_pool_size)

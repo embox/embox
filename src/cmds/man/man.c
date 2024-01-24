@@ -10,7 +10,7 @@
 #include <unistd.h>
 #include <stdio.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <framework/cmd/api.h>
 
 int main(int argc, char **argv) {

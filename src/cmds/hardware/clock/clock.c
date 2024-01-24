@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <unistd.h>
 #include <stdio.h>

@@ -15,7 +15,7 @@
  * @author Anton Bondarev
  */
 #include <embox/test.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 EMBOX_TEST_SUITE("util/dlist test");
 

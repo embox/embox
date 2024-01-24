@@ -12,7 +12,7 @@
 #include <drivers/tty.h>
 #include <kernel/irq.h>
 #include <kernel/task/resource/idesc.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/macro.h>
 
 struct uart;

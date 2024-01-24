@@ -9,7 +9,7 @@
 #ifndef SCHED_WAITQ_PROTECT_THREAD_H_
 #define SCHED_WAITQ_PROTECT_THREAD_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct waitq_protect_link {
 	struct dlist_head waitq_protect_list;

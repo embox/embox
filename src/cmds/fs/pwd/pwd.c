@@ -10,7 +10,7 @@
 #include <limits.h>
 #include <stdio.h>
 #include <unistd.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 int main(int argc, char *argv[]) {
 	char buff[PATH_MAX];

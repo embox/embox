@@ -7,7 +7,7 @@
  */
 
 #include <errno.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <embox/unit.h>
 #include <framework/cmd/api.h>
 #include <cmd/shell.h>

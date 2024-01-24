@@ -9,7 +9,7 @@
 #ifndef DRIVERS_USB_DRIVER_H_
 #define DRIVERS_USB_DRIVER_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct usb_dev;
 struct usb_hcd;

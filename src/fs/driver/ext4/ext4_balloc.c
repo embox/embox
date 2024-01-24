@@ -28,7 +28,7 @@
 #include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/hlpr_path.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <embox/unit.h>
 #include <drivers/block_dev.h>
 #include <mem/misc/pool.h>

@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include <util/member.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/log.h>
 #include <mem/misc/pool.h>
 

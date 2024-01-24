@@ -8,7 +8,7 @@
 
 #include <hal/mmu.h>
 #include <hal/reg.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/math.h>
 
 struct mmuinfo_reg_access {

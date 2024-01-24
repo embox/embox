@@ -17,7 +17,7 @@
 #include <kernel/task.h>
 #include <kernel/sched.h>
 #include <hal/context.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/math.h>
 
 #include <framework/mod/options.h>

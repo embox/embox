@@ -11,8 +11,8 @@
 #include <stdint.h>
 
 #include <embox/unit.h>
-#include <util/bit.h>
-#include <util/array.h>
+#include <lib/libds/bit.h>
+#include <lib/libds/array.h>
 
 #include <kernel/irq.h>
 

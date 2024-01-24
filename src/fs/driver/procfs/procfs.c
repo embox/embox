@@ -12,7 +12,7 @@
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <module/embox/driver/block_dev.h>
 

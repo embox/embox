@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/irq.h>
 #include <kernel/irq_lock.h>

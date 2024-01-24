@@ -11,7 +11,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <sys/types.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct inode;
 struct block_dev;

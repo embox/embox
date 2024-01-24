@@ -14,7 +14,7 @@
 
 #include <mem/misc/pool.h>
 #include <util/err.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 #include <framework/mod/options.h>
 

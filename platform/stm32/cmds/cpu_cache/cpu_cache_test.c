@@ -14,7 +14,7 @@
 #include <hal/reg.h>
 #include <hal/ipl.h>
 #include <hal/system.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <stm32f7xx_hal.h>
 #include <asm/arm_m_regs.h>

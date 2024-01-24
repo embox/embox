@@ -19,8 +19,8 @@
 #include <drivers/pci/pci_regs.h>
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
-#include <util/array.h>
-#include <util/dlist.h>
+#include <lib/libds/array.h>
+#include <lib/libds/dlist.h>
 #include <util/log.h>
 
 #define PCI_BUS_N_TO_SCAN OPTION_GET(NUMBER, bus_n_to_scan)

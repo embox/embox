@@ -10,7 +10,7 @@
 #ifndef HEAD_TIMER_H_
 #define HEAD_TIMER_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 
 typedef struct dlist_head sys_timer_queue_t;

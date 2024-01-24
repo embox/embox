@@ -7,7 +7,7 @@ module shell_registry {
 	@IncludeExport(path="cmd")
 	source "shell.h"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 abstract module shell_api {

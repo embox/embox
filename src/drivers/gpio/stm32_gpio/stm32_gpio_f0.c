@@ -10,7 +10,7 @@
 #include <string.h>
 
 #include <embox/unit.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <kernel/irq.h>
 

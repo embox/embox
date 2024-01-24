@@ -13,8 +13,8 @@
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/waitq.h>
-#include <util/indexator.h>
-#include <util/dlist.h>
+#include <lib/libds/indexator.h>
+#include <lib/libds/dlist.h>
 
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/usb_queue.h>

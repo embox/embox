@@ -15,7 +15,7 @@
 
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sync/mutex.h>
-#include <util/ring.h>
+#include <lib/libds/ring.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/driver/tty/tty.h>

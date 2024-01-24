@@ -9,7 +9,7 @@
 #ifndef FS_JOURNAL_H
 #define FS_JOURNAL_H
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <drivers/block_dev.h>
 #include <stdint.h>
 

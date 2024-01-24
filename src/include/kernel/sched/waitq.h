@@ -12,7 +12,7 @@
 #include <assert.h>
 
 #include <sys/cdefs.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <kernel/spinlock.h>
 
 __BEGIN_DECLS

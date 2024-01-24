@@ -26,7 +26,7 @@ module tty {
 	depends embox.kernel.thread.sync /* mutex */
 	depends embox.kernel.thread.sched_wait
 	depends task_breaking
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.kernel.irq_lock
 
 	depends termios_ops
@@ -37,5 +37,5 @@ module termios_ops {
 	source "termios_ops.h"
 	source "termios_ops.c"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }

@@ -7,7 +7,7 @@
  */
 
 #include <linux/list.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <drivers/amba_registry.h>
 #include <embox/unit.h>
 #include <util/log.h>

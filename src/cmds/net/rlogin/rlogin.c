@@ -19,7 +19,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 
 #define RLOGIN_ADDR INADDR_ANY
 

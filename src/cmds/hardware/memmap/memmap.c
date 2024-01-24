@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <inttypes.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <mem/phymem.h>
 #include <kernel/task/kernel_task.h>

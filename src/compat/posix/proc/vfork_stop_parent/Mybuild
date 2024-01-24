@@ -4,7 +4,7 @@ static module exec_stop_parent extends exec_lib {
 	source "exec_stop_parent.c"
 
 	depends vfork
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	@NoRuntime depends embox.kernel.task.resource.argv
 
 	depends exec_lib
@@ -19,6 +19,6 @@ static module vfork_stop_parent extends vfork {
 	depends embox.arch.libarch
 	depends vfork_entry
 	depends embox.kernel.task.resource.vfork
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.mem.sysmalloc_api
 }

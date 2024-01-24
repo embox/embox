@@ -11,7 +11,7 @@
 #include <debug/breakpoint.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #define BPT_COUNT OPTION_GET(NUMBER, bpt_count)
 

@@ -23,7 +23,7 @@ module net_rx {
 	depends packet
 	depends net_pack
 	depends af_packet_api /* make af_packet socket receive incoming packets */
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 module net_tx {
@@ -36,7 +36,7 @@ module net_tx {
 	depends af_packet_api /* make af_packet socket receive outcoming packets */
 	depends neighbour
 	depends embox.net.entry_api
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 @DefaultImpl(net_no_crypt)

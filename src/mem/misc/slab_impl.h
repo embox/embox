@@ -9,7 +9,7 @@
 #ifndef MEM_MISC_SLAB_IMPL_H_
 #define MEM_MISC_SLAB_IMPL_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <framework/mod/self.h>
 #include <stddef.h>
 #include <stdbool.h>

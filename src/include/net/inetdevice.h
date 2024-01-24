@@ -12,7 +12,7 @@
 
 #include <net/netdevice.h>
 #include <netinet/in.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct net_device;
 

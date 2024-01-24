@@ -10,7 +10,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <util/hashtable.h>
+#include <lib/libds/hashtable.h>
 
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>

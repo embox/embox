@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <stdio.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <drivers/char_dev.h>
 #include <drivers/usb/usb.h>
 #include <drivers/usb/usb_dev_desc.h>

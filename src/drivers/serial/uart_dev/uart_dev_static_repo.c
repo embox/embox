@@ -12,7 +12,7 @@
 
 #include <util/err.h>
 #include <util/log.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <drivers/device.h>
 #include <drivers/char_dev.h>

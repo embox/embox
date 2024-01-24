@@ -21,8 +21,8 @@
 #include <mem/heap_bm.h>
 #include <mem/page.h>
 
-#include <util/dlist.h>
-#include <util/array.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 
 #include <kernel/printk.h>

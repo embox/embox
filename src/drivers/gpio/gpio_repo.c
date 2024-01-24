@@ -6,7 +6,7 @@
  */
 
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <drivers/gpio/gpio_driver.h>
 

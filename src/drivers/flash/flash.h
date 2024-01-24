@@ -16,7 +16,7 @@
 #include <stdint.h>
 
 #include <framework/mod/options.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <config/embox/driver/flash/core.h>
 

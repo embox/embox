@@ -14,7 +14,7 @@
 #include <sys/cdefs.h>
 #include <errno.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/sched/waitq.h>
 #include <kernel/sched/sync/mutex.h>

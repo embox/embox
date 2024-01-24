@@ -10,7 +10,7 @@
 
 #include <errno.h>
 #include <hal/ipl.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <kernel/critical.h>
 
 EMBOX_TEST_SUITE("critical API test");

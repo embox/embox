@@ -8,7 +8,7 @@
 
 #include <assert.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>

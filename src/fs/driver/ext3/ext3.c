@@ -14,7 +14,7 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/err.h>
 #include <util/getopt.h>
 #include <embox/unit.h>

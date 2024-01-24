@@ -13,7 +13,7 @@ module ide {
 	@IncludeExport(path="drivers")
 	source "ide.h"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.driver.block_dev
 	depends embox.compat.posix.util.sleep
 	depends embox.driver.block.partition

@@ -11,7 +11,7 @@
 
 #include <net/netdevice.h>
 #include <time.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 /**
  * Neighbour entity

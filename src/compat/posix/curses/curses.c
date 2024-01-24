@@ -15,7 +15,7 @@
 #include <inttypes.h>
 
 #include <util/math.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <mem/misc/pool.h>
 
 int COLS;

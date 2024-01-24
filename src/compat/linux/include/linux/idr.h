@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <limits.h>
 
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 
 #include <linux/types.h>
 

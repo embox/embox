@@ -13,7 +13,7 @@
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/err.h>
 
 #include <kernel/thread.h>

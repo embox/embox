@@ -7,7 +7,7 @@
 #include <stdlib.h>
 
 #include <mem/phymem.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/task.h>
 #include <kernel/task/resource.h>

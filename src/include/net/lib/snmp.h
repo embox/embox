@@ -10,7 +10,7 @@
 #define NET_LIB_SNMP_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <net/lib/snmp_mib.h>
 
 struct snmp_desc {

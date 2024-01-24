@@ -6,7 +6,7 @@ module seculog {
 	source "seculog.h"
 	source "seculog.c"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	@NoRuntime depends embox.mem.pool
 }
 

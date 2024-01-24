@@ -19,7 +19,7 @@
 #include <drivers/ide.h>
 #include <drivers/block_dev.h>
 #include <mem/phymem.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 #include <kernel/time/ktime.h>
 #include <kernel/thread/waitq.h>

@@ -9,7 +9,7 @@
 #include <assert.h>
 
 #include <embox/unit.h>
-#include <util/bit.h>
+#include <lib/libds/bit.h>
 
 #include <drivers/gpio/gpio_driver.h>
 

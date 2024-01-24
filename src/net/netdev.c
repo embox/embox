@@ -14,10 +14,10 @@
 #include <errno.h>
 
 
-#include <util/hashtable.h>
-#include <util/dlist.h>
-#include <util/indexator.h>
-#include <util/array.h>
+#include <lib/libds/hashtable.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/indexator.h>
+#include <lib/libds/array.h>
 
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>

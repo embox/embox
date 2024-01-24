@@ -10,7 +10,7 @@
 #include <pnet/core/core.h>
 #include <pnet/core/types.h>
 #include <pnet/core/node.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <embox/unit.h>
 #include <ctype.h>
 #include <framework/cmd/api.h>

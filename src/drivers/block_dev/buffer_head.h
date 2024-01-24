@@ -9,7 +9,7 @@
 #ifndef FS_BUFFER_HEAD_H_
 #define FS_BUFFER_HEAD_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <kernel/thread/sync/mutex.h>
 #include <drivers/block_dev.h>
 #include <fs/journal.h>

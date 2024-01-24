@@ -17,7 +17,7 @@
 #include <sys/uio.h>
 #include <fcntl.h>
 
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 
 #include <framework/mod/options.h>
 #include <kernel/thread/sync/mutex.h>

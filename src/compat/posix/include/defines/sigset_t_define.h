@@ -11,7 +11,7 @@
 
 #include <defines/_sig_total_define.h>
 
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 
 typedef struct {
 	BITMAP_DECL(bitmap, _SIG_TOTAL);

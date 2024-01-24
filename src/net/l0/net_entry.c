@@ -14,7 +14,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <hal/ipl.h>
 #include <net/netdevice.h>

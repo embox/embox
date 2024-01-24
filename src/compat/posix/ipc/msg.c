@@ -12,8 +12,8 @@
 #include <sys/types.h>
 
 #include <posix_errno.h>
-#include <util/dlist.h>
-#include <util/msg_buff.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/msg_buff.h>
 #include <mem/misc/pool.h>
 #include <kernel/sched.h>
 #include <kernel/thread.h>

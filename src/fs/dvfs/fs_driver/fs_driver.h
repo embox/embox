@@ -9,7 +9,7 @@
 #ifndef FS_DRV_H_
 #define FS_DRV_H_
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #define FS_DRV_NAME_LEN   16
 

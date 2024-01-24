@@ -11,7 +11,7 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_id.h>
 #include <drivers/pci/pci_repo.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 typedef struct pci_vendor {
 	uint16_t ven_id;

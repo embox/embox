@@ -15,8 +15,8 @@
 #include <limits.h>
 #include <sys/types.h>
 
-#include <util/array.h>
-#include <util/indexator.h>
+#include <lib/libds/array.h>
+#include <lib/libds/indexator.h>
 #include <mem/misc/pool.h>
 #include <mem/phymem.h> /* PAGE_SIZE() */
 #include <mem/page.h>

@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 #include <embox/unit.h>
 

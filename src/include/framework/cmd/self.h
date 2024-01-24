@@ -9,7 +9,7 @@
 #ifndef FRAMEWORK_CMD_SELF_H_
 #define FRAMEWORK_CMD_SELF_H_
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <framework/mod/self.h>
 
 #include <framework/cmd/api.h>

@@ -18,7 +18,7 @@ module tracing extends trace {
 	source "__cyg_profile.c"
 	depends embox.kernel.timer.itimer
 	depends embox.kernel.time.clock_source
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.lib.debug.symbol
 
 	depends cyg_profile

@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <string.h>
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <security/seculog/seculog.h>
 

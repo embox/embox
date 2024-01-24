@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <assert.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <framework/mod/api.h>
 #include <framework/mod/ops.h>
 #include <framework/mod/types.h>

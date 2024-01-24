@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <debug/symbol.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <kernel/printk.h>
 #include <embox/unit.h>
 #include "cyg_profile.h"

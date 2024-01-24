@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/err.h>
 
 #include <mem/misc/pool.h>

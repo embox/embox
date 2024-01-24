@@ -10,7 +10,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <fs/dvfs.h>
 

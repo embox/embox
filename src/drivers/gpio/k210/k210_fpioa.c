@@ -10,8 +10,8 @@
 #include <util/log.h>
 
 #include <embox/unit.h>
-#include <util/bit.h>
-#include <util/array.h>
+#include <lib/libds/bit.h>
+#include <lib/libds/array.h>
 
 #include <drivers/gpio/k210/fpioa.h>
 

@@ -8,7 +8,7 @@
 
 #ifndef DRIVERS_TERMIOS_OPS_H_
 
-#include <util/ring.h>
+#include <lib/libds/ring.h>
 
 #define DRIVERS_TERMIOS_OPS_H_
 

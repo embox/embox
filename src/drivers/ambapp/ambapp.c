@@ -7,7 +7,7 @@
  */
 
 #include <stdint.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <drivers/amba_pnp.h>
 
 /** AMBA High-performance Bus (AHB) slot */

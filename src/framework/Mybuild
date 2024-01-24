@@ -12,7 +12,7 @@ module runlevel {
 	source "runlevel.c", "unit.c"
 
 	depends mod
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.compat.libc.str
 }
 

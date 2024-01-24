@@ -21,7 +21,7 @@
 #include <sys/cdefs.h>
 
 #include <util/macro.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/location.h>
 #include <framework/mod/self.h>
 

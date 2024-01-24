@@ -12,7 +12,7 @@
 #include <netdb.h>
 #include <stddef.h>
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #define MODOPS_MAX_NAME_LEN OPTION_GET(NUMBER, max_name_len)
 #define MODOPS_MAX_ALIASES_NUM OPTION_GET(NUMBER, max_aliases_num)

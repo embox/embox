@@ -21,7 +21,7 @@
 #include <kernel/panic.h>
 #include <mem/vmem.h>
 #include <util/binalign.h>
-#include <util/bit.h>
+#include <lib/libds/bit.h>
 
 #define BCM2835_INTERRUPT_BASE OPTION_GET(NUMBER, base_addr)
 

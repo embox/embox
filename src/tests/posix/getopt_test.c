@@ -8,7 +8,7 @@
  */
 
 #include <embox/test.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <unistd.h>
 #include <util/getopt.h>
 

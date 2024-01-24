@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <sys/cdefs.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <module/embox/lib/breakpoint.h>
 

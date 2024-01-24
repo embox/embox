@@ -13,7 +13,7 @@
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/task_heap.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 TASK_RESOURCE_DEF(task_heap_desc, struct task_heap);
 

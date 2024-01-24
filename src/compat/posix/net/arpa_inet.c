@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 static int inet_to_str(const struct in_addr *in, char *buff,
 		socklen_t buff_sz) {

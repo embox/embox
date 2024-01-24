@@ -13,7 +13,7 @@
 #include <string.h>
 #include <libgen.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
 

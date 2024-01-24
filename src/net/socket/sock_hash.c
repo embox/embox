@@ -5,7 +5,7 @@
  * @author: Anton Bondarev
  */
 #include <net/sock.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <hal/ipl.h>
 
 void sock_hash(struct sock *sk) {

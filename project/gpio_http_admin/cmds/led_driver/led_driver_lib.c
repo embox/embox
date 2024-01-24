@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <errno.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <drivers/gpio/gpio.h>
 
 #include <led_driver_lib.h>

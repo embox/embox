@@ -14,7 +14,7 @@
 #include <fs/inode.h>
 #include <fs/super_block.h>
 #include <mem/misc/pool.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 POOL_DEF(super_block_pool, struct super_block, OPTION_GET(NUMBER,fs_quantity));
 

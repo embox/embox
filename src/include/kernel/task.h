@@ -92,7 +92,7 @@ extern int task_start(struct task *task, void * (*run)(void *), void *arg);
 
 __END_DECLS
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #define task_foreach_thread(th, tsk) \
 	th = task_get_main(tsk); \

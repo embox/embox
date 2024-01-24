@@ -9,8 +9,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <assert.h>
-#include <util/array.h>
-#include <util/dlist.h>
+#include <lib/libds/array.h>
+#include <lib/libds/dlist.h>
 #include <util/math.h>
 #include <util/log.h>
 #include <drivers/usb/usb_defines.h>

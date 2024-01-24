@@ -17,7 +17,7 @@
 #include <sys/resource.h>
 #include <signal.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <mem/misc/pool.h>
 #include <framework/mod/options.h>
 #include <kernel/task.h>

@@ -14,7 +14,7 @@
 #include <stdint.h>
 #include <net/if.h>
 #include <net/skbuff.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <net/net_namespace.h>
 
 /**

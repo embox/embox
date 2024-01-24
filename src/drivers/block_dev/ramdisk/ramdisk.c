@@ -22,7 +22,7 @@
 #include <mem/phymem.h>
 #include <util/binalign.h>
 #include <util/err.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 #define MAX_RAMDISK_QUANTITY OPTION_GET(NUMBER, ramdisk_quantity)
 #define RAMDISK_SIZE         OPTION_GET(NUMBER, size)

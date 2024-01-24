@@ -10,7 +10,7 @@
 #include <hal/reg.h>
 #include <drivers/common/memory.h>
 #include <embox/unit.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <kernel/printk.h>
 #include <kernel/panic.h>
 #include <kernel/irq.h>

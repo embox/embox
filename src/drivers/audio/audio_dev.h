@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct audio_dev;
 

@@ -14,8 +14,8 @@
 #include <linux/in.h>
 #include <mem/misc/pool.h>
 #include <net/inetdevice.h>
-#include <util/bit.h>
-#include <util/dlist.h>
+#include <lib/libds/bit.h>
+#include <lib/libds/dlist.h>
 #include <util/member.h>
 #include <net/skbuff.h>
 #include <net/sock.h>

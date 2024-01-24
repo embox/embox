@@ -23,7 +23,7 @@
 #include "nrf24.h"
 #include "nrf24_stm32_cube.h"
 
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 #include <hal/ipl.h>
 #include <util/log.h>
 

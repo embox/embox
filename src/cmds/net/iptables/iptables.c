@@ -10,7 +10,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <net/netfilter.h>
 #include <string.h>
 

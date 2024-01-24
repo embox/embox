@@ -13,7 +13,7 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <sys/cdefs.h>
 
 #include <defines/_sig_total_define.h>

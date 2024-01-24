@@ -15,7 +15,7 @@
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>
 #include <util/err.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 #include "idesc_serial.h"
 #include "ttys.h"

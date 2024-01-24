@@ -7,8 +7,8 @@
 
 #include <embox/test.h>
 
-#include <util/bit.h>
-#include <util/array.h>
+#include <lib/libds/bit.h>
+#include <lib/libds/array.h>
 
 EMBOX_TEST_SUITE("util/bit test");
 

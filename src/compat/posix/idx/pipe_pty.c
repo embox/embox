@@ -17,8 +17,8 @@
 #include <sys/stat.h>
 #include <sys/uio.h>
 
-#include <util/ring_buff.h>
-#include <util/ring.h>
+#include <lib/libds/ring_buff.h>
+#include <lib/libds/ring.h>
 #include <util/member.h>
 
 #include <drivers/pty.h>

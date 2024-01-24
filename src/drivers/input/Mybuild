@@ -15,7 +15,7 @@ module core {
 
 	depends input_dev_handler
 	depends embox.kernel.irq_api
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 @DefaultImpl(input_dev_nofs)

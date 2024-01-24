@@ -8,7 +8,7 @@
  */
 
 #include <stddef.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include "embox/net/pack.h"
 
 ARRAY_SPREAD_DEF(const struct net_pack, __net_pack_registry);

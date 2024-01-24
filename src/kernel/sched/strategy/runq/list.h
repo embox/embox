@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_QUEUE_LIST_H_
 #define KERNEL_THREAD_QUEUE_LIST_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 typedef struct dlist_head runq_item_t;
 

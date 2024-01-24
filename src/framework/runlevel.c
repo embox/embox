@@ -12,7 +12,7 @@
 #include <framework/mod/api.h>
 #include <framework/mod/self.h>
 #include <kernel/panic.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 
 static runlevel_nr_t init_level = -1;

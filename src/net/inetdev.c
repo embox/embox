@@ -12,7 +12,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <mem/misc/pool.h>
 

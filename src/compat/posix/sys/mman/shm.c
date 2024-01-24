@@ -6,7 +6,7 @@
 #include <mem/vmem.h>
 #include <mem/phymem.h>
 #include <util/binalign.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <fs/inode.h>
 #include <kernel/task/resource/idesc.h>
