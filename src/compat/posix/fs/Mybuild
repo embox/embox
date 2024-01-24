@@ -98,7 +98,10 @@ static module umask {
 }
 
 static module libgen {
-	source "libgen.c"
+	source "dirname.c"
+	source "basename.c"
+
+	@NoRuntime depends third_party.lib.cwalk
 }
 
 static module chdir {

@@ -47,6 +47,7 @@ module core extends fs_api {
 	source "vfs.c"
 
 	@NoRuntime depends fs_driver
+	@NoRuntime depends oldfs_idesc_file_ops
 
 	depends embox.fs.file_desc_oldfs
 	depends filesystem
