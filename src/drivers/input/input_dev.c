@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <string.h>
 #include <kernel/irq.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee_priority.h>
