@@ -40,7 +40,7 @@ abstract module vfork { }
 static module waitpid {
 	source "waitpid.c"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.kernel.task.syslib.waitpid
 }
 

@@ -41,7 +41,7 @@ static module pipe {
 
 	depends embox.kernel.task.idesc_event
 	depends embox.kernel.task.api
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 static module ppty {

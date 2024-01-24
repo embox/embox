@@ -14,5 +14,5 @@ static module vfork_exchanged extends vfork {
 	depends embox.kernel.task.resource.vfork
 	depends vfork_entry
 	depends embox.arch.vfork_entry
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }

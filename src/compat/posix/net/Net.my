@@ -153,7 +153,7 @@ static module socket {
 	depends embox.kernel.task.idesc
 	depends embox.compat.libc.str
 	depends embox.net.socket
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 
 	source "socket_index_operation.c"
 	depends embox.kernel.task.idesc

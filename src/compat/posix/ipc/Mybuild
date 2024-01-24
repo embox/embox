@@ -6,5 +6,5 @@ static module msg_queue {
 
 	source "msg.c"
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
