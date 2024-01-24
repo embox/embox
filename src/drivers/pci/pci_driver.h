@@ -12,7 +12,7 @@
 
 #include <framework/mod/api.h>
 #include <framework/mod/self.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 struct pci_slot_dev;
 

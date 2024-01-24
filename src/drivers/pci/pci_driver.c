@@ -12,7 +12,7 @@
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <framework/mod/api.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 
 static int pci_drv_probe(const struct pci_driver *drv,

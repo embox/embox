@@ -12,7 +12,7 @@
 #include <drivers/pci/pci.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 #include <util/log.h>
 
 #define PCI_SPACE_BASE  OPTION_GET(NUMBER, pci_space_base)
