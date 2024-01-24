@@ -6,7 +6,7 @@
  * @author Anton Bulychev
  */
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/sched.h>
 #include <kernel/sched/sched_strategy.h>

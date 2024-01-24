@@ -15,8 +15,8 @@
 #include <kernel/task.h>
 
 #include <kernel/task/resource/idesc_table.h>
-#include <util/array.h>
-#include <util/indexator.h>
+#include <lib/libds/array.h>
+#include <lib/libds/indexator.h>
 
 int idesc_index_valid(int idx) {
 	return (idx >=0) && (idx < MODOPS_IDESC_TABLE_SIZE);

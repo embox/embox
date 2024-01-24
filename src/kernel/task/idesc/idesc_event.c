@@ -9,7 +9,7 @@
 #include <errno.h>
 
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <kernel/task/resource/idesc.h>
 #include <fcntl.h>
 #include <kernel/sched.h>

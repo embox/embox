@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <hal/ipl.h>
 #include <hal/clock.h>

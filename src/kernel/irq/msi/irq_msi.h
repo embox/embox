@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 /* Dummy shadow structures if an architecture does not define them */
 #ifndef arch_msi_msg_addr_lo

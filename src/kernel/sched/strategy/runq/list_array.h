@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_QUEUE_PRIOQ2_H_
 #define KERNEL_THREAD_QUEUE_PRIOQ2_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/sched/schedee_priority.h>
 

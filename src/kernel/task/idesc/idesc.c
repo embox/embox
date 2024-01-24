@@ -10,7 +10,7 @@
 #include <sys/types.h>
 #include <fcntl.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/task.h>
 #include <kernel/task/resource/idesc_table.h>

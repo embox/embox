@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_QUEUE_PRIOQ_H_
 #define KERNEL_THREAD_QUEUE_PRIOQ_H_
 
-#include <util/priolist.h>
+#include <lib/libds/priolist.h>
 
 typedef struct priolist      runq_t;
 typedef struct priolist_link runq_item_t;

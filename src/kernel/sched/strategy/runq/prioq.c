@@ -10,7 +10,7 @@
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/sched/sched_strategy.h>
 
-#include <util/priolist.h>
+#include <lib/libds/priolist.h>
 
 void runq_item_init(runq_item_t *runq_link) {
 	priolist_link_init(runq_link);

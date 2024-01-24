@@ -9,7 +9,7 @@
 #ifndef KERNEL_THREAD_SIGRT_H_
 #define KERNEL_THREAD_SIGRT_H_
 
-#include <util/slist.h>
+#include <lib/libds/slist.h>
 
 struct siginfoq {
 	struct slist       queue;

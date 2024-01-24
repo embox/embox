@@ -16,7 +16,7 @@
 #include <config/embox/kernel/task/resource/idesc_table.h>
 #include <framework/mod/options.h>
 #include <kernel/task.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 #define MODOPS_IDESC_TABLE_SIZE \
 	OPTION_MODULE_GET(embox__kernel__task__resource__idesc_table, \
