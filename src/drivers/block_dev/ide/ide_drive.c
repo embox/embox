@@ -46,7 +46,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 #include <util/log.h>
 
 #include <asm/io.h>

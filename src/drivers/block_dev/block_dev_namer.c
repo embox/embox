@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 #include <errno.h>
 
 #define WHOLE_NAME     0

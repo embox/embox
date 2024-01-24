@@ -18,8 +18,8 @@
 #include <mem/misc/pool.h>
 #include <mem/page.h>
 #include <mem/phymem.h>
-#include <util/array.h>
-#include <util/indexator.h>
+#include <lib/libds/array.h>
+#include <lib/libds/indexator.h>
 #include <util/math.h>
 
 extern struct idesc_ops idesc_bdev_ops;
