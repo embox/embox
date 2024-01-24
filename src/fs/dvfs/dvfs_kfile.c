@@ -150,3 +150,7 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 
 	return 0;
 }
+
+int dvfs_ioctl(struct file_desc *fp, int request, void *data) {
+	return fp->f_ops->ioctl(fp, request, data);
+}
