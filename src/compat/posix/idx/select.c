@@ -25,7 +25,7 @@
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 #include <kernel/task/resource/poll_table.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 static int select_fds2pt(struct idesc_poll_table *pt,
 		int nfds, fd_set *readfds, fd_set *writefds, fd_set *exceptfds) {

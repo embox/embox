@@ -11,10 +11,10 @@
 
 #include <hal/stack.h>
 #include <sys/types.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <kernel/task.h>
 #include <hal/ptrace.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct stack_space {
 	struct dlist_head list;

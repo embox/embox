@@ -19,7 +19,7 @@
 #include <fs/inode_operation.h>
 
 #include <mem/objalloc.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <framework/mod/options.h>
 
 #include <dirent.h>

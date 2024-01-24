@@ -4,7 +4,7 @@
 #include <sys/types.h>
 #include <sys/cdefs.h>
 
-#include <util/slist.h>
+#include <lib/libds/slist.h>
 
 #include <fs/path.h>
 #include <fs/dir_context.h>
