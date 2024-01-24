@@ -11,5 +11,5 @@ module common {
 
 	depends embox.fs.driver.devfs /* devfs_notify_new_module() */
 	depends embox.compat.libc.str
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
