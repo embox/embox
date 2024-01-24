@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <drivers/audio/audio_dev.h>
 
