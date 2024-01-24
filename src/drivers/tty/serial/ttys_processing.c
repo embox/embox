@@ -10,7 +10,7 @@
 #include <embox/unit.h>
 #include <kernel/lthread/lthread.h>
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/log.h>
 
 EMBOX_UNIT_INIT(idesc_serial_init);

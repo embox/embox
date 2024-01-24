@@ -9,7 +9,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <termios.h>
-#include <util/ring.h>
+#include <lib/libds/ring.h>
 
 #include <drivers/tty/termios_ops.h>
 
