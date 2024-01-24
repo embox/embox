@@ -17,5 +17,5 @@ module journal {
 	depends embox.fs.buffer_cache
 	depends embox.mem.slab
 
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }

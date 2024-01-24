@@ -13,7 +13,7 @@ module node {
 
 	depends embox.driver.block_dev
 	depends embox.kernel.thread.mutex
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 module filesystem {
@@ -55,7 +55,7 @@ module core extends fs_api {
 
 	depends embox.compat.libc.str
 	depends embox.compat.posix.util.environ
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.compat.posix.proc.uid
 
 	depends embox.kernel.task.resource.vfs
