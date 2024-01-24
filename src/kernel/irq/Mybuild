@@ -18,7 +18,7 @@ module irq extends irq_api {
 	@NoRuntime depends embox.mem.objalloc
 	depends embox.driver.interrupt.irqctrl_api
 	@NoRuntime depends embox.profiler.trace
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 @DefaultImpl(irq_stack_no_protection)

@@ -9,6 +9,6 @@ module stdout {
 	depends embox.kernel.task.task_resource
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 

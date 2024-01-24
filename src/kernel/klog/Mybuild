@@ -13,7 +13,7 @@ module klog extends klog_api {
 	source "klog.h"
 
 	@NoRuntime depends embox.lib.printk
-	@NoRuntime depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 }
 
 module no_klog extends klog_api {
