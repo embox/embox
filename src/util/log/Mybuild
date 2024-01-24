@@ -1,5 +1,6 @@
 package embox.util
 
+@Mandatory
 @DefaultImpl(log_full)
 abstract module log {
 	option string max_log_level="LOG_DEBUG"
