@@ -13,7 +13,7 @@
 #include <drivers/device.h>
 #include <kernel/task/resource/idesc.h>
 #include <mem/misc/pool.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
 
