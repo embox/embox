@@ -11,7 +11,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/err.h>
 #include <util/log.h>
 #include <framework/mod/options.h>

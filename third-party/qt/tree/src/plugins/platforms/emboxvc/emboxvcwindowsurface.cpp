@@ -19,7 +19,7 @@
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched/waitq.h>
 #include <kernel/thread/waitq.h>
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 
 QT_BEGIN_NAMESPACE
 
