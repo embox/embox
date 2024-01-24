@@ -1,0 +1,9 @@
+package embox.lib
+
+@NoCode
+module libds_array {
+	@IncludeExport(path="lib/libds")
+	source "array.h"
+	source "array_impl.h"
+	source "array_spread.lds.S"
+}

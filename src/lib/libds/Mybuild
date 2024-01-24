@@ -1,0 +1,71 @@
+package embox.lib
+
+/* data structure library */
+static module libds {
+	@IncludeExport(path="lib/libds", target_name="bit.h")
+	source "bit/bit.h"
+	source "bit/bit_clz.c"
+	source "bit/bit_ctz.c"
+
+	@IncludeExport(path="lib/libds", target_name="bitmap.h")
+	source "bitmap/bitmap.h"
+	source "bitmap/bitmap_find_bit.c"
+	source "bitmap/bitmap_find_zero_bit.c"
+
+	@IncludeExport(path="lib/libds", target_name="hashtable.h")
+	source "hashtable/hashtable.h"
+	source "hashtable/hashtable_del.c"
+	source "hashtable/hashtable_destroy.c"
+	source "hashtable/hashtable_get.c"
+	source "hashtable/hashtable_get_key_first.c"
+	source "hashtable/hashtable_get_key_next.c"
+	source "hashtable/hashtable_init.c"
+	source "hashtable/hashtable_item_init.c"
+	source "hashtable/hashtable_put.c"
+
+	@IncludeExport(path="lib/libds", target_name="indexator.h")
+	source "indexator/indexator.h"
+	source "indexator/index_alloc.c"
+	source "indexator/index_clamp.c"
+	source "indexator/index_clean.c"
+	source "indexator/index_find.c"
+	source "indexator/index_info.c"
+	source "indexator/index_init.c"
+	source "indexator/index_lock.c"
+	source "indexator/index_priv.c"
+
+	@IncludeExport(path="lib/libds", target_name="msg_buff.h")
+	source "msg_buff/msg_buff.h"
+	source "msg_buff/msg_buff_dequeue.c"
+	source "msg_buff/msg_buff_empty.c"
+	source "msg_buff/msg_buff_enqueue.c"
+	source "msg_buff/msg_buff_init.c"
+	source "msg_buff/msg_buff_space.c"
+
+	@IncludeExport(path="lib/libds", target_name="priolist.h")
+	source "priolist/priolist.h"
+	source "priolist/priolist.c"
+
+	@IncludeExport(path="lib/libds", target_name="ring.h")
+	source "ring/ring.h"
+	source "ring/ring.c"
+
+	@IncludeExport(path="lib/libds", target_name="ring_buff.h")
+	source "ring_buff/ring_buff.h"
+	source "ring_buff/ring_buff.c"
+
+	@IncludeExport(path="lib/libds", target_name="slist.h")
+	source "slist/slist.h"
+
+	@IncludeExport(path="lib/libds", target_name="tree.h")
+	source "tree/tree.h"
+	source "tree/tree_children.c"
+	source "tree/tree_link.c"
+	source "tree/tree_lookup.c"
+	source "tree/tree_postorder.c"
+
+	@NoRuntime depends embox.lib.libds_array
+	@NoRuntime depends embox.lib.libds_dlist
+
+	/* TODO: depends */
+}
