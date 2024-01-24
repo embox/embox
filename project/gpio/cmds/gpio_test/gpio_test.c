@@ -11,7 +11,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <drivers/gpio/gpio.h>
 
 struct led_desc {
