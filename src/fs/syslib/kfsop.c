@@ -17,8 +17,10 @@
 #include <sys/file.h>
 
 #include <drivers/device.h>
+
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
+#include <fs/dentry.h>
 #include <fs/fs_driver.h>
 #include <fs/hlpr_path.h>
 #include <fs/inode.h>
@@ -379,6 +381,7 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 	const struct fs_driver *drv;
 	struct super_block *sb;
 	const char *lastpath;
+	struct mount_descriptor *mnt_desc;
 	int res;
 
 	if (NULL == (sb = super_block_alloc(fs_type, source))) {
@@ -409,7 +412,9 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		vfs_mount_walker(sb->sb_root);
 	}
 
-	if (NULL == mount_table_add(&dir_node, sb->sb_root, source)) {
+	mnt_desc = dir_node.mnt_desc;
+
+	if (NULL == mount_table_add(&dir_node, mnt_desc, sb->sb_root, source)) {
 		super_block_free(sb);
 		//todo free root
 		errno = -res;

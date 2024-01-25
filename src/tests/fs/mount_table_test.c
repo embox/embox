@@ -47,6 +47,7 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 	struct mount_descriptor *mdesc;
 	struct inode *node, *root_node;
 	struct path path;
+	struct mount_descriptor *mnt_desc;
 
 	if (vfs_lookup(strpath, &path)) {
 		return -ENOENT;
@@ -59,7 +60,9 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 
 	vfs_add_leaf(node, root_node);
 
-	mdesc = mount_table_add(&path, root_node, "");
+	mnt_desc = mount_desc_by_inode(path.node);
+
+	mdesc = mount_table_add(&path, mnt_desc, root_node, "");
 	assert(mdesc);
 
 	return 0;
