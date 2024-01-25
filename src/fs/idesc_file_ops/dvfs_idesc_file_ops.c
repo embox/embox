@@ -22,7 +22,7 @@ extern const struct idesc_ops idesc_file_ops;
 static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
 
-	dvfs_close((struct file_desc *)idesc);
+	kclose((struct file_desc *)idesc);
 }
 
 static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov,
@@ -39,7 +39,7 @@ static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov,
 	buf = iov->iov_base;
 	nbyte = iov->iov_len;
 
-	return dvfs_read((struct file_desc *)idesc, buf, nbyte);
+	return kread((struct file_desc *)idesc, buf, nbyte);
 }
 
 static ssize_t idesc_file_ops_write(struct idesc *idesc,
@@ -56,21 +56,21 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc,
 	buf = iov->iov_base;
 	nbyte = iov->iov_len;
 
-	return dvfs_write((struct file_desc *)idesc, (char *)buf, nbyte);
+	return kwrite((struct file_desc *)idesc, (char *)buf, nbyte);
 }
 
 static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
 
-	return dvfs_fstat((struct file_desc *)idesc, buf);
+	return kfstat((struct file_desc *)idesc, buf);
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
 
-	return dvfs_ioctl((struct file_desc *)idesc, request, data);
+	return kioctl((struct file_desc *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {

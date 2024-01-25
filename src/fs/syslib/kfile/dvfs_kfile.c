@@ -24,7 +24,7 @@
  * @retval  0 Ok
  * @retval -1 Descriptor fields are inconsistent
  */
-int dvfs_close(struct file_desc *desc) {
+int kclose(struct file_desc *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
 
@@ -53,7 +53,7 @@ int dvfs_close(struct file_desc *desc) {
  * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
-int dvfs_write(struct file_desc *desc, char *buf, int count) {
+int kwrite(struct file_desc *desc, char *buf, int count) {
 	int res = 0; /* Assign to avoid compiler warning when use -O2 */
 	int retcode = count;
 	struct inode *inode;
@@ -102,7 +102,7 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
  * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
-int dvfs_read(struct file_desc *desc, char *buf, int count) {
+int kread(struct file_desc *desc, char *buf, int count) {
 	int res;
 	int sz;
 
@@ -130,7 +130,7 @@ int dvfs_read(struct file_desc *desc, char *buf, int count) {
 	return res;
 }
 
-int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
+int kfstat(struct file_desc *desc, struct stat *sb) {
 	size_t block_size;
 
 	*sb = (struct stat){
@@ -151,6 +151,6 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	return 0;
 }
 
-int dvfs_ioctl(struct file_desc *fp, int request, void *data) {
+int kioctl(struct file_desc *fp, int request, void *data) {
 	return fp->f_ops->ioctl(fp, request, data);
 }

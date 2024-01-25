@@ -14,10 +14,10 @@
 struct file_desc;
 struct stat;
 
-extern int dvfs_close(struct file_desc *desc);
-extern int dvfs_write(struct file_desc *desc, char *buf, int count);
-extern int dvfs_read(struct file_desc *desc, char *buf, int count);
-extern int dvfs_fstat(struct file_desc *desc, struct stat *sb);
-extern int dvfs_ioctl(struct file_desc *fp, int request, void *data);
+extern int kclose(struct file_desc *desc);
+extern int kwrite(struct file_desc *desc, char *buf, int count);
+extern int kread(struct file_desc *desc, char *buf, int count);
+extern int kfstat(struct file_desc *desc, struct stat *sb);
+extern int kioctl(struct file_desc *fp, int request, void *data);
 
 #endif /* FS_DVFS_KFILE_H_ */
