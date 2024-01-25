@@ -2,6 +2,9 @@ package embox.fs.syslib.kfile
 
 static module kfile_oldfs {
 	source "oldfs_kfile.c"
+
+	@IncludeExport(path="fs", target_name="kfile.h")
+	source "oldfs_kfile.h"
 }
 
 static module kfile_dvfs {
