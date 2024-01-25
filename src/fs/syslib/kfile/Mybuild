@@ -1,0 +1,9 @@
+package embox.fs.syslib.kfile
+
+static module kfile_oldfs {
+	source "oldfs_kfile.c"
+}
+
+static module kfile_dvfs {
+	source "dvfs_kfile.c"
+}

@@ -6,7 +6,6 @@ abstract module file {
 }
 
 module fs_full extends file {
-	source "oldfs_kfile.c"
 	source "oldfs_kopen.c"
 	source "oldfs_kftruncate.c"
 	source "oldfs_kseek.c"
@@ -15,6 +14,7 @@ module fs_full extends file {
 	depends embox.compat.libc.assert
 	depends embox.fs.core
 	depends embox.fs.file_desc_oldfs
+	depends embox.fs.syslib.kfile.kfile_oldfs
 	depends embox.security.api
 	depends embox.compat.posix.util.gettimeofday /* kfile_change_stat */
 	depends perm
