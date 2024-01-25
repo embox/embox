@@ -19,7 +19,7 @@ module all_dvfs extends all {
 static module file_dvfs extends file {
 	depends embox.compat.posix.fs.file_ops
 	depends ftruncate_dvfs
-	depends lseek_dvfs
+	depends lseek
 	depends open_dvfs
 	depends ioctl
 	depends fstat
