@@ -33,7 +33,7 @@ module core extends embox.fs.fs_api {
 	@NoRuntime depends embox.fs.dvfs.fs_driver
 	@NoRuntime depends embox.fs.syslib.kfile.kfile_dvfs
 
-	depends embox.fs.dvfs_idesc_file_ops
+	depends embox.fs.idesc_file_ops
 
 	depends embox.fs.path_helper
 	@NoRuntime depends embox.fs.rootfs_dvfs
