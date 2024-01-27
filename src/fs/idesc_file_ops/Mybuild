@@ -2,4 +2,6 @@ package embox.fs
 
 module idesc_file_ops {
 	source "idesc_file_ops.c"
+
+	@NoRuntime depends embox.fs.syslib.kfile.kfile
 }
