@@ -19,7 +19,7 @@
 
 #include <framework/mod/options.h>
 
-#define SUPER_BLOCK_POOL_SZ           OPTION_GET(NUMBER, super_block_pool_sz)
+#define SUPER_BLOCK_POOL_SZ           OPTION_GET(NUMBER, super_block_quantity)
 
 POOL_DEF(super_block_pool, struct super_block, SUPER_BLOCK_POOL_SZ);
 
