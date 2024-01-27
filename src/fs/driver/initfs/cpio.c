@@ -15,7 +15,6 @@
 #include <stdio.h>
 #include <sys/stat.h>
 
-#include <fs/vfs.h>
 #include <fs/fs_driver.h>
 #include <kernel/printk.h>
 
