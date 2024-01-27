@@ -46,6 +46,9 @@ module fs_driver {
 module core extends fs_api {
 	source "vfs.c"
 
+	@IncludeExport(path="fs", target_name="vfs.h")
+	source "vfs.h"
+
 	@NoRuntime depends fs_driver
 	@NoRuntime depends idesc_file_ops
 
