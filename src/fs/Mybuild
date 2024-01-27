@@ -8,8 +8,16 @@ module no_file_system extends fs_api{
 	depends embox.fs.syslib.file_system_none
 }
 
+@NoCode
+module journal_header {
+	@IncludeExport(path="fs")
+	source "journal.h"
+}
+
 module journal {
 	source "journal.c"
+
+	@NoRuntime depends embox.fs.journal_header
 
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
