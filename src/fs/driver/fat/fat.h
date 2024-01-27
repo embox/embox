@@ -12,8 +12,6 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <fs/mbr.h>
-
 #define DIR_SEPARATOR   '/'	/* character separating directory components*/
 #define ROOT_DIR        "/"
 #define MSDOS_NAME      11

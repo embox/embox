@@ -22,6 +22,9 @@
 #include <fs/inode_operation.h>
 #include <fs/mount.h>
 #include <fs/super_block.h>
+
+#include <fs/mbr.h>
+
 #include "fat.h"
 
 #include <util/log.h>
