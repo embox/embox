@@ -118,9 +118,9 @@ void file_set_size(struct file_desc *file, size_t size) {
 
 void *file_get_inode_data(struct file_desc *file) {
 	assert(file->f_inode);
-	assert(file->f_inode->nas->fi->privdata);
+	//assert(file->f_inode->nas->fi->privdata);
 
-	return file->f_inode->nas->fi->privdata;
+	return file->f_inode->i_privdata;
 }
 
 struct file_desc *file_desc_from_idesc(struct idesc *idesc) {

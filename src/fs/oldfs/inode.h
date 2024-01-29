@@ -52,6 +52,8 @@ struct inode {
 	struct super_block      *i_sb;
 	struct inode_operations *i_ops;
 
+	void                 *i_privdata;
+
 	unsigned int i_nlink;
 	struct slist_link dirent_link;
 
@@ -83,7 +85,7 @@ struct node_fi {
 struct nas {
 	struct inode       *node;
 	struct super_block *fs;
-	struct node_fi     *fi;
+//	struct node_fi     *fi;
 };
 
 extern struct inode *inode_new(struct super_block *sb);

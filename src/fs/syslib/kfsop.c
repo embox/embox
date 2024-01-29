@@ -330,7 +330,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	bdev = node.node->nas->fi->privdata;
+	bdev = node.node->i_privdata;
 	if (0 != (res = drv->format(bdev, NULL))) {
 		errno = -res;
 		return -1;

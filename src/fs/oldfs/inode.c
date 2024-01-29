@@ -24,7 +24,7 @@
 struct node_tuple {
 	struct inode node;
 	struct nas nas;
-	struct node_fi fi;
+	//struct node_fi fi;
 };
 
 POOL_DEF(node_pool, struct node_tuple, MAX_NODE_QUANTITY);
@@ -68,7 +68,7 @@ struct inode *inode_new(struct super_block *sb) {
 	nas->node = node;
 	node->i_sb = sb;
 
-	nas->fi = &nt->fi;
+	//nas->fi = &nt->fi;
 
 	tree_link_init(&node->tree_link);
 
@@ -126,13 +126,13 @@ void node_free(struct inode *node) {
 void *inode_priv(const struct inode *node) {
 	assert(node);
 
-	return node->nas->fi->privdata;
+	return node->i_privdata;
 }
 
 void inode_priv_set(struct inode *node, void *priv) {
 	assert(node);
 
-	node->nas->fi->privdata = priv;
+	node->i_privdata = priv;
 }
 
 size_t inode_size(const struct inode *node) {
