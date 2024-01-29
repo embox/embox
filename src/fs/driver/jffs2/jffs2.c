@@ -1642,8 +1642,8 @@ static int jffs2fs_iterate(struct inode *next, char *next_name, struct inode *pa
 
 				next->i_mode = inode->i_mode;
 
-				next->uid = inode->i_uid;
-				next->gid =  inode->i_gid;
+				next->i_owner_id = inode->i_uid;
+				next->i_group_id =  inode->i_gid;
 				inode_size_set(next,  inode->i_size);
 
 				strncpy(next_name, (const char *)fd_list->name, NAME_MAX - 1);

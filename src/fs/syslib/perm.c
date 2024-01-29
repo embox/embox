@@ -27,9 +27,9 @@ int fs_perm_mask(struct inode *node) {
 		return S_IRWXO;
 	}
 
-	if (node->uid == uid) {
+	if (node->i_owner_id == uid) {
 		perm >>= 6;
-	} else if (node->gid == getgid()) {
+	} else if (node->i_group_id == getgid()) {
 		perm >>= 3;
 	}
 	perm &= S_IRWXO;

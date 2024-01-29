@@ -58,8 +58,8 @@ int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
 
 	stat_buff->st_size = inode_size(node);
 	stat_buff->st_mode = node->i_mode;
-	stat_buff->st_uid = node->uid;
-	stat_buff->st_gid = node->gid;
+	stat_buff->st_uid = node->i_owner_id;
+	stat_buff->st_gid = node->i_group_id;
 	stat_buff->st_ctime = inode_ctime(node);
 	stat_buff->st_mtime = inode_mtime(node);
 	stat_buff->st_blocks = stat_buff->st_size;

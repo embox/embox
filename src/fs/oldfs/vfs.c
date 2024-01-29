@@ -358,8 +358,8 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 	if (child) {
 		child->i_mode = mode;
 		child->i_dentry->flags = mode;
-		child->uid = getuid();
-		child->gid = getgid();
+		child->i_owner_id = getuid();
+		child->i_group_id = getgid();
 
 		child->nas->fs = child->i_sb = parent->i_sb;
 

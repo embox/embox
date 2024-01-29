@@ -43,8 +43,8 @@ struct inode {
 	size_t                length;
 
 	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
-	uid_t                 uid;/* owner user ID */
-	gid_t                 gid;/* owner group ID */
+	uid_t                 i_owner_id;/* owner user ID */
+	gid_t                 i_group_id;/* owner group ID */
 
 	struct dentry        *i_dentry;
 	struct super_block      *i_sb;

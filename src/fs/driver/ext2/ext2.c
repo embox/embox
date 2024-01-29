@@ -893,8 +893,8 @@ static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
 		return 0;
 	}
 	dest->i_mode = fi->f_di.i_mode;
-	dest->uid = fi->f_di.i_uid;
-	dest->gid = fi->f_di.i_gid;
+	dest->i_owner_id = fi->f_di.i_uid;
+	dest->i_group_id = fi->f_di.i_gid;
 
 	ext2_close(dest->nas);
 	return 0;
@@ -1504,8 +1504,8 @@ static int ext2_iterate(struct inode *next, char *next_name, struct inode *paren
 
 			next->i_mode = fi->f_di.i_mode;
 
-			next->uid = fi->f_di.i_uid;
-			next->gid = fi->f_di.i_gid;
+			next->i_owner_id = fi->f_di.i_uid;
+			next->i_group_id = fi->f_di.i_gid;
 			inode_size_set(next, fi->f_di.i_size);
 			strncpy(next_name, name_buff, NAME_MAX - 1);
 			next_name[NAME_MAX - 1] = '\0';
@@ -1546,8 +1546,8 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 	dir_fi = inode_priv(dir_nas->node);
 
 	dir_nas->node->i_mode = dir_fi->f_di.i_mode;
-	dir_nas->node->uid = dir_fi->f_di.i_uid;
-	dir_nas->node->gid = dir_fi->f_di.i_gid;
+	dir_nas->node->i_owner_id = dir_fi->f_di.i_uid;
+	dir_nas->node->i_group_id = dir_fi->f_di.i_gid;
 
 	dir_fi->f_pointer = 0;
 	while (dir_fi->f_pointer < (long) dir_fi->f_di.i_size) {
@@ -1605,8 +1605,8 @@ static int ext2_mount_entry(struct nas *dir_nas) {
 					/* Load permisiions and credentials. */
 					assert((node->i_mode & S_IFMT) == (fi->f_di.i_mode & S_IFMT));
 					node->i_mode = fi->f_di.i_mode;
-					node->uid = fi->f_di.i_uid;
-					node->gid = fi->f_di.i_gid;
+					node->i_owner_id = fi->f_di.i_uid;
+					node->i_group_id = fi->f_di.i_gid;
 				}
 				ext2_close(node->nas);
 			}
