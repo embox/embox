@@ -71,21 +71,9 @@ struct inode {
 	struct tree_link      tree_link;
 };
 
-struct node_info {
-	//size_t        size;
-	//unsigned int  ctime; /* time of last status change */
-	//unsigned int  mtime;
-};
-
-struct node_fi {
-	struct node_info ni;
-	void  *privdata;
-};
-
 struct nas {
 	struct inode       *node;
 	struct super_block *fs;
-//	struct node_fi     *fi;
 };
 
 extern struct inode *inode_new(struct super_block *sb);

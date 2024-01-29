@@ -24,7 +24,6 @@
 struct node_tuple {
 	struct inode node;
 	struct nas nas;
-	//struct node_fi fi;
 };
 
 POOL_DEF(node_pool, struct node_tuple, MAX_NODE_QUANTITY);
