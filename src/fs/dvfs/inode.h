@@ -18,8 +18,8 @@ struct inode_operations;
 struct inode {
 	int      i_no;
 	size_t   length;
-	unsigned mtime;
-	unsigned ctime;
+	unsigned int  i_ctime; /* time of last status change */
+	unsigned int  i_mtime;
 
 	uid_t  i_owner_id;
 	gid_t  i_group_id;
