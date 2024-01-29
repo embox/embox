@@ -39,22 +39,22 @@ struct node_flock {
 };
 
 struct inode {
-	unsigned int i_nlink;
-	struct slist_link dirent_link;
-
-	/* node name (use vfs_get_path_by_node() for get full path*/
-	char                  name[NAME_MAX + 1];
-
 	int      i_no;
+	size_t                length;
 
 	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
 	uid_t                 uid;/* owner user ID */
 	gid_t                 gid;/* owner group ID */
 
 	struct dentry        *i_dentry;
-	size_t                length;
 	struct super_block      *i_sb;
 	struct inode_operations *i_ops;
+
+	unsigned int i_nlink;
+	struct slist_link dirent_link;
+
+	/* node name (use vfs_get_path_by_node() for get full path*/
+	char                  name[NAME_MAX + 1];
 
 	/* node attribute structure (extended information about node)*/
 	struct nas            *nas;
