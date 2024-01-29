@@ -19,11 +19,11 @@ off_t file_set_pos(struct file_desc *file, off_t off) {
 }
 
 size_t file_get_size(struct file_desc *file) {
-	return file->f_inode->length;
+	return file->f_inode->i_size;
 }
 
 void file_set_size(struct file_desc *file, size_t size) {
-	file->f_inode->length = size;
+	file->f_inode->i_size = size;
 }
 
 void *file_get_inode_data(struct file_desc *file) {

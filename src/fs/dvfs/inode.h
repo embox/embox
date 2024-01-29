@@ -17,7 +17,7 @@ struct inode_operations;
 
 struct inode {
 	int      i_no;
-	size_t   length;
+	size_t   i_size;
 	unsigned int  i_ctime; /* time of last status change */
 	unsigned int  i_mtime;
 

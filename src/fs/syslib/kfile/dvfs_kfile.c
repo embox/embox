@@ -66,7 +66,7 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 	assert(inode);
 
 	if (!(inode->i_mode & DVFS_NO_LSEEK)
-	    && (inode->length - desc->pos < count)) {
+	    && (inode->i_size - desc->pos < count)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
 			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
 			if (res) {
@@ -110,7 +110,7 @@ int kread(struct file_desc *desc, char *buf, int count) {
 		return -1;
 	}
 
-	sz = min(count, desc->f_inode->length - desc->pos);
+	sz = min(count, desc->f_inode->i_size - desc->pos);
 
 	if (sz <= 0) {
 		return 0;
@@ -134,7 +134,7 @@ int kfstat(struct file_desc *desc, struct stat *sb) {
 	size_t block_size;
 
 	*sb = (struct stat){
-	    .st_size = desc->f_inode->length,
+	    .st_size = desc->f_inode->i_size,
 	    .st_mode = desc->f_inode->i_mode,
 	    .st_uid = 0,
 	    .st_gid = 0,

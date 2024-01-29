@@ -95,7 +95,7 @@ int rename(const char *src_name, const char *dst_name) {
 			goto err_out;
 		}
 
-		while (pos < from->d_inode->length) {
+		while (pos < from->d_inode->i_size) {
 			err = fread(buf, sizeof(buf[0]), FS_BUFFER_SZ, in);
 			if (err <= 0 && ferror(in)) {
 				goto err_out;

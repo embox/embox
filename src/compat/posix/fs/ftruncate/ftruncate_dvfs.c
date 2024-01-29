@@ -35,7 +35,7 @@ int ftruncate(int fd, off_t length) {
 	ret = file->f_inode->i_ops->truncate(file->f_inode, length);
 
 	if (ret == 0)
-		file->f_inode->length = length;
+		file->f_inode->i_size = length;
 
 	return ret;
 }
