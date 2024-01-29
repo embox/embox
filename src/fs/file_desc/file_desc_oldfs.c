@@ -109,13 +109,11 @@ off_t file_set_pos(struct file_desc *file, off_t off) {
 }
 
 size_t file_get_size(struct file_desc *file) {
-	struct nas *nas = file->f_inode->nas;
-	return nas->fi->ni.size;
+	return file->f_inode->i_size;
 }
 
 void file_set_size(struct file_desc *file, size_t size) {
-	struct nas *nas = file->f_inode->nas;
-	nas->fi->ni.size = size;
+	file->f_inode->i_size = size;
 }
 
 void *file_get_inode_data(struct file_desc *file) {

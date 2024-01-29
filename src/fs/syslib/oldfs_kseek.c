@@ -14,8 +14,6 @@
 #include <fs/file_desc.h>
 
 int kseek(struct file_desc *desc, long int offset, int origin) {
-	struct nas *nas;
-	struct node_info *ni;
 	off_t pos;
 
 	pos = file_get_pos(desc);
@@ -23,9 +21,6 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 	if (NULL == desc) {
 		return -EBADF;
 	}
-
-	nas = desc->f_inode->nas;
-	ni = &nas->fi->ni;
 
 	switch (origin) {
 		case SEEK_SET:
@@ -37,7 +32,7 @@ int kseek(struct file_desc *desc, long int offset, int origin) {
 			break;
 
 		case SEEK_END:
-			pos = ni->size + offset;
+			pos = desc->f_inode->i_size + offset;
 			break;
 
 		default:

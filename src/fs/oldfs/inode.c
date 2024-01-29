@@ -136,11 +136,11 @@ void inode_priv_set(struct inode *node, void *priv) {
 }
 
 size_t inode_size(const struct inode *node) {
-	return node->nas->fi->ni.size;
+	return node->i_size;
 }
 
 void inode_size_set(struct inode *node, size_t sz) {
-	node->nas->fi->ni.size = sz;
+	node->i_size = sz;
 }
 
 unsigned inode_ctime(const struct inode *node) {

@@ -87,7 +87,7 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevtab[i] && !strcmp(block_dev_name(bdevtab[i]), name)) {
 			devfs_fill_inode(node, block_dev_to_device(bdevtab[i]), S_IFBLK);
-			node->length = bdevtab[i]->size;
+			node->i_size = bdevtab[i]->size;
 			return node;
 		}
 	}

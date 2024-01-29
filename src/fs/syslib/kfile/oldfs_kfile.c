@@ -67,8 +67,8 @@ ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 	}
 
 	/* Don't try to read past EOF */
-	if (size > desc->f_inode->nas->fi->ni.size - file_get_pos(desc)) {
-		size = desc->f_inode->nas->fi->ni.size - file_get_pos(desc);
+	if (size > desc->f_inode->i_size - file_get_pos(desc)) {
+		size = desc->f_inode->i_size - file_get_pos(desc);
 	}
 
 	ret = desc->f_ops->read(desc, buf, size);

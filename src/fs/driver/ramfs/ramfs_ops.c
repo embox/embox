@@ -186,7 +186,7 @@ int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct d
 
 		inode_priv_set(next, &ramfs_files[cur_id]);
 		next->i_no = cur_id;
-		next->length = ramfs_files[cur_id].length;
+		next->i_size = ramfs_files[cur_id].length;
 		next->i_mode = ramfs_files[cur_id].mode & (S_IFMT | S_IRWXA);
 
 		ctx->fs_ctx = (void *) (uintptr_t)(cur_id + 1);
