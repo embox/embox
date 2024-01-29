@@ -41,6 +41,8 @@ struct node_flock {
 struct inode {
 	int      i_no;
 	size_t                length;
+	unsigned int  i_ctime; /* time of last status change */
+	unsigned int  i_mtime;
 
 	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
 	uid_t                 i_owner_id;/* owner user ID */
@@ -69,8 +71,8 @@ struct inode {
 
 struct node_info {
 	size_t        size;
-	unsigned int  ctime; /* time of last status change */
-	unsigned int  mtime;
+	//unsigned int  ctime; /* time of last status change */
+	//unsigned int  mtime;
 };
 
 struct node_fi {

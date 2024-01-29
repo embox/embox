@@ -144,19 +144,19 @@ void inode_size_set(struct inode *node, size_t sz) {
 }
 
 unsigned inode_ctime(const struct inode *node) {
-	return node->nas->fi->ni.ctime;
+	return node->i_ctime;
 }
 
 void inode_ctime_set(struct inode *node, unsigned ctime) {
-	node->nas->fi->ni.ctime = ctime;
+	node->i_ctime = ctime;
 }
 
 unsigned inode_mtime(const struct inode *node) {
-	return node->nas->fi->ni.mtime;
+	return node->i_mtime;
 }
 
 void inode_mtime_set(struct inode *node, unsigned mtime) {
-	node->nas->fi->ni.mtime = mtime;
+	node->i_mtime = mtime;
 }
 
 char *inode_name(struct inode *node) {
