@@ -191,7 +191,7 @@ static void cifs_get_file_url(struct inode *node, char fileurl[PATH_MAX]) {
 	int rc;
 	struct cifs_fs_info *fsi;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	strncpy(fileurl, fsi->url, PATH_MAX - 1);
 	fileurl[PATH_MAX - 1] = '\0';
@@ -210,7 +210,7 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 	int i = 0;
 	int ret = -1;
 
-	fsi = parent->nas->fs->sb_data;
+	fsi = parent->i_sb->sb_data;
 	ctx = fsi->ctx;
 
 	cifs_get_file_url(parent, smb_path);
@@ -347,7 +347,7 @@ static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __of
 	struct stat st;
 	int rc;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
@@ -381,7 +381,7 @@ static int cifs_close(struct file_desc *file_desc)
 	struct cifs_fs_info *fsi;
 	SMBCFILE *file;
 
-	fsi = file_desc->f_inode->nas->fs->sb_data;
+	fsi = file_desc->f_inode->i_sb->sb_data;
 	file = file_desc->file_info;
 
 	if (smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
@@ -400,7 +400,7 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->f_inode->nas->fs->sb_data;
+	fsi = file_desc->f_inode->i_sb->sb_data;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -425,7 +425,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->f_inode->nas->fs->sb_data;
+	fsi = file_desc->f_inode->i_sb->sb_data;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -453,7 +453,7 @@ static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_n
 	mode_t mode;
 	int rc;
 
-	pfsi = parent_node->nas->fs->sb_data;
+	pfsi = parent_node->i_sb->sb_data;
 
 	strcpy(fileurl,pfsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
@@ -489,7 +489,7 @@ static int embox_cifs_node_delete(struct inode *node) {
 	char fileurl[PATH_MAX];
 	int rc;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
