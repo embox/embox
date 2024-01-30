@@ -46,7 +46,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	const struct fs_driver *drv;
 	int retval = 0;
 
-	if(NULL == parent->node->nas->fs) {
+	if(NULL == parent->node->i_sb) {
 		return -EINVAL;
 	}
 
@@ -55,10 +55,10 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	}
 
 	/* check drv of parents */
-	drv = parent->node->nas->fs->fs_drv;
+	drv = parent->node->i_sb->fs_drv;
 
 	if ((mode & VFS_DIR_VIRTUAL) && S_ISDIR(mode)) {
-		node.node->nas->fs = parent->node->nas->fs;
+		node.node->i_sb = parent->node->i_sb;
 	} else {
 		if (!drv || !drv->fsop->create_node) {
 			retval = -ENOSYS;
@@ -152,14 +152,14 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 	child->mnt_desc = dir_path->mnt_desc;
 
-	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
+	if(!dir_path->node->nas || !dir_path->node->i_sb) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
 		return -1;
 	}
 
 	/* check drv of parents */
-	drv = dir_path->node->nas->fs->fs_drv;
+	drv = dir_path->node->i_sb->fs_drv;
 	if (!drv || !drv->fsop->create_node) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
@@ -183,7 +183,6 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 int kremove(const char *pathname) {
 	struct path node;
-	struct nas *nas;
 	const struct fs_driver *drv;
 	int res;
 
@@ -192,8 +191,7 @@ int kremove(const char *pathname) {
 		return -1;
 	}
 
-	nas = node.node->nas;
-	drv = nas->fs->fs_drv;
+	drv = node.node->i_sb->fs_drv;
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
@@ -228,7 +226,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->nas->fs->fs_drv;
+	drv = node.node->i_sb->fs_drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
@@ -272,7 +270,7 @@ int krmdir(const char *pathname) {
 		return res;
 	}
 
-	drv = node.node->nas->fs->fs_drv;
+	drv = node.node->i_sb->fs_drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
@@ -366,7 +364,7 @@ static int vfs_mount_walker(struct inode *dir) {
 		node->i_ops = dir->i_ops;
 
 		assert(node->nas);
-		node->nas->fs = node->i_sb = dir->nas->fs;
+		node->i_sb = dir->i_sb;
 
 		vfs_add_leaf(node, dir);
 
@@ -663,7 +661,7 @@ int kumount(const char *dir) {
 	if_mounted_follow_down(&dir_node);
 	node = dir_node;
 
-	drv = dir_node.node->nas->fs->fs_drv;
+	drv = dir_node.node->i_sb->fs_drv;
 
 	if (!drv) {
 		return -EINVAL;

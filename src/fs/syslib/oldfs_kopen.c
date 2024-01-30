@@ -16,7 +16,7 @@
 #include <fs/kfile.h>
 
 struct idesc *kopen(struct inode *node, int flag) {
-	struct nas *nas;
+	struct super_block *sb;
 	struct file_desc *desc;
 	const struct file_operations *ops;
 	int ret;
@@ -27,22 +27,22 @@ struct idesc *kopen(struct inode *node, int flag) {
 	assertf(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
 
 
-	nas = node->nas;
+	sb = node->i_sb;
 	/* if we try open a file (not special) we must have the file system */
-	if (NULL == nas->fs) {
+	if (NULL == sb) {
 		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
 
 	if (node_is_directory(node)) {
-		ops = nas->fs->sb_fops;
+		ops = sb->sb_fops;
 	} else {
-		if (NULL == nas->fs->sb_fops) {
+		if (NULL == sb->sb_fops) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
 
-		ops = nas->fs->sb_fops;
+		ops = sb->sb_fops;
 
 		if (S_ISCHR(node->i_mode)) {
 			/* Note: we suppose this node belongs to devfs */

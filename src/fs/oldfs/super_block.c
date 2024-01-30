@@ -73,7 +73,6 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 	}
 
 	node->i_ops = sb->sb_iops;
-	node->nas->fs = sb;
 
 	return sb;
 }

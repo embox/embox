@@ -38,7 +38,7 @@ int ktruncate(struct inode *node, off_t length) {
 		return -1;
 	}
 
-	drv = node->nas->fs->fs_drv;
+	drv = node->i_sb->fs_drv;
 
 	if (NULL == drv || NULL == drv->fsop || NULL == drv->fsop->truncate) {
 		//errno = EPERM;
