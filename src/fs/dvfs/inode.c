@@ -12,11 +12,11 @@
 #include <fs/dentry.h>
 
 void *inode_priv(const struct inode *node) {
-	return node->i_data;
+	return node->i_privdata;
 }
 
 void inode_priv_set(struct inode *node, void *priv) {
-	node->i_data = priv;
+	node->i_privdata = priv;
 }
 
 size_t inode_size(const struct inode *node) {

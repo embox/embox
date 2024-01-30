@@ -29,7 +29,7 @@ struct inode {
 	struct super_block *i_sb;
 	struct inode_operations *i_ops;
 
-	void *i_data;
+	void *i_privdata;
 };
 
 extern void *inode_priv(const struct inode *node);

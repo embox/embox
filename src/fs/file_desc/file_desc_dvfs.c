@@ -30,7 +30,7 @@ void *file_get_inode_data(struct file_desc *file) {
 	assert(file);
 	assert(file->f_inode);
 
-	return file->f_inode->i_data;
+	return file->f_inode->i_privdata;
 }
 
 struct file_desc *file_desc_from_idesc(struct idesc *idesc) {
