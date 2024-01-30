@@ -25,8 +25,6 @@ extern ssize_t kread(struct file_desc *desc, void *buf, size_t size);
 
 extern void kclose(struct file_desc *desc);
 
-extern int kseek(struct file_desc *desc, long int offset, int origin);
-
 extern int kioctl(struct file_desc *fp, int request, void *data);
 
 extern int kfstat(struct file_desc *fp, struct stat *buff);
