@@ -164,7 +164,7 @@ static int embox_ntfs_node_delete(struct inode *node) {
 		return -EINVAL;
 	}
 	pfi = inode_priv(parent_node);
-	pfsi = parent_node->nas->fs->sb_data;
+	pfsi = parent_node->i_sb->sb_data;
 	fi = inode_priv(node);
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
@@ -303,7 +303,7 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		}
 	}
 
-	fsi = dir_nas->fs->sb_data;
+	fsi = dir_nas->node->i_sb->sb_data;
 
 	// There is a room for optimization here, it is necessary to open only directory nodes
 	ni = ntfs_inode_open(fsi->ntfs_vol, mref);
@@ -348,7 +348,7 @@ static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
 
 	node = ctx->node;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	if (ctx->idx++ < (int)(uintptr_t)ctx->dir_ctx->fs_ctx) {
 		return 0;
@@ -469,7 +469,7 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 		return -1;
 	}
 
-	next->nas->fs = parent->nas->fs;
+	next->i_sb = parent->i_sb;
 
 	ntfs_dir_ctx.dir_ctx = dir_ctx;
 	ntfs_dir_ctx.next_name = name;
