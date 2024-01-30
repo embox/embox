@@ -425,24 +425,24 @@ int cdfs_mount(struct nas *root_nas)
 	unsigned char *esc;
 	struct cdfs_fs_info *fsi;
 
-	fsi = root_nas->fs->sb_data;
+	fsi = root_nas->node->i_sb->sb_data;
 
 	/* Check block size */
-	if (CDFS_BLOCKSIZE != block_dev_block_size(root_nas->fs->bdev)) {
+	if (CDFS_BLOCKSIZE != block_dev_block_size(root_nas->node->i_sb->bdev)) {
 		return -ENXIO;
 	}
 
 	/* Allocate file system */
 	cdfs = (cdfs_t *) sysmalloc(sizeof(cdfs_t));
 	memset(cdfs, 0, sizeof(cdfs_t));
-	cdfs->bdev = root_nas->fs->bdev;
-	cdfs->blks = block_dev_size(root_nas->fs->bdev);
+	cdfs->bdev = root_nas->node->i_sb->bdev;
+	cdfs->blks = block_dev_size(root_nas->node->i_sb->bdev);
 	if (cdfs->blks < 0) {
 		return cdfs->blks;
 	}
 
 	/* Allocate cache */
-	if (NULL == block_dev_cache_init(root_nas->fs->bdev, CDFS_POOLDEPTH)) {
+	if (NULL == block_dev_cache_init(root_nas->node->i_sb->bdev, CDFS_POOLDEPTH)) {
 		return -ENOMEM;
 	}
 
@@ -450,7 +450,7 @@ int cdfs_mount(struct nas *root_nas)
 	cdfs->vdblk = 0;
 	blk = 0x8000/CDFS_BLOCKSIZE;
 	while (1) {
-		cache  = block_dev_cached_read(root_nas->fs->bdev, blk);
+		cache  = block_dev_cached_read(root_nas->node->i_sb->bdev, blk);
 		if (!cache) {
 			return -EIO;
 		}
@@ -486,7 +486,7 @@ int cdfs_mount(struct nas *root_nas)
 	}
 
 	/* Initialize filesystem from selected volume descriptor and read path table */
-	cache  = block_dev_cached_read(root_nas->fs->bdev, cdfs->vdblk);
+	cache  = block_dev_cached_read(root_nas->node->i_sb->bdev, cdfs->vdblk);
 	if (!cache) {
 		return -EIO;
 	}
@@ -607,7 +607,7 @@ static int cdfs_read(struct nas *nas, void *data, size_t size, off64_t pos) {
 	cdfs_t *cdfs;
 
 	fi = inode_priv(nas->node);
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 	cdfs = (cdfs_t *) fsi->data;
 
 	read = 0;
@@ -669,7 +669,7 @@ static int cdfs_opendir(struct nas *nas, char *name) {
 	struct cdfs_file_info *fi;
 
 	fi = inode_priv(nas->node);
-	cdfs = (cdfs_t *) fi->fs->data;
+	cdfs = (cdfs_t *) nas->node->i_sb->data;
 
 	// Locate directory
 	rc = cdfs_find_file(cdfs, name, strlen(name), &rec);
@@ -715,7 +715,7 @@ static int cdfs_readdir(struct nas *nas, direntry_t *dirp, int count) {
 
 	fi = inode_priv(nas->node);
 	cdfile = (cdfs_file_t *) fi->data;
-	cdfs = (cdfs_t *) fi->fs->data;
+	cdfs = (cdfs_t *) nas->node->i_sb->data;
 
   blkagain:
 	if (count != 1) {
@@ -1229,7 +1229,7 @@ int cdfs_create_dir_entry (struct nas *root_nas) {
 	dir_node = root_node = node = root_nas->node;
 
 	fi = parent_fi = inode_priv(dir_node);
-	fsi = root_nas->fs->sb_data;
+	fsi = root_nas->node->i_sb->sb_data;
 	cdfs = fsi->data;
 
 	/* Setup pointers into path table buffer */
