@@ -60,7 +60,6 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 	}
 
 	desc->f_inode = node;
-	desc->file_flags = flag & O_APPEND;
 	desc->f_pos = 0;
 
 	idesc_init(&desc->f_idesc, &idesc_file_ops, flag);
