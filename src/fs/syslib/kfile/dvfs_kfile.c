@@ -66,9 +66,9 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 	assert(inode);
 
 	if (!(inode->i_mode & DVFS_NO_LSEEK)
-	    && (inode->i_size - desc->pos < count)) {
+	    && ((inode->i_size - desc->f_pos) < count)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
-			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
+			res = inode->i_ops->truncate(desc->f_inode, desc->f_pos + count);
 			if (res) {
 				retcode = -EFBIG;
 			}
@@ -86,7 +86,7 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 	}
 
 	if (res > 0) {
-		desc->pos += res;
+		desc->f_pos += res;
 	}
 
 	return retcode;
@@ -110,7 +110,7 @@ int kread(struct file_desc *desc, char *buf, int count) {
 		return -1;
 	}
 
-	sz = min(count, desc->f_inode->i_size - desc->pos);
+	sz = min(count, desc->f_inode->i_size - desc->f_pos);
 
 	if (sz <= 0) {
 		return 0;
@@ -124,7 +124,7 @@ int kread(struct file_desc *desc, char *buf, int count) {
 	}
 
 	if (res > 0) {
-		desc->pos += res;
+		desc->f_pos += res;
 	}
 
 	return res;

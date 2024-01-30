@@ -41,7 +41,7 @@ struct file_desc {
 	struct dentry *f_dentry;
 	struct inode *f_inode;
 
-	off_t pos;
+	off_t f_pos;
 
 	const struct file_operations *f_ops;
 };

@@ -10,12 +10,12 @@
 #include <fs/file_desc.h>
 
 off_t file_get_pos(struct file_desc *file) {
-	return file->pos;
+	return file->f_pos;
 }
 
 off_t file_set_pos(struct file_desc *file, off_t off) {
-	file->pos = off;
-	return file->pos;
+	file->f_pos = off;
+	return file->f_pos;
 }
 
 size_t file_get_size(struct file_desc *file) {

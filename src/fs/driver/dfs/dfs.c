@@ -378,8 +378,8 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	sbi = sb->sb_data;
 	fdev = flash_by_bdev(sb->bdev);
 
-	pos = ((uintptr_t) desc->f_inode->i_privdata) + desc->pos;
-	l = min(size, sbi->max_len - desc->pos);
+	pos = ((uintptr_t) desc->f_inode->i_privdata) + desc->f_pos;
+	l = min(size, sbi->max_len - desc->f_pos);
 
 	if (l <= 0) {
 		return -1;
@@ -403,8 +403,8 @@ static size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	sb = desc->f_inode->i_sb;
 	fdev = flash_by_bdev(sb->bdev);
 
-	pos = ((uintptr_t) desc->f_inode->i_privdata) + desc->pos;
-	l = min(size, file_get_size(desc) - desc->pos);
+	pos = ((uintptr_t) desc->f_inode->i_privdata) + desc->f_pos;
+	l = min(size, file_get_size(desc) - desc->f_pos);
 
 	if (l < 0) {
 		return -1;

@@ -167,7 +167,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 		inode_size_set(i_no, 0);
 	}
 	if ((__oflag & O_APPEND) && (desc->f_inode)) {
-		desc->pos = desc->f_inode->i_size;
+		file_set_pos(desc, inode_size(desc->f_inode));
 	}
 
 	return &desc->f_idesc;
