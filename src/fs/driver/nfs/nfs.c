@@ -840,7 +840,7 @@ static int nfs_call_proc_mnt(struct nas *nas,
 	struct timeval timeout = { 25, 0 };
 	struct nfs_fs_info *fsi;
 
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 
 	if(NULL == fsi->mnt){
 		if(0 >  nfs_client_init(fsi)) {
@@ -1033,7 +1033,7 @@ static int nfs_mount(struct nas *nas) {
 	struct nfs_fs_info *fsi;
 	export_dir_t export;
 
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 
 	/* get server mount directory name*/
 	memset((void *)&export, 0, sizeof(export));
