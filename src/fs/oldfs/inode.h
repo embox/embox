@@ -73,7 +73,7 @@ struct inode {
 
 struct nas {
 	struct inode       *node;
-	struct super_block *fs;
+	//struct super_block *fs;
 };
 
 extern struct inode *inode_new(struct super_block *sb);
