@@ -6,7 +6,7 @@
  */
 #include <sys/types.h>
 
-#include <fs/dvfs.h>
+#include <fs/inode.h>
 #include <fs/file_desc.h>
 
 off_t file_get_pos(struct file_desc *file) {
