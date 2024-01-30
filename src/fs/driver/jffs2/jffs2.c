@@ -326,7 +326,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 
 	struct jffs2_fs_info *fsi;
 
-	fsi = dir_nas->fs->sb_data;
+	fsi = dir_nas->node->i_sb->sb_data;
 
 	jffs2_sb = &fsi->jffs2_sb;
 
@@ -337,7 +337,7 @@ static int jffs2_mount(struct nas *dir_nas) {
 	c = &jffs2_sb->jffs2_sb;
 	memset(jffs2_sb, 0, sizeof (struct jffs2_super_block));
 
-	jffs2_sb->bdev = dir_nas->fs->bdev;
+	jffs2_sb->bdev = dir_nas->node->i_sb->bdev;
 
 	c->inocache_list = sysmalloc(sizeof(struct jffs2_inode_cache *) * INOCACHE_HASHSIZE);
 	if (!c->inocache_list) {
@@ -1508,7 +1508,7 @@ static int mount_vfs_dir_enty(struct nas *dir_nas) {
 				}
 				nas = vfs_node->nas;
 				if (NULL == inode_priv(vfs_node)) {
-					if (NULL == (fi = jffs2_fi_alloc(vfs_node, dir_nas->fs))) {
+					if (NULL == (fi = jffs2_fi_alloc(vfs_node, dir_nas->node->i_sb))) {
 						inode_priv_set(vfs_node, fi);
 						return ENOMEM;
 					}
@@ -1542,7 +1542,7 @@ static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mo
 			return -rc;
 		}
 	} else {
-		if (NULL == (fi = jffs2_fi_alloc(i_new, parent_node->nas->fs))) {
+		if (NULL == (fi = jffs2_fi_alloc(i_new, parent_node->i_sb))) {
 				inode_priv_set(i_new, fi);
 				return ENOMEM;
 			}
@@ -1634,7 +1634,7 @@ static int jffs2fs_iterate(struct inode *next, char *next_name, struct inode *pa
 				if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
 					continue;
 				}
-				if (NULL == (fi = jffs2_fi_alloc(next, parent->nas->fs))) {
+				if (NULL == (fi = jffs2_fi_alloc(next, parent->i_sb))) {
 					return -1;
 				}
 				inode_priv_set(next, fi);
