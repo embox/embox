@@ -41,7 +41,7 @@ struct file_desc {
 	struct inode *f_inode;
 	int file_flags; //TODO now use only for O_APPEND should move to idesc
 	const struct file_operations *f_ops;
-	off_t cursor;
+	off_t f_pos;
 	/* TODO this need for system without file_nodes where we want to use uart for
  *  example
  */

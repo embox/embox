@@ -61,7 +61,7 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 
 	desc->f_inode = node;
 	desc->file_flags = flag & O_APPEND;
-	desc->cursor = 0;
+	desc->f_pos = 0;
 
 	idesc_init(&desc->f_idesc, &idesc_file_ops, flag);
 	desc->f_idesc.idesc_xattrops = &file_idesc_xattrops;
@@ -95,17 +95,16 @@ struct file_desc *file_desc_get(int idx) {
 	}
 
 	return (struct file_desc *) idesc;
-
 }
 
 off_t file_get_pos(struct file_desc * file) {
-	return file->cursor;
+	return file->f_pos;
 }
 
 off_t file_set_pos(struct file_desc *file, off_t off) {
-	file->cursor = off;
+	file->f_pos = off;
 
-	return file->cursor;
+	return file->f_pos;
 }
 
 size_t file_get_size(struct file_desc *file) {
@@ -118,7 +117,6 @@ void file_set_size(struct file_desc *file, size_t size) {
 
 void *file_get_inode_data(struct file_desc *file) {
 	assert(file->f_inode);
-	//assert(file->f_inode->nas->fi->privdata);
 
 	return file->f_inode->i_privdata;
 }
