@@ -152,7 +152,7 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 	struct ext2_fs_info *fsi;
 
 	fi = inode_priv(nas->node);
-	sb = nas->fs;
+	sb = nas->node->i_sb;
 	fsi = sb->sb_data;
 
 	block = NO_BLOCK;
@@ -235,7 +235,7 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	struct super_block *sb;
 
 	fi = inode_priv(nas->node);
-	sb = nas->fs;
+	sb = nas->node->i_sb;
 	fsi = sb->sb_data;
 
 	if (bit_returned >= fsi->e2sb.s_blocks_count ||
@@ -291,7 +291,7 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 	struct ext2_fs_info *fsi;
 
 	fi = inode_priv(nas->node);
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 
 	if (fsi->e2sb.s_free_blocks_count == 0) {
 		return NO_BLOCK;
