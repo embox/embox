@@ -156,7 +156,7 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 	struct ext4_fs_info *fsi;
 
 	fi = inode_priv(nas->node);
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 
 	block = EXT4_NO_BLOCK;
 	bit = -1;
@@ -192,7 +192,7 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 			continue;
 		}
 
-		ext2_read_sector(nas->fs, fi->f_buf, 1, ext4_block_bitmap_len(gd));
+		ext2_read_sector(nas->node->i_sb, fi->f_buf, 1, ext4_block_bitmap_len(gd));
 
 		bit = ext4_setbit(b_bitmap(fi->f_buf), fsi->e4sb.s_blocks_per_group, word);
 		if (-1 == bit) {
@@ -210,12 +210,12 @@ static uint32_t ext4_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 			return 0;
 		}
 
-		ext2_write_sector(nas->fs, fi->f_buf, 1, ext4_block_bitmap_len(gd));
+		ext2_write_sector(nas->node->i_sb, fi->f_buf, 1, ext4_block_bitmap_len(gd));
 
 		fsi->e4sb.s_free_blocks_count--;
-		ext2_write_sblock(nas->fs);
+		ext2_write_sblock(nas->node->i_sb);
 		ext4_inc_lo_hi(gd->free_blocks_count_lo, gd->free_blocks_count_hi);
-		ext2_write_gdblock(nas->fs);
+		ext2_write_gdblock(nas->node->i_sb);
 
 		if (update_bsearch && block != -1 && block != EXT4_NO_BLOCK) {
 			/* We searched from the beginning, update bsearch. */
@@ -237,7 +237,7 @@ void ext4_free_block(struct nas *nas, uint32_t bit_returned) {
 	struct ext4_fs_info *fsi;
 
 	fi = inode_priv(nas->node);
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 
 	if (bit_returned >= fsi->e4sb.s_blocks_count ||
 		bit_returned < fsi->e4sb.s_first_data_block) {
@@ -262,17 +262,17 @@ void ext4_free_block(struct nas *nas, uint32_t bit_returned) {
 		return;
 	}
 
-	ext2_read_sector(nas->fs, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
+	ext2_read_sector(nas->node->i_sb, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
 	if (ext2_unsetbit(b_bitmap(fi->f_buf), bit)) {
 		return; /*Tried to free unused block*/
 	}
-	ext2_write_sector(nas->fs, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
+	ext2_write_sector(nas->node->i_sb, (char *) fi->f_buf, 1, ext4_block_bitmap_len(gd));
 
 
 	fsi->e4sb.s_free_blocks_count++;
-	ext2_write_sblock(nas->fs);
+	ext2_write_sblock(nas->node->i_sb);
 	ext4_inc_lo_hi(gd->free_blocks_count_lo, gd->free_blocks_count_hi);
-	ext2_write_gdblock(nas->fs);
+	ext2_write_gdblock(nas->node->i_sb);
 
 	if (bit_returned < fsi->s_bsearch) {
 		fsi->s_bsearch = bit_returned;
@@ -292,7 +292,7 @@ uint32_t ext4_alloc_block(struct nas *nas, uint32_t block)
 	struct ext4_fs_info *fsi;
 
 	fi = inode_priv(nas->node);
-	fsi = nas->fs->sb_data;
+	fsi = nas->node->i_sb->sb_data;
 
 	if (fsi->e4sb.s_free_blocks_count == 0) {
 		return EXT4_NO_BLOCK;
