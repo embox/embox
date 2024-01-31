@@ -361,8 +361,8 @@ static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
 	node->i_mode = mode;
 	inode_size_set(node, ni->data_size);
 
-	strncpy(ctx->next_name, filename, sizeof(node->name) - 1);
-	ctx->next_name[sizeof(node->name) - 1] = '\0';
+	strncpy(ctx->next_name, filename, NAME_MAX - 1);
+	ctx->next_name[NAME_MAX] = '\0';
 
 	ctx->dir_ctx->fs_ctx = (void *)(uintptr_t)ctx->idx;
 
