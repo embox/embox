@@ -966,7 +966,7 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 //	vfs_get_relative_path(parent, name, sizeof(name));
 
 //	n = cdfs_find_file(cdfs, parent->name, strlen(parent->name), &dirrec);
-	n = cdfs_find_dir(cdfs, parent->name, strlen(parent->name));
+	n = cdfs_find_dir(cdfs, inode_name(parent), strlen(inode_name(parent)));
 
 	/* The first two directory records are . (current) and .. (parent) */
 	blk = cdfs->path_table[n]->extent;
