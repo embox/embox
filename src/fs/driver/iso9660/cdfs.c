@@ -73,8 +73,6 @@
 
 #include <framework/mod/options.h>
 
-
-
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
 
@@ -82,10 +80,7 @@ POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_qu
 POOL_DEF(cdfs_file_pool, struct cdfs_file_info, OPTION_GET(NUMBER,inode_quantity));
 
 static int cdfs_open(struct inode *node, char *name);
-//int cdfs_create_dir_entry (struct inode *parent_node);
 static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx);
-
-//static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path);
 
 static int cdfs_isonum_711(unsigned char *p) {
   return p[0];
@@ -501,10 +496,7 @@ int cdfs_mount(struct inode *root_node)
 
 	/* Device mounted successfully */
 	fsi->data = cdfs;
-#if 0
-	cdfs_create_dir_entry (root_node);
 
-#endif
 	return 0;
 }
 
@@ -850,7 +842,6 @@ static struct fs_driver cdfsfs_driver = {
 	.name = "iso9660",
 	.fill_sb = cdfs_fill_sb,
 	.clean_sb = cdfs_clean_sb,
-//	.file_op = &cdfsfs_fop,
 	.fsop = &cdfsfs_fsop,
 };
 
@@ -919,7 +910,6 @@ static int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_dire
 		name[i] = tolower(name[i]);
 	}
 
-
 	fi = pool_alloc(&cdfs_file_pool);
 	if (!fi) {
 		return -ENOMEM;
@@ -941,10 +931,7 @@ static int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_dire
 static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
 	int n;
 	cdfs_t *cdfs;
-
-//	char name[PATH_MAX];
 	struct cdfs_fs_info *fsi;
-//	iso_directory_record_t *dirrec;
 	struct block_dev_cache *cache;
 	int blk;
 	char *p;
@@ -960,9 +947,6 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 		dir_ctx->fs_ctx = (void*)(intptr_t)2;
 	}
 
-//	vfs_get_relative_path(parent, name, sizeof(name));
-
-//	n = cdfs_find_file(cdfs, parent->name, strlen(parent->name), &dirrec);
 	n = cdfs_find_dir(cdfs, inode_name(parent), strlen(inode_name(parent)));
 
 	/* The first two directory records are . (current) and .. (parent) */
@@ -1071,217 +1055,3 @@ static int cdfs_umount_entry(struct inode *node) {
 
 	return 0;
 }
-#if 0
-static struct inode *cdfs_get_dir_node(cdfs_t *cdfs, int numrec, struct inode *root) {
-	char path[PATH_MAX];
-	char tail[PATH_MAX];
-	iso_pathtable_record_t *pathrec;
-	struct inode *dir;
-
-	dir = root;
-	pathrec = cdfs->path_table[numrec];
-
-	memcpy(tail, pathrec->name, pathrec->length);
-	tail[pathrec->length] = 0;
-
-	/* go up to the root folder */
-	while (1 != pathrec->parent) {
-		pathrec = cdfs->path_table[pathrec->parent];
-		memcpy(path, pathrec->name, pathrec->length);
-		path[pathrec->length] = 0;
-		strcat(path, "/");
-		strcat(path, tail);
-		strncpy(tail, path, PATH_MAX);
-	}
-
-	if (1 != numrec) {
-		dir = vfs_subtree_lookup(root, tail);
-	}
-
-	return dir;
-}
-
-static int cdfs_create_file_node(struct inode *dir_node, cdfs_t *cdfs, int dir) {
-	struct block_dev_cache *cache;
-	char *p;
-	iso_directory_record_t *rec;
-	int blk;
-	int left;
-	int reclen;
-	int namelen;
-	int flags;
-	struct cdfs_file_info *fi;
-	struct inode *node;
-	wchar_t *wname;
-	char name[PATH_MAX];
-
-	/* The first two directory records are . (current) and .. (parent) */
-	blk = cdfs->path_table[dir]->extent;
-	cache = block_dev_cached_read(cdfs->bdev, blk++);
-	if (!cache) {
-		return -EIO;
-	}
-
-	/* Get length of directory from the first record */
-	p = cache->data;
-	rec = (iso_directory_record_t *) p;
-	left = cdfs_isonum_733(rec->size);
-
-	/* Find named entry in directory */
-	while (left > 0) {
-		/*
-		 * Read next block if all records in current block has been read
-		 * Directory records never cross block boundaries
-		 */
-		if (p >= cache->data + CDFS_BLOCKSIZE) {
-			if (p > cache->data + CDFS_BLOCKSIZE) {
-				return -EIO;
-			}
-			cache = block_dev_cached_read(cdfs->bdev, blk++);
-			if (!cache) {
-				return -EIO;
-			}
-			p = cache->data;
-		}
-
-		/* Check for match */
-		rec = (iso_directory_record_t *) p;
-		reclen = cdfs_isonum_711(rec->length);
-		namelen = cdfs_isonum_711(rec->name_len);
-		flags = cdfs_isonum_711(rec->flags);
-
-		if (reclen > 0) {
-			/* Skip to next record */
-			p += reclen;
-			left -= reclen;
-
-			/* if directory then not create node */
-			if (flags & 2) {
-				continue;
-			}
-
-			if (cdfs->joliet) {
-				namelen /= 2;
-				wname = (wchar_t *) rec->name;
-				if (namelen > 1 && ntohs(wname[namelen - 2]) == ';') {
-					namelen -= 2;
-				}
-				if (namelen > 0 && ntohs(wname[namelen - 1]) == '.') {
-					namelen -= 1;
-				}
-
-				for (int n = 0; n < namelen; n++) {
-					name[n] = (char) ntohs(wname[n]);
-				}
-			} else {
-				if (namelen > 1 && rec->name[namelen - 2] == ';') {
-					namelen -= 2;
-				}
-				if (namelen > 0 && rec->name[namelen - 1] == '.') {
-					namelen -= 1;
-				}
-				memcpy(name, rec->name, namelen);
-			}
-			name[namelen] = 0;
-
-			for(int i = 0; name[i]; i++){
-				name[i] = tolower(name[i]);
-			}
-			node = vfs_subtree_create_child(dir_node, name, S_IFREG);
-			if (!node) {
-				return -ENOMEM;
-			}
-
-			fi = pool_alloc(&cdfs_file_pool);
-			if (!fi) {
-				vfs_del_leaf(node);
-				return -ENOMEM;
-			}
-
-			fi->size = cdfs_isonum_733(rec->size);
-			inode_priv_set(node, fi);
-			inode_size_set(node, cdfs_isonum_733(rec->size));
- 		} else {
-			/* Skip to next block */
-			left -= (cache->data + CDFS_BLOCKSIZE) - p;
-			p = cache->data + CDFS_BLOCKSIZE;
-		}
-	}
-	return 0;
-}
-
-int cdfs_create_dir_entry (struct inode *root_node) {
-	int n;
-	iso_pathtable_record_t *pathrec;
-	cdfs_t *cdfs;
-	int namelen;
-	char name[PATH_MAX];
-	struct inode *node, *dir_node;
-	struct cdfs_file_info *fi, *parent_fi;
-	struct cdfs_fs_info *fsi;
-
-	dir_node = node = root_node;
-
-	fi = parent_fi = inode_priv(dir_node);
-	fsi = root_node->i_sb->sb_data;
-	cdfs = fsi->data;
-
-	/* Setup pointers into path table buffer */
-	for (n = 1; n < cdfs->path_table_records; n++) {
-		pathrec = cdfs->path_table[n];
-		namelen = pathrec->length;
-
-		if(path_is_dotname(pathrec->name, namelen)) {
-			continue;
-		}
-
-		memcpy(name, pathrec->name, namelen);
-		name[20 >= name[0] ? 0 : namelen] = 0; /* root dir name empty */
-
-		if (*name) {
-			dir_node = cdfs_get_dir_node(cdfs, pathrec->parent, root_node);
-
-			for(int i = 0; name[i]; i++){
-				name[i] = tolower(name[i]);
-			}
-
-			node = vfs_subtree_create_child(dir_node, name, S_IFDIR);
-			if (!node) {
-				return -ENOMEM;
-			}
-
-			fi = pool_alloc(&cdfs_file_pool);
-			if (!fi) {
-				vfs_del_leaf(node);
-				return -ENOMEM;
-			}
-
-			inode_priv_set(node, fi);
-		}
-
-
-		cdfs_create_file_node(node, cdfs, n);
-	}
-
-	return 0;
-}
-#endif
-//
-//static int cdfs_get_full_path(cdfs_t *cdfs, int numrec, char *path) {
-//	char full_path[PATH_MAX];
-//	iso_pathtable_record_t *pathrec;
-//
-//	pathrec = cdfs->path_table[numrec];
-//
-//	/* go up to the root folder */
-//	while (1 != pathrec->parent) {
-//		strncpy(full_path, path, PATH_MAX);
-//		pathrec = cdfs->path_table[pathrec->parent];
-//		memcpy(path, pathrec->name, pathrec->length);
-//		path[pathrec->length] = 0;
-//		strcat(path, "/");
-//		strcat(path, full_path);
-//	}
-//
-//	return 0;
-//}

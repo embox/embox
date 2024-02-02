@@ -455,7 +455,6 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 	struct ntfs_fs_info *fsi;
 	ntfs_volume *vol;
 	ntfs_inode *ni;
-//	struct ntfs_file_info *fi;
 	char dir_path[PATH_MAX];
 	s64 pos = 0;
 	struct ntfs_dir_context ntfs_dir_ctx;
@@ -479,8 +478,6 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 	 	ntfs_inode_close(ni);
 		return -1;
 	}
-
-
 
  	ntfs_inode_close(ni);
 
@@ -538,33 +535,6 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 }
 
 static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
-#if 0
-	ntfs_volume *vol;
-	int rc;
-	ntfs_inode *ni;
-	struct ntfs_fs_info *fsi;
-
-	fsi = sb->sb_data;
-	vol = fsi->ntfs_vol;
-
-	if (NULL == (ni = ntfs_pathname_to_inode(vol, NULL, "/"))) {
-		rc = errno;
-		goto error;
-	}
-
-	rc = embox_ntfs_simultaneous_mounting_descend(dest, ni, true);
-	if (rc) {
-		goto error;
-	}
-
-	return 0;
-
-error:
-	ntfs_clean_sb(sb);
-
-	return -rc;
-#else
-
 	ntfs_volume *vol;
 	int rc;
 	ntfs_inode *ni;
@@ -596,7 +566,6 @@ error:
 	ntfs_clean_sb(sb);
 
 	return -rc;
-#endif
 }
 
 static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __oflag)
@@ -985,7 +954,6 @@ static const struct fs_driver ntfs_driver = {
 	.name     = "ntfs",
 	.fill_sb  = ntfs_fill_sb,
 	.clean_sb = ntfs_clean_sb,
-//	.file_op  = &ntfs_fop,
 	.fsop     = &ntfs_fsop,
 };
 

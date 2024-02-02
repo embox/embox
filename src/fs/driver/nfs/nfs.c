@@ -187,35 +187,6 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return reply.count;
 }
 
-
-/*
-static int nfsfs_fseek(void *file, long offset, int whence);
-
-static int nfsfs_fseek(void *file, long offset, int whence) {
-
-	struct file_desc *desc;
-	nfs_file_info_t *fi;
-
-	desc = (struct file_desc *) file;
-	fi = (nfs_file_info_t *) desc->node->fi;
-
-	switch (whence) {
-	case SEEK_SET:
-		fi->offset = offset;
-		break;
-	case SEEK_CUR:
-		fi->offset += offset;
-		break;
-	case SEEK_END:
-		fi->offset = fi->attr.size + offset;
-		break;
-	default:
-		return -1;
-	}
-	return 0;
-}
-*/
-
 /* File system operations */
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
@@ -253,7 +224,6 @@ static struct fs_driver nfsfs_driver = {
 	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
-//	.file_op  = &nfsfs_fop,
 	.fsop     = &nfsfs_fsop,
 };
 
@@ -487,15 +457,9 @@ static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
-#if 0
-	if (0 >	nfs_create_dir_entry(dest)) { // XXX check the argument
-		rc = -1;
-	} else {
-		return 0;
-	}
-#else
+
 	return 0;
-#endif
+
 error:
 	nfs_free_fs(sb);
 
