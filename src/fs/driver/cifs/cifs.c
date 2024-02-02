@@ -49,8 +49,6 @@ struct cifs_fs_info
 POOL_DEF (cifs_fs_pool, struct cifs_fs_info,
 		  OPTION_GET (NUMBER, cifs_descriptor_quantity));
 
-
-
 typedef struct smbitem smbitem;
 
 struct smbitem
@@ -115,59 +113,6 @@ embox_delete_smbctx (SMBCCTX * ctx)
 static void
 cifs_fill_node(struct inode *node, char *name, unsigned type) {
 	node->i_mode = samba_type_to_mode_fmt(type);
-}
-
-int
-embox_cifs_mounting_recurse (struct inode *node, SMBCCTX * ctx, char *smb_path,
-							 int maxlen)
-{
-	int len, rc;
-	struct smbc_dirent *dirent;
-	SMBCFILE * fd;
-
-	len = strlen (smb_path);
-
-	if ((fd = smbc_getFunctionOpendir (ctx) (ctx, smb_path)) == NULL)
-		return -errno;
-	while ((dirent = smbc_getFunctionReaddir (ctx) (ctx, fd)) != NULL) {
-		if (strcmp (dirent->name, "") == 0)
-			continue;
-		if (strcmp (dirent->name, ".") == 0)
-			continue;
-		if (strcmp (dirent->name, "..") == 0)
-			continue;
-		switch (dirent->smbc_type) {
-		case SMBC_FILE_SHARE:
-		case SMBC_DIR:
-		case SMBC_FILE:
-			//ToDo: use namelen
-			if (maxlen < len + strlen (dirent->name) + 2)
-				break;
-
-			smb_path[len] = '/';
-			strcpy (smb_path + len + 1, dirent->name);
-			node = embox_set_node (node, dirent->name, dirent->smbc_type);
-			if (!node) {
-				errno = ENOMEM;
-				return -errno;
-			}
-			if (dirent->smbc_type != SMBC_FILE) {
-				rc = embox_cifs_mounting_recurse (node, ctx, smb_path,
-												  maxlen);
-				if (0 > rc) {
-					return rc;
-				}
-				if (dirent->smbc_type == SMBC_FILE_SHARE)
-					smbc_getFunctionPurgeCachedServers (ctx) (ctx);
-			}
-			break;
-		}
-	}
-
-	smbc_getFunctionClose (ctx) (ctx, fd);
-
-	smb_path[len] = '\0';
-	return 0;
 }
 
 static int cifs_clean_sb(struct super_block *sb) {
@@ -302,30 +247,6 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 }
 
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
-
-#if 0
-	struct cifs_fs_info *fsi;
-	char smb_path[PATH_MAX];
-	int rc;
-	SMBCCTX *ctx;
-
-	fsi = sb->sb_data;
-	ctx = fsi->ctx;
-
-	fsi->mntto = dir;
-	strcpy(smb_path, fsi->url);
-
-	rc = embox_cifs_mounting_recurse(dir, ctx, smb_path,
-			sizeof (smb_path));
-	if (0 > rc) {
-		goto error;
-	}
-
-	return 0;
-
-error:
-	return -rc;
-#else
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
 
@@ -335,7 +256,6 @@ error:
 	strcpy(smb_path, fsi->url);
 
 	return 0;
-#endif
 }
 
 static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __oflag)
@@ -350,11 +270,6 @@ static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __of
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
-#if 0
-	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
-		return rc;
-	}
-#endif
 
 	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX);
 
@@ -456,11 +371,7 @@ static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_n
 
 	strcpy(fileurl,pfsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
-#if 0
-	if ((rc = vfs_get_pathbynode_tilln(new_node, pfsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
-		return rc;
-	}
-#endif
+
 	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
 	mode = new_node->i_mode & S_IRWXA;
