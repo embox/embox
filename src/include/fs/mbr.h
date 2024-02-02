@@ -8,6 +8,8 @@
 
 #ifndef MBR_H_
 #define MBR_H_
+
+#include <stdint.h>
 /*
  *	Partition table entry structure
  */

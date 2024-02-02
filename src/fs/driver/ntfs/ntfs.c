@@ -84,7 +84,7 @@ POOL_DEF(ntfs_desc_pool, struct ntfs_desc_info,
 static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 		struct dir_ctx *dir_ctx);
 
-static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool);
+static int embox_ntfs_simultaneous_mounting_descend(struct inode *node, ntfs_inode *ni, bool);
 
 static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_node, int i_mode) {
 	ntfs_inode *ni, *pni;
@@ -125,7 +125,7 @@ static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_n
 		return -errno;
 	}
 
-	if (embox_ntfs_simultaneous_mounting_descend(new_node->nas, ni, false)) {
+	if (embox_ntfs_simultaneous_mounting_descend(new_node, ni, false)) {
 		int err = errno;
 		ntfs_delete(pfsi->ntfs_vol, NULL, ni, pni, ufilename, ufilename_len);
 		ntfs_inode_close(pni);
@@ -164,7 +164,7 @@ static int embox_ntfs_node_delete(struct inode *node) {
 		return -EINVAL;
 	}
 	pfi = inode_priv(parent_node);
-	pfsi = parent_node->nas->fs->sb_data;
+	pfsi = parent_node->i_sb->sb_data;
 	fi = inode_priv(node);
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */
@@ -265,7 +265,7 @@ static mode_t ntfs_type_to_mode_fmt(const unsigned dt_type) {
 static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		const int name_len, const int name_type, const s64 pos,
 		const MFT_REF mref, const unsigned dt_type) {
-	struct nas *dir_nas = dirent;
+	struct inode *dir_node = dirent;
 	struct inode *node;
 	struct ntfs_fs_info *fsi;
 	ntfs_inode *ni;
@@ -296,14 +296,14 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		}
 
 		//
-		node = vfs_subtree_create(dir_nas->node, filename, mode);
+		node = vfs_subtree_create(dir_node, filename, mode);
 		if (!node) {
 			errno = ENOMEM;
 			return -1;
 		}
 	}
 
-	fsi = dir_nas->fs->sb_data;
+	fsi = dir_node->i_sb->sb_data;
 
 	// There is a room for optimization here, it is necessary to open only directory nodes
 	ni = ntfs_inode_open(fsi->ntfs_vol, mref);
@@ -312,7 +312,7 @@ static int embox_ntfs_filldir(void *dirent, const ntfschar *name,
 		return -1;
 	}
 
-    return embox_ntfs_simultaneous_mounting_descend(node->nas, ni, true);
+    return embox_ntfs_simultaneous_mounting_descend(node, ni, true);
 }
 
 static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
@@ -348,7 +348,7 @@ static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
 
 	node = ctx->node;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	if (ctx->idx++ < (int)(uintptr_t)ctx->dir_ctx->fs_ctx) {
 		return 0;
@@ -361,8 +361,8 @@ static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
 	node->i_mode = mode;
 	inode_size_set(node, ni->data_size);
 
-	strncpy(ctx->next_name, filename, sizeof(node->name) - 1);
-	ctx->next_name[sizeof(node->name) - 1] = '\0';
+	strncpy(ctx->next_name, filename, NAME_MAX - 1);
+	ctx->next_name[NAME_MAX] = '\0';
 
 	ctx->dir_ctx->fs_ctx = (void *)(uintptr_t)ctx->idx;
 
@@ -380,7 +380,7 @@ static int embox_ntfs_fill_node(void *dirent, const ntfschar *name,
 	return 1;
 }
 
-static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode *ni, bool close_on_err) {
+static int embox_ntfs_simultaneous_mounting_descend(struct inode *node, ntfs_inode *ni, bool close_on_err) {
 	struct ntfs_file_info *fi;
 	s64 pos;
 
@@ -392,7 +392,7 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
 	}
 
 	memset(fi, 0, sizeof(*fi));
-	inode_priv_set(nas->node, fi);
+	inode_priv_set(node, fi);
 
 	// ToDo: remplir la structure de l'inode
 	// ToDo: en fait, seulement l'utilisateur et le groupe
@@ -400,7 +400,7 @@ static int embox_ntfs_simultaneous_mounting_descend(struct nas *nas, ntfs_inode 
 
 	pos = 0;
     if (ni->mrec->flags & MFT_RECORD_IS_DIRECTORY) {
-    	if (0 != ntfs_readdir(ni, &pos, nas, embox_ntfs_filldir)) {
+    	if (0 != ntfs_readdir(ni, &pos, node, embox_ntfs_filldir)) {
 			goto error;
     	}
     }
@@ -455,7 +455,6 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 	struct ntfs_fs_info *fsi;
 	ntfs_volume *vol;
 	ntfs_inode *ni;
-//	struct ntfs_file_info *fi;
 	char dir_path[PATH_MAX];
 	s64 pos = 0;
 	struct ntfs_dir_context ntfs_dir_ctx;
@@ -469,7 +468,7 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 		return -1;
 	}
 
-	next->nas->fs = parent->nas->fs;
+	next->i_sb = parent->i_sb;
 
 	ntfs_dir_ctx.dir_ctx = dir_ctx;
 	ntfs_dir_ctx.next_name = name;
@@ -479,8 +478,6 @@ static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,
 	 	ntfs_inode_close(ni);
 		return -1;
 	}
-
-
 
  	ntfs_inode_close(ni);
 
@@ -538,33 +535,6 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 }
 
 static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
-#if 0
-	ntfs_volume *vol;
-	int rc;
-	ntfs_inode *ni;
-	struct ntfs_fs_info *fsi;
-
-	fsi = sb->sb_data;
-	vol = fsi->ntfs_vol;
-
-	if (NULL == (ni = ntfs_pathname_to_inode(vol, NULL, "/"))) {
-		rc = errno;
-		goto error;
-	}
-
-	rc = embox_ntfs_simultaneous_mounting_descend(dest->nas, ni, true);
-	if (rc) {
-		goto error;
-	}
-
-	return 0;
-
-error:
-	ntfs_clean_sb(sb);
-
-	return -rc;
-#else
-
 	ntfs_volume *vol;
 	int rc;
 	ntfs_inode *ni;
@@ -596,7 +566,6 @@ error:
 	ntfs_clean_sb(sb);
 
 	return -rc;
-#endif
 }
 
 static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __oflag)
@@ -985,7 +954,6 @@ static const struct fs_driver ntfs_driver = {
 	.name     = "ntfs",
 	.fill_sb  = ntfs_fill_sb,
 	.clean_sb = ntfs_clean_sb,
-//	.file_op  = &ntfs_fop,
 	.fsop     = &ntfs_fsop,
 };
 

@@ -610,10 +610,10 @@ struct ext2_xattr_hdr {
 #define EXT2_XATTR_HDR_MAGIC 0xea020000
 #define EXT2_XATTR_PAD 4
 
-struct nas;
+struct inode;
 /* balloc.c */
-extern uint32_t ext2_alloc_block(struct nas *nas, uint32_t goal);
-extern void ext2_free_block(struct nas *nas, uint32_t bit);
+extern uint32_t ext2_alloc_block(struct inode *node, uint32_t goal);
+extern void ext2_free_block(struct inode *node, uint32_t bit);
 
 extern int ext2_read_sector(struct super_block *sb, char *buffer,
 		uint32_t count, uint32_t sector);
@@ -644,7 +644,7 @@ extern int ext2fs_getxattr(struct inode *node, const char *name,
 #define EXT2_R_INODE 0
 #define EXT2_W_INODE 1
 
-extern void ext2_rw_inode(struct nas *nas, struct ext2fs_dinode *fdi,
+extern void ext2_rw_inode(struct inode *node, struct ext2fs_dinode *fdi,
 	int rw_flag);
 
 #endif /* EXT_H_ */

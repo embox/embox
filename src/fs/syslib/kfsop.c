@@ -17,8 +17,10 @@
 #include <sys/file.h>
 
 #include <drivers/device.h>
+
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
+#include <fs/dentry.h>
 #include <fs/fs_driver.h>
 #include <fs/hlpr_path.h>
 #include <fs/inode.h>
@@ -44,7 +46,7 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	const struct fs_driver *drv;
 	int retval = 0;
 
-	if(NULL == parent->node->nas->fs) {
+	if(NULL == parent->node->i_sb) {
 		return -EINVAL;
 	}
 
@@ -53,10 +55,10 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	}
 
 	/* check drv of parents */
-	drv = parent->node->nas->fs->fs_drv;
+	drv = parent->node->i_sb->fs_drv;
 
 	if ((mode & VFS_DIR_VIRTUAL) && S_ISDIR(mode)) {
-		node.node->nas->fs = parent->node->nas->fs;
+		node.node->i_sb = parent->node->i_sb;
 	} else {
 		if (!drv || !drv->fsop->create_node) {
 			retval = -ENOSYS;
@@ -150,14 +152,14 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 	child->mnt_desc = dir_path->mnt_desc;
 
-	if(!dir_path->node->nas || !dir_path->node->nas->fs) {
+	if(!dir_path->node || !dir_path->node->i_sb) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
 		return -1;
 	}
 
 	/* check drv of parents */
-	drv = dir_path->node->nas->fs->fs_drv;
+	drv = dir_path->node->i_sb->fs_drv;
 	if (!drv || !drv->fsop->create_node) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
@@ -181,7 +183,6 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 int kremove(const char *pathname) {
 	struct path node;
-	struct nas *nas;
 	const struct fs_driver *drv;
 	int res;
 
@@ -190,8 +191,7 @@ int kremove(const char *pathname) {
 		return -1;
 	}
 
-	nas = node.node->nas;
-	drv = nas->fs->fs_drv;
+	drv = node.node->i_sb->fs_drv;
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
 		return -1;
@@ -226,7 +226,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->nas->fs->fs_drv;
+	drv = node.node->i_sb->fs_drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
@@ -270,7 +270,7 @@ int krmdir(const char *pathname) {
 		return res;
 	}
 
-	drv = node.node->nas->fs->fs_drv;
+	drv = node.node->i_sb->fs_drv;
 
 	if (NULL == drv->fsop->delete_node) {
 		errno = EPERM;
@@ -328,7 +328,7 @@ int kformat(const char *pathname, const char *fs_type) {
 		return -1;
 	}
 
-	bdev = node.node->nas->fi->privdata;
+	bdev = node.node->i_privdata;
 	if (0 != (res = drv->format(bdev, NULL))) {
 		errno = -res;
 		return -1;
@@ -363,8 +363,7 @@ static int vfs_mount_walker(struct inode *dir) {
 
 		node->i_ops = dir->i_ops;
 
-		assert(node->nas);
-		node->nas->fs = node->i_sb = dir->nas->fs;
+		node->i_sb = dir->i_sb;
 
 		vfs_add_leaf(node, dir);
 
@@ -379,6 +378,7 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 	const struct fs_driver *drv;
 	struct super_block *sb;
 	const char *lastpath;
+	struct mount_descriptor *mnt_desc;
 	int res;
 
 	if (NULL == (sb = super_block_alloc(fs_type, source))) {
@@ -409,7 +409,9 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		vfs_mount_walker(sb->sb_root);
 	}
 
-	if (NULL == mount_table_add(&dir_node, sb->sb_root, source)) {
+	mnt_desc = dir_node.mnt_desc;
+
+	if (NULL == mount_table_add(&dir_node, mnt_desc, sb->sb_root, source)) {
 		super_block_free(sb);
 		//todo free root
 		errno = -res;
@@ -658,7 +660,7 @@ int kumount(const char *dir) {
 	if_mounted_follow_down(&dir_node);
 	node = dir_node;
 
-	drv = dir_node.node->nas->fs->fs_drv;
+	drv = dir_node.node->i_sb->fs_drv;
 
 	if (!drv) {
 		return -EINVAL;
@@ -683,8 +685,6 @@ int kumount(const char *dir) {
 
 //	/*restore previous fs type from parent dir */
 //	if(NULL != (parent = vfs_get_parent(dir_node))) {
-//		dir_node->nas->fs = parent->nas->fs;
-//		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
 //	}
 
 	return 0;

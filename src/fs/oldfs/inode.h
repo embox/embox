@@ -20,8 +20,6 @@
 
 #include <fs/super_block.h>
 
-struct nas;
-
 struct inode_operations;
 struct super_block;
 struct dentry;
@@ -39,25 +37,26 @@ struct node_flock {
 };
 
 struct inode {
+	int      i_no;
+	size_t        i_size;
+	unsigned int  i_ctime; /* time of last status change */
+	unsigned int  i_mtime;
+
+	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
+	uid_t                 i_owner_id;/* owner user ID */
+	gid_t                 i_group_id;/* owner group ID */
+
+	struct dentry        *i_dentry;
+	struct super_block      *i_sb;
+	struct inode_operations *i_ops;
+
+	void                 *i_privdata;
+
 	unsigned int i_nlink;
 	struct slist_link dirent_link;
 
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
-
-	int      i_no;
-
-	mode_t                i_mode;/* discrete access mode Read-Write-Execution */
-	uid_t                 uid;/* owner user ID */
-	gid_t                 gid;/* owner group ID */
-
-	struct dentry        *i_dentry;
-	size_t                length;
-	struct super_block      *i_sb;
-	struct inode_operations *i_ops;
-
-	/* node attribute structure (extended information about node)*/
-	struct nas            *nas;
 
 	int                   mounted; /* is mount point*/
 
@@ -65,23 +64,6 @@ struct inode {
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;
-};
-
-struct node_info {
-	size_t        size;
-	unsigned int  ctime; /* time of last status change */
-	unsigned int  mtime;
-};
-
-struct node_fi {
-	struct node_info ni;
-	void  *privdata;
-};
-
-struct nas {
-	struct inode       *node;
-	struct super_block *fs;
-	struct node_fi     *fi;
 };
 
 extern struct inode *inode_new(struct super_block *sb);

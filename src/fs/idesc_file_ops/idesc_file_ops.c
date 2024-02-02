@@ -2,9 +2,10 @@
  * @file
  * @brief File descriptor (fd) abstraction over FILE *
  * @details Provide POSIX kernel support to operate with flides (int)
- *	instead of FILE *
- * @date 06.09.11
+ * instead of FILE *. Rewritten from old VFS.
+ * @date 20.05.15
  * @author Anton Kozlov
+ * @author Denis Deryugin
  */
 
 #include <assert.h>
@@ -15,6 +16,8 @@
 
 #include <fs/kfile.h>
 #include <kernel/task/resource/idesc.h>
+
+extern const struct idesc_ops idesc_file_ops;
 
 static void idesc_file_ops_close(struct idesc *idesc) {
 	assert(idesc);
@@ -28,6 +31,8 @@ static ssize_t idesc_file_ops_read(struct idesc *idesc, const struct iovec *iov,
 	size_t nbyte;
 
 	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	assert(iov);
 	assert(cnt == 1);
 
@@ -43,29 +48,34 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc,
 	size_t nbyte;
 
 	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
+
 	assert(iov);
 	assert(cnt == 1);
 
 	buf = iov->iov_base;
 	nbyte = iov->iov_len;
 
-	return kwrite((struct file_desc *)idesc, buf, nbyte);
+	return kwrite((struct file_desc *)idesc, (char *)buf, nbyte);
 }
 
 static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
 	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
 
 	return kfstat((struct file_desc *)idesc, buf);
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
 	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
 
 	return kioctl((struct file_desc *)idesc, request, data);
 }
 
 static int idesc_file_ops_status(struct idesc *idesc, int mask) {
 	assert(idesc);
+	assert(idesc->idesc_ops == &idesc_file_ops);
 
 	return 1;
 }

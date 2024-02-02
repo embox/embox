@@ -12,6 +12,13 @@ abstract module file {
 abstract module fsop {
 }
 
+static module lseek {
+	source "lseek.c"
+
+	depends embox.kernel.task.idesc
+	depends embox.kernel.task.resource.errno
+}
+
 module read {
 	source "read.c"
 	depends embox.kernel.task.idesc

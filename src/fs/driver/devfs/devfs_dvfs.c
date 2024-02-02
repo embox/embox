@@ -41,7 +41,7 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	assert(l->item->d_inode);
 
 	i_no = l->item->d_inode;
-	dev = i_no->i_data;
+	dev = i_no->i_privdata;
 
 	if (S_ISBLK(i_no->i_mode)) {
 		/* XXX */

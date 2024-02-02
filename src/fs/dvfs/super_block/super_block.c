@@ -5,17 +5,21 @@
  * @author Anton Bondarev
  */
 
+#include <util/log.h>
+
 #include <stddef.h>
 #include <sys/stat.h>
+#include <string.h>
+#include <errno.h>
 
-#include <framework/mod/options.h>
 #include <fs/fs_driver.h>
 #include <fs/inode.h>
 #include <fs/super_block.h>
 #include <mem/misc/pool.h>
-#include <util/log.h>
 
-#define SUPER_BLOCK_POOL_SZ OPTION_GET(NUMBER, super_block_pool_sz)
+#include <framework/mod/options.h>
+
+#define SUPER_BLOCK_POOL_SZ           OPTION_GET(NUMBER, super_block_quantity)
 
 POOL_DEF(super_block_pool, struct super_block, SUPER_BLOCK_POOL_SZ);
 
@@ -39,19 +43,21 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 		return NULL;
 	}
 
-	if (NULL == (sb = pool_alloc(&super_block_pool))) {
+	sb = pool_alloc(&super_block_pool);
+	if (sb == NULL) {
 		return NULL;
 	}
 
-	*sb = (struct super_block){
-	    .fs_drv = drv,
-	};
+	memset(sb, 0, sizeof(*sb));
+
+	sb->fs_drv = drv;
 
 	node = dvfs_alloc_inode(sb);
 	if (!node) {
-		super_block_free(sb);
+		pool_free(&super_block_pool, sb);
 		return NULL;
 	}
+
 	*node = (struct inode){
 	    .i_mode = S_IFDIR,
 	    .i_sb = sb,
@@ -80,16 +86,24 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
  * @return Negative error code or zero if succeed
  */
 int super_block_free(struct super_block *sb) {
-	int err = 0;
+	int ret = 0;
 
-	assert(sb);
+	if (NULL == sb) {
+		return EINVAL;
+	}
 	assert(sb->fs_drv);
 
 	if (sb->fs_drv->clean_sb) {
-		err = sb->fs_drv->clean_sb(sb);
+		ret = sb->fs_drv->clean_sb(sb);
+	}
+
+	if (sb->sb_root) {
+		/* Mount root should be generally
+		 * freed on umount */
+		dvfs_destroy_inode(sb->sb_root);
 	}
 
 	pool_free(&super_block_pool, sb);
 
-	return err;
+	return ret;
 }

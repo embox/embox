@@ -358,10 +358,10 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 	if (child) {
 		child->i_mode = mode;
 		child->i_dentry->flags = mode;
-		child->uid = getuid();
-		child->gid = getgid();
+		child->i_owner_id = getuid();
+		child->i_group_id = getgid();
 
-		child->nas->fs = child->i_sb = parent->i_sb;
+		child->i_sb = parent->i_sb;
 
 		vfs_add_leaf(child, parent);
 	}
@@ -526,7 +526,7 @@ int vfs_get_relative_path(struct inode *node, char *path, size_t path_len) {
 		prev = node;
 		node = __vfs_get_parent(node);
 
-		if (prev && node && prev->nas->fs != node->nas->fs) {
+		if (prev && node && prev->i_sb != node->i_sb) {
 			break;
 		}
 	}

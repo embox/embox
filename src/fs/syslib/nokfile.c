@@ -29,10 +29,6 @@ ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 void kclose(struct file_desc *desc) {
 }
 
-int kseek(struct file_desc *desc, long int offset, int origin) {
-	return -ENOSYS;
-}
-
 int kfstat(struct file_desc *desc, struct stat *buff) {
 	return -ENOSYS;
 }

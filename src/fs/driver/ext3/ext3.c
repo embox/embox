@@ -92,7 +92,7 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	journal_handle_t *handle;
 
 	assert(desc->f_inode);
-	fsi = desc->f_inode->nas->fs->sb_data;
+	fsi = desc->f_inode->i_sb->sb_data;
 	/* N * SECTOR_SIZE + K bytes of data can dirty N + 2 only if K >= 2  */
 	datablocks = (size + SECTOR_SIZE - 2) / SECTOR_SIZE + 1;
 	/* TODO recalculate */
@@ -110,7 +110,7 @@ static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode
 	journal_handle_t *handle;
 	int res = -1;
 
-	fsi = parent_node->nas->fs->sb_data;
+	fsi = parent_node->i_sb->sb_data;
 	/**
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
 	 * 2 blocks for child = 1 inode + 1 inode bitmap.
@@ -130,7 +130,7 @@ static int ext3fs_delete(struct inode *node) {
 	journal_handle_t *handle;
 	int res;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 	/**
 	 * Same as in ext3fs_create:
 	 * ext3_trans_blocks(1) - to modify parent_node's data block
@@ -238,7 +238,6 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
 	int inode_sector, ret, rsize;
-	struct nas *dir_nas;
 	journal_t *jp = NULL;
 	ext3_journal_specific_t *ext3_spec;
 	journal_fs_specific_t spec = {
@@ -264,12 +263,11 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 	}
 
 	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
-	dir_nas = dest->nas;
-	fsi = dir_nas->fs->sb_data;
+	fsi = sb->sb_data;
 
 	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
 
-	rsize = ext2_read_sector(dir_nas->fs, buf, 1, inode_sector);
+	rsize = ext2_read_sector(sb, buf, 1, inode_sector);
 	if (rsize * fsi->s_block_size != fsi->s_block_size) {
 		return -EIO;
 	}

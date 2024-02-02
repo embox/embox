@@ -1,11 +1,7 @@
 package embox.fs
 
-module dvfs_idesc_file_ops {
-	source "dvfs_idesc_file_ops.c"
-}
+module idesc_file_ops {
+	source "idesc_file_ops.c"
 
-module oldfs_idesc_file_ops {
-	source "oldfs_idesc_file_ops.c"
-
-	depends embox.fs.syslib.file
+	@NoRuntime depends embox.fs.syslib.kfile.kfile
 }

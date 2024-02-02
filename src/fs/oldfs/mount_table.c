@@ -41,18 +41,19 @@ struct mount_descriptor *mount_table_get_child(struct mount_descriptor *parent, 
 }
 
 struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
+		struct mount_descriptor *mnt_desc,
 		struct inode *root, const char *dev) {
 	struct mount_descriptor *mdesc;
 
-	assert(mnt_point_path->mnt_desc != NULL ||
-			(mnt_point_path->mnt_desc == NULL && mnt_root == NULL));
+	assert(mnt_desc != NULL ||
+			(mnt_desc == NULL && mnt_root == NULL));
 
 	if (mnt_point_path->node == NULL) {
 		return NULL;
 	}
 
 	if (mnt_root != NULL && mnt_point_path->node ==
-			mnt_point_path->mnt_desc->mnt_root) {
+			mnt_desc->mnt_root) {
 		return NULL;
 	}
 
@@ -66,18 +67,18 @@ struct mount_descriptor *mount_table_add(struct path *mnt_point_path,
 
 	/* XXX mount root should preserve mode, uid/gid */
 	root->i_mode = mnt_point_path->node->i_mode;
-	root->uid = mnt_point_path->node->uid;
-	root->gid = mnt_point_path->node->gid;
+	root->i_owner_id = mnt_point_path->node->i_owner_id;
+	root->i_group_id = mnt_point_path->node->i_group_id;
 
 	dlist_init(&mdesc->mnt_mounts);
 	dlist_head_init(&mdesc->mnt_child);
 
-	if (mnt_point_path->mnt_desc == NULL) {
+	if (mnt_desc == NULL) {
 		mdesc->mnt_parent = mdesc;
 		mnt_root = mdesc;
 	} else {
-		mdesc->mnt_parent = mnt_point_path->mnt_desc;
-		dlist_add_next(&mdesc->mnt_child, &mnt_point_path->mnt_desc->mnt_mounts);
+		mdesc->mnt_parent = mnt_desc;
+		dlist_add_next(&mdesc->mnt_child, &mnt_desc->mnt_mounts);
 	}
 
 	if (dev != NULL) {

@@ -1,0 +1,19 @@
+package embox.fs.syslib.kfile
+
+@DefaultImpl(kfile_oldfs)
+abstract module kfile {
+}
+
+static module kfile_oldfs extends kfile {
+	source "oldfs_kfile.c"
+
+	@IncludeExport(path="fs", target_name="kfile.h")
+	source "oldfs_kfile.h"
+}
+
+static module kfile_dvfs extends kfile {
+	source "dvfs_kfile.c"
+
+	@IncludeExport(path="fs", target_name="kfile.h")
+	source "dvfs_kfile.h"
+}

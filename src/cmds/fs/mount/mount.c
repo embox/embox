@@ -44,7 +44,7 @@ static void lookup_mounts(struct mount_descriptor *parent) {
 	printf("%s on %s type %s\n",
 			parent->mnt_dev[0] ? parent->mnt_dev : "none",
 			mount_path,
-			parent->mnt_root->nas->fs->fs_drv->name);
+			parent->mnt_root->i_sb->fs_drv->name);
 
 	dlist_foreach_entry(desc, &parent->mnt_mounts, mnt_child) {
 		lookup_mounts(desc);

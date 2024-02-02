@@ -89,9 +89,9 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		}
 
 		assert(lu.item->d_inode);
-		assert(lu.item->d_inode->i_data);
+		assert(lu.item->d_inode->i_privdata);
 
-		bdev = dev_module_to_bdev(lu.item->d_inode->i_data);
+		bdev = dev_module_to_bdev(lu.item->d_inode->i_privdata);
 		return drv->format(bdev, fs_specific);
 	}
 #endif

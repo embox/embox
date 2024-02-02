@@ -24,15 +24,16 @@ module core extends embox.fs.fs_api {
 	option boolean use_dcache=false
 
 	source "dvfs.c"
-	source "dvfs_kfile.c"
+
 	source "dvfs_dentry.c"
 	source "dvfs_util.c"
 	source "inode.c"
 
 	@NoRuntime depends embox.fs.dvfs.super_block
 	@NoRuntime depends embox.fs.dvfs.fs_driver
+	@NoRuntime depends embox.fs.syslib.kfile.kfile_dvfs
 
-	depends embox.fs.dvfs_idesc_file_ops
+	depends embox.fs.idesc_file_ops
 
 	depends embox.fs.path_helper
 	@NoRuntime depends embox.fs.rootfs_dvfs

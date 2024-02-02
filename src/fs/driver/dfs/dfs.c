@@ -189,8 +189,8 @@ static int dfs_icreate(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	*i_new = (struct inode) {
 		.i_no      = sbi->inode_count,
-		.i_data    = (void *) dirent.pos_start,
-		.length    = 0,
+		.i_privdata    = (void *) dirent.pos_start,
+		.i_size    = 0,
 		.i_sb      = sb,
 		.i_ops     = &dfs_iops,
 	};
@@ -231,14 +231,14 @@ static int dfs_itruncate(struct inode *inode, off_t new_len) {
 	}
 
 	dfs_read_dirent(sb, inode->i_no, &entry);
-	if (new_len == inode->length) {
+	if (new_len == inode->i_size) {
 		/* No need to write changes on drive */
 		return 0;
 	}
 	entry.len = new_len;
 	dfs_write_dirent(sb, inode->i_no, &entry);
 
-	inode->length = new_len;
+	inode->i_size = new_len;
 
 	return 0;
 }
@@ -268,8 +268,8 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 
 	dfs_read_dirent(sb, inode->i_no, &dirent);
 
-	inode->i_data = (void *) (uintptr_t) dirent.pos_start;
-	inode->length = dirent.len;
+	inode->i_privdata = (void *) (uintptr_t) dirent.pos_start;
+	inode->i_size = dirent.len;
 	inode->i_mode = dirent.flags;
 
 	return inode;
@@ -293,15 +293,15 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 		dir_pos++; /*skip root dir */
 	}
 
-	for (i = dir_pos; i < parent->length; i++) {
+	for (i = dir_pos; i < parent->i_size; i++) {
 		const uint32_t empty_dirent = 0xFFFFFFFF;
 
 		dfs_read_dirent(sb, i, &dirent);
 		if (memcmp(&dirent, &empty_dirent, sizeof(empty_dirent))) {
 			*next = (struct inode) {
 				.i_no   = i,
-				.i_data = (void *) (uintptr_t) dirent.pos_start,
-				.length = dirent.len,
+				.i_privdata = (void *) (uintptr_t) dirent.pos_start,
+				.i_size = dirent.len,
 				.i_sb   = sb,
 				.i_ops  = &dfs_iops,
 				.i_mode = dirent.flags,
@@ -378,8 +378,8 @@ static size_t dfs_write(struct file_desc *desc, void *buf, size_t size) {
 	sbi = sb->sb_data;
 	fdev = flash_by_bdev(sb->bdev);
 
-	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
-	l = min(size, sbi->max_len - desc->pos);
+	pos = ((uintptr_t) desc->f_inode->i_privdata) + desc->f_pos;
+	l = min(size, sbi->max_len - desc->f_pos);
 
 	if (l <= 0) {
 		return -1;
@@ -403,8 +403,8 @@ static size_t dfs_read(struct file_desc *desc, void *buf, size_t size) {
 	sb = desc->f_inode->i_sb;
 	fdev = flash_by_bdev(sb->bdev);
 
-	pos = ((uintptr_t) desc->f_inode->i_data) + desc->pos;
-	l = min(size, file_get_size(desc) - desc->pos);
+	pos = ((uintptr_t) desc->f_inode->i_privdata) + desc->f_pos;
+	l = min(size, file_get_size(desc) - desc->f_pos);
 
 	if (l < 0) {
 		return -1;
@@ -451,8 +451,8 @@ static int dfs_fill_sb(struct super_block *sb, const char *source) {
 	dfs_read_dirent(sb, 0, &dtr);
 
 	sb->sb_root->i_no      = 0;
-	sb->sb_root->length    = dtr.len;
-	sb->sb_root->i_data    = (void *) ((uintptr_t) dtr.pos_start);
+	sb->sb_root->i_size    = dtr.len;
+	sb->sb_root->i_privdata    = (void *) ((uintptr_t) dtr.pos_start);
 
 	return 0;
 }

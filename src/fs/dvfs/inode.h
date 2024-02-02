@@ -17,9 +17,9 @@ struct inode_operations;
 
 struct inode {
 	int      i_no;
-	size_t   length;
-	unsigned mtime;
-	unsigned ctime;
+	size_t   i_size;
+	unsigned int  i_ctime; /* time of last status change */
+	unsigned int  i_mtime;
 
 	uid_t  i_owner_id;
 	gid_t  i_group_id;
@@ -29,7 +29,7 @@ struct inode {
 	struct super_block *i_sb;
 	struct inode_operations *i_ops;
 
-	void *i_data;
+	void *i_privdata;
 };
 
 extern void *inode_priv(const struct inode *node);

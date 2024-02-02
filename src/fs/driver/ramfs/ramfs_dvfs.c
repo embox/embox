@@ -58,9 +58,9 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 			return NULL;
 		}
 
-		node->i_data = &ramfs_files[i];
+		node->i_privdata = &ramfs_files[i];
 		node->i_no = ramfs_files[i].index;
-		node->length = ramfs_files[i].length;
+		node->i_size = ramfs_files[i].length;
 		node->i_mode = ramfs_files[i].mode & (S_IFMT | S_IRWXA);
 
 		return node;

@@ -35,10 +35,6 @@ ssize_t kwrite(struct file_desc *file, const void *buf, size_t size) {
 		goto end;
 	}
 
-	if (file->file_flags & O_APPEND) {
-		kseek(file, 0, SEEK_END);
-	}
-
 	ret = file->f_ops->write(file, (void *)buf, size);
 	if (ret > 0) {
 		file_set_pos(file, file_get_pos(file) + ret);
@@ -67,8 +63,8 @@ ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 	}
 
 	/* Don't try to read past EOF */
-	if (size > desc->f_inode->nas->fi->ni.size - file_get_pos(desc)) {
-		size = desc->f_inode->nas->fi->ni.size - file_get_pos(desc);
+	if (size > desc->f_inode->i_size - file_get_pos(desc)) {
+		size = desc->f_inode->i_size - file_get_pos(desc);
 	}
 
 	ret = desc->f_ops->read(desc, buf, size);

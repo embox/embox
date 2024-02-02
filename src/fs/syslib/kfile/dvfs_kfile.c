@@ -9,9 +9,11 @@
 #include <errno.h>
 #include <stddef.h>
 
-#include <drivers/block_dev.h>
+#include <drivers/block_dev.h> /* block_dev_block_size */
 #include <fs/dentry.h>
 #include <fs/file_desc.h>
+#include <fs/kfile.h>
+
 #include <util/math.h>
 
 /**
@@ -22,7 +24,7 @@
  * @retval  0 Ok
  * @retval -1 Descriptor fields are inconsistent
  */
-int dvfs_close(struct file_desc *desc) {
+int kclose(struct file_desc *desc) {
 	if (!desc || !desc->f_inode || !desc->f_dentry)
 		return -1;
 
@@ -51,7 +53,7 @@ int dvfs_close(struct file_desc *desc) {
  * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
-int dvfs_write(struct file_desc *desc, char *buf, int count) {
+int kwrite(struct file_desc *desc, char *buf, int count) {
 	int res = 0; /* Assign to avoid compiler warning when use -O2 */
 	int retcode = count;
 	struct inode *inode;
@@ -64,9 +66,9 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
 	assert(inode);
 
 	if (!(inode->i_mode & DVFS_NO_LSEEK)
-	    && (inode->length - desc->pos < count)) {
+	    && ((inode->i_size - desc->f_pos) < count)) {
 		if (inode->i_ops && inode->i_ops->truncate) {
-			res = inode->i_ops->truncate(desc->f_inode, desc->pos + count);
+			res = inode->i_ops->truncate(desc->f_inode, desc->f_pos + count);
 			if (res) {
 				retcode = -EFBIG;
 			}
@@ -84,7 +86,7 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
 	}
 
 	if (res > 0) {
-		desc->pos += res;
+		desc->f_pos += res;
 	}
 
 	return retcode;
@@ -100,7 +102,7 @@ int dvfs_write(struct file_desc *desc, char *buf, int count) {
  * @retval       0 Ok
  * @retval -ENOSYS Function is not implemented in file system driver
  */
-int dvfs_read(struct file_desc *desc, char *buf, int count) {
+int kread(struct file_desc *desc, char *buf, int count) {
 	int res;
 	int sz;
 
@@ -108,7 +110,7 @@ int dvfs_read(struct file_desc *desc, char *buf, int count) {
 		return -1;
 	}
 
-	sz = min(count, desc->f_inode->length - desc->pos);
+	sz = min(count, desc->f_inode->i_size - desc->f_pos);
 
 	if (sz <= 0) {
 		return 0;
@@ -122,17 +124,17 @@ int dvfs_read(struct file_desc *desc, char *buf, int count) {
 	}
 
 	if (res > 0) {
-		desc->pos += res;
+		desc->f_pos += res;
 	}
 
 	return res;
 }
 
-int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
+int kfstat(struct file_desc *desc, struct stat *sb) {
 	size_t block_size;
 
 	*sb = (struct stat){
-	    .st_size = desc->f_inode->length,
+	    .st_size = desc->f_inode->i_size,
 	    .st_mode = desc->f_inode->i_mode,
 	    .st_uid = 0,
 	    .st_gid = 0,
@@ -147,4 +149,8 @@ int dvfs_fstat(struct file_desc *desc, struct stat *sb) {
 	}
 
 	return 0;
+}
+
+int kioctl(struct file_desc *fp, int request, void *data) {
+	return fp->f_ops->ioctl(fp, request, data);
 }

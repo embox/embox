@@ -2,10 +2,7 @@ package embox.fs.dvfs
 
 module super_block {
 	option string log_level="LOG_ERR"
-	option number super_block_pool_sz=4
-
-	@IncludeExport(path="fs")
-	source "super_block.h"
+	option number super_block_quantity=4
 
 	source "super_block.c"
 }

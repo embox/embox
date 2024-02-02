@@ -17,7 +17,7 @@ module node {
 }
 
 module filesystem {
-	option number fs_quantity=32
+	option number super_block_quantity=32
 	option number mount_desc_quantity=16
 
 	source "super_block.c"
@@ -46,8 +46,11 @@ module fs_driver {
 module core extends fs_api {
 	source "vfs.c"
 
+	@IncludeExport(path="fs", target_name="vfs.h")
+	source "vfs.h"
+
 	@NoRuntime depends fs_driver
-	@NoRuntime depends oldfs_idesc_file_ops
+	@NoRuntime depends idesc_file_ops
 
 	depends embox.fs.file_desc_oldfs
 	depends filesystem

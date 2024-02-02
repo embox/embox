@@ -25,8 +25,8 @@ int chown(const char *path, uid_t owner_id, gid_t group_id) {
 		return SET_ERRNO(ENOENT);
 	}
 
-	node_path.node->uid = owner_id;
-	node_path.node->gid = group_id;
+	node_path.node->i_owner_id = owner_id;
+	node_path.node->i_group_id = group_id;
 
 	return 0;
 }

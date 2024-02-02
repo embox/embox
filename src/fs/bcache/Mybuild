@@ -13,4 +13,6 @@ module buffer_cache {
 	depends embox.kernel.thread.mutex
 	depends embox.mem.sysmalloc_api
 	@NoRuntime depends embox.lib.libds
+
+	@NoRuntime depends embox.fs.journal_header
 }

@@ -12,8 +12,8 @@
 #include <fs/xattr.h>
 #include <fs/ext2.h>
 
-extern int ext2_close(struct nas *nas);
-extern int ext2_open(struct nas *nas);
+extern int ext2_close(struct inode *inode);
+extern int ext2_open(struct inode *inode);
 
 static inline unsigned int iceil(unsigned int val, unsigned int div) {
 	/* div is 1 << x */
@@ -107,13 +107,13 @@ static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
 	xattr_ent->e_hash = h2d32(hash);
 }
 
-static int ensure_dinode(struct nas *nas) {
+static int ensure_dinode(struct inode *inode) {
 	/* Sorry for doing that (Anton Kozlov).
 	 * Needed as mount not filling nas struct,
 	 * but postpone it till open
 	 */
-	ext2_open(nas);
-	ext2_close(nas);
+	ext2_open(inode);
+	ext2_close(inode);
 
 	return 0;
 }
@@ -125,9 +125,7 @@ static int xattr_block(struct inode *node, struct ext2_xattr_hdr **blk,
 	struct super_block *sb;
 	int res;
 
-	assert(node->nas);
-
-	if (0 != (res = ensure_dinode(node->nas))) {
+	if (0 != (res = ensure_dinode(node))) {
 		return res;
 	}
 
@@ -137,21 +135,21 @@ static int xattr_block(struct inode *node, struct ext2_xattr_hdr **blk,
 		return -ENOENT;
 	}
 
-	sb = node->nas->fs;
+	sb = node->i_sb;
 	if (NULL == (xattr_blk = ext2_buff_alloc(sb->sb_data, BBSIZE))) {
 		return -ENOMEM;
 	}
 
 	if (0 > (res = ext2_read_sector(sb, (char *) xattr_blk, 1,
 			d2h32(dinode->i_facl)))) {
-		ext2_buff_free(node->nas, (char *) xattr_blk);
+		ext2_buff_free(node, (char *) xattr_blk);
 		return res;
 	}
 
 	xattr_bswap(xattr_blk, xattr_blk, SECTOR_SIZE);
 
 	if (check_magic && d2h32(xattr_blk->h_magic) != EXT2_XATTR_HDR_MAGIC) {
-		ext2_buff_free(node->nas, (char *) xattr_blk);
+		ext2_buff_free(node, (char *) xattr_blk);
 		return -EIO;
 	}
 
@@ -204,7 +202,7 @@ int ext2fs_listxattr(struct inode *node, char *list, size_t len) {
 		res += xattr_ent->e_name_len + 1;
 	}
 
-	ext2_buff_free(node->nas, (char *) xattr_blk);
+	ext2_buff_free(node, (char *) xattr_blk);
 
 	return res;
 }
@@ -287,25 +285,23 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 	int res = 0;
 	struct super_block *sb;
 
-	assert(node->nas);
-
-	sb = node->nas->fs;
+	sb = node->i_sb;
 
 	if (0 != (res = xattr_block(node, &xattr_blk, 1))) {
 		if (res != -ENOENT) {
 			return res;
 		}
 
-		if (NO_BLOCK == (xblk_n = ext2_alloc_block(node->nas, 0))) {
+		if (NO_BLOCK == (xblk_n = ext2_alloc_block(node, 0))) {
 			res = -ENOMEM;
 			goto cleanup_out;
 		}
 
-		if ((res = ext2_write_gdblock(node->nas))) {
+		if ((res = ext2_write_gdblock(node))) {
 			goto cleanup_out;
 		}
 
-		if ((res = ext2_write_sblock(node->nas))) {
+		if ((res = ext2_write_sblock(node))) {
 			goto cleanup_out;
 		}
 
@@ -316,7 +312,7 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 					fsi->s_sectors_in_block);
 		}
 
-		ext2_rw_inode(node->nas, dinode, EXT2_W_INODE);
+		ext2_rw_inode(node, dinode, EXT2_W_INODE);
 
 		if (0 != (res = xattr_block(node, &xattr_blk, 0))) {
 			goto cleanup_out;
@@ -331,7 +327,7 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 	if (d2h32(xattr_blk->h_refcount) > 1) {
 		struct ext2_xattr_hdr *blk_copy;
 
-		if (NO_BLOCK == (xblk_n = ext2_alloc_block(node->nas, 0))) {
+		if (NO_BLOCK == (xblk_n = ext2_alloc_block(node, 0))) {
 			res = -ENOMEM;
 			goto cleanup_out;
 		}
@@ -359,10 +355,10 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 		dinode->i_facl = h2d32(xblk_n);
 		/* TODO: should we alter i_blocks* */
 
-		ext2_buff_free(node->nas, (char *) xattr_blk);
+		ext2_buff_free(node, (char *) xattr_blk);
 		xattr_blk = blk_copy;
 
-		ext2_rw_inode(node->nas, dinode, EXT2_W_INODE);
+		ext2_rw_inode(node, dinode, EXT2_W_INODE);
 	}
 
 	xattr_ent = NULL;
@@ -441,7 +437,7 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 
 cleanup_out:
 	if (xattr_blk) {
-		ext2_buff_free(node->nas, (char *) xattr_blk);
+		ext2_buff_free(node, (char *) xattr_blk);
 	}
 
 	return res;
@@ -479,7 +475,7 @@ int ext2fs_getxattr(struct inode *node, const char *name, char *value,
 		}
 	}
 
-	ext2_buff_free(node->nas, (char *) xattr_blk);
+	ext2_buff_free(node, (char *) xattr_blk);
 
 	return res;
 }

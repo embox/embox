@@ -20,23 +20,19 @@ static int check_fsop(struct inode *node, const struct fsop_desc **fsop) {
 		return -ENOENT;
 	}
 
-	if (!node->nas) {
+	if (!node->i_sb) {
 		return -EINVAL;
 	}
 
-	if (!node->nas->fs) {
+	if (!node->i_sb->fs_drv) {
 		return -EINVAL;
 	}
 
-	if (!node->nas->fs->fs_drv) {
+	if (!node->i_sb->fs_drv->fsop) {
 		return -EINVAL;
 	}
 
-	if (!node->nas->fs->fs_drv->fsop) {
-		return -EINVAL;
-	}
-
-	*fsop = node->nas->fs->fs_drv->fsop;
+	*fsop = node->i_sb->fs_drv->fsop;
 	return 0;
 }
 
