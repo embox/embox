@@ -77,10 +77,10 @@ samba_type_to_mode_fmt (const unsigned dt_type)
 }
 
 struct inode *
-embox_set_node (struct nas *nas, char *filename, int mode)
-{
+embox_set_node (struct inode *parent, char *filename, int mode) {
 	struct inode *node;
-	node = vfs_subtree_create (nas->node, filename, samba_type_to_mode_fmt (mode));
+
+	node = vfs_subtree_create (parent, filename, samba_type_to_mode_fmt (mode));
 	if (!node) {
 		return NULL;
 	}
@@ -118,13 +118,12 @@ cifs_fill_node(struct inode *node, char *name, unsigned type) {
 }
 
 int
-embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
+embox_cifs_mounting_recurse (struct inode *node, SMBCCTX * ctx, char *smb_path,
 							 int maxlen)
 {
 	int len, rc;
 	struct smbc_dirent *dirent;
 	SMBCFILE * fd;
-	struct inode *node;
 
 	len = strlen (smb_path);
 
@@ -147,13 +146,13 @@ embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
 
 			smb_path[len] = '/';
 			strcpy (smb_path + len + 1, dirent->name);
-			node = embox_set_node (nas, dirent->name, dirent->smbc_type);
+			node = embox_set_node (node, dirent->name, dirent->smbc_type);
 			if (!node) {
 				errno = ENOMEM;
 				return -errno;
 			}
 			if (dirent->smbc_type != SMBC_FILE) {
-				rc = embox_cifs_mounting_recurse (node->nas, ctx, smb_path,
+				rc = embox_cifs_mounting_recurse (node, ctx, smb_path,
 												  maxlen);
 				if (0 > rc) {
 					return rc;
@@ -316,7 +315,7 @@ static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 	fsi->mntto = dir;
 	strcpy(smb_path, fsi->url);
 
-	rc = embox_cifs_mounting_recurse(dir->nas, ctx, smb_path,
+	rc = embox_cifs_mounting_recurse(dir, ctx, smb_path,
 			sizeof (smb_path));
 	if (0 > rc) {
 		goto error;
