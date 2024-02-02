@@ -48,6 +48,7 @@ extern int fat_clean_sb(struct super_block *sb);
 
 struct inode_operations fat_iops = {
 	.iterate = fat_iterate,
+	.truncate = fat_truncate,
 };
 
 static int fatfs_mount(struct super_block *sb, struct inode *dest) {

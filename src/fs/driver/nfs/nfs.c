@@ -209,6 +209,7 @@ static struct super_block_operations nfs_sbops = {
 
 struct inode_operations nfs_iops = {
 	.iterate = nfs_iterate,
+	.truncate = nfsfs_truncate,
 };
 
 static struct fsop_desc nfsfs_fsop = {

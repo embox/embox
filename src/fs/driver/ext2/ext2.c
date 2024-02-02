@@ -143,6 +143,9 @@ static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
 static int ext2_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
+static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode);
+static int ext2fs_delete(struct inode *node);
+static int ext2fs_truncate(struct inode *node, off_t length);
 
 struct file_operations ext2_fop = {
 	.open = ext2fs_open,
@@ -162,6 +165,7 @@ static struct super_block_operations e2fs_sbops = {
 
 struct inode_operations ext2_iops = {
 	.iterate = ext2_iterate,
+	.truncate = ext2fs_truncate,
 };
 
 /*
@@ -543,9 +547,7 @@ static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
 static int ext2fs_mount(struct super_block *sb, struct inode *dest);
-static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode);
-static int ext2fs_delete(struct inode *node);
-static int ext2fs_truncate(struct inode *node, off_t length);
+
 static int ext2_fill_sb(struct super_block *sb, const char *source);
 static int ext2_clean_sb(struct super_block *sb);
 
