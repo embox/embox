@@ -20,10 +20,6 @@ static int check_fsop(struct inode *node, const struct fsop_desc **fsop) {
 		return -ENOENT;
 	}
 
-	if (!node->nas) {
-		return -EINVAL;
-	}
-
 	if (!node->i_sb) {
 		return -EINVAL;
 	}

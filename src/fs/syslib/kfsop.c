@@ -152,7 +152,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 	child->mnt_desc = dir_path->mnt_desc;
 
-	if(!dir_path->node->nas || !dir_path->node->i_sb) {
+	if(!dir_path->node || !dir_path->node->i_sb) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
 		return -1;
@@ -363,7 +363,6 @@ static int vfs_mount_walker(struct inode *dir) {
 
 		node->i_ops = dir->i_ops;
 
-		assert(node->nas);
 		node->i_sb = dir->i_sb;
 
 		vfs_add_leaf(node, dir);
@@ -686,8 +685,6 @@ int kumount(const char *dir) {
 
 //	/*restore previous fs type from parent dir */
 //	if(NULL != (parent = vfs_get_parent(dir_node))) {
-//		dir_node->nas->fs = parent->nas->fs;
-//		//dir_node->nas->fi->privdata = parent->nas->fi->privdata;
 //	}
 
 	return 0;
