@@ -28,6 +28,7 @@
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
 #include <fs/super_block.h>
@@ -215,6 +216,7 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
 }
 
 static struct file_operations ext3_fop;
+struct inode_operations ext3_iops;
 static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 	int ret;
 
@@ -229,6 +231,7 @@ static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 
 	sb->sb_ops = &ext3fs_sbops;
 	sb->sb_fops = &ext3_fop;
+	sb->sb_iops = &ext3_iops;
 
 	return 0;
 }
@@ -328,6 +331,13 @@ static struct file_operations ext3_fop = {
 	.close = ext3fs_close,
 	.read = ext3fs_read,
 	.write = ext3fs_write,
+};
+
+extern int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx);
+
+struct inode_operations ext3_iops = {
+	.iterate = ext2_iterate,
+	.truncate = ext3fs_truncate,
 };
 
 static struct fsop_desc ext3_fsop = {

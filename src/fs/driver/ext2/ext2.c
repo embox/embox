@@ -142,7 +142,7 @@ static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
-static int ext2_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
+extern int ext2_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
 static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext2fs_delete(struct inode *node);
 static int ext2fs_truncate(struct inode *node, off_t length);
@@ -1417,7 +1417,7 @@ struct inode *ext2_lookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
-static int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
+int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
 //	mode_t mode;
 	char name_buff[NAME_MAX];
 	struct ext2_fs_info *fsi;
