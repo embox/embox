@@ -12,8 +12,8 @@
 #include <fs/xattr.h>
 #include <fs/ext2.h>
 
-extern int ext2_close(struct nas *nas);
-extern int ext2_open(struct nas *nas);
+extern int ext2_close(struct inode *inode);
+extern int ext2_open(struct inode *inode);
 
 static inline unsigned int iceil(unsigned int val, unsigned int div) {
 	/* div is 1 << x */
@@ -107,13 +107,13 @@ static void entry_rehash(struct ext2_xattr_hdr *xattr_blk,
 	xattr_ent->e_hash = h2d32(hash);
 }
 
-static int ensure_dinode(struct nas *nas) {
+static int ensure_dinode(struct inode *inode) {
 	/* Sorry for doing that (Anton Kozlov).
 	 * Needed as mount not filling nas struct,
 	 * but postpone it till open
 	 */
-	ext2_open(nas);
-	ext2_close(nas);
+	ext2_open(inode);
+	ext2_close(inode);
 
 	return 0;
 }
@@ -125,9 +125,7 @@ static int xattr_block(struct inode *node, struct ext2_xattr_hdr **blk,
 	struct super_block *sb;
 	int res;
 
-	assert(node->nas);
-
-	if (0 != (res = ensure_dinode(node->nas))) {
+	if (0 != (res = ensure_dinode(node))) {
 		return res;
 	}
 
