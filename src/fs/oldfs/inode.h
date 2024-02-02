@@ -20,8 +20,6 @@
 
 #include <fs/super_block.h>
 
-struct nas;
-
 struct inode_operations;
 struct super_block;
 struct dentry;
@@ -60,20 +58,12 @@ struct inode {
 	/* node name (use vfs_get_path_by_node() for get full path*/
 	char                  name[NAME_MAX + 1];
 
-	/* node attribute structure (extended information about node)*/
-	struct nas            *nas;
-
 	int                   mounted; /* is mount point*/
 
 	struct node_flock     flock;
 
 	/* service data structure for enabling tree operation */
 	struct tree_link      tree_link;
-};
-
-struct nas {
-	struct inode       *node;
-	//struct super_block *fs;
 };
 
 extern struct inode *inode_new(struct super_block *sb);

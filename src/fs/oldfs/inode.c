@@ -21,12 +21,7 @@
 
 #define MAX_NODE_QUANTITY OPTION_GET(NUMBER,fnode_quantity)
 
-struct node_tuple {
-	struct inode node;
-	struct nas nas;
-};
-
-POOL_DEF(node_pool, struct node_tuple, MAX_NODE_QUANTITY);
+POOL_DEF(node_pool, struct inode, MAX_NODE_QUANTITY);
 POOL_DEF(dentry_pool, struct dentry, MAX_NODE_QUANTITY);
 
 static inline int flock_init(struct inode *node) {
@@ -40,34 +35,25 @@ static inline int flock_init(struct inode *node) {
 }
 
 struct inode *inode_new(struct super_block *sb) {
-	struct node_tuple *nt;
 	struct inode *node;
 	struct dentry *dentry;
-	struct nas *nas;
 
-	nt = pool_alloc(&node_pool);
-	if (!nt) {
+	node = pool_alloc(&node_pool);
+	if (!node) {
 		return NULL;
 	}
 	dentry = pool_alloc(&dentry_pool);
 	if (!dentry) {
-		pool_free(&node_pool, nt);
+		pool_free(&node_pool, &node_pool);
 		return NULL;
 	}
 
-	memset(nt, 0, sizeof(struct node_tuple));
-
-	node = &nt->node;
-	nas = &nt->nas;
+	memset(node, 0, sizeof(struct inode));
 
 	node->i_dentry = dentry;
 	dentry->d_inode = node;
 
-	node->nas = nas;
-	nas->node = node;
 	node->i_sb = sb;
-
-	//nas->fi = &nt->fi;
 
 	tree_link_init(&node->tree_link);
 
@@ -119,7 +105,7 @@ void node_free(struct inode *node) {
 	if (node->i_dentry) {
 		pool_free(&dentry_pool, node->i_dentry);
 	}
-	pool_free(&node_pool, member_cast_out(node, struct node_tuple, node));
+	pool_free(&node_pool, node);
 }
 
 void *inode_priv(const struct inode *node) {
