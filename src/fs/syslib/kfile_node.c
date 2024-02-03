@@ -17,6 +17,7 @@
 #include <security/security.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
 #include <fs/file_desc.h>
@@ -26,7 +27,6 @@
 
 int ktruncate(struct inode *node, off_t length) {
 	int ret;
-	const struct fs_driver *drv;
 
 	if (node_is_directory(node)) {
 		SET_ERRNO(EISDIR);
@@ -38,14 +38,13 @@ int ktruncate(struct inode *node, off_t length) {
 		return -1;
 	}
 
-	drv = node->i_sb->fs_drv;
-
-	if (NULL == drv || NULL == drv->fsop || NULL == drv->fsop->truncate) {
-		//errno = EPERM;
+	if ((!node->i_sb->sb_iops) || (!node->i_sb->sb_iops->truncate)) {
+		//SET_ERRNO(ENOTSUP);
+		//SET_ERRNO(EPERM); it may mean that file it's not possible to modify
 		return 0;
 	}
 
-	if (0 > (ret = drv->fsop->truncate(node, length))) {
+	if (0 > (ret = node->i_sb->sb_iops->truncate(node, length))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
