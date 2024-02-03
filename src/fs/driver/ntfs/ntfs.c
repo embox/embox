@@ -448,6 +448,7 @@ static struct super_block_operations ntfs_sbops = {
 
 static struct inode_operations ntfs_iops = {
 	.ino_create = embox_ntfs_node_create,
+	.ino_remove = embox_ntfs_node_delete,
 	.ino_iterate = ntfs_iterate,
 	.ino_truncate = embox_ntfs_truncate,
 };

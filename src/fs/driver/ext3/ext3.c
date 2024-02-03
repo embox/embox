@@ -337,6 +337,7 @@ extern int ext2_iterate(struct inode *next, char *next_name, struct inode *paren
 
 struct inode_operations ext3_iops = {
 	.ino_create  = ext3fs_create,
+	.ino_remove  = ext3fs_delete,
 	.ino_iterate = ext2_iterate,
 	.ino_truncate     = ext3fs_truncate, /* TODO journaling */
 };

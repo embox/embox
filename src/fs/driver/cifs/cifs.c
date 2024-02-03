@@ -265,6 +265,7 @@ static int embox_cifs_node_delete(struct inode *node) {
 
 static struct inode_operations cifs_iops = {
 	.ino_create = embox_cifs_node_create,
+	.ino_remove = embox_cifs_node_delete,
 //	.ino_lookup   = cifs_lookup,
 	.ino_iterate  = cifs_iterate,
 };

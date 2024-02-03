@@ -50,6 +50,7 @@ extern int fat_format(struct block_dev *dev, void *priv);
 
 struct inode_operations fat_iops = {
 	.ino_create = fat_create,
+	.ino_remove = fat_delete,
 	.ino_iterate = fat_iterate,
 	.ino_truncate = fat_truncate,
 };

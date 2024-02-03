@@ -19,6 +19,7 @@ extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, s
 
 struct inode_operations ramfs_iops = {
 	.ino_create = ramfs_create,
+	.ino_remove = ramfs_delete,
 	.ino_iterate  = ramfs_iterate,
 	.ino_truncate = ramfs_truncate,
 };

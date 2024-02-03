@@ -1604,6 +1604,7 @@ static struct super_block_operations jffs2fs_sbops = {
 
 struct inode_operations jffs2fs_iops = {
 	.ino_create  = jffs2fs_create,
+	.ino_remove  = jffs2fs_delete,
 	.ino_iterate = jffs2fs_iterate,
 	.ino_truncate = jffs2fs_truncate,
 };

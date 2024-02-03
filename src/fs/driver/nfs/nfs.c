@@ -209,6 +209,7 @@ static struct super_block_operations nfs_sbops = {
 
 struct inode_operations nfs_iops = {
 	.ino_create = nfsfs_create,
+	.ino_remove = nfsfs_delete,
 	.ino_iterate = nfs_iterate,
 	.ino_truncate = nfsfs_truncate,
 };
