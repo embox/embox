@@ -29,10 +29,10 @@ int ftruncate(int fd, off_t length) {
 	assert(file->f_inode);
 	assert(file->f_inode->i_ops);
 
-	if (!file->f_inode->i_ops->truncate)
+	if (!file->f_inode->i_ops->ino_truncate)
 		return -EPERM;
 
-	ret = file->f_inode->i_ops->truncate(file->f_inode, length);
+	ret = file->f_inode->i_ops->ino_truncate(file->f_inode, length);
 
 	if (ret == 0)
 		file->f_inode->i_size = length;

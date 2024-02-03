@@ -80,9 +80,9 @@ struct super_block_operations initfs_sbops = {
 };
 
 struct inode_operations initfs_iops = {
-	.create   = initfs_create,
-	.lookup   = initfs_lookup,
-	.iterate  = initfs_iterate,
+	.ino_create   = initfs_create,
+	.ino_lookup   = initfs_lookup,
+	.ino_iterate  = initfs_iterate,
 };
 
 extern int initfs_fill_sb(struct super_block *sb, const char *source);

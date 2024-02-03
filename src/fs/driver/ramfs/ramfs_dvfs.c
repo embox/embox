@@ -71,11 +71,11 @@ static struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 
 /* Declaration of operations */
 struct inode_operations ramfs_iops = {
-	.create   = ramfs_create,
-	.lookup   = ramfs_ilookup,
-	.remove   = ramfs_delete,
-	.iterate  = ramfs_iterate,
-	.truncate = ramfs_truncate,
+	.ino_create   = ramfs_create,
+	.ino_lookup   = ramfs_ilookup,
+	.ino_remove   = ramfs_delete,
+	.ino_iterate  = ramfs_iterate,
+	.ino_truncate = ramfs_truncate,
 };
 
 

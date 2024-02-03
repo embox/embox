@@ -1603,8 +1603,8 @@ static struct super_block_operations jffs2fs_sbops = {
 };
 
 struct inode_operations jffs2fs_iops = {
-	.iterate = jffs2fs_iterate,
-	.truncate = jffs2fs_truncate,
+	.ino_iterate = jffs2fs_iterate,
+	.ino_truncate = jffs2fs_truncate,
 };
 
 struct inode *jffs2fs_lookup(char const *name, struct inode const *dir) {

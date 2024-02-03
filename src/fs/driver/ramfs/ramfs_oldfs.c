@@ -18,8 +18,8 @@
 extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
 
 struct inode_operations ramfs_iops = {
-	.iterate  = ramfs_iterate,
-	.truncate = ramfs_truncate,
+	.ino_iterate  = ramfs_iterate,
+	.ino_truncate = ramfs_truncate,
 };
 
 struct super_block_operations ramfs_sbops = {

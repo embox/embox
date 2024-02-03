@@ -91,11 +91,11 @@ succ_out:
 extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
 /* Declaration of operations */
 struct inode_operations fat_iops = {
-	.create   = fat_create,
-	.lookup   = fat_ilookup,
-	.remove   = fat_delete,
-	.iterate  = fat_iterate,
-	.truncate = fat_truncate,
+	.ino_create   = fat_create,
+	.ino_lookup   = fat_ilookup,
+	.ino_remove   = fat_delete,
+	.ino_iterate  = fat_iterate,
+	.ino_truncate = fat_truncate,
 };
 
 extern struct file_operations fat_fops;

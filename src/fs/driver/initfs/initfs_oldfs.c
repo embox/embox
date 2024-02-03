@@ -31,7 +31,7 @@
 #include "initfs.h"
 
 struct inode_operations initfs_iops = {
-	.iterate = initfs_iterate,
+	.ino_iterate = initfs_iterate,
 };
 
 static int initfs_mount(struct super_block *sb, struct inode *dest) {

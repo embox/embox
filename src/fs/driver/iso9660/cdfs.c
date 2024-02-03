@@ -857,7 +857,7 @@ static struct super_block_operations cdfs_sbops = {
 };
 
 struct inode_operations cdfs_iops = {
-	.iterate = cdfs_iterate,
+	.ino_iterate = cdfs_iterate,
 };
 
 

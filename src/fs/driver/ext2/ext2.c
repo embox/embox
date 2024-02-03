@@ -164,8 +164,8 @@ static struct super_block_operations e2fs_sbops = {
 };
 
 struct inode_operations ext2_iops = {
-	.iterate = ext2_iterate,
-	.truncate = ext2fs_truncate,
+	.ino_iterate = ext2_iterate,
+	.ino_truncate = ext2fs_truncate,
 };
 
 /*

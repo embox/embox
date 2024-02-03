@@ -62,8 +62,8 @@ struct file_operations binfs_fops = {
 };
 
 static struct inode_operations binfs_iops = {
-	.lookup   = binfs_lookup,
-	.iterate  = binfs_iterate,
+	.ino_lookup   = binfs_lookup,
+	.ino_iterate  = binfs_iterate,
 };
 
 int binfs_fill_sb(struct super_block *sb, const char *source) {

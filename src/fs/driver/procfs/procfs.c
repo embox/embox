@@ -161,8 +161,8 @@ static struct super_block_operations procfs_sbops = {
 };
 
 struct inode_operations procfs_iops = {
-	.lookup   = procfs_lookup,
-	.iterate  = procfs_iterate,
+	.ino_lookup   = procfs_lookup,
+	.ino_iterate  = procfs_iterate,
 };
 
 struct file_operations procfs_fops = {

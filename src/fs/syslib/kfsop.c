@@ -350,7 +350,7 @@ static int vfs_mount_walker(struct inode *dir) {
 		}
 
 		assert(dir->i_ops);
-		res = dir->i_ops->iterate(node,
+		res = dir->i_ops->ino_iterate(node,
 				inode_name(node),
 				dir,
 				&dir_context);
@@ -402,7 +402,7 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		return -1;
 	}
 
-	if (sb->sb_root->i_ops && sb->sb_root->i_ops->iterate) {
+	if (sb->sb_root->i_ops && sb->sb_root->i_ops->ino_iterate) {
 		/* If FS provides iterate handler, then we assume
 		 * that we should use it to actually mount all these
 		 * files */

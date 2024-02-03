@@ -447,8 +447,8 @@ static struct super_block_operations ntfs_sbops = {
 };
 
 static struct inode_operations ntfs_iops = {
-	.iterate = ntfs_iterate,
-	.truncate = embox_ntfs_truncate,
+	.ino_iterate = ntfs_iterate,
+	.ino_truncate = embox_ntfs_truncate,
 };
 
 static int ntfs_iterate(struct inode *next, char *name, struct inode *parent,

@@ -336,8 +336,8 @@ static struct file_operations ext3_fop = {
 extern int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx);
 
 struct inode_operations ext3_iops = {
-	.iterate = ext2_iterate,
-	.truncate     = ext3fs_truncate, /* TODO journaling */
+	.ino_iterate = ext2_iterate,
+	.ino_truncate     = ext3fs_truncate, /* TODO journaling */
 };
 
 static struct fsop_desc ext3_fsop = {

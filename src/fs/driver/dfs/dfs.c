@@ -334,13 +334,13 @@ static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 }
 
 static struct inode_operations dfs_iops = {
-	.create   = dfs_icreate,
-	.lookup   = dfs_ilookup,
-	.mkdir    = NULL,
-	.rmdir    = NULL,
-	.iterate  = dfs_iterate,
-	.truncate = dfs_itruncate,
-	.pathname = dfs_pathname,
+	.ino_create   = dfs_icreate,
+	.ino_lookup   = dfs_ilookup,
+	.ino_mkdir    = NULL,
+	.ino_rmdir    = NULL,
+	.ino_iterate  = dfs_iterate,
+	.ino_truncate = dfs_itruncate,
+	.ino_pathname = dfs_pathname,
 };
 
 static struct file_operations dfs_fops;

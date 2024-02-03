@@ -388,12 +388,12 @@ const struct super_block_operations fuse_sbops = {
 };
 
 const struct inode_operations fuse_iops = {
-	.lookup   = fuse_lookup,
-	.iterate  = fuse_iterate,
-	.create = fuse_create,
-	.remove = fuse_remove,
-	.getxattr = ext2fuse_getxattr,
-	.setxattr = ext2fuse_setxattr
+	.ino_lookup   = fuse_lookup,
+	.ino_iterate  = fuse_iterate,
+	.ino_create = fuse_create,
+	.ino_remove = fuse_remove,
+	.ino_getxattr = ext2fuse_getxattr,
+	.ino_setxattr = ext2fuse_setxattr
 };
 
 const struct file_operations fuse_fops = {

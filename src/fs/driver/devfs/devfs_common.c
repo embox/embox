@@ -167,9 +167,9 @@ int devfs_destroy_inode(struct inode *inode) {
 }
 
 struct inode_operations devfs_iops = {
-    .lookup = devfs_lookup,
-    .iterate = devfs_iterate,
-    .create = devfs_create,
+    .ino_lookup = devfs_lookup,
+    .ino_iterate = devfs_iterate,
+    .ino_create = devfs_create,
 };
 
 extern struct super_block_operations devfs_sbops;

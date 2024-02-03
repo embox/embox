@@ -67,8 +67,8 @@ int kwrite(struct file_desc *desc, char *buf, int count) {
 
 	if (!(inode->i_mode & DVFS_NO_LSEEK)
 	    && ((inode->i_size - desc->f_pos) < count)) {
-		if (inode->i_ops && inode->i_ops->truncate) {
-			res = inode->i_ops->truncate(desc->f_inode, desc->f_pos + count);
+		if (inode->i_ops && inode->i_ops->ino_truncate) {
+			res = inode->i_ops->ino_truncate(desc->f_inode, desc->f_pos + count);
 			if (res) {
 				retcode = -EFBIG;
 			}

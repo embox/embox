@@ -85,8 +85,8 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 		vfs_lookup_childn(&node_path, path, len, &node_path);
 
 		if (NULL == node_path.node) {
-			if (dnode && dnode->i_ops && dnode->i_ops->lookup) {
-				dnode->i_ops->lookup(path, NULL);
+			if (dnode && dnode->i_ops && dnode->i_ops->ino_lookup) {
+				dnode->i_ops->ino_lookup(path, NULL);
 			} else {
 				return -ENOENT;
 			}

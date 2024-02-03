@@ -38,13 +38,13 @@ int ktruncate(struct inode *node, off_t length) {
 		return -1;
 	}
 
-	if ((!node->i_sb->sb_iops) || (!node->i_sb->sb_iops->truncate)) {
+	if ((!node->i_sb->sb_iops) || (!node->i_sb->sb_iops->ino_truncate)) {
 		//SET_ERRNO(ENOTSUP);
 		//SET_ERRNO(EPERM); it may mean that file it's not possible to modify
 		return 0;
 	}
 
-	if (0 > (ret = node->i_sb->sb_iops->truncate(node, length))) {
+	if (0 > (ret = node->i_sb->sb_iops->ino_truncate(node, length))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}

@@ -205,8 +205,8 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 }
 
 static struct inode_operations cifs_iops = {
-//	.lookup   = cifs_lookup,
-	.iterate  = cifs_iterate,
+//	.ino_lookup   = cifs_lookup,
+	.ino_iterate  = cifs_iterate,
 };
 static struct file_operations cifs_fop;
 static int cifs_fill_sb(struct super_block *sb, const char *source) {

@@ -21,8 +21,8 @@ int getxattr(const char *path, const char *name, char *value, size_t size) {
 	}
 	inode = lookup.item->d_inode;
 
-	if (inode->i_ops->getxattr) {
-		return inode->i_ops->getxattr(inode, name, value, size);
+	if (inode->i_ops->ino_getxattr) {
+		return inode->i_ops->ino_getxattr(inode, name, value, size);
 	}
 
 	return 0;
@@ -39,8 +39,8 @@ int setxattr(const char *path, const char *name, const char *value, size_t size,
 	}
 	inode = lookup.item->d_inode;
 
-	if (inode->i_ops->setxattr) {
-		return inode->i_ops->setxattr(inode, name, value, size, flags);
+	if (inode->i_ops->ino_setxattr) {
+		return inode->i_ops->ino_setxattr(inode, name, value, size, flags);
 	}
 
 	return 0;
