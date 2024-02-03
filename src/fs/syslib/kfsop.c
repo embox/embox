@@ -181,7 +181,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 int kremove(const char *pathname) {
 	struct path node;
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -189,8 +189,8 @@ int kremove(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->i_sb->fs_drv;
-	if (NULL == drv->fsop->delete_node) {
+	sb = node.node->i_sb;
+	if (NULL == sb->sb_iops->ino_remove) {
 		errno = EPERM;
 		return -1;
 	}
@@ -205,7 +205,7 @@ int kremove(const char *pathname) {
 
 int kunlink(const char *pathname) {
 	struct path node, parent;
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -224,14 +224,14 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->i_sb->fs_drv;
+	sb = node.node->i_sb;
 
-	if (NULL == drv->fsop->delete_node) {
+	if (NULL == sb->sb_iops->ino_remove) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(node.node))) {
+	if (0 != (res = sb->sb_iops->ino_remove(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -244,7 +244,7 @@ int kunlink(const char *pathname) {
 
 int krmdir(const char *pathname) {
 	struct path node, parent, child;
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -268,14 +268,14 @@ int krmdir(const char *pathname) {
 		return res;
 	}
 
-	drv = node.node->i_sb->fs_drv;
+	sb = node.node->i_sb;
 
-	if (NULL == drv->fsop->delete_node) {
+	if (NULL == sb->sb_iops->ino_remove) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(node.node))) {
+	if (0 != (res = sb->sb_iops->ino_remove(node.node))) {
 		errno = -res;
 		return -1;
 	}
