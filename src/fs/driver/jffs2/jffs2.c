@@ -1451,7 +1451,7 @@ static struct fsop_desc jffs2_fsop = {
 	.setxattr     = NULL,
 	.listxattr    = NULL,
 
-	.truncate     = jffs2fs_truncate,
+	//.truncate     = jffs2fs_truncate,
 	.umount_entry = jffs2fs_umount_entry,
 };
 

@@ -62,7 +62,7 @@ static struct fsop_desc fatfs_fsop = {
 	.mount = fatfs_mount,
 	.create_node = fat_create,
 	.delete_node = fat_delete,
-	.truncate = fat_truncate,
+	//.truncate = fat_truncate,
 	.umount_entry = fatfs_umount_entry,
 };
 

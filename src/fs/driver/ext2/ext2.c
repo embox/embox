@@ -560,7 +560,7 @@ static struct fsop_desc ext2_fsop = {
 	.setxattr     = ext2fs_setxattr,
 	.listxattr    = ext2fs_listxattr,
 
-	.truncate     = ext2fs_truncate,
+	//.truncate     = ext2fs_truncate,
 	.umount_entry = ext2fs_umount_entry,
 };
 

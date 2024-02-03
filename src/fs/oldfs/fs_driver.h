@@ -29,7 +29,7 @@ struct fsop_desc {
 			const char *value, size_t len, int flags);
 	int (*listxattr)(struct inode *node, char *list, size_t len);
 
-	int (*truncate)(struct inode *node, off_t length);
+	//int (*truncate)(struct inode *node, off_t length);
 	int (*umount_entry)(struct inode *node);
 };
 

@@ -35,7 +35,7 @@ static struct fsop_desc ramfs_fsop = {
 	.mount = ramfs_mount,
 	.create_node = ramfs_create,
 	.delete_node = ramfs_delete,
-	.truncate = ramfs_truncate,
+	//.truncate = ramfs_truncate,
 };
 
 static struct fs_driver ramfs_driver = {

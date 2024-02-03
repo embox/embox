@@ -941,7 +941,7 @@ static const struct fsop_desc ntfs_fsop = {
 	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_ntfs_mount,
 	.umount_entry = ntfs_umount_entry,
-	.truncate = embox_ntfs_truncate,
+	//.truncate = embox_ntfs_truncate,
 };
 
 static const struct file_operations ntfs_fop = {

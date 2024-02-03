@@ -337,7 +337,7 @@ extern int ext2_iterate(struct inode *next, char *next_name, struct inode *paren
 
 struct inode_operations ext3_iops = {
 	.iterate = ext2_iterate,
-	.truncate = ext3fs_truncate,
+	.truncate     = ext3fs_truncate, /* TODO journaling */
 };
 
 static struct fsop_desc ext3_fsop = {
@@ -349,7 +349,7 @@ static struct fsop_desc ext3_fsop = {
 	.setxattr     = ext2fs_setxattr, /* TODO journaling */
 	.listxattr    = ext2fs_listxattr,
 
-	.truncate     = ext3fs_truncate, /* TODO journaling */
+	//.truncate     = ext3fs_truncate, /* TODO journaling */
 	.umount_entry = ext3fs_umount_entry,
 };
 
