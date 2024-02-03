@@ -45,8 +45,11 @@ struct super_block_operations fat_sbops = {
 
 extern int fat_fill_sb(struct super_block *sb, const char *source);
 extern int fat_clean_sb(struct super_block *sb);
+extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
+extern int fat_format(struct block_dev *dev, void *priv);
 
 struct inode_operations fat_iops = {
+	.ino_create = fat_create,
 	.ino_iterate = fat_iterate,
 	.ino_truncate = fat_truncate,
 };
@@ -56,8 +59,6 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 
-extern int fat_create(struct inode *i_new, struct inode *i_dir, int mode);
-extern int fat_format(struct block_dev *dev, void *priv);
 static struct fsop_desc fatfs_fsop = {
 	.mount = fatfs_mount,
 	.create_node = fat_create,

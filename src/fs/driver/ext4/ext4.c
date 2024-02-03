@@ -168,6 +168,7 @@ static struct super_block_operations ext4fs_sbops = {
 };
 
 struct inode_operations ext4_iops = {
+	.ino_create  = ext4fs_create,
 	.ino_iterate = ext4_iterate,
 	.ino_truncate = ext4fs_truncate,
 };

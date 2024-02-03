@@ -31,6 +31,7 @@
 #include "initfs.h"
 
 struct inode_operations initfs_iops = {
+	.ino_create = initfs_create,
 	.ino_iterate = initfs_iterate,
 };
 
