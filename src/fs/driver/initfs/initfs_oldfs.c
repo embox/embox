@@ -36,6 +36,7 @@ struct inode_operations initfs_iops = {
 };
 
 static int initfs_mount(struct super_block *sb, struct inode *dest) {
+#if 0
 	extern char _initfs_start, _initfs_end;
 	struct initfs_file_info *fi;
 
@@ -52,6 +53,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	inode_priv_set(dest, fi);
 
 	dest->i_ops = &initfs_iops;
+#endif
 
 	return 0;
 }

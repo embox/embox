@@ -188,7 +188,12 @@ extern struct super_block_operations initfs_sbops;
 extern struct inode_operations initfs_iops;
 
 int initfs_fill_sb(struct super_block *sb, const char *source) {
+	extern char _initfs_start, _initfs_end;
 	struct initfs_file_info *fi;
+
+	if (&_initfs_start == &_initfs_end) {
+		return -1;
+	}
 
 	fi = initfs_alloc_inode();
 	if (fi == NULL) {
@@ -202,6 +207,8 @@ int initfs_fill_sb(struct super_block *sb, const char *source) {
 
 	memset(fi, 0, sizeof(struct initfs_file_info));
 	inode_priv_set(sb->sb_root, fi);
+
+	sb->sb_root->i_ops = &initfs_iops;
 
 	return 0;
 }
