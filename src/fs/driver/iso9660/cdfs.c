@@ -1005,8 +1005,11 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 }
 
 static int cdfs_fill_sb(struct super_block *sb, const char *source) {
+	struct inode *dest;
 	struct block_dev *bdev;
 	struct cdfs_fs_info *fsi;
+	struct cdfs_file_info *fi;
+	int rc;
 
 	bdev = bdev_by_path(source);
 	if (NULL == bdev) {
@@ -1020,15 +1023,36 @@ static int cdfs_fill_sb(struct super_block *sb, const char *source) {
 		return -ENOMEM;
 	}
 	memset(fsi, 0, sizeof(struct cdfs_fs_info));
+
 	sb->sb_data = fsi;
 	sb->sb_ops = &cdfs_sbops;
 	sb->sb_iops = &cdfs_iops;
 	sb->sb_fops = &cdfsfs_fop;
 
+	dest = sb->sb_root;
+
+	/* allocate this directory info */
+	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
+		rc = -ENOMEM;
+		goto error;
+	}
+	memset(fi, 0, sizeof(struct cdfs_file_info));
+
+	inode_priv_set(dest, fi);
+
+	if(0 == (rc = cdfs_mount(dest))) {
+		return 0;
+	}
+
 	return 0;
+error:
+	cdfs_free_fs(sb);
+
+	return rc;
 }
 
 static int cdfsfs_mount(struct super_block *sb, struct inode *dest) {
+#if 0
 	struct cdfs_file_info *fi;
 	int rc;
 
@@ -1048,6 +1072,8 @@ error:
 	cdfs_free_fs(sb);
 
 	return rc;
+#endif
+	return 0;
 }
 
 static int cdfs_umount_entry(struct inode *node) {
