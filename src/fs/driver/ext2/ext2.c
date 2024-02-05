@@ -168,6 +168,10 @@ struct inode_operations ext2_iops = {
 	.ino_remove  = ext2fs_delete,
 	.ino_iterate = ext2_iterate,
 	.ino_truncate = ext2fs_truncate,
+
+	.ino_getxattr     = ext2fs_getxattr,
+	.ino_setxattr     = ext2fs_setxattr,
+	.ino_listxattr    = ext2fs_listxattr,
 };
 
 /*

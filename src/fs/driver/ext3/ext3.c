@@ -342,6 +342,10 @@ struct inode_operations ext3_iops = {
 	.ino_remove  = ext3fs_delete,
 	.ino_iterate = ext2_iterate,
 	.ino_truncate     = ext3fs_truncate, /* TODO journaling */
+
+	.ino_getxattr     = ext2fs_getxattr,
+	.ino_setxattr     = ext2fs_setxattr, /* TODO journaling */
+	.ino_listxattr    = ext2fs_listxattr,
 };
 
 static struct fsop_desc ext3_fsop = {

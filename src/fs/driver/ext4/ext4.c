@@ -172,6 +172,10 @@ struct inode_operations ext4_iops = {
 	.ino_remove  = ext4fs_delete,
 	.ino_iterate = ext4_iterate,
 	.ino_truncate = ext4fs_truncate,
+
+	.ino_getxattr     = ext2fs_getxattr,
+	.ino_setxattr     = ext2fs_setxattr,
+	.ino_listxattr    = ext2fs_listxattr,
 };
 
 static struct file_operations ext4_fop = {
