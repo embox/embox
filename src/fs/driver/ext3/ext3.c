@@ -219,8 +219,66 @@ static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t star
 
 static struct file_operations ext3_fop;
 struct inode_operations ext3_iops;
+
+static int ext3fs_create_jornal(struct super_block *sb, struct inode *dest) {
+	struct ext2fs_dinode *dip;
+	char buf[SECTOR_SIZE * 2];
+	struct ext2_fs_info *fsi;
+	int inode_sector, rsize;
+	journal_t *jp = NULL;
+	ext3_journal_specific_t *ext3_spec;
+	journal_fs_specific_t spec = {
+			.bmap = ext3_journal_bmap,
+			.commit = ext3_journal_commit,
+			.update = ext3_journal_update,
+			.trans_freespace = ext3_journal_trans_freespace
+	};
+
+
+	if (NULL == (ext3_spec = objalloc(&ext3_journal_cache))) {
+		return -1;
+	}
+
+	spec.data = ext3_spec;
+
+	if (NULL == (jp = journal_create(&spec))) {
+		objfree(&ext3_journal_cache, ext3_spec);
+		return -1;
+	}
+
+	/* Getting first block for inode number EXT3_JOURNAL_SUPERBLOCK_INODE */
+	fsi = sb->sb_data;
+
+	inode_sector = ino_to_fsba(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE);
+
+	rsize = ext2_read_sector(sb, buf, 1, inode_sector);
+	if (rsize * fsi->s_block_size != fsi->s_block_size) {
+		return -EIO;
+	}
+
+	/* set pointer to inode struct in read buffer */
+	dip = sysmalloc(sizeof(struct ext2fs_dinode));
+	memcpy(dip,
+		(buf + EXT2_DINODE_SIZE(fsi) * ino_to_fsbo(fsi, EXT3_JOURNAL_SUPERBLOCK_INODE)),
+		sizeof(struct ext2fs_dinode));
+
+	/* XXX Hack to use ext2 functions */
+	ext3_spec->ext3_journal_inode = dip;
+	if (0 > ext3_journal_load(jp, sb->bdev, fsbtodb(fsi, dip->i_block[0]))) {
+		return -EIO;
+	}
+	/*
+	 * FIXME Now journal supports block size only equal to filesystem block size
+	 * It is not critical but not flexible enough
+	 */
+	assert(jp->j_blocksize == fsi->s_block_size);
+	fsi->journal = jp;
+
+	return 0;
+}
+
 static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
-	int ret;
+	int ret = 0;
 
 	ext2fs_driver = fs_driver_find(EXT2_NAME);
 	if (NULL == ext2fs_driver) {
@@ -235,10 +293,14 @@ static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_fops = &ext3_fop;
 	sb->sb_iops = &ext3_iops;
 
-	return 0;
+
+	ret = ext3fs_create_jornal(sb, sb->sb_root);
+
+	return ret;
 }
 
 static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
+#if 0
 	struct ext2fs_dinode *dip;
 	char buf[SECTOR_SIZE * 2];
 	struct ext2_fs_info *fsi;
@@ -294,7 +356,7 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 	 */
 	assert(jp->j_blocksize == fsi->s_block_size);
 	fsi->journal = jp;
-
+#endif
 	return 0;
 }
 
