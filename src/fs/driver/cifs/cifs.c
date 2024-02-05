@@ -299,16 +299,19 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
 	fsi->ctx = ctx;
+
 	sb->sb_data = fsi;
 	sb->sb_ops = &cifs_sbops;
 	sb->sb_iops = &cifs_iops;
 	sb->sb_fops = &cifs_fop;
 
+	fsi->mntto = sb->sb_root;
 
 	return 0;
 }
 
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
+#if 0
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
 
@@ -316,6 +319,7 @@ static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 
 	fsi->mntto = dir;
 	strcpy(smb_path, fsi->url);
+#endif
 
 	return 0;
 }
