@@ -11,6 +11,8 @@
 #include <security/security.h>
 
 #include <fs/fs_driver.h>
+#include <fs/super_block.h>
+#include <fs/inode_operation.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/xattr.h>
@@ -44,11 +46,12 @@ int kfile_xattr_get(struct inode *node, const char *name, char *value, size_t le
 		return err;
 	}
 
-	if (!fsop->getxattr) {
+	if (!node->i_sb->sb_iops->ino_getxattr) {
 		return -EINVAL;
 	}
-
-	if (0 > (err = fsop->getxattr(node, name, value, len))) {
+	
+	err = node->i_sb->sb_iops->ino_getxattr(node, name, value, len);
+	if (0 > err) {
 		return err;
 	}
 
@@ -64,7 +67,7 @@ int kfile_xattr_set(struct inode *node, const char *name,
 		return err;
 	}
 
-	if (!fsop->setxattr) {
+	if (!node->i_sb->sb_iops->ino_setxattr) {
 		return -EINVAL;
 	}
 
@@ -72,7 +75,8 @@ int kfile_xattr_set(struct inode *node, const char *name,
 		flags |= XATTR_REMOVE;
 	}
 
-	if (0 > (err = fsop->setxattr(node, name, value, len, flags))) {
+	err = node->i_sb->sb_iops->ino_setxattr(node, name, value, len, flags);
+	if (0 > err) {
 		return err;
 	}
 
@@ -87,11 +91,11 @@ int kfile_xattr_list(struct inode *node, char *list, size_t len) {
 		return err;
 	}
 
-	if (!fsop->listxattr) {
+	if (!node->i_sb->sb_iops->ino_listxattr) {
 		return -EINVAL;
 	}
 
-	if (0 > (err = fsop->listxattr(node, list, len))) {
+	if (0 > (err = node->i_sb->sb_iops->ino_listxattr(node, list, len))) {
 		return err;
 	}
 
