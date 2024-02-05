@@ -1444,7 +1444,7 @@ static int jffs2fs_truncate(struct inode *node, off_t length);
 
 static struct fsop_desc jffs2_fsop = {
 	.mount	      = jffs2fs_mount,
-	.create_node  = jffs2fs_create,
+	//.create_node  = jffs2fs_create,
 	.delete_node  = jffs2fs_delete,
 
 	.getxattr     = NULL,

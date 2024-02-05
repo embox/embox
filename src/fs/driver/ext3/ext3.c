@@ -106,6 +106,8 @@ static size_t ext3fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return res;
 }
 
+extern struct inode_operations ext2_iops;
+
 static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
@@ -120,7 +122,7 @@ static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode
 	if (!(handle = journal_start(fsi->journal, 3 * (ext3_trans_blocks(1) + 2)))) {
 		return -1;
 	}
-	res = ext2fs_driver->fsop->create_node(node, parent_node, node->i_mode);
+	res = ext2_iops.ino_create(node, parent_node, node->i_mode);
 	journal_stop(handle);
 
 	return res;
@@ -344,7 +346,7 @@ struct inode_operations ext3_iops = {
 
 static struct fsop_desc ext3_fsop = {
 	.mount	      = ext3fs_mount,
-	.create_node  = ext3fs_create,
+	//.create_node  = ext3fs_create,
 	.delete_node  = ext3fs_delete,
 
 	.getxattr     = ext2fs_getxattr,

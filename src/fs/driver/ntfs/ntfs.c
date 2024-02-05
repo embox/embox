@@ -939,7 +939,7 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 };
 
 static const struct fsop_desc ntfs_fsop = {
-	.create_node = embox_ntfs_node_create,
+	//.create_node = embox_ntfs_node_create,
 	.delete_node = embox_ntfs_node_delete,
 	.mount = embox_ntfs_mount,
 	.umount_entry = ntfs_umount_entry,
