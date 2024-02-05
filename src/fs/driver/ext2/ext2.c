@@ -556,7 +556,7 @@ static int ext2_clean_sb(struct super_block *sb);
 static struct fsop_desc ext2_fsop = {
 	.mount	      = ext2fs_mount,
 	//.create_node  = ext2fs_create,
-	.delete_node  = ext2fs_delete,
+	//.delete_node  = ext2fs_delete,
 
 	.getxattr     = ext2fs_getxattr,
 	.setxattr     = ext2fs_setxattr,

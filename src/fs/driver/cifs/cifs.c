@@ -433,7 +433,7 @@ static struct super_block_operations cifs_sbops = {
 
 static const struct fsop_desc cifs_fsop = {
 	//.create_node = embox_cifs_node_create,
-	.delete_node = embox_cifs_node_delete,
+	//.delete_node = embox_cifs_node_delete,
 	.mount = embox_cifs_mount,
 };
 

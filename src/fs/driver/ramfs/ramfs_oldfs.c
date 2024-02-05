@@ -36,7 +36,7 @@ static int ramfs_mount(struct super_block *sb, struct inode *dest) {
 static struct fsop_desc ramfs_fsop = {
 	.mount = ramfs_mount,
 	//.create_node = ramfs_create,
-	.delete_node = ramfs_delete,
+	//.delete_node = ramfs_delete,
 	//.truncate = ramfs_truncate,
 };
 

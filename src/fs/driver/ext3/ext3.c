@@ -142,7 +142,7 @@ static int ext3fs_delete(struct inode *node) {
 	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
 		return -1;
 	}
-	res = ext2fs_driver->fsop->delete_node(node);
+	res = ext2_iops.ino_remove(node);
 	journal_stop(handle);
 
 	return res;
@@ -347,7 +347,7 @@ struct inode_operations ext3_iops = {
 static struct fsop_desc ext3_fsop = {
 	.mount	      = ext3fs_mount,
 	//.create_node  = ext3fs_create,
-	.delete_node  = ext3fs_delete,
+	//.delete_node  = ext3fs_delete,
 
 	.getxattr     = ext2fs_getxattr,
 	.setxattr     = ext2fs_setxattr, /* TODO journaling */

@@ -656,7 +656,7 @@ static int ext4fs_mount(struct super_block *sb, struct inode *dest);
 static struct fsop_desc ext4_fsop = {
 	.mount	      = ext4fs_mount,
 	//.create_node  = ext4fs_create,
-	.delete_node  = ext4fs_delete,
+	//.delete_node  = ext4fs_delete,
 
 	.getxattr     = ext2fs_getxattr,
 	.setxattr     = ext2fs_setxattr,
