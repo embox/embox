@@ -562,9 +562,9 @@ static struct fsop_desc ext2_fsop = {
 	//.create_node  = ext2fs_create,
 	//.delete_node  = ext2fs_delete,
 
-	.getxattr     = ext2fs_getxattr,
-	.setxattr     = ext2fs_setxattr,
-	.listxattr    = ext2fs_listxattr,
+	//.getxattr     = ext2fs_getxattr,
+	//.setxattr     = ext2fs_setxattr,
+	//.listxattr    = ext2fs_listxattr,
 
 	//.truncate     = ext2fs_truncate,
 	.umount_entry = ext2fs_umount_entry,

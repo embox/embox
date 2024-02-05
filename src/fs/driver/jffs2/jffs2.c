@@ -1447,9 +1447,9 @@ static struct fsop_desc jffs2_fsop = {
 	//.create_node  = jffs2fs_create,
 	//.delete_node  = jffs2fs_delete,
 
-	.getxattr     = NULL,
-	.setxattr     = NULL,
-	.listxattr    = NULL,
+	//.getxattr     = NULL,
+	//.setxattr     = NULL,
+	//.listxattr    = NULL,
 
 	//.truncate     = jffs2fs_truncate,
 	.umount_entry = jffs2fs_umount_entry,
