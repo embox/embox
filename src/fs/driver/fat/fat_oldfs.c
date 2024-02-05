@@ -62,9 +62,7 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 
 static struct fsop_desc fatfs_fsop = {
 	.mount = fatfs_mount,
-	//.create_node = fat_create,
-	//.delete_node = fat_delete,
-	//.truncate = fat_truncate,
+
 	.umount_entry = fatfs_umount_entry,
 };
 
@@ -73,7 +71,7 @@ static const struct fs_driver fatfs_driver = {
 	.format = fat_format,
 	.fill_sb  = fat_fill_sb,
 	.clean_sb = fat_clean_sb,
-//	.file_op  = &fat_fops,
+
 	.fsop     = &fatfs_fsop,
 };
 

@@ -47,7 +47,7 @@ static struct fs_driver binfs_driver = {
 	.name = BINFS_NAME,
 	.fill_sb   = binfs_fill_sb,
 	.fsop = &binfs_fsop,
-//	.file_op = &binfs_fops
+
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(binfs_driver);

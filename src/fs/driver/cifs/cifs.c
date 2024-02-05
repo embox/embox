@@ -432,8 +432,6 @@ static struct super_block_operations cifs_sbops = {
 };
 
 static const struct fsop_desc cifs_fsop = {
-	//.create_node = embox_cifs_node_create,
-	//.delete_node = embox_cifs_node_delete,
 	.mount = embox_cifs_mount,
 };
 
@@ -449,7 +447,6 @@ static const struct fs_driver cifs_driver = {
 	.fill_sb  = cifs_fill_sb,
 	.clean_sb = cifs_clean_sb,
 	.fsop     = &cifs_fsop,
-//	.file_op  = &cifs_fop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);

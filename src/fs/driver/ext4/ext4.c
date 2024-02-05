@@ -659,14 +659,7 @@ static int ext4fs_mount(struct super_block *sb, struct inode *dest);
 
 static struct fsop_desc ext4_fsop = {
 	.mount	      = ext4fs_mount,
-	//.create_node  = ext4fs_create,
-	//.delete_node  = ext4fs_delete,
 
-	//.getxattr     = ext2fs_getxattr,
-	//.setxattr     = ext2fs_setxattr,
-	//.listxattr    = ext2fs_listxattr,
-
-	//.truncate     = ext4fs_truncate,
 	.umount_entry = ext4fs_umount_entry,
 };
 
@@ -675,7 +668,7 @@ static struct fs_driver ext4fs_driver = {
 	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
-//	.file_op  = &ext4_fop,
+
 	.fsop     = &ext4_fsop,
 };
 

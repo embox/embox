@@ -66,13 +66,11 @@ struct super_block_operations initfs_sbops = {
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
-	//.create_node = initfs_create,
 };
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
 	.fill_sb   = initfs_fill_sb,
-//	.file_op = &initfs_fops,
 	.fsop = &initfs_fsop,
 };
 

@@ -350,14 +350,7 @@ struct inode_operations ext3_iops = {
 
 static struct fsop_desc ext3_fsop = {
 	.mount	      = ext3fs_mount,
-	//.create_node  = ext3fs_create,
-	//.delete_node  = ext3fs_delete,
 
-	//.getxattr     = ext2fs_getxattr,
-	//.setxattr     = ext2fs_setxattr, /* TODO journaling */
-	//.listxattr    = ext2fs_listxattr,
-
-	//.truncate     = ext3fs_truncate, /* TODO journaling */
 	.umount_entry = ext3fs_umount_entry,
 };
 
@@ -366,7 +359,7 @@ static struct fs_driver ext3fs_driver = {
 	.format   = ext3fs_format,
 	.fill_sb = ext3fs_fill_sb,
 	.clean_sb = ext3fs_clean_sb,
-//	.file_op = &ext3_fop,
+
 	.fsop = &ext3_fsop,
 };
 

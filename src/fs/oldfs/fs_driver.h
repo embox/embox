@@ -19,18 +19,7 @@ struct super_block;
 
 struct fsop_desc {
 	int (*mount)(struct super_block *sb, struct inode *dest);
-	//int (*create_node)(struct inode *new_node, struct inode *parent_node, int mode);
-	//int (*delete_node)(struct inode *node);
 
-	/* TODO: consider following to accept nas * as first arg (Anton Kozlov) */
-#if 0
-	int (*getxattr)(struct inode *node, const char *name,
-			char *value, size_t len);
-	int (*setxattr)(struct inode *node, const char *name,
-			const char *value, size_t len, int flags);
-	int (*listxattr)(struct inode *node, char *list, size_t len);
-#endif
-	//int (*truncate)(struct inode *node, off_t length);
 	int (*umount_entry)(struct inode *node);
 };
 

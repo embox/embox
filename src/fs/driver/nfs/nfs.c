@@ -216,10 +216,8 @@ struct inode_operations nfs_iops = {
 
 static struct fsop_desc nfsfs_fsop = {
 	.mount = nfsfs_mount,
-	//.create_node = nfsfs_create,
-	//.delete_node = nfsfs_delete,
+
 	.umount_entry = nfs_umount_entry,
-	//.truncate = nfsfs_truncate,
 };
 
 static struct fs_driver nfsfs_driver = {

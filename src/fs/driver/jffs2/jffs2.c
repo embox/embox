@@ -1444,14 +1444,7 @@ static int jffs2fs_truncate(struct inode *node, off_t length);
 
 static struct fsop_desc jffs2_fsop = {
 	.mount	      = jffs2fs_mount,
-	//.create_node  = jffs2fs_create,
-	//.delete_node  = jffs2fs_delete,
 
-	//.getxattr     = NULL,
-	//.setxattr     = NULL,
-	//.listxattr    = NULL,
-
-	//.truncate     = jffs2fs_truncate,
 	.umount_entry = jffs2fs_umount_entry,
 };
 
@@ -1461,7 +1454,7 @@ static struct fs_driver jffs2fs_driver = {
 	.format      = jffs2fs_format,
 	.fill_sb = jffs2_fill_sb,
 	.clean_sb = jffs2_clean_sb,
-//	.file_op = &jffs2_fop,
+
 	.fsop = &jffs2_fsop,
 };
 
