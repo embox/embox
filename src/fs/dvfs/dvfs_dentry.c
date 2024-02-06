@@ -16,6 +16,7 @@
 #include <fs/dvfs.h>
 #include <fs/hlpr_path.h>
 #include <kernel/task/resource/vfs.h>
+#include <lib/cwalk.h>
 #include <util/log.h>
 
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
@@ -60,105 +61,76 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
 
 /**
- * @brief Get the length of next element int the path
- * @param path Pointer to the path
- *
- * @return The length of next element in the path
- * @revtal -1 Error
- */
-int dvfs_path_next_len(const char *path) {
-	int len;
-	int off;
-
-	len = strlen(path);
-	off = 0;
-
-	while ((path[off] != '/') && (off < len)) {
-		off++;
-	}
-
-	return off;
-}
-/**
  * @brief Resolve one more element in the path
- * @param path   Pointer to relative path
- * @param dentry The previous dentry
- * @param lookup Structure which is to contain result of path walk
+ * @param segment Segment of a path
+ * @param parent  The previous dentry
+ * @param parent  The previous dentry
+ * @param dentry  Result of path walk
  *
  * @return Negative error code
  * @retval             0 Ok
  * @retval       -ENOENT Node not found
+ * @retval       -ENOMEM Cannot alloc dentry
  * @retval      -ENOTDIR Intermediate part of the path is not a directory
- * @retval -ENAMETOOLONG path is too long
+ * @retval -ENAMETOOLONG Path is too long
  */
-int dvfs_path_walk(const char *path, struct dentry *parent,
-    struct lookup *lookup) {
-	char buff[NAME_MAX];
-	struct inode *inode;
+int dvfs_path_walk(struct cwk_segment *segment, struct dentry *parent,
+    struct dentry **dentry) {
 	struct dentry *d;
-	int len;
+	struct inode *inode;
+	char buff[NAME_MAX];
 
 	assert(parent);
-	assert(path);
-
-	while (*path == '/') {
-		path++;
-	}
-
-	len = dvfs_path_next_len(path);
-	if (len >= NAME_MAX) {
-		return -ENAMETOOLONG;
-	}
-
-	memcpy(buff, path, len);
-	buff[len] = '\0';
-
-	if (buff[0] == '\0') {
-		dentry_ref_inc(parent);
-		*lookup = (struct lookup){
-		    .item = parent,
-		    .parent = parent->parent,
-		};
-		return 0;
-	}
+	assert(segment);
 
 	if (!S_ISDIR(parent->flags)) {
 		return -ENOTDIR;
 	}
 
-	if ((d = local_lookup(parent, buff))) {
-		return dvfs_path_walk(path + strlen(buff), d, lookup);
+	if (segment->size >= NAME_MAX) {
+		return -ENAMETOOLONG;
 	}
 
-	if (strlen(buff) > 1 && path_is_double_dot(buff)) {
-		return dvfs_path_walk(path + 2, parent->parent, lookup);
+	switch (cwk_path_get_segment_type(segment)) {
+	case CWK_BACK:
+		parent = parent->parent;
+
+	case CWK_CURRENT:
+		d = parent;
+		break;
+
+	case CWK_NORMAL:
+		assert(parent->d_sb);
+		assert(parent->d_sb->sb_iops);
+		assert(parent->d_sb->sb_iops->ino_lookup);
+
+		memcpy(buff, segment->begin, segment->size);
+		buff[segment->size] = '\0';
+
+		if ((d = local_lookup(parent, buff))) {
+			break;
+		}
+
+		inode = parent->d_sb->sb_iops->ino_lookup(buff, parent->d_inode);
+		if (!inode) {
+			return -ENOENT;
+		}
+
+		d = dvfs_alloc_dentry();
+		if (!d) {
+			return -ENOMEM;
+		}
+
+		dentry_fill(parent->d_sb, inode, d, parent);
+		strcpy(d->name, buff);
+		d->flags = inode->i_mode;
 	}
 
-	if (path_is_single_dot(buff)) {
-		return dvfs_path_walk(path + 1, parent, lookup);
+	if (dentry) {
+		*dentry = d;
 	}
 
-	/* TODO use cache instead */
-	assert(parent->d_sb);
-	assert(parent->d_sb->sb_iops);
-	assert(parent->d_sb->sb_iops->ino_lookup);
-
-	inode = parent->d_sb->sb_iops->ino_lookup(buff, parent->d_inode);
-	if (!inode) {
-		*lookup = (struct lookup){
-		    .item = NULL,
-		    .parent = parent,
-		};
-		return -ENOENT;
-	}
-
-	d = dvfs_alloc_dentry();
-	inode->i_dentry = parent;
-	dentry_fill(parent->d_sb, inode, d, parent);
-	strcpy(d->name, buff);
-	d->flags = inode->i_mode;
-
-	return dvfs_path_walk(path + strlen(buff), inode->i_dentry, lookup);
+	return 0;
 }
 
 /* DVFS interface */
@@ -172,19 +144,21 @@ int dvfs_path_walk(const char *path, struct dentry *parent,
  * @retval             0 Ok
  * @retval       -ENOENT Incorrect root/pwd dentry
  * @retval      -ENOTDIR Intermediate part of the path is not a directory
- * @retval -ENAMETOOLONG path is too long
+ * @retval -ENAMETOOLONG Path is too long
  */
 int dvfs_lookup(const char *path, struct lookup *lookup) {
 	struct dentry *dentry;
-	struct dentry *res;
-	int errcode;
+	struct cwk_segment segment;
+	int err;
+	char normal_path[PATH_MAX];
 
 	assert(path);
 	assert(lookup);
 
-	if (*path == '/') {
+	cwk_path_normalize(path, normal_path, sizeof(normal_path));
+
+	if (cwk_path_is_absolute(normal_path)) {
 		dentry = task_self_resource_vfs()->root;
-		path++;
 	}
 	else {
 		if (lookup->item == NULL) {
@@ -195,34 +169,29 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 		}
 	}
 
-	if (*path == '\0') {
-		dentry_ref_inc(dentry);
-		*lookup = (struct lookup){
-		    .item = dentry,
-		    .parent = dentry->parent,
-		};
-		return 0;
-	}
-
 	if (dentry->d_sb == NULL) {
 		lookup->item = NULL;
 		return -ENOENT;
 	}
 
-	/* TODO preprocess path ? Delete "/../" */
-
-	if ((res = dvfs_cache_lookup(path, dentry))) {
-		*lookup = (struct lookup){
-		    .item = res,
-		    .parent = res->parent,
-		};
+	if (!cwk_path_get_first_segment(path, &segment)) {
+		lookup->item = dentry;
+		lookup->parent = dentry->parent;
 		return 0;
 	}
 
-	errcode = dvfs_path_walk(path, dentry, lookup);
-	if (!errcode) {
-		dvfs_cache_add(lookup->item);
+	while (!(err = dvfs_path_walk(&segment, dentry, &dentry))
+	       && cwk_path_get_next_segment(&segment)) {}
+
+	if (!err) {
+		dentry_ref_inc(dentry);
+		lookup->item = dentry;
+		lookup->parent = dentry->parent;
+	}
+	else {
+		lookup->item = NULL;
+		lookup->parent = dentry;
 	}
 
-	return errcode == -ENOENT ? 0 : errcode;
+	return (err == -ENOENT) ? 0 : err;
 }

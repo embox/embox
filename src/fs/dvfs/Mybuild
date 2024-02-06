@@ -44,4 +44,5 @@ module core extends embox.fs.fs_api {
 	depends embox.fs.dvfs.compat
 	depends embox.kernel.task.idesc
 	@NoRuntime depends embox.kernel.task.resource.vfs
+	@NoRuntime depends third_party.lib.cwalk
 }
