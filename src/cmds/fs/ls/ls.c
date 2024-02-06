@@ -8,18 +8,17 @@
  *	    -- rewritten to use opendir
  */
 
+#include <dirent.h>
 #include <errno.h>
-#include <stdlib.h>
+#include <grp.h>
+#include <limits.h>
+#include <pwd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <unistd.h>
-
-#include <dirent.h>
-#include <pwd.h>
-#include <grp.h>
-#include <sys/stat.h>
-#include <limits.h>
 
 typedef void item_print(const char *path, struct stat *sb);
 
@@ -76,7 +75,8 @@ static void printer_long(const char *path, struct stat *sb) {
 
 	if (NULL == res) {
 		printf(" %10d", sb->st_uid);
-	} else {
+	}
+	else {
 		printf(" %10s", res->pw_name);
 	}
 
@@ -84,7 +84,8 @@ static void printer_long(const char *path, struct stat *sb) {
 
 	if (NULL == res) {
 		printf(" %10d", sb->st_uid);
-	} else {
+	}
+	else {
 		printf(" %10s", gres->gr_name);
 	}
 
@@ -111,14 +112,16 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 #ifdef __GNUC__
 #pragma GCC diagnostic push
 #if __GNUC__ > 12
-#pragma GCC diagnostic ignored "-Wformat-overflow" /* It can't really overflow, 'line' is big enough */
+#pragma GCC diagnostic ignored \
+    "-Wformat-overflow" /* It can't really overflow, 'line' is big enough */
 #endif
 #endif
 			sprintf(line, "%s/%s", path, dent->d_name);
 #ifdef __GNUC__
 #pragma GCC diagnostic pop
 #endif
-		} else {
+		}
+		else {
 			strcpy(line, dent->d_name);
 		}
 
@@ -147,17 +150,16 @@ static void print(char *path, DIR *dir, int recursive, item_print *printer) {
 
 int main(int argc, char **argv) {
 	DIR *dir;
-
 	int opt;
-	char dir_name[NAME_MAX];
 	int recursive;
 	item_print *printer;
+	char dir_name[NAME_MAX];
 
 	printer = printer_simple;
 	recursive = 0;
 
 	while (-1 != (opt = getopt(argc, argv, "Rlh"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'h':
 			print_usage();
 			return 0;
@@ -198,7 +200,8 @@ int main(int argc, char **argv) {
 
 			closedir(dir);
 		} while (optind++ < argc - 1);
-	} else {
+	}
+	else {
 		strcpy(dir_name, ".");
 
 		if (NULL == (dir = opendir(dir_name))) {
