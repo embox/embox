@@ -1655,6 +1655,34 @@ static int jffs2fs_iterate(struct inode *next, char *next_name, struct inode *pa
 	return -1;
 }
 
+static int jffs2fs_create_root(struct super_block *sb, struct inode *dest) {
+	int rc;
+	struct jffs2_file_info *fi;
+	struct jffs2_fs_info *fsi;
+
+	if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
+		inode_priv_set(dest, fi);
+		rc = ENOMEM;
+		goto error;
+	}
+	memset(fi, 0, sizeof(struct jffs2_file_info));
+
+	if (0 != (rc = jffs2_mount(dest))) {
+		goto error;
+	}
+
+	inode_priv_set(dest, fi);
+	fsi = sb->sb_data;
+	fi->_inode = fsi->jffs2_sb.s_root;
+
+	return 0;
+
+error:
+	jffs2_free_fs(sb);
+
+	return -rc;
+}
+
 static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	struct block_dev *bdev;
 	struct jffs2_fs_info *fsi;
@@ -1676,10 +1704,14 @@ static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_iops = &jffs2fs_iops;
 	sb->sb_fops = &jffs2_fop;
 
+	jffs2fs_create_root(sb, sb->sb_root);
+
 	return 0;
 }
 
 static int jffs2fs_mount(struct super_block *sb, struct inode *dest) {
+	return 0;
+#if 0
 	int rc;
 	struct jffs2_file_info *fi;
 	struct jffs2_fs_info *fsi;
@@ -1709,6 +1741,7 @@ error:
 	jffs2_free_fs(sb);
 
 	return -rc;
+#endif
 }
 
 static int jffs2fs_truncate (struct inode *node, off_t length) {
