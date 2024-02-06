@@ -43,7 +43,7 @@ static struct fsop_desc devfs_fsop = {
 static const struct fs_driver devfs_driver = {
 	.name = "devfs",
 	.fill_sb   = devfs_fill_sb,
-//	.file_op = &devfs_fops,
+
 	.fsop = &devfs_fsop
 };
 

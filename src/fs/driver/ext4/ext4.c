@@ -154,6 +154,9 @@ static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc, int __
 static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
+static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode);
+static int ext4fs_delete(struct inode *node);
+static int ext4fs_truncate(struct inode *node, off_t length);
 
 static int ext4fs_destroy_inode(struct inode *inode) {
 	return 0;
@@ -165,7 +168,14 @@ static struct super_block_operations ext4fs_sbops = {
 };
 
 struct inode_operations ext4_iops = {
-	.iterate = ext4_iterate,
+	.ino_create  = ext4fs_create,
+	.ino_remove  = ext4fs_delete,
+	.ino_iterate = ext4_iterate,
+	.ino_truncate = ext4fs_truncate,
+
+	.ino_getxattr     = ext2fs_getxattr,
+	.ino_setxattr     = ext2fs_setxattr,
+	.ino_listxattr    = ext2fs_listxattr,
 };
 
 static struct file_operations ext4_fop = {
@@ -646,20 +656,10 @@ static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_fill_sb(struct super_block *sb, const char *source);
 static int ext4fs_clean_sb(struct super_block *sb);
 static int ext4fs_mount(struct super_block *sb, struct inode *dest);
-static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode);
-static int ext4fs_delete(struct inode *node);
-static int ext4fs_truncate(struct inode *node, off_t length);
 
 static struct fsop_desc ext4_fsop = {
 	.mount	      = ext4fs_mount,
-	.create_node  = ext4fs_create,
-	.delete_node  = ext4fs_delete,
 
-	.getxattr     = ext2fs_getxattr,
-	.setxattr     = ext2fs_setxattr,
-	.listxattr    = ext2fs_listxattr,
-
-	.truncate     = ext4fs_truncate,
 	.umount_entry = ext4fs_umount_entry,
 };
 
@@ -668,7 +668,7 @@ static struct fs_driver ext4fs_driver = {
 	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
-//	.file_op  = &ext4_fop,
+
 	.fsop     = &ext4_fsop,
 };
 
@@ -740,6 +740,43 @@ static int ext4fs_delete(struct inode *node) {
 	return 0;
 }
 
+static int ext4fs_create_root(struct super_block *sb, struct inode *dest) {
+	int rc;
+	struct ext4_file_info *fi;
+	struct ext4_fs_info *fsi;
+
+	if (NULL == (fi = pool_alloc(&ext4_file_pool))) {
+		rc = ENOMEM;
+		goto error;
+	}
+	memset(fi, 0, sizeof(struct ext4_file_info));
+	fi->f_pointer = 0;
+	inode_priv_set(dest, fi);
+
+	/* presetting that we think */
+	fsi = sb->sb_data;
+	fsi->s_block_size = SBSIZE;
+	fsi->s_sectors_in_block = fsi->s_block_size / 512;
+	if (0 != (rc = ext4_read_sblock(dest))) {
+		goto error;
+	}
+	if (NULL == (fsi->e4fs_gd = ext4_buff_alloc(fsi,
+			sizeof(struct ext4_group_desc) * fsi->s_ncg))) {
+		rc = ENOMEM;
+		goto error;
+	}
+	if (0 != (rc = ext4_read_gdblock(dest))) {
+		goto error;
+	}
+
+	return 0;
+
+error:
+	ext4_free_fs(sb);
+
+	return -rc;
+}
+
 static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	struct ext4_fs_info *fsi;
 	struct block_dev *bdev = bdev_by_path(source);
@@ -757,10 +794,14 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_iops = &ext4_iops;
 	sb->sb_fops = &ext4_fop;
 
+	ext4fs_create_root(sb, sb->sb_root);
+
 	return 0;
 }
 
 static int ext4fs_mount(struct super_block *sb, struct inode *dest) {
+	return 0;
+#if 0
 	int rc;
 	struct ext4_file_info *fi;
 	struct ext4_fs_info *fsi;
@@ -799,6 +840,7 @@ error:
 	ext4_free_fs(sb);
 
 	return -rc;
+#endif
 }
 
 static int ext4fs_truncate (struct inode *node, off_t length) {

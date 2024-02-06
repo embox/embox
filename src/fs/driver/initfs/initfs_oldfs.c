@@ -31,10 +31,12 @@
 #include "initfs.h"
 
 struct inode_operations initfs_iops = {
-	.iterate = initfs_iterate,
+	.ino_create = initfs_create,
+	.ino_iterate = initfs_iterate,
 };
 
 static int initfs_mount(struct super_block *sb, struct inode *dest) {
+#if 0
 	extern char _initfs_start, _initfs_end;
 	struct initfs_file_info *fi;
 
@@ -51,6 +53,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 	inode_priv_set(dest, fi);
 
 	dest->i_ops = &initfs_iops;
+#endif
 
 	return 0;
 }
@@ -65,13 +68,11 @@ struct super_block_operations initfs_sbops = {
 
 static struct fsop_desc initfs_fsop = {
 	.mount = initfs_mount,
-	.create_node = initfs_create,
 };
 
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
 	.fill_sb   = initfs_fill_sb,
-//	.file_op = &initfs_fops,
 	.fsop = &initfs_fsop,
 };
 

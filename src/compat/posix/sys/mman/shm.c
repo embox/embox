@@ -78,7 +78,7 @@ static void shm_free(struct shm *shm) {
 }
 
 static struct inode_operations shm_i_ops = {
-	.truncate = &shm_truncate
+	.ino_truncate = &shm_truncate
 };
 
 static struct shm *shm_create(const char *name) {

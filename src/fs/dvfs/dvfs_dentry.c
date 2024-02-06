@@ -141,9 +141,9 @@ int dvfs_path_walk(const char *path, struct dentry *parent,
 	/* TODO use cache instead */
 	assert(parent->d_sb);
 	assert(parent->d_sb->sb_iops);
-	assert(parent->d_sb->sb_iops->lookup);
+	assert(parent->d_sb->sb_iops->ino_lookup);
 
-	inode = parent->d_sb->sb_iops->lookup(buff, parent->d_inode);
+	inode = parent->d_sb->sb_iops->ino_lookup(buff, parent->d_inode);
 	if (!inode) {
 		*lookup = (struct lookup){
 		    .item = NULL,

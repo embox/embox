@@ -80,21 +80,21 @@ int dvfs_create_new(const char *name, struct lookup *lookup, int flags) {
 		lookup->parent->flags |= DVFS_CHILD_VIRTUAL;
 	}
 	else {
-		if (!sb->sb_iops->create) {
+		if (!sb->sb_iops->ino_create) {
 			res = -ENOSUPP;
 		}
 		else {
 			if (!S_ISDIR(flags)) {
 				new_inode->i_mode |= S_IFREG;
 			}
-			res = sb->sb_iops->create(new_inode, lookup->parent->d_inode,
+			res = sb->sb_iops->ino_create(new_inode, lookup->parent->d_inode,
 			    flags);
 			if (res == -ENOMEM) {
 				/* This may be due to lack of some internal FS
 				 * resources,  so  we  can  try  to free  some
 				 * dentry and try again */
 				if (dvfs_fs_dentry_try_free(sb)) {
-					res = sb->sb_iops->create(new_inode,
+					res = sb->sb_iops->ino_create(new_inode,
 					    lookup->parent->d_inode, flags);
 				}
 			}
@@ -158,8 +158,8 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 	}
 
 	if ((__oflag & O_TRUNC) && (desc->f_inode)) {
-		if (i_no->i_ops && i_no->i_ops->truncate) {
-			if (i_no->i_ops->truncate(desc->f_inode, 0)) {
+		if (i_no->i_ops && i_no->i_ops->ino_truncate) {
+			if (i_no->i_ops->ino_truncate(desc->f_inode, 0)) {
 				dvfs_destroy_file(desc);
 				return err_ptr(ENOENT);
 			}
@@ -197,14 +197,14 @@ int dvfs_remove(const char *path) {
 
 	assert(i_no->i_ops);
 
-	if (!i_no->i_ops->remove)
+	if (!i_no->i_ops->ino_remove)
 		return -EPERM;
 
 	if (lookup.item->usage_count > 0) {
 		return -EBUSY;
 	}
 
-	res = i_no->i_ops->remove(i_no);
+	res = i_no->i_ops->ino_remove(i_no);
 
 	if (res == 0) {
 		res = dvfs_destroy_dentry(lookup.item);
@@ -407,7 +407,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	assert(lookup->parent->d_inode);
 
 	sb = lookup->parent->d_sb;
-	assert(sb->sb_iops && sb->sb_iops->iterate);
+	assert(sb->sb_iops && sb->sb_iops->ino_iterate);
 
 	if (ctx->flags & DVFS_CHILD_VIRTUAL) {
 		/* we are already in virtual iterate mode */
@@ -429,7 +429,7 @@ int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx) {
 	dentry_ref_inc(next_dentry);
 	lookup->item = next_dentry;
 
-	res = sb->sb_iops->iterate(next_inode, next_dentry->name,
+	res = sb->sb_iops->ino_iterate(next_inode, next_dentry->name,
 	    lookup->parent->d_inode, ctx);
 	if (res) {
 		/* iterate virtual */

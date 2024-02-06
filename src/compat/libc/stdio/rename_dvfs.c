@@ -74,16 +74,16 @@ int rename(const char *src_name, const char *dst_name) {
 	assert(dst_parent->d_sb);
 	assert(dst_parent->d_sb->sb_iops);
 
-	if (dst_parent->d_sb == from->d_sb && dst_parent->d_sb->sb_iops->rename) {
+	if (dst_parent->d_sb == from->d_sb && dst_parent->d_sb->sb_iops->ino_rename) {
 		/* Same FS with rename support*/
-		return dst_parent->d_sb->sb_iops->rename(from->d_inode, dst_parent->d_inode, basename((char *)dst_name));
+		return dst_parent->d_sb->sb_iops->ino_rename(from->d_inode, dst_parent->d_inode, basename((char *)dst_name));
 	} else {
 		/* Different FS or same FS without rename support */
 		assert(from);
 		assert(from->d_sb);
 		assert(from->d_sb->sb_iops);
 
-		if (!from->d_sb->sb_iops->remove || !dst_parent->d_sb->sb_iops->create) {
+		if (!from->d_sb->sb_iops->ino_remove || !dst_parent->d_sb->sb_iops->ino_create) {
 			return SET_ERRNO(EROFS);
 		}
 

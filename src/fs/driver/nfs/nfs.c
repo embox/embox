@@ -208,15 +208,16 @@ static struct super_block_operations nfs_sbops = {
 };
 
 struct inode_operations nfs_iops = {
-	.iterate = nfs_iterate,
+	.ino_create = nfsfs_create,
+	.ino_remove = nfsfs_delete,
+	.ino_iterate = nfs_iterate,
+	.ino_truncate = nfsfs_truncate,
 };
 
 static struct fsop_desc nfsfs_fsop = {
 	.mount = nfsfs_mount,
-	.create_node = nfsfs_create,
-	.delete_node = nfsfs_delete,
+
 	.umount_entry = nfs_umount_entry,
-	.truncate = nfsfs_truncate,
 };
 
 static struct fs_driver nfsfs_driver = {
@@ -415,7 +416,10 @@ static int nfs_iterate(struct inode *next, char *next_name, struct inode *parent
 }
 
 static int nfs_fill_sb(struct super_block *sb, const char *source) {
+	struct inode *dest;
 	struct nfs_fs_info *fsi;
+	nfs_file_info_t *fi;
+	int rc = 0;
 
 	if (NULL == (fsi = pool_alloc(&nfs_fs_pool))) {
 		return -ENOMEM;
@@ -432,10 +436,37 @@ static int nfs_fill_sb(struct super_block *sb, const char *source) {
 		return -1;
 	}
 
+	if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
+		pool_free(&nfs_fs_pool, fsi);
+		return -ENOMEM;
+	}
+
+	dest = sb->sb_root;
+	
+	inode_priv_set(dest, fi);
+	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
+
+		/* get server name and mount directory from params */
+	if (0 > nfs_mount(dest)) {
+		rc = -1;
+		goto error;
+	}
+
+	/* copy filesystem filehandle to root directory filehandle */
+	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
+
 	return 0;
+
+error:
+	pool_free(&nfs_fs_pool, fsi);
+	pool_free(&nfs_file_pool, fi);
+
+	return rc;
 }
 
 static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
+	return 0;
+#if 0
 	nfs_file_info_t *fi;
 	struct nfs_fs_info *fsi;
 	int rc;
@@ -464,6 +495,7 @@ error:
 	nfs_free_fs(sb);
 
 	return rc;
+#endif
 }
 
 static int nfs_umount_entry(struct inode *node) {

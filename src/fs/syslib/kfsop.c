@@ -43,7 +43,6 @@ POOL_DEF(flock_pool, struct flock_shared, MAX_FLOCK_QUANTITY);
 
 static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 	struct path node;
-	const struct fs_driver *drv;
 	int retval = 0;
 
 	if(NULL == parent->node->i_sb) {
@@ -54,18 +53,17 @@ static int create_new_node(struct path *parent, const char *name, mode_t mode) {
 		return -ENOMEM;
 	}
 
-	/* check drv of parents */
-	drv = parent->node->i_sb->fs_drv;
-
 	if ((mode & VFS_DIR_VIRTUAL) && S_ISDIR(mode)) {
 		node.node->i_sb = parent->node->i_sb;
 	} else {
-		if (!drv || !drv->fsop->create_node) {
-			retval = -ENOSYS;
+		struct super_block *sb = parent->node->i_sb;
+
+		if (!sb || !sb->sb_iops || !sb->sb_iops->ino_create) {
+			retval = -ENOSYS;/* FIXME EPERM ?*/
 			goto out;
 		}
 
-		retval = drv->fsop->create_node(node.node, parent->node, node.node->i_mode);
+		retval = sb->sb_iops->ino_create(node.node, parent->node, node.node->i_mode);
 		if (retval) {
 			goto out;
 		}
@@ -118,7 +116,7 @@ int kmkdir(const char *pathname, mode_t mode) {
 }
 
 int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *child) {
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int ret;
 
 	assert(dir_path->node);
@@ -158,15 +156,15 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 		return -1;
 	}
 
-	/* check drv of parents */
-	drv = dir_path->node->i_sb->fs_drv;
-	if (!drv || !drv->fsop->create_node) {
+	sb = dir_path->node->i_sb;
+	if (!sb || !sb->sb_iops || !sb->sb_iops->ino_create) {
 		SET_ERRNO(EBADF);
 		vfs_del_leaf(child->node);
 		return -1;
 	}
-
-	if (0 != (ret = drv->fsop->create_node(child->node, dir_path->node, child->node->i_mode))) {
+	
+	ret = sb->sb_iops->ino_create(child->node, dir_path->node, child->node->i_mode);
+	if (0 != ret) {
 		SET_ERRNO(-ret);
 		vfs_del_leaf(child->node);
 		return -1;
@@ -183,7 +181,7 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 
 int kremove(const char *pathname) {
 	struct path node;
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -191,8 +189,8 @@ int kremove(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->i_sb->fs_drv;
-	if (NULL == drv->fsop->delete_node) {
+	sb = node.node->i_sb;
+	if (NULL == sb->sb_iops->ino_remove) {
 		errno = EPERM;
 		return -1;
 	}
@@ -207,7 +205,7 @@ int kremove(const char *pathname) {
 
 int kunlink(const char *pathname) {
 	struct path node, parent;
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -226,14 +224,14 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	drv = node.node->i_sb->fs_drv;
+	sb = node.node->i_sb;
 
-	if (NULL == drv->fsop->delete_node) {
+	if (NULL == sb->sb_iops->ino_remove) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(node.node))) {
+	if (0 != (res = sb->sb_iops->ino_remove(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -246,7 +244,7 @@ int kunlink(const char *pathname) {
 
 int krmdir(const char *pathname) {
 	struct path node, parent, child;
-	const struct fs_driver *drv;
+	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
@@ -270,14 +268,14 @@ int krmdir(const char *pathname) {
 		return res;
 	}
 
-	drv = node.node->i_sb->fs_drv;
+	sb = node.node->i_sb;
 
-	if (NULL == drv->fsop->delete_node) {
+	if (NULL == sb->sb_iops->ino_remove) {
 		errno = EPERM;
 		return -1;
 	}
 
-	if (0 != (res = drv->fsop->delete_node(node.node))) {
+	if (0 != (res = sb->sb_iops->ino_remove(node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -350,7 +348,7 @@ static int vfs_mount_walker(struct inode *dir) {
 		}
 
 		assert(dir->i_ops);
-		res = dir->i_ops->iterate(node,
+		res = dir->i_ops->ino_iterate(node,
 				inode_name(node),
 				dir,
 				&dir_context);
@@ -402,7 +400,7 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 		return -1;
 	}
 
-	if (sb->sb_root->i_ops && sb->sb_root->i_ops->iterate) {
+	if (sb->sb_root->i_ops && sb->sb_root->i_ops->ino_iterate) {
 		/* If FS provides iterate handler, then we assume
 		 * that we should use it to actually mount all these
 		 * files */

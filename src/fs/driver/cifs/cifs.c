@@ -204,10 +204,72 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 	return ret;
 }
 
+static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_node, int I_mode) {
+	struct cifs_fs_info *pfsi;
+	char fileurl[PATH_MAX];
+	SMBCFILE *file;
+	mode_t mode;
+	int rc;
+
+	pfsi = parent_node->i_sb->sb_data;
+
+	strcpy(fileurl,pfsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+
+	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
+
+	mode = new_node->i_mode & S_IRWXA;
+	if (node_is_directory(new_node)) {
+		mode |= S_IFDIR;
+		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
+			return -errno;
+		}
+	} else {
+		mode |= S_IFREG;
+		file = smbc_getFunctionCreat(pfsi->ctx)(pfsi->ctx, fileurl, mode);
+		if (!file) {
+			return -errno;
+		}
+		if (smbc_getFunctionClose(pfsi->ctx)(pfsi->ctx, file)) {
+			return -errno;
+		}
+	}
+
+	return 0;
+}
+
+static int embox_cifs_node_delete(struct inode *node) {
+	struct cifs_fs_info *fsi;
+	char fileurl[PATH_MAX];
+	int rc;
+
+	fsi = node->i_sb->sb_data;
+
+	strcpy(fileurl,fsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+
+	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
+
+	if (node_is_directory(node)) {
+		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
+			return -errno;
+		}
+	} else {
+		if (smbc_getFunctionUnlink(fsi->ctx)(fsi->ctx, fileurl)) {
+			return -errno;
+		}
+	}
+
+	return 0;
+}
+
 static struct inode_operations cifs_iops = {
-//	.lookup   = cifs_lookup,
-	.iterate  = cifs_iterate,
+	.ino_create = embox_cifs_node_create,
+	.ino_remove = embox_cifs_node_delete,
+//	.ino_lookup   = cifs_lookup,
+	.ino_iterate  = cifs_iterate,
 };
+
 static struct file_operations cifs_fop;
 static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	SMBCCTX *ctx;
@@ -237,16 +299,19 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
 	fsi->ctx = ctx;
+
 	sb->sb_data = fsi;
 	sb->sb_ops = &cifs_sbops;
 	sb->sb_iops = &cifs_iops;
 	sb->sb_fops = &cifs_fop;
 
+	fsi->mntto = sb->sb_root;
 
 	return 0;
 }
 
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
+#if 0
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
 
@@ -254,6 +319,7 @@ static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 
 	fsi->mntto = dir;
 	strcpy(smb_path, fsi->url);
+#endif
 
 	return 0;
 }
@@ -360,69 +426,6 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	return res;
 }
 
-static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_node, int I_mode) {
-	struct cifs_fs_info *pfsi;
-	char fileurl[PATH_MAX];
-	SMBCFILE *file;
-	mode_t mode;
-	int rc;
-
-	pfsi = parent_node->i_sb->sb_data;
-
-	strcpy(fileurl,pfsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
-
-	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
-
-	mode = new_node->i_mode & S_IRWXA;
-	if (node_is_directory(new_node)) {
-		mode |= S_IFDIR;
-		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
-			return -errno;
-		}
-	} else {
-		mode |= S_IFREG;
-		file = smbc_getFunctionCreat(pfsi->ctx)(pfsi->ctx, fileurl, mode);
-		if (!file) {
-			return -errno;
-		}
-		if (smbc_getFunctionClose(pfsi->ctx)(pfsi->ctx, file)) {
-			return -errno;
-		}
-	}
-
-	return 0;
-}
-
-static int embox_cifs_node_delete(struct inode *node) {
-	struct cifs_fs_info *fsi;
-	char fileurl[PATH_MAX];
-	int rc;
-
-	fsi = node->i_sb->sb_data;
-
-	strcpy(fileurl,fsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
-#if 0
-	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
-		return rc;
-	}
-#endif
-	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
-
-	if (node_is_directory(node)) {
-		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
-			return -errno;
-		}
-	} else {
-		if (smbc_getFunctionUnlink(fsi->ctx)(fsi->ctx, fileurl)) {
-			return -errno;
-		}
-	}
-
-	return 0;
-}
-
 static int cifs_destroy_inode(struct inode *inode) {
 	return 0;
 }
@@ -433,8 +436,6 @@ static struct super_block_operations cifs_sbops = {
 };
 
 static const struct fsop_desc cifs_fsop = {
-	.create_node = embox_cifs_node_create,
-	.delete_node = embox_cifs_node_delete,
 	.mount = embox_cifs_mount,
 };
 
@@ -450,7 +451,6 @@ static const struct fs_driver cifs_driver = {
 	.fill_sb  = cifs_fill_sb,
 	.clean_sb = cifs_clean_sb,
 	.fsop     = &cifs_fsop,
-//	.file_op  = &cifs_fop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);
