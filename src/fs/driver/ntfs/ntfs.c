@@ -493,6 +493,10 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	struct block_dev *bdev;
 	struct ntfs_fs_info *fsi;
 	struct ntfs_device *ntfs_dev;
+	struct inode *dest;
+	int rc;
+	ntfs_inode *ni;
+	struct ntfs_file_info *fi;
 
 	bdev = bdev_by_path(source);
 	if (NULL == bdev) {
@@ -534,10 +538,38 @@ static int ntfs_fill_sb(struct super_block *sb, const char *source) {
 	fsi->ntfs_dev = ntfs_dev;
 	fsi->ntfs_vol = vol;
 
+/*************/
+	rc = 0;
+	dest = sb->sb_root;
+
+	if (NULL == (ni = ntfs_pathname_to_inode(vol, NULL, "/"))) {
+		rc = errno;
+		goto error;
+	}
+
+	if (NULL == (fi = pool_alloc(&ntfs_file_pool))) {
+		errno = ENOMEM;
+		goto error;
+	}
+
+	memset(fi, 0, sizeof(*fi));
+	inode_priv_set(dest, fi);
+
+	// ToDo: remplir la structure de l'inode
+	// ToDo: en fait, seulement l'utilisateur et le groupe
+	fi->mref = ni->mft_no;
+
 	return 0;
+error:
+	ntfs_clean_sb(sb);
+
+	return -rc;
+
 }
 
 static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
+	return 0;
+#if 0
 	ntfs_volume *vol;
 	int rc;
 	ntfs_inode *ni;
@@ -569,6 +601,8 @@ error:
 	ntfs_clean_sb(sb);
 
 	return -rc;
+#endif
+
 }
 
 static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __oflag)
