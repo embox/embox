@@ -518,6 +518,9 @@ static int cdfs_clean_sb(struct super_block *sb) {
 	sysfree(cdfs);
 
 	cdfs_free_fs(sb);
+
+	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
+
 	return 0;
 }
 
@@ -1079,7 +1082,7 @@ error:
 #endif
 
 static int cdfs_umount_entry(struct inode *node) {
-	pool_free(&cdfs_file_pool, inode_priv(node));
+	//pool_free(&cdfs_file_pool, inode_priv(node));
 
 	return 0;
 }

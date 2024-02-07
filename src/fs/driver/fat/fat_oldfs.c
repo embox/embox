@@ -27,11 +27,11 @@
 #include "fat.h"
 
 static int fatfs_umount_entry(struct inode *node) {
-	if (node_is_directory(node)) {
-		fat_dirinfo_free(inode_priv(node));
-	} else {
-		fat_file_free(inode_priv(node));
-	}
+	// if (node_is_directory(node)) {
+	// 	fat_dirinfo_free(inode_priv(node));
+	// } else {
+	// 	fat_file_free(inode_priv(node));
+	// }
 
 	return 0;
 }

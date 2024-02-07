@@ -377,7 +377,7 @@ static int jffs2_mount(struct inode *dir_node) {
 }
 
 static int jffs2fs_umount_entry(struct inode *node) {
-	pool_free(&jffs2_file_pool, inode_priv(node));
+	//pool_free(&jffs2_file_pool, inode_priv(node));
 
 	return 0;
 }
@@ -429,7 +429,11 @@ static int jffs2_clean_sb(struct super_block *sb) {
 
 	jffs2_compressors_exit();
 
-	return jffs2_free_fs(sb);
+	jffs2_free_fs(sb);
+
+	pool_free(&jffs2_file_pool, inode_priv(sb->sb_root));
+
+	return 0;
 }
 
 /**

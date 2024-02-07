@@ -416,7 +416,7 @@ static int embox_ntfs_simultaneous_mounting_descend(struct inode *node, ntfs_ino
 }
 
 static int ntfs_umount_entry(struct inode *node) {
-	pool_free(&ntfs_file_pool, inode_priv(node));
+	//pool_free(&ntfs_file_pool, inode_priv(node));
 
 	return 0;
 }
@@ -433,6 +433,8 @@ static int ntfs_clean_sb(struct super_block *sb) {
 		ntfs_device_free(fsi->ntfs_dev);
 	}
 	pool_free(&ntfs_fs_pool, fsi);
+
+	pool_free(&ntfs_file_pool, inode_priv(sb->sb_root));
 
 	return 0;
 }

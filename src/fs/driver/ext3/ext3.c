@@ -388,7 +388,8 @@ static int ext3fs_clean_sb(struct super_block *sb) {
 }
 
 static int ext3fs_umount_entry(struct inode *node) {
-	return ext2fs_driver->fsop->umount_entry(node);
+	return 0;
+	//return ext2fs_driver->fsop->umount_entry(node);
 }
 
 static struct file_operations ext3_fop = {

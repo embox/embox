@@ -854,6 +854,8 @@ static int ext4fs_truncate (struct inode *node, off_t length) {
 
 static int ext4fs_clean_sb(struct super_block *sb) {
 	ext4_free_fs(sb);
+
+	pool_free(&ext4_file_pool, inode_priv(sb->sb_root));
 	return 0;
 }
 
@@ -869,7 +871,7 @@ static void ext4_free_fs(struct super_block *sb) {
 }
 
 static int ext4fs_umount_entry(struct inode *node) {
-	pool_free(&ext4_file_pool, inode_priv(node));
+	//pool_free(&ext4_file_pool, inode_priv(node));
 
 	return 0;
 }

@@ -501,13 +501,14 @@ error:
 #endif
 
 static int nfs_umount_entry(struct inode *node) {
-	pool_free(&nfs_file_pool, inode_priv(node));
+	//pool_free(&nfs_file_pool, inode_priv(node));
 
 	return 0;
 }
 
 static int nfs_clean_sb(struct super_block *sb) {
 	nfs_free_fs(sb);
+	pool_free(&nfs_file_pool, inode_priv(sb->sb_root));
 	return 0;
 }
 
