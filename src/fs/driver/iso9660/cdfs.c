@@ -834,11 +834,11 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 /* File system operations*/
 static int cdfs_fill_sb(struct super_block *sb, const char *source);
 //static int cdfsfs_mount(struct super_block *sb, struct inode *dest);
-static int cdfs_umount_entry(struct inode *node);
+//static int cdfs_umount_entry(struct inode *node);
 
 static struct fsop_desc cdfsfs_fsop = {
 	//.mount = cdfsfs_mount,
-	.umount_entry = cdfs_umount_entry,
+	//.umount_entry = cdfs_umount_entry,
 };
 
 static struct fs_driver cdfsfs_driver = {
@@ -1080,9 +1080,10 @@ error:
 	return 0;
 }
 #endif
-
+#if 0
 static int cdfs_umount_entry(struct inode *node) {
 	//pool_free(&cdfs_file_pool, inode_priv(node));
 
 	return 0;
 }
+#endif

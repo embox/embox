@@ -414,12 +414,13 @@ static int embox_ntfs_simultaneous_mounting_descend(struct inode *node, ntfs_ino
  	}
     return -1;
 }
-
+#if 0
 static int ntfs_umount_entry(struct inode *node) {
 	//pool_free(&ntfs_file_pool, inode_priv(node));
 
 	return 0;
 }
+#endif
 
 static int ntfs_clean_sb(struct super_block *sb) {
 	struct ntfs_fs_info *fsi = sb->sb_data;
@@ -978,7 +979,7 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 
 static const struct fsop_desc ntfs_fsop = {
 	//.mount = embox_ntfs_mount,
-	.umount_entry = ntfs_umount_entry,
+	//.umount_entry = ntfs_umount_entry,
 };
 
 static const struct file_operations ntfs_fop = {

@@ -549,7 +549,7 @@ static int ext2_create(struct inode *i_new, struct inode *i_dir);
 static int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
 static int ext2_unlink(struct inode *dir_node, struct inode *node);
 static void ext2_free_fs(struct super_block *sb);
-static int ext2fs_umount_entry(struct inode *node);
+//static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
 //static int ext2fs_mount(struct super_block *sb, struct inode *dest);
@@ -560,7 +560,7 @@ static int ext2_clean_sb(struct super_block *sb);
 static struct fsop_desc ext2_fsop = {
 	//.mount	      = ext2fs_mount,
 
-	.umount_entry = ext2fs_umount_entry,
+	//.umount_entry = ext2fs_umount_entry,
 };
 
 static struct fs_driver ext2fs_driver = {
@@ -941,13 +941,13 @@ static void ext2_free_fs(struct super_block *sb) {
 	}
 
 }
-
+#if 0
 static int ext2fs_umount_entry(struct inode *node) {
 	//pool_free(&ext2_file_pool, inode_priv(node));
 
 	return 0;
 }
-
+#endif
 extern void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new);
 
 /*

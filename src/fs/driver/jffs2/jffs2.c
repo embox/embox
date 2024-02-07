@@ -375,12 +375,13 @@ static int jffs2_mount(struct inode *dir_node) {
 
 	return ENOERR;
 }
-
+#if 0
 static int jffs2fs_umount_entry(struct inode *node) {
 	//pool_free(&jffs2_file_pool, inode_priv(node));
 
 	return 0;
 }
+#endif
 
 /**
  * Unmount the filesystem.
@@ -1449,7 +1450,7 @@ static int jffs2fs_truncate(struct inode *node, off_t length);
 static struct fsop_desc jffs2_fsop = {
 	//.mount	      = jffs2fs_mount,
 
-	.umount_entry = jffs2fs_umount_entry,
+	//.umount_entry = jffs2fs_umount_entry,
 };
 
 static int jffs2_fill_sb(struct super_block *sb, const char *source);

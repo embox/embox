@@ -650,7 +650,7 @@ static int ext4_create(struct inode *i_new, struct inode *i_dir);
 static int ext4_mkdir(struct inode *i_new, struct inode *i_dir);
 static int ext4_unlink(struct inode *dir_node, struct inode *node);
 static void ext4_free_fs(struct super_block *sb);
-static int ext4fs_umount_entry(struct inode *node);
+//static int ext4fs_umount_entry(struct inode *node);
 
 static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_fill_sb(struct super_block *sb, const char *source);
@@ -660,7 +660,7 @@ static int ext4fs_clean_sb(struct super_block *sb);
 static struct fsop_desc ext4_fsop = {
 	//.mount	      = ext4fs_mount,
 
-	.umount_entry = ext4fs_umount_entry,
+	//.umount_entry = ext4fs_umount_entry,
 };
 
 static struct fs_driver ext4fs_driver = {
@@ -870,11 +870,13 @@ static void ext4_free_fs(struct super_block *sb) {
 	}
 }
 
+#if 0
 static int ext4fs_umount_entry(struct inode *node) {
 	//pool_free(&ext4_file_pool, inode_priv(node));
 
 	return 0;
 }
+#endif
 
 /*
  * Read a new inode into a file structure.

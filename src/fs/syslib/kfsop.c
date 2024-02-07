@@ -624,10 +624,6 @@ static int umount_walker(struct inode *node) {
 		}
 	}
 
-	if (node->i_sb->fs_drv->fsop->umount_entry) {
-		node->i_sb->fs_drv->fsop->umount_entry(node);
-	}
-
 	vfs_del_leaf(node);
 
 	return 0;

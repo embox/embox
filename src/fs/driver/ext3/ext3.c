@@ -56,7 +56,7 @@ static int ext3fs_fill_sb(struct super_block *sb, const char *source);
 static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext3fs_delete(struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
-static int ext3fs_umount_entry(struct inode *node);
+//static int ext3fs_umount_entry(struct inode *node);
 
 static const struct fs_driver *ext2fs_driver;
 static struct fs_driver ext3fs_driver;
@@ -386,11 +386,12 @@ static int ext3fs_clean_sb(struct super_block *sb) {
 
 	return res;
 }
-
+#if 0
 static int ext3fs_umount_entry(struct inode *node) {
 	return 0;
 	//return ext2fs_driver->fsop->umount_entry(node);
 }
+#endif
 
 static struct file_operations ext3_fop = {
 	.open = ext3fs_open,
@@ -415,7 +416,7 @@ struct inode_operations ext3_iops = {
 static struct fsop_desc ext3_fsop = {
 	//.mount	      = ext3fs_mount,
 
-	.umount_entry = ext3fs_umount_entry,
+	//.umount_entry = ext3fs_umount_entry,
 };
 
 static struct fs_driver ext3fs_driver = {

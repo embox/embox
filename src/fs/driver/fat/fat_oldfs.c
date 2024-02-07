@@ -25,7 +25,7 @@
 #include <drivers/block_dev.h>
 
 #include "fat.h"
-
+#if 0
 static int fatfs_umount_entry(struct inode *node) {
 	// if (node_is_directory(node)) {
 	// 	fat_dirinfo_free(inode_priv(node));
@@ -35,6 +35,7 @@ static int fatfs_umount_entry(struct inode *node) {
 
 	return 0;
 }
+#endif
 
 extern struct file_operations fat_fops;
 extern int fat_destroy_inode(struct inode *inode);
@@ -65,7 +66,7 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 static struct fsop_desc fatfs_fsop = {
 	//.mount = fatfs_mount,
 
-	.umount_entry = fatfs_umount_entry,
+	//.umount_entry = fatfs_umount_entry,
 };
 
 static const struct fs_driver fatfs_driver = {
