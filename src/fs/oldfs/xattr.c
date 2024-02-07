@@ -17,7 +17,7 @@
 #include <fs/inode.h>
 #include <fs/xattr.h>
 
-static int check_fsop(struct inode *node, const struct fsop_desc **fsop) {
+static int check_inode(struct inode *node) {
 	if (!node) {
 		return -ENOENT;
 	}
@@ -30,19 +30,14 @@ static int check_fsop(struct inode *node, const struct fsop_desc **fsop) {
 		return -EINVAL;
 	}
 
-	if (!node->i_sb->fs_drv->fsop) {
-		return -EINVAL;
-	}
 
-	*fsop = node->i_sb->fs_drv->fsop;
 	return 0;
 }
 
 int kfile_xattr_get(struct inode *node, const char *name, char *value, size_t len) {
-	const struct fsop_desc *fsop;
 	int err;
 
-	if (0 > (err = check_fsop(node, &fsop))) {
+	if (0 > (err = check_inode(node))) {
 		return err;
 	}
 
@@ -60,10 +55,9 @@ int kfile_xattr_get(struct inode *node, const char *name, char *value, size_t le
 
 int kfile_xattr_set(struct inode *node, const char *name,
 			const char *value, size_t len, int flags) {
-	const struct fsop_desc *fsop;
 	int err;
 
-	if (0 > (err = check_fsop(node, &fsop))) {
+	if (0 > (err = check_inode(node))) {
 		return err;
 	}
 
@@ -84,10 +78,9 @@ int kfile_xattr_set(struct inode *node, const char *name,
 }
 
 int kfile_xattr_list(struct inode *node, char *list, size_t len) {
-	const struct fsop_desc *fsop;
 	int err;
 
-	if (0 > (err = check_fsop(node, &fsop))) {
+	if (0 > (err = check_inode(node))) {
 		return err;
 	}
 
