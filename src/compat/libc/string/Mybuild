@@ -41,9 +41,6 @@ static module str {
 	source "ffs.c"
 	source "bcopy.c"
 	source "bzero.c"
-}
-
-static module stpcpy {
 	source "stpcpy.c"
 }
 
