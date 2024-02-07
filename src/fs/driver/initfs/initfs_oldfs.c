@@ -35,6 +35,7 @@ struct inode_operations initfs_iops = {
 	.ino_iterate = initfs_iterate,
 };
 
+#if 0
 static int initfs_mount(struct super_block *sb, struct inode *dest) {
 #if 0
 	extern char _initfs_start, _initfs_end;
@@ -57,6 +58,7 @@ static int initfs_mount(struct super_block *sb, struct inode *dest) {
 
 	return 0;
 }
+#endif
 
 extern struct file_operations initfs_fops;
 extern int initfs_fill_sb(struct super_block *sb, const char *source);
@@ -67,7 +69,7 @@ struct super_block_operations initfs_sbops = {
 };
 
 static struct fsop_desc initfs_fsop = {
-	.mount = initfs_mount,
+	//.mount = initfs_mount,
 };
 
 static struct fs_driver initfs_driver = {

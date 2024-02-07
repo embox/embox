@@ -31,13 +31,14 @@ struct super_block_operations devfs_sbops = {
 	//.open_idesc = devfs_open_idesc,
 	.destroy_inode = devfs_destroy_inode,
 };
-
+#if 0
 static int devfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
+#endif
 
 static struct fsop_desc devfs_fsop = {
-	.mount = devfs_mount,
+	//.mount = devfs_mount,
 };
 
 static const struct fs_driver devfs_driver = {

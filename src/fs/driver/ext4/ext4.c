@@ -655,10 +655,10 @@ static int ext4fs_umount_entry(struct inode *node);
 static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_fill_sb(struct super_block *sb, const char *source);
 static int ext4fs_clean_sb(struct super_block *sb);
-static int ext4fs_mount(struct super_block *sb, struct inode *dest);
+//static int ext4fs_mount(struct super_block *sb, struct inode *dest);
 
 static struct fsop_desc ext4_fsop = {
-	.mount	      = ext4fs_mount,
+	//.mount	      = ext4fs_mount,
 
 	.umount_entry = ext4fs_umount_entry,
 };
@@ -799,6 +799,7 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	return 0;
 }
 
+#if 0
 static int ext4fs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 #if 0
@@ -842,6 +843,7 @@ error:
 	return -rc;
 #endif
 }
+#endif
 
 static int ext4fs_truncate (struct inode *node, off_t length) {
 

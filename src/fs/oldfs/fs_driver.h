@@ -18,7 +18,7 @@ struct block_dev;
 struct super_block;
 
 struct fsop_desc {
-	int (*mount)(struct super_block *sb, struct inode *dest);
+	//int (*mount)(struct super_block *sb, struct inode *dest);
 
 	int (*umount_entry)(struct inode *node);
 };

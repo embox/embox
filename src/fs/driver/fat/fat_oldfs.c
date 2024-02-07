@@ -55,13 +55,15 @@ struct inode_operations fat_iops = {
 	.ino_truncate = fat_truncate,
 };
 
+#if 0
 static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	/* Do nothing */
 	return 0;
 }
+#endif
 
 static struct fsop_desc fatfs_fsop = {
-	.mount = fatfs_mount,
+	//.mount = fatfs_mount,
 
 	.umount_entry = fatfs_umount_entry,
 };

@@ -309,7 +309,7 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 
 	return 0;
 }
-
+#if 0
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 #if 0
 	struct cifs_fs_info *fsi;
@@ -323,6 +323,7 @@ static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
 
 	return 0;
 }
+#endif
 
 static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __oflag)
 {
@@ -436,7 +437,7 @@ static struct super_block_operations cifs_sbops = {
 };
 
 static const struct fsop_desc cifs_fsop = {
-	.mount = embox_cifs_mount,
+	//.mount = embox_cifs_mount,
 };
 
 static struct file_operations cifs_fop = {

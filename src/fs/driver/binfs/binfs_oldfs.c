@@ -20,10 +20,11 @@
 #include <fs/file_desc.h>
 
 #define BINFS_NAME "binfs"
-
+#if 0
 static int binfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
+#endif
 
 extern int binfs_destroy_inode(struct inode *inode) ;
 
@@ -40,7 +41,7 @@ struct super_block_operations binfs_sbops = {
 
 
 static struct fsop_desc binfs_fsop = {
-	.mount = binfs_mount,
+	//.mount = binfs_mount,
 };
 
 static struct fs_driver binfs_driver = {

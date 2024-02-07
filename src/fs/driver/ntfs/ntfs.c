@@ -567,6 +567,7 @@ error:
 
 }
 
+#if 0
 static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 #if 0
@@ -604,6 +605,7 @@ error:
 #endif
 
 }
+#endif
 
 static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __oflag)
 {
@@ -973,7 +975,7 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 };
 
 static const struct fsop_desc ntfs_fsop = {
-	.mount = embox_ntfs_mount,
+	//.mount = embox_ntfs_mount,
 	.umount_entry = ntfs_umount_entry,
 };
 

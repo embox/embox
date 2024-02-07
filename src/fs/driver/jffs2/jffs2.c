@@ -1437,13 +1437,13 @@ static int jffs2_free_fs(struct super_block *sb) {
 }
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
-static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
+//static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
 static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
 
 static struct fsop_desc jffs2_fsop = {
-	.mount	      = jffs2fs_mount,
+	//.mount	      = jffs2fs_mount,
 
 	.umount_entry = jffs2fs_umount_entry,
 };
@@ -1709,6 +1709,7 @@ static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	return 0;
 }
 
+#if 0
 static int jffs2fs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 #if 0
@@ -1743,6 +1744,7 @@ error:
 	return -rc;
 #endif
 }
+#endif
 
 static int jffs2fs_truncate (struct inode *node, off_t length) {
 	struct jffs2_file_info *fi;

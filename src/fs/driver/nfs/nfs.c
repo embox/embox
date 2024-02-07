@@ -190,7 +190,7 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 /* File system operations */
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
-static int nfsfs_mount(struct super_block *sb, struct inode *dest);
+//static int nfsfs_mount(struct super_block *sb, struct inode *dest);
 static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
@@ -215,7 +215,7 @@ struct inode_operations nfs_iops = {
 };
 
 static struct fsop_desc nfsfs_fsop = {
-	.mount = nfsfs_mount,
+	//.mount = nfsfs_mount,
 
 	.umount_entry = nfs_umount_entry,
 };
@@ -464,6 +464,7 @@ error:
 	return rc;
 }
 
+#if 0
 static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 #if 0
@@ -497,6 +498,7 @@ error:
 	return rc;
 #endif
 }
+#endif
 
 static int nfs_umount_entry(struct inode *node) {
 	pool_free(&nfs_file_pool, inode_priv(node));

@@ -373,7 +373,7 @@ static int vfs_mount_walker(struct inode *dir) {
 
 int kmount(const char *source, const char *dest, const char *fs_type) {
 	struct path dir_node;
-	const struct fs_driver *drv;
+	//const struct fs_driver *drv;
 	struct super_block *sb;
 	const char *lastpath;
 	struct mount_descriptor *mnt_desc;
@@ -382,24 +382,24 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 	if (NULL == (sb = super_block_alloc(fs_type, source))) {
 		return -ENOMEM;
 	}
-
+#if 0
 	drv = sb->fs_drv;
 	if (!drv->fsop->mount) {
 		errno = ENOSYS;
 		return -1;
 	}
-
+#endif
 	if (ENOERR != (res = fs_perm_lookup(dest, &lastpath, &dir_node))) {
 		errno = -res;
 		return -1;
 	}
-
+#if 0
 	if (ENOERR != (res = drv->fsop->mount(sb, sb->sb_root))) {
 		//todo free root
 		errno = -res;
 		return -1;
 	}
-
+#endif
 	if (sb->sb_root->i_ops && sb->sb_root->i_ops->ino_iterate) {
 		/* If FS provides iterate handler, then we assume
 		 * that we should use it to actually mount all these
