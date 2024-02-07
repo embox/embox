@@ -20,6 +20,8 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <lib/cwalk.h>
+
 typedef void item_print(const char *path, struct stat *sb);
 
 static void print_usage(void) {
@@ -35,7 +37,10 @@ static void print_access(int flags) {
 #define BUFLEN 1024
 
 static void printer_simple(const char *path, struct stat *sb) {
-	printf(" %s\n", path);
+	if (cwk_path_is_absolute(path)) {
+		path++;
+	}
+	printf("\t%s\n", path);
 }
 
 static void printer_long(const char *path, struct stat *sb) {
@@ -65,6 +70,7 @@ static void printer_long(const char *path, struct stat *sb) {
 		break;
 	}
 
+	putchar('\t');
 	putchar(type);
 
 	print_access(sb->st_mode >> 6);
@@ -93,67 +99,49 @@ static void printer_long(const char *path, struct stat *sb) {
 	printer_simple(path, sb);
 }
 
-static void print(char *path, DIR *dir, int recursive, item_print *printer) {
+static void print(const char *path, const char *beg, char *end, DIR *dir,
+    int recursive, item_print *printer) {
+	DIR *d;
+	char *endptr;
 	struct dirent *dent;
-	char *line;
+	struct stat sb;
 
 	while (NULL != (dent = readdir(dir))) {
-		int pathlen = strlen(path);
-		int dent_namel = strlen(dent->d_name);
-		const int line_size = sizeof(char) * (pathlen + dent_namel + 3);
-		line = (char *)malloc(line_size);
-		if (line == NULL) {
-			printf("Failed to allocate memory for buffer!\n");
-			return;
-		}
-		struct stat sb;
+		endptr = stpcpy(end, dent->d_name);
 
-		if (pathlen > 0) {
-#ifdef __GNUC__
-#pragma GCC diagnostic push
-#if __GNUC__ > 12
-#pragma GCC diagnostic ignored \
-    "-Wformat-overflow" /* It can't really overflow, 'line' is big enough */
-#endif
-#endif
-			sprintf(line, "%s/%s", path, dent->d_name);
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-		}
-		else {
-			strcpy(line, dent->d_name);
-		}
-
-		if (-1 == stat(line, &sb)) {
-			printf("Cannot stat %s\n", line);
-			free(line);
+		if (-1 == stat(path, &sb)) {
+			printf("Cannot stat %s\n", path);
 			continue;
 		}
 
-		printer(line, &sb);
+		if (S_ISDIR(sb.st_mode)) {
+			endptr = stpcpy(endptr, "/");
+		}
+
+		printer(beg, &sb);
 
 		if (S_ISDIR(sb.st_mode) && recursive) {
-			DIR *d;
-
-			if (NULL == (d = opendir(line))) {
-				printf("Cannot recurse to %s\n", line);
+			if (NULL == (d = opendir(path))) {
+				printf("Cannot recurse to %s\n", path);
 			}
 
-			print(line, d, recursive, printer);
+			print(path, beg, endptr, d, recursive, printer);
 
 			closedir(d);
 		}
-		free(line);
 	}
 }
 
 int main(int argc, char **argv) {
+	item_print *printer;
+	char *endptr;
 	DIR *dir;
 	int opt;
 	int recursive;
-	item_print *printer;
-	char dir_name[NAME_MAX];
+	size_t path_len;
+	size_t root_len;
+	struct stat sb;
+	char path[PATH_MAX];
 
 	printer = printer_simple;
 	recursive = 0;
@@ -178,37 +166,42 @@ int main(int argc, char **argv) {
 	}
 
 	if (optind < argc) {
-		struct stat sb;
-
 		do {
-			if (-1 == stat(argv[optind], &sb)) {
+			cwk_path_normalize(argv[optind], path, sizeof(path));
+
+			if (-1 == stat(path, &sb)) {
 				return -errno;
 			}
 
 			if (!S_ISDIR(sb.st_mode)) {
-				printer(argv[optind], &sb);
+				printer(path, &sb);
 				continue;
 			}
 
-			snprintf(dir_name, NAME_MAX, "%s", argv[optind]);
-
-			if (NULL == (dir = opendir(dir_name))) {
+			if (NULL == (dir = opendir(path))) {
 				return -errno;
 			}
 
-			print(dir_name, dir, recursive, printer);
+			path_len = strlen(path);
+			endptr = path + path_len;
+			cwk_path_get_root(path, &root_len);
+			if (path_len != root_len) {
+				endptr = stpcpy(endptr, "/");
+			}
+
+			print(path, endptr, endptr, dir, recursive, printer);
 
 			closedir(dir);
 		} while (optind++ < argc - 1);
 	}
 	else {
-		strcpy(dir_name, ".");
+		endptr = stpcpy(path, "./");
 
-		if (NULL == (dir = opendir(dir_name))) {
+		if (NULL == (dir = opendir(path))) {
 			return -errno;
 		}
 
-		print(dir_name, dir, recursive, printer);
+		print(path, endptr, endptr, dir, recursive, printer);
 
 		closedir(dir);
 	}
