@@ -152,6 +152,8 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	int err;
 	char normal_path[PATH_MAX];
 
+	err = 0;
+
 	assert(path);
 	assert(lookup);
 
@@ -174,23 +176,19 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 		return -ENOENT;
 	}
 
-	if (!cwk_path_get_first_segment(path, &segment)) {
-		lookup->item = dentry;
-		lookup->parent = dentry->parent;
-		return 0;
+	if (cwk_path_get_first_segment(path, &segment)) {
+		while (!(err = dvfs_path_walk(&segment, dentry, &dentry))
+		       && cwk_path_get_next_segment(&segment)) {}
 	}
 
-	while (!(err = dvfs_path_walk(&segment, dentry, &dentry))
-	       && cwk_path_get_next_segment(&segment)) {}
-
-	if (!err) {
+	if (err) {
+		lookup->item = NULL;
+		lookup->parent = dentry;
+	}
+	else {
 		dentry_ref_inc(dentry);
 		lookup->item = dentry;
 		lookup->parent = dentry->parent;
-	}
-	else {
-		lookup->item = NULL;
-		lookup->parent = dentry;
 	}
 
 	return (err == -ENOENT) ? 0 : err;
