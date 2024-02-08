@@ -100,7 +100,7 @@ module pipe_test {
 module ppty_test {
 	source "ppty_test.c"
 
-	depends embox.compat.posix.idx.ppty
+	depends embox.compat.posix.ipc.ppty
 }
 
 module fork_test {
