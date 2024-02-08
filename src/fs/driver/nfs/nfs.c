@@ -213,19 +213,20 @@ struct inode_operations nfs_iops = {
 	.ino_iterate = nfs_iterate,
 	.ino_truncate = nfsfs_truncate,
 };
-
+#if 0
 static struct fsop_desc nfsfs_fsop = {
 	//.mount = nfsfs_mount,
 
 	//.umount_entry = nfs_umount_entry,
 };
+#endif
 
 static struct fs_driver nfsfs_driver = {
 	.name     = "nfs",
 	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
-	.fsop     = &nfsfs_fsop,
+	//.fsop     = &nfsfs_fsop,
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {

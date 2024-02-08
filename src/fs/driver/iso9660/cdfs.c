@@ -835,17 +835,17 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 static int cdfs_fill_sb(struct super_block *sb, const char *source);
 //static int cdfsfs_mount(struct super_block *sb, struct inode *dest);
 //static int cdfs_umount_entry(struct inode *node);
-
+#if 0
 static struct fsop_desc cdfsfs_fsop = {
 	//.mount = cdfsfs_mount,
 	//.umount_entry = cdfs_umount_entry,
 };
-
+#endif
 static struct fs_driver cdfsfs_driver = {
 	.name = "iso9660",
 	.fill_sb = cdfs_fill_sb,
 	.clean_sb = cdfs_clean_sb,
-	.fsop = &cdfsfs_fsop,
+	//.fsop = &cdfsfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);

@@ -36,16 +36,17 @@ static int devfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 #endif
-
+#if 0
 static struct fsop_desc devfs_fsop = {
 	//.mount = devfs_mount,
 };
+#endif
 
 static const struct fs_driver devfs_driver = {
 	.name = "devfs",
 	.fill_sb   = devfs_fill_sb,
 
-	.fsop = &devfs_fsop
+	//.fsop = &devfs_fsop
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);

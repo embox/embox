@@ -657,19 +657,20 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source);
 static int ext4fs_clean_sb(struct super_block *sb);
 //static int ext4fs_mount(struct super_block *sb, struct inode *dest);
 
+#if 0
 static struct fsop_desc ext4_fsop = {
 	//.mount	      = ext4fs_mount,
 
 	//.umount_entry = ext4fs_umount_entry,
 };
-
+#endif
 static struct fs_driver ext4fs_driver = {
 	.name     = EXT4_NAME,
 	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
 
-	.fsop     = &ext4_fsop,
+	//.fsop     = &ext4_fsop,
 };
 
 static ext4_file_info_t *ext4_fi_alloc(struct inode *i_new, void *fs) {

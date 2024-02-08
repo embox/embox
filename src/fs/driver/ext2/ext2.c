@@ -556,20 +556,20 @@ static int ext2fs_format(struct block_dev *bdev, void *priv);
 
 static int ext2_fill_sb(struct super_block *sb, const char *source);
 static int ext2_clean_sb(struct super_block *sb);
-
+#if 0
 static struct fsop_desc ext2_fsop = {
 	//.mount	      = ext2fs_mount,
 
 	//.umount_entry = ext2fs_umount_entry,
 };
-
+#endif
 static struct fs_driver ext2fs_driver = {
 	.name     = FS_NAME,
 	.format   = ext2fs_format,
 	.fill_sb  = ext2_fill_sb,
 	.clean_sb = ext2_clean_sb,
 
-	.fsop     = &ext2_fsop,
+	//.fsop     = &ext2_fsop,
 };
 
 static ext2_file_info_t *ext2_fi_alloc(struct inode *i_new, void *fs) {

@@ -435,10 +435,11 @@ static struct super_block_operations cifs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = cifs_destroy_inode,
 };
-
+#if 0
 static const struct fsop_desc cifs_fsop = {
 	//.mount = embox_cifs_mount,
 };
+#endif
 
 static struct file_operations cifs_fop = {
 	.open = cifs_open,
@@ -451,7 +452,7 @@ static const struct fs_driver cifs_driver = {
 	.name     = "cifs",
 	.fill_sb  = cifs_fill_sb,
 	.clean_sb = cifs_clean_sb,
-	.fsop     = &cifs_fsop,
+	//.fsop     = &cifs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);

@@ -412,20 +412,20 @@ struct inode_operations ext3_iops = {
 	.ino_setxattr     = ext2fs_setxattr, /* TODO journaling */
 	.ino_listxattr    = ext2fs_listxattr,
 };
-
+#if 0
 static struct fsop_desc ext3_fsop = {
 	//.mount	      = ext3fs_mount,
 
 	//.umount_entry = ext3fs_umount_entry,
 };
-
+#endif
 static struct fs_driver ext3fs_driver = {
 	.name = EXT3_NAME,
 	.format   = ext3fs_format,
 	.fill_sb = ext3fs_fill_sb,
 	.clean_sb = ext3fs_clean_sb,
 
-	.fsop = &ext3_fsop,
+	//.fsop = &ext3_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ext3fs_driver);

@@ -17,12 +17,6 @@ struct inode;
 struct block_dev;
 struct super_block;
 
-struct fsop_desc {
-	//int (*mount)(struct super_block *sb, struct inode *dest);
-
-	//int (*umount_entry)(struct inode *node);
-};
-
 /**
  * Structure of file system driver.
  * We can mount some file system with name of FS which has been registered in
@@ -33,8 +27,6 @@ struct fs_driver {
 	int (*format)(struct block_dev *bdev, void *priv);
 	int (*fill_sb)(struct super_block *sb, const char *source);
 	int (*clean_sb)(struct super_block *sb);
-
-	const struct fsop_desc       *fsop;
 };
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \

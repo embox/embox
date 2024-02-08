@@ -977,11 +977,12 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 	.ioctl		= ntfs_device_bdev_io_ioctl,
 };
 
+#if 0
 static const struct fsop_desc ntfs_fsop = {
 	//.mount = embox_ntfs_mount,
 	//.umount_entry = ntfs_umount_entry,
 };
-
+#endif
 static const struct file_operations ntfs_fop = {
 	.open = ntfs_open,
 	.close = ntfs_close,
@@ -993,7 +994,7 @@ static const struct fs_driver ntfs_driver = {
 	.name     = "ntfs",
 	.fill_sb  = ntfs_fill_sb,
 	.clean_sb = ntfs_clean_sb,
-	.fsop     = &ntfs_fsop,
+	//.fsop     = &ntfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ntfs_driver);

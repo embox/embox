@@ -62,20 +62,20 @@ static int fatfs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 }
 #endif
-
+#if 0
 static struct fsop_desc fatfs_fsop = {
 	//.mount = fatfs_mount,
 
 	//.umount_entry = fatfs_umount_entry,
 };
-
+#endif
 static const struct fs_driver fatfs_driver = {
 	.name     = "vfat",
 	.format = fat_format,
 	.fill_sb  = fat_fill_sb,
 	.clean_sb = fat_clean_sb,
 
-	.fsop     = &fatfs_fsop,
+	//.fsop     = &fatfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(fatfs_driver);
