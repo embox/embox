@@ -26,7 +26,7 @@ struct msgbuf {
 static int msqid = -1;
 static key_t key = IPC_PRIVATE;
 
-TEST_CASE("send/rcv ") {
+TEST_CASE("send/rcv") {
 	int rtrn;
 	int msgflg = 0;
 	int msgsz;
@@ -80,7 +80,7 @@ TEST_CASE("rcv with IPC_NOWAIT flas") {
 }
 
 
-TEST_CASE("send/rcv ") {
+TEST_CASE("send/rcv") {
 	int rtrn;
 	int msgflg = 0;
 	int msgsz;

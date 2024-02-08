@@ -5,33 +5,32 @@
  * @author Aleksey Zhmulin
  * @date 17.07.23
  */
-#include <errno.h>
 #include <assert.h>
-#include <sys/msg.h>
+#include <errno.h>
+#include <posix_errno.h>
 #include <sys/ipc.h>
+#include <sys/msg.h>
 #include <sys/types.h>
 
-#include <posix_errno.h>
+#include <framework/mod/options.h>
+#include <kernel/sched.h>
+#include <kernel/sched/waitq.h>
+#include <kernel/spinlock.h>
+#include <kernel/thread.h>
+#include <kernel/thread/sync/mutex.h>
+#include <kernel/thread/thread_sched_wait.h>
 #include <lib/libds/dlist.h>
 #include <lib/libds/msg_buff.h>
 #include <mem/misc/pool.h>
-#include <kernel/sched.h>
-#include <kernel/thread.h>
-#include <kernel/spinlock.h>
-#include <kernel/sched/waitq.h>
-#include <kernel/thread/sync/mutex.h>
-#include <kernel/thread/thread_sched_wait.h>
 
-#include <framework/mod/options.h>
-
-#define MSG_QUEUE_COUNT    OPTION_GET(NUMBER, msg_queue_count)
-#define MSG_QUEUE_BUF_SIZE OPTION_GET(NUMBER, msg_queue_buf_size)
+#define MSG_QUEUE_COUNT    OPTION_GET(NUMBER, msg_count)
+#define MSG_QUEUE_BUF_SIZE OPTION_GET(NUMBER, msg_buf_size)
 
 enum msq_state {
 	MSQ_FULL,
 	MSQ_EMPTY,
 	MSQ_DELETED,
-	MSQ_OTHER
+	MSQ_OTHER,
 };
 
 struct msgbuf {
