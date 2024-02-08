@@ -672,8 +672,8 @@ int kumount(const char *dir) {
 		return res;
 	}
 
-	dir_node.node->i_sb->sb_root = NULL;
 	super_block_free(dir_node.node->i_sb);
+	//dir_node.node->i_sb->sb_root = NULL;
 
 	if (dir_node.node != vfs_get_root()) {
 		node_free(dir_node.node);
