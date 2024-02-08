@@ -30,16 +30,6 @@ static module dup {
 	depends embox.kernel.task.api
 }
 
-static module ppty {
-	option number pty_count = 20
-
-	source "pipe_pty.c"
-
-	depends embox.kernel.task.idesc_event
-	depends embox.driver.tty.tty
-	depends embox.kernel.task.api
-}
-
 static module poll {
 	source "poll.c"
 
