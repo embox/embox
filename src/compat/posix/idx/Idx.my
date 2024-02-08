@@ -5,8 +5,7 @@ package embox.compat.posix.idx
 module All {
 	depends isatty,
 		select,
-		dup,
-		pipe
+		dup
 }
 
 static module isatty {

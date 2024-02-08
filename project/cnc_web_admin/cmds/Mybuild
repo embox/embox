@@ -21,6 +21,8 @@ module cnc_control {
 @Cmd(name="cnc_init", help="main cnc init")
 module cnc_init {
 	source "cnc_init.c"
+
+	@NoRuntime depends embox.compat.posix.ipc.pipe
 }
 
 @AutoCmd
