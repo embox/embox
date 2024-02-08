@@ -8,12 +8,8 @@
 #ifndef FS_DRV_H_
 #define FS_DRV_H_
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <sys/types.h>
 #include <lib/libds/array.h>
 
-struct inode;
 struct block_dev;
 struct super_block;
 
@@ -24,18 +20,15 @@ struct super_block;
  */
 struct fs_driver {
 	const char                   *name;
+
 	int (*format)(struct block_dev *bdev, void *priv);
 	int (*fill_sb)(struct super_block *sb, const char *source);
 	int (*clean_sb)(struct super_block *sb);
 };
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \
-	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, \
-			fs_drivers_registry);                \
-	ARRAY_SPREAD_ADD(fs_drivers_registry, \
-			&fs_driver_)
-
-
+	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry); \
+	ARRAY_SPREAD_ADD(fs_drivers_registry, &fs_driver_)
 
 struct auto_mount {
 	const char *mount_path;
