@@ -24,7 +24,7 @@ module telnetd {
 	option string shell = "tish"
 
 	depends embox.compat.posix.net.socket
-	depends embox.compat.posix.idx.ppty
+	depends embox.compat.posix.ipc.ppty
 	depends embox.compat.posix.idx.select
 	depends embox.compat.posix.proc.signal
 	depends embox.compat.posix.proc.exec

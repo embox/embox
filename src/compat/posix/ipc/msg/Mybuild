@@ -1,0 +1,12 @@
+package embox.compat.posix.ipc
+
+/* System V message queue */
+static module msg {
+	option number msg_count=8
+	option number msg_buf_size=1024
+
+	source "msg.c"
+
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends embox.mem.pool
+}
