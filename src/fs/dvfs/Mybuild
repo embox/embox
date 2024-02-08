@@ -30,7 +30,7 @@ module core extends embox.fs.fs_api {
 	source "inode.c"
 
 	@NoRuntime depends embox.fs.dvfs.super_block
-	@NoRuntime depends embox.fs.dvfs.fs_driver
+	@NoRuntime depends embox.fs.fs_driver
 	@NoRuntime depends embox.fs.syslib.kfile.kfile_dvfs
 
 	depends embox.fs.idesc_file_ops
