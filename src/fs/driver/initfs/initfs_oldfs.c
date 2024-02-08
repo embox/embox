@@ -67,15 +67,10 @@ struct super_block_operations initfs_sbops = {
 	//.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = initfs_destroy_inode,
 };
-#if 0
-static struct fsop_desc initfs_fsop = {
-	//.mount = initfs_mount,
-};
-#endif
+
 static struct fs_driver initfs_driver = {
 	.name = "initfs",
 	.fill_sb   = initfs_fill_sb,
-	//.fsop = &initfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(initfs_driver);

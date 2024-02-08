@@ -29,22 +29,10 @@ struct super_block_operations ramfs_sbops = {
 	.destroy_inode = ramfs_destroy_inode,
 };
 
-#if 0
-static int ramfs_mount(struct super_block *sb, struct inode *dest) {
-	return 0;
-}
-#endif
-#if 0
-static struct fsop_desc ramfs_fsop = {
-	//.mount = ramfs_mount,
-};
-#endif
 static struct fs_driver ramfs_driver = {
 	.name    = "ramfs",
 	.format = ramfs_format,
 	.fill_sb = ramfs_fill_sb,
-
-	//.fsop    = &ramfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ramfs_driver);

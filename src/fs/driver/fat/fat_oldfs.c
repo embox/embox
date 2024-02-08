@@ -25,17 +25,6 @@
 #include <drivers/block_dev.h>
 
 #include "fat.h"
-#if 0
-static int fatfs_umount_entry(struct inode *node) {
-	// if (node_is_directory(node)) {
-	// 	fat_dirinfo_free(inode_priv(node));
-	// } else {
-	// 	fat_file_free(inode_priv(node));
-	// }
-
-	return 0;
-}
-#endif
 
 extern struct file_operations fat_fops;
 extern int fat_destroy_inode(struct inode *inode);
@@ -56,26 +45,11 @@ struct inode_operations fat_iops = {
 	.ino_truncate = fat_truncate,
 };
 
-#if 0
-static int fatfs_mount(struct super_block *sb, struct inode *dest) {
-	/* Do nothing */
-	return 0;
-}
-#endif
-#if 0
-static struct fsop_desc fatfs_fsop = {
-	//.mount = fatfs_mount,
-
-	//.umount_entry = fatfs_umount_entry,
-};
-#endif
 static const struct fs_driver fatfs_driver = {
 	.name     = "vfat",
 	.format = fat_format,
 	.fill_sb  = fat_fill_sb,
 	.clean_sb = fat_clean_sb,
-
-	//.fsop     = &fatfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(fatfs_driver);
