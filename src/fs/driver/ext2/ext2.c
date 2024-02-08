@@ -549,27 +549,27 @@ static int ext2_create(struct inode *i_new, struct inode *i_dir);
 static int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
 static int ext2_unlink(struct inode *dir_node, struct inode *node);
 static void ext2_free_fs(struct super_block *sb);
-static int ext2fs_umount_entry(struct inode *node);
+//static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
-static int ext2fs_mount(struct super_block *sb, struct inode *dest);
+//static int ext2fs_mount(struct super_block *sb, struct inode *dest);
 
 static int ext2_fill_sb(struct super_block *sb, const char *source);
 static int ext2_clean_sb(struct super_block *sb);
-
+#if 0
 static struct fsop_desc ext2_fsop = {
-	.mount	      = ext2fs_mount,
+	//.mount	      = ext2fs_mount,
 
-	.umount_entry = ext2fs_umount_entry,
+	//.umount_entry = ext2fs_umount_entry,
 };
-
+#endif
 static struct fs_driver ext2fs_driver = {
 	.name     = FS_NAME,
 	.format   = ext2fs_format,
 	.fill_sb  = ext2_fill_sb,
 	.clean_sb = ext2_clean_sb,
 
-	.fsop     = &ext2_fsop,
+	//.fsop     = &ext2_fsop,
 };
 
 static ext2_file_info_t *ext2_fi_alloc(struct inode *i_new, void *fs) {
@@ -894,6 +894,7 @@ error:
 	return -rc;
 }
 
+#if 0
 static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
 #if 0
 	struct ext2_file_info *fi;
@@ -914,6 +915,7 @@ static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
 #endif
 	return 0;
 }
+#endif
 
 static int ext2fs_truncate (struct inode *node, off_t length) {
 
@@ -924,6 +926,7 @@ static int ext2fs_truncate (struct inode *node, off_t length) {
 
 static int ext2_clean_sb(struct super_block *sb) {
 	ext2_free_fs(sb);
+	pool_free(&ext2_file_pool, inode_priv(sb->sb_root));
 	return 0;
 }
 
@@ -936,14 +939,15 @@ static void ext2_free_fs(struct super_block *sb) {
 		}
 		pool_free(&ext2_fs_pool, fsi);
 	}
-}
 
+}
+#if 0
 static int ext2fs_umount_entry(struct inode *node) {
-	pool_free(&ext2_file_pool, inode_priv(node));
+	//pool_free(&ext2_file_pool, inode_priv(node));
 
 	return 0;
 }
-
+#endif
 extern void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new);
 
 /*

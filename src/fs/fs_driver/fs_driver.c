@@ -10,7 +10,6 @@
 
 #include <fs/fs_driver.h>
 #include <lib/libds/array.h>
-#include <util/member.h>
 
 ARRAY_SPREAD_DEF(const struct fs_driver *const, fs_drivers_registry);
 

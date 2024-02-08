@@ -52,11 +52,11 @@ static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
 /* fs operations */
 static int ext3fs_format(struct block_dev *bdev, void *priv);
 static int ext3fs_fill_sb(struct super_block *sb, const char *source);
-static int ext3fs_mount(struct super_block *sb, struct inode *dest);
+//static int ext3fs_mount(struct super_block *sb, struct inode *dest);
 static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode);
 static int ext3fs_delete(struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
-static int ext3fs_umount_entry(struct inode *node);
+//static int ext3fs_umount_entry(struct inode *node);
 
 static const struct fs_driver *ext2fs_driver;
 static struct fs_driver ext3fs_driver;
@@ -298,7 +298,7 @@ static int ext3fs_fill_sb(struct super_block *sb, const char *source) {
 
 	return ret;
 }
-
+#if 0
 static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 #if 0
 	struct ext2fs_dinode *dip;
@@ -359,6 +359,7 @@ static int ext3fs_mount(struct super_block *sb, struct inode *dest) {
 #endif
 	return 0;
 }
+#endif
 
 /* TODO ext2fs_truncate()? */
 static int ext3fs_truncate (struct inode *node, off_t length) {
@@ -385,10 +386,12 @@ static int ext3fs_clean_sb(struct super_block *sb) {
 
 	return res;
 }
-
+#if 0
 static int ext3fs_umount_entry(struct inode *node) {
-	return ext2fs_driver->fsop->umount_entry(node);
+	return 0;
+	//return ext2fs_driver->fsop->umount_entry(node);
 }
+#endif
 
 static struct file_operations ext3_fop = {
 	.open = ext3fs_open,
@@ -409,20 +412,20 @@ struct inode_operations ext3_iops = {
 	.ino_setxattr     = ext2fs_setxattr, /* TODO journaling */
 	.ino_listxattr    = ext2fs_listxattr,
 };
-
+#if 0
 static struct fsop_desc ext3_fsop = {
-	.mount	      = ext3fs_mount,
+	//.mount	      = ext3fs_mount,
 
-	.umount_entry = ext3fs_umount_entry,
+	//.umount_entry = ext3fs_umount_entry,
 };
-
+#endif
 static struct fs_driver ext3fs_driver = {
 	.name = EXT3_NAME,
 	.format   = ext3fs_format,
 	.fill_sb = ext3fs_fill_sb,
 	.clean_sb = ext3fs_clean_sb,
 
-	.fsop = &ext3_fsop,
+	//.fsop = &ext3_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ext3fs_driver);

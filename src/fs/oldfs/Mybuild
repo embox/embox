@@ -34,15 +34,6 @@ module xattr_list {
 	source "xattr_list.c"
 }
 
-module fs_driver {
-	option number drivers_quantity=16
-
-	source "fs_driver.c"
-
-	@IncludeExport(path="fs")
-	source "fs_driver.h"
-}
-
 module core extends fs_api {
 	source "vfs.c"
 

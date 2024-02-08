@@ -79,6 +79,8 @@ int fat_clean_sb(struct super_block *sb) {
 
 	fat_fs_free(fsi);
 
+	fat_dirinfo_free(inode_priv(sb->sb_root));
+
 	return 0;
 }
 

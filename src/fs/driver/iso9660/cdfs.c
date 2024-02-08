@@ -518,6 +518,9 @@ static int cdfs_clean_sb(struct super_block *sb) {
 	sysfree(cdfs);
 
 	cdfs_free_fs(sb);
+
+	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
+
 	return 0;
 }
 
@@ -830,19 +833,11 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 
 /* File system operations*/
 static int cdfs_fill_sb(struct super_block *sb, const char *source);
-static int cdfsfs_mount(struct super_block *sb, struct inode *dest);
-static int cdfs_umount_entry(struct inode *node);
-
-static struct fsop_desc cdfsfs_fsop = {
-	.mount = cdfsfs_mount,
-	.umount_entry = cdfs_umount_entry,
-};
 
 static struct fs_driver cdfsfs_driver = {
 	.name = "iso9660",
 	.fill_sb = cdfs_fill_sb,
 	.clean_sb = cdfs_clean_sb,
-	.fsop = &cdfsfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
@@ -1049,35 +1044,4 @@ error:
 	cdfs_free_fs(sb);
 
 	return rc;
-}
-
-static int cdfsfs_mount(struct super_block *sb, struct inode *dest) {
-#if 0
-	struct cdfs_file_info *fi;
-	int rc;
-
-	/* allocate this directory info */
-	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
-		rc = -ENOMEM;
-		goto error;
-	}
-	memset(fi, 0, sizeof(struct cdfs_file_info));
-	inode_priv_set(dest, fi);
-
-	if(0 == (rc = cdfs_mount(dest))) {
-		return 0;
-	}
-
-error:
-	cdfs_free_fs(sb);
-
-	return rc;
-#endif
-	return 0;
-}
-
-static int cdfs_umount_entry(struct inode *node) {
-	pool_free(&cdfs_file_pool, inode_priv(node));
-
-	return 0;
 }

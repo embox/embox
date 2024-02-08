@@ -376,12 +376,6 @@ static int jffs2_mount(struct inode *dir_node) {
 	return ENOERR;
 }
 
-static int jffs2fs_umount_entry(struct inode *node) {
-	pool_free(&jffs2_file_pool, inode_priv(node));
-
-	return 0;
-}
-
 /**
  * Unmount the filesystem.
  */
@@ -429,7 +423,11 @@ static int jffs2_clean_sb(struct super_block *sb) {
 
 	jffs2_compressors_exit();
 
-	return jffs2_free_fs(sb);
+	jffs2_free_fs(sb);
+
+	pool_free(&jffs2_file_pool, inode_priv(sb->sb_root));
+
+	return 0;
 }
 
 /**
@@ -1437,25 +1435,16 @@ static int jffs2_free_fs(struct super_block *sb) {
 }
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
-static int jffs2fs_mount(struct super_block *sb, struct inode *dest);
 static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode);
 static int jffs2fs_delete(struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
-
-static struct fsop_desc jffs2_fsop = {
-	.mount	      = jffs2fs_mount,
-
-	.umount_entry = jffs2fs_umount_entry,
-};
-
 static int jffs2_fill_sb(struct super_block *sb, const char *source);
+
 static struct fs_driver jffs2fs_driver = {
 	.name = FS_NAME,
 	.format      = jffs2fs_format,
 	.fill_sb = jffs2_fill_sb,
 	.clean_sb = jffs2_clean_sb,
-
-	.fsop = &jffs2_fsop,
 };
 
 static jffs2_file_info_t *jffs2_fi_alloc(struct inode *i_new, void *fs) {
@@ -1707,41 +1696,6 @@ static int jffs2_fill_sb(struct super_block *sb, const char *source) {
 	jffs2fs_create_root(sb, sb->sb_root);
 
 	return 0;
-}
-
-static int jffs2fs_mount(struct super_block *sb, struct inode *dest) {
-	return 0;
-#if 0
-	int rc;
-	struct jffs2_file_info *fi;
-	struct jffs2_fs_info *fsi;
-
-	if (NULL == (fi = pool_alloc(&jffs2_file_pool))) {
-		inode_priv_set(dest, fi);
-		rc = ENOMEM;
-		goto error;
-	}
-	memset(fi, 0, sizeof(struct jffs2_file_info));
-
-	if (0 != (rc = jffs2_mount(dest))) {
-		goto error;
-	}
-
-	inode_priv_set(dest, fi);
-	fsi = sb->sb_data;
-	fi->_inode = fsi->jffs2_sb.s_root;
-#if 0
-	if(0 != (rc = mount_vfs_dir_enty(dest))) {
-		goto error;
-	}
-#endif
-	return 0;
-
-error:
-	jffs2_free_fs(sb);
-
-	return -rc;
-#endif
 }
 
 static int jffs2fs_truncate (struct inode *node, off_t length) {

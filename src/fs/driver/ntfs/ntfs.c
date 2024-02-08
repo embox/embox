@@ -415,12 +415,6 @@ static int embox_ntfs_simultaneous_mounting_descend(struct inode *node, ntfs_ino
     return -1;
 }
 
-static int ntfs_umount_entry(struct inode *node) {
-	pool_free(&ntfs_file_pool, inode_priv(node));
-
-	return 0;
-}
-
 static int ntfs_clean_sb(struct super_block *sb) {
 	struct ntfs_fs_info *fsi = sb->sb_data;
 
@@ -433,6 +427,8 @@ static int ntfs_clean_sb(struct super_block *sb) {
 		ntfs_device_free(fsi->ntfs_dev);
 	}
 	pool_free(&ntfs_fs_pool, fsi);
+
+	pool_free(&ntfs_file_pool, inode_priv(sb->sb_root));
 
 	return 0;
 }
@@ -564,44 +560,6 @@ error:
 	ntfs_clean_sb(sb);
 
 	return -rc;
-
-}
-
-static int embox_ntfs_mount(struct super_block *sb, struct inode *dest) {
-	return 0;
-#if 0
-	ntfs_volume *vol;
-	int rc;
-	ntfs_inode *ni;
-	struct ntfs_fs_info *fsi;
-	struct ntfs_file_info *fi;
-
-	fsi = sb->sb_data;
-	vol = fsi->ntfs_vol;
-
-	if (NULL == (ni = ntfs_pathname_to_inode(vol, NULL, "/"))) {
-		rc = errno;
-		goto error;
-	}
-
-	if (NULL == (fi = pool_alloc(&ntfs_file_pool))) {
-		errno = ENOMEM;
-		goto error;
-	}
-
-	memset(fi, 0, sizeof(*fi));
-	inode_priv_set(dest, fi);
-
-	// ToDo: remplir la structure de l'inode
-	// ToDo: en fait, seulement l'utilisateur et le groupe
-	fi->mref = ni->mft_no;
-
-	return 0;
-error:
-	ntfs_clean_sb(sb);
-
-	return -rc;
-#endif
 
 }
 
@@ -972,11 +930,6 @@ struct ntfs_device_operations ntfs_device_bdev_io_ops = {
 	.ioctl		= ntfs_device_bdev_io_ioctl,
 };
 
-static const struct fsop_desc ntfs_fsop = {
-	.mount = embox_ntfs_mount,
-	.umount_entry = ntfs_umount_entry,
-};
-
 static const struct file_operations ntfs_fop = {
 	.open = ntfs_open,
 	.close = ntfs_close,
@@ -988,7 +941,6 @@ static const struct fs_driver ntfs_driver = {
 	.name     = "ntfs",
 	.fill_sb  = ntfs_fill_sb,
 	.clean_sb = ntfs_clean_sb,
-	.fsop     = &ntfs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER(ntfs_driver);

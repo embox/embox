@@ -53,9 +53,9 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 		return -ENOENT;
 	}
 
-	node = node_alloc(name, strlen(name));
+	node = node_alloc(name);
 	assert(node);
-	root_node = node_alloc("/", strlen("/"));
+	root_node = node_alloc("/");
 	assert(root_node);
 
 	vfs_add_leaf(node, root_node);
@@ -90,7 +90,7 @@ static int setup_suite(void) {
 	struct path root;
 
 	vfs_get_root_path(&root);
-	test_node = node_alloc("test", strlen("test"));
+	test_node = node_alloc("test");
 
 	vfs_add_leaf(test_node, root.node);
 

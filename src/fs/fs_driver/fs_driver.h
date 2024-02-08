@@ -1,9 +1,8 @@
 /**
- * @file fs_driver.h
- * @brief
- * @author Denis Deryugin <deryugin.denis@gmail.com>
- * @version
- * @date 05.02.2020
+ * @file
+ *
+ * @date 05.10.10
+ * @author Nikolay Korotky
  */
 
 #ifndef FS_DRV_H_
@@ -11,25 +10,25 @@
 
 #include <lib/libds/array.h>
 
-#define FS_DRV_NAME_LEN   16
-
 struct block_dev;
 struct super_block;
-struct file_desc;
 
+/**
+ * Structure of file system driver.
+ * We can mount some file system with name of FS which has been registered in
+ * our system.
+ */
 struct fs_driver {
-	const char name[FS_DRV_NAME_LEN];
-	int (*format)(struct block_dev *dev, void *priv);
+	const char                   *name;
+
+	int (*format)(struct block_dev *bdev, void *priv);
 	int (*fill_sb)(struct super_block *sb, const char *source);
 	int (*clean_sb)(struct super_block *sb);
 };
 
 #define DECLARE_FILE_SYSTEM_DRIVER(fs_driver_)      \
-	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, \
-			fs_drivers_registry);                \
-	ARRAY_SPREAD_ADD(fs_drivers_registry, \
-			&fs_driver_)
-
+	ARRAY_SPREAD_DECLARE(const struct fs_driver *const, fs_drivers_registry); \
+	ARRAY_SPREAD_ADD(fs_drivers_registry, &fs_driver_)
 
 struct auto_mount {
 	const char *mount_path;
@@ -44,7 +43,6 @@ struct auto_mount {
 		ARRAY_SPREAD_DECLARE(const struct auto_mount *const, auto_mount_tab); \
 		ARRAY_SPREAD_ADD(auto_mount_tab, &fsdriver ## _auto_mount)
 
-
 extern const struct fs_driver *fs_driver_find(const char *name);
 
-#endif /* FS_DRV_H */
+#endif /* FS_DRV_H_ */

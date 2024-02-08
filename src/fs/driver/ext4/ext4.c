@@ -650,26 +650,27 @@ static int ext4_create(struct inode *i_new, struct inode *i_dir);
 static int ext4_mkdir(struct inode *i_new, struct inode *i_dir);
 static int ext4_unlink(struct inode *dir_node, struct inode *node);
 static void ext4_free_fs(struct super_block *sb);
-static int ext4fs_umount_entry(struct inode *node);
+//static int ext4fs_umount_entry(struct inode *node);
 
 static int ext4fs_format(struct block_dev *dev, void *priv);
 static int ext4fs_fill_sb(struct super_block *sb, const char *source);
 static int ext4fs_clean_sb(struct super_block *sb);
-static int ext4fs_mount(struct super_block *sb, struct inode *dest);
+//static int ext4fs_mount(struct super_block *sb, struct inode *dest);
 
+#if 0
 static struct fsop_desc ext4_fsop = {
-	.mount	      = ext4fs_mount,
+	//.mount	      = ext4fs_mount,
 
-	.umount_entry = ext4fs_umount_entry,
+	//.umount_entry = ext4fs_umount_entry,
 };
-
+#endif
 static struct fs_driver ext4fs_driver = {
 	.name     = EXT4_NAME,
 	.format       = ext4fs_format,
 	.fill_sb  = ext4fs_fill_sb,
 	.clean_sb = ext4fs_clean_sb,
 
-	.fsop     = &ext4_fsop,
+	//.fsop     = &ext4_fsop,
 };
 
 static ext4_file_info_t *ext4_fi_alloc(struct inode *i_new, void *fs) {
@@ -799,6 +800,7 @@ static int ext4fs_fill_sb(struct super_block *sb, const char *source) {
 	return 0;
 }
 
+#if 0
 static int ext4fs_mount(struct super_block *sb, struct inode *dest) {
 	return 0;
 #if 0
@@ -842,6 +844,7 @@ error:
 	return -rc;
 #endif
 }
+#endif
 
 static int ext4fs_truncate (struct inode *node, off_t length) {
 
@@ -852,6 +855,8 @@ static int ext4fs_truncate (struct inode *node, off_t length) {
 
 static int ext4fs_clean_sb(struct super_block *sb) {
 	ext4_free_fs(sb);
+
+	pool_free(&ext4_file_pool, inode_priv(sb->sb_root));
 	return 0;
 }
 
@@ -866,11 +871,13 @@ static void ext4_free_fs(struct super_block *sb) {
 	}
 }
 
+#if 0
 static int ext4fs_umount_entry(struct inode *node) {
-	pool_free(&ext4_file_pool, inode_priv(node));
+	//pool_free(&ext4_file_pool, inode_priv(node));
 
 	return 0;
 }
+#endif
 
 /*
  * Read a new inode into a file structure.

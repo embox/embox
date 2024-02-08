@@ -74,7 +74,7 @@ extern void inode_del(struct inode *node);
  * @param name_len (optional) how many bytes to take from name.
  *    If zero, the name must be a null-terminated string.
  */
-extern struct inode *node_alloc(const char *name, size_t name_len);
+extern struct inode *node_alloc(const char *name);
 
 extern void node_free(struct inode *node);
 extern void *inode_priv(const struct inode *node);

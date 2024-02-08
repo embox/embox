@@ -1,8 +1,6 @@
-package embox.fs.dvfs
+package embox.fs
 
 module fs_driver {
-	option number drivers_quantity=16
-
 	source "fs_driver.c"
 
 	@IncludeExport(path="fs")

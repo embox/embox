@@ -53,7 +53,7 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 
 	sb->fs_drv = drv;
 
-	node = node_alloc("", 0);
+	node = node_alloc("");
 	if (!node) {
 		pool_free(&super_block_pool, sb);
 		return NULL;

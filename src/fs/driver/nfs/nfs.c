@@ -190,11 +190,9 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 /* File system operations */
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
-static int nfsfs_mount(struct super_block *sb, struct inode *dest);
 static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
 static int nfsfs_delete(struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
-static int nfs_umount_entry(struct inode *node);
 static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
 
@@ -214,18 +212,11 @@ struct inode_operations nfs_iops = {
 	.ino_truncate = nfsfs_truncate,
 };
 
-static struct fsop_desc nfsfs_fsop = {
-	.mount = nfsfs_mount,
-
-	.umount_entry = nfs_umount_entry,
-};
-
 static struct fs_driver nfsfs_driver = {
 	.name     = "nfs",
 	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
-	.fsop     = &nfsfs_fsop,
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {
@@ -464,48 +455,9 @@ error:
 	return rc;
 }
 
-static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
-	return 0;
-#if 0
-	nfs_file_info_t *fi;
-	struct nfs_fs_info *fsi;
-	int rc;
-
-	fsi = sb->sb_data;
-
-	if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
-		return -ENOMEM;
-	}
-
-	inode_priv_set(dest, fi);
-	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
-
-	/* get server name and mount directory from params */
-	if (0 > nfs_mount(dest)) {
-		rc = -1;
-		goto error;
-	}
-
-	/* copy filesystem filehandle to root directory filehandle */
-	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
-
-	return 0;
-
-error:
-	nfs_free_fs(sb);
-
-	return rc;
-#endif
-}
-
-static int nfs_umount_entry(struct inode *node) {
-	pool_free(&nfs_file_pool, inode_priv(node));
-
-	return 0;
-}
-
 static int nfs_clean_sb(struct super_block *sb) {
 	nfs_free_fs(sb);
+	pool_free(&nfs_file_pool, inode_priv(sb->sb_root));
 	return 0;
 }
 
