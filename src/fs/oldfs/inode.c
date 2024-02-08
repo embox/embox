@@ -74,13 +74,12 @@ void inode_del(struct inode *node) {
 	}
 }
 
-struct inode *node_alloc(const char *name, size_t name_len) {
+struct inode *node_alloc(const char *name) {
 	struct inode *node;
 	char *node_name;
+	size_t name_len;
 
-	if (!name_len) {
-		name_len = strlen(name);
-	}
+	name_len = strlen(name);
 
 	if (name_len > NAME_MAX) {
 		return NULL;
