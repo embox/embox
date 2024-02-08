@@ -31,19 +31,6 @@ static module dup {
 	depends embox.kernel.task.api
 }
 
-static module pipe {
-	source "idesc_pipe.c"
-
-	option number pipe_buffer_size=1024
-	option number max_pipe_buffer_size=1024
-
-	depends embox.mem.sysmalloc_api
-
-	depends embox.kernel.task.idesc_event
-	depends embox.kernel.task.api
-	@NoRuntime depends embox.lib.libds
-}
-
 static module ppty {
 	option number pty_count = 20
 
