@@ -19,47 +19,18 @@ static module lseek {
 	depends embox.kernel.task.resource.errno
 }
 
-module read {
-	source "read.c"
-	depends embox.kernel.task.idesc
-}
-
 module pread {
 	source "pread.c"
-	@NoRuntime depends read
-	@NoRuntime depends lseek
-}
 
-module write {
-	source "write.c"
-	depends embox.kernel.task.idesc
+	@NoRuntime depends lseek
+	@NoRuntime depends embox.compat.posix.index_descriptor
 }
 
 module pwrite {
 	source "pwrite.c"
-	@NoRuntime depends write
+
 	@NoRuntime depends lseek
-}
-
-module fcntl {
-	source "fcntl.c"
-	depends embox.kernel.task.idesc
-}
-
-module ioctl {
-	source "ioctl.c"
-	depends fcntl
-	depends embox.kernel.task.idesc
-}
-
-module close {
-	source "close.c"
-	depends embox.kernel.task.idesc
-}
-
-module fstat {
-	source "fstat.c"
-	depends embox.kernel.task.idesc
+	@NoRuntime depends embox.compat.posix.index_descriptor
 }
 
 module fsync {
@@ -71,23 +42,15 @@ module creat {
 	source "creat.c"
 }
 
-module readv {
-	source "readv.c"
-}
-
-module writev {
-	source "writev.c"
-}
-
 static module stat {
 	source "stat.c"
+
+	@NoRuntime depends embox.compat.posix.index_descriptor
 }
 
 @NoCode
 module file_ops {
-	depends read, write, fcntl, ioctl, close
-	depends fstat, fsync, readv, writev
-	depends ftruncate
+	depends ftruncate, fsync
 	depends pread, pwrite
 }
 
