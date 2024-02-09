@@ -20,7 +20,7 @@ module core {
 	depends samba_stubs
 	depends embox.compat.libc.all
 	depends embox.compat.posix.proc.exec_lib
-	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.proc.exec
 	depends embox.net.lib.getifaddrs
 	depends embox.compat.posix.sys.mman.mmap_api

@@ -8,7 +8,7 @@ module pjsip_dependencies {
 	depends embox.compat.posix.pthread_rwlock
 	depends embox.compat.posix.semaphore
 	depends embox.compat.posix.fs.fsop
-	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.net.getaddrinfo
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.util.gethostname

@@ -43,7 +43,7 @@ module setup_tty_devfs extends setup_tty_api {
 
 	depends diag_fd
 	depends embox.compat.posix.fs.file
-	depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.util.environ
 	depends embox.kernel.task.api
 }
@@ -57,7 +57,7 @@ module setup_tty_diag extends setup_tty_api {
 module diag_fd {
 	source "diag_fd.c"
 
-	depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.index_descriptor
 	//depends embox.compat.libc.stdio.rename
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.api
