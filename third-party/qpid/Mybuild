@@ -16,7 +16,7 @@ module core {
 	source "libqpidbroker.a", "libqpidclient.a",
 		"libqpidcommon.a", "libqpidmessaging.a", "libqpidtypes.a"
 
-	@NoRuntime depends embox.compat.posix.fs.fsop
+	@NoRuntime depends embox.compat.posix.file_system
 	@NoRuntime depends embox.compat.posix.ipc.pipe
 	@NoRuntime depends embox.compat.posix.index_descriptor
 	@NoRuntime depends embox.compat.posix.net.gai_strerror

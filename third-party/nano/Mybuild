@@ -16,10 +16,9 @@ package third_party.cmd
 module nano {
 	source "^BUILD/extbld/^MOD_PATH/install/nano.o"
 
-	@NoRuntime depends embox.compat.posix.regex
-
 	depends embox.compat.posix.libcurses_full
-	depends embox.compat.posix.fs.realpath
 	depends embox.compat.libc.stdlib.mktemp
+	@NoRuntime depends embox.compat.posix.regex
+	@NoRuntime depends embox.compat.posix.file_system
 }
 

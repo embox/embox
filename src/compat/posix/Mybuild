@@ -2,7 +2,6 @@ package embox.compat.posix
 
 @NoCode
 module LibPosix {
-	depends embox.compat.posix.fs.all
 	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.net.All
 	depends embox.compat.posix.proc.All

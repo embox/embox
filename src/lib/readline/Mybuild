@@ -9,8 +9,8 @@ module rl_linenoise extends readline_api {
 	@IncludeExport(path="readline")
 	source "readline.h", "history.h"
 
-	depends embox.compat.posix.fs.dirent
 	depends embox.compat.libc.all
 	depends third_party.lib.linenoise
 	depends embox.compat.libc.str_dup
+	@NoRuntime depends embox.compat.posix.file_system
 }

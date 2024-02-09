@@ -17,7 +17,7 @@ module mc {
 	depends third_party.libs.ncurses.libncurses
 	depends third_party.libs.libiconv
 
-	depends embox.compat.posix.fs.statvfs_stub
+	@NoRuntime depends embox.compat.posix.file_system
 //	depends embox.driver.usb.hc.ohci_pci
 
 

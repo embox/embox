@@ -19,5 +19,5 @@ module dd {
 	depends embox.compat.libc.stdio.printf
 	depends embox.compat.libc.str
 	depends embox.compat.posix.index_descriptor
-	depends embox.compat.posix.fs.open
+	@NoRuntime depends embox.compat.posix.file_system
 }

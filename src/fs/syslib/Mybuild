@@ -46,7 +46,6 @@ module file_system_full extends file_system {
 	depends embox.fs.syslib.fs_full
 	depends embox.kernel.thread.mutex
 	depends embox.compat.libc.str_dup
-	depends embox.compat.posix.fs.open
 	depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.lib.libds
 

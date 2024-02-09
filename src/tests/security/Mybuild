@@ -5,5 +5,4 @@ module smac {
 
 	depends embox.security.smac
 	depends embox.fs.driver.ext2
-	depends embox.compat.posix.fs.xattr
 }

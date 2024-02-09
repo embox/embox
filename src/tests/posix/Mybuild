@@ -82,7 +82,6 @@ module poll_test {
 module select_test {
 	source "select_test.c"
 
-	depends embox.compat.posix.fs.file_ops
 	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.ipc.pipe
 	depends embox.compat.posix.pthreads

@@ -12,7 +12,6 @@ module block_dev {
 	source "block_dev.c"
 	source "block_dev_namer.c"
 
-	depends embox.compat.posix.fs.libgen
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
 	depends embox.driver.buffer_crypt_api

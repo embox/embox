@@ -20,7 +20,7 @@ module rm {
 	source "rm.c"
 
 	depends embox.compat.libc.all
-	depends embox.compat.posix.fs.fsop
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
+	@NoRuntime depends embox.compat.posix.file_system
 }

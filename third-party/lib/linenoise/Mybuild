@@ -9,9 +9,8 @@ module linenoise {
 	depends embox.compat.libc.all
 	depends embox.compat.libc.str_dup
 	depends embox.mem.heap_api
-	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.termios
 	depends embox.kernel.task.resource.linenoise
-	@NoRuntime depends embox.compat.posix.fs.chmod
+	@NoRuntime depends embox.compat.posix.file_system
 }

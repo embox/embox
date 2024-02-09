@@ -41,18 +41,16 @@ module dropbear {
 	@InitFS(chmod="622")
 	source "dev_pty_0"
 
-	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.type
 	@NoRuntime depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.kernel.task.resource.dropbear_res
-	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.compat.posix.ipc.pipe
 	@NoRuntime depends embox.compat.posix.stubs
 	@NoRuntime depends embox.compat.posix.pty
 	@NoRuntime depends embox.compat.posix.proc.vfork
 	@NoRuntime depends embox.compat.posix.crypt
-	@NoRuntime depends embox.compat.posix.fs.chown_api
 	@NoRuntime depends embox.compat.posix.proc.rlimit
 	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.file_system
 }
