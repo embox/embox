@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 06.11.15
+ * @date 06.11.15
  * @author: Anton Bondarev
  */
 #include <errno.h>
@@ -14,6 +14,7 @@
 #include <sys/statvfs.h>
 
 #include <fs/dvfs.h>
+#include <drivers/block_dev.h>
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/index_descriptor.h>
 #include <kernel/task/resource/idesc_table.h>

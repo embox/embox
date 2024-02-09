@@ -6,11 +6,11 @@
  * @author Alex Kalmuk
  */
 
-#include <sys/stat.h>
 #include <assert.h>
+#include <sys/stat.h>
 
-#include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/vfs.h>
 
 int chmod(const char *path, mode_t mode) {
 	struct path p;
