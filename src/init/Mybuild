@@ -42,10 +42,10 @@ module setup_tty_devfs extends setup_tty_api {
 	source "setup_tty_devfs.c"
 
 	depends diag_fd
-	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.util.environ
 	depends embox.kernel.task.api
+	@NoRuntime depends embox.compat.posix.file_system
 }
 
 module setup_tty_diag extends setup_tty_api {

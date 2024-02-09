@@ -25,10 +25,8 @@ module core {
 	depends embox.net.lib.getifaddrs
 	depends embox.compat.posix.sys.mman.mmap_api
 	depends third_party.zlib.libs
-	depends embox.compat.posix.fs.chown_api
-	depends embox.compat.posix.fs.rewinddir_api
 	depends embox.compat.posix.proc.atexit_api
 	depends embox.compat.posix.sys.mman.mmap
-	depends embox.compat.posix.fs.statvfs
 	depends embox.compat.posix.sys.mman.msync
+	@NoRuntime depends embox.compat.posix.file_system
 }

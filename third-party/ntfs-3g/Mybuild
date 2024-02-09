@@ -8,6 +8,6 @@ static module core {
 
 	depends embox.compat.libc.all
 	depends embox.compat.libc.str_dup
-	depends embox.compat.posix.fs.statvfs
 	depends embox.compat.posix.proc.daemon_api
+	@NoRuntime depends embox.compat.posix.file_system
 }

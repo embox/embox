@@ -24,8 +24,7 @@ static module core {
 	@NoRuntime depends embox.compat.libc.all
 
 	depends tclsh_export_scripts
-	depends embox.compat.posix.fs.chown_api
-	depends embox.compat.posix.fs.rewinddir_api
+	@NoRuntime depends embox.compat.posix.file_system
 }
 
 @App

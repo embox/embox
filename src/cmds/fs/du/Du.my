@@ -22,5 +22,5 @@ package embox.cmd.fs
 module du {
 	source "du.c"
 
-	depends embox.compat.posix.fs.chmod
+	@NoRuntime depends embox.compat.posix.file_system
 }

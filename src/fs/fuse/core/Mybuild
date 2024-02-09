@@ -9,6 +9,5 @@ static module core {
 	@IncludeExport(path="fs")
 	source "fuse_req_alloc.h"
 
-	depends embox.compat.posix.fs.statvfs_dvfs
 	depends third_party.fuse.core
 }

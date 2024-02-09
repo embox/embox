@@ -17,8 +17,7 @@ module cd {
 	option string home_dir="/"
 	source "cd.c"
 
-	depends embox.compat.posix.fs.chdir
-	depends embox.compat.posix.fs.getcwd
+	@NoRuntime depends embox.compat.posix.file_system
 	depends embox.compat.libc.all
 	depends embox.framework.LibFramework
 }

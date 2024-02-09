@@ -1,41 +1,25 @@
-package embox.compat.posix.fs
+package embox.compat.posix
 
-@NoCode
-module all_dvfs extends all {
-	depends file_dvfs,
-		chdir,
-		dirent_dvfs,
-		fsop_dvfs,
-		getcwd,
-		umask,
-		xattr_dvfs,
-		libgen,
-		chmod_dvfs,
-		chown_dvfs,
-		mknod_dvfs
-}
+static module file_system_dvfs extends embox.compat.posix.file_system {
+	option number dir_quantity=4 /* DIR (dirent.h) */
+	
+	source "chmod_dvfs.c"
+	source "chown_dvfs.c"
+	source "dirent_dvfs.c"
+	source "flock_dvfs.c"
+	source "ftruncate_dvfs.c"
+	source "mkdir_dvfs.c"
+	source "mknod_dvfs.c"
+	source "open_dvfs.c"
+	source "remove_dvfs.c"
+	source "rmdir_dvfs.c"
+	source "unlink_dvfs.c"
+	source "xattr_dvfs.c"
+	// source "statvfs_dvfs.c"
 
-@NoCode
-static module file_dvfs extends file {
-	depends embox.compat.posix.fs.file_ops
-	depends ftruncate_dvfs
-	depends lseek
-	depends open_dvfs
-	depends ioctl
-	depends fstat
-	depends embox.compat.posix.fs.fsync
-	depends embox.compat.posix.fs.creat
-}
-
-static module fsop_dvfs extends fsop {
-	source "fsop.c"
-
-	depends stat
-
-	depends creat
-	depends truncate
-
-	depends embox.fs.dvfs.core
-	depends embox.kernel.task.resource.errno
-	depends umask // mkdir
+	@NoRuntime depends embox.fs.dvfs.core
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.compat.posix.file_system_depends
+	@NoRuntime depends embox.security.api
+	@NoRuntime depends embox.mem.pool
 }

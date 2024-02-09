@@ -42,8 +42,9 @@ static module file_pool {
 
 static module open {
 	source "fopen.c"
+
 	depends file_pool
-	depends embox.compat.posix.fs.open
+	@NoRuntime depends embox.compat.posix.file_system
 	@NoRuntime depends embox.compat.libc.str
 	depends embox.compat.posix.index_descriptor
 }
@@ -51,7 +52,7 @@ static module open {
 static module fseek {
 	source "fseek.c"
 
-	depends embox.compat.posix.fs.lseek
+	@NoRuntime depends embox.compat.posix.file_system
 }
 
 static module printf {
@@ -141,7 +142,7 @@ static module file_ops {
 
 	depends file_struct_header
 	depends file_pool
-	depends embox.compat.posix.fs.file_ops
+	@NoRuntime depends embox.compat.posix.file_system
 
 	source "printf.c"
 	source "fprintf.c"

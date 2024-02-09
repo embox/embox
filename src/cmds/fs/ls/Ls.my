@@ -26,8 +26,8 @@ module ls {
 	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.compat.posix.passwd
-	depends embox.compat.posix.fs.dirent
-	depends embox.compat.posix.fs.stat
-	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
+	@NoRuntime depends embox.compat.posix.file_system
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends third_party.lib.cwalk
 }

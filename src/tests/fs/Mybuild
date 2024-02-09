@@ -19,7 +19,6 @@ module xattr {
 	source "xattr.c"
 
 	depends embox.driver.ramdisk
-	depends embox.compat.posix.fs.xattr
 }
 
 module mount_test {

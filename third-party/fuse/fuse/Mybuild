@@ -3,5 +3,5 @@ package third_party.fuse
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/fuse/core/install/include")
 static module core {
-	depends embox.compat.posix.fs.statvfs_dvfs
+	@NoRuntime depends embox.compat.posix.file_system
 }

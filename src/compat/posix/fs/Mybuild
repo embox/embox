@@ -1,92 +1,31 @@
-package embox.compat.posix.fs
+package embox.compat.posix
 
-@DefaultImpl(all_old)
-abstract module all {
-}
-
-@DefaultImpl(file_old)
-abstract module file {
-}
-
-@DefaultImpl(fsop_old)
-abstract module fsop {
-}
-
-static module lseek {
-	source "lseek.c"
-
-	depends embox.kernel.task.idesc
-	depends embox.kernel.task.resource.errno
-}
-
-module pread {
-	source "pread.c"
-
-	@NoRuntime depends lseek
-	@NoRuntime depends embox.compat.posix.index_descriptor
-}
-
-module pwrite {
-	source "pwrite.c"
-
-	@NoRuntime depends lseek
-	@NoRuntime depends embox.compat.posix.index_descriptor
-}
-
-module fsync {
-	source "fsync.c"
-	depends embox.kernel.task.idesc
-}
-
-module creat {
-	source "creat.c"
-}
-
-static module stat {
-	source "stat.c"
-
-	@NoRuntime depends embox.compat.posix.index_descriptor
-}
-
-@NoCode
-module file_ops {
-	depends ftruncate, fsync
-	depends pread, pwrite
-}
-
-static module getcwd {
-	source "getcwd.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.str
-}
-
-static module umask {
-	source "umask.c"
-
-	depends embox.kernel.task.resource.umask
-}
-
-static module libgen {
-	source "dirname.c"
-	source "basename.c"
-
-	@NoRuntime depends third_party.lib.cwalk
-}
-
-static module chdir {
-	source "chdir.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.libc.all
-}
-
-static module truncate {
-	source "truncate.c"
-}
-
-static module realpath {
+@DefaultImpl(file_system_oldfs)
+abstract module file_system {
 	option string log_level="LOG_ERR"
 
+	source "lseek.c"
+	source "pread.c"
+	source "pwrite.c"
+	source "fsync.c"
+	source "creat.c"
+	source "stat.c"
+	source "getcwd.c"
+	source "umask.c"
+	source "dirname.c"
+	source "basename.c"
+	source "chdir.c"
+	source "truncate.c"
 	source "realpath.c"
+	source "rewinddir.c"
+}
+
+@NoCode	
+module file_system_depends {
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.kernel.task.resource.umask
+	@NoRuntime depends embox.compat.posix.index_descriptor
+	@NoRuntime depends embox.compat.posix.util.environ
+	@NoRuntime depends third_party.lib.cwalk
 }

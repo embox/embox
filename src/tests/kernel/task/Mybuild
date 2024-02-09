@@ -36,14 +36,12 @@ module uid {
 module pipe_test {
 	source "pipe_test.c"
 
-	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.ipc.pipe
 }
 
 module select_test {
 	source "select_test.c"
 
-	depends embox.compat.posix.fs.file
 	depends embox.compat.posix.ipc.pipe
 	depends embox.compat.posix.index_descriptor
 }

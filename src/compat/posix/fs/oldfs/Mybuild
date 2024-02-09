@@ -1,40 +1,27 @@
-package embox.compat.posix.fs
+package embox.compat.posix
 
-@NoCode
-module all_old extends all {
-	depends file,
-		chdir,
-		chmod,
-		dirent,
-		fsop,
-		getcwd,
-		umask,
-		xattr,
-		libgen,
-		chown_old
-}
+static module file_system_oldfs extends embox.compat.posix.file_system {
+	option number dir_quantity=4 /* DIR (dirent.h) */
 
-@NoCode
-static module file_old extends file {
-	depends file_ops
-	depends lseek
-	depends open
-}
+	source "chmod_oldfs.c"
+	source "chown_oldfs.c"
+	source "dirent_oldfs.c"
+	source "flock_oldfs.c"
+	source "ftruncate_oldfs.c"
+	source "mkdir_oldfs.c"
+	source "mknod_oldfs.c"
+	source "open_oldfs.c"
+	source "remove_oldfs.c"
+	source "rmdir_oldfs.c"
+	source "unlink_oldfs.c"
+	source "xattr_oldfs.c"
 
-static module fsop_old extends fsop {
-	source "fsop.c"
-
-	depends stat
-
-	depends truncate
-
-	depends embox.kernel.task.resource.errno
-	depends embox.fs.core
-	depends embox.fs.syslib.perm
-	/* TODO tsort loop
-	 * depends embox.fs.syslib.file_system_full
-	 */
-
-	depends creat
-	depends umask
+	@NoRuntime depends embox.fs.core
+	@NoRuntime depends embox.fs.xattr
+	@NoRuntime depends embox.fs.idesc_file_ops
+	@NoRuntime depends embox.fs.syslib.perm
+	@NoRuntime depends embox.fs.syslib.file_system
+	@NoRuntime depends embox.compat.libc.str
+	@NoRuntime depends embox.compat.posix.file_system_depends
+	@NoRuntime depends embox.security.api
 }

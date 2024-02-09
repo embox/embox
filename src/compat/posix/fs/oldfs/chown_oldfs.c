@@ -1,16 +1,16 @@
 /**
  * @file
  *
- * @data 01.02.2016
+ * @date 01.02.2016
  * @author: Anton Bondarev
  */
 
 #include <errno.h>
 #include <unistd.h>
 
+#include <fs/inode.h>
 #include <fs/path.h>
 #include <fs/vfs.h>
-#include <fs/inode.h>
 
 int chown(const char *path, uid_t owner_id, gid_t group_id) {
 	struct path node_path;

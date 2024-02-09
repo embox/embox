@@ -18,6 +18,6 @@ package embox.cmd
 module chown {
 	source "chown.c"
 
-	depends embox.compat.posix.fs.chown_api
+	@NoRuntime depends embox.compat.posix.file_system
 }
 

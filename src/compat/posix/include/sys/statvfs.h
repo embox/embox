@@ -1,12 +1,12 @@
 /**
  * @file
  *
- * @data 06.11.15
+ * @date 06.11.15
  * @author: Anton Bondarev
  */
 
-#ifndef SRC_COMPAT_POSIX_FS_STATVFS_SYS_STATVFS_H_
-#define SRC_COMPAT_POSIX_FS_STATVFS_SYS_STATVFS_H_
+#ifndef SRC_COMPAT_POSIX_FS_SYS_STATVFS_H_
+#define SRC_COMPAT_POSIX_FS_SYS_STATVFS_H_
 
 #include <sys/types.h>
 
@@ -25,7 +25,6 @@ struct statvfs {
 };
 
 
-
 #define ST_RDONLY 0x1 /* Read-only file system. */
 #define ST_NOSUID 0x2 /* Setuid/setgid bits ignored by exec. */
 
@@ -42,4 +41,4 @@ extern char *fsid2fsname(unsigned long f_sid);
 #define FSID_EXT3 0x3
 #define FSID_EXT4 0x4
 
-#endif /* SRC_COMPAT_POSIX_FS_STATVFS_STATVFS_H_ */
+#endif /* SRC_COMPAT_POSIX_FS_SYS_STATVFS_H_ */

@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 3 Apr 2015
@@ -9,13 +8,14 @@
 
 #include <errno.h>
 #include <fcntl.h>
-#include <string.h>
 #include <limits.h>
+#include <string.h>
+#include <sys/stat.h>
 
 #include <fs/dvfs.h>
 
 int mkdir(const char *pathname, mode_t mode) {
-	struct lookup lu = { };
+	struct lookup lu = {};
 	char *t;
 	int res;
 
@@ -43,7 +43,8 @@ int mkdir(const char *pathname, mode_t mode) {
 
 		lu.parent = lu.item;
 		lu.item = NULL;
-	} else {
+	}
+	else {
 		parent[0] = '\0';
 		if ((res = dvfs_lookup(pathname, &lu))) {
 			return SET_ERRNO(-res);
@@ -51,7 +52,7 @@ int mkdir(const char *pathname, mode_t mode) {
 	}
 
 	res = dvfs_create_new(pathname + strlen(parent), &lu,
-			       S_IFDIR | (mode & VFS_DIR_VIRTUAL));
+	    S_IFDIR | (mode & VFS_DIR_VIRTUAL));
 	dentry_ref_dec(lu.parent);
 	dentry_ref_dec(lu.item);
 	if (res) {
@@ -60,25 +61,3 @@ int mkdir(const char *pathname, mode_t mode) {
 
 	return 0;
 }
-
-int remove(const char *pathname) {
-	int ret = dvfs_remove(pathname);
-	if (ret != 0) {
-		return SET_ERRNO(-ret);
-	}
-
-	return 0;
-}
-
-int unlink(const char *pathname) {
-	return 0;
-}
-
-int rmdir(const char *pathname) {
-	return 0;
-}
-
-int flock(int fd, int operation) {
-	return 0;
-}
-
