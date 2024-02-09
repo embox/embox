@@ -15,6 +15,7 @@ static module file_system_oldfs extends embox.compat.posix.file_system {
 	source "rmdir_oldfs.c"
 	source "unlink_oldfs.c"
 	source "xattr_oldfs.c"
+	source "rename_oldfs.c"
 
 	@NoRuntime depends embox.fs.core
 	@NoRuntime depends embox.fs.xattr

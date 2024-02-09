@@ -15,6 +15,7 @@ static module file_system_dvfs extends embox.compat.posix.file_system {
 	source "rmdir_dvfs.c"
 	source "unlink_dvfs.c"
 	source "xattr_dvfs.c"
+	source "rename_dvfs.c"
 	// source "statvfs_dvfs.c"
 
 	@NoRuntime depends embox.fs.dvfs.core

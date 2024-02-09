@@ -155,26 +155,8 @@ static module file_ops {
 	depends embox.compat.libc.stdio.stdio_stdstreams
 }
 
-@DefaultImpl(rename_old)
-abstract module rename {
-}
-
-static module rename_old extends rename {
-	source "rename.c"
-}
-
-static module rename_dvfs extends rename {
-	source "rename_dvfs.c"
-
-	depends embox.fs.dvfs.core
-	depends embox.compat.libc.str
-	depends open
-	depends file_ops
-}
-
 @NoCode	
 static module all {
-	@NoRuntime depends rename
 	@NoRuntime depends sprintf
 	@NoRuntime depends open
 	@NoRuntime depends fseek
