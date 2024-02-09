@@ -7,6 +7,7 @@
  */
 
 #include <stdio.h>
+
 #include <fs/kfsop.h>
 
 int rename(const char *src_name, const char *dst_name) {

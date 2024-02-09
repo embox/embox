@@ -7,10 +7,11 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
-#include <string.h>
+#include <fcntl.h>
 #include <libgen.h>
 #include <limits.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <fs/dvfs.h>
 
@@ -31,7 +32,7 @@ int rename(const char *src_name, const char *dst_name) {
 	char dst_parent_path[PATH_MAX + 1];
 	int err;
 	char buf[FS_BUFFER_SZ];
-	FILE *in, *out;
+	int in, out;
 	int pos;
 
 	assert(src_name);
@@ -74,21 +75,25 @@ int rename(const char *src_name, const char *dst_name) {
 	assert(dst_parent->d_sb);
 	assert(dst_parent->d_sb->sb_iops);
 
-	if (dst_parent->d_sb == from->d_sb && dst_parent->d_sb->sb_iops->ino_rename) {
+	if (dst_parent->d_sb == from->d_sb
+	    && dst_parent->d_sb->sb_iops->ino_rename) {
 		/* Same FS with rename support*/
-		return dst_parent->d_sb->sb_iops->ino_rename(from->d_inode, dst_parent->d_inode, basename((char *)dst_name));
-	} else {
+		return dst_parent->d_sb->sb_iops->ino_rename(from->d_inode,
+		    dst_parent->d_inode, basename((char *)dst_name));
+	}
+	else {
 		/* Different FS or same FS without rename support */
 		assert(from);
 		assert(from->d_sb);
 		assert(from->d_sb->sb_iops);
 
-		if (!from->d_sb->sb_iops->ino_remove || !dst_parent->d_sb->sb_iops->ino_create) {
+		if (!from->d_sb->sb_iops->ino_remove
+		    || !dst_parent->d_sb->sb_iops->ino_create) {
 			return SET_ERRNO(EROFS);
 		}
 
-		in  = fopen(src_name, "r");
-		out = fopen(dst_name, "w");
+		in = open(src_name, O_RDONLY);
+		out = open(dst_name, O_WRONLY);
 		pos = 0;
 
 		if (!in || !out) {
@@ -96,12 +101,12 @@ int rename(const char *src_name, const char *dst_name) {
 		}
 
 		while (pos < from->d_inode->i_size) {
-			err = fread(buf, sizeof(buf[0]), FS_BUFFER_SZ, in);
-			if (err <= 0 && ferror(in)) {
+			err = read(in, buf, sizeof(buf));
+			if (err < 0) {
 				goto err_out;
 			}
 
-			err = fwrite(buf, sizeof(buf[0]), err, out);
+			err = write(out, buf, err);
 			if (err < 0) {
 				goto err_out;
 			}
@@ -112,17 +117,14 @@ int rename(const char *src_name, const char *dst_name) {
 		dvfs_remove(src_name);
 	}
 
-	fclose(in);
-	fclose(out);
+	close(in);
+	close(out);
 
 	return 0;
+
 err_out:
-	if (in) {
-		fclose(in);
-	}
-	if (out) {
-		fclose(out);
-	}
+	close(in);
+	close(out);
 
 	return -1;
 }

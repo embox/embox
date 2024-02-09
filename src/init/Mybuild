@@ -58,7 +58,6 @@ module diag_fd {
 	source "diag_fd.c"
 
 	depends embox.compat.posix.index_descriptor
-	//depends embox.compat.libc.stdio.rename
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.api
 	depends embox.kernel.task.resource.idesc_table
