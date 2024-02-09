@@ -5,18 +5,16 @@
  * @author  Anton Kozlov
  * @date    23.05.2014
  */
-#include <errno.h>
-#include <string.h>
-#include <limits.h>
 
-#include <fs/inode.h>
-#include <fs/inode_operation.h>
 #include <fs/fs_driver.h>
 #include <fs/super_block.h>
 #include <fs/dir_context.h>
-#include <fs/file_desc.h>
 
 #define BINFS_NAME "binfs"
+
+struct inode *binfs_lookup(char const *name, struct inode const *dir) {
+	return NULL;
+}
 
 extern int binfs_destroy_inode(struct inode *inode) ;
 
