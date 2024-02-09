@@ -76,7 +76,7 @@ void inode_del(struct inode *node) {
 	}
 }
 
-struct inode *node_alloc(const char *name) {
+struct inode *inode_alloc(const char *name) {
 	struct inode *node;
 	char *node_name;
 	size_t name_len;
@@ -102,7 +102,7 @@ struct inode *node_alloc(const char *name) {
 	return node;
 }
 
-void node_free(struct inode *node) {
+void inode_free(struct inode *node) {
 	if (node->i_dentry) {
 		pool_free(&dentry_pool, node->i_dentry);
 	}

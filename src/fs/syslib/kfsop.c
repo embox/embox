@@ -355,7 +355,7 @@ static int vfs_mount_walker(struct inode *dir) {
 
 		if (res == -1){
 			/* End of directory */
-			node_free(node);
+			inode_free(node);
 			return 0;
 		}
 
@@ -672,7 +672,7 @@ int kumount(const char *dir) {
 	//dir_node.node->i_sb->sb_root = NULL;
 
 	if (dir_node.node != vfs_get_root()) {
-		node_free(dir_node.node);
+		inode_free(dir_node.node);
 	}
 
 	mount_table_del(node.mnt_desc);

@@ -30,12 +30,12 @@ static struct inode *a, *b, *c, *d, *e;
  */
 static int setup_suite(void) {
 
-	test_root = node_alloc("R");
-	a = node_alloc("A");
-	b = node_alloc("B");
-	c = node_alloc("C");
-	d = node_alloc("D");
-	e = node_alloc("E");
+	test_root = inode_alloc("R");
+	a = inode_alloc("A");
+	b = inode_alloc("B");
+	c = inode_alloc("C");
+	d = inode_alloc("D");
+	e = inode_alloc("E");
 
 	if (!a || !b || !c || !d || !e) {
 		return -ENOMEM;
