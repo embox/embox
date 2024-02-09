@@ -2,21 +2,19 @@ package embox.fs.driver
 
 @DefaultImpl(devfs_stub)
 abstract module devfs {
+	source "devfs_common.c"
+	source "devfs_drv.c"
 }
 
 module devfs_old extends devfs {
 	source "devfs_oldfs.c"
-	source "devfs_common.c"
 
-//	depends embox.fs.core
-//	depends embox.fs.rootfs_oldfs
-//	depends embox.driver.flash.core
 	@NoRuntime depends embox.driver.char_dev
 }
 
 module devfs_dvfs extends devfs {
 	source "devfs_dvfs.c"
-	source "devfs_common.c"
+
 	source "devfs_notify_stub.c"
 
 	depends embox.driver.char_dev

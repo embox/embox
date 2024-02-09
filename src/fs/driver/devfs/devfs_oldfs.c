@@ -31,27 +31,7 @@ struct super_block_operations devfs_sbops = {
 	//.open_idesc = devfs_open_idesc,
 	.destroy_inode = devfs_destroy_inode,
 };
-#if 0
-static int devfs_mount(struct super_block *sb, struct inode *dest) {
-	return 0;
-}
-#endif
-#if 0
-static struct fsop_desc devfs_fsop = {
-	//.mount = devfs_mount,
-};
-#endif
 
-static const struct fs_driver devfs_driver = {
-	.name = "devfs",
-	.fill_sb   = devfs_fill_sb,
-
-	//.fsop = &devfs_fsop
-};
-
-DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
-
-FILE_SYSTEM_AUTOMOUNT("/dev", devfs_driver);
 
 static int devfs_add_dev(struct dev_module *cdev, int flag) {
 	struct path node;
