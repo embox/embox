@@ -13,6 +13,8 @@
 
 #include <mem/misc/pool.h>
 
+#include <util/math.h>
+
 #include <fs/inode.h>
 #include <fs/dentry.h>
 #include <fs/vfs.h>
@@ -145,4 +147,17 @@ void inode_mtime_set(struct inode *node, unsigned mtime) {
 
 char *inode_name(struct inode *node) {
 	return node->name;
+}
+
+char *inode_name_set(struct inode *node, const char *name) {
+	char *node_name;
+	size_t name_len;
+
+	name_len = min(sizeof(node->name) - 1, strlen(name));
+
+	node_name = inode_name(node);
+	strncpy(node_name, name, name_len);
+	node_name[name_len] = '\0';
+
+	return node_name;
 }
