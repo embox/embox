@@ -1,38 +1,15 @@
+package embox.compat.posix
 
-package embox.compat.posix.idx
-
-@NoCode
-module All {
-	depends isatty,
-		select,
-		dup
-}
-
-static module isatty {
-	source "isatty.c"
-
-	depends embox.kernel.task.api
-}
-
-static module select {
-
+static module index_descriptor {
+	source "poll.c"
 	source "select.c"
-
-	depends embox.kernel.task.poll_table
-	depends embox.kernel.task.idesc
-}
-
-static module dup {
+	source "isatty.c"
 	source "dup.c"
+
+	@NoRuntime depends embox.kernel.task.api
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.kernel.task.poll_table
 
 	depends embox.compat.posix.fs.close
 	depends embox.compat.posix.fs.fcntl
-	depends embox.kernel.task.api
-}
-
-static module poll {
-	source "poll.c"
-
-	depends embox.kernel.task.poll_table
-	depends embox.kernel.task.idesc
 }
