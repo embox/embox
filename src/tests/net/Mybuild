@@ -36,8 +36,7 @@ module inet_dgram_socket_test {
 	source "inet_dgram_socket_test.c"
 	option number proto
 
-	depends embox.compat.posix.fs.readv
-	depends embox.compat.posix.fs.writev
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.net.socket
 	depends embox.driver.net.loopback
 	depends embox.framework.test
