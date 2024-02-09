@@ -30,16 +30,23 @@ static struct inode *a, *b, *c, *d, *e;
  */
 static int setup_suite(void) {
 
-	test_root = node_alloc("R");
-	a = node_alloc("A");
-	b = node_alloc("B");
-	c = node_alloc("C");
-	d = node_alloc("D");
-	e = node_alloc("E");
+	test_root = inode_alloc(NULL);
+	a = inode_alloc(NULL);
+	b = inode_alloc(NULL);
+	c = inode_alloc(NULL);
+	d = inode_alloc(NULL);
+	e = inode_alloc(NULL);
 
 	if (!a || !b || !c || !d || !e) {
 		return -ENOMEM;
 	}
+
+	inode_name_set(test_node, "R");
+	inode_name_set(test_node, "A");
+	inode_name_set(test_node, "B");
+	inode_name_set(test_node, "C");
+	inode_name_set(test_node, "D");
+	inode_name_set(test_node, "E");
 
 	vfs_add_leaf(a, test_root);
 	vfs_add_leaf(b, test_root);

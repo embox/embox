@@ -53,11 +53,12 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 
 	sb->fs_drv = drv;
 
-	node = node_alloc("");
+	node = inode_alloc(sb);
 	if (!node) {
 		pool_free(&super_block_pool, sb);
 		return NULL;
 	}
+	inode_name_set(node, "");
 
 	node->i_sb = sb;
 	node->i_mode = S_IFDIR;
@@ -66,7 +67,7 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 
 	if (drv->fill_sb) {
 		if (0 != drv->fill_sb(sb, source)) {
-			node_free(node);
+			inode_free(node);
 			pool_free(&super_block_pool, sb);
 			return NULL;
 		}
@@ -99,7 +100,7 @@ int super_block_free(struct super_block *sb) {
 	if (sb->sb_root) {
 		/* Mount root should be generally
 		 * freed on umount */
-		node_free(sb->sb_root);
+		inode_free(sb->sb_root);
 	}
 
 	pool_free(&super_block_pool, sb);

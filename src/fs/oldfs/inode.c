@@ -13,6 +13,8 @@
 
 #include <mem/misc/pool.h>
 
+#include <util/math.h>
+
 #include <fs/inode.h>
 #include <fs/dentry.h>
 #include <fs/vfs.h>
@@ -74,25 +76,13 @@ void inode_del(struct inode *node) {
 	}
 }
 
-struct inode *node_alloc(const char *name) {
+struct inode *inode_alloc(struct super_block *sb) {
 	struct inode *node;
-	char *node_name;
-	size_t name_len;
 
-	name_len = strlen(name);
-
-	if (name_len > NAME_MAX) {
-		return NULL;
-	}
-
-	node = inode_new(NULL);
+	node = inode_new(sb);
 	if (!node) {
 		return NULL;
 	}
-
-	node_name = inode_name(node);
-	strncpy(node_name, name, name_len);
-	node_name[name_len] = '\0';
 
 	/* it's for permanent linked inode to file tree */
 	node->i_nlink++;
@@ -100,7 +90,7 @@ struct inode *node_alloc(const char *name) {
 	return node;
 }
 
-void node_free(struct inode *node) {
+void inode_free(struct inode *node) {
 	if (node->i_dentry) {
 		pool_free(&dentry_pool, node->i_dentry);
 	}
@@ -145,4 +135,17 @@ void inode_mtime_set(struct inode *node, unsigned mtime) {
 
 char *inode_name(struct inode *node) {
 	return node->name;
+}
+
+char *inode_name_set(struct inode *node, const char *name) {
+	char *node_name;
+	size_t name_len;
+
+	name_len = min(sizeof(node->name) - 1, strlen(name));
+
+	node_name = inode_name(node);
+	strncpy(node_name, name, name_len);
+	node_name[name_len] = '\0';
+
+	return node_name;
 }

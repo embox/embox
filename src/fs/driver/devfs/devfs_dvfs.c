@@ -104,11 +104,3 @@ struct super_block_operations devfs_sbops = {
     .destroy_inode = devfs_destroy_inode,
 };
 
-static const struct fs_driver devfs_dumb_driver = {
-    .name = "devfs",
-    .fill_sb = devfs_fill_sb,
-};
-
-DECLARE_FILE_SYSTEM_DRIVER(devfs_dumb_driver);
-
-FILE_SYSTEM_AUTOMOUNT("/dev", devfs_dumb_driver);

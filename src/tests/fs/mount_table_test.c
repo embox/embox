@@ -53,10 +53,12 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 		return -ENOENT;
 	}
 
-	node = node_alloc(name);
+	node = inode_alloc(NULL);
 	assert(node);
-	root_node = node_alloc("/");
+	inode_name_set(node, name);
+	root_node = inode_alloc(NULL);
 	assert(root_node);
+	inode_name_set(root_node, "/");
 
 	vfs_add_leaf(node, root_node);
 
@@ -81,7 +83,7 @@ static int test_mt_path_fini(const char *strpath) {
 
 	vfs_del_leaf(path.node);
 
-	node_free(root_node);
+	inode_free(root_node);
 
 	return 0;
 }
@@ -90,7 +92,8 @@ static int setup_suite(void) {
 	struct path root;
 
 	vfs_get_root_path(&root);
-	test_node = node_alloc("test");
+	test_node = inode_alloc(NULL);
+	inode_name_set(test_node, "test");
 
 	vfs_add_leaf(test_node, root.node);
 

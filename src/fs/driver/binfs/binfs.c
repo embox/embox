@@ -11,7 +11,6 @@
 
 #include <embox/cmd.h>
 
-//#include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/fs_driver.h>
@@ -23,12 +22,10 @@
 
 extern struct super_block_operations binfs_sbops;
 
+extern struct inode *binfs_lookup(char const *name, struct inode const *dir);
+
 int binfs_destroy_inode(struct inode *inode) {
 	return 0;
-}
-
-static struct inode *binfs_lookup(char const *name, struct inode const *dir) {
-	return NULL;
 }
 
 static int binfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
@@ -50,7 +47,6 @@ static int binfs_iterate(struct inode *next, char *name, struct inode *parent, s
 	/* End of directory */
 	return -1;
 }
-
 
 static int binfs_ioctl(struct file_desc *desc, int request, void *data) {
 	return 0;

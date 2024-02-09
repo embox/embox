@@ -74,9 +74,9 @@ extern void inode_del(struct inode *node);
  * @param name_len (optional) how many bytes to take from name.
  *    If zero, the name must be a null-terminated string.
  */
-extern struct inode *node_alloc(const char *name);
+extern struct inode *inode_alloc(struct super_block *sb);
 
-extern void node_free(struct inode *node);
+extern void inode_free(struct inode *node);
 extern void *inode_priv(const struct inode *node);
 extern void inode_priv_set(struct inode *node, void *priv);
 extern size_t inode_size(const struct inode *node);
@@ -86,6 +86,7 @@ extern void inode_ctime_set(struct inode *node, unsigned ctime);
 extern unsigned inode_mtime(const struct inode *node);
 extern void inode_mtime_set(struct inode *node, unsigned mtime);
 extern char *inode_name(struct inode *node);
+extern char *inode_name_set(struct inode *node, const char *name);
 
 static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->i_mode);

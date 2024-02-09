@@ -6,5 +6,6 @@ module binfs {
 }
 
 module binfs_dvfs {
+	source "binfs.c"
 	source "binfs_dvfs.c"
 }

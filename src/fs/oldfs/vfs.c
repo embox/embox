@@ -354,8 +354,9 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 
 	assert(parent);
 
-	child = node_alloc(name);
+	child = inode_alloc(parent->i_sb);
 	if (child) {
+		inode_name_set(child, name);
 		child->i_mode = mode;
 		child->i_dentry->flags = mode;
 		child->i_owner_id = getuid();
@@ -454,7 +455,7 @@ int vfs_del_leaf(struct inode *node) {
 
 	rc = tree_unlink_link(&(node->tree_link));
 	if (rc) {
-		node_free(node);
+		inode_free(node);
 	}
 	return rc;
 }
@@ -462,8 +463,9 @@ int vfs_del_leaf(struct inode *node) {
 struct inode *vfs_create_root(void) {
 	struct inode *root_node;
 
-	root_node = node_alloc("/");
+	root_node = inode_alloc(NULL);
 	assert(root_node);
+	inode_name_set(root_node, "/");
 	root_node->i_mode = S_IFDIR | ROOT_MODE;
 	root_node->i_dentry->flags = S_IFDIR | ROOT_MODE;
 

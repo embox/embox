@@ -16,6 +16,8 @@ abstract module fat {
 	source "fat_common_mem.c"
 	source "fat_fops.c"
 
+	source "fatfs_drv.c"
+
 	depends embox.driver.block_dev
 }
 
