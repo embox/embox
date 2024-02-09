@@ -53,11 +53,12 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 
 	sb->fs_drv = drv;
 
-	node = inode_alloc("");
+	node = inode_alloc(sb);
 	if (!node) {
 		pool_free(&super_block_pool, sb);
 		return NULL;
 	}
+	inode_name_set(node, "");
 
 	node->i_sb = sb;
 	node->i_mode = S_IFDIR;

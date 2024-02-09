@@ -76,25 +76,13 @@ void inode_del(struct inode *node) {
 	}
 }
 
-struct inode *inode_alloc(const char *name) {
+struct inode *inode_alloc(struct super_block *sb) {
 	struct inode *node;
-	char *node_name;
-	size_t name_len;
 
-	name_len = strlen(name);
-
-	if (name_len > NAME_MAX) {
-		return NULL;
-	}
-
-	node = inode_new(NULL);
+	node = inode_new(sb);
 	if (!node) {
 		return NULL;
 	}
-
-	node_name = inode_name(node);
-	strncpy(node_name, name, name_len);
-	node_name[name_len] = '\0';
 
 	/* it's for permanent linked inode to file tree */
 	node->i_nlink++;
