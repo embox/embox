@@ -66,6 +66,6 @@ module ping {
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.net.herror
 	depends embox.compat.posix.proc.signal
-	depends embox.compat.posix.idx.poll
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.util.sleep
 }

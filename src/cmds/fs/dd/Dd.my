@@ -18,7 +18,6 @@ module dd {
 
 	depends embox.compat.libc.stdio.printf
 	depends embox.compat.libc.str
-	depends embox.compat.posix.fs.read
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.fs.open
-	depends embox.compat.posix.fs.write
 }

@@ -44,9 +44,8 @@ static module open {
 	source "fopen.c"
 	depends file_pool
 	depends embox.compat.posix.fs.open
-	depends embox.compat.posix.fs.close
 	@NoRuntime depends embox.compat.libc.str
-	depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.index_descriptor
 }
 
 static module fseek {
@@ -70,7 +69,7 @@ static module printf {
 static module fwrite {
 	source "fwrite.c"
 
-	depends embox.compat.posix.fs.write
+	depends embox.compat.posix.index_descriptor
 	depends embox.kernel.task.resource.errno
 
 	depends funopen
@@ -132,7 +131,7 @@ static module file_ops {
 	source "clearerr.c"
 
 	source "fread.c"
-	depends embox.compat.posix.fs.read
+	@NoRuntime depends embox.compat.posix.index_descriptor
 
 	source "fioctl.c"
 	source "fflush.c"
