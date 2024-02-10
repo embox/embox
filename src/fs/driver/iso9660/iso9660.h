@@ -45,6 +45,9 @@
  */
 
 #include <stdint.h>
+#include <limits.h>
+#include <time.h>
+
 #include <fs/iso9660_format.h>
 
 typedef int64_t off64_t;

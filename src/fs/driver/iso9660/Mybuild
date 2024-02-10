@@ -1,14 +1,16 @@
 package embox.fs.driver
 
 module cdfs {
+	option number inode_quantity=2048
+	option number cdfs_descriptor_quantity=4
+
 	@IncludeExport(path="fs")
 	source "iso9660.h"
 	@IncludeExport(path="fs")
 	source "iso9660_format.h"
 
 	source "cdfs.c"
-	option number inode_quantity=2048
-	option number cdfs_descriptor_quantity=4
+	source "iso9660_drv.c"
 
 	depends embox.fs.node
 	depends embox.mem.page_api

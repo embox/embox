@@ -500,29 +500,8 @@ int cdfs_mount(struct inode *root_node)
 	return 0;
 }
 
-static void cdfs_free_fs(struct super_block *sb);
-static int cdfs_clean_sb(struct super_block *sb) {
-	struct cdfs_fs_info *fsi = sb->sb_data;
-	cdfs_t *cdfs = (cdfs_t *) fsi->data;
+extern void cdfs_free_fs(struct super_block *sb);
 
-	/* Close device */
-	//block_dev_close(fs->bdev);
-
-	/* Deallocate file system */
-	if (cdfs->path_table_buffer) {
-		sysfree(cdfs->path_table_buffer);
-	}
-	if (cdfs->path_table) {
-		sysfree(cdfs->path_table);
-	}
-	sysfree(cdfs);
-
-	cdfs_free_fs(sb);
-
-	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
-
-	return 0;
-}
 
 /* int cdfs_statfs(struct cdfs_fs_info *fsi, statfs_t *cache) { */
 /* 	cdfs_t *cdfs = (cdfs_t *) fsi->data; */
@@ -831,38 +810,6 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 	return rezult;
 }
 
-/* File system operations*/
-static int cdfs_fill_sb(struct super_block *sb, const char *source);
-
-static struct fs_driver cdfsfs_driver = {
-	.name = "iso9660",
-	.fill_sb = cdfs_fill_sb,
-	.clean_sb = cdfs_clean_sb,
-};
-
-DECLARE_FILE_SYSTEM_DRIVER(cdfsfs_driver);
-
-static int cdfs_destroy_inode(struct inode *inode) {
-	return 0;
-}
-
-static struct super_block_operations cdfs_sbops = {
-	//.open_idesc    = dvfs_file_open_idesc,
-	.destroy_inode = cdfs_destroy_inode,
-};
-
-struct inode_operations cdfs_iops = {
-	.ino_iterate = cdfs_iterate,
-};
-
-
-static void cdfs_free_fs(struct super_block *sb) {
-	struct cdfs_fs_info *fsi = sb->sb_data;
-
-	if (NULL != fsi) {
-		pool_free(&cdfs_fs_pool, fsi);
-	}
-}
 
 static int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_directory_record_t *rec) {
 	int flags;
@@ -999,7 +946,20 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 
 }
 
-static int cdfs_fill_sb(struct super_block *sb, const char *source) {
+struct inode_operations cdfs_iops = {
+	.ino_iterate = cdfs_iterate,
+};
+
+int cdfs_destroy_inode(struct inode *inode) {
+	return 0;
+}
+
+struct super_block_operations cdfs_sbops = {
+	//.open_idesc    = dvfs_file_open_idesc,
+	.destroy_inode = cdfs_destroy_inode,
+};
+
+int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	struct inode *dest;
 	struct block_dev *bdev;
 	struct cdfs_fs_info *fsi;
@@ -1044,4 +1004,35 @@ error:
 	cdfs_free_fs(sb);
 
 	return rc;
+}
+
+void cdfs_free_fs(struct super_block *sb) {
+	struct cdfs_fs_info *fsi = sb->sb_data;
+
+	if (NULL != fsi) {
+		pool_free(&cdfs_fs_pool, fsi);
+	}
+}
+
+int cdfs_clean_sb(struct super_block *sb) {
+	struct cdfs_fs_info *fsi = sb->sb_data;
+	cdfs_t *cdfs = (cdfs_t *) fsi->data;
+
+	/* Close device */
+	//block_dev_close(fs->bdev);
+
+	/* Deallocate file system */
+	if (cdfs->path_table_buffer) {
+		sysfree(cdfs->path_table_buffer);
+	}
+	if (cdfs->path_table) {
+		sysfree(cdfs->path_table);
+	}
+	sysfree(cdfs);
+
+	cdfs_free_fs(sb);
+
+	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
+
+	return 0;
 }
