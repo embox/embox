@@ -486,9 +486,6 @@ int cdfs_mount(struct inode *root_node)
 	return 0;
 }
 
-extern void cdfs_free_fs(struct super_block *sb);
-
-
 /* int cdfs_statfs(struct cdfs_fs_info *fsi, statfs_t *cache) { */
 /* 	struct cdfs *cdfs = (struct cdfs *) fsi->data; */
 
@@ -753,25 +750,14 @@ int cdfs_fill_sb(struct super_block *sb, const char *source) {
 
 	return 0;
 error:
-	cdfs_free_fs(sb);
+	pool_free(&cdfs_fs_pool, sb->sb_data);
 
 	return rc;
-}
-
-void cdfs_free_fs(struct super_block *sb) {
-	struct cdfs_fs_info *fsi = sb->sb_data;
-
-	if (NULL != fsi) {
-		pool_free(&cdfs_fs_pool, fsi);
-	}
 }
 
 int cdfs_clean_sb(struct super_block *sb) {
 	struct cdfs_fs_info *fsi = sb->sb_data;
 	struct cdfs *cdfs = (struct cdfs *) fsi->data;
-
-	/* Close device */
-	//block_dev_close(fs->bdev);
 
 	/* Deallocate file system */
 	if (cdfs->path_table_buffer) {
@@ -782,7 +768,7 @@ int cdfs_clean_sb(struct super_block *sb) {
 	}
 	sysfree(cdfs);
 
-	cdfs_free_fs(sb);
+	pool_free(&cdfs_fs_pool, sb->sb_data);
 
 	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
 

@@ -70,8 +70,8 @@ struct cdfs {
 };
 
 struct cdfs_fs_info {
-	struct fsops *ops;
-	char mntto[PATH_MAX];
+	//struct fsops *ops;
+	//char mntto[PATH_MAX];
 	void *data;
 };
 
