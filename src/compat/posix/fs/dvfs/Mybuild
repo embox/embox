@@ -1,6 +1,7 @@
 package embox.compat.posix
 
-static module file_system_dvfs extends embox.compat.posix.file_system {
+static module file_system_dvfs extends file_system {
+	option string log_level="LOG_ERR"
 	option number dir_quantity=4 /* DIR (dirent.h) */
 	
 	source "chmod_dvfs.c"
@@ -18,9 +19,10 @@ static module file_system_dvfs extends embox.compat.posix.file_system {
 	source "rename_dvfs.c"
 	// source "statvfs_dvfs.c"
 
+	@NoRuntime depends file_system_common
 	@NoRuntime depends embox.fs.dvfs.core
 	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.compat.posix.file_system_depends
 	@NoRuntime depends embox.security.api
 	@NoRuntime depends embox.mem.pool
+	@NoRuntime depends embox.compat.posix.libgen
 }
