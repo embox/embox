@@ -40,27 +40,14 @@
  */
 
 #include <errno.h>
-#include <unistd.h>
 #include <sys/stat.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <fcntl.h>
 #include <arpa/inet.h>
 #include <ctype.h>
 
-#include <util/err.h>
 #include <util/math.h>
 
 #include <fs/inode.h>
-#include <fs/vfs.h>
-#include <fs/hlpr_path.h>
 #include <fs/super_block.h>
-#include <fs/file_desc.h>
-#include <fs/fs_driver.h>
-#include <fs/inode_operation.h>
-#include <fs/dir_context.h>
 
 #include <fs/iso9660.h>
 
@@ -68,10 +55,11 @@
 #include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
 
-#include <kernel/time/ktime.h>
-#include <kernel/time/clock_source.h>
-
 #include <framework/mod/options.h>
+
+
+/* FIXME bdev_by_path is declared in dvfs.h and fs/mount.h */
+extern struct block_dev *bdev_by_path(const char *source);
 
 /* cdfs filesystem description pool */
 POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
@@ -79,10 +67,8 @@ POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_qu
 /* cdfs file description pool */
 POOL_DEF(cdfs_file_pool, struct cdfs_file_info, OPTION_GET(NUMBER,inode_quantity));
 
-static int cdfs_open(struct inode *node, char *name);
-static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx);
 
-static int cdfs_isonum_711(unsigned char *p) {
+int cdfs_isonum_711(unsigned char *p) {
   return p[0];
 }
 
@@ -90,7 +76,7 @@ static int cdfs_isonum_731(unsigned char *p) {
   return p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
 }
 
-static int cdfs_isonum_733(unsigned char *p) {
+int cdfs_isonum_733(unsigned char *p) {
   return cdfs_isonum_731(p);
 }
 
@@ -218,7 +204,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 	return 0;
 }
 
-static int cdfs_find_dir(cdfs_t *cdfs, char *name, int len) {
+int cdfs_find_dir(cdfs_t *cdfs, char *name, int len) {
 	char *p;
 	int l;
 	int dir = 2;
@@ -351,7 +337,7 @@ static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, iso_dire
 	return -ENOENT;
 }
 
-static int cdfs_find_file(cdfs_t *cdfs, char *name, int len, iso_directory_record_t **rec) {
+int cdfs_find_file(cdfs_t *cdfs, char *name, int len, iso_directory_record_t **rec) {
 	int dir;
 	int split;
 	int n;
@@ -393,7 +379,7 @@ static int cdfs_find_file(cdfs_t *cdfs, char *name, int len, iso_directory_recor
 								  len - split - 1, rec);
 }
 
-static time_t cdfs_isodate(unsigned char *date)
+time_t cdfs_isodate(unsigned char *date)
 {
 	static struct tm tm;
 
@@ -517,118 +503,7 @@ extern void cdfs_free_fs(struct super_block *sb);
 /* 	return 0; */
 /* } */
 
-static int cdfs_open(struct inode *node, char *name) {
-	cdfs_t *cdfs;
-	iso_directory_record_t *rec;
-	time_t date;
-	int size;
-	int extent;
-	int flags;
-	int rc;
-	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
 
-	fi = inode_priv(node);
-	fsi = node->i_sb->sb_data;;
-
-	cdfs = (cdfs_t *) fsi->data;
-
-
-	/* Check open mode */
-	if (fi->flags & (O_CREAT | O_TRUNC | O_APPEND)) {
-		return -EROFS;
-	}
-
-	for(int i = 0; name[i]; i++){
-		name[i] = toupper(name[i]);
-	}
-
-	/* Locate file in file system */
-	rc = cdfs_find_file(cdfs, name, strlen(name), &rec);
-	if (rc < 0) {
-		return rc;
-	}
-
-	flags = cdfs_isonum_711(rec->flags);
-	extent = cdfs_isonum_733(rec->extent);
-	date = cdfs_isodate(rec->date);
-	size = cdfs_isonum_733(rec->size);
-
-	fi->extent = extent;
-	fi->date = date;
-	fi->size = size;
-	if (flags & 2) {
-		//fi->flags |= F_DIR;
-		fi->flags |= S_IFDIR;
-	}
-
-//	fi->mode = S_IFREG | S_IRUSR | S_IXUSR |
-//	   S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
-	return 0;
-}
-
-static int cdfs_read(struct inode *node, void *data, size_t size, off64_t pos) {
-	size_t read;
-	size_t count;
-	size_t left;
-	char *p;
-	int iblock;
-	int start;
-	int blk;
-	struct block_dev_cache *cache;
-	struct cdfs_file_info *fi;
-	struct cdfs_fs_info *fsi;
-	cdfs_t *cdfs;
-
-	fi = inode_priv(node);
-	fsi = node->i_sb->sb_data;
-	cdfs = (cdfs_t *) fsi->data;
-
-	read = 0;
-	p = (char *) data;
-	while (pos < fi->size && size > 0) {
-		iblock = (int) pos / CDFS_BLOCKSIZE;
-		start = (int) pos % CDFS_BLOCKSIZE;
-
-		count = CDFS_BLOCKSIZE - start;
-		if (count > size) {
-			count = size;
-		}
-
-		left = fi->size - (int) pos;
-		if (count > left) {
-			count = left;
-		}
-		if (count <= 0) {
-			break;
-		}
-
-		blk = fi->extent + iblock;
-
-		if (fi->flags & O_DIRECT) {
-			if (start != 0 || count != CDFS_BLOCKSIZE) {
-				return read;
-			}
-			if (block_dev_read(cdfs->bdev, p, count, blk) != (int) count) {
-				return read;
-			}
-		}
-		else {
-			cache = block_dev_cached_read(cdfs->bdev, blk);
-			if (!cache) {
-				return -EIO;
-			}
-			memcpy(p, cache->data + start, count);
-		}
-
-		pos += count;
-		p += count;
-		read += count;
-		size -= count;
-	}
-
-	return read;
-}
 
 /*
 static int cdfs_opendir(struct inode *dir_node, char *name) {
@@ -765,53 +640,7 @@ void cdfs_init(void) {
 }
 */
 
-/* File operations */
-static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag);
-static int    cdfsfs_close(struct file_desc *desc);
-static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
-
-static struct file_operations cdfsfs_fop = {
-	.open = cdfsfs_open,
-	.close = cdfsfs_close,
-	.read = cdfsfs_read,
-};
-
-static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
-	char path [PATH_MAX + 1];
-	int res;
-
-	vfs_get_relative_path(node, path, PATH_MAX);
-
-	res = cdfs_open(node, path + 1);
-	if (res) {
-		return err_ptr(-res);
-	}
-	return idesc;
-}
-
-static int cdfsfs_close(struct file_desc *desc) {
-	struct cdfs_file_info *fi;
-
-	fi = inode_priv(desc->f_inode);
-	fi->pos = 0;
-
-	return 0;
-}
-
-static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
-	int rezult;
-	struct cdfs_file_info *fi;
-
-	fi = inode_priv(desc->f_inode);
-
-	rezult = cdfs_read(desc->f_inode, (void *) buf, size, fi->pos);
-	fi->pos += rezult;
-
-	return rezult;
-}
-
-
-static int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_directory_record_t *rec) {
+int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_directory_record_t *rec) {
 	int flags;
 	int namelen;
 	struct cdfs_file_info *fi;
@@ -870,86 +699,6 @@ static int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_dire
 	return 0;
 }
 
-static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
-	int n;
-	cdfs_t *cdfs;
-	struct cdfs_fs_info *fsi;
-	struct block_dev_cache *cache;
-	int blk;
-	char *p;
-	iso_directory_record_t *rec;
-	int left;
-	int reclen;
-	int idx = 0;
-
-	fsi = parent->i_sb->sb_data;
-	cdfs = fsi->data;
-
-	if (0 == (int) (intptr_t) dir_ctx->fs_ctx) {
-		dir_ctx->fs_ctx = (void*)(intptr_t)2;
-	}
-
-	n = cdfs_find_dir(cdfs, inode_name(parent), strlen(inode_name(parent)));
-
-	/* The first two directory records are . (current) and .. (parent) */
-	blk = cdfs->path_table[n]->extent;
-	cache = block_dev_cached_read(cdfs->bdev, blk++);
-	if (!cache) {
-		return -1;
-	}
-
-	/* Get length of directory from the first record */
-	p = cache->data;
-	rec = (iso_directory_record_t *) p;
-	left = cdfs_isonum_733(rec->size);
-
-	/* Find named entry in directory */
-	while (left > 0) {
-		/*
-		 * Read next block if all records in current block has been read
-		 * Directory records never cross block boundaries
-		 */
-		if (p >= cache->data + CDFS_BLOCKSIZE) {
-			if (p > cache->data + CDFS_BLOCKSIZE) {
-				return -1;
-			}
-			cache = block_dev_cached_read(cdfs->bdev, blk++);
-			if (!cache) {
-				return -1;
-			}
-			p = cache->data;
-		}
-
-		/* Check for match */
-		rec = (iso_directory_record_t *) p;
-		reclen = cdfs_isonum_711(rec->length);
-
-		if (reclen > 0) {
-
-			if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
-			} else {
-				cdfs_fill_node(next, next_name, cdfs, rec);
-				dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
-				return 0;
-			}
-			/* Skip to next record */
-			p += reclen;
-			left -= reclen;
-		}
-		else {
-			/* Skip to next block */
-			left -= (cache->data + CDFS_BLOCKSIZE) - p;
-			p = cache->data + CDFS_BLOCKSIZE;
-		}
-	}
-	return -1;
-
-}
-
-struct inode_operations cdfs_iops = {
-	.ino_iterate = cdfs_iterate,
-};
-
 int cdfs_destroy_inode(struct inode *inode) {
 	return 0;
 }
@@ -958,6 +707,9 @@ struct super_block_operations cdfs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = cdfs_destroy_inode,
 };
+
+extern struct inode_operations cdfs_iops;
+extern struct file_operations cdfsfs_fop;
 
 int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	struct inode *dest;

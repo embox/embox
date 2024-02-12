@@ -12,6 +12,9 @@ module cdfs {
 	source "cdfs.c"
 	source "iso9660_drv.c"
 
+	source "iso9660_file_ops.c"
+	source "iso9660_inode_ops.c"
+
 	depends embox.fs.node
 	depends embox.mem.page_api
 	depends embox.mem.pool
