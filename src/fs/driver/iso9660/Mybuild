@@ -10,6 +10,7 @@ module cdfs {
 	source "iso9660_format.h"
 
 	source "cdfs.c"
+	source "iso9660_mem.c"
 	source "iso9660_drv.c"
 
 	source "iso9660_file_ops.c"

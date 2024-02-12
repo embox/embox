@@ -6,43 +6,11 @@
  * @author Andrey Gazukin
  */
 
-/**
- * cdfs.c
- *
- * ISO-9660 CD-ROM Filesystem
- *
- * Copyright (C) 2002 Michael Ringgaard. All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- *
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the project nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- */
-
 #include <errno.h>
 #include <sys/stat.h>
 #include <arpa/inet.h>
 #include <ctype.h>
+#include <string.h>
 
 #include <util/math.h>
 
@@ -52,20 +20,10 @@
 #include <fs/iso9660.h>
 
 #include <drivers/block_dev.h>
-#include <mem/misc/pool.h>
 #include <mem/sysmalloc.h>
 
 #include <framework/mod/options.h>
 
-
-/* FIXME bdev_by_path is declared in dvfs.h and fs/mount.h */
-extern struct block_dev *bdev_by_path(const char *source);
-
-/* cdfs filesystem description pool */
-POOL_DEF(cdfs_fs_pool, struct cdfs_fs_info, OPTION_GET(NUMBER,cdfs_descriptor_quantity));
-
-/* cdfs file description pool */
-POOL_DEF(cdfs_file_pool, struct cdfs_file_info, OPTION_GET(NUMBER,inode_quantity));
 
 
 int cdfs_isonum_711(unsigned char *p) {
@@ -670,7 +628,7 @@ int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, is
 		name[i] = tolower(name[i]);
 	}
 
-	fi = pool_alloc(&cdfs_file_pool);
+	fi = iso9660_fi_alloc();
 	if (!fi) {
 		return -ENOMEM;
 	}
@@ -685,82 +643,5 @@ int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, is
 	fi->size = cdfs_isonum_733(rec->size);
 	inode_priv_set(node, fi);
 	inode_size_set(node, fi->size);
-	return 0;
-}
-
-int cdfs_destroy_inode(struct inode *inode) {
-	return 0;
-}
-
-struct super_block_operations cdfs_sbops = {
-	//.open_idesc    = dvfs_file_open_idesc,
-	.destroy_inode = cdfs_destroy_inode,
-};
-
-extern struct inode_operations cdfs_iops;
-extern struct file_operations cdfsfs_fop;
-
-int cdfs_fill_sb(struct super_block *sb, const char *source) {
-	struct inode *dest;
-	struct block_dev *bdev;
-	struct cdfs_fs_info *fsi;
-	struct cdfs_file_info *fi;
-	int rc;
-
-	bdev = bdev_by_path(source);
-	if (NULL == bdev) {
-		return -ENODEV;
-	}
-
-	sb->bdev = bdev;
-
-	/* allocate this fs info */
-	if (NULL == (fsi = pool_alloc(&cdfs_fs_pool))) {
-		return -ENOMEM;
-	}
-	memset(fsi, 0, sizeof(struct cdfs_fs_info));
-
-	sb->sb_data = fsi;
-	sb->sb_ops = &cdfs_sbops;
-	sb->sb_iops = &cdfs_iops;
-	sb->sb_fops = &cdfsfs_fop;
-
-	dest = sb->sb_root;
-
-	/* allocate this directory info */
-	if(NULL == (fi = pool_alloc(&cdfs_file_pool))) {
-		rc = -ENOMEM;
-		goto error;
-	}
-	memset(fi, 0, sizeof(struct cdfs_file_info));
-
-	inode_priv_set(dest, fi);
-
-	if(0 == (rc = cdfs_mount(dest))) {
-		return 0;
-	}
-
-	return 0;
-error:
-	pool_free(&cdfs_fs_pool, sb->sb_data);
-
-	return rc;
-}
-
-int cdfs_clean_sb(struct super_block *sb) {
-	struct cdfs_fs_info *fsi = sb->sb_data;
-
-	/* Deallocate file system */
-	if (fsi->path_table_buffer) {
-		sysfree(fsi->path_table_buffer);
-	}
-	if (fsi->path_table) {
-		sysfree(fsi->path_table);
-	}
-
-	pool_free(&cdfs_fs_pool, fsi);
-
-	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
-
 	return 0;
 }

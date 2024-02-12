@@ -39,4 +39,14 @@ struct cdfs_file_info {
 	time_t date;
 };
 
+
+extern struct cdfs_fs_info *iso9660_fsi_alloc(void);
+
+extern void iso9660_fsi_free(struct cdfs_fs_info *fs);
+
+extern struct cdfs_file_info *iso9660_fi_alloc(void);
+
+extern void iso9660_fi_free(struct cdfs_file_info *fs);
+
+
 #endif /* ISO9660_H_ */
