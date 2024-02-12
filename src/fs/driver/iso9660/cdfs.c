@@ -80,7 +80,7 @@ int cdfs_isonum_733(unsigned char *p) {
   return cdfs_isonum_731(p);
 }
 
-static int cdfs_fnmatch(struct cdfs *cdfs, char *fn1, int len1, char *fn2, int len2) {
+static int cdfs_fnmatch(struct cdfs_fs_info *cdfs, char *fn1, int len1, char *fn2, int len2) {
 	wchar_t *wfn2;
 	int wlen2;
 
@@ -122,7 +122,7 @@ static int cdfs_fnmatch(struct cdfs *cdfs, char *fn1, int len1, char *fn2, int l
 	}
 }
 
-static int cdfs_read_path_table(struct cdfs *cdfs, iso_volume_descriptor_t *vd) {
+static int cdfs_read_path_table(struct cdfs_fs_info *cdfs, iso_volume_descriptor_t *vd) {
 	struct block_dev_cache *cache;
 	unsigned char *pt;
 	int ptblk;
@@ -204,7 +204,7 @@ static int cdfs_read_path_table(struct cdfs *cdfs, iso_volume_descriptor_t *vd) 
 	return 0;
 }
 
-int cdfs_find_dir(struct cdfs *cdfs, char *name, int len) {
+int cdfs_find_dir(struct cdfs_fs_info *cdfs, char *name, int len) {
 	char *p;
 	int l;
 	int dir = 2;
@@ -274,7 +274,7 @@ int cdfs_find_dir(struct cdfs *cdfs, char *name, int len) {
 	return -ENOENT;
 }
 
-static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, iso_directory_record_t **dirrec) {
+static int cdfs_find_in_dir(struct cdfs_fs_info *cdfs, int dir, char *name, int len, iso_directory_record_t **dirrec) {
 	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;
@@ -337,7 +337,7 @@ static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, iso
 	return -ENOENT;
 }
 
-int cdfs_find_file(struct cdfs *cdfs, char *name, int len, iso_directory_record_t **rec) {
+int cdfs_find_file(struct cdfs_fs_info *cdfs, char *name, int len, iso_directory_record_t **rec) {
 	int dir;
 	int split;
 	int n;
@@ -397,7 +397,6 @@ time_t cdfs_isodate(unsigned char *date)
 
 int cdfs_mount(struct inode *root_node)
 {
-	struct cdfs *cdfs;
 	int rc;
 	int blk;
 	struct block_dev_cache *cache;
@@ -414,12 +413,10 @@ int cdfs_mount(struct inode *root_node)
 	}
 
 	/* Allocate file system */
-	cdfs = (struct cdfs *) sysmalloc(sizeof(struct cdfs));
-	memset(cdfs, 0, sizeof(struct cdfs));
-	cdfs->bdev = root_node->i_sb->bdev;
-	cdfs->blks = block_dev_size(root_node->i_sb->bdev);
-	if (cdfs->blks < 0) {
-		return cdfs->blks;
+	fsi->bdev = root_node->i_sb->bdev;
+	fsi->blks = block_dev_size(root_node->i_sb->bdev);
+	if (fsi->blks < 0) {
+		return fsi->blks;
 	}
 
 	/* Allocate cache */
@@ -428,7 +425,7 @@ int cdfs_mount(struct inode *root_node)
 	}
 
 	/* Read volume descriptors */
-	cdfs->vdblk = 0;
+	fsi->vdblk = 0;
 	blk = 0x8000/CDFS_BLOCKSIZE;
 	while (1) {
 		cache  = block_dev_cached_read(root_node->i_sb->bdev, blk);
@@ -441,20 +438,18 @@ int cdfs_mount(struct inode *root_node)
 		esc = vd->escape_sequences;
 
 		if (memcmp(vd->id, "CD001", 5) != 0) {
-			/*free_buffer_pool(cdfs->cache); */
-			//block_dev_close(cdfs->bdev);
-			sysfree(cdfs);
+			sysfree(fsi);
 			return -EIO;
 		}
 
-		if (cdfs->vdblk == 0 && type == ISO_VD_PRIMARY) {
-			cdfs->vdblk = blk;
+		if (fsi->vdblk == 0 && type == ISO_VD_PRIMARY) {
+			fsi->vdblk = blk;
 		}
 		else if (type == ISO_VD_SUPPLEMENTAL &&
 				 esc[0] == 0x25 && esc[1] == 0x2F &&
 				 (esc[2] == 0x40 || esc[2] == 0x43 || esc[2] == 0x45)) {
-			cdfs->vdblk = blk;
-			cdfs->joliet = 1;
+			fsi->vdblk = blk;
+			fsi->joliet = 1;
 		}
 
 		if (type == ISO_VD_END) {
@@ -462,26 +457,23 @@ int cdfs_mount(struct inode *root_node)
 		}
 		blk++;
 	}
-	if (cdfs->vdblk == 0) {
+	if (fsi->vdblk == 0) {
 		return -EIO;
 	}
 
 	/* Initialize filesystem from selected volume descriptor and read path table */
-	cache  = block_dev_cached_read(root_node->i_sb->bdev, cdfs->vdblk);
+	cache  = block_dev_cached_read(root_node->i_sb->bdev, fsi->vdblk);
 	if (!cache) {
 		return -EIO;
 	}
 	vd = (iso_volume_descriptor_t *) cache->data;
 
-	cdfs->volblks = cdfs_isonum_733(vd->volume_space_size);
+	fsi->volblks = cdfs_isonum_733(vd->volume_space_size);
 
-	rc = cdfs_read_path_table(cdfs, vd);
+	rc = cdfs_read_path_table(fsi, vd);
 	if (rc < 0) {
 		return rc;
 	}
-
-	/* Device mounted successfully */
-	fsi->data = cdfs;
 
 	return 0;
 }
@@ -637,7 +629,7 @@ void cdfs_init(void) {
 }
 */
 
-int cdfs_fill_node(struct inode* node, char *name, struct cdfs *cdfs, iso_directory_record_t *rec) {
+int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, iso_directory_record_t *rec) {
 	int flags;
 	int namelen;
 	struct cdfs_file_info *fi;
@@ -757,18 +749,16 @@ error:
 
 int cdfs_clean_sb(struct super_block *sb) {
 	struct cdfs_fs_info *fsi = sb->sb_data;
-	struct cdfs *cdfs = (struct cdfs *) fsi->data;
 
 	/* Deallocate file system */
-	if (cdfs->path_table_buffer) {
-		sysfree(cdfs->path_table_buffer);
+	if (fsi->path_table_buffer) {
+		sysfree(fsi->path_table_buffer);
 	}
-	if (cdfs->path_table) {
-		sysfree(cdfs->path_table);
+	if (fsi->path_table) {
+		sysfree(fsi->path_table);
 	}
-	sysfree(cdfs);
 
-	pool_free(&cdfs_fs_pool, sb->sb_data);
+	pool_free(&cdfs_fs_pool, fsi);
 
 	pool_free(&cdfs_file_pool, inode_priv(sb->sb_root));
 

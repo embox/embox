@@ -22,12 +22,11 @@
 extern int cdfs_isonum_711(unsigned char *p);
 extern int cdfs_isonum_733(unsigned char *p);
 
-extern int cdfs_fill_node(struct inode* node, char *name, struct cdfs *cdfs, iso_directory_record_t *rec);
-extern int cdfs_find_dir(struct cdfs *cdfs, char *name, int len);
+extern int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, iso_directory_record_t *rec);
+extern int cdfs_find_dir(struct cdfs_fs_info *cdfs, char *name, int len);
 
 static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
 	int n;
-	struct cdfs *cdfs;
 	struct cdfs_fs_info *fsi;
 	struct block_dev_cache *cache;
 	int blk;
@@ -38,17 +37,16 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 	int idx = 0;
 
 	fsi = parent->i_sb->sb_data;
-	cdfs = fsi->data;
 
 	if (0 == (int) (intptr_t) dir_ctx->fs_ctx) {
 		dir_ctx->fs_ctx = (void*)(intptr_t)2;
 	}
 
-	n = cdfs_find_dir(cdfs, inode_name(parent), strlen(inode_name(parent)));
+	n = cdfs_find_dir(fsi, inode_name(parent), strlen(inode_name(parent)));
 
 	/* The first two directory records are . (current) and .. (parent) */
-	blk = cdfs->path_table[n]->extent;
-	cache = block_dev_cached_read(cdfs->bdev, blk++);
+	blk = fsi->path_table[n]->extent;
+	cache = block_dev_cached_read(fsi->bdev, blk++);
 	if (!cache) {
 		return -1;
 	}
@@ -68,7 +66,7 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 			if (p > cache->data + CDFS_BLOCKSIZE) {
 				return -1;
 			}
-			cache = block_dev_cached_read(cdfs->bdev, blk++);
+			cache = block_dev_cached_read(fsi->bdev, blk++);
 			if (!cache) {
 				return -1;
 			}
@@ -83,7 +81,7 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 
 			if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
 			} else {
-				cdfs_fill_node(next, next_name, cdfs, rec);
+				cdfs_fill_node(next, next_name, fsi, rec);
 				dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
 				return 0;
 			}

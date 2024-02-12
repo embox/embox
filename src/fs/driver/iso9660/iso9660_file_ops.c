@@ -22,11 +22,10 @@ extern int cdfs_isonum_711(unsigned char *p);
 extern int cdfs_isonum_733(unsigned char *p);
 extern time_t cdfs_isodate(unsigned char *date);
 
-extern int cdfs_find_file(struct cdfs *cdfs, char *name, int len,
+extern int cdfs_find_file(struct cdfs_fs_info *cdfs, char *name, int len,
 							iso_directory_record_t **rec);
 
 static int cdfs_open(struct inode *node, char *name) {
-	struct cdfs *cdfs;
 	iso_directory_record_t *rec;
 	time_t date;
 	int size;
@@ -39,9 +38,6 @@ static int cdfs_open(struct inode *node, char *name) {
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;;
 
-	cdfs = (struct cdfs *) fsi->data;
-
-
 	/* Check open mode */
 	if (fi->flags & (O_CREAT | O_TRUNC | O_APPEND)) {
 		return -EROFS;
@@ -52,7 +48,7 @@ static int cdfs_open(struct inode *node, char *name) {
 	}
 
 	/* Locate file in file system */
-	rc = cdfs_find_file(cdfs, name, strlen(name), &rec);
+	rc = cdfs_find_file(fsi, name, strlen(name), &rec);
 	if (rc < 0) {
 		return rc;
 	}
@@ -86,11 +82,9 @@ static int cdfs_read(struct inode *node, void *data, size_t size, int64_t pos) {
 	struct block_dev_cache *cache;
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
-	struct cdfs *cdfs;
 
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;
-	cdfs = (struct cdfs *) fsi->data;
 
 	read = 0;
 	p = (char *) data;
@@ -117,12 +111,12 @@ static int cdfs_read(struct inode *node, void *data, size_t size, int64_t pos) {
 			if (start != 0 || count != CDFS_BLOCKSIZE) {
 				return read;
 			}
-			if (block_dev_read(cdfs->bdev, p, count, blk) != (int) count) {
+			if (block_dev_read(fsi->bdev, p, count, blk) != (int) count) {
 				return read;
 			}
 		}
 		else {
-			cache = block_dev_cached_read(cdfs->bdev, blk);
+			cache = block_dev_cached_read(fsi->bdev, blk);
 			if (!cache) {
 				return -EIO;
 			}
@@ -267,10 +261,6 @@ static int cdfs_readdir(struct inode *node, direntry_t *dirp, int count) {
 	return 1;
 }
 
-void cdfs_init(void) {
-
-	return;
-}
 */
 
 /* File operations */

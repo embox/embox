@@ -50,15 +50,13 @@
 
 #include <fs/iso9660_format.h>
 
-
 #define CDFS_BLOCKSIZE         2048
 #define CDFS_POOLDEPTH         10
 
 #define PS1                     '/'     /* Primary path separator */
 #define PS2                     '\\'    /* Alternate path separator */
 
-
-struct cdfs {
+struct cdfs_fs_info {
 	void *bdev;
 	uint64_t blks;
 	int volblks;
@@ -67,12 +65,6 @@ struct cdfs {
 	unsigned char *path_table_buffer;
 	struct iso_pathtable_record **path_table;
 	int path_table_records;
-};
-
-struct cdfs_fs_info {
-	//struct fsops *ops;
-	//char mntto[PATH_MAX];
-	void *data;
 };
 
 struct cdfs_file_info {
