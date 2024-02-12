@@ -18,6 +18,7 @@ module block_dev {
 	depends embox.mem.phymem
 	depends embox.mem.heap_place
 	depends embox.device.common
+	@NoRuntime depends embox.compat.posix.libgen
 }
 
 @DefaultImpl(buffer_no_crypt)
