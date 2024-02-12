@@ -22,11 +22,11 @@ extern int cdfs_isonum_711(unsigned char *p);
 extern int cdfs_isonum_733(unsigned char *p);
 extern time_t cdfs_isodate(unsigned char *date);
 
-extern int cdfs_find_file(cdfs_t *cdfs, char *name, int len,
+extern int cdfs_find_file(struct cdfs *cdfs, char *name, int len,
 							iso_directory_record_t **rec);
 
 static int cdfs_open(struct inode *node, char *name) {
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	iso_directory_record_t *rec;
 	time_t date;
 	int size;
@@ -39,7 +39,7 @@ static int cdfs_open(struct inode *node, char *name) {
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;;
 
-	cdfs = (cdfs_t *) fsi->data;
+	cdfs = (struct cdfs *) fsi->data;
 
 
 	/* Check open mode */
@@ -75,7 +75,7 @@ static int cdfs_open(struct inode *node, char *name) {
 	return 0;
 }
 
-static int cdfs_read(struct inode *node, void *data, size_t size, off64_t pos) {
+static int cdfs_read(struct inode *node, void *data, size_t size, int64_t pos) {
 	size_t read;
 	size_t count;
 	size_t left;
@@ -86,11 +86,11 @@ static int cdfs_read(struct inode *node, void *data, size_t size, off64_t pos) {
 	struct block_dev_cache *cache;
 	struct cdfs_file_info *fi;
 	struct cdfs_fs_info *fsi;
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;
-	cdfs = (cdfs_t *) fsi->data;
+	cdfs = (struct cdfs *) fsi->data;
 
 	read = 0;
 	p = (char *) data;
@@ -140,7 +140,7 @@ static int cdfs_read(struct inode *node, void *data, size_t size, off64_t pos) {
 
 /*
 static int cdfs_opendir(struct inode *dir_node, char *name) {
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	iso_directory_record_t *rec;
 	cdfs_file_t *cdfile;
 	time_t date;
@@ -151,7 +151,7 @@ static int cdfs_opendir(struct inode *dir_node, char *name) {
 	struct cdfs_file_info *fi;
 
 	fi = inode_priv(dir->node);
-	cdfs = (cdfs_t *) dir_node->i_sb->data;
+	cdfs = (struct cdfs *) dir_node->i_sb->data;
 
 	// Locate directory
 	rc = cdfs_find_file(cdfs, name, strlen(name), &rec);
@@ -185,7 +185,7 @@ static int cdfs_opendir(struct inode *dir_node, char *name) {
 
 static int cdfs_readdir(struct inode *node, direntry_t *dirp, int count) {
 	cdfs_file_t *cdfile;
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	iso_directory_record_t *rec;
 	struct block_dev_cache *cache;
 	int namelen;
@@ -197,7 +197,7 @@ static int cdfs_readdir(struct inode *node, direntry_t *dirp, int count) {
 
 	fi = inode_priv(node);
 	cdfile = (cdfs_file_t *) fi->data;
-	cdfs = (cdfs_t *) node->i_sb->data;
+	cdfs = (struct cdfs *) node->i_sb->data;
 
   blkagain:
 	if (count != 1) {

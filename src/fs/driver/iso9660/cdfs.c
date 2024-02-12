@@ -80,7 +80,7 @@ int cdfs_isonum_733(unsigned char *p) {
   return cdfs_isonum_731(p);
 }
 
-static int cdfs_fnmatch(cdfs_t *cdfs, char *fn1, int len1, char *fn2, int len2) {
+static int cdfs_fnmatch(struct cdfs *cdfs, char *fn1, int len1, char *fn2, int len2) {
 	wchar_t *wfn2;
 	int wlen2;
 
@@ -122,7 +122,7 @@ static int cdfs_fnmatch(cdfs_t *cdfs, char *fn1, int len1, char *fn2, int len2) 
 	}
 }
 
-static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
+static int cdfs_read_path_table(struct cdfs *cdfs, iso_volume_descriptor_t *vd) {
 	struct block_dev_cache *cache;
 	unsigned char *pt;
 	int ptblk;
@@ -204,7 +204,7 @@ static int cdfs_read_path_table(cdfs_t *cdfs, iso_volume_descriptor_t *vd) {
 	return 0;
 }
 
-int cdfs_find_dir(cdfs_t *cdfs, char *name, int len) {
+int cdfs_find_dir(struct cdfs *cdfs, char *name, int len) {
 	char *p;
 	int l;
 	int dir = 2;
@@ -274,7 +274,7 @@ int cdfs_find_dir(cdfs_t *cdfs, char *name, int len) {
 	return -ENOENT;
 }
 
-static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, iso_directory_record_t **dirrec) {
+static int cdfs_find_in_dir(struct cdfs *cdfs, int dir, char *name, int len, iso_directory_record_t **dirrec) {
 	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;
@@ -337,7 +337,7 @@ static int cdfs_find_in_dir(cdfs_t *cdfs, int dir, char *name, int len, iso_dire
 	return -ENOENT;
 }
 
-int cdfs_find_file(cdfs_t *cdfs, char *name, int len, iso_directory_record_t **rec) {
+int cdfs_find_file(struct cdfs *cdfs, char *name, int len, iso_directory_record_t **rec) {
 	int dir;
 	int split;
 	int n;
@@ -397,7 +397,7 @@ time_t cdfs_isodate(unsigned char *date)
 
 int cdfs_mount(struct inode *root_node)
 {
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	int rc;
 	int blk;
 	struct block_dev_cache *cache;
@@ -414,8 +414,8 @@ int cdfs_mount(struct inode *root_node)
 	}
 
 	/* Allocate file system */
-	cdfs = (cdfs_t *) sysmalloc(sizeof(cdfs_t));
-	memset(cdfs, 0, sizeof(cdfs_t));
+	cdfs = (struct cdfs *) sysmalloc(sizeof(struct cdfs));
+	memset(cdfs, 0, sizeof(struct cdfs));
 	cdfs->bdev = root_node->i_sb->bdev;
 	cdfs->blks = block_dev_size(root_node->i_sb->bdev);
 	if (cdfs->blks < 0) {
@@ -490,7 +490,7 @@ extern void cdfs_free_fs(struct super_block *sb);
 
 
 /* int cdfs_statfs(struct cdfs_fs_info *fsi, statfs_t *cache) { */
-/* 	cdfs_t *cdfs = (cdfs_t *) fsi->data; */
+/* 	struct cdfs *cdfs = (struct cdfs *) fsi->data; */
 
 /* 	cache->bsize = CDFS_BLOCKSIZE; */
 /* 	cache->iosize = CDFS_BLOCKSIZE; */
@@ -507,7 +507,7 @@ extern void cdfs_free_fs(struct super_block *sb);
 
 /*
 static int cdfs_opendir(struct inode *dir_node, char *name) {
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	iso_directory_record_t *rec;
 	cdfs_file_t *cdfile;
 	time_t date;
@@ -518,7 +518,7 @@ static int cdfs_opendir(struct inode *dir_node, char *name) {
 	struct cdfs_file_info *fi;
 
 	fi = inode_priv(dir->node);
-	cdfs = (cdfs_t *) dir_node->i_sb->data;
+	cdfs = (struct cdfs *) dir_node->i_sb->data;
 
 	// Locate directory
 	rc = cdfs_find_file(cdfs, name, strlen(name), &rec);
@@ -552,7 +552,7 @@ static int cdfs_opendir(struct inode *dir_node, char *name) {
 
 static int cdfs_readdir(struct inode *node, direntry_t *dirp, int count) {
 	cdfs_file_t *cdfile;
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	iso_directory_record_t *rec;
 	struct block_dev_cache *cache;
 	int namelen;
@@ -564,7 +564,7 @@ static int cdfs_readdir(struct inode *node, direntry_t *dirp, int count) {
 
 	fi = inode_priv(node);
 	cdfile = (cdfs_file_t *) fi->data;
-	cdfs = (cdfs_t *) node->i_sb->data;
+	cdfs = (struct cdfs *) node->i_sb->data;
 
   blkagain:
 	if (count != 1) {
@@ -640,7 +640,7 @@ void cdfs_init(void) {
 }
 */
 
-int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_directory_record_t *rec) {
+int cdfs_fill_node(struct inode* node, char *name, struct cdfs *cdfs, iso_directory_record_t *rec) {
 	int flags;
 	int namelen;
 	struct cdfs_file_info *fi;
@@ -768,7 +768,7 @@ void cdfs_free_fs(struct super_block *sb) {
 
 int cdfs_clean_sb(struct super_block *sb) {
 	struct cdfs_fs_info *fsi = sb->sb_data;
-	cdfs_t *cdfs = (cdfs_t *) fsi->data;
+	struct cdfs *cdfs = (struct cdfs *) fsi->data;
 
 	/* Close device */
 	//block_dev_close(fs->bdev);

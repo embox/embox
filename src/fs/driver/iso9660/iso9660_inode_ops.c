@@ -22,12 +22,12 @@
 extern int cdfs_isonum_711(unsigned char *p);
 extern int cdfs_isonum_733(unsigned char *p);
 
-extern int cdfs_fill_node(struct inode* node, char *name, cdfs_t *cdfs, iso_directory_record_t *rec);
-extern int cdfs_find_dir(cdfs_t *cdfs, char *name, int len);
+extern int cdfs_fill_node(struct inode* node, char *name, struct cdfs *cdfs, iso_directory_record_t *rec);
+extern int cdfs_find_dir(struct cdfs *cdfs, char *name, int len);
 
 static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
 	int n;
-	cdfs_t *cdfs;
+	struct cdfs *cdfs;
 	struct cdfs_fs_info *fsi;
 	struct block_dev_cache *cache;
 	int blk;
