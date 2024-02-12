@@ -1,31 +1,4 @@
 package embox.compat.posix
 
-@DefaultImpl(file_system_oldfs)
-abstract module file_system {
-	option string log_level="LOG_ERR"
-
-	source "lseek.c"
-	source "pread.c"
-	source "pwrite.c"
-	source "fsync.c"
-	source "creat.c"
-	source "stat.c"
-	source "getcwd.c"
-	source "umask.c"
-	source "dirname.c"
-	source "basename.c"
-	source "chdir.c"
-	source "truncate.c"
-	source "realpath.c"
-	source "rewinddir.c"
-}
-
-@NoCode	
-module file_system_depends {
-	@NoRuntime depends embox.kernel.task.idesc
-	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.kernel.task.resource.umask
-	@NoRuntime depends embox.compat.posix.index_descriptor
-	@NoRuntime depends embox.compat.posix.util.environ
-	@NoRuntime depends third_party.lib.cwalk
-}
+@DefaultImpl(file_system_stub)
+abstract module file_system { }

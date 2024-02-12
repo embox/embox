@@ -1,6 +1,7 @@
 package embox.compat.posix
 
-static module file_system_oldfs extends embox.compat.posix.file_system {
+static module file_system_oldfs extends file_system {
+	option string log_level="LOG_ERR"
 	option number dir_quantity=4 /* DIR (dirent.h) */
 
 	source "chmod_oldfs.c"
@@ -17,12 +18,13 @@ static module file_system_oldfs extends embox.compat.posix.file_system {
 	source "xattr_oldfs.c"
 	source "rename_oldfs.c"
 
+	@NoRuntime depends file_system_common
 	@NoRuntime depends embox.fs.core
 	@NoRuntime depends embox.fs.xattr
 	@NoRuntime depends embox.fs.idesc_file_ops
 	@NoRuntime depends embox.fs.syslib.perm
 	@NoRuntime depends embox.fs.syslib.file_system
 	@NoRuntime depends embox.compat.libc.str
-	@NoRuntime depends embox.compat.posix.file_system_depends
 	@NoRuntime depends embox.security.api
+	@NoRuntime depends embox.compat.posix.libgen
 }

@@ -1,0 +1,31 @@
+package embox.compat.posix
+
+static module file_system_stub extends file_system {
+	option string log_level="LOG_WARNING"
+
+	source "chdir_stub.c"
+	source "chmod_stub.c"
+	source "chown_stub.c"
+	source "creat_stub.c"
+	source "dirent_stub.c"
+	source "flock_stub.c"
+	source "fsync_stub.c"
+	source "ftruncate_stub.c"
+	source "getcwd_stub.c"
+	source "lseek_stub.c"
+	source "mkdir_stub.c"
+	source "mknod_stub.c"
+	source "open_stub.c"
+	source "pread_stub.c"
+	source "pwrite_stub.c"
+	source "realpath_stub.c"
+	source "remove_stub.c"
+	source "rename_stub.c"
+	source "rewinddir_stub.c"
+	source "rmdir_stub.c"
+	source "stat_stub.c"
+	source "truncate_stub.c"
+	source "umask_stub.c"
+	source "unlink_stub.c"
+	source "xattr_stub.c"
+}

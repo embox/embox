@@ -1,0 +1,8 @@
+package embox.compat.posix
+
+static module libgen {
+	source "basename.c"
+	source "dirname.c"
+
+	@NoRuntime depends third_party.lib.cwalk
+}
