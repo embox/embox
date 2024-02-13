@@ -24,8 +24,6 @@
 
 #include <framework/mod/options.h>
 
-
-
 int cdfs_isonum_711(unsigned char *p) {
   return p[0];
 }
@@ -80,7 +78,7 @@ static int cdfs_fnmatch(struct cdfs_fs_info *cdfs, char *fn1, int len1, char *fn
 	}
 }
 
-static int cdfs_read_path_table(struct cdfs_fs_info *cdfs, iso_volume_descriptor_t *vd) {
+int cdfs_read_path_table(struct cdfs_fs_info *cdfs, iso_volume_descriptor_t *vd) {
 	struct block_dev_cache *cache;
 	unsigned char *pt;
 	int ptblk;
@@ -353,7 +351,7 @@ time_t cdfs_isodate(unsigned char *date)
 	return (time_t) &tm; /*mktime(&tm); */
 }
 
-int cdfs_mount(struct inode *root_node)
+int iso9660_fsi_init(struct inode *root_node)
 {
 	int rc;
 	int blk;
@@ -377,11 +375,6 @@ int cdfs_mount(struct inode *root_node)
 		return fsi->blks;
 	}
 
-	/* Allocate cache */
-	if (NULL == block_dev_cache_init(root_node->i_sb->bdev, CDFS_POOLDEPTH)) {
-		return -ENOMEM;
-	}
-
 	/* Read volume descriptors */
 	fsi->vdblk = 0;
 	blk = 0x8000/CDFS_BLOCKSIZE;
@@ -396,7 +389,6 @@ int cdfs_mount(struct inode *root_node)
 		esc = vd->escape_sequences;
 
 		if (memcmp(vd->id, "CD001", 5) != 0) {
-			sysfree(fsi);
 			return -EIO;
 		}
 

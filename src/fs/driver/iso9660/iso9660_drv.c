@@ -10,6 +10,8 @@
 
 #include <mem/sysmalloc.h>
 
+#include <drivers/block_dev.h>
+
 #include <fs/inode.h>
 #include <fs/super_block.h>
 #include <fs/fs_driver.h>
@@ -31,7 +33,7 @@ extern struct file_operations cdfsfs_fop;
 extern struct block_dev *bdev_by_path(const char *source);
 
 
-extern int cdfs_mount(struct inode *root_node);
+extern int iso9660_fsi_init(struct inode *root_node);
 
 int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	struct inode *dest;
@@ -39,6 +41,7 @@ int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	struct cdfs_fs_info *fsi;
 	struct cdfs_file_info *fi;
 	int rc;
+	struct block_dev_cache *cache;
 
 	bdev = bdev_by_path(source);
 	if (NULL == bdev) {
@@ -65,20 +68,32 @@ int cdfs_fill_sb(struct super_block *sb, const char *source) {
 	fi = iso9660_fi_alloc();
 	if(NULL == fi) {
 		rc = -ENOMEM;
-		goto error;
+		goto error1;
 	}
 	memset(fi, 0, sizeof(struct cdfs_file_info));
 
 	inode_priv_set(dest, fi);
-#if 1
-	if(0 == (rc = cdfs_mount(dest))) {
-		return 0;
+
+	/* Allocate bdev cache */
+	cache = block_dev_cache_init(sb->bdev, CDFS_POOLDEPTH);
+	if (NULL == cache) {
+		rc = -ENOMEM;
+		goto error2;
 	}
-#endif
+
+	rc = iso9660_fsi_init(dest);
+	if(0 != rc) {
+		goto error3;
+	}
 
 	return 0;
-error:
-	iso9660_fsi_free(sb->sb_data);
+
+error3:
+	block_dev_cache_free(sb->bdev);
+error2:
+	iso9660_fi_free(fi);
+error1:
+	iso9660_fsi_free(fsi);
 
 	return rc;
 }
@@ -97,6 +112,8 @@ int cdfs_clean_sb(struct super_block *sb) {
 	iso9660_fsi_free(fsi);
 
 	iso9660_fi_free(inode_priv(sb->sb_root));
+
+	block_dev_cache_free(sb->bdev);
 
 	return 0;
 }
