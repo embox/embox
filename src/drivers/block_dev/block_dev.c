@@ -37,7 +37,7 @@ struct block_dev **get_bdev_tab(void) {
 	return &devtab[0];
 }
 
-static int block_dev_cache_free(void *dev) {
+int block_dev_cache_free(void *dev) {
 	struct block_dev *bdev;
 	struct block_dev_cache *cache;
 

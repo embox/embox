@@ -78,6 +78,8 @@ extern struct block_dev *block_dev(void *bdev);
 
 extern struct block_dev_cache *block_dev_cache_init(void *bdev, int blocks);
 extern struct block_dev_cache *block_dev_cached_read(void *bdev, blkno_t blkno);
+extern int block_dev_cache_free(void *dev);
+
 extern int block_dev_read(void *bdev, char *buffer, size_t count,
     blkno_t blkno);
 extern int block_dev_read_buffered(struct block_dev *bdev, char *buffer,
