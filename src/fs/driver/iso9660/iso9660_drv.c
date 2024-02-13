@@ -22,10 +22,7 @@ int cdfs_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
-struct super_block_operations cdfs_sbops = {
-	//.open_idesc    = dvfs_file_open_idesc,
-	.destroy_inode = cdfs_destroy_inode,
-};
+extern struct super_block_operations cdfs_sbops;
 
 extern struct inode_operations cdfs_iops;
 extern struct file_operations cdfsfs_fop;

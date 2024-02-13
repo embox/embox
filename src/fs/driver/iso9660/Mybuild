@@ -1,6 +1,7 @@
 package embox.fs.driver
 
-module cdfs {
+@DefaultImpl(cdfs_oldfs)
+abstract module cdfs {
 	option number inode_quantity=2048
 	option number cdfs_descriptor_quantity=4
 
@@ -16,8 +17,12 @@ module cdfs {
 	source "iso9660_file_ops.c"
 	source "iso9660_inode_ops.c"
 
-	depends embox.fs.node
-	depends embox.mem.page_api
+//	depends embox.mem.page_api
 	depends embox.mem.pool
 }
 
+module cdfs_oldfs extends cdfs {
+	source "iso9660_oldfs.c"
+
+	depends embox.fs.node
+}
