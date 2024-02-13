@@ -25,6 +25,7 @@ extern time_t cdfs_isodate(unsigned char *date);
 extern int cdfs_find_file(struct cdfs_fs_info *cdfs, char *name, int len,
 							iso_directory_record_t **rec);
 
+#if 0
 static int cdfs_open(struct inode *node, char *name) {
 	iso_directory_record_t *rec;
 	time_t date;
@@ -70,6 +71,7 @@ static int cdfs_open(struct inode *node, char *name) {
 //	   S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH;
 	return 0;
 }
+#endif
 
 static int cdfs_read(struct inode *node, void *data, size_t size, int64_t pos) {
 	size_t read;
@@ -264,31 +266,10 @@ static int cdfs_readdir(struct inode *node, direntry_t *dirp, int count) {
 */
 
 /* File operations */
-static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int    cdfsfs_close(struct file_desc *desc);
 static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size);
 
-extern int vfs_get_relative_path(struct inode *node, char *path, size_t path_len);
-
-static struct idesc *cdfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
-	char path [PATH_MAX + 1];
-	int res;
-
-	vfs_get_relative_path(node, path, PATH_MAX);
-
-	res = cdfs_open(node, path + 1);
-	if (res) {
-		return err_ptr(-res);
-	}
-	return idesc;
-}
-
 static int cdfsfs_close(struct file_desc *desc) {
-	struct cdfs_file_info *fi;
-
-	fi = inode_priv(desc->f_inode);
-	fi->pos = 0;
-
 	return 0;
 }
 
@@ -305,7 +286,6 @@ static size_t cdfsfs_read(struct file_desc *desc, void *buf, size_t size) {
 }
 
 struct file_operations cdfsfs_fop = {
-	.open = cdfsfs_open,
 	.close = cdfsfs_close,
 	.read = cdfsfs_read,
 };

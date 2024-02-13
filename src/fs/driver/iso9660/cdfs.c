@@ -628,12 +628,17 @@ int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, is
 	/* if directory then not create node */
 	if (flags & 2) {
 		node->i_mode = S_IFDIR;
+		//fi->flags |= S_IFDIR;
 	} else {
 		node->i_mode = S_IFREG;
 	}
 
 	fi->size = cdfs_isonum_733(rec->size);
+	fi->extent = cdfs_isonum_733(rec->extent);
+	fi->date = cdfs_isodate(rec->date);
+
 	inode_priv_set(node, fi);
 	inode_size_set(node, fi->size);
+
 	return 0;
 }
