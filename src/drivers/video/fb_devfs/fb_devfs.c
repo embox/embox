@@ -113,7 +113,6 @@ static ssize_t fb_id_writev(struct idesc *idesc, const struct iovec *iov,
 	return (size_t)(ptr - (uint8_t *)info->screen_base);
 }
 
-static const struct dev_module_ops fb_dev_ops;
 static const struct idesc_ops fb_idesc_ops;
 
 int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
@@ -124,21 +123,19 @@ int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
 
 	assert(fbi);
 
-	cdev = dev_module_create(name, &fb_dev_ops, &fb_idesc_ops, fbi);
+	cdev = dev_module_create(name, &fb_idesc_ops, fbi);
 
 	char_dev_register(cdev);
 
 	return 0;
 }
 
-static const struct dev_module_ops fb_dev_ops = {
-    .dev_open = char_dev_default_open,
-};
-
 static const struct idesc_ops fb_idesc_ops = {
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
     .ioctl = fb_device_ioctl,
     .idesc_mmap = fb_idesc_mmap,
     .id_readv = fb_id_readv,
     .id_writev = fb_id_writev,
-    .close = char_dev_default_close,
 };
