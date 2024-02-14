@@ -23,6 +23,8 @@ struct idesc {
 	const struct idesc_xattrops *idesc_xattrops;
 	unsigned int idesc_flags;
 	int idesc_count;
+
+	void *idesc_priv;
 };
 
 /**
@@ -32,6 +34,7 @@ struct idesc_ops {
 	ssize_t (*id_readv)(struct idesc *idesc, const struct iovec *iov, int cnt);
 	ssize_t (*id_writev)(struct idesc *idesc, const struct iovec *iov, int cnt);
 	void (*close)(struct idesc *idesc);
+	int (*open)(struct idesc *idesc, void *source);
 	int (*ioctl)(struct idesc *idesc, int request, void *data);
 	int (*fstat)(struct idesc *idesc, void *buff);
 	int (*status)(struct idesc *idesc, int mask);
@@ -49,6 +52,12 @@ struct idesc_xattrops {
 };
 
 __BEGIN_DECLS
+
+extern struct idesc *idesc_alloc(void);
+
+extern void idesc_free(struct idesc *idesc);
+
+extern int idesc_open(struct idesc *idesc, void *source);
 
 extern int idesc_init(struct idesc *idesc, const struct idesc_ops *ops,
     mode_t amode);
