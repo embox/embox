@@ -26,7 +26,7 @@
 
 POOL_DEF(uart_ttys, struct tty_uart, MAX_IDESC_SERIALS);
 
-#define idesc_to_uart(desc) (((struct tty_uart *)desc)->uart)
+#define idesc_to_uart(idesc) (((struct tty_uart *)(idesc->idesc_priv))->uart)
 
 const struct idesc_ops idesc_serial_ops;
 
@@ -154,26 +154,33 @@ static int serial_status(struct idesc *idesc, int mask) {
 	return res;
 }
 
-struct idesc *idesc_serial_open(struct uart *uart, int __oflags) {
+static int serial_open(struct idesc *idesc, void *source) {
 	extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 	extern struct tty_ops uart_tty_ops;
 
+	struct dev_module *cdev;
 	struct tty_uart *tu;
-	int res;
+	struct uart *uart;
+	int err;
 
-	assert(uart);
+	assert(source);
+
+	cdev = (struct dev_module *)source;
+	uart = (struct uart *)(cdev->dev_priv);
 
 	if (uart->tty) {
 		tu = member_cast_out(uart->tty, struct tty_uart, tty);
 		if (pool_belong(&uart_ttys, tu)) {
-			goto out;
+			return 0;
 		}
 	}
 
 	tu = pool_alloc(&uart_ttys);
 	if (!tu) {
-		return err_ptr(ENOMEM);
+		return ENOMEM;
 	}
+
+	idesc->idesc_priv = tu;
 
 	tty_init(&tu->tty, &uart_tty_ops);
 	tu->tty.termios.c_ispeed = uart->params.baud_rate;
@@ -181,20 +188,18 @@ struct idesc *idesc_serial_open(struct uart *uart, int __oflags) {
 
 	tu->uart = uart;
 	uart->tty = &tu->tty;
-	uart->tty->idesc = &tu->idesc;
+	uart->tty->idesc = idesc;
+
 	if (uart->irq_handler == NULL) {
 		uart->irq_handler = uart_irq_handler;
 	}
 
-	idesc_init(&tu->idesc, idesc_serial_get_ops(), __oflags);
-
-	res = uart_open(uart);
-	if (res) {
-		return err_ptr(-res);
+	err = uart_open(uart);
+	if (err) {
+		pool_free(&uart_ttys, tu);
 	}
 
-out:
-	return &tu->idesc;
+	return err;
 }
 
 static void idesc_serial_close(struct idesc *idesc) {
@@ -214,9 +219,10 @@ const struct idesc_ops idesc_serial_ops = {
     .id_readv = serial_read,
     .id_writev = serial_write,
     .ioctl = serial_ioctl,
+    .open = serial_open,
     .close = serial_close,
     .status = serial_status,
-    .fstat = char_dev_idesc_fstat,
+    .fstat = char_dev_default_fstat,
 };
 
 const struct idesc_ops *idesc_serial_get_ops(void) {

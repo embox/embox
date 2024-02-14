@@ -18,19 +18,17 @@
 struct uart;
 
 struct tty_uart {
-	struct idesc idesc;
 	struct tty tty;
 	struct uart *uart;
 };
 
 extern const struct idesc_ops idesc_serial_ops;
-extern const struct dev_module_ops uart_cdev_ops;
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
 #define TTYS_DEF(name, uart_dev)                                      \
 	ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry); \
 	ARRAY_SPREAD_ADD(__uart_device_registry, uart_dev);               \
-	CHAR_DEV_DEF(name, &uart_cdev_ops, &idesc_serial_ops, uart_dev)
+	CHAR_DEV_DEF(name, &idesc_serial_ops, uart_dev)
 
 #endif /* DRIVERS_TTY_SERIAL_TTYS_H_ */
