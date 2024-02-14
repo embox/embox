@@ -6,19 +6,14 @@
  * @date 05.12.2018
  */
 
-#include <util/log.h>
-
-#include <stdint.h>
 #include <assert.h>
+#include <stdint.h>
 #include <sys/uio.h>
 
-//#include <embox/unit.h>
-
+#include <drivers/char_dev.h>
 #include <drivers/spi.h>
 #include <fs/dvfs.h>
-
-static void spi_close(struct idesc *desc) {
-}
+#include <util/log.h>
 
 static ssize_t spi_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	struct spi_device *dev = idesc_to_dev_module(desc)->dev_priv;
@@ -60,19 +55,17 @@ static int spi_ioctl(struct idesc *desc, int request, void *data) {
 
 	log_debug("request=0x%x data=%p", request, data);
 
-	switch(request) {
+	switch (request) {
 	case SPI_IOCTL_CS:
-		spi_select(dev, (int)(intptr_t) data);
+		spi_select(dev, (int)(intptr_t)data);
 		break;
 	case SPI_IOCTL_TRANSFER:
 		transfer_arg = data;
-		spi_transfer(dev,
-				transfer_arg->in,
-				transfer_arg->out,
-				transfer_arg->count);
+		spi_transfer(dev, transfer_arg->in, transfer_arg->out,
+		    transfer_arg->count);
 		break;
 	case SPI_IOCTL_CS_MODE:
-		dev->flags = (int) (intptr_t)data;
+		dev->flags = (int)(intptr_t)data;
 		break;
 	}
 
@@ -80,9 +73,10 @@ static int spi_ioctl(struct idesc *desc, int request, void *data) {
 }
 
 const struct idesc_ops spi_iops = {
-	.close     = spi_close,
-	.id_readv  = spi_read,
-	.id_writev = spi_write,
-	.ioctl     = spi_ioctl,
-	.fstat     = char_dev_idesc_fstat,
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
+    .id_readv = spi_read,
+    .id_writev = spi_write,
+    .ioctl = spi_ioctl,
 };
