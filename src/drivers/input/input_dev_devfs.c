@@ -21,14 +21,6 @@
 
 POOL_DEF(cdev_input_pool, struct dev_module, INPUT_DEV_CNT);
 
-static void input_dev_fs_close(struct idesc *desc) {
-	struct input_dev *inpdev = idesc_to_dev_module(desc)->dev_priv;
-
-	input_dev_close(inpdev);
-
-	inpdev->fs_data = NULL;
-}
-
 static int input_dev_fs_wait(struct idesc *desc, int flags) {
 	struct idesc_wait_link wl;
 
@@ -83,19 +75,28 @@ static int input_dev_fs_status(struct idesc *desc, int mask) {
 	return res;
 }
 
-static struct idesc *input_dev_fs_open(struct dev_module *mod, void *dev_priv) {
-	struct input_dev *inpdev = mod->dev_priv;
-	struct idesc *idesc;
+static int input_dev_fs_open(struct idesc *idesc, void *source) {
+	struct input_dev *inpdev;
 
-	idesc = char_dev_idesc_create(mod);
+	char_dev_default_open(idesc, source);
+
+	inpdev = idesc_to_dev_module(idesc)->dev_priv;
+
 	inpdev->fs_data = idesc;
 
 	input_dev_open(inpdev, NULL);
 
-	return idesc;
+	return 0;
 }
 
-static const struct dev_module_ops input_dev_fs_ops;
+static void input_dev_fs_close(struct idesc *desc) {
+	struct input_dev *inpdev = idesc_to_dev_module(desc)->dev_priv;
+
+	input_dev_close(inpdev);
+
+	inpdev->fs_data = NULL;
+}
+
 static const struct idesc_ops input_dev_fs_iops;
 
 int input_dev_private_register(struct input_dev *inpdev) {
@@ -111,7 +112,6 @@ int input_dev_private_register(struct input_dev *inpdev) {
 
 	strncat(dev->name, inpdev->name, sizeof(dev->name) - 1);
 
-	dev->dev_ops = &input_dev_fs_ops;
 	dev->dev_iops = &input_dev_fs_iops;
 	dev->dev_priv = inpdev;
 
@@ -138,13 +138,10 @@ int input_dev_private_notify(struct input_dev *inpdev, struct input_event *ev) {
 	return 0;
 }
 
-static const struct dev_module_ops input_dev_fs_ops = {
-    .dev_open = input_dev_fs_open,
-};
-
 static const struct idesc_ops input_dev_fs_iops = {
+    .open = input_dev_fs_open,
     .close = input_dev_fs_close,
     .id_readv = input_dev_fs_read,
     .status = input_dev_fs_status,
-    .fstat = char_dev_idesc_fstat,
+    .fstat = char_dev_default_fstat,
 };
