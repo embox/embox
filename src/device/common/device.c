@@ -12,8 +12,8 @@
 
 #include <drivers/device.h>
 #include <kernel/task/resource/idesc.h>
-#include <mem/misc/pool.h>
 #include <lib/libds/indexator.h>
+#include <mem/misc/pool.h>
 
 POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
 
@@ -27,8 +27,7 @@ POOL_DEF(dev_module_pool, struct dev_module, MAX_DEV_MODULE_COUNT);
  * @return Initialized device module
  */
 struct dev_module *dev_module_init(struct dev_module *devmod, const char *name,
-    const struct dev_module_ops *dev_ops, const struct idesc_ops *dev_iops,
-    void *privdata) {
+    const struct idesc_ops *dev_iops, void *privdata) {
 	assert(devmod);
 	assert(dev_iops);
 	assert(name);
@@ -37,7 +36,6 @@ struct dev_module *dev_module_init(struct dev_module *devmod, const char *name,
 
 	strncpy(devmod->name, name, DEV_NAME_LEN);
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
-	devmod->dev_ops = dev_ops;
 	devmod->dev_iops = dev_iops;
 	devmod->dev_priv = privdata;
 
@@ -56,8 +54,7 @@ struct dev_module *dev_module_init(struct dev_module *devmod, const char *name,
  * @return Allocated device module or NULL if failed
  */
 struct dev_module *dev_module_create(const char *name,
-    const struct dev_module_ops *dev_ops, const struct idesc_ops *dev_iops,
-    void *privdata) {
+    const struct idesc_ops *dev_iops, void *privdata) {
 	struct dev_module *devmod;
 
 	devmod = pool_alloc(&dev_module_pool);
@@ -65,7 +62,7 @@ struct dev_module *dev_module_create(const char *name,
 		return NULL;
 	}
 
-	return dev_module_init(devmod, name, dev_ops, dev_iops, privdata);
+	return dev_module_init(devmod, name, dev_iops, privdata);
 }
 
 /**
