@@ -21,9 +21,6 @@
 
 #define MEM_DEV_NAME mem
 
-static void mem_close(struct idesc *desc) {
-}
-
 static ssize_t mem_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	int i;
 	ssize_t ret_size;
@@ -58,20 +55,13 @@ static void *mem_mmap(struct idesc *idesc, void *addr, size_t len, int prot,
 	return vmem;
 }
 
-static struct idesc *mem_cdev_open(struct dev_module *cdev, void *priv) {
-	return char_dev_idesc_create(cdev);
-}
-
 static const struct idesc_ops mem_idesc_ops = {
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
     .id_readv = mem_read,
     .id_writev = mem_write,
-    .close = mem_close,
-    .fstat = char_dev_idesc_fstat,
     .idesc_mmap = mem_mmap,
 };
 
-static const struct dev_module_ops mem_cdev_ops = {
-    .dev_open = mem_cdev_open,
-};
-
-CHAR_DEV_DEF(MEM_DEV_NAME, &mem_cdev_ops, &mem_idesc_ops, NULL);
+CHAR_DEV_DEF(MEM_DEV_NAME, &mem_idesc_ops, NULL);

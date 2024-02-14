@@ -17,9 +17,6 @@
 
 #define TTY_NAME OPTION_MODULE_GET(__EMBUILD_MOD__, STRING, tty_name)
 
-static void tty_stub_close(struct idesc *desc) {
-}
-
 static ssize_t tty_stub_write(struct idesc *desc, const struct iovec *iov,
     int cnt) {
 	int i;
@@ -43,20 +40,13 @@ static int tty_stub_ioctl(struct idesc *idesc, int request, void *data) {
 	return 0;
 }
 
-static struct idesc *tty_stub_cdev_open(struct dev_module *cdev, void *priv) {
-	return char_dev_idesc_create(cdev);
-}
-
 static const struct idesc_ops tty_stub_idesc_ops = {
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
     .id_readv = tty_stub_read,
     .id_writev = tty_stub_write,
     .ioctl = tty_stub_ioctl,
-    .close = tty_stub_close,
-    .fstat = char_dev_idesc_fstat,
 };
 
-static const struct dev_module_ops tty_stub_cdev_ops = {
-    .dev_open = tty_stub_cdev_open,
-};
-
-CHAR_DEV_DEF(TTY_NAME, &tty_stub_cdev_ops, &tty_stub_idesc_ops, NULL);
+CHAR_DEV_DEF(TTY_NAME, &tty_stub_idesc_ops, NULL);
