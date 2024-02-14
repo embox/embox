@@ -230,7 +230,7 @@ int cdfs_find_dir(struct cdfs_fs_info *cdfs, char *name, int len) {
 	return -ENOENT;
 }
 
-static int cdfs_find_in_dir(struct cdfs_fs_info *cdfs, int dir, char *name, int len, iso_directory_record_t **dirrec) {
+int cdfs_find_in_dir(struct cdfs_fs_info *cdfs, int dir, char *name, int len, iso_directory_record_t **dirrec) {
 	struct block_dev_cache *cache;
 	char *p;
 	iso_directory_record_t *rec;

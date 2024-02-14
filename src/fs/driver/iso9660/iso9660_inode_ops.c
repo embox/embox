@@ -15,6 +15,7 @@
 #include <fs/fs_driver.h>
 #include <fs/dir_context.h>
 #include <fs/inode_operation.h>
+#include <fs/super_block.h>
 
 #include <fs/iso9660.h>
 

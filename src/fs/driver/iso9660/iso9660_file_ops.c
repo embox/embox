@@ -9,13 +9,17 @@
 #include <time.h>
 #include <ctype.h>
 #include <string.h>
+#include <fcntl.h>
+#include <errno.h>
 
 #include <util/err.h>
 
 #include <drivers/block_dev.h>
 
 #include <fs/inode.h>
+#include <fs/super_block.h>
 #include <fs/iso9660.h>
+
 #include <fs/file_desc.h>
 
 extern int cdfs_isonum_711(unsigned char *p);

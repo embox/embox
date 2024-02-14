@@ -6,6 +6,7 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
 #include <string.h>
 
 #include <mem/sysmalloc.h>
