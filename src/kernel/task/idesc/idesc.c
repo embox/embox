@@ -6,18 +6,17 @@
  */
 
 #include <errno.h>
+#include <fcntl.h>
+#include <stddef.h>
 #include <string.h>
 #include <sys/types.h>
-#include <fcntl.h>
-
-#include <lib/libds/dlist.h>
 
 #include <kernel/task.h>
-#include <kernel/task/resource/idesc_table.h>
 #include <kernel/task/resource/idesc.h>
+#include <kernel/task/resource/idesc_table.h>
+#include <lib/libds/dlist.h>
 
 int idesc_init(struct idesc *idesc, const struct idesc_ops *ops, mode_t amode) {
-
 	memset(idesc, 0, sizeof(struct idesc));
 
 	idesc->idesc_flags = amode;
@@ -62,7 +61,7 @@ static int idesc_xattr_check(struct idesc *idesc) {
 }
 
 int idesc_getxattr(struct idesc *idesc, const char *name, void *value,
-		size_t size) {
+    size_t size) {
 	int res;
 
 	res = idesc_xattr_check(idesc);
@@ -74,7 +73,7 @@ int idesc_getxattr(struct idesc *idesc, const char *name, void *value,
 }
 
 int idesc_setxattr(struct idesc *idesc, const char *name, const void *value,
-		size_t size, int flags) {
+    size_t size, int flags) {
 	int res;
 
 	res = idesc_xattr_check(idesc);
@@ -106,4 +105,3 @@ int idesc_removexattr(struct idesc *idesc, const char *name) {
 
 	return idesc->idesc_xattrops->removexattr(idesc, name);
 }
-
