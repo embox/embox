@@ -26,3 +26,7 @@ module cdfs_oldfs extends cdfs {
 
 	depends embox.fs.node
 }
+
+module cdfs_dvfs extends cdfs {
+	source "iso9660_dvfs.c"
+}
