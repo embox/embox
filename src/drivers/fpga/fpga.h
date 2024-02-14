@@ -16,7 +16,6 @@
 
 struct fpga_ops;
 struct fpga {
-	struct idesc       desc;
 	struct dev_module *dev;
 	size_t             id;
 	struct fpga_ops   *ops;
