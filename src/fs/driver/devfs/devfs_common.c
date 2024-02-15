@@ -5,6 +5,7 @@
  * @version
  * @date 30.01.2020
  */
+#include <assert.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <string.h>
@@ -18,29 +19,47 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/super_block.h>
+#include <kernel/task/resource/idesc.h>
 #include <lib/libds/array.h>
 
 extern struct dev_module **get_cdev_tab(void);
 extern struct block_dev **get_bdev_tab(void);
 
-static struct idesc *devfs_open(struct inode *node, struct idesc *desc,
+static struct idesc *devfs_open(struct inode *node, struct idesc *idesc,
     int __oflag) {
 	extern struct idesc_ops idesc_bdev_ops;
 
 	struct dev_module *dev;
+	int err;
+
+	if (!idesc) {
+		idesc = idesc_alloc();
+		if (!idesc) {
+			return NULL;
+		}
+	}
 
 	if (S_ISBLK(node->i_mode)) {
-		desc->idesc_ops = &idesc_bdev_ops;
-		return desc;
+		idesc_init(idesc, &idesc_bdev_ops, __oflag);
+		return idesc;
 	}
 
 	dev = inode_priv(node);
-	assert(dev->dev_ops->dev_open);
 
 	if (__oflag & O_PATH) {
-		return char_dev_idesc_create(NULL);
+		idesc_init(idesc, char_dev_get_default_ops(), __oflag);
 	}
-	return dev->dev_ops->dev_open(dev, dev_module_to_bdev(dev));
+	else {
+		idesc_init(idesc, dev->dev_iops, __oflag);
+	}
+
+	err = idesc_open(idesc, dev);
+	if (err) {
+		idesc_free(idesc);
+		return NULL;
+	}
+
+	return idesc;
 }
 
 static int devfs_ioctl(struct file_desc *desc, int request, void *data) {

@@ -23,6 +23,7 @@
 #include <drivers/device.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
+#include <kernel/task/resource/idesc.h>
 #include <lib/libds/array.h>
 #include <util/err.h>
 
@@ -34,32 +35,46 @@ extern int devfs_fill_sb(struct super_block *sb, const char *source);
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode *i_no;
 	struct dev_module *dev;
-	struct idesc *desc;
+	struct idesc *idesc;
+	int err;
 
 	assert(l);
 	assert(l->item);
 	assert(l->item->d_inode);
 
 	i_no = l->item->d_inode;
-	dev = i_no->i_privdata;
 
 	if (S_ISBLK(i_no->i_mode)) {
 		/* XXX */
-		desc = dvfs_file_open_idesc(l, __oflag);
+		idesc = dvfs_file_open_idesc(l, __oflag);
 
-		desc->idesc_ops = &idesc_bdev_ops;
+		idesc->idesc_ops = &idesc_bdev_ops;
 
-		return desc;
+		return idesc;
 	}
 
+	dev = i_no->i_privdata;
 	assert(dev);
-	if (__oflag & O_PATH) {
-		return char_dev_idesc_create(NULL);
-	}
-	assert(dev->dev_ops->dev_open);
-	desc = dev->dev_ops->dev_open(dev, (void *)(uintptr_t)__oflag);
 
-	return desc;
+	idesc = idesc_alloc();
+	if (!idesc) {
+		return NULL;
+	}
+
+	if (__oflag & O_PATH) {
+		idesc_init(idesc, char_dev_get_default_ops(), __oflag);
+	}
+	else {
+		idesc_init(idesc, dev->dev_iops, __oflag);
+	}
+
+	err = idesc_open(idesc, dev);
+	if (err) {
+		idesc_free(idesc);
+		return NULL;
+	}
+
+	return idesc;
 }
 
 struct block_dev *bdev_by_path(const char *dev_name) {
@@ -103,4 +118,3 @@ struct super_block_operations devfs_sbops = {
     .open_idesc = devfs_open_idesc,
     .destroy_inode = devfs_destroy_inode,
 };
-

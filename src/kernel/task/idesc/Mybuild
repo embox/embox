@@ -1,15 +1,16 @@
 package embox.kernel.task
 
 module idesc {
-	source "idesc_table.c", "index_descriptor.c"
+	option number idesc_pool_size=64
 
 	@IncludeExport(path="kernel/task/resource")
 	source "index_descriptor.h"
-
-	source "idesc.c"
+	source "idesc_table.c"
+	source "index_descriptor.c"
 
 	@IncludeExport(path="kernel/task/resource")
 	source "idesc.h"
+	source "idesc.c"
 
 	depends embox.kernel.task.api
 	@NoRuntime depends embox.kernel.task.resource.idesc_table
@@ -19,16 +20,14 @@ module idesc {
 }
 
 module idesc_event {
-	source "idesc_event.c"
-
 	@IncludeExport(path="kernel/task/resource")
 	source "idesc_event.h"
+	source "idesc_event.c"
 }
 
 static module poll_table {
 	@IncludeExport(path="kernel/task/resource")
 	source "poll_table.h"
-
 	source "poll_table.c"
 
 	depends embox.kernel.task.idesc_event

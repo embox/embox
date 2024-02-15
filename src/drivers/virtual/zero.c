@@ -17,9 +17,6 @@
 
 #define ZERO_DEV_NAME zero
 
-static void zero_close(struct idesc *desc) {
-}
-
 static ssize_t zero_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	int i;
 	ssize_t ret_size;
@@ -49,19 +46,12 @@ static ssize_t zero_write(struct idesc *desc, const struct iovec *iov,
 	return ret_size;
 }
 
-static struct idesc *zero_cdev_open(struct dev_module *cdev, void *priv) {
-	return char_dev_idesc_create(cdev);
-}
-
 static const struct idesc_ops zero_idesc_ops = {
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
     .id_readv = zero_read,
     .id_writev = zero_write,
-    .close = zero_close,
-    .fstat = char_dev_idesc_fstat,
 };
 
-static const struct dev_module_ops zero_cdev_ops = {
-    .dev_open = zero_cdev_open,
-};
-
-CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_cdev_ops, &zero_idesc_ops, NULL);
+CHAR_DEV_DEF(ZERO_DEV_NAME, &zero_idesc_ops, NULL);

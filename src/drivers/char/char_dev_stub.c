@@ -10,6 +10,7 @@
  */
 #include <errno.h>
 #include <stddef.h>
+
 #include <drivers/char_dev.h>
 
 /**
@@ -33,18 +34,12 @@ int char_dev_register(const struct dev_module *cdev) {
 	return -ENOSUPP;
 }
 
-struct inode;
-
-struct idesc *char_dev_open(struct inode *node, int flags) {
-	return NULL;
-}
-
-int char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
+int char_dev_default_fstat(struct idesc *idesc, void *buff) {
 	return 0;
 }
 
-struct idesc *char_dev_default_open(struct dev_module *cdev, void *priv) {
-	return NULL;
+int char_dev_default_open(struct idesc *idesc, void *source) {
+	return 0;
 }
 
 void char_dev_default_close(struct idesc *idesc) {

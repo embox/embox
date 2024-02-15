@@ -156,7 +156,7 @@ static const struct idesc_ops fbcon_idesc_ops = {
 	.id_writev  = fbcon_idesc_write,
 	.close  = fbcon_idesc_close,
 	.ioctl  = fbcon_idesc_ioctl,
-	.fstat  = char_dev_idesc_fstat,
+	.fstat  = char_dev_default_fstat,
 	.status = fbcon_idesc_status,
 };
 

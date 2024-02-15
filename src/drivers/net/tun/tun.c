@@ -134,18 +134,20 @@ static inline int tun_netdev_by_idesc(struct idesc *idesc,
 	return 0;
 }
 
-static struct idesc *tun_dev_open(struct dev_module *cdev, void *priv) {
+static int tun_dev_open(struct idesc *idesc, void *source) {
 	struct net_device *netdev;
 	struct tun *tun;
 
-	netdev = (struct net_device *)cdev->dev_priv;
+	char_dev_default_open(idesc, source);
+
+	netdev = (struct net_device *)idesc_to_dev_module(idesc)->dev_priv;
 	if (!netdev) {
-		return err_ptr(ENOENT);
+		return ENOENT;
 	}
 
 	tun = netdev_priv(netdev);
 	if (!tun) {
-		return err_ptr(ENOENT);
+		return ENOENT;
 	}
 
 	tun_user_lock(tun);
@@ -153,10 +155,12 @@ static struct idesc *tun_dev_open(struct dev_module *cdev, void *priv) {
 	waitq_init(&tun->wq);
 
 	tun_krnl_lock(tun);
-	{ skb_queue_init(&tun->rx_q); }
+
+	skb_queue_init(&tun->rx_q);
+
 	tun_krnl_unlock(tun);
 
-	return char_dev_idesc_create(cdev);
+	return 0;
 }
 
 static void tun_dev_close(struct idesc *idesc) {
@@ -282,7 +286,6 @@ static void tun_deinit(void) {
 	}
 }
 
-static const struct dev_module_ops tun_dev_ops;
 static const struct idesc_ops tun_idesc_ops;
 
 static int tun_init(void) {
@@ -321,7 +324,6 @@ static int tun_init(void) {
 		memset(cdev, 0, sizeof(*cdev));
 		memcpy(cdev->name, tun_name, sizeof(cdev->name));
 
-		cdev->dev_ops = &tun_dev_ops;
 		cdev->dev_iops = &tun_idesc_ops;
 		cdev->dev_priv = tdev;
 
@@ -342,12 +344,9 @@ err_deinit:
 	return err;
 }
 
-static const struct dev_module_ops tun_dev_ops = {
-    .dev_open = tun_dev_open,
-};
-
 static const struct idesc_ops tun_idesc_ops = {
     .id_readv = tun_dev_read,
     .id_writev = tun_dev_write,
+    .open = tun_dev_open,
     .close = tun_dev_close,
 };

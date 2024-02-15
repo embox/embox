@@ -16,8 +16,8 @@
 #include <drivers/fpga.h>
 #include <framework/mod/options.h>
 #include <kernel/task/resource/idesc.h>
-#include <mem/misc/pool.h>
 #include <lib/libds/indexator.h>
+#include <mem/misc/pool.h>
 #include <util/log.h>
 
 #define FPGA_MAX OPTION_GET(NUMBER, fpga_pool_sz)
@@ -25,26 +25,29 @@
 static struct fpga fpga_tab[FPGA_MAX];
 INDEX_DEF(fpga_idx, 0, FPGA_MAX);
 
-static const struct dev_module_ops fpga_dev_ops;
 static const struct idesc_ops fpga_iops;
 
-static struct idesc *fpga_idesc_open(struct dev_module *dev_mod, void *priv) {
-	struct fpga *fpga = dev_mod->dev_priv;
-	int err = fpga->ops->config_init(fpga);
-	if (err != 0) {
+static int fpga_idesc_open(struct idesc *idesc, void *source) {
+	struct fpga *fpga;
+	int err;
+
+	char_dev_default_open(idesc, source);
+
+	fpga = (struct fpga *)(idesc_to_dev_module(idesc)->dev_priv);
+
+	err = fpga->ops->config_init(fpga) if (err != 0) {
 		log_error("Failed to init config for FPGA");
 		return NULL;
 	}
 
-	fpga->desc = (struct idesc){
-	    .idesc_ops = &fpga_iops,
-	};
-
-	return &fpga->desc;
+	return 0;
 }
 
 static void fpga_idesc_close(struct idesc *desc) {
-	struct fpga *fpga = (struct fpga *)desc;
+	struct fpga *fpga;
+
+	fpga = (struct fpga *)(idesc_to_dev_module(idesc)->dev_priv);
+
 	int err = fpga->ops->config_complete(fpga);
 	if (err != 0) {
 		log_error(".conf_complete() finished with error code %d", err);
@@ -59,8 +62,10 @@ static ssize_t fpga_idesc_read(struct idesc *desc, const struct iovec *iov,
 
 static ssize_t fpga_idesc_write(struct idesc *desc, const struct iovec *iov,
     int cnt) {
-	struct fpga *fpga = (struct fpga *)desc;
+	struct fpga *fpga;
 	int ret = 0;
+
+	fpga = (struct fpga *)(idesc_to_dev_module(idesc)->dev_priv);
 
 	for (int i = 0; i < cnt; i++) {
 		int err = fpga->ops->config_write(fpga, iov[i].iov_base,
@@ -100,8 +105,7 @@ struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	    .id = id,
 	    .ops = ops,
 	    .priv = priv,
-	    .dev = dev_module_create(name, &fpga_dev_ops, &fpga_iops,
-	        &fpga_tab[id]),
+	    .dev = dev_module_create(name, &fpga_iops, &fpga_tab[id]),
 	};
 
 	if (fpga_tab[id].dev == NULL) {
@@ -152,11 +156,8 @@ size_t fpga_max_id(void) {
 	return FPGA_MAX;
 }
 
-static const struct dev_module_ops fpga_dev_ops = {
-    .dev_open = fpga_idesc_open,
-};
-
 static const struct idesc_ops fpga_iops = {
+    .open = fpga_idesc_open,
     .close = fpga_idesc_close,
     .id_readv = fpga_idesc_read,
     .id_writev = fpga_idesc_write,

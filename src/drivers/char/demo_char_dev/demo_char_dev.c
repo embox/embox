@@ -11,8 +11,8 @@
 #include <drivers/char_dev.h>
 #include <drivers/device.h>
 #include <embox/unit.h>
-#include <mem/misc/pool.h>
 #include <lib/libds/indexator.h>
+#include <mem/misc/pool.h>
 #include <util/log.h>
 
 EMBOX_UNIT_INIT(demo_char_dev_module_init);
@@ -39,14 +39,6 @@ static int demo_char_dev_module_init(void) {
 	return 0;
 }
 
-static struct idesc *demo_char_dev_idesc_open(struct dev_module *dev_mod,
-    void *priv) {
-	return NULL;
-}
-
-static void demo_char_dev_idesc_close(struct idesc *desc) {
-}
-
 static ssize_t demo_char_dev_idesc_read(struct idesc *desc,
     const struct iovec *iov, int cnt) {
 	return 0;
@@ -61,18 +53,12 @@ static int demo_char_dev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	return 0;
 }
 
-static int demo_char_dev_idesc_fstat(struct idesc *idesc, void *buff) {
-	return 0;
-}
-
-static const struct dev_module_ops demo_char_dev_ops;
 static const struct idesc_ops demo_char_dev_iops;
 
 int demo_char_dev_register(struct demo_char_dev_priv *priv) {
 	struct dev_module *dev;
 
-	dev = dev_module_create(priv->name, &demo_char_dev_ops, &demo_char_dev_iops,
-	    priv);
+	dev = dev_module_create(priv->name, &demo_char_dev_iops, priv);
 	if (!dev) {
 		log_error("failed to allocate new char device \"%s\"", priv->name);
 		return -1;
@@ -131,14 +117,11 @@ int demo_char_dev_destroy(struct dev_module *dev) {
 	return 0;
 }
 
-static const struct dev_module_ops demo_char_dev_ops = {
-    .dev_open = demo_char_dev_idesc_open,
-};
-
 static const struct idesc_ops demo_char_dev_iops = {
-    .close = demo_char_dev_idesc_close,
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
     .id_readv = demo_char_dev_idesc_read,
     .id_writev = demo_char_dev_idesc_write,
     .ioctl = demo_char_dev_idesc_ioctl,
-    .fstat = demo_char_dev_idesc_fstat,
 };

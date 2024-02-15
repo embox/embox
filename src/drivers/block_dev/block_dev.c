@@ -15,11 +15,11 @@
 #include <drivers/block_dev.h>
 #include <framework/mod/options.h>
 #include <fs/bcache.h>
+#include <lib/libds/array.h>
+#include <lib/libds/indexator.h>
 #include <mem/misc/pool.h>
 #include <mem/page.h>
 #include <mem/phymem.h>
-#include <lib/libds/array.h>
-#include <lib/libds/indexator.h>
 #include <util/math.h>
 
 extern struct idesc_ops idesc_bdev_ops;
@@ -430,7 +430,7 @@ struct block_dev *block_dev_create(const char *path,
 	    .block_size = DEFAULT_BDEV_BLOCK_SIZE,
 	};
 
-	devmod = dev_module_init(&bdev->dev_module, basename((char *)path), NULL,
+	devmod = dev_module_init(&bdev->dev_module, basename((char *)path),
 	    &idesc_bdev_ops, privdata);
 	devmod->dev_id = DEVID_BDEV | bdev_id;
 

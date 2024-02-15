@@ -29,11 +29,11 @@ EMBOX_UNIT_INIT(vc_init);
 
 static struct vterm vc_vterm;
 
-static void vc_close(struct idesc *desc) {
+static void vc_close(struct idesc *idesc) {
 	vc_vterm.tty.idesc = NULL;
 }
 
-static ssize_t vc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t vc_read(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	void *buf;
 	size_t nbyte;
 
@@ -45,7 +45,7 @@ static ssize_t vc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return tty_read(&vc_vterm.tty, (char *)buf, nbyte);
 }
 
-static ssize_t vc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t vc_write(struct idesc *idesc, const struct iovec *iov, int cnt) {
 	int i;
 	char *b;
 
@@ -60,7 +60,7 @@ static ssize_t vc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return (ssize_t)iov->iov_len;
 }
 
-static int vc_ioctl(struct idesc *desc, int request, void *data) {
+static int vc_ioctl(struct idesc *idesc, int request, void *data) {
 	return tty_ioctl(&vc_vterm.tty, request, data);
 }
 
@@ -68,7 +68,7 @@ static int vc_status(struct idesc *idesc, int mask) {
 	return tty_status(&vc_vterm.tty, mask);
 }
 
-static struct idesc *vc_open(struct dev_module *mod, void *dev_priv) {
+static int vc_open(struct idesc *idesc, void *source) {
 	struct vterm_video *vc_vga;
 
 	vc_vga = vc_vga_init();
@@ -77,10 +77,9 @@ static struct idesc *vc_open(struct dev_module *mod, void *dev_priv) {
 
 	vterm_open_indev(&vc_vterm, "keyboard");
 
-	return char_dev_idesc_create(mod);
+	return char_dev_default_open(idesc, source);
 }
 
-static const struct dev_module_ops vc_dev_ops;
 static const struct idesc_ops vc_idesc_ops;
 
 static int vc_init(void) {
@@ -95,21 +94,17 @@ static int vc_init(void) {
 	strncpy(vc_dev->name, VC_DEV_NAME, sizeof(vc_dev->name));
 	vc_dev->name[sizeof(vc_dev->name) - 1] = '\0';
 
-	vc_dev->dev_ops = vc_dev_ops;
 	vc_dev->dev_iops = &vc_idesc_ops;
 
 	return char_dev_register(vc_dev);
 }
 
-static const struct dev_module_ops vc_dev_ops = {
-    .dev_open = vc_open,
-};
-
 static const struct idesc_ops vc_idesc_ops = {
     .id_readv = vc_read,
     .id_writev = vc_write,
     .ioctl = vc_ioctl,
+    .open = vc_open,
     .close = vc_close,
     .status = vc_status,
-    .fstat = char_dev_idesc_fstat,
+    .fstat = char_dev_default_fstat,
 };

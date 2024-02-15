@@ -17,9 +17,6 @@
 
 #define NULL_DEV_NAME null
 
-static void null_close(struct idesc *desc) {
-}
-
 static ssize_t null_write(struct idesc *desc, const struct iovec *iov,
     int cnt) {
 	int i;
@@ -37,19 +34,12 @@ static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
 	return 0;
 }
 
-static struct idesc *null_cdev_open(struct dev_module *cdev, void *priv) {
-	return char_dev_idesc_create(cdev);
-}
-
 static const struct idesc_ops null_idesc_ops = {
+    .open = char_dev_default_open,
+    .close = char_dev_default_close,
+    .fstat = char_dev_default_fstat,
     .id_readv = null_read,
     .id_writev = null_write,
-    .close = null_close,
-    .fstat = char_dev_idesc_fstat,
 };
 
-static const struct dev_module_ops null_cdev_ops = {
-    .dev_open = null_cdev_open,
-};
-
-CHAR_DEV_DEF(NULL_DEV_NAME, &null_cdev_ops, &null_idesc_ops, NULL);
+CHAR_DEV_DEF(NULL_DEV_NAME, &null_idesc_ops, NULL);

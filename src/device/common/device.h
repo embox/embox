@@ -27,26 +27,18 @@
 
 struct idesc;
 struct idesc_ops;
-struct dev_module_ops;
 
 struct dev_module {
 	int dev_id;
 	char name[DEV_NAME_LEN];
 
 	const struct idesc_ops *dev_iops;
-	const struct dev_module_ops *dev_ops;
 
 	void *dev_priv;
 };
 
-struct dev_module_ops {
-	struct idesc *(*dev_open)(struct dev_module *dev, void *priv);
-	/* void   (*dev_close) (struct idesc *); */
-};
-
 extern struct dev_module *dev_module_create(const char *name,
-    const struct dev_module_ops *dev_ops, const struct idesc_ops *dev_iops,
-    void *privdata);
+    const struct idesc_ops *dev_iops, void *privdata);
 
 /**
  * @brief initialize device module with given parameters
@@ -58,8 +50,7 @@ extern struct dev_module *dev_module_create(const char *name,
  * @return
  */
 extern struct dev_module *dev_module_init(struct dev_module *devmod,
-    const char *name, const struct dev_module_ops *dev_ops,
-    const struct idesc_ops *dev_iops, void *privdata);
+    const char *name, const struct idesc_ops *dev_iops, void *privdata);
 
 extern int dev_module_destroy(struct dev_module *dev);
 

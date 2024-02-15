@@ -13,9 +13,10 @@
 #include <drivers/device.h>
 #include <drivers/serial/uart_dev.h>
 #include <framework/mod/options.h>
+#include <kernel/task/resource/idesc.h>
+#include <lib/libds/indexator.h>
 #include <mem/misc/pool.h>
 #include <util/err.h>
-#include <lib/libds/indexator.h>
 
 #include "idesc_serial.h"
 #include "ttys.h"
@@ -23,17 +24,6 @@
 #define SERIAL_POOL_SIZE OPTION_GET(NUMBER, serial_quantity)
 
 POOL_DEF(cdev_serials_pool, struct dev_module, SERIAL_POOL_SIZE);
-
-static struct idesc *uart_cdev_open(struct dev_module *cdev, void *priv) {
-	struct idesc *idesc;
-
-	idesc = idesc_serial_open(cdev->dev_priv, (uintptr_t)priv);
-	if (err(idesc)) {
-		return NULL;
-	}
-
-	return idesc;
-}
 
 int ttys_register(const char *name, void *dev_info) {
 	struct dev_module *cdev;
@@ -44,13 +34,8 @@ int ttys_register(const char *name, void *dev_info) {
 	}
 	memset(cdev, 0, sizeof(*cdev));
 	memcpy(cdev->name, name, sizeof(cdev->name));
-	cdev->dev_ops = &uart_cdev_ops;
 	cdev->dev_iops = idesc_serial_get_ops();
 	cdev->dev_priv = dev_info;
 
 	return char_dev_register(cdev);
 }
-
-const struct dev_module_ops uart_cdev_ops = {
-    .dev_open = uart_cdev_open,
-};
