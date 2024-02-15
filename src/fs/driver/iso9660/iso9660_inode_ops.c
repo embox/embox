@@ -38,14 +38,19 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 	int left;
 	int reclen;
 	int idx = 0;
+	char *dir_name;
 
 	fsi = parent->i_sb->sb_data;
 
 	if (0 == (int) (intptr_t) dir_ctx->fs_ctx) {
 		dir_ctx->fs_ctx = (void*)(intptr_t)2;
 	}
-
-	n = cdfs_find_dir(fsi, inode_name(parent), strlen(inode_name(parent)));
+	if (parent == parent->i_sb->sb_root) {
+		dir_name = "";
+	} else {
+		dir_name = inode_name(parent);
+	}
+	n = cdfs_find_dir(fsi, dir_name, strlen(dir_name));
 
 	/* The first two directory records are . (current) and .. (parent) */
 	blk = fsi->path_table[n]->extent;
