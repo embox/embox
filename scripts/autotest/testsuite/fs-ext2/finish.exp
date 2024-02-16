@@ -1,0 +1,6 @@
+test_exec_embox_cmd "cd /\r"
+test_exec_embox_cmd "umount $mount_dir\r"
+#test_exec_embox_cmd "rmdir $mount_dir"
+
+target_disconnect
+
