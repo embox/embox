@@ -21,23 +21,15 @@
 
 #include <stdint.h>
 #include <cpio.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <limits.h>
-#include <stdarg.h>
+//#include <limits.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <unistd.h>
 
-#include <framework/mod/options.h>
-
-#include <fs/dvfs.h>
-#include <mem/misc/pool.h>
-#include <lib/libds/array.h>
+#include <fs/inode.h>
+#include <fs/super_block.h>
 
 #include "initfs.h"
 
-static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
+struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
 	struct cpio_entry entry;
@@ -74,22 +66,9 @@ static struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 	return NULL;
 }
 
+extern struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
+
 struct super_block_operations initfs_sbops = {
 	.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = initfs_destroy_inode,
 };
-
-struct inode_operations initfs_iops = {
-	.ino_create   = initfs_create,
-	.ino_lookup   = initfs_lookup,
-	.ino_iterate  = initfs_iterate,
-};
-
-extern int initfs_fill_sb(struct super_block *sb, const char *source);
-
-static const struct fs_driver initfs_dumb_driver = {
-	.name      = "initfs",
-	.fill_sb   = initfs_fill_sb,
-};
-
-DECLARE_FILE_SYSTEM_DRIVER(initfs_dumb_driver);

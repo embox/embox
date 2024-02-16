@@ -15,6 +15,7 @@ abstract module fat {
 	source "fatfs_subr.c"
 	source "fat_common_mem.c"
 	source "fat_fops.c"
+	source "fat_inode_ops.c"
 
 	source "fatfs_drv.c"
 
