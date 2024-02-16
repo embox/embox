@@ -1,25 +1,25 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 09.11.2013
  * @author Anton Bondarev
  */
-#include <errno.h>
-#include <stdint.h>
+
 #include <assert.h>
+#include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
-#include <kernel/task/resource/idesc.h>
 #include <kernel/task.h>
-
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_table.h>
 #include <lib/libds/array.h>
 #include <lib/libds/indexator.h>
 
 int idesc_index_valid(int idx) {
-	return (idx >=0) && (idx < MODOPS_IDESC_TABLE_SIZE);
+	return (idx >= 0) && (idx < MODOPS_IDESC_TABLE_SIZE);
 }
 
 int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
@@ -44,7 +44,8 @@ int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 	return idx;
 }
 
-int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx, int cloexec) {
+int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx,
+    int cloexec) {
 	assert(t);
 	assert(idesc);
 	assert(idesc_index_valid(idx));
@@ -100,12 +101,10 @@ struct idesc *idesc_table_get(struct idesc_table *t, int idx) {
 	return idesc_cloexec_clear(idesc);
 }
 
-
 void idesc_table_init(struct idesc_table *t) {
 	assert(t);
 	memset(t->idesc_table, 0, sizeof t->idesc_table);
-	index_init(&t->indexator, 0, ARRAY_SIZE(t->idesc_table),
-			t->index_buffer);
+	index_init(&t->indexator, 0, ARRAY_SIZE(t->idesc_table), t->index_buffer);
 }
 
 void idesc_table_finit(struct idesc_table *t) {
@@ -113,7 +112,7 @@ void idesc_table_finit(struct idesc_table *t) {
 
 	assert(t);
 
-	for(i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
+	for (i = 0; i < ARRAY_SIZE(t->idesc_table); i++) {
 		if (t->idesc_table[i]) {
 			assert(idesc_table_get(t, i));
 			idesc_table_del(t, i);
@@ -123,7 +122,7 @@ void idesc_table_finit(struct idesc_table *t) {
 
 /* Alloc idesc at the specified position. */
 static int idesc_table_idx_copy(struct idesc_table *t, int idx,
-	struct idesc *idesc, int cloexec) {
+    struct idesc *idesc, int cloexec) {
 	assert(t);
 	assert(idesc);
 
