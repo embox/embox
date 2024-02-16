@@ -40,7 +40,11 @@ struct inode *cdfs_ilookup(char const *name, struct inode const *dir) {
 	sb = dir->i_sb;
 	fsi = sb->sb_data;
 
-	dir_name = inode_name((struct inode *)dir);
+	if (dir == dir->i_sb->sb_root) {
+		dir_name = "";
+	} else {
+		dir_name = inode_name((struct inode *)dir);
+	}
 
 	n = cdfs_find_dir(fsi, dir_name, strlen(dir_name));
 
