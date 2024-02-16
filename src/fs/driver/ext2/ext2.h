@@ -565,7 +565,7 @@ typedef struct ext2_fs_info {
 /*
  * In-core open file.
  */
-typedef struct ext2_file_info {
+struct ext2_file_info {
 	struct ext2fs_dinode	f_di;		/* copy of on-disk inode */
 	uint		f_nishift;	/* for blocks in indirect block */
 	int32_t		f_ind_cache_block;
@@ -585,7 +585,7 @@ typedef struct ext2_file_info {
 								 * a new block (should be block i_bsearch).
 								 * used to check for sequential operation.
 								 */
-} ext2_file_info_t;
+};
 
 struct ext2_xattr_ent {
 	uint8_t		e_name_len;

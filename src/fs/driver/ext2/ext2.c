@@ -126,10 +126,6 @@ static int ext2_read_sblock(struct super_block *sb);
 static int ext2_read_gdblock(struct super_block *sb);
 static int ext2_mount_entry(struct inode *node);
 
-/* ext filesystem description pool */
-POOL_DEF(ext2_fs_pool, struct ext2_fs_info,
-		OPTION_GET(NUMBER,ext2_descriptor_quantity));
-
 /* ext file description pool */
 POOL_DEF(ext2_file_pool, struct ext2_file_info,
 		OPTION_GET(NUMBER,inode_quantity));
@@ -549,45 +545,23 @@ static int ext2_create(struct inode *i_new, struct inode *i_dir);
 static int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
 static int ext2_unlink(struct inode *dir_node, struct inode *node);
 static void ext2_free_fs(struct super_block *sb);
-//static int ext2fs_umount_entry(struct inode *node);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
-//static int ext2fs_mount(struct super_block *sb, struct inode *dest);
 
 static int ext2_fill_sb(struct super_block *sb, const char *source);
 static int ext2_clean_sb(struct super_block *sb);
-#if 0
-static struct fsop_desc ext2_fsop = {
-	//.mount	      = ext2fs_mount,
 
-	//.umount_entry = ext2fs_umount_entry,
-};
-#endif
 static struct fs_driver ext2fs_driver = {
 	.name     = FS_NAME,
 	.format   = ext2fs_format,
 	.fill_sb  = ext2_fill_sb,
 	.clean_sb = ext2_clean_sb,
-
-	//.fsop     = &ext2_fsop,
 };
 
-static ext2_file_info_t *ext2_fi_alloc(struct inode *i_new, void *fs) {
-	ext2_file_info_t *fi;
-
-	fi = pool_alloc(&ext2_file_pool);
-	if (fi) {
-		fi->f_pointer = 0;
-		inode_size_set(i_new, 0);
-		inode_priv_set(i_new, fi);
-	}
-
-	return fi;
-}
-
-static void ext2_fi_free(ext2_file_info_t *fi, void *fs) {
-	pool_free(&ext2_file_pool, fi);
-}
+extern struct ext2_fs_info *ext2fs_fsi_alloc(void);
+extern void ext2fs_fsi_free(struct ext2_fs_info *fsi);
+extern struct ext2_file_info *ext2_fi_alloc(void);
+extern void ext2_fi_free(struct ext2_file_info *fi);
 
 static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
@@ -839,9 +813,11 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	}
 	sb->bdev = bdev;
 
-	if (NULL == (fsi = pool_alloc(&ext2_fs_pool))) {
+	fsi = ext2fs_fsi_alloc();
+	if (NULL == fsi) {
 		return -ENOMEM;
 	}
+
 	memset(fsi, 0, sizeof(struct ext2_fs_info));
 	sb->sb_data = fsi;
 	sb->sb_ops = &e2fs_sbops;
@@ -865,13 +841,18 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	dest = sb->sb_root;
-	fi= ext2_fi_alloc(dest, sb);
+	fi= ext2_fi_alloc();
 	if (!fi) {
 		goto error;
 	}
 
+	memset(fi, 0, sizeof(struct ext2_file_info));
+
+	inode_size_set(dest, 0);
+	inode_priv_set(dest, fi);
+
 	if (0 != ext2_open(dest)) {
-		ext2_fi_free(fi, sb);	
+		ext2_fi_free(fi);	
 		goto error;
 	}
 
@@ -888,34 +869,11 @@ error:
 	}
 
 	if (fsi != NULL ){
-		pool_free(&ext2_fs_pool, fsi);
+		ext2fs_fsi_free(fsi);	
 	}
 
 	return -rc;
 }
-
-#if 0
-static int ext2fs_mount(struct super_block *sb, struct inode *dest) {
-#if 0
-	struct ext2_file_info *fi;
-
-	fi= ext2_fi_alloc(dest, sb);
-	if (!fi) {
-		return 0;
-	}
-
-	if (0 != ext2_open(dest)) {
-		return 0;
-	}
-	dest->i_mode = fi->f_di.i_mode;
-	dest->i_owner_id = fi->f_di.i_uid;
-	dest->i_group_id = fi->f_di.i_gid;
-
-	ext2_close(dest);
-#endif
-	return 0;
-}
-#endif
 
 static int ext2fs_truncate (struct inode *node, off_t length) {
 
@@ -937,17 +895,12 @@ static void ext2_free_fs(struct super_block *sb) {
 		if (NULL != fsi->e2fs_gd) {
 			ext2_buff_free(fsi, (char *) fsi->e2fs_gd);
 		}
-		pool_free(&ext2_fs_pool, fsi);
+		
+		ext2fs_fsi_free(fsi);
 	}
 
 }
-#if 0
-static int ext2fs_umount_entry(struct inode *node) {
-	//pool_free(&ext2_file_pool, inode_priv(node));
 
-	return 0;
-}
-#endif
 extern void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new);
 
 /*
@@ -1482,7 +1435,7 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, stru
 			}
 
 			//mode = ext2_type_to_mode_fmt(dp->e2d_type);
-			fi = ext2_fi_alloc(next, parent->i_sb);
+			fi = ext2_fi_alloc();
 			if (!fi) {
 				goto out;
 			}
@@ -1490,6 +1443,8 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, stru
 			fi->f_num = fs2h32(dp->e2d_ino);
 
 			next->i_sb = parent->i_sb;
+			inode_size_set(next, 0);
+			inode_priv_set(next, fi);
 
 			/* Load permisiions and credentials. */
 			if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
@@ -1588,12 +1543,19 @@ static int ext2_mount_entry(struct inode *dir_node) {
 				goto out;
 			}
 
-			fi = ext2_fi_alloc(node, dir_node->i_sb);
+			fi = ext2_fi_alloc();
 			if (!fi) {
 				vfs_del_leaf(node);
 				rc = ENOMEM;
 				goto out;
 			}
+
+			memset(fi, 0, sizeof(struct ext2_file_info));
+			fi->f_num = fs2h32(dp->e2d_ino);
+
+			node->i_sb = dir_node->i_sb;
+			inode_size_set(node, 0);
+			inode_priv_set(node, fi);
 
 			if (node_is_directory(node)) {
 				rc = ext2_mount_entry(node);
@@ -2282,12 +2244,15 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	dir_fi = inode_priv(i_dir);
 	fsi = i_dir->i_sb->sb_data;
 
-	if (NULL == (fi = ext2_fi_alloc(i_new, i_dir->i_sb))) {
+	if (NULL == (fi = ext2_fi_alloc())) {
 		rc = ENOSPC;
 		goto out;
 	}
 	memset(fi, 0, sizeof(struct ext2_file_info));
 
+	inode_size_set(i_new, 0);
+	inode_priv_set(i_new, fi);
+	
 	if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
 		rc = ENOSPC;
 		goto out;
