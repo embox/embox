@@ -70,7 +70,7 @@ static int cdfs_fnmatch(struct cdfs_fs_info *cdfs, char *fn1, int len1, char *fn
 			return 0;
 		}
 		while (len1--) {
-			if (*fn1++ != *fn2++) {
+			if (toupper(*fn1++) != toupper(*fn2++)) {
 				return 0;
 			}
 		}
