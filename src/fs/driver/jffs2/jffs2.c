@@ -1496,7 +1496,7 @@ static int mount_vfs_dir_enty(struct inode *dir_node) {
 					fi->_inode = inode;
 				}
 
-				if(node_is_directory(vfs_node)) {
+				if(S_ISDIR(vfs_node->i_mode)) {
 					mount_vfs_dir_enty(vfs_node);
 				}
 			}
@@ -1512,7 +1512,7 @@ static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mo
 
 	parents_fi = inode_priv(parent_node);
 
-	if (node_is_directory(i_new)) {
+	if (S_ISDIR(i_new->i_mode)) {
 		i_new->i_mode |= S_IRUGO|S_IXUGO|S_IWUSR;
 		if (0 != (rc = jffs2_ops_mkdir(parents_fi->_inode,
 				(const char *) inode_name(i_new), i_new->i_mode))) {
@@ -1548,7 +1548,7 @@ static int jffs2fs_delete(struct inode *node) {
 
 	par_fi = inode_priv(parent);
 	fi = inode_priv(node);
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		if (0 != (rc = jffs2_ops_rmdir(par_fi->_inode,
 						(const char *) inode_name(node)))) {
 			return -rc;

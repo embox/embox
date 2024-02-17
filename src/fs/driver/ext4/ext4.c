@@ -689,7 +689,7 @@ static ext4_file_info_t *ext4_fi_alloc(struct inode *i_new, void *fs) {
 static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		if (0 != (rc = ext4_mkdir(node, parent_node))) {
 			return -rc;
 		}
@@ -1461,7 +1461,7 @@ static int ext4_mount_entry(struct inode *dir_node) {
 				goto out;
 			}
 
-			if (node_is_directory(node)) {
+			if (S_ISDIR(node->i_mode)) {
 				rc = ext4_mount_entry(node);
 			} else {
 				/* read inode into fi->f_di*/
@@ -1567,7 +1567,7 @@ static int ext4_mkdir(struct inode *i_new, struct inode *i_dir) {
 	struct ext4_file_info *fi, *dir_fi;
 	struct ext4_fs_info *fsi;
 
-	if (!node_is_directory(i_dir)) {
+	if (!S_ISDIR(i_dir->i_mode)) {
 		rc = ENOTDIR;
 		return rc;
 	}
@@ -1807,7 +1807,7 @@ static int ext4_free_inode(struct inode *node) { /* ext4_file_info to free */
 	if (b <= 0 || b > fsi->e4sb.s_inodes_count) {
 		return ENOSPC;
 	}
-	rc = ext4_free_inode_bit(node, b, node_is_directory(node));
+	rc = ext4_free_inode_bit(node, b, S_ISDIR(node->i_mode));
 
 	ext4_close(node);
 	pool_free(&ext4_file_pool, fi);
@@ -1841,7 +1841,7 @@ static int ext4_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	}
 
 	/* Acquire an inode from the bit map. */
-	if (0 == (b = ext4_alloc_inode_bit(i_new, node_is_directory(i_new)))) {
+	if (0 == (b = ext4_alloc_inode_bit(i_new, S_ISDIR(i_new->i_mode)))) {
 		rc = ENOSPC;
 		goto out;
 	}
@@ -1936,7 +1936,7 @@ static int ext4_dir_operation(struct inode *node, char *string, ino_t *numb,
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;
 	/* If 'fi' is not a pointer to a dir inode, error. */
-	if (!node_is_directory(node)) {
+	if (!S_ISDIR(node->i_mode)) {
 		return ENOTDIR;
 	}
 
@@ -2133,7 +2133,7 @@ static int ext4_new_node(struct inode *i_new, struct inode *i_dir) {
 	 * the system more robust in the face of a crash: an inode with
 	 * no directory entry is much better than the opposite.
 	 */
-	if (node_is_directory(i_new)) {
+	if (S_ISDIR(i_new->i_mode)) {
 		fi->f_di.i_size_lo = fsi->s_block_size;
 		if (0 != ext4_new_block(i_new, fsi->s_block_size - 1)) {
 			return ENOSPC;
@@ -2221,7 +2221,7 @@ static int ext4_unlink(struct inode *dir_node, struct inode *node) {
 		return rc;
 	}
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		rc = ext4_remove_dir(dir_node, node); /* call is RMDIR */
 	}
 	else {

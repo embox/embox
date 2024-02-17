@@ -110,7 +110,7 @@ static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_n
 		return -errno;
 	}
 
-	if (node_is_directory(new_node)) {
+	if (S_ISDIR(new_node->i_mode)) {
 		mode = S_IFDIR;
 	} else {
 		mode = S_IFREG;

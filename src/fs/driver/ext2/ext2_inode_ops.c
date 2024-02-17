@@ -32,7 +32,7 @@ extern int ext2_open(struct inode *inode);
 static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		if (0 != (rc = ext2_mkdir(node, parent_node))) {
 			return -rc;
 		}

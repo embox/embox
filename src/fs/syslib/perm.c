@@ -106,7 +106,7 @@ int fs_perm_lookup_relative(const char *path, const char **pathlast,
 		return ret;
 	}
 
-	if (!node_is_directory(nodelast->node)) {
+	if (!S_ISDIR(nodelast->node->i_mode)) {
 		return 0;
 	}
 

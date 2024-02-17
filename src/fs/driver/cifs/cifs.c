@@ -219,7 +219,7 @@ static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_n
 	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
 	mode = new_node->i_mode & S_IRWXA;
-	if (node_is_directory(new_node)) {
+	if (S_ISDIR(new_node->i_mode)) {
 		mode |= S_IFDIR;
 		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
 			return -errno;
@@ -250,7 +250,7 @@ static int embox_cifs_node_delete(struct inode *node) {
 
 	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
 			return -errno;
 		}

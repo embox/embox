@@ -45,7 +45,7 @@ DIR *opendir(const char *path) {
 		return NULL;
 	}
 
-	if (!node_is_directory(node_path.node)) {
+	if (!S_ISDIR(node_path.node->i_mode)) {
 		SET_ERRNO(ENOTDIR);
 		return NULL;
 	}

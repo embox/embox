@@ -106,7 +106,7 @@ int open(const char *path, int __oflag, ...) {
 			goto out;
 		}
 
-		if (node_is_directory(node)) {
+		if (S_ISDIR(node->i_mode)) {
 			rc = -EISDIR;
 			goto out;
 		}

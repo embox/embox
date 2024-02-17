@@ -668,7 +668,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 				node = nfs_create_file(parent_node, predesc);
 				if (!node) {
 					log_error("nfs_create_file failed\n");
-				} else if (node_is_directory(node)) {
+				} else if (S_ISDIR(node->i_mode)) {
 					nfs_create_dir_entry(node);
 				}
 			}
@@ -697,7 +697,7 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	parent_fi = inode_priv(parent_node);
 	fsi = parent_node->i_sb->sb_data;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		procnum = NFSPROC3_MKDIR;
 		req.type = NFS_DIRECTORY_NODE_TYPE;
 		req.create_mode = UNCHECKED_MODE;
@@ -756,7 +756,7 @@ static int nfsfs_delete(struct inode *node) {
 	dir_fi = inode_priv(dir_node);
 	req.dir_fh = &dir_fi->fh.name_fh;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		procnum = NFSPROC3_RMDIR;
 	}
 	else {

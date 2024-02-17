@@ -195,7 +195,7 @@ int kremove(const char *pathname) {
 		return -1;
 	}
 
-	if (node_is_directory(node.node)) {
+	if (S_ISDIR(node.node->i_mode)) {
 		return krmdir(pathname);
 	}
 	else {
@@ -365,7 +365,7 @@ static int vfs_mount_walker(struct inode *dir) {
 
 		vfs_add_leaf(node, dir);
 
-		if (node_is_directory(node)) {
+		if (S_ISDIR(node->i_mode)) {
 			vfs_mount_walker(node);
 		}
 	} while (1);
@@ -508,7 +508,7 @@ int krename(const char *oldpath, const char *newpath) {
 			(const char **) &newpathcopy, &newnode);
 	free(npc_free);
 	if (0 == rc) {
-		if (node_is_directory(newnode.node)) {
+		if (S_ISDIR(newnode.node->i_mode)) {
 			/* Directory was passed as destination */
 			name = strrchr(oldpath, '/') + 1;
 			newpathlen = strlen(newpath) + strlen(name);
@@ -541,7 +541,7 @@ int krename(const char *oldpath, const char *newpath) {
 	 */
 
 	/* If oldpath is directory, copy it recursively */
-	if (node_is_directory(oldnode.node)) {
+	if (S_ISDIR(oldnode.node->i_mode)) {
 		rc = kmkdir(newpath, oldnode.node->i_mode);
 		if (-1 == rc) {
 			return -1;
@@ -618,7 +618,7 @@ int krename(const char *oldpath, const char *newpath) {
 static int umount_walker(struct inode *node) {
 	struct inode *child;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		while (NULL != (child = vfs_subtree_get_child_next(node, NULL))) {
 			umount_walker(child);
 		}
