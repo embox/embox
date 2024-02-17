@@ -33,89 +33,6 @@
 #include <mem/misc/pool.h>
 #include <mem/phymem.h>
 
-
-/*
- * Copyright (c) 1997 Manuel Bouyer.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
-/*-
- * Copyright (c) 1993
- *	The Regents of the University of California.  All rights reserved.
- *
- * This code is derived from software contributed to Berkeley by
- * The Mach Operating System project at Carnegie-Mellon University.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- *
- * Copyright (c) 1990, 1991 Carnegie Mellon University
- * All Rights Reserved.
- *
- * Author: David Golub
- *
- * Permission to use, copy, modify and distribute this software and its
- * documentation is hereby granted, provided that both the copyright
- * notice and this permission notice appear in all copies of the
- * software, derivative works or modified versions, and any portions
- * thereof, and that both notices appear in supporting documentation.
- *
- * CARNEGIE MELLON ALLOWS FREE USE OF THIS SOFTWARE IN ITS "AS IS"
- * CONDITION.  CARNEGIE MELLON DISCLAIMS ANY LIABILITY OF ANY KIND FOR
- * ANY DAMAGES WHATSOEVER RESULTING FROM THE USE OF THIS SOFTWARE.
- *
- * Carnegie Mellon requests users of this software to return to
- *
- *  Software Distribution Coordinator  or  Software.Distribution@CS.CMU.EDU
- *  School of Computer Science
- *  Carnegie Mellon University
- *  Pittsburgh PA 15213-3890
- *
- * any improvements or extensions that they make and grant Carnegie the
- * rights to redistribute these changes.
- */
-
 static int ext2_read_inode(struct inode *node, uint32_t);
 static int ext2_block_map(struct inode *node, int32_t, uint32_t *);
 static int ext2_buf_read_file(struct inode *inode, char **, size_t *);
@@ -125,10 +42,6 @@ static int ext2_search_directory(struct inode *node, const char *, int, uint32_t
 static int ext2_read_sblock(struct super_block *sb);
 static int ext2_read_gdblock(struct super_block *sb);
 static int ext2_mount_entry(struct inode *node);
-
-/* ext file description pool */
-POOL_DEF(ext2_file_pool, struct ext2_file_info,
-		OPTION_GET(NUMBER,inode_quantity));
 
 #define FS_NAME "ext2"
 
@@ -884,7 +797,7 @@ static int ext2fs_truncate (struct inode *node, off_t length) {
 
 static int ext2_clean_sb(struct super_block *sb) {
 	ext2_free_fs(sb);
-	pool_free(&ext2_file_pool, inode_priv(sb->sb_root));
+	ext2_fi_free(inode_priv(sb->sb_root));
 	return 0;
 }
 
@@ -2229,7 +2142,7 @@ static int ext2_free_inode(struct inode *node) { /* ext2_file_info to free */
 	rc = ext2_free_inode_bit(node, b, node_is_directory(node));
 
 	ext2_close(node);
-	pool_free(&ext2_file_pool, fi);
+	ext2_fi_free(fi);
 
 	return rc;
 }
@@ -2279,7 +2192,7 @@ out:
 		if (NULL != fi->f_buf) {
 			ext2_buff_free(fsi, fi->f_buf);
 		}
-		pool_free(&ext2_file_pool, fi);
+		ext2_fi_free(fi);
 	}
 	return rc;
 }

@@ -537,7 +537,7 @@ struct ext2fs_dinode {
 };
 
 /* in-memory data for ext2fs */
-typedef struct ext2_fs_info {
+struct ext2_fs_info {
 	struct ext2sb e2sb;
 	struct	ext2_gd *e2fs_gd; /* group descripors */
 	/* The following items are only used when the super_block is in memory. */
@@ -560,7 +560,7 @@ typedef struct ext2_fs_info {
 									    */
 	journal_t *journal; /* ext3 journal. XXX it would be better to have separate ext3_fs_info */
 	char mntto[PATH_MAX];
-} ext2_fs_info_t;
+};
 
 /*
  * In-core open file.
