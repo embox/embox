@@ -8,6 +8,7 @@ module ext2 {
 	source "ext2_balloc.c"
 
 	source "ext2fs_mem.c"
+	source "ext2_inode_ops.c"
 
 	@IncludeExport(path="fs")
 	source "ext2.h"

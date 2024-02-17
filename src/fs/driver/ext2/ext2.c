@@ -14,7 +14,6 @@
 #include <fcntl.h>
 #include <limits.h>
 
-#include <fs/journal.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
@@ -23,25 +22,24 @@
 #include <fs/mount.h>
 #include <fs/super_block.h>
 #include <fs/file_desc.h>
-#include <fs/dir_context.h>
 #include <fs/inode_operation.h>
 
-#include <lib/libds/array.h>
 #include <util/err.h>
-#include <embox/unit.h>
+
 #include <drivers/block_dev.h>
-#include <mem/misc/pool.h>
+
 #include <mem/phymem.h>
 
-static int ext2_read_inode(struct inode *node, uint32_t);
+extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
+extern int ext2_read_inode(struct inode *node, uint32_t);
+
 static int ext2_block_map(struct inode *node, int32_t, uint32_t *);
-static int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 static size_t ext2_write_file(struct inode *inode, char *buf_p, size_t size);
 static int ext2_new_block(struct inode *node, long position);
 static int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
 static int ext2_read_sblock(struct super_block *sb);
 static int ext2_read_gdblock(struct super_block *sb);
-static int ext2_mount_entry(struct inode *node);
+extern int ext2_mount_entry(struct inode *node);
 
 #define FS_NAME "ext2"
 
@@ -51,10 +49,6 @@ static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __
 static int ext2fs_close(struct file_desc *desc);
 static size_t ext2fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext2fs_write(struct file_desc *desc, void *buf, size_t size);
-extern int ext2_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *dir_ctx);
-static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode);
-static int ext2fs_delete(struct inode *node);
-static int ext2fs_truncate(struct inode *node, off_t length);
 
 struct file_operations ext2_fop = {
 	.open = ext2fs_open,
@@ -70,17 +64,6 @@ static int e2fs_destroy_inode(struct inode *inode) {
 static struct super_block_operations e2fs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = e2fs_destroy_inode,
-};
-
-struct inode_operations ext2_iops = {
-	.ino_create  = ext2fs_create,
-	.ino_remove  = ext2fs_delete,
-	.ino_iterate = ext2_iterate,
-	.ino_truncate = ext2fs_truncate,
-
-	.ino_getxattr     = ext2fs_getxattr,
-	.ino_setxattr     = ext2fs_setxattr,
-	.ino_listxattr    = ext2fs_listxattr,
 };
 
 /*
@@ -454,9 +437,9 @@ static size_t ext2fs_write(struct file_desc *desc, void *buff, size_t size) {
 	return bytecount;
 }
 
-static int ext2_create(struct inode *i_new, struct inode *i_dir);
-static int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
-static int ext2_unlink(struct inode *dir_node, struct inode *node);
+extern int ext2_create(struct inode *i_new, struct inode *i_dir);
+extern int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
+extern int ext2_unlink(struct inode *dir_node, struct inode *node);
 static void ext2_free_fs(struct super_block *sb);
 
 static int ext2fs_format(struct block_dev *bdev, void *priv);
@@ -475,40 +458,6 @@ extern struct ext2_fs_info *ext2fs_fsi_alloc(void);
 extern void ext2fs_fsi_free(struct ext2_fs_info *fsi);
 extern struct ext2_file_info *ext2_fi_alloc(void);
 extern void ext2_fi_free(struct ext2_file_info *fi);
-
-static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode) {
-	int rc;
-
-	if (node_is_directory(node)) {
-		if (0 != (rc = ext2_mkdir(node, parent_node))) {
-			return -rc;
-		}
-		if (0 != (rc = ext2_mount_entry(node))) {
-			return -rc;
-		}
-	} else {
-		if (0 != (rc = ext2_create(node, parent_node))) {
-			return -rc;
-		}
-	}
-	return 0;
-}
-
-static int ext2fs_delete(struct inode *node) {
-	int rc;
-	struct inode *parents;
-
-	if (NULL == (parents = vfs_subtree_get_parent(node))) {
-		rc = ENOENT;
-		return -rc;
-	}
-
-	if (0 != (rc = ext2_unlink(parents, node))) {
-		return -rc;
-	}
-
-	return 0;
-}
 
 static void ext2_dflt_sb(struct ext2sb *sb,
 							size_t dev_size, float dev_factor) {
@@ -657,6 +606,8 @@ static int ext2_mark_bitmap(void *bdev, struct ext2sb *sb,
 	return 0;
 }
 
+extern struct inode_operations ext2_iops;
+
 static int ext2fs_format(struct block_dev *bdev, void *priv) {
 	struct ext2sb sb;
 	struct ext2_gd gd;
@@ -788,13 +739,6 @@ error:
 	return -rc;
 }
 
-static int ext2fs_truncate (struct inode *node, off_t length) {
-
-	inode_size_set(node, length);
-
-	return 0;
-}
-
 static int ext2_clean_sb(struct super_block *sb) {
 	ext2_free_fs(sb);
 	ext2_fi_free(inode_priv(sb->sb_root));
@@ -819,7 +763,7 @@ extern void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new);
 /*
  * Read a new inode into a file structure.
  */
-static int ext2_read_inode(struct inode *node, uint32_t inumber) {
+int ext2_read_inode(struct inode *node, uint32_t inumber) {
 	char *buf;
 	size_t rsize;
 	int64_t inode_sector;
@@ -963,7 +907,7 @@ static int ext2_block_map(struct inode *node, int32_t file_block,
  * Read a portion of a file into an internal buffer.
  * Return the location in the buffer and the amount in the buffer.
  */
-static int ext2_buf_read_file(struct inode *node, char **buf_p, size_t *size_p) {
+int ext2_buf_read_file(struct inode *node, char **buf_p, size_t *size_p) {
 	int rc;
 	long off;
 	int32_t file_block;
@@ -1288,108 +1232,8 @@ out:
 	ext2_buff_free(fsi, gdbuf);
 	return ret;
 }
-struct inode *ext2_lookup(char const *name, struct inode const *dir) {
-	return NULL;
-}
 
-int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
-//	mode_t mode;
-	char name_buff[NAME_MAX];
-	struct ext2_fs_info *fsi;
-	struct ext2_file_info *dir_fi;
-	struct ext2_file_info *fi;
-	struct ext2fs_direct *dp, *edp;
-	size_t buf_size;
-	char *buf;
-	int rc;
-	char *name;
-	int idx = 0;
-
-	fsi = parent->i_sb->sb_data;
-
-	if (0 != ext2_open(parent)) {
-		return -1;
-	}
-
-	dir_fi = inode_priv(parent);
-
-	dir_fi->f_pointer = 0;
-	while (dir_fi->f_pointer < (long) dir_fi->f_di.i_size) {
-		if (0 != (rc = ext2_buf_read_file(parent, &buf, &buf_size))) {
-			goto out;
-		}
-		if (buf_size != fsi->s_block_size || buf_size == 0) {
-			rc = EIO;
-			goto out;
-		}
-
-		dp = (struct ext2fs_direct *) buf;
-		edp = (struct ext2fs_direct *) (buf + buf_size);
-		for (; dp < edp; dp = (void *)((char *)dp + fs2h16(dp->e2d_reclen))) {
-			if (fs2h16(dp->e2d_reclen) <= 0) {
-				goto out;
-			}
-			if (fs2h32(dp->e2d_ino) == 0) {
-				continue;
-			}
-
-			/* set null determine name */
-			name = (char *) &dp->e2d_name;
-
-			memcpy(name_buff, name, fs2h16(dp->e2d_namlen));
-			name_buff[fs2h16(dp->e2d_namlen)] = '\0';
-
-			if(0 != path_is_dotname(name_buff, dp->e2d_namlen)) {
-				/* dont need create dot or dotdot node */
-				continue;
-			}
-			if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
-				continue;
-			}
-
-			//mode = ext2_type_to_mode_fmt(dp->e2d_type);
-			fi = ext2_fi_alloc();
-			if (!fi) {
-				goto out;
-			}
-			memset(fi, 0, sizeof(struct ext2_file_info));
-			fi->f_num = fs2h32(dp->e2d_ino);
-
-			next->i_sb = parent->i_sb;
-			inode_size_set(next, 0);
-			inode_priv_set(next, fi);
-
-			/* Load permisiions and credentials. */
-			if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
-				rc = ENOSPC;
-				goto out;
-			}
-
-			ext2_read_inode(next, fs2h32(dp->e2d_ino));
-			ext2_buff_free(fsi, fi->f_buf);
-
-			next->i_mode = fi->f_di.i_mode;
-
-			next->i_owner_id = fi->f_di.i_uid;
-			next->i_group_id = fi->f_di.i_gid;
-			inode_size_set(next, fi->f_di.i_size);
-			strncpy(next_name, name_buff, NAME_MAX - 1);
-			next_name[NAME_MAX - 1] = '\0';
-
-			dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
-			ext2_close(parent);
-			return 0;
-		}
-		dir_fi->f_pointer += buf_size;
-	}
-
-out:
-	ext2_close(parent);
-
-	return -1;
-}
-
-static int ext2_mount_entry(struct inode *dir_node) {
+int ext2_mount_entry(struct inode *dir_node) {
 	int rc;
 	char *buf;
 	size_t buf_size;
@@ -1863,7 +1707,7 @@ static void ext2_zero_block(char *buf) {
 
 static int ext2_new_node(struct inode *i_new, struct inode *i_dir);
 
-static int ext2_create(struct inode *i_new, struct inode *i_dir) {
+int ext2_create(struct inode *i_new, struct inode *i_dir) {
 	int rc;
 	struct ext2_file_info *fi, *dir_fi;
 
@@ -1891,7 +1735,7 @@ static int ext2_create(struct inode *i_new, struct inode *i_dir) {
 	return ENOSPC;
 }
 
-static int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
+int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
 	int rc;
 	int r1, r2; /* status codes */
 	ino_t dot, dotdot; /* inode numbers for . and .. */
@@ -2546,7 +2390,7 @@ static int ext2_remove_dir(struct inode *dir_node, struct inode *node) {
 	return 0;
 }
 
-static int ext2_unlink(struct inode *dir_node, struct inode *node) {
+int ext2_unlink(struct inode *dir_node, struct inode *node) {
 	int rc;
 	struct ext2_file_info *dir_fi;
 
