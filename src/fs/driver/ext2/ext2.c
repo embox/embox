@@ -858,7 +858,7 @@ static int ext2_read_inode(struct inode *node, uint32_t inumber) {
  */
 static int ext2_block_map(struct inode *node, int32_t file_block,
 		uint32_t *disk_block_p) {
-	uint level;
+	unsigned int level;
 	int32_t ind_cache;
 	int32_t ind_block_num;
 	size_t rsize;
@@ -1234,7 +1234,7 @@ out:
 }
 
 int ext2_write_gdblock(struct super_block *sb) {
-	uint gdpb;
+	unsigned int gdpb;
 	int i;
 	char *buff;
 	struct ext2_fs_info *fsi;
@@ -1257,7 +1257,7 @@ int ext2_write_gdblock(struct super_block *sb) {
 
 static int ext2_read_gdblock(struct super_block *sb) {
 	size_t rsize;
-	uint gdpb;
+	unsigned int gdpb;
 	int i;
 	struct ext2_fs_info *fsi;
 	void *gdbuf = NULL;
@@ -2264,7 +2264,7 @@ static int ext2_dir_operation(struct inode *node, char *string, ino_t *numb,
 	int required_space;
 	int string_len;
 	int new_slot_size, actual_size;
-	u16_t temp;
+	uint16_t temp;
 	struct ext2fs_dinode fdi;
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;

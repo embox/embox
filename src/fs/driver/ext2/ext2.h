@@ -10,71 +10,18 @@
 #ifndef EXT_H_
 #define EXT_H_
 
-#include <mem/page.h>
-#include <linux/types.h>
+#include <mem/phymem.h>
+
 #include <stdint.h>
+#include <string.h>
+
 #include <fs/journal.h>
 #include <fs/super_block.h>
+
 #include <endian.h>
 #include <swab.h>
-/*
- * Copyright (c) 1982, 1986, 1993
- *	The Regents of the University of California.  All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the University nor the names of its contributors
- *    may be used to endorse or promote products derived from this software
- *    without specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
- * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
- * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
- * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
- * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
- * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
- * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
- * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
- * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
- * SUCH DAMAGE.
- *
- *	@(#)fs.h	8.10 (Berkeley) 10/27/94
- *  Modified for ext2fs by Manuel Bouyer.
- */
 
-/*
- * Copyright (c) 1997 Manuel Bouyer.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions
- * are met:
- * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
- * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
- *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
- * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
- * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
- * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
- * NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
- * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
- * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
- * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *	@(#)fs.h	8.10 (Berkeley) 10/27/94
- *  Modified for ext2fs by Manuel Bouyer.
- */
+
 
 /* FIXME: prefix with EXT2_ */
 #define SECTOR_SIZE 512
@@ -370,18 +317,18 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 	uint32_t  s_inodes_per_group;  /* # Inodes per group */
 	uint32_t  s_mtime;             /* Mount time */
 	uint32_t  s_wtime;             /* Write time */
-	u16_t  s_mnt_count;            /* Mount count */
-	u16_t  s_max_mnt_count;        /* Maximal mount count */
-	u16_t  s_magic;                /* Magic signature */
-	u16_t  s_state;                /* File system state */
-	u16_t  s_errors;               /* Behaviour when detecting errors */
-	u16_t  s_minor_rev_level;      /* minor revision level */
+	uint16_t  s_mnt_count;            /* Mount count */
+	uint16_t  s_max_mnt_count;        /* Maximal mount count */
+	uint16_t  s_magic;                /* Magic signature */
+	uint16_t  s_state;                /* File system state */
+	uint16_t  s_errors;               /* Behaviour when detecting errors */
+	uint16_t  s_minor_rev_level;      /* minor revision level */
 	uint32_t  s_lastcheck;         /* time of last check */
 	uint32_t  s_checkinterval;     /* max. time between checks */
 	uint32_t  s_creator_os;        /* OS */
 	uint32_t  s_rev_level;         /* Revision level */
-	u16_t  s_def_resuid;           /* Default uid for reserved blocks */
-	u16_t  s_def_resgid;           /* Default gid for reserved blocks */
+	uint16_t  s_def_resuid;           /* Default uid for reserved blocks */
+	uint16_t  s_def_resgid;           /* Default gid for reserved blocks */
 	/*
 	 * These fields are for EXT2_DYNAMIC_REV superblocks only.
 	 *
@@ -396,12 +343,12 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 	 * things it doesn't understand...
 	 */
 	uint32_t  s_first_ino;         /* First non-reserved inode */
-	u16_t  s_inode_size;           /* size of inode structure */
-	u16_t  s_block_group_nr;       /* block group # of this superblock */
+	uint16_t  s_inode_size;           /* size of inode structure */
+	uint16_t  s_block_group_nr;       /* block group # of this superblock */
 	uint32_t  s_feature_compat;    /* compatible feature set */
 	uint32_t  s_feature_incompat;  /* incompatible feature set */
 	uint32_t  s_feature_ro_compat; /* readonly-compatible feature set */
-	u8_t   s_uuid[16];             /* 128-bit uuid for volume */
+	uint8_t   s_uuid[16];             /* 128-bit uuid for volume */
 	char   s_volume_name[16];      /* volume name */
 	char   s_last_mounted[64];     /* directory where last mounted */
 	uint32_t  s_algorithm_usage_bitmap; /* For compression */
@@ -409,20 +356,20 @@ void e2fs_cg_bswap(struct ext2_gd *, struct ext2_gd *, int);
 	 * Performance hints.  Directory preallocation should only
 	 * happen if the EXT2_COMPAT_PREALLOC flag is on.
 	 */
-	u8_t    s_prealloc_blocks;      /* Nr of blocks to try to preallocate*/
-	u8_t    s_prealloc_dir_blocks;  /* Nr to preallocate for dirs */
-	u16_t   s_padding1;
+	uint8_t    s_prealloc_blocks;      /* Nr of blocks to try to preallocate*/
+	uint8_t    s_prealloc_dir_blocks;  /* Nr to preallocate for dirs */
+	uint16_t   s_padding1;
 	/*
 	 * Journaling support valid if EXT3_FEATURE_COMPAT_HAS_JOURNAL set.
 	 */
-	u8_t    s_journal_uuid[16];     /* uuid of journal superblock */
+	uint8_t    s_journal_uuid[16];     /* uuid of journal superblock */
 	uint32_t   s_journal_inum;      /* inode number of journal file */
 	uint32_t   s_journal_dev;       /* device number of journal file */
 	uint32_t   s_last_orphan;       /* start of list of inodes to delete */
 	uint32_t   s_hash_seed[4];      /* HTREE hash seed */
-	u8_t    s_def_hash_version;     /* Default hash version to use */
-	u8_t    s_reserved_char_pad;
-	u16_t   s_reserved_word_pad;
+	uint8_t    s_def_hash_version;     /* Default hash version to use */
+	uint8_t    s_reserved_char_pad;
+	uint16_t   s_reserved_word_pad;
 	uint32_t   s_default_mount_opts;
 	uint32_t   s_first_meta_bg;     /* First metablock block group */
 	uint32_t   s_reserved[190];     /* Padding to the end of the block */
@@ -433,10 +380,10 @@ struct ext2_gd {
 	uint32_t  block_bitmap;     /* Blocks bitmap block */
     uint32_t  inode_bitmap;     /* Inodes bitmap block */
     uint32_t  inode_table;      /* Inodes table block */
-    u16_t  free_blocks_count;   /* Free blocks count */
-    u16_t  free_inodes_count;   /* Free inodes count */
-    u16_t  used_dirs_count;     /* Directories count */
-    u16_t  pad;
+    uint16_t  free_blocks_count;   /* Free blocks count */
+    uint16_t  free_inodes_count;   /* Free inodes count */
+    uint16_t  used_dirs_count;     /* Directories count */
+    uint16_t  pad;
     uint32_t  reserved[3];
 };
 
@@ -496,13 +443,13 @@ struct ext2fs_dinode {
 	uint32_t	i_flags;	/*  32: Status flags (chflags) */
 	union {
 		struct {
-				u32_t  l_i_reserved1;
+				uint32_t  l_i_reserved1;
 		} linux1;
 		struct {
-				u32_t  h_i_translator;
+				uint32_t  h_i_translator;
 		} hurd1;
 		struct {
-				u32_t  m_i_reserved1;
+				uint32_t  m_i_reserved1;
 		} masix1;
 	} osd1;
 	uint32_t	i_block[NDADDR + NIADDR]; /* 40: disk blocks */
@@ -512,26 +459,26 @@ struct ext2fs_dinode {
 	uint32_t	i_faddr;	/* 112: fragment address */
     union {
         struct {
-            u8_t    l_i_frag;       // Fragment number /
-            u8_t    l_i_fsize;      // Fragment size /
-            u16_t   i_pad1;
-            u16_t  l_i_uid_high;   // these 2 fields    /
-            u16_t  l_i_gid_high;   // were reserved2[0] /
-            u32_t   l_i_reserved2;
+            uint8_t    l_i_frag;       // Fragment number /
+            uint8_t    l_i_fsize;      // Fragment size /
+            uint16_t   i_pad1;
+            uint16_t  l_i_uid_high;   // these 2 fields    /
+            uint16_t  l_i_gid_high;   // were reserved2[0] /
+            uint32_t   l_i_reserved2;
         } linux2;
         struct {
-            u8_t    h_i_frag;       // Fragment number /
-            u8_t    h_i_fsize;      // Fragment size /
-            u16_t  h_i_mode_high;
-            u16_t  h_i_uid_high;
-            u16_t  h_i_gid_high;
-            u32_t  h_i_author;
+            uint8_t    h_i_frag;       // Fragment number /
+            uint8_t    h_i_fsize;      // Fragment size /
+            uint16_t  h_i_mode_high;
+            uint16_t  h_i_uid_high;
+            uint16_t  h_i_gid_high;
+            uint32_t  h_i_author;
         } hurd2;
         struct {
-            u8_t    m_i_frag;       // Fragment number /
-            u8_t    m_i_fsize;      // Fragment size /
-            u16_t   m_pad1;
-            u32_t   m_i_reserved2[2];
+            uint8_t    m_i_frag;       // Fragment number /
+            uint8_t    m_i_fsize;      // Fragment size /
+            uint16_t   m_pad1;
+            uint32_t   m_i_reserved2[2];
         } masix2;
     } osd2;                         // OS dependent 2 /
 };
@@ -553,9 +500,9 @@ struct ext2_fs_info {
 	uint32_t   s_desc_per_block;       /* Number of group descriptors per block */
 	uint32_t   s_groups_count;         /* Number of groups in the fs */
 	size_t     s_page_count;		   /* Number of pages of embox for file r/w buffer*/
-	u16_t      s_sectors_in_block;     /* s_block_size / 512 */
+	uint16_t      s_sectors_in_block;     /* s_block_size / 512 */
 	uint32_t   s_bsearch;	           /* all data blocks  below this block are in use*/
-	u8_t       s_blocksize_bits;       /* Used to calculate offsets (e.g. inode block),
+	uint8_t       s_blocksize_bits;       /* Used to calculate offsets (e.g. inode block),
 								        * always s_log_block_size + 10.
 									    */
 	journal_t *journal; /* ext3 journal. XXX it would be better to have separate ext3_fs_info */
@@ -566,10 +513,10 @@ struct ext2_fs_info {
  * In-core open file.
  */
 struct ext2_file_info {
-	struct ext2fs_dinode	f_di;		/* copy of on-disk inode */
-	uint		f_nishift;	/* for blocks in indirect block */
-	int32_t		f_ind_cache_block;
-	int32_t		f_ind_cache[IND_CACHE_SZ];
+	struct ext2fs_dinode f_di;   /* copy of on-disk inode */
+	unsigned int         f_nishift; /* for blocks in indirect block */
+	int32_t              f_ind_cache_block;
+	int32_t              f_ind_cache[IND_CACHE_SZ];
 
 	char		*f_buf;		/* buffer for data block */
 	size_t		f_buf_size;	/* size of data block */
