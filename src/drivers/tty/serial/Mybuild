@@ -15,7 +15,7 @@ module serial {
 	option number idesc_serial_quantity = 1
 
 	depends tty
-	depends embox.driver.char_dev
+	depends embox.device.char_dev_api
 	depends embox.device.common
 }
 
