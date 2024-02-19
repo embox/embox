@@ -37,4 +37,6 @@ module input_dev_devfs extends input_dev_handler {
 	option number input_dev_cnt = 4
 
 	source "input_dev_devfs.c"
+
+	depends embox.device.char_dev_api
 }
