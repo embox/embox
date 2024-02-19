@@ -1,19 +1,17 @@
 package embox.device
 
-@DefaultImpl(char_dev)
+@DefaultImpl(char_dev_impl)
 abstract module char_dev_api {
 	@IncludeExport(path="drivers")
 	source "char_dev.h"
 }
 
-module char_dev extends char_dev_api {
+module char_dev_impl extends char_dev_api {
 	option string log_level="LOG_NONE"
-
 	option number dev_quantity=32
-	option number cdev_idesc_quantity=32
 
 	source "char_dev_impl.h"
-	source "char_dev.c"
+	source "char_dev_impl.c"
 }
 
 module char_dev_stub extends char_dev_api {

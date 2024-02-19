@@ -11,11 +11,7 @@
 
 #include <stddef.h>
 
-#include <kernel/task/resource/idesc.h>
-
 #define MAX_CDEV_QUANTITY 0
-
-struct dev_module;
 
 #ifdef __GNUC__
 /* Avoid warning for unused parameters with ((unused)) attribute */
