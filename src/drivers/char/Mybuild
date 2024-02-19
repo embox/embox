@@ -7,27 +7,3 @@ module terminal {
 
 	depends embox.driver.terminal.vt
 }
-
-@DefaultImpl(char_dev)
-abstract module char_dev_api {
-
-}
-
-module char_dev extends char_dev_api {
-	option string log_level="LOG_NONE"
-
-	option number dev_quantity=32
-	option number cdev_idesc_quantity=32
-
-	@IncludeExport(path="drivers",target_name="char_dev.h")
-	source "char_dev.h"
-
-	source "char_dev.c"
-}
-
-module char_dev_stub extends char_dev_api {
-	@IncludeExport(path="drivers",target_name="char_dev.h")
-	source "char_dev_stub.h"
-
-	source "char_dev_stub.c"
-}

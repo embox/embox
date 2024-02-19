@@ -36,18 +36,4 @@ struct dev_module;
 
 #endif /* __GNUC__ */
 
-struct idesc;
-struct dev_module;
-
-extern int char_dev_init_all(void);
-extern int char_dev_register(const struct dev_module *cdev);
-extern int char_dev_unregister(struct dev_module *cdev);
-extern int char_dev_default_fstat(struct idesc *idesc, void *buff);
-extern int char_dev_default_open(struct idesc *idesc, void *source);
-extern void char_dev_default_close(struct idesc *idesc);
-
-static inline struct dev_module *idesc_to_dev_module(struct idesc *desc) {
-	return NULL;
-}
-
 #endif /* DEVICE_H_ */
