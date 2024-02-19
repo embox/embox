@@ -13,11 +13,11 @@
 #include <stdint.h>
 #include <termios.h>
 
+#include <framework/mod/options.h>
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sync/mutex.h>
 #include <lib/libds/ring.h>
 
-#include <framework/mod/options.h>
 #include <module/embox/driver/tty/tty.h>
 
 /* Defaults */
@@ -34,20 +34,27 @@ struct tty {
 	struct idesc *idesc;
 	const struct tty_ops *ops;
 
-	struct termios    termios;
+	struct termios termios;
 
-	struct mutex      lock; /* serialize operations on tty, also used in pty */
+	/* serialize operations on tty, also used in pty */
+	struct mutex lock;
 
-	struct ring       rx_ring;
-	uint16_t          rx_buff[TTY_RX_BUFF_SZ]; /* flag (MSB) and char (LSB) */
+	struct ring rx_ring;
 
-	struct ring       i_ring;
-	char              i_buff[TTY_IO_BUFF_SZ];
-	struct ring       i_canon_ring; /* cooked range inside the ring buffer */
+	/* flag (MSB) and char (LSB) */
+	uint16_t rx_buff[TTY_RX_BUFF_SZ];
 
-	struct ring       o_ring;
-	char              o_buff[TTY_IO_BUFF_SZ];
-	pid_t             pgrp; /* process group (TODO: lonely process now) */
+	struct ring i_ring;
+	char i_buff[TTY_IO_BUFF_SZ];
+
+	/* cooked range inside the ring buffer */
+	struct ring i_canon_ring;
+
+	struct ring o_ring;
+	char o_buff[TTY_IO_BUFF_SZ];
+
+	/* process group (TODO: lonely process now) */
+	pid_t pgrp;
 };
 
 struct tty_ops {

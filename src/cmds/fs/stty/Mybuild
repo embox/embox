@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.fs
 
 @AutoCmd
 @Cmd(name = "stty",
@@ -6,20 +6,18 @@ package embox.cmd
 	man = '''
 		NAME
 			stty - change and print terminal settings
-
 		SYNOPSIS
 			stty [-F DEVICE] [SETTING]...
-
 		SETTINGS
 			N - set the input and output speeds to N bauds
 			speed - print the terminal speed
-
 		AUTHORS
 			Aleksey Zhmulin
 	''')
 module stty {
 	source "stty.c"
 
-	depends embox.compat.posix.termios
-	depends embox.compat.posix.util.getopt
+	@NoRuntime depends embox.compat.posix.termios
+	@NoRuntime depends embox.compat.posix.util.getopt
+	@NoRuntime depends embox.compat.posix.file_system
 }

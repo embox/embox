@@ -10,11 +10,11 @@
 #ifndef MEM_MISC_UTIL_POOL_H_
 #define MEM_MISC_UTIL_POOL_H_
 
-
 #include <stddef.h>
-#include <util/macro.h>
-#include <lib/libds/slist.h>
+
 #include <lib/libds/bitmap.h>
+#include <lib/libds/slist.h>
+#include <util/macro.h>
 
 #include <module/embox/mem/pool.h>
 
@@ -53,50 +53,50 @@ struct pool {
  * @param specific attributes like aligned
  */
 #if defined __LCC__
-#define POOL_DEF_ATTR(name, object_type, size, attr) \
-	static union { \
-		object_type object; \
-		struct slist_link free_link; \
-	} __pool_storage ## name[size] \
-		attr __attribute__((section(".bss..reserve.pool,\"aw\";#")));  \
-	static struct pool name = { \
-			.memory = __pool_storage ## name, \
-			.bound_free = __pool_storage ## name, \
-			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(__pool_storage ## name[0]), \
-			.pool_size = sizeof(__pool_storage ## name), \
-			POOL_BLOCKS_INIT \
+#define POOL_DEF_ATTR(name, object_type, size, attr)             \
+	static union {                                               \
+		object_type object;                                      \
+		struct slist_link free_link;                             \
+	} __pool_storage##name[size] attr                            \
+	    __attribute__((section(".bss..reserve.pool,\"aw\";#"))); \
+	static struct pool name = {                                  \
+	    .memory = __pool_storage##name,                          \
+	    .bound_free = __pool_storage##name,                      \
+	    .free_blocks = SLIST_INIT(&name.free_blocks),            \
+	    .obj_size = sizeof(__pool_storage##name[0]),             \
+	    .pool_size = sizeof(__pool_storage##name),               \
+	    POOL_BLOCKS_INIT,                                        \
 	};
 
 #else
-#define POOL_DEF_ATTR(name, object_type, size, attr) \
-	static union { \
-		object_type object; \
-		struct slist_link free_link; \
-	} __pool_storage ## name[size] \
-		attr __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#")));  \
-	static struct pool name = { \
-			.memory = __pool_storage ## name, \
-			.bound_free = __pool_storage ## name, \
-			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(__pool_storage ## name[0]), \
-			.pool_size = sizeof(__pool_storage ## name), \
-			POOL_BLOCKS_INIT \
+#define POOL_DEF_ATTR(name, object_type, size, attr)                     \
+	static union {                                                       \
+		object_type object;                                              \
+		struct slist_link free_link;                                     \
+	} __pool_storage##name[size] attr                                    \
+	    __attribute__((section(".bss..reserve.pool,\"aw\",%nobits;#"))); \
+	static struct pool name = {                                          \
+	    .memory = __pool_storage##name,                                  \
+	    .bound_free = __pool_storage##name,                              \
+	    .free_blocks = SLIST_INIT(&name.free_blocks),                    \
+	    .obj_size = sizeof(__pool_storage##name[0]),                     \
+	    .pool_size = sizeof(__pool_storage##name),                       \
+	    POOL_BLOCKS_INIT                                                 \
 	};
 
 #define POOL_DEF_SECTION_ATTR(name, object_type, size, section_name, attr) \
-	static union { \
-		object_type object; \
-		struct slist_link free_link; \
-	} __pool_storage ## name[size] \
-		attr __attribute__((section(section_name ",\"aw\",%nobits;#")));  \
-	static struct pool name = { \
-			.memory = __pool_storage ## name, \
-			.bound_free = __pool_storage ## name, \
-			.free_blocks = SLIST_INIT(&name.free_blocks),\
-			.obj_size = sizeof(__pool_storage ## name[0]), \
-			.pool_size = sizeof(__pool_storage ## name), \
-			POOL_BLOCKS_INIT \
+	static union {                                                         \
+		object_type object;                                                \
+		struct slist_link free_link;                                       \
+	} __pool_storage##name[size] attr                                      \
+	    __attribute__((section(section_name ",\"aw\",%nobits;#")));        \
+	static struct pool name = {                                            \
+	    .memory = __pool_storage##name,                                    \
+	    .bound_free = __pool_storage##name,                                \
+	    .free_blocks = SLIST_INIT(&name.free_blocks),                      \
+	    .obj_size = sizeof(__pool_storage##name[0]),                       \
+	    .pool_size = sizeof(__pool_storage##name),                         \
+	    POOL_BLOCKS_INIT                                                   \
 	};
 #endif
 
@@ -108,8 +108,8 @@ struct pool {
  * @param type of objects in cache
  * @param count of objects in cache
  */
- #define POOL_DEF(name, object_type, size) POOL_DEF_ATTR(name, object_type, size, )
-
+#define POOL_DEF(name, object_type, size) \
+	POOL_DEF_ATTR(name, object_type, size, )
 
 /**
  * allocate single object from the cache and return it to the caller
