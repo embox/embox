@@ -21,7 +21,7 @@ module core {
 		"usb_config.c"
 
 	source "usb_driver.c"
-	depends embox.driver.char_dev
+	depends embox.device.char_dev_api
 }
 
 module hub {
