@@ -22,7 +22,7 @@ struct idesc {
 	const struct idesc_ops *idesc_ops;
 	const struct idesc_xattrops *idesc_xattrops;
 	unsigned int idesc_flags;
-	int idesc_count;
+	int idesc_usage_count;
 };
 
 /**

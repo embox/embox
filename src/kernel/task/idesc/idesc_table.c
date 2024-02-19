@@ -33,7 +33,7 @@ int idesc_table_add(struct idesc_table *t, struct idesc *idesc, int cloexec) {
 		return -EMFILE;
 	}
 
-	idesc->idesc_count++;
+	idesc->idesc_usage_count++;
 
 	if (cloexec) {
 		idesc_cloexec_set(idesc);
@@ -53,7 +53,7 @@ int idesc_table_lock(struct idesc_table *t, struct idesc *idesc, int idx,
 
 	index_lock(&t->indexator, idx);
 
-	idesc->idesc_count++;
+	idesc->idesc_usage_count++;
 
 	if (cloexec) {
 		idesc_cloexec_set(idesc);
@@ -81,7 +81,7 @@ void idesc_table_del(struct idesc_table *t, int idx) {
 	assert(idesc);
 	assert(idesc->idesc_ops && idesc->idesc_ops->close);
 
-	if (!(--idesc->idesc_count)) {
+	if (!(--idesc->idesc_usage_count)) {
 		idesc->idesc_ops->close(idesc);
 	}
 
@@ -130,7 +130,7 @@ static int idesc_table_idx_copy(struct idesc_table *t, int idx,
 		return -1;
 	}
 
-	idesc->idesc_count++;
+	idesc->idesc_usage_count++;
 
 	if (cloexec) {
 		idesc_cloexec_set(idesc);
