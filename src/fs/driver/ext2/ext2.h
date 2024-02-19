@@ -16,12 +16,11 @@
 #include <string.h>
 
 #include <fs/journal.h>
-#include <fs/super_block.h>
 
 #include <endian.h>
 #include <swab.h>
 
-
+#include "fs/ext2_balloc.h"
 
 /* FIXME: prefix with EXT2_ */
 #define SECTOR_SIZE 512
@@ -545,37 +544,30 @@ struct ext2_xattr_ent {
 };
 
 struct ext2_xattr_hdr {
-	uint32_t	h_magic;
-	uint32_t	h_refcount;
-	uint32_t	h_blocks;
-	uint32_t	h_hash;
-	uint8_t		reserved[16];
-	struct ext2_xattr_ent
-			h_entries[];
+	uint32_t                h_magic;
+	uint32_t                h_refcount;
+	uint32_t                h_blocks;
+	uint32_t                h_hash;
+	uint8_t	                reserved[16];
+	struct ext2_xattr_ent   h_entries[];
 };
 
 #define EXT2_XATTR_HDR_MAGIC 0xea020000
 #define EXT2_XATTR_PAD 4
 
 struct inode;
-/* balloc.c */
-extern uint32_t ext2_alloc_block(struct inode *node, uint32_t goal);
-extern void ext2_free_block(struct inode *node, uint32_t bit);
+struct super_block;
 
 extern int ext2_read_sector(struct super_block *sb, char *buffer,
 		uint32_t count, uint32_t sector);
 extern int ext2_write_sector(struct super_block *sb, char *buffer,
 		uint32_t count, uint32_t sector);
-extern struct ext2_gd* ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi);
 
 extern int ext2_write_gdblock(struct super_block *sb);
 extern int ext2_write_sblock(struct super_block *sb);
 
 extern void *ext2_buff_alloc(struct ext2_fs_info *fsi, size_t size);
 extern int ext2_buff_free(struct ext2_fs_info *fsi, char *buff);
-
-extern uint32_t ext2_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
-extern int ext2_unsetbit(uint32_t *bitmap, uint32_t bit);
 
 extern int ext2fs_listxattr(struct inode *node, char *list, size_t len)
 	__attribute__((weak));

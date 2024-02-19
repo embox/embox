@@ -6,37 +6,13 @@
  * @author Andrey Gazukin
  */
 
-/* This files manages blocks allocation and deallocation.
- *
- * The entry points into this file are:
- *   discard_preallocated_blocks:	Discard preallocated blocks.
- *   alloc_block:	somebody wants to allocate a block; find one.
- *   free_block:	indicate that a block is available for new allocation.
- *
- * Created:
- *   June 2010 (Evgeniy Ivanov)
- */
+#include <stdint.h>
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <fs/fs_driver.h>
-#include <fs/vfs.h>
 #include <fs/inode.h>
-#include <fs/ext2.h>
-#include <fs/hlpr_path.h>
-#include <lib/libds/array.h>
-#include <embox/unit.h>
-#include <drivers/block_dev.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
 
-#include <fs/super_block.h>
-#include <fs/file_desc.h>
+#include <fs/ext2.h>
+
+#include <fs/ext2_balloc.h>
 
 /* help function */
 
@@ -139,7 +115,8 @@ struct ext2_gd *ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi)
 	return &fsi->e2fs_gd[bnum];
 }
 
-static uint32_t ext2_alloc_block_bit(struct inode *node, uint32_t goal) { /* try to allocate near this block */
+static uint32_t ext2_alloc_block_bit(struct inode *node, uint32_t goal) {
+	 /* try to allocate near this block */
 	uint32_t block;	/* allocated block */
 	int word;			/* word in block bitmap */
 	uint32_t bit;

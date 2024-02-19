@@ -14,6 +14,9 @@ module ext2 {
 	@IncludeExport(path="fs")
 	source "ext2.h"
 
+	@IncludeExport(path="fs")
+	source "ext2_balloc.h"
+
 	depends embox.fs.node
 	depends embox.fs.journal
 	depends embox.mem.page_api
