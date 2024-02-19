@@ -21,7 +21,6 @@
 #include <mem/misc/pool.h>
 
 #include <drivers/device.h>
-#include <drivers/char_dev.h>
 #include <drivers/serial/uart_dev.h>
 
 ARRAY_SPREAD_DECLARE(struct uart *const, __uart_device_registry);
