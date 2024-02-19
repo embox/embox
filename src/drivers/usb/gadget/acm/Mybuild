@@ -6,7 +6,6 @@ module f_acm {
 	source "f_acm.c"
 	source "acm_tty.c"
 
-  depends embox.driver.char_dev
   depends embox.driver.serial.core
   depends embox.driver.serial.diag
 }
