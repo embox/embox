@@ -12,5 +12,4 @@ module rpi_mini_uart extends embox.driver.serial.diag {
 	depends embox.driver.periph_memory
 	depends core
 	//depends diag
-	depends embox.driver.char_dev_api
 }
