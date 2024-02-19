@@ -23,6 +23,6 @@ module vc {
 	depends embox.driver.input.core
 	depends embox.driver.input.keyboard.i8042_keyboard
 
-	depends embox.driver.char_dev
+	depends embox.device.char_dev_api
 }
 

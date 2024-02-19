@@ -23,6 +23,7 @@ module spi {
 	source "spi_devfs.c"
 
 	depends core
+	depends embox.device.char_dev_api
 }
 
 module omap3_poll {

@@ -11,7 +11,6 @@
 #include <drivers/common/memory.h>
 
 #include <drivers/amba_pnp.h>
-#include <drivers/char_dev.h>
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <kernel/irq.h>

@@ -27,6 +27,10 @@ struct dev_module **get_cdev_tab(void) {
 extern void devfs_notify_new_module(struct dev_module *devmod);
 extern void devfs_notify_del_module(struct dev_module *devmod);
 
+struct dev_module *idesc_to_dev_module(struct idesc *idesc) {
+	return idesc->idesc_priv;
+}
+
 static int char_dev_register_static(struct dev_module *cdev) {
 	int cdev_id;
 

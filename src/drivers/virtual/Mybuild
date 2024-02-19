@@ -4,7 +4,7 @@ module null {
 	source "null.c"
 
 	depends embox.fs.driver.devfs
-	depends embox.driver.char_dev
+	depends embox.device.char_dev_api
 }
 
 module zero {
@@ -12,7 +12,7 @@ module zero {
 
 	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
-	depends embox.driver.char_dev
+	depends embox.device.char_dev_api
 }
 
 module mem {
@@ -20,16 +20,6 @@ module mem {
 
 	depends embox.compat.libc.all
 	depends embox.fs.driver.devfs
-	depends embox.driver.char_dev
+	depends embox.device.char_dev_api
 	depends embox.kernel.task.idesc.idesc_mmap
-}
-
-module tty_stub {
-	option string tty_name="ttyS1"
-	
-	source "tty_stub.c"
-
-	depends embox.compat.posix.util.sleep
-	depends embox.fs.driver.devfs
-	depends embox.driver.char_dev
 }

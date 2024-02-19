@@ -1,0 +1,10 @@
+package embox.device
+
+module char_dev_api {
+	option string log_level="LOG_NONE"
+	option number dev_quantity=32
+
+	@IncludeExport(path="drivers")
+	source "char_dev.h"
+	source "char_dev.c"
+}
