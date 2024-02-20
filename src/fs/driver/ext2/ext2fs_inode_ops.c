@@ -63,10 +63,6 @@ static int ext2fs_delete(struct inode *node) {
 	return 0;
 }
 
-struct inode *ext2_lookup(char const *name, struct inode const *dir) {
-	return NULL;
-}
-
 int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
 
 	char name_buff[NAME_MAX];
@@ -171,9 +167,12 @@ static int ext2fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
+extern struct inode *ext2fs_lookup(char const *name, struct inode const *dir);
+
 struct inode_operations ext2_iops = {
 	.ino_create  = ext2fs_create,
 	.ino_remove  = ext2fs_delete,
+	.ino_lookup  = ext2fs_lookup,
 	.ino_iterate = ext2_iterate,
 	.ino_truncate = ext2fs_truncate,
 

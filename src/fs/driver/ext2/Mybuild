@@ -1,6 +1,7 @@
 package embox.fs.driver
 
-module ext2 {
+@DefaultImpl(ext2_oldfs)
+abstract module ext2 {
 	option number inode_quantity=64
 	option number ext2_descriptor_quantity=4
 
@@ -18,8 +19,13 @@ module ext2 {
 	@IncludeExport(path="fs")
 	source "ext2_balloc.h"
 
-	depends embox.fs.node
 	depends embox.fs.journal
 	depends embox.mem.page_api
 	depends embox.mem.pool
+}
+
+module ext2_oldfs extends ext2 {
+	source "ext2fs_oldfs.c"
+
+	depends embox.fs.node
 }
