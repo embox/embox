@@ -6,40 +6,26 @@
  * @author Anton Kozlov -- original implementation
  * @author Denis Deryugin <deryugin.denis@gmail.com> -- port to new vfs
  */
-#include <stdlib.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <sys/uio.h>
+
+#include <stddef.h>
 
 #include <drivers/char_dev.h>
-#include <util/err.h>
-#include <util/macro.h>
 
-#define NULL_DEV_NAME null
-
-static ssize_t null_write(struct idesc *desc, const struct iovec *iov,
-    int cnt) {
-	int i;
-	ssize_t ret_size;
-
-	ret_size = 0;
-	for (i = 0; i < cnt; i++) {
-		ret_size += iov[i].iov_len;
-	}
-
-	return ret_size;
-}
-
-static ssize_t null_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t null_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	return 0;
 }
 
-static const struct idesc_ops null_idesc_ops = {
-    .open = char_dev_default_open,
-    .close = char_dev_default_close,
-    .fstat = char_dev_default_fstat,
-    .id_readv = null_read,
-    .id_writev = null_write,
+static ssize_t null_write(struct char_dev *cdev, const void *buf,
+    size_t nbyte) {
+	return nbyte;
+}
+
+static const struct char_dev_ops null_cdev_ops = {
+    .read = null_read,
+    .write = null_write,
 };
 
-CHAR_DEV_DEF(NULL_DEV_NAME, &null_idesc_ops, NULL);
+static struct char_dev null_cdev = CHAR_DEV_INIT(null_cdev, "null",
+    &null_cdev_ops);
+
+CHAR_DEV_REGISTER(&null_cdev);
