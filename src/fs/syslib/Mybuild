@@ -16,7 +16,7 @@ module fs_full extends file {
 	depends embox.fs.syslib.kfile.kfile_oldfs
 	depends embox.security.api
 	depends embox.compat.posix.util.gettimeofday /* kfile_change_stat */
-	depends perm
+	depends embox.fs.syslib.perm
 }
 
 module fs_none extends file {
@@ -36,7 +36,7 @@ module file_system_full extends file_system {
 	source "kfsop.c"
 	source "fsop.c"
 
-	depends perm
+	depends embox.fs.syslib.perm
 
 	depends fs_full        // kfile_fill_stat
 
@@ -50,23 +50,4 @@ module file_system_full extends file_system {
 	@NoRuntime depends embox.lib.libds
 
 	option number flock_quantity=128
-}
-
-@DefaultImpl(perm_full)
-abstract module perm {
-}
-
-module perm_full extends perm {
-	source "perm.c"
-
-	depends embox.compat.posix.util.environ
-	depends embox.compat.posix.proc.uid
-	depends embox.security.api
-	/* TODO tsort loop
-	depends embox.fs.core
-	*/
-}
-
-module perm_stub extends perm {
-	source "perm_stub.c"
 }
