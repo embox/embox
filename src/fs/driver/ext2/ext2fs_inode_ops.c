@@ -32,35 +32,33 @@ static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode
 	int rc;
 
 	if (S_ISDIR(node->i_mode)) {
-		if (0 != (rc = ext2_mkdir(node, parent_node))) {
-			return -rc;
-		}
+		rc = ext2_mkdir(node, parent_node);
 	} else {
-		if (0 != (rc = ext2_create(node, parent_node))) {
-			return -rc;
-		}
+		rc = ext2_create(node, parent_node);
 	}
-	return 0;
+	return -rc;
 }
 
 static int ext2fs_delete(struct inode *node) {
 	int rc;
 	struct inode *parents;
 
-	if (NULL == (parents = vfs_subtree_get_parent(node))) {
+	parents = vfs_subtree_get_parent(node);
+	if (NULL == parents) {
 		rc = ENOENT;
 		return -rc;
 	}
 
-	if (0 != (rc = ext2_unlink(parents, node))) {
+	rc = ext2_unlink(parents, node);
+	if (0 != rc) {
 		return -rc;
 	}
 
 	return 0;
 }
 
-int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
-
+int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
+					struct dir_ctx *dir_ctx) {
 	char name_buff[NAME_MAX];
 	struct ext2_fs_info *fsi;
 	struct ext2_file_info *dir_fi;
@@ -82,7 +80,8 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, stru
 
 	dir_fi->f_pointer = 0;
 	while (dir_fi->f_pointer < (long) dir_fi->f_di.i_size) {
-		if (0 != (rc = ext2_buf_read_file(parent, &buf, &buf_size))) {
+		rc = ext2_buf_read_file(parent, &buf, &buf_size);
+		if (0 != rc) {
 			goto out;
 		}
 		if (buf_size != fsi->s_block_size || buf_size == 0) {
@@ -127,7 +126,8 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, stru
 			inode_priv_set(next, fi);
 
 			/* Load permisiions and credentials. */
-			if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
+			fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
+			if (NULL == fi->f_buf) {
 				rc = ENOSPC;
 				goto out;
 			}
