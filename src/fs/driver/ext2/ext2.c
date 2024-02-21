@@ -376,18 +376,15 @@ int ext2_read_inode(struct inode *node, uint32_t inumber) {
  * Given an offset in a file, find the disk block number that
  * contains that block.
  */
-static int ext2_block_map(struct inode *node, int32_t file_block,
-		uint32_t *disk_block_p) {
+static int ext2_block_map(struct super_block *sb,
+				struct ext2_fs_info *fsi, struct ext2_file_info *fi,
+				int32_t file_block, uint32_t *disk_block_p) {
 	unsigned int level;
 	int32_t ind_cache;
 	int32_t ind_block_num;
 	size_t rsize;
 	int32_t *buf;
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
 
-	fi = inode_priv(node);
-	fsi = node->i_sb->sb_data;
 	buf = (void *) fi->f_buf;
 
 	/*
@@ -458,7 +455,7 @@ static int ext2_block_map(struct inode *node, int32_t file_block,
 		 * of a filesystem block.
 		 * However we don't do this very often anyway...
 		 */
-		rsize = ext2_read_sector(node->i_sb, (char *) buf, 1, ind_block_num);
+		rsize = ext2_read_sector(sb, (char *) buf, 1, ind_block_num);
 
 		if (rsize * fsi->s_block_size != fsi->s_block_size) {
 			return EIO;
@@ -500,7 +497,7 @@ int ext2_buf_read_file(struct inode *node, char **buf_p, size_t *size_p) {
 	block_size = fsi->s_block_size; /* no fragment */
 
 	if (file_block != fi->f_buf_blkno) {
-		if (0 != (rc = ext2_block_map(node, file_block, &disk_block))) {
+		if (0 != (rc = ext2_block_map(node->i_sb, fsi, fi, file_block, &disk_block))) {
 			return rc;
 		}
 
@@ -564,7 +561,7 @@ static int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
 		memcpy(namebuf, fi->f_di.i_block, link_len);
 	} else {
 		/* Read file for symbolic link */
-		if (0 != (rc = ext2_block_map(node, (int32_t) 0, &disk_block))) {
+		if (0 != (rc = ext2_block_map(sb, sb->sb_data, fi, (int32_t) 0, &disk_block))) {
 			return rc;
 		}
 		if (1 != ext2_read_sector(sb, fi->f_buf, 1, disk_block)) {
@@ -717,7 +714,7 @@ size_t ext2_write_file(struct inode *node, char *buf, size_t size) {
 	while (1) {
 		file_block = lblkno(fsi, fi->f_pointer);
 
-		if (0 != ext2_block_map(node, file_block, &disk_block)) {
+		if (0 != ext2_block_map(node->i_sb, fsi, fi, file_block, &disk_block)) {
 			return 0;
 		}
 
@@ -1393,7 +1390,7 @@ static int ext2_new_block(struct inode *node, long position) {
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;
 
-	if (0 != (rc = ext2_block_map(node, lblkno(fsi, position), &b))) {
+	if (0 != (rc = ext2_block_map(node->i_sb, fsi, fi, lblkno(fsi, position), &b))) {
 		return rc;
 	}
 	/* Is another block available? */
@@ -1701,7 +1698,7 @@ static int ext2_free_inode(struct inode *node) { /* ext2_file_info to free */
 
 	/* free all data block of file */
 	for(pos = 0; pos <= fi->f_di.i_size; pos += fsi->s_block_size) {
-		if (0 != (rc = ext2_block_map(node, lblkno(fsi, pos), &b))) {
+		if (0 != (rc = ext2_block_map(node->i_sb, fsi, fi, lblkno(fsi, pos), &b))) {
 			return rc;
 		}
 		ext2_free_block(node, b);
@@ -1866,7 +1863,7 @@ static int ext2_dir_operation(struct inode *node, char *string, ino_t *numb,
 	}
 
 	for (; pos < fi->f_di.i_size; pos += fsi->s_block_size) {
-		if (0 != (rc = ext2_block_map(node, lblkno(fsi, pos), &b))) {
+		if (0 != (rc = ext2_block_map(node->i_sb, fsi, fi, lblkno(fsi, pos), &b))) {
 			return rc;
 		}
 
