@@ -37,7 +37,6 @@ static int ext2_new_block(struct inode *node, long position);
 static int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
 
 extern int ext2_read_gdblock(struct super_block *sb);
-extern int ext2_mount_entry(struct inode *node);
 
 /*
  * help function
@@ -143,8 +142,9 @@ static int ext2_shift_culc(struct ext2_file_info *fi,
 	return 0;
 }
 
+#if 0
 /* set node type by file system file type */
-static mode_t ext2_type_to_mode_fmt(uint8_t e2d_type) {
+mode_t ext2_type_to_mode_fmt(uint8_t e2d_type) {
 	switch (e2d_type) {
 	case EXT2_FT_REG_FILE: return S_IFREG;
 	case EXT2_FT_DIR: return S_IFDIR;
@@ -155,6 +155,7 @@ static mode_t ext2_type_to_mode_fmt(uint8_t e2d_type) {
 	default: return 0;
 	}
 }
+#endif
 
 static uint8_t ext2_type_from_mode_fmt(mode_t mode) {
 	switch (mode & S_IFMT) {
@@ -958,112 +959,6 @@ int ext2_read_gdblock(struct super_block *sb) {
 out:
 	ext2_buff_free(fsi, gdbuf);
 	return ret;
-}
-
-int ext2_mount_entry(struct inode *dir_node) {
-	int rc;
-	char *buf;
-	size_t buf_size;
-	struct ext2fs_direct *dp, *edp;
-	struct ext2_file_info *dir_fi, *fi;
-	struct ext2_fs_info *fsi;
-	char *name;
-	struct inode *node;
-	mode_t mode;
-	char name_buff[NAME_MAX];
-
-	rc = 0;
-
-	fsi = dir_node->i_sb->sb_data;
-
-	if (0 != ext2_open(dir_node)) {
-		goto out;
-	}
-
-	dir_fi = inode_priv(dir_node);
-
-	dir_node->i_mode = dir_fi->f_di.i_mode;
-	dir_node->i_owner_id = dir_fi->f_di.i_uid;
-	dir_node->i_group_id = dir_fi->f_di.i_gid;
-
-	dir_fi->f_pointer = 0;
-	while (dir_fi->f_pointer < (long) dir_fi->f_di.i_size) {
-		if (0 != (rc = ext2_buf_read_file(dir_node, &buf, &buf_size))) {
-			goto out;
-		}
-		if (buf_size != fsi->s_block_size || buf_size == 0) {
-			rc = EIO;
-			goto out;
-		}
-
-		dp = (struct ext2fs_direct *) buf;
-		edp = (struct ext2fs_direct *) (buf + buf_size);
-
-		for (; dp < edp; dp = (void *) ((char *) dp +
-								fs2h16(dp->e2d_reclen))) {
-			if (fs2h16(dp->e2d_reclen) <= 0) {
-				goto out;
-			}
-			if (fs2h32(dp->e2d_ino) == 0) {
-				continue;
-			}
-
-			/* set null determine name */
-			name = (char *) &dp->e2d_name;
-
-			memcpy(name_buff, name, fs2h16(dp->e2d_namlen));
-			name_buff[fs2h16(dp->e2d_namlen)] = '\0';
-
-			if(0 != path_is_dotname(name_buff, dp->e2d_namlen)) {
-				/* dont need create dot or dotdot node */
-				continue;
-			}
-
-
-
-			fi = ext2_fi_alloc();
-			if (!fi) {
-				rc = ENOMEM;
-				goto out;
-			}
-
-			mode = ext2_type_to_mode_fmt(dp->e2d_type);
-
-			node = vfs_subtree_create(dir_node, name_buff, mode);
-			if (!node) {
-				ext2_fi_free(fi);
-				rc = ENOMEM;
-				goto out;
-			}
-
-			memset(fi, 0, sizeof(struct ext2_file_info));
-			fi->f_num = fs2h32(dp->e2d_ino);
-
-			node->i_sb = dir_node->i_sb;
-			inode_size_set(node, 0);
-			inode_priv_set(node, fi);
-
-			if (S_ISDIR(node->i_mode)) {
-				rc = ext2_mount_entry(node);
-			} else {
-				/* read inode into fi->f_di*/
-				if (0 == ext2_open(node)) {
-					/* Load permisiions and credentials. */
-					assert((node->i_mode & S_IFMT) == (fi->f_di.i_mode & S_IFMT));
-					node->i_mode = fi->f_di.i_mode;
-					node->i_owner_id = fi->f_di.i_uid;
-					node->i_group_id = fi->f_di.i_gid;
-				}
-				ext2_close(node);
-			}
-		}
-		dir_fi->f_pointer += buf_size;
-	}
-
-out:
-	ext2_close(dir_node);
-
-	return rc;
 }
 
 static int ext2_dir_operation(struct inode *node, char *string, ino_t *numb,

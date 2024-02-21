@@ -18,7 +18,6 @@
 
 extern struct ext2_file_info *ext2_fi_alloc(void);
 
-extern int ext2_mount_entry(struct inode *node);
 
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 extern int ext2_read_inode(struct inode *node, uint32_t);
@@ -34,9 +33,6 @@ static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode
 
 	if (S_ISDIR(node->i_mode)) {
 		if (0 != (rc = ext2_mkdir(node, parent_node))) {
-			return -rc;
-		}
-		if (0 != (rc = ext2_mount_entry(node))) {
 			return -rc;
 		}
 	} else {
