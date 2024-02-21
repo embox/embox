@@ -2070,7 +2070,6 @@ static int ext2_new_node(struct inode *i_new, struct inode *i_dir) {
 static int ext2_unlink_file(struct inode *dir_node, struct inode *node) {
 	int rc;
 
-
 	if ((0 != (rc = ext2_open(dir_node))) || (0 != (rc = ext2_free_inode(node)))) {
 		return rc;
 	}
@@ -2225,99 +2224,3 @@ void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new) {
 
 }
 #endif
-
-
-
-
-/*
- int ext2_fs_slink() {
-	phys_bytes len;
-	struct ext2_file_info *sip;            inode containing symbolic link
-	struct ext2_file_info *dir_fi;          directory containing link
-	int r;               error code
-	char string[NAME_MAX];        last component of the new dir's path name
-	char* link_target_buf = NULL;        either sip->i_block or bp->b_data
-	struct buf *bp = NULL;     disk buffer for link
-
-	caller_uid = (uid_t) fs_m_in.REQ_UID;
-	caller_gid = (gid_t) fs_m_in.REQ_GID;
-
-	Copy the link name's last component
-	len = fs_m_in.REQ_PATH_LEN;
-	if (len > NAME_MAX || len > EXT2_NAME_MAX) {
-		return(ENAMETOOLONG);
-	}
-
-	r = sys_safecopyfrom(VFS_PROC_NR, (cp_grant_id_t) fs_m_in.REQ_GRANT,
-	(vir_bytes) 0, (vir_bytes) string, (size_t) len);
-	if (r != OK) {
-	 	 return(r);
-	}
-	NUL(string, len, sizeof(string));
-
-	Temporarily open the dir.
-	if ( (dir_fi = get_inode(fs_dev, (ino_t) fs_m_in.REQ_INODE_NR)) == NULL) {
-	 	 return(EINVAL);
-	}
-	Create the inode for the symlink.
-	sip = new_node(dir_fi, string, (mode_t) (I_SYMBOLIC_LINK | RWX_MODES),
-	(block_t) 0);
-
-	If we can then create fast symlink (store it in inode),
-	* Otherwise allocate a disk block for the contents of the symlink and
-	* copy contents of symlink (the name pointed to) into first disk block.
-	if ((r = err_code) == OK) {
-		 if ( (fs_m_in.REQ_MEM_SIZE + 1) > sip->i_sp->s_block_size) {
-			 r = ENAMETOOLONG;
-		 } else if ((fs_m_in.REQ_MEM_SIZE + 1) <= MAX_FAST_SYMLINK_LENGTH) {
-			 r = sys_safecopyfrom(VFS_PROC_NR,
-			 (cp_grant_id_t) fs_m_in.REQ_GRANT3,
-			 (vir_bytes) 0, (vir_bytes) sip->i_block,
-			 (vir_bytes) fs_m_in.REQ_MEM_SIZE);
-			 sip->i_dirt = IN_DIRTY;
-			 link_target_buf = (char*) sip->i_block;
-		 } else {
-			 if ((bp = new_block(sip, (off_t) 0)) != NULL) {
-				 sys_safecopyfrom(VFS_PROC_NR,
-				 (cp_grant_id_t) fs_m_in.REQ_GRANT3,
-				 (vir_bytes) 0, (vir_bytes) b_data(bp),
-				 (vir_bytes) fs_m_in.REQ_MEM_SIZE);
-				 //lmfs_markdirty(bp);
-				 link_target_buf = b_data(bp);
-			 } else {
-				 r = err_code;
-			 }
-		 }
-		 if (r == OK) {
-			 assert(link_target_buf);
-			 link_target_buf[fs_m_in.REQ_MEM_SIZE] = '\0';
-			 sip->i_size = (off_t) strlen(link_target_buf);
-			 if (sip->i_size != fs_m_in.REQ_MEM_SIZE) {
-				 This can happen if the user provides a buffer
-				 * with a \0 in it. This can cause a lot of trouble
-				 * when the symlink is used later. We could just use
-				 * the strlen() value, but we want to let the user
-				 * know he did something wrong. ENAMETOOLONG doesn't
-				 * exactly describe the error, but there is no
-				 * ENAMETOOWRONG.
-
-				 r = ENAMETOOLONG;
-			 }
-		 }
-
-		 put_block(bp, DIRECTORY_BLOCK);  put_block() accepts NULL.
-
-		 if (r != OK) {
-			 sip->i_links_count = NO_LINK;
-			 if (search_dir(dir_fi, string, NULL, DELETE, IGN_PERM, 0) != OK)
-			 panic("Symbolic link vanished");
-		 }
-	}
-
-	put_inode() accepts NULL as a noop, so the below are safe.
-	put_inode(sip);
-	put_inode(dir_fi);
-
-	return(r);
- }
- */
