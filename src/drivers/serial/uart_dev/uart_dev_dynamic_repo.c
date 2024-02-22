@@ -12,6 +12,7 @@
 
 #include <drivers/device.h>
 #include <drivers/serial/uart_dev.h>
+#include <drivers/ttys.h>
 #include <kernel/irq.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
