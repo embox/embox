@@ -6,6 +6,7 @@
  * @date 30.01.2020
  */
 #include <assert.h>
+#include <errno.h>
 #include <fcntl.h>
 #include <stddef.h>
 #include <string.h>
@@ -46,7 +47,7 @@ static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
 }
 
 static int devfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	return 0;
+	return -ENOSUPP;
 }
 
 struct file_operations devfs_fops = {
