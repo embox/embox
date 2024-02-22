@@ -14,18 +14,7 @@
 #include <drivers/char_dev.h>
 #include <drivers/console/vc/vc_vga.h>
 #include <drivers/video_term.h>
-#include <embox/unit.h>
 #include <fs/file_desc.h>
-#include <kernel/task/resource/idesc.h>
-#include <mem/misc/pool.h>
-
-#define VC_DEV_NAME  "vc"
-
-#define VC_POOL_SIZE OPTION_GET(NUMBER, vc_quantity)
-
-POOL_DEF(cdev_vc_pool, struct dev_module, VC_POOL_SIZE);
-
-EMBOX_UNIT_INIT(vc_init);
 
 static struct vterm vc_vterm;
 
@@ -68,7 +57,7 @@ static int vc_status(struct idesc *idesc, int mask) {
 	return tty_status(&vc_vterm.tty, mask);
 }
 
-static int vc_open(struct idesc *idesc, void *source) {
+static int vc_open(struct char_dev *cdev, struct idesc *idesc) {
 	struct vterm_video *vc_vga;
 
 	vc_vga = vc_vga_init();
@@ -80,31 +69,15 @@ static int vc_open(struct idesc *idesc, void *source) {
 	return char_dev_default_open(idesc, source);
 }
 
-static const struct idesc_ops vc_idesc_ops;
-
-static int vc_init(void) {
-	struct dev_module *vc_dev;
-
-	vc_dev = pool_alloc(&cdev_vc_pool);
-	if (!vc_dev) {
-		return -ENOMEM;
-	}
-
-	memset(vc_dev, 0, sizeof(*vc_dev));
-	strncpy(vc_dev->name, VC_DEV_NAME, sizeof(vc_dev->name));
-	vc_dev->name[sizeof(vc_dev->name) - 1] = '\0';
-
-	vc_dev->dev_iops = &vc_idesc_ops;
-
-	return char_dev_register(vc_dev);
-}
-
-static const struct idesc_ops vc_idesc_ops = {
-    .id_readv = vc_read,
-    .id_writev = vc_write,
+static const struct char_dev_ops vc_dev_ops = {
+    .read = vc_read,
+    .write = vc_write,
     .ioctl = vc_ioctl,
     .open = vc_open,
     .close = vc_close,
     .status = vc_status,
-    .fstat = char_dev_default_fstat,
 };
+
+static struct char_dev vc_dev = CHAR_DEV_INIT(vc_dev, "vc", &vc_dev_ops);
+
+CHAR_DEV_REGISTER(&vc_dev);
