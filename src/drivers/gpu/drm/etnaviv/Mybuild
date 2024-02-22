@@ -30,5 +30,5 @@ module etnaviv_drm {
 	depends embox.driver.power.imx
 
 	depends platform.etnaviv.xml_headers
-	depends embox.device.char_dev_api
+	depends embox.device.char_dev
 }
