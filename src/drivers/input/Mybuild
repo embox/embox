@@ -38,5 +38,5 @@ module input_dev_devfs extends input_dev_handler {
 
 	source "input_dev_devfs.c"
 
-	depends embox.device.char_dev_api
+	depends embox.device.char_dev
 }
