@@ -6,5 +6,5 @@ module tun {
 	depends embox.net.entry_api
 	depends embox.net.l2.ethernet
 	depends embox.net.dev
-	depends embox.device.char_dev_api
+	depends embox.device.char_dev
 }
