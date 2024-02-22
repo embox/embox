@@ -47,7 +47,7 @@ struct spi_device;
 typedef void (*irq_spi_event_t)(struct spi_device *data, int cnt);
 
 struct spi_device {
-	struct dev_module *dev;
+	struct char_dev cdev;
 
 	uint32_t flags;
 	bool is_master;
@@ -91,18 +91,18 @@ extern int spi_select(struct spi_device *dev, int cs);
 extern int spi_set_master_mode(struct spi_device *dev);
 extern int spi_set_slave_mode(struct spi_device *dev);
 
-extern const struct idesc_ops spi_iops;
+extern const struct char_dev_ops __spi_cdev_ops;
 
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
 #define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, idx)                   \
-	struct spi_device MACRO_CONCAT(spi_device, idx);                        \
-	CHAR_DEV_DEF(dev_name, &spi_iops, &MACRO_CONCAT(spi_device, idx));      \
 	struct spi_device MACRO_CONCAT(spi_device, idx) = {                     \
+	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, idx).cdev,           \
+	        MACRO_STRING(dev_name), &__spi_cdev_ops),                       \
 	    .spi_ops = spi_dev_ops,                                             \
 	    .priv = dev_priv,                                                   \
-	    .dev = (void *)MACRO_CONCAT(__char_device_registry_ptr_, dev_name), \
-	}
+	};                                                                      \
+	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, idx))
 
 /* IOCTL-related stuff */
 #define SPI_IOCTL_CS       0x1

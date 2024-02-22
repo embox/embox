@@ -1,16 +1,13 @@
-
 package embox.driver.spi
 
 /* This is a minimal module which doesn't
  * depends on char_dev or file system */
 module core {
 	option string log_level="LOG_NONE"
-
 	option number spi_quantity = 6
 
 	@IncludeExport(path="drivers")
 	source "spi.h"
-
 	source "spi.c"
 
 	depends embox.driver.dma.dma_api
@@ -20,14 +17,16 @@ module core {
  * devices as a specific case for char devices */
 module spi {
 	option string log_level="LOG_NONE"
-	source "spi_devfs.c"
+
+	source "spi_dev.c"
 
 	depends core
-	depends embox.device.char_dev_api
+	depends embox.device.char_dev
 }
 
 module omap3_poll {
-	source "omap3_spi_poll.c", "omap3_spi_poll.h"
+	source "omap3_spi_poll.c"
+	source "omap3_spi_poll.h"
 }
 
 /*
