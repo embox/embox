@@ -176,18 +176,11 @@ int usb_whitelist_check(struct usb_dev *dev) {
 	return -EBUSY;
 }
 
-static ssize_t usb_whitelist_read(struct idesc *desc, const struct iovec *iov,
-    int cnt) {
+static ssize_t usb_whitelist_read(struct char_dev *cdev, void *buf,
+    size_t nbyte) {
 	struct usb_whitelist_conf *wl_conf;
 	int req_rules;
 	ssize_t req_size;
-	void *buf;
-	size_t nbyte;
-
-	assert(iov);
-	buf = iov->iov_base;
-	assert(cnt == 1);
-	nbyte = iov->iov_len;
 
 	wl_conf = &whitelist_conf;
 	req_rules = min(nbyte / sizeof(struct usb_whitelist_rule),
@@ -200,7 +193,7 @@ static ssize_t usb_whitelist_read(struct idesc *desc, const struct iovec *iov,
 	return req_size;
 }
 
-static int usb_whitelist_ioctl(struct idesc *idesc, int request, void *data) {
+static int usb_whitelist_ioctl(struct char_dev *cdev, int request, void *data) {
 	struct usb_whitelist_conf *wl_conf = &whitelist_conf;
 	struct usb_whitelist_rule *wl_rule = NULL;
 	int rule_id;
@@ -300,12 +293,12 @@ static int usb_whitelist_dev_init(void) {
 	return 0;
 }
 
-static struct idesc_ops usb_whitelist_iops = {
-    .open = char_dev_default_open,
-    .close = char_dev_default_close,
-    .fstat = char_dev_default_fstat,
+static const struct char_dev_ops usb_whitelist_cdev_ops = {
     .ioctl = usb_whitelist_ioctl,
-    .id_readv = usb_whitelist_read,
+    .read = usb_whitelist_read,
 };
 
-CHAR_DEV_DEF(USB_WHITELIST_DEV_NAME, &usb_whitelist_iops, NULL);
+static struct char_dev usb_whitelist_cdev = CHAR_DEV_INIT(zero_cdev, "zero",
+    &zero_cdev_ops);
+
+CHAR_DEV_REGISTER(&usb_whitelist_cdev);
