@@ -9,7 +9,7 @@ module devfs_old extends devfs {
 	source "devfs_common.c"
 	source "devfs_drv.c"
 
-	@NoRuntime depends embox.device.char_dev_api
+	depends embox.device.char_dev
 }
 
 module devfs_dvfs extends devfs {
@@ -19,7 +19,7 @@ module devfs_dvfs extends devfs {
 
 	source "devfs_notify_stub.c"
 
-	depends embox.device.char_dev_api
+	depends embox.device.char_dev
 }
 
 module devfs_stub extends devfs {

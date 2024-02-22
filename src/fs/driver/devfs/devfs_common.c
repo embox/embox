@@ -22,44 +22,23 @@
 #include <kernel/task/resource/idesc.h>
 #include <lib/libds/array.h>
 
-extern struct dev_module **get_cdev_tab(void);
 extern struct block_dev **get_bdev_tab(void);
 
 static struct idesc *devfs_open(struct inode *node, struct idesc *idesc,
     int __oflag) {
 	extern struct idesc_ops idesc_bdev_ops;
 
-	struct dev_module *dev;
-	int err;
-
-	if (!idesc) {
-		idesc = idesc_alloc();
-		if (!idesc) {
-			return NULL;
-		}
-	}
+	struct char_dev *cdev;
 
 	if (S_ISBLK(node->i_mode)) {
 		idesc_init(idesc, &idesc_bdev_ops, __oflag);
 		return idesc;
 	}
 
-	dev = inode_priv(node);
+	cdev = inode_priv(node);
+	assert(cdev);
 
-	if (__oflag & O_PATH) {
-		idesc_init(idesc, char_dev_get_default_ops(), __oflag);
-	}
-	else {
-		idesc_init(idesc, dev->dev_iops, __oflag);
-	}
-
-	err = idesc_open(idesc, dev);
-	if (err) {
-		idesc_free(idesc);
-		return NULL;
-	}
-
-	return idesc;
+	return char_dev_open(cdev, __oflag);
 }
 
 static int devfs_ioctl(struct file_desc *desc, int request, void *data) {
@@ -75,12 +54,11 @@ struct file_operations devfs_fops = {
     .ioctl = devfs_ioctl,
 };
 
-static void devfs_fill_inode(struct inode *inode, struct dev_module *devmod,
-    int flags) {
+static void devfs_fill_inode(struct inode *inode, void *priv, int flags) {
 	assert(inode);
-	assert(devmod);
+	assert(priv);
 
-	inode_priv_set(inode, devmod);
+	inode_priv_set(inode, priv);
 	inode->i_mode = flags;
 }
 
@@ -96,8 +74,8 @@ static void devfs_fill_inode(struct inode *inode, struct dev_module *devmod,
 static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 	int i;
 	struct inode *node;
+	struct char_dev *cdev;
 	struct block_dev **bdevtab = get_bdev_tab();
-	struct dev_module **cdevtab = get_cdev_tab();
 
 	if (NULL == (node = inode_new(dir->i_sb))) {
 		return NULL;
@@ -111,11 +89,9 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
 		}
 	}
 
-	for (i = 0; i < MAX_CDEV_QUANTITY; i++) {
-		if (cdevtab[i] && !strcmp(cdevtab[i]->name, name)) {
-			devfs_fill_inode(node, cdevtab[i], S_IFCHR);
-			return node;
-		}
+	if ((cdev = char_dev_find(name))) {
+		devfs_fill_inode(node, cdev, S_IFCHR);
+		return node;
 	}
 
 	inode_del(node);
@@ -138,15 +114,12 @@ static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
  */
 static int devfs_iterate(struct inode *next, char *name, struct inode *parent,
     struct dir_ctx *ctx) {
-	int i;
 	struct block_dev **bdevtab = get_bdev_tab();
-	struct dev_module **cdevtab = get_cdev_tab();
-	int offset;
-
-	i = ((intptr_t)ctx->fs_ctx);
+	struct char_dev *cdev;
+	uintptr_t i;
 
 	/* All block devices */
-	for (; i < MAX_BDEV_QUANTITY; i++) {
+	for (i = ((uintptr_t)ctx->fs_ctx); i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevtab[i]) {
 			ctx->fs_ctx = (void *)(intptr_t)i + 1;
 			devfs_fill_inode(next, block_dev_to_device(bdevtab[i]),
@@ -158,16 +131,12 @@ static int devfs_iterate(struct inode *next, char *name, struct inode *parent,
 	}
 
 	/* All char device */
-	offset = MAX_BDEV_QUANTITY;
-	for (; i < (MAX_CDEV_QUANTITY + offset); i++) {
-		if (cdevtab[i - offset]) {
-			struct dev_module *dev_module = cdevtab[i - offset];
-			ctx->fs_ctx = (void *)((intptr_t)i + 1);
-			devfs_fill_inode(next, dev_module, S_IFCHR | S_IRALL | S_IWALL);
-			strncpy(name, dev_module->name, NAME_MAX - 1);
-			name[NAME_MAX - 1] = '\0';
-			return 0;
-		}
+	cdev = (i == MAX_BDEV_QUANTITY) ? NULL : ctx->fs_ctx;
+	if ((cdev = char_dev_iterate(cdev))) {
+		ctx->fs_ctx = (void *)cdev;
+		devfs_fill_inode(next, cdev, S_IFCHR | S_IRALL | S_IWALL);
+		strcpy(name, cdev->name);
+		return 0;
 	}
 
 	/* End of directory */
@@ -201,6 +170,5 @@ int devfs_fill_sb(struct super_block *sb, const char *source) {
 	sb->sb_fops = &devfs_fops;
 	sb->sb_ops = &devfs_sbops;
 
-	char_dev_init_all();
 	return block_devs_init();
 }
