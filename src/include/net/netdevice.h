@@ -12,10 +12,11 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <net/if.h>
-#include <net/skbuff.h>
+
 #include <lib/libds/dlist.h>
+#include <net/if.h>
 #include <net/net_namespace.h>
+#include <net/skbuff.h>
 
 /**
  * Prototypes
@@ -29,7 +30,7 @@ struct sk_buff;
 #define NET_RX_DROP    1
 
 /** Largest hardware address length */
-#define MAX_ADDR_LEN 16
+#define MAX_ADDR_LEN   16
 
 /**
  * Network device statistics structure.
@@ -78,7 +79,6 @@ typedef struct net_driver {
 	int (*set_speed)(struct net_device *dev, int speed);
 } net_driver_t;
 
-
 /**
  * information for/of device header
  */
@@ -100,7 +100,7 @@ struct net_header_info {
  */
 typedef struct net_device_ops {
 	int (*build_hdr)(struct sk_buff *skb,
-			const struct net_header_info *hdr_info);
+	    const struct net_header_info *hdr_info);
 	int (*check_addr)(const void *addr);
 	int (*check_mtu)(int mtu);
 } net_device_ops_t;
@@ -110,16 +110,16 @@ typedef struct net_device_ops {
  */
 typedef struct net_device {
 	int index;
-	char name[IFNAMSIZ]; /**< Name of the interface.  */
-	unsigned char dev_addr[MAX_ADDR_LEN]; /**< hw address              */
+	char name[IFNAMSIZ];                   /**< Name of the interface.  */
+	unsigned char dev_addr[MAX_ADDR_LEN];  /**< hw address              */
 	unsigned char broadcast[MAX_ADDR_LEN]; /**< hw bcast address        */
-	unsigned short type; /**< interface hardware type      */
-	unsigned char hdr_len; /**< hardware header length      */
-	unsigned char addr_len; /**< hardware address length      */
-	unsigned int flags; /**< interface flags (a la BSD)   */
-	unsigned int mtu; /**< interface MTU value          */
-	uintptr_t base_addr; /**< device I/O address           */
-	unsigned int irq; /**< device IRQ number            */
+	unsigned short type;                   /**< interface hardware type      */
+	unsigned char hdr_len;                 /**< hardware header length      */
+	unsigned char addr_len;                /**< hardware address length      */
+	unsigned int flags;                    /**< interface flags (a la BSD)   */
+	unsigned int mtu;                      /**< interface MTU value          */
+	uintptr_t base_addr;                   /**< device I/O address           */
+	unsigned int irq;                      /**< device IRQ number            */
 	struct net_device_stats stats;
 	const struct net_device_ops *ops; /**< Hardware description  */
 	const struct net_driver *drv_ops; /**< Management operations        */
@@ -137,11 +137,11 @@ typedef struct net_device {
 /**
  * Get data private data casted to type
  */
-#define netdev_priv(dev) \
+#define netdev_priv(dev)                      \
 	({                                        \
 		const struct net_device *__dev = dev; \
 		assert(__dev != NULL);                \
-		__dev->priv;                         \
+		__dev->priv;                          \
 	})
 
 /**
@@ -149,19 +149,19 @@ typedef struct net_device {
  * @param name name to find
  * @return NULL is returned if no matching device is found.
  */
-extern struct net_device * netdev_get_by_name(const char *name);
+extern struct net_device *netdev_get_by_name(const char *name);
 
 /**
  * Allocate network device
  * @param name device name format string
  * @param callback to initialize device
  */
-extern struct net_device * netdev_alloc(const char *name,
-		int (*setup)(struct net_device *), size_t priv_size);
+extern struct net_device *netdev_alloc(const char *name,
+    int (*setup)(struct net_device *), size_t priv_size);
 
 extern void dev_net_set(struct net_device *dev, net_namespace_p net_ns);
 extern struct net_device *veth_alloc(struct net_device **v1,
-				struct net_device **v2);
+    struct net_device **v2);
 
 /**
  * Free network device
@@ -183,10 +183,11 @@ extern int netdev_unregister(struct net_device *dev);
 
 /* TODO this use only for pnet */
 extern struct hashtable *netdevs_table;
-#define netdev_foreach(device)                                                      \
-	for (char **dev_name_ptr = hashtable_get_key_first(netdevs_table);              \
-			(dev_name_ptr != NULL) && (device = netdev_get_by_name(*dev_name_ptr)); \
-			dev_name_ptr = hashtable_get_key_next(netdevs_table, dev_name_ptr))
+#define netdev_foreach(device)                                         \
+	for (char **dev_name_ptr = hashtable_get_key_first(netdevs_table); \
+	     (dev_name_ptr != NULL)                                        \
+	     && (device = netdev_get_by_name(*dev_name_ptr));              \
+	     dev_name_ptr = hashtable_get_key_next(netdevs_table, dev_name_ptr))
 
 /**
  * Pepare an interface for use.
@@ -219,14 +220,11 @@ extern int netdev_flag_down(struct net_device *dev, unsigned int flag);
  * @param dev device
  * @param macaddr - MAC devices address
  */
-extern int netdev_set_macaddr(struct net_device *dev,
-		const void *mac_addr);
+extern int netdev_set_macaddr(struct net_device *dev, const void *mac_addr);
 
 extern int netdev_set_irq(struct net_device *dev, int irq_num);
-extern int netdev_set_baseaddr(struct net_device *dev,
-		unsigned long base_addr);
-extern int netdev_set_bcastaddr(struct net_device *dev,
-		const void *bcast_addr);
+extern int netdev_set_baseaddr(struct net_device *dev, unsigned long base_addr);
+extern int netdev_set_bcastaddr(struct net_device *dev, const void *bcast_addr);
 extern int netdev_set_mtu(struct net_device *dev, int mtu);
 
 extern void netif_carrier_off(struct net_device *dev);
