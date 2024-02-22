@@ -20,7 +20,6 @@ extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 extern int ext2_read_inode(struct inode *node, uint32_t);
 extern size_t ext2_write_file(struct inode *inode, char *buf_p, size_t size);
 extern int ext2_close(struct inode *node);
-extern int ext2_open(struct inode *node);
 
 /*
  * file_operation

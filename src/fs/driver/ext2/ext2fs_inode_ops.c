@@ -116,8 +116,10 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 			//mode = ext2_type_to_mode_fmt(dp->e2d_type);
 			fi = ext2_fi_alloc();
 			if (!fi) {
+				rc = ENOSPC;
 				goto out;
 			}
+
 			memset(fi, 0, sizeof(struct ext2_file_info));
 			fi->f_num = fs2h32(dp->e2d_ino);
 
@@ -144,16 +146,19 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 			next_name[NAME_MAX - 1] = '\0';
 
 			dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
-			ext2_close(parent);
-			return 0;
+
+			rc = 0;
+			goto out;
 		}
 		dir_fi->f_pointer += buf_size;
 	}
 
+	rc = -1;
 out:
+
 	ext2_close(parent);
 
-	return -1;
+	return rc;
 }
 
 static int ext2fs_truncate (struct inode *node, off_t length) {
