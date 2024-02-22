@@ -19,7 +19,6 @@
 #include <util/log.h>
 #include <util/math.h>
 
-#include <drivers/char_dev.h>
 #include <drivers/video/fb.h>
 
 #include <framework/mod/options.h>

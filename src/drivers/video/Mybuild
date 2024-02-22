@@ -23,7 +23,6 @@ module fb {
 	@NoRuntime depends embox.compat.libc.all
 	depends fb_videomodes
 	depends fonts
-	depends embox.device.char_dev_api
 	depends embox.driver.video.fb_devfs
 }
 
