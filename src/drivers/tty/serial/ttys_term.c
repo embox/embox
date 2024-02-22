@@ -10,8 +10,8 @@
 #include <drivers/ttys.h>
 
 static inline struct uart *tty2uart(struct tty *tty) {
-	struct tty_uart *tu;
-	tu = member_cast_out(tty, struct tty_uart, tty);
+	struct serial_dev *tu;
+	tu = member_cast_out(tty, struct serial_dev, tty);
 	return tu->uart;
 }
 
@@ -40,7 +40,7 @@ static void uart_term_setup(struct tty *tty, struct termios *termios) {
 	}
 }
 
-struct tty_ops uart_tty_ops = {
+const struct tty_ops __uart_tty_ops = {
     .setup = uart_term_setup,
     .out_wake = uart_out_wake,
 };
