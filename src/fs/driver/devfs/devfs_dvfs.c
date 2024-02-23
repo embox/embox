@@ -34,9 +34,8 @@ extern int devfs_fill_sb(struct super_block *sb, const char *source);
 /* Call device-specific open() handler */
 static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 	struct inode *i_no;
-	struct dev_module *dev;
+	struct char_dev *cdev;
 	struct idesc *idesc;
-	int err;
 
 	assert(l);
 	assert(l->item);
@@ -53,28 +52,10 @@ static struct idesc *devfs_open_idesc(struct lookup *l, int __oflag) {
 		return idesc;
 	}
 
-	dev = i_no->i_privdata;
-	assert(dev);
+	cdev = i_no->i_privdata;
+	assert(cdev);
 
-	idesc = idesc_alloc();
-	if (!idesc) {
-		return NULL;
-	}
-
-	if (__oflag & O_PATH) {
-		idesc_init(idesc, char_dev_get_default_ops(), __oflag);
-	}
-	else {
-		idesc_init(idesc, dev->dev_iops, __oflag);
-	}
-
-	err = idesc_open(idesc, dev);
-	if (err) {
-		idesc_free(idesc);
-		return NULL;
-	}
-
-	return idesc;
+	return char_dev_open(cdev, __oflag);
 }
 
 struct block_dev *bdev_by_path(const char *dev_name) {

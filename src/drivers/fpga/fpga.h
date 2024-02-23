@@ -6,20 +6,21 @@
  * @date 27.01.2020
  */
 
-#ifndef FPGA_H
-#define FPGA_H
+#ifndef DRIVERS_FPGA_FPGA_H_
+#define DRIVERS_FPGA_FPGA_H_
 
+#include <stddef.h>
 #include <stdint.h>
 
-#include <drivers/device.h>
+#include <drivers/char_dev.h>
 #include <kernel/task/resource/idesc.h>
 
 struct fpga_ops;
 struct fpga {
-	struct dev_module *dev;
-	size_t             id;
-	struct fpga_ops   *ops;
-	void              *priv;
+	struct char_dev cdev;
+	size_t id;
+	struct fpga_ops *ops;
+	void *priv;
 };
 
 struct fpga_ops {
@@ -36,4 +37,4 @@ extern int fpga_free(struct fpga *fpga);
 extern struct fpga *fpga_by_id(size_t id);
 extern size_t fpga_max_id(void);
 
-#endif /* FPGA_H */
+#endif /* DRIVERS_FPGA_FPGA_H_ */

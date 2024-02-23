@@ -2,8 +2,9 @@
  * @file
  *
  * @date Jul 1, 2017
- * author Anton Bondarev
+ * @author Anton Bondarev
  */
+
 #include <stddef.h>
 
 #include <drivers/video/fb.h>

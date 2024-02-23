@@ -25,17 +25,16 @@
 static struct fpga fpga_tab[FPGA_MAX];
 INDEX_DEF(fpga_idx, 0, FPGA_MAX);
 
-static const struct idesc_ops fpga_iops;
+static const struct idesc_ops fpga_dev_ops;
 
-static int fpga_idesc_open(struct idesc *idesc, void *source) {
+static int fpga_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	struct fpga *fpga;
 	int err;
 
-	char_dev_default_open(idesc, source);
+	fpga = (struct fpga *)cdev;
 
-	fpga = (struct fpga *)(idesc_to_dev_module(idesc)->dev_priv);
-
-	err = fpga->ops->config_init(fpga) if (err != 0) {
+	err = fpga->ops->config_init(fpga);
+	if (err) {
 		log_error("Failed to init config for FPGA");
 		return NULL;
 	}
@@ -43,58 +42,50 @@ static int fpga_idesc_open(struct idesc *idesc, void *source) {
 	return 0;
 }
 
-static void fpga_idesc_close(struct idesc *desc) {
+static void fpga_dev_close(struct char_dev *cdev) {
 	struct fpga *fpga;
+	int err;
 
-	fpga = (struct fpga *)(idesc_to_dev_module(idesc)->dev_priv);
+	fpga = (struct fpga *)cdev;
 
-	int err = fpga->ops->config_complete(fpga);
-	if (err != 0) {
+	err = fpga->ops->config_complete(fpga);
+	if (err) {
 		log_error(".conf_complete() finished with error code %d", err);
 	}
 }
 
-static ssize_t fpga_idesc_read(struct idesc *desc, const struct iovec *iov,
-    int cnt) {
+static ssize_t fpga_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	/* Dumping FPGA config is currently NIY */
 	return 0;
 }
 
-static ssize_t fpga_idesc_write(struct idesc *desc, const struct iovec *iov,
-    int cnt) {
+static ssize_t fpga_dev_write(struct char_dev *cdev, const void *buf,
+    size_t nbyte) {
 	struct fpga *fpga;
-	int ret = 0;
+	int err;
 
-	fpga = (struct fpga *)(idesc_to_dev_module(idesc)->dev_priv);
+	fpga = (struct fpga *)cdev;
 
-	for (int i = 0; i < cnt; i++) {
-		int err = fpga->ops->config_write(fpga, iov[i].iov_base,
-		    iov[i].iov_len);
-		if (err != 0) {
-			log_error("Failed to write FPGA config");
-			return -1;
-		}
-
-		ret += iov[i].iov_len;
+	err = fpga->ops->config_write(fpga, buf, nbyte);
+	if (err) {
+		log_error("Failed to write FPGA config");
+		return -1;
 	}
 
-	return ret;
+	ret += iov[i].iov_len;
+
+	return nbyte;
 }
 
-static int fpga_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
-	/* NIY */
-	return 0;
-}
-
-static int fpga_idesc_fstat(struct idesc *idesc, void *buff) {
+static int fpga_dev_ioctl(struct idesc *idesc, int cmd, void *args) {
 	/* NIY */
 	return 0;
 }
 
 struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	size_t id;
-	char name[PATH_MAX];
 	int err;
+	char name[NAME_MAX];
 
 	memset(name, 0, sizeof(name));
 
@@ -105,15 +96,11 @@ struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	    .id = id,
 	    .ops = ops,
 	    .priv = priv,
-	    .dev = dev_module_create(name, &fpga_iops, &fpga_tab[id]),
 	};
 
-	if (fpga_tab[id].dev == NULL) {
-		index_free(&fpga_idx, id);
-		return NULL;
-	}
+	char_dev_init(&fpga_tab[id].cdev, name, &fpga_dev_ops);
 
-	err = char_dev_register(fpga_tab[id].dev);
+	err = char_dev_register(&fpga_tab[id].cdev);
 	if (err != 0) {
 		index_free(&fpga_idx, id);
 		return NULL;
@@ -130,12 +117,6 @@ int fpga_free(struct fpga *fpga) {
 	}
 
 	index_free(&fpga_idx, fpga->id);
-
-	err = dev_module_destroy(fpga->dev);
-	if (err != 0) {
-		log_error("Failed to free dev_module\n");
-		return err;
-	}
 
 	return 0;
 }
@@ -156,11 +137,10 @@ size_t fpga_max_id(void) {
 	return FPGA_MAX;
 }
 
-static const struct idesc_ops fpga_iops = {
-    .open = fpga_idesc_open,
-    .close = fpga_idesc_close,
-    .id_readv = fpga_idesc_read,
-    .id_writev = fpga_idesc_write,
-    .ioctl = fpga_idesc_ioctl,
-    .fstat = fpga_idesc_fstat,
+static const struct char_dev_ops fpga_dev_ops = {
+    .open = fpga_dev_open,
+    .close = fpga_dev_close,
+    .read = fpga_dev_read,
+    .write = fpga_dev_write,
+    .ioctl = fpga_dev_ioctl,
 };

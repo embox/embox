@@ -74,8 +74,8 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 		if (!idesc) {
 			continue;
 		}
-		idesc->idesc_count--;
-		if (idesc->idesc_count > 0) {
+		idesc->idesc_usage_count--;
+		if (idesc->idesc_usage_count > 0) {
 			idesc_wait_cleanup(idesc, &idesc_poll->wait_link);
 		}
 		else {
@@ -98,7 +98,7 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 		if (!idesc) {
 			continue;
 		}
-		idesc->idesc_count++;
+		idesc->idesc_usage_count++;
 
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
 		idesc_wait_prepare(idesc, &ip->wait_link);

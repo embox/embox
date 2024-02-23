@@ -52,7 +52,6 @@ struct input_dev {
 	enum input_dev_type type;
 
 	void *data;
-	void *fs_data;
 
 	int flags;
 #define INPUT_DEV_OPENED (1 << 0)

@@ -21,7 +21,6 @@
 #include <drivers/video/fb.h>
 #include <drivers/video/font.h>
 #include <drivers/tty.h>
-#include <drivers/char_dev.h>
 #include <kernel/task/resource/index_descriptor.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task.h>
@@ -156,7 +155,6 @@ static const struct idesc_ops fbcon_idesc_ops = {
 	.id_writev  = fbcon_idesc_write,
 	.close  = fbcon_idesc_close,
 	.ioctl  = fbcon_idesc_ioctl,
-	.fstat  = char_dev_default_fstat,
 	.status = fbcon_idesc_status,
 };
 

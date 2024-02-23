@@ -21,7 +21,7 @@ ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
 	int ret;
 	struct idesc *idesc;
 
-	if (iovcnt < 0) {
+	if (iovcnt <= 0) {
 		return SET_ERRNO(EINVAL);
 	}
 
@@ -35,7 +35,6 @@ ssize_t readv(int fd, const struct iovec *iov, int iovcnt) {
 	assert(idesc->idesc_ops->id_readv);
 
 	ret = idesc->idesc_ops->id_readv(idesc, iov, iovcnt);
-
 	if (ret < 0) {
 		return SET_ERRNO(-ret);
 	}
