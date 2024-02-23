@@ -7,6 +7,7 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 #include <string.h>
 
 #include <drivers/char_dev.h>
@@ -21,7 +22,7 @@ static ssize_t mem_write(struct char_dev *cdev, const void *buf, size_t nbyte) {
 }
 
 static void *mem_direct_access(struct char_dev *cdev, off_t off, size_t len) {
-	return (void *)off;
+	return (void *)(uintptr_t)off;
 }
 
 static const struct char_dev_ops mem_cdev_ops = {
