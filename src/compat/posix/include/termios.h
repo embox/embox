@@ -8,13 +8,11 @@
  * @author Anton Bondarev
  */
 
-#ifndef TERMIOS_H_
-#define TERMIOS_H_
+#ifndef COMPAT_POSIX_TERMIOS_H_
+#define COMPAT_POSIX_TERMIOS_H_
 
 #include <sys/ioctl.h>
 #include <sys/types.h>
-
-#include <asm/termbits.h>
 
 /* Values for termios c_iflag bit map.  POSIX Table 7-2. */
 #define BRKINT    0x0001 /* signal interrupt on break */
@@ -60,6 +58,24 @@
 #define NOFLSH    0x0080 /* disable flush after interrupt or quit */
 #define TOSTOP    0x0100 /* send SIGTTOU (job control, not implemented*/
 
+/* Values for the baud rate settings (c_cflag bits).  POSIX Table 7-6. */
+#define B0        0x0000 /* hang up the line */
+#define B50       0x0100 /* 50 baud */
+#define B75       0x0200 /* 75 baud */
+#define B110      0x0300 /* 110 baud */
+#define B134      0x0400 /* 134.5 baud */
+#define B150      0x0500 /* 150 baud */
+#define B200      0x0600 /* 200 baud */
+#define B300      0x0700 /* 300 baud */
+#define B600      0x0800 /* 600 baud */
+#define B1200     0x0900 /* 1200 baud */
+#define B1800     0x0a00 /* 1800 baud */
+#define B2400     0x0b00 /* 2400 baud */
+#define B4800     0x0c00 /* 4800 baud */
+#define B9600     0x0d00 /* 9600 baud */
+#define B19200    0x0e00 /* 19200 baud */
+#define B38400    0x0f00 /* 38400 baud */
+
 /*
  * cc_c - Control characters array.
  */
@@ -78,24 +94,6 @@
 #define VSTOP     10 /* cc_c[VSTOP]  = STOP char (^Q) */
 
 #define NCCS      11 /* Size of the array of control characters.*/
-
-/* Values for the baud rate settings.  POSIX Table 7-6. */
-#define B0        0x0000 /* hang up the line */
-#define B50       0x1000 /* 50 baud */
-#define B75       0x2000 /* 75 baud */
-#define B110      0x3000 /* 110 baud */
-#define B134      0x4000 /* 134.5 baud */
-#define B150      0x5000 /* 150 baud */
-#define B200      0x6000 /* 200 baud */
-#define B300      0x7000 /* 300 baud */
-#define B600      0x8000 /* 600 baud */
-#define B1200     0x9000 /* 1200 baud */
-#define B1800     0xA000 /* 1800 baud */
-#define B2400     0xB000 /* 2400 baud */
-#define B4800     0xC000 /* 4800 baud */
-#define B9600     0xD000 /* 9600 baud */
-#define B19200    0xE000 /* 19200 baud */
-#define B38400    0xF000 /* 38400 baud */
 
 /* Optional actions for tcsetattr().  POSIX Sec. 7.2.1.2. */
 #define TCSANOW   1 /* changes take effect immediately */
@@ -123,19 +121,6 @@ struct termios {
 	tcflag_t c_cflag; /* control mode flags */
 	tcflag_t c_lflag; /* local mode flags */
 	cc_t c_cc[NCCS];  /* control characters */
-
-	/* TODO non-standard fields. */
-	cc_t c_line; /* line discipline */
-	speed_t c_ispeed;
-	speed_t c_ospeed;
-};
-
-// TODO part of tty_ioctl, not termios -- Eldar
-struct winsize {
-	unsigned short ws_row;
-	unsigned short ws_col;
-	unsigned short ws_xpixel; /* unused */
-	unsigned short ws_ypixel; /* unused */
 };
 
 extern int tcgetattr(int fd, struct termios *);
@@ -146,33 +131,12 @@ extern int tcflush(int fd, int queue_selector);
 extern pid_t tcgetpgrp(int fd);
 extern int tcsetpgrp(int fd, pid_t pgrp);
 
-static inline speed_t cfgetispeed(const struct termios *termios) {
-	return termios->c_ispeed;
-}
-static inline speed_t cfgetospeed(const struct termios *termios) {
-	return termios->c_ospeed;
-}
+extern speed_t cfgetispeed(const struct termios *termios);
+extern speed_t cfgetospeed(const struct termios *termios);
+extern int cfsetispeed(struct termios *termios, speed_t speed);
+extern int cfsetospeed(struct termios *termios, speed_t speed);
 
-static inline int cfsetispeed(struct termios *termios, speed_t speed) {
-	termios->c_ispeed = speed;
-	return 0;
-}
-static inline int cfsetospeed(struct termios *termios, speed_t speed) {
-	termios->c_ospeed = speed;
-	return 0;
-}
+/* Non-standard */
+#include <asm/termbits.h>
 
-/* TODO IOCTL numbers are not included in standard <termios.h>.  -- Eldar */
-
-#define TIOCGETA   _IOR('t', 1, struct termios) /* get termios struct */
-#define TIOCSETA   _IOW('t', 2, struct termios) /* set termios struct */
-#define TIOCSETAW  _IOW('t', 3, struct termios) /* drain output, set */
-#define TIOCSETAF  _IOW('t', 4, struct termios) /* drn out, fls in, set */
-
-#define TIOCGWINSZ _IOR('t', 5, struct winsize) /* get window size */
-#define TIOCSWINSZ _IOW('t', 6, struct winsize) /* set window size */
-
-#define TIOCSPGRP  _IOR('t', 7, pid_t) /* set process group */
-#define TIOCGPGRP  _IO('t', 8)         /* get process group */
-
-#endif /* TERMIOS_H_ */
+#endif /* COMPAT_POSIX_TERMIOS_H_ */

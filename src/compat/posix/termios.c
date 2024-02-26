@@ -5,24 +5,49 @@
  * @author: Anton Bondarev
  */
 
-#include <termios.h>
-#include <stropts.h>
 #include <errno.h>
+#include <posix_errno.h>
+#include <stropts.h>
 #include <sys/ioctl.h>
+#include <termios.h>
+
 #include <drivers/tty.h>
 
+speed_t cfgetospeed(const struct termios *termios) {
+	return termios->c_cflag & B38400;
+}
+
+speed_t cfgetispeed(const struct termios *termios) {
+	return cfgetospeed(termios);
+}
+
+int cfsetospeed(struct termios *termios, speed_t speed) {
+	if (speed & ~B38400) {
+		return SET_ERRNO(EINVAL);
+	}
+
+	termios->c_cflag &= ~B38400;
+	termios->c_cflag |= speed;
+
+	return 0;
+}
+
+int cfsetispeed(struct termios *termios, speed_t speed) {
+	return cfsetospeed(termios, speed);
+}
+
 int tcgetattr(int fd, struct termios *termios) {
-	return ioctl(fd, TIOCGETA, termios);
+	return ioctl(fd, TCGETS, termios);
 }
 
 int tcsetattr(int fd, int opt, const struct termios *termios) {
 	switch (opt) {
 	case TCSANOW:
-		return (ioctl(fd, TIOCSETA, termios));
+		return (ioctl(fd, TCSETS, termios));
 	case TCSADRAIN:
-		return (ioctl(fd, TIOCSETAW, termios));
+		return (ioctl(fd, TCSETSW, termios));
 	case TCSAFLUSH:
-		return (ioctl(fd, TIOCSETAF, termios));
+		return (ioctl(fd, TCSETSF, termios));
 	default:
 		errno = EINVAL;
 		return (-1);
@@ -44,20 +69,22 @@ int tcsetpgrp(int fd, pid_t pgrp) {
 }
 
 int tcflush(int fd, int queue_selector) {
-	int arg = 0;
+	int arg;
+
 	switch (queue_selector) {
-		case TCIFLUSH:
-			arg = FLUSHR;
-			break;
-		case TCOFLUSH:
-			arg = FLUSHW;
-			break;
-		case TCIOFLUSH:
-			arg = FLUSHRW;
-			break;
-		default:
-			SET_ERRNO(EINVAL);
-			return -1;
+	case TCIFLUSH:
+		arg = FLUSHR;
+		break;
+	case TCOFLUSH:
+		arg = FLUSHW;
+		break;
+	case TCIOFLUSH:
+		arg = FLUSHRW;
+		break;
+	default:
+		SET_ERRNO(EINVAL);
+		return -1;
 	}
-	return ioctl(fd, I_FLUSH, (void *) &arg);
+
+	return ioctl(fd, I_FLUSH, (void *)&arg);
 }
