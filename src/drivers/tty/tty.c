@@ -12,6 +12,7 @@
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
+#include <termios.h>
 
 #include <drivers/tty.h>
 #include <drivers/tty/termios_ops.h>
@@ -198,17 +199,35 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 int tty_ioctl(struct tty *t, int request, void *data) {
 	int ret = 0;
 
+	assert(t);
+
+	if (!data) {
+		return -EINVAL;
+	}
+
 	mutex_lock(&t->lock);
 
 	switch (request) {
-	case TIOCGETA:
+	case TCGETS:
 		memcpy(data, &t->termios, sizeof(struct termios));
 		break;
-	case TIOCSETAF:
-	case TIOCSETAW:
-	case TIOCSETA:
+	case TCGETS2:
+		memcpy(data, &t->termios, sizeof(struct termios2));
+		break;
+	case TCSETS:
+	case TCSETSW:
+	case TCSETSF:
 		memcpy(&t->termios, data, sizeof(struct termios));
 		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
+		break;
+	case TCSETS2:
+	case TCSETSW2:
+	case TCSETSF2:
+		memcpy(&t->termios, data, sizeof(struct termios2));
+		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
+		if (t->ops->setup_term) {
+			t->ops->setup_term(t);
+		}
 		break;
 	case TIOCGPGRP:
 		memcpy(data, &t->pgrp, sizeof(pid_t));
@@ -217,8 +236,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 		memcpy(&t->pgrp, data, sizeof(pid_t));
 		break;
 	default:
-		ret = -ENOSYS;
-		break;
+		ret = -EINVAL;
 	}
 
 	mutex_unlock(&t->lock);
@@ -268,6 +286,10 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 	ring_init(&t->o_ring);
 
 	t->pgrp = -1;
+
+	if (ops->fill_term) {
+		ops->fill_term(t);
+	}
 
 	return t;
 }

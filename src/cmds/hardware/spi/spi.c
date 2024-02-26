@@ -16,7 +16,9 @@
 static void print_help(char **argv) {
 	printf("Transfer bytes via SPI bus\n");
 	printf("Usage:\n");
-	printf("%s [-s] [-m] [-b] bus_number line_number data0 [data1 [data2 [...]]]\n", argv[0]);
+	printf("%s [-s] [-m] [-b] bus_number line_number data0 [data1 [data2 "
+	       "[...]]]\n",
+	    argv[0]);
 	printf("%s [-l] [-h]\n", argv[0]);
 	printf("\t -s - slave mode\n");
 	printf("\t -m - master mode\n");
@@ -34,25 +36,19 @@ static void list_spi_devices(void) {
 			continue;
 		}
 
-		printf("Bus %d: ", i);
-
-		if (s->dev == NULL) {
-			printf("(unnamed)\n");
-			continue;
-		}
-
-		printf("%s\n", s->dev->name);
+		printf("Bus %d: %s\n", i, s->cdev.name);
 	}
 }
 
 int main(int argc, char **argv) {
 	int spi_bus, spi_line;
 	int ret, opt;
-	bool set_mode = false, master_mode = false, full_time_cs = false, format_16bit=false;
+	bool set_mode = false, master_mode = false, full_time_cs = false,
+	     format_16bit = false;
 	struct spi_device *dev;
 
 	while (-1 != (opt = getopt(argc, argv, "lhsmfx"))) {
-		switch(opt) {
+		switch (opt) {
 		case 's':
 			set_mode = true;
 			master_mode = false;
@@ -97,7 +93,8 @@ int main(int argc, char **argv) {
 				printf("Failed to set SPI master mode\n");
 				return -1;
 			}
-		} else {
+		}
+		else {
 			if (spi_set_slave_mode(dev)) {
 				printf("Failed to set SPI slave mode\n");
 				return -1;
@@ -106,8 +103,10 @@ int main(int argc, char **argv) {
 	}
 
 	dev->flags |= SPI_CS_ACTIVE;
-	if (full_time_cs)	dev->flags &= ~SPI_CS_INACTIVE;
-	else			dev->flags |= SPI_CS_INACTIVE;
+	if (full_time_cs)
+		dev->flags &= ~SPI_CS_INACTIVE;
+	else
+		dev->flags |= SPI_CS_INACTIVE;
 
 	ret = spi_select(dev, spi_line);
 	if (ret < 0) {
@@ -119,10 +118,15 @@ int main(int argc, char **argv) {
 	for (int i = optind + 2; i < argc; i++) {
 		uint16_t buf_in, buf_out;
 		buf_out = strtol(argv[i], NULL, 0);
-		if (i + 1 == argc) dev->flags |= SPI_CS_INACTIVE;
-		spi_transfer(dev, (uint8_t*)&buf_out, (uint8_t*)&buf_in, 1);
-		if (format_16bit)	printf(" 0x%04x", buf_in);
-		else			printf(" 0x%02x", buf_in);
+		if (i + 1 == argc)
+			dev->flags |= SPI_CS_INACTIVE;
+		spi_transfer(dev, (uint8_t *)&buf_out, (uint8_t *)&buf_in, 1);
+		if (format_16bit) {
+			printf(" 0x%04x", buf_in);
+		}
+		else {
+			printf(" 0x%02x", buf_in);
+		}
 	}
 	printf("\n");
 

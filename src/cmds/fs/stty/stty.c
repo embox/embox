@@ -19,43 +19,39 @@ static void stty_print_usage(void) {
 }
 
 static int stty_print_speed(int fd) {
-	struct termios t;
-	int err;
+	struct termios2 termios2;
+	speed_t speed;
 
-	err = 0;
-
-	if (-1 == tcgetattr(fd, &t)) {
-		err = -errno;
-		goto out;
+	if (-1 == ioctl(fd, TCGETS2, &termios2)) {
+		return -errno;
 	}
 
-	printf("%u\n", t.c_ospeed);
+	/* Get custom baud rate (standard baud rates are not yet supported) */
+	speed = termios2.c_ospeed;
 
-out:
-	return err;
+	printf("%u\n", speed);
+
+	return 0;
 }
 
 static int stty_set_speed(int fd, speed_t speed) {
-	struct termios t;
-	int err;
+	struct termios2 termios2;
 
-	err = 0;
-
-	if (-1 == tcgetattr(fd, &t)) {
-		err = -errno;
-		goto out;
+	if (-1 == ioctl(fd, TCGETS2, &termios2)) {
+		return -errno;
 	}
 
-	t.c_ospeed = speed;
-	t.c_ispeed = speed;
+	termios2.c_cflag &= ~CBAUD; /* Remove current baud rate */
+	termios2.c_cflag |= BOTHER; /* Allow custom baud rate */
 
-	if (-1 == tcsetattr(fd, TCSANOW, &t)) {
-		err = -errno;
-		goto out;
+	termios2.c_ispeed = speed; /* Set the input baud rate */
+	termios2.c_ospeed = speed; /* Set the output baud */
+
+	if (-1 == ioctl(fd, TCSETS2, &termios2)) {
+		return -errno;
 	}
 
-out:
-	return err;
+	return 0;
 }
 
 int main(int argc, char **argv) {
@@ -71,44 +67,43 @@ int main(int argc, char **argv) {
 		goto out;
 	}
 
-	if (-1 != (opt = getopt(argc, argv, "hF"))) {
-		switch (opt) {
-		case 'h':
-			stty_print_usage();
-			break;
+	if (-1 == (opt = getopt(argc, argv, "hF"))) {
+		err = -EINVAL;
+		goto out;
+	}
 
-		case 'F':
-			if (optind + 1 >= argc) {
-				err = -EINVAL;
-				goto out;
-			}
+	switch (opt) {
+	case 'h':
+		stty_print_usage();
+		break;
 
-			if (-1 == (fd = open(argv[optind], O_RDWR))) {
-				err = -errno;
-				goto out;
-			}
-
-			optind++;
-			if (!strcmp(argv[optind], "speed")) {
-				err = stty_print_speed(fd);
-			}
-			else if (isdigit(argv[optind][0])) {
-				speed = strtoul(argv[optind], NULL, 10);
-				err = stty_set_speed(fd, speed);
-			}
-
-			close(fd);
-
-			if (err) {
-				goto out;
-			}
-			break;
-
-		default:
-			printf("stty: invalid option -- '%c'\n", optopt);
+	case 'F':
+		if (optind + 1 >= argc) {
 			err = -EINVAL;
 			goto out;
 		}
+
+		if (-1 == (fd = open(argv[optind], O_RDONLY))) {
+			err = -errno;
+			goto out;
+		}
+
+		optind++;
+		if (!strcmp(argv[optind], "speed")) {
+			err = stty_print_speed(fd);
+		}
+		else if (isdigit(argv[optind][0])) {
+			speed = strtoul(argv[optind], NULL, 10);
+			err = stty_set_speed(fd, speed);
+		}
+
+		close(fd);
+		break;
+
+	default:
+		printf("stty: invalid option -- '%c'\n", optopt);
+		err = -EINVAL;
+		break;
 	}
 
 out:

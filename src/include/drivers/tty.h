@@ -11,8 +11,8 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <termios.h>
 
+#include <asm/termbits.h>
 #include <framework/mod/options.h>
 #include <kernel/irq_lock.h>
 #include <kernel/thread/sync/mutex.h>
@@ -34,7 +34,7 @@ struct tty {
 	struct idesc *idesc;
 	const struct tty_ops *ops;
 
-	struct termios termios;
+	struct termios2 termios;
 
 	/* serialize operations on tty, also used in pty */
 	struct mutex lock;
@@ -58,8 +58,9 @@ struct tty {
 };
 
 struct tty_ops {
-	void (*setup)(struct tty *, struct termios *);
-	void (*out_wake)(struct tty *);
+	void (*setup_term)(struct tty *tty);
+	void (*fill_term)(struct tty *tty);
+	void (*out_wake)(struct tty *tty);
 };
 
 extern struct tty *tty_init(struct tty *, const struct tty_ops *);
