@@ -298,7 +298,19 @@ int termios_can_read(const struct termios2 *t, struct ring *i_ring,
 }
 
 void termios_init(struct termios2 *t) {
-	cc_t cc_init[NCCS] = TERMIOS_CC_INIT;
+	cc_t cc_init[NCCS] = {
+	    [VEOF] = __TERMIOS_CTRL('d'),
+	    [VEOL] = ((cc_t)~0), /* undef */
+	    [VERASE] = 0177,
+	    [VINTR] = __TERMIOS_CTRL('c'),
+	    [VKILL] = __TERMIOS_CTRL('u'),
+	    [VMIN] = 1,
+	    [VQUIT] = __TERMIOS_CTRL('\\'),
+	    [VTIME] = 0,
+	    [VSUSP] = __TERMIOS_CTRL('z'),
+	    [VSTART] = __TERMIOS_CTRL('q'),
+	    [VSTOP] = __TERMIOS_CTRL('s'),
+	};
 
 	memcpy(t->c_cc, cc_init, sizeof(cc_init));
 

@@ -6,24 +6,13 @@
  * @date    26.09.2013
  */
 
-#ifndef DRIVERS_TERMIOS_OPS_H_
+#ifndef DRIVERS_TTY_TERMIOS_OPS_H_
+#define DRIVERS_TTY_TERMIOS_OPS_H_
 
 #include <stddef.h>
 #include <termios.h>
 
 #include <lib/libds/ring.h>
-
-#define DRIVERS_TERMIOS_OPS_H_
-
-#define TERMIOS_CC_INIT                                                \
-	{                                                                  \
-		[VEOF] = __TERMIOS_CTRL('d'), [VEOL] = ((cc_t)~0), /* undef */ \
-		    [VERASE] = 0177, [VINTR] = __TERMIOS_CTRL('c'),            \
-		[VKILL] = __TERMIOS_CTRL('u'), [VMIN] = 1,                     \
-		[VQUIT] = __TERMIOS_CTRL('\\'), [VTIME] = 0,                   \
-		[VSUSP] = __TERMIOS_CTRL('z'), [VSTART] = __TERMIOS_CTRL('q'), \
-		[VSTOP] = __TERMIOS_CTRL('s'),                                 \
-	}
 
 #define __TERMIOS_CTRL(ch) (cc_t)((ch)&0x1f)
 
@@ -121,4 +110,4 @@ extern void termios_init(struct termios2 *t);
 extern void termios_i_buff_init(struct termios_i_buff *b, struct ring *ring,
     char *buff, struct ring *canon_ring, size_t buflen);
 
-#endif /* DRIVERS_TERMIOS_OPS_H_ */
+#endif /* DRIVERS_TTY_TERMIOS_OPS_H_ */
