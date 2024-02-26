@@ -11,15 +11,14 @@
 #include <stddef.h>
 #include <termios.h>
 
-#include <kernel/panic.h>
-#include <lib/libds/ring.h>
 #include <drivers/diag.h>
 #include <drivers/tty/termios_ops.h>
-
 #include <framework/mod/options.h>
+#include <kernel/panic.h>
+#include <lib/libds/ring.h>
 
-#if OPTION_DEFINED(STRING,impl)
-#define DIAG_IMPL DIAG_IMPL_NAME(OPTION_GET(STRING,impl))
+#if OPTION_DEFINED(STRING, impl)
+#define DIAG_IMPL DIAG_IMPL_NAME(OPTION_GET(STRING, impl))
 #else
 #error No impl option provided
 #endif
@@ -27,13 +26,12 @@
 extern const struct diag DIAG_IMPL;
 static const struct diag *cdiag = &DIAG_IMPL;
 
-static const struct termios diag_tio = {
-	.c_lflag = ICANON,
-	.c_oflag = ONLCR,
+static const struct termios2 diag_tio = {
+    .c_lflag = ICANON,
+    .c_oflag = ONLCR,
 };
 
 int diag_init(void) {
-
 	if (cdiag->ops->init) {
 		return cdiag->ops->init(cdiag);
 	}
@@ -49,12 +47,11 @@ char diag_getc(void) {
 	}
 
 	if (cdiag->ops->kbhit) {
-		while (!cdiag->ops->kbhit(cdiag)) {
-		}
+		while (!cdiag->ops->kbhit(cdiag)) {}
 
 		ch = cdiag->ops->getc(cdiag);
-	} else {
-
+	}
+	else {
 		do {
 			ch = cdiag->ops->getc(cdiag);
 		} while (ch == (char)-1);
@@ -81,7 +78,6 @@ void diag_putc(char ch) {
 }
 
 int diag_kbhit(void) {
-
 	if (cdiag->ops->kbhit) {
 		return cdiag->ops->kbhit(cdiag);
 	}
