@@ -5,6 +5,7 @@
  * @version
  * @date 27.01.2020
  */
+
 #include <errno.h>
 #include <limits.h>
 #include <stddef.h>
@@ -25,7 +26,7 @@
 static struct fpga fpga_tab[FPGA_MAX];
 INDEX_DEF(fpga_idx, 0, FPGA_MAX);
 
-static const struct idesc_ops fpga_dev_ops;
+static const struct char_dev_ops fpga_dev_ops;
 
 static int fpga_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	struct fpga *fpga;
@@ -36,7 +37,7 @@ static int fpga_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	err = fpga->ops->config_init(fpga);
 	if (err) {
 		log_error("Failed to init config for FPGA");
-		return NULL;
+		return -1;
 	}
 
 	return 0;
@@ -72,22 +73,13 @@ static ssize_t fpga_dev_write(struct char_dev *cdev, const void *buf,
 		return -1;
 	}
 
-	ret += iov[i].iov_len;
-
 	return nbyte;
-}
-
-static int fpga_dev_ioctl(struct idesc *idesc, int cmd, void *args) {
-	/* NIY */
-	return 0;
 }
 
 struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	size_t id;
 	int err;
 	char name[NAME_MAX];
-
-	memset(name, 0, sizeof(name));
 
 	id = index_alloc(&fpga_idx, INDEX_MIN);
 	snprintf(name, sizeof(name), "fpga%d", id);
@@ -101,7 +93,7 @@ struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	char_dev_init(&fpga_tab[id].cdev, name, &fpga_dev_ops);
 
 	err = char_dev_register(&fpga_tab[id].cdev);
-	if (err != 0) {
+	if (err) {
 		index_free(&fpga_idx, id);
 		return NULL;
 	}
@@ -109,14 +101,14 @@ struct fpga *fpga_register(struct fpga_ops *ops, void *priv) {
 	return &fpga_tab[id];
 }
 
-int fpga_free(struct fpga *fpga) {
-	int err;
-
+int fpga_unregister(struct fpga *fpga) {
 	if (fpga == NULL) {
 		return -EINVAL;
 	}
 
 	index_free(&fpga_idx, fpga->id);
+
+	char_dev_unregister(&fpga->cdev);
 
 	return 0;
 }
@@ -142,5 +134,4 @@ static const struct char_dev_ops fpga_dev_ops = {
     .close = fpga_dev_close,
     .read = fpga_dev_read,
     .write = fpga_dev_write,
-    .ioctl = fpga_dev_ioctl,
 };
