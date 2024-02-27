@@ -12,6 +12,7 @@
 
 #include <drivers/char_dev.h>
 #include <drivers/input/input_dev.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <mem/misc/pool.h>
@@ -22,6 +23,7 @@
 struct cdev_input {
 	struct char_dev cdev;
 	struct input_dev *inpdev;
+	struct idesc *idesc;
 };
 
 POOL_DEF(cdev_input_pool, struct cdev_input, INPUT_DEV_CNT);
@@ -34,12 +36,12 @@ static int input_dev_fs_wait(struct idesc *desc, int flags) {
 	    /* no lock */);
 }
 
-static ssize_t input_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+static ssize_t input_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	struct input_dev *inpdev;
 	ssize_t sz;
 	ssize_t ret_size = 0;
 	struct input_event *ev;
-	int i, res = 0;
+	int res = 0;
 
 	inpdev = ((struct cdev_input *)cdev)->inpdev;
 
@@ -57,14 +59,14 @@ static ssize_t input_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 		ret_size += nbyte - sz;
 
 		if (!ret_size) {
-			res = input_dev_fs_wait(desc, POLLIN);
+			res = input_dev_fs_wait(((struct cdev_input *)cdev)->idesc, POLLIN);
 		}
 	} while (ret_size == 0 && res == 0);
 
 	return ret_size;
 }
 
-static int input_dev_status(struct char_dev *cdev, int mask) {
+static int input_cdev_status(struct char_dev *cdev, int mask) {
 	struct input_dev *inpdev;
 	int res;
 
@@ -86,10 +88,12 @@ static int input_dev_status(struct char_dev *cdev, int mask) {
 	return res;
 }
 
-static int input_dev_open(struct char_dev *cdev, struct idesc *idesc) {
+static int input_cdev_open(struct char_dev *cdev, struct idesc *idesc) {
 	struct input_dev *inpdev;
 
 	inpdev = ((struct cdev_input *)cdev)->inpdev;
+
+	((struct cdev_input *)cdev)->idesc = idesc;
 
 	assert(inpdev);
 
@@ -98,7 +102,7 @@ static int input_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	return 0;
 }
 
-static void input_dev_close(struct char_dev *cdev) {
+static void input_cdev_close(struct char_dev *cdev) {
 	struct input_dev *inpdev;
 
 	inpdev = ((struct cdev_input *)cdev)->inpdev;
@@ -109,10 +113,10 @@ static void input_dev_close(struct char_dev *cdev) {
 }
 
 static const struct char_dev_ops input_cdev_ops = {
-    .read = input_dev_read,
-    .status = input_dev_status,
-    .open = input_dev_open,
-    .close = input_dev_close,
+    .read = input_cdev_read,
+    .status = input_cdev_status,
+    .open = input_cdev_open,
+    .close = input_cdev_close,
 };
 
 int input_dev_private_register(struct input_dev *inpdev) {
@@ -128,7 +132,7 @@ int input_dev_private_register(struct input_dev *inpdev) {
 	char_dev_init(&dev->cdev, inpdev->name, &input_cdev_ops);
 	dev->inpdev = inpdev;
 
-	if ((err = char_dev_register(dev))) {
+	if ((err = char_dev_register((struct char_dev *)dev))) {
 		log_error("failed to register char device for \"%s\"", inpdev->name);
 		pool_free(&cdev_input_pool, dev);
 	}
