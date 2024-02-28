@@ -142,15 +142,20 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	/* presetting that we think */
 	fsi->s_block_size = SBSIZE;
 	fsi->s_sectors_in_block = fsi->s_block_size / 512;
-	if (0 != (rc = ext2_read_sblock(sb))) {
+
+	rc = ext2_read_sblock(sb);
+	if (0 != rc) {
 		goto error;
 	}
-	if (NULL == (fsi->e2fs_gd = ext2_buff_alloc(fsi,
-			sizeof(struct ext2_gd) * fsi->s_ncg))) {
+
+	fsi->e2fs_gd = ext2_buff_alloc(fsi, sizeof(struct ext2_gd) * fsi->s_ncg);
+	if (NULL == fsi->e2fs_gd) {
 		rc = ENOMEM;
 		goto error;
 	}
-	if (0 != (rc = ext2_read_gdblock(sb))) {
+
+	rc = ext2_read_gdblock(sb);
+	if (0 != rc) {
 		goto error;
 	}
 
