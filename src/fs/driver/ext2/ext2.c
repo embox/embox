@@ -171,7 +171,6 @@ static uint8_t ext2_type_from_mode_fmt(mode_t mode) {
 
 extern int ext2_unlink(struct inode *dir_node, struct inode *node);
 
-extern void ext2fs_fsi_free(struct ext2_fs_info *fsi);
 extern struct ext2_file_info *ext2_fi_alloc(void);
 extern void ext2_fi_free(struct ext2_file_info *fi);
 
@@ -1616,7 +1615,8 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	dir_fi = inode_priv(i_dir);
 	fsi = i_dir->i_sb->sb_data;
 
-	if (NULL == (fi = ext2_fi_alloc())) {
+	fi = ext2_fi_alloc();
+	if (NULL == fi) {
 		rc = ENOSPC;
 		goto out;
 	}
@@ -1625,19 +1625,22 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	inode_size_set(i_new, 0);
 	inode_priv_set(i_new, fi);
 	
-	if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
+	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
+	if (NULL == fi->f_buf) {
 		rc = ENOSPC;
-		goto out;
+		goto error1;
 	}
 
-	if (0 != (rc = ext2_read_sblock(i_new->i_sb))) {
-		goto out;
+	rc = ext2_read_sblock(i_new->i_sb);
+	if (0 != rc) {
+		goto error2;
 	}
 
 	/* Acquire an inode from the bit map. */
-	if (0 == (b = ext2_alloc_inode_bit(i_new, S_ISDIR(i_new->i_mode)))) {
+	b = ext2_alloc_inode_bit(i_new, S_ISDIR(i_new->i_mode));
+	if (0 == b) {
 		rc = ENOSPC;
-		goto out;
+		goto error2;
 	}
 
 	fi->f_num = b;
@@ -1645,18 +1648,16 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 
 	return 0;
 
+error2:
+	ext2_buff_free(fsi, fi->f_buf);
+error1:
+	ext2_fi_free(fi);
 out:
-	if (NULL != fi) {
-		if (NULL != fi->f_buf) {
-			ext2_buff_free(fsi, fi->f_buf);
-		}
-		ext2_fi_free(fi);
-	}
 	return rc;
 }
 
-void ext2_rw_inode(struct inode *node, struct ext2fs_dinode *fdi,
-		int rw_flag) {
+void 
+ext2_rw_inode(struct inode *node, struct ext2fs_dinode *fdi, int rw_flag) {
 	/* An entry in the inode table is to be copied to or from the disk. */
 
 	struct ext2_gd *gd;
@@ -1673,7 +1674,8 @@ void ext2_rw_inode(struct inode *node, struct ext2fs_dinode *fdi,
 	ext2_read_sblock(node->i_sb);
 
 	block_group_number = (fi->f_num - 1) / fsi->e2sb.s_inodes_per_group;
-	if (NULL == (gd = ext2_get_group_desc(block_group_number, fsi))) {
+	gd = ext2_get_group_desc(block_group_number, fsi);
+	if (NULL == gd) {
 		return;
 	}
 	offset = ((fi->f_num - 1) % fsi->e2sb.s_inodes_per_group)
