@@ -36,9 +36,7 @@ static struct super_block_operations e2fs_sbops = {
 
 extern int ext2_read_sblock(struct super_block *sb);
 extern int ext2_read_gdblock(struct super_block *sb);
-
-extern int ext2_close(struct inode *inode);
-extern int ext2_open(struct inode *inode);
+extern int ext2_read_inode(struct inode *node, uint32_t);
 
 extern struct ext2_fs_info *ext2fs_fsi_alloc(void);
 extern void ext2fs_fsi_free(struct ext2_fs_info *fsi);
@@ -161,6 +159,7 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	dest = sb->sb_root;
 	fi= ext2_fi_alloc();
 	if (!fi) {
+		rc = ENOMEM;
 		goto error2;
 	}
 
@@ -169,17 +168,27 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	inode_size_set(dest, 0);
 	inode_priv_set(dest, fi);
 
-	if (0 != ext2_open(dest)) {
+	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
+	if (NULL == fi) {
+		rc = ENOMEM;
 		goto error3;
 	}
+
+	rc = ext2_read_inode(dest, EXT2_ROOTINO);
+	if (0 != rc) {
+		goto error4;
+	}
+
+	ext2_buff_free(sb->sb_data, fi->f_buf);
 
 	dest->i_mode = fi->f_di.i_mode;
 	dest->i_owner_id = fi->f_di.i_uid;
 	dest->i_group_id = fi->f_di.i_gid;
 
-	ext2_close(dest);
-
 	return 0;
+
+error4:
+	ext2_buff_free(sb->sb_data, fi->f_buf);
 
 error3:
 	ext2_fi_free(fi);
