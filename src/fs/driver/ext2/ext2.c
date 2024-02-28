@@ -31,12 +31,14 @@
 #include <mem/phymem.h>
 
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
-extern int ext2_read_inode(struct inode *node, uint32_t);
 
 static int ext2_new_block(struct inode *node, long position);
 static int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
 
 extern int ext2_read_gdblock(struct super_block *sb);
+
+extern struct ext2_file_info *ext2_fi_alloc(void);
+extern void ext2_fi_free(struct ext2_file_info *fi);
 
 /*
  * help function
@@ -168,11 +170,6 @@ static uint8_t ext2_type_from_mode_fmt(mode_t mode) {
 	default: return EXT2_FT_UNKNOWN;
 	}
 }
-
-extern int ext2_unlink(struct inode *dir_node, struct inode *node);
-
-extern struct ext2_file_info *ext2_fi_alloc(void);
-extern void ext2_fi_free(struct ext2_file_info *fi);
 
 void ext2_dflt_sb(struct ext2sb *sb,
 							size_t dev_size, float dev_factor) {
