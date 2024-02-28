@@ -44,7 +44,6 @@ extern struct ext2_fs_info *ext2fs_fsi_alloc(void);
 extern void ext2fs_fsi_free(struct ext2_fs_info *fsi);
 extern struct ext2_file_info *ext2_fi_alloc(void);
 extern void ext2_fi_free(struct ext2_file_info *fi);
-extern void ext2_free_fs(struct super_block *sb);
 
 extern void ext2_dflt_sb(struct ext2sb *sb, size_t dev_size, float dev_factor);
 
@@ -145,24 +144,24 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 
 	rc = ext2_read_sblock(sb);
 	if (0 != rc) {
-		goto error;
+		goto error1;
 	}
 
 	fsi->e2fs_gd = ext2_buff_alloc(fsi, sizeof(struct ext2_gd) * fsi->s_ncg);
 	if (NULL == fsi->e2fs_gd) {
 		rc = ENOMEM;
-		goto error;
+		goto error1;
 	}
 
 	rc = ext2_read_gdblock(sb);
 	if (0 != rc) {
-		goto error;
+		goto error2;
 	}
 
 	dest = sb->sb_root;
 	fi= ext2_fi_alloc();
 	if (!fi) {
-		goto error;
+		goto error2;
 	}
 
 	memset(fi, 0, sizeof(struct ext2_file_info));
@@ -171,8 +170,7 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	inode_priv_set(dest, fi);
 
 	if (0 != ext2_open(dest)) {
-		ext2_fi_free(fi);	
-		goto error;
+		goto error3;
 	}
 
 	dest->i_mode = fi->f_di.i_mode;
@@ -182,21 +180,32 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	ext2_close(dest);
 
 	return 0;
-error:
-	if (fsi != NULL && fsi->e2fs_gd != NULL) {
-		ext2_buff_free(fsi, (void *) fsi->e2fs_gd);
-	}
 
-	if (fsi != NULL ){
-		ext2fs_fsi_free(fsi);	
-	}
+error3:
+	ext2_fi_free(fi);
+
+error2:
+	ext2_buff_free(fsi, (void *) fsi->e2fs_gd);
+
+error1:
+	ext2fs_fsi_free(fsi);	
 
 	return -rc;
 }
 
 static int ext2_clean_sb(struct super_block *sb) {
-	ext2_free_fs(sb);
+	struct ext2_fs_info *fsi = sb->sb_data;
+
+	if (NULL != fsi) {
+		if (NULL != fsi->e2fs_gd) {
+			ext2_buff_free(fsi, (char *) fsi->e2fs_gd);
+		}
+		
+		ext2fs_fsi_free(fsi);
+	}
+
 	ext2_fi_free(inode_priv(sb->sb_root));
+
 	return 0;
 }
 

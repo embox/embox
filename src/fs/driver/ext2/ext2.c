@@ -322,19 +322,6 @@ int ext2_mark_bitmap(void *bdev, struct ext2sb *sb,
 	return 0;
 }
 
-void ext2_free_fs(struct super_block *sb) {
-	struct ext2_fs_info *fsi = sb->sb_data;
-
-	if (NULL != fsi) {
-		if (NULL != fsi->e2fs_gd) {
-			ext2_buff_free(fsi, (char *) fsi->e2fs_gd);
-		}
-		
-		ext2fs_fsi_free(fsi);
-	}
-
-}
-
 extern void e2fs_i_bswap(struct ext2fs_dinode *old, struct ext2fs_dinode *new);
 
 /*
