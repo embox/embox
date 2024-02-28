@@ -562,7 +562,8 @@ static int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
 		memcpy(namebuf, fi->f_di.i_block, link_len);
 	} else {
 		/* Read file for symbolic link */
-		if (0 != (rc = ext2_block_map(sb, sb->sb_data, fi, (int32_t) 0, &disk_block))) {
+		rc = ext2_block_map(sb, sb->sb_data, fi, (int32_t) 0, &disk_block);
+		if (0 != rc) {
 			return rc;
 		}
 		if (1 != ext2_read_sector(sb, fi->f_buf, 1, disk_block)) {
@@ -1338,12 +1339,14 @@ int ext2_create(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi = inode_priv(i_dir);
 
-	if (0 != (rc = ext2_open(i_dir))) {
+	rc = ext2_open(i_dir);
+	if (0 != rc) {
 		return rc;
 	}
 
 	/* Create a new file inode */
-	if (0 != (rc = ext2_new_node(i_new, i_dir))) {
+	rc = ext2_new_node(i_new, i_dir);
+	if (0 != rc) {
 		return rc;
 	}
 	fi = inode_priv(i_new);
@@ -1926,7 +1929,8 @@ static int ext2_new_node(struct inode *i_new, struct inode *i_dir) {
 	fsi = i_dir->i_sb->sb_data;
 
 	/* Last path component does not exist.  Make new directory entry. */
-	if (0 != (rc = ext2_alloc_inode(i_new, i_dir))) {
+	rc = ext2_alloc_inode(i_new, i_dir);
+	if (0 != rc) {
 		/* Can't creat new inode: out of inodes. */
 		return rc;
 	}
@@ -1951,8 +1955,9 @@ static int ext2_new_node(struct inode *i_new, struct inode *i_dir) {
 	ext2_rw_inode(i_new, &fdi, EXT2_W_INODE);/* force inode to disk now */
 
 	/* New inode acquired.  Try to make directory entry. */
-	if (0 != (rc = ext2_dir_operation(i_dir, inode_name(i_new),
-			&fi->f_num, ENTER, i_new->i_mode))) {
+	rc = ext2_dir_operation(i_dir, inode_name(i_new),
+								&fi->f_num, ENTER, i_new->i_mode);
+	if (0 != rc) {
 		return rc;
 	}
 	/* The caller has to return the directory ext2_file_info (*dir_fi).  */
@@ -1967,8 +1972,10 @@ static int ext2_unlink_file(struct inode *dir_node, struct inode *node) {
 	if ((0 != (rc = ext2_open(dir_node))) || (0 != (rc = ext2_free_inode(node)))) {
 		return rc;
 	}
-	return ext2_dir_operation(dir_node,
-			inode_name(node), NULL, DELETE, 0);
+	
+	rc = ext2_dir_operation(dir_node, inode_name(node), NULL, DELETE, 0);
+
+	return rc;
 }
 
 static int ext2_remove_dir(struct inode *dir_node, struct inode *node) {
@@ -1987,7 +1994,8 @@ static int ext2_remove_dir(struct inode *dir_node, struct inode *node) {
 	dir_name = inode_name(node);
 
 	/* search_dir checks that rip is a directory too. */
-	if (0 != (rc = ext2_dir_operation(node, "", NULL, IS_EMPTY, 0))) {
+	rc = ext2_dir_operation(node, "", NULL, IS_EMPTY, 0);
+	if (0 != rc) {
 		return -1;
 	}
 
@@ -2006,7 +2014,8 @@ static int ext2_remove_dir(struct inode *dir_node, struct inode *node) {
 	}
 
 	/* Actually try to unlink the file; fails if parent is mode 0 etc. */
-	if (0 != (rc = ext2_unlink_file(dir_node, node))) {
+	rc = ext2_unlink_file(dir_node, node);
+	if (0 != rc) {
 		return rc;
 	}
 
