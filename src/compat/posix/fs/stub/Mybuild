@@ -28,4 +28,5 @@ static module file_system_stub extends file_system {
 	source "umask_stub.c"
 	source "unlink_stub.c"
 	source "xattr_stub.c"
+	source "utime_stub.c"
 }

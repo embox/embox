@@ -279,7 +279,6 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 	int ret, after_percent;
 
 	uid = getuid();
-	pwd = getpwuid(uid);
 	after_percent = 0;
 
 	for (; *fmt != '\0'; fmt++) {
@@ -304,6 +303,7 @@ static int rich_prompt(const char *fmt, char *buf, size_t len) {
 			ret = snprintf(buf, len, "%c", *fmt);
 			break;
 		case 'u':
+			pwd = getpwuid(uid);
 			ret = pwd != NULL ? snprintf(buf, len, "%s", pwd->pw_name)
 					: snprintf(buf, len, "%d", uid);
 			break;

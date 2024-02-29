@@ -1,6 +1,0 @@
-package embox.compat.posix
-
-static module utime {
-	source "utime.c"
-	depends embox.fs.syslib.file_system
-}

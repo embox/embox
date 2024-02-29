@@ -23,7 +23,6 @@ module all {
 
 module utime_test {
 	source "utime_test.c"
-	depends embox.compat.posix.utime
 	depends embox.fs.driver.ramfs /* for creat() and close() */
 }
 
