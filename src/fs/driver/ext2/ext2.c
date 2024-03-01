@@ -599,21 +599,25 @@ int ext2_open(struct inode *node) {
 	vfs_get_relative_path(node, path, PATH_MAX);
 
 	/* alloc a block sized buffer used for all transfers */
-	if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
+	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
+	if (NULL == fi->f_buf) {
 		return ENOMEM;
 	}
 
 	/* read group descriptor blocks */
-	if (0 != (rc = ext2_read_gdblock(node->i_sb))) {
+	rc = ext2_read_gdblock(node->i_sb);
+	if (0 != rc) {
 		return rc;
 	}
 
-	if (0 != (rc = ext2_shift_culc(fi, fsi))) {
+	rc = ext2_shift_culc(fi, fsi);
+	if (0 != rc) {
 		return rc;
 	}
 
 	inumber = EXT2_ROOTINO;
-	if (0 != (rc = ext2_read_inode(node, inumber))) {
+	rc = ext2_read_inode(node, inumber);
+	if (0 != rc) {
 		return rc;
 	}
 
@@ -643,18 +647,21 @@ int ext2_open(struct inode *node) {
 		 * in case we find a symbolic link.
 		 */
 		parent_inumber = inumber;
-		if (0 != (rc = ext2_search_directory(node, ncp, cp - ncp, &inumber))) {
+		rc = ext2_search_directory(node, ncp, cp - ncp, &inumber);
+		if (0 != rc) {
 			goto out;
 		}
 
 		/* Open next component */
-		if (0 != (rc = ext2_read_inode(node, inumber))) {
+		rc = ext2_read_inode(node, inumber);
+		if (0 != rc) {
 			goto out;
 		}
 
 		/* Check for symbolic link */
 		if (S_ISLNK(fi->f_di.i_mode)) {
-			if (0 != (rc = ext2_read_symlink(node, parent_inumber, &cp))) {
+			rc = ext2_read_symlink(node, parent_inumber, &cp);
+			if (0 != rc) {
 				goto out;
 			}
 		}
@@ -665,7 +672,8 @@ int ext2_open(struct inode *node) {
 	return 0;
 
 out:
-	ext2_close(node);
+	ext2_buff_free(fsi, fi->f_buf);
+
 	return rc;
 }
 
