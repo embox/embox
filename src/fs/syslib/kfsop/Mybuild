@@ -11,6 +11,9 @@ module file_system_none extends file_system {
 }
 
 module file_system_full extends file_system {
+	option number flock_quantity=128
+	source "kflock.c"
+
 	source "kfsop.c"
 	source "fsop.c"
 
@@ -26,6 +29,4 @@ module file_system_full extends file_system {
 	depends embox.compat.libc.str_dup
 	depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.lib.libds
-
-	option number flock_quantity=128
 }
