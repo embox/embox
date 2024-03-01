@@ -22,7 +22,9 @@ struct inode_operations {
 	int (*ino_mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int (*ino_rmdir)(struct dentry *dir);
 	int (*ino_truncate)(struct inode *inode, off_t len);
+#if 0
 	int (*ino_pathname)(struct inode *inode, char *buf, int flags);
+#endif
 	int (*ino_iterate)(struct inode *next_inode, char *name_buf,
 	    struct inode *parent, struct dir_ctx *ctx);
 	int (*ino_rename)(struct inode *node, struct inode *new_parent,
