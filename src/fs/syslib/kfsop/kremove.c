@@ -27,17 +27,10 @@
 
 int kremove(const char *pathname) {
 	struct path node;
-	struct super_block *sb;
 	int res;
 
 	if (0 != (res = fs_perm_lookup(pathname, NULL, &node))) {
 		errno = -res;
-		return -1;
-	}
-
-	sb = node.node->i_sb;
-	if (NULL == sb->sb_iops->ino_remove) {
-		errno = EPERM;
 		return -1;
 	}
 
