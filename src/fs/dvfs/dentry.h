@@ -11,8 +11,12 @@
 
 #include <limits.h>
 
-#include <fs/dvfs.h>
 #include <lib/libds/dlist.h>
+
+struct inode;
+struct super_block;
+struct dentry;
+struct lookup;
 
 struct dentry {
 	char name[NAME_MAX];
