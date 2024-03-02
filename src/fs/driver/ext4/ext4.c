@@ -155,7 +155,7 @@ static int ext4fs_close(struct file_desc *desc);
 static size_t ext4fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext4fs_write(struct file_desc *desc, void *buf, size_t size);
 static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode);
-static int ext4fs_delete(struct inode *node);
+static int ext4fs_delete(struct inode *dir, struct inode *node);
 static int ext4fs_truncate(struct inode *node, off_t length);
 
 static int ext4fs_destroy_inode(struct inode *inode) {
@@ -725,7 +725,7 @@ static int ext4fs_format(struct block_dev *dev, void *priv) {
 	return main_mke2fs(argc, argv);
 }
 
-static int ext4fs_delete(struct inode *node) {
+static int ext4fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
 	struct inode *parent;
 

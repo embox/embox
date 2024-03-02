@@ -70,7 +70,7 @@ int kunlink(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != (res = sb->sb_iops->ino_remove(node.node))) {
+	if (0 != (res = sb->sb_iops->ino_remove(parent.node, node.node))) {
 		errno = -res;
 		return -1;
 	}
@@ -114,7 +114,7 @@ int krmdir(const char *pathname) {
 		return -1;
 	}
 
-	if (0 != (res = sb->sb_iops->ino_remove(node.node))) {
+	if (0 != (res = sb->sb_iops->ino_remove(parent.node, node.node))) {
 		errno = -res;
 		return -1;
 	}

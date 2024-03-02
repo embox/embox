@@ -238,7 +238,7 @@ static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_n
 	return 0;
 }
 
-static int embox_cifs_node_delete(struct inode *node) {
+static int embox_cifs_node_delete(struct inode *dir, struct inode *node) {
 	struct cifs_fs_info *fsi;
 	char fileurl[PATH_MAX];
 	int rc;

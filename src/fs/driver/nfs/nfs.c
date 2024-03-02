@@ -191,7 +191,7 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
-static int nfsfs_delete(struct inode *node);
+static int nfsfs_delete(struct inode *dir, struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
 static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
@@ -737,7 +737,7 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	return nfs_create_dir_entry(parent_node); // XXX parent_node? or node?
 }
 
-static int nfsfs_delete(struct inode *node) {
+static int nfsfs_delete(struct inode *dir, struct inode *node) {
 	nfs_file_info_t *fi;
 	struct inode *dir_node;
 	nfs_file_info_t *dir_fi;

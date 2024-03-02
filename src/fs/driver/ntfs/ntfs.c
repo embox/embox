@@ -151,7 +151,7 @@ static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_n
 	return 0;
 }
 
-static int embox_ntfs_node_delete(struct inode *node) {
+static int embox_ntfs_node_delete(struct inode *dir, struct inode *node) {
 	ntfs_inode *ni, *pni;
 	struct inode *parent_node;
 	ntfschar *ufilename;

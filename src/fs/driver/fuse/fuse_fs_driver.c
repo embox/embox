@@ -127,7 +127,7 @@ static int fuse_close(struct file_desc *desc) {
 	return 0;
 }
 
-static int fuse_remove(struct inode *inode) {
+static int fuse_remove(struct inode *dir, struct inode *inode) {
 	struct task *task;
 	struct inode *parent;
 	struct fuse_req_embox *req;

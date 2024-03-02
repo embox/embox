@@ -146,7 +146,7 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 
-int fat_delete(struct inode *node) {
+int fat_delete(struct inode *dir, struct inode *node) {
 	struct fat_file_info *fi;
 
 	fi = inode_priv(node);

@@ -54,7 +54,7 @@ static int ext3fs_format(struct block_dev *bdev, void *priv);
 static int ext3fs_fill_sb(struct super_block *sb, const char *source);
 //static int ext3fs_mount(struct super_block *sb, struct inode *dest);
 static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode);
-static int ext3fs_delete(struct inode *node);
+//static int ext3fs_delete(struct inode *dir, struct inode *node);
 static int ext3fs_truncate(struct inode *node, off_t length);
 //static int ext3fs_umount_entry(struct inode *node);
 
@@ -128,7 +128,7 @@ static int ext3fs_create(struct inode *node, struct inode *parent_node, int mode
 	return res;
 }
 
-static int ext3fs_delete(struct inode *node) {
+static int ext3fs_delete(struct inode *dir, struct inode *node) {
 	struct ext2_fs_info *fsi;
 	journal_handle_t *handle;
 	int res;
@@ -142,7 +142,7 @@ static int ext3fs_delete(struct inode *node) {
 	if (!(handle = journal_start(fsi->journal, ext3_trans_blocks(1) + 2))) {
 		return -1;
 	}
-	res = ext2_iops.ino_remove(node);
+	res = ext2_iops.ino_remove(dir, node);
 	journal_stop(handle);
 
 	return res;

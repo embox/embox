@@ -18,7 +18,7 @@ struct dir_ctx;
 struct inode_operations {
 	struct inode *(*ino_lookup)(const char *name, const struct inode *dir);
 	int (*ino_create)(struct inode *i_new, struct inode *i_dir, int mode);
-	int (*ino_remove)(struct inode *inode);
+	int (*ino_remove)(struct inode *idir, struct inode *inode);
 	int (*ino_mkdir)(struct dentry *d_new, struct dentry *d_parent);
 	int (*ino_rmdir)(struct dentry *dir);
 	int (*ino_truncate)(struct inode *inode, off_t len);

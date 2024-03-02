@@ -1436,7 +1436,7 @@ static int jffs2_free_fs(struct super_block *sb) {
 
 static int jffs2fs_format(struct block_dev *bdev, void *priv);
 static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mode);
-static int jffs2fs_delete(struct inode *node);
+//static int jffs2fs_delete(struct inode *dir, struct inode *node);
 static int jffs2fs_truncate(struct inode *node, off_t length);
 static int jffs2_fill_sb(struct super_block *sb, const char *source);
 
@@ -1536,7 +1536,7 @@ static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mo
 	return 0;
 }
 
-static int jffs2fs_delete(struct inode *node) {
+static int jffs2fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
 	struct inode *parent;
 	struct jffs2_file_info *par_fi, *fi;

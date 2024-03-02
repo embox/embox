@@ -46,16 +46,15 @@ int dvfs_remove(const char *path) {
 		return -EBUSY;
 	}
 
-	res = i_no->i_ops->ino_remove(i_no);
-
-	if (res == 0) {
-		res = dvfs_destroy_dentry(lookup.item);
-		if (res != 0) {
-			log_error("Failed to destroy dentry");
-		}
-	}
-	else {
+	res = i_no->i_ops->ino_remove(lookup.parent->d_inode, i_no);
+	if (res != 0) {
 		log_error("Failed to remove inode");
+		return res;
+	}
+	
+	res = dvfs_destroy_dentry(lookup.item);
+	if (res != 0) {
+		log_error("Failed to destroy dentry");
 	}
 
 	return res;

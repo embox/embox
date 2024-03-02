@@ -39,7 +39,7 @@ static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode
 	return -rc;
 }
 
-static int ext2fs_delete(struct inode *node) {
+static int ext2fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
 	struct inode *parents;
 
