@@ -165,13 +165,11 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	}
 }
 
-static int bdev_idesc_fstat(struct idesc *idesc, void *buff) {
-	struct stat *sb;
-
-	assert(buff);
-	sb = buff;
-	memset(sb, 0, sizeof(struct stat));
-	sb->st_mode = S_IFBLK;
+static int bdev_idesc_fstat(struct idesc *idesc, struct stat *stat) {
+	assert(stat);
+	
+	memset(stat, 0, sizeof(struct stat));
+	stat->st_mode = S_IFBLK;
 
 	return 0;
 }
