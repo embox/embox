@@ -9,6 +9,7 @@
 #define KERNEL_TASK_IDESC_IDESC_H_
 
 #include <sys/cdefs.h>
+#include <sys/stat.h>
 #include <sys/types.h>
 
 #include <kernel/sched/waitq.h>
@@ -33,7 +34,7 @@ struct idesc_ops {
 	ssize_t (*id_writev)(struct idesc *idesc, const struct iovec *iov, int cnt);
 	void (*close)(struct idesc *idesc);
 	int (*ioctl)(struct idesc *idesc, int request, void *data);
-	int (*fstat)(struct idesc *idesc, void *buff);
+	int (*fstat)(struct idesc *idesc, struct stat *stat);
 	int (*status)(struct idesc *idesc, int mask);
 	void *(*idesc_mmap)(struct idesc *idesc, void *addr, size_t len, int prot,
 	    int flags, int fd, off_t off);
