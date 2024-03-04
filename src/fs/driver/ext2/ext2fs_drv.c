@@ -25,14 +25,11 @@
 extern struct file_operations ext2_fop;
 extern struct inode_operations ext2_iops;
 
-static int e2fs_destroy_inode(struct inode *inode) {
+int e2fs_destroy_inode(struct inode *inode) {
 	return 0;
 }
 
-static struct super_block_operations e2fs_sbops = {
-	//.open_idesc    = dvfs_file_open_idesc,
-	.destroy_inode = e2fs_destroy_inode,
-};
+extern struct super_block_operations e2fs_sbops;
 
 extern int ext2_read_sblock(struct super_block *sb);
 extern int ext2_read_gdblock(struct super_block *sb);
