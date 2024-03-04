@@ -41,15 +41,15 @@ static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode
 
 static int ext2fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
+#if 0
 	struct inode *parents;
-
 	parents = vfs_subtree_get_parent(node);
 	if (NULL == parents) {
 		rc = ENOENT;
 		return -rc;
 	}
-
-	rc = ext2_unlink(parents, node);
+#endif
+	rc = ext2_unlink(dir, node);
 	if (0 != rc) {
 		return -rc;
 	}

@@ -1538,15 +1538,16 @@ static int jffs2fs_create(struct inode *i_new, struct inode *parent_node, int mo
 
 static int jffs2fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
-	struct inode *parent;
 	struct jffs2_file_info *par_fi, *fi;
+#if 0
+	struct inode *parent;
 
 	if (NULL == (parent = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
-
-	par_fi = inode_priv(parent);
+#endif
+	par_fi = inode_priv(dir);
 	fi = inode_priv(node);
 	if (S_ISDIR(node->i_mode)) {
 		if (0 != (rc = jffs2_ops_rmdir(par_fi->_inode,

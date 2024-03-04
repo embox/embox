@@ -739,21 +739,23 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 
 static int nfsfs_delete(struct inode *dir, struct inode *node) {
 	nfs_file_info_t *fi;
-	struct inode *dir_node;
 	nfs_file_info_t *dir_fi;
 	lookup_req_t req;
 	delete_reply_t reply;
 	uint32_t procnum;
 
-	fi = inode_priv(node);
+#if 0
+	struct inode *dir_node;
 
 	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
+#endif
+	fi = inode_priv(node);
 
 	/* set delete structure */
 	req.fname = &fi->name_dsc.name;
-	dir_fi = inode_priv(dir_node);
+	dir_fi = inode_priv(dir);
 	req.dir_fh = &dir_fi->fh.name_fh;
 
 	if (S_ISDIR(node->i_mode)) {

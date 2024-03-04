@@ -727,14 +727,15 @@ static int ext4fs_format(struct block_dev *dev, void *priv) {
 
 static int ext4fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
+#if 0
 	struct inode *parent;
 
 	if (NULL == (parent = vfs_subtree_get_parent(node))) {
 		rc = ENOENT;
 		return -rc;
 	}
-
-	if (0 != (rc = ext4_unlink(parent, node))) {
+#endif
+	if (0 != (rc = ext4_unlink(dir, node))) {
 		return -rc;
 	}
 
