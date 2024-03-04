@@ -250,13 +250,10 @@ static ssize_t pty_slave_read(struct idesc *desc, const struct iovec *iov, int c
 	return tty_read(pty_to_tty(ipty->pty), iov->iov_base, iov->iov_len);
 }
 
-static int pty_fstat(struct idesc *data, void *buff) {
-	struct stat *st = buff;
-
-	st->st_mode = S_IFCHR;
+static int pty_fstat(struct idesc *data, struct stat *stat) {
+	stat->st_mode = S_IFCHR;
 
 	return 0;
-
 }
 
 static int pty_ioctl(struct idesc *idesc, int request, void *data) {
