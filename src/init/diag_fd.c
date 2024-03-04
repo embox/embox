@@ -56,10 +56,8 @@ static ssize_t diag_write(struct idesc *data, const struct iovec *iov,
 static void diag_close(struct idesc *data) {
 }
 
-static int diag_fstat(struct idesc *data, void *buff) {
-	struct stat *st = buff;
-
-	st->st_mode = S_IFCHR;
+static int diag_fstat(struct idesc *data, struct stat *stat) {
+	stat->st_mode = S_IFCHR;
 
 	return 0;
 }
