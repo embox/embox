@@ -59,11 +59,11 @@ static ssize_t idesc_file_ops_write(struct idesc *idesc,
 	return kwrite((struct file_desc *)idesc, (char *)buf, nbyte);
 }
 
-static int idesc_file_ops_stat(struct idesc *idesc, void *buf) {
+static int idesc_file_ops_stat(struct idesc *idesc, struct stat *stat) {
 	assert(idesc);
 	assert(idesc->idesc_ops == &idesc_file_ops);
 
-	return kfstat((struct file_desc *)idesc, buf);
+	return kfstat((struct file_desc *)idesc, stat);
 }
 
 static int idesc_file_ops_ioctl(struct idesc *idesc, int request, void *data) {
