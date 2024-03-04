@@ -86,7 +86,7 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 
 		if (NULL == node_path.node) {
 			if (dnode && dnode->i_ops && dnode->i_ops->ino_lookup) {
-				dnode->i_ops->ino_lookup(path, NULL);
+				dnode->i_ops->ino_lookup(path, dir_path.node);
 			} else {
 				return -ENOENT;
 			}
