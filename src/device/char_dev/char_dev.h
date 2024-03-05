@@ -54,7 +54,6 @@ struct char_dev_idesc {
 };
 
 extern struct dlist_head *const __char_dev_registry;
-extern const struct idesc_ops __char_dev_idesc_ops;
 
 extern struct char_dev *char_dev_iterate(struct char_dev *cdev);
 extern struct char_dev *char_dev_find(const char *name);
@@ -68,7 +67,5 @@ extern struct idesc *char_dev_open(struct char_dev *cdev, int oflag);
 
 #define char_dev_foreach(cdev_ptr) \
 	dlist_foreach_entry(cdev_ptr, __char_dev_registry, list_item)
-
-#define char_dev_idesc_ops() (&__char_dev_idesc_ops)
 
 #endif /* DEVICE_CHAR_DEV_H_ */
