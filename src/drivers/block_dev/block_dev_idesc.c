@@ -5,20 +5,19 @@
  * @version 0.1
  * @date 2015-10-01
  */
-#include <util/log.h>
 
 #include <errno.h>
+#include <stddef.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/uio.h>
-#include <stddef.h>
-#include <stdlib.h>
-
-#include <util/err.h>
 
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
 #include <fs/file_desc.h>
+#include <util/err.h>
+#include <util/log.h>
 
 extern const struct idesc_ops idesc_file_ops;
 static void bdev_idesc_close(struct idesc *desc) {
@@ -28,7 +27,8 @@ static void bdev_idesc_close(struct idesc *desc) {
 	idesc_file_ops.close(desc);
 }
 
-static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov,
+    int cnt) {
 	void *buf;
 	size_t nbyte;
 	struct file_desc *file;
@@ -44,7 +44,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	assert(cnt == 1);
 	nbyte = iov->iov_len;
 
-	file = (struct file_desc *) desc;
+	file = (struct file_desc *)desc;
 
 	pos = file_get_pos(file);
 
@@ -53,7 +53,8 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
 		blk_no = pos / bdev->block_size;
-	} else {
+	}
+	else {
 		/* It's a partition */
 		blk_no = bdev->start_offset + (pos / bdev->block_size);
 		bdev = bdev->parent_bdev;
@@ -67,7 +68,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	if (cnt != bdev->block_size) {
 		cache_buf = malloc(bdev->block_size);
 		if (!cache_buf) {
-			log_error("could not alloc cache_buff (%zi)", bdev->block_size );
+			log_error("could not alloc cache_buff (%zi)", bdev->block_size);
 			return -ENOMEM;
 		}
 	}
@@ -80,7 +81,8 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 			res = nbyte;
 			memcpy(buf, &cache_buf[pos % bdev->block_size], nbyte);
 		}
-	} else {
+	}
+	else {
 		res = bdev->driver->bdo_read(bdev, buf, nbyte, blk_no);
 	}
 	if (res > 0) {
@@ -94,7 +96,8 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov, int 
 	return res;
 }
 
-static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int cnt) {
+static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov,
+    int cnt) {
 	struct file_desc *file;
 	struct dev_module *devmod;
 	struct block_dev *bdev;
@@ -115,7 +118,8 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 	if (!bdev->parent_bdev) {
 		/* It's not a partition */
 		blk_no = pos / bdev->block_size;
-	} else {
+	}
+	else {
 		/* It's a partition */
 		blk_no = bdev->start_offset + (pos / bdev->block_size);
 		bdev = bdev->parent_bdev;
@@ -128,7 +132,8 @@ static ssize_t bdev_idesc_write(struct idesc *desc, const struct iovec *iov, int
 
 	assert(bdev->driver);
 	assert(bdev->driver->bdo_write);
-	res = bdev->driver->bdo_write(bdev, (void *)iov->iov_base, iov->iov_len, blk_no);
+	res = bdev->driver->bdo_write(bdev, (void *)iov->iov_base, iov->iov_len,
+	    blk_no);
 	if (res > 0) {
 		file_set_pos(file, pos + res);
 	}
@@ -143,7 +148,7 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 
 	assert(idesc);
 
-	file = (struct file_desc *) idesc;
+	file = (struct file_desc *)idesc;
 
 	devmod = file_get_inode_data(file);
 	bdev = dev_module_to_bdev(devmod);
@@ -165,21 +170,19 @@ static int bdev_idesc_ioctl(struct idesc *idesc, int cmd, void *args) {
 	}
 }
 
-static int bdev_idesc_fstat(struct idesc *idesc, void *buff) {
-	struct stat *sb;
+static int bdev_idesc_fstat(struct idesc *idesc, struct stat *stat) {
+	assert(stat);
 
-	assert(buff);
-	sb = buff;
-	memset(sb, 0, sizeof(struct stat));
-	sb->st_mode = S_IFBLK;
+	memset(stat, 0, sizeof(struct stat));
+	stat->st_mode = S_IFBLK;
 
 	return 0;
 }
 
 struct idesc_ops idesc_bdev_ops = {
-	.close = bdev_idesc_close,
-	.id_readv  = bdev_idesc_read,
-	.id_writev = bdev_idesc_write,
-	.ioctl = bdev_idesc_ioctl,
-	.fstat = bdev_idesc_fstat
+    .close = bdev_idesc_close,
+    .id_readv = bdev_idesc_read,
+    .id_writev = bdev_idesc_write,
+    .ioctl = bdev_idesc_ioctl,
+    .fstat = bdev_idesc_fstat,
 };

@@ -142,17 +142,13 @@ static int char_dev_ioctl(struct idesc *idesc, int request, void *data) {
 	return cdev->ops->ioctl(cdev, request, data);
 }
 
-static int char_dev_fstat(struct idesc *idesc, void *buff) {
-	struct stat *sb;
-
-	assert(buff);
+static int char_dev_fstat(struct idesc *idesc, struct stat *stat) {
+	assert(stat);
 	assert(idesc);
 	assert(idesc->idesc_ops == char_dev_idesc_ops());
 
-	sb = buff;
-
-	memset(sb, 0, sizeof(struct stat));
-	sb->st_mode = S_IFCHR;
+	memset(stat, 0, sizeof(struct stat));
+	stat->st_mode = S_IFCHR;
 
 	return 0;
 }
