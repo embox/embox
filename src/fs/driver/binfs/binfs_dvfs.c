@@ -16,23 +16,15 @@
 
 #define BINFS_NAME "binfs"
 
-struct inode *binfs_lookup(char const *name, struct inode const *dir) {
-	struct super_block *sb;
-	struct inode *node;
+struct inode *binfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	const struct cmd *cmd;
 
 	assert(dir);
 	assert(dir->i_sb);
 
-	sb = dir->i_sb;
-
 	cmd_foreach(cmd) {
 		if (strcmp(name, cmd->desc->name)) {
 			continue;
-		}
-
-		if (NULL == (node = dvfs_alloc_inode(sb))) {
-			return NULL;
 		}
 
 		return node;

@@ -13,7 +13,7 @@
 
 #include "fat.h"
 
-struct inode *fat_ilookup(char const *name, struct inode const *dir) {
+struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 

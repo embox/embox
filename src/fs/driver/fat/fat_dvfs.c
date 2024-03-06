@@ -27,21 +27,18 @@
  *
  * @return Pointer of inode or NULL if not found
  */
-struct inode *fat_ilookup(char const *name, struct inode const *dir) {
+struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	struct dirinfo *di;
 	struct fat_dirent de;
-	struct super_block *sb;
 	uint8_t tmp_ent;
 	uint8_t tmp_sec;
 	uint32_t tmp_clus;
-	struct inode *node;
 	char tmppath[128];
 	int found = 0;
 
 	assert(name);
 	assert(S_ISDIR(dir->i_mode));
 
-	sb = dir->i_sb;
 	di = inode_priv(dir);
 
 	assert(di);
@@ -63,9 +60,6 @@ struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 	}
 
 	if (!found)
-		goto err_out;
-
-	if (NULL == (node = dvfs_alloc_inode(sb)))
 		goto err_out;
 
 	if (fat_fill_inode(node, &de, di))

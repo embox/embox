@@ -18,7 +18,7 @@
 
 #include "initfs.h"
 
-struct inode *initfs_lookup(char const *name, struct inode const *dir) {
+struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 

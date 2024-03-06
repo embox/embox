@@ -26,7 +26,7 @@ extern int cdfs_isonum_733(unsigned char *p);
 extern int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, iso_directory_record_t *rec);
 extern int cdfs_find_dir(struct cdfs_fs_info *cdfs, char *name, int len);
 
-extern struct inode *cdfs_ilookup(char const *name, struct inode const *dir);
+extern struct inode *cdfs_ilookup(struct inode *node, char const *name, struct inode const *dir);
 
 static int cdfs_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx) {
 	int n;

@@ -204,17 +204,13 @@ static size_t fuse_write(struct file_desc *desc, void *buf, size_t size) {
 	return ret;
 }
 
-static struct inode *fuse_lookup(char const *name, struct inode const *dir) {
-	struct inode *node;
+static struct inode *fuse_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	struct fuse_req_embox *req;
 	struct task *task;
 	struct fuse_sb_priv_data *sb_fuse_data;
 
 	sb_fuse_data = dir->i_sb->sb_data;
 
-	if (NULL == (node = dvfs_alloc_inode(dir->i_sb))) {
-		return NULL;
-	}
 	if (NULL == (req = fuse_req_alloc())) {
 		return NULL;
 	}

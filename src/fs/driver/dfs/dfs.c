@@ -243,9 +243,8 @@ static int dfs_itruncate(struct inode *inode, off_t new_len) {
 	return 0;
 }
 
-static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
+static struct inode *dfs_ilookup(struct inode *inode, char const *path, struct inode const *dir) {
 	struct dfs_dir_entry dirent;
-	struct inode *inode;
 	struct super_block *sb;
 
 	assert(path);
@@ -253,16 +252,8 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 
 	sb = dir->i_sb;
 
-	inode = dvfs_alloc_inode(sb);
-
-	if (!inode) {
-		return NULL;
-	}
-
 	inode->i_no = ino_from_path(sb, path);
-
 	if (inode->i_no < 0) {
-		dvfs_destroy_inode(inode);
 		return NULL;
 	}
 

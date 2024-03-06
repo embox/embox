@@ -127,7 +127,7 @@ static int cifs_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
-struct inode *cifs_lookup(char const *name, struct inode const *dir) {
+struct inode *cifs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 
@@ -266,7 +266,7 @@ static int embox_cifs_node_delete(struct inode *dir, struct inode *node) {
 static struct inode_operations cifs_iops = {
 	.ino_create = embox_cifs_node_create,
 	.ino_remove = embox_cifs_node_delete,
-//	.ino_lookup   = cifs_lookup,
+	.ino_lookup   = cifs_lookup,
 	.ino_iterate  = cifs_iterate,
 };
 

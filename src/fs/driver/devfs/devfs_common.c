@@ -72,15 +72,10 @@ static void devfs_fill_inode(struct inode *inode, void *priv, int flags) {
  *
  * @return Pointer to inode structure or NULL if failed
  */
-static struct inode *devfs_lookup(char const *name, struct inode const *dir) {
+static struct inode *devfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	int i;
-	struct inode *node;
 	struct char_dev *cdev;
 	struct block_dev **bdevtab = get_bdev_tab();
-
-	if (NULL == (node = inode_new(dir->i_sb))) {
-		return NULL;
-	}
 
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevtab[i] && !strcmp(block_dev_name(bdevtab[i]), name)) {

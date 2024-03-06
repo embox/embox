@@ -168,7 +168,7 @@ static int ext2fs_truncate (struct inode *node, off_t length) {
 	return 0;
 }
 
-extern struct inode *ext2fs_lookup(char const *name, struct inode const *dir);
+extern struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir);
 
 struct inode_operations ext2_iops = {
 	.ino_create  = ext2fs_create,

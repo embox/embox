@@ -22,7 +22,7 @@
 #include <fs/inode_operation.h>
 #include <fs/fs_driver.h>
 
-extern struct inode *initfs_lookup(char const *name, struct inode const *dir);
+extern struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir);
 
 extern struct super_block_operations initfs_sbops;
 extern int initfs_create(struct inode *i_new, struct inode *i_dir, int mode);

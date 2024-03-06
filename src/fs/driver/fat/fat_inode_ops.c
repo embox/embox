@@ -164,7 +164,7 @@ int fat_delete(struct inode *dir, struct inode *node) {
 	return 0;
 }
 
-extern struct inode *fat_ilookup(char const *name, struct inode const *dir);
+extern struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir);
 
 struct inode_operations fat_iops = {
 	.ino_create   = fat_create,

@@ -29,11 +29,10 @@
 
 #include "initfs.h"
 
-struct inode *initfs_lookup(char const *name, struct inode const *dir) {
+struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
 	struct cpio_entry entry;
-	struct inode *node = NULL;
 	struct initfs_file_info *fi = inode_priv(dir);
 
 	while ((cpio = cpio_parse_entry(cpio, &entry))) {
@@ -46,11 +45,6 @@ struct inode *initfs_lookup(char const *name, struct inode const *dir) {
 
 			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
 				log_error("Unknown inode type in cpio\n");
-				break;
-			}
-
-			node = dvfs_alloc_inode(dir->i_sb);
-			if (node == NULL) {
 				break;
 			}
 

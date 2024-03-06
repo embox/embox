@@ -17,8 +17,7 @@
 
 extern struct ramfs_file_info ramfs_files[RAMFS_FILES];
 
-struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
-	struct inode *node;
+struct inode *ramfs_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	struct super_block *sb;
 
 	assert(dir);
@@ -34,10 +33,6 @@ struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
 
 		if (strcmp(name, ramfs_files[i].name)) {
 			continue;
-		}
-
-		if (NULL == (node = dvfs_alloc_inode(sb))) {
-			return NULL;
 		}
 
 		node->i_privdata = &ramfs_files[i];

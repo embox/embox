@@ -22,7 +22,7 @@
 
 extern struct super_block_operations binfs_sbops;
 
-extern struct inode *binfs_lookup(char const *name, struct inode const *dir);
+extern struct inode *binfs_lookup(struct inode *node, char const *name, struct inode const *dir);
 
 int binfs_destroy_inode(struct inode *inode) {
 	return 0;
