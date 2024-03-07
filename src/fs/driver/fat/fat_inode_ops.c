@@ -145,11 +145,15 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	return 0;
 }
-
+extern int fat_dir_empty(struct fat_file_info *fi);
 int fat_delete(struct inode *dir, struct inode *node) {
 	struct fat_file_info *fi;
 
 	fi = inode_priv(node);
+
+	if (S_ISDIR(node->i_mode) && !fat_dir_empty(fi)) {
+		return -EPERM;
+	}
 
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
 		return -1;
