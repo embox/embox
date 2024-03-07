@@ -17,6 +17,8 @@
 
 #include "fat.h"
 
+extern int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de);
+extern int fat_destroy_inode(struct inode *inode);
 
 /* @brief Get next inode in directory
  * @param inode   Structure to be filled
@@ -58,11 +60,19 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 	switch (res) {
 	case DFS_OK: {
 		char tmp_name[128];
+		int res;
+
+		res = fat_alloc_inode_priv(next, &de);
+		if (res) {
+			return res;
+		}
 
 		if (0 > fat_fill_inode(next, &de, dirinfo)) {
+			fat_destroy_inode(next);
 			return -1;
 		}
 		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, tmp_name)) {
+			fat_destroy_inode(next);
 			return -1;
 		}
 		strncpy(name, tmp_name, NAME_MAX-1);

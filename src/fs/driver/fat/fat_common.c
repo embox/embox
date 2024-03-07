@@ -1984,6 +1984,45 @@ uint8_t fat_canonical_name_checksum(const char *name) {
 	return res;
 }
 
+int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de) {
+	struct fat_file_info *fi;
+	
+	fi = inode_priv(inode);
+	if (fi) {
+		/*we already allocated file info for this inode */
+		return 0;
+	}
+	
+	if (de->attr & ATTR_DIRECTORY){
+		struct dirinfo *new_di;
+
+		new_di = fat_dirinfo_alloc();
+		if (NULL == new_di) {
+			return -ENOMEM;
+		}
+
+		memset(new_di, 0, sizeof(struct dirinfo));
+		new_di->p_scratch = fat_sector_buff;
+		new_di->currentcluster = fat_direntry_get_clus(de);
+
+		fi = &new_di->fi;
+
+		inode->i_mode |= S_IFDIR;
+	} else {
+		fi = fat_file_alloc();
+		if (NULL == fi) {
+			return -ENOMEM;
+		}
+		memset(fi, 0, sizeof(struct fat_file_info));
+
+		inode->i_mode |= S_IFREG;
+	}
+
+	inode_priv_set(inode, fi);
+
+	return 0;
+}
+
 /**
  * @brief Set appropriate flags and i_data for given inode
  *
@@ -2012,6 +2051,9 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 	vi = &fsi->vi;
 	assert(vi);
 
+	fi = inode_priv(inode);
+	assert(fi);
+
 	/* Need to save some dirinfo data because this
 	 * stuff may change while we traverse to the end
 	 * of long name entry */
@@ -2027,30 +2069,6 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 		}
 	}
 
-	if (de->attr & ATTR_DIRECTORY){
-		struct dirinfo *new_di;
-
-		new_di = fat_dirinfo_alloc();
-		if (NULL == new_di) {
-			goto err_out;
-		}
-
-		memset(new_di, 0, sizeof(struct dirinfo));
-		new_di->p_scratch = fat_sector_buff;
-		new_di->currentcluster = fat_direntry_get_clus(de);
-
-		fi = &new_di->fi;
-
-		inode->i_mode |= S_IFDIR;
-	} else {
-		fi = fat_file_alloc();
-		if (NULL == fi) {
-			goto err_out;
-		}
-
-		inode->i_mode |= S_IFREG;
-	}
-
 	if (di->fi.dirsector == 0 && (vi->filesystem == FAT12 || vi->filesystem == FAT16)) {
 		fi->dirsector = tmp_sector + tmp_cluster * vi->secperclus;
 	} else {
@@ -2064,16 +2082,14 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 	fi->filelen      = fat_direntry_get_size(de);
 	fi->fdi          = di;
 
-	inode_priv_set(inode, fi);
 	inode_size_set(inode, fi->filelen);
 	if (de->attr & ATTR_READ_ONLY) {
 		inode->i_mode |= S_IRALL;
 	} else {
 		inode->i_mode |= S_IRWXA;
 	}
+
 	return 0;
-err_out:
-	return -1;
 }
 
 int fat_destroy_inode(struct inode *inode) {
@@ -2091,6 +2107,8 @@ int fat_destroy_inode(struct inode *inode) {
 		fi = inode_priv(inode);
 		fat_file_free(fi);
 	}
+
+	inode_priv_set(inode, NULL);
 
 	return 0;
 }
