@@ -73,6 +73,24 @@ void initfs_free_inode(struct initfs_file_info *fi) {
 	pool_free(&initfs_file_pool, fi);
 }
 
+int initfs_alloc_inode_priv(struct inode *node) {
+	struct initfs_file_info *fi;
+
+	if (inode_priv(node)) {
+		return 0;
+	}
+
+	fi = initfs_alloc_inode();
+	if (!fi) {
+		return -ENOMEM;
+	}
+	memset(fi, 0, sizeof(*fi));
+
+	inode_priv_set(node, fi);
+
+	return 0;
+}
+
 /**
 * @brief Initialize initfs inode
 *
@@ -85,18 +103,13 @@ int initfs_fill_inode(struct inode *node, char *cpio,
 		struct cpio_entry *entry) {
 	struct initfs_file_info *fi;
 
+	fi = inode_priv(node);
+	assert(fi);
+
 	inode_size_set(node, entry->size);
 	inode_mtime_set(node, entry->mtime);
 	node->i_mode = entry->mode & (S_IFMT | S_IRWXA);
 
-	fi = initfs_alloc_inode();
-	if (!fi) {
-		return -ENOMEM;
-	}
-
-	memset(fi, 0, sizeof(*fi));
-
-	inode_priv_set(node, fi);
 	fi->start_pos = (intptr_t) entry->data;
 	fi->entry     = (void *) cpio;
 
@@ -160,7 +173,12 @@ int initfs_iterate(struct inode *next, char *name, struct inode *parent, struct 
 				break;
 			}
 
+			if (0 > initfs_alloc_inode_priv(next)) {
+				return -1;
+			}
+
 			if (0 > initfs_fill_inode(next, prev, &entry)) {
+				dvfs_destroy_inode(node);
 				return -1;
 			}
 

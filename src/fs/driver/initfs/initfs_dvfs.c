@@ -29,6 +29,7 @@
 
 #include "initfs.h"
 
+extern int initfs_alloc_inode_priv(struct inode *node);
 struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	extern char _initfs_start;
 	char *cpio = &_initfs_start;
@@ -46,6 +47,10 @@ struct inode *initfs_lookup(struct inode *node, char const *name, struct inode c
 			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
 				log_error("Unknown inode type in cpio\n");
 				break;
+			}
+
+			if (0 > initfs_alloc_inode_priv(node)) {
+				return NULL;
 			}
 
 			if (0 > initfs_fill_inode(node, cpio, &entry)) {
