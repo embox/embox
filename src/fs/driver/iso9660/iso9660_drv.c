@@ -20,6 +20,14 @@
 #include <fs/iso9660.h>
 
 int cdfs_destroy_inode(struct inode *inode) {
+	struct cdfs_file_info *fi;
+
+	fi = inode_priv(inode);
+
+	iso9660_fi_free(fi);
+
+	inode_priv_set(inode, NULL);
+	
 	return 0;
 }
 

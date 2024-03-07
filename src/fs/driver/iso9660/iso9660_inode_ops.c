@@ -23,6 +23,8 @@
 extern int cdfs_isonum_711(unsigned char *p);
 extern int cdfs_isonum_733(unsigned char *p);
 
+extern int cdfs_alloc_inode_priv(struct inode* node);
+extern int cdfs_destroy_inode(struct inode *inode);
 extern int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, iso_directory_record_t *rec);
 extern int cdfs_find_dir(struct cdfs_fs_info *cdfs, char *name, int len);
 
@@ -89,8 +91,21 @@ static int cdfs_iterate(struct inode *next, char *next_name, struct inode *paren
 
 			if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
 			} else {
-				cdfs_fill_node(next, next_name, fsi, rec);
+				int res;
+
+				res = cdfs_alloc_inode_priv(next);
+				if (res) {
+					return -1;
+				}
+
+				res = cdfs_fill_node(next, next_name, fsi, rec);
+				if (res) {
+					cdfs_destroy_inode(next);
+					return -1;
+				}
+
 				dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
+				
 				return 0;
 			}
 			/* Skip to next record */
