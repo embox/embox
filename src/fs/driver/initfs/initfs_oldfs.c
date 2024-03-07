@@ -18,10 +18,6 @@
 
 #include "initfs.h"
 
-struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
-	return NULL;
-}
-
 struct super_block_operations initfs_sbops = {
 	//.open_idesc = dvfs_file_open_idesc,
 	.destroy_inode = initfs_destroy_inode,

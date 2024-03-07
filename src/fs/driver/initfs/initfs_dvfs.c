@@ -21,49 +21,12 @@
 
 #include <stdint.h>
 #include <cpio.h>
-//#include <limits.h>
 #include <string.h>
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
 
 #include "initfs.h"
-
-extern int initfs_alloc_inode_priv(struct inode *node);
-struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
-	extern char _initfs_start;
-	char *cpio = &_initfs_start;
-	struct cpio_entry entry;
-	struct initfs_file_info *fi = inode_priv(dir);
-
-	while ((cpio = cpio_parse_entry(cpio, &entry))) {
-		if (fi->path && memcmp(fi->path, entry.name, fi->path_len)) {
-			continue;
-		}
-		if (!strcmp(name,
-		             entry.name + fi->path_len + (*(entry.name + fi->path_len) == '/' ? 1 : 0)) &&
-			strrchr(entry.name + fi->path_len + 1, '/') == NULL) {
-
-			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
-				log_error("Unknown inode type in cpio\n");
-				break;
-			}
-
-			if (0 > initfs_alloc_inode_priv(node)) {
-				return NULL;
-			}
-
-			if (0 > initfs_fill_inode(node, cpio, &entry)) {
-				dvfs_destroy_inode(node);
-				return NULL;
-			}
-
-			return node;
-		}
-	}
-
-	return NULL;
-}
 
 extern struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
 
