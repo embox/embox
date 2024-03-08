@@ -485,8 +485,8 @@ struct usb_driver usb_driver_hub = {
 static int usb_hub_driver_init(void) {
 #if USE_THREAD
 	usb_hubs_thread = thread_create(THREAD_FLAG_SUSPENDED, usb_hub_event_hnd, NULL);
-	if (err(usb_hubs_thread)) {
-		return err(usb_hubs_thread);
+	if (ptr2err(usb_hubs_thread)) {
+		return ptr2err(usb_hubs_thread);
 	}
 #endif
 

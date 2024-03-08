@@ -114,7 +114,7 @@ err_free_mem:
 err_free_ramdisk:
 	pool_free(&ramdisk_pool, ramdisk);
 err_out:
-	return err_ptr(err);
+	return err2ptr(err);
 }
 
 /* TODO rewrite it to be device remove function */
