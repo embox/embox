@@ -28,9 +28,9 @@ int idle_thread_create(void) {
 
 	t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED, idle_run,
 	    NULL);
-	if (err(t)) {
-		log_error(" Couldn't create thread err=%d", err(t));
-		return err(t);
+	if (ptr2err(t)) {
+		log_error(" Couldn't create thread err=%d", ptr2err(t));
+		return ptr2err(t);
 	}
 
 	task_thread_register(task_kernel_task(), t);
