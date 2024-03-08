@@ -468,12 +468,12 @@ static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __
 	fi->f_pointer = file_get_pos(file_desc_from_idesc(idesc));
 
 	if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	if (0 != (rc = ext2_read_inode(node, fi->f_num))) {
 		ext2_close(node);
-		return err_ptr(rc);
+		return err2ptr(rc);
 	}
 	else {
 		file_set_size(file_desc_from_idesc(idesc), fi->f_di.i_size);

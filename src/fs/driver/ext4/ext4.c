@@ -573,12 +573,12 @@ static struct idesc *ext4fs_open(struct inode *node, struct idesc *idesc, int __
 	fi->f_pointer = file_get_pos(file_desc_from_idesc(idesc)); /* reset seek pointer */
 
 	if (NULL == (fi->f_buf = ext4_buff_alloc(fsi, fsi->s_block_size))) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	if (0 != (rc = ext4_read_inode(node, fi->f_num))) {
 		ext4_close(node);
-		return err_ptr(rc);
+		return err2ptr(rc);
 	}
 	else {
 		file_set_size(file_desc_from_idesc(idesc), ext4_file_size(fi->f_di));

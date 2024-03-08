@@ -341,12 +341,12 @@ static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __of
 	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX);
 
 	if (smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 
 	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,idesc->idesc_flags,0);
 	if(!file) {
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 
 	file_desc_set_file_info(file_desc_from_idesc(idesc), file);

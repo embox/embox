@@ -132,7 +132,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 
 	desc = dvfs_alloc_file();
 	if (desc == NULL) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	d = lookup->item;
@@ -153,7 +153,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 		res = desc->f_ops->open(i_no, &desc->f_idesc, __oflag);
 		if (res == NULL) {
 			dvfs_destroy_file(desc);
-			return err_ptr(ENOENT);
+			return err2ptr(ENOENT);
 		}
 	}
 
@@ -161,7 +161,7 @@ struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag) {
 		if (i_no->i_ops && i_no->i_ops->ino_truncate) {
 			if (i_no->i_ops->ino_truncate(desc->f_inode, 0)) {
 				dvfs_destroy_file(desc);
-				return err_ptr(ENOENT);
+				return err2ptr(ENOENT);
 			}
 		}
 		inode_size_set(i_no, 0);

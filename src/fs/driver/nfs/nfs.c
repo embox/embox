@@ -89,7 +89,7 @@ static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __o
 		inode_size_set(node, fi->attr.size);
 		return idesc;
 	}
-	return err_ptr(ENOENT);
+	return err2ptr(ENOENT);
 }
 
 static int nfsfs_close(struct file_desc *desc) {
