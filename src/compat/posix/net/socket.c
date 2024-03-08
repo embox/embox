@@ -56,8 +56,8 @@ int socket(int domain, int type, int protocol) {
 	struct sock *sk;
 
 	sk = ksocket(domain, type, protocol);
-	if (err(sk) != 0) {
-		return SET_ERRNO(-err(sk));
+	if (ptr2err(sk) != 0) {
+		return SET_ERRNO(-ptr2err(sk));
 	}
 
 	sockfd = get_index(sk);

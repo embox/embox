@@ -61,8 +61,8 @@ int _open(const char *path, int __oflag) {
 		idesc = lookup.item->d_sb->sb_ops->open_idesc(&lookup, __oflag);
 	}
 
-	if (err(idesc)) {
-		return SET_ERRNO(err(idesc));
+	if (ptr2err(idesc)) {
+		return SET_ERRNO(ptr2err(idesc));
 	}
 
 	idesc->idesc_flags = __oflag;
