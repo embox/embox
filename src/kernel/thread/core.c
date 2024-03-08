@@ -110,16 +110,16 @@ static struct thread *__thread_create(unsigned int flags, size_t stack_sz,
 	/* check mutually exclusive flags */
 	if ((flags & THREAD_FLAG_PRIORITY_LOWER)
 			&& (flags & THREAD_FLAG_PRIORITY_HIGHER)) {
-		return err_ptr(EINVAL);
+		return err2ptr(EINVAL);
 	}
 
 	if((flags & THREAD_FLAG_NOTASK) && !(flags & THREAD_FLAG_SUSPENDED)) {
-		return err_ptr(EINVAL);
+		return err2ptr(EINVAL);
 	}
 
 	/* check correct executive function */
 	if (!run) {
-		return err_ptr(EINVAL);
+		return err2ptr(EINVAL);
 	}
 
 	/* calculate current thread priority. It can be change later with
@@ -135,7 +135,7 @@ static struct thread *__thread_create(unsigned int flags, size_t stack_sz,
 	{
 		/* allocate memory */
 		if (!(t = thread_alloc(stack_sz))) {
-			t = err_ptr(ENOMEM);
+			t = err2ptr(ENOMEM);
 			goto out_unlock;
 		}
 

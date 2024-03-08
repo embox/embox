@@ -31,7 +31,7 @@ static struct idesc *example_open(struct inode *node, struct idesc *idesc,
 
 	res = usb_driver_open_by_node(node, &ddesc);
 	if (0 != res) {
-		return err_ptr(-res);
+		return err2ptr(-res);
 	}
 
 	assert(ddesc);

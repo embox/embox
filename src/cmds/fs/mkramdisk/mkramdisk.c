@@ -39,7 +39,7 @@ int main(int argc, char *argv[]) {
 
 	rd = ramdisk_create(ramdisk_path, ramdisk_size);
 	
-	exit_code = err(rd);
+	exit_code = ptr2err(rd);
 
 	if (!exit_code) {
 		printf("%s\n", block_dev_name(rd->bdev));

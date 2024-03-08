@@ -32,7 +32,7 @@ TEST_TEARDOWN_SUITE(teardown_suite);
 static int setup_suite(void) {
 	int res;
 
-	res = err(ramdisk_create(FS_DEV, FS_BLOCKS * sysconf(_SC_PAGESIZE)));
+	res = ptr2err(ramdisk_create(FS_DEV, FS_BLOCKS * sysconf(_SC_PAGESIZE)));
 	if (res != 0) {
 		return res;
 	}

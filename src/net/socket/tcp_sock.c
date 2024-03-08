@@ -314,8 +314,8 @@ int tcp_sock_listen_alloc(struct tcp_sock *tcp_sk) {
 
         newsk = sock_create(to_sock(tcp_sk)->opt.so_domain,
                 SOCK_STREAM, IPPROTO_TCP);
-        if (err(newsk) != 0) {
-            log_info("could not sock_create() err(%d)", err(newsk));
+        if (ptr2err(newsk) != 0) {
+            log_info("could not sock_create() ptr2err(%d)", ptr2err(newsk));
             break;
         }
 

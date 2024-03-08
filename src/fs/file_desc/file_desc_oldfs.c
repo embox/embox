@@ -43,7 +43,7 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 
 	/* allocate new descriptor */
 	if (NULL == (desc = file_desc_alloc())) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 	/* setup access mode */
 	perm_flags = 0;
@@ -56,7 +56,7 @@ struct file_desc *file_desc_create(struct inode *node, int flag) {
 
 	if (0 > (ret = fs_perm_check(node, perm_flags))) {
 		file_desc_free(desc);
-		return err_ptr(EACCES);
+		return err2ptr(EACCES);
 	}
 
 	desc->f_inode = node;

@@ -37,7 +37,7 @@ struct flash_dev *flash_create(const char *name, size_t size) {
 	assert(name);
 
 	if (NULL == (flash = flash_alloc())) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	memset(dev_name, 0, sizeof(dev_name));
@@ -46,7 +46,7 @@ struct flash_dev *flash_create(const char *name, size_t size) {
 	flash->bdev = block_dev_create(dev_name, &flashbdev_pio_driver, flash);
 	if (NULL == flash->bdev) {
 		flash_free(flash);
-		return err_ptr(EIO);
+		return err2ptr(EIO);
 	}
 
 	flash->bdev->size = size;

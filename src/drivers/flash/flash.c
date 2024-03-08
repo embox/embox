@@ -30,13 +30,13 @@ struct flash_dev *flash_alloc(void) {
 	int idx;
 
 	if (NULL == (flash = pool_alloc(&flash_pool))) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	idx = index_alloc(&flash_idx, INDEX_MIN);
 	if (idx == INDEX_NONE) {
 		pool_free(&flash_pool, flash);
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	memset(flash, 0, sizeof(*flash));

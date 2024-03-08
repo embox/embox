@@ -8,11 +8,11 @@
 #ifndef UTIL_ERR_H_
 #define UTIL_ERR_H_
 
-static inline void *err_ptr(long err_code) {
+static inline void *err2ptr(long err_code) {
 	return (void *)-err_code;
 }
 
-static inline int err(const void *res) {
+static inline int ptr2err(const void *res) {
 	return (((long)res) < 0) && (((long)res) > -4096) ? ((long)res) : 0;
 }
 

@@ -60,7 +60,7 @@ static int setup(void) {
 	mutex_init_schedee(&m);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
-	test_assert_zero(err(low));
+	test_assert_zero(ptr2err(low));
 
 	lthread_init(&high, high_run);
 

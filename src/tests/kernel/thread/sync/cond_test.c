@@ -49,10 +49,10 @@ TEST_CASE("General") {
 	cond_init(&c, NULL);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
-	test_assert_zero(err(low));
+	test_assert_zero(ptr2err(low));
 
 	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, NULL);
-	test_assert_zero(err(high));
+	test_assert_zero(ptr2err(high));
 
 	test_assert_zero(schedee_priority_set(&low->schedee, l));
 	test_assert_zero(schedee_priority_set(&high->schedee, h));

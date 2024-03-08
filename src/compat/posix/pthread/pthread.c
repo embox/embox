@@ -159,7 +159,7 @@ int pthread_create(pthread_t *thread, const pthread_attr_t *attr,
 	flags = detached | inherit | THREAD_FLAG_SUSPENDED;
 
 	t = thread_create(flags, start_routine, arg);
-	if (err(t)) {
+	if (ptr2err(t)) {
 		/*
 		 * The pthread_create() function will fail if:
 		 *

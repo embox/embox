@@ -579,13 +579,13 @@ static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __of
 	//       necessary to keep only ntfs_attr
 	desc = pool_alloc(&ntfs_desc_pool);
 	if (!desc) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	ni = ntfs_inode_open(fsi->ntfs_vol, fi->mref);
 	if (!ni) {
 		pool_free(&ntfs_desc_pool, desc);
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 
 	attr = ntfs_attr_open(ni, AT_DATA, NULL, 0);
@@ -594,7 +594,7 @@ static struct idesc *ntfs_open(struct inode *node, struct idesc *idesc, int __of
 		pool_free(&ntfs_desc_pool, desc);
 		ntfs_inode_close(ni);
 		errno = err;
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 
 	desc->attr = attr;

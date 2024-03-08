@@ -1368,7 +1368,7 @@ static struct idesc *jffs2fs_open(struct inode *node, struct idesc *idesc, int _
 
 	res = jffs2_open(fsi->jffs2_sb.s_root, path, idesc->idesc_flags);
 	if (res) {
-		return err_ptr(-res);
+		return err2ptr(-res);
 	}
 	return idesc;
 }

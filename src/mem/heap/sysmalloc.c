@@ -46,7 +46,7 @@ void *sysrealloc(void *ptr, size_t size) {
 	void *ret;
 
 	ret = mspace_realloc(ptr, size, kernel_task_mspace());
-	if (0 > err(ret)) {
+	if (0 > ptr2err(ret)) {
 		return NULL;
 	}
 

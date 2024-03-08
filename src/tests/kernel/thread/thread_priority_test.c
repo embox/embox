@@ -34,7 +34,7 @@ TEST_CASE("Create " str(THREADS_QUANTITY) " threads with"
 		struct thread *t;
 		t = thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				thread_run, (void *) (uintptr_t) i);
-		test_assert_zero(err(t));
+		test_assert_zero(ptr2err(t));
 		task_thread_register(task_kernel_task(), t);
 		test_assert_zero(schedee_priority_set(&t->schedee, i));
 		test_assert_zero(thread_detach(t));

@@ -89,7 +89,7 @@ char *dns_set_nameserver(char *nameserver) {
 
 	file = fopen(RESOLV_FILE, "w+");
 	if (file == NULL) {
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 	while(NULL != (res = fgets(buf, sizeof(buf), file))) {
 		if (0 == strncmp(buf, "nameserver ", 11)) {

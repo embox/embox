@@ -58,7 +58,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 	}
 
 	desc = file_desc_create(node, flag);
-	if (0 != err(desc)) {
+	if (0 != ptr2err(desc)) {
 		SET_ERRNO(-(uintptr_t)desc);
 		return NULL;
 	}
@@ -66,7 +66,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 
 	if (desc->f_ops->open != NULL) {
 		idesc = desc->f_ops->open(node, &desc->f_idesc, flag);
-		if (err(idesc)){
+		if (ptr2err(idesc)){
 			ret = (uintptr_t)idesc;
 			goto free_out;
 		}

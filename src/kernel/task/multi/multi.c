@@ -110,8 +110,8 @@ int new_task(const char *name, void * (*run)(void *), void *arg) {
 		 */
 		thd = main_thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				stack_sz, task_trampoline, NULL);
-		if (0 != err(thd)) {
-			res = err(thd);
+		if (0 != ptr2err(thd)) {
+			res = ptr2err(thd);
 			goto out_unlock;
 		}
 
@@ -222,8 +222,8 @@ int task_prepare(const char *name) {
 		 */
 		thd = main_thread_create(THREAD_FLAG_NOTASK | THREAD_FLAG_SUSPENDED,
 				stack_sz, task_trampoline, NULL);
-		if (0 != err(thd)) {
-			res = err(thd);
+		if (0 != ptr2err(thd)) {
+			res = ptr2err(thd);
 			goto out_unlock;
 		}
 

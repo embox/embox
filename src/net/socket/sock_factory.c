@@ -148,23 +148,23 @@ struct sock *sock_create(int family, int type, int protocol) {
 
 	nfamily = net_family_lookup(family);
 	if (nfamily == NULL) {
-		return err_ptr(EAFNOSUPPORT);
+		return err2ptr(EAFNOSUPPORT);
 	}
 
 	nftype = net_family_type_lookup(nfamily, type);
 	if (nftype == NULL) {
-		return err_ptr(EPROTOTYPE);
+		return err2ptr(EPROTOTYPE);
 	}
 
 	nsock = net_sock_lookup(family, type, protocol);
 	if (nsock == NULL) {
-		return err_ptr(EPROTONOSUPPORT);
+		return err2ptr(EPROTONOSUPPORT);
 	}
 
 	new_sk = sock_alloc(nftype->ops, nsock->ops);
 	if (new_sk == NULL) {
 		log_info("could not alloc type %d prot %d", nftype->type, nsock->protocol);
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	sock_init(new_sk, family, type, nsock->protocol,
@@ -175,7 +175,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 	ret = new_sk->f_ops->init(new_sk);
 	if (ret != 0) {
 		sock_release(new_sk);
-		return err_ptr(-ret);
+		return err2ptr(-ret);
 	}
 
 	assert(new_sk->p_ops != NULL);
@@ -183,7 +183,7 @@ struct sock *sock_create(int family, int type, int protocol) {
 		ret = new_sk->p_ops->init(new_sk);
 		if (ret != 0) {
 			sock_close(new_sk);
-			return err_ptr(-ret);
+			return err2ptr(-ret);
 		}
 	}
 

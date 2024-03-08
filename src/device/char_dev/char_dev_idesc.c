@@ -195,7 +195,7 @@ struct idesc *char_dev_open(struct char_dev *cdev, int oflag) {
 
 	cdev_idesc = pool_alloc(&idesc_pool);
 	if (!cdev_idesc) {
-		return err_ptr(ENOMEM);
+		return err2ptr(ENOMEM);
 	}
 
 	idesc_init((struct idesc *)cdev_idesc, &char_dev_idesc_ops, oflag);
@@ -206,11 +206,11 @@ struct idesc *char_dev_open(struct char_dev *cdev, int oflag) {
 	}
 
 	if (!cdev->ops->read && ((oflag & O_ACCESS_MASK) != O_WRONLY)) {
-		return err_ptr(EACCES);
+		return err2ptr(EACCES);
 	}
 
 	if (!cdev->ops->write && ((oflag & O_ACCESS_MASK) != O_RDONLY)) {
-		return err_ptr(EACCES);
+		return err2ptr(EACCES);
 	}
 
 	if (cdev->usage_count++ > 0) {
@@ -219,7 +219,7 @@ struct idesc *char_dev_open(struct char_dev *cdev, int oflag) {
 
 	if (cdev->ops->open && (err = cdev->ops->open(cdev, &cdev_idesc->idesc))) {
 		pool_free(&idesc_pool, cdev_idesc);
-		return err_ptr(err);
+		return err2ptr(err);
 	}
 
 out:

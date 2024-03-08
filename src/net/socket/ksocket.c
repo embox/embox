@@ -32,7 +32,7 @@ struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;
 
 	new_sk = sock_create(family, type, protocol);
-	if (0 != err(new_sk)) {
+	if (0 != ptr2err(new_sk)) {
 		return new_sk;
 	}
 

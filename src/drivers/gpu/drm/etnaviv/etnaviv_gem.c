@@ -61,7 +61,7 @@ static struct drm_gem_object *__etnaviv_gem_new(struct drm_device *dev,
 	return obj;
 
 fail:
-	return err_ptr(ret);
+	return err2ptr(ret);
 }
 
 /* convenience method to construct a GEM buffer object, and userspace handle */
@@ -71,7 +71,7 @@ int etnaviv_gem_new_handle(struct drm_device *dev, struct drm_file *file,
 	int ret;
 
 	obj = __etnaviv_gem_new(dev, size, flags);
-	if (err(obj)) {
+	if (ptr2err(obj)) {
 		return (int) obj;
 	}
 
@@ -89,11 +89,11 @@ struct drm_gem_object *etnaviv_gem_new(struct drm_device *dev, uint32_t size,
 	int ret;
 
 	obj = __etnaviv_gem_new(dev, size, flags);
-	if (err(obj))
+	if (ptr2err(obj))
 		return obj;
 
 	if ((ret = etnaviv_gem_obj_add(dev, obj)) < 0) {
-		return err_ptr(ret);
+		return err2ptr(ret);
 	}
 
 	return obj;
