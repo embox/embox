@@ -60,7 +60,7 @@ static void *task_thr1_hnd(void *data) {
 
 	/* Now create te second thread and call malloc() simultaneously */
 	t = thread_create(0, task_thr2_hnd, &thr_info_array[1]);
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	thr1_info->count = thread_malloc_objs(&thr1_info->objs_list);
 	test_assert_not_zero(thr1_info->count);

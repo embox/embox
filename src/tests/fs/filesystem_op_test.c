@@ -84,7 +84,7 @@ TEST_CASE("generic filesystem test") {
 static int setup_suite(void) {
 	int res;
 
-	if(0 != (res = err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
+	if(0 != (res = ptr2err(ramdisk_create(FS_DEV, FS_BLOCKS * PAGE_SIZE())))) {
 		return res;
 	}
 

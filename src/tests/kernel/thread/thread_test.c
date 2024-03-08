@@ -28,7 +28,7 @@ TEST_CASE("thread_create with default flags should return -EINVAL if the "
 
 	t = thread_create(0, arg_invert_run, (void *) 1);
 
-	test_assert_equal(err(t), -EINVAL);
+	test_assert_equal(ptr2err(t), -EINVAL);
 }
 #endif
 
@@ -37,7 +37,7 @@ TEST_CASE("thread_create should return -EINVAL if thread function is NULL") {
 
 	t = thread_create(0, NULL, NULL);
 
-	test_assert_equal(err(t), -EINVAL);
+	test_assert_equal(ptr2err(t), -EINVAL);
 }
 
 #if 0
@@ -62,7 +62,7 @@ TEST_CASE("thread_join should retrieve the result of thread execution") {
 	struct thread *t;
 
 	t = thread_create(0, arg_invert_run, (void *) 42UL);
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(sleep(1));
 
@@ -75,7 +75,7 @@ TEST_CASE("thread_launch should return 0 if the thread was created with "
 	struct thread *t;
 
 	t = thread_create(THREAD_FLAG_SUSPENDED, arg_invert_run, NULL);
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(thread_launch(t));
 	test_assert_zero(thread_detach(t));
@@ -86,7 +86,7 @@ TEST_CASE("thread_launch should return an error if the thread hasn't been "
 	struct thread *t;
 
 	t = thread_create(0, arg_invert_run, NULL);
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(sleep(1));
 

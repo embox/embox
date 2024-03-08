@@ -53,13 +53,13 @@ TEST_CASE("General") {
 	semaphore_init(&s, 2);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, NULL);
-	test_assert_zero(err(low));
+	test_assert_zero(ptr2err(low));
 
 	mid = thread_create(THREAD_FLAG_SUSPENDED, mid_run, NULL);
-	test_assert_zero(err(mid));
+	test_assert_zero(ptr2err(mid));
 
 	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, NULL);
-	test_assert_zero(err(high));
+	test_assert_zero(ptr2err(high));
 
 	test_assert_zero(schedee_priority_set(&low->schedee, l));
 	test_assert_zero(schedee_priority_set(&mid->schedee, m));
@@ -95,10 +95,10 @@ TEST_CASE("Correctness of semaphore_timedwait") {
 	semaphore_init(&s, 1);
 
 	l_low = thread_create(THREAD_FLAG_SUSPENDED, l_low_run, NULL);
-	test_assert_zero(err(l_low));
+	test_assert_zero(ptr2err(l_low));
 
 	h_high = thread_create(THREAD_FLAG_SUSPENDED, h_high_run, NULL);
-	test_assert_zero(err(h_high));
+	test_assert_zero(ptr2err(h_high));
 
 	test_assert_zero(schedee_priority_set(&l_low->schedee, ll));
 	test_assert_zero(schedee_priority_set(&h_high->schedee, hh));

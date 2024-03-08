@@ -34,19 +34,19 @@ TEST_CASE("with inheritance") {
 	mutex_init(&mutex);
 
 	low = thread_create(THREAD_FLAG_SUSPENDED, low_run, &mutex);
-	test_assert_zero(err(low));
+	test_assert_zero(ptr2err(low));
 
 	test_assert_not_null(low);
 	test_assert_zero(schedee_priority_set(&low->schedee, l));
 
 	mid = thread_create(THREAD_FLAG_SUSPENDED, mid_run, &mutex);
-	test_assert_zero(err(mid));
+	test_assert_zero(ptr2err(mid));
 
 	test_assert_not_null(mid);
 	test_assert_zero(schedee_priority_set(&mid->schedee, m));
 
 	high = thread_create(THREAD_FLAG_SUSPENDED, high_run, &mutex);
-	test_assert_zero(err(high));
+	test_assert_zero(ptr2err(high));
 
 	test_assert_not_null(high);
 	test_assert_zero(schedee_priority_set(&high->schedee, h));

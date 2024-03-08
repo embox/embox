@@ -62,7 +62,7 @@ static void *tsk3_thr1_hnd(void *data) {
 	test_assert_equal(data, NULL);
 
 	t = thread_create(0, tsk3_thr2_hnd, task_self());
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	return (void *)EXIT_CODE1;
 }
@@ -89,7 +89,7 @@ static void *tsk4_thr1_hnd(void *data) {
 	test_assert_equal(data, NULL);
 
 	t = thread_create(0, tsk4_thr2_hnd, task_self());
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(thread_join(t, NULL));
 
@@ -120,7 +120,7 @@ static void *tsk5_thr1_hnd(void *data) {
 	test_assert_equal(data, NULL);
 
 	t = thread_create(0, tsk5_thr2_hnd, task_self());
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(thread_join(t, NULL));
 
@@ -150,7 +150,7 @@ static void *tsk6_thr1_hnd(void *data) {
 	test_assert_equal(data, NULL);
 
 	t = thread_create(0, tsk6_thr2_hnd, task_self());
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(thread_join(t, NULL));
 
@@ -182,7 +182,7 @@ static void *tsk7_thr1_hnd(void *data) {
 	test_assert_equal(data, NULL);
 
 	t = thread_create(0, tsk7_thr2_hnd, task_self());
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	thread_exit((void *)EXIT_CODE1);
 
@@ -212,7 +212,7 @@ static void *tsk8_thr1_hnd(void *data) {
 	test_assert_equal(data, NULL);
 
 	t = thread_create(0, tsk8_thr2_hnd, task_self());
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(thread_join(t, NULL));
 

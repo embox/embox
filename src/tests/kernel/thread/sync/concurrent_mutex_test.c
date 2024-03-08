@@ -44,9 +44,9 @@ static int setup(void) {
 	mutex_init(&m);
 
 	t1 = thread_create(THREAD_FLAG_SUSPENDED, run, (void*)1);
-	test_assert_zero(err(t1));
+	test_assert_zero(ptr2err(t1));
 
 	t2 = thread_create(THREAD_FLAG_SUSPENDED, run, (void*)2);
-	test_assert_zero(err(t2));
+	test_assert_zero(ptr2err(t2));
 	return 0;
 }
