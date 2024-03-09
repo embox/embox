@@ -32,11 +32,10 @@ static const char *get_filetype(struct stat *stat) {
 }
 
 static void print_statistic(struct stat *filestat) {
-
 	printf("  Size: %8d    Blocks: %8d    IO Block: %8d  %s\n",
 		(int)filestat->st_size, (int)filestat->st_blocks,
 		(int)filestat->st_blksize, get_filetype(filestat));
-	printf("   Dev: %8d     Inode: %8d       Links: %8d\n",
+	printf("   Dev: %8d     Inode: %8ld       Links: %8d\n",
 		filestat->st_dev, filestat->st_ino, filestat->st_nlink);
 	printf("Access: %8d       Uid: %8d         Gid: %8d\n",
 		filestat->st_mode, filestat->st_uid, filestat->st_gid);
