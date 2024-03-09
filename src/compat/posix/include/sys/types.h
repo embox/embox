@@ -61,7 +61,7 @@ static inline unsigned int minor(dev_t dev) {
 
 typedef int key_t;
 
-typedef unsigned int ino_t;
+typedef unsigned long ino_t;
 
 typedef unsigned short nlink_t;
 
