@@ -259,6 +259,11 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 	if (NULL == (sb = super_block_alloc(fs_type, source))) {
 		return -ENOMEM;
 	}
+
+	if (!strcmp("/", dest)) {
+		vfs_set_root(sb->sb_root);
+	}
+	
 #if 0
 	drv = sb->fs_drv;
 	if (!drv->fsop->mount) {
