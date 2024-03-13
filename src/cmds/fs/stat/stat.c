@@ -6,17 +6,17 @@
  * @author Andrey Gazukin
  */
 
-#include <unistd.h>
+#include <errno.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <errno.h>
+#include <unistd.h>
 
 static void print_usage(void) {
 	printf("Usage: stat [FILE]...\n");
 }
 static const char *get_filetype(struct stat *stat) {
 	if (S_ISCHR(stat->st_mode)) {
-		return "character special file";
+		return "character device";
 	}
 	if (S_ISDIR(stat->st_mode)) {
 		return "directory";
@@ -25,23 +25,26 @@ static const char *get_filetype(struct stat *stat) {
 		return "regular file";
 	}
 	if (S_ISBLK(stat->st_mode)) {
-		return "block special file";
+		return "block device";
 	}
 
-	return "unknown file type";
+	return "unknown";
 }
 
 static void print_statistic(struct stat *filestat) {
-	printf("  Size: %8d    Blocks: %8d    IO Block: %8d  %s\n",
-		(int)filestat->st_size, (int)filestat->st_blocks,
-		(int)filestat->st_blksize, get_filetype(filestat));
-	printf("   Dev: %8d     Inode: %8ld       Links: %8d\n",
-		filestat->st_dev, filestat->st_ino, filestat->st_nlink);
-	printf("Access: %8d       Uid: %8d         Gid: %8d\n",
-		filestat->st_mode, filestat->st_uid, filestat->st_gid);
-	printf("Access: %8ld  \n", (long)filestat->st_atime);
-	printf("Modify: %8ld  \n", (long)filestat->st_mtime);
-	printf("Change: %8ld  \n", (long)filestat->st_ctime);
+	printf("\tSize:     %ju\n", (uintmax_t)filestat->st_size);
+	printf("\tBlocks:   %ju\n", (uintmax_t)filestat->st_blocks);
+	printf("\tIO Block: %ju\n", (uintmax_t)filestat->st_blksize);
+	printf("\tType:     %s\n", get_filetype(filestat));
+	printf("\tDev:      %ju\n", (uintmax_t)filestat->st_dev);
+	printf("\tInode:    %ju\n", (uintmax_t)filestat->st_ino);
+	printf("\tLinks:    %ju\n", (uintmax_t)filestat->st_nlink);
+	printf("\tMode:     %ju\n", (uintmax_t)filestat->st_mode);
+	printf("\tUid:      %ju\n", (uintmax_t)filestat->st_uid);
+	printf("\tGid:      %ju\n", (uintmax_t)filestat->st_gid);
+	printf("\tAccess: 	%ju\n", (uintmax_t)filestat->st_atim.tv_sec);
+	printf("\tModify: 	%ju\n", (uintmax_t)filestat->st_mtim.tv_sec);
+	printf("\tChange: 	%ju\n", (uintmax_t)filestat->st_ctim.tv_sec);
 }
 
 int main(int argc, char **argv) {
