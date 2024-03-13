@@ -10,7 +10,7 @@
 #define FS_NODE_H_
 
 #include <fcntl.h>
-#include <sys/stat.h>
+//#include <sys/stat.h>
 #include <limits.h>
 
 #include <lib/libds/slist.h>
@@ -87,9 +87,9 @@ extern unsigned inode_mtime(const struct inode *node);
 extern void inode_mtime_set(struct inode *node, unsigned mtime);
 extern char *inode_name(struct inode *node);
 extern char *inode_name_set(struct inode *node, const char *name);
-
+#if 0
 static inline int node_is_directory(struct inode *node) {
 	return S_ISDIR(node->i_mode);
 }
-
+#endif
 #endif /* FS_NODE_H_ */

@@ -110,7 +110,7 @@ static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_n
 		return -errno;
 	}
 
-	if (node_is_directory(new_node)) {
+	if (S_ISDIR(new_node->i_mode)) {
 		mode = S_IFDIR;
 	} else {
 		mode = S_IFREG;
@@ -151,20 +151,23 @@ static int embox_ntfs_node_create(struct inode *new_node, struct inode *parent_n
 	return 0;
 }
 
-static int embox_ntfs_node_delete(struct inode *node) {
+static int embox_ntfs_node_delete(struct inode *dir, struct inode *node) {
 	ntfs_inode *ni, *pni;
-	struct inode *parent_node;
 	ntfschar *ufilename;
 	int ufilename_len;
 	struct ntfs_fs_info *pfsi;
 	struct ntfs_file_info *pfi, *fi;
 
+#if 0
+	struct inode *parent_node;
 	parent_node = vfs_subtree_get_parent(node);
 	if (!parent_node) {
 		return -EINVAL;
 	}
-	pfi = inode_priv(parent_node);
-	pfsi = parent_node->i_sb->sb_data;
+#endif
+
+	pfi = inode_priv(dir);
+	pfsi = dir->i_sb->sb_data;
 	fi = inode_priv(node);
 
 	/* ntfs_mbstoucs(...) will allocate memory for ufilename if it's NULL */

@@ -1531,7 +1531,7 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 	}
 }
 
-static int fat_dir_empty(struct fat_file_info *fi) {
+int fat_dir_empty(struct fat_file_info *fi) {
 	struct dirinfo *di = (void *) fi;
 	struct fat_dirent de = { };
 	int res = 0;
@@ -1566,9 +1566,6 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
 
 	fsi = fi->fsi;
 
-	if (S_ISDIR(fi->mode) && !fat_dir_empty(fi)) {
-		return -EPERM;
-	}
 
 	fat_dir_clean_long(di, fi);
 
@@ -1987,6 +1984,45 @@ uint8_t fat_canonical_name_checksum(const char *name) {
 	return res;
 }
 
+int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de) {
+	struct fat_file_info *fi;
+	
+	fi = inode_priv(inode);
+	if (fi) {
+		/*we already allocated file info for this inode */
+		return 0;
+	}
+	
+	if (de->attr & ATTR_DIRECTORY){
+		struct dirinfo *new_di;
+
+		new_di = fat_dirinfo_alloc();
+		if (NULL == new_di) {
+			return -ENOMEM;
+		}
+
+		memset(new_di, 0, sizeof(struct dirinfo));
+		new_di->p_scratch = fat_sector_buff;
+		new_di->currentcluster = fat_direntry_get_clus(de);
+
+		fi = &new_di->fi;
+
+		inode->i_mode |= S_IFDIR;
+	} else {
+		fi = fat_file_alloc();
+		if (NULL == fi) {
+			return -ENOMEM;
+		}
+		memset(fi, 0, sizeof(struct fat_file_info));
+
+		inode->i_mode |= S_IFREG;
+	}
+
+	inode_priv_set(inode, fi);
+
+	return 0;
+}
+
 /**
  * @brief Set appropriate flags and i_data for given inode
  *
@@ -1998,7 +2034,6 @@ uint8_t fat_canonical_name_checksum(const char *name) {
 int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *di) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
-	struct dirinfo *new_di;
 	struct volinfo *vi;
 	struct super_block *sb;
 	int res, tmp_sector, tmp_entry, tmp_cluster;
@@ -2016,6 +2051,9 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 	vi = &fsi->vi;
 	assert(vi);
 
+	fi = inode_priv(inode);
+	assert(fi);
+
 	/* Need to save some dirinfo data because this
 	 * stuff may change while we traverse to the end
 	 * of long name entry */
@@ -2031,39 +2069,13 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 		}
 	}
 
-	if (de->attr & ATTR_DIRECTORY){
-		if (NULL == (new_di = fat_dirinfo_alloc()))
-			goto err_out;
-
-		memset(new_di, 0, sizeof(struct dirinfo));
-		new_di->p_scratch = fat_sector_buff;
-		new_di->fi.mode = S_IFDIR;
-		inode->i_mode |= S_IFDIR;
-
-		new_di->currentcluster = fat_direntry_get_clus(de);
-
-		fi = &new_di->fi;
-	} else {
-		if (NULL == (fi = fat_file_alloc())) {
-			goto err_out;
-		}
-
-		inode->i_mode |= S_IFREG;
-	}
-
-	inode_priv_set(inode, fi);
-
-	*fi = (struct fat_file_info) {
-		.fsi = fsi,
-		.volinfo = vi,
-	};
-
 	if (di->fi.dirsector == 0 && (vi->filesystem == FAT12 || vi->filesystem == FAT16)) {
 		fi->dirsector = tmp_sector + tmp_cluster * vi->secperclus;
 	} else {
 		fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
 	}
-
+	fi->fsi = fsi;
+	fi->volinfo = vi;
 	fi->diroffset    = tmp_entry - 1;
 	fi->cluster      = fat_direntry_get_clus(de);
 	fi->firstcluster = fi->cluster;
@@ -2076,9 +2088,8 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 	} else {
 		inode->i_mode |= S_IRWXA;
 	}
+
 	return 0;
-err_out:
-	return -1;
 }
 
 int fat_destroy_inode(struct inode *inode) {
@@ -2096,6 +2107,8 @@ int fat_destroy_inode(struct inode *inode) {
 		fi = inode_priv(inode);
 		fat_file_free(fi);
 	}
+
+	inode_priv_set(inode, NULL);
 
 	return 0;
 }

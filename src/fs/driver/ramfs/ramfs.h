@@ -54,7 +54,7 @@ struct ramfs_file_info {
 extern struct file_operations ramfs_fops;
 extern int ramfs_fill_sb(struct super_block *sb, const char *source);
 extern int ramfs_format(struct block_dev *bdev, void *priv);
-extern int ramfs_delete(struct inode *node);
+extern int ramfs_delete(struct inode *dir, struct inode *node);
 extern int ramfs_truncate(struct inode *node, off_t length);
 extern int ramfs_create(struct inode *i_new, struct inode *i_dir, int mode);
 

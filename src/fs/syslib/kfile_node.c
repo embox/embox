@@ -28,7 +28,7 @@
 int ktruncate(struct inode *node, off_t length) {
 	int ret;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		SET_ERRNO(EISDIR);
 		return -1;
 	}

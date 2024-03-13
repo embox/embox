@@ -1,0 +1,21 @@
+package embox.fs.syslib
+
+
+@DefaultImpl(perm_full)
+abstract module perm {
+}
+
+module perm_full extends perm {
+	source "perm.c"
+
+	depends embox.compat.posix.util.environ
+	depends embox.compat.posix.proc.uid
+	depends embox.security.api
+	/* TODO tsort loop
+	depends embox.fs.core
+	*/
+}
+
+module perm_stub extends perm {
+	source "perm_stub.c"
+}

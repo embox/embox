@@ -73,6 +73,24 @@ void initfs_free_inode(struct initfs_file_info *fi) {
 	pool_free(&initfs_file_pool, fi);
 }
 
+int initfs_alloc_inode_priv(struct inode *node) {
+	struct initfs_file_info *fi;
+
+	if (inode_priv(node)) {
+		return 0;
+	}
+
+	fi = initfs_alloc_inode();
+	if (!fi) {
+		return -ENOMEM;
+	}
+	memset(fi, 0, sizeof(*fi));
+
+	inode_priv_set(node, fi);
+
+	return 0;
+}
+
 /**
 * @brief Initialize initfs inode
 *
@@ -85,18 +103,13 @@ int initfs_fill_inode(struct inode *node, char *cpio,
 		struct cpio_entry *entry) {
 	struct initfs_file_info *fi;
 
+	fi = inode_priv(node);
+	assert(fi);
+
 	inode_size_set(node, entry->size);
 	inode_mtime_set(node, entry->mtime);
 	node->i_mode = entry->mode & (S_IFMT | S_IRWXA);
 
-	fi = initfs_alloc_inode();
-	if (!fi) {
-		return -ENOMEM;
-	}
-
-	memset(fi, 0, sizeof(*fi));
-
-	inode_priv_set(node, fi);
 	fi->start_pos = (intptr_t) entry->data;
 	fi->entry     = (void *) cpio;
 
@@ -108,7 +121,7 @@ int initfs_fill_inode(struct inode *node, char *cpio,
 	return 0;
 }
 
-static int initfs_fillname(struct inode *inode, char *buf) {
+int initfs_fillname(struct inode *inode, char *buf) {
 	struct cpio_entry entry;
 	struct initfs_file_info *fi = inode_priv(inode);
 	size_t name_len = 0;
@@ -134,47 +147,6 @@ static int initfs_fillname(struct inode *inode, char *buf) {
 
 	return 0;
 }
-
-int initfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	struct cpio_entry entry;
-	extern char _initfs_start;
-	struct initfs_file_info *di = inode_priv(parent);
-	char *cpio = ctx->fs_ctx;
-	char *prev;
-
-	assert(di);
-
-	if (!cpio) {
-		cpio = &_initfs_start;
-	}
-
-	while ((prev = cpio, cpio = cpio_parse_entry(cpio, &entry))) {
-		if (di->path && memcmp(di->path, entry.name, di->path_len)) {
-			continue;
-		}
-		if (entry.name[di->path_len] != '\0' &&
-			strrchr(entry.name + di->path_len + 1, '/') == NULL) {
-
-			if (!S_ISDIR(entry.mode) && !S_ISREG(entry.mode)) {
-				log_error("Unknown inode type in cpio\n");
-				break;
-			}
-
-			if (0 > initfs_fill_inode(next, prev, &entry)) {
-				return -1;
-			}
-
-			initfs_fillname(next, name);
-			ctx->fs_ctx = cpio;
-
-			return 0;
-		}
-	}
-
-	/* End of directory */
-	return -1;
-}
-
 
 int initfs_destroy_inode(struct inode *inode) {
 	if (inode_priv(inode) != NULL) {

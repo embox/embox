@@ -277,7 +277,7 @@ static int ramfs_file_free(struct ramfs_file_info *fi) {
 	return 0;
 }
 
-int ramfs_delete(struct inode *node) {
+int ramfs_delete(struct inode *dir, struct inode *node) {
 	struct ramfs_file_info *fi;
 
 	fi = inode_priv(node);

@@ -13,6 +13,7 @@
 #include <fs/dentry.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
+#include <fs/dvfs.h>
 
 #include <util/math.h>
 

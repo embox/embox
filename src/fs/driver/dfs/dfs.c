@@ -243,9 +243,8 @@ static int dfs_itruncate(struct inode *inode, off_t new_len) {
 	return 0;
 }
 
-static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
+static struct inode *dfs_ilookup(struct inode *inode, char const *path, struct inode const *dir) {
 	struct dfs_dir_entry dirent;
-	struct inode *inode;
 	struct super_block *sb;
 
 	assert(path);
@@ -253,16 +252,8 @@ static struct inode *dfs_ilookup(char const *path, struct inode const *dir) {
 
 	sb = dir->i_sb;
 
-	inode = dvfs_alloc_inode(sb);
-
-	if (!inode) {
-		return NULL;
-	}
-
 	inode->i_no = ino_from_path(sb, path);
-
 	if (inode->i_no < 0) {
-		dvfs_destroy_inode(inode);
 		return NULL;
 	}
 
@@ -316,7 +307,7 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 	/* End of directory */
 	return -1;
 }
-
+#if 0
 static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 	struct dfs_dir_entry dirent;
 
@@ -332,15 +323,17 @@ static int dfs_pathname(struct inode *inode, char *buf, int flags) {
 
 	return 0;
 }
+#endif
 
 static struct inode_operations dfs_iops = {
 	.ino_create   = dfs_icreate,
 	.ino_lookup   = dfs_ilookup,
-	.ino_mkdir    = NULL,
-	.ino_rmdir    = NULL,
+
 	.ino_iterate  = dfs_iterate,
 	.ino_truncate = dfs_itruncate,
+#if 0
 	.ino_pathname = dfs_pathname,
+#endif
 };
 
 static struct file_operations dfs_fops;

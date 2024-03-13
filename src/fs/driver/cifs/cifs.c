@@ -127,7 +127,7 @@ static int cifs_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
-struct inode *cifs_lookup(char const *name, struct inode const *dir) {
+struct inode *cifs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 
@@ -219,7 +219,7 @@ static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_n
 	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
 	mode = new_node->i_mode & S_IRWXA;
-	if (node_is_directory(new_node)) {
+	if (S_ISDIR(new_node->i_mode)) {
 		mode |= S_IFDIR;
 		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
 			return -errno;
@@ -238,7 +238,7 @@ static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_n
 	return 0;
 }
 
-static int embox_cifs_node_delete(struct inode *node) {
+static int embox_cifs_node_delete(struct inode *dir, struct inode *node) {
 	struct cifs_fs_info *fsi;
 	char fileurl[PATH_MAX];
 	int rc;
@@ -250,7 +250,7 @@ static int embox_cifs_node_delete(struct inode *node) {
 
 	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
 			return -errno;
 		}
@@ -266,7 +266,7 @@ static int embox_cifs_node_delete(struct inode *node) {
 static struct inode_operations cifs_iops = {
 	.ino_create = embox_cifs_node_create,
 	.ino_remove = embox_cifs_node_delete,
-//	.ino_lookup   = cifs_lookup,
+	.ino_lookup   = cifs_lookup,
 	.ino_iterate  = cifs_iterate,
 };
 

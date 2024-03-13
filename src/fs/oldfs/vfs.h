@@ -48,8 +48,9 @@ extern int vfs_add_leaf(struct inode *child, struct inode *parent);
 
 extern int vfs_del_leaf(struct inode *nod);
 
-extern struct inode *vfs_create_root(void);
+
 extern struct inode *vfs_get_root(void);
+extern struct inode *vfs_set_root(struct inode *node);
 extern struct inode *vfs_get_leaf(void);
 
 extern int vfs_create(struct path *parent, const char *path, mode_t mode,

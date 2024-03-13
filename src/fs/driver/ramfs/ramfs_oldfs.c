@@ -14,7 +14,7 @@
 
 #include "ramfs.h"
 
-struct inode *ramfs_ilookup(char const *name, struct inode const *dir) {
+struct inode *ramfs_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 

@@ -34,7 +34,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 		return NULL;
 	}
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		ops = sb->sb_fops;
 	} else {
 		if (NULL == sb->sb_fops) {

@@ -22,13 +22,13 @@ extern int cdfs_destroy_inode(struct inode *inode);
 extern int cdfs_find_in_dir(struct cdfs_fs_info *cdfs, int dir, char *name,
 								int len, iso_directory_record_t **dirrec);
 extern int cdfs_find_dir(struct cdfs_fs_info *cdfs, char *name, int len);
+extern int cdfs_alloc_inode_priv(struct inode* node);
 extern int cdfs_fill_node(struct inode* node, char *name, 
 					struct cdfs_fs_info *cdfs, iso_directory_record_t *rec);
 
-struct inode *cdfs_ilookup(char const *name, struct inode const *dir) {
+struct inode *cdfs_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	struct super_block *sb;
 	struct cdfs_fs_info *fsi;
-	struct inode *node;
 	iso_directory_record_t *rec;
 	int res;
 	int n;
@@ -53,14 +53,14 @@ struct inode *cdfs_ilookup(char const *name, struct inode const *dir) {
 		return NULL;
 	}
 
-	node = dvfs_alloc_inode(sb);
-	if (NULL == node) {
+	res = cdfs_alloc_inode_priv(node);
+	if (res) {
 		return NULL;
 	}
 
 	res = cdfs_fill_node(node, (char *)name, fsi, rec);
 	if (res) {
-		dvfs_destroy_inode(node);
+		return NULL;
 	}
 
 	return node;

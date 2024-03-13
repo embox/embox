@@ -191,7 +191,7 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
 static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
-static int nfsfs_delete(struct inode *node);
+static int nfsfs_delete(struct inode *dir, struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
 static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
@@ -668,7 +668,7 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 				node = nfs_create_file(parent_node, predesc);
 				if (!node) {
 					log_error("nfs_create_file failed\n");
-				} else if (node_is_directory(node)) {
+				} else if (S_ISDIR(node->i_mode)) {
 					nfs_create_dir_entry(node);
 				}
 			}
@@ -697,7 +697,7 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	parent_fi = inode_priv(parent_node);
 	fsi = parent_node->i_sb->sb_data;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		procnum = NFSPROC3_MKDIR;
 		req.type = NFS_DIRECTORY_NODE_TYPE;
 		req.create_mode = UNCHECKED_MODE;
@@ -737,26 +737,28 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	return nfs_create_dir_entry(parent_node); // XXX parent_node? or node?
 }
 
-static int nfsfs_delete(struct inode *node) {
+static int nfsfs_delete(struct inode *dir, struct inode *node) {
 	nfs_file_info_t *fi;
-	struct inode *dir_node;
 	nfs_file_info_t *dir_fi;
 	lookup_req_t req;
 	delete_reply_t reply;
 	uint32_t procnum;
 
-	fi = inode_priv(node);
+#if 0
+	struct inode *dir_node;
 
 	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
+#endif
+	fi = inode_priv(node);
 
 	/* set delete structure */
 	req.fname = &fi->name_dsc.name;
-	dir_fi = inode_priv(dir_node);
+	dir_fi = inode_priv(dir);
 	req.dir_fh = &dir_fi->fh.name_fh;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		procnum = NFSPROC3_RMDIR;
 	}
 	else {

@@ -17,6 +17,9 @@
 
 #include "fat.h"
 
+extern int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de);
+extern int fat_destroy_inode(struct inode *inode);
+
 /* @brief Figure out if node at specific path exists or not
  * @note  Assume dir is root
  * @note IMPORTANT: this functions should not be calls in the middle of iterate,
@@ -27,23 +30,19 @@
  *
  * @return Pointer of inode or NULL if not found
  */
-struct inode *fat_ilookup(char const *name, struct inode const *dir) {
+struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	struct dirinfo *di;
 	struct fat_dirent de;
-	struct super_block *sb;
 	uint8_t tmp_ent;
 	uint8_t tmp_sec;
 	uint32_t tmp_clus;
-	struct inode *node;
 	char tmppath[128];
 	int found = 0;
 
 	assert(name);
 	assert(S_ISDIR(dir->i_mode));
 
-	sb = dir->i_sb;
 	di = inode_priv(dir);
-
 	assert(di);
 
 	tmp_ent = di->currententry;
@@ -62,14 +61,18 @@ struct inode *fat_ilookup(char const *name, struct inode const *dir) {
 		}
 	}
 
-	if (!found)
+	if (!found) {
 		goto err_out;
+	}
 
-	if (NULL == (node = dvfs_alloc_inode(sb)))
+	if (fat_alloc_inode_priv(node, &de)) {
 		goto err_out;
+	}
 
-	if (fat_fill_inode(node, &de, di))
+	if (fat_fill_inode(node, &de, di)) {
+		fat_destroy_inode(node);
 		goto err_out;
+	}
 
 	goto succ_out;
 err_out:

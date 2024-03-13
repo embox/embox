@@ -9,6 +9,8 @@
 #include <errno.h>
 #include <string.h>
 
+#include <fs/inode.h>
+
 #include <fs/xattr.h>
 #include <fs/ext2.h>
 
@@ -142,14 +144,14 @@ static int xattr_block(struct inode *node, struct ext2_xattr_hdr **blk,
 
 	if (0 > (res = ext2_read_sector(sb, (char *) xattr_blk, 1,
 			d2h32(dinode->i_facl)))) {
-		ext2_buff_free(node, (char *) xattr_blk);
+		ext2_buff_free(sb->sb_data, (char *) xattr_blk);
 		return res;
 	}
 
 	xattr_bswap(xattr_blk, xattr_blk, SECTOR_SIZE);
 
 	if (check_magic && d2h32(xattr_blk->h_magic) != EXT2_XATTR_HDR_MAGIC) {
-		ext2_buff_free(node, (char *) xattr_blk);
+		ext2_buff_free(sb->sb_data, (char *) xattr_blk);
 		return -EIO;
 	}
 
@@ -202,7 +204,7 @@ int ext2fs_listxattr(struct inode *node, char *list, size_t len) {
 		res += xattr_ent->e_name_len + 1;
 	}
 
-	ext2_buff_free(node, (char *) xattr_blk);
+	ext2_buff_free(node->i_sb->sb_data, (char *) xattr_blk);
 
 	return res;
 }
@@ -297,11 +299,11 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 			goto cleanup_out;
 		}
 
-		if ((res = ext2_write_gdblock(node))) {
+		if ((res = ext2_write_gdblock(sb))) {
 			goto cleanup_out;
 		}
 
-		if ((res = ext2_write_sblock(node))) {
+		if ((res = ext2_write_sblock(sb))) {
 			goto cleanup_out;
 		}
 
@@ -355,7 +357,7 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 		dinode->i_facl = h2d32(xblk_n);
 		/* TODO: should we alter i_blocks* */
 
-		ext2_buff_free(node, (char *) xattr_blk);
+		ext2_buff_free(sb->sb_data, (char *) xattr_blk);
 		xattr_blk = blk_copy;
 
 		ext2_rw_inode(node, dinode, EXT2_W_INODE);
@@ -437,7 +439,7 @@ int ext2fs_setxattr(struct inode *node, const char *name, const char *value,
 
 cleanup_out:
 	if (xattr_blk) {
-		ext2_buff_free(node, (char *) xattr_blk);
+		ext2_buff_free(sb->sb_data, (char *) xattr_blk);
 	}
 
 	return res;
@@ -475,7 +477,7 @@ int ext2fs_getxattr(struct inode *node, const char *name, char *value,
 		}
 	}
 
-	ext2_buff_free(node, (char *) xattr_blk);
+	ext2_buff_free(node->i_sb->sb_data, (char *) xattr_blk);
 
 	return res;
 }

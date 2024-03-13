@@ -16,7 +16,7 @@
 #include "ramfs.h"
 
 extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
-extern struct inode *ramfs_ilookup(char const *name, struct inode const *dir);
+extern struct inode *ramfs_ilookup(struct inode *node, char const *name, struct inode const *dir);
 /* Declaration of operations */
 struct inode_operations ramfs_iops = {
 	.ino_create   = ramfs_create,

@@ -16,7 +16,7 @@
 
 extern int cdfs_destroy_inode(struct inode *inode);
 
-struct inode *cdfs_ilookup(char const *name, struct inode const *dir) {
+struct inode *cdfs_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 

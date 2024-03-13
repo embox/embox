@@ -579,10 +579,33 @@ void cdfs_init(void) {
 }
 */
 
+int cdfs_alloc_inode_priv(struct inode* node) {
+	struct cdfs_file_info *fi;
+
+	fi = inode_priv(node);
+	if (fi) {
+		return 0;
+	}
+
+	fi = iso9660_fi_alloc();
+	if (!fi) {
+		return -ENOMEM;
+	}
+
+	memset(fi, 0, sizeof(struct cdfs_file_info));
+
+	inode_priv_set(node, fi);
+
+	return 0;
+}
+
 int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, iso_directory_record_t *rec) {
 	int flags;
 	int namelen;
 	struct cdfs_file_info *fi;
+
+	fi = inode_priv(node);
+	assert(fi);
 
 	namelen = cdfs_isonum_711(rec->name_len);
 	flags = cdfs_isonum_711(rec->flags);
@@ -620,15 +643,9 @@ int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, is
 		name[i] = tolower(name[i]);
 	}
 
-	fi = iso9660_fi_alloc();
-	if (!fi) {
-		return -ENOMEM;
-	}
-
 	/* if directory then not create node */
 	if (flags & 2) {
 		node->i_mode = S_IFDIR;
-		//fi->flags |= S_IFDIR;
 	} else {
 		node->i_mode = S_IFREG;
 	}
@@ -637,7 +654,6 @@ int cdfs_fill_node(struct inode* node, char *name, struct cdfs_fs_info *cdfs, is
 	fi->extent = cdfs_isonum_733(rec->extent);
 	fi->date = cdfs_isodate(rec->date);
 
-	inode_priv_set(node, fi);
 	inode_size_set(node, fi->size);
 
 	return 0;

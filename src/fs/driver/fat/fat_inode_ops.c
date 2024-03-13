@@ -17,6 +17,8 @@
 
 #include "fat.h"
 
+extern int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de);
+extern int fat_destroy_inode(struct inode *inode);
 
 /* @brief Get next inode in directory
  * @param inode   Structure to be filled
@@ -58,11 +60,19 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 	switch (res) {
 	case DFS_OK: {
 		char tmp_name[128];
+		int res;
+
+		res = fat_alloc_inode_priv(next, &de);
+		if (res) {
+			return res;
+		}
 
 		if (0 > fat_fill_inode(next, &de, dirinfo)) {
+			fat_destroy_inode(next);
 			return -1;
 		}
 		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, tmp_name)) {
+			fat_destroy_inode(next);
 			return -1;
 		}
 		strncpy(name, tmp_name, NAME_MAX-1);
@@ -145,11 +155,15 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 
 	return 0;
 }
-
-int fat_delete(struct inode *node) {
+extern int fat_dir_empty(struct fat_file_info *fi);
+int fat_delete(struct inode *dir, struct inode *node) {
 	struct fat_file_info *fi;
 
 	fi = inode_priv(node);
+
+	if (S_ISDIR(node->i_mode) && !fat_dir_empty(fi)) {
+		return -EPERM;
+	}
 
 	if (fat_unlike_file(fi, (uint8_t *) fat_sector_buff)) {
 		return -1;
@@ -164,7 +178,7 @@ int fat_delete(struct inode *node) {
 	return 0;
 }
 
-extern struct inode *fat_ilookup(char const *name, struct inode const *dir);
+extern struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir);
 
 struct inode_operations fat_iops = {
 	.ino_create   = fat_create,

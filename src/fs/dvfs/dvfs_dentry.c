@@ -59,7 +59,7 @@ int dentry_full_path(struct dentry *dentry, char *buf) {
 }
 
 extern struct dentry *local_lookup(struct dentry *parent, char *name);
-
+extern int dvfs_default_destroy_inode(struct inode *);
 /**
  * @brief Resolve one more element in the path
  * @param segment Segment of a path
@@ -110,14 +110,20 @@ int dvfs_path_walk(struct cwk_segment *segment, struct dentry *parent,
 		if ((d = local_lookup(parent, buff))) {
 			break;
 		}
+		
+		inode = dvfs_alloc_inode(parent->d_sb);
+		if (NULL == inode) {
+			return -ENOMEM;
+		}
 
-		inode = parent->d_sb->sb_iops->ino_lookup(buff, parent->d_inode);
-		if (!inode) {
+		if (!parent->d_sb->sb_iops->ino_lookup(inode, buff, parent->d_inode)) {
+			dvfs_default_destroy_inode(inode);
 			return -ENOENT;
 		}
 
 		d = dvfs_alloc_dentry();
 		if (!d) {
+			dvfs_destroy_inode(inode);
 			return -ENOMEM;
 		}
 
