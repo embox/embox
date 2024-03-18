@@ -3,7 +3,7 @@ package embox.compat.posix
 static module file_system_dvfs extends file_system {
 	option string log_level="LOG_ERR"
 	option number dir_quantity=4 /* DIR (dirent.h) */
-	
+
 	source "chmod_dvfs.c"
 	source "chown_dvfs.c"
 	source "dirent_dvfs.c"
@@ -11,6 +11,7 @@ static module file_system_dvfs extends file_system {
 	source "ftruncate_dvfs.c"
 	source "mkdir_dvfs.c"
 	source "mknod_dvfs.c"
+	source "mount_dvfs.c" /* not part of posix */
 	source "open_dvfs.c"
 	source "remove_dvfs.c"
 	source "rmdir_dvfs.c"

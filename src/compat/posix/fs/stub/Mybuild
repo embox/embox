@@ -15,6 +15,7 @@ static module file_system_stub extends file_system {
 	source "lseek_stub.c"
 	source "mkdir_stub.c"
 	source "mknod_stub.c"
+	source "mount_stub.c" /* not part of posix */
 	source "open_stub.c"
 	source "pread_stub.c"
 	source "pwrite_stub.c"

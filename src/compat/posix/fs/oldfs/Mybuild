@@ -11,6 +11,7 @@ static module file_system_oldfs extends file_system {
 	source "ftruncate_oldfs.c"
 	source "mkdir_oldfs.c"
 	source "mknod_oldfs.c"
+	source "mount_oldfs.c" /* not part of posix */
 	source "open_oldfs.c"
 	source "remove_oldfs.c"
 	source "rmdir_oldfs.c"
