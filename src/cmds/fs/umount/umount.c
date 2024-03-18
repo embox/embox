@@ -6,12 +6,11 @@
  * @author Andrey Gazukin
  */
 
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
 #include <errno.h>
-
-#include <fs/mount.h>
+#include <stdio.h>
+#include <string.h>
+#include <sys/mount.h>
+#include <unistd.h>
 
 static void print_usage(void) {
 	printf("Usage: umount [-h] dir\n");
@@ -19,7 +18,7 @@ static void print_usage(void) {
 
 int main(int argc, char **argv) {
 	int opt;
-	char *dir;
+	const char *dir;
 
 	while (-1 != (opt = getopt(argc, argv, "h:"))) {
 		switch (opt) {
@@ -38,17 +37,11 @@ int main(int argc, char **argv) {
 		print_usage();
 		return EINVAL;
 	}
+
 	dir = argv[argc - 1];
 
-	switch(umount(dir)) {
-	case -EBUSY:
-		printf("Can't unmount %s, device is in use.\n", dir);
-		break;
-	case -ENOENT:
-		printf("%s not found.\n", dir);
-		break;
-	case -EINVAL:
-		printf("%s is not a mount point.\n", dir);
+	if (-1 == umount(dir)) {
+		printf("umount: %s\n", strerror(errno));
 	}
 
 	return 0;
