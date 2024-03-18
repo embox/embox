@@ -6,12 +6,11 @@
  * @date    12.02.2013
  */
 
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <dirent.h>
-
-#include <fs/mount.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/mount.h>
+#include <unistd.h>
 
 #include <embox/test.h>
 
@@ -23,61 +22,58 @@ TEST_TEARDOWN(clear_id);
 
 TEST_TEARDOWN_SUITE(teardown_suite);
 
-#define FS_NAME  "ext2"
-#define FS_DEV  "/dev/hda"
-#define FS_DIR  "/tmp"
+#define FS_NAME        "ext2"
+#define FS_DEV         "/dev/hda"
+#define FS_DIR         "/tmp"
 
-#define TEST_FNM1 "/tmp/f1"
-#define TEST_UID1 1000
-#define TEST_GID1 1000
-#define TEST_MOD1 0664
+#define TEST_FNM1      "/tmp/f1"
+#define TEST_UID1      1000
+#define TEST_GID1      1000
+#define TEST_MOD1      0664
 
-#define TEST_FNM2 "/tmp/f2"
-#define TEST_UID2 1001
-#define TEST_GID2 1001
-#define TEST_MOD2 0006
+#define TEST_FNM2      "/tmp/f2"
+#define TEST_UID2      1001
+#define TEST_GID2      1001
+#define TEST_MOD2      0006
 
-#define TEST_DNM1 "/tmp/dir"
-#define TEST_DUID1 1000
-#define TEST_DGID1 1000
-#define TEST_DMOD1 0710
+#define TEST_DNM1      "/tmp/dir"
+#define TEST_DUID1     1000
+#define TEST_DGID1     1000
+#define TEST_DMOD1     0710
 
-#define TEST_FNM3 "/tmp/dir/f1"
-#define TEST_UID3 0
-#define TEST_GID3 0
-#define TEST_MOD3 0777
+#define TEST_FNM3      "/tmp/dir/f1"
+#define TEST_UID3      0
+#define TEST_GID3      0
+#define TEST_MOD3      0777
 
-#define TEST_FNM4 "/tmp/dir/f2"
+#define TEST_FNM4      "/tmp/dir/f2"
 
-#define TEST_DNM2 "/tmp/dir2"
+#define TEST_DNM2      "/tmp/dir2"
 
 #define TEST_UID_INVAL 0xdead
 #define TEST_GID_INVAL 0xdead
-
 
 #include <fs/vfs.h>
 static mode_t root_backup_mode;
 
 static int setup_suite(void) {
-        int res;
+	int res;
 
 	/*XXX*/
 	root_backup_mode = vfs_get_root()->i_mode;
 	vfs_get_root()->i_mode = S_IFDIR | 0777;
 
-	if ((res = mount(FS_DEV, FS_DIR, FS_NAME))) {
+	if ((res = mount(FS_DEV, FS_DIR, FS_NAME, 0, NULL))) {
 		return res;
 	}
 
 	return 0;
-
 }
 
 static int teardown_suite(void) {
 	vfs_get_root()->i_mode = root_backup_mode;
-        return 0;
+	return 0;
 }
-
 
 #include <kernel/task/resource/u_area.h>
 static int clear_id(void) {
