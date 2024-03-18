@@ -31,7 +31,9 @@ extern int mount(const char *source, const char *target,
 
 extern int umount(const char *target);
 
+/* 
 extern int umount2(const char *target, int flags);
+ */
 
 __END_DECLS
 
