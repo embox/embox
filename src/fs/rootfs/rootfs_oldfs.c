@@ -9,15 +9,13 @@
 
 #include <errno.h>
 #include <string.h>
+#include <sys/mount.h>
 #include <sys/stat.h>
 
-#include <lib/libds/array.h>
-
-#include <fs/mount.h> /* mount */
+#include <embox/unit.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
-
-#include <embox/unit.h>
+#include <lib/libds/array.h>
 
 EMBOX_UNIT_INIT(unit_init);
 
@@ -26,9 +24,10 @@ ARRAY_SPREAD_DEF(const struct auto_mount *const, auto_mount_tab);
 static int rootfs_mount(const char *dev, const char *fs_type) {
 	struct path node, root;
 	mode_t mode;
+	int err;
 	const struct auto_mount *auto_mnt;
 
-	if (-1 == mount((char *) dev, "/", (char *) fs_type)) {
+	if (-1 == mount((char *)dev, "/", (char *)fs_type, 0, NULL)) {
 		return -errno;
 	}
 
@@ -40,7 +39,9 @@ static int rootfs_mount(const char *dev, const char *fs_type) {
 			return -1;
 		}
 
-		if (-1 == mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name)) {
+		err = mount(NULL, auto_mnt->mount_path, auto_mnt->fs_driver->name, 0,
+		    NULL);
+		if (err) {
 			return -errno;
 		}
 	}
