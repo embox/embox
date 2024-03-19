@@ -12,12 +12,19 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <framework/mod/options.h>
-#include <fs/dvfs.h>
-#include <fs/hlpr_path.h>
-#include <kernel/task/resource/vfs.h>
 #include <lib/cwalk.h>
+
+#include <fs/dvfs.h>
+#include <fs/dentry.h>
+#include <fs/super_block.h>
+#include <fs/inode_operation.h>
+#include <fs/inode.h>
+
+#include <kernel/task/resource/vfs.h>
+
 #include <util/log.h>
+
+#include <framework/mod/options.h>
 
 #define DENTRY_POOL_SIZE OPTION_GET(NUMBER, dentry_pool_size)
 
@@ -166,7 +173,7 @@ int dvfs_lookup(const char *path, struct lookup *lookup) {
 	cwk_path_normalize(path, normal_path, sizeof(normal_path));
 
 	if (cwk_path_is_absolute(normal_path)) {
-		dentry = task_self_resource_vfs()->root;
+		dentry = dvfs_root();
 	}
 	else {
 		if (lookup->item == NULL) {
