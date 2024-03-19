@@ -20,7 +20,6 @@ static void task_vfs_init(const struct task *task, void *task_vfs) {
 
 	fs = task_vfs;
 	fs->pwd = dvfs_root();
-	fs->root = dvfs_root();
 }
 
 static int task_vfs_inherit(const struct task *task,
@@ -35,7 +34,6 @@ static int task_vfs_inherit(const struct task *task,
 	assert(fs_parent);
 
 	fs_self->pwd = fs_parent->pwd;
-	fs_self->root = fs_parent->root;
 
 	return 0;
 }
