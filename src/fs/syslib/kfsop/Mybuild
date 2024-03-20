@@ -19,6 +19,7 @@ module file_system_full extends file_system {
 	source "krename.c"
 	source "kremove.c"
 	source "kutime.c"
+	source "kmount.c"
 
 	depends embox.fs.syslib.perm
 
