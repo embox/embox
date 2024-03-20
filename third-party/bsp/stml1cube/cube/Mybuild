@@ -1,0 +1,11 @@
+package third_party.bsp.stml1cube
+
+module cube_cppflags {
+
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildDepends(cube_cppflags)
+static module cube {
+
+}
