@@ -1,0 +1,23 @@
+package embox.fs.vfs
+
+module core extends embox.fs.fs_api {
+	option string log_level="LOG_ERR"
+	option string rootfs="virtfs"
+
+	@IncludeExport(path="vfs")
+	source "core.h"
+
+	source "inode.c"
+	source "driver.c"
+	source "rootfs.c"
+	source "mount_point.c"
+	source "super_block.c"
+	source "path.c"
+
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends embox.kernel.thread.mutex
+	@NoRuntime depends embox.compat.posix.util.environ
+	@NoRuntime depends embox.compat.posix.util.time
+	@NoRuntime depends embox.compat.posix.proc.uid
+	@NoRuntime depends third_party.lib.cwalk
+}

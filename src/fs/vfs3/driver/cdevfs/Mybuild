@@ -1,0 +1,11 @@
+package embox.fs.vfs.driver
+
+module cdevfs {
+	option string log_level="LOG_ERR"
+
+	source "cdevfs.c"
+
+	@NoRuntime depends embox.fs.vfs.core
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends embox.device.char_dev
+}
