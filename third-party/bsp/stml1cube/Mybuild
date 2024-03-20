@@ -1,0 +1,4 @@
+package third_party.bsp.stml1cube
+
+abstract module stm32l1_conf {
+}
