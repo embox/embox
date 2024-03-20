@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <utime.h>
 
 #include <fs/dir_context.h>
 #include <fs/fs_driver.h>
@@ -161,17 +160,6 @@ int kcreat(struct path *dir_path, const char *path, mode_t mode, struct path *ch
 	security_node_cred_fill(child->node);
 
 	return 0;
-}
-
-int kutime(const char *path,const struct utimbuf *times) {
-	struct path node;
-	int res;
-
-	if (0 != (res = fs_perm_lookup(path, NULL, &node))) {
-		return res;
-	}
-
-	return kfile_change_stat(node.node, times);
 }
 
 int kformat(const char *pathname, const char *fs_type) {
