@@ -24,7 +24,9 @@ static int vfs_mount_walker(struct inode *dir) {
 	assert(dir);
 
 	do {
-		struct inode *node = inode_new(dir->i_sb);
+		struct inode *node;
+
+		node = inode_new(dir->i_sb);
 		if (NULL == node) {
 			return -ENOMEM;
 		}
@@ -60,16 +62,17 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 	struct mount_descriptor *mnt_desc;
 	int res;
 
-	if (NULL == (sb = super_block_alloc(fs_type, source))) {
+	sb = super_block_alloc(fs_type, source);
+	if (NULL == sb) {
 		return -ENOMEM;
 	}
 
 	if (!strcmp("/", dest)) {
 		vfs_set_root(sb->sb_root);
 	}
-	
 
-	if (ENOERR != (res = fs_perm_lookup(dest, &lastpath, &dir_node))) {
+	res = fs_perm_lookup(dest, &lastpath, &dir_node);
+	if (ENOERR != res) {
 		errno = -res;
 		return -1;
 	}
@@ -83,7 +86,8 @@ int kmount(const char *source, const char *dest, const char *fs_type) {
 
 	mnt_desc = dir_node.mnt_desc;
 
-	if (NULL == mount_table_add(&dir_node, mnt_desc, sb->sb_root, source)) {
+	mnt_desc = mount_table_add(&dir_node, mnt_desc, sb->sb_root, source);
+	if (NULL == mnt_desc) {
 		super_block_free(sb);
 		//todo free root
 		errno = -res;
