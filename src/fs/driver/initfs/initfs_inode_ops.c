@@ -19,9 +19,25 @@
 
 #include "initfs.h"
 
-
-extern int initfs_alloc_inode_priv(struct inode *node);
 extern int initfs_fillname(struct inode *inode, char *buf);
+
+static int initfs_alloc_inode_priv(struct inode *node) {
+	struct initfs_file_info *fi;
+
+	if (inode_priv(node)) {
+		return 0;
+	}
+
+	fi = initfs_alloc_inode();
+	if (!fi) {
+		return -ENOMEM;
+	}
+	memset(fi, 0, sizeof(*fi));
+
+	inode_priv_set(node, fi);
+
+	return 0;
+}
 
 struct inode *initfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	extern char _initfs_start;

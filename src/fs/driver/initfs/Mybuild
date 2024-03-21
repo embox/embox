@@ -10,6 +10,7 @@ abstract module initfs {
 	source "initfs_fops.c"
 	source "initfs_drv.c"
 	source "initfs_inode_ops.c"
+	source "initfs_mem.c"
 
 	depends embox.mem.pool
 }
