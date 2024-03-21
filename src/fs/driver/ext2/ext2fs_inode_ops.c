@@ -8,7 +8,6 @@
 
 #include <string.h>
 
-#include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
@@ -41,14 +40,7 @@ static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode
 
 static int ext2fs_delete(struct inode *dir, struct inode *node) {
 	int rc;
-#if 0
-	struct inode *parents;
-	parents = vfs_subtree_get_parent(node);
-	if (NULL == parents) {
-		rc = ENOENT;
-		return -rc;
-	}
-#endif
+
 	rc = ext2_unlink(dir, node);
 	if (0 != rc) {
 		return -rc;
@@ -161,14 +153,16 @@ out:
 	return rc;
 }
 
-static int ext2fs_truncate (struct inode *node, off_t length) {
+static int ext2fs_truncate(struct inode *node, off_t length) {
 
 	inode_size_set(node, length);
 
 	return 0;
 }
 
-extern struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir);
+struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir) {
+	return NULL;
+}
 
 struct inode_operations ext2_iops = {
 	.ino_create  = ext2fs_create,

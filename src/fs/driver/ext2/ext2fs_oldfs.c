@@ -6,15 +6,8 @@
  * @author Andrey Gazukin
  */
 
-#include <stddef.h>
-
 #include <fs/inode.h>
 #include <fs/super_block.h>
-#include <fs/inode_operation.h>
-
-struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir) {
-	return NULL;
-}
 
 extern int e2fs_destroy_inode(struct inode *inode);
 
