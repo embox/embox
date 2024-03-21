@@ -21,6 +21,7 @@ module file_system_full extends file_system {
 	source "kutime.c"
 	source "kmount.c"
 	source "kumount.c"
+	source "kformat.c"
 
 	depends embox.fs.syslib.perm
 
