@@ -1,7 +1,7 @@
 package platform.stm32.l1.stm32l152c_discovery
 
 @Build(stage=1)
-@BuildArtifactPath(cppflags="-DSTM32L152xx")
+@BuildArtifactPath(cppflags="-DSTM32L152xx -DSTM32L152xC -DUSE_STM32L152C_DISCO")
 static module stm32l152c_discovery_conf extends third_party.bsp.stml1cube.stm32l1_conf {
 	@IncludeExport(path="")
 	source "stm32l1xx_hal_conf.h"
