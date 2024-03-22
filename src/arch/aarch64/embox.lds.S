@@ -18,5 +18,5 @@ SECTIONS {
 		*(.text)
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)
-	} > RAM AT> RAM :text
+	} SECTION_REGION(text) :text
 }

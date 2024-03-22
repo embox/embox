@@ -24,17 +24,6 @@ SECTIONS {
 		ALIGNMENT();
 		*(.text)
 		*(.text.*)
-	}
-
-	/DISCARD/ : {
-		*(.MIPS.options)
-		*(.options)
-		*(.pdr)
-		*(.reginfo)
-		*(.comment)
-		*(.note)
-		*(.mdebug.* .gnu.attributes)
-		*(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) *(.eh_frame) *(.eh_frame.*)
-	}
+	} SECTION_REGION(text) :text
 }
 
