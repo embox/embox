@@ -143,13 +143,19 @@ bss_loop:
 	ldr     x0, =_data_vma
 	ldr     x1, =_data_lma
 	ldr     x2, =_data_len
+
+	/* Don't copy if same address */
+	cmp     x0, x1
+	beq     data_loop_done
+
 data_loop:
 	ldr     x3, [x1, 0]
 	str     x3, [x0, 0]
 	add     x0, x0, #8
 	add     x1, x1, #8
 	subs    x2, x2, #8
-	b.gt    data_loop
+	bgt     data_loop
+data_loop_done:
 
 	/* Jump to arch-independent part */
 	bl      kernel_start
