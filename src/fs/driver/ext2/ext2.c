@@ -28,8 +28,6 @@
 
 #include <drivers/block_dev.h>
 
-#include <mem/phymem.h>
-
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 
 static int ext2_new_block(struct inode *node, long position);
@@ -43,29 +41,6 @@ extern void ext2_fi_free(struct ext2_file_info *fi);
 /*
  * help function
  */
-
-void *ext2_buff_alloc(struct ext2_fs_info *fsi, size_t size) {
-	if (size < fsi->s_block_size) {
-		size = fsi->s_block_size;
-	}
-
-	fsi->s_page_count = size / PAGE_SIZE();
-	if (0 != size % PAGE_SIZE()) {
-		fsi->s_page_count++;
-	}
-	if (0 == fsi->s_page_count) {
-		fsi->s_page_count++;
-	}
-
-	return phymem_alloc(fsi->s_page_count);
-}
-
-int ext2_buff_free(struct ext2_fs_info *fsi, char *buff) {
-	if ((0 != fsi->s_page_count) && (NULL != buff)) {
-		phymem_free(buff, fsi->s_page_count);
-	}
-	return 0;
-}
 
 int ext2_read_sector(struct super_block *sb, char *buffer, uint32_t count,
 		uint32_t sector) {
