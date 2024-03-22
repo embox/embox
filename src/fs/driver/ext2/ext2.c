@@ -26,8 +26,6 @@
 
 #include <util/err.h>
 
-#include <drivers/block_dev.h>
-
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 
 static int ext2_new_block(struct inode *node, long position);
@@ -41,52 +39,6 @@ extern void ext2_fi_free(struct ext2_file_info *fi);
 /*
  * help function
  */
-
-int ext2_read_sector(struct super_block *sb, char *buffer, uint32_t count,
-		uint32_t sector) {
-	struct ext2_fs_info *fsi;
-	fsi = sb->sb_data;
-
-	if (0 > block_dev_read(sb->bdev, (char *) buffer,
-			count * fsi->s_block_size, fsbtodb(fsi, sector))) {
-		return -1;
-	} else {
-		return count;
-	}
-}
-
-int ext2_write_sector(struct super_block *sb, char *buffer, uint32_t count,
-		uint32_t sector) {
-	struct ext2_fs_info *fsi;
-
-	fsi = sb->sb_data;
-
-	if (!strcmp(sb->fs_drv->name, "ext3")) {
-		/* EXT3 */
-		int i = 0;
-		journal_t *jp = fsi->journal;
-		journal_block_t *b;
-
-		assert(jp);
-
-		for (i = 0 ; i < count; i++) {
-			b = journal_new_block(jp, sector + i);
-			if (!b) {
-				return -1;
-			}
-			memcpy(b->data, buffer + i * fsi->s_block_size, fsi->s_block_size);
-			journal_dirty_block(jp, b);
-		}
-	} else {
-		/* EXT2 */
-		if (0 > block_dev_write(sb->bdev, (char *) buffer,
-						count * fsi->s_block_size, fsbtodb(fsi, sector))) {
-			return -1;
-		}
-	}
-
-	return count;
-}
 
 static uint32_t ext2_rd_indir(char *buf, int index) {
 	return b_ind(buf) [index];
