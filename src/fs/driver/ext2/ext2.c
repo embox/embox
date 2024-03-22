@@ -1610,6 +1610,43 @@ static int ext2_free_inode(struct inode *node) { /* ext2_file_info to free */
 	return rc;
 }
 
+int ext2_set_inode_priv(struct inode *node) {
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+	int rc;
+
+	fsi = node->i_sb->sb_data;
+	assert(fsi);
+
+	fi = inode_priv(node);
+	if (fi) {
+		return 0;
+	}	
+
+	fi = ext2_fi_alloc();
+	if (NULL == fi) {
+		return -ENOMEM;
+	}
+	memset(fi, 0, sizeof(struct ext2_file_info));
+
+	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
+	if (NULL == fi->f_buf) {
+		ext2_fi_free(fi);
+		return -ENOMEM;
+	}
+
+	rc = ext2_shift_culc(fi, fsi);
+	if (0 != rc) {
+		ext2_buff_free(fsi, fi->f_buf);
+		ext2_fi_free(fi);		
+		return rc;
+	}
+
+	inode_priv_set(node, fi);
+
+	return 0;
+}
+
 static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	/* Allocate a free inode in inode table and return a pointer to it. */
 	int rc;
