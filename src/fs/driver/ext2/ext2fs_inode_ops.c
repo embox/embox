@@ -51,7 +51,6 @@ static int ext2fs_delete(struct inode *dir, struct inode *node) {
 
 int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 					struct dir_ctx *dir_ctx) {
-	char name_buff[NAME_MAX];
 	struct ext2_fs_info *fsi;
 	struct ext2_file_info *dir_fi;
 	struct ext2_file_info *fi;
@@ -84,28 +83,30 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 		dp = (struct ext2fs_direct *) buf;
 		edp = (struct ext2fs_direct *) (buf + buf_size);
 		for (; dp < edp; dp = (void *)((char *)dp + fs2h16(dp->e2d_reclen))) {
+			int name_len;
+
 			if (fs2h16(dp->e2d_reclen) <= 0) {
 				goto out;
 			}
 			if (fs2h32(dp->e2d_ino) == 0) {
 				continue;
 			}
-
+			
+			name_len = fs2h16(dp->e2d_namlen);
+			assert (name_len < NAME_MAX);
 			/* set null determine name */
 			name = (char *) &dp->e2d_name;
 
-			memcpy(name_buff, name, fs2h16(dp->e2d_namlen));
-			name_buff[fs2h16(dp->e2d_namlen)] = '\0';
-
-			if(0 != path_is_dotname(name_buff, dp->e2d_namlen)) {
+			if(0 != path_is_dotname(name, name_len)) {
 				/* dont need create dot or dotdot node */
 				continue;
 			}
+
 			if (idx++ < (int)(uintptr_t)dir_ctx->fs_ctx) {
 				continue;
 			}
 
-			//mode = ext2_type_to_mode_fmt(dp->e2d_type);
+			
 			fi = ext2_fi_alloc();
 			if (!fi) {
 				rc = ENOSPC;
@@ -113,12 +114,7 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 			}
 
 			memset(fi, 0, sizeof(struct ext2_file_info));
-			fi->f_num = fs2h32(dp->e2d_ino);
-
-			next->i_sb = parent->i_sb;
-			inode_size_set(next, 0);
-			inode_priv_set(next, fi);
-
+		
 			/* Load permisiions and credentials. */
 			fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
 			if (NULL == fi->f_buf) {
@@ -126,15 +122,24 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 				goto out;
 			}
 
-			ext2_read_inode(next, fs2h32(dp->e2d_ino));
-			ext2_buff_free(fsi, fi->f_buf);
+			inode_priv_set(next, fi);
 
+			next->i_sb = parent->i_sb;
+
+			fi->f_num = fs2h32(dp->e2d_ino);
+
+			ext2_read_inode(next, fi->f_num);
+
+			//mode = ext2_type_to_mode_fmt(dp->e2d_type);
 			next->i_mode = fi->f_di.i_mode;
-
 			next->i_owner_id = fi->f_di.i_uid;
 			next->i_group_id = fi->f_di.i_gid;
+
 			inode_size_set(next, fi->f_di.i_size);
-			strncpy(next_name, name_buff, NAME_MAX - 1);
+
+			ext2_buff_free(fsi, fi->f_buf);
+
+			strncpy(next_name, name, NAME_MAX - 1);
 			next_name[NAME_MAX - 1] = '\0';
 
 			dir_ctx->fs_ctx = (void *)(uintptr_t)idx;
