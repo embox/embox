@@ -523,6 +523,10 @@ int ext2_open(struct inode *node) {
 	fi = inode_priv(node);
 	fsi = node->i_sb->sb_data;
 
+	if (fi->f_num) {
+		return 0;
+	}
+
 	/* prepare full path into this filesystem */
 	vfs_get_relative_path(node, path, PATH_MAX);
 #if 0

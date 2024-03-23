@@ -165,6 +165,7 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 
 	fi = inode_priv(dest);
 
+	fi->f_num = EXT2_ROOTINO;
 	rc = ext2_read_inode(dest, EXT2_ROOTINO);
 	if (0 != rc) {
 		goto error4;
