@@ -24,5 +24,5 @@ SECTIONS {
 		*(.trap_table.text)
 		*(.text)
 		*(.text.*)
-	}
+	} SECTION_REGION(text) :text
 }

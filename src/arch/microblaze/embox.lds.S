@@ -24,7 +24,7 @@ SECTIONS {
 		*(.trap_table.text)
 		*(.text)
 		*(.text.*)
-	}
+	} SECTION_REGION(text) :text
 
 	_bstart = _bss_vma;
 	_bend = _bstart + _bss_len;
