@@ -49,6 +49,8 @@ static int ext2fs_delete(struct inode *dir, struct inode *node) {
 	return 0;
 }
 
+extern int ext2_set_inode_priv(struct inode *node);
+
 int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 					struct dir_ctx *dir_ctx) {
 	struct ext2_fs_info *fsi;
@@ -106,23 +108,11 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 				continue;
 			}
 
-			
-			fi = ext2_fi_alloc();
-			if (!fi) {
-				rc = ENOSPC;
+			rc = ext2_set_inode_priv(next);
+			if (rc) {
 				goto out;
 			}
-
-			memset(fi, 0, sizeof(struct ext2_file_info));
-		
-			/* Load permisiions and credentials. */
-			fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
-			if (NULL == fi->f_buf) {
-				rc = ENOSPC;
-				goto out;
-			}
-
-			inode_priv_set(next, fi);
+			fi = inode_priv(next);
 
 			next->i_sb = parent->i_sb;
 
@@ -137,7 +127,7 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 
 			inode_size_set(next, fi->f_di.i_size);
 
-			ext2_buff_free(fsi, fi->f_buf);
+			//ext2_buff_free(fsi, fi->f_buf);
 
 			strncpy(next_name, name, NAME_MAX - 1);
 			next_name[NAME_MAX - 1] = '\0';

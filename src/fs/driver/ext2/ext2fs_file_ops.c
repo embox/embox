@@ -27,15 +27,13 @@ extern int ext2_close(struct inode *node);
 static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	int rc;
 	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
+	//struct ext2_fs_info *fsi;
 
 	fi = inode_priv(node);
-	fsi = node->i_sb->sb_data;
+	//fsi = node->i_sb->sb_data;
 	fi->f_pointer = file_get_pos(file_desc_from_idesc(idesc));
 
-	if (NULL == (fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size))) {
-		return err2ptr(ENOMEM);
-	}
+	assert(fi->f_buf);
 
 	if (0 != (rc = ext2_read_inode(node, fi->f_num))) {
 		ext2_close(node);

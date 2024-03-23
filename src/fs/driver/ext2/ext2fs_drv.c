@@ -108,6 +108,8 @@ static int ext2fs_format(struct block_dev *bdev, void *priv) {
 	return 0;
 }
 
+extern int ext2_set_inode_priv(struct inode *node);
+
 static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	struct ext2_file_info *fi;
 	struct inode *dest;
@@ -154,30 +156,21 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 	}
 
 	dest = sb->sb_root;
-	fi= ext2_fi_alloc();
-	if (!fi) {
-		rc = ENOMEM;
+
+	rc = ext2_set_inode_priv(dest);
+	if (rc) {
+		rc = -rc;
 		goto error2;
 	}
 
-	memset(fi, 0, sizeof(struct ext2_file_info));
-
-	inode_size_set(dest, 0);
-	inode_priv_set(dest, fi);
-
-	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
-	if (NULL == fi) {
-		rc = ENOMEM;
-		goto error3;
-	}
+	fi = inode_priv(dest);
 
 	rc = ext2_read_inode(dest, EXT2_ROOTINO);
 	if (0 != rc) {
 		goto error4;
 	}
 
-	ext2_buff_free(sb->sb_data, fi->f_buf);
-
+	inode_size_set(dest, 0);
 	dest->i_mode = fi->f_di.i_mode;
 	dest->i_owner_id = fi->f_di.i_uid;
 	dest->i_group_id = fi->f_di.i_gid;
@@ -187,7 +180,6 @@ static int ext2_fill_sb(struct super_block *sb, const char *source) {
 error4:
 	ext2_buff_free(sb->sb_data, fi->f_buf);
 
-error3:
 	ext2_fi_free(fi);
 
 error2:

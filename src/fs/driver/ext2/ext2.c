@@ -497,6 +497,7 @@ static int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
 }
 
 int ext2_close(struct inode *node) {
+#if 0
 	struct ext2_file_info *fi;
 
 	fi = inode_priv(node);
@@ -506,7 +507,7 @@ int ext2_close(struct inode *node) {
 			ext2_buff_free(node->i_sb->sb_data, fi->f_buf);
 		}
 	}
-
+#endif
 	return 0;
 }
 
@@ -524,12 +525,14 @@ int ext2_open(struct inode *node) {
 
 	/* prepare full path into this filesystem */
 	vfs_get_relative_path(node, path, PATH_MAX);
-
+#if 0
 	/* alloc a block sized buffer used for all transfers */
 	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
 	if (NULL == fi->f_buf) {
 		return ENOMEM;
 	}
+#endif
+	assert(fi->f_buf);
 
 	/* read group descriptor blocks */
 	rc = ext2_read_gdblock(node->i_sb);
@@ -599,7 +602,7 @@ int ext2_open(struct inode *node) {
 	return 0;
 
 out:
-	ext2_buff_free(fsi, fi->f_buf);
+	//ext2_buff_free(fsi, fi->f_buf);
 
 	return rc;
 }
@@ -1584,21 +1587,11 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	dir_fi = inode_priv(i_dir);
 	fsi = i_dir->i_sb->sb_data;
 
-	fi = ext2_fi_alloc();
-	if (NULL == fi) {
-		rc = ENOSPC;
+	rc = ext2_set_inode_priv(i_new);
+	if (rc) {
 		goto out;
 	}
-	memset(fi, 0, sizeof(struct ext2_file_info));
-
-	inode_size_set(i_new, 0);
-	inode_priv_set(i_new, fi);
-	
-	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
-	if (NULL == fi->f_buf) {
-		rc = ENOSPC;
-		goto error1;
-	}
+	fi = inode_priv(i_new);
 
 	rc = ext2_read_sblock(i_new->i_sb);
 	if (0 != rc) {
@@ -1613,14 +1606,18 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	}
 
 	fi->f_num = b;
+	
 	ext2_wipe_inode(fi, dir_fi);
+
+//	inode_size_set(i_new, 0);
 
 	return 0;
 
 error2:
 	ext2_buff_free(fsi, fi->f_buf);
-error1:
+
 	ext2_fi_free(fi);
+	inode_priv_set(i_new, NULL);
 out:
 	return rc;
 }
