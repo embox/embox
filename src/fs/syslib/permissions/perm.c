@@ -86,7 +86,13 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 
 		if (NULL != node_path.node) {
 			if (dnode && dnode->i_ops && dnode->i_ops->ino_lookup) {
-				dnode->i_ops->ino_lookup(node_path.node, path, dir_path.node);
+				if (dnode->i_ops == dir_path.node->i_ops) {
+					dnode->i_ops->ino_lookup(node_path.node, path, dir_path.node);
+				} else {
+					/* find mount inode */
+					dnode->i_ops->ino_lookup(node_path.node, path, NULL);
+
+				}
 			}
 		}
 
