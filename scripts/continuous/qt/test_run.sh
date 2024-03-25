@@ -14,8 +14,8 @@ LOG_FILE=$QT_SCRIPTS_DIR/out.log
 # to CAPTURED_VIDEO
 timeout $TIMEOUT ffmpeg -draw_mouse 0 -video_size 1024x768 -framerate 25 \
 	-f x11grab -i :$QT_VNC_DISPLAY_NR $CAPTURED_VIDEO &
-# Start xvncviewer on display :QT_VNC_DISPLAY_NR
-timeout $TIMEOUT xvncviewer -geometry 1024x768 10.0.2.16:5900
+# Start vncviewer on display :QT_VNC_DISPLAY_NR
+timeout $TIMEOUT vncviewer -geometry 1024x768 10.0.2.16:5900
 
 # Now search for the gold frames within captured video.
 # If some of the gold frames are not found then exit with failure.

@@ -132,8 +132,8 @@ tap_down() {
 	sudo /sbin/ip tuntap del mode tap tap0
 }
 
-sudo /etc/init.d/ntp restart
-sudo inetd
+sudo systemctl restart ntp
+sudo systemctl restart inetd
 
 cp $CONT_BASE/net/$HTTP_GOLD_SIMPLE_FILE $ROOT_DIR/conf/rootfs/$HTTP_GOLD_SIMPLE_FILE
 make >/dev/null 2>/dev/null

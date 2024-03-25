@@ -175,8 +175,8 @@ for f in $FS_TEST_NETWORK; do
 			check_post_exit "fs content differ from expected"
 			;;
 		cifs)
-			sudo /etc/init.d/nmbd restart
-			sudo /etc/init.d/smbd restart
+			sudo systemctl restart nmbd
+			sudo systemctl restart smbd
 
 			$CONT_FS_MANAGE $f $FS_TEST_CIFS_PATH build_dir "$IMG_RW_CONTENT"
 
