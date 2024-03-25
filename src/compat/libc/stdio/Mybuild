@@ -31,7 +31,6 @@ static module sprintf {
 	source "snprintf.c"
 
 	@NoRuntime depends print_impl
-	@NoRuntime depends embox.lib.libgcc
 }
 
 static module file_pool {
