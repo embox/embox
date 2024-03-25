@@ -1,5 +1,6 @@
 package embox.lib
 
+@Mandatory
 @DefaultImpl(third_party.lib.libgcc_toolchain)
 abstract module libgcc {
 }

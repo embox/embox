@@ -23,6 +23,5 @@ module lua {
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.time.time
 	@NoRuntime depends embox.compat.posix.util.nanosleep
-	@NoRuntime depends embox.lib.libgcc
 	@NoRuntime depends embox.kernel.task.resource.errno
 }
