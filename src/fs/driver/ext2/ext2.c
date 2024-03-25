@@ -29,7 +29,7 @@
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 
 static int ext2_new_block(struct inode *node, long position);
-static int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
+extern int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
 
 extern int ext2_read_gdblock(struct super_block *sb);
 
@@ -708,7 +708,7 @@ size_t ext2_write_file(struct inode *node, char *buf, size_t size) {
  * Search a directory for a name and return its
  * inode number.
  */
-static int ext2_search_directory(struct inode *node, const char *name, int length,
+int ext2_search_directory(struct inode *node, const char *name, int length,
 		uint32_t *inumber_p) {
 	int rc;
 	struct ext2fs_direct *dp;

@@ -20,6 +20,7 @@ extern struct ext2_file_info *ext2_fi_alloc(void);
 
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 extern int ext2_read_inode(struct inode *node, uint32_t);
+extern int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
 
 extern int ext2_create(struct inode *i_new, struct inode *i_dir);
 extern int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
@@ -156,6 +157,45 @@ static int ext2fs_truncate(struct inode *node, off_t length) {
 }
 
 struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir) {
+	uint32_t i_no;
+	int rc;
+	// struct ext2_fs_info *fsi;
+	// struct ext2_file_info *dir_fi;
+	struct ext2_file_info *fi;
+
+
+	if (dir == NULL) {
+		dir = node->i_sb->sb_root;
+	}
+
+
+	// if (0 != ext2_open((struct inode *)dir)) {
+	//  	return NULL;
+	// }
+
+	rc = ext2_search_directory((struct inode *)dir, name, strlen(name), &i_no);
+	if (0 != rc) {
+		return NULL;
+	}
+	rc = ext2_set_inode_priv(node);
+	if (rc) {
+		return NULL;
+	}
+	fi = inode_priv(node);
+
+	node->i_sb = dir->i_sb;
+
+	fi->f_num = i_no;
+
+	ext2_read_inode(node, fi->f_num);
+
+	//mode = ext2_type_to_mode_fmt(dp->e2d_type);
+	node->i_mode = fi->f_di.i_mode;
+	node->i_owner_id = fi->f_di.i_uid;
+	node->i_group_id = fi->f_di.i_gid;
+
+	inode_size_set(node, fi->f_di.i_size);
+
 	return NULL;
 }
 
