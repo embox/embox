@@ -6,9 +6,12 @@
  * @author Andrey Gazukin
  */
 
+#include <errno.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #include <fs/inode.h>
+#include <fs/super_block.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
 #include <fs/dir_context.h>

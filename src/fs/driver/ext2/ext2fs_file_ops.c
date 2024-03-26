@@ -6,6 +6,7 @@
  * @author Andrey Gazukin
  */
 
+#include <errno.h>
 #include <stddef.h>
 
 #include <fs/inode.h>
