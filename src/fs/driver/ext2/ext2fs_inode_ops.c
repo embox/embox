@@ -50,7 +50,7 @@ static int ext2fs_delete(struct inode *dir, struct inode *node) {
 }
 
 extern int ext2_set_inode_priv(struct inode *node);
-
+extern mode_t ext2_type_to_mode_fmt(uint8_t e2d_type);
 int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 					struct dir_ctx *dir_ctx) {
 	struct ext2_fs_info *fsi;
@@ -117,7 +117,7 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 			ext2_read_inode(next, fi->f_num);
 
 			//mode = ext2_type_to_mode_fmt(dp->e2d_type);
-			next->i_mode = fi->f_di.i_mode;
+			next->i_mode = fi->f_di.i_mode; //ext2_type_to_mode_fmt(fi->f_di.i_mode);
 			next->i_owner_id = fi->f_di.i_uid;
 			next->i_group_id = fi->f_di.i_gid;
 
@@ -176,13 +176,13 @@ struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode c
 	ext2_read_inode(node, fi->f_num);
 
 	//mode = ext2_type_to_mode_fmt(dp->e2d_type);
-	node->i_mode = fi->f_di.i_mode;
+	node->i_mode = fi->f_di.i_mode; //ext2_type_to_mode_fmt(fi->f_di.i_mode);
 	node->i_owner_id = fi->f_di.i_uid;
 	node->i_group_id = fi->f_di.i_gid;
 
 	inode_size_set(node, fi->f_di.i_size);
 
-	return NULL;
+	return node;
 }
 
 struct inode_operations ext2_iops = {
