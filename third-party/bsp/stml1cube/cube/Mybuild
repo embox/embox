@@ -19,7 +19,9 @@ static module cube {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeL1-1.10.4/Drivers/STM32L1xx_HAL_Driver/Src")
 	source
 		"stm32l1xx_hal.c",
-		"stm32l1xx_hal_cortex.c"
+		"stm32l1xx_hal_cortex.c",
+		"stm32l1xx_hal_gpio.c",
+		"stm32l1xx_hal_rcc.c"
 
 	@NoRuntime depends third_party.bsp.stml1cube.stm32l1_conf
 	@NoRuntime depends cube_cppflags
