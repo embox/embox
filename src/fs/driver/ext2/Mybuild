@@ -30,3 +30,8 @@ module ext2_oldfs extends ext2 {
 
 	depends embox.fs.node
 }
+
+module ext2_dvfs extends ext2 {
+	source "ext2fs_dvfs.c"
+	depends embox.fs.journal
+}
