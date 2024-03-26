@@ -36,7 +36,7 @@ static struct idesc *ext2fs_open(struct inode *node, struct idesc *idesc, int __
 	assert(fi->f_buf);
 
 	if (0 != (rc = ext2_read_inode(node, fi->f_num))) {
-		ext2_close(node);
+		// ext2_close(node);
 		return err2ptr(rc);
 	}
 	else {

@@ -14,9 +14,7 @@
 #include <fs/dir_context.h>
 #include <fs/inode_operation.h>
 
-
 extern struct ext2_file_info *ext2_fi_alloc(void);
-
 
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 extern int ext2_read_inode(struct inode *node, uint32_t);
@@ -25,8 +23,6 @@ extern int ext2_search_directory(struct inode *node, const char *, int, uint32_t
 extern int ext2_create(struct inode *i_new, struct inode *i_dir);
 extern int ext2_mkdir(struct inode *i_new, struct inode *i_dir);
 extern int ext2_unlink(struct inode *dir_node, struct inode *node);
-extern int ext2_close(struct inode *inode);
-extern int ext2_open(struct inode *inode);
 
 static int ext2fs_create(struct inode *node, struct inode *parent_node, int mode) {
 	int rc;
@@ -65,10 +61,6 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 	int idx = 0;
 
 	fsi = parent->i_sb->sb_data;
-
-	if (0 != ext2_open(parent)) {
-		return -1;
-	}
 
 	dir_fi = inode_priv(parent);
 
@@ -143,9 +135,6 @@ int ext2_iterate(struct inode *next, char *next_name, struct inode *parent,
 
 	rc = -1;
 out:
-
-	ext2_close(parent);
-
 	return rc;
 }
 
@@ -159,28 +148,22 @@ static int ext2fs_truncate(struct inode *node, off_t length) {
 struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	uint32_t i_no;
 	int rc;
-	// struct ext2_fs_info *fsi;
-	// struct ext2_file_info *dir_fi;
 	struct ext2_file_info *fi;
-
 
 	if (dir == NULL) {
 		dir = node->i_sb->sb_root;
 	}
 
-
-	// if (0 != ext2_open((struct inode *)dir)) {
-	//  	return NULL;
-	// }
-
 	rc = ext2_search_directory((struct inode *)dir, name, strlen(name), &i_no);
 	if (0 != rc) {
 		return NULL;
 	}
+
 	rc = ext2_set_inode_priv(node);
 	if (rc) {
 		return NULL;
 	}
+
 	fi = inode_priv(node);
 
 	node->i_sb = dir->i_sb;

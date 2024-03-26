@@ -15,7 +15,6 @@
 #include <limits.h>
 
 #include <fs/fs_driver.h>
-#include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
@@ -443,7 +442,7 @@ int ext2_buf_read_file(struct inode *node, char **buf_p, size_t *size_p) {
 }
 
 /* find and read symlink file */
-static int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
+int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
 		const char **cp) {
 	/* XXX should handle LARGEFILE */
 	int len, link_len;
@@ -509,106 +508,6 @@ int ext2_close(struct inode *node) {
 	}
 #endif
 	return 0;
-}
-
-int ext2_open(struct inode *node) {
-	int rc;
-	char path[PATH_MAX];
-	const char *cp, *ncp;
-	uint32_t inumber, parent_inumber;
-
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
-
-	fi = inode_priv(node);
-	fsi = node->i_sb->sb_data;
-
-	if (fi->f_num) {
-		return 0;
-	}
-
-	/* prepare full path into this filesystem */
-	vfs_get_relative_path(node, path, PATH_MAX);
-#if 0
-	/* alloc a block sized buffer used for all transfers */
-	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
-	if (NULL == fi->f_buf) {
-		return ENOMEM;
-	}
-#endif
-	assert(fi->f_buf);
-
-	/* read group descriptor blocks */
-	rc = ext2_read_gdblock(node->i_sb);
-	if (0 != rc) {
-		return rc;
-	}
-
-	rc = ext2_shift_culc(fi, fsi);
-	if (0 != rc) {
-		return rc;
-	}
-
-	inumber = EXT2_ROOTINO;
-	rc = ext2_read_inode(node, inumber);
-	if (0 != rc) {
-		return rc;
-	}
-
-	cp = path;
-	while (*cp) {
-		/* Remove extra separators */
-		while (*cp == '/') {
-			cp++;
-		}
-		if (*cp == '\0') {
-			break;
-		}
-
-		/* Check that current node is a directory */
-		if (!S_ISDIR(fi->f_di.i_mode)) {
-			rc = ENOTDIR;
-			goto out;
-		}
-
-		/* Get next component of path name */
-		ncp = cp;
-		while ((*cp != '\0') && (*cp != '/')) {
-			cp++;
-		}
-		/*
-		 * Look up component in current directory. Save directory inumber
-		 * in case we find a symbolic link.
-		 */
-		parent_inumber = inumber;
-		rc = ext2_search_directory(node, ncp, cp - ncp, &inumber);
-		if (0 != rc) {
-			goto out;
-		}
-
-		/* Open next component */
-		rc = ext2_read_inode(node, inumber);
-		if (0 != rc) {
-			goto out;
-		}
-
-		/* Check for symbolic link */
-		if (S_ISLNK(fi->f_di.i_mode)) {
-			rc = ext2_read_symlink(node, parent_inumber, &cp);
-			if (0 != rc) {
-				goto out;
-			}
-		}
-	}
-
-	fi->f_num = inumber;
-
-	return 0;
-
-out:
-	//ext2_buff_free(fsi, fi->f_buf);
-
-	return rc;
 }
 
 /*
@@ -1264,11 +1163,6 @@ int ext2_create(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi = inode_priv(i_dir);
 
-	rc = ext2_open(i_dir);
-	if (0 != rc) {
-		return rc;
-	}
-
 	/* Create a new file inode */
 	rc = ext2_new_node(i_new, i_dir);
 	if (0 != rc) {
@@ -1278,9 +1172,9 @@ int ext2_create(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi->f_di.i_links_count++;
 	ext2_rw_inode(i_dir, &dir_fi->f_di, EXT2_W_INODE);
-
+#if 0
 	ext2_close(i_dir);
-
+#endif
 	if (NULL != fi) {
 		ext2_buff_free(i_new->i_sb->sb_data, fi->f_buf);
 		return 0;
@@ -1301,13 +1195,9 @@ int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi = inode_priv(i_dir);
 
-	/* read the directory inode */
-	if (0 != (rc = ext2_open(i_dir))) {
-		return rc;
-	}
 	/* Create a new directory inode. */
 	if (0 != (rc = ext2_new_node(i_new, i_dir))) {
-		ext2_close(i_dir);
+		//ext2_close(i_dir);
 		return ENOSPC;
 	}
 	fi = inode_priv(i_new);
@@ -1334,10 +1224,10 @@ int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi->f_di.i_links_count++;
 	ext2_rw_inode(i_dir, &dir_fi->f_di, EXT2_W_INODE);
-
+#if 0
 	ext2_buff_free(i_new->i_sb->sb_data, fi->f_buf);
 	ext2_close(i_dir);
-
+#endif
 	if (NULL == fi) {
 		return ENOSPC;
 	}
@@ -1538,8 +1428,11 @@ static int ext2_free_inode(struct inode *node) { /* ext2_file_info to free */
 	}
 	rc = ext2_free_inode_bit(node, b, S_ISDIR(node->i_mode));
 
-	ext2_close(node);
+	ext2_buff_free(node->i_sb->sb_data, fi->f_buf);
 	ext2_fi_free(fi);
+
+	ext2_close(node);
+	inode_priv_set(node, NULL);
 
 	return rc;
 }
@@ -1928,7 +1821,7 @@ static int ext2_new_node(struct inode *i_new, struct inode *i_dir) {
 static int ext2_unlink_file(struct inode *dir_node, struct inode *node) {
 	int rc;
 
-	if ((0 != (rc = ext2_open(dir_node))) || (0 != (rc = ext2_free_inode(node)))) {
+	if (0 != (rc = ext2_free_inode(node))) {
 		return rc;
 	}
 	
@@ -1987,11 +1880,6 @@ int ext2_unlink(struct inode *dir_node, struct inode *node) {
 
 	dir_fi = inode_priv(dir_node);
 
-	/* Temporarily open the dir. */
-	if (0 != (rc = ext2_open(dir_node))) {
-		return rc;
-	}
-
 	if (S_ISDIR(node->i_mode)) {
 		rc = ext2_remove_dir(dir_node, node); /* call is RMDIR */
 	}
@@ -2003,8 +1891,6 @@ int ext2_unlink(struct inode *dir_node, struct inode *node) {
 		dir_fi->f_di.i_links_count--;
 		ext2_rw_inode(dir_node, &dir_fi->f_di, EXT2_W_INODE);
 	}
-
-	ext2_close(dir_node);
 
 	return rc;
 }
