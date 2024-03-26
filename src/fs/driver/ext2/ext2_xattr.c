@@ -9,6 +9,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <fs/super_block.h>
 #include <fs/inode.h>
 
 #include <fs/xattr.h>
