@@ -1,14 +1,27 @@
 package embox.driver.serial
 
 
-module i8250 extends embox.driver.serial.diag {
+module i8250 {
+	source "i8250.c"
+
+	depends embox.driver.serial.core
+}
+
+module i8250_diag extends embox.driver.serial.diag {
+	option number base_addr = 0x3f8
+	option number baud_rate
+
+	source "i8250_diag.c"
+
+	depends i8250
+}
+
+module i8250_ttyS0 {
 	option number base_addr = 0x3f8
 	option number irq_num = 4
 	option number baud_rate
 
-	source "i8250.c"
-	source "i8250_diag.c"
 	source "i8250_ttys0.c"
 
-	depends core
+	depends i8250
 }

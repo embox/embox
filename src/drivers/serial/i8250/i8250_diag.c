@@ -22,14 +22,12 @@
  */
 
 #define UART_BASE      OPTION_GET(NUMBER, base_addr)
-#define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
 #define BAUD_RATE      OPTION_GET(NUMBER,baud_rate)
 
 extern const struct uart_ops i8250_uart_ops;
 
 static struct uart uart_diag = {
 		.uart_ops = &i8250_uart_ops,
-		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,
 };
 
