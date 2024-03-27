@@ -25,3 +25,33 @@ module i8250_ttyS0 {
 
 	depends i8250
 }
+
+module i8250_ttyS1 {
+	option number base_addr = 0x2f8
+	option number irq_num = 3
+	option number baud_rate = 115200
+
+	source "i8250_ttys1.c"
+
+	depends i8250
+}
+
+module i8250_ttyS2 {
+	option number base_addr = 0x3E8
+	option number irq_num = 4
+	option number baud_rate = 115200
+
+	source "i8250_ttys2.c"
+
+	depends i8250
+}
+
+module i8250_ttyS3 {
+	option number base_addr = 0x2E8
+	option number irq_num = 3
+	option number baud_rate = 115200
+
+	source "i8250_ttys2.c"
+
+	depends i8250
+}
