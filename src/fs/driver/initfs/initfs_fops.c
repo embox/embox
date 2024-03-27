@@ -15,12 +15,7 @@
 #include <fs/inode.h>
 #include <fs/super_block.h>
 
-#include <mem/misc/pool.h>
-#include <util/log.h>
-
 #include "initfs.h"
-
-POOL_DEF(initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
 
 int initfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return -EACCES;
@@ -64,32 +59,6 @@ struct file_operations initfs_fops = {
 	.write = initfs_write,
 	.ioctl = initfs_ioctl,
 };
-
-struct initfs_file_info *initfs_alloc_inode(void) {
-	return pool_alloc(&initfs_file_pool);
-}
-
-void initfs_free_inode(struct initfs_file_info *fi) {
-	pool_free(&initfs_file_pool, fi);
-}
-
-int initfs_alloc_inode_priv(struct inode *node) {
-	struct initfs_file_info *fi;
-
-	if (inode_priv(node)) {
-		return 0;
-	}
-
-	fi = initfs_alloc_inode();
-	if (!fi) {
-		return -ENOMEM;
-	}
-	memset(fi, 0, sizeof(*fi));
-
-	inode_priv_set(node, fi);
-
-	return 0;
-}
 
 /**
 * @brief Initialize initfs inode

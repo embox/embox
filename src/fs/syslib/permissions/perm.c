@@ -84,17 +84,16 @@ int fs_perm_lookup(const char *path, const char **pathlast,
 		dnode = node_path.node;
 		vfs_lookup_childn(&node_path, path, len, &node_path);
 
-		if (NULL == node_path.node) {
+		if (NULL != node_path.node) {
 			if (dnode && dnode->i_ops && dnode->i_ops->ino_lookup) {
-				struct inode *node = inode_new(dnode->i_sb);
-				
-				dnode->i_ops->ino_lookup(node, path, dir_path.node);
+				if (dnode->i_ops == dir_path.node->i_ops) {
+					dnode->i_ops->ino_lookup(node_path.node, path, dir_path.node);
+				} else {
+					/* find mount inode */
+					dnode->i_ops->ino_lookup(node_path.node, path, NULL);
 
-				vfs_add_leaf(node, dir_path.node);
-			} else {
-				return -ENOENT;
+				}
 			}
-			vfs_lookup_childn(&dir_path, path, len, &node_path);
 		}
 
 	} while (node_path.node);

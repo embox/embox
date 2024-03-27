@@ -15,7 +15,6 @@
 #include <limits.h>
 
 #include <fs/fs_driver.h>
-#include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/ext2.h>
 #include <fs/hlpr_path.h>
@@ -26,14 +25,10 @@
 
 #include <util/err.h>
 
-#include <drivers/block_dev.h>
-
-#include <mem/phymem.h>
-
 extern int ext2_buf_read_file(struct inode *inode, char **, size_t *);
 
 static int ext2_new_block(struct inode *node, long position);
-static int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
+extern int ext2_search_directory(struct inode *node, const char *, int, uint32_t *);
 
 extern int ext2_read_gdblock(struct super_block *sb);
 
@@ -43,75 +38,6 @@ extern void ext2_fi_free(struct ext2_file_info *fi);
 /*
  * help function
  */
-
-void *ext2_buff_alloc(struct ext2_fs_info *fsi, size_t size) {
-	if (size < fsi->s_block_size) {
-		size = fsi->s_block_size;
-	}
-
-	fsi->s_page_count = size / PAGE_SIZE();
-	if (0 != size % PAGE_SIZE()) {
-		fsi->s_page_count++;
-	}
-	if (0 == fsi->s_page_count) {
-		fsi->s_page_count++;
-	}
-
-	return phymem_alloc(fsi->s_page_count);
-}
-
-int ext2_buff_free(struct ext2_fs_info *fsi, char *buff) {
-	if ((0 != fsi->s_page_count) && (NULL != buff)) {
-		phymem_free(buff, fsi->s_page_count);
-	}
-	return 0;
-}
-
-int ext2_read_sector(struct super_block *sb, char *buffer, uint32_t count,
-		uint32_t sector) {
-	struct ext2_fs_info *fsi;
-	fsi = sb->sb_data;
-
-	if (0 > block_dev_read(sb->bdev, (char *) buffer,
-			count * fsi->s_block_size, fsbtodb(fsi, sector))) {
-		return -1;
-	} else {
-		return count;
-	}
-}
-
-int ext2_write_sector(struct super_block *sb, char *buffer, uint32_t count,
-		uint32_t sector) {
-	struct ext2_fs_info *fsi;
-
-	fsi = sb->sb_data;
-
-	if (!strcmp(sb->fs_drv->name, "ext3")) {
-		/* EXT3 */
-		int i = 0;
-		journal_t *jp = fsi->journal;
-		journal_block_t *b;
-
-		assert(jp);
-
-		for (i = 0 ; i < count; i++) {
-			b = journal_new_block(jp, sector + i);
-			if (!b) {
-				return -1;
-			}
-			memcpy(b->data, buffer + i * fsi->s_block_size, fsi->s_block_size);
-			journal_dirty_block(jp, b);
-		}
-	} else {
-		/* EXT2 */
-		if (0 > block_dev_write(sb->bdev, (char *) buffer,
-						count * fsi->s_block_size, fsbtodb(fsi, sector))) {
-			return -1;
-		}
-	}
-
-	return count;
-}
 
 static uint32_t ext2_rd_indir(char *buf, int index) {
 	return b_ind(buf) [index];
@@ -516,7 +442,7 @@ int ext2_buf_read_file(struct inode *node, char **buf_p, size_t *size_p) {
 }
 
 /* find and read symlink file */
-static int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
+int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
 		const char **cp) {
 	/* XXX should handle LARGEFILE */
 	int len, link_len;
@@ -570,6 +496,7 @@ static int ext2_read_symlink(struct inode *node, uint32_t parent_inumber,
 }
 
 int ext2_close(struct inode *node) {
+#if 0
 	struct ext2_file_info *fi;
 
 	fi = inode_priv(node);
@@ -579,102 +506,8 @@ int ext2_close(struct inode *node) {
 			ext2_buff_free(node->i_sb->sb_data, fi->f_buf);
 		}
 	}
-
+#endif
 	return 0;
-}
-
-int ext2_open(struct inode *node) {
-	int rc;
-	char path[PATH_MAX];
-	const char *cp, *ncp;
-	uint32_t inumber, parent_inumber;
-
-	struct ext2_file_info *fi;
-	struct ext2_fs_info *fsi;
-
-	fi = inode_priv(node);
-	fsi = node->i_sb->sb_data;
-
-	/* prepare full path into this filesystem */
-	vfs_get_relative_path(node, path, PATH_MAX);
-
-	/* alloc a block sized buffer used for all transfers */
-	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
-	if (NULL == fi->f_buf) {
-		return ENOMEM;
-	}
-
-	/* read group descriptor blocks */
-	rc = ext2_read_gdblock(node->i_sb);
-	if (0 != rc) {
-		return rc;
-	}
-
-	rc = ext2_shift_culc(fi, fsi);
-	if (0 != rc) {
-		return rc;
-	}
-
-	inumber = EXT2_ROOTINO;
-	rc = ext2_read_inode(node, inumber);
-	if (0 != rc) {
-		return rc;
-	}
-
-	cp = path;
-	while (*cp) {
-		/* Remove extra separators */
-		while (*cp == '/') {
-			cp++;
-		}
-		if (*cp == '\0') {
-			break;
-		}
-
-		/* Check that current node is a directory */
-		if (!S_ISDIR(fi->f_di.i_mode)) {
-			rc = ENOTDIR;
-			goto out;
-		}
-
-		/* Get next component of path name */
-		ncp = cp;
-		while ((*cp != '\0') && (*cp != '/')) {
-			cp++;
-		}
-		/*
-		 * Look up component in current directory. Save directory inumber
-		 * in case we find a symbolic link.
-		 */
-		parent_inumber = inumber;
-		rc = ext2_search_directory(node, ncp, cp - ncp, &inumber);
-		if (0 != rc) {
-			goto out;
-		}
-
-		/* Open next component */
-		rc = ext2_read_inode(node, inumber);
-		if (0 != rc) {
-			goto out;
-		}
-
-		/* Check for symbolic link */
-		if (S_ISLNK(fi->f_di.i_mode)) {
-			rc = ext2_read_symlink(node, parent_inumber, &cp);
-			if (0 != rc) {
-				goto out;
-			}
-		}
-	}
-
-	fi->f_num = inumber;
-
-	return 0;
-
-out:
-	ext2_buff_free(fsi, fi->f_buf);
-
-	return rc;
 }
 
 /*
@@ -774,7 +607,7 @@ size_t ext2_write_file(struct inode *node, char *buf, size_t size) {
  * Search a directory for a name and return its
  * inode number.
  */
-static int ext2_search_directory(struct inode *node, const char *name, int length,
+int ext2_search_directory(struct inode *node, const char *name, int length,
 		uint32_t *inumber_p) {
 	int rc;
 	struct ext2fs_direct *dp;
@@ -1330,11 +1163,6 @@ int ext2_create(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi = inode_priv(i_dir);
 
-	rc = ext2_open(i_dir);
-	if (0 != rc) {
-		return rc;
-	}
-
 	/* Create a new file inode */
 	rc = ext2_new_node(i_new, i_dir);
 	if (0 != rc) {
@@ -1344,9 +1172,9 @@ int ext2_create(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi->f_di.i_links_count++;
 	ext2_rw_inode(i_dir, &dir_fi->f_di, EXT2_W_INODE);
-
+#if 0
 	ext2_close(i_dir);
-
+#endif
 	if (NULL != fi) {
 		ext2_buff_free(i_new->i_sb->sb_data, fi->f_buf);
 		return 0;
@@ -1367,13 +1195,9 @@ int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi = inode_priv(i_dir);
 
-	/* read the directory inode */
-	if (0 != (rc = ext2_open(i_dir))) {
-		return rc;
-	}
 	/* Create a new directory inode. */
 	if (0 != (rc = ext2_new_node(i_new, i_dir))) {
-		ext2_close(i_dir);
+		//ext2_close(i_dir);
 		return ENOSPC;
 	}
 	fi = inode_priv(i_new);
@@ -1400,10 +1224,10 @@ int ext2_mkdir(struct inode *i_new, struct inode *i_dir) {
 
 	dir_fi->f_di.i_links_count++;
 	ext2_rw_inode(i_dir, &dir_fi->f_di, EXT2_W_INODE);
-
+#if 0
 	ext2_buff_free(i_new->i_sb->sb_data, fi->f_buf);
 	ext2_close(i_dir);
-
+#endif
 	if (NULL == fi) {
 		return ENOSPC;
 	}
@@ -1604,10 +1428,50 @@ static int ext2_free_inode(struct inode *node) { /* ext2_file_info to free */
 	}
 	rc = ext2_free_inode_bit(node, b, S_ISDIR(node->i_mode));
 
-	ext2_close(node);
+	ext2_buff_free(node->i_sb->sb_data, fi->f_buf);
 	ext2_fi_free(fi);
 
+	ext2_close(node);
+	inode_priv_set(node, NULL);
+
 	return rc;
+}
+
+int ext2_set_inode_priv(struct inode *node) {
+	struct ext2_file_info *fi;
+	struct ext2_fs_info *fsi;
+	int rc;
+
+	fsi = node->i_sb->sb_data;
+	assert(fsi);
+
+	fi = inode_priv(node);
+	if (fi) {
+		return 0;
+	}	
+
+	fi = ext2_fi_alloc();
+	if (NULL == fi) {
+		return -ENOMEM;
+	}
+	memset(fi, 0, sizeof(struct ext2_file_info));
+
+	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
+	if (NULL == fi->f_buf) {
+		ext2_fi_free(fi);
+		return -ENOMEM;
+	}
+
+	rc = ext2_shift_culc(fi, fsi);
+	if (0 != rc) {
+		ext2_buff_free(fsi, fi->f_buf);
+		ext2_fi_free(fi);		
+		return rc;
+	}
+
+	inode_priv_set(node, fi);
+
+	return 0;
 }
 
 static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
@@ -1620,21 +1484,11 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	dir_fi = inode_priv(i_dir);
 	fsi = i_dir->i_sb->sb_data;
 
-	fi = ext2_fi_alloc();
-	if (NULL == fi) {
-		rc = ENOSPC;
+	rc = ext2_set_inode_priv(i_new);
+	if (rc) {
 		goto out;
 	}
-	memset(fi, 0, sizeof(struct ext2_file_info));
-
-	inode_size_set(i_new, 0);
-	inode_priv_set(i_new, fi);
-	
-	fi->f_buf = ext2_buff_alloc(fsi, fsi->s_block_size);
-	if (NULL == fi->f_buf) {
-		rc = ENOSPC;
-		goto error1;
-	}
+	fi = inode_priv(i_new);
 
 	rc = ext2_read_sblock(i_new->i_sb);
 	if (0 != rc) {
@@ -1649,14 +1503,18 @@ static int ext2_alloc_inode(struct inode *i_new, struct inode *i_dir) {
 	}
 
 	fi->f_num = b;
+	
 	ext2_wipe_inode(fi, dir_fi);
+
+//	inode_size_set(i_new, 0);
 
 	return 0;
 
 error2:
 	ext2_buff_free(fsi, fi->f_buf);
-error1:
+
 	ext2_fi_free(fi);
+	inode_priv_set(i_new, NULL);
 out:
 	return rc;
 }
@@ -1963,7 +1821,7 @@ static int ext2_new_node(struct inode *i_new, struct inode *i_dir) {
 static int ext2_unlink_file(struct inode *dir_node, struct inode *node) {
 	int rc;
 
-	if ((0 != (rc = ext2_open(dir_node))) || (0 != (rc = ext2_free_inode(node)))) {
+	if (0 != (rc = ext2_free_inode(node))) {
 		return rc;
 	}
 	
@@ -2022,11 +1880,6 @@ int ext2_unlink(struct inode *dir_node, struct inode *node) {
 
 	dir_fi = inode_priv(dir_node);
 
-	/* Temporarily open the dir. */
-	if (0 != (rc = ext2_open(dir_node))) {
-		return rc;
-	}
-
 	if (S_ISDIR(node->i_mode)) {
 		rc = ext2_remove_dir(dir_node, node); /* call is RMDIR */
 	}
@@ -2038,8 +1891,6 @@ int ext2_unlink(struct inode *dir_node, struct inode *node) {
 		dir_fi->f_di.i_links_count--;
 		ext2_rw_inode(dir_node, &dir_fi->f_di, EXT2_W_INODE);
 	}
-
-	ext2_close(dir_node);
 
 	return rc;
 }

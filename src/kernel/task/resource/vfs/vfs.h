@@ -13,7 +13,6 @@
 struct dentry;
 
 struct task_vfs {
-	struct dentry *root;
 	struct dentry *pwd;
 };
 

@@ -71,11 +71,8 @@ OPTIONS
 module xattr {
 	source "xattr.c"
 
-	depends embox.compat.libc.all
-
 	depends embox.compat.posix.util.getopt
-	depends embox.fs.core
-	depends embox.framework.LibFramework
+
 	depends embox.fs.driver.ext2.xattr
 	@NoRuntime depends embox.compat.posix.file_system
 }

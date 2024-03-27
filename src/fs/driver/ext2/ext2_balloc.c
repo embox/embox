@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <fs/inode.h>
+#include <fs/super_block.h>
 
 #include <fs/ext2.h>
 

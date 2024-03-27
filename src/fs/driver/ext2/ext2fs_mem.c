@@ -12,7 +12,7 @@
 
 #include <mem/misc/pool.h>
 
-
+#include <mem/phymem.h>
 
 /* ext filesystem description pool */
 POOL_DEF(ext2_fs_pool, struct ext2_fs_info,
@@ -36,4 +36,27 @@ struct ext2_file_info *ext2_fi_alloc(void) {
 
 void ext2_fi_free(struct ext2_file_info *fi) {
 	pool_free(&ext2_file_pool, fi);
+}
+
+void *ext2_buff_alloc(struct ext2_fs_info *fsi, size_t size) {
+	if (size < fsi->s_block_size) {
+		size = fsi->s_block_size;
+	}
+
+	fsi->s_page_count = size / PAGE_SIZE();
+	if (0 != size % PAGE_SIZE()) {
+		fsi->s_page_count++;
+	}
+	if (0 == fsi->s_page_count) {
+		fsi->s_page_count++;
+	}
+
+	return phymem_alloc(fsi->s_page_count);
+}
+
+int ext2_buff_free(struct ext2_fs_info *fsi, char *buff) {
+	if ((0 != fsi->s_page_count) && (NULL != buff)) {
+		phymem_free(buff, fsi->s_page_count);
+	}
+	return 0;
 }

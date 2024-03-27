@@ -401,11 +401,12 @@ static struct file_operations ext3_fop = {
 };
 
 extern int ext2_iterate(struct inode *next, char *next_name, struct inode *parent, struct dir_ctx *dir_ctx);
-
+extern struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir);
 struct inode_operations ext3_iops = {
 	.ino_create  = ext3fs_create,
 	.ino_remove  = ext3fs_delete,
 	.ino_iterate = ext2_iterate,
+	.ino_lookup = ext2fs_lookup,
 	.ino_truncate     = ext3fs_truncate, /* TODO journaling */
 
 	.ino_getxattr     = ext2fs_getxattr,

@@ -10,6 +10,7 @@
 #include <string.h>
 #include <assert.h>
 #include <errno.h>
+#include <sys/stat.h>
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
