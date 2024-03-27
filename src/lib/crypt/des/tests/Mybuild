@@ -3,4 +3,6 @@ package embox.lib.libcrypt
 
 module des_test {
 	source "des_test.c"
+	
+	depends embox.lib.libcrypt.des
 }
