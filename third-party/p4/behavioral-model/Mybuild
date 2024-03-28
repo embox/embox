@@ -1,0 +1,10 @@
+package third_party.lib
+
+@BuildDepends(third_party.lib.libpcap)
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+module bmv2 {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "bmv2.a"
+
+	@NoRuntime depends third_party.lib.libpcap
+}
