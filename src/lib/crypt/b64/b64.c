@@ -81,14 +81,17 @@ static const char char2b[256] = {
 #define MAKE_CHAR2(b64b) \
 	(((b64b.b2 & 0x0F) << 4) | (b64b.b3 >> 2))
 #define MAKE_CHAR3(b64b) \
-	(((b64b.b3 & 0x03) << 6) | b64b.b2)
+	(((b64b.b3 & 0x03) << 6) | b64b.b4)
 
 size_t b64_coded_len(const char *plain, size_t plain_sz) {
 	return ((plain_sz + 2) / 3) * 4;
 }
 
 size_t b64_plain_len(const char *coded, size_t coded_sz) {
-	return (coded_sz / 4) * 3;
+	size_t size = (coded_sz / 4) * 3;
+	if (*(coded + coded_sz - 1) == '=') size -= 1;
+	if (*(coded + coded_sz - 2) == '=') size -= 1;
+	return size;
 }
 
 int b64_encode(const char *plain, size_t plain_sz,
