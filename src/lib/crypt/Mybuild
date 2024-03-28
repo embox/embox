@@ -5,4 +5,5 @@ static module LibCrypt {
 	depends embox.lib.crypt.crc32
 	depends embox.lib.crypt.crc16
 	depends embox.lib.crypt.b64
+	depends embox.lib.crypt.des
 }
