@@ -1,0 +1,31 @@
+package platform.stm32.l1.stm32l152c_discovery
+
+@Build(stage=1)
+@BuildArtifactPath(cppflags="-DSTM32L152xx -DSTM32L152xC -DUSE_STM32L152C_DISCO")
+static module stm32l152c_discovery_conf extends third_party.bsp.stml1cube.stm32l1_conf {
+	@IncludeExport(path="")
+	source "stm32l1xx_hal_conf.h"
+}
+
+@BuildDepends(stm32l152c_discovery_conf)
+@BuildDepends(third_party.bsp.stml1cube.cube)
+module arch extends embox.arch.arch {
+	source "arch.c"
+	source "stm32cube_compat.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stml1cube/cube/STM32CubeL1-1.10.4/")
+	source "Projects/32L152CDISCOVERY/Templates/Src/system_stm32l1xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(stm32l152c_discovery_conf)
+@BuildDepends(third_party.bsp.stml1cube.cube)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml1cube/cube/STM32CubeL1-1.10.4/Drivers/BSP/STM32L152C-Discovery")
+static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stml1cube/cube/STM32CubeL1-1.10.4/Drivers/BSP/STM32L152C-Discovery")
+	source "stm32l152c_discovery.c"
+
+	@NoRuntime depends third_party.bsp.stml1cube.cube
+	@NoRuntime depends stm32l152c_discovery_conf
+	@NoRuntime depends arch
+}

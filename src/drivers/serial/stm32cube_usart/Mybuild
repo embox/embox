@@ -89,6 +89,20 @@ module stm_usart_h7 extends stm32_usart_ops {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
+module stm_usart_l1 extends stm32_usart_ops {
+
+	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
+	source "stm32_usart_conf_l1.h"
+
+	source "stm_hal_msp.c"
+	source "stm_usart.c"
+
+	depends embox.driver.serial.core
+
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm_usart_l4 extends stm32_usart_ops {
 
 	@IncludeExport(path="drivers/serial", target_name="stm_usart.h")
