@@ -1,0 +1,7 @@
+package embox.lib.crypt
+
+module md5_test {
+	source "md5_test.c"
+	
+	depends embox.lib.crypt.md5
+}

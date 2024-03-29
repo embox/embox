@@ -1,4 +1,4 @@
-package embox.lib.libcrypt
+package embox.lib.crypt
 
 static module des {
 	source "des.c"
