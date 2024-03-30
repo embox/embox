@@ -43,6 +43,7 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 	char gw[32] = "";
 	char hw_addr[32] = "";
 	char net[32] = "";
+	int scanf_res = -1;
 
 	while (fscanf(input, "%s", buf) != EOF && strcmp(buf, "iface")) {
 		if (!strncmp(buf, "#", 1)) {
@@ -50,27 +51,38 @@ static int setup_static_config(FILE *input, char buf[BUFF_SZ], char *iface_name)
 			continue;
 		}
 
-		if (!strcmp(buf, "address"))
-			fscanf(input, "%s", ipv4_addr);
-		else if (!strcmp(buf, "netmask"))
-			fscanf(input, "%s", netmask);
-		else if (!strcmp(buf, "gateway"))
-			fscanf(input, "%s", gw);
-		else if (!strcmp(buf, "hwaddress"))
-			fscanf(input, "%s", hw_addr);
-		else
+		scanf_res = -1;
+		if (!strcmp(buf, "address")) {
+			scanf_res = fscanf(input, "%s", ipv4_addr);
+		} else if (!strcmp(buf, "netmask")) {
+			scanf_res = fscanf(input, "%s", netmask);
+		} else if (!strcmp(buf, "gateway")) {
+			scanf_res = fscanf(input, "%s", gw);
+		} else if (!strcmp(buf, "hwaddress")) {
+			scanf_res = fscanf(input, "%s", hw_addr);
+		} else {
 			printf("WARNING: Unknown iface parameter: %s\n", buf);
+			return EINVAL;
+		}
+
+		if (scanf_res != 1) {
+			printf("Missing parameter for '%s'\n", buf);
+			return EINVAL;
+		}
 	}
 
 	if (1 != inet_pton(AF_INET, netmask, &if_ipv4_netmask)) {
 		printf("netmanager: iface(%s) wrong netmask %s\n", iface_name, netmask);
+		return EINVAL;
 	}
 	if (1 != inet_pton(AF_INET, ipv4_addr, &if_ipv4_addr)) {
 		printf("netmanager: iface(%s) wrong ipaddr %s\n", iface_name, ipv4_addr);
+		return EINVAL;
 	}
 	if_ipv4_net = if_ipv4_addr & if_ipv4_netmask;
 	if (NULL == inet_ntop(AF_INET, &if_ipv4_net, net, sizeof(net))) {
 		printf("netmanager: iface(%s) wrong net", iface_name);
+		return EINVAL;
 	}
 
 	strcpy(cmd_line, "ifconfig ");
