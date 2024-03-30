@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+
+SERIAL=1
+
+mkfifo $SERIAL.out
+mkfifo $SERIAL.in
+
+./scripts/qemu/auto_qemu \
+	-serial mon:stdio -serial pipe:$SERIAL
+
+rm $SERIAL.out
+rm $SERIAL.in
