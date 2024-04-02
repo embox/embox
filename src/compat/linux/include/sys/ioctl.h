@@ -48,7 +48,6 @@
 	    | ((_IOC_NRMASK & (nr)) << _IOC_NRSHIFT)
 
 /* Encoding IOCTL numbers */
-#define _ION(type, nr)       _IOC(_IOC_NONE, type, nr, 0)
 #define _IO(type, nr)        _IOC(_IOC_NONE, type, nr, 0)
 #define _IOR(type, nr, arg)  _IOC(_IOC_READ, type, nr, sizeof(arg))
 #define _IOW(type, nr, arg)  _IOC(_IOC_WRITE, type, nr, sizeof(arg))
@@ -108,24 +107,24 @@
 #define TCSETAF            _IOW('t', 13, struct termio)  /* Like TCSETSF, but with struct termio */
 #define TIOCGWINSZ         _IOR('t', 14, struct winsize) /* Get window size */
 #define TIOCSWINSZ         _IOW('t', 15, struct winsize) /* Set window size */
-#define TCSBRK             _ION('t', 16 /*int*/)         /* Equivalent to tcsendbreak(fd, arg) */
-#define TCSBRKP            _ION('t', 17 /*int*/)         /* So-called "POSIX version" of TCSBRK */
-#define TIOCSBRK           _ION('t', 18)                 /* Turn break on, start sending zero bits */
-#define TIOCCBRK           _ION('t', 19)                 /* Turn break off, stop sending zero bits */
-#define TCXONC             _ION('t', 20 /*int*/)         /* Equivalent to tcflow(fd, arg) */
-#define TCFLSH             _ION('t', 21 /*int*/)         /* Equivalent to tcflush(fd, arg) */
+#define TCSBRK              _IO('t', 16 /*int*/)         /* Equivalent to tcsendbreak(fd, arg) */
+#define TCSBRKP             _IO('t', 17 /*int*/)         /* So-called "POSIX version" of TCSBRK */
+#define TIOCSBRK            _IO('t', 18)                 /* Turn break on, start sending zero bits */
+#define TIOCCBRK            _IO('t', 19)                 /* Turn break off, stop sending zero bits */
+#define TCXONC              _IO('t', 20 /*int*/)         /* Equivalent to tcflow(fd, arg) */
+#define TCFLSH              _IO('t', 21 /*int*/)         /* Equivalent to tcflush(fd, arg) */
 #define TIOCOUTQ           _IOR('t', 22, int)            /* Get the number of bytes in the output buffer */
 #define TIOCINQ            _IOR('t', 23, int)            /* Get the number of bytes in the input buffer */
 #define TIOCSTI            _IOW('t', 24, char)           /* Insert the given byte in the input queue */
-#define TIOCCONS           _ION('t', 25)                 /* Redirect /dev/console output */
-#define TIOCSCTTY          _ION('t', 26 /*int*/)         /* Make the given terminal the controlling terminal */
-#define TIOCNOTTY          _ION('t', 27)                 /* Give up this controlling terminal */
+#define TIOCCONS            _IO('t', 25)                 /* Redirect /dev/console output */
+#define TIOCSCTTY           _IO('t', 26 /*int*/)         /* Make the given terminal the controlling terminal */
+#define TIOCNOTTY           _IO('t', 27)                 /* Give up this controlling terminal */
 #define TIOCGPGRP          _IOR('t', 28, pid_t)          /* Equivalent to tcgetpgrp(fd) */
 #define TIOCSPGRP          _IOW('t', 29, pid_t)          /* Equivalent to tcsetpgrp(fd, *arg) */
 #define TIOCGSID           _IOR('t', 30, pid_t)          /* Get the session ID of the given terminal */
 #define TIOCGEXCL          _IOR('t', 31, pid_t)          /* Get the terminal mode */
-#define TIOCEXCL           _ION('t', 32)                 /* Put the terminal into exclusive mode */
-#define TIOCNXCL           _ION('t', 33)                 /* Disable exclusive mode */
+#define TIOCEXCL            _IO('t', 32)                 /* Put the terminal into exclusive mode */
+#define TIOCNXCL            _IO('t', 33)                 /* Disable exclusive mode */
 #define TIOCGETD           _IOR('t', 34, int)            /* Get the line discipline of the terminal */
 #define TIOCSETD           _IOW('t', 35, int)            /* Set the line discipline of the terminal */
 #define TIOCPKT            _IOW('t', 36, int)            /* Enable or disable packet mode */
@@ -136,7 +135,7 @@
 #define TIOCMSET           _IOW('t', 41, int)            /* Set the status of modem bits */
 #define TIOCMBIC           _IOW('t', 42, int)            /* Clear the indicated modem bits */
 #define TIOCMBIS           _IOW('t', 43, int)            /* Set the indicated modem bits */
-#define TIOCMIWAIT         _ION('t', 44 /*int*/)         /* Wait for any of the specified modem bits to change */
+#define TIOCMIWAIT          _IO('t', 44 /*int*/)         /* Wait for any of the specified modem bits to change */
 #define TIOCGSOFTCAR       _IOR('t', 46, int)            /* Get the status of the CLOCAL flag */
 #define TIOCSSOFTCAR       _IOW('t', 47, int)            /* Set the status of the CLOCAL flag */
 
