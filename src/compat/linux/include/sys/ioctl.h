@@ -49,6 +49,7 @@
 
 /* Encoding IOCTL numbers */
 #define _ION(type, nr)       _IOC(_IOC_NONE, type, nr, 0)
+#define _IO(type, nr)        _IOC(_IOC_NONE, type, nr, 0)
 #define _IOR(type, nr, arg)  _IOC(_IOC_READ, type, nr, sizeof(arg))
 #define _IOW(type, nr, arg)  _IOC(_IOC_WRITE, type, nr, sizeof(arg))
 #define _IORW(type, nr, arg) _IOC(_IOC_READ | _IOC_WRITE, type, nr, sizeof(arg))
