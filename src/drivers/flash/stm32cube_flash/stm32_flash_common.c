@@ -95,29 +95,38 @@ int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data,
 }
 
 static int stm32_flash_write_unaligned_bytes(uint32_t dest, const void *data, size_t len) {
-	const uint8_t *data8 = data;
+#if defined(STM32H7_CUBE)
+	assert(0);
+	return 0;
+#else
+	const uint8_t *data8;
 	int i;
 	int err;
 
+	data8 = data;
+
 	HAL_FLASH_Unlock();
 	for (i = 0; i < len; i++) {
-		int flash_err = HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, dest, data8[i]);
+		int flash_err;
+
+		flash_err = HAL_FLASH_Program(FLASH_TYPEPROGRAM_BYTE, dest, data8[i]);
 		if (flash_err != HAL_OK) {
 			flash_err = HAL_FLASH_GetError();
 			log_error("dest=0x%08x,len=0x%x, flash_err 0x%x", dest, len,
 			    flash_err);
 			err = -1;
-			goto err_exit;
+			goto out;
 		}
 		dest++;
 		data8++;
 	}
 
-	return len;
+	err = len;
 
-err_exit:
+out:
 	HAL_FLASH_Lock();
 	return err;
+#endif
 }
 
 int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data,
@@ -152,8 +161,7 @@ int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data,
 	HAL_FLASH_Unlock();
 	for (i = 0; i < len / sizeof(*data32);
 	     i += (STM32_FLASH_WORD / sizeof(*data32))) {
-		for (retry = 3; retry >= 0; retry--) {
-			static_assert(STM32_FLASH_WORD == 4, "");
+		for (retry = 3; retry >= 0; retry--) {			
 #if defined(STM32H7_CUBE)
 			flash_err = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest,
 			    (uint32_t)&data32[i]);
@@ -161,6 +169,7 @@ int stm32_flash_program(struct flash_dev *dev, uint32_t base, const void *data,
 			flash_err = HAL_FLASH_Program(FLASH_TYPEPROGRAM_DOUBLEWORD, dest,
 			    *(uint64_t *)&data32[i]);
 #else
+			static_assert(STM32_FLASH_WORD == 4, "");
 			flash_err = HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, dest,
 			    data32[i]);
 #endif
