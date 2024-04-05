@@ -1,7 +1,10 @@
 
 #include <stdint.h>
 
+#include <drivers/clk/k1921vg015_rcu.h>
+
 #include <system_k1921vg015.h>
+
 #if 0
 uint32_t SystemPll0Clock;
 uint32_t SystemPll1Clock;

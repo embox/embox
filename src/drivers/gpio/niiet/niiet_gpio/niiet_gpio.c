@@ -11,6 +11,8 @@
 
 #include <drivers/gpio/gpio_driver.h>
 
+#include <drivers/clk/k1921vg015_rcu.h>
+
 #include <system_k1921vg015.h>
 
 #include <framework/mod/options.h>

@@ -13,6 +13,8 @@
 #include <drivers/serial/diag_serial.h>
 #include <drivers/gpio/gpio.h>
 
+#include <drivers/clk/k1921vg015_rcu.h>
+
 #include <system_k1921vg015.h>
 
 #include <framework/mod/options.h>
