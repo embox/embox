@@ -146,7 +146,7 @@ int stm32_i2c_common_init(struct stm32_i2c *adapter) {
 	i2c_handle->Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
 	i2c_handle->Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
 	i2c_handle->Init.NoStretchMode   = I2C_NOSTRETCH_DISABLE;
-#if defined(STM32F4_CUBE) || defined(STM32F2_CUBE)
+#if defined(STM32F4_CUBE) || defined(STM32F2_CUBE) || defined(STM32L1_CUBE)
 	i2c_handle->Init.ClockSpeed      = 400000;
 	i2c_handle->Init.DutyCycle       = I2C_DUTYCYCLE_16_9;
 #elif defined(STM32L4_CUBE)
