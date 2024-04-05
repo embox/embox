@@ -24,7 +24,9 @@ static module cube {
 		"stm32l1xx_hal_rcc.c",
 		"stm32l1xx_hal_dma.c",
 		"stm32l1xx_hal_usart.c",
-		"stm32l1xx_hal_uart.c"
+		"stm32l1xx_hal_uart.c",
+		"stm32l1xx_hal_spi.c",
+		"stm32l1xx_hal_i2c.c"
 
 	@NoRuntime depends third_party.bsp.stml1cube.stm32l1_conf
 	@NoRuntime depends cube_cppflags
