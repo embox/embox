@@ -18,6 +18,8 @@
 
 #include <drivers/clk/k1921vg015_rcu.h>
 
+#define HSECLK_VAL     OPTION_GET(NUMBER,hse_clk_val)
+
 int niiet_gpio_clock_setup(unsigned char port) {
 	switch (port) {
 		case 0:
