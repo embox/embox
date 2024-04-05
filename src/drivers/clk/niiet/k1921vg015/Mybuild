@@ -4,6 +4,7 @@ module k1921vg015_rcu {
 	option string log_level="LOG_NONE"
 
 	option number base_addr=0x3000E000
+	option number hse_clk_val = 16000000
 
 	source "k1921vg015_rcu.c"
 

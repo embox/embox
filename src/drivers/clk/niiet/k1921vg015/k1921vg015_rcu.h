@@ -108,5 +108,6 @@ struct rcu_reg {
 
 extern int niiet_gpio_clock_setup(unsigned char port);
 extern void niiet_uart_set_rcu(int uart_num);
+extern void niiet_sysclk_init(void);
 
 #endif
