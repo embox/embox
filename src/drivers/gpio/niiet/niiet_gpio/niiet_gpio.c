@@ -38,38 +38,6 @@
 #define RCU_HRSTCFG_GPIOBEN_mask	0x00000002
 #endif
 
-static int niiet_gpio_clock_setup(unsigned char port) {
-	switch (port) {
-		case 0:
-			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOAEN;
-			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOAEN;
-		break;
-		case 1:
-			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOBEN;
-			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOBEN;
-		break;
-#if defined (GPIOC)
-		case 2:
-			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOCEN;
-			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOCEN;
-		break;		
-#endif /* defined (PORTC) */
-		default:
-			return -1;
-	}
-
-	return 0;
-#if 0
-	if (port == GPIO_PORT_A) {
-		REG32_ORIN (RCU_HCLKCFG, RCU_HCLKCFG_GPIOAEN_mask);
-		REG32_ORIN (RCU_HRSTCFG, RCU_HRSTCFG_GPIOAEN_mask);
-	} else { // GPIO_PORT_B
-		REG32_ORIN (RCU_HCLKCFG, RCU_HCLKCFG_GPIOBEN_mask);
-		REG32_ORIN (RCU_HRSTCFG, RCU_HRSTCFG_GPIOBEN_mask);
-	}
-	return 0;
-#endif
-}
 static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char port) {
 		switch (port) {
 		case 0:
