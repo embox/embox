@@ -107,5 +107,6 @@ struct rcu_reg {
 #define RCU          ((volatile struct rcu_reg *) RCU_BASE)
 
 extern int niiet_gpio_clock_setup(unsigned char port);
+extern void niiet_uart_set_rcu(int uart_num);
 
 #endif
