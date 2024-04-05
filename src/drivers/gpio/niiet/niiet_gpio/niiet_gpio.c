@@ -19,23 +19,54 @@
 
 #define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 #define GPIO_PINS_NUMBER 16
+
+struct gpio_reg {
+    uint32_t 	GPIO_DATA_reg;        /* 0x00 */
+    uint32_t 	GPIO_DATAOUT_reg;     /* 0x04 */
+    uint32_t 	GPIO_DATAOUTSET_reg;  /* 0x08 */
+    uint32_t 	GPIO_DATAOUTCLR_reg;  /* 0x0C */
+    uint32_t 	GPIO_DATAOUTTGL_reg;  /* 0x10 */
+    uint32_t 	GPIO_DENSET_reg;      /* 0x14 */
+    uint32_t 	GPIO_DENCLR_reg;      /* 0x18 */
+    uint32_t 	GPIO_INMODE_reg;      /* 0x1C */
+    uint32_t 	GPIO_PULLMODE_reg;    /* 0x20 */
+    uint32_t 	GPIO_OUTMODE_reg;     /* 0x24 */
+    uint32_t 	GPIO_DRIVEMODE_reg;   /* 0x28 */
+    uint32_t 	GPIO_OUTENSET_reg;    /* 0x2C */
+    uint32_t 	GPIO_OUTENCLR_reg;    /* 0x30 */
+    uint32_t 	GPIO_ALTFUNCSET_reg;  /* 0x34 */
+    uint32_t 	GPIO_ALTFUNCCLR_reg;  /* 0x38 */
+    uint32_t 	GPIO_ALTFUNCNUM_reg;  /* 0x3C */
+    uint32_t reserved2[1];
+    uint32_t 	GPIO_SYNCSET_reg;
+    uint32_t 	GPIO_SYNCCLR_reg;
+    uint32_t 	GPIO_QUALSET_reg;
+    uint32_t 	GPIO_QUALCLR_reg;
+    uint32_t 	GPIO_QUALMODESET_reg;
+    uint32_t 	GPIO_QUALMODECLR_reg;
+    uint32_t 	GPIO_QUALSAMPLE_reg;
+    uint32_t 	GPIO_INTENSET_reg;
+    uint32_t 	GPIO_INTENCLR_reg;
+    uint32_t 	GPIO_INTTYPESET_reg;
+    uint32_t 	GPIO_INTTYPECLR_reg;
+    uint32_t 	GPIO_INTPOLSET_reg;
+    uint32_t 	GPIO_INTPOLCLR_reg;
+    uint32_t 	GPIO_INTEDGESET_reg;
+    uint32_t 	GPIO_INTEDGECLR_reg;
+    uint32_t 	GPIO_INTSTATUS_reg;
+    uint32_t 	GPIO_DMAREQSET_reg;
+    uint32_t 	GPIO_DMAREQCLR_reg;
+    uint32_t 	GPIO_ADCSOCSET_reg;
+    uint32_t 	GPIO_ADCSOCCLR_reg;
+    uint32_t reserved3[2];
+    uint32_t 	GPIO_LOCKKEY_reg;
+    uint32_t 	GPIO_LOCKSET_reg;
+    uint32_t 	GPIO_LOCKCLR_reg;
+};
+
 #if 0
 #define GPIOA				0x40010000
 #define GPIOB				0x40011000
-#define GPIO_OFFSET_DATAOUTSET		0x08
-#define GPIO_OFFSET_DATAOUTCLR		0x0C
-#define GPIO_OFFSET_DENSET		0x14
-#define GPIO_OFFSET_OUTENSET		0x2C
-#define GPIO_OFFSET_OUTENCLR		0x30
-#define GPIO_OFFSET_ALTFUNCSET		0x34
-#define GPIO_OFFSET_ALTFUNCCLR		0x38
-
-#define RCU_HCLKCFG			0x40041100
-#define RCU_HCLKCFG_GPIOAEN_mask	0x00000001
-#define RCU_HCLKCFG_GPIOBEN_mask	0x00000002
-#define RCU_HRSTCFG			0x40041104
-#define RCU_HRSTCFG_GPIOAEN_mask	0x00000001
-#define RCU_HRSTCFG_GPIOBEN_mask	0x00000002
 #endif
 
 static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char port) {

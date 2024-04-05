@@ -6,51 +6,6 @@
 #define HSICLK_VAL 1000000
 #define LSICLK_VAL 32768
 
-struct gpio_reg {
-    uint32_t 	GPIO_DATA_reg;        /* 0x00 */
-    uint32_t 	GPIO_DATAOUT_reg;     /* 0x04 */
-    uint32_t 	GPIO_DATAOUTSET_reg;  /* 0x08 */
-    uint32_t 	GPIO_DATAOUTCLR_reg;  /* 0x0C */
-    uint32_t 	GPIO_DATAOUTTGL_reg;  /* 0x10 */
-    uint32_t 	GPIO_DENSET_reg;      /* 0x14 */
-    uint32_t 	GPIO_DENCLR_reg;      /* 0x18 */
-    uint32_t 	GPIO_INMODE_reg;      /* 0x1C */
-    uint32_t 	GPIO_PULLMODE_reg;    /* 0x20 */
-    uint32_t 	GPIO_OUTMODE_reg;     /* 0x24 */
-    uint32_t 	GPIO_DRIVEMODE_reg;   /* 0x28 */
-    uint32_t 	GPIO_OUTENSET_reg;    /* 0x2C */
-    uint32_t 	GPIO_OUTENCLR_reg;    /* 0x30 */
-    uint32_t 	GPIO_ALTFUNCSET_reg;  /* 0x34 */
-    uint32_t 	GPIO_ALTFUNCCLR_reg;  /* 0x38 */
-    uint32_t 	GPIO_ALTFUNCNUM_reg;  /* 0x3C */
-    uint32_t reserved2[1];
-    uint32_t 	GPIO_SYNCSET_reg;
-    uint32_t 	GPIO_SYNCCLR_reg;
-    uint32_t 	GPIO_QUALSET_reg;
-    uint32_t 	GPIO_QUALCLR_reg;
-    uint32_t 	GPIO_QUALMODESET_reg;
-    uint32_t 	GPIO_QUALMODECLR_reg;
-    uint32_t 	GPIO_QUALSAMPLE_reg;
-    uint32_t 	GPIO_INTENSET_reg;
-    uint32_t 	GPIO_INTENCLR_reg;
-    uint32_t 	GPIO_INTTYPESET_reg;
-    uint32_t 	GPIO_INTTYPECLR_reg;
-    uint32_t 	GPIO_INTPOLSET_reg;
-    uint32_t 	GPIO_INTPOLCLR_reg;
-    uint32_t 	GPIO_INTEDGESET_reg;
-    uint32_t 	GPIO_INTEDGECLR_reg;
-    uint32_t 	GPIO_INTSTATUS_reg;
-    uint32_t 	GPIO_DMAREQSET_reg;
-    uint32_t 	GPIO_DMAREQCLR_reg;
-    uint32_t 	GPIO_ADCSOCSET_reg;
-    uint32_t 	GPIO_ADCSOCCLR_reg;
-    uint32_t reserved3[2];
-    uint32_t 	GPIO_LOCKKEY_reg;
-    uint32_t 	GPIO_LOCKSET_reg;
-    uint32_t 	GPIO_LOCKCLR_reg;
-};
-
-
 #define GPIOA_BASE              0x28000000UL
 #define GPIOB_BASE              0x28001000UL
 #define GPIOC_BASE              0x28002000UL
