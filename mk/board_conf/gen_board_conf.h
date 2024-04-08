@@ -23,6 +23,7 @@ struct field_pin {
 };
 
 struct device_conf {
+	const char *name;
 	struct field_reg_map regs[16];
 	struct field_int irqs[16];
 	struct field_pin pins[64];
