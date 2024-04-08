@@ -17,8 +17,8 @@
 
 #include <framework/mod/options.h>
 
-#define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
-#define GPIO_PINS_NUMBER 16
+#define GPIO_CHIP_ID       OPTION_GET(NUMBER,gpio_chip_id)
+#define GPIO_PINS_NUMBER   16
 
 struct gpio_reg {
     uint32_t 	GPIO_DATA_reg;        /* 0x00 */
@@ -103,7 +103,6 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 		gpio_reg->GPIO_OUTENCLR_reg |= pins;
 	}
 	if (mode & GPIO_MODE_OUT) {
-		//REG32_STORE(GPIO + GPIO_OFFSET_OUTENSET, pins);
 		gpio_reg->GPIO_OUTENSET_reg |= pins;
 	
 	}
@@ -119,31 +118,7 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 		}
 	}
 
-	
-
 	return 0;
-
-#if 0
-	unsigned long GPIO = GPIOA + (GPIOB-GPIOA)*port;
-	/* Enable digital functionality */
-	/* No definition for this mode in gpio.h */
-	REG32_STORE(GPIO + GPIO_OFFSET_DENSET, pins); // set_gpio_digital(GPIO, pins);
-	if (mode & GPIO_MODE_IN) {
-		REG32_STORE(GPIO + GPIO_OFFSET_OUTENCLR, pins); // set_gpio_mode_input(GPIO, pins); ??? what about altfunc?
-		//if (mode & GPIO_MODE_IN_PULL_UP)         set_gpio_mode_pull_up(GPIO, pins);
-		//if (mode & GPIO_MODE_IN_PULL_DOWN)        set_gpio_mode_pull_down(GPIO, pins);
-		}
-	if (mode & GPIO_MODE_OUT) {
-		REG32_STORE(GPIO + GPIO_OFFSET_OUTENSET, pins); // set_gpio_mode_output(GPIO, pins);
-		//if (mode & GPIO_MODE_OUT_OPEN_DRAIN)    set_gpio_mode_open_drain(GPIO, pins);
-		//if (mode & GPIO_MODE_OUT_PUSH_PULL)        set_gpio_mode_push_pull(GPIO, pins);
-		}
-	if (mode & GPIO_MODE_OUT_ALTERNATE) {
-		/* Enable ALTFUNC */
-		REG32_STORE(GPIO + GPIO_OFFSET_ALTFUNCSET, pins); // set_gpio_mode_output(GPIO, pins);
-		}
-	return 0;
-#endif
 }
 
 static void niiet_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
@@ -159,13 +134,6 @@ static void niiet_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
 	} else {		
 		gpio_reg->GPIO_DATAOUTCLR_reg |= pins;
 	}
-#if 0
-	if (level) {
-		REG32_STORE(GPIOA + (GPIOB-GPIOA)*port + GPIO_OFFSET_DATAOUTSET, pins);
-	} else {
-		REG32_STORE(GPIOA + (GPIOB-GPIOA)*port + GPIO_OFFSET_DATAOUTCLR, pins);
-	}
-#endif
 }
 
 static gpio_mask_t niiet_gpio_get(unsigned char port, gpio_mask_t pins) {
@@ -177,9 +145,6 @@ static gpio_mask_t niiet_gpio_get(unsigned char port, gpio_mask_t pins) {
 	}
 
 	return gpio_reg->GPIO_DATA_reg & pins;
-#if 0
-	return REG_LOAD(GPIOA + (GPIOB-GPIOA)*port) & pins;
-#endif
 }
 
 static struct gpio_chip niiet_gpio_chip = {
