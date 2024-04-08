@@ -1,13 +1,8 @@
 
 #include <asm-generic/embox.lds.h>
 
-#ifndef OUTPUT_FORMAT_STRING
-#define OUTPUT_FORMAT_STRING "elf32-bigmips"
-#endif
-
-OUTPUT_FORMAT(OUTPUT_FORMAT_STRING)
+OUTPUT_FORMAT("elf32-tradbigmips", "elf32-tradbigmips", "elf32-tradlittlemips")
 OUTPUT_ARCH(mips)
-
 ENTRY(_start)
 
 MEMORY {
@@ -26,4 +21,3 @@ SECTIONS {
 		*(.text.*)
 	} SECTION_REGION(text) :text
 }
-
