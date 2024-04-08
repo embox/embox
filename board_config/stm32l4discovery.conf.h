@@ -6,6 +6,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART1",
 		.dev = {
+			.name = "USART1",
 			.irqs = {
 				VAL("", 37),
 			},
@@ -25,6 +26,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART2",
 		.dev = {
+			.name = "USART2",
 			.irqs = {
 				VAL("", 38),
 			},
@@ -47,6 +49,7 @@ struct spi_conf spis[] = {
 		.status = DISABLED,
 		.name = "SPI1",
 		.dev = {
+			.name = "SPI1",
 			.pins = {
 				PIN("SCK",  PA, PIN_5, AF5),
 				PIN("MISO", PA, PIN_6, AF5),
@@ -66,6 +69,7 @@ struct spi_conf spis[] = {
 		.status = DISABLED,
 		.name = "SPI2",
 		.dev = {
+			.name = "SPI2",
 			.pins = {
 				PIN("SCK",  PB, PIN_10, AF5),
 				PIN("MISO", PB, PIN_14, AF5),
@@ -87,6 +91,7 @@ struct spi_conf spis[] = {
 		.bits_per_word = 16,
 		.clk_div = 8,
 		.dev = {
+			.name = "SPI3",
 			.pins = {
 				PIN("SCK",  PC, PIN_10, AF6),
 				PIN("MISO", PC, PIN_11, AF6),
@@ -109,6 +114,7 @@ struct i2c_conf i2cs[] = {
 		.status = ENABLED,
 		.name = "I2C1",
 		.dev = {
+			.name = "I2C1",
 			.irqs = {
 				VAL("EVENT_IRQ", 31),
 				VAL("ERROR_IRQ", 32),
@@ -128,6 +134,7 @@ struct i2c_conf i2cs[] = {
 		.status = ENABLED,
 		.name = "I2C2",
 		.dev = {
+			.name = "I2C2",
 			.irqs = {
 				VAL("EVENT_IRQ", 33),
 				VAL("ERROR_IRQ", 34),

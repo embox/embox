@@ -8,6 +8,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART1",
 		.dev = {
+			.name = "USART1",
 			.irqs = {
 				VAL("", 37),
 			},
@@ -27,6 +28,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART2",
 		.dev = {
+			.name = "USART2",
 			.irqs = {
 				VAL("", 38),
 			},
@@ -49,6 +51,7 @@ struct spi_conf spis[] = {
 		.status = DISABLED,
 		.name = "SPI1",
 		.dev = {
+			.name = "SPI1",
 			.pins = {
 				PIN("SCK",  PA, PIN_5, AF5),
 				PIN("MISO", PA, PIN_6, AF5),
@@ -68,6 +71,7 @@ struct spi_conf spis[] = {
 		.status = DISABLED,
 		.name = "SPI2",
 		.dev = {
+			.name = "SPI2",
 			.pins = {
 				PIN("SCK",  PB, PIN_10, AF5),
 				PIN("MISO", PB, PIN_14, AF5),
