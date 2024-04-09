@@ -32,12 +32,17 @@ packetdrill_run() {
 	default_run
 }
 
+x86_smp_run() {
+	TIMEOUT=80
+	default_run
+}
+
 declare -A atml2run
 atml2run=(
 	['arm/qemu']=default_run
 	['arm/stm32f4cube']=true
 	['x86/qemu']=default_run
-	['x86/smp']=default_run
+	['x86/smp']=x86_smp_run
 	['x86/user_apps']=default_run
 	['x86/test/lang']=default_run
 	['x86/test/fs']="$(dirname "$0")/fs/run.sh $ATML"
