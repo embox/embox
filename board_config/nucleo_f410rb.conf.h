@@ -124,8 +124,8 @@ struct i2c_conf i2cs[] = {
 		.dev = {
 			.name = "I2C1",
 			.irqs = {
-				VAL("EVENT_IRQ", 31),
-				VAL("ERROR_IRQ", 32),
+				VAL("EVENT", 31),
+				VAL("ERROR", 32),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_B, PIN_6, AF4),
@@ -142,8 +142,8 @@ struct i2c_conf i2cs[] = {
 		.dev = {
 			.name = "I2C2",
 			.irqs = {
-				VAL("EVENT_IRQ", 33),
-				VAL("ERROR_IRQ", 34),
+				VAL("EVENT", 33),
+				VAL("ERROR", 34),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_B, PIN_10, AF4),
