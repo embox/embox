@@ -132,6 +132,7 @@ struct spi_conf spis[] = {
 		.status = ENABLED,
 		.name = "SPI1",
 		.dev = {
+			.name = "SPI1",
 			.pins = {
 				PIN("SCK",  PB, PIN_5, AF5),
 				PIN("MISO", PB, PIN_6, AF5),
