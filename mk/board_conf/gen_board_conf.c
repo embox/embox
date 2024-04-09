@@ -119,6 +119,35 @@ static int gen_field_gpio_out(const char *dev_name, const char *port, const char
 	return 0;
 }
 
+static int gen_device_conf(const struct device_conf *dev) {
+	int j;
+
+	gen_dev_enabled(dev->name);
+
+	for (j = 0; j < ARRAY_SIZE(dev->irqs); j++) {
+		if (gen_field_int(dev->name,
+				"IRQ", &dev->irqs[j]) != 0) {
+			break;
+		}
+	}
+
+	for (j = 0; j < ARRAY_SIZE(dev->pins); j++) {
+		if (gen_field_pin(dev->name,
+				"PIN", &dev->pins[j]) != 0) {
+			break;
+		}
+	}
+
+	for (j = 0; j < ARRAY_SIZE(dev->clocks); j++) {
+		if (gen_field_func(dev->name,
+				"CLK_ENABLE", &dev->clocks[j]) != 0) {
+			break;
+		}
+	}
+
+	return 0;
+}
+
 int main() {
 	int i, j;
 	struct conf_item *uart_conf = &board_config[UART_IDX];
@@ -145,28 +174,7 @@ int main() {
 			continue;
 		}
 
-		gen_dev_enabled(uart->name);
-
-		for (j = 0; j < ARRAY_SIZE(uart->dev.irqs); j++) {
-			if (gen_field_int(uart->name,
-					"IRQ", &uart->dev.irqs[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(uart->dev.pins); j++) {
-			if (gen_field_pin(uart->name,
-					"PIN", &uart->dev.pins[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(uart->dev.clocks); j++) {
-			if (gen_field_func(uart->name,
-					"CLK_ENABLE", &uart->dev.clocks[j]) != 0) {
-				break;
-			}
-		}
+		gen_device_conf(&uart->dev);
 
 		printf("\n");
 	}
@@ -179,31 +187,10 @@ int main() {
 			continue;
 		}
 
-		gen_dev_enabled(spi->name);
+		gen_device_conf(&spi->dev);
 
-		gen_prop_ival(spi->name, "BITS_PER_WORD", spi->bits_per_word);
-		gen_prop_ival(spi->name, "CLK_DIV", spi->clk_div);
-
-		for (j = 0; j < ARRAY_SIZE(spi->dev.irqs); j++) {
-			if (gen_field_int(spi->name,
-					"IRQ", &spi->dev.irqs[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(spi->dev.pins); j++) {
-			if (gen_field_pin(spi->name,
-					"PIN", &spi->dev.pins[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(spi->dev.clocks); j++) {
-			if (gen_field_func(spi->name,
-					"CLK_ENABLE", &spi->dev.clocks[j]) != 0) {
-				break;
-			}
-		}
+		gen_prop_ival(spi->dev.name, "BITS_PER_WORD", spi->bits_per_word);
+		gen_prop_ival(spi->dev.name, "CLK_DIV", spi->clk_div);
 
 		printf("\n");
 	}
@@ -216,28 +203,7 @@ int main() {
 			continue;
 		}
 
-		gen_dev_enabled(i2c->name);
-
-		for (j = 0; j < ARRAY_SIZE(i2c->dev.irqs); j++) {
-			if (gen_field_int(i2c->name,
-					"", &i2c->dev.irqs[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(i2c->dev.pins); j++) {
-			if (gen_field_pin(i2c->name,
-					"PIN", &i2c->dev.pins[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(i2c->dev.clocks); j++) {
-			if (gen_field_func(i2c->name,
-					"CLK_ENABLE", &i2c->dev.clocks[j]) != 0) {
-				break;
-			}
-		}
+		gen_device_conf(&i2c->dev);
 
 		printf("\n");
 	}
@@ -246,25 +212,12 @@ int main() {
 	for (i = 0; i < pwm_conf->array_size; i++) {
 		pwm = &((const struct pwm_conf *) pwm_conf->ptr)[i];
 
-		gen_dev_enabled(pwm->name);
+		gen_device_conf(&pwm->dev);
+
 		gen_field_func(pwm->name, "CHANNEL", &pwm->channel);
 		gen_field_func(pwm->name, "TIM", &pwm->instance);
 		gen_field_int(pwm->name, "SERVO_POS", &pwm->servo_low);
 		gen_field_int(pwm->name, "SERVO_POS", &pwm->servo_high);
-
-		for (j = 0; j < ARRAY_SIZE(pwm->dev.pins); j++) {
-			if (gen_field_pin(pwm->name,
-					"PIN", &pwm->dev.pins[j]) != 0) {
-				break;
-			}
-		}
-
-		for (j = 0; j < ARRAY_SIZE(pwm->dev.clocks); j++) {
-			if (gen_field_func(pwm->name,
-					"CLK_ENABLE", &pwm->dev.clocks[j]) != 0) {
-				break;
-			}
-		}
 
 		printf("\n");
 	}

@@ -32,8 +32,8 @@ static I2C_HandleTypeDef i2c1_handle;
 static struct stm32_i2c stm32_i2c1_priv = {
 	.i2c_handle = &i2c1_handle,
 	.i2c = I2C1,
-	.event_irq = CONF_I2C1_EVENT_IRQ,
-	.error_irq = CONF_I2C1_ERROR_IRQ,
+	.event_irq = CONF_I2C1_IRQ_EVENT_IRQ,
+	.error_irq = CONF_I2C1_IRQ_ERROR_IRQ,
 };
 
 static struct i2c_adapter stm32_i2c1_adap = {
@@ -69,9 +69,9 @@ static int stm32_i2c1_init(void) {
 extern irq_return_t i2c_ev_irq_handler(unsigned int irq_nr, void *data);
 extern irq_return_t i2c_er_irq_handler(unsigned int irq_nr, void *data);
 
-static_assert(CONF_I2C1_EVENT_IRQ == I2C1_EV_IRQn, "");
-static_assert(CONF_I2C1_ERROR_IRQ == I2C1_EV_IRQn, "");
+static_assert(CONF_I2C1_IRQ_EVENT_IRQ == I2C1_EV_IRQn, "");
+static_assert(CONF_I2C1_IRQ_ERROR_IRQ == I2C1_EV_IRQn, "");
 
-STATIC_IRQ_ATTACH(CONF_I2C1_EVENT_IRQ, i2c_ev_irq_handler, &i2c1_handle);
-STATIC_IRQ_ATTACH(CONF_I2C1_ERROR_IRQ, i2c_er_irq_handler, &i2c1_handle);
+STATIC_IRQ_ATTACH(CONF_I2C1_IRQ_EVENT_IRQ, i2c_ev_irq_handler, &i2c1_handle);
+STATIC_IRQ_ATTACH(CONF_I2C1_IRQ_ERROR_IRQ, i2c_er_irq_handler, &i2c1_handle);
 #endif
