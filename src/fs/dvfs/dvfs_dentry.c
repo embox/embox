@@ -98,6 +98,8 @@ int dvfs_path_walk(struct cwk_segment *segment, struct dentry *parent,
 		return -ENAMETOOLONG;
 	}
 
+	d = NULL;
+
 	switch (cwk_path_get_segment_type(segment)) {
 	case CWK_BACK:
 		parent = parent->parent;
