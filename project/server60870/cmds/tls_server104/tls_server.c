@@ -243,4 +243,5 @@ exit_program:
     TLSConfiguration_destroy(tlsConfig);
 
     Thread_sleep(500);
+    return 0;
 }

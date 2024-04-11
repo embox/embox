@@ -11,6 +11,8 @@
 
 static bool running = true;
 
+#define LOG_ENABLE   0
+
 void
 sigint_handler(int signalId)
 {
@@ -28,6 +30,7 @@ printCP56Time2a(CP56Time2a time)
                              CP56Time2a_getYear(time) + 2000);
 }
 
+#if LOG_ENABLE==1
 /* Callback handler to log sent or received messages (optional) */
 static void
 rawMessageHandler(void* parameter, IMasterConnection conneciton, uint8_t* msg, int msgSize, bool sent)
@@ -44,13 +47,14 @@ rawMessageHandler(void* parameter, IMasterConnection conneciton, uint8_t* msg, i
 
     printf("\n");
 }
+#endif /* #if LOG_ENABLE==1 */
 
 static bool
 clockSyncHandler (void* parameter, IMasterConnection connection, CS101_ASDU asdu, CP56Time2a newTime)
 {
     printf("Process time sync command with time "); printCP56Time2a(newTime); printf("\n");
 
-    uint64_t newSystemTimeInMs = CP56Time2a_toMsTimestamp(newTime);
+//    uint64_t newSystemTimeInMs = CP56Time2a_toMsTimestamp(newTime);
 
     /* Set time for ACT_CON message */
     CP56Time2a_setFromMsTimestamp(newTime, Hal_getTimeInMs());
@@ -270,8 +274,9 @@ main(int argc, char** argv)
     /* set handler to track connection events (optional) */
     CS104_Slave_setConnectionEventHandler(slave, connectionEventHandler, NULL);
 
-    /* uncomment to log messages */
-    //CS104_Slave_setRawMessageHandler(slave, rawMessageHandler, NULL);
+#if LOG_ENABLE==1
+    CS104_Slave_setRawMessageHandler(slave, rawMessageHandler, NULL);
+#endif /* #if LOG_ENABLE==1 */
 
     CS104_Slave_start(slave);
 
@@ -308,4 +313,6 @@ exit_program:
     CS104_Slave_destroy(slave);
 
     Thread_sleep(500);
+
+    return 0;
 }
