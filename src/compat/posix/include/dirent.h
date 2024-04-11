@@ -46,6 +46,10 @@ static inline
 int scandir(const char *dir, struct dirent ***namelist,
        int (*sel)(const struct dirent *),
        int (*compar)(const struct dirent **, const struct dirent **)) {
+	(void)dir;
+	(void)namelist;
+	(void)sel;
+	(void)compar;
 	return -1;
 }
 

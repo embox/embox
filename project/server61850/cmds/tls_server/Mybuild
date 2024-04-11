@@ -10,7 +10,9 @@ package embox.project.server61850.cmd
 @BuildDepends(third_party.lib.libiec61850)
 @Build(stage=2)
 module tls_server {
+    @Cflags("-Wno-undef")
 	source "tls_server_example.c"
+    @Cflags("-Wno-undef")
 	source "static_model.c"
 	depends third_party.lib.mbedtls
 	depends third_party.lib.libiec61850
