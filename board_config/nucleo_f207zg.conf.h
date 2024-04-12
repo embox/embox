@@ -93,6 +93,40 @@
 #define ETH_DMA_BASE          (ETH_BASE + 0x1000UL)
 
 
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			
+		},
+		.type = VAL("", 0),
+	},
+};
+
+struct gpio_conf gpios[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_A",
+			.regs = {
+				REGMAP("BASE", (GPIOA_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOA),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+};
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
@@ -256,4 +290,5 @@ struct i2c_conf i2cs[] = {
 
 };
 
-EXPORT_CONFIG(UART(uarts), LED(leds), SPI(spis), I2C(i2cs))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios),
+				UART(uarts), LED(leds), SPI(spis), I2C(i2cs))
