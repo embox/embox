@@ -10,11 +10,6 @@
 #define GPIOB_BASE              0x28001000UL
 #define GPIOC_BASE              0x28002000UL
 
-#define GPIOA                ((volatile struct gpio_reg *) GPIOA_BASE)
-#define GPIOB                ((volatile struct gpio_reg *) GPIOB_BASE)
-#define GPIOC                ((volatile struct gpio_reg *) GPIOC_BASE)
-
-
 #define UART0_BASE              0x30006000UL
 #define UART1_BASE              0x30007000UL
 #define UART2_BASE              0x30008000UL

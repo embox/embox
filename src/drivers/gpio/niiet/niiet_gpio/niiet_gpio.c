@@ -20,6 +20,10 @@
 #define GPIO_CHIP_ID       OPTION_GET(NUMBER,gpio_chip_id)
 #define GPIO_PINS_NUMBER   16
 
+#define GPIOA                ((volatile struct gpio_reg *) GPIOA_BASE)
+#define GPIOB                ((volatile struct gpio_reg *) GPIOB_BASE)
+#define GPIOC                ((volatile struct gpio_reg *) GPIOC_BASE)
+
 struct gpio_reg {
     uint32_t 	GPIO_DATA_reg;        /* 0x00 */
     uint32_t 	GPIO_DATAOUT_reg;     /* 0x04 */
