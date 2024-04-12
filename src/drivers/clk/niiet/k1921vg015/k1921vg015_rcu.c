@@ -127,12 +127,10 @@ int niiet_gpio_clock_setup(unsigned char port) {
 			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOBEN;
 			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOBEN;
 		break;
-#if defined (GPIOC)
 		case 2:
 			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOCEN;
 			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOCEN;
 		break;		
-#endif /* defined (PORTC) */
 		default:
 			return -1;
 	}
