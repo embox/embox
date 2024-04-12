@@ -198,11 +198,46 @@ int main() {
 	const struct pwm_conf *pwm;
 	struct conf_item *led_conf = &board_config[LED_IDX];
 	const struct led_conf *led;
+	struct conf_item *gpio_conf = &board_config[GPIO_IDX];
+	const struct gpio_conf *gpio;
+	struct conf_item *clk_conf = &board_config[CLK_IDX];
+	const struct clk_conf *clk;
 
 	config();
 
 	printf("#ifndef BOARD_CONFIG_H_\n");
 	printf("#define BOARD_CONFIG_H_\n\n");
+
+	/* CLK */
+	for (i = 0; i < clk_conf->array_size; i++) {
+		clk = &((const struct clk_conf *) clk_conf->ptr)[i];
+
+		if (clk->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&clk->dev);
+
+		gen_field_int(clk->dev.name, "TYPE", &clk->type);
+
+		printf("\n");
+	}
+
+	/* GPIO */
+	for (i = 0; i < gpio_conf->array_size; i++) {
+		gpio = &((const struct gpio_conf *) gpio_conf->ptr)[i];
+
+		if (gpio->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&gpio->dev);
+
+		gen_prop_ival(gpio->dev.name, "NUM", gpio->port_num);
+		gen_prop_ival(gpio->dev.name, "WIDTH", gpio->port_width);
+
+		printf("\n");
+	}
 
 	/* UART */
 	for (i = 0; i < uart_conf->array_size; i++) {

@@ -30,6 +30,20 @@ struct device_conf {
 	struct field_int clocks[16];
 };
 
+struct gpio_conf {
+	int status;
+	struct device_conf dev;
+	int port_num;
+	int port_width;
+};
+
+struct clk_conf {
+	int status;
+	struct device_conf dev;
+	struct field_int type;
+
+};
+
 struct uart_conf {
 	int status;
 	const char *name;
@@ -85,7 +99,9 @@ struct led_conf {
 #define I2C_IDX     2
 #define PWM_IDX     3
 #define LED_IDX     4
-#define MAX_IDX     5
+#define GPIO_IDX    5
+#define CLK_IDX     6
+#define MAX_IDX     7
 
 #define EXPORT_CONFIG(...) \
 	struct conf_item board_config[MAX_IDX] = { \
@@ -120,6 +136,18 @@ struct led_conf {
 	[LED_IDX] = { \
 		(void *) &(leds)[0], \
 		ARRAY_SIZE(leds), \
+	}
+
+#define GPIO(gpios) \
+	[GPIO_IDX] = { \
+		(void *) &(gpios)[0], \
+		ARRAY_SIZE(gpios), \
+	}
+
+#define CLK(clks) \
+	[CLK_IDX] = { \
+		(void *) &(clks)[0], \
+		ARRAY_SIZE(clks), \
 	}
 
 #define CONFIG   void config()
