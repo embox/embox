@@ -9,8 +9,8 @@ module core {
 
 	source "fpga.c"
 
-	depends embox.driver.common
+	depends embox.device.common
 	depends embox.mem.pool
-	depends embox.util.indexator
-	depends embox.util.log
+	@NoRuntime depends embox.lib.libds
+	depends embox.device.char_dev
 }

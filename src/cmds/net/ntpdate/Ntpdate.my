@@ -18,7 +18,6 @@ module ntpdate {
 	option number timeout = 5000
 	source "ntpdate.c"
 
-	depends embox.compat.posix.fs.file_ops
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.util.getopt
@@ -27,4 +26,5 @@ module ntpdate {
 	depends embox.kernel.time.kernel_time
 	depends embox.compat.libc.all
 	depends embox.net.lib.ntp
+	@NoRuntime depends embox.compat.posix.file_system
 }

@@ -13,7 +13,7 @@
 #include <time.h>
 #include <sys/time.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>

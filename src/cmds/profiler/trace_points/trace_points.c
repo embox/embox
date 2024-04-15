@@ -11,7 +11,7 @@
 #include <errno.h>
 
 #include <unistd.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <profiler/tracing/trace.h>
 
 ARRAY_SPREAD_DECLARE(struct __trace_point *, __trace_points_array);

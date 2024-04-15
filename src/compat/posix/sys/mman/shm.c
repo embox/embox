@@ -6,7 +6,7 @@
 #include <mem/vmem.h>
 #include <mem/phymem.h>
 #include <util/binalign.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <fs/inode.h>
 #include <kernel/task/resource/idesc.h>
@@ -78,7 +78,7 @@ static void shm_free(struct shm *shm) {
 }
 
 static struct inode_operations shm_i_ops = {
-	.truncate = &shm_truncate
+	.ino_truncate = &shm_truncate
 };
 
 static struct shm *shm_create(const char *name) {

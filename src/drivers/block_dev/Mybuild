@@ -12,18 +12,19 @@ module block_dev {
 	source "block_dev.c"
 	source "block_dev_namer.c"
 
-	depends embox.compat.posix.fs.libgen
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
 	depends embox.driver.buffer_crypt_api
 	depends embox.mem.phymem
 	depends embox.mem.heap_place
-	depends embox.driver.common
+	depends embox.device.common
+	@NoRuntime depends embox.compat.posix.libgen
 }
-
 
 @DefaultImpl(buffer_no_crypt)
 abstract module buffer_crypt_api {
+	@IncludeExport(path="fs")
+	source "buffer_head.h"
 }
 
 module buffer_no_crypt extends buffer_crypt_api {

@@ -1,0 +1,33 @@
+package third_party.bsp.stml1cube
+
+@BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32L1_CUBE -DSTM32L1_CUBE_1_10_4")
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stml1cube/cube/STM32CubeL1-1.10.4/,Drivers/STM32L1xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32L1xx/Include Drivers/CMSIS/Include)")
+module cube_cppflags {
+
+}
+
+@Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
+@BuildDepends(cube_cppflags)
+@BuildDepends(third_party.bsp.stml1cube.stm32l1_conf)
+static module cube {
+
+	@IncludeExport(path="bsp")
+	source "stm32cube_hal.h"
+
+//	@Cflags("-Wno-unused")
+//	@Cflags("-Wno-undef")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeL1-1.10.4/Drivers/STM32L1xx_HAL_Driver/Src")
+	source
+		"stm32l1xx_hal.c",
+		"stm32l1xx_hal_cortex.c",
+		"stm32l1xx_hal_gpio.c",
+		"stm32l1xx_hal_rcc.c",
+		"stm32l1xx_hal_dma.c",
+		"stm32l1xx_hal_usart.c",
+		"stm32l1xx_hal_uart.c",
+		"stm32l1xx_hal_spi.c",
+		"stm32l1xx_hal_i2c.c"
+
+	@NoRuntime depends third_party.bsp.stml1cube.stm32l1_conf
+	@NoRuntime depends cube_cppflags
+}

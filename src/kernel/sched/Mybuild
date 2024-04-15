@@ -45,7 +45,7 @@ module sched_ticker_stub extends sched_ticker {
 module wait_queue {
 	source "waitq.c"
 
-	depends embox.util.dlist
+	@NoRuntime depends embox.lib.libds
 	depends waitq_protect_link
 }
 
@@ -71,12 +71,14 @@ module idle_thread extends idle {
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.task.kernel_task
+	@NoRuntime depends platform.platform_idle
 }
 
 module idle_light extends idle {
 	source "idle_light.c"
 
 	@NoRuntime depends embox.kernel.lthread.lthread
+	@NoRuntime depends platform.platform_idle
 }
 
 @DefaultImpl(boot_light)

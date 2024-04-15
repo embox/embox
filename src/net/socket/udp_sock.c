@@ -24,7 +24,7 @@
 #include <net/sock.h>
 #include <net/socket/inet_sock.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <stdlib.h>
 

@@ -21,8 +21,8 @@
 #include <mem/heap_bm.h>
 #include <mem/page.h>
 
-#include <util/dlist.h>
-#include <util/array.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 
 #include <kernel/printk.h>
@@ -299,7 +299,7 @@ void *mspace_realloc(void *ptr, size_t size, struct dlist_head *mspace) {
 	memcpy(ret, ptr, size);
 	if (0 > mspace_free(ptr, mspace)) {
 		mspace_free(ret, mspace);
-		return err_ptr(EINVAL);
+		return err2ptr(EINVAL);
 	}
 
 	return ret;

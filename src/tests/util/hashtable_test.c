@@ -11,8 +11,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <util/array.h>
-#include <util/hashtable.h>
+#include <lib/libds/array.h>
+#include <lib/libds/hashtable.h>
 
 #include <mem/misc/pool.h>
 

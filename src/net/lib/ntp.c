@@ -14,7 +14,7 @@
 #include <net/lib/ntp.h>
 #include <stddef.h>
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 /* RFC 868 */
 #define SECONDS_1900_1970 2208988800L

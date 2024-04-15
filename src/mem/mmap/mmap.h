@@ -10,7 +10,7 @@
 #define MEM_MMAP_PRIV_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <hal/mmu.h>
 
 struct phy_page {

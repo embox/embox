@@ -6,6 +6,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART1",
 		.dev = {
+			.name = "USART1",
 			.irqs = {
 				VAL("", 37),
 			},
@@ -25,6 +26,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART2",
 		.dev = {
+			.name = "USART2",
 			.irqs = {
 				VAL("", 38),
 			},
@@ -44,6 +46,7 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART3",
 		.dev = {
+			.name = "USART3",
 			.irqs = {
 				VAL("", 71),
 			},
@@ -69,6 +72,7 @@ struct pwm_conf pwms[] = {
 		.servo_low = VAL("LOW", 430),
 		.servo_high = VAL("HIGH", 2175),
 		.dev = {
+			.name = "PWM0",
 			.pins = {
 				PIN("TIM",  PD, PIN_4, AF2),
 			},
@@ -128,6 +132,7 @@ struct spi_conf spis[] = {
 		.status = ENABLED,
 		.name = "SPI1",
 		.dev = {
+			.name = "SPI1",
 			.pins = {
 				PIN("SCK",  PB, PIN_5, AF5),
 				PIN("MISO", PB, PIN_6, AF5),

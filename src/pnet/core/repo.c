@@ -7,7 +7,7 @@
  * @author Anton Bondarev
  */
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <string.h>
 
 #include <pnet/core/core.h>

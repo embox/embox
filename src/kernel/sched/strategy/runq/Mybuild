@@ -5,7 +5,8 @@ abstract module api { }
 
 module prioq extends api {
 	source "prioq.c", "prioq.h"
-	depends embox.util.priolist
+
+	@NoRuntime depends embox.lib.libds
 }
 
 module list extends api {

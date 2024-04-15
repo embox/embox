@@ -15,6 +15,9 @@ abstract module fat {
 	source "fatfs_subr.c"
 	source "fat_common_mem.c"
 	source "fat_fops.c"
+	source "fat_inode_ops.c"
+
+	source "fatfs_drv.c"
 
 	depends embox.driver.block_dev
 }
@@ -22,7 +25,7 @@ abstract module fat {
 module fat_old extends fat {
 	source "fat_oldfs.c"
 
-	depends embox.fs.node, embox.fs.driver.repo
+	depends embox.fs.node
 	depends embox.fs.driver.devfs
 	depends embox.mem.page_api
 	depends embox.mem.pool

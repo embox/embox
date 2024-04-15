@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <framework/mod/options.h>
 

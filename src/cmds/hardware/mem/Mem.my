@@ -1,4 +1,4 @@
-package embox.cmd
+package embox.cmd.hw
 
 @AutoCmd
 @Cmd(name = "mem",

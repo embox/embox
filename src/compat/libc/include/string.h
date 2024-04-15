@@ -67,6 +67,19 @@ extern char *strcpy(char *dst, const char *src);
 extern char *strncpy(char *dst, const char *src, size_t n);
 
 /**
+ * @brief Copy string from src to dest 
+ *
+ * @param dest
+ * @param src
+ *
+ * @note  Arrays should not overlap
+ * @note  This functions differs from strcpy() in return value
+ *
+ * @return Pointer to terminating NULL of the string dest
+ */
+extern char *stpcpy(char *dest, const char *src);
+
+/**
  * Appends a null-terminated string to the end of another.
  *
  * @param dst

@@ -9,7 +9,7 @@
 #define TASK_FORK_H_
 
 #include <sys/types.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct task;
 extern struct addr_space *fork_addr_space_get(const struct task *task);

@@ -1,0 +1,13 @@
+package embox.compat.posix.ipc
+
+static module pipe {
+	source "pipe.c"
+
+	option number pipe_buffer_size=1024
+	option number max_pipe_buffer_size=1024
+
+	@NoRuntime depends embox.mem.sysmalloc_api
+	@NoRuntime depends embox.kernel.task.idesc_event
+	@NoRuntime depends embox.kernel.task.api
+	@NoRuntime depends embox.lib.libds
+}

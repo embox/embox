@@ -15,7 +15,7 @@
 
 #include <kernel/irq_lock.h>
 
-#include <util/bit.h>
+#include <lib/libds/bit.h>
 #include <util/math.h>
 
 struct sigstate *sigstate_init(struct sigstate *sigstate) {

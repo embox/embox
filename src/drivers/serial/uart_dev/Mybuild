@@ -10,7 +10,7 @@ module uart_repo_with_dynamic extends uart_repo {
 
 	source "uart_dev_dynamic_repo.c"
 
-	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.lib.libds
 	@NoRuntime depends embox.mem.pool
 }
 
@@ -29,18 +29,17 @@ abstract module core {
 	@IncludeExport(path="drivers/serial")
 	source "uart_dev.h"
 
-	@NoRuntime depends embox.util.dlist
-	@NoRuntime depends embox.util.log
+	@NoRuntime depends embox.lib.libds
 
 	depends uart_repo
 }
 
 module core_tty extends core {
 	@NoRuntime depends embox.driver.tty.serial
-	@NoRuntime depends embox.driver.common
+	@NoRuntime depends embox.device.common
 }
 
 module core_notty extends core {
 	@NoRuntime depends embox.driver.tty.serial_stub
-	@NoRuntime depends embox.driver.common
+	@NoRuntime depends embox.device.common
 }

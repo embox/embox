@@ -32,7 +32,7 @@ struct net_family {
 	const struct net_pack_out_ops *const *out_ops;
 };
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DECLARE(const struct net_family, __net_family_registry);
 

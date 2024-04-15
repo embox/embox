@@ -290,7 +290,7 @@ PaError Pa_OpenStream(PaStream** stream,
 	pa_stream->pa_thread = thread_create(THREAD_FLAG_SUSPENDED,
 								pa_thread_hnd, pa_stream);
 
-	if (err(pa_stream->pa_thread)) {
+	if (ptr2err(pa_stream->pa_thread)) {
 		log_error("thread_create failed");
 		return paInternalError;;
 	}

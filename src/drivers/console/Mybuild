@@ -26,4 +26,3 @@ module fbcon {
 	depends embox.cmd.sh.shell_api
 	depends embox.init.graphic_init
 }
-

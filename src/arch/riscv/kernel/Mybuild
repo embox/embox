@@ -1,12 +1,16 @@
 package embox.arch.riscv.kernel
 
+module conf {
+	option boolean smode = false
+}
+
 module boot extends embox.arch.boot {
 	source "boot.S"
+	depends embox.arch.riscv.kernel.conf
 }
 
 module arch extends embox.arch.arch {
 	source "arch.c"
-    option boolean smode = false
 }
 
 module locore extends embox.arch.locore {

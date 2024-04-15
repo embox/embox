@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <termios.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/member.h>
 #include <drivers/video_term.h>
 #include <drivers/input/input_dev.h>

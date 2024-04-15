@@ -12,7 +12,7 @@
 #include <asm/arm_m_regs.h>
 #include <debug/breakpoint.h>
 #include <hal/reg.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 
 #define MAX_HW_BPTS 16
 

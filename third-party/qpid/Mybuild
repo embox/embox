@@ -16,10 +16,9 @@ module core {
 	source "libqpidbroker.a", "libqpidclient.a",
 		"libqpidcommon.a", "libqpidmessaging.a", "libqpidtypes.a"
 
-	@NoRuntime depends embox.compat.posix.fs.fsop
-	@NoRuntime depends embox.compat.posix.idx.pipe
-	@NoRuntime depends embox.compat.posix.idx.poll
-	@NoRuntime depends embox.compat.posix.idx.select
+	@NoRuntime depends embox.compat.posix.file_system
+	@NoRuntime depends embox.compat.posix.ipc.pipe
+	@NoRuntime depends embox.compat.posix.index_descriptor
 	@NoRuntime depends embox.compat.posix.net.gai_strerror
 	@NoRuntime depends embox.compat.posix.net.getaddrinfo
 	@NoRuntime depends embox.compat.posix.net.getnameinfo

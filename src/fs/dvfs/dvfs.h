@@ -12,8 +12,7 @@
 
 #include <kernel/task/resource/idesc.h>
 #include <fs/file_desc.h>
-#include <util/dlist.h>
-#include <fs/file_operation.h>
+#include <lib/libds/dlist.h>
 #include <fs/fs_driver.h>
 #include <fs/inode_operation.h>
 #include <fs/dir_context.h>
@@ -50,10 +49,7 @@ extern int            dvfs_fs_dentry_try_free(struct super_block *sb);
 extern struct dentry *dvfs_root(void);
 extern int dvfs_remove(const char *path);
 struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
-extern int dvfs_close(struct file_desc *desc);
-extern int dvfs_write(struct file_desc *desc, char *buf, int count);
-extern int dvfs_read(struct file_desc *desc, char *buf, int count);
-extern int dvfs_fstat(struct file_desc *desc, struct stat *sb);
+
 extern int dvfs_iterate(struct lookup *lookup, struct dir_ctx *ctx);
 extern int dvfs_create_new(const char *name, struct lookup *lookup, int flags);
 extern int dvfs_rename(struct dentry *from, struct dentry *to);

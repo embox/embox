@@ -24,5 +24,5 @@ module mkdir {
 	depends embox.compat.libc.all
 	depends embox.compat.posix.util.getopt
 	depends embox.framework.LibFramework
-	depends embox.compat.posix.fs.umask
+	@NoRuntime depends embox.compat.posix.file_system
 }

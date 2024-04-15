@@ -159,7 +159,7 @@ uint8_t *bootp_get_opt(struct bootphdr *bph, uint8_t opt_type) {
 
 	ret = bootp_valid(bph, BOOTPREPLY);
 	if (ret != 0) {
-		return err_ptr(-ret);
+		return err2ptr(-ret);
 	}
 
 	tag = &bph->vend[sizeof(dhcp_magic_cookie)];

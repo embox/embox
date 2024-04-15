@@ -9,55 +9,55 @@
  * @date 03.12.2018
  */
 
-#include <drivers/spi.h>
-#include <util/log.h>
-
 #include <assert.h>
 #include <errno.h>
 
+#include <drivers/char_dev.h>
+#include <drivers/spi.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
+#include <util/log.h>
 
 /* Assume we have 4 SPI devices at most */
-#if SPI_REGISTRY_SZ >0
+#if SPI_REGISTRY_SZ > 0
 struct spi_device spi_device0 __attribute__((weak));
 #endif
-#if SPI_REGISTRY_SZ >1
+#if SPI_REGISTRY_SZ > 1
 struct spi_device spi_device1 __attribute__((weak));
 #endif
-#if SPI_REGISTRY_SZ >2
+#if SPI_REGISTRY_SZ > 2
 struct spi_device spi_device2 __attribute__((weak));
 #endif
-#if SPI_REGISTRY_SZ >3
+#if SPI_REGISTRY_SZ > 3
 struct spi_device spi_device3 __attribute__((weak));
 #endif
-#if SPI_REGISTRY_SZ >4
+#if SPI_REGISTRY_SZ > 4
 struct spi_device spi_device4 __attribute__((weak));
 #endif
-#if SPI_REGISTRY_SZ >5
+#if SPI_REGISTRY_SZ > 5
 struct spi_device spi_device5 __attribute__((weak));
 #endif
 
 /* Note: it's array of pointers, not structures as usual */
 struct spi_device *spi_device_registry[SPI_REGISTRY_SZ] = {
-	#if SPI_REGISTRY_SZ >0
-	&spi_device0,
-	#endif
-	#if SPI_REGISTRY_SZ >1
-	&spi_device1,
-	#endif
-	#if SPI_REGISTRY_SZ >1
-	&spi_device2,
-	#endif
-	#if SPI_REGISTRY_SZ >1
-	&spi_device3,
-	#endif
-	#if SPI_REGISTRY_SZ >1
-	&spi_device4,
-	#endif
-	#if SPI_REGISTRY_SZ >1
-	&spi_device5
-	#endif
+#if SPI_REGISTRY_SZ > 0
+    &spi_device0,
+#endif
+#if SPI_REGISTRY_SZ > 1
+    &spi_device1,
+#endif
+#if SPI_REGISTRY_SZ > 1
+    &spi_device2,
+#endif
+#if SPI_REGISTRY_SZ > 1
+    &spi_device3,
+#endif
+#if SPI_REGISTRY_SZ > 1
+    &spi_device4,
+#endif
+#if SPI_REGISTRY_SZ > 1
+    &spi_device5
+#endif
 };
 
 /**
@@ -68,7 +68,6 @@ struct spi_device *spi_device_registry[SPI_REGISTRY_SZ] = {
  */
 static int spi_init(void) {
 	struct spi_device *dev;
-
 
 	for (int i = 0; i < SPI_REGISTRY_SZ; i++) {
 		dev = spi_device_registry[i];
@@ -81,7 +80,8 @@ static int spi_init(void) {
 
 		if (dev->spi_ops->init) {
 			dev->spi_ops->init(dev);
-		} else {
+		}
+		else {
 			log_warning("SPI%d has no init funcion", i);
 		}
 	}
@@ -100,7 +100,8 @@ struct spi_device *spi_dev_by_id(int id) {
 
 	if (spi_device_registry[id]->spi_ops != NULL) {
 		return spi_device_registry[id];
-	} else {
+	}
+	else {
 		return NULL;
 	}
 }
@@ -110,8 +111,8 @@ struct spi_device *spi_dev_by_id(int id) {
  */
 int spi_dev_id(struct spi_device *dev) {
 	for (int i = 0; i < SPI_REGISTRY_SZ; i++) {
-		if (dev == spi_device_registry[i] &&
-				spi_device_registry[i]->spi_ops != NULL) {
+		if (dev == spi_device_registry[i]
+		    && spi_device_registry[i]->spi_ops != NULL) {
 			return i;
 		}
 	}
@@ -137,7 +138,7 @@ int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt) {
 
 	if (dev->spi_ops->transfer == NULL) {
 		log_debug("Transfer operation is not supported for SPI%d",
-				spi_dev_id(dev));
+		    spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
@@ -153,7 +154,7 @@ int spi_select(struct spi_device *dev, int cs) {
 
 	if (dev->spi_ops->select == NULL) {
 		log_debug("Select operation is not supported for SPI%d",
-				spi_dev_id(dev));
+		    spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
@@ -169,7 +170,7 @@ static int spi_set_mode(struct spi_device *dev, bool is_master) {
 
 	if (dev->spi_ops->set_mode == NULL) {
 		log_debug("SPI mode setting is not supported for SPI%d",
-				spi_dev_id(dev));
+		    spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
@@ -187,4 +188,4 @@ int spi_set_slave_mode(struct spi_device *dev) {
 }
 
 /* Stub */
-const struct idesc_ops spi_iops __attribute__ ((weak));
+const struct char_dev_ops __spi_cdev_ops __attribute__((weak));

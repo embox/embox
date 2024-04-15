@@ -19,7 +19,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <lib/crypt/b64.h>
 
 #include <net/lib/smtp.h>

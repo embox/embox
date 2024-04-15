@@ -6,7 +6,7 @@ module seculog {
 	source "seculog.h"
 	source "seculog.c"
 
-	@NoRuntime depends embox.util.dlist
+	@NoRuntime depends embox.lib.libds
 	@NoRuntime depends embox.mem.pool
 }
 
@@ -17,7 +17,7 @@ module seculog_file {
 	source "seculog_file.c"
 
 	depends seculog
-	depends embox.compat.posix.fs.creat
 	depends embox.fs.file_desc_oldfs
 	depends embox.fs.syslib.file
+	@NoRuntime depends embox.compat.posix.file_system
 }

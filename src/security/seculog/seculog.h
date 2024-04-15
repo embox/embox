@@ -10,7 +10,7 @@
 #define SECURITY_SECULOG_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #define SECULOG_LABEL_MANDATORY (1 << 0)
 #define SECULOG_LABEL_LOGIN_ACT (1 << 1)

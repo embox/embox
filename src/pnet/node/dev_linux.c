@@ -21,7 +21,7 @@
 
 #include <net/skbuff.h>
 #include <net/netdevice.h>
-#include <util/hashtable.h>
+#include <lib/libds/hashtable.h>
 
 EMBOX_UNIT_INIT(init);
 

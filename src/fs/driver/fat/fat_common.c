@@ -22,6 +22,9 @@
 #include <fs/inode_operation.h>
 #include <fs/mount.h>
 #include <fs/super_block.h>
+
+#include <fs/mbr.h>
+
 #include "fat.h"
 
 #include <util/log.h>
@@ -1528,7 +1531,7 @@ static void fat_dir_clean_long(struct dirinfo *di, struct fat_file_info *fi) {
 	}
 }
 
-static int fat_dir_empty(struct fat_file_info *fi) {
+int fat_dir_empty(struct fat_file_info *fi) {
 	struct dirinfo *di = (void *) fi;
 	struct fat_dirent de = { };
 	int res = 0;
@@ -1563,9 +1566,6 @@ int fat_unlike_file(struct fat_file_info *fi, uint8_t *p_scratch) {
 
 	fsi = fi->fsi;
 
-	if (S_ISDIR(fi->mode) && !fat_dir_empty(fi)) {
-		return -EPERM;
-	}
 
 	fat_dir_clean_long(di, fi);
 
@@ -1984,110 +1984,43 @@ uint8_t fat_canonical_name_checksum(const char *name) {
 	return res;
 }
 
-#define DEFAULT_FAT_VERSION OPTION_GET(NUMBER, default_fat_version)
-/**
- * @brief Format given block device
- * @param dev Pointer to device
- * @note Should be block device
- *
- * @return Negative error code or 0 if succeed
- */
-int fat_format(struct block_dev *dev, void *priv) {
-	int fat_n = priv ? atoi((char*) priv) : 0;
-	struct block_dev *bdev = dev;
+int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de) {
+	struct fat_file_info *fi;
+	
+	fi = inode_priv(inode);
+	if (fi) {
+		/*we already allocated file info for this inode */
+		return 0;
+	}
+	
+	if (de->attr & ATTR_DIRECTORY){
+		struct dirinfo *new_di;
 
-	assert(dev);
+		new_di = fat_dirinfo_alloc();
+		if (NULL == new_di) {
+			return -ENOMEM;
+		}
 
-	if (!fat_n) {
-		fat_n = DEFAULT_FAT_VERSION;
+		memset(new_di, 0, sizeof(struct dirinfo));
+		new_di->p_scratch = fat_sector_buff;
+		new_di->currentcluster = fat_direntry_get_clus(de);
+
+		fi = &new_di->fi;
+
+		inode->i_mode |= S_IFDIR;
+	} else {
+		fi = fat_file_alloc();
+		if (NULL == fi) {
+			return -ENOMEM;
+		}
+		memset(fi, 0, sizeof(struct fat_file_info));
+
+		inode->i_mode |= S_IFREG;
 	}
 
-	if (fat_n != 12 && fat_n != 16 && fat_n != 32) {
-		log_error("Unsupported FAT version: FAT%d "
-				"(FAT12/FAT16/FAT32 available)", fat_n);
-		return -EINVAL;
-	}
-
-	fat_create_partition(bdev, fat_n);
-	fat_root_dir_record(bdev);
+	inode_priv_set(inode, fi);
 
 	return 0;
-}
-
-extern struct inode_operations fat_iops;
-extern struct super_block_operations fat_sbops;
-extern struct file_operations fat_fops;
-/* @brief Initializing fat super_block
- * @param sb  Structure to be initialized
- * @param dev Storage device
- *
- * @return Negative error code
- */
-int fat_fill_sb(struct super_block *sb, const char *source) {
-	struct fat_fs_info *fsi;
-	struct block_dev *bdev;
-	uint32_t pstart, psize;
-	uint8_t pactive, ptype;
-	struct dirinfo *di = NULL;
-	int rc = 0;
-
-	assert(sb);
-
-	bdev = bdev_by_path(source);
-	if (!bdev) {
-		/* FAT always uses block device, so we can't fill superblock */
-		return -ENOENT;
-	}
-
-	fsi = fat_fs_alloc();
-	*fsi = (struct fat_fs_info) {
-		.bdev = bdev,
-	};
-	sb->sb_data = fsi;
-	sb->sb_iops = &fat_iops;
-	sb->sb_fops = &fat_fops;
-	sb->sb_ops  = &fat_sbops;
-	sb->bdev    = bdev;
-
-	/* Obtain pointer to first partition on first (only) unit */
-	pstart = fat_get_ptn_start(bdev, 0, &pactive, &ptype, &psize);
-	if (pstart == 0xffffffff) {
-		rc = -EINVAL;
-		goto error;
-	}
-
-	if (fat_get_volinfo(bdev, &fsi->vi, pstart)) {
-		rc = -EBUSY;
-		goto error;
-	}
-
-	if (NULL == (di = fat_dirinfo_alloc())) {
-		rc = -ENOMEM;
-		goto error;
-	}
-	memset(di, 0, sizeof(struct dirinfo));
-	di->p_scratch = fat_sector_buff;
-
-	if (fat_open_rootdir(fsi, di)) {
-		rc = -EBUSY;
-		goto error;
-	}
-
-	di->fi.fsi = fsi;
-	di->fi.volinfo = &fsi->vi;
-
-	inode_priv_set(sb->sb_root, di);
-	sb->sb_root->i_ops = &fat_iops;
-
-	return 0;
-
-error:
-	if (di) {
-		fat_dirinfo_free(di);
-	}
-
-	fat_fs_free(fsi);
-	return rc;
 }
 
 /**
@@ -2101,7 +2034,6 @@ error:
 int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *di) {
 	struct fat_file_info *fi;
 	struct fat_fs_info *fsi;
-	struct dirinfo *new_di;
 	struct volinfo *vi;
 	struct super_block *sb;
 	int res, tmp_sector, tmp_entry, tmp_cluster;
@@ -2119,6 +2051,9 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 	vi = &fsi->vi;
 	assert(vi);
 
+	fi = inode_priv(inode);
+	assert(fi);
+
 	/* Need to save some dirinfo data because this
 	 * stuff may change while we traverse to the end
 	 * of long name entry */
@@ -2134,39 +2069,13 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 		}
 	}
 
-	if (de->attr & ATTR_DIRECTORY){
-		if (NULL == (new_di = fat_dirinfo_alloc()))
-			goto err_out;
-
-		memset(new_di, 0, sizeof(struct dirinfo));
-		new_di->p_scratch = fat_sector_buff;
-		new_di->fi.mode = S_IFDIR;
-		inode->i_mode |= S_IFDIR;
-
-		new_di->currentcluster = fat_direntry_get_clus(de);
-
-		fi = &new_di->fi;
-	} else {
-		if (NULL == (fi = fat_file_alloc())) {
-			goto err_out;
-		}
-
-		inode->i_mode |= S_IFREG;
-	}
-
-	inode_priv_set(inode, fi);
-
-	*fi = (struct fat_file_info) {
-		.fsi = fsi,
-		.volinfo = vi,
-	};
-
 	if (di->fi.dirsector == 0 && (vi->filesystem == FAT12 || vi->filesystem == FAT16)) {
 		fi->dirsector = tmp_sector + tmp_cluster * vi->secperclus;
 	} else {
 		fi->dirsector = tmp_sector + fat_sec_by_clus(fsi, tmp_cluster);
 	}
-
+	fi->fsi = fsi;
+	fi->volinfo = vi;
 	fi->diroffset    = tmp_entry - 1;
 	fi->cluster      = fat_direntry_get_clus(de);
 	fi->firstcluster = fi->cluster;
@@ -2178,135 +2087,6 @@ int fat_fill_inode(struct inode *inode, struct fat_dirent *de, struct dirinfo *d
 		inode->i_mode |= S_IRALL;
 	} else {
 		inode->i_mode |= S_IRWXA;
-	}
-	return 0;
-err_out:
-	return -1;
-}
-
-/* @brief Get next inode in directory
- * @param inode   Structure to be filled
- * @param parent  Inode of parent directory
- * @param dir_ctx Directory context
- *
- * @return Error code
- */
-int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
-	struct dirinfo *dirinfo;
-	struct fat_dirent de;
-	int res;
-
-	assert(parent->i_sb);
-
-	dirinfo = inode_priv(parent);
-	dirinfo->currententry = (uintptr_t) ctx->fs_ctx;
-
-	if (dirinfo->currententry == 0) {
-		/* Need to get directory data from drive */
-		fat_reset_dir(dirinfo);
-	}
-
-	read_dir_buf(dirinfo);
-
-	while (((res = fat_get_next_long(dirinfo, &de, NULL)) ==  DFS_OK) || res == DFS_ALLOCNEW) {
-		if (de.attr & ATTR_VOLUME_ID) {
-			continue;
-		}
-
-		if (!memcmp(de.name, MSDOS_DOT, strlen(MSDOS_DOT)) ||
-			!memcmp(de.name, MSDOS_DOTDOT, strlen(MSDOS_DOT))) {
-			continue;
-		}
-
-		break;
-	}
-
-	switch (res) {
-	case DFS_OK: {
-		char tmp_name[128];
-
-		if (0 > fat_fill_inode(next, &de, dirinfo)) {
-			return -1;
-		}
-		if (DFS_OK != fat_read_filename(inode_priv(next), fat_sector_buff, tmp_name)) {
-			return -1;
-		}
-		strncpy(name, tmp_name, NAME_MAX-1);
-		name[NAME_MAX - 1] = '\0';
-
-		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
-		return 0;
-	}
-	case DFS_EOF:
-		/* Fall through */
-	default:
-		return -1;
-	}
-}
-
-int fat_truncate(struct inode *node, off_t length) {
-	assert(node);
-
-	inode_size_set(node, length);
-
-	/* TODO realloc blocks*/
-
-	return 0;
-}
-
-/* @brief Create new file or directory
- * @param i_new Inode to be filled
- * @param i_dir Inode realted to the parent
- * @param mode  Used to figure out file type
- *
- * @return Negative error code
- */
-int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
-	struct fat_file_info *fi;
-	struct fat_fs_info *fsi;
-	struct dirinfo *di;
-	char *name;
-
-	assert(i_dir && i_new);
-
-	inode_size_set(i_new, 0);
-
-	di = inode_priv(i_dir);
-
-	name = inode_name(i_new);
-	assert(name);
-
-	/* TODO check file exists */
-	assert(i_dir->i_sb);
-	fsi = i_dir->i_sb->sb_data;
-
-	fat_reset_dir(di);
-	read_dir_buf(di);
-
-	if (S_ISDIR(i_new->i_mode)) {
-		struct dirinfo *new_di;
-		new_di = fat_dirinfo_alloc();
-		if (!new_di) {
-			return -ENOMEM;
-		}
-		new_di->p_scratch = fat_sector_buff;
-		fi = &new_di->fi;
-	} else {
-		fi = fat_file_alloc();
-		if (!fi) {
-			return -ENOMEM;
-		}
-	}
-
-	inode_priv_set(i_new, fi);
-
-	fi->volinfo = &fsi->vi;
-	fi->fdi     = di;
-	fi->fsi     = fsi;
-	fi->mode   |= i_new->i_mode;
-
-	if (0 != fat_create_file(fi, di, name, fi->mode)) {
-		return -EIO;
 	}
 
 	return 0;
@@ -2327,6 +2107,8 @@ int fat_destroy_inode(struct inode *inode) {
 		fi = inode_priv(inode);
 		fat_file_free(fi);
 	}
+
+	inode_priv_set(inode, NULL);
 
 	return 0;
 }

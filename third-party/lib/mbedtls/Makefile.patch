@@ -1,0 +1,18 @@
+--- mbedtls-2.16.12/Makefile	2020-04-09 16:12:23.000000000 +0300
++++ ../build/extbld/third_party/lib/mbedtls/mbedtls-2.16.12/Makefile	2023-12-14 07:13:22.115016892 +0300
+@@ -1,5 +1,14 @@
++CC=$(EMBOX_GCC)
++CFLAGS=$(EMBOX_CFLAGS)
++ARFLAGS=$(EMBOX_LDFLAGS)
++LDFLAGS=-static -nostdlib
++CFLAGS+= -Wno-error
++export CC
++export CFLAGS
++export LDFLAGS 
++export ARFLAGS
+ 
+-DESTDIR=/usr/local
++DESTDIR=$(PKG_INSTALL_DIR)
+ PREFIX=mbedtls_
+ 
+ .SILENT:

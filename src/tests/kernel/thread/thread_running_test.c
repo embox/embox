@@ -44,11 +44,11 @@ static void *first_thread_hnd(void *arg) {
 	int i;
 
 	t = thread_create(0, second_thread_hnd, &thread_res[1]);
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	thread_yield();
 
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	for (i = 0; i < 10; i++) {
 		delay_busy(DELAY);
@@ -66,7 +66,7 @@ TEST_CASE("Test for two running thread switches") {
 	struct thread *t;
 
 	t = thread_create(0, first_thread_hnd, NULL);
-	test_assert_zero(err(t));
+	test_assert_zero(ptr2err(t));
 
 	test_assert_zero(thread_join(t, NULL));
 }

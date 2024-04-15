@@ -1,0 +1,11 @@
+package embox.platform.vostok.vostok_vg015_dev
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+
+	@IncludeExport(path="")
+	source "system_k1921vg015.h"
+
+	source "system_k1921vg015.c"
+}
+

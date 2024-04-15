@@ -35,7 +35,7 @@ SECTIONS {
 		_traps_text_end = .;
 		*(.text)
 		*(.text.*)
-	}
+	} SECTION_REGION(text) :text
 #if 0
 	.eh_frame : {
 		*(.eh_frame)

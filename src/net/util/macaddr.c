@@ -9,7 +9,7 @@
 #include <net/util/macaddr.h>
 #include <stdio.h>
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 unsigned char *macaddr_scan(const unsigned char *addr, unsigned char *res) {
 	char symbol_str[5];

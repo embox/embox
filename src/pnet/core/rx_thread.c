@@ -8,7 +8,7 @@
  */
 
 #include <embox/unit.h>
-#include <util/ring_buff.h>
+#include <lib/libds/ring_buff.h>
 #include <stdio.h>
 
 #include <kernel/thread.h>
@@ -64,7 +64,7 @@ static int rx_thread_init(void) {
 		ring_buff_init(&pack_storage[i].buff, sizeof(net_packet_t), RX_THRD_BUF_SIZE,
 				(void *) pack_bufs[i]);
 		pnet_rx_threads[i] = thread_create(0, pnet_rx_thread_hnd, &pack_storage[i]);
-		if(err(pnet_rx_threads[i])) {
+		if(ptr2err(pnet_rx_threads[i])) {
 			return -1;
 		}
 

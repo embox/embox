@@ -13,10 +13,10 @@ module tar {
 	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
 	source "strip.tar.o"
 
-	@NoRuntime depends embox.compat.posix.fs.dirent
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.type
 	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.compat.posix.file_system
 
 	depends embox.compat.posix.stubs
 }

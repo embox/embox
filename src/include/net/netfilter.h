@@ -12,7 +12,7 @@
 #include <net/l2/ethernet.h>
 #include <net/skbuff.h>
 #include <netinet/in.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 /**
  * Netfilter chains

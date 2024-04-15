@@ -15,11 +15,10 @@
 
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/printk.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/log.h>
 #include <util/math.h>
 
-#include <drivers/char_dev.h>
 #include <drivers/video/fb.h>
 
 #include <framework/mod/options.h>

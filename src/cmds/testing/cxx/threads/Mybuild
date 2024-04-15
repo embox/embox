@@ -4,12 +4,10 @@ package embox.cmd.testing.cxx
 @Cmd(name="cxx_threads_demo",
 	help="",
 	man="")
-@BuildDepends(embox.lib.libgcc)
 @BuildDepends(embox.lib.libstdcxx)
 @Build(stage=2,script="true")
 module cxx_threads_demo {
 	source "cxx_threads_demo.cpp"
 
-	@NoRuntime depends embox.lib.libgcc
 	@NoRuntime depends embox.lib.libstdcxx
 }

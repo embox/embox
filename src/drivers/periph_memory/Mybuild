@@ -1,0 +1,26 @@
+package embox.driver
+
+@DefaultImpl(periph_memory_mmap)
+abstract module periph_memory { }
+
+module periph_memory_mmap extends periph_memory {
+	@IncludeExport(path="drivers/common", target_name="memory.h")
+	source "memory.h"
+
+	source "memory.c"
+
+	@NoRuntime depends embox.mem.mmap
+	depends embox.kernel.task.kernel_task
+	@NoRuntime depends embox.lib.libds
+}
+
+module periph_memory_stub extends periph_memory {
+	@IncludeExport(path="drivers/common", target_name="memory.h")
+	source "memory_impl_stub.h"
+}
+
+module periph_memory_alloc {
+	@IncludeExport(path="drivers/common", target_name="periph_memory_alloc.h")
+	source "periph_memory_alloc.h"
+	source "periph_memory_alloc.c"
+}

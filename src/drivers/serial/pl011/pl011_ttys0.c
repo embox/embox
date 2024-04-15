@@ -17,7 +17,6 @@ EMBOX_UNIT_INIT(uart_init);
 #define UART_BASE OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
 #define BAUD_RATE OPTION_GET(NUMBER, baud_rate)
-
 #define TTY_NAME  ttyS0
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
@@ -29,11 +28,11 @@ static struct uart uart0 = {
     .uart_ops = &pl011_uart_ops,
     .irq_num = IRQ_NUM,
     .base_addr = UART_BASE,
-    .params = {
-               .baud_rate = BAUD_RATE,
-               .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD
+    .params = ((struct uart_params){
+        .baud_rate = BAUD_RATE,
+        .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD
                             | UART_PARAM_FLAGS_USE_IRQ,
-               }
+    }),
 };
 
 static const struct uart_params uart_defparams = {

@@ -8,6 +8,4 @@ static module libarch extends embox.arch.libarch {
 
 static module libgcc {
 	source "mulhi3.c"
-
-	depends embox.lib.libgcc
 }

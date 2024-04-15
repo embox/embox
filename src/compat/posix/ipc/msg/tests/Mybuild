@@ -1,0 +1,13 @@
+package embox.compat.posix.ipc
+
+module msg_basic_tests {
+	source "msg_basic_tests.c"
+}
+
+module msg_pthread_tests {
+	source "msg_pthread_tests.c"
+}
+
+module msg_lthread_tests {
+	source "msg_lthread_tests.c"
+}

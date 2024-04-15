@@ -32,19 +32,18 @@ module uid {
 	depends embox.kernel.task.resource.u_area
 }
 
-@TestFor(embox.compat.posix.idx.pipe)
+@TestFor(embox.compat.posix.ipc.pipe)
 module pipe_test {
 	source "pipe_test.c"
 
-	depends embox.compat.posix.fs.file
-	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.ipc.pipe
 }
 
 module select_test {
 	source "select_test.c"
 
-	depends embox.compat.posix.fs.file
-	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.ipc.pipe
+	depends embox.compat.posix.index_descriptor
 }
 
 module rtsignal_test {

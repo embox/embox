@@ -1,0 +1,16 @@
+package embox.device
+
+module char_dev {
+	option string log_level="LOG_NONE"
+	option number idesc_pool_size=32
+
+	@IncludeExport(path="drivers")
+	source "char_dev.h"
+	source "char_dev.c"
+	source "char_dev_idesc.c"
+
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.mem.vmem_device_memory
+	@NoRuntime depends embox.mem.pool
+	@NoRuntime depends embox.lib.libds
+}

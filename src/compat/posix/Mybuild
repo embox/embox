@@ -1,8 +1,8 @@
 package embox.compat.posix
 
+@NoCode
 module LibPosix {
-	depends embox.compat.posix.fs.all
-	depends embox.compat.posix.idx.All
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.net.All
 	depends embox.compat.posix.proc.All
 	depends embox.compat.posix.passwd
@@ -11,7 +11,6 @@ module LibPosix {
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.timerfd
 	depends embox.compat.posix.fnmatch
-	depends embox.compat.posix.utime
 	depends sched
 	depends termios
 	depends syslog

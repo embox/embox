@@ -12,7 +12,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/math.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>

@@ -57,7 +57,7 @@ int user_thread_create(struct thread **p_thread, unsigned int flags,
 		data->sp = sp;
 		t = thread_create(flags, TRAMPOLINE, data);
 
-		if ((res = err(t))) {
+		if ((res = ptr2err(t))) {
 			pool_free(&ue_data_pool, data);
 			sched_unlock();
 			return res;

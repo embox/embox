@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include <util/math.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 CMDLINE * cmdline_init(CMDLINE *this) {
 	CMDLINE_HISTORY *history;

@@ -17,18 +17,18 @@
 #include <security/security.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
+#include <fs/inode_operation.h>
 #include <fs/path.h>
 #include <fs/fs_driver.h>
-#include <fs/file_operation.h>
+#include <fs/file_desc.h>
 #include <sys/time.h>
 #include <utime.h>
 #include <drivers/block_dev.h>
 
 int ktruncate(struct inode *node, off_t length) {
 	int ret;
-	const struct fs_driver *drv;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		SET_ERRNO(EISDIR);
 		return -1;
 	}
@@ -38,14 +38,13 @@ int ktruncate(struct inode *node, off_t length) {
 		return -1;
 	}
 
-	drv = node->nas->fs->fs_drv;
-
-	if (NULL == drv || NULL == drv->fsop || NULL == drv->fsop->truncate) {
-		//errno = EPERM;
+	if ((!node->i_sb->sb_iops) || (!node->i_sb->sb_iops->ino_truncate)) {
+		//SET_ERRNO(ENOTSUP);
+		//SET_ERRNO(EPERM); it may mean that file it's not possible to modify
 		return 0;
 	}
 
-	if (0 > (ret = drv->fsop->truncate(node, length))) {
+	if (0 > (ret = node->i_sb->sb_iops->ino_truncate(node, length))) {
 		SET_ERRNO(-ret);
 		return -1;
 	}
@@ -58,8 +57,8 @@ int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
 
 	stat_buff->st_size = inode_size(node);
 	stat_buff->st_mode = node->i_mode;
-	stat_buff->st_uid = node->uid;
-	stat_buff->st_gid = node->gid;
+	stat_buff->st_uid = node->i_owner_id;
+	stat_buff->st_gid = node->i_group_id;
 	stat_buff->st_ctime = inode_ctime(node);
 	stat_buff->st_mtime = inode_mtime(node);
 	stat_buff->st_blocks = stat_buff->st_size;

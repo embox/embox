@@ -21,7 +21,7 @@
 #include <sys/cdefs.h>
 
 #include <util/macro.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/location.h>
 #include <framework/mod/self.h>
 
@@ -60,12 +60,6 @@
 			&__TEST_FIXTURE_OP(case_teardown), test_suite_nm, test_private_nm, \
 			_autorun)
 
-#ifdef __cplusplus
-# define GLOBAL_C extern "C"
-#else
-# define GLOBAL_C
-#endif
-
 #define __EMBOX_TEST_SUITE_NM_EXT(_description, _suite_setup, _suite_teardown, \
 		_case_setup, _case_teardown, test_suite_nm, test_private_nm, _autorun) \
 	EXTERN_C const struct mod_ops __test_mod_ops;                    \
@@ -73,7 +67,7 @@
 			__TEST_CASES_ARRAY, NULL);                               \
 	static struct __test_private test_private_nm;                    \
 	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                            \
-	GLOBAL_C const struct test_mod mod_self = {                    \
+	const struct test_mod mod_self = {                    \
 		/* .mod   = */ MOD_SELF_INIT(__EMBUILD_MOD__, &__test_mod_ops), \
 		/* .suite = */ {                                             \
 			/* .test_cases        = */ __TEST_CASES_ARRAY,           \
@@ -120,11 +114,6 @@
 #define __TEST_CASES_ARRAY \
 	MACRO_CONCAT(__test_cases_in_suite__, __EMBUILD_MOD__)
 
-static inline const struct mod *test_mod_self() {
-	extern const struct test_mod mod_self;
-	return &mod_self.mod;
-}
-
 /* Simplify the life of Eclipse CDT. */
 #ifdef __CDT_PARSER__
 
@@ -144,5 +133,11 @@ static inline const struct mod *test_mod_self() {
 	static void MACRO_GUARD(__test_case)(void)
 
 #endif /* __CDT_PARSER__ */
+
+EXTERN_C const struct test_mod mod_self;
+
+static inline const struct mod *test_mod_self() {
+	return &mod_self.mod;
+}
 
 #endif /* FRAMEWORK_TEST_SELF_H_ */

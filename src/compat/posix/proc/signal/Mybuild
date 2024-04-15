@@ -11,7 +11,7 @@ static module signal {
 
 static module sigset {
 	source "sigset.c"
-	depends embox.util.Bitmap
+	@NoRuntime depends embox.lib.libds
 }
 
 static module sigwait_stub {

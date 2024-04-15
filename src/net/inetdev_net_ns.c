@@ -15,7 +15,7 @@
 #include <net/netdevice.h>
 #include <stddef.h>
 #include <string.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <net/net_namespace.h>
 
 #define MODOPS_AMOUNT_INTERFACE OPTION_GET(NUMBER, amount_interface)

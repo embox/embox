@@ -6,16 +6,16 @@
  * @author Filipp Chubukov
  */
 
+#include <ctype.h>
 #include <errno.h>
+#include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <stdlib.h>
-#include <stdbool.h>
 
 static void wc_util(FILE *file_in, int *lines_in_file, int *words_in_file,
-		int *bytes_in_file,int *max_line_in_file) {
-
+    int *bytes_in_file, int *max_line_in_file) {
 	int byte_walker, prev_byte = 0;
 	int count_len = 0;
 	bool prev_symbol = false;
@@ -39,10 +39,12 @@ static void wc_util(FILE *file_in, int *lines_in_file, int *words_in_file,
 			}
 
 			count_len = 0;
-		} else {
+		}
+		else {
 			if (byte_walker == '\t') {
 				count_len += 8;
-			} else {
+			}
+			else {
 				count_len++;
 			}
 		}
@@ -57,7 +59,6 @@ static void wc_util(FILE *file_in, int *lines_in_file, int *words_in_file,
 			prev_symbol = false;
 			words++;
 		}
-
 	}
 
 	if (prev_byte != '\n' && prev_byte != EOF) {
@@ -76,7 +77,7 @@ static void wc_util(FILE *file_in, int *lines_in_file, int *words_in_file,
 int main(int argc, char **argv) {
 	int opt, j, param_number = 0;
 
-	bool print_lines, print_words,print_bytes;
+	bool print_lines, print_words, print_bytes;
 	bool print_linelength;
 
 	int lines_count = 0;
@@ -117,8 +118,7 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	if (!(print_lines || print_words || print_bytes
-			|| print_linelength)) {
+	if (!(print_lines || print_words || print_bytes || print_linelength)) {
 		print_lines = print_words = print_bytes = true;
 	}
 
@@ -136,7 +136,8 @@ int main(int argc, char **argv) {
 			return 0;
 		}
 
-		wc_util(file_in, &lines_in_file, &words_in_file, &bytes_in_file, &max_line_in_file);
+		wc_util(file_in, &lines_in_file, &words_in_file, &bytes_in_file,
+		    &max_line_in_file);
 
 		if (print_lines) {
 			printf("%d  ", lines_in_file);

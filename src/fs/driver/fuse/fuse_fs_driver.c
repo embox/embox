@@ -127,7 +127,7 @@ static int fuse_close(struct file_desc *desc) {
 	return 0;
 }
 
-static int fuse_remove(struct inode *inode) {
+static int fuse_remove(struct inode *dir, struct inode *inode) {
 	struct task *task;
 	struct inode *parent;
 	struct fuse_req_embox *req;
@@ -204,17 +204,13 @@ static size_t fuse_write(struct file_desc *desc, void *buf, size_t size) {
 	return ret;
 }
 
-static struct inode *fuse_lookup(char const *name, struct inode const *dir) {
-	struct inode *node;
+static struct inode *fuse_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	struct fuse_req_embox *req;
 	struct task *task;
 	struct fuse_sb_priv_data *sb_fuse_data;
 
 	sb_fuse_data = dir->i_sb->sb_data;
 
-	if (NULL == (node = dvfs_alloc_inode(dir->i_sb))) {
-		return NULL;
-	}
 	if (NULL == (req = fuse_req_alloc())) {
 		return NULL;
 	}
@@ -388,12 +384,12 @@ const struct super_block_operations fuse_sbops = {
 };
 
 const struct inode_operations fuse_iops = {
-	.lookup   = fuse_lookup,
-	.iterate  = fuse_iterate,
-	.create = fuse_create,
-	.remove = fuse_remove,
-	.getxattr = ext2fuse_getxattr,
-	.setxattr = ext2fuse_setxattr
+	.ino_lookup   = fuse_lookup,
+	.ino_iterate  = fuse_iterate,
+	.ino_create = fuse_create,
+	.ino_remove = fuse_remove,
+	.ino_getxattr = ext2fuse_getxattr,
+	.ino_setxattr = ext2fuse_setxattr
 };
 
 const struct file_operations fuse_fops = {

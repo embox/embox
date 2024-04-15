@@ -9,23 +9,17 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <util/math.h>
-
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_cache.h>
 
-#include <framework/mod/options.h>
-
-//#define NAND_PAGE_SIZE         OPTION_GET(NUMBER, page_size)
-//#define NAND_BLOCK_SIZE        OPTION_GET(NUMBER, block_size)
-
-
-int flash_cache_clean(struct flash_dev *flashdev, uint32_t block) {
+int flash_cache_clean(struct flash_dev *flashdev) {
 	return 0;
 }
 
 int flash_cache_load(struct flash_dev *flashdev,
 							 uint32_t to, uint32_t from, int len) {
+	flash_read(flashdev, from, (void *)(uintptr_t)to, len);
+#if 0
 	char b[32];
 
 	while (len > 0) {
@@ -42,7 +36,7 @@ int flash_cache_load(struct flash_dev *flashdev,
 		to += tmp_len;
 		from += tmp_len;
 	}
-
+#endif
 	return 0;
 }
 
@@ -56,12 +50,14 @@ int flash_cache_restore(struct flash_dev *flashdev,
 								uint32_t to, uint32_t from) {
 	int res;
 	int flash_block_size;
+	struct flash_block_info *to_fbi = flash_block_info_by_block(flashdev, to);
 
-	flash_block_size = flashdev->block_info[0].block_size;
+	flash_block_size = to_fbi->block_size;
 
 	flash_erase(flashdev, to);
-	res = flash_write_aligned(flashdev,
-		to * flash_block_size, (void *)((uintptr_t)from), flash_block_size);
+
+	res = flash_write(flashdev, to * flash_block_size, 
+					(const void *)flashdev->fld_cache, flash_block_size);
 
 	return res;
 }

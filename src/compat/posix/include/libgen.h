@@ -9,11 +9,12 @@
 #define POSIX_LIBGEN_H_
 
 #include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
-extern char  *basename(char *);
+extern char *basename(char *path);
 
-extern char  *dirname(char *);
+extern char *dirname(char *path);
 
 __END_DECLS
 

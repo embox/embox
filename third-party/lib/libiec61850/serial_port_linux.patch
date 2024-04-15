@@ -1,0 +1,11 @@
+--- libiec61850-1.5.1/hal/serial/linux/serial_port_linux.c	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/hal/serial/linux/serial_port_linux.c	2023-12-11 06:28:48.682363654 +0300
+@@ -257,7 +257,7 @@
+ 
+     ssize_t result = write(self->fd, buffer + startPos, bufSize);
+ 
+-    tcdrain(self->fd);
++    /*tcdrain(self->fd);*/
+ 
+     self->lastSentTime = Hal_getTimeInMs();
+ 

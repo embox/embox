@@ -10,7 +10,7 @@
 
 #include <embox/test.h>
 
-#include <util/tree.h>
+#include <lib/libds/tree.h>
 
 EMBOX_TEST_SUITE("util/tree test");
 

@@ -1,0 +1,16 @@
+package embox.project.server60870.cmd
+
+@AutoCmd
+@Cmd(name = "tls_server104",
+    help = "IEC60870 simple server",
+    man = '''
+        AUTHOR
+            Valery Iline ported to embox.
+    ''')
+@BuildDepends(third_party.lib.lib60870)
+@Build(stage=2)
+module tls_server104 {
+	source "tls_server.c"
+	depends third_party.lib.lib60870
+}
+

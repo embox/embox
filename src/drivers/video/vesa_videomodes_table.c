@@ -5,7 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <drivers/video/vesa_modes.h>
 #include <drivers/video/fb.h>

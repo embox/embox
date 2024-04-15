@@ -13,7 +13,7 @@ static module nrf24 {
 	source "nrf24.c"
 
 	depends nrf24_cube_layer
-	depends embox.util.ring
+	@NoRuntime depends embox.lib.libds
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)

@@ -18,7 +18,7 @@ module byte_pipe {
 	source "strip.pipe.o"
 
 	depends core
-	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.ipc.pipe
 }
 
 @Cmd(name = "byte_select",
@@ -35,7 +35,7 @@ module byte_select {
 	source "strip.select.o"
 
 	depends core
-	depends embox.compat.posix.idx.select
+	depends embox.compat.posix.index_descriptor
 }
 
 @Cmd(name = "byte_dhry2",

@@ -15,7 +15,7 @@
 #include <string.h>
 #include <limits.h>
 #include <util/binalign.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <util/math.h>
 
 #include <mem/page.h>

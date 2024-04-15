@@ -1,13 +1,8 @@
 
 #include <asm-generic/embox.lds.h>
 
-#ifndef OUTPUT_FORMAT_STRING
-#define OUTPUT_FORMAT_STRING "elf32-bigmips"
-#endif
-
-OUTPUT_FORMAT(OUTPUT_FORMAT_STRING)
+OUTPUT_FORMAT("elf32-tradbigmips", "elf32-tradbigmips", "elf32-tradlittlemips")
 OUTPUT_ARCH(mips)
-
 ENTRY(_start)
 
 MEMORY {
@@ -24,17 +19,5 @@ SECTIONS {
 		ALIGNMENT();
 		*(.text)
 		*(.text.*)
-	}
-
-	/DISCARD/ : {
-		*(.MIPS.options)
-		*(.options)
-		*(.pdr)
-		*(.reginfo)
-		*(.comment)
-		*(.note)
-		*(.mdebug.* .gnu.attributes)
-		*(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) *(.eh_frame) *(.eh_frame.*)
-	}
+	} SECTION_REGION(text) :text
 }
-

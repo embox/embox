@@ -1,0 +1,11 @@
+package embox.compat.posix.ipc
+
+static module ppty {
+	option number pty_count=20
+
+	source "pty.c"
+
+	@NoRuntime depends embox.kernel.task.idesc_event
+	@NoRuntime depends embox.driver.tty.tty
+	@NoRuntime depends embox.kernel.task.api
+}

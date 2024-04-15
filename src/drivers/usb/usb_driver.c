@@ -9,8 +9,8 @@
 #include <errno.h>
 #include <stdio.h>
 
-#include <util/dlist.h>
-#include <drivers/char_dev.h>
+#include <lib/libds/dlist.h>
+// #include <drivers/char_dev.h>
 #include <drivers/usb/usb.h>
 #include <drivers/usb/usb_dev_desc.h>
 #include <fs/inode.h>
@@ -136,7 +136,7 @@ int usb_driver_probe(struct usb_interface *dev) {
 				dev->usb_dev->dev_desc.id_vendor,
 				dev->usb_dev->dev_desc.id_product);
 
-		char_dev_register(NULL);
+		// char_dev_register(NULL);
 	}
 	return 0;
 }

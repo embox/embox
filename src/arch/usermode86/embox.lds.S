@@ -17,5 +17,5 @@ SECTIONS {
 		*(.text)
 		*(.text.*)
 		*(.glue_7t) *(.glue_7)
-	}
+	} SECTION_REGION(text) :text
 }

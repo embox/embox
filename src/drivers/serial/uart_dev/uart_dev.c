@@ -7,21 +7,19 @@
  */
 
 #include <string.h>
-#include <stdio.h>
 #include <errno.h>
 
 #include <util/err.h>
 #include <util/log.h>
-#include <util/indexator.h>
-#include <util/dlist.h>
-#include <util/ring_buff.h>
-#include <util/array.h>
+#include <lib/libds/indexator.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/ring_buff.h>
+#include <lib/libds/array.h>
 
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
 
 #include <drivers/device.h>
-#include <drivers/char_dev.h>
 #include <drivers/serial/uart_dev.h>
 
 ARRAY_SPREAD_DEF(struct uart *const, __uart_device_registry);

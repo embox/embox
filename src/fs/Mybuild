@@ -1,18 +1,23 @@
 package embox.fs
 
 @DefaultImpl(no_file_system)
-abstract module fs_api {
-
-}
+abstract module fs_api { }
 
 module no_file_system extends fs_api{
 	depends embox.fs.syslib.fs_none
 	depends embox.fs.syslib.file_system_none
 }
 
+@NoCode
+module journal_header {
+	@IncludeExport(path="fs")
+	source "journal.h"
+}
 
 module journal {
 	source "journal.c"
+
+	@NoRuntime depends embox.fs.journal_header
 
 	depends embox.compat.libc.assert
 	depends embox.compat.libc.str
@@ -20,18 +25,5 @@ module journal {
 	depends embox.fs.buffer_cache
 	depends embox.mem.slab
 
-	depends embox.util.dlist
-}
-
-module buffer_cache {
-	source "bcache.c"
-	option number bcache_size=128
-	option number bcache_align=512
-
-	depends embox.mem.pool
-	depends embox.kernel.thread.mutex
-
-	depends embox.mem.sysmalloc_api
-
-	@NoRuntime depends embox.util.hashtable
+	@NoRuntime depends embox.lib.libds
 }

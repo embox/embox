@@ -47,19 +47,24 @@ static int test_mt_path_init(const char *strpath, const char *name) {
 	struct mount_descriptor *mdesc;
 	struct inode *node, *root_node;
 	struct path path;
+	struct mount_descriptor *mnt_desc;
 
 	if (vfs_lookup(strpath, &path)) {
 		return -ENOENT;
 	}
 
-	node = node_alloc(name, strlen(name));
+	node = inode_alloc(NULL);
 	assert(node);
-	root_node = node_alloc("/", strlen("/"));
+	inode_name_set(node, name);
+	root_node = inode_alloc(NULL);
 	assert(root_node);
+	inode_name_set(root_node, "/");
 
 	vfs_add_leaf(node, root_node);
 
-	mdesc = mount_table_add(&path, root_node, "");
+	mnt_desc = mount_desc_by_inode(path.node);
+
+	mdesc = mount_table_add(&path, mnt_desc, root_node, "");
 	assert(mdesc);
 
 	return 0;
@@ -78,7 +83,7 @@ static int test_mt_path_fini(const char *strpath) {
 
 	vfs_del_leaf(path.node);
 
-	node_free(root_node);
+	inode_free(root_node);
 
 	return 0;
 }
@@ -87,7 +92,8 @@ static int setup_suite(void) {
 	struct path root;
 
 	vfs_get_root_path(&root);
-	test_node = node_alloc("test", strlen("test"));
+	test_node = inode_alloc(NULL);
+	inode_name_set(test_node, "test");
 
 	vfs_add_leaf(test_node, root.node);
 

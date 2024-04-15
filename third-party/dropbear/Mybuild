@@ -32,12 +32,6 @@ module dropbear {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "dropbear.o"
 
-	@NoRuntime depends embox.compat.posix.fs.dirent
-	@NoRuntime depends embox.compat.libc.assert
-	@NoRuntime depends embox.compat.libc.type
-	@NoRuntime depends embox.kernel.task.resource.errno
-	@NoRuntime depends embox.kernel.task.resource.dropbear_res
-
 	@InitFS
 	source "etc"
 
@@ -47,11 +41,16 @@ module dropbear {
 	@InitFS(chmod="622")
 	source "dev_pty_0"
 
-	depends embox.compat.posix.stubs
-	depends embox.compat.posix.pty
-	depends embox.compat.posix.proc.vfork
-	depends embox.compat.posix.crypt
-	depends embox.compat.posix.fs.chown_api
-	depends embox.compat.posix.proc.rlimit
-	depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.compat.libc.type
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.kernel.task.resource.dropbear_res
+	@NoRuntime depends embox.compat.posix.ipc.pipe
+	@NoRuntime depends embox.compat.posix.stubs
+	@NoRuntime depends embox.compat.posix.pty
+	@NoRuntime depends embox.compat.posix.proc.vfork
+	@NoRuntime depends embox.compat.posix.crypt
+	@NoRuntime depends embox.compat.posix.proc.rlimit
+	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.file_system
 }

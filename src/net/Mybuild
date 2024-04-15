@@ -7,8 +7,7 @@ module dev {
 	source "netdev.c"
 
 	depends embox.mem.sysmalloc_api
-	depends embox.util.dlist
-	depends embox.util.hashtable
+	@NoRuntime depends embox.lib.libds
 	depends embox.net.netlink
 }
 
@@ -23,7 +22,7 @@ module core_no_net_ns extends core {
 	source "inetdev.c"
 
 	depends dev /* for dev.c */
-	depends embox.util.dlist
+	@NoRuntime depends embox.lib.libds
 	depends embox.mem.pool
 	depends embox.net.net_namespace
 }
@@ -33,7 +32,7 @@ module core_net_ns extends core {
 
 	source "inetdev_net_ns.c"
 	depends dev /* for dev.c */
-	depends embox.util.dlist
+	@NoRuntime depends embox.lib.libds
 	depends embox.mem.pool
 	depends embox.net.net_namespace
 }
@@ -98,5 +97,5 @@ module packet {
 module net_pack {
 	source "net_pack.c"
 
-	depends embox.util.Array
+	@NoRuntime depends embox.lib.libds
 }

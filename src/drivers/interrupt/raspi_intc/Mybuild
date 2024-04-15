@@ -5,5 +5,5 @@ module raspi extends irqctrl_api {
 
 	source "raspi.c", "raspi.h"
 
-	depends embox.util.Bit
+	@NoRuntime depends embox.lib.libds
 }

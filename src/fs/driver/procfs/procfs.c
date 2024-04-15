@@ -12,7 +12,7 @@
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <module/embox/driver/block_dev.h>
 
@@ -34,13 +34,8 @@ static int is_number(const char *str) {
 		return 1;
 }
 
-static struct inode *procfs_lookup(char const *name, struct inode const *dir) {
-	struct inode *node;
+static struct inode *procfs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	net_namespace_p net_ns_p;
-
-	if (NULL == (node = inode_new(dir->i_sb))) { /* where it's freed? */
-		return NULL;
-	}
 
 	/* /proc/pid/ns/net case */
 	if (is_number(name))
@@ -161,8 +156,8 @@ static struct super_block_operations procfs_sbops = {
 };
 
 struct inode_operations procfs_iops = {
-	.lookup   = procfs_lookup,
-	.iterate  = procfs_iterate,
+	.ino_lookup   = procfs_lookup,
+	.ino_iterate  = procfs_iterate,
 };
 
 struct file_operations procfs_fops = {

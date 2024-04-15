@@ -1,0 +1,139 @@
+--- libiec61850-1.5.1/Makefile	2023-11-28 12:12:05.249661038 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/Makefile	2023-12-08 09:06:12.213743423 +0300
+@@ -1,6 +1,24 @@
+ LIBIEC_HOME=.
+ 
+-include make/target_system.mk
++TOOLCHAIN_PREFIX=$(CROSS_COMPILE)
++TOOLCHAIN_PREFIX=$(CROSS_COMPILE)
++CFLAGS += $(EMBOX_CFLAGS)
++CFLAGS += -fno-stack-protector
++CFLAGS += -Wno-error
++CFLAGS += -Wno-format
++CFLAGS += -D'CONFIG_IEC61850_USE_COMPAT_TYPE_DECLARATIONS=0'
++
++LDFLAG += $(EMBOX_LDFLAGS)
++
++HAL_IMPL = POSIX
++LDLIBS = -lpthread
++LIB_OBJS_DIR = $(LIBIEC_HOME)/build
++LIB_NAME = $(LIB_OBJS_DIR)/libiec61850.a
++
++CC=$(EMBOX_GCC)
++CPP=$(TOOLCHAIN_PREFIX)g++
++AR=$(TOOLCHAIN_PREFIX)ar
++RANLIB=$(TOOLCHAIN_PREFIX)ranlib
+ 
+ LIB_SOURCE_DIRS = src/mms/iso_acse
+ LIB_SOURCE_DIRS += src/mms/iso_acse/asn1c
+@@ -20,25 +38,16 @@
+ 
+ LIB_SOURCE_DIRS += src/logging
+ 
+-ifndef EXCLUDE_ETHERNET_WINDOWS
+ LIB_SOURCE_DIRS += src/goose
+ LIB_SOURCE_DIRS += src/sampled_values
+-endif
++
+ LIB_SOURCE_DIRS += src/iec61850/client
+ LIB_SOURCE_DIRS += src/iec61850/common
+ LIB_SOURCE_DIRS += src/iec61850/server
+ LIB_SOURCE_DIRS += src/iec61850/server/model
+ LIB_SOURCE_DIRS += src/iec61850/server/mms_mapping
+ LIB_SOURCE_DIRS += src/iec61850/server/impl
+-ifeq ($(HAL_IMPL), WIN32)
+-LIB_SOURCE_DIRS += hal/socket/win32
+-LIB_SOURCE_DIRS += hal/thread/win32
+-LIB_SOURCE_DIRS += hal/ethernet/win32
+-LIB_SOURCE_DIRS += hal/filesystem/win32
+-LIB_SOURCE_DIRS += hal/time/win32
+-LIB_SOURCE_DIRS += hal/serial/win32
+-LIB_SOURCE_DIRS += hal/memory
+-else ifeq ($(HAL_IMPL), POSIX)
++
+ LIB_SOURCE_DIRS += hal/socket/linux
+ LIB_SOURCE_DIRS += hal/thread/linux
+ LIB_SOURCE_DIRS += hal/ethernet/linux
+@@ -46,22 +55,9 @@
+ LIB_SOURCE_DIRS += hal/time/unix
+ LIB_SOURCE_DIRS += hal/serial/linux
+ LIB_SOURCE_DIRS += hal/memory
+-else ifeq ($(HAL_IMPL), BSD)
+-LIB_SOURCE_DIRS += hal/socket/bsd
+-LIB_SOURCE_DIRS += hal/thread/bsd
+-LIB_SOURCE_DIRS += hal/ethernet/bsd
+-LIB_SOURCE_DIRS += hal/filesystem/linux
+-LIB_SOURCE_DIRS += hal/time/unix
+-LIB_SOURCE_DIRS += hal/memory
+-else ifeq ($(HAL_IMPL), MACOS)
+-LIB_SOURCE_DIRS += hal/socket/bsd
+-LIB_SOURCE_DIRS += hal/thread/macos
+-LIB_SOURCE_DIRS += hal/ethernet/bsd
+-LIB_SOURCE_DIRS += hal/filesystem/linux
+-LIB_SOURCE_DIRS += hal/time/unix
+-LIB_SOURCE_DIRS += hal/memory
+-endif
++
+ LIB_INCLUDE_DIRS += config
++
+ LIB_INCLUDE_DIRS += hal/inc
+ LIB_INCLUDE_DIRS += src/common/inc
+ LIB_INCLUDE_DIRS += src/mms/iso_mms/asn1c
+@@ -73,26 +69,30 @@
+ LIB_INCLUDE_DIRS += src/iec61850/inc_private
+ LIB_INCLUDE_DIRS += src/logging
+ LIB_INCLUDE_DIRS += src/tls
+-ifeq ($(HAL_IMPL), WIN32)
+-LIB_INCLUDE_DIRS += third_party/winpcap/Include
+-endif
++
+ 
+ ifdef WITH_MBEDTLS
+-LIB_SOURCE_DIRS += third_party/mbedtls/mbedtls-2.16/library
++LIB_SOURCE_DIRS += third_party/lib/mbedtls/mbedtls-2.16.12/library
+ LIB_SOURCE_DIRS += hal/tls/mbedtls
+ LIB_INCLUDE_DIRS += third_party/mbedtls/mbedtls-2.16/include
+ LIB_INCLUDE_DIRS += hal/tls/mbedtls
+ CFLAGS += -D'MBEDTLS_CONFIG_FILE="mbedtls_config.h"'
+ CFLAGS += -D'CONFIG_MMS_SUPPORT_TLS=1'
++CFLAGS += -D'WITH_MBEDTLS=1'
+ endif
+ 
++LIB_INCLUDE_DIRS += $(SRC_DIR)/compat/posix/include
++LIB_INCLUDE_DIRS += $(SRC_DIR)/compat/linux/include
++LIB_INCLUDE_DIRS += $(SRC_DIR)/include
++
+ LIB_INCLUDES = $(addprefix -I,$(LIB_INCLUDE_DIRS))
+ 
+ ifndef INSTALL_PREFIX
+ INSTALL_PREFIX = ./.install
+ endif
+ 
+-LIB_API_HEADER_FILES = hal/inc/hal_time.h 
++LIB_API_HEADER_FILES  = config/stack_config.h 
++LIB_API_HEADER_FILES += hal/inc/hal_time.h 
+ LIB_API_HEADER_FILES += hal/inc/hal_thread.h
+ LIB_API_HEADER_FILES += hal/inc/hal_filesystem.h
+ LIB_API_HEADER_FILES += hal/inc/tls_config.h
+@@ -129,13 +129,7 @@
+ 
+ LIB_OBJS = $(call src_to,.o,$(LIB_SOURCES))
+ 
+-CFLAGS += -std=gnu99
+-CFLAGS += -Wno-error=format 
+-CFLAGS += -Wstrict-prototypes
+-
+-ifneq ($(HAL_IMPL), WIN32)
+ CFLAGS += -Wuninitialized 
+-endif
+ 
+ CFLAGS += -Wsign-compare 
+ CFLAGS += -Wpointer-arith 
+@@ -148,6 +142,7 @@
+ #CFLAGS += -Wconditional-uninitialized
+ #CFLAGS += -Werror  
+ 
++
+ all:	lib
+ 
+ static_checks:	lib

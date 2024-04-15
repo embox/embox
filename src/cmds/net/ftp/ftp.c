@@ -13,15 +13,24 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <sys/socket.h>
-#include <net/l3/ipv4/ip.h>
 #include <arpa/inet.h>
 
+
 #define FTP_PORT 21
+
+#if defined (__EMBOX__)
 
 #include <framework/mod/options.h>
 
 #define MODOPS_CMD_BUFF_SZ  OPTION_GET(NUMBER, cmd_buff_sz)
 #define MODOPS_DATA_BUFF_SZ OPTION_GET(NUMBER, data_buff_sz)
+
+#else
+
+#define MODOPS_CMD_BUFF_SZ  128
+#define MODOPS_DATA_BUFF_SZ 1024
+
+#endif /* defined (__EMBOX__) */
 
 /* Global return codes */
 enum {
@@ -37,9 +46,15 @@ enum {
 #define FTP_STAT_FINI(stat) (stat % 10)
 
 /* Useful commands */
-#define skip_spaces(ptr) while (*ptr && isspace(*ptr)) ptr++
-#define skip_word(ptr) while (*ptr && !isspace(*ptr)) ptr++
-static void split_word(char *ptr) { skip_word(ptr); *ptr = '\0'; }
+#define skip_spaces(ptr) \
+				while (*ptr && isspace(*ptr)) { ptr++; }
+
+#define skip_word(ptr)  \
+				while (*ptr && !isspace(*ptr)) { ptr++; }
+
+static inline void split_word(char *ptr) {
+	 skip_word(ptr); *ptr = '\0';
+}
 
 /* Status code for first digit (X pos) of result (*YZ) */
 enum {
@@ -94,7 +109,7 @@ static int fs_cmd_help(struct fs_info *session);
 static int fs_cmd_bye(struct fs_info *session);
 
 /* Table of FTP Methods */
-static struct fm_info ftp_mtds[] = {
+static const struct fm_info ftp_mtds[] = {
 	{ "open", "open <host-name> [port]", "connect to remote ftp", &fs_cmd_open },
 	{ "close", "close", "terminate ftp session", &fs_cmd_close },
 	{ "user", "user <user-name>", "login on remote ftp", &fs_cmd_user },
@@ -201,7 +216,7 @@ static int fs_execute(struct fs_info *session, const char *cmd_format, ...) {
 	va_list args;
 
 	va_start(args, cmd_format);
-	vsnprintf(&session->buff[0], sizeof session->buff, cmd_format, args);
+	vsnprintf(&session->buff[0], sizeof(session->buff), cmd_format, args);
 	va_end(args);
 
 	ret = fs_snd_request(session, &session->buff[0]);
@@ -209,7 +224,7 @@ static int fs_execute(struct fs_info *session, const char *cmd_format, ...) {
 		return ret;
 	}
 
-	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -242,13 +257,13 @@ static int make_active_socket(in_addr_t remote_ip, uint16_t remote_port, int *ou
 		return ret;
 	}
 
-	memset(&remote_addr, 0, sizeof remote_addr);
+	memset(&remote_addr, 0, sizeof(remote_addr));
 
 	remote_addr.sin_addr.s_addr = remote_ip;
 	remote_addr.sin_port = htons(remote_port);
 	remote_addr.sin_family = AF_INET;
 
-	ret = connect(sock, (struct sockaddr *)&remote_addr, sizeof remote_addr);
+	ret = connect(sock, (struct sockaddr *)&remote_addr, sizeof(remote_addr));
 	if (ret < 0) {
 		fprintf(stderr, "Can't connect to host %s:%d.\n", inet_ntoa(remote_addr.sin_addr), (int)remote_port);
 		close(sock);
@@ -401,7 +416,8 @@ static int fs_cmd_open(struct fs_info *session) {
 		}
 	}
 
-	ret = make_active_socket(remote_ip.s_addr, (uint16_t)remote_port, &session->cmd_sock);
+	ret = make_active_socket(remote_ip.s_addr, (uint16_t)remote_port,
+									&session->cmd_sock);
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -409,7 +425,7 @@ static int fs_cmd_open(struct fs_info *session) {
 	fprintf(stdout, "Connected to %s:%u.\n", arg_hostname, remote_port);
 	session->is_connected = 1;
 
-	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -665,7 +681,8 @@ static int fs_cmd_ls(struct fs_info *session) {
 		return ret;
 	}
 
-	ret = fill_file_from_socket(stdout, data_sock, &session->buff[0], sizeof session->buff);
+	ret = fill_file_from_socket(stdout, data_sock, &session->buff[0],
+										sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		close(data_sock);
 		return ret;
@@ -675,7 +692,7 @@ static int fs_cmd_ls(struct fs_info *session) {
 
 	if (FTP_STAT_TYPE_POSITIVE_PRELIMINARY
 			== FTP_STAT_TYPE(session->stat_code)) {
-		ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+		ret = fs_rcv_reply(session, &session->buff[0], sizeof(session->buff));
 		if (ret != FTP_RET_OK) {
 			return ret;
 		}
@@ -742,7 +759,8 @@ static int fs_cmd_get(struct fs_info *session) {
 		return ret;
 	}
 
-	ret = fill_file_from_socket(file, data_sock, &session->buff[0], sizeof session->buff);
+	ret = fill_file_from_socket(file, data_sock, &session->buff[0],
+									sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		fclose(file);
 		close(data_sock);
@@ -752,7 +770,7 @@ static int fs_cmd_get(struct fs_info *session) {
 	fclose(file);
 	close(data_sock);
 
-	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -809,7 +827,8 @@ static int fs_cmd_put(struct fs_info *session) {
 		return ret;
 	}
 
-	ret = flush_file_to_socket(file, data_sock, &session->buff[0], sizeof session->buff);
+	ret = flush_file_to_socket(file, data_sock, &session->buff[0],
+									sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		fclose(file);
 		close(data_sock);
@@ -819,7 +838,7 @@ static int fs_cmd_put(struct fs_info *session) {
 	fclose(file);
 	close(data_sock);
 
-	ret = fs_rcv_reply(session, &session->buff[0], sizeof session->buff);
+	ret = fs_rcv_reply(session, &session->buff[0], sizeof(session->buff));
 	if (ret != FTP_RET_OK) {
 		return ret;
 	}
@@ -864,7 +883,7 @@ static int fs_cmd_help(struct fs_info *session) {
 	size_t i;
 
 	fprintf(stdout, "Use the next commands:\n");
-	for (i = 0; i < sizeof ftp_mtds / sizeof ftp_mtds[0]; ++i) {
+	for (i = 0; i < (sizeof(ftp_mtds) / sizeof(ftp_mtds[0])); ++i) {
 		fprintf(stdout, "\t%s -- %s\n", ftp_mtds[i].mtd_usage, ftp_mtds[i].mtd_description);
 	}
 
@@ -896,7 +915,7 @@ int main(int argc, char **argv) {
 			return 0;
 		}
 		cmd_name = &fsi.cmd_buff[0];
-		snprintf(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, "open %s %s",
+		snprintf(&fsi.cmd_buff[0], sizeof(fsi.cmd_buff), "open %s %s",
 				argv[1], argc == 3 ? argv[2] : "");
 		goto parse_cmd;
 	}
@@ -904,7 +923,7 @@ int main(int argc, char **argv) {
 	while (1) {
 		fprintf(stdout, "%s> ", argv[0]);
 
-		cmd_name = fgets(&fsi.cmd_buff[0], sizeof fsi.cmd_buff, stdin);
+		cmd_name = fgets(&fsi.cmd_buff[0], sizeof(fsi.cmd_buff), stdin);
 		if (cmd_name == NULL) {
 			fprintf(stderr, "%s: fatal error: fgets return null.\n", argv[0]);
 			break;
@@ -931,12 +950,12 @@ parse_cmd:
 		}
 
 		/* Try find this command */
-		for (i = 0; i < sizeof ftp_mtds / sizeof ftp_mtds[0]; ++i) {
+		for (i = 0; i < (sizeof(ftp_mtds) / sizeof(ftp_mtds[0])); ++i) {
 			if (strcmp(ftp_mtds[i].mtd_name, cmd_name) == 0) {
 				break;
 			}
 		}
-		if (i == sizeof ftp_mtds / sizeof ftp_mtds[0]) {
+		if (i == (sizeof(ftp_mtds) / sizeof(ftp_mtds[0]))) {
 			fprintf(stderr, "%s: unknown command `%s'.\n", argv[0], cmd_name);
 			continue;
 		}

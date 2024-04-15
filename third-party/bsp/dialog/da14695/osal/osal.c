@@ -11,7 +11,7 @@
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>
 #include <mem/misc/pool.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/err.h>
 #include <util/log.h>
 #include <framework/mod/options.h>
@@ -73,7 +73,7 @@ int os_task_create(const char *name, void (*run)(void *), void *arg,
 
 	info->thread = thread_create_with_stack(THREAD_FLAG_SUSPENDED, stack_size,
 	                                        os_thread_run, info);
-	if (err(info->thread)) {
+	if (ptr2err(info->thread)) {
 		log_error("thread_create failed");
 		return -1;
 	}

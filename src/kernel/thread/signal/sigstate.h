@@ -13,7 +13,7 @@
 
 #include <signal.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <sys/cdefs.h>
 
 struct siginfoq;

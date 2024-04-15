@@ -1,0 +1,18 @@
+package embox.fs
+
+module buffer_cache {
+	option number bcache_size=128
+	option number bcache_align=512
+
+	source "bcache.c"
+
+	@IncludeExport(path="fs")
+	source "bcache.h"
+
+	depends embox.mem.pool
+	depends embox.kernel.thread.mutex
+	depends embox.mem.sysmalloc_api
+	@NoRuntime depends embox.lib.libds
+
+	@NoRuntime depends embox.fs.journal_header
+}

@@ -17,7 +17,6 @@ package embox.cmd.net
 module ntpd {
 	source "ntpd.c"
 
-	depends embox.compat.posix.fs.file_ops
 	depends embox.compat.posix.net.inet_addr
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.util.getopt
@@ -26,4 +25,5 @@ module ntpd {
 	depends embox.kernel.timer.sys_timer
 	depends embox.compat.libc.all
 	depends embox.net.lib.ntp
+	@NoRuntime depends embox.compat.posix.file_system
 }

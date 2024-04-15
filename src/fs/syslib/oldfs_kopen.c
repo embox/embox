@@ -12,12 +12,11 @@
 #include <util/err.h>
 
 #include <fs/inode.h>
-#include <fs/file_operation.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
 
 struct idesc *kopen(struct inode *node, int flag) {
-	struct nas *nas;
+	struct super_block *sb;
 	struct file_desc *desc;
 	const struct file_operations *ops;
 	int ret;
@@ -28,22 +27,22 @@ struct idesc *kopen(struct inode *node, int flag) {
 	assertf(!(flag & O_DIRECTORY), "use mkdir() instead kopen()");
 
 
-	nas = node->nas;
+	sb = node->i_sb;
 	/* if we try open a file (not special) we must have the file system */
-	if (NULL == nas->fs) {
+	if (NULL == sb) {
 		SET_ERRNO(ENOSUPP);
 		return NULL;
 	}
 
-	if (node_is_directory(node)) {
-		ops = nas->fs->sb_fops;
+	if (S_ISDIR(node->i_mode)) {
+		ops = sb->sb_fops;
 	} else {
-		if (NULL == nas->fs->sb_fops) {
+		if (NULL == sb->sb_fops) {
 			SET_ERRNO(ENOSUPP);
 			return NULL;
 		}
 
-		ops = nas->fs->sb_fops;
+		ops = sb->sb_fops;
 
 		if (S_ISCHR(node->i_mode)) {
 			/* Note: we suppose this node belongs to devfs */
@@ -59,7 +58,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 	}
 
 	desc = file_desc_create(node, flag);
-	if (0 != err(desc)) {
+	if (0 != ptr2err(desc)) {
 		SET_ERRNO(-(uintptr_t)desc);
 		return NULL;
 	}
@@ -67,7 +66,7 @@ struct idesc *kopen(struct inode *node, int flag) {
 
 	if (desc->f_ops->open != NULL) {
 		idesc = desc->f_ops->open(node, &desc->f_idesc, flag);
-		if (err(idesc)){
+		if (ptr2err(idesc)){
 			ret = (uintptr_t)idesc;
 			goto free_out;
 		}

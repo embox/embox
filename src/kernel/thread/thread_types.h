@@ -24,7 +24,7 @@
 #include <kernel/sched.h>
 #include <kernel/thread/thread_wait.h>
 #include <kernel/sched/waitq_protect_link.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct task;
 

@@ -1,0 +1,38 @@
+package embox.fs.syslib
+
+
+@DefaultImpl(file_system_none)
+abstract module file_system {
+
+}
+
+module file_system_none extends file_system {
+	source "nokfsop.c"
+}
+
+module file_system_full extends file_system {
+	option number flock_quantity=128
+	source "kflock.c"
+
+	source "kfsop.c"
+	source "fsop.c"
+	source "krename.c"
+	source "kremove.c"
+	source "kutime.c"
+	source "kmount.c"
+	source "kumount.c"
+	source "kformat.c"
+
+	depends embox.fs.syslib.perm
+
+	depends embox.fs.syslib.fs_full        // kfile_fill_stat
+
+	depends embox.device.common
+	depends embox.fs.core
+	depends embox.fs.file_desc_oldfs
+
+	depends embox.kernel.thread.mutex
+	depends embox.compat.libc.str_dup
+	depends embox.compat.posix.util.environ
+	@NoRuntime depends embox.lib.libds
+}

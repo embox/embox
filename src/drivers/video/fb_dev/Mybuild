@@ -1,0 +1,20 @@
+package embox.driver.video
+
+@DefaultImpl(fb_devfs_stub)
+abstract module fb_devfs_api {
+}
+
+module fb_devfs_stub extends fb_devfs_api {
+	source "fb_dev_stub.c"
+
+	depends fb_header
+}
+
+module fb_devfs extends fb_devfs_api {
+	option number dev_pool_size=8
+
+	source "fb_dev.c"
+
+	depends fb_header
+	depends embox.device.char_dev
+}

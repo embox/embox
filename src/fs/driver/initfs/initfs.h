@@ -10,6 +10,10 @@
 
 #include <stddef.h>
 
+struct dir_ctx;
+struct inode;
+struct cpio_entry;
+
 struct initfs_file_info {
 	unsigned int    start_pos;
 	struct cpio_entry *entry;

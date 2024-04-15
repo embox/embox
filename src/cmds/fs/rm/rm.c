@@ -6,10 +6,10 @@
  * @author Roman Evstifeev
  */
 
-#include <unistd.h>
-#include <stdio.h>
 #include <errno.h>
+#include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 static void print_usage(void) {
 	printf("Usage: rm [OPTIONS] FILE\n");
@@ -18,8 +18,9 @@ static void print_usage(void) {
 int main(int argc, char **argv) {
 	const char *file_path;
 	int opt;
+
 	while (-1 != (opt = getopt(argc - 1, argv, "frh"))) {
-		switch(opt) {
+		switch (opt) {
 		case 'f':
 			break;
 		case 'r':
@@ -34,5 +35,9 @@ int main(int argc, char **argv) {
 
 	file_path = argv[argc - 1];
 
-	return remove(file_path);
+	if (-1 == remove(file_path)) {
+		return -errno;
+	}
+
+	return 0;
 }

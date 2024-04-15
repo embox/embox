@@ -1,10 +1,7 @@
 package embox.fs
 
-module index_operation {
-	source "index_operation.c"
+module idesc_file_ops {
+	source "idesc_file_ops.c"
 
-	depends embox.fs.syslib.file
-}
-module dvfs_idesc_ops {
-	source "dvfs_idesc_ops.c"
+	@NoRuntime depends embox.fs.syslib.kfile.kfile
 }

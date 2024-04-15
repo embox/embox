@@ -8,10 +8,9 @@ static module glib {
 	depends embox.compat.posix.proc.fork
 	depends embox.compat.posix.pthread_rwlock
 	depends embox.compat.libc.all
-	depends embox.compat.posix.fs.statvfs
 	depends embox.compat.posix.stubs
-	depends embox.compat.posix.fs.realpath
 	depends embox.compat.libc.stdlib.mktemp
+	@NoRuntime depends embox.compat.posix.file_system
 	
 	depends third_party.zlib.libs
 	depends third_party.libs.libffi

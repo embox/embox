@@ -38,7 +38,7 @@ module spi {
 	source "spi.c"
 
 	depends embox.driver.spi.core
-	depends embox.util.pretty_print
+	@NoRuntime depends embox.lib.libds
 	depends embox.compat.libc.stdio.printf
 	depends embox.compat.libc.str
 	depends embox.compat.posix.util.getopt

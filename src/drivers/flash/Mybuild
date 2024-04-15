@@ -6,12 +6,13 @@ abstract module core {
 	option number block_info_max = 1
 
 	source "flash.c"
+	source "flash_ops.c"
 
 	@IncludeExport(path="drivers/flash")
 	source "flash.h"
 
 	depends embox.mem.pool
-	depends embox.util.indexator
+	@NoRuntime depends embox.lib.libds
 
 	depends embox.driver.flash.flash_cache
 }

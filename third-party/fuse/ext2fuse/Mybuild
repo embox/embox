@@ -8,7 +8,7 @@ static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/src")
 	source "*.o"
 
-	depends embox.compat.posix.fs.statvfs_dvfs
+	@NoRuntime depends embox.compat.posix.file_system
 	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends embox.fs.fuse.core
 }

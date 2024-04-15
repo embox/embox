@@ -1,0 +1,18 @@
+--- libiec61850-1.5.1/src/sampled_values/sv_subscriber.c	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/src/sampled_values/sv_subscriber.c	2023-11-25 16:32:19.965261806 +0300
+@@ -359,11 +359,11 @@
+             printf("SV_SUBSCRIBER:     DatSet: %s\n", asdu.datSet);
+ 
+         if (SVSubscriber_ASDU_hasRefrTm(&asdu))
+-#ifndef _MSC_VER
+-            printf("SV_SUBSCRIBER:     RefrTm[ns]: %"PRIu64"\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
+-#else
++//#ifndef _MSC_VER
++//            printf("SV_SUBSCRIBER:     RefrTm[ns]: %"PRIu64"\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
++//#else
+             printf("SV_SUBSCRIBER:     RefrTm[ns]: %llu\n", SVSubscriber_ASDU_getRefrTmAsNs(&asdu));
+-#endif
++//#endif
+         if (SVSubscriber_ASDU_hasSmpMod(&asdu))
+             printf("SV_SUBSCRIBER:     SmpMod: %d\n", SVSubscriber_ASDU_getSmpMod(&asdu));
+         if (SVSubscriber_ASDU_hasSmpRate(&asdu))

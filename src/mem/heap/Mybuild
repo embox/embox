@@ -50,7 +50,7 @@ module heap_simple extends heap_api {
 	source "heap_simple.c"
 
 	depends embox.mem.heap_place
-	depends embox.util.log
+	@NoRuntime depends embox.lib.libds
 }
 
 module sysmalloc_task_based extends sysmalloc_api {

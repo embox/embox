@@ -1,0 +1,11 @@
+--- libiec61850-1.5.1/hal/filesystem/linux/file_provider_linux.c	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/hal/filesystem/linux/file_provider_linux.c	2023-12-10 16:31:39.735870917 +0300
+@@ -33,6 +33,8 @@
+ #include "hal_filesystem.h"
+ #include "lib_memory.h"
+ 
++#define DT_DIR 4
++
+ struct sDirectoryHandle {
+     DIR* handle;
+ };

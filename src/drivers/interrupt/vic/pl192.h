@@ -25,10 +25,10 @@
 #define VIC_VECT_PRIOR_DAISY 0x28
 #define VIC_ADDR             0xf00 /* Currently active ISR */
 
-#define VIC_VECT_ADDR(x)  (0x100 + (4 * (x))) /* (0..31) */
-#define VIC_VECT_PRIOR(x) (0x200 + (4 * (x))) /* (0..31) */
+#define VIC_VECT_ADDR(x)     (0x100 + (4 * (x))) /* (0..31) */
+#define VIC_VECT_PRIOR(x)    (0x200 + (4 * (x))) /* (0..31) */
 
-#define VIC_VECT_IRQ_COUNT 32
+#define VIC_VECT_IRQ_COUNT   32
 
 static inline void __irqctrl_init(void) {
 	int i, j;

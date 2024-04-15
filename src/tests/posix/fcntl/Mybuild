@@ -16,6 +16,4 @@ module open_test {
 
 	@InitFS
 	source "testfile.txt"
-
-	depends embox.compat.posix.fs.all
 }

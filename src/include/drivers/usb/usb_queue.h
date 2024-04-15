@@ -9,7 +9,7 @@
 #ifndef USB_QUEUE_H_
 #define USB_QUEUE_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct usb_queue;
 struct usb_queue_link;

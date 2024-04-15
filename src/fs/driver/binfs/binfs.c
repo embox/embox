@@ -11,25 +11,21 @@
 
 #include <embox/cmd.h>
 
-//#include <fs/vfs.h>
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/fs_driver.h>
 #include <fs/super_block.h>
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
-#include <fs/file_operation.h>
 
 #define BINFS_NAME "binfs"
 
 extern struct super_block_operations binfs_sbops;
 
+extern struct inode *binfs_lookup(struct inode *node, char const *name, struct inode const *dir);
+
 int binfs_destroy_inode(struct inode *inode) {
 	return 0;
-}
-
-static struct inode *binfs_lookup(char const *name, struct inode const *dir) {
-	return NULL;
 }
 
 static int binfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
@@ -52,7 +48,6 @@ static int binfs_iterate(struct inode *next, char *name, struct inode *parent, s
 	return -1;
 }
 
-
 static int binfs_ioctl(struct file_desc *desc, int request, void *data) {
 	return 0;
 }
@@ -63,8 +58,8 @@ struct file_operations binfs_fops = {
 };
 
 static struct inode_operations binfs_iops = {
-	.lookup   = binfs_lookup,
-	.iterate  = binfs_iterate,
+	.ino_lookup   = binfs_lookup,
+	.ino_iterate  = binfs_iterate,
 };
 
 int binfs_fill_sb(struct super_block *sb, const char *source) {

@@ -12,7 +12,7 @@
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/binalign.h>
 
 #include <embox/unit.h>

@@ -1,16 +1,60 @@
 package embox.driver.serial
 
+/**
+ * IMX  |   IRQ_NUM
+ *  6   | 58 + UART_NUM
+ *  8   | 26 + UART_NUM
+ *
+ * IMX | UART_NUM | UART_BASE
+ *  6  |     0    | 0x02020000
+ *  6  |     1    | 0x021e8000
+ *  6  |     2    | 0x021ec000
+ *  6  |     3    | 0x021f0000
+ *  6  |     4    | 0x021f4000
+ *  8  |     0    | 0x30860000
+ *  8  |     1    | 0x30890000
+ *  8  |     2    | 0x30880000
+ *  8  |     3    | 0x30a60000
+ */
+
 module imx_uart {
-	option number num=1
-	option number imx=6
-	option number baud_rate=115200
-	option number iomuxc_base=0x020e0000
 	option boolean pin_config=false
+	option number uart_clk=40000000
 
 	source "imx_uart.c"
 
-	depends core
-	depends diag
-	depends embox.driver.periph_memory
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends embox.driver.serial.core
+	@NoRuntime depends platform.imx.drivers.iomuxc
+}
+
+module imx_uart_diag extends embox.driver.serial.diag {
+	option number base_addr
+	option number baud_rate=115200
+
+	source "imx_uart_diag.c"
+
+	@NoRuntime depends imx_uart
+	@NoRuntime depends embox.driver.periph_memory
+}
+
+module imx_uart_ttyS0 {
+	option number base_addr
+	option number irq_num
+	option number baud_rate=115200
+
+	source "imx_uart_ttys0.c"
+
+	@NoRuntime depends imx_uart
+	@NoRuntime depends embox.driver.periph_memory
+}
+
+module imx_uart_ttyS1 {
+	option number base_addr
+	option number irq_num
+	option number baud_rate=115200
+
+	source "imx_uart_ttys1.c"
+
+	@NoRuntime depends imx_uart
+	@NoRuntime depends embox.driver.periph_memory
 }

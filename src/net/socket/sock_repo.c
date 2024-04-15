@@ -11,7 +11,7 @@
 #include <arpa/inet.h>
 
 #include <net/sock.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <hal/ipl.h>
 
 struct sock * sock_iter(const struct sock_proto_ops *p_ops) {

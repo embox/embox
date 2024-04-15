@@ -2,7 +2,6 @@ package embox.compat.posix.proc
 
 @DefaultImpl(atexit_stub)
 abstract module atexit_api {
-	
 }
 
 module atexit_stub extends atexit_api {

@@ -20,12 +20,12 @@ static void fs_test_flock(void) {
 
 	fftt = thread_create(THREAD_FLAG_SUSPENDED, first_flock_test_thread,
 			(void *) &fd);
-	test_assert_zero(err(fftt));
+	test_assert_zero(ptr2err(fftt));
 
 
 	sftt = thread_create(THREAD_FLAG_SUSPENDED, second_flock_test_thread,
 			(void *) &fd);
-	test_assert_zero(err(sftt));
+	test_assert_zero(ptr2err(sftt));
 
 	test_assert_zero(schedee_priority_set(&fftt->schedee, l));
 	test_assert_zero(schedee_priority_set(&sftt->schedee, l));

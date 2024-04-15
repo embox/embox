@@ -6,37 +6,14 @@
  * @author Andrey Gazukin
  */
 
-/* This files manages blocks allocation and deallocation.
- *
- * The entry points into this file are:
- *   discard_preallocated_blocks:	Discard preallocated blocks.
- *   alloc_block:	somebody wants to allocate a block; find one.
- *   free_block:	indicate that a block is available for new allocation.
- *
- * Created:
- *   June 2010 (Evgeniy Ivanov)
- */
+#include <stdint.h>
 
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
-
-#include <fs/fs_driver.h>
-#include <fs/vfs.h>
 #include <fs/inode.h>
-#include <fs/ext2.h>
-#include <fs/hlpr_path.h>
-#include <util/array.h>
-#include <embox/unit.h>
-#include <drivers/block_dev.h>
-#include <mem/misc/pool.h>
-#include <mem/phymem.h>
-
 #include <fs/super_block.h>
-#include <fs/file_desc.h>
+
+#include <fs/ext2.h>
+
+#include <fs/ext2_balloc.h>
 
 /* help function */
 
@@ -139,7 +116,8 @@ struct ext2_gd *ext2_get_group_desc(unsigned int bnum, struct ext2_fs_info *fsi)
 	return &fsi->e2fs_gd[bnum];
 }
 
-static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to allocate near this block */
+static uint32_t ext2_alloc_block_bit(struct inode *node, uint32_t goal) {
+	 /* try to allocate near this block */
 	uint32_t block;	/* allocated block */
 	int word;			/* word in block bitmap */
 	uint32_t bit;
@@ -151,8 +129,8 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = inode_priv(nas->node);
-	sb = nas->fs;
+	fi = inode_priv(node);
+	sb = node->i_sb;
 	fsi = sb->sb_data;
 
 	block = NO_BLOCK;
@@ -225,7 +203,7 @@ static uint32_t ext2_alloc_block_bit(struct nas *nas, uint32_t goal) { /* try to
 	return block;
 }
 
-void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
+void ext2_free_block(struct inode *node, uint32_t bit_returned) {
 	/* Return a block by turning off its bitmap bit. */
 	int group;		/* group number of bit_returned */
 	int bit;		/* bit_returned number within its group */
@@ -234,8 +212,8 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	struct ext2_fs_info *fsi;
 	struct super_block *sb;
 
-	fi = inode_priv(nas->node);
-	sb = nas->fs;
+	fi = inode_priv(node);
+	sb = node->i_sb;
 	fsi = sb->sb_data;
 
 	if (bit_returned >= fsi->e2sb.s_blocks_count ||
@@ -278,7 +256,7 @@ void ext2_free_block(struct nas *nas, uint32_t bit_returned) {
 	}
 }
 
-uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
+uint32_t ext2_alloc_block(struct inode *node, uint32_t block)
 {
 	/* Allocate a block for inode. If block is provided, then use it as a goal:
 	* try to allocate this block or his neghbors.
@@ -290,8 +268,8 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 	struct ext2_file_info *fi;
 	struct ext2_fs_info *fsi;
 
-	fi = inode_priv(nas->node);
-	fsi = nas->fs->sb_data;
+	fi = inode_priv(node);
+	fsi = node->i_sb->sb_data;
 
 	if (fsi->e2sb.s_free_blocks_count == 0) {
 		return NO_BLOCK;
@@ -304,7 +282,7 @@ uint32_t ext2_alloc_block(struct nas *nas, uint32_t block)
 		goal = fsi->e2sb.s_blocks_per_group * group + fsi->e2sb.s_first_data_block;
 	}
 
-	b = ext2_alloc_block_bit(nas, goal);
+	b = ext2_alloc_block_bit(node, goal);
 	if (b != NO_BLOCK) {
 		fi->f_bsearch = b;
 	}

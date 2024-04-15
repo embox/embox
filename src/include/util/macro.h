@@ -66,4 +66,28 @@
 #define MACRO_GUARD(symbol) __MACRO_GUARD(symbol)
 #define __MACRO_GUARD(symbol) MACRO_CONCAT(symbol ## _at_line_, __LINE__)
 
+/**
+ * Apply macro function f(a, tail) for each argument recursively.
+ *
+ * @param f
+ *  Macro function
+ * @param ...
+ *  List of arguments
+ * @return
+ *  Macro expansion
+ */
+#define MACRO_FOREACH(f, ...) \
+	__MACRO_FOREACH_N(__VA_ARGS__, 9, 8, 7, 6, 5, 4, 3, 2, 1)(f, __VA_ARGS__)
+#define __MACRO_FOREACH_N(_9, _8, _7, _6, _5, _4, _3, _2, _1, N, ...) \
+	MACRO_CONCAT(__MACRO_FOREACH_, N)
+#define __MACRO_FOREACH_1(f, a)      f(a, )
+#define __MACRO_FOREACH_2(f, a, ...) f(a, __MACRO_FOREACH_1(f, __VA_ARGS__))
+#define __MACRO_FOREACH_3(f, a, ...) f(a, __MACRO_FOREACH_2(f, __VA_ARGS__))
+#define __MACRO_FOREACH_4(f, a, ...) f(a, __MACRO_FOREACH_3(f, __VA_ARGS__))
+#define __MACRO_FOREACH_5(f, a, ...) f(a, __MACRO_FOREACH_4(f, __VA_ARGS__))
+#define __MACRO_FOREACH_6(f, a, ...) f(a, __MACRO_FOREACH_5(f, __VA_ARGS__))
+#define __MACRO_FOREACH_7(f, a, ...) f(a, __MACRO_FOREACH_6(f, __VA_ARGS__))
+#define __MACRO_FOREACH_8(f, a, ...) f(a, __MACRO_FOREACH_7(f, __VA_ARGS__))
+#define __MACRO_FOREACH_9(f, a, ...) f(a, __MACRO_FOREACH_8(f, __VA_ARGS__))
+
 #endif /* UTIL_MACRO_H_ */

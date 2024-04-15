@@ -1,0 +1,27 @@
+package platform.stm32.cmd
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+@LinkerSection(text="flasher_text",rodata="flasher_rodata",data="flasher_data",bss="flasher_bss")
+@AutoCmd
+@Cmd(name = "stm32_flasher",
+	help = "Flash a image from a high flash addr",
+	man  = '''
+		NAME
+			
+		AUTHORS
+			Anton Bondarev
+	''')
+module stm32_flasher {
+	option number image_addr=0x08100000
+	option number image_size=0x00100000
+
+	option number buf_page_start
+	option number buf_page_size
+
+	source "stm32_flasher.c"
+	source "libflash.c"
+
+	depends embox.mem.loadsect
+
+	depends third_party.bsp.st_bsp_api
+}

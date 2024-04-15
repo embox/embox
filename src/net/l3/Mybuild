@@ -73,7 +73,7 @@ module route_no_net_ns extends route {
 
 	depends core /* for inetdev.c */
 	depends embox.mem.pool
-	depends embox.util.dlist
+	@NoRuntime depends embox.lib.libds
 }
 
 module route_net_ns extends route {
@@ -82,11 +82,11 @@ module route_net_ns extends route {
 
 	depends core /* for inetdev.c */
 	depends embox.mem.pool
-	depends embox.util.dlist
+	@NoRuntime depends embox.lib.libds
 }
 
 module proto {
 	source "proto.c"
 
-	depends embox.util.Array
+	@NoRuntime depends embox.lib.libds
 }

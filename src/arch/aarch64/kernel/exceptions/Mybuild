@@ -1,5 +1,15 @@
 package embox.arch.aarch64
 
 module exceptions {
+	option string log_level="LOG_EMERG"
+
+	@IncludeExport(path="aarch64")
+	source "exception.h"
+
 	source "entry.S"
+	source "exception.c"
+	source "fiq_handler.c"
+	source "irq_handler.c"
+	source "sync_handler.c"
+	source "serror_handler.c"
 }

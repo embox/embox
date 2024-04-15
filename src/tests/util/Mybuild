@@ -15,14 +15,14 @@ module bit_test {
 module bitmap_test {
 	source "bitmap_test.c"
 
-	depends embox.util.Bitmap
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
 }
 
 module slist_test {
 	source "slist_test.c"
 
-	depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
 }
 
@@ -35,14 +35,14 @@ module tree_test {
 module ring_buff_test {
 	source "ring_buff_test.c"
 
-	depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
 }
 
 module hashtable_test {
 	source "hashtable_test.c"
 
-	depends embox.util.hashtable
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
 }
 
@@ -55,13 +55,13 @@ module dlist_test {
 module indexator_test {
 	source "indexator_test.c"
 
-	depends embox.util.indexator
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
 }
 
 module msg_buff_test {
 	source "msg_buff_test.c"
 
-	depends embox.util.msg_buff
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.LibFramework
 }

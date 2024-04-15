@@ -1,0 +1,20 @@
+package embox.compat.posix
+
+static module index_descriptor {
+	source "poll.c"
+	source "select.c"
+	source "isatty.c"
+	source "dup.c"
+	source "read.c"
+	source "write.c"
+	source "fcntl.c"
+	source "ioctl.c"
+	source "close.c"
+	source "fstat.c"
+	source "readv.c"
+	source "writev.c"
+
+	@NoRuntime depends embox.kernel.task.api
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.kernel.task.poll_table
+}

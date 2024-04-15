@@ -7,16 +7,16 @@
 
 #include <assert.h>
 #include <poll.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 #include <kernel/sched/waitq.h>
-#include <kernel/thread/thread_sched_wait.h>
-
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
-#include <kernel/task/resource/poll_table.h>
 #include <kernel/task/resource/index_descriptor.h>
-
+#include <kernel/task/resource/poll_table.h>
 #include <kernel/thread.h>
+#include <kernel/thread/thread_sched_wait.h>
 
 static struct idesc *poll_table_idx2idesc(int idx) {
 	return idx < 0 ? NULL : index_descriptor_get(idx);
@@ -71,13 +71,14 @@ static int poll_table_cleanup(struct idesc_poll_table *pt) {
 
 		//assert(idesc_poll->idesc);
 		idesc = poll_table_idx2idesc(idesc_poll->fd);
-		if (!idesc ) {
+		if (!idesc) {
 			continue;
 		}
-		idesc->idesc_count--;
-		if (idesc->idesc_count > 0) {
-		idesc_wait_cleanup(idesc,  &idesc_poll->wait_link);
-		} else {
+		idesc->idesc_usage_count--;
+		if (idesc->idesc_usage_count > 0) {
+			idesc_wait_cleanup(idesc, &idesc_poll->wait_link);
+		}
+		else {
 			idesc_close(idesc, idesc_poll->fd);
 		}
 	}
@@ -97,7 +98,7 @@ static int poll_table_wait_prepare(struct idesc_poll_table *pt, clock_t ticks) {
 		if (!idesc) {
 			continue;
 		}
-		idesc->idesc_count++;
+		idesc->idesc_usage_count++;
 
 		idesc_wait_init(&ip->wait_link, ip->i_poll_mask);
 		idesc_wait_prepare(idesc, &ip->wait_link);
@@ -111,7 +112,6 @@ int poll_table_wait(struct idesc_poll_table *pt, clock_t ticks) {
 
 	threadsig_lock();
 	{
-
 		poll_table_wait_prepare(pt, ticks);
 
 		ret = SCHED_WAIT_TIMEOUT(poll_table_count(pt), ticks);

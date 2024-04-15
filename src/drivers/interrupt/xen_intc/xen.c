@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <xen_hypercall-x86_32.h>

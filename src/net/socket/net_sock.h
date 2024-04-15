@@ -25,7 +25,7 @@ struct net_sock {
 extern const struct net_sock * net_sock_lookup(int family,
 		int type, int protocol);
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DECLARE(const struct net_sock, __net_sock_registry);
 

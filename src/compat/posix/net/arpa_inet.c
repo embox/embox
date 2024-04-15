@@ -20,18 +20,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 static int inet_to_str(const struct in_addr *in, char *buff,
 		socklen_t buff_sz) {
 	int ret;
+	uint8_t tmp[4];
 
 	assert(in != NULL);
 	assert(buff != NULL);
 
+	memcpy(tmp, in, sizeof(tmp));
+
 	ret = snprintf(buff, buff_sz, "%hhu.%hhu.%hhu.%hhu",
-			in->s_addr8[0], in->s_addr8[1], in->s_addr8[2],
-			in->s_addr8[3]);
+								tmp[0], tmp[1],tmp[2], tmp[3]);
 	if (ret < 0) {
 		return -EIO;
 	}
@@ -364,10 +366,17 @@ static int str_to_inet6(const char *str, struct in6_addr *in6) {
 	return 0;
 }
 
-char * inet_ntoa(struct in_addr in) {
-	static char buff[INET_ADDRSTRLEN];
-	return 0 == inet_to_str(&in, &buff[0], ARRAY_SIZE(buff))
-			? &buff[0] : NULL;
+char *inet_ntoa(struct in_addr in) {
+	static uint8_t buff[INET_ADDRSTRLEN];
+
+	int res;
+
+	res = inet_to_str(&in, (char *)&buff[0], sizeof(buff));
+	if (res) {
+		return NULL;
+	}
+
+	return (char *)buff;
 }
 
 const char * inet_ntop(int af, const void *addr, char *buff,

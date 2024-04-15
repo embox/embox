@@ -17,7 +17,7 @@
 
 #include <framework/mod/ops.h>
 #include <framework/test/api.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 static int test_mod_enable(const struct mod *mod);
 

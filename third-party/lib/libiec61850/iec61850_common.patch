@@ -1,0 +1,11 @@
+--- libiec61850-1.5.1/src/iec61850/inc/iec61850_common.h	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/src/iec61850/inc/iec61850_common.h	2023-12-25 07:02:29.899201916 +0300
+@@ -28,7 +28,7 @@
+ extern "C" {
+ #endif
+ 
+-
++#include "stack_config.h"
+ #include "libiec61850_common_api.h"
+ #include "logging_api.h"
+ #include "linked_list.h"

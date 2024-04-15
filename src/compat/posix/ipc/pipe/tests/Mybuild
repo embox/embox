@@ -1,0 +1,5 @@
+package embox.compat.posix.ipc
+
+module pipe_close_notify_test {
+	source "pipe_close_notify_test.c"
+}

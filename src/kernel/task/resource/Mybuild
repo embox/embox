@@ -30,10 +30,6 @@ module module_ptr {
 	source "module_ptr.c"
 }
 
-module vfs {
-	source "vfs.c"
-}
-
 module security {
 	option number security_size=32
 	source "security.c"
@@ -60,6 +56,6 @@ module thread_key_table {
 	@NoRuntime depends embox.kernel.thread.mutex
 	@NoRuntime depends embox.kernel.thread.thread_local
 	@NoRuntime depends embox.compat.libc.assert
-	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.lib.libds
 }
 

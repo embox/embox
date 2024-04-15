@@ -1,0 +1,25 @@
+package embox.compat.posix
+
+static module file_system_common {
+	option string log_level="LOG_ERR"
+
+	source "lseek.c"
+	source "pread.c"
+	source "pwrite.c"
+	source "fsync.c"
+	source "creat.c"
+	source "stat.c"
+	source "getcwd.c"
+	source "umask.c"
+	source "chdir.c"
+	source "truncate.c"
+	source "realpath.c"
+	source "rewinddir.c"
+	source "utime.c"
+
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.kernel.task.resource.errno
+	@NoRuntime depends embox.kernel.task.resource.umask
+	@NoRuntime depends embox.compat.posix.index_descriptor
+	@NoRuntime depends embox.compat.posix.util.environ
+}

@@ -9,8 +9,8 @@
 #ifndef EMBOX_INPUT_DEVICE_H_
 #define EMBOX_INPUT_DEVICE_H_
 
-#include <util/dlist.h>
-#include <util/ring_buff.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/ring_buff.h>
 
 #include <framework/mod/options.h>
 #include <module/embox/driver/input/core.h>
@@ -52,7 +52,6 @@ struct input_dev {
 	enum input_dev_type type;
 
 	void *data;
-	void *fs_data;
 
 	int flags;
 #define INPUT_DEV_OPENED (1 << 0)

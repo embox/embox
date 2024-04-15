@@ -1,0 +1,5 @@
+package embox.util
+
+module pretty_print {
+	source "pretty_print.c"
+}

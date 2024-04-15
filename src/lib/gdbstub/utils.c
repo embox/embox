@@ -84,7 +84,7 @@ bool gdb_check_mem(uintptr_t addr) {
 
 #if 0
 #include <mem/mmap.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/mmap.h>
 

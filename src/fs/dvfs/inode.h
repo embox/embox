@@ -17,9 +17,9 @@ struct inode_operations;
 
 struct inode {
 	int      i_no;
-	size_t   length;
-	unsigned mtime;
-	unsigned ctime;
+	size_t   i_size;
+	unsigned int  i_ctime; /* time of last status change */
+	unsigned int  i_mtime;
 
 	uid_t  i_owner_id;
 	gid_t  i_group_id;
@@ -29,7 +29,7 @@ struct inode {
 	struct super_block *i_sb;
 	struct inode_operations *i_ops;
 
-	void *i_data;
+	void *i_privdata;
 };
 
 extern void *inode_priv(const struct inode *node);
@@ -41,6 +41,7 @@ extern void inode_ctime_set(struct inode *node, unsigned ctime);
 extern unsigned inode_mtime(const struct inode *node);
 extern void inode_mtime_set(struct inode *node, unsigned mtime);
 extern char *inode_name(struct inode *node);
+extern char *inode_name_set(struct inode *node, const char *name);
 
 extern struct inode  *dvfs_alloc_inode(struct super_block *sb);
 #define inode_new     dvfs_alloc_inode

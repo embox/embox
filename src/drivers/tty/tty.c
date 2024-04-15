@@ -6,20 +6,18 @@
  * @author Eldar Abusalimov
  */
 
-#include <drivers/tty.h>
-#include <drivers/tty/termios_ops.h>
-
 #include <ctype.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <limits.h>
 #include <stdint.h>
 #include <string.h>
-#include <fcntl.h>
+#include <termios.h>
 
+#include <drivers/tty.h>
+#include <drivers/tty/termios_ops.h>
 #include <kernel/task/resource/idesc_event.h>
-
 #include <kernel/thread/thread_sched_wait.h>
-
 #include <util/math.h>
 #include <util/member.h>
 
@@ -34,7 +32,7 @@ static inline void tty_notify(struct tty *t, int mask) {
 }
 
 #define MUTEX_UNLOCKED_DO(expr, m) \
-		__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
+	__lang_surround(expr, mutex_unlock(m), mutex_lock(m))
 
 static inline void tty_out_wake(struct tty *t) {
 	t->ops->out_wake(t);
@@ -43,7 +41,8 @@ static inline void tty_out_wake(struct tty *t) {
 /* called from mutex locked context */
 static int tty_output(struct tty *t, char ch) {
 	// TODO locks? context? -- Eldar
-	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+	int len = termios_putc(&t->termios, ch, &t->o_ring, t->o_buff,
+	    TTY_IO_BUFF_SZ);
 
 	if (len > 0) {
 		MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
@@ -57,12 +56,12 @@ static void tty_rx_do(struct tty *t) {
 	int ich;
 	termios_i_buff b;
 
-	termios_i_buff_init(&b, &t->i_ring,
-		t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
+	termios_i_buff_init(&b, &t->i_ring, t->i_buff, &t->i_canon_ring,
+	    TTY_IO_BUFF_SZ);
 
 	while ((ich = tty_rx_dequeue(t)) != -1) {
-		int result = termios_input(&t->termios, (char) ich, &b,
-			&t->o_ring, t->o_buff, TTY_IO_BUFF_SZ);
+		int result = termios_input(&t->termios, (char)ich, &b, &t->o_ring,
+		    t->o_buff, TTY_IO_BUFF_SZ);
 
 		if (result & TERMIOS_RES_GOT_ECHO) {
 			MUTEX_UNLOCKED_DO(tty_out_wake(t), &t->lock);
@@ -99,8 +98,8 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 		tty_rx_do(t);
 		rc = idesc_wait_prepare(t->idesc, &iwl);
 
-		termios_i_buff_init(&b, &t->i_ring,
-			t->i_buff, &t->i_canon_ring, TTY_IO_BUFF_SZ);
+		termios_i_buff_init(&b, &t->i_ring, t->i_buff, &t->i_canon_ring,
+		    TTY_IO_BUFF_SZ);
 
 		next = termios_read(&t->termios, &b, curr, end);
 
@@ -130,7 +129,6 @@ size_t tty_read(struct tty *t, char *buff, size_t size) {
 			ipl_restore(ipl);
 
 			mutex_lock(&t->lock);
-
 		}
 
 		idesc_wait_cleanup(t->idesc, &iwl);
@@ -201,19 +199,34 @@ size_t tty_write(struct tty *t, const char *buff, size_t size) {
 int tty_ioctl(struct tty *t, int request, void *data) {
 	int ret = 0;
 
+	assert(t);
+
+	if (!data) {
+		return -EINVAL;
+	}
+
 	mutex_lock(&t->lock);
 
 	switch (request) {
-	case TIOCGETA:
+	case TCGETS:
 		memcpy(data, &t->termios, sizeof(struct termios));
 		break;
-	case TIOCSETAF:
-	case TIOCSETAW:
-	case TIOCSETA:
+	case TCGETS2:
+		memcpy(data, &t->termios, sizeof(struct termios2));
+		break;
+	case TCSETS:
+	case TCSETSW:
+	case TCSETSF:
 		memcpy(&t->termios, data, sizeof(struct termios));
 		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
-		if (t->ops->setup) {
-			t->ops->setup(t, &t->termios);
+		break;
+	case TCSETS2:
+	case TCSETSW2:
+	case TCSETSF2:
+		memcpy(&t->termios, data, sizeof(struct termios2));
+		termios_update_ring(&t->termios, &t->i_ring, &t->i_canon_ring);
+		if (t->ops->setup_term) {
+			t->ops->setup_term(t);
 		}
 		break;
 	case TIOCGPGRP:
@@ -223,8 +236,7 @@ int tty_ioctl(struct tty *t, int request, void *data) {
 		memcpy(&t->pgrp, data, sizeof(pid_t));
 		break;
 	default:
-		ret = -ENOSYS;
-		break;
+		ret = -EINVAL;
 	}
 
 	mutex_unlock(&t->lock);
@@ -242,8 +254,8 @@ size_t tty_status(struct tty *t, int status_nr) {
 	switch (status_nr) {
 	case POLLIN:
 		IRQ_LOCKED_DO(tty_rx_do(t));
-		res = termios_can_read(&t->termios,
-			&t->i_ring, &t->i_canon_ring, TTY_IO_BUFF_SZ);
+		res = termios_can_read(&t->termios, &t->i_ring, &t->i_canon_ring,
+		    TTY_IO_BUFF_SZ);
 		break;
 	case POLLOUT:
 		res = ring_can_write(&t->o_ring, TTY_IO_BUFF_SZ, 1);
@@ -275,6 +287,10 @@ struct tty *tty_init(struct tty *t, const struct tty_ops *ops) {
 
 	t->pgrp = -1;
 
+	if (ops->fill_term) {
+		ops->fill_term(t);
+	}
+
 	return t;
 }
 
@@ -292,7 +308,7 @@ int tty_rx_locked(struct tty *t, char ch, unsigned char flag) {
 		return -1;
 	}
 
-	*slot = (flag<<CHAR_BIT) | (unsigned char) ch;
+	*slot = (flag << CHAR_BIT) | (unsigned char)ch;
 
 	tty_notify(t, POLLIN);
 
@@ -314,11 +330,12 @@ int tty_rx_dequeue(struct tty *t) {
 
 	if (TTY_I(t, ICRNL) && *slot == '\r') {
 		*slot = '\n';
-	} else if (TTY_I(t, INLCR) && *slot == '\n') {
+	}
+	else if (TTY_I(t, INLCR) && *slot == '\n') {
 		*slot = '\r';
 	}
 
-	return (int) *slot;
+	return (int)*slot;
 }
 
 int tty_out_getc(struct tty *t) {
@@ -330,7 +347,7 @@ int tty_out_getc(struct tty *t) {
 
 	tty_notify(t, POLLOUT);
 
-	return (int) ch;
+	return (int)ch;
 }
 
 int tty_out_buf(struct tty *t, void *buf, size_t len) {

@@ -20,6 +20,6 @@ module man {
 	source "man.c"
 
 	depends embox.compat.libc.stdio.printf
-	depends embox.util.LibUtil
+	@NoRuntime depends embox.lib.libds
 	depends embox.framework.cmd
 }

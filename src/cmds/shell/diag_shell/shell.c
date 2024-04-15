@@ -12,7 +12,7 @@
 #include <string.h>
 #include <ctype.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <cmd/cmdline.h>
 #include <framework/cmd/api.h>
 #include <cmd/shell.h>

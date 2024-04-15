@@ -1,5 +1,6 @@
 package embox.util
 
+@Mandatory
 @DefaultImpl(log_full)
 abstract module log {
 	option string max_log_level="LOG_DEBUG"
@@ -10,12 +11,12 @@ abstract module log {
 	source "log.h"
 }
 
-module log_full extends log {
+static module log_full extends log {
 	source "log_full.c"
 	source "log_full.h"
 }
 
-module log_light extends log {
+static module log_light extends log {
 	source "log_light.c"
 	source "log_light.h"
 }

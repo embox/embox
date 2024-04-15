@@ -4,7 +4,7 @@ package embox.init
 abstract module display_mode {
 }
 
-@DefaultImpl(setup_tty_devfs)
+@DefaultImpl(setup_tty_dev)
 abstract module setup_tty_api {
 }
 
@@ -36,16 +36,16 @@ module no_graphic extends display_mode {
 	source "no_graphic_init.c"
 }
 
-module setup_tty_devfs extends setup_tty_api {
+module setup_tty_dev extends setup_tty_api {
 	option string term_name="xterm-sco"
 	
-	source "setup_tty_devfs.c"
+	source "setup_tty_dev.c"
 
 	depends diag_fd
-	depends embox.compat.posix.fs.file
-	depends embox.compat.posix.idx.dup
+	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.util.environ
 	depends embox.kernel.task.api
+	depends embox.device.char_dev
 }
 
 module setup_tty_diag extends setup_tty_api {
@@ -57,8 +57,7 @@ module setup_tty_diag extends setup_tty_api {
 module diag_fd {
 	source "diag_fd.c"
 
-	depends embox.compat.posix.idx.dup
-	//depends embox.compat.libc.stdio.rename
+	depends embox.compat.posix.index_descriptor
 	depends embox.kernel.task.idesc
 	depends embox.kernel.task.api
 	depends embox.kernel.task.resource.idesc_table

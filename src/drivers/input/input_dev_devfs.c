@@ -6,65 +6,73 @@
  */
 
 #include <assert.h>
+#include <errno.h>
 #include <string.h>
 #include <sys/uio.h>
-#include <drivers/input/input_dev.h>
+
 #include <drivers/char_dev.h>
-#include <drivers/device.h>
-#include <mem/misc/pool.h>
+#include <drivers/input/input_dev.h>
+#include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/idesc_event.h>
 #include <kernel/thread/thread_sched_wait.h>
+#include <mem/misc/pool.h>
 #include <util/log.h>
 
 #define INPUT_DEV_CNT OPTION_GET(NUMBER, input_dev_cnt)
 
-POOL_DEF(cdev_input_pool, struct dev_module, INPUT_DEV_CNT);
+struct cdev_input {
+	struct char_dev cdev;
+	struct input_dev *inpdev;
+	struct idesc *idesc;
+};
 
-static void input_dev_fs_close(struct idesc *desc) {
-	struct input_dev *inpdev = idesc_to_dev_module(desc)->dev_priv;
-
-	input_dev_close(inpdev);
-
-	inpdev->fs_data = NULL;
-}
+POOL_DEF(cdev_input_pool, struct cdev_input, INPUT_DEV_CNT);
 
 static int input_dev_fs_wait(struct idesc *desc, int flags) {
 	struct idesc_wait_link wl;
 
-	return IDESC_WAIT_LOCKED(/* no unlock */,
-		desc, &wl, flags, SCHED_TIMEOUT_INFINITE, /* no lock */);
+	return IDESC_WAIT_LOCKED(/* no unlock */, desc, &wl, flags,
+	    SCHED_TIMEOUT_INFINITE,
+	    /* no lock */);
 }
 
-static ssize_t input_dev_fs_read(struct idesc *desc, const struct iovec *iov, int cnt) {
-	struct input_dev *inpdev = idesc_to_dev_module(desc)->dev_priv;
-	ssize_t sz, ret_size = 0;
+static ssize_t input_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
+	struct input_dev *inpdev;
+	ssize_t sz;
+	ssize_t ret_size = 0;
 	struct input_event *ev;
-	int i, res = 0;
+	int res = 0;
+
+	inpdev = ((struct cdev_input *)cdev)->inpdev;
+
+	assert(inpdev);
 
 	do {
-		for (i = 0; i < cnt; i++) {
-			sz = iov[i].iov_len;
-			ev = (struct input_event *) iov[i].iov_base;
+		sz = nbyte;
+		ev = (struct input_event *)buf;
 
-			while ((sz >= sizeof *ev) && !input_dev_event(inpdev, ev)) {
-				sz -= sizeof *ev;
-				ev++;
-			}
-
-			ret_size += iov[i].iov_len - sz;
+		while ((sz >= sizeof *ev) && !input_dev_event(inpdev, ev)) {
+			sz -= sizeof *ev;
+			ev++;
 		}
 
+		ret_size += nbyte - sz;
+
 		if (!ret_size) {
-			res = input_dev_fs_wait(desc, POLLIN);
+			res = input_dev_fs_wait(((struct cdev_input *)cdev)->idesc, POLLIN);
 		}
 	} while (ret_size == 0 && res == 0);
 
 	return ret_size;
 }
 
-static int input_dev_fs_status(struct idesc *desc, int mask) {
-	struct input_dev *inpdev = idesc_to_dev_module(desc)->dev_priv;
+static int input_cdev_status(struct char_dev *cdev, int mask) {
+	struct input_dev *inpdev;
 	int res;
+
+	inpdev = ((struct cdev_input *)cdev)->inpdev;
+
+	assert(inpdev);
 
 	switch (mask) {
 	case POLLIN:
@@ -80,58 +88,61 @@ static int input_dev_fs_status(struct idesc *desc, int mask) {
 	return res;
 }
 
-static const struct idesc_ops input_dev_fs_iops = {
-	.close     = input_dev_fs_close,
-	.id_readv  = input_dev_fs_read,
-	.status    = input_dev_fs_status,
-	.fstat     = char_dev_idesc_fstat,
-};
+static int input_cdev_open(struct char_dev *cdev, struct idesc *idesc) {
+	struct input_dev *inpdev;
 
-static struct idesc *input_dev_fs_open(struct dev_module *mod, void *dev_priv) {
-	struct input_dev *inpdev = mod->dev_priv;
-	struct idesc *idesc;
+	inpdev = ((struct cdev_input *)cdev)->inpdev;
 
-	idesc = char_dev_idesc_create(mod);
-	inpdev->fs_data = idesc;
+	((struct cdev_input *)cdev)->idesc = idesc;
+
+	assert(inpdev);
 
 	input_dev_open(inpdev, NULL);
-
-	return idesc;
-}
-
-int input_dev_private_register(struct input_dev *inpdev) {
-	struct dev_module *dev;
-
-	dev = pool_alloc(&cdev_input_pool);
-	if (!dev) {
-		log_error("failed to allocate new input device \"%s\"", inpdev->name);
-		return -1;
-	}
-
-	memset(dev, 0, sizeof(*dev));
-
-	strncat(dev->name, inpdev->name, sizeof(dev->name) - 1);
-
-	dev->dev_iops = &input_dev_fs_iops;
-	dev->dev_open = input_dev_fs_open;
-	dev->dev_priv = inpdev;
-
-	if (0 != char_dev_register(dev)) {
-		log_error("failed to register char device for \"%s\"", inpdev->name);
-		pool_free(&cdev_input_pool, dev);
-		return -1;
-	}
 
 	return 0;
 }
 
+static void input_cdev_close(struct char_dev *cdev) {
+	struct input_dev *inpdev;
+
+	inpdev = ((struct cdev_input *)cdev)->inpdev;
+
+	assert(inpdev);
+
+	input_dev_close(inpdev);
+}
+
+static const struct char_dev_ops input_cdev_ops = {
+    .read = input_cdev_read,
+    .status = input_cdev_status,
+    .open = input_cdev_open,
+    .close = input_cdev_close,
+};
+
+int input_dev_private_register(struct input_dev *inpdev) {
+	struct cdev_input *dev;
+	int err;
+
+	dev = pool_alloc(&cdev_input_pool);
+	if (!dev) {
+		log_error("failed to allocate new input device \"%s\"", inpdev->name);
+		return -ENOMEM;
+	}
+
+	char_dev_init(&dev->cdev, inpdev->name, &input_cdev_ops);
+	dev->inpdev = inpdev;
+
+	if ((err = char_dev_register((struct char_dev *)dev))) {
+		log_error("failed to register char device for \"%s\"", inpdev->name);
+		pool_free(&cdev_input_pool, dev);
+	}
+
+	return err;
+}
+
 int input_dev_private_notify(struct input_dev *inpdev, struct input_event *ev) {
-	if (inpdev->fs_data) {
-		idesc_notify((struct idesc *) inpdev->fs_data, POLLIN);
-	} else if (inpdev->event_cb) {
+	if (inpdev->event_cb) {
 		inpdev->event_cb(inpdev);
-	} else {
-		log_error("input device has not been opend \"%s\"", inpdev->name);
 	}
 
 	return 0;

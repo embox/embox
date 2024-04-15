@@ -1,0 +1,10 @@
+package embox.lib
+
+static module libds_dlist {
+	option number debug=0
+
+	@IncludeExport(path="lib/libds")
+	source "dlist.h"
+	source "dlist_debug.h"
+	source "dlist_debug.c"
+}

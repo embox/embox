@@ -10,8 +10,8 @@
 #define NET_LIB_SNMP_MIB_H_
 
 #include <stdint.h>
-#include <util/dlist.h>
-#include <util/array.h>
+#include <lib/libds/dlist.h>
+#include <lib/libds/array.h>
 
 enum pdu_type {
 	/* simple types */

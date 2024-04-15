@@ -11,7 +11,8 @@ module ramdisk {
 
 	depends embox.mem.pool
 	depends embox.mem.phymem
-	depends embox.util.indexator
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends embox.compat.posix.libgen
 
 	depends embox.driver.block_dev
 }
@@ -23,4 +24,7 @@ module static_ramdisk {
 	option number block_size = 512
 
 	source "static_ramdisk.c"
+
+	@NoRuntime depends ramdisk
+	depends embox.driver.block_dev
 }

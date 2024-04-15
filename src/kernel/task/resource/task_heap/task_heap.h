@@ -9,7 +9,7 @@
 #ifndef TASK_HEAP_H_
 #define TASK_HEAP_H_
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 struct task_heap {
 	 struct dlist_head mm;

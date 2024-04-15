@@ -1,0 +1,12 @@
+global embox_prompt
+
+set mount_dir "/isofs_test"
+set fs_type   "iso9660"
+set mount_dev $env(TEST_BLKDEV0)
+
+target_connect
+
+test_exec_embox_cmd "mkdir -v $mount_dir\r"
+test_exec_embox_cmd "ls /dev\r"
+test_exec_embox_cmd "mount -t $fs_type $mount_dev $mount_dir\r"
+test_exec_embox_cmd "cd $mount_dir\r"

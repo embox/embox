@@ -29,7 +29,7 @@ static int unit_mod_enable(const struct mod *mod) {
 		return 0;
 	}
 
-	log_info("unit: initializing %s.%s", mod_pkg_name(mod), mod_name(mod));
+	log_info("initializing %s.%s", mod_pkg_name(mod), mod_name(mod));
 	if ((ret = unit->init())) {
 		log_error("%s", strerror(-ret));
 	}
@@ -45,7 +45,7 @@ static int unit_mod_disable(const struct mod *mod) {
 		return 0;
 	}
 
-	log_info("unit: finalizing %s.%s", mod_pkg_name(mod), mod_name(mod));
+	log_info("finalizing %s.%s", mod_pkg_name(mod), mod_name(mod));
 	if ((ret = unit->fini())) {
 		log_error("%s", strerror(-ret));
 	}

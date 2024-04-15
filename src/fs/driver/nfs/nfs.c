@@ -24,7 +24,6 @@
 #include <fs/inode.h>
 #include <fs/file_desc.h>
 #include <fs/fs_driver.h>
-#include <fs/file_operation.h>
 #include <fs/super_block.h>
 #include <fs/dir_context.h>
 #include <fs/inode_operation.h>
@@ -39,8 +38,8 @@
 
 static int nfs_create_dir_entry(struct inode *parent);
 
-static int nfs_mount(struct nas *nas);
-static int __nfs_lookup(struct nas *nas);
+static int nfs_mount(struct inode *dir_node);
+static int __nfs_lookup(struct inode *node);
 static int nfs_iterate(struct inode *next, char *name, struct inode *parent,
 		struct dir_ctx *dir_ctx);
 static struct inode *nfs_fill_inode(struct inode *node,
@@ -78,21 +77,19 @@ static void unaligned_set_hyper(uint64_t *dst, void *src) {
  */
 static struct idesc *nfsfs_open(struct inode *node, struct idesc *idesc, int __oflag) {
 	nfs_file_info_t *fi;
-	struct nas *nas;
 	off_t pos;
 
 	pos = file_get_pos(file_desc_from_idesc(idesc));
 
-	nas = node->nas;
 	fi = inode_priv(node);
 
 	fi->offset = pos;
 
-	if(0 == __nfs_lookup(nas)) {
+	if(0 == __nfs_lookup(node)) {
 		inode_size_set(node, fi->attr.size);
 		return idesc;
 	}
-	return err_ptr(ENOENT);
+	return err2ptr(ENOENT);
 }
 
 static int nfsfs_close(struct file_desc *desc) {
@@ -190,43 +187,12 @@ static size_t nfsfs_write(struct file_desc *desc, void *buf, size_t size) {
 	return reply.count;
 }
 
-
-/*
-static int nfsfs_fseek(void *file, long offset, int whence);
-
-static int nfsfs_fseek(void *file, long offset, int whence) {
-
-	struct file_desc *desc;
-	nfs_file_info_t *fi;
-
-	desc = (struct file_desc *) file;
-	fi = (nfs_file_info_t *) desc->node->fi;
-
-	switch (whence) {
-	case SEEK_SET:
-		fi->offset = offset;
-		break;
-	case SEEK_CUR:
-		fi->offset += offset;
-		break;
-	case SEEK_END:
-		fi->offset = fi->attr.size + offset;
-		break;
-	default:
-		return -1;
-	}
-	return 0;
-}
-*/
-
 /* File system operations */
 
 static int nfsfs_format(struct block_dev *bdev, void *priv);
-static int nfsfs_mount(struct super_block *sb, struct inode *dest);
 static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode);
-static int nfsfs_delete(struct inode *node);
+static int nfsfs_delete(struct inode *dir, struct inode *node);
 static int nfsfs_truncate (struct inode *node, off_t length);
-static int nfs_umount_entry(struct inode *node);
 static int nfs_fill_sb(struct super_block *sb, const char *source);
 static int nfs_clean_sb(struct super_block *sb);
 
@@ -240,15 +206,10 @@ static struct super_block_operations nfs_sbops = {
 };
 
 struct inode_operations nfs_iops = {
-	.iterate = nfs_iterate,
-};
-
-static struct fsop_desc nfsfs_fsop = {
-	.mount = nfsfs_mount,
-	.create_node = nfsfs_create,
-	.delete_node = nfsfs_delete,
-	.umount_entry = nfs_umount_entry,
-	.truncate = nfsfs_truncate,
+	.ino_create = nfsfs_create,
+	.ino_remove = nfsfs_delete,
+	.ino_iterate = nfs_iterate,
+	.ino_truncate = nfsfs_truncate,
 };
 
 static struct fs_driver nfsfs_driver = {
@@ -256,8 +217,6 @@ static struct fs_driver nfsfs_driver = {
 	.format = nfsfs_format,
 	.fill_sb  = nfs_fill_sb,
 	.clean_sb = nfs_clean_sb,
-//	.file_op  = &nfsfs_fop,
-	.fsop     = &nfsfs_fsop,
 };
 
 static int nfsfs_format(struct block_dev *bdev, void *priv) {
@@ -448,7 +407,10 @@ static int nfs_iterate(struct inode *next, char *next_name, struct inode *parent
 }
 
 static int nfs_fill_sb(struct super_block *sb, const char *source) {
+	struct inode *dest;
 	struct nfs_fs_info *fsi;
+	nfs_file_info_t *fi;
+	int rc = 0;
 
 	if (NULL == (fsi = pool_alloc(&nfs_fs_pool))) {
 		return -ENOMEM;
@@ -465,56 +427,37 @@ static int nfs_fill_sb(struct super_block *sb, const char *source) {
 		return -1;
 	}
 
-	return 0;
-}
-
-static int nfsfs_mount(struct super_block *sb, struct inode *dest) {
-	nfs_file_info_t *fi;
-	struct nas *dir_nas;
-	struct nfs_fs_info *fsi;
-	int rc;
-
-	dir_nas = dest->nas;
-	fsi = sb->sb_data;
-
 	if (NULL == (fi = pool_alloc(&nfs_file_pool))) {
+		pool_free(&nfs_fs_pool, fsi);
 		return -ENOMEM;
 	}
 
+	dest = sb->sb_root;
+	
 	inode_priv_set(dest, fi);
 	memset(fi, 0, sizeof *fi); /* FIXME maybe not required */
 
-	/* get server name and mount directory from params */
-	if (0 > nfs_mount(dir_nas)) {
+		/* get server name and mount directory from params */
+	if (0 > nfs_mount(dest)) {
 		rc = -1;
 		goto error;
 	}
 
 	/* copy filesystem filehandle to root directory filehandle */
 	memcpy(&fi->fh, &fsi->fh, sizeof(fi->fh));
-#if 0
-	if (0 >	nfs_create_dir_entry(dest)) { // XXX check the argument
-		rc = -1;
-	} else {
-		return 0;
-	}
-#else
+
 	return 0;
-#endif
+
 error:
-	nfs_free_fs(sb);
+	pool_free(&nfs_fs_pool, fsi);
+	pool_free(&nfs_file_pool, fi);
 
 	return rc;
 }
 
-static int nfs_umount_entry(struct inode *node) {
-	pool_free(&nfs_file_pool, inode_priv(node));
-
-	return 0;
-}
-
 static int nfs_clean_sb(struct super_block *sb) {
 	nfs_free_fs(sb);
+	pool_free(&nfs_file_pool, inode_priv(sb->sb_root));
 	return 0;
 }
 
@@ -580,7 +523,7 @@ static struct inode *nfs_fill_inode(struct inode *node, readdir_desc_t *predesc 
 	return node;
 }
 
-static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *predesc) {
+static struct inode *nfs_create_file(struct inode *parent_node, readdir_desc_t *predesc) {
 	struct inode *node;
 	nfs_file_info_t *fi;
 	const char *name;
@@ -588,7 +531,7 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 
 	name = (const char *) predesc->file_name.name.data;
 
-	node = vfs_subtree_lookup_child(parent_nas->node, name);
+	node = vfs_subtree_lookup_child(parent_node, name);
 	if (node) {
 		fi = inode_priv(node);
 	} else {
@@ -648,7 +591,7 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 				return NULL;
 		}
 
-		node = vfs_subtree_create_child(parent_nas->node, name, mode);
+		node = vfs_subtree_create_child(parent_node, name, mode);
 		if (!node) {
 			pool_free(&nfs_file_pool, fi);
 			return NULL; /* device not found */
@@ -661,7 +604,6 @@ static struct inode *nfs_create_file(struct nas *parent_nas, readdir_desc_t *pre
 
 static int nfs_create_dir_entry(struct inode *parent_node) {
 	struct inode *node;
-	struct nas *parent_nas;
 	uint32_t vf;
 	char *point;
 	nfs_file_info_t *parent_fi;
@@ -671,7 +613,6 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 
 	char *rcv_buf;
 
-	parent_nas = parent_node->nas;
 	parent_fi = inode_priv(parent_node);
 	fh = &parent_fi->fh;
 	fh->count = fh->maxcount = DIRCOUNT;
@@ -724,10 +665,10 @@ static int nfs_create_dir_entry(struct inode *parent_node) {
 
 			if(0 == path_is_dotname(predesc->file_name.name.data,
 									predesc->file_name.name.len)) {
-				node = nfs_create_file(parent_nas, predesc);
+				node = nfs_create_file(parent_node, predesc);
 				if (!node) {
 					log_error("nfs_create_file failed\n");
-				} else if (node_is_directory(node)) {
+				} else if (S_ISDIR(node->i_mode)) {
 					nfs_create_dir_entry(node);
 				}
 			}
@@ -756,7 +697,7 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	parent_fi = inode_priv(parent_node);
 	fsi = parent_node->i_sb->sb_data;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		procnum = NFSPROC3_MKDIR;
 		req.type = NFS_DIRECTORY_NODE_TYPE;
 		req.create_mode = UNCHECKED_MODE;
@@ -796,26 +737,28 @@ static int nfsfs_create(struct inode *node, struct inode *parent_node, int mode)
 	return nfs_create_dir_entry(parent_node); // XXX parent_node? or node?
 }
 
-static int nfsfs_delete(struct inode *node) {
+static int nfsfs_delete(struct inode *dir, struct inode *node) {
 	nfs_file_info_t *fi;
-	struct inode *dir_node;
 	nfs_file_info_t *dir_fi;
 	lookup_req_t req;
 	delete_reply_t reply;
 	uint32_t procnum;
 
-	fi = inode_priv(node);
+#if 0
+	struct inode *dir_node;
 
 	if(NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
+#endif
+	fi = inode_priv(node);
 
 	/* set delete structure */
 	req.fname = &fi->name_dsc.name;
-	dir_fi = inode_priv(dir_node);
+	dir_fi = inode_priv(dir);
 	req.dir_fh = &dir_fi->fh.name_fh;
 
-	if (node_is_directory(node)) {
+	if (S_ISDIR(node->i_mode)) {
 		procnum = NFSPROC3_RMDIR;
 	}
 	else {
@@ -836,12 +779,12 @@ static int nfsfs_delete(struct inode *node) {
 
 DECLARE_FILE_SYSTEM_DRIVER(nfsfs_driver);
 
-static int nfs_call_proc_mnt(struct nas *nas,
+static int nfs_call_proc_mnt(struct inode *node,
 		uint32_t procnum, char *req, char *reply) {
 	struct timeval timeout = { 25, 0 };
 	struct nfs_fs_info *fsi;
 
-	fsi = nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	if(NULL == fsi->mnt){
 		if(0 >  nfs_client_init(fsi)) {
@@ -1001,18 +944,18 @@ static int nfs_call_proc_nfs(struct nfs_fs_info *fsi,
 	return 0;
 }
 
-static int __nfs_lookup(struct nas *nas) {
+static int __nfs_lookup(struct inode *node) {
 	struct inode *dir_node;
 	struct nfs_fs_info *fsi;
 	nfs_file_info_t *fi, *dir_fi;
 	lookup_req_t req;
 	lookup_reply_t reply;
 
-	if (NULL == (dir_node = vfs_subtree_get_parent(nas->node))) {
+	if (NULL == (dir_node = vfs_subtree_get_parent(node))) {
 		return -1;
 	}
 
-	fi = inode_priv(nas->node);
+	fi = inode_priv(node);
 	fsi = dir_node->i_sb->sb_data;
 
 	/* set lookup structure */
@@ -1027,18 +970,18 @@ static int __nfs_lookup(struct nas *nas) {
 			(char *) &req, (char *) &reply);
 }
 
-static int nfs_mount(struct nas *nas) {
+static int nfs_mount(struct inode *dir_node) {
 	char *point;
 	nfs_filehandle_t *p_fh;
 	mount_service_t mnt_svc;
 	struct nfs_fs_info *fsi;
 	export_dir_t export;
 
-	fsi = nas->fs->sb_data;
+	fsi = dir_node->i_sb->sb_data;
 
 	/* get server mount directory name*/
 	memset((void *)&export, 0, sizeof(export));
-	if (0 > nfs_call_proc_mnt(nas, MOUNTPROC3_EXPORT,
+	if (0 > nfs_call_proc_mnt(dir_node, MOUNTPROC3_EXPORT,
 		0, (char *)&export)){
 		return -1;
 	}
@@ -1046,7 +989,7 @@ static int nfs_mount(struct nas *nas) {
 		return -1;
 	}
 	/* send NULL procedure*/
-	if (0 > nfs_call_proc_mnt(nas, MOUNTPROC3_NULL, 0, 0)) {
+	if (0 > nfs_call_proc_mnt(dir_node, MOUNTPROC3_NULL, 0, 0)) {
 		return -1;
 	}
 
@@ -1055,7 +998,7 @@ static int nfs_mount(struct nas *nas) {
 	p_fh = &fsi->fh;
 	memset(&mnt_svc, 0, sizeof(mnt_svc));
 
-	if (0 > nfs_call_proc_mnt(nas, MOUNTPROC3_MNT,
+	if (0 > nfs_call_proc_mnt(dir_node, MOUNTPROC3_MNT,
 			(char *)&point, (char *)&mnt_svc)) {
 		return -1;
 	}

@@ -9,9 +9,9 @@
 #include <embox/test.h>
 
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
-#include <util/slist.h>
+#include <lib/libds/slist.h>
 
 EMBOX_TEST_SUITE("util/slist test");
 

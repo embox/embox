@@ -6,6 +6,13 @@ abstract module initfs {
 
 	source "cpio.c", "initfs_cpio.S"
 	source "initfs.lds.S"
+
+	source "initfs_fops.c"
+	source "initfs_drv.c"
+	source "initfs_inode_ops.c"
+	source "initfs_mem.c"
+
+	depends embox.mem.pool
 }
 
 module initfs_old extends initfs {
@@ -14,10 +21,8 @@ module initfs_old extends initfs {
 	option number file_quantity=128
 
 	source "initfs_oldfs.c"
-	source "initfs_fops.c"
 
 	depends embox.fs.core
-	depends embox.mem.pool
 }
 
 module initfs_dvfs extends initfs {
@@ -26,7 +31,6 @@ module initfs_dvfs extends initfs {
 	option number file_quantity=128
 
 	source "initfs_dvfs.c"
-	source "initfs_fops.c"
 
 	depends embox.fs.dvfs.core
 }

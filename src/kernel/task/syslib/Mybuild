@@ -5,7 +5,7 @@ module thread_key_table {
 
 	depends embox.kernel.task.resource.thread_key_table
 	@NoRuntime depends embox.kernel.thread.mutex
-	@NoRuntime depends embox.util.indexator
+	@NoRuntime depends embox.lib.libds
 }
 
 module waitpid {

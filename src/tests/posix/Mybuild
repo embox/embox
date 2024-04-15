@@ -23,7 +23,6 @@ module all {
 
 module utime_test {
 	source "utime_test.c"
-	depends embox.compat.posix.utime
 	depends embox.fs.driver.ramfs /* for creat() and close() */
 }
 
@@ -74,17 +73,16 @@ module memccpy_test {
 module poll_test {
 	source "poll_test.c"
 
-	depends embox.compat.posix.idx.poll
-	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.index_descriptor
+	depends embox.compat.posix.ipc.pipe
 	depends embox.framework.LibFramework
 }
 
 module select_test {
 	source "select_test.c"
 
-	depends embox.compat.posix.fs.file_ops
-	depends embox.compat.posix.idx.select
-	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.index_descriptor
+	depends embox.compat.posix.ipc.pipe
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.util.sleep
 	depends embox.framework.test
@@ -93,14 +91,14 @@ module select_test {
 module pipe_test {
 	source "pipe_test.c"
 
-	depends embox.compat.posix.idx.pipe
+	depends embox.compat.posix.ipc.pipe
 	depends embox.compat.posix.util.sleep
 }
 
 module ppty_test {
 	source "ppty_test.c"
 
-	depends embox.compat.posix.idx.ppty
+	depends embox.compat.posix.ipc.ppty
 }
 
 module fork_test {

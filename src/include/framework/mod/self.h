@@ -24,7 +24,7 @@
 #include <framework/mod/ops.h>
 #include <framework/mod/options.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include "decls.h"
 

@@ -17,7 +17,7 @@
 #include <stddef.h>
 #include <stdbool.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <kernel/task/resource/idesc.h>
 #include <net/socket/sock_xattr.h>

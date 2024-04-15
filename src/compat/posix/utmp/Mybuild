@@ -1,4 +1,3 @@
-
 package embox.compat.posix
 
 @DefaultImpl(no_utmp)

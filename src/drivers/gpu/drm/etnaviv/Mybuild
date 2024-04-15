@@ -14,11 +14,21 @@ module etnaviv_drm {
 
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv/")
-	source "etnaviv_dev.c", "etnaviv_gem.c", "etnaviv_gem_submit.c", "etnaviv_cmdbuf.c", "etnaviv_cmd_parser.c", "etnaviv_gpu.c", "etnaviv_buffer.c", "etnaviv_mmu.c", "etnaviv_iommu_v2.c", "etnaviv_iommu.c"
+	source "etnaviv_dev.c",
+		"etnaviv_gem.c",
+		"etnaviv_gem_submit.c",
+		"etnaviv_cmdbuf.c",
+		"etnaviv_cmd_parser.c",
+		"etnaviv_gpu.c",
+		"etnaviv_buffer.c",
+		"etnaviv_mmu.c",
+		"etnaviv_iommu_v2.c",
+		"etnaviv_iommu.c"
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 	depends embox.driver.gpu.drm.drm_dev
 	depends embox.driver.power.imx
 
 	depends platform.etnaviv.xml_headers
+	depends embox.device.char_dev
 }

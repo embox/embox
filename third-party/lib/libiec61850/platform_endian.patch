@@ -1,0 +1,11 @@
+--- libiec61850-1.5.1/hal/inc/platform_endian.h	2022-03-11 21:15:52.000000000 +0300
++++ ../build/extbld/third_party/lib/libiec61850/libiec61850-1.5.1/hal/inc/platform_endian.h	2023-12-25 08:26:32.086461127 +0300
+@@ -15,6 +15,8 @@
+ #ifdef __BYTE_ORDER__
+ #if (__BYTE_ORDER__ == __ORDER_BIG_ENDIAN__)
+ #define PLATFORM_IS_BIGENDIAN 1
++#else
++#define PLATFORM_IS_BIGENDIAN 0
+ #endif
+ 
+ #else

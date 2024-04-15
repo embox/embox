@@ -29,7 +29,7 @@
 #include <util/binalign.h>
 #include <util/math.h>
 #include <util/log.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <mem/vmem.h>
 #include <hal/mmu.h>

@@ -12,7 +12,7 @@
 #include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #define MV_RECURSIVE	(0x1 << 0)
 #define MV_FORCE		(0x1 << 1)

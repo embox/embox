@@ -12,5 +12,5 @@ module ldb {
 
 	depends embox.driver.clk.ccm_imx6
 	depends embox.driver.video.fb
-	@NoRuntime depends embox.arch.arm.imx.iomuxc
+	@NoRuntime depends platform.imx.drivers.iomuxc
 }

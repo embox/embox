@@ -12,6 +12,8 @@ module exceptions {
 	source "pabt_handler.c"
 	source "dabt_handler.c"
 	source "fiq_handler.c"
+	source "irq_handler.c"
+	source "swi_handler.c"
 
 	depends embox.arch.arm.fpu.fpu
 	depends embox.arch.arm.armlib.mem_barriers

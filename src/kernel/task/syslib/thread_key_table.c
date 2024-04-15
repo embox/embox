@@ -13,7 +13,7 @@
 #include <kernel/task/thread_key_table.h>
 #include <kernel/task/resource/thread_key_table.h>
 #include <kernel/thread/sync/mutex.h>
-#include <util/indexator.h>
+#include <lib/libds/indexator.h>
 
 int task_thread_key_exist(struct task *task, size_t idx) {
 	assert(task);

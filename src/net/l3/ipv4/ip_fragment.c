@@ -21,7 +21,7 @@
 #include <kernel/time/time.h>
 
 #include <util/math.h>
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/log.h>
 
 #include <framework/mod/options.h>

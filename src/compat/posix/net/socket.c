@@ -56,8 +56,8 @@ int socket(int domain, int type, int protocol) {
 	struct sock *sk;
 
 	sk = ksocket(domain, type, protocol);
-	if (err(sk) != 0) {
-		return SET_ERRNO(-err(sk));
+	if (ptr2err(sk) != 0) {
+		return SET_ERRNO(-ptr2err(sk));
 	}
 
 	sockfd = get_index(sk);
@@ -270,14 +270,17 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_RD + 1))
+	if (sk->shutdown_flag & (SHUT_RD + 1)) {
 		return SET_ERRNO(EPIPE);
+	}
 
+#if 0
 	/* TODO remove this */
 	if (flags != 0) {
 		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
+#endif
 
 	msg.msg_name = NULL;
 	msg.msg_namelen = 0;
@@ -295,6 +298,7 @@ ssize_t recv(int sockfd, void *buff, size_t size, int flags) {
 
 	return ret;
 }
+
 /* open? read */
 ssize_t recvfrom(int sockfd, void *buff, size_t size,
 		int flags, struct sockaddr *addr,
@@ -307,14 +311,17 @@ ssize_t recvfrom(int sockfd, void *buff, size_t size,
 
 	socket_idesc_check(sockfd, sk);
 
-	if (sk->shutdown_flag & (SHUT_RD + 1))
+	if (sk->shutdown_flag & (SHUT_RD + 1)) {
 		return SET_ERRNO(EPIPE);
+	}
 
+#if 0
 	/* TODO remove this */
 	if (flags != 0) {
 		log_error("flags are not supported");
 		return SET_ERRNO(EOPNOTSUPP);
 	}
+#endif
 
 	msg.msg_name = (void *)addr;
 	msg.msg_namelen = addrlen != NULL ? *addrlen : 0;

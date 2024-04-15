@@ -22,5 +22,6 @@ module i2cdump {
 	source "i2cdump.c"
 
 	depends embox.driver.i2c
-	depends embox.util.pretty_print
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends embox.util.pretty_print	
 }

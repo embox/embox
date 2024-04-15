@@ -1,0 +1,10 @@
+TEST_CASE {Print cdrom (conf/ folder) content lots of times} {
+	global embox_prompt
+
+	# Assume devfs presents
+	for {set i 0} {$i < 256} {incr i} {
+		exec sleep 0.1
+		send "ls\r"
+		test_expect_strings "mods.con" $embox_prompt
+	}
+}

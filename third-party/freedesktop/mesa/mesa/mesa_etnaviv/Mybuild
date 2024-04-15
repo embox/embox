@@ -18,10 +18,10 @@ module  mesa_etnaviv {
 
 	depends embox.compat.posix.util.gettimeofday
 	depends embox.compat.posix.sched
-	depends embox.compat.posix.fs.rewinddir_api
 	depends embox.compat.posix.pthread_key
 	depends embox.kernel.task.idesc.idesc_mmap
 	depends embox.compat.posix.sys.mman.mmap
+	@NoRuntime depends embox.compat.posix.file_system
 
 	depends third_party.freedesktop.mesa.libdrm_etnaviv
 	depends embox.lib.cxx.libsupcxx_standalone

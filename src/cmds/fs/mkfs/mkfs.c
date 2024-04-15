@@ -38,7 +38,7 @@
 #include <mem/page.h>
 
 static int mkfs_create_ramdisk(char *path, int blocks) {
-	return err(ramdisk_create(path, blocks * PAGE_SIZE()));
+	return ptr2err(ramdisk_create(path, blocks * PAGE_SIZE()));
 }
 #else
 static int mkfs_create_ramdisk(char *path, int blocks) {
@@ -89,9 +89,9 @@ static int mkfs_do_operation(size_t blocks, char *path, const char *fs_name,
 		}
 
 		assert(lu.item->d_inode);
-		assert(lu.item->d_inode->i_data);
+		assert(lu.item->d_inode->i_privdata);
 
-		bdev = dev_module_to_bdev(lu.item->d_inode->i_data);
+		bdev = dev_module_to_bdev(lu.item->d_inode->i_privdata);
 		return drv->format(bdev, fs_specific);
 	}
 #endif

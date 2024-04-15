@@ -6,18 +6,20 @@ abstract module cpu_reset {}
 module cpu_reset_stub extends cpu_reset {}
 
 module locore extends embox.arch.locore {
-	depends reg
-	depends exceptions
-	depends reset_handler
-	depends embox.arch.arm.head
+	@NoRuntime depends reg
+	@NoRuntime depends exceptions
+	@NoRuntime depends reset_handler
+	@NoRuntime depends embox.arch.arm.head
 }
 
+@NoCode	
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
 
-	depends locore
+	@NoRuntime depends locore
 }
 
+@NoCode	
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
 }

@@ -10,7 +10,7 @@
 #include <errno.h>
 #include <embox/unit.h>
 #include <kernel/task/task_table.h>
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <framework/mod/options.h>
 
 EMBOX_UNIT_INIT(task_table_module_init);

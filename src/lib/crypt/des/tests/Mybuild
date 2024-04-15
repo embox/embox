@@ -1,6 +1,7 @@
-
-package embox.lib.libcrypt
+package embox.lib.crypt
 
 module des_test {
 	source "des_test.c"
+	
+	depends embox.lib.crypt.des
 }

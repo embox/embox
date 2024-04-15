@@ -386,8 +386,8 @@ struct ext4_extent_header {
 #define e4fs_isave(old, new)	\
 		memcpy((new),(old),sizeof(struct ext4_inode))
 
-extern uint32_t ext4_alloc_block(struct nas *nas, uint32_t goal);
-extern void ext4_free_block(struct nas *nas, uint32_t bit);
+extern uint32_t ext4_alloc_block(struct inode *node, uint32_t goal);
+extern void ext4_free_block(struct inode *node, uint32_t bit);
 extern struct ext4_group_desc* ext4_get_group_desc(unsigned int bnum, struct ext4_fs_info *fsi);
 extern uint32_t ext4_setbit(uint32_t *bitmap, uint32_t max_bits, unsigned int word);
 extern int ext4_unsetbit(uint32_t *bitmap, uint32_t bit);

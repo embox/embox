@@ -8,6 +8,7 @@ abstract module ramfs {
 	option number ramfs_buffer_size = 4096
 
 	source "ramfs_ops.c"
+	source "ramfs_drv.c"
 
 	depends embox.mem.pool
 	depends embox.driver.ramdisk
@@ -18,7 +19,6 @@ module ramfs_old extends ramfs {
 	source "ramfs_oldfs.c"
 
 	depends embox.fs.node
-	depends embox.fs.driver.repo
 }
 
 module ramfs_dvfs extends ramfs {

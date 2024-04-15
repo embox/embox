@@ -9,7 +9,6 @@
 #include <sys/stat.h>
 #include <string.h>
 
-#include <fs/file_operation.h>
 #include <fs/fs_driver.h>
 #include <fs/vfs.h>
 #include <fs/inode.h>
@@ -33,24 +32,6 @@ struct super_block_operations devfs_sbops = {
 	.destroy_inode = devfs_destroy_inode,
 };
 
-static int devfs_mount(struct super_block *sb, struct inode *dest) {
-	return 0;
-}
-
-static struct fsop_desc devfs_fsop = {
-	.mount = devfs_mount,
-};
-
-static const struct fs_driver devfs_driver = {
-	.name = "devfs",
-	.fill_sb   = devfs_fill_sb,
-//	.file_op = &devfs_fops,
-	.fsop = &devfs_fsop
-};
-
-DECLARE_FILE_SYSTEM_DRIVER(devfs_driver);
-
-FILE_SYSTEM_AUTOMOUNT("/dev", devfs_driver);
 
 static int devfs_add_dev(struct dev_module *cdev, int flag) {
 	struct path node;

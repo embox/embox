@@ -8,7 +8,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <util/err.h>
 
 #include <mem/misc/pool.h>
@@ -69,7 +69,7 @@ int i2c_bus_unregister(int id) {
 
 struct i2c_bus *i2c_bus_get(int id) {
 	if (id < 0 || id >= I2C_BUS_MAX) {
-		return err_ptr(EINVAL);
+		return err2ptr(EINVAL);
 	}
 	return i2c_bus_repo[id];
 }
@@ -104,7 +104,7 @@ int i2c_bus_transfer(int id, uint16_t addr, struct i2c_msg *msgs, int num) {
 		return -EINVAL;
 	}
 	bus = i2c_bus_get(id);
-	if (err(bus) || bus == NULL) {
+	if (ptr2err(bus) || bus == NULL) {
 		return -EBUSY;
 	}
 
@@ -127,7 +127,7 @@ int i2c_bus_set_baudrate(int id, uint32_t baudrate) {
 	}
 
 	bus = i2c_bus_get(id);
-	if (err(bus) || bus == NULL) {
+	if (ptr2err(bus) || bus == NULL) {
 		return -EBUSY;
 	}
 

@@ -22,7 +22,6 @@
 #include <util/err.h>
 
 #include <fs/file_desc.h>
-#include <fs/file_operation.h>
 #include <fs/fs_driver.h>
 #include <fs/super_block.h>
 #include <fs/hlpr_path.h>
@@ -50,8 +49,6 @@ struct cifs_fs_info
 POOL_DEF (cifs_fs_pool, struct cifs_fs_info,
 		  OPTION_GET (NUMBER, cifs_descriptor_quantity));
 
-
-
 typedef struct smbitem smbitem;
 
 struct smbitem
@@ -78,10 +75,10 @@ samba_type_to_mode_fmt (const unsigned dt_type)
 }
 
 struct inode *
-embox_set_node (struct nas *nas, char *filename, int mode)
-{
+embox_set_node (struct inode *parent, char *filename, int mode) {
 	struct inode *node;
-	node = vfs_subtree_create (nas->node, filename, samba_type_to_mode_fmt (mode));
+
+	node = vfs_subtree_create (parent, filename, samba_type_to_mode_fmt (mode));
 	if (!node) {
 		return NULL;
 	}
@@ -118,60 +115,6 @@ cifs_fill_node(struct inode *node, char *name, unsigned type) {
 	node->i_mode = samba_type_to_mode_fmt(type);
 }
 
-int
-embox_cifs_mounting_recurse (struct nas *nas, SMBCCTX * ctx, char *smb_path,
-							 int maxlen)
-{
-	int len, rc;
-	struct smbc_dirent *dirent;
-	SMBCFILE * fd;
-	struct inode *node;
-
-	len = strlen (smb_path);
-
-	if ((fd = smbc_getFunctionOpendir (ctx) (ctx, smb_path)) == NULL)
-		return -errno;
-	while ((dirent = smbc_getFunctionReaddir (ctx) (ctx, fd)) != NULL) {
-		if (strcmp (dirent->name, "") == 0)
-			continue;
-		if (strcmp (dirent->name, ".") == 0)
-			continue;
-		if (strcmp (dirent->name, "..") == 0)
-			continue;
-		switch (dirent->smbc_type) {
-		case SMBC_FILE_SHARE:
-		case SMBC_DIR:
-		case SMBC_FILE:
-			//ToDo: use namelen
-			if (maxlen < len + strlen (dirent->name) + 2)
-				break;
-
-			smb_path[len] = '/';
-			strcpy (smb_path + len + 1, dirent->name);
-			node = embox_set_node (nas, dirent->name, dirent->smbc_type);
-			if (!node) {
-				errno = ENOMEM;
-				return -errno;
-			}
-			if (dirent->smbc_type != SMBC_FILE) {
-				rc = embox_cifs_mounting_recurse (node->nas, ctx, smb_path,
-												  maxlen);
-				if (0 > rc) {
-					return rc;
-				}
-				if (dirent->smbc_type == SMBC_FILE_SHARE)
-					smbc_getFunctionPurgeCachedServers (ctx) (ctx);
-			}
-			break;
-		}
-	}
-
-	smbc_getFunctionClose (ctx) (ctx, fd);
-
-	smb_path[len] = '\0';
-	return 0;
-}
-
 static int cifs_clean_sb(struct super_block *sb) {
 	struct cifs_fs_info *fsi = sb->sb_data;
 
@@ -184,7 +127,7 @@ static int cifs_clean_sb(struct super_block *sb) {
 	return 0;
 }
 
-struct inode *cifs_lookup(char const *name, struct inode const *dir) {
+struct inode *cifs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;
 }
 
@@ -192,7 +135,7 @@ static void cifs_get_file_url(struct inode *node, char fileurl[PATH_MAX]) {
 	int rc;
 	struct cifs_fs_info *fsi;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	strncpy(fileurl, fsi->url, PATH_MAX - 1);
 	fileurl[PATH_MAX - 1] = '\0';
@@ -211,7 +154,7 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 	int i = 0;
 	int ret = -1;
 
-	fsi = parent->nas->fs->sb_data;
+	fsi = parent->i_sb->sb_data;
 	ctx = fsi->ctx;
 
 	cifs_get_file_url(parent, smb_path);
@@ -261,10 +204,72 @@ int cifs_iterate(struct inode *next, char *name, struct inode *parent, struct di
 	return ret;
 }
 
+static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_node, int I_mode) {
+	struct cifs_fs_info *pfsi;
+	char fileurl[PATH_MAX];
+	SMBCFILE *file;
+	mode_t mode;
+	int rc;
+
+	pfsi = parent_node->i_sb->sb_data;
+
+	strcpy(fileurl,pfsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+
+	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
+
+	mode = new_node->i_mode & S_IRWXA;
+	if (S_ISDIR(new_node->i_mode)) {
+		mode |= S_IFDIR;
+		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
+			return -errno;
+		}
+	} else {
+		mode |= S_IFREG;
+		file = smbc_getFunctionCreat(pfsi->ctx)(pfsi->ctx, fileurl, mode);
+		if (!file) {
+			return -errno;
+		}
+		if (smbc_getFunctionClose(pfsi->ctx)(pfsi->ctx, file)) {
+			return -errno;
+		}
+	}
+
+	return 0;
+}
+
+static int embox_cifs_node_delete(struct inode *dir, struct inode *node) {
+	struct cifs_fs_info *fsi;
+	char fileurl[PATH_MAX];
+	int rc;
+
+	fsi = node->i_sb->sb_data;
+
+	strcpy(fileurl,fsi->url);
+	fileurl[rc=strlen(fileurl)] = '/';
+
+	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
+
+	if (S_ISDIR(node->i_mode)) {
+		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
+			return -errno;
+		}
+	} else {
+		if (smbc_getFunctionUnlink(fsi->ctx)(fsi->ctx, fileurl)) {
+			return -errno;
+		}
+	}
+
+	return 0;
+}
+
 static struct inode_operations cifs_iops = {
-//	.lookup   = cifs_lookup,
-	.iterate  = cifs_iterate,
+	.ino_create = embox_cifs_node_create,
+	.ino_remove = embox_cifs_node_delete,
+	.ino_lookup   = cifs_lookup,
+	.ino_iterate  = cifs_iterate,
 };
+
 static struct file_operations cifs_fop;
 static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	SMBCCTX *ctx;
@@ -294,51 +299,31 @@ static int cifs_fill_sb(struct super_block *sb, const char *source) {
 	memset (fsi, 0, sizeof(*fsi));
 	strcpy (fsi->url, smb_path);
 	fsi->ctx = ctx;
+
 	sb->sb_data = fsi;
 	sb->sb_ops = &cifs_sbops;
 	sb->sb_iops = &cifs_iops;
 	sb->sb_fops = &cifs_fop;
 
+	fsi->mntto = sb->sb_root;
 
 	return 0;
 }
-
+#if 0
 static int embox_cifs_mount(struct super_block *sb, struct inode *dir) {
-
 #if 0
 	struct cifs_fs_info *fsi;
 	char smb_path[PATH_MAX];
-	int rc;
-	SMBCCTX *ctx;
-
-	fsi = sb->sb_data;
-	ctx = fsi->ctx;
-
-	fsi->mntto = dir;
-	strcpy(smb_path, fsi->url);
-
-	rc = embox_cifs_mounting_recurse(dir->nas, ctx, smb_path,
-			sizeof (smb_path));
-	if (0 > rc) {
-		goto error;
-	}
-
-	return 0;
-
-error:
-	return -rc;
-#else
-	struct cifs_fs_info *fsi;
-	char smb_path[PATH_MAX];
 
 	fsi = sb->sb_data;
 
 	fsi->mntto = dir;
 	strcpy(smb_path, fsi->url);
-
-	return 0;
 #endif
+
+	return 0;
 }
+#endif
 
 static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __oflag)
 {
@@ -348,25 +333,20 @@ static struct idesc *cifs_open(struct inode *node, struct idesc *idesc, int __of
 	struct stat st;
 	int rc;
 
-	fsi = node->nas->fs->sb_data;
+	fsi = node->i_sb->sb_data;
 
 	strcpy(fileurl,fsi->url);
 	fileurl[rc=strlen(fileurl)] = '/';
-#if 0
-	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
-		return rc;
-	}
-#endif
 
 	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX);
 
 	if (smbc_getFunctionStat(fsi->ctx)(fsi->ctx, fileurl, &st)) {
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 
 	file = smbc_getFunctionOpen(fsi->ctx)(fsi->ctx,fileurl,idesc->idesc_flags,0);
 	if(!file) {
-		return err_ptr(errno);
+		return err2ptr(errno);
 	}
 
 	file_desc_set_file_info(file_desc_from_idesc(idesc), file);
@@ -382,7 +362,7 @@ static int cifs_close(struct file_desc *file_desc)
 	struct cifs_fs_info *fsi;
 	SMBCFILE *file;
 
-	fsi = file_desc->f_inode->nas->fs->sb_data;
+	fsi = file_desc->f_inode->i_sb->sb_data;
 	file = file_desc->file_info;
 
 	if (smbc_getFunctionClose(fsi->ctx)(fsi->ctx, file)) {
@@ -401,7 +381,7 @@ static size_t cifs_read(struct file_desc *file_desc, void *buf, size_t size)
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->f_inode->nas->fs->sb_data;
+	fsi = file_desc->f_inode->i_sb->sb_data;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -426,7 +406,7 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 
 	pos = file_get_pos(file_desc);
 
-	fsi = file_desc->f_inode->nas->fs->sb_data;
+	fsi = file_desc->f_inode->i_sb->sb_data;
 	file = file_desc->file_info;
 
 	res = smbc_getFunctionLseek(fsi->ctx)(fsi->ctx, file, pos, SEEK_SET);
@@ -447,73 +427,6 @@ static size_t cifs_write(struct file_desc *file_desc, void *buf, size_t size) {
 	return res;
 }
 
-static int embox_cifs_node_create(struct inode *new_node, struct inode *parent_node, int I_mode) {
-	struct cifs_fs_info *pfsi;
-	char fileurl[PATH_MAX];
-	SMBCFILE *file;
-	mode_t mode;
-	int rc;
-
-	pfsi = parent_node->nas->fs->sb_data;
-
-	strcpy(fileurl,pfsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
-#if 0
-	if ((rc = vfs_get_pathbynode_tilln(new_node, pfsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
-		return rc;
-	}
-#endif
-	vfs_get_relative_path(new_node, &fileurl[rc+1], PATH_MAX - rc - 1);
-
-	mode = new_node->i_mode & S_IRWXA;
-	if (node_is_directory(new_node)) {
-		mode |= S_IFDIR;
-		if (smbc_getFunctionMkdir(pfsi->ctx)(pfsi->ctx, fileurl, mode)) {
-			return -errno;
-		}
-	} else {
-		mode |= S_IFREG;
-		file = smbc_getFunctionCreat(pfsi->ctx)(pfsi->ctx, fileurl, mode);
-		if (!file) {
-			return -errno;
-		}
-		if (smbc_getFunctionClose(pfsi->ctx)(pfsi->ctx, file)) {
-			return -errno;
-		}
-	}
-
-	return 0;
-}
-
-static int embox_cifs_node_delete(struct inode *node) {
-	struct cifs_fs_info *fsi;
-	char fileurl[PATH_MAX];
-	int rc;
-
-	fsi = node->nas->fs->sb_data;
-
-	strcpy(fileurl,fsi->url);
-	fileurl[rc=strlen(fileurl)] = '/';
-#if 0
-	if ((rc = vfs_get_pathbynode_tilln(node, fsi->mntto, &fileurl[rc+1], sizeof(fileurl)-rc-1))) {
-		return rc;
-	}
-#endif
-	vfs_get_relative_path(node, &fileurl[rc+1], PATH_MAX - rc - 1);
-
-	if (node_is_directory(node)) {
-		if (smbc_getFunctionRmdir(fsi->ctx)(fsi->ctx, fileurl)) {
-			return -errno;
-		}
-	} else {
-		if (smbc_getFunctionUnlink(fsi->ctx)(fsi->ctx, fileurl)) {
-			return -errno;
-		}
-	}
-
-	return 0;
-}
-
 static int cifs_destroy_inode(struct inode *inode) {
 	return 0;
 }
@@ -522,12 +435,11 @@ static struct super_block_operations cifs_sbops = {
 	//.open_idesc    = dvfs_file_open_idesc,
 	.destroy_inode = cifs_destroy_inode,
 };
-
+#if 0
 static const struct fsop_desc cifs_fsop = {
-	.create_node = embox_cifs_node_create,
-	.delete_node = embox_cifs_node_delete,
-	.mount = embox_cifs_mount,
+	//.mount = embox_cifs_mount,
 };
+#endif
 
 static struct file_operations cifs_fop = {
 	.open = cifs_open,
@@ -540,8 +452,7 @@ static const struct fs_driver cifs_driver = {
 	.name     = "cifs",
 	.fill_sb  = cifs_fill_sb,
 	.clean_sb = cifs_clean_sb,
-	.fsop     = &cifs_fsop,
-//	.file_op  = &cifs_fop,
+	//.fsop     = &cifs_fsop,
 };
 
 DECLARE_FILE_SYSTEM_DRIVER (cifs_driver);

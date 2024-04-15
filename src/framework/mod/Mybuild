@@ -1,7 +1,6 @@
 package embox.framework
 
 module mod {
-
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
@@ -13,8 +12,7 @@ module mod {
 	@Generated(script="$(MAKE) -f mk/script/apps-build-deps.mk")
 	source "apps_build_deps.c"
 
-	depends embox.util.Array
-	depends embox.util.log
+	@NoRuntime depends embox.lib.libds
 
 	option boolean security_label = true
 
@@ -30,9 +28,11 @@ module mod_integrity {
 @DefaultImpl(embuild_full)
 abstract module embuild { }
 
+@NoCode
 module embuild_full extends embuild {
 }
 
+@NoCode
 module embuild_light extends embuild {
 	option boolean use_mod_names = false
 

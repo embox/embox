@@ -12,7 +12,7 @@
 #include <framework/mod/api.h>
 #include <framework/mod/self.h>
 #include <kernel/panic.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <util/log.h>
 
 static runlevel_nr_t init_level = -1;
@@ -43,7 +43,7 @@ static const struct mod *const volatile *mod_runlevels_end[RUNLEVEL_NRS_TOTAL] =
 static int runlevel_change_hook(runlevel_nr_t new_rl, int res) {
 	if (!res) {
 		init_level = new_rl;
-		log_info("runlevel: init level is %d", init_level);
+		log_info("init level is %d", init_level);
 	}
 	else {
 		log_error("Failed to get into level %d, current level %d", new_rl,

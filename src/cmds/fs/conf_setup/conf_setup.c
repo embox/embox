@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 #include <conf_setup.inc>
 

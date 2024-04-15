@@ -354,14 +354,15 @@ static struct inode *__vfs_subtree_create_child(struct inode *parent, const char
 
 	assert(parent);
 
-	child = node_alloc(name, len);
+	child = inode_alloc(parent->i_sb);
 	if (child) {
+		inode_name_set(child, name);
 		child->i_mode = mode;
 		child->i_dentry->flags = mode;
-		child->uid = getuid();
-		child->gid = getgid();
+		child->i_owner_id = getuid();
+		child->i_group_id = getgid();
 
-		child->nas->fs = child->i_sb = parent->i_sb;
+		child->i_sb = parent->i_sb;
 
 		vfs_add_leaf(child, parent);
 	}
@@ -454,28 +455,40 @@ int vfs_del_leaf(struct inode *node) {
 
 	rc = tree_unlink_link(&(node->tree_link));
 	if (rc) {
-		node_free(node);
+		inode_free(node);
 	}
 	return rc;
 }
 
-struct inode *vfs_create_root(void) {
-	struct inode *root_node;
+static struct inode *vfs_init_root(struct inode *node) {
+	inode_name_set(node, "/");
+	node->i_mode = S_IFDIR | ROOT_MODE;
+	node->i_dentry->flags = S_IFDIR | ROOT_MODE;
 
-	root_node = node_alloc("/", 0);
-	assert(root_node);
-	root_node->i_mode = S_IFDIR | ROOT_MODE;
-	root_node->i_dentry->flags = S_IFDIR | ROOT_MODE;
+	return node;
+}
+
+static struct inode *root_node;
+
+struct inode *vfs_get_root(void) {
+	if (!root_node) {
+		struct inode *node;
+		node = inode_alloc(NULL);
+		assert(node);
+		root_node = vfs_init_root(node);
+	}
 
 	return root_node;
 }
 
-struct inode *vfs_get_root(void) {
-	static struct inode *root_node;
-
-	if (!root_node) {
-		root_node = vfs_create_root();
+struct inode *vfs_set_root(struct inode *node) {
+	/* FIXME */
+	//assert(!root_node);
+	if (root_node) {
+		inode_free(root_node);
 	}
+
+	root_node = vfs_init_root(node);
 
 	return root_node;
 }
@@ -526,7 +539,7 @@ int vfs_get_relative_path(struct inode *node, char *path, size_t path_len) {
 		prev = node;
 		node = __vfs_get_parent(node);
 
-		if (prev && node && prev->nas->fs != node->nas->fs) {
+		if (prev && node && prev->i_sb != node->i_sb) {
 			break;
 		}
 	}

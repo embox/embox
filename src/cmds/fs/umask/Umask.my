@@ -8,5 +8,5 @@ package embox.cmd.fs
 module umask {
 	source "umask.c"
 
-	depends embox.compat.posix.fs.umask
+	@NoRuntime depends embox.compat.posix.file_system
 }

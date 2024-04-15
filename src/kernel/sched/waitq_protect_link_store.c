@@ -6,7 +6,7 @@
  * @date    29.05.2014
  */
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 #include <kernel/thread.h>
 #include <kernel/sched/waitq.h>
 #include <mem/sysmalloc.h>

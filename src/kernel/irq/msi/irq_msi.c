@@ -5,7 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <util/dlist.h>
+#include <lib/libds/dlist.h>
 
 #include <mem/sysmalloc.h>
 

@@ -8,7 +8,7 @@
 #ifndef ARCH_ARM_ASM_ARM_M_REGS_H_
 #define ARCH_ARM_ASM_ARM_M_REGS_H_
 
-#define BIT(nr)                     (1UL << (nr))
+#define BIT(nr)                     (1U << (nr))
 
 #define ARM_M_SCS_BASE              0xe000e000
 

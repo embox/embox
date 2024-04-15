@@ -5,7 +5,7 @@ module mosquitto_build {
 	@NoRuntime depends embox.compat.posix.LibPosix
 	@NoRuntime depends embox.compat.posix.time.time
 	@NoRuntime depends embox.compat.posix.stubs
-	@NoRuntime depends embox.compat.posix.idx.poll
+	@NoRuntime depends embox.compat.posix.index_descriptor
 	@NoRuntime depends embox.compat.posix.util.nanosleep
 	@NoRuntime depends embox.net.lib.getifaddrs
 }

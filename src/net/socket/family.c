@@ -8,7 +8,7 @@
 
 #include "family.h"
 #include <stddef.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 
 ARRAY_SPREAD_DEF(const struct net_family, __net_family_registry);
 

@@ -1,0 +1,19 @@
+package platform.imx
+
+module arch extends embox.arch.arch {
+	source "arch.c"
+}
+
+module cpuinfo {
+	option string log_level="LOG_INFO"
+
+	source "cpuinfo.c"
+
+	@IncludeExport(path="arch/arm/imx")
+	source "cpuinfo.h"
+
+	option number usb_analog_base=0x20C8000
+
+	depends embox.compat.libc.stdio.open
+	depends embox.driver.periph_memory
+}

@@ -27,14 +27,14 @@
 #endif
 
 #define FLASH_CACHE_DEF(cache_name, word_size, block_size) \
-			static uint8_t cache_name ## _block_buffer[word_size] \
+			static uint8_t cache_name ## _block_buffer[block_size] \
 						FLASH_CACHE_SECTION	\
-						__attribute__ ((aligned(block_size)))
+						__attribute__ ((aligned(word_size)))
 
 #define FLASH_CACHE_GET(fdev, cache_name) \
 				((uintptr_t) cache_name ## _block_buffer)
 
-extern int flash_cache_clean(struct flash_dev *flashdev, uint32_t block);
+extern int flash_cache_clean(struct flash_dev *flashdev);
 
 extern int flash_cache_load(struct flash_dev *flashdev,
 							 uint32_t to, uint32_t from, int len);

@@ -3,11 +3,12 @@
 
 #include <framework/mod/options.h>
 
-#include "config/embox/arch/riscv/kernel/arch.h"
+#include "config/embox/arch/riscv/kernel/conf.h"
 #include "util/macro.h"
 
 #define SMODE \
-	OPTION_MODULE_GET(embox__arch__riscv__kernel__arch, BOOLEAN, smode)
+	OPTION_MODULE_GET(embox__arch__riscv__kernel__conf, BOOLEAN, smode)
+
 #if SMODE
 #define MODE_LOWER_CASE s
 #define MODE_UPPER_CASE S

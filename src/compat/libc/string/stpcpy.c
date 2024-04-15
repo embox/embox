@@ -4,23 +4,20 @@
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
  * @date 26.10.2018
+ * 
+ * @author Aleksey Zhmulin
+ * @note arm-none-eabi-gcc (12.2.1) assembler error
+ * when compiling with -fsanitize=undefined
+ * "Error: expected comma after name `' in .size directive"
  */
 
 #include <string.h>
 
-/**
- * @brief Copy string from dest to src
- *
- * @param dest
- * @param src
- *
- * @note  Arrays should not overlap
- * @note  This functions differs from strcpy() in return value
- *
- * @return Pointer to terminating NULL
- */
-char *stpcpy(char * dest, const char * src) {
-	char *cp = dest;
-	while ((*cp++ = *src++));
-	return dest - 1;
+char *__attribute__((no_sanitize_undefined))
+stpcpy(char *dest, const char *src) {
+	while ((*dest = *src++)) {
+		++dest;
+	}
+
+	return dest;
 }

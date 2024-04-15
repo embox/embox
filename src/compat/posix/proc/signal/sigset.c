@@ -19,7 +19,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#include <util/bitmap.h>
+#include <lib/libds/bitmap.h>
 #include <util/math.h>
 
 int sigemptyset(sigset_t *set)

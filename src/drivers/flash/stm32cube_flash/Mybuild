@@ -1,30 +1,38 @@
 package embox.driver.flash
 
 @BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_flash_common {
+	option string log_level="LOG_ERR"
+
+	source "stm32_flash_common.c"
+
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_flash_in_chip {
+	option string log_level="LOG_ERR"
+	option number flash_size
+
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "stm32_in_chip_flash.h"
+
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32h7cube {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x40000
 
-	source "stm32_flash.c"
+	source "stm32_flash.c"	
 	source "stm32_flash.lds.S"
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32h7flash.h"
 
-	depends third_party.bsp.st_bsp_api
-	depends core
-}
-
-@BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f7cube {
-	option string log_level="LOG_ERR"
-	option number flash_size=0x18000
-
-	source "stm32_flash.c"
-	source "stm32_flash.lds.S"
-
-	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
-	source "stm32f7flash.h"
+	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -41,6 +49,27 @@ module stm32l4cube {
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32l4flash.h"
 
+	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
+
+	depends third_party.bsp.st_bsp_api
+	depends core
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f7cube {
+	option string log_level="LOG_ERR"
+	option number flash_size=0x18000
+
+	source "stm32_flash.c"
+	source "stm32_flash.lds.S"
+
+	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
+	source "stm32f7flash.h"
+
+	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
+
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
@@ -55,6 +84,9 @@ module stm32f4cube {
 
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32f4flash.h"
+
+	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
@@ -71,6 +103,9 @@ module stm32f3cube {
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32f3flash.h"
 
+	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
+
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
@@ -86,7 +121,24 @@ module stm32f2cube {
 	@IncludeExport(path="drivers/block_dev/flash",target_name="stm32flash.h")
 	source "stm32f2flash.h"
 
+	depends stm32cube_flash_common
+	depends stm32cube_flash_in_chip
+
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
 
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_fix_addr {
+	option string log_level="LOG_ERR"
+
+	option number flash_start_addr
+	option number flash_end_addr
+
+	source "stm32_flash_fix_addr.c"
+
+	depends stm32cube_flash_common
+
+	depends third_party.bsp.st_bsp_api
+	depends core
+}

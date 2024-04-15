@@ -8,7 +8,7 @@
 
 #include <assert.h>
 #include <stddef.h>
-#include <util/array.h>
+#include <lib/libds/array.h>
 #include <drivers/video/vesa_modes.h>
 
 static const struct video_resbpp vesa_mode_text_descriptions[] = {

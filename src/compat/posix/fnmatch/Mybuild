@@ -2,5 +2,4 @@ package embox.compat.posix
 
 static module fnmatch {
 	source "fnmatch.c"
-
 }

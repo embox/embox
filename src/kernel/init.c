@@ -11,8 +11,8 @@
 #include <drivers/diag.h>
 #include <drivers/irqctrl.h>
 #include <embox/runlevel.h>
-#include <hal/arch.h>
 #include <hal/ipl.h>
+#include <hal/platform.h>
 #include <kernel/kgdb.h>
 #include <kernel/klog.h>
 #include <kernel/printk.h>
@@ -38,7 +38,7 @@ void kernel_start(void) {
 	system_start();
 
 	while (1) {
-		arch_idle();
+		platform_idle();
 	}
 }
 
@@ -47,7 +47,7 @@ void kernel_start(void) {
  * further memory configuration, initialization of drivers, devices.
  */
 static void kernel_init(void) {
-	arch_init();
+	platform_init();
 
 	ipl_init();
 
