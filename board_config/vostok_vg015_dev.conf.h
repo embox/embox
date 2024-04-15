@@ -1,5 +1,7 @@
 #include <gen_board_conf.h>
 
+#define RCU_BASE       0x3000E000UL
+
 
 struct clk_conf clks[] = {
 	[0] = {

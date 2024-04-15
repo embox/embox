@@ -20,10 +20,7 @@
 
 #include <drivers/clk/k1921vg015_rcu.h>
 
-#define HSECLK_VAL     OPTION_GET(NUMBER,hse_clk_val)
-
-#define RCU_BASE       OPTION_GET(NUMBER,base_addr)
-#define RCU          ((volatile struct rcu_reg *) RCU_BASE)
+#define RCU          ((volatile struct rcu_reg *) CONF_RCU_REGION_BASE)
 
 struct rcu_reg { 
     uint32_t 	RCU_CGCFGAHB_reg;   /* 0x000 */
