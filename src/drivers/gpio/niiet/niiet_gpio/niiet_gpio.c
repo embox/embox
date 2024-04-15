@@ -13,6 +13,8 @@
 
 #include <drivers/clk/k1921vg015_rcu.h>
 
+#include <config/board_config.h>
+
 #include <system_k1921vg015.h>
 
 #include <framework/mod/options.h>
@@ -93,13 +95,32 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 
 static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
 	volatile struct gpio_reg *gpio_reg;
+	char *clk_name;
 
 	gpio_reg = niiet_gpio_get_gpio_port(port);
 	if (gpio_reg == NULL) {
 		return -1;
 	}
+
+	switch(port) {
+		case 0:
+		clk_name = CONF_GPIO_PORT_A_CLK_ENABLE();
+		break;
+		case 1:
+		clk_name = CONF_GPIO_PORT_B_CLK_ENABLE();
+		break;
+		case 2:
+#if defined CONF_GPIO_PORT_C_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_C_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_C_CLK_ENABLE */
+		break;
+		default:
+		return -1;
+	}
+
 	/* Enable port */
-	niiet_gpio_clock_setup(port);
+	//niiet_gpio_clock_setup(port);
+	clk_enable(clk_name);
 
 	gpio_reg->GPIO_DENSET_reg |= pins;
 
