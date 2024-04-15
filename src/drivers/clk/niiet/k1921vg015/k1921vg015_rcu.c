@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 
 #include <drivers/common/memory.h>
 
@@ -19,6 +20,10 @@
 #include <framework/mod/options.h>
 
 #include <drivers/clk/k1921vg015_rcu.h>
+
+/* FROM board_config.h*/
+#define CLK_NAME_GPIO     "CLK_GPIO"
+#define CLK_NAME_UART     "CLK_UART"
 
 #define RCU          ((volatile struct rcu_reg *) CONF_RCU_REGION_BASE)
 
@@ -147,6 +152,24 @@ void niiet_uart_set_rcu(int uart_num) {
 	RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_CLKEN_MASK;
     RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_RSTDIS_MASK;
 }
+
+int clk_enable(char *clk_name) {
+    int num;
+
+    if (0 == strncmp(clk_name, CLK_NAME_GPIO, sizeof(CLK_NAME_GPIO) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_GPIO) - 1] - 'A';
+        niiet_gpio_clock_setup(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_UART, sizeof(CLK_NAME_UART) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_UART) - 1]  - '0';
+        niiet_uart_set_rcu(num);
+        return 0;
+    }
+
+    return -ENOSUPP;
+}
+
 
 void niiet_sysclk_init(void) {
     uint32_t sysclk_source;
