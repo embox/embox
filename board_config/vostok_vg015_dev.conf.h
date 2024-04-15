@@ -1,25 +1,115 @@
 #include <gen_board_conf.h>
 
 
-struct uart_conf uarts[] = {
-	[1] = {
-		.status = DISABLED,
-		.name = "USART1",
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
 		.dev = {
+			.name = "RCU",
+			.regs = {
+				REGMAP("BASE", (RCU_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("HSECLK_VAL", 16000000UL),
+			}
+		},
+		.type = VAL("SYSCLK_PLL", 1),
+	},
+};
+
+struct gpio_conf gpios[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_A",
+			.regs = {
+				REGMAP("BASE", (GPIOA_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("", "CLK_GPIOA"),
+			}
+		},
+		.port_num = 3,
+		.port_width = 16,
+	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_B",
+			.regs = {
+				REGMAP("BASE", (GPIOB_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("", "CLK_GPIOB"),
+			}
+		},
+		.port_num = 3,
+		.port_width = 16,
+	},
+	[2] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_C",
+			.regs = {
+				REGMAP("BASE", (GPIOC_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("", "CLK_GPIOC"),
+			}
+		},
+		.port_num = 3,
+		.port_width = 16,
+	},
+};
+
+struct uart_conf uarts[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "USART0",
+		.dev = {
+			.name = "USART0",
 			.regs = {
 				REGMAP("BASE_ADDR", UART0_BASE, 0x100),
 			},
 			.irqs = {
-				VAL("", 37),
+				//VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", PA, PIN_9, AF7),
-				PIN("RX", PA, PIN_10, AF7),
+				PIN("TX", PGPIO_PORT_A, 1, 1),
+				PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
-				VAL("UART", CLK_USART1),
+				VAL("", "CLK_USART1"),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[1] = {
+		.status = DISABLED,
+		.name = "USART1",
+		.dev = {
+			.name = "USART1",
+			.regs = {
+				REGMAP("BASE_ADDR", UART1_BASE, 0x100),
+			},
+			.irqs = {
+				//VAL("", 37),
+			},
+			.pins = {
+				//PIN("TX", PGPIO_PORT_A, 1, 1),
+				//PIN("RX", GPIO_PORT_A, 0, 1),
+			},
+			.clocks = {
+				VAL("", "CLK_USART1"),
 			}
 		},
 		.baudrate = 115200,
@@ -28,36 +118,33 @@ struct uart_conf uarts[] = {
 		.status = DISABLED,
 		.name = "USART2",
 		.dev = {
+			.name = "USART2",
 			.irqs = {
-				VAL("", 38),
+				//VAL("", 38),
 			},
 			.pins = {
-				PIN("TX", PA, PIN_2, AF7),
-				PIN("RX", PA, PIN_3, AF7),
+				//PIN("TX", PGPIO_PORT_A, 1, 1),
+				//PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
-				VAL("UART", CLK_USART2),
+				VAL("", "CLK_USART2"),
 			}
 		},
 		.baudrate = 115200,
 	},
 	[3] = {
-		.status = ENABLED,
+		.status = DISABLED,
 		.name = "USART3",
 		.dev = {
 			.irqs = {
-				VAL("", 39),
+				//VAL("", 39),
 			},
 			.pins = {
-				PIN("TX", PD, PIN_8, AF7),
-				PIN("RX", PD, PIN_9, AF7),
+				//PIN("TX", PGPIO_PORT_A, 1, 1),
+				//PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOD),
-				VAL("RX",   CLK_GPIOD),
-				VAL("UART", CLK_USART3),
+				VAL("", "CLK_USART3"),
 			}
 		},
 		.baudrate = 115200,
@@ -69,6 +156,7 @@ struct spi_conf spis[] = {
 		.status = DISABLED,
 		.name = "SPI1",
 		.dev = {
+			.name = "SPI1",
 			.pins = {
 				PIN("SCK",  PA, PIN_5, AF5),
 				PIN("MISO", PA, PIN_6, AF5),
@@ -76,11 +164,7 @@ struct spi_conf spis[] = {
 				PIN("CS",   PD, PIN_14, NOAF),
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOA),
-				VAL("MISO", CLK_GPIOA),
-				VAL("MOSI", CLK_GPIOA),
-				VAL("CS",   CLK_GPIOD),
-				VAL("SPI",  CLK_SPI1),
+				VAL("SPI",  "CLK_SPI1"),
 			}
 		},
 	},
@@ -92,6 +176,7 @@ struct i2c_conf i2cs[] = {
 		.status = ENABLED,
 		.name = "I2C1",
 		.dev = {
+			.name = "I2C1",
 			.irqs = {
 				VAL("EVENT_IRQ", 31),
 				VAL("ERROR_IRQ", 32),
@@ -101,9 +186,7 @@ struct i2c_conf i2cs[] = {
 				PIN("SDA", GPIO_PORT_B, PIN_9, AF4),
 			},
 			.clocks = {
-				VAL("SCL", CLK_GPIOB),
-				VAL("SDA", CLK_GPIOB),
-				VAL("I2C", CLK_I2C1),
+				VAL("", "CLK_I2C1"),
 			}
 		},
 	},
@@ -111,6 +194,7 @@ struct i2c_conf i2cs[] = {
 		.status = DISABLED,
 		.name = "I2C2",
 		.dev = {
+			.name = "I2C2",
 			.irqs = {
 				VAL("EVENT_IRQ", 33),
 				VAL("ERROR_IRQ", 34),
@@ -120,13 +204,11 @@ struct i2c_conf i2cs[] = {
 				PIN("SDA", GPIO_PORT_B, PIN_11, AF4),
 			},
 			.clocks = {
-				VAL("SCL", CLK_GPIOB),
-				VAL("SDA", CLK_GPIOB),
-				VAL("I2C", CLK_I2C1),
+				VAL("", "CLK_I2C2"),
 			}
 		},
 	},
-
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs))
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts))
