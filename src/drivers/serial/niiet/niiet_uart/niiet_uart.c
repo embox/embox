@@ -15,6 +15,8 @@
 
 #include <drivers/clk/k1921vg015_rcu.h>
 
+#include <config/board_config.h>
+
 #include <system_k1921vg015.h>
 
 #include <framework/mod/options.h>
@@ -122,6 +124,43 @@ static inline void niiet_uart_set_pins(struct uart *dev) {
 			 GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1) | GPIO_MODE_IN);
 }
 
+static inline int niiet_uart_set_clk(int num) {
+	char *clk_name;
+	switch (num) {
+#if defined CONF_USART0_CLK_ENABLE
+		case 0:
+		clk_name = CONF_USART0_CLK_ENABLE();
+		break;
+#endif
+#if defined CONF_USART1_CLK_ENABLE
+		case 1:
+		clk_name = CONF_USART1_CLK_ENABLE();
+		break;
+#endif
+#if defined CONF_USART2_CLK_ENABLE
+		case 2:
+		clk_name = CONF_USART2_CLK_ENABLE();
+		break;
+#endif
+#if defined CONF_USART3_CLK_ENABLE
+		case 3:
+		clk_name = CONF_USART3_CLK_ENABLE();
+		break;
+#endif
+#if defined CONF_USART4_CLK_ENABLE
+		case 4:
+		clk_name = CONF_USART4_CLK_ENABLE();
+		break;
+#endif
+	default:
+		return -1;
+	}
+
+	clk_enable(clk_name);
+
+	return  0;
+}
+
 static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) {
 	int uart_num = niiet_uart_nr_by_addr(dev->base_addr);
 
@@ -129,7 +168,8 @@ static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) 
 	REG32_STORE(UART_CR(dev->base_addr), 0);
 
 	niiet_uart_set_pins(dev);
-	niiet_uart_set_rcu(uart_num);
+	niiet_uart_set_clk(uart_num);
+	//niiet_uart_set_rcu(uart_num);
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM);
