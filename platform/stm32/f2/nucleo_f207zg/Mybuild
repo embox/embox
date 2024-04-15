@@ -20,7 +20,7 @@ module arch extends embox.arch.arch {
 @Build(stage=1)
 @BuildDepends(nucleo_f207zg_conf)
 @BuildDepends(third_party.bsp.stmf2cube.cube)
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/Drivers/BSP/STM32F2xx_Nucleo_144")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF2-1.9.4/Drivers/BSP/STM32F2xx_Nucleo_144")
 static module bsp extends third_party.bsp.st_bsp_api {
 //	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/Drivers/BSP/STM32F2xx_Nucleo_144")
 //	source "stm32f2xx_nucleo_144.c"
