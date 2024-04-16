@@ -97,10 +97,14 @@ static inline int niiet_uart_nr_by_addr(uintptr_t base_addr) {
 	return 0;
 }
 
-static inline void niiet_uart_set_pins(struct uart *dev) {
+static inline void niiet_uart_set_pins(int num) {
 	gpio_setup_mode(UART_GPIO_PORT,
-			(1 << UART_GPIO_TX_PIN) | (1 << UART_GPIO_RX_PIN),
-			 GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1) | GPIO_MODE_IN);
+			(1 << UART_GPIO_TX_PIN),
+			GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(UART_GPIO_TX_PIN));
+
+	gpio_setup_mode(UART_GPIO_PORT,
+			(1 << UART_GPIO_RX_PIN),
+			GPIO_MODE_IN);
 }
 
 static inline int niiet_uart_set_clk(int num) {
@@ -146,9 +150,8 @@ static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) 
 	/* Disable uart. */
 	REG32_STORE(UART_CR(dev->base_addr), 0);
 
-	niiet_uart_set_pins(dev);
+	niiet_uart_set_pins(uart_num);
 	niiet_uart_set_clk(uart_num);
-	//niiet_uart_set_rcu(uart_num);
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM);
