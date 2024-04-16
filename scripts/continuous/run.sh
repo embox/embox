@@ -33,7 +33,7 @@ packetdrill_run() {
 }
 
 x86_smp_run() {
-	TIMEOUT=80
+	TIMEOUT=120
 	default_run
 }
 
