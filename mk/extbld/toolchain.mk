@@ -5,13 +5,20 @@ include $(MKGEN_DIR)/build.mk
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
-EMBOX_IMPORTED_CPPFLAGS  = $(filter -D% -U% -I% -nostdinc,$(filter-out -D"% -D'%,$(EMBOX_EXPORT_CPPFLAGS)))
+# Ignore Warning Options
+EMBOX_IMPORTED_CPPFLAGS  = $(filter-out -W%,$(EMBOX_EXPORT_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(EMBOX_EXPORT_CPPFLAGS))
 
-EMBOX_IMPORTED_CFLAGS    = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(CFLAGS))
-EMBOX_IMPORTED_CXXFLAGS  = $(filter -g% -f% -m% -O% -G% -E% -Wa% -std=%,$(CXXFLAGS))
+EMBOX_IMPORTED_CFLAGS    = $(filter-out -W%,$(CFLAGS))
+EMBOX_IMPORTED_CFLAGS   += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CFLAGS))
 
-EMBOX_IMPORTED_LDFLAGS   = $(filter -static -nostdlib -E%,$(LDFLAGS))
-EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m elf_i386,$(LDFLAGS)))
+EMBOX_IMPORTED_CXXFLAGS  = $(filter-out -W%,$(CXXFLAGS))
+EMBOX_IMPORTED_CXXFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CXXFLAGS))
+
+# Ignore LDFLAGS except -static -nostdlib -E<endian> and -m<emulation>
+EMBOX_IMPORTED_LDFLAGS   = $(filter -static -nostdlib -EL -EB,$(LDFLAGS))
+EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m%,$(subst -m elf_i386,-melf_i386,$(LDFLAGS))))
+
 ifeq ($(ARCH),microblaze)
 # microblaze compiler wants vendor's xillinx.ld if no lds provided from command line.
 # Make it happy with empty lds
