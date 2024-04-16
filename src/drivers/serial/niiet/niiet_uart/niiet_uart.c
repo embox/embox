@@ -24,28 +24,7 @@
 #define UARTCLK   OPTION_GET(NUMBER, uartclk)
 #define BAUD_ICOEF(baud_rate) (UARTCLK / (16 * baud_rate))
 #define BAUD_FCOEF(baud_rate) ((UARTCLK / (16.0f * baud_rate) - BAUD_ICOEF(baud_rate)) * 64 + 0.5f)
-#if 0
-#define RCU				0x40041000
 
-#define RCU_SYSCLKCFG			0x40041010
-#define RCU_SYSCLKCFG_SYSSEL_OSICLK	0x00000000
-#define RCU_SYSCLKCFG_SYSSEL_OSECLK	0x00000001
-#define RCU_SYSCLKCFG_SYSSEL_PLLCLK	0x00000002
-#define RCU_SYSCLKCFG_SYSSEL_PLLDIVCLK	0x00000003
-
-#define RCU_SYSCLKSTAT			0x40041014
-#define RCU_SYSCLKSTAT_SYSSTAT_mask	0x00000003
-
-#define RCU_UARTCFG			0x40041060
-#define RCU_UART0CFG			0x40041060
-#define RCU_UART1CFG			0x40041064
-#define RCU_UARTCFG_CLKEN_mask		0x00000001
-#define RCU_UARTCFG_RSTDIS_mask		0x00000010
-#define RCU_UARTCFG_CLKSEL_OSECLK	0x00000000
-#define RCU_UARTCFG_CLKSEL_PLLCLK	0x00000100
-#define RCU_UARTCFG_CLKSEL_PLLDIVCLK	0x00000200
-#define RCU_UARTCFG_CLKSEL_OSICLK	0x00000300
-#endif
 #if 0
 struct uart_reg {
 	uint32_t 	UART_DR_reg;
@@ -184,23 +163,6 @@ static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) 
 	REG32_STORE(UART_CR(dev->base_addr), UART_UARTEN | UART_TXE | UART_RXE);
 
 	return 0;
-#if 0
-	/* Disable uart. */
-	REG_STORE(UART0_CR, 0);
-	/* Enable uart0 pins */
-	gpio_setup_mode(UART0_GPIO, UART0_GPIO_TX_mask | UART0_GPIO_RX_mask, GPIO_MODE_OUT_ALTERNATE);
-	/* Clock for uart0 */
-	REG32_STORE(RCU_UART0CFG, RCU_UARTCFG_CLKEN_mask | RCU_UARTCFG_RSTDIS_mask | RCU_UARTCFG_CLKSEL_PLLCLK);
-	/* Set baud rate */
-	REG32_STORE(UART0_IBRD, BAUD_ICOEF);
-	REG32_STORE(UART0_FBRD, BAUD_FCOEF);
-	/* FIFO enable, 8 data bits */
-	REG32_STORE(UART0_LCRH, UART_LCRH_FEN_mask | UART_LCRH_WLEN_8bit);
-	/* Enable UART */
-	REG32_STORE(UART0_CR, UART_CR_TXE_mask | UART_CR_RXE_mask | UART_CR_UARTEN_mask);
-
-	return 0;
-#endif
 }
 
 static int niiet_uart_irq_enable(struct uart *dev,
@@ -219,11 +181,6 @@ static int niiet_uart_irq_disable(struct uart *dev,
 }
 
 static int niiet_uart_putc(struct uart *dev, int ch) {
-#if 0
-	while (REG32_LOAD(UART0_FR) & UART_FR_BUSY_mask);
-	REG32_STORE(UART0_DR, (uint32_t) ch);
-#endif
-
 	while (REG32_LOAD(UART_FR(dev->base_addr)) & FR_TXFF) {
 		;
 	}
@@ -235,18 +192,10 @@ static int niiet_uart_putc(struct uart *dev, int ch) {
 
 static int niiet_uart_hasrx(struct uart *dev) {
 	return !(REG32_LOAD(UART_FR(dev->base_addr)) & FR_RXFE);
-
-#if 0
-	return !(REG32_LOAD(UART0_FR) & UART_FR_RXFE_mask);
-#endif
 }
 
 static int niiet_uart_getc(struct uart *dev) {
 	return REG32_LOAD(UART_DR(dev->base_addr));
-
-#if 0
-	return (int) (REG32_LOAD(UART0_DR) & UART_DR_DATA_mask);
-#endif
 }
 
 const struct uart_ops niiet_uart_ops = {
