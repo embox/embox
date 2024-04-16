@@ -10,18 +10,6 @@
 #define GPIOB_BASE              0x28001000UL
 #define GPIOC_BASE              0x28002000UL
 
-#define UART0_BASE              0x30006000UL
-#define UART1_BASE              0x30007000UL
-#define UART2_BASE              0x30008000UL
-#define UART3_BASE              0x30009000UL
-#define UART4_BASE              0x3000A000UL
-
-#define UART0                ((volatile struct UART_REG *) UART0_BASE)
-#define UART1                ((volatile struct UART_REG *) UART1_BASE)
-#define UART2                ((volatile struct UART_REG *) UART2_BASE)
-#define UART3                ((volatile struct UART_REG *) UART3_BASE)
-#define UART4                ((volatile struct UART_REG *) UART4_BASE)
-
 
 #define TMR32_BASE              0x30000000UL
 
