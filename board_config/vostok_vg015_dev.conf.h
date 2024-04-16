@@ -90,16 +90,16 @@ struct uart_conf uarts[] = {
 				PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("", "CLK_USART1"),
+				VAL("", "CLK_UART0"),
 			}
 		},
 		.baudrate = 115200,
 	},
 	[1] = {
 		.status = DISABLED,
-		.name = "USART1",
+		.name = "UART1",
 		.dev = {
-			.name = "USART1",
+			.name = "UART1",
 			.regs = {
 				REGMAP("BASE_ADDR", UART1_BASE, 0x100),
 			},
@@ -111,16 +111,19 @@ struct uart_conf uarts[] = {
 				//PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("", "CLK_USART1"),
+				VAL("", "CLK_UART1"),
 			}
 		},
 		.baudrate = 115200,
 	},
 	[2] = {
 		.status = DISABLED,
-		.name = "USART2",
+		.name = "UART2",
 		.dev = {
-			.name = "USART2",
+			.name = "UART2",
+			.regs = {
+				REGMAP("BASE_ADDR", UART2_BASE, 0x100),
+			},
 			.irqs = {
 				//VAL("", 38),
 			},
@@ -129,15 +132,19 @@ struct uart_conf uarts[] = {
 				//PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("", "CLK_USART2"),
+				VAL("", "CLK_UART2"),
 			}
 		},
 		.baudrate = 115200,
 	},
 	[3] = {
 		.status = DISABLED,
-		.name = "USART3",
+		.name = "UART3",
 		.dev = {
+			.name = "UART3",
+			.regs = {
+				REGMAP("BASE_ADDR", UART3_BASE, 0x100),
+			},
 			.irqs = {
 				//VAL("", 39),
 			},
@@ -146,7 +153,28 @@ struct uart_conf uarts[] = {
 				//PIN("RX", GPIO_PORT_A, 0, 1),
 			},
 			.clocks = {
-				VAL("", "CLK_USART3"),
+				VAL("", "CLK_UART3"),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[4] = {
+		.status = DISABLED,
+		.name = "UART4",
+		.dev = {
+			.name = "UART4",
+			.regs = {
+				REGMAP("BASE_ADDR", UART4_BASE, 0x100),
+			},
+			.irqs = {
+				//VAL("", 39),
+			},
+			.pins = {
+				//PIN("TX", PGPIO_PORT_A, 1, 1),
+				//PIN("RX", GPIO_PORT_A, 0, 1),
+			},
+			.clocks = {
+				VAL("", "CLK_UART4"),
 			}
 		},
 		.baudrate = 115200,
