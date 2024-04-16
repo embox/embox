@@ -24,7 +24,7 @@ module niiet_uart_ttyS0 {
 	option number uartclk = 50000000
 	option number baud_rate = 115200
 
-//	source "niiet_uart_ttys0.c"
+	source "niiet_uart_ttys0.c"
 
 	depends embox.driver.serial.niiet_uart
 }
