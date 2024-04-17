@@ -72,23 +72,6 @@ struct uart_reg {
 
 #define IMSC_RXIM       (0x1 << 4)
 
-static void niiet_uart_set_baudrate(struct uart *dev) {
-	/* FIXME Init baud rate only if UARTCLK is really used.
-	 * Currenly it is not so for the teplates which use pl011. */
-#if UARTCLK != 0
-	uint32_t baud_rate;
-	int ibrd, fbrd;
-
-	/* Baud Rate Divisor = UARTCLK/(16×Baud Rate) = BRDI + BRDF,
-	 * See 2.4.3 UART operation.  */
-	baud_rate = dev->params.baud_rate;
-	ibrd = BAUD_ICOEF(baud_rate);
-	fbrd = BAUD_FCOEF(baud_rate);
-	REG32_STORE(UART_IBRD(dev->base_addr), ibrd);
-	REG32_STORE(UART_FBRD(dev->base_addr), fbrd);
-#endif
-}
-
 #define UART_GPIO_PORT         GPIO_PORT_A
 #define UART_GPIO_TX_PIN		(1)
 #define UART_GPIO_RX_PIN		(0)
@@ -97,14 +80,40 @@ static inline int niiet_uart_nr_by_addr(uintptr_t base_addr) {
 	return 0;
 }
 
-static inline void niiet_uart_set_pins(int num) {
-	gpio_setup_mode(UART_GPIO_PORT,
-			(1 << UART_GPIO_TX_PIN),
-			GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1));
+static inline int niiet_uart_get_tx_port(int num) {
+	return UART_GPIO_PORT;
+}
 
-	gpio_setup_mode(UART_GPIO_PORT,
-			(1 << UART_GPIO_RX_PIN),
-			GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(1));
+static inline int niiet_uart_get_tx_pin(int num) {
+	return UART_GPIO_TX_PIN;
+}
+
+static inline int niiet_uart_get_tx_alt(int num) {
+	return 1;
+}
+
+static inline int niiet_uart_get_rx_port(int num) {
+	return UART_GPIO_PORT;
+}
+
+static inline int niiet_uart_get_rx_pin(int num) {
+	return UART_GPIO_RX_PIN;
+}
+
+static inline int niiet_uart_get_rx_alt(int num) {
+	return 1;
+}
+
+static inline void niiet_uart_set_pins(int num) {
+	gpio_setup_mode(niiet_uart_get_tx_port(num),
+			(1 << niiet_uart_get_tx_pin(num)),
+			GPIO_MODE_OUT_ALTERNATE |
+			GPIO_ALTERNATE(niiet_uart_get_tx_alt(num)));
+
+	gpio_setup_mode(niiet_uart_get_rx_port(num),
+			(1 << niiet_uart_get_rx_pin(num)),
+			GPIO_MODE_OUT_ALTERNATE |
+			GPIO_ALTERNATE(niiet_uart_get_tx_alt(num)));
 }
 
 static inline int niiet_uart_set_clk(int num) {
@@ -142,6 +151,23 @@ static inline int niiet_uart_set_clk(int num) {
 	clk_enable(clk_name);
 
 	return  0;
+}
+
+static void niiet_uart_set_baudrate(struct uart *dev) {
+	/* FIXME Init baud rate only if UARTCLK is really used.
+	 * Currenly it is not so for the teplates which use pl011. */
+#if UARTCLK != 0
+	uint32_t baud_rate;
+	int ibrd, fbrd;
+
+	/* Baud Rate Divisor = UARTCLK/(16×Baud Rate) = BRDI + BRDF,
+	 * See 2.4.3 UART operation.  */
+	baud_rate = dev->params.baud_rate;
+	ibrd = BAUD_ICOEF(baud_rate);
+	fbrd = BAUD_FCOEF(baud_rate);
+	REG32_STORE(UART_IBRD(dev->base_addr), ibrd);
+	REG32_STORE(UART_FBRD(dev->base_addr), fbrd);
+#endif
 }
 
 static int niiet_uart_setup(struct uart *dev, const struct uart_params *params) {
