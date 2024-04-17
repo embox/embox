@@ -1,0 +1,9 @@
+package embox.driver.video
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32l152c_disco_lcd {
+	source "stm32l152c_disco_lcd.c"
+
+//	depends embox.driver.video.fb
+	depends third_party.bsp.st_bsp_api
+}
