@@ -121,9 +121,9 @@ struct gpio_conf gpios[] = {
 struct uart_conf uarts[] = {
 	[0] = {
 		.status = ENABLED,
-		.name = "USART0",
+		.name = "UART0",
 		.dev = {
-			.name = "USART0",
+			.name = "UART0",
 			.regs = {
 				REGMAP("BASE_ADDR", (UART0_BASE), 0x100),
 			},
