@@ -18,9 +18,9 @@ bool is_close(double x, double y) {
 
 
 TEST_CASE("Test for atan at simple points") {
-	test_assert(is_close(atan(0.0), 0.0));
-	test_assert(is_close(atan(1.0), M_PI_4));
-	test_assert(is_close(atan(-1.0), -M_PI_4));
+    test_assert(is_close(atan(0.0), 0.0));
+    test_assert(is_close(atan(1.0), M_PI_4));
+    test_assert(is_close(atan(-1.0), -M_PI_4));
 }
 
 TEST_CASE("Test for tan(atan)") {
