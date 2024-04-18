@@ -73,6 +73,7 @@ struct rcu_reg {
 #define RCU_CGCFGAPB_UART3EN        (1 << 9)
 #define RCU_CGCFGAPB_UART4EN        (1 << 10)
 
+#define RCU_CGCFGAHB_GPIOEN(port)   (1 << (8 + port))
 #define RCU_CGCFGAHB_GPIOAEN        (1 << 8)
 #define RCU_CGCFGAHB_GPIOBEN        (1 << 9)
 #define RCU_CGCFGAHB_GPIOCEN        (1 << 10)
@@ -84,6 +85,7 @@ struct rcu_reg {
 #define RCU_RSTDISAPB_UART3EN        (1 << 9)
 #define RCU_RSTDISAPB_UART4EN        (1 << 10)
 
+#define RCU_RSTDISAHB_GPIOEN(port)   (1 << (8 + port))
 #define RCU_RSTDISAHB_GPIOAEN        (1 << 8)
 #define RCU_RSTDISAHB_GPIOBEN        (1 << 9)
 #define RCU_RSTDISAHB_GPIOCEN        (1 << 10)
@@ -113,15 +115,18 @@ struct rcu_reg {
 #define RCU_PLLSYSCFG0_REFDIV_MASK  (0x3F << 7) /* 7-12*/
 #define RCU_PLLSYSCFG0_REFDIV_VAL(val)   ((val & 0x3F) << 7) /* 7-12*/
 
-#define RCU_UARTCLKCFG0_CLKEN_MASK	 	 	 	0x00000001UL
-#define RCU_UARTCLKCFG0_RSTDIS_MASK	 	 	 	0x00000100UL
-#define RCU_UARTCLKCFG0_CLKSEL_MASK	 	 	 	0x00030000UL
-#define   RCU_UARTCLKCFG0_CLKSEL_SYSPLL0CLK_MASK    0x00020000UL
-
-#define RCU_UARTCLKCFG0_DIVEN_MASK	 	 	 	0x00100000UL
-#define RCU_UARTCLKCFG0_DIVN_MASK	 	 	 	0x3f000000UL
+#define RCU_UARTCLKCFG_CLKEN_MASK	 	 	 	0x00000001UL
+#define RCU_UARTCLKCFG_RSTDIS_MASK	 	 	 	0x00000100UL
+#define RCU_UARTCLKCFG_CLKSEL_MASK	 	 	 	0x00030000UL
+#define  RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK   0x00020000UL
+#define RCU_UARTCLKCFG_DIVEN_MASK	 	 	 	0x00100000UL
+#define RCU_UARTCLKCFG_DIVN_MASK	 	 	 	0x3f000000UL
 
 int niiet_gpio_clock_setup(unsigned char port) {
+    RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOEN(port);
+    RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOEN(port);
+
+#if 0
 	switch (port) {
 		case 0:
 			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOAEN;
@@ -138,19 +143,24 @@ int niiet_gpio_clock_setup(unsigned char port) {
 		default:
 			return -1;
 	}
+#endif
 
 	return 0;
 }
 
-void niiet_uart_set_rcu(int uart_num) {	
+void niiet_uart_set_rcu(int uart_num) {
+    uint32_t *rcu_uartclkcfg_reg = (void *)&RCU->RCU_UARTCLKCFG0_reg;
+
 	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_UART_EN(uart_num);
 	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_UART_EN(uart_num);
 
-	RCU->RCU_UARTCLKCFG0_reg = 0;
-	RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_CLKSEL_SYSPLL0CLK_MASK;
+    rcu_uartclkcfg_reg += uart_num;
 
-	RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_CLKEN_MASK;
-    RCU->RCU_UARTCLKCFG0_reg |= RCU_UARTCLKCFG0_RSTDIS_MASK;
+	*rcu_uartclkcfg_reg = 0;
+	*rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK;
+
+	*rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_CLKEN_MASK;
+    *rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
 }
 
 int clk_enable(char *clk_name) {
