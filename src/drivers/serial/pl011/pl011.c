@@ -13,6 +13,7 @@
 #include <hal/reg.h>
 
 #define UARTCLK         OPTION_GET(NUMBER, uartclk)
+#define USE_BOARD_CONF  OPTION_GET(NUMBER, uartclk)
 
 /* UART Registers */
 #define UART_DR(base)   (base + 0x00)
@@ -39,6 +40,14 @@
 #define FR_TXFF         0x20 /* Transmit FIFO full */
 
 #define IMSC_RXIM       (0x1 << 4)
+
+#if USE_BOARD_CONF
+#include "uart_setup_hw_board_config.inc"
+#else
+static inline int uart_setup_hw(struct uart *dev) {
+	return 0;
+}
+#endif /* USE_BOARD_CONF */
 
 static void pl011_set_baudrate(struct uart *dev) {
 	/* FIXME Init baud rate only if UARTCLK is really used.
@@ -75,6 +84,8 @@ static int pl011_irq_disable(struct uart *dev,
 static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 	/* Disable uart. */
 	REG32_STORE(UART_CR(dev->base_addr), 0);
+
+	uart_setup_hw(dev);
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM);
