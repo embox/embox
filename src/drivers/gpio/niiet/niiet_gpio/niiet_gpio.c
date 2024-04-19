@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <hal/reg.h>
+#include <kernel/irq.h>
 
 #include <drivers/gpio/gpio_driver.h>
 
@@ -70,10 +71,7 @@ struct gpio_reg {
     uint32_t 	GPIO_LOCKCLR_reg;
 };
 
-#if 0
-#define GPIOA				0x40010000
-#define GPIOB				0x40011000
-#endif
+static struct gpio_chip niiet_gpio_chip;
 
 static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char port) {
 		switch (port) {
@@ -91,6 +89,22 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 	}
 
 	return 0;
+}
+
+irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio_) {
+	uint32_t mask = 0;
+
+	gpio_handle_irq(&niiet_gpio_chip, 0, mask);
+
+	return IRQ_HANDLED;
+}
+
+static int niiet_gpio_irq_setup(int port) {
+	int res;
+
+	res = irq_attach(0, niiet_gpio_irq_handler, 0, NULL, "GPIO Irq");
+	
+	return res;
 }
 
 static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
@@ -119,7 +133,6 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 	}
 
 	/* Enable port */
-	//niiet_gpio_clock_setup(port);
 	clk_enable(clk_name);
 
 	gpio_reg->GPIO_DENSET_reg |= pins;
@@ -127,18 +140,25 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 	if (mode & GPIO_MODE_IN) {
 		gpio_reg->GPIO_OUTENCLR_reg |= pins;
 	}
+
 	if (mode & GPIO_MODE_OUT) {
 		gpio_reg->GPIO_OUTENSET_reg |= pins;
-	
 	}
+
+	if (mode & GPIO_MODE_INT_SECTION) {
+		niiet_gpio_irq_setup(port);
+	}
+
 	if (mode & GPIO_MODE_OUT_ALTERNATE) {
 		/* Enable ALTFUNC */
 		gpio_reg->GPIO_ALTFUNCSET_reg |= pins;
-	}
-	if (GPIO_GET_ALTERNATE(mode) != 0){
-		for (int i = 0; i < GPIO_PINS_NUMBER; i++){ // TODO use bit_ctz()
+
+		for (int i = 0; i < GPIO_PINS_NUMBER; i++) {			
 			if (pins & (1 << i)) {
-				gpio_reg->GPIO_ALTFUNCNUM_reg |= GPIO_GET_ALTERNATE(mode) << i*2;
+				uint32_t alt = GPIO_GET_ALTERNATE(mode);
+
+				gpio_reg->GPIO_ALTFUNCNUM_reg &= ~(0x3 << i * 2);
+				gpio_reg->GPIO_ALTFUNCNUM_reg |= alt << i * 2;
 			}
 		}
 	}
@@ -184,4 +204,7 @@ static struct gpio_chip niiet_gpio_chip = {
 };
 
 GPIO_CHIP_DEF(&niiet_gpio_chip);
+
+STATIC_IRQ_ATTACH(GPIO_IRQ, gpio_irq_handler, NULL);
+
 
