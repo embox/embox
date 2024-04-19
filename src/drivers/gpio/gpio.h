@@ -45,7 +45,7 @@ typedef volatile unsigned long gpio_mask_t;
 #define GPIO_GET_ALTERNATE(mode) (((mode) & 0x7e0000) >> 17)
 #define GPIO_ALTERNATE(af) (((af) << 17) & 0x7e0000)
 
-/* #define GPIO_MODE_INT_SECTION         0xFF000000 */
+#define GPIO_MODE_INT_SECTION         0xFF000000
 #define GPIO_MODE_IN_INT_EN         (1u << 31)
 #define GPIO_MODE_INT_MODE_RISING   (1u << 30)
 #define GPIO_MODE_INT_MODE_FALLING  (1u << 29)
