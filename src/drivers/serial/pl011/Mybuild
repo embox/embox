@@ -3,7 +3,7 @@ package embox.driver.serial
 module pl011 {
 	/* FIXME Set UARTCLK to 0 since it is not used in many templates */
 	option number uartclk=0
-	option boolean use_bconf = 0
+	option boolean use_bconf=false
 
 	source "pl011.c"
 

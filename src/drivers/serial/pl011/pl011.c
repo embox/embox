@@ -13,7 +13,7 @@
 #include <hal/reg.h>
 
 #define UARTCLK         OPTION_GET(NUMBER, uartclk)
-#define USE_BOARD_CONF  OPTION_GET(NUMBER, uartclk)
+#define USE_BOARD_CONF  OPTION_GET(BOOLEAN, use_bconf)
 
 /* UART Registers */
 #define UART_DR(base)   (base + 0x00)
