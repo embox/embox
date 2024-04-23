@@ -1,17 +1,23 @@
-#include <asm/linkage.h>
+/**
+ * @file
+ *
+ * @date 19.12.2016
+ * @author Anton Bondarev
+ */
+
 #include <asm/asm.h>
 #include <asm/regdef.h>
 
-#define RALINK_SYSCTL_BASE	        0xB0000000
-#define SDRAM_CFG0_REG              RALINK_SYSCTL_BASE + 0x0300
-#define SDRAM_CFG1_REG              RALINK_SYSCTL_BASE + 0x0304
+#define RALINK_SYSCTL_BASE 0xB0000000
+#define SDRAM_CFG0_REG     RALINK_SYSCTL_BASE + 0x0300
+#define SDRAM_CFG1_REG     RALINK_SYSCTL_BASE + 0x0304
 
 #define SDRAM_CFG1_SDRAM_INIT_START (1u << 31)
-#define SDRAM_CFG1_SDRAM_INIT_DONE (1u << 30)
+#define SDRAM_CFG1_SDRAM_INIT_DONE  (1u << 30)
 
-#define ON_BOARD_16M_DRAM_COMPONENT  y
-#define ON_BOARD_16BIT_DRAM_BUS      y
-#define DELAY_USEC(us)				 ((500*(us))/3)
+#define ON_BOARD_16M_DRAM_COMPONENT y
+#define ON_BOARD_16BIT_DRAM_BUS     y
+#define DELAY_USEC(us) ((500*(us))/3)
 
 	.section    .text
 	.align  4

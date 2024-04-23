@@ -7,7 +7,6 @@
  */
 
 
-#include <asm/linkage.h>
 #include <asm/asm.h>
 
 	.section    .reset,"x"
