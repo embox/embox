@@ -7,22 +7,18 @@
  * @author Anton Bondarev
  */
 
-#include <asm/linkage.h>
 #include <asm/asm.h>
 
+.section .text
+.align 4
+.weak hardware_init_hook
+.weak software_init_hook
 
-	.section    .text
-	.align  4
-	.weak hardware_init_hook
-	.weak software_init_hook
-
-
-	    .ent _start
-C_ENTRY(_start):
+ENTRY(_start)
 	/* clean all registers */
-	.set noat
+.set noat
 	move    $1, $zero /* $at */
-	.set at
+.set at
 	move    $2, $zero
 	move    $3, $zero
 	move    $4, $zero
@@ -60,10 +56,10 @@ C_ENTRY(_start):
 	mthi    $zero
 
 	/* check hardware_init_hook and call if needed */
-	PTR_LA $t5, hardware_init_hook
-	beqz   $t5, 1f
+	PTR_LA  $13, hardware_init_hook
+	beqz    $13, 1f
 	nop
-	jal hardware_init_hook
+	jal     hardware_init_hook
 	nop
 1:
 
@@ -86,7 +82,4 @@ C_ENTRY(_start):
 	/* call C-code */
 	jal     kernel_start
 	nop
-
-	    .globl _start
-
-	.end _start
+END(_start)

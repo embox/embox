@@ -46,6 +46,8 @@ extern void mips_interrupt_handler(void);
 
 #else /* __ASSEMBLER__ */
 
+#include <asm/asm.h>
+
 	.macro SAVE_SOME
 		.set    push
 

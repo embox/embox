@@ -7,11 +7,9 @@
  * @author Anton Bondarev
  */
 
-#include <asm/linkage.h>
 #include <asm/mipsregs.h>
 #include <asm/entry.h>
 #include <asm/asm.h>
-
 
 /*
  * General exception vector for all other CPUs. It saves all registers and
@@ -19,7 +17,7 @@
  * This code is called from mips_first_exception handler. Register k1 contains
  * exception type.
  */
- LEAF(mips_second_exception_handler)
+LEAF(mips_second_exception_handler)
 	SAVE_ALL                             /* save all needed registers */
 	li      $t1, CAUSE_IM                /*  is a mask, which mean that Interrupt bit of CAUSE register set in 1 */
 	and     $t1, $k1, $t1                /* check if Timer Interrupt bit of CAUSE register is 1 */

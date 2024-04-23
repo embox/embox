@@ -5,7 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <asm/linkage.h>
+#include <asm/asm.h>
 #include <asm/setjmp.h>
 
 
