@@ -13,6 +13,7 @@ jobs:
           - arm/qemu
           - platform/stm32/f4/stm32f4-discovery
           - x86/qemu
+          - x86/smp
           - x86/user_apps
           - project/qt4/x86_qemu_emboxvc
           - x86/test/lang
@@ -42,7 +43,6 @@ jobs:
       fail-fast: false
       matrix:
         template:
-          - x86/smp
           - x86/test/net
           - x86/test/fs
           - x86/test/qt-vnc
