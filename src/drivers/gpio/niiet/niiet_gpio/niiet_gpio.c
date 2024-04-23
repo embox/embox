@@ -73,6 +73,53 @@ struct gpio_reg {
 
 static struct gpio_chip niiet_gpio_chip;
 
+static inline void
+niiet_gpio_irq_conf_type(volatile struct gpio_reg *gpio_reg, uint32_t mask, int type) {
+	if (1 == type) {
+		gpio_reg->GPIO_INTTYPESET_reg = mask;
+	} else {
+		gpio_reg->GPIO_INTTYPECLR_reg = mask;
+	}
+}
+
+static inline void
+niiet_gpio_irq_conf_pol(volatile struct gpio_reg *gpio_reg, uint32_t mask, int pol) {
+	if (1 == pol) {
+		gpio_reg->GPIO_INTPOLSET_reg = mask;
+	} else {
+		gpio_reg->GPIO_INTPOLCLR_reg = mask;
+	}
+}
+
+static inline void
+niiet_gpio_irq_conf_edge(volatile struct gpio_reg *gpio_reg, uint32_t mask, int edge) {
+	if (1 == edge) {
+		gpio_reg->GPIO_INTEDGESET_reg = mask;
+	} else {
+		gpio_reg->GPIO_INTEDGECLR_reg = mask;
+	}
+}
+
+static inline void 
+niiet_gpio_irq_en(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
+	gpio_reg->GPIO_INTENSET_reg = mask;
+}
+
+static inline void 
+niiet_gpio_irq_dis(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
+	gpio_reg->GPIO_INTENCLR_reg = mask;
+}
+
+static inline uint32_t 
+niiet_gpio_irq_get_status(volatile struct gpio_reg *gpio_reg) {
+	return gpio_reg->GPIO_INTSTATUS_reg;
+}
+
+static inline void 
+niiet_gpio_irq_clear_status(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
+	gpio_reg->GPIO_INTSTATUS_reg = mask;
+}
+
 static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char port) {
 		switch (port) {
 		case 0:
@@ -91,19 +138,66 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 	return 0;
 }
 
-irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio_) {
+irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
 	uint32_t mask = 0;
+	uint8_t port_num = 0;
+	volatile struct gpio_reg *gpio_reg = gpio;
+	
+	mask = niiet_gpio_irq_get_status(gpio_reg);
 
-	gpio_handle_irq(&niiet_gpio_chip, 0, mask);
+	niiet_gpio_irq_clear_status(gpio_reg, mask);
+
+	gpio_handle_irq(&niiet_gpio_chip, port_num, mask);
 
 	return IRQ_HANDLED;
 }
 
-static int niiet_gpio_irq_setup(int port) {
+static int niiet_gpio_setup_irq(int port, uint32_t mask, int mode) {
 	int res;
+	volatile struct gpio_reg *gpio_reg;
+	int type;
+	int edge;
+	int pol;
 
-	res = irq_attach(0, niiet_gpio_irq_handler, 0, NULL, "GPIO Irq");
+	gpio_reg = niiet_gpio_get_gpio_port(port);
+	if (gpio_reg == NULL) {
+		return -1;
+	}
+
+	res = irq_attach(0, niiet_gpio_irq_handler, 0, (void*)gpio_reg, "GPIO Irq");
+	if (res < 0) {
+		return res;
+	}
+
+	if ( (mode & GPIO_MODE_INT_MODE_LEVEL0)
+			|| (mode & GPIO_MODE_INT_MODE_LEVEL1) ) {
+		type = 0;
+	} else {
+		type = 1;
+	}
 	
+	if ((mode & GPIO_MODE_INT_MODE_RISING)
+			&& (mode & GPIO_MODE_INT_MODE_FALLING)) {
+		edge = 1;
+	} else {
+		edge = 0;
+	}
+
+	if ((mode & GPIO_MODE_INT_MODE_RISING)
+			|| (mode & GPIO_MODE_INT_MODE_LEVEL1)) {
+		pol = 1;
+	} else {
+		pol = 0;
+	}
+
+	niiet_gpio_irq_conf_pol(gpio_reg, mask, pol);
+	niiet_gpio_irq_conf_edge(gpio_reg, mask, edge);
+	niiet_gpio_irq_conf_type(gpio_reg, mask, type);
+
+	if (mode & GPIO_MODE_IN_INT_EN) {
+		niiet_gpio_irq_en(gpio_reg, mask);
+	}
+
 	return res;
 }
 
@@ -146,7 +240,7 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 	}
 
 	if (mode & GPIO_MODE_INT_SECTION) {
-		niiet_gpio_irq_setup(port);
+		niiet_gpio_setup_irq(port, pins, mode);
 	}
 
 	if (mode & GPIO_MODE_OUT_ALTERNATE) {
