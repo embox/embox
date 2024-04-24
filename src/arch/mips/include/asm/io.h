@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 27.06.2012
@@ -12,18 +11,24 @@
 
 #include <stdint.h>
 
-#define IO_OFFSET    0x1fd00000 + 0xA0000000 /* ISA_BASE + kseg1 */
+#include <asm/addrspace.h>
 
-#define out8(v,a) do { *((volatile uint8_t *)((size_t)a + IO_OFFSET)) = (uint8_t)(v); } while (0)
+#define IO_OFFSET (0x1fd00000 + KSEG1) /* ISA_BASE + kseg1 */
+
+#define out8(v, a)                                                     \
+	do {                                                               \
+		*((volatile uint8_t *)((size_t)a + IO_OFFSET)) = (uint8_t)(v); \
+	} while (0)
 #define in8(a) (*(volatile uint8_t *)((size_t)a + IO_OFFSET))
 
-#define out32(v,a) do { *((volatile uint32_t *)((size_t)a + IO_OFFSET)) = (uint32_t)(v); } while (0)
-#define in32(a) (*(volatile uint32_t *)((size_t)a + IO_OFFSET))
+#define out32(v, a)                                                      \
+	do {                                                                 \
+		*((volatile uint32_t *)((size_t)a + IO_OFFSET)) = (uint32_t)(v); \
+	} while (0)
+#define in32(a)  (*(volatile uint32_t *)((size_t)a + IO_OFFSET))
 
+#define mmiowb() asm volatile("sync" ::: "memory")
 
-
-#define mmiowb()   asm volatile ("sync" ::: "memory")
-
-#define __sync()   mmiowb()
+#define __sync() mmiowb()
 
 #endif /* MIPS_IO_H_ */
