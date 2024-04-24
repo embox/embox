@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
 
 #include <embox/unit.h>
@@ -32,49 +33,34 @@ static struct stm32_spi stm32_spi1 = {
 };
 
 static int stm32_spi1_init(void) {
-	GPIO_InitTypeDef  GPIO_InitStruct;
-
 #if defined(STM32F407xx) && !OPTION_MODULE_GET(platform__stm32__f4__stm32f4_discovery__arch,BOOLEAN,errata_spi_wrong_last_bit)
 	#error errata_spi_wrong_last_bit is not enabled for SPI1! \
 	       Please, enable this option in platform.stm32.f4.stm32f4_discovery.arch
 #endif
 
-	CONF_SPI1_CLK_ENABLE_SCK();
-	CONF_SPI1_CLK_ENABLE_MISO();
-	CONF_SPI1_CLK_ENABLE_MOSI();
-#if defined(CONF_SPI1_PIN_CS_PORT)
-	CONF_SPI1_CLK_ENABLE_CS();
-#endif
 	CONF_SPI1_CLK_ENABLE_SPI();
 
 	stm32_spi_init(&stm32_spi1, SPI1);
 
-	memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
-	GPIO_InitStruct.Pin       = CONF_SPI1_PIN_SCK_NR;
-	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull      = GPIO_PULLUP;
-	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
-	GPIO_InitStruct.Alternate = CONF_SPI1_PIN_SCK_AF;
-	HAL_GPIO_Init(CONF_SPI1_PIN_SCK_PORT, &GPIO_InitStruct);
+	gpio_setup_mode(CONF_SPI1_PIN_SCK_PORT, CONF_SPI1_PIN_SCK_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI1_PIN_SCK_AF) |
+		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
-	GPIO_InitStruct.Pin = CONF_SPI1_PIN_MISO_NR;
-	GPIO_InitStruct.Alternate = CONF_SPI1_PIN_MISO_AF;
-	HAL_GPIO_Init(CONF_SPI1_PIN_MISO_PORT, &GPIO_InitStruct);
+	gpio_setup_mode(CONF_SPI1_PIN_MISO_PORT, CONF_SPI1_PIN_MISO_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI1_PIN_MISO_AF) |
+		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
-	GPIO_InitStruct.Pin = CONF_SPI1_PIN_MOSI_NR;
-	GPIO_InitStruct.Alternate = CONF_SPI1_PIN_MOSI_AF;
-	HAL_GPIO_Init(CONF_SPI1_PIN_MOSI_PORT, &GPIO_InitStruct);
+	gpio_setup_mode(CONF_SPI1_PIN_MOSI_PORT, CONF_SPI1_PIN_MOSI_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI1_PIN_MOSI_AF) |
+		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
 #if defined(CONF_SPI1_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */
-	GPIO_InitStruct.Pin       = CONF_SPI1_PIN_CS_NR;
-	GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull      = GPIO_PULLUP;
-	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
-	HAL_GPIO_Init(CONF_SPI1_PIN_CS_PORT, &GPIO_InitStruct);
-
+	gpio_setup_mode(CONF_SPI1_PIN_CS_PORT, CONF_SPI1_PIN_CS_NR,
+		GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
+		
 	/* Chip Select is in inactive state by default. */
-	HAL_GPIO_WritePin(CONF_SPI1_PIN_CS_PORT, CONF_SPI1_PIN_CS_NR, GPIO_PIN_SET);
+	gpio_set(CONF_SPI1_PIN_CS_PORT, CONF_SPI1_PIN_CS_NR, GPIO_PIN_HIGH);
 #endif
 
 	return 0;

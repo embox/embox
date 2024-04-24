@@ -71,10 +71,10 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK",  PB, PIN_3, AF5),
-				PIN("MISO", PB, PIN_4, AF5),
-				PIN("MOSI", PB, PIN_5, AF5),
-				PIN("CS",   PB, PIN_2, NOAF),
+				PIN("SCK",  GPIO_PORT_B, PIN_3, AF5),
+				PIN("MISO", GPIO_PORT_B, PIN_4, AF5),
+				PIN("MOSI", GPIO_PORT_B, PIN_5, AF5),
+				PIN("CS",   GPIO_PORT_B, PIN_2, NOAF),
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOB),
@@ -91,10 +91,10 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI2",
 			.pins = {
-				PIN("SCK",  PB, PIN_13, AF5),
-				PIN("MISO", PB, PIN_14, AF5),
-				PIN("MOSI", PB, PIN_15, AF5),
-				PIN("CS",   PB, PIN_12, NOAF),
+				PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
+				PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
+				PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
+				PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOB),
@@ -111,10 +111,10 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI5",
 			.pins = {
-				PIN("SCK",  PF, PIN_7, AF5),
-				PIN("MISO", PF, PIN_8, AF5),
-				PIN("MOSI", PF, PIN_9, AF5),
-				PIN("CS",   PC, PIN_1, NOAF),
+				PIN("SCK",  GPIO_PORT_F, PIN_7, AF5),
+				PIN("MISO", GPIO_PORT_F, PIN_8, AF5),
+				PIN("MOSI", GPIO_PORT_F, PIN_9, AF5),
+				PIN("CS",   GPIO_PORT_C, PIN_1, NOAF),
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOF),

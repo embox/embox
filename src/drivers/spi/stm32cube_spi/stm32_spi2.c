@@ -7,6 +7,7 @@
  */
 
 #include <string.h>
+#include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
 
 #include <embox/unit.h>
@@ -39,37 +40,30 @@ static int stm32_spi2_init(void) {
 
 	stm32_spi_init(&stm32_spi2, SPI2);
 
-	memset(&GPIO_InitStruct, 0, sizeof(GPIO_InitStruct));
-	GPIO_InitStruct.Pin       = CONF_SPI2_PIN_SCK_NR;
-	GPIO_InitStruct.Mode      = GPIO_MODE_AF_PP;
-	GPIO_InitStruct.Pull      = GPIO_PULLUP;
-	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
-	GPIO_InitStruct.Alternate = CONF_SPI2_PIN_SCK_AF;
-	HAL_GPIO_Init(CONF_SPI2_PIN_SCK_PORT, &GPIO_InitStruct);
+	gpio_setup_mode(CONF_SPI2_PIN_SCK_PORT, CONF_SPI2_PIN_SCK_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI2_PIN_SCK_AF) |
+		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
-	GPIO_InitStruct.Pin = CONF_SPI2_PIN_MISO_NR;
-	GPIO_InitStruct.Alternate = CONF_SPI2_PIN_MISO_AF;
-	HAL_GPIO_Init(CONF_SPI2_PIN_MISO_PORT, &GPIO_InitStruct);
+	gpio_setup_mode(CONF_SPI2_PIN_MISO_PORT, CONF_SPI2_PIN_MISO_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI2_PIN_MISO_AF) |
+		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
-	GPIO_InitStruct.Pin = CONF_SPI2_PIN_MOSI_NR;
-	GPIO_InitStruct.Alternate = CONF_SPI2_PIN_MOSI_AF;
-	HAL_GPIO_Init(CONF_SPI2_PIN_MOSI_PORT, &GPIO_InitStruct);
+	gpio_setup_mode(CONF_SPI2_PIN_MOSI_PORT, CONF_SPI2_PIN_MOSI_NR,
+		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI2_PIN_MOSI_AF) |
+		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
 #if defined(CONF_SPI2_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */
-	GPIO_InitStruct.Pin       = CONF_SPI2_PIN_CS_NR;
-	GPIO_InitStruct.Mode      = GPIO_MODE_OUTPUT_PP;
-	GPIO_InitStruct.Pull      = GPIO_PULLUP;
-	GPIO_InitStruct.Speed     = GPIO_SPEED_FAST;
-	HAL_GPIO_Init(CONF_SPI2_PIN_CS_PORT, &GPIO_InitStruct);
-
+	gpio_setup_mode(CONF_SPI2_PIN_CS_PORT, CONF_SPI2_PIN_CS_NR,
+		GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
+		
 	/* Chip Select is in inactive state by default. */
-	HAL_GPIO_WritePin(CONF_SPI2_PIN_CS_PORT, CONF_SPI2_PIN_CS_NR, GPIO_PIN_SET);
+	gpio_set(CONF_SPI2_PIN_CS_PORT, CONF_SPI2_PIN_CS_NR, GPIO_PIN_HIGH);
 #endif
 
 	return 0;
 }
 
-#define SPI_DEV_NAME      stm32_spi_1
+#define SPI_DEV_NAME      stm32_spi_2
 
 SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi2, 2);
