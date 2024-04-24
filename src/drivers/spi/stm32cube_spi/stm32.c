@@ -11,6 +11,7 @@
 
 #include "stm32_spi.h"
 
+#include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
 #include <kernel/irq.h>
 #include <util/log.h>
@@ -104,8 +105,8 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 
 	if (dev->flags & SPI_CS_ACTIVE && dev->is_master) {
 		/* Note: we suppose that there's a single slave device
-		 * on the SPI bus, so we lower the same pin all the tiem */
-		HAL_GPIO_WritePin(priv->nss_port, priv->nss_pin, GPIO_PIN_RESET);
+		 * on the SPI bus, so we lower the same pin all the time */
+		gpio_set(priv->nss_port, priv->nss_pin, GPIO_PIN_LOW);
 	}
 
 	ret = HAL_SPI_TransmitReceive(handle, inbuf, outbuf, count, 5000);
@@ -118,8 +119,8 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 
 	if (dev->flags & SPI_CS_INACTIVE && dev->is_master) {
 		/* Note: we suppose that there's a single slave device
-		 * on the SPI bus, so we raise the same pin all the tiem */
-		HAL_GPIO_WritePin(priv->nss_port, priv->nss_pin, GPIO_PIN_SET);
+		 * on the SPI bus, so we raise the same pin all the time */
+		gpio_set(priv->nss_port, priv->nss_pin, GPIO_PIN_HIGH);
 	}
 
 	return 0;
