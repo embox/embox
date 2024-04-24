@@ -6,11 +6,6 @@
 #define HSICLK_VAL 1000000
 #define LSICLK_VAL 32768
 
-#define GPIOA_BASE              0x28000000UL
-#define GPIOB_BASE              0x28001000UL
-#define GPIOC_BASE              0x28002000UL
-
-
 #define TMR32_BASE              0x30000000UL
 
 #define TMR32                ((volatile t_TMR32_REG                *) TMR32_BASE)

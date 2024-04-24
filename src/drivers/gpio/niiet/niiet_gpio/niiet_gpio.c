@@ -23,9 +23,11 @@
 #define GPIO_CHIP_ID       OPTION_GET(NUMBER,gpio_chip_id)
 #define GPIO_PINS_NUMBER   16
 
-#define GPIOA                ((volatile struct gpio_reg *) GPIOA_BASE)
-#define GPIOB                ((volatile struct gpio_reg *) GPIOB_BASE)
-#define GPIOC                ((volatile struct gpio_reg *) GPIOC_BASE)
+#define GPIOA     ((volatile struct gpio_reg *)CONF_GPIO_PORT_A_REGION_BASE)
+#define GPIOB     ((volatile struct gpio_reg *)CONF_GPIO_PORT_B_REGION_BASE)
+#if defined(CONF_GPIO_PORT_C_REGION_BASE)
+# define GPIOC     ((volatile struct gpio_reg *)CONF_GPIO_PORT_C_REGION_BASE)
+#endif /* defined(CONF_GPIO_PORT_C_REGION_BASE) */
 
 struct gpio_reg {
     uint32_t 	GPIO_DATA_reg;        /* 0x00 */
@@ -126,7 +128,7 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 			return GPIOA;
 		case 1:
 			return GPIOB;
-#if defined (GPIOC)
+#if defined (CONF_GPIO_PORT_C_REGION_BASE)
 		case 2:
 			return GPIOC;
 		break;		
