@@ -61,6 +61,7 @@ $ sudo apt-get install build-essential gcc-multilib curl libmpc-dev python
 For Arch Linux:
 ```
 $ sudo pacman -S make gcc-multilib cpio qemu
+$ yay -S python2-bin
 ```
 
 For MAC OS X (requires [MacPorts](https://www.macports.org/install.php) installed):
