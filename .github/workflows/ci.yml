@@ -4,7 +4,7 @@ on: [push]
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04 # Embox NFS write test fails with ubuntu 18.04: "RPC: Can't decode result"
     strategy:
       fail-fast: false
       matrix:
@@ -13,11 +13,15 @@ jobs:
           - arm/qemu
           - platform/stm32/f4/stm32f4-discovery
           - x86/qemu
+          - x86/smp
           - x86/user_apps
           - project/qt4/x86_qemu_emboxvc
           - x86/test/lang
+          - x86/test/net
+          - x86/test/fs
           - x86/test/units
           - x86/test/packetdrill
+          - x86/test/qt-vnc
           - sparc/qemu
           - mips/qemu
           - ppc/qemu
@@ -26,28 +30,6 @@ jobs:
           - riscv64/qemu
     container:
       image: ghcr.io/embox/emdocker-test/emdocker-test:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.github_token }}
-      options: --privileged -v /:/host
-    steps:
-      - uses: actions/checkout@v1
-      - run: ./scripts/continuous/prepare.sh ${{matrix.template}}
-      - run: make confload-${{matrix.template}}
-      - run: make -j $(nproc)
-      - run: ./scripts/continuous/run.sh ${{matrix.template}}
-  ci-old:
-    runs-on: ubuntu-20.04 # Embox NFS write test fails with ubuntu 18.04: "RPC: Can't decode result"
-    strategy:
-      fail-fast: false
-      matrix:
-        template:
-          - x86/smp
-          - x86/test/net
-          - x86/test/fs
-          - x86/test/qt-vnc
-    container:
-      image: ghcr.io/embox/emdocker-test/emdocker-test:ubuntu16
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.github_token }}
