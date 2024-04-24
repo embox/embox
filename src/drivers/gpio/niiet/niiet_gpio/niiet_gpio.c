@@ -8,6 +8,7 @@
 
 #include <stdint.h>
 #include <hal/reg.h>
+#include <kernel/irq.h>
 
 #include <drivers/gpio/gpio_driver.h>
 
@@ -15,16 +16,16 @@
 
 #include <config/board_config.h>
 
-#include <system_k1921vg015.h>
-
 #include <framework/mod/options.h>
 
 #define GPIO_CHIP_ID       OPTION_GET(NUMBER,gpio_chip_id)
 #define GPIO_PINS_NUMBER   16
 
-#define GPIOA                ((volatile struct gpio_reg *) GPIOA_BASE)
-#define GPIOB                ((volatile struct gpio_reg *) GPIOB_BASE)
-#define GPIOC                ((volatile struct gpio_reg *) GPIOC_BASE)
+#define GPIOA     ((volatile struct gpio_reg *)CONF_GPIO_PORT_A_REGION_BASE)
+#define GPIOB     ((volatile struct gpio_reg *)CONF_GPIO_PORT_B_REGION_BASE)
+#if defined(CONF_GPIO_PORT_C_REGION_BASE)
+# define GPIOC     ((volatile struct gpio_reg *)CONF_GPIO_PORT_C_REGION_BASE)
+#endif /* defined(CONF_GPIO_PORT_C_REGION_BASE) */
 
 struct gpio_reg {
     uint32_t 	GPIO_DATA_reg;        /* 0x00 */
@@ -70,10 +71,54 @@ struct gpio_reg {
     uint32_t 	GPIO_LOCKCLR_reg;
 };
 
-#if 0
-#define GPIOA				0x40010000
-#define GPIOB				0x40011000
-#endif
+static struct gpio_chip niiet_gpio_chip;
+
+static inline void
+niiet_gpio_irq_conf_type(volatile struct gpio_reg *gpio_reg, uint32_t mask, int type) {
+	if (1 == type) {
+		gpio_reg->GPIO_INTTYPESET_reg = mask;
+	} else {
+		gpio_reg->GPIO_INTTYPECLR_reg = mask;
+	}
+}
+
+static inline void
+niiet_gpio_irq_conf_pol(volatile struct gpio_reg *gpio_reg, uint32_t mask, int pol) {
+	if (1 == pol) {
+		gpio_reg->GPIO_INTPOLSET_reg = mask;
+	} else {
+		gpio_reg->GPIO_INTPOLCLR_reg = mask;
+	}
+}
+
+static inline void
+niiet_gpio_irq_conf_edge(volatile struct gpio_reg *gpio_reg, uint32_t mask, int edge) {
+	if (1 == edge) {
+		gpio_reg->GPIO_INTEDGESET_reg = mask;
+	} else {
+		gpio_reg->GPIO_INTEDGECLR_reg = mask;
+	}
+}
+
+static inline void 
+niiet_gpio_irq_en(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
+	gpio_reg->GPIO_INTENSET_reg = mask;
+}
+
+static inline void 
+niiet_gpio_irq_dis(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
+	gpio_reg->GPIO_INTENCLR_reg = mask;
+}
+
+static inline uint32_t 
+niiet_gpio_irq_get_status(volatile struct gpio_reg *gpio_reg) {
+	return gpio_reg->GPIO_INTSTATUS_reg;
+}
+
+static inline void 
+niiet_gpio_irq_clear_status(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
+	gpio_reg->GPIO_INTSTATUS_reg = mask;
+}
 
 static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char port) {
 		switch (port) {
@@ -81,7 +126,7 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 			return GPIOA;
 		case 1:
 			return GPIOB;
-#if defined (GPIOC)
+#if defined (CONF_GPIO_PORT_C_REGION_BASE)
 		case 2:
 			return GPIOC;
 		break;		
@@ -91,6 +136,69 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 	}
 
 	return 0;
+}
+
+irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
+	uint32_t mask = 0;
+	uint8_t port_num = 0;
+	volatile struct gpio_reg *gpio_reg = gpio;
+	
+	mask = niiet_gpio_irq_get_status(gpio_reg);
+
+	niiet_gpio_irq_clear_status(gpio_reg, mask);
+
+	gpio_handle_irq(&niiet_gpio_chip, port_num, mask);
+
+	return IRQ_HANDLED;
+}
+
+static int niiet_gpio_setup_irq(int port, uint32_t mask, int mode) {
+	int res;
+	volatile struct gpio_reg *gpio_reg;
+	int type;
+	int edge;
+	int pol;
+
+	gpio_reg = niiet_gpio_get_gpio_port(port);
+	if (gpio_reg == NULL) {
+		return -1;
+	}
+
+	res = irq_attach(0, niiet_gpio_irq_handler, 0, (void*)gpio_reg, "GPIO Irq");
+	if (res < 0) {
+		return res;
+	}
+
+	if ( (mode & GPIO_MODE_INT_MODE_LEVEL0)
+			|| (mode & GPIO_MODE_INT_MODE_LEVEL1) ) {
+		type = 0;
+	} else {
+		type = 1;
+	}
+	
+	if ((mode & GPIO_MODE_INT_MODE_RISING)
+			&& (mode & GPIO_MODE_INT_MODE_FALLING)) {
+		edge = 1;
+	} else {
+		edge = 0;
+	}
+
+	if ((mode & GPIO_MODE_INT_MODE_RISING)
+			|| (mode & GPIO_MODE_INT_MODE_LEVEL1)) {
+		pol = 1;
+	} else {
+		pol = 0;
+	}
+
+	niiet_gpio_irq_conf_pol(gpio_reg, mask, pol);
+	niiet_gpio_irq_conf_edge(gpio_reg, mask, edge);
+	niiet_gpio_irq_conf_type(gpio_reg, mask, type);
+
+	if (mode & GPIO_MODE_IN_INT_EN) {
+		niiet_gpio_irq_en(gpio_reg, mask);
+	}
+
+	return res;
 }
 
 static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode) {
@@ -119,7 +227,6 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 	}
 
 	/* Enable port */
-	//niiet_gpio_clock_setup(port);
 	clk_enable(clk_name);
 
 	gpio_reg->GPIO_DENSET_reg |= pins;
@@ -127,18 +234,25 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 	if (mode & GPIO_MODE_IN) {
 		gpio_reg->GPIO_OUTENCLR_reg |= pins;
 	}
+
 	if (mode & GPIO_MODE_OUT) {
 		gpio_reg->GPIO_OUTENSET_reg |= pins;
-	
 	}
+
+	if (mode & GPIO_MODE_INT_SECTION) {
+		niiet_gpio_setup_irq(port, pins, mode);
+	}
+
 	if (mode & GPIO_MODE_OUT_ALTERNATE) {
 		/* Enable ALTFUNC */
 		gpio_reg->GPIO_ALTFUNCSET_reg |= pins;
-	}
-	if (GPIO_GET_ALTERNATE(mode) != 0){
-		for (int i = 0; i < GPIO_PINS_NUMBER; i++){ // TODO use bit_ctz()
+
+		for (int i = 0; i < GPIO_PINS_NUMBER; i++) {			
 			if (pins & (1 << i)) {
-				gpio_reg->GPIO_ALTFUNCNUM_reg |= GPIO_GET_ALTERNATE(mode) << i*2;
+				uint32_t alt = GPIO_GET_ALTERNATE(mode);
+
+				gpio_reg->GPIO_ALTFUNCNUM_reg &= ~(0x3 << i * 2);
+				gpio_reg->GPIO_ALTFUNCNUM_reg |= alt << i * 2;
 			}
 		}
 	}
@@ -184,4 +298,7 @@ static struct gpio_chip niiet_gpio_chip = {
 };
 
 GPIO_CHIP_DEF(&niiet_gpio_chip);
+
+STATIC_IRQ_ATTACH(GPIO_IRQ, gpio_irq_handler, NULL);
+
 
