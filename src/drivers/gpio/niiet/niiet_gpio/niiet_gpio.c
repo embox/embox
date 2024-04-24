@@ -16,8 +16,6 @@
 
 #include <config/board_config.h>
 
-#include <system_k1921vg015.h>
-
 #include <framework/mod/options.h>
 
 #define GPIO_CHIP_ID       OPTION_GET(NUMBER,gpio_chip_id)

@@ -13,8 +13,6 @@
 
 #include <drivers/common/memory.h>
 
-#include <system_k1921vg015.h>
-
 #include <config/board_config.h>
 
 #include <framework/mod/options.h>
