@@ -22,20 +22,19 @@ struct context {
 
 #endif /* !__ASSEMBLER__ */
 
-/* Offsets for struct context_kregs. */
-#define CTX_S0       0x00
-#define CTX_S1       0x04
-#define CTX_S2       0x08
-#define CTX_S3       0x0C
-#define CTX_S4       0x10
-#define CTX_S5       0x14
-#define CTX_S6       0x18
-#define CTX_S7       0x1C
-#define CTX_S8       0x20
-#define CTX_GP       0x24
-#define CTX_RA       0x28
-#define CTX_SP       0x2C
-#define CTX_CR0_STAT 0x30
-#define CTX_SIZE     0x34
+#define CTX_S0       (LONGSIZE * 0)
+#define CTX_S1       (LONGSIZE * 1)
+#define CTX_S2       (LONGSIZE * 2)
+#define CTX_S3       (LONGSIZE * 3)
+#define CTX_S4       (LONGSIZE * 4)
+#define CTX_S5       (LONGSIZE * 5)
+#define CTX_S6       (LONGSIZE * 6)
+#define CTX_S7       (LONGSIZE * 7)
+#define CTX_S8       (LONGSIZE * 8)
+#define CTX_GP       (LONGSIZE * 9)
+#define CTX_RA       (LONGSIZE * 10)
+#define CTX_SP       (LONGSIZE * 11)
+#define CTX_CR0_STAT (LONGSIZE * 12)
+#define CTX_SIZE     (LONGSIZE * 13)
 
 #endif /* ARCH_MIPS_CONTEXT_H_ */

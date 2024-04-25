@@ -46,7 +46,7 @@ END(mips_second_exception_handler)
  * Be careful when changing this, it has to be at most 128 bytes
  * to fit into space reserved for the exception handler.
  *
- * This code must place into EBASE+0x180 address
+ * This code must place into KSEG0+0x180 address
  */
 NESTED(mips_first_exception_handler, 0, $sp)
 	.set  push                 /* save the current status of flags */
