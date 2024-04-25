@@ -72,6 +72,9 @@
 #define LONG_INS   ins
 #define LONG_EXT   ext
 
+#define LONGSIZE   4
+#define LONGLOG    2
+
 #elif (_MIPS_SZLONG == 64)
 
 #define LONG_ADD   dadd
@@ -93,6 +96,9 @@
 #define LONG_SRAV  dsrav
 #define LONG_INS   dins
 #define LONG_EXT   dext
+
+#define LONGSIZE   8
+#define LONGLOG    3
 
 #endif /* _MIPS_SZLONG */
 

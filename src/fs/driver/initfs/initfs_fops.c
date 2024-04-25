@@ -8,6 +8,7 @@
 #include <errno.h>
 #include <stddef.h>
 #include <string.h>
+#include <stdint.h>
 #include <sys/types.h>
 
 #include <fs/dir_context.h>
@@ -79,7 +80,7 @@ int initfs_fill_inode(struct inode *node, char *cpio,
 	inode_mtime_set(node, entry->mtime);
 	node->i_mode = entry->mode & (S_IFMT | S_IRWXA);
 
-	fi->start_pos = (intptr_t) entry->data;
+	fi->start_pos = (uintptr_t) entry->data;
 	fi->entry     = (void *) cpio;
 
 	if (S_ISDIR(entry->mode)) {
