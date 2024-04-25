@@ -12,7 +12,7 @@ module stm32cube_flash_common {
 abstract module stm32cube_flash_in_chip {
 	//option string log_level="LOG_ERR"
 	option number flash_size
-	option number flash_sector_size=0x1000
+	option number flash_sector_size
 
 	@IncludeExport(path="drivers/block_dev/flash")
 	source "stm32_in_chip_flash.h"
@@ -24,6 +24,7 @@ abstract module stm32cube_flash_in_chip {
 module stm32h7cube extends stm32cube_flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x40000
+	option number flash_sector_size=0x20000 /* 128 Kb */
 
 	source "stm32_flash.c"	
 	//source "stm32_flash.lds.S"
@@ -42,6 +43,7 @@ module stm32h7cube extends stm32cube_flash_in_chip {
 module stm32l4cube extends stm32cube_flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x02000
+	option number flash_sector_size=0x800 /* 2Kb */
 
 	source "stm32_flash.c"
 	//source "stm32_flash.lds.S"
@@ -60,6 +62,7 @@ module stm32l4cube extends stm32cube_flash_in_chip {
 module stm32f7cube extends stm32cube_flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x18000
+	option number flash_sector_size=0x8000 /* 32 Kb */
 
 	source "stm32_flash.c"
 	//source "stm32_flash.lds.S"
@@ -78,6 +81,7 @@ module stm32f7cube extends stm32cube_flash_in_chip {
 module stm32f4cube extends stm32cube_flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0xc000
+	option number flash_sector_size=0x4000 /* 16 Kb */
 
 	source "stm32_flash.c"
 	//source "stm32_flash.lds.S"
@@ -96,6 +100,7 @@ module stm32f4cube extends stm32cube_flash_in_chip {
 module stm32f3cube extends stm32cube_flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x10000
+	option number flash_sector_size=0x800 /* 2 Kb */
 
 	source "stm32_flash.c"
 	//source "stm32_flash.lds.S"
@@ -114,6 +119,7 @@ module stm32f3cube extends stm32cube_flash_in_chip {
 module stm32f2cube extends stm32cube_flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0xc000
+	option number flash_sector_size=0x4000 /* 16 Kb */
 
 	source "stm32_flash.c"
 	//source "stm32_flash.lds.S"

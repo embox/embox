@@ -34,7 +34,10 @@
 
 #define FLASH_NAME stm32flash
 
-FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, STM32_FLASH_SECTOR_SIZE);
+/* TODO remove this. it's only temporary */
+static_assert(IN_CHIP_FLASH_SECTOR_SIZE == STM32_FLASH_SECTOR_SIZE, "");
+
+FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, IN_CHIP_FLASH_SECTOR_SIZE);
 
 extern char _flash_start, _flash_end;
 
@@ -42,7 +45,7 @@ extern char _flash_start, _flash_end;
 #define STM32_FLASH_END   ((uint32_t)&_flash_end)
 
 #define FLASH_START_SECTOR \
-	((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / STM32_FLASH_SECTOR_SIZE)
+	((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / IN_CHIP_FLASH_SECTOR_SIZE)
 
 static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD]
     __attribute__((aligned(STM32_FLASH_WORD)));
@@ -52,9 +55,9 @@ static const struct flash_dev_drv stm32_flash_drv;
 static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	struct flash_dev *flash;
 
-	assert((STM32_FLASH_FLASH_SIZE % STM32_FLASH_SECTOR_SIZE) == 0);
+	assert((IN_CHIP_FLASH_SIZE % IN_CHIP_FLASH_SECTOR_SIZE) == 0);
 
-	flash = flash_create(MACRO_STRING(FLASH_NAME), STM32_FLASH_FLASH_SIZE);
+	flash = flash_create(MACRO_STRING(FLASH_NAME), IN_CHIP_FLASH_SIZE);
 	if (flash == NULL) {
 		log_error("Failed to create flash device!");
 		return -1;
@@ -64,8 +67,8 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 	flash->num_block_infos = 1;
 	flash->block_info[0] = (struct flash_block_info){
 	    .fbi_start_id = STM32_FLASH_START,
-	    .block_size = STM32_FLASH_SECTOR_SIZE,
-	    .blocks = STM32_FLASH_FLASH_SIZE / STM32_FLASH_SECTOR_SIZE,
+	    .block_size = IN_CHIP_FLASH_SECTOR_SIZE,
+	    .blocks = IN_CHIP_FLASH_SIZE / IN_CHIP_FLASH_SECTOR_SIZE,
 	};
 	flash->fld_aligned_word = stm32_flash_aligned_word;
 	flash->fld_word_size = STM32_FLASH_WORD;
@@ -74,7 +77,7 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 
 	/* We are using only first STM32_FLASH_SECTORS_COUNT sectors */
 	assert((flash->block_info[0].blocks + FLASH_START_SECTOR)
-	       <= (STM32_FLASH_SECTOR_SIZE * STM32_FLASH_SECTORS_COUNT));
+	       <= (IN_CHIP_FLASH_SECTOR_SIZE * STM32_FLASH_SECTORS_COUNT));
 
 	log_debug("");
 	log_debug("Flash info:");
