@@ -37,15 +37,12 @@
 /* TODO remove this. it's only temporary */
 static_assert(IN_CHIP_FLASH_SECTOR_SIZE == STM32_FLASH_SECTOR_SIZE, "");
 
+IN_CHIP_FLASH_DECL();
+
 FLASH_CACHE_DEF(FLASH_NAME, STM32_FLASH_WORD, IN_CHIP_FLASH_SECTOR_SIZE);
 
-extern char _flash_start, _flash_end;
-
-#define STM32_FLASH_START ((uint32_t)&_flash_start)
-#define STM32_FLASH_END   ((uint32_t)&_flash_end)
-
 #define FLASH_START_SECTOR \
-	((STM32_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / IN_CHIP_FLASH_SECTOR_SIZE)
+	((IN_CHIP_FLASH_START - STM32_ADDR_FLASH_SECTOR_0) / IN_CHIP_FLASH_SECTOR_SIZE)
 
 static uint8_t stm32_flash_aligned_word[STM32_FLASH_WORD]
     __attribute__((aligned(STM32_FLASH_WORD)));
@@ -63,10 +60,10 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 		return -1;
 	}
 	flash->drv = &stm32_flash_drv;
-	flash->size = STM32_FLASH_END - STM32_FLASH_START;
+	flash->size = IN_CHIP_FLASH_END - IN_CHIP_FLASH_START;
 	flash->num_block_infos = 1;
 	flash->block_info[0] = (struct flash_block_info){
-	    .fbi_start_id = STM32_FLASH_START,
+	    .fbi_start_id = IN_CHIP_FLASH_START,
 	    .block_size = IN_CHIP_FLASH_SECTOR_SIZE,
 	    .blocks = IN_CHIP_FLASH_SIZE / IN_CHIP_FLASH_SECTOR_SIZE,
 	};
@@ -81,7 +78,7 @@ static int stm32_flash_init(struct flash_dev *dev, void *arg) {
 
 	log_debug("");
 	log_debug("Flash info:");
-	log_debug("  Flash start address = 0x%08x", STM32_FLASH_START);
+	log_debug("  Flash start address = 0x%08x", IN_CHIP_FLASH_START);
 	log_debug("  Flash start sector  = %d", FLASH_START_SECTOR);
 	log_debug("  Flash size   = 0x%x", flash->size);
 	log_debug("  Block size   = 0x%x", flash->block_info[0].block_size);

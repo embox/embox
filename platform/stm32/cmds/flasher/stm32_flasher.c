@@ -12,6 +12,7 @@
 #include <hal/ipl.h>
 
 #include <drivers/block_dev/flash/stm32flash.h>
+#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
 
 #include <framework/mod/options.h>
 
@@ -40,9 +41,7 @@ __NO_RETURN __STATIC_INLINE void __stm32_system_reset(void) {
   }
 }
 
-extern char _flash_start, _flash_end;
-#define STM32_FLASH_START ((uint32_t)&_flash_start)
-#define STM32_FLASH_END   ((uint32_t)&_flash_end)
+IN_CHIP_FLASH_DECL();
 
 static inline void flash_write_line(uint32_t wr_addr, uint32_t buf[16]) {
 	int i;
@@ -71,10 +70,10 @@ static void flasher_copy_blocks(void) {
 
 	for (; rd_addr < (uint32_t)IMAGE_END;) {
 
-		if (wr_addr == STM32_FLASH_START) {
+		if (wr_addr == IN_CHIP_FLASH_START) {
 			/* first sector includes stm32_flash0 don't touch it */
-			wr_addr += (STM32_FLASH_END - STM32_FLASH_START);
-			rd_addr += (STM32_FLASH_END - STM32_FLASH_START);
+			wr_addr += (IN_CHIP_FLASH_END - IN_CHIP_FLASH_START);
+			rd_addr += (IN_CHIP_FLASH_END - IN_CHIP_FLASH_START);
 		}
 
 		sec_nr = stm32_flash_sector_by_addr(wr_addr);
