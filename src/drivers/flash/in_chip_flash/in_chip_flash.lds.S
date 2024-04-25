@@ -1,4 +1,4 @@
-#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
+#include <drivers/block_dev/flash/in_chip_flash.h>
 
 SECTIONS {
 	.inchip_flash_section (NOLOAD): ALIGN(IN_CHIP_FLASH_SECTOR_SIZE) {

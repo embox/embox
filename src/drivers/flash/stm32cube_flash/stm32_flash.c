@@ -24,7 +24,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <drivers/block_dev/flash/stm32_in_chip_flash.h>
+#include <drivers/block_dev/flash/in_chip_flash.h>
 #include <drivers/block_dev/flash/stm32flash.h>
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_cache.h>
