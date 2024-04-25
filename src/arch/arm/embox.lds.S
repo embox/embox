@@ -29,7 +29,7 @@ SECTIONS {
 		KEEP(*(.da14680_quirk));
 		KEEP(*(.da1469x_quirk));
 
-		KEEP(*(.flash));
+		KEEP(*(.inchip_flash_section));
 
 		*(.text)
 		*(.text.*)
