@@ -1,6 +1,6 @@
 package embox.driver.flash
 
-abstract module stm32cube_flash_in_chip {
+abstract module flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size
 	option number flash_sector_size

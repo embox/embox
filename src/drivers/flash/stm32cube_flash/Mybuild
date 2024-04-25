@@ -10,7 +10,7 @@ module stm32cube_flash_common {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32h7cube extends stm32cube_flash_in_chip {
+module stm32h7cube extends flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x40000
 	option number flash_sector_size=0x20000 /* 128 Kb */
@@ -21,14 +21,13 @@ module stm32h7cube extends stm32cube_flash_in_chip {
 	source "stm32h7flash.h"
 
 	depends stm32cube_flash_common
-	depends embox.driver.flash.stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32l4cube extends stm32cube_flash_in_chip {
+module stm32l4cube extends flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x02000
 	option number flash_sector_size=0x800 /* 2Kb */
@@ -39,14 +38,13 @@ module stm32l4cube extends stm32cube_flash_in_chip {
 	source "stm32l4flash.h"
 
 	depends stm32cube_flash_common
-	depends embox.driver.flash.stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f7cube extends stm32cube_flash_in_chip {
+module stm32f7cube extends flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x18000
 	option number flash_sector_size=0x8000 /* 32 Kb */
@@ -57,14 +55,13 @@ module stm32f7cube extends stm32cube_flash_in_chip {
 	source "stm32f7flash.h"
 
 	depends stm32cube_flash_common
-	depends embox.driver.flash.stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f4cube extends stm32cube_flash_in_chip {
+module stm32f4cube extends flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0xc000
 	option number flash_sector_size=0x4000 /* 16 Kb */
@@ -75,14 +72,13 @@ module stm32f4cube extends stm32cube_flash_in_chip {
 	source "stm32f4flash.h"
 
 	depends stm32cube_flash_common
-	depends embox.driver.flash.stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f3cube extends stm32cube_flash_in_chip {
+module stm32f3cube extends flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0x10000
 	option number flash_sector_size=0x800 /* 2 Kb */
@@ -93,14 +89,13 @@ module stm32f3cube extends stm32cube_flash_in_chip {
 	source "stm32f3flash.h"
 
 	depends stm32cube_flash_common
-	depends stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f2cube extends stm32cube_flash_in_chip {
+module stm32f2cube extends flash_in_chip {
 	option string log_level="LOG_ERR"
 	option number flash_size=0xc000
 	option number flash_sector_size=0x4000 /* 16 Kb */
@@ -111,7 +106,6 @@ module stm32f2cube extends stm32cube_flash_in_chip {
 	source "stm32f2flash.h"
 
 	depends stm32cube_flash_common
-	depends embox.driver.flash.stm32cube_flash_in_chip
 
 	depends third_party.bsp.st_bsp_api
 	depends core
