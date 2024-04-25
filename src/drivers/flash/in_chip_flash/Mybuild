@@ -1,0 +1,12 @@
+package embox.driver.flash
+
+abstract module stm32cube_flash_in_chip {
+	option string log_level="LOG_ERR"
+	option number flash_size
+	option number flash_sector_size
+
+	@IncludeExport(path="drivers/block_dev/flash")
+	source "stm32_in_chip_flash.h"
+
+	source "stm32_flash.lds.S"
+}
