@@ -9,7 +9,7 @@
 #ifndef UTIL_BINALIGN_H_
 #define UTIL_BINALIGN_H_
 
-#define __binalign_mask(x, mask)       (((x) + (mask)) & ~(mask))
+#define __binalign_mask(x, mask) (((x) + (mask)) & ~(mask))
 
 #define __binalign(x, power) \
 		__binalign_bound(x, (typeof(x)) 0x1 << (power))
@@ -26,7 +26,7 @@
 
 #endif /* __ASSEMBLER__ */
 
-#define __binalign_check_mask(x, mask)  (((x) & (mask)) == 0)
+#define __binalign_check_mask(x, mask) (((x) & (mask)) == 0)
 
 #ifndef __ASSEMBLER__
 
@@ -37,7 +37,6 @@
 		__binalign_check_mask(x, (typeof(x)) (bound) - 1)
 
 #endif /* __ASSEMBLER__ */
-
 
 /**
  * Aligns the @c x value up to the @c 2^power boundary.
@@ -63,6 +62,8 @@
 
 #ifndef __ASSEMBLER__
 
+#include <stddef.h> /* offsetof() */
+
 /**
  * Checks whether the specified value is power of two aligned.
  *
@@ -87,6 +88,23 @@
  * @see #binalign_bound()
  */
 #define binalign_check_bound(x, bound) __binalign_check_bound(x, bound)
+
+/**
+ * Aligns the @c x value up according to @c type alignment requirements.
+ *
+ * @param x the value to be aligned
+ * @param type
+ *
+ * @return the minimal aligned value closest to the @c x
+ */
+#define binalign_type(x, type)                   \
+	__binalign_bound(x, ({                       \
+		struct __binalign_struct {               \
+			char __a;                            \
+			type __b;                            \
+		};                                       \
+		offsetof(struct __binalign_struct, __b); \
+	}))
 
 #endif /* __ASSEMBLER__ */
 
