@@ -163,7 +163,8 @@ static struct free_block * cut(struct free_block_link *free_blocks_list,
 	size_t offset;
 
 	offset = size + sizeof(block->size);
-	nblock = (struct free_block *) ((char *) block + offset);
+	offset = binalign_type(offset, struct free_block);
+	nblock = (struct free_block *)((char *)block + offset);
 
 	block_unlink(block);
 	block_link(free_blocks_list, nblock);
