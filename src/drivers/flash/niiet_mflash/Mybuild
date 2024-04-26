@@ -1,0 +1,11 @@
+package embox.driver.flash
+
+module niiet_mflash_in_chip extends flash_in_chip {
+	option string log_level="LOG_ERR"
+	option number flash_size=0xC000 /* 48 Kb */ 
+	option number flash_sector_size=0x1000 /* 4 Kb */
+
+	source "niiet_mflash.c"	
+
+	depends core
+}
