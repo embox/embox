@@ -6,16 +6,18 @@
  * @date 14.06.2023
  */
 
-#include <util/log.h>
 #include <string.h>
 #include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
+
+#include <embox/unit.h>
+
 #include "stm32_spi.h"
 
 #include <config/board_config.h>
+
 #include <framework/mod/options.h>
 
-#include <embox/unit.h>
 EMBOX_UNIT_INIT(stm32_spi3_init);
 
 static struct stm32_spi stm32_spi3 = {
@@ -28,15 +30,9 @@ static struct stm32_spi stm32_spi3 = {
 };
 
 static int stm32_spi3_init(void) {
-	GPIO_InitTypeDef  GPIO_InitStruct;
-
-	CONF_SPI3_CLK_ENABLE_SCK();
-	CONF_SPI3_CLK_ENABLE_MISO();
-	CONF_SPI3_CLK_ENABLE_MOSI();
-#if defined(CONF_SPI3_PIN_CS_PORT)
-	CONF_SPI3_CLK_ENABLE_CS();
-#endif
 	CONF_SPI3_CLK_ENABLE_SPI();
+
+	stm32_spi_init(&stm32_spi3, SPI3);
 
 #if	OPTION_GET(NUMBER, pullup) == 1
 	gpio_setup_mode(CONF_SPI3_PIN_SCK_PORT, CONF_SPI3_PIN_SCK_NR,
@@ -60,23 +56,20 @@ static int stm32_spi3_init(void) {
 		GPIO_MODE_OUT_PUSH_PULL);
 #endif
 
-
 #if defined(CONF_SPI3_PIN_CS_PORT)
 #if	CONF_SPI3_PIN_CS_AF == -1
 	/* NOAF in board configuration file defined as -1 */
 	gpio_setup_mode(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR,
 		GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
+
+	/* Chip Select is in inactive state by default. */
+	gpio_set(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR, GPIO_PIN_HIGH);
 #else
 	gpio_setup_mode(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_CS_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 #endif // CONF_SPI3_PIN_CS_AF == -1
-
-	/* Chip Select is in inactive state by default. */
-	gpio_set(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR, GPIO_PIN_HIGH);
 #endif // defined(CONF_SPI3_PIN_CS_PORT)
-
-	stm32_spi_init(&stm32_spi3, SPI3);
 
 	return 0;
 }
