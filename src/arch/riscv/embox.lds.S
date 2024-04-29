@@ -16,6 +16,7 @@ PROVIDE(_ram_size = LENGTH(RAM));
 SECTIONS {
 	.text : {
 		KEEP(*(.init));
+		KEEP(*(.inchip_flash_section));
 		*(.text)
 		*(.text.*)
 	} SECTION_REGION(text) :text
