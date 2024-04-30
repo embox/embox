@@ -1,0 +1,6 @@
+package embox.arch.mips.kernel
+
+@NoCode
+module reg extends embox.arch.reg {
+	source "mmap_reg.h"
+}
