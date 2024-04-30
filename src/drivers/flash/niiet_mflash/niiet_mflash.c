@@ -157,10 +157,11 @@ static int niiet_mflash_program(struct flash_dev *dev, uint32_t base,
     const void *data, size_t len) {
 	uint32_t addr;
 	uint32_t *d = (void *)data;
+	int cnt;
 
-	addr = dev->block_info[0].fbi_start_id + base;
+	for(cnt = 0; cnt < len; cnt += 16) {
+		addr = dev->block_info[0].fbi_start_id + base + cnt;
 
-	for(;len; len-=16) {
 		niiet_mflash_waitdone(dev);
 		REG32_STORE(MFLASH_ADDR, addr);
 
