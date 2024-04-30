@@ -73,11 +73,11 @@ int main(int argc, char **argv) {
 
 			if (is_bytes) {
 				printf("%4d | %6s         | %10" PRId64 " | %s\n",
-					   id, name, size, "disk");
+					   (int)id, name, size, "disk");
 			} else {
 				unit = convert_unit(&size);
 				printf("%4d | %6s         | %8" PRId64 "%s | %s\n",
-					   id, name, size, unit, "disk");
+					   (int)id, name, size, unit, "disk");
 			}
 
 			for (j = 0; j < MAX_BDEV_QUANTITY; j++) {
@@ -88,11 +88,11 @@ int main(int argc, char **argv) {
 
 					if (is_bytes) {
 						printf("%4d |      |--%6s | %10" PRId64 " | %s\n",
-							   id, name, size, "part");
+							   (int)id, name, size, "part");
 					} else {
 						unit = convert_unit(&size);
 						printf("%4d | %6s         | %10" PRId64 "%s | %s\n",
-							   id, name, size, unit, "disk");
+							   (int)id, name, size, unit, "disk");
 					}
 				}
 			}
