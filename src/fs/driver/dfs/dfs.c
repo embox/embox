@@ -307,23 +307,6 @@ static int dfs_iterate(struct inode *next, char *name_buf,
 	/* End of directory */
 	return -1;
 }
-#if 0
-static int dfs_pathname(struct inode *inode, char *buf, int flags) {
-	struct dfs_dir_entry dirent;
-
-	assert(inode);
-	dfs_read_dirent(inode->i_sb, inode->i_no, &dirent);
-
-	if (flags & DVFS_NAME) {
-		strcpy(buf, (char *) dirent.name);
-	} else {
-		*buf = '/';
-		strcpy(buf + 1, (char *) dirent.name);
-	}
-
-	return 0;
-}
-#endif
 
 static struct inode_operations dfs_iops = {
 	.ino_create   = dfs_icreate,
@@ -331,9 +314,6 @@ static struct inode_operations dfs_iops = {
 
 	.ino_iterate  = dfs_iterate,
 	.ino_truncate = dfs_itruncate,
-#if 0
-	.ino_pathname = dfs_pathname,
-#endif
 };
 
 static struct file_operations dfs_fops;
