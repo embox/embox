@@ -16,23 +16,28 @@
 /**
  * Architecture-specific registers.
  */
-
 #define ARCH_REG_STORE(reg, val)  __ARCH_REG_STORE(reg, val)
 #define ARCH_REG_LOAD(reg)        __ARCH_REG_LOAD(reg)
 #define ARCH_REG_ORIN(reg, mask)  __ARCH_REG_ORIN(reg, mask)
 #define ARCH_REG_ANDIN(reg, mask) __ARCH_REG_ANDIN(reg, mask)
 #define ARCH_REG_CLEAR(reg, mask) __ARCH_REG_CLEAR(reg, mask)
 
-/**
- * Registers mapped into the address space.
- */
-
-#define MMAP_REG_STORE(inttype, addr, val)                \
+#ifndef __MMAP_REG_STORE
+#define __MMAP_REG_STORE(inttype, addr, val)              \
 	do {                                                  \
 		*((volatile inttype *)((uintptr_t)addr)) = (val); \
 	} while (0)
+#endif /* __MMAP_REG_STORE */
 
-#define MMAP_REG_LOAD(inttype, addr) *((volatile inttype *)((uintptr_t)addr))
+#ifndef __MMAP_REG_LOAD
+#define __MMAP_REG_LOAD(inttype, addr) *((volatile inttype *)((uintptr_t)addr))
+#endif /* __MMAP_REG_LOAD */
+
+/**
+ * Registers mapped into the address space.
+ */
+#define MMAP_REG_STORE(inttype, addr, val) __MMAP_REG_STORE(inttype, addr, val)
+#define MMAP_REG_LOAD(inttype, addr)       __MMAP_REG_LOAD(inttype, addr)
 
 #define MMAP_REG_ORIN(inttype, addr, mask) \
 	MMAP_REG_STORE(inttype, addr,          \
