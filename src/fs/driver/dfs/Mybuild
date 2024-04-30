@@ -12,11 +12,5 @@ module dfs {
 
 	option number format_during_fill_sb = 1
 
-	/* remove these from mods.conf */
-	option number page_size = 4
-	option number block_size = 131072 /* 128kb */
-	option boolean use_ram_as_cache = false
-	option boolean use_ram_section = false
-
 	depends embox.driver.flash.flash_cache
 }
