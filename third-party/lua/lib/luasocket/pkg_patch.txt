@@ -1,37 +1,48 @@
-diff -Naur luasocket-321c0c9b1f7b6b83cd83b58e7e259f53eca69373.orig/src/makefile luasocket-321c0c9b1f7b6b83cd83b58e7e259f53eca69373/src/makefile
---- luasocket-321c0c9b1f7b6b83cd83b58e7e259f53eca69373.orig/src/makefile	2015-03-04 01:20:44.000000000 +0300
-+++ luasocket-321c0c9b1f7b6b83cd83b58e7e259f53eca69373/src/makefile	2015-04-21 02:30:00.490867895 +0300
-@@ -158,15 +158,14 @@
+diff -Naur -u luasocket-3.1.0.orig/src/makefile luasocket-3.1.0/src/makefile
+--- luasocket-3.1.0.orig/src/makefile	2022-07-27 10:07:00.000000000 +0300
++++ luasocket-3.1.0/src/makefile	2024-05-01 00:51:04.521370820 +0300
+@@ -18,7 +18,7 @@
+ 
+ # LUAV: 5.1 5.2 5.3 5.4
+ # lua version to build against
+-LUAV?=5.1
++LUAV?=5.4
+ 
+ # MYCFLAGS: to be set by user if needed
+ MYCFLAGS?=
+@@ -172,12 +172,14 @@
  # for Linux
  SO_linux=so
  O_linux=o
 -CC_linux=gcc
-+CC_linux:=$(CC)
- DEF_linux=-DLUASOCKET_$(DEBUG) -DLUA_$(COMPAT)_MODULE \
--	-DLUASOCKET_API='__attribute__((visibility("default")))' \
--	-DUNIX_API='__attribute__((visibility("default")))' \
--	-DMIME_API='__attribute__((visibility("default")))'
--CFLAGS_linux= -I$(LUAINC) $(DEF) -Wall -Wshadow -Wextra \
--	-Wimplicit -O2 -ggdb3 -fpic -fvisibility=hidden
--LDFLAGS_linux=-O -shared -fpic -o 
+-DEF_linux=-DLUASOCKET_$(DEBUG)
+-CFLAGS_linux=$(LUAINC:%=-I%) $(DEF) -Wall -Wshadow -Wextra \
+-	-Wimplicit -O2 -ggdb3 -fpic
+-LDFLAGS_linux=-O -shared -fpic -o
 -LD_linux=gcc
++CC_linux:=$(CC)
++DEF_linux=-DLUASOCKET_$(DEBUG) -DLUA_$(COMPAT)_MODULE \
 +	-DLUASOCKET_API= \
 +	-DUNIX_API= \
 +	-DMIME_API=
 +CFLAGS_linux=$(DEF) $(CPPFLAGS)
-+LDFLAGS_linux=-o 
++LDFLAGS_linux=-o
 +LD_linux=$(CC)
  SOCKET_linux=usocket.o
  
  #------
-@@ -232,8 +231,8 @@
+@@ -272,10 +274,10 @@
  #
  SO=$(SO_$(PLAT))
  O=$(O_$(PLAT))
--SOCKET_V=3.0-rc1
+-SOCKET_V=3.0.0
 -MIME_V=1.0.3
+-SOCKET_SO=socket-$(SOCKET_V).$(SO)
+-MIME_SO=mime-$(MIME_V).$(SO)
 +SOCKET_V=o
 +MIME_V=o
- SOCKET_SO=socket.$(SO).$(SOCKET_V)
- MIME_SO=mime.$(SO).$(MIME_V)
++SOCKET_SO=socket.$(SO).$(SOCKET_V)
++MIME_SO=mime.$(SO).$(MIME_V)
  UNIX_SO=unix.$(SO)
+ SERIAL_SO=serial.$(SO)
+ SOCKET=$(SOCKET_$(PLAT))

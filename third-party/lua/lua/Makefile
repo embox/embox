@@ -1,9 +1,9 @@
 
 PKG_NAME := lua
-PKG_VER  := 5.3.0
+PKG_VER  := 5.4.6
 
 PKG_SOURCES := http://www.lua.org/ftp/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := a1b0a7e92d0c85bbff7a8d27bf29f8af
+PKG_MD5     := 25a429319dff20dfbfb9956c2b5be911
 
 PKG_PATCHES := pkg_patch.txt
 
