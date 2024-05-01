@@ -4,3 +4,9 @@ package embox.test.kernel.sched
 module waitq {
 	source "waitq.c"
 }
+
+@AutoCmd
+@Cmd(name = "test_strategy", help="strategy performamce")
+module test_sched {
+    source "strategy.c"
+}
