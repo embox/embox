@@ -1,9 +1,9 @@
 
 PKG_NAME := luasocket
-PKG_VER  := 321c0c9b1f7b6b83cd83b58e7e259f53eca69373
+PKG_VER  := 3.1.0
 
-PKG_SOURCES := https://github.com/diegonehab/luasocket/archive/$(PKG_VER).tar.gz
-PKG_MD5     := e2d6845e1f75d2e24df5563f643598af
+PKG_SOURCES := https://github.com/lunarmodules/luasocket/archive/refs/tags/v$(PKG_VER).tar.gz
+PKG_MD5     := abeca2891168914b57460b0ba9f9090f
 
 PKG_PATCHES := pkg_patch.txt
 
@@ -12,10 +12,11 @@ include $(EXTBLD_LIB)
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
-			LUAV=5.3 \
+			LUAV=5.4 \
 			DEBUG=DEBUG \
 			CC=$(EMBOX_GCC) \
 			CPPFLAGS='-I$(ROOT_DIR)/third-party/lua/lib/luasocket/include/ \
+					  -I$(ROOT_DIR)/third-party/lua/lua/include/ \
 				$(EMBOX_CPPFLAGS)' \
 	)
 	touch $@
