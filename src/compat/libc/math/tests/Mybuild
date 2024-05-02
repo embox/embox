@@ -80,3 +80,12 @@ module math_test_atan {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module math_test_sinh {
+	source "math_test_sinh.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
