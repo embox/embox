@@ -16,3 +16,7 @@ module list extends api {
 module list_array extends api {
 	source "list_array.c", "list_array.h"
 }
+
+module dlist_prio extends api {
+	source "dlist_prio.c", "dlist_prio.h"
+}

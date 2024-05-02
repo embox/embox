@@ -1,0 +1,7 @@
+package embox.test.smp
+
+@AutoCmd
+@Cmd(name = "test_smp", help="Running multiple cores")
+module test_smp {
+    source "test_smp.c"
+}

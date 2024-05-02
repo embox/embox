@@ -26,3 +26,12 @@ module trivial {
 
 	depends runq.list
 }
+
+module custom {
+
+	depends embox.kernel.sched.affinity.affinity
+	depends embox.kernel.sched.timing.timing
+	depends embox.kernel.sched.priority.priority
+
+	depends runq.dlist_prio
+}
