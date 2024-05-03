@@ -81,6 +81,10 @@ int stm32_spi_init(struct stm32_spi *dev, void *instance) {
 	return stm32_spi_setup(dev, instance, true);
 }
 
+static int stm32_spi_init1(struct spi_device *dev) {
+	return ((struct stm32_spi*)(dev->priv))->rcc_gpio_init();
+}
+
 static int stm32_spi_select(struct spi_device *dev, int cs) {
 	log_debug("NIY");
 
@@ -127,6 +131,7 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 }
 
 struct spi_ops stm32_spi_ops = {
+	.init     = stm32_spi_init1,
 	.select   = stm32_spi_select,
 	.set_mode = stm32_spi_set_mode,
 	.transfer = stm32_spi_transfer

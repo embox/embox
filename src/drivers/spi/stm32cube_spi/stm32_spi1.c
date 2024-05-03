@@ -21,9 +21,10 @@
 
 #include <config/board_config.h>
 
-EMBOX_UNIT_INIT(stm32_spi1_init);
-
+//EMBOX_UNIT_INIT(stm32_spi1_init);
+static int stm32_spi1_init(void);
 static struct stm32_spi stm32_spi1 = {
+	.rcc_gpio_init = stm32_spi1_init,
 #if defined(CONF_SPI1_PIN_CS_PORT)
 	.nss_port = CONF_SPI1_PIN_CS_PORT,
 	.nss_pin  = CONF_SPI1_PIN_CS_NR,
