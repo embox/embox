@@ -11,14 +11,6 @@ diff -aur -x configure boost_1_65_0-orig/boost/config/stdlib/libstdcpp3.hpp boos
        //
        // If the std lib has thread support turned on, then turn it on in Boost
        // as well.  We do this because some gcc-3.4 std lib headers define _REENTANT
-diff -aur -x configure boost_1_65_0-orig/boost/config/user.hpp boost_1_65_0/boost/config/user.hpp
---- boost_1_65_0-orig/boost/config/user.hpp	2017-08-19 19:49:40.000000000 +0300
-+++ boost_1_65_0/boost/config/user.hpp	2019-05-16 19:57:24.343760757 +0300
-@@ -130,4 +130,3 @@
- //
- // to ensure the correct libraries are selected at link time.
- // #define BOOST_LIB_BUILDID amd64
--
 diff -aur -x configure boost_1_65_0-orig/tools/build/src/tools/gcc.jam boost_1_65_0/tools/build/src/tools/gcc.jam
 --- boost_1_65_0-orig/tools/build/src/tools/gcc.jam	2017-08-19 19:49:50.000000000 +0300
 +++ boost_1_65_0/tools/build/src/tools/gcc.jam	2019-05-16 19:53:41.381039305 +0300
