@@ -1,0 +1,22 @@
+diff -aur ./gmp-6.3.0/gmp-impl.h ../build/extbld/third_party/lib/libgmp/gmp-6.3.0/gmp-impl.h
+--- ./gmp-6.3.0/gmp-impl.h	2023-07-29 16:42:16.000000000 +0300
++++ ../build/extbld/third_party/lib/libgmp/gmp-6.3.0/gmp-impl.h	2024-04-14 18:00:56.242884959 +0300
+@@ -161,7 +161,7 @@
+ #if HAVE_STDINT_H
+ # include <stdint.h>
+ #endif
+-
++#include <stdio.h>
+ #ifdef __cplusplus
+ #include <cstring>  /* for strlen */
+ #include <string>   /* for std::string */
+@@ -1780,9 +1780,7 @@
+ __GMP_DECLSPEC int mpz_lucas_mod (mpz_ptr, mpz_ptr, long, mp_bitcnt_t, mpz_srcptr, mpz_ptr, mpz_ptr);
+
+ #define mpz_inp_str_nowhite __gmpz_inp_str_nowhite
+-#ifdef _GMP_H_HAVE_FILE
+ __GMP_DECLSPEC size_t  mpz_inp_str_nowhite (mpz_ptr, FILE *, int, int, size_t);
+-#endif
+
+ #define mpn_divisible_p __MPN(divisible_p)
+ __GMP_DECLSPEC int     mpn_divisible_p (mp_srcptr, mp_size_t, mp_srcptr, mp_size_t) __GMP_ATTRIBUTE_PURE;
