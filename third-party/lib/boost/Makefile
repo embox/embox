@@ -1,7 +1,11 @@
 PKG_NAME := boost
-PKG_VER  := 1_65_0
 
-PKG_SOURCES := dl.bintray.com/boostorg/release/1.65.0/source/$(PKG_NAME)_$(PKG_VER).tar.gz
+# PKG_VER  := 1_85_0
+# PKG_SOURCES := https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_$(PKG_VER).tar.gz
+# PKG_MD5     := 53aeccc3167909ee770e34469f8dd592
+
+PKG_VER  := 1_65_0
+PKG_SOURCES := https://boostorg.jfrog.io/artifactory/main/release/1.65.0/source/boost_$(PKG_VER).tar.gz
 PKG_MD5     := d75a27ad1a34cfc7c9b5cb92594410c3
 
 PKG_PATCHES := patch.txt
