@@ -26,8 +26,8 @@
 /* Structure describing CPU time used by a process and its children.  */
 
 namespace std {
-	extern size_t strxfrm(char *dest, const char *src, size_t n);
-	extern size_t wcslen(const wchar_t *s);
+	//extern size_t strxfrm(char *dest, const char *src, size_t n);
+	//extern size_t wcslen(const wchar_t *s);
 }
 
 #define RLIM_INFINITY 0
