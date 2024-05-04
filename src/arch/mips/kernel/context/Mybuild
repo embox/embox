@@ -1,0 +1,7 @@
+package embox.arch.mips
+
+module context extends embox.arch.context {
+	source "context.h"
+	source "context.c"
+	source "context_switch.S"
+}

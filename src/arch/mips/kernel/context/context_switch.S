@@ -6,8 +6,7 @@
  */
 
 #include <asm/asm.h>
-
-#include "context.h"
+#include <hal/context.h>
 
 ENTRY(context_switch)
 	LONG_ADDI $sp, $sp, -CTX_SIZE

@@ -2,29 +2,24 @@
  * @file
  *
  * @date Mar 11, 2020
- * @Author Anton Bondarev
+ * @author Anton Bondarev
  */
 
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <asm/cacheops.h>
+#include <asm/io.h>
+#include <asm/mipsregs.h>
+#include <asm/system.h>
+#include <drivers/mips/global_control_block.h>
+#include <embox/unit.h>
+#include <framework/mod/options.h>
+#include <kernel/panic.h>
 #include <util/log.h>
 
-#include <stdint.h>
-#include <stdbool.h>
-
-#include <kernel/panic.h>
-
-#include <asm/mipsregs.h>
-#include <asm/cacheops.h>
-#include <asm/system.h>
-#include <asm/io.h>
-
-#include <drivers/mips/global_control_block.h>
-
-#include <embox/unit.h>
-
-#include <framework/mod/options.h>
-
-#define USE_L2_CACHE        OPTION_GET(BOOLEAN,use_l2_cache)
-#define USE_CACHE_SIZE_AUTO  OPTION_GET(BOOLEAN,use_auto_cache_size)
+#define USE_L2_CACHE        OPTION_GET(BOOLEAN, use_l2_cache)
+#define USE_CACHE_SIZE_AUTO OPTION_GET(BOOLEAN, use_auto_cache_size)
 
 EMBOX_UNIT_INIT(mips_cache_init);
 
@@ -36,7 +31,6 @@ static uint32_t l2_line_size;
 static uint32_t l1i_line_size;
 static uint32_t l1d_line_size;
 #endif
-
 
 static inline unsigned long icache_line_size(void) {
 #ifdef USE_CACHE_SIZE_AUTO
@@ -64,7 +58,6 @@ static inline unsigned long scache_line_size(void) {
 
 #if USE_L2_CACHE
 static void probe_l2(void) {
-
 	unsigned long conf2, sl;
 	bool l2c = false;
 
@@ -85,10 +78,12 @@ static void probe_l2(void) {
 
 	if (l2c) {
 		l2_line_size = mips_cm_l2_line_size();
-	} else if (l2c) {
+	}
+	else if (l2c) {
 		/* We don't know how to retrieve L2 config on this system */
 		panic("We don't know how to retrieve L2 config on this system");
-	} else {
+	}
+	else {
 		sl = (conf2 & MIPS_CONF2_SL) >> MIPS_CONF2_SL_SHF;
 		l2_line_size = sl ? (2 << sl) : 0;
 	}
@@ -109,7 +104,7 @@ static int mips_cache_init(void) {
 #endif
 
 	log_info("cache L1: instr line size (%d) data line size (%d)\n",
-				icache_line_size(), dcache_line_size());
+	    icache_line_size(), dcache_line_size());
 #if USE_L2_CACHE
 	probe_l2();
 	log_info("cache L2: line size (%d)\n", scache_line_size());
@@ -117,20 +112,21 @@ static int mips_cache_init(void) {
 	return 0;
 }
 
-#define cache_loop(start, end, lsize, ops...) do {                \
-	const void *addr = (const void *)(start & ~(lsize - 1));      \
-	const void *aend = (const void *)((end - 1) & ~(lsize - 1));  \
-	const unsigned int cache_ops[] = { ops };                     \
-	unsigned int i;                                               \
-	                                                              \
-	if (!lsize) {                                                 \
-		break;                                                    \
-	}                                                             \
-	for (; addr <= aend; addr += lsize) {                         \
-		for (i = 0; i < ARRAY_SIZE(cache_ops); i++)               \
-		mips_cache(cache_ops[i], (const volatile void *)addr);    \
-	}                                                             \
-} while (0)
+#define cache_loop(start, end, lsize, ops...)                          \
+	do {                                                               \
+		const void *addr = (const void *)(start & ~(lsize - 1));       \
+		const void *aend = (const void *)((end - 1) & ~(lsize - 1));   \
+		const unsigned int cache_ops[] = {ops};                        \
+		unsigned int i;                                                \
+                                                                       \
+		if (!lsize) {                                                  \
+			break;                                                     \
+		}                                                              \
+		for (; addr <= aend; addr += lsize) {                          \
+			for (i = 0; i < ARRAY_SIZE(cache_ops); i++)                \
+				mips_cache(cache_ops[i], (const volatile void *)addr); \
+		}                                                              \
+	} while (0)
 
 void flush_cache(unsigned long start_addr, size_t size) {
 	unsigned long ilsize = icache_line_size();
@@ -144,8 +140,8 @@ void flush_cache(unsigned long start_addr, size_t size) {
 
 	if ((ilsize == dlsize) && !slsize) {
 		/* flush I-cache & D-cache simultaneously */
-		cache_loop(start_addr, start_addr + size, ilsize,
-				HIT_WRITEBACK_INV_D, HIT_INVALIDATE_I);
+		cache_loop(start_addr, start_addr + size, ilsize, HIT_WRITEBACK_INV_D,
+		    HIT_INVALIDATE_I);
 		goto ops_done;
 	}
 

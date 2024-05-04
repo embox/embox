@@ -1,4 +1,4 @@
-package embox.arch.mips.kernel
+package embox.arch.mips
 
 @NoCode
 module reg extends embox.arch.reg {

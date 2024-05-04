@@ -10,7 +10,6 @@
 #ifndef MIPS_ASM_IPL_H_
 #define MIPS_ASM_IPL_H_
 
-
 #include <asm/mipsregs.h>
 
 typedef unsigned int __ipl_t;
@@ -20,14 +19,14 @@ static inline void ipl_init(void) {
 
 	/* read status registers for cleaning interrupts mask */
 	c0_reg = mips_read_c0_status();
-//	c0_reg &= ~(ST0_IM);           /* clear all interrupts mask */
-	c0_reg |= ST0_IE;              /* global enable interrupt */
-	mips_write_c0_status(c0_reg);  /* write back status register */
+	// c0_reg &= ~(ST0_IM);          /* clear all interrupts mask */
+	c0_reg |= ST0_IE;             /* global enable interrupt */
+	mips_write_c0_status(c0_reg); /* write back status register */
 
 	/* read cause register for cleaning all pending bits */
-//	c0_reg = mips_read_c0_cause();
-//	c0_reg &= ~(ST0_IM);           /* clear all interrupts pending bits */
-//	mips_write_c0_cause(c0_reg);   /* write back cause register */
+	// c0_reg = mips_read_c0_cause();
+	// c0_reg &= ~(ST0_IM);           /* clear all interrupts pending bits */
+	// mips_write_c0_cause(c0_reg);   /* write back cause register */
 }
 
 static inline __ipl_t ipl_save(void) {
@@ -49,7 +48,8 @@ static inline void ipl_restore(__ipl_t ipl) {
 
 	if (ipl & ST0_IE) {
 		mips_write_c0_status(c0_reg | ST0_IE);
-	} else {
+	}
+	else {
 		mips_write_c0_status(c0_reg & ~ST0_IE);
 	}
 }
