@@ -1,0 +1,13 @@
+diff -aur ./boost_1_85_0/boost/config/stdlib/libstdcpp3.hpp ../build/extbld/third_party/boost/libs/boost_1_85_0/boost/config/stdlib/libstdcpp3.hpp
+--- ./boost_1_85_0/boost/config/stdlib/libstdcpp3.hpp	2024-04-11 21:48:00.000000000 +0300
++++ ../build/extbld/third_party/boost/libs/boost_1_85_0/boost/config/stdlib/libstdcpp3.hpp	2024-05-04 14:58:16.334585104 +0300
+@@ -37,7 +37,8 @@
+         || defined(_GLIBCXX_HAS_GTHREADS) \
+         || defined(_WIN32) \
+         || defined(_AIX) \
+-        || defined(__HAIKU__)
++        || defined(__HAIKU__) \
++        || defined(__EMBOX__)        
+       //
+       // If the std lib has thread support turned on, then turn it on in Boost
+       // as well.  We do this because some gcc-3.4 std lib headers define _REENTANT
