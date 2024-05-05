@@ -45,6 +45,11 @@ module cache_stub extends embox.arch.cache {
 }
 
 @NoCode
+module cpu_idle_stub extends embox.arch.cpu_idle {
+	source "cpu_idle_stub.h"
+}
+
+@NoCode
 module no_libarch extends embox.arch.libarch { }
 
 @NoCode
