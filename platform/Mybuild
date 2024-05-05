@@ -1,10 +1,7 @@
 package platform
 
-@DefaultImpl(platform.generic.deprecated_platform_idle)
-abstract module platform_idle { }
-
-@DefaultImpl(platform.generic.deprecated_platform_init)
+@DefaultImpl(platform.generic.platform_init_stub)
 abstract module platform_init { }
 
-@DefaultImpl(platform.generic.deprecated_platform_shutdown)
+@DefaultImpl(platform.generic.platform_shutdown_stub)
 abstract module platform_shutdown { }

@@ -9,7 +9,7 @@
 
 #include <sys/types.h>
 
-#include <hal/platform.h>
+#include <hal/cpu_idle.h>
 #include <kernel/time/ktime.h>
 #include <kernel/time/timer.h>
 
@@ -32,7 +32,7 @@ int ksleep(useconds_t msec) {
 		return 1;
 	}
 	while (wait_flag) {
-		platform_idle();
+		arch_cpu_idle();
 	}
 	timer_close(&timer);
 	return 0;

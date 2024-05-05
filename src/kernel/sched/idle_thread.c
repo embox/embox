@@ -7,7 +7,7 @@
  */
 #include <stddef.h>
 
-#include <hal/platform.h>
+#include <hal/cpu_idle.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
@@ -17,7 +17,7 @@
 
 static void *idle_run(void *arg) {
 	while (1) {
-		platform_idle();
+		arch_cpu_idle();
 	}
 
 	return NULL;

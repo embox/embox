@@ -26,7 +26,6 @@ module sleep_nosched extends sleep_api {
 	source "ksleep_nosched.c"
 
 	depends sys_timer
-	@NoRuntime depends platform.platform_idle
 }
 
 module itimer {
