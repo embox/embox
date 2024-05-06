@@ -82,7 +82,9 @@ int stm32_spi_init(struct stm32_spi *dev, void *instance) {
 }
 
 static int stm32_spi_init1(struct spi_device *dev) {
-	return ((struct stm32_spi*)(dev->priv))->rcc_gpio_init();
+	if (((struct stm32_spi*)(dev->priv))->hw_init != NULL)
+		return ((struct stm32_spi*)(dev->priv))->hw_init();
+	else	return -1;
 }
 
 static int stm32_spi_select(struct spi_device *dev, int cs) {
