@@ -10,8 +10,6 @@
 #include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
 
-#include <embox/unit.h>
-
 #if defined(STM32F407xx)
 #include <framework/mod/options.h>
 #include <config/platform/stm32/f4/stm32f4_discovery/arch.h>
@@ -21,7 +19,6 @@
 
 #include <config/board_config.h>
 
-//EMBOX_UNIT_INIT(stm32_spi1_init);
 static int stm32_spi1_init(void);
 static struct stm32_spi stm32_spi1 = {
 	.hw_init = stm32_spi1_init,
