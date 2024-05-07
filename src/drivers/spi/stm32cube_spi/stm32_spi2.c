@@ -10,15 +10,13 @@
 #include <drivers/gpio/gpio.h>
 #include <drivers/spi.h>
 
-#include <embox/unit.h>
-
 #include "stm32_spi.h"
 
 #include <config/board_config.h>
 
-EMBOX_UNIT_INIT(stm32_spi2_init);
-
+static int stm32_spi2_init(void);
 static struct stm32_spi stm32_spi2 = {
+	.hw_init = stm32_spi2_init,
 #if defined(CONF_SPI2_PIN_CS_PORT)
 	.nss_port = CONF_SPI2_PIN_CS_PORT,
 	.nss_pin  = CONF_SPI2_PIN_CS_NR,

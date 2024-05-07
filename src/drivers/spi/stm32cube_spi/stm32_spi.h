@@ -18,6 +18,7 @@
 #endif
 
 struct stm32_spi {
+	int (*hw_init)(void);
 	SPI_HandleTypeDef handle;
 	unsigned short nss_port;
 	uint32_t nss_pin;
