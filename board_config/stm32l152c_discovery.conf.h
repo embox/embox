@@ -81,7 +81,22 @@ struct spi_conf spis[] = {
    		 }
    	 },
     },
-
+    [2] = {
+   	 .status = DISABLED,
+   	 .name = "SPI2",
+   	 .dev = {
+		.name = "SPI2",
+   		 .pins = {
+   			 PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
+   			 PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
+   			 PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
+   			 PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
+   		 },
+   		 .clocks = {
+   			 VAL("SPI",  CLK_SPI2),
+   		 }
+   	 },
+    },
 };
 
 struct i2c_conf i2cs[] = {
