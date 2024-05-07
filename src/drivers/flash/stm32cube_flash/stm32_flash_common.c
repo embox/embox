@@ -95,7 +95,7 @@ int stm32_flash_read(struct flash_dev *dev, uint32_t base, void *data,
 }
 
 static int stm32_flash_write_unaligned_bytes(uint32_t dest, const void *data, size_t len) {
-#if defined(STM32H7_CUBE) || defined(STM32F3_CUBE)
+#if defined(STM32H7_CUBE) || defined(STM32F3_CUBE) || defined(STM32L4_CUBE)
 	assert(0);
 	return 0;
 #else
