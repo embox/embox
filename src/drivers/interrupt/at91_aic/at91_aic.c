@@ -59,37 +59,17 @@ void irqctrl_force(unsigned int interrupt_nr) {
 	REG_STORE(AT91C_AIC_ISCR, 1 << interrupt_nr);
 }
 
-static inline void disable_interrupts(void) {
-	ipl_disable();
+void irqctrl_eoi(unsigned int irq) {
+	REG_STORE(AT91C_AIC_EOICR, irq); /* write anything */
 }
 
-static inline void enable_interrupts(void) {
-	ipl_enable();
-}
-
-void interrupt_handle(void) {
-	uint32_t source;
+unsigned int irqctrl_get_intid(void) {
+	unsigned int irq;
 
 	REG_LOAD(AT91C_AIC_IVR);
-	source = REG_LOAD(AT91C_AIC_ISR);
+	irq = REG_LOAD(AT91C_AIC_ISR);
 
-	assert(!critical_inside(CRITICAL_IRQ_LOCK));
-
-	critical_enter(CRITICAL_IRQ_HANDLER);
-
-	enable_interrupts();
-
-	irq_dispatch(source);
-
-	REG_STORE(AT91C_AIC_EOICR, source); /* write anything */
-
-	critical_leave(CRITICAL_IRQ_HANDLER);
-
-	critical_dispatch_pending();
-}
-
-void swi_handle(void) {
-	panic(__func__);
+	return irq;
 }
 
 IRQCTRL_DEF(at91_intc, at91_intc_init);
