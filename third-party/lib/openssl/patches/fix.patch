@@ -1,0 +1,65 @@
+diff -aur ./openssl-1.0.2u/crypto/engine/tb_asnmth.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/engine/tb_asnmth.c
+--- ./openssl-1.0.2u/crypto/engine/tb_asnmth.c	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/engine/tb_asnmth.c	2024-05-10 20:27:04.214094294 +0300
+@@ -55,6 +55,7 @@
+ #include "eng_int.h"
+ #include "asn1_locl.h"
+ #include <openssl/evp.h>
++#include <strings.h>
+ 
+ /*
+  * If this symbol is defined then ENGINE_get_pkey_asn1_meth_engine(), the
+diff -aur ./openssl-1.0.2u/crypto/x509v3/v3_utl.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/x509v3/v3_utl.c
+--- ./openssl-1.0.2u/crypto/x509v3/v3_utl.c	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/x509v3/v3_utl.c	2024-05-10 20:27:52.302329385 +0300
+@@ -59,6 +59,7 @@
+ /* X509 v3 extension utilities */
+ 
+ #include <stdio.h>
++#include <strings.h>
+ #include <ctype.h>
+ #include "cryptlib.h"
+ #include <openssl/conf.h>
+diff -aur ./openssl-1.0.2u/crypto/bio/bss_dgram.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/bss_dgram.c
+--- ./openssl-1.0.2u/crypto/bio/bss_dgram.c	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/bss_dgram.c	2024-05-10 20:27:17.402158767 +0300
+@@ -500,7 +500,7 @@
+     int *ip;
+     struct sockaddr *to = NULL;
+     bio_dgram_data *data = NULL;
+-    int sockopt_val = 0;
++    // int sockopt_val = 0;
+ # if defined(OPENSSL_SYS_LINUX) && (defined(IP_MTU_DISCOVER) || defined(IP_MTU))
+     socklen_t sockopt_len;      /* assume that system supporting IP_MTU is
+                                  * modern enough to define socklen_t */
+@@ -885,7 +885,7 @@
+         break;
+ # endif
+     case BIO_CTRL_DGRAM_SET_DONT_FRAG:
+-        sockopt_val = num ? 1 : 0;
++        // sockopt_val = num ? 1 : 0;
+ 
+         switch (data->peer.sa.sa_family) {
+         case AF_INET:
+diff -aur ./openssl-1.0.2u/crypto/asn1/ameth_lib.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/asn1/ameth_lib.c
+--- ./openssl-1.0.2u/crypto/asn1/ameth_lib.c	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/asn1/ameth_lib.c	2024-05-10 20:27:32.642233272 +0300
+@@ -57,6 +57,7 @@
+  */
+ 
+ #include <stdio.h>
++#include <strings.h>
+ #include "cryptlib.h"
+ #include <openssl/asn1t.h>
+ #include <openssl/x509.h>
+diff -aur ./openssl-1.0.2u/ssl/ssl_conf.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/ssl/ssl_conf.c
+--- ./openssl-1.0.2u/ssl/ssl_conf.c	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/ssl/ssl_conf.c	2024-05-10 20:29:10.190710162 +0300
+@@ -59,6 +59,7 @@
+ # include <assert.h>
+ #endif
+ #include <stdio.h>
++#include <strings.h>
+ #include "ssl_locl.h"
+ #include <openssl/conf.h>
+ #include <openssl/objects.h>
