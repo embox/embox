@@ -1,0 +1,12 @@
+--- ./thrift-0.11.0/configure.ac	2017-12-03 22:11:35.000000000 +0300
++++ ../build/extbld/third_party/lib/thrift/thrift-0.11.0/configure.ac	2024-05-09 17:52:08.080745694 +0300
+@@ -677,9 +677,7 @@
+ 
+ AC_FUNC_ALLOCA
+ AC_FUNC_FORK
+-AC_FUNC_MALLOC
+ AC_FUNC_MEMCMP
+-AC_FUNC_REALLOC
+ AC_FUNC_SELECT_ARGTYPES
+ AC_FUNC_STAT
+ AC_FUNC_STRERROR_R
