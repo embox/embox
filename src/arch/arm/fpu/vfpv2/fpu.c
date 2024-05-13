@@ -14,9 +14,9 @@
 #include <util/log.h>
 #include <util/math.h>
 
-EMBOX_UNIT_INIT(vfp_init);
+EMBOX_UNIT_INIT(vfp_print_info);
 
-static int vfp_init(void) {
+static int vfp_print_info(void) {
 	uint32_t ctrl;
 	uint32_t sid;
 
