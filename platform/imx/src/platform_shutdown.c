@@ -5,8 +5,9 @@
  * @version
  * @date 26.12.2017
  */
-#include <hal/arch.h>
+#include <hal/cpu_idle.h>
 #include <hal/mmu.h>
+#include <hal/platform.h>
 #include <hal/reg.h>
 #include <kernel/panic.h>
 
@@ -14,16 +15,9 @@
 #define WCR 0x20bc000
 #define WSR 0x20bc000
 
-void arch_init(void) {
-}
-
-void arch_idle(void) {
-}
-
-void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
-
+void _NORETURN platform_shutdown(shutdown_mode_t mode) {
 	switch (mode) {
-	case ARCH_SHUTDOWN_MODE_REBOOT:
+	case SHUTDOWN_MODE_REBOOT:
 		mmu_off(); /* Access possibly unmapped registers */
 		REG16_STORE(WCR, 0);
 		REG16_STORE(WSR, 0x5555);
@@ -38,5 +32,7 @@ void _NORETURN arch_shutdown(arch_shutdown_mode_t mode) {
 		/* NIY */
 	}
 
-	while(1) {}
+	while (1) {
+		arch_cpu_idle();
+	}
 }
