@@ -126,8 +126,6 @@ static int etnaviv_ioctl_wait_fence(struct drm_device *dev, void *data,
 	return 0;
 }
 
-static struct idesc_ops etnaviv_dev_idesc_ops;
-
 static struct drm_device etnaviv_drm_device;
 static struct drm_file etnaviv_drm_file;
 static struct etnaviv_drm_private etnaviv_drm_private;
@@ -212,17 +210,17 @@ static int etnaviv_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 
 	if (irq_attach(GPU3D_IRQ, etna_irq_handler, 0,
 	        &etnaviv_gpus[PIPE_ID_PIPE_3D], "i.MX6 GPU3D")) {
-		return NULL;
+		return -1;
 	}
 
 	if (irq_attach(R2D_GPU2D_IRQ, etna_irq_handler, 0,
 	        &etnaviv_gpus[PIPE_ID_PIPE_2D], "i.MX6 GPU2D")) {
-		return NULL;
+		return -1;
 	}
 
 	if (irq_attach(V2D_GPU2D_IRQ, etna_irq_handler, 0,
 	        &etnaviv_gpus[PIPE_ID_PIPE_2D], "i.MX6 GPU2D")) {
-		return NULL;
+		return -1;
 	}
 
 	if ((err = vmem_set_flags(vmem_current_context(),
@@ -231,13 +229,13 @@ static int etnaviv_dev_open(struct char_dev *cdev, struct idesc *idesc) {
 	         PROT_WRITE | PROT_READ | PROT_NOCACHE))) {
 		log_error("Failed to set page attributes! Error %d", err);
 
-		return NULL;
+		return -1;
 	}
 
 	mmu_flush_tlb();
 	dcache_flush(etnaviv_uncached_buffer, sizeof(etnaviv_uncached_buffer));
 
-	return char_dev_default_open(idesc, source);
+	return 0;
 }
 
 static void etnaviv_dev_close(struct char_dev *cdev) {
@@ -352,7 +350,7 @@ static void *etnaviv_dev_idesc_mmap(struct idesc *idesc, void *addr, size_t len,
 static void *etnaviv_dev_direct_access(struct char_dev *cdev, off_t off,
     size_t len) {
 	if (off + len >= sizeof(etnaviv_uncached_buffer)) {
-		return NULL
+		return NULL;
 	}
 
 	return &etnaviv_uncached_buffer[off];
@@ -366,7 +364,7 @@ static struct char_dev_ops etnaviv_dev_ops = {
     .direct_access = etnaviv_dev_direct_access,
 };
 
-static struct char_dev etnaviv_dev = CHAR_DEV_INIT(mem_cdev, "card",
+static struct char_dev etnaviv_dev = CHAR_DEV_INIT(etnaviv_dev, "card",
     &etnaviv_dev_ops);
 
 CHAR_DEV_REGISTER(&etnaviv_dev);
