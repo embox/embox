@@ -1,9 +1,9 @@
 /**
- * @file stm32_spi3.c
- * @brief it's compatible but not the same as stm32_spi1.c, stm32_spi2.c and stm32_spi5.c
- * @author Andrew Bursian
+ * @file
+ * @brief
+ * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
- * @date 14.06.2023
+ * @date 25.12.2019
  */
 
 #include <string.h>
@@ -13,8 +13,6 @@
 #include "stm32_spi.h"
 
 #include <config/board_config.h>
-
-#include <framework/mod/options.h>
 
 static int stm32_spi3_init(void);
 static struct stm32_spi stm32_spi3 = {
@@ -32,42 +30,26 @@ static int stm32_spi3_init(void) {
 
 	stm32_spi_init(&stm32_spi3, SPI3);
 
-#if	OPTION_GET(NUMBER, pullup) == 1
 	gpio_setup_mode(CONF_SPI3_PIN_SCK_PORT, CONF_SPI3_PIN_SCK_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_SCK_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
+
 	gpio_setup_mode(CONF_SPI3_PIN_MISO_PORT, CONF_SPI3_PIN_MISO_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_MISO_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
+
 	gpio_setup_mode(CONF_SPI3_PIN_MOSI_PORT, CONF_SPI3_PIN_MOSI_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_MOSI_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
-#else
-	gpio_setup_mode(CONF_SPI3_PIN_SCK_PORT, CONF_SPI3_PIN_SCK_NR,
-		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_SCK_AF) |
-		GPIO_MODE_OUT_PUSH_PULL);
-	gpio_setup_mode(CONF_SPI3_PIN_MISO_PORT, CONF_SPI3_PIN_MISO_NR,
-		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_MISO_AF) |
-		GPIO_MODE_OUT_PUSH_PULL);
-	gpio_setup_mode(CONF_SPI3_PIN_MOSI_PORT, CONF_SPI3_PIN_MOSI_NR,
-		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_MOSI_AF) |
-		GPIO_MODE_OUT_PUSH_PULL);
-#endif
 
 #if defined(CONF_SPI3_PIN_CS_PORT)
-#if	CONF_SPI3_PIN_CS_AF == -1
-	/* NOAF in board configuration file defined as -1 */
+	/* Chip Select is usual GPIO pin. */
 	gpio_setup_mode(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR,
 		GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
 	/* Chip Select is in inactive state by default. */
 	gpio_set(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR, GPIO_PIN_HIGH);
-#else
-	gpio_setup_mode(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR,
-		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_CS_AF) |
-		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
-#endif // CONF_SPI3_PIN_CS_AF == -1
-#endif // defined(CONF_SPI3_PIN_CS_PORT)
+#endif
 
 	return 0;
 }
