@@ -4,7 +4,6 @@
  * @date May 9, 2018
  * @author Anton Bondarev
  */
-#include <hal/cache.h>
 #include <asm/regs.h>
 #include <hal/reg.h>
 #include <framework/mod/options.h>
