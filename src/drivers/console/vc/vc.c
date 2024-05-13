@@ -66,7 +66,7 @@ static int vc_open(struct char_dev *cdev, struct idesc *idesc) {
 
 	vterm_open_indev(&vc_vterm, "keyboard");
 
-	return char_dev_default_open(idesc, source);
+	return 0;
 }
 
 static const struct char_dev_ops vc_dev_ops = {
