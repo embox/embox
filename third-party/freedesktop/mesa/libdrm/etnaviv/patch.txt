@@ -59,13 +59,14 @@ diff -aur libdrm-2.4.96-orig/etnaviv/etnaviv_device.c libdrm-2.4.96/etnaviv/etna
 diff -aur libdrm-2.4.96-orig/include/drm/drm.h libdrm-2.4.96/include/drm/drm.h
 --- libdrm-2.4.96-orig/include/drm/drm.h	2017-04-08 23:00:58.000000000 +0300
 +++ libdrm-2.4.96/include/drm/drm.h	2018-09-24 13:42:22.827814538 +0300
-@@ -40,6 +40,14 @@
+@@ -42,6 +42,15 @@
  #include <asm/ioctl.h>
  typedef unsigned int drm_handle_t;
  
 +#elif defined(__EMBOX__)
 +
 +#include <linux/types.h>
++#include <stddef.h>
 +#include <sys/ioctl.h>
 +
 +typedef size_t   __kernel_size_t;
@@ -198,12 +199,11 @@ diff -aur libdrm-2.4.96-orig/xf86drm.c libdrm-2.4.96/xf86drm.c
 diff -aur libdrm-2.4.96-orig/xf86drm.h libdrm-2.4.96/xf86drm.h
 --- libdrm-2.4.96-orig/xf86drm.h	2017-04-08 23:00:58.000000000 +0300
 +++ libdrm-2.4.96/xf86drm.h	2018-09-24 13:42:22.807813709 +0300
-@@ -47,7 +47,17 @@
+@@ -47,7 +47,16 @@
  #define DRM_MAX_MINOR   16
  #endif
  
 -#if defined(__linux__)
-+#define SCNu64
 +#if defined(__linux__) 
 +
 +#define DRM_IOCTL_NR(n)		_IOC_NR(n)
@@ -217,7 +217,7 @@ diff -aur libdrm-2.4.96-orig/xf86drm.h libdrm-2.4.96/xf86drm.h
  
  #define DRM_IOCTL_NR(n)		_IOC_NR(n)
  #define DRM_IOC_VOID		_IOC_NONE
-@@ -82,11 +92,11 @@
+@@ -82,11 +91,11 @@
  #define DRM_CONTROL_DEV_NAME  "%s/drmC%d"
  #define DRM_RENDER_DEV_NAME  "%s/drmR%d"
  #else
