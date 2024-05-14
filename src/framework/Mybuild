@@ -2,18 +2,26 @@ package embox.framework
 
 @NoCode
 module LibFramework {
-	depends cmd, mod, test, runlevel
+	@NoRuntime depends cmd, mod, test, runlevel
+}
+
+module unit {
+	option string log_level="LOG_INFO"
+
+	@DefineMacro("__FRAMEWORK__")
+	source "unit.c"
+
+	@NoRuntime depends embox.compat.libc.str
 }
 
 module runlevel {
 	option string log_level="LOG_INFO"
 
 	@DefineMacro("__FRAMEWORK__")
-	source "runlevel.c", "unit.c"
+	source "runlevel.c"
 
-	depends mod
 	@NoRuntime depends embox.lib.libds
-	depends embox.compat.libc.str
+	@NoRuntime depends mod, unit
 }
 
 @NoCode
