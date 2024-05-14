@@ -1,5 +1,10 @@
 package embox.arch.arm.armv6
 
-module arch extends embox.arch.arch {
-	source "arch.c"
+module head extends embox.arch.arm.head {
+	source "hardware_init_hook.S"
+}
+
+@NoCode	
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }

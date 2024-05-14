@@ -1,10 +1,5 @@
 package embox.arch.arm.armlib
 
-@DefaultImpl(cpu_reset_stub)
-abstract module cpu_reset {}
-
-module cpu_reset_stub extends cpu_reset {}
-
 module locore extends embox.arch.locore {
 	@NoRuntime depends reg
 	@NoRuntime depends exceptions
@@ -12,14 +7,12 @@ module locore extends embox.arch.locore {
 	@NoRuntime depends embox.arch.arm.head
 }
 
-@NoCode	
+@NoCode
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
-
-	@NoRuntime depends locore
 }
 
-@NoCode	
+@NoCode
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
 }

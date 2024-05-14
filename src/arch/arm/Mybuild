@@ -1,12 +1,11 @@
 
 package embox.arch.arm
 
-
 abstract module cmsis { }
-
 
 module head {
 	option boolean mmu_boot=false
 	option boolean use_fast_boot=false
+
 	source "head.S"
 }
