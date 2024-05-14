@@ -1,5 +1,9 @@
 package platform.stm32.f0.nucleo_f030r8
 
-module arch extends embox.arch.arch {
-    source "arch.c"
+module platform_init extends platform.platform_init {
+    source "platform_init.c"
+}
+
+module platform_shutdown extends platform.platform_shutdown {
+    source "platform_shutdown.c"
 }
