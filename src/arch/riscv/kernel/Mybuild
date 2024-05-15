@@ -6,11 +6,8 @@ module conf {
 
 module boot extends embox.arch.boot {
 	source "boot.S"
-	depends embox.arch.riscv.kernel.conf
-}
 
-module arch extends embox.arch.arch {
-	source "arch.c"
+	depends embox.arch.riscv.kernel.conf
 }
 
 module locore extends embox.arch.locore {
@@ -44,4 +41,9 @@ module exception {
 	source "exception.h"
 
 	source "exception.c"
+}
+
+@NoCode
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }
