@@ -18,8 +18,7 @@ module interrupt extends embox.arch.interrupt {
 	depends locore
 }
 
-module arch extends embox.arch.arch {
-	source "arch.c"
+module cache {
 	option number icache_size
 	option number icache_line
 	option number dcache_size
