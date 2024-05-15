@@ -1,9 +1,8 @@
 package third_party.bsp.niiet
 
-@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/niiet/k1921vk035_system/framework-k1921vk-sdk-1.7.3/,platform/Device/NIIET/K1921VK035/Include platform/plib035/inc)")
+@BuildArtifactPath(cppflags=" $(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/niiet/k1921vk035_system/k1921vk-sdk-1.7.3/,platform/Device/NIIET/K1921VK035/Include platform/plib035/inc)")
 module k1921vk_sdk_cppflags {
 }
-
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
 @BuildDepends(k1921vk_sdk_cppflags)
@@ -11,20 +10,20 @@ module k1921vk_sdk_cppflags {
 static module k1921vk035_system {
 	option number external_clk_freq=12000000
 
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/framework-k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Source")
+	source "bsp_compat.c"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Source")
 	source "system_K1921VK035.c"
-	
+
 	@NoRuntime depends k1921vk_sdk_cppflags
 	@NoRuntime depends third_party.cmsis.core
 }
 
-
 @BuildDepends(k1921vk035_system)
 static module plib035 {
-
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
-	@AddPrefix("^BUILD/extbld/third_party/bsp/niiet/k1921vk035_system/framework-k1921vk-sdk-1.7.3/platform/plib035/src")
+	@AddPrefix("^BUILD/extbld/third_party/bsp/niiet/k1921vk035_system/k1921vk-sdk-1.7.3/platform/plib035/src")
 	source "plib035_adc.c",
 		"plib035_can.c",
 		"plib035_dma.c",

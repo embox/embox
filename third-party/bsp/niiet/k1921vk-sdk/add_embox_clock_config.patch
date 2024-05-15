@@ -1,5 +1,6 @@
---- framework-k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Include/system_K1921VK035.h
-+++ ../build/extbld/third_party/bsp/niiet/k1921vk035_system/framework-k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Include/system_K1921VK035.h
+diff -aur ./k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Include/system_K1921VK035.h ../build/extbld/third_party/bsp/niiet/k1921vk035_system/k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Include/system_K1921VK035.h
+--- ./k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Include/system_K1921VK035.h	2022-03-06 13:57:50.000000000 +0300
++++ ../build/extbld/third_party/bsp/niiet/k1921vk035_system/k1921vk-sdk-1.7.3/platform/Device/NIIET/K1921VK035/Include/system_K1921VK035.h	2024-05-15 20:02:40.044919722 +0300
 @@ -27,6 +27,14 @@
  
  //-- Includes ------------------------------------------------------------------
