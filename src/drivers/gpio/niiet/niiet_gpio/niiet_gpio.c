@@ -235,6 +235,10 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 		gpio_reg->GPIO_OUTENCLR_reg |= pins;
 	}
 
+	if (mode & GPIO_MODE_IN_PULL_UP) {
+		gpio_reg->GPIO_PULLMODE_reg |= pins;
+	}
+
 	if (mode & GPIO_MODE_OUT) {
 		gpio_reg->GPIO_OUTENSET_reg |= pins;
 	}
