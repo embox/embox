@@ -235,6 +235,10 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 		gpio_reg->GPIO_OUTENCLR_reg |= pins;
 	}
 
+	if (mode & GPIO_MODE_IN_PULL_UP) {
+		gpio_reg->GPIO_PULLMODE_reg |= pins;
+	}
+
 	if (mode & GPIO_MODE_OUT) {
 		gpio_reg->GPIO_OUTENSET_reg |= pins;
 	}
@@ -290,7 +294,7 @@ static struct gpio_chip niiet_gpio_chip = {
 	.setup_mode = niiet_gpio_setup_mode,
 	.get = niiet_gpio_get,
 	.set = niiet_gpio_set,
-#if defined (PORTC)
+#if defined (CONF_GPIO_PORT_C_REGION_BASE)
 	.nports = 3
 #else
 	.nports = 2

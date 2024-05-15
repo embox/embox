@@ -92,9 +92,9 @@ static void keypad_timer_handler(sys_timer_t* timer, void *param) {
 	
 	if (!(kp->down)) {
 		for (int c=0; c<4; c++) {
-			gpio_set(cols[c].port, 1<<cols[c].pino, GPIO_PIN_HIGH);
+			gpio_set(cols[c].port, 1<<cols[c].pino, GPIO_PIN_LOW);
 			for (int r=0; r<4; r++) {
-				if (gpio_get(rows[r].port, 1<<rows[r].pino)) {
+				if (!gpio_get(rows[r].port, 1<<rows[r].pino)) {
 					ev.type=USER_BUTTON_PRESSED | KBD_KEY_PRESSED;
 					ev.value=keys[(r<<2)+c];
 					log_debug("keypad key pressed");
@@ -103,11 +103,11 @@ static void keypad_timer_handler(sys_timer_t* timer, void *param) {
 					kp->row=r; kp->col=c;
 				}
 			}
-			gpio_set(cols[c].port, 1<<cols[c].pino, GPIO_PIN_LOW);
+			gpio_set(cols[c].port, 1<<cols[c].pino, GPIO_PIN_HIGH);
 		}
 	} else {	// no matter about down spikes, holding poll until key up for HOLD_TICKS
-		gpio_set(cols[kp->col].port, 1<<cols[kp->col].pino, GPIO_PIN_HIGH);
-		if (gpio_get(rows[kp->row].port, 1<<rows[kp->row].pino)) kp->down=kp->HOLD_TICKS;
+		gpio_set(cols[kp->col].port, 1<<cols[kp->col].pino, GPIO_PIN_LOW);
+		if (!gpio_get(rows[kp->row].port, 1<<rows[kp->row].pino)) kp->down=kp->HOLD_TICKS;
 		else kp->down--;
 		if (!(kp->down)) {
 			ev.type=USER_BUTTON_UNPRESSED;
@@ -115,7 +115,7 @@ static void keypad_timer_handler(sys_timer_t* timer, void *param) {
 			log_debug("keypad key released");
 			input_dev_report_event(dev, &ev);
 		} 
-		gpio_set(cols[kp->col].port, 1<<cols[kp->col].pino, GPIO_PIN_LOW);
+		gpio_set(cols[kp->col].port, 1<<cols[kp->col].pino, GPIO_PIN_HIGH);
 	}
 }
 
@@ -186,9 +186,9 @@ static int keypad_init(void) {
 	for (int i=0; i<4; i++) {
 		// Output pins
 		gpio_setup_mode(cols[i].port, 1<<cols[i].pino, GPIO_MODE_OUT);
-		gpio_set(cols[i].port, 1<<cols[i].pino, GPIO_PIN_LOW);
+		gpio_set(cols[i].port, 1<<cols[i].pino, GPIO_PIN_HIGH);
 		// Input pins
-		gpio_setup_mode(rows[i].port, 1<<rows[i].pino, GPIO_MODE_IN|GPIO_MODE_IN_PULL_DOWN);
+		gpio_setup_mode(rows[i].port, 1<<rows[i].pino, GPIO_MODE_IN|GPIO_MODE_IN_PULL_UP);
 	}
 
 err_out:
