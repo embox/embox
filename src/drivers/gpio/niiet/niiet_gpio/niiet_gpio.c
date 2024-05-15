@@ -290,7 +290,7 @@ static struct gpio_chip niiet_gpio_chip = {
 	.setup_mode = niiet_gpio_setup_mode,
 	.get = niiet_gpio_get,
 	.set = niiet_gpio_set,
-#if defined (PORTC)
+#if defined (CONF_GPIO_PORT_C_REGION_BASE)
 	.nports = 3
 #else
 	.nports = 2
