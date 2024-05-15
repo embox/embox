@@ -8,20 +8,17 @@ static module stm32h745i_discovery_conf extends third_party.bsp.stmh7cube.stm32h
 	source "stm32h7xx_hal_conf.h"
 }
 
-@BuildDepends(third_party.bsp.stmh7cube.cube)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
-	source "STM32CubeH7-1.8.0/Projects/STM32H745I-DISCO/Templates/BootCM7_CM4Gated/Common/Src/system_stm32h7xx.c"
-}
-
 @Build(stage=1)
 @BuildDepends(stm32h745i_discovery_conf)
 @BuildDepends(third_party.bsp.stmh7cube.cube)
 @BuildDepends(third_party.bsp.stmh7cube.stm32h7_discovery_components)
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/,Drivers/BSP/STM32H745I-DISCO Projects/STM32H745I-DISCO/Templates/BootCM7_CM4Gated/Common/Inc/ Projects/STM32H745I-DISCO/Examples/BSP/Common/Inc/)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
+	source "STM32CubeH7-1.8.0/Projects/STM32H745I-DISCO/Templates/BootCM7_CM4Gated/Common/Src/system_stm32h7xx.c"
+
 	/* Cubse LCD call SDRAM_Init, we don't wont that, so tell Cube's LCD do not init SDRAM */
 	@DefineMacro("DATA_IN_ExtSDRAM")
 	//@DefineMacro("USE_BSP_COM_FEATURE")
@@ -39,7 +36,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@NoRuntime depends third_party.bsp.stmh7cube.cube
 	@NoRuntime depends stm32h745i_discovery_conf
-	@NoRuntime depends arch
+	@NoRuntime depends platform.stm32.stm32cube_compat
 	/* OTM8009A is required by stm32f769i_discovery_lcd.c */
 	@NoRuntime depends third_party.bsp.stmh7cube.stm32h7_discovery_components
 }

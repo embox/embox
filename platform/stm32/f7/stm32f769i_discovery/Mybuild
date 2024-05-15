@@ -33,18 +33,15 @@ module lcd_mb1166_a09 extends lcd {
 	@NoRuntime depends stm32f769i_revb03_conf
 }
 
-@BuildDepends(third_party.bsp.stmf7cube.cube)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
-	source "./STM32CubeF7-1.17.1/Projects/STM32F769I-Discovery/Templates/Src/system_stm32f7xx.c"
-}
-
 @Build(stage=1)
 @BuildDepends(third_party.bsp.stmf7cube.cube)
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.17.1/,Drivers/BSP/STM32F769I-Discovery)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32CubeF7-1.17.1/Projects/STM32F769I-Discovery/Templates/Src/system_stm32f7xx.c"
+
 	/* Cubse LCD call SDRAM_Init, we don't wont that, so tell Cube's LCD do not init SDRAM */
 	@DefineMacro("DATA_IN_ExtSDRAM")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.17.1/Drivers/BSP/STM32F769I-Discovery")
@@ -59,7 +56,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@NoRuntime depends third_party.bsp.stmf7cube.cube
 	@NoRuntime depends lcd
-	@NoRuntime depends arch
+	@NoRuntime depends platform.stm32.stm32cube_compat
 	/* OTM8009A is required by stm32f769i_discovery_lcd.c */
 	@NoRuntime depends third_party.bsp.stmf7cube.stm32f7_discovery_components
 }

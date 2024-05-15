@@ -7,19 +7,16 @@ static module stm32f746g_conf extends third_party.bsp.stmf7cube.stm32f7_conf {
 	source "stm32f7xx_hal_conf_1.17.1.h"
 }
 
-@BuildDepends(third_party.bsp.stmf7cube.cube)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
-	source "./STM32CubeF7-1.17.1/Projects/STM32746G-Discovery/Templates/Src/system_stm32f7xx.c"
-}
-
 @Build(stage=1)
 @BuildDepends(stm32f746g_conf)
 @BuildDepends(third_party.bsp.stmf7cube.cube)
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.17.1/,Drivers/BSP/STM32746G-Discovery)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube")
+	source "./STM32CubeF7-1.17.1/Projects/STM32746G-Discovery/Templates/Src/system_stm32f7xx.c"
+
 	/* Cubse LCD call SDRAM_Init, we don't wont that, so tell Cube's LCD do not init SDRAM */
 	@DefineMacro("DATA_IN_ExtSDRAM")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf7cube/cube/STM32CubeF7-1.17.1/Drivers/BSP/STM32746G-Discovery")
@@ -35,5 +32,9 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@NoRuntime depends third_party.bsp.stmf7cube.cube
 	@NoRuntime depends stm32f746g_conf
-	@NoRuntime depends arch
+	@NoRuntime depends platform.stm32.stm32cube_compat
+}
+
+static module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.c"
 }

@@ -5,14 +5,7 @@
  * @author Anton Bondarev
  */
 
-#include <stdint.h>
-
-#include <hal/arch.h>
-#include <hal/ipl.h>
-
-
-#include <system_stm32f2xx.h>
-#include <stm32f2xx_hal.h>
+#include <bsp/stm32cube_hal.h>
 
 /**
   * @brief  System Clock Configuration
@@ -51,41 +44,10 @@ void SystemClock_Config(void) {
 	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2
 	 clocks dividers */
 	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK
-			| RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
+	                               | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
 	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
-}
-
-void arch_init(void) {
-	ipl_t ipl = ipl_save();
-
-	SystemInit();
-	HAL_Init();
-
-	SystemClock_Config();
-
-	ipl_restore(ipl);
-}
-
-void arch_idle(void) {
-
-}
-
-void arch_shutdown(arch_shutdown_mode_t mode) {
-	switch (mode) {
-	case ARCH_SHUTDOWN_MODE_HALT:
-	case ARCH_SHUTDOWN_MODE_REBOOT:
-	case ARCH_SHUTDOWN_MODE_ABORT:
-	default:
-		HAL_NVIC_SystemReset();
-		break;
-	}
-
-	/* NOTREACHED */
-	while(1) {
-
-	}
 }

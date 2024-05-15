@@ -7,19 +7,16 @@ static module nucleo_h743zi_conf extends third_party.bsp.stmh7cube.stm32h7_conf 
 	source "stm32h7xx_hal_conf.h"
 }
 
-@BuildDepends(third_party.bsp.stmh7cube.cube)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
-	source "STM32CubeH7-1.8.0/Projects/NUCLEO-H743ZI/Templates/Src/system_stm32h7xx.c"
-}
-
 @Build(stage=1)
 @BuildDepends(nucleo_h743zi_conf)
 @BuildDepends(third_party.bsp.stmh7cube.cube)
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/,Drivers/BSP/STM32H7xx_Nucleo Projects/NUCLEO-H743ZI/Templates/Inc)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube")
+	source "STM32CubeH7-1.8.0/Projects/NUCLEO-H743ZI/Templates/Src/system_stm32h7xx.c"
+
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/STM32H7xx_Nucleo")
 	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Projects/NUCLEO-H743ZI/Templates/Inc")
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmh7cube/cube/STM32CubeH7-1.8.0/Drivers/BSP/STM32H7xx_Nucleo")
@@ -27,5 +24,5 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@NoRuntime depends third_party.bsp.stmh7cube.cube
 	@NoRuntime depends nucleo_h743zi_conf
-	@NoRuntime depends arch
+	@NoRuntime depends platform.stm32.stm32cube_compat
 }
