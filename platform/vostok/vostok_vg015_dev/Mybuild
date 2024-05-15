@@ -1,13 +1,7 @@
-package embox.platform.vostok.vostok_vg015_dev
+package platform.vostok.vostok_vg015_dev
 
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	//@IncludeExport(path="")
-	//source "system_k1921vg015.h"
-
-	source "system_k1921vg015.c"
+module platform_init extends platform.platform_init {
+	source "platform_init.c"
 
 	@NoRuntime depends embox.driver.clk.niiet.k1921vg015_rcu
 }
-
