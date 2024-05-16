@@ -30,3 +30,14 @@ module pl011_ttyS0 {
 	depends pl011
 	depends embox.driver.periph_memory
 }
+
+module pl011_ttyS1 {
+	option number base_addr
+	option number irq_num
+	option number baud_rate=115200
+
+	source "pl011_ttys1.c"
+
+	depends pl011
+	depends embox.driver.periph_memory
+}
