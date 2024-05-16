@@ -186,6 +186,3 @@ int spi_set_master_mode(struct spi_device *dev) {
 int spi_set_slave_mode(struct spi_device *dev) {
 	return spi_set_mode(dev, false);
 }
-
-/* Stub */
-const struct char_dev_ops __spi_cdev_ops __attribute__((weak));

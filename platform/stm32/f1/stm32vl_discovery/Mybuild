@@ -7,23 +7,20 @@ static module stm32vl_discovery_conf extends third_party.bsp.stmf1cube.stm32f1_c
 	source "stm32f1xx_hal_conf.h"
 }
 
-@BuildDepends(third_party.bsp.stmf1cube.cube)
-module arch extends embox.arch.arch {
-	source "arch.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf1cube/cube")
-	source "STM32CubeF1-1.8.1/Projects/STM32VL-Discovery/Templates/Src/system_stm32f1xx.c"
-}
-
 @Build(stage=1)
 @BuildDepends(stm32vl_discovery_conf)
 @BuildDepends(third_party.bsp.stmf1cube.cube)
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/, Drivers/BSP/STM32VL-Discovery)")
 static module bsp extends third_party.bsp.st_bsp_api {
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf1cube/cube")
+	source "STM32CubeF1-1.8.1/Projects/STM32VL-Discovery/Templates/Src/system_stm32f1xx.c"
+
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/BSP/STM32VL-Discovery")
 	source "stm32vl_discovery.c"
 
 	@NoRuntime depends third_party.bsp.stmf1cube.cube
 	@NoRuntime depends stm32vl_discovery_conf
-	@NoRuntime depends arch
+	@NoRuntime depends platform.stm32.stm32cube_compat
 }

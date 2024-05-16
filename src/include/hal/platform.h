@@ -18,8 +18,6 @@ typedef enum shutdown_mode {
 
 extern void platform_init(void);
 
-extern void platform_idle(void);
-
 extern void _NORETURN platform_shutdown(shutdown_mode_t mode);
 
 #endif /* HAL_PLATFORM_H_ */

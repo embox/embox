@@ -1,8 +1,8 @@
 
 package platform.at91
 
-module arch extends embox.arch.arch {
-	source "arch.c"
+module platform_init extends platform.platform_init {
+	source "platform_init.c"
 
 	option number sys_clk_div
 	option number sys_clk_mul

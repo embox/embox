@@ -1,0 +1,11 @@
+package embox.arch.mips
+
+module syscall extends embox.arch.syscall {
+	source "syscall.c"
+}
+
+module syscall_caller extends embox.arch.syscall_caller {
+	source "syscall_caller.h"
+
+	depends embox.kernel.syscall
+}

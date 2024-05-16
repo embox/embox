@@ -1,8 +1,15 @@
-package embox.platform.vostok.vostok_uno_vn035
+package platform.vostok.vostok_uno_vn035
 
 @BuildDepends(third_party.bsp.niiet.k1921vk035_system)
-module arch extends embox.arch.arch {
-	source "arch.c"
-	depends third_party.bsp.niiet.k1921vk035_system
+module platform_init extends platform.platform_init {
+	source "platform_init.c"
+
+	@NoRuntime depends third_party.bsp.niiet.k1921vk035_system
 }
 
+@BuildDepends(third_party.bsp.niiet.k1921vk035_system)
+module platform_shutdown extends platform.platform_shutdown {
+	source "platform_shutdown.c"
+
+	@NoRuntime depends third_party.bsp.niiet.k1921vk035_system
+}

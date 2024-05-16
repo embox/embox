@@ -1,7 +1,0 @@
-package embox.arch.mips.subarch.p5600
-
-module arch extends embox.arch.arch {
-	source "mips32_p5600_arch.c"
-
-	depends embox.arch.mips.subarch.p5600.global_control_block
-}

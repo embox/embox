@@ -16,7 +16,3 @@ module interrupt extends embox.arch.interrupt {
 	source "irq_entry.S", "irq_handler.c", "ipl_impl.h"
 	depends locore
 }
-
-module arch extends embox.arch.arch {
-	source "arch.c"
-}

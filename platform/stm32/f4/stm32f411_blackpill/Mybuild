@@ -6,25 +6,20 @@ static module stm32f411_blackpill_conf extends third_party.bsp.stmf4cube.stm32f4
 	source "stm32f4xx_hal_conf.h"
 }
 
-@BuildDepends(third_party.bsp.stmf4cube.cube)
-static module arch extends embox.arch.arch {
-	option boolean errata_spi_wrong_last_bit = false
-
-	source "arch.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
-}
-
 @Build(stage=1)
 @BuildDepends(stm32f411_blackpill_conf)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
 @BuildDepends(third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd)
 static module bsp extends third_party.bsp.st_bsp_api {
+	option boolean errata_spi_wrong_last_bit = false
+
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
+    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
 
 	@NoRuntime depends third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd
-
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends stm32f411_blackpill_conf
-	@NoRuntime depends arch
+	@NoRuntime depends platform.stm32.stm32cube_compat
 }

@@ -41,6 +41,10 @@ abstract module smp { }
 @DefaultImpl(embox.arch.generic.reg_stub)
 abstract module reg { }
 
+@Mandatory
+@DefaultImpl(embox.arch.generic.cpu_idle_stub)
+abstract module cpu_idle { }
+
 @DefaultImpl(embox.arch.generic.cache_stub)
 abstract module cache { }
 

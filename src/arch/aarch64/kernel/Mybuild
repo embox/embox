@@ -1,9 +1,5 @@
 package embox.arch.aarch64
 
-module arch extends embox.arch.arch {
-	source "arch.c"
-}
-
 @NoCode
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
@@ -21,4 +17,9 @@ module locore extends embox.arch.locore {
 @NoCode
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
+}
+
+@NoCode
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }

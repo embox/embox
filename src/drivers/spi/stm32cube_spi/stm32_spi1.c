@@ -12,7 +12,7 @@
 
 #if defined(STM32F407xx)
 #include <framework/mod/options.h>
-#include <config/platform/stm32/f4/stm32f4_discovery/arch.h>
+#include <config/platform/stm32/f4/stm32f4_discovery/bsp.h>
 #endif
 
 #include "stm32_spi.h"
@@ -31,7 +31,7 @@ static struct stm32_spi stm32_spi1 = {
 };
 
 static int stm32_spi1_init(void) {
-#if defined(STM32F407xx) && !OPTION_MODULE_GET(platform__stm32__f4__stm32f4_discovery__arch,BOOLEAN,errata_spi_wrong_last_bit)
+#if defined(STM32F407xx) && !OPTION_MODULE_GET(platform__stm32__f4__stm32f4_discovery__bsp,BOOLEAN,errata_spi_wrong_last_bit)
 	#error errata_spi_wrong_last_bit is not enabled for SPI1! \
 	       Please, enable this option in platform.stm32.f4.stm32f4_discovery.arch
 #endif

@@ -14,7 +14,7 @@
 #include <asm/msr.h>
 #include <drivers/common/memory.h>
 #include <embox/unit.h>
-#include <hal/platform.h>
+#include <hal/cpu_idle.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/panic.h>
 #include <kernel/spinlock.h>
@@ -65,7 +65,7 @@ void startup_ap(void) {
 	ipl_enable();
 
 	while (1) {
-		platform_idle();
+		arch_cpu_idle();
 	}
 }
 

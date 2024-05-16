@@ -1,13 +1,14 @@
 package embox.arch.arm.armv7a
 
-module cpu_reset extends embox.arch.arm.armlib.cpu_reset {
+module head extends embox.arch.arm.head {
 	option number multi_processing=0
 
-	source "cpu_reset.S"
+	source "hardware_init_hook.S"
 }
 
-module arch extends embox.arch.arch {
-	source "arch.S"
+@NoCode	
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }
 
 module monitor_mode {

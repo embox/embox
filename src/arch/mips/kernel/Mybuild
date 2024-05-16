@@ -1,22 +1,17 @@
-package embox.arch.mips.kernel
-
-module context extends embox.arch.context {
-	source "context.c", "context_switch.S", "context.h"
-}
-
-module locore extends embox.arch.locore {
-
-	depends entry,
-		exception,
-		interrupt
-}
+package embox.arch.mips
 
 module boot extends embox.arch.boot {
 	source "boot.S"
+	source "reset.S"
 }
 
-module reset {
-	source "reset.S"
+@NoCode
+module locore extends embox.arch.locore {
+	@NoRuntime depends exception
+	@NoRuntime depends interrupt
+	@NoRuntime depends boot
+	@NoRuntime depends entry
+	@NoRuntime depends reg
 }
 
 module entry extends embox.arch.entry {
@@ -25,31 +20,24 @@ module entry extends embox.arch.entry {
 
 module exception {
 	source "exception.c"
+
 	depends embox.arch.mips.mm.cache_api
 }
 
-module interrupt extends embox.arch.interrupt {
+module interrupt {
 	option string log_level="LOG_ERR"
 
-	source "interrupt.c", "ipl_impl.h"
+	source "interrupt.c"
+
 	depends exception
 }
 
-module syscall extends embox.arch.syscall {
-	source "syscall.c"
-	depends exception
+@NoCode
+module ipl extends embox.arch.interrupt {
+	source "ipl.h"
 }
 
-module syscall_caller extends embox.arch.syscall_caller {
-	source "syscall_caller.h"
-
-	depends embox.kernel.syscall
-}
-
-module arch extends embox.arch.arch {
-	source "arch.c"
-}
-
-module arch_maximite extends embox.arch.arch {
-	source "arch_maximite.c"
+@NoCode
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }

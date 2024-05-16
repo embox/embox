@@ -1,5 +1,9 @@
 package platform.stm32.l0.zx_mini_pcb_debug_module_cpu_v1
 
-module arch extends embox.arch.arch {
-    source "arch.c"
+module platform_init extends platform.platform_init {
+    source "platform_init.c"
+}
+
+module platform_shutdown extends platform.platform_shutdown {
+    source "platform_shutdown.c"
 }

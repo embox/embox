@@ -36,12 +36,13 @@ module onecpu extends embox.arch.cpu {
 	source "onecpu.h"
 }
 
-module arch extends embox.arch.arch {
-	source "arch.c"
-}
-
 module cache_stub extends embox.arch.cache {
 	source "cache_stub.c"
+}
+
+@NoCode
+module cpu_idle_stub extends embox.arch.cpu_idle {
+	source "cpu_idle_stub.h"
 }
 
 @NoCode

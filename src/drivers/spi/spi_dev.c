@@ -12,7 +12,6 @@
 
 #include <drivers/char_dev.h>
 #include <drivers/spi.h>
-#include <fs/dvfs.h>
 #include <util/log.h>
 
 static ssize_t spi_read(struct char_dev *cdev, void *buf, size_t nbyte) {
@@ -36,12 +35,13 @@ static ssize_t spi_write(struct char_dev *cdev, const void *buf, size_t nbyte) {
 
 	dev = (struct spi_device *)cdev;
 
-	spi_transfer(dev, buf, NULL, nbyte);
+	spi_transfer(dev, (void *)buf, NULL, nbyte);
 
 	return nbyte;
 }
 
 static int spi_ioctl(struct char_dev *cdev, int request, void *data) {
+	struct spi_transfer_arg *transfer_arg;
 	struct spi_device *dev;
 
 	assert(cdev);

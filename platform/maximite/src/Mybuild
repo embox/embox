@@ -1,0 +1,5 @@
+package platform.maximite
+
+module platform_init extends platform.platform_init {
+	source "platform_init.c"
+}

@@ -1,19 +1,20 @@
 package platform.imx
 
-module arch extends embox.arch.arch {
-	source "arch.c"
+module platform_shutdown extends platform.platform_shutdown {
+	source "platform_shutdown.c"
+
+	@NoRuntime depends embox.arch.mmu
+	@NoRuntime depends embox.arch.cpu_idle
 }
 
 module cpuinfo {
 	option string log_level="LOG_INFO"
-
-	source "cpuinfo.c"
+	option number usb_analog_base=0x20C8000
 
 	@IncludeExport(path="arch/arm/imx")
 	source "cpuinfo.h"
+	source "cpuinfo.c"
 
-	option number usb_analog_base=0x20C8000
-
-	depends embox.compat.libc.stdio.open
+	@NoRuntime depends embox.compat.libc.stdio.open
 	depends embox.driver.periph_memory
 }

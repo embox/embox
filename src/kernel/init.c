@@ -11,6 +11,7 @@
 #include <drivers/diag.h>
 #include <drivers/irqctrl.h>
 #include <embox/runlevel.h>
+#include <hal/cpu_idle.h>
 #include <hal/ipl.h>
 #include <hal/platform.h>
 #include <kernel/kgdb.h>
@@ -38,7 +39,7 @@ void kernel_start(void) {
 	system_start();
 
 	while (1) {
-		platform_idle();
+		arch_cpu_idle();
 	}
 }
 

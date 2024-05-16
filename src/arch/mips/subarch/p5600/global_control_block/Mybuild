@@ -3,8 +3,8 @@ package embox.arch.mips.subarch.p5600
 module global_control_block {
 	option string log_level="LOG_ERR"
 	option number base_addr
-	
-	source "global_control_block.c"
+
 	@IncludeExport(path="drivers/mips")
 	source "global_control_block.h"
+	source "global_control_block.c"
 }

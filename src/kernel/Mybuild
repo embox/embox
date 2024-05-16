@@ -5,13 +5,9 @@ package embox.kernel
 module Kernel {
 	option string log_level="LOG_INFO"
 
-	/* FIXME
-	 * 1.it depends from embox.prom.printf (for init.c)
-	 */
 	source "init.c"
 
 	depends embox.arch.libarch
-	depends embox.arch.locore
 	depends embox.arch.cpu
 	depends embox.kernel.stack
 	depends embox.kernel.kgdb_api
@@ -22,5 +18,4 @@ module Kernel {
 	depends embox.init.system_start
 	
 	@NoRuntime depends platform.platform_init
-	@NoRuntime depends platform.platform_idle
 }
