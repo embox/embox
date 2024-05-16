@@ -4,9 +4,12 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
 
+@NoCode	
 module locore extends embox.arch.locore {
-	depends entry, interrupt
-	depends embox.arch.x86.boot.multiboot
+	@NoRuntime depends entry
+	@NoRuntime depends interrupt
+	@NoRuntime depends cpu_idle
+	@NoRuntime depends embox.arch.x86.boot.multiboot
 }
 
 module interrupt extends embox.arch.interrupt {
@@ -61,4 +64,9 @@ module acpi_shutdown extends shutdown {
 
 module noacpi_shutdown extends shutdown {
 	source "noacpi_shutdown.c"
+}
+
+@NoCode
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }
