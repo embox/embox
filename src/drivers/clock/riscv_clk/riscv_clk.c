@@ -18,7 +18,7 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 
-#include <embox/unit.h>
+#include <framework/mod/options.h>
 
 #define HZ 1000
 #define COUNT_OFFSET (RTC_CLOCK / HZ)
