@@ -73,6 +73,14 @@ module math_test_sin {
 	depends embox.framework.LibFramework
 }
 
+module math_test_cos {
+        source "math_test_cos.c"
+
+        depends embox.compat.libc.all
+        depends embox.compat.libc.math
+        depends embox.framework.LibFramework
+}
+
 module math_test_atan {
 	source "math_test_atan.c"
 
