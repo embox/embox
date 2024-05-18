@@ -2,7 +2,7 @@
  * @file
  *
  * @data May 1, 2024
- * @aothor Zeng Zixian
+ * @author Zeng Zixian
  */
 
 
