@@ -1,0 +1,31 @@
+package platform.stm32.f1.stm32f103rct6
+
+@Build(stage=1)
+@BuildArtifactPath(cppflags="-DSTM32F103xE")
+static module stm32f103rct6_conf extends third_party.bsp.stmf1cube.stm32f1_conf {
+	@IncludeExport(path="")
+	source "stm32f1xx_hal_conf.h"
+}
+
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+module arch extends embox.arch.arch {
+	source "arch.c"
+	source "stm32cube_compat.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf1cube/cube")
+	source "STM32CubeF1-1.8.1/Projects/STM32VL-Discovery/Templates/Src/system_stm32f1xx.c"
+}
+
+@Build(stage=1)
+@BuildDepends(stm32f103rct6_conf)
+@BuildDepends(third_party.bsp.stmf1cube.cube)
+@BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/, Drivers/BSP/STM32F1xx_Nucleo)")
+static module bsp extends third_party.bsp.st_bsp_api {
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf1cube/cube/STM32CubeF1-1.8.1/Drivers/BSP/STM32F1xx_Nucleo")
+	source "stm32f1xx_nucleo.c"
+
+	@NoRuntime depends third_party.bsp.stmf1cube.cube
+	@NoRuntime depends stm32f103rct6_conf
+	@NoRuntime depends arch
+}
+
