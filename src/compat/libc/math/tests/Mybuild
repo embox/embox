@@ -89,3 +89,10 @@ module math_test_sinh {
 	depends embox.framework.LibFramework
 }
 
+module math_test_abs {
+	source "math_test_abs.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
