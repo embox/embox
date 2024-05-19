@@ -2,7 +2,7 @@
  * @file
  *
  * @date May 25, 2023
- * @aothor Anton Bondarev
+ * @author Anton Bondarev
  */
 
 

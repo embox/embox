@@ -2,7 +2,7 @@
  * @file
  *
  * @date May 18, 2024
- * @aothor Guokai Chen
+ * @author Guokai Chen
  */
 
 
