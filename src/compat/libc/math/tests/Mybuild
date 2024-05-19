@@ -104,3 +104,11 @@ module math_test_abs {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module math_test_ceil {
+    source "math_test_ceil.c"
+
+    depends embox.compat.libc.all
+    depends embox.compat.libc.math
+    depends embox.framework.LibFramework
+}
