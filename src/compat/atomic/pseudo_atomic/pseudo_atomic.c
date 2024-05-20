@@ -176,3 +176,17 @@ bool __atomic_compare_exchange_4(volatile void *p, void *e,
 	spin_unlock(&atomic_lock);
 	return ret;
 }
+
+uint64_t __atomic_load_8(volatile void *mem, int model) {
+	spin_lock(&atomic_lock);
+	uint64_t ret = *((uint64_t *) mem);
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+void __atomic_store_8(volatile void *mem, uint64_t val, int model) {
+	spin_lock(&atomic_lock);
+	*((uint64_t *) mem) = val;
+	spin_unlock(&atomic_lock);
+	return;
+}
