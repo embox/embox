@@ -1,4 +1,4 @@
-#include <stm32f405_soc.conf.h>
+#include <netduinoplus2.conf.h>
 
 CONFIG {
 	uarts[1].status = ENABLED;
