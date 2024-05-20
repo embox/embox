@@ -120,3 +120,11 @@ module atan_tests {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module math_test_cosh {
+	source "math_test_cosh.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
