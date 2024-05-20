@@ -32,12 +32,41 @@ namespace std {
 
 #define RLIM_INFINITY 0
 
-extern int symlink(const char *oldpath, const char *newpath);
+static inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
+	printf("boost>>> %s\n", __func__);
+	return -1;
+}
+
+static inline int symlink(const char *oldpath, const char *newpath) {
+	printf("boost>>> %s\n", __func__);
+	return -1;
+}
+
+static inline int utime(const char *filename, const struct utimbuf *times) {
+	printf("boost>>> %s\n", __func__);
+	return -1;
+}
+
+static inline long pathconf(char *path, int name) {
+	printf("boost>>> %s\n", __func__);
+	return -1;
+}
 
 #define _PC_NAME_MAX 0
-extern long pathconf(char *path, int name);
 
-extern int strerror_r(int errnum, char *buf, size_t buflen);
+#include <string.h>
+static inline int strerror_r(int errnum, char *buf, size_t buflen) {
+	// memcpy(buf, strerror(errnum), buflen);
+	return 0;
+}
+
+static inline int statvfs(const char *path, struct statvfs *buf) {
+	return -1;
+}
+
+static inline int link(const char *oldpath, const char *newpath) {
+	return 1;
+}
 
 #include <pthread.h>
 
