@@ -24,17 +24,3 @@ diff -aur ./thrift-0.11.0/lib/cpp/src/thrift/transport/THttpServer.cpp ../build/
  
  #include <thrift/config.h>
  #include <thrift/transport/THttpServer.h>
-diff -aur ./thrift-0.11.0/lib/cpp/src/thrift/transport/PlatformSocket.h ../build/extbld/third_party/lib/thrift/thrift-0.11.0/lib/cpp/src/thrift/transport/PlatformSocket.h
---- ./thrift-0.11.0/lib/cpp/src/thrift/transport/PlatformSocket.h	2017-12-03 22:11:36.000000000 +0300
-+++ ../build/extbld/third_party/lib/thrift/thrift-0.11.0/lib/cpp/src/thrift/transport/PlatformSocket.h	2024-05-10 23:29:01.183464642 +0300
-@@ -22,6 +22,10 @@
- #ifndef _THRIFT_TRANSPORT_PLATFORM_SOCKET_H_
- #  define _THRIFT_TRANSPORT_PLATFORM_SOCKET_H_
- 
-+static inline int socketpair(int domain, int type, int protocol, int sv[2]) {
-+	return -1;
-+}
-+
- #ifdef _WIN32
- #  include <winsock2.h>
- #  define THRIFT_GET_SOCKET_ERROR ::WSAGetLastError()
