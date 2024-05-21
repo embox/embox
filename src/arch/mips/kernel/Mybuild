@@ -1,35 +1,26 @@
 package embox.arch.mips
 
+@NoCode
+module locore extends embox.arch.locore {
+	@NoRuntime depends exception
+	@NoRuntime depends boot
+	@NoRuntime depends reg
+}
+
 module boot extends embox.arch.boot {
 	source "boot.S"
 	source "reset.S"
 }
 
-@NoCode
-module locore extends embox.arch.locore {
-	@NoRuntime depends exception
-	@NoRuntime depends interrupt
-	@NoRuntime depends boot
-	@NoRuntime depends entry
-	@NoRuntime depends reg
-}
-
-module entry extends embox.arch.entry {
-	source "entry.S"
-}
-
 module exception {
-	source "exception.c"
+	option string log_level="LOG_INFO"
+
+	source "entry.S"
+	source "exc_init.c"
+	source "exc_handler.c"
+	source "irq_handler.c"
 
 	depends embox.arch.mips.mm.cache_api
-}
-
-module interrupt {
-	option string log_level="LOG_ERR"
-
-	source "interrupt.c"
-
-	depends exception
 }
 
 @NoCode
