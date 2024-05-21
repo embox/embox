@@ -79,7 +79,11 @@ ENTRY(_start)
 	jal     memcpy
 	nop
 
+	/* Init exceptions */
+	jal     mips_exception_init
+	nop
+
 	/* Start kernel */
-	jal     kernel_start
+	j       kernel_start
 	nop
 END(_start)
