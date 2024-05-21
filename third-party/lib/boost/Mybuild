@@ -15,7 +15,9 @@ static module libs {
 			"libboost_random.a",
 			"libboost_system.a",
 			"libboost_thread.a",
-			"libboost_timer.a"
+			"libboost_timer.a",
+			"libboost_system.a",
+			"libboost_filesystem.a"
 
 	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.compat.libc.all
