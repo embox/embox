@@ -131,10 +131,10 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK",  PA, PIN_5, AF5),
-				PIN("MISO", PA, PIN_6, AF5),
-				PIN("MOSI", PA, PIN_7, AF5),
-				PIN("CS",   PC, PIN_13, NOAF),
+				PIN("SCK", GPIO_PORT_A, PIN_5, AF5),
+				PIN("MISO", GPIO_PORT_A, PIN_6, AF5),
+				PIN("MOSI", GPIO_PORT_A, PIN_7, AF5),
+				PIN("CS",   GPIO_PORT_C, PIN_13, NOAF),
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOA),
@@ -151,10 +151,10 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI2",
 			.pins = {
-				PIN("SCK",  PB, PIN_13, AF5),
-				PIN("MISO", PB, PIN_14, AF5),
-				PIN("MOSI", PB, PIN_15, AF5),
-				PIN("CS",   PC, PIN_14, NOAF),
+				PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
+				PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
+				PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
+				PIN("CS",   GPIO_PORT_C, PIN_14, NOAF),
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOB),
@@ -174,16 +174,14 @@ struct i2c_conf i2cs[] = {
 		.dev = {
 			.name = "I2C1",
 			.irqs = {
-				VAL("EVENT_IRQ", 31),
-				VAL("ERROR_IRQ", 32),
+				VAL("EVENT", 31),
+				VAL("ERROR", 32),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_B, PIN_8, AF4),
 				PIN("SDA", GPIO_PORT_B, PIN_9, AF4),
 			},
 			.clocks = {
-				VAL("SCL", CLK_GPIOB),
-				VAL("SDA", CLK_GPIOB),
 				VAL("I2C", CLK_I2C1),
 			}
 		},
@@ -194,16 +192,14 @@ struct i2c_conf i2cs[] = {
 		.dev = {
 			.name = "I2C2",
 			.irqs = {
-				VAL("EVENT_IRQ", 33),
-				VAL("ERROR_IRQ", 34),
+				VAL("EVENT", 33),
+				VAL("ERROR", 34),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_F, PIN_0, AF4),
 				PIN("SDA", GPIO_PORT_F, PIN_1, AF4),
 			},
 			.clocks = {
-				VAL("SCL", CLK_GPIOF),
-				VAL("SDA", CLK_GPIOF),
 				VAL("I2C", CLK_I2C2),
 			}
 		},
@@ -214,16 +210,14 @@ struct i2c_conf i2cs[] = {
 		.dev = {
 			.name = "I2C3",
 			.irqs = {
-				VAL("EVENT_IRQ", 72),
-				VAL("ERROR_IRQ", 73),
+				VAL("EVENT", 72),
+				VAL("ERROR", 73),
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_H, PIN_4, AF4),
 				PIN("SDA", GPIO_PORT_H, PIN_5, AF4),
 			},
 			.clocks = {
-				VAL("SCL", CLK_GPIOH),
-				VAL("SDA", CLK_GPIOH),
 				VAL("I2C", CLK_I2C3),
 			}
 		},
