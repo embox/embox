@@ -5,9 +5,9 @@ abstract module cxxabi_api {
 }
 
 module cxxabi extends cxxabi_api {
-	source "aeabi_atexit.c"
+	source "aeabi_atexit.c", "aeabi_read_tp.c"
 }
 
 module cxxabi_stub extends cxxabi_api {
-	source "aeabi_atexit_stub.c"
+	source "aeabi_atexit_stub.c", "aeabi_read_tp_stub.c"
 }
