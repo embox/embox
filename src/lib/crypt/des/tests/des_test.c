@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data Sep 19, 2022
+ * @date Sep 19, 2022
  * @author Anton Bondarev
  */
 

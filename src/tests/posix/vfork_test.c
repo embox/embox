@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data May 7, 2014
+ * @date May 7, 2014
  * @author Anton Bondarev
  */
 

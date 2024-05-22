@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 06.02.2020
+ * @date 06.02.2020
  * @author Alexander Kalmuk
  */
 

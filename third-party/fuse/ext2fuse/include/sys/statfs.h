@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 06.11.15
+ * @date 06.11.15
  * @author Alexander Kalmuk
  */
 

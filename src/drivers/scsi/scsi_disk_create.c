@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 10.11.15
+ * @date 10.11.15
  * @author: Anton Bondarev
  */
 #include <util/log.h>

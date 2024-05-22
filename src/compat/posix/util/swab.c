@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 18.11.2015
+ * @date 18.11.2015
  * @author: Anton Bondarev
  */
 #include <unistd.h>

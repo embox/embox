@@ -1,7 +1,7 @@
 /**
  * @file
  * @brief
- * @data 20.11.2019
+ * @date 20.11.2019
  * @author: Denis Deryugin <deryugin.denis@gmail.com>
  */
 

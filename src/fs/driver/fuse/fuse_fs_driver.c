@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 15.01.2015
+ * @date 15.01.2015
  * @author: Anton Bondarev
  */
 #include <string.h>
