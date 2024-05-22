@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data 12 oct. 2015
+ * @date 12 oct. 2015
  * @author: Anton Bondarev
  */
 #include <errno.h>

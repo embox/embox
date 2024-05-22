@@ -27,7 +27,7 @@ static int jffs2_compression_mode = JFFS2_COMPR_MODE_PRIORITY;
 static uint32_t none_stat_compr_blocks=0,none_stat_decompr_blocks=0,none_stat_compr_size=0;
 
 /* jffs2_compress:
- * @data: Pointer to uncompressed data
+ * @date: Pointer to uncompressed data
  * @cdata: Pointer to returned pointer to buffer for compressed data
  * @datalen: On entry, holds the amount of data available for compression.
  *	On exit, expected to hold the amount of data actually compressed.

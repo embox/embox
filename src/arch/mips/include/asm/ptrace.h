@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 25.07.2012
@@ -9,6 +8,8 @@
 
 #ifndef MIPS_PTRACE_H_
 #define MIPS_PTRACE_H_
+
+#include <asm/asm.h>
 
 #ifndef __ASSEMBLER__
 

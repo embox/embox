@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @data Apr 8, 2020
+ * @date Apr 8, 2020
  * @author Anton Bondarev
  */
 

@@ -1,7 +1,7 @@
 /**
  * @file ipuv3.c
  * @brief Probe/irq handle/reset/channel init/etc
- * @data Sep 15, 2017
+ * @date Sep 15, 2017
  * @author Anton Bondarev
  */
 

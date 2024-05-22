@@ -2,7 +2,7 @@
  * @file
  * @brief Filesystem types
  *
- * @data 09.11.15
+ * @date 09.11.15
  * @author: Anton Bondarev
  */
 
