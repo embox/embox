@@ -1,0 +1,1 @@
+sudo ../src/openocd -f /media/anton/e3f70f69-f756-4819-ba7f-386fb5676286/anton/MIKRON/mik32-uploader/openocd-scripts/interface/ftdi/mikron-link.cfg -f /media/anton/e3f70f69-f756-4819-ba7f-386fb5676286/anton/MIKRON/mik32-uploader/openocd-scripts/target/mik32.cfg
