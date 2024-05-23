@@ -13,7 +13,7 @@ static module thrift {
 	@NoRuntime depends embox.lib.libsupcxx
 	@NoRuntime depends embox.lib.libstdcxx
 	@NoRuntime depends embox.lib.libgcc
-	@NoRuntime depends embox.compat.posix.pthread_stack_stub
+	@NoRuntime depends embox.compat.posix.pthread_stack
 	@NoRuntime depends third_party.boost.libs
 	@NoRuntime depends third_party.lib.openssl
 }
