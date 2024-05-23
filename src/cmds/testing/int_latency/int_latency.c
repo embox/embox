@@ -12,7 +12,7 @@
 #define OUT_PORT OPTION_GET(NUMBER,out_port)
 #define OUT_PIN (1 << OPTION_GET(NUMBER,out_pin))
 
-void irq_hnd(void *data) {
+static void irq_hnd(void *data) {
 	gpio_set(OUT_PORT, OUT_PIN, GPIO_PIN_HIGH);
 	(*(int *) data) = 1;
 }

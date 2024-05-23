@@ -1,4 +1,4 @@
-package embox.test
+package embox.cmd.testing
 
 @AutoCmd
 @Cmd(	name = "int_latency",
