@@ -1,3 +1,15 @@
+diff -aur ./openssl-1.0.2u/Makefile.org ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/Makefile.org
+--- ./openssl-1.0.2u/Makefile.org	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/Makefile.org	2024-05-20 20:54:18.137632682 +0300
+@@ -137,7 +137,7 @@
+ 
+ BASEADDR=
+ 
+-DIRS=   crypto ssl engines apps test tools
++DIRS=   crypto ssl engines
+ ENGDIRS= ccgost
+ SHLIBDIRS= crypto ssl
+ 
 diff -aur ./openssl-1.0.2u/crypto/engine/tb_asnmth.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/engine/tb_asnmth.c
 --- ./openssl-1.0.2u/crypto/engine/tb_asnmth.c	2019-12-20 16:02:41.000000000 +0300
 +++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/engine/tb_asnmth.c	2024-05-10 20:27:04.214094294 +0300

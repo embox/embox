@@ -1,5 +1,6 @@
 package third_party.lib
 
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/openssl/install/include")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 module openssl {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
