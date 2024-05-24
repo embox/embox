@@ -14,11 +14,11 @@
 #include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
+#include <kernel/time/time.h>
 
 #define CYC_PER_TICK       OPTION_GET(NUMBER, cyc_per_tick)
 
-#define HZ                 1000
-#define TIMER_IRQ_INTERVAL (SYS_CLOCK / (CYC_PER_TICK * HZ))
+#define TIMER_IRQ_INTERVAL (SYS_CLOCK / (CYC_PER_TICK * JIFFIES_PERIOD))
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	mips_write_c0_compare(TIMER_IRQ_INTERVAL); /* this lowers irq line */
