@@ -1,0 +1,10 @@
+package embox.project.openssl.cmd
+
+@AutoCmd
+@Cmd(name = "openssl_rand_demo", help="Openssl md5 demo")
+@BuildDepends(third_party.lib.openssl)
+@Build(stage=2)
+module openssl_rand_demo {
+    source "openssl_rand_demo.c"
+    depends third_party.lib.openssl
+}
