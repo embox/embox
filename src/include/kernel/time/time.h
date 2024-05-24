@@ -9,18 +9,26 @@
 #ifndef KERNEL_TIME_TIME_H_
 #define KERNEL_TIME_TIME_H_
 
+#include <assert.h>
 #include <stdint.h>
+#include <sys/cdefs.h>
 #include <sys/time.h>
 #include <time.h>
-#include <assert.h>
 
-#define MSEC_PER_SEC    1000L
-#define USEC_PER_MSEC   1000L
-#define USEC_PER_SEC    1000000L
-#define NSEC_PER_USEC   1000L
-#define NSEC_PER_MSEC   1000000L
-#define NSEC_PER_SEC    1000000000L
-#define SEC_PER_DAY     86400L
+#include <framework/mod/options.h>
+
+#include <config/embox/kernel/time/jiffies.h>
+
+#define MSEC_PER_SEC  1000L
+#define USEC_PER_MSEC 1000L
+#define USEC_PER_SEC  1000000L
+#define NSEC_PER_USEC 1000L
+#define NSEC_PER_MSEC 1000000L
+#define NSEC_PER_SEC  1000000000L
+#define SEC_PER_DAY   86400L
+
+#define JIFFIES_PERIOD \
+	OPTION_MODULE_GET(embox__kernel__time__jiffies, NUMBER, period)
 
 /**
  * Storage for hardware internal cycles
@@ -38,7 +46,6 @@ typedef uint64_t cycle_t;
  */
 typedef int64_t time64_t;
 
-#include <sys/cdefs.h>
 __BEGIN_DECLS
 
 /* gettimeofday is posix function, but settimeofday is not. */
@@ -62,8 +69,7 @@ extern struct timeval ns_to_timeval(const __s64 nsec);
  * Returns a new \ref timespec representing the result of summing up
  * given timespecs
  */
-extern struct timespec timespec_add(struct timespec t1,
-		struct timespec t2);
+extern struct timespec timespec_add(struct timespec t1, struct timespec t2);
 /**
  * Returns a new \ref timespec representing the result of subtraction
  * of two given timespecs.
@@ -71,29 +77,29 @@ extern struct timespec timespec_add(struct timespec t1,
  * @param t1 timespec to subtract from
  * @param t2 timespec to be subtracted
  */
-extern struct timespec timespec_sub(struct timespec t1,
-		struct timespec t2);
+extern struct timespec timespec_sub(struct timespec t1, struct timespec t2);
 #if 0
 extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
 #endif
 
 static inline time64_t timespec_to_ns(const struct timespec *ts) {
 	assert(ts != NULL);
-	return ((__s64) ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
+	return ((__s64)ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
 
 static inline time64_t timespec_to_ms(const struct timespec *ts) {
 	assert(ts != NULL);
-	return ((__s64) ts->tv_sec * MSEC_PER_SEC) + ts->tv_nsec / NSEC_PER_MSEC;
+	return ((__s64)ts->tv_sec * MSEC_PER_SEC) + ts->tv_nsec / NSEC_PER_MSEC;
 }
 
 static inline uint64_t timespec_to_hw(const struct timespec *ts, uint32_t hz) {
-	return (uint64_t) ts->tv_sec * hz + ((uint64_t)ts->tv_nsec * hz) / NSEC_PER_SEC;
+	return (uint64_t)ts->tv_sec * hz
+	       + ((uint64_t)ts->tv_nsec * hz) / NSEC_PER_SEC;
 }
 
 static inline unsigned long timeval_to_ms(const struct timeval *tv) {
 	assert(tv != NULL);
-	return ((__u32) tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec / USEC_PER_MSEC;
+	return ((__u32)tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec / USEC_PER_MSEC;
 }
 
 static inline void ms_to_timeval(unsigned long ms, struct timeval *tv) {
@@ -104,7 +110,7 @@ static inline void ms_to_timeval(unsigned long ms, struct timeval *tv) {
 
 static inline time64_t timeval_to_ns(const struct timeval *tv) {
 	assert(tv != NULL);
-	return ((__s64) tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
+	return ((__s64)tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
 }
 
 /* Round up */
@@ -120,7 +126,8 @@ static inline clock_t ns_to_clock(uint32_t hz, time64_t ns) {
 	return (ns * hz + NSEC_PER_SEC - 1) / NSEC_PER_SEC + 1;
 }
 
-static inline struct timespec cycles64_to_timespec(uint32_t hz, uint64_t cycles) {
+static inline struct timespec cycles64_to_timespec(uint32_t hz,
+    uint64_t cycles) {
 	struct timespec ts = {0, 0};
 	assert(hz != 0);
 	ts.tv_sec = cycles / hz;
@@ -128,13 +135,15 @@ static inline struct timespec cycles64_to_timespec(uint32_t hz, uint64_t cycles)
 	return ts;
 }
 
-static inline struct timespec cycles32_to_timespec(uint32_t cycles, uint32_t mult, uint32_t shift) {
+static inline struct timespec cycles32_to_timespec(uint32_t cycles,
+    uint32_t mult, uint32_t shift) {
 	struct timespec ts = {0, 0};
 	ts.tv_nsec = ((uint64_t)cycles * mult) >> shift;
 	return ts;
 }
 
-static inline struct timespec jiffies_to_timespec(uint32_t hz, uint32_t jiffies) {
+static inline struct timespec jiffies_to_timespec(uint32_t hz,
+    uint32_t jiffies) {
 	struct timespec ts = {0, 0};
 	assert(hz != 0);
 	ts.tv_sec = jiffies / hz;

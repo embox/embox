@@ -8,11 +8,14 @@
  * @author Anton Bondarev
  */
 
+#include <assert.h>
 #include <string.h>
+#include <sys/types.h>
+
+#include <framework/mod/options.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-#define HZ      OPTION_GET(NUMBER, hz)
 #define CS_NAME OPTION_GET(STRING, cs_name)
 
 extern struct clock_source CLOCK_SOURCE_NAME(CS_NAME);
@@ -48,9 +51,10 @@ int jiffies_init(void) {
 
 	clock_tick_init();
 
-	clock_source_register((struct clock_source *) cs_jiffies);
+	clock_source_register((struct clock_source *)cs_jiffies);
 
-	clock_source_set_periodic((struct clock_source *) cs_jiffies, HZ);
+	clock_source_set_periodic((struct clock_source *)cs_jiffies,
+	    JIFFIES_PERIOD);
 
 	return 0;
 }
