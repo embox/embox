@@ -31,8 +31,8 @@ void mips_exception_init(void) {
 	tmp &= ~(ST0_IM | ST0_BEV | ST0_ERL | ST0_IE);
 	mips_write_c0_status(tmp);
 
-	/* Configure status register */
+	/* Configure cause register */
 	tmp = mips_read_c0_cause();
-	tmp &= ~(CAUSE_IV | ST0_IM);
+	tmp &= ~(CAUSE_IV | CAUSE_IM);
 	mips_write_c0_cause(tmp);
 }
