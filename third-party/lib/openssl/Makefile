@@ -33,9 +33,6 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	# cp $(ROOT_DIR)/third-party/lib/openssl/patches/Makefile $(PKG_SOURCE_DIR)/Makefile
-	ln -sf /usr/bin/arm-none-eabi-ar $(ROOT_DIR)/mk/extbld/arch-embox-ar
-	ln -sf /usr/bin/arm-none-eabi-ranlib $(ROOT_DIR)/mk/extbld/arch-embox-ranlib
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) depend MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
@@ -45,6 +42,4 @@ $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) install_sw MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
-	rm $(ROOT_DIR)/mk/extbld/arch-embox-ranlib
-	rm $(ROOT_DIR)/mk/extbld/arch-embox-ar
 	touch $@
