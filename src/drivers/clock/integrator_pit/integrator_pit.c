@@ -4,6 +4,7 @@
  * @date 05 aug 2015
  * @author: Anton Bondarev
  */
+
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
@@ -12,8 +13,7 @@
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
-
-#define HZ             1000
+#include <kernel/time/time.h>
 
 #define TIMER_BASE     OPTION_GET(NUMBER, base_addr)
 
@@ -24,7 +24,7 @@
 #define CLOCK_RATE     48054841L
 
 /* The initial counter value */
-#define TIMER_COUNT    (CLOCK_RATE / HZ)
+#define TIMER_COUNT    (CLOCK_RATE / JIFFIES_PERIOD)
 
 /* Timer 1 registers */
 #define TMR_LOAD       (TIMER_BASE + 0x000)
@@ -58,7 +58,8 @@ static int integratorcp_clock_setup(struct clock_source *cs) {
 static struct time_event_device integratorcp_event_device = {
     .set_periodic = integratorcp_clock_setup,
     .name = "integratorcp_clk",
-    .irq_nr = CLOCK_IRQ};
+    .irq_nr = CLOCK_IRQ,
+};
 
 static cycle_t integratorcp_counter_read(struct clock_source *cs) {
 	return REG32_LOAD(TMR_VAL) & 0xFFFF;
