@@ -2,9 +2,7 @@ PKG_NAME := thrift
 PKG_VER := 0.11.0
 
 PKG_SOURCES := https://archive.apache.org/dist/thrift/0.11.0/$(PKG_NAME)-$(PKG_VER).tar.gz
-
 PKG_PATCHES := patches/fix.patch
-
 PKG_MD5     := 0be59730ebce071eceaf6bfdb8d3a20e
 
 THRIFT_CXXFLAGS = -I$(ROOT_DIR)/build/extbld/third_party/boost/libs/install/include
@@ -37,6 +35,7 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cp $(ROOT_DIR)/third-party/lib/thrift/patches/config.h $(PKG_SOURCE_DIR)/lib/cpp/src/thrift/config.h
+	cp $(ROOT_DIR)/third-party/lib/thrift/patches/config.h $(PKG_SOURCE_DIR)/config.h
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) install MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
