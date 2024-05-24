@@ -17,3 +17,9 @@ module mem {
 
 	@NoRuntime depends embox.device.char_dev
 }
+
+module urandom {
+	source "urandom.c"
+
+	@NoRuntime depends embox.device.char_dev
+}
