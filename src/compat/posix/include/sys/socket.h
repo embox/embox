@@ -456,6 +456,26 @@ extern int getsockopt(int sockfd, int level, int optname,
  */
 extern int setsockopt(int sockfd, int level, int optname,
 		const void *optval, socklen_t optlen);
+/**
+ * The socketpair() call creates an unnamed pair of connected
+ *      sockets in the specified domain, of the specified type, and using
+ *      the optionally specified protocol.  For further details of these
+ *      arguments, see socket(2).
+ *      The file descriptors used in referencing the new sockets are
+ *      returned in sv[0] and sv[1].  The two sockets are
+ *      indistinguishable.
+ */
+//extern int socketpair(int domain, int type, int protocol, int sv[2]);
+#include <errno.h>
+static inline
+int socketpair(int domain, int type, int protocol, int sv[2]) {
+	(void)domain;
+	(void)type;
+	(void)protocol;
+	(void)sv;
+	errno = -EPROTONOSUPPORT;
+	return -1;
+}
 
 __END_DECLS
 

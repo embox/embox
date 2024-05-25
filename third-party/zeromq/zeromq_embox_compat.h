@@ -60,12 +60,6 @@ static inline char *tempnam(const char *dir, const char *pfx) {
 
 #define EPROTO          71      /* Protocol error */
 
-static inline int socketpair(int domain, int type, int protocol, int sv[2]) {
-	DPRINT();
-	errno = EOPNOTSUPP;
-	return -1;
-}
-
 #define AI_PASSIVE 0x100
 #define AI_NUMERICHOST 0x200
 
