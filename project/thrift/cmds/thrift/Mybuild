@@ -1,0 +1,10 @@
+package embox.project.thrift.cmd
+
+@AutoCmd
+@Cmd(name = "thrift_server", help="thrift server demo")
+@BuildDepends(third_party.lib.thrift)
+@Build(stage=2)
+module thrift_server_demo {
+    source "gen-cpp/hello_types.cpp", "gen-cpp/HelloSvc.cpp", "server.cpp"
+    depends third_party.lib.thrift
+}
