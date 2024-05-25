@@ -1,0 +1,10 @@
+package embox.project.gmp.cmd
+
+@AutoCmd
+@Cmd(name = "gmp_demo", help="GMP demo")
+@BuildDepends(third_party.lib.libgmp)
+@Build(stage=2)
+module gmp_demo {
+    source "gmp_factorial.c"
+    depends third_party.lib.libgmp
+}
