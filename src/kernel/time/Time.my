@@ -13,7 +13,7 @@ module clock_source {
 module jiffies {
 	/* "cs_name" is one of registered clock sources. */
 	option string cs_name = ""
-	option number hz = 1000
+	option number period = 1000
 
 	source "jiffies.c"
 
