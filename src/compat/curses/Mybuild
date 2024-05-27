@@ -1,0 +1,5 @@
+package embox.compat
+
+@DefaultImpl(embox.compat.libcurses_impl)
+abstract module LibCurses {
+}

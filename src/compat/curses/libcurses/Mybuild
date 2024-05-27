@@ -1,0 +1,35 @@
+package embox.compat
+
+static module libcurses_impl extends embox.compat.LibCurses {
+	source "addch.c"
+	source "addstr.c"
+	source "attr.c"
+	source "beep.c"
+	source "bkgd.c"
+	source "clear.c"
+	source "delch.c"
+	source "getch.c"
+	source "globals.c"
+	source "initscr.c"
+	source "inopts.c"
+	source "insch.c"
+	source "mode.c"
+	source "move.c"
+	source "mvcur.c"
+	source "napms.c"
+	source "outopts.c"
+	source "printw.c"
+	source "refresh.c"
+	source "scroll.c"
+	source "touch.c"
+	source "window.c"
+	source "ctrl_seq.c"
+	source "output.c"
+	source "setupterm.c"
+	source "tparm.c"
+	source "tputs.c"
+
+	@NoRuntime depends embox.compat.posix.util.sleep
+	@NoRuntime depends embox.compat.posix.termios
+	@NoRuntime depends third_party.terminfo
+}
