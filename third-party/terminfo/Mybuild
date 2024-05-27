@@ -1,7 +1,13 @@
 package third_party
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract build")
-static module terminfo {
+module terminfo {
+	option string term="xterm-sco"
+	option string path="/terminfo"
+
+	@IncludeExport(path="terminfo")
+	source "config.h"
+
 	@InitFS
 	@AddPrefix("../../build/extbld/^MOD_PATH")
 	source "terminfo"
