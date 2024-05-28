@@ -1,11 +1,9 @@
 package embox.framework
 
 module cmd {
-	option number use_getopt_init=1
-
 	/*FIXME mybuild make flags options */
 	@DefineMacro("__FRAMEWORK__")
 	source "core.c"
 
-//	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.util.getopt
 }
