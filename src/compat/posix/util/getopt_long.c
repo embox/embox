@@ -7,15 +7,11 @@
  */
 
 #include <errno.h>
-#include <string.h>
 #include <getopt.h>
+#include <string.h>
 
-#include <framework/mod/options.h>
-
-#if OPTION_GET(NUMBER, use_getopt)
-
-static int getopt_try_long(int argl, char *const arg[], const struct option *longopts,
-		const struct option **out_lopt) {
+static int getopt_try_long(int argl, char *const arg[],
+    const struct option *longopts, const struct option **out_lopt) {
 	const struct option *lopt;
 
 	for (lopt = longopts; lopt->name; lopt++) {
@@ -36,7 +32,8 @@ static int getopt_try_long(int argl, char *const arg[], const struct option *lon
 				if (*optarg_sep) {
 					optarg = optarg_sep + 1;
 					return 1;
-				} else if (argl >= 1) {
+				}
+				else if (argl >= 1) {
 					optarg = arg[1];
 					return 2;
 				}
@@ -50,10 +47,8 @@ static int getopt_try_long(int argl, char *const arg[], const struct option *lon
 	return -ENOENT;
 }
 
-int getopt_long(int argc, char * const argv[],
-                  const char *optstring,
-                  const struct option *longopts, int *longindex) {
-
+int getopt_long(int argc, char *const argv[], const char *optstring,
+    const struct option *longopts, int *longindex) {
 	if (optind < argc) {
 		int consumed;
 		const struct option *lopt;
@@ -61,9 +56,9 @@ int getopt_long(int argc, char * const argv[],
 		if (strncmp(argv[optind], "--", 2))
 			return -1;
 
-		consumed = getopt_try_long(argc - optind, argv + optind, longopts, &lopt);
+		consumed = getopt_try_long(argc - optind, argv + optind, longopts,
+		    &lopt);
 		if (consumed >= 0) {
-
 			optind += consumed;
 			if (longindex) {
 				*longindex = lopt - longopts;
@@ -71,7 +66,8 @@ int getopt_long(int argc, char * const argv[],
 			if (lopt->flag) {
 				*lopt->flag = lopt->val;
 				return 0;
-			} else {
+			}
+			else {
 				return lopt->val;
 			}
 		}
@@ -79,4 +75,3 @@ int getopt_long(int argc, char * const argv[],
 
 	return -1;
 }
-#endif
