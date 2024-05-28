@@ -14,11 +14,10 @@ module All {
 }
 
 static module getopt {
-	option number use_getopt=1
-
 	@IncludeExport(path="util")
 	source "getopt.h"
 	source "getopt.c"
+	source "getopt_init.c"
 	source "getopt_long.c"
 
 	@NoRuntime depends embox.compat.libc.str
