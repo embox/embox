@@ -37,8 +37,6 @@ module no_graphic extends display_mode {
 }
 
 module setup_tty_dev extends setup_tty_api {
-	option string term_name="xterm-sco"
-	
 	source "setup_tty_dev.c"
 
 	depends diag_fd

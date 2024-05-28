@@ -3,7 +3,7 @@ package third_party.libs.ncurses
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/libs/ncurses/libncurses/install/include/ncurses")
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
-static module libncurses extends embox.compat.posix.LibCurses  {
+static module libncurses extends embox.compat.LibCurses  {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libncurses.a"
 /*
@@ -23,6 +23,6 @@ static module libncurses extends embox.compat.posix.LibCurses  {
 		"libpanel_g.a"
 */
 
-	depends third_party.terminfo
-	depends embox.compat.posix.getpgrp
+	@NoRuntime depends third_party.terminfo
+	@NoRuntime depends embox.compat.posix.getpgrp
 }

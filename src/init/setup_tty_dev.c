@@ -27,10 +27,6 @@ const char *setup_tty(const char *dev_name) {
 	struct idesc *idesc;
 	int fd;
 
-	/* TODO: Move to terminfo */
-	putenv("TERM=" OPTION_STRING_GET(term_name));
-	putenv("TERMINFO=/terminfo");
-
 	cdev = char_dev_find(dev_name);
 	if (!cdev) {
 		log_error("tty device not found");

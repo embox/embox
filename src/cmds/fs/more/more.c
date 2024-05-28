@@ -1,4 +1,4 @@
-/*
+/**
  * @file
  * @brief prints file to standart output screen by screen
  *
@@ -6,56 +6,42 @@
  * @author Denis Deryugin
  */
 
-#include <unistd.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
-#include <curses.h>
+#include <unistd.h>
 
-
-#define TAB_SIZE 4
-#define MAX_SCREEN_WIDTH 256
+#define TAB_SIZE      4
+#define SCREEN_HEIGHT 24
+#define SCREEN_WIDTH  80
 
 static void screen(FILE *fp) {
-	char buff[MAX_SCREEN_WIDTH + 1];
+	char buff[SCREEN_WIDTH + 1];
 	int cmd = 0, columns, lines, x, y, i;
 
-	WINDOW *std;
-	std = initscr();
-	columns = std->maxx - std->begx;
-	if (columns >= MAX_SCREEN_WIDTH - 1) {
-		columns = MAX_SCREEN_WIDTH - 1;
-	}
-	if (columns < 1) {
-		columns = 1;
-	}
-	lines = std->maxy - std->begy;
+	columns = 80;
+	lines = SCREEN_HEIGHT;
 
 	while (1) {
 		for (x = 0; x < lines - 1; x++) {
-
 			for (y = 0; y < columns; y++) {
 				if (fread(&buff[y], 1, 1, fp) == 1) {
+					switch ((int)buff[y]) {
+					case '\n':
+						/*	End of the line, filling the rest of buffer */
+						memset(buff + y, ' ', columns - y);
+						y = columns;
+						break;
 
-					switch ((int) buff[y]) {
-
-						case '\n':
-							/*	End of the line, filling the rest of buffer */
-							memset(buff + y, ' ', columns - y);
-							y = columns;
-							break;
-
-						case '\t':
-							/*	Perform tab instert	*/
-							memset(buff + y, ' ', TAB_SIZE);
-							y += TAB_SIZE - 1;
-							break;
-
+					case '\t':
+						/*	Perform tab instert	*/
+						memset(buff + y, ' ', TAB_SIZE);
+						y += TAB_SIZE - 1;
+						break;
 					}
-
-				} else {
-
+				}
+				else {
 					for (i = 0; i < y; i++) {
 						printf("%c", buff[i]);
 					}
@@ -71,7 +57,7 @@ static void screen(FILE *fp) {
 		}
 
 		printf("---More---\n");
-		cmd = getch();
+		cmd = getchar();
 
 		if (cmd == 'q') {
 			return;
@@ -83,12 +69,12 @@ int main(int argc, char **argv) {
 	FILE *fp;
 
 	if (argc < 2) {
-		printf ("Usage: more [FILE]\n");
+		printf("Usage: more [FILE]\n");
 		return 0;
 	}
 
 	if (NULL == (fp = fopen(argv[1], "r"))) {
-		printf ("Can't open this file!\n");
+		printf("Can't open this file!\n");
 		return 0;
 	}
 
