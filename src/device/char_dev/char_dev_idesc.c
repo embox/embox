@@ -219,7 +219,7 @@ struct idesc *char_dev_open(struct char_dev *cdev, int oflag) {
 
 	if (cdev->ops->open && (err = cdev->ops->open(cdev, &cdev_idesc->idesc))) {
 		pool_free(&idesc_pool, cdev_idesc);
-		return err2ptr(err);
+		return err2ptr(-err);
 	}
 
 out:

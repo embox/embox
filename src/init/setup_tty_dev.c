@@ -35,7 +35,7 @@ const char *setup_tty(const char *dev_name) {
 
 	idesc = char_dev_open(cdev, O_RDWR);
 	if (ptr2err(idesc)) {
-		log_error(strerror(ptr2err(idesc)));
+		log_error(strerror(-ptr2err(idesc)));
 		return NULL;
 	}
 
