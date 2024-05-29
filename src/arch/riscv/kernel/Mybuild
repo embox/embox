@@ -26,6 +26,12 @@ module interrupt extends embox.arch.interrupt {
 	depends embox.kernel.irq
 }
 
+module no_interrupt extends embox.arch.interrupt {
+	source "ipl_impl.c"
+	source "ipl_impl.h"
+	source "no_interrupt.c"
+}
+
 module entry extends embox.arch.entry {
 	source "entry.S"
 }
