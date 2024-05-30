@@ -30,6 +30,7 @@ $(CONFIGURE) :
 			--enable-static=yes \
 			--enable-tests=no \
 			--enable-tutorial=no \
+			--without-c_glib \
 	)
 	touch $@
 
