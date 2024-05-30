@@ -6,10 +6,10 @@ include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
 # Ignore Warning Options
-EMBOX_IMPORTED_CPPFLAGS  = $(filter-out -W%,$(EMBOX_EXPORT_CPPFLAGS))
+EMBOX_IMPORTED_CPPFLAGS  = $(filter-out -MMD -MP -W%,$(EMBOX_EXPORT_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(EMBOX_EXPORT_CPPFLAGS))
 
-EMBOX_IMPORTED_CFLAGS    = $(filter-out -W%,$(CFLAGS))
+EMBOX_IMPORTED_CFLAGS    = $(filter-out -std=% -W%,$(CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CFLAGS))
 
 EMBOX_IMPORTED_CXXFLAGS  = $(filter-out -W%,$(CXXFLAGS))
