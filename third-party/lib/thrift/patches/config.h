@@ -456,6 +456,10 @@
    code using `volatile' can become incorrect without. Disable with care. */
 /* #undef volatile */
 
+#define T_GLOBAL_DEBUG_VIRTUAL 0
+#define _THRIFT_FUNCTIONAL_TR1_ 0
+#define USE_BOOST_THREAD 0
+#define USE_STD_THREAD 0
 
 #endif
 
