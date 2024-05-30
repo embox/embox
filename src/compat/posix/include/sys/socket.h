@@ -465,17 +465,7 @@ extern int setsockopt(int sockfd, int level, int optname,
  *      returned in sv[0] and sv[1].  The two sockets are
  *      indistinguishable.
  */
-//extern int socketpair(int domain, int type, int protocol, int sv[2]);
-#include <errno.h>
-static inline
-int socketpair(int domain, int type, int protocol, int sv[2]) {
-	(void)domain;
-	(void)type;
-	(void)protocol;
-	(void)sv;
-	errno = -EPROTONOSUPPORT;
-	return -1;
-}
+extern int socketpair(int domain, int type, int protocol, int sv[2]);
 
 __END_DECLS
 

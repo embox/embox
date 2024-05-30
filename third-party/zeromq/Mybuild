@@ -10,6 +10,7 @@ static module core {
 
 	@NoRuntime depends embox.lib.libstdcxx
 	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.compat.posix.net.socketpair_stub
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "lib/libzmq.a"
