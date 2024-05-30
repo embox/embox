@@ -160,3 +160,9 @@ static module socket {
 	depends embox.compat.libc.assert
 	depends embox.net.socket
 }
+
+static module socketpair_stub {
+	option string log_level="LOG_NONE"
+
+	source "socketpair_stub.c"
+}

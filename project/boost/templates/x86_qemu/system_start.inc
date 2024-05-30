@@ -1,0 +1,8 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"service telnetd",
+"service httpd",
+"stl_demo_sort1",
+"boost_demo_time_math",
+"tish",

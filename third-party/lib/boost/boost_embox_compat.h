@@ -32,10 +32,10 @@ namespace std {
 
 #define RLIM_INFINITY 0
 
-static inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
-	printf("boost>>> %s\n", __func__);
-	return -1;
-}
+// static inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
+// 	printf("boost>>> %s\n", __func__);
+// 	return -1;
+// }
 
 static inline int symlink(const char *oldpath, const char *newpath) {
 	printf("boost>>> %s\n", __func__);
@@ -64,9 +64,9 @@ static inline int statvfs(const char *path, struct statvfs *buf) {
 	return -1;
 }
 
-static inline int link(const char *oldpath, const char *newpath) {
-	return 1;
-}
+// static inline int link(const char *oldpath, const char *newpath) {
+// 	return 1;
+// }
 
 #include <pthread.h>
 

@@ -8,4 +8,5 @@ module mosquitto_build {
 	@NoRuntime depends embox.compat.posix.index_descriptor
 	@NoRuntime depends embox.compat.posix.util.nanosleep
 	@NoRuntime depends embox.net.lib.getifaddrs
+	@NoRuntime depends embox.compat.posix.net.socketpair_stub
 }
