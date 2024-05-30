@@ -20,4 +20,6 @@ static module thrift {
 	@NoRuntime depends embox.compat.posix.util.nanosleep
 	@NoRuntime depends third_party.boost.libs
 	@NoRuntime depends third_party.lib.openssl
+
+	@NoRuntime depends embox.compat.posix.net.socketpair_stub
 }
