@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 #include <stddef.h>
 #include <string.h>
 #include <fcntl.h>
@@ -470,10 +471,28 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 	assert(optval);
 	assert(optlen >= 0);
 
-	if (level == SOL_SOCKET) {
-		return ksetsockopt_sol_socket(sk, level, optname, optval, optlen);
-	} else {
+	switch(level) {
+	default: 
 		ret = -EOPNOTSUPP;
+		break;
+	
+	case SOL_SOCKET:
+		ret = ksetsockopt_sol_socket(sk, level, optname, optval, optlen);
+		if (-ENOPROTOOPT != ret) {
+			return ret;
+		}
+		break;
+	case SOL_TCP:
+	/* FIXME is not implemented yet*/
+		if (optname == TCP_DEFER_ACCEPT) {
+			return 0;
+		} else {
+			ret = -EOPNOTSUPP;
+		}
+		break;
+	case SOL_IPV6:
+	/* FIXME is not implemented yet*/
+		return 0;		
 	}
 
 	assert(sk->f_ops != NULL);
