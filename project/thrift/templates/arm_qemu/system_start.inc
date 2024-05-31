@@ -3,5 +3,7 @@
 "netmanager",
 "service telnetd",
 "service httpd",
-"source time_setup.sh",
+"stl_demo_sort1",
+"boost_demo_time_math",
+"thrift_server",
 "tish",
