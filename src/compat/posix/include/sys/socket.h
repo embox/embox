@@ -244,7 +244,7 @@ MSG_WAITALL    Wait for complete message.
 //#define SOL_ICMP    1   /* No-no-no! Due to Linux :-) we cannot use SOL_ICMP=1 */
 #define SOL_TCP     6
 #define SOL_UDP     17
-//#define SOL_IPV6    41
+#define SOL_IPV6    41
 //#define SOL_ICMPV6  58
 //#define SOL_SCTP    132
 //#define SOL_UDPLITE 136 /* UDP-Lite (RFC 3828) */

@@ -9,6 +9,7 @@
 
 #include <errno.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h>
 #include <stddef.h>
 #include <string.h>
 #include <fcntl.h>
@@ -422,6 +423,46 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 		memcpy(&sk->opt.field, optval, optlen);       \
 		return 0
 
+static inline int 
+ksetsockopt_sol_socket(struct sock *sk, int level,
+						int optname, const void *optval, socklen_t optlen) {
+	switch (optname) {
+	default:
+		return -ENOPROTOOPT;
+
+	case SO_ACCEPTCONN:
+	case SO_DOMAIN:
+	case SO_ERROR:
+	case SO_PROTOCOL:
+	case SO_TYPE:
+		return -EINVAL;
+	case SO_BINDTODEVICE: {
+		struct net_device *dev = netdev_get_by_name(optval);
+		if (dev == NULL) {
+			return -ENODEV;
+		}
+		sk->opt.so_bindtodevice = dev;
+		return 0;
+	}
+	CASE_SETSOCKOPT(SO_REUSEADDR, so_reuseaddr, );
+	CASE_SETSOCKOPT(SO_BROADCAST, so_broadcast, );
+	CASE_SETSOCKOPT(SO_DONTROUTE, so_dontroute, );
+	CASE_SETSOCKOPT(SO_LINGER, so_linger, );
+	CASE_SETSOCKOPT(SO_OOBINLINE, so_oobinline, );
+	CASE_SETSOCKOPT(SO_RCVBUF, so_rcvbuf, );
+	CASE_SETSOCKOPT(SO_RCVLOWAT, so_rcvlowat, );
+	CASE_SETSOCKOPT(SO_RCVTIMEO, so_rcvtimeo,
+		    if (optlen > sizeof sk->opt.so_rcvtimeo) { return -EDOM; }
+		);
+	CASE_SETSOCKOPT(SO_SNDBUF, so_sndbuf, );
+	CASE_SETSOCKOPT(SO_SNDLOWAT, so_sndlowat, );
+	CASE_SETSOCKOPT(SO_SNDTIMEO, so_sndtimeo,
+		    if (optlen > sizeof sk->opt.so_sndtimeo) { return -EDOM; }
+		);
+	}
+	return -EINVAL;
+}
+
 int ksetsockopt(struct sock *sk, int level, int optname,
 		const void *optval, socklen_t optlen) {
 	int ret;
@@ -430,46 +471,28 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 	assert(optval);
 	assert(optlen >= 0);
 
-	if (level == SOL_SOCKET) {
-		switch (optname) {
-		default:
-			ret = -ENOPROTOOPT;
-			break;
-		case SO_ACCEPTCONN:
-		case SO_DOMAIN:
-		case SO_ERROR:
-		case SO_PROTOCOL:
-		case SO_TYPE:
-			return -EINVAL;
-		case SO_BINDTODEVICE:
-		{
-			struct net_device *dev = netdev_get_by_name(optval);
-			if (dev == NULL) {
-				return -ENODEV;
-			}
-			sk->opt.so_bindtodevice = dev;
-			return 0;
-		}
-		CASE_SETSOCKOPT(SO_REUSEADDR, so_reuseaddr, );
-		CASE_SETSOCKOPT(SO_BROADCAST, so_broadcast, );
-		CASE_SETSOCKOPT(SO_DONTROUTE, so_dontroute, );
-		CASE_SETSOCKOPT(SO_LINGER, so_linger, );
-		CASE_SETSOCKOPT(SO_OOBINLINE, so_oobinline, );
-		CASE_SETSOCKOPT(SO_RCVBUF, so_rcvbuf, );
-		CASE_SETSOCKOPT(SO_RCVLOWAT, so_rcvlowat, );
-		CASE_SETSOCKOPT(SO_RCVTIMEO, so_rcvtimeo,
-				if (optlen > sizeof sk->opt.so_rcvtimeo) {
-					return -EDOM;
-				});
-		CASE_SETSOCKOPT(SO_SNDBUF, so_sndbuf, );
-		CASE_SETSOCKOPT(SO_SNDLOWAT, so_sndlowat, );
-		CASE_SETSOCKOPT(SO_SNDTIMEO, so_sndtimeo,
-				if (optlen > sizeof sk->opt.so_sndtimeo) {
-					return -EDOM;
-				});
-		}
-	} else {
+	switch(level) {
+	default: 
 		ret = -EOPNOTSUPP;
+		break;
+	
+	case SOL_SOCKET:
+		ret = ksetsockopt_sol_socket(sk, level, optname, optval, optlen);
+		if (-ENOPROTOOPT != ret) {
+			return ret;
+		}
+		break;
+	case SOL_TCP:
+	/* FIXME is not implemented yet*/
+		if (optname == TCP_DEFER_ACCEPT) {
+			return 0;
+		} else {
+			ret = -EOPNOTSUPP;
+		}
+		break;
+	case SOL_IPV6:
+	/* FIXME is not implemented yet*/
+		return 0;		
 	}
 
 	assert(sk->f_ops != NULL);
