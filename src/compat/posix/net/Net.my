@@ -165,4 +165,6 @@ static module socketpair_stub {
 	option string log_level="LOG_NONE"
 
 	source "socketpair_stub.c"
+
+	@NoRuntime depends embox.compat.posix.ipc.pipe
 }
