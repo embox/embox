@@ -31,6 +31,8 @@ typedef __INT16_TYPE__ int16_t;
 
 #ifdef __ARM_32BIT_STATE
 typedef int int32_t; /* For compatibility with 3rd-party software */
+#elif defined(__i386__) && (__GNUC__ == 6) && (__GNUC_MINOR__ == 3) /* FIXME */
+typedef int int32_t;
 #else
 #ifndef __INT32_TYPE__
 typedef __s32  int32_t;
@@ -59,6 +61,8 @@ typedef __UINT16_TYPE__ uint16_t;
 
 #ifdef __ARM_32BIT_STATE
 typedef unsigned int uint32_t; /* For compatibility with 3rd-party software */
+#elif defined(__i386__) && (__GNUC__ == 6) && (__GNUC_MINOR__ == 3) /* FIXME */
+typedef unsigned int uint32_t;
 #else
 #ifndef __UINT32_TYPE__
 typedef __u32  uint32_t;

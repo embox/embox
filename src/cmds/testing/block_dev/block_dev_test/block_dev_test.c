@@ -320,7 +320,7 @@ static int part_test(struct block_dev *bdev) {
 		if (b && b->parent_bdev == bdev) {
 			printf("%s\n", block_dev_name(b));
 			if (b->block_size != blk_sz) {
-				printf("Block size mismatch! %d for %s; %d for %s\n",
+				printf("Block size mismatch! %zi for %s; %zi for %s\n",
 						blk_sz, block_dev_name(bdev), b->block_size, block_dev_name(b));
 				return 0;
 			}
