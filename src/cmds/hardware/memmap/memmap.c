@@ -58,7 +58,8 @@ static void show_vmem_translation(void) {
 		for (voff = 0; voff < marea->size; voff += MMU_PAGE_SIZE) {
 			paddr = vmem_translate(emmap->ctx, marea->start + voff, &mmu_translate_info);
 			if (paddr != paddr_start + region_size) {
-				printf("0x%16x .. 0x%16x -> 0x%16x \n", vaddr_start, vaddr_start + region_size - 1, paddr_start);
+				printf("0x%16" PRIxPTR ".. 0x%16" PRIxPTR "-> 0x%16" PRIxPTR "\n",
+				    vaddr_start, vaddr_start + region_size - 1, paddr_start);
 				region_size = 0;
 				paddr_start = paddr;
 				vaddr_start = marea->size + voff;
@@ -66,7 +67,8 @@ static void show_vmem_translation(void) {
 			region_size += MMU_PAGE_SIZE;
 		}
 
-		printf("0x%16x .. 0x%16x -> 0x%16x \n", vaddr_start, vaddr_start + region_size - 1, paddr_start);
+		printf("0x%16" PRIxPTR ".. 0x%16" PRIxPTR "-> 0x%16" PRIxPTR "\n",
+		    vaddr_start, vaddr_start + region_size - 1, paddr_start);
 	}
 }
 
