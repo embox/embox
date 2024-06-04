@@ -136,3 +136,11 @@ module math_test_cosh {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module acos_tests {
+	source "acos_tests.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
