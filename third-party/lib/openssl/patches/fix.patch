@@ -64,6 +64,18 @@ diff -aur ./openssl-1.0.2u/crypto/asn1/ameth_lib.c ../build/extbld/third_party/l
  #include "cryptlib.h"
  #include <openssl/asn1t.h>
  #include <openssl/x509.h>
+diff -aur ./openssl-1.0.2u/crypto/bio/b_sock.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/b_sock.c
+--- ./openssl-1.0.2u/crypto/bio/b_sock.c	2019-12-20 16:02:41.000000000 +0300
++++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/b_sock.c	2024-06-05 13:52:52.205638737 +0300
+@@ -590,7 +590,7 @@
+  * The reason I have implemented this instead of using sscanf is because
+  * Visual C 1.52c gives an unresolved external when linking a DLL :-(
+  */
+-static int get_ip(const char *str, unsigned char ip[4])
++static int get_ip(const char *str, unsigned char *ip)
+ {
+     unsigned int tmp[4];
+     int num = 0, c, ok = 0;
 diff -aur ./openssl-1.0.2u/ssl/ssl_conf.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/ssl/ssl_conf.c
 --- ./openssl-1.0.2u/ssl/ssl_conf.c	2019-12-20 16:02:41.000000000 +0300
 +++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/ssl/ssl_conf.c	2024-05-10 20:29:10.190710162 +0300
