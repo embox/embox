@@ -144,3 +144,11 @@ module acos_tests {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module asin_tests {
+	source "asin_tests.c"
+
+	depends embox.compat.libc.all
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
