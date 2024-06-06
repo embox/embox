@@ -1,0 +1,86 @@
+--- ./behavioral-model-1.15.0/configure.ac	2024-05-01 18:50:51.100159574 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/configure.ac	2024-05-01 18:50:06.683942434 +0300
+@@ -186,32 +186,32 @@
+ 
+ # Check for pthread, libgmp, libpcap
+ AX_PTHREAD([], [AC_MSG_ERROR([Missing pthread library])])
+-AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
+-AC_CHECK_LIB([pcap], [pcap_create], [], [AC_MSG_ERROR([Missing libpcap])])
+-AC_CHECK_LIB([pcap], [pcap_set_immediate_mode], [pcap_fix=yes], [pcap_fix=no])
++#AC_CHECK_LIB([gmp], [__gmpz_init], [], [AC_MSG_ERROR([Missing libgmp])])
++#AC_CHECK_LIB([pcap], [pcap_create], [], [AC_MSG_ERROR([Missing libpcap])])
++#AC_CHECK_LIB([pcap], [pcap_set_immediate_mode], [pcap_fix=yes], [pcap_fix=no])
+ if test -n "$COVERAGE_FLAGS"; then
+     AC_CHECK_LIB([gcov], [__gcov_init], [], [AC_MSG_ERROR([Missing gcov library])])
+ fi
+ 
+-AC_MSG_CHECKING(for compiler atomic support)
+-AC_LINK_IFELSE(
+-    [AC_LANG_SOURCE(
+-      [[#include <atomic>
+-        int main() {
+-          struct C { int x; int y; };
+-          std::atomic<C> c;
+-          C c1 = c.load();
+-          C c2;
+-          do { c2.x = c1.x + 1; c2.y = c1.y + 1; }
+-          while (!c.compare_exchange_weak(c1, c2));
+-          return 0;
+-        }
+-    ]])],
+-    [AC_MSG_RESULT(yes)],
+-    [AC_MSG_RESULT(no)
+-     AC_MSG_NOTICE([using -latomic])
+-     AX_CXX_CHECK_LIB([atomic], [__atomic_load_4], [], AC_MSG_ERROR([Missing latomic]))
+-    ])
++#AC_MSG_CHECKING(for compiler atomic support)
++#AC_LINK_IFELSE(
++#    [AC_LANG_SOURCE(
++#      [[#include <atomic>
++#        int main() {
++#          struct C { int x; int y; };
++#          std::atomic<C> c;
++#          C c1 = c.load();
++#          C c2;
++#          do { c2.x = c1.x + 1; c2.y = c1.y + 1; }
++#          while (!c.compare_exchange_weak(c1, c2));
++#          return 0;
++#        }
++#    ]])],
++#    [AC_MSG_RESULT(yes)],
++#    [AC_MSG_RESULT(no)
++#     AC_MSG_NOTICE([using -latomic])
++#     AX_CXX_CHECK_LIB([atomic], [__atomic_load_4], [], AC_MSG_ERROR([Missing latomic]))
++#    ])
+ 
+ AM_CONDITIONAL([WITH_PCAP_FIX], [test "$pcap_fix" = "yes"])
+ 
+@@ -244,17 +244,17 @@
+ 
+ # C++ libraries are harder (http://nerdland.net/2009/07/detecting-c-libraries-with-autotools/),
+ # so use headers to check
+-AC_CHECK_HEADER([boost/thread.hpp], [], [AC_MSG_ERROR([Boost threading headers not found])])
+-# need to check at least for the libboost_thread since it is -mt.so
+-AX_CXX_CHECK_LIB([boost_thread], [boost::thread], [],
+-                 [AX_CXX_CHECK_LIB([boost_thread-mt], [boost::thread],
+-                                   [LIBS="-lboost_thread-mt $LIBS"],
+-                                   [AC_MSG_ERROR([Missing boost thread library])])])
+-AC_CHECK_HEADER([boost/multiprecision/gmp.hpp], [], [AC_MSG_ERROR([Missing boost Multiprecision headers])])
+-AC_CHECK_HEADER([boost/program_options.hpp], [], [AC_MSG_ERROR([Missing boost program options header])])
+-AC_CHECK_HEADER([boost/functional/hash.hpp], [], [AC_MSG_ERROR([Missing boost functional hash header])])
+-AC_CHECK_HEADER([boost/filesystem.hpp], [], [AC_MSG_ERROR([Missing boost filesystem header])])
+-AC_CHECK_HEADER([boost/container/flat_set.hpp], [], [AC_MSG_ERROR([Boost flat_set header not found])])
++#AC_CHECK_HEADER([boost/thread.hpp], [], [AC_MSG_ERROR([Boost threading headers not found])])
++## need to check at least for the libboost_thread since it is -mt.so
++#AX_CXX_CHECK_LIB([boost_thread], [boost::thread], [],
++#                 [AX_CXX_CHECK_LIB([boost_thread-mt], [boost::thread],
++#                                   [LIBS="-lboost_thread-mt $LIBS"],
++#                                   [AC_MSG_ERROR([Missing boost thread library])])])
++#AC_CHECK_HEADER([boost/multiprecision/gmp.hpp], [], [AC_MSG_ERROR([Missing boost Multiprecision headers])])
++#AC_CHECK_HEADER([boost/program_options.hpp], [], [AC_MSG_ERROR([Missing boost program options header])])
++#AC_CHECK_HEADER([boost/functional/hash.hpp], [], [AC_MSG_ERROR([Missing boost functional hash header])])
++#AC_CHECK_HEADER([boost/filesystem.hpp], [], [AC_MSG_ERROR([Missing boost filesystem header])])
++#AC_CHECK_HEADER([boost/container/flat_set.hpp], [], [AC_MSG_ERROR([Boost flat_set header not found])])
+ 
+ AC_SUBST([AM_CPPFLAGS], ["-I\$(top_srcdir)/include \
+                           -I\$(top_builddir)/include \
