@@ -213,11 +213,11 @@ static void cap_msi(struct pci_slot_dev *d, int where, int cap) {
 	if (is64) {
 		t = get_conf_long(d, where + PCI_MSI_ADDRESS_HI);
 		w = get_conf_word(d, where + PCI_MSI_DATA_64);
-		printf("%08x", t);
+		printf("%08" PRIx32, t);
 	} else
 		w = get_conf_word(d, where + PCI_MSI_DATA_32);
 	t = get_conf_long(d, where + PCI_MSI_ADDRESS_LO);
-	printf("%08x  Data: %04x\n", t, w);
+	printf("%08" PRIx32 "  Data: %04" PRIx16 "\n", t, w);
 	if (cap & PCI_MSI_FLAGS_MASK_BIT) {
 		uint32_t mask, pending;
 
@@ -230,7 +230,7 @@ static void cap_msi(struct pci_slot_dev *d, int where, int cap) {
 			mask = get_conf_long(d, where + PCI_MSI_MASK_BIT_32);
 			pending = get_conf_long(d, where + PCI_MSI_PENDING_32);
 		}
-		printf("\t\tMasking: %08x  Pending: %08x\n", mask, pending);
+		printf("\t\tMasking: %08" PRIx32 "  Pending: %08" PRIx32 "\n", mask, pending);
 	}
 }
 
@@ -241,10 +241,10 @@ static void cap_msix(struct pci_slot_dev *d, int where, int cap) {
 			(cap & PCI_MSIX_TABSIZE) + 1, FLAG(cap, PCI_MSIX_MASK));
 
 	off = get_conf_long(d, where + PCI_MSIX_TABLE);
-	printf("\t\tVector table: BAR=%d offset=%08x\n", off & PCI_MSIX_BIR,
+	printf("\t\tVector table: BAR=%" PRId32 " offset=%08" PRIx32 "\n", off & PCI_MSIX_BIR,
 			off & ~PCI_MSIX_BIR);
 	off = get_conf_long(d, where + PCI_MSIX_PBA);
-	printf("\t\tPBA: BAR=%d offset=%08x\n", off & PCI_MSIX_BIR,
+	printf("\t\tPBA: BAR=%" PRId32 " offset=%08" PRIx32 "\n", off & PCI_MSIX_BIR,
 			off & ~PCI_MSIX_BIR);
 }
 
@@ -283,7 +283,7 @@ static void show_capabilities(struct pci_slot_dev *pci_dev) {
 		get_cap_id(pci_dev, where, &id);
 		get_cap_next(pci_dev, where, &next);
 		get_cap_flags(pci_dev, where, &cap);
-		printf("[%02x] ", where);
+		printf("[%02" PRIx32 "] ", where);
 
 		if (id == 0xff) {
 			printf("<chain broken>\n");
