@@ -57,6 +57,7 @@ struct tm {
 	int    tm_wday;  /*Day of week [0,6] (Sunday =0). */
 	int    tm_yday;  /*Day of year [0,365]. */
 	int    tm_isdst; /*Daylight Savings flag. */
+	int    tm_gmtoff;/*Seconds east of UTC. */
 };
 
 struct timespec {

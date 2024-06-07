@@ -1,0 +1,257 @@
+diff -aur ./behavioral-model-1.15.0/include/bm/bm_sim/packet.h ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/include/bm/bm_sim/packet.h
+--- ./behavioral-model-1.15.0/include/bm/bm_sim/packet.h	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/include/bm/bm_sim/packet.h	2024-05-11 12:19:43.731633798 +0300
+@@ -41,6 +41,17 @@
+ #include "phv_source.h"
+ #include "phv_forward.h"
+ 
++#include <sstream>
++namespace patch
++{
++    template < typename T > std::string to_string( const T& n )
++    {
++        std::ostringstream stm ;
++        stm << n ;
++        return stm.str() ;
++    }
++}
++
+ namespace bm {
+ 
+ //! Integral type used to identify a given data packet
+@@ -139,7 +150,7 @@
+   //! Get a unique string id for this packet.
+   //! It is simply `packet_id + "." + copy_id`.
+   const std::string get_unique_id() const {
+-    return std::to_string(packet_id) + "." + std::to_string(copy_id);
++    return patch::to_string(packet_id) + "." + patch::to_string(copy_id);
+   }
+ 
+   void set_copy_id(copy_id_t id) { copy_id = id; }
+diff -aur ./behavioral-model-1.15.0/src/bm_sim/P4Objects.cpp ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/P4Objects.cpp
+--- ./behavioral-model-1.15.0/src/bm_sim/P4Objects.cpp	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/P4Objects.cpp	2024-05-11 12:33:17.815613652 +0300
+@@ -36,6 +36,17 @@
+ #include "jsoncpp/json.h"
+ #include "crc_map.h"
+ 
++#include <sstream>
++namespace patch2
++{
++    template < typename T > std::string to_string( const T& n )
++    {
++        std::ostringstream stm ;
++        stm << n ;
++        return stm.str() ;
++    }
++}
++
+ namespace bm {
+ 
+ using std::unique_ptr;
+@@ -49,7 +60,7 @@
+ // constexpr int min_minor_version = 0;
+ 
+ std::string get_version_str(int major, int minor) {
+-  return std::to_string(major) + "." + std::to_string(minor);
++  return patch2::to_string(major) + "." + patch2::to_string(minor);
+ }
+ 
+ template <typename T,
+diff -aur ./behavioral-model-1.15.0/src/bm_sim/options_parse.cpp ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/options_parse.cpp
+--- ./behavioral-model-1.15.0/src/bm_sim/options_parse.cpp	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/options_parse.cpp	2024-05-11 12:31:54.619206926 +0300
+@@ -36,6 +36,16 @@
+ 
+ #include "version.h"
+ 
++namespace patch1
++{
++    template < typename T > std::string to_string( const T& n )
++    {
++        std::ostringstream stm ;
++        stm << n ;
++        return stm.str() ;
++    }
++}
++
+ namespace fs = boost::filesystem;
+ 
+ namespace bm {
+@@ -66,7 +76,8 @@
+   std::getline(stream, tok, '@');
+   uint32_t port;
+   try {
+-    port = std::stoi(tok, nullptr);
++    //port = std::stoi(tok, nullptr);
++    port = -1;
+   }
+   catch (...) {
+     throw po::validation_error(po::validation_error::invalid_option_value,
+@@ -258,7 +269,7 @@
+     notifications_addr = vm["notifications-addr"].as<std::string>();
+   } else {
+     notifications_addr = std::string("ipc:///tmp/bmv2-")
+-        + std::to_string(device_id) + std::string("-notifications.ipc");
++        + patch1::to_string(device_id) + std::string("-notifications.ipc");
+   }
+ #endif
+ 
+@@ -382,7 +393,7 @@
+   } else if (vm.count("debugger")) {
+     debugger = true;
+     debugger_addr = std::string("ipc:///tmp/bmv2-")
+-        + std::to_string(device_id) + std::string("-debug.ipc");
++        + patch1::to_string(device_id) + std::string("-debug.ipc");
+   }
+ 
+ #ifdef BM_THRIFT_ON
+diff -aur ./behavioral-model-1.15.0/src/bm_sim/pcap_file.cpp ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/pcap_file.cpp
+--- ./behavioral-model-1.15.0/src/bm_sim/pcap_file.cpp	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/pcap_file.cpp	2024-05-11 12:45:42.107252309 +0300
+@@ -26,6 +26,16 @@
+ 
+ #include <cstring>
+ 
++namespace patch3
++{
++    template < typename T > std::string to_string( const T& n )
++    {
++        std::ostringstream stm ;
++        stm << n ;
++        return stm.str() ;
++    }
++}
++
+ namespace bm {
+ 
+ namespace {
+@@ -46,8 +56,8 @@
+ std::string
+ PcapPacket::timevalToString(const struct timeval *tv) {
+   std::stringstream result;
+-  result << std::to_string(tv->tv_sec) << ":"
+-         << std::setfill('0') << std::setw(6) << std::to_string(tv->tv_usec);
++  result << patch3::to_string(tv->tv_sec) << ":"
++         << std::setfill('0') << std::setw(6) << patch3::to_string(tv->tv_usec);
+   return result.str();
+ }
+ 
+@@ -222,7 +232,9 @@
+ 
+     if (respectTiming) {
+       struct timeval delta;
+-      timersub(earliest_time, &firstPacketTime, &delta);
++      struct timeval earliest_timee;
++      memcpy(&earliest_timee, earliest_time, sizeof(timeval));
++      timersub(&earliest_timee, &firstPacketTime, &delta);
+ 
+       struct timeval now;
+       gettimeofday(&now, nullptr);
+@@ -278,12 +290,12 @@
+ 
+ void PcapFilesReader::start() {
+   BMLOG_DEBUG("Pcap reader: starting PcapFilesReader {}",
+-              std::to_string(files.size()));
++              patch3::to_string(files.size()));
+ 
+   // Give the switch some time to initialize
+   if (wait_time_in_seconds > 0) {
+     BMLOG_DEBUG("Pcap reader: waiting for {} seconds",
+-                std::to_string(wait_time_in_seconds));
++                patch3::to_string(wait_time_in_seconds));
+     auto duration = std::chrono::seconds(wait_time_in_seconds);
+     std::this_thread::sleep_for(duration);
+   }
+diff -aur ./behavioral-model-1.15.0/include/bm/bm_runtime/bm_runtime.h ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/include/bm/bm_runtime/bm_runtime.h
+--- ./behavioral-model-1.15.0/include/bm/bm_runtime/bm_runtime.h	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/include/bm/bm_runtime/bm_runtime.h	2024-05-11 15:50:07.385347702 +0300
+@@ -11,7 +11,7 @@
+ using namespace thrift_provider::transport;
+ using namespace thrift_provider::protocol;
+ 
+-using ::stdcxx::shared_ptr;
++// using ::stdcxx::shared_ptr;
+ 
+ namespace bm_runtime {
+ 
+@@ -19,9 +19,9 @@
+ 
+ template <typename Iface, typename Processor>
+ int add_service(const std::string &service_name,
+-                shared_ptr<Iface> handler) {
++                std::shared_ptr<Iface> handler) {
+   processor_->registerProcessor(service_name,
+-				shared_ptr<TProcessor>(new Processor(handler)));
++				std::shared_ptr<TProcessor>(new Processor(handler)));
+   return 0;
+ }
+ 
+diff -aur ./behavioral-model-1.15.0/src/bm_sim/Makefile.am ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/Makefile.am
+--- ./behavioral-model-1.15.0/src/bm_sim/Makefile.am	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/bm_sim/Makefile.am	2024-05-12 20:10:21.191503830 +0300
+@@ -48,8 +48,6 @@
+ match_error_codes.cpp \
+ match_units.cpp \
+ match_tables.cpp \
+-md5.c \
+-md5.h \
+ meters.cpp \
+ options_parse.cpp \
+ P4Objects.cpp \
+diff -aur ./behavioral-model-1.15.0/src/bm_runtime/server.cpp ../build/extbld/third_party/cmd/l2_switch/behavioral-model-1.15.0/src/bm_runtime/server.cpp
+--- ./behavioral-model-1.15.0/src/bm_runtime/server.cpp	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/cmd/l2_switch/behavioral-model-1.15.0/src/bm_runtime/server.cpp	2024-06-01 01:29:40.629241869 +0300
+@@ -51,7 +51,7 @@
+ using ::bm_runtime::simple_pre::SimplePreProcessor;
+ using ::bm_runtime::simple_pre_lag::SimplePreLAGProcessor;
+ 
+-using ::stdcxx::shared_ptr;
++using std::shared_ptr;
+ 
+ namespace bm_runtime {
+ 
+diff -aur ./behavioral-model-1.15.0/thrift_src/Makefile.am ../build/extbld/third_party/cmd/l2_switch/behavioral-model-1.15.0/thrift_src/Makefile.am
+--- ./behavioral-model-1.15.0/thrift_src/Makefile.am	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/cmd/l2_switch/behavioral-model-1.15.0/thrift_src/Makefile.am	2024-06-01 02:39:32.561735184 +0300
+@@ -88,12 +88,12 @@
+ 	@rm -f thrift_files.tmp
+ 	@touch thrift_files.tmp
+ 	@mkdir -p $(builddir)/gen-cpp/bm
+-	$(THRIFT) -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/standard.thrift
+-	$(THRIFT) -o $(builddir) --gen py -r $(srcdir)/standard.thrift
+-	$(THRIFT) -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/simple_pre.thrift
+-	$(THRIFT) -o $(builddir) --gen py -r $(srcdir)/simple_pre.thrift
+-	$(THRIFT) -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/simple_pre_lag.thrift
+-	$(THRIFT) -o $(builddir) --gen py -r $(srcdir)/simple_pre_lag.thrift
++	/usr/local/bin/thrift -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/standard.thrift
++	/usr/local/bin/thrift -o $(builddir) --gen py -r $(srcdir)/standard.thrift
++	/usr/local/bin/thrift -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/simple_pre.thrift
++	/usr/local/bin/thrift -o $(builddir) --gen py -r $(srcdir)/simple_pre.thrift
++	/usr/local/bin/thrift -out $(builddir)/gen-cpp/bm --gen cpp -r $(srcdir)/simple_pre_lag.thrift
++	/usr/local/bin/thrift -o $(builddir) --gen py -r $(srcdir)/simple_pre_lag.thrift
+ 	touch $(thrift_cxx_files)
+ 	if mkdir $(top_srcdir)/tools/bm_runtime.test 2>/dev/null; then \
+ 	  rm -rf $(top_srcdir)/tools/bm_runtime/; \
+diff -aur ./behavioral-model-1.15.0/include/bm/bm_sim/dynamic_bitset.h ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/include/bm/bm_sim/dynamic_bitset.h
+--- ./behavioral-model-1.15.0/include/bm/bm_sim/dynamic_bitset.h	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/include/bm/bm_sim/dynamic_bitset.h	2024-05-18 20:40:22.538185914 +0300
+@@ -29,8 +29,16 @@
+ namespace bm {
+ 
+ template <typename T>
+-inline int find_lowest_bit(T v);
+-
++inline int find_lowest_bit(T v) {
++    if (v == 0) return 0;
++    
++    int position = 1;
++    while ((v & 1) == 0) {
++        v >>= 1;
++        position++;
++    }
++    return position;
++}
+ template<>
+ inline int find_lowest_bit<uint32_t>(uint32_t v) {
+   static const int kMultiplyDeBruijnBitPosition[32] = {

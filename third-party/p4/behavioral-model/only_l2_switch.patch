@@ -1,0 +1,92 @@
+diff -aur ./behavioral-model-1.15.0/Makefile.am ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/Makefile.am
+--- ./behavioral-model-1.15.0/Makefile.am	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/Makefile.am	2024-05-12 19:09:39.165698871 +0300
+@@ -9,17 +9,18 @@
+ endif
+ 
+ if COND_THRIFT
+-    MAYBE_THRIFT = thrift_src
+     MAYBE_TESTS = tests
+ endif
+ 
++MAYBE_THRIFT = thrift_src
++
+ if COND_PI
+     MAYBE_PI = PI
+ endif
+ 
+ # simple_switch depends on libbmpi so PI needs to appear first
+ SUBDIRS = $(MAYBE_THRIFT) third_party src include \
+-$(MAYBE_TESTS) $(MAYBE_PI) $(MAYBE_TARGETS) tools $(MAYBE_PDFIXED)
++$(MAYBE_TESTS) $(MAYBE_PI) $(MAYBE_TARGETS) $(MAYBE_PDFIXED)
+ 
+ # I am leaving all style-related files (cpplint) out of dist on purpose, maybe
+ # will add them later if needed
+diff -aur ./behavioral-model-1.15.0/configure.ac ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/configure.ac
+--- ./behavioral-model-1.15.0/configure.ac	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/configure.ac	2024-04-03 22:26:01.289841976 +0300
+@@ -290,27 +290,11 @@
+ 		src/bm_apps/Makefile
+ 		src/bm_apps/examples/Makefile
+ 		targets/Makefile
+-		targets/simple_router/Makefile
+ 		targets/l2_switch/Makefile
+-		targets/l2_switch/learn_client/Makefile
+-		targets/simple_switch/Makefile
+-		targets/simple_switch/tests/Makefile
+-		targets/simple_switch/tests/CLI_tests/Makefile
+-		targets/psa_switch/Makefile
+-		targets/psa_switch/tests/Makefile
+-		tests/Makefile
+-		tests/stress_tests/Makefile
+-                tools/Makefile
+-                pdfixed/Makefile
+-                pdfixed/include/Makefile
+-                PI/Makefile])
++		targets/l2_switch/learn_client/Makefile])
+ 
+ # Generate other files
+-AC_CONFIG_FILES([tests/utils.cpp
+-                 src/bm_sim/version.cpp
+-                 mininet/stress_test_ipv4.py])
+-AC_CONFIG_FILES([targets/simple_switch/tests/CLI_tests/run_one_test.py],
+-                [chmod +x targets/simple_switch/tests/CLI_tests/run_one_test.py])
++AC_CONFIG_FILES([src/bm_sim/version.cpp])
+ 
+ AX_PREFIX_CONFIG_H([include/bm/config.h], [BM])
+ 
+diff -aur ./behavioral-model-1.15.0/targets/Makefile.am ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/targets/Makefile.am
+--- ./behavioral-model-1.15.0/targets/Makefile.am	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/targets/Makefile.am	2024-04-03 22:39:18.625194834 +0300
+@@ -1,5 +1 @@
+-if COND_THRIFT
+-MAYBE_SECONDARY_TARGETS = simple_router l2_switch
+-endif
+-
+-SUBDIRS = $(MAYBE_SECONDARY_TARGETS) simple_switch psa_switch
++SUBDIRS = l2_switch
+
+diff -aur ./behavioral-model-1.15.0/src/Makefile.am ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/Makefile.am
+--- ./behavioral-model-1.15.0/src/Makefile.am	2022-02-10 22:23:34.000000000 +0300
++++ ../build/extbld/third_party/lib/bmv2/behavioral-model-1.15.0/src/Makefile.am	2024-05-12 18:28:56.233755984 +0300
+@@ -1,8 +1,6 @@
+ ACLOCAL_AMFLAGS = ${ACLOCAL_FLAGS} -I m4
+ 
+-if COND_THRIFT
+ MAYBE_BM_RUNTIME = bm_runtime
+-endif
+ 
+ if COND_NANOMSG
+ MAYBE_BM_APPS = bm_apps
+@@ -29,11 +27,9 @@
+ $(top_builddir)/src/BMI/libbmi.la \
+ $(top_builddir)/third_party/jsoncpp/libjson.la
+ 
+-if COND_THRIFT
+ libbmall_la_LIBADD += \
+ $(top_builddir)/src/bm_runtime/libbmruntime.la \
+ $(top_builddir)/thrift_src/libruntimestubs.la
+-endif
+ 
+ libbmall_la_LIBADD += \
+ -lboost_system $(THRIFT_LIB) -lboost_program_options -lboost_filesystem
