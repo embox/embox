@@ -1,13 +1,13 @@
 /**
  * @file
  *
- * @date 04.10.2019
- * @author Anastasia Nizharadze
+ * @date 08.06.2024
+ * @author Suraj Sonawane
  */
 
-#ifndef IRQCTRL_RISCV_INTC_IMPL_H_
-#define IRQCTRL_RISCV_INTC_IMPL_H_
+#ifndef IRQCTRL_SIFIVE_INTC_IMPL_H_
+#define IRQCTRL_SIFIVE_INTC_IMPL_H_
 
-#define __IRQCTRL_IRQS_TOTAL 70
+#define __IRQCTRL_IRQS_TOTAL 511
 
-#endif /* IRQCTRL_RISCV_INTC_IMPL_H_ */
+#endif /* IRQCTRL_SIFIVE_INTC_IMPL_H_ */
