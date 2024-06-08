@@ -1,9 +1,5 @@
 package embox.driver.interrupt
 
 module sifive_plic extends irqctrl_api {
-    option number base_addr = 0x0C000000
-    option number threshold_offset = 0x00200000
-    option number interrupt_enable_offset = 0x00002000
-
     source "sifive_plic.c", "sifive_plic.h"
 }
