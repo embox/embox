@@ -24,6 +24,7 @@
 #include <net/skbuff.h>
 #include <net/netdevice.h>
 #include <asm/io.h>
+#include <hal/reg.h>
 
 #include <stdio.h>
 #include <kernel/printk.h>
@@ -103,9 +104,9 @@ static int cadence_gem_xmit(struct net_device *dev, struct sk_buff *skb) {
   uint32_t net_control;
   uint32_t tx_stat;
 
-  riscv_read32(tx_stat, ((uint32_t)BASE_ADDR + (uint32_t)GEM_TXSTATUS));
+  tx_stat = REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_TXSTATUS);
   tx_stat |= GEM_TXSTATUS_TXCMPL;
-  riscv_write32(tx_stat, ((uint32_t)BASE_ADDR + (uint32_t)GEM_TXSTATUS));
+  REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_TXSTATUS), tx_stat);
 
   memset(tx_buff, 0, sizeof(char) * MAX_BUFF_SIZE);
   memcpy(tx_buff, skb->mac.raw, skb->len);
@@ -119,9 +120,9 @@ static int cadence_gem_xmit(struct net_device *dev, struct sk_buff *skb) {
 
   //show_packet(skb->mac.raw, skb->len, "xmit");
 
-  riscv_read32(net_control, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL));
+  net_control = REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL);
   net_control |= GEM_NWCTRL_TXSTART;
-  riscv_write32(net_control, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL));
+  REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL), net_control);
 
   skb_free(skb);
   return 0;
@@ -131,7 +132,7 @@ static void program_dma_cfg(void) {
 	uint32_t val = 0;
 
 	val |= GEM_DMA_CFG_RX_BUF_SIZE(MAX_BUFF_SIZE);
-	riscv_write32(val, ((uint32_t)BASE_ADDR + (uint32_t)GEM_DMACFG));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_DMACFG), val);
 }
 
 static int cadence_gem_start(struct net_device *dev) {
@@ -142,8 +143,8 @@ static int cadence_gem_start(struct net_device *dev) {
 
 	program_dma_cfg();
 
-	riscv_write32((uint32_t)*(uint32_t *)mac_addr, ((uint32_t)BASE_ADDR + (uint32_t)GEM_SPADDR1LO));
-	riscv_write32((uint16_t)*(uint16_t *)(mac_addr + 4), ((uint32_t)BASE_ADDR + (uint32_t)GEM_SPADDR1HI));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_SPADDR1LO), (uint32_t)*(uint32_t *)mac_addr);
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_SPADDR1HI), (uint16_t)*(uint16_t *)(mac_addr + 4));
 
 	dma_desc_tx.flags = DESC_1_USED & DESC_1_TX_WRAP & DESC_1_TX_LAST;
 	dma_desc_tx.addr = 0;
@@ -153,21 +154,21 @@ static int cadence_gem_start(struct net_device *dev) {
 	dma_desc_rx.addr = (uint32_t)rx_buff | DESC_0_RX_WRAP;
 	dma_desc_rx.flags = 0;
 
-	riscv_read32(net_config, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCFG));
+	net_config = REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCFG);
 	net_config |= GEM_NWCFG_STRIP_FCS;
-	riscv_write32(net_config, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCFG));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCFG), net_config);
 
-	riscv_write32(&dma_desc_rx, ((uint32_t)BASE_ADDR + (uint32_t)GEM_RXQBASE));
-	riscv_write32(&dma_desc_tx, ((uint32_t)BASE_ADDR + (uint32_t)GEM_TXQBASE));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_RXQBASE), (uint32_t)&dma_desc_rx);
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_TXQBASE), (uint32_t)&dma_desc_tx);
 
-	riscv_read32(net_ier, ((uint32_t)BASE_ADDR + (uint32_t)GEM_IER));
+	net_ier =REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_IER);
 	net_ier |= GEM_INT_TXCMPL | GEM_INT_TXUSED | GEM_INT_RXUSED | GEM_INT_RXCMPL;
-	riscv_write32(net_ier, ((uint32_t)BASE_ADDR + (uint32_t)GEM_IER));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_IER), net_ier);
 
-	riscv_read32(net_control, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL));
+	net_control = REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL);
 	net_control |= GEM_NWCTRL_TXENA;
 	net_control |= GEM_NWCTRL_RXENA;
-	riscv_write32(net_control, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL), net_control);
 
 	return 0;
 }
@@ -212,9 +213,9 @@ static int cadence_gem_rx(struct net_device *dev) {
 	dma_desc_rx.addr = (uint32_t)rx_buff | DESC_0_RX_WRAP;
 	dma_desc_tx.flags &= ~DESC_1_LENGTH;
 
-	riscv_read32(net_control, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL));
+	net_control = REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL);
 	net_control |= GEM_NWCTRL_RXENA;
-	riscv_write32(net_control, ((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL));
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_NWCTRL), net_control);
 
 	//show_packet(skb->mac.raw, skb->len, "rx");
 	skb->dev = dev;
@@ -232,10 +233,10 @@ static irq_return_t cadence_gem_interrupt_handler(unsigned int irq,
 	uint32_t istatus;
 
 	/* Read and clear registers */
-	riscv_read32(istatus, ((uint32_t)BASE_ADDR + (uint32_t)GEM_INTR_STAT));
-	riscv_write32(istatus, ((uint32_t)BASE_ADDR + (uint32_t)GEM_INTR_STAT));
-	riscv_write32(istatus, ((uint32_t)BASE_ADDR + (uint32_t)GEM_RX_STAT));
-	riscv_write32(0xf, ((uint32_t)BASE_ADDR + (uint32_t)GEM_RX_STAT));
+	istatus = REG32_LOAD((uint32_t)BASE_ADDR + (uint32_t)GEM_INTR_STAT);
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_INTR_STAT), istatus);
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_RX_STAT), istatus);
+	REG32_STORE(((uint32_t)BASE_ADDR + (uint32_t)GEM_RX_STAT), 0xf);
 
 	cadence_gem_rx(dev);
 
