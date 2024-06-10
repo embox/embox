@@ -9,6 +9,8 @@
 #ifndef DRIVER_IRQCTRL_H_
 #define DRIVER_IRQCTRL_H_
 
+#include <stdint.h>
+
 #include <module/embox/driver/interrupt/irqctrl_api.h>
 
 /**
