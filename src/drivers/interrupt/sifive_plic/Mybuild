@@ -1,0 +1,5 @@
+package embox.driver.interrupt
+
+module sifive_plic extends irqctrl_api {
+    source "sifive_plic.c", "sifive_plic.h"
+}
