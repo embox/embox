@@ -9,6 +9,7 @@
 #define UTIL_LOG_LIGHT_H_
 
 #include <stdint.h>
+#include <sys/cdefs.h>
 #include <syslog.h>
 
 #include <framework/mod/options.h>
@@ -34,6 +35,10 @@
 #define __log_handle(flags, fmt, ...) \
 	log_light_handle(flags, fmt, ##__VA_ARGS__)
 
+__BEGIN_DECLS
+
 extern void log_light_handle(uint16_t flags, const char *fmt, ...);
+
+__END_DECLS
 
 #endif /* UTIL_LOG_LIGHT_H_ */

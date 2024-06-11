@@ -10,6 +10,7 @@
 
 #include <stdarg.h>
 #include <stdint.h>
+#include <sys/cdefs.h>
 #include <syslog.h>
 
 #include <framework/mod/self.h>
@@ -97,11 +98,15 @@ struct logger {
 	log_prio_t level;
 };
 
+__BEGIN_DECLS
+
 extern const char *log_prio2str(log_prio_t prio);
 extern void log_set_handler(log_handler_t handler);
 extern log_handler_t log_get_handler(void);
 
 /* Declares logger of the module from which macro is called. */
 extern struct logger mod_logger __attribute__((weak));
+
+__END_DECLS
 
 #endif /* UTIL_LOG_H_ */
