@@ -9,6 +9,7 @@
 #define UTIL_LOG_FULL_H_
 
 #include <stdint.h>
+#include <sys/cdefs.h>
 #include <syslog.h>
 
 #include <framework/mod/options.h>
@@ -27,7 +28,11 @@
 #define __log_handle(flags, fmt, ...) \
 	log_full_handle(&mod_logger, flags, fmt, ##__VA_ARGS__)
 
+__BEGIN_DECLS
+
 extern void log_full_handle(struct logger *logger, uint16_t flags,
     const char *fmt, ...);
+
+__END_DECLS
 
 #endif /* UTIL_LOG_FULL_H_ */
