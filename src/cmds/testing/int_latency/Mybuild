@@ -6,8 +6,8 @@ package embox.cmd.testing
 )
 
 module int_latency {
-	option number int_port = 2
-	option number int_pin = 13
+	option number in_port = 2
+	option number in_pin = 13
 	option number out_port = 1
 	option number out_pin = 7
 
