@@ -41,7 +41,8 @@ static void print_block_devs(void) {
 
 	for (i = 0; i < MAX_BDEV_QUANTITY; i++) {
 		if (bdevs[i]) {
-			printf("%4d | %s\n", block_dev_id(bdevs[i]), block_dev_name(bdevs[i]));
+			printf("%4" PRIdMAX " | %s\n", (uintmax_t)block_dev_id(bdevs[i]),
+			    block_dev_name(bdevs[i]));
 		}
 	}
 	printf("\n");
