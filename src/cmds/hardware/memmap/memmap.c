@@ -50,7 +50,7 @@ static void show_vmem_translation(void) {
 	emmap = task_resource_mmap(task_kernel_task());
 
 	dlist_foreach_entry(marea, &emmap->marea_list, mmap_link) {
-		printf("map region (base 0x%" PRIxPTR " size %zu flags 0x%" PRIx32 ")\n",
+		printf("map region (base 0x%" PRIxPTR " size %zu flags 0x%x)\n",
 				marea->start, marea->size, marea->flags);
 		vaddr_start = marea->start;
 		paddr_start = vmem_translate(emmap->ctx, marea->start, &mmu_translate_info);
