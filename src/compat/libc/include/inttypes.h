@@ -48,17 +48,12 @@
 #define __PRI16_PREFIX __PRI_PREFIX(__INT16_TYPE__)
 #endif
 
-#ifdef __ARM_32BIT_STATE
-#define __PRI32_PREFIX
-#elif defined(__i386__) && (__GNUC__ == 6) && (__GNUC_MINOR__ == 3) /* FIXME */
-#define __PRI32_PREFIX
-#else
-#ifndef __INT32_TYPE__
-#define __PRI32_PREFIX
+/* For compatibility with 3rd-party software */
+#if defined(__ARM_32BIT_STATE) || !defined(__INT32_TYPE__)
+#define __PRI32_PREFIX 
 #else
 #define __PRI32_PREFIX __PRI_PREFIX(__INT32_TYPE__)
 #endif
-#endif /* __ARM_32BIT_STATE */
 
 #ifndef __INT64_TYPE__
 #define __PRI64_PREFIX "l"
