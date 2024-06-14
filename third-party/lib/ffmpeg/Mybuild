@@ -1,0 +1,13 @@
+package third_party.lib
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ffmpeg/install/include")
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+static module ffmpeg {
+    @AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+    source "libavcodec.a",
+            "libavformat.a",
+            "libavutil.a"
+
+    @NoRuntime depends embox.compat.libc.all 
+    @NoRuntime depends embox.compat.posix.LibPosix 
+}
