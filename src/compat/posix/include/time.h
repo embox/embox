@@ -7,67 +7,52 @@
  * @author Ilia Vaprol
  */
 
-#ifndef TIME_H_
-#define TIME_H_
-/* The clock_t, size_t, time_t, clockid_t, and timer_t  types shall be defined
- * as described in <sys/types.h> .
- */
+#ifndef COMPAT_POSIX_TIME_H_
+#define COMPAT_POSIX_TIME_H_
 
-#include <defines/clock_t.h>
-#include <defines/size_t.h>
-#include <defines/time_t.h>
-#include <defines/clockid_t.h>
-#include <defines/timer_t.h>
+#include <stddef.h>
+#include <sys/types.h> /* clock_t, size_t, time_t, clockid_t, and timer_t */
 
-/* This header defines the following symbolic names:
-NULL
-    Null pointer constant.
-CLK_TCK
-    Number of clock ticks per second returned by the times() function (LEGACY).
-CLOCKS_PER_SEC
-    A number used to convert the value returned by the clock() function into
-    seconds. */
-#include <defines/null.h>
-
-/* The value of this macro is the number of clock ticks per second measured by
+/**
+ * The value of this macro is the number of clock ticks per second measured by
  * the clock function.
  */
-#define CLOCKS_PER_SEC     1000 //TODO CLOCKS_PER_SEC should receive from clock_getres()
-
+// TODO CLOCKS_PER_SEC should receive from clock_getres()
+#define CLOCKS_PER_SEC 1000
 
 /* This is an obsolete name for CLOCKS_PER_SEC. */
-#define CLK_TCK            CLOCKS_PER_SEC
+#define CLK_TCK        CLOCKS_PER_SEC
 
 /* Parameters used to convert the time specific values */
-#define MSEC_PER_SEC    1000L
-#define USEC_PER_MSEC   1000L
-#define NSEC_PER_USEC   1000L
-#define USEC_PER_SEC    1000000L
-#define NSEC_PER_SEC    1000000000L
+#define MSEC_PER_SEC   1000L
+#define USEC_PER_MSEC  1000L
+#define NSEC_PER_USEC  1000L
+#define USEC_PER_SEC   1000000L
+#define NSEC_PER_SEC   1000000000L
 
 #include <sys/time.h> //TODO not standard but Linux compatible
 
 struct tm {
-	int    tm_sec;   /*Seconds [0,60].*/
-	int    tm_min;   /*Minutes [0,59].*/
-	int    tm_hour;  /*Hour [0,23].   */
-	int    tm_mday;  /*Day of month [1,31]. */
-	int    tm_mon;   /*Month of year [0,11]. */
-	int    tm_year;  /*Years since 1900 */
-	int    tm_wday;  /*Day of week [0,6] (Sunday =0). */
-	int    tm_yday;  /*Day of year [0,365]. */
-	int    tm_isdst; /*Daylight Savings flag. */
-	int    tm_gmtoff;/*Seconds east of UTC. */
+	int tm_sec;    /*Seconds [0,60].*/
+	int tm_min;    /*Minutes [0,59].*/
+	int tm_hour;   /*Hour [0,23].   */
+	int tm_mday;   /*Day of month [1,31]. */
+	int tm_mon;    /*Month of year [0,11]. */
+	int tm_year;   /*Years since 1900 */
+	int tm_wday;   /*Day of week [0,6] (Sunday =0). */
+	int tm_yday;   /*Day of year [0,365]. */
+	int tm_isdst;  /*Daylight Savings flag. */
+	int tm_gmtoff; /*Seconds east of UTC. */
 };
 
 struct timespec {
-	time_t tv_sec;  /* Seconds */
-	long   tv_nsec; /* Nanoseconds */
+	time_t tv_sec; /* Seconds */
+	long tv_nsec;  /* Nanoseconds */
 };
 
 struct itimerspec {
-	struct timespec it_interval;  /* Interval for periodic timer */
-	struct timespec it_value;     /* Initial expiration */
+	struct timespec it_interval; /* Interval for periodic timer */
+	struct timespec it_value;    /* Initial expiration */
 };
 
 #include <sys/cdefs.h>
@@ -110,7 +95,8 @@ extern int clock_settime(clockid_t clk_id, const struct timespec *tp);
 extern time_t time(time_t *t);
 
 /** Format date and time */
-extern size_t strftime(char *s, size_t max, const char *fmt, const struct tm *tm);
+extern size_t strftime(char *s, size_t max, const char *fmt,
+    const struct tm *tm);
 
 extern char *strptime(const char *s, const char *fmt, struct tm *tm);
 
@@ -122,4 +108,4 @@ static inline double difftime(time_t time1, time_t time0) {
 
 __END_DECLS
 
-#endif /* TIME_H_ */
+#endif /* COMPAT_POSIX_TIME_H_ */

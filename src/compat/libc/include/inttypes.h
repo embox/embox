@@ -36,286 +36,219 @@
 #define __PRI_PREFIX(type) \
 	MACRO_FOREACH(__PRI_PREFIX_APPEND, __PRI_TYPE(__PRI_TYPE(__PRI_TYPE(type))))
 
-#ifndef __INT8_TYPE__
-#define __PRI8_PREFIX "hh"
-#else
-#define __PRI8_PREFIX __PRI_PREFIX(__INT8_TYPE__)
-#endif
+#define __PRI_PREFIX_INT8    __PRI_PREFIX(__INT8_TYPE__)
+#define __PRI_PREFIX_INT16   __PRI_PREFIX(__INT16_TYPE__)
+#define __PRI_PREFIX_INT32   __PRI_PREFIX(__INT32_TYPE__)
+#define __PRI_PREFIX_INT64   __PRI_PREFIX(__INT64_TYPE__)
 
-#ifndef __INT16_TYPE__
-#define __PRI16_PREFIX "h"
-#else
-#define __PRI16_PREFIX __PRI_PREFIX(__INT16_TYPE__)
-#endif
+#define __PRI_PREFIX_LEAST8  __PRI_PREFIX(__INT_LEAST8_TYPE__)
+#define __PRI_PREFIX_LEAST16 __PRI_PREFIX(__INT_LEAST16_TYPE__)
+#define __PRI_PREFIX_LEAST32 __PRI_PREFIX(__INT_LEAST32_TYPE__)
+#define __PRI_PREFIX_LEAST64 __PRI_PREFIX(__INT_LEAST64_TYPE__)
 
-/* For compatibility with 3rd-party software */
-#if defined(__ARM_32BIT_STATE) || !defined(__INT32_TYPE__)
-#define __PRI32_PREFIX 
-#else
-#define __PRI32_PREFIX __PRI_PREFIX(__INT32_TYPE__)
-#endif
+#define __PRI_PREFIX_FAST8   __PRI_PREFIX(__INT_FAST8_TYPE__)
+#define __PRI_PREFIX_FAST16  __PRI_PREFIX(__INT_FAST16_TYPE__)
+#define __PRI_PREFIX_FAST32  __PRI_PREFIX(__INT_FAST32_TYPE__)
+#define __PRI_PREFIX_FAST64  __PRI_PREFIX(__INT_FAST64_TYPE__)
 
-#ifndef __INT64_TYPE__
-#define __PRI64_PREFIX "l"
-#else
-#define __PRI64_PREFIX __PRI_PREFIX(__INT64_TYPE__)
-#endif
+#define __PRI_PREFIX_MAX     __PRI_PREFIX(__INTMAX_TYPE__)
+#define __PRI_PREFIX_PTR     __PRI_PREFIX(__INTPTR_TYPE__)
 
-#ifndef __INT_LEAST8_TYPE__
-#define __PRI_LEAST8_PREFIX "hh"
-#else
-#define __PRI_LEAST8_PREFIX __PRI_PREFIX(__INT_LEAST8_TYPE__)
-#endif
+#define PRId8                __PRI_PREFIX_INT8 "d"
+#define PRIi8                __PRI_PREFIX_INT8 "i"
+#define PRIo8                __PRI_PREFIX_INT8 "o"
+#define PRIu8                __PRI_PREFIX_INT8 "u"
+#define PRIx8                __PRI_PREFIX_INT8 "x"
+#define PRIX8                __PRI_PREFIX_INT8 "X"
 
-#ifndef __INT_LEAST16_TYPE__
-#define __PRI_LEAST16_PREFIX "h"
-#else
-#define __PRI_LEAST16_PREFIX __PRI_PREFIX(__INT_LEAST16_TYPE__)
-#endif
+#define PRId16               __PRI_PREFIX_INT16 "d"
+#define PRIi16               __PRI_PREFIX_INT16 "i"
+#define PRIo16               __PRI_PREFIX_INT16 "o"
+#define PRIu16               __PRI_PREFIX_INT16 "u"
+#define PRIx16               __PRI_PREFIX_INT16 "x"
+#define PRIX16               __PRI_PREFIX_INT16 "X"
 
-#ifndef __INT_LEAST32_TYPE__
-#define __PRI_LEAST32_PREFIX
-#else
-#define __PRI_LEAST32_PREFIX __PRI_PREFIX(__INT_LEAST32_TYPE__)
-#endif
+#define PRId32               __PRI_PREFIX_INT32 "d"
+#define PRIi32               __PRI_PREFIX_INT32 "i"
+#define PRIo32               __PRI_PREFIX_INT32 "o"
+#define PRIu32               __PRI_PREFIX_INT32 "u"
+#define PRIx32               __PRI_PREFIX_INT32 "x"
+#define PRIX32               __PRI_PREFIX_INT32 "X"
 
-#ifndef __INT_LEAST64_TYPE__
-#define __PRI_LEAST64_PREFIX "l"
-#else
-#define __PRI_LEAST64_PREFIX __PRI_PREFIX(__INT_LEAST64_TYPE__)
-#endif
+#define PRId64               __PRI_PREFIX_INT64 "d"
+#define PRIi64               __PRI_PREFIX_INT64 "i"
+#define PRIo64               __PRI_PREFIX_INT64 "o"
+#define PRIu64               __PRI_PREFIX_INT64 "u"
+#define PRIx64               __PRI_PREFIX_INT64 "x"
+#define PRIX64               __PRI_PREFIX_INT64 "X"
 
-#ifndef __INT_FAST8_TYPE__
-#define __PRI_FAST8_PREFIX "hh"
-#else
-#define __PRI_FAST8_PREFIX __PRI_PREFIX(__INT_FAST8_TYPE__)
-#endif
+#define PRIdLEAST8           __PRI_PREFIX_LEAST8 "d"
+#define PRIiLEAST8           __PRI_PREFIX_LEAST8 "i"
+#define PRIoLEAST8           __PRI_PREFIX_LEAST8 "o"
+#define PRIuLEAST8           __PRI_PREFIX_LEAST8 "u"
+#define PRIxLEAST8           __PRI_PREFIX_LEAST8 "x"
+#define PRIXLEAST8           __PRI_PREFIX_LEAST8 "X"
 
-#ifndef __INT_FAST16_TYPE__
-#define __PRI_FAST16_PREFIX "h"
-#else
-#define __PRI_FAST16_PREFIX __PRI_PREFIX(__INT_FAST16_TYPE__)
-#endif
+#define PRIdLEAST16          __PRI_PREFIX_LEAST16 "d"
+#define PRIiLEAST16          __PRI_PREFIX_LEAST16 "i"
+#define PRIoLEAST16          __PRI_PREFIX_LEAST16 "o"
+#define PRIuLEAST16          __PRI_PREFIX_LEAST16 "u"
+#define PRIxLEAST16          __PRI_PREFIX_LEAST16 "x"
+#define PRIXLEAST16          __PRI_PREFIX_LEAST16 "X"
 
-#ifndef __INT_FAST32_TYPE__
-#define __PRI_FAST32_PREFIX
-#else
-#define __PRI_FAST32_PREFIX __PRI_PREFIX(__INT_FAST32_TYPE__)
-#endif
+#define PRIdLEAST32          __PRI_PREFIX_LEAST32 "d"
+#define PRIiLEAST32          __PRI_PREFIX_LEAST32 "i"
+#define PRIoLEAST32          __PRI_PREFIX_LEAST32 "o"
+#define PRIuLEAST32          __PRI_PREFIX_LEAST32 "u"
+#define PRIxLEAST32          __PRI_PREFIX_LEAST32 "x"
+#define PRIXLEAST32          __PRI_PREFIX_LEAST32 "X"
 
-#ifndef __INT_FAST64_TYPE__
-#define __PRI_FAST64_PREFIX "l"
-#else
-#define __PRI_FAST64_PREFIX __PRI_PREFIX(__INT_FAST64_TYPE__)
-#endif
+#define PRIdLEAST64          __PRI_PREFIX_LEAST64 "d"
+#define PRIiLEAST64          __PRI_PREFIX_LEAST64 "i"
+#define PRIoLEAST64          __PRI_PREFIX_LEAST64 "o"
+#define PRIuLEAST64          __PRI_PREFIX_LEAST64 "u"
+#define PRIxLEAST64          __PRI_PREFIX_LEAST64 "x"
+#define PRIXLEAST64          __PRI_PREFIX_LEAST64 "X"
 
-#ifndef __INTMAX_TYPE__
-#define __PRIMAX_PREFIX "ll"
-#else
-#define __PRIMAX_PREFIX __PRI_PREFIX(__INTMAX_TYPE__)
-#endif
+#define PRIdFAST8            __PRI_PREFIX_FAST8 "d"
+#define PRIiFAST8            __PRI_PREFIX_FAST8 "i"
+#define PRIoFAST8            __PRI_PREFIX_FAST8 "o"
+#define PRIuFAST8            __PRI_PREFIX_FAST8 "u"
+#define PRIxFAST8            __PRI_PREFIX_FAST8 "x"
+#define PRIXFAST8            __PRI_PREFIX_FAST8 "X"
 
-#ifndef __INTPTR_TYPE__
-#define __PRIPTR_PREFIX "l"
-#else
-#define __PRIPTR_PREFIX __PRI_PREFIX(__INTPTR_TYPE__)
-#endif
+#define PRIdFAST16           __PRI_PREFIX_FAST16 "d"
+#define PRIiFAST16           __PRI_PREFIX_FAST16 "i"
+#define PRIoFAST16           __PRI_PREFIX_FAST16 "o"
+#define PRIuFAST16           __PRI_PREFIX_FAST16 "u"
+#define PRIxFAST16           __PRI_PREFIX_FAST16 "x"
+#define PRIXFAST16           __PRI_PREFIX_FAST16 "X"
 
-#define PRId8       __PRI8_PREFIX "d"
-#define PRIi8       __PRI8_PREFIX "i"
-#define PRIo8       __PRI8_PREFIX "o"
-#define PRIu8       __PRI8_PREFIX "u"
-#define PRIx8       __PRI8_PREFIX "x"
-#define PRIX8       __PRI8_PREFIX "X"
+#define PRIdFAST32           __PRI_PREFIX_FAST32 "d"
+#define PRIiFAST32           __PRI_PREFIX_FAST32 "i"
+#define PRIoFAST32           __PRI_PREFIX_FAST32 "o"
+#define PRIuFAST32           __PRI_PREFIX_FAST32 "u"
+#define PRIxFAST32           __PRI_PREFIX_FAST32 "x"
+#define PRIXFAST32           __PRI_PREFIX_FAST32 "X"
 
-#define PRId16      __PRI16_PREFIX "d"
-#define PRIi16      __PRI16_PREFIX "i"
-#define PRIo16      __PRI16_PREFIX "o"
-#define PRIu16      __PRI16_PREFIX "u"
-#define PRIx16      __PRI16_PREFIX "x"
-#define PRIX16      __PRI16_PREFIX "X"
+#define PRIdFAST64           __PRI_PREFIX_FAST64 "d"
+#define PRIiFAST64           __PRI_PREFIX_FAST64 "i"
+#define PRIoFAST64           __PRI_PREFIX_FAST64 "o"
+#define PRIuFAST64           __PRI_PREFIX_FAST64 "u"
+#define PRIxFAST64           __PRI_PREFIX_FAST64 "x"
+#define PRIXFAST64           __PRI_PREFIX_FAST64 "X"
 
-#define PRId32      __PRI32_PREFIX "d"
-#define PRIi32      __PRI32_PREFIX "i"
-#define PRIo32      __PRI32_PREFIX "o"
-#define PRIu32      __PRI32_PREFIX "u"
-#define PRIx32      __PRI32_PREFIX "x"
-#define PRIX32      __PRI32_PREFIX "X"
+#define PRIdMAX              __PRI_PREFIX_MAX "d"
+#define PRIiMAX              __PRI_PREFIX_MAX "i"
+#define PRIoMAX              __PRI_PREFIX_MAX "o"
+#define PRIuMAX              __PRI_PREFIX_MAX "u"
+#define PRIxMAX              __PRI_PREFIX_MAX "x"
+#define PRIXMAX              __PRI_PREFIX_MAX "X"
 
-#define PRId64      __PRI64_PREFIX "d"
-#define PRIi64      __PRI64_PREFIX "i"
-#define PRIo64      __PRI64_PREFIX "o"
-#define PRIu64      __PRI64_PREFIX "u"
-#define PRIx64      __PRI64_PREFIX "x"
-#define PRIX64      __PRI64_PREFIX "X"
+#define PRIdPTR              __PRI_PREFIX_PTR "d"
+#define PRIiPTR              __PRI_PREFIX_PTR "i"
+#define PRIoPTR              __PRI_PREFIX_PTR "o"
+#define PRIuPTR              __PRI_PREFIX_PTR "u"
+#define PRIxPTR              __PRI_PREFIX_PTR "x"
+#define PRIXPTR              __PRI_PREFIX_PTR "X"
 
-#define PRIdLEAST8  __PRI_LEAST8_PREFIX "d"
-#define PRIiLEAST8  __PRI_LEAST8_PREFIX "i"
-#define PRIoLEAST8  __PRI_LEAST8_PREFIX "o"
-#define PRIuLEAST8  __PRI_LEAST8_PREFIX "u"
-#define PRIxLEAST8  __PRI_LEAST8_PREFIX "x"
-#define PRIXLEAST8  __PRI_LEAST8_PREFIX "X"
+#define SCNd8                __PRI_PREFIX_INT8 "d"
+#define SCNi8                __PRI_PREFIX_INT8 "i"
+#define SCNo8                __PRI_PREFIX_INT8 "o"
+#define SCNu8                __PRI_PREFIX_INT8 "u"
+#define SCNx8                __PRI_PREFIX_INT8 "x"
+#define SCNX8                __PRI_PREFIX_INT8 "X"
 
-#define PRIdLEAST16 __PRI_LEAST16_PREFIX "d"
-#define PRIiLEAST16 __PRI_LEAST16_PREFIX "i"
-#define PRIoLEAST16 __PRI_LEAST16_PREFIX "o"
-#define PRIuLEAST16 __PRI_LEAST16_PREFIX "u"
-#define PRIxLEAST16 __PRI_LEAST16_PREFIX "x"
-#define PRIXLEAST16 __PRI_LEAST16_PREFIX "X"
+#define SCNd16               __PRI_PREFIX_INT16 "d"
+#define SCNi16               __PRI_PREFIX_INT16 "i"
+#define SCNo16               __PRI_PREFIX_INT16 "o"
+#define SCNu16               __PRI_PREFIX_INT16 "u"
+#define SCNx16               __PRI_PREFIX_INT16 "x"
+#define SCNX16               __PRI_PREFIX_INT16 "X"
 
-#define PRIdLEAST32 __PRI_LEAST32_PREFIX "d"
-#define PRIiLEAST32 __PRI_LEAST32_PREFIX "i"
-#define PRIoLEAST32 __PRI_LEAST32_PREFIX "o"
-#define PRIuLEAST32 __PRI_LEAST32_PREFIX "u"
-#define PRIxLEAST32 __PRI_LEAST32_PREFIX "x"
-#define PRIXLEAST32 __PRI_LEAST32_PREFIX "X"
+#define SCNd32               __PRI_PREFIX_INT32 "d"
+#define SCNi32               __PRI_PREFIX_INT32 "i"
+#define SCNo32               __PRI_PREFIX_INT32 "o"
+#define SCNu32               __PRI_PREFIX_INT32 "u"
+#define SCNx32               __PRI_PREFIX_INT32 "x"
+#define SCNX32               __PRI_PREFIX_INT32 "X"
 
-#define PRIdLEAST64 __PRI_LEAST64_PREFIX "d"
-#define PRIiLEAST64 __PRI_LEAST64_PREFIX "i"
-#define PRIoLEAST64 __PRI_LEAST64_PREFIX "o"
-#define PRIuLEAST64 __PRI_LEAST64_PREFIX "u"
-#define PRIxLEAST64 __PRI_LEAST64_PREFIX "x"
-#define PRIXLEAST64 __PRI_LEAST64_PREFIX "X"
+#define SCNd64               __PRI_PREFIX_INT64 "d"
+#define SCNi64               __PRI_PREFIX_INT64 "i"
+#define SCNo64               __PRI_PREFIX_INT64 "o"
+#define SCNu64               __PRI_PREFIX_INT64 "u"
+#define SCNx64               __PRI_PREFIX_INT64 "x"
+#define SCNX64               __PRI_PREFIX_INT64 "X"
 
-#define PRIdFAST8   __PRI_FAST8_PREFIX "d"
-#define PRIiFAST8   __PRI_FAST8_PREFIX "i"
-#define PRIoFAST8   __PRI_FAST8_PREFIX "o"
-#define PRIuFAST8   __PRI_FAST8_PREFIX "u"
-#define PRIxFAST8   __PRI_FAST8_PREFIX "x"
-#define PRIXFAST8   __PRI_FAST8_PREFIX "X"
+#define SCNdLEAST8           __PRI_PREFIX_LEAST8 "d"
+#define SCNiLEAST8           __PRI_PREFIX_LEAST8 "i"
+#define SCNoLEAST8           __PRI_PREFIX_LEAST8 "o"
+#define SCNuLEAST8           __PRI_PREFIX_LEAST8 "u"
+#define SCNxLEAST8           __PRI_PREFIX_LEAST8 "x"
+#define SCNXLEAST8           __PRI_PREFIX_LEAST8 "X"
 
-#define PRIdFAST16  __PRI_FAST16_PREFIX "d"
-#define PRIiFAST16  __PRI_FAST16_PREFIX "i"
-#define PRIoFAST16  __PRI_FAST16_PREFIX "o"
-#define PRIuFAST16  __PRI_FAST16_PREFIX "u"
-#define PRIxFAST16  __PRI_FAST16_PREFIX "x"
-#define PRIXFAST16  __PRI_FAST16_PREFIX "X"
+#define SCNdLEAST16          __PRI_PREFIX_LEAST16 "d"
+#define SCNiLEAST16          __PRI_PREFIX_LEAST16 "i"
+#define SCNoLEAST16          __PRI_PREFIX_LEAST16 "o"
+#define SCNuLEAST16          __PRI_PREFIX_LEAST16 "u"
+#define SCNxLEAST16          __PRI_PREFIX_LEAST16 "x"
+#define SCNXLEAST16          __PRI_PREFIX_LEAST16 "X"
 
-#define PRIdFAST32  __PRI_FAST32_PREFIX "d"
-#define PRIiFAST32  __PRI_FAST32_PREFIX "i"
-#define PRIoFAST32  __PRI_FAST32_PREFIX "o"
-#define PRIuFAST32  __PRI_FAST32_PREFIX "u"
-#define PRIxFAST32  __PRI_FAST32_PREFIX "x"
-#define PRIXFAST32  __PRI_FAST32_PREFIX "X"
+#define SCNdLEAST32          __PRI_PREFIX_LEAST32 "d"
+#define SCNiLEAST32          __PRI_PREFIX_LEAST32 "i"
+#define SCNoLEAST32          __PRI_PREFIX_LEAST32 "o"
+#define SCNuLEAST32          __PRI_PREFIX_LEAST32 "u"
+#define SCNxLEAST32          __PRI_PREFIX_LEAST32 "x"
+#define SCNXLEAST32          __PRI_PREFIX_LEAST32 "X"
 
-#define PRIdFAST64  __PRI_FAST64_PREFIX "d"
-#define PRIiFAST64  __PRI_FAST64_PREFIX "i"
-#define PRIoFAST64  __PRI_FAST64_PREFIX "o"
-#define PRIuFAST64  __PRI_FAST64_PREFIX "u"
-#define PRIxFAST64  __PRI_FAST64_PREFIX "x"
-#define PRIXFAST64  __PRI_FAST64_PREFIX "X"
+#define SCNdLEAST64          __PRI_PREFIX_LEAST64 "d"
+#define SCNiLEAST64          __PRI_PREFIX_LEAST64 "i"
+#define SCNoLEAST64          __PRI_PREFIX_LEAST64 "o"
+#define SCNuLEAST64          __PRI_PREFIX_LEAST64 "u"
+#define SCNxLEAST64          __PRI_PREFIX_LEAST64 "x"
+#define SCNXLEAST64          __PRI_PREFIX_LEAST64 "X"
 
-#define PRIdMAX     __PRIMAX_PREFIX "d"
-#define PRIiMAX     __PRIMAX_PREFIX "i"
-#define PRIoMAX     __PRIMAX_PREFIX "o"
-#define PRIuMAX     __PRIMAX_PREFIX "u"
-#define PRIxMAX     __PRIMAX_PREFIX "x"
-#define PRIXMAX     __PRIMAX_PREFIX "X"
+#define SCNdFAST8            __PRI_PREFIX_FAST8 "d"
+#define SCNiFAST8            __PRI_PREFIX_FAST8 "i"
+#define SCNoFAST8            __PRI_PREFIX_FAST8 "o"
+#define SCNuFAST8            __PRI_PREFIX_FAST8 "u"
+#define SCNxFAST8            __PRI_PREFIX_FAST8 "x"
+#define SCNXFAST8            __PRI_PREFIX_FAST8 "X"
 
-#define PRIdPTR     __PRIPTR_PREFIX "d"
-#define PRIiPTR     __PRIPTR_PREFIX "i"
-#define PRIoPTR     __PRIPTR_PREFIX "o"
-#define PRIuPTR     __PRIPTR_PREFIX "u"
-#define PRIxPTR     __PRIPTR_PREFIX "x"
-#define PRIXPTR     __PRIPTR_PREFIX "X"
+#define SCNdFAST16           __PRI_PREFIX_FAST16 "d"
+#define SCNiFAST16           __PRI_PREFIX_FAST16 "i"
+#define SCNoFAST16           __PRI_PREFIX_FAST16 "o"
+#define SCNuFAST16           __PRI_PREFIX_FAST16 "u"
+#define SCNxFAST16           __PRI_PREFIX_FAST16 "x"
+#define SCNXFAST16           __PRI_PREFIX_FAST16 "X"
 
-#define SCNd8       __PRI8_PREFIX "d"
-#define SCNi8       __PRI8_PREFIX "i"
-#define SCNo8       __PRI8_PREFIX "o"
-#define SCNu8       __PRI8_PREFIX "u"
-#define SCNx8       __PRI8_PREFIX "x"
-#define SCNX8       __PRI8_PREFIX "X"
+#define SCNdFAST32           __PRI_PREFIX_FAST32 "d"
+#define SCNiFAST32           __PRI_PREFIX_FAST32 "i"
+#define SCNoFAST32           __PRI_PREFIX_FAST32 "o"
+#define SCNuFAST32           __PRI_PREFIX_FAST32 "u"
+#define SCNxFAST32           __PRI_PREFIX_FAST32 "x"
+#define SCNXFAST32           __PRI_PREFIX_FAST32 "X"
 
-#define SCNd16      __PRI16_PREFIX "d"
-#define SCNi16      __PRI16_PREFIX "i"
-#define SCNo16      __PRI16_PREFIX "o"
-#define SCNu16      __PRI16_PREFIX "u"
-#define SCNx16      __PRI16_PREFIX "x"
-#define SCNX16      __PRI16_PREFIX "X"
+#define SCNdFAST64           __PRI_PREFIX_FAST64 "d"
+#define SCNiFAST64           __PRI_PREFIX_FAST64 "i"
+#define SCNoFAST64           __PRI_PREFIX_FAST64 "o"
+#define SCNuFAST64           __PRI_PREFIX_FAST64 "u"
+#define SCNxFAST64           __PRI_PREFIX_FAST64 "x"
+#define SCNXFAST64           __PRI_PREFIX_FAST64 "X"
 
-#define SCNd32      __PRI32_PREFIX "d"
-#define SCNi32      __PRI32_PREFIX "i"
-#define SCNo32      __PRI32_PREFIX "o"
-#define SCNu32      __PRI32_PREFIX "u"
-#define SCNx32      __PRI32_PREFIX "x"
-#define SCNX32      __PRI32_PREFIX "X"
+#define SCNdMAX              __PRI_PREFIX_MAX "d"
+#define SCNiMAX              __PRI_PREFIX_MAX "i"
+#define SCNoMAX              __PRI_PREFIX_MAX "o"
+#define SCNuMAX              __PRI_PREFIX_MAX "u"
+#define SCNxMAX              __PRI_PREFIX_MAX "x"
+#define SCNXMAX              __PRI_PREFIX_MAX "X"
 
-#define SCNd64      __PRI64_PREFIX "d"
-#define SCNi64      __PRI64_PREFIX "i"
-#define SCNo64      __PRI64_PREFIX "o"
-#define SCNu64      __PRI64_PREFIX "u"
-#define SCNx64      __PRI64_PREFIX "x"
-#define SCNX64      __PRI64_PREFIX "X"
-
-#define SCNdLEAST8  __PRI_LEAST8_PREFIX "d"
-#define SCNiLEAST8  __PRI_LEAST8_PREFIX "i"
-#define SCNoLEAST8  __PRI_LEAST8_PREFIX "o"
-#define SCNuLEAST8  __PRI_LEAST8_PREFIX "u"
-#define SCNxLEAST8  __PRI_LEAST8_PREFIX "x"
-#define SCNXLEAST8  __PRI_LEAST8_PREFIX "X"
-
-#define SCNdLEAST16 __PRI_LEAST16_PREFIX "d"
-#define SCNiLEAST16 __PRI_LEAST16_PREFIX "i"
-#define SCNoLEAST16 __PRI_LEAST16_PREFIX "o"
-#define SCNuLEAST16 __PRI_LEAST16_PREFIX "u"
-#define SCNxLEAST16 __PRI_LEAST16_PREFIX "x"
-#define SCNXLEAST16 __PRI_LEAST16_PREFIX "X"
-
-#define SCNdLEAST32 __PRI_LEAST32_PREFIX "d"
-#define SCNiLEAST32 __PRI_LEAST32_PREFIX "i"
-#define SCNoLEAST32 __PRI_LEAST32_PREFIX "o"
-#define SCNuLEAST32 __PRI_LEAST32_PREFIX "u"
-#define SCNxLEAST32 __PRI_LEAST32_PREFIX "x"
-#define SCNXLEAST32 __PRI_LEAST32_PREFIX "X"
-
-#define SCNdLEAST64 __PRI_LEAST64_PREFIX "d"
-#define SCNiLEAST64 __PRI_LEAST64_PREFIX "i"
-#define SCNoLEAST64 __PRI_LEAST64_PREFIX "o"
-#define SCNuLEAST64 __PRI_LEAST64_PREFIX "u"
-#define SCNxLEAST64 __PRI_LEAST64_PREFIX "x"
-#define SCNXLEAST64 __PRI_LEAST64_PREFIX "X"
-
-#define SCNdFAST8   __PRI_FAST8_PREFIX "d"
-#define SCNiFAST8   __PRI_FAST8_PREFIX "i"
-#define SCNoFAST8   __PRI_FAST8_PREFIX "o"
-#define SCNuFAST8   __PRI_FAST8_PREFIX "u"
-#define SCNxFAST8   __PRI_FAST8_PREFIX "x"
-#define SCNXFAST8   __PRI_FAST8_PREFIX "X"
-
-#define SCNdFAST16  __PRI_FAST16_PREFIX "d"
-#define SCNiFAST16  __PRI_FAST16_PREFIX "i"
-#define SCNoFAST16  __PRI_FAST16_PREFIX "o"
-#define SCNuFAST16  __PRI_FAST16_PREFIX "u"
-#define SCNxFAST16  __PRI_FAST16_PREFIX "x"
-#define SCNXFAST16  __PRI_FAST16_PREFIX "X"
-
-#define SCNdFAST32  __PRI_FAST32_PREFIX "d"
-#define SCNiFAST32  __PRI_FAST32_PREFIX "i"
-#define SCNoFAST32  __PRI_FAST32_PREFIX "o"
-#define SCNuFAST32  __PRI_FAST32_PREFIX "u"
-#define SCNxFAST32  __PRI_FAST32_PREFIX "x"
-#define SCNXFAST32  __PRI_FAST32_PREFIX "X"
-
-#define SCNdFAST64  __PRI_FAST64_PREFIX "d"
-#define SCNiFAST64  __PRI_FAST64_PREFIX "i"
-#define SCNoFAST64  __PRI_FAST64_PREFIX "o"
-#define SCNuFAST64  __PRI_FAST64_PREFIX "u"
-#define SCNxFAST64  __PRI_FAST64_PREFIX "x"
-#define SCNXFAST64  __PRI_FAST64_PREFIX "X"
-
-#define SCNdMAX     __PRIMAX_PREFIX "d"
-#define SCNiMAX     __PRIMAX_PREFIX "i"
-#define SCNoMAX     __PRIMAX_PREFIX "o"
-#define SCNuMAX     __PRIMAX_PREFIX "u"
-#define SCNxMAX     __PRIMAX_PREFIX "x"
-#define SCNXMAX     __PRIMAX_PREFIX "X"
-
-#define SCNdPTR     __PRIPTR_PREFIX "d"
-#define SCNiPTR     __PRIPTR_PREFIX "i"
-#define SCNoPTR     __PRIPTR_PREFIX "o"
-#define SCNuPTR     __PRIPTR_PREFIX "u"
-#define SCNxPTR     __PRIPTR_PREFIX "x"
-#define SCNXPTR     __PRIPTR_PREFIX "X"
+#define SCNdPTR              __PRI_PREFIX_PTR "d"
+#define SCNiPTR              __PRI_PREFIX_PTR "i"
+#define SCNoPTR              __PRI_PREFIX_PTR "o"
+#define SCNuPTR              __PRI_PREFIX_PTR "u"
+#define SCNxPTR              __PRI_PREFIX_PTR "x"
+#define SCNXPTR              __PRI_PREFIX_PTR "X"
 
 __BEGIN_DECLS
 

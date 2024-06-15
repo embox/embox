@@ -13,13 +13,12 @@
  *         - Documenting and library code cleanup
  */
 
-#ifndef STRING_H_
-#define STRING_H_
+#ifndef COMPAT_LIBC_STRING_H_
+#define COMPAT_LIBC_STRING_H_
 
-#include <defines/null.h>
-#include <defines/size_t.h>
-
+#include <stddef.h>
 #include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 /**
@@ -294,8 +293,7 @@ extern char *strerror(int err);
  * @see memcpy()
  *  It does the same thing, but it doesn't stop at c.
  */
-extern void* memccpy(void* dest, const void* src, int c, size_t n);
-
+extern void *memccpy(void *dest, const void *src, int c, size_t n);
 
 /**
  * Copies @a n bytes from @a src to @a dst which must be two non-overlapping
@@ -554,4 +552,4 @@ extern char *strndup(const char *s, size_t size);
 
 __END_DECLS
 
-#endif /* STRING_H_ */
+#endif /* COMPAT_LIBC_STRING_H_ */

@@ -1,4 +1,4 @@
-/*
+/**
  * @file
  * @brief
  *
@@ -7,17 +7,18 @@
  * @author Ilia Vaprol
  */
 
-#ifndef LOCALE_H_
-#define LOCALE_H_
+#ifndef COMPAT_LIBC_LOCALE_H_
+#define COMPAT_LIBC_LOCALE_H_
 
-#include <defines/null.h>
-#include <defines/size_t.h>
-
+#include <stddef.h>
 #include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
-/* These are the possibilities for the first argument to setlocale.
-   The code assumes that the lowest LC_* symbol has the value zero.  */
+/** 
+ * These are the possibilities for the first argument to setlocale.
+ * The code assumes that the lowest LC_* symbol has the value zero.
+ */
 #define LC_CTYPE          0
 #define LC_NUMERIC        1
 #define LC_TIME           2
@@ -59,9 +60,9 @@ struct lconv {
 	char int_p_sign_posn;
 };
 
-extern char * setlocale(int category, const char *locale);
-extern struct lconv * localeconv(void);
+extern char *setlocale(int category, const char *locale);
+extern struct lconv *localeconv(void);
 
 __END_DECLS
 
-#endif /* LOCALE_H_ */
+#endif /* COMPAT_LIBC_LOCALE_H_ */
