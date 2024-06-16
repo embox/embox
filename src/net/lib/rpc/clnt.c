@@ -5,58 +5,54 @@
  * @author Ilia Vaprol
  */
 
-#include <net/lib/rpc/clnt.h>
-#include <net/lib/rpc/auth.h>
-#include <net/lib/rpc/rpc.h>
-#include <string.h>
-#include <assert.h>
-#include <sys/time.h>
 #include <arpa/inet.h>
+#include <assert.h>
+#include <errno.h>
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
+#include <sys/time.h>
+
+#include <net/lib/rpc/auth.h>
+#include <net/lib/rpc/clnt.h>
+#include <net/lib/rpc/rpc.h>
 
 #define ERROR_STR_MAX_SZ 256
 
 struct rpc_createerr rpc_create_error; // TODO rename and move
 
 /* List of AUTH errors */
-static char *auth_errlist[AUTH_MAX] = {
-		[AUTH_OK] = "Authentication OK",
-		[AUTH_BADCRED] = "Invalid client credential",
-		[AUTH_REJECTEDCRED] = "Server rejected credential",
-		[AUTH_BADVERF] = "Invalid client verifier",
-		[AUTH_REJECTEDVERF] = "Server rejected verifier",
-		[AUTH_TOOWEAK] = "Client credential too weak",
-		[AUTH_INVALIDRESP] = "Invalid server verifier",
-		[AUTH_FAILED] = "Failed (unspecified error)"
-};
+static char *auth_errlist[AUTH_MAX] = {[AUTH_OK] = "Authentication OK",
+    [AUTH_BADCRED] = "Invalid client credential",
+    [AUTH_REJECTEDCRED] = "Server rejected credential",
+    [AUTH_BADVERF] = "Invalid client verifier",
+    [AUTH_REJECTEDVERF] = "Server rejected verifier",
+    [AUTH_TOOWEAK] = "Client credential too weak",
+    [AUTH_INVALIDRESP] = "Invalid server verifier",
+    [AUTH_FAILED] = "Failed (unspecified error)"};
 
 /* List of RPC errors */
-static char *rpc_errlist[RPC_MAX] = {
-		[RPC_SUCCESS] = "RPC: Success",
-		[RPC_CANTENCODEARGS] = "RPC: Can't encode arguments",
-		[RPC_CANTDECODERES] = "RPC: Can't decode result",
-		[RPC_CANTSEND] = "RPC: Unable to send",
-		[RPC_CANTRECV] = "RPC: Unable to receive",
-		[RPC_TIMEDOUT] = "RPC: Timed out",
-		[RPC_VERSMISMATCH] = "RPC: Incompatible versions of RPC",
-		[RPC_AUTHERROR] = "RPC: Authentication error",
-		[RPC_PROGUNAVAIL] = "RPC: Program unavailable",
-		[RPC_PROGVERSMISMATCH] = "RPC: Program/version mismatch",
-		[RPC_PROCUNAVAIL] = "RPC: Procedure unavailable",
-		[RPC_CANTDECODEARGS] = "RPC: Server can't decode arguments",
-		[RPC_SYSTEMERROR] = "RPC: Remote system error",
-		[RPC_UNKNOWNHOST] = "RPC: Unknown host",
-		[RPC_PMAPFAILURE] = "RPC: Port mapper failure",
-		[RPC_PROGNOTREGISTERED] = "RPC: Program not registered",
-		[RPC_FAILED] = "RPC: Failed (unspecified error)",
-		[RPC_UNKNOWNPROTO] = "RPC: Unknown protocol"
-};
+static char *rpc_errlist[RPC_MAX] = {[RPC_SUCCESS] = "RPC: Success",
+    [RPC_CANTENCODEARGS] = "RPC: Can't encode arguments",
+    [RPC_CANTDECODERES] = "RPC: Can't decode result",
+    [RPC_CANTSEND] = "RPC: Unable to send",
+    [RPC_CANTRECV] = "RPC: Unable to receive",
+    [RPC_TIMEDOUT] = "RPC: Timed out",
+    [RPC_VERSMISMATCH] = "RPC: Incompatible versions of RPC",
+    [RPC_AUTHERROR] = "RPC: Authentication error",
+    [RPC_PROGUNAVAIL] = "RPC: Program unavailable",
+    [RPC_PROGVERSMISMATCH] = "RPC: Program/version mismatch",
+    [RPC_PROCUNAVAIL] = "RPC: Procedure unavailable",
+    [RPC_CANTDECODEARGS] = "RPC: Server can't decode arguments",
+    [RPC_SYSTEMERROR] = "RPC: Remote system error",
+    [RPC_UNKNOWNHOST] = "RPC: Unknown host",
+    [RPC_PMAPFAILURE] = "RPC: Port mapper failure",
+    [RPC_PROGNOTREGISTERED] = "RPC: Program not registered",
+    [RPC_FAILED] = "RPC: Failed (unspecified error)",
+    [RPC_UNKNOWNPROTO] = "RPC: Unknown protocol"};
 
-
-struct client * clnt_create(const char *host, __u32 prognum,
-		__u32 versnum, const char *prot) {
+struct client *clnt_create(const char *host, __u32 prognum, __u32 versnum,
+    const char *prot) {
 	struct sockaddr_in raddr;
 	struct timeval tv;
 	int sock;
@@ -81,7 +77,7 @@ struct client * clnt_create(const char *host, __u32 prognum,
 }
 
 enum clnt_stat clnt_call(struct client *clnt, __u32 procnum, xdrproc_t inproc,
-		char *in, xdrproc_t outproc, char *out, struct timeval wait) {
+    char *in, xdrproc_t outproc, char *out, struct timeval wait) {
 	assert(clnt != NULL);
 	assert(clnt->ops != NULL);
 	assert(clnt->ops->call != NULL);
@@ -106,11 +102,11 @@ void clnt_destroy(struct client *clnt) {
 	}
 }
 
-static char * get_auth_msg(enum auth_stat stat) {
+static char *get_auth_msg(enum auth_stat stat) {
 	return (((0 <= stat) && (stat < AUTH_MAX)) ? auth_errlist[stat] : NULL);
 }
 
-char * clnt_spcreateerror(const char *msg) {
+char *clnt_spcreateerror(const char *msg) {
 	/* FIXME should use snprintf instead sprintf */
 	static char buff[ERROR_STR_MAX_SZ];
 	char *curr;
@@ -123,10 +119,12 @@ char * clnt_spcreateerror(const char *msg) {
 	default:
 		break;
 	case RPC_PMAPFAILURE:
-		curr += sprintf(curr, " - %s", clnt_sperrno(rpc_create_error.err.status));
+		curr += sprintf(curr, " - %s",
+		    clnt_sperrno(rpc_create_error.err.status));
 		break;
 	case RPC_SYSTEMERROR:
-		curr += sprintf(curr, " - %s", strerror(rpc_create_error.err.extra.error));
+		curr += sprintf(curr, " - %s",
+		    strerror(rpc_create_error.err.extra.error));
 		break;
 	}
 
@@ -135,12 +133,12 @@ char * clnt_spcreateerror(const char *msg) {
 	return buff;
 }
 
-char * clnt_sperrno(enum clnt_stat stat) {
-	return (((0 <= stat) && (stat < RPC_MAX))
-			? rpc_errlist[stat] : "RPC: (unknown error code)");
+char *clnt_sperrno(enum clnt_stat stat) {
+	return (((0 <= stat) && (stat < RPC_MAX)) ? rpc_errlist[stat]
+	                                          : "RPC: (unknown error code)");
 }
 
-char * clnt_sperror(struct client *clnt, const char *msg) {
+char *clnt_sperror(struct client *clnt, const char *msg) {
 	/* FIXME should use snprintf instead sprintf */
 	static char buff[ERROR_STR_MAX_SZ];
 	struct rpc_err err;
@@ -154,8 +152,8 @@ char * clnt_sperror(struct client *clnt, const char *msg) {
 	curr += sprintf(curr, "%s: %s", msg, clnt_sperrno(err.status));
 	switch (err.status) {
 	default:
-		curr += sprintf(curr, "; s1 = %u, s2 = %u", err.extra.mminfo.low,
-				err.extra.mminfo.high);
+		curr += sprintf(curr, "; s1 = %" PRIu32 ", s2 = %" PRIu32,
+		    err.extra.mminfo.low, err.extra.mminfo.high);
 		break;
 	case RPC_SUCCESS:
 	case RPC_CANTENCODEARGS:
@@ -176,8 +174,9 @@ char * clnt_sperror(struct client *clnt, const char *msg) {
 		curr += sprintf(curr, "; errno = %s", strerror(err.extra.error));
 		break;
 	case RPC_VERSMISMATCH:
-		curr += sprintf(curr, "; low version = %u, high version = %u",
-				err.extra.mminfo.low, err.extra.mminfo.high);
+		curr += sprintf(curr,
+		    "; low version = %" PRIu32 ", high version = %" PRIu32,
+		    err.extra.mminfo.low, err.extra.mminfo.high);
 		break;
 	case RPC_AUTHERROR:
 		auth_msg = get_auth_msg(err.extra.reason);
@@ -186,12 +185,13 @@ char * clnt_sperror(struct client *clnt, const char *msg) {
 		}
 		else {
 			curr += sprintf(curr, "; why = (unknown authentication error - %d)",
-					err.extra.reason);
+			    err.extra.reason);
 		}
 		break;
 	case RPC_PROGVERSMISMATCH:
-		curr += sprintf(curr, "; low version = %u, high version = %u",
-				err.extra.mminfo.low, err.extra.mminfo.high);
+		curr += sprintf(curr,
+		    "; low version = %" PRIu32 ", high version = %" PRIu32,
+		    err.extra.mminfo.low, err.extra.mminfo.high);
 		break;
 	}
 

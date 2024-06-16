@@ -299,9 +299,8 @@ void print_lsblk_information(void) {
 			id = block_dev_id(bdevs[i]);
 
 			unit = convert_unit(&size);
-			printf("%4d | %6s         | %8" PRId64 "%s | %s\n",
-				   id, name, size, unit, "disk"
-			);
+			printf("%4" PRIdMAX " | %6s         | %8" PRId64 "%s | %s\n",
+			    (uintmax_t)id, name, size, unit, "disk");
 
 			for (j = 0; j < MAX_BDEV_QUANTITY; j++) {
 				if (bdevs[j] && (bdevs[i] == block_dev_parent(bdevs[j]))) {
@@ -310,10 +309,8 @@ void print_lsblk_information(void) {
 					id = block_dev_id(bdevs[j]);
 
 					unit = convert_unit(&size);
-					printf("%4d | %6s         | %10" PRId64 "%s | %s\n",
-						   id, name, size, unit, "disk"
-					);
-					
+					printf("%4" PRIdMAX " | %6s         | %10" PRId64 "%s | %s\n",
+					    (uintmax_t)id, name, size, unit, "disk");
 				}
 			}
 		}
