@@ -1,7 +1,7 @@
 package embox.test.mem
 
-module afterfree {
-	source "afterfree.c"
+module afterfree_test {
+	source "afterfree_test.c"
 }
 
 @TestFor(embox.mem.heap_api)
