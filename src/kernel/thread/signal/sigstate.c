@@ -32,6 +32,14 @@ int sigstate_send(struct sigstate *sigstate, int sig, const siginfo_t *info) {
 
 	assert(sigstate);
 
+	if (sig == 0) {
+		/*
+		 if sig is zero, error checking shall be performed
+		 but no signal shall actually be sent.
+		 */
+		return 0;
+	}
+
 	if (!check_range(sig, 1, _SIG_TOTAL))
 		return -EINVAL;
 
