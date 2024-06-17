@@ -1,22 +1,22 @@
 package embox.test.mem
 
-module objalloc {
+module objalloc_test {
 	source "objalloc.c"
 
 	depends embox.mem.objalloc
 	depends embox.framework.LibFramework
 }
 
-module page {
-	source "page.c"
+module page_test {
+	source "page_test.c"
 
 	depends embox.mem.page_api
 	depends embox.mem.phymem
 	depends embox.framework.LibFramework
 }
 
-module page_allocator {
-	source "page_allocator.c"
+module page_allocator_test {
+	source "page_allocator_test.c"
 
 	depends embox.mem.page_api
 	depends embox.framework.LibFramework
@@ -29,23 +29,23 @@ module pool_test {
 	depends embox.framework.LibFramework
 }
 
-module slab {
-	source "slab.c"
+module slab_test {
+	source "slab_test.c"
 
 	depends embox.mem.slab
 	depends embox.framework.LibFramework
 }
 
-module mmap {
-	source "mmap.c"
+module mmap_test {
+	source "mmap_test.c"
 
 	depends embox.arch.mmu
 	depends embox.kernel.task.resource.mmap_full
 	depends embox.compat.posix.sys.mman.mmap
 }
 
-module mprotect {
-	source "mprotect.c"
+module mprotect_test {
+	source "mprotect_test.c"
 
 	depends embox.compat.posix.sys.mman.mprotect
 }
