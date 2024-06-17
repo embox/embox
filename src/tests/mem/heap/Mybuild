@@ -5,7 +5,7 @@ module afterfree {
 }
 
 @TestFor(embox.mem.heap_api)
-module heap {
+module heap_test {
 	source "heap.c"
 
 	depends embox.mem.heap_api
