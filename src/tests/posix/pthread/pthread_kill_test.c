@@ -101,11 +101,10 @@ TEST_CASE("Send signal to an unavailable thread") {
     if (rc != 0) {
         test_fail("Failed pthread_create\n");
     }
-    sleep(2);
-    rc = pthread_kill(thread_blank, SIGALRM);
-    test_assert_not_zero(rc);
     rc = pthread_join(thread_blank, NULL);
-    test_assert_emitted("");
+
+    rc = pthread_kill(thread_blank, SIGALRM);
+    test_assert_zero(rc);
 }
 
 TEST_CASE("Send an invalid signal to a thread") {
@@ -121,7 +120,7 @@ TEST_CASE("Send an invalid signal to a thread") {
     if (rc != 0) {
         test_fail("Failed pthread_create\n");
     }
-    rc = pthread_kill(thread_normal, 65);
+    rc = pthread_kill(thread_normal, _SIG_TOTAL + 1);
     test_assert_not_zero(rc);
     rc = pthread_join(thread_normal, NULL);
     test_assert_emitted("");

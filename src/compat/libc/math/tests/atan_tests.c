@@ -41,5 +41,5 @@ TEST_CASE("Test for tan(atan(x)) == x") {
 TEST_CASE("Test for corner cases and failure case") {
 	test_assert(is_equal(M_PI_2, atan(INFINITY)));
 	test_assert(is_equal(-M_PI_2, atan(-INFINITY)));
-	isnan(atan(NAN));
+	//isnan(atan(NAN));
 }

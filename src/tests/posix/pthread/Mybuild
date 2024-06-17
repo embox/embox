@@ -2,7 +2,7 @@
 package embox.test.posix.pthread
 
 @TestFor(embox.compat.posix.pthreads)
-module pthread_mutex {
+module pthread_mutex_test {
 	source "pthread_mutex_test.c"
 	depends embox.compat.posix.pthreads
 	depends embox.framework.LibFramework
@@ -14,30 +14,30 @@ module pthread_kill_test {
 	depends embox.compat.posix.pthreads
 }
 
-module pthread_rwlock {
+module pthread_rwlock_test {
 	source "pthread_rwlock_test.c"
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.pthread_rwlock
 	depends embox.framework.LibFramework
 }
 
-module pthread_barrier {
+module pthread_barrier_test {
 	source "pthread_barrier_test.c"
 
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.pthread_barrier
 }
 
-module pthread_policy {
+module pthread_policy_test {
 	source "pthread_policy_test.c"
 	depends embox.compat.posix.pthreads
 }
 
-module pthread_cond {
+module pthread_cond_test {
 	source "pthread_cond_test.c"
 }
 
-module pthread_key {
+module pthread_key_test {
 	source "pthread_key_test.c"
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.pthread_key
@@ -56,10 +56,10 @@ module pthread_cond_timedwait_test {
 	depends embox.framework.LibFramework
 }
 
-module pthread_mutex_timedlock {
+module pthread_mutex_timedlock_test {
 	source "pthread_mutex_timedlock_test.c"
 }
 
-module pthread_attributes {
+module pthread_attributes_test {
 	source "pthread_attributes_test.c"
 }
