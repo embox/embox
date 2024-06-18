@@ -4,13 +4,11 @@ package platform.ffmpeg.cmds
 @App
 @AutoCmd
 @CxxCmd(name = "ffmpeg_version",
-	help = "Print FFMPEG info")
-@BuildDepends(third_party.lib.ffmpeg)
-@BuildDepends(embox.lib.libstdcxx)
+    help = "Print FFmpeg version info")
+@BuildDepends(third_party.lib.ffmpeg.all)
 @Build(stage=2)
 module ffmpeg_version {
-	source "version.cpp"
+    source "version.cpp"
 
-	depends third_party.lib.ffmpeg
-	@NoRuntime depends embox.lib.libstdcxx
+    depends third_party.lib.ffmpeg.all
 }
