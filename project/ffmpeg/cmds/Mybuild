@@ -1,0 +1,14 @@
+package platform.ffmpeg.cmds
+
+@LinkerSection(text="version_text",rodata="version_rodata",data="version_data",bss="version_bss",arm_exidx="version_arm_exidx",arm_extab="version_arm_extab")
+@App
+@AutoCmd
+@CxxCmd(name = "ffmpeg_version",
+    help = "Print FFmpeg version info")
+@BuildDepends(third_party.lib.ffmpeg.all)
+@Build(stage=2)
+module ffmpeg_version {
+    source "version.cpp"
+
+    depends third_party.lib.ffmpeg.all
+}
