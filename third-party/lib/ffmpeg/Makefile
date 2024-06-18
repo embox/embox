@@ -38,6 +38,10 @@ $(CONFIGURE) :
 			--enable-cross-compile \
 			--enable-gpl \
 			--enable-nonfree \
+			--enable-avformat \
+			--enable-avcodec \
+			--enable-swscale \
+			--enable-avutil \
 			--enable-protocol=file \
 			--enable-decoder=h264 \
 			--enable-parser=h264 \
@@ -49,6 +53,9 @@ $(CONFIGURE) :
 			--enable-static \
 			--disable-shared \
 			--pkgconfigdir=$(PKG_INSTALL_DIR) \
+			--libdir=$(PKG_INSTALL_DIR)/lib \
+			--incdir=$(PKG_INSTALL_DIR)/include \
+			--pkg-config-flags="--static" \
 			--disable-runtime-cpudetect \
 			--disable-protocols \
 			--disable-devices \

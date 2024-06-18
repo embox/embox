@@ -1,13 +1,48 @@
-package third_party.lib
+package third_party.lib.ffmpeg
 
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ffmpeg/install/include")
-@Build(stage=2, script="$(EXTERNAL_MAKE)")
-static module ffmpeg {
-    @AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-    source "libavcodec.a",
-            "libavformat.a",
-            "libavutil.a"
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.compat.libc.all)
+@BuildDepends(embox.compat.posix.LibPosix)
+static module build {
+    depends embox.compat.libc.all
+    depends embox.compat.posix.LibPosix
+    @NoRuntime depends embox.lib.libstdcxx
+}
 
-    @NoRuntime depends embox.compat.libc.all 
-    @NoRuntime depends embox.compat.posix.LibPosix 
+@LinkerSection(text="ffmpeg_avcodec_text",rodata="ffmpeg_avcodec_rodata",data="ffmpeg_avcodec_data",bss="ffmpeg_avcodec_bss",arm_exidx="ffmpeg_avcodec_arm_exidx",arm_extab="ffmpeg_avcodec_arm_extab")
+@BuildDepends(third_party.lib.ffmpeg.build)
+@Build(script="true")
+static module libavcodec {
+    source "^BUILD/extbld/third_party/lib/ffmpeg/build/install/libavcodec.a"
+
+    @NoRuntime depends build
+}
+
+@LinkerSection(text="ffmpeg_avformat_text",rodata="ffmpeg_avformat_rodata",data="ffmpeg_avformat_data",bss="ffmpeg_avformat_bss",arm_exidx="ffmpeg_avformat_arm_exidx",arm_extab="ffmpeg_avformat_arm_extab")
+@BuildDepends(third_party.lib.ffmpeg.build)
+@Build(script="true")
+static module libavformat {
+    source "^BUILD/extbld/third_party/lib/ffmpeg/build/install/libavformat.a"
+
+    @NoRuntime depends build
+}
+
+@LinkerSection(text="ffmpeg_avutil_text",rodata="ffmpeg_avutil_rodata",data="ffmpeg_avutil_data",bss="ffmpeg_avutil_bss",arm_exidx="ffmpeg_avutil_arm_exidx",arm_extab="ffmpeg_avutil_arm_extab")
+@BuildDepends(third_party.lib.ffmpeg.build)
+@Build(script="true")
+static module libavutil {
+    source "^BUILD/extbld/third_party/lib/ffmpeg/build/install/libavutil.a"
+
+    @NoRuntime depends build
+}
+
+@BuildDepends(libavcodec)
+@BuildDepends(libavformat)
+@BuildDepends(libavutil)
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ffmpeg/build/ffmpeg-4.3.1/")
+static module all {
+    @NoRuntime depends libavcodec
+    @NoRuntime depends libavformat
+    @NoRuntime depends libavutil
 }
