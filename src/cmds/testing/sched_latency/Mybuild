@@ -1,0 +1,15 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(	name = "sched_latency",
+	help = "Estimate schedule latency"
+)
+
+module sched_latency {
+	option number in_port = 2
+	option number in_pin = 13
+	option number out_port = 1
+	option number out_pin = 7
+
+	source "sched_latency.c"
+}
