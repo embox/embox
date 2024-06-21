@@ -8,18 +8,20 @@
  * @author Eldar Abusalimov
  */
 
+#include <errno.h>
 #include <inttypes.h>
-#include <unistd.h>
+#include <limits.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <errno.h>
+#include <unistd.h>
 
 #define DEFAULT_LENGTH 0x4
 
-#if (__WORDSIZE == 32)
+#if (LONG_BIT == 32)
 #define PRINT_POINTER_WIDTH "8"
-#elif (__WORDSIZE == 64)
+#elif (LONG_BIT == 64)
 #define PRINT_POINTER_WIDTH "16"
 #endif
 
@@ -35,15 +37,15 @@ enum operation_mode {
 };
 
 static const char *fmts[] = {
-	"0x%02lx  ",
-	"0x%04lx  ",
-	"0x%0" PRINT_POINTER_WIDTH "lx  ",
+    "0x%02lx  ",
+    "0x%04lx  ",
+    "0x%0" PRINT_POINTER_WIDTH "lx  ",
 };
 
 static const size_t aalign[] = {
-	sizeof(char),
-	sizeof(short),
-	sizeof(long),
+    sizeof(char),
+    sizeof(short),
+    sizeof(long),
 };
 
 static void print_usage(void) {
@@ -87,7 +89,7 @@ int main(int argc, char **argv) {
 	while (-1 != (opt = getopt(argc, argv, "n:hcslw:"))) {
 		switch (opt) {
 		case 'n':
-			ret = parse_option(optarg, opt, (unsigned long int *) &length);
+			ret = parse_option(optarg, opt, (unsigned long int *)&length);
 			if (ret != 0) {
 				return ret;
 			}
@@ -107,7 +109,7 @@ int main(int argc, char **argv) {
 			break;
 		case 'w':
 			mode = MEM_MODE_WRITE;
-			ret = parse_option(optarg, opt, (unsigned long int *) &val);
+			ret = parse_option(optarg, opt, (unsigned long int *)&val);
 			if (ret != 0) {
 				return ret;
 			}
@@ -123,9 +125,10 @@ int main(int argc, char **argv) {
 
 	errno = 0;
 	if (access_type_passed) {
-		address = (void *) strtoul(argv[3], 0, 0);
-	} else  {
-		address = (void *) strtoul(argv[1], 0, 0);
+		address = (void *)strtoul(argv[3], 0, 0);
+	}
+	else {
+		address = (void *)strtoul(argv[1], 0, 0);
 	}
 
 	if (errno != 0) {
@@ -134,8 +137,9 @@ int main(int argc, char **argv) {
 		return -EINVAL;
 	}
 
-	if ((uintptr_t) address & ((1 << at) - 1)) {
-		printf("address is not aligned to selected mem access %p %08x\n", address, (1 << at) - 1);
+	if ((uintptr_t)address & ((1 << at) - 1)) {
+		printf("address is not aligned to selected mem access %p %08x\n",
+		    address, (1 << at) - 1);
 		return -EINVAL;
 	}
 
@@ -143,32 +147,33 @@ int main(int argc, char **argv) {
 		switch (at) {
 		default:
 		case MEM_AT_LONG:
-			*(unsigned long *) address = val;
+			*(unsigned long *)address = val;
 			break;
 		case MEM_AT_SHORT:
-			*(unsigned short *) address = val;
+			*(unsigned short *)address = val;
 			break;
 		case MEM_AT_CHAR:
-			*(unsigned char *) address = val;
+			*(unsigned char *)address = val;
 			break;
 		}
-	} else {
-		align = (uintptr_t) address & 0xF;
+	}
+	else {
+		align = (uintptr_t)address & 0xF;
 		while (length--) {
 			if (0 == (((uintptr_t)address - align) & 0xF)) {
-				printf("\n0x%0" PRIxPTR ":\t", (uintptr_t) address);
+				printf("\n0x%0" PRIxPTR ":\t", (uintptr_t)address);
 			}
 
 			switch (at) {
 			default:
 			case MEM_AT_LONG:
-				val = *(unsigned long *) address;
+				val = *(unsigned long *)address;
 				break;
 			case MEM_AT_SHORT:
-				val = *(unsigned short *) address;
+				val = *(unsigned short *)address;
 				break;
 			case MEM_AT_CHAR:
-				val = *(unsigned char *) address;
+				val = *(unsigned char *)address;
 				break;
 			}
 
