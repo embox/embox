@@ -9,10 +9,11 @@
  */
 
 #include <assert.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <defines/null.h>
-#include <hal/test/traps_core.h>
+
 #include <asm/head.h>
+#include <hal/test/traps_core.h>
 
 //static traps_env_t test_env[1];
 #define CONFIG_MIN_HWTRAP_NUMBER    0x0
@@ -22,20 +23,20 @@
 static __trap_handler testtrap_handlers[TRAP_TABLE_SIZE];
 
 void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
-	switch(type) {
+	switch (type) {
 	case TRAP_TYPE_HARDTRAP:
 		assertf(number + CONFIG_MIN_HWTRAP_NUMBER < CONFIG_MIN_INTERRUPT_NUMBER,
-				"hard trap - 0x%x\n", number);
+		    "hard trap - 0x%x\n", number);
 		testtrap_handlers[number + CONFIG_MIN_HWTRAP_NUMBER] = handler;
 		break;
 	case TRAP_TYPE_INTERRUPT:
 		assertf(number + CONFIG_MIN_INTERRUPT_NUMBER < CONFIG_MIN_SOFTTRAP_NUMBER,
-				"irq trap - 0x%x\n", number);
+		    "irq trap - 0x%x\n", number);
 		testtrap_handlers[number + CONFIG_MIN_INTERRUPT_NUMBER] = handler;
 		break;
 	case TRAP_TYPE_SOFTTRAP:
 		assertf(number + CONFIG_MIN_SOFTTRAP_NUMBER < TRAP_TABLE_SIZE,
-				"soft trap - 0x%x\n", number);
+		    "soft trap - 0x%x\n", number);
 		testtrap_handlers[number + CONFIG_MIN_SOFTTRAP_NUMBER] = handler;
 		break;
 	default:
@@ -44,14 +45,12 @@ void testtraps_set_handler(uint32_t type, int number, trap_handler_t handler) {
 }
 
 int testtraps_fire_softtrap(uint32_t number, void *data) {
-	__asm__ __volatile__ (
-		"mov %0, %%o0;\n\t"
-		"mov %1, %%o1;\n\t"
-		"ta %0;\n\t"
-		"nop;\t\n"
-		:
-		:"r" (number), "r" (data)
-	);
+	__asm__ __volatile__("mov %0, %%o0;\n\t"
+	                     "mov %1, %%o1;\n\t"
+	                     "ta %0;\n\t"
+	                     "nop;\t\n"
+	                     :
+	                     : "r"(number), "r"(data));
 	return 0;
 }
 
