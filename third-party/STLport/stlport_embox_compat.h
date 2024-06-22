@@ -72,21 +72,6 @@ extern void clearerr(FILE *stream);
 
 #endif // __cplusplus
 
-#include <defines/wchar_t.h>
-
-// moving this section to _embox.h
-//#ifdef __WINT_TYPE__
-//typedef __WINT_TYPE__ wint_t;
-//#else //__WINT_TYPE__
-//#error __WINT_TYPE__ is not defined
-//#endif //__WINT_TYPE__
-
-#ifdef __WCHAR_MIN__
-#define WCHAR_MIN __WCHAR_MIN__
-#endif
-
-#ifdef __WCHAR_MAX__
-#define WCHAR_MAX __WCHAR_MAX__
-#endif
+#include <stddef.h>
 
 #endif /* STLPORT_EMBOX_COMPAT_H_ */
