@@ -57,13 +57,13 @@ extern void getnsofday(struct timespec *t, struct timezone *tz);
  *
  * @param nsec a time in nanoseconds to be converted to timespec
 */
-extern struct timespec ns_to_timespec(const __s64 nsec);
+extern struct timespec ns_to_timespec(const int64_t nsec);
 /**
  * Returns a new \ref timeval representing the time given as input
  *
  * @param nsec a time in nanoseconds to be converted to timeval
 */
-extern struct timeval ns_to_timeval(const __s64 nsec);
+extern struct timeval ns_to_timeval(const int64_t nsec);
 
 /**
  * Returns a new \ref timespec representing the result of summing up
@@ -84,12 +84,12 @@ extern struct timespec timespec_add_ns(struct timespec t, time64_t ns);
 
 static inline time64_t timespec_to_ns(const struct timespec *ts) {
 	assert(ts != NULL);
-	return ((__s64)ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
+	return ((int64_t)ts->tv_sec * NSEC_PER_SEC) + ts->tv_nsec;
 }
 
 static inline time64_t timespec_to_ms(const struct timespec *ts) {
 	assert(ts != NULL);
-	return ((__s64)ts->tv_sec * MSEC_PER_SEC) + ts->tv_nsec / NSEC_PER_MSEC;
+	return ((int64_t)ts->tv_sec * MSEC_PER_SEC) + ts->tv_nsec / NSEC_PER_MSEC;
 }
 
 static inline uint64_t timespec_to_hw(const struct timespec *ts, uint32_t hz) {
@@ -99,7 +99,8 @@ static inline uint64_t timespec_to_hw(const struct timespec *ts, uint32_t hz) {
 
 static inline unsigned long timeval_to_ms(const struct timeval *tv) {
 	assert(tv != NULL);
-	return ((__u32)tv->tv_sec * MSEC_PER_SEC) + tv->tv_usec / USEC_PER_MSEC;
+	return ((unsigned long)tv->tv_sec * MSEC_PER_SEC)
+	       + tv->tv_usec / USEC_PER_MSEC;
 }
 
 static inline void ms_to_timeval(unsigned long ms, struct timeval *tv) {
@@ -110,7 +111,7 @@ static inline void ms_to_timeval(unsigned long ms, struct timeval *tv) {
 
 static inline time64_t timeval_to_ns(const struct timeval *tv) {
 	assert(tv != NULL);
-	return ((__s64)tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
+	return ((int64_t)tv->tv_sec * NSEC_PER_SEC) + tv->tv_usec * NSEC_PER_USEC;
 }
 
 /* Round up */
