@@ -6,8 +6,10 @@
  * @author Alexander Kalmuk
  */
 
-#include <kernel/time/time.h>
+#include <stdint.h>
 #include <time.h>
+
+#include <kernel/time/time.h>
 
 /**
  * Assigns number of seconds and nanoseconds to a \ref timespec.
@@ -22,8 +24,8 @@
  * @param sec number of seconds
  * @param nsec number of nanoseconds
  */
-static void set_normalized_timespec(struct timespec *ts,
-		time_t sec, long nsec) {
+static void set_normalized_timespec(struct timespec *ts, time_t sec,
+    long nsec) {
 	while (nsec >= NSEC_PER_SEC) {
 		nsec -= NSEC_PER_SEC;
 		sec++;
@@ -38,22 +40,20 @@ static void set_normalized_timespec(struct timespec *ts,
 	ts->tv_nsec = nsec;
 }
 
-struct timespec timespec_add(struct timespec t1,
-		struct timespec t2) {
+struct timespec timespec_add(struct timespec t1, struct timespec t2) {
 	struct timespec ts;
 
 	set_normalized_timespec(&ts, t1.tv_sec + t2.tv_sec,
-			t1.tv_nsec + t2.tv_nsec);
+	    t1.tv_nsec + t2.tv_nsec);
 
 	return ts;
 }
 
-struct timespec timespec_sub(struct timespec t1,
-		struct timespec t2) {
+struct timespec timespec_sub(struct timespec t1, struct timespec t2) {
 	struct timespec ts;
 
 	set_normalized_timespec(&ts, t1.tv_sec - t2.tv_sec,
-			t1.tv_nsec - t2.tv_nsec);
+	    t1.tv_nsec - t2.tv_nsec);
 
 	return ts;
 }
@@ -68,7 +68,7 @@ struct timespec timespec_add_ns(struct timespec t, time64_t ns) {
 }
 #endif
 
-struct timespec ns_to_timespec(const __s64 nsec) {
+struct timespec ns_to_timespec(const int64_t nsec) {
 	struct timespec ts;
 
 	ts.tv_sec = nsec / NSEC_PER_SEC;
@@ -82,7 +82,7 @@ struct timespec ns_to_timespec(const __s64 nsec) {
 	return ts;
 }
 
-struct timeval ns_to_timeval(const __s64 nsec) {
+struct timeval ns_to_timeval(const int64_t nsec) {
 	struct timeval tv;
 	struct timespec ts = ns_to_timespec(nsec);
 

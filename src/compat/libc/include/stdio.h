@@ -8,13 +8,13 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef STDIO_H_
-#define STDIO_H_
+#ifndef COMPAT_LIBC_STDIO_H_
+#define COMPAT_LIBC_STDIO_H_
 
-#include <defines/null.h>
-#include <defines/size_t.h>
 #include <limits.h>
 #include <stdarg.h> /* va_list */
+#include <stddef.h>
+#include <sys/cdefs.h>
 #include <sys/types.h>
 
 #define EOF          (-1)
@@ -39,8 +39,6 @@ struct file_struct;
 typedef struct file_struct FILE;
 
 struct stat;
-
-#include <sys/cdefs.h>
 
 __BEGIN_DECLS
 
@@ -247,4 +245,4 @@ extern ssize_t getline(char **buf, size_t *bufsiz, FILE *fp);
 
 __END_DECLS
 
-#endif /* STDIO_H_ */
+#endif /* COMPAT_LIBC_STDIO_H_ */

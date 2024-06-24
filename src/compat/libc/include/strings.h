@@ -6,13 +6,12 @@
  * @author Ilia Vaprol
  */
 
-#ifndef STRINGS_H_
-#define STRINGS_H_
+#ifndef COMPAT_LIBC_STRINGS_H_
+#define COMPAT_LIBC_STRINGS_H_
 
-
-#include <defines/size_t.h>
-
+#include <stddef.h>
 #include <sys/cdefs.h>
+
 __BEGIN_DECLS
 
 /**
@@ -63,4 +62,4 @@ extern void bzero(void *s, size_t n);
 
 __END_DECLS
 
-#endif /* STRINGS_H_ */
+#endif /* COMPAT_LIBC_STRINGS_H_ */

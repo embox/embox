@@ -6,7 +6,7 @@
  */
 
 #include <ctype.h>
-#include <defines/null.h>
+#include <stddef.h>
 
 #include <framework/mod/options.h>
 

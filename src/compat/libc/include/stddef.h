@@ -8,27 +8,34 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef STDDEF_H_
-#define STDDEF_H_
+#ifndef COMPAT_LIBC_STDDEF_H_
+#define COMPAT_LIBC_STDDEF_H_
 
 #if __GNUC__ < 4 || defined(__CDT_PARSER__)
-# define offsetof(type, member) \
-	((size_t) &((type *) 0x0)->member)
+#define offsetof(type, member) ((size_t) & ((type *)0x0)->member)
 #else
-# define offsetof(type, member) \
-	__builtin_offsetof(type, member)
+#define offsetof(type, member) __builtin_offsetof(type, member)
 #endif
 
+#ifndef __cplusplus
+#define NULL ((void *)0)
+#else /* __cplusplus */
+#define NULL 0
+#endif /* ! __cplusplus */
+
 #ifndef __ASSEMBLER__
-#include <defines/null.h>
 
-#include <defines/size_t.h>
+typedef __SIZE_TYPE__ size_t;
+typedef __WINT_TYPE__ wint_t;
+typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
-#include <defines/wchar_t.h>
-
-#include <defines/ptrdiff_t.h>
+/* wchar_t is C++ built-in type */
+#ifndef __cplusplus
+typedef __WCHAR_TYPE__ wchar_t;
+#endif
 
 typedef long double max_align_t;
-#endif /* __ASSEMBLER__ */
 
-#endif /* STDDEF_H_ */
+#endif /* !__ASSEMBLER__ */
+
+#endif /* COMPAT_LIBC_STDDEF_H_ */

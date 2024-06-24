@@ -8,35 +8,16 @@
 #ifndef WCHAR_H_
 #define WCHAR_H_
 
-#include <defines/wchar_t.h>
-#include <defines/size_t.h>
-#include <sys/cdefs.h>
 #include <stdarg.h>
+#include <stddef.h>
+#include <stdint.h> /* WCHAR_MAX and WCHAR_MIN */
 #include <stdio.h>
+#include <sys/cdefs.h>
 #include <time.h>
 
-#define WEOF      ((wint_t)(-1))
+#define WEOF ((wint_t)(-1))
 
-#ifndef WCHAR_MIN
-#if defined (__WCHAR_MIN__)
-#define WCHAR_MIN __WCHAR_MIN__
-#elif defined (__WCHAR_UNSIGNED__)
-#define WCHAR_MIN 0x00000000UL
-#else
-#define WCHAR_MIN (-0x7FFFFFFF-1)
-#endif
-#endif /* WCHAR_MIN */
-
-#ifndef WCHAR_MAX
-#if defined (__WCHAR_MAX__)
-#define WCHAR_MAX __WCHAR_MAX__
-#elif defined (__WCHAR_UNSIGNED__)
-#define WCHAR_MAX 0xFFFFFFFFUL
-#else
-#define WCHAR_MAX 0x7FFFFFFFUL
-#endif
-#endif /* WCHAR_MAX */
-
+typedef int wctype_t;
 typedef int mbstate_t;
 
 __BEGIN_DECLS
@@ -51,21 +32,18 @@ extern wchar_t *wmemmove(wchar_t *dest, const wchar_t *src, size_t n);
 extern wchar_t *wmemcpy(wchar_t *dest, const wchar_t *src, size_t n);
 extern wchar_t *wmemset(wchar_t *wcs, wchar_t wc, size_t n);
 
-extern int vswprintf(wchar_t *wcs, size_t maxlen,
-		const wchar_t *format, va_list args);
+extern int vswprintf(wchar_t *wcs, size_t maxlen, const wchar_t *format,
+    va_list args);
 
-extern long wcstol(const wchar_t *nptr, wchar_t **endptr,
-       int base);
-extern long long wcstoll(const wchar_t *nptr,
-       wchar_t **endptr, int base);
-extern unsigned long wcstoul(const wchar_t *nptr,
-       wchar_t **endptr, int base);
-extern unsigned long long wcstoull(const wchar_t *nptr,
-       wchar_t **endptr, int base);
+extern long wcstol(const wchar_t *nptr, wchar_t **endptr, int base);
+extern long long wcstoll(const wchar_t *nptr, wchar_t **endptr, int base);
+extern unsigned long wcstoul(const wchar_t *nptr, wchar_t **endptr, int base);
+extern unsigned long long wcstoull(const wchar_t *nptr, wchar_t **endptr,
+    int base);
 
-extern float       wcstof(const wchar_t* str, wchar_t** str_end);
-extern double      wcstod(const wchar_t* str, wchar_t** str_end);
-extern long double wcstold(const wchar_t* str, wchar_t** endptr);
+extern float wcstof(const wchar_t *str, wchar_t **str_end);
+extern double wcstod(const wchar_t *str, wchar_t **str_end);
+extern long double wcstold(const wchar_t *str, wchar_t **endptr);
 
 extern int wctob(wint_t);
 extern wint_t btowc(int);
@@ -76,13 +54,13 @@ extern size_t wcrtomb(char *, wchar_t, mbstate_t *);
 extern size_t mbrtowc(wchar_t *, const char *, size_t, mbstate_t *);
 extern int wcscoll(const wchar_t *, const wchar_t *);
 extern size_t wcsxfrm(wchar_t *, const wchar_t *, size_t);
-extern size_t wcsftime(wchar_t *, size_t,
-                  const wchar_t *, const struct tm *);
+extern size_t wcsftime(wchar_t *, size_t, const wchar_t *, const struct tm *);
 
 extern int wcsncasecmp(const wchar_t *ws1, const wchar_t *ws2, size_t n);
 
-# if defined(__EMBOX__)
+#if defined(__EMBOX__)
 #include <framework/mod/options.h>
+
 #include <module/embox/compat/libc/wchar_extended.h>
 #endif
 

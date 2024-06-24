@@ -6,40 +6,42 @@
  * @author 
  */
 
+#include <barrier.h>
+#include <grant_table.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <kernel/printk.h>
-#include <defines/null.h>
-
 #include <xenstore.h>
-#include <barrier.h>
-#include <xen/memory.h>
-#include <xen/io/xenbus.h>
-#include <net/l0/net_entry.h>
-#include "netfront.h"
-#include <xen/event.h>
-#include <grant_table.h>
+
+#include <kernel/printk.h>
 #include <kernel/sched/sched_lock.h>
+#include <net/l0/net_entry.h>
+#include <xen/event.h>
+#include <xen/io/xenbus.h>
+#include <xen/memory.h>
+
+#include "netfront.h"
 
 #define XS_MSG_LEN 256
-#define ASSERT(x)                           \
-do {                                        \
-	if (!(x)) {                          	\
-		printk("ASSERTION FAILED!");       	\
-	}                                       \
-} while(0)
+#define ASSERT(x)                        \
+	do {                                 \
+		if (!(x)) {                      \
+			printk("ASSERTION FAILED!"); \
+		}                                \
+	} while (0)
 
-#define BUG_ON(x) ASSERT(!(x))
+#define BUG_ON(x)           ASSERT(!(x))
 #define NET_FRONTEND_NUMBER 0
 
-static inline void add_id_to_freelist(unsigned int id,unsigned short* freelist) {
+static inline void add_id_to_freelist(unsigned int id,
+    unsigned short *freelist) {
 	freelist[id + 1] = freelist[0];
-	freelist[0]  = id;
+	freelist[0] = id;
 }
 
-static inline unsigned short get_id_from_freelist(unsigned short* freelist) {
+static inline unsigned short get_id_from_freelist(unsigned short *freelist) {
 	unsigned int id = freelist[0];
 	freelist[0] = freelist[id + 1];
 	return id;
@@ -52,8 +54,7 @@ int alloc_evtchn(evtchn_port_t *port) {
 	alloc_unbound.dom = DOMID_SELF;
 	alloc_unbound.remote_dom = 0;
 
-	err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
-					  &alloc_unbound);
+	err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound, &alloc_unbound);
 	if (err)
 		printk("ERROR IN alloc_evtchn");
 	else
@@ -66,9 +67,9 @@ int setup_netfront(struct netfront_dev *dev) {
 	// Rings
 	struct netif_tx_sring *txs;
 	struct netif_rx_sring *rxs;
-	
-	txs = (struct netif_tx_sring *) xen_mem_alloc(1);
-	rxs = (struct netif_rx_sring *) xen_mem_alloc(1);
+
+	txs = (struct netif_tx_sring *)xen_mem_alloc(1);
+	rxs = (struct netif_rx_sring *)xen_mem_alloc(1);
 
 	memset(txs, 0, PAGE_SIZE());
 	memset(rxs, 0, PAGE_SIZE());
@@ -78,24 +79,24 @@ int setup_netfront(struct netfront_dev *dev) {
 
 	FRONT_RING_INIT(&dev->tx, txs, PAGE_SIZE());
 	FRONT_RING_INIT(&dev->rx, rxs, PAGE_SIZE());
-	
+
 	dev->tx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(txs), 0);
 	dev->rx_ring_ref = gnttab_grant_access(dev->dom, virt_to_mfn(rxs), 0);
 
 	// Alloc pages for buffer rings
 	int i;
-	for (i=0; i<NET_TX_RING_SIZE; i++) {
-		struct net_buffer* buf = &dev->tx_buffers[i];
-		buf->page = (void*)xen_mem_alloc(1);
+	for (i = 0; i < NET_TX_RING_SIZE; i++) {
+		struct net_buffer *buf = &dev->tx_buffers[i];
+		buf->page = (void *)xen_mem_alloc(1);
 		buf->gref = gnttab_grant_access(dev->dom, virt_to_mfn(buf->page), 1);
 	}
 
-	for (i=0; i<NET_RX_RING_SIZE; i++) {
-		struct net_buffer* buf = &dev->rx_buffers[i];
-		buf->page = (void*)xen_mem_alloc(1);
+	for (i = 0; i < NET_RX_RING_SIZE; i++) {
+		struct net_buffer *buf = &dev->rx_buffers[i];
+		buf->page = (void *)xen_mem_alloc(1);
 		buf->gref = gnttab_grant_access(dev->dom, virt_to_mfn(buf->page), 1);
 	}
-	
+
 	// Event channel
 #ifdef FEATURE_SPLIT_CHANNELS
 	alloc_evtchn(&dev->evtchn_rx);
@@ -109,7 +110,7 @@ int setup_netfront(struct netfront_dev *dev) {
 static int xenstore_interaction(struct netfront_dev *dev) {
 	char xs_key[XS_MSG_LEN], xs_value[XS_MSG_LEN];
 	int err;
-	
+
 	// Set backend node and mac
 	memset(xs_key, 0, XS_MSG_LEN);
 	sprintf(xs_key, "%s/backend", dev->nodename);
@@ -175,7 +176,7 @@ static int xenstore_interaction(struct netfront_dev *dev) {
 		return err;
 	}
 #else
-	
+
 	memset(xs_key, 0, XS_MSG_LEN);
 	sprintf(xs_key, "%s/event-channel", dev->nodename);
 	memset(xs_value, 0, XS_MSG_LEN);
@@ -224,7 +225,7 @@ int change_state_connected(struct netfront_dev *dev) {
 		printk("%d [PANIC!] can not switch state\n", ret);
 		return ret;
 	}
-	
+
 	//wait for backend
 	XenbusState state = XenbusStateUnknown;
 
@@ -234,12 +235,12 @@ int change_state_connected(struct netfront_dev *dev) {
 		sprintf(xs_key, "%s/state", dev->backend);
 		memset(xs_value, 0, XS_MSG_LEN);
 		xenstore_read(xs_key, xs_value, XS_MSG_LEN);
-		printk(">>>State is:%s\n",xs_value);
+		printk(">>>State is:%s\n", xs_value);
 		state = atoi(xs_value);
 		//sleep(5);
 		++count;
 	}
-	
+
 	if (state != XenbusStateConnected) {
 		printk("[PANIC!] backend not avalable, state=%d\n", state);
 		return -state;
@@ -263,7 +264,7 @@ void init_rx_buffers(struct netfront_dev *dev) {
 	int notify;
 
 	for (requeue_idx = 0, i = 0; i < 256; i++) {
-		struct net_buffer* buf = &dev->rx_buffers[requeue_idx];
+		struct net_buffer *buf = &dev->rx_buffers[requeue_idx];
 
 		req = RING_GET_REQUEST(&dev->rx, requeue_idx);
 
@@ -278,12 +279,12 @@ void init_rx_buffers(struct netfront_dev *dev) {
 	wmb();
 
 	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-	
+
 	if (notify) {
 #ifdef FEATURE_SPLIT_CHANNELS
-	notify_remote_via_evtchn(dev->evtchn_rx);
+		notify_remote_via_evtchn(dev->evtchn_rx);
 #else
-	notify_remote_via_evtchn(dev->evtchn);
+		notify_remote_via_evtchn(dev->evtchn);
 #endif
 	}
 
@@ -296,21 +297,21 @@ int netfront_priv_init(struct netfront_dev *dev) {
 
 	snprintf(nodename, sizeof(nodename), "device/vif/%d", NET_FRONTEND_NUMBER);
 	dev->nodename = strdup(nodename);
-	
+
 	ret = setup_netfront(dev);
-	if(ret) {
+	if (ret) {
 		printk("%d Setup netfront failed\n", ret);
 		return ret;
 	}
-	
+
 	ret = xenstore_interaction(dev);
-	if(ret) {
+	if (ret) {
 		printk("%d XenStore interaction failed\n", ret);
 		return ret;
 	}
 
 	ret = change_state_connected(dev);
-	if(ret) {
+	if (ret) {
 		printk("%d Change state failed\n", ret);
 		return ret;
 	}
@@ -325,7 +326,7 @@ int netfront_priv_init(struct netfront_dev *dev) {
 }
 
 void network_rx(struct netfront_dev *dev, struct net_device *embox_dev) {
-	RING_IDX rp,cons,req_prod;
+	RING_IDX rp, cons, req_prod;
 	int nr_consumed, i;
 	int more, notify;
 	int dobreak;
@@ -336,10 +337,10 @@ moretodo:
 	rmb(); /* Ensure we see queued responses up to 'rp'. */
 
 	dobreak = 0;
-	for (cons = dev->rx.rsp_cons; cons != rp && !dobreak; nr_consumed++, cons++)
-	{
-		struct net_buffer* buf;
-		unsigned char* page;
+	for (cons = dev->rx.rsp_cons; cons != rp && !dobreak;
+	     nr_consumed++, cons++) {
+		struct net_buffer *buf;
+		unsigned char *page;
 		int id;
 
 		struct netif_rx_response *rx = RING_GET_RESPONSE(&dev->rx, cons);
@@ -348,34 +349,35 @@ moretodo:
 		BUG_ON(id >= NET_RX_RING_SIZE);
 
 		buf = &dev->rx_buffers[id];
-		page = (unsigned char*)buf->page;
+		page = (unsigned char *)buf->page;
 
 		gnttab_end_access(buf->gref);
 
-		if (rx->status > NETIF_RSP_NULL) {				
-				struct sk_buff *skb;
-				if (!(skb = skb_alloc(rx->status))) {
-					return;
-				}
-				memcpy(skb->mac.raw, page+rx->offset, skb->len);
-				skb->dev = embox_dev;
-				netif_rx(skb);
+		if (rx->status > NETIF_RSP_NULL) {
+			struct sk_buff *skb;
+			if (!(skb = skb_alloc(rx->status))) {
+				return;
+			}
+			memcpy(skb->mac.raw, page + rx->offset, skb->len);
+			skb->dev = embox_dev;
+			netif_rx(skb);
 		}
 	}
 
-	dev->rx.rsp_cons=cons;
+	dev->rx.rsp_cons = cons;
 
 	RING_FINAL_CHECK_FOR_RESPONSES(&dev->rx, more);
-	if(more && !dobreak) goto moretodo;
+	if (more && !dobreak)
+		goto moretodo;
 
 	req_prod = dev->rx.req_prod_pvt;
 
 	for (i = 0; i < nr_consumed; i++) {
 		int id = xennet_rxidx(req_prod + i);
 		netif_rx_request_t *req = RING_GET_REQUEST(&dev->rx, req_prod + i);
-		
-		struct net_buffer* buf = &dev->rx_buffers[id];
-		req->gref = gnttab_regrant_access(buf->gref, 0);										
+
+		struct net_buffer *buf = &dev->rx_buffers[id];
+		req->gref = gnttab_regrant_access(buf->gref, 0);
 		req->id = id;
 	}
 
@@ -383,12 +385,11 @@ moretodo:
 
 	dev->rx.req_prod_pvt = req_prod + i;
 	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->rx, notify);
-	if (notify) 
-	{
+	if (notify) {
 #ifdef FEATURE_SPLIT_CHANNELS
-	notify_remote_via_evtchn(dev->evtchn_rx);
+		notify_remote_via_evtchn(dev->evtchn_rx);
 #else
-	notify_remote_via_evtchn(dev->evtchn);
+		notify_remote_via_evtchn(dev->evtchn);
 #endif
 	}
 }
@@ -416,7 +417,7 @@ void network_tx_buf_gc(struct netfront_dev *dev) {
 			if (txrsp->status == NETIF_RSP_ERROR)
 				printk("packet error\n");
 
-			id  = txrsp->id;
+			id = txrsp->id;
 			BUG_ON(id >= NET_TX_RING_SIZE);
 			buf = &dev->tx_buffers[id];
 			gnttab_end_access(buf->gref);
@@ -424,41 +425,42 @@ void network_tx_buf_gc(struct netfront_dev *dev) {
 
 		dev->tx.rsp_cons = prod;
 
-		dev->tx.sring->rsp_event =
-			prod + ((dev->tx.sring->req_prod - prod) >> 1) + 1;
+		dev->tx.sring->rsp_event = prod
+		                           + ((dev->tx.sring->req_prod - prod) >> 1)
+		                           + 1;
 		mb();
 	} while ((cons == prod) && (prod != dev->tx.sring->rsp_prod));
 }
 
-void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len) {
+void netfront_xmit(struct netfront_dev *dev, unsigned char *data, int len) {
 	struct netif_tx_request *tx;
 	RING_IDX i, id;
 	int notify;
-	struct net_buffer* buf;
+	struct net_buffer *buf;
 
 	BUG_ON(len > PAGE_SIZE());
 
 	sched_lock();
 	id = xennet_txidx(dev->tx.sring->req_prod);
-	if (xennet_txidx(id+1) == dev->tx.sring->rsp_prod) {
+	if (xennet_txidx(id + 1) == dev->tx.sring->rsp_prod) {
 		printk("CATCH TAIL!!!\n\n");
 		return;
 	}
 
 	sched_unlock();
-	
+
 	buf = &dev->tx_buffers[id];
 	i = dev->tx.req_prod_pvt;
-	
+
 	tx = RING_GET_REQUEST(&dev->tx, i);
 
 	memcpy(buf->page, data, len);
 
 	tx->gref = gnttab_regrant_access(buf->gref, 0);
 
-	tx->offset=0;
+	tx->offset = 0;
 	tx->size = len;
-	tx->flags=0;
+	tx->flags = 0;
 	tx->id = id;
 	dev->tx.req_prod_pvt = i + 1;
 
@@ -466,9 +468,11 @@ void netfront_xmit(struct netfront_dev *dev, unsigned char* data, int len) {
 
 	RING_PUSH_REQUESTS_AND_CHECK_NOTIFY(&dev->tx, notify);
 #ifdef FEATURE_SPLIT_CHANNELS
-	if(notify) notify_remote_via_evtchn(dev->evtchn_tx);
+	if (notify)
+		notify_remote_via_evtchn(dev->evtchn_tx);
 #else
-	if(notify) notify_remote_via_evtchn(dev->evtchn);
+	if (notify)
+		notify_remote_via_evtchn(dev->evtchn);
 #endif
 
 	sched_lock();

@@ -11,56 +11,36 @@
 
 #ifndef __ASSEMBLER__
 
-#include <defines/clock_t.h> /* Used for system times in clock ticks or CLOCKS_PER_SEC */
-#include <defines/clockid_t.h>
-#include <defines/size_t.h>
-#include <defines/suseconds_t.h> /* Used for time in microseconds */
-#include <defines/time_t.h>
-#include <defines/timer_t.h>
+#include <stddef.h> /* The <sys/types.h> header shall define size_t */
 #include <stdint.h>
 #include <sys/cdefs.h>
 
-#include <asm/types.h>
+typedef unsigned long blkcnt_t;   /* Used for file block counts */
+typedef unsigned long blksize_t;  /* Used for block sizes */
+typedef unsigned long clock_t;    /* Used for system times in clock ticks */
+typedef unsigned long fsblkcnt_t; /* Used for file system block counts */
+typedef unsigned long fsfilcnt_t; /* Used for file system file counts */
+typedef unsigned long ino_t;      /* Used for file serial numbers */
+typedef uint32_t clockid_t;       /* Used for clock ID type */
+typedef uint32_t timer_t;         /* Used for timer ID */
+typedef uint32_t dev_t;           /* Used for device IDs */
+typedef uint32_t key_t;           /* Used for XSI interprocess communication */
+typedef uint32_t mode_t;          /* Used for some file attributes */
+typedef unsigned short gid_t;     /* Used for group IDs */
+typedef unsigned short nlink_t;   /* Used for link counts */
+typedef unsigned short uid_t;     /* Used for user IDs */
+typedef int pid_t;                /* Used for process IDs */
+typedef int id_t;                 /* Used as a general identifier */
+typedef int ssize_t;              /* Used for a count of bytes or an error */
+typedef long off_t;               /* Used for file sizes */
+typedef long time_t;              /* Used for time in seconds */
+typedef long suseconds_t;         /* Used for time in microseconds (signed) */
+typedef unsigned long useconds_t; /* Used for time in microseconds */
 
-/** Note also that 'size_t' is a typedef required by the ISO C standard
- (it must be available if <stddef.h> is included). However, 'ssize_t'
- does not exist in the C standard -- the standard 'ptrdiff_t'
- typedef is nearly equivalent.*/
-typedef int ssize_t;
-
-/** Used for time in microseconds.*/
-typedef unsigned long useconds_t;
-
+/* Not part of posix */
+typedef uint64_t loff_t; /* Used for file sizes (64-bit version) */
 typedef uint32_t gfp_t;
-
-typedef int id_t;
-
-typedef int pid_t;
-
-typedef uint32_t dev_t;
-
-typedef int key_t;
-
-typedef unsigned long ino_t;
-
-typedef unsigned short nlink_t;
-
-typedef uint32_t mode_t;
-
-typedef unsigned short uid_t;
-typedef unsigned short gid_t;
-
 typedef unsigned int blkno_t;
-
-typedef long long off_t; /*  Used for file sizes. */
-
-typedef long long loff_t;
-
-typedef unsigned long fsblkcnt_t;
-typedef unsigned long fsfilcnt_t;
-
-typedef unsigned long blkcnt_t;
-typedef unsigned long blksize_t;
 
 __BEGIN_DECLS
 

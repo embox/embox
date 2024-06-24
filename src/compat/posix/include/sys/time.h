@@ -10,13 +10,9 @@
 #ifndef COMPAT_POSIX_SYS_TIME_H_
 #define COMPAT_POSIX_SYS_TIME_H_
 
-/*The time_t and suseconds_t types are defined as described in <sys/types.h>.*/
-#include <defines/time_t.h>
-#include <defines/suseconds_t.h>
-
-#include <sys/select.h>
-
 #include <sys/cdefs.h>
+#include <sys/select.h>
+#include <sys/types.h> /* time_t and suseconds_t */
 
 __BEGIN_DECLS
 
@@ -32,7 +28,7 @@ __BEGIN_DECLS
  * suseconds_t    tv_usec     microseconds
  */
 struct timeval {
-	time_t      tv_sec;
+	time_t tv_sec;
 	suseconds_t tv_usec;
 };
 
@@ -42,8 +38,8 @@ struct timeval {
  * struct timeval it_value    current value
  */
 struct itimerval {
-	struct timeval it_interval;  /* Timer period. */
-	struct timeval it_value;     /* Timer expiration. */
+	struct timeval it_interval; /* Timer period. */
+	struct timeval it_value;    /* Timer expiration. */
 };
 
 extern int gettimeofday(struct timeval *ts, void *tz);
@@ -51,15 +47,15 @@ extern int gettimeofday(struct timeval *ts, void *tz);
 extern int getitimer(int, struct itimerval *);
 
 extern int setitimer(int which, const struct itimerval *value,
-		struct itimerval *ovalue);
+    struct itimerval *ovalue);
 
 /* LEGACY */
 extern int utimes(const char *path, const struct timeval times[2]);
 
 /* Only Linux compatible */
 struct timezone {
-	int tz_minuteswest;     /* minutes west of Greenwich */
-	int tz_dsttime;         /* type of DST correction */
+	int tz_minuteswest; /* minutes west of Greenwich */
+	int tz_dsttime;     /* type of DST correction */
 };
 
 /* gettimeofday is posix function, but settimeofday is not. */
@@ -76,24 +72,21 @@ extern void timerclear(struct timeval *tvp);
 
 extern int timerisset(struct timeval *tvp);
 
-#define timercmp(a, b, CMP) \
-	(((a)->tv_sec CMP (b)->tv_sec) \
-		|| (((a)->tv_sec == (b)->tv_sec) \
-			&& ((a)->tv_usec CMP (b)->tv_usec)))
-
+#define timercmp(a, b, CMP)       \
+	(((a)->tv_sec CMP(b)->tv_sec) \
+	    || (((a)->tv_sec == (b)->tv_sec) && ((a)->tv_usec CMP(b)->tv_usec)))
 
 /* Operations on timespecs. */
-#define	timespecclear(tsp)     (tsp)->tv_sec = (tsp)->tv_nsec = 0
-#define	timespecisset(tsp)     ((tsp)->tv_sec || (tsp)->tv_nsec)
-#define	timespecisvalid(tsp) \
+#define timespecclear(tsp) (tsp)->tv_sec = (tsp)->tv_nsec = 0
+#define timespecisset(tsp) ((tsp)->tv_sec || (tsp)->tv_nsec)
+#define timespecisvalid(tsp) \
 	((tsp)->tv_nsec >= 0 && (tsp)->tv_nsec < 1000000000L)
 
-#define	timespeccmp(tsp, usp, cmp)  \
-	(((tsp)->tv_sec == (usp)->tv_sec) ?   \
-			((tsp)->tv_nsec cmp (usp)->tv_nsec) : \
-			((tsp)->tv_sec cmp (usp)->tv_sec))
+#define timespeccmp(tsp, usp, cmp)                                         \
+	(((tsp)->tv_sec == (usp)->tv_sec) ? ((tsp)->tv_nsec cmp(usp)->tv_nsec) \
+	                                  : ((tsp)->tv_sec cmp(usp)->tv_sec))
 
-#define	timespecadd(tsp, usp, vsp)                        \
+#define timespecadd(tsp, usp, vsp)                        \
 	do {                                                  \
 		(vsp)->tv_sec = (tsp)->tv_sec + (usp)->tv_sec;    \
 		(vsp)->tv_nsec = (tsp)->tv_nsec + (usp)->tv_nsec; \
@@ -103,7 +96,7 @@ extern int timerisset(struct timeval *tvp);
 		}                                                 \
 	} while (0)
 
-#define	timespecsub(tsp, usp, vsp)                       \
+#define timespecsub(tsp, usp, vsp)                        \
 	do {                                                  \
 		(vsp)->tv_sec = (tsp)->tv_sec - (usp)->tv_sec;    \
 		(vsp)->tv_nsec = (tsp)->tv_nsec - (usp)->tv_nsec; \
@@ -113,16 +106,17 @@ extern int timerisset(struct timeval *tvp);
 		}                                                 \
 	} while (0)
 
+#define TIMEVAL_TO_TIMESPEC(tv, ts)           \
+	do {                                      \
+		(ts)->tv_sec = (tv)->tv_sec;          \
+		(ts)->tv_nsec = (tv)->tv_usec * 1000; \
+	} while (0)
 
-#define	TIMEVAL_TO_TIMESPEC(tv, ts) do {   \
-	(ts)->tv_sec = (tv)->tv_sec;           \
-	(ts)->tv_nsec = (tv)->tv_usec * 1000;  \
-} while (0)
-
-#define	TIMESPEC_TO_TIMEVAL(tv, ts) do {    \
-	(tv)->tv_sec = (ts)->tv_sec;            \
-	(tv)->tv_usec = (ts)->tv_nsec / 1000;   \
-} while (0)
+#define TIMESPEC_TO_TIMEVAL(tv, ts)           \
+	do {                                      \
+		(tv)->tv_sec = (ts)->tv_sec;          \
+		(tv)->tv_usec = (ts)->tv_nsec / 1000; \
+	} while (0)
 
 __END_DECLS
 
