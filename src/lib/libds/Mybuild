@@ -8,7 +8,6 @@ static module libds {
 	@IncludeExport(path="lib/libds", target_name="bitmap.h")
 	source "bitmap/bitmap.h"
 	source "bitmap/bitmap_find_bit.c"
-	source "bitmap/bitmap_find_zero_bit.c"
 
 	@IncludeExport(path="lib/libds", target_name="hashtable.h")
 	source "hashtable/hashtable.h"
