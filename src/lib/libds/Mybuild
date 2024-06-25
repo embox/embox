@@ -4,8 +4,6 @@ package embox.lib
 static module libds {
 	@IncludeExport(path="lib/libds", target_name="bit.h")
 	source "bit/bit.h"
-	source "bit/bit_clz.c"
-	source "bit/bit_ctz.c"
 
 	@IncludeExport(path="lib/libds", target_name="bitmap.h")
 	source "bitmap/bitmap.h"
