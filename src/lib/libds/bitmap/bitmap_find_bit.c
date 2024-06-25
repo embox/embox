@@ -4,43 +4,42 @@
  * @date 21.10.2013
  * @author Eldar Abusalimov
  */
+
 #include <limits.h>
+#include <stdbool.h>
 
 #include <lib/libds/bit.h>
 #include <lib/libds/bitmap.h>
 
-unsigned int bitmap_find_bit(const unsigned long *bitmap, unsigned int nbits,
-    unsigned int start) {
-	const unsigned long *p;
-	unsigned int shift;
-	unsigned int result;
-	unsigned long tmp;
+unsigned int __bitmap_find_bit(const unsigned long *bitmap, unsigned int nbits,
+    unsigned int start, bool zero_bit) {
+	const unsigned long *first;
+	const unsigned long *last;
+	const unsigned long *iter;
+	unsigned long bits;
 
 	if (start >= nbits) {
 		return nbits;
 	}
 
-	p = bitmap + BITMAP_OFFSET(start); /* start word */
-	shift = BITMAP_SHIFT(start);       /* within the start word */
-	result = start - shift;            /* LONG_BIT-aligned down start */
+	first = bitmap + BITMAP_OFFSET(start);
+	last = bitmap + BITMAP_OFFSET(nbits - 1);
 
-	nbits -= result;
-	tmp = *(p++) & (~0x0ul << shift); /* mask out the beginning */
-
-	while (nbits > LONG_BIT) {
-		if (tmp) {
-			goto found;
+	for (iter = first; iter <= last; iter++) {
+		bits = *iter;
+		if (zero_bit) {
+			bits = ~bits;
 		}
-		result += LONG_BIT;
-		nbits -= LONG_BIT;
-		tmp = *(p++);
+		if (iter == first) {
+			bits &= ~0UL << BITMAP_SHIFT(start);
+		}
+		if (iter == last) {
+			bits &= ~0UL >> (LONG_BIT - 1 - BITMAP_SHIFT(nbits - 1));
+		}
+		if (bits) {
+			return LONG_BIT * (iter - bitmap) + bit_ctz(bits);
+		}
 	}
 
-	tmp &= (~0x0ul >> (LONG_BIT - nbits)); /* ...and the ending */
-	if (!tmp) {
-		return result + nbits;
-	}
-
-found:
-	return result + bit_ctz(tmp);
+	return nbits;
 }
