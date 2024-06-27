@@ -37,12 +37,23 @@ static module libavutil {
     @NoRuntime depends build
 }
 
+@LinkerSection(text="ffmpeg_swscale_text",rodata="ffmpeg_swscale_rodata",data="ffmpeg_swscale_data",bss="ffmpeg_swscale_bss",arm_exidx="ffmpeg_swscale_arm_exidx",arm_extab="ffmpeg_swscale_arm_extab")
+@BuildDepends(third_party.lib.ffmpeg.build)
+@Build(script="true")
+static module libswscale {
+    source "^BUILD/extbld/third_party/lib/ffmpeg/build/install/libswscale.a"
+
+    @NoRuntime depends build
+}
+
 @BuildDepends(libavcodec)
 @BuildDepends(libavformat)
 @BuildDepends(libavutil)
+@BuildDepends(libswscale)
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ffmpeg/build/ffmpeg-4.3.1/")
 static module all {
     @NoRuntime depends libavcodec
     @NoRuntime depends libavformat
     @NoRuntime depends libavutil
+    @NoRuntime depends libswscale
 }
