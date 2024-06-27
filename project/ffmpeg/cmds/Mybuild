@@ -12,3 +12,16 @@ module ffmpeg_version {
 
     depends third_party.lib.ffmpeg.all
 }
+
+@LinkerSection(text="ffmpeg_test_text",rodata="ffmpeg_test_rodata",data="ffmpeg_test_data",bss="ffmpeg_test_bss",arm_exidx="ffmpeg_test_arm_exidx",arm_extab="ffmpeg_test_arm_extab")
+@App
+@AutoCmd
+@CxxCmd(name = "ffmpeg_test",
+        help = "FFMPEG test")
+@BuildDepends(third_party.lib.ffmpeg.all)
+@Build(stage=2)
+module ffmpeg_test {
+        source "ffmpeg_test.cpp"
+
+        depends third_party.lib.ffmpeg.all
+}
