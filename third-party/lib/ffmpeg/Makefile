@@ -22,54 +22,76 @@ $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \
 		./configure --prefix=$(PKG_INSTALL_DIR) \
-			--cc=$(EMBOX_GCC) \
-			--cxx=$(EMBOX_GXX) \
-			--target-os=none \
-			--disable-asm \
-			--disable-programs \
-			--disable-doc \
-			--disable-avdevice \
-			--disable-swscale \
-			--disable-postproc \
-			--disable-avfilter \
-			--disable-network \
-			--disable-hwaccels \
-			--disable-everything \
-			--enable-cross-compile \
-			--enable-gpl \
-			--enable-nonfree \
-			--enable-avformat \
-			--enable-avcodec \
-			--enable-swscale \
-			--enable-avutil \
-			--enable-protocol=file \
-			--enable-decoder=h264 \
-			--enable-parser=h264 \
-			--enable-demuxer=h264 \
-			--enable-decoder=mpeg4 \
-			--enable-parser=mpeg4video \
-			--enable-demuxer=mov \
-			--enable-demuxer=avi \
-			--enable-static \
-			--disable-shared \
-			--pkgconfigdir=$(PKG_INSTALL_DIR) \
-			--libdir=$(PKG_INSTALL_DIR)/lib \
-			--incdir=$(PKG_INSTALL_DIR)/include \
-			--pkg-config-flags="--static" \
-			--disable-runtime-cpudetect \
-			--disable-protocols \
-			--disable-devices \
-			--disable-lzma \
-			--disable-bzlib \
-			--disable-xlib \
-			--disable-zlib \
-			--disable-iconv \
-			--disable-libxcb \
-			--disable-libxcb-shm \
-			--disable-libxcb-xfixes \
-			--disable-libxcb-shape \
-			--disable-sdl2 \
-			--extra-cflags="$(FF_CPPFLAGS)" \
+		--cc=$(EMBOX_GCC) \
+		--cxx=$(EMBOX_GXX) \
+		--target-os=none \
+		--disable-asm \
+		--disable-programs \
+		--disable-doc \
+		--disable-postproc \
+		--disable-avfilter \
+		--disable-hwaccels \
+		--disable-everything \
+		--disable-debug \
+		--disable-runtime-cpudetect \
+		--disable-stripping \
+		--enable-cross-compile \
+		--enable-gpl \
+		--enable-nonfree \
+		--enable-avformat \
+		--enable-avcodec \
+		--enable-swscale \
+		--enable-avutil \
+		--enable-avresample  \
+		--enable-pic \
+		--enable-protocol=file \
+		--enable-protocol=http \
+		--enable-indev=v4l2 \
+		--enable-decoder=h264 \
+		--enable-decoder=mpeg4 \
+		--enable-decoder=msmpeg4v2 \
+		--enable-decoder=mjpeg \
+		--enable-decoder=rawvideo \
+		--enable-decoder=mpeg1video \
+		--enable-decoder=mpeg2video \
+		--enable-decoder=wmv1 \
+		--enable-decoder=wmv2 \
+		--enable-decoder=wmv3 \
+		--enable-decoder=vp6 \
+		--enable-decoder=vp8 \
+		--enable-decoder=vp9 \
+		--enable-decoder=flv \
+		--enable-decoder=h263 \
+		--enable-decoder=h263i \
+		--enable-decoder=h263p \
+		--enable-decoder=rv10 \
+		--enable-decoder=rv20 \
+		--enable-decoder=rv30 \
+		--enable-decoder=rv40 \
+		--enable-demuxer=mov \
+		--enable-demuxer=avi \
+		--enable-demuxer=h264 \
+		--enable-demuxer=mjpeg \
+		--enable-demuxer=mpegvideo \
+		--enable-demuxer=mpegps \
+		--enable-demuxer=mpegts \
+		--enable-demuxer=flv \
+		--enable-demuxer=rm \
+		--enable-demuxer=asf \
+		--enable-parser=h264 \
+		--enable-parser=mpeg4video \
+		--enable-parser=mjpeg \
+		--enable-parser=mpegvideo \
+		--enable-parser=vc1 \
+		--enable-parser=vp8 \
+		--enable-parser=vp9 \
+		--enable-version3 \
+		--enable-pthreads \
+		--enable-static \
+		--disable-shared \
+		--libdir=$(PKG_INSTALL_DIR)/lib \
+		--incdir=$(PKG_INSTALL_DIR)/include \
+		--extra-cflags="$(FF_CPPFLAGS) -lpthread -lm" \
 	)
 	touch $@
 
@@ -79,5 +101,8 @@ $(BUILD) :
 		cp libavcodec/libavcodec.a $(PKG_INSTALL_DIR)/; \
 		cp libavformat/libavformat.a $(PKG_INSTALL_DIR)/; \
 		cp libavutil/libavutil.a $(PKG_INSTALL_DIR)/; \
+		cp libswscale/libswscale.a $(PKG_INSTALL_DIR)/; \
 	)
 	touch $@
+
+# 		--enable-libx264 \

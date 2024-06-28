@@ -1,0 +1,11 @@
+package platform.ffmpeg.data_samples
+
+module sample_avi {
+	@InitFS(target_name="sample.avi")
+	source "sample.avi"
+}
+
+module test_mp4 {
+	@InitFS(target_name="test.mp4")
+	source "test.mp4"
+}
