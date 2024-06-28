@@ -1,10 +1,10 @@
 /**
- * @file
- * @brief
+ * @brief store and load without caching and mmu
  *
  * @date 30.04.24
  * @author Aleksey Zhmulin
  */
+
 #ifndef MIPS_KERNEL_REG_REG_H_
 #define MIPS_KERNEL_REG_REG_H_
 
@@ -14,10 +14,10 @@
 
 #define __MMAP_REG_STORE(inttype, addr, val)                      \
 	do {                                                          \
-		*((volatile inttype *)((uintptr_t)addr + KSEG0)) = (val); \
+		*((volatile inttype *)((uintptr_t)addr + KSEG1)) = (val); \
 	} while (0)
 
 #define __MMAP_REG_LOAD(inttype, addr) \
-	*((volatile inttype *)((uintptr_t)addr + KSEG0))
+	*((volatile inttype *)((uintptr_t)addr + KSEG1))
 
 #endif /* MIPS_KERNEL_REG_REG_H_ */
