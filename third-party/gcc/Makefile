@@ -28,9 +28,10 @@ PKG_VER:=$(call option_get_string,gcc_version)
 
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
 
-PKG_MD5_6.3.0 := 6e5ea04789678f1250c1b30c4d9ec417
-PKG_MD5_8.3.0 := 9972f8c24c02ebcb5a342c1b30de69ff
-PKG_MD5_9.3.0 := 9b7e8f6cfad96114e726c752935af58a
+PKG_MD5_6.3.0  := 6e5ea04789678f1250c1b30c4d9ec417
+PKG_MD5_8.3.0  := 9972f8c24c02ebcb5a342c1b30de69ff
+PKG_MD5_9.3.0  := 9b7e8f6cfad96114e726c752935af58a
+PKG_MD5_13.2.0 := aeb5ac806c34d47e725bdd025f34bac4
 
 PKG_MD5:=$(PKG_MD5_$(PKG_VER))
 
@@ -87,6 +88,7 @@ $(CONFIGURE) :
 			--without-newlib \
 			--enable-languages=c,c++ \
 			--enable-soft-float \
+			--enable-hosted-libstdcxx \
 			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
 			CFLAGS_FOR_TARGET="$(cppflags) $(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \

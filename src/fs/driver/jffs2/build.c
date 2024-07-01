@@ -11,6 +11,11 @@
  *
  */
 
+#include <dirent.h>
+#include <stddef.h>
+#include <errno.h>
+#include <stdint.h>
+
 #include <linux/kernel.h>
 #include <linux/sched.h>
 #include <linux/slab.h>

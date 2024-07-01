@@ -1,0 +1,110 @@
+diff -aur ./gcc-13.2.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/c/Make-lang.in
+--- ./gcc-13.2.0/gcc/c/Make-lang.in	2023-07-27 11:13:04.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/c/Make-lang.in	2024-06-29 23:34:35.928596646 +0300
+@@ -73,14 +73,14 @@
+ # the bootstrap comparison and allows comparing of the cc1 binary
+ cc1-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
+ 	$(C_OBJS) $(BACKEND) $(LIBDEPS) 
+-	if [ -f ../stage_final ] \
+-	   && cmp -s ../stage_current ../stage_final; then \
+-	  cp ../prev-gcc/cc1-checksum.cc cc1-checksum.cc; \
+-	else \
+-	  build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
+-                     checksum-options > cc1-checksum.cc.tmp && 		 \
+-	  $(srcdir)/../move-if-change cc1-checksum.cc.tmp cc1-checksum.cc; \
+-	fi
++	#if [ -f ../stage_final ] \
++	#   && cmp -s ../stage_current ../stage_final; then \
++	#  cp ../prev-gcc/cc1-checksum.cc cc1-checksum.cc; \
++	#else \
++	#  build/genchecksum$(build_exeext) $(C_OBJS) $(BACKEND) $(LIBDEPS) \
++    #                 checksum-options > cc1-checksum.cc.tmp && 		 \
++	#  $(srcdir)/../move-if-change cc1-checksum.cc.tmp cc1-checksum.cc; \
++	#fi
+ 
+ cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
+ 	@$(call LINK_PROGRESS,$(INDEX.c),start)
+diff -aur ./gcc-13.2.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/cp/Make-lang.in
+--- ./gcc-13.2.0/gcc/cp/Make-lang.in	2023-07-27 11:13:04.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/cp/Make-lang.in	2024-06-29 23:41:03.499770010 +0300
+@@ -131,14 +131,14 @@
+ # the bootstrap comparison and allows comparing of the cc1 binary
+ cc1plus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
+ 	$(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) 
+-	if [ -f ../stage_final ] \
+-	   && cmp -s ../stage_current ../stage_final; then \
+-	   cp ../prev-gcc/cc1plus-checksum.cc cc1plus-checksum.cc; \
+-	else \
+-	  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) \
+-                     checksum-options > cc1plus-checksum.cc.tmp &&	   \
+-	  $(srcdir)/../move-if-change cc1plus-checksum.cc.tmp cc1plus-checksum.cc; \
+-	fi
++	#if [ -f ../stage_final ] \
++	#   && cmp -s ../stage_current ../stage_final; then \
++	#   cp ../prev-gcc/cc1plus-checksum.cc cc1plus-checksum.cc; \
++	#else \
++	#  build/genchecksum$(build_exeext) $(CXX_OBJS) $(BACKEND) $(CODYLIB) $(LIBDEPS) \
++    #                 checksum-options > cc1plus-checksum.cc.tmp &&	   \
++	#  $(srcdir)/../move-if-change cc1plus-checksum.cc.tmp cc1plus-checksum.cc; \
++	#fi
+ 
+ cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
+ 	@$(call LINK_PROGRESS,$(INDEX.c++),start)
+diff -aur ./gcc-13.2.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libgcc/configure
+--- ./gcc-13.2.0/libgcc/configure	2023-07-27 11:13:07.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libgcc/configure	2024-06-29 23:45:25.077913975 +0300
+@@ -5048,6 +5048,9 @@
+ target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+ { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
+ $as_echo "$target_thread_file" >&6; }
++# In Embox we provide posix even if gcc built with single thread model
++# Among other solutions is to use Linux gcc, or our own gcc.
++target_thread_file=posix
+ 
+ # Check for assembler CFI support.
+ { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
+diff -aur ./gcc-13.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libstdc++-v3/configure
+--- ./gcc-13.2.0/libstdc++-v3/configure	2023-07-27 11:13:08.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libstdc++-v3/configure	2024-06-29 23:57:30.519993260 +0300
+@@ -15796,6 +15796,9 @@
+   target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
+   { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
+ $as_echo "$target_thread_file" >&6; }
++  # In Embox we provide posix even if gcc built with single thread model
++  # Among other solutions is to use Linux gcc, or our own gcc.
++  target_thread_file=posix
+ 
+ case $target_thread_file in
+     aix)	thread_header=config/rs6000/gthr-aix.h ;;
+@@ -68261,7 +68264,7 @@
+ 
+     ;;
+   *)
+-    as_fn_error $? "No support for this host/target combination." "$LINENO" 5
++    #as_fn_error $? "No support for this host/target combination." "$LINENO" 5
+    ;;
+ esac
+ 
+@@ -69756,7 +69759,9 @@
+   CXXFLAGS="$CXXFLAGS -fno-exceptions \
+ 	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
+ 
+-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
++  # In Embox we provide posix even if gcc built with single thread model
++  # Among other solutions is to use Linux gcc, or our own gcc.
++  target_thread_file=posix
+   case $target_thread_file in
+     posix)
+       CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
+diff -aur ./gcc-13.2.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/zlib/Makefile.in
+--- ./gcc-13.2.0/zlib/Makefile.in	2023-07-27 11:17:14.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/zlib/Makefile.in	2024-06-29 23:59:26.276969111 +0300
+@@ -452,7 +452,7 @@
+ MULTISUBDIR = 
+ MULTIDO = true
+ MULTICLEAN = true
+-all: all-am
++all:
+ 
+ .SUFFIXES:
+ .SUFFIXES: .c .lo .o .obj

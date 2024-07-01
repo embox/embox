@@ -34,7 +34,7 @@ static module libgcc extends embox.lib.libgcc {
 @BuildDepends(third_party.lib.OpenLibm)
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 static module gcc_build {
-	option string gcc_version="6.3.0"
+	option string gcc_version="9.3.0"
 
 	depends embox.compat.posix.proc.atexit_api
 }
