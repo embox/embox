@@ -11,6 +11,11 @@
  *
  */
 
+#include <dirent.h>
+#include <stddef.h>
+#include <errno.h>
+#include <string.h>
+
 #include <linux/kernel.h>
 #include <linux/crc32.h>
 #include "nodelist.h"

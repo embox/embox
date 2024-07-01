@@ -23,7 +23,7 @@ POOL_DEF(dir_pool, DIR, MAX_DIR_QUANTITY);
 
 static inline void fill_dirent(struct dirent *dirent, struct dentry *dentry) {
 	dirent->d_ino = dentry->d_inode->i_no;
-	memcpy(dirent->d_name, dentry->name, DIRENT_DNAME_LEN);
+	memcpy(dirent->d_name, dentry->name, NAME_MAX);
 }
 
 DIR *opendir(const char *path) {
