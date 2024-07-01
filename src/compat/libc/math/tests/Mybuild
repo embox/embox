@@ -3,7 +3,6 @@ package embox.compat.libc.test
 module math_test_fp {
 	source "math_test_fp.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -11,7 +10,6 @@ module math_test_fp {
 module math_test {
 	source "math_test.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -28,7 +26,6 @@ module fpu_context_consistency_test {
 module log10_test {
 	source "log10_test.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -36,7 +33,6 @@ module log10_test {
 module sqrt_test {
 	source "sqrt_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -44,7 +40,6 @@ module sqrt_test {
 module fmod_test {
 	source "fmod_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -52,7 +47,6 @@ module fmod_test {
 module pow_tests {
 	source "pow_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -60,79 +54,69 @@ module pow_tests {
 module exp_test {
 	source "exp_test.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module math_test_sin {
-	source "math_test_sin.c"
+	source "sin_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module math_test_cos {
-        source "math_test_cos.c"
+        source "cos_tests.c"
 
-        depends embox.compat.libc.all
         depends embox.compat.libc.math
         depends embox.framework.LibFramework
 }
 
 module math_test_atan {
-	source "math_test_atan.c"
+	source "atan_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module math_test_sinh {
-	source "math_test_sinh.c"
+	source "sinh_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module math_test_abs {
-	source "math_test_abs.c"
+	source "abs_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module math_test_ceil {
-    source "math_test_ceil.c"
+	source "ceil_tests.c"
 
-    depends embox.compat.libc.all
-    depends embox.compat.libc.math
-    depends embox.framework.LibFramework
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
 }
 
 module atan_tests {
-  source "atan_tests.c"
+	source "atan_tests.c"
 
-  depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module atan2_tests {
-  source "atan2_tests.c"
+	source "atan2_tests.c"
 
-  depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module math_test_cosh {
-	source "math_test_cosh.c"
+	source "cosh_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -140,7 +124,6 @@ module math_test_cosh {
 module acos_tests {
 	source "acos_tests.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
@@ -148,7 +131,7 @@ module acos_tests {
 module asin_tests {
 	source "asin_tests.c"
 
-	depends embox.compat.libc.all
+
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
