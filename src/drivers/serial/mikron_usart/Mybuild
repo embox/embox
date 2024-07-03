@@ -1,0 +1,41 @@
+package embox.driver.serial
+
+module mikron_usart {
+	option boolean use_bconf=false
+
+	source "mikron_usart.c"
+
+	depends embox.driver.serial.core
+}
+
+module mikron_usart_diag extends embox.driver.serial.diag {
+	option number base_addr
+	option number baud_rate=115200
+
+	source "mikron_usart_diag.c"
+
+	depends mikron_usart
+	depends embox.driver.periph_memory
+}
+
+module mikron_usart_ttyS0 {
+	option number base_addr
+	option number irq_num
+	option number baud_rate=115200
+
+	source "mikron_usart_ttys0.c"
+
+	depends mikron_usart
+	depends embox.driver.periph_memory
+}
+
+module mikron_usart_ttyS1 {
+	option number base_addr
+	option number irq_num
+	option number baud_rate=115200
+
+	source "mikron_usart_ttys1.c"
+
+	depends mikron_usart
+	depends embox.driver.periph_memory
+}
