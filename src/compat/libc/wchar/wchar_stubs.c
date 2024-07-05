@@ -129,11 +129,6 @@ wint_t putwchar(wchar_t wc) {
 	return 0;
 }
 
-int swprintf(wchar_t *s, size_t n, const wchar_t *format, ...) {
-	printf("%s\n",__func__);
-	return 0;
-}
-
 int swscanf(const wchar_t *s, const wchar_t *format, ... ) {
 	printf("%s\n",__func__);
 	return 0;

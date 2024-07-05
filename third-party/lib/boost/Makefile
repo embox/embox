@@ -1,14 +1,20 @@
-PKG_NAME := boost
 
-# PKG_VER  := 1_85_0
-# PKG_SOURCES := https://boostorg.jfrog.io/artifactory/main/release/1.85.0/source/boost_$(PKG_VER).tar.gz
-# PKG_MD5     := 53aeccc3167909ee770e34469f8dd592
-# PKG_PATCHES := patch_1_85_0.txt
+define option_get_string
+$(shell echo OPTION_STRING_third_party__boost__libs__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/boost/libs.h -)
+endef
 
-PKG_VER  := 1_65_0
-PKG_SOURCES := https://boostorg.jfrog.io/artifactory/main/release/1.65.0/source/boost_$(PKG_VER).tar.gz
-PKG_MD5     := d75a27ad1a34cfc7c9b5cb92594410c3
-PKG_PATCHES := patch_1_65_0.txt
+PKG_VER_1_65_0 := 1.65.0
+PKG_VER_1_85_0 := 1.85.0
+
+PKG_MD5_1_65_0 := d75a27ad1a34cfc7c9b5cb92594410c3
+PKG_MD5_1_85_0 := 53aeccc3167909ee770e34469f8dd592
+
+PKG_NAME    := boost
+PKG_VER     := $(call option_get_string,boost_version)
+PKG_VER2    := $(PKG_VER_$(PKG_VER))
+PKG_MD5     := $(PKG_MD5_$(PKG_VER))
+PKG_PATCHES := patch_$(PKG_VER).txt
+PKG_SOURCES := https://boostorg.jfrog.io/artifactory/main/release/$(PKG_VER2)/source/boost_$(PKG_VER).tar.gz
 
 PKG_SOURCE_DIR = $(BUILD_DIR)/$(PKG_NAME)_$(PKG_VER)
 
