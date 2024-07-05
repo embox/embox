@@ -22,6 +22,7 @@ typedef int mbstate_t;
 
 __BEGIN_DECLS
 
+extern size_t wcslen(const wchar_t *s);
 extern int wcscmp(const wchar_t *s1, const wchar_t *s2);
 extern wchar_t *wcsncpy(wchar_t *dst, const wchar_t *src, size_t n);
 extern int wmemcmp(const wchar_t *s1, const wchar_t *s2, size_t n);
@@ -32,6 +33,7 @@ extern wchar_t *wmemmove(wchar_t *dest, const wchar_t *src, size_t n);
 extern wchar_t *wmemcpy(wchar_t *dest, const wchar_t *src, size_t n);
 extern wchar_t *wmemset(wchar_t *wcs, wchar_t wc, size_t n);
 
+extern int swprintf(wchar_t *s, size_t n, const wchar_t *format, ...);
 extern int vswprintf(wchar_t *wcs, size_t maxlen, const wchar_t *format,
     va_list args);
 

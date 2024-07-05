@@ -18,6 +18,7 @@ static module wchar {
 	source "wmemcmp.c"
 	source "wmemchr.c"
 	source "wcsncasecmp.c"
+	source "swprintf.c"
 	source "vswprintf.c"
 	source "wprintf_impl.c"
 	source "wcstol.c"

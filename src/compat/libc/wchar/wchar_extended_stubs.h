@@ -19,7 +19,6 @@ extern int fwscanf(FILE *stream, const wchar_t *wc, ...);
 extern int mbsinit(const mbstate_t *st);
 extern size_t mbsrtowcs(wchar_t *dst, const char **src, size_t len, mbstate_t *ps);
 extern wint_t putwchar(wchar_t wc);
-extern int swprintf(wchar_t *s, size_t n, const wchar_t *format, ...);
 extern int swscanf(const wchar_t *s, const wchar_t *format, ... );
 extern int vwprintf(const wchar_t *format, va_list arg);
 extern int vfwprintf(FILE *stream, const wchar_t *format, va_list arg);
