@@ -88,8 +88,6 @@ struct mod_build_info {
 	/**< (optional) Security. */
 	const struct mod_label *label;
 
-	// struct logger *const logger;
-
 	/* Null-terminated array with dependency information. */
 	const struct mod *volatile const *requires;
 
