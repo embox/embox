@@ -24,11 +24,16 @@ struct logger;
 struct mod {
 	const struct mod_ops *ops;
 
-	struct __mod_private     *priv; /**< Used by dependency resolver. */
+	/**< Used by dependency resolver. */
+	struct __mod_private *priv;
 
 	/* Data used to properly enable/disable the module itself. */
-	const struct mod_app     *app;     /**< (optional) Application specific. */
-	const struct mod_member *volatile const *members; /**< Members to setup/finalize. */
+
+	/**< (optional) Application specific. */
+	const struct mod_app *app;
+
+	/**< Members to setup/finalize. */
+	const struct mod_member *volatile const *members;
 
 	/* Const build info data */
 	const struct mod_build_info *build_info;
@@ -36,10 +41,10 @@ struct mod {
 
 struct mod_app {
 	/* app's .data and .bss */
-	char  *data_vma;
-	char  *data_lma;
+	char *data_vma;
+	char *data_lma;
 	size_t data_sz;
-	char  *bss;
+	char *bss;
 	size_t bss_sz;
 
 	/* .data and .bss of the modules on which app uses @BuildDepends */
@@ -55,8 +60,8 @@ struct __mod_private {
 };
 
 struct __mod_section {
-	char   *vma;
-	size_t  len;
+	char *vma;
+	size_t len;
 	const char *md5sum;
 };
 
@@ -72,18 +77,30 @@ struct mod_sec_label {
 	const struct mod *mod;
 };
 
+/* Descriptive information about the module provided by Embuild. */
 struct mod_build_info {
-	/* Descriptive information about the module provided by Embuild. */
-	const char *pkg_name; /**< Definition package. */
-	const char *mod_name; /**< Name assigned by EMBuild. */
-	const struct mod_label *label;   /**< (optional) Security. */
-	struct logger *const logger;
+	/**< Definition package. */
+	const char *pkg_name;
+
+	/**< Name assigned by EMBuild. */
+	const char *mod_name;
+
+	/**< (optional) Security. */
+	const struct mod_label *label;
+
+	// struct logger *const logger;
+
 	/* Null-terminated array with dependency information. */
-	const struct mod *volatile const *requires,
-	      *volatile const *provides; /**< Modules, that this module depends on;
-                                                  which are dependent on this. */
-	const struct mod *volatile const *after_deps; /**< Should be loaded right after this. */
-	const struct mod *volatile const *contents;  /**< Contained in this module. */
+	const struct mod *volatile const *requires;
+
+	/**< Modules, that this module depends on; which are dependent on this. */
+	const struct mod *volatile const *provides;
+
+	/**< Should be loaded right after this. */
+	const struct mod *volatile const *after_deps;
+
+	/**< Contained in this module. */
+	const struct mod *volatile const *contents;
 };
 
 #endif /* FRAMEWORK_MOD_TYPES_H_ */
