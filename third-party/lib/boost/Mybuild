@@ -5,6 +5,8 @@ package third_party.boost
 @BuildDepends(embox.lib.libsupcxx)
 @BuildDepends(embox.lib.libstdcxx)
 static module libs {
+	option string boost_version="1_65_0"
+
 	@AddPrefix("^BUILD/extbld/third_party/boost/libs/install/lib")
 	source "libboost_atomic.a", 
 			"libboost_chrono.a",
