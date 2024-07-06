@@ -14,6 +14,7 @@
 #include <sys/statvfs.h>
 
 #include <fs/dvfs.h>
+#include <fs/file_desc.h>
 #include <drivers/block_dev.h>
 #include <kernel/task/resource/idesc.h>
 #include <kernel/task/resource/index_descriptor.h>
@@ -98,6 +99,7 @@ static void statvfs_fill_from_file(struct file_desc *file, struct statvfs *buf) 
 	}
 }
 
+#if 0	
 static struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file_desc *bdev) {
 	const struct fs_driver *fs_drv;
 	int res;
@@ -118,8 +120,10 @@ static struct super_block *dumb_fs_fill_sb(struct super_block *sb, struct file_d
 
 	return NULL;
 }
+#endif	
 
 static void statvfs_fill_from_bdev(struct file_desc *bdev, struct statvfs *buf) {
+#if 0
 	struct super_block sb_buf;
 	struct super_block *sb;
 	struct block_dev *dev;
@@ -135,6 +139,7 @@ static void statvfs_fill_from_bdev(struct file_desc *bdev, struct statvfs *buf) 
 		buf->f_blocks = dev->size / dev->block_size;
 
 	}
+#endif	
 }
 
 int fstatvfs(int fd, struct statvfs *buf) {

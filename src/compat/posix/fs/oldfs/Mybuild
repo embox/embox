@@ -14,10 +14,11 @@ static module file_system_oldfs extends file_system {
 	source "mount_oldfs.c" /* not part of posix */
 	source "open_oldfs.c"
 	source "remove_oldfs.c"
+	source "rename_oldfs.c"
 	source "rmdir_oldfs.c"
 	source "unlink_oldfs.c"
+	source "utime_oldfs.c"
 	source "xattr_oldfs.c"
-	source "rename_oldfs.c"
 
 	@NoRuntime depends file_system_common
 	@NoRuntime depends embox.fs.core
