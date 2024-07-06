@@ -89,7 +89,7 @@ struct mod_build_info {
 	const struct mod_label *label;
 
 	/* Null-terminated array with dependency information. */
-	const struct mod *volatile const *requires;
+	const struct mod *volatile const *depends;
 
 	/**< Modules, that this module depends on; which are dependent on this. */
 	const struct mod *volatile const *provides;

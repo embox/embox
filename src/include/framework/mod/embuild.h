@@ -39,7 +39,7 @@
 /**
  * Defines a new mod. For the new mod the @link #mod corresponding @endlink
  * structure is allocated. Also two section-driven arrays are defined for the
- * mod#provides and mod#requires lists.
+ * mod#provides and mod#depends lists.
  *
  * @param runlevel_nr
  *   The runlevel number which module belongs to.
@@ -167,7 +167,7 @@
 	extern const struct mod_label __MOD_LABEL(_mod_nm)       \
 			__attribute__ ((weak));                          \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
-			__MOD_REQUIRES(_mod_nm), NULL);                  \
+			__MOD_DEPENDS(_mod_nm), NULL);                   \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
 			__MOD_PROVIDES(_mod_nm), NULL);                  \
 	ARRAY_SPREAD_DEF_TERMINATED(static const struct mod *,   \
@@ -178,7 +178,7 @@
 		.pkg_name   = _package_name,                         \
 		.mod_name   = _mod_name,                             \
 		.label      = &__MOD_LABEL(_mod_nm),                 \
-		.requires   = __MOD_REQUIRES(_mod_nm),               \
+		.depends    = __MOD_DEPENDS(_mod_nm),                \
 		.provides   = __MOD_PROVIDES(_mod_nm),               \
 		.after_deps = __MOD_AFTER_DEPS(_mod_nm),             \
 		.contents   = __MOD_CONTENTS(_mod_nm),               \
@@ -289,7 +289,7 @@
 
 #ifndef __MOD_DEP_DEF
 #define __MOD_DEP_DEF(mod_nm, dep_nm) \
-	ARRAY_SPREAD_ADD(__MOD_REQUIRES(mod_nm), &__MOD(dep_nm)); \
+	ARRAY_SPREAD_ADD(__MOD_DEPENDS(mod_nm), &__MOD(dep_nm)); \
 	ARRAY_SPREAD_ADD(__MOD_PROVIDES(dep_nm), &__MOD(mod_nm))
 #endif /* __MOD_DEP_DEF */
 

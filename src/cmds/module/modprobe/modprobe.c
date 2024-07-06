@@ -25,7 +25,7 @@ static void fake_enable(const struct mod *mod) {
 	}
 
 	mod->priv->flags |= 0x1;
-	mod_foreach_requires(dep, mod) {
+	mod_foreach_depends(dep, mod) {
 		fake_enable(dep);
 	}
 
