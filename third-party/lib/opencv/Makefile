@@ -22,14 +22,23 @@ PKG_PATCHES := endian.patch \
                disable_dlopen.patch \
                disable_fpu_cortex_m.patch \
                add_if_defined_embox.patch
+
 ifneq (0,$(call option_get_boolean,hack_4_5_2_disable_fonts))
 PKG_PATCHES += disable_hershey_fonts.patch
 endif
 else ifeq ("$(PKG_VER)","4.0.1")
-PKG_PATCHES := patch_4_0_1.txt
-PKG_PATCHES += force_embox_ffmpeg.patch
+PKG_PATCHES += patch_4_0_1.txt
 else
 $(error Unsupported OpenCV version: $(PKG_VER))
+endif
+
+ifneq (0,$(call option_get_boolean,with_ffmpeg))
+PKG_PATCHES += force_embox_ffmpeg.patch
+FFMPEG_FLAGS := -DWITH_FFMPEG=ON \
+		-DFFMPEG_INCLUDE_DIR=$(ROOT_DIR)/build/base/gen/include/config/third_party/lib/ffmpeg \
+		-DFFMPEG_LIB_DIR=$(ROOT_DIR)/build/extbld/third_party/lib/ffmpeg/build/install
+else
+FFMPEG_FLAGS := -DWITH_FFMPEG=OFF
 endif
 
 include $(EXTBLD_LIB)
@@ -43,9 +52,7 @@ OPENCV_FLAGS = \
 		-DBUILD_opencv_apps=OFF \
 		-DBUILD_opencv_java_bindings_generator=OFF \
 		-DBUILD_opencv_ml=OFF \
-		-DWITH_FFMPEG=ON \
-		-DFFMPEG_INCLUDE_DIR=$(ROOT_DIR)/build/base/gen/include/config/third_party/lib/ffmpeg \
-		-DFFMPEG_LIB_DIR=$(ROOT_DIR)/build/extbld/third_party/lib/ffmpeg/build/install \
+		$(FFMPEG_FLAGS) \
 		-DWITH_EIGEN=OFF \
 		-DBUILD_IPP_IW=OFF \
 		-DBUILD_ITT=OFF \
@@ -64,7 +71,7 @@ OPENCV_FLAGS = \
 		-DBUILD_opencv_objdetect=ON \
 		-DBUILD_opencv_photo=ON \
 		-DBUILD_opencv_stitching=OFF \
-		-DBUILD_opencv_ts=OFF \
+		-DBUILD_opencv_ts=ON \
 		-DBUILD_opencv_video=ON \
 		-DBUILD_opencv_videoio=ON \
 		-DBUILD_opencv_js_bindings_generator=OFF \
