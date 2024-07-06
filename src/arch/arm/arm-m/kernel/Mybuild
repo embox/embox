@@ -4,13 +4,11 @@ package embox.arch.arm.armmlib
 @DefaultImpl(cpu_cache_none)
 abstract module cpu_cache_api { }
 
-@NoCode
 module cpu_cache_none extends cpu_cache_api {
 	@IncludeExport(path="arm", target_name="cpu_cache.h")
 	source "cpu_cache_none.h"
 }
 
-@NoCode
 module irq_static extends embox.kernel.irq_static_impl {
 	source "irq_static_impl.h"
 }
@@ -59,7 +57,6 @@ module context extends embox.arch.context {
 	depends embox.arch.arm.fpu.fpu
 }
 
-@NoCode
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }

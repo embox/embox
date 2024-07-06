@@ -1,6 +1,5 @@
 package embox.framework
 
-@NoCode
 module LibFramework {
 	@NoRuntime depends cmd, mod, test, runlevel
 }
@@ -24,22 +23,17 @@ module runlevel {
 	@NoRuntime depends mod, unit
 }
 
-@NoCode
 module level_0 { /*level_arch */
 }
 
-@NoCode
 module level_1 { /* level_test */
 }
 
-@NoCode
 module level_2 { /* level_driver */
 }
 
-@NoCode
 module level_3 { /*level_user */
 }
 
-@NoCode
 module level_4 { /*level_nonloaded */
 }

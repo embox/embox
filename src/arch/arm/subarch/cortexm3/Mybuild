@@ -1,7 +1,6 @@
 
 package embox.arch.arm.cortexm3
 
-@NoCode
 module bundle {
 	@NoRuntime depends embox.arch.arm.armmlib.locore
 	@NoRuntime depends embox.arch.arm.armmlib.ipl

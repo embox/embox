@@ -1,6 +1,5 @@
 package embox.arch.mips
 
-@NoCode
 module locore extends embox.arch.locore {
 	@NoRuntime depends exception
 	@NoRuntime depends boot
@@ -23,12 +22,10 @@ module exception {
 	depends embox.arch.mips.mm.cache_api
 }
 
-@NoCode
 module ipl extends embox.arch.interrupt {
 	source "ipl.h"
 }
 
-@NoCode
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }

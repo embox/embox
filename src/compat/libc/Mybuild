@@ -1,6 +1,5 @@
 package embox.compat.libc
 
-@NoCode
 static module all {
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.int_types
@@ -17,7 +16,6 @@ static module all {
 	//depends embox.fs.syslib.file_system_full
 }
 
-@NoCode
 @Mandatory
 module limits {
 	option number name_max = 32

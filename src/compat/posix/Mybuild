@@ -1,6 +1,5 @@
 package embox.compat.posix
 
-@NoCode
 module LibPosix {
 	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.net.All

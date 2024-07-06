@@ -4,24 +4,20 @@ package embox.compat.libc
 abstract module math {
 }
 
-@NoCode	
 module math_builtins_header {
 	@IncludeExport(target_name="math.h")
 	source "math_builtins.h"
 }
 
-@NoCode	
 static module math_builtins extends embox.compat.libc.math {
 	@NoRuntime depends math_builtins_header
 }
 
-@NoCode	
 static module math_openlibm extends embox.compat.libc.math {
 	@IncludeExport(target_name="math.h")
 	source "math_openlibm.h"
 	depends third_party.lib.OpenLibm
 }
 
-@NoCode	
 static module math_libm_none extends embox.compat.libc.math {
 }

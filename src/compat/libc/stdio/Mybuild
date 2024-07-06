@@ -113,7 +113,6 @@ static module funopen {
 	depends file_pool
 }
 
-@NoCode
 static module file_struct_header {
 	@IncludeExport(path="stdio/internal")
 	source "file_struct.h"
@@ -153,8 +152,7 @@ static module file_ops {
 	depends fwrite
 	depends embox.compat.libc.stdio.stdio_stdstreams
 }
-
-@NoCode	
+	
 static module all {
 	@NoRuntime depends sprintf
 	@NoRuntime depends open

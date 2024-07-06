@@ -8,7 +8,6 @@ static module msync {
 	@NoRuntime depends embox.lib.libds
 }
 
-@NoCode
 static module libmman {
 	depends msync
 }

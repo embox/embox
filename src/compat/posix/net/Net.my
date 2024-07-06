@@ -1,6 +1,5 @@
 package embox.compat.posix.net
 
-@NoCode
 module All {
 	depends gai_strerror,
 		getaddrinfo,

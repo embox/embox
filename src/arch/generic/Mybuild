@@ -1,27 +1,22 @@
 package embox.arch.generic
 
-@NoCode
 module interrupt_stub extends embox.arch.interrupt {
 	source "interrupt_stub.h"
 }
 
-@NoCode
 module syscall_stub extends embox.arch.syscall {
 	source "syscall_stub.h"
 }
 
-@NoCode
 module nommu extends embox.mem.vmem_nommu {
 	option number page_size=4
 	source "nommu.h"
 }
 
-@NoCode
 module nousermode extends embox.arch.usermode {
 	source "nousermode.h"
 }
 
-@NoCode
 module nosmp extends embox.arch.smp {
 	option number max_supported_cores=1
 	source "nosmp.h"
@@ -31,7 +26,6 @@ module nocontext extends embox.arch.context {
 	source "nocontext.c","nocontext.h"
 }
 
-@NoCode
 module onecpu extends embox.arch.cpu {
 	option number cpu_count = 1
 	source "onecpu.h"
@@ -41,13 +35,10 @@ module cache_stub extends embox.arch.cache {
 	source "cache_stub.c"
 }
 
-@NoCode
 module cpu_idle_stub extends embox.arch.cpu_idle {
 	source "cpu_idle_stub.h"
 }
 
-@NoCode
 module no_libarch extends embox.arch.libarch { }
 
-@NoCode
 module reg_stub extends embox.arch.reg { }

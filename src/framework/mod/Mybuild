@@ -28,11 +28,9 @@ module mod_integrity {
 @DefaultImpl(embuild_full)
 abstract module embuild { }
 
-@NoCode
 module embuild_full extends embuild {
 }
 
-@NoCode
 module embuild_light extends embuild {
 	option boolean use_mod_names = false
 
