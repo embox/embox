@@ -10,10 +10,14 @@ include mk/script/script-common.mk
 _build_modules:=$(call get,$(build_model),modules)
 
 mod_inst_fqn=$(call get,$(call get,$1,type),qualifiedName)
-
-_modules := \
+# f.q.n.obj
+modules := \
 	$(foreach m,$(_build_modules), \
 		$(call get,$(call get,$m,type),qualifiedName)$m)
+
+# f.q.n
+packages := \
+	$(sort generic $(basename $(basename $(modules))))
 
 my_app       := $(call mybuild_resolve_or_die,mybuild.lang.App)
 my_cmd       := $(call mybuild_resolve_or_die,mybuild.lang.Cmd)
@@ -25,7 +29,6 @@ my_cxx_cmd_name  := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd.name)
 my_cxx_cmd_help  := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd.help)
 my_cxx_cmd_man   := $(call mybuild_resolve_or_die,mybuild.lang.CxxCmd.man)
 my_rl_value  := $(call mybuild_resolve_or_die,mybuild.lang.Runlevel.value)
-my_nocode    := $(call mybuild_resolve_or_die,mybuild.lang.NoCode)
 
 # 1. Module instance.
 # 2. Option.
@@ -42,14 +45,6 @@ __single_value_check = \
 
 is_a = \
 	$(strip $(call invoke,$(call get,$2,allTypes),getAnnotationsOfType,$1))
-
-# f.q.n.obj
-modules := \
-	$(foreach m,$(_modules),$(if $(call is_a,$(my_nocode),$m),,$m))
-
-# f.q.n
-packages := \
-	$(sort generic $(basename $(basename $(modules))))
 
 cmd_modules := \
 	$(foreach m,$(modules),$(if $(call is_a,$(my_cmd),$m),$m))
