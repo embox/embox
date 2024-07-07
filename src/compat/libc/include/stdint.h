@@ -10,6 +10,29 @@
 #ifndef COMPAT_LIBC_STDINT_H_
 #define COMPAT_LIBC_STDINT_H_
 
+#include <limits.h> /* UINT_MAX, INT_MAX, INT_MIN */
+
+/* For compatibility with 3rd-party software (e.g. opencv) */
+#if __SIZEOF_INT__ == 4
+#undef __UINT32_TYPE__
+#undef __INT32_TYPE__
+#undef __UINT32_MAX__
+#undef __INT32_MAX__
+#undef __UINT32_C
+#undef __INT32_C
+#undef __UINT32_C_SUFFIX__
+#undef __INT32_C_SUFFIX__
+
+#define __UINT32_TYPE__     unsigned int
+#define __INT32_TYPE__      int
+#define __UINT32_MAX__      UINT_MAX
+#define __INT32_MAX__       INT_MAX
+#define __UINT32_C(c)       MACRO_CONCAT(c, U)
+#define __INT32_C(c)        c
+#define __UINT32_C_SUFFIX__ U
+#define __INT32_C_SUFFIX__
+#endif /* __SIZEOF_INT__ */
+
 #define UINT8_MAX        __UINT8_MAX__
 #define UINT16_MAX       __UINT16_MAX__
 #define UINT32_MAX       __UINT32_MAX__
@@ -79,8 +102,8 @@
 #define WINT_MIN       (-WINT_MAX - 1)
 #define WCHAR_MIN      (-WCHAR_MAX - 1)
 
-#define SIG_ATOMIC_MAX __INT_MAX__
-#define SIG_ATOMIC_MIN __INT_MIN__
+#define SIG_ATOMIC_MAX INT_MAX
+#define SIG_ATOMIC_MIN INT_MIN
 
 #define UINT8_C(c)     MACRO_CONCAT(c, __UINT8_C_SUFFIX__)
 #define UINT16_C(c)    MACRO_CONCAT(c, __UINT16_C_SUFFIX__)

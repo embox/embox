@@ -15,7 +15,6 @@ static module file_system_common {
 	source "truncate.c"
 	source "realpath.c"
 	source "rewinddir.c"
-	source "utime.c"
 
 	@NoRuntime depends embox.kernel.task.idesc
 	@NoRuntime depends embox.kernel.task.resource.errno
