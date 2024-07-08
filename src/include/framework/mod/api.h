@@ -147,8 +147,8 @@ extern const struct mod *mod_lookup(const char *fqn);
  * @param mod
  *   The target mod.
  */
-#define mod_foreach_requires(dep, mod) \
-	__mod_foreach_field(dep, mod, requires)
+#define mod_foreach_depends(dep, mod) \
+	__mod_foreach_field(dep, mod, depends)
 
 /**
  * Iterates over a list of mods which depend on the specified one.

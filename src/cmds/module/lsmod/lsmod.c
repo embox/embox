@@ -89,7 +89,7 @@ int main(int argc, char **argv) {
 
 		if (print_deps) {
 			printf("\n\t-> ");
-			mod_foreach_requires(dep, mod) {
+			mod_foreach_depends(dep, mod) {
 				mod_print(dep);
 			}
 
