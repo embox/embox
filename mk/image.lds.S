@@ -47,6 +47,7 @@ SECTIONS {
 		ALIGNMENT();
 		_ctors_start = .;
 		KEEP(*(.init_array))
+		KEEP(*(.init_array.*))
 		KEEP(*(.ctors))
 		KEEP(*(.ctors.*))
 		_ctors_end   = .;
@@ -54,6 +55,7 @@ SECTIONS {
 		ALIGNMENT();
 		_dtors_start = .;
 		KEEP(*(.fini_array))
+		KEEP(*(.fini_array.*))
 		KEEP(*(.dtors))
 		KEEP(*(.dtors.*))
 		_dtors_end   = .;
