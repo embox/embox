@@ -33,11 +33,11 @@ C_ENTRY(__ap_trampoline):
 	.align 0x4
 
 C_LABEL(__ap_sp):
-	.space 4
+	.space 16
 C_LABEL(__ap_gdtr):
 	.space 8
 C_LABEL(__ap_gdt):
-	.space 128 /* TODO: Fix size */
+	.space 384 /* TODO: Fix size */
 C_LABEL(__ap_trampoline_end):
 
 	.section .text
