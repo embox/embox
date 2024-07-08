@@ -16,7 +16,7 @@
 extern char __ap_trampoline;
 extern char __ap_trampoline_end;
 
-extern void *__ap_sp;
+extern void *__ap_sp[];
 extern gdt_pointer_t __ap_gdtr;
 extern gdt_gate_t __ap_gdt[GDT_ENTRIES];
 
