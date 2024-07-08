@@ -4,6 +4,8 @@ package third_party.lib.opencv
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/install/include/opencv4")
 @BuildDepends(third_party.gcc.libstdcxx)
 @BuildDepends(third_party.gcc.libsupcxx)
+@BuildDepends(third_party.lib.ffmpeg.all)
+@BuildDepends(third_party.lib.ffmpeg.build)
 static module build {
 	option string opencv_version="4.0.1"
 
@@ -11,7 +13,7 @@ static module build {
 	 * to minimize .rodata size by ~70 Kb. */
 	option boolean hack_4_5_2_disable_fonts=true
 
-	option boolean with_ffmpeg=false
+	option boolean with_ffmpeg=true
 
 	@NoRuntime depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends embox.compat.posix.util.gettimeofday
@@ -22,6 +24,8 @@ static module build {
 	@NoRuntime depends embox.compat.posix.pthread_key
 	@NoRuntime depends third_party.gcc.libstdcxx
 	@NoRuntime depends third_party.gcc.libsupcxx
+	@NoRuntime depends third_party.lib.ffmpeg.all
+	@NoRuntime depends third_party.lib.ffmpeg.build
 }
 
 @LinkerSection(text="cv_core_text",rodata="cv_core_rodata",data="cv_core_data",bss="cv_core_bss",arm_exidx="cv_core_arm_exidx",arm_extab="cv_core_arm_extab")
