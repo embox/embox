@@ -45,30 +45,30 @@ struct gpio_reg {
     uint32_t 	GPIO_ALTFUNCCLR_reg;  /* 0x38 */
     uint32_t 	GPIO_ALTFUNCNUM_reg;  /* 0x3C */
     uint32_t reserved2[1];
-    uint32_t 	GPIO_SYNCSET_reg;
-    uint32_t 	GPIO_SYNCCLR_reg;
-    uint32_t 	GPIO_QUALSET_reg;
-    uint32_t 	GPIO_QUALCLR_reg;
-    uint32_t 	GPIO_QUALMODESET_reg;
-    uint32_t 	GPIO_QUALMODECLR_reg;
-    uint32_t 	GPIO_QUALSAMPLE_reg;
-    uint32_t 	GPIO_INTENSET_reg;
-    uint32_t 	GPIO_INTENCLR_reg;
-    uint32_t 	GPIO_INTTYPESET_reg;
-    uint32_t 	GPIO_INTTYPECLR_reg;
-    uint32_t 	GPIO_INTPOLSET_reg;
-    uint32_t 	GPIO_INTPOLCLR_reg;
-    uint32_t 	GPIO_INTEDGESET_reg;
-    uint32_t 	GPIO_INTEDGECLR_reg;
-    uint32_t 	GPIO_INTSTATUS_reg;
-    uint32_t 	GPIO_DMAREQSET_reg;
-    uint32_t 	GPIO_DMAREQCLR_reg;
-    uint32_t 	GPIO_ADCSOCSET_reg;
-    uint32_t 	GPIO_ADCSOCCLR_reg;
+    uint32_t 	GPIO_SYNCSET_reg;	  /* 0x44 */
+    uint32_t 	GPIO_SYNCCLR_reg;     /* 0x48 */
+    uint32_t 	GPIO_QUALSET_reg;     /* 0x4C */
+    uint32_t 	GPIO_QUALCLR_reg;     /* 0x50 */
+    uint32_t 	GPIO_QUALMODESET_reg; /* 0x54 */
+    uint32_t 	GPIO_QUALMODECLR_reg; /* 0x58 */
+    uint32_t 	GPIO_QUALSAMPLE_reg;  /* 0x5C */
+    uint32_t 	GPIO_INTENSET_reg;    /* 0x60 */
+    uint32_t 	GPIO_INTENCLR_reg;    /* 0x64 */
+    uint32_t 	GPIO_INTTYPESET_reg;  /* 0x68 */
+    uint32_t 	GPIO_INTTYPECLR_reg;  /* 0x6C */
+    uint32_t 	GPIO_INTPOLSET_reg;   /* 0x70 */
+    uint32_t 	GPIO_INTPOLCLR_reg;   /* 0x74 */
+    uint32_t 	GPIO_INTEDGESET_reg;  /* 0x78 */
+    uint32_t 	GPIO_INTEDGECLR_reg;  /* 0x7C */
+    uint32_t 	GPIO_INTSTATUS_reg;   /* 0x80 */
+    uint32_t 	GPIO_DMAREQSET_reg;   /* 0x84 */
+    uint32_t 	GPIO_DMAREQCLR_reg;   /* 0x88 */
+    uint32_t 	GPIO_ADCSOCSET_reg;   /* 0x8C */
+    uint32_t 	GPIO_ADCSOCCLR_reg;   /* 0x90 */
     uint32_t reserved3[2];
-    uint32_t 	GPIO_LOCKKEY_reg;
-    uint32_t 	GPIO_LOCKSET_reg;
-    uint32_t 	GPIO_LOCKCLR_reg;
+    uint32_t 	GPIO_LOCKKEY_reg;     /* 0x9C */
+    uint32_t 	GPIO_LOCKSET_reg;     /* 0xA0 */
+    uint32_t 	GPIO_LOCKCLR_reg;     /* 0xA4 */
 };
 
 static struct gpio_chip niiet_gpio_chip;
