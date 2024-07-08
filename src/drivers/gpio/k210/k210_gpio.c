@@ -16,12 +16,13 @@
 #include <drivers/gpio/gpio_driver.h>
 #include <drivers/gpio/k210.h>
 #include <drivers/gpio/k210/fpioa.h>
+#include <config/board_config.h>
 
 EMBOX_UNIT_INIT(k210_gpio_init);
 
 #define K210_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
 
-volatile k210_gpio_t* const gpio = (volatile k210_gpio_t*) K210_GPIO_BASE_ADDR;
+volatile k210_gpio_t* const gpio = (volatile k210_gpio_t*) CONF_GPIO_PORT_REGION_BASE;
 
 extern volatile sysctl_clock_enable_central* const clk_en_cent;
 extern volatile sysctl_clock_enable_peripheral* const clk_en_peri;
@@ -30,11 +31,11 @@ static struct gpio_chip k210_gpio_chip = {
 	.setup_mode = k210_gpio_setup_mode,
 	.get = k210_gpio_get,
 	.set = k210_gpio_set,
-	.nports = K210_GPIO_PORTS_COUNT
+	.nports = CONF_GPIO_PORT_NUM
 };
 
 static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
-	assert(port < K210_GPIO_PORTS_COUNT);
+	assert(port < CONF_GPIO_PORT_NUM);
 
 	if(mode & GPIO_MODE_OUT) {
 		k210_gpio_set_dir(pins, 1);
@@ -54,7 +55,7 @@ static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level){
 	volatile uint32_t *reg = gpio->data_out.reg32;
 	uint32_t input = ~(*reg_dir);
 
-	assert(port < K210_GPIO_PORTS_COUNT);
+	assert(port < CONF_GPIO_PORT_NUM);
 	// direction check
 	input = (uint32_t)pins & input;
 	if (input) {
@@ -76,7 +77,7 @@ static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level){
 static gpio_mask_t k210_gpio_get(unsigned char port, gpio_mask_t pins){
 	volatile uint32_t *reg_dir = gpio->dir.reg32;
 	gpio_mask_t res = 0;
-	assert(port < K210_GPIO_PORTS_COUNT);
+	assert(port < CONF_GPIO_PORT_NUM);
 
 	uint32_t dir = *reg_dir;
 	int bit;

@@ -111,9 +111,12 @@ int main(int argc, char **argv) {
 		}
 	} else if (!strcmp("blink", argv[opt])) {
 		gpio_setup_mode(gpio, pin, GPIO_MODE_OUT);
+		opt++;
+		int sleep_time = atoi(argv[opt]);
 		while (1) {
 			gpio_toggle(gpio, pin);
-			sleep(1);
+			// sleep(1);
+			sleep(sleep_time);
 		}
 	} else if (!strcmp("irq", argv[opt])) {
 		int pin_irq_handled = 0, expected = 0;

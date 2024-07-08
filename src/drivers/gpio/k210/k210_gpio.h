@@ -11,9 +11,9 @@
 
 #include <drivers/gpio/gpio.h>
 
-#define K210_GPIO_BASE_ADDR		(0x50200000U)
-#define K210_GPIO_PORTS_COUNT	1
-#define K210_GPIO_PIN_COUNT		8
+// #define K210_GPIO_BASE_ADDR		(0x50200000U)
+// #define K210_GPIO_PORTS_COUNT	1
+// #define K210_GPIO_PIN_COUNT		8
 
 typedef union {
 	uint32_t reg32[1];

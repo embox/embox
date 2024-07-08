@@ -104,7 +104,7 @@ int mod_activate_app(const struct mod *mod) {
 		int i;
 		const struct mod *dep;
 
-		mod_foreach_requires(dep, mod) {
+		mod_foreach_depends(dep, mod) {
 			int ret = mod_activate_app(dep);
 			if (ret)
 				return ret;
