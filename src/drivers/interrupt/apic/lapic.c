@@ -29,7 +29,11 @@
 #define lapic_write_icr1(val)   lapic_write(LAPIC_ICR1, val)
 #define lapic_write_icr2(val)   lapic_write(LAPIC_ICR2, val)
 
+#define LAPIC_ICR_DM_INIT            (5 <<  8)
+#define LAPIC_ICR_DM_STARTUP         (6 <<  8)
 #define LAPIC_ICR_DELIVERY_PENDING	 (1 << 12)
+#define LAPIC_ICR_INT_ASSERT         (1 << 14)
+#define LAPIC_ICR_INIT_LEVELTRIG     (1 << 15)
 #define LAPIC_ICR_DEST_FIELD         (0 << 18)
 #define LAPIC_ICR_DEST_SELF          (1 << 18)
 #define LAPIC_ICR_DEST_ALL           (2 << 18)
@@ -42,19 +46,28 @@
 #define	TMR_PERIODIC     0x20000
 #define	TMR_BASEDIV      (1<<20)
 
+static void udelay(int delay) {
+	volatile int i;
+
+	for (i = delay * 10; i != 0; i-- );
+}
+
 void lapic_send_init_ipi(uint32_t apic_id) {
 	uint32_t val;
 
 	val = (apic_id & 0xFF) << 24; /* Destination Field */
 	lapic_write_icr2(val);
 
-	val = 0x5 << 8; /* Delivery Mode: INIT */
-	val |= 0x1 << 14; /* Level: Assert */
-	val |= 0x3 << 18; /* Destination Shorthand: all excluding self */
+	val = LAPIC_ICR_DM_INIT; /* Delivery Mode: INIT */
+	val |= LAPIC_ICR_INT_ASSERT; /* Level: Assert */
+	val |= LAPIC_ICR_DEST_FIELD; /* Destination Shorthand: field specified*/
+	val |= LAPIC_ICR_INIT_LEVELTRIG;/*triger level: set high level*/	
 	lapic_write_icr1(val);
 
+	udelay(10000);
+
 	/* sleep until Delivery Status is Pending */
-	while (lapic_read_icr1() & (0x1 << 12));
+	while (lapic_read_icr1() & LAPIC_ICR_DELIVERY_PENDING);
 }
 
 void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
@@ -64,13 +77,21 @@ void lapic_send_startup_ipi(uint32_t apic_id, uint32_t trampoline) {
 	lapic_write_icr2(val);
 
 	val = (trampoline >> 12) & 0xFF; /* Vector Field */
-	val |= 0x6 << 8; /* Delivery Mode: Start Up */
-	val |= 0x1 << 14; /* Level: Assert */
-	val |= 0x3 << 18; /* Destination Shorthand: all excluding self */
+	val |= LAPIC_ICR_DM_STARTUP; /* Delivery Mode: Start Up */
+	val |= LAPIC_ICR_DEST_FIELD; /* Destination Shorthand: field specified*/
 	lapic_write_icr1(val);
 
+	udelay(1000);
+
+	val = (trampoline >> 12) & 0xFF; /* Vector Field */
+	val |= LAPIC_ICR_DM_STARTUP; /* Delivery Mode: Start Up */
+	val |= LAPIC_ICR_DEST_FIELD; /* Destination Shorthand: field specified*/
+	lapic_write_icr1(val);
+
+	udelay(1000);
+
 	/* sleep until Delivery Status is Pending */
-	while (lapic_read_icr1() & (0x1 << 12));
+	while (lapic_read_icr1() & LAPIC_ICR_DELIVERY_PENDING);
 }
 
 void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
