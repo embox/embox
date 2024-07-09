@@ -2,8 +2,8 @@
  * @file
  * @brief
  *
- * @author  Vadim Deryabkin
- * @date    27.01.2020
+ * @author Anton Bondarev
+ * @date   09.07.2024
  */
 
 #include <assert.h>

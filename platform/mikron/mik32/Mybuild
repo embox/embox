@@ -4,6 +4,7 @@ module platform_init extends platform.platform_init {
     source "platform_init.c"
 
     @NoRuntime depends embox.driver.clk.mikron.mikron_pm
+    @NoRuntime depends platform.mikron.drivers.mikron_wakeup
 }
 
 module platform_shutdown extends platform.platform_shutdown {
