@@ -218,3 +218,15 @@ void mikron_pm_init(void) {
 
 	PM->CLK_AHB_SET |= PM_CLOCK_AHB_SPIFI_M;
 }
+
+void mikron_pm_set_ahb_div(uint32_t div) {
+    PM->DIV_AHB = div;
+}
+
+void mikron_pm_set_apbm_div(uint32_t div) {
+    PM->DIV_APB_M = div;
+}
+
+void mikron_pm_set_apbp_div(uint32_t div) {
+    PM->DIV_APB_P = div;
+}
