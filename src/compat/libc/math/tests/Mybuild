@@ -135,3 +135,35 @@ module asin_tests {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module round_tests {
+	source "round_tests.c"
+
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module tanh_tests {
+	source "tanh_tests.c"
+
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module floor_tests {
+	source "floor_tests.c"
+
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module fabs_tests {
+	source "fabs_tests.c"
+
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
