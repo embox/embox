@@ -5,6 +5,8 @@ module conf {
 }
 
 module boot extends embox.arch.boot {
+	option boolean smp_support = true
+
 	source "boot.S"
 
 	depends embox.arch.riscv.kernel.conf
