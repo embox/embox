@@ -11,6 +11,8 @@
 
 #define GDT_ENTRIES            6
 
+#define GDT_ENTRY_SIZE        64
+
 #define GDT_ENTRY_KERNEL_CS    1
 #define GDT_ENTRY_KERNEL_DS    2
 #define GDT_ENTRY_USER_CS      3

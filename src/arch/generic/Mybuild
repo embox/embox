@@ -23,6 +23,7 @@ module nousermode extends embox.arch.usermode {
 
 @NoCode
 module nosmp extends embox.arch.smp {
+	option number max_supported_cores=1
 	source "nosmp.h"
 }
 
