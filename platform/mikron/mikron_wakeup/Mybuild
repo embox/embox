@@ -1,0 +1,9 @@
+package platform.mikron.drivers
+
+module mikron_wakeup  {
+    option number base_addr = 0x00060000
+
+    source "mikron_wakeup.c"
+
+    @NoRuntime depends embox.driver.clk.mikron.mikron_pm
+}
