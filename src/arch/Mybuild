@@ -31,13 +31,13 @@ abstract module syscall { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nousermode)
-abstract module usermode {
-	option number max_supported_cores
-}
+abstract module usermode { }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)
-abstract module smp { }
+abstract module smp {
+	option number max_supported_cores
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.reg_stub)
