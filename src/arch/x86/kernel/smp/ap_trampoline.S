@@ -33,11 +33,11 @@ C_ENTRY(__ap_trampoline):
 	.align 0x4
 
 C_LABEL(__ap_sp):
-	.space 16
+	.space 4 * MAX_SUPPORTED_CORES
 C_LABEL(__ap_gdtr):
 	.space 8
 C_LABEL(__ap_gdt):
-	.space 384 /* TODO: Fix size */
+	.space GDT_ENTRIES * GDT_ENTRY_SIZE
 C_LABEL(__ap_trampoline_end):
 
 	.section .text

@@ -29,7 +29,6 @@
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
 
 EMBOX_UNIT_INIT(unit_init);
-#define X86_MAXAPS 4
 #define TRAMPOLINE_ADDR 0x20000UL
 extern void idt_load(void);
 
