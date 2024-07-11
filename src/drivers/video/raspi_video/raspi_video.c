@@ -73,11 +73,9 @@ static int raspi_init(void) {
 	/* Get new base address to the frame buffer */
 	info->screen_base = (char *) raspi_fb.gpu_pointer;
 	info->screen_size = binalign_bound(raspi_fb.gpu_size, PAGE_SIZE());
-	if (MAP_FAILED == mmap_device_memory(info->screen_base,
-				info->screen_size,
-					PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) info->screen_base)) {
+	if (MAP_FAILED == mmap_device_memory(info->screen_base, info->screen_size,
+	        PROT_READ | PROT_WRITE | PROT_NOCACHE, MAP_FIXED,
+	        (uintptr_t)info->screen_base)) {
 		fb_delete(info);
 		return -EIO;
 	}
