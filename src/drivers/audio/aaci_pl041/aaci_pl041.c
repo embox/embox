@@ -473,12 +473,9 @@ static int aaci_pl041_init(void) {
 	int i;
 	int ret;
 
-	aaci_pl041_hw_dev.base_addr = (uintptr_t)mmap_device_memory(
-			(void*)BASE_ADDR,
-			0x1000,
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			BASE_ADDR);
+	aaci_pl041_hw_dev.base_addr =
+	    (uintptr_t)mmap_device_memory((void *)BASE_ADDR, 0x1000,
+	        PROT_WRITE | PROT_READ, MAP_FIXED, (uintptr_t)BASE_ADDR);
 	/* Set MAINCR to allow slot 1 and 2 data IO */
 	aaci_pl041_hw_dev.maincr = AACI_MAINCR_IE | AACI_MAINCR_SL1RXEN | AACI_MAINCR_SL1TXEN |
 			AACI_MAINCR_SL2RXEN | AACI_MAINCR_SL2TXEN;
