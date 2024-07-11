@@ -1,7 +1,7 @@
 package embox.driver.interrupt
 
 module riscv_clint extends irqctrl_api {
-	option number base_addr = 0X2000000
+	option number base_addr = 0x2000000
         option number msip_offset = 0x0000
         option number mtimecmp_offset = 0x4000
         option number mtime_offset = 0xBFF8
