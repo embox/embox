@@ -108,6 +108,8 @@ int fb_devfs_create(struct fb_info *fbi, char *map_base, size_t map_size) {
 		return -ENOMEM;
 	}
 
+	dev->info = fbi;
+
 	snprintf(name, sizeof(name), "fb%d", fbi->id);
 
 	char_dev_init((struct char_dev *)dev, name, &fb_cdev_ops);
