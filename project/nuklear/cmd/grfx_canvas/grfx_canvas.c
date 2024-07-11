@@ -85,9 +85,9 @@ int main(int argc, char *argv[]) {
 			* fb_info->var.bits_per_pixel / 8;
 
 	/* Map the device to memory */
-	fbp = (uint8_t *) mmap_device_memory((void *) fb_info->screen_base,
-			screensize, PROT_READ | PROT_WRITE, MAP_SHARED,
-			(uint64_t) ((uintptr_t) fb_info->screen_base));
+	fbp = (uint8_t *)mmap_device_memory((void *)fb_info->screen_base,
+	    screensize, PROT_READ | PROT_WRITE, MAP_SHARED,
+	    (uintptr_t)fb_info->screen_base);
 	if ((int) fbp == -1) {
 		perror("Error: failed to map framebuffer device to memory");
 		exit(4);
