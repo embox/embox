@@ -110,7 +110,8 @@ static int vc_diag_init(const struct diag *diag) {
 	size_t len = 0x1000;
 
 	/* Map in the physical memory; 0xb8000 is text mode VGA video memory */
-	ptr = mmap_device_memory((void* ) 0xb8000, len, PROT_READ|PROT_WRITE|PROT_NOCACHE, MAP_FIXED, 0xb8000 );
+	ptr = mmap_device_memory((void *)0xb8000, len,
+	    PROT_READ | PROT_WRITE | PROT_NOCACHE, MAP_FIXED, (uintptr_t)0xb8000);
 	if ( ptr == MAP_FAILED ) {
 		return -1;
 	}
