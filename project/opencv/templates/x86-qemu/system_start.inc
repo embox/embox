@@ -3,4 +3,5 @@
 "netmanager",
 "service telnetd",
 "service httpd",
+"edges fruits.png",
 "tish",
