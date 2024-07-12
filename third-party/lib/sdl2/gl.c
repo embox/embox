@@ -190,11 +190,10 @@ static void sdl_init_buffers(struct fb_info *mesa_fbi, int xres, int yres) {
 
 	screensize = display_width * display_height * mesa_fbi->var.bits_per_pixel / 8;
 
-	/* Map the devic	e to memory */
-	hw_base = 0 ? (uint8_t *) mmap_device_memory((void *) mesa_fbi->screen_base,
-			screensize, PROT_READ | PROT_WRITE, MAP_SHARED,
-			(uint64_t) ((uintptr_t) mesa_fbi->screen_base)) : (void *) mesa_fbi->screen_base;
-
+	/* Map the device to memory */
+	hw_base = (void *)mesa_fbi->screen_base;
+	// hw_base = mmap_device_memory((void *)mesa_fbi->screen_base, screensize,
+	//     PROT_READ | PROT_WRITE, MAP_SHARED, (uintptr_t)mesa_fbi->screen_base);
 
 	if ((int) hw_base == -1) {
 		perror("Error: failed to map framebuffer device to memory");

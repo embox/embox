@@ -6,6 +6,7 @@
  */
 
 #include <stddef.h>
+#include <stdint.h>
 #include <sys/mman.h>
 
 /**
@@ -19,10 +20,7 @@
  *
  * @return Pointer to allocated vmem or NULL if failed
  */
-void *mmap_device_memory(void *addr,
-                           size_t len,
-                           int prot,
-                           int flags,
-                           uint64_t physical){
-	return addr;
+void *mmap_device_memory(void *addr, size_t len, int prot, int flags,
+    uintptr_t physical) {
+	return (void *)physical;
 }

@@ -172,8 +172,9 @@ static void *char_dev_mmap(struct idesc *idesc, void *addr, size_t len,
 		return NULL;
 	}
 
-	return mmap_device_memory(addr, len, prot, flags,
-	    (uint64_t)(uintptr_t)phy_addr);
+	mmap_device_memory(phy_addr, len, prot, flags, (uintptr_t)phy_addr);
+
+	return phy_addr;
 }
 
 static const struct idesc_ops char_dev_idesc_ops = {

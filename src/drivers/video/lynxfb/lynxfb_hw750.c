@@ -40,11 +40,9 @@ int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev) 
 
 
 	/* now map mmio and vidmem */
-	share->pvReg = mmap_device_memory((void*)share->vidreg_start,
-			share->vidreg_size,
-			PROT_READ|PROT_WRITE|PROT_NOCACHE,
-			MAP_FIXED,
-			(unsigned long) share->vidreg_start);
+	share->pvReg = mmap_device_memory((void *)share->vidreg_start,
+	    share->vidreg_size, PROT_READ | PROT_WRITE | PROT_NOCACHE, MAP_FIXED,
+	    (uintptr_t)share->vidreg_start);
 	if (MAP_FAILED == share->pvReg) {
 		log_error("mmio failed");
 		ret = -EFAULT;
@@ -71,11 +69,9 @@ int lynxfb_hw750_map(struct sm750_share *spec_share, struct pci_slot_dev *pdev) 
 
 	/* reserve the vidmem space of smi adaptor */
 
-	share->pvMem = mmap_device_memory((void*)share->vidmem_start,
-			share->vidmem_size,
-			PROT_READ|PROT_WRITE|PROT_NOCACHE,
-			MAP_FIXED,
-			(unsigned long) share->vidmem_start);
+	share->pvMem = mmap_device_memory((void *)share->vidmem_start,
+	    share->vidmem_size, PROT_READ | PROT_WRITE | PROT_NOCACHE, MAP_FIXED,
+	    (uintptr_t)share->vidmem_start);
 
 	if (MAP_FAILED == share->pvMem) {
 		log_error("Map video memory failed");

@@ -79,8 +79,9 @@ static int hpet_init(struct clock_source *cs) {
 	}
 
 	hpet_base_address = hpet_table->Address.Address;
-	hpet_base_address = (uintptr_t)mmap_device_memory((uintptr_t *)hpet_base_address,
-			0x100, PROT_READ | PROT_WRITE, MAP_SHARED, (uint64_t)hpet_base_address);
+	hpet_base_address = (uintptr_t)mmap_device_memory((void *)hpet_base_address,
+	    0x100, PROT_READ | PROT_WRITE, MAP_SHARED,
+	    (uintptr_t)hpet_base_address);
 	cs->counter_device->cycle_hz = hpet_get_hz();
 	hpet_start_counter();
 

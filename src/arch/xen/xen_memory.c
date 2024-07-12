@@ -313,11 +313,8 @@ static int memory_init(char *const xen_mem_alloc_start, char *const xen_mem_allo
 
 	printk("start=%p end=%p size=%zu\n", xen_mem_alloc_start, xen_mem_alloc_end, mem_len);
 
-	va = mmap_device_memory(xen_mem_alloc_start,
-			mem_len,
-			PROT_WRITE | PROT_READ,
-			MAP_FIXED,
-			(uint64_t)((uintptr_t) xen_mem_alloc_start));
+	va = mmap_device_memory(xen_mem_alloc_start, mem_len,
+	    PROT_WRITE | PROT_READ, MAP_FIXED, (uintptr_t)xen_mem_alloc_start);
 
 	if (va) {
 		__xen_mem_allocator = page_allocator_init(xen_mem_alloc_start, mem_len, PAGE_SIZE());

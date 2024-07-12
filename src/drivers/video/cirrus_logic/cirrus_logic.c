@@ -396,11 +396,9 @@ static int cirrus_init(struct pci_slot_dev *pci_dev) {
 	size_t mmap_len = 1024 * 1280 * 16 / 8;
 	struct fb_info *info;
 
-	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
+	if (MAP_FAILED == mmap_device_memory(mmap_base, mmap_len,
+	        PROT_READ | PROT_WRITE | PROT_NOCACHE, MAP_FIXED,
+	        (uintptr_t)mmap_base)) {
 		return -EIO;
 	}
 

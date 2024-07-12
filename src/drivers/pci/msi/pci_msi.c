@@ -452,10 +452,9 @@ static void *msix_map_region(struct pci_slot_dev *dev, unsigned nr_entries) {
 	phys_addr = pci_resource_start(dev, bir) + table_offset;
 
 	//return ioremap_nocache(phys_addr, nr_entries * PCI_MSIX_ENTRY_SIZE);
-	return mmap_device_memory((void *) ((uintptr_t)phys_addr),
-			nr_entries * PCI_MSIX_ENTRY_SIZE,
-			PROT_READ | PROT_WRITE, MAP_SHARED,
-			(uint64_t) ((uintptr_t)phys_addr));
+	return mmap_device_memory((void *)((uintptr_t)phys_addr),
+	    nr_entries * PCI_MSIX_ENTRY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED,
+	    (uintptr_t)phys_addr);
 }
 
 int pci_msix_vec_count(struct pci_slot_dev *dev) {

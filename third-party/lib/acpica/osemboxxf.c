@@ -105,7 +105,7 @@ void *AcpiOsMapMemory(ACPI_PHYSICAL_ADDRESS Where, ACPI_SIZE Length) {
                 Length,
                 PROT_READ | PROT_WRITE | PROT_NOCACHE,
                 MAP_FIXED,
-                Where)) {
+                (uintptr_t)Where)) {
 		return NULL;
 	}
 	return ACPI_TO_POINTER(Where);

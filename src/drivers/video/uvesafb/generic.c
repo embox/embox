@@ -63,11 +63,9 @@ static int generic_init(struct pci_slot_dev *pci_dev) {
 			MBOOT_VHEIGHT * MBOOT_VDEPTH / 8, PAGE_SIZE());
 	struct fb_info *info;
 
-	if (MAP_FAILED == mmap_device_memory(mmap_base,
-				mmap_len,
-			       	PROT_READ|PROT_WRITE|PROT_NOCACHE,
-				MAP_FIXED,
-				(unsigned long) mmap_base)) {
+	if (MAP_FAILED == mmap_device_memory(mmap_base, mmap_len,
+	        PROT_READ | PROT_WRITE | PROT_NOCACHE, MAP_FIXED,
+	        (uintptr_t)mmap_base)) {
 		return -EIO;
 	}
 

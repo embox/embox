@@ -37,7 +37,7 @@ static int phymem_init(void) {
 	    mem_len);
 
 	va = mmap_device_memory(phymem_alloc_start, mem_len, PROT_WRITE | PROT_READ,
-	    MAP_FIXED, (uint64_t)((uintptr_t)phymem_alloc_start));
+	    MAP_FIXED, (uintptr_t)phymem_alloc_start);
 
 	if (va) {
 		__phymem_allocator = page_allocator_init(phymem_alloc_start, mem_len,
