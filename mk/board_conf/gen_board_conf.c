@@ -200,6 +200,8 @@ int main() {
 	const struct led_conf *led;
 	struct conf_item *gpio_conf = &board_config[GPIO_IDX];
 	const struct gpio_conf *gpio;
+	struct conf_item *fpioa_conf = &board_config[FPIOA_IDX];
+	const struct fpioa_conf *fpioa;	
 	struct conf_item *clk_conf = &board_config[CLK_IDX];
 	const struct clk_conf *clk;
 
@@ -235,6 +237,22 @@ int main() {
 
 		gen_prop_ival(gpio->dev.name, "NUM", gpio->port_num);
 		gen_prop_ival(gpio->dev.name, "WIDTH", gpio->port_width);
+
+		printf("\n");
+	}
+
+	/* FPIOA */
+	for (i = 0; i < fpioa_conf->array_size; i++) {
+		fpioa = &((const struct fpioa_conf *) fpioa_conf->ptr)[i];
+
+		if (fpioa->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&fpioa->dev);
+
+		gen_prop_ival(fpioa->dev.name, "NUM", fpioa->port_num);
+		gen_prop_ival(fpioa->dev.name, "WIDTH", fpioa->port_width);
 
 		printf("\n");
 	}
