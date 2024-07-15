@@ -1,0 +1,13 @@
+package embox.driver.clk
+
+module maix_bit_sysctl {
+	option string log_level="LOG_NONE"
+
+	// option number base_addr=0x3000E000
+	// option number hse_clk_val = 16000000
+
+	source "maix_bit_sysctl.c"
+
+	@IncludeExport(path="drivers/clk")
+	source "maix_bit_sysctl.h"
+}
