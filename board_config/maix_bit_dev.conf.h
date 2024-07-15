@@ -1,6 +1,8 @@
 #include <gen_board_conf.h>
 
 #define K210_GPIO_BASE_ADDR              0x50200000UL
+#define K210_FPIOA_BASE_ADDR			 0x502B0000UL
+#define K210_SYSCTL_BASE_ADDR            0x50440000UL
 
 #define K210_UART1_BASE_ADDR             0x50210000UL
 #define K210_UART2_BASE_ADDR             0x50220000UL
@@ -39,7 +41,10 @@ struct clk_conf clks[] = {
 	[0] = {
 		.status = ENABLED,
 		.dev = {
-			.name = "RCU",
+			.name = "SYSCTL",
+			.regs = {
+				REGMAP("BASE", (K210_SYSCTL_BASE_ADDR), 0x80),
+			},
 			.clocks = {
 				VAL("HSECLK_VAL", 26000000UL),
 			}
@@ -68,5 +73,25 @@ struct gpio_conf gpios[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), 
+struct fpioa_conf fpioas[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "FPIOA_PORT",
+			.regs = {
+				REGMAP("BASE", (K210_FPIOA_BASE_ADDR), 0x80),
+			},
+			.irqs = {
+				VAL("", K210_RST_FPIOA)
+			},
+			.clocks = {
+				VAL("", "CLK_FPIOA")
+			}
+		},
+		.port_num = 1,
+		.port_width = 48,
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), FPIOA(fpioas), 
 				)
