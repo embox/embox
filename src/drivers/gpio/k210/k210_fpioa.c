@@ -14,27 +14,29 @@
 #include <lib/libds/array.h>
 
 #include <drivers/gpio/k210/fpioa.h>
+#include <drivers/clk/maix_bit_sysctl.h>
+#include <config/board_config.h>
 
-volatile fpioa_t* const fpioa = (volatile fpioa_t*) FPIOA_BASE_ADDR;
+volatile fpioa_t* const fpioa = (volatile fpioa_t*) CONF_FPIOA_PORT_REGION_BASE;
 
-EMBOX_UNIT_INIT(k210_fpioa_init);
+// EMBOX_UNIT_INIT(k210_fpioa_init);
 
-// TODO: add sysctl driver
+// // TODO: add sysctl driver
 
-// central clock enable(sysctl: 0x28)
-volatile sysctl_clock_enable_central* const clk_en_cent = (volatile sysctl_clock_enable_central*) SYSCTL_BASE_ADDR + 0x28;
-volatile sysctl_clock_enable_peripheral* const clk_en_peri = (volatile sysctl_clock_enable_peripheral*) SYSCTL_BASE_ADDR + 0x2c;
+// // central clock enable(sysctl: 0x28)
+// volatile sysctl_clock_enable_central* const clk_en_cent = (volatile sysctl_clock_enable_central*) CONF_SYSCTL_REGION_BASE + 0x28;
+// volatile sysctl_clock_enable_peripheral* const clk_en_peri = (volatile sysctl_clock_enable_peripheral*) CONF_SYSCTL_REGION_BASE + 0x2c;
 
-static int k210_fpioa_init(void){
+// static int k210_fpioa_init(void){
 
-	// enable bus clock
-	clk_en_cent->apb0 = 1;
+// 	// enable bus clock
+// 	clk_en_cent->apb0 = 1;
 
-	// enable device clock
-	clk_en_peri->fpioa = 1;
+// 	// enable device clock
+// 	clk_en_peri->fpioa = 1;
 
-	return 0;
-}
+// 	return 0;
+// }
 
 void k210_fpioa_set_func_impl(uint8_t num, k210_fpioa_func_t func){
 	// TODO: other func
@@ -63,7 +65,7 @@ void k210_fpioa_set_func_impl(uint8_t num, k210_fpioa_func_t func){
 }
 
 void k210_fpioa_set_func(uint8_t num, k210_fpioa_func_t func){
-	assert(num <= FPIOA_NUM_IO);
+	assert(num <= CONF_FPIOA_PORT_WIDTH);
 	assert(0 <= func && func < FN_MAX);
 
 	if(func == FN_RESERVED0){
@@ -71,7 +73,7 @@ void k210_fpioa_set_func(uint8_t num, k210_fpioa_func_t func){
 		return;
 	}
 
-	for(int i=0;i<FPIOA_NUM_IO;i++){
+	for(int i=0;i<CONF_FPIOA_PORT_WIDTH;i++){
 		if((fpioa->io[i].channel == func) && (i != num)){
 			k210_fpioa_set_func_impl(num, FN_RESERVED0);
 		}
