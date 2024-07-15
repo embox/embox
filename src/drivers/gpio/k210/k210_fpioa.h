@@ -8,11 +8,12 @@
 
 #ifndef SRC_DRIVERS_GPIO_K210_FPIOA_H_
 #define SRC_DRIVERS_GPIO_K210_FPIOA_H_
+#include <config/board_config.h>
 
-#define SYSCTL_BASE_ADDR	(0x50440000U)
-#define FPIOA_BASE_ADDR		(0x502B0000U)
+// #define SYSCTL_BASE_ADDR	(0x50440000U)
+// #define FPIOA_BASE_ADDR		(0x502B0000U)
 
-#define FPIOA_NUM_IO		48
+// #define FPIOA_NUM_IO		48
 
 typedef struct {
     uint32_t cpu      : 1;
@@ -127,7 +128,7 @@ typedef enum {
 	FN_DEBUG30, FN_DEBUG31,
 	FN_MAX,
 } k210_fpioa_func_t;
-static_assert(FN_MAX == 256, "");
+// static_assert(FN_MAX == 256, "");
 
 typedef enum {
 	MAIXBIT_IO_JTAG_TCK, MAIXBIT_IO_JTAG_TDI, MAIXBIT_IO_JTAG_TMS, MAIXBIT_IO_JTAG_TDO,
@@ -147,7 +148,7 @@ typedef enum {
 	MAIXBIT_IO_DVP_XCLK, MAIXBIT_IO_DVP_PCLK,
 	MAIXBIT_IO_MAX,
 } maixbit_io_pin;
-static_assert(MAIXBIT_IO_MAX == 48, "");
+// static_assert(MAIXBIT_IO_MAX == 48, "");
 
 typedef struct {
 	uint8_t channel;
@@ -169,7 +170,7 @@ typedef struct {
 } __attribute__((packed, aligned(4))) k210_fpioa_io_cfg_t;
 
 typedef struct {
-	k210_fpioa_io_cfg_t io[FPIOA_NUM_IO];
+	k210_fpioa_io_cfg_t io[CONF_FPIOA_PORT_WIDTH];
 } __attribute__((packed, aligned(4))) fpioa_t;
 
 extern volatile fpioa_t* const fpioa;

@@ -37,6 +37,13 @@ struct gpio_conf {
 	int port_width;
 };
 
+struct fpioa_conf {
+	int status;
+	struct device_conf dev;
+	int port_num;
+	int port_width;
+};
+
 struct clk_conf {
 	int status;
 	struct device_conf dev;
@@ -100,8 +107,10 @@ struct led_conf {
 #define PWM_IDX     3
 #define LED_IDX     4
 #define GPIO_IDX    5
-#define CLK_IDX     6
-#define MAX_IDX     7
+#define FPIOA_IDX   6
+#define CLK_IDX     7
+#define MAX_IDX     8
+
 
 #define EXPORT_CONFIG(...) \
 	struct conf_item board_config[MAX_IDX] = { \
@@ -142,6 +151,12 @@ struct led_conf {
 	[GPIO_IDX] = { \
 		(void *) &(gpios)[0], \
 		ARRAY_SIZE(gpios), \
+	}
+
+#define FPIOA(fpioas) \
+	[FPIOA_IDX] = { \
+		(void *) &(fpioas)[0], \
+		ARRAY_SIZE(fpioas), \
 	}
 
 #define CLK(clks) \
