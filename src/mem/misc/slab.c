@@ -15,7 +15,7 @@
 #include <string.h>
 
 #include <embox/unit.h>
-#include <framework/mod/ops.h>
+#include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
 #include <lib/libds/slist.h>
 #include <mem/heap.h>
@@ -96,18 +96,6 @@ cache_t cache_chain = {
     .slab_order = CACHE_CHAIN_SIZE,
     .growing = true,
 };
-
-/** Initialize cache according to storage data in info structure */
-static int cache_member_init(const struct mod_member *info);
-
-const struct mod_member_ops __cache_member_ops = {
-    .init = &cache_member_init,
-};
-
-static int cache_member_init(const struct mod_member *info) {
-	cache_t *cache = (cache_t *)info->data;
-	return cache_init(cache, cache->obj_size, cache->num);
-}
 
 /**
  * Free memory which occupied by slab
@@ -379,9 +367,15 @@ int cache_shrink(cache_t *cachep) {
 	return ret;
 }
 
+ARRAY_SPREAD_DEF_TERMINATED(struct cache *, __cache_slab_registry, NULL);
+
 static int slab_init(void) {
 	extern struct page_allocator *__heap_pgallocator;
-	int page_cnt = (HEAP_SIZE / PAGE_SIZE() - 2);
+	cache_t *cache;
+	int page_cnt;
+	int err;
+
+	page_cnt = (HEAP_SIZE / PAGE_SIZE() - 2);
 
 	heap_start_ptr = page_alloc(__heap_pgallocator, page_cnt);
 
@@ -393,6 +387,12 @@ static int slab_init(void) {
 	    PAGE_SIZE());
 
 	heap_start_ptr += PAGE_SIZE();
+
+	array_spread_nullterm_foreach(cache, __cache_slab_registry) {
+		if ((err = cache_init(cache, cache->obj_size, cache->num))) {
+			return err;
+		}
+	}
 
 	return 0;
 }
