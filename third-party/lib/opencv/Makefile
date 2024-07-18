@@ -4,7 +4,7 @@ $(shell echo OPTION_STRING_third_party__lib__opencv__build__$(1) | gcc -P -E -in
 endef
 
 define option_get_boolean
-$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__opencv_base__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
 endef
 
 PKG_NAME         := opencv
@@ -40,6 +40,8 @@ FFMPEG_FLAGS := -DWITH_FFMPEG=ON \
 else
 FFMPEG_FLAGS := -DWITH_FFMPEG=OFF
 endif
+
+BUILD_DIR := $(ROOT_DIR)/build/extbld/third_party/lib/opencv/build
 
 include $(EXTBLD_LIB)
 

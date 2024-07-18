@@ -9,14 +9,6 @@ PKG_MD5	:= 804707549590e90880e8ecd4e5244fd8
 include $(EXTBLD_LIB)
 
 FF_CPPFLAGS := -I$(ROOT_DIR)/third-party/lib/ffmpeg/include
-FF_CPPFLAGS += -I$(SRC_DIR)/include
-FF_CPPFLAGS += -I$(SRC_DIR)/compat
-FF_CPPFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/gcc/include
-FF_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include
-FF_CPPFLAGS += -I$(SRC_DIR)/compat/cxx/include
-FF_CPPFLAGS += -I$(SRC_DIR)/compat/posix/include
-FF_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include 
-FF_CPPFLAGS += -I$(ROOT_DIR)/build/base/gen/include
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

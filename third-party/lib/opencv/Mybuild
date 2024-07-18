@@ -1,27 +1,55 @@
 package third_party.lib.opencv
 
+@DefaultImpl(opencv_without_ffmpeg)
+@Build(script="true")
+abstract module opencv_base {
+    option boolean with_ffmpeg = false
+}
+
+@BuildDepends(third_party.lib.ffmpeg.all)
+@BuildDepends(third_party.lib.ffmpeg.build)
+@Build(script="true")
+static module ffmpeg_deps {
+    depends third_party.lib.ffmpeg.all
+    depends third_party.lib.ffmpeg.build
+}
+
+static module opencv_without_ffmpeg extends opencv_base {
+    option boolean with_ffmpeg = false
+}
+
+@BuildDepends(third_party.lib.ffmpeg.all)
+@BuildDepends(third_party.lib.ffmpeg.build)
+static module opencv_with_ffmpeg extends opencv_base {
+    option boolean with_ffmpeg = true
+    depends third_party.lib.ffmpeg.all
+    depends third_party.lib.ffmpeg.build
+}
+
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/install/include/opencv4")
 @BuildDepends(third_party.gcc.libstdcxx)
 @BuildDepends(third_party.gcc.libsupcxx)
+@BuildDepends(opencv_with_ffmpeg)
 static module build {
-	option string opencv_version="4.0.1"
+    option string opencv_version="4.0.1"
 
-	/* Disables fonts for OpenCV version 4.5.2. It's used
-	 * to minimize .rodata size by ~70 Kb. */
-	option boolean hack_4_5_2_disable_fonts=true
+    /* Disables fonts for OpenCV version 4.5.2. It's used
+     * to minimize .rodata size by ~70 Kb. */
+    option boolean hack_4_5_2_disable_fonts=true
 
-	option boolean with_ffmpeg=false
+    option boolean with_ffmpeg=false
 
-	@NoRuntime depends embox.compat.posix.proc.atexit_api
-	@NoRuntime depends embox.compat.posix.util.gettimeofday
-	@NoRuntime depends embox.compat.atomic.pseudo_atomic
-	@NoRuntime depends embox.compat.libc.math
-	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api // include sys/mman.h
-	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends embox.compat.posix.pthread_key
-	@NoRuntime depends third_party.gcc.libstdcxx
-	@NoRuntime depends third_party.gcc.libsupcxx
+    @NoRuntime depends embox.compat.posix.proc.atexit_api
+    @NoRuntime depends embox.compat.posix.util.gettimeofday
+    @NoRuntime depends embox.compat.atomic.pseudo_atomic
+    @NoRuntime depends embox.compat.libc.math
+    @NoRuntime depends embox.compat.posix.sys.mman.mmap_api // include sys/mman.h
+    @NoRuntime depends embox.compat.libc.all
+    @NoRuntime depends embox.compat.posix.pthread_key
+    @NoRuntime depends third_party.gcc.libstdcxx
+    @NoRuntime depends third_party.gcc.libsupcxx
+    depends opencv_base
 }
 
 @LinkerSection(text="cv_core_text",rodata="cv_core_rodata",data="cv_core_data",bss="cv_core_bss",arm_exidx="cv_core_arm_exidx",arm_extab="cv_core_arm_extab")
@@ -30,7 +58,7 @@ static module build {
 static module libopencv_core {
 	source "^BUILD/extbld/third_party/lib/opencv/build/install/lib/libopencv_core.a"
 
-	@NoRuntime depends build
+    @NoRuntime depends build
 }
 
 @LinkerSection(text="cv_imgcodecs_text",rodata="cv_imgcodecs_rodata",data="cv_imgcodecs_data",bss="cv_imgcodecs_bss",arm_exidx="cv_imgcodecs_arm_exidx",arm_extab="cv_imgcodecs_arm_extab")
@@ -114,6 +142,7 @@ static module libzlib {
 	@NoRuntime depends build
 }
 
+@BuildDepends(opencv_base)
 @BuildDepends(libopencv_core)
 @BuildDepends(libopencv_imgcodecs)
 @BuildDepends(libopencv_imgproc)
@@ -125,7 +154,8 @@ static module libzlib {
 @BuildDepends(liblibpng)
 @BuildDepends(libzlib)
 static module all {
-	@NoRuntime depends libopencv_core
+    depends opencv_base
+    @NoRuntime depends libopencv_core
 	@NoRuntime depends libopencv_imgcodecs
 	@NoRuntime depends libopencv_imgproc
 	@NoRuntime depends libopencv_objdetect
