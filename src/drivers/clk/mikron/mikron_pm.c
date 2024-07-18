@@ -230,3 +230,7 @@ void mikron_pm_set_apbm_div(uint32_t div) {
 void mikron_pm_set_apbp_div(uint32_t div) {
     PM->DIV_APB_P = div;
 }
+
+int clk_enable(char *clk_name) {
+    return 0;
+}
