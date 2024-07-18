@@ -1,0 +1,11 @@
+package embox.driver.gpio
+
+module mikron_gpio extends api {
+	option number gpio_chip_id = 0
+
+	source "mikron_gpio.c"
+	source "mikron_pad_config.c"
+
+	depends embox.driver.gpio.core
+}
+
