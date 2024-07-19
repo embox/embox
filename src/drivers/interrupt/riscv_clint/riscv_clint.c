@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @brief Implementation of the RISC-V Core Local Interruptor (CLINT) for interrupt control and timer management.
+ * @brief Implementation of the RISC-V Core Local Interruptor (CLINT) for interrupt control, including support for SiFive multi-hart architectures.
  *
  * @date 05.07.2024
  * @authored by Suraj Ravindra Sonawane
@@ -10,15 +10,17 @@
 #include <stdint.h>
 #include <drivers/irqctrl.h>
 #include <hal/reg.h>
+#include <asm/interrupts.h>
+#include <drivers/interrupt/riscv_clint.h>
 
 #define CLINT_ADDR      OPTION_GET(NUMBER, base_addr)
 #define MSIP_OFFSET     OPTION_GET(NUMBER, msip_offset)
 #define MTIMECMP_OFFSET OPTION_GET(NUMBER, mtimecmp_offset)
 #define MTIME_OFFSET    OPTION_GET(NUMBER, mtime_offset)
 
-#define MSIP_ADDR       (CLINT_ADDR + MSIP_OFFSET)
-#define MTIMECMP_ADDR   (CLINT_ADDR + MTIMECMP_OFFSET)
-#define MTIME_ADDR      (CLINT_ADDR + MTIME_OFFSET)
+#define MSIP_ADDR(hart)       (CLINT_ADDR + MSIP_OFFSET + ((hart) * 4))
+#define MTIMECMP_ADDR(hart)   (CLINT_ADDR + MTIMECMP_OFFSET + ((hart) * 8))
+#define MTIME_ADDR            (CLINT_ADDR + MTIME_OFFSET)
 
 /**
  * Initializes the CLINT.
@@ -28,11 +30,15 @@
  *
  * @return 0 on success.
  */
-static int clint_init(void) {
-    // Initial configuration: clear MSIP and set MTIMECMP to max value
-    REG32_STORE(MSIP_ADDR, 0);                      // Clear MSIP by writing 0 to its address
-    REG64_STORE(MTIMECMP_ADDR, 0xFFFFFFFFFFFFFFFF); // Set MTIMECMP to max value
-    REG64_STORE(MTIME_ADDR, 0);                     // Initialize MTIME to 0
+int clint_init(void) __attribute__((unused));
+int clint_init(void) {
+    // Initial configuration: clear MSIP and set MTIMECMP to max value for all harts
+    for (int hart = 0; hart < 5; hart++) {
+        REG32_STORE(MSIP_ADDR(hart), 0);                 
+        REG64_STORE(MTIMECMP_ADDR(hart), 0xFFFFFFFFFFFFFFFF); 
+    }
+    REG64_STORE(MTIME_ADDR, 0); 
+    enable_software_interrupts();
     return 0;
 }
 
@@ -42,9 +48,18 @@ static int clint_init(void) {
  * This function configures the MSIP by writing a specific value (0 or 1) to its address.
  *
  * @param value The value (0 or 1) to set for MSIP.
+ * @param hart_id The hart id (only for SiFive CLINT).
  */
-void clint_configure_msip(uint8_t value) {
-    REG32_STORE(MSIP_ADDR, value & 1); // Write the least significant bit of 'value' to MSIP_ADDR
+void clint_configure_msip(uint8_t value
+#ifdef SIFIVE_CLINT
+    , int hart_id
+#endif
+) {
+#ifdef SIFIVE_CLINT
+    REG32_STORE(MSIP_ADDR(hart_id), value & 1);
+#else
+    REG32_STORE(MSIP_ADDR(0), value & 1);
+#endif
 }
 
 /**
@@ -53,9 +68,18 @@ void clint_configure_msip(uint8_t value) {
  * This function sets the MTIMECMP register to the provided 64-bit value.
  *
  * @param value The value to set for MTIMECMP.
+ * @param hart_id The hart id (only for SiFive CLINT).
  */
-void clint_set_mtimecmp(uint64_t value) {
-    REG64_STORE(MTIMECMP_ADDR, value); // Write 'value' to MTIMECMP_ADDR
+void clint_set_mtimecmp(uint64_t value
+#ifdef SIFIVE_CLINT
+    , int hart_id
+#endif
+) {
+#ifdef SIFIVE_CLINT
+    REG64_STORE(MTIMECMP_ADDR(hart_id), value); // Write 'value' to MTIMECMP_ADDR for the specific hart
+#else
+    REG64_STORE(MTIMECMP_ADDR(0), value);
+#endif
 }
 
 /**
@@ -66,7 +90,5 @@ void clint_set_mtimecmp(uint64_t value) {
  * @return The current value of MTIME.
  */
 uint64_t clint_get_mtime(void) {
-    return REG64_LOAD(MTIME_ADDR); // Read and return the value at MTIME_ADDR
+    return REG64_LOAD(MTIME_ADDR);
 }
-
-IRQCTRL_DEF(riscv_clint, clint_init);

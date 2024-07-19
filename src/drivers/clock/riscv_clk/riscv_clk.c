@@ -19,17 +19,16 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
+#include <drivers/interrupt/riscv_clint.h>
 
 #define COUNT_OFFSET  (RTC_CLOCK / JIFFIES_PERIOD)
 #define RTC_CLOCK     OPTION_GET(NUMBER, rtc_freq)
-
-#define MTIME         OPTION_GET(NUMBER, base_mtime)
-#define MTIMECMP      OPTION_GET(NUMBER, base_mtimecmp)
 
 #define OPENSBI_TIMER 0x54494D45
 
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
 #if SMODE
+    
 	register uintptr_t a7 asm("a7") = (uintptr_t)(OPENSBI_TIMER);
 	register uintptr_t a6 asm("a6") = (uintptr_t)(0);
 	register uintptr_t a0 asm("a0") = 0;
@@ -39,9 +38,8 @@ static int clock_handler(unsigned int irq_nr, void *dev_id) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET);
 #endif
-
 	clock_tick_handler(dev_id);
 
 	return IRQ_HANDLED;
@@ -58,7 +56,7 @@ static int riscv_clock_setup(struct clock_source *cs) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET);
 #endif
 
 	enable_timer_interrupts();
