@@ -6,6 +6,9 @@ module mikron_gpio extends api {
 	source "mikron_gpio.c"
 	source "mikron_pad_config.c"
 
+	@IncludeExport(path="drivers/gpio")
+	source "mikron_gpio.h"
+
 	depends embox.driver.gpio.core
 }
 
