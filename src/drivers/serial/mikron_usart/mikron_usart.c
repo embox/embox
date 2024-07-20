@@ -10,6 +10,11 @@
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
+#include <drivers/gpio/gpio.h>
+#include <drivers/gpio/mikron_gpio.h>
+
+#include <config/board_config.h>
+
 #define SYSFREQ         32000000 /* 32MHz*/
 #define USE_BOARD_CONF  OPTION_GET(BOOLEAN, use_bconf)
 
@@ -17,6 +22,8 @@
 #include "uart_setup_hw_board_config.inc"
 #else
 static inline int uart_setup_hw(struct uart *dev) {
+	gpio_setup_mode(GPIO_PORT_B, 1 << 8, GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0x1));
+	gpio_setup_mode(GPIO_PORT_B, 1 << 9, GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0x1));
 	return 0;
 }
 #endif /* USE_BOARD_CONF */
