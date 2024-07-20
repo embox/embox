@@ -13,6 +13,7 @@
 #include <hal/system.h>
 
 #include <drivers/clk/mikron_pm.h>
+#include <drivers/clk/mikron_rcc.h>
 
 #define HSI32M_CALIBRATION_VALUE 128
 #define LSI32K_CALIBRATION_VALUE 128
@@ -24,14 +25,6 @@
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
 
 #define WU    ((volatile struct mikron_wakeup_regs *) BASE_ADDR)
-
-#define PCC_OSCILLATORTYPE_NONE    0b0000
-#define PCC_OSCILLATORTYPE_HSI32M  0b0001
-#define PCC_OSCILLATORTYPE_OSC32M  0b0010
-#define PCC_OSCILLATORTYPE_LSI32K  0b0100
-#define PCC_OSCILLATORTYPE_OSC32K  0b1000
-#define PCC_OSCILLATORTYPE_ALL     0b1111
-
 
 struct mikron_wakeup_regs {
 	volatile uint32_t SYS_MASK;
@@ -124,6 +117,18 @@ struct mikron_wakeup_regs {
 #define WU_STOP_S                  0
 #define WU_STOP_M                  (1 << WU_STOP_S)
 
+
+
+/* Источники тактирования RTC */
+#define PCC_RTCCLKSOURCE_NO_CLK            0b00          /* Нет источника */
+#define PCC_RTCCLKSOURCE_LSI32K            0b01          /* LSI32K - источник тактирования RTC */
+#define PCC_RTCCLKSOURCE_OSC32K            0b10          /* OSC32K - источник тактирования RTC */
+
+/* Источник тактирования RTC в составе ядра*/
+#define PCC_RTCCLKCPUSOURCE_NO_CLK         0b00          /* Нет источника */
+#define PCC_RTCCLKCPUSOURCE_LSI32K         0b01          /* LSI32K - источник тактирования RTC */
+#define PCC_RTCCLKCPUSOURCE_OSC32K         0b10          /* OSC32K - источник тактирования RTC */
+
 void mikron_wakeup_init(uint32_t osc) {
 
     WU->CLOCKS_SYS &= ~(0b11 << WU_CLOCKS_SYS_OSC32M_EN_S); // OSC32M & HSI32M
@@ -131,6 +136,17 @@ void mikron_wakeup_init(uint32_t osc) {
 
     WU->CLOCKS_SYS = WU_CLOCKS_SYS_ADJ_HSI32M(HSI32M_CALIBRATION_VALUE);
     WU->CLOCKS_BU = WU_CLOCKS_BU_ADJ_LSI32K(LSI32K_CALIBRATION_VALUE);
+#if 0
+    //PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
+    //PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
+    //PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
+    
+    /* Опорный источник для монитора частоты */
+    errors.FreqMonRef = HAL_PCC_FreqMonRefSet(PCC_Init->FreqMon.Force32KClk);
+    
+    /* Настройка источника тактирования системы */
+    errors.SetOscSystem = HAL_PCC_SetOscSystem(PCC_Init->FreqMon.OscillatorSystem, PCC_Init->FreqMon.ForceOscSys);
+#endif
 
     mikron_pm_set_ahb_div(DIVIDER_AHB);
     mikron_pm_set_apbm_div(DIVIDER_APB_M);
@@ -138,9 +154,17 @@ void mikron_wakeup_init(uint32_t osc) {
     // PM->DIV_AHB = DIVIDER_AHB;
     // PM->DIV_APB_M = DIVIDER_APB_M;
     // PM->DIV_APB_P = DIVIDER_APB_P;
+#if 0
+    //PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_OSC32K;
+    //PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
+    /* Выбор источника тактирования RTC */
+    errors.RTCClock = HAL_PCC_RTCClock(PCC_Init->RTCClockSelection);
+    
+    /* Выбор источника тактирования RTC в составе ядра*/
+    errors.CPURTCClock = HAL_PCC_CPURTCClock(PCC_Init->RTCClockCPUSelection);
+#endif
 
-
-     if (!(osc & PCC_OSCILLATORTYPE_HSI32M)) {
+    if (!(osc & PCC_OSCILLATORTYPE_HSI32M)) {
         WU->CLOCKS_SYS |= (1 << WU_CLOCKS_SYS_HSI32M_EN_S);
     }
 
