@@ -166,14 +166,23 @@
 
 /* Spread array iterators. */
 
-#define __array_spread_foreach(element, array)            \
-	__array_spread_foreach_nm(element, array,             \
-			ARRAY_SPREAD_SIZE(array), MACRO_GUARD(__ptr))
+#define __array_spread_foreach(element, array)                          \
+	__array_spread_foreach_nm(element, array, ARRAY_SPREAD_SIZE(array), \
+	    MACRO_GUARD(__ptr), MACRO_GUARD(__end))
 
-#define __array_spread_foreach_nm(element, array, size, _ptr)    \
-	for (typeof(element) volatile const *_ptr = (array),         \
-				*_end = _ptr + (size);                           \
-			(_ptr < _end) && (((element) = *_ptr) || 1); ++_ptr)
+#define __array_spread_foreach_nm(element, array, size, _ptr, _end) \
+	for (typeof(element) volatile const *_ptr = (array),            \
+	                                    *_end = _ptr + (size);      \
+	     (_ptr < _end) && (((element) = *_ptr) || 1); ++_ptr)
+
+#define __array_spread_foreach_reverse(element, array) \
+	__array_spread_foreach_reverse_nm(element, array,  \
+	    ARRAY_SPREAD_SIZE(array), MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+
+#define __array_spread_foreach_reverse_nm(element, array, size, _ptr, _end) \
+	for (typeof(element) volatile const *_end = (array),                    \
+	                                    *_ptr = _end + (size) - 1;          \
+	     (_ptr >= _end) && (((element) = *_ptr) || 1); --_ptr)
 
 #define __array_spread_foreach_ptr(element_ptr, array)     \
 	__array_spread_foreach_ptr_nm(element_ptr, array,      \

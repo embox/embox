@@ -123,6 +123,8 @@
  */
 #define array_spread_foreach(element, array) \
 	  __array_spread_foreach(element, array)
+#define array_spread_foreach_reverse(element, array) \
+	  __array_spread_foreach_reverse(element, array)
 #define array_spread_foreach_ptr(element_ptr, array) \
 	  __array_spread_foreach_ptr(element_ptr, array)
 #define array_spread_nullterm_foreach(element, array) \
