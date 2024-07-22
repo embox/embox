@@ -1,11 +1,10 @@
 package embox.driver.clock
 
 module riscv_clk {
-	option number base_mtime=0x200bff8
-	option number base_mtimecmp=0x2004000
 	option number rtc_freq=1000000
 	
 	source "riscv_clk.c"
 
 	depends embox.kernel.time.clock_source
+	depends embox.drivers.interrupt.riscv_clint
 }
