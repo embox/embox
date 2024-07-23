@@ -1,40 +1,31 @@
 package embox.framework
 
 module mod {
-	/*FIXME mybuild make flags options */
-	@DefineMacro("__FRAMEWORK__")
-	source "core.c"
+	option string log_level="LOG_INFO"
 
-	@DefineMacro("__EMBUILD__")
-	@Generated(script="$(MAKE) -f mk/script/c-runtime-inject.mk")
-	source "depsinject.c"
+	option boolean use_mod_names=true
+	option boolean use_mod_labels=true
+	option boolean use_mod_logger=true
+	option boolean use_mod_depends=true
+	option boolean use_cmd_details=true
+
+	source "core.c"
+	source "runlevel.c"
+
+	@Generated(script="$(MAKE) -f mk/script/mod-info.mk")
+	source "mod_info.h"
+
+	@Generated(script="$(MAKE) -f mk/script/mod-inject.mk")
+	source "mod_inject.c"
 
 	@Generated(script="$(MAKE) -f mk/script/apps-build-deps.mk")
 	source "apps_build_deps.c"
 
 	@NoRuntime depends embox.lib.libds
-
-	option boolean security_label = true
-
-	depends embuild
-
 }
 
 module mod_integrity {
 	source "mod_integrity.c"
+
 	depends embox.lib.LibCrypt
-}
-
-@DefaultImpl(embuild_full)
-abstract module embuild { }
-
-module embuild_full extends embuild {
-}
-
-module embuild_light extends embuild {
-	option boolean use_mod_names = false
-
-	source "embuild_light_impl.h"
-
-	depends embox.util.log_light
 }

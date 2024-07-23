@@ -6,17 +6,29 @@
  * @date    4 Aug 2014
  */
 
-#include "fork_copy_addr_space.h"
-#include <kernel/task/resource/task_fork.h>
-#include <kernel/task/resource/module_ptr.h>
-#include <sys/types.h>
-#include <mem/sysmalloc.h>
-#include <framework/mod/types.h>
 #include <string.h>
+#include <sys/types.h>
+
+#include <framework/cmd/self.h>
+#include <framework/cmd/types.h>
+#include <framework/mod/types.h>
+#include <kernel/task/resource/module_ptr.h>
+#include <kernel/task/resource/task_fork.h>
+#include <mem/sysmalloc.h>
+
+#include "fork_copy_addr_space.h"
 
 static inline const struct mod_app *task_app_get(void) {
-	const struct mod *mod = task_module_ptr_get(task_self());
-	return mod ? mod->app : NULL;
+	const struct mod *mod;
+
+	mod = task_module_ptr_get(task_self());
+
+	/* XXX */
+	if (mod && (mod->ops == &__cmd_mod_ops)) {
+		return ((const struct cmd_mod *)mod)->app;
+	}
+
+	return NULL;
 }
 
 void fork_static_store(struct static_space *sspc) {
@@ -60,7 +72,6 @@ void fork_static_restore(struct static_space *sspc) {
 }
 
 void fork_static_cleanup(struct static_space *sspc) {
-
 	if (sspc->bss_store) {
 		sysfree(sspc->bss_store);
 	}
@@ -72,4 +83,3 @@ void fork_static_cleanup(struct static_space *sspc) {
 	sspc->bss_store = NULL;
 	sspc->data_store = NULL;
 }
-

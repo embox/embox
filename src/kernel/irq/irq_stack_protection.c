@@ -18,7 +18,7 @@
 extern struct mod __mod__embox__kernel__thread__core;
 
 static inline int threads_done(void) {
-	return __mod__embox__kernel__thread__core.priv->flags & 1;
+	return mod_is_running(&__mod__embox__kernel__thread__core);
 }
 
 int irq_stack_protection(void) {

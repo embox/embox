@@ -10,26 +10,64 @@
 #define FRAMEWORK_MOD_API_H_
 
 #include <stdbool.h>
+#include <sys/cdefs.h>
 
+#include <framework/mod/ops.h>
+#include <framework/mod/runlevel.h>
+#include <framework/mod/types.h>
 #include <lib/libds/array.h>
-
-#include "types.h"
-
-ARRAY_SPREAD_DECLARE(const struct mod *const, __mod_registry);
+#include <util/macro.h>
 
 /**
- * TODO Module info emitted by EMBuild dependency injection model generator.
- */
-struct mod;
-
-/**
- * All mods in the system are grouped into so-called packages. Packages are
- * useful only during the image build where they act as isolated mod
- * namespaces and compilation domains.
+ * Iterates over a list of mods on which the specified one depends.
  *
- * Package has no special run-time semantics.
+ * @param dep
+ *   Iteration variable which takes a value of each element of the mod
+ *   dependencies list.
+ * @param mod
+ *   The target mod.
  */
-struct mod_package;
+#define mod_foreach_depends(dep, mod) __mod_foreach_depends(dep, mod)
+
+#if USE_MOD_DEPENDS
+#define __mod_foreach_depends(dep, mod) \
+	array_spread_nullterm_foreach(dep, mod->depends)
+#else
+
+#define __mod_foreach_depends(dep, mod) while (0)
+#endif
+
+/**
+ * Iterates over a list of mods which depend on the specified one.
+ *
+ * @param dep
+ *   Iteration variable which takes a value of each mod depending on the
+ *   target mod.
+ * @param mod
+ *   The target mod.
+ */
+#define mod_foreach_provides(dep, mod) __mod_foreach_provides(dep, mod)
+
+#if USE_MOD_DEPENDS
+#define __mod_foreach_provides(dep, mod) \
+	array_spread_nullterm_foreach(dep, mod->provides)
+#else
+#define __mod_foreach_provides(dep, mod) while (0)
+#endif
+
+/**
+ * Iterates over a list of runtime modules either running or not.
+ *
+ * @param mod
+ *   Iteration variable which takes a value of each mod.
+ */
+#define mod_foreach(mod) __mod_foreach(mod, MACRO_GUARD(__i))
+
+#define __mod_foreach(mod, _i)                      \
+	for (int _i = 0; _i < RUNLEVEL_NRS_TOTAL; _i++) \
+	runlevel_mod_foreach(mod, _i)
+
+__BEGIN_DECLS
 
 /**
  * Enables the specified #mod resolving its dependencies. This implies that all
@@ -102,21 +140,6 @@ extern int mod_disable(const struct mod *mod);
 extern bool mod_is_running(const struct mod *mod);
 
 /**
- * Loads static data sections from initialization image for app modules,
- * does noting for the rest. Module must be running.
- *
- * @param mod
- *   The mod to activate.
- * @return
- *   Operation result.
- * @retval 0
- *   If everyting is OK.
- * @retval -ENOENT
- *   If the @a mod is not running.
- */
-extern int mod_activate_app(const struct mod *mod);
-
-/**
  * Search for a module with a given FQN (fully.qualified.name)
  * @param fqn
  *   Module name, including packages.
@@ -125,53 +148,18 @@ extern int mod_activate_app(const struct mod *mod);
  */
 extern const struct mod *mod_lookup(const char *fqn);
 
-/**
- * Iterates over a list of all mods registered in the system
- * either running or not.
- *
- * @param mod
- *   Iteration variable which takes a value of each mod.
- */
-#define mod_foreach(mod) \
-	array_spread_nullterm_foreach(mod, __mod_registry)
-
-#define __mod_foreach_field(_i, _mod, _field) \
-	array_spread_nullterm_foreach(_i, (_mod)->build_info ? (_mod)->build_info->_field : NULL)
-
-/**
- * Iterates over a list of mods on which the specified one depends.
- *
- * @param dep
- *   Iteration variable which takes a value of each element of the mod
- *   dependencies list.
- * @param mod
- *   The target mod.
- */
-#define mod_foreach_depends(dep, mod) \
-	__mod_foreach_field(dep, mod, depends)
-
-/**
- * Iterates over a list of mods which depend on the specified one.
- *
- * @param dep
- *   Iteration variable which takes a value of each mod depending on the
- *   target mod.
- * @param mod
- *   The target mod.
- */
-#define mod_foreach_provides(dep, mod) \
-	__mod_foreach_field(dep, mod, provides)
-
 static inline const char *mod_name(const struct mod *mod) {
-	return mod->build_info ? mod->build_info->mod_name : NULL;
+	return mod->mod_name;
 }
 
 static inline const char *mod_pkg_name(const struct mod *mod) {
-	return mod->build_info ? mod->build_info->pkg_name : NULL;
+	return mod->pkg_name;
 }
 
 static inline const struct mod_label *mod_label(const struct mod *mod) {
-	return mod->build_info ? mod->build_info->label : NULL;
+	return mod->label;
 }
+
+__END_DECLS
 
 #endif /* FRAMEWORK_MOD_API_H_ */

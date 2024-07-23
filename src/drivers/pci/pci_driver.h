@@ -30,17 +30,17 @@ struct pci_driver {
 	unsigned int id_table_n;
 };
 
-#define PCI_DRIVER_TABLE(_drv_name, _init_func, _id_table)     \
-	MOD_SELF_INIT_DECLS(__EMBUILD_MOD__);                      \
-	static int _init_func(struct pci_slot_dev *pci_dev);       \
-	extern const struct mod_ops __pci_mod_ops;                 \
-	const struct pci_driver mod_self = {                       \
-	    .mod = MOD_SELF_INIT(__EMBUILD_MOD__, &__pci_mod_ops), \
-	    .init = _init_func,                                    \
-	    .name = "" _drv_name,                                  \
-	    .id_table = _id_table,                                 \
-	    .id_table_n = ARRAY_SIZE(_id_table),                   \
-	}
+#define PCI_DRIVER_TABLE(_drv_name, _init_func, _id_table) \
+	static int _init_func(struct pci_slot_dev *pci_dev);   \
+	extern const struct mod_ops __pci_mod_ops;             \
+	const struct pci_driver __MOD(__EMBUILD_MOD__) = {     \
+	    .mod = MOD_SELF_INIT(&__pci_mod_ops),              \
+	    .init = _init_func,                                \
+	    .name = "" _drv_name,                              \
+	    .id_table = _id_table,                             \
+	    .id_table_n = ARRAY_SIZE(_id_table),               \
+	};                                                     \
+	MOD_SELF_RUNTIME()
 
 #define __PCI_DRIVER(_drv_name, _init_func, _id_table, _vid, _did) \
 	static const struct pci_id _id_table[] = {{_vid, _did}};       \

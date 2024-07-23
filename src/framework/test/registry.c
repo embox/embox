@@ -15,7 +15,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include <framework/mod/ops.h>
 #include <framework/test/api.h>
 #include <lib/libds/array.h>
 

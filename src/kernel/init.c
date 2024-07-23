@@ -10,7 +10,7 @@
 
 #include <drivers/diag.h>
 #include <drivers/irqctrl.h>
-#include <embox/runlevel.h>
+#include <framework/mod/runlevel.h>
 #include <hal/cpu_idle.h>
 #include <hal/ipl.h>
 #include <hal/platform.h>
