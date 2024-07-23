@@ -1,5 +1,6 @@
 package embox.test.framework.mod.member
 
+/* Deprecated */
 module ops_test {
-	source "ops_test.c"
+	// source "ops_test.c"
 }

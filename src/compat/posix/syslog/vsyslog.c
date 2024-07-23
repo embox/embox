@@ -6,6 +6,7 @@
  * @date 10.11.23
  */
 #include <stdarg.h>
+#include <stddef.h>
 #include <syslog.h>
 
 #include <util/log.h>

@@ -1,6 +1,5 @@
 package embox.compat.posix.util
 
-@NoCode
 module All {
 	depends time,
 		sleep,

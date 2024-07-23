@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <string.h>
 #include <framework/mod/api.h>
-#include <framework/mod/ops.h>
 #include <framework/mod/types.h>
 #include <lib/crypt/md5.h>
 

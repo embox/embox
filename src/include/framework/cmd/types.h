@@ -9,6 +9,7 @@
 #ifndef FRAMEWORK_CMD_TYPES_H_
 #define FRAMEWORK_CMD_TYPES_H_
 
+#include <framework/mod/types.h>
 #include <util/member.h>
 
 /**
@@ -28,12 +29,13 @@ struct cmd_desc {
 
 struct cmd {
 	cmd_exec_t exec;
-	struct cmd_desc *desc;
+	const struct cmd_desc *desc;
 };
 
 struct cmd_mod {
 	struct mod mod;
 	struct cmd cmd;
+	const struct mod_app *app;
 };
 
 static inline const struct mod *cmd2mod(const struct cmd *cmd) {

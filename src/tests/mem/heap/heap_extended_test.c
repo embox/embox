@@ -32,9 +32,16 @@ static void *task_thr_realloc_hnd(void *opaque) {
 		memset(ptr, 0x55, size - 1);
 		*((char *) ptr + size - 1) = 0x1f;
 
+#if __GNUC__ >= 12
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wuse-after-free"
+#endif /* __GNUC__ */
 		/* Realloc object of twice size of the previously allocated one */
 		ptr_new = realloc(ptr, 2 * size);
 		test_assert_not_null(ptr);
+#if __GNUC__ >= 12
+#pragma GCC diagnostic pop
+#endif /* __GNUC__ */
 
 		for (j = 0; j < size - 1; j++) {
 			test_assert_equal(*((char *) ptr_new + j), 0x55);

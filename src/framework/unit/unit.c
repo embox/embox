@@ -10,7 +10,6 @@
 
 #include <embox/unit.h>
 #include <framework/mod/api.h>
-#include <framework/mod/ops.h>
 #include <util/log.h>
 
 static int unit_mod_enable(const struct mod *mod);

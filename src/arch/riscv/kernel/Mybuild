@@ -43,7 +43,6 @@ module exception {
 	source "exception.c"
 }
 
-@NoCode
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }

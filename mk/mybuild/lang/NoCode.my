@@ -1,3 +1,0 @@
-package mybuild.lang
-
-annotation NoCode { }

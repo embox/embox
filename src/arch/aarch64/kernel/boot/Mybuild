@@ -1,6 +1,5 @@
 package embox.arch.aarch64
 
-@NoCode
 module reset_handler {
 	source "reset_handler.S"
 

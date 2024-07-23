@@ -7,12 +7,10 @@ module locore extends embox.arch.locore {
 	@NoRuntime depends embox.arch.arm.head
 }
 
-@NoCode
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
 }
 
-@NoCode
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
 }

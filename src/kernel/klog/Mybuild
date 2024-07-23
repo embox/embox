@@ -5,12 +5,9 @@ abstract module klog_api {
 }
 
 module klog extends klog_api {
-	option boolean print_mod_name=true
-	
-	source "klog.c"
-
 	@IncludeExport(path="kernel")
 	source "klog.h"
+	source "klog.c"
 
 	@NoRuntime depends embox.lib.printk
 	@NoRuntime depends embox.lib.libds

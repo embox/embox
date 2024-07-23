@@ -6,12 +6,12 @@
  * @author Eldar Abusalimov
  */
 
-#include <unistd.h>
+#include <errno.h>
+#include <inttypes.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
-#include <errno.h>
-#include <stdint.h>
-#include <inttypes.h>
+#include <unistd.h>
 
 #include <framework/mod/api.h>
 #include <framework/mod/integrity.h>
@@ -21,8 +21,8 @@ static void print_usage(void) {
 }
 
 static void mod_print(const struct mod *mod) {
-	int enabled = mod->priv->flags & 0x1; // XXX fix later
-	printf(" %c  %s.%s ", enabled ? '*' : ' ', mod_pkg_name(mod), mod_name(mod));
+	printf(" %c  %s.%s ", mod_is_running(mod) ? '*' : ' ', mod_pkg_name(mod),
+	    mod_name(mod));
 }
 
 int main(int argc, char **argv) {
@@ -59,18 +59,19 @@ int main(int argc, char **argv) {
 	}
 
 	mod_foreach(mod) {
-		if ((substr_package && !strstr(mod_pkg_name(mod), substr_package)) ||
-			(substr_name && !strstr(mod_name(mod), substr_name))) {
+		if ((substr_package && !strstr(mod_pkg_name(mod), substr_package))
+		    || (substr_name && !strstr(mod_name(mod), substr_name))) {
 			continue;
 		}
 		mod_print(mod);
 		printf("\n");
-		if (show_label) {
-			printf("\tlabel:%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR "\n",
-					(uintptr_t)mod_label(mod)->text.vma,
-					(uintptr_t)mod_label(mod)->data.vma,
-					(uintptr_t)mod_label(mod)->bss.vma,
-					(uintptr_t)mod_label(mod)->rodata.vma);
+		if (show_label && mod_label(mod)) {
+			printf("\tlabel:%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR ":%" PRIxPTR
+			       "\n",
+			    (uintptr_t)mod_label(mod)->text.vma,
+			    (uintptr_t)mod_label(mod)->data.vma,
+			    (uintptr_t)mod_label(mod)->bss.vma,
+			    (uintptr_t)mod_label(mod)->rodata.vma);
 		}
 
 		if (integrity_check) {
@@ -80,9 +81,11 @@ int main(int argc, char **argv) {
 
 			if (check < 0) {
 				printf("error: %s\n", strerror(-check));
-			} else if (check == 0) {
+			}
+			else if (check == 0) {
 				printf("OK\n");
-			} else {
+			}
+			else {
 				printf("FAIL\n");
 			}
 		}

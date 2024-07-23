@@ -20,69 +20,31 @@
 
 #include <sys/cdefs.h>
 
-#include <framework/mod/api.h>
-#include <framework/mod/ops.h>
-#include <framework/mod/options.h>
+#include <framework/mod/decls.h>
+#include <framework/mod/embuild.h>
+#include <framework/mod/runlevel.h>
 
-#include <lib/libds/array.h>
+/* Initialize current module */
+#define MOD_SELF_INIT(mod_ops) _MOD_INIT(__EMBUILD_MOD__, mod_ops)
 
-#include "decls.h"
+/* Make current module a runtime module */
+#define MOD_SELF_RUNTIME()                       \
+	struct mod_data __MOD_DATA(__EMBUILD_MOD__); \
+	RUNLEVEL_MOD_REGISTER(__EMBUILD_MOD__)
 
-#ifndef __EMBUILD_MOD__
-# error "Do not include without __EMBUILD_MOD__ defined (e.g. from lib code)!"
-#endif /* __EMBUILD_MOD__ */
+__BEGIN_DECLS
 
-// well, this is rather bad idea
-// TODO it would be better to use something like weakref or alias. -- Eldar
-#define mod_self __MOD(__EMBUILD_MOD__)
-#define mod_logger __MOD_LOGGER(__EMBUILD_MOD__)
+/* Required for MOD_SELF_INIT() */
+extern struct mod_data __MOD_DATA(__EMBUILD_MOD__) __attribute__((weak));
+extern const struct mod_label __MOD_LABEL(__EMBUILD_MOD__)
+    __attribute__((weak));
 
-/** The #mod structure corresponding to the self mod. */
-//extern struct mod mod_self __attribute__((weak));
+__END_DECLS
 
-#define __MOD_MEMBER_DECLS(_mod_nm) \
-	ARRAY_SPREAD_DECLARE(const struct mod_member *, \
-			__MOD_MEMBERS(_mod_nm))
-
-#define MOD_SELF_INIT_DECLS(_mod_nm) \
-	struct __mod_private __MOD_PRIVATE(_mod_nm); \
-	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
-			__attribute__ ((weak)); \
-	__MOD_MEMBER_DECLS(_mod_nm); \
-	EXTERN_C const struct mod_app __MOD_APP(_mod_nm) \
-			__attribute__ ((weak)); \
-	EXTERN_C const struct mod_build_info __MOD_BUILDINFO(_mod_nm) \
-			__attribute__((weak))
-
-#define MOD_SELF_INIT(_mod_nm, _ops) { \
-	/* .ops        = */ _ops, \
-	/* .priv       = */ &__MOD_PRIVATE(_mod_nm), \
-	/* .app        = */ &__MOD_APP(_mod_nm), \
-	/* .members    = */ __MOD_MEMBERS(_mod_nm), \
-	/* .build_info = */ &__MOD_BUILDINFO(_mod_nm), \
-}
-
-/**
- * Binds the specified data and operations to the mod member.
- *
- * @param member_ops
- *   Pointer to the #mod_member_ops structure (if any).
- * @param member_data
- *   Pointer to the member specific data (if any).
- */
-#define MOD_MEMBER_BIND(member_ops, member_data) \
-	__MOD_MEMBER_DEF(__EMBUILD_MOD__, member_ops, member_data)
-
-#define __MOD_MEMBER_DEF(mod_nm, ops, data) \
-	__MOD_MEMBER_DEF_NM(mod_nm, ops, data, \
-			MACRO_GUARD(MACRO_CONCAT(__mod_member__, mod_nm)))
-
-#define __MOD_MEMBER_DEF_NM(mod_nm, _ops, _data, member_nm) \
-	static const struct mod_member member_nm = {                  \
-		.ops = _ops,                                          \
-		.data = (void *) _data,                               \
-	};                                                            \
-	__MOD_MEMBER_DECLS(mod_nm);                                   \
-	ARRAY_SPREAD_ADD(__MOD_MEMBERS(mod_nm), &member_nm)
+/* Required for MOD_SELF_INIT() */
+ARRAY_SPREAD_DECLARE(const struct mod *, __MOD_DEPENDS(__EMBUILD_MOD__))
+__attribute__((weak));
+ARRAY_SPREAD_DECLARE(const struct mod *, __MOD_PROVIDES(__EMBUILD_MOD__))
+__attribute__((weak));
 
 #endif /* FRAMEWORK_MOD_SELF_H_ */

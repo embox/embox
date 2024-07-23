@@ -1,6 +1,5 @@
 package embox.arch.arm.armv5te
-
-@NoCode	
+	
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }

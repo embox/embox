@@ -3,8 +3,7 @@ package embox.arch.x86.kernel
 module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
-
-@NoCode	
+	
 module locore extends embox.arch.locore {
 	@NoRuntime depends entry
 	@NoRuntime depends interrupt
@@ -66,7 +65,6 @@ module noacpi_shutdown extends shutdown {
 	source "noacpi_shutdown.c"
 }
 
-@NoCode
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }

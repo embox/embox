@@ -1,6 +1,5 @@
 package embox.arch.aarch64
 
-@NoCode
 module reg extends embox.arch.reg {
 	source "reg.h"
 	source "tlb.h"

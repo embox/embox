@@ -1,0 +1,10 @@
+package embox.framework
+
+module unit {
+	option string log_level="LOG_INFO"
+
+	@DefineMacro("__FRAMEWORK__")
+	source "unit.c"
+
+	@NoRuntime depends embox.compat.libc.str
+}

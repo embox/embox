@@ -1,6 +1,5 @@
 package embox.compat.posix.proc
 
-@NoCode
 module All {
 	depends exec,
 		exit,

@@ -1,6 +1,5 @@
 package embox.arch.arm.fpu
 
-@NoCode
 module fpu_stub extends fpu {
 	@IncludeExport(path="arm")
 	source "fpu.h", "fpu_macro.s"

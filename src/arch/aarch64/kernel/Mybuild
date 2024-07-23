@@ -1,25 +1,21 @@
 package embox.arch.aarch64
 
-@NoCode
 module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
 
 	@NoRuntime depends locore
 }
 
-@NoCode
 module locore extends embox.arch.locore {
 	@NoRuntime depends reg
 	@NoRuntime depends exceptions
 	@NoRuntime depends reset_handler
 }
 
-@NoCode
 module mem_barriers extends embox.arch.mem_barriers {
 	source "mem_barriers.h"
 }
 
-@NoCode
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }

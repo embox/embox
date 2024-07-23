@@ -18,13 +18,13 @@ static void print_usage(void) {
 
 static void fake_disable(const struct mod *mod) {
 	const struct mod *dep;
-	int enabled = mod->priv->flags & 0x1; // XXX fix later
+	int enabled = mod_is_running(mod); // XXX fix later
 
 	if (!enabled) {
 		return;
 	}
 
-	mod->priv->flags &= ~0x1;
+	mod->priv->stat &= ~(mod_stat_t)MOD_STAT_ENABLED;
 	mod_foreach_provides(dep, mod) {
 		fake_disable(dep);
 	}

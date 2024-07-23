@@ -1,6 +1,5 @@
 package embox.demo
 
-@NoCode
 module website {
 	@InitFS
 	source "index.html",

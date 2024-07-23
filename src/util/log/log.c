@@ -5,9 +5,10 @@
  * @author Aleksey Zhmulin
  * @date 10.11.23
  */
+
 #include <syslog.h>
 
-#include "log.h"
+#include <util/log.h>
 
 static log_handler_t __log_handler;
 
