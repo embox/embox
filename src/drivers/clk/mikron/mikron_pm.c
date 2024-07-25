@@ -202,8 +202,7 @@ struct mikron_pm_regs {
 #define PM    ((volatile struct mikron_pm_regs *) BASE_ADDR)
 
 void mikron_pm_init(void) {
-
-    PM->CLK_APB_P_SET = 0;
+	PM->CLK_APB_P_SET = 0;
 	PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_GPIO_0_M;
 	PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_GPIO_1_M;
 	PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_GPIO_2_M;
@@ -211,31 +210,65 @@ void mikron_pm_init(void) {
 
 	PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_TIMER32_1_M;
 
-    PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_UART_0_M;
-    PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_UART_1_M;
+	PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_UART_0_M;
+	PM->CLK_APB_P_SET |= PM_CLOCK_APB_P_UART_1_M;
 
-	PM->CLK_APB_M_SET =   PM_CLOCK_APB_M_PAD_CONFIG_M
-						| PM_CLOCK_APB_M_WU_M
-						| PM_CLOCK_APB_M_PM_M
-						| PM_CLOCK_APB_M_EPIC_M
-						| PM_CLOCK_APB_M_RTC_M
-						| PM_CLOCK_APB_M_OTP_CONTROLLER_M;
+	PM->CLK_APB_M_SET = PM_CLOCK_APB_M_PAD_CONFIG_M
+                        | PM_CLOCK_APB_M_WU_M
+	                    | PM_CLOCK_APB_M_PM_M
+                        | PM_CLOCK_APB_M_EPIC_M
+	                    | PM_CLOCK_APB_M_RTC_M
+	                    | PM_CLOCK_APB_M_OTP_CONTROLLER_M;
 
 	PM->CLK_AHB_SET |= PM_CLOCK_AHB_SPIFI_M;
 }
 
 void mikron_pm_set_ahb_div(uint32_t div) {
-    PM->DIV_AHB = div;
+	PM->DIV_AHB = div;
 }
 
 void mikron_pm_set_apbm_div(uint32_t div) {
-    PM->DIV_APB_M = div;
+	PM->DIV_APB_M = div;
 }
 
 void mikron_pm_set_apbp_div(uint32_t div) {
-    PM->DIV_APB_P = div;
+	PM->DIV_APB_P = div;
+}
+
+void mikron_pm_set_ahb_force_mux(uint32_t mux_type) {
+	PM->AHB_CLK_MUX |= (mux_type << PM_AHB_FORCE_MUX_S);
+}
+
+void mikron_pm_set_ahb_clk_mux_osc32m(void) {
+	PM->AHB_CLK_MUX |= PM_AHB_CLK_MUX_OSC32M_M;
+}
+
+void mikron_pm_set_cpu_rtc_clk_mux_osc32k(void) {
+	PM->CPU_RTC_CLK_MUX |= PM_CPU_RTC_CLK_MUX_OSC32K_M;
+}
+
+uint32_t mikron_pm_get_freq_status(uint32_t freq_status) {
+	return PM->FREQ_STATUS & freq_status;
 }
 
 int clk_enable(char *clk_name) {
+	return 0;
+}
+
+int mikron_pm_wait_freq_osc32k(void) {
+	while ( !mikron_pm_get_freq_status(PM_FREQ_STATUS_OSC32K_M)) {
+    };
+    return 0;
+}
+
+int mikron_pm_wait_freq_lsi32k(void) {
+	while ( !mikron_pm_get_freq_status(PM_FREQ_STATUS_LSI32K_M)) {
+    };
+    return 0;
+}
+
+int mikron_pm_wait_freq_osc32m(void) {
+	while ( !mikron_pm_get_freq_status(PM_FREQ_STATUS_OSC32M_M)) {
+    };
     return 0;
 }
