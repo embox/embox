@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, workflow_dispatch, pull_request_target]
+on: [push, workflow_dispatch]
 
 jobs:
   ci:
