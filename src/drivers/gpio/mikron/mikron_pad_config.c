@@ -26,7 +26,7 @@ struct pad_config_regs {
 	struct pad_config_port_regs pad_config_port_regs[3];
 };
 
-#define CONF_PAD_CONFIG_REGION_BASE 0x00084000
+#define CONF_PAD_CONFIG_REGION_BASE 0x000050c00
 
 #define PAD_CONFIG                 ((volatile struct pad_config_regs *)CONF_PAD_CONFIG_REGION_BASE)
 
@@ -42,7 +42,7 @@ void mik_pad_cfg_set_func(int port, int pin, int func) {
 	port_regs->PORT_CFG |= mask;
 }
 
-void mik_pad_cfg_set_ds(int port, int pin, int pupd) {
+void mik_pad_cfg_set_ds(int port, int pin, int ds) {
 	volatile struct pad_config_port_regs *port_regs;
 	uint32_t mask;
 
@@ -50,7 +50,7 @@ void mik_pad_cfg_set_ds(int port, int pin, int pupd) {
 
 	mask = 0x3 << (pin << 1);
 	port_regs->PORT_DS &= ~mask;
-	mask = pupd << (pin << 1);
+	mask = ds << (pin << 1);
 	port_regs->PORT_DS |= mask;
 }
 
