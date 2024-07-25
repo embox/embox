@@ -17,10 +17,8 @@ PERL_CPPFLAGS := \
 	-DNO_PERL_MALLOC_ENV \
 	-DMSG_PROXY=MSG_PROBE \
 	-DNO_LOCALE \
-	-Dkey_t=int \
 	-Dfork=vfork \
-	-Dexecvp=execv \
-	-I$(ROOT_DIR)/third-party/staticperl/include
+	-Dexecvp=execv
 
 STATICPERL     = $(PKG_SOURCE_DIR)/.staticperl
 STATICPERL_TMP = $(PKG_SOURCE_DIR)/.staticperl.tmp
