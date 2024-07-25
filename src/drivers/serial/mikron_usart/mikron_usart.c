@@ -172,7 +172,7 @@ static void mikron_usart_set_baudrate(struct uart *dev) {
 
 	regs = (struct mikron_uart_regs *)(uintptr_t) dev->base_addr;
 
-	REG32_STORE(regs->DIVIDER, divider); 
+	REG32_STORE(&regs->DIVIDER, divider); 
 }
 
 static int mikron_usart_irq_enable(struct uart *dev, 
@@ -182,7 +182,7 @@ static int mikron_usart_irq_enable(struct uart *dev,
 	regs = (struct mikron_uart_regs *)(uintptr_t) dev->base_addr;
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		REG32_ORIN(regs->CONTROL1, UART_CONTROL1_RXNEIE_M);
+		REG32_ORIN(&regs->CONTROL1, UART_CONTROL1_RXNEIE_M);
 	}
 
 	return 0;
@@ -194,7 +194,7 @@ static int mikron_usart_irq_disable(struct uart *dev,
 
 	regs = (struct mikron_uart_regs *)(uintptr_t) dev->base_addr;
 
-	REG32_ANDIN(regs->CONTROL1, ~UART_CONTROL1_RXNEIE_M);
+	REG32_ANDIN(&regs->CONTROL1, ~UART_CONTROL1_RXNEIE_M);
 
 	return 0;
 }
@@ -214,23 +214,23 @@ static int mikron_usart_setup(struct uart *dev,
 	ctrl |= UART_CONTROL1_UE_M;
 
 	/* Disable uart. */
-	REG32_STORE(regs->CONTROL1, 0);
-	REG32_STORE(regs->CONTROL2, 0);
-	REG32_STORE(regs->CONTROL3, 0);
-	REG32_STORE(regs->FLAGS, 0xFFFFFFFF);
+	REG32_STORE(&regs->CONTROL1, 0);
+	REG32_STORE(&regs->CONTROL2, 0);
+	REG32_STORE(&regs->CONTROL3, 0);
+	REG32_STORE(&regs->FLAGS, 0xFFFFFFFF);
 
 	uart_setup_hw(dev);
 	
 	mikron_usart_set_baudrate(dev);
 
-	REG32_STORE(regs->CONTROL1, ctrl);
+	REG32_STORE(&regs->CONTROL1, ctrl);
 
 	mikron_usart_irq_enable(dev, params);
 
 	flags = 0;
 	do {
-		flags = REG32_LOAD(regs->CONTROL1);
-	} while(!(flags & (UART_FLAGS_REACK_M) && !(flags | UART_FLAGS_TEACK_M)));
+		flags = REG32_LOAD(&regs->FLAGS);
+	} while(!(flags & UART_FLAGS_REACK_M) && !(flags | UART_FLAGS_TEACK_M));
 
 	return 0;
 }
@@ -240,10 +240,10 @@ static int mikron_usart_putc(struct uart *dev, int ch) {
 	
 	regs = (struct mikron_uart_regs *)(uintptr_t) dev->base_addr;
 
-	while ( REG_LOAD(regs->FLAGS) & UART_FLAGS_TXE_M) {		
+	while ( 0 == (REG_LOAD(&regs->FLAGS) & UART_FLAGS_TXE_M)) {
 	}
 
-	REG32_STORE(regs->TXDATA, ch);
+	REG32_STORE(&regs->TXDATA, ch);
 
 	return 0;
 }
@@ -253,7 +253,7 @@ static int mikron_usart_has_symbol(struct uart *dev) {
 
 	regs = (struct mikron_uart_regs *)(uintptr_t) dev->base_addr;
 
-	return (REG_LOAD(regs->FLAGS) & UART_FLAGS_RXNE_M) ? 1 :0 ;
+	return (REG_LOAD(&regs->FLAGS) & UART_FLAGS_RXNE_M) ? 1 :0 ;
 }
 
 static int mikron_usart_getc(struct uart *dev) {
@@ -261,7 +261,7 @@ static int mikron_usart_getc(struct uart *dev) {
 
 	regs = (struct mikron_uart_regs *)(uintptr_t) dev->base_addr;
 
-	return REG_LOAD(regs->RXDATA) & 0xFF;
+	return REG_LOAD(&regs->RXDATA) & 0xFF;
 }
 
 const struct uart_ops mikron_usart_ops = {
