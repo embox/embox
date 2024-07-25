@@ -39,21 +39,25 @@ x86_smp_run() {
 
 declare -A atml2run
 atml2run=(
-	['arm/qemu']=default_run
-	['arm/stm32f4cube']=true
 	['x86/qemu']=default_run
-	['x86/smp']=x86_smp_run
 	['x86/user_apps']=default_run
 	['x86/test/lang']=default_run
-	['x86/test/fs']="$(dirname "$0")/fs/run.sh $ATML"
-	['x86/test/net']="$(dirname "$0")/net/run.sh $ATML"
+	['x86/test/units']=default_run
 	['x86/test/packetdrill']=packetdrill_run
-	['x86/test/qt-vnc']="$(dirname "$0")/qt/run.sh $ATML"
-	['sparc/qemu']=default_run
+	['arm/test/cxx']=default_run
+	['aarch64/qemu']=default_run
+	['riscv64/qemu']=default_run
 	['mips/qemu']=default_run
 	['ppc/qemu']=default_run
+	['sparc/qemu']=default_run
 	['microblaze/qemu']=default_run
-#	['usermode86/debug']=default_run
+	['usermode86/debug']=default_run
+	['project/qt4/x86_qemu_emboxvc']=true
+	['platform/stm32/f4/stm32f4-discovery']=true
+	['x86/smp']=x86_smp_run
+	['x86/test/fs']="$(dirname "$0")/fs/run.sh $ATML"
+	['x86/test/net']="$(dirname "$0")/net/run.sh $ATML"
+	['x86/test/qt-vnc']="$(dirname "$0")/qt/run.sh $ATML"
 	['generic/qemu']=default_run
 	['generic/qemu_bg']="run_bg_wrapper true"
 	['generic/qemu_bg_no_check']="run_bg_wrapper false"
