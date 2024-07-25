@@ -2,6 +2,8 @@
 
 # Intended for clang-format >= 10
 
+
+
 AccessModifierOffset: -4
 AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: Left  # clang-format-13
