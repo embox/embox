@@ -33,7 +33,7 @@
 #define GPIOC                        ((volatile struct gpio_reg *)CONF_GPIO_PORT_2_REGION_BASE)
 
 extern void mik_pad_cfg_set_func(int port, int pin, int func);
-extern void mik_pad_cfg_set_ds(int port, int pin, int pupd);
+extern void mik_pad_cfg_set_ds(int port, int pin, int ds);
 extern void mik_pad_cfg_set_pupd(int port, int pin, int pupd);
 
 struct gpio_reg {
@@ -204,8 +204,7 @@ static int mik_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 
 		mik_pad_cfg_set_func(port, pin, alt);
 		mik_pad_cfg_set_ds(port, pin, 0);
-		mik_pad_cfg_set_func(port, pin, pull);
-
+		mik_pad_cfg_set_pupd(port, pin, pull);
 	}
 
 	if (mode & GPIO_MODE_INT_SECTION) {
