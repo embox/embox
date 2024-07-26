@@ -27,7 +27,7 @@ esac
 
 case " $@ " in
 	*" -c "*) ARG_LINE="$C_CXX_FLAGS";;
-	*" -E "*) ARG_LINE=;;
+	*" -E "*) ARG_LINE="$cppflags";;
 	*" -shared "*) echo -e "\n\nCan't build shared objects\n\n"; exit 1;;
 	*" -l"*) $0 $(for i in "$@"; do echo ${i/#-l*/}; done); exit $?;;
 	*" -I/usr/"*) $0 $(for i in "$@"; do echo ${i/#-I\/usr\/*/}; done); exit $?;;

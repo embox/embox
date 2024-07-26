@@ -1,7 +1,7 @@
 package embox.cmd.testing.cxx
 
 @AutoCmd
-@Cmd(name="stl_demo_sort1",
+@CxxCmd(name="stl_demo_sort1",
 	help="example for stl algo sort",
 	man="")
 @BuildDepends(embox.lib.libstdcxx)
@@ -12,8 +12,8 @@ module stl_demo_sort1 {
 	@NoRuntime depends embox.lib.libstdcxx
 }
 
-	@AutoCmd
-@Cmd(name="stl_demo_sort1",
+@AutoCmd
+@CxxCmd(name="stl_demo_sort1",
 	help="example for stl algo sort",
 	man="")
 @BuildDepends(embox.lib.libstdcxx)
