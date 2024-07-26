@@ -6,5 +6,5 @@ module riscv_clk {
 	source "riscv_clk.c"
 
 	depends embox.kernel.time.clock_source
-	depends embox.drivers.interrupt.riscv_clint
+	depends embox.driver.interrupt.riscv_clint
 }
