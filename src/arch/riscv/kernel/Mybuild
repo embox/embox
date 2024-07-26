@@ -5,6 +5,8 @@ module conf {
 }
 
 module boot extends embox.arch.boot {
+	option boolean smp_support = true
+
 	source "boot.S"
 
 	depends embox.arch.riscv.kernel.conf
@@ -24,6 +26,12 @@ module interrupt extends embox.arch.interrupt {
 	source "interrupt.c"
 
 	depends embox.kernel.irq
+}
+
+module no_interrupt extends embox.arch.interrupt {
+	source "ipl_impl.c"
+	source "ipl_impl.h"
+	source "no_interrupt.c"
 }
 
 module entry extends embox.arch.entry {

@@ -39,6 +39,7 @@ _start:
 	la      t0, riscv_trap_handler
 	csrw    TRAP_VECTOR_REG, t0
 
+#if OPTION_GET(BOOLEAN,smp_support)
 	/**
 	 * Continue on hart lottery winner, others branch to
 	 * secondary_hart_loop.
@@ -49,6 +50,7 @@ _start:
 	csrr    t0, mhartid
 #endif
 	bnez    t0, secondary_hart_loop
+#endif /* OPTION_GET(BOOLEAN,smp_support) */
 
 	/* Set up stack pointer. */
 	la      sp, _stack_top
