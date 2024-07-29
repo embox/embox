@@ -1,0 +1,112 @@
+diff -aur ./openlibm-0.8.3/Make.inc ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Make.inc
+--- ./openlibm-0.8.3/Make.inc	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Make.inc	2024-07-31 04:16:41.952009596 +0300
+@@ -160,15 +160,8 @@
+ endif
+ endif
+ 
+-ifneq ($(filter $(ARCH),i387 amd64),)
+-# Determines whether `long double` is the same as `double` on this arch.
+-# linux x86_64, for instance, `long double` is 80 bits wide, whereas on macOS aarch64,
+-# `long double` is the same as `double`. 
++ifneq ($(LONG_DOUBLE_SIZE),64)
+ LONG_DOUBLE_NOT_DOUBLE := 1
+-else ifeq ($(ARCH), aarch64)
+-ifeq ($(filter $(OS),Darwin WINNT),)
+-LONG_DOUBLE_NOT_DOUBLE := 1
+-endif
+ endif
+ 
+ ifeq ($(CODE_COVERAGE),1)
+@@ -176,12 +169,18 @@
+ LDFLAGS_add += --coverage
+ endif # CODE_COVERAGE==1
+ 
++CPPFLAGS_add += -I$(OPENLIBM_HOME) -I$(OPENLIBM_HOME)/include -I$(OPENLIBM_HOME)/$(ARCH) -I$(OPENLIBM_HOME)/src -DASSEMBLER -D__BSD_VISIBLE -Wno-implicit-function-declaration
++ifeq ($(LONG_DOUBLE_SIZE),80)
++CPPFLAGS_add += -I$(OPENLIBM_HOME)/ld80
++else ifeq ($(LDBL_MANT_DIG),128)
++CPPFLAGS_add += -I$(OPENLIBM_HOME)/ld128
++endif
+ 
+ %.c.o: %.c
+-	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_add) -c $< -o $@
++	$(CC) $(CPPFLAGS) $(CPPFLAGS_add) -c $< -o $@
+ 
+ %.S.o: %.S
+-	$(CC) $(CPPFLAGS) $(SFLAGS) $(SFLAGS_add) $(filter -m% -B% -I% -D%,$(CFLAGS_add)) -c $< -o $@
++	$(CC) $(CPPFLAGS) $(CPPFLAGS_add) -c $< -o $@
+ 
+ 
+ # Makefile debugging trick:
+diff -aur ./openlibm-0.8.3/Makefile ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Makefile
+--- ./openlibm-0.8.3/Makefile	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Makefile	2024-07-31 04:16:41.952009596 +0300
+@@ -2,16 +2,10 @@
+ include ./Make.inc
+ 
+ SUBDIRS = src $(ARCH) bsdsrc
+-ifeq ($(LONG_DOUBLE_NOT_DOUBLE),1)
+-# Add ld80 directory on x86 and x64
+-ifneq ($(filter $(ARCH),i387 amd64),)
++ifeq ($(LONG_DOUBLE_SIZE),80)
+ SUBDIRS += ld80
+-else
+-ifneq ($(filter $(ARCH),aarch64),)
++else ifeq ($(LDBL_MANT_DIG),128)
+ SUBDIRS += ld128
+-else
+-endif
+-endif
+ endif
+ 
+ define INC_template
+diff -aur ./openlibm-0.8.3/i387/fenv.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/i387/fenv.c
+--- ./openlibm-0.8.3/i387/fenv.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/i387/fenv.c	2024-07-31 04:16:41.952009596 +0300
+@@ -70,22 +70,6 @@
+ int
+ __test_sse(void)
+ {
+-	int flag, nflag;
+-	int dx_features;
+-
+-	/* Am I a 486? */
+-	getfl(&flag);
+-	nflag = flag ^ 0x200000;
+-	setfl(nflag);
+-	getfl(&nflag);
+-	if (flag != nflag) {
+-		/* Not a 486, so CPUID should work. */
+-		cpuid_dx(&dx_features);
+-		if (dx_features & 0x2000000) {
+-			__has_sse = __SSE_YES;
+-			return (1);
+-		}
+-	}
+ 	__has_sse = __SSE_NO;
+ 	return (0);
+ }
+diff -aur ./openlibm-0.8.3/include/openlibm_math.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/include/openlibm_math.h
+--- ./openlibm-0.8.3/include/openlibm_math.h	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/include/openlibm_math.h	2024-07-31 04:17:12.056210347 +0300
+@@ -18,7 +18,9 @@
+ #include <math.h>
+ #else /* !OPENLIBM_USE_HOST_MATH_H */
+ 
+-#include <openlibm_defs.h>
++#ifndef OLM_DLLEXPORT
++#define OLM_DLLEXPORT extern
++#endif
+ 
+ #ifndef OPENLIBM_MATH_H
+ #define	OPENLIBM_MATH_H
+@@ -174,7 +176,7 @@
+ #define	MAXFLOAT	((float)3.40282346638528860e+38)
+ 
+ #ifndef OPENLIBM_ONLY_THREAD_SAFE
+-OLM_DLLEXPORT extern int signgam;
++OLM_DLLEXPORT int signgam;
+ #endif
+ #endif /* __BSD_VISIBLE || __XSI_VISIBLE */
+ 
