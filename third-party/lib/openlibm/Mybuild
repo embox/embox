@@ -1,17 +1,12 @@
-
 package third_party.lib
 
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
-static module OpenLibm {
+static module OpenLibm extends embox.compat.libc.math_openlibm {
 	source "^BUILD/extbld/^MOD_PATH/install/libopenlibm.a"
-	source "impl.h"
 
-	@NoRuntime depends libm_long_double_stubs
-}
+	@IncludeExport(target_name="math.h")
+	source "openlibm_math.h"
 
-/* Here are stubs for platforms on which long double != double.
- * On such platforms roundl() evaluates to round() and so on.
- * For example, newlib have similar stubs. */
-static module libm_long_double_stubs {
-	source "libm_long_double_stubs.c"
+	@IncludeExport(target_name="complex.h")
+	source "openlibm_complex.h"
 }
