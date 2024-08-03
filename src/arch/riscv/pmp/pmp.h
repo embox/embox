@@ -37,7 +37,7 @@ typedef struct {
  * predefined PMP regions based on configuration options.
  *
  */
-int pmp_init(void);
+static int pmp_init(void);
 
 /**
  * Configures a PMP entry with specific parameters.

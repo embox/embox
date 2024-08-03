@@ -8,8 +8,8 @@
  */
 
 #include "pmp.h"
-#include <math.h>
 #include <hal/reg.h>
+#include <embox/unit.h>
 
 /**
  * Writes to a PMP configuration register.
@@ -36,7 +36,7 @@ static inline void write_pmpaddr(uint32_t reg, uint32_t value) {
  * predefined PMP regions based on configuration options.
  *
  */
-int pmp_init(void) {
+static int pmp_init(void) {
     unsigned long pmp_addr[PMP_NUM_REGISTERS] = {0};
     unsigned long pmp_cfg[(PMP_NUM_REGISTERS + 3) / 4] = {0};
     unsigned int index = 0;
@@ -104,8 +104,9 @@ void set_pmp_entry(unsigned int *index, unsigned int flags, uintptr_t base, size
         (*index)++;
     } else if (flags & PMP_NAPOT) {
         // NAPOT: Naturally Aligned Power of Two
-        size_t napot_size = size;
-        while ((size_t)1 << (uint32_t)log2(napot_size) != napot_size) {
+        napot_size = size;
+        napot_size = 1;
+        while (napot_size < size) {
             napot_size <<= 1;
         }
         pmp_addr[*index] = (base >> 2) | (napot_size - 1);
@@ -120,3 +121,5 @@ void set_pmp_entry(unsigned int *index, unsigned int flags, uintptr_t base, size
         *index += num_entries;
     }
 }
+
+EMBOX_UNIT_INIT(pmp_init);
