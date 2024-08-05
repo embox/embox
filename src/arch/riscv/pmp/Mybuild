@@ -1,0 +1,5 @@
+package embox.arch.riscv
+
+module pmp {
+  source "pmp.c", "pmp.h"
+}
