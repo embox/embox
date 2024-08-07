@@ -1,6 +1,6 @@
-diff -aur gcc-9.3.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/c/Make-lang.in
---- gcc-9.3.0/gcc/c/Make-lang.in	2020-03-12 14:07:21.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/c/Make-lang.in	2020-10-29 20:59:20.815491475 +0300
+diff -aur ./gcc-9.3.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/c/Make-lang.in
+--- ./gcc-9.3.0/gcc/c/Make-lang.in	2020-03-12 14:07:21.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/c/Make-lang.in	2024-08-10 04:56:18.340457544 +0300
 @@ -72,14 +72,14 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1-checksum.c : build/genchecksum$(build_exeext) checksum-options \
@@ -24,9 +24,9 @@ diff -aur gcc-9.3.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build
  
  cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
  	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ $(C_OBJS) \
-diff -aur gcc-9.3.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/cp/Make-lang.in
---- gcc-9.3.0/gcc/cp/Make-lang.in	2020-03-12 14:07:21.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/cp/Make-lang.in	2020-10-29 20:59:21.423494297 +0300
+diff -aur ./gcc-9.3.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/cp/Make-lang.in
+--- ./gcc-9.3.0/gcc/cp/Make-lang.in	2020-03-12 14:07:21.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/gcc/cp/Make-lang.in	2024-08-10 04:56:18.340457544 +0300
 @@ -107,14 +107,14 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1plus-checksum.c : build/genchecksum$(build_exeext) checksum-options \
@@ -50,9 +50,9 @@ diff -aur gcc-9.3.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_buil
  
  cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(LIBDEPS)
  	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
-diff -aur gcc-9.3.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libgcc/configure
---- gcc-9.3.0/libgcc/configure	2020-03-12 14:07:23.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libgcc/configure	2020-10-29 20:59:21.475494539 +0300
+diff -aur ./gcc-9.3.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libgcc/configure
+--- ./gcc-9.3.0/libgcc/configure	2020-03-12 14:07:23.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libgcc/configure	2024-08-10 04:56:18.340457544 +0300
 @@ -4975,6 +4975,9 @@
  target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -63,9 +63,9 @@ diff -aur gcc-9.3.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/g
  
  # Check for assembler CFI support.
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
-diff -aur gcc-9.3.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/configure
---- gcc-9.3.0/libstdc++-v3/configure	2020-03-12 14:07:24.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/configure	2020-10-29 20:59:21.487494594 +0300
+diff -aur ./gcc-9.3.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/configure
+--- ./gcc-9.3.0/libstdc++-v3/configure	2020-03-12 14:07:24.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/configure	2024-08-10 04:59:04.410017822 +0300
 @@ -15617,6 +15617,10 @@
    target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -96,9 +96,54 @@ diff -aur gcc-9.3.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_b
    case $target_thread_file in
      posix)
        CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
-diff -aur gcc-9.3.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/zlib/Makefile.in
---- gcc-9.3.0/zlib/Makefile.in	2020-03-12 14:08:30.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/zlib/Makefile.in	2020-10-29 21:31:08.315971544 +0300
+@@ -82576,11 +82581,6 @@
+       glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
+       glibcxx_toolexeclibdir='${libdir}'
+     fi
+-    multi_os_directory=`$CXX -print-multi-os-directory`
+-    case $multi_os_directory in
+-      .) ;; # Avoid trailing /.
+-      *) glibcxx_toolexeclibdir=$glibcxx_toolexeclibdir/$multi_os_directory ;;
+-    esac
+   fi
+ 
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for install location" >&5
+diff -aur ./gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.am ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.am
+--- ./gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.am	2020-03-12 14:07:24.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.am	2024-08-10 04:56:18.348457619 +0300
+@@ -138,8 +138,6 @@
+ 	locale_init.cc \
+ 	locale_facets.cc \
+ 	localename.cc \
+-	math_stubs_float.cc \
+-	math_stubs_long_double.cc \
+ 	stdexcept.cc \
+ 	strstream.cc \
+ 	tree.cc \
+diff -aur ./gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.in
+--- ./gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.in	2020-03-12 14:07:24.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/libstdc++-v3/src/c++98/Makefile.in	2024-08-10 04:56:18.348457619 +0300
+@@ -140,7 +140,7 @@
+ 	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
+ 	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
+ 	list_associated-2.lo locale.lo locale_init.lo locale_facets.lo \
+-	localename.lo math_stubs_float.lo math_stubs_long_double.lo \
++	localename.lo \
+ 	stdexcept.lo strstream.lo tree.lo istream.lo istream-string.lo \
+ 	streambuf.lo valarray.lo $(am__objects_1) $(am__objects_3) \
+ 	$(am__objects_6)
+@@ -496,8 +496,6 @@
+ 	locale_init.cc \
+ 	locale_facets.cc \
+ 	localename.cc \
+-	math_stubs_float.cc \
+-	math_stubs_long_double.cc \
+ 	stdexcept.cc \
+ 	strstream.cc \
+ 	tree.cc \
+diff -aur ./gcc-9.3.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/zlib/Makefile.in
+--- ./gcc-9.3.0/zlib/Makefile.in	2020-03-12 14:08:30.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-9.3.0/zlib/Makefile.in	2024-08-10 04:56:18.348457619 +0300
 @@ -447,7 +447,8 @@
  MULTISUBDIR = 
  MULTIDO = true

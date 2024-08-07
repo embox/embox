@@ -1,6 +1,6 @@
-diff -aur ./gcc-13.2.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/c/Make-lang.in
---- ./gcc-13.2.0/gcc/c/Make-lang.in	2023-07-27 11:13:04.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/c/Make-lang.in	2024-06-29 23:34:35.928596646 +0300
+diff -aur ./gcc-13.3.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/gcc/c/Make-lang.in
+--- ./gcc-13.3.0/gcc/c/Make-lang.in	2024-05-21 10:47:38.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/gcc/c/Make-lang.in	2024-08-08 23:02:47.173469375 +0300
 @@ -73,14 +73,14 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
@@ -24,9 +24,9 @@ diff -aur ./gcc-13.2.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_bu
  
  cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
  	@$(call LINK_PROGRESS,$(INDEX.c),start)
-diff -aur ./gcc-13.2.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/cp/Make-lang.in
---- ./gcc-13.2.0/gcc/cp/Make-lang.in	2023-07-27 11:13:04.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/gcc/cp/Make-lang.in	2024-06-29 23:41:03.499770010 +0300
+diff -aur ./gcc-13.3.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/gcc/cp/Make-lang.in
+--- ./gcc-13.3.0/gcc/cp/Make-lang.in	2024-05-21 10:47:38.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/gcc/cp/Make-lang.in	2024-08-08 23:02:47.173469375 +0300
 @@ -131,14 +131,14 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1plus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
@@ -50,9 +50,9 @@ diff -aur ./gcc-13.2.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_b
  
  cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
  	@$(call LINK_PROGRESS,$(INDEX.c++),start)
-diff -aur ./gcc-13.2.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libgcc/configure
---- ./gcc-13.2.0/libgcc/configure	2023-07-27 11:13:07.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libgcc/configure	2024-06-29 23:45:25.077913975 +0300
+diff -aur ./gcc-13.3.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libgcc/configure
+--- ./gcc-13.3.0/libgcc/configure	2024-05-21 10:47:41.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libgcc/configure	2024-08-08 23:02:47.173469375 +0300
 @@ -5048,6 +5048,9 @@
  target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -63,10 +63,10 @@ diff -aur ./gcc-13.2.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_buil
  
  # Check for assembler CFI support.
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
-diff -aur ./gcc-13.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libstdc++-v3/configure
---- ./gcc-13.2.0/libstdc++-v3/configure	2023-07-27 11:13:08.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/libstdc++-v3/configure	2024-06-29 23:57:30.519993260 +0300
-@@ -15796,6 +15796,9 @@
+diff -aur ./gcc-13.3.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libstdc++-v3/configure
+--- ./gcc-13.3.0/libstdc++-v3/configure	2024-05-21 10:47:42.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libstdc++-v3/configure	2024-08-08 23:02:47.177469408 +0300
+@@ -15812,6 +15812,9 @@
    target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
  $as_echo "$target_thread_file" >&6; }
@@ -76,7 +76,7 @@ diff -aur ./gcc-13.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gc
  
  case $target_thread_file in
      aix)	thread_header=config/rs6000/gthr-aix.h ;;
-@@ -68261,7 +68264,7 @@
+@@ -68277,7 +68280,7 @@
  
      ;;
    *)
@@ -85,7 +85,7 @@ diff -aur ./gcc-13.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gc
     ;;
  esac
  
-@@ -69756,7 +69759,9 @@
+@@ -69772,7 +69775,9 @@
    CXXFLAGS="$CXXFLAGS -fno-exceptions \
  	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
  
@@ -96,9 +96,54 @@ diff -aur ./gcc-13.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gc
    case $target_thread_file in
      posix)
        CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
-diff -aur ./gcc-13.2.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/zlib/Makefile.in
---- ./gcc-13.2.0/zlib/Makefile.in	2023-07-27 11:17:14.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.2.0/zlib/Makefile.in	2024-06-29 23:59:26.276969111 +0300
+@@ -73087,11 +73092,6 @@
+       glibcxx_toolexecdir='${libdir}/gcc/${host_alias}'
+       glibcxx_toolexeclibdir='${libdir}'
+     fi
+-    multi_os_directory=`$CXX -print-multi-os-directory`
+-    case $multi_os_directory in
+-      .) ;; # Avoid trailing /.
+-      *) glibcxx_toolexeclibdir=$glibcxx_toolexeclibdir/$multi_os_directory ;;
+-    esac
+   fi
+ 
+   { $as_echo "$as_me:${as_lineno-$LINENO}: checking for install location" >&5
+diff -aur ./gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.am ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.am
+--- ./gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.am	2024-05-21 10:47:42.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.am	2024-08-08 23:03:37.701877727 +0300
+@@ -133,8 +133,6 @@
+ 	locale_init.cc \
+ 	locale_facets.cc \
+ 	localename.cc \
+-	math_stubs_float.cc \
+-	math_stubs_long_double.cc \
+ 	stdexcept.cc \
+ 	strstream.cc \
+ 	tree.cc \
+diff -aur ./gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.in
+--- ./gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.in	2024-05-21 10:47:42.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/libstdc++-v3/src/c++98/Makefile.in	2024-08-08 23:03:49.589973877 +0300
+@@ -140,7 +140,7 @@
+ 	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
+ 	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
+ 	list_associated-2.lo locale.lo locale_init.lo locale_facets.lo \
+-	localename.lo math_stubs_float.lo math_stubs_long_double.lo \
++	localename.lo \
+ 	stdexcept.lo strstream.lo tree.lo istream.lo istream-string.lo \
+ 	streambuf.lo valarray.lo $(am__objects_1) $(am__objects_3) \
+ 	$(am__objects_6)
+@@ -509,8 +509,6 @@
+ 	locale_init.cc \
+ 	locale_facets.cc \
+ 	localename.cc \
+-	math_stubs_float.cc \
+-	math_stubs_long_double.cc \
+ 	stdexcept.cc \
+ 	strstream.cc \
+ 	tree.cc \
+diff -aur ./gcc-13.3.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/zlib/Makefile.in
+--- ./gcc-13.3.0/zlib/Makefile.in	2024-05-21 10:49:00.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-13.3.0/zlib/Makefile.in	2024-08-08 23:02:47.177469408 +0300
 @@ -452,7 +452,7 @@
  MULTISUBDIR = 
  MULTIDO = true

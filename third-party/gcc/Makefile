@@ -22,55 +22,52 @@ define option_get_string
 $(shell echo OPTION_STRING_third_party__gcc__gcc_build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/gcc/gcc_build.h -)
 endef
 
-PKG_NAME := gcc
-
-PKG_VER:=$(call option_get_string,gcc_version)
-
+PKG_NAME    := gcc
+PKG_VER     := $(call option_get_string,gcc_version)
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_PATCHES := gcc_$(PKG_VER).patch
 
 PKG_MD5_6.3.0  := 6e5ea04789678f1250c1b30c4d9ec417
 PKG_MD5_8.3.0  := 9972f8c24c02ebcb5a342c1b30de69ff
 PKG_MD5_9.3.0  := 9b7e8f6cfad96114e726c752935af58a
 PKG_MD5_13.3.0 := f6e5402827861cd5397b3947bc7b8ff2
-
-PKG_MD5:=$(PKG_MD5_$(PKG_VER))
-
-PKG_PATCHES := patch_$(PKG_VER).txt
+PKG_MD5        := $(PKG_MD5_$(PKG_VER))
 
 include $(EXTBLD_LIB)
 
 ifeq (arm,$(EMBOX_ARCH))
-AUTOCONF_TARGET_TRIPLET := arm-none-eabi
-else ifeq (sparc,$(EMBOX_ARCH))
-AUTOCONF_TARGET_TRIPLET := sparc-elf
+GCC_TARGET := arm-none-eabi
 else ifeq (mips,$(EMBOX_ARCH))
-AUTOCONF_TARGET_TRIPLET := mips-elf
+GCC_TARGET := mips-mti-elf
+else ifeq (mips64,$(EMBOX_ARCH))
+GCC_TARGET := mips-mti-elf
+else ifeq (riscv,$(EMBOX_ARCH))
+GCC_TARGET := riscv64-unknown-elf
+else ifeq (riscv64,$(EMBOX_ARCH))
+GCC_TARGET := riscv64-unknown-elf
+else ifeq (sparc,$(EMBOX_ARCH))
+GCC_TARGET := sparc-elf
 else ifeq (x86,$(EMBOX_ARCH))
-AUTOCONF_TARGET_TRIPLET := i386-pc-elf
+GCC_TARGET := i386-elf
 else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
 
-target_libgcc_cppflags := -DLIBGCC2_HAS_XF_MODE=0 \
-	-DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY
+GCC_BUILD_DIR   := $(BUILD_DIR)/build
+GCC_CPPFLAGS    := -I$(GCC_BUILD_DIR)/gcc/include
+LIBGCC_CPPFLAGS := -DLIBGCC2_HAS_XF_MODE=0 -DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY
 
-cppflags = $${EMBOX_IMPORTED_CPPFLAGS} \
-	-I$(PKG_BUILD_DIR)/gcc/include
-
-EMBOX_DERIVED_CXXFLAGS = $(filter -g% -f% -m% -O% -G% -E% -Wa%,$(EMBOX_CXXFLAGS))
 ifeq (arm,$(EMBOX_ARCH))
-GCC_IMPORTED_CXXFLAGS = $(filter-out -std=% -fno-rtti,$(EMBOX_DERIVED_CXXFLAGS))
+LIBSTDCXX_CXXFLAGS := -frtti
 else
-GCC_IMPORTED_CXXFLAGS = $(filter-out -std=%, $(EMBOX_DERIVED_CXXFLAGS))
+LIBSTDCXX_CXXFLAGS :=
 endif
 
-PKG_BUILD_DIR  := $(BUILD_DIR)/build
-
 $(CONFIGURE) :
-	mkdir -p $(PKG_BUILD_DIR) && cd $(PKG_BUILD_DIR) && ( \
+	$(MKDIR) $(GCC_BUILD_DIR) && cd $(GCC_BUILD_DIR) && ( \
 		. $(EMBOX_GCC_ENV) && $(PKG_SOURCE_DIR)/configure \
-			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			--with-cross-host=embox \
+			--target=$(GCC_TARGET) \
 			--prefix=$(PKG_INSTALL_DIR) \
 			--disable-multilib \
 			--disable-shared \
@@ -88,24 +85,19 @@ $(CONFIGURE) :
 			--without-newlib \
 			--enable-languages=c,c++ \
 			--enable-soft-float \
+			--enable-threads=posix \
 			--enable-hosted-libstdcxx \
-			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
-			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			CFLAGS_FOR_TARGET="$(cppflags) $(target_libgcc_cppflags) $${EMBOX_IMPORTED_CFLAGS}" \
-			CXXFLAGS_FOR_TARGET="$(cppflags) $(GCC_IMPORTED_CXXFLAGS) -fpermissive" \
-			LDFLAGS_FOR_TARGET="$${EMBOX_IMPORTED_LDFLAGS}"; \
+			--with-gxx-include-dir=$(PKG_INSTALL_DIR)/include \
+			target_configargs="CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX)" \
+			CFLAGS_FOR_TARGET="$(GCC_CPPFLAGS) $(LIBGCC_CPPFLAGS)" \
+			CXXFLAGS_FOR_TARGET="$(GCC_CPPFLAGS) $(LIBSTDCXX_CXXFLAGS)" \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(PKG_BUILD_DIR) && ( \
-		. $(EMBOX_GCC_ENV) && $(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
-			CC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
-			GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
-			CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			RAW_CXX_FOR_TARGET=$${EMBOX_CROSS_COMPILE}g++ \
-			AR_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ar \
-			RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib \
+	cd $(GCC_BUILD_DIR) && ( \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
+			GCC_FOR_TARGET=$(EMBOX_GCC) \
 			TARGET-libiberty="LINKER=true CC=true AR=true RANLIB=touch all" \
 			TARGET-zlib="LINKER=true CC=true AR=true RANLIB=touch all" \
 			TARGET-libbacktrace="LINKER=true CC=true AR=touch \
@@ -117,27 +109,20 @@ $(BUILD) :
 			TARGET-fixincludes="LINKER=true CC=true AR=true all" \
 			TARGET-lto-plugin="CC=true LIBTOOL=true all" \
 			TARGET-gcc="LINKER=true CC=true AR=true \
-				GCC_FOR_TARGET=$${EMBOX_CROSS_COMPILE}gcc \
 				AR=true RANLIB=true libgcc-support stmp-int-hdrs CXXDEPMODE=true" \
-			TARGET-target-libgcc="PICFLAG= EXTRA_PARTS= all" \
+			TARGET-target-libgcc="CC=$(EMBOX_GCC) PICFLAG= EXTRA_PARTS= all" \
+			TARGET-target-libstdc++-v3="CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX) all" \
 			all-target-libgcc all-target-libstdc++-v3; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(PKG_BUILD_DIR) && ( \
-		. $(EMBOX_GCC_ENV) && \
-		$(MAKE) install-target-libgcc RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib; \
-		$(MAKE) install-target-libstdc++-v3 RANLIB_FOR_TARGET=$${EMBOX_CROSS_COMPILE}ranlib; \
+	cd $(GCC_BUILD_DIR) && ( \
+		$(MAKE) install-target-libgcc; \
+		$(MAKE) install-target-libstdc++-v3; \
 	)
-	mkdir -p $(PKG_INSTALL_DIR)/libs
-	cp $(PKG_INSTALL_DIR)/lib/gcc/$(AUTOCONF_TARGET_TRIPLET)/$(PKG_VER)/libgcc.a $(PKG_INSTALL_DIR)/libs
-	cp $(PKG_INSTALL_DIR)/$(AUTOCONF_TARGET_TRIPLET)/lib/libstdc++.a $(PKG_INSTALL_DIR)/libs
-	cp $(PKG_INSTALL_DIR)/$(AUTOCONF_TARGET_TRIPLET)/lib/libsupc++.a $(PKG_INSTALL_DIR)/libs
-	# Rename directories from target specific (e.g. "arm-none-eabi") to
-	# "_target" and "_gcc_version" to use them in Mybuild.
-	$(MV) $(PKG_INSTALL_DIR)/$(AUTOCONF_TARGET_TRIPLET) $(PKG_INSTALL_DIR)/_target
-	$(MV) $(PKG_INSTALL_DIR)/_target/include/c++/$(PKG_VER) $(PKG_INSTALL_DIR)/_target/include/c++/_gcc_version
-	$(MV) $(PKG_INSTALL_DIR)/_target/include/c++/_gcc_version/$(AUTOCONF_TARGET_TRIPLET) \
-		$(PKG_INSTALL_DIR)/_target/include/c++/_gcc_version/_target
+	$(MV) $(PKG_INSTALL_DIR)/lib/gcc/$(GCC_TARGET)/$(PKG_VER)/libgcc.a $(PKG_INSTALL_DIR)/lib
+	$(MV) $(PKG_INSTALL_DIR)/$(GCC_TARGET)/lib/libstdc++.a $(PKG_INSTALL_DIR)/lib
+	$(MV) $(PKG_INSTALL_DIR)/$(GCC_TARGET)/lib/libsupc++.a $(PKG_INSTALL_DIR)/lib
+	$(MV) $(PKG_INSTALL_DIR)/include/$(GCC_TARGET) $(PKG_INSTALL_DIR)/include/_target
 	touch $@
