@@ -59,10 +59,8 @@ static void print_cpuinfo(void) {
 
 	for (int i = 0; i < cinfo->feature_count; i++) {
 		printf("\t");
-		printf("CPU %-16s %u",
-				cinfo->feature[i].name,
-				cinfo->feature[i].val
-		);
+		//printf("CPU %-16s %u", cinfo->feature[i].name, cinfo->feature[i].val);
+		cpu_feature_print(&cinfo->feature[i]);
 		printf("\n");
 	}
 
