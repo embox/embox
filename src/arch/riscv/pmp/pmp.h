@@ -33,13 +33,6 @@ typedef struct {
 } pmp_region_t;
 
 /**
- * Initializes the PMP subsystem by clearing all PMP entries and setting up 
- * predefined PMP regions based on configuration options.
- *
- */
-static int pmp_init(void);
-
-/**
  * Configures a PMP entry with specific parameters.
  *
  * @param index Pointer to the current index of the PMP entry to configure.
@@ -60,7 +53,7 @@ void set_pmp_entry(unsigned int *index, unsigned int flags, uintptr_t base, size
  * @param reg The index of the PMP configuration register to write to.
  * @param value The value to write to the register.
  */
-static inline void write_pmpcfg(uint32_t reg, uint32_t value);
+void write_pmpcfg(uint32_t reg, uint32_t value);
 
 /**
  * Writes to a PMP address register.
@@ -68,6 +61,6 @@ static inline void write_pmpcfg(uint32_t reg, uint32_t value);
  * @param reg The index of the PMP address register to write to.
  * @param value The address value to write to the register.
  */
-static inline void write_pmpaddr(uint32_t reg, uint32_t value);
+void write_pmpaddr(uint32_t reg, uint32_t value);
 
 #endif /* PMP_H_ */
