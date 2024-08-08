@@ -21,7 +21,9 @@ int main(int argc, char **argv) {
 	printf("%-20s %s\n", "CPU Vendor ID ", info->vendor_id);
 	
 	for(int i = 0; i < info->feature_count; i++) {
-		printf("CPU %-16s %u\n", info->feature[i].name, info->feature[i].val);
+		//printf("CPU %-16s %u", info->feature[i].name, info->feature[i].val);
+		cpu_feature_print(&info->feature[i]);
+		printf("\n");
 	}
 
 	cpu_cnt = get_cpu_counter();
