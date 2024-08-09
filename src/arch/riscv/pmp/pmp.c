@@ -17,7 +17,7 @@
  * @param reg The index of the PMP configuration register to write to.
  * @param value The value to write to the register.
  */
-static inline void write_pmpcfg(uint32_t reg, uint32_t value) {
+void write_pmpcfg(uint32_t reg, uint32_t value) {
     REG32_STORE(PMP_CFG_BASE + reg * 4, value);
 }
 
@@ -27,7 +27,7 @@ static inline void write_pmpcfg(uint32_t reg, uint32_t value) {
  * @param reg The index of the PMP address register to write to.
  * @param value The address value to write to the register.
  */
-static inline void write_pmpaddr(uint32_t reg, uint32_t value) {
+void write_pmpaddr(uint32_t reg, uint32_t value) {
     REG32_STORE(PMP_ADDR_BASE + reg * 4, value);
 }
 
@@ -40,12 +40,6 @@ static int pmp_init(void) {
     unsigned long pmp_addr[PMP_NUM_REGISTERS] = {0};
     unsigned long pmp_cfg[(PMP_NUM_REGISTERS + 3) / 4] = {0};
     unsigned int index = 0;
-
-    // Clear all PMP configurations and addresses
-    for (int i = 0; i < PMP_NUM_REGISTERS; i++) {
-        write_pmpaddr(i, 0); 
-        write_pmpcfg(i / 4, 0); 
-    }
 
     // Set up PMP entries based on configuration options
     #ifdef CONFIG_ROM_REGION
@@ -86,6 +80,7 @@ void set_pmp_entry(unsigned int *index, unsigned int flags, uintptr_t base, size
                    unsigned long *pmp_addr, unsigned long *pmp_cfg, size_t pmp_count, size_t page_size) {
     unsigned int i;
     size_t num_entries = (size + page_size - 1) / page_size;
+    size_t napot_size;
 
     // Ensure there are enough PMP registers available
     if (*index + num_entries > pmp_count) {
