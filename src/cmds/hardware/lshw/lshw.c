@@ -50,21 +50,27 @@ static void print_error(void) {
 
 /* cpuinfo implementation */
 static void print_cpuinfo(void) {
+	uint64_t cpu_cnt;
 	struct cpu_info *cinfo = get_cpu_info();
 
 	printf("CPU:\n");
+
 	printf("\t%-20s %s\n", "CPU Vendor ID ", cinfo->vendor_id);
 
 	for (int i = 0; i < cinfo->feature_count; i++) {
-		printf("\tCPU %-16s %u\n", 
-				cinfo->feature[i].name,
-				cinfo->feature[i].val
-		);
+		printf("\t");
+		//printf("CPU %-16s %u", cinfo->feature[i].name, cinfo->feature[i].val);
+		cpu_feature_print(&cinfo->feature[i]);
+		printf("\n");
 	}
 
-	printf("\tCurrent time stamp counter: %" PRIu64 "\n", get_cpu_counter());
+	cpu_cnt = get_cpu_counter();
+	if (cpu_cnt) {
+		printf("\tCurrent time stamp counter: %" PRIu64 "\n", cpu_cnt);
+	}
 	printf("\n\n");
 }
+
 /* cpuinfo implementation end */
 
 /* lsusb implementation */

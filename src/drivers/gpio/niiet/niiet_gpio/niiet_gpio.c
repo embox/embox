@@ -129,7 +129,7 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(unsigned char p
 #if defined (CONF_GPIO_PORT_C_REGION_BASE)
 		case 2:
 			return GPIOC;
-		break;		
+		break;
 #endif /* defined (PORTC) */
 		default:
 			return NULL;
