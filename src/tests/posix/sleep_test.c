@@ -14,6 +14,7 @@
 #include <kernel/thread/thread_sched_wait.h>
 #include <pthread.h>
 #include <errno.h>
+#include <stdint.h>
 
 EMBOX_TEST_SUITE("sleep suite");
 
@@ -74,8 +75,8 @@ TEST_CASE("timeout sleep") {
  */
 
 static void * handler1(void* args) {
-	usleep(TIME_TO_SLEEP * (uint32_t) args);
-	test_emit('0' + (uint32_t) args);
+	usleep(TIME_TO_SLEEP * (uint32_t)(uintptr_t)args);
+	test_emit('0' + (uint32_t)(uintptr_t)args);
 	return NULL;
 }
 
@@ -104,8 +105,8 @@ TEST_CASE("simple multi-threaded check") {
  * after execute buffer2 must be "87654321"
  */
 static void * handler2(void* args) {
-	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t) args) + 1);
-	test_emit('1' + (uint32_t) args);
+	usleep(TIME_TO_SLEEP * (NUM_THREADS - (uint32_t)(uintptr_t)args) + 1);
+	test_emit('1' + (uint32_t)(uintptr_t)args);
 	return NULL;
 }
 
@@ -115,7 +116,7 @@ TEST_CASE("sleep sort") {
 
 	for (i = 0; i < NUM_THREADS; i++) {
 		test_assert_zero(
-				pthread_create(&t[i], 0, handler2, (void *) i));
+				pthread_create(&t[i], 0, handler2, (void *)(uintptr_t)i));
 		test_assert_not_null(t[i]);
 	}
 	for (i = 0; i < NUM_THREADS; i++) {
