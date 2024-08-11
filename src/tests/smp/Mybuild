@@ -4,4 +4,11 @@ package embox.test.smp
 @Cmd(name = "test_smp", help="Running multiple cores")
 module test_smp {
     source "test_smp.c"
+	depends embox.arch.smp
+}
+
+module simult_thread_test {
+	option string log_level="LOG_NONE"
+	source "simult_thread_test.c"
+	depends embox.arch.smp
 }
