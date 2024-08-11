@@ -10,7 +10,7 @@
 #define LIB_CPU_INFO_H_
 
 #define FEATURE_NAME_LEN 32
-#define MAX_NUM_FEATURES 5
+#define MAX_NUM_FEATURES 10
 
 #include <stdint.h>
 
