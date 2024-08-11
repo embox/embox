@@ -5,13 +5,11 @@
  * @author Ankith Veldandi
  */
 
-
-
-#include <embox/test.h>
 #include <math.h>
 
-EMBOX_TEST_SUITE("round() tests");
+#include <embox/test.h>
 
+EMBOX_TEST_SUITE("round() tests");
 
 TEST_CASE("Test for round(0.23)") {
 	test_assert(round(0.23) == 0.0);

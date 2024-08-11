@@ -1,5 +1,6 @@
-#include <embox/test.h>
 #include <math.h>
+
+#include <embox/test.h>
 
 EMBOX_TEST_SUITE("exp() tests");
 
@@ -18,4 +19,3 @@ TEST_CASE("Test for exp(+INFINITY)") {
 TEST_CASE("Test for exp(NaN)") {
 	test_assert(isnan(exp(NAN)));
 }
-

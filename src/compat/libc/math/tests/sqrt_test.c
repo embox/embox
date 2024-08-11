@@ -5,13 +5,11 @@
  * @author Anton Bondarev
  */
 
-
-
-#include <embox/test.h>
 #include <math.h>
 
-EMBOX_TEST_SUITE("sqrt() tests");
+#include <embox/test.h>
 
+EMBOX_TEST_SUITE("sqrt() tests");
 
 TEST_CASE("Test for sqrt() with negative argument") {
 	test_assert(isnan(sqrt(-1.0)));

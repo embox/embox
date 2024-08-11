@@ -5,13 +5,11 @@
  * @author Ankith Veldandi
  */
 
-
-
-#include <embox/test.h>
 #include <math.h>
 
-EMBOX_TEST_SUITE("floor() tests");
+#include <embox/test.h>
 
+EMBOX_TEST_SUITE("floor() tests");
 
 TEST_CASE("Test for floor(0.23)") {
 	test_assert(floor(0.23) == 0.0);

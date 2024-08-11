@@ -1,12 +1,12 @@
-#include <embox/test.h>
 #include <math.h>
+
+#include <embox/test.h>
 
 EMBOX_TEST_SUITE("cosh() tests");
 
 static bool is_close(double x, double y) {
 	return fabs(x - y) <= 1e-9 * fmin(fabs(x), fabs(y));
 }
-
 
 TEST_CASE("tests for cosh(0.0)") {
 	test_assert(cosh(0.0) == 1.0);
