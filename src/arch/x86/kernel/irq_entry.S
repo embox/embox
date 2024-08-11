@@ -31,7 +31,7 @@ IRQ_ENTRY(15) /* secondary ATA channel */
 	.section .traps.text,"x"
 
 irq_stub:
-	SAVE_ALL
+	SAVE_ALL               /* Entry code is already in higher address */
 
 	mov     %esp, %eax     /* Used for fastcall of handler */
 	call    irq_handler
