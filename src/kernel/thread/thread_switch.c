@@ -6,6 +6,10 @@
  * @author Vita Loginova
  */
 
+#include <util/log.h>
+
+#include <hal/cpu.h>
+
 #include <kernel/thread.h>
 #include <kernel/addr_space.h>
 
@@ -21,6 +25,7 @@ static struct thread *saved_prev __cpudata__; // XXX
 void thread_ack_switched(void) {
 	ADDR_SPACE_FINISH_SWITCH();
 	sched_finish_switch(&cpudata_var(saved_prev)->schedee);
+	log_debug("first switch on cpu :%d",cpu_get_id());
 	ipl_enable();
 	/* we add first timer the same behavious as sched_ticker_update*/
 	sched_ticker_add();
@@ -32,9 +37,11 @@ static void thread_prepare_switch(struct thread *prev, struct thread *next) {
 	prev->critical_count = critical_count();
 	critical_count() = next->critical_count;
 	sched_start_switch(&next->schedee);
+	log_debug("thread prepare switch on cpu :%d",cpu_get_id());
 }
 
 extern void thread_set_current(struct thread *t);
+/** Locks: IPL. */
 void thread_context_switch(struct thread *prev, struct thread *next) {
 	thread_prepare_switch(prev, next);
 
@@ -49,5 +56,6 @@ void thread_context_switch(struct thread *prev, struct thread *next) {
 	prev = cpudata_var(saved_prev);
 
 	sched_finish_switch(&prev->schedee);
+	log_debug("thread finish switch on cpu :%d",cpu_get_id());
 }
 
