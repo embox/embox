@@ -45,14 +45,15 @@ extern void thread_set_current(struct thread *t);
 
 void startup_ap(void) {
 	struct thread *bs_idle;
-	int self_id = lapic_id();
+	int self_id = cpu_get_id();
 
 	__spin_lock(&startup_lock);
 
 	idt_load();
-	lapic_enable();
+	apic_init();
+	irqctrl_enable(2);
 
-	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
+	bs_idle = thread_init_stack(__ap_sp[self_id - 1] - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);
 	cpu_init(self_id, bs_idle);
 	task_thread_register(task_kernel_task(), bs_idle);
