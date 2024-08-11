@@ -39,15 +39,16 @@ x86_smp_run() {
 
 declare -A atml2run
 atml2run=(
-	['x86/qemu']=default_run
 	['x86/user_apps']=default_run
 	['x86/test/lang']=default_run
 	['x86/test/units']=default_run
 	['x86/test/packetdrill']=packetdrill_run
 	['arm/test/cxx']=default_run
-	['aarch64/qemu']=default_run
-	['riscv64/qemu']=default_run
-	['mips/qemu']=default_run
+	['aarch64/test/units']=default_run
+	['riscv64/test/cxx']=default_run
+	['riscv64/test/units']=default_run
+	['mips/third_party']=default_run
+	['mips64/test/cxx']=default_run
 	['ppc/qemu']=default_run
 	['sparc/qemu']=default_run
 	['microblaze/qemu']=default_run
