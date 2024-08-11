@@ -13,8 +13,8 @@
 #error Exceptions must be disabled
 #endif
 
-#include <cstdlib>
 #include <exception>
+#include <c_compat/cstdlib>
 
 extern "C++" {
 
