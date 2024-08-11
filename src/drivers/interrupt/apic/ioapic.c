@@ -10,6 +10,8 @@
 
 #include <stdint.h>
 
+#include <hal/cpu.h>
+
 #include <asm/io.h>
 
 #include "lapic.h"
@@ -39,10 +41,10 @@ static inline void i8259_disable(void)
  */
 static int ioapic_enable(void) {
 	static int inited = 0;
-	if (1 == inited) {
+	if (inited & 0x1 << cpu_get_id()) {
 		return 0;
-	}
-	inited = 1;
+	}else
+		inited |= 0x1 << cpu_get_id();
 
 #ifdef IOAPIC_REGS_X86_H_
 	/* I'm not sure that it is correct */

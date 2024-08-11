@@ -14,6 +14,7 @@
 #include <asm/io.h>
 
 #include <hal/ipl.h>
+#include <hal/cpu.h>
 
 #include <hal/clock.h>
 #include <kernel/irq.h>
@@ -58,10 +59,10 @@ int lapic_clock_setup(struct clock_source *cs) {
 	uint32_t ticks, cpubusfreq, counter;
 	uint8_t tmp;
 
-	if (initialized) {
+	if (initialized & 0x1 << cpu_get_id()) {
 		return ENOERR;
-	}
-	initialized = 1;
+	}else
+		initialized |= 0x1 << cpu_get_id();
 
 	/*
 	 * Map APIC timer to an interrupt, and by that enable it in
