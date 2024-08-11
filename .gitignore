@@ -6,6 +6,9 @@
 .*.sw[a-z]
 *~
 /tags
+# Cscope
+cscope.*
+
 #QtCreator
 embox.cflags
 embox.config
