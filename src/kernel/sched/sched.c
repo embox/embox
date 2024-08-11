@@ -423,9 +423,15 @@ static void sched_ticker_update(void) {
 	/* We only need re-schedule by ticker only if there is
 	 * an active schedee with the same priority in runq. */
 	if (cur != next && cur_prio == next_prio) {
-		sched_ticker_add();
+#ifdef SMP
+		for(unsigned int cpuid = 0; cpuid < NCPU; cpuid++)
+			if(0x1 << cpuid & next->affinity.mask)
+#else
+			unsigned int cpuid = cpu_get_id();
+#endif /* SMP */
+				sched_ticker_add(cpuid);
 	} else {
-		sched_ticker_del();
+		sched_ticker_del(cpu_get_id());
 	}
 }
 

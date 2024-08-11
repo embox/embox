@@ -28,7 +28,7 @@ void thread_ack_switched(void) {
 	log_debug("first switch on cpu :%d",cpu_get_id());
 	ipl_enable();
 	/* we add first timer the same behavious as sched_ticker_update*/
-	sched_ticker_add();
+	sched_ticker_add(cpu_get_id());
 	sched_timing_start(&thread_self()->schedee);	
 	sched_unlock();
 }

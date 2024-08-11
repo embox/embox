@@ -112,8 +112,8 @@ extern int schedee_init(struct schedee *schedee, int priority,
 
 extern void sched_set_current(struct schedee *schedee);
 
-extern void sched_ticker_add(void);
-extern void sched_ticker_del(void);
+extern void sched_ticker_add(unsigned int cpuid);
+extern void sched_ticker_del(unsigned int cpuid);
 
 extern int sched_active(struct schedee *s);
 

@@ -9,6 +9,7 @@
 
 #include <hal/cpu.h>
 #include <kernel/sched.h>
+#include <kernel/thread.h>
 
 #include <kernel/time/timer.h>
 #include <kernel/cpu/cpu.h>
@@ -20,7 +21,7 @@
 #define SCHED_TICK_INTERVAL \
 	OPTION_GET(NUMBER, tick_interval)
 
-static struct sys_timer sched_tick_timer;
+static struct sys_timer sched_tick_timer[NCPU];
 
 static void sched_tick(sys_timer_t *timer, void *param) {
 	sched_post_switch();
@@ -33,15 +34,15 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 #endif /* SMP */
 }
 
-void sched_ticker_add(void) {
-	if (!timer_is_started(&sched_tick_timer)) {
-		timer_init_start_msec(&sched_tick_timer, TIMER_PERIODIC,
+void sched_ticker_add(unsigned int cpuid) {
+	if (!timer_is_started(&sched_tick_timer[cpuid])) {
+		timer_init_start_msec(&sched_tick_timer[cpuid], TIMER_PERIODIC,
 				SCHED_TICK_INTERVAL, sched_tick, NULL);
 	}
 }
 
-void sched_ticker_del(void) {
-	if (timer_is_started(&sched_tick_timer)) {
-		timer_stop(&sched_tick_timer);
+void sched_ticker_del(unsigned int cpuid) {
+	if (timer_is_started(&sched_tick_timer[cpuid])) {
+		timer_stop(&sched_tick_timer[cpuid]);
 	}
 }
