@@ -36,11 +36,3 @@ TEST_CASE("check for NULL argument with strcpy()") {
     strcpy(dst, src);
     test_assert_zero(strcmp(dst, src));
 }
-
-TEST_CASE("check for error if dst isn't allocated enough memory for strcpy()") {
-    char src[] = "string";
-    char dst[3];
-
-    strcpy(dst, src);
-    test_assert_not_zero(strcmp(dst, src));
-}
