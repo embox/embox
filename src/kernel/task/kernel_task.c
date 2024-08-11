@@ -30,9 +30,12 @@ static int kernel_task_init(void) {
 		return ktask_id;
 	}
 
-	/* task_get_main returns a value which already initialized
-	 * by thread.core module in the file idle_thread.c by the
-	 * idle_thread_create() function */
+	/**
+	 * since kernel_task module is initialized earlier than sched.sched module
+	 * which calls task_set_main() in boot_thread.c, so task_get_main(ktask)
+	 * will return a NULL. This will leave job of connecting task and thread
+	 * to boot_thread_create() function
+	 */
 	task_init(ktask, ktask_id, NULL, "kernel", task_get_main(ktask),
 			TASK_PRIORITY_DEFAULT);
 
