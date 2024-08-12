@@ -1,29 +1,34 @@
 package embox.compat.libc.test
 
-module math_test_fp {
-	source "math_test_fp.c"
+/**
+ * Math tests must be compiled with the '-fno-builtin' flag,
+ * otherwise the math function calls will be replaced by the result
+ * at compile time.
+ */
 
-	depends embox.compat.libc.math
-	depends embox.framework.LibFramework
-}
-
+/* TODO: Remove module */
 module math_test {
-	source "math_test.c"
-
-	depends embox.compat.libc.math
-	depends embox.framework.LibFramework
 }
 
 module fpu_context_consistency_test {
+	@Cflags("-fno-builtin")
 	source "fpu_context_consistency_test.c"
 
-	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 	depends embox.compat.posix.pthreads
 	depends embox.framework.LibFramework
 }
 
+module signbit_test {
+	@Cflags("-fno-builtin")
+	source "signbit_test.c"
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
 module log10_test {
+	@Cflags("-fno-builtin")
 	source "log10_test.c"
 
 	depends embox.compat.libc.math
@@ -31,138 +36,136 @@ module log10_test {
 }
 
 module sqrt_test {
-	source "sqrt_tests.c"
+	@Cflags("-fno-builtin")
+	source "sqrt_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module fmod_test {
-	source "fmod_tests.c"
+	@Cflags("-fno-builtin")
+	source "fmod_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module pow_tests {
-	source "pow_tests.c"
+module pow_test {
+	@Cflags("-fno-builtin")
+	source "pow_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
 module exp_test {
+	@Cflags("-fno-builtin")
 	source "exp_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module math_test_sin {
-	source "sin_tests.c"
+module sin_test {
+	@Cflags("-fno-builtin")
+	source "sin_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module math_test_cos {
-        source "cos_tests.c"
-
-        depends embox.compat.libc.math
-        depends embox.framework.LibFramework
-}
-
-module math_test_atan {
-	source "atan_tests.c"
+module cos_test {
+	@Cflags("-fno-builtin")
+	source "cos_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module math_test_sinh {
-	source "sinh_tests.c"
+module atan_test {
+	@Cflags("-fno-builtin")
+	source "atan_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module math_test_abs {
-	source "abs_tests.c"
+module atan2_test {
+	@Cflags("-fno-builtin")
+	source "atan2_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module math_test_ceil {
-	source "ceil_tests.c"
+module sinh_test {
+	@Cflags("-fno-builtin")
+	source "sinh_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module atan_tests {
-	source "atan_tests.c"
+module fabs_test {
+	@Cflags("-fno-builtin")
+	source "fabs_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module atan2_tests {
-	source "atan2_tests.c"
+module ceil_test {
+	@Cflags("-fno-builtin")
+	source "ceil_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module math_test_cosh {
-	source "cosh_tests.c"
+module cosh_test {
+	@Cflags("-fno-builtin")
+	source "cosh_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module acos_tests {
-	source "acos_tests.c"
+module acos_test {
+	@Cflags("-fno-builtin")
+	source "acos_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module asin_tests {
-	source "asin_tests.c"
-
-
-	depends embox.compat.libc.math
-	depends embox.framework.LibFramework
-}
-
-module round_tests {
-	source "round_tests.c"
-
+module asin_test {
+	@Cflags("-fno-builtin")
+	source "asin_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module tanh_tests {
-	source "tanh_tests.c"
-
-
-	depends embox.compat.libc.math
-	depends embox.framework.LibFramework
-}
-
-module floor_tests {
-	source "floor_tests.c"
-
+module round_test {
+	@Cflags("-fno-builtin")
+	source "round_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
 
-module fabs_tests {
-	source "fabs_tests.c"
+module tanh_test {
+	@Cflags("-fno-builtin")
+	source "tanh_test.c"
 
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
+
+module floor_test {
+	@Cflags("-fno-builtin")
+	source "floor_test.c"
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework

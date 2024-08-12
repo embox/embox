@@ -6,6 +6,7 @@
  * @author Aleksey Zhmulin
  */
 
+#include <endian.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <limits.h>
@@ -60,15 +61,15 @@ int setupterm(char *term, int fildes, int *errret) {
 	close(fd);
 
 	header_section = (int16_t *)buf;
-	if (header_section[0] != MAGIC) {
+	if (le16toh(header_section[0]) != MAGIC) {
 		RET_ERROR(ERROR_OCCURRED, "%s\n", "Invalid terminal entry format");
 	}
 
-	name_size = header_section[1];
-	flag_size = header_section[2];
-	num_size = header_section[3] * 2;
-	str_size = header_section[4] * 2;
-	table_size = header_section[5];
+	name_size = le16toh(header_section[1]);
+	flag_size = le16toh(header_section[2]);
+	num_size = le16toh(header_section[3]) * 2;
+	str_size = le16toh(header_section[4]) * 2;
+	table_size = le16toh(header_section[5]);
 
 	if ((name_size < 0) || (flag_size < 0) || (num_size < 0) || (str_size < 0)
 	    || (table_size < 0)) {

@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #include <sys/wait.h>
+#include <stdint.h>
 
 #include <embox/test.h>
 #include <kernel/task.h>
@@ -28,7 +29,7 @@ void void2param(void *arg, struct test_param *par) {
 }
 
 void *param2void(int sleep_val, int exit_code) {
-	return (void *) ((sleep_val & 0x0000ffff) | (exit_code << 16));
+	return (void *)(uintptr_t)((sleep_val & 0x0000ffff) | (exit_code << 16));
 }
 
 static void *test_waitpid_child(void *arg) {

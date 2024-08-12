@@ -8,17 +8,15 @@
  * @date 28.03.2018
  */
 
-#include <unistd.h> /* sleep() */
 #include <pthread.h>
+#include <unistd.h> /* sleep() */
 
 #include <embox/test.h>
-
 #include <kernel/printk.h>
-
 
 EMBOX_TEST_SUITE("FPU context consistency test. Must be compiled with -02");
 
-#define TICK_COUNT	10
+#define TICK_COUNT 10
 
 static float res_out[2][TICK_COUNT];
 
@@ -26,7 +24,7 @@ static void *fpu_context_thr1_hnd(void *arg) {
 	float res = 1.0f;
 	int i;
 
-	for (i = 0; i < TICK_COUNT; ) {
+	for (i = 0; i < TICK_COUNT;) {
 		res_out[0][i] = res;
 
 		if (i == 0 || res_out[1][i - 1] > 0) {
@@ -47,7 +45,7 @@ static void *fpu_context_thr2_hnd(void *arg) {
 	float res = 1.0f;
 	int i = 0;
 
-	for (i = 0; i < TICK_COUNT; ) {
+	for (i = 0; i < TICK_COUNT;) {
 		res_out[1][i] = res;
 
 		if (res_out[0][i] != 0) {
@@ -79,8 +77,8 @@ TEST_CASE("Test FPU context consistency") {
 		test_assert(0);
 	}
 
-	pthread_join(threads[0], (void**)&status);
-	pthread_join(threads[1], (void**)&status);
+	pthread_join(threads[0], (void **)&status);
+	pthread_join(threads[1], (void **)&status);
 
 	test_assert(res_out[0][0] != 0 && res_out[1][0] != 0);
 

@@ -1,271 +1,123 @@
 /**
  * @file
- * @brief http://pubs.opengroup.org/onlinepubs/009695399/basedefs/float.h.html
+ * @brief https://pubs.opengroup.org/onlinepubs/9799919799/basedefs/float.h.html
  *
  * @date Jan 17, 2013
  * @author: Anton Bondarev
  */
 
-#ifndef POSIX_FLOAT_H_
-#define POSIX_FLOAT_H_
+#ifndef COMPAT_POSIX_FLOAT_H_
+#define COMPAT_POSIX_FLOAT_H_
 
-
-//#define DBL_MANT_BITS    64      /* Number of bits used for the mantissa. */
-//#define DBL_MAX_2_EXP    3321    /* The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). */
-//#define FLT_MAX_2_EXP    3321 /*  The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). */
-//#define DBL_MIN_2_EXP    (-3318) /* The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). */
-//#define FLT_MANT_BITS    64 /* Number of bits used for the mantissa. */
-//#define FLT_MIN_2_EXP    (-3318) /*  The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). */
-//#define FLT_NORMALIZE    1 /*  Indicates that floating point numbers should always be normalized. */
-//#define LDBL_MANT_BITS   64 /*   Number of bits used for the mantissa. */
-//#define LDBL_MAX_2_EXP   3321 /*  The maximal exponent of a floating point value expressed in base 2 (see notes about FLT_MAX_EXP). */
-//#define LDBL_MIN_2_EXP  (-3318) /* The minimal exponent of a floating point value expressed in base 2 (see notes about FLT_MIN_EXP). */
-
-
-/* Number of significant digits in a floating point number.*/
-#ifdef __DBL_DIG__
-#undef DBL_DIG
-#define DBL_DIG __DBL_DIG__
-#else
-#define DBL_DIG          16
-#endif
-
-/* The smallest x for which 1.0+x != 1.0. */
-#ifdef __DBL_EPSILON__
-#undef DBL_EPSILON
-#define DBL_EPSILON __DBL_EPSILON__
-#else
-#define DBL_EPSILON      (1e-15)
-#endif
-
-/* Number of FLT_RADIX digits in the mantissa. */
-#ifdef __DBL_MANT_DIG__
-#undef DBL_MANT_DIG
-#define DBL_MANT_DIG __DBL_MANT_DIG__
-#else
-#define DBL_MANT_DIG     16
-#endif
-
-/* The maximal exponent of a floating point value expressed in base 10
- * (see notes about FLT_MAX_EXP).*/
-#ifdef __DBL_MAX_10_EXP__
-#undef DBL_MAX_10_EXP
-#define DBL_MAX_10_EXP __DBL_MAX_10_EXP__
-#else
-#define DBL_MAX_10_EXP   999
-#endif
-
-/* The maximal exponent of a floating point value expressed in base FLT_RADIX;
- * greater exponents are principally possible (up to 16383), but not supported
- * in all math functions.*/
-#ifdef __DBL_MAX_EXP__
-#undef DBL_MAX_EXP
-#define DBL_MAX_EXP __DBL_MAX_EXP__
-#else
-#define DBL_MAX_EXP      999
-#endif
-
-/*  The maximal floating point value (see notes about FLT_MAX_EXP). */
-#ifdef __DBL_MAX__
-#undef DBL_MAX
-#define DBL_MAX __DBL_MAX__
-#else
-#define DBL_MAX          (9.999999999999999e999)
-#endif
-
-/* The minimal exponent of a floating point value expressed in base 10
- * (see notes about FLT_MIN_EXP). */
-#ifdef __DBL_MIN_10_EXP__
-#undef DBL_MIN_10_EXP
-#define DBL_MIN_10_EXP __DBL_MIN_10_EXP__
-#else
-#define DBL_MIN_10_EXP   (-999)
-#endif
-
- /* The maximal exponent of a floating point value expressed in base FLT_RADIX;
-  * smaller exponents are principally possible (up to -16383),
-  * but not supported in all math functions. */
-#ifdef __DBL_MIN_EXP__
-#undef DBL_MIN_EXP
-#define DBL_MIN_EXP __DBL_MIN_EXP__
-#else
-#define DBL_MIN_EXP      (-999)
-#endif
-
-/* The minimal floating point value (see notes about FLT_MIN_EXP). */
-#ifdef __DBL_MIN__
-#undef DBL_MIN
-#define DBL_MIN __DBL_MIN__
-#else
-#define DBL_MIN          (1e-999)
-#endif
-/* Number of significant digits in a floating point number. */
-#ifdef __FLT_DIG__
-#undef FLT_DIG
-#define FLT_DIG __FLT_DIG__
-#else
-#define FLT_DIG          16
-#endif
-
-/* The smallest x for which 1.0+x != 1.0. */
-#ifdef __FLT_EPSILON__
-#undef FLT_EPSILON
-#define FLT_EPSILON __FLT_EPSILON__
-#else
-#define FLT_EPSILON      (1e-15)
-#endif
-
-/*  Number of FLT_RADIX digits in the mantissa. */
-#ifdef __FLT_MANT_DIG__
-#undef FLT_MANT_DIG
-#define FLT_MANT_DIG __FLT_MANT_DIG__
-#else
-#define FLT_MANT_DIG     16
-#endif
-
-/* The maximal exponent of a floating point value expressed in base 10
- * (see notes about FLT_MAX_EXP). */
-#ifdef __FLT_MAX_10_EXP__
-#undef FLT_MAX_10_EXP
-#define FLT_MAX_10_EXP __FLT_MAX_10_EXP__
-#else
-#define FLT_MAX_10_EXP   999
-#endif
-
-/* The maximal exponent of a floating point value expressed in base FLT_RADIX;
- * greater exponents are principally possible (up to 16383), but not supported
- * in all math functions. */
-#ifdef __FLT_MAX_EXP__
-#undef FLT_MAX_EXP
-#define FLT_MAX_EXP __FLT_MAX_EXP__
-#else
-#define FLT_MAX_EXP      999
-#endif
-
-/* The maximal floating point value (see notes about FLT_MAX_EXP). */
-#ifdef __FLT_MAX__
-#undef FLT_MAX
-#define FLT_MAX __FLT_MAX__
-#else
-#define FLT_MAX          (9.999999999999999e999)
-#endif
-
-/*  The minimal exponent of a floating point value expressed in base 10
- * (see notes about FLT_MIN_EXP).*/
-#ifdef __FLT_MIN_10_EXP__
-#undef FLT_MIN_10_EXP
-#define FLT_MIN_10_EXP __FLT_MIN_10_EXP__
-#else
-#define FLT_MIN_10_EXP   (-999)
-#endif
-
- /* The minimal exponent of a floating point value expressed in base FLT_RADIX;
-  * smaller exponents are principally possible (up to -16383),
-  * but not supported in all math functions. */
-#ifdef __FLT_MIN_EXP__
-#undef FLT_MIN_EXP
-#define FLT_MIN_EXP __FLT_MIN_EXP__
-#else
-#define FLT_MIN_EXP      (-999)
-#endif
-
-/* The minimal floating point value (see notes about FLT_MIN_EXP).*/
-#ifdef __FLT_MIN__
-#undef FLT_MIN
-#define FLT_MIN __FLT_MIN__
-#else
-#define FLT_MIN          (1e-999)
-#endif
-
-
-/*  The base used for representing the exponent. */
-#ifdef __FLT_RADIX__
-#undef FLT_RADIX
-#define FLT_RADIX        __FLT_RADIX__
-#else
-#define FLT_RADIX        10
-#endif
-
-/*    Option for rounding floating point numbers during the addition. */
-#undef FLT_ROUNDS
+/**
+ * The rounding mode for floating-point addition.
+ * 
+ * -1 Indeterminable
+ *  0 Toward zero
+ *  1 To nearest
+ *  2 Toward positive infinity
+ *  3 Toward negative infinity
+ */
 #define FLT_ROUNDS       1
 
-/*    Number of significant digits in a floating point number. */
-#ifdef __LDBL_DIG__
-#undef LDBL_DIG
-#define LDBL_DIG __LDBL_DIG__
-#else
-#define LDBL_DIG         16
-#endif
+/**
+ * Evaluation format of operations and constants of float and double type.
+ * 
+ * -1 Indeterminable
+ *  0 Evaluate to the range and precision of the type
+ *  1 Evaluate to the range and precision of the double
+ *  2 Evaluate to the range and precision of the long double
+ */
+#define FLT_EVAL_METHOD  __FLT_EVAL_METHOD__
 
-/*   The smallest x for which 1.0+x != 1.0. */
-#ifdef LDBL_EPSILON
-#undef LDBL_EPSILON
-#define LDBL_EPSILON __LDBL_EPSILON__
-#else
-#define LDBL_EPSILON     (1e-15)
-#endif
+/**
+ * Radix of exponent representation
+ */
+#define FLT_RADIX        __FLT_RADIX__
 
-/*    Number of FLT_RADIX digits in the mantissa. */
-#ifdef __LDBL_MANT_DIG__
-#undef LDBL_MANT_DIG
-#define LDBL_MANT_DIG __LDBL_MANT_DIG__
-#else
-#define LDBL_MANT_DIG    16
-#endif
+/**
+ * Number of base-FLT_RADIX digits in float/double/long double type.
+ */
+#define FLT_MANT_DIG     __FLT_MANT_DIG__
+#define DBL_MANT_DIG     __DBL_MANT_DIG__
+#define LDBL_MANT_DIG    __LDBL_MANT_DIG__
 
-/*  The maximal exponent of a floating point value expressed in base 10
- * (see notes about FLT_MAX_EXP). */
-#ifdef __LDBL_MAX_10_EXP__
-#undef LDBL_MAX_10_EXP
-#define LDBL_MAX_10_EXP __LDBL_MAX_10_EXP__
-#else
-#define LDBL_MAX_10_EXP  999
-#endif
+/** 
+ * Number of decimal digits that can be converted to
+ * float/double/long double type and back without losing precision
+ */
+#define DECIMAL_DIG      __DECIMAL_DIG__
+#define FLT_DECIMAL_DIG  __FLT_DECIMAL_DIG__
+#define DBL_DECIMAL_DIG  __DBL_DECIMAL_DIG__
+#define LDBL_DECIMAL_DIG __DECIMAL_DIG__
 
- /* The maximal exponent of a floating point value expressed in base FLT_RADIX;
-  *  greater exponents are principally possible (up to 16383),
-  *  but not supported in all math functions.*/
-#ifdef __LDBL_MAX_EXP__
-#undef LDBL_MAX_EXP
-#define LDBL_MAX_EXP __LDBL_MAX_EXP__
-#else
-#define LDBL_MAX_EXP     999
-#endif
+/** 
+ * Number of decimal digits that can be represented
+ * without losing precision for float/double/long double type
+ */
+#define FLT_DIG          __FLT_DIG__
+#define DBL_DIG          __DBL_DIG__
+#define LDBL_DIG         __LDBL_DIG__
 
-/* The maximal floating point value (see notes about FLT_MAX_EXP). */
-#ifdef __LDBL_MAX__
-#undef LDBL_MAX
-#define LDBL_MAX __LDBL_MAX__
-#else
-#define LDBL_MAX        (9.999999999999999e999)
-#endif
+/** 
+ * Minimum negative integer such that FLT_RADIX raised to that power minus 1
+ * is a normalized float/double/long double type number
+ */
+#define FLT_MIN_EXP      __FLT_MIN_EXP__
+#define DBL_MIN_EXP      __DBL_MIN_EXP__
+#define LDBL_MIN_EXP     __LDBL_MIN_EXP__
 
- /* The minimal exponent of a floating point value expressed in base 10
-  * (see notes about FLT_MIN_EXP). */
-#ifdef __LDBL_MIN_10_EXP__
-#undef LDBL_MIN_10_EXP
-#define LDBL_MIN_10_EXP __LDBL_MIN_10_EXP__
-#else
-#define LDBL_MIN_10_EXP (-999)
-#endif
+/** 
+ * Minimum negative integer such that 10 raised to that power
+ * is in the range of normalized float/double/long double type numbers
+ */
+#define FLT_MIN_10_EXP   __FLT_MIN_10_EXP__
+#define DBL_MIN_10_EXP   __DBL_MIN_10_EXP__
+#define LDBL_MIN_10_EXP  __LDBL_MIN_10_EXP__
 
-/* The maximal exponent of a floating point value expressed in base FLT_RADIX;
- * smaller exponents are principally possible (up to -16383), but not supported
-*  in all math functions. */
-#ifdef __LDBL_MIN_EXP__
-#undef LDBL_MIN_EXP
-#define LDBL_MIN_EXP __LDBL_MIN_EXP__
-#else
-#define LDBL_MIN_EXP    (-999)
-#endif
+/** 
+ * Maximum integer such that FLT_RADIX raised to that power minus 1
+ * is a representable finite float/double/long double type number
+ */
+#define FLT_MAX_EXP      __FLT_MAX_EXP__
+#define DBL_MAX_EXP      __DBL_MAX_EXP__
+#define LDBL_MAX_EXP     __LDBL_MAX_EXP__
 
-/* The minimal floating point value (see notes about FLT_MIN_EXP). */
-#ifdef __LDBL_MIN__
-#undef LDBL_MIN
-#define LDBL_MIN __LDBL_MIN__
-#else
-#define LDBL_MIN        (1e-999)
-#endif
+/** 
+ * Maximum integer such that 10 raised to that power
+ * is in the range of representable finite float/double/long double type numbers
+ */
+#define FLT_MAX_10_EXP   __FLT_MAX_10_EXP__
+#define DBL_MAX_10_EXP   __DBL_MAX_10_EXP__
+#define LDBL_MAX_10_EXP  __LDBL_MAX_10_EXP__
 
-#endif /* POSIX_FLOAT_H_ */
+/** 
+ * Maximum representable finite float/double/long double type number
+ */
+#define FLT_MAX          __FLT_MAX__
+#define DBL_MAX          __DBL_MAX__
+#define LDBL_MAX         __LDBL_MAX__
+
+/** 
+ * Minimum normalized positive float/double/long double type number
+ */
+#define FLT_MIN          __FLT_MIN__
+#define DBL_MIN          __DBL_MIN__
+#define LDBL_MIN         __LDBL_MIN__
+
+/** 
+ * Minimum positive float/double/long double type number
+ */
+#define FLT_TRUE_MIN     __FLT_MIN__
+#define DBL_TRUE_MIN     __DBL_MIN__
+#define LDBL_TRUE_MIN    __LDBL_MIN__
+
+/** 
+ * The difference between 1 and the least value greater than 1
+ * that is representable in float/double/long double type
+ */
+#define FLT_EPSILON      __FLT_EPSILON__
+#define DBL_EPSILON      __DBL_EPSILON__
+#define LDBL_EPSILON     __LDBL_EPSILON__
+
+#endif /* COMPAT_POSIX_FLOAT_H_ */

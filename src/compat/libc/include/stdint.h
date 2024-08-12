@@ -179,6 +179,9 @@ typedef __INTMAX_TYPE__ intmax_t;
 typedef __UINTPTR_TYPE__ uintptr_t;
 typedef __INTPTR_TYPE__ intptr_t;
 
+/* For compatibility with Linux */
+#include <bits/types.h>
+
 /* TODO: REMOVE ME */
 #include <asm/types.h>
 

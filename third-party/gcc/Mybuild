@@ -3,9 +3,9 @@ package third_party.gcc
 @LinkerSection(text="libsupcxx_text",rodata="libsupcxx_rodata",data="libsupcxx_data",bss="libsupcxx_bss",arm_exidx="libsupcxx_arm_exidx",arm_extab="libsupcxx_arm_extab")
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
-@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version/_target")
+@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/_target")
 static module libsupcxx extends embox.lib.libsupcxx {
-	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/libs")
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
 	source "libsupc++.a"
 
 	@NoRuntime depends gcc_build
@@ -14,9 +14,9 @@ static module libsupcxx extends embox.lib.libsupcxx {
 @LinkerSection(text="libstdcxx_text",rodata="libstdcxx_rodata",data="libstdcxx_data",bss="libstdcxx_bss",arm_exidx="libstdcxx_arm_exidx",arm_extab="libstdcxx_arm_extab")
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
-@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/_target/include/c++/_gcc_version/_target")
+@BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/_target")
 static module libstdcxx extends embox.lib.libstdcxx {
-	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/libs")
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
 	source "libstdc++.a"
 
 	@NoRuntime depends gcc_build
@@ -25,7 +25,7 @@ static module libstdcxx extends embox.lib.libstdcxx {
 @BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 static module libgcc extends embox.lib.libgcc {
-	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/libs")
+	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
 	source "libgcc.a"
 
 	@NoRuntime depends gcc_build
@@ -36,5 +36,7 @@ static module libgcc extends embox.lib.libgcc {
 static module gcc_build {
 	option string gcc_version="9.3.0"
 
-	depends embox.compat.posix.proc.atexit_api
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.compat.posix.LibPosix
+	@NoRuntime depends embox.compat.posix.proc.atexit_api
 }

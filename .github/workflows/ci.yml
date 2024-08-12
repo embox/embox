@@ -9,15 +9,16 @@ jobs:
       fail-fast: false
       matrix:
         template:
-          - x86/qemu
           - x86/user_apps
           - x86/test/lang
           - x86/test/units
           - x86/test/packetdrill
           - arm/test/cxx
-          - aarch64/qemu
-          - riscv64/qemu
-          - mips/qemu
+          - aarch64/test/units
+          - riscv64/test/cxx
+          - riscv64/test/units
+          - mips/third_party
+          - mips64/test/cxx
           - ppc/qemu
           - sparc/qemu
           - microblaze/qemu

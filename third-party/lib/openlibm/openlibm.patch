@@ -1,0 +1,495 @@
+diff -aur ./openlibm-0.8.3/Make.inc ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Make.inc
+--- ./openlibm-0.8.3/Make.inc	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Make.inc	2024-08-12 03:22:44.200450784 +0300
+@@ -160,15 +160,8 @@
+ endif
+ endif
+ 
+-ifneq ($(filter $(ARCH),i387 amd64),)
+-# Determines whether `long double` is the same as `double` on this arch.
+-# linux x86_64, for instance, `long double` is 80 bits wide, whereas on macOS aarch64,
+-# `long double` is the same as `double`. 
++ifneq ($(LONG_DOUBLE_SIZE),64)
+ LONG_DOUBLE_NOT_DOUBLE := 1
+-else ifeq ($(ARCH), aarch64)
+-ifeq ($(filter $(OS),Darwin WINNT),)
+-LONG_DOUBLE_NOT_DOUBLE := 1
+-endif
+ endif
+ 
+ ifeq ($(CODE_COVERAGE),1)
+@@ -176,12 +169,18 @@
+ LDFLAGS_add += --coverage
+ endif # CODE_COVERAGE==1
+ 
++CPPFLAGS_add += -I$(OPENLIBM_HOME) -I$(OPENLIBM_HOME)/include -I$(OPENLIBM_HOME)/$(ARCH) -I$(OPENLIBM_HOME)/src -DASSEMBLER -D__BSD_VISIBLE -Wno-implicit-function-declaration
++ifeq ($(LONG_DOUBLE_SIZE),80)
++CPPFLAGS_add += -I$(OPENLIBM_HOME)/ld80
++else ifeq ($(LONG_DOUBLE_SIZE),128)
++CPPFLAGS_add += -I$(OPENLIBM_HOME)/ld128
++endif
+ 
+ %.c.o: %.c
+-	$(CC) $(CPPFLAGS) $(CFLAGS) $(CFLAGS_add) -c $< -o $@
++	$(CC) $(CPPFLAGS) $(CPPFLAGS_add) -c $< -o $@
+ 
+ %.S.o: %.S
+-	$(CC) $(CPPFLAGS) $(SFLAGS) $(SFLAGS_add) $(filter -m% -B% -I% -D%,$(CFLAGS_add)) -c $< -o $@
++	$(CC) $(CPPFLAGS) $(CPPFLAGS_add) -c $< -o $@
+ 
+ 
+ # Makefile debugging trick:
+diff -aur ./openlibm-0.8.3/Makefile ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Makefile
+--- ./openlibm-0.8.3/Makefile	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/Makefile	2024-08-12 03:22:44.200450784 +0300
+@@ -2,16 +2,10 @@
+ include ./Make.inc
+ 
+ SUBDIRS = src $(ARCH) bsdsrc
+-ifeq ($(LONG_DOUBLE_NOT_DOUBLE),1)
+-# Add ld80 directory on x86 and x64
+-ifneq ($(filter $(ARCH),i387 amd64),)
++ifeq ($(LONG_DOUBLE_SIZE),80)
+ SUBDIRS += ld80
+-else
+-ifneq ($(filter $(ARCH),aarch64),)
++else ifeq ($(LONG_DOUBLE_SIZE),128)
+ SUBDIRS += ld128
+-else
+-endif
+-endif
+ endif
+ 
+ define INC_template
+diff -aur ./openlibm-0.8.3/i387/fenv.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/i387/fenv.c
+--- ./openlibm-0.8.3/i387/fenv.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/i387/fenv.c	2024-08-12 03:22:44.200450784 +0300
+@@ -70,22 +70,6 @@
+ int
+ __test_sse(void)
+ {
+-	int flag, nflag;
+-	int dx_features;
+-
+-	/* Am I a 486? */
+-	getfl(&flag);
+-	nflag = flag ^ 0x200000;
+-	setfl(nflag);
+-	getfl(&nflag);
+-	if (flag != nflag) {
+-		/* Not a 486, so CPUID should work. */
+-		cpuid_dx(&dx_features);
+-		if (dx_features & 0x2000000) {
+-			__has_sse = __SSE_YES;
+-			return (1);
+-		}
+-	}
+ 	__has_sse = __SSE_NO;
+ 	return (0);
+ }
+diff -aur ./openlibm-0.8.3/include/openlibm_math.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/include/openlibm_math.h
+--- ./openlibm-0.8.3/include/openlibm_math.h	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/include/openlibm_math.h	2024-08-12 03:22:44.200450784 +0300
+@@ -27,9 +27,7 @@
+     #define __WIN32__
+ #endif
+ 
+-#if !defined(__arm__) && !defined(__wasm__)
+ #define OLM_LONG_DOUBLE
+-#endif
+ 
+ #ifndef __pure2
+ #define __pure2
+diff -aur ./openlibm-0.8.3/riscv64/fenv.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/riscv64/fenv.c
+--- ./openlibm-0.8.3/riscv64/fenv.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/riscv64/fenv.c	2024-08-12 03:23:26.397245861 +0300
+@@ -27,7 +27,7 @@
+  */
+ 
+ #define	__fenv_static
+-#include "fenv.h"
++#include <openlibm_fenv.h>
+ 
+ #ifdef __GNUC_GNU_INLINE__
+ #error "This file must be compiled with C99 'inline' semantics"
+diff -aur ./openlibm-0.8.3/src/cdefs-compat.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/cdefs-compat.h
+--- ./openlibm-0.8.3/src/cdefs-compat.h	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/cdefs-compat.h	2024-08-12 03:22:44.200450784 +0300
+@@ -1,6 +1,8 @@
+ #ifndef _CDEFS_COMPAT_H_
+ #define	_CDEFS_COMPAT_H_
+ 
++#include <sys/cdefs.h>
++
+ #if !defined(__BEGIN_DECLS)
+ #if defined(__cplusplus)
+ #define	__BEGIN_DECLS	extern "C" {
+@@ -101,5 +103,10 @@
+ #endif  /* __weak_reference */
+ #endif	/* __GNUC__ */
+ 
++#undef openlibm_strong_reference
++#define openlibm_strong_reference(sym,alias) __strong_alias(alias,sym)
++
++#undef openlibm_weak_reference
++#define openlibm_weak_reference(sym,alias) __strong_alias(alias,sym)
+ 
+ #endif /* _CDEFS_COMPAT_H_ */
+diff -aur ./openlibm-0.8.3/src/e_fmod.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/e_fmod.c
+--- ./openlibm-0.8.3/src/e_fmod.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/e_fmod.c	2024-08-12 03:22:44.200450784 +0300
+@@ -131,3 +131,7 @@
+ 	}
+ 	return x;		/* exact output */
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(fmod, fmodl);
++#endif
+diff -aur ./openlibm-0.8.3/src/e_lgamma.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/e_lgamma.c
+--- ./openlibm-0.8.3/src/e_lgamma.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/e_lgamma.c	2024-08-12 03:22:44.200450784 +0300
+@@ -34,3 +34,7 @@
+ 
+ 	return __ieee754_lgamma_r(x,&signgam);
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(lgamma, lgammal);
++#endif
+diff -aur ./openlibm-0.8.3/src/e_lgamma_r.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/e_lgamma_r.c
+--- ./openlibm-0.8.3/src/e_lgamma_r.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/e_lgamma_r.c	2024-08-12 03:22:44.200450784 +0300
+@@ -296,3 +296,7 @@
+ 	if(hx<0) r = nadj - r;
+ 	return r;
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(lgamma_r, lgammal_r);
++#endif
+diff -aur ./openlibm-0.8.3/src/fpmath.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/fpmath.h
+--- ./openlibm-0.8.3/src/fpmath.h	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/fpmath.h	2024-08-12 03:22:44.200450784 +0300
+@@ -29,26 +29,6 @@
+ #ifndef _FPMATH_H_
+ #define _FPMATH_H_
+ 
+-#if defined(__aarch64__)
+-#include "aarch64_fpmath.h"
+-#elif defined(__i386__) || defined(__x86_64__)
+-#ifdef __LP64__
+-#include "amd64_fpmath.h"
+-#else 
+-#include "i386_fpmath.h"
+-#endif
+-#elif defined(__powerpc__) || defined(__POWERPC__)
+-#include "powerpc_fpmath.h"
+-#elif defined(__mips__)
+-#include "mips_fpmath.h"
+-#elif defined(__s390__)
+-#include "s390_fpmath.h"
+-#elif defined(__riscv)
+-#include "riscv_fpmath.h"
+-#elif defined(__loongarch64)
+-#include "loongarch64_fpmath.h"
+-#endif
+-
+ /* Definitions provided directly by GCC and Clang. */
+ #if !(defined(__BYTE_ORDER__) && defined(__ORDER_LITTLE_ENDIAN__) && defined(__ORDER_BIG_ENDIAN__))
+ 
+@@ -81,6 +61,60 @@
+ #define __FLOAT_WORD_ORDER__     __BYTE_ORDER__
+ #endif
+ 
++#if defined(__aarch64__)
++#include "aarch64_fpmath.h"
++#elif defined(__i386__) || defined(__x86_64__)
++#ifdef __LP64__
++#include "amd64_fpmath.h"
++#else 
++#include "i386_fpmath.h"
++#endif
++#elif defined(__powerpc__) || defined(__POWERPC__)
++#include "powerpc_fpmath.h"
++#elif defined(__mips__)
++#include "mips_fpmath.h"
++#elif defined(__s390__)
++#include "s390_fpmath.h"
++#elif defined(__riscv)
++#include "riscv_fpmath.h"
++#elif defined(__loongarch64)
++#include "loongarch64_fpmath.h"
++#else
++union IEEEl2bits {
++	long double	e;
++	struct {
++#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
++#if __FLOAT_WORD_ORDER__ == __ORDER_LITTLE_ENDIAN__
++		unsigned int	manl	:32;
++#endif
++		unsigned int	manh	:20;
++		unsigned int	exp	:11;
++		unsigned int	sign	:1;
++#if __FLOAT_WORD_ORDER__ == __ORDER_BIG_ENDIAN__
++		unsigned int	manl	:32;
++#endif
++#else /* _BIG_ENDIAN */
++		unsigned int	sign	:1;
++		unsigned int	exp	:11;
++		unsigned int	manh	:20;
++		unsigned int	manl	:32;
++#endif
++	} bits;
++};
++
++#define	LDBL_NBIT	0
++#define	mask_nbit_l(u)	((void)0)
++#define	LDBL_IMPLICIT_NBIT
++
++#define	LDBL_MANH_SIZE	20
++#define	LDBL_MANL_SIZE	32
++
++#define	LDBL_TO_ARRAY32(u, a) do {			\
++	(a)[0] = (uint32_t)(u).bits.manl;		\
++	(a)[1] = (uint32_t)(u).bits.manh;		\
++} while(0)
++#endif
++
+ union IEEEf2bits {
+ 	float	f;
+ 	struct {
+diff -aur ./openlibm-0.8.3/src/math_private.h ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/math_private.h
+--- ./openlibm-0.8.3/src/math_private.h	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/math_private.h	2024-08-12 03:22:44.204450861 +0300
+@@ -24,6 +24,7 @@
+ #include "fpmath.h"
+ #include <stdint.h>
+ #include "math_private_openbsd.h"
++#include <float.h>
+ 
+ /*
+  * The original fdlibm code used statements like:
+diff -aur ./openlibm-0.8.3/src/s_carg.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_carg.c
+--- ./openlibm-0.8.3/src/s_carg.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_carg.c	2024-08-12 03:22:44.204450861 +0300
+@@ -38,3 +38,7 @@
+ 
+ 	return (atan2(cimag(z), creal(z)));
+ }
++
++#if LDBL_MANT_DIG == 53
++openlibm_weak_reference(carg, cargl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_ccosh.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_ccosh.c
+--- ./openlibm-0.8.3/src/s_ccosh.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_ccosh.c	2024-08-12 03:22:44.204450861 +0300
+@@ -153,3 +153,8 @@
+ 	/* ccos(z) = ccosh(I * z) */
+ 	return (ccosh(CMPLX(-cimag(z), creal(z))));
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(ccos, ccosl);
++openlibm_strong_reference(ccosh, ccoshl);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_cexp.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_cexp.c
+--- ./openlibm-0.8.3/src/s_cexp.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_cexp.c	2024-08-12 03:22:44.204450861 +0300
+@@ -87,3 +87,7 @@
+ 		return (CMPLX(exp_x * cos(y), exp_x * sin(y)));
+ 	}
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(cexp, cexpl);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_cimag.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_cimag.c
+--- ./openlibm-0.8.3/src/s_cimag.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_cimag.c	2024-08-12 03:22:44.204450861 +0300
+@@ -35,3 +35,7 @@
+ {
+ 	return (__imag__ z);
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(cimag, cimagl);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_conj.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_conj.c
+--- ./openlibm-0.8.3/src/s_conj.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_conj.c	2024-08-12 03:22:44.204450861 +0300
+@@ -36,3 +36,7 @@
+ 
+ 	return (CMPLX(creal(z), -cimag(z)));
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(conj, conjl);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_copysign.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_copysign.c
+--- ./openlibm-0.8.3/src/s_copysign.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_copysign.c	2024-08-12 03:22:44.204450861 +0300
+@@ -32,3 +32,7 @@
+ 	SET_HIGH_WORD(x,(hx&0x7fffffff)|(hy&0x80000000));
+         return x;
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(copysign, copysignl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_creal.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_creal.c
+--- ./openlibm-0.8.3/src/s_creal.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_creal.c	2024-08-12 03:22:44.204450861 +0300
+@@ -35,3 +35,7 @@
+ {
+ 	return z;
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(creal, creall);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_csinh.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_csinh.c
+--- ./openlibm-0.8.3/src/s_csinh.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_csinh.c	2024-08-12 03:22:44.204450861 +0300
+@@ -155,3 +155,8 @@
+ 	z = csinh(CMPLX(-cimag(z), creal(z)));
+ 	return (CMPLX(cimag(z), -creal(z)));
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(csin, csinl);
++openlibm_strong_reference(csinh, csinhl);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_ctanh.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_ctanh.c
+--- ./openlibm-0.8.3/src/s_ctanh.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_ctanh.c	2024-08-12 03:22:44.204450861 +0300
+@@ -142,3 +142,8 @@
+ 	z = ctanh(CMPLX(-cimag(z), creal(z)));
+ 	return (CMPLX(cimag(z), -creal(z)));
+ }
++
++#if	LDBL_MANT_DIG == DBL_MANT_DIG
++openlibm_strong_reference(ctan, ctanl);
++openlibm_strong_reference(ctanh, ctanhl);
++#endif	/* LDBL_MANT_DIG == DBL_MANT_DIG */
+diff -aur ./openlibm-0.8.3/src/s_fabs.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_fabs.c
+--- ./openlibm-0.8.3/src/s_fabs.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_fabs.c	2024-08-12 03:22:44.204450861 +0300
+@@ -26,3 +26,7 @@
+ 	SET_HIGH_WORD(x,high&0x7fffffff);
+         return x;
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(fabs, fabsl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_fmax.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_fmax.c
+--- ./openlibm-0.8.3/src/s_fmax.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_fmax.c	2024-08-12 03:22:44.204450861 +0300
+@@ -52,3 +52,7 @@
+ 
+ 	return (x > y ? x : y);
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(fmax, fmaxl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_fmin.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_fmin.c
+--- ./openlibm-0.8.3/src/s_fmin.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_fmin.c	2024-08-12 03:22:44.204450861 +0300
+@@ -52,3 +52,7 @@
+ 
+ 	return (x < y ? x : y);
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(fmin, fminl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_ilogb.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_ilogb.c
+--- ./openlibm-0.8.3/src/s_ilogb.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_ilogb.c	2024-08-12 03:22:44.204450861 +0300
+@@ -47,3 +47,7 @@
+ 	else if (hx>0x7ff00000 || lx!=0) return FP_ILOGBNAN;
+ 	else return INT_MAX;
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(ilogb, ilogbl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_llrint.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_llrint.c
+--- ./openlibm-0.8.3/src/s_llrint.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_llrint.c	2024-08-12 03:22:44.204450861 +0300
+@@ -7,3 +7,7 @@
+ #define	fn		llrint
+ 
+ #include "s_lrint.c"
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(llrint, llrintl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_llround.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_llround.c
+--- ./openlibm-0.8.3/src/s_llround.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_llround.c	2024-08-12 03:22:44.204450861 +0300
+@@ -9,3 +9,7 @@
+ #define	fn		llround
+ 
+ #include "s_lround.c"
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(llround, llroundl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_lrint.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_lrint.c
+--- ./openlibm-0.8.3/src/s_lrint.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_lrint.c	2024-08-12 03:22:44.204450861 +0300
+@@ -59,3 +59,7 @@
+ 	feupdateenv(&env);
+ 	return (d);
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(lrint, lrintl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_lround.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_lround.c
+--- ./openlibm-0.8.3/src/s_lround.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_lround.c	2024-08-12 03:22:44.204450861 +0300
+@@ -67,3 +67,7 @@
+ 		return (DTYPE_MAX);
+ 	}
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(lround, lroundl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_modf.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_modf.c
+--- ./openlibm-0.8.3/src/s_modf.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_modf.c	2024-08-12 03:22:44.204450861 +0300
+@@ -74,3 +74,7 @@
+ 	    }
+ 	}
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(modf, modfl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_nearbyint.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_nearbyint.c
+--- ./openlibm-0.8.3/src/s_nearbyint.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_nearbyint.c	2024-08-12 03:22:44.204450861 +0300
+@@ -54,3 +54,7 @@
+ 
+ DECL(double, nearbyint, rint)
+ DECL(float, nearbyintf, rintf)
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(nearbyint, nearbyintl);
++#endif
+diff -aur ./openlibm-0.8.3/src/s_round.c ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_round.c
+--- ./openlibm-0.8.3/src/s_round.c	2024-06-19 22:02:50.000000000 +0300
++++ ../build/extbld/third_party/lib/OpenLibm/openlibm-0.8.3/src/s_round.c	2024-08-12 03:22:44.204450861 +0300
+@@ -53,3 +53,7 @@
+ 		return (-t);
+ 	}
+ }
++
++#if (LDBL_MANT_DIG == 53)
++openlibm_weak_reference(round, roundl);
++#endif

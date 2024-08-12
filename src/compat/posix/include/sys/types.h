@@ -58,6 +58,9 @@ static inline unsigned int minor(dev_t dev) {
 
 __END_DECLS
 
+/* For compatibility with Linux */
+#include <bits/types.h>
+
 #endif /* __ASSEMBLER__ */
 
 #endif /* COMPAT_POSIX_SYS_TYPES_H_ */

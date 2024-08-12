@@ -4,6 +4,7 @@ package embox.cmd.testing.cxx
 @CxxCmd(name="cxx_ctors_demo",
 	help="",
 	man="")
+@BuildDepends(embox.lib.libstdcxx)
 module cxx_ctors_demo {
 	source "cxx_ctors_demo.cpp"
 }
