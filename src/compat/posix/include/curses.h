@@ -6,13 +6,13 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CURSES_H_
-#define CURSES_H_
+#ifndef COMPAT_POSIX_CURSES_H_
+#define COMPAT_POSIX_CURSES_H_
 
-#include <stdio.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #undef TRUE
 #define TRUE true
@@ -43,9 +43,9 @@ typedef struct window {
 	uint16_t flags;
 
 	attr_t attrs;
-	chtype bkgd;         /* background color */
-	bool scrollok;       /* may scroll */
-	bool clearok;        /* clear screen on next refresh */
+	chtype bkgd;   /* background color */
+	bool scrollok; /* may scroll */
+	bool clearok;  /* clear screen on next refresh */
 } WINDOW;
 
 #ifdef CURSES_PRIV_H_
@@ -256,8 +256,8 @@ extern WINDOW *derwin(WINDOW *orig, int nlines, int ncols, int begy, int begx);
 #define KEY_EVENT     0633           /* We were interrupted by an event */
 #define KEY_MAX       0777           /* Maximum key value is 0633 */
 
-#define A_NORMAL  0x0000
-#define A_REVERSE 0x1000
-#define A_BOLD    0x2000
+#define A_NORMAL      0x0000
+#define A_REVERSE     0x1000
+#define A_BOLD        0x2000
 
-#endif /* CURSES_H_ */
+#endif /* COMPAT_POSIX_CURSES_H_ */

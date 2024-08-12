@@ -6,9 +6,10 @@
  * @author Aleksey Zhmulin
  */
 
-#ifndef TERM_H_
-#define TERM_H_
+#ifndef COMPAT_POSIX_TERM_H_
+#define COMPAT_POSIX_TERM_H_
 
+#include <endian.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -32,78 +33,81 @@ typedef struct terminal {
 
 extern TERMINAL *cur_term;
 
-#define CUR_TERM_STRINGS(n) cur_term->type.str_table + cur_term->type.strings[n]
+#define CUR_TERM_FLAGS(n)   cur_term->type.flags[n]
+#define CUR_TERM_NUMBERS(n) le16toh(cur_term->type.numbers[n])
+#define CUR_TERM_STRINGS(n) \
+	(cur_term->type.str_table + le16toh(cur_term->type.strings[n]))
 
-#define TINFO_AUTO_LEFT_MARGIN          cur_term->type.flags[0]
-#define TINFO_AUTO_RIGHT_MARGIN         cur_term->type.flags[1]
-#define TINFO_NO_ESC_CTLC               cur_term->type.flags[2]
-#define TINFO_CEOL_STANDOUT_GLITCH      cur_term->type.flags[3]
-#define TINFO_EAT_NEWLINE_GLITCH        cur_term->type.flags[4]
-#define TINFO_ERASE_OVERSTRIKE          cur_term->type.flags[5]
-#define TINFO_GENERIC_TYPE              cur_term->type.flags[6]
-#define TINFO_HARD_COPY                 cur_term->type.flags[7]
-#define TINFO_HAS_META_KEY              cur_term->type.flags[8]
-#define TINFO_HAS_STATUS_LINE           cur_term->type.flags[9]
-#define TINFO_INSERT_NULL_GLITCH        cur_term->type.flags[10]
-#define TINFO_MEMORY_ABOVE              cur_term->type.flags[11]
-#define TINFO_MEMORY_BELOW              cur_term->type.flags[12]
-#define TINFO_MOVE_INSERT_MODE          cur_term->type.flags[13]
-#define TINFO_MOVE_STANDOUT_MODE        cur_term->type.flags[14]
-#define TINFO_OVER_STRIKE               cur_term->type.flags[15]
-#define TINFO_STATUS_LINE_ESC_OK        cur_term->type.flags[16]
-#define TINFO_DEST_TABS_MAGIC_SMSO      cur_term->type.flags[17]
-#define TINFO_TILDE_GLITCH              cur_term->type.flags[18]
-#define TINFO_TRANSPARENT_UNDERLINE     cur_term->type.flags[19]
-#define TINFO_XON_XOFF                  cur_term->type.flags[20]
-#define TINFO_NEEDS_XON_XOFF            cur_term->type.flags[21]
-#define TINFO_PRTR_SILENT               cur_term->type.flags[22]
-#define TINFO_HARD_CURSOR               cur_term->type.flags[23]
-#define TINFO_NON_REV_RMCUP             cur_term->type.flags[24]
-#define TINFO_NO_PAD_CHAR               cur_term->type.flags[25]
-#define TINFO_NON_DEST_SCROLL_REGION    cur_term->type.flags[26]
-#define TINFO_CAN_CHANGE                cur_term->type.flags[27]
-#define TINFO_BACK_COLOR_ERASE          cur_term->type.flags[28]
-#define TINFO_HUE_LIGHTNESS_SATURATION  cur_term->type.flags[29]
-#define TINFO_COL_ADDR_GLITCH           cur_term->type.flags[30]
-#define TINFO_CR_CANCELS_MICRO_MODE     cur_term->type.flags[31]
-#define TINFO_HAS_PRINT_WHEEL           cur_term->type.flags[32]
-#define TINFO_ROW_ADDR_GLITCH           cur_term->type.flags[33]
-#define TINFO_SEMI_AUTO_RIGHT_MARGIN    cur_term->type.flags[34]
-#define TINFO_CPI_CHANGES_RES           cur_term->type.flags[35]
-#define TINFO_LPI_CHANGES_RES           cur_term->type.flags[36]
-#define TINFO_COLUMNS                   cur_term->type.numbers[0]
-#define TINFO_INIT_TABS                 cur_term->type.numbers[1]
-#define TINFO_LINES                     cur_term->type.numbers[2]
-#define TINFO_LINES_OF_MEMORY           cur_term->type.numbers[3]
-#define TINFO_MAGIC_COOKIE_GLITCH       cur_term->type.numbers[4]
-#define TINFO_PADDING_BAUD_RATE         cur_term->type.numbers[5]
-#define TINFO_VIRTUAL_TERMINAL          cur_term->type.numbers[6]
-#define TINFO_WIDTH_STATUS_LINE         cur_term->type.numbers[7]
-#define TINFO_NUM_LABELS                cur_term->type.numbers[8]
-#define TINFO_LABEL_HEIGHT              cur_term->type.numbers[9]
-#define TINFO_LABEL_WIDTH               cur_term->type.numbers[10]
-#define TINFO_MAX_ATTRIBUTES            cur_term->type.numbers[11]
-#define TINFO_MAXIMUM_WINDOWS           cur_term->type.numbers[12]
-#define TINFO_MAX_COLORS                cur_term->type.numbers[13]
-#define TINFO_MAX_PAIRS                 cur_term->type.numbers[14]
-#define TINFO_NO_COLOR_VIDEO            cur_term->type.numbers[15]
-#define TINFO_BUFFER_CAPACITY           cur_term->type.numbers[16]
-#define TINFO_DOT_VERT_SPACING          cur_term->type.numbers[17]
-#define TINFO_DOT_HORZ_SPACING          cur_term->type.numbers[18]
-#define TINFO_MAX_MICRO_ADDRESS         cur_term->type.numbers[19]
-#define TINFO_MAX_MICRO_JUMP            cur_term->type.numbers[20]
-#define TINFO_MICRO_COL_SIZE            cur_term->type.numbers[21]
-#define TINFO_MICRO_LINE_SIZE           cur_term->type.numbers[22]
-#define TINFO_NUMBER_OF_PINS            cur_term->type.numbers[23]
-#define TINFO_OUTPUT_RES_CHAR           cur_term->type.numbers[24]
-#define TINFO_OUTPUT_RES_LINE           cur_term->type.numbers[25]
-#define TINFO_OUTPUT_RES_HORZ_INCH      cur_term->type.numbers[26]
-#define TINFO_OUTPUT_RES_VERT_INCH      cur_term->type.numbers[27]
-#define TINFO_PRINT_RATE                cur_term->type.numbers[28]
-#define TINFO_WIDE_CHAR_SIZE            cur_term->type.numbers[29]
-#define TINFO_BUTTONS                   cur_term->type.numbers[30]
-#define TINFO_BIT_IMAGE_ENTWINING       cur_term->type.numbers[31]
-#define TINFO_BIT_IMAGE_TYPE            cur_term->type.numbers[32]
+#define TINFO_AUTO_LEFT_MARGIN          CUR_TERM_FLAGS(0)
+#define TINFO_AUTO_RIGHT_MARGIN         CUR_TERM_FLAGS(1)
+#define TINFO_NO_ESC_CTLC               CUR_TERM_FLAGS(2)
+#define TINFO_CEOL_STANDOUT_GLITCH      CUR_TERM_FLAGS(3)
+#define TINFO_EAT_NEWLINE_GLITCH        CUR_TERM_FLAGS(4)
+#define TINFO_ERASE_OVERSTRIKE          CUR_TERM_FLAGS(5)
+#define TINFO_GENERIC_TYPE              CUR_TERM_FLAGS(6)
+#define TINFO_HARD_COPY                 CUR_TERM_FLAGS(7)
+#define TINFO_HAS_META_KEY              CUR_TERM_FLAGS(8)
+#define TINFO_HAS_STATUS_LINE           CUR_TERM_FLAGS(9)
+#define TINFO_INSERT_NULL_GLITCH        CUR_TERM_FLAGS(10)
+#define TINFO_MEMORY_ABOVE              CUR_TERM_FLAGS(11)
+#define TINFO_MEMORY_BELOW              CUR_TERM_FLAGS(12)
+#define TINFO_MOVE_INSERT_MODE          CUR_TERM_FLAGS(13)
+#define TINFO_MOVE_STANDOUT_MODE        CUR_TERM_FLAGS(14)
+#define TINFO_OVER_STRIKE               CUR_TERM_FLAGS(15)
+#define TINFO_STATUS_LINE_ESC_OK        CUR_TERM_FLAGS(16)
+#define TINFO_DEST_TABS_MAGIC_SMSO      CUR_TERM_FLAGS(17)
+#define TINFO_TILDE_GLITCH              CUR_TERM_FLAGS(18)
+#define TINFO_TRANSPARENT_UNDERLINE     CUR_TERM_FLAGS(19)
+#define TINFO_XON_XOFF                  CUR_TERM_FLAGS(20)
+#define TINFO_NEEDS_XON_XOFF            CUR_TERM_FLAGS(21)
+#define TINFO_PRTR_SILENT               CUR_TERM_FLAGS(22)
+#define TINFO_HARD_CURSOR               CUR_TERM_FLAGS(23)
+#define TINFO_NON_REV_RMCUP             CUR_TERM_FLAGS(24)
+#define TINFO_NO_PAD_CHAR               CUR_TERM_FLAGS(25)
+#define TINFO_NON_DEST_SCROLL_REGION    CUR_TERM_FLAGS(26)
+#define TINFO_CAN_CHANGE                CUR_TERM_FLAGS(27)
+#define TINFO_BACK_COLOR_ERASE          CUR_TERM_FLAGS(28)
+#define TINFO_HUE_LIGHTNESS_SATURATION  CUR_TERM_FLAGS(29)
+#define TINFO_COL_ADDR_GLITCH           CUR_TERM_FLAGS(30)
+#define TINFO_CR_CANCELS_MICRO_MODE     CUR_TERM_FLAGS(31)
+#define TINFO_HAS_PRINT_WHEEL           CUR_TERM_FLAGS(32)
+#define TINFO_ROW_ADDR_GLITCH           CUR_TERM_FLAGS(33)
+#define TINFO_SEMI_AUTO_RIGHT_MARGIN    CUR_TERM_FLAGS(34)
+#define TINFO_CPI_CHANGES_RES           CUR_TERM_FLAGS(35)
+#define TINFO_LPI_CHANGES_RES           CUR_TERM_FLAGS(36)
+#define TINFO_COLUMNS                   CUR_TERM_NUMBERS(0)
+#define TINFO_INIT_TABS                 CUR_TERM_NUMBERS(1)
+#define TINFO_LINES                     CUR_TERM_NUMBERS(2)
+#define TINFO_LINES_OF_MEMORY           CUR_TERM_NUMBERS(3)
+#define TINFO_MAGIC_COOKIE_GLITCH       CUR_TERM_NUMBERS(4)
+#define TINFO_PADDING_BAUD_RATE         CUR_TERM_NUMBERS(5)
+#define TINFO_VIRTUAL_TERMINAL          CUR_TERM_NUMBERS(6)
+#define TINFO_WIDTH_STATUS_LINE         CUR_TERM_NUMBERS(7)
+#define TINFO_NUM_LABELS                CUR_TERM_NUMBERS(8)
+#define TINFO_LABEL_HEIGHT              CUR_TERM_NUMBERS(9)
+#define TINFO_LABEL_WIDTH               CUR_TERM_NUMBERS(10)
+#define TINFO_MAX_ATTRIBUTES            CUR_TERM_NUMBERS(11)
+#define TINFO_MAXIMUM_WINDOWS           CUR_TERM_NUMBERS(12)
+#define TINFO_MAX_COLORS                CUR_TERM_NUMBERS(13)
+#define TINFO_MAX_PAIRS                 CUR_TERM_NUMBERS(14)
+#define TINFO_NO_COLOR_VIDEO            CUR_TERM_NUMBERS(15)
+#define TINFO_BUFFER_CAPACITY           CUR_TERM_NUMBERS(16)
+#define TINFO_DOT_VERT_SPACING          CUR_TERM_NUMBERS(17)
+#define TINFO_DOT_HORZ_SPACING          CUR_TERM_NUMBERS(18)
+#define TINFO_MAX_MICRO_ADDRESS         CUR_TERM_NUMBERS(19)
+#define TINFO_MAX_MICRO_JUMP            CUR_TERM_NUMBERS(20)
+#define TINFO_MICRO_COL_SIZE            CUR_TERM_NUMBERS(21)
+#define TINFO_MICRO_LINE_SIZE           CUR_TERM_NUMBERS(22)
+#define TINFO_NUMBER_OF_PINS            CUR_TERM_NUMBERS(23)
+#define TINFO_OUTPUT_RES_CHAR           CUR_TERM_NUMBERS(24)
+#define TINFO_OUTPUT_RES_LINE           CUR_TERM_NUMBERS(25)
+#define TINFO_OUTPUT_RES_HORZ_INCH      CUR_TERM_NUMBERS(26)
+#define TINFO_OUTPUT_RES_VERT_INCH      CUR_TERM_NUMBERS(27)
+#define TINFO_PRINT_RATE                CUR_TERM_NUMBERS(28)
+#define TINFO_WIDE_CHAR_SIZE            CUR_TERM_NUMBERS(29)
+#define TINFO_BUTTONS                   CUR_TERM_NUMBERS(30)
+#define TINFO_BIT_IMAGE_ENTWINING       CUR_TERM_NUMBERS(31)
+#define TINFO_BIT_IMAGE_TYPE            CUR_TERM_NUMBERS(32)
 #define TINFO_BACK_TAB                  CUR_TERM_STRINGS(0)
 #define TINFO_BELL                      CUR_TERM_STRINGS(1)
 #define TINFO_CARRIAGE_RETURN           CUR_TERM_STRINGS(2)
@@ -511,4 +515,4 @@ extern char *tparm(char *str, long p1, long p2, long p3, long p4, long p5,
 extern int tputs(char *str, int affcnt, int (*putc)(int));
 extern int putp(char *str);
 
-#endif /* TERM_H_ */
+#endif /* COMPAT_POSIX_TERM_H_ */
