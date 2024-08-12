@@ -27,6 +27,7 @@
 #define MSTATUS_MIE  (1UL << 3)  /* Machine Interrupt Enable */
 #define MSTATUS_MPIE (1UL << 7)  /* Machine Previous Interrupt Enable */
 #define MSTATUS_MPP  (3UL << 11) /* Machine Previous Privilege Mode */
+#define MSTATUS_FS   (1UL << 13) /* Enable floating point registers */
 
 #define SSTATUS_SIE  (1UL << 1) /* Supervisor Interrupt Enable */
 #define SSTATUS_SPIE (1UL << 5) /* Supervisor Previous Interrupt Enable */
