@@ -1,0 +1,7 @@
+package embox.arch.riscv.pmp
+
+module test_pmp {
+	source "test_pmp.c"
+
+	depends embox.arch.riscv.pmp
+}
