@@ -20,23 +20,38 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-#define COUNT_OFFSET  (RTC_CLOCK / JIFFIES_PERIOD)
-#define RTC_CLOCK     OPTION_GET(NUMBER, rtc_freq)
+#define BASE_ADDR    OPTION_GET(NUMBER, base_addr)
 
-#define MTIME         OPTION_GET(NUMBER, base_mtime)
-#define MTIMECMP      OPTION_GET(NUMBER, base_mtimecmp)
+#define COUNT_OFFSET (RTC_CLOCK / JIFFIES_PERIOD)
+
+#define RTC_CLOCK    OPTION_GET(NUMBER, rtc_freq)
+
+//#define MTIME        OPTION_GET(NUMBER, base_mtime)
+//#define MTIMECMP     OPTION_GET(NUMBER, base_mtimecmp)
+
+
+#define SCR1_TIMER_ENABLE_S             0
+#define SCR1_TIMER_ENABLE_M             (1 << SCR1_TIMER_ENABLE_S)
+
+#define SCR1_TIMER_CLKSRC_S             1
+#define SCR1_TIMER_CLKSRC_M             (1 << SCR1_TIMER_CLKSRC_S)
+#define SCR1_TIMER_CLKSRC_INTERNAL_M    (0 << SCR1_TIMER_CLKSRC_S)
+#define SCR1_TIMER_CLKSRC_RTC_M         (1 << SCR1_TIMER_CLKSRC_S)
 
 struct mikron_clk_regs {
-	uint32_t TIMER_CTRL;
-	uint32_t TIMER_DIV;
-	uint32_t MTIME_REG;
-	uint32_t MTIMEH;
-	uint32_t MTIMECMP_REG;
-	uint32_t MTIMECMPH;
+	volatile uint32_t TIMER_CTRL;
+	volatile uint32_t TIMER_DIV;
+	volatile uint32_t MTIME;
+	volatile uint32_t MTIMEH;
+	volatile uint32_t MTIMECMP;
+	volatile uint32_t MTIMECMPH;
 };
 
+static struct mikron_clk_regs *SCR1_TIMER = (void*)(uintptr_t)BASE_ADDR;
+
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
-	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+	*(unsigned long long *) &SCR1_TIMER->MTIMECMP += COUNT_OFFSET;
 
 	clock_tick_handler(dev_id);
 
@@ -44,14 +59,22 @@ static int clock_handler(unsigned int irq_nr, void *dev_id) {
 }
 
 static int riscv_clock_setup(struct clock_source *cs) {
-	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+
+	*(unsigned long long *) &SCR1_TIMER->MTIME = 0;
+	*(unsigned long long *) &SCR1_TIMER->MTIMECMP = COUNT_OFFSET;
+	//SCR1_TIMER->TIMER_CTRL |= SCR1_TIMER_ENABLE_M;
 
 	return ENOERR;
 }
 
 static int mikron_clk_init(struct clock_source *cs) {
-	REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
-
+	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
+	SCR1_TIMER->TIMER_DIV = 0;
+	*(unsigned long long *) &SCR1_TIMER->MTIME = 0;
+	*(unsigned long long *) &SCR1_TIMER->MTIMECMP = COUNT_OFFSET;
+	SCR1_TIMER->TIMER_CTRL |= SCR1_TIMER_ENABLE_M;
+	//SCR1_TIMER->TIMER_CTRL &= ~SCR1_TIMER_ENABLE_M;
 	enable_timer_interrupts();
 
 	return ENOERR;
