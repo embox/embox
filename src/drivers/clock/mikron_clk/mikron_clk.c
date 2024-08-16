@@ -26,10 +26,6 @@
 
 #define RTC_CLOCK    OPTION_GET(NUMBER, rtc_freq)
 
-//#define MTIME        OPTION_GET(NUMBER, base_mtime)
-//#define MTIMECMP     OPTION_GET(NUMBER, base_mtimecmp)
-
-
 #define SCR1_TIMER_ENABLE_S             0
 #define SCR1_TIMER_ENABLE_M             (1 << SCR1_TIMER_ENABLE_S)
 
