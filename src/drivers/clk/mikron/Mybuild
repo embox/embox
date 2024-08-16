@@ -3,7 +3,7 @@ package embox.driver.clk.mikron
 module mikron_pm {
 	option string log_level="LOG_NONE"
 
-	option number base_addr=0x000050000
+	option number base_addr=0x00050000
 	// option number hse_clk_val = 16000000
 
 	source "mikron_pm.c"
