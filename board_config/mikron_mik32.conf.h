@@ -103,7 +103,8 @@ struct clk_conf clks[] = {
 			},
 			.clocks = {
 				VAL("HSECLK_VAL", 3200000UL),
-			}
+			},
+		},
 	},
 };
 
@@ -174,8 +175,8 @@ struct uart_conf uarts[] = {
 				VAL("", EPIC_UART_0_INDEX),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_0, 5, 1),
-				PIN("RX", GPIO_PORT_0, 6, 1),
+				PIN("TX", GPIO_PORT_A, 5, 1),
+				PIN("RX", GPIO_PORT_A, 6, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART0"),
@@ -184,7 +185,7 @@ struct uart_conf uarts[] = {
 		.baudrate = 115200,
 	},
 	[1] = {
-		.status = ENABLE,
+		.status = ENABLED,
 		.name = "UART1",
 		.dev = {
 			.name = "UART1",
@@ -195,8 +196,8 @@ struct uart_conf uarts[] = {
 				VAL("", EPIC_UART_1_INDEX),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_1, 8, 1),
-				PIN("RX", GPIO_PORT_1, 9, 1),
+				PIN("TX", GPIO_PORT_B, 8, 1),
+				PIN("RX", GPIO_PORT_B, 9, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
@@ -207,6 +208,18 @@ struct uart_conf uarts[] = {
 
 };
 
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED_GREEN",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 9),
+	},
+	[1] = {
+		.name = "LED_RED",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 10),
+	},
+};
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), 
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds) 
 				)
