@@ -94,6 +94,17 @@ struct clk_conf clks[] = {
 		},
 		.type = VAL("SYSCLK_PLL", 1),
 	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "WU",
+			.regs = {
+				REGMAP("BASE", (WU_BASE_ADDRESS), 0x100),
+			},
+			.clocks = {
+				VAL("HSECLK_VAL", 3200000UL),
+			}
+	},
 };
 
 struct gpio_conf gpios[] = {
@@ -173,7 +184,7 @@ struct uart_conf uarts[] = {
 		.baudrate = 115200,
 	},
 	[1] = {
-		.status = DISABLED,
+		.status = ENABLE,
 		.name = "UART1",
 		.dev = {
 			.name = "UART1",
