@@ -23,7 +23,7 @@
 
 #define BASE_ADDR                OPTION_GET(NUMBER, base_addr)
 
-#define WU                       ((volatile struct mikron_wakeup_regs *)BASE_ADDR)
+#define WU       ((volatile struct mikron_wakeup_regs *)BASE_ADDR)
 
 struct mikron_wakeup_regs {
 	volatile uint32_t SYS_MASK;
@@ -180,28 +180,17 @@ static int HAL_PCC_FreqMonRefSet(int Force32KClk) {
 }
 
 int HAL_PCC_SetOscSystem(uint32_t OscillatorSystem, int ForceOscSys) {
-	//uint32_t sys_clk_m = 0;
-	//uint32_t osc_clk_flag_m = 0;
-
-	/* Настройка источника тактирования системы */
 	switch (OscillatorSystem) {
 	case PCC_OSCILLATORTYPE_HSI32M:
-		//sys_clk_m = PM_AHB_CLK_MUX_HSI32M_M;
-		//osc_clk_flag_m = PM_FREQ_STATUS_HSI32M_M;
 		break;
 	case PCC_OSCILLATORTYPE_OSC32M:
-		//sys_clk_m = PM_AHB_CLK_MUX_OSC32M_M;
 		mikron_pm_wait_freq_osc32m();
 		mikron_pm_set_ahb_clk_mux_osc32m();
-		//osc_clk_flag_m = PM_FREQ_STATUS_OSC32M_M;
+
 		break;
 	case PCC_OSCILLATORTYPE_LSI32K:
-		//sys_clk_m = PM_AHB_CLK_MUX_LSI32K_M;
-		//osc_clk_flag_m = PM_FREQ_STATUS_LSI32K_M;
 		break;
 	case PCC_OSCILLATORTYPE_OSC32K:
-		//sys_clk_m = PM_AHB_CLK_MUX_OSC32K_M;
-		//osc_clk_flag_m = PM_FREQ_STATUS_OSC32K_M;
 		break;
 	default:
 		return -1;
@@ -216,9 +205,7 @@ int HAL_PCC_SetOscSystem(uint32_t OscillatorSystem, int ForceOscSys) {
 }
 
 int HAL_PCC_RTCClock(int Oscillator) {
-	//   uint32_t clockswitch_timeout = 0;
 	uint32_t rtc_clk_m = 0;
-	// uint32_t osc_clk_flag_m = 0;
 
 	switch (Oscillator) {
 	case PCC_RTC_CLOCK_SOURCE_AUTO:
@@ -226,19 +213,16 @@ int HAL_PCC_RTCClock(int Oscillator) {
 		return 0;
 	case PCC_RTC_CLOCK_SOURCE_LSI32K:
 		rtc_clk_m = WU_CLOCKS_BU_RTC_CLK_MUX_LSI32K_M;
-		//osc_clk_flag_m = PM_FREQ_STATUS_LSI32K_M;
 		mikron_pm_wait_freq_lsi32k();
 		break;
 	case PCC_RTC_CLOCK_SOURCE_OSC32K:
 		rtc_clk_m = WU_CLOCKS_BU_RTC_CLK_MUX_OSC32K_M;
-		// osc_clk_flag_m = PM_FREQ_STATUS_OSC32K_M;
 		mikron_pm_wait_freq_osc32k();
 		break;
 	default:
 		return -1;
 	}
 
-	/* Выбор источника тактирования RTC */
 	WU->CLOCKS_BU = (WU->CLOCKS_BU & ~WU_CLOCKS_BU_RTC_CLK_MUX_M) | rtc_clk_m;
 	WU->RTC_CONRTOL = WU_RTC_CONTROL_RESET_CLEAR_M;
 
@@ -249,19 +233,11 @@ int HAL_PCC_RTCClock(int Oscillator) {
 }
 
 int HAL_PCC_CPURTCClock(int Oscillator) {
-	// uint32_t clockswitch_timeout = 0;
-	// uint32_t rtc_clk_m = 0;
-	// uint32_t osc_clk_flag_m = 0;
-
 	switch (Oscillator) {
 	case PCC_CPU_RTC_CLOCK_SOURCE_LSI32K:
-		//rtc_clk_m = PM_CPU_RTC_CLK_MUX_LSI32K_M;
-		//osc_clk_flag_m = PM_FREQ_STATUS_LSI32K_M;
 		mikron_pm_wait_freq_lsi32k();
 		break;
 	case PCC_CPU_RTC_CLOCK_SOURCE_OSC32K:
-		//rtc_clk_m = PM_CPU_RTC_CLK_MUX_OSC32K_M;
-		//osc_clk_flag_m = PM_FREQ_STATUS_OSC32K_M;
 		mikron_pm_wait_freq_osc32k();
 		break;
 	default:
@@ -287,37 +263,12 @@ void mikron_wakeup_init(uint32_t osc) {
 	HAL_PCC_FreqMonRefSet(PCC_FREQ_MONITOR_SOURCE_OSC32K);
 	HAL_PCC_SetOscSystem(PCC_OSCILLATORTYPE_OSC32M, PCC_FORCE_OSC_SYS_UNFIXED);
 
-#if 0
-    //PCC_OscInit.FreqMon.OscillatorSystem = PCC_OSCILLATORTYPE_OSC32M;
-    //PCC_OscInit.FreqMon.ForceOscSys = PCC_FORCE_OSC_SYS_UNFIXED;
-    //PCC_OscInit.FreqMon.Force32KClk = PCC_FREQ_MONITOR_SOURCE_OSC32K;
-    
-    /* Опорный источник для монитора частоты */
-    errors.FreqMonRef = HAL_PCC_FreqMonRefSet(PCC_Init->FreqMon.Force32KClk);
-    
-    /* Настройка источника тактирования системы */
-    errors.SetOscSystem = HAL_PCC_SetOscSystem(PCC_Init->FreqMon.OscillatorSystem, PCC_Init->FreqMon.ForceOscSys);
-#endif
-
 	mikron_pm_set_ahb_div(DIVIDER_AHB);
 	mikron_pm_set_apbm_div(DIVIDER_APB_M);
 	mikron_pm_set_apbp_div(DIVIDER_APB_P);
-	// PM->DIV_AHB = DIVIDER_AHB;
-	// PM->DIV_APB_M = DIVIDER_APB_M;
-	// PM->DIV_APB_P = DIVIDER_APB_P;
 
 	HAL_PCC_RTCClock(PCC_RTC_CLOCK_SOURCE_OSC32K);
 	HAL_PCC_CPURTCClock(PCC_CPU_RTC_CLOCK_SOURCE_OSC32K);
-
-#if 0
-    //PCC_OscInit.RTCClockSelection = PCC_RTC_CLOCK_SOURCE_OSC32K;
-    //PCC_OscInit.RTCClockCPUSelection = PCC_CPU_RTC_CLOCK_SOURCE_OSC32K;
-    /* Выбор источника тактирования RTC */
-    errors.RTCClock = HAL_PCC_RTCClock(PCC_Init->RTCClockSelection);
-    
-    /* Выбор источника тактирования RTC в составе ядра*/
-    errors.CPURTCClock = HAL_PCC_CPURTCClock(PCC_Init->RTCClockCPUSelection);
-#endif
 
 	if (!(osc & PCC_OSCILLATORTYPE_HSI32M)) {
 		WU->CLOCKS_SYS |= (1 << WU_CLOCKS_SYS_HSI32M_EN_S);
