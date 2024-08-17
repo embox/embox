@@ -13,7 +13,7 @@
 #ifndef __ASSEMBLER__
 
 typedef struct pt_regs {
-	/* Pushed by SAVE_ALL. */
+	/* Ranged in reverse order of SAVE_ALL */
 	uint32_t ebx;
 	uint32_t ecx;
 	uint32_t edx;

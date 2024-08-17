@@ -86,6 +86,12 @@ extern void task_delete(struct task *tsk);
 extern pid_t task_waitpid(pid_t pid);
 extern pid_t task_waitpid_posix(pid_t pid, int *status, int options);
 
+/**
+ * @brief Prepare a new task but start it later by task_start()
+ *
+ * @param name Task name
+ * @return pid of the new task
+ */
 extern int task_prepare(const char *name);
 extern int task_start(struct task *task, void * (*run)(void *), void *arg);
 

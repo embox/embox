@@ -29,7 +29,17 @@ struct task {
 	int tsk_id;
 
 	struct task *parent;
+
+	/**
+	 * List of child_tasks which belongs to current task
+	 * Current task is the parent of them all
+	 */
 	struct dlist_head child_list;
+
+	/**
+	 * List of siblings which belongs to another parent
+	 * Current task is one of the siblings among them
+	 */
 	struct dlist_head child_lnk;
 
 	struct {
@@ -44,6 +54,13 @@ struct task {
 	struct nsproxy nsproxy;
 #endif
 	char resources[];
+
+	/*
+	 * WARNING: 'task' contains a variable-sized structure.
+	 * It *MUST* be at the end of this point.
+	 *
+	 * Do not put anything below here!
+	 */
 };
 
 

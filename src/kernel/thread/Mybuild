@@ -9,6 +9,7 @@ module core {
 	option number thread_stack_align=8
 	option number thread_stack_size=8192
 	option number thread_pool_size=16
+	option string log_level="LOG_NONE"
 
 	source "core.c"
 	source "thread_switch.c"
