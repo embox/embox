@@ -23,16 +23,6 @@
 #include "drivers/i8259_regs.h"
 #endif
 
-#define IOAPIC_ID                 0x0
-#define IOAPIC_VERSION            0x1
-#define IOAPIC_ARB                0x2
-#define IOAPIC_REDIR_TABLE        0x10
-
-#define IOAPIC_ICR_VECTOR         0x000000FF
-#define IOAPIC_ICR_INT_POLARITY   (1 << 13)
-#define IOAPIC_ICR_TRIGGER        (1 << 15)
-#define IOAPIC_ICR_INT_MASK       (1 << 16)
-
 EMBOX_UNIT_INIT(ioapic_enable);
 
 static inline void i8259_disable(void)
@@ -70,58 +60,58 @@ void apic_init(void) {
 	lapic_enable();
 }
 
-/* TODO: Rewrite it! */
 static inline uint32_t irq_redir_low(unsigned int irq) {
 	uint32_t val = 0;
 
-	/* clear the polarity, trigger, mask and vector fields */
-	val &= ~(IOAPIC_ICR_VECTOR | IOAPIC_ICR_INT_MASK |
-			IOAPIC_ICR_TRIGGER | IOAPIC_ICR_INT_POLARITY);
-
 	if (irq < 16) {
 		/* ISA active-high */
-		val &= ~IOAPIC_ICR_INT_POLARITY;
+		val |= IOAPIC_ICR_HIGH_POLARITY;
 		/* ISA edge triggered */
-		val &= ~IOAPIC_ICR_TRIGGER;
+		val |= IOAPIC_ICR_EDGE_TRIGGER;
 	}
 	else {
 		/* PCI active-low */
-		val |= IOAPIC_ICR_INT_POLARITY;
+		val |= IOAPIC_ICR_LOW_POLARITY;
 		/* PCI level triggered */
-		val |= IOAPIC_ICR_TRIGGER;
+		val |= IOAPIC_ICR_LEVEL_TRIGGER;
 	}
 
+	val |= IOAPIC_ICR_DM_FIXED;
+	val |= IOAPIC_ICR_LOGICAL_DEST;
 	val |= (irq + 0x20);
 
+	/* Return with Mask bit clear */
 	return val;
 }
 
 void irqctrl_enable(unsigned int irq) {
-	uint32_t low, high;
-
-	if (irq == 0) {
-		/* LAPIC timer interrupt */
-		return ;
-	}
+	uint32_t low;
+	static uint32_t high = 0;
 
 	if (irq >= 24) {
 		/* msi irq */
 		return;
 	}
 	low = irq_redir_low(irq);
-	high = lapic_id() << 24;
+	/**
+	 * In both SMP and NOSMP situation, we can use logical destination
+	 * mode to delivery interrupt. But when we add CPU in such mode,
+	 * we only need to call irqctrl_enable() at each CPUs to set bit
+	 */
+	high |= lapic_read(LAPIC_LDR);
 
-	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2 + 1, high);
 	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2, low);
+	ioapic_write(IOAPIC_REDIR_TABLE + irq * 2 + 1, high);
 }
 
 void irqctrl_disable(unsigned int irq) {
 	uint32_t low;
 
 	if (irq == 0) {
-		/* LAPIC timer interrupt */
-		return ;
+		/*None Maskable interrupt*/
+		return;
 	}
+
 	if (irq >= 24) {
 		/* msi irq */
 		return;
