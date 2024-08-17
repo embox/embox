@@ -37,6 +37,9 @@ _start:
 	 * register.
 	 */
 	la      t0, riscv_trap_handler
+#if OPTION_GET(BOOLEAN,mik32_fixup)	
+	la      t0, _start
+#endif
 	csrw    TRAP_VECTOR_REG, t0
 
 #if OPTION_GET(BOOLEAN,smp_support)
@@ -89,3 +92,20 @@ secondary_hart_loop:
 	/* TODO: SMP support */
 #endif
 	j       secondary_hart_loop
+
+
+#if OPTION_GET(BOOLEAN,mik32_fixup)
+.section .init, "ax"
+
+.globl _test_interrupt
+.org 0xC0
+_test_interrupt:
+.cfi_startproc
+	nop
+	nop
+	nop
+	nop
+	nop
+	j riscv_trap_handler
+.cfi_endproc
+#endif
