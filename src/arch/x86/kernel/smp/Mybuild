@@ -8,7 +8,6 @@ module cpu extends embox.arch.cpu {
 }
 
 module smp extends embox.arch.smp {
-	option number max_supported_cores=2
 	source "smp_traps.S", "ap_trampoline.S", "smp.c"
 
 	depends cpu

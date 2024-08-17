@@ -8,6 +8,7 @@
 
 #include <asm/linkage.h>
 #include <asm/gdt.h>
+#include <hal/cpu.h>
 
 	.section .data
 	.code16
@@ -33,7 +34,7 @@ C_ENTRY(__ap_trampoline):
 	.align 0x4
 
 C_LABEL(__ap_sp):
-	.space 4 * MAX_SUPPORTED_CORES
+	.space 4 * (NCPU - 1)
 C_LABEL(__ap_gdtr):
 	.space 8
 C_LABEL(__ap_gdt):
