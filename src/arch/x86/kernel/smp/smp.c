@@ -110,7 +110,7 @@ static int unit_init(void) {
 }
 
 void smp_send_resched(int cpu_id) {
-	lapic_send_ipi(0x50, cpu_id, LAPIC_IPI_DEST);
+	lapic_send_ipi(0x50, cpu_id, LAPIC_ICR_DEST_FIELD);
 }
 
 void resched(void) {

@@ -14,28 +14,46 @@
 
 #define LOCAL_APIC_DEF_ADDR	 0xFEE00000 /* Default local apic address */
 
-#define LAPIC_ID        (LOCAL_APIC_DEF_ADDR + 0x020)
-#define LAPIC_EOI       (LOCAL_APIC_DEF_ADDR + 0x0B0)
-#define LAPIC_SIVR      (LOCAL_APIC_DEF_ADDR + 0x0F0)
-#define LAPIC_ESR       (LOCAL_APIC_DEF_ADDR + 0x280)
-#define LAPIC_ICR1      (LOCAL_APIC_DEF_ADDR + 0x300)
-#define LAPIC_ICR2      (LOCAL_APIC_DEF_ADDR + 0x310)
-#define LAPIC_LVT_TR    (LOCAL_APIC_DEF_ADDR + 0x320)
-#define LAPIC_LVT_PCR   (LOCAL_APIC_DEF_ADDR + 0x340)
-#define LAPIC_TIMER_ICR	(LOCAL_APIC_DEF_ADDR + 0x380)
-#define LAPIC_TIMER_CCR	(LOCAL_APIC_DEF_ADDR + 0x390)
-#define LAPIC_TIMER_DCR	(LOCAL_APIC_DEF_ADDR + 0x3E0)
+#define LAPIC_ID             (LOCAL_APIC_DEF_ADDR + 0x020)
+#define LAPIC_EOI            (LOCAL_APIC_DEF_ADDR + 0x0B0)
+#define LAPIC_SIVR           (LOCAL_APIC_DEF_ADDR + 0x0F0)
+#define LAPIC_ESR            (LOCAL_APIC_DEF_ADDR + 0x280)
+#define LAPIC_ICR1           (LOCAL_APIC_DEF_ADDR + 0x300)
+#define LAPIC_ICR2           (LOCAL_APIC_DEF_ADDR + 0x310)
+#define LAPIC_LVT_TR         (LOCAL_APIC_DEF_ADDR + 0x320)
+#define LAPIC_LVT_PCR        (LOCAL_APIC_DEF_ADDR + 0x340)
+#define LAPIC_TIMER_ICR      (LOCAL_APIC_DEF_ADDR + 0x380)
+#define LAPIC_TIMER_CCR      (LOCAL_APIC_DEF_ADDR + 0x390)
+#define LAPIC_TIMER_DCR      (LOCAL_APIC_DEF_ADDR + 0x3E0)
 
-#define	LAPIC_DFR       (LOCAL_APIC_DEF_ADDR + 0x0E0)
-#define	LAPIC_LDR       (LOCAL_APIC_DEF_ADDR + 0x0D0)
-#define	LAPIC_LVT_LINT0	(LOCAL_APIC_DEF_ADDR + 0x350)
-#define	LAPIC_LVT_LINT1	(LOCAL_APIC_DEF_ADDR + 0x360)
-#define	LAPIC_TASKPRIOR	(LOCAL_APIC_DEF_ADDR + 0x80)
+#define LAPIC_DFR            (LOCAL_APIC_DEF_ADDR + 0x0E0)
+#define LAPIC_LDR            (LOCAL_APIC_DEF_ADDR + 0x0D0)
+#define LAPIC_LVT_LINT0      (LOCAL_APIC_DEF_ADDR + 0x350)
+#define LAPIC_LVT_LINT1      (LOCAL_APIC_DEF_ADDR + 0x360)
+#define LAPIC_TASKPRIOR      (LOCAL_APIC_DEF_ADDR + 0x80)
 
-#define LAPIC_IPI_DEST             0
-#define LAPIC_IPI_SELF             1
-#define LAPIC_IPI_TO_ALL           2
-#define LAPIC_IPI_TO_ALL_BUT_SELF  3
+/* Delivery Mode */
+#define LAPIC_ICR_DM_FIXED           (0 << 8)
+#define LAPIC_ICR_DM_LOWPRIO         (1 << 8)
+#define LAPIC_ICR_DM_SMI             (2 << 8)
+#define LAPIC_ICR_DM_NMI             (4 << 8)
+#define LAPIC_ICR_DM_INIT            (5 << 8)
+#define LAPIC_ICR_DM_STARTUP         (6 << 8)
+
+#define LAPIC_ICR_LOGICAL_DEST       (1 << 11)
+#define LAPIC_ICR_DELIVERY_PENDING   (1 << 12)
+#define LAPIC_ICR_INT_ASSERT         (1 << 14)
+#define LAPIC_ICR_INIT_LEVELTRIG     (1 << 15)
+
+/* Destination Shorthand */
+#define LAPIC_ICR_DEST_FIELD         (0 << 18)
+#define LAPIC_ICR_DEST_SELF          (1 << 18)
+#define LAPIC_ICR_DEST_ALL           (2 << 18)
+#define LAPIC_ICR_DEST_ALL_BUT_SELF  (3 << 18)
+
+#define LAPIC_DISABLE    0x10000
+#define LAPIC_SW_ENABLE  0x100
+#define LAPIC_CPUFOCUS   0x200
 
 static inline uint32_t lapic_id(void) {
 	return lapic_read(LAPIC_ID) >> 24;
