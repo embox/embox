@@ -62,12 +62,12 @@ void cpu_idle(void) {
 }
 
 #include <hal/context.h>
+#include <hal/cpu.h>
 static struct context cpu_ctx_prev[2];
 static struct context cpu_ctx[2];/* 8 CPU */
 static char idle_stack1[0x100000] __attribute__((aligned(0x4000)));
 #include <module/embox/kernel/stack.h>
 
-#define KERNEL_STACK_SZ OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size)
 extern char _stack_top;
 
 __attribute__ ((__section__(".e2k_entry")))
@@ -121,7 +121,7 @@ void e2k_entry(struct pt_regs *regs) {
 		}
 
 		context_init(&cpu_ctx[1], CONTEXT_PRIVELEGED | CONTEXT_IRQDISABLE,
-				e2k_kernel_start, &_stack_top, KERNEL_STACK_SZ);
+				e2k_kernel_start, &_stack_top, KERNEL_BSP_STACK_SZ);
 		__api_atomic32_add_oldval_lock(1, &sync_count);
 		context_switch(&cpu_ctx_prev[1], &cpu_ctx[1]);
 	}

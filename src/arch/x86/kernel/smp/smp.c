@@ -32,8 +32,8 @@ EMBOX_UNIT_INIT(unit_init);
 #define TRAMPOLINE_ADDR 0x20000UL
 extern void idt_load(void);
 
-static char ap_stack[NCPU][THREAD_STACK_SIZE]
-    __attribute__((aligned(THREAD_STACK_SIZE)));
+static char ap_stack[NCPU - 1][KERNEL_AP_STACK_SZ]
+    __attribute__((aligned(KERNEL_AP_STACK_SZ)));
 static int ap_ack;
 static spinlock_t startup_lock = SPIN_STATIC_UNLOCKED;
 
@@ -81,7 +81,7 @@ static inline void init_trampoline(void) {
 /* TODO: FIX THIS! */
 static inline void cpu_start(int cpu_id) {
 	/* Setting up stack and boot */
-	__ap_sp[cpu_id-1] = ap_stack[cpu_id] + THREAD_STACK_SIZE;
+	__ap_sp[cpu_id - 1] = ap_stack[cpu_id] + KERNEL_AP_STACK_SZ;
 
 	lapic_send_init_ipi(cpu_id);
 

@@ -4,6 +4,7 @@ module stack {
 	source "stack.lds.S"
 
 	option number stack_size=0x20000
+	option number ap_stack_size=0x20000
 	option number alignment=0x1000
 	depends embox.mem.page_api
 }
