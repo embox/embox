@@ -141,6 +141,7 @@ extern struct schedee *lthread_process(struct schedee *prev,
 		.schedee = { \
 			.runq_link = RUNQ_ITEM_INIT(_lth.schedee.runq_link), \
 			.lock = SPIN_UNLOCKED, \
+			.type = SCHEDEE_LTHREAD, \
 			.process = lthread_process, \
 			.ready = false, \
 			.active = false, \
