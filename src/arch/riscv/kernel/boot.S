@@ -95,17 +95,14 @@ secondary_hart_loop:
 
 
 #if OPTION_GET(BOOLEAN,mik32_fixup)
-.section .init, "ax"
+.section .mik32_fixup, "ax"
 
-.globl _test_interrupt
-.org 0xC0
-_test_interrupt:
+.globl _mik32_fixup_interrupt
+//.org _start + 0xC0
+.org 0x40
+_mik32_fixup_interrupt:
 .cfi_startproc
-	nop
-	nop
-	nop
-	nop
-	nop
 	j riscv_trap_handler
 .cfi_endproc
 #endif
+
