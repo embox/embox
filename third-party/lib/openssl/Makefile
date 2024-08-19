@@ -25,6 +25,8 @@ $(CONFIGURE) :
 		386 \
 		no-dso \
 		no-shared \
+		-Wno-error=array-bounds \
+		-Wno-error=format-overflow \
 		--prefix=$(PKG_INSTALL_DIR) \
 		-DPEDANTIC \
 		"$(EMBOX_CFLAGS)" \
