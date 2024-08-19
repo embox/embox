@@ -1,8 +1,7 @@
 PKG_NAME := openssl
 PKG_VER := 1.0.2u
 
-PKG_SOURCES := https://ftp.openssl.org/source/old/1.0.2/$(PKG_NAME)-$(PKG_VER).tar.gz
-
+PKG_SOURCES := https://openssl.org/source/old/1.0.2/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_PATCHES := patches/fix.patch
 
 # 1.0.2u - cdc2638f789ecc2db2c91488265686c1
