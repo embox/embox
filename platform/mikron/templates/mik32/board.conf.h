@@ -1,4 +1,4 @@
-#include <vostok_vg015_dev.conf.h>
+#include <mikron_mik32.conf.h>
 
 CONFIG {
 	uarts[0].status = ENABLED;

@@ -16,6 +16,8 @@ PROVIDE(_ram_size = LENGTH(RAM));
 SECTIONS {
 	.text : {
 		KEEP(*(.init));
+		. = ALIGN(0x80); /* FIXUP for mik32 */
+		KEEP(*(.mik32_fixup));
 		KEEP(*(.inchip_flash_section));
 		*(.text)
 		*(.text.*)

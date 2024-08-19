@@ -1,9 +1,7 @@
 package embox.driver.clock
 
 module mikron_clk {
-	option number base_mtime=0x00490008
-	option number base_mtimecmp=0x00490010
-	option number rtc_freq=1000000
+	option number rtc_freq=32000000
 	option number base_addr=0x00490000
 	
 	source "mikron_clk.c"
