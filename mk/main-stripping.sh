@@ -62,7 +62,7 @@ fi
 
 $CC -DMAIN_ROUTING_NAME=$main_rename_name \
 	-D__EMBUILD_MOD__=$MODULE_ID \
-	-DCXX_CMD=$(expr "${CXX_CMD:-no}" == "yes") \
+	-DCXX_CMD=$([ "${CXX_CMD:-no}" = "yes" ] && echo 1 || echo 0) \
 	$EMBOX_CFLAGS \
 	$EMBOX_CPPFLAGS \
 	-c -o $cmd_wrapper_obj $CMD_WRAPPER_SRC
