@@ -64,9 +64,14 @@ $ sudo pacman -S make gcc-multilib cpio qemu
 $ yay -S python2-bin
 ```
 
-For MAC OS X (requires [MacPorts](https://www.macports.org/install.php) installed):
+For Fedora Linux:
 ```
-$ sudo port install i386-elf-gcc i386-elf-binutils cpio gawk qemu
+$ sudo dnf install make gcc cpio qemu patch curl python
+```
+
+For MAC OS X (requires [Homebrew](https://brew.sh/) installed):
+```
+$ brew install i686-elf-binutils i686-elf-gcc awk cpio qemu python
 ```
 
 For any system with Docker (more info on wiki [Emdocker](https://github.com/embox/embox/wiki/Emdocker)):
