@@ -31,7 +31,11 @@ static I2C_HandleTypeDef i2c2_handle;
 
 static struct stm32_i2c stm32_i2c2_priv = {
 	.i2c_handle = &i2c2_handle,
+#if defined CONF_I2C1_REGION_BASE
+	.i2c = (I2C_TypeDef *) CONF_I2C2_REGION_BASE,
+#else
 	.i2c = I2C2,
+#endif	/* CONF_I2C2_REGION_BASE */
 	.event_irq = CONF_I2C2_IRQ_EVENT,
 	.error_irq = CONF_I2C2_IRQ_ERROR,
 };
