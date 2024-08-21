@@ -13,9 +13,7 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 
-#include <module/embox/kernel/stack.h>
-
-#define KERNEL_STACK_SZ OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size)
+#include <hal/cpu.h>
 
 static void *boot_stub(void *arg) {
 	panic("Entering boot_stub");
@@ -27,7 +25,7 @@ struct schedee *boot_thread_create(void) {
 	struct thread *bootstrap;
 	extern char _stack_top;
 
-	bootstrap = thread_init_stack((void *) ((uintptr_t) &_stack_top - KERNEL_STACK_SZ), KERNEL_STACK_SZ,
+	bootstrap = thread_init_stack((void *) ((uintptr_t) &_stack_top - KERNEL_BSP_STACK_SZ), KERNEL_BSP_STACK_SZ,
 			SCHED_PRIORITY_NORMAL, boot_stub, NULL);
 
 	task_set_main(task_kernel_task(), bootstrap);

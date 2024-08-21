@@ -14,7 +14,12 @@
 #include <module/embox/arch/cpu.h>
 #include <module/embox/arch/smp.h>
 
+#include <module/embox/kernel/stack.h>
+
 #define NCPU OPTION_MODULE_GET(embox__arch__cpu, NUMBER, cpu_count)
+
+#define KERNEL_AP_STACK_SZ OPTION_MODULE_GET(embox__kernel__stack, NUMBER, ap_stack_size)
+#define KERNEL_BSP_STACK_SZ OPTION_MODULE_GET(embox__kernel__stack, NUMBER, stack_size)
 
 #ifndef NOSMP
 #define SMP
