@@ -14,15 +14,6 @@
 #include <module/embox/arch/cpu.h>
 #include <module/embox/arch/smp.h>
 
-#if !defined(NOSMP)
-
-#include <framework/mod/options.h>
-#include <module/embox/arch/x86/kernel/smp.h>
-
-#define MAX_SUPPORTED_CORES OPTION_MODULE_GET(embox__arch__x86__kernel__smp, NUMBER, max_supported_cores)
-
-#endif /* !defined(NOSMP) */
-
 #ifdef __ASSEMBLER__
 
 #define C_ENTRY(name) .globl name; .align 2; name
