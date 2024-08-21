@@ -3,7 +3,7 @@ PKG_VER := 3.3.1
 
 PKG_SOURCES := https://github.com/$(PKG_NAME)/$(PKG_NAME)/releases/download/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
 
-#PKG_PATCHES := patches/fix.patch
+PKG_PATCHES := a_time.c.patch
 
 PKG_MD5     := 8a4342b399c18f870ca6186299195984
 
@@ -16,11 +16,14 @@ $(CONFIGURE) :
 		linux-armv4 \
 		--cross-compile-prefix=$(ROOT_DIR)/mk/extbld/arch-embox- \
 		386 \
+		no-asm \
 		no-dso \
+		no-async \
 		no-shared \
 		--prefix=$(PKG_INSTALL_DIR) \
 		-DPEDANTIC \
 		"$(EMBOX_CFLAGS)" \
+		-I$(THIRDPARTY_DIR)/lib/openssl3 \
 	)
 	touch $@
 

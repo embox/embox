@@ -1,0 +1,10 @@
+diff -aur openssl-3.3.1-orig/crypto/asn1/a_time.c openssl-3.3.1/crypto/asn1/a_time.c                                                                                                               ✔ 
+--- openssl-3.3.1-orig/crypto/asn1/a_time.c     2024-08-21 01:21:50.223343612 +0300
++++ openssl-3.3.1/crypto/asn1/a_time.c  2024-08-21 01:24:24.462497233 +0300
+@@ -21,6 +21,7 @@
+ #include "internal/cryptlib.h"
+ #include <openssl/asn1t.h>
+ #include "asn1_local.h"
++#include "localtime.h"
+ 
+ IMPLEMENT_ASN1_MSTRING(ASN1_TIME, B_ASN1_TIME)
