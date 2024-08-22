@@ -28,7 +28,11 @@ static struct stm32_spi stm32_spi5 = {
 static int stm32_spi5_init(void) {
 	CONF_SPI5_CLK_ENABLE_SPI();
 
+#if defined CONF_SPI5_REGION_BASE
+	stm32_spi_init(&stm32_spi5, (void *) CONF_SPI5_REGION_BASE);
+#else
 	stm32_spi_init(&stm32_spi5, SPI5);
+#endif	/* CONF_SPI5_REGION_BASE */
 
 	gpio_setup_mode(CONF_SPI5_PIN_SCK_PORT, CONF_SPI5_PIN_SCK_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI5_PIN_SCK_AF) |

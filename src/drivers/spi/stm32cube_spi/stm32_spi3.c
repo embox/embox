@@ -28,7 +28,11 @@ static struct stm32_spi stm32_spi3 = {
 static int stm32_spi3_init(void) {
 	CONF_SPI3_CLK_ENABLE_SPI();
 
+#if defined CONF_SPI3_REGION_BASE
+	stm32_spi_init(&stm32_spi3, (void *) CONF_SPI3_REGION_BASE);
+#else
 	stm32_spi_init(&stm32_spi3, SPI3);
+#endif	/* CONF_SPI3_REGION_BASE */
 
 	gpio_setup_mode(CONF_SPI3_PIN_SCK_PORT, CONF_SPI3_PIN_SCK_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI3_PIN_SCK_AF) |

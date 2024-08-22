@@ -38,7 +38,11 @@ static int stm32_spi1_init(void) {
 
 	CONF_SPI1_CLK_ENABLE_SPI();
 
+#if defined CONF_SPI1_REGION_BASE
+	stm32_spi_init(&stm32_spi1, (void *) CONF_SPI1_REGION_BASE);
+#else
 	stm32_spi_init(&stm32_spi1, SPI1);
+#endif	/* CONF_SPI1_REGION_BASE */
 
 	gpio_setup_mode(CONF_SPI1_PIN_SCK_PORT, CONF_SPI1_PIN_SCK_NR,
 		GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(CONF_SPI1_PIN_SCK_AF) |
