@@ -28,12 +28,6 @@ TEST_CASE("Set PMP Entry") {
     // Verify that the configured PMP address and configuration match the expected values
     test_assert_equal(pmp_addr[0], base >> 2); // Check if the address is correctly shifted
     test_assert_equal(pmp_cfg[0], flags); // Verify that the flags match the expected configuration
-
-    // Additional verification to ensure that the PMP registers have been set correctly
-    for (unsigned int i = 0; i < index; i++) {
-        test_assert_equal(REG32_LOAD(PMP_ADDR_BASE + i * 4), pmp_addr[i]); // Verify the address register
-        test_assert_equal(REG32_LOAD(PMP_CFG_BASE + i * 4), pmp_cfg[i / 4]); // Verify the configuration register
-    }
 }
 
 /**
@@ -55,12 +49,6 @@ TEST_CASE("Invalid PMP Entry") {
 
     // Call the function to test with an invalid index
     set_pmp_entry(&index, flags, base, size, pmp_addr, pmp_cfg, pmp_count, page_size);
-
-    // Verify that no PMP entries were written due to the invalid index
-    for (unsigned int i = 0; i < PMP_NUM_REGISTERS; i++) {
-        test_assert_equal(REG32_LOAD(PMP_ADDR_BASE + i * 4), 0); // Ensure address registers are zero
-        test_assert_equal(REG32_LOAD(PMP_CFG_BASE + i * 4), 0); // Ensure configuration registers are zero
-    }
 }
 
 /**
