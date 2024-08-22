@@ -8,3 +8,24 @@ diff -aur openssl-3.3.1-orig/crypto/asn1/a_time.c openssl-3.3.1/crypto/asn1/a_ti
 +#include "localtime.h"
  
  IMPLEMENT_ASN1_MSTRING(ASN1_TIME, B_ASN1_TIME)
+
+diff -aur openssl-3.3.1-orig/crypto/bio/bss_dgram.c openssl-3.3.1/crypto/bio/bss_dgram.c
+--- openssl-3.3.1-orig/crypto/bio/bss_dgram.c	2024-08-21 01:21:50.246676817 +0300
++++ openssl-3.3.1/crypto/bio/bss_dgram.c	2024-08-22 23:42:16.653505458 +0300
+@@ -16,6 +16,7 @@
+ 
+ #include "internal/time.h"
+ #include "bio_local.h"
++#include "in_ext.h"
+ #ifndef OPENSSL_NO_DGRAM
+ 
+ # ifndef OPENSSL_NO_SCTP
+@@ -551,7 +552,7 @@
+     bio_dgram_data *data = NULL;
+ # ifndef __DJGPP__
+     /* There are currently no cases where this is used on djgpp/watt32. */
+-    int sockopt_val = 0;
++    // int sockopt_val = 0;
+ # endif
+     int d_errno;
+ # if defined(OPENSSL_SYS_LINUX) && (defined(IP_MTU_DISCOVER) || defined(IP_MTU))
