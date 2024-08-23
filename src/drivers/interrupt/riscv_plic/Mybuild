@@ -5,5 +5,7 @@ module riscv_plic extends irqctrl_api {
 	option number threshold_offset = 0x200000
 	option number interrupt_enable_offset = 0x2000
 
+	option number max_irq_number = 1023
+
 	source "riscv_plic.c", "riscv_plic.h"
 }
