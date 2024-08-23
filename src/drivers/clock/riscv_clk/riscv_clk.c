@@ -20,6 +20,7 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 #include <drivers/interrupt/riscv_clint.h>
+#include <hal/cpu.h>
 
 #define COUNT_OFFSET  (RTC_CLOCK / JIFFIES_PERIOD)
 #define RTC_CLOCK     OPTION_GET(NUMBER, rtc_freq)
@@ -38,7 +39,7 @@ static int clock_handler(unsigned int irq_nr, void *dev_id) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET);
+	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET, cpu_get_id());
 #endif
 	clock_tick_handler(dev_id);
 
@@ -56,7 +57,7 @@ static int riscv_clock_setup(struct clock_source *cs) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET);
+	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET, cpu_get_id());
 #endif
 
 	enable_timer_interrupts();
