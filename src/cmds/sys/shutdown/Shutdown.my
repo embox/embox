@@ -19,7 +19,7 @@ package embox.cmd.sys
 module shutdown {
 	source "shutdown.c"
 
-	@NoRuntime depends embox.compat.libc.stdio.all
+	//@NoRuntime depends embox.compat.libc.stdio.all
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends platform.platform_shutdown
 }

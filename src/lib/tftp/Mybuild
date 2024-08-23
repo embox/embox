@@ -8,7 +8,7 @@ module tftp {
 	@IncludeExport(path="lib")
 	source "tftp.h"
 
-	@NoRuntime depends embox.compat.libc.stdio.all
+	//@NoRuntime depends embox.compat.libc.stdio.all
 	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.net.udp
 	@NoRuntime depends embox.net.udp_sock
