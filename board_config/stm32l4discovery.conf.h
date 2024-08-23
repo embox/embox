@@ -1,6 +1,11 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+#define PERIPH_BASE           (0x40000000UL) /*!< Peripheral base address */
+#define APB1PERIPH_BASE        PERIPH_BASE
+#define I2C1_BASE             (APB1PERIPH_BASE + 0x5400UL)
+#define I2C2_BASE             (APB1PERIPH_BASE + 0x5800UL)
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
@@ -115,6 +120,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C1",
 		.dev = {
 			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 31),
 				VAL("ERROR", 32),
@@ -133,6 +141,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C2",
 		.dev = {
 			.name = "I2C2",
+			.regs = {
+				REGMAP("BASE", (I2C2_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 33),
 				VAL("ERROR", 34),

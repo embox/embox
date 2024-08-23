@@ -1,6 +1,13 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+#define PERIPH_BASE           (0x40000000UL)
+#define APB1PERIPH_BASE       PERIPH_BASE
+#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000UL)
+#define SPI2_BASE             (APB1PERIPH_BASE + 0x00003800UL)
+#define SPI3_BASE             (APB1PERIPH_BASE + 0x00003C00UL)
+#define SPI1_BASE             (APB2PERIPH_BASE + 0x00003000UL)
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
@@ -70,15 +77,18 @@ struct spi_conf spis[] = {
    	 .name = "SPI1",
    	 .dev = {
 		.name = "SPI1",
-   		 .pins = {
-   			 PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-   			 PIN("MISO", GPIO_PORT_A, PIN_11, AF5),
-   			 PIN("MOSI", GPIO_PORT_A, PIN_12, AF5),
-   			 PIN("CS",   GPIO_PORT_C, PIN_12, NOAF),
-   		 },
-   		 .clocks = {
-   			 VAL("SPI",  CLK_SPI1),
-   		 }
+		.regs = {
+			REGMAP("BASE", (SPI1_BASE), 0x100),
+		},
+   		.pins = {
+   			PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
+   			PIN("MISO", GPIO_PORT_A, PIN_11, AF5),
+   			PIN("MOSI", GPIO_PORT_A, PIN_12, AF5),
+   			PIN("CS",   GPIO_PORT_C, PIN_12, NOAF),
+   		},
+   		.clocks = {
+   			VAL("SPI",  CLK_SPI1),
+   		}
    	 },
     },
     [2] = {
@@ -86,15 +96,18 @@ struct spi_conf spis[] = {
    	 .name = "SPI2",
    	 .dev = {
 		.name = "SPI2",
-   		 .pins = {
-   			 PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
-   			 PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
-   			 PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
-   			 PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
-   		 },
-   		 .clocks = {
-   			 VAL("SPI",  CLK_SPI2),
-   		 }
+		.regs = {
+			REGMAP("BASE", (SPI2_BASE), 0x100),
+		},
+   		.pins = {
+   			PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
+   			PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
+   			PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
+   			PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
+   		},
+   		.clocks = {
+   			VAL("SPI",  CLK_SPI2),
+   		}
    	 },
     },
 };
