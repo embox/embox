@@ -5,6 +5,8 @@ static module passwd {
 
 	depends passwd_db
 	depends crypt
+	depends embox.compat.libc.stdio.scanf_api
+	depends embox.compat.libc.stdio.fseek
 	depends embox.compat.libc.stdio.file_ops
 }
 
