@@ -30,11 +30,7 @@ extern int clint_init(void);
  * @param value The value (0 or 1) to set for MSIP.
  * @param hart_id The hart id (only for SiFive CLINT).
  */
-extern void clint_configure_msip(uint8_t value
-#ifdef SIFIVE_CLINT
-    , int hart_id
-#endif
-);
+extern void clint_configure_msip(uint8_t value, int hart_id);
 
 /**
  * Sets the MTIMECMP register value.
@@ -44,11 +40,7 @@ extern void clint_configure_msip(uint8_t value
  * @param value The value to set for MTIMECMP.
  * @param hart_id The hart id (only for SiFive CLINT).
  */
-extern void clint_set_mtimecmp(uint64_t value
-#ifdef SIFIVE_CLINT
-    , int hart_id
-#endif
-);
+extern void clint_set_mtimecmp(uint64_t value, int hart_id);
 
 /**
  * Retrieves the current value of MTIME.

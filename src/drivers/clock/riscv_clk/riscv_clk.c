@@ -38,7 +38,7 @@ static int clock_handler(unsigned int irq_nr, void *dev_id) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET);
+	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET, 0);
 #endif
 	clock_tick_handler(dev_id);
 
@@ -56,7 +56,7 @@ static int riscv_clock_setup(struct clock_source *cs) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET);
+	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET, 0);
 #endif
 
 	enable_timer_interrupts();

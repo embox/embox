@@ -32,11 +32,14 @@
  */
 int clint_init(void) __attribute__((unused));
 int clint_init(void) {
-    // Initial configuration: clear MSIP and set MTIMECMP to max value for all harts
-    for (int hart = 0; hart < 5; hart++) {
-        REG32_STORE(MSIP_ADDR(hart), 0);                 
-        REG64_STORE(MTIMECMP_ADDR(hart), 0xFFFFFFFFFFFFFFFF); 
-    }
+// Initial configuration: clear MSIP and set MTIMECMP to max value for all harts
+#ifdef SMP
+    
+#else
+    REG32_STORE(MSIP_ADDR(0), 0);                 
+    REG64_STORE(MTIMECMP_ADDR(0), 0xFFFFFFFFFFFFFFFF); 
+#endif
+
     REG64_STORE(MTIME_ADDR, 0); 
     enable_software_interrupts();
     return 0;
@@ -50,13 +53,9 @@ int clint_init(void) {
  * @param value The value (0 or 1) to set for MSIP.
  * @param hart_id The hart id (only for SiFive CLINT).
  */
-void clint_configure_msip(uint8_t value
-#ifdef SIFIVE_CLINT
-    , int hart_id
-#endif
-) {
-#ifdef SIFIVE_CLINT
-    REG32_STORE(MSIP_ADDR(hart_id), value & 1);
+void clint_configure_msip(uint8_t value, int hart_id) {
+#ifdef SMP
+    
 #else
     REG32_STORE(MSIP_ADDR(0), value & 1);
 #endif
@@ -70,13 +69,9 @@ void clint_configure_msip(uint8_t value
  * @param value The value to set for MTIMECMP.
  * @param hart_id The hart id (only for SiFive CLINT).
  */
-void clint_set_mtimecmp(uint64_t value
-#ifdef SIFIVE_CLINT
-    , int hart_id
-#endif
-) {
-#ifdef SIFIVE_CLINT
-    REG64_STORE(MTIMECMP_ADDR(hart_id), value); // Write 'value' to MTIMECMP_ADDR for the specific hart
+void clint_set_mtimecmp(uint64_t value, int hart_id) {
+#ifdef SMP
+    
 #else
     REG64_STORE(MTIMECMP_ADDR(0), value);
 #endif
