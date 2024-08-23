@@ -23,5 +23,5 @@ module backtrace_symbols_fd {
 	source "backtrace_symbols_fd.c"
 
 	depends embox.lib.debug.symbol
-	depends embox.compat.libc.stdio.all
+	//depends embox.compat.libc.stdio.all
 }
