@@ -8,7 +8,6 @@
 
 #include <asm/linkage.h>
 #include <asm/regs.h>
-#include <hal/cpu.h>
 
 	.section .text
 
@@ -52,7 +51,7 @@ loop:
 	.section .data
 	.align 0x4
 C_LABEL(__ap_sp):
-	.space 4 * (NCPU - 1)
+	.space 4
 
 	.align 16
 C_LABEL(__tmp_small_stack):
