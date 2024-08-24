@@ -8,6 +8,9 @@
 #ifndef IRQCTRL_RISCV_INTC_IMPL_H_
 #define IRQCTRL_RISCV_INTC_IMPL_H_
 
-#define __IRQCTRL_IRQS_TOTAL 70
+#include <framework/mod/options.h>
+
+#define __IRQCTRL_IRQS_TOTAL \
+	OPTION_MODULE_GET(embox__driver__interrupt__riscv_plic, NUMBER, max_irq_number)
 
 #endif /* IRQCTRL_RISCV_INTC_IMPL_H_ */
