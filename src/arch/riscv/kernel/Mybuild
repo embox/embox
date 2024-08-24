@@ -4,15 +4,6 @@ module conf {
 	option boolean smode = false
 }
 
-module boot extends embox.arch.boot {
-	option boolean smp_support = true
-	option boolean mik32_fixup = false
-
-	source "boot.S"
-
-	depends embox.arch.riscv.kernel.conf
-}
-
 module locore extends embox.arch.locore {
 	depends entry
 	depends interrupt

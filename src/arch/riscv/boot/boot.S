@@ -87,10 +87,15 @@ copy_data_end:
 .cfi_endproc
 
 secondary_hart_loop:
-	wfi
 #ifdef SMP
-	/* TODO: SMP support */
-#endif
+	csrw    STATUS_REG, STATUS(IE)      
+	/* Turn on soft interrput before WFI*/
+	csrw    INTERRUPT_REG, IE(SIE) 
+
+	la      t0, __ap_trampoline
+	csrw    TRAP_VECTOR_REG, t0
+#endif /* SMP */
+	wfi
 	j       secondary_hart_loop
 
 
