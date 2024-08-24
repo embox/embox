@@ -5,3 +5,11 @@ module cpu extends embox.arch.cpu {
 	source "cpu_get_id.c"
 
 }
+
+module smp extends embox.arch.smp {
+	source "ap_trampoline.S"
+
+	option boolean independent_clock = true
+
+	depends cpu
+}
