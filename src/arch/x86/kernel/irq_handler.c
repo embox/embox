@@ -14,11 +14,12 @@
 #include <kernel/irq.h>
 
 fastcall void irq_handler(pt_regs_t *regs) {
+	int irq = regs->trapno - 0x20;
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
-		int irq = regs->trapno - 0x20;
+		irqctrl_disable(irq);
 
 		ipl_enable();
 
@@ -35,6 +36,7 @@ fastcall void irq_handler(pt_regs_t *regs) {
 
 		irqctrl_eoi(irq);
 
+		irqctrl_enable(irq);
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
