@@ -2,6 +2,8 @@ package third_party.lib
 
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 module openssl3 {
+
+	source "localtime.c"
 	
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libssl.a", "libcrypto.a"

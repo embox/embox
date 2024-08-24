@@ -3,7 +3,7 @@ PKG_VER := 3.3.1
 
 PKG_SOURCES := https://github.com/$(PKG_NAME)/$(PKG_NAME)/releases/download/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
 
-PKG_PATCHES := a_time.c.patch
+PKG_PATCHES := embox.patch
 
 PKG_MD5     := 8a4342b399c18f870ca6186299195984
 
@@ -20,6 +20,8 @@ $(CONFIGURE) :
 		no-dso \
 		no-async \
 		no-shared \
+		no-apps \
+		no-afalgeng \
 		--prefix=$(PKG_INSTALL_DIR) \
 		-DPEDANTIC \
 		"$(EMBOX_CFLAGS)" \
@@ -32,3 +34,10 @@ $(BUILD) :
 		$(MAKE)  MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
+
+$(INSTALL) :
+	cd $(PKG_SOURCE_DIR) && ( \
+		$(MAKE) install MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
+	touch $@
+
