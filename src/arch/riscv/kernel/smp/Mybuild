@@ -1,0 +1,7 @@
+package embox.arch.riscv.kernel
+
+module cpu extends embox.arch.cpu {
+	option number cpu_count
+	source "cpu_get_id.c"
+
+}
