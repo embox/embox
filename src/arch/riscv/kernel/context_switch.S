@@ -17,7 +17,6 @@
 
 .align 2
 context_switch:
-	addi    sp, sp, -CTX_SIZE
 	PTR_S   sp, CTX_SP(a0)
 	PTR_S   ra, CTX_RA(a0)
 	PTR_S   s0, CTX_S0(a0)
@@ -52,6 +51,5 @@ context_switch:
 	PTR_L   s11, CTX_S11(a1)
 	PTR_L   t6, CTX_MSTATUS(a1)
 	csrw    STATUS_REG, t6
-	addi    sp, sp, CTX_SIZE
 
 	ret
