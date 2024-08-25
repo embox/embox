@@ -82,6 +82,10 @@ copy_data:
 	blt     t0, t2, copy_data
 copy_data_end:
 
+#if NCPU > 1
+	call    cpudata_init
+#endif /* NCPU > 1 */
+
 	/* Start kernel. */
 	call    kernel_start
 .cfi_endproc
