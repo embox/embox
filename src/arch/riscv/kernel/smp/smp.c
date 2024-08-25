@@ -6,20 +6,19 @@
  * @author Zeng Zixian
  */
 
-#include <stdint.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <drivers/common/memory.h>
 #include <embox/unit.h>
 #include <hal/cpu_idle.h>
+#include <asm/interrupts.h>
 #include <kernel/cpu/cpu.h>
 #include <kernel/panic.h>
 #include <kernel/spinlock.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
+#include <kernel/irq.h>
+#include <kernel/time/clock_source.h>
 
+#include <drivers/irqctrl.h>
 #include <module/embox/kernel/thread/core.h>
 #include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
@@ -46,8 +45,14 @@ void startup_ap(void) {
 
 	__spin_lock(&startup_lock);
 
-	clint_configure_msip(0,self_id);
-	//irqctrl_enable(2);
+	/* enable external interrupt on each AP independently */
+	irqctrl_init();
+
+	/* enable external interrupt on each AP independently */
+	clint_init();
+
+	/* set up clock interrupt for each AP independently */
+	((struct clock_source *)__riscv_timer_data)->event_device->set_periodic(__riscv_timer_data);
 
 	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);
