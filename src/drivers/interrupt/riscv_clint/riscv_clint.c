@@ -7,12 +7,10 @@
  * @authored by Suraj Ravindra Sonawane
  */
 
-#include <stdint.h>
 #include <drivers/irqctrl.h>
 #include <hal/reg.h>
 #include <hal/cpu.h>
 #include <asm/interrupts.h>
-#include <drivers/interrupt/riscv_clint.h>
 
 #define CLINT_ADDR      OPTION_GET(NUMBER, base_addr)
 #define MSIP_OFFSET     OPTION_GET(NUMBER, msip_offset)

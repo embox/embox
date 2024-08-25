@@ -20,8 +20,8 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
 
-#include <drivers/interrupt/riscv_clint.h>
 #include <module/embox/kernel/thread/core.h>
+#include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
 #define THREAD_STACK_SIZE \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
