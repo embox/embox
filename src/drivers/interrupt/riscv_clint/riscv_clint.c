@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <drivers/irqctrl.h>
 #include <hal/reg.h>
+#include <hal/cpu.h>
 #include <asm/interrupts.h>
 #include <drivers/interrupt/riscv_clint.h>
 
@@ -20,6 +21,8 @@
 
 #define MSIP_ADDR(hart)       (CLINT_ADDR + MSIP_OFFSET + ((hart) * 4))
 #define MTIMECMP_ADDR(hart)   (CLINT_ADDR + MTIMECMP_OFFSET + ((hart) * 8))
+
+/* time counter register is read only*/
 #define MTIME_ADDR            (CLINT_ADDR + MTIME_OFFSET)
 
 /**
@@ -31,16 +34,13 @@
  * @return 0 on success.
  */
 int clint_init(void) __attribute__((unused));
-int clint_init(void) {
-// Initial configuration: clear MSIP and set MTIMECMP to max value for all harts
-#ifdef SMP
-    
-#else
-    REG32_STORE(MSIP_ADDR(0), 0);                 
-    REG64_STORE(MTIMECMP_ADDR(0), 0xFFFFFFFFFFFFFFFF); 
-#endif
 
-    REG64_STORE(MTIME_ADDR, 0); 
+/* In SMP case, each CPU will call this function independently */
+int clint_init(void) {
+	int hartid = cpu_get_id();
+    REG32_STORE(MSIP_ADDR(hartid), 0); /* Clear Pending bit */
+    REG64_STORE(MTIMECMP_ADDR(hartid), 0xFFFFFFFFFFFFFFFF); 
+
     enable_software_interrupts();
     return 0;
 }
@@ -54,11 +54,7 @@ int clint_init(void) {
  * @param hart_id The hart id (only for SiFive CLINT).
  */
 void clint_configure_msip(uint8_t value, int hart_id) {
-#ifdef SMP
-    
-#else
-    REG32_STORE(MSIP_ADDR(0), value & 1);
-#endif
+    REG32_STORE(MSIP_ADDR(hart_id), value & 1);
 }
 
 /**
@@ -70,11 +66,7 @@ void clint_configure_msip(uint8_t value, int hart_id) {
  * @param hart_id The hart id (only for SiFive CLINT).
  */
 void clint_set_mtimecmp(uint64_t value, int hart_id) {
-#ifdef SMP
-    
-#else
-    REG64_STORE(MTIMECMP_ADDR(0), value);
-#endif
+    REG64_STORE(MTIMECMP_ADDR(hart_id), value);
 }
 
 /**
