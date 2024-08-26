@@ -11,8 +11,6 @@
 
 #include <util/log.h>
 
-#include <asm/ap.h>
-
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/thread/thread_stack.h>
