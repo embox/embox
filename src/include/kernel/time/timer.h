@@ -19,6 +19,8 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 #include <sys/types.h>
+#include <hal/cpu.h>
+#include <hal/ipl.h>
 
 #include <kernel/time/timer_strat.h>
 
@@ -39,11 +41,20 @@ typedef void (*sys_timer_handler_t)(struct sys_timer *timer, void *param);
 #define TIMER_STATE_PREALLOC 0x1
 #define TIMER_STATE_STARTED  0x2
 
+struct sys_timer_sharing {
+	uint8_t is_shared;
+	/* Shared on multiprocessor, each bit indicate a CPU */
+	uint32_t shared_cpu;
+};
+
 /**
  * system timer structure
  */
 struct sys_timer {
 	sys_timer_queue_t lnk;
+#ifdef SMP
+	sys_timer_queue_t multi_lnk[NCPU];
+#endif
 	struct dlist_head st_wait_link;
 
 	uint32_t load;
@@ -53,6 +64,8 @@ struct sys_timer {
 	void *param;
 	unsigned int flags;
 	uint32_t state; /**< do we use timer_set or timer_init_start? */
+
+	struct sys_timer_sharing *timer_sharing;
 };
 
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {
@@ -67,16 +80,66 @@ static inline void timer_clear_preallocated(struct sys_timer *tmr) {
 	tmr->state &= ~TIMER_STATE_PREALLOC;
 }
 
+static inline bool timer_is_shared(struct sys_timer *tmr) {
+	if(tmr->timer_sharing) return tmr->timer_sharing->is_shared;
+	else return 0;
+}
+
+static inline void timer_set_shared(struct sys_timer *tmr) {
+	if(tmr->timer_sharing) tmr->timer_sharing->is_shared = 1;
+}
+
+static inline void timer_set_private(struct sys_timer *tmr) {
+	if(tmr->timer_sharing) tmr->timer_sharing->is_shared = 0;
+}
+
 static inline bool timer_is_started(struct sys_timer *tmr) {
+#ifdef SMP
+	ipl_t ipl = ipl_save();
+	unsigned int cpuid = cpu_get_id();
+	ipl_restore(ipl);
+	if(!timer_is_shared(tmr)) {
+		return tmr->state & TIMER_STATE_STARTED;
+	}else{
+		if(tmr->state & TIMER_STATE_STARTED) {
+			if(tmr->timer_sharing->shared_cpu & (0x1 << cpuid))
+				return 1;
+			else
+				return 0;
+		}else{
+			return 0;
+		}
+	}
+
+#else
 	return tmr->state & TIMER_STATE_STARTED;
+#endif
 }
 
 static inline void timer_set_started(struct sys_timer *tmr) {
+#ifdef SMP
+	ipl_t ipl = ipl_save();
+	unsigned int cpuid = cpu_get_id();
+	ipl_restore(ipl);
+	if(timer_is_shared(tmr)) {
+		tmr->timer_sharing->shared_cpu |= (0x1 << cpuid);
+	}
+#endif
 	tmr->state |= TIMER_STATE_STARTED;
 }
 
 static inline void timer_set_stopped(struct sys_timer *tmr) {
-	tmr->state &= ~TIMER_STATE_STARTED;
+#ifdef SMP
+	ipl_t ipl = ipl_save();
+	unsigned int cpuid = cpu_get_id();
+	ipl_restore(ipl);
+	if(timer_is_shared(tmr)) {
+		tmr->timer_sharing->shared_cpu &= ~(0x1 << cpuid);
+		if(tmr->timer_sharing->shared_cpu == 0x0)
+			tmr->state &= ~TIMER_STATE_STARTED;
+	}else
+#endif
+		tmr->state &= ~TIMER_STATE_STARTED;
 }
 
 static inline bool timer_is_periodic(struct sys_timer *tmr) {
