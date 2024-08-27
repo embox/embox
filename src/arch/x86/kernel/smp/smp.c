@@ -21,6 +21,7 @@
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
+#include <kernel/sched.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 #include <module/embox/kernel/thread/core.h>
@@ -99,6 +100,8 @@ static int unit_init(void) {
 
 	/* Initialize trampoline for the APs */
 	init_trampoline();
+
+	sched_ticker_set_shared();
 
 	/* Start all CPUs */
 	self_id = cpu_get_id();
