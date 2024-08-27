@@ -10,3 +10,7 @@ module list_timer extends api {
 module head_timer extends api {
 	source "head_timer.c", "head_timer.h"
 }
+
+module head_timer_smp extends api {
+	source "head_timer_smp.c", "head_timer.h"
+}

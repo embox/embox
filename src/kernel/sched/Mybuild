@@ -18,6 +18,7 @@ module sched {
 
 	depends wait_queue
 
+	depends embox.kernel.timer.strategy.api
 	depends embox.kernel.sched.current.api
 }
 
