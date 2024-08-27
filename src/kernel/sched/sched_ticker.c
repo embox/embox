@@ -23,14 +23,16 @@
 static struct sys_timer sched_tick_timer;
 
 static void sched_tick(sys_timer_t *timer, void *param) {
-	sched_post_switch();
-
 #ifdef SMP
 	for (int i = 0; i < NCPU; i++) {
 		extern void smp_send_resched(int cpu_id);
+		if(i == cpu_get_id()) {
+			continue;
+		}
 		smp_send_resched(i);
 	}
 #endif /* SMP */
+	sched_post_switch();
 }
 
 void sched_ticker_add(void) {
