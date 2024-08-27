@@ -416,6 +416,14 @@ static void sched_ticker_update(void) {
 	cur = schedee_get_current();
 
 	next = runq_get_next(&rq.queue);
+	/**
+	 * If runq_get_next() returns NULL which means the rq is empty at all.
+	 * There is no need for thread switching, just delete the sched_tick
+	 */
+	if(next == NULL) {
+		sched_ticker_del();
+		return;
+	}
 
 	cur_prio = schedee_priority_get(cur);
 	next_prio = schedee_priority_get(next);
@@ -456,7 +464,9 @@ static void __schedule(int preempt) {
 	sched_timing_stop(prev);
 
 	while (1) {
+		/* when called from here, it must NOT be empty*/
 		next = runq_get_next(&rq.queue);
+		assert(next);
 
 		if (schedee_is_thread(prev) && schedee_is_thread(next) &&
 			    schedee_priority_get(prev) == schedee_priority_get(next)) {
