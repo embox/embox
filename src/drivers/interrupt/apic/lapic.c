@@ -93,7 +93,7 @@ void lapic_send_ipi(unsigned int vector, unsigned int cpu, int type) {
 
 	switch (type) {
 		case LAPIC_ICR_DEST_FIELD:
-			lapic_write_icr2(icr2 |	(cpu << 24));
+			lapic_write_icr2(icr2 |	((0x1<<cpu) << 24));
 			lapic_write_icr1(icr1 |	type | LAPIC_ICR_LOGICAL_DEST | vector);
 			break;
 		case LAPIC_ICR_DEST_SELF:
