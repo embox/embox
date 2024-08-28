@@ -14,6 +14,7 @@
 #include <kernel/time/timer.h>
 #include <kernel/time/time.h>
 #include <kernel/sched/sched_lock.h>
+#include <kernel/sched.h>
 #include <hal/clock.h>
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
@@ -24,10 +25,19 @@ int timer_init(struct sys_timer *tmr, unsigned int flags,
 		return -EINVAL;
 	}
 
-	tmr->state = 0;
+	/**
+	 * No need to init timer_sharing and state file for
+	 * sched_tick_timer
+	 */
+	if(sched_ticker_get_timer() != (void*)tmr){
+		tmr->timer_sharing = NULL;
+		tmr->state = 0;
+	}
+
 	tmr->handle = handler;
 	tmr->param = param;
 	tmr->flags = flags;
+
 	return ENOERR;
 }
 

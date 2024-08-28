@@ -114,6 +114,10 @@ extern void sched_set_current(struct schedee *schedee);
 
 extern void sched_ticker_add(void);
 extern void sched_ticker_del(void);
+extern void* sched_ticker_get_timer(void);
+
+extern void sched_ticker_set_shared(void);
+extern void sched_ticker_set_private(void);
 
 extern int sched_active(struct schedee *s);
 
