@@ -89,3 +89,24 @@ struct schedee *runq_extract(runq_t *queue) {
 
 	return schedee;
 }
+
+struct schedee *runq_get_next_ignore_affinity(runq_t *queue) {
+	struct schedee *schedee = NULL;
+	int i;
+
+	for (i = SCHED_PRIORITY_MAX; i >= SCHED_PRIORITY_MIN; i--) {
+		struct schedee *s;
+
+		dlist_foreach_entry(s, &queue->list[i], runq_link) {
+			/* Not checking the affinity */
+			schedee = s;
+			break;
+		}
+
+		if (schedee) {
+			break;
+		}
+	}
+
+	return schedee;
+}
