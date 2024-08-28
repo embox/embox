@@ -116,10 +116,12 @@ void smp_send_resched(int cpu_id) {
 
 void resched(void) {
 	extern void sched_post_switch(void);
+	extern void sched_post_switch_noyield(void);
 
 	lapic_send_eoi();
 
-	sched_post_switch();
+	//sched_post_switch();
+	sched_post_switch_noyield();
 }
 
 /* FIXME this is a code (not device memory) region */
