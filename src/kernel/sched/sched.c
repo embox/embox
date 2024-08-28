@@ -36,6 +36,8 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/lthread/lthread.h>
+#include <kernel/cpu/cpu.h>
+#include <kernel/time/timer.h>
 
 // XXX
 #ifndef __barrier
@@ -417,10 +419,33 @@ static void sched_ticker_update(void) {
 
 	next = runq_get_next(&rq.queue);
 	/**
-	 * If runq_get_next() returns NULL which means the rq is empty at all.
-	 * There is no need for thread switching, just delete the sched_tick
+	 * If runq_get_next() returns NULL which means the current cpu can't
+	 * get any threads to run. But it doesn't mean other cpu can not get
+	 * threads to run in SMP situation. So at least for current cpu, it's
+	 * no need for thread switching, just delete the sched_tick in current
 	 */
 	if(next == NULL) {
+#ifdef SMP
+		next = runq_get_next_ignore_affinity(&rq.queue);
+		extern void smp_send_resched(int cpu_id);
+		if(next != NULL) {
+			unsigned int affinity_mask = sched_affinity_get(&next->affinity);
+			for(int cpuid = 0, mask = affinity_mask; mask != 0; mask = mask >> 1, cpuid++) {
+				if((mask & 0x1) && \
+				/**
+				 * In situation for example, threads all have affinity to cpu A
+				 * but first actual scheduling happens on cpu B. CPU A will never
+				 * get a chance to add it's own sched_tick_timer, which means
+				 * CPU A will never wake up clock_hander'bottom half never scheduling
+				 */
+				0 == (((struct sys_timer*)sched_ticker_get_timer())->timer_sharing->shared_cpu & affinity_mask) && \
+				/* check target cpu is on idle thread for safety */
+				cpu_get_idle(cpuid)->schedee.active == 0x1){
+				   smp_send_resched(cpuid);
+				}
+			}
+		}
+#endif
 		sched_ticker_del();
 		return;
 	}
