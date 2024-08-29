@@ -12,7 +12,7 @@ $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \
 		./Configure \
-		linux-generic32 \
+		gcc \
 		--cross-compile-prefix=$(ROOT_DIR)/mk/extbld/arch-embox- \
 		386 \
 		no-asm \
