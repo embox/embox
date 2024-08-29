@@ -35,3 +35,11 @@ int irq_detach(unsigned int irq_nr, void *dev_id) {
 void irq_dispatch(unsigned int irq_nr) {
 
 }
+
+void irq_enable_attached(void) {
+	for(int irq_nr = 0; irq_nr < IRQ_NRS_TOTAL; irq_nr++) {
+		if(irq_table[irq_nr]) {
+			irqctrl_enable(irq_nr);
+		}
+	}
+}
