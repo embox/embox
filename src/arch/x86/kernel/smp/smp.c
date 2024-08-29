@@ -22,6 +22,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
+#include <kernel/irq.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 #include <module/embox/kernel/thread/core.h>
@@ -52,7 +53,7 @@ void startup_ap(void) {
 
 	idt_load();
 	apic_init();
-	irqctrl_enable(2);
+	irq_enable_attached();
 
 	bs_idle = thread_init_stack(__ap_sp[self_id - 1] - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);
