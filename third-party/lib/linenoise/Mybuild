@@ -7,6 +7,9 @@ module linenoise {
 	source "linenoise.h"
 
 	//depends embox.compat.libc.all
+	depends embox.compat.libc.stdio.open
+	depends embox.compat.libc.stdio.file_ops
+
 	depends embox.compat.libc.str_dup
 	depends embox.mem.heap_api
 	depends embox.compat.posix.index_descriptor
