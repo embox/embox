@@ -1,6 +1,10 @@
 package embox.compat.posix
 
-static module passwd {
+@DefaultImpl(passwd)
+abstract module pwd_api {
+}
+
+static module passwd extends pwd_api {
 	source "pwd_grp.c"
 
 	depends passwd_db
@@ -8,6 +12,10 @@ static module passwd {
 	depends embox.compat.libc.stdio.scanf_api
 	depends embox.compat.libc.stdio.fseek
 	depends embox.compat.libc.stdio.file_ops
+}
+
+static module pwd_stub extends pwd_api {
+	source "pwd_stub.c"
 }
 
 @DefaultImpl(passwd_db_static)
