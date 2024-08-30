@@ -17,6 +17,7 @@
 #include <kernel/thread.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
+#include <kernel/sched.h>
 
 #include <drivers/irqctrl.h>
 #include <riscv/ipi.h>
@@ -55,6 +56,9 @@ void startup_ap(void) {
 	/* set up clock interrupt for each AP independently */
 	((struct clock_source *)__riscv_timer_data)->event_device->set_periodic(__riscv_timer_data);
 
+	/* enable all attached IRQs for each CPU */
+	irq_enable_attached();
+
 	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);
 	cpu_init(self_id, bs_idle);
@@ -87,6 +91,7 @@ static inline void cpu_start(int cpu_id) {
 static int unit_init(void) {
 	int i, self_id;
 
+	sched_ticker_set_shared();
 	/* Start all CPUs */
 	self_id = cpu_get_id();
 	for (i = 0; i < NCPU; i++) {
