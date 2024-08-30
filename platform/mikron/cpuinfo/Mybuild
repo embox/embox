@@ -1,0 +1,5 @@
+package platform.mikron.mik32
+
+module cpu_info extends embox.arch.cpu_info {
+	source "cpu_info.h", "cpu_info.c"
+}
