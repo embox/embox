@@ -21,11 +21,11 @@ EMBOX_UNIT_INIT(uart_init);
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-extern const struct uart_ops pl011_uart_ops;
+extern const struct uart_ops mikron_usart_ops;
 
 static struct uart uart0 = {
     .dev_name = MACRO_STRING(TTY_NAME),
-    .uart_ops = &pl011_uart_ops,
+    .uart_ops = &mikron_usart_ops,
     .irq_num = IRQ_NUM,
     .base_addr = UART_BASE,
     .params = ((struct uart_params){

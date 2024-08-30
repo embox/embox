@@ -29,6 +29,7 @@ struct epic_regs {
 #define EPIC_REGS   ((struct epic_regs *)(uintptr_t)(BASE_ADDR))
 
 static int epic_init(void) {
+	EPIC_REGS->CLEAR = 0xFFFFFFFF;
 	enable_external_interrupts();
 	return 0;
 }
@@ -46,7 +47,19 @@ void irqctrl_eoi(unsigned int irq) {
 }
 
 unsigned int irqctrl_get_intid(void) {
-	return EPIC_REGS->RAW_STATUS;
+	int i;
+
+	if (EPIC_REGS->RAW_STATUS == 0) {
+		return 0;
+	}
+
+	for (i = 0; i < 32; i ++) {
+		if (EPIC_REGS->RAW_STATUS & 1 << i) {
+			break;
+		}
+	}
+
+	return i;
 }
 
 IRQCTRL_DEF(mikron_epic, epic_init);

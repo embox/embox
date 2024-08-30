@@ -8,6 +8,6 @@ static module LibElf {
 	@IncludeExport(path="lib")
 	source "elf_consts.h", "elf_types.h"
 
-	@NoRuntime depends embox.compat.libc.stdio.all
+	//@NoRuntime depends embox.compat.libc.stdio.all
 	@NoRuntime depends embox.compat.libc.str
 }

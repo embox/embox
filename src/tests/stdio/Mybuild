@@ -29,7 +29,7 @@ module file_io_error_test {
 	@InitFS
 	source  "file_io_error_test.txt"
 
-	depends embox.compat.libc.stdio.all
+	//depends embox.compat.libc.stdio.all
 	depends embox.framework.test
 	depends embox.framework.LibFramework
 }

@@ -34,7 +34,7 @@ module arp {
 	depends embox.net.neighbour
 	depends embox.net.util.macaddr
 	depends embox.compat.posix.net.inet_addr
-	depends embox.compat.libc.stdio.all
+	//depends embox.compat.libc.stdio.all
 	depends embox.compat.posix.util.getopt
 	depends embox.net.core
 	depends embox.framework.LibFramework

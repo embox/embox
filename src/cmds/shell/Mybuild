@@ -43,7 +43,7 @@ module tish extends shell_api {
 	depends embox.compat.posix.proc.pid
 	depends embox.compat.posix.proc.uid
 	depends embox.compat.posix.proc.waitpid
-	depends embox.compat.posix.passwd
+	depends embox.compat.posix.pwd_api
 	depends embox.compat.libc.str_dup
 
 	@NoRuntime depends embox.compat.posix.util.sleep
