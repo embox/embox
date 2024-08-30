@@ -9,6 +9,7 @@
 
 #include <assert.h>
 
+#include <hal/cpu.h>
 #include <asm/entry.h>
 #include <asm/interrupts.h>
 #include <asm/ptrace.h>
@@ -36,7 +37,14 @@ void riscv_interrupt_handler(void) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
 			if (__riscv_timer_handler) {
-				__riscv_timer_handler(0, __riscv_timer_data);
+				if(cpu_get_id() == 0) {
+					__riscv_timer_handler(0, __riscv_timer_data);
+				}else {
+#ifdef SMP
+					extern void __riscv_ap_timer_handler(void* dev);
+					__riscv_ap_timer_handler(__riscv_timer_data);
+#endif
+				}
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
