@@ -19,6 +19,7 @@
 #include <kernel/time/clock_source.h>
 
 #include <drivers/irqctrl.h>
+#include <riscv/ipi.h>
 #include <module/embox/kernel/thread/core.h>
 #include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
@@ -78,7 +79,7 @@ static inline void cpu_start(int cpu_id) {
 
 	ap_ack = 0;
 
-	clint_configure_msip(1,cpu_id);
+	smp_send_none(cpu_id);
 	while (!ap_ack)
 		__barrier();
 }
@@ -95,13 +96,3 @@ static int unit_init(void) {
 
 	return 0;
 }
-
-void smp_send_resched(int cpu_id) {
-}
-
-void resched(void) {
-	extern void sched_post_switch(void);
-
-	sched_post_switch();
-}
-

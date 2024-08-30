@@ -12,6 +12,7 @@ module smp extends embox.arch.smp {
 	option boolean independent_clock = true
 
 	depends cpu
+	depends ipi
 
 	depends embox.driver.interrupt.riscv_plic
 	depends embox.driver.interrupt.riscv_clint

@@ -16,7 +16,8 @@
 #include <asm/regs.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
+#include <kernel/panic.h>
+#include <riscv/ipi.h>
 
 EMBOX_UNIT_INIT(riscv_interrupt_init);
 
@@ -63,6 +64,21 @@ void riscv_interrupt_handler(void) {
 			irq_dispatch(interrupt_id);
 			ipl_disable();
 			irqctrl_enable(interrupt_id);
+		}else if (pending == IRQ_SOFTWARE) {
+			disable_software_interrupts();
+			switch(smp_get_ipi_message()) {
+				case NONE:
+					smp_ack_ipi();
+					break;
+				case RESCHED:
+					smp_ack_ipi();
+					resched();
+					break;
+				default:
+					panic("unknown software interrupt\n");
+					break;
+			}
+			enable_software_interrupts();
 		}
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);

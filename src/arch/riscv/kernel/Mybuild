@@ -17,6 +17,7 @@ module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
 	source "interrupt.c"
 
+	depends ipi
 	depends embox.kernel.irq
 }
 
@@ -49,4 +50,12 @@ module cpu_idle extends embox.arch.cpu_idle {
 
 module fpu {
 	source "fpu.c"
+}
+
+module ipi {
+	@IncludeExport(path="riscv")
+	source "ipi.h"
+
+	source "ipi.c"
+
 }
