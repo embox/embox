@@ -22,6 +22,7 @@
 #define INTERRUPT_REG   MACRO_CONCAT(MODE_LOWER_CASE, ie)
 #define EPC_REG         MACRO_CONCAT(MODE_LOWER_CASE, epc)
 #define TRAP_VECTOR_REG MACRO_CONCAT(MODE_LOWER_CASE, tvec)
+#define HARDID_REG     MACRO_CONCAT(MODE_LOWER_CASE, hartid)
 
 /* Machine mode Status Register (mstatus) */
 #define MSTATUS_MIE  (1UL << 3)  /* Machine Interrupt Enable */
