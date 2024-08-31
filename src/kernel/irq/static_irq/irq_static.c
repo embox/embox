@@ -38,7 +38,7 @@ void irq_dispatch(unsigned int irq_nr) {
 
 void irq_enable_attached(void) {
 	for(int irq_nr = 0; irq_nr < IRQ_NRS_TOTAL; irq_nr++) {
-		if(irq_table[irq_nr]) {
+		if(((void **) &__static_irq_table_start)[irq_nr] != NULL) {
 			irqctrl_enable(irq_nr);
 		}
 	}
