@@ -22,6 +22,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
 #include <kernel/sched.h>
+#include <kernel/irq.h>
 
 #include <module/embox/driver/interrupt/lapic.h>
 #include <module/embox/kernel/thread/core.h>
@@ -52,7 +53,7 @@ void startup_ap(void) {
 
 	idt_load();
 	apic_init();
-	irqctrl_enable(2);
+	irq_enable_attached();
 
 	bs_idle = thread_init_stack(__ap_sp[self_id - 1] - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);
@@ -83,7 +84,7 @@ static inline void init_trampoline(void) {
 /* TODO: FIX THIS! */
 static inline void cpu_start(int cpu_id) {
 	/* Setting up stack and boot */
-	__ap_sp[cpu_id - 1] = ap_stack[cpu_id] + KERNEL_AP_STACK_SZ;
+	__ap_sp[cpu_id - 1] = (char *)&ap_stack[cpu_id - 1] + KERNEL_AP_STACK_SZ;
 
 	lapic_send_init_ipi(cpu_id);
 
