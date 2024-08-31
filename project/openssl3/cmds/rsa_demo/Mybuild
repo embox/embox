@@ -1,0 +1,10 @@
+package embox.project.openssl3.cmd
+
+@AutoCmd
+@Cmd(name = "rsa_demo", help="Openssl rsa_demo")
+@BuildDepends(third_party.lib.openssl3)
+@Build(stage=2)
+module rsa_demo {
+    source "rsa_encrypt.c"
+    depends third_party.lib.openssl3
+}
