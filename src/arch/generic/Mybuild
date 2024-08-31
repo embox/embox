@@ -18,7 +18,7 @@ module nousermode extends embox.arch.usermode {
 }
 
 module nosmp extends embox.arch.smp {
-	option number max_supported_cores=1
+	option boolean independent_clock = false
 	source "nosmp.h"
 }
 

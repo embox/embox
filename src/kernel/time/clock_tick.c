@@ -14,6 +14,7 @@
 #include <kernel/lthread/lthread.h>
 
 #include <hal/clock.h>
+#include <hal/cpu.h>
 
 #include <framework/mod/options.h>
 
@@ -33,8 +34,11 @@ void clock_tick_handler(void *dev_id) {
 
 void jiffies_update(int ticks) {
 	clock_t next_event;
-
-	cs_jiffies->event_device->jiffies += ticks;
+#if defined(SMP) && (OPTION_MODULE_GET(embox__arch__smp, BOOLEAN, independent_clock) == true)
+	static clock_t ticks_for_multi_clock;
+	if(ticks_for_multi_clock++ % NCPU)
+#endif
+		cs_jiffies->event_device->jiffies += ticks;
 
 	if ((timer_strat_get_next_event(&next_event) == 0) &&
 			(cs_jiffies->event_device->jiffies >= next_event)) {
