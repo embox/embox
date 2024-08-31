@@ -36,7 +36,7 @@ abstract module usermode { }
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp {
-	option number max_supported_cores
+	option boolean independent_clock = false
 }
 
 @Mandatory
