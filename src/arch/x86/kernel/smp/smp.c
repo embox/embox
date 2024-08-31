@@ -83,7 +83,7 @@ static inline void init_trampoline(void) {
 /* TODO: FIX THIS! */
 static inline void cpu_start(int cpu_id) {
 	/* Setting up stack and boot */
-	__ap_sp[cpu_id - 1] = ap_stack[cpu_id] + KERNEL_AP_STACK_SZ;
+	__ap_sp[cpu_id - 1] = (char *)&ap_stack[cpu_id - 1] + KERNEL_AP_STACK_SZ;
 
 	lapic_send_init_ipi(cpu_id);
 

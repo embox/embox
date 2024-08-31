@@ -39,6 +39,9 @@ C_LABEL(__ap_gdtr):
 	.space 8
 C_LABEL(__ap_gdt):
 	.space GDT_ENTRIES * GDT_ENTRY_SIZE
+C_LABEL(__tmp_small_stack):
+	/* this stack in only for calling cpu_get_id */
+	.space 0x40
 C_LABEL(__ap_trampoline_end):
 
 	.section .text
@@ -54,7 +57,14 @@ __ap_trampoline_32:
 	movw %ax, %ss
 
 	/* Setting up stack */
-	mov	__ap_sp, %esp
+	lea	__tmp_small_stack, %esp
+	addl $0x40, %esp
+	call cpu_get_id
+
+	/* eax get the returned cpuid value */
+	dec	%eax
+	lea	__ap_sp(,%eax,4), %esp
+	mov	(%esp), %esp
 
 	/* Jumping forward */
 	jmp startup_ap
