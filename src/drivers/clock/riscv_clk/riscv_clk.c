@@ -19,8 +19,8 @@
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
-#include <drivers/interrupt/riscv_clint.h>
 #include <hal/cpu.h>
+#include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
 #define COUNT_OFFSET  (RTC_CLOCK / JIFFIES_PERIOD)
 #define RTC_CLOCK     OPTION_GET(NUMBER, rtc_freq)

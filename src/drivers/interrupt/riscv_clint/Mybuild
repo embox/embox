@@ -7,4 +7,7 @@ module riscv_clint {
         option number mtime_offset = 0xBFF8
 
 	source "riscv_clint.c"
+
+	@IncludeExport(path="drivers/interrupt/riscv_clint", target_name="riscv_clint.h")
+	source "riscv_clint.h"
 }

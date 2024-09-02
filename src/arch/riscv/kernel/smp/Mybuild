@@ -6,14 +6,6 @@ module cpu extends embox.arch.cpu {
 
 }
 
-module ipi {
-	@IncludeExport(path="riscv")
-	source "ipi.h"
-
-	source "ipi.c"
-
-}
-
 module smp extends embox.arch.smp {
 	source "ap_trampoline.S", "smp.c", "ap_timer_handler.c"
 

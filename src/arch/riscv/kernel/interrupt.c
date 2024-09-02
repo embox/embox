@@ -9,13 +9,15 @@
 
 #include <assert.h>
 
+#include <hal/cpu.h>
 #include <asm/entry.h>
 #include <asm/interrupts.h>
 #include <asm/ptrace.h>
 #include <asm/regs.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
+#include <kernel/panic.h>
+#include <riscv/ipi.h>
 
 EMBOX_UNIT_INIT(riscv_interrupt_init);
 
@@ -36,7 +38,14 @@ void riscv_interrupt_handler(void) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
 			if (__riscv_timer_handler) {
-				__riscv_timer_handler(0, __riscv_timer_data);
+				if(cpu_get_id() == 0) {
+					__riscv_timer_handler(0, __riscv_timer_data);
+				}else {
+#ifdef SMP
+					extern void __riscv_ap_timer_handler(void* dev);
+					__riscv_ap_timer_handler(__riscv_timer_data);
+#endif
+				}
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
@@ -55,6 +64,21 @@ void riscv_interrupt_handler(void) {
 			irq_dispatch(interrupt_id);
 			ipl_disable();
 			irqctrl_enable(interrupt_id);
+		}else if (pending == IRQ_SOFTWARE) {
+			disable_software_interrupts();
+			switch(smp_get_ipi_message()) {
+				case NONE:
+					smp_ack_ipi();
+					break;
+				case RESCHED:
+					smp_ack_ipi();
+					resched();
+					break;
+				default:
+					panic("unknown software interrupt\n");
+					break;
+			}
+			enable_software_interrupts();
 		}
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
