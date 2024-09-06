@@ -37,12 +37,11 @@ _start:
 	 * register.
 	 */
 	la      t0, riscv_trap_handler
-#if OPTION_GET(BOOLEAN,mik32_fixup)	
+#if OPTION_GET(BOOLEAN,mik32_fixup)
 	la      t0, _start
 #endif
 	csrw    TRAP_VECTOR_REG, t0
 
-#if OPTION_GET(BOOLEAN,smp_support)
 	/**
 	 * Continue on hart lottery winner, others branch to
 	 * secondary_hart_loop.
@@ -52,8 +51,9 @@ _start:
 #else
 	csrr    t0, mhartid
 #endif
+#if !OPTION_GET(BOOLEAN,mik32_fixup)
 	bnez    t0, secondary_hart_loop
-#endif /* OPTION_GET(BOOLEAN,smp_support) */
+#endif /* !OPTION_GET(BOOLEAN,mik32_fixup) */
 
 	/* Set up stack pointer. */
 	la      sp, _stack_top
