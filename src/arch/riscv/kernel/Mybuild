@@ -17,7 +17,6 @@ module interrupt extends embox.arch.interrupt {
 	source "ipl_impl.h"
 	source "interrupt.c"
 
-	depends ipi
 	depends embox.kernel.irq
 }
 

@@ -17,7 +17,9 @@
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
+#ifdef SMP
 #include <riscv/ipi.h>
+#endif
 
 EMBOX_UNIT_INIT(riscv_interrupt_init);
 
@@ -66,6 +68,7 @@ void riscv_interrupt_handler(void) {
 			irqctrl_enable(interrupt_id);
 		}else if (pending == IRQ_SOFTWARE) {
 			disable_software_interrupts();
+#ifdef SMP
 			switch(smp_get_ipi_message()) {
 				case NONE:
 					smp_ack_ipi();
@@ -78,6 +81,7 @@ void riscv_interrupt_handler(void) {
 					panic("unknown software interrupt\n");
 					break;
 			}
+#endif
 			enable_software_interrupts();
 		}
 	}

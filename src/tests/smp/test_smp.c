@@ -32,9 +32,9 @@ void start_thread_on_cpu(int cpu_id) {
     thread_launch(t);
 }
 
-int count, all_chars;
-char b = '\n';
-void * thd_1(void *arg){
+static int count, all_chars;
+static char b = '\n';
+static void * thd_1(void *arg) {
 	for(int i = 0;count < all_chars; i++){
 		if((i % 10000000) == 0){
 			count++;
@@ -78,4 +78,6 @@ int main(int argc, char *argv[]) {
 	thread_join(tid3,NULL);
 	thread_join(tid4,NULL);
 	thread_join(tid5,NULL);
+
+	return 0;
 }
