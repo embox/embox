@@ -1,0 +1,10 @@
+package embox.project.openssl3.cmd
+
+@AutoCmd
+@Cmd(name = "aesgcm_demo", help="aesgcm demo")
+@BuildDepends(third_party.lib.openssl3)
+@Build(stage=2)
+module aesgcm_demo {
+    source "aesgcm.c"
+    depends third_party.lib.openssl3
+}
