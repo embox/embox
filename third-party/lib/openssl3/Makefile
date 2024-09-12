@@ -10,21 +10,15 @@ include $(EXTBLD_LIB)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
+	cp $(THIRDPARTY_DIR)/lib/openssl3/embox.conf $(PKG_SOURCE_DIR)/Configurations
 	cd $(PKG_SOURCE_DIR) && ( \
 		./Configure \
-		gcc \
+		embox \
 		--cross-compile-prefix=$(ROOT_DIR)/mk/extbld/arch-embox- \
-		386 \
-		no-asm \
-		no-dso \
-		no-async \
-		no-shared \
-		no-apps \
-		no-afalgeng \
 		--prefix=$(PKG_INSTALL_DIR) \
 		-DPEDANTIC \
-		"$(EMBOX_CFLAGS)" \
 		-I$(THIRDPARTY_DIR)/lib/openssl3 \
+		"$(EMBOX_CFLAGS)" \
 	)
 	touch $@
 

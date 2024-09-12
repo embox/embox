@@ -12,26 +12,29 @@
 #define COMPAT_POSIX_UNISTD_H_
 
 #include <compiler.h>
-#include <posix_environ.h>
-#include <sys/cdefs.h>
-#include <sys/stat.h>
+
 #include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/cdefs.h>
+
 #include <sys/uio.h>
+
+#include <posix_environ.h>
 
 /*
  * The following symbolic constants are defined for sysconf():
  */
-#define _SC_PAGESIZE         1
-#define _SC_PAGE_SIZE        _SC_PAGESIZE
-#define _SC_CLK_TCK          2
-#define _SC_GETPW_R_SIZE_MAX 3
-#define _SC_ATEXIT_MAX       4
+#define _SC_PAGESIZE          1
+#define _SC_PAGE_SIZE         _SC_PAGESIZE
+#define _SC_CLK_TCK           2
+#define _SC_GETPW_R_SIZE_MAX  3
+#define _SC_ATEXIT_MAX        4
 /*not posix */
-#define _SC_NPROCESSORS_ONLN 103
-#define _SC_NPROCESSORS_CONF _SC_NPROCESSORS_ONLN
-#define _SC_PHYS_PAGES       104
+#define _SC_NPROCESSORS_ONLN  103
+#define _SC_NPROCESSORS_CONF  _SC_NPROCESSORS_ONLN
+#define _SC_PHYS_PAGES        104
 
-#define _SC_OPEN_MAX         20
+#define _SC_OPEN_MAX          20
 
 /*
 _SC_2_C_BIND
@@ -121,15 +124,18 @@ _SC_XBS5_LP64_OFF64
 _SC_XBS5_LPBIG_OFFBIG
 */
 
+
+
 /* Standard file descriptors. */
-#define STDIN_FILENO         0 /* Standard input. */
-#define STDOUT_FILENO        1 /* Standard output. */
-#define STDERR_FILENO        2 /* Standard error output. */
+#define STDIN_FILENO    0   /* Standard input. */
+#define STDOUT_FILENO   1   /* Standard output. */
+#define STDERR_FILENO   2   /* Standard error output. */
 
 /* Values for the WHENCE argument to lseek. */
-#define SEEK_SET             0 /* Seek from beginning of file. */
-#define SEEK_CUR             1 /* Seek from current position. */
-#define SEEK_END             2 /* Seek from end of file. */
+#define SEEK_SET        0   /* Seek from beginning of file. */
+#define SEEK_CUR        1   /* Seek from current position. */
+#define SEEK_END        2   /* Seek from end of file. */
+
 
 __BEGIN_DECLS
 /**
@@ -167,7 +173,7 @@ extern int fsync(int);
 extern pid_t fork(void);
 extern pid_t vfork(void);
 
-extern int daemon(int nochdir, int noclose);
+extern int daemon(int nochdir , int noclose); 
 
 extern int nice(int incr);
 
@@ -179,7 +185,8 @@ extern int execl(const char *path, const char *arg, ...);
 // extern int link(const char *oldpath, const char *newpath);
 // extern ssize_t readlink(const char *path, char *buf,
 // 		       size_t bufsize);
-extern ssize_t readlinkat(int fd, const char *path, char *buf, size_t bufsize);
+extern ssize_t readlinkat(int fd, const char *path,
+		       char *buf, size_t bufsize);
 
 extern int unlink(const char *pathname);
 
@@ -195,7 +202,7 @@ extern int dup2(int flides, int flides2);
 extern int pipe(int pipefd[2]);
 extern int pipe2(int pipefd[2], int flags);
 
-extern void _NORETURN _exit(int status);
+extern void _NORETURN _exit (int status);
 
 extern uid_t getuid(void);
 extern uid_t geteuid(void);
@@ -210,7 +217,6 @@ extern int seteuid(uid_t uid);
 extern int setregid(gid_t rgid, gid_t egid);
 extern int setgid(gid_t gid);
 extern int setegid(gid_t gid);
-extern int setpgid(pid_t pid, pid_t pgid);
 
 /**
  * @brief Change length of regular file
@@ -232,7 +238,7 @@ extern int setpgid(pid_t pid, pid_t pgid);
 extern int truncate(const char *path, off_t length);
 extern int ftruncate(int fd, off_t length);
 
-extern char *getcwd(char *buff, size_t size);
+extern char * getcwd(char *buff, size_t size);
 extern int chdir(const char *path);
 
 extern int getpagesize(void);
@@ -244,8 +250,7 @@ extern long int sysconf(int name);
 #define X_OK 1
 #define F_OK 0
 static inline int access(const char *path, int amode) {
-	(void)path;
-	(void)amode;
+	(void)path; (void)amode;
 	return 0;
 }
 
@@ -293,11 +298,13 @@ extern int gethostname(char *name, size_t len);
 
 extern int chown(const char *path, uid_t owner, gid_t group);
 
+
 /*******************************************
  * stubs
  *******************************************/
 static inline void sync(void) {
 }
+
 
 extern unsigned alarm(unsigned seconds);
 
