@@ -3,11 +3,13 @@
  * @brief RISC-V MMU Implementation
  *
  * @date 04.09.2024
+ * @author Suraj Sonawane
  */
 
 #include "mmu.h"
 #include <asm/regs.h> 
 #include <mem/vmem.h>  
+#include <util/log.h>
 
 #include <stdint.h>
 
@@ -23,21 +25,21 @@ static int ctx_counter = 0;
 void mmu_on(void) {
     uint64_t satp_val = (read_csr(satp) | ((uint64_t)SATP_MODE_SV39 << 60)); // Enable MMU for SV39
     write_csr(satp, satp_val);
-    //asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after enabling MMU
+    asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after enabling MMU
 }
 
 void mmu_off(void) {
     uintptr_t satp_val = 0;  // Disable paging
     write_csr(satp, satp_val);
-    //asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after disabling MMU
+    asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after disabling MMU
 }
                    
 void mmu_flush_tlb_single(unsigned long addr) {
-    //asm volatile("sfence.vma %0, zero" : : "r"(addr) : "memory");
+    asm volatile("sfence.vma %0, zero" : : "r"(addr) : "memory");
 }
 
 void mmu_flush_tlb(void) {
-    //asm volatile("sfence.vma zero, zero" : : : "memory");
+    asm volatile("sfence.vma zero, zero" : : : "memory");
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
@@ -46,7 +48,7 @@ mmu_vaddr_t mmu_get_fault_address(void) {
 
 void mmu_set_context(mmu_ctx_t ctx) {
     write_csr(satp, ((read_csr(satp) & ~0xFFFFFFFFFFUL) | (uintptr_t) mmu_get_root(ctx)));
-    //asm volatile ("sfence.vma" : : : "memory"); // Flush TLB
+    asm volatile ("sfence.vma" : : : "memory"); // Flush TLB
 }
 
 mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
@@ -70,8 +72,19 @@ int mmu_present(int lvl, uintptr_t *entry)  {
 }
 
 void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
-    *entry = (value & MMU_PAGE_MASK) | MMU_PTE_FLAG | MMU_PAGE_PRESENT;
+    switch (lvl) {
+    case 0:
+        *entry = ((value & MMU_PAGE_MASK) | MMU_PTE_FLAG | MMU_PAGE_PRESENT);
+        break;
+    case 1:
+        *entry = ((value & MMU_PAGE_MASK) | MMU_PAGE_PRESENT);
+        break;
+    default:
+        log_error("Invalid level=%d for RISC-V MMU", lvl);
+        break;
+    }
 }
+
 
 uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
     return (uintptr_t *) (*entry & MMU_PAGE_MASK);
