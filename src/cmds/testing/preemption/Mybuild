@@ -1,0 +1,10 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(	name = "preemption",
+	help = "preemption demo"
+)
+module preemption {
+
+	source "preemption.c"
+}
