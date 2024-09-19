@@ -36,5 +36,5 @@ typedef uint64_t __mmu_reg_t;      // 64-bit PTE for RISC-V
 #define __MMU_SHIFT_3 12
 
 #define SATP_MODE_SV32    1
-#define SATP_MODE_SV39    8
+#define SATP_MODE_SV39    (8ULL) 
 #endif /* RISCV_MMU_H_ */

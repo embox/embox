@@ -1,0 +1,7 @@
+package embox.arch.riscv.mmu
+
+module test_mmu {	
+	source "test_mmu.c"
+
+	depends embox.arch.riscv.mmu
+}
