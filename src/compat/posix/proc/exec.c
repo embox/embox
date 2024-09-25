@@ -75,9 +75,6 @@ int exec_call(void) {
 
 int execv(const char *path, char *const argv[]) {
 	struct task *task;
-	int i;
-	size_t len;
-	char cmd_name[MAX_TASK_NAME_LEN];
     const struct cmd *cmd;
 
     /* check whether a valid executable command name is given */
@@ -90,10 +87,17 @@ int execv(const char *path, char *const argv[]) {
         }
     }
 
+	task = task_self();
+	task_resource_exec(task, path, argv);
+	task_set_name(task, path);
+
+#if 0
+	int i;
+	size_t len;
+	char cmd_name[MAX_TASK_NAME_LEN];
 	/* save starting arguments for the task */
 	task = task_self();
 	task_resource_exec(task, path, argv);
-
 	cmd_name[0] = '\0';
 	if (argv != NULL) {
         /* number of arguments constrained by 3*/
@@ -109,8 +113,8 @@ int execv(const char *path, char *const argv[]) {
 		strncpy(cmd_name, path, MAX_TASK_NAME_LEN - 1);
 		cmd_name[MAX_TASK_NAME_LEN - 1] = '\0';
 	}
-
 	task_set_name(task, cmd_name);
+#endif	
 
 	/* If vforked then unblock parent and start execute new image */
 	vfork_child_done(task, task_exec_callback, NULL);
