@@ -83,18 +83,18 @@ $(CONFIGURE) :
 		--disable-shared \
 		--libdir=$(PKG_INSTALL_DIR)/lib \
 		--incdir=$(PKG_INSTALL_DIR)/include \
-		--extra-cflags="$(FF_CPPFLAGS) -lpthread -lm" \
 	)
 	touch $@
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
-		cp libavcodec/libavcodec.a $(PKG_INSTALL_DIR)/; \
-		cp libavformat/libavformat.a $(PKG_INSTALL_DIR)/; \
-		cp libavutil/libavutil.a $(PKG_INSTALL_DIR)/; \
-		cp libswscale/libswscale.a $(PKG_INSTALL_DIR)/; \
 	)
 	touch $@
 
-# 		--enable-libx264 \
+$(INSTALL) :
+	$(MV) $(PKG_SOURCE_DIR)/libavcodec/libavcodec.a $(PKG_INSTALL_DIR)
+	$(MV) $(PKG_SOURCE_DIR)/libavformat/libavformat.a $(PKG_INSTALL_DIR)
+	$(MV) $(PKG_SOURCE_DIR)/libavutil/libavutil.a $(PKG_INSTALL_DIR)
+	$(MV) $(PKG_SOURCE_DIR)/libswscale/libswscale.a $(PKG_INSTALL_DIR)
+	touch $@
