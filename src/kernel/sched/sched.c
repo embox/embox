@@ -364,8 +364,8 @@ int __sched_wakeup(struct schedee *s) {
 		log_debug("<thread> schedee %#x, cpu %d", s, cpu_get_id());
 #endif
 	}else{
-		struct lthread * lth = mcast_out(s, struct lthread, schedee);
-		log_debug("<lthread> schedee %#x, event %#x, cpu %d", s, lth->run, cpu_get_id());
+		// struct lthread * lth = mcast_out(s, struct lthread, schedee);
+		log_debug("<lthread> schedee %#x, event %#x, cpu %d", s, mcast_out(s, struct lthread, schedee)->run, cpu_get_id());
 	}
 
 
