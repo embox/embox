@@ -34,9 +34,8 @@ module input_dev_nofs extends input_dev_handler {
 
 module input_dev_devfs extends input_dev_handler {
 	option string log_level="LOG_ERR"
-	option number input_dev_cnt = 4
 
 	source "input_dev_devfs.c"
 
-	depends embox.device.char_dev
+	@NoRuntime depends embox.device.char_dev
 }
