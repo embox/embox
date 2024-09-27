@@ -9,16 +9,17 @@
 #ifndef EMBOX_INPUT_DEVICE_H_
 #define EMBOX_INPUT_DEVICE_H_
 
+#include <drivers/char_dev.h>
+#include <drivers/input/input_codes.h>
+#include <framework/mod/options.h>
+#include <kernel/task/resource/idesc.h>
 #include <lib/libds/dlist.h>
 #include <lib/libds/ring_buff.h>
 
-#include <framework/mod/options.h>
 #include <module/embox/driver/input/core.h>
 
-#include <drivers/input/input_codes.h>
-
 #define INPUT_DEV_EVENT_QUEUE_LEN \
-    OPTION_MODULE_GET(embox__driver__input__core, NUMBER, event_queue_len)
+	OPTION_MODULE_GET(embox__driver__input__core, NUMBER, event_queue_len)
 
 struct input_dev;
 
@@ -47,6 +48,9 @@ struct input_dev_ops {
 
 /*describe input device instance */
 struct input_dev {
+	struct char_dev cdev;
+	struct idesc *idesc;
+
 	const struct input_dev_ops *ops;
 	const char *name; /* registered name /dev/input/<name> */
 	enum input_dev_type type;
@@ -56,8 +60,8 @@ struct input_dev {
 	int flags;
 #define INPUT_DEV_OPENED (1 << 0)
 
-	indev_event_cb_t *event_cb; /* user callback on event */
-	struct dlist_head dev_link; /* global device list */
+	indev_event_cb_t *event_cb;  /* user callback on event */
+	struct dlist_head dev_link;  /* global device list */
 	struct dlist_head post_link; /* link in to process queue */
 
 	struct ring_buff rbuf;
@@ -80,7 +84,8 @@ extern int input_dev_register(struct input_dev *dev);
  *
  * @return 0 on success
  */
-extern void input_dev_report_event(struct input_dev *dev, struct input_event *ev);
+extern void input_dev_report_event(struct input_dev *dev,
+    struct input_event *ev);
 
 /**
  * @brief Get pending event from input dev and store it in provided place.
@@ -121,7 +126,7 @@ extern int input_dev_open(struct input_dev *dev, indev_event_cb_t *event);
  */
 extern int input_dev_close(struct input_dev *dev);
 
-extern struct input_dev *input_dev_iterate(struct input_dev * dev);
+extern struct input_dev *input_dev_iterate(struct input_dev *dev);
 
 static inline int input_dev_bytes_count(struct input_dev *dev) {
 	return ring_buff_get_cnt(&dev->rbuf);
@@ -129,6 +134,6 @@ static inline int input_dev_bytes_count(struct input_dev *dev) {
 
 extern int input_dev_private_register(struct input_dev *inpdev);
 extern int input_dev_private_notify(struct input_dev *inpdev,
-                                    struct input_event *ev);
+    struct input_event *ev);
 
 #endif /* EMBOX_INPUT_DEVICE_H_ */
