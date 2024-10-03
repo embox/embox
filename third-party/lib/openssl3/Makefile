@@ -8,16 +8,17 @@ PKG_MD5     := 8a4342b399c18f870ca6186299195984
 
 include $(EXTBLD_LIB)
 
+export EMBOX_GCC
+export EMBOX_GXX
+export EMBOX_CFLAGS
+export EMBOX_CXXFLAGS
+
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cp $(THIRDPARTY_DIR)/lib/openssl3/embox.conf $(PKG_SOURCE_DIR)/Configurations
 	cd $(PKG_SOURCE_DIR) && ( \
-		./Configure \
-		embox \
-		--cross-compile-prefix=$(ROOT_DIR)/mk/extbld/arch-embox- \
+		./Configure embox \
 		--prefix=$(PKG_INSTALL_DIR) \
-		-I$(THIRDPARTY_DIR)/lib/openssl3 \
-		"$(EMBOX_CFLAGS)" \
 	)
 	touch $@
 
