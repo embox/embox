@@ -7,4 +7,6 @@
 "mkdir -v /mnt",
 "mount -t ramfs /dev/static_ramdisk /mnt",
 "openssl_rand_demo",
+"rsa_demo",
+"aesgcm_demo",
 "tish",
