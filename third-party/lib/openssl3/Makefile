@@ -16,7 +16,6 @@ $(CONFIGURE) :
 		embox \
 		--cross-compile-prefix=$(ROOT_DIR)/mk/extbld/arch-embox- \
 		--prefix=$(PKG_INSTALL_DIR) \
-		-DPEDANTIC \
 		-I$(THIRDPARTY_DIR)/lib/openssl3 \
 		"$(EMBOX_CFLAGS)" \
 	)
