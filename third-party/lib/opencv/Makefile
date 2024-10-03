@@ -1,10 +1,22 @@
 
 define option_get_string
-$(shell echo OPTION_STRING_third_party__lib__opencv__build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+$(shell echo OPTION_STRING_third_party__lib__opencv__build__$(1) | \
+gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
 endef
 
 define option_get_boolean
-$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__opencv_base__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__build__$(1) | \
+gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+endef
+
+define option_get_number
+$(shell echo OPTION_NUMBER_third_party__lib__opencv__build__$(1) | \
+gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
+endef
+
+define option_get_with_ffmpeg
+$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__videoio_backend__with_ffmpeg | \
+gcc -I$(SRCGEN_DIR)/include -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/videoio_backend.h -)
 endef
 
 PKG_NAME         := opencv
@@ -17,31 +29,33 @@ PKG_MD5_4.0.1    := eb367fc73de66e6d8808e8712138c6b4
 PKG_MD5          := $(PKG_MD5_$(PKG_VER))
 
 ifeq ("$(PKG_VER)","4.5.2")
-PKG_PATCHES := endian.patch \
-               disable_wstring.patch \
-               disable_dlopen.patch \
-               disable_fpu_cortex_m.patch \
-               add_if_defined_embox.patch
+PKG_PATCHES := patch_4_5_2/disable_wstring.patch \
+               patch_4_5_2/disable_dlopen.patch \
+               patch_4_5_2/disable_fpu_cortex_m.patch \
+               patch_4_5_2/add_if_defined_embox.patch
 
-ifneq (0,$(call option_get_boolean,hack_4_5_2_disable_fonts))
-PKG_PATCHES += disable_hershey_fonts.patch
+ifeq (1,$(call option_get_boolean,hack_4_5_2_disable_fonts))
+PKG_PATCHES += patch_4_5_2/disable_hershey_fonts.patch
 endif
+
+ifeq (1,$(call option_get_with_ffmpeg))
+PKG_PATCHES += patch_4_5_2/with_ffmpeg.patch
+endif
+
 else ifeq ("$(PKG_VER)","4.0.1")
 PKG_PATCHES += patch_4_0_1.txt
 else
 $(error Unsupported OpenCV version: $(PKG_VER))
 endif
 
-ifneq (0,$(call option_get_boolean,with_ffmpeg))
-PKG_PATCHES += force_embox_ffmpeg.patch
-FFMPEG_FLAGS := -DWITH_FFMPEG=ON \
-		-DFFMPEG_INCLUDE_DIR=$(ROOT_DIR)/build/base/gen/include/config/third_party/lib/ffmpeg \
-		-DFFMPEG_LIB_DIR=$(ROOT_DIR)/build/extbld/third_party/lib/ffmpeg/build/install
+ifeq (1,$(call option_get_with_ffmpeg))
+WITH_FFMPEG := ON
 else
-FFMPEG_FLAGS := -DWITH_FFMPEG=OFF
+WITH_FFMPEG := OFF
 endif
 
-BUILD_DIR := $(ROOT_DIR)/build/extbld/third_party/lib/opencv/build
+CV_LOG_LEVEL := $(call option_get_number,cv_log_level)
+CV_CXX_FLAGS := -DCV_LOG_STRIP_LEVEL=$(CV_LOG_LEVEL)
 
 include $(EXTBLD_LIB)
 
@@ -54,7 +68,7 @@ OPENCV_FLAGS = \
 		-DBUILD_opencv_apps=OFF \
 		-DBUILD_opencv_java_bindings_generator=OFF \
 		-DBUILD_opencv_ml=OFF \
-		$(FFMPEG_FLAGS) \
+		-DWITH_FFMPEG=$(WITH_FFMPEG) \
 		-DWITH_EIGEN=OFF \
 		-DBUILD_IPP_IW=OFF \
 		-DBUILD_ITT=OFF \
@@ -127,7 +141,8 @@ OPENCV_FLAGS = \
 		-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
 		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
 		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
-		-DCMAKE_AR:STRING=ar \
+		-DCMAKE_AR:STRING=$(CROSS_COMPILE)ar \
+		-DCMAKE_CXX_FLAGS:STRING="$(CV_CXX_FLAGS)" \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
 		-DCMAKE_BUILD_TYPE:STRING=None \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
@@ -136,13 +151,24 @@ OPENCV_FLAGS = \
 # FIXME mv $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp is used
 # becase there are two files in modules/core/src/ with the same name parallel.cpp which
 # then leads to broken gnu ar extraction.
+$(CONFIGURE) :
+	$(MV) $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp \
+		$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel2.cpp; \
+	$(MKDIR) $(BUILD_DIR)/build
+	export EMBOX_GCC_LINK=full; \
+	cd $(BUILD_DIR)/build && ( \
+		cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/; \
+	)
+	touch $@
+
 $(BUILD) :
-	cd $(BUILD_DIR) && mkdir build; \
-	mv $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel2.cpp; \
-	cd build && cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/ && \
-	$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
+	cd $(BUILD_DIR)/build && ( \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
+	)
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/build && make install
+	cd $(BUILD_DIR)/build && ( \
+		$(MAKE) install; \
+	)
 	touch $@
