@@ -79,8 +79,8 @@ $(foreach s,data, \
 $(foreach s,data bss, \
 	$(foreach m,$(apps), \
 		$(info $(call app_build_deps_extern_ref,$m,$s,len)) \
-		$(info $(call app_build_deps_array_start,$m,$s,unsigned,len)) \
-		$(info $(call app_build_deps_array_body,$m,$s,unsigned,len)) \
-		$(info $(call app_build_deps_array_end,(unsigned)-1,len)) \
+		$(info $(call app_build_deps_array_start,$m,$s,unsigned long,len)) \
+		$(info $(call app_build_deps_array_body,$m,$s,unsigned long,len)) \
+		$(info $(call app_build_deps_array_end,(unsigned long)-1,len)) \
 	) \
 )
