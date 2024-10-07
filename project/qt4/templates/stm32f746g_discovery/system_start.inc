@@ -1,0 +1,7 @@
+"export PWD=/",
+"export HOME=/",
+"export QT_QPA_FONTDIR=/fonts",
+"netmanager",
+//"service telnetd",
+//"moveblocks -platform emboxfb",
+"animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/stm32-ts -fullscreen",
