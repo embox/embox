@@ -13,7 +13,6 @@ jobs:
           - x86/test/lang
           - x86/test/units
           - x86/test/packetdrill
-          - arm/test/cxx
           - aarch64/test/units
           - riscv64/test/cxx
           - riscv64/test/units
@@ -23,7 +22,8 @@ jobs:
           - sparc/qemu
           - microblaze/qemu
           - usermode86/debug
-          - project/qt4/x86_qemu_emboxvc
+          - project/opencv/arm-qemu
+          - project/qt4/arm_qemu_fb_small
           - platform/stm32/f4/stm32f4-discovery
     container:
       image: ghcr.io/embox/emdocker-test/emdocker-test:latest

@@ -63,11 +63,11 @@
 	extern char __module_ ## mod_nm ## _data_len;                          \
 	extern char __module_ ## mod_nm ## _bss_vma;                           \
 	extern char __module_ ## mod_nm ## _bss_len;                           \
-	extern void *   __module_ ## mod_nm ## _build_deps_data_vma[];         \
-	extern void *   __module_ ## mod_nm ## _build_deps_data_lma[];         \
-	extern unsigned __module_ ## mod_nm ## _build_deps_data_len[];         \
-	extern void *   __module_ ## mod_nm ## _build_deps_bss_vma[];          \
-	extern unsigned __module_ ## mod_nm ## _build_deps_bss_len[];          \
+	extern void *        __module_ ## mod_nm ## _build_deps_data_vma[];    \
+	extern void *        __module_ ## mod_nm ## _build_deps_data_lma[];    \
+	extern unsigned long __module_ ## mod_nm ## _build_deps_data_len[];    \
+	extern void *        __module_ ## mod_nm ## _build_deps_bss_vma[];     \
+	extern unsigned long __module_ ## mod_nm ## _build_deps_bss_len[];     \
 	const struct mod_app __MOD_APP(mod_nm) = {                             \
 		.data_vma =          &__module_ ## mod_nm ## _data_vma,            \
 		.data_lma =          &__module_ ## mod_nm ## _data_lma,            \

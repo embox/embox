@@ -8,7 +8,6 @@
 
 "stl_demo_sort1",
 "cxx_ctors_demo",
-"edges fruits.png",
 //"boost_demo_time_math",
 
 "tish",

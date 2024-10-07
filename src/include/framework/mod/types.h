@@ -66,8 +66,8 @@ struct mod_app {
 	void **build_dep_data_vma;
 	void **build_dep_data_lma;
 	void **build_dep_bss;
-	unsigned *build_dep_data_sz;
-	unsigned *build_dep_bss_sz;
+	unsigned long *build_dep_data_sz;
+	unsigned long *build_dep_bss_sz;
 };
 
 struct __mod_section {
