@@ -72,7 +72,7 @@ $(config_lds_h) :
 		$(HOSTCPP) -P -undef -nostdinc $(HOSTCC_CPPFLAGS) $(DEFS:%=-D%) \
 		-MMD -MT $@ -MF $@.d mk/confmacro.S \
 			| $(AWK) '{ gsub("\\$$N","\n"); gsub("\\$$","#"); print }'; \
-	echo '#define CONFIG_ROOTFS_IMAGE "$(ROOTFS_IMAGE)"') # XXX =/
+	echo '#define INITFS_IMAGE_PATH "$(ROOTFS_IMAGE)"') # XXX =/
 
 $(regions_lds_h) : $(config_lds_h)
 	@$(call gen_regions, $(config_lds_h), $@)
