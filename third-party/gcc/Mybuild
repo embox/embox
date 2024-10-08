@@ -37,6 +37,5 @@ static module gcc_build {
 	option string gcc_version="9.3.0"
 
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends embox.compat.posix.LibPosix
 	@NoRuntime depends embox.compat.posix.proc.atexit_api
 }
