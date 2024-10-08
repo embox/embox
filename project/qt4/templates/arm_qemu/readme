@@ -1,11 +1,11 @@
 This template demos how to work standard qt examples (moveblocks & animatedtiles) on arm qemu (intergator-CP machine)
 It's launched moveblock on framebuffer by default. To use vnc plugin you have to comment 
-`include third_party.qt.plugin.platform.emboxfb`
+`include third_party.qt.plugin.platform.vnc`
 and uncomment
 `include third_party.qt.plugin.platform.emboxfb`
 in `mods.conf`
 
-You can also choose which the appropriate example will be launched at system start with comment uncomment lines in 'sytem_start.inc' '"service moveblocks -platform emboxfb"'
+You can also choose which the appropriate example will be launched at system start with comment uncomment lines in 'sytem_start.inc' '"service moveblocks -platform vnc"'
 use by default. You also can launch wished example manually
 'moveblocks -platform emboxfb'
 for example
