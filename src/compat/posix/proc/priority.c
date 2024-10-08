@@ -8,24 +8,28 @@
 
 #include <errno.h>
 #include <sys/resource.h>
+#include <sys/types.h>
+
 #include <kernel/task.h>
-#include <errno.h>
-#include <kernel/task/task_table.h>
 #include <kernel/task/resource/u_area.h>
+#include <kernel/task/task_table.h>
 #include <util/math.h>
 
 static int xetpriority_match(int which, id_t who, struct task *task) {
 	struct task_u_area *task_u_area;
+	struct task_u_area *self_u;
+	struct task *self;
 	id_t real_who;
-	int is_match;
+	int is_match = 0; /* "may be used uninitialized" error with NDEBUG macro */
 
 	if (who != 0) {
 		real_who = who;
-	} else {
-		struct task *self = task_self();
-		struct task_u_area *self_u = task_resource_u_area(self);
+	}
+	else {
+		self = task_self();
+		self_u = task_resource_u_area(self);
 
-		switch(which) {
+		switch (which) {
 		case PRIO_PROCESS:
 			real_who = task_get_id(task_self());
 			break;
@@ -60,7 +64,8 @@ static int xetpriority_match(int which, id_t who, struct task *task) {
 }
 
 static int xetpriority_which_ok(int which) {
-	return which == PRIO_PROCESS || which == PRIO_PGRP || which == PRIO_USER;
+	return (which == PRIO_PROCESS) || (which == PRIO_PGRP)
+	       || (which == PRIO_USER);
 }
 
 int getpriority(int which, id_t who) {
@@ -92,7 +97,6 @@ int setpriority(int which, id_t who, int value) {
 	exist = 0;
 	task_foreach(task) {
 		if (xetpriority_match(which, who, task)) {
-
 			exist = 1;
 
 			ret = task_set_priority(task, value);
