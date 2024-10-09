@@ -5,7 +5,7 @@
 "netmanager",
 "service telnetd",
 
-"animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/ps-mouse",
+//"animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/ps-mouse",
 //"moveblocks -platform emboxfb",
 
 "tish",
