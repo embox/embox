@@ -4,7 +4,6 @@
 
 "netmanager",
 "service telnetd",
-"service httpd",
 
 //"animatedtiles -platform emboxfb -plugin EmboxInputMouse:/dev/ps-mouse",
 //"moveblocks -platform emboxfb",
