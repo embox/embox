@@ -170,3 +170,11 @@ module floor_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module log_test {
+	@Cflags("-fno-builtin")
+	source "log_test.c"
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
