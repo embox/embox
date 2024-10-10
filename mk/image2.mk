@@ -78,7 +78,7 @@ $(ROOTFS_IMAGE) :
 -include $(ROOTFS_IMAGE).d
 
 #XXX
-$(OBJ_DIR)/src/fs/driver/initfs/initfs_cpio.o : $(ROOTFS_IMAGE)
+$(OBJ_DIR)/src/fs/driver/initfs/initfs_image.o : $(ROOTFS_IMAGE)
 
 ifdef __REBUILD_ROOTFS
 initfs_cp_prerequisites += FORCE
