@@ -302,7 +302,7 @@ print_f(int (*printchar_handler)(struct printchar_handler_data *d, int c),
 	fp = with_exp ? fp : MODF(r, &ip);
 
 	if (is_shortened) {
-		precision -= ceil(LOG10(ip)) + (ip != 0.0L);
+		precision -= (ip == 1.0) ? 1 : ceil(LOG10(ip));
 	}
 
 	assert(precision >= 0);
