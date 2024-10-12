@@ -2,25 +2,22 @@ package embox.compat.libc.stdio
 
 @DefaultImpl(print)
 abstract module print_impl {
-	option number support_floating = 1
 }
 
 static module print extends print_impl {
-	option number support_floating = 1
-	option number stub = 0
+	option number support_floating=1
 
 	source "printf_impl.c"
 	source "printf_impl.h"
 
-	depends embox.compat.libc.math                   // depends from support_floating value
+	@NoRuntime depends embox.compat.libc.math
 	@NoRuntime depends embox.compat.libc.stdlib.core // atoi
-	@NoRuntime depends embox.compat.libc.str         // strlen
+	@NoRuntime depends embox.compat.libc.str
 	@NoRuntime depends embox.compat.libc.type
 }
 
 static module print_stub extends print_impl {
-	option number support_floating = 1
-	option number stub = 1
+	option number support_floating=1
 
 	source "print_stub.c"
 	source "printf_impl.h"
