@@ -186,3 +186,11 @@ module cbrt_test {
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
 }
+
+module modf_test {
+	@Cflags("-fno-builtin")
+	source "modf_test.c"
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+} 
