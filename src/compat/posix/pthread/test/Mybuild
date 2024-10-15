@@ -1,5 +1,5 @@
 
-package embox.test.posix.pthread
+package embox.compat.posix.pthread.test
 
 @TestFor(embox.compat.posix.pthreads)
 module pthread_tests {
