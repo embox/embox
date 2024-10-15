@@ -24,7 +24,7 @@
  
  TEST_CASE("Test for cbrt(NaN)") {
  
-    test_assert(isnan(cbrt(cbrt(NAN)));
+    test_assert(isnan(cbrt(cbrt(NAN))));
 }
  
  TEST_CASE("Test for cbrt(0.0)") {
@@ -42,4 +42,4 @@
  TEST_CASE("Test for cbrt(1.0)") {
     test_assert(cbrt(1.0) ==1.0);
 }
- 
+
