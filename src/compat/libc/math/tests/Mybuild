@@ -193,4 +193,12 @@ module modf_test {
 
 	depends embox.compat.libc.math
 	depends embox.framework.LibFramework
-} 
+}
+
+module copysign_test {
+	@Cflags("-fno-builtin")
+	source "copysign_test.c"
+
+	depends embox.compat.libc.math
+	depends embox.framework.LibFramework
+}
