@@ -365,6 +365,9 @@ my_bld_artpath_cppflags_before := $(call mybuild_resolve_or_die,mybuild.lang.Bui
 my_bld_artpath_cppflags := $(call mybuild_resolve_or_die,mybuild.lang.BuildArtifactPath.cppflags)
 my_bld_artpath_ldflags := $(call mybuild_resolve_or_die,mybuild.lang.BuildArtifactPath.ldflags)
 
+my_bld_var_name := $(call mybuild_resolve_or_die,mybuild.lang.BuildVariable.name)
+my_bld_var_val  := $(call mybuild_resolve_or_die,mybuild.lang.BuildVariable.value)
+
 @module_extbld_rmk := \
 	$(foreach m,$(build_modules), \
 		$(patsubst %,module-extbld-rmk/%$m, \
@@ -670,6 +673,12 @@ $(@source_rmk) : flags = $(call trim, \
 			$(call do_flags,-include,$(includes_header)) \
 			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 
+$(@source_rmk) : __bld_var_list = $(join \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)), \
+			$(addprefix :,$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_val))))
+$(@source_rmk) : bld_var_list = $(sort \
+			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)))
+$(@source_rmk) : bld_var_val = $(word 2,$(subst :, ,$(filter $(1):%,$(__bld_var_list))))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk
 
@@ -695,6 +704,8 @@ $(@source_cpp_rmk) $(@source_cc_rmk) $(@source_o_rmk) $(@source_a_rmk):
 		$(call gen_make_tsvar,$(out),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(out),flags_before,$(flags_before)); \
 		$(call gen_make_tsvar,$(out),flags,$(flags)); \
+	$(foreach var,$(bld_var_list), \
+		$(call gen_make_tsvar,$(out),$(var),$(call bld_var_val,$(var)));) \
 		$(call gen_make_rule,$(out),$(prereqs),$(script)); \
 		$(call gen_make_include,$$(OBJ_DIR)/$$(source_base).d,silent))
 
