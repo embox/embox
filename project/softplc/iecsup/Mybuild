@@ -1,0 +1,11 @@
+package project.softplc
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@BuildVariable(name="iec2c", value="$(EXTERNAL_BUILD_DIR)/project/softplc/iecsup/install/bin/iec2c")
+@BuildVariable(name="ieclib", value="$(EXTERNAL_BUILD_DIR)/project/softplc/iecsup/install/lib")
+@BuildVariable(name="plc_main", value="$(PROJECT_DIR)/softplc/iecsup/plc_main.c")
+@BuildArtifactPath(cppflags="-include $(EXTERNAL_BUILD_DIR)/project/softplc/iecsup/install/lib/embox_ieclib.h")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/project/softplc/iecsup/install/lib/C")
+@BuildArtifactPath(cppflags="-Wno-unused-variable -Wno-unused-but-set-variable")
+module iecsup {
+}
