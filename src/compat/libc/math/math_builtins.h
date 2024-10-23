@@ -99,6 +99,10 @@ extern long double fabsl(long double x);
 #define coshf(x) __builtin_coshf(x)
 #define coshl(x) __builtin_coshl(x)
 
+#define atanh(x) __builtin_atanh(x)
+#define atanhf(x) __builtin_atanhf(x)
+#define atanhl(x) __builtin_atanhl(x)
+
 #define frexp(x, exp) __builtin_frexp(x, exp)
 #define frexpf(x, exp) __builtin_frexpf(x, exp)
 #define frexpl(x, exp) __builtin_frexpl(x, exp)

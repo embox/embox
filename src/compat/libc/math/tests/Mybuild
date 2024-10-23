@@ -70,6 +70,12 @@ module sinh_test {
 	source "sinh_test.c"
 }
 
+module atanh_test {
+	@Cflags("-fno-builtin")
+	source "atanh_test.c"
+}
+
+
 module fabs_test {
 	@Cflags("-fno-builtin")
 	source "fabs_test.c"
