@@ -6,13 +6,14 @@
  * @date    20.08.2019
  */
 
-#include <string.h>
-#include <stdlib.h>
-#include <errno.h>
-#include <stdio.h>
 #include <assert.h>
+#include <errno.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <led_driver_lib.h>
+#include <lib/leddrv.h>
 
 static int ccwrp_query_to_argv(char **argv, unsigned int argv_len) {
 	char *query = getenv("QUERY_STRING");
@@ -27,7 +28,8 @@ static int ccwrp_query_to_argv(char **argv, unsigned int argv_len) {
 			if (*query_to_parse) {
 				*query_to_parse++ = '\0';
 			}
-		} else {
+		}
+		else {
 			break;
 		}
 	}
@@ -37,15 +39,30 @@ static int ccwrp_query_to_argv(char **argv, unsigned int argv_len) {
 	return argv_cnt;
 }
 
+static int led_serialize(void) {
+	int i;
+
+	bool led_states[LEDDRV_LED_N];
+	leddrv_get_states(led_states);
+
+	printf("[");
+	for (i = 0; i < LEDDRV_LED_N - 1; i++) {
+		printf("%d,", (int)led_states[i]);
+	}
+	printf("%d]\n", (int)led_states[LEDDRV_LED_N - 1]);
+
+	return 0;
+}
+
 int main(int argc, char *argv[]) {
 	char *new_argv[4];
 	const char *action;
 
 	printf("HTTP/1.1 %d %s\r\n"
-		"Content-Type: %s\r\n"
-		"Connection: close\r\n"
-		"\r\n", 200, "OK", "text/plain");
-
+	       "Content-Type: %s\r\n"
+	       "Connection: close\r\n"
+	       "\r\n",
+	    200, "OK", "text/plain");
 
 	ccwrp_query_to_argv(new_argv, 4);
 
@@ -53,11 +70,13 @@ int main(int argc, char *argv[]) {
 
 	if (action) {
 		if (0 == strcmp(action, "set")) {
-			return led_driver_set(atoi(new_argv[1]));
-		} else if (0 == strcmp(action, "clr")) {
-			return led_driver_clear(atoi(new_argv[1]));
-		} else if (0 == strcmp(action, "serialize_states")) {
-			return led_driver_serialize();
+			return leddrv_set(atoi(new_argv[1]));
+		}
+		else if (0 == strcmp(action, "clr")) {
+			return leddrv_clr(atoi(new_argv[1]));
+		}
+		else if (0 == strcmp(action, "serialize_states")) {
+			return led_serialize();
 		}
 	}
 

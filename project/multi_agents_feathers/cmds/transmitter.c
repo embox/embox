@@ -8,33 +8,30 @@
 
 #include <unistd.h>
 
+#include <drivers/serial/stm_usart.h>
+#include <feather/libbutton.h>
+#include <feather/servo.h>
+#include <framework/mod/options.h>
 #include <kernel/thread.h>
 #include <kernel/thread/sync/mutex.h>
-
-#include <drivers/serial/stm_usart.h>
-#include <framework/mod/options.h>
-
-#include <feather/libleds.h>
-#include <feather/servo.h>
-#include <feather/libbutton.h>
+#include <lib/leddrv.h>
 
 #define AGENT_ID OPTION_GET(NUMBER, agent_id)
 
-#define UART_NUM	3
-#define MSG_LEN		4
+#define UART_NUM 3
+#define MSG_LEN  4
 
 static int current_state[UART_NUM + 1];
 
 static void leds_off(void) {
 	int i;
 
-	for (i = 0; i < libleds_leds_quantity(); i++) {
-		libleds_led_off(i);
+	for (i = 0; i < LEDDRV_LED_N; i++) {
+		leddrv_clr(i);
 	}
 }
 
 static void init_leds(void) {
-	libleds_init();
 	leds_off();
 }
 
@@ -43,13 +40,13 @@ struct mutex led_mutex;
 static int leds_cnt = 0;
 
 static void leds_next(void) {
-
 	mutex_lock(&led_mutex);
-	if (++leds_cnt == libleds_leds_quantity() + 1) {
+	if (++leds_cnt == LEDDRV_LED_N + 1) {
 		leds_cnt = 0;
 		leds_off();
-	} else {
-		libleds_led_on(leds_cnt);
+	}
+	else {
+		leddrv_set(leds_cnt);
 	}
 	mutex_unlock(&led_mutex);
 
@@ -60,7 +57,7 @@ static void leds_next(void) {
 
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
-	libleds_led_off(leds_cnt);
+	leddrv_clr(leds_cnt);
 	if (--leds_cnt < 0) {
 		leds_cnt = 0;
 	}
@@ -71,16 +68,13 @@ static void leds_prev(void) {
 	servo_set(leds_cnt * 100 / 8);
 }
 
-static USART_TypeDef *uart_base[] = {
-	(void*) USART1,
-	(void*) USART2,
-	(void*) USART3
-};
+static USART_TypeDef *uart_base[] = {(void *)USART1, (void *)USART2,
+    (void *)USART3};
 
 extern void schedule();
 static void transmit_delay(void) {
 	int t = 0x16FF / UART_NUM;
-	while(t--) {
+	while (t--) {
 		schedule();
 	}
 }
@@ -104,9 +98,10 @@ static int obtain_data(void) {
 }
 
 static void transmit_data(int data, USART_TypeDef *uart) {
-	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0);
+	while ((STM32_USART_FLAGS(uart) & USART_FLAG_TXE) == 0)
+		;
 
-	STM32_USART_TXDATA(uart) = (uint8_t) (data + 0);
+	STM32_USART_TXDATA(uart) = (uint8_t)(data + 0);
 }
 
 static void *transmitter_thread_run(void *arg) {
@@ -140,7 +135,8 @@ static void process_message(char *msg) {
 		current_state[msg[1]] = msg[2];
 		if (get_data() > leds_cnt) {
 			leds_next();
-		} else if (get_data() < leds_cnt) {
+		}
+		else if (get_data() < leds_cnt) {
 			leds_prev();
 		}
 		mutex_unlock(&led_mutex);
@@ -161,7 +157,7 @@ static void *receiver_thread_run(void *arg) {
 	UART_HandleTypeDef UartHandle;
 	UartHandle.Instance = uart_base[0];
 	char buf[UART_NUM][MSG_LEN];
-	int counter[UART_NUM] = { 0 };
+	int counter[UART_NUM] = {0};
 
 	int tt = 0;
 
@@ -190,12 +186,14 @@ static void *receiver_thread_run(void *arg) {
 						counter[i] = 0;
 						memset(buf[i], 0, sizeof(buf[i]));
 						continue;
-					} else {
+					}
+					else {
 						//buf[i][0] = i;
 						process_message(buf[i]);
 					}
 				}
-			} else {
+			}
+			else {
 				__HAL_USART_CLEAR_NEFLAG(&UartHandle);
 				__HAL_USART_CLEAR_FEFLAG(&UartHandle);
 				__HAL_USART_CLEAR_OREFLAG(&UartHandle);

@@ -20,7 +20,7 @@ struct led_desc {
 };
 
 static const struct led_desc leds[] = {
-#include <gpio_config.inc>
+#include <leds_config.inc>
 };
 
 #define LEDS_N ARRAY_SIZE(leds)

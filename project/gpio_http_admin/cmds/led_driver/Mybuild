@@ -5,13 +5,5 @@ package project.gpio_httpd_admin
 module led_driver {
 	source "led_driver.c"
 
-	depends led_driver_lib
-}
-
-static module led_driver_lib {
-	@IncludeExport(target_name="led_driver_lib.h")
-	source "led_driver_lib.h"
-
-	@IncludePath("$(CONF_DIR)")
-	source "led_driver_lib.c"
+	@NoRuntime depends embox.lib.leddrv
 }
