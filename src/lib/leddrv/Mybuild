@@ -1,0 +1,23 @@
+package embox.lib
+
+@DefaultImpl(leddrv_gpio)
+abstract module leddrv {
+	@IncludeExport(path="lib")
+	source "leddrv.h"
+}
+
+module leddrv_gpio extends leddrv {
+	option string log_level="LOG_ERR"
+
+	source "leddrv_gpio.h"
+	source "leddrv_gpio.c"
+
+	@NoRuntime depends embox.driver.gpio.core
+}
+
+module leddrv_stub extends leddrv {
+	option string log_level="LOG_INFO"
+
+	source "leddrv_stub.h"
+	source "leddrv_stub.c"
+}
