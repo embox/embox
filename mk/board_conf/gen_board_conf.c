@@ -310,11 +310,36 @@ int main() {
 	for (i = 0; i < led_conf->array_size; i++) {
 		led = &((const struct led_conf *)led_conf->ptr)[i];
 
+		if (led->status != ENABLED) {
+			continue;
+		}
+
 		gen_dev_enabled(led->name);
 		gen_field_gpio_out(led->name, led->port.val, led->pin.val);
 
 		printf("\n");
 	}
+
+	/* LED info for leddrv library */
+	int led_quantity = 0;
+
+	printf("#define CONF_LED_LIST");
+	for (i = 0; i < led_conf->array_size; i++) {
+		led = &((const struct led_conf *)led_conf->ptr)[i];
+
+		if (led->status != ENABLED) {
+			continue;
+		}
+
+		led_quantity += 1;
+
+		printf("%s", (i == 0) ? " " : ", ");
+		printf("%s", led->name);
+	}
+	printf("\n");
+
+	printf("#define CONF_LED_QUANTITY %i\n", led_quantity);
+	printf("\n");
 
 	printf("#endif /* BOARD_CONFIG_H_ */\n");
 
