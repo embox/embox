@@ -1,8 +1,0 @@
-package project.gpio
-
-@AutoCmd
-@Cmd(name="gpio_test", help="GPIO", man="")
-module gpio_test {
-	@IncludePath("$(CONF_DIR)")
-	source "gpio_test.c"
-}
