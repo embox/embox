@@ -107,4 +107,25 @@ struct spi_conf spis[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis))
+struct led_conf leds[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 0),
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 7),
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 14),
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis), LED(leds))
