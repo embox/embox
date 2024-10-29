@@ -1,0 +1,17 @@
+package project.mongoose.cmd
+
+@App
+@AutoCmd
+@Cmd(name="led_ctrl_panel", help="LED control panel", man="")
+module led_ctrl_panel {
+	option boolean mg_enable_log=true
+
+	source "main.c"
+	source "mongoose.c"
+	source "mongoose_fs.c"
+	source "mongoose_glue.c"
+	source "mongoose_impl.c"
+
+	@NoRuntime depends embox.lib.leddrv
+	@NoRuntime depends embox.compat.posix.net.All
+}
