@@ -1,0 +1,9 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name="blink", help="tests LED blinking", man="")
+module blink {
+	source "blink.c"
+
+	@NoRuntime depends embox.lib.leddrv
+}

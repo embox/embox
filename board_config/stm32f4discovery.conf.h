@@ -147,4 +147,31 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs), PWM(pwms))
+struct led_conf leds[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 13),
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 12),
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 14),
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 15),
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs), PWM(pwms), LED(leds))

@@ -8,22 +8,19 @@
 
 #include <errno.h>
 #include <fcntl.h>
+#include <ifaddrs.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <ifaddrs.h>
-#include <net/inetdevice.h>
 #include <drivers/flash/flash.h>
-
-#include <led_driver_lib.h>
-
+#include <lib/leddrv.h>
 #include <lib/loop_file_logger.h>
+#include <net/inetdevice.h>
 
-#define NIC_FILENAME  "/conf/nic"
-#define LED_FILENAME  "/conf/led"
-
-#define MAX_LEDS 32
+#define NIC_FILENAME "/conf/nic"
+#define LED_FILENAME "/conf/led"
 
 #define DPRINTF(fmt, ...) \
 	fprintf(stderr, "flash_settings: %s: " fmt, __func__, ##__VA_ARGS__)
@@ -31,14 +28,14 @@
 struct flashset_network_settings {
 	struct sockaddr fsn_addr;
 	struct sockaddr fsn_mask;
-	unsigned char   fsn_mac[MAX_ADDR_LEN];
+	unsigned char fsn_mac[MAX_ADDR_LEN];
 };
 
 static struct flashset_network_settings fsn_network;
-static unsigned char fsn_leds_state[MAX_LEDS];
+static bool fsn_leds_state[LEDDRV_LED_N];
 
 static int flashset_nic_store(const char *nic_name) {
-		struct ifaddrs *i_ifa, *nic_ifa, *ifa;
+	struct ifaddrs *i_ifa, *nic_ifa, *ifa;
 	struct in_device *iface_dev;
 	int errcode, fd;
 
@@ -49,8 +46,7 @@ static int flashset_nic_store(const char *nic_name) {
 
 	nic_ifa = NULL;
 	for (i_ifa = ifa; i_ifa != NULL; i_ifa = i_ifa->ifa_next) {
-		if (i_ifa->ifa_addr == NULL ||
-			i_ifa->ifa_addr->sa_family != AF_INET) {
+		if (i_ifa->ifa_addr == NULL || i_ifa->ifa_addr->sa_family != AF_INET) {
 			continue;
 		}
 
@@ -73,15 +69,15 @@ static int flashset_nic_store(const char *nic_name) {
 	}
 
 	memcpy(&fsn_network.fsn_addr, nic_ifa->ifa_addr,
-		sizeof(fsn_network.fsn_addr));
+	    sizeof(fsn_network.fsn_addr));
 	memcpy(&fsn_network.fsn_mask, nic_ifa->ifa_netmask,
-		sizeof(fsn_network.fsn_mask));
+	    sizeof(fsn_network.fsn_mask));
 	memcpy(&fsn_network.fsn_mac, iface_dev->dev->dev_addr,
-		sizeof(fsn_network.fsn_mac));
+	    sizeof(fsn_network.fsn_mac));
 
 	fd = open(NIC_FILENAME, O_CREAT | O_RDWR);
 
-	errcode = write(fd, (char*) &fsn_network, sizeof(fsn_network));
+	errcode = write(fd, (char *)&fsn_network, sizeof(fsn_network));
 	close(fd);
 	if (errcode < 0) {
 		goto outerr;
@@ -103,7 +99,7 @@ static int flashset_nic_restore(const char *nic_name) {
 		return fd;
 	}
 
-	errcode = read(fd, (char*) &fsn_network, sizeof(fsn_network));
+	errcode = read(fd, (char *)&fsn_network, sizeof(fsn_network));
 	if (errcode < 0)
 		goto outerr;
 
@@ -114,12 +110,12 @@ static int flashset_nic_restore(const char *nic_name) {
 	}
 
 	if ((errcode = inetdev_set_addr(iface_dev,
-		((struct sockaddr_in *) &fsn_network.fsn_addr)->sin_addr.s_addr))) {
+	         ((struct sockaddr_in *)&fsn_network.fsn_addr)->sin_addr.s_addr))) {
 		goto outerr;
 	}
 
 	if ((errcode = inetdev_set_mask(iface_dev,
-		((struct sockaddr_in *) &fsn_network.fsn_mask)->sin_addr.s_addr))) {
+	         ((struct sockaddr_in *)&fsn_network.fsn_mask)->sin_addr.s_addr))) {
 		goto outerr;
 	}
 
@@ -135,7 +131,7 @@ outerr:
 	return errcode;
 }
 
-static void logging_state(unsigned char state[MAX_LEDS]) {
+static void logging_state(bool state[LEDDRV_LED_N]) {
 	struct timeval tv;
 	char buf[64];
 	time_t time;
@@ -149,27 +145,26 @@ static void logging_state(unsigned char state[MAX_LEDS]) {
 	ctime_r(&time, buf);
 
 	led_off = strlen(buf);
-	buf[led_off ++] = ':';
-	buf[led_off ++] = ' ';
-	for (i = 0; i < MAX_LEDS; i ++ ) {
-		buf[led_off + i] = state[i] +'0';
+	buf[led_off++] = ':';
+	buf[led_off++] = ' ';
+	for (i = 0; i < LEDDRV_LED_N; i++) {
+		buf[led_off + i] = (char)state[i] + '0';
 	}
 
 	loop_logger_write(buf);
 }
 
-
 static int flashset_led_store(void) {
 	int errcode, fd;
 
-	led_driver_get_states(fsn_leds_state, MAX_LEDS);
+	leddrv_get_states(fsn_leds_state);
 
 	fd = open(LED_FILENAME, O_CREAT | O_RDWR);
 	if (fd < 0) {
 		DPRINTF("Error opening led\n");
 		return -1;
 	}
-	errcode = write(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	errcode = write(fd, (char *)&fsn_leds_state, sizeof(fsn_leds_state));
 	close(fd);
 	if (errcode < 0) {
 		DPRINTF("Error writing led\n");
@@ -186,7 +181,7 @@ static int flashset_led_restore(void) {
 		DPRINTF("Error opening led\n");
 		return -1;
 	}
-	errcode = read(fd, (char*) &fsn_leds_state, sizeof(fsn_leds_state));
+	errcode = read(fd, (char *)&fsn_leds_state, sizeof(fsn_leds_state));
 	close(fd);
 
 	if (errcode < 0) {
@@ -194,7 +189,7 @@ static int flashset_led_restore(void) {
 		return errcode;
 	}
 
-	return led_driver_set_states(fsn_leds_state, MAX_LEDS);
+	return leddrv_set_states(fsn_leds_state);
 }
 
 int main(int argc, char *argv[]) {
@@ -210,9 +205,11 @@ int main(int argc, char *argv[]) {
 
 			if (0 == strcmp(what, "net")) {
 				errcode = flashset_nic_store("eth0");
-			} else if (0 == strcmp(what, "led")) {
+			}
+			else if (0 == strcmp(what, "led")) {
 				errcode = flashset_led_store();
-			} else {
+			}
+			else {
 				fprintf(stderr, "unknown store object: %s\n", what);
 				errcode = -EINVAL;
 			}
@@ -221,15 +218,16 @@ int main(int argc, char *argv[]) {
 				return errcode;
 			}
 		}
-	} else if (0 == strcmp(argv[1], "restore")) {
+	}
+	else if (0 == strcmp(argv[1], "restore")) {
 		/* seems to have valid settings */
 		fprintf(stderr, "Restoring flash settings\n");
 
 		fprintf(stderr,
-			"  net       [%s]\n"
-			"  led       [%s]\n",
-		flashset_nic_restore("eth0") ? "fail" : " ok ",
-		flashset_led_restore()       ? "fail" : " ok ");
+		    "  net       [%s]\n"
+		    "  led       [%s]\n",
+		    flashset_nic_restore("eth0") ? "fail" : " ok ",
+		    flashset_led_restore() ? "fail" : " ok ");
 	}
 
 	return 0;

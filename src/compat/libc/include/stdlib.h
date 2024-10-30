@@ -24,6 +24,9 @@
  */
 #include <sys/wait.h>
 
+/* For compatibility with Linux */
+#include <alloca.h>
+
 typedef struct ldiv {
 	long int quot;
 	long int rem;
