@@ -1,0 +1,6 @@
+package mybuild.lang
+
+annotation BuildVariable {
+	string name
+	string value
+}
