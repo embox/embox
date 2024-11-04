@@ -2,7 +2,7 @@
 
 HELP_MSG="Usage: ./scripts/beremiz.sh <path_to_beremiz>"
 
-EMBOX_FB=$(pwd)/build/extbld/project/softplc/iecsup/install/lib/embox_ieclib.iecst
+EMBOX_FB=./build/base/gen/embox_ieclib.iecst
 
 if [ "$#" -ne 1 ]; then
 	echo $HELP_MSG
@@ -10,9 +10,15 @@ if [ "$#" -ne 1 ]; then
 	exit 1
 fi
 
+if [ ! -f $(pwd)/scripts/beremiz.sh ]; then
+	echo $HELP_MSG
+	echo "error: beremiz.sh must be run from the root directory of Embox"
+	exit 1
+fi
+
 if [ ! -f $1/Beremiz.py ] || [ ! -f $1/ImportEmboxFB.py ]; then
 	echo $HELP_MSG
-	echo "error: Invalid path to beremiz"
+	echo "error: Invalid path to Beremiz"
 	exit 1
 fi
 
@@ -22,12 +28,17 @@ if [ ! -f $1/.venv/bin/python ]; then
 	exit 1
 fi
 
-if [ -f $EMBOX_FB ]; then
-	$1/.venv/bin/python $1/ImportEmboxFB.py $EMBOX_FB
-else	
-	TMPFILE=$(mktemp /tmp/ieclib-XXXXX)
-	$1/.venv/bin/python $1/ImportEmboxFB.py $TMPFILE
-	rm -f $TMPFILE
+printf "\n>>> Generating Embox function blocks for Beremiz <<<\n\n"
+make -j$(nproc) buildgen &> /dev/null
+echo > $EMBOX_FB
+
+if [ -d ./build/base/include/ieclib ]; then
+	find ./build/base/include/ieclib -name \*.iecst \
+		-exec cat {} >> $EMBOX_FB \; \
+		-exec printf "\n\n" >> $EMBOX_FB \;
 fi
 
+$1/.venv/bin/python $1/ImportEmboxFB.py $EMBOX_FB
+
+printf "\n>>> Launch Beremiz <<<\n\n"
 $1/.venv/bin/python $1/Beremiz.py
