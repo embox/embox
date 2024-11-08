@@ -79,7 +79,7 @@ $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 
 $(OBJ_DIR)/%.o : $(GEN_DIR)/%.softplc_generated
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -o $@ $(plc_main) \
-		$(filter-out %/POUS.c,$(shell find $(<D) -name \*.c)) $(LDFLAGS) -Wl,-r; \
+		$(filter-out %/POUS.c,$(shell find $(<D) -name \*.c)) -Wl,-r; \
 
 $(GEN_DIR)/%.softplc_generated : $(ROOT_DIR)/%.st
 	$(iec2c) -f -l -p -I $(ieclib) -T $(@D) $<
