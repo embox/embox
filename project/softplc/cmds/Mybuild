@@ -1,10 +1,10 @@
 package project.softplc.cmd
 
 @AutoCmd
-@Cmd(name="plc_blink", help="", man="")
+@Cmd(name="plc_blink", help="")
 @BuildDepends(project.softplc.iecsup)
 module blink {
-	source "main.st"
+	source "blink.st"
 
 	@NoRuntime depends project.softplc.iecsup
 	@NoRuntime depends project.softplc.ieclib.leddrv

@@ -80,7 +80,6 @@ module atanh_test {
 	source "atanh_test.c"
 }
 
-
 module fabs_test {
 	@Cflags("-fno-builtin")
 	source "fabs_test.c"
