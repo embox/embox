@@ -50,6 +50,11 @@ module exp2_test {
 	source "exp2_test.c"
 }
 
+module expm1_test {
+	@Cflags("-fno-builtin")
+	source "expm1_test.c"
+}
+
 module sin_test {
 	@Cflags("-fno-builtin")
 	source "sin_test.c"
