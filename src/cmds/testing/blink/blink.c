@@ -28,9 +28,9 @@ int main(int argc, char *argv[]) {
 
 	for (i = 0; i < 3; i++) {
 		for (j = 0; j < LEDDRV_LED_N; j++) {
-			leddrv_set(j);
+			leddrv_led_on(j);
 			sleep(1);
-			leddrv_clr(j);
+			leddrv_led_off(j);
 		}
 		sleep(1);
 	}

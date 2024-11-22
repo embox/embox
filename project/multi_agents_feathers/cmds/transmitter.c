@@ -27,7 +27,7 @@ static void leds_off(void) {
 	int i;
 
 	for (i = 0; i < LEDDRV_LED_N; i++) {
-		leddrv_clr(i);
+		leddrv_led_off(i);
 	}
 }
 
@@ -46,7 +46,7 @@ static void leds_next(void) {
 		leds_off();
 	}
 	else {
-		leddrv_set(leds_cnt);
+		leddrv_led_on(leds_cnt);
 	}
 	mutex_unlock(&led_mutex);
 
@@ -57,7 +57,7 @@ static void leds_next(void) {
 
 static void leds_prev(void) {
 	mutex_lock(&led_mutex);
-	leddrv_clr(leds_cnt);
+	leddrv_led_off(leds_cnt);
 	if (--leds_cnt < 0) {
 		leds_cnt = 0;
 	}

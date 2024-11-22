@@ -70,10 +70,10 @@ int main(int argc, char *argv[]) {
 
 	if (action) {
 		if (0 == strcmp(action, "set")) {
-			return leddrv_set(atoi(new_argv[1]));
+			return leddrv_led_on(atoi(new_argv[1]));
 		}
 		else if (0 == strcmp(action, "clr")) {
-			return leddrv_clr(atoi(new_argv[1]));
+			return leddrv_led_off(atoi(new_argv[1]));
 		}
 		else if (0 == strcmp(action, "serialize_states")) {
 			return led_serialize();
