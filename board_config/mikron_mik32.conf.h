@@ -213,13 +213,14 @@ struct led_conf leds[] = {
 		.name = "LED_GREEN",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("", 9),
+		.level = VAL("", GPIO_PIN_HIGH), // or GPIO_PIN_LOW ?
 	},
 	[1] = {
 		.name = "LED_RED",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("", 10),
+		.level = VAL("", GPIO_PIN_HIGH), // or GPIO_PIN_LOW ?
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds) 
-				)
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds))
