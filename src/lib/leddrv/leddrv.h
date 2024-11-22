@@ -16,8 +16,8 @@
 
 #define LEDDRV_LED_N __LEDDRV_LED_N
 
-extern int leddrv_set(unsigned int nr);
-extern int leddrv_clr(unsigned int nr);
+extern int leddrv_led_on(unsigned int nr);
+extern int leddrv_led_off(unsigned int nr);
 
 extern void leddrv_get_states(bool states[LEDDRV_LED_N]);
 extern void leddrv_set_states(bool states[LEDDRV_LED_N]);
