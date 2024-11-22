@@ -3,27 +3,25 @@ PROGRAM Blink
     blink_led: BOOL;
     TON0: TON;
     TOF0: TOF;
-    LEDDRV_SET0: LEDDRV_SET;
-    R_TRIG0: R_TRIG;
-    LEDDRV_CLR0: LEDDRV_CLR;
-    F_TRIG0: F_TRIG;
-    _TMP_NOT14_OUT: BOOL;
+    LED_ON0: LED_ON;
+    LED_OFF0: LED_OFF;
+    R_TRIG1: R_TRIG;
+    F_TRIG1: F_TRIG;
   END_VAR
 
-  _TMP_NOT14_OUT := NOT(blink_led);
-  TON0(IN := _TMP_NOT14_OUT, PT := T#1000ms);
-  TOF0(IN := TON0.Q, PT := T#1000ms);
+  TON0(EN := TRUE, IN := NOT(blink_led), PT := T#1s);
+  TOF0(EN := TON0.ENO, IN := TON0.Q, PT := T#1s);
   blink_led := TOF0.Q;
-  R_TRIG0(CLK := blink_led);
-  LEDDRV_SET0(EN := R_TRIG0.Q, LED_NUM := 0);
-  F_TRIG0(CLK := blink_led);
-  LEDDRV_CLR0(EN := F_TRIG0.Q, LED_NUM := 0);
+  R_TRIG1(CLK := blink_led);
+  LED_ON0(EN := R_TRIG1.Q, LED := 0);
+  F_TRIG1(CLK := blink_led);
+  LED_OFF0(EN := F_TRIG1.Q, LED := 0);
 END_PROGRAM
 
 
 CONFIGURATION config
 
-  RESOURCE resource0 ON PLC
+  RESOURCE resource1 ON PLC
     TASK task0(INTERVAL := T#50ms, PRIORITY := 0);
     PROGRAM instance0 WITH task0: Blink;
   END_RESOURCE
