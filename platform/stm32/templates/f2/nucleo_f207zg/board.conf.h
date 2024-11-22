@@ -6,4 +6,8 @@ CONFIG {
 	uarts[3].status = ENABLED;
 
 	spis[1].status = ENABLED;
+
+	leds[0].status = ENABLED;
+	leds[1].status = ENABLED;
+	leds[2].status = ENABLED;
 }
