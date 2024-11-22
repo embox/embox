@@ -104,10 +104,10 @@ static void event_handler(lv_event_t *e) {
 		}
 
 		if (state) {
-			leddrv_set(pin);
+			leddrv_led_on(pin);
 		}
 		else {
-			leddrv_clr(pin);
+			leddrv_led_off(pin);
 		}
 	}
 }

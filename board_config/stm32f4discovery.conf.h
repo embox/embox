@@ -150,27 +150,31 @@ struct pwm_conf pwms[] = {
 struct led_conf leds[] = {
 	[0] = {
 		.status = ENABLED,
-		.name = "LED1",
-		.port = VAL("", GPIO_PORT_D),
-		.pin = VAL("", 13),
-	},
-	[1] = {
-		.status = ENABLED,
-		.name = "LED2",
+		.name = "LD4",
 		.port = VAL("", GPIO_PORT_D),
 		.pin = VAL("", 12),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[1] = {
 		.status = ENABLED,
-		.name = "LED3",
+		.name = "LD3",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 13),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "LD5",
 		.port = VAL("", GPIO_PORT_D),
 		.pin = VAL("", 14),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
-	[1] = {
+	[3] = {
 		.status = ENABLED,
-		.name = "LED3",
+		.name = "LD6",
 		.port = VAL("", GPIO_PORT_D),
 		.pin = VAL("", 15),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
 };
 

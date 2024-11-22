@@ -1,8 +1,8 @@
 package project.softplc.ieclib
 
-module leddrv {
+module led {
 	@IncludeExport(path="ieclib")
-	source "leddrv.iecst", "leddrv.h"
+	source "led.iecst", "led.h"
 
 	@NoRuntime depends embox.lib.leddrv
 }

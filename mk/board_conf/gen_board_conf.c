@@ -132,7 +132,7 @@ static int gen_field_pin(const char *dev_name, const char *prop_name,
 }
 
 static int gen_field_gpio_out(const char *dev_name, const char *port,
-    const char *pin) {
+    const char *pin, const char *level) {
 	char buf[128];
 	char def[64];
 
@@ -142,6 +142,10 @@ static int gen_field_gpio_out(const char *dev_name, const char *port,
 
 	sprintf(def, "#define CONF_%s_GPIO_PIN", dev_name);
 	sprintf(buf, "%-50s %s", def, pin);
+	printf("%s\n", buf);
+
+	sprintf(def, "#define CONF_%s_GPIO_LEVEL", dev_name);
+	sprintf(buf, "%-50s %s", def, level);
 	printf("%s\n", buf);
 
 	return 0;
@@ -315,7 +319,8 @@ int main() {
 		}
 
 		gen_dev_enabled(led->name);
-		gen_field_gpio_out(led->name, led->port.val, led->pin.val);
+		gen_field_gpio_out(led->name, led->port.val, led->pin.val,
+		    led->level.val);
 
 		printf("\n");
 	}

@@ -15,7 +15,7 @@
 
 static bool leds[LEDDRV_LED_N];
 
-int leddrv_set(unsigned int nr) {
+int leddrv_led_on(unsigned int nr) {
 	if (nr >= LEDDRV_LED_N) {
 		return -EINVAL;
 	}
@@ -26,7 +26,7 @@ int leddrv_set(unsigned int nr) {
 	return 0;
 }
 
-int leddrv_clr(unsigned int nr) {
+int leddrv_led_off(unsigned int nr) {
 	if (nr >= LEDDRV_LED_N) {
 		return -EINVAL;
 	}

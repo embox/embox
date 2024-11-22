@@ -153,18 +153,21 @@ struct led_conf leds[] = {
 		.name = "LED1",
 		.port = VAL("", GPIO_PORT_B),
 		.pin = VAL("", 0),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[1] = {
 		.status = ENABLED,
 		.name = "LED2",
 		.port = VAL("", GPIO_PORT_B),
 		.pin = VAL("", 7),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[2] = {
 		.status = ENABLED,
 		.name = "LED3",
 		.port = VAL("", GPIO_PORT_B),
 		.pin = VAL("", 14),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
 };
 

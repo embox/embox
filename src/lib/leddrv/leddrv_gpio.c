@@ -17,12 +17,20 @@
 
 #include "leddrv.h"
 
-#define LED_DESC_VALUE(a, b) {CONF_##a##_GPIO_PORT, 1 << CONF_##a##_GPIO_PIN}, b
-#define LED_DESC_LIST        MACRO_FOREACH(LED_DESC_VALUE, CONF_LED_LIST)
+#define LED_ON  0
+#define LED_OFF 1
+
+#define LED_DESC_VALUE(a, b)                              \
+	{CONF_##a##_GPIO_PORT, 1 << CONF_##a##_GPIO_PIN,      \
+	    {CONF_##a##_GPIO_LEVEL, !CONF_##a##_GPIO_LEVEL}}, \
+	    b
+
+#define LED_DESC_LIST MACRO_FOREACH(LED_DESC_VALUE, CONF_LED_LIST)
 
 struct led_desc {
 	int port;
 	int pin;
+	char level[2];
 };
 
 static const struct led_desc leds[LEDDRV_LED_N] = {LED_DESC_LIST};
@@ -39,28 +47,28 @@ static int leddrv_init(void) {
 			log_error("gpio init failed");
 			return err;
 		}
-		gpio_set(leds[i].port, leds[i].pin, GPIO_PIN_LOW);
+		gpio_set(leds[i].port, leds[i].pin, leds[i].level[LED_OFF]);
 	}
 
 	return 0;
 }
 
-int leddrv_set(unsigned int nr) {
+int leddrv_led_on(unsigned int nr) {
 	if (nr >= LEDDRV_LED_N) {
 		return -EINVAL;
 	}
 
-	gpio_set(leds[nr].port, leds[nr].pin, GPIO_PIN_HIGH);
+	gpio_set(leds[nr].port, leds[nr].pin, leds[nr].level[LED_ON]);
 
 	return 0;
 }
 
-int leddrv_clr(unsigned int nr) {
+int leddrv_led_off(unsigned int nr) {
 	if (nr >= LEDDRV_LED_N) {
 		return -EINVAL;
 	}
 
-	gpio_set(leds[nr].port, leds[nr].pin, GPIO_PIN_LOW);
+	gpio_set(leds[nr].port, leds[nr].pin, leds[nr].level[LED_OFF]);
 
 	return 0;
 }
@@ -78,6 +86,6 @@ void leddrv_set_states(bool states[LEDDRV_LED_N]) {
 
 	for (i = 0; i < LEDDRV_LED_N; i++) {
 		gpio_set(leds[i].port, leds[i].pin,
-		    states[i] ? GPIO_PIN_HIGH : GPIO_PIN_LOW);
+		    leds[i].level[states[i] ? LED_ON : LED_OFF]);
 	}
 }

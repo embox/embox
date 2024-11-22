@@ -1,4 +1,5 @@
 "export PWD=/",
 "export HOME=/",
-"plc_blink",
+
+//"plc_blink",
 "tish",
