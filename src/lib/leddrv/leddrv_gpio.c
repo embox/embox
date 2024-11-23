@@ -17,15 +17,19 @@
 
 #include "leddrv.h"
 
-#define LED_ON  0
-#define LED_OFF 1
-
-#define LED_DESC_VALUE(a, b)                              \
+#if LEDDRV_LED_N > 0
+#define LED_DESC_INIT(a, b)                               \
 	{CONF_##a##_GPIO_PORT, 1 << CONF_##a##_GPIO_PIN,      \
 	    {CONF_##a##_GPIO_LEVEL, !CONF_##a##_GPIO_LEVEL}}, \
 	    b
+#define LED_DESC_LIST MACRO_FOREACH(LED_DESC_INIT, CONF_LED_LIST)
+#else
+#define LED_DESC_LIST
+#error "LEDs are not enabled in board.conf.h"
+#endif
 
-#define LED_DESC_LIST MACRO_FOREACH(LED_DESC_VALUE, CONF_LED_LIST)
+#define LED_ON  0
+#define LED_OFF 1
 
 struct led_desc {
 	int port;
