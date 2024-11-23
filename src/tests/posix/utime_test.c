@@ -53,6 +53,9 @@ TEST_CASE("check changed time") {
 TEST_CASE("file not exist") {
 	struct utimbuf time;
 
+	time.actime = 0;
+	time.modtime = 0;
+
 	test_assert(utime(TEST_NOT_EXIST_FILE, &time) == -1);
 }
 
