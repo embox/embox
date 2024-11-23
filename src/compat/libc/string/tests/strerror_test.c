@@ -87,5 +87,5 @@ TEST_CASE("text of EBUSY is Resource busy"){
 	int errnum = EBUSY;
 
 	/* Checking if the error text matches */
-	test_assert_equal(strerror(errnum),"Resourse busy");
+	test_assert_equal(strerror(errnum),"Resource busy");
 }
