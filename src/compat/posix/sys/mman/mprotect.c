@@ -8,6 +8,7 @@
 
 #include <errno.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include <sys/mman.h>
 #include <hal/mmu.h>
@@ -19,7 +20,7 @@ int mprotect(void* addr, size_t len, int prot) {
 	int err;
 	struct emmap *emmap = task_self_resource_mmap();
 
-	if ((int) addr % VMEM_PAGE_SIZE != 0) {
+	if (((uintptr_t) addr % VMEM_PAGE_SIZE) != 0) {
 		err = EINVAL;
 		return SET_ERRNO(err);
 	}
