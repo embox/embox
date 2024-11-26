@@ -77,15 +77,8 @@ $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.softplc_build_dir
-	cat $(filter-out %/POUS.c,$(shell find $< -name \*.c)) > $</softplc_gen.c
-	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $</softplc_gen.o $</softplc_gen.c
-	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $</softplc_main.o $(plc_main)
-	$(LD) -r -o $@ $</softplc_gen.o $</softplc_main.o $(ldflags)
-
-$(GEN_DIR)/%.softplc_build_dir : $(ROOT_DIR)/%.st
-	$(MKDIR) $@
-	$(iec2c) -f -l -p -I $(ieclib) -T $@ $<
+$(GEN_DIR)/%.c : $(ROOT_DIR)/%.st
+	IEC2C=$(iec2c) IECLIB=$(ieclib) PLC_MAIN=$(plc_main) $(ROOT_DIR)/mk/gen_softplc.sh $< $@
 
 ifeq ($(value OSTYPE),cygwin)
 # GCC built for Windows doesn't recognize /cygdrive/... absolute paths. As a
