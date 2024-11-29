@@ -5,6 +5,8 @@ PROGRAM Blink
     TOF0: TOF;
     LED_ON0: LED_ON;
     LED_OFF0: LED_OFF;
+    LED_ON1: LED_ON;
+    LED_OFF1: LED_OFF;
     R_TRIG1: R_TRIG;
     F_TRIG1: F_TRIG;
   END_VAR
@@ -16,6 +18,8 @@ PROGRAM Blink
   LED_ON0(EN := R_TRIG1.Q, LED := 0);
   F_TRIG1(CLK := blink_led);
   LED_OFF0(EN := F_TRIG1.Q, LED := 0);
+  LED_ON1(EN := LED_OFF0.ENO, LED := 1);
+  LED_OFF1(EN := LED_ON0.ENO, LED := 1);
 END_PROGRAM
 
 
