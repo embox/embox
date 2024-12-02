@@ -50,7 +50,7 @@ unsigned int irqctrl_get_intid(void) {
 
 	pending = (mips_read_c0_cause() & mips_read_c0_status() & CAUSE_IM) >> ST0_IRQ_MASK_OFFSET;
 
-	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
+	for (irq = IRQCTRL_IRQS_TOTAL - 1; irq >=0 ; irq--) {
 		if (pending & (1U << irq)) {
 			return irq;
 		}
