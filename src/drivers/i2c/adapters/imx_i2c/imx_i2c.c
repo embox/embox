@@ -17,13 +17,6 @@
 
 #include "imx_i2c.h"
 
-static int imx_i2c_master_xfer(struct i2c_adapter *adapter, struct i2c_msg *msgs,
-		int num);
-
-const struct i2c_algorithm imx_i2c_algo = {
-	.i2c_master_xfer = imx_i2c_master_xfer,
-};
-
 static inline int imx_i2c_wait_status(struct imx_i2c *adapter, uint8_t mask, int for_set) {
 	uint8_t temp;
 	volatile int i;
@@ -56,9 +49,11 @@ static int imx_i2c_tx_byte(struct imx_i2c *adapter, uint8_t byte) {
 	if (res) {
 		return res;
 	}
+
 	if (REG8_LOAD(adapter->base_addr + IMX_I2C_I2SR) &  IMX_I2C_I2SR_RXAK) {
 		return -ENODEV;
 	}
+
 	return 0;
 }
 
@@ -98,6 +93,7 @@ static int imx_i2c_stop(struct imx_i2c *adapter) {
 
 	REG8_STORE(adapter->base_addr + IMX_I2C_I2CR, 0);
 	usleep(100);
+
 	return 0;
 }
 
@@ -127,7 +123,8 @@ static int imx_i2c_start(struct imx_i2c *adapter) {
 }
 
 
-static int imx_i2c_rx(struct imx_i2c *adapter, uint16_t addr, uint8_t *buff, size_t sz) {
+static int
+imx_i2c_rx(struct imx_i2c *adapter, uint16_t addr, uint8_t *buff, size_t sz) {
 	int res;
 	int cnt;
 	uint8_t tmp;
@@ -136,6 +133,7 @@ static int imx_i2c_rx(struct imx_i2c *adapter, uint16_t addr, uint8_t *buff, siz
 	if (res < 0) {
 		return res;
 	}
+
 	log_debug("ACK received 0x%x", addr);
 	tmp = REG8_LOAD(adapter->base_addr + IMX_I2C_I2CR);
 	tmp &= ~IMX_I2C_I2CR_MTX;
@@ -184,36 +182,46 @@ static int imx_i2c_rx(struct imx_i2c *adapter, uint16_t addr, uint8_t *buff, siz
 	return sz;
 }
 
-static int imx_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
-		int num) {
+static int
+imx_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num) {
 	struct imx_i2c *adapter;
 	int res = -1;
 	int i;
 	uint8_t tmp;
 
 	adapter = adap->i2c_algo_data;
-	if (imx_i2c_start(adapter)) {
+
+	res = imx_i2c_start(adapter);
+	if (res) {
 		log_error("i2c  bus error");
-	} else {
-		for (i = 0; i < num; i ++) {
-			if (i) {
-				tmp = REG8_LOAD(adapter->base_addr + IMX_I2C_I2CR);
-				tmp |= IMX_I2C_I2CR_RSTA;
-				REG8_STORE(adapter->base_addr + IMX_I2C_I2CR, tmp);
-				res = imx_i2c_wait_status(adapter, IMX_I2C_I2SR_IBB, 1);
-				if (res) {
-					break;
-				}
-			}
-			if (msgs[i].flags & I2C_M_RD) {
-				res = imx_i2c_rx(adapter, msgs->addr, msgs->buf, msgs->len);
-			} else {
-				res = imx_i2c_tx(adapter, msgs->addr, msgs->buf, msgs->len);
-			}
-		}
+		goto out;
 	}
 
+	for (i = 0; i < num; i ++) {
+		if (i) {
+			tmp = REG8_LOAD(adapter->base_addr + IMX_I2C_I2CR);
+			tmp |= IMX_I2C_I2CR_RSTA;
+			REG8_STORE(adapter->base_addr + IMX_I2C_I2CR, tmp);
+			res = imx_i2c_wait_status(adapter, IMX_I2C_I2SR_IBB, 1);
+			if (res) {
+				break;
+			}
+		}
+
+		if (msgs[i].flags & I2C_M_RD) {
+			res = imx_i2c_rx(adapter, msgs->addr, msgs->buf, msgs->len);
+		} else {
+			res = imx_i2c_tx(adapter, msgs->addr, msgs->buf, msgs->len);
+		}
+
+	}
+
+out:
 	imx_i2c_stop(adapter);
 
 	return res;
 }
+
+const struct i2c_algorithm imx_i2c_algo = {
+	.i2c_master_xfer = imx_i2c_master_xfer,
+};
