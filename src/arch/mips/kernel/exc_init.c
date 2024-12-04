@@ -24,8 +24,10 @@ void mips_exception_init(void) {
 
 	flush_cache((unsigned long)(KSEG0 + 0x180), 0x80);
 
+#if __mips_isa_rev >= 2
 	/* explicitly set ebase */
 	mips_write_c0_ebase(KSEG0);
+#endif
 
 	execution_hazard_barrier();
 
