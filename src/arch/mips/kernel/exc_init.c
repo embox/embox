@@ -24,6 +24,9 @@ void mips_exception_init(void) {
 
 	flush_cache((unsigned long)(KSEG0 + 0x180), 0x80);
 
+	/* explicitly set ebase */
+	mips_write_c0_ebase(KSEG0);
+
 	execution_hazard_barrier();
 
 	/* Configure status register */
