@@ -1,0 +1,10 @@
+package embox.driver.eeprom
+
+module at24 {
+	source "at24.c"
+
+	option number i2c_bus_nr = 0
+	option number i2c_bus_addr = 0x50
+
+	@NoRuntime depends embox.driver.eeprom.eeprom_dev
+}
