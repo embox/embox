@@ -7,7 +7,7 @@ AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: Left  # clang-format-13
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignConsecutiveMacros: AcrossComments
 AlignEscapedNewlines: Left
 AlignOperands: true
 AlignTrailingComments: true
