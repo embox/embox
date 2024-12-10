@@ -125,7 +125,7 @@ int main(int argc, char **argv) {
 
 	errno = 0;
 	if (access_type_passed) {
-		address = (void *)strtoul(argv[3], 0, 0);
+		address = (void *)strtoul(argv[2], 0, 0);
 	}
 	else {
 		address = (void *)strtoul(argv[1], 0, 0);

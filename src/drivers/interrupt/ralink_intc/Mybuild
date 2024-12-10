@@ -1,0 +1,8 @@
+package embox.driver.interrupt
+
+module ralink_intc extends irqctrl_api {
+	option string log_level="LOG_INFO"
+
+	source "ralink_intc.h"
+	source "ralink_intc.c"
+}
