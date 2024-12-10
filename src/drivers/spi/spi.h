@@ -95,13 +95,13 @@ extern const struct char_dev_ops __spi_cdev_ops;
 
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
-#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, idx)                   \
-	struct spi_device MACRO_CONCAT(spi_device, idx) = {                     \
-	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, idx).cdev,           \
-	        MACRO_STRING(dev_name), &__spi_cdev_ops),                       \
-	    .spi_ops = spi_dev_ops,                                             \
-	    .priv = dev_priv,                                                   \
-	};                                                                      \
+#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, idx)         \
+	struct spi_device MACRO_CONCAT(spi_device, idx) = {           \
+	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, idx).cdev, \
+	        MACRO_STRING(dev_name), &__spi_cdev_ops),             \
+	    .spi_ops = spi_dev_ops,                                   \
+	    .priv = dev_priv,                                         \
+	};                                                            \
 	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, idx))
 
 /* IOCTL-related stuff */
@@ -114,16 +114,20 @@ struct spi_transfer_arg {
 	ssize_t count;
 };
 
-/* CS modes */
-#define SPI_CS_ACTIVE    (1 << 0)
-#define SPI_CS_INACTIVE  (1 << 1)
+/* spi_device flags */
+#define SPI_CS_ACTIVE                 (1 << 0)
+#define SPI_CS_INACTIVE               (1 << 1)
 /* x is one of enum spi_pol_phase_t */
-#define SPI_CS_MODE(x)   ((0x03 & (x)) << 2)
-#define SPI_CS_IRQD      (1 << 4)
-#define SPI_CS_IRQR      (1 << 5)
-#define SPI_CS_DMAEN     (1 << 6)
+#define SPI_CS_MODE(x)                ((0x03 & (x)) << 2)
+#define SPI_CS_CPHA                   (1 << 2)
+#define SPI_CS_CPOL                   (1 << 3)
+#define SPI_CS_IRQD                   (1 << 4)
+#define SPI_CS_IRQR                   (1 << 5)
+#define SPI_CS_DMAEN                  (1 << 6)
 /* Upper 16 bits used to set clock divisor */
-#define SPI_CS_DIVSOR(x) (((x)&0xFFFF) << 16)
+#define SPI_CS_DIVSOR(div)            ((0xffff & (div)) << 16)
+#define SPI_CS_DIVSOR_SET(flags, div) ((0xffff & (flags)) | SPI_CS_DIVSOR(div))
+#define SPI_CS_DIVSOR_GET(flags)      (((flags) >> 16) & 0xffff)
 
 /* DMA Levels 
  * rcPanic: DMA Read Panic Threshold. Generate the Panic signal to 
