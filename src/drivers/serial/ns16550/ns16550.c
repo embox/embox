@@ -18,6 +18,38 @@
 #define REG_WIDTH    OPTION_GET(NUMBER, reg_width)
 #define MEM32_ACCESS OPTION_GET(BOOLEAN, mem32_access)
 
+#ifdef RALINK
+/**
+ * Redefinition for Ralink layout
+ * (R) - read only
+ * (W) - write only
+ * (R/W) - read/write
+ * (RC) - read/clear
+ */
+#define UART_RHR(base) (base + REG_WIDTH * 0) /* (R) Receiver Holding Reg */
+#define UART_THR(base) (base + REG_WIDTH * 1) /* (W) Transmitter Holding Reg */
+#define UART_IER(base) (base + REG_WIDTH * 2) /* (R/W) Interrupt Enable Reg */
+#define UART_ISR(base) (base + REG_WIDTH * 3) /* (R) Interrupt Status Reg */
+#define UART_FCR(base) (base + REG_WIDTH * 4) /* (R/W) FIFO Control Reg */
+#define UART_LCR(base) (base + REG_WIDTH * 5) /* (R/W) Line Control Reg */
+#define UART_MCR(base) (base + REG_WIDTH * 6) /* (R/W) Modem Control Reg */
+#define UART_LSR(base) (base + REG_WIDTH * 7) /* (RC) Line Status Reg */
+#define UART_MSR(base) (base + REG_WIDTH * 8) /* (RC) Modem Status Reg - not for uartlite*/
+#define UART_SPR(base) (base + REG_WIDTH * 9) /* (R/W) Scratch Pad Reg */
+
+/**
+ * Ralink ignore DLAB = 1 settting (for ns16550 compatibility)
+ * but use its' own registers
+ */
+/* (R/W) Baudrate Divisor’s as 16-bit value */
+#define UART_DL(base) (base + REG_WIDTH * 10)
+/* (R/W) Baudrate Divisor’s Constant Least Significant Byte */
+#define UART_DLL(base) (base + REG_WIDTH * 11)
+/* (R/W) Baudrate Divisor’s Constant Most Significant Byte */
+#define UART_DLM(base) (base + REG_WIDTH * 12)
+//#define UART_PSD(base) (base + REG_WIDTH * 5) /* (W) Prescaler Division */
+/* End of RALINK specific regs */
+#else
 /**
  * General Register Set
  * 
@@ -35,6 +67,20 @@
 #define UART_LSR(base) (base + REG_WIDTH * 5) /* (R) Line Status Reg */
 #define UART_MSR(base) (base + REG_WIDTH * 6) /* (R) Modem Status Reg */
 #define UART_SPR(base) (base + REG_WIDTH * 7) /* (R/W) Scratch Pad Reg */
+
+/**
+ * Registers accesible only when DLAB = 1
+ * 
+ * (R) - read only
+ * (W) - write only
+ * (R/W) - read/write
+ */
+/* (R/W) Baudrate Divisor’s Constant Least Significant Byte */
+#define UART_DLL(base) (base + REG_WIDTH * 0)
+/* (R/W) Baudrate Divisor’s Constant Most Significant Byte */
+#define UART_DLM(base) (base + REG_WIDTH * 1)
+#define UART_PSD(base) (base + REG_WIDTH * 5) /* (W) Prescaler Division */
+#endif	/*End of #ifdef RALINK */
 
 #define UART_IER_DR   (1U << 0) /* Data Ready */
 #define UART_IER_THRE (1U << 1) /* Transmit-hold-register empty */
@@ -57,19 +103,6 @@
 #define UART_LSR_THRE (1U << 5) /* Transmit-hold-register empty */
 #define UART_LSR_TE   (1U << 6) /* Transmitter empty */
 #define UART_LSR_FDE  (1U << 7) /* FIFO data Error */
-
-/**
- * Registers accesible only when DLAB = 1
- * 
- * (R) - read only
- * (W) - write only
- * (R/W) - read/write
- */
-/* (R/W) Baudrate Divisor’s Constant Least Significant Byte */
-#define UART_DLL(base) (base + REG_WIDTH * 0)
-/* (R/W) Baudrate Divisor’s Constant Most Significant Byte */
-#define UART_DLM(base) (base + REG_WIDTH * 1)
-#define UART_PSD(base) (base + REG_WIDTH * 5) /* (W) Prescaler Division */
 
 #if MEM32_ACCESS
 static_assert(REG_WIDTH == 4, "");
