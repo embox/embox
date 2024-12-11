@@ -14,10 +14,10 @@
 
 #define __MMAP_REG_STORE(inttype, addr, val)                      \
 	do {                                                          \
-		*((volatile inttype *)((uintptr_t)addr + KSEG1)) = (val); \
+		*((volatile inttype *)((uintptr_t)(addr & 0x1fffffff) | KSEG1)) = (val); \
 	} while (0)
 
 #define __MMAP_REG_LOAD(inttype, addr) \
-	*((volatile inttype *)((uintptr_t)addr + KSEG1))
+	*((volatile inttype *)((uintptr_t)(addr & 0x1fffffff) | KSEG1))
 
 #endif /* MIPS_KERNEL_REG_REG_H_ */
