@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <errno.h>
+#include <string.h>
 
 #include <drivers/i2c/i2c.h>
 #include <drivers/char_dev.h>
@@ -19,11 +20,42 @@
 
 static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	struct eeprom_dev *dev;
-	struct i2c_msg msgs[3];
+	struct i2c_msg msgs[2];
+	uint8_t msgbuf[2];
+	int i;
+	uint32_t offset;
+	int count;
 
 	dev = (struct eeprom_dev *)cdev;
 
-	i2c_bus_transfer(dev->eed_bus, dev->eed_bus_addr, msgs, 3);
+	memset(msgs, 0, sizeof(msgs));
+
+	count = nbyte;
+	if (count > dev->eed_io_limit) {
+		count = dev->eed_io_limit;
+	}
+
+
+	offset = dev->eed_offset;
+
+	i = 0;
+	#if 0
+	if (at24->chip.flags & AT24_FLAG_ADDR16) {
+		msgbuf[i++] = offset >> 8;
+	}
+	#endif
+	msgbuf[i++] = offset;
+
+	msgs[0].addr = dev->eed_bus_addr;
+	msgs[0].buf = msgbuf;
+	msgs[0].len = i;
+
+	msgs[1].addr = dev->eed_bus_addr;
+	msgs[1].flags = I2C_M_RD;
+	msgs[1].buf = buf;
+	msgs[1].len = count;
+
+	i2c_bus_transfer(dev->eed_bus, dev->eed_bus_addr, msgs, 2);
 
 	return 0;
 }

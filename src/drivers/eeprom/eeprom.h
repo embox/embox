@@ -34,10 +34,13 @@ struct eeprom_dev {
 
 	struct dlist_head eed_dev_link;  /* global device list */
 
-	void *eed_priv;
-
 	uint8_t eed_bus;
 	uint16_t eed_bus_addr;
+
+	void *eed_priv;
+
+	int eed_offset;
+	int eed_io_limit;
 
 };
 
