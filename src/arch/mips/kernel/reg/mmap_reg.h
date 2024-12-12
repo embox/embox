@@ -12,12 +12,12 @@
 
 #include <asm/addrspace.h>
 
-#define __MMAP_REG_STORE(inttype, addr, val)                      \
-	do {                                                          \
-		*((volatile inttype *)((uintptr_t)(addr & 0x1fffffff) | KSEG1)) = (val); \
+#define __MMAP_REG_STORE(inttype, addr, val)                       \
+	do {                                                           \
+		*(volatile inttype *)((uintptr_t)KSEG1ADDR(addr)) = (val); \
 	} while (0)
 
 #define __MMAP_REG_LOAD(inttype, addr) \
-	*((volatile inttype *)((uintptr_t)(addr & 0x1fffffff) | KSEG1))
+	*(volatile inttype *)((uintptr_t)KSEG1ADDR(addr))
 
 #endif /* MIPS_KERNEL_REG_REG_H_ */
