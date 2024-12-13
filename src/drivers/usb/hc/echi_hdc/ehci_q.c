@@ -4,17 +4,27 @@
  * @date Aug 13, 2019
  * @author Anton Bondrev
  */
+
+#include <util/log.h>
+
 #include <stdint.h>
 #include <string.h>
 
 #include <drivers/usb/usb.h>
-#include <util/log.h>
 
 #include "ehci.h"
 
 void ehci_qtd_show(struct ehci_qtd_hw *qtd, int log_level) {
-	log_debug(log_level, "qtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x", qtd,
-	    qtd->hw_buf, qtd->hw_token, qtd->hw_next);
+	switch(log_level) {
+		case LOG_DEBUG:
+			log_debug("qtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x",
+							qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
+		default:
+			log_error("qtd=%p, buf=0x%08x, token=0x%08x, next=0x%08x",
+							qtd, qtd->hw_buf, qtd->hw_token, qtd->hw_next);
+		break;
+	}
+	
 }
 
 /* fill a qtd, returning how much of the buffer we were able to queue up */
@@ -173,7 +183,7 @@ static unsigned qh_handle_error(struct ehci_hcd *ehci, struct ehci_qh *qh) {
 
 	qtd = qh->qdt;
 	while (1) {
-		ehci_qtd_show(qtd, LOG_ERROR);
+		ehci_qtd_show(qtd, LOG_ERR);
 		hw_next = qtd->hw_next;
 		ehci_qtd_free(ehci, qtd);
 
