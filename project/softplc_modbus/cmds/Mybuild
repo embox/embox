@@ -1,0 +1,17 @@
+package project.softplc_modbus.cmd
+
+@AutoCmd
+@Cmd(name="plc_run", help="")
+@BuildDepends(project.softplc_modbus.iecsup)
+@BuildDepends(third_party.lib.libmodbus)
+module modbus_led {
+	@IncludeExport(path="")
+	source "MB_0.h"
+
+	source "plc.st"
+
+	@NoRuntime depends project.softplc_modbus.iecsup
+	@NoRuntime depends project.softplc_modbus.ieclib.led
+	@NoRuntime depends embox.compat.posix.pthreads
+	@NoRuntime depends third_party.lib.libmodbus
+}

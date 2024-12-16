@@ -1,0 +1,23 @@
+PROGRAM program0
+  VAR
+    Coil0 AT %IX0.0.0.0 : BOOL;
+  END_VAR
+  VAR
+    LED_ON0 : LED_ON;
+    LED_OFF0 : LED_OFF;
+    _TMP_NOT4_OUT : BOOL;
+  END_VAR
+
+  LED_ON0(EN := Coil0, LED := 0);
+  _TMP_NOT4_OUT := NOT(Coil0);
+  LED_OFF0(EN := _TMP_NOT4_OUT, LED := 0);
+END_PROGRAM
+
+
+CONFIGURATION config
+
+  RESOURCE resource1 ON PLC
+    TASK task0(INTERVAL := T#20ms,PRIORITY := 0);
+    PROGRAM instance0 WITH task0 : program0;
+  END_RESOURCE
+END_CONFIGURATION
