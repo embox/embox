@@ -1,6 +1,6 @@
 PROGRAM program0
   VAR
-    Coil0 AT %IX0.0.0.0 : BOOL;
+    Coil0 AT %QX0.0.0.0 : BOOL;
   END_VAR
   VAR
     LED_ON0 : LED_ON;
