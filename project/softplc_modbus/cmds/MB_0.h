@@ -28,13 +28,10 @@
 typedef struct _server_node_t {
     const char *ip_adress;
     uint16_t port;
-    u8		slave_id;
+    uint8_t slave_id;
     modbus_mapping_t mem_area;
     modbus_t *ctx;
 } server_node_t;
-
-
-
 
 
 
@@ -51,7 +48,7 @@ typedef struct _server_node_t {
 
 static server_node_t server_nodes[NUMBER_OF_SERVER_NODES] = {
 /*node 0.0*/
-{"10.0.2.16", 502, 0, {1, 0, 0, 0, 0, 0, 0, 0}}
+{"10.0.2.16", 502, 0, {0, 0, 1, 0, 0, 0, 0, 0}}
 }
 ;
 
@@ -59,5 +56,7 @@ static server_node_t server_nodes[NUMBER_OF_SERVER_NODES] = {
 /*located variables*/
 /*******************/
 
-u16 *__IX0_0_0_0 = &server_nodes[0].mem_area.tab_bits[0];
+uint8_t *__IX0_0_0_0;
+
+#define LOC_VARS_INIT __IX0_0_0_0 = &server_nodes[0].mem_area.tab_input_bits[0];
 

@@ -5,12 +5,14 @@ PROGRAM program0
   VAR
     LED_ON0 : LED_ON;
     LED_OFF0 : LED_OFF;
-    _TMP_NOT4_OUT : BOOL;
+    R_TRIG0 : R_TRIG;
+    F_TRIG0 : F_TRIG;
   END_VAR
 
-  LED_ON0(EN := Coil0, LED := 0);
-  _TMP_NOT4_OUT := NOT(Coil0);
-  LED_OFF0(EN := _TMP_NOT4_OUT, LED := 0);
+  R_TRIG0(CLK := Coil0);
+  LED_ON0(EN := R_TRIG0.Q, LED := 0);
+  F_TRIG0(CLK := Coil0);
+  LED_OFF0(EN := F_TRIG0.Q, LED := 0);
 END_PROGRAM
 
 

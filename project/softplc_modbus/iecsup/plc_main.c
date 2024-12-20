@@ -40,7 +40,6 @@ void modbus_servers_init() {
 	for (int i = 0; i < NUMBER_OF_SERVER_NODES; i++) {
 		server_nodes[i].ctx = modbus_new_tcp(server_nodes[i].ip_adress, server_nodes[i].port);
 		modbus_set_debug(server_nodes[i].ctx, FALSE);
-
 		// tab_bits
 		if (server_nodes[i].mem_area.nb_bits == 0) {
 			server_nodes[i].mem_area.tab_bits = NULL;
@@ -91,10 +90,12 @@ void modbus_servers_init() {
 			memset(server_nodes[i].mem_area.tab_registers, 0, server_nodes[i].mem_area.nb_registers * sizeof(uint16_t));
 		}
 	}
+	LOC_VARS_INIT
 }
 
 static void *__mb_server_thread(void *_server_node)  {
 	int header_len;
+	int listen_socket, client_socket;
 	uint8_t *query;
 	server_node_t *server_node = _server_node;
 	header_len = modbus_get_header_length(server_node->ctx);
@@ -166,7 +167,7 @@ int main(int argc, char const *argv[]) {
 	modbus_servers_init();
 
 	for (int i = 0; i < NUMBER_OF_SERVER_NODES; i++) {
-		pthread_create(&threads[i], NULL, __mb_server_thread, (void *)&(server_nodes[i]))
+		pthread_create(&threads[i], NULL, __mb_server_thread, (void *)&(server_nodes[i]));
 	}
 	tick_counter = 0;
 	ticktime_ms = common_ticktime__ / NSEC_PER_MSEC;
@@ -178,7 +179,7 @@ int main(int argc, char const *argv[]) {
 	}
 
 	for (int i = 0; i < NUMBER_OF_SERVER_NODES; i++) {
-		pthread_join(&threads[i])
+		pthread_join(threads[i], NULL);
 	}
 
 	return err;

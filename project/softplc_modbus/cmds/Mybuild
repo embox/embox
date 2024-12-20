@@ -2,6 +2,7 @@ package project.softplc_modbus.cmd
 
 @AutoCmd
 @Cmd(name="plc_run", help="")
+@Build(stage=2)
 @BuildDepends(project.softplc_modbus.iecsup)
 @BuildDepends(third_party.lib.libmodbus)
 module modbus_led {
