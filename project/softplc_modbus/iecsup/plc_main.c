@@ -84,7 +84,7 @@ void modbus_servers_init() {
 			    server_nodes[i].mem_area.nb_input_registers * sizeof(uint16_t));
 		}
 
-		// tab_input_registers
+		// tab_registers
 		if (server_nodes[i].mem_area.nb_registers == 0) {
 			server_nodes[i].mem_area.tab_registers = NULL;
 		}
@@ -102,6 +102,29 @@ void modbus_servers_init() {
 		}
 	}
 	LOC_VARS_INIT
+}
+
+void modbus_servers_free() {
+	for (int i = 0; i < NUMBER_OF_SERVER_NODES; i++) {
+		modbus_free(server_nodes[i].ctx);
+		modbus_set_debug(server_nodes[i].ctx, FALSE);
+		// tab_bits
+		if (server_nodes[i].mem_area.tab_bits == NULL) {
+				free(server_nodes[i].mem_area.tab_bits);
+		}
+		// tab_input_bits
+		if (server_nodes[i].mem_area.tab_input_bits == NULL) {
+				free(server_nodes[i].mem_area.tab_input_bits);
+		}
+		// tab_input_registers
+		if (server_nodes[i].mem_area.tab_input_registers == NULL) {
+			free(server_nodes[i].mem_area.tab_input_registers);
+		}
+		// tab_registers
+		if (server_nodes[i].mem_area.tab_registers == NULL) {
+			free(server_nodes[i].mem_area.tab_input_registers);
+		}
+	}
 }
 
 static void *__mb_server_thread(void *_server_node) {
@@ -182,6 +205,7 @@ int main(int argc, char const *argv[]) {
 	for (int i = 0; i < NUMBER_OF_SERVER_NODES; i++) {
 		pthread_join(threads[i], NULL);
 	}
+	modbus_servers_free();
 
 	return err;
 }
