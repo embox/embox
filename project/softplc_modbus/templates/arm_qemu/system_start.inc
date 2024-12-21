@@ -1,5 +1,6 @@
 "export PWD=/",
 "export HOME=/",
 
-"plc_run",
+"netmanager",
+//"plc_run",
 "tish",
