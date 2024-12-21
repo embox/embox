@@ -34,7 +34,6 @@ typedef struct _server_node_t {
 } server_node_t;
 
 
-
 /* Values for instance 0 of the modbus plugin */
 
 #define NUMBER_OF_TCPSERVER_NODES 1
@@ -43,8 +42,6 @@ typedef struct _server_node_t {
 
 
 /*initialization following all parameters given by user in application*/
-
-
 
 static server_node_t server_nodes[NUMBER_OF_SERVER_NODES] = {
 /*node 0.0*/
@@ -56,7 +53,7 @@ static server_node_t server_nodes[NUMBER_OF_SERVER_NODES] = {
 /*located variables*/
 /*******************/
 
-uint8_t *__QX0_0_0_0;
+BOOL *__QX0_0_0_0;
 
 #define LOC_VARS_INIT __QX0_0_0_0 = &server_nodes[0].mem_area.tab_bits[0];
 
