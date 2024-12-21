@@ -1,0 +1,17 @@
+package project.plc.cmd
+
+@AutoCmd
+@Cmd(name="plc_start", help="")
+module plc_start {
+	source "plc_start.c"
+
+	@NoRuntime depends project.plc.core
+}
+
+@AutoCmd
+@Cmd(name="plc_stop", help="")
+module plc_stop {
+	source "plc_stop.c"
+
+	@NoRuntime depends project.plc.core
+}

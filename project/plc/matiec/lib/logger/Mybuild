@@ -1,0 +1,8 @@
+package project.plc.matiec_lib
+
+module logger {
+	@IncludeExport(path="matiec_lib")
+	source "logger.iecst", "logger.h"
+
+	@NoRuntime depends embox.compat.posix.syslog
+}
