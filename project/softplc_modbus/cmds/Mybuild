@@ -12,7 +12,7 @@ module modbus_led {
 	source "plc.st"
 
 	@NoRuntime depends project.softplc_modbus.iecsup
-	@NoRuntime depends project.softplc_modbus.ieclib.led
+	@NoRuntime depends project.softplc.ieclib.led
 	@NoRuntime depends embox.compat.posix.pthreads
 	@NoRuntime depends third_party.lib.libmodbus
 }

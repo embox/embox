@@ -1,8 +1,0 @@
-package project.softplc_modbus.ieclib
-
-module led {
-	@IncludeExport(path="ieclib")
-	source "led.iecst", "led.h"
-
-	@NoRuntime depends embox.lib.leddrv
-}
