@@ -28,5 +28,5 @@ void index_init(struct indexator *ind, size_t start, size_t capacity,
 	ind->max = ind->prev = ind->end = ind->clamp_max = start + capacity - 1;
 
 	ind->mask = (unsigned long *)data;
-	memset(data, 0, INDEX_DATA_LEN(capacity) * INDEX_DATA_BIT);
+	memset(data, 0, (INDEX_DATA_LEN(capacity) * INDEX_DATA_BIT) / CHAR_BIT);
 }
