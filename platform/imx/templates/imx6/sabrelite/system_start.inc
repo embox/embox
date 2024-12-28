@@ -3,4 +3,5 @@
 "netmanager",
 "service telnetd",
 "service httpd",
+//"dd if=/dev/at24_eeprom count=1 format=hex_c",
 "tish",
