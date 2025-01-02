@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-HELP_MSG="Usage: $ROOT_DIR/mk/gen_softplc.sh <input_file> <output_file>"
+HELP_MSG="Usage: $ROOT_DIR/mk/plc/iec2c.sh <input_file> <output_file>"
 
 if [ "$#" -ne 2 ]; then
 	echo $HELP_MSG
@@ -20,23 +20,17 @@ if [ -z "$IECLIB" ]; then
 	exit 1
 fi
 
-if [ -z "$PLC_MAIN" ]; then
-	echo $HELP_MSG
-	echo "error: PLC_MAIN variable not found"
-	exit 1
-fi
-
 input_file=$1
 output_file=$2
 
 # Create tmp direcory
-tmp_dir=$(mktemp -d /tmp/softplc-XXXXX)
+tmp_dir=$(mktemp -d /tmp/embox_plc-XXXXX)
 
-# Generate SoftPLC in tmp directory
+# Generate C code from ST in tmp directory
 $IEC2C -f -l -p -I $IECLIB -T $tmp_dir $input_file || {
 	rm -rf $tmp_dir # Remove tmp direcory
 	echo $HELP_MSG
-	echo "error: SoftPLC generation failed"
+	echo "error: PLC generation failed"
 	exit 1
 }
 
@@ -48,16 +42,16 @@ if [ ! -f $tmp_dir/config.h ]; then
 	exit 1
 fi
 
-# Generated SoftPLC files
-softplc_files="$tmp_dir/POUS.h $tmp_dir/config.h $(find $tmp_dir -name \*.c)"
+# Generated C files
+gen_files="$tmp_dir/POUS.h $tmp_dir/config.h $(find $tmp_dir -name \*.c)"
 
 # Located variables in one line
-located_vars=$(sed '$!N;s/\n/ /' <$tmp_dir/LOCATED_VARIABLES.h)
+located_vars=$(tr -s '\r\n' ' ' <$tmp_dir/LOCATED_VARIABLES.h)
 
-# Write SoftPLC code to output file
+# Write code to output file
 printf "#define __LOCATED_VAR_LIST $located_vars\n\n" >$output_file
-printf "#include \"$PLC_MAIN\"\n" >>$output_file
-for file in $softplc_files; do
+cat $ROOT_DIR/mk/plc/glue.c >>$output_file
+for file in $gen_files; do
 	printf "\n\n" >>$output_file
 	cat $file >>$output_file
 done

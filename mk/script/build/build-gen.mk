@@ -633,19 +633,15 @@ my_rule_prereqs = $(call mybuild_resolve_or_die,mybuild.lang.Rule.prerequisites)
 $(@source_all) : script  = $(call get,$(call values_of,$(my_rule_script)),value)
 $(@source_all) : prereqs = $(call get,$(call values_of,$(my_rule_prereqs)),value)
 
-$(@source_o_rmk) $(@source_a_rmk) : script  = $(or \
-			$(call get,$(call values_of,$(my_rule_script)),value), \
-			@true)
+$(@source_o_rmk) $(@source_a_rmk) : script = $(or $(call get,\
+		$(call values_of,$(my_rule_script)),value), @true)
 
-my_include_header_val := \
-		$(call mybuild_resolve_or_die,mybuild.lang.IncludeHeader.value)
-my_incpath_before_val := \
-		$(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
-my_incpath_val  := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
-my_defmacro_val := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
-my_cflags_val := $(call mybuild_resolve_or_die,mybuild.lang.Cflags.value)
-my_instrument_val := \
-		$(call mybuild_resolve_or_die,mybuild.lang.InstrumentProfiling.value)
+my_include_header_val := $(call mybuild_resolve_or_die,mybuild.lang.IncludeHeader.value)
+my_incpath_before_val := $(call mybuild_resolve_or_die,mybuild.lang.IncludePathBefore.value)
+my_incpath_val        := $(call mybuild_resolve_or_die,mybuild.lang.IncludePath.value)
+my_defmacro_val       := $(call mybuild_resolve_or_die,mybuild.lang.DefineMacro.value)
+my_cflags_val         := $(call mybuild_resolve_or_die,mybuild.lang.Cflags.value)
+my_instrument_val     := $(call mybuild_resolve_or_die,mybuild.lang.InstrumentProfiling.value)
 
 $(@source_rmk) : includes_header = $(call values_of,$(my_include_header_val))
 $(@source_rmk) : includes_before = $(call values_of,$(my_incpath_before_val))
@@ -658,26 +654,24 @@ $(@source_rmk) : instrument = $(call values_of,$(my_instrument_val))
 $(@source_rmk) : do_flags = $(foreach f,$2,$1$(call sh_quote,$(call get,$f,value)))
 $(@source_rmk) : check_profiling = $(if $(filter true, $(call get,$1,value)), -finstrument-functions, )
 $(@source_rmk) : flags_before = $(call trim, \
-			$(call do_flags,-I,$(includes_before)) \
-			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+		$(call do_flags,-I,$(includes_before)) \
+		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 
 $(@source_rmk) : flags = $(call trim, \
-			$(call do_flags,-I,$(includes)) \
-			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
-			$(call do_flags,-D,$(defines)) \
-			-include $(patsubst %,$(value module_config_h_pat), \
-						$(mod_path)) \
-			-D__EMBUILD_MOD__=$(call module_id,$(module)) \
-			$(call check_profiling,$(instrument)) \
-			$(call do_flags,,$(additional_cflags)) \
-			$(call do_flags,-include,$(includes_header)) \
-			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+		$(call do_flags,-I,$(includes)) \
+		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags)) \
+		$(call do_flags,-D,$(defines)) \
+		-include $(patsubst %,$(value module_config_h_pat),$(mod_path)) -D__EMBUILD_MOD__=$(call module_id,$(module)) \
+		$(call check_profiling,$(instrument)) \
+		$(call do_flags,,$(additional_cflags)) \
+		$(call do_flags,-include,$(includes_header)) \
+		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
 
 $(@source_rmk) : __bld_var_list = $(join \
-			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)), \
-			$(addprefix :,$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_val))))
+		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)), \
+		$(addprefix :,$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_val))))
 $(@source_rmk) : bld_var_list = $(sort \
-			$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)))
+		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)))
 $(@source_rmk) : bld_var_val = $(word 2,$(subst :, ,$(filter $(1):%,$(__bld_var_list))))
 
 source_rmk_mk_pat   = $(MKGEN_DIR)/%.rule.mk

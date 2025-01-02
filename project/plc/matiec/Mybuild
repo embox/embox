@@ -1,0 +1,18 @@
+package project.plc
+
+@DefaultImpl(matiec_build)
+abstract module matiec {
+}
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@BuildVariable(name="iec2c", value="$(EXTERNAL_BUILD_DIR)/project/plc/matiec_build/install/iec2c")
+@BuildVariable(name="ieclib", value="$(EXTERNAL_BUILD_DIR)/project/plc/matiec_build/install/lib")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/project/plc/matiec_build/install/lib/C")
+module matiec_build extends matiec {
+}
+
+@BuildVariable(name="iec2c", value="$(MATIEC_IEC2C_PATH)")
+@BuildVariable(name="ieclib", value="$(MATIEC_IECLIB_PATH)")
+@BuildArtifactPath(cppflags="-I$(MATIEC_IECLIB_PATH)/C")
+module matiec_local extends matiec {
+}

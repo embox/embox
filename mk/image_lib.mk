@@ -78,7 +78,7 @@ $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
 $(GEN_DIR)/%.c : $(ROOT_DIR)/%.st
-	IEC2C=$(iec2c) IECLIB=$(ieclib) PLC_MAIN=$(plc_main) $(ROOT_DIR)/mk/gen_softplc.sh $< $@
+	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
 
 ifeq ($(value OSTYPE),cygwin)
 # GCC built for Windows doesn't recognize /cygdrive/... absolute paths. As a

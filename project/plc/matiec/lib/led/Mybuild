@@ -1,7 +1,7 @@
-package project.softplc.ieclib
+package project.plc.matiec_lib
 
 module led {
-	@IncludeExport(path="ieclib")
+	@IncludeExport(path="matiec_lib")
 	source "led.iecst", "led.h"
 
 	@NoRuntime depends embox.lib.leddrv

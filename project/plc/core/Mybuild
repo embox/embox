@@ -1,0 +1,7 @@
+package project.plc
+
+abstract module core {
+	@IncludeExport(path="plc")
+	source "core.h"
+	source "core.c"
+}
