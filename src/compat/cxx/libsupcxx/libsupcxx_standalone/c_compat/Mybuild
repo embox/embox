@@ -1,0 +1,24 @@
+package embox.lib.cxx.standalone
+
+module c_compat {
+
+	@IncludeExport
+	source "cassert",
+		"cctype",
+		"cerrno",
+		"cfloat",
+		"climits",
+		"clocale",
+		"cmath",
+		"csetjmp",
+		"cstdarg",
+		"cstddef",
+		"cstdint",
+		"cstdio",
+		"cstdlib",
+		"cstring",
+		"ctime",
+		"cwchar",
+		"cwctype"
+
+}
