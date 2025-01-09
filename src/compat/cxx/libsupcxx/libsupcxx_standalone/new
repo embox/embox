@@ -14,7 +14,7 @@
 #endif
 
 #include <exception>
-#include <c_compat/cstdlib>
+#include <cstdlib>
 
 extern "C++" {
 
