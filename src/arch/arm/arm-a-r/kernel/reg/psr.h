@@ -12,14 +12,14 @@
 
 #define __MRS(reg)                                          \
 	({                                                      \
-		register uint32_t __val;                            \
+		/* register */ uint32_t __val;                            \
 		__asm__ __volatile__("mrs %0," #reg : "=r"(__val)); \
 		__val;                                              \
 	})
 
 #define __MSR(reg, val)                                                \
 	({                                                                 \
-		register uint32_t __val = val;                                 \
+		/* register */ uint32_t __val = val;                                 \
 		__asm__ __volatile__("msr " #reg ",%0" : : "r"(__val) : "cc"); \
 	})
 
