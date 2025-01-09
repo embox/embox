@@ -4,6 +4,9 @@ module cpu_info_x86 extends embox.arch.cpu_info {
 	source "cpu_info.h", "cpu_info.c", "cpu_counter.c"
 
 	depends embox.driver.clock.tsc
+
+/* extends ? */
+	@NoRuntime depends embox.lib.LibCpuInfo
 }
 
 
