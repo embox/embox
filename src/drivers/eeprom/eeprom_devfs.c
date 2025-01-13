@@ -20,11 +20,12 @@
 
 static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	struct eeprom_dev *dev;
-	struct i2c_msg msgs[2];
-	uint8_t msgbuf[2];
+	struct i2c_msg msgs[2] = {0};
+	uint8_t msgbuf[2] = {0};
 	int i;
 	uint32_t offset;
 	int count;
+	int res;
 
 	dev = (struct eeprom_dev *)cdev;
 
@@ -35,15 +36,14 @@ static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) 
 		count = dev->eed_io_limit;
 	}
 
-
 	offset = dev->eed_offset;
 
 	i = 0;
-	#if 0
+#if 0
 	if (at24->chip.flags & AT24_FLAG_ADDR16) {
 		msgbuf[i++] = offset >> 8;
 	}
-	#endif
+#endif
 	msgbuf[i++] = offset;
 
 	msgs[0].addr = dev->eed_bus_addr;
@@ -55,9 +55,9 @@ static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) 
 	msgs[1].buf = buf;
 	msgs[1].len = count;
 
-	i2c_bus_transfer(dev->eed_bus, dev->eed_bus_addr, msgs, 2);
+	res = i2c_bus_transfer(dev->eed_bus, dev->eed_bus_addr, msgs, 2);
 
-	return 0;
+	return res;
 }
 
 static int eeprom_cdev_status(struct char_dev *cdev, int mask) {
