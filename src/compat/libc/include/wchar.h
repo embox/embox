@@ -5,8 +5,8 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef WCHAR_H_
-#define WCHAR_H_
+#ifndef COMPAT_LIBC_WCHAR_H_
+#define COMPAT_LIBC_WCHAR_H_
 
 #include <stdarg.h>
 #include <stddef.h>
@@ -68,4 +68,4 @@ extern int wcsncasecmp(const wchar_t *ws1, const wchar_t *ws2, size_t n);
 
 __END_DECLS
 
-#endif /* WCHAR_H_ */
+#endif /* COMPAT_LIBC_WCHAR_H_ */

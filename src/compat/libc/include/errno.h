@@ -8,8 +8,8 @@
  * @author Anton Kozlov
  */
 
-#ifndef ERRNO_H_
-#define ERRNO_H_
+#ifndef COMPAT_LIBC_ERRNO_H_
+#define COMPAT_LIBC_ERRNO_H_
 
 #include <posix_errno.h>
 
@@ -119,4 +119,4 @@
 #define EHOSTDOWN        364   /* Host is down */
 #define EHOSTUNREACH     365   /* No route to host */
 
-#endif /* ERRNO_H_ */
+#endif /* COMPAT_LIBC_ERRNO_H_ */

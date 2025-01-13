@@ -37,8 +37,8 @@ Boston, MA 02110-1301, USA.  */
  * @author Eldar Abusalimov
  */
 
-#ifndef STDARG_H_
-#define STDARG_H_
+#ifndef COMPAT_LIBC_STDARG_H_
+#define COMPAT_LIBC_STDARG_H_
 
 #ifdef __GNUC__
 
@@ -55,4 +55,4 @@ typedef __builtin_va_list va_list;
 
 #endif /* __GNUC__ */
 
-#endif /* STDARG_H_ */
+#endif /* COMPAT_LIBC_STDARG_H_ */
