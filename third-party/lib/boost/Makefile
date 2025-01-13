@@ -14,7 +14,7 @@ PKG_VER     := $(call option_get_string,boost_version)
 PKG_VER2    := $(PKG_VER_$(PKG_VER))
 PKG_MD5     := $(PKG_MD5_$(PKG_VER))
 PKG_PATCHES := patch_$(PKG_VER).txt
-PKG_SOURCES := https://boostorg.jfrog.io/artifactory/main/release/$(PKG_VER2)/source/boost_$(PKG_VER).tar.gz
+PKG_SOURCES := https://sourceforge.net/projects/boost/files/boost/$(PKG_VER2)/boost_$(PKG_VER).tar.gz
 
 PKG_SOURCE_DIR = $(BUILD_DIR)/$(PKG_NAME)_$(PKG_VER)
 
