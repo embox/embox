@@ -129,6 +129,8 @@ imx_i2c_rx(struct imx_i2c *adapter, uint16_t addr, uint8_t *buff, size_t sz) {
 	int cnt;
 	uint8_t tmp;
 
+	log_debug("start read %d bytes", sz);
+
 	res = imx_i2c_tx_byte(adapter, ((addr << 1) | 0x1) & 0xFF);
 	if (res < 0) {
 		return res;
@@ -179,6 +181,8 @@ imx_i2c_rx(struct imx_i2c *adapter, uint16_t addr, uint8_t *buff, size_t sz) {
 		*buff++ = tmp;
 	}
 
+	log_debug("end read %d bytes", sz);
+
 	return sz;
 }
 
@@ -209,9 +213,9 @@ imx_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num) {
 		}	
 
 		if (msgs[i].flags & I2C_M_RD) {
-			res = imx_i2c_rx(adapter, msgs->addr, msgs->buf, msgs->len);
+			res = imx_i2c_rx(adapter, msgs->addr, msgs[i].buf, msgs[i].len);
 		} else {
-			res = imx_i2c_tx(adapter, msgs->addr, msgs->buf, msgs->len);
+			res = imx_i2c_tx(adapter, msgs->addr, msgs[i].buf, msgs[i].len);
 		}
 
 	}
