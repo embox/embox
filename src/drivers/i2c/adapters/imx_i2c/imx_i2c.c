@@ -116,7 +116,7 @@ static int imx_i2c_start(struct imx_i2c *adapter) {
 	}
 
 	tmp = REG8_LOAD(adapter->base_addr + IMX_I2C_I2CR);
-	tmp |= IMX_I2C_I2CR_MTX | IMX_I2C_I2CR_TXAK;
+	tmp |= IMX_I2C_I2CR_IIEN | IMX_I2C_I2CR_MTX | IMX_I2C_I2CR_TXAK;
 	REG8_STORE(adapter->base_addr + IMX_I2C_I2CR, tmp);
 
 	return 0;
@@ -206,7 +206,7 @@ imx_i2c_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num) {
 			if (res) {
 				break;
 			}
-		}
+		}	
 
 		if (msgs[i].flags & I2C_M_RD) {
 			res = imx_i2c_rx(adapter, msgs->addr, msgs->buf, msgs->len);
