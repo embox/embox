@@ -31,7 +31,8 @@ $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		./bootstrap.sh \
 		--prefix=$(PKG_INSTALL_DIR) \
-		--with-libraries=atomic,chrono,context,date_time,exception,program_options,random,system,thread,timer,filesystem,system \
+		--with-libraries=chrono,context,date_time,exception,program_options,random,system,timer,system \
+		# --with-libraries=atomic,chrono,context,date_time,exception,program_options,random,system,thread,timer,filesystem,system \
 	)
 	touch $@
 
