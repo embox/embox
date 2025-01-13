@@ -24,7 +24,7 @@ int eeprom_dev_register(struct eeprom_dev *dev, int bus_nr, uint16_t bus_addr) {
 
     err = eeprom_dev_private_register(dev);
     if (err) {
-		log_error("failed to register char device for \"%s\"", dev->name);   
+		log_error("failed to register char device for \"%s\"", dev->eed_name);   
         return err;
 	}
 
