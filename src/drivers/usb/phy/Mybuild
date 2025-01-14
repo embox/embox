@@ -4,6 +4,12 @@ package embox.driver.usb.phy
 module phy_mxs_usb {
 	option string log_level="LOG_DEBUG"
 
+	option number base_addr=0x20C9000
+	option number phy_quantity=2
+
+	option number phy0_irq_num=76 /*IMX6_USB_PHY_UTMI0*/
+	option number phy1_irq_num=77
+
 	source "phy_mxs_usb.c"
 	source "stmp_device.c"
 }

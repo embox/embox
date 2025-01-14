@@ -1,0 +1,11 @@
+package embox.driver.eeprom
+
+module eeprom_dev {
+	option string log_level="LOG_NONE"
+
+	source "eeprom.c"
+	source "eeprom_devfs.c"
+
+	@IncludeExport(path="drivers")
+	source "eeprom.h"
+}

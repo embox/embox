@@ -398,19 +398,37 @@ static void lan9119_get_macaddr(struct net_device *dev, void *addr) {
 }
 
 int lan9118_set_macaddr(struct net_device *dev, const void *addr) {
+	uint32_t tmp;
 	char data[6];
+	char *p_tmp = (char *)addr;
+
+	lan9118_disable_irqs(dev);
 
 	lan9119_get_macaddr(dev, data);
 	log_debug("Before set_macaddr: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2],
 		data[3], data[4], data[5]);
+	data[0] = p_tmp[0];
+	data[1] = p_tmp[1];
+	data[2] = p_tmp[2];
+	data[3] = p_tmp[3];
 
-	lan9118_mac_write(dev, LAN9118_MAC_ADDRL, *(uint32_t *) addr);
-	lan9118_mac_write(dev, LAN9118_MAC_ADDRH, *(uint32_t *) (addr + 4));
+	memcpy(&tmp, &data[0], 4);
+	lan9118_mac_write(dev, LAN9118_MAC_ADDRL, tmp);
+
+	tmp = 0;
+	data[0] = p_tmp[4];
+	data[1] = p_tmp[5];
+	data[2] = 0;
+	data[3] = 0;
+	memcpy(&tmp, &data[0], 2);
+
+	lan9118_mac_write(dev, LAN9118_MAC_ADDRH, tmp);
 
 	lan9119_get_macaddr(dev, data);
 	log_debug("After set_macaddr: %x:%x:%x:%x:%x:%x\n", data[0], data[1], data[2],
 		data[3], data[4], data[5]);
 
+	lan9118_reg_write(dev, LAN9118_INT_EN, (_LAN9118_INT_EN_SW | _LAN9118_INT_EN_RSFL));
 	return 0;
 }
 
