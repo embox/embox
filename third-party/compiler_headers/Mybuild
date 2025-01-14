@@ -1,0 +1,8 @@
+package third_party
+
+@DefaultImpl(compiler_headers_toolchain)
+abstract module compiler_headers {}
+
+@BuildArtifactPath(cppflags="-I\"$$($(CC) -print-file-name=include | sed $$'s/\r$$//')\"")
+module compiler_headers_toolchain extends third_party.compiler_headers {
+}
