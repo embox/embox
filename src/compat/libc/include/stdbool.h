@@ -7,8 +7,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef STDBOOL_H_
-#define STDBOOL_H_
+#ifndef COMPAT_LIBC_STDBOOL_H_
+#define COMPAT_LIBC_STDBOOL_H_
 
  /* Don't define bool, true, and false in C++, except as a GNU extension. */
  #ifndef __cplusplus
@@ -28,4 +28,4 @@
 
  #define __bool_true_false_are_defined 1
 
-#endif /* STDBOOL_H_ */
+#endif /* COMPAT_LIBC_STDBOOL_H_ */

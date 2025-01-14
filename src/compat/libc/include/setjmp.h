@@ -7,8 +7,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef SETJMP_H_
-#define SETJMP_H_
+#ifndef COMPAT_LIBC_SETJMP_H_
+#define COMPAT_LIBC_SETJMP_H_
 
 #include <asm/setjmp.h>
 
@@ -54,4 +54,4 @@ extern void _NORETURN longjmp(jmp_buf env, int value);
 
 __END_DECLS
 
-#endif /* SETJMP_H_ */
+#endif /* COMPAT_LIBC_SETJMP_H_ */

@@ -7,19 +7,21 @@ package third_party.boost
 static module libs {
 	option string boost_version="1_65_0"
 
+	// @AddPrefix("^BUILD/extbld/third_party/boost/libs/install/lib")
+	// source  "libboost_atomic.a", 
+	// 		"libboost_thread.a",
+	// 		"libboost_filesystem.a"
+
 	@AddPrefix("^BUILD/extbld/third_party/boost/libs/install/lib")
-	source "libboost_atomic.a", 
-			"libboost_chrono.a",
+	source  "libboost_chrono.a",
 			"libboost_context.a",
 			"libboost_date_time.a",
 			"libboost_exception.a",
 			"libboost_program_options.a",
 			"libboost_random.a",
 			"libboost_system.a",
-			"libboost_thread.a",
 			"libboost_timer.a",
-			"libboost_system.a",
-			"libboost_filesystem.a"
+			"libboost_system.a"
 
 	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.compat.libc.all

@@ -26,7 +26,6 @@
 #ifndef __ASSEMBLER__
 
 typedef __SIZE_TYPE__ size_t;
-typedef __WINT_TYPE__ wint_t;
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 
 /* wchar_t is C++ built-in type */
