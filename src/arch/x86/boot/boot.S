@@ -53,9 +53,19 @@ C_ENTRY(_start):
 	pushl   $_data_len         /* push data len as 3 parameter on the stack */
 	pushl   $_data_lma         /* push data lma as 2 parameter on the stack */
 	pushl   $_data_vma         /* push data vma as 1 parameter on the stack */
-	call    memcpy              /* copy data section */
+	call    memcpy             /* copy data section */
 	addl    $0xc, %esp
 1:
+
+#ifdef __SSE__
+	mov     %cr0, %eax
+	and     $0xFFFB, %ax       /* clear coprocessor emulation cr0.em */
+	or      $0x2, %ax          /* set coprocessor monitoring CR0.MP */
+	mov     %eax, %cr0
+	mov     %cr4, %eax
+	or      $(3 << 9), %ax     /* set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time */
+	mov     %eax, %cr4
+#endif
 
 	call    gdt_init
 	call    idt_init
