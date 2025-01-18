@@ -45,7 +45,7 @@ typedef struct _server_node_t {
 
 static server_node_t server_nodes[NUMBER_OF_SERVER_NODES] = {
 /*node 0.0*/
-{"10.0.2.16", 502, 0, {1, 0, 0, 0, 0, 0, 0, 0}}
+{"0.0.0.0", 502, 0, {1, 0, 0, 0, 0, 0, 0, 0}}
 }
 ;
 
