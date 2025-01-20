@@ -291,6 +291,31 @@ struct i2c_conf i2cs[] = {
 
 };
 
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 12),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 13),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[2] = {
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 14),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[3] = {
+		.name = "LED4",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("PIN", 15),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+};
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), 
-				)
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts),  LED(leds))
