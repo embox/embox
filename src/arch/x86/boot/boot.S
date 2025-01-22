@@ -57,16 +57,6 @@ C_ENTRY(_start):
 	addl    $0xc, %esp
 1:
 
-#ifdef __SSE__
-	mov     %cr0, %eax
-	and     $0xFFFB, %ax       /* clear coprocessor emulation cr0.em */
-	or      $0x2, %ax          /* set coprocessor monitoring CR0.MP */
-	mov     %eax, %cr0
-	mov     %cr4, %eax
-	or      $(3 << 9), %ax     /* set CR4.OSFXSR and CR4.OSXMMEXCPT at the same time */
-	mov     %eax, %cr4
-#endif
-
 	call    gdt_init
 	call    idt_init
 
