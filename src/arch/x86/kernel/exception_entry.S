@@ -49,6 +49,6 @@ excep_stub:
 	SAVE_ALL
 
 	mov     %esp, %eax     /* Used for fastcall of handler */
-	call    exception_handler
+	call    x86_excpt_handler
 
 	RESTORE_ALL
