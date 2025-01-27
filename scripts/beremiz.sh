@@ -32,8 +32,8 @@ printf "\n>>> Generating Embox function blocks for Beremiz <<<\n\n"
 make -j$(nproc) buildgen &> /dev/null
 echo > $EMBOX_FB
 
-if [ -d ./build/base/include/ieclib ]; then
-	find ./build/base/include/ieclib -name \*.iecst \
+if [ -d ./build/base/include/matiec_lib ]; then
+	find ./build/base/include/matiec_lib -name \*.iecst \
 		-exec cat {} >> $EMBOX_FB \; \
 		-exec printf "\n\n" >> $EMBOX_FB \;
 fi
