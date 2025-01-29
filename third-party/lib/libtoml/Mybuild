@@ -1,0 +1,9 @@
+package third_party.lib
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/lib/libtoml/install")
+module libtoml {
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "libtoml.a"
+}
