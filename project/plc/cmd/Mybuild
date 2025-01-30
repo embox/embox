@@ -15,3 +15,13 @@ module plc_stop {
 
 	@NoRuntime depends project.plc.core
 }
+
+
+@AutoCmd
+@Cmd(name="modbus_start", help="")
+@Build(stage=2)
+module modbus_start {
+	source "modbus_start.c"
+
+	@NoRuntime depends project.plc.modbus
+}

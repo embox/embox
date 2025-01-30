@@ -1,0 +1,14 @@
+package project.plc
+
+@Build(stage=2)
+@BuildDepends(third_party.lib.libtoml)
+@BuildDepends(third_party.lib.libmodbus)
+module modbus {
+	@IncludeExport(path="plc")
+	source "modbus_plc.h"
+
+	source "modbus_plc.c"
+
+    @NoRuntime depends third_party.lib.libtoml
+    @NoRuntime depends third_party.lib.libmodbus
+}

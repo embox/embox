@@ -1,0 +1,10 @@
+host = '15.0.0.0'
+port = 1512
+nb_bits = 1
+start_bits = 0
+nb_input_bits = 0
+start_input_bits = 0
+nb_input_registers = 0
+start_input_registers = 0
+nb_registers = 0
+start_registers = 0
