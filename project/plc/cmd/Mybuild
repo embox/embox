@@ -20,8 +20,19 @@ module plc_stop {
 @AutoCmd
 @Cmd(name="modbus_start", help="")
 @Build(stage=2)
+@BuildDepends(third_party.lib.libmodbus)
 module modbus_start {
 	source "modbus_start.c"
+
+	@NoRuntime depends project.plc.modbus
+}
+
+@AutoCmd
+@Cmd(name="modbus_stop", help="")
+@Build(stage=2)
+@BuildDepends(third_party.lib.libmodbus)
+module modbus_stop {
+	source "modbus_stop.c"
 
 	@NoRuntime depends project.plc.modbus
 }

@@ -10,5 +10,4 @@ module modbus {
 	source "modbus_plc.c"
 
     @NoRuntime depends third_party.lib.libtoml
-    @NoRuntime depends third_party.lib.libmodbus
 }

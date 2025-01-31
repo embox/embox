@@ -9,14 +9,14 @@
 #include "modbus.h"
 
 typedef struct _server_node_t {
-	const char *ip_adress;
+	char ip_adress[12];
 	uint16_t port;
 	modbus_mapping_t *mem_area;
 	modbus_t *ctx;
 } server_node_t;
 
 typedef struct _server_settings_t {
-	char ip_adress[12];
+	char host[12];
 	uint16_t port;
 	int nb_bits;
 	int start_bits;
@@ -29,4 +29,6 @@ typedef struct _server_settings_t {
 } server_settings_t;
 
 
-server_settings_t *get_server_settings();
+int modbus_start(void);
+
+int modbus_stop(void);
