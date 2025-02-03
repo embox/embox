@@ -34,7 +34,7 @@
 #define SCR1_TIMER_CLKSRC_INTERNAL_M    (0 << SCR1_TIMER_CLKSRC_S)
 #define SCR1_TIMER_CLKSRC_RTC_M         (1 << SCR1_TIMER_CLKSRC_S)
 
-struct mikron_clk_regs {
+struct syntacore_mtimer_regs {
 	volatile uint32_t TIMER_CTRL;
 	volatile uint32_t TIMER_DIV;
 	volatile uint32_t MTIME;
@@ -43,7 +43,7 @@ struct mikron_clk_regs {
 	volatile uint32_t MTIMECMPH;
 };
 
-static struct mikron_clk_regs *SCR1_TIMER = (void*)(uintptr_t)BASE_ADDR;
+static struct syntacore_mtimer_regs *SCR1_TIMER = (void*)(uintptr_t)BASE_ADDR;
 
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
 	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
@@ -64,7 +64,7 @@ static int riscv_clock_setup(struct clock_source *cs) {
 	return ENOERR;
 }
 
-static int mikron_clk_init(struct clock_source *cs) {
+static int syntacore_mtimer_init(struct clock_source *cs) {
 	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 	SCR1_TIMER->TIMER_DIV = 0;
 	*(unsigned long long *) &SCR1_TIMER->MTIME = 0;
@@ -78,10 +78,10 @@ static int mikron_clk_init(struct clock_source *cs) {
 
 static struct time_event_device riscv_event_device = {
     .set_periodic = riscv_clock_setup,
-    .name = "mikron_clk",
+    .name = "syntacore_mtimer",
     .irq_nr = IRQ_TIMER,
 };
 
-CLOCK_SOURCE_DEF(mikron_clk, mikron_clk_init, NULL, &riscv_event_device, NULL);
+CLOCK_SOURCE_DEF(syntacore_mtimer, syntacore_mtimer_init, NULL, &riscv_event_device, NULL);
 
-RISCV_TIMER_IRQ_DEF(clock_handler, &CLOCK_SOURCE_NAME(mikron_clk));
+RISCV_TIMER_IRQ_DEF(clock_handler, &CLOCK_SOURCE_NAME(syntacore_mtimer));
