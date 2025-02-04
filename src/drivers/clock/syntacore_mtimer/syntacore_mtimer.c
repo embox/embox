@@ -37,6 +37,7 @@
 struct syntacore_mtimer_regs {
 	volatile uint32_t TIMER_CTRL;
 	volatile uint32_t TIMER_DIV;
+	/* CLINT timer */
 	volatile uint32_t MTIME;
 	volatile uint32_t MTIMEH;
 	volatile uint32_t MTIMECMP;
@@ -45,43 +46,40 @@ struct syntacore_mtimer_regs {
 
 static struct syntacore_mtimer_regs *SCR1_TIMER = (void*)(uintptr_t)BASE_ADDR;
 
-static int clock_handler(unsigned int irq_nr, void *dev_id) {
+static int syntacore_mtimer_clock_handler(unsigned int irq_nr, void *dev_id) {
 	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
-	*(unsigned long long *) &SCR1_TIMER->MTIMECMP += COUNT_OFFSET;
+
+	REG64_STORE(&SCR1_TIMER->MTIMECMP, REG64_LOAD(&SCR1_TIMER->MTIME) + COUNT_OFFSET);
 
 	clock_tick_handler(dev_id);
 
 	return IRQ_HANDLED;
 }
 
-static int riscv_clock_setup(struct clock_source *cs) {
+static int syntacore_mtimer_clock_setup(struct clock_source *cs) {
 	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 
-	*(unsigned long long *) &SCR1_TIMER->MTIME = 0;
-	*(unsigned long long *) &SCR1_TIMER->MTIMECMP = COUNT_OFFSET;
-	//SCR1_TIMER->TIMER_CTRL |= SCR1_TIMER_ENABLE_M;
+	REG64_STORE(&SCR1_TIMER->MTIMECMP, REG64_LOAD(&SCR1_TIMER->MTIME) + COUNT_OFFSET);
 
 	return ENOERR;
 }
 
 static int syntacore_mtimer_init(struct clock_source *cs) {
-	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 	SCR1_TIMER->TIMER_DIV = 0;
-	*(unsigned long long *) &SCR1_TIMER->MTIME = 0;
-	*(unsigned long long *) &SCR1_TIMER->MTIMECMP = COUNT_OFFSET;
 	SCR1_TIMER->TIMER_CTRL |= SCR1_TIMER_ENABLE_M;
 	//SCR1_TIMER->TIMER_CTRL &= ~SCR1_TIMER_ENABLE_M;
+
 	enable_timer_interrupts();
 
 	return ENOERR;
 }
 
-static struct time_event_device riscv_event_device = {
-    .set_periodic = riscv_clock_setup,
+static struct time_event_device syntacore_mtimer_event_device = {
+    .set_periodic = syntacore_mtimer_clock_setup,
     .name = "syntacore_mtimer",
     .irq_nr = IRQ_TIMER,
 };
 
-CLOCK_SOURCE_DEF(syntacore_mtimer, syntacore_mtimer_init, NULL, &riscv_event_device, NULL);
+CLOCK_SOURCE_DEF(syntacore_mtimer, syntacore_mtimer_init, NULL, &syntacore_mtimer_event_device, NULL);
 
-RISCV_TIMER_IRQ_DEF(clock_handler, &CLOCK_SOURCE_NAME(syntacore_mtimer));
+RISCV_TIMER_IRQ_DEF(syntacore_mtimer_clock_handler, &CLOCK_SOURCE_NAME(syntacore_mtimer));
