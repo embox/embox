@@ -3,32 +3,23 @@
  * @brief
  *
  * @author Dmitry Pilyuk
- * @date 23.01.25
+ * @date 05.02.25
  */
 
 #include "modbus.h"
 
 typedef struct _server_node_t {
-	char ip_adress[12];
-	uint16_t port;
-	modbus_mapping_t *mem_area;
-	modbus_t *ctx;
-} server_node_t;
-
-typedef struct _server_settings_t {
 	char host[12];
 	uint16_t port;
-	int nb_bits;
-	int start_bits;
-	int nb_input_bits;
-	int start_input_bits;
-	int nb_input_registers;
-	int start_input_registers;
-	int nb_registers;
-	int start_registers;
-} server_settings_t;
+	modbus_mapping_t *mb_mapping;
+	modbus_t *ctx;
+	uint16_t base_addr;
+	uint16_t mb_addr;
+	uint16_t addr_bits;
+	uint16_t addr_input_bits;
+	uint16_t addr_input_registers;
+	uint16_t addr_registers;
 
+} server_node_t;
 
-int modbus_start(void);
-
-int modbus_stop(void);
+int modbus_server(void);
