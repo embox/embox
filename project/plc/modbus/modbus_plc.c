@@ -235,7 +235,7 @@ void update_mb_mapping(server_node_t *node) {
 int modbus_server(void) {
 	int listen_socket;
 
-	signal(SIGTERM, handle_signal);
+	signal(SIGKILL, handle_signal);
 
 	server_node_t *node = get_server_node();
 
@@ -272,6 +272,7 @@ int modbus_server(void) {
 	if (listen_socket != -1) {
 		close(listen_socket);
 	}
+	printf("ENDING MODBUS\n");
 
 	free(node->mb_mapping);
 	free(node->ctx);
