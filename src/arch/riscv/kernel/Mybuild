@@ -27,6 +27,8 @@ module no_interrupt extends embox.arch.interrupt {
 }
 
 module entry extends embox.arch.entry {
+	option number trap_align=2
+
 	source "entry.S"
 }
 

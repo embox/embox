@@ -10,11 +10,15 @@
 #include <asm/entry.h>
 #include <asm/ptrace.h>
 
+#include <framework/mod/options.h>
+
+#define TRAP_ALIGN    OPTION_GET(NUMBER,trap_align)
+
 .section .text
 
 .global riscv_trap_handler
 
-.align 2
+.align TRAP_ALIGN
 riscv_trap_handler:
 	SAVE_ALL
 	csrr    a1, CAUSE_REG
