@@ -55,10 +55,6 @@ void riscv_interrupt_handler(void) {
 		else if (pending == IRQ_EXTERNAL) {
 			/* the ID of the highest-priority pending interrupt */
 			interrupt_id = irqctrl_get_intid();
-			if (interrupt_id == 0) {
-				critical_leave(CRITICAL_IRQ_HANDLER);
-				return;
-			}
 
 			irqctrl_eoi(interrupt_id);
 			irqctrl_disable(interrupt_id);
