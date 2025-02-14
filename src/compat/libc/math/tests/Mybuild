@@ -144,3 +144,8 @@ module copysign_test {
 	@Cflags("-fno-builtin")
 	source "copysign_test.c"
 }
+
+module asinh_test {
+	@Cflags("-fno-builtin")
+	source "asinh_test.c"
+}
