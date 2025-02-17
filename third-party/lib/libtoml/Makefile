@@ -1,8 +1,8 @@
 PKG_NAME := toml-c
-PKG_VER := 1.0
-PKG_SOURCES :=https://github.com/arp242/toml-c/archive/refs/heads/master.zip
+PKG_VER := c072e53645e0bb75cd4ab1901df8df861874ac45
+PKG_SOURCES := https://github.com/arp242/$(PKG_NAME)/archive/$(PKG_VER).zip
 
-PKG_MD5     := bacca3462fbf95d3dce99e505a6a9e97
+PKG_MD5     := 2584710bf290c778321a34b716249803
 
 include $(EXTBLD_LIB)
 

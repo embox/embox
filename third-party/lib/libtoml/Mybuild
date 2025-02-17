@@ -1,6 +1,6 @@
 package third_party.lib
 
-@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/lib/libtoml/install")
 module libtoml {
 
