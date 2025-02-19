@@ -10,7 +10,7 @@
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 
-#define BASE_ADDR OPTION_GET(NUMBER, base_addr)
+#define BASE_ADDR UINTMAX_C(OPTION_GET(NUMBER, base_addr))
 #define IRQ_NUM   OPTION_GET(NUMBER, irq_num)
 #define BAUD_RATE OPTION_GET(NUMBER, baud_rate)
 #define TTY_NAME  ttyS0
