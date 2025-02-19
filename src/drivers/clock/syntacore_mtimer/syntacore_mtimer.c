@@ -20,7 +20,7 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-#define BASE_ADDR    OPTION_GET(NUMBER, base_addr)
+#define BASE_ADDR    UINTMAX_C(OPTION_GET(NUMBER, base_addr))
 
 #define COUNT_OFFSET (RTC_CLOCK / JIFFIES_PERIOD)
 
