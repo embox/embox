@@ -21,11 +21,11 @@
 
 static volatile int keep_running = 1;
 
-void handle_signal(int sig) {
+static void handle_signal(int sig) {
 	keep_running = 0;
 }
 
-int is_valid_number(const char *str) {
+static int is_valid_number(const char *str) {
 	if (*str == '\0')
 		return 0;
 	for (; *str; str++) {
@@ -35,7 +35,7 @@ int is_valid_number(const char *str) {
 	return 1;
 }
 
-int validate_ip(const char *ip) {
+static int validate_ip(const char *ip) {
 	if (ip == NULL)
 		return 0;
 
@@ -60,7 +60,7 @@ int validate_ip(const char *ip) {
 	return count == 4;
 }
 
-server_node_t *get_server_node(void) {
+static server_node_t *get_server_node(void) {
 	char errbuf[200];
 
 	FILE *f = fopen("modbus.toml", "r");
@@ -188,7 +188,7 @@ server_node_t *get_server_node(void) {
 	return node;
 }
 
-void update_located_vars(server_node_t *node) {
+static void update_located_vars(server_node_t *node) {
 	struct plc_located_var *var;
 	plc_located_var_foreach(var) {
 		if (var->n0 == node->base_addr && var->n1 == node->mb_addr) {
@@ -232,7 +232,7 @@ void update_located_vars(server_node_t *node) {
 	}
 }
 
-void update_mb_mapping(server_node_t *node) {
+static void update_mb_mapping(server_node_t *node) {
 	struct plc_located_var *var;
 	plc_located_var_foreach(var) {
 		if (var->n0 == node->base_addr && var->n1 == node->mb_addr) {
