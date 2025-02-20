@@ -11,4 +11,5 @@ module modbus {
 
     @NoRuntime depends third_party.lib.libtoml
     @NoRuntime depends third_party.lib.libmodbus
+	@NoRuntime depends embox.compat.posix.net.getaddrinfo
 }

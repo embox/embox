@@ -9,8 +9,6 @@
 #include "modbus.h"
 
 typedef struct _server_node_t {
-	char host[12];
-	uint16_t port;
 	modbus_mapping_t *mb_mapping;
 	modbus_t *ctx;
 	uint16_t base_addr;

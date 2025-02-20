@@ -6,12 +6,14 @@
  * @date 05.02.25
  */
 
+#include <ctype.h>
 #include <errno.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <signal.h>
+
 #include <plc/core.h>
 #include <plc/modbus_plc.h>
 
@@ -21,6 +23,41 @@ static volatile int keep_running = 1;
 
 void handle_signal(int sig) {
 	keep_running = 0;
+}
+
+int is_valid_number(const char *str) {
+	if (*str == '\0')
+		return 0;
+	for (; *str; str++) {
+		if (!isdigit((unsigned char)*str))
+			return 0;
+	}
+	return 1;
+}
+
+int validate_ip(const char *ip) {
+	if (ip == NULL)
+		return 0;
+
+	char ip_copy[16];
+	strncpy(ip_copy, ip, sizeof(ip_copy));
+	ip_copy[sizeof(ip_copy) - 1] = '\0';
+
+	char *token;
+	int num, count = 0;
+	token = strtok(ip_copy, ".");
+
+	while (token) {
+		if (!is_valid_number(token))
+			return 0;
+		num = atoi(token);
+		if (num < 0 || num > 255)
+			return 0;
+		count++;
+		token = strtok(NULL, ".");
+	}
+
+	return count == 4;
 }
 
 server_node_t *get_server_node(void) {
@@ -61,19 +98,23 @@ server_node_t *get_server_node(void) {
 	server_node_t *node = malloc(sizeof(server_node_t));
 	node->base_addr = 0;
 
-	if (host.ok) {
-		strcpy(node->host, host.u.s);
-	}
-	else {
-		strcpy(node->host, "0.0.0.0");
+	if (!host.ok || !validate_ip(host.u.s)) {
+		fprintf(stderr, "WARNING: Incorrect host in modbus.toml. Set to "
+		                "default value 0.0.0.0.\n");
+		strcpy(host.u.s, "0.0.0.0");
 	}
 
-	node->port = (port.ok && port.u.i >= 0) ? port.u.i : 502;
+	if (!port.ok || port.u.i < 0 || port.u.i > 65535) {
+		fprintf(stderr, "WARNING: Incorrect port in modbus.toml. Set to "
+		                "default value 502.\n");
+		port.u.i = 502;
+	}
+
 	if (mb_addr.ok && mb_addr.u.i >= 0) {
 		node->mb_addr = mb_addr.u.i;
 	}
 	else {
-		fprintf(stderr, "ERROR: %s\n", errbuf);
+		fprintf(stderr, "ERROR: mb_addr not specified.\n");
 		exit(1);
 	}
 
@@ -81,7 +122,7 @@ server_node_t *get_server_node(void) {
 		node->addr_bits = addr_bits.u.i;
 	}
 	else {
-		fprintf(stderr, "ERROR: %s\n", errbuf);
+		fprintf(stderr, "ERROR: addr_bits not specified.\n");
 		exit(1);
 	}
 
@@ -89,7 +130,7 @@ server_node_t *get_server_node(void) {
 		node->addr_input_bits = addr_input_bits.u.i;
 	}
 	else {
-		fprintf(stderr, "ERROR: %s\n", errbuf);
+		fprintf(stderr, "ERROR: addr_input_bits not specified.\n");
 		exit(1);
 	}
 
@@ -97,7 +138,7 @@ server_node_t *get_server_node(void) {
 		node->addr_input_registers = addr_input_registers.u.i;
 	}
 	else {
-		fprintf(stderr, "ERROR: %s\n", errbuf);
+		fprintf(stderr, "ERROR: addr_input_registers not specified.\n");
 		exit(1);
 	}
 
@@ -105,7 +146,7 @@ server_node_t *get_server_node(void) {
 		node->addr_registers = addr_registers.u.i;
 	}
 	else {
-		fprintf(stderr, "ERROR: %s\n", errbuf);
+		fprintf(stderr, "ERROR: addr_registers not specified.\n");
 		exit(1);
 	}
 
@@ -238,7 +279,6 @@ int modbus_server(void) {
 	signal(SIGKILL, handle_signal);
 
 	server_node_t *node = get_server_node();
-
 	listen_socket = modbus_tcp_listen(node->ctx, 1);
 	if (listen_socket == -1) {
 		fprintf(stderr, "Failed to listen: %s\n", modbus_strerror(errno));
@@ -248,6 +288,7 @@ int modbus_server(void) {
 		return -1;
 	}
 
+	keep_running = 1;
 	while (keep_running) {
 		int client_socket = modbus_tcp_accept(node->ctx, &listen_socket);
 		if (client_socket == -1) {
@@ -272,7 +313,6 @@ int modbus_server(void) {
 	if (listen_socket != -1) {
 		close(listen_socket);
 	}
-	printf("ENDING MODBUS\n");
 
 	free(node->mb_mapping);
 	free(node->ctx);
