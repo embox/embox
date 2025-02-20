@@ -192,7 +192,7 @@ static void update_located_vars(server_node_t *node) {
 	struct plc_located_var *var;
 	plc_located_var_foreach(var) {
 		if (var->n0 == node->base_addr && var->n1 == node->mb_addr) {
-			if (var->n2 == node->addr_bits
+			if (var->type == PLC_LOCATED_QX && var->n2 == node->addr_bits
 			    && var->n3 >= node->mb_mapping->start_bits
 			    && var->n3 < node->mb_mapping->start_bits
 			                     + node->mb_mapping->nb_bits) {
@@ -200,7 +200,7 @@ static void update_located_vars(server_node_t *node) {
 				*addr = node->mb_mapping
 				            ->tab_bits[var->n3 - node->mb_mapping->start_bits];
 			}
-			if (var->n2 == node->addr_input_bits
+			if (var->type == PLC_LOCATED_IX && var->n2 == node->addr_input_bits
 			    && var->n3 >= node->mb_mapping->start_input_bits
 			    && var->n3 < node->mb_mapping->start_input_bits
 			                     + node->mb_mapping->nb_input_bits) {
@@ -210,7 +210,8 @@ static void update_located_vars(server_node_t *node) {
 				        ->tab_input_bits[var->n3
 				                         - node->mb_mapping->start_input_bits];
 			}
-			if (var->n2 == node->addr_input_registers
+			if (var->type == PLC_LOCATED_IW
+			    && var->n2 == node->addr_input_registers
 			    && var->n3 >= node->mb_mapping->start_input_registers
 			    && var->n3 < node->mb_mapping->start_input_registers
 			                     + node->mb_mapping->nb_input_registers) {
@@ -218,7 +219,7 @@ static void update_located_vars(server_node_t *node) {
 				*addr = node->mb_mapping->tab_input_registers
 				            [var->n3 - node->mb_mapping->start_input_registers];
 			}
-			if (var->n2 == node->addr_registers
+			if (var->type == PLC_LOCATED_QW && var->n2 == node->addr_registers
 			    && var->n3 >= node->mb_mapping->start_registers
 			    && var->n3 < node->mb_mapping->start_registers
 			                     + node->mb_mapping->nb_registers) {
@@ -236,7 +237,7 @@ static void update_mb_mapping(server_node_t *node) {
 	struct plc_located_var *var;
 	plc_located_var_foreach(var) {
 		if (var->n0 == node->base_addr && var->n1 == node->mb_addr) {
-			if (var->n2 == node->addr_bits
+			if (var->type == PLC_LOCATED_QX && var->n2 == node->addr_bits
 			    && var->n3 >= node->mb_mapping->start_bits
 			    && var->n3 < node->mb_mapping->start_bits
 			                     + node->mb_mapping->nb_bits) {
@@ -244,7 +245,7 @@ static void update_mb_mapping(server_node_t *node) {
 				    ->tab_bits[var->n3 - node->mb_mapping->start_bits] = *(
 				    uint8_t *)var->addr;
 			}
-			if (var->n2 == node->addr_input_bits
+			if (var->type == PLC_LOCATED_IX && var->n2 == node->addr_input_bits
 			    && var->n3 >= node->mb_mapping->start_input_bits
 			    && var->n3 < node->mb_mapping->start_input_bits
 			                     + node->mb_mapping->nb_input_bits) {
@@ -253,7 +254,8 @@ static void update_mb_mapping(server_node_t *node) {
 				                     - node->mb_mapping->start_input_bits] =
 				    *(uint8_t *)var->addr;
 			}
-			if (var->n2 == node->addr_input_registers
+			if (var->type == PLC_LOCATED_IW
+			    && var->n2 == node->addr_input_registers
 			    && var->n3 >= node->mb_mapping->start_input_registers
 			    && var->n3 < node->mb_mapping->start_input_registers
 			                     + node->mb_mapping->nb_input_registers) {
@@ -261,7 +263,7 @@ static void update_mb_mapping(server_node_t *node) {
 				    [var->n3 - node->mb_mapping->start_input_registers] = *(
 				    uint16_t *)var->addr;
 			}
-			if (var->n2 == node->addr_registers
+			if (var->type == PLC_LOCATED_QW && var->n2 == node->addr_registers
 			    && var->n3 >= node->mb_mapping->start_registers
 			    && var->n3 < node->mb_mapping->start_registers
 			                     + node->mb_mapping->nb_registers) {
