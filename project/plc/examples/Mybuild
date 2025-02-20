@@ -7,3 +7,11 @@ module blink extends project.plc.core {
 	@NoRuntime depends project.plc.matiec
 	@NoRuntime depends project.plc.matiec_lib.led
 }
+
+@BuildDepends(project.plc.matiec)
+module mb_blink extends project.plc.core {
+	source "mb_blink.st"
+
+	@NoRuntime depends project.plc.matiec
+	@NoRuntime depends project.plc.matiec_lib.led
+}
