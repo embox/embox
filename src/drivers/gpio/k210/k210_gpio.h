@@ -9,6 +9,9 @@
 #ifndef SRC_DRIVERS_GPIO_K210_GPIO_H_
 #define SRC_DRIVERS_GPIO_K210_GPIO_H_
 
+#include <stdint.h>
+#include <stdbool.h>
+
 #include <drivers/gpio/gpio.h>
 
 // #define K210_GPIO_BASE_ADDR		(0x50200000U)
