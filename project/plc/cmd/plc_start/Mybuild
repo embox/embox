@@ -1,0 +1,20 @@
+package project.plc.cmd
+
+@AutoCmd
+@Cmd(name = "plc_start",
+     help = "Start PLC",
+     man  = '''
+		NAME
+			plc_start - Start PLC
+		SYNOPSIS
+			plc_start [CONFIG]
+		SETTINGS
+			CONFIG - PLC configuration name
+		AUTHORS
+			Aleksey Zhmulin
+	''')
+module plc_start {
+	source "plc_start.c"
+
+	@NoRuntime depends project.plc.core
+}

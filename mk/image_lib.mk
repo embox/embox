@@ -77,8 +77,12 @@ $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-$(GEN_DIR)/%.c : $(ROOT_DIR)/%.st
+$(GEN_DIR)/%.st.c : $(ROOT_DIR)/%.st
 	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
+
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.st.c
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(EXTERNAL_MAKE_FLAGS) $(ROOT_DIR)/mk/plc/localize_symbols.sh $@
 
 ifeq ($(value OSTYPE),cygwin)
 # GCC built for Windows doesn't recognize /cygdrive/... absolute paths. As a

@@ -1,0 +1,28 @@
+package project.plc.cmd
+
+@AutoCmd
+@Cmd(name = "plc_slave_tcp",
+     help = "Start Modbus TCP Server",
+     man  = '''
+		NAME
+			plc_slave_tcp - Start Modbus TCP Server
+		SYNOPSIS
+			plc_slave_tcp [HOST]:[PORT]
+		AUTHORS
+			Aleksey Zhmulin
+''')
+@Build(script="true")
+@BuildDepends(third_party.lib.libmodbus)
+module plc_slave_tcp {
+	option boolean debug_mode=false
+
+	option number nb_bits=32
+	option number nb_regs=32
+	option number nb_input_bits=32
+	option number nb_input_regs=32
+
+	source "plc_slave_tcp.c"
+
+	@NoRuntime depends project.plc.core
+    @NoRuntime depends third_party.lib.libmodbus
+}

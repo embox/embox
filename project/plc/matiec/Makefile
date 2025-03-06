@@ -1,11 +1,11 @@
 
-GIT_SHA  := 983cef2542f2052683a041da5c1b49595bc1d75a
+GIT_SHA  := 9eba44f372ecc43617c455c8331df93078b338eb
 
 PKG_NAME := matiec
 PKG_VER  := $(GIT_SHA)
 
 PKG_SOURCES := https://github.com/embox/matiec/archive/$(GIT_SHA).zip
-PKG_MD5     := 80c2aba8cb47429d3a144fb54c61d30c
+PKG_MD5     := 42911958253a014c9c83290e0bb99837
 
 include $(EXTBLD_LIB)
 
@@ -25,6 +25,7 @@ $(BUILD) :
 $(INSTALL) :
 	$(CP) $(PKG_SOURCE_DIR)/iec2c $(PKG_INSTALL_DIR)
 	$(CP) -r $(PKG_SOURCE_DIR)/lib $(PKG_INSTALL_DIR)/lib
+	$(MKDIR) $(INCLUDE_INSTALL_DIR)/matiec_lib
 	echo > $(PKG_INSTALL_DIR)/lib/C/iec_embox_lib.h
 	echo > $(PKG_INSTALL_DIR)/lib/iec_embox_lib.txt
 	find $(INCLUDE_INSTALL_DIR)/matiec_lib -name \*.h \

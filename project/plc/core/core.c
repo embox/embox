@@ -6,86 +6,136 @@
  * @date 23.12.24
  */
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <time.h>
 
+#include <drivers/gpio/gpio.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
+#include <lib/libds/array.h>
 #include <plc/core.h>
 
-#include "iec_types.h"
+ARRAY_SPREAD_DEF(const struct plc_config *const, __plc_config_registry);
 
 /**
- * Functions and variables provied by generated C softPLC
+ * Variables to export to generated C softPLC
  */
-extern unsigned long long common_ticktime__; // ns
-extern unsigned long greatest_tick_count__;  // tick
+struct timespec __CURRENT_TIME;
+uint8_t __DEBUG;
 
-extern void config_init__(void);
-extern void config_run__(unsigned long tick);
-
-/**
- * Functions and variables to export to generated C softPLC
- */
-IEC_TIME __CURRENT_TIME;
-IEC_BOOL __DEBUG;
-
-static sys_timer_t *plc_timer;
 static unsigned long tick_counter;
-static bool plc_started;
+static struct sys_timer *plc_timer;
+static const struct plc_config *current_config;
 
-static void plc_handler(sys_timer_t *timer, void *param) {
-	struct timespec ts;
+void plc_slave_handle(void (*handler)(const struct plc_slave_var *)) {
+	const struct plc_slave_var *var;
+	const struct plc_config *config;
 
-	tick_counter += 1;
-	if (greatest_tick_count__) {
-		tick_counter %= greatest_tick_count__;
+	config = current_config;
+
+	if (!config) {
+		return;
 	}
 
-	clock_gettime(CLOCK_REALTIME, &ts);
-
-	__CURRENT_TIME.tv_sec = ts.tv_sec;
-	__CURRENT_TIME.tv_nsec = ts.tv_nsec;
-
-	config_run__(tick_counter);
+	plc_slave_var_foreach(var, config) {
+		handler(var);
+	}
 }
 
-bool plc_is_started(void) {
-	return plc_started;
+static void plc_handler(sys_timer_t *timer, void *param) {
+	const struct plc_phys_var *var;
+
+	if (!current_config) {
+		return;
+	}
+
+	tick_counter += 1;
+	if (*current_config->greatest_tick_count) {
+		tick_counter %= *current_config->greatest_tick_count;
+	}
+
+	clock_gettime(CLOCK_REALTIME, &__CURRENT_TIME);
+
+	current_config->ops.run(tick_counter);
+
+	plc_phys_var_foreach(var, current_config) {
+		switch (var->type) {
+		case PLC_PHYS_VAR_QX:
+			gpio_set(var->port, 1 << var->pin, *(uint8_t *)var->data);
+			break;
+
+		case PLC_PHYS_VAR_IX:
+			*(uint8_t *)var->data = !!gpio_get(var->port, 1 << var->pin);
+			break;
+
+		case PLC_PHYS_VAR_IW:
+			/* TODO */
+			break;
+
+		case PLC_PHYS_VAR_QW:
+			/* TODO */
+			break;
+		}
+	}
 }
 
-int plc_start(void) {
+int plc_start(const struct plc_config *config) {
+	const struct plc_phys_var *var;
 	uint32_t ticktime_ms;
 	int err;
 
-	if (plc_started) {
-		return -1;
+	if (!config) {
+		return -EINVAL;
 	}
 
-	config_init__();
+	if (current_config) {
+		return -EBUSY;
+	}
+
+	config->ops.init();
+
+	plc_phys_var_foreach(var, config) {
+		switch (var->type) {
+		case PLC_PHYS_VAR_QX:
+			gpio_setup_mode(var->port, 1 << var->pin,
+			    GPIO_MODE_OUT | GPIO_ALTERNATE(var->alt));
+			break;
+
+		case PLC_PHYS_VAR_IX:
+			gpio_setup_mode(var->port, 1 << var->pin,
+			    GPIO_MODE_IN | GPIO_ALTERNATE(var->alt));
+			break;
+
+		case PLC_PHYS_VAR_IW:
+			/* TODO */
+			break;
+
+		case PLC_PHYS_VAR_QW:
+			/* TODO */
+			break;
+		}
+	}
 
 	tick_counter = 0;
-	ticktime_ms = common_ticktime__ / NSEC_PER_MSEC;
+	ticktime_ms = *config->common_ticktime / NSEC_PER_MSEC;
+	current_config = config;
 
 	err = timer_set(&plc_timer, TIMER_PERIODIC, ticktime_ms, plc_handler, NULL);
 	if (err) {
 		return err;
 	}
 
-	plc_started = true;
-
 	return 0;
 }
 
 int plc_stop(void) {
-	if (!plc_started) {
-		return -1;
+	if (current_config) {
+		timer_close(plc_timer);
+		current_config = NULL;
 	}
-
-	timer_close(plc_timer);
-
-	plc_started = false;
 
 	return 0;
 }

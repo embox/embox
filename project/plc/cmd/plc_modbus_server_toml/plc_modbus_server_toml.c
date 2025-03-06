@@ -15,9 +15,21 @@
 #include <unistd.h>
 
 #include <plc/core.h>
-#include <plc/modbus_plc.h>
 
+#include "modbus.h"
 #include "toml.h"
+
+typedef struct _server_node_t {
+	modbus_mapping_t *mb_mapping;
+	modbus_t *ctx;
+	uint16_t base_addr;
+	uint16_t mb_addr;
+	uint16_t addr_bits;
+	uint16_t addr_input_bits;
+	uint16_t addr_input_registers;
+	uint16_t addr_registers;
+
+} server_node_t;
 
 static volatile int keep_running = 1;
 
@@ -275,7 +287,7 @@ static void update_mb_mapping(server_node_t *node) {
 	}
 }
 
-int modbus_server(void) {
+int main(int argc, char **argv) {
 	int listen_socket;
 
 	signal(SIGKILL, handle_signal);
