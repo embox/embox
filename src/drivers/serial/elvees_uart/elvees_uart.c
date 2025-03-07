@@ -53,7 +53,6 @@
 #define LCR_DLS_8BITS    (3 << 0)
 
 
-
 #define PINS_INIT       OPTION_GET(NUMBER, pins_init)
 #define USE_BOARD_CONF  OPTION_GET(BOOLEAN, use_bconf)
 
@@ -82,7 +81,7 @@ static inline void  elvees_uart_setup_baud_rate(struct uart *dev, int baudrate_b
 }
 
 
-int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params){
+static int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params){
 
 	uart_setup_hw(dev);
 #if (PINS_INIT != 0)
@@ -102,15 +101,15 @@ int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params)
 }
 
 
-int elvees_uart_has_symbol(struct uart *dev) {
+static int elvees_uart_has_symbol(struct uart *dev) {
 	return UART(LSR) & LSR_RDR;
 }
 
-int elvees_uart_getc(struct uart *dev) {
+static int elvees_uart_getc(struct uart *dev) {
 	return (char)UART(RBR);
 }
 
-int elvees_uart_putc(struct uart *dev, int ch) {
+static int elvees_uart_putc(struct uart *dev, int ch) {
 	while (!(UART(LSR) & LSR_THRE)) {
 	}
 
