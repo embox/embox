@@ -1,10 +1,12 @@
 package embox.driver.serial
 
 module elvees_uart {
+	option boolean use_bconf=false
+	option number pins_init = 0
+
 	source "elvees_uart.c"
 
 	depends core
-	//depends diag
 }
 
 module elvees_uart_diag extends embox.driver.serial.diag {
