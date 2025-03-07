@@ -10,6 +10,10 @@
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
 
+
+#include <framework/mod/options.h>
+
+
 #define UART(x)        (*(volatile uint32_t *)(dev->base_addr + (x)))
 
 #define RBR  0x00
@@ -48,6 +52,20 @@
 
 #define LCR_DLS_8BITS    (3 << 0)
 
+
+
+#define PINS_INIT       OPTION_GET(NUMBER, pins_init)
+#define USE_BOARD_CONF  OPTION_GET(BOOLEAN, use_bconf)
+
+#if USE_BOARD_CONF
+#include "uart_setup_hw_board_config.inc"
+#else
+static inline int uart_setup_hw(struct uart *dev) {
+	return 0;
+}
+
+#endif /* USE_BOARD_CONF */
+
 static inline void  elvees_uart_setup_baud_rate(struct uart *dev, int baudrate_bps) {
 	uint32_t src_clock_hz = 48000000;
     uint32_t divisor = (uint32_t) (src_clock_hz / (baudrate_bps * 16));
@@ -63,8 +81,11 @@ static inline void  elvees_uart_setup_baud_rate(struct uart *dev, int baudrate_b
     UART(LCR) = tmp_lcr;
 }
 
-int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params) {
 
+int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params){
+
+	uart_setup_hw(dev);
+#if (PINS_INIT != 0)
 	UART(SRR) = 1; /* soft reset */
 	UART(FCR) = 0; /* without fifo */
 	UART(LCR) = LCR_DLS_8BITS; /* 8 bit */
@@ -76,9 +97,10 @@ int elvees_uart_setup_common(struct uart *dev, const struct uart_params *params)
 		/*enable rx interrupt*/
 		UART(IER) = IER_ERBFI;
 	}
-
+#endif /*PINS_INIT  */
 	return 0;
 }
+
 
 int elvees_uart_has_symbol(struct uart *dev) {
 	return UART(LSR) & LSR_RDR;
@@ -96,3 +118,10 @@ int elvees_uart_putc(struct uart *dev, int ch) {
 
 	return 0;
 }
+
+const struct uart_ops elvees_uart_uart_ops = {
+	.uart_getc = elvees_uart_getc,
+	.uart_putc = elvees_uart_putc,
+	.uart_hasrx = elvees_uart_has_symbol,
+	.uart_setup = elvees_uart_setup_common,
+};

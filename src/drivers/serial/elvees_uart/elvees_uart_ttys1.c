@@ -43,6 +43,7 @@ static int elvees_uart_setup(struct uart *dev, const struct uart_params *params)
 #define PIN_TX_PORT      OPTION_GET(NUMBER, pin_tx_port)
 #define PIN_TX_PIN       OPTION_GET(NUMBER, pin_tx_pin)
 
+#if 0
 static int elvees_uart_setup(struct uart *dev, const struct uart_params *params) {
 #define GPIO_ALT_FUNC_UART   (4)
 
@@ -54,25 +55,29 @@ static int elvees_uart_setup(struct uart *dev, const struct uart_params *params)
 	return 0;
 }
 #endif
+#endif
 
+#if 0
 static const struct uart_ops elvees_uart_uart_ops = {
 		.uart_getc = elvees_uart_getc,
 		.uart_putc = elvees_uart_putc,
 		.uart_hasrx = elvees_uart_has_symbol,
 		.uart_setup = elvees_uart_setup,
 };
+#endif
+
+extern const struct uart_ops elvees_uart_uart_ops;
 
 extern irq_return_t uart_irq_handler(unsigned int irq_nr, void *data);
 
-
-
 static struct uart uart_ttyS1 = {
+		.dev_name = MACRO_STRING(TTY_NAME),
 		.uart_ops = &elvees_uart_uart_ops,
 		.irq_num = IRQ_NUM,
 		.base_addr = UART_BASE,
 		.params =  {
-		.baud_rate = OPTION_GET(NUMBER,baud_rate),
-		.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
+			.baud_rate = OPTION_GET(NUMBER,baud_rate),
+			.uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD | UART_PARAM_FLAGS_USE_IRQ,
 		},
 };
 

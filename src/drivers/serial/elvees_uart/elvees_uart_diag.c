@@ -14,7 +14,6 @@
 
 #include <framework/mod/options.h>
 
-#include <framework/mod/options.h>
 
 #define UART_BASE      OPTION_GET(NUMBER, base_addr)
 #define IRQ_NUM        OPTION_GET(NUMBER, irq_num)
@@ -41,6 +40,7 @@ static int elvees_uart_setup(struct uart *dev, const struct uart_params *params)
 #define PIN_TX_PORT      OPTION_GET(NUMBER, pin_tx_port)
 #define PIN_TX_PIN       OPTION_GET(NUMBER, pin_tx_pin)
 
+#if 0
 static int elvees_uart_setup(struct uart *dev, const struct uart_params *params) {
 #define GPIO_ALT_FUNC_UART   (4)
 
@@ -52,6 +52,8 @@ static int elvees_uart_setup(struct uart *dev, const struct uart_params *params)
 	return 0;
 }
 #endif
+#endif
+#if 0
 
 static const struct uart_ops elvees_uart_uart_ops = {
 		.uart_getc = elvees_uart_getc,
@@ -59,6 +61,9 @@ static const struct uart_ops elvees_uart_uart_ops = {
 		.uart_hasrx = elvees_uart_has_symbol,
 		.uart_setup = elvees_uart_setup,
 };
+#endif
+
+extern const struct uart_ops elvees_uart_uart_ops;
 
 static struct uart uart0 = {
 		.uart_ops = &elvees_uart_uart_ops,
