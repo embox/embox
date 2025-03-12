@@ -14,6 +14,9 @@ export PLATFORM_DIR    = $(ROOT_DIR)/platform
 export PROJECT_DIR     = $(ROOT_DIR)/project
 export EXT_PROJECT_DIR = $(ROOT_DIR)/ext_project
 
+export CHIP_VENDOR          ?=
+export CHIP_VENDOR_DIR       = $(PLATFORM_DIR)/$(CHIP_VENDOR)/board_config
+
 export SUBPLATFORM_TEMPLATE_DIR  = templates/
 
 export BUILD_DIR       = $(ROOT_DIR)/build/base

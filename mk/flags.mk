@@ -1,6 +1,7 @@
 
 include mk/core/common.mk
 
+ARCH ?=
 CFLAGS ?=
 CXXFLAGS ?=
 CPPFLAGS ?=
