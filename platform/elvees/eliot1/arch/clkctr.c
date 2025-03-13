@@ -7,10 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "eliot1_board.h"
+
 #include "hal_clkctr.h"
 
 #include "clkctr.h"
+
+#include <config/board_config.h>
 
 /* ========================================================  PLLCFG  ========================================================= */
 #define CLKCTR_PLLCFG_SEL_Pos             (0UL)                     /*!< SEL (Bit 0)                                           */
@@ -80,7 +82,7 @@
 	(((x) << CLKCTR_PLLCFG_SEL_Pos) & CLKCTR_PLLCFG_SEL_Msk)
 
 
-static uint32_t MAINCLK_FREQUENCY = BOARD_HFI_FREQUENCY;
+static uint32_t MAINCLK_FREQUENCY = CONF_CLKCTRL_CLK_ENABLE_HFI_FREQ();
 
 int clkctr_get_pll_config(struct clkctr_regs *base,
 		struct clkctr_pll_cfg *config) {
@@ -153,7 +155,7 @@ void clkctr_set_pll(struct clkctr_regs *base, uint32_t xti_hz, uint16_t pll_mul)
 	/* PLLCLK (HFI or XTI). */
 	if (xti_hz == 0) {
 		clkctr_set_switch_pll_ref(base, CLKCTR_CLK_TYPE_HFI);
-		MAINCLK_FREQUENCY = BOARD_HFI_FREQUENCY;
+		MAINCLK_FREQUENCY = CONF_CLKCTRL_CLK_ENABLE_HFI_FREQ();
 	} else {
 		clkctr_set_switch_pll_ref(base, CLKCTR_CLK_TYPE_XTI);
 		MAINCLK_FREQUENCY = xti_hz;
