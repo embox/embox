@@ -266,7 +266,3 @@ void clkctr_set_sys_div(struct clkctr_regs *base, uint16_t fclk_div,
 	}
 	clkctr_set_qspi_clk_div(base, qspiclk_div + 1);
 }
-
-int clk_enable(char *clk_name) {
-	return 0;
-}

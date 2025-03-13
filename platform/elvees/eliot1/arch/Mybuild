@@ -3,4 +3,5 @@ package platform.elvees.eliot1
 module platform_init extends platform.platform_init {
 	source "platform_init.c"
 	source "clkctr.c"
+	source "elvees_eliot_clk.c"
 }

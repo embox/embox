@@ -15,19 +15,7 @@
 #define FPU_NSACR  0xE000ED8C
 #define FPU_FPCCR  0xE000EF34
 
-#define CLOCK_BASE ((struct clkctr_regs *)CLKCTR_BASE)
-
-static void board_clocks_init(void) {
-	if (REG_LOAD(CPU_IDENTITY_REG) == 0) {
-		clkctr_set_pll(CLOCK_BASE, 0, 0);
-		clkctr_set_sys_div(CLOCK_BASE, 0,              /* FCLK == MAINCLK */
-		    (BOARD_FCLK_FREQ / BOARD_SYSCLK_FREQ) - 1, /* SYSCLK DIV */
-		    (BOARD_FCLK_FREQ / BOARD_GNSS_FREQ) - 1,   /* GNSSCLK DIV */
-		    (BOARD_FCLK_FREQ / BOARD_QSPI_FREQ) - 1);  /* QSPI DIV */
-		clkctr_set_pll(CLOCK_BASE, BOARD_XTI_FREQ,
-		    (BOARD_FCLK_FREQ / BOARD_XTI_FREQ) - 1);
-	}
-}
+extern void board_clocks_init(void);
 
 void platform_init(void) {
 	board_clocks_init();
