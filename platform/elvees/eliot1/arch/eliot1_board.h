@@ -8,11 +8,11 @@
 #ifndef PLATFORM_ELVEES_ELIOT1_ARCH_ELIOT1_BOARD_H_
 #define PLATFORM_ELVEES_ELIOT1_ARCH_ELIOT1_BOARD_H_
 
+#if 0
+//#define CPU_IDENTITY_REG            0x4001F000
 
-#define CPU_IDENTITY_REG            0x4001F000
-
-#define CLKCTR_BASE                 0x40031000UL
-#define CLKCTR_Secure_BASE          0x50031000UL
+//#define CLKCTR_BASE                 0x40031000UL
+//#define CLKCTR_Secure_BASE          0x50031000UL
 
 
 //#define BOARD_CHIP_REV      0
@@ -25,5 +25,6 @@
 //#define BOARD_XTI32_FREQ    32768U
 //#define BOARD_LFI_FREQUENCY 32768U
 
+#endif
 
 #endif /* PLATFORM_ELVEES_ELIOT1_ARCH_ELIOT1_BOARD_H_ */
