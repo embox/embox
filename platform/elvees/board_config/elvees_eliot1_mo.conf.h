@@ -1,32 +1,41 @@
 #include <gen_board_conf.h>
 
-#define NS_PERIPHERAL_BASE      (0x40000000UL)
+#define NS_PERIPHERAL_BASE          (0x40000000UL)
 
-#define APB_PPC3_BASE           (NS_PERIPHERAL_BASE + 0x00030000UL)
+#define SECURE_PERIPHERAL_BASE      (0x50000000UL)
 
-#define IOCTR_BASE              (NS_PERIPHERAL_BASE + 0x00030000UL)
+
+#define CPU_BUS_BASE            (PERIPHERAL_BASE + 0x00010000UL)
+
+#define CPU_IDENTITY_BASE       (CPU_BUS_BASE + 0x0000F000UL)
+
+#define APB_PPC3_BASE           (PERIPHERAL_BASE + 0x00030000UL)
+
+#define IOCTR_BASE              (APB_PPC3_BASE + 0x00000000UL)
+#define CLKCTR_BASE             (APB_PPC3_BASE + 0x00001000UL)
+#define PWRCTR_BASE             (APB_PPC3_BASE + 0x00002000UL)
 
 /* APB_PPC0 */
-#define APB_PPC0_BASE           (NS_PERIPHERAL_BASE + 0x00100000UL)
+#define APB_PPC0_BASE           (PERIPHERAL_BASE + 0x00100000UL)
 
-#define UART0_BASE              (NS_PERIPHERAL_BASE + 0x00100000UL)
-#define UART1_BASE              (NS_PERIPHERAL_BASE + 0x00101000UL)
-#define UART2_BASE              (NS_PERIPHERAL_BASE + 0x00102000UL)
-#define UART3_BASE              (NS_PERIPHERAL_BASE + 0x00103000UL)
+#define UART0_BASE              (APB_PPC0_BASE + 0x00000000UL)
+#define UART1_BASE              (APB_PPC0_BASE + 0x00001000UL)
+#define UART2_BASE              (APB_PPC0_BASE + 0x00002000UL)
+#define UART3_BASE              (APB_PPC0_BASE + 0x00003000UL)
 
-#define SPI0_BASE               (NS_PERIPHERAL_BASE + 0x00104000UL)
-#define SPI1_BASE               (NS_PERIPHERAL_BASE + 0x00105000UL)
-#define SPI2_BASE               (NS_PERIPHERAL_BASE + 0x00106000UL)
+#define SPI0_BASE               (APB_PPC0_BASE + 0x00004000UL)
+#define SPI1_BASE               (APB_PPC0_BASE + 0x00005000UL)
+#define SPI2_BASE               (APB_PPC0_BASE + 0x00006000UL)
 
-#define I2C0_BASE               (NS_PERIPHERAL_BASE + 0x00107000UL)
-#define I2C1_BASE               (NS_PERIPHERAL_BASE + 0x00108000UL)
+#define I2C0_BASE               (APB_PPC0_BASE + 0x00007000UL)
+#define I2C1_BASE               (APB_PPC0_BASE + 0x00008000UL)
 
-#define I2S_BASE                (NS_PERIPHERAL_BASE + 0x00109000UL)
+#define I2S_BASE                (APB_PPC0_BASE + 0x00009000UL)
 
-#define GPIO0_BASE              (NS_PERIPHERAL_BASE + 0x0010A000UL)
-#define GPIO1_BASE              (NS_PERIPHERAL_BASE + 0x0010B000UL)
-#define GPIO2_BASE              (NS_PERIPHERAL_BASE + 0x0010C000UL)
-#define GPIO3_BASE              (NS_PERIPHERAL_BASE + 0x0010D000UL)
+#define GPIO0_BASE              (APB_PPC0_BASE + 0x0000A000UL)
+#define GPIO1_BASE              (APB_PPC0_BASE + 0x0000B000UL)
+#define GPIO2_BASE              (APB_PPC0_BASE + 0x0000C000UL)
+#define GPIO3_BASE              (APB_PPC0_BASE + 0x0000D000UL)
 
 #define IRQ_NUM_UART0           32
 #define IRQ_NUM_UART1           33
@@ -49,6 +58,29 @@
 
 
 #define AF(x)                   (x)
+
+#define PERIPHERAL_BASE          NS_PERIPHERAL_BASE
+
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "CLKCTRL",
+			.regs = {
+				REGMAP("BASE", (CLKCTR_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("XTI_FREQ", 24000000UL),
+				VAL("FCLK_FREQ", 144000000UL),
+				VAL("SYSCLK_FREQ", 48000000UL),
+				VAL("GNSS_FREQ", 72000000UL),
+				VAL("QSPI_FREQ", 24000000UL),
+				VAL("HFI_FREQ", 15100000UL),
+			}
+		},
+		.type = VAL("SYSCLK_PLL", 1),
+	},
+};
 
 struct gpio_conf gpios[] = {
 	[0] = {
@@ -350,4 +382,4 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(GPIO(gpios), UART(uarts),  LED(leds));
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts),  LED(leds));
