@@ -8,7 +8,6 @@
 #include <hal/platform.h>
 #include <hal/reg.h>
 
-#include "clkctr.h"
 
 #define FPU_CPACR  0xE000ED88
 #define FPU_NSACR  0xE000ED8C
