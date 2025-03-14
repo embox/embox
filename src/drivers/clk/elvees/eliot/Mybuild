@@ -1,0 +1,8 @@
+package embox.driver.clk.elvees.eliot
+
+module clkctrl {
+	option string log_level="LOG_NONE"
+
+	source "clkctr.c"
+	source "elvees_eliot_clk.c"
+}
