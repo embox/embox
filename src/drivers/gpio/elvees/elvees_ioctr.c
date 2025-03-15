@@ -59,7 +59,7 @@ void elvees_gpio_setup_func(uint32_t port, uint32_t pin, int func) {
 }
 
 
-void elvees_gpio_setup_digit(uint32_t port, uint32_t pin, int dir) {
+void elvees_gpio_setup_digit(uint32_t port, uint32_t pin) {
 	uint32_t *addr_reg;
 	uint32_t reg = GPIO_MODE_AF << (pin * 2);
 
