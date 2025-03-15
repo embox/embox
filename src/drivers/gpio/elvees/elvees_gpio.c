@@ -25,8 +25,13 @@
 
 #define GPIO_PORTS_COUNT           OPTION_GET(NUMBER,gpio_ports)
 
+#define DATA_IN        (0x00)
+#define DATA_OUT       (0x04)
 #define OUT_EN_SET     (0x10)
 #define OUT_EN_CLR     (0x14)
+
+#define GPIO_DATA_IN(port)    (GPIO_BASE_ADDR(port) + DATA_IN)
+#define GPIO_DATA_OUT(port)    (GPIO_BASE_ADDR(port) + DATA_OUT)
 
 #define GPIO_OUT_EN_SET(port)    (GPIO_BASE_ADDR(port) + OUT_EN_SET)
 #define GPIO_OUT_EN_CLR(port)    (GPIO_BASE_ADDR(port) + OUT_EN_CLR)
@@ -57,10 +62,16 @@ static int elvees_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int m) {
 }
 
 static void elvees_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
+
+	if (level) {
+		REG32_ORIN(GPIO_DATA_OUT(port), mask);
+	} else {
+		REG32_CLEAR(GPIO_DATA_OUT(port), mask);
+	}
 }
 
 static gpio_mask_t elvees_gpio_get(unsigned char port, gpio_mask_t mask) {
-	return 0;
+	return REG32_LOAD(GPIO_DATA_IN(port)) & mask;
 }
 
 struct gpio_chip elvees_gpio_chip = {
