@@ -14,11 +14,13 @@
 #include <sys/resource.h>
 #include <sys/types.h>
 
+#include <framework/mod/options.h>
 #include <kernel/nsproxy.h>
 #include <kernel/task/task_priority.h>
 #include <kernel/thread.h>
 
-#define MAX_TASK_NAME_LEN 20
+#define MAX_TASK_NAME_LEN \
+	OPTION_MODULE_GET(embox__kernel__task__multi, NUMBER, task_name_len)
 
 struct thread;
 
