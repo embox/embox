@@ -1,5 +1,5 @@
-#ifndef NSPROXY_H_
-#define NSPROXY_H_
+#ifndef KERNEL_NSPROXY_H_
+#define KERNEL_NSPROXY_H_
 
 #include <net/net_namespace.h>
 
@@ -9,14 +9,14 @@ typedef struct nsproxy {
 
 extern struct nsproxy init_nsproxy;
 
-#define set_task_proxy(tsk, parent) \
-	if (parent) { \
+#define set_task_proxy(tsk, parent)     \
+	if (parent) {                       \
 		tsk->nsproxy = parent->nsproxy; \
-	} else { \
-		tsk->nsproxy = init_nsproxy; \
+	}                                   \
+	else {                              \
+		tsk->nsproxy = init_nsproxy;    \
 	}
-
 
 extern void netns_decrement_ref_cnt(net_namespace_p netns);
 
-#endif /* NSPROXY_H_ */
+#endif /* KERNEL_NSPROXY_H_ */
