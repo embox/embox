@@ -59,6 +59,10 @@ static inline const char *task_get_name(const struct task *tsk) {
 	return "kernel";
 }
 
+static inline int task_set_name(struct task *tsk, const char *name) {
+	return 0;
+}
+
 static inline struct thread *task_get_main(const struct task *tsk) {
 	assert(tsk == task_kernel_task());
 	return tsk->tsk_main;
