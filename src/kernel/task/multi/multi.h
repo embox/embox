@@ -18,7 +18,7 @@
 #include <kernel/thread.h>
 #include <kernel/task/task_priority.h>
 
-#include <nsproxy.h>
+#include <kernel/nsproxy.h>
 
 #define MAX_TASK_NAME_LEN 20
 

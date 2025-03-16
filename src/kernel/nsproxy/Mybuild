@@ -5,7 +5,7 @@ abstract module nsproxy {
 }
 
 module nsproxy_nonstub extends nsproxy {
-	@IncludeExport(target_name="nsproxy.h")
+	@IncludeExport(path="kernel", target_name="nsproxy.h")
 	source "nsproxy.h"
 
 	source "nsproxy.c"
@@ -15,7 +15,7 @@ module nsproxy_nonstub extends nsproxy {
 }
 
 module nsproxy_stub extends nsproxy {
-	@IncludeExport(target_name="nsproxy.h")
+	@IncludeExport(path="kernel", target_name="nsproxy.h")
 	source "nsproxy_stub.h"
 
 	depends embox.net.net_namespace

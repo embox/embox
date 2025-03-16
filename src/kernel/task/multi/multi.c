@@ -21,7 +21,7 @@
 #include <kernel/task/resource/errno.h>
 #include <kernel/task/task_table.h>
 #include <kernel/thread.h>
-#include <nsproxy.h>
+#include <kernel/nsproxy.h>
 
 #include <util/binalign.h>
 #include <util/err.h>
