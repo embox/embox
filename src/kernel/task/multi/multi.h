@@ -10,15 +10,13 @@
 #define KERNEL_TASK_MULTI_H_
 
 #include <assert.h>
-
 #include <sys/cdefs.h>
 #include <sys/resource.h>
 #include <sys/types.h>
 
-#include <kernel/thread.h>
-#include <kernel/task/task_priority.h>
-
 #include <kernel/nsproxy.h>
+#include <kernel/task/task_priority.h>
+#include <kernel/thread.h>
 
 #define MAX_TASK_NAME_LEN 20
 
@@ -63,8 +61,6 @@ struct task {
 	 */
 };
 
-
-
 __BEGIN_DECLS
 
 #include <kernel/task/defs.h>
@@ -91,7 +87,7 @@ static inline int task_get_id(const struct task *tsk) {
 	return tsk->tsk_id;
 }
 
-static inline const char * task_get_name(const struct task *tsk) {
+static inline const char *task_get_name(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_name;
 }
@@ -102,18 +98,17 @@ static inline int task_set_name(struct task *tsk, const char *name) {
 	return 0;
 }
 
-static inline struct thread * task_get_main(const struct task *tsk) {
+static inline struct thread *task_get_main(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->tsk_main;
 }
 
-static inline struct task * task_get_parent(const struct task *tsk) {
+static inline struct task *task_get_parent(const struct task *tsk) {
 	assert(tsk != NULL);
 	return tsk->parent;
 }
 
-static inline void task_set_main(struct task *tsk,
-		struct thread *main_thread) {
+static inline void task_set_main(struct task *tsk, struct thread *main_thread) {
 	assert(tsk != NULL);
 	assert(main_thread != NULL);
 	assert(tsk->tsk_main == NULL);
@@ -138,7 +133,8 @@ static inline void task_thread_unregister(struct task *tsk, struct thread *t) {
 
 	if (t != task_get_main(tsk)) {
 		dlist_del(&t->thread_link);
-	} else {
+	}
+	else {
 		assert(dlist_empty(&task_get_main(tsk)->thread_link));
 		tsk->tsk_main = NULL;
 	}
