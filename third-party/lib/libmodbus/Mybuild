@@ -2,9 +2,10 @@ package third_party.lib
 
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/lib/libmodbus/install/include/modbus")
-module libmodbus {
+static module libmodbus {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libmodbus.a"
 
+	@NoRuntime depends embox.compat.posix.net.All
 	@NoRuntime depends embox.compat.posix.util.nanosleep
 }
