@@ -19,9 +19,11 @@
 
 #include <framework/mod/options.h>
 
+#include <config/board_config.h>
+
 
 #define GPIO_BASE_ADDR(port_num) \
-	((uintptr_t) OPTION_GET(NUMBER,base_addr) + (port_num) * 0x1000)
+	((uintptr_t) CONF_GPIO_PORT_A_REGION_BASE + (port_num) * 0x1000)
 
 #define GPIO_PORTS_COUNT           OPTION_GET(NUMBER,gpio_ports)
 

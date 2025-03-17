@@ -15,12 +15,17 @@
 
 #include <framework/mod/options.h>
 
+#include <config/board_config.h>
 
+#if 0
 #define IOCTR_BASE_ADDR(port_num) \
 	((uintptr_t) OPTION_GET(NUMBER,base_addr) + (port_num) * 0x100)
+#endif
+
+#define IOCTR_BASE_ADDR(port_num) \
+	((uintptr_t) CONF_IOCTR_REGION_BASE + (port_num) * 0x100)
 
 #define GPIO_PORTS_COUNT           OPTION_GET(NUMBER,gpio_ports)
-
 
 #define IOCTR_MODE           0x00
 #define IOCTR_AFL            0x04
