@@ -15,6 +15,7 @@
 #include <fcntl.h>
 #include <limits.h>
 #include <pwd.h>
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -149,6 +150,23 @@ static void cmd_data_copy(struct cmd_data *dst, const struct cmd_data *src) {
 	dst->on_fg = src->on_fg;
 }
 
+static void set_task_name(struct cmd_data *cdata) {
+	char buf[SHELL_INPUT_BUFF_SZ];
+	char *ptr;
+	int i;
+
+	ptr = buf;
+
+	for (i = 0; i < cdata->argc; i++) {
+		if (i > 0) {
+			*ptr++ = ' ';
+		}
+		ptr = stpcpy(ptr, cdata->argv[i]);
+	}
+
+	task_set_name(task_self(), buf);
+}
+
 static void *run_cmd(void *data) {
 	int ret;
 	struct cmd_data cdata;
@@ -156,6 +174,8 @@ static void *run_cmd(void *data) {
 	cmd_data_copy(&cdata, data);
 
 	((struct cmd_data *)data)->started = 1;
+
+	set_task_name(&cdata);
 
 	if (-1 == tcsetpgrp(STDIN_FILENO, getpid())) {
 		/* running noninteractive */
@@ -178,7 +198,7 @@ static int process_external(struct cmd_data *cdata) {
 
 	cdata->started = 0;
 
-	pid = new_task(cdata->argv[0], run_cmd, cdata);
+	pid = new_task("", run_cmd, cdata);
 	if (pid < 0) {
 		return pid;
 	}
