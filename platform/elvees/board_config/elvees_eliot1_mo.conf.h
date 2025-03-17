@@ -145,7 +145,22 @@ struct gpio_conf gpios[] = {
 				VAL("", IRQ_NUM_GPIO3_S),
 			},
 			.clocks = {
-				VAL("", "CLK_GPIO2"),
+				VAL("", "CLK_GPIO3"),
+			}
+		},
+		.port_num = 4,
+		.port_width = 16,
+	},
+	[4] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "IOCTR",
+			.regs = {
+				REGMAP("BASE", (IOCTR_BASE), 0x100),
+			},
+
+			.clocks = {
+				VAL("", "CLK_IOCTR"),
 			}
 		},
 		.port_num = 4,
