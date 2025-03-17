@@ -382,17 +382,18 @@ struct i2c_conf i2cs[] = {
 
 };
 
+/* Using XP6 pins (pin33=PA6 & pin33=PC13) not real LEDs */
 struct led_conf leds[] = {
 	[0] = {
 		.name = "LED1",
 		.port = VAL("", GPIO_PORT_A),
-		.pin = VAL("", 0),
+		.pin = VAL("", 6),
 		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[1] = {
 		.name = "LED2",
-		.port = VAL("", GPIO_PORT_A),
-		.pin = VAL("", 1),
+		.port = VAL("", GPIO_PORT_C),
+		.pin = VAL("", 13),
 		.level = VAL("", GPIO_PIN_HIGH),
 	},
 };
