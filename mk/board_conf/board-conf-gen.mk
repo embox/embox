@@ -22,6 +22,9 @@ ifneq ($(CHIP_VENDOR),)
 BOARD_CONF_INCLUDE += -I $(CHIP_VENDOR_DIR)
 endif
 
+ifneq ($(PLATFORM_VENDOR),)
+BOARD_CONF_INCLUDE += -I $(PLATFORM_VENDOR_DIR)
+endif
 
 all:
 ifneq ($(wildcard $(BOARD_CONF)),)
