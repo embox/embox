@@ -1,0 +1,20 @@
+package project.plc.cmd
+
+@AutoCmd
+@Cmd(name = "plc_info",
+     help = "Print info about PLC configuration",
+     man  = '''
+		NAME
+			plc_info - Print info about PLC configuration
+		SYNOPSIS
+			plc_info [CONFIG]
+		SETTINGS
+			CONFIG - PLC configuration name
+		AUTHORS
+			Aleksey Zhmulin
+	''')
+module plc_info {
+	source "plc_info.c"
+
+	@NoRuntime depends project.plc.core
+}

@@ -1,0 +1,14 @@
+package project.plc.cmd
+
+@AutoCmd
+@Cmd(name="plc_modbus_server_toml", help="")
+@Build(script="true")
+@BuildDepends(third_party.lib.libtoml)
+@BuildDepends(third_party.lib.libmodbus)
+module plc_modbus_server_toml {
+	source "plc_modbus_server_toml.c"
+
+	@NoRuntime depends project.plc.core
+    @NoRuntime depends third_party.lib.libtoml
+    @NoRuntime depends third_party.lib.libmodbus
+}

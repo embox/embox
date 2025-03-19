@@ -1,0 +1,11 @@
+package project.plc.examples
+
+@BuildDepends(project.plc.matiec)
+module delay_check {
+	@IncludeHeader("kernel/printk.h")
+	@IncludeHeader("kernel/time/time.h")
+	source "plc.st"
+
+	@NoRuntime depends project.plc.core
+	@NoRuntime depends project.plc.matiec
+}

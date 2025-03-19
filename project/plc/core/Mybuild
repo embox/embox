@@ -1,7 +1,10 @@
 package project.plc
 
-abstract module core {
+module core {
 	@IncludeExport(path="plc")
 	source "core.h"
 	source "core.c"
+
+	@NoRuntime depends embox.driver.gpio.core
+	@NoRuntime depends embox.kernel.timer.sys_timer
 }
