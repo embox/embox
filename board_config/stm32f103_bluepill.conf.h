@@ -1,5 +1,20 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
+#include <stm32F10xxx_chip.h>
+
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			
+		},
+		.type = VAL("", 0),
+	},
+};
 
 struct uart_conf uarts[] = {
 	[1] = {
@@ -7,6 +22,9 @@ struct uart_conf uarts[] = {
 		.name = "USART1",
 		.dev = {
 			.name = "USART1",
+			.regs = {
+				REGMAP("BASE", (USART1_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 37),
 			},
@@ -27,6 +45,9 @@ struct uart_conf uarts[] = {
 		.name = "USART2",
 		.dev = {
 			.name = "USART2",
+			.regs = {
+				REGMAP("BASE", (USART2_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 38),
 			},
@@ -50,6 +71,9 @@ struct spi_conf spis[] = {
 		.name = "SPI1",
 		.dev = {
 			.name = "SPI1",
+			.regs = {
+				REGMAP("BASE", (SPI1_BASE), 0x100),
+			},
 			.pins = {
 				PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
 				PIN("MISO", GPIO_PORT_A, PIN_6, AF5),
@@ -67,4 +91,4 @@ struct spi_conf spis[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis))
+EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis))
