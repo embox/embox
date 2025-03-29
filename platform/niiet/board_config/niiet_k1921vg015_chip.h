@@ -7,6 +7,12 @@
 #define GPIOB_BASE              0x28001000UL
 #define GPIOC_BASE              0x28002000UL
 
+#define TMR32_BASE              0x30000000UL
+
+#define TMR0_BASE               0x30001000UL
+#define TMR1_BASE               0x30002000UL
+#define TMR2_BASE               0x30003000UL
+
 #define UART0_BASE              0x30006000UL
 #define UART1_BASE              0x30007000UL
 #define UART2_BASE              0x30008000UL
