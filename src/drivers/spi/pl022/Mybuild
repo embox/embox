@@ -1,0 +1,20 @@
+package embox.driver.spi
+
+module pl022_spi_drv {
+	option string log_level="LOG_ERR"
+
+	source "pl022_spi_drv.c"
+
+	depends embox.driver.spi.core
+}
+
+module pl022_spi1 {
+	option string log_level="LOG_ERR"
+
+	option number base_addr = 0
+	option number irq_num = 0
+
+	source "pl022_spi1.c"
+
+	depends embox.driver.spi.pl022_spi_drv
+}
