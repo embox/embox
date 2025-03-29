@@ -1,5 +1,5 @@
 /**
- * @file skeleton_spi_common.c
+ * @file
  * @brief
  * @author Andrew Bursian
  * @version
@@ -34,12 +34,11 @@ static int skeleton_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
 
 static int skeleton_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	struct skeleton_spi *dev = spi_dev->priv;
+	//struct skeleton_spi *dev = spi_dev->priv;
 
 	if (spi_dev->flags & SPI_CS_ACTIVE && spi_dev->is_master) {
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we lower the same pin all the tiem */
-		gpio_set(dev->nss_port, dev->nss_pin, GPIO_PIN_LOW);
 	}
 
 	/* Place transmit/recieve code here */
@@ -47,7 +46,6 @@ static int skeleton_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 	if (spi_dev->flags & SPI_CS_INACTIVE && spi_dev->is_master) {
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we raise the same pin all the tiem */
-		gpio_set(dev->nss_port, dev->nss_pin, GPIO_PIN_HIGH);
 	}
 
 	return 0;
