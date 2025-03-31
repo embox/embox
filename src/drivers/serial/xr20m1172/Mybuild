@@ -5,16 +5,20 @@ module xr20m1172 {
 	option number spi_bus=0
 	option number spi_cs=3
 
+	option number gpio_irq_port=0
+	option number gpio_irq_pin=0
+
 	source "xr20m1172.c"
 
 	@NoRuntime depends embox.driver.serial.core
 	depends embox.driver.spi.core
 }
 
-module xr20m1172_dev {
+module xr20m1172_ttySPI0 {
 	option number baud_rate=115200
 
-	source "xr20m1172_dev.c"
+	source "xr20m1172_ttySPI0.c"
 
 	@NoRuntime depends xr20m1172
+	@NoRuntime depends embox.driver.gpio.core
 }
