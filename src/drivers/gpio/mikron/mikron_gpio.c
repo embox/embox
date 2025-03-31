@@ -198,8 +198,8 @@ static int mik_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 			pull = 2;
 		}
 
-		if (mode & GPIO_MODE_OUT_ALTERNATE) {
-			alt = GPIO_GET_ALTERNATE(mode);
+		if (mode & GPIO_MODE_ALT_SECTION) {
+			alt = GPIO_MODE_ALT_GET(mode);
 		}
 
 		mik_pad_cfg_set_func(port, pin, alt);

@@ -96,7 +96,7 @@ struct bcm283x_spi_regs {
 
 static int bcm283x_spi0_init(void) {
     uint32_t pins_spi_Alt0 =( 1 << 7 ) | ( 1 << 8 ) | ( 1 << 9 ) | ( 1 << 10 ) | ( 1 << 11 );    
-    gpio_setup_mode(GPIO_PORT_A, pins_spi_Alt0, GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt0) );
+    gpio_setup_mode(GPIO_PORT_A, pins_spi_Alt0, GPIO_MODE_ALT_SET(GFAlt0) );
 
 #ifdef DRIVER_TESTING
     gpio_setup_mode(GPIO_PORT_A, PIN, GPIO_MODE_OUTPUT);

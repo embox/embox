@@ -247,13 +247,13 @@ static int niiet_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
 		niiet_gpio_setup_irq(port, pins, mode);
 	}
 
-	if (mode & GPIO_MODE_OUT_ALTERNATE) {
+	if (mode & GPIO_MODE_ALT_SECTION) {
 		/* Enable ALTFUNC */
 		gpio_reg->GPIO_ALTFUNCSET_reg |= pins;
 
 		for (int i = 0; i < GPIO_PINS_NUMBER; i++) {			
 			if (pins & (1 << i)) {
-				uint32_t alt = GPIO_GET_ALTERNATE(mode);
+				uint32_t alt = GPIO_MODE_ALT_GET(mode);
 
 				gpio_reg->GPIO_ALTFUNCNUM_reg &= ~(0x3 << i * 2);
 				gpio_reg->GPIO_ALTFUNCNUM_reg |= alt << i * 2;

@@ -41,7 +41,7 @@ static int k1921vk035_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int 
 	GPIO_StructInit(&gpio_init_struct);
 	gpio_init_struct.Pin = pins;
 	gpio_init_struct.Out = (mode & GPIO_MODE_OUT_SECTION) ? ENABLE : DISABLE;
-	gpio_init_struct.AltFunc = (mode & GPIO_MODE_OUT_ALTERNATE) ? ENABLE : DISABLE;
+	gpio_init_struct.AltFunc = (mode & GPIO_MODE_ALT_SECTION) ? ENABLE : DISABLE;
 	gpio_init_struct.OutMode = (mode & GPIO_MODE_OUT_OPEN_DRAIN) ? GPIO_OutMode_OD : GPIO_OutMode_PP;
 	gpio_init_struct.InMode = (mode & GPIO_MODE_IN_SCHMITT) ? GPIO_InMode_Schmitt : GPIO_InMode_CMOS;
 	gpio_init_struct.PullMode = (mode & GPIO_MODE_IN_PULL_UP) ? GPIO_PullMode_PU :

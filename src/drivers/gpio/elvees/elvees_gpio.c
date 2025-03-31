@@ -46,8 +46,8 @@ static int elvees_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int m) {
 
 	for (i = 0; i < 16; i++) {
 		if (mask & (1 << i)) {
-			if (m & GPIO_MODE_OUT_ALTERNATE) {
-				elvees_gpio_setup_func(port, i, GPIO_GET_ALTERNATE(m));
+			if (m & GPIO_MODE_ALT_SECTION) {
+				elvees_gpio_setup_func(port, i, GPIO_MODE_ALT_GET(m));
 			}
 			if (m & GPIO_MODE_OUT) {
 				elvees_gpio_setup_digit(port, i);

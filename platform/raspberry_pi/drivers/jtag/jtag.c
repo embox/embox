@@ -31,10 +31,10 @@ int gpio_jtag(uint8_t config) {
 
 	if(config < OPTIONS) {
 		if(pins_GFAlt5[config]) {
-			gpio_setup_mode(GPIO_PORT_A, pins_GFAlt5[config], GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt5) );
+			gpio_setup_mode(GPIO_PORT_A, pins_GFAlt5[config], GPIO_MODE_ALT_SET(GFAlt5) );
 		}
 		if(pins_GFAlt4[config]) {
-			gpio_setup_mode(GPIO_PORT_A, pins_GFAlt4[config], GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt4) );
+			gpio_setup_mode(GPIO_PORT_A, pins_GFAlt4[config], GPIO_MODE_ALT_SET(GFAlt4) );
 		}
 		return 0;
 	} else {

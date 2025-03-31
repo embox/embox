@@ -194,8 +194,8 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode)
         if (mode & GPIO_MODE_IN_PULL_UP)         set_gpio_mode_pull_up(GPIO, pins);
         if (mode & GPIO_MODE_IN_PULL_DOWN)        set_gpio_mode_pull_down(GPIO, pins);
         reset_exti_interrupt(port, pins);
-    } else if (mode & GPIO_MODE_OUT_ALTERNATE) {
-        uint32_t func = GPIO_GET_ALTERNATE(mode);
+    } else if (mode & GPIO_MODE_ALT_SECTION) {
+        uint32_t func = GPIO_MODE_ALT_GET(mode);
         set_gpio_mode_alt_func(GPIO, pins, func);
 
         if (mode & GPIO_MODE_IN_PULL_UP)         set_gpio_mode_pull_up(GPIO, pins);

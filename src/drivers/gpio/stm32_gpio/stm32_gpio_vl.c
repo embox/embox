@@ -87,7 +87,7 @@ static int stm32_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 
 		mode_val = 3;
 
-		if (mode & GPIO_MODE_OUT_ALTERNATE) {
+		if (mode & GPIO_MODE_ALT_SECTION) {
 			mode_val |= 8;
 		}
 

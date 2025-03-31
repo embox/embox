@@ -161,7 +161,7 @@ static int bcm283x_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mod
     assert(((port == GPIO_PORT_A) || (port == GPIO_PORT_B)));
 
     // Determine GPIO Function of Input/Output/Alternate X
-    if(mode & GPIO_MODE_OUT_ALTERNATE) {
+    if(mode & GPIO_MODE_ALT_SECTION) {
         bcm283x_gpio_pin_set_func(port,pins,GPIO_ALTERNATE_INVERT(mode));
     } else if (mode & (GPIO_MODE_IN 
         | GPIO_MODE_IN_PULL_UP | GPIO_MODE_IN_PULL_DOWN 
