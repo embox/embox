@@ -50,12 +50,21 @@
  /*
   * SSP Control Register 0  - SSP_CR0
   */
- #define SSP_CR0_MASK_DSS	(0x0FUL << 0)
- #define SSP_CR0_MASK_FRF	(0x3UL << 4)
- #define SSP_CR0_MASK_SPO	(0x1UL << 6)
- #define SSP_CR0_MASK_SPH	(0x1UL << 7)
- #define SSP_CR0_MASK_SCR	(0xFFUL << 8)
- 
+ #define SSP_CR0_MASK_DSS     (0x0FUL << 0)
+ #define SSP_CR0_MASK_FRF     (0x3UL << 4)
+ #define SSP_CR0_MASK_SPO     (0x1UL << 6)
+ #define SSP_CR0_MASK_SPH     (0x1UL << 7)
+ #define SSP_CR0_MASK_SCR     (0xFFUL << 8)
+ #define SSP_CR0_BIT_MODE(x)  ((x) - 1)
+
+ /* SSP Control Register 0  - SSP_CR0 */
+#define SSP_CR0_SPO		(0x1 << 6)
+#define SSP_CR0_SPH		(0x1 << 7)
+#define SSP_SCR_MIN		(0x00)
+#define SSP_SCR_MAX		(0xFF)
+#define SSP_SCR_SHFT		8
+#define DFLT_CLKRATE		2
+
  /*
   * The ST version of this block moves som bits
   * in SSP_CR0 and extends it to 32 bits
@@ -68,10 +77,10 @@
  /*
   * SSP Control Register 0  - SSP_CR1
   */
- #define SSP_CR1_MASK_LBM	(0x1UL << 0)
- #define SSP_CR1_MASK_SSE	(0x1UL << 1)
- #define SSP_CR1_MASK_MS		(0x1UL << 2)
- #define SSP_CR1_MASK_SOD	(0x1UL << 3)
+ #define SSP_CR1_MASK_LBM   (0x1UL << 0)
+ #define SSP_CR1_MASK_SSE   (0x1UL << 1)
+ #define SSP_CR1_MASK_MS    (0x1UL << 2)
+ #define SSP_CR1_MASK_SOD   (0x1UL << 3)
  
  /*
   * The ST version of this block adds some bits
@@ -98,6 +107,10 @@
   * SSP Clock Prescale Register  - SSP_CPSR
   */
  #define SSP_CPSR_MASK_CPSDVSR	(0xFFUL << 0)
+
+#define SSP_CPSR_MIN		(0x02)
+#define SSP_CPSR_MAX		(0xFE)
+#define DFLT_PRESCALE		(0x40)
  
  /*
   * SSP Interrupt Mask Set/Clear Register - SSP_IMSC
@@ -209,7 +222,6 @@ static int pl022_is_supported(struct pl022_spi *dev) {
 	return 0;
 }
 
-
 static void pl022_spi_flush(struct pl022_spi *dev) {
 	do {
 		while (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
@@ -245,9 +257,20 @@ static inline int pl022_spi_release_bus(struct pl022_spi *dev) {
 }
 
 static int pl022_spi_setup(struct pl022_spi *dev, bool is_master) {
+	uint16_t reg;
+
+	reg = REG16_LOAD(SSP_CR1(dev->base_addr));
+
+	if (!is_master) {
+		reg |= SSP_CR1_MASK_MS;
+	} else {
+		reg &= ~((uint16_t)SSP_CR1_MASK_MS);
+	}
+
 	/* 8 bits per word, high polarity and default clock rate */
-	REG16_STORE(SSP_CR0(dev->base_addr), 0);
-	REG16_STORE(SSP_CPSR(dev->base_addr), 0);
+	REG16_STORE(SSP_CR0(dev->base_addr), SSP_CR0_BIT_MODE(8));
+	REG16_STORE(SSP_CPSR(dev->base_addr), DFLT_PRESCALE);
+	REG16_STORE(SSP_CR1(dev->base_addr), reg);
 
 	return 0;
 }
@@ -269,6 +292,19 @@ static int pl022_spi_select(struct spi_device *spi_dev, int cs) {
 
 static int pl022_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
 	struct pl022_spi *dev = spi_dev->priv;
+
+#if 0
+	uint16_t reg;
+
+	reg = REG16_LOAD(SSP_CR0(dev->base_addr));
+	reg &= ~(SSP_CR0_SPH | SSP_CR0_SPO);
+	if (mode & SPI_CPHA)
+		reg |= SSP_CR0_SPH;
+	if (mode & SPI_CPOL)
+		reg |= SSP_CR0_SPO;
+	REG16_LOAD(SSP_CR0(dev->base_addr), reg);
+#endif
+
 	return pl022_spi_setup(dev, is_master);
 }
 
