@@ -36,7 +36,7 @@ static int stm32_gpio_init(void) {
 	REG_ORIN(RCC_APB1RSTR,RCC_APB1PWR);
 	REG_ORIN(RCC_APB2ENR,RCC_APB2GPIOx);
 	REG_ORIN(RCC_APB2ENR,RCC_APB2AFIO);
-	return gpio_register_chip(&stm32_gpio_chip, STM32_GPIO_CHIP_ID);
+	return 0;
 }
 
 static void set_state(struct stm32_gpio *gpio, gpio_mask_t mask, int new_state) {
@@ -124,5 +124,8 @@ static struct gpio_chip stm32_gpio_chip = {
 	.setup_mode = stm32_gpio_setup_mode,
 	.get = stm32_gpio_get,
 	.set = stm32_gpio_set,
-	.nports = GPIO_PORT_NUM
+	.nports = GPIO_PORT_NUM,
+	.chip_id = STM32_GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&stm32_gpio_chip);

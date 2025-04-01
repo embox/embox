@@ -80,7 +80,8 @@ struct gpio_chip elvees_gpio_chip = {
 	.setup_mode = elvees_gpio_setup_mode,
 	.get = elvees_gpio_get,
 	.set = elvees_gpio_set,
-	.nports = GPIO_PORTS_COUNT
+	.nports = GPIO_PORTS_COUNT,
+	.chip_id = GPIO_CHIP0,
 };
 
 GPIO_CHIP_DEF(&elvees_gpio_chip);

@@ -31,8 +31,11 @@ static struct gpio_chip k210_gpio_chip = {
 	.setup_mode = k210_gpio_setup_mode,
 	.get = k210_gpio_get,
 	.set = k210_gpio_set,
-	.nports = CONF_GPIO_PORT_NUM
+	.nports = CONF_GPIO_PORT_NUM,
+	.chip_id = K210_GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&k210_gpio_chip);
 
 static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
 	assert(port < CONF_GPIO_PORT_NUM);
@@ -127,7 +130,7 @@ static int k210_gpio_init(void){
 
 	maix_bit_gpio_config();
 
-	return gpio_register_chip(&k210_gpio_chip, K210_GPIO_CHIP_ID);
+	return 0;
 }
 
 void k210_gpio_set_dir(gpio_mask_t pins, bool dir){

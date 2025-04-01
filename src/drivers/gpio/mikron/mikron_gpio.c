@@ -245,7 +245,8 @@ static struct gpio_chip mik_gpio_chip = {
 	.setup_mode = mik_gpio_setup_mode,
     .get = mik_gpio_get,
     .set = mik_gpio_set,
-    .nports = 3
+    .nports = 3,
+	.chip_id = GPIO_CHIP_ID,
 };
 
 GPIO_CHIP_DEF(&mik_gpio_chip);

@@ -137,8 +137,11 @@ static struct gpio_chip omap3_gpio_chip = {
 	.setup_mode = omap3_gpio_setup_mode,
 	.get = omap3_gpio_get,
 	.set = omap3_gpio_set,
-	.nports = GPIO_MODULE_CNT
+	.nports = GPIO_MODULE_CNT,
+	.chip_id = GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&omap3_gpio_chip);
 
 static int gpio_init(void) {
 	int i, ret;
@@ -153,5 +156,5 @@ static int gpio_init(void) {
 		}
 	}
 
-	return gpio_register_chip(&omap3_gpio_chip, GPIO_CHIP_ID);
+	return 0;
 }

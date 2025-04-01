@@ -94,7 +94,9 @@ static struct gpio_chip k1921vk035_gpio_chip = {
 	.setup_mode = k1921vk035_gpio_setup_mode,
 	.get = k1921vk035_gpio_get,
 	.set = k1921vk035_gpio_set,
-	.nports = 2};
+	.nports = 2,
+	.chip_id = GPIO_CHIP_ID,
+};
 
 GPIO_CHIP_DEF(&k1921vk035_gpio_chip);
 

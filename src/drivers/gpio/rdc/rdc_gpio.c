@@ -86,8 +86,11 @@ static struct gpio_chip rdc_gpio_chip = {
 	.setup_mode = rdc_gpio_setup_mode,
 	.get = rdc_gpio_get,
 	.set = rdc_gpio_set,
-	.nports = 1
+	.nports = 1,
+	.chip_id = GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&rdc_gpio_chip);
 
 static int gpio_init(void) {
 	/* Example: blink led */
@@ -95,5 +98,5 @@ static int gpio_init(void) {
 	out32(RDC_DATA, PCI_ADDR_SEL);
 //	out32(0, PCI_DATA_REG);          // red led on
 //	out32(GPIO_RTCRD, PCI_DATA_REG); // red led off
-	return gpio_register_chip(&rdc_gpio_chip, GPIO_CHIP_ID);
+	return 0;
 }

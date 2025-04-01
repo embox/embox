@@ -295,10 +295,11 @@ static struct gpio_chip niiet_gpio_chip = {
 	.get = niiet_gpio_get,
 	.set = niiet_gpio_set,
 #if defined (CONF_GPIO_PORT_C_REGION_BASE)
-	.nports = 3
+	.nports = 3,
 #else
-	.nports = 2
+	.nports = 2,
 #endif
+	.chip_id = GPIO_CHIP_ID,
 };
 
 GPIO_CHIP_DEF(&niiet_gpio_chip);

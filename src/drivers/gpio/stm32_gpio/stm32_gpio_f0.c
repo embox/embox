@@ -248,8 +248,11 @@ static struct gpio_chip stm32_gpio_chip = {
     .setup_mode = stm32_gpio_setup_mode,
     .get = stm32_gpio_get,
     .set = stm32_gpio_set,
-    .nports = STM32_GPIO_PORTS_COUNT
+    .nports = STM32_GPIO_PORTS_COUNT,
+	.chip_id = STM32_GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&stm32_gpio_chip);
 
 irq_return_t stm32_gpio_irq_handler(unsigned int irq_nr, void *data) {
     uint16_t pending = EXTI->PR;
@@ -278,7 +281,7 @@ static int stm32_gpio_init(void) {
         }
     }
 
-    return gpio_register_chip(&stm32_gpio_chip, STM32_GPIO_CHIP_ID);
+    return 0;
 }
 
 EMBOX_UNIT_INIT(stm32_gpio_init);

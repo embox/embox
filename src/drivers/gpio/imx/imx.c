@@ -37,7 +37,7 @@ static int imx_gpio_init(void) {
 		log_debug("GPIO%d base address=%p", i, BASE_ADDR(i));
 	}
 
-	return gpio_register_chip(&imx_gpio_chip, GPIO_CHIP_ID);
+	return 0;
 }
 
 static int imx_gpio_setup_mode(unsigned char port, gpio_mask_t mask, int mode) {
@@ -87,7 +87,10 @@ static struct gpio_chip imx_gpio_chip = {
 	.setup_mode = imx_gpio_setup_mode,
 	.get = imx_gpio_get,
 	.set = imx_gpio_set,
-	.nports = GPIO_PORTS
+	.nports = GPIO_PORTS,
+	.chip_id = GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&imx_gpio_chip);
 
 PERIPH_MEMORY_DEFINE(imx_gpio, BASE_ADDR(0), (0x4000 * 5));

@@ -89,11 +89,14 @@ static struct gpio_chip dwapb_gpio_chip = {
 	.setup_mode = dwapb_gpio_setup_mode,
 	.get = dwapb_gpio_get,
 	.set = dwapb_gpio_set,
-	.nports = DWAPB_GPIO_PORTS_COUNT
+	.nports = DWAPB_GPIO_PORTS_COUNT,
+	.chip_id = GPIO_CHIP_ID,
 };
 
+GPIO_CHIP_DEF(&dwapb_gpio_chip);
+
 static int dwapb_gpio_init(void) {
-	return gpio_register_chip(&dwapb_gpio_chip, GPIO_CHIP_ID);
+	return 0;
 }
 
 PERIPH_MEMORY_DEFINE(arasan, BASE_CTRL_ADDR(0), 0x1000 * DWAPB_GPIO_PORTS_COUNT);

@@ -268,8 +268,11 @@ static struct gpio_chip bcm283x_gpio_chip = {
     .setup_mode = bcm283x_gpio_setup_mode,
     .get = bcm283x_gpio_get,
     .set = bcm283x_gpio_set,
-    .nports = BCM283X_GPIO_PORTS_COUNT
+    .nports = BCM283X_GPIO_PORTS_COUNT,
+	.chip_id = BCM283X_GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&bcm283x_gpio_chip);
 
 irq_return_t bcm283x_gpio_irq_handler(unsigned int irq_nr, void *data) {
     uint16_t ports[BCM283X_GPIO_PORTS_COUNT] = {0,0};
@@ -292,8 +295,6 @@ irq_return_t bcm283x_gpio_irq_handler(unsigned int irq_nr, void *data) {
 }
 
 static int bcm283x_gpio_init(void) {
-    int res;
-
     // We don't know the pull up/down state of GPIO pins
     // so we'll set the change state to a default assignment.
     // It is expected that pin PINNUMBER_APPLY_CONFIG will be set at 
@@ -306,11 +307,7 @@ static int bcm283x_gpio_init(void) {
         _pinMaskPortB[i] = b[i];
     }
 
-    res = irq_attach(GPU_IRQ, bcm283x_gpio_irq_handler, 0, NULL, "BCM283x GPIO irq handler");
-    if (res >= 0) {
-        res = gpio_register_chip(&bcm283x_gpio_chip, BCM283X_GPIO_CHIP_ID);
-    }
-    return res;
+    return irq_attach(GPU_IRQ, bcm283x_gpio_irq_handler, 0, NULL, "BCM283x GPIO irq handler");
 };
 
 EMBOX_UNIT_INIT(bcm283x_gpio_init);

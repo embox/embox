@@ -65,8 +65,11 @@ static const struct gpio_chip efm32_gpio_chip = {
 	.setup_mode = efm32_gpio_setup_mode,
 	.get = efm32_gpio_get,
 	.set = efm32_gpio_set,
-	.nports = EFM32_GPIO_PORTS_COUNT
+	.nports = EFM32_GPIO_PORTS_COUNT,
+	.chip_id = EFM32_GPIO_CHIP_ID,
 };
+
+GPIO_CHIP_DEF(&efm32_gpio_chip);
 
 static int efm32_gpio_init(void) {
 #if (_SILICON_LABS_32B_SERIES < 2)
@@ -77,6 +80,5 @@ static int efm32_gpio_init(void) {
   || defined(_SILICON_LABS_32B_SERIES_2_CONFIG_2)
   CMU_ClockEnable(cmuClock_GPIO, true);
 #endif
-	return gpio_register_chip((struct gpio_chip *)&efm32_gpio_chip, EFM32_GPIO_CHIP_ID);
-
+	return 0;
 }
