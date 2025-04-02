@@ -310,21 +310,57 @@ static int pl022_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
 
 static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	//struct pl022_spi *dev = spi_dev->priv;
+	struct pl022_spi *dev = spi_dev->priv;
+	uint8_t value;
+	int tx_cnt;
+	int rx_cnt;
+
+	rx_cnt = 0;
+	tx_cnt = 0;
 
 	if (spi_dev->flags & SPI_CS_ACTIVE && spi_dev->is_master) {
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we lower the same pin all the tiem */
 	}
 
-	/* Place transmit/recieve code here */
+	/* transmit/recieve */
+	while (tx_cnt < count) {
+		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_TNF) {
+			if (inbuf) {
+				value = *inbuf++;
+			} else {
+				value = 0;
+			}
+
+			REG16_STORE(SSP_DR(dev->base_addr), value);
+			tx_cnt++;
+		}
+
+		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
+			value = REG16_LOAD(SSP_DR(dev->base_addr));
+			if (outbuf) {
+				*outbuf++ = value;
+			}
+			rx_cnt++;
+		}
+	}
+
+	while (rx_cnt < tx_cnt) {
+		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_RNE) {
+			value = REG16_LOAD(SSP_DR(dev->base_addr));
+			if (outbuf) {
+				*outbuf++ = value;
+			}
+			rx_cnt++;
+		}
+	}
 
 	if (spi_dev->flags & SPI_CS_INACTIVE && spi_dev->is_master) {
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we raise the same pin all the tiem */
 	}
 
-	return 0;
+	return rx_cnt;
 }
 
 struct spi_ops pl022_spi_ops = {
