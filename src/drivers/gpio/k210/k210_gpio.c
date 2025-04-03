@@ -7,42 +7,49 @@
  */
 
 #include <assert.h>
-#include <util/log.h>
 
-#include <embox/unit.h>
-#include <lib/libds/bit.h>
-#include <lib/libds/array.h>
-
-#include <drivers/gpio/gpio_driver.h>
+#include <drivers/gpio.h>
 #include <drivers/gpio/k210.h>
 #include <drivers/gpio/k210/fpioa.h>
+#include <embox/unit.h>
+#include <lib/libds/array.h>
+#include <lib/libds/bit.h>
+#include <util/log.h>
+
 #include <config/board_config.h>
 
 EMBOX_UNIT_INIT(k210_gpio_init);
 
-#define K210_GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
+#define K210_GPIO_CHIP_ID OPTION_GET(NUMBER, gpio_chip_id)
 
-volatile k210_gpio_t* const gpio = (volatile k210_gpio_t*) CONF_GPIO_PORT_REGION_BASE;
+volatile k210_gpio_t *const gpio =
+    (volatile k210_gpio_t *)CONF_GPIO_PORT_REGION_BASE;
 
-extern volatile sysctl_clock_enable_central* const clk_en_cent;
-extern volatile sysctl_clock_enable_peripheral* const clk_en_peri;
+extern volatile sysctl_clock_enable_central *const clk_en_cent;
+extern volatile sysctl_clock_enable_peripheral *const clk_en_peri;
 
-static struct gpio_chip k210_gpio_chip = {
-	.setup_mode = k210_gpio_setup_mode,
-	.get = k210_gpio_get,
-	.set = k210_gpio_set,
-	.nports = CONF_GPIO_PORT_NUM
+static const struct gpio_chip k210_gpio_chip = {
+    .setup_mode = k210_gpio_setup_mode,
+    .get = k210_gpio_get,
+    .set = k210_gpio_set,
+    .nports = CONF_GPIO_PORT_NUM,
+    .chip_id = K210_GPIO_CHIP_ID,
 };
 
-static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
+GPIO_CHIP_DEF(&k210_gpio_chip);
+
+static int k210_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
+    uint32_t mode) {
 	assert(port < CONF_GPIO_PORT_NUM);
 
-	if(mode & GPIO_MODE_OUT) {
+	if (mode & GPIO_MODE_OUT) {
 		k210_gpio_set_dir(pins, 1);
-	} else if (mode & GPIO_MODE_IN){
+	}
+	else if (mode & GPIO_MODE_IN) {
 		log_error("GPIO input mode is not implemented");
 		return -1;
-	} else {
+	}
+	else {
 		log_error("GPIO mode %x is not implemented", mode);
 		return -1;
 	}
@@ -50,7 +57,7 @@ static int k210_gpio_setup_mode(unsigned char port, gpio_mask_t pins, int mode){
 	return 0;
 }
 
-static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level){
+static void k210_gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 	volatile uint32_t *reg_dir = gpio->dir.reg32;
 	volatile uint32_t *reg = gpio->data_out.reg32;
 	uint32_t input = ~(*reg_dir);
@@ -59,32 +66,36 @@ static void k210_gpio_set(unsigned char port, gpio_mask_t pins, char level){
 	// direction check
 	input = (uint32_t)pins & input;
 	if (input) {
-		log_error("input pin cannot set level: pin mask=%x, level=%d", input, level);
+		log_error("input pin cannot set level: pin mask=%x, level=%d", input,
+		    level);
 	}
 
 	if (level == GPIO_PIN_HIGH) {
 		*reg &= ~(uint32_t)pins;
 		log_debug("gpio_set high: %x", pins);
-	} else if (level == GPIO_PIN_LOW){
+	}
+	else if (level == GPIO_PIN_LOW) {
 		*reg |= ((uint32_t)pins);
 		log_debug("gpio_set low: %x", pins);
-	} else {
+	}
+	else {
 		log_error("unknown GPIO pin level");
 	}
 	log_debug("gpio_set result: %x", *reg);
 }
 
-static gpio_mask_t k210_gpio_get(unsigned char port, gpio_mask_t pins){
+static gpio_mask_t k210_gpio_get(unsigned int port, gpio_mask_t pins) {
 	volatile uint32_t *reg_dir = gpio->dir.reg32;
 	gpio_mask_t res = 0;
 	assert(port < CONF_GPIO_PORT_NUM);
 
 	uint32_t dir = *reg_dir;
 	int bit;
-	bit_foreach(bit, (uint32_t)pins){
+	bit_foreach(bit, (uint32_t)pins) {
 		uint32_t reg;
 
-		reg = (dir & (1 << bit)) ? gpio->data_out.reg32[0] : gpio->data_in.reg32[0];
+		reg = (dir & (1 << bit)) ? gpio->data_out.reg32[0]
+		                         : gpio->data_in.reg32[0];
 		log_debug("bit: %d dir: 0x%x reg: 0x%x", bit, dir, reg);
 		if (!(reg & (1 << bit))) {
 			res |= (1 << bit);
@@ -94,7 +105,7 @@ static gpio_mask_t k210_gpio_get(unsigned char port, gpio_mask_t pins){
 	return res;
 }
 
-static void maix_bit_gpio_config(void){
+static void maix_bit_gpio_config(void) {
 	// builtin RGB LEDs
 	k210_fpioa_set_func(MAIXBIT_IO_LED_R, FN_GPIO0);
 	k210_fpioa_set_pull(MAIXBIT_IO_LED_R, FPIOA_PULL_DOWN);
@@ -117,7 +128,7 @@ static void maix_bit_gpio_config(void){
 	k210_gpio_set(0, 0x0F, GPIO_PIN_LOW);
 }
 
-static int k210_gpio_init(void){
+static int k210_gpio_init(void) {
 	//k210_fpioa_set_func(24, FN_GPIO3);
 	// enable bus clock
 	clk_en_cent->apb0 = 1;
@@ -127,15 +138,16 @@ static int k210_gpio_init(void){
 
 	maix_bit_gpio_config();
 
-	return gpio_register_chip(&k210_gpio_chip, K210_GPIO_CHIP_ID);
+	return 0;
 }
 
-void k210_gpio_set_dir(gpio_mask_t pins, bool dir){
+void k210_gpio_set_dir(gpio_mask_t pins, bool dir) {
 	volatile uint32_t *reg = gpio->dir.reg32;
 
-	if(dir) {
+	if (dir) {
 		*reg |= (uint32_t)pins;
-	} else{
+	}
+	else {
 		*reg &= ~((uint32_t)pins);
 	}
 }

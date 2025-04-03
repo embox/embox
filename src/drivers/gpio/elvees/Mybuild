@@ -10,7 +10,7 @@ module elvees_ioctr {
 
 }
 
-module elvees_gpio extends api {
+module elvees_gpio {
 	option string log_level="LOG_ERR"
 
 	option number base_addr = 0x4010A000

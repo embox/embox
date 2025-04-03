@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
 #include <lib/libds/array.h>
@@ -101,12 +101,12 @@ int plc_start(const struct plc_config *config) {
 		switch (var->type) {
 		case PLC_PHYS_VAR_QX:
 			gpio_setup_mode(var->port, 1 << var->pin,
-			    GPIO_MODE_OUT | GPIO_ALTERNATE(var->alt));
+			    GPIO_MODE_OUT | GPIO_MODE_ALT_SET(var->alt));
 			break;
 
 		case PLC_PHYS_VAR_IX:
 			gpio_setup_mode(var->port, 1 << var->pin,
-			    GPIO_MODE_IN | GPIO_ALTERNATE(var->alt));
+			    GPIO_MODE_IN | GPIO_MODE_ALT_SET(var->alt));
 			break;
 
 		case PLC_PHYS_VAR_IW:

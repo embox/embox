@@ -14,7 +14,7 @@
 #include <drivers/spi.h>
 #include <kernel/irq.h>
 #include <util/log.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 static struct stm32_spi stm32_spi1 = {0};
 
@@ -108,9 +108,9 @@ struct spi_ops stm32_spi_ops = {
 };
 
 static int stm32_spi1_init(void) {
-	gpio_setup_mode(OPTION_GET(NUMBER,port_mosi), 1 << OPTION_GET(NUMBER,pin_mosi), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
-	gpio_setup_mode(OPTION_GET(NUMBER,port_miso), 1 << OPTION_GET(NUMBER,pin_miso), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
-	gpio_setup_mode(OPTION_GET(NUMBER,port_sck), 1 << OPTION_GET(NUMBER,pin_sck), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
+	gpio_setup_mode(OPTION_GET(NUMBER,port_mosi), 1 << OPTION_GET(NUMBER,pin_mosi), GPIO_MODE_ALT_SET(0));
+	gpio_setup_mode(OPTION_GET(NUMBER,port_miso), 1 << OPTION_GET(NUMBER,pin_miso), GPIO_MODE_ALT_SET(0));
+	gpio_setup_mode(OPTION_GET(NUMBER,port_sck), 1 << OPTION_GET(NUMBER,pin_sck), GPIO_MODE_ALT_SET(0));
 
 	stm32_spi_init(&stm32_spi1);
 	return 0;

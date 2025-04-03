@@ -11,7 +11,7 @@
 #include <framework/mod/options.h>
 #include <util/log.h>
 #include <assert.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <plib035_spi.h>
 #include <plib035_rcu.h>
 
@@ -69,7 +69,7 @@ static int k1921vk035_spi_init(struct spi_device *dev) {
 
 
 	//Init SPI_TX - PB7, SPI_RX - PB6 , SPI_SCK - PB5
-	gpio_setup_mode(GPIO_PORT_B, ( 1 << 5 ) | ( 1 << 6 ) | ( 1 << 7 ), GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(0));
+	gpio_setup_mode(GPIO_PORT_B, ( 1 << 5 ) | ( 1 << 6 ) | ( 1 << 7 ), GPIO_MODE_ALT_SET(0));
 
 	for (int i = 0; i < K1921VK035_SPI_MAX_CS; i++) {
 		pin = k1921vk035_spi_dev->cs_map[i][K1921VK035_SPI_CS_MAP_PIN];

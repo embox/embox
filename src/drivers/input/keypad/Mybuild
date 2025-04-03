@@ -29,5 +29,5 @@ module keypad {
 	source "keypad.c"
 
 	depends embox.driver.input.core
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }

@@ -1,6 +1,6 @@
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/ttys.h>
 #include "K1921VK035.h"
 #include "errno.h"

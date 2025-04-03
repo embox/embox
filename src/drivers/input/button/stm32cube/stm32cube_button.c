@@ -13,7 +13,7 @@
 #include <kernel/irq.h>
 #include <drivers/input/input_dev.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>

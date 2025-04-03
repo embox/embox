@@ -12,7 +12,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #include <framework/mod/options.h>
 

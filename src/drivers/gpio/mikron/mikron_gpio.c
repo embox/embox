@@ -8,17 +8,16 @@
 
 #include <stdint.h>
 
-#include <drivers/gpio/gpio_driver.h>
+#include <drivers/gpio.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 
 //#include <config/board_config.h>
 #include <drivers/clk/mikron_pm.h>
-
 #include <framework/mod/options.h>
 
-#define GPIO_CHIP_ID                 OPTION_GET(NUMBER, gpio_chip_id)
-#define GPIO_PINS_NUMBER             16
+#define GPIO_CHIP_ID     OPTION_GET(NUMBER, gpio_chip_id)
+#define GPIO_PINS_NUMBER 16
 
 #define CONF_GPIO_PORT_0_REGION_BASE 0x00084000
 #define CONF_GPIO_PORT_1_REGION_BASE 0x00084400
@@ -28,9 +27,9 @@
 #define CONF_GPIO_PORT_1_CLK_ENABLE() "CLK_GPIO_PORT1"
 #define CONF_GPIO_PORT_2_CLK_ENABLE() "CLK_GPIO_PORT2"
 
-#define GPIOA                        ((volatile struct gpio_reg *)CONF_GPIO_PORT_0_REGION_BASE)
-#define GPIOB                        ((volatile struct gpio_reg *)CONF_GPIO_PORT_1_REGION_BASE)
-#define GPIOC                        ((volatile struct gpio_reg *)CONF_GPIO_PORT_2_REGION_BASE)
+#define GPIOA ((volatile struct gpio_reg *)CONF_GPIO_PORT_0_REGION_BASE)
+#define GPIOB ((volatile struct gpio_reg *)CONF_GPIO_PORT_1_REGION_BASE)
+#define GPIOC ((volatile struct gpio_reg *)CONF_GPIO_PORT_2_REGION_BASE)
 
 extern void mik_pad_cfg_set_func(int port, int pin, int func);
 extern void mik_pad_cfg_set_ds(int port, int pin, int ds);
@@ -48,31 +47,27 @@ struct gpio_reg {
 	volatile uint32_t CONTROL;
 };
 
-static struct gpio_chip mik_gpio_chip;
+static const struct gpio_chip mik_gpio_chip;
 
-static inline
-void mik_gpio_irq_en(volatile struct gpio_reg *gpio_reg,
-			uint32_t mask) {
-
+static inline void mik_gpio_irq_en(volatile struct gpio_reg *gpio_reg,
+    uint32_t mask) {
 }
 
 static inline void mik_gpio_irq_dis(volatile struct gpio_reg *gpio_reg,
-				uint32_t mask) {
+    uint32_t mask) {
 }
 
 static inline uint32_t mik_gpio_irq_get_status(
-					volatile struct gpio_reg *gpio_reg) {
+    volatile struct gpio_reg *gpio_reg) {
 	return 0;
-
 }
 
-static inline void mik_gpio_irq_clear_status(
-		volatile struct gpio_reg *gpio_reg, uint32_t mask) {
-
+static inline void mik_gpio_irq_clear_status(volatile struct gpio_reg *gpio_reg,
+    uint32_t mask) {
 }
 
 static inline volatile struct gpio_reg *mik_gpio_get_gpio_port(
-	unsigned char port) {
+    unsigned int port) {
 	switch (port) {
 	case 0:
 		return GPIOA;
@@ -102,7 +97,7 @@ irq_return_t mik_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
 	return IRQ_HANDLED;
 }
 
-static int mik_gpio_setup_irq(int port, uint32_t mask, int mode) {
+static int mik_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 	int res;
 	volatile struct gpio_reg *gpio_reg;
 	// int type;
@@ -120,34 +115,26 @@ static int mik_gpio_setup_irq(int port, uint32_t mask, int mode) {
 	}
 
 	if ((mode & GPIO_MODE_INT_MODE_LEVEL0)
-	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {
-	}
-	else {
-	}
+	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {}
+	else {}
 
 	if ((mode & GPIO_MODE_INT_MODE_RISING)
-	    && (mode & GPIO_MODE_INT_MODE_FALLING)) {
-	}
-	else {
-	}
+	    && (mode & GPIO_MODE_INT_MODE_FALLING)) {}
+	else {}
 
 	if ((mode & GPIO_MODE_INT_MODE_RISING)
-	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {
-	}
-	else {
-	}
-
+	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {}
+	else {}
 
 	if (mode & GPIO_MODE_IN_INT_EN) {
 		mik_gpio_irq_en(gpio_reg, mask);
 	}
 
-
 	return res;
 }
 
-static int mik_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
-    int mode) {
+static int mik_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
+    uint32_t mode) {
 	volatile struct gpio_reg *gpio_reg;
 	char *clk_name = NULL;
 	uint32_t alt = 0;
@@ -198,8 +185,8 @@ static int mik_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 			pull = 2;
 		}
 
-		if (mode & GPIO_MODE_OUT_ALTERNATE) {
-			alt = GPIO_GET_ALTERNATE(mode);
+		if (mode & GPIO_MODE_ALT_SECTION) {
+			alt = GPIO_MODE_ALT_GET(mode);
 		}
 
 		mik_pad_cfg_set_func(port, pin, alt);
@@ -214,7 +201,7 @@ static int mik_gpio_setup_mode(unsigned char port, gpio_mask_t pins,
 	return 0;
 }
 
-static void mik_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
+static void mik_gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 	volatile struct gpio_reg *gpio_reg;
 
 	gpio_reg = mik_gpio_get_gpio_port(port);
@@ -230,7 +217,7 @@ static void mik_gpio_set(unsigned char port, gpio_mask_t pins, char level) {
 	}
 }
 
-static gpio_mask_t mik_gpio_get(unsigned char port, gpio_mask_t pins) {
+static gpio_mask_t mik_gpio_get(unsigned int port, gpio_mask_t pins) {
 	volatile struct gpio_reg *gpio_reg;
 
 	gpio_reg = mik_gpio_get_gpio_port(port);
@@ -241,11 +228,12 @@ static gpio_mask_t mik_gpio_get(unsigned char port, gpio_mask_t pins) {
 	return gpio_reg->SET & pins;
 }
 
-static struct gpio_chip mik_gpio_chip = {
-	.setup_mode = mik_gpio_setup_mode,
+static const struct gpio_chip mik_gpio_chip = {
+    .setup_mode = mik_gpio_setup_mode,
     .get = mik_gpio_get,
     .set = mik_gpio_set,
-    .nports = 3
+    .nports = 3,
+    .chip_id = GPIO_CHIP_ID,
 };
 
 GPIO_CHIP_DEF(&mik_gpio_chip);

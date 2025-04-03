@@ -10,7 +10,7 @@
 #define SRC_DRIVERS_SPI_IMX6_ECSPI_H_
 
 #include <stdint.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #define IMX6_ECSPI_MAX_CS   4
 

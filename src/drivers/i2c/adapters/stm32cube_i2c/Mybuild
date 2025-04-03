@@ -8,7 +8,7 @@ module stm32cube_i2c {
 	source "stm32_i2c.c"
 
 	depends embox.driver.i2c
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 	depends third_party.bsp.st_bsp_api
 }
 

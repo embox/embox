@@ -18,7 +18,7 @@ extern void button_init(struct button *button, int port, int pin);
 extern void button_wait_set(struct button * button);
 extern void button_wait_reset(struct button * button);
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #define STM_USER_BUTTON_PIN                  0
 #define STM_USER_BUTTON_GPIO_PORT            GPIO_PORT_A

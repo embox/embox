@@ -33,7 +33,7 @@
 
 #if LAN9118_IRQ_TYPE == LAN9118_IRQ_GPIO /* If GPIO irq */
 #include <drivers/gpmc.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #define LAN9118_GPMC_CS           5 /* GPMC chip-select number */
 #define LAN9118_PORT              (OPTION_GET(NUMBER, port) - 1)

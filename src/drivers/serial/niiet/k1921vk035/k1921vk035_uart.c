@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/ttys.h>
 
 #include <framework/mod/options.h>
@@ -41,7 +41,7 @@ static int k1921vk035_uart_setup(struct uart *dev, const struct uart_params *par
     RCU_UARTRstCmd(uart_num, ENABLE);
 
     // This also enables gpio port
-    gpio_setup_mode(GPIO_PORT_B, uart_gpio_mask, GPIO_MODE_OUT_ALTERNATE);
+    gpio_setup_mode(GPIO_PORT_B, uart_gpio_mask, GPIO_MODE_ALT_SET(0));
 
     UART_Init_TypeDef uart_init_struct;
     UART_StructInit(&uart_init_struct);

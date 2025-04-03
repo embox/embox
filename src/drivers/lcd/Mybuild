@@ -19,7 +19,7 @@ module hd44780 {
 
 	source "hd44780.c"
 
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }
 /* include example (suitable for stm32vl)
 

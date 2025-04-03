@@ -5,7 +5,7 @@
  * @date 2016-04-04
  */
 
-#include <drivers/gpio/gpio_driver.h>
+#include <drivers/gpio.h>
 
 #include <feather/libbutton.h>
 
