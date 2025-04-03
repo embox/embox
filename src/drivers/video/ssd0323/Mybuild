@@ -1,0 +1,11 @@
+package embox.driver.video
+
+module ssd0323 {
+	option number display_width  = 128
+	option number display_height = 64
+
+	source "ssd0323.c"
+
+	depends embox.driver.video.fb
+	depends embox.driver.spi.core
+}
