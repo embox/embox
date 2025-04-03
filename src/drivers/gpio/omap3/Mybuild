@@ -1,6 +1,6 @@
 package embox.driver.gpio
 
-module omap3_gpio extends api {
+module omap3_gpio {
 	option number gpio_chip_id = 0
 
 	source "omap3_gpio.c", "omap3_gpio.h"
