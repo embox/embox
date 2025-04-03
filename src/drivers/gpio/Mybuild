@@ -2,23 +2,10 @@ package embox.driver.gpio
 
 module core {
 	option string log_level="LOG_ERR"
-	option number gpio_chips_count = 1
-	option number gpio_irqs_count = 4 /* Number of GPIO pins irq handlers */
-	option number gpio_hnd_prio = 200
+	option number irq_pool_size=4
 
-	/* User API */
-	@IncludeExport(path="drivers/gpio")
+	@IncludeExport(path="drivers")
 	source "gpio.h"
-
-	/* Driver API */
-	@IncludeExport(path="drivers/gpio")
-	source "gpio_driver.h"
-
 	source "gpio.c"
-	source "gpio_repo.c"
-
-	depends embox.kernel.lthread.lthread
+	source "gpio_irq.c"
 }
-
-/* Should be implemented by GPIO drivers */
-abstract module api {}

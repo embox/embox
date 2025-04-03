@@ -12,18 +12,21 @@
 #include <stdint.h>
 #include <sys/cdefs.h>
 
-typedef uint32_t gpio_mask_t;
+#include <lib/libds/array.h>
 
 #define GPIO_MODE_IN_SECTION  0x000000ff
 #define GPIO_MODE_OUT_SECTION 0x0000ff00
 #define GPIO_MODE_ALT_SECTION 0x00ff0000
 #define GPIO_MODE_INT_SECTION 0xff000000
 
+/* Each GPIO port must be (GPIO_CHIP_N | GPIO_PORT_M) */
 #define GPIO_PORT(port) (0xf & (port))
-#define GPIO_CHIP(port) ((0xf0 & (port)) >> 4)
+#define GPIO_CHIP(port) (0xf & ((port) >> 4))
 
 #define GPIO_CHIP0 (0 << 4)
 #define GPIO_CHIP1 (1 << 4)
+#define GPIO_CHIP2 (2 << 4)
+#define GPIO_CHIP3 (3 << 4)
 
 /* GPIO_MODE_IN_SECTION 0..7 */
 #define GPIO_MODE_IN           (1 << 0)
@@ -75,25 +78,41 @@ typedef uint32_t gpio_mask_t;
 #define GPIO_PIN_LOW  0
 #define GPIO_PIN_HIGH 1
 
+#define GPIO_CHIP_DEF(chip)                                               \
+	ARRAY_SPREAD_DECLARE(const struct gpio_chip *, __gpio_chip_registry); \
+	ARRAY_SPREAD_ADD(__gpio_chip_registry, chip)
+
+typedef uint32_t gpio_mask_t;
+typedef void (*gpio_irq_hnd_t)(void *);
+
+struct gpio_chip {
+	int (*setup_mode)(unsigned int port, gpio_mask_t pins, uint32_t mode);
+	void (*set)(unsigned int port, gpio_mask_t pins, int level);
+	gpio_mask_t (*get)(unsigned int port, gpio_mask_t pins);
+	unsigned int nports;
+	unsigned int chip_id;
+};
+
 __BEGIN_DECLS
-/* Each GPIO port must be (GPIO_CHIP_N | GPIO_PORT_M).
- * Be default, GPIO_PORT_N is default system GPIO controller number 0 */
 
-extern int gpio_setup_mode(unsigned short port, gpio_mask_t pins,
-    uint32_t mode);
+extern const struct gpio_chip *gpio_get_chip(unsigned int chip_id);
 
-extern void gpio_set(unsigned short port, gpio_mask_t pins, char level);
+extern int gpio_setup_mode(unsigned int port, gpio_mask_t pins, uint32_t mode);
 
-/* Toggles (inverts) specified pins, that is levels will be changed
- * 1 -> 0 and 0 -> 1 */
-extern void gpio_toggle(unsigned short port, gpio_mask_t pins);
+extern void gpio_set(unsigned int port, gpio_mask_t pins, int level);
 
-extern gpio_mask_t gpio_get(unsigned short port, gpio_mask_t pins);
+extern void gpio_toggle(unsigned int port, gpio_mask_t pins);
 
-extern int gpio_irq_attach(unsigned short port, gpio_mask_t pin,
-    void (*pin_handler)(void *), void *data);
+extern gpio_mask_t gpio_get(unsigned int port, gpio_mask_t pins);
 
-extern int gpio_irq_detach(unsigned short port, gpio_mask_t pin);
+extern int gpio_irq_attach(unsigned int port, gpio_mask_t pins,
+    gpio_irq_hnd_t handler, void *data);
+
+extern int gpio_irq_detach(unsigned int port, gpio_mask_t pins);
+
+extern void gpio_handle_irq(const struct gpio_chip *chip, unsigned int port,
+    gpio_mask_t pins);
+
 __END_DECLS
 
 #endif /* DRIVERS_GPIO_H_ */
