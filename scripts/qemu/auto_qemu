@@ -158,6 +158,8 @@ guess_machine() {
 				echo "-M sabrelite"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
 				echo "-M lm3s811evb"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s6965evb" > /dev/null; then
+				echo "-M lm3s6965evb"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry" > /dev/null; then
 				echo "-M raspi1ap"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry2" > /dev/null; then
@@ -373,6 +375,7 @@ GRAPHIC2QEMU=(
 	[bochs]="std"
 	[cirrus_logic]="cirrus"
 	[pl110]="pl110"
+	[ssd0323]="ssd0323"
 )
 
 qemu_graphic=$(guess_graphic)
@@ -385,7 +388,7 @@ if [ "$graphic_n" -gt 0 ]; then
 			if [ ! "$graphic_model" ]; then
 				graphic_lines="-nographic"
 			else
-				if [ "$graphic_model" = "pl110" ]; then
+				if [ "$graphic_model" = "pl110" ] || [ "$graphic_model" = "ssd0323" ]; then
 					graphic_lines="-serial mon:stdio"
 				else
 					graphic_lines="-vga $graphic_model -serial mon:stdio"
