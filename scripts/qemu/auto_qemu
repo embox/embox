@@ -375,6 +375,7 @@ GRAPHIC2QEMU=(
 	[bochs]="std"
 	[cirrus_logic]="cirrus"
 	[pl110]="pl110"
+	[ssd0323]="ssd0323"
 )
 
 qemu_graphic=$(guess_graphic)
@@ -387,7 +388,7 @@ if [ "$graphic_n" -gt 0 ]; then
 			if [ ! "$graphic_model" ]; then
 				graphic_lines="-nographic"
 			else
-				if [ "$graphic_model" = "pl110" ]; then
+				if [ "$graphic_model" = "pl110" ] || [ "$graphic_model" = "ssd0323" ]; then
 					graphic_lines="-serial mon:stdio"
 				else
 					graphic_lines="-vga $graphic_model -serial mon:stdio"
