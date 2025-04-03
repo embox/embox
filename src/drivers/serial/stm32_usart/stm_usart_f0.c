@@ -13,7 +13,7 @@
 
 #include <drivers/serial/diag_serial.h>
 #include <drivers/serial/uart_dev.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #include "stm32_usart_conf_f0.h"
 

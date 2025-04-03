@@ -2,7 +2,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <time.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/serial/uart_dev.h>
 #include <stdlib.h>
 #include <ctype.h>

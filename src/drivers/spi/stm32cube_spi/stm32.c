@@ -11,7 +11,7 @@
 
 #include "stm32_spi.h"
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/spi.h>
 #include <kernel/irq.h>
 #include <util/log.h>

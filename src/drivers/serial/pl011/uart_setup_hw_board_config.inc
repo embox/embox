@@ -1,6 +1,6 @@
 #include <config/board_config.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 extern int clk_enable(char *clk_name);
 

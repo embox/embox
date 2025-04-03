@@ -8,7 +8,7 @@
 #include <assert.h>
 
 #include <drivers/i2c/i2c.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #include <kernel/irq.h>
 

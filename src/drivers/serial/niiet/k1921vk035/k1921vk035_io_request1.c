@@ -1,6 +1,6 @@
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/ttys.h>
 #include "errno.h"
 #include "kernel/irq_lock.h"

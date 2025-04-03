@@ -20,7 +20,7 @@
 
 #include <drivers/dma/pl330_dma.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/gpio/bcm283x/bcm283x_gpio.h>
 #include <drivers/spi.h>
 

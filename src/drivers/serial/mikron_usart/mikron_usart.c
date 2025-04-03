@@ -10,7 +10,7 @@
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/gpio/mikron_gpio.h>
 
 #include <config/board_config.h>

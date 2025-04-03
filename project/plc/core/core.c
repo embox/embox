@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <time.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <kernel/time/time.h>
 #include <kernel/time/timer.h>
 #include <lib/libds/array.h>

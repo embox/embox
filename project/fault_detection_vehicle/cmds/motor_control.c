@@ -16,7 +16,7 @@
 #include <libmisc/led.h>
 #include <libmisc/button.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <config/board_config.h>
 
 #include <libfilters/filtered_derivative.h>

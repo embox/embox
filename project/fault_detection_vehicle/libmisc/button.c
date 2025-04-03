@@ -5,7 +5,7 @@
  */
 
 #include "button.h"
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 void button_init(struct button *button, int port, int pin) {
 	button->port = port;

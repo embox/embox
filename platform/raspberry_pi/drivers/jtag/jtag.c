@@ -10,7 +10,7 @@
 #include <kernel/printk.h>
 #include <framework/mod/options.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/gpio/bcm283x/bcm283x_gpio.h>
 
 #define CONFIG_DEFAULT  OPTION_GET(NUMBER,gpio_jtag_config)

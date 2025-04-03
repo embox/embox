@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <drivers/diag.h>

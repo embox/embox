@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <assert.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 static void print_usage(void) {
 	printf("USAGE:\npin <gpio> <pin> <state>\n"

@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <stdbool.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <embox/unit.h>
 #include <util/log.h>
 

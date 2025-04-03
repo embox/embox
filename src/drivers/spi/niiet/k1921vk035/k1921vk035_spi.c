@@ -11,7 +11,7 @@
 #include <framework/mod/options.h>
 #include <util/log.h>
 #include <assert.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <plib035_spi.h>
 #include <plib035_rcu.h>
 

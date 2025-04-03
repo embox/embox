@@ -8,7 +8,7 @@
 #ifndef SRC_DRIVERS_SPI_STM32_I2C_H_
 #define SRC_DRIVERS_SPI_STM32_I2C_H_
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 struct skeleton_spi {
 	void *instance;

@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/ttys.h>
 
 #include <framework/mod/options.h>

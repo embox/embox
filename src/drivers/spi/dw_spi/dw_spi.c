@@ -16,7 +16,7 @@
 #include <util/math.h>
 #include <kernel/irq.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #include "dw_spi.h"
 

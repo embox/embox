@@ -6,7 +6,7 @@
  * @date 12.06.2017
  */
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/spi.h>
 #include <embox/unit.h>
 #include <errno.h>

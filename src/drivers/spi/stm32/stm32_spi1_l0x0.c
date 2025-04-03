@@ -14,7 +14,7 @@
 #include <drivers/spi.h>
 #include <kernel/irq.h>
 #include <util/log.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 static struct stm32_spi stm32_spi1 = {0};
 

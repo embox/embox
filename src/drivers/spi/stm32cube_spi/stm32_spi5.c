@@ -7,7 +7,7 @@
  */
 
 #include <string.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/spi.h>
 
 #include "stm32_spi.h"

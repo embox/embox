@@ -8,7 +8,7 @@
 
 #include <unistd.h>
 #include <stdio.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/jtag/jtag.h>
 
 static void print_usage(void) {
