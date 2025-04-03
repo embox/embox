@@ -7,6 +7,6 @@ module servo {
 
 	source "servo.c"
 
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 	depends third_party.bsp.st_bsp_api
 }

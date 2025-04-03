@@ -9,5 +9,5 @@ module stm32cube_button {
 	source "stm32cube_button.c"
 
 	depends embox.driver.input.core
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }

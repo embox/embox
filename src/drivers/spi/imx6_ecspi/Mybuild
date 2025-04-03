@@ -6,7 +6,7 @@ static module imx6_ecspi {
 	source "imx6_ecspi.c"
 
 	depends core
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }
 
 module imx6_ecspi1 {

@@ -14,5 +14,5 @@ module dw_spi {
 
 	depends core
 	depends embox.driver.periph_memory
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }
