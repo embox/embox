@@ -9,7 +9,6 @@
 #include <stdint.h>
 
 #include <drivers/common/memory.h>
-#include <drivers/serial/diag_serial.h>
 #include <drivers/serial/uart_dev.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
