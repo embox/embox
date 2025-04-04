@@ -56,11 +56,11 @@ located_vars=$(tr -s '\r\n' ' ' <$tmp_dir/LOCATED_VARIABLES.h)
 # Write code to output file
 printf "#define __CONFIG_NAME \"$config\"\n\n" >$output_file
 printf "#define __LOCATED_VAR_LIST $located_vars\n\n" >>$output_file
+cat $ROOT_DIR/mk/plc/glue.c >>$output_file
 for file in $gen_files; do
 	printf "\n\n" >>$output_file
 	cat $file >>$output_file
 done
-cat $ROOT_DIR/mk/plc/glue.c >>$output_file
 
 # Remove header inclusions
 sed -i "/#include \"POUS.c\"/d" $output_file
