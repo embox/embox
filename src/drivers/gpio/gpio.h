@@ -35,10 +35,10 @@
 #define GPIO_MODE_IN_SCHMITT   (1 << 3)
 #define GPIO_MODE_IN_ALTERNATE (1 << 4)
 
-/* GPIO_MODE_OUT_SECTION 7..15 */
-#define GPIO_MODE_OUT            (1 << 7)
-#define GPIO_MODE_OUT_PUSH_PULL  (1 << 8)
-#define GPIO_MODE_OUT_OPEN_DRAIN (1 << 9)
+/* GPIO_MODE_OUT_SECTION 8..15 */
+#define GPIO_MODE_OUT            (1 << 8)
+#define GPIO_MODE_OUT_PUSH_PULL  (1 << 9)
+#define GPIO_MODE_OUT_OPEN_DRAIN (1 << 10)
 #define GPIO_MODE_VDD_LEVEL      (1 << 11)
 
 /* GPIO_MODE_ALT_SECTION 16..23 */
