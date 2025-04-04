@@ -30,7 +30,7 @@ struct gpio_irq {
 
 static DLIST_DEFINE(gpio_irq_list);
 
-static spinlock_t gpio_irq_list_lock;
+static spinlock_t gpio_irq_list_lock = SPIN_STATIC_UNLOCKED;
 
 POOL_DEF(gpio_irq_pool, struct gpio_irq, GPIO_IRQ_POOL_SIZE);
 

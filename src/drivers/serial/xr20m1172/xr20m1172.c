@@ -11,9 +11,11 @@
 #include <stdint.h>
 
 #include <drivers/common/memory.h>
+#include <drivers/gpio.h>
 #include <drivers/serial/diag_serial.h>
 #include <drivers/serial/uart_dev.h>
 #include <drivers/spi.h>
+#include <drivers/ttys.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
@@ -21,6 +23,9 @@
 #define CLK_FREQ OPTION_GET(NUMBER, clk_freq)
 #define SPI_BUS  OPTION_GET(NUMBER, spi_bus)
 #define SPI_CS   OPTION_GET(NUMBER, spi_cs)
+
+#define GPIO_IRQ_PORT OPTION_GET(NUMBER, gpio_irq_port)
+#define GPIO_IRQ_PIN  OPTION_GET(NUMBER, gpio_irq_pin)
 
 /**
  * General Register Set
@@ -73,10 +78,10 @@ static struct spi_device *spi_bus_dev;
 
 #define UART_REG_LOAD(reg)                      \
 	({                                          \
-		uint8_t buf[1];                         \
+		uint8_t buf[2];                         \
 		buf[0] = (reg << 3) | (1 << 7);         \
-		spi_transfer(spi_bus_dev, buf, buf, 1); \
-		buf[0];                                 \
+		spi_transfer(spi_bus_dev, buf, buf, 2); \
+		buf[1];                                 \
 	})
 
 #define UART_REG_STORE(reg, val)                 \
@@ -96,11 +101,11 @@ static struct spi_device *spi_bus_dev;
 #define UART_REG_CLEAR(reg, val) \
 	UART_REG_STORE(reg, UART_REG_LOAD(reg) & ~((uint8_t)val))
 
-static int xr20m1172_setup(struct uart *dev, const struct uart_params *params) {
-	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		UART_REG_ORIN(UART_IER, UART_IER_DR);
-	}
+static void xr20m1172_irq_handler(void *uart) {
+	uart_irq_handler(0 /* XXX */, uart);
+}
 
+static int xr20m1172_setup(struct uart *dev, const struct uart_params *params) {
 #if CLK_FREQ
 	uint16_t baud_divisor;
 	uint8_t lcr;
@@ -115,11 +120,21 @@ static int xr20m1172_setup(struct uart *dev, const struct uart_params *params) {
 	UART_REG_STORE(UART_LCR, lcr);
 #endif
 
+	gpio_irq_attach(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN, xr20m1172_irq_handler,
+	    dev);
+
+	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN,
+	    GPIO_MODE_IN | GPIO_MODE_INT_EN | GPIO_MODE_INT_MODE_FALLING);
+
+	UART_REG_ORIN(UART_IER, UART_IER_DR);
+
 	return 0;
 }
 
 static int xr20m1172_irq_en(struct uart *dev,
     const struct uart_params *params) {
+	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN, GPIO_MODE_INT_EN);
+
 	UART_REG_ORIN(UART_IER, UART_IER_DR);
 
 	return 0;
@@ -128,6 +143,8 @@ static int xr20m1172_irq_en(struct uart *dev,
 static int xr20m1172_irq_dis(struct uart *dev,
     const struct uart_params *params) {
 	UART_REG_CLEAR(UART_IER, UART_IER_DR);
+
+	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN, GPIO_MODE_INT_DIS);
 
 	return 0;
 }
