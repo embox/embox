@@ -153,4 +153,14 @@ module asinh_test {
 module acosh_test {
 	@Cflags("-fno-builtin")
 	source "acosh_test.c"
+} 
+
+module lrint_test {
+	@Cflags("-fno-builtin")
+	source "lrint_test.c"
+}  
+
+module llrint_test {
+	@Cflags("-fno-builtin")
+	source "llrint_test.c"
 }
