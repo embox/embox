@@ -14,6 +14,7 @@
 #include <util/macro.h>
 
 #include "iec_embox_lib.h"
+#include "iec_types_all.h" /* for __LOCATED_VAR_DEF */
 
 #ifndef __LOCATED_VAR_LIST
 #define __LOCATED_VAR_LIST
