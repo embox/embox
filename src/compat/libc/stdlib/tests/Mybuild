@@ -1,0 +1,5 @@
+package embox.test.stdlib
+
+module strtod_test {
+	source "strtod_test.c"
+}
