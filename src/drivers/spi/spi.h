@@ -53,10 +53,10 @@ struct spi_device {
 	bool is_master;
 	int bits_per_word;
 
-	struct spi_controller *spi_cntl;
-
 	struct spi_ops *spi_ops;
 	void *priv;
+
+	struct spi_controller *spi_cntl;
 };
 
 struct spi_ops {

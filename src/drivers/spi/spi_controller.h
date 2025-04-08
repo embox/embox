@@ -25,6 +25,7 @@
 	OPTION_MODULE_GET(embox__driver__spi__core, NUMBER, spi_quantity)
 
 struct spi_controller_ops;
+struct spi_device;
 
 struct spi_controller {
 	struct char_dev cdev;
@@ -38,10 +39,10 @@ struct spi_controller {
 };
 
 struct spi_controller_ops {
-	int (*init)(struct spi_controller *dev);
-	int (*select)(struct spi_controller *dev, int cs);
-	int (*set_mode)(struct spi_controller *dev, bool is_master);
-	int (*transfer)(struct spi_controller *dev, uint8_t *in, uint8_t *out, int cnt);
+	int (*init)(struct spi_device *dev);
+	int (*select)(struct spi_device *dev, int cs);
+	int (*set_mode)(struct spi_device *dev, bool is_master);
+	int (*transfer)(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
 };
 
 extern struct spi_controller *spi_ctrl_by_id(int id);
@@ -52,7 +53,7 @@ extern const struct char_dev_ops __spi_cdev_ops;
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
  #define SPI_CONTROLLER_DEF(dev_name, spi_dev_ops, dev_priv, idx)         \
- struct spi_device MACRO_CONCAT(spi_device, idx) = {           \
+ struct spi_controller MACRO_CONCAT(spi_device, idx) = {           \
 	 .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, idx).cdev, \
 		 MACRO_STRING(dev_name), &__spi_cdev_ops),             \
 	 .spi_ops = spi_dev_ops,                                   \
