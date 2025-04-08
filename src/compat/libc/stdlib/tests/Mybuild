@@ -3,3 +3,7 @@ package embox.test.stdlib
 module strtod_test {
 	source "strtod_test.c"
 }
+
+module bsearch_test {
+	source "bsearch_test.c"
+}
