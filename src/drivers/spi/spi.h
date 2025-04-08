@@ -56,7 +56,8 @@ struct spi_device {
 	struct spi_ops *spi_ops;
 	void *priv;
 
-	struct spi_controller *spi_cntl;
+	int                    spid_bus_num;
+	struct spi_controller *spid_spi_cntl;
 };
 
 struct spi_ops {
@@ -102,8 +103,11 @@ extern const struct char_dev_ops __spi_cdev_ops;
 	        MACRO_STRING(dev_name), &__spi_cdev_ops),             \
 	    .spi_ops = spi_dev_ops,                                   \
 	    .priv = dev_priv,                                         \
+		.spid_bus_num = idx,                                      \
 	};                                                            \
-	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, idx))
+	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, idx));	\
+	ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);       \
+	ARRAY_SPREAD_ADD(__spi_device_registry, &MACRO_CONCAT(spi_device, idx))
 
 /* IOCTL-related stuff */
 #define SPI_IOCTL_CS       0x1
