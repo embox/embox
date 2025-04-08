@@ -5,7 +5,8 @@ module core {
 	option number spi_quantity=6
 
 	@IncludeExport(path="drivers")
-	source "spi.h"
+	source "spi.h", "spi_controller.h", "spi_dma.h"
+
 	source "spi.c"
 	source "spi_dev.c"
 
