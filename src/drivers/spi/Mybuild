@@ -10,6 +10,7 @@ module core {
 	source "spi.c"
 	source "spi_dev.c"
 	source "spi_dev_repo.c"
+	source "spi_controller_repo.c"
 
 	depends embox.device.char_dev
 	depends embox.driver.dma.dma_api
