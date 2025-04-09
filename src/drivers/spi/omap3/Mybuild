@@ -1,0 +1,12 @@
+package embox.driver.spi
+
+module omap3_poll {
+	source "omap3_spi_poll.c"
+	source "omap3_spi_poll.h"
+}
+
+/*
+module omap3_irq {
+	source "omap3_spi_irq.c", "omap3_spi_irq.h"
+}
+*/
