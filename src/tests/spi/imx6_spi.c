@@ -7,17 +7,23 @@
  */
 
 #include <drivers/spi.h>
+
+#include <framework/mod/options.h>
 #include <embox/test.h>
 
-EMBOX_TEST_SUITE("Basic i.MX6 SPI flash test");
+EMBOX_TEST_SUITE("Basic SPI flash test");
 
-#define SPI_FLASH_BUS 0
-#define SPI_FLASH_CS  0
+#define SPI_FLASH_BUS    OPTION_GET(NUMBER,bus_num)
+#define SPI_FLASH_CS     OPTION_GET(NUMBER,cs_num)
+
+#define JEDEC_BYTE1     0xbf
+#define JEDEC_BYTE2     0x25
+#define JEDEC_BYTE3     0x41
 
 TEST_CASE("Read JEDEC ID") {
 	struct spi_device *dev;
-	uint8_t _spi_out[] = {0x9f, 0x9f, 0x9f, 0x9f}; /* JEDEC ID */
-	uint8_t _spi_in[4];
+	uint8_t buf_out[] = {0x9f, 0x0, 0x0, 0x0}; /* JEDEC ID */
+	uint8_t buf_in[4];
 	int res;
 
 	dev = spi_dev_by_id(SPI_FLASH_BUS);
@@ -28,8 +34,9 @@ TEST_CASE("Read JEDEC ID") {
 	res = spi_select(dev, SPI_FLASH_CS);
 	test_assert(res == 0);
 
-	res = spi_transfer(dev, _spi_out, _spi_in, 4);
-	test_assert(res == 0 &&
-	            _spi_in[0] == 0x00 && _spi_in[1] == 0xbf &&
-	            _spi_in[2] == 0x25 && _spi_in[3] == 0x41);
+	res = spi_transfer(dev, buf_out, buf_in, 4);
+	test_assert(res == 0);
+	test_assert(buf_in[1] == JEDEC_BYTE1);
+	test_assert(buf_in[2] == JEDEC_BYTE2);
+	test_assert(buf_in[3] == JEDEC_BYTE3);
 }
