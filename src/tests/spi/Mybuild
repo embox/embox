@@ -1,8 +1,8 @@
 package embox.test.spi
 
-module imx6_test {
+module spi_jedec_test {
 	option number bus_num = 0
 	option number cs_num = 0
 
-	source "imx6_spi.c"
+	source "spi_jedec_test.c"
 }
