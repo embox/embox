@@ -150,11 +150,6 @@ module asinh_test {
 	source "asinh_test.c"
 }
 
-module log2_test {
-	@Cflags("-fno-builtin")
-	source "log2_test.c"
-}
-
 module acosh_test {
 	@Cflags("-fno-builtin")
 	source "acosh_test.c"
@@ -168,4 +163,9 @@ module lrint_test {
 module llrint_test {
 	@Cflags("-fno-builtin")
 	source "llrint_test.c"
+}
+
+module log2_test {
+	@Cflags("-fno-builtin")
+	source "log2_test.c"
 }
