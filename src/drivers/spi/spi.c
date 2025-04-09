@@ -18,7 +18,8 @@
 #include <framework/mod/options.h>
 #include <util/log.h>
 
-ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry); 
+ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);
+ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);
 
 /**
  * @brief Call device-specific init handlers for all
@@ -28,10 +29,26 @@ ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);
  */
 static int spi_init(void) {
 	struct spi_device *dev;
+	struct spi_controller *ctrl;
+
+	array_spread_foreach(ctrl, __spi_controller_registry) {
+		assert(ctrl);
+
+		if (!ctrl->spi_ops) {
+			continue;
+		}
+
+		if (ctrl->spi_ops->init) {
+			ctrl->spi_ops->init(ctrl);
+		}
+		else {
+			log_warning("SPI%d has no init funcion", ctrl->spic_bus_num);
+		}
+	}
 
 	array_spread_foreach(dev, __spi_device_registry) {
 		assert(dev);
-
+		dev->spid_spi_cntl = spi_controller_by_id(dev->spid_bus_num);
 		if (!dev->spi_ops) {
 			continue;
 		}
