@@ -18,8 +18,11 @@ PKG_MD5          := $(PKG_MD5_$(PKG_VER))
 ifeq ("$(PKG_VER)","4.5.2")
 PKG_PATCHES := patch_4_5_2/disable_wstring.patch \
                patch_4_5_2/disable_dlopen.patch \
-               patch_4_5_2/disable_fpu_cortex_m.patch \
                patch_4_5_2/add_if_defined_embox.patch
+
+ifeq (1,$(call gxx_macro_get,__thumb__))
+PKG_PATCHES += patch_4_5_2/disable_fpu_cortex_m.patch
+endif
 
 ifeq (1,$(call option_get,BOOLEAN,hack_4_5_2_disable_fonts))
 PKG_PATCHES += patch_4_5_2/disable_hershey_fonts.patch
@@ -39,6 +42,14 @@ ifeq (1,$(call option_get_with_ffmpeg))
 WITH_FFMPEG := ON
 else
 WITH_FFMPEG := OFF
+endif
+
+ifeq (1,$(call gxx_macro_get,__ARM_NEON__))
+INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=ON -DENABLE_NEON=ON
+else ifeq (1,$(call gxx_macro_get,__SSE2__))
+INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=ON -DENABLE_SSE2=ON
+else
+INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=OFF
 endif
 
 CV_LOG_LEVEL := $(call option_get,NUMBER,cv_log_level)
@@ -84,7 +95,7 @@ OPENCV_FLAGS = \
 		-DCPACK_SOURCE_TGZ=OFF \
 		-DCPACK_SOURCE_TXZ=OFF \
 		-DCPACK_SOURCE_TZ=OFF \
-		-DCV_ENABLE_INTRINSICS=OFF \
+		$(INTRINSIC_FLAGS) \
 		-DCV_TRACE=OFF \
 		-DENABLE_CCACHE=OFF \
 		-DENABLE_OMIT_FRAME_POINTER=OFF \
@@ -130,8 +141,7 @@ OPENCV_FLAGS = \
 		-DCMAKE_CXX_FLAGS:STRING="$(CV_CXX_FLAGS)" \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
 		-DCMAKE_BUILD_TYPE:STRING=None \
-		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
-		-DC_HAS_MFPU_NEON=0
+		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on
 
 include $(EXTBLD_TARGETS)
 
