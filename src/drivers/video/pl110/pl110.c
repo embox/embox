@@ -25,6 +25,15 @@
 #define PL110_BASE           OPTION_GET(NUMBER, base_addr)
 #define PL110_DISPLAY_WIDTH  OPTION_GET(NUMBER, display_width)
 #define PL110_DISPLAY_HEIGHT OPTION_GET(NUMBER, display_height)
+#define PL110_VERSION_PL111  OPTION_GET(BOOLEAN, version_pl111)
+
+#if PL110_VERSION_PL111
+#define __PL110_IMSC    (PL110_BASE + 0x01C)
+#define __PL110_CONTROL (PL110_BASE + 0x018)
+#else
+#define __PL110_IMSC    (PL110_BASE + 0x018)
+#define __PL110_CONTROL (PL110_BASE + 0x01C)
+#endif
 
 #define PL110_TIMING0    (PL110_BASE + 0x000)
 #define PL110_PPL_MASK   0xFC
@@ -35,8 +44,8 @@
 #define PL110_TIMING3    (PL110_BASE + 0x00C)
 #define PL110_UPBASE     (PL110_BASE + 0x010)
 #define PL110_LPBASE     (PL110_BASE + 0x014)
-#define PL110_IMSC       (PL110_BASE + 0x018)
-#define PL110_CONTROL    (PL110_BASE + 0x01C)
+#define PL110_IMSC       __PL110_IMSC
+#define PL110_CONTROL    __PL110_CONTROL
 #define PL110_BPP_MASK   0xE
 #define PL110_BPP_OFFT   1
 #define PL110_LCD_EN     (1 << 0)
