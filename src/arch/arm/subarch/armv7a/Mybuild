@@ -1,6 +1,7 @@
 package embox.arch.arm.armv7a
 
 module head extends embox.arch.arm.head {
+	option boolean strict_alignment=true
 	option number multi_processing=0
 
 	source "hardware_init_hook.S"
