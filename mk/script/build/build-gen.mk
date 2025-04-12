@@ -664,8 +664,7 @@ $(@source_rmk) : flags = $(call trim, \
 		-include $(patsubst %,$(value module_config_h_pat),$(mod_path)) -D__EMBUILD_MOD__=$(call module_id,$(module)) \
 		$(call check_profiling,$(instrument)) \
 		$(call do_flags,,$(additional_cflags)) \
-		$(call do_flags,-include,$(includes_header)) \
-		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_artpath_cppflags_before)))
+		$(call do_flags,-include,$(includes_header)))
 
 $(@source_rmk) : __bld_var_list = $(join \
 		$(call annotation_value,$(call build_deps_all,$(call get,$(module),allTypes)),$(my_bld_var_name)), \
