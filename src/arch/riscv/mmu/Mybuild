@@ -7,3 +7,7 @@ module mmu extends embox.mem.vmem{
 	
 	depends embox.mem.vmem_depends
 }
+
+module mmuinfo extends embox.arch.mmuinfo {
+        source "mmuinfo.c"
+}
