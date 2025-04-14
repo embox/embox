@@ -18,47 +18,8 @@
 #include <framework/mod/options.h>
 #include <util/log.h>
 
-/* Assume we have 4 SPI devices at most */
-#if SPI_REGISTRY_SZ > 0
-struct spi_device spi_device0 __attribute__((weak));
-#endif
-#if SPI_REGISTRY_SZ > 1
-struct spi_device spi_device1 __attribute__((weak));
-#endif
-#if SPI_REGISTRY_SZ > 2
-struct spi_device spi_device2 __attribute__((weak));
-#endif
-#if SPI_REGISTRY_SZ > 3
-struct spi_device spi_device3 __attribute__((weak));
-#endif
-#if SPI_REGISTRY_SZ > 4
-struct spi_device spi_device4 __attribute__((weak));
-#endif
-#if SPI_REGISTRY_SZ > 5
-struct spi_device spi_device5 __attribute__((weak));
-#endif
-
-/* Note: it's array of pointers, not structures as usual */
-struct spi_device *spi_device_registry[SPI_REGISTRY_SZ] = {
-#if SPI_REGISTRY_SZ > 0
-    &spi_device0,
-#endif
-#if SPI_REGISTRY_SZ > 1
-    &spi_device1,
-#endif
-#if SPI_REGISTRY_SZ > 1
-    &spi_device2,
-#endif
-#if SPI_REGISTRY_SZ > 1
-    &spi_device3,
-#endif
-#if SPI_REGISTRY_SZ > 1
-    &spi_device4,
-#endif
-#if SPI_REGISTRY_SZ > 1
-    &spi_device5
-#endif
-};
+ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);
+ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);
 
 /**
  * @brief Call device-specific init handlers for all
@@ -68,12 +29,26 @@ struct spi_device *spi_device_registry[SPI_REGISTRY_SZ] = {
  */
 static int spi_init(void) {
 	struct spi_device *dev;
+	struct spi_controller *ctrl;
 
-	for (int i = 0; i < SPI_REGISTRY_SZ; i++) {
-		dev = spi_device_registry[i];
+	array_spread_foreach(ctrl, __spi_controller_registry) {
+		assert(ctrl);
 
+		if (!ctrl->spi_ops) {
+			continue;
+		}
+
+		if (ctrl->spi_ops->init) {
+			ctrl->spi_ops->init(ctrl);
+		}
+		else {
+			log_warning("SPI%d has no init funcion", ctrl->spic_bus_num);
+		}
+	}
+
+	array_spread_foreach(dev, __spi_device_registry) {
 		assert(dev);
-
+		dev->spid_spi_cntl = spi_controller_by_id(dev->spid_bus_num);
 		if (!dev->spi_ops) {
 			continue;
 		}
@@ -82,44 +57,13 @@ static int spi_init(void) {
 			dev->spi_ops->init(dev);
 		}
 		else {
-			log_warning("SPI%d has no init funcion", i);
+			log_warning("SPI%d has no init funcion", dev->spid_bus_num);
 		}
 	}
 
 	return 0;
 }
 EMBOX_UNIT_INIT(spi_init);
-
-/**
- * @brief Get SPI device pointer by it's ID
- */
-struct spi_device *spi_dev_by_id(int id) {
-	if (id < 0 || id >= SPI_REGISTRY_SZ) {
-		return NULL;
-	}
-
-	if (spi_device_registry[id]->spi_ops != NULL) {
-		return spi_device_registry[id];
-	}
-	else {
-		return NULL;
-	}
-}
-
-/**
- * @brief Return device ID by it's pointer
- */
-int spi_dev_id(struct spi_device *dev) {
-	for (int i = 0; i < SPI_REGISTRY_SZ; i++) {
-		if (dev == spi_device_registry[i]
-		    && spi_device_registry[i]->spi_ops != NULL) {
-			return i;
-		}
-	}
-
-	log_error("Wrong SPI device pointer: %p", dev);
-	return -1;
-}
 
 /**
  * @brief Perform device-dependent SPI transfer operation

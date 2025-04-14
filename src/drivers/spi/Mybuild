@@ -5,21 +5,13 @@ module core {
 	option number spi_quantity=6
 
 	@IncludeExport(path="drivers")
-	source "spi.h"
+	source "spi.h", "spi_controller.h", "spi_dma.h"
+
 	source "spi.c"
 	source "spi_dev.c"
+	source "spi_dev_repo.c"
+	source "spi_controller_repo.c"
 
 	depends embox.device.char_dev
 	depends embox.driver.dma.dma_api
 }
-
-module omap3_poll {
-	source "omap3_spi_poll.c"
-	source "omap3_spi_poll.h"
-}
-
-/*
-module omap3_irq {
-	source "omap3_spi_irq.c", "omap3_spi_irq.h"
-}
-*/
