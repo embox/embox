@@ -13,6 +13,8 @@
 
 #define MMU_LEVELS              2
 
+#define MMU_PTE_PMASK           0Xfffff000
+
 // Define PTE flags
 #define MMU_PAGE_PRESENT        (1UL << 0)   // Page Table Entry Present flag
 #define MMU_PAGE_WRITABLE       (1UL << 1)   // Page Table Entry Writable flag

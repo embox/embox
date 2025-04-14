@@ -72,22 +72,12 @@ int mmu_present(int lvl, uintptr_t *entry)  {
 }
 
 void mmu_set(int lvl, uintptr_t *entry, uintptr_t value) {
-    switch (lvl) {
-    case 0:
-        *entry = ((value & MMU_PAGE_MASK) | MMU_PTE_FLAG | MMU_PAGE_PRESENT);
-        break;
-    case 1:
-        *entry = ((value & MMU_PAGE_MASK) | MMU_PAGE_PRESENT);
-        break;
-    default:
-        log_error("Invalid level=%d for RISC-V MMU", lvl);
-        break;
-    }
+    *entry = (value | MMU_PTE_FLAG | MMU_PAGE_PRESENT);
 }
 
 
 uintptr_t *mmu_get(int lvl, uintptr_t *entry) {
-    return (uintptr_t *) (*entry & MMU_PAGE_MASK);
+    return (uintptr_t *) (*entry & MMU_PTE_PMASK);
 }
 
 void mmu_unset(int lvl, uintptr_t *entry) {
