@@ -75,9 +75,6 @@ $(EMBOX_GCC_ENV): | $(dir $(EMBOX_GCC_ENV))
 TOOLCHAIN_TEST_SRC := $(ROOT_DIR)/mk/extbld/toolchain_test.c
 TOOLCHAIN_TEST_OUT := $(OBJ_DIR)/toolchain_test
 
-include $(EXTBLD_LIB)
-include $(SRCGEN_DIR)/build.mk
-
 .PHONY : do_test
 do_test : $(TOOLCHAIN_TEST_OUT)
 
@@ -87,4 +84,3 @@ ifeq ($(filter usermode%,$(ARCH)),)
 else
 	@echo "Full linking mode isn't supported for usermode arch!"
 endif
-

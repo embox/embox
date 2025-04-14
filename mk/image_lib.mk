@@ -29,6 +29,11 @@ cpp_prerequisites             = $(common_prereqs)
 extbld_prerequisites          = $(common_prereqs)
 include_install_prerequisites = $(common_prereqs)
 
+flags_before ?=
+flags ?=
+iec2c ?=
+ieclib ?=
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
