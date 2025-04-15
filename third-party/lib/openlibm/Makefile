@@ -1,4 +1,6 @@
 
+include $(EXTBLD_DEFINES)
+
 PKG_NAME := openlibm
 PKG_VER  := 0.8.3
 
@@ -6,15 +8,8 @@ PKG_SOURCES := https://github.com/JuliaMath/openlibm/archive/refs/tags/v$(PKG_VE
 PKG_MD5     := 8bdbe6bf53dfb8790b8ccb98773cafd6
 PKG_PATCHES := openlibm.patch
 
-include $(EXTBLD_LIB)
-include $(ROOT_DIR)/mk/core/compiler.mk
-
-define get_macro_float_h
-$(shell echo $(1) | $(EMBOX_GCC) -P -E -include $(SRC_DIR)/compat/posix/include/float.h -)
-endef
-
-DBL_MANT_DIG  := $(call get_macro_float_h,DBL_MANT_DIG)
-LDBL_MANT_DIG := $(call get_macro_float_h,LDBL_MANT_DIG)
+DBL_MANT_DIG  := $(call gcc_macro_get,__DBL_MANT_DIG__)
+LDBL_MANT_DIG := $(call gcc_macro_get,__LDBL_MANT_DIG__)
 
 ifneq ($(DBL_MANT_DIG),53)
 $(error Invalid DBL_MANT_DIG)
@@ -38,28 +33,30 @@ endif
 
 OLIBM_CPPFLAGS := -D__ELF__
 
-ifeq ($(ARCH), aarch64)
+ifeq ($(EMBOX_ARCH), aarch64)
 OLIBM_ARCH := aarch64
-else ifeq ($(ARCH), arm)
+else ifeq ($(EMBOX_ARCH), arm)
 OLIBM_ARCH := arm
-else ifeq ($(ARCH), mips)
+else ifeq ($(EMBOX_ARCH), mips)
 OLIBM_ARCH := mips
-else ifeq ($(ARCH), mips64)
+else ifeq ($(EMBOX_ARCH), mips64)
 OLIBM_ARCH := mips
-else ifeq ($(ARCH), ppc)
+else ifeq ($(EMBOX_ARCH), ppc)
 OLIBM_ARCH := powerpc
 OLIBM_CPPFLAGS := -D__powerpc__
-else ifeq ($(ARCH), riscv)
+else ifeq ($(EMBOX_ARCH), riscv)
 OLIBM_ARCH := riscv64
-else ifeq ($(ARCH), riscv64)
+else ifeq ($(EMBOX_ARCH), riscv64)
 OLIBM_ARCH := riscv64
-else ifeq ($(ARCH), usermode86)
+else ifeq ($(EMBOX_ARCH), usermode86)
 OLIBM_ARCH := i387
-else ifeq ($(ARCH), x86)
+else ifeq ($(EMBOX_ARCH), x86)
 OLIBM_ARCH := i387
 else
 $(error Unsupported architecture)
 endif
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	touch $@

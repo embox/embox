@@ -4,7 +4,7 @@ PKG_VER  := 3.4.4
 PKG_SOURCES := https://github.com/libffi/libffi/releases/download/v3.4.4/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5 := 0da1a5ed7786ac12dcbaf0d499d8a049
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

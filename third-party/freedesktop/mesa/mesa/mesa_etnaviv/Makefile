@@ -9,15 +9,14 @@ PKG_MD5     := b31a43ebb8b37fb704a9a75c90bbd71b
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
-
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(EMBOX_ARCH)/include
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(EMBOX_ARCH)/include -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/
 MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/
 MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv -DHAVE_FUNC_ATTRIBUTE_WEAK
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

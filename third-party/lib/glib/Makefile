@@ -7,7 +7,7 @@ PKG_MD5 := e32b090f0c24a6be61479a6e7a3f2a77
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

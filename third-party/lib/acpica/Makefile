@@ -6,7 +6,7 @@ PKG_MD5     := ca8425f76b1b42cb4956e81025c1df6d
 
 PKG_PATCHES := acenv.h.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	touch $@

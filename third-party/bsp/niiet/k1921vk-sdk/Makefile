@@ -10,4 +10,4 @@ PKG_MD5     := 71fd3b348ba42254f137aa40e4671b8f
 
 PKG_PATCHES := add_embox_clock_config.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)

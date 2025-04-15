@@ -8,4 +8,4 @@ PKG_MD5     := c16271bdba349cdc03ae5bc3746a2e24
 
 PKG_PATCHES := cmsis_strex_output_fix.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)

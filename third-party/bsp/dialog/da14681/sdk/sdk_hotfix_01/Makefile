@@ -5,7 +5,7 @@ PKG_SOURCES := https://support.dialog-semiconductor.com/system/files/restricted/
 
 PKG_MD5     := cfd1fc53947c2c6350cd8dd6afdac983
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \

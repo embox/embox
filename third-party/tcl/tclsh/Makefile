@@ -8,9 +8,9 @@ PKG_MD5     := aae4b701ee527c6e4e1a6f9c7399882e
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tclsh/tcl_embox_compat.h
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \

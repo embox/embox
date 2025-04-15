@@ -1,7 +1,7 @@
 HOST_SRCS := $(wildcard *.c)
 HOST_OBJS := $(addprefix $(BUILD_DIR)/,$(HOST_SRCS:.c=.o))
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(BUILD) : $(HOST_OBJS)
 	@touch $@

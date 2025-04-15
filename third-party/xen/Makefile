@@ -6,7 +6,7 @@ PKG_SOURCES := https://downloads.xenproject.org/release/xen/$(PKG_VER)/$(PKG_NAM
 
 PKG_MD5 := d3b13c4c785601be2f104eaddd7c6a00
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(INSTALL) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \

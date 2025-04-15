@@ -8,8 +8,6 @@ PKG_MD5     := 466ff0b534ee656cbb0e0e33871df31f
 PKG_PATCHES := patch.txt \
 	fix_boost_warnings.txt
 
-include $(EXTBLD_LIB)
-
 QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/qpid/include \
 	-I$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include\
@@ -21,6 +19,8 @@ QPID_CXX_FLAGS="-include $(ROOT_DIR)/third-party/qpid/qpid_embox_compat.h \
 QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/lib"
 
 QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include;$(ROOT_DIR)/third-party/qpid/include"
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	#ln $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true

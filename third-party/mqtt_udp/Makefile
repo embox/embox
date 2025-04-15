@@ -8,7 +8,7 @@ PKG_MD5 	:= f881143ae137868bf1ed4308e1844e49
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR)/lang/c && aclocal && autoconf && (./configure \

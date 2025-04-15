@@ -8,10 +8,10 @@ PKG_MD5     := 8ef664b6eb698aa6b733df59b17b9ed4
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 E2FSPROGS_CPPFLAGS = -include $(ROOT_DIR)/third-party/e2fsprogs/e2fsprogs_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/e2fsprogs/include
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \

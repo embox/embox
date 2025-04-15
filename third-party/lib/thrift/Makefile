@@ -8,7 +8,7 @@ PKG_MD5     := 0be59730ebce071eceaf6bfdb8d3a20e
 THRIFT_CXXFLAGS = -I$(ROOT_DIR)/build/extbld/third_party/boost/libs/install/include
 THRIFT_CXXFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/lib/openssl/install/include
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

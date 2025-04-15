@@ -7,9 +7,9 @@ PKG_MD5     := 43c734bf63157ec277d706879dc3b2c0
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
-
 IPERF3_CPPFLAGS := -I$(ROOT_DIR)/third-party/iperf3/include
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

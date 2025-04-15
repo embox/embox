@@ -18,12 +18,10 @@
 #      libsupc++, and libstdc++. With "Thread mode: posix".
 #
 
-define option_get_string
-$(shell echo OPTION_STRING_third_party__gcc__gcc_build__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/gcc/gcc_build.h -)
-endef
+include $(EXTBLD_DEFINES)
 
 PKG_NAME    := gcc
-PKG_VER     := $(call option_get_string,gcc_version)
+PKG_VER     := $(call option_get,STRING,gcc_version)
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_PATCHES := gcc_$(PKG_VER).patch
 
@@ -32,8 +30,6 @@ PKG_MD5_8.3.0  := 9972f8c24c02ebcb5a342c1b30de69ff
 PKG_MD5_9.3.0  := 9b7e8f6cfad96114e726c752935af58a
 PKG_MD5_13.3.0 := f6e5402827861cd5397b3947bc7b8ff2
 PKG_MD5        := $(PKG_MD5_$(PKG_VER))
-
-include $(EXTBLD_LIB)
 
 ifeq (arm,$(EMBOX_ARCH))
 GCC_TARGET := arm-none-eabi
@@ -62,6 +58,8 @@ LIBSTDCXX_CXXFLAGS := -frtti
 else
 LIBSTDCXX_CXXFLAGS :=
 endif
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	$(MKDIR) $(GCC_BUILD_DIR) && cd $(GCC_BUILD_DIR) && ( \

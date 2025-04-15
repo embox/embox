@@ -7,8 +7,6 @@ PKG_MD5     := 127aee4c5ecb2935b3ee631c48827d69
 
 PKG_PATCHES := staticperl.patch
 
-include $(EXTBLD_LIB)
-
 PERL_VERSION := https://www.cpan.org/src/5.0/perl-5.8.9.tar.bz2
 
 PERL_CPPFLAGS := \
@@ -23,6 +21,8 @@ PERL_CPPFLAGS := \
 STATICPERL     = $(PKG_SOURCE_DIR)/.staticperl
 STATICPERL_TMP = $(PKG_SOURCE_DIR)/.staticperl.tmp
 PERL_SRC       = $(STATICPERL)/src/perl
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export STATICPERL=$(STATICPERL_TMP); \

@@ -1,10 +1,10 @@
 
-include $(EXTBLD_LIB)
-
 JAVACALL_DIR := $(BUILD_DIR)/src
 JAVACALL_OUTPUT_DIR := $(BUILD_DIR)
 TOOLS_DIR := $(BUILD_DIR)/../src/phoneme/tools
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \

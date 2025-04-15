@@ -6,9 +6,9 @@ PKG_SOURCE_DIR := $(EXTERNAL_BUILD_DIR)/third_party/ffmpeg/$(PKG_NAME)-$(PKG_VER
 PKG_SOURCES := https://ffmpeg.org/releases/$(PKG_NAME)-$(PKG_VER).tar.bz2
 PKG_MD5	:= 804707549590e90880e8ecd4e5244fd8
 
-include $(EXTBLD_LIB)
-
 FF_CPPFLAGS := -I$(ROOT_DIR)/third-party/lib/ffmpeg/include
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

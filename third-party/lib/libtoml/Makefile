@@ -4,7 +4,7 @@ PKG_SOURCES := https://github.com/arp242/$(PKG_NAME)/archive/$(PKG_VER).zip
 
 PKG_MD5     := 2584710bf290c778321a34b716249803
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
