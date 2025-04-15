@@ -1,13 +1,17 @@
+
 include $(MKGEN_DIR)/build.mk
-include $(ROOT_DIR)/mk/variables.mk
+
+CHIP_VENDOR ?=
+PLATFORM_VENDOR ?=
 
 HOSTCC := cc
 
-BOARD_CONF         := $(CONF_DIR)/board.conf.h
-BOARD_CONF_DIR     := $(ROOT_DIR)/board_config
-BOARD_CONF_GEN_DIR := $(ROOT_DIR)/mk/board_conf
-BOARD_CONF_EXT_DIR := $(EXT_PROJECT_DIR)/board_config
-
+BOARD_CONF          := $(CONF_DIR)/board.conf.h
+BOARD_CONF_DIR      := $(ROOT_DIR)/board_config
+BOARD_CONF_GEN_DIR  := $(ROOT_DIR)/mk/board_conf
+BOARD_CONF_EXT_DIR  := $(EXT_PROJECT_DIR)/board_config
+CHIP_VENDOR_DIR     := $(PLATFORM_DIR)/$(CHIP_VENDOR)/board_config
+PLATFORM_VENDOR_DIR := $(PLATFORM_DIR)/$(PLATFORM_VENDOR)/board_config
 
 board_config_h := $(SRCGEN_DIR)/include/config/board_config.h
 GEN_EXE        := $(BUILD_DIR)/gen_board_conf
