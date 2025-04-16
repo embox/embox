@@ -1,6 +1,6 @@
-diff -aur App-Staticperl-1.46/bin/staticperl ../build/extbld/third_party/staticperl/App-Staticperl-1.46/bin/staticperl
+diff -aur App-Staticperl-1.46/bin/staticperl ../build/extbld/third_party/cmd/perl/App-Staticperl-1.46/bin/staticperl
 --- App-Staticperl-1.46/bin/staticperl	2022-02-15 21:36:36.000000000 +0300
-+++ ../build/extbld/third_party/staticperl/App-Staticperl-1.46/bin/staticperl	2023-04-18 12:36:34.015579498 +0300
++++ ../build/extbld/third_party/cmd/perl/App-Staticperl-1.46/bin/staticperl	2023-04-18 12:36:34.015579498 +0300
 @@ -3,18 +3,18 @@
  #############################################################################
  # configuration to fill in (or to replace in your .staticperlrc)
