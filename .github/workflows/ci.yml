@@ -22,7 +22,7 @@ jobs:
           - sparc/qemu
           - microblaze/qemu
           - usermode86/debug
-          - project/opencv/arm-qemu
+          - project/opencv/vexpress-a9
           - project/qt4/arm_qemu_fb_small
           - platform/stm32/f4/stm32f4-discovery
     container:
