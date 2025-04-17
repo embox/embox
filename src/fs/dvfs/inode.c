@@ -54,9 +54,9 @@ char *inode_name_set(struct inode *node, const char *name) {
 	char *node_name;
 	size_t name_len;
 
-	name_len = min(sizeof(node->i_dentry->name) - 1, strlen(name));
+	node_name = node->i_dentry->name;
+	name_len = sizeof(node->i_dentry->name) - 1;
 	
-	node_name = inode_name(node);
 	strncpy(node_name, name, name_len);
 	node_name[name_len] = '\0';
 
