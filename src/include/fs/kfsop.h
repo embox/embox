@@ -34,8 +34,6 @@ extern int krename(const char *oldpath, const char *newpath);
 
 extern int kflock(int fd, int operation);
 
-extern int kutime(const char *path, const struct utimbuf *times);
-
 extern int kfile_change_stat(struct inode *node, const struct utimbuf *times);
 
 #endif /* FS_KFSOP_H_ */
