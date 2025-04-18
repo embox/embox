@@ -9,7 +9,7 @@ PKG_MD5     := 2d6fb47ddf62b51733227126fe9227fe
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 samba_cppflags = -include $(ROOT_DIR)/third-party/ntfs-3g/ntfs-3g_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/ntfs-3g/include \

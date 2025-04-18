@@ -10,28 +10,23 @@ ifeq ($(strip $(BUILD_DIR)),)
 $(error BUILD_DIR is not set)
 endif
 
-include $(ROOT_DIR)/mk/core/common.mk
-include $(ROOT_DIR)/mk/core/string.mk
-
-.PHONY : all download extract patch configure build install
-
-all : download extract patch configure build install
-
-PKG_INSTALL_DIR  := $(BUILD_DIR)/install
-PKG_SOURCE_DIR   = $(filter-out %/install,$(wildcard $(BUILD_DIR)/*))
-DOWNLOAD_BASEDIR := $(ROOT_DIR)/download
-ifeq ($(value PKG_DOWNLOADS_SEPARATE),)
-DOWNLOAD_DIR     := $(DOWNLOAD_BASEDIR)
-else
-DOWNLOAD_DIR     := $(DOWNLOAD_BASEDIR)/$(PKG_NAME)
-endif
-
-$(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
-	mkdir -p $@
-
 PKG_NAME    ?=
 PKG_VER     ?=
 PKG_SOURCES ?=
+PKG_PATCHES ?=
+
+.PHONY : all download extract patch configure build install
+all : download extract patch configure build install
+
+PKG_SOURCE_DIR    = $(filter-out %/install,$(wildcard $(BUILD_DIR)/*))
+PKG_INSTALL_DIR  := $(BUILD_DIR)/install
+DOWNLOAD_BASEDIR := $(ROOT_DIR)/download
+
+ifeq ($(value PKG_DOWNLOADS_SEPARATE),)
+DOWNLOAD_DIR := $(DOWNLOAD_BASEDIR)
+else
+DOWNLOAD_DIR := $(DOWNLOAD_BASEDIR)/$(PKG_NAME)
+endif
 
 sources_git := $(filter %.git,$(PKG_SOURCES))
 targets_git = $(basename $(notdir $1))
@@ -51,7 +46,10 @@ else
 	pkg_archive_name := $(PKG_NAME)$(pkg_ext)
 endif
 
-DOWNLOAD  := $(BUILD_DIR)/.downloaded
+$(DOWNLOAD_DIR) $(BUILD_DIR) $(PKG_INSTALL_DIR):
+	mkdir -p $@
+
+DOWNLOAD := $(BUILD_DIR)/.downloaded
 $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(foreach d,$(sources_archive_mirrors), \
 		if [ ! -f $(DOWNLOAD_DIR)/$(pkg_archive_name) ] ; then \
@@ -80,8 +78,9 @@ $(DOWNLOAD): | $(DOWNLOAD_DIR) $(BUILD_DIR)
 		fi;)
 	touch $@
 
-DOWNLOAD_CHECK  := $(BUILD_DIR)/.download_checked
-$(DOWNLOAD_CHECK) : $(DOWNLOAD)
+DOWNLOAD_CHECK := $(BUILD_DIR)/.download_checked
+download : $(DOWNLOAD_CHECK)
+$(DOWNLOAD_CHECK) : $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
     # check md5sum only for source archives and skip the check for git repos
 	if [ "$(sources_archive_mirrors)" ] ; then \
 		cd $(DOWNLOAD_DIR) && ( \
@@ -90,9 +89,7 @@ $(DOWNLOAD_CHECK) : $(DOWNLOAD)
     fi;
 	touch $@
 
-download : $(DOWNLOAD) $(DOWNLOAD_CHECK)
-
-EXTRACT  := $(BUILD_DIR)/.extracted
+EXTRACT := $(BUILD_DIR)/.extracted
 extract : $(EXTRACT)
 $(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
 	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
@@ -107,9 +104,8 @@ $(EXTRACT): $(DOWNLOAD) | $(DOWNLOAD_DIR) $(BUILD_DIR)
 		fi;
 	touch $@
 
-PATCH  := $(BUILD_DIR)/.patched
+PATCH := $(BUILD_DIR)/.patched
 patch : $(PATCH)
-PKG_PATCHES ?=
 $(PATCH): $(EXTRACT) $(PKG_PATCHES) | $(BUILD_DIR)
 	if [ -d tree ]; then \
 		cd tree; \
@@ -125,29 +121,10 @@ CONFIGURE  := $(BUILD_DIR)/.configured
 configure : $(CONFIGURE)
 $(CONFIGURE): $(PATCH) | $(BUILD_DIR)
 
-BUILD  := $(BUILD_DIR)/.built
+BUILD := $(BUILD_DIR)/.built
 build : $(BUILD)
 $(BUILD): $(CONFIGURE) | $(BUILD_DIR)
 
-INSTALL  := $(BUILD_DIR)/.installed
+INSTALL := $(BUILD_DIR)/.installed
 install : $(INSTALL)
 $(INSTALL): $(BUILD) | $(BUILD_DIR) $(PKG_INSTALL_DIR)
-
-# Definitions used by user Makefile
-
-ifneq ($(MKGEN_DIR),)
-include $(MKGEN_DIR:.%=$(ROOT_DIR)%)/build.mk
-ifeq ($(ARCH),x86)
-AUTOCONF_ARCH := i386
-else
-AUTOCONF_ARCH := $(ARCH)
-endif
-AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_ARCH)-unknown-none
-endif
-
-ifeq ($(COMPILER),clang)
-EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-clang
-else
-EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-gcc
-EMBOX_GXX := $(ROOT_DIR)/mk/extbld/arch-embox-g++
-endif

@@ -6,6 +6,7 @@ abstract module compiler_headers {}
 module compiler_headers_stub extends third_party.compiler_headers {
 }
 
+@BuildArtifactPath(cppflags_before="-I$(THIRDPARTY_DIR)/compiler_headers/include")
 @BuildArtifactPath(cppflags="-I\"$$($(CC) -print-file-name=include | sed $$'s/\r$$//')\"")
 module compiler_headers_toolchain extends third_party.compiler_headers {
 }

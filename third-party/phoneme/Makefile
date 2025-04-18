@@ -9,4 +9,4 @@ PKG_MD5     := b552aa86b2832d00563636330ec64299
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)

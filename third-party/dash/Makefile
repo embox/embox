@@ -7,7 +7,7 @@ PKG_MD5     := f6cedb10ae7258adb5ab17a10ae80d51
 
 PKG_PATCHES := dash.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

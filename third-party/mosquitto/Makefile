@@ -7,11 +7,11 @@ PKG_MD5     := 1247e425545affe185278a5314e7bbfe
 
 PKG_PATCHES := pkg_patch.patch
 
-include $(EXTBLD_LIB)
-
 MOSQUITTO_CPPFLAGS = "-include $(ROOT_DIR)/third-party/mosquitto/mosquitto_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/mosquitto/include \
 	-Dproperty__get_remaining_length=mosquitto_broken_function"
+
+include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \

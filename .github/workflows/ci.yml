@@ -22,7 +22,7 @@ jobs:
           - sparc/qemu
           - microblaze/qemu
           - usermode86/debug
-          - project/opencv/arm-qemu
+          - project/opencv/vexpress-a9
           - project/qt4/arm_qemu_fb_small
           - platform/stm32/f4/stm32f4-discovery
     container:
@@ -38,7 +38,7 @@ jobs:
       - run: make -j $(nproc)
       - run: ./scripts/continuous/run.sh ${{matrix.template}}
   ci-old:
-    runs-on: ubuntu-20.04 # Embox NFS write test fails with ubuntu 18.04: "RPC: Can't decode result"
+    runs-on: ubuntu-24.04 # Embox NFS write test fails with ubuntu 18.04: "RPC: Can't decode result"
     strategy:
       fail-fast: false
       matrix:

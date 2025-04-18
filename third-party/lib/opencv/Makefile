@@ -1,18 +1,5 @@
 
-define option_get_string
-$(shell echo OPTION_STRING_third_party__lib__opencv__build__$(1) | \
-gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
-endef
-
-define option_get_boolean
-$(shell echo OPTION_BOOLEAN_third_party__lib__opencv__build__$(1) | \
-gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
-endef
-
-define option_get_number
-$(shell echo OPTION_NUMBER_third_party__lib__opencv__build__$(1) | \
-gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/build.h -)
-endef
+include $(EXTBLD_DEFINES)
 
 define option_get_with_ffmpeg
 $(shell echo OPTION_BOOLEAN_third_party__lib__opencv__videoio_backend__with_ffmpeg | \
@@ -20,7 +7,7 @@ gcc -I$(SRCGEN_DIR)/include -P -E -include $(SRCGEN_DIR)/include/config/third_pa
 endef
 
 PKG_NAME         := opencv
-PKG_VER          := $(call option_get_string,opencv_version)
+PKG_VER          := $(call option_get,STRING,opencv_version)
 PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
 PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
 
@@ -31,10 +18,13 @@ PKG_MD5          := $(PKG_MD5_$(PKG_VER))
 ifeq ("$(PKG_VER)","4.5.2")
 PKG_PATCHES := patch_4_5_2/disable_wstring.patch \
                patch_4_5_2/disable_dlopen.patch \
-               patch_4_5_2/disable_fpu_cortex_m.patch \
                patch_4_5_2/add_if_defined_embox.patch
 
-ifeq (1,$(call option_get_boolean,hack_4_5_2_disable_fonts))
+ifeq (1,$(call gxx_macro_get,__thumb__))
+PKG_PATCHES += patch_4_5_2/disable_fpu_cortex_m.patch
+endif
+
+ifeq (1,$(call option_get,BOOLEAN,hack_4_5_2_disable_fonts))
 PKG_PATCHES += patch_4_5_2/disable_hershey_fonts.patch
 endif
 
@@ -54,10 +44,16 @@ else
 WITH_FFMPEG := OFF
 endif
 
-CV_LOG_LEVEL := $(call option_get_number,cv_log_level)
-CV_CXX_FLAGS := -DCV_LOG_STRIP_LEVEL=$(CV_LOG_LEVEL)
+ifeq (1,$(call gxx_macro_get,__ARM_NEON__))
+INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=ON -DENABLE_NEON=ON
+else ifeq (1,$(call gxx_macro_get,__SSE2__))
+INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=ON -DENABLE_SSE2=ON
+else
+INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=OFF
+endif
 
-include $(EXTBLD_LIB)
+CV_LOG_LEVEL := $(call option_get,NUMBER,cv_log_level)
+CV_CXX_FLAGS := -DCV_LOG_STRIP_LEVEL=$(CV_LOG_LEVEL)
 
 OPENCV_FLAGS = \
 		-DCMAKE_INSTALL_PREFIX=$(BUILD_DIR)/install \
@@ -99,7 +95,7 @@ OPENCV_FLAGS = \
 		-DCPACK_SOURCE_TGZ=OFF \
 		-DCPACK_SOURCE_TXZ=OFF \
 		-DCPACK_SOURCE_TZ=OFF \
-		-DCV_ENABLE_INTRINSICS=OFF \
+		$(INTRINSIC_FLAGS) \
 		-DCV_TRACE=OFF \
 		-DENABLE_CCACHE=OFF \
 		-DENABLE_OMIT_FRAME_POINTER=OFF \
@@ -141,12 +137,13 @@ OPENCV_FLAGS = \
 		-DCMAKE_SYSTEM_PROCESSOR:STRING=$(AUTOCONF_TARGET_TRIPLET) \
 		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
 		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
-		-DCMAKE_AR:STRING=$(CROSS_COMPILE)ar \
+		-DCMAKE_AR:STRING=$(EMBOX_CROSS_COMPILE)ar \
 		-DCMAKE_CXX_FLAGS:STRING="$(CV_CXX_FLAGS)" \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
 		-DCMAKE_BUILD_TYPE:STRING=None \
-		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on \
-		-DC_HAS_MFPU_NEON=0
+		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on
+
+include $(EXTBLD_TARGETS)
 
 # FIXME mv $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp is used
 # becase there are two files in modules/core/src/ with the same name parallel.cpp which

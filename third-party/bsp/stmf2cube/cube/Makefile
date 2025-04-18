@@ -6,4 +6,4 @@ PKG_SOURCES := https://www.github.com/STMicroelectronics/STM32CubeF2/archive/$(P
 
 PKG_MD5     := 741de186164780de6e15314b79a72f9e
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)

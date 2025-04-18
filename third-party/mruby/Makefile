@@ -10,7 +10,7 @@ PKG_MD5     := fbb67cc8a1ecfb9cdc1307ec1c02b489
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cp -f $(THIRDPARTY_DIR)/mruby/build_config.rb $(PKG_SOURCE_DIR)/build_config/default.rb

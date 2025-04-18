@@ -1,5 +1,5 @@
---- qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.h	2020-08-04 16:03:47.890697094 +0300
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.h	2020-08-04 16:28:16.555747362 +0300
+--- Qt-4.8.7-master/src/corelib/global/qglobal.h	2020-08-04 16:03:47.890697094 +0300
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/global/qglobal.h	2020-08-04 16:28:16.555747362 +0300
 @@ -2492,17 +2492,26 @@
  template <typename T>
  class QForeachContainer {

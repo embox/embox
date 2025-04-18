@@ -7,7 +7,7 @@ PKG_MD5     := 6600531a3c0bb6ce6f4e009b4f03c4c1
 PKG_PATCHES := patch.txt \
 	           rawfb.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/nuklear.h $(PKG_INSTALL_DIR)/

@@ -1,6 +1,4 @@
 
-include $(EXTBLD_LIB)
-
 ifeq (arm,$(EMBOX_ARCH))
 CLDC_TEMPLATE := javacall_linux_arm
 ROMIMAGE_EXTRA_CPPFLAGS := -DMSW_FIRST_FOR_DOUBLE
@@ -18,6 +16,8 @@ CLDC_OUTPUT_DIR := $(BUILD_DIR)
 CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/$(CLDC_TEMPLATE)/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
+include $(EXTBLD_TARGETS)
+
 $(CONFIGURE) :
 	cd $(BUILD_DIR) && ( \
 		ln -s ../src/phoneme/cldc src \
@@ -34,7 +34,7 @@ $(BUILD) :
 			PCSL_OUTPUT_DIR=$(PCSL_OUTPUT_DIR) \
 			JVMWorkSpace=$(CLDC_DIR) JVMBuildSpace=$(CLDC_OUTPUT_DIR) \
 			JDK_DIR=$(JDK_DIR) \
-			EMBOX_GXX=$(EMBOX_GXX) CROSS_COMPILE=$(CROSS_COMPILE) \
+			EMBOX_GXX=$(EMBOX_GXX) CROSS_COMPILE=$(EMBOX_CROSS_COMPILE) \
 	)
 	mkdir -p $(BUILD_DIR)/gen && cd $(BUILD_DIR)/gen && ( \
 		$(CLDC_DIST_DIR)/bin/romgen -cp $(CLDC_DIST_DIR)/lib/cldc_classes.zip \

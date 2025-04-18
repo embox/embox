@@ -6,4 +6,4 @@ PKG_SOURCES := https://localhost/$(PKG_NAME)-$(PKG_VER).zip
 
 PKG_MD5     := 34ba2bc724fda430dbbb528f43295f20
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)

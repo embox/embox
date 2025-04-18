@@ -7,7 +7,7 @@ PKG_MD5     := e55fe3830f0d469dc67205b380515af0
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \

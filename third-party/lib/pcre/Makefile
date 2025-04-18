@@ -6,7 +6,7 @@ PKG_SOURCES := http://netcologne.dl.sourceforge.net/project/$(PKG_NAME)/$(PKG_NA
 	http://download.embox.rocks/$(PKG_NAME)-$(PKG_VER).tar.bz2
 PKG_MD5     := b767bc9af0c20bc9c1fe403b0d41ad97
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

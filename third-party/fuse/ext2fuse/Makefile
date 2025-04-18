@@ -8,10 +8,10 @@ PKG_MD5     := 8926c6eeb9ea17846466ca4bd7143489
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 EXT2FUSE_CPPFLAGS = -I$(ROOT_DIR)/third-party/fuse/ext2fuse/include \
     ${EMBOX_IMPORTED_CPPFLAGS}
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER) && autoconf && ( \

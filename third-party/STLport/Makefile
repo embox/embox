@@ -9,8 +9,6 @@ PKG_MD5     := a8341363e44d9d06a60e03215b38ddde
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 STLPORT_CPPFLAGS += -I../../stlport
 STLPORT_CPPFLAGS += -DUSE_SPRINTF_INSTEAD
 STLPORT_CPPFLAGS += -I$(abspath .)/include
@@ -21,6 +19,8 @@ EMBOX_RTTI_FLAG          = --without-rtti
 else
 EMBOX_RTTI_FLAG          =
 endif
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

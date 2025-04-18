@@ -7,7 +7,7 @@ PKG_MD5     := 16b69c3497b46dfb65af8d98549b037b
 
 PKG_PATCHES := chibi.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	touch $@

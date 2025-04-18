@@ -28,7 +28,7 @@ verify:
 		false; \
 	fi
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cp qspi_at25ql641.h $(PKG_SOURCE_DIR)/sdk/bsp/memory/include/

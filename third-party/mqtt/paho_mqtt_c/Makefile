@@ -8,7 +8,7 @@ PKG_MD5 	:= 71b9a3070f543afcb818a8c231be6684
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(PKG_INSTALL_DIR) && ( \

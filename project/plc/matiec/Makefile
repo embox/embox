@@ -7,7 +7,7 @@ PKG_VER  := $(GIT_SHA)
 PKG_SOURCES := https://github.com/embox/matiec/archive/$(GIT_SHA).zip
 PKG_MD5     := 42911958253a014c9c83290e0bb99837
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \

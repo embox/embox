@@ -5,8 +5,6 @@ PKG_VER  := 6470fb9e4bd9baa14d50f754dc7f945e7a76c828
 PKG_SOURCES := https://github.com/pjsip/pjproject/archive/$(PKG_VER).zip
 PKG_MD5     := ec8e45c13d6b8a578612dabf98382141
 
-include $(EXTBLD_LIB)
-
 PKG_PATCHES := pjproject.patch \
                tests.patch
 
@@ -28,6 +26,8 @@ endif
 
 BUILD_ROOT  := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PJSIP_INSTALL_DIR := $(EXTERNAL_BUILD_DIR)/third_party/pjproject/core/install
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

@@ -6,7 +6,7 @@ PKG_PATCHES := embox.patch
 
 PKG_MD5     := 8a4342b399c18f870ca6186299195984
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 export EMBOX_GCC
 export EMBOX_GXX

@@ -1,5 +1,5 @@
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(ROOT_DIR)/third-party/phoneme/hello && ( \

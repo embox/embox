@@ -7,7 +7,7 @@ PKG_MD5     := 1091300b72fcc1f75cafb91bea92772e
 
 PKG_PATCHES := setup.patch
 
-include $(EXTBLD_LIB)
+include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && CC=$(EMBOX_GCC) python2 setup.py linux

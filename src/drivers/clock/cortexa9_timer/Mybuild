@@ -1,7 +1,7 @@
 package embox.driver.clock
 
 module cortexa9 {
-	option string log_level="LOG_NONE"
+	option string log_level="LOG_ERR"
 
 	option number periph_base_addr
 	option number irq_num

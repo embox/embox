@@ -6,11 +6,11 @@ PKG_MD5     := 76da2fa64edd94a0188531e7ecb27c4e
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 samba_cppflags = -include $(ROOT_DIR)/third-party/samba/samba_embox_compat.h \
         -I$(ROOT_DIR)/third-party/samba/include \
         -I$(ROOT_DIR)/build/extbld/third_party/zlib/libs/zlib-1.2.8
+
+include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

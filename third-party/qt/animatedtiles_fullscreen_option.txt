@@ -1,5 +1,5 @@
---- qt-everywhere-opensource-src-4.8.7/examples/animation/animatedtiles/main.cpp	2015-05-07 17:14:37.000000000 +0300
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/examples/animation/animatedtiles/main.cpp	2020-12-22 16:22:04.863669762 +0300
+--- Qt-4.8.7-master/examples/animation/animatedtiles/main.cpp	2015-05-07 17:14:37.000000000 +0300
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/examples/animation/animatedtiles/main.cpp	2020-12-22 16:22:04.863669762 +0300
 @@ -213,7 +213,13 @@
  #ifdef Q_OS_SYMBIAN
      view->showMaximized();

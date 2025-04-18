@@ -32,6 +32,7 @@ static module libgcc extends embox.lib.libgcc {
 }
 
 @BuildDepends(gcc_build)
+@BuildArtifactPath(cppflags_before="-I$(THIRDPARTY_DIR)/compiler_headers/include")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/gcc/gcc_build/build/gcc/include")
 module compiler_headers extends third_party.compiler_headers {
 	@NoRuntime depends gcc_build
