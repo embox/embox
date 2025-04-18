@@ -4,7 +4,6 @@ static module file_system_oldfs extends file_system {
 	option string log_level="LOG_ERR"
 	option number dir_quantity=4 /* DIR (dirent.h) */
 
-	source "chmod_oldfs.c"
 	source "chown_oldfs.c"
 	source "dirent_oldfs.c"
 	source "flock_oldfs.c"
