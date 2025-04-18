@@ -15,7 +15,17 @@
 #include <fs/inode.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
-#include <fs/kfsop.h>
+
+void kclose(struct file_desc *desc) {
+	assert(desc);
+	assert(desc->f_ops);
+
+	if (desc->f_ops->close) {
+		desc->f_ops->close(desc);
+	}
+
+	file_desc_destroy(desc);
+}
 
 ssize_t kwrite(struct file_desc *file, const void *buf, size_t size) {
 	ssize_t ret;
@@ -74,17 +84,6 @@ ssize_t kread(struct file_desc *desc, void *buf, size_t size) {
 
 end:
 	return ret;
-}
-
-void kclose(struct file_desc *desc) {
-	assert(desc);
-	assert(desc->f_ops);
-
-	if (desc->f_ops->close) {
-		desc->f_ops->close(desc);
-	}
-
-	file_desc_destroy(desc);
 }
 
 #include <drivers/block_dev.h> /* block_dev_block_size */
