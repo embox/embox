@@ -52,25 +52,6 @@ int ktruncate(struct inode *node, off_t length) {
 	return ret;
 }
 
-int kfile_fill_stat(struct inode *node, struct stat *stat_buff) {
-	memset(stat_buff, 0 , sizeof(struct stat));
-
-	stat_buff->st_size = inode_size(node);
-	stat_buff->st_mode = node->i_mode;
-	stat_buff->st_uid = node->i_owner_id;
-	stat_buff->st_gid = node->i_group_id;
-	stat_buff->st_ctime = inode_ctime(node);
-	stat_buff->st_mtime = inode_mtime(node);
-	stat_buff->st_blocks = stat_buff->st_size;
-
-        if (node->i_sb->bdev) {
-        	stat_buff->st_blocks /= block_dev_block_size(node->i_sb->bdev);
-	       	stat_buff->st_blocks += (stat_buff->st_blocks % block_dev_block_size(node->i_sb->bdev) != 0);	
-        }
-
-	return 0;
-}
-
 int kfile_change_stat(struct inode *node, const struct utimbuf *times) {
 	struct timeval now;
 
