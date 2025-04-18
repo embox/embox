@@ -4,6 +4,7 @@ static module file_system_common {
 	option string log_level="LOG_ERR"
 
 	source "chmod.c"
+	source "chown.c"
 	source "lseek.c"
 	source "pread.c"
 	source "pwrite.c"

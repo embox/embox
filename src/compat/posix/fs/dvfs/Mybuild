@@ -4,7 +4,6 @@ static module file_system_dvfs extends file_system {
 	option string log_level="LOG_ERR"
 	option number dir_quantity=4 /* DIR (dirent.h) */
 
-	source "chown_dvfs.c"
 	source "dirent_dvfs.c"
 	source "flock_dvfs.c"
 	source "ftruncate_dvfs.c"
