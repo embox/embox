@@ -163,4 +163,9 @@ module lrint_test {
 module llrint_test {
 	@Cflags("-fno-builtin")
 	source "llrint_test.c"
+} 
+
+module llrint_test {
+	@Cflags("-fno-builtin")
+	source "log1p_test.c"
 }
