@@ -60,7 +60,7 @@ bool jffs2_flash_write(struct jffs2_sb_info * c,
 int jffs2_flash_direct_writev(struct jffs2_sb_info *c, const struct iovec *vecs,
 		   unsigned long count, loff_t to, size_t * retlen) {
 	unsigned long i;
-	size_t totlen = 0, thislen;
+	size_t totlen = 0, thislen = 0;
 	int ret = 0;
 
 	for (i = 0; i < count; i++) {

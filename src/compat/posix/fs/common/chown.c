@@ -8,7 +8,8 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <fs/dvfs.h>
+#include <fs/inode.h>
+#include <fs/dentry.h>
 
 int chown(const char *path, uid_t owner, gid_t group) {
 	struct lookup lookup = {};

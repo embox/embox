@@ -15,7 +15,17 @@
 #include <fs/inode.h>
 #include <fs/file_desc.h>
 #include <fs/kfile.h>
-#include <fs/kfsop.h>
+
+void kclose(struct file_desc *desc) {
+	assert(desc);
+	assert(desc->f_ops);
+
+	if (desc->f_ops->close) {
+		desc->f_ops->close(desc);
+	}
+
+	file_desc_destroy(desc);
+}
 
 ssize_t kwrite(struct file_desc *file, const void *buf, size_t size) {
 	ssize_t ret;
@@ -76,23 +86,34 @@ end:
 	return ret;
 }
 
-void kclose(struct file_desc *desc) {
-	assert(desc);
-	assert(desc->f_ops);
+#include <drivers/block_dev.h> /* block_dev_block_size */
+#include <string.h>
 
-	if (desc->f_ops->close) {
-		desc->f_ops->close(desc);
-	}
+static int inode_fill_stat(struct inode *node, struct stat *sb) {
+	memset(sb, 0 , sizeof(struct stat));
 
-	file_desc_destroy(desc);
+	sb->st_size = inode_size(node);
+	sb->st_mode = node->i_mode;
+	sb->st_uid = node->i_owner_id;
+	sb->st_gid = node->i_group_id;
+	sb->st_ctime = inode_ctime(node);
+	sb->st_mtime = inode_mtime(node);
+	sb->st_blocks = sb->st_size;
+
+    if (node->i_sb->bdev) {
+        sb->st_blocks /= block_dev_block_size(node->i_sb->bdev);
+	    sb->st_blocks += (sb->st_blocks % block_dev_block_size(node->i_sb->bdev) != 0);	
+    }
+
+	return 0;
 }
 
-int kfstat(struct file_desc *desc, struct stat *stat_buff) {
-	if ((NULL == desc) || (stat_buff == NULL)) {
+int kfstat(struct file_desc *desc, struct stat *sb) {
+	if ((NULL == desc) || (sb == NULL)) {
 		return -EBADF;
 	}
 
-	kfile_fill_stat(desc->f_inode, stat_buff);
+	inode_fill_stat(desc->f_inode, sb);
 
 	return 0;
 }

@@ -7,7 +7,6 @@ abstract module file {
 
 module fs_full extends file {
 	source "oldfs_kopen.c"
-	source "oldfs_kftruncate.c"
 	source "kfile_node.c"
 
 	depends embox.compat.libc.assert

@@ -18,7 +18,6 @@ module file_system_full extends file_system {
 	source "fsop.c"
 	source "krename.c"
 	source "kremove.c"
-	source "kutime.c"
 	source "kmount.c"
 	source "kumount.c"
 	source "kformat.c"

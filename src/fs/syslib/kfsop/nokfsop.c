@@ -40,7 +40,3 @@ int kformat(const char *pathname, const char *fs_type) {
 int kumount(const char *dir) {
 	return -1;
 }
-
-int kutime(const char *path,const struct utimbuf *times) {
-	return -1;
-}
