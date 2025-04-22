@@ -134,6 +134,10 @@ typedef struct ext3_journal_specific_s {
     uint8_t j_uuid[16];
 } ext3_journal_specific_t;
 
+extern struct ext3_journal_specific_s *ext3_journal_cache_alloc(void);
+
+extern void ext3_journal_cache_free(struct ext3_journal_specific_s *ext3_spec);
+
 /**
  * Count of blocks needed for transaction that is going to modify 1 block of data.
  * 1 inode

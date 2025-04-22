@@ -1,9 +1,15 @@
 package embox.fs.driver
 
 module ext3 {
-	source "ext3.c"
-	option number inode_quantity=64
-	option number ext3_descriptor_quantity=4
+	//option number inode_quantity=64
+	//option number ext3_descriptor_quantity=4
+
+	source "ext3fs_file_ops.c"
+	source "ext3fs_drv.c"
+	source "ext3fs_mem.c"
+	source "ext3fs_inode_ops.c"
+
+	source "ext3fs_oldfs.c"
 
 	depends embox.fs.node
 	depends embox.fs.driver.ext2
