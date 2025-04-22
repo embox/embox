@@ -1,6 +1,6 @@
 #!/bin/sh
 
-FS_TYPE=ext2
+FS_TYPE=ext4
 
 QEMU=./scripts/qemu/auto_qemu
 IMG=$(mktemp -d)/hda_$FS_TYPE.img
