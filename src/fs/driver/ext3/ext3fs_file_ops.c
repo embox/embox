@@ -8,24 +8,22 @@
 
 #include <errno.h>
 #include <stddef.h>
- 
+
 #include <fs/inode.h>
- 
+#include <fs/super_block.h>
 #include <fs/ext2.h>
  
 #include <fs/file_desc.h>
- 
+
 #include <util/err.h>
 
 #include "ext3_journal.h"
-
 
 /* file operations */
 static struct idesc *ext3fs_open(struct inode *node, struct idesc *idesc, int __oflag);
 static int ext3fs_close(struct file_desc *desc);
 static size_t ext3fs_read(struct file_desc *desc, void *buf, size_t size);
 static size_t ext3fs_write(struct file_desc *desc, void *buf, size_t size);
-
 
 extern struct file_operations ext2_fop;
 /*
