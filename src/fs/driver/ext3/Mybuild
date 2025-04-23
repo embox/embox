@@ -1,6 +1,6 @@
 package embox.fs.driver
 
-@BuildDepends(third_party.e2fsprogs.mke2fs)
+//@BuildDepends(third_party.e2fsprogs.mke2fs)
 abstract module ext3fs {
 	//option number inode_quantity=64
 	//option number ext3_descriptor_quantity=4
@@ -16,7 +16,7 @@ abstract module ext3fs {
 	depends embox.mem.page_api
 	depends embox.mem.pool
 	depends embox.fs.journal
-	depends third_party.e2fsprogs.mke2fs
+	//depends third_party.e2fsprogs.mke2fs
 }
 
 module ext3fs_oldfs extends ext3fs {

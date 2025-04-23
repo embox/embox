@@ -10,8 +10,9 @@
 #include <stdint.h>
 #include <sys/types.h>
 #include <arpa/inet.h>
+#include <stdlib.h>
 
-#include <util/getopt.h>
+//#include <util/getopt.h>
 
 #include <mem/sysmalloc.h>
 
@@ -43,9 +44,10 @@ int ext3fs_destroy_inode(struct inode *inode) {
 }
 
 
-extern int main_mke2fs(int argc, char **argv);
+//extern int main_mke2fs(int argc, char **argv);
 
 static int ext3fs_format(struct block_dev *bdev, void *priv) {
+#if 0
 	int argc = 6;
 	char *argv[6];
 	char dev_path[64];
@@ -62,6 +64,11 @@ static int ext3fs_format(struct block_dev *bdev, void *priv) {
 
 	getopt_init();
 	return main_mke2fs(argc, argv);
+#endif
+	char cmd_line[128] = "mke2fs -b 1024 -t ext3 /dev/";
+
+	strcat(cmd_line, block_dev_name(bdev));
+	return system(cmd_line);
 }
 
 static int ext3_journal_load(journal_t *jp, struct block_dev *jdev, block_t start) {
