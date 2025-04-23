@@ -51,6 +51,7 @@ module dumpe2fs {
 	@NoRuntime depends core
 }
 
+@Build(stage=1)
 @Cmd(name = "mke2fs",
 	help = "Make a ext2fs filesystem",
 	man = '''
