@@ -104,7 +104,8 @@ struct dirent *readdir(DIR *dir) {
 
 	node = child.node;
 
-	strncpy(dir->current.d_name, inode_name(node), NAME_MAX);
+	strncpy(dir->current.d_name, inode_name(node), NAME_MAX - 1);
+	dir->current.d_name[NAME_MAX - 1] = '\0';
 	dir->current.d_ino = (ino_t) (uintptr_t) node;
 
 	node->i_nlink ++;

@@ -1,20 +1,28 @@
 package embox.fs.driver
 
-module ext3 {
-	source "ext3.c"
-	option number inode_quantity=64
-	option number ext3_descriptor_quantity=4
+//@BuildDepends(third_party.e2fsprogs.mke2fs)
+abstract module ext3fs {
+	//option number inode_quantity=64
+	//option number ext3_descriptor_quantity=4
 
-	depends embox.fs.node
+	source "ext3fs_file_ops.c"
+	source "ext3fs_drv.c"
+	source "ext3fs_mem.c"
+	source "ext3fs_inode_ops.c"
+
+	source "ext3_journal.c"
+
 	depends embox.fs.driver.ext2
 	depends embox.mem.page_api
 	depends embox.mem.pool
-	depends ext3_journal
-	depends third_party.e2fsprogs.mke2fs
+	depends embox.fs.journal
+	//depends third_party.e2fsprogs.mke2fs
 }
 
-module ext3_journal {
-	source "ext3_journal.c"
+module ext3fs_oldfs extends ext3fs {
+	source "ext3fs_oldfs.c"
+}
 
-	depends embox.fs.journal
+module ext3fs_dvfs extends ext3fs {
+	source "ext3fs_dvfs.c"
 }

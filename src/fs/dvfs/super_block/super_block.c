@@ -57,11 +57,10 @@ struct super_block *super_block_alloc(const char *fs_type, const char *source) {
 		pool_free(&super_block_pool, sb);
 		return NULL;
 	}
+	//inode_name_set(node, "");
 
-	*node = (struct inode){
-	    .i_mode = S_IFDIR,
-	    .i_sb = sb,
-	};
+	node->i_sb = sb;
+	node->i_mode = S_IFDIR;
 
 	sb->sb_root = node;
 

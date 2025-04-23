@@ -6,9 +6,11 @@
  * @author Alex Kalmuk
  */
 
-#include <sys/stat.h>
 #include <errno.h>
-#include <fs/dvfs.h>
+#include <sys/stat.h>
+
+#include <fs/dentry.h>
+#include <fs/inode.h>
 
 int chmod(const char *path, mode_t mode) {
 	struct lookup l = {};

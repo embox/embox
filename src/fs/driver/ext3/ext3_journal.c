@@ -7,12 +7,14 @@
  */
 
 #include <errno.h>
-#include <mem/objalloc.h>
+#include <string.h>
 #include <arpa/inet.h>
-#include <fs/vfs.h>
+
+#include <mem/objalloc.h>
+
 #include <fs/ext2.h>
 #include "ext3_journal.h"
-#include <string.h>
+
 
 static int journal_write_desc_blocks(journal_t *jp);
 static int journal_write_commit_block(journal_t *jp);

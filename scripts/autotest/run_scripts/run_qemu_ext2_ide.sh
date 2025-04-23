@@ -1,10 +1,12 @@
 #!/bin/sh
 
+FS_TYPE=ext2
+
 QEMU=./scripts/qemu/auto_qemu
-IMG=$(mktemp -d)/hda_ext2.img
+IMG=$(mktemp -d)/hda_$FS_TYPE.img
 
 dd if=/dev/zero of="$IMG" bs=1M count=64
-/sbin/mkfs.ext2 -F -b 1024 "$IMG"
+/sbin/mkfs.$FS_TYPE -F -b 1024 "$IMG"
 
 # Using subshell to avoid manual cd back
 (
