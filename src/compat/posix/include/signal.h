@@ -19,6 +19,8 @@
 #include <defines/stack_t_define.h>
 #include <defines/ucontext_t_define.h>
 
+#include <defines/pthread_attr_t_define.h>
+
 #include <lib/libds/bitmap.h>
 
 #define SIG_DFL      ((sighandler_t)0x1)
@@ -84,8 +86,8 @@ typedef __SIG_ATOMIC_TYPE__ sig_atomic_t;
 #define NSIG _SIG_TOTAL
 
 union sigval {
-	int sival_int;
-	void *sival_ptr;
+	int    sival_int;      /* Integer signal value. */
+	void  *sival_ptr;      /* Pointer signal value. */
 };
 
 typedef struct {
@@ -152,6 +154,19 @@ extern const char *const sys_siglist[];
 
 #define MINSIGSTKSZ 2048
 extern int sigaltstack(const stack_t *ss, stack_t *oss);
+
+#define SIGEV_NONE        0
+#define SIGEV_SIGNAL      1
+#define SIGEV_THREAD      2
+
+struct sigevent {
+	int                sigev_notify; /* Notification type. */
+	int                sigev_signo;  /* Signal number. */
+	union sigval       sigev_value;  /* Signal value. */
+	void(*sigev_notify_function)(union sigval) ; /* Notification function. */
+	pthread_attr_t     *sigev_notify_attributes; /* Notification attributes. */
+};
+
 
 __END_DECLS
 
