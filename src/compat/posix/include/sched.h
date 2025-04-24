@@ -85,6 +85,21 @@ extern int sched_setscheduler(pid_t, int, const struct sched_param *);
  */
 extern int sched_yield(void);
 
+
+/* _GNU_SOURCE */
+struct affinity;
+
+typedef struct affinity cpu_set_t;
+
+extern void CPU_ZERO(cpu_set_t *set);
+
+extern void CPU_SET(int cpu, cpu_set_t *set);
+extern void CPU_CLR(int cpu, cpu_set_t *set);
+extern int  CPU_ISSET(int cpu, cpu_set_t *set);
+
+
+
+
 __END_DECLS
 
 #endif /* POSIX_SCHED_H_ */
