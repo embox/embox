@@ -235,6 +235,12 @@ extern int   pthread_barrier_destroy(pthread_barrier_t *);
 extern int   pthread_barrierattr_init(pthread_barrierattr_t *);
 extern int   pthread_barrierattr_destroy(pthread_barrierattr_t *);
 
+/* _GNU_SOURCE */
+extern int pthread_attr_setaffinity_np(pthread_attr_t *attr,
+                                size_t cpusetsize, const cpu_set_t *cpuset);
+extern int pthread_attr_getaffinity_np(const pthread_attr_t *attr,
+                                size_t cpusetsize, cpu_set_t *cpuset);
+
 __END_DECLS
 
 #endif /* PTHREAD_H_ */
