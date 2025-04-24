@@ -177,9 +177,8 @@ extern void sched_start_switch(struct schedee *next);
  * @retval non-zero
  *   On operation fail.
  */
-void sched_signal(struct schedee *schedee);
+extern void sched_signal(struct schedee *schedee);
 
 __END_DECLS
-
 
 #endif /* KERNEL_SCHED_H_ */

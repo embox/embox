@@ -48,11 +48,14 @@ typedef struct thread *pthread_t;
 
 
 #define PTHREAD_INHERIT_SCHED       THREAD_FLAG_PRIORITY_INHERIT
+#define PTHREAD_EXPLICIT_SCHED      THREAD_FLAG_PRIORITY_EXPLICIT
+
 #define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
 #define PTHREAD_CREATE_JOINABLE     THREAD_FLAG_JOINABLE
 
 #define PTHREAD_BARRIER_SERIAL_THREAD (-1)
 
+#if 0
 typedef struct pthread_attr {
 	uint32_t flags; /* scope, inherit, detachstate */
 	void *stack;
@@ -60,6 +63,8 @@ typedef struct pthread_attr {
 	int policy;
 	struct sched_param sched_param;
 } pthread_attr_t;
+#endif
+#include <defines/pthread_attr_t_define.h>
 
 typedef cond_t pthread_cond_t;
 
@@ -114,7 +119,6 @@ typedef struct _pthread_barrier_t *pthread_barrier_t;
 
 #define PTHREAD_CANCEL_DEFERRED     0x0
 #define PTHREAD_CANCEL_ASYNCHRONOUS 0x1
-
 
 __BEGIN_DECLS
 
@@ -230,6 +234,12 @@ extern int   pthread_barrier_wait(pthread_barrier_t *);
 extern int   pthread_barrier_destroy(pthread_barrier_t *);
 extern int   pthread_barrierattr_init(pthread_barrierattr_t *);
 extern int   pthread_barrierattr_destroy(pthread_barrierattr_t *);
+
+/* _GNU_SOURCE */
+extern int pthread_attr_setaffinity_np(pthread_attr_t *attr,
+                                size_t cpusetsize, const cpu_set_t *cpuset);
+extern int pthread_attr_getaffinity_np(const pthread_attr_t *attr,
+                                size_t cpusetsize, cpu_set_t *cpuset);
 
 __END_DECLS
 
