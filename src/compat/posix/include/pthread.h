@@ -55,6 +55,7 @@ typedef struct thread *pthread_t;
 
 #define PTHREAD_BARRIER_SERIAL_THREAD (-1)
 
+#if 0
 typedef struct pthread_attr {
 	uint32_t flags; /* scope, inherit, detachstate */
 	void *stack;
@@ -62,6 +63,8 @@ typedef struct pthread_attr {
 	int policy;
 	struct sched_param sched_param;
 } pthread_attr_t;
+#endif
+#include <defines/pthread_attr_t_define.h>
 
 typedef cond_t pthread_cond_t;
 
