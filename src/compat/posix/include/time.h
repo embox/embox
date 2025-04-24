@@ -106,6 +106,14 @@ static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
 }
 
+struct sigevent;
+extern int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid);
+
+extern int timer_settime(timer_t timerid, int flags,
+				const struct itimerspec *value, struct itimerspec *ovalue);
+extern int timer_gettime(timer_t timerid, struct itimerspec *value);
+extern int timer_getoverrun(timer_t timerid);
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_TIME_H_ */

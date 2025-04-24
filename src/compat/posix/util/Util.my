@@ -33,6 +33,7 @@ static module utsname {
 static module time {
 	source "time.c"
 	source "linux_timer.c"
+	source "time_timer.c"
 
 	depends embox.kernel.time.kernel_time
 }
