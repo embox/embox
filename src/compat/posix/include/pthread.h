@@ -48,6 +48,8 @@ typedef struct thread *pthread_t;
 
 
 #define PTHREAD_INHERIT_SCHED       THREAD_FLAG_PRIORITY_INHERIT
+#define PTHREAD_EXPLICIT_SCHED      THREAD_FLAG_PRIORITY_EXPLICIT
+
 #define PTHREAD_CREATE_DETACHED     THREAD_FLAG_DETACHED
 #define PTHREAD_CREATE_JOINABLE     THREAD_FLAG_JOINABLE
 
@@ -114,7 +116,6 @@ typedef struct _pthread_barrier_t *pthread_barrier_t;
 
 #define PTHREAD_CANCEL_DEFERRED     0x0
 #define PTHREAD_CANCEL_ASYNCHRONOUS 0x1
-
 
 __BEGIN_DECLS
 
