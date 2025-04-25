@@ -13,8 +13,6 @@ PKG_PATCHES += add_types_define.patch
 LIBPCAP_CFLAGS = -I$(ROOT_DIR)/third-party/lib/libpcap/include
 # LIBPCAP_CFLAGS = -I$(ROOT_DIR)/src/posix/include
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \

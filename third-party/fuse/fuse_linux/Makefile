@@ -10,8 +10,6 @@ PKG_PATCHES := patch.txt
 FUSE_LINUX_CPPFLAGS = -I$(ROOT_DIR)/third-party/fuse/fuse_linux/include \
     ${EMBOX_IMPORTED_CPPFLAGS}
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && autoconf && ( \
         ./configure --prefix=$(PKG_INSTALL_DIR) \

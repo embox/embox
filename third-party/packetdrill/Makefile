@@ -17,8 +17,6 @@ ifeq "$(GCCVERSIONGTEQ9)" "1"
     CFLAGS_NO_PACKED = -Wno-address-of-packed-member
 endif
 
-include $(EXTBLD_TARGETS)
-
 $(BUILD) :
 	cd $(PACKETDRILL_SOURCE_DIR) && ( \
 		$(MAKE) -f Makefile.common \

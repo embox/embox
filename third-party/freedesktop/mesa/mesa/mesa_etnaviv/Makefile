@@ -16,8 +16,6 @@ MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(EMBOX_ARCH)/include -I$(SRC_DIR)/../build/e
 MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/include/drm/
 MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv -DHAVE_FUNC_ATTRIBUTE_WEAK
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	export PKG_CONFIG_PATH=$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96:$(ROOT_DIR)/build/extbld/third_party/freedesktop/mesa/libdrm_etnaviv/libdrm-2.4.96/etnaviv;\

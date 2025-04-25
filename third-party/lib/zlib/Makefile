@@ -7,8 +7,6 @@ PKG_SOURCES := http://zlib.net/fossils/$(PKG_NAME)-$(PKG_VER).tar.gz \
 
 PKG_MD5     := 44d667c142d7cda120332623eab69f40
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \

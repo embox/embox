@@ -16,8 +16,6 @@ CLDC_OUTPUT_DIR := $(MOD_BUILD_DIR)
 CLDC_DIST_DIR := $(CLDC_OUTPUT_DIR)/$(CLDC_TEMPLATE)/dist
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(MOD_BUILD_DIR) && ( \
 		ln -s ../src/phoneme/cldc src \

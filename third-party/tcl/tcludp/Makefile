@@ -10,8 +10,6 @@ PKG_PATCHES := pkg_patch.txt
 
 tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tcludp/tcludp_embox_compat.h
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \

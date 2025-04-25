@@ -10,8 +10,6 @@ samba_cppflags = -include $(ROOT_DIR)/third-party/samba/samba_embox_compat.h \
         -I$(ROOT_DIR)/third-party/samba/include \
         -I$(ROOT_DIR)/build/extbld/third_party/zlib/libs/zlib-1.2.8
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3 && ( \

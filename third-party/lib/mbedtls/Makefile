@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := mbedtls
 PKG_VER  := 2.16.12
 PKG_SOURCES :=  https://github.com/Mbed-TLS/$(PKG_NAME)/archive/refs/tags/v$(PKG_VER).tar.gz
@@ -21,8 +19,6 @@ $(info EMBOX_LDLAGS: $(EMBOX_LDFLAGS))
 $(info EMBOX_ARCH:   $(EMBOX_ARCH))
 
 CONFIG_NAME := $(call option_get,STRING,tls_config)
-
-include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full

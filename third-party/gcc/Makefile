@@ -18,8 +18,6 @@
 #      libsupc++, and libstdc++. With "Thread mode: posix".
 #
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME    := gcc
 PKG_VER     := $(call option_get,STRING,gcc_version)
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
@@ -59,11 +57,9 @@ else
 LIBSTDCXX_CXXFLAGS :=
 endif
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	$(MKDIR) $(GCC_BUILD_DIR) && cd $(GCC_BUILD_DIR) && ( \
-		. $(EMBOX_GCC_ENV) && $(PKG_SOURCE_DIR)/configure \
+		$(PKG_SOURCE_DIR)/configure \
 			--with-cross-host=embox \
 			--target=$(GCC_TARGET) \
 			--prefix=$(PKG_INSTALL_DIR) \

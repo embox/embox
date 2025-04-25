@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 define option_get_with_ffmpeg
 $(shell echo OPTION_BOOLEAN_third_party__lib__opencv__videoio_backend__with_ffmpeg | \
 gcc -I$(SRCGEN_DIR)/include -P -E -include $(SRCGEN_DIR)/include/config/third_party/lib/opencv/videoio_backend.h -)
@@ -143,29 +141,29 @@ OPENCV_FLAGS = \
 		-DCMAKE_BUILD_TYPE:STRING=None \
 		-DCMAKE_VERBOSE_MAKEFILE:BOOL=on
 
-include $(EXTBLD_TARGETS)
+OPENCV_BUILD_DIR := $(MOD_BUILD_DIR)/build
 
 # FIXME mv $(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp is used
 # becase there are two files in modules/core/src/ with the same name parallel.cpp which
 # then leads to broken gnu ar extraction.
 $(CONFIGURE) :
-	$(MV) $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp \
-		$(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel2.cpp; \
-	$(MKDIR) $(MOD_BUILD_DIR)/build
+	$(MV) $(PKG_SOURCE_DIR)/modules/core/src/parallel/parallel.cpp \
+		$(PKG_SOURCE_DIR)/modules/core/src/parallel/parallel2.cpp; \
+	$(MKDIR) $(OPENCV_BUILD_DIR)
 	export EMBOX_GCC_LINK=full; \
-	cd $(MOD_BUILD_DIR)/build && ( \
-		cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/; \
+	cd $(OPENCV_BUILD_DIR) && ( \
+		cmake $(OPENCV_FLAGS) $(PKG_SOURCE_DIR); \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(MOD_BUILD_DIR)/build && ( \
+	cd $(OPENCV_BUILD_DIR) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(MOD_BUILD_DIR)/build && ( \
+	cd $(OPENCV_BUILD_DIR) && ( \
 		$(MAKE) install; \
 	)
 	touch $@

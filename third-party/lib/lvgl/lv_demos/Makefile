@@ -26,8 +26,6 @@ LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(CONF_DIR)/lvgl/lv_conf.h \
                 -DLV_LVGL_H_INCLUDE_SIMPLE \
                 -DLV_DEMO_CONF_INCLUDE_SIMPLE
 
-include $(EXTBLD_TARGETS)
-
 $(BUILD) :
 	cp $(ROOT_DIR)/third-party/lib/lvgl/lv_demos/CMakeLists.txt $(PKG_SOURCE_DIR) \
 	    && cd $(PKG_SOURCE_DIR) && (mkdir build/ || true) && cd build && \

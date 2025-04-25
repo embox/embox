@@ -8,8 +8,6 @@ PKG_MD5     := dd0a89154ee3d60c37ee5b8099979875
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \

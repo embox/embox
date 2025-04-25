@@ -13,8 +13,6 @@ PKG_PATCHES := patch.txt \
 
 PKG_PATCHES += sse_patch.txt
 
-include $(EXTBLD_TARGETS)
-
 QUAKE_EMBOX_CFLAGS := -include $(ROOT_DIR)/third-party/games/quake3/embox_compat.h
 QUAKE_EMBOX_CFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/lib/OpenLibm/openlibm-0.7.0/include/
 QUAKE_EMBOX_CFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/lib/OpenLibm/openlibm-0.7.0/src/

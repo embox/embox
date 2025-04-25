@@ -20,8 +20,6 @@ QPID_LDFLAGS="-L$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/lib"
 
 QPID_CMAKE_REQUIRED_INCLUDES="$(ROOT_DIR)/build/extbld/third_party/e2fsprogs/core/install/include;$(ROOT_DIR)/third-party/qpid/include"
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	#ln $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer.cpp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Buffer_.cpp || true
 	#ln $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex.cpp  $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/qpid/management/Mutex_.cpp || true

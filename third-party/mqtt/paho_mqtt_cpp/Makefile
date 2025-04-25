@@ -8,8 +8,6 @@ PKG_MD5 	:= 5a4b7c869e6f20cb85c438456d5b8d12
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		cmake -DPAHO_WITH_SSL=FALSE \

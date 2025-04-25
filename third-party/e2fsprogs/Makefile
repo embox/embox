@@ -11,8 +11,6 @@ PKG_PATCHES := patch.txt
 E2FSPROGS_CPPFLAGS = -include $(ROOT_DIR)/third-party/e2fsprogs/e2fsprogs_embox_compat.h \
 	-I$(ROOT_DIR)/third-party/e2fsprogs/include
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \
 		./configure --prefix=$(PKG_INSTALL_DIR) \

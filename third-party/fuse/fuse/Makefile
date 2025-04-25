@@ -8,8 +8,6 @@ PKG_MD5     := ecb712b5ffc6dffd54f4a405c9b372d8
 
 #PKG_PATCHES := patch.txt
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	touch $@
 

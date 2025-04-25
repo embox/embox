@@ -20,8 +20,6 @@ else
 EMBOX_RTTI_FLAG          =
 endif
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \

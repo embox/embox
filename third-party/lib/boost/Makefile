@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_VER_1_65_0 := 1.65.0
 PKG_VER_1_85_0 := 1.85.0
 
@@ -21,8 +19,6 @@ BOOST_ADDITIONAL_CPPFLAGS += -include $(abspath .)/boost_embox_compat.h
 
 USER_TOOLS_CONFIG=$(PKG_SOURCE_DIR)/tools/build/src/user-config.jam
 USER_BOOST_CONFIG=$(PKG_SOURCE_DIR)/boost/config/user.hpp
-
-include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

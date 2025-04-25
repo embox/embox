@@ -4,8 +4,6 @@ JAVACALL_OUTPUT_DIR := $(MOD_BUILD_DIR)
 TOOLS_DIR := $(MOD_BUILD_DIR)/../src/phoneme/tools
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(MOD_BUILD_DIR) && ( \
 		ln -s ../src/phoneme/javacall src \

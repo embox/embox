@@ -4,8 +4,6 @@ PCSL_OUTPUT_DIR := $(MOD_BUILD_DIR)
 
 PCSL_ARCH := $(AUTOCONF_ARCH)
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(MOD_BUILD_DIR) && ( \
 		ln -s ../src/phoneme/pcsl src \

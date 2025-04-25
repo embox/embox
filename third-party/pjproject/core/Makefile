@@ -27,8 +27,6 @@ endif
 BUILD_ROOT  := $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PJSIP_INSTALL_DIR := $(EXTERNAL_BUILD_DIR)/third_party/pjproject/core/install
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(BUILD_ROOT) && ( \

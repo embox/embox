@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME    := lvgl
 PKG_VER     := $(call option_get,STRING,lvgl_version)
 PKG_SOURCES := https://github.com/lvgl/lvgl/archive/$(PKG_VER).tar.gz
@@ -21,8 +19,6 @@ PKG_PATCHES := $(PKG_PATCHES_$(PKG_VER))
 PKG_MD5     := $(PKG_MD5_$(PKG_VER))
 
 LVGL_CPP_FLAGS:=-DLV_CONF_PATH=$(CONF_DIR)/lvgl/lv_conf.h
-
-include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && (mkdir build/ || true) && cd build && \

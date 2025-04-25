@@ -10,8 +10,6 @@ PKG_PATCHES := patch.txt
 
 tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tclsh/tcl_embox_compat.h
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cd $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \
 		./configure --prefix=$(PKG_INSTALL_DIR) \

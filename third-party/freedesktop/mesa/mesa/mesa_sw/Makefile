@@ -17,8 +17,6 @@ MESA_CPPFLAGS += -I$(ROOT_DIR)/build/base/gen/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.96/
 MESA_CPPFLAGS += -DHAVE_FUNC_ATTRIBUTE_WEAK
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf &&( \

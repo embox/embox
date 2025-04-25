@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := stm32cubeh7
 PKG_VER  := v1.8.0
 
@@ -11,5 +9,3 @@ PKG_PATCHES  = component_mt25tl01g.patch
 ifeq (0,$(call option_get,BOOLEAN,use_middleware_pdm))
 PKG_PATCHES += stm32h45i_discovery_audio.patch
 endif
-
-include $(EXTBLD_TARGETS)
