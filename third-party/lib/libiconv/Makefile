@@ -10,7 +10,7 @@ include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		CC=$(EMBOX_GCC) ./configure \
 				--host=$(AUTOCONF_TARGET_TRIPLET) \
 				--enable-static=yes \
@@ -19,14 +19,14 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		cp lib/.libs/libiconv.la $(PKG_INSTALL_DIR)/libiconv.la; \
 		cp lib/.libs/libiconv.a $(PKG_INSTALL_DIR)/libiconv.a; \
 		cp libcharset/lib/.libs/libcharset.la $(PKG_INSTALL_DIR)/libcharset.la; \

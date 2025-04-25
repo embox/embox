@@ -11,19 +11,19 @@ include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		CC=$(EMBOX_GCC) ./configure \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
 		cp minigzip $(PKG_INSTALL_DIR)/minigzip.o; \
 		cp libz.a $(PKG_INSTALL_DIR); \
 		cp zlib.h $(INCLUDE_INSTALL_DIR); \

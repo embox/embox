@@ -5,7 +5,7 @@ PKG_VER  := 0.1.0
 TARGET_CFG := i686_32
 # Если необходимо то можно переопределить цель из .cargo/config.toml
 #CARGO_FLAGS += --target $(TARGET_CFG).json
-CARGO_FLAGS += --target-dir $(BUILD_DIR)
+CARGO_FLAGS += --target-dir $(MOD_BUILD_DIR)
 DEBUG ?=
 
 $(info debug is $(DEBUG))
@@ -22,19 +22,19 @@ endif
 
 all: build install
 
-BUILD  := $(BUILD_DIR)/.built
+BUILD  := $(MOD_BUILD_DIR)/.built
 build : $(BUILD)
 $(BUILD):
 	export RUSTFLAGS='--print=link-args -Clink-args=$(OBJ_DIR)/module/embox/compat/libc/str.a -L$(OBJ_DIR)/module/embox/compat/libc'; \
 	cargo build $(RELEASE) $(CARGO_FLAGS) --verbose; \
 	touch $@
 
-PKG_INSTALL_DIR  := $(BUILD_DIR)/install
+PKG_INSTALL_DIR  := $(MOD_BUILD_DIR)/install
 
-INSTALL  := $(BUILD_DIR)/.installed
+INSTALL  := $(MOD_BUILD_DIR)/.installed
 install : $(INSTALL)
 $(INSTALL):
-	cp $(BUILD_DIR)/$(TARGET_CFG)/$(TARGET)/lib$(PKG_NAME).a $(PKG_INSTALL_DIR)/$(PKG_NAME).a; \
+	cp $(MOD_BUILD_DIR)/$(TARGET_CFG)/$(TARGET)/lib$(PKG_NAME).a $(PKG_INSTALL_DIR)/$(PKG_NAME).a; \
 	echo "******* INSTALL DONE!" \
 	touch $@
  

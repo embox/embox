@@ -49,7 +49,7 @@ else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
 
-GCC_BUILD_DIR   := $(BUILD_DIR)/build
+GCC_BUILD_DIR   := $(MOD_BUILD_DIR)/build
 GCC_CPPFLAGS    := -I$(GCC_BUILD_DIR)/gcc/include
 LIBGCC_CPPFLAGS := -DLIBGCC2_HAS_XF_MODE=0 -DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY
 

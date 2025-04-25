@@ -56,7 +56,7 @@ CV_LOG_LEVEL := $(call option_get,NUMBER,cv_log_level)
 CV_CXX_FLAGS := -DCV_LOG_STRIP_LEVEL=$(CV_LOG_LEVEL)
 
 OPENCV_FLAGS = \
-		-DCMAKE_INSTALL_PREFIX=$(BUILD_DIR)/install \
+		-DCMAKE_INSTALL_PREFIX=$(MOD_BUILD_DIR)/install \
 		-DBUILD_SHARED_LIBS=OFF \
 		-DBUILD_opencv_python_bindings_generator=OFF \
 		-DBUILD_JAVA=OFF \
@@ -149,23 +149,23 @@ include $(EXTBLD_TARGETS)
 # becase there are two files in modules/core/src/ with the same name parallel.cpp which
 # then leads to broken gnu ar extraction.
 $(CONFIGURE) :
-	$(MV) $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp \
-		$(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel2.cpp; \
-	$(MKDIR) $(BUILD_DIR)/build
+	$(MV) $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel.cpp \
+		$(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/modules/core/src/parallel/parallel2.cpp; \
+	$(MKDIR) $(MOD_BUILD_DIR)/build
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/build && ( \
+	cd $(MOD_BUILD_DIR)/build && ( \
 		cmake $(OPENCV_FLAGS) ../$(PKG_NAME)-$(PKG_VER)/; \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/build && ( \
+	cd $(MOD_BUILD_DIR)/build && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/build && ( \
+	cd $(MOD_BUILD_DIR)/build && ( \
 		$(MAKE) install; \
 	)
 	touch $@

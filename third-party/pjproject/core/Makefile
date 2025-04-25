@@ -24,7 +24,7 @@ ifeq ($(PJSIP_ENABLE_CXX),false)
 DISABLE_FEATURES += pjsua2
 endif
 
-BUILD_ROOT  := $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
+BUILD_ROOT  := $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)
 PJSIP_INSTALL_DIR := $(EXTERNAL_BUILD_DIR)/third_party/pjproject/core/install
 
 include $(EXTBLD_TARGETS)

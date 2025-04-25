@@ -13,7 +13,7 @@ tcl_cppflags = -include $(ROOT_DIR)/third-party/tcl/tclsh/tcl_embox_compat.h
 include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
-	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \
 		./configure --prefix=$(PKG_INSTALL_DIR) \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
@@ -28,16 +28,16 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix  && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix  && ( \
 		$(MAKE) tclsh MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cp $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/tclsh $(PKG_INSTALL_DIR)/tclsh.o
-	cp $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/libtcl8.6.a $(PKG_INSTALL_DIR)/libtcl8.6.a
-	cp $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/libtclstub8.6.a $(PKG_INSTALL_DIR)/libtclstub8.6.a
-	cd $(BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \
+	cp $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/tclsh $(PKG_INSTALL_DIR)/tclsh.o
+	cp $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/libtcl8.6.a $(PKG_INSTALL_DIR)/libtcl8.6.a
+	cp $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix/libtclstub8.6.a $(PKG_INSTALL_DIR)/libtclstub8.6.a
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)$(PKG_VER)/unix && ( \
 		$(MAKE) install-headers \
 	)
 	touch $@

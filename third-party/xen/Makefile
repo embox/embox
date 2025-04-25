@@ -9,7 +9,7 @@ PKG_MD5 := d3b13c4c785601be2f104eaddd7c6a00
 include $(EXTBLD_TARGETS)
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/ && ( \
 		test -d $(INCLUDE_INSTALL_DIR)/xen && rm -rf $(INCLUDE_INSTALL_DIR)/xen; \
 		cp -r xen/include/public $(INCLUDE_INSTALL_DIR)/xen \
 	)

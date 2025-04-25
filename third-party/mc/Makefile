@@ -11,7 +11,7 @@ include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 	    CC=$(EMBOX_GCC) ./configure \
 			--host=$(AUTOCONF_TARGET_TRIPLET) \
 			CHECK_CFLAGS="-I$(EXTERNAL_BUILD_DIR)/third_party/libs/check/install" \
@@ -23,7 +23,7 @@ $(CONFIGURE) :
 			--without-gpm-mouse \
 			--without-edit \
 			--enable-static=yes \
-			--prefix=$(BUILD_DIR)/install \
+			--prefix=$(MOD_BUILD_DIR)/install \
 			--with-screen=ncurses \
 			--with-ncurses-includes="$(EXTERNAL_BUILD_DIR)/third_party/libs/ncurses/libncurses/install/include" \
 			--with-ncurses-libs="$(EXTERNAL_BUILD_DIR)/third_party/libs/ncurses/libncurses/install/lib" \
@@ -33,14 +33,14 @@ $(CONFIGURE) :
 
 $(BUILD) :
 	cp -r ./include/* $(INCLUDE_INSTALL_DIR)/
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
-		cp $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/mc $(PKG_INSTALL_DIR)/mc.o; \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+		cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/src/mc $(PKG_INSTALL_DIR)/mc.o; \
 	); \
 	
 	touch $@

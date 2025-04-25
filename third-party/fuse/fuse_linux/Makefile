@@ -13,7 +13,7 @@ FUSE_LINUX_CPPFLAGS = -I$(ROOT_DIR)/third-party/fuse/fuse_linux/include \
 include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && autoconf && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && autoconf && ( \
         ./configure --prefix=$(PKG_INSTALL_DIR) \
             --host=$(AUTOCONF_TARGET_TRIPLET) \
             --target=$(AUTOCONF_TARGET_TRIPLET) \
@@ -24,12 +24,12 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/include
-	cp -R $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/* $(PKG_INSTALL_DIR)/include
+	cp -R $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/* $(PKG_INSTALL_DIR)/include
 	touch $@

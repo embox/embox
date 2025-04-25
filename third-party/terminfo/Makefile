@@ -10,7 +10,7 @@ PKG_MD5     := 053bb48fc744d108fb64120ddf0e51e3
 include $(EXTBLD_TARGETS)
 
 $(BUILD) :
-	mkdir -p $(BUILD_DIR)/terminfo
+	mkdir -p $(MOD_BUILD_DIR)/terminfo
 	tic -e $(call option_get,STRING,term) \
-		-o $(BUILD_DIR)/terminfo $(BUILD_DIR)/$(PKG_NAME) &> /dev/null
+		-o $(MOD_BUILD_DIR)/terminfo $(MOD_BUILD_DIR)/$(PKG_NAME) &> /dev/null
 	touch $@

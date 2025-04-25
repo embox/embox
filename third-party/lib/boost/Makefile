@@ -14,7 +14,7 @@ PKG_MD5     := $(PKG_MD5_$(PKG_VER))
 PKG_PATCHES := patch_$(PKG_VER).txt
 PKG_SOURCES := https://sourceforge.net/projects/boost/files/boost/$(PKG_VER2)/boost_$(PKG_VER).tar.gz
 
-PKG_SOURCE_DIR = $(BUILD_DIR)/$(PKG_NAME)_$(PKG_VER)
+PKG_SOURCE_DIR = $(MOD_BUILD_DIR)/$(PKG_NAME)_$(PKG_VER)
 
 BOOST_ADDITIONAL_CPPFLAGS += -I$(abspath .)/include
 BOOST_ADDITIONAL_CPPFLAGS += -include $(abspath .)/boost_embox_compat.h

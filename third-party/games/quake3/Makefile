@@ -27,7 +27,7 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/ioq3 && ( \
+	cd $(MOD_BUILD_DIR)/ioq3 && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' V=1 ARCH=$(EMBOX_ARCH) CC=$(EMBOX_GCC) CFLAGS="$(QUAKE_EMBOX_CFLAGS)"; \
 	)
 	touch $@

@@ -18,5 +18,5 @@ $(BUILD) :
 
 $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/include
-	cp -R $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/* $(PKG_INSTALL_DIR)/include
+	cp -R $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/include/* $(PKG_INSTALL_DIR)/include
 	touch $@

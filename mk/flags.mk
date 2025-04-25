@@ -91,7 +91,7 @@ EXTERNAL_MAKE_QT = \
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
-	BUILD_DIR=$(abspath $(mod_build_dir)) \
+	MOD_BUILD_DIR=$(abspath $(mod_build_dir)) \
 	EXTBLD_TARGETS=$(ROOT_DIR)/mk/extbld/targets.mk \
 	EXTBLD_DEFINES=$(ROOT_DIR)/mk/extbld/defines.mk \
 	AUTOCONF_ARCH=$(AUTOCONF_ARCH) \
