@@ -87,7 +87,7 @@ extern int sched_yield(void);
 
 
 /* _GNU_SOURCE */
-struct affinity;
+#include <kernel/sched/affinity.h>
 
 typedef struct affinity cpu_set_t;
 
