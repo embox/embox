@@ -36,7 +36,7 @@
 extern void elvees_gpio_setup_func(uint32_t port, uint32_t pin, int func);
 extern void elvees_gpio_setup_digit(uint32_t port, uint32_t pin);
 
-static int elvees_gpio_setup_mode(unsigned int port, gpio_mask_t mask, int m) {
+static int elvees_gpio_setup_mode(unsigned int port, gpio_mask_t mask, uint32_t m) {
 	int i;
 
 	for (i = 0; i < 16; i++) {
