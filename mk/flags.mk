@@ -77,7 +77,7 @@ PROFILING_CFLAGS ?= -finstrument-functions \
 # additional '+'.
 #
 EXTERNAL_MAKE = \
-	+$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
+	+$(MAKE) -C $(dir $(my_file)) -f $(ROOT_DIR)/mk/extbld/build.mk $(EXTERNAL_MAKE_FLAGS)
 
 EXTERNAL_MAKE_QT = \
 	$(MKDIR) $(mod_build_dir) && \
@@ -91,9 +91,8 @@ EXTERNAL_MAKE_QT = \
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
+	MOD_DIR=$(abspath $(dir $(my_file))) \
 	MOD_BUILD_DIR=$(abspath $(mod_build_dir)) \
-	EXTBLD_TARGETS=$(ROOT_DIR)/mk/extbld/targets.mk \
-	EXTBLD_DEFINES=$(ROOT_DIR)/mk/extbld/defines.mk \
 	AUTOCONF_ARCH=$(AUTOCONF_ARCH) \
 	AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_TARGET_TRIPLET) \
 	COMPILER=$(COMPILER) \
