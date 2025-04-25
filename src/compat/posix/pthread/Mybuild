@@ -8,6 +8,7 @@ static module pthreads {
 	source "pthread_cancel.c"
 
 	source "pthread_attr_affinity.c"
+	source "pthread_affinity.c"
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync

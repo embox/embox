@@ -1,8 +1,8 @@
 /**
  * @file   
- * @brief  pthread_barrier functions
- * @date   11.03.2020
- * @author Sobhan Mondal <inro20fdm@gmail.com>
+ * @brief
+ * @date   25.04.2025
+ * @author Anton Bondarev
  */
 
 #include <stdlib.h>

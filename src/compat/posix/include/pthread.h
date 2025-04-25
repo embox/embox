@@ -241,6 +241,11 @@ extern int pthread_attr_setaffinity_np(pthread_attr_t *attr,
 extern int pthread_attr_getaffinity_np(const pthread_attr_t *attr,
                                 size_t cpusetsize, cpu_set_t *cpuset);
 
+extern int pthread_setaffinity_np(pthread_t thread, size_t cpusetsize,
+                                const cpu_set_t *cpuset);
+extern int pthread_getaffinity_np(pthread_t thread, size_t cpusetsize,
+                                cpu_set_t *cpuset);
+
 __END_DECLS
 
 #endif /* PTHREAD_H_ */
