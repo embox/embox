@@ -79,7 +79,7 @@ PROFILING_CFLAGS ?= -finstrument-functions \
 EXTERNAL_MAKE = \
 	+$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
 
-EXTERNAL_MAKE_PRO = \
+EXTERNAL_MAKE_QT = \
 	$(MKDIR) $(mod_build_dir) && \
 	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/.qmake.cache $(mod_build_dir) && \
 	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \

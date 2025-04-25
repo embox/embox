@@ -1,6 +1,6 @@
 package third_party.qpid.demo
 
-@Build(stage=2,script="$(EXTERNAL_MAKE_PRO)")
+@Build(stage=2,script="$(EXTERNAL_MAKE_QT)")
 @BuildDepends(third_party.qpid.core)
 @BuildDepends(third_party.qt.core)
 @Cmd(name = "qpidhello",
