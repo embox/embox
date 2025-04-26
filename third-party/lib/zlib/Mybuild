@@ -27,8 +27,7 @@ static module libs {
 			Andrey Gazukin
 	''')
 module gzip {
-
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	source "^BUILD/extbld/third_party/zlib/libs/install/strip.minigzip.o"
 
 	depends libs
