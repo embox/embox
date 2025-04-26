@@ -12,8 +12,6 @@ PKG_PATCHES := dropbear-mpr.patch
 
 DROPBEAR_CPPFLAGS += -DLTC_NO_BSWAP
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	cp stubs.h $(PKG_SOURCE_DIR)
 	cp embox_drpbr.c $(PKG_SOURCE_DIR)

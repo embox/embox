@@ -14,5 +14,3 @@ PKG_MD5     := 167930574388fe83e074b2eb8c0d7a51
 PKG_PATCHES := sd_read_1_17_1.patch
 
 PKG_SOURCES := https://github.com/STMicroelectronics/STM32CubeF7/archive/refs/tags/$(PKG_VER).zip
-
-include $(EXTBLD_TARGETS)

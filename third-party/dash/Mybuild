@@ -10,7 +10,7 @@ package third_party
 	''')
 module dash {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	source "strip.dash.o"
 
 	depends embox.compat.posix.signal.sys_siglist

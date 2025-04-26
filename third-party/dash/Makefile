@@ -7,11 +7,9 @@ PKG_MD5     := f6cedb10ae7258adb5ab17a10ae80d51
 
 PKG_PATCHES := dash.patch
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			CC=$(EMBOX_GCC) \
@@ -20,13 +18,13 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' CC=$(EMBOX_GCC) ;\
 	)
 	touch $@
 
 $(INSTALL) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER) && ( \
 		$(MAKE) DESTDIR=$(PKG_INSTALL_DIR) install; \
 		mv $(PKG_INSTALL_DIR)/usr/local/bin/dash $(PKG_INSTALL_DIR)/dash.o; \
 	)

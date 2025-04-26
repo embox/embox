@@ -12,7 +12,7 @@ module core {
 	''')
 @BuildDepends(core)
 module byte_pipe {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.pipe.o';")
+	@Rule(script="$(MAIN_STRIPPING)")
 	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.pipe.o $(abspath $(mod_build_dir))/strip.pipe.o")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "strip.pipe.o"
@@ -29,7 +29,7 @@ module byte_pipe {
 	''')
 @BuildDepends(core)
 module byte_select {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.select.o';")
+	@Rule(script="$(MAIN_STRIPPING)")
 	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/pgms/strip.select.o $(abspath $(mod_build_dir))/strip.select.o")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "strip.select.o"
@@ -46,7 +46,7 @@ module byte_select {
 	''')
 @BuildDepends(core)
 module byte_dhry2 {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/src/strip.dhry_1.o';")
+	@Rule(script="$(MAIN_STRIPPING)")
 	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/src/strip.dhry_1.o $(abspath $(mod_build_dir))/strip.dhry_1.o;")
 	@Rule(script="$(CP) $(abspath $(EXTERNAL_BUILD_DIR))/third_party/unixbyte/core/src/unixbyte-build/src/dhry_2.o $(abspath $(mod_build_dir))/dhry_2.o")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")

@@ -77,9 +77,9 @@ PROFILING_CFLAGS ?= -finstrument-functions \
 # additional '+'.
 #
 EXTERNAL_MAKE = \
-	+$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
+	+$(MAKE) -C $(dir $(my_file)) -f $(ROOT_DIR)/mk/extbld/build.mk $(EXTERNAL_MAKE_FLAGS)
 
-EXTERNAL_MAKE_PRO = \
+EXTERNAL_MAKE_QT = \
 	$(MKDIR) $(mod_build_dir) && \
 	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/.qmake.cache $(mod_build_dir) && \
 	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
@@ -91,9 +91,8 @@ EXTERNAL_MAKE_PRO = \
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
-	BUILD_DIR=$(abspath $(mod_build_dir)) \
-	EXTBLD_TARGETS=$(ROOT_DIR)/mk/extbld/targets.mk \
-	EXTBLD_DEFINES=$(ROOT_DIR)/mk/extbld/defines.mk \
+	MOD_DIR=$(abspath $(dir $(my_file))) \
+	MOD_BUILD_DIR=$(abspath $(mod_build_dir)) \
 	AUTOCONF_ARCH=$(AUTOCONF_ARCH) \
 	AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_TARGET_TRIPLET) \
 	COMPILER=$(COMPILER) \
@@ -110,6 +109,10 @@ EXTERNAL_MAKE_FLAGS = \
 	EMBOX_DEPS_CPPFLAGS_BEFORE='$(BUILD_DEPS_CPPFLAGS_BEFORE)' \
 	EMBOX_DEPS_CPPFLAGS_AFTER='$(BUILD_DEPS_CPPFLAGS_AFTER)' \
 	EMBOX_MODULE_CPPFLAGS='$(MODULE_CPPFLAGS)'
+
+MAIN_STRIPPING = \
+	$(MAKE) -f $(ROOT_DIR)/mk/main-stripping.mk \
+	$(EXTERNAL_MAKE_FLAGS) TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'
 
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 

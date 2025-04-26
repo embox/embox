@@ -18,8 +18,6 @@
 #      libsupc++, and libstdc++. With "Thread mode: posix".
 #
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME    := gcc
 PKG_VER     := $(call option_get,STRING,gcc_version)
 PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
@@ -49,7 +47,7 @@ else
 $(error Unsupported architecture: $(EMBOX_ARCH))
 endif
 
-GCC_BUILD_DIR   := $(BUILD_DIR)/build
+GCC_BUILD_DIR   := $(MOD_BUILD_DIR)/build
 GCC_CPPFLAGS    := -I$(GCC_BUILD_DIR)/gcc/include
 LIBGCC_CPPFLAGS := -DLIBGCC2_HAS_XF_MODE=0 -DDO_GLOBAL_CTORS_BODY -DDO_GLOBAL_DTORS_BODY
 
@@ -59,11 +57,9 @@ else
 LIBSTDCXX_CXXFLAGS :=
 endif
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	$(MKDIR) $(GCC_BUILD_DIR) && cd $(GCC_BUILD_DIR) && ( \
-		. $(EMBOX_GCC_ENV) && $(PKG_SOURCE_DIR)/configure \
+		$(PKG_SOURCE_DIR)/configure \
 			--with-cross-host=embox \
 			--target=$(GCC_TARGET) \
 			--prefix=$(PKG_INSTALL_DIR) \

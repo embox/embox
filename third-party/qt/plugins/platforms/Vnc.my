@@ -1,6 +1,6 @@
 package third_party.qt.plugin.platform
 
-@Build(stage=2,script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/Qt-4.8.7-master/src/plugins/platforms/vnc; $(EXTERNAL_MAKE_PRO)")
+@Build(stage=2,script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/Qt-4.8.7-master/src/plugins/platforms/vnc; $(EXTERNAL_MAKE_QT)")
 @BuildDepends(third_party.qt.core)
 module vnc {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/Qt-4.8.7-master/plugins/platforms")

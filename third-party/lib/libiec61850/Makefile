@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := libiec61850
 PKG_VER  := 1.5.1
 PKG_SOURCES := https://github.com/mz-automation/$(PKG_NAME)/archive/refs/tags/v$(PKG_VER).tar.gz
@@ -30,8 +28,6 @@ $(info EMBOX_ARCH:   $(EMBOX_ARCH))
 
 CONFIG_NAME := $(call option_get,STRING,config)
 TLS_ENABLE  := $(call option_get,BOOLEAN,tls_enable)
-
-include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full

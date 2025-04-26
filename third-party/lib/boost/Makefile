@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_VER_1_65_0 := 1.65.0
 PKG_VER_1_85_0 := 1.85.0
 
@@ -14,15 +12,13 @@ PKG_MD5     := $(PKG_MD5_$(PKG_VER))
 PKG_PATCHES := patch_$(PKG_VER).txt
 PKG_SOURCES := https://sourceforge.net/projects/boost/files/boost/$(PKG_VER2)/boost_$(PKG_VER).tar.gz
 
-PKG_SOURCE_DIR = $(BUILD_DIR)/$(PKG_NAME)_$(PKG_VER)
+PKG_SOURCE_DIR = $(MOD_BUILD_DIR)/$(PKG_NAME)_$(PKG_VER)
 
 BOOST_ADDITIONAL_CPPFLAGS += -I$(abspath .)/include
 BOOST_ADDITIONAL_CPPFLAGS += -include $(abspath .)/boost_embox_compat.h
 
 USER_TOOLS_CONFIG=$(PKG_SOURCE_DIR)/tools/build/src/user-config.jam
 USER_BOOST_CONFIG=$(PKG_SOURCE_DIR)/boost/config/user.hpp
-
-include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \

@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := lua
 PKG_VER  := 5.4.6
 
@@ -13,8 +11,6 @@ LUA_CPPFLAGS := -DLUASOCKET_SUPPORT
 else
 LUA_CPPFLAGS :=
 endif
-
-include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \

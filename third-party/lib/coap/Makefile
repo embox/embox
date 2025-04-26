@@ -7,8 +7,6 @@ PKG_MD5     := ff1af4bd9893c1728e765aa08a816e41
 coap_cppflags = -include $(ROOT_DIR)/third-party/libcoap/lib/libcoap_embox_compat.h \
 			-Drpl_malloc=malloc
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && autoconf && ( \

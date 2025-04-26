@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := openlibm
 PKG_VER  := 0.8.3
 
@@ -55,8 +53,6 @@ OLIBM_ARCH := i387
 else
 $(error Unsupported architecture)
 endif
-
-include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	touch $@

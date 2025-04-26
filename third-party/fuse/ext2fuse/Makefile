@@ -11,10 +11,8 @@ PKG_PATCHES := patch.txt
 EXT2FUSE_CPPFLAGS = -I$(ROOT_DIR)/third-party/fuse/ext2fuse/include \
     ${EMBOX_IMPORTED_CPPFLAGS}
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER) && autoconf && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER) && autoconf && ( \
         ./configure --prefix=$(PKG_INSTALL_DIR) \
             --host=$(AUTOCONF_TARGET_TRIPLET) \
             --target=$(AUTOCONF_TARGET_TRIPLET) \
@@ -25,12 +23,12 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER)/src && ( \
+	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER)/src && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/src
-	cp -R $(BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER)/src/* $(PKG_INSTALL_DIR)/src
+	cp -R $(MOD_BUILD_DIR)/$(PKG_NAME)-src-$(PKG_VER)/src/* $(PKG_INSTALL_DIR)/src
 	touch $@

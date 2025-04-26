@@ -11,8 +11,6 @@ MOSQUITTO_CPPFLAGS = "-include $(ROOT_DIR)/third-party/mosquitto/mosquitto_embox
 	-I$(ROOT_DIR)/third-party/mosquitto/include \
 	-Dproperty__get_remaining_length=mosquitto_broken_function"
 
-include $(EXTBLD_TARGETS)
-
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \

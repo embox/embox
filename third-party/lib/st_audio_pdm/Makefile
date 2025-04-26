@@ -8,8 +8,6 @@ PKG_SOURCES := https://localhost/$(PKG_NAME).zip
 
 DOWNLOADED_LINK := https://my.st.com/content/my_st_com/en/products/licensed-software/stm32-licensed-software/audiopdm-mw.license=1621431532619.product=AudioPDM-MW.version=3.1.0.html
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME).zip ]; then \
 		echo ""; \

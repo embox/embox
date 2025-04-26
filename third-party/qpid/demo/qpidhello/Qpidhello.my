@@ -1,6 +1,6 @@
 package third_party.qpid.demo
 
-@Build(stage=2,script="$(EXTERNAL_MAKE_PRO)")
+@Build(stage=2,script="$(EXTERNAL_MAKE_QT)")
 @BuildDepends(third_party.qpid.core)
 @BuildDepends(third_party.qt.core)
 @Cmd(name = "qpidhello",
@@ -11,7 +11,7 @@ package third_party.qpid.demo
 	''')
 module qpidhello {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	source "strip.qpidhello.embox.o"
 
 	@NoRuntime depends third_party.qpid.core

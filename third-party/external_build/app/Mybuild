@@ -10,7 +10,7 @@ package third_party.external_build
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildDepends(lib)
 module app {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
 	source "strip.app.o"
 

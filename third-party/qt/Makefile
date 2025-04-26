@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := qt-everywhere-opensource-src
 PKG_VER  := 4.8.7
 
@@ -33,8 +31,6 @@ ifeq ($(call option_get,STRING,qconfig),small)
 PKG_PATCHES += pkg_patch_for_qconfig.txt
 PKG_PATCHES += qconfig-small.txt
 endif
-
-include $(EXTBLD_TARGETS)
 
 QT_CONF_FLAGS := -hostprefix $(PKG_INSTALL_DIR)
 ifeq (arm,$(EMBOX_ARCH))

@@ -5,8 +5,6 @@ PKG_VER  := 7.2
 PKG_SOURCES := http://www.nano-editor.org/dist/v7/$(PKG_NAME)-$(PKG_VER).tar.gz
 PKG_MD5     := 2fc38daa9075b7e29f69085c63a5aa8a
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \

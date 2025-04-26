@@ -1,6 +1,4 @@
 
-include $(EXTBLD_DEFINES)
-
 PKG_NAME := lib60870
 PKG_VER  := 2.3.1
 PKG_SOURCES := https://github.com/mz-automation/$(PKG_NAME)/archive/refs/tags/v$(PKG_VER).tar.gz
@@ -23,8 +21,6 @@ endif
 ifeq ($(call option_get,BOOLEAN,tls_enable), 1)
 	export WITH_MBEDTLS=1
 endif
-
-include $(EXTBLD_TARGETS)
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full

@@ -9,8 +9,6 @@ PKG_PATCHES := pkg_patch.txt
 
 IPERF3_CPPFLAGS := -I$(ROOT_DIR)/third-party/iperf3/include
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ( \

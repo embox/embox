@@ -7,7 +7,7 @@ PKG_MD5     := 1c203d1474022b0aad2364f3ab92494e
 
 PKG_PATCHES := packetdrill.patch
 
-PACKETDRILL_SOURCE_DIR := $(BUILD_DIR)/$(PKG_NAME)/gtests/net/$(PKG_NAME)
+PACKETDRILL_SOURCE_DIR := $(MOD_BUILD_DIR)/$(PKG_NAME)/gtests/net/$(PKG_NAME)
 
 CFLAGS_NO_PACKED =
 
@@ -16,8 +16,6 @@ GCCVERSIONGTEQ9 := $(shell expr `$(EMBOX_GCC) -dumpversion | cut -f1 -d.` \>= 9)
 ifeq "$(GCCVERSIONGTEQ9)" "1"
     CFLAGS_NO_PACKED = -Wno-address-of-packed-member
 endif
-
-include $(EXTBLD_TARGETS)
 
 $(BUILD) :
 	cd $(PACKETDRILL_SOURCE_DIR) && ( \

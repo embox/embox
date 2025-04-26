@@ -24,8 +24,6 @@ PERL_SRC       = $(STATICPERL)/src/perl
 
 PERL_MODULES := $(call option_get,STRING,perl_modules)
 
-include $(EXTBLD_TARGETS)
-
 $(CONFIGURE) :
 	export STATICPERL=$(STATICPERL_TMP); \
 	export PERL_VERSION=$(PERL_VERSION); \
