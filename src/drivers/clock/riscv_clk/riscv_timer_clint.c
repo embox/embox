@@ -29,7 +29,7 @@
 
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
 #if SMODE
-    
+
 	register uintptr_t a7 asm("a7") = (uintptr_t)(OPENSBI_TIMER);
 	register uintptr_t a6 asm("a6") = (uintptr_t)(0);
 	register uintptr_t a0 asm("a0") = 0;
@@ -67,7 +67,7 @@ static int riscv_clock_setup(struct clock_source *cs) {
 
 static struct time_event_device riscv_event_device = {
     .set_periodic = riscv_clock_setup,
-    .name = "riscv_clk",
+    .name = "riscv_timer_clint",
     .irq_nr = IRQ_TIMER,
 };
 
