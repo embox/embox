@@ -25,8 +25,14 @@ riscv_trap_handler:
 	srli    t0, a1, (__riscv_xlen - 1)
 	bnez    t0, 1f
 
+	csrr    a2, INTERRUPT_REG
+	csrr    a3, INTPENDING_REG
+	csrr    a4, EPC_REG
+	csrr    a5, TRAP_VECTOR_REG
+	csrr    a6, HARTID_REG
+
 	/* exception handling */
-	mv      a0, sp
+	add     a0, sp, x0
 	call    riscv_exception_handler
 	j       riscv_trap_exit
 1:

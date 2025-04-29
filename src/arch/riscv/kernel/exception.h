@@ -17,11 +17,11 @@ typedef struct excpt_context {
 extern trap_handler_t riscv_excpt_table[0x10];
 
 #define PRINT_PTREGS(ptregs)                                    \
-	printk("ra      = %#lx\n"                                   \
+	printk(MACRO_STRING(STATUS_REG) " = %#lx\n"                 \
+	       "ra      = %#lx\n"                                   \
 	       "sp      = %#lx\n"                                   \
 	       "gp      = %#lx\n"                                   \
 	       "tp      = %#lx\n"                                   \
-	       MACRO_STRING(STATUS_REG) " = %#lx\n"                 \
 	       "pc      = %#lx\n",                                  \
-	    (ptregs)->ra, (ptregs)->sp, (ptregs)->gp, (ptregs)->tp, \
-	    (ptregs)->mstatus, (ptregs)->pc)
+	    (ptregs)->mstatus, (ptregs)->ra, (ptregs)->sp,          \
+	    (ptregs)->gp, (ptregs)->tp, (ptregs)->pc)
