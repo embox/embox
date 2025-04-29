@@ -81,9 +81,10 @@ extern struct tm *localtime_r(const time_t *timep, struct tm *result);
 /* clocks from beginning of start system */
 extern clock_t clock(void);
 
-#define CLOCK_REALTIME  3
-#define TIMER_ABSTIME   2
-#define CLOCK_MONOTONIC 1
+#define CLOCK_REALTIME      3
+#define TIMER_ABSTIME       2
+#define CLOCK_MONOTONIC     1
+#define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 
 extern int clock_getres(clockid_t clk_id, struct timespec *res);
 
