@@ -10,6 +10,8 @@ module All {
 		gethostname,
 		environ,
 		swab
+	
+	depends embox.compat.posix.sys.timeb
 }
 
 static module getopt {
