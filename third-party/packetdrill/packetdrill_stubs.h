@@ -39,16 +39,6 @@ static inline char *strsignal(int sig) {
 	return "i-know-but-won't-tell-you-signal";
 }
 
-static inline int mlockall(int flags) {
-	PD_STUB_USE();
-	return 0;
-}
-
-static inline int munlockall(void) {
-	PD_STUB_USE();
-	return 0;
-}
-
 #include <stdio.h>
 static inline FILE *fropen(void *cookie, int (*readfn)(void *, char *, int)) {
 	return funopen(cookie, readfn, NULL, NULL, NULL);
