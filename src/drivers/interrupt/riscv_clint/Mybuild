@@ -1,10 +1,14 @@
 package embox.driver.interrupt
 
 module riscv_clint {
+	/* This configuration is base on sifive_u54
+	 * https://static.dev.sifive.com/U54-MC-RVCoreIP.pdf
+	 */
 	option number base_addr = 0x2000000
         option number msip_offset = 0x0000
         option number mtimecmp_offset = 0x4000
         option number mtime_offset = 0xBFF8
+	option boolean has64bitmmio=true
 
 	source "riscv_clint.c"
 
