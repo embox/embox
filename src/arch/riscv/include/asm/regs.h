@@ -25,6 +25,10 @@
 #define TRAP_VECTOR_REG MACRO_CONCAT(MODE_LOWER_CASE, tvec)
 #define HARTID_REG      MACRO_CONCAT(MODE_LOWER_CASE, hartid)
 
+/* Unprivileged */
+#define TIME_REG        (0xc01)
+#define TIMEH_REG       (0xc81)
+
 /* Machine mode Status Register (mstatus) */
 #define MSTATUS_MIE  (1UL << 3)  /* Machine Interrupt Enable */
 #define MSTATUS_MPIE (1UL << 7)  /* Machine Previous Interrupt Enable */

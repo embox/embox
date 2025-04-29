@@ -11,3 +11,10 @@ module riscv_timer_clint extends riscv_clk {
 	depends embox.kernel.time.clock_source
 	depends embox.driver.interrupt.riscv_clint
 }
+
+module riscv_timer_csr extends riscv_clk {
+	source "riscv_timer_csr.c"
+
+	depends embox.kernel.time.clock_source
+	depends embox.driver.interrupt.riscv_clint
+}
