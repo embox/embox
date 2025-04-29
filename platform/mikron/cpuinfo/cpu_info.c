@@ -23,7 +23,7 @@ struct cpu_info *get_cpu_info(void) {
 	memset(&current_cpu, 0, sizeof(current_cpu));
 	strcpy(current_cpu.vendor_id, "MIKRON");
 
-	hartid = read_csr(HARDID_REG);
+	hartid = read_csr(HARTID_REG);
 
 	set_feature_strval(&current_cpu, "Chip name", "AMUR");
 	set_feature_strval(&current_cpu, "CPU ARCH", "RISC-V");
