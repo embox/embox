@@ -159,12 +159,17 @@ extern int sigaltstack(const stack_t *ss, stack_t *oss);
 #define SIGEV_SIGNAL      1
 #define SIGEV_THREAD      2
 
+#define SIGEV_THREAD_ID   SIGEV_THREAD
+
 struct sigevent {
 	int                sigev_notify; /* Notification type. */
 	int                sigev_signo;  /* Signal number. */
 	union sigval       sigev_value;  /* Signal value. */
 	void(*sigev_notify_function)(union sigval) ; /* Notification function. */
 	pthread_attr_t     *sigev_notify_attributes; /* Notification attributes. */
+	/* Linux only: */
+	/* ID of thread to signal (SIGEV_THREAD_ID) */
+	pid_t           sigev_notify_thread_id;
 };
 
 
