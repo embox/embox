@@ -75,6 +75,9 @@ extern time_t mktime(struct tm *tm);
 /* convert date and time to a string */
 extern char *asctime(const struct tm *timeptr);
 
+extern int daylight;
+extern long timezone;
+
 extern struct tm *localtime(const time_t *timep);
 extern struct tm *localtime_r(const time_t *timep, struct tm *result);
 

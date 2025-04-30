@@ -2,9 +2,7 @@ package third_party.lib
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/openssl3/install/include")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
-module openssl3 {
-	source "localtime.c"
-	
+module openssl3 {	
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libssl.a", "libcrypto.a"
 

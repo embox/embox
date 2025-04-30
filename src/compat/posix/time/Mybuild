@@ -17,8 +17,13 @@ module time {
 	@NoRuntime depends strptime
 	@NoRuntime depends months_short_names
 	@NoRuntime depends tzset
+	@NoRuntime depends localtime
 }
 
 module tzset {
 	source "tzset.c"
+}
+
+module localtime {
+	source "localtime.c"
 }
