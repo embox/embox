@@ -63,10 +63,6 @@ static inline void *sbrk(intptr_t increment) {
 	return NULL;
 }
 
-static inline void tzset (void) {
-	printf(">>> tzset\n");
-}
-
 static inline int daemon(int nochdir, int noclose) {
 	printf(">>> daemon, nochdir - %d, noclose - %d\n", nochdir, noclose);
 	return -1;

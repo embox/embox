@@ -22,11 +22,6 @@
 
 struct utimbuf;
 
-static inline void tzset (void) {
-	printf("tcl>>> %s\n", __func__);
-	return;
-}
-
 static inline double ldexp(double x, int exp) {
 	printf("tcl>>> %s\n", __func__);
 	return -1;

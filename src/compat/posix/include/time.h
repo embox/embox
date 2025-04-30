@@ -107,6 +107,9 @@ static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
 }
 
+extern char *tzname[2];
+extern void tzset(void);
+
 struct sigevent;
 extern int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid);
 

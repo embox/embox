@@ -17,6 +17,3 @@ char *ttyname(int fd) {
 	errno = ENOSYS;
 	return NULL;
 }
-
-void tzset(void) {
-}
