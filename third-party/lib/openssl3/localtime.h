@@ -1,1 +1,0 @@
-extern long int timezone;
