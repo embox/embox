@@ -1,0 +1,9 @@
+package embox.arch.riscv
+
+module mmu_sv39_mode extends embox.arch.riscv.mmu {
+	option number page_size=4096
+
+	source "mmu.c", "mmu.h"
+
+	depends embox.mem.vmem_depends
+}
