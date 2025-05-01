@@ -1,0 +1,5 @@
+package project.fourdiac
+
+@Build(script="$(EXTERNAL_MAKE)")
+module forte {
+}
