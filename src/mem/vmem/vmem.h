@@ -48,16 +48,28 @@ extern int vmem_set_flags(mmu_ctx_t ctx, mmu_vaddr_t virt_addr, ssize_t len, int
 #define MMU_LAST_LEVEL (MMU_LEVELS - 1)
 
 #ifndef __MMU_SHIFT_1
-#define __MMU_SHIFT_1 0u
-#endif
+# if MMU_LEVELS > 1
+#  error "MMU_LEVELS does not match __MMU_SHIFT_1"
+# else
+#  define __MMU_SHIFT_1 0u
+# endif
+#endif /* __MMU_SHIFT_1 */
 
 #ifndef __MMU_SHIFT_2
-#define __MMU_SHIFT_2 0u
-#endif
+# if MMU_LEVELS > 2
+#  error "MMU_LEVELS does not match __MMU_SHIFT_2"
+# else
+#  define __MMU_SHIFT_2 0u
+# endif
+#endif /* __MMU_SHIFT_2 */
 
 #ifndef __MMU_SHIFT_3
-#define __MMU_SHIFT_3 0u
-#endif
+# if MMU_LEVELS > 3
+#  error "MMU_LEVELS does not match __MMU_SHIFT_3"
+# else
+#  define __MMU_SHIFT_3 0u
+# endif
+#endif /* __MMU_SHIFT_3 */
 
 #ifndef MMU_VADDR_WIDTH
 #define MMU_VADDR_WIDTH (8u * sizeof(uintptr_t))
