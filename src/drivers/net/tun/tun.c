@@ -73,8 +73,13 @@ static int tun_xmit(struct net_device *dev, struct sk_buff *skb) {
 	memcpy(ethh->h_source, skb->dev->dev_addr, ETH_ALEN);
 	memset(ethh->h_dest, 0, ETH_ALEN);
 
-	skb_queue_push(&tun->rx_q, skb);
-	waitq_wakeup(&tun->wq, 1);
+	tun_krnl_lock(tun);
+	{
+		skb_queue_push(&tun->rx_q, skb);
+		waitq_wakeup(&tun->wq, 1);
+	}
+	tun_krnl_unlock(tun);
+
 	return 0;
 }
 
