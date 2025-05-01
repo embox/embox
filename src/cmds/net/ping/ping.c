@@ -187,7 +187,7 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 
 	tx_pack->icmp.hdr.type = ICMP_ECHO_REQUEST;
 	tx_pack->icmp.hdr.code = 0;
-	tx_pack->icmp.body.echo_req.id = 11; /* TODO: get unique id */
+	tx_pack->icmp.body.echo_req.id = (uint16_t)getpid();
 
 	/* open socket */
 	sk = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
