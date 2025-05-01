@@ -142,6 +142,7 @@ static ssize_t tun_dev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 		}
 	} while (ret == 0);
 	waitq_wait_cleanup(&tun->wq, wql);
+	skb_free(skb);
 
 	return ret;
 }
