@@ -75,7 +75,10 @@ static int imx6_ecspi2_init(void) {
 	return imx6_ecspi_init(&imx6_ecspi2);
 }
 
-#define SPI_DEV_NAME      ixm6_ecspi2
+#define SPI_BUS_NAME      ixm6_ecspi2
 
 PERIPH_MEMORY_DEFINE(imx6_ecspi2, BASE_ADDR, 0x44);
-SPI_DEV_DEF(SPI_DEV_NAME, &imx6_ecspi_ops, &imx6_ecspi2, 1);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &imx6_ecspi_ops, &imx6_ecspi2, 1);
+
+#define SPI_DEV_NAME      spi_bus_0_
+SPI_DEV_DEF(MACRO_CONCAT(SPI_DEV_NAME,1), NULL, &imx6_ecspi2, 1);
