@@ -1,4 +1,4 @@
-
+/**/
 #ifndef RISCV64_MMU_H_
 #define RISCV64_MMU_H_
 
@@ -7,24 +7,27 @@
 
 #ifdef RISC_MMU_SV48
 
-#define SATP_MODE               (9ULL)
+    #define SATP_MODE               (9ULL)
 
-#define MMU_LEVELS              4
-// Page entry shifts for each level in the paging hierarchy
-#define __MMU_SHIFT_0 39
-#define __MMU_SHIFT_1 30
-#define __MMU_SHIFT_2 21
-#define __MMU_SHIFT_3 12
+    #define MMU_LEVELS              4
+
+    // Page entry shifts for each level in the paging hierarchy
+    #define __MMU_SHIFT_0 39
+    #define __MMU_SHIFT_1 30
+    #define __MMU_SHIFT_2 21
+    #define __MMU_SHIFT_3 12
 
 #else
 
-#define SATP_MODE               (8ULL)
+    #define SATP_MODE               (8ULL)
 
-#define MMU_LEVELS              3
-// Page entry shifts for each level in the paging hierarchy
-#define __MMU_SHIFT_0 39
-#define __MMU_SHIFT_1 28
-#define __MMU_SHIFT_2 12
+    #define MMU_LEVELS              3
+
+    // Page entry shifts for each level in the paging hierarchy
+    #define __MMU_SHIFT_0 30
+    #define __MMU_SHIFT_1 21
+    #define __MMU_SHIFT_2 12
+
 #endif
 
 #define MMU_PTE_PMASK           (~((0x1FFUL << 53) | 0x3FFUL))
@@ -46,8 +49,6 @@
 #define MMU_INIT_FLAGS          (MMU_PAGE_VALID | MMU_PAGE_ACCESSED | MMU_PAGE_DIRTY)
 #define MMU_FLAG_MASK           ((MMU_INIT_FLAGS | MMU_PAGE_READABLE | MMU_PAGE_WRITABLE) | \
                                 (MMU_PAGE_EXECUTABLE | MMU_PAGE_USERMODE | MMU_PAGE_GLOBAL))
-
-
 
 typedef uintptr_t __mmu_paddr_t;   // Physical address type
 typedef uintptr_t __mmu_vaddr_t;   // Virtual address type
