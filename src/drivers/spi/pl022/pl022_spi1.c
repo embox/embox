@@ -32,4 +32,4 @@ static int pl022_spi1_init(void) {
 	return 0;
 }
 
-SPI_DEV_DEF(SPI_DEV_NAME, &pl022_spi_ops, &pl022_spi1, 1);
+SPI_DEV_DEF(SPI_DEV_NAME, &pl022_spi_ops, &pl022_spi1, 0);
