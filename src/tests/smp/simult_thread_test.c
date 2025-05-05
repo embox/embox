@@ -17,12 +17,12 @@
 
 #include <module/embox/kernel/stack.h>
 
-#define MAX_TRYTIMES    ((unsigned int)(-1) - 1)
+#define MAX_TRYTIMES    ((size_t)(-1) - 1)
 
 EMBOX_TEST_SUITE("test simultaneous thread on CPUs");
 
-static unsigned int try_time = 0;
-static unsigned int thread_status[4] = {0};
+static size_t try_time = 0;
+static size_t thread_status[4] = {0};
 
 static int search_threads(void) {
 	struct thread * th;
@@ -36,7 +36,7 @@ static int search_threads(void) {
 				thread_status[0] = th->schedee.active;
 				thread_status[1] = th->schedee.ready;
 				thread_status[2] = th->schedee.waiting;
-				thread_status[3] = (unsigned int)th;
+				thread_status[3] = (size_t)th;
 				return ret;
 			}
 		}
@@ -58,7 +58,7 @@ void * test_thread_1(void *arg){
 
 	log_debug("found %d try_time %u",founded,try_time);
 	if(founded){
-		log_debug("Self thread %#x A %u R %u W %u", (unsigned int)self, self->schedee.active, self->schedee.ready, self->schedee.waiting);
+		log_debug("Self thread %#x A %u R %u W %u", (size_t)self, self->schedee.active, self->schedee.ready, self->schedee.waiting);
 		log_debug("Found thread %#x A %u R %u W %u", thread_status[3], thread_status[0], thread_status[1], thread_status[2]);
 	}
 

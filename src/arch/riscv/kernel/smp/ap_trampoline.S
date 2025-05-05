@@ -8,6 +8,7 @@
 
 #include <asm/linkage.h>
 #include <asm/regs.h>
+#include <asm/asm.h>
 
 	.section .text
 
@@ -35,8 +36,7 @@ C_ENTRY(__ap_trampoline):
 
 	/* Setting up stack */
 	la      t0, __ap_sp
-	add     t0, t0, a1
-	lw      t1, 0(t0)
+	PTR_L   t1, 0(t0)
 	mv      sp, t1
 
 	/* Jumping forward */
