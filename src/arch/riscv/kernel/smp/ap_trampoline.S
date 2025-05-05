@@ -29,11 +29,6 @@ C_ENTRY(__ap_trampoline):
 	mv      sp, t0
 	call    cpuid_register
 
-	/* a0 returned with cpuid */
-	addi    a0, a0, -1
-	li      a1, 0x4
-	mul     a1, a1, a0
-
 	/* Setting up stack */
 	la      t0, __ap_sp
 	PTR_L   t1, 0(t0)
