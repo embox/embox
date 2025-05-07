@@ -18,6 +18,12 @@
 #include "pl022_spi.h"
 
 
+struct pl022_regs {
+	uint32_t cr0;
+	uint16_t cr1;
+	uint16_t dmacr;
+};
+
 /*
  * Macros to access SSP Registers with their offsets
  */
@@ -284,13 +290,13 @@ int pl022_spi_init(struct pl022_spi *dev) {
 	return pl022_spi_setup(dev, true);
 }
 
-static int pl022_spi_select(struct spi_device *spi_dev, int cs) {
+static int pl022_spi_select(struct spi_controller *spi_dev, int cs) {
 	log_debug("NIY");
 
 	return 0;
 }
 
-static int pl022_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
+static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 	struct pl022_spi *dev = spi_dev->priv;
 	uint16_t reg;
 
@@ -307,7 +313,7 @@ static int pl022_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
 	return pl022_spi_setup(dev, is_master);
 }
 
-static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
+static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	struct pl022_spi *dev = spi_dev->priv;
 	uint8_t value;
@@ -366,7 +372,7 @@ static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops pl022_spi_ops = {
+struct spi_controller_ops pl022_spi_ops = {
 	.select   = pl022_spi_select,
 	.set_mode = pl022_spi_set_mode,
 	.transfer = pl022_spi_transfer
