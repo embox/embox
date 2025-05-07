@@ -11,18 +11,12 @@
 
 #include <stdint.h>
 
-struct pl022_regs {
-	uint32_t cr0;
-	uint16_t cr1;
-	uint16_t dmacr;
-};
-
 struct pl022_spi {
 	uint32_t base_addr;
 };
 
 extern int pl022_spi_init(struct pl022_spi *dev);
 
-extern struct spi_ops pl022_spi_ops;
+extern struct spi_controller_ops pl022_spi_ops;
 
 #endif /* SRC_DRIVERS_SPI_PL022_PL022_SPI_H_ */
