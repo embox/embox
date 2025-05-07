@@ -363,7 +363,7 @@ static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 		 * on the SPI bus, so we raise the same pin all the tiem */
 	}
 
-	return rx_cnt;
+	return 0;
 }
 
 struct spi_ops pl022_spi_ops = {
