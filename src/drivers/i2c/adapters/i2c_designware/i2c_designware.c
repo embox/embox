@@ -10,6 +10,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <unistd.h>
+#include <stdbool.h>
 
 #include <hal/reg.h>
 #include <swab.h>
