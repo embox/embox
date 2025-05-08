@@ -21,18 +21,18 @@ int skeleton_spi_init(struct skeleton_spi *dev) {
 	return skeleton_spi_setup(dev, true);
 }
 
-static int skeleton_spi_select(struct spi_device *spi_dev, int cs) {
+static int skeleton_spi_select(struct spi_controller *spi_dev, int cs) {
 	log_debug("NIY");
 
 	return 0;
 }
 
-static int skeleton_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
+static int skeleton_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 	struct skeleton_spi *dev = spi_dev->priv;
 	return skeleton_spi_setup(dev, is_master);
 }
 
-static int skeleton_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
+static int skeleton_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	//struct skeleton_spi *dev = spi_dev->priv;
 
@@ -51,7 +51,7 @@ static int skeleton_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops skeleton_spi_ops = {
+struct spi_controller_ops skeleton_spi_ops = {
 	.select   = skeleton_spi_select,
 	.set_mode = skeleton_spi_set_mode,
 	.transfer = skeleton_spi_transfer
