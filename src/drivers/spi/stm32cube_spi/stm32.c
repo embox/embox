@@ -82,9 +82,11 @@ int stm32_spi_init(struct stm32_spi *dev, void *instance) {
 }
 
 static int stm32_spi_init1(struct spi_device *dev) {
-	if (((struct stm32_spi*)(dev->priv))->hw_init != NULL)
+	if (((struct stm32_spi*)(dev->priv))->hw_init != NULL) {
 		return ((struct stm32_spi*)(dev->priv))->hw_init();
-	else	return -1;
+	}
+
+	return -1;
 }
 
 static int stm32_spi_select(struct spi_device *dev, int cs) {
