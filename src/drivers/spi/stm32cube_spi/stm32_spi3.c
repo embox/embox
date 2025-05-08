@@ -6,13 +6,36 @@
  * @date 25.12.2019
  */
 
-#include <string.h>
+#include <util/macro.h>
+
 #include <drivers/gpio.h>
 #include <drivers/spi.h>
 
 #include "stm32_spi.h"
 
 #include <config/board_config.h>
+
+#define SPI_BUS_NUM        3
+
+#if defined CONF_SPI3_REGION_BASE
+#define SPI_REGION_BASE        ((uintptr_t)CONF_SPI3_REGION_BASE)
+#else
+#define SPI_REGION_BASE         SPI3
+#endif /* defined CONF_SPI3_REGION_BASE */
+
+#define CLK_ENABLE_SPI          CONF_SPI3_CLK_ENABLE_SPI
+
+#define SPI_PIN_SCK_PORT        CONF_SPI3_PIN_SCK_PORT
+#define SPI_PIN_SCK_NR          CONF_SPI3_PIN_SCK_NR
+#define SPI_PIN_SCK_AF          CONF_SPI3_PIN_SCK_AF
+
+#define SPI_PIN_MISO_PORT     CONF_SPI3_PIN_MISO_PORT
+#define SPI_PIN_MISO_NR       CONF_SPI3_PIN_MISO_NR
+#define SPI_PIN_MISO_AF       CONF_SPI3_PIN_MISO_AF
+
+#define SPI_PIN_MOSI_PORT     CONF_SPI3_PIN_MOSI_PORT
+#define SPI_PIN_MOSI_NR       CONF_SPI3_PIN_MOSI_NR
+#define SPI_PIN_MOSI_AF       CONF_SPI3_PIN_MOSI_AF
 
 static int stm32_spi3_init(void);
 static struct stm32_spi stm32_spi3 = {
@@ -26,24 +49,20 @@ static struct stm32_spi stm32_spi3 = {
 };
 
 static int stm32_spi3_init(void) {
-	CONF_SPI3_CLK_ENABLE_SPI();
+	CLK_ENABLE_SPI();
 
-#if defined CONF_SPI3_REGION_BASE
-	stm32_spi_init(&stm32_spi3, (void *) CONF_SPI3_REGION_BASE);
-#else
-	stm32_spi_init(&stm32_spi3, SPI3);
-#endif	/* CONF_SPI3_REGION_BASE */
+	stm32_spi_init(&stm32_spi3, (void *) SPI_REGION_BASE);
 
-	gpio_setup_mode(CONF_SPI3_PIN_SCK_PORT, CONF_SPI3_PIN_SCK_NR,
-		GPIO_MODE_ALT_SET(CONF_SPI3_PIN_SCK_AF) |
+	gpio_setup_mode(SPI_PIN_SCK_PORT, SPI_PIN_SCK_NR,
+		GPIO_MODE_ALT_SET(SPI_PIN_SCK_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
-	gpio_setup_mode(CONF_SPI3_PIN_MISO_PORT, CONF_SPI3_PIN_MISO_NR,
-		GPIO_MODE_ALT_SET(CONF_SPI3_PIN_MISO_AF) |
+	gpio_setup_mode(SPI_PIN_MISO_PORT, SPI_PIN_MISO_NR,
+		GPIO_MODE_ALT_SET(SPI_PIN_MISO_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
-	gpio_setup_mode(CONF_SPI3_PIN_MOSI_PORT, CONF_SPI3_PIN_MOSI_NR,
-		GPIO_MODE_ALT_SET(CONF_SPI3_PIN_MOSI_AF) |
+	gpio_setup_mode(SPI_PIN_MOSI_PORT, SPI_PIN_MOSI_NR,
+		GPIO_MODE_ALT_SET(SPI_PIN_MOSI_AF) |
 		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 
 #if defined(CONF_SPI3_PIN_CS_PORT)
@@ -58,6 +77,8 @@ static int stm32_spi3_init(void) {
 	return 0;
 }
 
-#define SPI_DEV_NAME      stm32_spi_3
+#define SPI_BUS_NAME      MACRO_CONCAT(spi,SPI_BUS_NUM)
 
-SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi3, 3);
+#define SPI_DEV_NAME      MACRO_CONCAT(SPI_BUS_NAME,_dev)
+
+SPI_DEV_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), &stm32_spi_ops, &stm32_spi3, SPI_BUS_NUM);
