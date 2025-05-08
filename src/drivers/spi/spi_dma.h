@@ -18,9 +18,9 @@
 #include <util/macro.h>
 
 
-struct spi_device;
+struct spi_controller;
 
-typedef void (*irq_spi_event_t)(struct spi_device *data, int cnt);
+typedef void (*irq_spi_event_t)(struct spi_controller *data, int cnt);
 
 struct dma_ctrl_blk;
 struct dma_mem_handle;
@@ -52,7 +52,7 @@ struct dma_mem_handle;
  * @param next_conbk - pointer to next conbk, null if this is last one 
  * @param int_enable - enable interrupt at end of transmission/receipt for conbk
  */
-extern struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev,
+extern struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_controller *dev,
     struct dma_mem_handle *mem_handle, uint32_t offset, void *src,
     uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
 
@@ -67,15 +67,15 @@ extern struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev,
  * @param next_conbk - pointer to next conbk, null if this is last one 
  * @param int_enable - enable interrupt at end of transmission/receipt for conbk
  */
-extern struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_device *dev,
+extern struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_controller *dev,
     struct dma_mem_handle *mem_handle, uint32_t offset, void *dest,
     uint32_t bytes, struct dma_ctrl_blk *next_conbk, bool int_enable);
 
-extern int spi_dma_prepare(struct spi_device *dev,
+extern int spi_dma_prepare(struct spi_controller *dev,
     irq_return_t (*dma_complete)(unsigned int, void *), int dma_chan_out,
     int dma_chan_in, uint32_t dma_levels);
 
-extern int spi_irq_prepare(struct spi_device *dev,
+extern int spi_irq_prepare(struct spi_controller *dev,
     irq_spi_event_t send_complete, irq_spi_event_t received_data);
 
 #endif /* DRIVERS_SPI_DMA_H_ */
