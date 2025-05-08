@@ -8,6 +8,16 @@ module skeleton_spi_drv {
 	depends embox.driver.spi.core
 }
 
+module skeleton_spi0 {
+	option string log_level="LOG_ERR"
+
+	option number base_addr = 0
+
+	source "skeleton_spi0.c"
+
+	depends embox.driver.spi.skeleton_spi_drv
+}
+
 module skeleton_spi1 {
 	option string log_level="LOG_ERR"
 

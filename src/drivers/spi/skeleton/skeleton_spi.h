@@ -14,6 +14,6 @@ struct skeleton_spi {
 
 extern int skeleton_spi_init(struct skeleton_spi *dev);
 
-extern struct spi_ops skeleton_spi_ops;
+extern struct spi_controller_ops skeleton_spi_ops;
 
 #endif /* SRC_DRIVERS_SPI_STM32_I2C_H_ */
