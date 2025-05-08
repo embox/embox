@@ -17,7 +17,7 @@ struct bcm283x_spi_regs;
 
 struct dma_mem_handle;
 typedef struct dma_ctrl_blk *(*init_dma_block_spi_func_t) (
-		struct spi_device *dev,
+		struct spi_controller *dev,
 		struct dma_mem_handle *mem_handle, uint32_t offset, void *src, uint32_t bytes,
 		struct dma_ctrl_blk *next_conbk, bool int_enable);
 

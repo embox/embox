@@ -15,7 +15,7 @@
 
 #include "bcm283x_spi_dev.h"
 
-struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev, struct dma_mem_handle *mem_handle,
+struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_controller *dev, struct dma_mem_handle *mem_handle,
 		uint32_t offset, void *src, uint32_t bytes,
 		struct dma_ctrl_blk *next_conbk, bool int_enable) {
 	struct bcm283x_spi_dev *bcm283x_spi_dev;
@@ -25,14 +25,13 @@ struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_device *dev, struct dma_me
 	bcm283x_spi_dev = dev->priv;
 
 	if(bcm283x_spi_dev->init_dma_block_spi_in == NULL) {
-		log_debug("Select operation is not supported for SPI%d",
-				spi_dev_id(dev));
+		log_debug("Select operation is not supported for SPI%d", dev->spic_bus_num);
 		return NULL;
 	}
 	return bcm283x_spi_dev->init_dma_block_spi_in(dev, mem_handle, offset, src,bytes, next_conbk, int_enable);
 }
 
-struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_device *dev, struct dma_mem_handle *mem_handle,
+struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_controller *dev, struct dma_mem_handle *mem_handle,
 		uint32_t offset, void *dest, uint32_t bytes,
 		struct dma_ctrl_blk *next_conbk, bool int_enable) {
 	struct bcm283x_spi_dev *bcm283x_spi_dev;
@@ -42,14 +41,13 @@ struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_device *dev, struct dma_m
 	bcm283x_spi_dev = dev->priv;
 
 	if(bcm283x_spi_dev->init_dma_block_spi_out == NULL) {
-		log_debug("Select operation is not supported for SPI%d",
-				spi_dev_id(dev));
+		log_debug("Select operation is not supported for SPI%d", dev->spic_bus_num);
 		return NULL;
 	}
 	return bcm283x_spi_dev->init_dma_block_spi_out(dev, mem_handle, offset, dest, bytes, next_conbk, int_enable);
 }
 
-int spi_dma_prepare(struct spi_device *dev,
+int spi_dma_prepare(struct spi_controller *dev,
 		irq_return_t (*dma_complete)(unsigned int,  void *),
 		int dma_chan_out, int dma_chan_in,
 		uint32_t dma_levels) {
@@ -67,7 +65,7 @@ int spi_dma_prepare(struct spi_device *dev,
 	return 0;
 }
 
-int spi_irq_prepare(struct spi_device *dev,
+int spi_irq_prepare(struct spi_controller *dev,
 		irq_spi_event_t send_complete, irq_spi_event_t received_data) {
 	struct bcm283x_spi_dev *bcm283x_spi_dev;
 
