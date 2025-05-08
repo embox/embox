@@ -115,14 +115,7 @@ static void list_spi_devices(void) {
 			continue;
 		}
 
-		printf("Bus %d: ", i);
-
-		if (s->dev == NULL) {
-			printf("(unnamed)\n");
-			continue;
-		}
-
-		printf("%s\n", s->dev->name);
+		printf("Bus %d: %s\n", i, s->cdev.name);
 	}
 }
 
