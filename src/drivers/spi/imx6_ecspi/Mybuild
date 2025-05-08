@@ -15,6 +15,7 @@ module imx6_ecspi1 {
 	option number pins_group
 
 	source "imx6_ecspi1.c"
+	source "spi0_dev.c"
 
 	depends imx6_ecspi
 	depends embox.driver.periph_memory
@@ -26,8 +27,8 @@ module imx6_ecspi2 {
 	option number pins_group
 
 	source "imx6_ecspi2.c"
+	source "spi1_dev.c"
 
 	depends imx6_ecspi
-
 	depends embox.driver.periph_memory
 }
