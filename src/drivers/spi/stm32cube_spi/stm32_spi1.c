@@ -6,6 +6,8 @@
  * @date 25.12.2019
  */
 
+#include <stddef.h>
+
 #include <util/macro.h>
 
 #include <drivers/gpio.h>
@@ -89,6 +91,8 @@ static int stm32_spi1_init(void) {
 
 #define SPI_BUS_NAME      MACRO_CONCAT(spi,SPI_BUS_NUM)
 
+SPI_CONTROLLER_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), &stm32_spi_ops, &stm32_spi1, SPI_BUS_NUM);
+
 #define SPI_DEV_NAME      MACRO_CONCAT(SPI_BUS_NAME,_dev)
 
-SPI_DEV_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), &stm32_spi_ops, &stm32_spi1, SPI_BUS_NUM);
+SPI_DEV_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), NULL, &stm32_spi1, SPI_BUS_NUM);

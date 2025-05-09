@@ -6,6 +6,8 @@
  * @date 25.12.2019
  */
 
+#include <stddef.h>
+
 #include <util/macro.h>
 
 #include <drivers/gpio.h>
@@ -29,13 +31,13 @@
 #define SPI_PIN_SCK_NR          CONF_SPI3_PIN_SCK_NR
 #define SPI_PIN_SCK_AF          CONF_SPI3_PIN_SCK_AF
 
-#define SPI_PIN_MISO_PORT     CONF_SPI3_PIN_MISO_PORT
-#define SPI_PIN_MISO_NR       CONF_SPI3_PIN_MISO_NR
-#define SPI_PIN_MISO_AF       CONF_SPI3_PIN_MISO_AF
+#define SPI_PIN_MISO_PORT       CONF_SPI3_PIN_MISO_PORT
+#define SPI_PIN_MISO_NR         CONF_SPI3_PIN_MISO_NR
+#define SPI_PIN_MISO_AF         CONF_SPI3_PIN_MISO_AF
 
-#define SPI_PIN_MOSI_PORT     CONF_SPI3_PIN_MOSI_PORT
-#define SPI_PIN_MOSI_NR       CONF_SPI3_PIN_MOSI_NR
-#define SPI_PIN_MOSI_AF       CONF_SPI3_PIN_MOSI_AF
+#define SPI_PIN_MOSI_PORT       CONF_SPI3_PIN_MOSI_PORT
+#define SPI_PIN_MOSI_NR         CONF_SPI3_PIN_MOSI_NR
+#define SPI_PIN_MOSI_AF         CONF_SPI3_PIN_MOSI_AF
 
 static int stm32_spi3_init(void);
 static struct stm32_spi stm32_spi3 = {
@@ -79,6 +81,8 @@ static int stm32_spi3_init(void) {
 
 #define SPI_BUS_NAME      MACRO_CONCAT(spi,SPI_BUS_NUM)
 
+SPI_CONTROLLER_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), &stm32_spi_ops, &stm32_spi3, SPI_BUS_NUM);
+
 #define SPI_DEV_NAME      MACRO_CONCAT(SPI_BUS_NAME,_dev)
 
-SPI_DEV_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), &stm32_spi_ops, &stm32_spi3, SPI_BUS_NUM);
+SPI_DEV_DEF(MACRO_CONCAT(SPI_DEV_NAME,0), NULL, &stm32_spi3, SPI_BUS_NUM);
