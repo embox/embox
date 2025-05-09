@@ -3,8 +3,8 @@
  *
  * @brief RISC-V build-in timer
  *
- * @date 29.04.2025
- * @author Zixian Zeng
+ * @date 12.12.2019
+ * @author Anastasia Nizharadze
  */
 
 #include <errno.h>
@@ -14,45 +14,60 @@
 #include <asm/regs.h>
 #include <framework/mod/options.h>
 #include <hal/clock.h>
+#include <hal/reg.h>
 #include <hal/system.h>
 #include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
+#include <hal/cpu.h>
 #include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
 #define COUNT_OFFSET  (RTC_CLOCK / JIFFIES_PERIOD)
 #define RTC_CLOCK     OPTION_GET(NUMBER, rtc_freq)
 
-static uint64_t get_current_time64(void) {
-#if __riscv_xlen == 32
-        uint32_t hi, lo;
-
-        do {
-                hi = read_csr(TIMEH_REG);
-                lo = read_csr(TIME_REG);
-        } while (hi != read_csr(TIMEH_REG));
-
-        return ((uint64_t)hi << 32) | lo;
-#else /* __riscv_xlen == 64 */
-        return read_csr(TIME_REG);
-#endif
-}
+#define OPENSBI_TIMER 0x54494D45
 
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
-	set_timecmp(get_current_time64() + COUNT_OFFSET, cpu_get_id());
+#if SMODE
+
+	register uintptr_t a7 asm("a7") = (uintptr_t)(OPENSBI_TIMER);
+	register uintptr_t a6 asm("a6") = (uintptr_t)(0);
+	register uintptr_t a0 asm("a0") = 0;
+	asm volatile("rdtime a0");
+	a0 = a0 + COUNT_OFFSET;
+	(void)a7;
+	(void)a6;
+	asm volatile("ecall");
+#else
+	set_timecmp(get_current_time() + COUNT_OFFSET, cpu_get_id());
+#endif
 	clock_tick_handler(dev_id);
+
 	return IRQ_HANDLED;
 }
 
 static int riscv_clock_setup(struct clock_source *cs) {
-	set_timecmp(get_current_time64() + COUNT_OFFSET, cpu_get_id());
+#if SMODE
+	register uintptr_t a7 asm("a7") = (uintptr_t)(OPENSBI_TIMER);
+	register uintptr_t a6 asm("a6") = (uintptr_t)(0);
+	register uintptr_t a0 asm("a0") = 0;
+	asm volatile("rdtime a0");
+	a0 = a0 + COUNT_OFFSET;
+	(void)a7;
+	(void)a6;
+	asm volatile("ecall");
+#else
+	set_timecmp(get_current_time() + COUNT_OFFSET, cpu_get_id());
+#endif
+
 	enable_timer_interrupts();
+
 	return ENOERR;
 }
 
 static struct time_event_device riscv_event_device = {
     .set_periodic = riscv_clock_setup,
-    .name = "riscv_timer_csr",
+    .name = "riscv_timer_clint",
     .irq_nr = IRQ_TIMER,
 };
 

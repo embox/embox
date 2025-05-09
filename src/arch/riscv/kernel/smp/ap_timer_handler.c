@@ -35,7 +35,7 @@ void __riscv_ap_timer_handler(void *dev_id) {
 	(void)a6;
 	asm volatile("ecall");
 #else
-	clint_set_mtimecmp(clint_get_mtime() + COUNT_OFFSET, cpu_get_id());
+	set_timecmp(get_current_time() + COUNT_OFFSET, cpu_get_id());
 #endif
 	if (dev_id == cs_jiffies) {
 		jiffies_update(1);

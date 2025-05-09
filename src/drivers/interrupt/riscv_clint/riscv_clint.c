@@ -13,6 +13,7 @@
 #include <hal/reg.h>
 
 #define HAS64BITMMIO	OPTION_GET(BOOLEAN, has64bitmmio)
+#define NO_MTIME_REG	OPTION_GET(BOOLEAN, no_mtime_reg)
 #define CLINT_ADDR      OPTION_GET(NUMBER, base_addr)
 #define MSIP_OFFSET     OPTION_GET(NUMBER, msip_offset)
 #define MTIMECMP_OFFSET OPTION_GET(NUMBER, mtimecmp_offset)
@@ -69,7 +70,22 @@ uint64_t get_timecmp(int hart_id) {
 }
 
 uint64_t get_current_time(void) {
+#if NO_MTIME_REG
+  #if __riscv_xlen == 32
+        uint32_t hi, lo;
+
+        do {
+                hi = read_csr(TIMEH_REG);
+                lo = read_csr(TIME_REG);
+        } while (hi != read_csr(TIMEH_REG));
+
+        return ((uint64_t)hi << 32) | lo;
+  #else /* __riscv_xlen == 64 */
+        return read_csr(TIME_REG);
+  #endif
+#else
 	return READ_64BIT(MTIME_ADDR);
+#endif /* NO_MTIME_REG */
 }
 
 #else /* !SMODE */
