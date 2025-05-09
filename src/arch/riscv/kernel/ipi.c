@@ -19,7 +19,7 @@ void smp_send_resched(int cpu_id) {
 	ipi_message = RESCHED;
 	__spin_unlock(&ipi_lock);
 
-	clint_configure_msip(1,cpu_id);
+	configure_soft_int(1,cpu_id);
 }
 
 void smp_send_none(int cpu_id) {
@@ -27,12 +27,12 @@ void smp_send_none(int cpu_id) {
 	ipi_message = NONE;
 	__spin_unlock(&ipi_lock);
 
-	clint_configure_msip(1,cpu_id);
+	configure_soft_int(1,cpu_id);
 }
 
 void smp_ack_ipi(void) {
 	int cpuid = cpu_get_id();
-	clint_configure_msip(0,cpuid);
+	configure_soft_int(0,cpuid);
 }
 
 enum ipi_type smp_get_ipi_message(void) {

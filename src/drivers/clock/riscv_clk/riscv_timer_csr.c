@@ -39,14 +39,13 @@ static uint64_t get_current_time64(void) {
 }
 
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
-	clint_set_mtimecmp(get_current_time64() + COUNT_OFFSET, cpu_get_id());
+	set_timecmp(get_current_time64() + COUNT_OFFSET, cpu_get_id());
 	clock_tick_handler(dev_id);
 	return IRQ_HANDLED;
 }
 
-uint64_t clint_get_mtimecmp(int);
 static int riscv_clock_setup(struct clock_source *cs) {
-	clint_set_mtimecmp(get_current_time64() + COUNT_OFFSET, cpu_get_id());
+	set_timecmp(get_current_time64() + COUNT_OFFSET, cpu_get_id());
 	enable_timer_interrupts();
 	return ENOERR;
 }
