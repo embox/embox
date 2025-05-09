@@ -81,7 +81,7 @@ int stm32_spi_init(struct stm32_spi *dev, void *instance) {
 	return stm32_spi_setup(dev, instance, true);
 }
 
-static int stm32_spi_init1(struct spi_device *dev) {
+static int stm32_spi_init1(struct spi_controller *dev) {
 	if (((struct stm32_spi*)(dev->priv))->hw_init != NULL) {
 		return ((struct stm32_spi*)(dev->priv))->hw_init();
 	}
@@ -89,13 +89,13 @@ static int stm32_spi_init1(struct spi_device *dev) {
 	return -1;
 }
 
-static int stm32_spi_select(struct spi_device *dev, int cs) {
+static int stm32_spi_select(struct spi_controller *dev, int cs) {
 	log_debug("NIY");
 
 	return 0;
 }
 
-static int stm32_spi_set_mode(struct spi_device *dev, bool is_master) {
+static int stm32_spi_set_mode(struct spi_controller *dev, bool is_master) {
 	struct stm32_spi *s = dev->priv;
 	SPI_HandleTypeDef *handle = &s->handle;
 	void *instance = handle->Instance;
@@ -105,7 +105,7 @@ static int stm32_spi_set_mode(struct spi_device *dev, bool is_master) {
 	return stm32_spi_setup(s, instance, is_master);
 }
 
-static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
+static int stm32_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	int ret;
 	struct stm32_spi *priv = dev->priv;
@@ -134,7 +134,7 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops stm32_spi_ops = {
+struct spi_controller_ops stm32_spi_ops = {
 	.init     = stm32_spi_init1,
 	.select   = stm32_spi_select,
 	.set_mode = stm32_spi_set_mode,
