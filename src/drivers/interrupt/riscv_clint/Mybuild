@@ -10,6 +10,9 @@ module riscv_clint {
         option number mtime_offset = 0xBFF8
 	option boolean has64bitmmio=true
 
+	/* this option is used for T-head C9XX core */
+	option boolean no_mtime_reg=false
+
 	source "riscv_clint.c"
 
 	@IncludeExport(path="drivers/interrupt/riscv_clint", target_name="riscv_clint.h")
