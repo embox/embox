@@ -28,7 +28,7 @@ typedef struct {
 __attribute__((always_inline)) static inline void dsb() {
 	__asm("DSB");
 }
-
+#if 0
 void arch_shutdown(shutdown_mode_t mode) {
 	switch (mode) {
 	case SHUTDOWN_MODE_HALT:
@@ -42,5 +42,22 @@ void arch_shutdown(shutdown_mode_t mode) {
 		break;
 	}
 
+	while (1) {}
+}
+#endif
+
+void platform_shutdown(shutdown_mode_t mode) {
+	switch (mode) {
+	case SHUTDOWN_MODE_HALT:
+	case SHUTDOWN_MODE_REBOOT:
+	case SHUTDOWN_MODE_ABORT:
+	default:
+		dsb();
+	
+		// Doc ID 022979 Rev 1, 80/91.
+		SCB->AIRCR = (0x5FA << 16) | (1 << 2);
+		break;
+	}
+	
 	while (1) {}
 }
