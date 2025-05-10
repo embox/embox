@@ -147,6 +147,7 @@ extern int   pthread_attr_setschedpolicy(pthread_attr_t *, int);
 //extern int   pthread_attr_setscope(pthread_attr_t *, int);
 //extern int   pthread_attr_setstackaddr(pthread_attr_t *, void *);
 extern int   pthread_attr_setstacksize(pthread_attr_t *, size_t);
+extern int pthread_attr_setstack(pthread_attr_t *attr, void *stackaddr, size_t stacksize);
 
 extern int   pthread_cancel(pthread_t);
 extern void  pthread_cleanup_push(void (*)(void *), void *arg);
