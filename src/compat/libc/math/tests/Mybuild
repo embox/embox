@@ -153,12 +153,12 @@ module asinh_test {
 module acosh_test {
 	@Cflags("-fno-builtin")
 	source "acosh_test.c"
-} 
+}
 
 module lrint_test {
 	@Cflags("-fno-builtin")
 	source "lrint_test.c"
-}  
+}
 
 module llrint_test {
 	@Cflags("-fno-builtin")
@@ -173,4 +173,9 @@ module log1p_test {
 module frexp_test {
 	@Cflags("-fno-builtin")
 	source "frexp_test.c"
+}
+
+module log2_test {
+	@Cflags("-fno-builtin")
+	source "log2_test.c"
 }
