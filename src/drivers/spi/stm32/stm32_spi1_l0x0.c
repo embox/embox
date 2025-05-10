@@ -6,14 +6,19 @@
  * @date 20.02.2021
  */
 
+#include <util/log.h>
+
 #include <string.h>
 #include <assert.h>
+
+#include <embox/unit.h>
+#include <hal/reg.h>
 
 #include "stm32_spi_l0x0.h"
 
 #include <drivers/spi.h>
 #include <kernel/irq.h>
-#include <util/log.h>
+
 #include <drivers/gpio.h>
 
 static struct stm32_spi stm32_spi1 = {0};

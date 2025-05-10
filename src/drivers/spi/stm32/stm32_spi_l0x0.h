@@ -9,8 +9,11 @@
 #ifndef SRC_DRIVERS_SPI_STM32_SPI_L0X0_H_
 #define SRC_DRIVERS_SPI_STM32_SPI_L0X0_H_
 
-#include <embox/unit.h>
+#include <stdint.h>
+#include <stdbool.h>
+
 #include <hal/reg.h>
+#include <framework/mod/options.h>
 
 typedef struct {
 	volatile uint32_t CR1;
