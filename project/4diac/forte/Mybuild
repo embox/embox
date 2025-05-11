@@ -1,0 +1,16 @@
+package project.fourdiac
+
+@AutoCmd
+@Cmd(name = "forte",
+	help = "TODO"
+    )
+@BuildDepends(third_party.lib.libstdcxx_toolchain)
+@Build(script="$(EXTERNAL_MAKE)")
+module forte {
+
+	source "^BUILD/extbld/^MOD_PATH/install/forte.o"
+    
+    @NoRuntime depends third_party.lib.libstdcxx_toolchain
+    @NoRuntime depends embox.compat.posix.pthread_stack
+    @NoRuntime depends embox.compat.posix.util.nanosleep
+}

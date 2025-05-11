@@ -272,6 +272,8 @@ extern char *strcasestr(const char *haystack, const char *needle);
  */
 extern char *strerror(int err);
 
+extern int strerror_r(int errnum, char *strerrbuf, size_t buflen);
+
 /**
  * Copies no more than @a n bytes from memory area @a src
  * to memory area @a dest,

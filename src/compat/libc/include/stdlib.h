@@ -151,6 +151,8 @@ extern int initstate_r(unsigned int seed, char *statebuf, size_t statelen,
     struct random_data *buf);
 extern int setstate_r(char *statebuf, struct random_data *buf);
 
+extern uint32_t arc4random(void);
+
 extern lldiv_t lldiv(long long num, long long denom);
 extern ldiv_t ldiv(long num, long denom);
 extern div_t div(int num, int denom);

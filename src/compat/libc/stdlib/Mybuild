@@ -7,6 +7,8 @@ static module rand {
 	source "random.c"
 	@Cflags("-Wno-deprecated-non-prototype")
 	source "random_r.c"
+
+	source "arc4random_stub.c"
 }
 
 static module config {
