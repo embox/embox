@@ -5,6 +5,14 @@ static module strerror {
 	source "strerror.c"
 }
 
+@DefaultImpl(strerror_r_stub)
+abstract module strerror_r {
+}
+
+static module strerror_r_stub extends strerror_r {
+	source "strerror_r_stub.c"
+}
+
 static module str {
 	source "memchr.c"
 	source "memrchr.c"
@@ -22,6 +30,7 @@ static module str {
 	source "strcpy.c"
 	source "strcspn.c"
 	@NoRuntime depends strerror
+	@NoRuntime depends strerror_r
 	source "strlen.c"
 	source "strlwr.c"
 	source "strncat.c"

@@ -1,0 +1,9 @@
+package embox.compat.posix
+
+@DefaultImpl(getentropy_stub)
+abstract module getentropy {
+}
+
+static module getentropy_stub extends getentropy {
+	source "getentropy_stub.c"
+}
