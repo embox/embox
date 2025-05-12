@@ -43,7 +43,7 @@
 #define EROFS            30    /* Read-only file system */
 #define EMLINK           31    /* Too many links */
 #define EDOM             33    /* Argument to math function out of domain */
-#define ERANGE           34    /* Math result cannot be represented */
+#define ERANGE           34    /* Numerical result out of range */
 #define EDEADLK          35    /* Resource deadlock would occur */
 #define ENAMETOOLONG     36    /* File name too long */
 #define EDEADLOCK        EDEADLK
