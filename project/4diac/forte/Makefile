@@ -34,7 +34,9 @@ $(BUILD):
 	cd $(PKG_SOURCE_DIR)/bin/embox && ( \
 		make \
 	)
+	touch $@
 
 $(INSTALL):
 	mv $(PKG_SOURCE_DIR)/bin/embox/src/forte $(PKG_INSTALL_DIR)/forte.o
+	touch $@
 

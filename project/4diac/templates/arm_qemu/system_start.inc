@@ -3,4 +3,3 @@
 
 "netmanager",
 "tish",
-"forte -f hello_FORTE_PC",
