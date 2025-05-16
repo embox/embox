@@ -1,0 +1,9 @@
+package embox.driver.pwm
+
+module pwm_dev {
+	source "pwm_dev.c"
+	source "pwm_repo.c"
+
+	@IncludeExport(path="drivers")
+	source "pwm.h"
+}
