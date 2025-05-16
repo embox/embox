@@ -1,7 +1,7 @@
 package project.fourdiac
 
 @AutoCmd
-@Cmd(name = "forte",
+@CxxCmd(name = "forte",
 	help = "TODO"
     )
 @BuildDepends(embox.lib.libstdcxx)
