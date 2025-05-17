@@ -1,7 +1,7 @@
 "export PWD=/",
 "export HOME=/",
 "netmanager",
-"mkdir -v /mnt",
+"mkdir -s /mnt",
 "mount -t ramfs /dev/static_ramdisk /mnt",
 "service telnetd",
 "service httpd http_admin",

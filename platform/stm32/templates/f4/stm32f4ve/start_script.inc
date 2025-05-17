@@ -1,4 +1,4 @@
-"mkdir -v /conf",
+"mkdir -s /conf",
 "pin GPIOA 6 reset",
 "msleep 500",
 "pin GPIOA 6 set",

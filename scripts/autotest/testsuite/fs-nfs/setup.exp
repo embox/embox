@@ -6,6 +6,6 @@ set mount_nfs_dir $env(TEST_HOST_NFS_DIR)
 
 target_connect
 
-test_exec_embox_cmd "mkdir -v $mount_dir\r"
+test_exec_embox_cmd "mkdir -s $mount_dir\r"
 test_exec_embox_cmd "mount -t nfs $host_ip:$mount_nfs_dir $mount_dir\r"
 test_exec_embox_cmd "cd $mount_dir\r"

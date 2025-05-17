@@ -4,7 +4,7 @@
 "service telnetd",
 "service httpd",
 "source time_setup.sh",
-"mkdir -v /mnt",
+"mkdir -s /mnt",
 "mount -t ramfs /dev/static_ramdisk /mnt",
 "openssl_rand_demo",
 "rsa_demo",
