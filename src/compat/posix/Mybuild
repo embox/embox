@@ -10,7 +10,6 @@ module LibPosix {
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.timerfd
 	depends embox.compat.posix.fnmatch
-	depends embox.compat.posix.getentropy
 	depends sched
 	depends termios
 	depends syslog
