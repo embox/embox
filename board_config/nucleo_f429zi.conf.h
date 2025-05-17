@@ -51,12 +51,12 @@ struct uart_conf uarts[] = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_6, AF8),
-				PIN("RX", PC, PIN_7, AF8),
+				PIN("TX", PG, PIN_14, AF8),
+				PIN("RX", PG, PIN_9, AF8),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOC),
-				VAL("RX",   CLK_GPIOC),
+				VAL("TX",   CLK_GPIOG),
+				VAL("RX",   CLK_GPIOG),
 				VAL("UART", CLK_USART6),
 			}
 		},
