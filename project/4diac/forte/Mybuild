@@ -13,4 +13,5 @@ module forte {
 	@NoRuntime depends embox.lib.libstdcxx
     @NoRuntime depends embox.compat.posix.pthread_stack
     @NoRuntime depends embox.compat.posix.util.nanosleep
+    @NoRuntime depends embox.lib.leddrv
 }
