@@ -302,8 +302,6 @@ extern int gethostname(char *name, size_t len);
 
 extern int chown(const char *path, uid_t owner, gid_t group);
 
-extern int getentropy(void *buffer, size_t length);
-
 
 /*******************************************
  * stubs
