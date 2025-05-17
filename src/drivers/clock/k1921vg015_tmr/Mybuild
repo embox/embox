@@ -1,0 +1,9 @@
+package embox.driver.clock
+
+module k1921vg015_tmr32 {
+	source "k1921vg015_tmr32.c"
+
+	depends embox.driver.interrupt.irqctrl_api
+	depends embox.driver.clk.niiet.k1921vg015_rcu
+	@NoRuntime depends embox.kernel.time.clock_source
+}
