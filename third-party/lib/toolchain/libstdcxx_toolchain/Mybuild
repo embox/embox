@@ -6,7 +6,10 @@ static module libstdcxx_toolchain extends embox.lib.libstdcxx {
 	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libstdc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/toolchain/libstdcxx_toolchain")
 	source "libstdc++.a"
 
+	source "stubs.c"
+
 	@NoRuntime depends third_party.lib.newlib_compat.errno
 	@NoRuntime depends third_party.lib.newlib_compat.locale
-	depends third_party.lib.newlib_compat.reent
+	@NoRuntime depends third_party.lib.newlib_compat.reent
+	@NoRuntime depends third_party.lib.newlib_compat.xpg_strerror_r
 }

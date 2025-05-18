@@ -104,15 +104,6 @@ __END_DECLS
 
 #include <arpa/inet.h>
 
-static inline
-char *strerror_r(int errnum, char *buf, size_t buflen) {
-	(void)errnum;
-	(void)buf;
-	(void)buflen;
-	DPRINT();
-	return strerror(errnum);
-}
-
 
 /* not standard */
 typedef unsigned int uint;
