@@ -176,6 +176,11 @@ module frexp_test {
 }
 
 module remainder_test {
-       @Cflags("-fno-builtin")
-        source "remainder_test.c"
+  @Cflags("-fno-builtin")
+  source "remainder_test.c"
+}
+
+module tgamma_test {
+	@Cflags("-fno-builtin")
+	source "tgamma_test.c"
 }
