@@ -1,8 +1,8 @@
 /**
  * @file
  *
- * @date March 16, 2025
- * @author Advait Dhamorikar
+ * @date March 19, 2025
+ * @author Shaurya Rane
  */
 
  #include <math.h>

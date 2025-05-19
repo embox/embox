@@ -175,12 +175,12 @@ module frexp_test {
 	source "frexp_test.c"
 }
 
-module logb_test {
-    @cflags("-fno-builtin")
-    source "logb_test.c"
-}
-
 module remainder_test {
     @cflags("-fno-builtin")
     source "remainder_test.c"
+}
+
+module logb_test {
+    @cflags("-fno-builtin")
+    source "logb_test.c"
 }
