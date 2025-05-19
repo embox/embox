@@ -40,6 +40,7 @@ int main(int argc, char **argv) {
 			mode_set = 1;
 			break;
 		case 's':
+		case 'v':
 			mode |= VFS_DIR_VIRTUAL;
 			break;
 		default:
