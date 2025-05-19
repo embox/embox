@@ -183,4 +183,11 @@ module remainder_test {
 module tgamma_test {
 	@Cflags("-fno-builtin")
 	source "tgamma_test.c"
+       @Cflags("-fno-builtin")
+        source "remainder_test.c"
+}
+
+module logb_test {
+    @Cflags("-fno-builtin")
+    source "logb_test.c"
 }
