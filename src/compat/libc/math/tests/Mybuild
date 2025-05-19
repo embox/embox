@@ -176,11 +176,11 @@ module frexp_test {
 }
 
 module remainder_test {
-    @cflags("-fno-builtin")
+    @Cflags("-fno-builtin")
     source "remainder_test.c"
 }
 
 module logb_test {
-    @cflags("-fno-builtin")
+    @Cflags("-fno-builtin")
     source "logb_test.c"
 }
