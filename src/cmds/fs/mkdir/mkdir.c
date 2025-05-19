@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc - 1, argv, "hm:v"))) {
+	while (-1 != (opt = getopt(argc - 1, argv, "hm:vs"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
