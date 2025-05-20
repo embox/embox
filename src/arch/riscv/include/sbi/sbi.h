@@ -11,8 +11,8 @@
  * Western Digital’s original work (BSD-2-Clause licensed).
  */
 
-#ifndef __SBI_ECALL_INTERFACE_H__
-#define __SBI_ECALL_INTERFACE_H__
+#ifndef __SBI_H__
+#define __SBI_H__
 
 /* clang-format off */
 
@@ -495,5 +495,15 @@ enum sbi_sse_state {
 #define SBI_LAST_ERR				SBI_ERR_DENIED_LOCKED
 
 /* clang-format on */
+
+struct sbiret {
+	long error;
+	long value;
+};
+
+struct sbiret sbi_ecall(unsigned long arg0, unsigned long arg1,
+			unsigned long arg2, unsigned long arg3,
+			unsigned long arg4, unsigned long arg5,
+			unsigned long func, unsigned long ext);
 
 #endif
