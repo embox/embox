@@ -64,6 +64,10 @@ struct rcu_reg {
     uint32_t 	RCU_RSTSYS_reg;      /* 0x0C0 */
 } ;
 
+#define RCU_CGCFGAPB_TMR32EN        (1 << 0)
+#define RCU_CGCFGAPB_TMR0EN         (1 << 1)
+#define RCU_CGCFGAPB_TMR1EN         (1 << 2)
+#define RCU_CGCFGAPB_TMR2EN         (1 << 3)
 #define RCU_CGCFGAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_CGCFGAPB_UART0EN        (1 << 6)
 #define RCU_CGCFGAPB_UART1EN        (1 << 7)
@@ -76,6 +80,10 @@ struct rcu_reg {
 #define RCU_CGCFGAHB_GPIOBEN        (1 << 9)
 #define RCU_CGCFGAHB_GPIOCEN        (1 << 10)
 
+#define RCU_RSTDISAPB_TMR32EN        (1 << 0)
+#define RCU_RSTDISAPB_TMR0EN         (1 << 1)
+#define RCU_RSTDISAPB_TMR1EN         (1 << 2)
+#define RCU_RSTDISAPB_TMR2EN         (1 << 3)
 #define RCU_RSTDISAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_RSTDISAPB_UART0EN        (1 << 6)
 #define RCU_RSTDISAPB_UART1EN        (1 << 7)
@@ -159,6 +167,11 @@ void niiet_uart_set_rcu(int uart_num) {
 
 	*rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_CLKEN_MASK;
     *rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
+}
+
+void niiet_tmr32_set_rcu(void) {
+	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_TMR32EN;
+	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_TMR32EN;
 }
 
 int clk_enable(char *clk_name) {
