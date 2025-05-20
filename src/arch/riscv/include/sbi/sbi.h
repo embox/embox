@@ -506,4 +506,9 @@ struct sbiret sbi_ecall(unsigned long arg0, unsigned long arg1,
 			unsigned long arg4, unsigned long arg5,
 			unsigned long func, unsigned long ext);
 
+void sbi_set_timer(uint64_t timeval);
+void sbi_send_ipi(uint64_t hartid);
+int  sbi_hsm_hart_start(unsigned long hartid, unsigned long addr,
+			unsigned long mode);
+
 #endif
