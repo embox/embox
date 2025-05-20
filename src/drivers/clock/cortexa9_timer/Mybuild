@@ -5,7 +5,6 @@ module cortexa9 {
 
 	option number periph_base_addr
 	option number irq_num
-	option number freq=1000 /* Hz */
 
 	source "cortexa9_timer.c"
 
