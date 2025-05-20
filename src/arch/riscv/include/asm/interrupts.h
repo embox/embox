@@ -22,7 +22,7 @@
 	int (*__riscv_timer_handler)(unsigned int, void *) = timer_handler; \
 	void *__riscv_timer_data = pclock_source;
 
-extern int (*__riscv_timer_handler)(unsigned int, void *);
-extern void *__riscv_timer_data;
+extern int (*__riscv_timer_handler)(unsigned int, void *) __attribute__((weak));
+extern void *__riscv_timer_data __attribute__((weak));
 
 #endif /* RISCV_INTERRUPTS_H_ */
