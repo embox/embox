@@ -1,7 +1,21 @@
 package embox.arch.riscv.kernel
 
-module conf {
-	option boolean smode = false
+@DefaultImpl(conf_nosbi)
+abstract module conf {
+     option boolean smode = false
+
+}
+
+module conf_nosbi extends  conf {
+        option boolean smode = true
+	source "sbi.c"
+	source "sbi_ecall.c"
+}
+
+
+module conf_sbi extends  conf {
+        option boolean smode = false
+
 }
 
 module locore extends embox.arch.locore {
