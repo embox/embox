@@ -47,7 +47,7 @@ _start:
 	 * After SBI, a0 contains Hart ID of any
 	 * possible Harts
 	 */
-	add     t0, a0, 0
+	add     tp, a0, 0
 #else
 	/**
 	 * Hart 0 is considered as BSP, other Harts
