@@ -230,6 +230,6 @@ int main(int argc, char **argv) {
     if(service_run(command, &argv[arg_offset]) < 0)
         printf("Couldn't start service %s\n", argv[1]);
     else
-        printf("Succefully started\n");
+        printf("Successfully started\n");
     return 0;
 }
