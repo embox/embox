@@ -20,6 +20,7 @@ embox.includes
 
 ## Build
 /*.img
+*.dtb
 
 ## Other
 /.dep.inc
