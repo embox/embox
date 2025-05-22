@@ -189,3 +189,8 @@ module ldexp_test {
 	@Cflags("-fno-builtin")
 	source "ldexp_test.c"
 }
+
+module logb_test {
+    @Cflags("-fno-builtin")
+    source "logb_test.c"
+}
