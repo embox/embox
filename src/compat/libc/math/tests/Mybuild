@@ -184,3 +184,8 @@ module tgamma_test {
 	@Cflags("-fno-builtin")
 	source "tgamma_test.c"
 }
+
+module ldexp_test {
+	@Cflags("-fno-builtin")
+	source "ldexp_test.c"
+}
