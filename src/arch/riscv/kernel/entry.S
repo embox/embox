@@ -7,6 +7,7 @@
  * @author Nastya Nizharadze
  */
 #include <asm/asm.h>
+#include <asm/regs.h>
 #include <asm/entry.h>
 #include <asm/ptrace.h>
 
@@ -29,7 +30,11 @@ riscv_trap_handler:
 	csrr    a3, INTPENDING_REG
 	csrr    a4, EPC_REG
 	csrr    a5, TRAP_VECTOR_REG
-	csrr    a6, HARTID_REG
+#if !SMODE
+	csrr    a6, mhartid
+#else
+	add	a6, tp, x0
+#endif
 
 	/* exception handling */
 	add     a0, sp, x0

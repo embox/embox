@@ -42,19 +42,23 @@ _start:
 #endif
 	csrw    TRAP_VECTOR_REG, t0
 
-	/**
-	 * Continue on hart lottery winner, others branch to
-	 * secondary_hart_loop.
-	 */
 #if SMODE
-	add     t0, a0, 0
+	/**
+	 * After SBI, a0 contains Hart ID of any
+	 * possible Harts
+	 */
+	add     tp, a0, 0
 #else
+	/**
+	 * Hart 0 is considered as BSP, other Harts
+	 * go to secondary_hart_loop.
+	 */
 	csrr    t0, mhartid
-#endif
 #if !OPTION_GET(BOOLEAN,mik32_fixup)
 	bnez    t0, secondary_hart_loop
 #endif /* !OPTION_GET(BOOLEAN,mik32_fixup) */
 
+#endif
 	/* Set up stack pointer. */
 	la      sp, _stack_top
 
@@ -92,9 +96,9 @@ copy_data_end:
 
 secondary_hart_loop:
 #ifdef SMP
-	csrw    STATUS_REG, STATUS(IE)      
+	csrw    STATUS_REG, STATUS(IE)
 	/* Turn on soft interrput before WFI*/
-	csrw    INTERRUPT_REG, IE(SIE) 
+	csrw    INTERRUPT_REG, IE(SIE)
 
 	la      t0, __ap_trampoline
 	csrw    TRAP_VECTOR_REG, t0

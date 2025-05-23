@@ -7,10 +7,12 @@
  * @authored by Suraj Ravindra Sonawane
  */
 
+#include <asm/regs.h>
 #include <asm/interrupts.h>
-#include <drivers/irqctrl.h>
 #include <hal/cpu.h>
 #include <hal/reg.h>
+#include <sbi/sbi.h>
+#include <drivers/irqctrl.h>
 
 #define HAS64BITMMIO	OPTION_GET(BOOLEAN, has64bitmmio)
 #define NO_MTIME_REG	OPTION_GET(BOOLEAN, no_mtime_reg)
@@ -88,12 +90,33 @@ uint64_t get_current_time(void) {
 #endif /* NO_MTIME_REG */
 }
 
-#else /* !SMODE */
-/* TODO: Implement the following functions for SMODE */
-int clint_init(void) { return 0; }
+#else /* SMODE */
+
+int clint_init(void) {
+	sbi_set_timer((uint64_t)-1);
+	return 0;
+}
+
+/* TODO */
 void configure_soft_int(uint8_t value, int hart_id) {}
-void set_timecmp(uint64_t value, int hart_id) {}
-uint64_t get_timecmp(int hart_id) { return 0; }
-uint64_t get_current_time(void) { return 0; }
+
+void set_timecmp(uint64_t timeval, int hart_id) {
+	sbi_set_timer(timeval);
+}
+
+uint64_t get_current_time(void) {
+#if __riscv_xlen == 32
+	uint32_t hi, lo;
+
+	do {
+		hi = read_csr(TIMEH_REG);
+		lo = read_csr(TIME_REG);
+	} while (hi != read_csr(TIMEH_REG));
+
+	return ((uint64_t)hi << 32) | lo;
+#else /* __riscv_xlen == 64 */
+	return read_csr(TIME_REG);
+#endif
+}
 
 #endif

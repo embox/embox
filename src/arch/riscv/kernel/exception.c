@@ -22,7 +22,7 @@ void riscv_exception_handler(struct excpt_context *ctx, unsigned long cause,
 	}
 	else {
 		printk("\nUnresolvable exception!\n");
-		printk(MACRO_STRING(HARTID_REG)" = %lu\n", hartid);
+		printk("hartid  = %lu\n", hartid);
 		printk(MACRO_STRING(CAUSE_REG)"  = %lu\n", cause);
 		printk(MACRO_STRING(EPC_REG)"    = %#lx\n", epc);
 		printk(MACRO_STRING(INTERRUPT_REG)"     = %#lx\n", interrupt);

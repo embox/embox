@@ -23,7 +23,6 @@
 #define INTPENDING_REG  MACRO_CONCAT(MODE_LOWER_CASE, ip)
 #define EPC_REG         MACRO_CONCAT(MODE_LOWER_CASE, epc)
 #define TRAP_VECTOR_REG MACRO_CONCAT(MODE_LOWER_CASE, tvec)
-#define HARTID_REG      MACRO_CONCAT(MODE_LOWER_CASE, hartid)
 
 /* Unprivileged */
 #define TIME_REG        (0xc01)

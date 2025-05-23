@@ -10,56 +10,30 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <asm/interrupts.h>
 #include <asm/regs.h>
-#include <framework/mod/options.h>
-#include <hal/clock.h>
+#include <asm/interrupts.h>
+#include <hal/cpu.h>
 #include <hal/reg.h>
+#include <hal/clock.h>
 #include <hal/system.h>
 #include <kernel/irq.h>
-#include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
-#include <hal/cpu.h>
+#include <kernel/time/clock_source.h>
+#include <framework/mod/options.h>
 #include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
 #define COUNT_OFFSET  (RTC_CLOCK / JIFFIES_PERIOD)
 #define RTC_CLOCK     OPTION_GET(NUMBER, rtc_freq)
 
-#define OPENSBI_TIMER 0x54494D45
-
 static int clock_handler(unsigned int irq_nr, void *dev_id) {
-#if SMODE
-
-	register uintptr_t a7 asm("a7") = (uintptr_t)(OPENSBI_TIMER);
-	register uintptr_t a6 asm("a6") = (uintptr_t)(0);
-	register uintptr_t a0 asm("a0") = 0;
-	asm volatile("rdtime a0");
-	a0 = a0 + COUNT_OFFSET;
-	(void)a7;
-	(void)a6;
-	asm volatile("ecall");
-#else
 	set_timecmp(get_current_time() + COUNT_OFFSET, cpu_get_id());
-#endif
 	clock_tick_handler(dev_id);
 
 	return IRQ_HANDLED;
 }
 
 static int riscv_clock_setup(struct clock_source *cs) {
-#if SMODE
-	register uintptr_t a7 asm("a7") = (uintptr_t)(OPENSBI_TIMER);
-	register uintptr_t a6 asm("a6") = (uintptr_t)(0);
-	register uintptr_t a0 asm("a0") = 0;
-	asm volatile("rdtime a0");
-	a0 = a0 + COUNT_OFFSET;
-	(void)a7;
-	(void)a6;
-	asm volatile("ecall");
-#else
 	set_timecmp(get_current_time() + COUNT_OFFSET, cpu_get_id());
-#endif
-
 	enable_timer_interrupts();
 
 	return ENOERR;
