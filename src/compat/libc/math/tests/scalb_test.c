@@ -47,3 +47,10 @@ TEST_CASE("scalb() with infinity and NaN") {
     test_assert(isinf(scalb(INFINITY, 10.0)), "scalb(INFINITY, 10.0) is not infinity");
     test_assert(isnan(scalb(NAN, 10.0)), "scalb(NAN, 10.0) is not NaN");
 }
+
+/* Test overflow */
+TEST_CASE("scalb() with overflow") {
+    errno = 0;
+    double result = scalb(DBL_MAX, 1024.0);
+    test_assert(isinf(result) && errno == ERANGE, "scalb(DBL_MAX, 1024.0) did not set ERANGE");
+}
