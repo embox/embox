@@ -1,17 +1,5 @@
 package embox.test.stdlib
 
-module strtod_test {
-	source "strtod_test.c"
-	depends embox.framework.LibFramework
-}
-
-module bsearch_test {
-	source "bsearch_test.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
 module mbstowcs_test {
 	source "mbstowcs_test.c"
 	depends embox.compat.libc.stdlib.multibyte
