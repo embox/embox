@@ -7,14 +7,14 @@ abstract module conf {
 }
 
 module conf_nosbi extends  conf {
-        option boolean smode = true
+        option boolean smode = false
 	source "sbi.c"
 	source "sbi_ecall.c"
 }
 
 
 module conf_sbi extends  conf {
-        option boolean smode = false
+        option boolean smode = true
 
 }
 
