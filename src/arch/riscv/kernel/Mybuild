@@ -2,19 +2,19 @@ package embox.arch.riscv.kernel
 
 @DefaultImpl(conf_nosbi)
 abstract module conf {
-     option boolean smode = false
+	option boolean smode = false
 
 }
 
 module conf_nosbi extends  conf {
-        option boolean smode = true
+	option boolean smode = false
 	source "sbi.c"
 	source "sbi_ecall.c"
 }
 
 
 module conf_sbi extends  conf {
-        option boolean smode = false
+	option boolean smode = true
 
 }
 
