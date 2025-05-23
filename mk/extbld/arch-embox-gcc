@@ -29,6 +29,7 @@ case " $@ " in
 		;;
 	*" -shared "*) echo -e "\n\nCan't build shared objects\n\n"; exit 1;;
 	*" -l"*) $0 $(for i in "$@"; do echo ${i/#-l*/}; done); exit $?;;
+	*" -rdynamic "*) $0 $(for i in "$@"; do echo ${i/#-rdynamic/}; done); exit $?;;
 	*" -I/usr/"*) $0 $(for i in "$@"; do echo ${i/#-I\/usr\/*/}; done); exit $?;;
 esac
 
