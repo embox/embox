@@ -4,8 +4,7 @@
 #FS_TEST_RW="vfat ext2 ext3 ext4"
 FS_TEST_RO="jffs2 ext4"
 FS_TEST_RW="ext2 ext3 ntfs vfat"
-#FS_TEST_NETWORK="nfs cifs"
-FS_TEST_NETWORK="cifs"
+FS_TEST_NETWORK="nfs cifs"
 
 FS_TEST_NFS_ROOT="/var/nfs_test"
 
