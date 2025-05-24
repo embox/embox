@@ -32,8 +32,8 @@ int sigaction(int sig, const struct sigaction *restrict act,
 		struct sigaction *restrict oact) {
 	struct sigaction *sig_table = task_self_resource_sig_table();
 
-	if (!check_range(sig, 0, _SIG_TOTAL))
-		return SET_ERRNO(EINVAL);
+	if (!check_range(sig, 0, _SIG_TOTAL) || IS_UNMODIFIABLE_SIGNAL(sig))
+		return SET_ERRNO(EINVAL); 
 
 	if (oact) {
 		sighandler_t ofunc = sig_table[sig].sa_handler;
@@ -73,7 +73,6 @@ sighandler_t signal(int sig, sighandler_t func) {
 
 	err = sigaction(sig, &act, &oact);
 	if (err) {
-		SET_ERRNO(err);
 		return SIG_ERR;
 	}
 
