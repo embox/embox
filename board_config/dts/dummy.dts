@@ -1,0 +1,10 @@
+/dts-v1/;
+
+/ {
+	compatible = "embox";
+	model = "embox-fake";
+	#address-cells = <2>;
+	#size-cells = <1>;
+	cpus {
+	};
+};

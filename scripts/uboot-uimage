@@ -1,12 +1,70 @@
 #!/bin/sh
 
-EMBOX_BIN=${1:-"./build/base/bin/embox.bin"}
-UIMAGE=${2:-uImage}
+EMBOX_BIN="./build/base/bin/embox.bin"
+IMAGENAME="Embox RTOS Image"
+UIMAGE="uImage"
+ARCH="riscv"
 MKIMAGE=$(which mkimage)
+POSITIONAL_ARGS=()
 
 if [ ! "$MKIMAGE" ]; then
 	echo "!!!!!!!  ERROR !!!!!!!!!!!!! please install mkimage or uboot-tools"   >&2
 	exit 1
+fi
+
+help_info() {
+	echo "Usage: $0 [options] [positional_args...]"
+	echo
+	echo "Options:"
+	echo "  -o, --output <file>     Specify the output uImage file name"
+	echo "  -A, --arch <arch>       Specify the target architecture (e.g., arm, riscv)"
+	echo "  -n, --name <name>       Specify the image name scription"
+	echo "  -n, --name <name>       Specify the image name scription"
+	echo "  -h, --help              Show this help message and exit"
+	echo
+	echo "Example:"
+	echo "  $0 -o uImage -a riscv -n \"Embox RTOS Image\" ./build/base/bin/embox.bin"
+	echo "  $0 ./build/base/bin/embox.bin -o uImage -a riscv -n \"Embox RTOS Image\""
+	echo
+}
+
+while [[ $# -gt 0 ]]; do
+	case $1 in
+		-o|--output)
+			UIMAGE="$2"
+			shift # past argument
+			shift # past value
+			;;
+		-a|--arch)
+			ARCH="$2"
+			shift
+			shift
+			;;
+		-n|--name)
+			IMAGENAME="$2"
+			shift
+			shift
+			;;
+		-h|--help)
+			help_info
+			exit 0
+			;;
+		-*|--*)
+			echo "Unknown option $1"
+			help_info
+			exit 1
+			;;
+		*)
+			POSITIONAL_ARGS+=("$1") # save positional arg
+			shift # past argument
+			;;
+	esac
+done
+
+set -- "${POSITIONAL_ARGS[@]}" # restore positional parameters
+
+if [[ -n $1 ]]; then
+    EMBOX_BIN="$1"
 fi
 
 case $OMAP_UBOOT_IMAGE_BOARD in
@@ -20,22 +78,19 @@ case $OMAP_UBOOT_IMAGE_BOARD in
 		LOAD_ADDR=0x43000000
 		;;
 	*)
-		LOAD_ADDR=0x80000000
+		LOAD_ADDR=0x84000000
 		;;
 esac
-ENTRY_ADDR=$(printf "0x%x" $(($LOAD_ADDR + 0x8040)))
 
-echo LOAD_ADDR=$LOAD_ADDR ENTRY_ADDR=$ENTRY_ADDR
+ENTRY_ADDR=${LOAD_ADDR}
 
-PAD_FILE_NAME=".pad.zero"
-PADDED_BIN=".embox-padded.bin"
+echo "UIMAGE        = ${UIMAGE}"
+echo "ARCH          = ${ARCH}"
+echo "EMBOX_BIN     = ${EMBOX_BIN}"
+echo "IMAGENAME     = ${IMAGENAME}"
 
-PAD_SIZE=32K
+echo "LOAD_ADDR     = ${LOAD_ADDR}"
+echo "ENTRY_ADDR    = ${ENTRY_ADDR}"
 
-dd if=/dev/zero of="$PAD_FILE_NAME" bs=1 count=$PAD_SIZE
-
-cat "$PAD_FILE_NAME" "$EMBOX_BIN" > "$PADDED_BIN"
-
-"$MKIMAGE" -A arm -O linux -C none -T kernel -a $LOAD_ADDR -e "$ENTRY_ADDR" -d "$PADDED_BIN" "$UIMAGE"
-
-rm "$PAD_FILE_NAME" "$PADDED_BIN"
+${MKIMAGE} -A ${ARCH} -O linux -C none -T kernel -a ${LOAD_ADDR} \
+	-e ${ENTRY_ADDR} -n "${IMAGENAME}" -d ${EMBOX_BIN} ${UIMAGE}
