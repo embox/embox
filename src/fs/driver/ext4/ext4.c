@@ -704,25 +704,11 @@ static int ext4fs_create(struct inode *node, struct inode *parent_node, int mode
 	return 0;
 }
 
-extern int main_mke2fs(int argc, char **argv);
-
 static int ext4fs_format(struct block_dev *dev, void *priv) {
-	int argc = 6;
-	char *argv[6];
-	char dev_path[64];
+	char cmd_line[128] = "mke2fs -b 1024 -t ext4 /dev/";
 
-	strcpy(dev_path, "/dev/");
-	strcat(dev_path, block_dev_name(dev));
-
-	argv[0] = "mke2fs";
-	argv[1] = "-b";
-	argv[2] = "1024";
-	argv[3] = "-t";
-	argv[4] = "ext4";
-	argv[5] = dev_path;
-
-	getopt_init();
-	return main_mke2fs(argc, argv);
+	strcat(cmd_line, block_dev_name(dev));
+	return system(cmd_line);
 }
 
 static int ext4fs_delete(struct inode *dir, struct inode *node) {
