@@ -1,0 +1,92 @@
+diff -aur ./e2fsprogs-1.47.2/Makefile.in ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/Makefile.in
+--- ./e2fsprogs-1.47.2/Makefile.in	2025-01-01 09:24:42.000000000 +0300
++++ ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/Makefile.in	2025-05-25 02:47:09.842727586 +0300
+@@ -110,7 +110,7 @@
+ @ALL_CMT@	  if test -d $$subdir ; then \
+ @ALL_CMT@	    target=`echo $@|$(SED) 's/-progs-recursive//'`; \
+ @ALL_CMT@	    echo making $$target in $$subdir; \
+-@ALL_CMT@	    (cd $$subdir && $(MAKE) $$target) || exit 1; \
++@ALL_CMT@	    (cd $$subdir && $(MAKE) LIBS= $$target) || exit 1; \
+ @ALL_CMT@	  fi ; \
+ @ALL_CMT@	done
+ 
+diff -aur ./e2fsprogs-1.47.2/configure ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/configure
+--- ./e2fsprogs-1.47.2/configure	2025-01-01 09:24:42.000000000 +0300
++++ ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/configure	2025-05-25 02:47:09.842727586 +0300
+@@ -12194,7 +12194,7 @@
+ "
+ if test "x$ac_cv_header_net_if_h" = xyes
+ then :
+-  printf "%s\n" "#define HAVE_NET_IF_H 1" >>confdefs.h
++  printf "%s\n" "#undef HAVE_NET_IF_H" >>confdefs.h
+ 
+ fi
+ 
+diff -aur ./e2fsprogs-1.47.2/lib/ext2fs/compiler.h ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/lib/ext2fs/compiler.h
+--- ./e2fsprogs-1.47.2/lib/ext2fs/compiler.h	2025-01-01 09:24:42.000000000 +0300
++++ ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/lib/ext2fs/compiler.h	2025-05-25 02:47:09.846727622 +0300
+@@ -22,5 +22,6 @@
+ 	((type *)((char *)(ptr) - offsetof(type, member)))
+ #endif
+ 
++#include_next <compiler.h>
+ 
+ #endif /* _EXT2FS_COMPILER_H */
+diff -aur ./e2fsprogs-1.47.2/lib/ext2fs/ext2_types.h.in ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/lib/ext2fs/ext2_types.h.in
+--- ./e2fsprogs-1.47.2/lib/ext2fs/ext2_types.h.in	2025-01-01 09:24:42.000000000 +0300
++++ ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/lib/ext2fs/ext2_types.h.in	2025-05-25 02:47:09.846727622 +0300
+@@ -3,8 +3,7 @@
+  * everything we need.  (cross fingers)  Other header files may have
+  * also defined the types that we need.
+  */
+-#if (!defined(_LINUX_TYPES_H) && !defined(_BLKID_TYPES_H) && \
+-	!defined(_EXT2_TYPES_H))
++#if 0
+ #define _EXT2_TYPES_H
+ 
+ @ASM_TYPES_HEADER@
+@@ -167,9 +166,10 @@
+ #endif /* _*_TYPES_H */
+ 
+ #include <stdint.h>
++#include <linux/types.h>
+ 
+ /* endian checking stuff */
+-#ifndef EXT2_ENDIAN_H_
++#if 0
+ #define EXT2_ENDIAN_H_
+ 
+ #ifdef __CHECKER__
+diff -aur ./e2fsprogs-1.47.2/lib/ext2fs/unix_io.c ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/lib/ext2fs/unix_io.c
+--- ./e2fsprogs-1.47.2/lib/ext2fs/unix_io.c	2025-01-01 09:24:42.000000000 +0300
++++ ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/lib/ext2fs/unix_io.c	2025-05-25 02:47:09.846727622 +0300
+@@ -137,6 +137,9 @@
+ }
+ #endif
+ 
++#define mutex_lock   __mutex_lock
++#define mutex_unlock __mutex_unlock
++
+ static inline void mutex_lock(struct unix_private_data *data, kind_t kind)
+ {
+ #ifdef HAVE_PTHREAD
+diff -aur ./e2fsprogs-1.47.2/misc/create_inode_libarchive.c ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/misc/create_inode_libarchive.c
+--- ./e2fsprogs-1.47.2/misc/create_inode_libarchive.c	2025-01-01 09:24:42.000000000 +0300
++++ ../build/extbld/third_party/e2fsprogs/core/e2fsprogs-1.47.2/misc/create_inode_libarchive.c	2025-05-25 02:54:14.850396808 +0300
+@@ -22,10 +22,12 @@
+ 
+ /* If ./configure was run with --without-libarchive, then only
+  * __populate_fs_from_tar() remains in this file and will return an error. */
+-errcode_t __populate_fs_from_tar(ext2_filsys, ext2_ino_t, const char *,
+-                                 ext2_ino_t, struct hdlinks_s *,
+-                                 struct file_info *,
+-                                 struct fs_ops_callbacks *) {
++errcode_t __populate_fs_from_tar(ext2_filsys fs, ext2_ino_t root_ino,
++				 const char *source_tar, ext2_ino_t root,
++				 struct hdlinks_s *hdlinks EXT2FS_ATTR((unused)),
++				 struct file_info *target,
++				 struct fs_ops_callbacks *fs_callbacks)
++{
+   com_err(__func__, 0,
+           _("you need to compile e2fsprogs without --without-libarchive"
+             "be able to process tarballs"));
