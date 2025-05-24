@@ -42,7 +42,7 @@ const SFBInterfaceSpec FORTE_LED_OFF::scm_stFBInterfaceSpec = {
 
 void FORTE_LED_OFF::executeEvent(int pa_nEIID) {
   if (pa_nEIID == scm_nEventREQID) {
-      int err = leddrv_led_off(1);
+      int err = leddrv_led_off(!st_LED_N());
       st_SUCCESS() = err? false : true;
       sendOutputEvent(scm_nEventCNFID);
   }
