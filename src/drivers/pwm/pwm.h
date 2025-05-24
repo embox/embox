@@ -9,6 +9,8 @@
 #ifndef DRIVERS_PWM_PWM_H_
 #define DRIVERS_PWM_PWM_H_
 
+#include <stdint.h>
+
 #include <lib/libds/array.h>
 
 struct pwm_device;
@@ -28,9 +30,10 @@ struct pin_description {
 
 struct pwm_device {
 	int pwmd_id;
-	const struct pwm_ops *pwmd_ops;
-	struct pin_description pwmd_pin;
-	void *pwmd_priv;
+	const struct pwm_ops   *pwmd_ops;
+	void                   *pwmd_priv;
+	struct pin_description  pwmd_pin;
+	uintptr_t               pwmd_base_addr;
 };
 
 
