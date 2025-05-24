@@ -194,3 +194,8 @@ module logb_test {
     @Cflags("-fno-builtin")
     source "logb_test.c"
 }
+
+module trunc_test {
+    @Cflags("-fno-builtin")
+    source "trunc_test.c"
+}
