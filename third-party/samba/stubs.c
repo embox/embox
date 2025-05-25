@@ -48,3 +48,7 @@ int fnmatch(const char *pattern, const char *string, int flags) {
 int fork(void) {
 	return -1;
 }
+
+int getgroups(int gidsetsize, gid_t grouplist[]) {
+	return -1;
+}

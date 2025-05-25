@@ -148,7 +148,8 @@ static int ext2fs_truncate(struct inode *node, off_t length) {
 	return 0;
 }
 
-struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir) {
+/* libext2fs from 'third_party.e2fsprogs.core' have function ext2fs_lookup() */
+struct inode *_ext2fs_lookup(struct inode *node, char const *name, struct inode const *dir) {
 	uint32_t i_no;
 	int rc;
 	struct ext2_file_info *fi;
@@ -188,7 +189,7 @@ struct inode *ext2fs_lookup(struct inode *node, char const *name, struct inode c
 struct inode_operations ext2_iops = {
 	.ino_create  = ext2fs_create,
 	.ino_remove  = ext2fs_delete,
-	.ino_lookup  = ext2fs_lookup,
+	.ino_lookup  = _ext2fs_lookup,
 	.ino_iterate = ext2_iterate,
 	.ino_truncate = ext2fs_truncate,
 

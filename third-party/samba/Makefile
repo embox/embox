@@ -12,7 +12,7 @@ samba_cppflags = -include $(ROOT_DIR)/third-party/samba/samba_embox_compat.h \
 
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
-	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3 && ( \
+	cd $(PKG_SOURCE_DIR)/source3 && ( \
 		./configure --host=$(AUTOCONF_TARGET_TRIPLET) \
 			--target=$(AUTOCONF_TARGET_TRIPLET) \
 			CC=$(EMBOX_GCC) \
@@ -34,16 +34,16 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3 && ( \
+	cd $(PKG_SOURCE_DIR)/source3 && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL) :
-	cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/smbclient $(PKG_INSTALL_DIR)/smbclient.embox.o
-	cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libsmbclient.a $(PKG_INSTALL_DIR)/libsmbclient.a
-	cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtevent.a $(PKG_INSTALL_DIR)/libtevent.a
-	cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtalloc.a $(PKG_INSTALL_DIR)/libtalloc.a
-	cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libtdb.a $(PKG_INSTALL_DIR)/libtdb.a
-	cp $(MOD_BUILD_DIR)/$(PKG_NAME)-$(PKG_VER)/source3/bin/libwbclient.a $(PKG_INSTALL_DIR)/libwbclient.a
+	cp $(PKG_SOURCE_DIR)/source3/bin/smbclient $(PKG_INSTALL_DIR)/smbclient.embox.o
+	cp $(PKG_SOURCE_DIR)/source3/bin/libsmbclient.a $(PKG_INSTALL_DIR)/libsmbclient.a
+	cp $(PKG_SOURCE_DIR)/source3/bin/libtevent.a $(PKG_INSTALL_DIR)/libtevent.a
+	cp $(PKG_SOURCE_DIR)/source3/bin/libtalloc.a $(PKG_INSTALL_DIR)/libtalloc.a
+	cp $(PKG_SOURCE_DIR)/source3/bin/libtdb.a $(PKG_INSTALL_DIR)/libtdb.a
+	cp $(PKG_SOURCE_DIR)/source3/bin/libwbclient.a $(PKG_INSTALL_DIR)/libwbclient.a
 	touch $@
