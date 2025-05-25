@@ -1,6 +1,6 @@
 package third_party.ext2fuse
 
-@Build(stage=1,script="$(EXTERNAL_MAKE)")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/ext2fuse/core/install/src")
 @BuildDepends(third_party.fuse.core)
 @BuildDepends(third_party.e2fsprogs.core)

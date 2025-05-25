@@ -5,28 +5,23 @@ module samba_stubs {
 }
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/samba/core/samba-3.6.25/source3/include")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/samba/core/samba-3.6.25/source3/include")
 @BuildDepends(third_party.zlib.libs)
 module core {
-
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	source
-		"libsmbclient.a",
-		"libtevent.a",
-		"libtalloc.a",
-		"libtdb.a",
-		"libwbclient.a"
+	source "libsmbclient.a", "libtevent.a", "libtalloc.a", "libtdb.a", "libwbclient.a"
 
-	depends samba_stubs
-	depends embox.compat.libc.all
-	depends embox.compat.posix.proc.exec_lib
-	depends embox.compat.posix.index_descriptor
-	depends embox.compat.posix.proc.exec
-	depends embox.net.lib.getifaddrs
-	depends embox.compat.posix.sys.mman.mmap_api
-	depends third_party.zlib.libs
-	depends embox.compat.posix.proc.atexit_api
-	depends embox.compat.posix.sys.mman.mmap
-	depends embox.compat.posix.sys.mman.msync
+	@NoRuntime depends samba_stubs
+
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.compat.posix.proc.exec_lib
+	@NoRuntime depends embox.compat.posix.index_descriptor
+	@NoRuntime depends embox.compat.posix.proc.exec
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
+	@NoRuntime depends embox.compat.posix.proc.atexit_api
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap
+	@NoRuntime depends embox.compat.posix.sys.mman.msync
 	@NoRuntime depends embox.compat.posix.file_system
+	@NoRuntime depends embox.net.lib.getifaddrs
+	@NoRuntime depends third_party.zlib.libs
 }
