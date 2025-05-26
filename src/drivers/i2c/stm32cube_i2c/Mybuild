@@ -7,17 +7,21 @@ module stm32cube_i2c {
 
 	source "stm32_i2c.c"
 
-	depends embox.driver.i2c
+	depends embox.driver.i2c_core
 	depends embox.driver.gpio.core
-	depends third_party.bsp.st_bsp_api
+	@NoRuntime depends third_party.bsp.st_bsp_api
 }
 
-@BuildDepends(stm32cube_i2c)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32cube_i2c1 {
 	source "stm32_i2c1.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
 }
 
-@BuildDepends(stm32cube_i2c)
+@BuildDepends(third_party.bsp.st_bsp_api)
 module stm32cube_i2c2 {
 	source "stm32_i2c2.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
 }
