@@ -8,14 +8,13 @@ abstract module conf {
 
 module conf_nosbi extends  conf {
 	option boolean smode = false
-	source "sbi.c"
-	source "sbi_ecall.c"
 }
 
 
 module conf_sbi extends  conf {
 	option boolean smode = true
-
+	source "sbi.c"
+	source "sbi_ecall.c"
 }
 
 module locore extends embox.arch.locore {
