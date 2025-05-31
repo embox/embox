@@ -1,9 +1,4 @@
-
 package embox.driver
-
-module at91_twi {
-	source "at91_twi.c"
-}
 
 module i2c_core {
 	option string log_level="LOG_NONE"
