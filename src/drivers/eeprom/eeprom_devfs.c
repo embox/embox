@@ -22,7 +22,7 @@ static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) 
 	int i;
 	uint32_t offset;
 	int count;
-	int res;
+	int err;
 
 	dev = (struct eeprom_dev *)cdev;
 
@@ -51,9 +51,12 @@ static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) 
 	msgs[1].addr = dev->eed_bus_addr;
 	msgs[1].flags = I2C_M_RD;
 
-	res = i2c_bus_transfer(dev->eed_bus, msgs, 2);
+	err = i2c_bus_transfer(dev->eed_bus, msgs, 2);
+	if (err < 0) {
+		return err;
+	}
 
-	return res;
+	return count;
 }
 
 static int eeprom_cdev_status(struct char_dev *cdev, int mask) {
