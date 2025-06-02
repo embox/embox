@@ -7,9 +7,9 @@ module k1921vk035 {
 	option boolean i2c_threadsafe=true
 
 	source "k1921vk035_i2c.c"
-	source "I2C_driver/I2C_driver.c"
+	source "I2C_driver.c"
 
-	depends embox.driver.i2c
+	depends embox.driver.i2c_core
 	depends third_party.bsp.niiet.plib035
 	//depends embox.compat.posix.pthreads
 }

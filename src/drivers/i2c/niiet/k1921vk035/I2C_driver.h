@@ -1,5 +1,5 @@
-#ifndef _I2C_DRIVER
-#define _I2C_DRIVER
+#ifndef DRIVERS_I2C_NIIET_K1921VK035_I2C_DRIVER_H_
+#define DRIVERS_I2C_NIIET_K1921VK035_I2C_DRIVER_H_
 
 #include <stddef.h>
 #include <plib035_i2c.h>
@@ -83,4 +83,4 @@ void I2C_IRQHandler();
 
 I2C_driver_state_t I2C_driver_recover_from_error();
 
-#endif //_I2C_DRIVER
+#endif //DRIVERS_I2C_NIIET_K1921VK035_I2C_DRIVER_H_

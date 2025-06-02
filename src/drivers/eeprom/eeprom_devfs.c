@@ -5,31 +5,26 @@
  * @author Anton Bondarev
  */
 
-#include <util/log.h>
-
+#include <errno.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <errno.h>
 #include <string.h>
 
-#include <drivers/i2c/i2c.h>
 #include <drivers/char_dev.h>
-
 #include <drivers/eeprom.h>
-
+#include <drivers/i2c/i2c.h>
+#include <util/log.h>
 
 static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) {
 	struct eeprom_dev *dev;
-	struct i2c_msg msgs[2] = {0};
+	struct i2c_msg msgs[2];
 	uint8_t msgbuf[2] = {0};
 	int i;
 	uint32_t offset;
 	int count;
-	int res;
+	int err;
 
 	dev = (struct eeprom_dev *)cdev;
-
-	memset(msgs, 0, sizeof(msgs));
 
 	count = nbyte;
 	if (count > dev->eed_io_limit) {
@@ -46,22 +41,26 @@ static ssize_t eeprom_cdev_read(struct char_dev *cdev, void *buf, size_t nbyte) 
 #endif
 	msgbuf[i++] = offset;
 
-	msgs[0].addr = dev->eed_bus_addr;
 	msgs[0].buf = msgbuf;
 	msgs[0].len = i;
+	msgs[0].addr = dev->eed_bus_addr;
+	msgs[0].flags = 0;
 
-	msgs[1].addr = dev->eed_bus_addr;
-	msgs[1].flags = I2C_M_RD;
 	msgs[1].buf = buf;
 	msgs[1].len = count;
+	msgs[1].addr = dev->eed_bus_addr;
+	msgs[1].flags = I2C_M_RD;
 
-	res = i2c_bus_transfer(dev->eed_bus, dev->eed_bus_addr, msgs, 2);
+	err = i2c_bus_transfer(dev->eed_bus, msgs, 2);
+	if (err < 0) {
+		return err;
+	}
 
-	return res;
+	return count;
 }
 
 static int eeprom_cdev_status(struct char_dev *cdev, int mask) {
-    return 0;
+	return 0;
 }
 
 static int eeprom_cdev_open(struct char_dev *cdev, struct idesc *idesc) {

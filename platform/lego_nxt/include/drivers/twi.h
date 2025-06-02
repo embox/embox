@@ -9,6 +9,8 @@
 #ifndef NXT_TWI_H_
 #define NXT_TWI_H_
 
+#include <stdint.h>
+
 /**
  * Send through TWI, should be used to normal communication
  */

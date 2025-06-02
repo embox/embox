@@ -8,5 +8,5 @@ static module gy_30 {
 	@IncludeExport(path="drivers/sensors", target_name="gy_30.h")
 	source "gy_30.h"
 
-	depends embox.driver.i2c
+	depends embox.driver.i2c_core
 }

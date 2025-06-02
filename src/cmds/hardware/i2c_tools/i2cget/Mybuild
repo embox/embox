@@ -40,5 +40,5 @@ package embox.cmd.i2c_tools
 module i2cget {
 	source "i2cget.c"
 
-	depends embox.driver.i2c
+	depends embox.driver.i2c_core
 }

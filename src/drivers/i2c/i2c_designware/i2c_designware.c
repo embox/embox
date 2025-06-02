@@ -4,20 +4,19 @@
  * @date Sep 25, 2019
  * @author Anton Bondarev
  */
-#include <util/log.h>
 
 #include <errno.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <unistd.h>
-#include <stdbool.h>
-
-#include <hal/reg.h>
 #include <swab.h>
-#include <kernel/irq.h>
-#include <kernel/printk.h>
+#include <unistd.h>
 
 #include <drivers/i2c/i2c.h>
+#include <hal/reg.h>
+#include <kernel/irq.h>
+#include <kernel/printk.h>
+#include <util/log.h>
 
 #include "i2c_designware.h"
 
@@ -25,15 +24,17 @@ static uint32_t i2c_dw_read(struct i2c_dw_dev *dev, int offset) {
 	uint32_t value;
 
 	if (dev->accessor_flags & ACCESS_16BIT) {
-		value = REG32_LOAD(dev->base_addr + offset) |
-			(REG32_LOAD(dev->base_addr + offset + 2) << 16);
-	} else {
+		value = REG32_LOAD(dev->base_addr + offset)
+		        | (REG32_LOAD(dev->base_addr + offset + 2) << 16);
+	}
+	else {
 		value = REG32_LOAD(dev->base_addr + offset);
 	}
 
 	if (dev->accessor_flags & ACCESS_SWAP) {
 		return swab32(value);
-	} else {
+	}
+	else {
 		return value;
 	}
 }
@@ -46,7 +47,8 @@ static void i2c_dw_write(struct i2c_dw_dev *dev, uint32_t b, int offset) {
 	if (dev->accessor_flags & ACCESS_16BIT) {
 		REG16_STORE(dev->base_addr + offset, ((uint16_t)b));
 		REG16_STORE(dev->base_addr + offset + 2, (uint16_t)(b >> 16));
-	} else {
+	}
+	else {
 		REG32_STORE(dev->base_addr + offset, b);
 	}
 }
@@ -109,7 +111,8 @@ static void i2c_dw_xfer_init(struct i2c_dw_dev *dev) {
 		 * We set it always as I2C_DYNAMIC_TAR_UPDATE can't be
 		 * detected from registers. */
 		ic_tar = I2C_DW_IC_TAR_10BITADDR_MASTER;
-	} else {
+	}
+	else {
 		ic_con &= ~I2C_DW_IC_CON_10BITADDR_MASTER;
 	}
 	i2c_dw_write(dev, ic_con, I2C_DW_IC_CON);
@@ -166,8 +169,8 @@ static void i2c_dw_xfer_msg(struct i2c_dw_dev *dev) {
 			/* If both IC_EMPTYFIFO_HOLD_MASTER_EN and
 			 * IC_RESTART_EN are set, we must manually
 			 * set restart bit between messages. */
-			if ((dev->master_cfg & I2C_DW_IC_CON_RESTART_EN) &&
-					(dev->msg_write_idx > 0)) {
+			if ((dev->master_cfg & I2C_DW_IC_CON_RESTART_EN)
+			    && (dev->msg_write_idx > 0)) {
 				need_restart = true;
 			}
 		}
@@ -200,7 +203,8 @@ static void i2c_dw_xfer_msg(struct i2c_dw_dev *dev) {
 				i2c_dw_write(dev, cmd | 0x100, I2C_DW_IC_DATA_CMD);
 				rx_limit--;
 				dev->rx_outstanding++;
-			} else {
+			}
+			else {
 				i2c_dw_write(dev, cmd | *buf++, I2C_DW_IC_DATA_CMD);
 			}
 
@@ -246,7 +250,8 @@ static void i2c_dw_read_msg(struct i2c_dw_dev *dev) {
 		if (!(dev->status & STATUS_READ_IN_PROGRESS)) {
 			len = msg->len;
 			buf = msg->buf;
-		} else {
+		}
+		else {
 			len = dev->rx_buf_len;
 			buf = dev->rx_buf;
 		}
@@ -271,20 +276,21 @@ static void i2c_dw_read_msg(struct i2c_dw_dev *dev) {
 	}
 }
 
-static int i2c_dw_xfer(struct i2c_adapter *ad, struct i2c_msg *msgs, int num) {
+static int i2c_dw_xfer(const struct i2c_bus *bus, struct i2c_msg *msgs,
+    size_t num_msgs) {
 	struct i2c_dw_dev *dev;
 	int ret;
 
-	dev = ad->i2c_algo_data;
+	dev = bus->i2c_priv;
 
-	dev->msgs           = msgs;
-	dev->msgs_num       = num;
-	dev->cmd_err        = 0;
-	dev->msg_write_idx  = 0;
-	dev->msg_read_idx   = 0;
-	dev->msg_err        = 0;
-	dev->status         = STATUS_IDLE;
-	dev->abort_source   = 0;
+	dev->msgs = msgs;
+	dev->msgs_num = num_msgs;
+	dev->cmd_err = 0;
+	dev->msg_write_idx = 0;
+	dev->msg_read_idx = 0;
+	dev->msg_err = 0;
+	dev->status = STATUS_IDLE;
+	dev->abort_source = 0;
 	dev->rx_outstanding = 0;
 
 	ret = i2c_dw_wait_bus_not_busy(dev);
@@ -295,7 +301,8 @@ static int i2c_dw_xfer(struct i2c_adapter *ad, struct i2c_msg *msgs, int num) {
 	i2c_dw_xfer_init(dev);
 
 	usleep(USEC_PER_MSEC);
-	while (dev->status != STATUS_IDLE);
+	while (dev->status != STATUS_IDLE)
+		;
 
 	/* We must disable the adapter before returning and signaling the end
 	 * of the current transfer. Otherwise the hardware might continue
@@ -310,7 +317,7 @@ static int i2c_dw_xfer(struct i2c_adapter *ad, struct i2c_msg *msgs, int num) {
 	}
 
 	if (!dev->cmd_err && dev->status == STATUS_IDLE) {
-		return num;
+		return num_msgs;
 	}
 
 	if (dev->cmd_err == I2C_DW_IC_ERR_TX_ABRT) {
@@ -319,10 +326,6 @@ static int i2c_dw_xfer(struct i2c_adapter *ad, struct i2c_msg *msgs, int num) {
 
 	return ret;
 }
-
-const struct i2c_algorithm i2c_dw_algo = {
-	.i2c_master_xfer = i2c_dw_xfer,
-};
 
 static uint32_t i2c_dw_read_clear_intrbits(struct i2c_dw_dev *dev) {
 	uint32_t stat;
@@ -355,7 +358,7 @@ static uint32_t i2c_dw_read_clear_intrbits(struct i2c_dw_dev *dev) {
 		i2c_dw_read(dev, I2C_DW_IC_CLR_RX_OVER);
 	}
 	if (stat & I2C_DW_IC_INTR_TX_OVER) {
-		i2c_dw_read(dev,I2C_DW_IC_CLR_TX_OVER);
+		i2c_dw_read(dev, I2C_DW_IC_CLR_TX_OVER);
 	}
 	if (stat & I2C_DW_IC_INTR_RD_REQ) {
 		i2c_dw_read(dev, I2C_DW_IC_CLR_RD_REQ);
@@ -426,9 +429,11 @@ static irq_return_t i2c_dw_irq_handler(unsigned int this_irq, void *dev_id) {
 	 * the current transmit status. */
 
 tx_aborted:
-	if ((stat & (I2C_DW_IC_INTR_TX_ABRT | I2C_DW_IC_INTR_STOP_DET)) || dev->msg_err ) {
+	if ((stat & (I2C_DW_IC_INTR_TX_ABRT | I2C_DW_IC_INTR_STOP_DET))
+	    || dev->msg_err) {
 		log_debug("tx_aborted");
-	} else {
+	}
+	else {
 		/* Workaround to trigger pending interrupt */
 		stat = i2c_dw_read(dev, I2C_DW_IC_INTR_MASK);
 		i2c_dw_disable_int(dev);
@@ -447,16 +452,20 @@ static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 	 * so we can check endianness and 16/32-bit access */
 	if (reg == ___constant_swab32(I2C_DW_IC_COMP_TYPE_VALUE)) {
 		dev->accessor_flags |= ACCESS_SWAP;
-	} else if (reg == (I2C_DW_IC_COMP_TYPE_VALUE & 0x0000ffff)) {
+	}
+	else if (reg == (I2C_DW_IC_COMP_TYPE_VALUE & 0x0000ffff)) {
 		dev->accessor_flags |= ACCESS_16BIT;
-	} else if (reg != I2C_DW_IC_COMP_TYPE_VALUE) {
-		log_error("Unknown Synopsys component type: ""0x%08x\n", reg);
+	}
+	else if (reg != I2C_DW_IC_COMP_TYPE_VALUE) {
+		log_error("Unknown Synopsys component type: "
+		          "0x%08x\n",
+		    reg);
 		return -ENODEV;
 	}
 
 	reg = i2c_dw_read(dev, I2C_DW_IC_COMP_PARAM_1);
 	dev->tx_fifo_depth = ((reg >> 16) & 0xff) + 1;
-	dev->rx_fifo_depth = ((reg >> 8)  & 0xff) + 1;
+	dev->rx_fifo_depth = ((reg >> 8) & 0xff) + 1;
 
 	i2c_dw_enable_and_wait(dev, false);
 
@@ -472,20 +481,24 @@ static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 	i2c_dw_write(dev, dev->tx_fifo_depth / 2, I2C_DW_IC_TX_TL);
 	i2c_dw_write(dev, 0, I2C_DW_IC_RX_TL);
 
-	dev->master_cfg = I2C_DW_IC_CON_MASTER |
-			I2C_DW_IC_CON_SLAVE_DISABLE | I2C_DW_IC_CON_RESTART_EN |
-			I2C_DW_IC_CON_SPEED_FAST;
+	dev->master_cfg = I2C_DW_IC_CON_MASTER | I2C_DW_IC_CON_SLAVE_DISABLE
+	                  | I2C_DW_IC_CON_RESTART_EN | I2C_DW_IC_CON_SPEED_FAST;
 	i2c_dw_write(dev, dev->master_cfg, I2C_DW_IC_CON);
 
 	return 0;
 }
 
-int i2c_dw_master_init(struct i2c_dw_dev *dev) {
-	int res;
+static int i2c_dw_init(const struct i2c_bus *bus) {
+	struct i2c_dw_dev *dev;
+
+	dev = bus->i2c_priv;
 
 	i2c_dw_hw_init(dev);
 
-	res = irq_attach(dev->irq_num, i2c_dw_irq_handler, 0, dev, "i2c_dw");
-
-	return res;
+	return irq_attach(dev->irq_num, i2c_dw_irq_handler, 0, dev, "i2c_dw");
 }
+
+const struct i2c_ops i2c_dw_ops = {
+    .i2c_master_xfer = i2c_dw_xfer,
+    .i2c_init = i2c_dw_init,
+};
