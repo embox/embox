@@ -32,6 +32,8 @@
 
 EMBOX_NET_PACK(ETH_P_IP, ip_rcv);
 
+extern int ip_forward(struct sk_buff *skb);
+
 static int ip_rcv(struct sk_buff *skb, struct net_device *dev) {
 	net_device_stats_t *stats = &dev->stats;
 	const struct net_proto *nproto;
