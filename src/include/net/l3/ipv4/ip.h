@@ -73,7 +73,6 @@ extern const struct net_pack_out_ops *const ip_out_ops
 		__attribute__ ((weak));
 
 /* TODO remve this */
-extern int ip_forward(struct sk_buff *skb);
 
 struct sock;
 extern int ip_header_size(struct sock *sock);
