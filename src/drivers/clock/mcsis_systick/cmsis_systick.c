@@ -50,12 +50,12 @@ static struct time_event_device cmsis_systick_event = {
 };
 
 #if 0
-static cycle_t this_read(struct clock_source *cs) {
+static cycle_t this_get_cycles(struct clock_source *cs) {
 	return 0;
 }
 
 static struct time_counter_device this_counter = {
-	.read = this_read,
+	.get_cycles = this_get_cycles,
 	.cycles_hz = SYS_CLOCK / CLOCK_DIVIDER,
 };
 #endif

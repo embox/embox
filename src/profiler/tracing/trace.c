@@ -126,7 +126,7 @@ void trace_block_enter(struct __trace_block *tb) {
 	if (tb->active && tb_cs) {
 		tb->count++;
 		tb->depth++;
-		cur_time = tb_cs->counter_device->read(tb_cs);
+		cur_time = tb_cs->counter_device->get_cycles(tb_cs);
 
 		t = (struct tb_time*) pool_alloc (&st_pool);
 		if (t) {assert(t != NULL);
@@ -149,7 +149,7 @@ void trace_block_leave(struct __trace_block *tb) {
 
 		tb->depth--;
 
-		cur_time = tb_cs->counter_device->read(tb_cs);
+		cur_time = tb_cs->counter_device->get_cycles(tb_cs);
 
 		p = tb->time_list_head;
 		if (p) {

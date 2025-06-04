@@ -112,7 +112,7 @@ static int tmr32_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t tmr32_read(struct clock_source *cs) {
+static cycle_t tmr32_get_cycles(struct clock_source *cs) {
 	return (cycle_t)REG32_LOAD(TMR_COUNT);
 }
 
@@ -122,7 +122,7 @@ static struct time_event_device tmr32_event = {
 };
 
 static struct time_counter_device tmr32_counter = {
-    .read = tmr32_read,
+    .get_cycles = tmr32_get_cycles,
     .cycle_hz = TMR_PERIOD,
 };
 

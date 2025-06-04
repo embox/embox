@@ -30,13 +30,13 @@ static struct time_event_device xen_event_device = {
 	.irq_nr = -1
 };
 
-static cycle_t xen_tcd_read(struct clock_source *cs) {
+static cycle_t xen_tcd_get_cycles(struct clock_source *cs) {
 	return 0;
 }
 
 static struct time_counter_device xen_tcd = {
 	.cycle_hz = 1000,
-	.read = xen_tcd_read,
+	.get_cycles = xen_tcd_get_cycles,
 };
 
 static uint64_t system_time;

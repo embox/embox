@@ -88,7 +88,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static cycle_t mb_cycle_read(struct clock_source *cs) {
+static cycle_t mb_get_cycles(struct clock_source *cs) {
 	return TIMER_PRELOAD - timer0->tcr;
 
 }
@@ -119,7 +119,7 @@ static struct time_event_device mb_ed = {
 };
 
 static struct time_counter_device mb_cd = {
-	.read = mb_cycle_read,
+	.get_cycles = mb_get_cycles,
 	.cycle_hz = SYS_CLOCK,
 };
 

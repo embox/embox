@@ -29,7 +29,7 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 	return IRQ_HANDLED;
 }
 
-static cycle_t mips_clk_read(struct clock_source *cs) {
+static cycle_t mips_clk_get_cycles(struct clock_source *cs) {
 	return (cycle_t)mips_read_c0_count();
 }
 
@@ -47,7 +47,7 @@ static struct time_event_device mips_event_device = {
 };
 
 static struct time_counter_device mips_counter_device = {
-    .read = mips_clk_read,
+    .get_cycles = mips_clk_get_cycles,
     .cycle_hz = SYS_CLOCK,
 };
 

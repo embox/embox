@@ -20,22 +20,22 @@
 
 
 /* Read Time Stamp Counter Register */
-static inline unsigned long long rdtsc(struct clock_source *cs) {
+static inline unsigned long long tsc_get_cycles(struct clock_source *cs) {
 	unsigned hi, lo;
 	__asm__ __volatile__("rdtsc" : "=a"(lo), "=d"(hi));
 	return (((unsigned long long) lo) | (((unsigned long long) hi) << 32));
 }
 
 static struct time_counter_device tsc = {
-	.read = rdtsc
+	.get_cycles = tsc_get_cycles
 };
 
 static int tsc_init(struct clock_source *cs) {
 	time64_t t1, t2;
 	/* Getting CPU frequency */
-	t1 = rdtsc(cs);
+	t1 = tsc_get_cycles(cs);
 	sleep(1);
-	t2 = rdtsc(cs);
+	t2 = tsc_get_cycles(cs);
 	tsc.cycle_hz = t2 - t1;
 
 	return ENOERR;
