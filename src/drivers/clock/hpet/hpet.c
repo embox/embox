@@ -37,7 +37,7 @@
 //ACPI_GENERIC_ADDRESS __attribute__((packed));
 //ACPI_TABLE_HPET __attribute__((packed));
 
-static cycle_t hpet_read(struct clock_source *cs);
+static cycle_t hpet_get_cycles(struct clock_source *cs);
 
 
 static ACPI_TABLE_HPET *hpet_table;
@@ -96,12 +96,12 @@ static int hpet_init(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t hpet_read(struct clock_source *cs) {
+static cycle_t hpet_get_cycles(struct clock_source *cs) {
 	return hpet_get_register(HPET_MAIN_CNT_REG);
 }
 
 static struct time_counter_device hpet_counter_device = {
-	.read = &hpet_read
+	.get_cycles = &hpet_get_cycles
 };
 
 CLOCK_SOURCE_DEF(hpet, hpet_init, NULL,

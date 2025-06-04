@@ -69,7 +69,7 @@ static int cortexm_systick_init(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t cortexm_systick_read(struct clock_source *cs) {
+static cycle_t cortexm_systick_get_cycles(struct clock_source *cs) {
 	return REG_LOAD(SYSTICK_RELOAD) - REG_LOAD(SYSTICK_VAL);
 }
 
@@ -81,7 +81,7 @@ static struct time_event_device cortexm_systick_event = {
 };
 
 static struct time_counter_device cortexm_systick_counter = {
-	.read = cortexm_systick_read,
+	.get_cycles = cortexm_systick_get_cycles,
 	.cycle_hz = SYS_CLOCK,
 	.mask = SYSTICK_RELOAD_MSK,
 };

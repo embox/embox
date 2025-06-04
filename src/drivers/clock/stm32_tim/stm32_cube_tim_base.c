@@ -38,7 +38,7 @@ int stm32_cube_tim_base_set_next_event(struct clock_source *cs,
 	return 0;
 }
 
-cycle_t stm32_cube_tim_base_read(struct clock_source *cs) {
+cycle_t stm32_cube_tim_get_cycles(struct clock_source *cs) {
 	TIM_HandleTypeDef *htim = cs->driver_priv_data;
 
 	if (!(htim->Instance->CR1 & (1 << TIM_CR1_CEN_Pos))) {

@@ -94,12 +94,12 @@ static struct time_event_device ti8168_clk_event = {
 };
 
 /* TODO */
-static cycle_t ti8168_this_read(struct clock_source *cs) {
+static cycle_t ti8168_get_cycles(struct clock_source *cs) {
 	return 0;
 }
 
 static struct time_counter_device ti8168_counter_device = {
-	.read = ti8168_this_read,
+	.get_cycles = ti8168_get_cycles,
 	.cycle_hz = TI8168_CLKIN_HZ,
 };
 

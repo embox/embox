@@ -101,7 +101,7 @@ static int this_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t this_read(struct clock_source *cs) {
+static cycle_t this_get_cycles(struct clock_source *cs) {
 	return REG32_LOAD(GPT_CNT);
 }
 
@@ -111,7 +111,7 @@ static struct time_event_device gpt_timer_event = {
 };
 
 static struct time_counter_device gpt_timer_counter = {
-	.read = this_read,
+	.get_cycles = this_get_cycles,
 	.cycle_hz = 1000,
 };
 

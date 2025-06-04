@@ -51,7 +51,7 @@ static int cortexa9_timer_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t cortexa9_timer_read(struct clock_source *cs) {
+static cycle_t cortexa9_timer_get_cycles(struct clock_source *cs) {
 	return (cycle_t)LOAD_VALUE - REG32_LOAD(PTIMER_COUNT);
 }
 
@@ -61,7 +61,7 @@ static struct time_event_device cortexa9_timer_event = {
 };
 
 static struct time_counter_device cortexa9_timer_counter = {
-    .read = cortexa9_timer_read,
+    .get_cycles = cortexa9_timer_get_cycles,
     .cycle_hz = PERIPHCLK,
 };
 

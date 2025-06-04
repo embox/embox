@@ -72,17 +72,17 @@ static int this_set_periodic(struct clock_source *cs) {
     return 0;
 }
 
-static cycle_t this_read(struct clock_source *cs) {
+static cycle_t this_get_cycles(struct clock_source *cs) {
     return REG32_LOAD(SP804_T1_VR);
 }
 
 static struct time_event_device sp804_timer_event = {
-    .set_periodic   = this_set_periodic,
-    .irq_nr   = SP804_IRQ,
+    .set_periodic = this_set_periodic,
+    .irq_nr = SP804_IRQ,
 };
 
 static struct time_counter_device sp804_timer_counter = {
-    .read     = this_read,
+    .get_cycles = this_get_cycles,
     .cycle_hz = 1000,
 };
 

@@ -67,7 +67,7 @@ static __RETAINED_CODE irq_return_t da1469x_timer_irq_handler(
 	return IRQ_HANDLED;
 }
 
-static cycle_t da1469x_timer_read(struct clock_source *cs) {
+static cycle_t da1469x_timer_get_cycles(struct clock_source *cs) {
 	return hw_timer_get_reload(TIMER_ID) - hw_timer_get_count(TIMER_ID);
 }
 
@@ -89,7 +89,7 @@ static struct time_event_device da1469x_timer_event = {
 };
 
 static struct time_counter_device da1469x_timer_counter = {
-	.read = da1469x_timer_read,
+	.get_cycles = da1469x_timer_get_cycles,
 	.cycle_hz = CLOCK_FREQ,
 	.mask = 0xffffff,
 };
