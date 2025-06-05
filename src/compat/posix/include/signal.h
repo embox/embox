@@ -75,6 +75,8 @@
 #define SA_NODEFER   (0x1ul << 5)
 #define SA_RESETHAND (0x1ul << 6)
 
+#define IS_UNMODIFIABLE_SIGNAL(sig) ((sig) == SIGKILL || (sig) == SIGSTOP)
+
 __BEGIN_DECLS
 
 #ifdef __clang__
