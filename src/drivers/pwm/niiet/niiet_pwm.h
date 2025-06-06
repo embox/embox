@@ -18,9 +18,9 @@ struct niiet_pwm_priv {
 	uintptr_t               base_addr;
 };
 
-struct niiet_tmr16_reg {
-	volatile uint32_t CTRL;  /*!< Capture / Compare Control register */
-	volatile uint16_t VAL;   /*!< VAL : type used for word access */
+struct niiet_capcom_reg {
+	volatile uint32_t CAPCOM_CTRL;  /*!< Capture / Compare Control register */
+	volatile uint32_t CAPCOM_VAL;   /*!< VAL : type used for word access */
 };
 
 struct niiet_tmr16_regs {
@@ -30,7 +30,7 @@ struct niiet_tmr16_regs {
 	volatile uint32_t RIS;            /*!< Raw Interrupt Status register */
 	volatile uint32_t MIS;            /*!< Masked Interrupt Status register */
 	volatile uint32_t IC;             /*!< Clear Interrupt Status register */
-	struct niiet_tmr16_reg CAPCOM[4];
+	struct niiet_capcom_reg CAPCOM[4];
 	volatile uint32_t DMA_IM;         /*!< DMA request mask register */
 	volatile uint32_t ADC_IM;         /*!< ADC request mask register */
 };
