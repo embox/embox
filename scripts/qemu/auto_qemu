@@ -417,7 +417,7 @@ fi
 RUNAS=""
 # Don't try to drop privileges for root user; qemu fails otherwise
 if [[ "$(id -u)" -ne 0 ]] ; then
-	if [ "$QEMU_VER" > 100000 ]; then
+	if [ "$QEMU_VER" -ge 100000 ]; then
 		RUNAS="-run-with user=$(whoami)"
 	else 
 		RUNAS="-runas $(whoami)"
