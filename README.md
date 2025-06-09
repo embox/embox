@@ -55,7 +55,7 @@ Required environment:
 ### Preparing environment
 For Debian-based systems (most packages are installed out of box though):
 ```
-$ sudo apt-get install build-essential gcc-multilib curl libmpc-dev python3
+$ sudo apt-get install build-essential gcc-multilib curl libmpc-dev python3 python-is-python3
 ```
 
 For Arch Linux:
