@@ -105,9 +105,9 @@ $(DOWNLOAD_CHECK) : $(DOWNLOAD) | $(DOWNLOAD_DIR) $(MOD_BUILD_DIR)
 
 extract : $(EXTRACT)
 $(EXTRACT) : $(DOWNLOAD) | $(DOWNLOAD_DIR) $(MOD_BUILD_DIR)
-	$(if $(first_url),$(if $(filter %zip,$(pkg_ext)), \
+	$(if $(first_url),$(if $(filter %zip,$(pkg_archive_ext)), \
 		unzip -q $(DOWNLOAD_DIR)/$(pkg_archive_name) -d $(MOD_BUILD_DIR);, \
-		$(if $(filter-out %tar.gz %tgz,$(filter %gz,$(pkg_ext))), \
+		$(if $(filter-out %tar.gz %tgz,$(filter %gz,$(pkg_archive_ext))), \
 		gzip -dk $(DOWNLOAD_DIR)/$(pkg_archive_name); mv $(DOWNLOAD_DIR)/$(PKG_NAME) $(MOD_BUILD_DIR);, \
 		tar -xf $(DOWNLOAD_DIR)/$(pkg_archive_name) -C $(MOD_BUILD_DIR);)))
 	COPY_FILES="$(addprefix $(DOWNLOAD_DIR)/, \
@@ -143,6 +143,8 @@ include $(extbld_makefile)
 PKG_NAME    ?=
 PKG_VER     ?=
 PKG_SOURCES ?=
+PKG_EXT     ?=
+PKG_MD5     ?=
 PKG_PATCHES ?=
 
 targets_git      = $(basename $(notdir $1))
@@ -150,16 +152,18 @@ sources_git     := $(filter %.git,$(PKG_SOURCES))
 sources_archive := $(filter-out %.git,$(PKG_SOURCES))
 first_url       := $(word 1,$(sources_archive))
 
-ifneq ($(filter %.tar.gz %.tar.bz %.tar.bz2 %.tar.xz,$(first_url)),)
-pkg_ext := .tar$(suffix $(first_url))
+ifneq ($(PKG_EXT),)
+pkg_archive_ext := .$(PKG_EXT)
+else ifneq ($(filter %.tar.gz %.tar.bz %.tar.bz2 %.tar.xz,$(first_url)),)
+pkg_archive_ext := .tar$(suffix $(first_url))
 else ifneq ($(filter %.tgz %.tbz %.zip %.gz,$(first_url)),)
-pkg_ext := $(suffix $(first_url))
+pkg_archive_ext := $(suffix $(first_url))
 else
-pkg_ext :=
+pkg_archive_ext :=
 endif
 
 ifneq ($(PKG_VER),)
-pkg_archive_name := $(PKG_NAME)-$(PKG_VER)$(pkg_ext)
+pkg_archive_name := $(PKG_NAME)-$(PKG_VER)$(pkg_archive_ext)
 else
-pkg_archive_name := $(PKG_NAME)$(pkg_ext)
+pkg_archive_name := $(PKG_NAME)$(pkg_archive_ext)
 endif
