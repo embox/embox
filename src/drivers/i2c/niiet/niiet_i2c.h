@@ -1,13 +1,13 @@
-#ifndef DRIVERS_I2C_NIIET_K1921VK035_I2C_DRIVER_H_
-#define DRIVERS_I2C_NIIET_K1921VK035_I2C_DRIVER_H_
+#ifndef DRIVERS_I2C_NIIET_I2C_H_
+#define DRIVERS_I2C_NIIET_I2C_H_
 
-#include <stddef.h>
-#include <plib035_i2c.h>
-#include <plib035_gpio.h>
+#include <stdint.h>
 
-#define I2C_DRIVER_SCL        (GPIO_Pin_0)
-#define I2C_DRIVER_SDA        (GPIO_Pin_1)
-#define I2C_DRIVER_PORT       (GPIOA)
+#include <bsp/niiet/plib.h>
+
+#define I2C_DRIVER_SCL  (GPIO_Pin_0)
+#define I2C_DRIVER_SDA  (GPIO_Pin_1)
+#define I2C_DRIVER_PORT (GPIOA)
 
 #define I2C_DRIVER_READ_FLAG  1
 #define I2C_DRIVER_WRITE_FLAG 0
@@ -16,20 +16,20 @@
  * State of the I2C driver.
  */
 typedef enum __attribute__((__packed__)) {
-    I2C_DRIVER_BUSY = 0,     /**< Operations still in progress */
-    I2C_DRIVER_OK,           /**< All operations successful */
-    I2C_DRIVER_DEVICE_ERROR, /**< Error encountered in one of the operations */
-    I2C_DRIVER_BUS_ERROR     /**< Error encountered in one of the operations */
+	I2C_DRIVER_BUSY = 0,     /**< Operations still in progress */
+	I2C_DRIVER_OK,           /**< All operations successful */
+	I2C_DRIVER_DEVICE_ERROR, /**< Error encountered in one of the operations */
+	I2C_DRIVER_BUS_ERROR     /**< Error encountered in one of the operations */
 } I2C_driver_state_t;
 
 /**
  * Read or write I2C operation.
  */
 typedef struct {
-    uint8_t address; /**< Shifted device address. Lowest bit is responsible for the type of the operation -- 0 to write, 1 to read */
-    uint8_t size;    /**< Number of bytes to read or write */
-    uint8_t start;   /**< Start of the buffer, usually 0 */
-    uint8_t* data;   /**< Buffer to read from or write to. Must be at least start + size bytes */
+	uint8_t address; /**< Shifted device address. Lowest bit is responsible for the type of the operation -- 0 to write, 1 to read */
+	uint8_t size;    /**< Number of bytes to read or write */
+	uint8_t start;   /**< Start of the buffer, usually 0 */
+	uint8_t *data; /**< Buffer to read from or write to. Must be at least start + size bytes */
 } I2C_driver_operation_t;
 
 // Initialization:
@@ -49,7 +49,7 @@ void I2C_driver_init(uint32_t freq);
  * @param operations Array of operations
  * @param size Length of the array of operations
  */
-void I2C_driver_execute(I2C_driver_operation_t* operations, uint8_t size);
+void I2C_driver_execute(I2C_driver_operation_t *operations, uint8_t size);
 
 /**
  * @brief Checks the status of the executing operations.
@@ -67,7 +67,7 @@ I2C_driver_state_t I2C_driver_is_done();
  * @param data Buffer to read from
  * @param size Length of the buffer
  */
-void I2C_driver_write(uint8_t address, const uint8_t* data, uint8_t size);
+void I2C_driver_write(uint8_t address, const uint8_t *data, uint8_t size);
 
 /**
  * @brief Executes one read operation.
@@ -76,11 +76,11 @@ void I2C_driver_write(uint8_t address, const uint8_t* data, uint8_t size);
  * @param data Buffer to write the data to
  * @param size Length of the buffer
  */
-void I2C_driver_read(uint8_t address, uint8_t* data, uint8_t size);
+void I2C_driver_read(uint8_t address, uint8_t *data, uint8_t size);
 // Still need is_done for it though
 
 void I2C_IRQHandler();
 
 I2C_driver_state_t I2C_driver_recover_from_error();
 
-#endif //DRIVERS_I2C_NIIET_K1921VK035_I2C_DRIVER_H_
+#endif //DRIVERS_I2C_NIIET_I2C_H_
