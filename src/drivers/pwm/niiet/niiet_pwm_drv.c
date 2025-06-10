@@ -26,6 +26,7 @@ int niiet_pwm_init(struct pwm_device *dev) {
     pin = &priv->pin_desc;
 
     gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin), pin->pd_func);
+    clk_enable(priv->clk_name);
 
     return 0;
 }

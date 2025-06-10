@@ -16,6 +16,8 @@
 struct niiet_pwm_priv {
 	struct pin_description  pin_desc;
 	uintptr_t               base_addr;
+	char                   *clk_name;
+	int                     channel;
 };
 
 struct niiet_capcom_reg {
