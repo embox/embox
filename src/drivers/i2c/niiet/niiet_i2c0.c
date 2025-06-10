@@ -1,33 +1,26 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <bsp/niiet/plib.h>
 #include <drivers/i2c/i2c.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 #include <kernel/sched.h>
 
-#include "I2C_driver.h"
-#include "plib035_i2c.h"
-
-#define I2C_FREQUENCY OPTION_GET(NUMBER, i2c_frequency)
+#include "niiet_i2c.h"
 
 #define IMX_I2C_ID 0
 
+#define I2C_FREQUENCY         OPTION_GET(NUMBER, i2c_frequency)
+#define I2C_THREADSAFE        OPTION_GET(BOOLEAN, i2c_threadsafe)
 #define I2C_INTERRUPTS_ENABLE OPTION_GET(BOOLEAN, i2c_interrupts)
-#if I2C_INTERRUPTS_ENABLE
-#define I2C_INTERRUPTS
-#endif
-
-#define I2C_THREADSAFE OPTION_GET(BOOLEAN, i2c_threadsafe)
 
 #if I2C_THREADSAFE
-
 #include <pthread.h>
 static pthread_mutex_t lock;
+#endif /* I2C_THREADSAFE */
 
-#endif
-
-static int k1921vk035_i2c_master_xfer(const struct i2c_bus *bus,
+static int niiet_i2c_master_xfer(const struct i2c_bus *bus,
     struct i2c_msg *msgs, size_t num_msgs) {
 	I2C_driver_operation_t ops[num_msgs];
 
@@ -55,7 +48,7 @@ static int k1921vk035_i2c_master_xfer(const struct i2c_bus *bus,
 	I2C_driver_state_t s;
 	while (!(s = I2C_driver_is_done())) {
 		// TODO sleep
-#ifndef I2C_INTERRUPTS
+#if I2C_INTERRUPTS_ENABLE
 		if (I2C_ITStatus()) {
 			I2C_IRQHandler();
 		}
@@ -82,12 +75,12 @@ static int k1921vk035_i2c_master_xfer(const struct i2c_bus *bus,
 	return -1;
 }
 
-static int k1921vk035_i2c_init() {
+static int niiet_i2c_init() {
 #if I2C_THREADSAFE
 	pthread_mutex_init(&lock, NULL);
 #endif
 
-#ifdef I2C_INTERRUPTS
+#if I2C_INTERRUPTS_ENABLE
 	NVIC_EnableIRQ(I2C_IRQn);
 	NVIC_SetPriority(I2C_IRQn, 0);
 #endif
@@ -97,20 +90,20 @@ static int k1921vk035_i2c_init() {
 	return 0;
 }
 
-const struct i2c_ops k1921vk035_i2c_ops = {
-    .i2c_master_xfer = k1921vk035_i2c_master_xfer,
-    .i2c_init = k1921vk035_i2c_init,
+const struct i2c_ops niiet_i2c_ops = {
+    .i2c_master_xfer = niiet_i2c_master_xfer,
+    .i2c_init = niiet_i2c_init,
 };
 
-static const struct i2c_bus k1921vk035_i2c_bus = {
-    .i2c_ops = &k1921vk035_i2c_ops,
+static const struct i2c_bus niiet_i2c_bus = {
+    .i2c_ops = &niiet_i2c_ops,
     .i2c_priv = NULL,
     .i2c_id = IMX_I2C_ID,
 };
 
-I2C_BUS_REGISTER(&k1921vk035_i2c_bus);
+I2C_BUS_REGISTER(&niiet_i2c_bus);
 
-#ifdef I2C_INTERRUPTS
+#if I2C_INTERRUPTS_ENABLE
 irq_return_t i2c_irq_handler(unsigned int irq_nr, void *data) {
 	I2C_IRQHandler();
 	return IRQ_HANDLED;
@@ -118,4 +111,4 @@ irq_return_t i2c_irq_handler(unsigned int irq_nr, void *data) {
 
 #define I2C_IRQn 36
 STATIC_IRQ_ATTACH(I2C_IRQn, i2c_irq_handler, NULL);
-#endif /* I2C_INTERRUPTS */
+#endif /* I2C_INTERRUPTS_ENABLE */
