@@ -106,8 +106,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_UART1_VECTNUM),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 3, 1),
-				PIN("RX", GPIO_PORT_A, 2, 1),
+				PIN("TX", GPIO_PORT_A, 11, 3),
+				PIN("RX", GPIO_PORT_A, 10, 3),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
@@ -275,14 +275,14 @@ struct led_conf leds[] = {
 struct pwm_conf pwms[] = {
 	[0] = {
 		.name = "PWM0",
-		.channel = VAL("CHANNEL_TIM", 0),
+		.channel = VAL("", 0),
 		.dev = {
 			.name = "PWM0",
 			.regs = {
 				REGMAP("BASE_ADDR", (TMR0_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_B, 13, 1),
+				PIN("OUT", GPIO_PORT_C, 6, 1),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR0"),
@@ -291,14 +291,14 @@ struct pwm_conf pwms[] = {
 	},
 	[1] = {
 		.name = "PWM1",
-		.channel = VAL("CHANNEL_TIM", 0),
+		.channel = VAL("", 2),
 		.dev = {
 			.name = "PWM1",
 			.regs = {
 				REGMAP("BASE_ADDR", (TMR1_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_B, 13, 1),
+				PIN("OUT", GPIO_PORT_A, 8, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR1"),
@@ -307,14 +307,14 @@ struct pwm_conf pwms[] = {
 	},
 	[2] = {
 		.name = "PWM2",
-		.channel = VAL("CHANNEL_TIM", 0),
+		.channel = VAL("", 2),
 		.dev = {
 			.name = "PWM2",
 			.regs = {
 				REGMAP("BASE_ADDR", (TMR2_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_B, 13, 1),
+				PIN("OUT", GPIO_PORT_A, 2, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR2"),
