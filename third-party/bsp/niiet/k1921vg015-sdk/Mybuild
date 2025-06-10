@@ -1,9 +1,12 @@
 package third_party.bsp.niiet
 
-@BuildArtifactPath(cppflags="$(EXTERNAL_BUILD_DIR)/third_party/bsp/plib015/install")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/niiet/plib015/install/include")
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
-static module plib015 {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+static module plib015 extends third_party.bsp.niiet.plib {
+	@IncludeExport(path="bsp/niiet", target_name="plib.h")
+	source "plib015.h"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src")
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-sequence-point")
 	source

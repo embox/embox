@@ -7,7 +7,11 @@ PKG_MD5     := dfa35fabf1bd42b44f01764dddbd2fde
 PKG_PATCHES := 
 
 $(INSTALL) :
-	$(CP) $(MOD_BUILD_DIR)/platform/plib015/src/* $(PKG_INSTALL_DIR)
-	$(CP) $(MOD_BUILD_DIR)/platform/plib015/inc/* $(PKG_INSTALL_DIR)
-	$(CP) $(MOD_BUILD_DIR)/platform/Device/K1921VG015/Include/K1921VG015.h $(PKG_INSTALL_DIR)
+	$(MKDIR) $(PKG_INSTALL_DIR)/src
+	$(MKDIR) $(PKG_INSTALL_DIR)/include
+	$(CP) $(MOD_BUILD_DIR)/platform/plib015/src/* $(PKG_INSTALL_DIR)/src
+	$(CP) $(MOD_BUILD_DIR)/platform/plib015/inc/* $(PKG_INSTALL_DIR)/src
+	$(CP) $(MOD_BUILD_DIR)/platform/plib015/inc/* $(PKG_INSTALL_DIR)/include
+	$(CP) $(MOD_BUILD_DIR)/platform/Device/K1921VG015/Include/K1921VG015.h $(PKG_INSTALL_DIR)/src
+	$(CP) $(MOD_BUILD_DIR)/platform/Device/K1921VG015/Include/K1921VG015.h $(PKG_INSTALL_DIR)/include
 	touch $@
