@@ -3,23 +3,33 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <stdint.h>
+#include <stdio.h>
+#include <limits.h>
 
 #include <util/err.h>
+#include <lib/libds/array.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
 #include <drivers/device.h>
-#include <framework/mod/options.h>
-#include <fs/dvfs.h>
-
-#include <lib/libds/array.h>
-
 #include <module/embox/driver/block_dev.h>
 
+#include <fs/dir_context.h>
 #include <fs/inode.h>
-#include <limits.h>
+#include <fs/inode_operation.h>
+#include <fs/mount.h>
+#include <fs/super_block.h>
+#include <fs/dentry.h>
+#include <fs/file_desc.h>
+#include <fs/fs_driver.h>
+
 #include <net/net_namespace.h>
 #include <kernel/task.h>
+
+#include <framework/mod/options.h>
+
+
+extern struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
 
 extern net_namespace_p net_ns_lookup(const char *name);
 extern net_namespace_p net_ns_lookup_by_inode(struct inode *inode);
@@ -43,7 +53,7 @@ static struct inode *procfs_lookup(struct inode *node, char const *name, struct 
 	else if (strcmp(name, "ns") == 0)
 		node->i_mode = S_IFDIR;
 	else if (strcmp(name, "net") == 0) {
-		node->length = NAME_MAX + 1;
+		node->i_size = NAME_MAX + 1;
 		node->i_mode = S_IFLNK;
 	}
 
