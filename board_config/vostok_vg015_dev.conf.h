@@ -272,4 +272,55 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts),  LED(leds))
+struct pwm_conf pwms[] = {
+	[0] = {
+		.name = "PWM0",
+		.channel = VAL("CHANNEL_TIM", 0),
+		.dev = {
+			.name = "PWM0",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR0_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT", GPIO_PORT_B, 13, 1),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR0"),
+			}
+		},
+	},
+	[1] = {
+		.name = "PWM1",
+		.channel = VAL("CHANNEL_TIM", 0),
+		.dev = {
+			.name = "PWM1",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR1_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT", GPIO_PORT_B, 13, 1),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR1"),
+			}
+		},
+	},
+	[2] = {
+		.name = "PWM2",
+		.channel = VAL("CHANNEL_TIM", 0),
+		.dev = {
+			.name = "PWM2",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR2_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT", GPIO_PORT_B, 13, 1),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR2"),
+			}
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts),  LED(leds), PWM(pwms))
