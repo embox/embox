@@ -32,7 +32,7 @@ struct pwm_device {
 	int pwmd_id;
 	const struct pwm_ops   *pwmd_ops;
 	void                   *pwmd_priv;
-	struct pin_description  pwmd_pin;
+	const struct pin_description *pwmd_pin;
 	uintptr_t               pwmd_base_addr;
 };
 
@@ -43,8 +43,8 @@ extern void pwm_disable(struct pwm_device *pwm);
 
 extern struct pwm_device *pwm_dev_by_id(int id);
 
-#define PWM_DEV_DEF(id, ops, priv) \
-	ARRAY_SPREAD_DECLARE(struct pwm_device, __pwm_device_registry); \
-	ARRAY_SPREAD_ADD(__pwm_device_registry, { id, ops, priv } )
+#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr) \
+	ARRAY_SPREAD_DECLARE(const struct pwm_device, __pwm_device_registry); \
+	ARRAY_SPREAD_ADD(__pwm_device_registry, { id, ops, priv, out_pin, base_addr } )
 
 #endif /* DRIVERS_PWM_PWM_H_ */

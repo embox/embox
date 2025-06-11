@@ -14,10 +14,10 @@
 #include <drivers/pwm.h> /* only for struct pin_description  */
 
 struct niiet_pwm_priv {
-	struct pin_description  pin_desc;
-	uintptr_t               base_addr;
-	char                   *clk_name;
-	int                     channel;
+	const struct pin_description *pin_desc;
+	const uintptr_t               base_addr;
+	const char                   *clk_name;
+	const int                     channel;
 };
 
 struct niiet_capcom_reg {

@@ -33,15 +33,18 @@
 
 extern struct pwm_ops niiet_pwm_ops;
 
-struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
-    .pin_desc = {
+static const struct pin_description pwm_pin_desc = {
         .pd_port = PWM_PORT,
         .pd_pin = PWM_PIN,
         .pd_func = PWM_FUNC
-    },
+};
+
+static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
+    .pin_desc  = &pwm_pin_desc,
     .base_addr = PWM_BASE_ADDR,
     .clk_name  = PWM_CLK_NAME(),
     .channel   = PWM_CHANNEL_NR(),
 };
 
-PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME);
+PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
+                        &pwm_pin_desc, PWM_BASE_ADDR);
