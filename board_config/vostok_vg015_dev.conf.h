@@ -275,14 +275,14 @@ struct led_conf leds[] = {
 struct pwm_conf pwms[] = {
 	[0] = {
 		.name = "PWM0",
-		.channel = VAL("", 0),
+		.channel = VAL("", 1),
 		.dev = {
 			.name = "PWM0",
 			.regs = {
 				REGMAP("BASE_ADDR", (TMR0_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_C, 6, 1),
+				PIN("OUT", GPIO_PORT_C, 7, 1),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR0"),
