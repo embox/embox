@@ -38,6 +38,18 @@ static int pwm_subsystem_init(void) {
 	return 0;
 }
 
+struct pwm_device *pwm_dev_by_id(int id) {
+	struct pwm_device *pwm_dev;
+
+	array_spread_foreach_ptr(pwm_dev, __pwm_device_registry) {
+		if (id == pwm_dev->pwmd_id) {
+			return pwm_dev;
+		}
+	}
+
+	return 0;
+}
+
 int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns) {
     return 0;
 }
