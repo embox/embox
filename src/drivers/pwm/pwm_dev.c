@@ -9,6 +9,7 @@
 
 #include <lib/libds/array.h>
 
+#include <errno.h>
 #include <stddef.h>
 
 #include <drivers/pwm.h>
@@ -50,13 +51,36 @@ struct pwm_device *pwm_dev_by_id(int id) {
 	return 0;
 }
 
-int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns) {
-    return 0;
+int pwm_config(struct pwm_device *pwm, int duty, int period) {
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+	if (period  < 1 || duty < 2 || period < duty) {
+		return -EINVAL;
+	}
+
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_config == NULL) {
+		return -ENOSUPP;
+	}
+    return pwm->pwmd_ops->pwmo_config(pwm, duty, period);
 }
 
 int pwm_enable(struct pwm_device *pwm) {
-    return 0;
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_enable == NULL) {
+		return -ENOSUPP;
+	}
+    return pwm->pwmd_ops->pwmo_enable(pwm);
 }
 
 void pwm_disable(struct pwm_device *pwm) {
+	if (pwm == NULL) {
+		return;
+	}
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_disable == NULL) {
+		return;
+	}
+	pwm->pwmd_ops->pwmo_disable(pwm);
 }
