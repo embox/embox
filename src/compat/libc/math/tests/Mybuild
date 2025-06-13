@@ -204,3 +204,8 @@ module trunc_test {
     @Cflags("-fno-builtin")
     source "trunc_test.c"
 }
+
+module fdim_test {
+    @Cflags("-fno-builtin")
+    source "fdim_test.c"
+}
