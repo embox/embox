@@ -22,6 +22,9 @@
 /* FROM board_config.h*/
 #define CLK_NAME_GPIO     "CLK_GPIO"
 #define CLK_NAME_UART     "CLK_UART"
+#define CLK_NAME_SPI      "CLK_SPI"
+#define CLK_NAME_I2C      "CLK_I2C"
+#define CLK_NAME_TMR      "CLK_TMR"
 
 #define RCU          ((volatile struct rcu_reg *) CONF_RCU_REGION_BASE)
 
@@ -68,6 +71,8 @@ struct rcu_reg {
 #define RCU_CGCFGAPB_TMR0EN         (1 << 1)
 #define RCU_CGCFGAPB_TMR1EN         (1 << 2)
 #define RCU_CGCFGAPB_TMR2EN         (1 << 3)
+#define RCU_CGCFGAPB_TMR16_EN(nr)   (1 << (1 + nr))
+
 #define RCU_CGCFGAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_CGCFGAPB_UART0EN        (1 << 6)
 #define RCU_CGCFGAPB_UART1EN        (1 << 7)
@@ -84,6 +89,8 @@ struct rcu_reg {
 #define RCU_RSTDISAPB_TMR0EN         (1 << 1)
 #define RCU_RSTDISAPB_TMR1EN         (1 << 2)
 #define RCU_RSTDISAPB_TMR2EN         (1 << 3)
+#define RCU_RSTDISAPB_TMR16_EN(num)  (1 << (1 + num))
+
 #define RCU_RSTDISAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_RSTDISAPB_UART0EN        (1 << 6)
 #define RCU_RSTDISAPB_UART1EN        (1 << 7)
@@ -110,7 +117,6 @@ struct rcu_reg {
 
 #define RCU_PLLSYSSTAT_LOCK         (0x1)
 
-
 #define RCU_PLLSYSCFG0_PLLEN        (0x1 << 0)
 #define RCU_PLLSYSCFG0_BYP_MASK     (0x3 << 1)
 #define RCU_PLLSYSCFG0_DACEN        (0x1 << 3)
@@ -131,25 +137,6 @@ struct rcu_reg {
 int niiet_gpio_clock_setup(unsigned char port) {
     RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOEN(port);
     RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOEN(port);
-
-#if 0
-	switch (port) {
-		case 0:
-			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOAEN;
-			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOAEN;
-		break;
-		case 1:
-			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOBEN;
-			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOBEN;
-		break;
-		case 2:
-			RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOCEN;
-			RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_GPIOCEN;
-		break;		
-		default:
-			return -1;
-	}
-#endif
 
 	return 0;
 }
@@ -174,6 +161,15 @@ void niiet_tmr32_set_rcu(void) {
 	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_TMR32EN;
 }
 
+void niiet_tmr_set_rcu(int num) {
+    if (num == 3) { /* TMR32*/
+        niiet_tmr32_set_rcu();
+    }
+
+	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_TMR16_EN(num);
+	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_TMR16_EN(num);
+}
+
 int clk_enable(char *clk_name) {
     int num;
 
@@ -187,10 +183,14 @@ int clk_enable(char *clk_name) {
         niiet_uart_set_rcu(num);
         return 0;
     }
+    if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_UART) - 1]  - '0';
+        niiet_tmr_set_rcu(num);
+        return 0;
+    }
 
     return -ENOSUPP;
 }
-
 
 void niiet_sysclk_init(void) {
     uint32_t sysclk_source;

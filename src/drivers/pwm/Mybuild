@@ -1,0 +1,13 @@
+package embox.driver.pwm
+
+module pwm_dev {
+	option string log_level="LOG_ERR"
+
+	source "pwm_dev.c"
+	source "pwm_repo.c"
+
+	@IncludeExport(path="drivers")
+	source "pwm.h"
+
+	@NoRuntime depends embox.device.pin_description
+}
