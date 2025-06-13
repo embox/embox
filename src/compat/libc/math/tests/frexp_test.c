@@ -21,7 +21,7 @@ static int validate(double x, double mantissa, int exponent) {
     if (x == 0.0 || isinf(x) || isnan(x)){ 
         return 1;
     }
-    return equal(x, mantissa * ldexp(1.0, exponent), DBL_EPSILON * 10);
+    return equal(x, mantissa * ldexpl(1.0, exponent), DBL_EPSILON * 10);
 }
 
 TEST_CASE("Test positive number: frexp(12.34)") {
