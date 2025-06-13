@@ -37,4 +37,47 @@ struct niiet_tmr16_regs {
 	volatile uint32_t ADC_IM;         /*!< ADC request mask register */
 };
 
+#define TMR_CTRL_DIV_MASK  0x3
+#define TMR_CTRL_DIV_SHIFT 6
+#define TMR_CTRL_DIV(div)  \
+					((div & TMR_CTRL_DIV_MASK) << TMR_CTRL_DIV_SHIFT)
+#define TMR_CTRL_DIV_1     0
+#define TMR_CTRL_DIV_2     1
+#define TMR_CTRL_DIV_4     2
+#define TMR_CTRL_DIV_8     3
+
+#define TMR_CTRL_MODE_SHIFT 4
+#define TMR_CTRL_MODE_MASK  0x3
+#define TMR_CTRL_MODE(mode)  \
+					((mode & TMR_CTRL_MODE_MASK) << TMR_CTRL_MODE_SHIFT)
+#define TMR_CTRL_MODE_STOP  0
+#define TMR_CTRL_MODE_UP    1
+
+#define TMR_CAPCOM_CTRL_SCCI (1 << 10) /* Synchronized Capture/Compare Input */
+#define TMR_CAPCOM_CTRL_CAP  (1 << 8)  /* Capture Mode Enable */
+#define TMR_CAPCOM_CTRL_CCI  (1 << 3)  /* Capture/Compare Input */
+#define TMR_CAPCOM_CTRL_OUT  (1 << 2)  /* Output */
+#define TMR_CAPCOM_CTRL_OVF  (1 << 1)  /* Capture Overflow */
+
+#define TMR_CAPCOM_CTRL_CAPMODE_MASK  0x3
+#define TMR_CAPCOM_CTRL_CAPMODE_SHIFT 14
+#define TMR_CAPCOM_CTRL_CAPMODE(mode)  \
+				((mode & TMR_CAPCOM_CTRL_CAPMODE_MASK) \
+										<< TMR_CAPCOM_CTRL_CAPMODE_SHIFT)
+
+#define TMR_CAPCOM_CTRL_CCISEL       /* Capture/Compare Input Select */
+#define TMR_CAPCOM_CTRL_CCISEL_MASK  0x3
+#define TMR_CAPCOM_CTRL_CCISEL_SHIFT 12
+
+#define TMR_CAPCOM_CTRL_OUTMODE_MASK  0x7
+#define TMR_CAPCOM_CTRL_OUTMODE_SHIFT 5
+#define TMR_CAPCOM_CTRL_OUTMODE(mode) \
+				((mode & TMR_CAPCOM_CTRL_OUTMODE_MASK) \
+										<< TMR_CAPCOM_CTRL_OUTMODE_SHIFT)
+#define TMR_CAPCOM_CTRL_OUTMODE_SET_RESET   3
+#define TMR_CAPCOM_CTRL_OUTMODE_RESET_SET   7
+
+
+
+
 #endif /* DRIVERS_PWM_NIIET_NIIET_PWM_H_ */
