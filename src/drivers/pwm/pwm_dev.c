@@ -12,6 +12,7 @@
 #include <errno.h>
 #include <stddef.h>
 
+#include <drivers/pin_description.h>
 #include <drivers/pwm.h>
 
 #include <embox/unit.h>

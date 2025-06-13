@@ -9,7 +9,7 @@
 #include <stddef.h>
 
 #include <drivers/pwm.h>
-
+#include <drivers/pin_description.h>
 #include <drivers/gpio.h>
 
 #include "niiet_pwm.h"
@@ -21,8 +21,6 @@ int niiet_pwm_init(struct pwm_device *dev) {
     const struct pin_description *pin;
 
     priv = dev->pwmd_priv;
-    //dev->pwmd_base_addr = priv->base_addr;
-    //dev->pwmd_pin = priv->pin_desc; /* copy */
     pin = priv->pin_desc;
 
     gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin), pin->pd_func);

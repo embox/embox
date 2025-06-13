@@ -14,6 +14,7 @@
 #include <drivers/gpio.h>
 
 #include <drivers/pwm.h>
+#include <drivers/pin_description.h>
 
 #include "niiet_pwm.h"
 

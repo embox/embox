@@ -13,6 +13,8 @@
 
 #include <lib/libds/array.h>
 
+#include <drivers/pin_description.h>
+
 struct pwm_device;
 
 struct pwm_ops {
@@ -20,12 +22,6 @@ struct pwm_ops {
 	int (*pwmo_config)(struct pwm_device *dev,  int duty_ns, int period_ns);
 	int (*pwmo_enable)(struct pwm_device *dev);
 	void (*pwmo_disable)(struct pwm_device *dev);
-};
-
-struct pin_description {
-	int pd_port;
-	int pd_pin;
-	int pd_func;
 };
 
 struct pwm_device {
