@@ -6,17 +6,17 @@
  * @date 21.01.2020
  * @author Nastya Nizharadze
  */
+
 #include <asm/asm.h>
 #include <asm/regs.h>
-
-#include "context.h"
+#include <hal/context.h>
 
 .section .text
-
 .global context_switch
 
 .align 2
 context_switch:
+	/* Save current context */
 	PTR_S   sp, CTX_SP(a0)
 	PTR_S   ra, CTX_RA(a0)
 	PTR_S   s0, CTX_S0(a0)
@@ -32,10 +32,10 @@ context_switch:
 	PTR_S   s10, CTX_S10(a0)
 	PTR_S   s11, CTX_S11(a0)
 	csrr    t6, STATUS_REG
-	PTR_S   t6, CTX_MSTATUS(a0)
+	PTR_S   t6, CTX_STATUS(a0)
 
+	/* Load new context */
 	PTR_L   sp, CTX_SP(a1)
-
 	PTR_L   ra, CTX_RA(a1)
 	PTR_L   s0, CTX_S0(a1)
 	PTR_L   s1, CTX_S1(a1)
@@ -49,7 +49,6 @@ context_switch:
 	PTR_L   s9, CTX_S9(a1)
 	PTR_L   s10, CTX_S10(a1)
 	PTR_L   s11, CTX_S11(a1)
-	PTR_L   t6, CTX_MSTATUS(a1)
+	PTR_L   t6, CTX_STATUS(a1)
 	csrw    STATUS_REG, t6
-
 	ret

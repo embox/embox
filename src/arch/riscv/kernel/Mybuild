@@ -2,17 +2,17 @@ package embox.arch.riscv.kernel
 
 @DefaultImpl(conf_nosbi)
 abstract module conf {
-	option boolean smode = false
+	option boolean smode
 
 }
 
 module conf_nosbi extends  conf {
-	option boolean smode = false
+	option boolean smode=false
 }
 
-
 module conf_sbi extends  conf {
-	option boolean smode = true
+	option boolean smode=true
+
 	source "sbi.c"
 	source "sbi_ecall.c"
 }
@@ -45,16 +45,9 @@ module entry {
 	source "entry.S"
 }
 
-module context extends embox.arch.context {
-	source "context.c"
-	source "context.h"
-	source "context_switch.S"
-}
-
 module exception {
 	@IncludeExport(path="riscv")
 	source "exception.h"
-
 	source "exception.c"
 }
 
@@ -62,14 +55,8 @@ module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }
 
-module fpu {
-	source "fpu.c"
-}
-
 module ipi {
 	@IncludeExport(path="riscv")
 	source "ipi.h"
-
 	source "ipi.c"
-
 }
