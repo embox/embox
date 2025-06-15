@@ -9,7 +9,6 @@
 #include <embox/test.h>
 #include <stdlib.h>
 
-
 EMBOX_TEST_SUITE("standard library");
 
 TEST_CASE("Check strtod function") {
