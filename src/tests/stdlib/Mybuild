@@ -1,9 +1,5 @@
 package embox.test.stdlib
 
-module mbstowcs_test {
-	source "mbstowcs_test.c"
-}
-
 module wcstombs_test {
 	source "wcstombs_test.c"
 }

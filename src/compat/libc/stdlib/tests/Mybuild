@@ -7,3 +7,7 @@ module atof_test {
 module bsearch_test {
 	source "bsearch_test.c"
 }
+
+module mbstowcs_test {
+	source "mbstowcs_test.c"
+}
