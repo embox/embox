@@ -1,9 +1,5 @@
 package embox.test.stdlib
 
-module mblen_test {
-	source "mblen_test.c"
-}
-
 module qsort_test {
 	source "qsort_test.c"
 }

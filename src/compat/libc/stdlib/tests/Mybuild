@@ -15,3 +15,7 @@ module mbstowcs_test {
 module wcstombs_test {
 	source "wcstombs_test.c"
 }
+
+module mblen_test {
+	source "mblen_test.c"
+}
