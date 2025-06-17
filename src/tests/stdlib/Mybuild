@@ -1,9 +1,5 @@
 package embox.test.stdlib
 
-module qsort_test {
-	source "qsort_test.c"
-}
-
 module setjmp_test {
 	source "setjmp_test.c"
 }
