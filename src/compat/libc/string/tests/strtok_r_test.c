@@ -6,6 +6,7 @@
  */
 
 #include <string.h>
+
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("string tokenazer (strtok_r)");
@@ -13,8 +14,9 @@ EMBOX_TEST_SUITE("string tokenazer (strtok_r)");
 TEST_CASE("parse single word string") {
 	char *tok;
 	char *rest;
+	char str[] = "test";
 
-	tok = strtok_r("test", " ", &rest);
+	tok = strtok_r(str, " ", &rest);
 
 	test_assert_not_null(tok);
 
@@ -26,7 +28,9 @@ TEST_CASE("parse single word string") {
 TEST_CASE("parse simple string") {
 	char *tok;
 	char *rest;
-	tok = strtok_r("test string", " ", &rest);
+	char str[] = "test string";
+
+	tok = strtok_r(str, " ", &rest);
 
 	test_assert_not_null(tok);
 
@@ -41,7 +45,9 @@ TEST_CASE("parse simple string") {
 TEST_CASE("parse string with several separators") {
 	char *tok;
 	char *rest;
-	tok = strtok_r("test , string", ", ", &rest);
+	char str[] = "test , string";
+
+	tok = strtok_r(str, " ", &rest);
 
 	test_assert_not_null(tok);
 

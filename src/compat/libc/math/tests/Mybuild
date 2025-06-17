@@ -1,48 +1,80 @@
 package embox.compat.libc.test
 
 /**
- * Math tests must be compiled with the '-fno-builtin' flag,
- * otherwise the math function calls will be replaced by the result
- * at compile time.
+ * Tests for standard functions must be compiled with the '-fno-builtin' flag.
+ * This flag prevents GCC from using built-in versions of standard functions,
+ * forcing it to use the actual library implementations.
  */
 
-/* TODO: Remove module */
-module math_test {
-}
-
+/* TODO: Move fpu_context_consistency_test to other folder */
 module fpu_context_consistency_test {
 	@Cflags("-fno-builtin")
 	source "fpu_context_consistency_test.c"
 }
 
-module signbit_test {
+module acosh_test {
 	@Cflags("-fno-builtin")
-	source "signbit_test.c"
+	source "acosh_test.c"
 }
 
-module log10_test {
+module acos_test {
 	@Cflags("-fno-builtin")
-	source "log10_test.c"
+	source "acos_test.c"
 }
 
-module sqrt_test {
+module asinh_test {
 	@Cflags("-fno-builtin")
-	source "sqrt_test.c"
+	source "asinh_test.c"
 }
 
-module fmod_test {
+module asin_test {
 	@Cflags("-fno-builtin")
-	source "fmod_test.c"
+	source "asin_test.c"
 }
 
-module pow_test {
+module atan2_test {
 	@Cflags("-fno-builtin")
-	source "pow_test.c"
+	source "atan2_test.c"
 }
 
-module exp_test {
+module atanh_test {
 	@Cflags("-fno-builtin")
-	source "exp_test.c"
+	source "atanh_test.c"
+}
+
+module atan_test2 {
+	@Cflags("-fno-builtin")
+	source "atan_test2.c"
+}
+
+module atan_test {
+	@Cflags("-fno-builtin")
+	source "atan_test.c"
+}
+
+module cbrt_test {
+	@Cflags("-fno-builtin")
+	source "cbrt_test.c"
+}
+
+module ceil_test {
+	@Cflags("-fno-builtin")
+	source "ceil_test.c"
+}
+
+module copysign_test {
+	@Cflags("-fno-builtin")
+	source "copysign_test.c"
+}
+
+module cosh_test {
+	@Cflags("-fno-builtin")
+	source "cosh_test.c"
+}
+
+module cos_test {
+	@Cflags("-fno-builtin")
+	source "cos_test.c"
 }
 
 module exp2_test {
@@ -55,34 +87,9 @@ module expm1_test {
 	source "expm1_test.c"
 }
 
-module sin_test {
+module exp_test {
 	@Cflags("-fno-builtin")
-	source "sin_test.c"
-}
-
-module cos_test {
-	@Cflags("-fno-builtin")
-	source "cos_test.c"
-}
-
-module atan_test {
-	@Cflags("-fno-builtin")
-	source "atan_test.c"
-}
-
-module atan2_test {
-	@Cflags("-fno-builtin")
-	source "atan2_test.c"
-}
-
-module sinh_test {
-	@Cflags("-fno-builtin")
-	source "sinh_test.c"
-}
-
-module atanh_test {
-	@Cflags("-fno-builtin")
-	source "atanh_test.c"
+	source "exp_test.c"
 }
 
 module fabs_test {
@@ -90,34 +97,9 @@ module fabs_test {
 	source "fabs_test.c"
 }
 
-module ceil_test {
+module fdim_test {
 	@Cflags("-fno-builtin")
-	source "ceil_test.c"
-}
-
-module cosh_test {
-	@Cflags("-fno-builtin")
-	source "cosh_test.c"
-}
-
-module acos_test {
-	@Cflags("-fno-builtin")
-	source "acos_test.c"
-}
-
-module asin_test {
-	@Cflags("-fno-builtin")
-	source "asin_test.c"
-}
-
-module round_test {
-	@Cflags("-fno-builtin")
-	source "round_test.c"
-}
-
-module tanh_test {
-	@Cflags("-fno-builtin")
-	source "tanh_test.c"
+	source "fdim_test.c"
 }
 
 module floor_test {
@@ -125,54 +107,9 @@ module floor_test {
 	source "floor_test.c"
 }
 
-module log_test {
+module fmod_test {
 	@Cflags("-fno-builtin")
-	source "log_test.c"
-}
-
-module cbrt_test {
-	@Cflags("-fno-builtin")
-	source "cbrt_test.c"
-}
-
-module modf_test {
-	@Cflags("-fno-builtin")
-	source "modf_test.c"
-}
-
-module copysign_test {
-	@Cflags("-fno-builtin")
-	source "copysign_test.c"
-}
-
-module asinh_test {
-	@Cflags("-fno-builtin")
-	source "asinh_test.c"
-}
-
-module log2_test {
-	@Cflags("-fno-builtin")
-	source "log2_test.c"
-}
-
-module acosh_test {
-	@Cflags("-fno-builtin")
-	source "acosh_test.c"
-}
-
-module lrint_test {
-	@Cflags("-fno-builtin")
-	source "lrint_test.c"
-}
-
-module llrint_test {
-	@Cflags("-fno-builtin")
-	source "llrint_test.c"
-} 
-
-module log1p_test {
-	@Cflags("-fno-builtin")
-	source "log1p_test.c"
+	source "fmod_test.c"
 }
 
 module frexp_test {
@@ -180,9 +117,94 @@ module frexp_test {
 	source "frexp_test.c"
 }
 
+module ldexp_test {
+	@Cflags("-fno-builtin")
+	source "ldexp_test.c"
+}
+
+module llrint_test {
+	@Cflags("-fno-builtin")
+	source "llrint_test.c"
+}
+
+module log10_test {
+	@Cflags("-fno-builtin")
+	source "log10_test.c"
+}
+
+module log1p_test {
+	@Cflags("-fno-builtin")
+	source "log1p_test.c"
+}
+
+module log2_test {
+	@Cflags("-fno-builtin")
+	source "log2_test.c"
+}
+
+module logb_test {
+	@Cflags("-fno-builtin")
+	source "logb_test.c"
+}
+
+module log_test {
+	@Cflags("-fno-builtin")
+	source "log_test.c"
+}
+
+module lrint_test {
+	@Cflags("-fno-builtin")
+	source "lrint_test.c"
+}
+
+module modf_test {
+	@Cflags("-fno-builtin")
+	source "modf_test.c"
+}
+
+module pow_test {
+	@Cflags("-fno-builtin")
+	source "pow_test.c"
+}
+
 module remainder_test {
-  @Cflags("-fno-builtin")
-  source "remainder_test.c"
+	@Cflags("-fno-builtin")
+	source "remainder_test.c"
+}
+
+module round_test {
+	@Cflags("-fno-builtin")
+	source "round_test.c"
+}
+
+module scalbn_test {
+	@Cflags("-fno-builtin")
+	source "scalbn_test.c"
+}
+
+module signbit_test {
+	@Cflags("-fno-builtin")
+	source "signbit_test.c"
+}
+
+module sinh_test {
+	@Cflags("-fno-builtin")
+	source "sinh_test.c"
+}
+
+module sin_test {
+	@Cflags("-fno-builtin")
+	source "sin_test.c"
+}
+
+module sqrt_test {
+	@Cflags("-fno-builtin")
+	source "sqrt_test.c"
+}
+
+module tanh_test {
+	@Cflags("-fno-builtin")
+	source "tanh_test.c"
 }
 
 module tgamma_test {
@@ -190,22 +212,7 @@ module tgamma_test {
 	source "tgamma_test.c"
 }
 
-module ldexp_test {
-	@Cflags("-fno-builtin")
-	source "ldexp_test.c"
-}
-
-module logb_test {
-    @Cflags("-fno-builtin")
-    source "logb_test.c"
-}
-
 module trunc_test {
-    @Cflags("-fno-builtin")
-    source "trunc_test.c"
-}
-
-module fdim_test {
-    @Cflags("-fno-builtin")
-    source "fdim_test.c"
+	@Cflags("-fno-builtin")
+	source "trunc_test.c"
 }

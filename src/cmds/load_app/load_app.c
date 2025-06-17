@@ -76,6 +76,7 @@ int main(int argc, char **argv) {
 	if (mem == NULL) {
 		fprintf(stderr, "Failed to allocate %d bytes for app\n",
 				sections_end - sections_begin);
+		ret = -1;
 		goto out;
 	}
 

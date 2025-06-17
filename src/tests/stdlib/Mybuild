@@ -2,165 +2,36 @@ package embox.test.stdlib
 
 module strtod_test {
 	source "strtod_test.c"
-	depends embox.framework.LibFramework
 }
 
 module bsearch_test {
 	source "bsearch_test.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
 }
 
 module mbstowcs_test {
 	source "mbstowcs_test.c"
-	depends embox.compat.libc.stdlib.multibyte
 }
+
 module wcstombs_test {
 	source "wcstombs_test.c"
-	depends embox.compat.libc.stdlib.multibyte
 }
+
 module mblen_test {
 	source "mblen_test.c"
-	depends embox.compat.libc.stdlib.multibyte
 }
 
 module qsort_test {
 	source "qsort_test.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
 }
 
 module setjmp_test {
 	source "setjmp_test.c"
-
-	depends embox.arch.libarch
-	depends embox.framework.test
-}
-
-module strcasecmp_test {
-	source "strcasecmp.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module strtok_test {
-	source "strtok.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module strtok_r_test {
-	source "strtok_r.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module strlcpy_test {
-	source "strlcpy.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module strdup_test {
-	source "strdup.c"
-
-	depends embox.mem.heap_api
-	depends embox.framework.LibFramework
-	depends embox.compat.libc.str_dup
-}
-
-module strlen_test {
-	source "strlen.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strchr_test {
-	source "strchr.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
 }
 
 module ffs_test {
 	source "ffs_test.c"
-
-	depends embox.framework.LibFramework
-}
-
-module strlwr_test {
-	source "strlwr.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module strupr_test {
-	source "strupr.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
-}
-
-module strrchr_test {
-	source "strrchr_test.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strncpy_test {
-	source "strncpy.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strstr_test {
-	source "strstr.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strcasestr_test {
-	source "strcasestr.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strchrnul_test {
-	source "strchrnul_test.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
-}
-
-module strpbrk_test {
-	source "strpbrk.c"
-
-	depends embox.compat.libc.str
-	depends embox.framework.LibFramework
 }
 
 module wcslen_test {
-	source "wcslen.c"
-
-	depends embox.compat.libc.wchar
-	depends embox.framework.LibFramework
-}
-
-module memset_test {
-	source "memset.c"
-
-	depends embox.compat.libc.stdlib.core
-	depends embox.framework.LibFramework
+	source "wcslen_test.c"
 }
