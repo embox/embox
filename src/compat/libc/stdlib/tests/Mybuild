@@ -1,4 +1,4 @@
-package embox.test.stdlib
+package embox.compat.libc.stdlib.tests
 
 module atof_test {
 	source "atof_test.c"
