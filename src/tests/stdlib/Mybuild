@@ -1,13 +1,14 @@
 package embox.test.stdlib
 
+// <setjmp.h>
 module setjmp_test {
 	source "setjmp_test.c"
 }
-
+// <strings.h>
 module ffs_test {
 	source "ffs_test.c"
 }
-
+// <wchar.h>
 module wcslen_test {
 	source "wcslen_test.c"
 }
