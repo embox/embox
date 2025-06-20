@@ -1,37 +1,14 @@
 package embox.test.stdlib
 
-module strtod_test {
-	source "strtod_test.c"
-}
-
-module bsearch_test {
-	source "bsearch_test.c"
-}
-
-module mbstowcs_test {
-	source "mbstowcs_test.c"
-}
-
-module wcstombs_test {
-	source "wcstombs_test.c"
-}
-
-module mblen_test {
-	source "mblen_test.c"
-}
-
-module qsort_test {
-	source "qsort_test.c"
-}
-
+// <setjmp.h>
 module setjmp_test {
 	source "setjmp_test.c"
 }
-
+// <strings.h>
 module ffs_test {
 	source "ffs_test.c"
 }
-
+// <wchar.h>
 module wcslen_test {
 	source "wcslen_test.c"
 }

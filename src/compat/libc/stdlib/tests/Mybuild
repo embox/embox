@@ -1,0 +1,25 @@
+package embox.compat.libc.stdlib.tests
+
+module atof_test {
+	source "atof_test.c"
+}
+
+module bsearch_test {
+	source "bsearch_test.c"
+}
+
+module mbstowcs_test {
+	source "mbstowcs_test.c"
+}
+
+module wcstombs_test {
+	source "wcstombs_test.c"
+}
+
+module mblen_test {
+	source "mblen_test.c"
+}
+
+module qsort_test {
+	source "qsort_test.c"
+}
