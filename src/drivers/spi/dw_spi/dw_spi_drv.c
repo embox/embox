@@ -44,7 +44,7 @@ static void __attribute__((used)) spi1_de0_nano_soc_init(void) {
 	gpio_set(GPIO_PORT_B, 1 << 11, GPIO_PIN_LOW);
 }
 
-static int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr) {
+int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr) {
 	uint32_t reg;
 
 	dw_spi->base_addr = base_addr;
@@ -164,51 +164,3 @@ struct spi_ops dw_spi_ops = {
 	.select   = dw_spi_select,
 	.transfer = dw_spi_transfer
 };
-
-#define DW_SPI0_BASE OPTION_GET(NUMBER, base_addr0)
-#define DW_SPI1_BASE OPTION_GET(NUMBER, base_addr1)
-#define DW_SPI2_BASE OPTION_GET(NUMBER, base_addr2)
-#define DW_SPI3_BASE OPTION_GET(NUMBER, base_addr3)
-
-#define SPI_DEV_NAME     dw_spi
-
-#if DW_SPI0_BASE != 0
-static struct dw_spi dw_spi0;
-PERIPH_MEMORY_DEFINE(dw_spi0, DW_SPI0_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi0, 0);
-#endif
-
-#if DW_SPI1_BASE != 0
-static struct dw_spi dw_spi1;
-PERIPH_MEMORY_DEFINE(dw_spi1, DW_SPI1_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi1, 1);
-#endif
-
-#if DW_SPI2_BASE != 0
-static struct dw_spi dw_spi2;
-PERIPH_MEMORY_DEFINE(dw_spi2, DW_SPI2_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi2, 2);
-#endif
-
-#if DW_SPI3_BASE != 0
-static struct dw_spi dw_spi3;
-PERIPH_MEMORY_DEFINE(dw_spi3, DW_SPI3_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi3, 3);
-#endif
-
-EMBOX_UNIT_INIT(dw_spi_module_init);
-static int dw_spi_module_init(void) {
-#if DW_SPI0_BASE != 0
-	dw_spi_init(&dw_spi0, DW_SPI0_BASE, 0);
-#endif
-#if DW_SPI1_BASE != 0
-	dw_spi_init(&dw_spi1, DW_SPI1_BASE, 1);
-#endif
-#if DW_SPI2_BASE != 0
-	dw_spi_init(&dw_spi2, DW_SPI2_BASE, 2);
-#endif
-#if DW_SPI3_BASE != 0
-	dw_spi_init(&dw_spi3, DW_SPI3_BASE, 3);
-#endif
-	return 0;
-}
