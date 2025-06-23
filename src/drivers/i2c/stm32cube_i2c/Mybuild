@@ -25,3 +25,10 @@ module stm32cube_i2c2 {
 
 	@NoRuntime depends third_party.bsp.st_bsp_api
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_i2c3 {
+	source "stm32_i2c3.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
