@@ -33,7 +33,9 @@ module graphic_init extends display_mode {
 }
 
 module no_graphic extends display_mode {
+	@IncludePath("include")
 	source "no_graphic_init.c"
+
 }
 
 module setup_tty_dev extends setup_tty_api {
