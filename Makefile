@@ -25,6 +25,14 @@ MAKEFLAGS += --warn-undefined-variables
 # Avoids bogus 'undefined variable' warnings.
 export PS1 :=
 
+# Check for mcmodel compatibility before building
+.PHONY: check-mcmodel
+check-mcmodel:
+	@bash ./scripts/check_mcmodel.sh || { echo "mcmodel check failed. Please check the error above and consider using -mcmodel=medany."; exit 1; }
+
+# Make 'all' depend on check-mcmodel
+all: check-mcmodel
+
 .DEFAULT_GOAL := all
 
 # Force multiple targets listed in the command line to run independently,
