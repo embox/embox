@@ -386,6 +386,6 @@ static struct bcm283x_spi_dev bcm283x_spi_dev = {
 
 SPI_CONTROLLER_DEF("spi0", &bcm283x_spi0_ops, &bcm283x_spi_dev, 0);
 
-SPI_DEV_DEF("spi0_0", NULL, NULL, 0);
+SPI_DEV_DEF("spi0_0", NULL, NULL, 0, 0);
 
 EMBOX_UNIT_INIT(bcm283x_spi0_init);
