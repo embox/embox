@@ -69,16 +69,16 @@ int stm32_spi_init(struct stm32_spi *dev) {
 	return stm32_spi_setup(dev, true);
 }
 
-static int stm32_spi_select(struct spi_device *dev, int cs) {
+static int stm32_spi_select(struct spi_controller *dev, int cs) {
 	return 0;
 }
 
-static int stm32_spi_set_mode(struct spi_device *dev, bool is_master) {
+static int stm32_spi_set_mode(struct spi_controller *dev, bool is_master) {
 	struct stm32_spi *s = dev->priv;
 	return stm32_spi_setup(s, is_master);
 }
 
-static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
+static int stm32_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	uint32_t tx_byte = count;
 	uint32_t rx_bute = count;
@@ -106,7 +106,7 @@ static int stm32_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops stm32_spi_ops = {
+struct spi_controller_ops stm32_spi_ops = {
 	.select   = stm32_spi_select,
 	.set_mode = stm32_spi_set_mode,
 	.transfer = stm32_spi_transfer
@@ -123,5 +123,7 @@ static int stm32_spi1_init(void) {
 
 #define SPI_DEV_NAME      stm32_spi_1
 
-SPI_DEV_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi1, 1);
+SPI_CONTROLLER_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi1, 1);
+SPI_DEV_DEF(SPI_DEV_NAME, NULL, NULL, 1);
+
 EMBOX_UNIT_INIT(stm32_spi1_init);
