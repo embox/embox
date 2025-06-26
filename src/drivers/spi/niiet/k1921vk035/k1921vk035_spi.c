@@ -167,4 +167,4 @@ struct spi_controller_ops k1921vk035_spi_ops = {
 
 SPI_CONTROLLER_DEF(spi0, &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
 
-SPI_DEV_DEF(spi0, NULL, NULL, 0, 0);
+SPI_DEV_DEF(spi0, NULL, NULL, 0, 0, NULL);
