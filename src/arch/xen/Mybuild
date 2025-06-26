@@ -40,7 +40,3 @@ module xen_memory {
 	depends embox.mem.vmem_device_memory
 	depends embox.arch.xen.grant_table
 }
-
-module locore extends embox.arch.locore {
-
-}

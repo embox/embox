@@ -4,7 +4,7 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
 
-module locore extends embox.arch.locore {
+module locore {
 	@NoRuntime depends entry
 	@NoRuntime depends interrupt
 	@NoRuntime depends cpu_idle
@@ -18,7 +18,7 @@ module interrupt extends embox.arch.interrupt {
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module entry extends embox.arch.entry {
+module entry {
 	/* FIXME: Depends on kernel panic */
 	source "exception_entry.S", "exception_handler.c"
 	source "traps_core.c" /* Replace? */

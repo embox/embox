@@ -10,6 +10,7 @@ module syscall_stub extends embox.arch.syscall {
 
 module nommu extends embox.mem.vmem_nommu {
 	option number page_size=4
+
 	source "nommu.h"
 }
 
@@ -18,16 +19,19 @@ module nousermode extends embox.arch.usermode {
 }
 
 module nosmp extends embox.arch.smp {
-	option boolean independent_clock = false
+	option boolean independent_clock=false
+
 	source "nosmp.h"
 }
 
-module nocontext extends embox.arch.context {
-	source "nocontext.c","nocontext.h"
+module context_stub extends embox.arch.context {
+	source "context_stub.h"
+	source "context_stub.c"
 }
 
 module onecpu extends embox.arch.cpu {
-	option number cpu_count = 1
+	option number cpu_count=1
+
 	source "onecpu.h"
 }
 
@@ -39,6 +43,12 @@ module cpu_idle_stub extends embox.arch.cpu_idle {
 	source "cpu_idle_stub.h"
 }
 
-module no_libarch extends embox.arch.libarch { }
+module mem_barriers_stub extends embox.arch.mem_barriers {
+	source "mem_barriers_stub.h"
+}
 
-module reg_stub extends embox.arch.reg { }
+module no_libarch extends embox.arch.libarch {
+}
+
+module reg_stub extends embox.arch.reg {
+}

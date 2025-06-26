@@ -6,9 +6,9 @@
  * @author Anton Bulychev
  */
 
-#ifndef ARCH_SYSCALL_STUB_H_
-#define ARCH_SYSCALL_STUB_H_
+#ifndef ARCH_GENERIC_SYSCALL_STUB_H_
+#define ARCH_GENERIC_SYSCALL_STUB_H_
 
 #define SYSCALL_STUB
 
-#endif /* ARCH_SYSCALL_STUB_H_ */
+#endif /* ARCH_GENERIC_SYSCALL_STUB_H_ */

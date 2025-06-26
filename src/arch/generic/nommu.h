@@ -6,14 +6,14 @@
  * @author Anton Bulychev
  */
 
-#ifndef ARCH_NOMMU_H_
-#define ARCH_NOMMU_H_
+#ifndef ARCH_GENERIC_NOMMU_H_
+#define ARCH_GENERIC_NOMMU_H_
 
 #define NOMMU
-#define MMU_LEVELS         0
+#define MMU_LEVELS 0
 
 #ifndef __ASSEMBLER__
 typedef int mmu_ctx_t;
 #endif /* __ASSEMBLER__ */
 
-#endif /* ARCH_NOMMU_H_ */
+#endif /* ARCH_GENERIC_NOMMU_H_ */

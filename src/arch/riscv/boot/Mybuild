@@ -1,6 +1,6 @@
 package embox.arch.riscv.kernel
 
-module boot extends embox.arch.boot {
+module boot {
 	option boolean mik32_fixup = false
 
 	source "boot.S"
