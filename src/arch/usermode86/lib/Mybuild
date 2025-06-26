@@ -1,4 +1,3 @@
-
 package embox.arch.usermode86.lib
 
 static module stack_chk_fail {
