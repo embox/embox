@@ -18,11 +18,6 @@
 #include <lib/libds/array.h>
 #include <util/macro.h>
 
-#include <framework/mod/options.h>
-#include <config/embox/driver/spi/core.h>
-
-#define SPI_REGISTRY_SZ \
-	OPTION_MODULE_GET(embox__driver__spi__core, NUMBER, spi_quantity)
 
 struct spi_controller_ops;
 struct spi_device;

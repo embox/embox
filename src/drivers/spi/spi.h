@@ -23,12 +23,6 @@
 #include <drivers/spi_dma.h>
 #include <drivers/spi_controller.h>
 
-#include <framework/mod/options.h>
-#include <config/embox/driver/spi/core.h>
-
-#define SPI_REGISTRY_SZ \
-	OPTION_MODULE_GET(embox__driver__spi__core, NUMBER, spi_quantity)
-
 struct spi_ops;
 
 /* Host modes */
