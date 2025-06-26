@@ -1,13 +1,6 @@
 package embox.driver.spi
 
 module dw_spi_drv {
-	// option number base_addr0 = 0
-	// option number base_addr1 = 0
-	// option number base_addr2 = 0
-	// option number base_addr3 = 0
-
-	option boolean spi_de0_nano_soc = false
-
 	option string log_level="LOG_NONE"
 
 	source "dw_spi_drv.c"
@@ -29,6 +22,9 @@ module dw_spi0 {
 }
 
 module dw_spi1 {
+	/* TODO pins_init */
+	option boolean spi_de0_nano_soc = false
+
 	option string log_level="LOG_NONE"
 	option number base_addr = 0
 

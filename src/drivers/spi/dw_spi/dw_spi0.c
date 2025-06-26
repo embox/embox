@@ -7,6 +7,8 @@
  */
 #include <errno.h>
 
+#include <util/macro.h>
+
 #include <drivers/common/memory.h>
 #include <drivers/spi.h>
 
@@ -19,21 +21,24 @@
 #include "dw_spi.h"
 
 extern struct spi_ops dw_spi_ops;
+extern int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr);
 
-#define DW_SPI_BASE OPTION_GET(NUMBER, base_addr)
+#define DW_SPI_BASE               OPTION_GET(NUMBER, base_addr)
 
-#define SPI_DEV_NAME     dw_spi
+#define SPI_BUS_NUM               0
 
-#if DW_SPI_BASE != 0
-static struct dw_spi dw_spi0;
-PERIPH_MEMORY_DEFINE(dw_spi0, DW_SPI_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi0, 0);
-#endif
+#define SPI_BUS_NAME              MACRO_CONCAT(dw_spi,SPI_BUS_NUM)
+#define DW_SPI_CTRL_STRUCT_NAME   MACRO_CONCAT(dw_spi_priv,SPI_BUS_NUM)
 
-extern int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr);
+static struct dw_spi_priv DW_SPI_CTRL_STRUCT_NAME;
+
+PERIPH_MEMORY_DEFINE(SPI_BUS_NAME, DW_SPI_BASE, 0x100);
+
+SPI_DEV_DEF(SPI_BUS_NAME, &dw_spi_ops, &DW_SPI_CTRL_STRUCT_NAME, SPI_BUS_NUM);
+
 EMBOX_UNIT_INIT(dw_spi_module_init);
 static int dw_spi_module_init(void) {
-	dw_spi_init(&dw_spi0, DW_SPI_BASE, 0);
+	dw_spi_init(&DW_SPI_CTRL_STRUCT_NAME, DW_SPI_BASE, SPI_BUS_NUM);
 
 	return 0;
 }

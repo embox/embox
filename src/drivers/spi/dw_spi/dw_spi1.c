@@ -7,6 +7,8 @@
  */
 #include <errno.h>
 
+#include <util/macro.h>
+
 #include <drivers/common/memory.h>
 #include <drivers/spi.h>
 
@@ -19,21 +21,40 @@
 #include "dw_spi.h"
 
 extern struct spi_ops dw_spi_ops;
+extern int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr);
 
-#define DW_SPI_BASE OPTION_GET(NUMBER, base_addr)
+#define SPI_DE0_NANO_SOC          OPTION_GET(BOOLEAN,spi_de0_nano_soc)
 
-#define SPI_DEV_NAME     dw_spi
+#define DW_SPI_BASE               OPTION_GET(NUMBER, base_addr)
 
-#if DW_SPI_BASE != 0
-static struct dw_spi dw_spi1;
-PERIPH_MEMORY_DEFINE(dw_spi1, DW_SPI_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi1, 1);
+#define SPI_BUS_NUM               1
+
+#define SPI_BUS_NAME              MACRO_CONCAT(dw_spi,SPI_BUS_NUM)
+#define DW_SPI_CTRL_STRUCT_NAME   MACRO_CONCAT(dw_spi_priv,SPI_BUS_NUM)
+
+static struct dw_spi_priv DW_SPI_CTRL_STRUCT_NAME;
+
+PERIPH_MEMORY_DEFINE(SPI_BUS_NAME, DW_SPI_BASE, 0x100);
+
+SPI_DEV_DEF(SPI_BUS_NAME, &dw_spi_ops, &DW_SPI_CTRL_STRUCT_NAME, SPI_BUS_NUM);
+
+EMBOX_UNIT_INIT(dw_spi_module_init);
+
+#if SPI_DE0_NANO_SOC
+/* Init hook for DE0 Nano SOC board. SPI and I2C share
+ * same pins, so we need to switch to SPI. */
+static void spi1_de0_nano_soc_init(void) {
+	gpio_setup_mode(GPIO_PORT_B, 1 << 11, GPIO_MODE_OUT);
+	gpio_set(GPIO_PORT_B, 1 << 11, GPIO_PIN_LOW);
+}
 #endif
 
-extern int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr);
-EMBOX_UNIT_INIT(dw_spi_module_init);
 static int dw_spi_module_init(void) {
-	dw_spi_init(&dw_spi1, DW_SPI_BASE, 1);
+#if SPI_DE0_NANO_SOC
+	spi1_de0_nano_soc_init();
+#endif
+
+	dw_spi_init(&DW_SPI_CTRL_STRUCT_NAME, DW_SPI_BASE, SPI_BUS_NUM);
 
 	return 0;
 }
