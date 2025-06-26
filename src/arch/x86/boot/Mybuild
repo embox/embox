@@ -5,14 +5,15 @@ module real_boot {
 }
 
 module multiboot {
-	source "boot.S"
-	source "multiboot_header.S"
-	source "multiboot.c"
-
 	option number video_mode_set=0
 	option number video_width=800
 	option number video_height=600
 	option number video_depth=24
 
-	depends embox.arch.x86.kernel.arch
+	source "boot.S"
+	source "multiboot_header.S"
+	source "multiboot.c"
+	source "idt.c"
+	source "gdt.c"
+	source "gdt_flush.S"
 }
