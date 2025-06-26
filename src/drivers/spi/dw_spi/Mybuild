@@ -15,6 +15,7 @@ module dw_spi0 {
 	option number base_addr = 0
 
 	source "dw_spi0.c"
+	source "spi0_dev0.c"
 
 	depends dw_spi_drv
 	depends embox.driver.periph_memory
@@ -29,6 +30,7 @@ module dw_spi1 {
 	option number base_addr = 0
 
 	source "dw_spi1.c"
+	source "spi1_dev0.c"
 
 	depends dw_spi_drv
 	depends embox.driver.periph_memory
@@ -40,6 +42,7 @@ module dw_spi2 {
 	option number base_addr = 0
 
 	source "dw_spi2.c"
+	source "spi2_dev0.c"
 
 	depends dw_spi_drv
 	depends embox.driver.periph_memory
@@ -51,6 +54,7 @@ module dw_spi3 {
 	option number base_addr = 0
 
 	source "dw_spi3.c"
+	source "spi3_dev0.c"
 
 	depends dw_spi_drv
 	depends embox.driver.periph_memory
