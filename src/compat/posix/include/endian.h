@@ -6,8 +6,8 @@
  * @author Andrey Gazukin
  */
 
-#ifndef ENDIAN_H_
-#define ENDIAN_H_
+#ifndef COMPAT_POSIX_ENDIAN_H_
+#define COMPAT_POSIX_ENDIAN_H_
 
 #include <hal/arch.h>
 
@@ -20,11 +20,11 @@
 #endif
 
 #ifndef __ORDER_BIG_ENDIAN__
-#define __ORDER_BIG_ENDIAN__    4321
+#define __ORDER_BIG_ENDIAN__ 4321
 #endif
 
 #ifndef __ORDER_PDP_ENDIAN__
-#define __ORDER_PDP_ENDIAN__    3412
+#define __ORDER_PDP_ENDIAN__ 3412
 #endif
 
 #define __LITTLE_ENDIAN __ORDER_LITTLE_ENDIAN__
@@ -76,4 +76,4 @@
 
 #endif /* BYTE_ORDER */
 
-#endif /* ENDIAN_H_ */
+#endif /* COMPAT_POSIX_ENDIAN_H_ */
