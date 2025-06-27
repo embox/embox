@@ -17,7 +17,7 @@ module math_builtins extends embox.compat.libc.math {
 	@NoRuntime depends math_builtins_header
 }
 
-+module erf_test {
-+    @Cflags("-fno-builtin")
-+    source "erf_test.c"
-+}
+module erf_test {
+    @Cflags("-fno-builtin")
+    source "erf_test.c"
+}
