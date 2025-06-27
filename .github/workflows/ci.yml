@@ -1,6 +1,6 @@
 name: CI
 
-on: [push, workflow_dispatch]
+on: [merge_group, workflow_dispatch]
 
 jobs:
   ci:
