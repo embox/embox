@@ -17,7 +17,7 @@ module conf_sbi extends  conf {
 	source "sbi_ecall.c"
 }
 
-module locore extends embox.arch.locore {
+module locore {
 	depends entry
 	depends interrupt
 	depends exception
@@ -39,7 +39,7 @@ module no_interrupt extends embox.arch.interrupt {
 	source "no_interrupt.c"
 }
 
-module entry extends embox.arch.entry {
+module entry {
 	option number trap_align=2
 
 	source "entry.S"

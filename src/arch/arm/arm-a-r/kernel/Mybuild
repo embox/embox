@@ -1,6 +1,6 @@
 package embox.arch.arm.armlib
 
-module locore extends embox.arch.locore {
+module locore {
 	@NoRuntime depends reg
 	@NoRuntime depends exceptions
 	@NoRuntime depends reset_handler

@@ -56,37 +56,6 @@ typedef struct {
 
 // HSE is not present.
 const uint32_t HSE_VALUE = 0;
-#if 0
-void arch_init() {
-	// Board is always working in max frequency.
-	static_assert(SYS_CLOCK == 32000000, "");
-
-	// On HSI (16 MHz).
-	RCC->CR |= (1 << 0);
-	while (!(RCC->CR & (1 << 2))) {};
-
-	// PLL_CLK = HSI * 6 / 3 == 32 MHz
-	RCC->CFGR = (0b0010 << 18) | (0b10 << 22);
-
-	// On PLL.
-	RCC->CR |= (1 << 24);
-	while (!(RCC->CR & (1 << 25))) {};
-
-	// Set latency.
-	FLASH->ACR = (1 << 0);
-
-	// Set CPU_CLK = PLL.
-	RCC->CFGR |= (0b11 << 0);
-	while (!((RCC->CFGR & (0b11 << 2)) == (0b11 << 2))) {};
-
-	// Off MSI.
-	RCC->CR &= ~(1 << 8);
-	while (RCC->CR & (1 << 9)) {};
-
-	// On prft, pd, pre.
-	FLASH->ACR |= (1 << 1) | (1 << 4) | (1 << 6);
-}
-#endif
 
 void platform_init(void) {
 	// Board is always working in max frequency.

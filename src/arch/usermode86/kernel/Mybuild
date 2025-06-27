@@ -1,31 +1,19 @@
-
 package embox.arch.usermode86
 
-/*
-module host {
-	source "host.c",
-		"../uservisor_base.c"
-
-}
-*/
-
-module locore extends embox.arch.locore {
-	source /*"boot.c",
-		"boot_asm.S",*/
-		"arch.c"
-}
-
 module ipl extends embox.arch.interrupt {
-	source "ipl.c",
-		"ipl.h"
+	source "ipl.h"
+	source "ipl.c"
 
 	depends embox.kernel.critical
 	depends embox.driver.interrupt.irqctrl_api
 	depends embox.kernel.irq
-
 }
 
 module context extends embox.arch.context {
-	source "ctx.c",
-		"ctx.h"
+	source "ctx.h"
+	source "ctx.c"
+}
+
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
 }

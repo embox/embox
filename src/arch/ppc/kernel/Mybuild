@@ -1,6 +1,6 @@
 package embox.arch.ppc.kernel
 
-module boot extends embox.arch.boot {
+module boot {
 	source "boot.S"
 }
 
@@ -8,11 +8,12 @@ module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
 
-module locore extends embox.arch.locore {
+module locore {
 	source "entry.S", "exception_table.S", "trap_handler.c"
 }
 
 module interrupt extends embox.arch.interrupt {
 	source "irq_entry.S", "irq_handler.c", "ipl_impl.h"
+
 	depends locore
 }

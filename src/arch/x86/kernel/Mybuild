@@ -3,8 +3,8 @@ package embox.arch.x86.kernel
 module context extends embox.arch.context {
 	source "context.c", "context_switch.S", "context.h"
 }
-	
-module locore extends embox.arch.locore {
+
+module locore {
 	@NoRuntime depends entry
 	@NoRuntime depends interrupt
 	@NoRuntime depends cpu_idle
@@ -14,55 +14,26 @@ module locore extends embox.arch.locore {
 module interrupt extends embox.arch.interrupt {
 	source "irq_entry.S", "irq_handler.c", "ipl.c", "ipl_impl.h"
 
-	depends arch
-
 	@NoRuntime depends embox.kernel.critical
 	@NoRuntime depends embox.compat.libc.assert
 }
 
-module entry extends embox.arch.entry {
+module entry {
 	/* FIXME: Depends on kernel panic */
 	source "exception_entry.S", "exception_handler.c"
-
 	source "traps_core.c" /* Replace? */
-
-	depends arch
 }
 
 module usermode extends embox.arch.usermode {
 	source "tss.c", "usermode_entry.S"
-
-	depends arch
 }
-
-module arch extends embox.arch.arch {
-	@IncludePath("$(THIRDPARTY_DIR)/lib/acpica")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/lib/acpica/acpica-R06_28_23/source/include/")
-	source "arch.c"
-
-	source "cpu_triple_reset.S"
-	source "gdt.c", "gdt_flush.S"
-	source "idt.c"
-
-	depends shutdown
-
-	@NoRuntime
-	depends embox.arch.entry
-}
-
-@DefaultImpl(noacpi_shutdown)
-abstract module shutdown {}
 
 @BuildDepends(third_party.lib.acpica)
-module acpi_shutdown extends shutdown {
+module acpi_shutdown extends platform.platform_shutdown {
 	source "acpi_shutdown.c"
+	source "cpu_triple_reset.S"
 
-	depends third_party.lib.acpica
-	depends embox.lib.printk
-}
-
-module noacpi_shutdown extends shutdown {
-	source "noacpi_shutdown.c"
+	@NoRuntime depends third_party.lib.acpica
 }
 
 module cpu_idle extends embox.arch.cpu_idle {

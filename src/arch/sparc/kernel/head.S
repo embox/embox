@@ -121,7 +121,7 @@ boot_start:
 	call %g1
 1:	 nop
 
-	call kernel_start
+	call sparc_kernel_start
 	 nop
 
 	ta 0 ! die

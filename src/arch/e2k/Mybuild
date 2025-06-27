@@ -10,8 +10,6 @@ module arch {
 	source "e2k_interrupt.c"
 	source "e2k_trap.c"
 	source "e2k_syscall_handler.c"
-
-	depends locore
 }
 
 module interrupt extends embox.arch.interrupt {
@@ -26,7 +24,4 @@ module context extends embox.arch.context {
 
 module x86_boot {
 	source "boot.S"
-}
-
-module locore extends embox.arch.locore {
 }

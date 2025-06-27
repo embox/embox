@@ -1,12 +1,12 @@
 package embox.arch.mips
 
-module locore extends embox.arch.locore {
+module locore {
 	@NoRuntime depends exception
 	@NoRuntime depends boot
 	@NoRuntime depends reg
 }
 
-module boot extends embox.arch.boot {
+module boot {
 	source "boot.S"
 	source "reset.S"
 }

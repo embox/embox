@@ -1,4 +1,3 @@
-
 package embox.arch.usermode86
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) build")
