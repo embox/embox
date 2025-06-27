@@ -1,0 +1,16 @@
+package third_party.libfdt
+
+@Build(stage=1)
+module libfdt {
+    source "fdt.c"
+    source "fdt_ro.c"
+    source "fdt_rw.c"
+    source "fdt_strerror.c"
+    source "fdt_addresses.c"
+    source "fdt_empty_tree.c"
+    source "fdt_overlay.c"
+    source "fdt_sw.c"
+    source "fdt_check.c"
+
+    @IncludePath(".")
+}
