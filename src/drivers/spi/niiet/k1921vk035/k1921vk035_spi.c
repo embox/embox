@@ -34,7 +34,7 @@ k1921vk035_spi_dev_t k1921vk035_spi0_dev = {.cs = 0,
 													   {OPTION_GET(NUMBER, port_cs3), OPTION_GET(NUMBER, pin_cs3)},
 													   {OPTION_GET(NUMBER, port_cs4), OPTION_GET(NUMBER, pin_cs4)}}};
 
-void k1921vk035_spi_config(struct spi_device *dev){
+void k1921vk035_spi_config(struct spi_controller *dev){
 	int clk_div;
 
 	SPI_Cmd(DISABLE);
@@ -60,13 +60,11 @@ void k1921vk035_spi_config(struct spi_device *dev){
 
 
 }
-static int k1921vk035_spi_init(struct spi_device *dev) {
+static int k1921vk035_spi_init(struct spi_controller *dev) {
 
 	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
 	int pin = 0;
 	int port = 0;
-
-
 
 	//Init SPI_TX - PB7, SPI_RX - PB6 , SPI_SCK - PB5
 	gpio_setup_mode(GPIO_PORT_B, ( 1 << 5 ) | ( 1 << 6 ) | ( 1 << 7 ), GPIO_MODE_ALT_SET(0));
@@ -104,7 +102,7 @@ static void k1921vk035_spi_set_cs(const k1921vk035_spi_dev_t* k1921vk035_spi_dev
 	gpio_set(port, 1 << pin, state);
 }
 
-static int k1921vk035_spi_select(struct spi_device *dev, int cs) {
+static int k1921vk035_spi_select(struct spi_controller *dev, int cs) {
 	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
 	int res = 0;
 	int pin = 0;
@@ -135,7 +133,7 @@ static uint8_t k1921vk035_spi_transfer_byte(const k1921vk035_spi_dev_t* k1921vk0
 	return SPI_RecieveData();
 }
 
-static int k1921vk035_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
+static int k1921vk035_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
 	uint8_t val;
@@ -161,11 +159,12 @@ static int k1921vk035_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops k1921vk035_spi_ops = {
+struct spi_controller_ops k1921vk035_spi_ops = {
 	.init     = k1921vk035_spi_init,
 	.select   = k1921vk035_spi_select,
 	.transfer = k1921vk035_spi_transfer
 };
 
+SPI_CONTROLLER_DEF(spi0, &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
 
-SPI_DEV_DEF(spi0, &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
+SPI_DEV_DEF(spi0, NULL, NULL, 0, 0, NULL);

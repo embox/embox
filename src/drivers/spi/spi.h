@@ -23,11 +23,7 @@
 #include <drivers/spi_dma.h>
 #include <drivers/spi_controller.h>
 
-#include <framework/mod/options.h>
-#include <config/embox/driver/spi/core.h>
-
-#define SPI_REGISTRY_SZ \
-	OPTION_MODULE_GET(embox__driver__spi__core, NUMBER, spi_quantity)
+#include <drivers/pin_description.h>
 
 struct spi_ops;
 
@@ -58,6 +54,7 @@ struct spi_device {
 
 	int                    spid_bus_num;
 	struct spi_controller *spid_spi_cntl;
+	const struct pin_description *spid_cs_pin;
 };
 
 struct spi_ops {
@@ -97,17 +94,18 @@ extern const struct char_dev_ops __spi_cdev_ops;
 
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
-#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, idx)         \
-	struct spi_device MACRO_CONCAT(spi_device, idx) = {           \
-	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, idx).cdev, \
+#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, bus_idx, dev_idx, cs_pin) \
+	struct spi_device MACRO_CONCAT(spi_device, bus_idx) = {           \
+	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, bus_idx).cdev, \
 	        MACRO_STRING(dev_name), &__spi_cdev_ops),             \
 	    .spi_ops = spi_dev_ops,                                   \
 	    .priv = dev_priv,                                         \
-		.spid_bus_num = idx,                                      \
+		.spid_bus_num = bus_idx,                                      \
+		.spid_cs_pin  = cs_pin,                                   \
 	};                                                            \
-	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, idx));	\
+	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, bus_idx)); \
 	ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);       \
-	ARRAY_SPREAD_ADD(__spi_device_registry, &MACRO_CONCAT(spi_device, idx))
+	ARRAY_SPREAD_ADD(__spi_device_registry, &MACRO_CONCAT(spi_device, bus_idx))
 
 /* IOCTL-related stuff */
 #define SPI_IOCTL_CS       0x1

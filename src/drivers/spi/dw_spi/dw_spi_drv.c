@@ -5,22 +5,20 @@
  * @version 0.1
  * @date 19.12.2019
  */
+#include <util/log.h>
+
 #include <errno.h>
 
-#include <drivers/common/memory.h>
-#include <drivers/spi.h>
-#include <embox/unit.h>
-#include <framework/mod/options.h>
-#include <hal/reg.h>
-#include <util/log.h>
 #include <util/math.h>
+
+#include <hal/reg.h>
+
 #include <kernel/irq.h>
 
-#include <drivers/gpio.h>
-
+#include <drivers/spi.h>
 #include "dw_spi.h"
 
-#define SPI_DE0_NANO_SOC      OPTION_GET(BOOLEAN,spi_de0_nano_soc)
+#include <framework/mod/options.h>
 
 /* I am not sure it's a constant for all types of DW SPI controllers.
  * For example, Linux calculates this value in drivers/spi/spi-dw.c:spi_hw_init,
@@ -28,32 +26,19 @@
  * about 256 entries (TXFLR). */
 #define DW_SPI_TX_FIFO_LEN   256
 
-static uint32_t dw_spi_read(struct dw_spi *dw_spi, int offset) {
+static uint32_t dw_spi_read(struct dw_spi_priv *dw_spi, int offset) {
 	return REG32_LOAD(dw_spi->base_addr + offset);
 }
 
-static void dw_spi_write(struct dw_spi *dw_spi, int offset, uint32_t val) {
+static void dw_spi_write(struct dw_spi_priv *dw_spi, int offset, uint32_t val) {
 	REG32_STORE(dw_spi->base_addr + offset, val);
 }
 
 
-/* Init hook for DE0 Nano SOC board. SPI and I2C share
- * same pins, so we need to switch to SPI. */
-static void __attribute__((used)) spi1_de0_nano_soc_init(void) {
-	gpio_setup_mode(GPIO_PORT_B, 1 << 11, GPIO_MODE_OUT);
-	gpio_set(GPIO_PORT_B, 1 << 11, GPIO_PIN_LOW);
-}
-
-static int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr) {
+int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr) {
 	uint32_t reg;
 
 	dw_spi->base_addr = base_addr;
-
-#if SPI_DE0_NANO_SOC
-	if (spi_nr == 1) {
-		spi1_de0_nano_soc_init();
-	}
-#endif
 
 	/* FIXME
 	 * It also required to set clocks and clear resets.
@@ -92,7 +77,7 @@ static int dw_spi_init(struct dw_spi *dw_spi, uintptr_t base_addr, int spi_nr) {
 	return 0;
 }
 
-static int dw_spi_tx(struct dw_spi *dw_spi, uint8_t *buf, int count) {
+static int dw_spi_tx(struct dw_spi_priv *dw_spi, uint8_t *buf, int count) {
 	int i;
 	int tx_slots = DW_SPI_TX_FIFO_LEN - dw_spi_read(dw_spi, DW_SPI_TXFLR);
 
@@ -109,7 +94,7 @@ static int dw_spi_tx(struct dw_spi *dw_spi, uint8_t *buf, int count) {
 	return count;
 }
 
-static int dw_spi_rx(struct dw_spi *dw_spi, uint8_t *buf, int count) {
+static int dw_spi_rx(struct dw_spi_priv *dw_spi, uint8_t *buf, int count) {
 	int i;
 
 	count = min(count, dw_spi_read(dw_spi, DW_SPI_RXFLR));
@@ -125,8 +110,8 @@ static int dw_spi_rx(struct dw_spi *dw_spi, uint8_t *buf, int count) {
 	return count;
 }
 
-static int dw_spi_select(struct spi_device *dev, int cs) {
-	struct dw_spi *dw_spi = dev->priv;
+static int dw_spi_select(struct spi_controller *dev, int cs) {
+	struct dw_spi_priv *dw_spi = dev->priv;
 
 	if (cs < 0 || cs > 3) {
 		log_error("Only cs=0..3 are avalable!");
@@ -138,9 +123,9 @@ static int dw_spi_select(struct spi_device *dev, int cs) {
 	return 0;
 }
 
-static int dw_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
+static int dw_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	struct dw_spi *dw_spi = dev->priv;
+	struct dw_spi_priv *dw_spi = dev->priv;
 	int tx_cnt, rx_cnt;
 
 	if (!inbuf || !outbuf) {
@@ -160,55 +145,7 @@ static int dw_spi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops dw_spi_ops = {
+struct spi_controller_ops dw_spi_ops = {
 	.select   = dw_spi_select,
 	.transfer = dw_spi_transfer
 };
-
-#define DW_SPI0_BASE OPTION_GET(NUMBER, base_addr0)
-#define DW_SPI1_BASE OPTION_GET(NUMBER, base_addr1)
-#define DW_SPI2_BASE OPTION_GET(NUMBER, base_addr2)
-#define DW_SPI3_BASE OPTION_GET(NUMBER, base_addr3)
-
-#define SPI_DEV_NAME     dw_spi
-
-#if DW_SPI0_BASE != 0
-static struct dw_spi dw_spi0;
-PERIPH_MEMORY_DEFINE(dw_spi0, DW_SPI0_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi0, 0);
-#endif
-
-#if DW_SPI1_BASE != 0
-static struct dw_spi dw_spi1;
-PERIPH_MEMORY_DEFINE(dw_spi1, DW_SPI1_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi1, 1);
-#endif
-
-#if DW_SPI2_BASE != 0
-static struct dw_spi dw_spi2;
-PERIPH_MEMORY_DEFINE(dw_spi2, DW_SPI2_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi2, 2);
-#endif
-
-#if DW_SPI3_BASE != 0
-static struct dw_spi dw_spi3;
-PERIPH_MEMORY_DEFINE(dw_spi3, DW_SPI3_BASE, 0x100);
-SPI_DEV_DEF(SPI_DEV_NAME, &dw_spi_ops, &dw_spi3, 3);
-#endif
-
-EMBOX_UNIT_INIT(dw_spi_module_init);
-static int dw_spi_module_init(void) {
-#if DW_SPI0_BASE != 0
-	dw_spi_init(&dw_spi0, DW_SPI0_BASE, 0);
-#endif
-#if DW_SPI1_BASE != 0
-	dw_spi_init(&dw_spi1, DW_SPI1_BASE, 1);
-#endif
-#if DW_SPI2_BASE != 0
-	dw_spi_init(&dw_spi2, DW_SPI2_BASE, 2);
-#endif
-#if DW_SPI3_BASE != 0
-	dw_spi_init(&dw_spi3, DW_SPI3_BASE, 3);
-#endif
-	return 0;
-}

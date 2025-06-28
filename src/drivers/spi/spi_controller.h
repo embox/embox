@@ -18,11 +18,6 @@
 #include <lib/libds/array.h>
 #include <util/macro.h>
 
-#include <framework/mod/options.h>
-#include <config/embox/driver/spi/core.h>
-
-#define SPI_REGISTRY_SZ \
-	OPTION_MODULE_GET(embox__driver__spi__core, NUMBER, spi_quantity)
 
 struct spi_controller_ops;
 struct spi_device;
@@ -53,15 +48,15 @@ extern int spi_controller_id(struct spi_controller *dev);
 extern const struct char_dev_ops __spi_cdev_ops;
 
  #define SPI_CONTROLLER_DEF(dev_name, spi_dev_ops, dev_priv, idx)         \
- struct spi_controller MACRO_CONCAT(spi_controller, idx) = {           \
-	 .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_controller, idx).cdev, \
-		 MACRO_STRING(dev_name), &__spi_cdev_ops),             \
-	 .spi_ops = spi_dev_ops,                                   \
-	 .priv = dev_priv,                                         \
-	 .spic_bus_num = idx,                                      \
- };                                                            \
- CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_controller, idx)) \
- ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);       \
- ARRAY_SPREAD_ADD(__spi_controller_registry, &MACRO_CONCAT(spi_controller, idx))
+ 	struct spi_controller MACRO_CONCAT(spi_controller, idx) = {           \
+		.cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_controller, idx).cdev, \
+			MACRO_STRING(dev_name), &__spi_cdev_ops),             \
+		.spi_ops = spi_dev_ops,                                   \
+		.priv = dev_priv,                                         \
+		.spic_bus_num = idx,                                      \
+ 	};                                                            \
+	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_controller, idx)); \
+	ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);       \
+	ARRAY_SPREAD_ADD(__spi_controller_registry, &MACRO_CONCAT(spi_controller, idx))
 
 #endif /* DRIVERS_SPI_CONTROLLER_H_ */

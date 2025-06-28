@@ -18,6 +18,12 @@
 #include "pl022_spi.h"
 
 
+struct pl022_regs {
+	uint32_t cr0;
+	uint16_t cr1;
+	uint16_t dmacr;
+};
+
 /*
  * Macros to access SSP Registers with their offsets
  */
@@ -284,31 +290,30 @@ int pl022_spi_init(struct pl022_spi *dev) {
 	return pl022_spi_setup(dev, true);
 }
 
-static int pl022_spi_select(struct spi_device *spi_dev, int cs) {
+static int pl022_spi_select(struct spi_controller *spi_dev, int cs) {
 	log_debug("NIY");
 
 	return 0;
 }
 
-static int pl022_spi_set_mode(struct spi_device *spi_dev, bool is_master) {
+static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 	struct pl022_spi *dev = spi_dev->priv;
-
-#if 0
 	uint16_t reg;
 
 	reg = REG16_LOAD(SSP_CR0(dev->base_addr));
 	reg &= ~(SSP_CR0_SPH | SSP_CR0_SPO);
-	if (mode & SPI_CPHA)
+	if (spi_dev->flags & SPI_CS_CPHA) {
 		reg |= SSP_CR0_SPH;
-	if (mode & SPI_CPOL)
+	}
+	if (spi_dev->flags & SPI_CS_CPOL) {
 		reg |= SSP_CR0_SPO;
-	REG16_LOAD(SSP_CR0(dev->base_addr), reg);
-#endif
+	}
+	REG16_STORE(SSP_CR0(dev->base_addr), reg);
 
 	return pl022_spi_setup(dev, is_master);
 }
 
-static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
+static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	struct pl022_spi *dev = spi_dev->priv;
 	uint8_t value;
@@ -322,6 +327,8 @@ static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we lower the same pin all the tiem */
 	}
+
+	pl022_spi_claim_bus(dev);
 
 	/* transmit/recieve */
 	while (tx_cnt < count) {
@@ -355,15 +362,17 @@ static int pl022_spi_transfer(struct spi_device *spi_dev, uint8_t *inbuf,
 		}
 	}
 
+	pl022_spi_release_bus(dev);
+
 	if (spi_dev->flags & SPI_CS_INACTIVE && spi_dev->is_master) {
 		/* Note: we suppose that there's a single slave device
 		 * on the SPI bus, so we raise the same pin all the tiem */
 	}
 
-	return rx_cnt;
+	return 0;
 }
 
-struct spi_ops pl022_spi_ops = {
+struct spi_controller_ops pl022_spi_ops = {
 	.select   = pl022_spi_select,
 	.set_mode = pl022_spi_set_mode,
 	.transfer = pl022_spi_transfer

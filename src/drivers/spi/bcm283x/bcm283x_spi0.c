@@ -114,7 +114,7 @@ static int bcm283x_spi0_init(void) {
 
 static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data);
 
-static int bcm283x_spi0_attach(struct spi_device *dev) {
+static int bcm283x_spi0_attach(struct spi_controller *dev) {
     int res = 0;
 
     if( !(REGS_SPI0->cs & SPI0_CS_INTD) && !(REGS_SPI0->cs & SPI0_CS_INTR) ) {
@@ -123,7 +123,7 @@ static int bcm283x_spi0_attach(struct spi_device *dev) {
     return res;
 }
 
-static int bcm283x_spi0_select(struct spi_device *dev, int cs) {
+static int bcm283x_spi0_select(struct spi_controller *dev, int cs) {
     int res = 0;
     if (cs < 0 || cs > 3) {
         log_error("Only cs=0..3 are avalable!");
@@ -192,7 +192,7 @@ static int bcm283x_spi0_select(struct spi_device *dev, int cs) {
     return res;
 }
 
-static int bcm283x_spi0_do_transfer(struct spi_device *dev, uint8_t *inbuf
+static int bcm283x_spi0_do_transfer(struct spi_controller *dev, uint8_t *inbuf
         , uint8_t *outbuf, int tx_count, int rx_count) {
     int tx_cnt, rx_cnt;
 
@@ -241,7 +241,7 @@ static int bcm283x_spi0_do_transfer(struct spi_device *dev, uint8_t *inbuf
 // Interrupt for data send required or complete
 static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *data) {
 	irq_return_t ret = IRQ_HANDLED;
-	struct spi_device *dev = (struct spi_device*) data;
+	struct spi_controller *dev = (struct spi_controller *) data;
 
 	// Transmit and receive with CS asserted
 	if ((REGS_SPI0->cs & (SPI0_CS_DONE | SPI0_CS_TA))
@@ -271,7 +271,7 @@ static irq_return_t bcm283x_spi_intrd_irq_handler(unsigned int irq_nr, void *dat
 	return ret;
 }
 
-static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_in(struct spi_device *dev,
+static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_in(struct spi_controller *dev,
 		struct dma_mem_handle  *mem_handle, uint32_t offset, void *src, uint32_t bytes,
 		struct dma_ctrl_blk *next_conbk, bool int_enable) {
 
@@ -296,7 +296,7 @@ static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_in(struct spi_device *dev
 	return cbp;
 }
 
-static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_device *dev,
+static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_controller *dev,
 		struct dma_mem_handle  *mem_handle, uint32_t offset, void *dest, uint32_t bytes,
 		struct dma_ctrl_blk *next_conbk, bool int_enable) {
 
@@ -328,7 +328,7 @@ static struct dma_ctrl_blk *bcm283x_init_dma_block_spi_out(struct spi_device *de
  * (the bottom eight bits) for TA = 1, CS, CPOL, CPHA 
 */
 
-static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf, uint8_t *outbuf, int count) {
+static int bcm283x_spi0_transfer(struct spi_controller *dev, uint8_t *inbuf, uint8_t *outbuf, int count) {
 
     // Interrupt mode
     if( ( (REGS_SPI0->cs & SPI0_CS_INTD) || (REGS_SPI0->cs & SPI0_CS_INTR) ) ) {
@@ -371,7 +371,7 @@ static int bcm283x_spi0_transfer(struct spi_device *dev, uint8_t *inbuf, uint8_t
     return 0;
 }
 
-struct spi_ops bcm283x_spi0_ops = {
+struct spi_controller_ops bcm283x_spi0_ops = {
     .select   = bcm283x_spi0_select,
     .transfer = bcm283x_spi0_transfer,
 };
@@ -384,6 +384,8 @@ static struct bcm283x_spi_dev bcm283x_spi_dev = {
 		.init_dma_block_spi_out = bcm283x_init_dma_block_spi_out
 };
 
-SPI_DEV_DEF("spi0", &bcm283x_spi0_ops, &bcm283x_spi_dev, 0);
+SPI_CONTROLLER_DEF("spi0", &bcm283x_spi0_ops, &bcm283x_spi_dev, 0);
+
+SPI_DEV_DEF("spi0_0", NULL, NULL, 0, 0, NULL);
 
 EMBOX_UNIT_INIT(bcm283x_spi0_init);
