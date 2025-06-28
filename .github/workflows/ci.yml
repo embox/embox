@@ -1,7 +1,9 @@
 name: CI
 
-on: [merge_group, workflow_dispatch]
-
+on:
+  pull_request:
+    types: [auto_merge_enabled]
+  workflow_dispatch:
 jobs:
   ci:
     runs-on: ubuntu-latest
