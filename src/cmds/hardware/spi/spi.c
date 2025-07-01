@@ -1,5 +1,5 @@
 /**
- * @file spi.c
+ * @file
  * @brief
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#include <lib/libds/array.h>
 
 #include <drivers/spi.h>
 
@@ -28,15 +30,19 @@ static void print_help(char **argv) {
 	printf("\t -h - this help\n");
 }
 
+ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);
+ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);
+
 static void list_spi_devices(void) {
-	for (int i = 0; i < SPI_REGISTRY_SZ; i++) {
-		struct spi_device *s = spi_dev_by_id(i);
+	struct spi_device *dev;
+	struct spi_controller *cntl;
 
-		if (s == NULL) {
-			continue;
-		}
+	array_spread_foreach(cntl, __spi_controller_registry) {
+		printf("Bus: %s\n", cntl->cdev.name);
+	}
 
-		printf("Bus %d: %s\n", i, s->cdev.name);
+	array_spread_foreach(dev, __spi_device_registry) {	
+		printf("device: %s\n", dev->cdev.name);
 	}
 }
 

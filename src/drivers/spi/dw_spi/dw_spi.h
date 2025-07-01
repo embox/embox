@@ -52,7 +52,7 @@
 #define DW_SPI_DR                0x60
 #define DW_SPI_DLY               0xF0
 
-struct dw_spi {
+struct dw_spi_priv {
 	uintptr_t base_addr;
 };
 

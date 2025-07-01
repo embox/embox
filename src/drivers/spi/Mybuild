@@ -2,7 +2,6 @@ package embox.driver.spi
 
 module core {
 	option string log_level="LOG_NONE"
-	option number spi_quantity=6
 
 	@IncludeExport(path="drivers")
 	source "spi.h", "spi_controller.h", "spi_dma.h"
@@ -14,4 +13,6 @@ module core {
 
 	depends embox.device.char_dev
 	depends embox.driver.dma.dma_api
+
+	@NoRuntime depends embox.device.pin_description
 }

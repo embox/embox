@@ -15,6 +15,7 @@ module pl022_spi1 {
 	option number irq_num = 0
 
 	source "pl022_spi1.c"
+	source "spi0_dev.c"
 
 	depends embox.driver.spi.pl022_spi_drv
 }

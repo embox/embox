@@ -73,12 +73,12 @@ typedef enum {
 volatile static SPI_status spi_stat = UNKNOWN;
 volatile static int spi_bytes = 0;
 
-static void data_sent(struct spi_device *data, int cnt) {
+static void data_sent(struct spi_controller *data, int cnt) {
 	spi_bytes = cnt;
 	spi_stat = SEND_COMPLETE;
 };
 
-static void data_received(struct spi_device *data, int cnt) {
+static void data_received(struct spi_controller *data, int cnt) {
 	spi_bytes = cnt;
 	spi_stat = DATA_RECEIVED;
 };
@@ -98,7 +98,7 @@ static int test_interrupt(struct spi_device *dev, int spi_line, uint8_t *dataOut
 	dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
 		| SPI_CS_IRQD | SPI_CS_IRQR;
 
-	spi_irq_prepare(dev, data_sent, data_received);
+	spi_irq_prepare(dev->spid_spi_cntl, data_sent, data_received);
 
 	ret = spi_select(dev, spi_line);
 	// trigger initiating send interrupt
@@ -107,15 +107,19 @@ static int test_interrupt(struct spi_device *dev, int spi_line, uint8_t *dataOut
 	return ret;
 }
 
+ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);
+ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);
+
 static void list_spi_devices(void) {
-	for (int i = 0; i < SPI_REGISTRY_SZ; i++) {
-		struct spi_device *s = spi_dev_by_id(i);
+	struct spi_device *dev;
+	struct spi_controller *cntl;
 
-		if (s == NULL) {
-			continue;
-		}
+	array_spread_foreach(cntl, __spi_controller_registry) {
+		printf("Bus: %s\n", cntl->cdev.name);
+	}
 
-		printf("Bus %d: %s\n", i, s->cdev.name);
+	array_spread_foreach(dev, __spi_device_registry) {	
+		printf("device: %s\n", dev->cdev.name);
 	}
 }
 
@@ -259,7 +263,7 @@ int main(int argc, char **argv) {
 			// Configure SPI
 			dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
 				| SPI_CS_DMAEN;
-			spi_dma_prepare(dev,
+			spi_dma_prepare(dev->spid_spi_cntl,
 					data_block_complete, DMA_CHAN_OUT, DMA_CHAN_IN,
 					DMA_LEVELS(12, 4, 12, 4));
 
@@ -303,7 +307,7 @@ int main(int argc, char **argv) {
 			// Layout control blocks
 			for(uint32_t i = 0 ; i < DMA_XFER_LEN * DMA_XFER_BLOCKS; i += ( DMA_XFER_LEN ) ) {
 				// Send block 
-				cbp_out = init_dma_block_spi_in(dev, mem_handle, i 
+				cbp_out = init_dma_block_spi_in(dev->spid_spi_cntl, mem_handle, i 
 					, (void *)(mem_handle->physical_addr + i + sizeof(struct dma_ctrl_blk) )
 					, DMA_XFER_LEN - sizeof(struct dma_ctrl_blk)
 					, ( i + DMA_XFER_LEN < DMA_XFER_LEN * DMA_XFER_BLOCKS
@@ -312,7 +316,7 @@ int main(int argc, char **argv) {
 					, false
 					);
 				// Receive block 
-				cbp_in = init_dma_block_spi_out(dev, mem_handle, i + DMA_MEM / 2 
+				cbp_in = init_dma_block_spi_out(dev->spid_spi_cntl, mem_handle, i + DMA_MEM / 2 
 					, (void *)(mem_handle->physical_addr + i + DMA_MEM / 2 + sizeof(struct dma_ctrl_blk) )
 					, DMA_XFER_LEN - sizeof(struct dma_ctrl_blk)
 					, ( i + DMA_XFER_LEN < DMA_XFER_LEN * DMA_XFER_BLOCKS
