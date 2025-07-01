@@ -1,6 +1,6 @@
 
 PKG_NAME    := lvgl
-PKG_VER     := $(call option_get,STRING,lvgl_version)
+PKG_VER     := $(strip $(call option_get,STRING,lvgl_version))
 PKG_SOURCES := https://github.com/lvgl/lvgl/archive/$(PKG_VER).tar.gz
 
 #PKG_VER := v7.10.0
@@ -29,6 +29,7 @@ $(BUILD) :
 	    -D CMAKE_CXX_COMPILER="$(EMBOX_GXX)" \
 	    -D CMAKE_C_COMPILER_WORKS=1 \
 	    -D CMAKE_CXX_COMPILER_WORKS=1 \
+	    -D CMAKE_SYSTEM_NAME=Generic \
 	    .. && \
 	make MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'
 	touch $@
