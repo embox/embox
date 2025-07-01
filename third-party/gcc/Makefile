@@ -18,16 +18,16 @@
 #      libsupc++, and libstdc++. With "Thread mode: posix".
 #
 
-PKG_NAME    := gcc
+PKG_NAME    := gcc-releases-gcc
 PKG_VER     := $(call option_get,STRING,gcc_version)
-PKG_SOURCES := http://ftp.gnu.org/gnu/gcc/$(PKG_NAME)-$(PKG_VER)/$(PKG_NAME)-$(PKG_VER).tar.gz
+PKG_SOURCES := https://github.com/gcc-mirror/gcc/archive/refs/tags/releases/gcc-$(PKG_VER).tar.gz
 PKG_PATCHES := gcc_$(PKG_VER).patch
 
-PKG_MD5_6.3.0  := 6e5ea04789678f1250c1b30c4d9ec417
-PKG_MD5_8.3.0  := 9972f8c24c02ebcb5a342c1b30de69ff
-PKG_MD5_9.3.0  := 9b7e8f6cfad96114e726c752935af58a
-PKG_MD5_13.3.0 := f6e5402827861cd5397b3947bc7b8ff2
-PKG_MD5_14.2.0 := b89ddcdaf5c1b6214abad40d9761a6ba
+PKG_MD5_6.3.0  := ec408c4056318f587a534653f21a6bad
+PKG_MD5_8.3.0  := 700467b46a64b8fbc89ebc3897922b8b
+PKG_MD5_9.3.0  := 62b4b034face742cf6679f2337f63423
+PKG_MD5_13.3.0 := ea39b36bf3553526ace8d22847dc6ba1
+PKG_MD5_14.2.0 := 6d8c205826f2891bd7027f6c69748921
 PKG_MD5        := $(PKG_MD5_$(PKG_VER))
 
 ifeq (arm,$(EMBOX_ARCH))

@@ -1,6 +1,6 @@
-diff -aur ./gcc-14.2.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/gcc/c/Make-lang.in
---- ./gcc-14.2.0/gcc/c/Make-lang.in	2024-08-01 11:17:14.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/gcc/c/Make-lang.in	2025-05-01 19:25:56.335761771 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/gcc/c/Make-lang.in
+--- ./gcc-releases-gcc-14.2.0/gcc/c/Make-lang.in	2024-08-01 11:17:14.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/gcc/c/Make-lang.in	2025-05-01 19:25:56.335761771 +0300
 @@ -73,14 +73,14 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
@@ -24,9 +24,9 @@ diff -aur ./gcc-14.2.0/gcc/c/Make-lang.in ../build/extbld/third_party/gcc/gcc_bu
  
  cc1$(exeext): $(C_OBJS) cc1-checksum.o $(BACKEND) $(LIBDEPS)
  	@$(call LINK_PROGRESS,$(INDEX.c),start)
-diff -aur ./gcc-14.2.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/gcc/cp/Make-lang.in
---- ./gcc-14.2.0/gcc/cp/Make-lang.in	2024-08-01 11:17:14.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/gcc/cp/Make-lang.in	2025-05-01 19:28:18.455766319 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/gcc/cp/Make-lang.in
+--- ./gcc-releases-gcc-14.2.0/gcc/cp/Make-lang.in	2024-08-01 11:17:14.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/gcc/cp/Make-lang.in	2025-05-01 19:28:18.455766319 +0300
 @@ -131,14 +131,14 @@
  # the bootstrap comparison and allows comparing of the cc1 binary
  cc1plus-checksum.cc : build/genchecksum$(build_exeext) checksum-options \
@@ -50,9 +50,9 @@ diff -aur ./gcc-14.2.0/gcc/cp/Make-lang.in ../build/extbld/third_party/gcc/gcc_b
  
  cc1plus$(exeext): $(CXX_OBJS) cc1plus-checksum.o $(BACKEND) $(CODYLIB) $(LIBDEPS) $(c++.prev)
  	@$(call LINK_PROGRESS,$(INDEX.c++),start)
-diff -aur ./gcc-14.2.0/gcc/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/gcc/Makefile.in
---- ./gcc-14.2.0/gcc/Makefile.in	2024-08-01 11:17:13.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/gcc/Makefile.in	2025-05-01 19:22:59.045756087 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/gcc/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/gcc/Makefile.in
+--- ./gcc-releases-gcc-14.2.0/gcc/Makefile.in	2024-08-01 11:17:13.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/gcc/Makefile.in	2025-05-01 19:22:59.045756087 +0300
 @@ -467,18 +467,7 @@
  
  # Header files that are made available under the same name
@@ -73,9 +73,9 @@ diff -aur ./gcc-14.2.0/gcc/Makefile.in ../build/extbld/third_party/gcc/gcc_build
  
  USER_H_INC_NEXT_PRE = @user_headers_inc_next_pre@
  USER_H_INC_NEXT_POST = @user_headers_inc_next_post@
-diff -aur ./gcc-14.2.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libgcc/configure
---- ./gcc-14.2.0/libgcc/configure	2024-08-01 11:17:17.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libgcc/configure	2025-05-01 19:34:44.375778656 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libgcc/configure
+--- ./gcc-releases-gcc-14.2.0/libgcc/configure	2024-08-01 11:17:17.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libgcc/configure	2025-05-01 19:34:44.375778656 +0300
 @@ -5047,6 +5047,9 @@
  target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -86,9 +86,9 @@ diff -aur ./gcc-14.2.0/libgcc/configure ../build/extbld/third_party/gcc/gcc_buil
  
  # Check for assembler CFI support.
  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether assembler supports CFI directives" >&5
-diff -aur ./gcc-14.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libstdc++-v3/configure
---- ./gcc-14.2.0/libstdc++-v3/configure	2024-08-01 11:17:18.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libstdc++-v3/configure	2025-05-01 19:47:37.062470026 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libstdc++-v3/configure
+--- ./gcc-releases-gcc-14.2.0/libstdc++-v3/configure	2024-08-01 11:17:18.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libstdc++-v3/configure	2025-05-01 19:47:37.062470026 +0300
 @@ -15961,6 +15961,9 @@
    target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
@@ -135,9 +135,9 @@ diff -aur ./gcc-14.2.0/libstdc++-v3/configure ../build/extbld/third_party/gcc/gc
    fi
  
    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for install location" >&5
-diff -aur ./gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am
---- ./gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am	2024-08-01 11:17:18.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am	2025-05-01 23:12:32.193842185 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am
+--- ./gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am	2024-08-01 11:17:18.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am	2025-05-01 23:12:32.193842185 +0300
 @@ -127,8 +127,6 @@
  	list_associated-2.cc \
  	locale.cc \
@@ -147,9 +147,9 @@ diff -aur ./gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.am ../build/extbld/third_
  	stdexcept.cc \
  	strstream.cc \
  	tree.cc \
-diff -aur ./gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in
---- ./gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in	2024-08-01 11:17:18.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in	2025-05-01 23:14:41.643845631 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in
+--- ./gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in	2024-08-01 11:17:18.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in	2025-05-01 23:14:41.643845631 +0300
 @@ -139,7 +139,7 @@
  	hashtable_tr1.lo ios_failure.lo ios_init.lo ios_locale.lo \
  	list.lo list-aux.lo list-aux-2.lo list_associated.lo \
@@ -168,9 +168,9 @@ diff -aur ./gcc-14.2.0/libstdc++-v3/src/c++98/Makefile.in ../build/extbld/third_
  	stdexcept.cc \
  	strstream.cc \
  	tree.cc \
-diff -aur ./gcc-14.2.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/zlib/Makefile.in
---- ./gcc-14.2.0/zlib/Makefile.in	2024-08-01 11:18:42.000000000 +0300
-+++ ../build/extbld/third_party/gcc/gcc_build/gcc-14.2.0/zlib/Makefile.in	2025-05-01 23:16:40.160515457 +0300
+diff -aur ./gcc-releases-gcc-14.2.0/zlib/Makefile.in ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/zlib/Makefile.in
+--- ./gcc-releases-gcc-14.2.0/zlib/Makefile.in	2024-08-01 11:18:42.000000000 +0300
++++ ../build/extbld/third_party/gcc/gcc_build/gcc-releases-gcc-14.2.0/zlib/Makefile.in	2025-05-01 23:16:40.160515457 +0300
 @@ -454,7 +454,7 @@
  MULTISUBDIR = 
  MULTIDO = true
