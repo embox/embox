@@ -42,7 +42,11 @@
  *
  * swab16(0x1234) is 0x3412
  */
+#if __GNUC_PREREQ(4, 8)
+#define swab16(x) __builtin_bswap16(x)
+#else
 #define swab16(x) __constant_swab16(x)
+#endif
 
 /**
  * swab32 - return a byteswapped 32-bit value
@@ -50,7 +54,11 @@
  *
  * swab32(0x12345678) is 0x78563412
  */
+#if __GNUC_PREREQ(4, 3)
+#define swab32(x) __builtin_bswap32(x)
+#else
 #define swab32(x) __constant_swab32(x)
+#endif
 
 /**
  * swab64 - return a byteswapped 64-bit value
@@ -58,7 +66,11 @@
  * 
  * swab64(0x1020304050607080) is 0x8070605040302010
  */
+#if __GNUC_PREREQ(4, 3)
+#define swab64(x) __builtin_bswap64(x)
+#else
 #define swab64(x) __constant_swab64(x)
+#endif
 
 /**
  * swahw32 - return a word-swapped 32-bit value
