@@ -450,7 +450,7 @@ static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 
 	/* This register should be equal to I2C_DW_IC_COMP_TYPE_VALUE,
 	 * so we can check endianness and 16/32-bit access */
-	if (reg == ___constant_swab32(I2C_DW_IC_COMP_TYPE_VALUE)) {
+	if (reg == swab32(I2C_DW_IC_COMP_TYPE_VALUE)) {
 		dev->accessor_flags |= ACCESS_SWAP;
 	}
 	else if (reg == (I2C_DW_IC_COMP_TYPE_VALUE & 0x0000ffff)) {
