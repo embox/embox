@@ -1,6 +1,51 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+/*!< Peripheral memory map */
+#define APB1PERIPH_BASE       PERIPH_BASE
+#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000UL)
+#define AHBPERIPH_BASE        (PERIPH_BASE + 0x00020000UL)
+
+#define RCC_BASE              (AHBPERIPH_BASE + 0x00001000UL)
+
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 168000000
+  *            HCLK(Hz)                       = 168000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 336
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 5
+  * @param  None
+  * @retval None
+  */
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCU_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("SYSCLK_VAL", 16800000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+			}
+		},
+		.type = VAL("SYSCLK_PLL", 1),
+	},
+};
+
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
