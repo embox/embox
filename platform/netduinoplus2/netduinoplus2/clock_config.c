@@ -1,5 +1,7 @@
 #include <bsp/stm32cube_hal.h>
 
+extern int RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct);
+
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow : 
@@ -21,8 +23,8 @@
   * @retval None
   */
 void SystemClock_Config(void) {
-	RCC_ClkInitTypeDef RCC_ClkInitStruct;
-	RCC_OscInitTypeDef RCC_OscInitStruct;
+	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+	RCC_OscInitTypeDef RCC_OscInitStruct = {0};
 
 	/* Enable Power Control clock */
 	__HAL_RCC_PWR_CLK_ENABLE();
@@ -41,7 +43,8 @@ void SystemClock_Config(void) {
 	RCC_OscInitStruct.PLL.PLLN = 336;
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
 	RCC_OscInitStruct.PLL.PLLQ = 7;
-	HAL_RCC_OscConfig(&RCC_OscInitStruct);
+	RCC_OscConfig(&RCC_OscInitStruct);
+
 
 	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
      clocks dividers */
