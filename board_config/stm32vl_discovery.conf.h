@@ -75,7 +75,9 @@ struct clk_conf clks[] = {
 			},
 			
 		},
-		.type = VAL("", 0),
+		.type = {
+			VAL("", 0),
+		},
 	},
 };
 

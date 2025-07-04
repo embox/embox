@@ -14,7 +14,9 @@ struct clk_conf clks[] = {
 				VAL("CLK_VAL", 32000000UL),
 			}
 		},
-		.type = VAL("SYSCLK_PLL", 1),
+		.type = {
+			VAL("SYSCLK_PLL", 1),
+		},
 	},
 	[1] = {
 		.status = ENABLED,

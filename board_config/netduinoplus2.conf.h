@@ -1,15 +1,8 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
-
-/*!< Peripheral memory map */
-#define APB1PERIPH_BASE       PERIPH_BASE
-#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000UL)
-#define AHBPERIPH_BASE        (PERIPH_BASE + 0x00020000UL)
-
-#define RCC_BASE              (AHBPERIPH_BASE + 0x00001000UL)
+#include <stm32f4_chip.h>
 
 /**
-  * @brief  System Clock Configuration
   *         The system Clock is configured as follow : 
   *            System Clock source            = PLL (HSE)
   *            SYSCLK(Hz)                     = 168000000
@@ -25,8 +18,6 @@
   *            VDD(V)                         = 3.3
   *            Main regulator output voltage  = Scale1 mode
   *            Flash Latency(WS)              = 5
-  * @param  None
-  * @retval None
   */
 struct clk_conf clks[] = {
 	[0] = {
@@ -34,17 +25,46 @@ struct clk_conf clks[] = {
 		.dev = {
 			.name = "RCC",
 			.regs = {
-				REGMAP("BASE", (RCU_BASE), 0x100),
+				REGMAP("BASE", (RCC_BASE), 0x100),
 			},
 			.clocks = {
 				VAL("SYSCLK_VAL", 16800000UL),
 				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  8),
+				VAL("PLL_N_VAL",  336),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  7),
 			}
 		},
-		.type = VAL("SYSCLK_PLL", 1),
+		.type = {
+			VAL("PLL", 1),
+			VAL("HSE", 1),
+		},
 	},
 };
 
+struct gpio_conf gpios[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_A",
+			.regs = {
+				REGMAP("BASE", (GPIOA_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOA),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+};
 
 struct uart_conf uarts[] = {
 	[1] = {
@@ -270,4 +290,4 @@ struct i2c_conf i2cs[] = {
 
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), I2C(i2cs))

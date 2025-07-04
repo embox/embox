@@ -178,6 +178,9 @@ static int gen_device_conf(const struct device_conf *dev) {
 		if (gen_field_func(dev->name, "CLK_ENABLE", &dev->clocks[j]) != 0) {
 			break;
 		}
+		if (gen_field_int(dev->name, "CLK_DEF", &dev->clocks[j]) != 0) {
+			break;
+		}
 	}
 
 	return 0;
@@ -217,7 +220,9 @@ int main() {
 
 		gen_device_conf(&clk->dev);
 
-		gen_field_int(clk->dev.name, "TYPE", &clk->type);
+		for (j = 0; j < ARRAY_SIZE(clk->type); j++) {
+			gen_field_int(clk->dev.name, "TYPE", &clk->type[j]);
+		}
 
 		printf("\n");
 	}
