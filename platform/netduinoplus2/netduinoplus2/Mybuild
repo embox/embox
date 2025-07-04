@@ -13,7 +13,6 @@ static module netduinoplus2_conf extends third_party.bsp.stmf4cube.stm32f4_conf 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM32F4-Discovery")
 static module bsp extends third_party.bsp.st_bsp_api {
 	source "clock_config.c"
-    source "stm32f4_rrc_cube.c"
 
     @AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
     source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
@@ -21,4 +20,5 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends netduinoplus2_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
+    @NoRuntime depends embox.driver.clk.stm32f4_rcc
 }
