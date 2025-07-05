@@ -1,4 +1,4 @@
-package platform.netduinoplus2.netduinoplus2
+package platform.netduino.netduinoplus2
 
 @Build(stage=1)
 @BuildArtifactPath(cppflags="-DSTM32F405xx")
