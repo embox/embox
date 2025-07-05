@@ -23,4 +23,12 @@
 #error "Unexpected __riscv_xlen"
 #endif
 
+#ifdef __riscv_float_abi_double
+#define REG_FS fsd
+#define REG_FL fld
+#else
+#define REG_FS fsw
+#define REG_FL flw
+#endif
+
 #endif /* RISCV_ASM_ASM_H_ */
