@@ -30,7 +30,7 @@ C_ENTRY(__ap_trampoline):
 
 	/* Setting up stack */
 	la      t0, __ap_sp
-	PTR_L   t1, 0(t0)
+	REG_L   t1, 0(t0)
 	mv      sp, t1
 
 	/* Jumping forward */

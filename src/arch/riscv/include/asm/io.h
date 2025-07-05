@@ -14,8 +14,8 @@
 #include <asm/asm.h>
 
 #define riscv_read32(val, addr) \
-	asm volatile("PTR_L %0, 0(%1)" : "=r"(val) : "r"(addr))
+	asm volatile("REG_L %0, 0(%1)" : "=r"(val) : "r"(addr))
 #define riscv_write32(val, addr) \
-	asm volatile("PTR_S %0, 0(%1)" : : "r"(val), "r"(addr))
+	asm volatile("REG_S %0, 0(%1)" : : "r"(val), "r"(addr))
 
 #endif /* RISCV_IO_H_ */
