@@ -118,7 +118,7 @@ $(EXTRACT) : $(DOWNLOAD) | $(DOWNLOAD_DIR) $(MOD_BUILD_DIR)
 	touch $@
 
 patch : $(PATCH)
-$(PATCH) : $(EXTRACT) $(PKG_PATCHES) | $(MOD_BUILD_DIR)
+$(PATCH) : $(EXTRACT) | $(MOD_BUILD_DIR)
 	if [ -d tree ]; then \
 		cd tree; \
 		cp -l -u -f --parents -t $(PKG_SOURCE_DIR) `find . -not -path '*/.*' -and -type f`; \
