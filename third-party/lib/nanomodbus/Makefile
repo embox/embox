@@ -19,6 +19,8 @@ $(BUILD):
 
 $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/lib
+	mkdir -p $(PKG_INSTALL_DIR)/include
+	cp $(PKG_SOURCE_DIR)/*.h $(PKG_INSTALL_DIR)/include
 	cp $(PKG_SOURCE_DIR)/build/libnanomodbus.a $(PKG_INSTALL_DIR)/lib/
 	$(RANLIB) $(PKG_INSTALL_DIR)/lib/libnanomodbus.a
 	touch $@
