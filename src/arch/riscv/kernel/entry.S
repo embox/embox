@@ -13,10 +13,9 @@
 
 #include <framework/mod/options.h>
 
-#define TRAP_ALIGN    OPTION_GET(NUMBER,trap_align)
+#define TRAP_ALIGN    OPTION_GET(NUMBER,tvec_alignment)
 
 .section .text
-
 .global riscv_trap_handler
 
 .align TRAP_ALIGN

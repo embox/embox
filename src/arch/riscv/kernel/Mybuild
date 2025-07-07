@@ -40,7 +40,7 @@ module no_interrupt extends embox.arch.interrupt {
 }
 
 module entry {
-	option number trap_align=2
+	option number tvec_alignment=2
 
 	source "entry.S"
 }
