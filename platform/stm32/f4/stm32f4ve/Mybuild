@@ -32,5 +32,6 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends stm32f4ve_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
+	@NoRuntime depends platform.stm32.stm32f4cube_sysclock_init
 }
 
