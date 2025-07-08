@@ -1,6 +1,72 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+#include <stm32f4_chip.h>
+
+/**
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 168000000
+  *            HCLK(Hz)                       = 168000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 336
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 5
+  */
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("SYSCLK_VAL", 16800000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  8),
+				VAL("PLL_N_VAL",  336),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  7),
+			}
+		},
+		.type = {
+			VAL("PLL", 1),
+			VAL("HSE", 1),
+		},
+	},
+};
+
+struct gpio_conf gpios[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_A",
+			.regs = {
+				REGMAP("BASE", (GPIOA_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOA),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+};
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = ENABLED,
@@ -127,4 +193,4 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), PWM(pwms))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), PWM(pwms))
