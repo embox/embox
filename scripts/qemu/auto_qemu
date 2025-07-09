@@ -195,6 +195,7 @@ guess_machine() {
 		riscv)
 			if cat $BUILD_CONF | gcc -P -E - | grep "sifive_e" >/dev/null; then
 				echo "-M sifive_e"
+			
 			elif cat $BUILD_CONF | gcc -P -E - | grep "sifive_u" >/dev/null; then
 				echo "-M sifive_u"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr1" >/dev/null; then
@@ -203,6 +204,8 @@ guess_machine() {
 				echo "-M scr4"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr3" >/dev/null; then
 				echo "-M scr3"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr5" >/dev/null; then
+				echo "-M scr5"
 			else
 				echo "-M virt"
 			fi
@@ -214,6 +217,8 @@ guess_machine() {
 				echo "-M scr3"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "virt" >/dev/null; then
 				echo "-M virt"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr5" >/dev/null; then
+				echo "-M scr5"
 			fi
 			;;
 		x86)
