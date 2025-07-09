@@ -11,54 +11,49 @@
 #include <framework/mod/options.h>
 #include "nanomodbus.h"
 
-/* Конфигурация светодиодов Nucleo-F429ZI */
-#define LED1_PORT  GPIO_PORT_B
-#define LED1_PIN   0   /* PB0 (зелёный) */
-#define LED2_PORT  GPIO_PORT_B
-#define LED2_PIN   7   /* PB7 (синий) */
-#define LED3_PORT  GPIO_PORT_B
-#define LED3_PIN   14  /* PB14 (красный) */
 
-/* Modbus адреса для управления */
+#define LED1_PORT  GPIO_PORT_B
+#define LED1_PIN   0
+#define LED2_PORT  GPIO_PORT_B
+#define LED2_PIN   7
+#define LED3_PORT  GPIO_PORT_B
+#define LED3_PIN   14
+
+
 #define LED1_COIL_ADDR 0
 #define LED2_COIL_ADDR 1
 #define LED3_COIL_ADDR 2
 
-/* Состояние виртуальных coils */
+// Bitfield to store the state of server coils (LED states)
 static nmbs_bitfield server_coils = {0};
 
-/* Инициализация светодиодов */
+
 static void init_leds(void) {
-    /* Настройка пинов как выходов */
+     // Set LED pins as outputs
     gpio_setup_mode(LED1_PORT, 1 << LED1_PIN, GPIO_MODE_OUT);
     gpio_setup_mode(LED2_PORT, 1 << LED2_PIN, GPIO_MODE_OUT);
     gpio_setup_mode(LED3_PORT, 1 << LED3_PIN, GPIO_MODE_OUT);
     
-    /* Изначально все выключены */
+    // Turn off all LEDs initially
     gpio_set(LED1_PORT, 1 << LED1_PIN, 0);
     gpio_set(LED2_PORT, 1 << LED2_PIN, 0);
     gpio_set(LED3_PORT, 1 << LED3_PIN, 0);
     
-    /* Инициализация виртуальных coils */
+    // Initialize coil states to OFF
     nmbs_bitfield_write(server_coils, LED1_COIL_ADDR, false);
     nmbs_bitfield_write(server_coils, LED2_COIL_ADDR, false);
     nmbs_bitfield_write(server_coils, LED3_COIL_ADDR, false);
 }
 
-/* Обработчик записи coils */
-static nmbs_error handle_write_multiple_coils(uint16_t address, uint16_t quantity, 
-                                     const nmbs_bitfield coils, uint8_t unit_id, void* arg) {
-    (void)unit_id;
-    (void)arg;
+// Callback function for handling write multiple coils Modbus request
+static nmbs_error handle_write_multiple_coils(uint16_t address, uint16_t quantity, const nmbs_bitfield coils, uint8_t unit_id, void* arg) {
 
     for (int i = 0; i < quantity; i++) {
         bool value = nmbs_bitfield_read(coils, i);
         uint16_t current_addr = address + i;
         
-        /* Обновляем виртуальное состояние */
         nmbs_bitfield_write(server_coils, current_addr, value);
         
-        /* Управляем физическими светодиодами */
         switch(current_addr) {
             case LED1_COIL_ADDR:
                 gpio_set(LED1_PORT, 1 << LED1_PIN, value ? 1 : 0);
@@ -79,12 +74,8 @@ static nmbs_error handle_write_multiple_coils(uint16_t address, uint16_t quantit
     return NMBS_ERROR_NONE;
 }
 
-/* Обработчик чтения coils */
-static nmbs_error handle_read_coils(uint16_t address, uint16_t quantity, 
-                           nmbs_bitfield coils_out, uint8_t unit_id, void* arg) {
-    (void)unit_id;
-    (void)arg;
-
+// Callback function for handling read coils Modbus request
+static nmbs_error handle_read_coils(uint16_t address, uint16_t quantity, nmbs_bitfield coils_out, uint8_t unit_id, void* arg) {
     for (int i = 0; i < quantity; i++) {
         uint16_t current_addr = address + i;
         bool value = nmbs_bitfield_read(server_coils, current_addr);
@@ -93,20 +84,21 @@ static nmbs_error handle_read_coils(uint16_t address, uint16_t quantity,
     return NMBS_ERROR_NONE;
 }
 
-/* Функции для работы с сокетами */
+// Function to read from file descriptor (for Modbus communication)
 static int32_t read_fd(uint8_t* buf, uint16_t count, int32_t byte_timeout_ms, void* arg) {
     (void)byte_timeout_ms;
     int fd = (int)(intptr_t)arg;
     return read(fd, buf, count);
 }
 
+// Function to write to file descriptor (for Modbus communication)
 static int32_t write_fd(const uint8_t* buf, uint16_t count, int32_t byte_timeout_ms, void* arg) {
     (void)byte_timeout_ms;
     int fd = (int)(intptr_t)arg;
     return write(fd, buf, count);
 }
 
-/* Создание TCP сервера */
+
 static int create_tcp_server(const char *ip, const char *port) {
     int sockfd = socket(AF_INET, SOCK_STREAM, 0);
     if (sockfd < 0) {
@@ -136,10 +128,10 @@ static int create_tcp_server(const char *ip, const char *port) {
 }
 
 int main(int argc, char *argv[]) {
-    /* Инициализация оборудования */
+  
     init_leds();
     
-    /* Настройка Modbus TCP сервера */
+    // Configure Modbus platform settings
     nmbs_platform_conf platform_conf;
     nmbs_platform_conf_create(&platform_conf);
     platform_conf.transport = NMBS_TRANSPORT_TCP;
@@ -147,13 +139,13 @@ int main(int argc, char *argv[]) {
     platform_conf.write = write_fd;
     platform_conf.arg = NULL;
 
-    /* Регистрация callback-функций */
+
     nmbs_callbacks callbacks;
     nmbs_callbacks_create(&callbacks);
     callbacks.read_coils = handle_read_coils;
     callbacks.write_multiple_coils = handle_write_multiple_coils;
 
-    /* Создание сервера */
+
     nmbs_t nmbs;
     nmbs_error err = nmbs_server_create(&nmbs, 0, &platform_conf, &callbacks);
     if (err != NMBS_ERROR_NONE) {
@@ -179,6 +171,7 @@ int main(int argc, char *argv[]) {
             continue;
         }
 
+        // Set client socket as communication channel for Modbus
         platform_conf.arg = (void*)(intptr_t)client_fd;
         nmbs_set_platform_arg(&nmbs, platform_conf.arg);
 
@@ -188,7 +181,7 @@ int main(int argc, char *argv[]) {
                 printf("Modbus error: %s\n", nmbs_strerror(err));
                 break;
             }
-            usleep(10000); /* 10 ms delay */
+            usleep(10000); 
         }
         
         close(client_fd);
