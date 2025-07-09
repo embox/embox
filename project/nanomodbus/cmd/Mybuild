@@ -1,0 +1,11 @@
+package project.nanomodbus.cmd
+
+@AutoCmd
+@Build(script="true")
+@BuildDepends(third_party.lib.nanomodbus)
+@Cmd(name="nanomodbus_server")
+module nanomodbus_server {
+	source "nanomodbus_server.c"
+
+	@NoRuntime depends third_party.lib.nanomodbus
+}
