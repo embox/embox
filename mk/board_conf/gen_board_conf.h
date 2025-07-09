@@ -47,7 +47,7 @@ struct fpioa_conf {
 struct clk_conf {
 	int status;
 	struct device_conf dev;
-	struct field_int type;
+	struct field_int type[16];
 
 };
 

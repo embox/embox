@@ -21,7 +21,9 @@ struct clk_conf clks[] = {
 				VAL("HFI_FREQ", 15100000UL),
 			}
 		},
-		.type = VAL("SYSCLK_PLL", 1),
+		.type = {
+			VAL("SYSCLK_PLL", 1),
+		},
 	},
 };
 

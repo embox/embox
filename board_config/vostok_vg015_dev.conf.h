@@ -14,7 +14,9 @@ struct clk_conf clks[] = {
 				VAL("HSECLK_VAL", 16000000UL),
 			}
 		},
-		.type = VAL("SYSCLK_PLL", 1),
+		.type = {
+			VAL("SYSCLK_PLL", 1),
+		},
 	},
 };
 

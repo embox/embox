@@ -1,9 +1,28 @@
-#include <gen_board_conf.h>
-#include <stm32.h>
+/** @addtogroup Peripheral_memory_map
+  * @{
+  */
+#define FLASH_BASE            0x08000000UL /*!< FLASH(up to 1 MB) base address in the alias region                         */
+#define CCMDATARAM_BASE       0x10000000UL /*!< CCM(core coupled memory) data RAM(64 KB) base address in the alias region  */
+#define SRAM1_BASE            0x20000000UL /*!< SRAM1(112 KB) base address in the alias region                              */
+#define SRAM2_BASE            0x2001C000UL /*!< SRAM2(16 KB) base address in the alias region                              */
+#define PERIPH_BASE           0x40000000UL /*!< Peripheral base address in the alias region                                */
+#define BKPSRAM_BASE          0x40024000UL /*!< Backup SRAM(4 KB) base address in the alias region                         */
+#define FSMC_R_BASE           0xA0000000UL /*!< FSMC registers base address                                                */
+#define SRAM1_BB_BASE         0x22000000UL /*!< SRAM1(112 KB) base address in the bit-band region                          */
+#define SRAM2_BB_BASE         0x22380000UL /*!< SRAM2(16 KB) base address in the bit-band region                           */
+#define PERIPH_BB_BASE        0x42000000UL /*!< Peripheral base address in the bit-band region                             */
+#define BKPSRAM_BB_BASE       0x42480000UL /*!< Backup SRAM(4 KB) base address in the bit-band region                      */
+#define FLASH_END             0x080FFFFFUL /*!< FLASH end address                                                          */
+#define FLASH_OTP_BASE        0x1FFF7800UL /*!< Base address of : (up to 528 Bytes) embedded FLASH OTP Area                */
+#define FLASH_OTP_END         0x1FFF7A0FUL /*!< End address of : (up to 528 Bytes) embedded FLASH OTP Area                 */
+#define CCMDATARAM_END        0x1000FFFFUL /*!< CCM data RAM end address                                                   */
 
-#define PERIPH_BASE           0x40000000UL
+/* Legacy defines */
+#define SRAM_BASE             SRAM1_BASE
+#define SRAM_BB_BASE          SRAM1_BB_BASE
 
-#define APB1PERIPH_BASE       (PERIPH_BASE)
+/*!< Peripheral memory map */
+#define APB1PERIPH_BASE       PERIPH_BASE
 #define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000UL)
 #define AHB1PERIPH_BASE       (PERIPH_BASE + 0x00020000UL)
 #define AHB2PERIPH_BASE       (PERIPH_BASE + 0x10000000UL)
@@ -21,8 +40,10 @@
 #define RTC_BASE              (APB1PERIPH_BASE + 0x2800UL)
 #define WWDG_BASE             (APB1PERIPH_BASE + 0x2C00UL)
 #define IWDG_BASE             (APB1PERIPH_BASE + 0x3000UL)
+#define I2S2ext_BASE          (APB1PERIPH_BASE + 0x3400UL)
 #define SPI2_BASE             (APB1PERIPH_BASE + 0x3800UL)
 #define SPI3_BASE             (APB1PERIPH_BASE + 0x3C00UL)
+#define I2S3ext_BASE          (APB1PERIPH_BASE + 0x4000UL)
 #define USART2_BASE           (APB1PERIPH_BASE + 0x4400UL)
 #define USART3_BASE           (APB1PERIPH_BASE + 0x4800UL)
 #define UART4_BASE            (APB1PERIPH_BASE + 0x4C00UL)
@@ -46,7 +67,6 @@
 #define ADC123_COMMON_BASE    (APB2PERIPH_BASE + 0x2300UL)
 /* Legacy define */
 #define ADC_BASE               ADC123_COMMON_BASE
-
 #define SDIO_BASE             (APB2PERIPH_BASE + 0x2C00UL)
 #define SPI1_BASE             (APB2PERIPH_BASE + 0x3000UL)
 #define SYSCFG_BASE           (APB2PERIPH_BASE + 0x3800UL)
@@ -86,214 +106,6 @@
 #define DMA2_Stream5_BASE     (DMA2_BASE + 0x088UL)
 #define DMA2_Stream6_BASE     (DMA2_BASE + 0x0A0UL)
 #define DMA2_Stream7_BASE     (DMA2_BASE + 0x0B8UL)
-#define ETH_BASE              (AHB1PERIPH_BASE + 0x8000UL)
-#define ETH_MAC_BASE          (ETH_BASE)
-#define ETH_MMC_BASE          (ETH_BASE + 0x0100UL)
-#define ETH_PTP_BASE          (ETH_BASE + 0x0700UL)
-#define ETH_DMA_BASE          (ETH_BASE + 0x1000UL)
 
-
-struct clk_conf clks[] = {
-	[0] = {
-		.status = ENABLED,
-		.dev = {
-			.name = "RCC",
-			.regs = {
-				REGMAP("BASE", (RCC_BASE), 0x100),
-			},
-			
-		},
-		.type = {
-			VAL("", 0),
-		},
-	},
-};
-
-struct gpio_conf gpios[] = {
-	[0] = {
-		.status = ENABLED,
-		.dev = {
-			.name = "GPIO_PORT_A",
-			.regs = {
-				REGMAP("BASE", (GPIOA_BASE), 0x100),
-			},
-			.irqs = {
-				VAL("", 0),
-			},
-			.clocks = {
-				VAL("",   CLK_GPIOA),
-			}
-		},
-		.port_num = 7,
-		.port_width = 16,
-	},
-};
-
-struct uart_conf uarts[] = {
-	[1] = {
-		.status = DISABLED,
-		.name = "USART1",
-		.dev = {
-			.name = "USART1",
-			.regs = {
-				REGMAP("BASE", (USART1_BASE), 0x100),
-			},
-			.irqs = {
-				VAL("", 37),
-			},
-			.pins = {
-				PIN("TX", PA, PIN_9, AF7),
-				PIN("RX", PA, PIN_10, AF7),
-			},
-			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
-				VAL("UART", CLK_USART1),
-			}
-		},
-		.baudrate = 115200,
-	},
-	[2] = {
-		.status = DISABLED,
-		.name = "USART2",
-		.dev = {
-			.name = "USART2",
-			.regs = {
-				REGMAP("BASE", (USART2_BASE), 0x100),
-			},
-			.irqs = {
-				VAL("", 38),
-			},
-			.pins = {
-				PIN("TX", PA, PIN_2, AF7),
-				PIN("RX", PA, PIN_3, AF7),
-			},
-			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
-				VAL("UART", CLK_USART2),
-			}
-		},
-		.baudrate = 115200,
-	},
-	[3] = {
-		.status = ENABLED,
-		.name = "USART3",
-		.dev = {
-			.name = "USART3",
-			.regs = {
-				REGMAP("BASE", (USART3_BASE), 0x100),
-			},
-			.irqs = {
-				VAL("", 39),
-			},
-			.pins = {
-				PIN("TX", PD, PIN_8, AF7),
-				PIN("RX", PD, PIN_9, AF7),
-			},
-			.clocks = {
-				VAL("TX",   CLK_GPIOD),
-				VAL("RX",   CLK_GPIOD),
-				VAL("UART", CLK_USART3),
-			}
-		},
-		.baudrate = 115200,
-	},
-};
-
-struct led_conf leds[] = {
-	[0] = {
-		.name = "LED1",
-		.port = VAL("", GPIO_PORT_B),
-		.pin = VAL("", 0),
-		.level = VAL("", GPIO_PIN_HIGH),
-	},
-	[1] = {
-		.name = "LED2",
-		.port = VAL("", GPIO_PORT_B),
-		.pin = VAL("", 7),
-		.level = VAL("", GPIO_PIN_HIGH),
-	},
-	[2] = {
-		.name = "LED3",
-		.port = VAL("", GPIO_PORT_B),
-		.pin = VAL("", 14),
-		.level = VAL("", GPIO_PIN_HIGH),
-	},
-};
-
-struct spi_conf spis[] = {
-	[1] = {
-		.status = DISABLED,
-		.name = "SPI1",
-		.dev = {
-			.name = "SPI1",
-			.regs = {
-				REGMAP("BASE", (SPI1_BASE), 0x100),
-			},
-			.pins = {
-				PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-				PIN("MISO", GPIO_PORT_A, PIN_6, AF5),
-				PIN("MOSI", GPIO_PORT_A, PIN_7, AF5),
-				PIN("CS",   GPIO_PORT_D, PIN_14, NOAF),
-			},
-			.clocks = {
-				VAL("SCK",  CLK_GPIOA),
-				VAL("MISO", CLK_GPIOA),
-				VAL("MOSI", CLK_GPIOA),
-				VAL("CS",   CLK_GPIOD),
-				VAL("SPI",  CLK_SPI1),
-			}
-		},
-	},
-
-};
-
-struct i2c_conf i2cs[] = {
-	[1] = {
-		.status = ENABLED,
-		.name = "I2C1",
-		.dev = {
-			.name = "I2C1",
-			.regs = {
-				REGMAP("BASE", (I2C1_BASE), 0x100),
-			},
-			.irqs = {
-				VAL("EVENT", 31),
-				VAL("ERROR", 32),
-			},
-			.pins = {
-				PIN("SCL", GPIO_PORT_B, PIN_6, AF4),
-				PIN("SDA", GPIO_PORT_B, PIN_9, AF4),
-			},
-			.clocks = {
-				VAL("I2C", CLK_I2C1),
-			}
-		},
-	},
-	[2] = {
-		.status = DISABLED,
-		.name = "I2C2",
-		.dev = {
-			.name = "I2C2",
-			.regs = {
-				REGMAP("BASE", (I2C2_BASE), 0x100),
-			},
-			.irqs = {
-				VAL("EVENT", 33),
-				VAL("ERROR", 34),
-			},
-			.pins = {
-				PIN("SCL", GPIO_PORT_B, PIN_10, AF4),
-				PIN("SDA", GPIO_PORT_B, PIN_11, AF4),
-			},
-			.clocks = {
-				VAL("I2C", CLK_I2C2),
-			}
-		},
-	},
-
-};
-
-EXPORT_CONFIG(CLK(clks), GPIO(gpios),
-				UART(uarts), LED(leds), SPI(spis), I2C(i2cs))
+/*!< AHB2 peripherals */
+#define RNG_BASE              (AHB2PERIPH_BASE + 0x60800UL)
