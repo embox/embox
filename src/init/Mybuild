@@ -33,8 +33,6 @@ module graphic_init extends display_mode {
 }
 
 module no_graphic extends display_mode {
-	@IncludePath("include")
-	@IncludePath("$(ROOT_DIR)/third-party/libfdt/")
 	source "no_graphic_init.c"
 }
 

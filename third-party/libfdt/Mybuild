@@ -1,6 +1,9 @@
-package third_party.libfdt
+package third_party.lib.libfdt
 
-@Build(stage=1)
+@App
+@AutoCmd
+@Build(stage=2)
+@IncludePath("/include/")
 module libfdt {
     source "fdt.c"
     source "fdt_ro.c"
@@ -12,5 +15,4 @@ module libfdt {
     source "fdt_sw.c"
     source "fdt_check.c"
 
-    @IncludePath(".")
 }

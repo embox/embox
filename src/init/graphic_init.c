@@ -12,6 +12,8 @@
 
 #include <embox/unit.h>
 
+#include <arm/arm-m/kernel/devicetree.h>
+
 EMBOX_UNIT_INIT(praphic_mode_init);
 
 extern int platform_get_default_video_mode(int *x, int *y, int *bpp);
@@ -51,6 +53,7 @@ int graphic_init(void) {
 		return -EIO;
 	}
 
+	probe_uart_from_dtb_file();
 	return 0;
 
 }
