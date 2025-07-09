@@ -166,6 +166,8 @@ guess_machine() {
 				echo "-M raspi2"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "netduinoplus2" > /dev/null; then
 				echo "-M netduinoplus2"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "stm32vl_discovery" > /dev/null; then
+				echo "-M stm32vldiscovery"
 			fi
 			;;
 		aarch64)
