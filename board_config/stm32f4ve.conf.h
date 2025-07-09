@@ -194,4 +194,19 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), PWM(pwms))
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 6),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_A),
+		.pin = VAL("", 7),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), PWM(pwms), LED(leds))
