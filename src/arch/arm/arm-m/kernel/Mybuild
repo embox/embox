@@ -60,3 +60,10 @@ module context extends embox.arch.context {
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }
+
+module devicetree_probe {
+	@InitFS
+	source "stm32f4_uart.dtb"
+	source "devicetree.c"
+	depends third_party.lib.libfdt.libfdt
+}
