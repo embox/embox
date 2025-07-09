@@ -37,6 +37,7 @@ struct clk_conf clks[] = {
 				VAL("PLL_N_VAL",  336),
 				VAL("PLL_P_VAL",  2),
 				VAL("PLL_Q_VAL",  7),
+				VAL("FLASH_LATENCY", 5),
 			}
 		},
 		.type = {
