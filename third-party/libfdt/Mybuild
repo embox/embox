@@ -1,7 +1,5 @@
 package third_party.lib.libfdt
 
-@App
-@AutoCmd
 @Build(stage=2)
 @IncludePath("/include/")
 module libfdt {
