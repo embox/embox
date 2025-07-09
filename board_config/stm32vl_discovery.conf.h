@@ -65,6 +65,19 @@
 #define OB_BASE               0x1FFFF800UL    /*!< Flash Option Bytes base address */
 
 
+/**
+  *         The system Clock is configured as follow :
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 24000000
+  *            HCLK(Hz)                       = 24000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 1
+  *            APB2 Prescaler                 = 1
+  *            HSE Frequency(Hz)              = 8000000
+  *            HSE PREDIV1                    = 2
+  *            PLLMUL                         = 6
+  *            Flash Latency(WS)              = 0
+  */
 struct clk_conf clks[] = {
 	[0] = {
 		.status = ENABLED,
@@ -73,13 +86,24 @@ struct clk_conf clks[] = {
 			.regs = {
 				REGMAP("BASE", (RCC_BASE), 0x100),
 			},
-			
+			.clocks = {
+				VAL("SYSCLK_VAL", 24000000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 1),
+				VAL("APB2_PRESCALER_VAL", 1),
+				VAL("HSE_PREDIV_VAL",  2),
+				VAL("PLLMUL_VAL",  6),
+				VAL("FLASH_LATENCY", 0),
+			}
 		},
 		.type = {
-			VAL("", 0),
+			VAL("PLL", 1),
+			VAL("HSE", 1),
 		},
 	},
 };
+
 
 struct gpio_conf gpios[] = {
 	[0] = {
