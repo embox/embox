@@ -12,3 +12,12 @@ module stm32f4_rcc extends stm32_rcc {
 
 	@NoRuntime depends third_party.bsp.st_bsp_api
 }
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f1_rcc extends stm32_rcc {
+	option string log_level="LOG_ERR"
+
+	source "stm32f1_rcc_cube.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
