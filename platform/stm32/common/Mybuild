@@ -16,8 +16,8 @@ module stm32cube_compat {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32f4cube_sysclock_init {
-    source "stm32f4cube_sysclock_init.c"
-    @NoRuntime depends third_party.bsp.stmf4cube.cube
-    @NoRuntime depends embox.driver.clk.stm32f4_rcc
+module stm32cube_sysclock_init {
+    source "stm32cube_sysclock_init.c"
+    @NoRuntime depends third_party.bsp.st_bsp_api
+    @NoRuntime depends embox.driver.clk.stm32_rcc
 }

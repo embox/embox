@@ -65,7 +65,7 @@ extern int RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct);
 # elif (CONF_RCC_CLK_DEF_APB1_PRESCALER_VAL == 16)
 # define  RCC_APB1_DIV      RCC_HCLK_DIV16
 # else
-# error "Wrong AHB_PRESCALER_VAL"
+# error "Wrong APB1_PRESCALER_VAL"
 # endif
 #endif /* defined(CONF_RCC_CLK_DEF_APB1_PRESCALER_VAL) */
 
@@ -81,10 +81,93 @@ extern int RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct);
 # elif (CONF_RCC_CLK_DEF_APB2_PRESCALER_VAL == 16)
 # define  RCC_APB2_DIV      RCC_HCLK_DIV16
 # else
-# error "Wrong AHB_PRESCALER_VAL"
+# error "Wrong APB2_PRESCALER_VAL"
 # endif
-#endif /* defined(CONF_RCC_CLK_DEF_APB1_PRESCALER_VAL) */
+#endif /* defined(CONF_RCC_CLK_DEF_APB2_PRESCALER_VAL) */
 
+#if defined(CONF_RCC_CLK_DEF_HSE_PREDIV_VAL)
+# if (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 1)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV1
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 2)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV2
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 3)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV3
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 4)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV4
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 5)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV5
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 6)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV6
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 7)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV7
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 8)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV8
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 9)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV9
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 10)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV10
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 11)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV11
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 12)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV12
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 13)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV13
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 14)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV14
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 15)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV15
+# elif (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 16)
+# define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV16
+# else
+# error "Wrong HSE_PREDIV_VAL"
+# endif
+#endif /* defined(CONF_RCC_CLK_DEF_HSE_PREDIV_VAL) */
+
+#if defined(CONF_RCC_CLK_DEF_PLLMUL_VAL)
+# if (CONF_RCC_CLK_DEF_PLLMUL_VAL == 1)
+# define  RCC_PLL_MUL      RCC_PLL_MUL1
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 2)
+# define  RCC_PLL_MUL      RCC_PLL_MUL2
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 3)
+# define  RCC_PLL_MUL      RCC_PLL_MUL3
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 4)
+# define  RCC_PLL_MUL      RCC_PLL_MUL4
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 5)
+# define  RCC_PLL_MUL      RCC_PLL_MUL5
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 6)
+# define  RCC_PLL_MUL      RCC_PLL_MUL6
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 7)
+# define  RCC_PLL_MUL      RCC_PLL_MUL7
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 8)
+# define  RCC_PLL_MUL      RCC_PLL_MUL8
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 9)
+# define  RCC_PLL_MUL      RCC_PLL_MUL9
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 10)
+# define  RCC_PLL_MUL      RCC_PLL_MUL10
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 11)
+# define  RCC_PLL_MUL      RCC_PLL_MUL11
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 12)
+# define  RCC_PLL_MUL      RCC_PLL_MUL12
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 13)
+# define  RCC_PLL_MUL      RCC_PLL_MUL13
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 14)
+# define  RCC_PLL_MUL      RCC_PLL_MUL14
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 15)
+# define  RCC_PLL_MUL      RCC_PLL_MUL15
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 16)
+# define  RCC_PLL_MUL      RCC_PLL_MUL16
+# elif (CONF_RCC_CLK_DEF_PLLMUL_VAL == 65)
+# define  RCC_PLL_MUL      RCC_PLL_MUL6_5
+# else
+# error "Wrong PLLMUL_VAL"
+# endif
+#endif /* defined(CONF_RCC_CLK_DEF_PLLMUL_VAL) */
+
+#if defined (CONF_RCC_CLK_DEF_FLASH_LATENCY)
+# define FLASH_LATENCY     MACRO_CONCAT(FLASH_LATENCY_, CONF_RCC_CLK_DEF_FLASH_LATENCY)
+#else
+# error "Wrong FLASH_LATENCY"
+#endif /* defined (CONF_RCC_CLK_DEF_FLASH_LATENCY) */
 
 void stm32_sysclock_init(void) {
 	RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
@@ -95,17 +178,32 @@ void stm32_sysclock_init(void) {
 	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE;
 #if defined(CONF_RCC_TYPE_HSE)
 	RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+# if defined(CONF_RCC_CLK_DEF_HSE_PREDIV_VAL)
+	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV;
+# endif
 #endif /* defined(CONF_RCC_TYPE_HSE) */
 #if defined(CONF_RCC_TYPE_PLL)
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE;
+# if defined(CONF_RCC_CLK_DEF_PLL_M_VAL)
 	RCC_OscInitStruct.PLL.PLLM = CONF_RCC_CLK_DEF_PLL_M_VAL;
+# endif /* defined(CONF_RCC_CLK_DEF_PLL_M_VAL) */
+# if defined(CONF_RCC_CLK_DEF_PLL_N_VAL)
 	RCC_OscInitStruct.PLL.PLLN = CONF_RCC_CLK_DEF_PLL_N_VAL;
+# endif /* defined(CONF_RCC_CLK_DEF_PLL_N_VAL) */
+# if defined(CONF_RCC_CLK_DEF_PLL_P_VAL)
 	RCC_OscInitStruct.PLL.PLLP = RCC_PLLP;
+# endif /* defined(CONF_RCC_CLK_DEF_PLL_P_VAL) */
+# if defined(CONF_RCC_CLK_DEF_PLL_Q_VAL)
 	RCC_OscInitStruct.PLL.PLLQ = CONF_RCC_CLK_DEF_PLL_Q_VAL;
-#if defined(CONF_RCC_СLK_DEF_PLL_R_VAL)
+# endif /* defined(CONF_RCC_CLK_DEF_PLL_Q_VAL) */
+# if defined(CONF_RCC_CLK_DEF_PLL_R_VAL)
 	RCC_OscInitStruct.PLL.PLLR = CONF_RCC_CLK_DEF_PLL_R_VAL;
-#endif /* defined(CONF_RCC_СLK_DEF_PLL_R_VAL) */
+# endif /* defined(CONF_RCC_CLK_DEF_PLL_R_VAL) */
+# if defined(CONF_RCC_CLK_DEF_PLLMUL_VAL)
+	RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL;
+# endif /* defined(CONF_RCC_CLK_DEF_PLLMUL_VAL) */
+
 #endif /* defined(CONF_RCC_TYPE_PLL) */
 	RCC_OscConfig(&RCC_OscInitStruct);
 
@@ -117,6 +215,6 @@ void stm32_sysclock_init(void) {
 	RCC_ClkInitStruct.AHBCLKDivider = RCC_AHB1_DIV;
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV;
-	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_5);
+	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY);
 
 }

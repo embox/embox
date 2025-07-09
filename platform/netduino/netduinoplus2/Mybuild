@@ -21,5 +21,5 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	@NoRuntime depends netduinoplus2_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
     @NoRuntime depends embox.driver.clk.stm32f4_rcc
-    @NoRuntime depends platform.stm32.stm32f4cube_sysclock_init
+    @NoRuntime depends platform.stm32.stm32cube_sysclock_init
 }
