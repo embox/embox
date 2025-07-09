@@ -198,4 +198,21 @@ struct uart_conf uarts[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios),UART(uarts))
+/* PB14 blue */
+/* PC9 green */
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 14),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_C),
+		.pin = VAL("", 9),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), LED(leds), UART(uarts))
