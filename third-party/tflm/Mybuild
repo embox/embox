@@ -1,0 +1,10 @@
+package third_party.tflm_tree
+
+@Build(script="$(EXTERNAL_MAKE) third_party/tflm/Makefile")
+
+static module libtflm {
+    @AddPrefix("^BUILD/tmp/tflite-micro")
+
+    @NoRuntime depends embox.compat.libc.all
+    @NoRuntime depends embox.lib.libsupcxx
+}
