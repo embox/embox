@@ -216,3 +216,7 @@ module trunc_test {
 	@Cflags("-fno-builtin")
 	source "trunc_test.c"
 }
+module erf_test {
+	@Cflags("-fno-builtin")
+	source "erf_test.c"
+}
