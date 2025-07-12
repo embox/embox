@@ -3,3 +3,9 @@ package embox.driver.at
 module at_parser {
 	source "at_parser.c"
 }
+
+module at_emulator {
+	source "emulator/at_emulator.c"
+
+	depends at_parser
+}
