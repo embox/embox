@@ -1,0 +1,32 @@
+package embox.cmd
+
+@AutoCmd
+@Cmd(name = "at_test",
+	help = "AT command framework test utility",
+	man = '''
+		NAME
+			at_test - AT command framework test utility
+		SYNOPSIS
+			at_test [options]
+		OPTIONS
+			-e <port>   Run as emulator TCP server on specified port
+			-t          Run integration tests using PTY
+			-d          Run debug tests to check return values
+			-h          Show help message
+		EXAMPLES
+			at_test -e 8080
+				Start AT emulator TCP server on port 8080
+			at_test -t
+				Run automated integration tests
+			at_test -d
+				Run debug tests for troubleshooting
+		AUTHORS
+			Peize Li
+	''')
+module at_test {
+	source "at_test.c"
+	
+	depends embox.driver.at.at_parser  
+	depends embox.driver.at.at_emulator  
+	depends embox.driver.at.at_client
+}
