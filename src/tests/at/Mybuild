@@ -5,3 +5,10 @@ module at_parser_test {
 
 	depends embox.driver.at.at_parser
 }
+
+module at_emulator_test {
+  source "at_emulator_test.c"
+
+  depends embox.driver.at.at_parser
+  depends embox.driver.at.at_emulator
+}
