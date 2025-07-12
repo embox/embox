@@ -12,3 +12,11 @@ module at_emulator_test {
   depends embox.driver.at.at_parser
   depends embox.driver.at.at_emulator
 }
+
+module at_client_test {
+  source "at_client_test.c"
+
+  depends embox.driver.at.at_parser
+  depends embox.driver.at.at_emulator
+  depends embox.driver.at.at_client
+}
