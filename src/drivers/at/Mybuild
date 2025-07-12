@@ -9,3 +9,10 @@ module at_emulator {
 
 	depends at_parser
 }
+
+module at_client {
+	source "at_client.c"
+
+	depends at_parser 
+	depends embox.compat.posix.LibPosix  
+}
