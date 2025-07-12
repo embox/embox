@@ -1,0 +1,7 @@
+package embox.test.at
+
+module at_parser_test {
+	source "at_parser_test.c"
+
+	depends embox.driver.at.at_parser
+}
