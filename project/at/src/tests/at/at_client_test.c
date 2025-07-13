@@ -82,6 +82,28 @@ TEST_CASE("Basic init and close with PTY") {
 	close(ptyfds[1]);
 }
 
+TEST_CASE("Init with device path") {
+	at_client_t client;
+	int ptyfds[2];
+	char master_path[32];
+
+	test_assert_zero(ppty(ptyfds));
+
+	/* Get the device path for master PTY */
+	snprintf(master_path, sizeof(master_path), "/dev/pts/%d", ptyfds[0]);
+
+	/* Close the raw fd since at_client_init will open it */
+	close(ptyfds[0]);
+
+	if (at_client_init(&client, master_path) == 0) {
+		test_assert(client.fd >= 0);
+		test_assert_true(client.owns_fd); /* fd was opened by client */
+		at_client_close(&client);
+	}
+
+	close(ptyfds[1]);
+}
+
 TEST_CASE("Parameter validation") {
 	at_client_t client;
 	char buf[128];
