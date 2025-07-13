@@ -15,57 +15,47 @@
 
 #include <at/at_client.h>
 #include <at/at_parser.h>
-#include <drivers/serial/uart_dev.h>
 #include <kernel/time/time.h>
 
-/* Initialize AT client - UART mode */
-int at_client_init(at_client_t *client, const char *uart_name, int baudrate) {
-	struct uart_params params;
+int at_client_init_fd(at_client_t *client, int fd);
 
-	if (!client || !uart_name) {
+/* Initialize AT client with device path */
+int at_client_init(at_client_t *client, const char *device_path) {
+	int fd;
+
+	if (!client || !device_path) {
 		return -1;
 	}
 
-	memset(client, 0, sizeof(*client));
-	client->fd = -1; /* Mark as UART mode */
-
-	/* Set UART parameters */
-	const char *dev_name = uart_name;
-	if (strncmp(uart_name, "/dev/", 5) == 0) {
-		dev_name = uart_name + 5;
-	}
-
-	client->uart = uart_dev_lookup(dev_name);
-	if (!client->uart) {
+	/* Open device */
+	fd = open(device_path, O_RDWR | O_NOCTTY | O_NONBLOCK);
+	if (fd < 0) {
 		return -1;
 	}
 
-	/* Open UART if not already open */
-	if (!(client->uart->state & UART_STATE_OPEN)) {
-		if (uart_open(client->uart) < 0) {
-			client->uart = NULL;
-			return -1;
-		}
-	}
-
-	if (uart_set_params(client->uart, &params) < 0) {
-		uart_close(client->uart);
-		client->uart = NULL;
+	/* Use common initialization */
+	if (at_client_init_fd(client, fd) < 0) {
+		close(fd);
 		return -1;
 	}
+
+	/* Mark that we own this fd */
+	client->owns_fd = true;
 
 	return 0;
 }
 
 /* Initialize AT client - file descriptor mode */
 int at_client_init_fd(at_client_t *client, int fd) {
+	struct termios tty;
+
 	if (!client || fd < 0) {
 		return -1;
 	}
 
 	memset(client, 0, sizeof(*client));
 	client->fd = fd;
-	client->uart = NULL; /* Mark as fd mode */
+	client->owns_fd = false;  /* We don't own this fd */
 
 	/* Set non-blocking mode */
 	int flags = fcntl(fd, F_GETFL, 0);
@@ -74,7 +64,6 @@ int at_client_init_fd(at_client_t *client, int fd) {
 	}
 
 	if (isatty(fd)) {
-		struct termios tty;
 		if (tcgetattr(fd, &tty) == 0) {
 			/* Clear character conversion in input flags */
 			tty.c_iflag &= ~(ICRNL | IGNCR | INLCR);
@@ -90,6 +79,7 @@ int at_client_init_fd(at_client_t *client, int fd) {
 			tty.c_cc[VTIME] = 0; /* No timeout */
 
 			tcsetattr(fd, TCSANOW, &tty);
+			tcflush(fd, TCIOFLUSH);
 		}
 	}
 
@@ -97,45 +87,23 @@ int at_client_init_fd(at_client_t *client, int fd) {
 }
 
 void at_client_close(at_client_t *client) {
-	if (client) {
-		if (client->fd >= 0) {
-			/* fd mode - don't close fd, managed by caller */
-			client->fd = -1;
-		}
-		else if (client->uart) {
-			/* UART mode - don't close UART, may be used by other components */
-			client->uart = NULL;
-		}
-		memset(client, 0, sizeof(*client));
+	if (!client) {
+		return;
 	}
-}
 
-/* Read one character from interface */
-static int client_getc(at_client_t *client) {
 	if (client->fd >= 0) {
-		/* fd mode */
-		unsigned char ch;
-		int n = read(client->fd, &ch, 1);
-		return (n == 1) ? ch : -1;
+		/* Only close fd if we opened it ourselves */
+		if (client->owns_fd) {
+			close(client->fd);
+		}
+		client->fd = -1;
 	}
-	else if (client->uart) {
-		/* UART mode */
-		return uart_getc(client->uart);
-	}
-	return -1;
-}
 
-/* Write one character to interface */
-static int client_putc(at_client_t *client, char ch) {
-	if (client->fd >= 0) {
-		/* fd mode */
-		return (write(client->fd, &ch, 1) == 1) ? 0 : -1;
-	}
-	else if (client->uart) {
-		/* UART mode */
-		return uart_putc(client->uart, ch);
-	}
-	return -1;
+	/* Clear the structure */
+	memset(client, 0, sizeof(*client));
+	
+	/* Set fd to invalid value */
+	client->fd = -1;
 }
 
 static void process_line(at_client_t *client, const char *line) {
@@ -228,14 +196,15 @@ static void process_line(at_client_t *client, const char *line) {
 }
 
 void at_client_process_rx(at_client_t *client) {
-	int ch;
+	unsigned char ch;
+	ssize_t n;
 
-	if (!client) {
+	if (!client || client->fd < 0) {
 		return;
 	}
 
 	/* Read all available characters */
-	while ((ch = client_getc(client)) >= 0) {
+	while ((n = read(client->fd, &ch, 1)) > 0) {
 		/* Handle line ending */
 		if (ch == '\r' || ch == '\n') {
 			if (client->rx_pos > 0) {
@@ -246,7 +215,7 @@ void at_client_process_rx(at_client_t *client) {
 		}
 		/* Accumulate characters */
 		else if (client->rx_pos < sizeof(client->rx_buf) - 1) {
-			client->rx_buf[client->rx_pos++] = (char)ch;
+			client->rx_buf[client->rx_pos++] = ch;
 		}
 		/* Buffer overflow, discard */
 		else {
@@ -258,9 +227,11 @@ void at_client_process_rx(at_client_t *client) {
 at_result_t at_client_send(at_client_t *client, const char *cmd, char *resp_buf,
     size_t resp_size, uint32_t timeout_ms) {
 	uint32_t start_time, elapsed;
-	size_t i, len;
+	ssize_t written;
+	size_t total_written = 0;
+	size_t cmd_len;
 
-	if (!client || !cmd) {
+	if (!client || !cmd || client->fd < 0) {
 		return AT_INVALID_PARAM;
 	}
 
@@ -275,17 +246,36 @@ at_result_t at_client_send(at_client_t *client, const char *cmd, char *resp_buf,
 	}
 
 	/* Send command */
-	len = strlen(cmd);
-	for (i = 0; i < len; i++) {
-		if (client_putc(client, cmd[i]) < 0) {
+	cmd_len = strlen(cmd);
+	while (total_written < cmd_len) {
+		written = write(client->fd, cmd + total_written, cmd_len - total_written);
+		if (written < 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				/* Non-blocking write, retry */
+				usleep(1000);
+				continue;
+			}
 			client->waiting_resp = false;
 			return AT_ERROR;
 		}
+		total_written += written;
 	}
 
 	/* Send \r\n */
-	client_putc(client, '\r');
-	client_putc(client, '\n');
+	const char *crlf = "\r\n";
+	total_written = 0;
+	while (total_written < 2) {
+		written = write(client->fd, crlf + total_written, 2 - total_written);
+		if (written < 0) {
+			if (errno == EAGAIN || errno == EWOULDBLOCK) {
+				usleep(1000);
+				continue;
+			}
+			client->waiting_resp = false;
+			return AT_ERROR;
+		}
+		total_written += written;
+	}
 
 	/* Wait for response */
 	start_time = clock();

@@ -14,26 +14,25 @@
 
 #include <at/at_parser.h>
 
-/* Forward declaration */
-struct uart;
-
 /**
- * @brief AT client structure - simplified version
+ * @brief AT Client structure
  */
 typedef struct at_client {
-	/* Communication interface - either uart or fd */
-	struct uart *uart; /**< UART device */
-	int fd;            /**< File descriptor (-1 if unused) */
+	/* Communication interface */
+	int fd; /**< File descriptor */
+
+	/* Flag indicating if we own the fd and should close it */
+	bool owns_fd;
 
 	/* Receive buffer */
 	char rx_buf[256]; /**< Receive line buffer */
 	size_t rx_pos;    /**< Current position */
 
 	/* Current pending response */
-	volatile bool waiting_resp;  /**< Waiting for response flag */
-	volatile at_result_t result; /**< Response result */
-	char *resp_buf;              /**< User-provided response buffer */
-	size_t resp_size;            /**< Response buffer size */
+	bool waiting_resp;  /**< Waiting for response flag */
+	at_result_t result; /**< Response result */
+	char *resp_buf;     /**< User-provided response buffer */
+	size_t resp_size;   /**< Response buffer size */
 
 	/* URC callback */
 	void (*urc_handler)(const char *line, void *arg);
@@ -41,19 +40,18 @@ typedef struct at_client {
 } at_client_t;
 
 /**
- * @brief Initialize AT client (UART mode)
+ * @brief Initialize AT client with device path and baud rate
  * 
- * @param client Client structure
- * @param uart_name UART device name
- * @param baudrate Baud rate
- * @return 0 on success, -1 on failure
+ * @param client Client instance
+ * @param device_path Device path (e.g., "/dev/ttyS1")
+ * @return 0 on success, -1 on error
  */
-int at_client_init(at_client_t *client, const char *uart_name, int baudrate);
+int at_client_init(at_client_t *client, const char *device_path);
 
 /**
- * @brief Initialize AT client (file descriptor mode)
+ * @brief Initialize AT client with file descriptor
  * 
- * @param client Client structure
+ * @param client Client instance
  * @param fd File descriptor (e.g., PTY, socket)
  * @return 0 on success, -1 on failure
  */
@@ -62,14 +60,14 @@ int at_client_init_fd(at_client_t *client, int fd);
 /**
  * @brief Close AT client
  * 
- * @param client Client structure
+ * @param client Client instance
  */
 void at_client_close(at_client_t *client);
 
 /**
  * @brief Send AT command and wait for response
  * 
- * @param client Client structure
+ * @param client Client instance
  * @param cmd AT command (without \r\n)
  * @param resp_buf Response buffer (optional)
  * @param resp_size Buffer size
@@ -82,7 +80,7 @@ at_result_t at_client_send(at_client_t *client, const char *cmd, char *resp_buf,
 /**
  * @brief Set URC handler
  * 
- * @param client Client structure
+ * @param client Client instance
  * @param handler Handler function
  * @param arg User argument for handler
  */
@@ -94,7 +92,7 @@ void at_client_set_urc_handler(at_client_t *client,
  * 
  * Called by receive thread or main loop to process incoming data.
  * 
- * @param client Client structure
+ * @param client Client instance
  */
 void at_client_process_rx(at_client_t *client);
 
