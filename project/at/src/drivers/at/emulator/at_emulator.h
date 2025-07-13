@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <drivers/at/at_parser.h>
+#include <at/at_parser.h>
 
 /* Forward declarations */
 typedef struct at_emulator at_emulator_t;

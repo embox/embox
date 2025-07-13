@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <drivers/at/at_parser.h>
+#include <at/at_parser.h>
 
 /* Forward declaration */
 struct uart;

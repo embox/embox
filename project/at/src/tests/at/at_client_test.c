@@ -14,8 +14,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include <drivers/at/at_client.h>
-#include <drivers/at/at_emulator.h>
+#include <at/at_client.h>
+#include <at/emulator/at_emulator.h>
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("AT Client Tests");

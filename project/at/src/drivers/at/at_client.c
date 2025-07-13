@@ -13,8 +13,8 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include <drivers/at/at_client.h>
-#include <drivers/at/at_parser.h>
+#include <at/at_client.h>
+#include <at/at_parser.h>
 #include <drivers/serial/uart_dev.h>
 #include <kernel/time/time.h>
 

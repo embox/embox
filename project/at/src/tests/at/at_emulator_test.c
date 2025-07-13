@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <drivers/at/at_emulator.h>
+#include <at/emulator/at_emulator.h>
 #include <embox/test.h>
 
 EMBOX_TEST_SUITE("AT Emulator Tests");

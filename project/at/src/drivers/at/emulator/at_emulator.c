@@ -12,8 +12,8 @@
 #include <string.h>
 #include <strings.h>
 
-#include <drivers/at/at_emulator.h>
-#include <drivers/at/at_parser.h>
+#include <at/emulator/at_emulator.h>
+#include <at/at_parser.h>
 
 #define INITIAL_CMD_CAPACITY 32
 

@@ -2,16 +2,25 @@ package embox.driver.at
 
 module at_parser {
 	source "at_parser.c"
+
+	@IncludeExport(path="at")
+	source "at_parser.h"
 }
 
 module at_emulator {
 	source "emulator/at_emulator.c"
+
+	@IncludeExport(path="at")
+	source "emulator/at_emulator.h"
 
 	depends at_parser
 }
 
 module at_client {
 	source "at_client.c"
+
+	@IncludeExport(path="at")
+	source "at_client.h"
 
 	depends at_parser 
 	depends embox.compat.posix.LibPosix  

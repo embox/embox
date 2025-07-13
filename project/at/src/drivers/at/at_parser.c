@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <drivers/at/at_parser.h>
+#include <at/at_parser.h>
 
 /* Parse AT command type */
 int at_parse_cmd_type(const char *cmd, char *name, size_t name_size,
