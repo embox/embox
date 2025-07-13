@@ -21,8 +21,8 @@
 #include <unistd.h>
 
 #include <at/at_client.h>
-#include <at/emulator/at_emulator.h>
 #include <at/at_parser.h>
+#include <at/emulator/at_emulator.h>
 
 /* PTY support */
 extern int ppty(int ptyfds[2]);
@@ -134,20 +134,8 @@ static int run_integration_tests(void) {
 
 	printf("PTY pair created: master=%d, slave=%d\n", ptyfds[0], ptyfds[1]);
 
-	fcntl(ptyfds[0], F_SETFL, fcntl(ptyfds[0], F_GETFL, 0) | O_NONBLOCK);
+	/* Set non-blocking mode for emulator side only */
 	fcntl(ptyfds[1], F_SETFL, fcntl(ptyfds[1], F_GETFL, 0) | O_NONBLOCK);
-
-	/* Configure PTY slave termios */
-	struct termios tty;
-	if (tcgetattr(ptyfds[1], &tty) == 0) {
-		/* Clear all character conversions */
-		tty.c_iflag &= ~(ICRNL | IGNCR | INLCR);
-		tty.c_oflag &= ~(ONLCR | OCRNL | ONLRET);
-		tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-		tty.c_cc[VMIN] = 0;
-		tty.c_cc[VTIME] = 0;
-		tcsetattr(ptyfds[1], TCSANOW, &tty);
-	}
 
 	emu_data.emulator = at_emulator_create();
 	if (!emu_data.emulator) {

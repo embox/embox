@@ -33,19 +33,6 @@ static void test_urc_handler(const char *line, void *arg) {
 	strncpy(g_last_urc, line, sizeof(g_last_urc) - 1);
 }
 
-/* Configure PTY in raw mode */
-static void configure_pty_raw(int fd) {
-	struct termios tty;
-	if (tcgetattr(fd, &tty) == 0) {
-		tty.c_iflag &= ~(ICRNL | IGNCR | INLCR);
-		tty.c_oflag &= ~(ONLCR | OCRNL | ONLRET);
-		tty.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-		tty.c_cc[VMIN] = 0;
-		tty.c_cc[VTIME] = 0;
-		tcsetattr(fd, TCSANOW, &tty);
-	}
-}
-
 /* Emulator thread data */
 struct emulator_thread_data {
 	int fd;
@@ -86,9 +73,10 @@ TEST_CASE("Basic init and close with PTY") {
 
 	test_assert_zero(at_client_init_fd(&client, ptyfds[0]));
 	test_assert_equal(client.fd, ptyfds[0]);
-	test_assert_null(client.uart);
+	test_assert_false(client.owns_fd); /* fd was provided externally */
 
 	at_client_close(&client);
+	test_assert_equal(client.fd, -1);
 
 	close(ptyfds[0]);
 	close(ptyfds[1]);
@@ -99,14 +87,22 @@ TEST_CASE("Parameter validation") {
 	char buf[128];
 	at_result_t result;
 
+	test_assert_equal(at_client_init(NULL, "/dev/null"), -1);
+	test_assert_equal(at_client_init(&client, NULL), -1);
 	test_assert_equal(at_client_init_fd(NULL, 0), -1);
 	test_assert_equal(at_client_init_fd(&client, -1), -1);
+
+	/* Initialize with invalid fd to test send validation */
+	client.fd = -1;
 
 	result = at_client_send(NULL, "AT", buf, sizeof(buf), 1000);
 	test_assert_equal(result, AT_INVALID_PARAM);
 
 	result = at_client_send(&client, NULL, buf, sizeof(buf), 1000);
 	test_assert_equal(result, AT_INVALID_PARAM);
+
+	result = at_client_send(&client, "AT", buf, sizeof(buf), 1000);
+	test_assert_equal(result, AT_INVALID_PARAM); /* Invalid fd */
 }
 
 TEST_CASE("Basic AT command test") {
@@ -119,10 +115,8 @@ TEST_CASE("Basic AT command test") {
 
 	test_assert_zero(ppty(ptyfds));
 
-	fcntl(ptyfds[0], F_SETFL, O_NONBLOCK);
+	/* Only set non-blocking on emulator side */
 	fcntl(ptyfds[1], F_SETFL, O_NONBLOCK);
-	configure_pty_raw(ptyfds[0]);
-	configure_pty_raw(ptyfds[1]);
 
 	emu_data.emulator = at_emulator_create();
 	test_assert_not_null(emu_data.emulator);
@@ -132,7 +126,11 @@ TEST_CASE("Basic AT command test") {
 	test_assert_zero(
 	    pthread_create(&emu_thread, NULL, emulator_thread_func, &emu_data));
 
+	/* Client will configure its side appropriately */
 	test_assert_zero(at_client_init_fd(&client, ptyfds[0]));
+
+	/* Small delay to ensure emulator is ready */
+	usleep(10000);
 
 	result = at_client_send(&client, "AT", buf, sizeof(buf), 1000);
 	test_assert_equal(result, AT_OK);
@@ -152,9 +150,6 @@ TEST_CASE("Timeout test") {
 	at_result_t result;
 
 	test_assert_zero(ppty(ptyfds));
-
-	fcntl(ptyfds[0], F_SETFL, O_NONBLOCK);
-	configure_pty_raw(ptyfds[0]);
 
 	/* Close other end to ensure timeout */
 	close(ptyfds[1]);
@@ -178,10 +173,7 @@ TEST_CASE("Error response test") {
 
 	test_assert_zero(ppty(ptyfds));
 
-	fcntl(ptyfds[0], F_SETFL, O_NONBLOCK);
 	fcntl(ptyfds[1], F_SETFL, O_NONBLOCK);
-	configure_pty_raw(ptyfds[0]);
-	configure_pty_raw(ptyfds[1]);
 
 	emu_data.emulator = at_emulator_create();
 	test_assert_not_null(emu_data.emulator);
@@ -192,6 +184,8 @@ TEST_CASE("Error response test") {
 	    pthread_create(&emu_thread, NULL, emulator_thread_func, &emu_data));
 
 	test_assert_zero(at_client_init_fd(&client, ptyfds[0]));
+
+	usleep(10000);
 
 	/* Send invalid command, should return ERROR */
 	result = at_client_send(&client, "AT+INVALID", buf, sizeof(buf), 1000);
@@ -215,10 +209,7 @@ TEST_CASE("URC handler test") {
 
 	test_assert_zero(ppty(ptyfds));
 
-	fcntl(ptyfds[0], F_SETFL, O_NONBLOCK);
 	fcntl(ptyfds[1], F_SETFL, O_NONBLOCK);
-	configure_pty_raw(ptyfds[0]);
-	configure_pty_raw(ptyfds[1]);
 
 	test_assert_zero(at_client_init_fd(&client, ptyfds[0]));
 
@@ -249,10 +240,7 @@ TEST_CASE("Null buffer test") {
 
 	test_assert_zero(ppty(ptyfds));
 
-	fcntl(ptyfds[0], F_SETFL, O_NONBLOCK);
 	fcntl(ptyfds[1], F_SETFL, O_NONBLOCK);
-	configure_pty_raw(ptyfds[0]);
-	configure_pty_raw(ptyfds[1]);
 
 	emu_data.emulator = at_emulator_create();
 	test_assert_not_null(emu_data.emulator);
@@ -264,6 +252,9 @@ TEST_CASE("Null buffer test") {
 
 	test_assert_zero(at_client_init_fd(&client, ptyfds[0]));
 
+	usleep(10000);
+
+	/* Should handle NULL buffer gracefully */
 	result = at_client_send(&client, "AT", NULL, 0, 1000);
 	test_assert_equal(result, AT_OK);
 
@@ -285,10 +276,7 @@ TEST_CASE("Sequential commands test") {
 
 	test_assert_zero(ppty(ptyfds));
 
-	fcntl(ptyfds[0], F_SETFL, O_NONBLOCK);
 	fcntl(ptyfds[1], F_SETFL, O_NONBLOCK);
-	configure_pty_raw(ptyfds[0]);
-	configure_pty_raw(ptyfds[1]);
 
 	emu_data.emulator = at_emulator_create();
 	test_assert_not_null(emu_data.emulator);
@@ -299,6 +287,8 @@ TEST_CASE("Sequential commands test") {
 	    pthread_create(&emu_thread, NULL, emulator_thread_func, &emu_data));
 
 	test_assert_zero(at_client_init_fd(&client, ptyfds[0]));
+
+	usleep(10000);
 
 	/* Send 3 commands sequentially */
 	for (int i = 0; i < 3; i++) {
