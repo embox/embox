@@ -1,4 +1,4 @@
-package embox.cmd
+package project.at.cmd
 
 @AutoCmd
 @Cmd(name = "at_test",
@@ -26,7 +26,7 @@ package embox.cmd
 module at_test {
 	source "at_test.c"
 	
-	depends embox.driver.at.at_parser  
-	depends embox.driver.at.at_emulator  
-	depends embox.driver.at.at_client
+	depends project.at.driver.at.at_parser  
+	depends project.at.driver.at.at_emulator  
+	depends project.at.driver.at.at_client
 }
