@@ -28,6 +28,7 @@ struct device_conf {
 	struct field_int irqs[16];
 	struct field_pin pins[64];
 	struct field_int clocks[16];
+	struct field_int dmas[16];
 };
 
 struct gpio_conf {
@@ -49,6 +50,16 @@ struct clk_conf {
 	struct device_conf dev;
 	struct field_int type[16];
 
+};
+
+struct dma_conf {
+	int status;
+	struct device_conf dev;
+};
+
+struct mmc_conf {
+	int status;
+	struct device_conf dev;
 };
 
 struct uart_conf {
@@ -110,7 +121,9 @@ struct led_conf {
 #define GPIO_IDX    5
 #define FPIOA_IDX   6
 #define CLK_IDX     7
-#define MAX_IDX     8
+#define MMC_IDX     8
+#define DMA_IDX     9
+#define MAX_IDX     10
 
 
 #define EXPORT_CONFIG(...) \
@@ -164,6 +177,18 @@ struct led_conf {
 	[CLK_IDX] = { \
 		(void *) &(clks)[0], \
 		ARRAY_SIZE(clks), \
+	}
+
+#define DMA(dmas) \
+	[DMA_IDX] = { \
+		(void *) &(dmas)[0], \
+		ARRAY_SIZE(dmas), \
+	}
+
+#define MMC(mmcs) \
+	[MMC_IDX] = { \
+		(void *) &(mmcs)[0], \
+		ARRAY_SIZE(mmcs), \
 	}
 
 #define CONFIG   void config()
