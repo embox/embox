@@ -7,9 +7,7 @@ PKG_MD5     := 1c203d1474022b0aad2364f3ab92494e
 
 PKG_PATCHES := packetdrill.patch
 
-include $(EXTBLD_LIB)
-
-PACKETDRILL_SOURCE_DIR := $(BUILD_DIR)/$(PKG_NAME)/gtests/net/$(PKG_NAME)
+PACKETDRILL_SOURCE_DIR := $(MOD_BUILD_DIR)/$(PKG_NAME)/gtests/net/$(PKG_NAME)
 
 CFLAGS_NO_PACKED =
 

@@ -20,10 +20,13 @@ static module k1921vk035_system {
 }
 
 @BuildDepends(k1921vk035_system)
-static module plib035 {
+static module plib035 extends third_party.bsp.niiet.plib {
+	@IncludeExport(path="bsp/niiet", target_name="plib.h")
+	source "plib035.h"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/niiet/k1921vk035_system/k1921vk-sdk-1.7.3/platform/plib035/src")
 	@Cflags("-Wno-unused")
 	@Cflags("-Wno-undef")
-	@AddPrefix("^BUILD/extbld/third_party/bsp/niiet/k1921vk035_system/k1921vk-sdk-1.7.3/platform/plib035/src")
 	source "plib035_adc.c",
 		"plib035_can.c",
 		"plib035_dma.c",
@@ -40,5 +43,5 @@ static module plib035 {
 		"plib035_uart.c",
 		"plib035_wdt.c"
 
-	depends k1921vk035_system
+	@NoRuntime depends k1921vk035_system
 }

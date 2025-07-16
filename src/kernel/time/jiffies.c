@@ -35,11 +35,13 @@ clock_t ns2jiffies(time64_t ns) {
 }
 
 clock_t ms2jiffies(time64_t ms) {
-	return ns2jiffies(ms * 1000000);
+	return ns2jiffies(ms * NSEC_PER_MSEC);
 }
 
 time64_t jiffies2ms(clock_t jiff) {
-	return clock_to_ns(cs_jiffies->event_device->event_hz, jiff) / 1000000;
+	time64_t ns;
+	ns = clock_to_ns(cs_jiffies->event_device->event_hz, jiff);
+	return ns / NSEC_PER_MSEC;
 }
 
 uint32_t clock_freq(void) {

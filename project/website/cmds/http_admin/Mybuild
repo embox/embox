@@ -14,3 +14,9 @@ module http_admin {
 	depends embox.compat.libc.stdlib.system
 	depends embox.compat.posix.util.environ
 }
+
+@AutoCmd
+@Cmd(name="website_stm32_hw_init", help="", man="")
+module website_stm32_hw_init {
+	source "website_stm32_hw_init.c"
+}

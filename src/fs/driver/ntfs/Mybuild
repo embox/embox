@@ -7,6 +7,7 @@ module ntfs {
 	option number ntfs_inode_quantity=64
 	option number ntfs_descriptor_quantity=4
 
+	//@Cflags("-Wno-error=stringop-truncation")
 	source "ntfs.c"
 
 	depends third_party.ntfs_3g.core

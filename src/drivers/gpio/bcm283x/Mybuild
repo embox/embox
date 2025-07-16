@@ -1,6 +1,6 @@
 package embox.driver.gpio
 
-module bcm283x_gpio extends api {
+module bcm283x_gpio {
 	/* 	RPI_VERSION == 0 then 0x20200000
 		RPI_VERSION == 3 then 0x3F200000
 		RPI_VERSION == 4 then 0xFE200000

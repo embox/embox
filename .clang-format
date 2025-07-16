@@ -7,7 +7,7 @@ AlignAfterOpenBracket: DontAlign
 # AlignArrayOfStructures: Left  # clang-format-13
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
-AlignConsecutiveMacros: AcrossEmptyLinesAndComments
+AlignConsecutiveMacros: AcrossComments
 AlignEscapedNewlines: Left
 AlignOperands: true
 AlignTrailingComments: true
@@ -106,7 +106,7 @@ PenaltyBreakComment: 10
 PenaltyBreakFirstLessLess: 0
 PenaltyBreakString: 20
 PenaltyBreakTemplateDeclaration: 0
-PenaltyExcessCharacter: 90
+PenaltyExcessCharacter: 5
 # PenaltyIndentedWhitespace: 0 # clang-format-13
 PenaltyReturnTypeOnItsOwnLine: 30
 

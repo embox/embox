@@ -12,7 +12,7 @@
 #include <util/log.h>
 
 #include <hal/cache.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/common/memory.h>
 #include <hal/reg.h>
 #include <kernel/printk.h>

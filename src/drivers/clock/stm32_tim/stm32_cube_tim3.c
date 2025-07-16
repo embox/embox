@@ -29,7 +29,7 @@ static struct time_event_device stm32_cube_tim_event = {
 };
 
 static struct time_counter_device stm32_cube_tim_counter = {
-	.read = stm32_cube_tim_base_read,
+	.get_cycles = stm32_cube_tim_get_cycles,
 	.cycle_hz = TIM_CLK_HZ,
 	.mask = 0xffff,
 };

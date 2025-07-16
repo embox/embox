@@ -11,6 +11,7 @@
 
 #include <framework/mod/options.h>
 
+#define STRICT_ALIGNMENT OPTION_GET(BOOLEAN, strict_alignment)
 #define MULTIPROCESSING OPTION_GET(NUMBER, multi_processing)
 
 .section .text
@@ -28,7 +29,9 @@ hardware_init_hook:
 
 	/* Setup c1, Control Register */
 	mrc     p15, 0, r0, c1, c0, 0
+#if STRICT_ALIGNMENT	
 	orr     r0, r0, #SCTLR_A /* enabling data abort on unaligned mem access */
+#endif	
 	orr     r0, r0, #SCTLR_C /* enabling data caching */
 	orr     r0, r0, #SCTLR_Z /* enabling program flow prediction */
 	orr     r0, r0, #SCTLR_I /* enabling instruction caching */

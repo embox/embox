@@ -1,0 +1,15 @@
+host = '10.0.2.16'
+port = 502
+mb_addr = 0
+addr_bits = 0
+nb_bits = 1
+start_bits = 0
+addr_input_bits = 1
+nb_input_bits = 0
+start_input_bits = 0
+addr_input_registers = 2
+nb_input_registers = 0
+start_input_registers = 0
+addr_registers = 3
+nb_registers = 0
+start_registers = 0

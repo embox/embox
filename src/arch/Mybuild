@@ -19,52 +19,69 @@ abstract module mmu {
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.interrupt_stub)
-abstract module interrupt { }
+abstract module interrupt {
+}
 
 @Mandatory
-@DefaultImpl(embox.arch.generic.nocontext)
-abstract module context { }
+@DefaultImpl(embox.arch.generic.context_stub)
+abstract module context {
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.syscall_stub)
-abstract module syscall { }
+abstract module syscall {
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nousermode)
-abstract module usermode { }
+abstract module usermode {
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp {
-	option boolean independent_clock = false
+	option boolean independent_clock=false
 }
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.reg_stub)
-abstract module reg { }
+abstract module reg {
+}
 
 @Mandatory
 @DefaultImpl(embox.arch.generic.cpu_idle_stub)
-abstract module cpu_idle { }
+abstract module cpu_idle {
+}
 
 @DefaultImpl(embox.arch.generic.cache_stub)
-abstract module cache { }
+abstract module cache {
+}
 
 @DefaultImpl(embox.arch.generic.no_libarch)
-abstract module libarch { }
+abstract module libarch {
+}
 
-/* Deprecated */
-abstract module arch { }
+@DefaultImpl(embox.arch.generic.mem_barriers_stub)
+abstract module mem_barriers {
+}
 
-abstract module locore { }
-abstract module entry { }
-abstract module boot { }
-abstract module lds { }
-abstract module mmuinfo { }
-abstract module mem_barriers { }
-abstract module syscall_caller { }
-abstract module stackframe { }
-abstract module testtrap { }
-abstract module cpu_info { }
-abstract module vfork_entry { }
-abstract module fork_entry { }
+abstract module mmuinfo {
+}
+
+abstract module syscall_caller {
+}
+
+abstract module stackframe {
+}
+
+abstract module testtrap {
+}
+
+abstract module cpu_info {
+}
+
+abstract module vfork_entry {
+}
+
+abstract module fork_entry {
+}

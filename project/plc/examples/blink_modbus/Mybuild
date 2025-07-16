@@ -1,0 +1,10 @@
+package project.plc.examples
+
+@BuildDepends(project.plc.matiec)
+module blink_modbus {
+	source "plc.st"
+
+	@NoRuntime depends project.plc.core
+	@NoRuntime depends project.plc.matiec
+	@NoRuntime depends project.plc.matiec_lib.led
+}

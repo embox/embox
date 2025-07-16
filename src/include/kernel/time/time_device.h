@@ -10,6 +10,7 @@
 #define KERNEL_TIME_TIME_DEVICE_H_
 
 #include <stdint.h>
+
 #include <kernel/time/time.h>
 
 struct clock_source;
@@ -32,7 +33,7 @@ struct time_event_device {
 	uint32_t flags; /**< periodical or not */
 #define CLOCK_EVENT_ONESHOT_MODE  (1 << 0)
 #define CLOCK_EVENT_PERIODIC_MODE (1 << 1)
-#define CLOCK_EVENT_MODE_MASK     \
+#define CLOCK_EVENT_MODE_MASK \
 	(CLOCK_EVENT_ONESHOT_MODE | CLOCK_EVENT_PERIODIC_MODE)
 
 	volatile clock_t jiffies; /**< count of jiffies since event device started */
@@ -42,19 +43,11 @@ struct time_event_device {
 	const char *name;
 };
 
-/**
- * Time device, that don't generate interrupts. Such device change own state
- * with fixed frequency and we need make request for it state.
- *
- * @param init - init function.
- * @param resolution - number of cycles per second.
- * @param read - return current number of cycles.
- */
 struct time_counter_device {
-	uint32_t cycle_hz;
-	uint64_t mask; /* Maximum value that can be loaded */
-
-	cycle_t (*read)(struct clock_source *cs);
+	cycle_t (*get_cycles)(struct clock_source *cs); /* number of cycles since last event */
+	uint64_t (*get_time)(struct clock_source *cs); /* time from start of timer */
+	uint64_t mask;     /* Maximum value that can be loaded */
+	uint32_t cycle_hz; /* number of cycles per second */
 };
 
 #endif /* KERNEL_TIME_TIME_DEVICE_H_ */

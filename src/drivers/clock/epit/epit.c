@@ -70,18 +70,18 @@ static int epit_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t epit_read(struct clock_source *cs) {
+static cycle_t epit_get_cycles(struct clock_source *cs) {
 	return REG32_LOAD(EPIT_CNR);
 }
 
 static struct time_event_device epit_event = {
-	.set_periodic   = epit_set_periodic,
-	.irq_nr   = EPIT_IRQ,
+    .set_periodic = epit_set_periodic,
+    .irq_nr = EPIT_IRQ,
 };
 
 static struct time_counter_device epit_counter = {
-	.read     = epit_read,
-	.cycle_hz = EPIT_TARGET_HZ,
+    .get_cycles = epit_get_cycles,
+    .cycle_hz = EPIT_TARGET_HZ,
 };
 
 STATIC_IRQ_ATTACH(EPIT_IRQ, clock_handler, &imx6_clock_source);

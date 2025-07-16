@@ -1,5 +1,5 @@
---- qt-everywhere-opensource-src-4.8.7/src/plugins/platforms/fb_base/fb_base.cpp	2015-05-07 17:14:48.000000000 +0300
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/plugins/platforms/fb_base/fb_base.cpp	2020-12-23 23:41:17.221257401 +0300
+--- Qt-4.8.7-master/src/plugins/platforms/fb_base/fb_base.cpp	2015-05-07 17:14:48.000000000 +0300
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/plugins/platforms/fb_base/fb_base.cpp	2020-12-23 23:41:17.221257401 +0300
 @@ -50,7 +50,11 @@
          : QPlatformCursor(scr), currentRect(QRect()), prevRect(QRect())
  {

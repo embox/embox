@@ -8,8 +8,6 @@ PKG_MD5     := bc173ff2caaf3d27b42befe0147369fa
 
 PKG_PATCHES := 32bit_counter_patch.txt
 
-include $(EXTBLD_LIB)
-
 $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/qsbr
 	cp $(PKG_SOURCE_DIR)/src/ebr.h $(PKG_INSTALL_DIR)/qsbr

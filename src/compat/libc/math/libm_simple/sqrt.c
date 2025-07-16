@@ -1,6 +1,6 @@
 #include <math.h>
 
-long double sqrtl(long double x) {
+static long double sqrt_common(long double x) {
 	long double l = 0.;
 	long double r = MAXFLOAT;
 	long double m = (r + l) / 2.;
@@ -29,10 +29,16 @@ long double sqrtl(long double x) {
 	return m;
 }
 
+long double sqrtl(long double x) {
+	return sqrt_common(x);
+}
+
 float sqrtf(float x) {
-	return sqrtl(x);
+	return sqrt_common(x);
 }
 
 double sqrt(double x) {
-	return sqrtl(x);
+	return sqrt_common(x);
 }
+
+

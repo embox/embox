@@ -93,7 +93,7 @@ run_bg() {
 	declare -A atml2sim
 	#"sparc/qemu" not supported due qemu bug
 	atml2sim=(
-		['x86/smp']="$RUN_QEMU -smp 2"
+		['x86/smp']="$RUN_QEMU"
 		['sparc/debug']="$(dirname "$0")/tsim_run.sh $OUTPUT_FILE $SIM_ARG $EMKERNEL"
 		['usermode86/debug']="$(dirname "$0")/../usermode_start.sh"
 	)

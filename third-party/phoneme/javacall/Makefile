@@ -1,19 +1,17 @@
 
-include $(EXTBLD_LIB)
-
-JAVACALL_DIR := $(BUILD_DIR)/src
-JAVACALL_OUTPUT_DIR := $(BUILD_DIR)
-TOOLS_DIR := $(BUILD_DIR)/../src/phoneme/tools
+JAVACALL_DIR := $(MOD_BUILD_DIR)/src
+JAVACALL_OUTPUT_DIR := $(MOD_BUILD_DIR)
+TOOLS_DIR := $(MOD_BUILD_DIR)/../src/phoneme/tools
 JDK_DIR := $(shell readlink -f `which javac` | xargs dirname)/..
 
 $(CONFIGURE) :
-	cd $(BUILD_DIR) && ( \
+	cd $(MOD_BUILD_DIR) && ( \
 		ln -s ../src/phoneme/javacall src \
 	)
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR) && ( \
+	cd $(MOD_BUILD_DIR) && ( \
 		$(MAKE) -C src/configuration/stubs/linux MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \
 			USE_DEBUG=true \
 			JAVACALL_DIR=$(JAVACALL_DIR) JAVACALL_OUTPUT_DIR=$(JAVACALL_OUTPUT_DIR) \
@@ -24,6 +22,6 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
-	ln -s $(BUILD_DIR)/inc $(PKG_INSTALL_DIR)/include
-	ln -s $(BUILD_DIR)/obj_g/javautil_unicode.o $(PKG_INSTALL_DIR)
+	ln -s $(MOD_BUILD_DIR)/inc $(PKG_INSTALL_DIR)/include
+	ln -s $(MOD_BUILD_DIR)/obj_g/javautil_unicode.o $(PKG_INSTALL_DIR)
 	touch $@

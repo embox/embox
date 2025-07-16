@@ -23,6 +23,5 @@ module flash_settings {
 
 	depends embox.net.lib.getifaddrs
 
-	depends project.gpio_httpd_admin.led_driver_lib
+	@NoRuntime depends embox.lib.leddrv
 }
-

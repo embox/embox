@@ -13,8 +13,6 @@ PKG_PATCHES := patch.txt \
 
 PKG_PATCHES += sse_patch.txt
 
-include $(EXTBLD_LIB)
-
 QUAKE_EMBOX_CFLAGS := -include $(ROOT_DIR)/third-party/games/quake3/embox_compat.h
 QUAKE_EMBOX_CFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/lib/OpenLibm/openlibm-0.7.0/include/
 QUAKE_EMBOX_CFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/lib/OpenLibm/openlibm-0.7.0/src/
@@ -27,7 +25,7 @@ $(CONFIGURE) :
 	touch $@
 
 $(BUILD) :
-	cd $(BUILD_DIR)/ioq3 && ( \
-		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' V=1 ARCH=$(ARCH) CC=$(EMBOX_GCC) CFLAGS="$(QUAKE_EMBOX_CFLAGS)"; \
+	cd $(MOD_BUILD_DIR)/ioq3 && ( \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' V=1 ARCH=$(EMBOX_ARCH) CC=$(EMBOX_GCC) CFLAGS="$(QUAKE_EMBOX_CFLAGS)"; \
 	)
 	touch $@

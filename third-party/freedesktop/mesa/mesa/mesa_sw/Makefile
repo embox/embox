@@ -9,11 +9,9 @@ PKG_MD5     := b31a43ebb8b37fb704a9a75c90bbd71b
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 MESA_CPPFLAGS := -I$(SRC_DIR)/include -I$(SRC_DIR)/compat/cxx/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/libc/include -I$(SRC_DIR)/compat/posix/include
-MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(ARCH)/include 
+MESA_CPPFLAGS += -I$(SRC_DIR)/arch/$(EMBOX_ARCH)/include 
 MESA_CPPFLAGS += -I$(SRC_DIR)/compat/linux/include
 MESA_CPPFLAGS += -I$(ROOT_DIR)/build/base/gen/include
 MESA_CPPFLAGS += -I$(SRC_DIR)/../build/extbld/third_party/freedesktop/mesa/libdrm/libdrm-2.4.96/

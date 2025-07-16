@@ -7,6 +7,7 @@
 #ifndef DIRENT_H_
 #define DIRENT_H_
 
+#include <limits.h>
 #include <sys/cdefs.h>
 #include <sys/types.h>
 
@@ -49,15 +50,11 @@ extern int readdir_r(DIR *, struct dirent *, struct dirent **);
 
 extern void rewinddir(DIR *dirp);
 
-static inline int scandir(const char *dir, struct dirent ***namelist,
+extern int scandir(const char *dir, struct dirent ***namelist,
     int (*sel)(const struct dirent *),
-    int (*compar)(const struct dirent **, const struct dirent **)) {
-	(void)dir;
-	(void)namelist;
-	(void)sel;
-	(void)compar;
-	return -1;
-}
+    int (*compar)(const struct dirent **, const struct dirent **));
+
+extern int alphasort(const struct dirent **d1, const struct dirent **d2);
 
 __END_DECLS
 

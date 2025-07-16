@@ -1,17 +1,10 @@
 package third_party.e2fsprogs
 
-@Build(stage=1,script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/install/include",
-	ldflags="-L$(abspath $(EXTERNAL_BUILD_DIR))/third_party/e2fsprogs/core/install/lib")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/e2fsprogs/core/install/include")
 static module core {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
-	source "libblkid.a", "libcom_err.a", "libe2p.a",
-		"libext2fs.a", "libquota.a", "libuuid.a"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/intl")
-	source "libintl.a"
-
-	depends embox.compat.posix.stubs
+	source "libsupport.a", "libext2fs.a", "libcom_err.a", "libblkid.a", "libuuid.a", "libe2p.a"
 
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.libc.str_dup
@@ -24,14 +17,12 @@ static module core {
 @App
 @AutoCmd
 @Cmd(name = "e2freefrag",
-	help = "report filesystem free-space fragmentation",
-	man = '''
-		NAME
-			e2freefrag - report filesystem free-space fragmentation
-	''')
+     help = "report filesystem free-space fragmentation",
+     man  = "")
+@Build(stage=2,script="true")
 module e2freefrag {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
-	source "e2freefrag.o"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/sbin")
+	source "e2freefrag"
 
 	@NoRuntime depends core
 }
@@ -39,30 +30,25 @@ module e2freefrag {
 @App
 @AutoCmd
 @Cmd(name = "dumpe2fs",
-	help = "List the control structures of a second extended filesystem",
-	man = '''
-		NAME
-			dumpe2fs - List the control structures of a second extended filesystem
-	''')
+     help = "List the control structures of a second extended filesystem",
+     man  = "")
+@Build(stage=2,script="true")
 module dumpe2fs {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
-	source "dumpe2fs.o"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/sbin")
+	source "dumpe2fs"
 
 	@NoRuntime depends core
 }
 
+@App
+@AutoCmd
 @Cmd(name = "mke2fs",
-	help = "Make a ext2fs filesystem",
-	man = '''
-		NAME
-			mke2fs - Make a ext2fs filesystem
-	''')
+     help = "Make a ext2fs filesystem",
+     man  = "")
+@Build(stage=2,script="true")
 module mke2fs {
-	source "mke2fs_cmd.c"
-
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/misc")
-	source "mke2fs.o", "util.o", "profile.o",
-		"prof_err.o", "default_profile.o"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/sbin")
+	source "mke2fs"
 
 	@NoRuntime depends core
 }
@@ -70,14 +56,12 @@ module mke2fs {
 @App
 @AutoCmd
 @Cmd(name = "e2fsck",
-	help = "a consistency checker for the new extended file system",
-	man = '''
-		NAME
-			e2fsck - a consistency checker for the new extended file system
-	''')
+     help = "a consistency checker for the new extended file system",
+     man  = "")
+@Build(stage=2,script="true")
 module e2fsck {
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/e2fsck")
-	source "*.o"
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/../core/install/sbin")
+	source "*e2fsck"
 
 	@NoRuntime depends core
 }

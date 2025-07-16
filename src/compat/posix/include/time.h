@@ -75,15 +75,19 @@ extern time_t mktime(struct tm *tm);
 /* convert date and time to a string */
 extern char *asctime(const struct tm *timeptr);
 
+extern int daylight;
+extern long timezone;
+
 extern struct tm *localtime(const time_t *timep);
 extern struct tm *localtime_r(const time_t *timep, struct tm *result);
 
 /* clocks from beginning of start system */
 extern clock_t clock(void);
 
-#define CLOCK_REALTIME  3
-#define TIMER_ABSTIME   2
-#define CLOCK_MONOTONIC 1
+#define CLOCK_REALTIME      3
+#define TIMER_ABSTIME       2
+#define CLOCK_MONOTONIC     1
+#define CLOCK_MONOTONIC_RAW CLOCK_MONOTONIC
 
 extern int clock_getres(clockid_t clk_id, struct timespec *res);
 
@@ -105,6 +109,17 @@ extern int nanosleep(const struct timespec *req, struct timespec *rem);
 static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
 }
+
+extern char *tzname[2];
+extern void tzset(void);
+
+struct sigevent;
+extern int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid);
+
+extern int timer_settime(timer_t timerid, int flags,
+				const struct itimerspec *value, struct itimerspec *ovalue);
+extern int timer_gettime(timer_t timerid, struct itimerspec *value);
+extern int timer_getoverrun(timer_t timerid);
 
 __END_DECLS
 

@@ -12,5 +12,5 @@ module adxl345 {
 
 	source "adxl345.c"
 
-	depends embox.driver.adapters.i2c_designware
+	depends embox.driver.i2c.i2c_designware
 }

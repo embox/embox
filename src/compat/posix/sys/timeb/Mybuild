@@ -1,0 +1,5 @@
+package embox.compat.posix.sys
+
+module timeb {
+	source "timeb.c"
+}

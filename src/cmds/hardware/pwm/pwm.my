@@ -1,0 +1,18 @@
+package embox.cmd.hw
+
+@AutoCmd
+@Cmd(name = "pwm",
+	help = "work with PWM subsystem",
+	man = '''
+		NAME
+			pwm - 
+		SYNOPSIS
+			pwm TODO
+		DESCRIPTION
+			Detailed description.
+		AUTHORS
+			Anton Bondarev
+	''')
+module pwm {
+	source "pwm.c"
+}

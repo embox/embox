@@ -1,6 +1,6 @@
 package embox.driver.gpio
 
-module stm32_gpio_l0x0 extends api {
+module stm32_gpio_l0x0 {
 	option string log_level="LOG_NONE"
 	option number gpio_chip_id = 0
 	option number exti0_1_irq = 5
@@ -16,7 +16,7 @@ module stm32_gpio_l0x0 extends api {
 	depends embox.driver.gpio.core
 }
 
-module stm32_gpio_f0 extends api {
+module stm32_gpio_f0 {
 	option string log_level="LOG_NONE"
 	option number gpio_chip_id = 0
 	option number exti0_1_irq = 5
@@ -32,7 +32,7 @@ module stm32_gpio_f0 extends api {
 	depends embox.driver.gpio.core
 }
 
-module stm32_vl extends api {
+module stm32_vl {
 	option number gpio_chip_id = 0
 
 	source "stm32_gpio_vl.c", "stm32_gpio_vl.h"

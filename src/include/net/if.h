@@ -14,7 +14,7 @@
 /**
  * Maximum length of interface's name (including \0)
  */
-#define IFNAMSIZ        6
+#define IFNAMSIZ 6
 
 /**
  * Standard interface flags
@@ -33,9 +33,8 @@
 
 extern unsigned int if_nametoindex(const char *);
 
-
 struct ifreq {
-	char    ifr_name[IFNAMSIZ];/* Interface name */
+	char ifr_name[IFNAMSIZ]; /* Interface name */
 	union {
 		struct sockaddr ifr_addr;
 		struct sockaddr ifr_dstaddr;
@@ -43,17 +42,33 @@ struct ifreq {
 		struct sockaddr ifr_netmask;
 		struct sockaddr ifr_hwaddr;
 
-		short   ifr_flags;
-		int     ifr_ifindex;
-		int     ifr_metric;
-		int     ifr_mtu;
+		short ifr_flags;
+		int ifr_ifindex;
+		int ifr_metric;
+		int ifr_mtu;
 #if 0
 		struct ifmap ifr_map;
 #endif
-		char    ifr_slave[IFNAMSIZ];
-		char    ifr_newname[IFNAMSIZ];
-		char *  ifr_data;
+		char ifr_slave[IFNAMSIZ];
+		char ifr_newname[IFNAMSIZ];
+		char *ifr_data;
 	};
 };
+
+/**
+ * Structure used in SIOCGIFCONF request. Used to retrieve interface
+ * configuration for machine (useful for programs which must know all
+ * networks accessible)
+ */
+struct ifconf {
+	int ifc_len; /* size of buffer	*/
+	union {
+		char *ifcu_buf;
+		struct ifreq *ifcu_req;
+	} ifc_ifcu;
+};
+
+#define ifc_buf ifc_ifcu.ifcu_buf /* buffer address	*/
+#define ifc_req ifc_ifcu.ifcu_req /* array of structures	*/
 
 #endif /* NET_IF_H_ */

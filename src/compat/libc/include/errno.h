@@ -8,8 +8,8 @@
  * @author Anton Kozlov
  */
 
-#ifndef ERRNO_H_
-#define ERRNO_H_
+#ifndef COMPAT_LIBC_ERRNO_H_
+#define COMPAT_LIBC_ERRNO_H_
 
 #include <posix_errno.h>
 
@@ -43,7 +43,7 @@
 #define EROFS            30    /* Read-only file system */
 #define EMLINK           31    /* Too many links */
 #define EDOM             33    /* Argument to math function out of domain */
-#define ERANGE           34    /* Math result cannot be represented */
+#define ERANGE           34    /* Numerical result out of range */
 #define EDEADLK          35    /* Resource deadlock would occur */
 #define ENAMETOOLONG     36    /* File name too long */
 #define EDEADLOCK        EDEADLK
@@ -119,4 +119,4 @@
 #define EHOSTDOWN        364   /* Host is down */
 #define EHOSTUNREACH     365   /* No route to host */
 
-#endif /* ERRNO_H_ */
+#endif /* COMPAT_LIBC_ERRNO_H_ */

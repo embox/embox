@@ -12,7 +12,6 @@
 #include <asm/io.h>
 #include <asm/mipsregs.h>
 #include <asm/system.h>
-#include <drivers/mips/global_control_block.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <kernel/panic.h>
@@ -23,17 +22,31 @@
 
 EMBOX_UNIT_INIT(mips_cache_init);
 
+#ifndef CONFIG_SYS_ICACHE_LINE_SIZE
+#define CONFIG_SYS_ICACHE_LINE_SIZE	32
+#endif
+
+#ifndef CONFIG_SYS_DCACHE_LINE_SIZE
+#define CONFIG_SYS_DCACHE_LINE_SIZE	32
+#endif
+
+#ifndef CONFIG_SYS_SCACHE_LINE_SIZE
+#define CONFIG_SYS_SCACHE_LINE_SIZE	0
+#endif
+
 #if USE_L2_CACHE
-static uint32_t l2_line_size;
+extern uint32_t mips_cm_l2_line_size(void);
+
+static uint32_t l2_line_size = CONFIG_SYS_SCACHE_LINE_SIZE;
 #endif
 
 #if USE_CACHE_SIZE_AUTO
-static uint32_t l1i_line_size;
-static uint32_t l1d_line_size;
+static uint32_t l1i_line_size = CONFIG_SYS_ICACHE_LINE_SIZE;
+static uint32_t l1d_line_size = CONFIG_SYS_DCACHE_LINE_SIZE;
 #endif
 
 static inline unsigned long icache_line_size(void) {
-#ifdef USE_CACHE_SIZE_AUTO
+#if USE_CACHE_SIZE_AUTO
 	return l1i_line_size;
 #else
 	return CONFIG_SYS_ICACHE_LINE_SIZE;
@@ -41,7 +54,7 @@ static inline unsigned long icache_line_size(void) {
 }
 
 static inline unsigned long dcache_line_size(void) {
-#ifdef USE_CACHE_SIZE_AUTO
+#if USE_CACHE_SIZE_AUTO
 	return l1d_line_size;
 #else
 	return CONFIG_SYS_DCACHE_LINE_SIZE;
@@ -49,7 +62,7 @@ static inline unsigned long dcache_line_size(void) {
 }
 
 static inline unsigned long scache_line_size(void) {
-#ifdef USE_L2_CACHE
+#if USE_L2_CACHE
 	return l2_line_size;
 #else
 	return CONFIG_SYS_SCACHE_LINE_SIZE;
@@ -91,7 +104,7 @@ static void probe_l2(void) {
 #endif
 
 static int mips_cache_init(void) {
-#ifdef USE_CACHE_SIZE_AUTO
+#if USE_CACHE_SIZE_AUTO
 	unsigned long conf1, il, dl;
 
 	conf1 = mips_read_c0_config1();

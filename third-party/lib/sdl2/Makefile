@@ -7,8 +7,6 @@ PKG_MD5     := 3800d705cef742c6a634f202c37f263f
 
 PKG_PATCHES := sdl2.patch
 
-include $(EXTBLD_LIB)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && aclocal && autoconf && ( \

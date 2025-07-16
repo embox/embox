@@ -8,14 +8,17 @@
  *         - clock_source_get_list() function.
  */
 
+#include <assert.h>
+#include <errno.h>
+#include <stddef.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <errno.h>
 
-#include <lib/libds/dlist.h>
-#include <util/math.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
+#include <lib/libds/dlist.h>
+#include <util/math.h>
 
 static DLIST_DEFINE(clock_source_list);
 
@@ -63,24 +66,20 @@ int clock_source_unregister(struct clock_source *cs) {
 }
 
 struct timespec clock_source_read(struct clock_source *cs) {
-	struct timespec ts;
-	struct time_event_device *ed;
 	struct time_counter_device *cd;
-	uint64_t ns = 0;
+	struct time_event_device *ed;
+	struct timespec ts;
+	uint64_t ns;
 
+	ns = 0;
 	ed = cs->event_device;
-	if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
-		ns += ((uint64_t) ed->jiffies * NSEC_PER_SEC) / ed->event_hz;
-	}
-
 	cd = cs->counter_device;
-	if (cd) {
-		if (cd->cycle_hz >= NSEC_PER_SEC) {
-			ns += ((uint64_t) cd->read(cs)) / ((uint64_t) cd->cycle_hz / NSEC_PER_SEC);
-		}
-		else {
-			ns += ((uint64_t) cd->read(cs)) * ((uint64_t) NSEC_PER_SEC / cd->cycle_hz);
-		}
+
+	if (cd && cd->get_time) {
+		ns = cd->get_time(cs);
+	}
+	else if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
+		ns = (uint64_t)ed->jiffies * (NSEC_PER_SEC / ed->event_hz);
 	}
 
 	ts = ns_to_timespec(ns);
@@ -123,15 +122,15 @@ int clock_source_set_periodic(struct clock_source *cs, uint32_t hz) {
 	/* FIXME Currently not all clock drivers support counter device. */
 	if (cs->counter_device) {
 		clock_source_set_next_event(cs, clock_source_ticks2cycles(cs, 1));
-	} else {
+	}
+	else {
 		clock_source_set_next_event(cs, 0);
 	}
 
 	return 0;
 }
 
-int clock_source_set_next_event(struct clock_source *cs,
-		uint32_t next_event) {
+int clock_source_set_next_event(struct clock_source *cs, uint32_t next_event) {
 	assert(cs && cs->event_device);
 
 	if (!cs->event_device->set_next_event) {
@@ -154,19 +153,19 @@ struct clock_source *clock_source_get_best(enum clock_source_property pr) {
 		cycle_hz = cs->counter_device ? cs->counter_device->cycle_hz : 0;
 
 		switch (pr) {
-			case CS_ANY:
+		case CS_ANY:
+			hz = cycle_hz;
+			break;
+		case CS_WITH_IRQ:
+			if (cs->event_device) {
 				hz = cycle_hz;
-				break;
-			case CS_WITH_IRQ:
-				if (cs->event_device) {
-					hz = cycle_hz;
-				}
-				break;
-			case CS_WITHOUT_IRQ:
-				if (!cs->event_device) {
-					hz = cycle_hz;
-				}
-				break;
+			}
+			break;
+		case CS_WITHOUT_IRQ:
+			if (!cs->event_device) {
+				hz = cycle_hz;
+			}
+			break;
 		}
 
 		if (hz > best_hz) {
@@ -197,5 +196,6 @@ time64_t clock_source_get_hwcycles(struct clock_source *cs) {
 	assert(cs->event_device && cs->counter_device);
 
 	load = cs->counter_device->cycle_hz / cs->event_device->event_hz;
-	return ((uint64_t) cs->event_device->jiffies) * load + cs->counter_device->read(cs);
+	return ((uint64_t)cs->event_device->jiffies) * load
+	       + cs->counter_device->get_cycles(cs);
 }

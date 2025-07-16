@@ -1,0 +1,17 @@
+package embox.driver.i2c
+
+@BuildDepends(third_party.bsp.niiet.plib)
+module niiet_i2c {
+	option boolean vg015_stub=false /* REMOVE ME */
+
+	option number i2c_frequency=125000
+	option boolean i2c_interrupts=false
+	option boolean i2c_threadsafe=true
+
+	source "niiet_i2c.c"
+	source "niiet_i2c0.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends third_party.bsp.niiet.plib
+	// @NoRuntime depends embox.compat.posix.pthreads
+}

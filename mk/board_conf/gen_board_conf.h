@@ -47,7 +47,7 @@ struct fpioa_conf {
 struct clk_conf {
 	int status;
 	struct device_conf dev;
-	struct field_int type;
+	struct field_int type[16];
 
 };
 
@@ -97,6 +97,7 @@ struct led_conf {
 	const char *name;
 	struct field_int port;
 	struct field_int pin;
+	struct field_int level; /* LED on */
 };
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))

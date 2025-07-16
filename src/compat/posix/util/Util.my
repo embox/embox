@@ -10,6 +10,8 @@ module All {
 		gethostname,
 		environ,
 		swab
+	
+	depends embox.compat.posix.sys.timeb
 }
 
 static module getopt {
@@ -33,6 +35,7 @@ static module utsname {
 static module time {
 	source "time.c"
 	source "linux_timer.c"
+	source "time_timer.c"
 
 	depends embox.kernel.time.kernel_time
 }

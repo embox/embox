@@ -5,6 +5,8 @@
  * @author Aleksey Zhmulin
  * @date 23.08.23
  */
+
+#include <stdbool.h>
 #include <stddef.h>
 
 #include <debug/breakpoint.h>
@@ -12,7 +14,7 @@
 
 EMBOX_TEST_SUITE("tests for hardware breakpoints");
 
-static void breakpoint_trigger(void) {
+static __attribute__((noinline)) void breakpoint_trigger(void) {
 	test_emit('a');
 }
 

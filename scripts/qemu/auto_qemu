@@ -158,10 +158,16 @@ guess_machine() {
 				echo "-M sabrelite"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
 				echo "-M lm3s811evb"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s6965evb" > /dev/null; then
+				echo "-M lm3s6965evb"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry" > /dev/null; then
 				echo "-M raspi1ap"
 			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry2" > /dev/null; then
 				echo "-M raspi2"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "netduinoplus2" > /dev/null; then
+				echo "-M netduinoplus2"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "stm32vl_discovery" > /dev/null; then
+				echo "-M stm32vldiscovery"
 			fi
 			;;
 		aarch64)
@@ -189,20 +195,43 @@ guess_machine() {
 		riscv)
 			if cat $BUILD_CONF | gcc -P -E - | grep "sifive_e" >/dev/null; then
 				echo "-M sifive_e"
+			
 			elif cat $BUILD_CONF | gcc -P -E - | grep "sifive_u" >/dev/null; then
 				echo "-M sifive_u"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr1" >/dev/null; then
+				echo "-M scr1"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr4" >/dev/null; then
+				echo "-M scr4"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr3" >/dev/null; then
+				echo "-M scr3"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr5" >/dev/null; then
+				echo "-M scr5"
 			else
 				echo "-M virt"
 			fi
 			;;
 		riscv64)
-			echo "-M virt"
+			if cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr4" >/dev/null; then
+				echo "-M scr4"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr3" >/dev/null; then
+				echo "-M scr3"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "virt" >/dev/null; then
+				echo "-M virt"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr5" >/dev/null; then
+				echo "-M scr5"
+			fi
 			;;
 		x86)
 			;;
 	esac
 }
 get_user_undef_guess AUTOQEMU_MACHINE guess_machine
+
+guess_cpuhartnum() {
+	cpu_num=$(cat "$MODS_CONF" | gcc -P -E - | sed -n 's/.*embox\.arch\.[^\.]*\.kernel\.cpu([^)]*cpu_count=\([0-9]\+\)).*/\1/p')
+	echo "${cpu_num:-1}"
+}
+get_user_undef_guess AUTOQEMU_CPUHARTNUM guess_cpuhartnum
 
 declare -A ARCH2QEMU
 ARCH2QEMU=(
@@ -339,13 +368,15 @@ usb_n=${#qemu_usb[*]}
 if [ "$usb_n" -gt 0 ]; then
 
 	for so in "${!qemu_usb[@]}"; do
-		usb_model=${USB2QEMU[${qemu_usb[$so]}]}
-		hci_id=${USB2QEMUID[${qemu_usb[$so]}]}
-		echo
-		if [ ! "$usb_model" ]; then
-			error "usb model ${qemu_usb[$ni]} is not supported"
-		else
-			usb_lines="$usb_lines -device $usb_model,id=$hci_id"
+		if [ "${qemu_usb[$ni]}" != "ehci_hcd" ]; then
+			usb_model=${USB2QEMU[${qemu_usb[$so]}]}
+			hci_id=${USB2QEMUID[${qemu_usb[$so]}]}
+			echo
+			if [ ! "$usb_model" ]; then
+				error "usb model ${qemu_usb[$so]} ${qemu_usb[$ni]} is not supported"
+			else
+				usb_lines="$usb_lines -device $usb_model,id=$hci_id"
+			fi
 		fi
 	done
 fi
@@ -359,6 +390,7 @@ GRAPHIC2QEMU=(
 	[bochs]="std"
 	[cirrus_logic]="cirrus"
 	[pl110]="pl110"
+	[ssd0323]="ssd0323"
 )
 
 qemu_graphic=$(guess_graphic)
@@ -371,7 +403,7 @@ if [ "$graphic_n" -gt 0 ]; then
 			if [ ! "$graphic_model" ]; then
 				graphic_lines="-nographic"
 			else
-				if [ "$graphic_model" = "pl110" ]; then
+				if [ "$graphic_model" = "pl110" ] || [ "$graphic_model" = "ssd0323" ]; then
 					graphic_lines="-serial mon:stdio"
 				else
 					graphic_lines="-vga $graphic_model -serial mon:stdio"
@@ -394,11 +426,15 @@ fi
 RUNAS=""
 # Don't try to drop privileges for root user; qemu fails otherwise
 if [[ "$(id -u)" -ne 0 ]] ; then
-	RUNAS="-runas $(whoami)"
+	if [ "$QEMU_VER" -ge 100000 ]; then
+		RUNAS="-run-with user=$(whoami)"
+	else 
+		RUNAS="-runas $(whoami)"
+	fi
 	sudo='sudo -E'
 fi
 
-ARG_LINE="$sudo $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
+ARG_LINE="$sudo $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
 
 info $ARG_LINE
 $ARG_LINE

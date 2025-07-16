@@ -1,7 +1,7 @@
 package embox.driver.gpio
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32cube_gpio extends api {
+module stm32cube_gpio {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -22,7 +22,7 @@ module stm32cube_gpio extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_f1 extends api {
+module stm32_gpio_f1 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -43,7 +43,7 @@ module stm32_gpio_f1 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_f2 extends api {
+module stm32_gpio_f2 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -64,7 +64,7 @@ module stm32_gpio_f2 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_f3 extends api {
+module stm32_gpio_f3 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -85,7 +85,7 @@ module stm32_gpio_f3 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_f4 extends api {
+module stm32_gpio_f4 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -105,7 +105,7 @@ module stm32_gpio_f4 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_f7 extends api {
+module stm32_gpio_f7 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -126,7 +126,7 @@ module stm32_gpio_f7 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_l1 extends api {
+module stm32_gpio_l1 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -146,7 +146,7 @@ module stm32_gpio_l1 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_l4 extends api {
+module stm32_gpio_l4 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0
@@ -166,7 +166,7 @@ module stm32_gpio_l4 extends api {
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
-module stm32_gpio_h7 extends api {
+module stm32_gpio_h7 {
 	option string log_level="LOG_NONE"
 
 	option number gpio_chip_id = 0

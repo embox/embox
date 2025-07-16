@@ -51,12 +51,12 @@ struct uart_conf uarts[] = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_6, AF8),
-				PIN("RX", PC, PIN_7, AF8),
+				PIN("TX", PG, PIN_14, AF8),
+				PIN("RX", PG, PIN_9, AF8),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOC),
-				VAL("RX",   CLK_GPIOC),
+				VAL("TX",   CLK_GPIOG),
+				VAL("RX",   CLK_GPIOG),
 				VAL("UART", CLK_USART6),
 			}
 		},
@@ -147,4 +147,28 @@ struct i2c_conf i2cs[] = {
 
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs))
+struct led_conf leds[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 0),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 7),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[2] = {
+		.status = ENABLED,
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 14),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+};
+
+EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs), LED(leds))

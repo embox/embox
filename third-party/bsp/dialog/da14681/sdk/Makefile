@@ -6,5 +6,3 @@ PKG_SOURCES := https://support.dialog-semiconductor.com/system/files/restricted/
 PKG_MD5     := fe8135b083503f0a759ebf975e00771f
 
 PKG_PATCHES := patch.txt
-
-include $(EXTBLD_LIB)

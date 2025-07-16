@@ -1,5 +1,5 @@
-diff -ur qt-everywhere-opensource-src-4.8.7/configure source/configure
---- qt-everywhere-opensource-src-4.8.7/configure	2013-06-07 09:16:41.000000000 +0400
+diff -ur Qt-4.8.7-master/configure source/configure
+--- Qt-4.8.7-master/configure	2013-06-07 09:16:41.000000000 +0400
 +++ source/configure	2014-03-07 11:57:58.081117323 +0400
 @@ -6799,6 +6799,7 @@
  fi
@@ -9,8 +9,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/configure source/configure
      if [ "$HAVE_STL" = "yes" ]; then
          CFG_STL=yes
      else
-diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.cpp source/src/corelib/global/qglobal.cpp
---- qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.cpp	2013-06-07 09:16:52.000000000 +0400
+diff -ur Qt-4.8.7-master/src/corelib/global/qglobal.cpp source/src/corelib/global/qglobal.cpp
+--- Qt-4.8.7-master/src/corelib/global/qglobal.cpp	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/global/qglobal.cpp	2014-03-07 11:57:58.094450656 +0400
 @@ -59,7 +59,7 @@
  #include <string.h>
@@ -21,8 +21,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.cpp sourc
  #  include <exception>
  #endif
  
-diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.h source/src/corelib/global/qglobal.h
---- qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.h	2013-06-07 09:16:52.000000000 +0400
+diff -ur Qt-4.8.7-master/src/corelib/global/qglobal.h source/src/corelib/global/qglobal.h
+--- Qt-4.8.7-master/src/corelib/global/qglobal.h	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/global/qglobal.h	2014-03-07 11:57:58.094450656 +0400
 @@ -261,6 +261,8 @@
  #  define Q_OS_INTEGRITY
@@ -55,8 +55,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/global/qglobal.h source/
 @@ -2327,0 +2327,2 @@
 +    Q_DECL_CONSTEXPR inline QFlags operator|(int mask) const { return QFlags(Enum(i | mask)); }
 +    Q_DECL_CONSTEXPR inline QFlags operator|(uint mask) const { return QFlags(Enum(i | mask)); }
-diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/io/qprocess.cpp source/src/corelib/io/qprocess.cpp
---- qt-everywhere-opensource-src-4.8.7/src/corelib/io/qprocess.cpp	2013-06-07 09:16:52.000000000 +0400
+diff -ur Qt-4.8.7-master/src/corelib/io/qprocess.cpp source/src/corelib/io/qprocess.cpp
+--- Qt-4.8.7-master/src/corelib/io/qprocess.cpp	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/io/qprocess.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -2263,7 +2263,8 @@
    static char *qt_empty_environ[] = { 0 };
@@ -68,8 +68,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/io/qprocess.cpp source/s
  #endif
  QT_END_INCLUDE_NAMESPACE
  
-diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/io/qprocess_unix.cpp source/src/corelib/io/qprocess_unix.cpp
---- qt-everywhere-opensource-src-4.8.7/src/corelib/io/qprocess_unix.cpp	2013-06-07 09:16:52.000000000 +0400
+diff -ur Qt-4.8.7-master/src/corelib/io/qprocess_unix.cpp source/src/corelib/io/qprocess_unix.cpp
+--- Qt-4.8.7-master/src/corelib/io/qprocess_unix.cpp	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/io/qprocess_unix.cpp	2014-03-07 12:31:10.484500716 +0400
 @@ -1335,6 +1335,88 @@
      return childPid != -1;
@@ -160,8 +160,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/io/qprocess_unix.cpp sou
  #else
  
  bool QProcessPrivate::startDetached(const QString &program, const QStringList &arguments, const QString &workingDirectory, qint64 *pid)
-diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/io/qresource.cpp source/src/corelib/io/qresource.cpp
---- qt-everywhere-opensource-src-4.8.7/src/corelib/io/qresource.cpp	2013-06-07 09:16:52.000000000 +0400
+diff -ur Qt-4.8.7-master/src/corelib/io/qresource.cpp source/src/corelib/io/qresource.cpp
+--- Qt-4.8.7-master/src/corelib/io/qresource.cpp	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/io/qresource.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -929,8 +929,10 @@
  };
@@ -174,8 +174,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/io/qresource.cpp source/
  
  // most of the headers below are already included in qplatformdefs.h
  // also this lacks Large File support but that's probably irrelevant
-diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qtranslator.cpp source/src/corelib/kernel/qtranslator.cpp
---- qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qtranslator.cpp	2013-06-07 09:16:52.000000000 +0400
+diff -ur Qt-4.8.7-master/src/corelib/kernel/qtranslator.cpp source/src/corelib/kernel/qtranslator.cpp
+--- Qt-4.8.7-master/src/corelib/kernel/qtranslator.cpp	2013-06-07 09:16:52.000000000 +0400
 +++ source/src/corelib/kernel/qtranslator.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -61,9 +61,11 @@
  #include "qresource.h"
@@ -189,8 +189,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qtranslator.cpp s
  
  #ifdef Q_OS_SYMBIAN
  #include "private/qcore_symbian_p.h"
-diff -ur qt-everywhere-opensource-src-4.8.7/src/gui/image/qmnghandler.cpp source/src/gui/image/qmnghandler.cpp
---- qt-everywhere-opensource-src-4.8.7/src/gui/image/qmnghandler.cpp	2013-06-07 09:16:59.000000000 +0400
+diff -ur Qt-4.8.7-master/src/gui/image/qmnghandler.cpp source/src/gui/image/qmnghandler.cpp
+--- Qt-4.8.7-master/src/gui/image/qmnghandler.cpp	2013-06-07 09:16:59.000000000 +0400
 +++ source/src/gui/image/qmnghandler.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -98,7 +98,7 @@
          (iChunkname>>8)&0xff,
@@ -201,8 +201,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/gui/image/qmnghandler.cpp source
  }
  
  static mng_ptr myalloc(mng_size_t iSize)
-diff -ur qt-everywhere-opensource-src-4.8.7/src/gui/styles/qplastiquestyle.cpp source/src/gui/styles/qplastiquestyle.cpp
---- qt-everywhere-opensource-src-4.8.7/src/gui/styles/qplastiquestyle.cpp	2013-06-07 09:16:59.000000000 +0400
+diff -ur Qt-4.8.7-master/src/gui/styles/qplastiquestyle.cpp source/src/gui/styles/qplastiquestyle.cpp
+--- Qt-4.8.7-master/src/gui/styles/qplastiquestyle.cpp	2013-06-07 09:16:59.000000000 +0400
 +++ source/src/gui/styles/qplastiquestyle.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -1513,17 +1513,21 @@
              handle.setColor(3, option->palette.light().color().rgba());
@@ -236,8 +236,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/gui/styles/qplastiquestyle.cpp s
              }
              cachePainter.end();
              QPixmapCache::insert(pixmapName, cache);
-diff -ur qt-everywhere-opensource-src-4.8.7/src/plugins/imageformats/ico/qicohandler.cpp source/src/plugins/imageformats/ico/qicohandler.cpp
---- qt-everywhere-opensource-src-4.8.7/src/plugins/imageformats/ico/qicohandler.cpp	2013-06-07 09:17:00.000000000 +0400
+diff -ur Qt-4.8.7-master/src/plugins/imageformats/ico/qicohandler.cpp source/src/plugins/imageformats/ico/qicohandler.cpp
+--- Qt-4.8.7-master/src/plugins/imageformats/ico/qicohandler.cpp	2013-06-07 09:17:00.000000000 +0400
 +++ source/src/plugins/imageformats/ico/qicohandler.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -364,11 +364,11 @@
      if (iod) {
@@ -253,8 +253,8 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/plugins/imageformats/ico/qicohan
  }
  
  void ICOReader::findColorInfo(QImage & image)
-diff -ur qt-everywhere-opensource-src-4.8.7/src/plugins/platforms/platforms.pro source/src/plugins/platforms/platforms.pro
---- qt-everywhere-opensource-src-4.8.7/src/plugins/platforms/platforms.pro	2013-06-07 09:17:00.000000000 +0400
+diff -ur Qt-4.8.7-master/src/plugins/platforms/platforms.pro source/src/plugins/platforms/platforms.pro
+--- Qt-4.8.7-master/src/plugins/platforms/platforms.pro	2013-06-07 09:17:00.000000000 +0400
 +++ source/src/plugins/platforms/platforms.pro	2014-03-07 11:57:58.097783990 +0400
 @@ -3,7 +3,9 @@
  SUBDIRS += minimal
@@ -267,12 +267,12 @@ diff -ur qt-everywhere-opensource-src-4.8.7/src/plugins/platforms/platforms.pro 
  }
  
  qnx {
---- qt-everywhere-opensource-src-4.8.7/src/network/socket/qudpsocket.cpp	2013-06-07 09:17:00.000000000 +0400
+--- Qt-4.8.7-master/src/network/socket/qudpsocket.cpp	2013-06-07 09:17:00.000000000 +0400
 +++ source/src/network/socket/qudpsocket.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -327,1 +327,1 @@
 -    return bind(QHostAddress::Any, port);
 +    return bind((const QHostAddress) QHostAddress::Any, (quint16) port);
---- qt-everywhere-opensource-src-4.8.7/src/gui/styles/qcommonstyle.cpp	2013-06-07 09:17:00.000000000 +0400
+--- Qt-4.8.7-master/src/gui/styles/qcommonstyle.cpp	2013-06-07 09:17:00.000000000 +0400
 +++ source/src/gui/styles/qcommonstyle.cpp	2014-03-07 11:57:58.097783990 +0400
 @@ -762,1 +762,1 @@
 -            QPalette::ColorGroup cg = (widget ? widget->isEnabled() : (vopt->state & QStyle::State_Enabled))

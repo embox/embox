@@ -8,7 +8,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/lcd/lcd.h>
 
 #include "race.h"

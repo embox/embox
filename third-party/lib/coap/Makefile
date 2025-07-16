@@ -4,8 +4,6 @@ PKG_VER  := 4.1.1
 PKG_SOURCES := https://github.com/obgm/$(PKG_NAME)/archive/v$(PKG_VER).tar.gz
 PKG_MD5     := ff1af4bd9893c1728e765aa08a816e41
 
-include $(EXTBLD_LIB)
-
 coap_cppflags = -include $(ROOT_DIR)/third-party/libcoap/lib/libcoap_embox_compat.h \
 			-Drpl_malloc=malloc
 

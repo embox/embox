@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <config/board_config.h>
 
 struct led {

@@ -18,7 +18,7 @@ module bcm283x_spi0 {
 	depends core
 	depends embox.driver.spi.spi_dma
 	depends embox.driver.periph_memory
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }
 
 module spi_dma {

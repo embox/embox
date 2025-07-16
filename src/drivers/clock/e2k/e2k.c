@@ -109,7 +109,7 @@ static int e2k_clock_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t e2k_clock_read(struct clock_source *cs) {
+static cycle_t e2k_clock_get_cycles(struct clock_source *cs) {
 	cycle_t res;
 
 	res = e2k_read64(E2K_POWER_COUNTER);
@@ -118,13 +118,13 @@ static cycle_t e2k_clock_read(struct clock_source *cs) {
 }
 
 static struct time_event_device e2k_clock_event = {
-	.set_periodic   = e2k_clock_set_periodic,
-	.irq_nr = IRQ_NR
+    .set_periodic = e2k_clock_set_periodic,
+    .irq_nr = IRQ_NR,
 };
 
 static struct time_counter_device e2k_clock_counter = {
-	.read     = e2k_clock_read,
-	.cycle_hz = 10000000,
+    .get_cycles = e2k_clock_get_cycles,
+    .cycle_hz = 10000000,
 };
 
 CLOCK_SOURCE_DEF(e2k_clock, e2k_clock_init, NULL,

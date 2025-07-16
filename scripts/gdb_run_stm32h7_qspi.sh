@@ -24,8 +24,8 @@ prepare_bin() {
 			       --remove-section=.data \
 			       --remove-section=.bss"
 
-	arm-none-eabi-objcopy -O binary build/base/bin/embox "$QSPI_BIN" $QSPI_SECTIONS
-	arm-none-eabi-objcopy -O binary build/base/bin/embox "$EMBOX_BIN" $EMBOX_SECTIONS
+	arm-none-eabi-objcopy -O binary "$EMBOX_ELF" "$QSPI_BIN" $QSPI_SECTIONS
+	arm-none-eabi-objcopy -O binary "$EMBOX_ELF" "$EMBOX_BIN" $EMBOX_SECTIONS
 	dd if="$EMBOX_BIN" of="$EMBOX_BIN0" bs=1 count=$((1024 * 1024))
 	dd if="$EMBOX_BIN" of="$EMBOX_BIN1" bs=1 skip=$((1024 * 1024))
 }

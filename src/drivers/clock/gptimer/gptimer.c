@@ -130,7 +130,7 @@ static int gptimer_init(struct clock_source *cs) {
 
 static int gptimer_set_periodic(struct clock_source *cs);
 
-static cycle_t gptimer_read(struct clock_source *cs) {
+static cycle_t gptimer_get_cycles(struct clock_source *cs) {
 	return TIMER0_RELOAD - REG_LOAD(&dev_regs->timer[0].counter);
 }
 
@@ -139,7 +139,7 @@ static struct time_event_device gptimer_ed = {
 };
 
 static struct time_counter_device gptimer_cd = {
-	.read = gptimer_read,
+	.get_cycles = gptimer_get_cycles,
 	.cycle_hz = 1000000,
 };
 

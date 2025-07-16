@@ -1,9 +1,11 @@
 package embox.arch.riscv
 
-module mmu extends embox.mem.vmem{
-	source "mmu.c", "mmu.h"
-	
+abstract module mmu extends embox.mem.vmem {
 	option number page_size=4096
 	
 	depends embox.mem.vmem_depends
+}
+
+module mmuinfo extends embox.arch.mmuinfo {
+        source "mmuinfo.c"
 }

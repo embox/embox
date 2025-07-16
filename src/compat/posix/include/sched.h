@@ -85,6 +85,26 @@ extern int sched_setscheduler(pid_t, int, const struct sched_param *);
  */
 extern int sched_yield(void);
 
+#define CPU_SETSIZE 32
+
+/* _GNU_SOURCE */
+#include <kernel/sched/affinity.h>
+
+typedef struct affinity cpu_set_t;
+
+extern void CPU_ZERO(cpu_set_t *set);
+
+extern void CPU_SET(int cpu, cpu_set_t *set);
+extern void CPU_CLR(int cpu, cpu_set_t *set);
+extern int  CPU_ISSET(int cpu, cpu_set_t *set);
+
+extern int sched_getcpu(void);
+
+extern int sched_setaffinity(pid_t pid, size_t cpusetsize,
+	const cpu_set_t *mask);
+extern int sched_getaffinity(pid_t pid, size_t cpusetsize,
+	cpu_set_t *mask);
+
 __END_DECLS
 
 #endif /* POSIX_SCHED_H_ */

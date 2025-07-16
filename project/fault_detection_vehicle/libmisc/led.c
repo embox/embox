@@ -5,7 +5,7 @@
  */
 
 #include "led.h"
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #define PIN_MASK(n) (1 << n)
 void led_init(struct led *led, int port, int pin) {
 	led->port = port;

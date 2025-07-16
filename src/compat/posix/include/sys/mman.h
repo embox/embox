@@ -56,6 +56,17 @@ extern int msync(void *addr, size_t len, int flags);
 extern void *mmap_device_memory(void *addr, size_t len, int prot, int flags,
     uintptr_t physical);
 
+#define MCL_CURRENT       0x0
+#define MCL_FUTURE        0x1
+
+static inline int mlockall(int flags) {
+    return 0;
+}
+
+static inline int munlockall(void) {
+	return 0;
+}
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_SYS_MMAN_H_ */

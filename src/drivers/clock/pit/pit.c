@@ -92,7 +92,7 @@ static inline uint8_t pit_in8(int port) {
 	return in8(port);
 }
 
-static cycle_t i8253_read(struct clock_source *cs) {
+static cycle_t i8253_get_cycles(struct clock_source *cs) {
 	unsigned char lsb, msb;
 
 	irq_lock();
@@ -131,7 +131,7 @@ static struct time_event_device pit_event_device = {
 };
 
 static struct time_counter_device pit_counter_device = {
-	.read = i8253_read,
+	.get_cycles = i8253_get_cycles,
 	.cycle_hz = INPUT_CLOCK,
 	.mask = 0xffff,
 };

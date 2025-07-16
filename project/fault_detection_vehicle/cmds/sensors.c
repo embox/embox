@@ -19,7 +19,7 @@
 #include <drivers/sensors/gyro.h>
 #include <libmisc/led.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <config/board_config.h>
 
 #include <hal/clock.h>

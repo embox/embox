@@ -1,6 +1,6 @@
 package embox.driver.gpio
 
-module mikron_gpio extends api {
+module mikron_gpio {
 	option number gpio_chip_id = 0
 
 	source "mikron_gpio.c"

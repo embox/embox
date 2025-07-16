@@ -98,14 +98,6 @@
 #define DPRINT()
 #endif
 
-static const char *tzname[2];
-inline void tzset(void) {
-	DPRINT();
-	// http://www.gnu.org/software/libc/manual/html_node/Time-Zone-Functions.html
-	tzname[0] = "EST";
-	tzname[1] = "EDT";
-}
-
 #define O_LARGEFILE 0
 
 inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {

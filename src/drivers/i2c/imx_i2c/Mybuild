@@ -1,0 +1,52 @@
+package embox.driver.i2c
+
+module imx_i2c {
+	option string log_level="LOG_ERR"
+
+	source "imx_i2c.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends platform.imx.drivers.iomuxc
+}
+
+module imx_i2c1 {
+	option string log_level="LOG_ERR"
+
+	option number base_addr=0x21a0000
+	option number irq_num=68
+	option number i2c_pins_select=0
+
+	source "imx_i2c1.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends imx_i2c
+	@NoRuntime depends platform.imx.drivers.iomuxc
+}
+
+module imx_i2c2 {
+	option string log_level="LOG_ERR"
+
+	option number base_addr=0x21a4000
+	option number irq_num=69
+	option number i2c_pins_select=1
+
+	source "imx_i2c2.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends imx_i2c
+	@NoRuntime depends platform.imx.drivers.iomuxc
+}
+
+module imx_i2c3 {
+	option string log_level="LOG_ERR"
+
+	option number base_addr=0x21a8000
+	option number irq_num=70
+	option number i2c_pins_select=0
+
+	source "imx_i2c3.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends imx_i2c
+	@NoRuntime depends platform.imx.drivers.iomuxc
+}

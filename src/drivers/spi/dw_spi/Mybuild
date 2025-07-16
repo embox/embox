@@ -1,18 +1,62 @@
 package embox.driver.spi
 
-module dw_spi {
-	option number base_addr0 = 0
-	option number base_addr1 = 0
-	option number base_addr2 = 0
-	option number base_addr3 = 0
-
-	option boolean spi_de0_nano_soc = false
-
+module dw_spi_drv {
 	option string log_level="LOG_NONE"
 
-	source "dw_spi.c"
+	source "dw_spi_drv.c"
 
 	depends core
 	depends embox.driver.periph_memory
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
+}
+
+module dw_spi0 {
+	option string log_level="LOG_NONE"
+	option number base_addr = 0
+
+	source "dw_spi0.c"
+	source "spi0_dev0.c"
+
+	depends dw_spi_drv
+	depends embox.driver.periph_memory
+	depends embox.driver.gpio.core
+}
+
+module dw_spi1 {
+	/* TODO pins_init */
+	option boolean spi_de0_nano_soc = false
+
+	option string log_level="LOG_NONE"
+	option number base_addr = 0
+
+	source "dw_spi1.c"
+	source "spi1_dev0.c"
+
+	depends dw_spi_drv
+	depends embox.driver.periph_memory
+	depends embox.driver.gpio.core
+}
+
+module dw_spi2 {
+	option string log_level="LOG_NONE"
+	option number base_addr = 0
+
+	source "dw_spi2.c"
+	source "spi2_dev0.c"
+
+	depends dw_spi_drv
+	depends embox.driver.periph_memory
+	depends embox.driver.gpio.core
+}
+
+module dw_spi3 {
+	option string log_level="LOG_NONE"
+	option number base_addr = 0
+
+	source "dw_spi3.c"
+	source "spi3_dev0.c"
+
+	depends dw_spi_drv
+	depends embox.driver.periph_memory
+	depends embox.driver.gpio.core
 }

@@ -10,7 +10,7 @@ package third_party.gnu
 	''')
 module tar {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	source "strip.tar.o"
 
 	@NoRuntime depends embox.compat.libc.assert

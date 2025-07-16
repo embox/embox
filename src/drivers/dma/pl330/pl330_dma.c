@@ -13,8 +13,6 @@
 #include <framework/mod/options.h>
 #include <module/embox/mem/bitmask.h>
 
-#include <asm/cp15.h>
-
 #include <drivers/dma/dma.h>
 #include <drivers/dma/pl330_dma.h>
 #include <drivers/mailbox/bcm2835_mailbox_property.h>

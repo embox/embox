@@ -6,9 +6,9 @@
  * @author Anton Bulychev
  */
 
-#ifndef ARCH_NOUSERMODE_H_
-#define ARCH_NOUSERMODE_H_
+#ifndef ARCH_GENERIC_NOUSERMODE_H_
+#define ARCH_GENERIC_NOUSERMODE_H_
 
 #define NOUSERMODE
 
-#endif /* ARCH_NOUSERMODE_H_ */
+#endif /* ARCH_GENERIC_NOUSERMODE_H_ */

@@ -1,6 +1,8 @@
 package embox.driver.net
 
 module ne2k_pci {
+	option string log_level="LOG_ERR"
+
 	//@IncludeExport(path="drivers/net")
 	//source "ne2k.h"
 	source "ne2k_pci.c"
@@ -17,6 +19,8 @@ module ne2k_pci {
 }
 
 module ne2k_isa {
+	option string log_level="LOG_ERR"
+
 	option number base_addr=0x300
 	option number irq_num=9
 

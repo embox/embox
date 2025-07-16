@@ -7,8 +7,6 @@ PKG_MD5     := abeca2891168914b57460b0ba9f9090f
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
-
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' \

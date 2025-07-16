@@ -1,0 +1,5 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"led_ctrl_panel",
+"tish",

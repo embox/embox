@@ -9,16 +9,24 @@
 #ifndef FS_DENTRY_H_
 #define FS_DENTRY_H_
 
+#include <limits.h>
+
+#include <lib/libds/dlist.h>
+
 struct inode;
+struct super_block;
+struct dentry;
 
 struct dentry {
+	char name[NAME_MAX];
+
+	int flags;
 	int usage_count;
 
 	struct inode *d_inode;
+	struct super_block *d_sb;
 
 	struct dentry     *parent;
-
-	int flags;
 };
 
 struct lookup {

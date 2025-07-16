@@ -1,0 +1,11 @@
+package third_party.lib
+
+@Build(script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(ROOT_DIR)/build/extbld/third_party/lib/nanomodbus/install/include/")
+static module nanomodbus {
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
+	source "libnanomodbus.a"
+
+	@NoRuntime depends embox.compat.posix.net.All
+	@NoRuntime depends embox.compat.posix.util.nanosleep
+}

@@ -7,8 +7,6 @@ PKG_MD5     := e6f8ca3ff2d6911da24ac3f1a319b799
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
-
 IPERF_CPPFLAGS := "-I$(ROOT_DIR)/third-party/iperf/include"
 
 $(CONFIGURE) :

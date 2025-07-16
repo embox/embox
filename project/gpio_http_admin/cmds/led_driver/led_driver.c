@@ -6,26 +6,41 @@
  * @date    20.08.2019
  */
 
-#include <string.h>
-#include <stdlib.h>
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
-#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
 
-#include <led_driver_lib.h>
+#include <lib/leddrv.h>
+
+static int led_serialize(void) {
+	int i;
+
+	bool led_states[LEDDRV_LED_N];
+	leddrv_get_states(led_states);
+
+	printf("[");
+	for (i = 0; i < LEDDRV_LED_N - 1; i++) {
+		printf("%d,", (int)led_states[i]);
+	}
+	printf("%d]\n", (int)led_states[LEDDRV_LED_N - 1]);
+
+	return 0;
+}
 
 int main(int argc, char *argv[]) {
 	const char *action = argv[1];
 
 	if (action) {
-		if (0 == strcmp(action, "init")) {
-			return led_driver_init();
-		} else if (0 == strcmp(action, "set")) {
-			return led_driver_set(atoi(argv[2]));
-		} else if (0 == strcmp(action, "clr")) {
-			return led_driver_clear(atoi(argv[2]));
-		} else if (0 == strcmp(action, "serialize_states")) {
-			return led_driver_serialize();
+		if (0 == strcmp(action, "set")) {
+			return leddrv_led_on(atoi(argv[2]));
+		}
+		else if (0 == strcmp(action, "clr")) {
+			return leddrv_led_off(atoi(argv[2]));
+		}
+		else if (0 == strcmp(action, "serialize_states")) {
+			return led_serialize();
 		}
 	}
 

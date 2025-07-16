@@ -12,5 +12,3 @@ PKG_SOURCES := https://github.com/DaveGamble/cJSON/archive/refs/tags/$(PKG_VER).
 PKG_MD5     := 9422f73fb9e4e524d77d9467d4b73536
 
 #PKG_PATCHES := header_types.patch
-
-include $(EXTBLD_LIB)

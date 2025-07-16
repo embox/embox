@@ -1,15 +1,15 @@
-diff -aur qt-everywhere-opensource-src-4.8.7/src/corelib/global/global.pri ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/global/global.pri
---- qt-everywhere-opensource-src-4.8.7/src/corelib/global/global.pri	2013-06-07 09:16:52.000000000 +0400
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/global/global.pri	2019-06-18 19:09:32.846793756 +0300
+diff -aur Qt-4.8.7-master/src/corelib/global/global.pri ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/global/global.pri
+--- Qt-4.8.7-master/src/corelib/global/global.pri	2013-06-07 09:16:52.000000000 +0400
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/global/global.pri	2019-06-18 19:09:32.846793756 +0300
 @@ -36,4 +36,4 @@
      DEFINES += QT_USE_SLOG2
  }
  
 -include(../../../tools/shared/symbian/epocroot.pri)
 +#include(../../../tools/shared/symbian/epocroot.pri)
-diff -aur qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication.cpp ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication.cpp
---- qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication.cpp	2013-06-07 09:16:52.000000000 +0400
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication.cpp	2019-06-18 19:13:28.413827427 +0300
+diff -aur Qt-4.8.7-master/src/corelib/kernel/qcoreapplication.cpp ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/kernel/qcoreapplication.cpp
+--- Qt-4.8.7-master/src/corelib/kernel/qcoreapplication.cpp	2013-06-07 09:16:52.000000000 +0400
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/kernel/qcoreapplication.cpp	2019-06-18 19:13:28.413827427 +0300
 @@ -330,6 +330,7 @@
  };
  #endif
@@ -26,9 +26,9 @@ diff -aur qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication
  
  Q_CORE_EXPORT uint qGlobalPostedEventsCount()
  {
-diff -aur qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication_p.h ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication_p.h
---- qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication_p.h	2013-06-07 09:16:52.000000000 +0400
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication_p.h	2019-06-18 19:12:00.052689327 +0300
+diff -aur Qt-4.8.7-master/src/corelib/kernel/qcoreapplication_p.h ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/kernel/qcoreapplication_p.h
+--- Qt-4.8.7-master/src/corelib/kernel/qcoreapplication_p.h	2013-06-07 09:16:52.000000000 +0400
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/corelib/kernel/qcoreapplication_p.h	2019-06-18 19:12:00.052689327 +0300
 @@ -146,7 +146,10 @@
  #if defined(QT3_SUPPORT)
      static bool useQt3Support;
@@ -40,9 +40,9 @@ diff -aur qt-everywhere-opensource-src-4.8.7/src/corelib/kernel/qcoreapplication
  };
  
  QT_END_NAMESPACE
-diff -aur qt-everywhere-opensource-src-4.8.7/src/gui/kernel/qapplication_qpa.cpp ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/gui/kernel/qapplication_qpa.cpp
---- qt-everywhere-opensource-src-4.8.7/src/gui/kernel/qapplication_qpa.cpp	2013-06-07 09:16:59.000000000 +0400
-+++ ../build/extbld/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/src/gui/kernel/qapplication_qpa.cpp	2019-06-18 19:09:32.846793756 +0300
+diff -aur Qt-4.8.7-master/src/gui/kernel/qapplication_qpa.cpp ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/gui/kernel/qapplication_qpa.cpp
+--- Qt-4.8.7-master/src/gui/kernel/qapplication_qpa.cpp	2013-06-07 09:16:59.000000000 +0400
++++ ../build/extbld/third_party/qt/core/Qt-4.8.7-master/src/gui/kernel/qapplication_qpa.cpp	2019-06-18 19:09:32.846793756 +0300
 @@ -852,9 +852,11 @@
           p = mouseWidget->mapFromGlobal(globalPoint);
       }

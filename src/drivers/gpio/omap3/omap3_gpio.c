@@ -7,40 +7,42 @@
  */
 
 #include <assert.h>
-#include <string.h>
 #include <stdio.h>
+#include <string.h>
+
+#include <drivers/gpio.h>
+#include <drivers/pins.h>
 #include <embox/unit.h>
 #include <hal/reg.h>
 #include <kernel/printk.h>
-#include <drivers/pins.h>
-#include <drivers/gpio/gpio_driver.h>
+
 #include "omap3_gpio.h"
 
-#define GPIO_CHIP_ID OPTION_GET(NUMBER,gpio_chip_id)
+#define GPIO_CHIP_ID OPTION_GET(NUMBER, gpio_chip_id)
 
 EMBOX_UNIT_INIT(gpio_init);
 
-static struct gpio_chip omap3_gpio_chip;
+static const struct gpio_chip omap3_gpio_chip;
 
-static pin_mask_t gpio_get_pin_changed(unsigned char port) {
-	return (int) gpio_reg_read(GPIO_BASE_ADDRESS(port + 1),
-		GPIO_IRQSTATUS1);
+static pin_mask_t gpio_get_pin_changed(unsigned int port) {
+	return (int)gpio_reg_read(GPIO_BASE_ADDRESS(port + 1), GPIO_IRQSTATUS1);
 }
 
-static int omap3_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
-		int mode) {
+static int omap3_gpio_setup_mode(unsigned int port, gpio_mask_t mask,
+    uint32_t mode) {
 	uint32_t l;
 	uint32_t gpio_base = GPIO_BASE_ADDRESS(port + 1);
 
 	/* check if mode is incorrect */
-	if (((mode & GPIO_MODE_OUT_SECTION) && (mode & GPIO_MODE_IN_SECTION)) ||
-		((mode & GPIO_MODE_IN_INT_EN) && (mode & GPIO_MODE_IN_INT_DIS))) {
+	if (((mode & GPIO_MODE_OUT_SECTION) && (mode & GPIO_MODE_IN_SECTION))
+	    || ((mode & GPIO_MODE_IN_INT_EN) && (mode & GPIO_MODE_IN_INT_DIS))) {
 		return -1;
 	}
 
 	if (mode & GPIO_MODE_IN) {
 		gpio_reg_write(gpio_base, GPIO_OE, mask);
-	} else if (mode & GPIO_MODE_OUT) {
+	}
+	else if (mode & GPIO_MODE_OUT) {
 		l = gpio_reg_read(gpio_base, GPIO_OE);
 		gpio_reg_write(gpio_base, GPIO_OE, l & ~mask);
 	}
@@ -99,7 +101,7 @@ static int omap3_gpio_setup_mode(unsigned char port, gpio_mask_t mask,
 	return 0;
 }
 
-static void omap3_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
+static void omap3_gpio_set(unsigned int port, gpio_mask_t mask, int level) {
 	uint32_t l;
 	uint32_t gpio_base = GPIO_BASE_ADDRESS(port + 1);
 
@@ -108,20 +110,21 @@ static void omap3_gpio_set(unsigned char port, gpio_mask_t mask, char level) {
 	if (level) {
 		l = gpio_reg_read(gpio_base, GPIO_DATAOUT);
 		gpio_reg_write(gpio_base, GPIO_DATAOUT, l | mask);
-	} else {
+	}
+	else {
 		l = gpio_reg_read(gpio_base, GPIO_CLEARDATAOUT);
 		gpio_reg_write(gpio_base, GPIO_CLEARDATAOUT, l | mask);
 	}
 }
 
-gpio_mask_t omap3_gpio_get(unsigned char port, gpio_mask_t mask){
+gpio_mask_t omap3_gpio_get(unsigned int port, gpio_mask_t mask) {
 	uint32_t gpio_base = GPIO_BASE_ADDRESS(port + 1);
 	return mask & (gpio_reg_read(gpio_base, GPIO_DATAIN));
 }
 
 irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 	int changed;
-	unsigned char port = GPIO_NUM_BY_IRQ(irq_nr) - 1;
+	unsigned int port = GPIO_NUM_BY_IRQ(irq_nr) - 1;
 	uint32_t gpio_base = GPIO_BASE_ADDRESS(port + 1);
 
 	changed = gpio_get_pin_changed(port);
@@ -133,25 +136,29 @@ irq_return_t irq_gpio_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static struct gpio_chip omap3_gpio_chip = {
-	.setup_mode = omap3_gpio_setup_mode,
-	.get = omap3_gpio_get,
-	.set = omap3_gpio_set,
-	.nports = GPIO_MODULE_CNT
+static const struct gpio_chip omap3_gpio_chip = {
+    .setup_mode = omap3_gpio_setup_mode,
+    .get = omap3_gpio_get,
+    .set = omap3_gpio_set,
+    .nports = GPIO_MODULE_CNT,
+    .chip_id = GPIO_CHIP_ID,
 };
 
+GPIO_CHIP_DEF(&omap3_gpio_chip);
+
 static int gpio_init(void) {
-	int i, ret;
+	int err;
+	int i;
 	char str[32];
 
 	for (i = 0; i < GPIO_MODULE_CNT; i++) {
-		sprintf(str,"OMAP_GPIO%d", i);
+		sprintf(str, "OMAP_GPIO%d", i);
 
-		if (0 != (ret = irq_attach(GPIO_IRQ(i + 1),
-				irq_gpio_handler, 0, NULL, str))) {
-			return ret;
+		err = irq_attach(GPIO_IRQ(i + 1), irq_gpio_handler, 0, NULL, str);
+		if (err) {
+			return err;
 		}
 	}
 
-	return gpio_register_chip(&omap3_gpio_chip, GPIO_CHIP_ID);
+	return 0;
 }

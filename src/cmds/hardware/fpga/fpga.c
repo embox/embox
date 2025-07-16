@@ -52,10 +52,10 @@ int main(int argc, char **argv) {
 	} else if (st.st_size > BUF_SZ) {
 		printf("File size is to large,"
 				" need to be less than %d bytes"
-				"(%s is %lld bytes)\n",
+				"(%s is %jd bytes)\n",
 				BUF_SZ,
 				fname,
-				st.st_size);
+				(intmax_t)st.st_size);
 		return -1;
 	}
 

@@ -1,11 +1,8 @@
 package embox.compat.libc
 
-static module strerror {
-	option number strerror_short = 0
-	source "strerror.c"
-}
-
 static module str {
+	option boolean strerror_short=false
+
 	source "memchr.c"
 	source "memrchr.c"
 	source "memcmp.c"
@@ -21,7 +18,8 @@ static module str {
 	source "strxfrm.c"
 	source "strcpy.c"
 	source "strcspn.c"
-	@NoRuntime depends strerror
+	source "strerror.c"
+	source "strerror_r.c"
 	source "strlen.c"
 	source "strlwr.c"
 	source "strncat.c"
@@ -47,5 +45,7 @@ static module str {
 static module str_dup {
 	source "strdup.c"
 	source "strndup.c"
-	depends embox.mem.heap_api /*for strdup() */
+
+	/* for malloc() */
+	@NoRuntime depends embox.mem.heap_api
 }

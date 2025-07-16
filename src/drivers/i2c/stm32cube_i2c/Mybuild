@@ -1,0 +1,34 @@
+package embox.driver.i2c
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_i2c {
+	option string log_level="LOG_ERR"
+	option boolean use_i2c_irq=false
+
+	source "stm32_i2c.c"
+
+	depends embox.driver.i2c_core
+	depends embox.driver.gpio.core
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_i2c1 {
+	source "stm32_i2c1.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_i2c2 {
+	source "stm32_i2c2.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_i2c3 {
+	source "stm32_i2c3.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}

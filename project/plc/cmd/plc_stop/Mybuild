@@ -1,0 +1,18 @@
+package project.plc.cmd
+
+@AutoCmd
+@Cmd(name = "plc_stop",
+     help = "Stop PLC",
+     man  = '''
+		NAME
+			plc_stop - Stop PLC
+		SYNOPSIS
+			plc_stop
+		AUTHORS
+			Aleksey Zhmulin
+	''')
+module plc_stop {
+	source "plc_stop.c"
+
+	@NoRuntime depends project.plc.core
+}

@@ -1,7 +1,7 @@
 package third_party.qt.example
 
 @AutoCmd
-@Build(script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/qt-everywhere-opensource-src-4.8.7/examples/animation/animatedtiles; $(EXTERNAL_MAKE_PRO)")
+@Build(script="TARGET=$(EXTERNAL_BUILD_DIR)/third_party/qt/core/Qt-4.8.7-master/examples/animation/animatedtiles; $(EXTERNAL_MAKE_QT)")
 @BuildDepends(third_party.qt.core)
 @Cmd(name = "animatedtiles",
 	help = "animation qt's example",

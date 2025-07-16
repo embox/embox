@@ -55,7 +55,7 @@ extern int clock_source_set_next_event(struct clock_source *cs,
 static inline clock_t clock_source_get_cycles(struct clock_source *cs) {
 	assert(cs && cs->counter_device);
 
-	return cs->counter_device->read(cs);
+	return cs->counter_device->get_cycles(cs);
 }
 
 static inline uint64_t clock_source_cycles2ticks(struct clock_source *cs,

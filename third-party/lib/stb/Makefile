@@ -6,7 +6,5 @@ PKG_MD5     := f4a555402efab6d3808aab43018d4c4b
 
 PKG_PATCHES := patch.txt
 
-include $(EXTBLD_LIB)
-
 $(INSTALL) :
 	cp $(PKG_SOURCE_DIR)/stb_image.h $(PKG_INSTALL_DIR)/

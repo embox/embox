@@ -7,8 +7,8 @@
  * @author Nikolay Korotky
  */
 
-#ifndef CTYPE_H_
-#define CTYPE_H_
+#ifndef COMPAT_LIBC_CTYPE_H_
+#define COMPAT_LIBC_CTYPE_H_
 
 #define _CTYPE_U      0x01    /* upper */
 #define _CTYPE_L      0x02    /* lower */
@@ -86,4 +86,4 @@ __END_DECLS
 #define isascii(c) (((unsigned char)(c))<=0x7f)
 #define toascii(c) (((unsigned char)(c))&0x7f)
 
-#endif /* CTYPE_H_ */
+#endif /* COMPAT_LIBC_CTYPE_H_ */

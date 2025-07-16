@@ -1,0 +1,10 @@
+package embox.driver.clock
+
+module syntacore_mtimer {
+	option number rtc_freq=32000000
+	option number base_addr=0x00490000
+	
+	source "syntacore_mtimer.c"
+
+	depends embox.kernel.time.clock_source
+}

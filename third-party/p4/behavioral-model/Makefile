@@ -20,8 +20,6 @@ BM_CXXFLAGS += -I$(ROOT_DIR)/build/extbld/third_party/boost/libs/install/include
 
 # LIBPCAP_CFLAGS = -I$(ROOT_DIR)/src/posix/include
 
-include $(EXTBLD_LIB)
-
 $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PKG_SOURCE_DIR) && ./autogen.sh && ( \

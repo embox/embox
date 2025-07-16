@@ -1,7 +1,0 @@
-package project.website
-
-@AutoCmd
-@Cmd(name="website_stm32_hw_init", help="", man="")
-module website_stm32_hw_init {
-	source "website_stm32_hw_init.c"
-}

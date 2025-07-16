@@ -8,7 +8,7 @@ module leon3 {
 	option number nwindows=8
 }
 
-module locore extends embox.arch.locore {
+module locore {
 	source "entry.S"
 	source "trap_save.S"
 	source "trap_restore.S"
@@ -21,12 +21,14 @@ module locore extends embox.arch.locore {
 	depends embox.arch.sparc.testtrap
 }
 
-module boot extends embox.arch.boot {
+module boot {
 	source "head.S"
+	source "kernel_start.c"
 }
 
 module interrupt extends embox.arch.interrupt {
 	source "interrupt_entry.S", "ipl_impl.h"
+
 	depends locore
 }
 
@@ -43,7 +45,10 @@ module syscall_caller extends embox.arch.syscall_caller {
 	depends embox.kernel.syscall
 }
 
-module arch extends embox.arch.arch {
-	source "arch.c"
-	depends locore
+module cpu_idle extends embox.arch.cpu_idle {
+	source "cpu_idle.h"
+}
+
+module shutdown extends platform.platform_shutdown {
+    source "shutdown.c"
 }

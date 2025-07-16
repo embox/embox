@@ -1,6 +1,8 @@
 package embox.driver.video
 
 module pl110 {
+	option boolean version_pl111=false
+
 	option number base_addr=0xc0000000
 	option number display_width  = 640
 	option number display_height = 480

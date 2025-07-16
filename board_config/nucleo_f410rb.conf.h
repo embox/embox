@@ -89,6 +89,7 @@ struct led_conf leds[] = {
 		.name = "LED1",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("", 5),
+		.level = VAL("", GPIO_PIN_HIGH),
 	},
 };
 

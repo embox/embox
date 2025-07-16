@@ -3,4 +3,6 @@
 "netmanager",
 "service telnetd",
 "service httpd",
+//"i2cdetect -y 1",
+//"dd if=/dev/at24_eeprom count=1 format=hex_c",
 "tish",

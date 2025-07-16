@@ -11,3 +11,7 @@ module locale {
 module reent {
 	source "reent.c"
 }
+
+module xpg_strerror_r {
+	source "xpg_strerror_r.c"
+}

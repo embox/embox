@@ -10,7 +10,7 @@
  *
  * A Pi Zero specific definition:
  * 
- * 	gpio_setup_mode(GPIO_PORT_A, pins_GFAlt5, GPIO_MODE_OUT_ALTERNATE | GPIO_ALTERNATE(GFAlt5) );
+ * 	gpio_setup_mode(GPIO_PORT_A, pins_GFAlt5, GPIO_MODE_ALT_SET(GFAlt5) );
  * 
  * A generic GPIO API definition:
  * 

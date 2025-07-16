@@ -32,7 +32,8 @@ struct test_run_context {
 	struct test_emit_buffer emitting;
 };
 
-static struct test_run_context *current;
+static struct test_run_context *current_ctx;
+static const struct __test_assertion_point *current_failure;
 
 #define EMIT_BUFFER_SZ 64
 
@@ -120,19 +121,19 @@ static const struct __test_assertion_point *test_run(test_case_run_t run) {
 	struct test_run_context ctx;
 	int caught;
 
-	current = &ctx;
-	test_emit_buffer_init(&current->emitting, emit_buffer, EMIT_BUFFER_SZ);
+	current_ctx = &ctx;
+	test_emit_buffer_init(&current_ctx->emitting, emit_buffer, EMIT_BUFFER_SZ);
 	if (!(caught = setjmp(ctx.before_run))) {
 		run();
 	}
-	current = NULL;
+	current_ctx = NULL;
 
-	return (const struct __test_assertion_point *)(uintptr_t)caught;
+	return caught ? current_failure : NULL;
 }
 
 struct test_emit_buffer *__test_emit_buffer_current(void) {
-	assert(current != NULL);
-	return &current->emitting;
+	assert(current_ctx != NULL);
+	return &current_ctx->emitting;
 }
 
 void __test_assertion_handle(int pass,
@@ -143,8 +144,9 @@ void __test_assertion_handle(int pass,
 
 	assert(point);
 
-	if (current) {
-		longjmp(current->before_run, (intptr_t)point);
+	if (current_ctx) {
+		current_failure = point;
+		longjmp(current_ctx->before_run, 1);
 	}
 	else {
 		handle_case_result(NULL, point);

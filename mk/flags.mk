@@ -1,6 +1,7 @@
 
 include mk/core/common.mk
 
+ARCH ?=
 CFLAGS ?=
 CXXFLAGS ?=
 CPPFLAGS ?=
@@ -8,9 +9,10 @@ ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
 COMPILER ?=
+BUILD_DEPS_LDFLAGS ?=
 BUILD_DEPS_CPPFLAGS_BEFORE ?=
 BUILD_DEPS_CPPFLAGS_AFTER ?=
-BUILD_DEPS_LDFLAGS ?=
+MODULE_CPPFLAGS ?=
 
 CROSS_COMPILE ?=
 CXX     ?= $(CROSS_COMPILE)g++
@@ -75,9 +77,9 @@ PROFILING_CFLAGS ?= -finstrument-functions \
 # additional '+'.
 #
 EXTERNAL_MAKE = \
-	+$(MAKE) -C $(dir $(my_file)) $(EXTERNAL_MAKE_FLAGS)
+	+$(MAKE) -C $(dir $(my_file)) -f $(ROOT_DIR)/mk/extbld/build.mk $(EXTERNAL_MAKE_FLAGS)
 
-EXTERNAL_MAKE_PRO = \
+EXTERNAL_MAKE_QT = \
 	$(MKDIR) $(mod_build_dir) && \
 	$(CP) $(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/.qmake.cache $(mod_build_dir) && \
 	$(EXTERNAL_BUILD_DIR)/third_party/qt/core/install/bin/qmake \
@@ -89,44 +91,28 @@ EXTERNAL_MAKE_PRO = \
 
 EXTERNAL_MAKE_FLAGS = \
 	MAKEFLAGS= \
-	$(foreach path_var, \
-			ROOT_DIR \
-			EMBOX_ROOT_DIR \
-			CONF_DIR \
-			TEMPLATES_DIR \
-			SRC_DIR \
-			THIRDPARTY_DIR \
-			PLATFORM_DIR \
-			PROJECT_DIR \
-			SUBPLATFORM_TEMPLATE_DIR \
-			EXTERNAL_BUILD_DIR \
-			LOADABLE_DIR \
-			DOC_DIR \
-			BIN_DIR \
-			OBJ_DIR \
-			GEN_DIR \
-			SRCGEN_DIR \
-			MKGEN_DIR \
-			AUTOCONF_DIR \
-			ROOTFS_DIR \
-			INCLUDE_INSTALL_DIR \
-			USER_ROOTFS_DIR \
-			DOT_DIR \
-			DOCS_OUT_DIR \
-			CACHE_DIR, \
-		$(path_var)=$(abspath $($(path_var)))) \
-	BUILD_DIR=$(abspath $(mod_build_dir)) \
+	MOD_DIR=$(abspath $(dir $(my_file))) \
+	MOD_BUILD_DIR=$(abspath $(mod_build_dir)) \
+	AUTOCONF_ARCH=$(AUTOCONF_ARCH) \
+	AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_TARGET_TRIPLET) \
 	COMPILER=$(COMPILER) \
-	EMBOX_ARCH='$(ARCH)' \
-	EMBOX_CROSS_COMPILE='$(CROSS_COMPILE)' \
+	EMBOX_ARCH=$(ARCH) \
+	EMBOX_GCC=$(EMBOX_GCC) \
+	EMBOX_GXX=$(EMBOX_GXX) \
+	EMBOX_CROSS_COMPILE=$(CROSS_COMPILE) \
 	EMBOX_MAKEFLAGS='$(MAKEFLAGS)' \
 	EMBOX_IMPORTED_MAKEFLAGS='$(filter -j --jobserver-auth=% --jobserver-fds=%, $(MAKEFLAGS))' \
 	EMBOX_CFLAGS='$(CFLAGS)' \
 	EMBOX_CXXFLAGS='$(CXXFLAGS)' \
+	EMBOX_CPPFLAGS='$(BUILD_DEPS_CPPFLAGS_BEFORE) $(EMBOX_EXPORT_CPPFLAGS) $(BUILD_DEPS_CPPFLAGS_AFTER)' \
+	EMBOX_LDFLAGS='$(LDFLAGS) $(BUILD_DEPS_LDFLAGS)' \
 	EMBOX_DEPS_CPPFLAGS_BEFORE='$(BUILD_DEPS_CPPFLAGS_BEFORE)' \
 	EMBOX_DEPS_CPPFLAGS_AFTER='$(BUILD_DEPS_CPPFLAGS_AFTER)' \
-	EMBOX_CPPFLAGS='$(EMBOX_EXPORT_CPPFLAGS)' \
-	EMBOX_LDFLAGS='$(LDFLAGS) $(BUILD_DEPS_LDFLAGS)'
+	EMBOX_MODULE_CPPFLAGS='$(MODULE_CPPFLAGS)'
+
+MAIN_STRIPPING = \
+	$(MAKE) -f $(ROOT_DIR)/mk/main-stripping.mk \
+	$(EXTERNAL_MAKE_FLAGS) TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'
 
 mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 
@@ -284,7 +270,6 @@ ifneq ($(COMPILER),lcc)
 endif
 endif
 
-
 # Linker flags
 ldflags := $(LDFLAGS)
 override LDFLAGS  = -static -nostdlib
@@ -292,8 +277,22 @@ override LDFLAGS += $(ldflags)
 
 override ARFLAGS = rcs
 
-
 CCFLAGS ?=
 
 INCLUDES_FROM_FLAGS := \
 	$(patsubst -I%,%,$(filter -I%,$(CPPFLAGS) $(CXXFLAGS)))
+
+ifeq ($(ARCH),x86)
+AUTOCONF_ARCH := i386
+else
+AUTOCONF_ARCH := $(ARCH)
+endif
+
+AUTOCONF_TARGET_TRIPLET := $(AUTOCONF_ARCH)-unknown-none
+
+ifeq ($(COMPILER),clang)
+EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-clang
+else
+EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-gcc
+EMBOX_GXX := $(ROOT_DIR)/mk/extbld/arch-embox-g++
+endif

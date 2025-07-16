@@ -9,7 +9,7 @@
  */
 
 #include <string.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <embox/unit.h>
 
 EMBOX_UNIT_INIT(lcd_test);

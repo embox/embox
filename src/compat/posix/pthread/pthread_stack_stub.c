@@ -16,6 +16,10 @@ int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
 	return -ENOSYS;
 }
 
+int pthread_attr_setstack(pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
+	return -ENOSYS;
+}
+
 int pthread_attr_getstackaddr(const pthread_attr_t *attr, void **stackaddr) {
 	*stackaddr = attr->stack;
 

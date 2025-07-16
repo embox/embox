@@ -13,3 +13,9 @@ module common {
 	depends embox.compat.libc.str
 	@NoRuntime depends embox.lib.libds
 }
+
+//NoCode (only header for compilation)
+module pin_description {
+	@IncludeExport(path="drivers")
+	source "pin_description.h"
+}

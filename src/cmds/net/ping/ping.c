@@ -32,7 +32,6 @@
 #include <net/util/checksum.h>
 #include <net/util/macaddr.h>
 
-
 /* Constants */
 #define DEFAULT_COUNT    4
 #define DEFAULT_PADLEN   64
@@ -47,7 +46,8 @@ struct ping_info {
 	int padding_size;    /* The number of data bytes to be sent. */
 	int timeout;         /* Time  to wait for a response, in seconds. */
 	int interval;        /* Wait  interval milliseconds between sending each packet. */
-	int pattern;         /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
+	uint8_t pattern[16]; /* Specify up to 16 ``pad'' bytes to fill out the packet to send. */
+	int pattern_len;     /* Length of the pattern */
 	int ttl;             /* IP Time to Live. */
 	struct in_addr dst;  /* Destination host */
 };
@@ -187,8 +187,12 @@ static int ping(struct ping_info *pinfo, char *name, char *official_name, struct
 
 	tx_pack->icmp.hdr.type = ICMP_ECHO_REQUEST;
 	tx_pack->icmp.hdr.code = 0;
-	tx_pack->icmp.body.echo_req.id = 11; /* TODO: get unique id */
+	tx_pack->icmp.body.echo_req.id = (uint16_t)getpid();
 
+	for (size_t i = 0; i < pinfo->padding_size; ++i)
+	{
+		tx_pack->data[i] = pinfo->pattern[i % pinfo->pattern_len];
+	}
 	/* open socket */
 	sk = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
 	if (sk == -1) {
@@ -293,7 +297,8 @@ int main(int argc, char **argv) {
 	pinfo.count = DEFAULT_COUNT;
 	pinfo.interval = DEFAULT_INTERVAL;
 	pinfo.padding_size = DEFAULT_PADLEN;
-	pinfo.pattern = DEFAULT_PATTERN;
+	pinfo.pattern[0] = DEFAULT_PATTERN;
+	pinfo.pattern_len = 1;
 	pinfo.timeout = DEFAULT_TIMEOUT;
 	pinfo.ttl = DEFAULT_TTL;
 
@@ -402,10 +407,47 @@ int main(int argc, char **argv) {
 			break;
 		case 'p': /* pattern */
 			if (!pat_set) {
-				if (sscanf(optarg, "%d", &pinfo.pattern) != 1) {
-					printf("ping: patterns must be specified as hex digits.\n");
+				size_t len = min(strlen(optarg), 32);
+
+				if (len == 0)
+				{
+					printf("ping: pattern cannot be empty\n");
 					return -EINVAL;
 				}
+
+				printf ("len is %zu\n", len);
+				for (size_t i = 0; i < len; ++i)
+				{
+					if (!isxdigit(optarg[i])) {
+						printf("ping: patterns must be specified as hex digits.\n");
+						return -EINVAL;
+					}
+				}
+				pinfo.pattern_len = (len + 1) / 2;
+
+				/* Convert hex string to bytes */
+				pinfo.pattern_len = (len + 1) / 2;
+				for (int i = 0; i < pinfo.pattern_len; i++) {
+					char byte_str[3] = {0};
+					int pos = i * 2;
+
+					/* If string has odd length pad last byte with 0 */
+					if (i == pinfo.pattern_len - 1 && len % 2 != 0) {
+						byte_str[0] = optarg[pos];
+						byte_str[1] = '0';
+					} else {
+						byte_str[0] = optarg[pos];
+						byte_str[1] = optarg[pos + 1];
+					}
+
+					unsigned int tmp;
+					if (sscanf(byte_str, "%2x", &tmp) != 1) {
+						printf("ping: failed to parse hex byte '%s'\n", byte_str);
+						return -EINVAL;
+					}
+					pinfo.pattern[i] = (uint8_t)tmp;
+				}
+
 				pat_set = 1;
 			} else
 				duplicate = 1;

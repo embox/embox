@@ -54,12 +54,6 @@ static inline long pathconf(char *path, int name) {
 
 #define _PC_NAME_MAX 0
 
-#include <string.h>
-static inline int strerror_r(int errnum, char *buf, size_t buflen) {
-	// memcpy(buf, strerror(errnum), buflen);
-	return 0;
-}
-
 static inline int statvfs(const char *path, struct statvfs *buf) {
 	return -1;
 }

@@ -5,7 +5,7 @@
  * @author Felix Sulima
  */
 
-#include <c_compat/cstdlib>
+#include <cstdlib>
 
 #if defined(__EXCEPTIONS) && __EXCEPTIONS==1
 #error Exceptions must be disabled

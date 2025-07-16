@@ -7,8 +7,6 @@ PKG_MD5     := e55fe3830f0d469dc67205b380515af0
 
 PKG_PATCHES := pkg_patch.txt
 
-include $(EXTBLD_LIB)
-
 $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) -f Makefile.cmdline MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)' CC=$(EMBOX_GCC); \

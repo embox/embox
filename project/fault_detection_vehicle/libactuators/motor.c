@@ -8,7 +8,7 @@
 
 #include <libactuators/motor.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 void motor_init(struct motor *m) {
 

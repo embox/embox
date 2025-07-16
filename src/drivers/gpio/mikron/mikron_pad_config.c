@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include <drivers/gpio/gpio_driver.h>
+#include <drivers/gpio.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 
@@ -28,7 +28,8 @@ struct pad_config_regs {
 
 #define CONF_PAD_CONFIG_REGION_BASE 0x000050c00
 
-#define PAD_CONFIG                 ((volatile struct pad_config_regs *)CONF_PAD_CONFIG_REGION_BASE)
+#define PAD_CONFIG \
+	((volatile struct pad_config_regs *)CONF_PAD_CONFIG_REGION_BASE)
 
 void mik_pad_cfg_set_func(int port, int pin, int func) {
 	volatile struct pad_config_port_regs *port_regs;

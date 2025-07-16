@@ -22,8 +22,8 @@ prepare_bin() {
 			       --remove-section=.data \
 			       --remove-section=.bss"
 
-	arm-none-eabi-objcopy -O binary build/base/bin/embox "$QSPI_BIN" $QSPI_SECTIONS
-	arm-none-eabi-objcopy -O binary build/base/bin/embox "$EMBOX_BIN" $EMBOX_SECTIONS
+	arm-none-eabi-objcopy -O binary "$EMBOX_ELF" "$QSPI_BIN" $QSPI_SECTIONS
+	arm-none-eabi-objcopy -O binary "$EMBOX_ELF" "$EMBOX_BIN" $EMBOX_SECTIONS
 }
 
 create_gdb_script() {
@@ -36,7 +36,7 @@ create_gdb_script() {
 	    echo "monitor flash banks"
 
 	    # Write embox.bin
-	    echo "monitor stm32f2x mass_erase 0"
+	    echo "monitor stm32f7x mass_erase 0"
 	    echo "monitor flash write_bank 0 $EMBOX_BIN"
 
 	} >> "$GDB_CMD_FILE"

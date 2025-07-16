@@ -6,7 +6,7 @@
  * @date 12.06.2017
  */
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <drivers/spi.h>
 #include <embox/unit.h>
 #include <errno.h>
@@ -106,7 +106,7 @@ static uint8_t imx6_ecspi_transfer_byte(struct imx6_ecspi *dev, uint8_t val) {
 	return REG32_LOAD(ECSPI_RXDATA(dev));
 }
 
-static int imx6_ecspi_select(struct spi_device *dev, int cs) {
+static int imx6_ecspi_select(struct spi_controller *dev, int cs) {
 	struct imx6_ecspi *priv = dev->priv;
 
 	if (cs < 0 || cs > priv->cs_count) {
@@ -119,7 +119,7 @@ static int imx6_ecspi_select(struct spi_device *dev, int cs) {
 	return 0;
 }
 
-static int imx6_ecspi_transfer(struct spi_device *dev, uint8_t *inbuf,
+static int imx6_ecspi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	struct imx6_ecspi *priv = dev->priv;
 	uint8_t val;
@@ -145,7 +145,7 @@ static int imx6_ecspi_transfer(struct spi_device *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_ops imx6_ecspi_ops = {
+struct spi_controller_ops imx6_ecspi_ops = {
 	.select   = imx6_ecspi_select,
 	.transfer = imx6_ecspi_transfer
 };

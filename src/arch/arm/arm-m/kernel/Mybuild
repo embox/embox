@@ -39,7 +39,7 @@ module exception_entry {
 	depends irq_static
 }
 
-module locore extends embox.arch.locore {
+module locore {
 	depends embox.arch.arm.head
 	depends irq_entry
 	depends exception_entry

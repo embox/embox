@@ -15,7 +15,7 @@
 #include <sys/stat.h>
 
 static void print_usage(void) {
-	printf("Usage: mkdir [-v] [-m MODE] DIR ...\n");
+	printf("Usage: mkdir [-s] [-m MODE] DIR ...\n");
 }
 
 int main(int argc, char **argv) {
@@ -30,7 +30,7 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc - 1, argv, "hm:v"))) {
+	while (-1 != (opt = getopt(argc - 1, argv, "hm:vs"))) {
 		switch(opt) {
 		case 'h':
 			print_usage();
@@ -39,6 +39,7 @@ int main(int argc, char **argv) {
 			mode = strtol(optarg, NULL, 8);
 			mode_set = 1;
 			break;
+		case 's':
 		case 'v':
 			mode |= VFS_DIR_VIRTUAL;
 			break;

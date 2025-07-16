@@ -3,15 +3,18 @@ package third_party.cmd
 @App
 @AutoCmd
 @Cmd(name="perl",
-	help="Interpreter of the Perl programming language",
-	man='''
-	''')
-@BuildDepends(third_party.staticperl.build)
+     help="Interpreter of the Perl programming language",
+     man="")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 module perl {
 	option string perl_modules=""
-	
+
 	source "^BUILD/extbld/^MOD_PATH/install/perl.o"
-	
-	depends third_party.staticperl.build
+	source "stubs.c"
+
+	@NoRuntime depends embox.compat.posix.LibPosix
+	@NoRuntime depends embox.compat.posix.time.time
+	@NoRuntime depends embox.compat.posix.util.times
+	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.driver.virtual.null
 }

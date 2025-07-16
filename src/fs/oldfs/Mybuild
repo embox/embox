@@ -5,6 +5,7 @@ module node {
 
 	source "inode.c"
 	source "dentry.c"
+	source "inode_repo.c"
 
 	@IncludeExport(path="fs")
 	source "inode.h"

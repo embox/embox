@@ -35,7 +35,7 @@ module lan9118_gpio_irq extends lan9118 {
 	option number memory_region_size = 0x1000000 /* 16 Mb */
 
 	depends embox.driver.gpmc.gpmc_api
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 
 	depends embox.net.skbuff
 	depends embox.compat.libc.all

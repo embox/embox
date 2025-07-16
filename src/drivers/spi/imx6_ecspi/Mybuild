@@ -6,7 +6,7 @@ static module imx6_ecspi {
 	source "imx6_ecspi.c"
 
 	depends core
-	depends embox.driver.gpio.api
+	depends embox.driver.gpio.core
 }
 
 module imx6_ecspi1 {
@@ -15,6 +15,7 @@ module imx6_ecspi1 {
 	option number pins_group
 
 	source "imx6_ecspi1.c"
+	source "spi0_dev.c"
 
 	depends imx6_ecspi
 	depends embox.driver.periph_memory
@@ -26,8 +27,8 @@ module imx6_ecspi2 {
 	option number pins_group
 
 	source "imx6_ecspi2.c"
+	source "spi1_dev.c"
 
 	depends imx6_ecspi
-
 	depends embox.driver.periph_memory
 }

@@ -10,8 +10,6 @@ PKG_MD5 := a75a34bcc03cacf71a2db9da3b7c94a5
 
 PKG_PATCHES := dropbear-mpr.patch
 
-include $(EXTBLD_LIB)
-
 DROPBEAR_CPPFLAGS += -DLTC_NO_BSWAP
 
 $(CONFIGURE) :

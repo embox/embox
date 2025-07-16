@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <drivers/diag.h>
@@ -92,7 +92,7 @@ static int stm32_uart_setup(struct uart *dev, const struct uart_params *params) 
 	REG_ORIN(RCC_APB2ENR,RCC_APB2ENR_USART1EN);
 
 	gpio_setup_mode(UART_GPIO, TX_PIN ,
-			GPIO_MODE_OUT | GPIO_MODE_OUT_ALTERNATE);
+			GPIO_MODE_OUT | GPIO_MODE_ALT_SET(0));
 	gpio_setup_mode(UART_GPIO, RX_PIN, GPIO_MODE_IN);
 
 	REG_STORE(&uart->brr, SYS_CLOCK / params->baud_rate);

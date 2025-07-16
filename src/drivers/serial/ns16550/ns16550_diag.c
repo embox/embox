@@ -10,7 +10,7 @@
 #include <drivers/serial/uart_dev.h>
 #include <framework/mod/options.h>
 
-#define BASE_ADDR OPTION_GET(NUMBER, base_addr)
+#define BASE_ADDR UINTMAX_C(OPTION_GET(NUMBER, base_addr))
 #define BAUD_RATE OPTION_GET(NUMBER, baud_rate)
 
 extern const struct uart_ops ns16550_uart_ops;

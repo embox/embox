@@ -44,7 +44,7 @@ endef
 define $(gold_grammar)_create-NumberLiteral
 	$(for num <- $(gold_default_create),
 		$(or $(filter-out 0x%,$(num)),
-			$(shell printf '%d' '$(num)')))
+			$(shell printf '%u' '$(num)')))
 endef
 
 # Symbol: StringLiteral

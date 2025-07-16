@@ -8,8 +8,8 @@
  * @author Eldar Abusalimov
  */
 
-#ifndef ASSERT_H_
-#define ASSERT_H_
+#ifndef COMPAT_LIBC_ASSERT_H_
+#define COMPAT_LIBC_ASSERT_H_
 
 #include <module/embox/compat/libc/assert.h>
 
@@ -62,4 +62,4 @@ __END_DECLS
 	_Static_assert(cond, msg)
 #endif /* !__cplusplus */
 
-#endif /* ASSERT_H_ */
+#endif /* COMPAT_LIBC_ASSERT_H_ */

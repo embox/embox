@@ -1,0 +1,5 @@
+package embox.compat.linux
+
+module syscall_stub {
+	source "syscall_stub.c"
+}

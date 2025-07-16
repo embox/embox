@@ -5,6 +5,7 @@ module multi extends api {
 	source "main_thread_create.c"
 	source "main_thread_allocator.c"
 
+	option number task_name_len = 40
 	option number task_quantity = 0
 	option number resource_size = 0
 

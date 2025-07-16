@@ -133,7 +133,12 @@ int main(int argc, char **argv) {
 			printf("Bad prefixlen or CIDR notation\n");
 			return -EINVAL;
 		}
-		netmask = htonl(~(0xffffffffU >> preflen));
+		/* Shifting 32-bit integer by 32 bits is UB */
+		if (preflen == 32) {
+			netmask = 0xffffffffU;
+		} else {
+			netmask = htonl(~(0xffffffffU >> preflen));
+		}
 	}
 
 	if (!strcmp(argv[0], "default")) {

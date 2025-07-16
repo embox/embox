@@ -1,0 +1,4 @@
+"version",
+"help",
+"tish",
+

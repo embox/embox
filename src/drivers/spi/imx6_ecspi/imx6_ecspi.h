@@ -10,7 +10,7 @@
 #define SRC_DRIVERS_SPI_IMX6_ECSPI_H_
 
 #include <stdint.h>
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #define IMX6_ECSPI_MAX_CS   4
 
@@ -25,6 +25,6 @@ struct imx6_ecspi {
 };
 
 extern int imx6_ecspi_init(struct imx6_ecspi *dev);
-extern struct spi_ops imx6_ecspi_ops;
+extern struct spi_controller_ops imx6_ecspi_ops;
 
 #endif /* SRC_DRIVERS_SPI_IMX6_ECSPI_H_ */

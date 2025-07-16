@@ -53,7 +53,7 @@ C_ENTRY(_start):
 	pushl   $_data_len         /* push data len as 3 parameter on the stack */
 	pushl   $_data_lma         /* push data lma as 2 parameter on the stack */
 	pushl   $_data_vma         /* push data vma as 1 parameter on the stack */
-	call    memcpy              /* copy data section */
+	call    memcpy             /* copy data section */
 	addl    $0xc, %esp
 1:
 

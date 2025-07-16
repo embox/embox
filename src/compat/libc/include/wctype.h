@@ -7,8 +7,8 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef WCTYPE_H_
-#define WCTYPE_H_
+#ifndef COMPAT_LIBC_WCTYPE_H_
+#define COMPAT_LIBC_WCTYPE_H_
 
 #include <wchar.h>
 #include <ctype.h>
@@ -53,4 +53,4 @@ extern int iswspace(wint_t wc);
 
 __END_DECLS
 
-#endif /* WCTYPE_H_ */
+#endif /* COMPAT_LIBC_WCTYPE_H_ */

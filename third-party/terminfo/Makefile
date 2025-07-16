@@ -1,18 +1,12 @@
 
-PKG_NAME := terminfo.src
-PKG_VER  :=
+PKG_NAME := ncurses
+PKG_VER  := 6.4
 
-PKG_SOURCES := https://invisible-mirror.net/archives/ncurses/terminfo.src.gz
-PKG_MD5     := 053bb48fc744d108fb64120ddf0e51e3
-
-include $(EXTBLD_LIB)
-
-define option_get_string
-$(shell echo OPTION_STRING_third_party__terminfo__$(1) | gcc -P -E -include $(SRCGEN_DIR)/include/config/third_party/terminfo.h -)
-endef
+PKG_SOURCES := https://github.com/mirror/ncurses/archive/refs/tags/v6.4.tar.gz
+PKG_MD5     := b7877c4c6cebed996158396d052a4b1f
 
 $(BUILD) :
-	mkdir -p $(BUILD_DIR)/terminfo
-	tic -e $(call option_get_string,term) \
-		-o $(BUILD_DIR)/terminfo $(BUILD_DIR)/$(PKG_NAME) &> /dev/null
+	$(MKDIR) $(MOD_BUILD_DIR)/terminfo
+	tic -e $(call option_get,STRING,term) \
+		-o $(MOD_BUILD_DIR)/terminfo $(PKG_SOURCE_DIR)/misc/terminfo.src &> /dev/null
 	touch $@

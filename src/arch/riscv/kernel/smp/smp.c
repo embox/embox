@@ -79,7 +79,7 @@ void startup_ap(void) {
 
 static inline void cpu_start(int cpu_id) {
 	/* Setting up stack and boot */
-	__ap_sp = (char *)&ap_stack[cpu_id] + KERNEL_AP_STACK_SZ;
+	__ap_sp = (char *)&ap_stack[cpu_id - 1] + KERNEL_AP_STACK_SZ;
 
 	ap_ack = 0;
 

@@ -40,7 +40,7 @@ static int ppc_clk_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t ppc_clk_read(struct clock_source *cs) {
+static cycle_t ppc_clk_get_cycles(struct clock_source *cs) {
 	uint32_t l, u, tmp;
 	tmp = __get_tbu();
 	do {
@@ -57,7 +57,7 @@ static struct time_event_device ppc_clk_event = {
 };
 
 static struct time_counter_device ppc_clk_counter = {
-	.read = ppc_clk_read,
+	.get_cycles = ppc_clk_get_cycles,
 	.cycle_hz = PPCCLK_FREQ,
 };
 

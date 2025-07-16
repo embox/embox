@@ -6,8 +6,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef ARCH_ONECPU_H_
-#define ARCH_ONECPU_H_
+#ifndef ARCH_GENERIC_ONECPU_H_
+#define ARCH_GENERIC_ONECPU_H_
 
 #ifndef __ASSEMBLER__
 
@@ -23,4 +23,4 @@ __END_DECLS
 
 #endif /* !__ASSEMBLER__ */
 
-#endif /* ARCH_ONECPU_H_ */
+#endif /* ARCH_GENERIC_ONECPU_H_ */

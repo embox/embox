@@ -23,9 +23,9 @@ diff -aur opencv-4.5.2/modules/core/src/parallel.cpp ../build/extbld/third_party
      #include <unistd.h>
      #include <stdio.h>
      #include <sys/types.h>
-diff -aur opencv-4.5.2/modules/core/src/system.cpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/system.cpp
---- opencv-4.5.2/modules/core/src/system.cpp	2021-04-02 14:23:54.000000000 +0300
-+++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/system.cpp	2021-04-15 17:18:03.150852664 +0300
+diff -aur ./opencv-4.5.2/modules/core/src/system.cpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/system.cpp
+--- ./opencv-4.5.2/modules/core/src/system.cpp	2021-04-02 14:23:54.000000000 +0300
++++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/system.cpp	2025-04-11 15:40:18.955136608 +0300
 @@ -229,7 +229,7 @@
  #include "omp.h"
  #endif
@@ -35,6 +35,29 @@ diff -aur opencv-4.5.2/modules/core/src/system.cpp ../build/extbld/third_party/l
  #include <unistd.h>
  #include <stdio.h>
  #include <sys/types.h>
+@@ -530,11 +530,11 @@
+         }
+     #endif // CV_CPUID_X86
+ 
+-    #if defined __ANDROID__ || defined __linux__
++    #if defined __ANDROID__ || defined __linux__ || defined __EMBOX__
+     #ifdef __aarch64__
+         have[CV_CPU_NEON] = true;
+         have[CV_CPU_FP16] = true;
+-    #elif defined __arm__ && defined __ANDROID__
++    #elif defined __arm__ && (defined __ANDROID__ || defined __EMBOX__)
+       #if defined HAVE_CPUFEATURES
+         CV_LOG_INFO(NULL, "calling android_getCpuFeatures() ...");
+         uint64_t features = android_getCpuFeatures();
+@@ -806,7 +806,7 @@
+     LARGE_INTEGER counter;
+     QueryPerformanceCounter( &counter );
+     return (int64)counter.QuadPart;
+-#elif defined __linux || defined __linux__
++#elif defined __linux || defined __linux__ || defined __EMBOX__
+     struct timespec tp;
+     clock_gettime(CLOCK_MONOTONIC, &tp);
+     return (int64)tp.tv_sec*1000000000 + tp.tv_nsec;
 diff -aur opencv-4.5.2/modules/core/src/utils/filesystem.cpp ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/utils/filesystem.cpp
 --- opencv-4.5.2/modules/core/src/utils/filesystem.cpp	2021-04-15 17:38:18.000565557 +0300
 +++ ../build/extbld/third_party/lib/opencv/build/opencv-4.5.2/modules/core/src/utils/filesystem.cpp	2021-04-15 17:36:13.092558269 +0300

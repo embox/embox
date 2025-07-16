@@ -98,17 +98,17 @@ static int imx6_gpt_set_periodic(struct clock_source *cs) {
 	return 0;
 }
 
-static cycle_t imx6_gpt_read(struct clock_source *cs) {
+static cycle_t imx6_gpt_get_cycles(struct clock_source *cs) {
 	return REG32_LOAD(GPT_CNT);
 }
 
 static struct time_event_device imx6_gpt_event = {
-	.set_periodic   = imx6_gpt_set_periodic,
-	.irq_nr   = GPT_IRQ,
+	.set_periodic = imx6_gpt_set_periodic,
+	.irq_nr = GPT_IRQ,
 };
 
 static struct time_counter_device imx6_gpt_counter = {
-	.read     = imx6_gpt_read,
+	.get_cycles = imx6_gpt_get_cycles,
 	.cycle_hz = GPT_TARGET_HZ,
 };
 

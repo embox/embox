@@ -11,9 +11,9 @@
 
 "telnetd &",
 
-"mkdir -v /mnt",
-"mkdir -v /mnt/fs_test",
+"mkdir -s /mnt",
+"mkdir -s /mnt/fs_test",
 
-"mkdir -v /tmp",
+"mkdir -s /tmp",
 "mkfs -q /dev/ram0 8192",
 "mount -t ramfs  /dev/ram0 /tmp",

@@ -1,1 +1,1 @@
-"mkdir -v /conf",
+"mkdir -s /conf",

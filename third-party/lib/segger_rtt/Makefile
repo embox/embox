@@ -4,8 +4,6 @@ PKG_VER  := V672
 PKG_SOURCES := http://localhost/$(PKG_NAME)_$(PKG_VER).tgz
 PKG_MD5     := 94089b67d4c1ecdb13aa9e395153b88e
 
-include $(EXTBLD_LIB)
-
 verify:
 	@if [ ! -f $(DOWNLOAD_DIR)/$(PKG_NAME)-$(PKG_VER).tgz ]; then \
 		echo ""; \

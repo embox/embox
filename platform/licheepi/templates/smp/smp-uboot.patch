@@ -1,0 +1,79 @@
+From ea99b38c8d30ea150af51f59f08794d7e806532f Mon Sep 17 00:00:00 2001
+From: Zixian Zeng <sycamoremoon376@gmail.com>
+Date: Fri, 9 May 2025 17:47:54 +0800
+Subject: [PATCH] temp fix for u-boot smp booting custom OS
+
+---
+ arch/riscv/lib/bootm.c |  6 +++---
+ cmd/elf.c              | 10 ++++++++++
+ 2 files changed, 13 insertions(+), 3 deletions(-)
+
+diff --git a/arch/riscv/lib/bootm.c b/arch/riscv/lib/bootm.c
+index f92b0893816..6173b5b8c3b 100644
+--- a/arch/riscv/lib/bootm.c
++++ b/arch/riscv/lib/bootm.c
+@@ -27,7 +27,7 @@ DECLARE_GLOBAL_DATA_PTR;
+ 
+ static struct fw_dynamic_info opensbi_info;
+ static atomic_t _harts_count = ATOMIC_INITIALIZER(3);
+-static ulong _load_start;
++ulong _load_start;
+ static ulong _dtb_addr;
+ static ulong _dyn_info_addr;
+ 
+@@ -120,7 +120,7 @@ bool has_reset_sample(ulong dtb_addr)
+ 	}
+ }
+ 
+-static void reset_sample(void)
++void reset_sample(void)
+ {
+ 	ulong addr;
+ 	uint addr_l, addr_h;
+@@ -155,7 +155,7 @@ static void boot_jump_linux(bootm_headers_t *images, int flag)
+ 
+ 	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
+ 
+-	debug("## Transferring control to kernel (at address %08lx) ...\n",
++	printf("## Transferring control to kernel (at address %08lx) ...\n",
+ 	      (ulong)kernel);
+ 
+ 	announce_and_cleanup(fake);
+diff --git a/cmd/elf.c b/cmd/elf.c
+index 32f12a72b9b..bfff121464e 100644
+--- a/cmd/elf.c
++++ b/cmd/elf.c
+@@ -241,6 +241,7 @@ static unsigned long do_bootelf_exec(ulong (*entry)(int, char * const[]),
+ 	 * pass address parameter as argv[0] (aka command name),
+ 	 * and all remaining args
+ 	 */
++	cleanup_before_linux();
+ 	ret = entry(argc, argv);
+ 
+ 	return ret;
+@@ -278,6 +279,8 @@ int do_bootelf(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ 	char *sload = NULL;
+ 	const char *ep = env_get("autostart");
+ 	int rcode = 0;
++	extern ulong _load_start;
++	extern void reset_sample(void);
+ 
+ 	/* Consume 'bootelf' */
+ 	argc--; argv++;
+@@ -313,6 +316,13 @@ int do_bootelf(cmd_tbl_t *cmdtp, int flag, int argc, char * const argv[])
+ 	 * pass address parameter as argv[0] (aka command name),
+ 	 * and all remaining args
+ 	 */
++
++	bootstage_mark(BOOTSTAGE_ID_RUN_OS);
++
++	printf("## Reset APs, Addr = 0x%lx\n", addr);
++	_load_start = (ulong)addr;
++	reset_sample();
++
+ 	rc = do_bootelf_exec((void *)addr, argc, argv);
+ 	if (rc != 0)
+ 		rcode = 1;
+-- 
+2.49.0
+

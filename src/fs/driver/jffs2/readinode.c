@@ -144,6 +144,7 @@ static inline int read_direntry(struct jffs2_sb_info *c,
 	      uint32_t read, struct jffs2_full_dirent **fdp,
 	      uint32_t *latest_mctime, uint32_t *mctime_ver) {
 	struct jffs2_full_dirent *fd;
+	size_t retlen;
 
 	/* The direntry nodes are checked during the flash scanning */
 	BUG_ON(ref_flags(ref) == REF_UNCHECKED);
@@ -188,9 +189,9 @@ static inline int read_direntry(struct jffs2_sb_info *c,
 		int err;
 		int already = read - sizeof(*rd);
 
-		err = jffs2_flash_read(c, (ref_offset(ref)) + read,
-				rd->nsize - already, &read, &fd->name[already]);
-		if (unlikely(read != rd->nsize - already) && likely(!err)) {
+		err = jffs2_flash_read(c, (ref_offset(ref)) + read, rd->nsize - already,
+		    &retlen, &fd->name[already]);
+		if (unlikely(retlen != rd->nsize - already) && likely(!err)) {
 			return -EIO;
 		}
 		if (unlikely(err)) {
@@ -227,6 +228,7 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 	   	   	   	   	   	   	   	   	   	   	   uint32_t *mctime_ver) {
 	struct jffs2_eraseblock *jeb;
 	struct jffs2_tmp_dnode_info *tn;
+	size_t retlen;
 
 	/* Obsoleted. This cannot happen, surely? dwmw2 20020308 */
 	BUG_ON(ref_obsolete(ref));
@@ -260,9 +262,9 @@ static inline int read_dnode(struct jffs2_sb_info *c,
 					return -ENOMEM;
 				}
 
-				err = jffs2_flash_read(c, ref_offset(ref) + sizeof(*rd), je32_to_cpu(rd->csize),
-							&read, buf);
-				if (unlikely(read != je32_to_cpu(rd->csize)) && likely(!err)) {
+				err = jffs2_flash_read(c, ref_offset(ref) + sizeof(*rd),
+				    je32_to_cpu(rd->csize), &retlen, buf);
+				if (unlikely(retlen != je32_to_cpu(rd->csize)) && likely(!err)) {
 					err = -EIO;
 				}
 				if (err) {

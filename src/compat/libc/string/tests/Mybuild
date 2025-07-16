@@ -1,41 +1,137 @@
-package embox.compat.libc.str.tests
+package embox.compat.libc.str.test
 
-module strcat_test {
-	source "strcat_test.c"
-}
-
-module strncat_test {
-	source "strncat_test.c"
-}
+/**
+ * Tests for standard functions must be compiled with the '-fno-builtin' flag.
+ * This flag prevents GCC from using built-in versions of standard functions,
+ * forcing it to use the actual library implementations.
+ */
 
 module memchr_test {
-    source "memchr_test.c"
-}
-
-module memrchr_test {
-    source "memrchr_test.c"
-}
-
-module strerror_test {
-	source "strerror_test.c"
-}
-
-module memcpy_test {
-	source "memcpy_test.c"
-}
-
-module strcmp_test {
-	source "strcmp_test.c"
-}
-
-module memmove_test {
-	source "memmove_test.c"
+	@Cflags("-fno-builtin")
+	source "memchr_test.c"
 }
 
 module memcmp_test {
+	@Cflags("-fno-builtin")
 	source "memcmp_test.c"
 }
 
+module memcpy_test {
+	@Cflags("-fno-builtin")
+	source "memcpy_test.c"
+}
+
+module memmove_test {
+	@Cflags("-fno-builtin")
+	source "memmove_test.c"
+}
+
+module memrchr_test {
+	@Cflags("-fno-builtin")
+	source "memrchr_test.c"
+}
+
+module memset_test {
+	@Cflags("-fno-builtin")
+	source "memset_test.c"
+}
+
+module strcasecmp_test {
+	@Cflags("-fno-builtin")
+	source "strcasecmp_test.c"
+}
+
+module strcasestr_test {
+	@Cflags("-fno-builtin")
+	source "strcasestr_test.c"
+}
+
+module strcat_test {
+	@Cflags("-fno-builtin")
+	source "strcat_test.c"
+}
+
+module strchrnul_test {
+	@Cflags("-fno-builtin")
+	source "strchrnul_test.c"
+}
+
+module strchr_test {
+	@Cflags("-fno-builtin")
+	source "strchr_test.c"
+}
+
+module strcmp_test {
+	@Cflags("-fno-builtin")
+	source "strcmp_test.c"
+}
+
 module strcpy_test {
+	@Cflags("-fno-builtin")
 	source "strcpy_test.c"
+}
+
+module strdup_test {
+	@Cflags("-fno-builtin")
+	source "strdup_test.c"
+}
+
+module strerror_test {
+	@Cflags("-fno-builtin")
+	source "strerror_test.c"
+}
+
+module strlcpy_test {
+	@Cflags("-fno-builtin")
+	source "strlcpy_test.c"
+}
+
+module strlen_test {
+	@Cflags("-fno-builtin")
+	source "strlen_test.c"
+}
+
+module strlwr_test {
+	@Cflags("-fno-builtin")
+	source "strlwr_test.c"
+}
+
+module strncat_test {
+	@Cflags("-fno-builtin")
+	source "strncat_test.c"
+}
+
+module strncpy_test {
+	@Cflags("-fno-builtin")
+	source "strncpy_test.c"
+}
+
+module strpbrk_test {
+	@Cflags("-fno-builtin")
+	source "strpbrk_test.c"
+}
+
+module strrchr_test {
+	@Cflags("-fno-builtin")
+	source "strrchr_test.c"
+}
+
+module strstr_test {
+	@Cflags("-fno-builtin")
+	source "strstr_test.c"
+}
+
+module strtok_r_test {
+	@Cflags("-fno-builtin")
+	source "strtok_r_test.c"
+}
+
+module strtok_test {
+	@Cflags("-fno-builtin")
+	source "strtok_test.c"
+}
+
+module strupr_test {
+	@Cflags("-fno-builtin")
+	source "strupr_test.c"
 }

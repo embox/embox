@@ -20,9 +20,13 @@
 #define CAUSE_REG       MACRO_CONCAT(MODE_LOWER_CASE, cause)
 #define STATUS_REG      MACRO_CONCAT(MODE_LOWER_CASE, status)
 #define INTERRUPT_REG   MACRO_CONCAT(MODE_LOWER_CASE, ie)
+#define INTPENDING_REG  MACRO_CONCAT(MODE_LOWER_CASE, ip)
 #define EPC_REG         MACRO_CONCAT(MODE_LOWER_CASE, epc)
 #define TRAP_VECTOR_REG MACRO_CONCAT(MODE_LOWER_CASE, tvec)
-#define HARDID_REG     MACRO_CONCAT(MODE_LOWER_CASE, hartid)
+
+/* Unprivileged */
+#define TIME_REG        (0xc01)
+#define TIMEH_REG       (0xc81)
 
 /* Machine mode Status Register (mstatus) */
 #define MSTATUS_MIE  (1UL << 3)  /* Machine Interrupt Enable */
@@ -118,13 +122,6 @@
 #endif
 
 #define __ENABLE_TIMER_INTERRUPTS __asm volatile("csrs mie,%0" ::"r"(MIE_MTIE));
-
-#define read_mhartid()                                                \
-	({                                                               \
-		unsigned long __tmp;                                         \
-		__asm volatile("csrr %0, mhartid " : "=r"(__tmp)); \
-		__tmp;                                                       \
-	})
 
 #define read_csr(reg)                                                \
 	({                                                               \

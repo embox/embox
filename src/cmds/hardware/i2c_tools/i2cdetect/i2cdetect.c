@@ -6,11 +6,11 @@
  */
 
 #include <errno.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <stdint.h>
-#include <stdlib.h>
 #include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include <drivers/i2c/i2c.h>
 
@@ -25,12 +25,13 @@ static void print_error(void) {
 }
 
 static void i2c_bus_list(void) {
+	const struct i2c_bus *bus;
 	int i;
-	struct i2c_bus *bus;
+
 	for (i = 0; i < I2C_BUS_MAX; i++) {
 		bus = i2c_bus_get(i);
 		if (bus) {
-			printf("%s\n", bus->name);
+			printf("i2c_bus%d\n", i);
 		}
 	}
 }
@@ -48,12 +49,14 @@ static void i2c_bus_scan(long busn, int read) {
 		}
 		if (read) {
 			res = i2c_bus_read(busn, i, &tmp, 1);
-		} else {
+		}
+		else {
 			res = i2c_bus_write(busn, i, &tmp, 0);
 		}
 		if (0 <= res) {
 			printf(" %2X", (unsigned)i);
-		} else {
+		}
+		else {
 			printf(" --");
 		}
 	}

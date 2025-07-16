@@ -192,7 +192,9 @@ extern int unlink(const char *pathname);
 
 extern int rmdir(const char *pathname);
 
+extern pid_t getpgrp(void);
 extern pid_t getpid(void);
+extern pid_t getppid(void);
 
 extern int isatty(int fd);
 
@@ -209,6 +211,8 @@ extern uid_t geteuid(void);
 
 extern uid_t getgid(void);
 extern uid_t getegid(void);
+
+extern int setpgid(pid_t pid, pid_t pgid);
 
 extern int setreuid(uid_t ruid, uid_t euid);
 extern int setuid(uid_t uid);

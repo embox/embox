@@ -55,7 +55,7 @@ Required environment:
 ### Preparing environment
 For Debian-based systems (most packages are installed out of box though):
 ```
-$ sudo apt-get install build-essential gcc-multilib curl libmpc-dev python
+$ sudo apt-get install build-essential gcc-multilib curl libmpc-dev python3 python-is-python3
 ```
 
 For Arch Linux:
@@ -72,6 +72,10 @@ $ sudo dnf install make gcc cpio qemu patch curl python
 For MAC OS X (requires [Homebrew](https://brew.sh/) installed):
 ```
 $ brew install i686-elf-binutils i686-elf-gcc awk cpio qemu python
+```
+For Intel MAC: (BASH 4.0 or later is required for the further use [script for updating](https://gist.github.com/samnang/1759336))
+```
+$ brew install --cask gcc-arm-embedded
 ```
 
 For any system with Docker (more info on wiki [Emdocker](https://github.com/embox/embox/wiki/Emdocker)):

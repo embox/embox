@@ -12,8 +12,8 @@
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
-#define UARTCLK         OPTION_GET(NUMBER, uartclk)
-#define USE_BOARD_CONF  OPTION_GET(BOOLEAN, use_bconf)
+#define UARTCLK        OPTION_GET(NUMBER, uartclk)
+#define USE_BOARD_CONF OPTION_GET(BOOLEAN, use_bconf)
 
 /* UART Registers */
 #define UART_DR(base)   (base + 0x00)
@@ -24,6 +24,7 @@
 #define UART_FBRD(base) (base + 0x28)
 #define UART_LCRH(base) (base + 0x2c)
 #define UART_CR(base)   (base + 0x30)
+#define UART_IFLS(base) (base + 0x34)
 #define UART_IMSC(base) (base + 0x38)
 #define UART_MIS(base)  (base + 0x40)
 #define UART_ICR(base)  (base + 0x44)
@@ -35,11 +36,14 @@
 #define UART_WLEN_8BIT  0x3
 #define UART_WLEN_SHIFT 5
 
-/* Flag register */
-#define FR_RXFE         0x10 /* Receive FIFO empty */
-#define FR_TXFF         0x20 /* Transmit FIFO full */
+#define UART_LCRH_FEN (1 << 4) /* Enable FIFO mode */
 
-#define IMSC_RXIM       (0x1 << 4)
+/* Flag register */
+#define FR_RXFE 0x10 /* Receive FIFO empty */
+#define FR_TXFF 0x20 /* Transmit FIFO full */
+
+#define IMSC_RXIM (1 << 4)
+#define IMSC_RTIM (1 << 6)
 
 #if USE_BOARD_CONF
 #include "uart_setup_hw_board_config.inc"
@@ -69,7 +73,7 @@ static void pl011_set_baudrate(struct uart *dev) {
 static int pl011_irq_enable(struct uart *dev,
     const struct uart_params *params) {
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM);
+		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM | IMSC_RTIM);
 	}
 	return 0;
 }
@@ -88,13 +92,14 @@ static int pl011_setup(struct uart *dev, const struct uart_params *params) {
 	uart_setup_hw(dev);
 
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
-		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM);
+		REG32_STORE(UART_IMSC(dev->base_addr), IMSC_RXIM | IMSC_RTIM);
 	}
 
 	pl011_set_baudrate(dev);
 
-	/* Word len 8 bit. */
-	REG32_STORE(UART_LCRH(dev->base_addr), UART_WLEN_8BIT << UART_WLEN_SHIFT);
+	/* Enable FIFO, Word len 8 bit. */
+	REG32_STORE(UART_LCRH(dev->base_addr),
+	    UART_LCRH_FEN | (UART_WLEN_8BIT << UART_WLEN_SHIFT));
 
 	/* Enable uart. */
 	REG32_STORE(UART_CR(dev->base_addr), UART_UARTEN | UART_TXE | UART_RXE);

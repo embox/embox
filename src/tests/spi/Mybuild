@@ -1,7 +1,8 @@
 package embox.test.spi
 
-module imx6_test {
-	source "imx6_spi.c"
+module spi_jedec_test {
+	option number bus_num = 0
+	option number cs_num = 0
 
-	depends embox.driver.spi.imx6_ecspi
+	source "spi_jedec_test.c"
 }

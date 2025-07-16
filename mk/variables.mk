@@ -14,7 +14,7 @@ export PLATFORM_DIR    = $(ROOT_DIR)/platform
 export PROJECT_DIR     = $(ROOT_DIR)/project
 export EXT_PROJECT_DIR = $(ROOT_DIR)/ext_project
 
-export SUBPLATFORM_TEMPLATE_DIR  = templates/
+export SUBPLATFORM_TEMPLATE_DIR = templates/
 
 export BUILD_DIR       = $(ROOT_DIR)/build/base
 export EXTERNAL_BUILD_DIR  = $(ROOT_DIR)/build/extbld
@@ -34,7 +34,6 @@ export AUTOCONF_DIR    = $(GEN_DIR)
 
 export INCLUDE_INSTALL_DIR  = $(DIST_BASE_DIR)/include
 
-
 export ROOTFS_DIR      = $(OBJ_DIR)/rootfs
 export ROOTFS_IMAGE    = $(OBJ_DIR)/rootfs.cpio
 export USER_ROOTFS_DIR = $(CONF_DIR)/rootfs
@@ -44,8 +43,7 @@ export DOCS_OUT_DIR    = $(DOC_DIR)
 export CACHE_DIR       = mk/.cache
 
 export EMBOX_DIST_BASE_DIR := $(abspath $(DIST_BASE_DIR))
-export EXTBLD_LIB      = $(abspath $(ROOT_DIR))/mk/extbld/lib.mk
-export EMBOX_GCC_ENV   = $(abspath $(MKGEN_DIR))/embox_gcc_env.sh
+export EMBOX_GCC_ENV       := $(abspath $(MKGEN_DIR))/embox_gcc_env.sh
 
 export ANNOTATION_HANDLERS  = mk/mybuild/annotation_handlers
 

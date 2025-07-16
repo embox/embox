@@ -10,18 +10,30 @@
 #include <inttypes.h>
 #include <stddef.h>
 
+#include <asm/cr_regs.h>
+#include <asm/flags.h>
 #include <asm/hal/env/traps_core.h>
 #include <asm/linkage.h>
 #include <asm/ptrace.h>
 #include <asm/traps.h>
-#include <kernel/irq.h>
 #include <kernel/panic.h>
 
 __trap_handler __exception_table[0x20];
 
-fastcall void exception_handler(pt_regs_t *st) {
-	if (NULL != __exception_table[st->trapno]) {
-		__exception_table[st->trapno](st->trapno, st);
+fastcall void x86_excpt_handler(pt_regs_t *regs) {
+#ifdef __SSE__
+	uint32_t cr4;
+	if (regs->trapno == X86_T_INVALID_OPCODE) {
+		cr4 = get_cr4();
+		if (!(cr4 & X86_CR4_OSFXSR)) {
+			set_cr4(cr4 | X86_CR4_OSFXSR | X86_CR4_OSXMMEXCPT);
+			return;
+		}
+	}
+#endif
+
+	if (NULL != __exception_table[regs->trapno]) {
+		__exception_table[regs->trapno](regs->trapno, regs);
 		return;
 	}
 
@@ -42,7 +54,7 @@ fastcall void exception_handler(pt_regs_t *st) {
 	      "EFLAGS =%" PRIx32 "\n"
 	      "ESP    =%" PRIx32 "\n"
 	      "SS     =%" PRIx32 "\n",
-	    st->trapno, st->err, st->eax, st->ebx, st->ecx, st->edx, st->gs, st->fs,
-	    st->es, st->ds, st->edi, st->esi, st->ebp, st->eip, st->cs, st->eflags,
-	    st->esp, st->ss);
+	    regs->trapno, regs->err, regs->eax, regs->ebx, regs->ecx, regs->edx,
+	    regs->gs, regs->fs, regs->es, regs->ds, regs->edi, regs->esi, regs->ebp,
+	    regs->eip, regs->cs, regs->eflags, regs->esp, regs->ss);
 }

@@ -13,7 +13,7 @@
 #include <unistd.h>
 #include <pthread.h>
 
-#include <drivers/gpio/gpio.h>
+#include <drivers/gpio.h>
 
 #include <kernel/thread.h>
 #include <kernel/thread/thread_sched_wait.h>

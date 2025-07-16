@@ -45,7 +45,7 @@ module core {
 			Alexander Kalmuk
 	''')
 module qpidd {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
 	source "strip.QpiddBroker.o"
 
@@ -65,7 +65,7 @@ module qpidd {
 			Alexander Kalmuk
 	''')
 module qpidd_hello {
-	@Rule(script="$(EXTERNAL_MAKE) -f $(abspath $(ROOT_DIR))/mk/main-stripping.mk TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'")
+	@Rule(script="$(MAIN_STRIPPING)")
 	@AddPrefix("^BUILD/extbld/third_party/qpid/core/install/bin")
 	source "strip.hello_world.o"
 

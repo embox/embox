@@ -263,14 +263,30 @@ extern char *strstr(const char *haystack, const char *needle);
 extern char *strcasestr(const char *haystack, const char *needle);
 
 /**
- * Maps given error code to its string representation.
+ * Get error message string.
  *
- * @param errno
+ * @param errnum
  *   The error code.
  * @return
  *   C-style string, containing a descriptive error message
  */
-extern char *strerror(int err);
+extern char *strerror(int errnum);
+
+/**
+ * Get error message string.
+ *
+ * @param errno
+ *   The error code.
+ * @param strerrbuf
+ *   Pointer to error message buffer.
+ * @param buflen
+ *   Length of error message buffer.
+ * @retval 0
+ *   If successful.
+ * @retval -1 (ERANGE)
+ *   Insufficient storage was supplied to contain error message string.
+ */
+extern int strerror_r(int errnum, char *strerrbuf, size_t buflen);
 
 /**
  * Copies no more than @a n bytes from memory area @a src

@@ -15,3 +15,5 @@ To use SD card with raw image sdcard.img, run this command:
 
 ./scripts/qemu/auto_qemu -drive if=sd,index=0,file=sdcard.img,format=raw
 
+To add eeprom (at24) use
+`-drive id=eeprom,file=EEPROM/403.bin,format=raw,if=none -device at24c-eeprom,drive=eeprom,rom-size=1024,bus=i2c-bus.0,address=0x50`

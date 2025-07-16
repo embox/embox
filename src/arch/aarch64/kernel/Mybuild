@@ -6,7 +6,7 @@ module interrupt extends embox.arch.interrupt {
 	@NoRuntime depends locore
 }
 
-module locore extends embox.arch.locore {
+module locore {
 	@NoRuntime depends reg
 	@NoRuntime depends exceptions
 	@NoRuntime depends reset_handler

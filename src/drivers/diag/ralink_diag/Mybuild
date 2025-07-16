@@ -1,0 +1,7 @@
+package embox.driver.diag
+
+module board_diag extends diag_api {
+	option number base_addr = 0xb0000c00
+	option number baud_rate = 115200
+	source "board_diag.c"
+}

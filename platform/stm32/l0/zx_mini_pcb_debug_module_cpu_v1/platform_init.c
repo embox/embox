@@ -57,7 +57,7 @@ typedef struct {
 // HSE is not present.
 const uint32_t HSE_VALUE = 0;
 
-void arch_init() {
+void platform_init(void) {
 	// Board is always working in max frequency.
 	static_assert(SYS_CLOCK == 32000000, "");
 

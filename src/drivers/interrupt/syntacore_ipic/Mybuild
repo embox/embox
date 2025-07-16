@@ -1,0 +1,14 @@
+package embox.driver.interrupt
+
+module syntacore_ipic extends irqctrl_api {
+	option number log_level=0
+
+	option number mmode_base_addr=0xBF0
+	option number smode_base_addr=0x9F0
+
+	option number scr_ver = 1
+
+	source "ipic.c", "ipic.h"
+
+	depends embox.kernel.critical
+}

@@ -1,16 +1,20 @@
+
+#include <stdio.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <fcntl.h>
+
+#include <net/inetdevice.h>
 #include <net/net_namespace.h>
 #include <net/netdevice.h>
 #include <kernel/task.h>
 #include <mem/misc/pool.h>
-#include <embox/unit.h>
-#include <net/inetdevice.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <fs/vfs.h>
+
+#include <fs/inode.h>
 #include <fs/file_desc.h>
-#include <fcntl.h>
 #include <fs/dentry.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(set_init_net_ns);
 

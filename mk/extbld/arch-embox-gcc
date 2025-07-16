@@ -23,9 +23,13 @@ esac
 
 case " $@ " in
 	*" -c "*) arg_line_after="$cppflags";;
-	*" -E "*) arg_line_after="$cppflags" arg_line_before="";;
+	*" -E "*)
+		arg_line_after=" $cppflags "; arg_line_after="${arg_line_after// -g3 / }"
+		arg_line_before=" $arg_line_before "; arg_line_before="${arg_line_before// -g3 / }"
+		;;
 	*" -shared "*) echo -e "\n\nCan't build shared objects\n\n"; exit 1;;
 	*" -l"*) $0 $(for i in "$@"; do echo ${i/#-l*/}; done); exit $?;;
+	*" -rdynamic "*) $0 $(for i in "$@"; do echo ${i/#-rdynamic/}; done); exit $?;;
 	*" -I/usr/"*) $0 $(for i in "$@"; do echo ${i/#-I\/usr\/*/}; done); exit $?;;
 esac
 

@@ -1,0 +1,87 @@
+diff -aur App-Staticperl-1.46/bin/staticperl ../build/extbld/third_party/cmd/perl/App-Staticperl-1.46/bin/staticperl
+--- App-Staticperl-1.46/bin/staticperl	2022-02-15 21:36:36.000000000 +0300
++++ ../build/extbld/third_party/cmd/perl/App-Staticperl-1.46/bin/staticperl	2023-04-18 12:36:34.015579498 +0300
+@@ -3,18 +3,18 @@
+ #############################################################################
+ # configuration to fill in (or to replace in your .staticperlrc)
+ 
+-STATICPERL=~/.staticperl
+-CPAN=http://mirror.netcologne.de/cpan # which mirror to use
++STATICPERL=${STATICPERL-~/.staticperl}
++CPAN=${CPAN-http://mirror.netcologne.de/cpan} # which mirror to use
+ EMAIL="read the documentation <rtfm@example.org>"
+ DLCACHE=
+ 
+ # perl build variables
+-MAKE=make
+-PERL_VERSION=http://stableperl.schmorp.de/dist/latest.tar.gz # 5.12.5 and 5.8.9 are good choices for small builds
+-PERL_CC=cc
+-PERL_CONFIGURE="" # additional Configure arguments
+-PERL_CCFLAGS="-g -DPERL_DISABLE_PMC -DPERL_ARENA_SIZE=16376 -DNO_PERL_MALLOC_ENV -D_GNU_SOURCE -DNDEBUG"
+-PERL_OPTIMIZE="-Os" # -Os -ffunction-sections -fdata-sections -finline-limit=8 -ffast-math"
++MAKE=${MAKE-make}
++PERL_VERSION=${PERL_VERSION-http://stableperl.schmorp.de/dist/latest.tar.gz} # 5.12.5 and 5.8.9 are good choices for small builds
++PERL_CC=${PERL_CC-cc}
++PERL_CONFIGURE=${PERL_CONFIGURE-""} # additional Configure arguments
++PERL_CCFLAGS=${PERL_CCFLAGS-"-g -DPERL_DISABLE_PMC -DPERL_ARENA_SIZE=16376 -DNO_PERL_MALLOC_ENV -D_GNU_SOURCE -DNDEBUG"}
++PERL_OPTIMIZE=${PERL_OPTIMIZE-"-Os"} # -Os -ffunction-sections -fdata-sections -finline-limit=8 -ffast-math"
+ 
+ ARCH="$(uname -m)"
+ 
+@@ -33,8 +33,8 @@
+ # for some reason so we need to patch away the "-no" after Configure and before make :/
+ # --allow-multiple-definition exists to work around uclibc's pthread static linking bug
+ #PERL_LDFLAGS="-Wl,--no-gc-sections -Wl,--allow-multiple-definition"
+-PERL_LDFLAGS=
+-PERL_LIBS="-lm -lcrypt" # perl loves to add lotsa crap itself
++PERL_LDFLAGS=${PERL_LDFLAGS-""}
++PERL_LIBS=${PERL_LIBS-"-lm -lcrypt"} # perl loves to add lotsa crap itself
+ 
+ # some configuration options for modules
+ PERL_MM_USE_DEFAULT=1
+@@ -45,10 +45,10 @@
+ 
+ # which extra modules to install by default from CPAN that are
+ # required by mkbundle
+-STATICPERL_MODULES="ExtUtils::MakeMaker ExtUtils::CBuilder common::sense Pod::Strip PPI PPI::XS Pod::Usage"
++STATICPERL_MODULES=${STATICPERL_MODULES-"ExtUtils::MakeMaker ExtUtils::CBuilder common::sense Pod::Strip PPI PPI::XS Pod::Usage"}
+ 
+ # which extra modules you might want to install
+-EXTRA_MODULES=""
++EXTRA_MODULES=${EXTRA_MODULES-""}
+ 
+ # overridable functions
+ preconfigure()  { : ; }
+@@ -164,7 +164,7 @@
+             PERLURL="$PERL_VERSION"
+             PERLTAR="$(basename "$PERL_VERSION")"
+             ;;
+-         /* )
++         * )
+             # directory
+             verbose "copying $PERL_VERSION"
+             cp -Rp "$PERL_VERSION/." unpack/.
+@@ -172,10 +172,6 @@
+             mv unpack perl
+             return
+             ;;
+-         * )
+-            PERLURL="$CPAN/src/5.0/perl-$PERL_VERSION.tar.bz2"
+-            PERLTAR=perl-$PERL_VERSION.tar.bz2
+-            ;;
+       esac
+ 
+       if ! [ -e "$PERLTAR" ]; then
+@@ -616,9 +612,9 @@
+ 
+    "$PERL_PREFIX"/bin/perl $MYCONFIG -MCPAN -e 'notest (install => $_) for @ARGV' -- "$@" | tee "$STATICPERL/instcpan.log"
+ 
+-   if grep -q " -- NOT OK\$" "$STATICPERL/instcpan.log"; then
+-      fatal "failure while installing modules from CPAN ($*)"
+-   fi
++#    if grep -q " -- NOT OK\$" "$STATICPERL/instcpan.log"; then
++#       fatal "failure while installing modules from CPAN ($*)"
++#    fi
+    rm -f "$STATICPERL/instcpan.log"
+ }
+ 

@@ -29,6 +29,11 @@ cpp_prerequisites             = $(common_prereqs)
 extbld_prerequisites          = $(common_prereqs)
 include_install_prerequisites = $(common_prereqs)
 
+flags_before ?=
+flags ?=
+iec2c ?=
+ieclib ?=
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
@@ -37,7 +42,7 @@ $(OBJ_DIR)/%.o : $(GEN_DIR)/%.c
 
 $(OBJ_DIR)/%.o : $(GEN_DIR)/%.S
 	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-	
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S
 	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
@@ -46,13 +51,13 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp
 
 $(OBJ_DIR)/%.o : $(GEN_DIR)/%.cpp
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-	
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.o : $(GEN_DIR)/%.cxx
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-	
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
@@ -65,7 +70,6 @@ $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cc
 $(OBJ_DIR)/%.o : $(GEN_DIR)/%.cc
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
-
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
 	-I$(SRCGEN_DIR) \
@@ -77,6 +81,13 @@ $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 	-I$(SRCGEN_DIR) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
+
+$(GEN_DIR)/%.st.c : $(ROOT_DIR)/%.st
+	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
+
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.st.c
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+	$(EXTERNAL_MAKE_FLAGS) $(ROOT_DIR)/mk/plc/localize_symbols.sh $@
 
 ifeq ($(value OSTYPE),cygwin)
 # GCC built for Windows doesn't recognize /cygdrive/... absolute paths. As a

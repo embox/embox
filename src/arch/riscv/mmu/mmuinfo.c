@@ -12,10 +12,6 @@
 #include <hal/mmu.h>
 #include <asm/regs.h> 
 
-struct mmuinfo_regs {
-    char mmu_reg_name[32];
-    uint64_t mmu_reg_value;
-};
 
 struct mmuinfo_reg_access {
     const char *reg_name;

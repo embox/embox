@@ -9,8 +9,9 @@ module transmitter {
 	source "transmitter.c"
 
 	depends project.multi_agents_feathers.servo
-	depends project.multi_agents_feathers.libleds
 	depends project.multi_agents_feathers.libbutton
 
 	depends third_party.bsp.st_bsp_api
+
+	@NoRuntime depends embox.lib.leddrv
 }

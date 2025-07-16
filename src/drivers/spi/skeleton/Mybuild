@@ -1,17 +1,29 @@
 package embox.driver.spi
 
-module skeleton_common {
+module skeleton_spi_drv {
 	option string log_level="LOG_ERR"
 
-	source "skeleton_spi_common.c"
+	source "skeleton_spi_drv.c"
 
 	depends embox.driver.spi.core
+}
+
+module skeleton_spi0 {
+	option string log_level="LOG_ERR"
+
+	option number base_addr = 0
+
+	source "skeleton_spi0.c"
+
+	depends embox.driver.spi.skeleton_spi_drv
 }
 
 module skeleton_spi1 {
 	option string log_level="LOG_ERR"
 
+	option number base_addr = 0
+
 	source "skeleton_spi1.c"
 
-	depends embox.driver.spi.skeleton_common
+	depends embox.driver.spi.skeleton_spi_drv
 }
