@@ -182,6 +182,12 @@ void stm32_sysclock_init(void) {
 	RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV;
 # endif
 #endif /* defined(CONF_RCC_TYPE_HSE) */
+#if defined(CONF_RCC_TYPE_HSI)
+	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+# if defined(CONF_RCC_CLK_DEF_HSICAL_VAL)
+	RCC_OscInitStruct.HSICalibrationValue =CONF_RCC_CLK_DEF_HSICAL_VAL;
+# endif
+#endif  /* defined(CONF_RCC_TYPE_HSI) */
 #if defined(CONF_RCC_TYPE_PLL)
 	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
 	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE;
