@@ -23,6 +23,8 @@
 
 #include <config/board_config.h>
 
+#include "stm32cube_definitions.h"
+
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
@@ -31,9 +33,11 @@ EMBOX_UNIT_INIT(stm32cube_sdio_init);
 
 extern const struct mmc_host_ops stm32cube_sdio_ops;
 
-#define SDIO_ID               1
+#define SDIO_ID               OPTION_GET(NUMBER,sdio_id)
 
-#define SDIO_INSTANCE         SDIO
+
+
+#define SDIO_INSTANCE         MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_REGION_BASE)
 
 #define SDIO_IRQ_NUM          MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_IRQ)
 #define SDIO_CLK_ENABLE       MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_CLK_ENABLE)()
@@ -106,12 +110,12 @@ static int stm32cube_sdio_init(void) {
 	stm32cube_sdio_hw_init();
 
 	/* USER CODE END SDIO_Init 1 */
-	hsd.Instance = SDIO_INSTANCE;
-	hsd.Init.ClockEdge = SDIO_CLOCK_EDGE_RISING;
-	hsd.Init.ClockBypass = SDIO_CLOCK_BYPASS_DISABLE;
-	hsd.Init.ClockPowerSave = SDIO_CLOCK_POWER_SAVE_DISABLE;
-	hsd.Init.BusWide = SDIO_BUS_WIDE_1B;
-	hsd.Init.HardwareFlowControl = SDIO_HARDWARE_FLOW_CONTROL_DISABLE;
+	hsd.Instance = (void*)((uintptr_t)SDIO_INSTANCE);
+	hsd.Init.ClockEdge = CUBE_CLOCK_EDGE_RISING;
+	hsd.Init.ClockBypass = CUBE_CLOCK_BYPASS_DISABLE;
+	hsd.Init.ClockPowerSave = CUBE_CLOCK_POWER_SAVE_DISABLE;
+	hsd.Init.BusWide = CUBE_BUS_WIDE_1B;
+	hsd.Init.HardwareFlowControl = CUBE_HARDWARE_FLOW_CONTROL_DISABLE;
 	hsd.Init.ClockDiv = TRANSFER_CLK_DIV;
 	/* USER CODE BEGIN SDIO_Init 2 */
 	
@@ -123,11 +127,11 @@ static int stm32cube_sdio_init(void) {
   
 	if (HAL_SD_Init(&hsd) != HAL_OK)
 	{
-    	return -1;
+    	return 0;
 	}
 
-	if (HAL_SD_ConfigWideBusOperation(&hsd, SDIO_BUS_WIDE_4B) != HAL_OK) {
-		return -1;
+	if (HAL_SD_ConfigWideBusOperation(&hsd, CUBE_BUS_WIDE_4B) != HAL_OK) {
+		return 0;
 	}
 
 
