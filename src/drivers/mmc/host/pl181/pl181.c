@@ -189,6 +189,8 @@ const struct mmc_host_ops pl181_mmc_ops = {
 	.request = pl181_mmc_request,
 };
 
+extern int stm32cube_sdio_hw_init(void);
+
 EMBOX_UNIT_INIT(pl181_init);
 static int pl181_init(void) {
 	/* It seems that  we can't check directly
@@ -196,6 +198,10 @@ static int pl181_init(void) {
 	 * that we have a single card number zero */
 	struct mmc_host *mmc = mmc_alloc_host();
 	mmc->ops = &pl181_mmc_ops;
+
+#if (OPTION_GET(NUMBER,hw_init) != 0)
+	stm32cube_sdio_hw_init();
+#endif /* (OPTION_GET(NUMBER,hw_init) != 0) */
 
 	/* Power-on */
 	REG32_CLEAR(MCI_POWER, MCI_POWER_CTRL_MASK);

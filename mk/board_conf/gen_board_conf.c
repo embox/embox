@@ -183,6 +183,18 @@ static int gen_device_conf(const struct device_conf *dev) {
 		}
 	}
 
+	for (j = 0; j < ARRAY_SIZE(dev->dmas); j++) {
+		if (gen_field_int(dev->name, "DMA", &dev->dmas[j]) != 0) {
+			break;
+		}
+	}
+
+	for (j = 0; j < ARRAY_SIZE(dev->misc); j++) {
+		if (gen_field_int(dev->name, "MISC", &dev->misc[j]) != 0) {
+			break;
+		}
+	}
+
 	return 0;
 }
 
@@ -204,6 +216,8 @@ int main() {
 	const struct fpioa_conf *fpioa;
 	struct conf_item *clk_conf = &board_config[CLK_IDX];
 	const struct clk_conf *clk;
+	struct conf_item *mmc_conf = &board_config[MMC_IDX];
+	const struct mmc_conf *mmc;
 
 	config();
 
@@ -311,6 +325,19 @@ int main() {
 		gen_field_func(pwm->name, "TIM", &pwm->instance);
 		gen_field_int(pwm->name, "SERVO_POS", &pwm->servo_low);
 		gen_field_int(pwm->name, "SERVO_POS", &pwm->servo_high);
+
+		printf("\n");
+	}
+
+	/* MMC */
+	for (i = 0; i < mmc_conf->array_size; i++) {
+		mmc = &((const struct mmc_conf *)mmc_conf->ptr)[i];
+
+		if (mmc->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&mmc->dev);
 
 		printf("\n");
 	}

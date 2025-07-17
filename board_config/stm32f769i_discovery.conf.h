@@ -1,6 +1,8 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+#include <stm32f7_chip.h>
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
@@ -81,4 +83,61 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), LED(leds))
+struct mmc_conf mmcs[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "SDIO1",
+			.regs = {
+				REGMAP("BASE", (SDMMC1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 49),
+			},
+			.pins = {
+				PIN("TX", PC, PIN_6, AF8),
+				PIN("RX", PC, PIN_7, AF8),
+			},
+			.clocks = {
+				VAL("", CLK_SDMMC1),
+			},
+			.misc = {
+				VAL("NAME_IN_CUBE_SDMMC", 1),
+			},
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "SDIO2",
+			.regs = {
+				REGMAP("BASE", (SDMMC2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 103),
+			},
+			.pins = {
+				PIN("D0", GPIO_PORT_B, 3, AF10),
+				PIN("D1", GPIO_PORT_B, 4, AF10),
+				PIN("D2", GPIO_PORT_D, 6, AF11),
+				PIN("D3", GPIO_PORT_D, 7, AF11),
+				PIN("CK", GPIO_PORT_G, 9, AF11),
+				PIN("CMD", GPIO_PORT_G, 10, AF11),
+
+				PIN("DETECT", GPIO_PORT_I, 15, 0),
+
+			},
+			.clocks = {
+				VAL("", STM32_CLK_ENABLE(SDMMC2)),
+				VAL("TRANSFER_DIV", 0),
+			},
+			.misc = {
+				VAL("NAME_IN_CUBE_SDMMC", 1),
+			},
+		},
+	}
+		
+};
+
+
+EXPORT_CONFIG(UART(uarts), LED(leds), MMC(mmcs))

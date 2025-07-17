@@ -98,4 +98,8 @@
 #define CHANNEL_TIM3      TIM_CHANNEL_3
 #define CHANNEL_TIM4      TIM_CHANNEL_4
 
+#define STM32_CLK(clk)  __HAL_RCC_ ## clk ## _CLK
+#define STM32_CLK_ENABLE(clk)  __HAL_RCC_ ## clk ## _CLK_ENABLE
+
+
 #endif /* STM32_H_ */
