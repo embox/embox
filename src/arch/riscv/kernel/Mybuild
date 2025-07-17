@@ -46,6 +46,8 @@ module entry {
 }
 
 module exception {
+	option string log_level="LOG_EMERG"
+	
 	@IncludeExport(path="riscv")
 	source "exception.h"
 	source "exception.c"
