@@ -21,14 +21,13 @@
 
 #include <config/board_config.h>
 
+#include "stm32cube_definitions.h"
+
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
-
-
-
 static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *req) {
-	SDMMC_CmdInitTypeDef  sdmmc_cmdinit = {0};
+	CUBE_CmdInitTypeDef  sdmmc_cmdinit = {0};
 	int response;
 	SD_HandleTypeDef *phsd;
 
@@ -37,13 +36,13 @@ static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *re
 
 	if (req->cmd.flags & MMC_RSP_PRESENT) {
 		if (req->cmd.flags & MMC_RSP_136) {
-			response = SDMMC_RESPONSE_LONG;
+			response = CUBE_RESPONSE_LONG;
 		}
 		else {
-			response = SDMMC_RESPONSE_SHORT;
+			response = CUBE_RESPONSE_SHORT;
 		}
 	} else {
-		response = SDMMC_RESPONSE_NO;
+		response = CUBE_RESPONSE_NO;
 	}
 
   
@@ -51,9 +50,9 @@ static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *re
 	sdmmc_cmdinit.Argument         = (uint32_t)req->cmd.arg;
 	sdmmc_cmdinit.CmdIndex         = req->cmd.opcode;
 	sdmmc_cmdinit.Response         = response;
-	sdmmc_cmdinit.WaitForInterrupt = SDMMC_WAIT_NO;
-	sdmmc_cmdinit.CPSM             = SDMMC_CPSM_ENABLE;
-	(void)SDMMC_SendCommand(phsd->Instance, &sdmmc_cmdinit);
+	sdmmc_cmdinit.WaitForInterrupt = CUBE_WAIT_NO;
+	sdmmc_cmdinit.CPSM             = CUBE_CPSM_ENABLE;
+	(void)CUBE_SendCommand(phsd->Instance, &sdmmc_cmdinit);
   
 	log_debug("send cmd (%d) arg (%x) resp (%d) longresp (%d)", req->cmd.opcode, req->cmd.arg,
 		 req->cmd.flags & MMC_RSP_PRESENT, req->cmd.flags & MMC_RSP_136);
@@ -96,10 +95,10 @@ static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *re
 
 	stm32cube_sdio_send_cmd(host, req);
 
-	req->cmd.resp[0] = SDMMC_GetResponse(phsd->Instance, SDMMC_RESP1);
-	req->cmd.resp[1] = SDMMC_GetResponse(phsd->Instance, SDMMC_RESP2);
-	req->cmd.resp[2] = SDMMC_GetResponse(phsd->Instance, SDMMC_RESP3);
-	req->cmd.resp[3] = SDMMC_GetResponse(phsd->Instance, SDMMC_RESP4);
+	req->cmd.resp[0] = CUBE_GetResponse(phsd->Instance, CUBE_RESP1);
+	req->cmd.resp[1] = CUBE_GetResponse(phsd->Instance, CUBE_RESP2);
+	req->cmd.resp[2] = CUBE_GetResponse(phsd->Instance, CUBE_RESP3);
+	req->cmd.resp[3] = CUBE_GetResponse(phsd->Instance, CUBE_RESP4);
 
 	if (req->cmd.flags & MMC_DATA_XFER) {
 		int xfer = req->data.blksz * req->data.blocks;
@@ -109,6 +108,7 @@ static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *re
 
 		while (xfer > 0) {
 			if (req->cmd.flags & MMC_DATA_READ) {
+				#if 0
 				__HAL_SD_CLEAR_FLAG(phsd, SDMMC_STATIC_FLAGS);
 				log_debug("reading  %d byte", req->data.blksz);
 				/* Get status data */
@@ -121,6 +121,7 @@ static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *re
 						xfer -= sizeof(uint32_t);
 					}
 				}
+				#endif
 			} else {
 				log_debug("writting  %d byte", req->data.blksz);
 			}
