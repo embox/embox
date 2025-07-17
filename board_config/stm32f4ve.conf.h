@@ -209,4 +209,35 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), PWM(pwms), LED(leds))
+struct mmc_conf mmcs[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "SDIO1",
+			.regs = {
+				REGMAP("BASE", (SDIO_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 49),
+			},
+			.pins = {
+				PIN("D0", GPIO_PORT_C, 8, AF12),
+				PIN("D1", GPIO_PORT_C, 9, AF12),
+				PIN("D2", GPIO_PORT_C, 10, AF12),
+				PIN("D3", GPIO_PORT_C, 11, AF12),
+				PIN("CK", GPIO_PORT_C, 12, AF12),
+				PIN("CMD", GPIO_PORT_D, 2, AF12),
+
+			},
+			.clocks = {
+				VAL("", STM32_CLK_ENABLE(SDIO)),
+				VAL("TRANSFER_DIV", 4),
+			},
+			.misc = {
+				VAL("NAME_IN_CUBE_SDIO", 1),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), PWM(pwms), LED(leds), MMC(mmcs))
