@@ -1,6 +1,56 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSI)
+  *            SYSCLK(Hz)                     = 100000000
+  *            HCLK(Hz)                       = 100000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 2
+  *            APB2 Prescaler                 = 1
+  *            HSI Frequency(Hz)              = 16000000
+  *            PLL_M                          = 16
+  *            PLL_N                          = 400
+  *            PLL_P                          = 4
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 3
+  * @param  None
+  * @retval None
+  */
+
+ struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("SYSCLK_VAL",  100000000UL),
+				VAL("HSICLK_VAL",  16000000UL),
+				VAL("HSICAL_VAL", 0x10),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 2),
+				VAL("APB2_PRESCALER_VAL", 1),
+				VAL("PLL_M_VAL",  16),
+				VAL("PLL_N_VAL",  400),
+				VAL("PLL_P_VAL",  4),
+				VAL("PLL_Q_VAL",  7),
+				VAL("FLASH_LATENCY", 3),
+			}
+		},
+		.type = {
+			VAL("PLL", 1),
+			VAL("HSI", 1),
+		},
+	},
+};
+
 struct uart_conf uarts[] = {
  	[1] = {
  		.status = DISABLED,
@@ -98,4 +148,4 @@ struct spi_conf spis[] = {
 };
 
 
-EXPORT_CONFIG(UART(uarts), LED(leds), SPI(spis))
+EXPORT_CONFIG(CLK(clks), UART(uarts), LED(leds), SPI(spis))
