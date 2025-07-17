@@ -189,6 +189,12 @@ static int gen_device_conf(const struct device_conf *dev) {
 		}
 	}
 
+	for (j = 0; j < ARRAY_SIZE(dev->misc); j++) {
+		if (gen_field_int(dev->name, "MISC", &dev->misc[j]) != 0) {
+			break;
+		}
+	}
+
 	return 0;
 }
 

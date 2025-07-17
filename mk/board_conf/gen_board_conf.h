@@ -29,6 +29,7 @@ struct device_conf {
 	struct field_pin pins[64];
 	struct field_int clocks[16];
 	struct field_int dmas[16];
+	struct field_int misc[16];
 };
 
 struct gpio_conf {
