@@ -1,6 +1,8 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+#include <stm32f7_chip.h>
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
@@ -86,6 +88,9 @@ struct mmc_conf mmcs[] = {
 		.status = ENABLED,
 		.dev = {
 			.name = "SDIO1",
+			.regs = {
+				REGMAP("BASE", (SDMMC1_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 49),
 			},
@@ -95,13 +100,19 @@ struct mmc_conf mmcs[] = {
 			},
 			.clocks = {
 				VAL("", CLK_SDMMC1),
-			}
+			},
+			.misc = {
+				VAL("NAME_IN_CUBE_SDMMC", 1),
+			},
 		},
 	},
 	[1] = {
 		.status = ENABLED,
 		.dev = {
 			.name = "SDIO2",
+			.regs = {
+				REGMAP("BASE", (SDMMC2_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 103),
 			},
@@ -119,7 +130,10 @@ struct mmc_conf mmcs[] = {
 			.clocks = {
 				VAL("", STM32_CLK_ENABLE(SDMMC2)),
 				VAL("TRANSFER_DIV", 0),
-			}
+			},
+			.misc = {
+				VAL("NAME_IN_CUBE_SDMMC", 1),
+			},
 		},
 	}
 		
