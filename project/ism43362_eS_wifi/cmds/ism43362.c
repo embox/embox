@@ -1,10 +1,11 @@
 /**
- * @file ism43362.c
+ * @file 
  * @brief ISM43362-M3G-L44-SPI Inventek eS-WiFi module library
- * @author Andrew Bursian
+ * @author Daria Pechenova
  * @version
- * @date 15.06.2023
+ * @date 18.07.2025
  */
+
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
