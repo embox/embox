@@ -14,14 +14,11 @@
 #include <config/board_config.h>
 #include "stm32l475e_iot01.h"
 
-
 #include "ism43362.h"
 
-#define WIFI_SPI_BUS	3
-#define WIFI_CHIP_SELECT()	do {gpio_set(GPIO_PORT_E, 1<<0, GPIO_PIN_LOW);} while(0)
-#define WIFI_CHIP_DESELECT()	do {gpio_set(GPIO_PORT_E, 1<<0, GPIO_PIN_HIGH);} while(0)
-#define WIFI_IS_CMDDATA_READY()	(gpio_get(GPIO_PORT_E, 1<<1) != 0)
-#define GPIO_MODE_AF   0x08
+#define WIFI_CHIP_SELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_LOW);} while(0)
+#define WIFI_CHIP_DESELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_HIGH);} while(0)
+#define WIFI_IS_CMDDATA_READY()	(gpio_get(CONF_SPI_PIN_CMDDATA_PORT, CONF_SPI_PIN_CMDDATA_NR) != 0)
 
 
 static struct spi_device *spi_dev;
@@ -32,32 +29,31 @@ static inline int gpio_setup_out_mode(unsigned short port, gpio_mask_t pins, int
 	return ret;
 }
 
-static int SPI3_setup(void){
+static int SPI_setup(void){
 
  	/* configure SPI soft NSS pin for WiFi module */
-	gpio_setup_out_mode(CONF_SPI3_PIN_CS_PORT, CONF_SPI3_PIN_CS_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);
+	gpio_setup_out_mode(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);
 	
 	/* configure SPI CLK pin */
-	gpio_setup_mode(CONF_SPI3_PIN_SCK_PORT, CONF_SPI3_PIN_SCK_NR, GPIO_MODE_ALT_SET(CONF_SPI3_PIN_SCK_AF) | GPIO_MODE_OUT_PUSH_PULL);
+	gpio_setup_mode(CONF_SPI_PIN_SCK_PORT, CONF_SPI_PIN_SCK_NR, GPIO_MODE_ALT_SET(CONF_SPI_PIN_SCK_AF) | GPIO_MODE_OUT_PUSH_PULL);
 	
 	/* configure SPI MISO pin */
-	gpio_setup_mode(CONF_SPI3_PIN_MISO_PORT, CONF_SPI3_PIN_MISO_NR, GPIO_MODE_ALT_SET(CONF_SPI3_PIN_MISO_AF) | GPIO_MODE_OUT_PUSH_PULL);
+	gpio_setup_mode(CONF_SPI_PIN_MISO_PORT, CONF_SPI_PIN_MISO_NR, GPIO_MODE_ALT_SET(CONF_SPI_PIN_MISO_AF) | GPIO_MODE_OUT_PUSH_PULL);
 
 	/* configure SPI MOSI pin */
-	gpio_setup_mode(CONF_SPI3_PIN_MOSI_PORT, CONF_SPI3_PIN_MOSI_NR, GPIO_MODE_ALT_SET(CONF_SPI3_PIN_MOSI_AF) | GPIO_MODE_OUT_PUSH_PULL);
+	gpio_setup_mode(CONF_SPI_PIN_MOSI_PORT, CONF_SPI_PIN_MOSI_NR, GPIO_MODE_ALT_SET(CONF_SPI_PIN_MOSI_AF) | GPIO_MODE_OUT_PUSH_PULL);
 
 	return 0;
 }
 
 int ism43362_init() {
 	// WiFi module init (WakeUp, DRdy, Rst, yellow LED)
-	gpio_setup_out_mode(GPIO_PORT_B, 1<<13, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_LOW);	// Wake up pin
-	gpio_setup_mode(GPIO_PORT_E, 1<<1, GPIO_MODE_IN);				// Data ready pin
-	gpio_setup_out_mode(GPIO_PORT_E, 1<<8, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);	// Reset pin
-	gpio_setup_out_mode(GPIO_PORT_C, 1<<9, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH); // WiFi LED pin
+	gpio_setup_out_mode(CONF_SPI_PIN_WAKE_PORT, CONF_SPI_PIN_WAKE_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_LOW);	// Wake up pin
+	gpio_setup_mode(CONF_SPI_PIN_CMDDATA_PORT, CONF_SPI_PIN_CMDDATA_NR, GPIO_MODE_IN);				// Data ready pin
+	gpio_setup_out_mode(CONF_SPI_PIN_RESET_PORT, CONF_SPI_PIN_RESET_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);	// Reset pin
+	gpio_setup_out_mode(CONF_SPI_PIN_WIFI_LED_PORT, CONF_SPI_PIN_WIFI_LED_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH); // WiFi LED pin
 
-	// SPI3 HAL setup
-	for (int res = SPI3_setup(); res;) {return -10500;}
+	for (int res = SPI_setup(); res;) {return -10500;}
 
 	// Get SPI device pointer
 	if (!(spi_dev = spi_dev_by_id(WIFI_SPI_BUS))){
@@ -65,9 +61,9 @@ int ism43362_init() {
 	}
 
 	// Reset WiFi module
-	gpio_set(GPIO_PORT_E, 1<<8, GPIO_PIN_LOW);
+	gpio_set(CONF_SPI_PIN_RESET_PORT, CONF_SPI_PIN_RESET_NR, GPIO_PIN_LOW);
 	usleep(100000);
-	gpio_set(GPIO_PORT_E, 1<<8, GPIO_PIN_HIGH);
+	gpio_set(CONF_SPI_PIN_RESET_PORT, CONF_SPI_PIN_RESET_NR, GPIO_PIN_HIGH);
 	usleep(50000);
 
 	// Wait for WiFi module to be ready for exchange
