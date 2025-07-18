@@ -6,6 +6,8 @@ package project.ism43362_eS_wifi.cmd
 
 @BuildDepends(third_party.bsp.st_bsp_api)
 module ism43362_test {
+	option number wifi_spi_bus=3 
+	
 	source "ism43362_test.c"
 	source "ism43362.c"
 
