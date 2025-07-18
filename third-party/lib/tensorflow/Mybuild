@@ -1,0 +1,48 @@
+package third_party.lib.tensorflow
+
+module backend {
+	option string tflm_version="main"
+}
+
+@Build(stage=2, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/tensorflow/install/include")
+@BuildDepends(backend)
+@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(third_party.compiler_headers)
+static module build {
+	option string flatbuffers_version="23.5.26"
+	option string gemmlowp_commit="719139ce755a0f31cbf1c37f7f98adcc7fc9f425"
+	option string ruy_commit="d37128311b445e758136b8602d1bbd2a755e115d"
+	option string kissfft_version="v130"
+
+	@NoRuntime depends backend
+	@NoRuntime depends third_party.compiler_headers
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.compat.atomic.pseudo_atomic
+	@NoRuntime depends embox.compat.posix.pthread_key
+
+	source "^BUILD/extbld/third_party/lib/tensorflow/tflite-micro/tensorflow/lite/c"
+	source "^BUILD/extbld/third_party/lib/tensorflow/tflite-micro/tensorflow/lite/core/api"
+	source "^BUILD/extbld/third_party/lib/tensorflow/tflite-micro/tensorflow/lite/kernels"
+	source "^BUILD/extbld/third_party/lib/tensorflow/tflite-micro/tensorflow/lite/kernels/internal"
+	source "^BUILD/extbld/third_party/lib/tensorflow/tflite-micro/tensorflow/lite/micro"
+	source "^BUILD/extbld/third_party/lib/tensorflow/tflite-micro/tensorflow/lite/schema"
+    source "^BUILD/extbld/third_party/lib/tensorflow/third_party_static/flatbuffers"
+	source "^BUILD/extbld/third_party/lib/tensorflow/third_party_static/ruy"
+	source "^BUILD/extbld/third_party/lib/tensorflow/third_party_static/gemmlowp"
+	source "^BUILD/extbld/third_party/lib/tensorflow/third_party_static/kissfft"
+
+}
+
+@LinkerSection(text="tflm_text", rodata="tflm_rodata", data="tflm_data", bss="tflm_bss")
+@BuildDepends(third_party.lib.tensorflow.build)
+@Build(script="true")
+static module libtflm {
+        source "^BUILD/extbld/third_party/lib/tensorflow/build/tflite-micro/libtflm.a"
+	@NoRuntime depends build
+}
+
+@BuildDepends(libtflm)
+static module all {
+	@NoRuntime depends libtflm
+}
