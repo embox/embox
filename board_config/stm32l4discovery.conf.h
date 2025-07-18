@@ -102,6 +102,10 @@ struct spi_conf spis[] = {
 				PIN("MISO", GPIO_PORT_C, PIN_11, AF6),
 				PIN("MOSI", GPIO_PORT_C, PIN_12, AF6),
 				PIN("CS",   GPIO_PORT_E, PIN_0, NOAF),	// for WiFi module
+				PIN("WAKE", GPIO_PORT_B, PIN_13, NOAF),
+				PIN("CMDDATA", GPIO_PORT_E, PIN_1, NOAF),
+				PIN("RESET", GPIO_PORT_E, PIN_8, NOAF),
+				PIN("WIFI_LED", GPIO_PORT_E, PIN_9, NOAF),
 			},
 			.clocks = {
 				VAL("SCK",  CLK_GPIOC),
