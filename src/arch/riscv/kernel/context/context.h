@@ -23,21 +23,21 @@ struct context {
 
 #else /* !__ASSEMBLER__ */
 
-#define CTX_RA     (SZREG * 0)
-#define CTX_SP     (SZREG * 1)
-#define CTX_S0     (SZREG * 2)
-#define CTX_S1     (SZREG * 3)
-#define CTX_S2     (SZREG * 4)
-#define CTX_S3     (SZREG * 5)
-#define CTX_S4     (SZREG * 6)
-#define CTX_S5     (SZREG * 7)
-#define CTX_S6     (SZREG * 8)
-#define CTX_S7     (SZREG * 9)
-#define CTX_S8     (SZREG * 10)
-#define CTX_S9     (SZREG * 11)
-#define CTX_S10    (SZREG * 12)
-#define CTX_S11    (SZREG * 13)
-#define CTX_STATUS (SZREG * 14)
+#define CTX_RA     (REG_SIZE_X * 0)
+#define CTX_SP     (REG_SIZE_X * 1)
+#define CTX_S0     (REG_SIZE_X * 2)
+#define CTX_S1     (REG_SIZE_X * 3)
+#define CTX_S2     (REG_SIZE_X * 4)
+#define CTX_S3     (REG_SIZE_X * 5)
+#define CTX_S4     (REG_SIZE_X * 6)
+#define CTX_S5     (REG_SIZE_X * 7)
+#define CTX_S6     (REG_SIZE_X * 8)
+#define CTX_S7     (REG_SIZE_X * 9)
+#define CTX_S8     (REG_SIZE_X * 10)
+#define CTX_S9     (REG_SIZE_X * 11)
+#define CTX_S10    (REG_SIZE_X * 12)
+#define CTX_S11    (REG_SIZE_X * 13)
+#define CTX_STATUS (REG_SIZE_X * 14)
 
 #endif /* __ASSEMBLER__ */
 

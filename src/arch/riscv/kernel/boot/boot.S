@@ -68,7 +68,7 @@ _start:
 	bge     t0, t1, zero_bss_end
 zero_bss:
 	REG_S   zero, 0(t0)
-	addi    t0, t0, SZREG
+	addi    t0, t0, REG_SIZE_X
 	blt     t0, t1, zero_bss
 zero_bss_end:
 
@@ -81,8 +81,8 @@ zero_bss_end:
 copy_data:
 	REG_L   t3, 0(t0)
 	REG_S   t3, 0(t1)
-	addi    t0, t0, SZREG
-	addi    t1, t1, SZREG
+	addi    t0, t0, REG_SIZE_X
+	addi    t1, t1, REG_SIZE_X
 	blt     t0, t2, copy_data
 copy_data_end:
 
