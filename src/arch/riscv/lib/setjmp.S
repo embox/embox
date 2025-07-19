@@ -1,53 +1,75 @@
+/**
+ * @file
+ * @brief
+ *
+ * @date 28.01.2020
+ * @author Nastya Nizharadze
+ */
+
 #include <asm/asm.h>
 
-.section .text
+#define __jmp_buf_ra_offset  (REG_SIZE_X * 0)
+#define __jmp_buf_sp_offset  (REG_SIZE_X * 1)
+#define __jmp_buf_s0_offset  (REG_SIZE_X * 2)
+#define __jmp_buf_s1_offset  (REG_SIZE_X * 3)
+#define __jmp_buf_s2_offset  (REG_SIZE_X * 4)
+#define __jmp_buf_s3_offset  (REG_SIZE_X * 5)
+#define __jmp_buf_s4_offset  (REG_SIZE_X * 6)
+#define __jmp_buf_s5_offset  (REG_SIZE_X * 7)
+#define __jmp_buf_s6_offset  (REG_SIZE_X * 8)
+#define __jmp_buf_s7_offset  (REG_SIZE_X * 9)
+#define __jmp_buf_s8_offset  (REG_SIZE_X * 10)
+#define __jmp_buf_s9_offset  (REG_SIZE_X * 11)
+#define __jmp_buf_s10_offset (REG_SIZE_X * 12)
+#define __jmp_buf_s11_offset (REG_SIZE_X * 13)
 
+.section .text
 .global setjmp
 .global longjmp
 
 .align 2
 setjmp:
-	/* Preserve all callee-saved registers and the SP */
-	REG_S   s0, (REG_SIZE_X * 0)(a0)
-	REG_S   s1, (REG_SIZE_X * 1)(a0)
-	REG_S   s2, (REG_SIZE_X * 2)(a0)
-	REG_S   s3, (REG_SIZE_X * 3)(a0)
-	REG_S   s4, (REG_SIZE_X * 4)(a0)
-	REG_S   s5, (REG_SIZE_X * 5)(a0)
-	REG_S   s6, (REG_SIZE_X * 6)(a0)
-	REG_S   s7, (REG_SIZE_X * 7)(a0)
-	REG_S   s8, (REG_SIZE_X * 8)(a0)
-	REG_S   s9, (REG_SIZE_X * 9)(a0)
-	REG_S   s10, (REG_SIZE_X * 10)(a0)
-	REG_S   s11, (REG_SIZE_X * 11)(a0)
-	REG_S   ra, (REG_SIZE_X * 12)(a0)
-	REG_S   sp, (REG_SIZE_X * 13)(a0)
+	/* Store callee-saved registers */
+	REG_S   ra, __jmp_buf_ra_offset(a0)
+	REG_S   sp, __jmp_buf_sp_offset(a0)
+	REG_S   s0, __jmp_buf_s0_offset(a0)
+	REG_S   s1, __jmp_buf_s1_offset(a0)
+	REG_S   s2, __jmp_buf_s2_offset(a0)
+	REG_S   s3, __jmp_buf_s3_offset(a0)
+	REG_S   s4, __jmp_buf_s4_offset(a0)
+	REG_S   s5, __jmp_buf_s5_offset(a0)
+	REG_S   s6, __jmp_buf_s6_offset(a0)
+	REG_S   s7, __jmp_buf_s7_offset(a0)
+	REG_S   s8, __jmp_buf_s8_offset(a0)
+	REG_S   s9, __jmp_buf_s9_offset(a0)
+	REG_S   s10, __jmp_buf_s10_offset(a0)
+	REG_S   s11, __jmp_buf_s11_offset(a0)
 
+	/* Return 0 */
 	li      a0, 0
 	ret
 
 .align 2
 longjmp:
-	REG_L   s0, (REG_SIZE_X * 0)(a0)
-	REG_L   s1, (REG_SIZE_X * 1)(a0)
-	REG_L   s2, (REG_SIZE_X * 2)(a0)
-	REG_L   s3, (REG_SIZE_X * 3)(a0)
-	REG_L   s4, (REG_SIZE_X * 4)(a0)
-	REG_L   s5, (REG_SIZE_X * 5)(a0)
-	REG_L   s6, (REG_SIZE_X * 6)(a0)
-	REG_L   s7, (REG_SIZE_X * 7)(a0)
-	REG_L   s8, (REG_SIZE_X * 8)(a0)
-	REG_L   s9, (REG_SIZE_X * 9)(a0)
-	REG_L   s10, (REG_SIZE_X * 10)(a0)
-	REG_L   s11, (REG_SIZE_X * 11)(a0)
-	REG_L   ra, (REG_SIZE_X * 12)(a0)
-	REG_L   sp, (REG_SIZE_X * 13)(a0)
+	/* Load callee-saved registers */
+	REG_L   ra, __jmp_buf_ra_offset(a0)
+	REG_L   sp, __jmp_buf_sp_offset(a0)
+	REG_L   s0, __jmp_buf_s0_offset(a0)
+	REG_L   s1, __jmp_buf_s1_offset(a0)
+	REG_L   s2, __jmp_buf_s2_offset(a0)
+	REG_L   s3, __jmp_buf_s3_offset(a0)
+	REG_L   s4, __jmp_buf_s4_offset(a0)
+	REG_L   s5, __jmp_buf_s5_offset(a0)
+	REG_L   s6, __jmp_buf_s6_offset(a0)
+	REG_L   s7, __jmp_buf_s7_offset(a0)
+	REG_L   s8, __jmp_buf_s8_offset(a0)
+	REG_L   s9, __jmp_buf_s9_offset(a0)
+	REG_L   s10, __jmp_buf_s10_offset(a0)
+	REG_L   s11, __jmp_buf_s11_offset(a0)
 
-	/* Move the return value in place, but return 1 if passed 0. */
-	beq     a1, zero, longjmp_1
+	/* Return the second argument if it is non-zero, otherwise returns 1 */
 	mv      a0, a1
-	ret
-
-longjmp_1:
+	bnez    a1, 1f
 	li      a0, 1
+1:
 	ret
