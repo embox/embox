@@ -1,0 +1,12 @@
+package project.ism43362_eS_wifi.libs
+
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module ism43362 {
+	option number wifi_spi_bus=3 
+
+	source "ism43362.c"
+
+	@IncludeExport(path="libs")
+	source "ism43362.h"
+}

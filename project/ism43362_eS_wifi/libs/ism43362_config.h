@@ -6,12 +6,12 @@
  * @date 18.07.2025
  */
 
-#ifndef ISM43362_H_
-#define ISM43362_H_
+#ifndef ISM43362_CONFIG_H_
+#define ISM43362_CONFIG_H_
 
 #include <config/board_config.h>
 
-#define WIFI_SPI_BUS OPTION_MODULE_GET(project__ism43362_eS_wifi__cmd__ism43362_test, NUMBER, wifi_spi_bus)
+#define WIFI_SPI_BUS OPTION_GET(NUMBER, wifi_spi_bus)
 
 #define CONF_SPI_PIN_CS_PORT MACRO_CONCAT(MACRO_CONCAT(CONF_SPI, WIFI_SPI_BUS), _PIN_CS_PORT)
 #define CONF_SPI_PIN_SCK_PORT MACRO_CONCAT(MACRO_CONCAT(CONF_SPI, WIFI_SPI_BUS),_PIN_SCK_PORT)
@@ -37,9 +37,4 @@
 #define CONF_SPI_PIN_RESET_NR MACRO_CONCAT(MACRO_CONCAT(CONF_SPI, WIFI_SPI_BUS), _PIN_RESET_NR)
 #define CONF_SPI_PIN_WIFI_LED_NR MACRO_CONCAT(MACRO_CONCAT(CONF_SPI, WIFI_SPI_BUS), _PIN_WIFI_LED_NR)
 
-
-
-extern int ism43362_init();
-extern int ism43362_exchange(char *txb, int txl, char *rxb, int rxl);
-
-#endif // ISM43362_H_
+#endif /* ISM43362_CONFIG_H_ */

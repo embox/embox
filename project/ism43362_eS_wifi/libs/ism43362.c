@@ -12,10 +12,15 @@
 
 #include <drivers/gpio.h>
 #include <drivers/spi.h>
-#include <config/board_config.h>
-#include "stm32l475e_iot01.h"
 
-#include "ism43362.h"
+#include <config/board_config.h>
+#include <bsp/stm32cube_hal.h> /* FIXUP! only for STM PINS configuration */
+
+#include <libs/ism43362.h>
+#include "ism43362_config.h"
+
+
+#define WIFI_LED_PIN (1 << 9)
 
 #define WIFI_CHIP_SELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_LOW);} while(0)
 #define WIFI_CHIP_DESELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_HIGH);} while(0)
@@ -101,6 +106,8 @@ int ism43362_init() {
 			return -10005;	// No CMD/DATA_READY sign after initial prompt
 		}
 	}
+
+	gpio_set(GPIO_PORT_C, WIFI_LED_PIN, GPIO_PIN_HIGH); // WiFi LED pin
 
 	return 0;
 }
