@@ -1,6 +1,55 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
 
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 180000000
+  *            HCLK(Hz)                       = 180000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 360
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 5
+  * @param  None
+  * @retval None
+  */
+
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("SYSCLK_VAL", 180000000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  8),
+				VAL("PLL_N_VAL",  360),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  7),
+				VAL("FLASH_LATENCY", 5),
+			}
+		},
+		.type = {
+			VAL("PLL", 1),
+			VAL("HSE", 1),
+		},
+	},
+};
+
 struct uart_conf uarts[] = {
 	[2] = {
 		.status = DISABLED,
@@ -171,4 +220,4 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), I2C(i2cs), LED(leds))
+EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis), I2C(i2cs), LED(leds))
