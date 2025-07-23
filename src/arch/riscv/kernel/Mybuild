@@ -40,12 +40,14 @@ module no_interrupt extends embox.arch.interrupt {
 }
 
 module entry {
-	option number trap_align=2
+	option number tvec_alignment=2
 
 	source "entry.S"
 }
 
 module exception {
+	option string log_level="LOG_EMERG"
+	
 	@IncludeExport(path="riscv")
 	source "exception.h"
 	source "exception.c"

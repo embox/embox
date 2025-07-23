@@ -6,30 +6,30 @@
  * @date 05.12.2019
  * @author Nastya Nizharadze
  */
+
 #include <asm/regs.h>
-#include <asm/ptrace.h>
+#include <hal/cpu.h>
+#include <hal/cpu_idle.h>
+#include <hal/test/traps_core.h>
 #include <kernel/printk.h>
 #include <riscv/exception.h>
-#include <hal/test/traps_core.h>
+#include <util/log.h>
 
 trap_handler_t riscv_excpt_table[0x10];
 
-void riscv_exception_handler(struct excpt_context *ctx, unsigned long cause,
-			unsigned long interrupt, unsigned long pending, unsigned long epc,
-			unsigned long trap_vector, unsigned long hartid) {
+void riscv_exception_handler(struct excpt_context *ctx, unsigned long cause) {
 	if (riscv_excpt_table[cause]) {
 		riscv_excpt_table[cause](cause, ctx);
+		return;
 	}
-	else {
-		printk("\nUnresolvable exception!\n");
-		printk("hartid  = %lu\n", hartid);
-		printk(MACRO_STRING(CAUSE_REG)"  = %lu\n", cause);
-		printk(MACRO_STRING(EPC_REG)"    = %#lx\n", epc);
-		printk(MACRO_STRING(INTERRUPT_REG)"     = %#lx\n", interrupt);
-		printk(MACRO_STRING(TRAP_VECTOR_REG)"   = %#lx\n", trap_vector);
-		printk(MACRO_STRING(INTPENDING_REG)"     = %#lx\n", pending);
-		PRINT_PTREGS(&ctx->ptregs);
-		while (1)
-			;
+
+	log_emerg("\nException: cause(%#lx) epc(%#lx)", read_csr(CAUSE_REG),
+	    ctx->ptregs.pc);
+
+	log_info("cpu_id  = %#lx", cpu_get_id());
+	log_info("mstatus = %#lx", ctx->ptregs.mstatus);
+
+	while (1) {
+		arch_cpu_idle();
 	}
 }
