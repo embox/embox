@@ -2,6 +2,10 @@ package project.ism43362_eS_wifi.drivers
 
 module eswifi_drv {
 	option string log_level="LOG_DEBUG"
+
+	option string ssid
+	option string passw
+
 	source "eswifi_drv.c"
 
 	@NoRuntime depends project.ism43362_eS_wifi.libs.ism43362
