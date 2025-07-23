@@ -85,6 +85,13 @@ extern int RCC_OscConfig(RCC_OscInitTypeDef  *RCC_OscInitStruct);
 # endif
 #endif /* defined(CONF_RCC_CLK_DEF_APB2_PRESCALER_VAL) */
 
+#if (CONF_RCC_CLK_DEF_ERRATA_SPI_WRONG_LAST_BIT == 1)
+	#undef RCC_APB1_DIV
+    #undef RCC_APB2_DIV
+    #define RCC_APB1_DIV   RCC_HCLK_DIV8
+    #define RCC_APB2_DIV   RCC_HCLK_DIV4
+#endif /* defined(CONF_RCC_CLK_DEF_ERRATA_SPI_WRONG_LAST_BIT) */
+
 #if defined(CONF_RCC_CLK_DEF_HSE_PREDIV_VAL)
 # if (CONF_RCC_CLK_DEF_HSE_PREDIV_VAL == 1)
 # define  RCC_HSE_PREDIV_DIV      RCC_HSE_PREDIV_DIV1
