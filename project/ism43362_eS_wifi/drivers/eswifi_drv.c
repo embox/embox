@@ -35,11 +35,11 @@ typedef struct {
 } AT_Command;
 
 static const AT_Command wifi_setup_commands[] = {
-	{"C1=Embox2.4", WIFI_NAME},
-	{"C2=pX6tsPeEN6", WIFI_PASSWORD},
-	{"C3=4", "4"},
-	{"C4=1", "1"},
-	{"C0", NULL},
+	{"C1=Embox2.4\r", WIFI_NAME},
+	{"C2=pX6tsPeEN6\r", WIFI_PASSWORD},
+	{"C3=4\r", "4"},
+	{"C4=1\r", "1"},
+	{"C0\r", NULL},
 	{NULL, NULL}
 };
 
@@ -52,25 +52,24 @@ static int eswifi_xmit(struct net_device *dev, struct sk_buff *skb) {
 static int eswifi_open(struct net_device *dev) {
 	int wifi_request;
 	char rx_buffer[BUFFER_SIZE];
-	// char tx_buffer[256];
-	// buffer[BUFFER_SIZE - 1]=0;
+
 	log_info("Starting Wi-Fi initialization");
-	int result = 0;
+	int result = ism43362_init();
     if (result != 0) {
-        // printf("ISM43362 initialization error %d\n", result);
+		log_info("ISM43362 initialization error");
         return -1;
     } 	
-	if (result > 0){
+
 	for (int i = 0; wifi_setup_commands[i].command != NULL; i++){
 		wifi_request = ism43362_exchange((char *)wifi_setup_commands[i].command, strlen(wifi_setup_commands[i].command), rx_buffer, sizeof(rx_buffer));
-		// printf("Response (%d bytes): [", wifi_request);
 		if (wifi_request < 0) {
-			printf("ism43362_exchange error #%d\n", wifi_request);
+			log_info("ism43362_exchange error");
 		}
-		usleep(100000);
-	}}
-	// gpio_set(2, 1 << 9, 1);
-
+		log_info(wifi_setup_commands[i].command);
+		log_info(rx_buffer);
+		memset(rx_buffer, '\0', BUFFER_SIZE);
+	}
+	
 	log_info("Wi-Fi initialization finished");
 	return 0;
 }
