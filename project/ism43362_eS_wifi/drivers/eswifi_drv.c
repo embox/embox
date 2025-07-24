@@ -40,6 +40,7 @@ static const AT_Command wifi_setup_commands[] = {
 	{"C3=4\r", "4"},
 	{"C4=1\r", "1"},
 	{"C0\r", NULL},
+	{"C?\r", NULL},
 	{"Z5\r", NULL},
 	{NULL, NULL}
 };
@@ -57,6 +58,8 @@ static int eswifi_open(struct net_device *dev) {
 	uint32_t ip_num;
 	struct in_device *iface;
 	unsigned char mac_bytes[6];
+
+	iface = inetdev_get_by_dev(dev);
 
 	log_info("Starting Wi-Fi initialization");
 	int result = ism43362_init();
@@ -80,9 +83,27 @@ static int eswifi_open(struct net_device *dev) {
 			ip = strtok(NULL, ",");
 			if (ip){
 				ip_num = inet_addr(ip); 
-				iface = inetdev_get_by_dev(dev);
+
 				inetdev_set_addr(iface, ip_num);
 			}
+		}  else if (wifi_setup_commands[i].command[0] == 'C' && wifi_setup_commands[i].command[1] == '?') {
+			char *token;
+			char *mask = NULL;
+			int field_num = 0;
+
+			token = strtok(rx_buffer, ","); 
+			while (token != NULL) {
+				if (field_num == 6) { 
+					mask = token;
+					break;
+				}
+				token = strtok(NULL, ",");
+				field_num++;
+			}
+			if (mask != NULL) {
+				inetdev_set_mask(iface, (inet_addr(mask)));
+			}
+
 		} else if (wifi_setup_commands[i].command[0] == 'Z' && wifi_setup_commands[i].command[1] == '5') {
 			
 			if (sscanf(strchr(rx_buffer, '\n') + 1, 
@@ -91,7 +112,6 @@ static int eswifi_open(struct net_device *dev) {
 					&mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) == 6) {
 				
 				memcpy(dev->dev_addr, mac_bytes, 6);
-				log_info("MAC set");  
 			} else {
 				log_error("Invalid MAC format in response: %s", rx_buffer);
 				return -1;
