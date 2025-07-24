@@ -185,7 +185,6 @@ int main() {
 		printf("\nTotal %d bytes in answer\n", total_c);
 	}
 	
-	//gpio_setup_mode(GPIO_PORT_C, WIFI_LED_PIN, GPIO_MODE_IN);// WiFi LED pin
 	return 0;
 }
 
