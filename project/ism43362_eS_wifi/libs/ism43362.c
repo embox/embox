@@ -20,7 +20,7 @@
 #include "ism43362_config.h"
 
 
-#define WIFI_LED_PIN (1 << 9)
+// #define WIFI_LED_PIN (1 << 9)
 
 #define WIFI_CHIP_SELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_LOW);} while(0)
 #define WIFI_CHIP_DESELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_HIGH);} while(0)
@@ -107,7 +107,7 @@ int ism43362_init() {
 		}
 	}
 
-	gpio_set(GPIO_PORT_C, WIFI_LED_PIN, GPIO_PIN_HIGH); // WiFi LED pin
+	// gpio_set(GPIO_PORT_C, 1 << 9, GPIO_MODE_IN); // WiFi LED pin
 
 	return 0;
 }
