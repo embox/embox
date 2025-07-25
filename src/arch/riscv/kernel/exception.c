@@ -23,8 +23,8 @@ void riscv_exception_handler(struct excpt_context *ctx, unsigned long cause) {
 		return;
 	}
 
-	log_emerg("\nException: cause(%#lx) epc(%#lx)", read_csr(CAUSE_REG),
-	    ctx->ptregs.pc);
+	log_raw(LOG_EMERG, "\nException: cause(%#lx) epc(%#lx)",
+	    read_csr(CAUSE_REG), ctx->ptregs.pc);
 
 	log_info("cpu_id  = %#lx", cpu_get_id());
 	log_info("mstatus = %#lx", ctx->ptregs.mstatus);
