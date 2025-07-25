@@ -10,11 +10,10 @@
 #include <asm/asm.h>
 #include <asm/regs.h>
 #include <asm/context.h>
-#include <util/binalign.h>
 
 #define __context_x_offset      0
-#define __context_f_offset      binalign_bound(CALLEE_SAVED_SIZE_X, REG_SIZE_F)
-#define __context_status_offset (__context_f_offset + CALLEE_SAVED_SIZE_F)
+#define __context_f_offset      CALLEE_SAVED_SIZE_X
+#define __context_status_offset (CALLEE_SAVED_SIZE_X + CALLEE_SAVED_SIZE_F)
 
 .section .text
 .global context_switch
