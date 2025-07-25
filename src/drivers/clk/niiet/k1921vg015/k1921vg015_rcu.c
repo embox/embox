@@ -184,7 +184,7 @@ int clk_enable(char *clk_name) {
         return 0;
     }
     if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
-        num = clk_name[sizeof(CLK_NAME_UART) - 1]  - '0';
+        num = clk_name[sizeof(CLK_NAME_TMR) - 1]  - '0';
         niiet_tmr_set_rcu(num);
         return 0;
     }
