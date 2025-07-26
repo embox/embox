@@ -1,0 +1,6 @@
+package embox.net.wifi
+
+module cfg80211 {
+	@IncludeExport(path="net")
+	source "cfg80211.h"
+}
