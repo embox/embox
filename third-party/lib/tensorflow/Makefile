@@ -77,12 +77,22 @@ THIRD_PARTY_SRCS := \
   $(wildcard $(THIRD_PARTY)/flatbuffers/*.c)
 
 SRCS := \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/core/api -name '*.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/schema -name '*.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/kernels/internal -name '*.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/kernels -name '*.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/c -name '*.c') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro             -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro/arena_allocator -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro/memory_planner -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro/tflite_bridge -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro/kernels      -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/core               -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/core/api           -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/core/c             -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/kernels/internal   -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/kernels            -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/c                  -name '*.c'  ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite                    -maxdepth 1 -name '*.c'  ! -name '*test.cc') \
+  $(PKG_SOURCE_DIR)/tensorflow/lite/array.cc \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/schema             -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/compiler/mlir/lite/core/api   -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/compiler/mlir/lite/schema     -name '*.cc' ! -name '*test.cc') \
   $(THIRD_PARTY_SRCS)
 
 OBJS := $(patsubst $(PKG_SOURCE_DIR)/%.cc, $(PKG_BUILD_DIR)/%.o, $(filter %.cc,$(SRCS))) \
@@ -119,7 +129,7 @@ $(INSTALL): $(BUILD)
 
 
 	@mkdir -p $(EXTERNAL_BUILD_DIR)/third_party/lib/tensorflow/build/tflite-micro
-	@cp $(PKG_BUILD_DIR)/libtflm.a $(EXTERNAL_BUILD_DIR)/third_party/lib/tensorflow/build/tflite-micro/
+	@cp $(PKG_BUILD_DIR)/libtflm.a $(EXTERNAL_BUILD_DIR)/third_party/lib/tensorflow/build/tflite-micro
 
 
 	@find $(PKG_SOURCE_DIR)/tensorflow/lite -name '*.h' -exec cp --parents {} install/include/ \;
