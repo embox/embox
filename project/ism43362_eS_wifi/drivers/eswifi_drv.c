@@ -142,7 +142,7 @@ static const struct net_driver eswifi_drv_ops = {
 static int eswifi_init(void) {
 	struct net_device *nic;
 
-	nic = etherdev_alloc(1);
+	nic = etherdev_alloc(0);
 	if (NULL == nic) {
 		return -ENOMEM;
 	}
