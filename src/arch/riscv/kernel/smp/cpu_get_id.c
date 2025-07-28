@@ -10,7 +10,7 @@
 #include <asm/entry.h>
 #include <asm/interrupts.h>
 #include <asm/ptrace.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 
 #define INVALIDHARTID (unsigned int)(-1)
 static unsigned int __cpuid_to_hartid_map[NCPU] = {

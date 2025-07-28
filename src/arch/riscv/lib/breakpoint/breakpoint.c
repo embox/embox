@@ -8,7 +8,7 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <riscv/exception.h>
 #include <debug/breakpoint.h>
 

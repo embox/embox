@@ -1,5 +1,5 @@
 #include "mmu.h"
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <mem/vmem.h>
 #include <hal/mmu.h>
 

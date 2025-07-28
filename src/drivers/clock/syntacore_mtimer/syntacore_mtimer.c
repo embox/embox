@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include <asm/interrupts.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <framework/mod/options.h>
 #include <hal/clock.h>
 #include <hal/reg.h>

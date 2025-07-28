@@ -17,7 +17,7 @@
 #include <net/l2/ethernet.h>
 #include <net/inetdevice.h>
 #include <net/util/show_packet.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <string.h>
 
 #include <embox/unit.h>

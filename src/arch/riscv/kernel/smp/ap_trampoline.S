@@ -7,7 +7,7 @@
  */
 
 #include <asm/linkage.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <asm/asm.h>
 
 	.section .text

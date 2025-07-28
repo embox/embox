@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include <asm/asm.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <hal/context.h>
 #include <hal/ipl.h>
 

@@ -8,7 +8,7 @@
  */
 
 #include <asm/asm.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <asm/context.h>
 
 #define __context_x_offset      0

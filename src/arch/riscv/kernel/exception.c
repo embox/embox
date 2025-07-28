@@ -7,7 +7,7 @@
  * @author Nastya Nizharadze
  */
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <hal/cpu.h>
 #include <hal/cpu_idle.h>
 #include <hal/test/traps_core.h>

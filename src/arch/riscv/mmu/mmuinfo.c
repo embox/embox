@@ -10,7 +10,7 @@
 #include <lib/libds/array.h>
 #include <util/math.h>
 #include <hal/mmu.h>
-#include <asm/regs.h> 
+#include <asm/csr.h> 
 
 
 struct mmuinfo_reg_access {

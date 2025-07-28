@@ -7,7 +7,7 @@
  * @authored by Suraj Ravindra Sonawane
  */
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <asm/interrupts.h>
 #include <hal/cpu.h>
 #include <hal/reg.h>

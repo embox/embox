@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include <asm/interrupts.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <drivers/irqctrl.h>
 #include <embox/unit.h>
 #include <hal/reg.h>

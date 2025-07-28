@@ -1,6 +1,6 @@
 #include <embox/test.h>
 #include "../mmu.h"
-#include <asm/regs.h> 
+#include <asm/csr.h> 
 #include <stdint.h>
 #include <util/log.h>
 #include <hal/mmu.h>

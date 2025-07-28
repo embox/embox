@@ -12,7 +12,7 @@
 #include <asm/entry.h>
 #include <asm/interrupts.h>
 #include <asm/ptrace.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <embox/unit.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>

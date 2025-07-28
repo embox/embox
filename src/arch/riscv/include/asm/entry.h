@@ -11,7 +11,7 @@
 #define RISCV_ENTRY_H_
 
 #include <asm/asm.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <asm/ptrace.h>
 
 #ifdef __ASSEMBLER__

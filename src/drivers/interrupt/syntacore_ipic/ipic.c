@@ -10,7 +10,7 @@
 
 #include <asm/interrupts.h>
 #include <drivers/irqctrl.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 
 #include <framework/mod/options.h>
 

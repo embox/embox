@@ -9,7 +9,7 @@
  * @date 21.08.23
  */
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <embox/unit.h>
 #include <string.h>
 

@@ -7,7 +7,7 @@
  */
 
 #include <hal/clock.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <framework/mod/options.h>
 
 #include <kernel/lthread/lthread.h>

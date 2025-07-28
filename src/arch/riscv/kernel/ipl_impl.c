@@ -7,7 +7,7 @@
 
 //#include <ipl_impl.h>
 #include <hal/ipl.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <asm/interrupts.h>
 
 void ipl_init(void) {

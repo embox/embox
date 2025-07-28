@@ -10,7 +10,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <lib/libcpu_info.h>
 
 static struct cpu_info current_cpu;

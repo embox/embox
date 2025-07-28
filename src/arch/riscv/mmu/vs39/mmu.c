@@ -7,7 +7,7 @@
  */
 
 #include "mmu.h"
-#include <asm/regs.h> 
+#include <asm/csr.h> 
 #include <mem/vmem.h>  
 #include <util/log.h>
 

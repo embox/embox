@@ -6,7 +6,7 @@
  * @date 06.07.23
  */
 #include <asm/asm.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <hal/cpu.h>
 
 .section .init, "ax"

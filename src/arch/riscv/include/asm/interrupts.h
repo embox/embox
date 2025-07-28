@@ -1,7 +1,7 @@
 #ifndef RISCV_INTERRUPTS_H_
 #define RISCV_INTERRUPTS_H_
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 
 #define disable_interrupts() clear_csr_bit(STATUS_REG, STATUS(IE))
 #define enable_interrupts()  set_csr_bit(STATUS_REG, STATUS(IE))
