@@ -52,9 +52,9 @@
 	REG_S   t4, PT_R29(sp)
 	REG_S   t5, PT_R30(sp)
 
-	csrr    t6, STATUS_REG
+	csrr    t6, CSR_STATUS
 	REG_S   t6, PT_MSTATUS(sp)
-	csrr    t6, EPC_REG
+	csrr    t6, CSR_EPC
 	REG_S   t6, PT_PC(sp)
 .endm
 
@@ -90,10 +90,10 @@
 	REG_L   t5, PT_R30(sp)
 
 	REG_L   t6, PT_MSTATUS(sp)
-	csrw    STATUS_REG, t6
+	csrw    CSR_STATUS, t6
 
 	REG_L   t6, PT_PC(sp)
-	csrw    EPC_REG, t6
+	csrw    CSR_EPC, t6
 
 	REG_L   t6, PT_R31(sp)
 

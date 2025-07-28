@@ -27,7 +27,7 @@ static unsigned int __cpuid_to_hartid_map[NCPU] = {
 #if !SMODE
 unsigned int cpuid_register(void) {
 	int cpuid = 1; /* skip BSP */
-	unsigned int mhartid = read_csr(mhartid);
+	unsigned int mhartid = csr_read(mhartid);
 	for(;cpuid < NCPU; cpuid++) {
 		if(__cpuid_to_hartid_map[cpuid] == INVALIDHARTID) {
 			__cpuid_to_hartid_map[cpuid] = mhartid;
@@ -39,7 +39,7 @@ unsigned int cpuid_register(void) {
 
 unsigned int cpu_get_id(void) {
 	int cpuid = 0;
-	unsigned int mhartid = read_csr(mhartid);
+	unsigned int mhartid = csr_read(mhartid);
 	for(cpuid = 0; cpuid < NCPU; cpuid++) {
 		if(__cpuid_to_hartid_map[cpuid] == mhartid)
 			break;

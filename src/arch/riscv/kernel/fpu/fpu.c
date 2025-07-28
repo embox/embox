@@ -25,7 +25,7 @@ typedef struct fpu_context {
 EMBOX_UNIT_INIT(riscv_enable_fpu);
 
 static int riscv_enable_fpu(void) {
-	set_csr_bit(mstatus, MSTATUS_FS);
+	csr_set(mstatus, CSR_STATUS_FS_INIT);
 	return 0;
 }
 
@@ -42,5 +42,5 @@ void riscv_fpu_context_init(fpu_context_t *fpu_ctx) {
  * @brief Disable the FPU by clearing the FS (Floating-point Status) field in mstatus.
  */
 void riscv_fpu_disable(void) {
-    clear_csr_bit(mstatus, MSTATUS_FS);
+    csr_clear(mstatus, CSR_STATUS_FS_INIT);
 }

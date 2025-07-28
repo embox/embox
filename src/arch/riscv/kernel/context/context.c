@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 21.01.2020
@@ -21,14 +20,14 @@ void context_init(struct context *ctx, unsigned int flags,
 
 	ctx->x.sp = (unsigned long)sp;
 	ctx->x.ra = (unsigned long)routine_fn;
-	ctx->status = read_csr(STATUS_REG);
+	ctx->status = csr_read(CSR_STATUS);
 
 #if REG_SIZE_F > 0
-		ctx->status &= ~(1UL << 14);
-		ctx->status |= MSTATUS_FS;
+	ctx->status &= ~CSR_STATUS_FS_DIRTY;
+	ctx->status |= CSR_STATUS_FS_INIT;
 #endif
 
 	if (flags & CONTEXT_IRQDISABLE) {
-		ctx->status &= ~(STATUS(IE));
+		ctx->status &= ~(CSR_STATUS_IE);
 	}
 }

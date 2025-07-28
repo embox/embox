@@ -24,7 +24,7 @@ struct cpu_info *get_cpu_info(void) {
 	strcpy(current_cpu.vendor_id, "MIKRON");
 
 #if !SMODE
-	hartid = read_csr(mhartid);
+	hartid = csr_read(mhartid);
 #else
 	asm volatile("add %0, tp, x0" : "=r" (hartid) );
 #endif

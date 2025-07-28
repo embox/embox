@@ -33,10 +33,10 @@ void riscv_interrupt_handler(void) {
 		long pending;
 		long interrupt_id;
 
-		pending = (read_csr(CAUSE_REG)) & CLEAN_IRQ_BIT;
+		pending = (csr_read(CSR_CAUSE)) & CLEAN_IRQ_BIT;
 		interrupt_id = pending;
 
-		if (pending == IRQ_TIMER) {
+		if (pending == RISCV_IRQ_TIMER) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
 			if (__riscv_timer_handler) {
@@ -52,7 +52,7 @@ void riscv_interrupt_handler(void) {
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
 		}
-		else if (pending == IRQ_EXTERNAL) {
+		else if (pending == RISCV_IRQ_EXT) {
 			/* the ID of the highest-priority pending interrupt */
 			interrupt_id = irqctrl_get_intid();
 
@@ -62,7 +62,7 @@ void riscv_interrupt_handler(void) {
 			irq_dispatch(interrupt_id);
 			ipl_disable();
 			irqctrl_enable(interrupt_id);
-		}else if (pending == IRQ_SOFTWARE) {
+		}else if (pending == RISCV_IRQ_SOFT) {
 			disable_software_interrupts();
 #ifdef SMP
 			switch(smp_get_ipi_message()) {

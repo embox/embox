@@ -24,7 +24,7 @@ context_switch:
 	store_callee_saved_x base=a0, offset=__context_x_offset
 
 	/* Store [m|s]status registers */
-	csrr    s0, STATUS_REG
+	csrr    s0, CSR_STATUS
 	REG_S   s0, __context_status_offset(a0)
 
 #if REG_SIZE_F > 0
@@ -40,7 +40,7 @@ context_switch:
 
 	/* Load [m|s]status registers */
 	REG_L   s0, __context_status_offset(a1)
-	csrw    STATUS_REG, s0
+	csrw    CSR_STATUS, s0
 
 #if REG_SIZE_F > 0
 	/* Check if FPU state is "dirty" */

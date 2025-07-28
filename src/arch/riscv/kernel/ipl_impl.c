@@ -16,11 +16,11 @@ void ipl_init(void) {
 
 ipl_t ipl_save(void) {
 	ipl_t csr;
-	csr = read_csr(STATUS_REG);
-	write_csr(STATUS_REG, csr & ~(STATUS(IE)));
+	csr = csr_read(CSR_STATUS);
+	csr_write(CSR_STATUS, csr & ~(CSR_STATUS_IE));
 	return csr;
 }
 
 void ipl_restore(ipl_t ipl) {
-	write_csr(STATUS_REG, ipl);
+	csr_write(CSR_STATUS, ipl);
 }

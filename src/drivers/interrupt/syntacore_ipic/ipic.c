@@ -76,8 +76,8 @@
 #define MK_IRQ_CFG(line, mode, flags) ((mode) | (flags) | ((line) << IPIC_IRQ_LN_OFFS))
 
 static inline int ipic_irq_setup(int irq_vec, int line, int mode, int flags) {
-    write_csr(IPIC_IDX, irq_vec);
-    write_csr(IPIC_ICSR, MK_IRQ_CFG(line, mode, flags | IPIC_IRQ_CLEAR_PENDING));
+    csr_write(IPIC_IDX, irq_vec);
+    csr_write(IPIC_ICSR, MK_IRQ_CFG(line, mode, flags | IPIC_IRQ_CLEAR_PENDING));
 
     return irq_vec;
 }
@@ -101,29 +101,29 @@ static int syntacore_ipic_init(void) {
 void irqctrl_enable(unsigned int interrupt_nr) {
 	unsigned long state ;
 
-    write_csr(IPIC_IDX, interrupt_nr);
+    csr_write(IPIC_IDX, interrupt_nr);
 
-    state = read_csr(IPIC_ICSR) & ~IPIC_IRQ_PENDING;
-    write_csr(IPIC_ICSR, state  | IPIC_IRQ_ENABLE);
+    state = csr_read(IPIC_ICSR) & ~IPIC_IRQ_PENDING;
+    csr_write(IPIC_ICSR, state  | IPIC_IRQ_ENABLE);
 }
 
 void irqctrl_disable(unsigned int interrupt_nr) {
 	unsigned long state;
 
-    write_csr(IPIC_IDX, interrupt_nr);
-	state = read_csr(IPIC_ICSR) & ~(IPIC_IRQ_ENABLE | IPIC_IRQ_PENDING);
+    csr_write(IPIC_IDX, interrupt_nr);
+	state = csr_read(IPIC_ICSR) & ~(IPIC_IRQ_ENABLE | IPIC_IRQ_PENDING);
     
-    write_csr(IPIC_ICSR, state);
+    csr_write(IPIC_ICSR, state);
 }
 
 void irqctrl_eoi(unsigned int irq) {
-    write_csr(IPIC_EOI, 0);
+    csr_write(IPIC_EOI, 0);
 }
 
 unsigned int irqctrl_get_intid(void) {
-    write_csr(IPIC_SOI, 0);
+    csr_write(IPIC_SOI, 0);
 
-    return read_csr(IPIC_CISV);
+    return csr_read(IPIC_CISV);
 }
 
 IRQCTRL_DEF(syntacore_ipic, syntacore_ipic_init);

@@ -8,14 +8,14 @@ static uintptr_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
 
 void mmu_on(void) {
-    uint64_t satp_val = (read_csr(satp) | ((uint64_t)SATP_MODE << 60)); // Enable MMU for SV48
-    write_csr(satp, satp_val);
+    uint64_t satp_val = (csr_read(satp) | ((uint64_t)SATP_MODE << 60)); // Enable MMU for SV48
+    csr_write(satp, satp_val);
     asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after enabling MMU
 }
 
 void mmu_off(void) {
     uintptr_t satp_val = 0;  // Disable paging
-    write_csr(satp, satp_val);
+    csr_write(satp, satp_val);
     asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after disabling MMU
 }
 
@@ -46,7 +46,7 @@ mmu_ctx_t mmu_create_context(uintptr_t *pgd) {
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
-    write_csr(satp, ((read_csr(satp) & (~SATP_PPN_MASK)) | (uintptr_t) mmu_get_root(ctx)));
+    csr_write(satp, ((csr_read(satp) & (~SATP_PPN_MASK)) | (uintptr_t) mmu_get_root(ctx)));
     asm volatile ("sfence.vma" : : : "memory"); // Flush TLB
 }
 
@@ -68,7 +68,7 @@ void mmu_flush_tlb_single(unsigned long addr) {
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
-    return read_csr(stval); // Returns the fault address from stval
+    return csr_read(stval); // Returns the fault address from stval
 }
 
 uintptr_t mmu_pte_pack(uintptr_t addr, int prot) {
