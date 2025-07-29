@@ -1,5 +1,0 @@
-package embox.arch.riscv.kernel
-
-module fpu {
-	source "fpu.c"
-}

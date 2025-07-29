@@ -6,5 +6,4 @@ module boot {
 	source "boot.S"
 
 	@NoRuntime depends embox.arch.riscv.kernel.conf
-	@NoRuntime depends embox.arch.riscv.kernel.fpu
 }
