@@ -16,4 +16,6 @@ module eswifi_drv {
 	depends embox.net.dev
 	depends embox.net.entry_api
 
+	depends embox.net.wifi.cfg80211
+
 }

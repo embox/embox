@@ -20,6 +20,7 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+#include <net/cfg80211.h>
 
 #include <libs/ism43362.h>
 
@@ -132,11 +133,20 @@ static int eswifi_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
-static const struct net_driver eswifi_drv_ops = {
+static const struct net_driver eswifi_netdev_ops = {
 	.xmit = eswifi_xmit,
 	.start = eswifi_open,
 
 	.set_macaddr = eswifi_set_macaddr,
+};
+
+static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
+						struct cfg80211_connect_params *sme) {
+	return 0;
+}
+
+const struct cfg80211_ops eswifi_cfg80211_ops = {
+	.connect = eswifi_connect,
 };
 
 static int eswifi_init(void) {
@@ -147,6 +157,6 @@ static int eswifi_init(void) {
 		return -ENOMEM;
 	}
 
-	nic->drv_ops = &eswifi_drv_ops;
+	nic->drv_ops = &eswifi_netdev_ops;
 	return inetdev_register_dev(nic);
 }
