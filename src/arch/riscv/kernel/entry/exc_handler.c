@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 05.12.2019
@@ -12,7 +11,7 @@
 #include <hal/cpu_idle.h>
 #include <hal/test/traps_core.h>
 #include <kernel/printk.h>
-#include <riscv/exception.h>
+#include <riscv/entry.h>
 #include <util/log.h>
 
 trap_handler_t riscv_excpt_table[0x10];

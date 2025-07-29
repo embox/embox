@@ -1,0 +1,16 @@
+package embox.arch.riscv.kernel
+
+@DefaultImpl(no_smode)
+abstract module smode {
+}
+
+module no_smode extends smode {
+	@IncludeExport(path="riscv", target_name="smode.h")
+	source "no_smode.h"
+}
+
+module sbi extends smode {
+	@IncludeExport(path="riscv", target_name="smode.h")
+	source "sbi.h"
+	source "sbi.c"
+}

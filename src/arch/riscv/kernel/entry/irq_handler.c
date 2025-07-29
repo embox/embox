@@ -9,21 +9,20 @@
 
 #include <assert.h>
 
-#include <hal/cpu.h>
+#include <asm/csr.h>
 #include <asm/entry.h>
 #include <asm/interrupts.h>
 #include <asm/ptrace.h>
-#include <asm/csr.h>
-#include <embox/unit.h>
+#include <hal/cpu.h>
 #include <kernel/irq.h>
 #include <kernel/panic.h>
 #ifdef SMP
-#include <riscv/ipi.h>
+#include <riscv/smp_ipi.h>
 #endif
 
-EMBOX_UNIT_INIT(riscv_interrupt_init);
-
 #define CLEAN_IRQ_BIT (~(1u << 31))
+
+extern void riscv_mtimer_irq_handler(void) __attribute__((weak));
 
 void riscv_interrupt_handler(void) {
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
@@ -39,15 +38,8 @@ void riscv_interrupt_handler(void) {
 		if (pending == RISCV_IRQ_TIMER) {
 			disable_timer_interrupts();
 			//ipl_enable();               /* enable mstatus.MIE */
-			if (__riscv_timer_handler) {
-				if(cpu_get_id() == 0) {
-					__riscv_timer_handler(0, __riscv_timer_data);
-				}else {
-#ifdef SMP
-					extern void __riscv_ap_timer_handler(void* dev);
-					__riscv_ap_timer_handler(__riscv_timer_data);
-#endif
-				}
+			if (riscv_mtimer_irq_handler) {
+				riscv_mtimer_irq_handler();
 			}
 			//ipl_disable();              /* disable mstatus.MIE */
 			enable_timer_interrupts();
@@ -62,20 +54,21 @@ void riscv_interrupt_handler(void) {
 			irq_dispatch(interrupt_id);
 			ipl_disable();
 			irqctrl_enable(interrupt_id);
-		}else if (pending == RISCV_IRQ_SOFT) {
+		}
+		else if (pending == RISCV_IRQ_SOFT) {
 			disable_software_interrupts();
 #ifdef SMP
-			switch(smp_get_ipi_message()) {
-				case NONE:
-					smp_ack_ipi();
-					break;
-				case RESCHED:
-					smp_ack_ipi();
-					resched();
-					break;
-				default:
-					panic("unknown software interrupt\n");
-					break;
+			switch (smp_get_ipi_message()) {
+			case NONE:
+				smp_ack_ipi();
+				break;
+			case RESCHED:
+				smp_ack_ipi();
+				resched();
+				break;
+			default:
+				panic("unknown software interrupt\n");
+				break;
 			}
 #endif
 			enable_software_interrupts();
@@ -83,10 +76,4 @@ void riscv_interrupt_handler(void) {
 	}
 	critical_leave(CRITICAL_IRQ_HANDLER);
 	critical_dispatch_pending();
-}
-
-static int riscv_interrupt_init(void) {
-	enable_interrupts();
-
-	return 0;
 }

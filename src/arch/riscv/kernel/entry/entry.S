@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 29.11.2019
@@ -35,7 +34,7 @@ riscv_trap_handler:
 
 riscv_trap_exit:
 	RESTORE_ALL
-#if SMODE
+#if RISCV_SMODE
 	sret
 #else
 	mret

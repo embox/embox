@@ -1,64 +1,17 @@
 package embox.arch.riscv.kernel
 
-@DefaultImpl(conf_nosbi)
-abstract module conf {
-	option boolean smode
-
-}
-
-module conf_nosbi extends  conf {
-	option boolean smode=false
-}
-
-module conf_sbi extends  conf {
-	option boolean smode=true
-
-	source "sbi.c"
-	source "sbi_ecall.c"
-}
-
 module locore {
-	depends entry
-	depends interrupt
-	depends exception
-}
-
-module interrupt extends embox.arch.interrupt {
-	option number plic_addr=0x0C000000
-
-	source "ipl_impl.c"
-	source "ipl_impl.h"
-	source "interrupt.c"
-
-	depends embox.kernel.irq
-}
-
-module no_interrupt extends embox.arch.interrupt {
-	source "ipl_impl.c"
-	source "ipl_impl.h"
-	source "no_interrupt.c"
-}
-
-module entry {
-	option number tvec_alignment=2
-
-	source "entry.S"
-}
-
-module exception {
-	option string log_level="LOG_EMERG"
-	
-	@IncludeExport(path="riscv")
-	source "exception.h"
-	source "exception.c"
+	@NoRuntime depends boot
+	@NoRuntime depends entry
+	@NoRuntime depends smode
+	@NoRuntime depends cpu_idle
+	@NoRuntime depends ipl
 }
 
 module cpu_idle extends embox.arch.cpu_idle {
 	source "cpu_idle.h"
 }
 
-module ipi {
-	@IncludeExport(path="riscv")
-	source "ipi.h"
-	source "ipi.c"
+module ipl extends embox.arch.interrupt {
+	source "ipl.h"
 }

@@ -42,7 +42,7 @@ _start:
 #endif
 	csrw    CSR_TVEC, t0
 
-#if SMODE
+#if RISCV_SMODE
 	/**
 	 * After SBI, a0 contains Hart ID of any
 	 * possible Harts

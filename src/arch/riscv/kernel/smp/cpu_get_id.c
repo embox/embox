@@ -24,7 +24,7 @@ static unsigned int __cpuid_to_hartid_map[NCPU] = {
  *
  * return cpuid
  */
-#if !SMODE
+#if !RISCV_SMODE
 unsigned int cpuid_register(void) {
 	int cpuid = 1; /* skip BSP */
 	unsigned int mhartid = csr_read(mhartid);

@@ -10,14 +10,10 @@
 #define RISCV_ASM_CSR_H_
 
 #include <framework/mod/options.h>
+#include <riscv/smode.h>
 #include <util/macro.h>
 
-#include <config/embox/arch/riscv/kernel/conf.h>
-
-#define SMODE \
-	OPTION_MODULE_GET(embox__arch__riscv__kernel__conf, BOOLEAN, smode)
-
-#if SMODE
+#if RISCV_SMODE
 #define CSR_CAUSE  scause
 #define CSR_STATUS sstatus
 #define CSR_IE     sie
@@ -44,7 +40,7 @@
 #define RISCV_EXC_STORE_ACCESS 7
 
 /* Interrupt causes */
-#if SMODE
+#if RISCV_SMODE
 #define RISCV_IRQ_SOFT  1
 #define RISCV_IRQ_TIMER 5
 #define RISCV_IRQ_EXT   9
@@ -62,7 +58,7 @@
 #define CSR_STATUS_MPP  (3UL << 11) /* Machine Previous Privilege Mode */
 #define CSR_STATUS_SD   (1UL << (__riscv_xlen - 1)) /* State Dirty */
 
-#if SMODE
+#if RISCV_SMODE
 #define CSR_STATUS_IE  CSR_STATUS_SIE
 #define CSR_STATUS_PIE CSR_STATUS_SPIE
 #define CSR_STATUS_PP  CSR_STATUS_SPP

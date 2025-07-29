@@ -6,10 +6,13 @@
  * @author Zeng Zixian
  */
 
-#ifndef RISCV_IPI_H_
-#define RISCV_IPI_H_
+#ifndef RISCV_KERNEL_SMP_IPI_H_
+#define RISCV_KERNEL_SMP_IPI_H_
+
+#ifndef __ASSEMBLER__
+
 enum ipi_type {
-	NONE, /* no additional information */
+	NONE,    /* no additional information */
 	RESCHED, /* ask target cpu to schedule */
 };
 
@@ -23,4 +26,6 @@ extern enum ipi_type smp_get_ipi_message(void);
 
 extern void resched(void);
 
-#endif /* RISCV_IPI_H_ */
+#endif
+
+#endif /* RISCV_KERNEL_SMP_IPI_H_ */

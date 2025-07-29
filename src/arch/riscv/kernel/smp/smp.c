@@ -6,23 +6,22 @@
  * @author Zeng Zixian
  */
 
+#include <asm/interrupts.h>
+#include <drivers/irqctrl.h>
 #include <embox/unit.h>
 #include <hal/cpu_idle.h>
-#include <asm/interrupts.h>
 #include <kernel/cpu/cpu.h>
+#include <kernel/irq.h>
 #include <kernel/panic.h>
+#include <kernel/sched.h>
 #include <kernel/spinlock.h>
 #include <kernel/task.h>
 #include <kernel/task/kernel_task.h>
 #include <kernel/thread.h>
-#include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
-#include <kernel/sched.h>
+#include <riscv/clint.h>
 
-#include <drivers/irqctrl.h>
-#include <riscv/ipi.h>
 #include <module/embox/kernel/thread/core.h>
-#include <drivers/interrupt/riscv_clint/riscv_clint.h>
 
 #define THREAD_STACK_SIZE \
 	OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
@@ -51,10 +50,12 @@ void startup_ap(void) {
 	irqctrl_init();
 
 	/* enable external interrupt on each AP independently */
-	clint_init();
+	clint_clear_ipi();
+	csr_set(CSR_IE, CSR_IE_SIE);
 
 	/* set up clock interrupt for each AP independently */
-	((struct clock_source *)__riscv_timer_data)->event_device->set_periodic(__riscv_timer_data);
+	clint_set_timer(0);
+	csr_set(CSR_IE, CSR_IE_TIE);
 
 	/* enable all attached IRQs for each CPU */
 	irq_enable_attached();
@@ -75,7 +76,6 @@ void startup_ap(void) {
 		arch_cpu_idle();
 	}
 }
-
 
 static inline void cpu_start(int cpu_id) {
 	/* Setting up stack and boot */

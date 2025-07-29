@@ -4,6 +4,4 @@ module boot {
 	option boolean mik32_fixup=false
 
 	source "boot.S"
-
-	@NoRuntime depends embox.arch.riscv.kernel.conf
 }

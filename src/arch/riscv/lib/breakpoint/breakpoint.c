@@ -10,7 +10,7 @@
 
 #include <asm/csr.h>
 #include <debug/breakpoint.h>
-#include <riscv/exception.h>
+#include <riscv/entry.h>
 
 static bpt_handler_t __bpt_handler;
 
