@@ -20,16 +20,21 @@
 #include <net/netdevice.h>
 #include <net/inetdevice.h>
 #include <net/skbuff.h>
+#include <net/cfg80211.h>
 
 #include <libs/ism43362.h>
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
-#define WIFI_NAME         MACRO_STRING(OPTION_GET(STRING,ssid))
-#define WIFI_PASSWORD     MACRO_STRING(OPTION_GET(STRING,passw))
+#define ESWIFI_SECURITY_OPEN  0
+#define ESWIFI_SECURITY_WPA2  4
 
-#define BUFFER_SIZE 2048
+#define WIFI_NAME          MACRO_STRING(OPTION_GET(STRING,ssid))
+#define WIFI_PASSWORD      MACRO_STRING(OPTION_GET(STRING,passw))
+#define WIFI_SECURITYTYPE  ESWIFI_SECURITY_WPA2
+
+#define BUFFER_SIZE     1024
 
 typedef struct {
     const char *command;
@@ -38,10 +43,10 @@ typedef struct {
 } AT_Command;
 
 static const AT_Command wifi_setup_commands[] = {
-	{"C1=" WIFI_NAME "\r", WIFI_NAME},
-	{"C2=" WIFI_PASSWORD "\r", WIFI_PASSWORD},
-	{"C3=4\r", "4"},
-	{"C4=1\r", "1"},
+//	{"C1=" WIFI_NAME "\r", WIFI_NAME},
+//	{"C2=" WIFI_PASSWORD "\r", WIFI_PASSWORD},
+//	{"C3=4\r", "4"},
+//	{"C4=1\r", "1"},
 	{"C0\r", NULL},
 	{"C?\r", NULL},
 	{"Z5\r", NULL},
@@ -51,12 +56,18 @@ static const AT_Command wifi_setup_commands[] = {
 EMBOX_UNIT_INIT(eswifi_init);
 
 static int eswifi_xmit(struct net_device *dev, struct sk_buff *skb) {
+
 	return 0;
 }
 
-static int eswifi_open(struct net_device *dev) {
+static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
+						struct cfg80211_connect_params *sme) {
 	int wifi_request;
-	char rx_buffer[BUFFER_SIZE];
+	char buf[64];
+	char rx_buffer[256];
+	int err;
+	char *essid = (char *)sme->ssid; //WIFI_NAME
+	char *pwd = (char *)sme->key; //WIFI_PASSWORD;
 	char *ip;
 	uint32_t ip_num;
 	struct in_device *iface;
@@ -64,12 +75,41 @@ static int eswifi_open(struct net_device *dev) {
 
 	iface = inetdev_get_by_dev(dev);
 
-	log_info("Starting Wi-Fi initialization");
-	int result = ism43362_init();
-    if (result != 0) {
-		log_info("ISM43362 initialization error");
-        return -1;
-    } 	
+	/* Set SSID */
+	snprintf(buf, sizeof(buf), "C1=%s\r", essid);
+	//snprintf(buf, sizeof(buf),"%s\r", cmd_c1);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set SSID");
+		return 0;
+	}
+
+	/* Set passphrase */
+	snprintf(buf, sizeof(buf), "C2=%s\r", pwd);
+	//snprintf(buf, sizeof(buf),"%s\r", cmd_c2);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set passphrase");
+		return 0;
+	}
+
+	/* Set Security type */
+	snprintf(buf, sizeof(buf), "C3=%u\r", WIFI_SECURITYTYPE);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set Security type");
+		return 0;
+	}
+
+	/* Join Network */
+	snprintf(buf, sizeof(buf), "C4=%u\r", 1/* connect*/);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable connect");
+		return 0;
+	}
+
+	log_error("%s", rx_buffer);
 
 	for (int i = 0; wifi_setup_commands[i].command != NULL; i++){
 		wifi_request = ism43362_exchange((char *)wifi_setup_commands[i].command, strlen(wifi_setup_commands[i].command), rx_buffer, sizeof(rx_buffer));
@@ -120,9 +160,24 @@ static int eswifi_open(struct net_device *dev) {
 				return -1;
 			}
 		}
-		memset(rx_buffer, '\0', BUFFER_SIZE);
+		memset(rx_buffer, '\0', sizeof(rx_buffer));
 	}
 	
+	return 0;
+}
+
+static int eswifi_open(struct net_device *dev) {
+
+
+	log_info("Starting Wi-Fi initialization");
+	int result = ism43362_init();
+    if (result != 0) {
+		log_info("ISM43362 initialization error");
+        return -1;
+    }
+
+
+
 	log_info("Wi-Fi initialization finished");
 	
 	return 0;
@@ -132,21 +187,53 @@ static int eswifi_set_macaddr(struct net_device *dev, const void *addr) {
 	return 0;
 }
 
-static const struct net_driver eswifi_drv_ops = {
+static const struct net_driver eswifi_netdev_ops = {
 	.xmit = eswifi_xmit,
 	.start = eswifi_open,
 
 	.set_macaddr = eswifi_set_macaddr,
 };
 
+static int eswifi_scan(struct wiphy *wiphy, struct cfg80211_scan_request *request) {
+	return 0;
+}
+
+static const struct cfg80211_ops eswifi_cfg80211_ops = {
+	.connect = eswifi_connect,
+	.scan = eswifi_scan,
+};
+
+static struct wireless_dev eswifi_wdev;
+
 static int eswifi_init(void) {
 	struct net_device *nic;
+	int res;
+	struct wiphy *wiphy;
+
+	res = 0;
 
 	nic = etherdev_alloc(0);
 	if (NULL == nic) {
 		return -ENOMEM;
 	}
 
-	nic->drv_ops = &eswifi_drv_ops;
-	return inetdev_register_dev(nic);
+	wiphy = wiphy_new_nm(&eswifi_cfg80211_ops, 0, "wlan0");
+	if (NULL == wiphy) {
+		return -ENOMEM;
+	}
+
+	nic->nd_ieee80211_ptr = &eswifi_wdev;
+	eswifi_wdev.netdev = nic;
+	eswifi_wdev.wiphy = wiphy;
+
+	nic->drv_ops = &eswifi_netdev_ops;
+
+	res = inetdev_register_dev(nic);
+	if (res != 0) {
+		return res;
+	}
+
+	res = cfg80211_register_netdevice(nic);
+
+	return res;
 }
