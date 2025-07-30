@@ -9,8 +9,6 @@ module cpu extends embox.arch.cpu {
 module smp extends embox.arch.smp {
 	source "ap_trampoline.S", "smp.c", "ap_timer_handler.c"
 
-	option boolean independent_clock = true
-
 	depends cpu
 	depends ipi
 

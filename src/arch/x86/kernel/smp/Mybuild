@@ -10,8 +10,6 @@ module cpu extends embox.arch.cpu {
 module smp extends embox.arch.smp {
 	source "smp_traps.S", "ap_trampoline.S", "smp.c"
 
-	option boolean independent_clock = false
-
 	depends cpu
 	/* i.e. depends from embox.arch.x86.kernel.cpu */
 
