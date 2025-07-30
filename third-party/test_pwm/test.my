@@ -1,0 +1,11 @@
+package third_party.cmd
+
+@App
+@AutoCmd
+@Cmd(name = "test_pwm",
+	help = "",
+	man = '''
+	''')
+module test_pwm {
+	source "test.c"
+}
