@@ -27,27 +27,11 @@
 extern void irqctrl_enable(unsigned int irq);
 
 /**
- * Enables the specified IRQ on a specific CPU (hart).
- *
- * @param hart_id the CPU (hart) ID
- * @param interrupt_nr the IRQ number to enable
- */
-extern void irqctrl_enable_in_cpu(uint32_t hart_id, unsigned int interrupt_nr);
-
-/**
  * Disables the specified IRQ.
  *
  * @param irq the IRQ number to disable
  */
 extern void irqctrl_disable(unsigned int irq);
-
-/**
- * Disables the specified IRQ on a specific CPU (hart).
- *
- * @param hart_id the CPU (hart) ID
- * @param interrupt_nr the IRQ number to disable
- */
-extern void irqctrl_disable_in_cpu(uint32_t hart_id, unsigned int interrupt_nr);
 
 /**
  * Clears pending status for the specified IRQ.
@@ -64,64 +48,35 @@ extern void irqctrl_clear(unsigned int irq);
 extern void irqctrl_force(unsigned int irq);
 
 /**
- * Get pending status from irqctrl.
+ * Get pending status from irqctrl
  *
  * @param irq the IRQ number status you want to know
- * @return non-zero if the IRQ is pending, 0 otherwise
  */
 extern int irqctrl_pending(unsigned int irq);
 
 /**
- * Signals end of interrupt for the specified IRQ.
- * Required by some interrupt controllers (e.g., x86).
- *
- * @param irq the IRQ number
+ * Some interrupt controllers required end of interrupt, x86 for example
  */
 extern void irqctrl_eoi(unsigned int irq);
 
 /**
- * Signals end of interrupt for the specified IRQ on a specific CPU (hart).
- * Required by some interrupt controllers (e.g., x86).
- *
- * @param hart_id the CPU (hart) ID
- * @param irq the IRQ number
- */
-extern void irqctrl_eoi_in_cpu(uint32_t hart_id, unsigned int irq);
-
-/**
- * Sets up interrupt priority.
- * A lower priority value indicates a higher interrupt priority.
- *
- * @param interrupt_nr the IRQ number
- * @param prio the priority value
+ * Set up interrupt priority.
+ * A lower priority value indicates a lower interrupt priority.
  */
 extern void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio);
 
 /**
- * Gets the priority of the specified interrupt.
- * A lower priority value indicates a higher interrupt priority.
- *
- * @param interrupt_nr the IRQ number
- * @return the priority value
+ * Get interrupt priority.
+ * A lower priority value indicates a lower interrupt priority.
  */
 extern unsigned int irqctrl_get_prio(unsigned int interrupt_nr);
 
 /**
- * Gets the ID of the currently active interrupt.
+ * Get the ID of the currently active interrupt.
  *
  * @retval -1 If there are no currently active interrupts
- * @return the interrupt ID, or -1 if none are active
  */
 extern unsigned int irqctrl_get_intid(void);
-
-/**
- * Gets the ID of the currently active interrupt on a specific CPU (hart).
- *
- * @param hart_id the CPU (hart) ID
- * @retval -1 If there are no currently active interrupts
- * @return the interrupt ID, or -1 if none are active
- */
-extern unsigned int irqctrl_get_intid_from_cpu(uint32_t hart_id);
 
 struct irqctrl {
 	const char *name;
