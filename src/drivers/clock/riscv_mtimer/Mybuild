@@ -1,0 +1,10 @@
+package embox.driver.clock
+
+module riscv_mtimer {
+	option number rtc_freq
+
+	source "riscv_mtimer.c"
+
+	@NoRuntime depends embox.arch.riscv.kernel.clint
+	depends embox.kernel.time.clock_source
+}
