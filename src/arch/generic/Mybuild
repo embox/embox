@@ -19,8 +19,6 @@ module nousermode extends embox.arch.usermode {
 }
 
 module nosmp extends embox.arch.smp {
-	option boolean independent_clock=false
-
 	source "nosmp.h"
 }
 

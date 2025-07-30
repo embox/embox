@@ -40,7 +40,6 @@ abstract module usermode {
 @Mandatory
 @DefaultImpl(embox.arch.generic.nosmp)
 abstract module smp {
-	option boolean independent_clock=false
 }
 
 @Mandatory
