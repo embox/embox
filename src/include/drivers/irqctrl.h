@@ -22,77 +22,51 @@
 #define IRQCTRL_IRQS_TOTAL ((unsigned int)__IRQCTRL_IRQS_TOTAL)
 
 /**
- * NOTICE
- * In order to better support SMP, the propagation of external interrupts
- * is explained below in more detail.
- * There are external interrupt sources, one or more, level or edge sensitive
- * If they want to interrupt the execution of the CPU, these steps are required:
- *   1. First, the interrupt controller must be set to recognize an external **signal**
- *   2. Then the interrupt controller must forward **request** to the CPUs
- *
- * [signal] here refers to the information passed externally to the interrupt controller
- * [request] here refers to the information passed by the interrupt controller to the target(CPU)
- * one signal can be forwarded as many requests to many targets(CPUs)
- *
- */
-
-/**
- * Enables the specified IRQ source in interrupt controller
- * Let the controller start detecting external interrupt signals
- *
- * By default, it also enables interrupt request to forward
- * to a target which calls this function
+ * Enables the specified IRQ.
  *
  * @param irq the IRQ number to enable
  */
 extern void irqctrl_enable(unsigned int irq);
 
 /**
- * This function configures where the interrupt signal will be passed
- * as interrupt request to. It does NOT change whether the interrupt controller
- * is able to detect the signal
+ * Enables the specified IRQ on a specific CPU (hart).
  *
- * @param hart_id interrupt request should (also) forward to this hartid CPU
+ * @param hart_id the CPU (hart) ID
  * @param interrupt_nr the IRQ number to enable
  */
 extern void irqctrl_enable_in_cpu(uint32_t hart_id, unsigned int interrupt_nr);
 
 /**
- * Disables the specified IRQ source in interrupt controller
- * so interrupt controller can not forward interrupt signal to
- * any target
+ * Disables the specified IRQ.
  *
  * @param irq the IRQ number to disable
  */
 extern void irqctrl_disable(unsigned int irq);
 
 /**
- * This function configures where the interrupt signal will NOT be passed
- * as interrupt request to. It does NOT change whether the interrupt controller
- * is able to detect the signal
+ * Disables the specified IRQ on a specific CPU (hart).
  *
- * @param hart_id interrupt request should NOT forward to this hartid CPU
+ * @param hart_id the CPU (hart) ID
  * @param interrupt_nr the IRQ number to disable
  */
 extern void irqctrl_disable_in_cpu(uint32_t hart_id, unsigned int interrupt_nr);
 
 /**
- * Clears pending status for the specified IRQ signal
+ * Clears pending status for the specified IRQ.
  *
  * @param irq the IRQ number to clear
  */
 extern void irqctrl_clear(unsigned int irq);
 
 /**
- * Forces interrupt controller to generate the specified IRQ signal
- * Which CPU it is propagated to depends on the interrupt controller settings
+ * Forces interrupt controller to generate the specified IRQ.
  *
  * @param irq the IRQ number to force
  */
 extern void irqctrl_force(unsigned int irq);
 
 /**
- * Get pending status of this interrupr signal from irqctrl.
+ * Get pending status from irqctrl.
  *
  * @param irq the IRQ number status you want to know
  * @return non-zero if the IRQ is pending, 0 otherwise
@@ -100,7 +74,7 @@ extern void irqctrl_force(unsigned int irq);
 extern int irqctrl_pending(unsigned int irq);
 
 /**
- * Indicates end of interrupt for the specified IRQ.
+ * Signals end of interrupt for the specified IRQ.
  * Required by some interrupt controllers (e.g., x86).
  *
  * @param irq the IRQ number
@@ -108,7 +82,7 @@ extern int irqctrl_pending(unsigned int irq);
 extern void irqctrl_eoi(unsigned int irq);
 
 /**
- * Indicates end of interrupt for the specified IRQ on a specific CPU (hart).
+ * Signals end of interrupt for the specified IRQ on a specific CPU (hart).
  * Required by some interrupt controllers (e.g., x86).
  *
  * @param hart_id the CPU (hart) ID
