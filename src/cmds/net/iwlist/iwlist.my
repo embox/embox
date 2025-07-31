@@ -1,0 +1,24 @@
+package embox.cmd.net
+
+@AutoCmd
+@Cmd(name = "iwlist",
+	help = "work with a wireless interface",
+	man = '''
+		NAME
+			iwlist - 
+		SYNOPSIS
+			iwlist [interface] scanning		          
+		DESCRIPTION
+
+		OPTIONS
+
+		EXAMPLES
+			
+		SEE ALSO
+			route, ifconfig, iwconfig
+		AUTHORS
+			Anton Bondarev
+	''')
+module iwlist {
+	source "iwlist.c"
+}
