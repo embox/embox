@@ -10,6 +10,7 @@
 #define EMBOX_NET_WIFI_CFG80211_H_
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include <lib/libds/dlist.h>
 
@@ -25,6 +26,21 @@ enum nl80211_band {
 	NL80211_BAND_LC,
 
 	NUM_NL80211_BANDS,
+};
+
+enum nl80211_key_mode {
+	NL80211_KEY_RX_TX,
+	NL80211_KEY_NO_TX,
+	NL80211_KEY_SET_TX
+};
+// END FIXME move to include/uapi/linux/nl80211.h
+
+//FIXME move to iclude/linux/ieee8021.h
+#define IEEE80211_MAX_SSID_LEN		32
+
+struct cfg80211_ssid {
+	uint8_t ssid[IEEE80211_MAX_SSID_LEN];
+	uint8_t ssid_len;
 };
 
 struct ieee80211_channel {
@@ -78,6 +94,68 @@ struct wireless_dev {
 	struct net_device *netdev;
 };
 
+// FIXME move to util/compiler.h ?
+#define __aligned(b) \
+			__attribute__ ((aligned (b)))
+
+
+#if __has_attribute(__counted_by__)
+# define __counted_by(member)  __attribute__((__counted_by__(member)))
+#else
+# define __counted_by(member)
+#endif
+
+
+struct cfg80211_scan_info {
+	uint64_t scan_start_tsf;
+	uint8_t tsf_bssid[ETH_ALEN] __aligned(2);
+	bool aborted;
+};
+
+
+struct cfg80211_scan_request {
+	struct cfg80211_ssid *ssids;
+	int n_ssids;
+//	u32 n_channels;
+//	const uint8_t *ie;
+//	size_t ie_len;
+//	u16 duration;
+//	bool duration_mandatory;
+	uint32_t flags;
+
+	uint32_t rates[NUM_NL80211_BANDS];
+
+	struct wireless_dev *wdev;
+
+	uint8_t mac_addr[ETH_ALEN] __aligned(2);
+	uint8_t mac_addr_mask[ETH_ALEN] __aligned(2);
+	uint8_t bssid[ETH_ALEN] __aligned(2);
+
+	/* internal */
+	struct wiphy *wiphy;
+	unsigned long scan_start;
+	struct cfg80211_scan_info info;
+	//bool notified;
+	//bool no_cck;
+	//bool scan_6ghz;
+	//u32 n_6ghz_params;
+	//struct cfg80211_scan_6ghz_params *scan_6ghz_params;
+	//s8 tsf_report_link_id;
+
+	/* keep last */
+	struct ieee80211_channel *channels[] __counted_by(n_channels);
+};
+
+struct key_params {
+	const uint8_t *key;
+	const uint8_t *seq;
+	int key_len;
+	int seq_len;
+	uint16_t vlan_id;
+	uint32_t cipher;
+	enum nl80211_key_mode mode;
+};
+
 struct cfg80211_ops {
 	int	(*connect)(struct wiphy *wiphy, struct net_device *dev,
 						struct cfg80211_connect_params *sme);
@@ -87,6 +165,21 @@ struct cfg80211_ops {
 						uint32_t changed);
 	int	(*disconnect)(struct wiphy *wiphy, struct net_device *dev,
 						uint16_t reason_code);
+	int	(*scan)(struct wiphy *wiphy, struct cfg80211_scan_request *request);
+
+	int	(*add_key)(struct wiphy *wiphy, struct net_device *netdev,
+			   int link_id, uint8_t key_index, bool pairwise,
+			   const uint8_t *mac_addr, struct key_params *params);
+	int	(*get_key)(struct wiphy *wiphy, struct net_device *netdev,
+			   int link_id, uint8_t key_index, bool pairwise,
+			   const uint8_t *mac_addr, void *cookie,
+			   void (*callback)(void *cookie, struct key_params*));
+	int	(*del_key)(struct wiphy *wiphy, struct net_device *netdev,
+			   int link_id, uint8_t key_index, bool pairwise,
+			   const uint8_t *mac_addr);
+	int	(*set_default_key)(struct wiphy *wiphy,
+				   struct net_device *netdev, int link_id,
+				   uint8_t key_index, bool unicast, bool multicast);
 };
 
 #endif /* EMBOX_NET_WIFI_CFG80211_H_ */
