@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
 	iface = inetdev_get_by_name(argv[1]);
 
-	printf("setup iface %s essid %s key\n", iface->dev->name, essid_name, key_str);
+	printf("setup iface %s essid %s key %s\n", iface->dev->name, essid_name, key_str);
 
 
 	return 0;
