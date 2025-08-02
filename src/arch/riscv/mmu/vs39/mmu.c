@@ -7,7 +7,7 @@
  */
 
 #include "mmu.h"
-#include <asm/regs.h> 
+#include <asm/csr.h> 
 #include <mem/vmem.h>  
 #include <util/log.h>
 
@@ -23,14 +23,14 @@ static uintptr_t *ctx_table[0x100] __attribute__((aligned(MMU_PAGE_SIZE)));
 static int ctx_counter = 0;
 
 void mmu_on(void) {
-    uint64_t satp_val = (read_csr(satp) | ((uint64_t)SATP_MODE_SV39 << 60)); // Enable MMU for SV39
-    write_csr(satp, satp_val);
+    uint64_t satp_val = (csr_read(satp) | ((uint64_t)SATP_MODE_SV39 << 60)); // Enable MMU for SV39
+    csr_write(satp, satp_val);
     asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after enabling MMU
 }
 
 void mmu_off(void) {
     uintptr_t satp_val = 0;  // Disable paging
-    write_csr(satp, satp_val);
+    csr_write(satp, satp_val);
     asm volatile ("sfence.vma" : : : "memory"); // Flush TLB after disabling MMU
 }
                    
@@ -43,11 +43,11 @@ void mmu_flush_tlb(void) {
 }
 
 mmu_vaddr_t mmu_get_fault_address(void) {
-    return read_csr(stval); // Returns the fault address from stval
+    return csr_read(stval); // Returns the fault address from stval
 }
 
 void mmu_set_context(mmu_ctx_t ctx) {
-    write_csr(satp, ((read_csr(satp) & ~0xFFFFFFFFFFUL) | (uintptr_t) mmu_get_root(ctx)));
+    csr_write(satp, ((csr_read(satp) & ~0xFFFFFFFFFFUL) | (uintptr_t) mmu_get_root(ctx)));
     asm volatile ("sfence.vma" : : : "memory"); // Flush TLB
 }
 

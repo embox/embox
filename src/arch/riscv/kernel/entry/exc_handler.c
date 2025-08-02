@@ -1,18 +1,17 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 05.12.2019
  * @author Nastya Nizharadze
  */
 
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <hal/cpu.h>
 #include <hal/cpu_idle.h>
 #include <hal/test/traps_core.h>
 #include <kernel/printk.h>
-#include <riscv/exception.h>
+#include <riscv/entry.h>
 #include <util/log.h>
 
 trap_handler_t riscv_excpt_table[0x10];
@@ -24,7 +23,7 @@ void riscv_exception_handler(struct excpt_context *ctx, unsigned long cause) {
 	}
 
 	log_raw(LOG_EMERG, "\nException: cause(%#lx) epc(%#lx)",
-	    read_csr(CAUSE_REG), ctx->ptregs.pc);
+	    csr_read(CSR_CAUSE), ctx->ptregs.pc);
 
 	log_info("cpu_id  = %#lx", cpu_get_id());
 	log_info("mstatus = %#lx", ctx->ptregs.mstatus);

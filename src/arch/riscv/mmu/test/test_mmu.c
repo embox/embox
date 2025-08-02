@@ -1,6 +1,6 @@
 #include <embox/test.h>
 #include "../mmu.h"
-#include <asm/regs.h> 
+#include <asm/csr.h> 
 #include <stdint.h>
 #include <util/log.h>
 #include <hal/mmu.h>
@@ -37,7 +37,7 @@ TEST_CASE("MMU One-to-One Mapping") {
     // Verify that MMU is enabled
     // The mode field in the SATP register is stored in the top 4 bits (63-60).
     // We shift SATP_MODE_SV39 by 60 to move it to the correct position in the SATP register.
-    test_assert_equal(read_csr(satp) & SATP_MODE_MASK, SATP_MODE_SV39 << 60); // Check that SV39 mode is enabled
+    test_assert_equal(csr_read(satp) & SATP_MODE_MASK, SATP_MODE_SV39 << 60); // Check that SV39 mode is enabled
 
     // Verify that one-to-one mapping is set up
     for (size_t i = 0; i < num_pages; ++i) {
@@ -51,5 +51,5 @@ TEST_CASE("MMU One-to-One Mapping") {
     mmu_off();
 
     // Verify that MMU is disabled
-    test_assert_equal(read_csr(satp), 0); // Check that the SATP register is cleared
+    test_assert_equal(csr_read(satp), 0); // Check that the SATP register is cleared
 }

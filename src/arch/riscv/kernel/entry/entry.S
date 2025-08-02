@@ -1,6 +1,5 @@
 /**
  * @file
- *
  * @brief
  *
  * @date 29.11.2019
@@ -8,6 +7,7 @@
  */
 
 #include <asm/asm.h>
+#include <asm/csr.h>
 #include <asm/entry.h>
 
 #include <framework/mod/options.h>
@@ -20,7 +20,7 @@
 .align TVEC_ALIGNMENT
 riscv_trap_handler:
 	SAVE_ALL
-	csrr    a1, CAUSE_REG
+	csrr    a1, CSR_CAUSE
 	srli    t0, a1, (__riscv_xlen - 1)
 	bnez    t0, 1f
 
@@ -34,4 +34,8 @@ riscv_trap_handler:
 
 riscv_trap_exit:
 	RESTORE_ALL
-	RET_INSTR
+#if RISCV_SMODE
+	sret
+#else
+	mret
+#endif

@@ -7,7 +7,7 @@
  */
 
 #include <asm/linkage.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <asm/asm.h>
 
 	.section .text
@@ -21,7 +21,7 @@ C_ENTRY(__ap_trampoline):
 #if OPTION_GET(BOOLEAN,mik32_fixup)
 	la      t0, _start
 #endif
-	csrw    TRAP_VECTOR_REG, t0
+	csrw    CSR_TVEC, t0
 
 	/* register cpuid with small stack */
 	la      t0, __tmp_small_stack
@@ -39,7 +39,7 @@ C_ENTRY(__ap_trampoline):
 	/* Should not return */
 loop:
 	la      t0, loop
-	csrw    TRAP_VECTOR_REG, t0
+	csrw    CSR_TVEC, t0
 	j       loop
 
 	.section .data

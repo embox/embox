@@ -1,0 +1,10 @@
+package embox.arch.riscv.kernel
+
+module clint {
+	option number base_addr=0x2000000
+
+	@IncludeExport(path="riscv")
+	source "clint.h"
+	source "clint_ipi.c"
+	source "clint_timer.c"
+}

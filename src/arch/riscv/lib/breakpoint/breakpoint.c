@@ -8,9 +8,9 @@
 #include <assert.h>
 #include <stdint.h>
 
-#include <asm/regs.h>
-#include <riscv/exception.h>
+#include <asm/csr.h>
 #include <debug/breakpoint.h>
+#include <riscv/entry.h>
 
 static bpt_handler_t __bpt_handler;
 
@@ -26,9 +26,9 @@ void bpt_handler_set(bpt_handler_t handler) {
 	__bpt_handler = handler;
 
 	if (handler) {
-		riscv_excpt_table[EXC_BREAKPOINT] = riscv_bpt_excpt_handler;
+		riscv_excpt_table[RISCV_EXC_BREAKPOINT] = riscv_bpt_excpt_handler;
 	}
 	else {
-		riscv_excpt_table[EXC_BREAKPOINT] = NULL;
+		riscv_excpt_table[RISCV_EXC_BREAKPOINT] = NULL;
 	}
 }

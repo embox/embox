@@ -1,0 +1,12 @@
+package embox.arch.riscv.kernel
+
+module entry {
+	option number tvec_alignment=2
+
+	@IncludeExport(path="riscv")
+	source "entry.h"
+
+	source "entry.S"
+	source "exc_handler.c"
+	source "irq_handler.c"
+}

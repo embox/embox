@@ -10,7 +10,7 @@
 #include <lib/libds/array.h>
 #include <util/math.h>
 #include <hal/mmu.h>
-#include <asm/regs.h> 
+#include <asm/csr.h> 
 
 
 struct mmuinfo_reg_access {
@@ -19,15 +19,15 @@ struct mmuinfo_reg_access {
 };
 
 static uint64_t get_satp(void) {
-    return read_csr(satp);  // SATP register controls MMU configuration
+    return csr_read(satp);  // SATP register controls MMU configuration
 }
 
 static uint64_t get_stval(void) {
-    return read_csr(stval);  // STVAL holds the faulting virtual address
+    return csr_read(stval);  // STVAL holds the faulting virtual address
 }
 
 static uint64_t get_sstatus(void) {
-    return read_csr(sstatus); // SSTATUS contains the status of the supervisor
+    return csr_read(sstatus); // SSTATUS contains the status of the supervisor
 }
 
 static const struct mmuinfo_reg_access mmuinfo_regs[] = {

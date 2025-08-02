@@ -6,7 +6,7 @@
  * @date 06.07.23
  */
 #include <asm/asm.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <hal/cpu.h>
 
 .section .init, "ax"
@@ -37,12 +37,12 @@ _start:
 	 * register.
 	 */
 	la      t0, riscv_trap_handler
-#if OPTION_GET(BOOLEAN,mik32_fixup)
+#if OPTION_GET(BOOLEAN, mik32_fixup)
 	la      t0, _start
 #endif
-	csrw    TRAP_VECTOR_REG, t0
+	csrw    CSR_TVEC, t0
 
-#if SMODE
+#if RISCV_SMODE
 	/**
 	 * After SBI, a0 contains Hart ID of any
 	 * possible Harts
@@ -54,9 +54,9 @@ _start:
 	 * go to secondary_hart_loop.
 	 */
 	csrr    t0, mhartid
-#if !OPTION_GET(BOOLEAN,mik32_fixup)
+#if !OPTION_GET(BOOLEAN, mik32_fixup)
 	bnez    t0, secondary_hart_loop
-#endif /* !OPTION_GET(BOOLEAN,mik32_fixup) */
+#endif /* !OPTION_GET(BOOLEAN, mik32_fixup) */
 
 #endif
 	/* Set up stack pointer. */
@@ -90,24 +90,28 @@ copy_data_end:
 	call    cpudata_init
 #endif /* NCPU > 1 */
 
+#if __riscv_f
+	lui     t0, (CSR_STATUS_FS_INIT << (CSR_STATUS_FS_SHIFT - 12))
+	csrs    CSR_STATUS, t0
+#endif
+
 	/* Start kernel. */
 	call    kernel_start
 .cfi_endproc
 
 secondary_hart_loop:
 #ifdef SMP
-	csrw    STATUS_REG, STATUS(IE)
+	csrw    CSR_STATUS, CSR_STATUS_IE
 	/* Turn on soft interrput before WFI*/
-	csrw    INTERRUPT_REG, IE(SIE)
+	csrw    CSR_IE, CSR_IE_SIE
 
 	la      t0, __ap_trampoline
-	csrw    TRAP_VECTOR_REG, t0
+	csrw    CSR_TVEC, t0
 #endif /* SMP */
 	wfi
 	j       secondary_hart_loop
 
-
-#if OPTION_GET(BOOLEAN,mik32_fixup)
+#if OPTION_GET(BOOLEAN, mik32_fixup)
 .section .mik32_fixup, "ax"
 
 .globl _mik32_fixup_interrupt
@@ -115,7 +119,7 @@ secondary_hart_loop:
 .org 0x40
 _mik32_fixup_interrupt:
 .cfi_startproc
-	j riscv_trap_handler
+	j       riscv_trap_handler
 .cfi_endproc
 #endif
 

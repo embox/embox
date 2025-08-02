@@ -11,7 +11,7 @@
 #include <stdint.h>
 
 #include <asm/interrupts.h>
-#include <asm/regs.h>
+#include <asm/csr.h>
 #include <framework/mod/options.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
@@ -77,7 +77,7 @@ static int syntacore_mtimer_init(struct clock_source *cs) {
 static struct time_event_device syntacore_mtimer_event_device = {
     .set_periodic = syntacore_mtimer_clock_setup,
     .name = "syntacore_mtimer",
-    .irq_nr = IRQ_TIMER,
+    .irq_nr = RISCV_IRQ_TIMER,
 };
 
 CLOCK_SOURCE_DEF(syntacore_mtimer, syntacore_mtimer_init, NULL, &syntacore_mtimer_event_device, NULL);
