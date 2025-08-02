@@ -7,3 +7,6 @@
 "mkdir -s /conf",
 //"mount -t DumbFS /dev/stm32flash0 /conf",
 //"conf_setup",
+"ifconfig eth0 up",
+"iwlist eth0 scan",
+"iwconfig eth0 essid XXXXXXX key s:XXXXXXX",
