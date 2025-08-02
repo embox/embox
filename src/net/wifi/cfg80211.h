@@ -89,6 +89,7 @@ struct wiphy {
 };
 
 struct wireless_dev {
+	struct wiphy *wiphy;
 	/* the remainder of this struct should be private to cfg80211 */
 	struct dlist_head list;
 	struct net_device *netdev;
