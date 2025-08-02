@@ -1,0 +1,21 @@
+package project.ism43362_eS_wifi.drivers
+
+module eswifi_drv {
+	option string log_level="LOG_DEBUG"
+
+	option string ssid
+	option string passw
+
+	source "eswifi_drv.c"
+
+	@NoRuntime depends project.ism43362_eS_wifi.libs.ism43362
+	depends embox.driver.spi.core
+
+	depends embox.net.skbuff
+	depends embox.net.l2.ethernet
+	depends embox.net.dev
+	depends embox.net.entry_api
+
+	depends embox.net.wifi.cfg80211
+
+}

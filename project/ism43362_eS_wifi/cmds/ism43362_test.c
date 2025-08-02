@@ -2,11 +2,10 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ism43362.h"
-#include <drivers/gpio.h>
+#include <libs/ism43362.h>
 
 #define BUFFER_SIZE 2048
-#define WIFI_LED_PIN (1 << 9)
+
 
 static void get_command_string(char *buffer, int buffer_length) {
 	printf("WiFi module>");
@@ -122,9 +121,7 @@ int main() {
     if (result != 0) {
         printf("ISM43362 initialization error %d\n", result);
         return -1;
-    }
-	gpio_set(GPIO_PORT_C, WIFI_LED_PIN, GPIO_PIN_HIGH); // WiFi LED pin
-		
+    }		
 
 	// AT command loop
 	while (1) {
@@ -188,7 +185,6 @@ int main() {
 		printf("\nTotal %d bytes in answer\n", total_c);
 	}
 	
-	gpio_setup_mode(GPIO_PORT_C, WIFI_LED_PIN, GPIO_MODE_IN);// WiFi LED pin
 	return 0;
 }
 

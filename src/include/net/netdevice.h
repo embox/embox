@@ -105,6 +105,13 @@ typedef struct net_device_ops {
 	int (*check_mtu)(int mtu);
 } net_device_ops_t;
 
+struct sock_family_ops;
+struct sock_proto_ops;
+
+//#if IS_ENABLED(CONFIG_CFG80211)
+struct wireless_dev;
+//#endif
+
 /**
  * structure of net device
  */
@@ -131,8 +138,31 @@ typedef struct net_device {
 #if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	net_namespace_p net_ns;
 #endif
+
+//#if IS_ENABLED(CONFIG_CFG80211)
+	struct wireless_dev	*nd_ieee80211_ptr;
+//#endif
+
+	const struct sock_family_ops *nd_net_offload;
+	const struct sock_proto_ops *nd_sock_offload;
+
 	void *priv; /**< private data */
 } net_device_t;
+
+
+#define netdev_net_offload(dev)               \
+	({                                        \
+		const struct net_device *__dev = dev; \
+		assert(__dev != NULL);                \
+		__dev->nd_net_offload                 \
+	})
+
+#define netdev_sock_offload(dev)              \
+	({                                        \
+		const struct net_device *__dev = dev; \
+		assert(__dev != NULL);                \
+		__dev->nd_sock_offload                \
+	})
 
 /**
  * Get data private data casted to type

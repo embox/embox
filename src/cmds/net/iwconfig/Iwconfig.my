@@ -1,0 +1,27 @@
+package embox.cmd.net
+
+@AutoCmd
+@Cmd(name = "iwconfig",
+	help = "Configure a wireless interface",
+	man = '''
+		NAME
+			iwconfig - Configure a wireless interface
+		SYNOPSIS
+			iwconfig [interface]
+			          interface essid {NNN|any|on|off}
+					  interface enc {NNNN-NNNN|off}
+			          interface key {NNNN-NNNN|off}			          
+		DESCRIPTION
+
+		OPTIONS
+
+		EXAMPLES
+			
+		SEE ALSO
+			route, ifconfig, iwlist
+		AUTHORS
+			Anton Bondarev
+	''')
+module iwconfig {
+	source "iwconfig.c"
+}
