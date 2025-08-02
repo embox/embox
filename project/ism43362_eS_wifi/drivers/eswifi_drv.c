@@ -27,10 +27,14 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
-#define WIFI_NAME         MACRO_STRING(OPTION_GET(STRING,ssid))
-#define WIFI_PASSWORD     MACRO_STRING(OPTION_GET(STRING,passw))
+#define ESWIFI_SECURITY_OPEN  0
+#define ESWIFI_SECURITY_WPA2  4
 
-#define BUFFER_SIZE 2048
+#define WIFI_NAME          MACRO_STRING(OPTION_GET(STRING,ssid))
+#define WIFI_PASSWORD      MACRO_STRING(OPTION_GET(STRING,passw))
+#define WIFI_SECURITYTYPE  ESWIFI_SECURITY_WPA2
+
+#define BUFFER_SIZE     1024
 
 typedef struct {
     const char *command;
@@ -39,10 +43,10 @@ typedef struct {
 } AT_Command;
 
 static const AT_Command wifi_setup_commands[] = {
-	{"C1=" WIFI_NAME "\r", WIFI_NAME},
-	{"C2=" WIFI_PASSWORD "\r", WIFI_PASSWORD},
-	{"C3=4\r", "4"},
-	{"C4=1\r", "1"},
+//	{"C1=" WIFI_NAME "\r", WIFI_NAME},
+//	{"C2=" WIFI_PASSWORD "\r", WIFI_PASSWORD},
+//	{"C3=4\r", "4"},
+//	{"C4=1\r", "1"},
 	{"C0\r", NULL},
 	{"C?\r", NULL},
 	{"Z5\r", NULL},
@@ -52,6 +56,53 @@ static const AT_Command wifi_setup_commands[] = {
 EMBOX_UNIT_INIT(eswifi_init);
 
 static int eswifi_xmit(struct net_device *dev, struct sk_buff *skb) {
+
+	return 0;
+}
+
+static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
+						struct cfg80211_connect_params *sme) {
+	char buf[64];
+	char rx_buffer[256];
+	int err;
+	char *essid = WIFI_NAME;
+	char *pwd = WIFI_PASSWORD;
+
+	/* Set SSID */
+	snprintf(buf, sizeof(buf), "C1=%s\r", essid);
+	//snprintf(buf, sizeof(buf),"%s\r", cmd_c1);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set SSID");
+		return 0;
+	}
+
+	/* Set passphrase */
+	snprintf(buf, sizeof(buf), "C2=%s\r", pwd);
+	//snprintf(buf, sizeof(buf),"%s\r", cmd_c2);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set SSID");
+		return 0;
+	}
+
+	/* Set Security type */
+	snprintf(buf, sizeof(buf), "C3=%u\r", WIFI_SECURITYTYPE);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set SSID");
+		return 0;
+	}
+
+	/* Join Network */
+	snprintf(buf, sizeof(buf), "C4=%u\r", 1/* connect*/);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable to set SSID");
+		return 0;
+	}
+
+	log_error("%s", rx_buffer);
 	return 0;
 }
 
@@ -70,7 +121,10 @@ static int eswifi_open(struct net_device *dev) {
     if (result != 0) {
 		log_info("ISM43362 initialization error");
         return -1;
-    } 	
+    }
+
+
+	eswifi_connect(NULL, dev, NULL);
 
 	for (int i = 0; wifi_setup_commands[i].command != NULL; i++){
 		wifi_request = ism43362_exchange((char *)wifi_setup_commands[i].command, strlen(wifi_setup_commands[i].command), rx_buffer, sizeof(rx_buffer));
@@ -140,14 +194,16 @@ static const struct net_driver eswifi_netdev_ops = {
 	.set_macaddr = eswifi_set_macaddr,
 };
 
-static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
-						struct cfg80211_connect_params *sme) {
+static int eswifi_scan(struct wiphy *wiphy, struct cfg80211_scan_request *request) {
 	return 0;
 }
 
 const struct cfg80211_ops eswifi_cfg80211_ops = {
 	.connect = eswifi_connect,
+	.scan = eswifi_scan,
 };
+
+struct wireless_dev eswifi_wdev;
 
 static int eswifi_init(void) {
 	struct net_device *nic;
@@ -156,6 +212,9 @@ static int eswifi_init(void) {
 	if (NULL == nic) {
 		return -ENOMEM;
 	}
+
+	nic->nd_ieee80211_ptr = &eswifi_wdev;
+	eswifi_wdev.netdev = nic;
 
 	nic->drv_ops = &eswifi_netdev_ops;
 	return inetdev_register_dev(nic);
