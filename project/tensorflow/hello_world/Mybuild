@@ -7,6 +7,6 @@ package project.tensorflow
 
 static module hello_world {
     
-source "^BUILD/extbld/project/tensorflow/hello_world"
+source "^project/tensorflow/hello_world/hello_world"
 
 }
