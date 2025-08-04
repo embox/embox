@@ -10,6 +10,11 @@
 #error "Do not include this file directly!"
 #endif
 
+#define __caller_saved_x_base    (REG_SIZE_F * 20)
+#define __callee_saved_x_base    (REG_SIZE_F * 12)
+#define __caller_saved_f_base    0
+#define __callee_saved_f_base    0
+
 /* Offsets of caller-saved X registers */
 #define __caller_saved_a0_offset   (REG_SIZE_X * 0)
 #define __caller_saved_a1_offset   (REG_SIZE_X * 1)
@@ -161,33 +166,33 @@
  */
 
 .macro store_caller_saved_x base, offset
-	__do_caller_saved_x REG_S, \base, \offset
+	__do_caller_saved_x REG_S, \base, \offset + __caller_saved_x_base
 .endm
 
 .macro load_caller_saved_x base, offset
-	__do_caller_saved_x REG_L, \base, \offset
+	__do_caller_saved_x REG_L, \base, \offset + __caller_saved_x_base
 .endm
 
 .macro store_callee_saved_x base, offset
-	__do_callee_saved_x REG_S, \base, \offset
+	__do_callee_saved_x REG_S, \base, \offset + __callee_saved_x_base
 .endm
 
 .macro load_callee_saved_x base, offset
-	__do_callee_saved_x REG_L, \base, \offset
+	__do_callee_saved_x REG_L, \base, \offset + __callee_saved_x_base
 .endm
 
 .macro store_caller_saved_f base, offset
-	__do_caller_saved_f REG_FS, \base, \offset
+	__do_caller_saved_f REG_FS, \base, \offset + __caller_saved_f_base
 .endm
 
 .macro load_caller_saved_f base, offset
-	__do_caller_saved_f REG_FL, \base, \offset
+	__do_caller_saved_f REG_FL, \base, \offset + __caller_saved_f_base
 .endm
 
 .macro store_callee_saved_f base, offset
-	__do_callee_saved_f REG_FS, \base, \offset
+	__do_callee_saved_f REG_FS, \base, \offset + __callee_saved_f_base
 .endm
 
 .macro load_callee_saved_f base, offset
-	__do_callee_saved_f REG_FL, \base, \offset
+	__do_callee_saved_f REG_FL, \base, \offset + __callee_saved_f_base
 .endm

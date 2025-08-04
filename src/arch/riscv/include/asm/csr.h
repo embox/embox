@@ -68,13 +68,11 @@
 #define CSR_STATUS_PP  CSR_STATUS_MPP
 #endif
 
-/* Floating point State */
-#define CSR_STATUS_FS_MASK  3UL
-#define CSR_STATUS_FS_SHIFT 13
-#define CSR_STATUS_FS_OFF   0
-#define CSR_STATUS_FS_INIT  1
-#define CSR_STATUS_FS_CLEAN 2
-#define CSR_STATUS_FS_DIRTY 3
+#define CSR_STATUS_FS_OFF   (0UL << 13)
+#define CSR_STATUS_FS_INIT  (1UL << 13)
+#define CSR_STATUS_FS_CLEAN (2UL << 13)
+#define CSR_STATUS_FS_DIRTY (3UL << 13)
+#define CSR_STATUS_FS_USED  (1UL << 14)
 
 #define CSR_IE_SIE (1UL << RISCV_IRQ_SOFT)  /* Software Interrupt Enable */
 #define CSR_IE_TIE (1UL << RISCV_IRQ_TIMER) /* Timer Interrupt Enable */
