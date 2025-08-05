@@ -90,8 +90,9 @@ copy_data_end:
 	call    cpudata_init
 #endif /* NCPU > 1 */
 
-#if __riscv_f
-	lui     t0, (CSR_STATUS_FS_INIT << (CSR_STATUS_FS_SHIFT - 12))
+#ifdef __riscv_f
+	/* Enable FPU */
+	lui     t0, (CSR_STATUS_FS_INIT >> 12)
 	csrs    CSR_STATUS, t0
 #endif
 

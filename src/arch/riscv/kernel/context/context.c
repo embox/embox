@@ -18,13 +18,12 @@ void context_init(struct context *ctx, unsigned int flags,
     void (*routine_fn)(void), void *sp) {
 	memset(ctx, 0, sizeof(*ctx));
 
-	ctx->x.sp = (unsigned long)sp;
-	ctx->x.ra = (unsigned long)routine_fn;
+	ctx->r.sp = (unsigned long)sp;
+	ctx->r.ra = (unsigned long)routine_fn;
 	ctx->status = csr_read(CSR_STATUS);
 
-#if REG_SIZE_F > 0
-	ctx->status &= ~CSR_STATUS_FS_DIRTY;
-	ctx->status |= CSR_STATUS_FS_INIT;
+#ifdef __riscv_f
+	ctx->status &= ~CSR_STATUS_FS_USED;
 #endif
 
 	if (flags & CONTEXT_IRQDISABLE) {
