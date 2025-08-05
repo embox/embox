@@ -4,14 +4,9 @@ package project.ism43362_eS_wifi.cmd
 @AutoCmd
 @Cmd(name = "ism43362_test", help = "B-L475E-IOT01A WiFi module test (lib based)")
 
-@BuildDepends(third_party.bsp.st_bsp_api)
 module ism43362_test {
-	option number wifi_spi_bus=3 
 	
 	source "ism43362_test.c"
-	source "ism43362.c"
 
-	depends third_party.bsp.st_bsp_api
+	depends project.ism43362_eS_wifi.libs.ism43362
 }
-
-
