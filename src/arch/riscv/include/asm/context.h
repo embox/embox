@@ -10,9 +10,19 @@
 #define RISCV_ASM_CONTEXT_H_
 
 #include <asm/asm.h>
+#include <util/binalign.h>
 
-#define CALLER_SAVED_REGS_SIZE (REG_SIZE_X * 15 + REG_SIZE_F * 20)
-#define CALLEE_SAVED_REGS_SIZE (REG_SIZE_X * 14 + REG_SIZE_F * 12)
+#if REG_SIZE_X > REG_SIZE_F
+#define CALLER_SAVED_REGS_SIZE \
+	binalign_bound(REG_SIZE_X * 15 + REG_SIZE_F * 20, REG_SIZE_X)
+#define CALLEE_SAVED_REGS_SIZE \
+	binalign_bound(REG_SIZE_X * 14 + REG_SIZE_F * 12, REG_SIZE_X)
+#else
+#define CALLER_SAVED_REGS_SIZE \
+	binalign_bound(REG_SIZE_X * 15 + REG_SIZE_F * 20, REG_SIZE_F)
+#define CALLEE_SAVED_REGS_SIZE \
+	binalign_bound(REG_SIZE_X * 14 + REG_SIZE_F * 12, REG_SIZE_F)
+#endif
 
 #ifdef __ASSEMBLER__
 #include "context_macros.s"
