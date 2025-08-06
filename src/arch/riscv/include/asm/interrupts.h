@@ -18,11 +18,4 @@
 #define enable_software_interrupts()  csr_set(CSR_IE, CSR_IE_SIE)
 #define disable_software_interrupts() csr_clear(CSR_IE, CSR_IE_SIE)
 
-#define RISCV_TIMER_IRQ_DEF(timer_handler, pclock_source)               \
-	int (*__riscv_timer_handler)(unsigned int, void *) = timer_handler; \
-	void *__riscv_timer_data = pclock_source;
-
-extern int (*__riscv_timer_handler)(unsigned int, void *) __attribute__((weak));
-extern void *__riscv_timer_data __attribute__((weak));
-
 #endif /* RISCV_INTERRUPTS_H_ */
