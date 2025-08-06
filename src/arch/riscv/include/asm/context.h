@@ -20,7 +20,7 @@
 #include <assert.h>
 #include <stddef.h>
 
-struct caller_saved_regs {
+struct __attribute__((packed)) caller_saved_regs {
 #if REG_SIZE_F == 4
 	float fa[8];
 	float ft[12];
