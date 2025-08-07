@@ -1,9 +1,15 @@
+# Embox user Makefile for hello_world_test program
+
+# Use Embox CC/CXX/CFLAGS/LDFLAGS by default if provided
 CXX ?= g++
 CC ?= gcc
 
+# Relative to this Makefile's location
 TFLM_BUILD_DIR ?= ../../../third-party/lib/tensorflow/build/tflite-micro
 TFLM_ROOT      ?= ../../../third-party/lib/tensorflow/tflite-micro
-TPARTY_DIR     ?= ../../../third-party/lib/tensorflow/third_party_static
+
+# Additional third-party static deps (should exist after tflm build)
+TPARTY_DIR ?= ../../../third-party/lib/tensorflow/third_party_static
 
 INCLUDES = \
   -I$(TFLM_ROOT) \
@@ -29,22 +35,19 @@ SRCS := hello_world_test.cc \
 
 OBJS := $(SRCS:.cc=.o)
 
-LIBTFLM := $(TFLM_BUILD_DIR)/libtflm.a
+TARGET := hello_world
 
-INSTALL_DIR    := $(EXTERNAL_BUILD_DIR)/project/tensorflow/hello_world/install
-CP_TARGET_DIR  := $(INSTALL_DIR)
+LIBTFLM := $(TFLM_BUILD_DIR)/libtflm.a
 
 .PHONY: all clean
 
-all: $(INSTALL_DIR)/hello_world.o
+all: $(TARGET)
 
-$(INSTALL_DIR)/hello_world.o: $(OBJS)
-	@mkdir -p $(INSTALL_DIR)
-	ld -r $^ -o $@
-	
+$(TARGET): $(OBJS) $(LIBTFLM)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $^ -o $@ -lm
 
 %.o: %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJS) $(INSTALL_DIR)/hello_world.o
+	rm -f $(TARGET) $(OBJS)
