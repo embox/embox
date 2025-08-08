@@ -70,11 +70,14 @@ third_party: clone
 	$(call download_zip,$(RUY_URL),$(MD5_RUY),$(THIRD_PARTY)/ruy)
 	$(call download_zip,$(KISSFFT_URL),$(MD5_KISSFFT),$(THIRD_PARTY)/kissfft)
 	$(call download_zip,$(FLATBUFFERS_URL),$(MD5_FLATBUFFERS),$(THIRD_PARTY)/flatbuffers)
+
+
 THIRD_PARTY_SRCS := \
   $(wildcard $(THIRD_PARTY)/ruy/*.cc) \
   $(wildcard $(THIRD_PARTY)/gemmlowp/*.cc) \
-  $(wildcard $(THIRD_PARTY)/kissfft/*.c) \
-  $(wildcard $(THIRD_PARTY)/flatbuffers/*.c)
+  $(wildcard $(THIRD_PARTY)/flatbuffers/*.c) \
+  $(wildcard $(THIRD_PARTY)/kissfft/kiss_fft.c) \
+  $(wildcard $(THIRD_PARTY)/kissfft/kiss_fftr.c) 
 
 SRCS := \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/micro             -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
@@ -93,6 +96,8 @@ SRCS := \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/schema             -name '*.cc' ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/compiler/mlir/lite/core/api   -name '*.cc' ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/compiler/mlir/lite/schema     -name '*.cc' ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/signal/micro -name '*.cc' ! -name 'test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/signal/src -name '*.cc' ! -name 'test.cc') \
   $(THIRD_PARTY_SRCS)
 
 OBJS := $(patsubst $(PKG_SOURCE_DIR)/%.cc, $(PKG_BUILD_DIR)/%.o, $(filter %.cc,$(SRCS))) \
