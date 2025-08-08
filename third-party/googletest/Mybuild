@@ -1,0 +1,7 @@
+package third_party
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+static module googletest {
+
+}
+
