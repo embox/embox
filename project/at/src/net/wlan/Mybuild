@@ -1,0 +1,11 @@
+package project.at.net.wlan
+
+module wlan_core {
+	source "wireless_ioctl.c"
+	source "wlan_core.c"
+
+	@IncludeExport(path="net/wlan/")
+  source "wireless_ioctl.h"
+	@IncludeExport(path="net/wlan/")
+	source "wlan_core.h"
+}
