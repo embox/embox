@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <kernel/thread/sync/mutex.h>
 #include <at/at_parser.h>
 
 /* Forward declarations */
@@ -68,6 +69,14 @@ struct at_emulator {
 
 	/* User data pointer */
 	void *user_data;
+
+	/* URC management */
+	char pending_urc[256];
+	bool has_pending_urc;
+	struct mutex urc_mutex;
+
+	/* Device poll function */
+	const char *(*device_poll)(struct at_emulator *emu);
 };
 
 /**
@@ -199,5 +208,25 @@ void at_emulator_set_user_data(at_emulator_t *emu, void *data);
  * @return User data pointer, NULL if not set
  */
 void *at_emulator_get_user_data(at_emulator_t *emu);
+
+/**
+ * @brief Push URC message to emulator
+ * 
+ * @param emu Emulator instance
+ * @param urc URC message string
+ */
+void at_emulator_push_urc(at_emulator_t *emu, const char *urc);
+
+
+/**
+ * @brief Poll for pending URC messages
+ * 
+ * Checks for device-specific events and pending URC messages.
+ * Should be called periodically for asynchronous event handling.
+ *
+ * @param emu Emulator instance
+ * @return URC string if available, NULL otherwise
+ */
+const char *at_emulator_poll(at_emulator_t *emu);
 
 #endif /* AT_EMULATOR_H */
