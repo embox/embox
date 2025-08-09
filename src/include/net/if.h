@@ -30,6 +30,7 @@
 #define IFF_PROMISC     0x0100 /* receive all packets */
 #define IFF_ALLMULTI    0x0200 /* receive all multicast packets */
 #define IFF_MULTICAST   0x1000 /* supports multicast */
+#define IFF_WIRELESS    0x8000 /* wireless interface */
 
 extern unsigned int if_nametoindex(const char *);
 
@@ -70,5 +71,20 @@ struct ifconf {
 
 #define ifc_buf ifc_ifcu.ifcu_buf /* buffer address	*/
 #define ifc_req ifc_ifcu.ifcu_req /* array of structures	*/
+
+struct iw_point {
+	void *pointer; /* Pointer to user space data */
+	int length;    /* Data length in bytes */
+	int flags;     /* Operation flags */
+};
+
+struct iwreq {
+	char ifr_name[IFNAMSIZ]; /* Interface name */
+	union {
+		struct iw_point essid; /* ESSID */
+		struct iw_point data;  /* Generic data */
+		int mode;              /* Operation mode */
+	} u;
+};
 
 #endif /* NET_IF_H_ */

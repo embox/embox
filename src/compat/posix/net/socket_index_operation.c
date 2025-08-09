@@ -14,6 +14,7 @@
 #include <poll.h>
 
 #include <net/socket/ksocket.h>
+#include <net/wlan/wireless_ioctl.h>
 
 #include <linux/net_tstamp.h>
 
@@ -91,6 +92,13 @@ static int socket_ioctl(struct idesc *idesc, int request, void *data) {
 	case SIOCGSTAMP:
 		memcpy(data, &sk->last_packet_tstamp, sizeof(struct timeval));
 		return 0;
+	case SIOCSIWESSID:
+	case SIOCGIWESSID:
+	case SIOCSIWMODE:
+	case SIOCGIWMODE:
+	case SIOCSIWSCAN:
+	case SIOCGIWSCAN:
+    return wireless_sock_ioctl(request, data);
 	default:
 		break;
 	}
