@@ -1,0 +1,8 @@
+package third_party.lib
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/flatbuffers_download/install/include")
+static module flatbuffers_download {
+	//@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+	//source "flatbuffers.a"
+}

@@ -1,0 +1,16 @@
+package third_party.lib.kissfft
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+static module kissfft_download {
+
+}
+
+@BuildDepends(kissfft_download)
+static module libkissfft {
+//	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
+
+	@NoRuntime depends kissfft_download
+}
+
+
+
