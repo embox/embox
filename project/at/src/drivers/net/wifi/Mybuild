@@ -17,3 +17,12 @@ module esp32c3_emulator {
 
 	depends project.at.driver.at.at_emulator
 }
+
+module esp32c3_wifi {
+  source "esp32c3/esp32c3_wifi.c"
+
+	@IncludeExport(path="wifi")
+	source "esp32c3/esp32c3_wifi.h"
+
+  depends project.at.driver.net.wifi.wifi_core
+}
