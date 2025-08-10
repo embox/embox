@@ -3,12 +3,12 @@
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
  */
-#include "libfdt_env.h"
+#include "include/libfdt_env.h"
 
-#include <fdt.h>
-#include <libfdt.h>
+#include "include/fdt.h"
+#include "include/libfdt.h"
 
-#include "libfdt_internal.h"
+#include "include/libfdt_internal.h"
 
 int fdt_check_full(const void *fdt, size_t bufsize)
 {

@@ -1,4 +1,4 @@
-package third_party.lib.libfdt
+package third_party.libfdt
 
 @Build(stage=2)
 @IncludePath("/include/")

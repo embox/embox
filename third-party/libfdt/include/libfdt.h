@@ -1,6 +1,6 @@
 /* SPDX-License-Identifier: (GPL-2.0-or-later OR BSD-2-Clause) */
-#ifndef LIBFDT_H
-#define LIBFDT_H
+#ifndef THIRD_PARTY_LIBFDT_INCLUDE_LIBFDT_H
+#define THIRD_PARTY_LIBFDT_INCLUDE_LIBFDT_H
 /*
  * libfdt - Flat Device Tree manipulation
  * Copyright (C) 2006 David Gibson, IBM Corporation.
