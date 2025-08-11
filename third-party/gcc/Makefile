@@ -34,11 +34,7 @@ ifeq (arm,$(EMBOX_ARCH))
 GCC_TARGET := arm-none-eabi
 else ifeq (mips,$(EMBOX_ARCH))
 GCC_TARGET := mips-mti-elf
-else ifeq (mips64,$(EMBOX_ARCH))
-GCC_TARGET := mips-mti-elf
 else ifeq (riscv,$(EMBOX_ARCH))
-GCC_TARGET := riscv64-unknown-elf
-else ifeq (riscv64,$(EMBOX_ARCH))
 GCC_TARGET := riscv64-unknown-elf
 else ifeq (sparc,$(EMBOX_ARCH))
 GCC_TARGET := sparc-elf

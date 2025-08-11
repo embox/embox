@@ -37,14 +37,10 @@ else ifeq ($(EMBOX_ARCH), arm)
 OLIBM_ARCH := arm
 else ifeq ($(EMBOX_ARCH), mips)
 OLIBM_ARCH := mips
-else ifeq ($(EMBOX_ARCH), mips64)
-OLIBM_ARCH := mips
 else ifeq ($(EMBOX_ARCH), ppc)
 OLIBM_ARCH := powerpc
 OLIBM_CPPFLAGS := -D__powerpc__
 else ifeq ($(EMBOX_ARCH), riscv)
-OLIBM_ARCH := riscv64
-else ifeq ($(EMBOX_ARCH), riscv64)
 OLIBM_ARCH := riscv64
 else ifeq ($(EMBOX_ARCH), usermode86)
 OLIBM_ARCH := i387
