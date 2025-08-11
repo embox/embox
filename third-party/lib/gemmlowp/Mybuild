@@ -1,0 +1,6 @@
+package third_party.lib
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+static module gemmlowp {
+
+}
