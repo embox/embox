@@ -1,0 +1,184 @@
+package third_party.lib.tflite_micro
+
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/tflite_micro/libtflm/install/src")
+module tflite_micro_build_headers {
+}
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/tflite_micro/libtflm/install/include")
+@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(third_party.lib.flatbuffers_download)
+@BuildDepends(third_party.lib.gemmlowp)
+@BuildDepends(tflite_micro_build_headers)
+static module libtflm {
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/")
+	source 
+		"test_helpers.cc",
+		"micro_time.cc",
+		"fake_micro_context.cc",
+		"micro_op_resolver.cc",
+		"micro_interpreter_graph.cc",
+		"micro_allocation_info.cc",
+		"debug_log.cc",
+		"micro_log.cc",
+		"flatbuffer_utils.cc",
+		"micro_context.cc",
+		"micro_utils.cc",
+		"recording_micro_allocator.cc",
+		"memory_helpers.cc",
+		"micro_profiler.cc",
+		"mock_micro_graph.cc",
+		"micro_resource_variable.cc",
+		"micro_allocator.cc",
+		"micro_interpreter_context.cc",
+		"hexdump.cc",
+		"test_helper_custom_ops.cc",
+		"system_setup.cc",
+		"micro_interpreter.cc"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/arena_allocator")
+	source
+		"persistent_arena_buffer_allocator.cc",
+		"single_arena_buffer_allocator.cc",
+		"non_persistent_arena_buffer_allocator.cc",
+		"recording_single_arena_buffer_allocator.cc"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/memory_planner")
+	source
+		"linear_memory_planner.cc",
+		"non_persistent_buffer_planner_shim.cc",
+		"greedy_memory_planner.cc"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/tflite_bridge")
+	source
+		"flatbuffer_conversions_bridge.cc",
+		"micro_error_reporter.cc"
+
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/kernels")
+	source
+		"mirror_pad.cc",
+		"logistic_common.cc",
+		"pooling_common.cc",
+		"strided_slice_common.cc",
+		"leaky_relu_common.cc",
+		"prelu.cc",
+		"fully_connected.cc",
+		"call_once.cc",
+		"space_to_batch_nd.cc",
+		"select.cc",
+		"transpose_conv.cc",
+		"detection_postprocess.cc",
+		"reshape_common.cc",
+		"while.cc",
+		"decompress_common.cc",
+		"mul_common.cc",
+		"depthwise_conv_common.cc",
+		"elementwise.cc",
+		"svdf_common.cc",
+		"add_n.cc",
+		"if.cc",
+		"depth_to_space.cc",
+		"conv_common.cc",
+		"kernel_util.cc",
+		"quantize.cc",
+		"circular_buffer_common.cc",
+		"activations.cc",
+		"gather_nd.cc",
+		"broadcast_to.cc",
+		"unpack.cc",
+		"logistic.cc",
+		"broadcast_args.cc",
+		"detection_postprocess_flexbuffers_generated_data.cc",
+		"reduce_common.cc",
+		"batch_matmul.cc",
+		"maximum_minimum.cc",
+		"hard_swish.cc",
+		"depthwise_conv.cc",
+		"fill.cc",
+		"shape.cc",
+		"ethosu.cc",
+		"cast.cc",
+		"lstm_eval_common.cc",
+		"sub_common.cc",
+		"resize_nearest_neighbor.cc",
+		"embedding_lookup.cc",
+		"resize_bilinear.cc",
+		"concatenation.cc",
+		"quantize_common.cc",
+		"circular_buffer.cc",
+		"elu.cc",
+		"l2_pool_2d.cc",
+		"read_variable.cc",
+		"micro_tensor_utils.cc",
+		"activations_common.cc",
+		"neg.cc",
+		"squared_difference.cc",
+		"var_handle.cc",
+		"sub.cc",
+		"softmax.cc",
+		"transpose.cc",
+		"batch_matmul_common.cc",
+		"pad.cc",
+		"expand_dims.cc",
+		"add.cc",
+		"cumsum.cc",
+		"pooling.cc",
+		"add_common.cc",
+		"ceil.cc",
+		"batch_to_space_nd.cc",
+		"conv.cc",
+		"gather.cc",
+		"comparisons.cc",
+		"floor_div.cc",
+		"transpose_common.cc",
+		"strided_slice.cc",
+		"mul.cc",
+		"zeros_like.cc",
+		"tanh.cc",
+		"unidirectional_sequence_lstm.cc",
+		"assign_variable.cc",
+		"softmax_common.cc",
+		"dequantize.cc",
+		"hard_swish_common.cc",
+		"space_to_depth.cc",
+		"svdf.cc",
+		"split_v.cc",
+		"log_softmax.cc",
+		"exp.cc",
+		"arg_min_max.cc",
+		"logical.cc",
+		"fully_connected_common.cc",
+		"reverse.cc",
+		"reshape.cc",
+		"prelu_common.cc",
+		"conv_test_common.cc",
+		"pad_common.cc",
+		"logical_common.cc",
+		"split.cc",
+		"dequantize_common.cc",
+		"pack.cc",
+		"circular_buffer_flexbuffers_generated_data.cc",
+		"squeeze.cc",
+		"round.cc",
+		"lstm_eval.cc",
+		"reduce.cc",
+		"decompress.cc",
+		"leaky_relu.cc",
+		"kernel_runner.cc",
+		"slice.cc",
+		"floor_mod.cc",
+		"floor.cc",
+		"l2norm.cc",
+		"div.cc"
+
+
+	@NoRuntime depends tflite_micro_build_headers
+
+	@NoRuntime depends third_party.lib.gemmlowp
+	@NoRuntime depends embox.lib.libstdcxx
+	@NoRuntime depends third_party.compiler_headers
+	@NoRuntime depends third_party.lib.flatbuffers_download
+}
