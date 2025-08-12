@@ -9,6 +9,7 @@ module backend {
 @BuildDepends(backend)
 @BuildDepends(embox.lib.libstdcxx)
 @BuildDepends(third_party.compiler_headers)
+@BuildDepends(third_party.lib.flatbuffers_download)
 static module build {
 	option string flatbuffers_version="23.5.26"
 	option string gemmlowp_commit="719139ce755a0f31cbf1c37f7f98adcc7fc9f425"
@@ -32,6 +33,7 @@ static module build {
 	source "^BUILD/extbld/third_party/lib/tensorflow/third_party_static/gemmlowp"
 	source "^BUILD/extbld/third_party/lib/tensorflow/third_party_static/kissfft"
 
+	@NoRuntime depends third_party.lib.flatbuffers_download
 }
 
 @LinkerSection(text="tflm_text", rodata="tflm_rodata", data="tflm_data", bss="tflm_bss")
