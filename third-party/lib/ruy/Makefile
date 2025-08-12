@@ -52,7 +52,9 @@ $(BUILD) :
 
 $(INSTALL) :
 	$(MKDIR) $(PKG_INSTALL_DIR)/include/ruy ;
+	$(MKDIR) $(PKG_INSTALL_DIR)/include/ruy/profiler ;
 	cp -r $(PKG_SOURCE_DIR)/ruy/*.h $(PKG_INSTALL_DIR)/include/ruy/ ;
+	cp -r $(PKG_SOURCE_DIR)/ruy/profiler/*.h $(PKG_INSTALL_DIR)/include/ruy/profiler ;
 	cd $(RUY_BUILD_DIR) && ( \
 		$(MAKE) install; \
 	)
