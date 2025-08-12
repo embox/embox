@@ -12,4 +12,9 @@ $(BUILD) :
 	touch $@
 
 $(INSTALL) :
+	$(MKDIR) $(PKG_INSTALL_DIR)/src ;
+	cp -r $(PKG_SOURCE_DIR)/* $(PKG_INSTALL_DIR)/src/ ;
+	$(MKDIR) $(PKG_INSTALL_DIR)/include ;
+	cp -r $(PKG_SOURCE_DIR)/fixedpoint $(PKG_INSTALL_DIR)/include/ ;
+	cp -r $(PKG_SOURCE_DIR)/public/* $(PKG_INSTALL_DIR)/include/ ;
 	touch $@

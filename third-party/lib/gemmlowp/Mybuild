@@ -1,5 +1,6 @@
 package third_party.lib
 
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/gemmlowp/install/src")
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
 static module gemmlowp {
 
