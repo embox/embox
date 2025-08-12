@@ -12,6 +12,7 @@ module tflite_micro_build_headers {
 @BuildDepends(third_party.lib.gemmlowp)
 @BuildDepends(third_party.lib.ruy.libruy)
 @BuildDepends(tflite_micro_build_headers)
+@BuildDepends(third_party.lib.kissfft.libkissfft)
 static module libtflm {
 
 	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
@@ -180,8 +181,127 @@ static module libtflm {
 		"div.cc"
 
 
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/core/api")
+	source
+		"flatbuffer_conversions.cc",
+		"tensor_utils.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/core/c")
+	source
+		"common.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/kernels/internal")
+	source
+		"portable_tensor_utils.cc",
+		"reference/portable_tensor_utils.cc",
+		"reference/comparisons.cc",
+		"tensor_ctypes.cc",
+		"quantization_util.cc",
+		"runtime_shape.cc",
+		"tensor_utils.cc",
+		"common.cc"
+
+	
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/kernels")
+	source
+		"kernel_util.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite")
+	source
+		"array.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/compiler/mlir/lite/core/api")
+	source
+		"error_reporter.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/compiler/mlir/lite/schema")
+	source
+		"schema_utils.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/signal/micro/kernels")
+	source
+		"overlap_add.cc",
+		"energy_flexbuffers_generated_data.cc",
+		"filter_bank.cc",
+		"delay.cc",
+		"fft_flexbuffers_generated_data.cc",
+		"framer_test.cc",
+		"stacker_flexbuffers_generated_data.cc",
+		"window_flexbuffers_generated_data.cc",
+		"pcan_test.cc",
+		"rfft.cc",
+		"delay_test.cc",
+		"framer_flexbuffers_generated_data.cc",
+		"filter_bank_log.cc",
+		"delay_flexbuffers_generated_data.cc",
+		"filter_bank_spectral_subtraction_flexbuffers_generated_data.cc",
+		"pcan.cc",
+		"energy_test.cc",
+		"filter_bank_test.cc",
+		"window.cc",
+		"window_test.cc",
+		"filter_bank_log_flexbuffers_generated_data.cc",
+		"pcan_flexbuffers_generated_data.cc",
+		"energy.cc",
+		"filter_bank_spectral_subtraction_test.cc",
+		"irfft.cc",
+		"stacker_test.cc",
+		"filter_bank_flexbuffers_generated_data.cc",
+		"stacker.cc",
+		"framer.cc",
+		"filter_bank_square_root_test.cc",
+		"filter_bank_log_test.cc",
+		"fft_test.cc",
+		"fft_auto_scale_kernel.cc",
+		"xtensa/fft_auto_scale_kernel.cc",
+		"xtensa/filter_bank_square_root.cc",
+		"overlap_add_test.cc",
+		"fft_auto_scale_common.cc",
+		"filter_bank_square_root.cc",
+		"filter_bank_square_root_common.cc",
+		"overlap_add_flexbuffers_generated_data.cc",
+		"filter_bank_spectral_subtraction.cc"
+
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/signal/src")
+	source
+		"overlap_add.cc",
+		"rfft_float.cc",
+		"square_root_64.cc",
+		"irfft_int16.cc",
+		"filter_bank.cc",
+		"log.cc",
+		"kiss_fft_wrappers/kiss_fft_int32.cc",
+		"kiss_fft_wrappers/kiss_fft_int16.cc",
+		"kiss_fft_wrappers/kiss_fft_float.cc",
+		"msb_32.cc",
+		"square_root_32.cc",
+		"rfft_int32.cc",
+		"filter_bank_log.cc",
+		"rfft_int16.cc",
+		"circular_buffer.cc",
+		"window.cc",
+		"fft_auto_scale.cc",
+		"energy.cc",
+		"pcan_argc_fixed.cc",
+		"msb_64.cc",
+		"irfft_int32.cc",
+		"max_abs.cc",
+		"filter_bank_square_root.cc",
+		"irfft_float.cc",
+		"filter_bank_spectral_subtraction.cc"
+
 	@NoRuntime depends tflite_micro_build_headers
 
+	@NoRuntime depends third_party.lib.kissfft.libkissfft
 	@NoRuntime depends third_party.lib.gemmlowp
 	@NoRuntime depends third_party.lib.ruy.libruy
 	@NoRuntime depends embox.lib.libstdcxx
