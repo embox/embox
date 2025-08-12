@@ -10,6 +10,7 @@ module tflite_micro_build_headers {
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(third_party.lib.flatbuffers_download)
 @BuildDepends(third_party.lib.gemmlowp)
+@BuildDepends(third_party.lib.ruy.libruy)
 @BuildDepends(tflite_micro_build_headers)
 static module libtflm {
 
@@ -39,6 +40,7 @@ static module libtflm {
 		"system_setup.cc",
 		"micro_interpreter.cc"
 
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/arena_allocator")
 	source
 		"persistent_arena_buffer_allocator.cc",
@@ -46,17 +48,20 @@ static module libtflm {
 		"non_persistent_arena_buffer_allocator.cc",
 		"recording_single_arena_buffer_allocator.cc"
 
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/memory_planner")
 	source
 		"linear_memory_planner.cc",
 		"non_persistent_buffer_planner_shim.cc",
 		"greedy_memory_planner.cc"
 
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/tflite_bridge")
 	source
 		"flatbuffer_conversions_bridge.cc",
 		"micro_error_reporter.cc"
 
+	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/kernels")
 	source
 		"mirror_pad.cc",
@@ -178,6 +183,7 @@ static module libtflm {
 	@NoRuntime depends tflite_micro_build_headers
 
 	@NoRuntime depends third_party.lib.gemmlowp
+	@NoRuntime depends third_party.lib.ruy.libruy
 	@NoRuntime depends embox.lib.libstdcxx
 	@NoRuntime depends third_party.compiler_headers
 	@NoRuntime depends third_party.lib.flatbuffers_download
