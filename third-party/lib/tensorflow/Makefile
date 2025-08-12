@@ -90,9 +90,8 @@ SRCS := \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/core/c             -name '*.cc' ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/kernels/internal   -name '*.cc' ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/kernels            -maxdepth 1 -name '*.cc' ! -name '*test.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/c                  -name '*.c'  ! -name '*test.cc') \
-  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite                    -maxdepth 1 -name '*.c'  ! -name '*test.cc') \
-  $(PKG_SOURCE_DIR)/tensorflow/lite/array.cc \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/c                  -name '*.cc'  ! -name '*test.cc') \
+  $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite                    -maxdepth 1 -name '*.cc'  ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/lite/schema             -name '*.cc' ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/compiler/mlir/lite/core/api   -name '*.cc' ! -name '*test.cc') \
   $(shell find $(PKG_SOURCE_DIR)/tensorflow/compiler/mlir/lite/schema     -name '*.cc' ! -name '*test.cc') \
