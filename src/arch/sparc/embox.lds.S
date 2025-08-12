@@ -1,4 +1,3 @@
-
 #include <asm-generic/embox.lds.h>
 
 #include <framework/mod/options.h>
@@ -9,7 +8,10 @@
 #define ARCH_DATA_ALIGNMENT PAGE_SIZE()
 
 OUTPUT_FORMAT("elf32-sparc", "elf32-sparc", "elf32-sparc")
+
+#undef sparc
 OUTPUT_ARCH(sparc)
+
 ENTRY(_start)
 
 MEMORY {

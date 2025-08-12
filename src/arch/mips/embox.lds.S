@@ -1,7 +1,8 @@
-
 #include <asm-generic/embox.lds.h>
 
+#undef mips
 OUTPUT_ARCH(mips)
+
 ENTRY(_start)
 
 MEMORY {

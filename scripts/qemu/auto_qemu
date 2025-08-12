@@ -44,7 +44,17 @@ get_user_empty_guess() {
 }
 
 guess_arch() {
-	cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p';
+	arch=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p')
+	if [ "$arch" == "mips" ] || [ "$arch" == "riscv" ]; then
+		file ./build/base/bin/embox | grep -q "ELF 64-bit"
+		if [ $? -eq 0 ]; then
+			echo "${arch}64"
+		else
+			echo "$arch"
+		fi
+	else
+		echo "$arch"
+	fi	
 }
 get_user_empty_guess AUTOQEMU_ARCH guess_arch
 

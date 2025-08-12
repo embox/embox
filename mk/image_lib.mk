@@ -71,13 +71,13 @@ $(OBJ_DIR)/%.o : $(GEN_DIR)/%.cc
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
-	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+	$(CPP) $(flags_before) $(CFLAGS) -P -D__LDS__ $(CPPFLAGS) $(flags) \
 	-I$(SRCGEN_DIR) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
 $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
-	$(CPP) $(flags_before) -P -undef -D__LDS__ $(CPPFLAGS) $(flags) \
+	$(CPP) $(flags_before) $(CFLAGS) -P -D__LDS__ $(CPPFLAGS) $(flags) \
 	-I$(SRCGEN_DIR) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<

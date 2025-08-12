@@ -1,4 +1,3 @@
-
 #include <asm-generic/embox.lds.h>
 
 #include <framework/mod/options.h>
@@ -8,7 +7,10 @@
 #define ARCH_DATA_ALIGNMENT PAGE_SIZE()
 
 OUTPUT_FORMAT("elf32-i386", "elf32-i386", "elf32-i386")
+
+#undef i386
 OUTPUT_ARCH(i386)
+
 ENTRY(_start)
 
 MEMORY {
