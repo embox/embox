@@ -1,14 +1,25 @@
 package embox.test.smp
 
-@AutoCmd
-@Cmd(name = "test_smp", help="Running multiple cores")
-module test_smp {
-    source "test_smp.c"
+module simult_thread_test {
+	option string log_level="LOG_NONE"
+
+	source "simult_thread_test.c"
+
 	depends embox.arch.smp
 }
 
-module simult_thread_test {
-	option string log_level="LOG_NONE"
-	source "simult_thread_test.c"
+@AutoCmd
+@Cmd(name="test_smp", help="Running multiple cores")
+module test_smp {
+    source "test_smp.c"
+
+	depends embox.arch.smp
+}
+
+@AutoCmd
+@Cmd(name="run_cmd_smp", help="")
+module run_cmd_smp {
+	source "run_cmd_smp.c"
+
 	depends embox.arch.smp
 }
