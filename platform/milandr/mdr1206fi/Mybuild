@@ -1,0 +1,5 @@
+package platform.milandr.mdr1206fi
+
+module platform_init extends platform.platform_init {
+	source "platform_init.c"
+}
