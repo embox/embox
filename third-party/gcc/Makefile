@@ -70,6 +70,7 @@ $(CONFIGURE) :
 			--disable-libmudflap \
 			--disable-libquadmath \
 			--disable-libstdcxx-pch \
+			--disable-libstdcxx-verbose \
 			--disable-libssp \
 			--disable-bootstrap \
 			--without-headers \
