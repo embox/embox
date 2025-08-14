@@ -20,8 +20,10 @@ PROVIDE(_ram_size = LENGTH(RAM));
 SECTIONS {
 	.text : {
 		KEEP(*(.init));
+#ifdef __EMBOX_PLATFORM__mikron_mik32__	
 		. = ALIGN(0x80); /* FIXUP for mik32 */
-		KEEP(*(.mik32_fixup));
+		KEEP(*(.mik32_trap_code));
+#endif	
 		KEEP(*(.inchip_flash_section));
 		*(.text)
 		*(.text.*)

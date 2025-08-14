@@ -18,9 +18,6 @@ C_ENTRY(__ap_trampoline):
 	la      gp, __global_pointer$
 
 	la      t0, riscv_trap_handler
-#if OPTION_GET(BOOLEAN,mik32_fixup)
-	la      t0, _start
-#endif
 	csrw    CSR_TVEC, t0
 
 	/* register cpuid with small stack */

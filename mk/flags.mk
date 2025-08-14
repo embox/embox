@@ -35,6 +35,10 @@ CPP     ?= $(CC) -E
 
 CPPFLAGS += -D__EMBOX_VERSION__=\"$(EMBOX_VERSION)\"
 
+ifdef PLATFORM
+CPPFLAGS += -D__EMBOX_PLATFORM__$(subst -,_,$(PLATFORM))__
+endif
+
 comma_sep_list = $(subst $(\s),$(,),$(strip $1))
 
 COVERAGE_CFLAGS ?= -finstrument-functions \
@@ -170,7 +174,7 @@ cppflags_fn = \
 	-I$(call $1,$(SRCGEN_DIR))/include \
 	-I$(call $1,$(SRCGEN_DIR))/src/include \
 	$(addprefix -I,$(call __srcgen_includes_fn,$1)) \
-	$(if $(value PLATFORM),-I$(call $1,$(PLATFORM_DIR))/$(PLATFORM)/include) \
+	$(if $(value PLATFORM_VENDOR),-I$(call $1,$(PLATFORM_DIR))/$(PLATFORM_VENDOR)/include) \
 	-I$(call $1,$(SRC_DIR))/compat/linux/include \
 	-I$(call $1,$(SRC_DIR))/compat/posix/include \
 	-I$(call $1,$(SRC_DIR))/compat/bsd/include \
