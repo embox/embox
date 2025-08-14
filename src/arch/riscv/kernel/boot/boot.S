@@ -36,9 +36,11 @@ _start:
 	 * interrupt occurs, the CPU will "call" the function given by this
 	 * register.
 	 */
-	la      t0, riscv_trap_handler
-#if OPTION_GET(BOOLEAN, mik32_fixup)
+
+#ifdef __EMBOX_PLATFORM__mikron_mik32__
 	la      t0, _start
+#else
+	la      t0, riscv_trap_handler
 #endif
 	csrw    CSR_TVEC, t0
 
@@ -54,9 +56,10 @@ _start:
 	 * go to secondary_hart_loop.
 	 */
 	csrr    t0, mhartid
-#if !OPTION_GET(BOOLEAN, mik32_fixup)
+
+#ifndef __EMBOX_PLATFORM__mikron_mik32__
 	bnez    t0, secondary_hart_loop
-#endif /* !OPTION_GET(BOOLEAN, mik32_fixup) */
+#endif
 
 #endif
 	/* Set up stack pointer. */
@@ -112,15 +115,12 @@ secondary_hart_loop:
 	wfi
 	j       secondary_hart_loop
 
-#if OPTION_GET(BOOLEAN, mik32_fixup)
-.section .mik32_fixup, "ax"
-
-.globl _mik32_fixup_interrupt
+#ifdef __EMBOX_PLATFORM__mikron_mik32__
+.section .mik32_trap_code, "ax"
 //.org _start + 0xC0
 .org 0x40
-_mik32_fixup_interrupt:
+__mik32_trap_entry:
 .cfi_startproc
 	j       riscv_trap_handler
 .cfi_endproc
 #endif
-
