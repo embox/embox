@@ -18,6 +18,7 @@
 #include <net/inetdevice.h>
 #include <net/netdevice.h>
 #include <net/util/macaddr.h>
+#include <net/cfg80211.h>
 
 #include <lib/libds/array.h>
 
@@ -30,6 +31,7 @@ static inline void print_usage(void) {
 
 int main(int argc, char *argv[]) {
 	struct in_device *iface;
+	struct cfg80211_scan_request req;
 
 	iface = NULL;
 
@@ -45,7 +47,18 @@ int main(int argc, char *argv[]) {
 
 	iface = inetdev_get_by_name(argv[1]);
 	if (!strcmp("scan", argv[2])) {
+		struct cfg80211_ssid ssids[32] = {0};
+		int i;
+
+		req.ssids = ssids;
+		req.n_ssids = 32;
+
 		printf("scanning %s\n", iface->dev->name);
+		cfg80211_scan(iface->dev, &req);
+		printf("Found %d ssid:\n", req.n_ssids);
+		for (i = 0; i < req.n_ssids; i ++) {
+			printf("\t%d. %s\n", i, req.ssids[i].ssid);
+		}
 	}
 	return 0;
 }
