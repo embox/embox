@@ -87,6 +87,13 @@
 #define SIOCSARP           _IOW('s', 20, struct arpreq)     /* Set arp entry */
 #define SIOCGARP           _IOR('s', 21, struct arpreq)     /* Get arp entry */
 #define SIOCDARP           _IOW('s', 22, struct arpreq)     /* Delete arp entry */
+#define SIOCGIWNAME				 _IOR('s', 23, char[IFNAMSIZ])    /* get name == wireless protocol */
+#define SIOCSIWESSID   		 _IOW('s', 24, struct ifreq)      /* set ESSID */
+#define SIOCGIWESSID   		 _IOR('s', 25, struct ifreq)      /* get ESSID */
+#define SIOCSIWMODE    		 _IOW('s', 26, int)               /* set operation mode */
+#define SIOCGIWMODE    		 _IOR('s', 27, int)               /* get operation mode */
+#define SIOCSIWSCAN    		 _IOW('s', 28, struct ifreq)      /* trigger scanning */
+#define SIOCGIWSCAN    		 _IOR('s', 29, struct ifreq)      /* get scanning results */
 
 /**
  * TTY Control Operations

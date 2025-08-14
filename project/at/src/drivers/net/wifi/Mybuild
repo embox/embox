@@ -1,0 +1,28 @@
+package project.at.driver.net.wifi
+
+module wifi_core {
+	source "wifi_core.c"
+
+	@IncludeExport(path="wifi")
+	source "wifi_core.h"
+
+	depends project.at.net.wlan.wlan_core
+}
+
+module esp32c3_emulator {
+	source "esp32c3/emulator/esp32c3_emulator.c"
+
+	@IncludeExport(path="wifi")
+	source "esp32c3/emulator/esp32c3_emulator.h"
+
+	depends project.at.driver.at.at_emulator
+}
+
+module esp32c3_wifi {
+  source "esp32c3/esp32c3_wifi.c"
+
+	@IncludeExport(path="wifi")
+	source "esp32c3/esp32c3_wifi.h"
+
+  depends project.at.driver.net.wifi.wifi_core
+}

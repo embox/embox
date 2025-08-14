@@ -138,7 +138,8 @@ typedef struct net_device {
 #if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	net_namespace_p net_ns;
 #endif
-
+	const struct wireless_ops *wireless_ops;  /* wireless operations */
+	void *wireless_priv;                      /* wireless driver private data */
 //#if IS_ENABLED(CONFIG_CFG80211)
 	struct wireless_dev	*nd_ieee80211_ptr;
 //#endif
