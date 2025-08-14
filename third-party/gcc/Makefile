@@ -54,6 +54,12 @@ else
 LIBSTDCXX_CXXFLAGS :=
 endif
 
+ifeq (1,$(call option_get,BOOLEAN,optspace))
+GCC_CONFIG_OPTSPACE := --enable-target-optspace --disable-libstdcxx-verbose
+else
+GCC_CONFIG_OPTSPACE :=
+endif
+
 $(CONFIGURE) :
 	$(MKDIR) $(GCC_BUILD_DIR) && cd $(GCC_BUILD_DIR) && ( \
 		$(PKG_SOURCE_DIR)/configure \
@@ -70,15 +76,14 @@ $(CONFIGURE) :
 			--disable-libmudflap \
 			--disable-libquadmath \
 			--disable-libstdcxx-pch \
-			--disable-libstdcxx-verbose \
 			--disable-libssp \
 			--disable-bootstrap \
 			--without-headers \
 			--without-newlib \
 			--enable-languages=c,c++ \
-			--enable-soft-float \
 			--enable-threads=posix \
 			--enable-hosted-libstdcxx \
+			$(GCC_CONFIG_OPTSPACE) \
 			--with-gxx-include-dir=$(PKG_INSTALL_DIR)/include \
 			target_configargs="CC=$(EMBOX_GCC) CXX=$(EMBOX_GXX)" \
 			CFLAGS_FOR_TARGET="$(GCC_CPPFLAGS) $(LIBGCC_CPPFLAGS)" \

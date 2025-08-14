@@ -42,6 +42,7 @@ module compiler_headers extends third_party.compiler_headers {
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 static module gcc_build {
 	option string gcc_version="9.3.0"
+	option boolean optspace=true
 
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.proc.atexit_api
