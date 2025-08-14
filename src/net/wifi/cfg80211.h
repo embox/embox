@@ -221,4 +221,6 @@ extern int cfg80211_register_netdevice(struct net_device *dev);
 
 extern int cfg80211_connect(struct net_device *dev, struct cfg80211_connect_params *sme);
 
+extern int cfg80211_scan(struct net_device *dev, struct cfg80211_scan_request *request);
+
 #endif /* EMBOX_NET_WIFI_CFG80211_H_ */

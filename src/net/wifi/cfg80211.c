@@ -91,3 +91,29 @@ int cfg80211_connect(struct net_device *dev, struct cfg80211_connect_params *sme
 
 	return ret;
 }
+
+int	cfg80211_scan(struct net_device *dev, struct cfg80211_scan_request *request) {
+    struct wireless_dev *wdev;
+    struct cfg80211_registered_device *rdev;
+    const struct cfg80211_ops *cfg80211_ops;
+    int ret;
+
+    if (NULL == dev) {
+        return -EINVAL;
+    }
+
+    wdev = dev->nd_ieee80211_ptr;
+    rdev = wiphy_to_rdev(wdev->wiphy);
+    if (NULL == rdev) {
+        return -EINVAL;
+    }
+
+    cfg80211_ops = rdev->ops;
+    if (NULL == cfg80211_ops) {
+        return -EINVAL;
+    }
+
+    ret = cfg80211_ops->scan(wdev->wiphy, request);
+
+    return ret;
+}
