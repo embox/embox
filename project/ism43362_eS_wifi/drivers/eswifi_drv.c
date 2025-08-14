@@ -101,7 +101,7 @@ static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 		return 0;
 	}
 
-	/* Join Network */
+	/* Join Network (DHCP enabled)*/
 	snprintf(buf, sizeof(buf), "C4=%u\r", 1/* connect*/);
 	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
 	if (err < 0) {
@@ -109,7 +109,7 @@ static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 		return 0;
 	}
 
-	log_error("%s", rx_buffer);
+	log_debug("%s", rx_buffer);
 
 	for (int i = 0; wifi_setup_commands[i].command != NULL; i++){
 		wifi_request = ism43362_exchange((char *)wifi_setup_commands[i].command, strlen(wifi_setup_commands[i].command), rx_buffer, sizeof(rx_buffer));
@@ -167,18 +167,17 @@ static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 }
 
 static int eswifi_open(struct net_device *dev) {
-
+	int res;
 
 	log_info("Starting Wi-Fi initialization");
-	int result = ism43362_init();
-    if (result != 0) {
-		log_info("ISM43362 initialization error");
+
+	res = ism43362_init();
+    if (res != 0) {
+		log_error("ISM43362 initialization failed error %d", res);
         return -1;
     }
 
-
-
-	log_info("Wi-Fi initialization finished");
+	log_info("Wi-Fi initialization finished OK");
 	
 	return 0;
 }
@@ -194,7 +193,55 @@ static const struct net_driver eswifi_netdev_ops = {
 	.set_macaddr = eswifi_set_macaddr,
 };
 
-static int eswifi_scan(struct wiphy *wiphy, struct cfg80211_scan_request *request) {
+
+static inline
+int eswifi_parse_scan_list(char *buf, int buf_len,
+								struct cfg80211_ssid *ssids, int n_ssids) {
+	int i;
+	int j;
+
+	for (i = 0; i < n_ssids; i++) {
+		/* fmt => #001,"SSID",MACADDR,RSSI,BITRATE,MODE,SECURITY,BAND,CHANNEL */
+		while(('#' != *buf) && ('\0' != *buf) && (buf_len > 0) ) {
+			buf_len --;
+			buf++;
+		};
+		if (*buf != '#') {
+			break;
+		}
+		buf += 6; /* sizeof("001,\"") */
+		buf_len -= 6;
+		for (j = 0; j < sizeof(ssids[i].ssid); j++) {
+			if (*buf == '\"') {
+				while(('\n' != *buf) && ('\0' != *buf) && (buf_len > 0)) {
+					buf_len --;
+					buf++;
+				};
+				break;
+			}
+			ssids[i].ssid[j] = *buf++;
+			buf_len --;
+		}
+	}
+
+	return i;
+}
+
+static int eswifi_scan(struct wiphy *wiphy, struct cfg80211_scan_request *req) {
+	char cmd[] = "F0\r";
+	char rx_buffer[2048];
+	int err;
+
+	err = ism43362_exchange(cmd, sizeof(cmd), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("failed scan");
+		return 0;
+	}
+
+	log_debug("%s", rx_buffer);
+
+	req->n_ssids = eswifi_parse_scan_list(rx_buffer, err, req->ssids, req->n_ssids);
+
 	return 0;
 }
 
