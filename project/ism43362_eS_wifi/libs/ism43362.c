@@ -35,7 +35,7 @@ static inline int gpio_setup_out_mode(unsigned short port, gpio_mask_t pins, int
 	return ret;
 }
 
-static int SPI_setup(void){
+static inline int spi_pins_setup(void){
 
  	/* configure SPI soft NSS pin for WiFi module */
 	gpio_setup_out_mode(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);
@@ -59,7 +59,7 @@ int ism43362_init() {
 	gpio_setup_out_mode(CONF_SPI_PIN_RESET_PORT, CONF_SPI_PIN_RESET_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);	// Reset pin
 	gpio_setup_out_mode(CONF_SPI_PIN_WIFI_LED_PORT, CONF_SPI_PIN_WIFI_LED_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH); // WiFi LED pin
 
-	for (int res = SPI_setup(); res;) {return -10500;}
+	spi_pins_setup();
 
 	// Get SPI device pointer
 	if (!(spi_dev = spi_dev_by_id(WIFI_SPI_BUS))){
@@ -208,19 +208,3 @@ int ism43362_exchange(char *txb, int txl, char *rxb, int rxl) {
 
 	return rxc;
 }
-/*	Calls ism43362_exchange and parse the answer
-	returns received payload bytes count (may be 0) or negative error code.
-		In particular, if rxb is not enough for full answer, return value is -payload count, means you have to continue with txb=NULL.
-		???? The problem is the ending "\r\nOK\r\n> ", so if 0 < payload count < -10 (in result of ism43362_interact(NULL, ...)), it means you have to cut previous result
-	payload starts at rxb[0]
-	if there was an asinchronous message inside module answer, 
-	    it stored for mr command, also flag "ASINC_MESSAGE" is raised
-	???if rxl < 0 all special symbols except \r, \n, and \t substained with "\\x%02x" 4-character format
-	if rxb is not enough for full answer, return value is -payload count, means you have to continue with txb=NULL..
-	the problem is the ending "\r\nOK\r\n> ", so if 0 < payload count < -10 (in result of ism43362_interact(NULL, ...)), 
-		it means you have to cut previous result
-*/
-int ism43362_interact(char *txb, int txc, char *rxb, int rxl) {
-	return -500; // Stub
-}
-
