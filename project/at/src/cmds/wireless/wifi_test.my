@@ -1,0 +1,23 @@
+package project.at.cmd
+
+@AutoCmd
+@Cmd(name = "wifi_test",
+	help = "esp32c3 wifi intergrate test utility",
+	man = '''
+		NAME
+			wifi_test - esp32c3 wifi intergrate test utility
+		SYNOPSIS
+			wifi_test [options]
+		OPTIONS
+			-t          Run integration tests using PTY
+			-h          Show help message
+		AUTHORS
+			Peize Li
+	''')
+module wifi_test {
+	source "wifi_test.c"
+	
+	depends project.at.driver.at.at_parser  
+	depends project.at.driver.at.at_emulator  
+	depends project.at.driver.at.at_client
+}
