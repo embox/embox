@@ -1,0 +1,9 @@
+package project.at.driver.net.wifi
+
+module wifi_core {
+	source "wifi_core.c"
+
+	@IncludeExport(path="wifi")
+	source "wifi_core.h"
+
+}
