@@ -1,0 +1,10 @@
+package project.at.driver.net.wifi.esp32c3
+
+module esp32c3_emulator {
+	source "emulator/esp32c3_emulator.c"
+
+	@IncludeExport(path="wifi/esp32c3")
+	source "emulator/esp32c3_emulator.h"
+
+	depends project.at.driver.at.at_emulator
+}
