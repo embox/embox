@@ -208,6 +208,11 @@ at_emulator_t *at_emulator_create(void) {
 		return NULL;
 	}
 
+	/* Initialize URC management */
+	mutex_init(&emu->urc_mutex);
+	emu->has_pending_urc = false;
+	emu->device_poll = NULL;
+
 	at_emulator_register_basic_commands(emu);
 
 	return emu;
@@ -524,4 +529,49 @@ void at_emulator_set_user_data(at_emulator_t *emu, void *data) {
 
 void *at_emulator_get_user_data(at_emulator_t *emu) {
 	return emu ? emu->user_data : NULL;
+}
+
+/* Push URC message to emulator */
+void at_emulator_push_urc(at_emulator_t *emu, const char *urc) {
+	if (!emu || !urc) {
+		return;
+	}
+	
+	mutex_lock(&emu->urc_mutex);
+	
+	/* Simple implementation: overwrite any existing URC */
+	strncpy(emu->pending_urc, urc, sizeof(emu->pending_urc) - 1);
+	emu->pending_urc[sizeof(emu->pending_urc) - 1] = '\0';
+	emu->has_pending_urc = true;
+	
+	mutex_unlock(&emu->urc_mutex);
+}
+
+/* Poll for pending URC messages */
+const char *at_emulator_poll(at_emulator_t *emu) {
+	static char urc_buffer[256];
+	
+	if (!emu) {
+		return NULL;
+	}
+	
+	/* First check device-specific polling */
+	if (emu->device_poll) {
+		const char *device_urc = emu->device_poll(emu);
+		if (device_urc) {
+			return device_urc;
+		}
+	}
+	
+	/* Then check generic URC queue */
+	mutex_lock(&emu->urc_mutex);
+	if (emu->has_pending_urc) {
+		strcpy(urc_buffer, emu->pending_urc);
+		emu->has_pending_urc = false;
+		mutex_unlock(&emu->urc_mutex);
+		return urc_buffer;
+	}
+	mutex_unlock(&emu->urc_mutex);
+	
+	return NULL;
 }
