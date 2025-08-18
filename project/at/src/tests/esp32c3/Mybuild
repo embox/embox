@@ -1,0 +1,13 @@
+package project.at.test.esp32c3
+
+module esp32c3_emulator_test {
+  source "esp32c3_emulator_test.c"
+
+  depends project.at.driver.net.wifi.esp32c3.esp32c3_emulator
+}
+
+module esp32c3_wifi_test {
+  source "esp32c3_wifi_test.c"
+
+  depends project.at.driver.net.wifi.esp32c3.esp32c3_wifi
+}

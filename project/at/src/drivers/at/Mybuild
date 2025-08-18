@@ -23,5 +23,7 @@ module at_client {
 	source "at_client.h"
 
 	depends at_parser 
-	depends embox.compat.posix.LibPosix  
+	depends embox.compat.posix.LibPosix
+	depends embox.kernel.time.jiffies  
 }
+
