@@ -1,12 +1,16 @@
-package project.tensorflow
-
-@App
+package project.tensorflow.hello_world
 @AutoCmd
-@CxxCmd(name = "hello_world", help = "sine value prediction using vanilla neural network")
-@Build(stage = 2, script = "$(EXTERNAL_MAKE)")
+@Cmd(name = "hello_world", help = "sine value prediction using vanilla neural network")
+@Build(stage=2)
+@BuildDepends(third_party.lib.tflite_micro.libtflm)
+@BuildDepends(third_party.lib.tflite_micro.tflite_micro_build_headers)
 
-static module hello_world {
-    
-source "^project/tensorflow/hello_world/hello_world"
+module hello_world {
 
+
+    @Cflags("-Wno-undef")
+    @Cflags("-Imodels")
+    source "hello_world.cc"
+    source "models/hello_world_float_model_data.cc"
+    source "models/hello_world_int8_model_data.cc"
 }
