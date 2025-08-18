@@ -1,0 +1,21 @@
+;<Request ID="2" Action="CREATE"><FB Name="EMB_RES" Type="EMB_RES" /></Request>
+EMB_RES;<Request ID="3" Action="CREATE"><FB Name="INT2INT" Type="INT2INT" /></Request>
+EMB_RES;<Request ID="4" Action="WRITE"><Connection Source="1" Destination="INT2INT.IN" /></Request>
+EMB_RES;<Request ID="5" Action="CREATE"><FB Name="INT2INT_1" Type="INT2INT" /></Request>
+EMB_RES;<Request ID="6" Action="WRITE"><Connection Source="1" Destination="INT2INT_1.IN" /></Request>
+EMB_RES;<Request ID="7" Action="CREATE"><FB Name="F_ADD" Type="F_ADD" /></Request>
+EMB_RES;<Request ID="8" Action="CREATE"><FB Name="INT2INT_2" Type="INT2INT" /></Request>
+EMB_RES;<Request ID="9" Action="CREATE"><FB Name="OUT_ANY_CONSOLE" Type="OUT_ANY_CONSOLE" /></Request>
+EMB_RES;<Request ID="10" Action="WRITE"><Connection Source="1" Destination="OUT_ANY_CONSOLE.QI" /></Request>
+EMB_RES;<Request ID="11" Action="WRITE"><Connection Source="&apos;Hello&apos;" Destination="OUT_ANY_CONSOLE.LABEL" /></Request>
+EMB_RES;<Request ID="12" Action="CREATE"><Connection Source="INT2INT.CNF" Destination="INT2INT_1.REQ" /></Request>
+EMB_RES;<Request ID="13" Action="CREATE"><Connection Source="INT2INT_1.CNF" Destination="F_ADD.REQ" /></Request>
+EMB_RES;<Request ID="14" Action="CREATE"><Connection Source="F_ADD.CNF" Destination="INT2INT_2.REQ" /></Request>
+EMB_RES;<Request ID="15" Action="CREATE"><Connection Source="INT2INT_2.CNF" Destination="OUT_ANY_CONSOLE.REQ" /></Request>
+EMB_RES;<Request ID="16" Action="CREATE"><Connection Source="START.WARM" Destination="INT2INT.REQ" /></Request>
+EMB_RES;<Request ID="17" Action="CREATE"><Connection Source="START.COLD" Destination="INT2INT.REQ" /></Request>
+EMB_RES;<Request ID="18" Action="CREATE"><Connection Source="INT2INT.OUT" Destination="F_ADD.IN1" /></Request>
+EMB_RES;<Request ID="19" Action="CREATE"><Connection Source="INT2INT_1.OUT" Destination="F_ADD.IN2" /></Request>
+EMB_RES;<Request ID="20" Action="CREATE"><Connection Source="F_ADD.OUT" Destination="INT2INT_2.IN" /></Request>
+EMB_RES;<Request ID="21" Action="CREATE"><Connection Source="INT2INT_2.OUT" Destination="OUT_ANY_CONSOLE.IN" /></Request>
+EMB_RES;<Request ID="21" Action="START"/>
