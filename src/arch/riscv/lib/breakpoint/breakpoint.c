@@ -5,21 +5,20 @@
  * @author Aleksey Zhmulin
  * @date 21.08.23
  */
+
 #include <assert.h>
 #include <stdint.h>
 
 #include <asm/csr.h>
 #include <debug/breakpoint.h>
-#include <riscv/entry.h>
+#include <riscv/exception.h>
 
 static bpt_handler_t __bpt_handler;
 
-static int riscv_bpt_excpt_handler(long unsigned nr, void *data) {
+static void riscv_bpt_excpt_handler(struct excpt_context *ctx) {
 	assert(__bpt_handler);
 
-	__bpt_handler(data);
-
-	return 0;
+	__bpt_handler((struct bpt_context *)ctx);
 }
 
 void bpt_handler_set(bpt_handler_t handler) {

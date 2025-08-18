@@ -18,9 +18,10 @@
 #define __context_status_offset (CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 0)
 #define __context_epc_offset    (CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 1)
 #define __context_ra_offset     (CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 2)
+#define __context_sp_offset     (CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 3)
 
 /* The stack pointer must always be 16-byte aligned when a function is entered */
-#define __context_size binalign_bound((CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 3), 16)
+#define __context_size binalign_bound((CALLER_SAVED_REGS_SIZE + REG_SIZE_X * 4), 16)
 
 .section .text
 .global riscv_trap_handler
@@ -61,6 +62,7 @@ riscv_trap_handler:
 
 	/* Exception handling */
 	mv      a1, sp
+	REG_S   sp, __context_sp_offset(a1)
 	call    riscv_exception_handler
 	j       riscv_trap_exit
 2:

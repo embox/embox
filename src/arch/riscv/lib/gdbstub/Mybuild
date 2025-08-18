@@ -4,5 +4,5 @@ module gdbstub extends embox.lib.gdbstub {
 	source "gdbstub.c"
 	source "gdbstub.h"
 
-	depends embox.arch.riscv.breakpoint
+	@NoRuntime depends embox.arch.riscv.breakpoint
 }

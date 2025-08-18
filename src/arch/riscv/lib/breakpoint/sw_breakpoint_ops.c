@@ -19,14 +19,14 @@ static const bpt_instr_t bpt_instr = 0x00100073; /* ebreak */
 #endif
 
 static void riscv_sw_bpt_set(struct bpt *bpt) {
-	bpt->orig = *(bpt_instr_t *)bpt->addr;
-	*(bpt_instr_t *)bpt->addr = bpt_instr;
+	bpt->orig = *(volatile bpt_instr_t *)bpt->addr;
+	*(volatile bpt_instr_t *)bpt->addr = bpt_instr;
 
 	riscv_icache_flush();
 }
 
 static void riscv_sw_bpt_remove(struct bpt *bpt) {
-	*(bpt_instr_t *)bpt->addr = bpt->orig;
+	*(volatile bpt_instr_t *)bpt->addr = bpt->orig;
 
 	riscv_icache_flush();
 }

@@ -14,9 +14,9 @@
 
 #define GDB_FEATURE_STR "l<target><architecture>riscv</architecture></target>"
 
-#define GDB_BPT_CTX_PC(ctx) (void *)(((struct bpt_context *)(ctx))->pc)
+#define GDB_BPT_CTX_PC(ctx) (void *)(((struct bpt_context *)(ctx))->excpt.epc)
 
-#define GDB_BPT_CTX_SP(ctx) (void *)(((struct bpt_context *)(ctx))->r[1])
+#define GDB_BPT_CTX_SP(ctx) (void *)(((struct bpt_context *)(ctx))->excpt.sp)
 
 #define GDB_IRQ_CTX_PC(ctx) GDB_BPT_CTX_PC(ctx)
 

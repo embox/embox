@@ -4,9 +4,10 @@ module breakpoint extends embox.lib.breakpoint {
 	source "breakpoint.c"
 	source "breakpoint.h"
 
-	depends embox.lib.sw_breakpoint_ops
-	depends embox.lib.hw_breakpoint_ops
-	depends embox.lib.watchpoint_ops
+	@NoRuntime depends embox.lib.sw_breakpoint_ops
+	@NoRuntime depends embox.lib.hw_breakpoint_ops
+	@NoRuntime depends embox.lib.watchpoint_ops
+	@NoRuntime depends embox.arch.riscv.kernel.exception_table
 }
 
 module sw_breakpoint_ops extends embox.lib.sw_breakpoint_ops {

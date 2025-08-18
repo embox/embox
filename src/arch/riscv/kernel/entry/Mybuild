@@ -5,9 +5,13 @@ module entry {
 	option number tvec_alignment=2
 
 	@IncludeExport(path="riscv")
-	source "entry.h"
+	source "exception.h"
 
 	source "entry.S"
 	source "exc_handler.c"
 	source "irq_handler.c"
+}
+
+module exception_table {
+	source "exception_table.c"
 }
