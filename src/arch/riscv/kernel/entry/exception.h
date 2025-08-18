@@ -12,7 +12,7 @@
 #include <asm/context.h>
 
 struct excpt_context {
-	struct callee_saved_regs r;
+	struct caller_saved_regs r;
 	unsigned long status;
 	unsigned long epc;
 	unsigned long ra;
