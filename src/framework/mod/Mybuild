@@ -6,7 +6,7 @@ module mod {
 	option boolean use_mod_names=true
 	option boolean use_mod_labels=true
 	option boolean use_mod_logger=true
-	option boolean use_mod_depends=true
+	option boolean use_mod_depends=false
 	option boolean use_cmd_details=true
 
 	source "core.c"
