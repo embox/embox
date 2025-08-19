@@ -1,6 +1,8 @@
 package third_party.lib.tflite_micro
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/tflite_micro/libtflm/install/src")
+@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/kissfft_download/install/include")
+
 module tflite_micro_build_headers {
 }
 
@@ -12,13 +14,14 @@ module tflite_micro_build_headers {
 @BuildDepends(third_party.lib.gemmlowp)
 @BuildDepends(third_party.lib.ruy.libruy)
 @BuildDepends(tflite_micro_build_headers)
-@BuildDepends(third_party.lib.kissfft.libkissfft)
+@BuildDepends(third_party.lib.kissfft_download)
+@BuildDepends(third_party.lib.libkissfft)
 static module libtflm {
 
 	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/micro/")
 	source 
-		"test_helpers.cc",
+
 		"micro_time.cc",
 		"fake_micro_context.cc",
 		"micro_op_resolver.cc",
@@ -37,7 +40,7 @@ static module libtflm {
 		"micro_allocator.cc",
 		"micro_interpreter_context.cc",
 		"hexdump.cc",
-		"test_helper_custom_ops.cc",
+
 		"system_setup.cc",
 		"micro_interpreter.cc"
 
@@ -160,7 +163,7 @@ static module libtflm {
 		"reverse.cc",
 		"reshape.cc",
 		"prelu_common.cc",
-		"conv_test_common.cc",
+	
 		"pad_common.cc",
 		"logical_common.cc",
 		"split.cc",
@@ -233,37 +236,36 @@ static module libtflm {
 		"filter_bank.cc",
 		"delay.cc",
 		"fft_flexbuffers_generated_data.cc",
-		"framer_test.cc",
+		
 		"stacker_flexbuffers_generated_data.cc",
 		"window_flexbuffers_generated_data.cc",
-		"pcan_test.cc",
+		
 		"rfft.cc",
-		"delay_test.cc",
+		
 		"framer_flexbuffers_generated_data.cc",
 		"filter_bank_log.cc",
 		"delay_flexbuffers_generated_data.cc",
 		"filter_bank_spectral_subtraction_flexbuffers_generated_data.cc",
 		"pcan.cc",
-		"energy_test.cc",
-		"filter_bank_test.cc",
+	
+	
 		"window.cc",
-		"window_test.cc",
+		
 		"filter_bank_log_flexbuffers_generated_data.cc",
 		"pcan_flexbuffers_generated_data.cc",
 		"energy.cc",
-		"filter_bank_spectral_subtraction_test.cc",
+
 		"irfft.cc",
-		"stacker_test.cc",
+		
 		"filter_bank_flexbuffers_generated_data.cc",
 		"stacker.cc",
 		"framer.cc",
-		"filter_bank_square_root_test.cc",
-		"filter_bank_log_test.cc",
-		"fft_test.cc",
+	
+	
 		"fft_auto_scale_kernel.cc",
 		"xtensa/fft_auto_scale_kernel.cc",
 		"xtensa/filter_bank_square_root.cc",
-		"overlap_add_test.cc",
+
 		"fft_auto_scale_common.cc",
 		"filter_bank_square_root.cc",
 		"filter_bank_square_root_common.cc",
@@ -272,6 +274,7 @@ static module libtflm {
 
 	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/signal/src")
+
 	source
 		"overlap_add.cc",
 		"rfft_float.cc",
@@ -301,10 +304,12 @@ static module libtflm {
 
 	@NoRuntime depends tflite_micro_build_headers
 
-	@NoRuntime depends third_party.lib.kissfft.libkissfft
+	@NoRuntime depends third_party.lib.libkissfft
+	@NoRuntime depends third_party.lib.kissfft_download
 	@NoRuntime depends third_party.lib.gemmlowp
 	@NoRuntime depends third_party.lib.ruy.libruy
 	@NoRuntime depends embox.lib.libstdcxx
 	@NoRuntime depends third_party.compiler_headers
 	@NoRuntime depends third_party.lib.flatbuffers_download
 }
+
