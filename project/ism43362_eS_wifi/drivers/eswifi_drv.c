@@ -275,6 +275,7 @@ static const struct cfg80211_ops eswifi_cfg80211_ops = {
 };
 
 static struct wireless_dev eswifi_wdev;
+extern const struct sock_family_ops eswifi_sock_family_ops ;
 
 static int eswifi_init(void) {
 	struct net_device *nic;
@@ -296,6 +297,8 @@ static int eswifi_init(void) {
 	nic->nd_ieee80211_ptr = &eswifi_wdev;
 	eswifi_wdev.netdev = nic;
 	eswifi_wdev.wiphy = wiphy;
+
+	nic->nd_net_offload = &eswifi_sock_family_ops;
 
 	nic->drv_ops = &eswifi_netdev_ops;
 
