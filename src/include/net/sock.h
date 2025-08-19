@@ -95,6 +95,7 @@ struct sock {
 #if defined(NET_NAMESPACE_ENABLED) && (NET_NAMESPACE_ENABLED == 1)
 	net_namespace_p net_ns;
 #endif
+	struct net_device *sock_netdev;
 };
 
 static inline int sock_err(struct sock *sk) {
