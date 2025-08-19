@@ -1,0 +1,8 @@
+package embox.driver.interrupt
+
+module riscv_clic extends irqctrl_api {
+	option number base_addr
+
+	source "riscv_clic.h"
+	source "riscv_clic.c"
+}
