@@ -2,4 +2,13 @@ package platform.milandr.mdr1206fi
 
 module platform_init extends platform.platform_init {
 	source "platform_init.c"
+
+	@NoRuntime depends mdr1206fi_clocks_init
+	@NoRuntime depends embox.driver.clk.milandr.mdr1206_rst_clk
+}
+
+static module mdr1206fi_clocks_init {
+	source "mdr1206fi_platform_clock.c"
+	source "mdr1206fi_rst_clk.c"
+	source "mdr1206fi_system.c"
 }
