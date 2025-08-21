@@ -23,8 +23,11 @@
 #define CYCLE_PER_NSEC (RTC_FREQ / NSEC_PER_SEC)
 #define CYCLE_PER_TICK (RTC_FREQ / JIFFIES_PERIOD)
 
+static uint64_t prev_mtimecmp;
+static uint64_t curr_mtimecmp;
+
 static cycle_t riscv_mtimer_get_cycles(struct clock_source *cs) {
-	return (cycle_t)clint_get_time();
+	return (cycle_t)(clint_get_time() - prev_mtimecmp);
 }
 
 static uint64_t riscv_mtimer_get_time(struct clock_source *cs) {
@@ -56,13 +59,14 @@ CLOCK_SOURCE_DEF(riscv_mtimer, NULL, NULL, &riscv_mtimer_event_device,
     &riscv_mtimer_counter_device);
 
 void riscv_mtimer_irq_handler(void) {
-	static uint64_t mtimecmp;
 	unsigned int ticks;
 
-	ticks = (clint_get_time() - mtimecmp) / CYCLE_PER_TICK + 1;
+	ticks = (clint_get_time() - curr_mtimecmp) / CYCLE_PER_TICK + 1;
 
-	mtimecmp += ticks * CYCLE_PER_TICK;
-	clint_set_timer(mtimecmp);
+	prev_mtimecmp = curr_mtimecmp;
+	curr_mtimecmp += ticks * CYCLE_PER_TICK;
+
+	clint_set_timer(curr_mtimecmp);
 
 	clock_handle_ticks(&CLOCK_SOURCE_NAME(riscv_mtimer), ticks);
 }
