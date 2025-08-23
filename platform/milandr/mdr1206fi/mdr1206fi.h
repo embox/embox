@@ -25,6 +25,12 @@
 
 #include <stdint.h>
 
+#undef USE_MDR32F02
+#undef USE_MDR1206AFI
+
+#define USE_MDR1206FI       1
+#define USE_MDR1206         1
+
 /* Clock generators frequencies if the SPL is not used. */
 /** HSI clock value [Hz].
     Default: 8000000 (8MHz). */
@@ -151,10 +157,6 @@
 #define CHIP_ID_MDR1206FI  217UL
 #define CHIP_ID_MDR1206AFI 215UL
 
-#undef USE_MDR32F02
-#undef USE_MDR1206AFI
-
-#define USE_MDR1206FI       1
 
 #if defined(USE_MDR32F02)
 #define CLK_FREQUENCY_MAX_Hz 60000000UL
