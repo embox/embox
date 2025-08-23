@@ -24,12 +24,9 @@
 #ifndef MDR32VF0xI_PORT_H
 #define MDR32VF0xI_PORT_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /* Includes ------------------------------------------------------------------*/
-#include "rst_clk.h"
+
 #include "mdr1206fi.h"
 
 /** @addtogroup MDR32VF0xI_StdPeriph_Driver MDR32VF0xI Standard Peripheral Driver
@@ -188,88 +185,18 @@ typedef struct {
                                               This parameter can be a value of the @ref PORT_PullDown_TypeDef. */
 } PORT_InitTypeDef;
 
-/** @} */ /* End of the group PORT_Exported_Types */
 
-/** @defgroup PORT_Exported_Defines PORT Exported Defines
- * @{
- */
 
-/** @defgroup PORT_JTAG_define PORT JTAG Defines
- * @{
- */
-#if defined(USE_JTAG)
-#define PORT_JTAG      MDR_PORTA /*!< The port containing JTAG interface. */
-#define PORT_JTAG_MASK (PORT_OE_OE6 | PORT_OE_OE7 | \
-                        PORT_OE_OE8 | PORT_OE_OE9) /*!< JTAG pins: OE, ANALOG mask. */
-#define PORT_JTAG_MASK1 (PORT_FUNC_MODE6_Msk | PORT_FUNC_MODE7_Msk | \
-                         PORT_FUNC_MODE8_Msk | PORT_FUNC_MODE9_Msk) /*!< JTAG pins: FUNC mask. */
-#define PORT_JTAG_MASK2 (PORT_PWR_PWR6 | PORT_PWR_PWR7 | \
-                         PORT_PWR_PWR8 | PORT_PWR_PWR9) /*!< JTAG pins: PWR mask. */
-#if defined(USE_MDR32F02_REV_2) || defined(USE_MDR1206FI) || defined(USE_MDR1206AFI) || defined(USE_MDR1206)
-#define PORT_JTAG_MASK3 (PORT_PULL_PULL_DOWN6 | PORT_PULL_PULL_DOWN7 | \
-                         PORT_PULL_PULL_DOWN8 | PORT_PULL_PULL_DOWN9 | \
-                         PORT_PULL_PULL_UP6 | PORT_PULL_PULL_UP7 |     \
-                         PORT_PULL_PULL_UP8 | PORT_PULL_PULL_UP9) /*!< JTAG pins: PULL mask. */
-#else
-#define PORT_JTAG_MASK3 (PORT_PULL_PULL_DOWN6 | PORT_PULL_PULL_DOWN7 | \
-                         PORT_PULL_PULL_DOWN8 | PORT_PULL_PULL_DOWN9) /*!< JTAG pins: PULL mask. */
-#endif
-
-#define JTAG_PINS(PORT)  (((PORT) == PORT_JTAG) ? PORT_JTAG_MASK : 0U)
-#define JTAG_PINS1(PORT) (((PORT) == PORT_JTAG) ? PORT_JTAG_MASK1 : 0U)
-#define JTAG_PINS2(PORT) (((PORT) == PORT_JTAG) ? PORT_JTAG_MASK2 : 0U)
-#define JTAG_PINS3(PORT) (((PORT) == PORT_JTAG) ? PORT_JTAG_MASK3 : 0U)
-
-#else
 
 #define JTAG_PINS(PORT)  0U
 #define JTAG_PINS1(PORT) 0U
 #define JTAG_PINS2(PORT) 0U
 #define JTAG_PINS3(PORT) 0U
 
-#endif
 
 #define IS_NOT_JTAG_PIN(PORT, PIN) (((PIN) & JTAG_PINS(PORT)) == 0x00)
 
-/** @} */ /* End of the group PORT_JTAG_define */
 
-/** @} */ /* End of the group PORT_Exported_Defines */
-
-/** @defgroup PORT_Exported_Functions PORT Exported Functions
- * @{
- */
-
-void PORT_DeInit(MDR_PORT_TypeDef* PORTx);
 void PORT_Init(MDR_PORT_TypeDef* PORTx, const PORT_InitTypeDef* PORT_InitStruct);
-void PORT_StructInit(PORT_InitTypeDef* PORT_InitStruct);
-
-BitStatus PORT_ReadInputDataBit(MDR_PORT_TypeDef* PORTx, PORT_Pin_TypeDef PORT_Pin);
-uint32_t  PORT_ReadInputData(MDR_PORT_TypeDef* PORTx);
-
-BitStatus PORT_ReadOutputDataBit(MDR_PORT_TypeDef* PORTx, PORT_Pin_TypeDef PORT_Pin);
-uint32_t  PORT_ReadOutputData(MDR_PORT_TypeDef* PORTx);
-
-void PORT_SetBits(MDR_PORT_TypeDef* PORTx, uint32_t PORT_Pin);
-void PORT_ResetBits(MDR_PORT_TypeDef* PORTx, uint32_t PORT_Pin);
-
-void PORT_WriteBit(MDR_PORT_TypeDef* PORTx, uint32_t PORT_Pin, BitStatus BitVal);
-
-void PORT_Write(MDR_PORT_TypeDef* PORTx, uint32_t PortVal);
-
-void PORT_ToggleBit(MDR_PORT_TypeDef* PORTx, uint32_t PORT_Pin);
-
-/** @} */ /* End of the group PORT_Exported_Functions */
-
-/** @} */ /* End of the group PORT */
-
-/** @} */ /* End of the group MDR32VF0xI_StdPeriph_Driver */
-
-#ifdef __cplusplus
-} // extern "C" block end
-#endif
 
 #endif /* MDR32VF0xI_PORT_H */
-
-/*********************** (C) COPYRIGHT 2025 Milandr ****************************
- *
- * END OF FILE MDR32VF0xI_port.h */
