@@ -1,0 +1,10 @@
+package embox.driver.gpio
+
+module milandr_gpio {
+	option number gpio_chip_id = 0
+
+	source "milandr_gpio.c"
+
+	depends embox.driver.gpio.core
+}
+
