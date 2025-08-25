@@ -29,6 +29,7 @@
 #include <kernel/critical.h>
 #include <drivers/irqctrl.h>
 #include <hal/ipl.h>
+#include <hal/cpu.h>
 #include <mem/objalloc.h>
 
 
@@ -182,6 +183,7 @@ void irq_dispatch(unsigned int irq_nr) {
 	}
 }
 
+#ifdef SMP /* XXX */
 void irq_enable_attached(void) {
 	for(int irq_nr = 0; irq_nr < IRQ_NRS_TOTAL; irq_nr++) {
 		if(irq_table[irq_nr]) {
@@ -189,3 +191,4 @@ void irq_enable_attached(void) {
 		}
 	}
 }
+#endif
