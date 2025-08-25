@@ -36,8 +36,10 @@
 #include <kernel/thread.h>
 #include <kernel/task.h>
 #include <kernel/lthread/lthread.h>
+#ifdef SMP /* XXX */
 #include <kernel/cpu/cpu.h>
 #include <kernel/time/timer.h>
+#endif
 
 // XXX
 #ifndef __barrier
@@ -356,6 +358,7 @@ static inline void __sched_wakeup_smp_inactive(struct schedee *s) {
 int __sched_wakeup(struct schedee *s) {
 	int was_waiting = (s->waiting && s->waiting != TW_SMP_WAKING);
 
+#ifdef SMP /* XXX */
 	if(s->type == SCHEDEE_THREAD){
 #if 0
 		struct thread * th = mcast_out(s, struct thread, schedee);
@@ -367,6 +370,7 @@ int __sched_wakeup(struct schedee *s) {
 		// struct lthread * lth = mcast_out(s, struct lthread, schedee);
 		log_debug("<lthread> schedee %#x, event %#x, cpu %d", s, mcast_out(s, struct lthread, schedee)->run, cpu_get_id());
 	}
+#endif	
 
 
 	if (was_waiting)
@@ -418,6 +422,8 @@ static void sched_ticker_update(void) {
 	cur = schedee_get_current();
 
 	next = runq_get_next(&rq.queue);
+	
+#ifdef SMP /* XXX */
 	/**
 	 * If runq_get_next() returns NULL which means the current cpu can't
 	 * get any threads to run. But it doesn't mean other cpu can not get
@@ -425,7 +431,6 @@ static void sched_ticker_update(void) {
 	 * no need for thread switching, just delete the sched_tick in current
 	 */
 	if(next == NULL) {
-#ifdef SMP
 		next = runq_get_next_ignore_affinity(&rq.queue);
 		extern void smp_send_resched(int cpu_id);
 		if(next != NULL) {
@@ -445,10 +450,10 @@ static void sched_ticker_update(void) {
 				}
 			}
 		}
-#endif
 		sched_ticker_del();
 		return;
 	}
+#endif
 
 	cur_prio = schedee_priority_get(cur);
 	next_prio = schedee_priority_get(next);
@@ -520,7 +525,10 @@ static void __schedule(int preempt) {
 		spin_unlock(&rq.lock);
 
 		schedee_set_current(next);
-		log_debug("prev: %#x, next: %#x, cpu: %d", prev, next, cpu_get_id());
+		log_debug("prev: %#x, next: %#x", prev, next);
+#ifdef SMP /* XXX */	
+		log_debug("cpu: %d", cpu_get_id());
+#endif	
 
 		/* next->process has to enable ipl. */
 		next = next->process(prev, next);

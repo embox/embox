@@ -52,8 +52,9 @@ struct sys_timer_sharing {
  */
 struct sys_timer {
 	sys_timer_queue_t lnk;
-#ifdef SMP
+#ifdef SMP /* XXX */
 	sys_timer_queue_t multi_lnk[NCPU];
+	struct sys_timer_sharing *timer_sharing;
 #endif
 	struct dlist_head st_wait_link;
 
@@ -64,8 +65,6 @@ struct sys_timer {
 	void *param;
 	unsigned int flags;
 	uint32_t state; /**< do we use timer_set or timer_init_start? */
-
-	struct sys_timer_sharing *timer_sharing;
 };
 
 static inline bool timer_is_preallocated(struct sys_timer *tmr) {
@@ -80,6 +79,7 @@ static inline void timer_clear_preallocated(struct sys_timer *tmr) {
 	tmr->state &= ~TIMER_STATE_PREALLOC;
 }
 
+#ifdef SMP /* XXX */
 static inline bool timer_is_shared(struct sys_timer *tmr) {
 	if(tmr->timer_sharing) return tmr->timer_sharing->is_shared;
 	else return 0;
@@ -92,9 +92,10 @@ static inline void timer_set_shared(struct sys_timer *tmr) {
 static inline void timer_set_private(struct sys_timer *tmr) {
 	if(tmr->timer_sharing) tmr->timer_sharing->is_shared = 0;
 }
+#endif
 
 static inline bool timer_is_started(struct sys_timer *tmr) {
-#ifdef SMP
+#ifdef SMP /* XXX */
 	ipl_t ipl = ipl_save();
 	unsigned int cpuid = cpu_get_id();
 	ipl_restore(ipl);
@@ -117,7 +118,7 @@ static inline bool timer_is_started(struct sys_timer *tmr) {
 }
 
 static inline void timer_set_started(struct sys_timer *tmr) {
-#ifdef SMP
+#ifdef SMP /* XXX */
 	ipl_t ipl = ipl_save();
 	unsigned int cpuid = cpu_get_id();
 	ipl_restore(ipl);
@@ -129,7 +130,7 @@ static inline void timer_set_started(struct sys_timer *tmr) {
 }
 
 static inline void timer_set_stopped(struct sys_timer *tmr) {
-#ifdef SMP
+#ifdef SMP /* XXX */
 	ipl_t ipl = ipl_save();
 	unsigned int cpuid = cpu_get_id();
 	ipl_restore(ipl);
