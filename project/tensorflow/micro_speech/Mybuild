@@ -1,0 +1,24 @@
+package project.tensorflow.micro_speech
+@AutoCmd
+@Cmd(name = "micro_speech", help = "keyword detection")
+@Build(stage=2)
+@BuildDepends(third_party.lib.tflite_micro.libtflm)
+@BuildDepends(third_party.lib.tflite_micro.tflite_micro_build_headers)
+
+module micro_speech {
+
+
+    @Cflags("-Wno-undef")
+    @Cflags("-Imodels")
+    @Cflags("-Itestdata")
+    source "micro_speech.cc"
+    source "models/audio_preprocessor_int8_model_data.cc"
+    source "models/micro_speech_quantized_model_data.cc"
+    source "testdata/no_30ms_audio_data.cc"
+	source "testdata/no_1000ms_audio_data.cc"
+	source "testdata/noise_1000ms_audio_data.cc"
+	source "testdata/silence_1000ms_audio_data.cc"
+	source "testdata/yes_30ms_audio_data.cc"
+	source "testdata/yes_1000ms_audio_data.cc"
+
+}
