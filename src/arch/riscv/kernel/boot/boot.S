@@ -5,9 +5,11 @@
  * @author Aleksey Zhmulin
  * @date 06.07.23
  */
+
 #include <asm/asm.h>
 #include <asm/csr.h>
 #include <hal/cpu.h>
+#include <riscv/smode.h>
 
 .section .init, "ax"
 

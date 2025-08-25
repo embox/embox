@@ -11,6 +11,7 @@
 #include <asm/interrupts.h>
 #include <asm/ptrace.h>
 #include <asm/csr.h>
+#include <riscv/smode.h>
 
 #define INVALIDHARTID (unsigned int)(-1)
 static unsigned int __cpuid_to_hartid_map[NCPU] = {

@@ -9,6 +9,7 @@
 #include <asm/asm.h>
 #include <asm/csr.h>
 #include <asm/context.h>
+#include <riscv/smode.h>
 #include <util/binalign.h>
 
 #include <framework/mod/options.h>
