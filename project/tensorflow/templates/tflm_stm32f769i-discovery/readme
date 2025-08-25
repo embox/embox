@@ -1,0 +1,25 @@
+OpenCV requires too much read-only memory (it's mostly code), so you have to
+use QSPI flash to run it.
+
+Brief instruction:
+
+1. Compile this template:
+	make confload-platform/opencv/stm32f7discovery
+	make
+
+2. Extract readonly sections from ELF
+	arm-none-eabi-objcopy -O binary build/base/bin/embox tmp.bin \
+		--only-section=.text --only-section=.rodata \
+		--only-section='.ARM.ex* \ # This is for CPP exceptions
+		--only-section=.data
+
+3. Now load tmp.bin to QSPI memory. Currently there's no easy way to do it with
+Embox itself, but you can use some third-party scripts etc.
+
+4. Build simple config with `goto` command, write it to regular flash memory
+
+5. Jump to <start> symbol of opencv template
+
+If you need help with this instruction feel free to create issues here:
+	https://github.com/embox/embox/issues
+or just mail me: deryugin.denis(at)gmail.com

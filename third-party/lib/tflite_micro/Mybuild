@@ -100,7 +100,6 @@ static module libtflm {
 		"unpack.cc",
 		"logistic.cc",
 		"broadcast_args.cc",
-		"detection_postprocess_flexbuffers_generated_data.cc",
 		"reduce_common.cc",
 		"batch_matmul.cc",
 		"maximum_minimum.cc",
@@ -160,16 +159,13 @@ static module libtflm {
 		"arg_min_max.cc",
 		"logical.cc",
 		"fully_connected_common.cc",
-		"reverse.cc",
 		"reshape.cc",
 		"prelu_common.cc",
-	
 		"pad_common.cc",
 		"logical_common.cc",
 		"split.cc",
 		"dequantize_common.cc",
 		"pack.cc",
-		"circular_buffer_flexbuffers_generated_data.cc",
 		"squeeze.cc",
 		"round.cc",
 		"lstm_eval.cc",
@@ -182,7 +178,6 @@ static module libtflm {
 		"floor.cc",
 		"l2norm.cc",
 		"div.cc"
-
 
 	@Cflags("-Wno-undef") /* TFLITE_WITH_STABLE_ABI, TFLITE_USE_OPAQUE_DELEGATE etc */
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/src/tensorflow/lite/core/api")
