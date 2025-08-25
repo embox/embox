@@ -13,7 +13,6 @@ module smp extends affinity {
 	source "smp.h"
 	source "smp.c"
 
-	depends embox.kernel.task.api
 	depends embox.kernel.task.resource.affinity
 }
 
