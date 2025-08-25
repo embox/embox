@@ -1,0 +1,10 @@
+package embox.driver.clk.milandr
+
+module mdr1206_rst_clk {
+	option string log_level="LOG_NONE"
+
+	source "mdr1206_rst_clk.c"
+
+	@IncludeExport(path="drivers/clk")
+	source "mdr1206_rst_clk.h"
+}
