@@ -7,8 +7,11 @@
  */
 
 #include <stdint.h>
+#include <errno.h>
 
 #include <drivers/gpio.h>
+#include <drivers/clk/mdr1206_rst_clk.h>
+
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
@@ -20,6 +23,11 @@
 #define GPIOB ((volatile struct gpio_reg *)0x50088000)
 #define GPIOC ((volatile struct gpio_reg *)0x50090000)
 #define GPIOD ((volatile struct gpio_reg *)0x500F0000)
+
+#define CONF_GPIO_PORT_A_CLK_ENABLE() "CLK_GPIOA"
+#define CONF_GPIO_PORT_B_CLK_ENABLE() "CLK_GPIOB"
+#define CONF_GPIO_PORT_C_CLK_ENABLE() "CLK_GPIOC"
+#define CONF_GPIO_PORT_D_CLK_ENABLE() "CLK_GPIOD"
 
 struct gpio_reg {
     volatile uint32_t RXTX;      /*!< 0x00 PORT Data Register */
@@ -38,8 +46,7 @@ struct gpio_reg {
 
 static const struct gpio_chip milandr_gpio_chip;
 
-static inline volatile struct gpio_reg *milandr_gpio_get_gpio_port(
-    unsigned int port) {
+static inline volatile struct gpio_reg *milandr_gpio_get_gpio_reg(int port) {
 	switch (port) {
 	case 0:
 		return GPIOA;
@@ -55,22 +62,49 @@ static inline volatile struct gpio_reg *milandr_gpio_get_gpio_port(
 		return NULL;
 	}
 
-	return 0;
+	return NULL;
+}
+
+static inline char *milandr_gpio_get_gpio_clk(int port) {
+	switch (port) {
+	case 0:
+		return CONF_GPIO_PORT_A_CLK_ENABLE();
+	case 1:
+		return CONF_GPIO_PORT_B_CLK_ENABLE();
+	case 2:
+		return CONF_GPIO_PORT_C_CLK_ENABLE();
+		break;
+	case 3:
+		return CONF_GPIO_PORT_D_CLK_ENABLE();
+		break;
+	default:
+		return NULL;
+	}
+
+	return NULL;
 }
 
 static int milandr_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
     uint32_t mode) {
 	volatile struct gpio_reg *gpio_reg;
+	uint32_t alt;
+	char *clk_name;
 
-	gpio_reg = milandr_gpio_get_gpio_port(port);
+	gpio_reg = milandr_gpio_get_gpio_reg(port);
 	if (gpio_reg == NULL) {
-		return -1;
+		return -EINVAL;
 	}
 
+	clk_name = milandr_gpio_get_gpio_clk(port);
+	if (clk_name == NULL)  {
+		return -EINVAL;
+	}
 
+	/* Enable port */
+	clk_enable(clk_name);
 
 	if (mode & GPIO_MODE_IN) {
-		gpio_reg->ANALOG |= pins;
+		gpio_reg->ANALOG |= pins; /* XXX*/
 	}
 
 	if (mode & GPIO_MODE_IN_PULL_UP) {
@@ -83,25 +117,24 @@ static int milandr_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 
 
 	if (mode & GPIO_MODE_ALT_SECTION) {
-		/* Enable ALTFUNC */
-		gpio_reg->FUNC |= pins;
-#if 0
-		for (int i = 0; i < GPIO_PINS_NUMBER; i++) {
-			if (pins & (1 << i)) {
-				uint32_t alt = GPIO_MODE_ALT_GET(mode);
-
-			}
-		}
-#endif
+		alt = GPIO_MODE_ALT_GET(mode);
+	} else {
+		alt = 0;
 	}
+	for (int i = 0; i < GPIO_PINS_NUMBER; i++) {
+		if (pins & (1 << i)) {
+			gpio_reg->FUNC &= ~(0x3 << i * 2);
+			gpio_reg->FUNC |= (alt << i * 2);
+		}
 
+	}
 	return 0;
 }
 
 static void milandr_gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 	volatile struct gpio_reg *gpio_reg;
 
-	gpio_reg = milandr_gpio_get_gpio_port(port);
+	gpio_reg = milandr_gpio_get_gpio_reg(port);
 	if (gpio_reg == NULL) {
 		return;
 	}
@@ -117,7 +150,7 @@ static void milandr_gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 static gpio_mask_t milandr_gpio_get(unsigned int port, gpio_mask_t pins) {
 	volatile struct gpio_reg *gpio_reg;
 
-	gpio_reg = milandr_gpio_get_gpio_port(port);
+	gpio_reg = milandr_gpio_get_gpio_reg(port);
 	if (gpio_reg == NULL) {
 		return -1;
 	}
