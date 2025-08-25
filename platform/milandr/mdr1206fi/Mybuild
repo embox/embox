@@ -4,6 +4,7 @@ module platform_init extends platform.platform_init {
 	source "platform_init.c"
 
 	@NoRuntime depends mdr1206fi_clocks_init
+	@NoRuntime depends embox.driver.clk.milandr.mdr1206_rst_clk
 }
 
 static module mdr1206fi_clocks_init {
@@ -12,5 +13,5 @@ static module mdr1206fi_clocks_init {
 	source "mdr1206fi_system.c"
 	source "mdr1206_bsp_uart.c"
 	source "mdr1206fi_platform_uart.c"
-	source "mdr1206_bsp_gpio.c"
+	//source "mdr1206_bsp_gpio.c"
 }
