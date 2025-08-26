@@ -20,6 +20,7 @@
 #include <kernel/thread.h>
 #include <kernel/time/clock_source.h>
 #include <riscv/clint.h>
+#include <riscv/smp_ipi.h>
 
 #include <module/embox/kernel/thread/core.h>
 
@@ -40,9 +41,29 @@ static void *bs_idle_run(void *arg) {
 
 extern void thread_set_current(struct thread *t);
 
+static irq_return_t soft_irq_handler(unsigned int irq_nr, void *data) {
+	switch (smp_get_ipi_message()) {
+	case NONE:
+		smp_ack_ipi();
+		break;
+	case RESCHED:
+		smp_ack_ipi();
+		resched();
+		break;
+	default:
+		panic("unknown software interrupt\n");
+		break;
+	}
+
+	return IRQ_HANDLED;
+}
+
 void startup_ap(void) {
 	struct thread *bs_idle;
-	int self_id = cpu_get_id();
+	unsigned int irq;
+	int self_id;
+
+	self_id = cpu_get_id();
 
 	__spin_lock(&startup_lock);
 
@@ -51,14 +72,13 @@ void startup_ap(void) {
 
 	/* enable external interrupt on each AP independently */
 	clint_clear_ipi();
-	csr_set(CSR_IE, CSR_IE_SIE);
+	irq = irqctrl_set_level(RISCV_IRQ_SOFT, 1);
+	irq_attach(irq, soft_irq_handler, 0, NULL, NULL);
 
 	/* set up clock interrupt for each AP independently */
 	clint_set_timer(0);
-	csr_set(CSR_IE, CSR_IE_TIE);
-
-	/* enable all attached IRQs for each CPU */
-	irq_enable_attached();
+	irq = irqctrl_set_level(RISCV_IRQ_TIMER, 1);
+	irqctrl_enable(irq);
 
 	bs_idle = thread_init_stack(__ap_sp - THREAD_STACK_SIZE, THREAD_STACK_SIZE,
 	    SCHED_PRIORITY_MIN, bs_idle_run, NULL);

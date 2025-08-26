@@ -13,6 +13,7 @@
 #include <asm/csr.h>
 #include <framework/mod/options.h>
 #include <hal/clock.h>
+#include <kernel/irq.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 #include <riscv/clint.h>
@@ -38,9 +39,28 @@ static uint64_t riscv_mtimer_get_time(struct clock_source *cs) {
 #endif
 }
 
+static irq_return_t riscv_mtimer_irq_handler(unsigned int irq_nr, void *data) {
+	unsigned int ticks;
+
+	ticks = (clint_get_time() - curr_mtimecmp) / CYCLE_PER_TICK + 1;
+
+	prev_mtimecmp = curr_mtimecmp;
+	curr_mtimecmp += ticks * CYCLE_PER_TICK;
+
+	clint_set_timer(curr_mtimecmp);
+
+	clock_handle_ticks(data, ticks);
+
+	return IRQ_HANDLED;
+}
+
 static int riscv_mtimer_set_periodic(struct clock_source *cs) {
+	unsigned int irq;
+
 	clint_set_timer(0);
-	csr_set(CSR_IE, CSR_IE_TIE);
+
+	irq = irqctrl_set_level(RISCV_IRQ_TIMER, 1);
+	irq_attach(irq, riscv_mtimer_irq_handler, 0, cs, NULL);
 
 	return 0;
 }
@@ -57,16 +77,3 @@ static struct time_event_device riscv_mtimer_event_device = {
 
 CLOCK_SOURCE_DEF(riscv_mtimer, NULL, NULL, &riscv_mtimer_event_device,
     &riscv_mtimer_counter_device);
-
-void riscv_mtimer_irq_handler(void) {
-	unsigned int ticks;
-
-	ticks = (clint_get_time() - curr_mtimecmp) / CYCLE_PER_TICK + 1;
-
-	prev_mtimecmp = curr_mtimecmp;
-	curr_mtimecmp += ticks * CYCLE_PER_TICK;
-
-	clint_set_timer(curr_mtimecmp);
-
-	clock_handle_ticks(&CLOCK_SOURCE_NAME(riscv_mtimer), ticks);
-}

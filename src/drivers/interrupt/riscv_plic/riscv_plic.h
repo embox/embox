@@ -5,12 +5,17 @@
  * @author Anastasia Nizharadze
  */
 
-#ifndef IRQCTRL_RISCV_INTC_IMPL_H_
-#define IRQCTRL_RISCV_INTC_IMPL_H_
+#ifndef DRIVERS_INTERRUPT_RISCV_PLIC_H_
+#define DRIVERS_INTERRUPT_RISCV_PLIC_H_
 
-#include <framework/mod/options.h>
+#ifdef __EMBOX_PLATFORM__vostok_mega_015__
+#define PLIC_IRQS_TOTAL 32
+#else
+#define PLIC_IRQS_TOTAL 1024
+#endif
 
-#define __IRQCTRL_IRQS_TOTAL \
-	OPTION_MODULE_GET(embox__driver__interrupt__riscv_plic, NUMBER, max_irq_number)
+#define CLINT_IRQS_TOTAL 16
 
-#endif /* IRQCTRL_RISCV_INTC_IMPL_H_ */
+#define __IRQCTRL_IRQS_TOTAL (PLIC_IRQS_TOTAL + CLINT_IRQS_TOTAL)
+
+#endif /* DRIVERS_INTERRUPT_RISCV_PLIC_H_ */

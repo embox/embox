@@ -68,7 +68,6 @@ riscv_trap_handler:
 	j       riscv_trap_exit
 2:
 	/* Interrupt handling */
-	and     a0, a0, 0x1f
 	call    riscv_interrupt_handler
 
 riscv_trap_exit:
