@@ -6,7 +6,6 @@
  * @author Zeng Zixian
  */
 
-#include <asm/interrupts.h>
 #include <drivers/irqctrl.h>
 #include <embox/unit.h>
 #include <hal/cpu_idle.h>
