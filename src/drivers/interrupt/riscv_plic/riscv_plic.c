@@ -85,7 +85,7 @@ void irqctrl_eoi(unsigned int irq) {
 	REG32_STORE(CLAIM_COMPLETE_ADDR(hart), irq);
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	uint32_t hart = cpu_get_id();
 	return REG32_LOAD(CLAIM_COMPLETE_ADDR(hart));
 }

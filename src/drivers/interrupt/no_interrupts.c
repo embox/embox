@@ -34,7 +34,7 @@ unsigned int irqctrl_get_prio(unsigned int interrupt_nr) {
 	return 0;
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	return 0;
 }
 

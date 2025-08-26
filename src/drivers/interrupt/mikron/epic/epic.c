@@ -46,7 +46,7 @@ void irqctrl_eoi(unsigned int irq) {
 	EPIC_REGS->CLEAR |= (1U << irq);
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	int i;
 
 	if (EPIC_REGS->RAW_STATUS == 0) {

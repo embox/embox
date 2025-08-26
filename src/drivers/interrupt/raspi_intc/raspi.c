@@ -128,7 +128,7 @@ static int __irqctrl_get_intid(uint32_t pend_bank, int32_t add_to) {
 	return -1;
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	int intid;
 
 	intid = __irqctrl_get_intid(regs->irq_pending_1, 0);

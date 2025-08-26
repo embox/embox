@@ -120,7 +120,7 @@ void irqctrl_eoi(unsigned int irq) {
     csr_write(IPIC_EOI, 0);
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
     csr_write(IPIC_SOI, 0);
 
     return csr_read(IPIC_CISV);

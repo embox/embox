@@ -76,7 +76,7 @@ extern unsigned int irqctrl_get_prio(unsigned int irq);
  *
  * @retval -1 If there are no currently active interrupts
  */
-extern unsigned int irqctrl_get_intid(void);
+extern int irqctrl_get_intid(void);
 
 /**
  * Get multilevel interrupt ID.

@@ -44,7 +44,7 @@ int irqctrl_pending(unsigned int irq) {
 void irqctrl_eoi(unsigned int irq) {
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	unsigned int irq;
 	uint32_t pending;
 

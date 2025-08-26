@@ -112,7 +112,7 @@ void irqctrl_eoi(unsigned int irq) {
 	}
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	uint32_t pending;
 	int i, j;
 
