@@ -9,6 +9,7 @@
 #include <asm/asm.h>
 #include <asm/csr.h>
 #include <asm/context.h>
+#include <riscv/smode.h>
 #include <util/binalign.h>
 
 #include <framework/mod/options.h>
@@ -67,7 +68,6 @@ riscv_trap_handler:
 	j       riscv_trap_exit
 2:
 	/* Interrupt handling */
-	and     a0, a0, 0x1f
 	call    riscv_interrupt_handler
 
 riscv_trap_exit:

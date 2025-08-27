@@ -1,11 +1,8 @@
 package embox.driver.interrupt
 
 module mikron_epic extends irqctrl_api {
-	option number log_level=0
-
 	option number base_addr=0x000050400
 
-	source "epic.c", "epic.h"
-
-	depends embox.kernel.critical
+	source "epic.h"
+	source "epic.c"
 }

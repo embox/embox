@@ -11,7 +11,6 @@
 #include <stdint.h>
 
 #include <asm/csr.h>
-#include <asm/interrupts.h>
 #include <framework/mod/options.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
@@ -55,28 +54,33 @@ static int syntacore_mtimer_clock_setup(struct clock_source *cs) {
 	return ENOERR;
 }
 
-static int syntacore_mtimer_init(struct clock_source *cs) {
-	SCR1_TIMER->TIMER_DIV = 0;
-	SCR1_TIMER->TIMER_CTRL |= SCR1_TIMER_ENABLE_M;
-	//SCR1_TIMER->TIMER_CTRL &= ~SCR1_TIMER_ENABLE_M;
-
-	enable_timer_interrupts();
-
-	return ENOERR;
-}
-
 static struct time_event_device syntacore_mtimer_event_device = {
     .set_periodic = syntacore_mtimer_clock_setup,
 };
 
-CLOCK_SOURCE_DEF(syntacore_mtimer, syntacore_mtimer_init, NULL,
-    &syntacore_mtimer_event_device, NULL);
-
-void riscv_mtimer_irq_handler(void) {
+static irq_return_t syntacore_mtimer_irq_handler(unsigned int irq_nr, void *data) {
 	//REG64_STORE(MTIMECMP, REG64_LOAD(MTIME) + COUNT_OFFSET);
 
 	REG64_STORE(&SCR1_TIMER->MTIMECMP,
 	    REG64_LOAD(&SCR1_TIMER->MTIME) + COUNT_OFFSET);
 
-	clock_tick_handler(&CLOCK_SOURCE_NAME(syntacore_mtimer));
+	clock_tick_handler(data);
+
+	return IRQ_HANDLED;
 }
+
+static int syntacore_mtimer_init(struct clock_source *cs) {
+	unsigned int irq;
+
+	SCR1_TIMER->TIMER_DIV = 0;
+	SCR1_TIMER->TIMER_CTRL |= SCR1_TIMER_ENABLE_M;
+	//SCR1_TIMER->TIMER_CTRL &= ~SCR1_TIMER_ENABLE_M;
+
+	irq = irqctrl_set_level(RISCV_IRQ_TIMER, 1);
+	irq_attach(irq, syntacore_mtimer_irq_handler, 0, cs, NULL);
+
+	return ENOERR;
+}
+
+CLOCK_SOURCE_DEF(syntacore_mtimer, syntacore_mtimer_init, NULL,
+    &syntacore_mtimer_event_device, NULL);

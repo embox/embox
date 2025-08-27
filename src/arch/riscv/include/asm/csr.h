@@ -50,6 +50,9 @@
 #define RISCV_IRQ_EXT   11
 #endif
 
+#define CSR_CAUSE_EC  0x1f                        /* Exception Code  */
+#define CSR_CAUSE_INT (1UL << (__riscv_xlen - 1)) /* Interrupt Bit  */
+
 #define CSR_STATUS_SIE  (1UL << 1)  /* Supervisor Interrupt Enable */
 #define CSR_STATUS_MIE  (1UL << 3)  /* Machine Interrupt Enable */
 #define CSR_STATUS_SPIE (1UL << 5)  /* Supervisor Previous Interrupt Enable */

@@ -106,7 +106,7 @@ void irqctrl_eoi(unsigned int irq) {
 	REG32_STORE(GICC_EOIR, irq);
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	unsigned int irq;
 
 	irq = REG32_LOAD(GICC_IAR);

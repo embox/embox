@@ -63,20 +63,28 @@ extern void irqctrl_eoi(unsigned int irq);
  * Set up interrupt priority.
  * A lower priority value indicates a lower interrupt priority.
  */
-extern void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio);
+extern void irqctrl_set_prio(unsigned int irq, unsigned int prio);
 
 /**
  * Get interrupt priority.
  * A lower priority value indicates a lower interrupt priority.
  */
-extern unsigned int irqctrl_get_prio(unsigned int interrupt_nr);
+extern unsigned int irqctrl_get_prio(unsigned int irq);
 
 /**
  * Get the ID of the currently active interrupt.
  *
  * @retval -1 If there are no currently active interrupts
  */
-extern unsigned int irqctrl_get_intid(void);
+extern int irqctrl_get_intid(void);
+
+/**
+ * Get multilevel interrupt ID.
+ *
+ * @param level >= 1
+ * @retval -1 if interrupt level @param level does not exist
+ */
+extern int irqctrl_set_level(unsigned int irq, int level);
 
 struct irqctrl {
 	const char *name;

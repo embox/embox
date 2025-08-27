@@ -1,101 +1,120 @@
 /**
  * @file
- *
- * @brief RISC-V build-in interrupt controller
+ * @brief Platform-level interrupt controller (PLIC)
  *
  * @date 04.10.2019
  * @author Anastasia Nizharadze
  */
 
-#include <assert.h>
-#include <stdint.h>
-
-#include <asm/interrupts.h>
 #include <asm/csr.h>
 #include <drivers/irqctrl.h>
-#include <embox/unit.h>
-#include <hal/reg.h>
+#include <framework/mod/options.h>
 #include <hal/cpu.h>
+#include <hal/reg.h>
 
-#define PLIC_ADDR                                OPTION_GET(NUMBER, base_addr)
-#define PRIORITY_THRESHOLD_OFFSET                OPTION_GET(NUMBER, threshold_offset)
-#define INTERRUPT_ENABLE_OFFSRT                  OPTION_GET(NUMBER, interrupt_enable_offset)
+#define PLIC_BASE OPTION_GET(NUMBER, base_addr)
 
-/* In case of same priority, lowest ID have the highest effective priority */
-#define IPL_ADDR(num)                            (PLIC_ADDR + (num) * 4)
+#ifdef SMP
+#define __PLIC_HARTID cpu_get_id()
+#else
+#define __PLIC_HARTID 0
+#endif
 
-#define PRIORITY_THRESHOLD_ADDR(hart)            \
-	(PLIC_ADDR + PRIORITY_THRESHOLD_OFFSET + (hart)*0x1000)
+/**
+ * Context is an abstract representation of
+ * the hart x under privilege level y
+ */
+#if RISCV_SMODE
+#define PLIC_CONTEXT (1 + __PLIC_HARTID * 2)
+#else
+#define PLIC_CONTEXT (0 + __PLIC_HARTID * 2)
+#endif
 
-#define CLAIM_COMPLETE_ADDR(hart)                \
-	(PLIC_ADDR + PRIORITY_THRESHOLD_OFFSET + 4 + (hart)*0x1000)
+/* Source Priority */
+#define PLIC_SPR(n) (PLIC_BASE + 4 * (n))
+/* Source Pending Bits */
+#define PLIC_SPB(n) (PLIC_BASE + 0x1000 + 4 * (n))
 
-#define INTERRUPT_ENABLE_REG(irq_num, hart)      \
-	(PLIC_ADDR + INTERRUPT_ENABLE_OFFSRT + ((irq_num)/32)*4 + (hart)*0x80)
+/* Context Interrupt Enable */
+#define PLIC_CIE(n) (PLIC_BASE + 0x2000 + PLIC_CONTEXT * 0x80 + 4 * (n))
+/* Context Threshold */
+#define PLIC_CTH    (PLIC_BASE + 0x200000 + PLIC_CONTEXT * 0x1000)
+/* Context Claim/Complete */
+#define PLIC_CCL    (PLIC_BASE + 0x200004 + PLIC_CONTEXT * 0x1000)
 
-/* Configure PLIC for current CPU */
 static int plic_init(void) {
-	uint32_t hart = cpu_get_id();
-	REG32_STORE(PRIORITY_THRESHOLD_ADDR(hart), 0);
-	enable_external_interrupts();
+	/* Configure PLIC for current context */
+	REG32_STORE(PLIC_CTH, 0);
+
+	csr_set(CSR_IE, CSR_IE_EIE);
+
 	return 0;
 }
 
-void irqctrl_enable(unsigned int interrupt_nr) {
-	uint32_t reg;
-	uint32_t hart = cpu_get_id();
+void irqctrl_enable(unsigned int irq) {
+	if (irq < PLIC_IRQS_TOTAL) {
+		/* Set up interrupt priorty */
+		REG32_STORE(PLIC_SPR(irq), 1);
 
-	/* Set up interrupt priorty */
-	REG32_STORE(IPL_ADDR(interrupt_nr), 1);
-
-	reg = REG32_LOAD(INTERRUPT_ENABLE_REG(interrupt_nr, hart));
-	reg |= (1U << interrupt_nr);
-	REG32_STORE(INTERRUPT_ENABLE_REG(interrupt_nr, hart), reg);
+		REG32_ORIN(PLIC_CIE(irq / 32), 1 << irq);
+	}
+	else {
+		csr_set(CSR_IE, 1 << (irq - PLIC_IRQS_TOTAL));
+	}
 }
 
-/* Close the irq signal from outside entirely*/
-void irqctrl_disable(unsigned int interrupt_nr) {
-	/* 0 means No interrupt PLIC do not detect it */
-	REG32_STORE(IPL_ADDR(interrupt_nr), 0);
-}
-
-/* Setting that signal will forward as interrupt request to specific CPU */
-void irqctrl_enable_in_cpu(uint32_t hartid, unsigned int interrupt_nr) {
-	uint32_t reg;
-
-	reg = REG32_LOAD(INTERRUPT_ENABLE_REG(interrupt_nr, hartid));
-	reg |= (1U << interrupt_nr);
-	REG32_STORE(INTERRUPT_ENABLE_REG(interrupt_nr, hartid), reg);
-}
-
-/**
- * Setting that signal will not forward as interrupt request to specific CPU
- * do nothing with whether interrupt signal can be recevied by PLIC
- */
-void irqctrl_disable_in_cpu(uint32_t hartid, unsigned int interrupt_nr) {
-	uint32_t reg;
-
-	reg = REG32_LOAD(INTERRUPT_ENABLE_REG(interrupt_nr, hartid));
-	reg &= ~(1U << interrupt_nr);
-	REG32_STORE(INTERRUPT_ENABLE_REG(interrupt_nr, hartid), reg);
+void irqctrl_disable(unsigned int irq) {
+	if (irq < PLIC_IRQS_TOTAL) {
+		REG32_CLEAR(PLIC_CIE(irq / 32), 1 << irq);
+	}
+	else {
+		csr_clear(CSR_IE, 1 << (irq - PLIC_IRQS_TOTAL));
+	}
 }
 
 void irqctrl_eoi(unsigned int irq) {
-	uint32_t hart = cpu_get_id();
-	REG32_STORE(CLAIM_COMPLETE_ADDR(hart), irq);
+	if (irq < PLIC_IRQS_TOTAL) {
+		REG32_STORE(PLIC_CCL, irq);
+	}
 }
 
-unsigned int irqctrl_get_intid(void) {
-	uint32_t hart = cpu_get_id();
-	return REG32_LOAD(CLAIM_COMPLETE_ADDR(hart));
+int irqctrl_get_intid(void) {
+	int irq;
+
+	irq = csr_read(CSR_CAUSE) & CSR_CAUSE_EC;
+
+	if (irq == RISCV_IRQ_EXT) {
+		irq = REG32_LOAD(PLIC_CCL);
+		if (!irq) {
+			irq = -1;
+		}
+	}
+	else {
+		irq += PLIC_IRQS_TOTAL;
+	}
+
+	return irq;
 }
 
-void irqctrl_set_prio(unsigned int interrupt_nr, unsigned int prio) {
-	REG32_STORE(IPL_ADDR(interrupt_nr), prio);
+int irqctrl_set_level(unsigned int irq, int level) {
+	switch (level) {
+	case 1:
+		return irq + PLIC_IRQS_TOTAL;
+	case 2:
+		return irq;
+	default:
+		return -1;
+	}
 }
 
-unsigned int irqctrl_get_prio(unsigned int interrupt_nr) {
-	return REG32_LOAD(IPL_ADDR(interrupt_nr));
+#if 0
+void irqctrl_set_prio(unsigned int irq, unsigned int prio) {
+	REG32_STORE(PLIC_SPR(irq), prio);
 }
+
+unsigned int irqctrl_get_prio(unsigned int irq) {
+	return REG32_LOAD(PLIC_SPR(irq));
+}
+#endif
 
 IRQCTRL_DEF(riscv_plic, plic_init);

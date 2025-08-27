@@ -62,7 +62,7 @@ void irqctrl_eoi(unsigned int irq) {
 	}
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	/*  Reading VIC_ADDR register updates the hardware priority register of the
 	interrupt controller. */
 	return VIC_REG_LOAD(0, VIC_ADDR);

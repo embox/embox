@@ -206,7 +206,7 @@ void irqctrl_eoi(unsigned int irq) {
 	ARCH_REG_STORE(ICC_EOIR1_EL1, irq);
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	return ARCH_REG_LOAD(ICC_IAR1_EL1) & ICC_IAR1_EL1_INTID_MASK;
 }
 

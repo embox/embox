@@ -63,7 +63,7 @@ void irqctrl_eoi(unsigned int irq) {
 	REG_STORE(AT91C_AIC_EOICR, irq); /* write anything */
 }
 
-unsigned int irqctrl_get_intid(void) {
+int irqctrl_get_intid(void) {
 	unsigned int irq;
 
 	REG_LOAD(AT91C_AIC_IVR);
