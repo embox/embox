@@ -10,8 +10,8 @@
 #include <stdint.h>
 
 #include <asm/csr.h>
-#include <asm/interrupts.h>
 #include <drivers/irqctrl.h>
+#include <framework/mod/options.h>
 #include <hal/cpu.h>
 #include <hal/reg.h>
 
@@ -25,12 +25,8 @@
 #define CLIC_INTCTL(n)  (CLIC_BASE_ADDR + 0x1003 + 4 * n)
 
 static int clic_init(void) {
-	int irq;
-
 	/* 4 interrupt levels and M-mode is available */
 	REG8_STORE(CLIC_CFG, 2 << 1);
-
-	for (irq = IRQCTRL_IRQS_TOTAL - 1; irq >= 0; irq--) {}
 
 	return 0;
 }
@@ -55,14 +51,17 @@ void irqctrl_eoi(unsigned int irq) {
 
 int irqctrl_get_intid(void) {
 	int irq;
+	int i;
 
-	for (irq = 0; irq < IRQCTRL_IRQS_TOTAL; irq++) {
-		if (REG8_LOAD(CLIC_INTIP(irq))) {
-			return irq;
+	irq = -1;
+
+	for (i = 0; i < IRQCTRL_IRQS_TOTAL; i++) {
+		if (REG8_LOAD(CLIC_INTIP(i))) {
+			irq = i;
 		}
 	}
 
-	return -1;
+	return irq;
 }
 
 int irqctrl_set_level(unsigned int irq, int level) {
