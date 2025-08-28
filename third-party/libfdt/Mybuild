@@ -1,7 +1,6 @@
 package third_party.libfdt
 
 @Build(stage=2)
-@IncludePath("/include/")
 module libfdt {
     source "fdt.c"
     source "fdt_ro.c"
