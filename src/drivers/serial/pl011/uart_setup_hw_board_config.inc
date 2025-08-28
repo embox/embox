@@ -258,11 +258,11 @@ static inline int uart_get_rx_alt(int num) {
 static inline void uart_set_pins(int num) {
 	gpio_setup_mode(uart_get_tx_port(num),
 			(1 << uart_get_tx_pin(num)),
-			GPIO_MODE_ALT_SET(uart_get_tx_alt(num)));
+			GPIO_MODE_OUT | GPIO_MODE_ALT_SET(uart_get_tx_alt(num)));
 
 	gpio_setup_mode(uart_get_rx_port(num),
 			(1 << uart_get_rx_pin(num)),
-			GPIO_MODE_ALT_SET(uart_get_rx_alt(num)));
+			GPIO_MODE_IN | GPIO_MODE_ALT_SET(uart_get_rx_alt(num)));
 }
 
 static inline int uart_set_clk(int num) {
