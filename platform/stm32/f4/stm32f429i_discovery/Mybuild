@@ -11,7 +11,6 @@ static module stm32f429i_discovery_conf extends third_party.bsp.stmf4cube.stm32f
 @BuildDepends(third_party.bsp.stmf4cube.cube)
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM32F429I-Discovery")
 @BuildDepends(third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd)
-@BuildDepends(embox.arch.arm.armmlib.devicetree_probe)
 static module bsp extends third_party.bsp.st_bsp_api {
 	option boolean errata_spi_wrong_last_bit=false
 

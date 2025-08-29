@@ -65,5 +65,5 @@ module devicetree_probe {
 	@InitFS
 	source "stm32f4_uart.dtb"
 	source "devicetree.c"
-	depends third_party.libfdt.fdt
+	@NoRuntime depends third_party.libfdt
 }

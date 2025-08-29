@@ -1,6 +1,10 @@
-package third_party.libfdt
+package third_party
 
-module fdt {
+module libfdt {
+    source "include/fdt.h"
+    source "include/libfdt_env.h"
+    source "include/libfdt_internal.h"
+    source "include/libfdt.h"
     source "fdt.c"
     source "fdt_ro.c"
     source "fdt_rw.c"
