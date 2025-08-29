@@ -1,7 +1,15 @@
-PKG_NAME := 4diac-forte
-PKG_VER  := 2.0.1
+
+PKG_NAME    := 4diac-forte
+PKG_VER     := 2.0.1
 PKG_SOURCES := https://github.com/eclipse-4diac/$(PKG_NAME)/archive/refs/tags/$(PKG_VER).tar.gz
 PKG_MD5     := 6be3b6bd8b9276d8c22b8f38f6343515
+PKG_PATCHES := forte-2.0.1-endian.patch
+
+ifeq ($(call gxx_macro_get,__BYTE_ORDER__),$(call gxx_macro_get,__ORDER_LITTLE_ENDIAN__))
+FORTE_ENDIAN_FLAGS := -DFORTE_LITTLE_ENDIAN=ON -DFORTE_BIG_ENDIAN=OFF
+else
+FORTE_ENDIAN_FLAGS := -DFORTE_LITTLE_ENDIAN=OFF -DFORTE_BIG_ENDIAN=ON
+endif
 
 FORTE_FLAGS = \
 		-DFORTE_ARCHITECTURE=Posix \
@@ -14,17 +22,17 @@ FORTE_FLAGS = \
 		-DFORTE_MODULE_CONVERT=ON \
 		-DFORTE_MODULE_IEC61131=ON \
 		-DFORTE_MODULE_UTILS=ON \
+		$(FORTE_ENDIAN_FLAGS) \
 		-DCMAKE_C_COMPILER:PATH=$(EMBOX_GCC) \
 		-DCMAKE_CXX_COMPILER:PATH=$(EMBOX_GXX) \
 		-DCMAKE_SYSTEM_NAME:STRING=Generic \
 		-DCMAKE_BUILD_TYPE:STRING=None \
 		-DFORTE_EXTERNAL_MODULES_DIRECTORY=$(PROJECT_DIR)/4diac/forte/Embox_FB_lib \ 
-		# -DCMAKE_CXX_FLAGS:STRING="$(CXX_FLAGS)" \
-
+		# -DCMAKE_CXX_FLAGS:STRING="$(CXX_FLAGS)"
 
 $(CONFIGURE):
+	$(MKDIR) $(PKG_SOURCE_DIR)/bin/embox
 	export EMBOX_GCC_LINK=full; \
-	mkdir -p $(PKG_SOURCE_DIR)/bin/embox; \
 	cd $(PKG_SOURCE_DIR)/bin/embox && ( \
 		cmake $(FORTE_FLAGS) $(PKG_SOURCE_DIR) \
 	)
@@ -32,11 +40,10 @@ $(CONFIGURE):
 
 $(BUILD):
 	cd $(PKG_SOURCE_DIR)/bin/embox && ( \
-		make \
+		$(MAKE) MAKEFLAGS='$(EMBOX_IMPORTED_MAKEFLAGS)'; \
 	)
 	touch $@
 
 $(INSTALL):
-	mv $(PKG_SOURCE_DIR)/bin/embox/src/forte $(PKG_INSTALL_DIR)/forte.o
+	$(CP) $(PKG_SOURCE_DIR)/bin/embox/src/forte $(PKG_INSTALL_DIR)/forte.o
 	touch $@
-

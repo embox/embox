@@ -1,0 +1,21 @@
+diff -aur ./4diac-forte-2.0.1/src/arch/posix/CMakeLists.txt ../build/extbld/project/fourdiac/forte/4diac-forte-2.0.1/src/arch/posix/CMakeLists.txt
+--- ./4diac-forte-2.0.1/src/arch/posix/CMakeLists.txt	2021-11-16 08:11:58.000000000 +0300
++++ ../build/extbld/project/fourdiac/forte/4diac-forte-2.0.1/src/arch/posix/CMakeLists.txt	2025-08-29 05:07:20.705203108 +0300
+@@ -38,8 +38,16 @@
+ 
+   #forte_add_link_library(pthread)
+ 
+-  forte_add_definition("-W -Wall -Wextra -Woverloaded-virtual -Wconversion -Wshadow -DFORTE_LITTLE_ENDIAN")
++  forte_add_definition("-W -Wall -Wextra -Woverloaded-virtual -Wconversion -Wshadow")
+   
++  if(FORTE_LITTLE_ENDIAN)
++   forte_add_definition("-DFORTE_LITTLE_ENDIAN")
++  endif(FORTE_LITTLE_ENDIAN)
++
++  if(FORTE_BIG_ENDIAN)
++   forte_add_definition("-DFORTE_BIG_ENDIAN")
++  endif(FORTE_BIG_ENDIAN)
++
+   set(FORTE_POSIX_GENERATE_MAP_FILE FALSE CACHE BOOL "Enable the generation of map files")
+   mark_as_advanced(FORTE_POSIX_GENERATE_MAP_FILE)
+   IF(FORTE_POSIX_GENERATE_MAP_FILE)
