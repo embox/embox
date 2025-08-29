@@ -1,7 +1,6 @@
 package third_party.libfdt
 
-@Build(stage=2)
-module libfdt {
+module fdt {
     source "fdt.c"
     source "fdt_ro.c"
     source "fdt_rw.c"
