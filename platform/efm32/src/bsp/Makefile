@@ -1,7 +1,6 @@
 
 PKG_NAME := Gecko_SDK
 PKG_VER := v5.1.2
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
 
 PKG_SOURCES := https://github.com/SiliconLabs/$(PKG_NAME)/archive/v5.1.2.tar.gz
 

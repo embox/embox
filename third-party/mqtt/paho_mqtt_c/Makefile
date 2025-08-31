@@ -1,8 +1,6 @@
 PKG_NAME	:= paho.mqtt.c
 PKG_VER  	:= v1.3.8
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
-
 PKG_SOURCES := https://github.com/eclipse/paho.mqtt.c/archive/$(PKG_VER).tar.gz
 PKG_MD5 	:= 71b9a3070f543afcb818a8c231be6684
 

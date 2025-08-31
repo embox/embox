@@ -1,8 +1,6 @@
 PKG_NAME	:= mqtt_udp
 PKG_VER  	:= v0.4-1
 
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).tar.gz
-
 PKG_SOURCES := https://github.com/dzavalishin/mqtt_udp/archive/$(PKG_VER).tar.gz
 PKG_MD5 	:= f881143ae137868bf1ed4308e1844e49
 
