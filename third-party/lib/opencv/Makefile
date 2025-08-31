@@ -7,7 +7,6 @@ endef
 PKG_NAME         := opencv
 PKG_VER          := $(call option_get,STRING,opencv_version)
 PKG_SOURCES      := https://github.com/opencv/opencv/archive/$(PKG_VER).zip
-PKG_ARCHIVE_NAME := $(PKG_NAME)-$(PKG_VER).zip
 
 PKG_MD5_4.5.2    := f100177ab3e7b884f490cba4cff8e074
 PKG_MD5_4.0.1    := eb367fc73de66e6d8808e8712138c6b4

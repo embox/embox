@@ -2,8 +2,6 @@
 PKG_NAME := en.AudioPDM-MW_V3-1-0
 PKG_MD5  := 028887f8564d1812bf92a06452b1a639
 
-PKG_ARCHIVE_NAME := $(PKG_NAME).zip
-
 PKG_SOURCES := https://localhost/$(PKG_NAME).zip
 
 DOWNLOADED_LINK := https://my.st.com/content/my_st_com/en/products/licensed-software/stm32-licensed-software/audiopdm-mw.license=1621431532619.product=AudioPDM-MW.version=3.1.0.html
