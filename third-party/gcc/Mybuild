@@ -1,7 +1,6 @@
 package third_party.gcc
 
 @LinkerSection(text="libsupcxx_text",rodata="libsupcxx_rodata",data="libsupcxx_data",bss="libsupcxx_bss",arm_exidx="libsupcxx_arm_exidx",arm_extab="libsupcxx_arm_extab")
-@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/_target")
 static module libsupcxx extends embox.lib.libsupcxx {
@@ -12,7 +11,6 @@ static module libsupcxx extends embox.lib.libsupcxx {
 }
 
 @LinkerSection(text="libstdcxx_text",rodata="libstdcxx_rodata",data="libstdcxx_data",bss="libstdcxx_bss",arm_exidx="libstdcxx_arm_exidx",arm_extab="libstdcxx_arm_extab")
-@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/gcc/gcc_build/install/include/_target")
 static module libstdcxx extends embox.lib.libstdcxx {
@@ -22,7 +20,6 @@ static module libstdcxx extends embox.lib.libstdcxx {
 	@NoRuntime depends gcc_build
 }
 
-@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(gcc_build)
 static module libgcc extends embox.lib.libgcc {
 	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
@@ -38,7 +35,6 @@ module compiler_headers extends third_party.compiler_headers {
 	@NoRuntime depends gcc_build
 }
 
-@BuildDepends(third_party.lib.OpenLibm)
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 static module gcc_build {
 	option string gcc_version="9.3.0"

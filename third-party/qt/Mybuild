@@ -4,7 +4,6 @@ package third_party.qt
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include/QtCore")
 @BuildDepends(embox.lib.libsupcxx)
-@BuildDepends(third_party.lib.OpenLibm)
 @BuildDepends(third_party.STLport.libstlportg)
 static module core {
 	option boolean stl_support=false
