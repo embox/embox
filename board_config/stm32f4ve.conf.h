@@ -219,6 +219,8 @@ struct mmc_conf mmcs[] = {
 			},
 			.irqs = {
 				VAL("", 49),
+				VAL("DMA_RX", 59), /* DMA2_Stream3 */
+				VAL("DMA_TX", 69), /* DMA2_Stream6 */				
 			},
 			.pins = {
 				PIN("D0", GPIO_PORT_C, 8, AF12),
