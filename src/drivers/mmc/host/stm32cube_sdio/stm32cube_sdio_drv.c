@@ -12,6 +12,10 @@
 
 #include <kernel/irq.h>
 
+#include <kernel/thread.h>
+#include <kernel/thread/thread_sched_wait.h>
+#include <kernel/sched.h>
+
 #include <drivers/gpio.h>
 
 #include <drivers/mmc/mmc_core.h>
@@ -25,6 +29,55 @@
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
+
+
+#define DMA_TRANSFER_STATE_IDLE      (0)
+#define DMA_TRANSFER_STATE_RX_START  (2)
+#define DMA_TRANSFER_STATE_RX_FIN    (3)
+#define DMA_TRANSFER_STATE_TX_START  (4)
+#define DMA_TRANSFER_STATE_TX_FIN    (5)
+
+static volatile int dma_transfer_state = DMA_TRANSFER_STATE_IDLE;
+static volatile struct schedee *dma_transfer_thread = NULL;
+
+irq_return_t stm32cube_sdio_dma_rx_irq(unsigned int irq_num, void *dev) {
+	SD_HandleTypeDef *phsd;
+
+	phsd = dev;
+
+	HAL_DMA_IRQHandler(phsd->hdmarx);
+
+	if (dma_transfer_state == DMA_TRANSFER_STATE_RX_START) {
+		dma_transfer_state = DMA_TRANSFER_STATE_RX_FIN;
+		sched_wakeup((struct schedee *)dma_transfer_thread);
+	}
+
+	return IRQ_HANDLED;
+}
+
+
+irq_return_t stm32cube_sdio_dma_tx_irq(unsigned int irq_num, void *dev) {
+	SD_HandleTypeDef *phsd;
+
+	phsd = dev;
+
+	HAL_DMA_IRQHandler(phsd->hdmatx);
+
+	if (dma_transfer_state == DMA_TRANSFER_STATE_TX_START) {
+		dma_transfer_state = DMA_TRANSFER_STATE_TX_FIN;
+		sched_wakeup((struct schedee *)dma_transfer_thread);
+	}
+
+	return IRQ_HANDLED;
+}
+
+
+irq_return_t stm32cube_sdio_irq_handler(unsigned int irq_num, void *arg) {
+	(void)irq_num;
+	(void)arg;
+	HAL_SD_IRQHandler(arg);
+	return 0;
+}
 
 static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *req) {
 	CUBE_CmdInitTypeDef  sdmmc_cmdinit = {0};
@@ -86,7 +139,8 @@ static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *re
 		config.DPSM          = SDMMC_DPSM_ENABLE;
 		(void)SDMMC_ConfigData(phsd->Instance, &config);
 #endif
-		HAL_SD_ReadBlocks(phsd, (void *) req->data.addr, req->cmd.arg, 1, 10000);
+		//HAL_SD_ReadBlocks(phsd, (void *) req->data.addr, req->cmd.arg, 1, 1000000);
+		HAL_SD_ReadBlocks_DMA(phsd, (void *) req->data.addr, req->cmd.arg, 1);
 		log_debug("Set datalen %d", req->data.blksz);
 		return ;
 
