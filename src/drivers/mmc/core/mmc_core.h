@@ -22,6 +22,7 @@ struct mmc_command {
 #define MMC_RSP_CRC     (1 << 2)
 #define MMC_RSP_BUSY    (1 << 3)
 #define MMC_RSP_OPCODE  (1 << 4)
+#define MMC_RSP_MASK    (0x1F)
 
 #define MMC_CMD_MASK    (3 << 5) /* non-SPI command type */
 #define MMC_CMD_AC      (0 << 5)
