@@ -79,6 +79,8 @@ irq_return_t stm32cube_sdio_irq_handler(unsigned int irq_num, void *arg) {
 	return 0;
 }
 
+#define SDMMC_CMDTIMEOUT                       5000U         /* Command send and response timeout */
+
 static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *req) {
 	CUBE_CmdInitTypeDef  sdmmc_cmdinit = {0};
 	int response;
@@ -97,7 +99,6 @@ static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *re
 	} else {
 		response = CUBE_RESPONSE_NO;
 	}
-
   
 	/* Set Block Size for Card */ 
 	sdmmc_cmdinit.Argument         = (uint32_t)req->cmd.arg;
@@ -106,7 +107,7 @@ static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *re
 	sdmmc_cmdinit.WaitForInterrupt = CUBE_WAIT_NO;
 	sdmmc_cmdinit.CPSM             = CUBE_CPSM_ENABLE;
 	(void)CUBE_SendCommand(phsd->Instance, &sdmmc_cmdinit);
-  
+
 	log_debug("send cmd (%d) arg (%x) resp (%d) longresp (%d)", req->cmd.opcode, req->cmd.arg,
 		 req->cmd.flags & MMC_RSP_PRESENT, req->cmd.flags & MMC_RSP_136);
 
@@ -116,6 +117,7 @@ static int stm32cube_sdio_send_cmd(struct mmc_host *host, struct mmc_request *re
 static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *req) {
 	uint32_t *buff;
 	SD_HandleTypeDef *phsd;
+	int response_flag = 1;
 
 	assert(host);
 	assert(req);
@@ -139,9 +141,9 @@ static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *re
 		config.DPSM          = SDMMC_DPSM_ENABLE;
 		(void)SDMMC_ConfigData(phsd->Instance, &config);
 #endif
-		//HAL_SD_ReadBlocks(phsd, (void *) req->data.addr, req->cmd.arg, 1, 1000000);
-		HAL_SD_ReadBlocks_DMA(phsd, (void *) req->data.addr, req->cmd.arg, 1);
-		log_debug("Set datalen %d", req->data.blksz);
+		HAL_SD_ReadBlocks(phsd, (void *) req->data.addr, req->cmd.arg, 1, 10000);
+		//HAL_SD_ReadBlocks_DMA(phsd, (void *) req->data.addr, req->cmd.arg, 1);
+		//log_debug("Set datalen %d", req->data.blksz);
 		return ;
 
 
@@ -149,10 +151,35 @@ static void stm32cube_sdio_request(struct mmc_host *host, struct mmc_request *re
 
 	stm32cube_sdio_send_cmd(host, req);
 
-	req->cmd.resp[0] = CUBE_GetResponse(phsd->Instance, CUBE_RESP1);
-	req->cmd.resp[1] = CUBE_GetResponse(phsd->Instance, CUBE_RESP2);
-	req->cmd.resp[2] = CUBE_GetResponse(phsd->Instance, CUBE_RESP3);
-	req->cmd.resp[3] = CUBE_GetResponse(phsd->Instance, CUBE_RESP4);
+	switch (req->cmd.flags & MMC_RSP_MASK) {
+		case 0:
+			response_flag = 0;
+			break;
+		case MMC_RSP_R1:
+		/* case MMC_RSP_R6: */
+		/* case MMC_RSP_R7: */
+			SDMMC_GetCmdResp1(phsd->Instance, req->cmd.opcode, SDMMC_CMDTIMEOUT);
+			response_flag = 1;
+		break;
+		case MMC_RSP_R2:
+			response_flag = 1;
+			SDMMC_GetCmdResp2(phsd->Instance);
+		break;
+		case MMC_RSP_R3:
+			response_flag = 1;
+			SDMMC_GetCmdResp3(phsd->Instance);
+		break;
+		default:
+		break;
+	}
+
+
+	if (response_flag) {
+		req->cmd.resp[0] = CUBE_GetResponse(phsd->Instance, CUBE_RESP1);
+		req->cmd.resp[1] = CUBE_GetResponse(phsd->Instance, CUBE_RESP2);
+		req->cmd.resp[2] = CUBE_GetResponse(phsd->Instance, CUBE_RESP3);
+		req->cmd.resp[3] = CUBE_GetResponse(phsd->Instance, CUBE_RESP4);
+	}
 
 	if (req->cmd.flags & MMC_DATA_XFER) {
 		int xfer = req->data.blksz * req->data.blocks;
