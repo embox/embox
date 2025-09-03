@@ -20,6 +20,8 @@
 #define MMC_DEV_QUANTITY OPTION_GET(NUMBER, dev_quantity)
 #define MMC_DEFAULT_NAME "mmc#" /* Sharp symbol is used for enumeration */
 
+#define MMC_BUS_WIDTH    OPTION_GET(NUMBER, bus_width)
+
 POOL_DEF(mmc_dev_pool, struct mmc_host, MMC_DEV_QUANTITY);
 INDEX_DEF(mmc_idx, 0, MMC_DEV_QUANTITY);
 
@@ -192,34 +194,49 @@ static void mmc_go_idle(struct mmc_host *host) {
 	mmc_send_cmd(host, 0, 0, 0, NULL);
 }
 
-int mmc_scan(struct mmc_host *host) {
-	assert(host);
+void mmc_set_bus_width(struct mmc_host *host, int width) {
+	uint32_t resp[4];
 
-	mmc_go_idle(host);
+	mmc_send_cmd(host, 55, 0x10000, MMC_RSP_R1, resp);
+	mmc_send_cmd(host, 6, width, MMC_RSP_R1, resp);
+}
+
+struct mmc_try_desc {
+	int (*mmc_try_func)(struct mmc_host *host);
+	char *type_name;
+};
 
 	/* The order is important! */
-	if (!mmc_try_sdio(host)) {
-		log_debug("SDIO detected");
+static const struct mmc_try_desc mmc_try_repo[3] = {
+	{ mmc_try_sdio, "SDIO"},
+	{ mmc_try_sd, "SD"},
+	{ mmc_try_mmc, "MMC"},
+};
+
+int mmc_scan(struct mmc_host *host) {
+	int res;
+	int i;
+
+	assert(host);
+
+	for (i = 0; i < 3; i ++) {
+		mmc_go_idle(host);
+		res = mmc_try_repo[i].mmc_try_func(host);
+		if (res == 0) {
+			log_debug("%s detected", mmc_try_repo[i].type_name);
+			break;
+		}
+	}
+	if (res == 0) {
+		if (MMC_BUS_WIDTH) {
+			mmc_set_bus_width(host, MMC_BUS_WIDTH);
+		}
 		create_partitions(host->bdev);
-		return 0;
+	} else {
+		log_debug("Failed to detect any memory card");
 	}
 
-	mmc_go_idle(host);
-	if (!mmc_try_sd(host)) {
-		log_debug("SD detected");
-		create_partitions(host->bdev);
-		return 0;
-	}
-
-	mmc_go_idle(host);
-	if (!mmc_try_mmc(host)) {
-		log_debug("MMC detected");
-		create_partitions(host->bdev);
-		return 0;
-	}
-
-	log_debug("Failed to detect any memory card");
-	return -1;
+	return res;
 }
 
 void mmc_dump_cid(uint32_t *cid) {
