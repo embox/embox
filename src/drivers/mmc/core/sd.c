@@ -5,6 +5,9 @@
  * @version
  * @date 05.11.2019
  */
+
+ #include <util/log.h>
+
 #include <unistd.h>
 #include <assert.h>
 
@@ -12,7 +15,13 @@
 #include <drivers/mmc/mmc.h>
 #include <drivers/mmc/mmc_core.h>
 #include <drivers/mmc/mmc_host.h>
-#include <util/log.h>
+
+
+#define OCR_HCS           (1u << 30) /* Flag for high-capacity storage.
+				     * We assume that HC supports it */
+#define OCR_READY         (1u << 31) /* When set to 1, SD card powerup is finished */
+#define SD_VOLTAGE_WINDOW 0xFF8000
+#define CMD55_VALID_RESP  0x120
 
 int mmc_try_sd(struct mmc_host *host) {
 	uint32_t resp[4];
@@ -21,11 +30,6 @@ int mmc_try_sd(struct mmc_host *host) {
 
 	mmc_send_cmd(host, 8, 0x1AA, MMC_RSP_R7 , resp);
 
-#define OCR_HCS           (1u << 30) /* Flag for high-capacity storage.
-				     * We assume that HC supports it */
-#define OCR_READY         (1u << 31) /* When set to 1, SD card powerup is finished */
-#define SD_VOLTAGE_WINDOW 0xFF8000
-#define CMD55_VALID_RESP  0x120
 	do {
 		usleep(10 * USEC_PER_MSEC);
 
