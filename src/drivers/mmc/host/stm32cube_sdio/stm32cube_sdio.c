@@ -31,18 +31,11 @@
 
 EMBOX_UNIT_INIT(stm32cube_sdio_init);
 
-extern const struct mmc_host_ops stm32cube_sdio_ops;
-
 #define SDIO_ID               OPTION_GET(NUMBER,sdio_id)
 
+#define USE_DMA               OPTION_GET(NUMBER,use_dma)
 
-#define __DMAx_TxRx_CLK_ENABLE            __HAL_RCC_DMA2_CLK_ENABLE
-#define SD_DMAx_Tx_CHANNEL                DMA_CHANNEL_11
-#define SD_DMAx_Rx_CHANNEL                DMA_CHANNEL_11
-#define SD_DMAx_Tx_STREAM                 DMA2_Stream5
-#define SD_DMAx_Rx_STREAM                 DMA2_Stream0
-#define SD_DMAx_Tx_IRQn                   DMA2_Stream5_IRQn
-#define SD_DMAx_Rx_IRQn                   DMA2_Stream0_IRQn
+extern const struct mmc_host_ops stm32cube_sdio_ops;
 
 
 #define SDIO_INSTANCE         MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_REGION_BASE)
@@ -50,8 +43,18 @@ extern const struct mmc_host_ops stm32cube_sdio_ops;
 #define SDIO_IRQ_NUM          MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_IRQ)
 #define SDIO_CLK_ENABLE       MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_CLK_ENABLE)()
 
-#define STM32_DMA_TX_IRQ      MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_IRQ_DMA_RX)
-#define STM32_DMA_RX_IRQ      MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_IRQ_DMA_TX)
+#define SDIO_DMA_TX_IRQ       MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_IRQ_DMA_RX)
+#define SDIO_DMA_RX_IRQ       MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_IRQ_DMA_TX)
+#define SDIO_DMA_CLK_ENABLE   MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_CLK_ENABLE_DMA)()
+#define SDIO_DMA_TX_CHANNEL   MACRO_CONCAT(DMA_CHANNEL_,MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_DMA_TX_CHANNEL))
+#define SDIO_DMA_RX_CHANNEL   MACRO_CONCAT(DMA_CHANNEL_,MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_DMA_TX_CHANNEL))
+
+#define SDIO_DMA_NUM          MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_DMA_NUM)
+#define SDIO_DMA_TX_STR_NUM   MACRO_CONCAT(_Stream,MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_DMA_TX_STREAM))
+#define SDIO_DMA_RX_STR_NUM   MACRO_CONCAT(_Stream,MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_DMA_RX_STREAM))
+
+#define SDIO_DMA_TX_STREAM    MACRO_CONCAT(DMA,MACRO_CONCAT(SDIO_DMA_NUM,SDIO_DMA_TX_STR_NUM))
+#define SDIO_DMA_RX_STREAM    MACRO_CONCAT(DMA,MACRO_CONCAT(SDIO_DMA_NUM,SDIO_DMA_RX_STR_NUM))
 
 
 #define TRANSFER_CLK_DIV      MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_CLK_DEF_TRANSFER_DIV)
@@ -77,9 +80,11 @@ extern const struct mmc_host_ops stm32cube_sdio_ops;
 #define SDIO_CMD_PIN            MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_PIN_CMD_NR)
 #define SDIO_CMD_FUNC           MACRO_CONCAT(MACRO_CONCAT(CONF_SDIO,SDIO_ID),_PIN_CMD_AF)
 
+#if USE_DMA
 extern irq_return_t stm32cube_sdio_dma_tx_irq(unsigned int irq_num, void *dev);
 extern irq_return_t stm32cube_sdio_irq_handler(unsigned int irq_num, void *arg);
 extern irq_return_t stm32cube_sdio_dma_rx_irq(unsigned int irq_num, void *dev);
+#endif /* USE_DMA */
 
 static int stm32cube_sdio_hw_init(void) {
 
@@ -113,13 +118,14 @@ static int stm32cube_sdio_hw_init(void) {
 }
 
 static int stm32_sdio_dma_init(SD_HandleTypeDef *phsd) {
+#if USE_DMA
 	static DMA_HandleTypeDef dma_rx_handle;
 	static DMA_HandleTypeDef dma_tx_handle;
 
 	/* Enable DMA2 clocks */
-	__DMAx_TxRx_CLK_ENABLE();
+	SDIO_DMA_CLK_ENABLE();
 	/* Configure DMA Rx parameters */
-	dma_rx_handle.Init.Channel             = SD_DMAx_Rx_CHANNEL;
+	dma_rx_handle.Init.Channel             = SDIO_DMA_RX_CHANNEL;
 	dma_rx_handle.Init.Direction           = DMA_PERIPH_TO_MEMORY;
 	dma_rx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
 	dma_rx_handle.Init.MemInc              = DMA_MINC_ENABLE;
@@ -132,7 +138,7 @@ static int stm32_sdio_dma_init(SD_HandleTypeDef *phsd) {
 	dma_rx_handle.Init.MemBurst            = DMA_MBURST_INC4;
 	dma_rx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 	
-	dma_rx_handle.Instance = SD_DMAx_Rx_STREAM;
+	dma_rx_handle.Instance = SDIO_DMA_RX_STREAM;
 
 	/* Associate the DMA handle */
 	__HAL_LINKDMA(phsd, hdmarx, dma_rx_handle);
@@ -144,7 +150,7 @@ static int stm32_sdio_dma_init(SD_HandleTypeDef *phsd) {
 	HAL_DMA_Init(&dma_rx_handle);
 	
 	/* Configure DMA Tx parameters */
-	dma_tx_handle.Init.Channel             = SD_DMAx_Tx_CHANNEL;
+	dma_tx_handle.Init.Channel             = SDIO_DMA_TX_CHANNEL;
 	dma_tx_handle.Init.Direction           = DMA_MEMORY_TO_PERIPH;
 	dma_tx_handle.Init.PeriphInc           = DMA_PINC_DISABLE;
 	dma_tx_handle.Init.MemInc              = DMA_MINC_ENABLE;
@@ -157,7 +163,7 @@ static int stm32_sdio_dma_init(SD_HandleTypeDef *phsd) {
 	dma_tx_handle.Init.MemBurst            = DMA_MBURST_INC4;
 	dma_tx_handle.Init.PeriphBurst         = DMA_PBURST_INC4;
 
-	dma_tx_handle.Instance = SD_DMAx_Tx_STREAM;
+	dma_tx_handle.Instance = SDIO_DMA_TX_STREAM;
 
 	/* Associate the DMA handle */
 	__HAL_LINKDMA(phsd, hdmatx, dma_tx_handle);
@@ -168,7 +174,7 @@ static int stm32_sdio_dma_init(SD_HandleTypeDef *phsd) {
 
 	/* Configure the DMA stream */
 	HAL_DMA_Init(&dma_tx_handle);
-
+#endif /* USE_DMA */
 	return 0;
 }
 
@@ -184,16 +190,16 @@ static int stm32cube_sdio_init(void) {
 
 	mmc->ops = &stm32cube_sdio_ops;
 	mmc->priv = &hsd;
-
-	res = irq_attach(STM32_DMA_RX_IRQ, stm32cube_sdio_dma_rx_irq, 0, NULL,
-									"stm32_dma_rx_irq");
+#if USE_DMA
+	res = irq_attach(SDIO_DMA_RX_IRQ, stm32cube_sdio_dma_rx_irq, 0, NULL,
+									"sd_dma_rx_irq");
 	if (res != 0) {
 		log_error("irq_attach error");
 		return -1;
 	}
 
-	res = irq_attach(STM32_DMA_TX_IRQ, stm32cube_sdio_dma_tx_irq, 0, NULL,
-									"stm32_dma_tx_irq");
+	res = irq_attach(SDIO_DMA_TX_IRQ, stm32cube_sdio_dma_tx_irq, 0, NULL,
+									"sd_dma_tx_irq");
 	if (res != 0) {
 		log_error("irq_attach error");
 		return -1;
@@ -208,11 +214,15 @@ static int stm32cube_sdio_init(void) {
 
 	/* SDMMC2 irq priority should be higher that DMA due to
 	 * STM32Cube implementation. */
-	irqctrl_set_prio(STM32_DMA_RX_IRQ, 10);
-	irqctrl_set_prio(STM32_DMA_TX_IRQ, 10);
+	irqctrl_set_prio(SDIO_DMA_RX_IRQ, 10);
+	irqctrl_set_prio(SDIO_DMA_TX_IRQ, 10);
 	irqctrl_set_prio(SDIO_IRQ_NUM, 11);
-
-	stm32cube_sdio_hw_init();
+#endif /* USE_DMA */
+	res = stm32cube_sdio_hw_init();
+	if (res != 0) {
+		log_error("stm32cube_sdio_hw_init error");
+		return -1;
+	}
 
 	/* USER CODE END SDIO_Init 1 */
 	hsd.Instance = (void*)((uintptr_t)SDIO_INSTANCE);
@@ -224,7 +234,11 @@ static int stm32cube_sdio_init(void) {
 	hsd.Init.ClockDiv = TRANSFER_CLK_DIV;
 	/* USER CODE BEGIN SDIO_Init 2 */
 
-	stm32_sdio_dma_init(&hsd);
+	res = stm32_sdio_dma_init(&hsd);
+	if (res != 0) {
+		log_error("stm32_sdio_dma_init error");
+		return -1;
+	}
 
 	// Общая настройка.
 	// https://imax9.narod.ru/publs/F407les04.html
@@ -241,12 +255,13 @@ static int stm32cube_sdio_init(void) {
 		return 0;
 	}
 
-
 	mmc_scan(mmc);
 
 	return 0;
 }
 
-STATIC_IRQ_ATTACH(STM32_DMA_RX_IRQ, stm32cube_sdio_dma_rx_irq,  &hsd);
-STATIC_IRQ_ATTACH(STM32_DMA_TX_IRQ, stm32cube_sdio_dma_tx_irq,  &hsd);
+#if USE_DMA
+STATIC_IRQ_ATTACH(SDIO_DMA_RX_IRQ, stm32cube_sdio_dma_rx_irq,  &hsd);
+STATIC_IRQ_ATTACH(SDIO_DMA_TX_IRQ, stm32cube_sdio_dma_tx_irq,  &hsd);
 STATIC_IRQ_ATTACH(SDIO_IRQ_NUM, stm32cube_sdio_irq_handler, &hsd);
+#endif /* USE_DMA */
