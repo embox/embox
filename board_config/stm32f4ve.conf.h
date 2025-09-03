@@ -234,9 +234,17 @@ struct mmc_conf mmcs[] = {
 			.clocks = {
 				VAL("", STM32_CLK_ENABLE(SDIO)),
 				VAL("TRANSFER_DIV", 4),
+				VAL("DMA", STM32_CLK_ENABLE(DMA2)),
 			},
 			.misc = {
 				VAL("NAME_IN_CUBE_SDIO", 1),
+			},
+			.dmas = {
+				VAL("NUM", 2),
+				VAL("TX_CHANNEL", 4),
+				VAL("RX_CHANNEL", 4),
+				VAL("TX_STREAM", 6),
+				VAL("RX_STREAM", 3),
 			},
 		},
 	},
