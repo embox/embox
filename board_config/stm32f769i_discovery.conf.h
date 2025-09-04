@@ -115,6 +115,8 @@ struct mmc_conf mmcs[] = {
 			},
 			.irqs = {
 				VAL("", 103),
+				VAL("DMA_RX", 56),
+				VAL("DMA_TX", 68),
 			},
 			.pins = {
 				PIN("D0", GPIO_PORT_B, 3, AF10),
@@ -130,9 +132,17 @@ struct mmc_conf mmcs[] = {
 			.clocks = {
 				VAL("", STM32_CLK_ENABLE(SDMMC2)),
 				VAL("TRANSFER_DIV", 0),
+				VAL("DMA", STM32_CLK_ENABLE(DMA2)),
 			},
 			.misc = {
 				VAL("NAME_IN_CUBE_SDMMC", 1),
+			},
+			.dmas = {
+				VAL("NUM", 2),
+				VAL("TX_CHANNEL", 11),
+				VAL("RX_CHANNEL", 11),
+				VAL("TX_STREAM", 5),
+				VAL("RX_STREAM", 0),
 			},
 		},
 	}
