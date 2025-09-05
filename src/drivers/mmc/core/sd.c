@@ -15,7 +15,7 @@
 #include <drivers/mmc/mmc_host.h>
 #include <util/log.h>
 
-#include "sd_mmc_cmd.h"
+#include "sd_cmd.h"
 
 int mmc_try_sd(struct mmc_host *host) {
 	uint32_t resp[4];
