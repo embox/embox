@@ -43,26 +43,26 @@ int mmc_try_mmc(struct mmc_host *host) {
 		return -1;
 	}
 
-	if (!(resp[0] & 0x40000000)) {
+	if (!(resp[0] & MMC_CSD_V2_MASK)) {
 		host->high_capacity = 1;
 		size = ((resp[1] >> 8) & 0x3) << 10;
-		size |= (resp[1] & 0xFF) << 2;
+		size |= (resp[1] & MMC_BYTE_MASK) << 2;
 
-		size = 256 * 1024 * (size + 1);
+		size = MMC_STD_CAPACITY_MULT * (size + 1);
 		log_debug("Size = %lld bytes (High-Capacity SD)", size);
 	}
 	else {
 		host->high_capacity = 0;
-		size = (resp[1] & 0xFF) << 16;
-		size |= ((resp[2] >> 24) & 0xFF) << 8;
-		size |= (resp[2] >> 16) & 0xFF;
-		size = 512 * 1024 * (size + 1);
+		size = (resp[1] & MMC_BYTE_MASK) << 16;
+		size |= ((resp[2] >> 24) & MMC_BYTE_MASK) << 8;
+		size |= (resp[2] >> 16) & MMC_BYTE_MASK;
+		size = MMC_HIGH_CAPACITY_MULT * (size + 1);
 		log_debug("Size = %lld bytes (Standart Capacity SD)", size);
 	}
 
 	assert(host->bdev);
 	host->bdev->size = size;
-	host->bdev->block_size = 512;
+	host->bdev->block_size = MMC_BYTES_PER_BLOCK;
 
 	mmc_send_cmd(host, MMC_SELECT_CARD, host->rca << 16, 0, resp);
 
