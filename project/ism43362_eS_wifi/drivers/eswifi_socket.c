@@ -28,30 +28,48 @@
 
 #include <framework/mod/options.h>
 
-int eswifi_sock_init(struct sock *sk) {
+
+extern int __eswifi_socket_select(struct sock *sk, int idx);
+
+extern int __eswifi_socket_init(struct sock *sk);
+
+extern int __eswifi_sock_bind(struct sock *sk, const struct sockaddr *addr,
+                            socklen_t addrlen) ;
+
+extern int __eswifi_sock_connect(struct sock *sk, const struct sockaddr *addr,
+                            socklen_t addrlen, int flags);
+extern int __eswifi_sock_listen(struct sock *sk, int len); 
+extern int __eswifi_sock_accept(struct sock *sk, struct sockaddr *addr,
+                            socklen_t *addrlen, int flags);
+
+static int eswifi_sock_init(struct sock *sk) {
+    __eswifi_socket_init(sk);
     return 0;
 }
 
-int eswifi_sock_close(struct sock *sk) {
+static int eswifi_sock_close(struct sock *sk) {
     return 0;
 }
 
-int eswifi_sock_bind(struct sock *sk, const struct sockaddr *addr,
+static int eswifi_sock_bind(struct sock *sk, const struct sockaddr *addr,
                             socklen_t addrlen) {
+    __eswifi_sock_bind(sk, addr, addrlen);
     return 0;
  }
 
-int eswifi_sock_connect(struct sock *sk, const struct sockaddr *addr,
+static int eswifi_sock_connect(struct sock *sk, const struct sockaddr *addr,
                             socklen_t addrlen, int flags) {
     return 0;
 }
 
-int eswifi_sock_listen(struct sock *sk, int len) {
+static int eswifi_sock_listen(struct sock *sk, int backlog) {
+    __eswifi_sock_listen(sk, backlog);
     return 0;
 }
 
-int eswifi_sock_accept(struct sock *sk, struct sockaddr *addr,
+static int eswifi_sock_accept(struct sock *sk, struct sockaddr *addr,
                             socklen_t *addrlen, int flags, struct sock **out_sk) {
+    __eswifi_sock_accept(sk, addr, addrlen, flags);
     return 0;
 }
 
