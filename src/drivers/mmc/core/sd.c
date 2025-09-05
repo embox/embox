@@ -18,6 +18,10 @@
 #include "sd_cmd.h"
 
 int mmc_try_sd(struct mmc_host *host) {
+	if (!host || !host->bdev) {
+		log_error("mmc_try_sd: host is NULL");
+		return -1;
+	}
 	uint32_t resp[4];
 	uint64_t size;
 	int retry = 5;
@@ -78,7 +82,10 @@ int mmc_try_sd(struct mmc_host *host) {
 		log_debug("Size = %lld bytes (Standart Capacity SD)", size);
 	}
 
-	assert(host->bdev);
+	if (!host->bdev) {
+		log_error("mmc_try_sd: host->bdev is NULL");
+		return -1;
+	}
 	host->bdev->size = size;
 	host->bdev->block_size = BYTES_PER_BLOCK;
 
