@@ -3,14 +3,18 @@
 
 #include <linux/types.h>
 
+
 /* Standard MMC commands (4.1)           type  argument     response */
-   /* class 1 */
+
+#define VOLTAGE_WINDOW_MMC 0x00FF8080 /* Taken from u-boot */
+
+/* class 1 */
 #define MMC_GO_IDLE_STATE         0   /* bc                          */
 #define MMC_SEND_OP_COND          1   /* bcr  [31:0] OCR         R3  */
 #define MMC_ALL_SEND_CID          2   /* bcr                     R2  */
 #define MMC_SET_RELATIVE_ADDR     3   /* ac   [31:16] RCA        R1  */
 #define MMC_SET_DSR               4   /* bc   [31:16] RCA            */
-#define MMC_SLEEP_AWAKE		  5   /* ac   [31:16] RCA 15:flg R1b */
+#define MMC_SLEEP_AWAKE		      5   /* ac   [31:16] RCA 15:flg R1b */
 #define MMC_SWITCH                6   /* ac   [31:0] See below   R1b */
 #define MMC_SELECT_CARD           7   /* ac   [31:16] RCA        R1  */
 #define MMC_SEND_EXT_CSD          8   /* adtc                    R1  */
@@ -55,6 +59,7 @@
   /* class 9 */
 #define MMC_FAST_IO              39   /* ac   <Complex>          R4  */
 #define MMC_GO_IRQ_STATE         40   /* bcr                     R5  */
+
 
   /* class 7 */
 #define MMC_LOCK_UNLOCK          42   /* adtc                    R1b */
