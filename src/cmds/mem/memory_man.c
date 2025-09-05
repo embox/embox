@@ -2,20 +2,27 @@
  * @file memory_man.c
  * @brief Memory utilities
  * @author Mikhael Kaa (Михаил Каа)
- * @date 21.06.2025
+ * @date 05.09.2025
  */
 
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include <inttypes.h>
+
+// Constants
+#define PROGRESS_UPDATE_BYTES (8 * 1024)  // 8KB
+#define BYTES_PER_LINE 16
+#define MAX_ERRORS_TO_PRINT 10
 
 static void print_usage(void);
 static void mem_dump(uint8_t *buf, uint32_t len);
 static uint32_t mem_test(uint8_t *buf, uint32_t len);
 
 int main(int argc, char *argv[]) {
-    uint32_t addr, data, len;
+    uintptr_t addr, src;  
+    uint32_t data, len;
     uint8_t *ptr;
 
     switch (argc) {
@@ -26,7 +33,7 @@ int main(int argc, char *argv[]) {
     
     case 3:
         if (strcmp(argv[1], "read") == 0) {
-            if (sscanf(argv[2], "%lx", &addr) != 1) {
+            if (sscanf(argv[2], "%" SCNxPTR, &addr) != 1) { 
                 printf("Invalid address format\n");
                 return -EINVAL;
             }
@@ -38,8 +45,8 @@ int main(int argc, char *argv[]) {
     
     case 4:
         if (strcmp(argv[1], "test") == 0) {
-            if (sscanf(argv[2], "%lx", &addr) != 1 ||
-                sscanf(argv[3], "%lx", &len) != 1) 
+            if (sscanf(argv[2], "%" SCNxPTR, &addr) != 1 ||
+                sscanf(argv[3], "%x", &len) != 1)  
             {
                 printf("Invalid arguments format\n");
                 return -EINVAL;
@@ -48,8 +55,8 @@ int main(int argc, char *argv[]) {
         }
         
         if (strcmp(argv[1], "dump") == 0) {
-            if (sscanf(argv[2], "%lx", &addr) != 1 ||
-                sscanf(argv[3], "%lx", &len) != 1) 
+            if (sscanf(argv[2], "%" SCNxPTR, &addr) != 1 ||
+                sscanf(argv[3], "%x", &len) != 1) 
             {
                 printf("Invalid arguments format\n");
                 return -EINVAL;
@@ -59,8 +66,8 @@ int main(int argc, char *argv[]) {
         }
         
         if (strcmp(argv[1], "write") == 0) {
-            if (sscanf(argv[2], "%lx", &addr) != 1 ||
-                sscanf(argv[3], "%lx", &data) != 1) 
+            if (sscanf(argv[2], "%" SCNxPTR, &addr) != 1 ||
+                sscanf(argv[3], "%x", &data) != 1) 
             {
                 printf("Invalid arguments format\n");
                 return -EINVAL;
@@ -73,10 +80,9 @@ int main(int argc, char *argv[]) {
     
     case 5:
         if (strcmp(argv[1], "cpy") == 0) {
-            uint32_t src;
-            if (sscanf(argv[2], "%lx", &addr) != 1 ||
-                sscanf(argv[3], "%lx", &src) != 1 ||
-                sscanf(argv[4], "%lx", &len) != 1) 
+            if (sscanf(argv[2], "%" SCNxPTR, &addr) != 1 ||
+                sscanf(argv[3], "%" SCNxPTR, &src) != 1 ||
+                sscanf(argv[4], "%x", &len) != 1) 
             {
                 printf("Invalid arguments format\n");
                 return -EINVAL;
@@ -107,16 +113,15 @@ static void print_usage(void) {
 
 static void mem_dump(uint8_t *buf, uint32_t len) {
     uint32_t i = 0;
-    uint32_t current_addr = (uint32_t)buf;
-    const uint32_t bytes_per_line = 16;
+    uintptr_t current_addr = (uintptr_t)buf;
     
     while (i < len) {
         /* Print address at start of each line */
-        printf("0x%08lx: ", (unsigned long)current_addr);
+        printf("0x%08" PRIxPTR ": ", current_addr);
         
         /* Print hex values */
         uint32_t bytes_printed = 0;
-        for (uint32_t j = 0; j < bytes_per_line; j++) {
+        for (uint32_t j = 0; j < BYTES_PER_LINE; j++) {
             if (i + j < len) {
                 printf("%02x ", buf[i + j]);
                 bytes_printed++;
@@ -143,12 +148,18 @@ static uint32_t mem_test(uint8_t *buf, uint32_t len) {
     volatile uint8_t *b = buf;
     const uint8_t patterns[] = {0x00, 0x55, 0xAA, 0xFF};
     const int num_patterns = sizeof(patterns) / sizeof(patterns[0]);
-    const uint32_t max_errors_to_print = 10;
+    
+
+    const uint32_t progress_interval = (len > PROGRESS_UPDATE_BYTES) ? 
+                                      PROGRESS_UPDATE_BYTES : 
+                                      (len / 16 + 1);
 
     if (len == 0) {
         printf("Zero-length test skipped\n");
         return 0;
     }
+
+    printf("Testing %" PRIu32 " bytes...\n", len);
 
     for (uint32_t i = 0; i < len; i++) {
         uint8_t original = b[i];
@@ -159,9 +170,9 @@ static uint32_t mem_test(uint8_t *buf, uint32_t len) {
             b[i] = test_val;
             
             if (b[i] != test_val) {
-                if (error_count < max_errors_to_print) {
-                    printf("ERROR @ 0x%08lx: Wrote 0x%02X, Read 0x%02X\n", 
-                          (unsigned long)(b + i), test_val, b[i]);
+                if (error_count < MAX_ERRORS_TO_PRINT) {
+                    printf("ERROR @ 0x%08" PRIxPTR ": Wrote 0x%02X, Read 0x%02X\n", 
+                          (uintptr_t)(b + i), test_val, b[i]);
                 }
                 error_count++;
             }
@@ -170,24 +181,28 @@ static uint32_t mem_test(uint8_t *buf, uint32_t len) {
         /* Restore original value */
         b[i] = original;
         if (b[i] != original) {
-            if (error_count < max_errors_to_print) {
-                printf("RESTORE ERROR @ 0x%08lx! Original: 0x%02X, Current: 0x%02X\n",
-                      (unsigned long)(b + i), original, b[i]);
+            if (error_count < MAX_ERRORS_TO_PRINT) {
+                printf("RESTORE ERROR @ 0x%08" PRIxPTR "! Original: 0x%02X, Current: 0x%02X\n",
+                      (uintptr_t)(b + i), original, b[i]);
             }
             error_count++;
         }
 
         /* Progress indicator */
-        if ((i % 8192) == 0) {
-            printf("Tested %lu/%lu bytes (errors: %lu)\n", i, len, error_count);
+        if (progress_interval > 0 && (i % progress_interval) == 0) {
+            printf("Progress: %lu/%lu bytes (errors: %lu)\r", i, len, error_count);
+            fflush(stdout); 
         }
     }
 
+    printf("\n"); 
+
     /* Final report */
     if (error_count == 0) {
-        printf("Memory test PASSED: %lu bytes\n", len);
+        printf("Memory test PASSED: %" PRIu32 " bytes\n", len);
     } else {
-        printf("Memory test FAILED! Errors: %lu/%lu bytes\n", error_count, len);
+        printf("Memory test FAILED! Errors: %" PRIu32 "/%" PRIu32 " bytes\n", 
+               error_count, len);
     }
     
     return error_count;
