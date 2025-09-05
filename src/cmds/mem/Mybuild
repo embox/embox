@@ -1,6 +1,6 @@
 package embox.cmd
 @AutoCmd
-@Cmd(name = "mem", help="mem tool")
+@Cmd(name = "mem_man", help="mem tool")
 module mem {
     source "memory_man.c"
 }
