@@ -24,6 +24,11 @@
 				     * We assume that HC supports it */
 #define OCR_READY         (1u << 31) /* When set to 1, SD card powerup is finished */
 #define SD_VOLTAGE_WINDOW 0xFF8000
+#define BYTES_PER_BLOCK   512u
+#define CSD_V2_MASK       0x40000000 /* CSD structure version 2.0 */
+#define SD_STD_CAPACITY_MULT   (256 * 1024)
+#define SD_HIGH_CAPACITY_MULT  (512 * 1024)
+#define SD_BYTE_MASK      0xFF
 #define CMD55_VALID_RESP  0x120
 
 
