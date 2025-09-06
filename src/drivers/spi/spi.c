@@ -31,27 +31,12 @@ static int spi_init(void) {
 	struct spi_device *dev;
 	struct spi_controller *cntl;
 
-	array_spread_foreach(cntl, __spi_controller_registry) {
-		assert(cntl);
-
-		if (!cntl->spi_ops) {
-			continue;
-		}
-
-		if (cntl->spi_ops->init) {
-			cntl->spi_ops->init(cntl);
-		}
-		else {
-			log_warning("SPI%d has no init funcion", cntl->spic_bus_num);
-		}
-	}
-
 	array_spread_foreach(dev, __spi_device_registry) {
 		assert(dev);
-	
+
 		cntl = spi_controller_by_id(dev->spid_bus_num);
 		dev->spid_spi_cntl = cntl;
-	
+
 		if (cntl && cntl->spi_ops && cntl->spi_ops->init) {
 			cntl->spi_ops->init(cntl);
 		}
@@ -83,18 +68,22 @@ EMBOX_UNIT_INIT(spi_init);
  */
 int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt) {
 	struct spi_controller *cntl;
+	int err;
 
 	assert(dev);
 	assert(in || out);
 
 	cntl = dev->spid_spi_cntl;
 	if (cntl && cntl->spi_ops && cntl->spi_ops->transfer) {
-		return cntl->spi_ops->transfer(cntl, in, out, cnt);
+		/** TODO: lock ??? */
+		cntl->flags = dev->flags;
+		err = cntl->spi_ops->transfer(cntl, in, out, cnt);
+		/** TODO: unlock ??? */
+		return err;
 	}
 
 	if (dev->spi_ops->transfer == NULL) {
-		log_debug("Transfer operation is not supported for SPI%d",
-		    spi_dev_id(dev));
+		log_debug("Transfer operation is not supported for SPI%d", spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
@@ -115,8 +104,7 @@ int spi_select(struct spi_device *dev, int cs) {
 	}
 
 	if (dev->spi_ops->select == NULL) {
-		log_debug("Select operation is not supported for SPI%d",
-		    spi_dev_id(dev));
+		log_debug("Select operation is not supported for SPI%d", spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
@@ -137,8 +125,7 @@ static int spi_set_mode(struct spi_device *dev, bool is_master) {
 	}
 
 	if (dev->spi_ops->set_mode == NULL) {
-		log_debug("SPI mode setting is not supported for SPI%d",
-		    spi_dev_id(dev));
+		log_debug("SPI mode setting is not supported for SPI%d", spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
