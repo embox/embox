@@ -265,16 +265,16 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	ret = sk->f_ops->accept(sk, addr, addrlen, flags, &new_sk);
-	if (ret != 0) {
-		log_error("error while accepting a connection");
-		return ret;
-	}
-
 	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
 		if (sk->sock_netdev->nd_net_offload->accept) {
 			ret = sk->sock_netdev->nd_net_offload->accept(sk, addr, addrlen, flags, &new_sk);
 		}
+	}
+
+	ret = sk->f_ops->accept(sk, addr, addrlen, flags, &new_sk);
+	if (ret != 0) {
+		log_error("error while accepting a connection");
+		return ret;
 	}
 
 	sock_set_state(new_sk, SS_ESTABLISHED);
