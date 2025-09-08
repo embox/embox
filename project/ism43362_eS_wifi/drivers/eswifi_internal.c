@@ -28,6 +28,8 @@
 
 #include <libs/ism43362.h>
 
+#include "eswifi_drv.h"
+
 #include <framework/mod/options.h>
 
 #define ESWIFI_TYPE_PROTOCOL_TCP        0

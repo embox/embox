@@ -12,8 +12,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <util/macro.h>
+
+#include <kernel/time/timer.h>
+#include <kernel/time/time.h>
 
 #include <net/l2/ethernet.h>
 #include <net/l0/net_entry.h>
@@ -23,6 +27,8 @@
 #include <net/cfg80211.h>
 
 #include <libs/ism43362.h>
+
+#include "eswifi_drv.h"
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -35,6 +41,8 @@
 #define WIFI_SECURITYTYPE  ESWIFI_SECURITY_WPA2
 
 EMBOX_UNIT_INIT(eswifi_init);
+
+struct eswifi_dev eswifi_dev;
 
 static int eswifi_xmit(struct net_device *dev, struct sk_buff *skb) {
 
@@ -277,12 +285,16 @@ static const struct cfg80211_ops eswifi_cfg80211_ops = {
 static struct wireless_dev eswifi_wdev;
 extern const struct sock_family_ops eswifi_sock_family_ops ;
 
+
+
 static int eswifi_init(void) {
 	struct net_device *nic;
 	int res;
 	struct wiphy *wiphy;
 
 	res = 0;
+
+	eswifi_dev.state = 0;
 
 	nic = etherdev_alloc(0);
 	if (NULL == nic) {
@@ -309,5 +321,9 @@ static int eswifi_init(void) {
 
 	res = cfg80211_register_netdevice(nic);
 
+	//timer_init(&eswifi_dev.eswifi_timer, TIMER_PERIODIC, eswifi_poll_handler, &eswifi_dev);
+
+
 	return res;
 }
+
