@@ -13,6 +13,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
@@ -39,11 +40,10 @@
 
 int __eswifi_socket_select(struct sock *sk, int idx) {
     int err;
-    char buf[64];
-	char rx_buffer[64];
+    char buf[16];
 
     snprintf(buf, sizeof(buf), "P0=%d\r", idx);
-    err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+    err = ism43362_exchange((char *)buf, strlen(buf),  eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
 
     return err;
 }
@@ -51,7 +51,7 @@ int __eswifi_socket_select(struct sock *sk, int idx) {
 int __eswifi_socket_init(struct sock *sk) {
     int err;
     char buf[64];
-	char rx_buffer[64];
+
     int proto;
 
 	__eswifi_socket_select(sk, 0);
@@ -63,7 +63,7 @@ int __eswifi_socket_init(struct sock *sk) {
     }
 
     snprintf(buf, sizeof(buf), "P1=%d\r", proto);
-    err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+    err = ism43362_exchange((char *)buf, strlen(buf),  eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
 
     return err;
 }
@@ -71,8 +71,7 @@ int __eswifi_socket_init(struct sock *sk) {
 int __eswifi_sock_bind(struct sock *sk, const struct sockaddr *addr,
                             socklen_t addrlen) {
     int err;
-    char buf[64];
-	char rx_buffer[64];
+    char buf[16];
     uint16_t port;
 
 	__eswifi_socket_select(sk, 0);
@@ -86,7 +85,7 @@ int __eswifi_sock_bind(struct sock *sk, const struct sockaddr *addr,
 
 	/* Set Local Port */
 	snprintf(buf, sizeof(buf), "P2=%d\r", port);
-    err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+    err = ism43362_exchange((char *)buf, strlen(buf),  eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
 	if (err < 0) {
 		log_error("Unable to set local port");
 		return -EIO;
@@ -112,14 +111,13 @@ int __eswifi_sock_connect(struct sock *sk, const struct sockaddr *addr,
 
 int __eswifi_sock_listen(struct sock *sk, int len) {
     int err;
-    char buf[64];
-	char rx_buffer[64];
+    char buf[16];
 
 	__eswifi_socket_select(sk, 0);
 
 	/* Set backlog */
 	snprintf(buf, sizeof(buf), "P8=%d\r", len);
-    err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+    err = ism43362_exchange((char *)buf, strlen(buf),  eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
     if (err < 0) {
 		log_error("Unable to listen");
 		return -EIO;
@@ -131,18 +129,51 @@ int __eswifi_sock_listen(struct sock *sk, int len) {
 int __eswifi_sock_accept(struct sock *sk, struct sockaddr *addr,
                             socklen_t *addrlen, int flags) {
     int err;
-    char buf[64];
-	char rx_buffer[64];
+    char buf[16];
 
 	__eswifi_socket_select(sk, 0);
 
 	/* Start TCP server */
 	snprintf(buf, sizeof(buf), "P5=%d\r", 1);
-    err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+    err = ism43362_exchange((char *)buf, strlen(buf),  eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
     if (err < 0) {
 		log_error("Unable to accept");
 		return -EIO;
 	}
 
     return 0;
+}
+
+
+int __eswifi_sock_recvmsg(struct sock *sk, char *buf_msg, int len) {
+	int ret;
+	char buf[16];
+
+	__eswifi_socket_select(sk, 0);
+
+	/* Set max read size */
+	snprintf(buf, sizeof(buf), "R1=%u\r", len);
+	ret = ism43362_exchange((char *)buf, strlen(buf), eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
+	if (ret < 0) {
+		log_error("Unable to set read size");
+		return -EIO;
+	}
+
+	/* Set timeout */
+	snprintf(buf, sizeof(buf), "R2=%u\r", 30); /* 30 ms */
+	ret = ism43362_exchange((char *)buf, strlen(buf),  eswifi_dev.rx_buf, sizeof(eswifi_dev.rx_buf));
+	if (ret < 0) {
+		log_error("Unable to set timeout");
+		return -EIO;
+	}
+
+	ret = ism43362_exchange((char *)buf, strlen(buf), buf_msg, len);
+	if (ret < 0) {
+		log_error("Unable to read");
+		return -EIO;
+	}
+
+	log_debug("%s", buf);
+
+	return 0;
 }

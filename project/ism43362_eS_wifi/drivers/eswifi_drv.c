@@ -139,6 +139,9 @@ static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 		ip_num = inet_addr(ip); 
 
 		inetdev_set_addr(iface, ip_num);
+
+		memcpy(&eswifi_dev.src_in.sin_addr, ip, 4);
+		eswifi_dev.src_in.sin_family = AF_INET;
 	}
 
 	/* Get netmask (DHCP enabled)*/
@@ -180,6 +183,8 @@ static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 	}
 
 	log_info(rx_buffer);
+
+	eswifi_dev.netdev = dev;
 
 	eswifi_get_macaddr(dev, mac_bytes);
 	memcpy(dev->dev_addr, mac_bytes, 6);
