@@ -53,7 +53,6 @@ int graphic_init(void) {
 		return -EIO;
 	}
 
-	probe_uart_from_dtb_file();
 	return 0;
 
 }
