@@ -62,8 +62,15 @@ module cpu_idle extends embox.arch.cpu_idle {
 }
 
 module devicetree_probe {
-	@InitFS
-	source "stm32f4_uart.dtb"
+	source "devicetree/stm32f4_uart.dtb"
 	source "devicetree.c"
 	@NoRuntime depends third_party.libfdt
+}
+
+module devicetree_init {
+	@Runlevel(1)
+	source "devicetree_init.c"
+	source "devicetree.c"
+	@InitFS
+	source "devictree/stm32f4_uart.dtb"
 }
