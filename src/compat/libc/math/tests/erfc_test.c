@@ -2,7 +2,7 @@
  * @file
  *
  * @date September 10, 2025
- * @author StanislavKidun
+ * @author Stanislav Kidun
  */
 
 #include <math.h>
