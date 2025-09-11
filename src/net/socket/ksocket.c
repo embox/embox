@@ -365,15 +365,15 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -EOPNOTSUPP;
 	}
 
-	ret = sk->f_ops->recvmsg(sk, msg, flags);
-	if (ret != 0) {
-		return ret;
-	}
-
 	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
 		if (sk->sock_netdev->nd_net_offload->recvmsg) {
 			ret = sk->sock_netdev->nd_net_offload->recvmsg(sk, msg, flags);
 		}
+	}
+
+	ret = sk->f_ops->recvmsg(sk, msg, flags);
+	if (ret != 0) {
+		return ret;
 	}
 
 	return ret;
