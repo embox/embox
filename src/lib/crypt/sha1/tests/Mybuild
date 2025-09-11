@@ -1,0 +1,7 @@
+package embox.lib.crypt
+
+module sha1_test {
+	source "sha1_test.c"
+	
+	depends embox.lib.crypt.sha1
+}

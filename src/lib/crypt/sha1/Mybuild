@@ -1,0 +1,8 @@
+package embox.lib.crypt
+
+static module sha1 {
+	source "sha1.c"
+
+	@IncludeExport(path="lib/crypt")
+	source "sha1.h"
+}
