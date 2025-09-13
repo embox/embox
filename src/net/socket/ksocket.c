@@ -20,6 +20,7 @@
 #include <net/sock.h>
 #include <net/socket/ksocket.h>
 #include <net/netdevice.h>
+#include <net/inetdevice.h>
 
 #include <framework/mod/options.h>
 #include <kernel/time/time.h>
@@ -29,12 +30,34 @@
 
 #define MODOPS_CONNECT_TIMEOUT OPTION_GET(NUMBER, connect_timeout)
 
+static inline struct net_device *find_netdev_with_ops(void) {
+	struct net_device *dev;
+	struct in_device *id;
+
+	for (id = inetdev_get_first(); id!= NULL; id = inetdev_get_next(id)) {
+		dev = id->dev;
+		if (dev && dev->nd_net_offload) {
+			return dev;
+		}
+	}
+
+	return NULL;
+}
+
 struct sock *ksocket(int family, int type, int protocol) {
 	struct sock *new_sk;
 
 	new_sk = sock_create(family, type, protocol);
 	if (0 != ptr2err(new_sk)) {
 		return new_sk;
+	}
+
+	new_sk->sock_netdev = find_netdev_with_ops();
+
+	if (new_sk->sock_netdev && new_sk->sock_netdev->nd_net_offload) {
+		if (new_sk->sock_netdev->nd_net_offload->init) {
+			new_sk->sock_netdev->nd_net_offload->init(new_sk);
+		}
 	}
 
 	sock_set_state(new_sk, SS_UNCONNECTED);
@@ -51,6 +74,12 @@ void ksocket_close(struct sock *sk) {
 		log_warning("can't close socket");
 	}
 	/* sock_set_state(sk, SS_CLOSED); */
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->close) {
+			sk->sock_netdev->nd_net_offload->close(sk);
+		}
+	}
 }
 
 int kbind(struct sock *sk, const struct sockaddr *addr,
@@ -80,9 +109,15 @@ int kbind(struct sock *sk, const struct sockaddr *addr,
 		return ret;
 	}
 
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->bind) {
+			ret = sk->sock_netdev->nd_net_offload->bind(sk, addr, addrlen);
+		}
+	}
+
 	sock_set_state(sk, SS_BOUND);
 
-	return 0;
+	return ret;
 }
 
 int kconnect(struct sock *sk, const struct sockaddr *addr,
@@ -144,9 +179,15 @@ int kconnect(struct sock *sk, const struct sockaddr *addr,
 		return ret;
 	}
 
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->connect) {
+			ret = sk->sock_netdev->nd_net_offload->connect(sk, (struct sockaddr *)addr, addrlen, flags);
+		}
+	}
+
 	sock_set_state(sk, SS_CONNECTED);
 
-	return 0;
+	return ret;
 }
 
 int klisten(struct sock *sk, int backlog) {
@@ -186,11 +227,17 @@ int klisten(struct sock *sk, int backlog) {
 		return ret;
 	}
 
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->listen) {
+			ret = sk->sock_netdev->nd_net_offload->listen(sk, backlog);
+		}
+	}
+
 	sock_set_state(sk, SS_LISTENING);
 	sk->opt.so_acceptconn = 1;
 	sk->shutdown_flag |= SHUT_WR + 1;
 
-	return 0;
+	return ret;
 }
 
 int kaccept(struct sock *sk, struct sockaddr *addr,
@@ -218,6 +265,12 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->accept) {
+			ret = sk->sock_netdev->nd_net_offload->accept(sk, addr, addrlen, flags, &new_sk);
+		}
+	}
+
 	ret = sk->f_ops->accept(sk, addr, addrlen, flags, &new_sk);
 	if (ret != 0) {
 		log_error("error while accepting a connection");
@@ -228,7 +281,7 @@ int kaccept(struct sock *sk, struct sockaddr *addr,
 
 	*out_sk = new_sk;
 
-	return 0;
+	return ret;
 }
 
 int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
@@ -279,10 +332,22 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -EOPNOTSUPP;
 	}
 
-	return sk->f_ops->sendmsg(sk, msg, flags);
+	ret = sk->f_ops->sendmsg(sk, msg, flags);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->sendmsg) {
+			ret = sk->sock_netdev->nd_net_offload->sendmsg(sk, msg, flags);
+		}
+	}
+	return ret;
 }
 
 int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
+	int ret;
+
 	assert(sk);
 	assert(msg);
 	assert(msg->msg_iov);
@@ -300,10 +365,23 @@ int krecvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 		return -EOPNOTSUPP;
 	}
 
-	return sk->f_ops->recvmsg(sk, msg, flags);
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->recvmsg) {
+			ret = sk->sock_netdev->nd_net_offload->recvmsg(sk, msg, flags);
+		}
+	}
+
+	ret = sk->f_ops->recvmsg(sk, msg, flags);
+	if (ret != 0) {
+		return ret;
+	}
+
+	return ret;
 }
 
 int kshutdown(struct sock *sk, int how) {
+	int ret;
+
 	assert(sk);
 	assert(how == SHUT_RD || how == SHUT_WR || how == SHUT_RDWR);
 
@@ -318,11 +396,24 @@ int kshutdown(struct sock *sk, int how) {
 		return -EOPNOTSUPP;
 	}
 
-	return sk->f_ops->shutdown(sk, how);
+	ret = sk->f_ops->shutdown(sk, how);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->shutdown) {
+			ret = sk->sock_netdev->nd_net_offload->shutdown(sk, how);
+		}
+	}
+
+	return ret;
 }
 
 int kgetsockname(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen) {
+	int ret;
+
 	assert(sk);
 	assert(addr);
 	assert(addrlen);
@@ -333,11 +424,24 @@ int kgetsockname(struct sock *sk, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	return sk->f_ops->getsockname(sk, addr, addrlen);
+	ret = sk->f_ops->getsockname(sk, addr, addrlen);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->getsockname) {
+			ret = sk->sock_netdev->nd_net_offload->getsockname(sk, addr, addrlen);
+		}
+	}
+
+	return ret;
 }
 
 int kgetpeername(struct sock *sk, struct sockaddr *addr,
 		socklen_t *addrlen) {
+	int ret;
+
 	assert(sk);
 	assert(addr);
 	assert(addrlen);
@@ -353,7 +457,19 @@ int kgetpeername(struct sock *sk, struct sockaddr *addr,
 		return -EOPNOTSUPP;
 	}
 
-	return sk->f_ops->getpeername(sk, addr, addrlen);
+	ret = sk->f_ops->getpeername(sk, addr, addrlen);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->getpeername) {
+			ret = sk->sock_netdev->nd_net_offload->getpeername(sk, addr, addrlen);
+		}
+	}
+
+	return ret;
+	
 }
 
 #define CASE_GETSOCKOPT(test_name, field, expression) \
@@ -366,6 +482,8 @@ int kgetpeername(struct sock *sk, struct sockaddr *addr,
 
 int kgetsockopt(struct sock *sk, int level, int optname,
 		void *optval, socklen_t *optlen) {
+	int ret = 0;
+
 	assert(sk);
 	assert(optval);
 	assert(optlen);
@@ -377,7 +495,17 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 			return -EOPNOTSUPP;
 		}
 
-		return sk->f_ops->getsockopt(sk, level, optname, optval, optlen);
+		ret = sk->f_ops->getsockopt(sk, level, optname, optval, optlen);
+		if (ret != 0) {
+			return ret;
+		}
+
+		if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+			if (sk->sock_netdev->nd_net_offload->getsockopt) {
+				ret = sk->sock_netdev->nd_net_offload->getsockopt(sk, level, optname, optval, optlen);
+			}
+		}
+
 	}
 
 	switch (optname) {
@@ -411,7 +539,17 @@ int kgetsockopt(struct sock *sk, int level, int optname,
 	CASE_GETSOCKOPT(SO_TYPE, so_type, );
 	}
 
-	return 0;
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->getsockopt) {
+			ret = sk->sock_netdev->nd_net_offload->getsockopt(sk, level, optname, optval, optlen);
+		}
+	}
+
+	return ret;
 }
 
 #define CASE_SETSOCKOPT(test_name, field, expression) \
@@ -499,6 +637,16 @@ int ksetsockopt(struct sock *sk, int level, int optname,
 	if (sk->f_ops->setsockopt == NULL) {
 		return ret;
 	}
-	return sk->f_ops->setsockopt(sk, level, optname,
-			optval, optlen);
+	ret = sk->f_ops->setsockopt(sk, level, optname, optval, optlen);
+	if (ret != 0) {
+		return ret;
+	}
+
+	if (sk->sock_netdev && sk->sock_netdev->nd_net_offload) {
+		if (sk->sock_netdev->nd_net_offload->setsockopt) {
+			ret = sk->sock_netdev->nd_net_offload->setsockopt(sk, level, optname, optval, optlen);
+		}
+	}
+
+	return ret;
 }

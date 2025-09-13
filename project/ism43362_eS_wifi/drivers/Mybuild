@@ -7,6 +7,8 @@ module eswifi_drv {
 	option string passw
 
 	source "eswifi_drv.c"
+	source "eswifi_socket.c"
+	source "eswifi_internal.c"
 
 	@NoRuntime depends project.ism43362_eS_wifi.libs.ism43362
 	depends embox.driver.spi.core

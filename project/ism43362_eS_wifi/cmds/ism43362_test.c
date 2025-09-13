@@ -6,6 +6,13 @@
 
 #define BUFFER_SIZE 2048
 
+static void
+print_usage(void)
+{
+   printf("Usage: eswifi_shell [-i]\n");
+   printf("    -i  -with hardware initialization\n");
+
+}
 
 static void get_command_string(char *buffer, int buffer_length) {
 	printf("WiFi module>");
@@ -14,6 +21,9 @@ static void get_command_string(char *buffer, int buffer_length) {
 	for (int i = 0; i < buffer_length; i++) {
 		buffer[i] = getchar();
 
+		if (buffer[i] == '\n' ) {
+			buffer[i] = '\r';
+		}
 		if (buffer[i] == '\r' || i == buffer_length - 1) { 
 			buffer[i] = '\0';
 			putchar('\r');
@@ -107,21 +117,38 @@ static void clear_leading_crlf(char *buffer, int *length) {
     }
 }
 
-int main() {
+int main(int argc, char **argv) {
 	char buffer[BUFFER_SIZE];
 	buffer[BUFFER_SIZE - 1]=0;
 	int command_len; // command length
 	int c;
 	int total_c;   // answer current & total counters
-	
+	int init_need = 0;
+	int opt;
+
+	while (-1 != (opt = getopt(argc, argv, "ih"))) {
+		switch (opt) {
+		case 'i':
+		init_need = 1;
+		break;
+		case '?':
+		case 'h':
+		default:
+			print_usage();
+			return 0;
+		}
+	}
+
 	print_wifi_setup_guide();
 
-	// Initialize WiFi module
-	int result = ism43362_init();
-    if (result != 0) {
-        printf("ISM43362 initialization error %d\n", result);
-        return -1;
-    }		
+	if (init_need) {
+		// Initialize WiFi module
+		int result = ism43362_init();
+		if (result != 0) {
+			printf("ISM43362 initialization error %d\n", result);
+			return -1;
+		}
+	}	
 
 	// AT command loop
 	while (1) {

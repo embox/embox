@@ -71,6 +71,7 @@ static int netdev_init(struct net_device *dev, const char *name,
 		if (dev->priv == NULL) {
 			return -ENOMEM;
 		}
+		memset(dev->priv, 0, priv_size);
 	}
 	else {
 		dev->priv = NULL;
@@ -102,6 +103,7 @@ struct net_device * netdev_alloc(const char *name,
 	if (dev == NULL) {
 		return NULL; /* error: no memory */
 	}
+	memset(dev, 0, sizeof(struct net_device));
 
 	dev->index = index_alloc(&netdev_index, INDEX_NEXT);
 

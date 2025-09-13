@@ -2,9 +2,9 @@ package project.ism43362_eS_wifi.cmd
 
 @App
 @AutoCmd
-@Cmd(name = "ism43362_test", help = "B-L475E-IOT01A WiFi module test (lib based)")
+@Cmd(name = "eswifi_shell", help = "B-L475E-IOT01A WiFi module test (lib based)")
 
-module ism43362_test {
+module eswifi_shell {
 	
 	source "ism43362_test.c"
 

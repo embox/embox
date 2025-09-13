@@ -12,8 +12,12 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <util/macro.h>
+
+#include <kernel/time/timer.h>
+#include <kernel/time/time.h>
 
 #include <net/l2/ethernet.h>
 #include <net/l0/net_entry.h>
@@ -23,6 +27,8 @@
 #include <net/cfg80211.h>
 
 #include <libs/ism43362.h>
+
+#include "eswifi_drv.h"
 
 #include <embox/unit.h>
 #include <framework/mod/options.h>
@@ -34,35 +40,42 @@
 #define WIFI_PASSWORD      MACRO_STRING(OPTION_GET(STRING,passw))
 #define WIFI_SECURITYTYPE  ESWIFI_SECURITY_WPA2
 
-#define BUFFER_SIZE     1024
-
-typedef struct {
-    const char *command;
-	const char *command_value;
-	// const int command_len;
-} AT_Command;
-
-static const AT_Command wifi_setup_commands[] = {
-//	{"C1=" WIFI_NAME "\r", WIFI_NAME},
-//	{"C2=" WIFI_PASSWORD "\r", WIFI_PASSWORD},
-//	{"C3=4\r", "4"},
-//	{"C4=1\r", "1"},
-	{"C0\r", NULL},
-	{"C?\r", NULL},
-	{"Z5\r", NULL},
-	{NULL, NULL}
-};
-
 EMBOX_UNIT_INIT(eswifi_init);
+
+struct eswifi_dev eswifi_dev;
 
 static int eswifi_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	return 0;
 }
 
+static int eswifi_get_macaddr(struct net_device *dev, void *addr) {
+	char buf[64];
+	char rx_buffer[64];
+	int err;
+	unsigned char *mac_bytes = addr;
+
+	snprintf(buf, sizeof(buf), "Z5\r");
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable get mac addr");
+		return 0;
+	}
+	if (sscanf(strchr(rx_buffer, '\n') + 1, 
+					"%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
+					&mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
+					&mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) == 6) {
+
+	} else {
+		log_error("Invalid MAC format in response: %s", rx_buffer);
+		return -1;
+	}
+
+	return 0;
+}
+
 static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 						struct cfg80211_connect_params *sme) {
-	int wifi_request;
 	char buf[64];
 	char rx_buffer[256];
 	int err;
@@ -101,67 +114,80 @@ static int eswifi_connect(struct wiphy *wiphy, struct net_device *dev,
 		return 0;
 	}
 
-	/* Join Network (DHCP enabled)*/
-	snprintf(buf, sizeof(buf), "C4=%u\r", 1/* connect*/);
+	/* DHCP enabled */
+	snprintf(buf, sizeof(buf), "C4=%u\r", 1/* enable */);
 	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
 	if (err < 0) {
-		log_error("Unable connect");
+		log_error("Unable DHCP switch on");
 		return 0;
 	}
 
-	log_debug("%s", rx_buffer);
-
-	for (int i = 0; wifi_setup_commands[i].command != NULL; i++){
-		wifi_request = ism43362_exchange((char *)wifi_setup_commands[i].command, strlen(wifi_setup_commands[i].command), rx_buffer, sizeof(rx_buffer));
-		if (wifi_request < 0) {
-			log_info("ism43362_exchange error");
-		}
-
-		log_info(wifi_setup_commands[i].command);
-		log_info(rx_buffer);
-		
-		if (wifi_setup_commands[i].command[0] == 'C' && wifi_setup_commands[i].command[1]== '0')
-		{
-			ip = strtok(rx_buffer, ",");
-			ip = strtok(NULL, ",");
-			if (ip){
-				ip_num = inet_addr(ip); 
-
-				inetdev_set_addr(iface, ip_num);
-			}
-		}  else if (wifi_setup_commands[i].command[0] == 'C' && wifi_setup_commands[i].command[1] == '?') {
-			char *token;
-			char *mask = NULL;
-			int field_num = 0;
-
-			token = strtok(rx_buffer, ","); 
-			while (token != NULL) {
-				if (field_num == 6) { 
-					mask = token;
-					break;
-				}
-				token = strtok(NULL, ",");
-				field_num++;
-			}
-			if (mask != NULL) {
-				inetdev_set_mask(iface, (inet_addr(mask)));
-			}
-
-		} else if (wifi_setup_commands[i].command[0] == 'Z' && wifi_setup_commands[i].command[1] == '5') {
-			
-			if (sscanf(strchr(rx_buffer, '\n') + 1, 
-					"%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx",
-					&mac_bytes[0], &mac_bytes[1], &mac_bytes[2],
-					&mac_bytes[3], &mac_bytes[4], &mac_bytes[5]) == 6) {
-				
-				memcpy(dev->dev_addr, mac_bytes, 6);
-			} else {
-				log_error("Invalid MAC format in response: %s", rx_buffer);
-				return -1;
-			}
-		}
-		memset(rx_buffer, '\0', sizeof(rx_buffer));
+	/* Join Network (DHCP enabled)*/
+	snprintf(buf, sizeof(buf), "C0\r");
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable join");
+		return 0;
 	}
+
+	log_info(rx_buffer);
+
+	/* Parse JOIN result (DHCP enabled)*/
+	ip = strtok(rx_buffer, ",");
+	ip = strtok(NULL, ",");
+	if (ip){
+		ip_num = inet_addr(ip); 
+
+		inetdev_set_addr(iface, ip_num);
+
+		memcpy(&eswifi_dev.src_in.sin_addr, ip, 4);
+		eswifi_dev.src_in.sin_family = AF_INET;
+	}
+
+	/* Get netmask (DHCP enabled)*/
+	snprintf(buf, sizeof(buf), "C?\r");
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable get network settings");
+		return 0;
+	}
+
+	log_info(rx_buffer);
+
+	/* Parse Jnetwork settings (nget netmask) (DHCP enabled)*/
+ 	{
+		char *token;
+		char *mask = NULL;
+		int field_num = 0;
+
+		token = strtok(rx_buffer, ","); 
+		while (token != NULL) {
+			if (field_num == 6) { 
+				mask = token;
+				break;
+			}
+			token = strtok(NULL, ",");
+			field_num++;
+		}
+		if (mask != NULL) {
+			inetdev_set_mask(iface, (inet_addr(mask)));
+		}
+	}
+
+		/* Get netmask (DHCP enabled)*/
+	snprintf(buf, sizeof(buf), "Z5\r");
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable join");
+		return 0;
+	}
+
+	log_info(rx_buffer);
+
+	eswifi_dev.netdev = dev;
+
+	eswifi_get_macaddr(dev, mac_bytes);
+	memcpy(dev->dev_addr, mac_bytes, 6);
 	
 	return 0;
 }
@@ -183,6 +209,17 @@ static int eswifi_open(struct net_device *dev) {
 }
 
 static int eswifi_set_macaddr(struct net_device *dev, const void *addr) {
+	char buf[64];
+	char rx_buffer[64];
+	int err;
+	uint8_t *a = (void *)addr;
+
+	snprintf(buf, sizeof(buf), "Z4=%02X:%02X:%02X:%02X:%02X:%02X:%02X\r", a[0], a[1], a[2], a[3], a[4], a[5]);
+	err = ism43362_exchange((char *)buf, strlen(buf), rx_buffer, sizeof(rx_buffer));
+	if (err < 0) {
+		log_error("Unable set mac addr");
+		return 0;
+	}
 	return 0;
 }
 
@@ -251,6 +288,9 @@ static const struct cfg80211_ops eswifi_cfg80211_ops = {
 };
 
 static struct wireless_dev eswifi_wdev;
+extern const struct sock_family_ops eswifi_sock_family_ops ;
+
+
 
 static int eswifi_init(void) {
 	struct net_device *nic;
@@ -258,6 +298,8 @@ static int eswifi_init(void) {
 	struct wiphy *wiphy;
 
 	res = 0;
+
+	eswifi_dev.state = 0;
 
 	nic = etherdev_alloc(0);
 	if (NULL == nic) {
@@ -273,6 +315,8 @@ static int eswifi_init(void) {
 	eswifi_wdev.netdev = nic;
 	eswifi_wdev.wiphy = wiphy;
 
+	nic->nd_net_offload = &eswifi_sock_family_ops;
+
 	nic->drv_ops = &eswifi_netdev_ops;
 
 	res = inetdev_register_dev(nic);
@@ -282,5 +326,9 @@ static int eswifi_init(void) {
 
 	res = cfg80211_register_netdevice(nic);
 
+	//timer_init(&eswifi_dev.eswifi_timer, TIMER_PERIODIC, eswifi_poll_handler, &eswifi_dev);
+
+
 	return res;
 }
+
