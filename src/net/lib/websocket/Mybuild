@@ -1,0 +1,14 @@
+package embox.net.lib
+
+module websocket {
+	source "websocket.c"
+	source "websocket_client.c"
+	source "websocket_frame.c"
+
+  @IncludeExport(path="net/lib")
+	source "websocket.h"
+	
+	depends embox.lib.crypt.b64
+	depends embox.lib.crypt.sha1
+	depends embox.compat.posix.net.socket
+}
