@@ -1,0 +1,34 @@
+package project.at.cmd
+
+@AutoCmd
+@Cmd(name = "ws_client",
+     help = "WebSocket client utility",
+     man = '''
+NAME
+     ws_client - Connect to WebSocket server
+
+SYNOPSIS
+     ws_client URL [-m message] [-p] [-e] [-h]
+
+DESCRIPTION
+     Connect to a WebSocket server and exchange messages
+
+OPTIONS
+     -m message   Send initial message after connecting
+     -p           Send ping every 5 seconds
+     -e           Echo received messages back
+     -h           Show help
+
+EXAMPLES
+     ws_client ws://10.0.2.10:8080/
+     ws_client -p ws://10.0.2.10:8080/
+
+AUTHORS
+     Peize Li
+''')
+module ws_client {
+	source "ws_client.c"
+	
+	depends embox.net.lib.websocket
+	depends embox.compat.posix.util.getopt
+}
