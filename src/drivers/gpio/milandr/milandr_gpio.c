@@ -134,10 +134,10 @@ static void milandr_gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 	}
 
 	if (level) {
-		gpio_reg->SETTX |= pins;
+		gpio_reg->SETTX = pins;
 	}
 	else {
-		gpio_reg->CLRTX |= pins;
+		gpio_reg->CLRTX = pins;
 	}
 }
 
