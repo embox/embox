@@ -208,5 +208,31 @@ struct uart_conf uarts[] = {
 	},
 };
 
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 5),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 6),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+	[2] = {
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 7),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+	[3] = {
+		.name = "LED4",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("PIN", 7),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+};
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds))
