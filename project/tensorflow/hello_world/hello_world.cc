@@ -43,7 +43,7 @@ TfLiteStatus ProfileMemoryAndLatency() {
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
   constexpr int kTensorArenaSize = 3000;
-  uint8_t tensor_arena[kTensorArenaSize];
+  alignas(16) uint8_t tensor_arena[kTensorArenaSize];
   constexpr int kNumResourceVariables = 24;
 
   tflite::RecordingMicroAllocator* allocator(
@@ -77,7 +77,7 @@ TfLiteStatus LoadFloatModelAndPerformInference() {
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
   constexpr int kTensorArenaSize = 3000;
-  uint8_t tensor_arena[kTensorArenaSize];
+  alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 
   tflite::MicroInterpreter interpreter(model, op_resolver, tensor_arena,
                                        kTensorArenaSize);
@@ -112,7 +112,7 @@ TfLiteStatus LoadQuantModelAndPerformInference() {
   // Arena size just a round number. The exact arena usage can be determined
   // using the RecordingMicroInterpreter.
   constexpr int kTensorArenaSize = 3000;
-  uint8_t tensor_arena[kTensorArenaSize];
+  alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 
   tflite::MicroInterpreter interpreter(model, op_resolver, tensor_arena,
                                        kTensorArenaSize);
@@ -161,7 +161,7 @@ int main(int argc, char* argv[]) {
   RegisterOps(op_resolver);
 
   constexpr int kTensorArenaSize = 3000;
-  uint8_t tensor_arena[kTensorArenaSize];
+  alignas(16) uint8_t tensor_arena[kTensorArenaSize];
 
   tflite::MicroInterpreter interpreter(model, op_resolver, tensor_arena, kTensorArenaSize);
   interpreter.AllocateTensors();
