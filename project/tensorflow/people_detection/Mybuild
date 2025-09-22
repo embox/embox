@@ -1,0 +1,23 @@
+package project.tensorflow.people_detection
+@AutoCmd
+@Cmd(name = "people_.detection", help = "face_detection")
+@Build(stage=2)
+@BuildDepends(third_party.lib.tflite_micro.libtflm)
+@BuildDepends(third_party.lib.tflite_micro.tflite_micro_build_headers)
+
+module people_detection {
+
+
+    @Cflags("-Wno-undef")
+    @Cflags("-Imodels")
+    
+    source "image_provider.cc"
+    source "detection_responder.cc"
+    source "model_settings.cc"
+    source "main.cc"
+    source "main_functions.cc"
+    source "models/person_detect_model_data.cc"
+ 
+
+
+}
