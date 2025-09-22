@@ -1,0 +1,10 @@
+
+package embox.driver.lcd
+
+module ks0108_lcd {
+
+	source "ks0108_lcd_drv.c"
+	source "ks0108_lcd.c"
+
+	@NoRuntime depends embox.driver.video.fb
+}
