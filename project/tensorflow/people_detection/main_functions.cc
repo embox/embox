@@ -13,6 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
+
 #include "main_functions.h"
 
 #include "detection_responder.h"
@@ -24,6 +25,11 @@ limitations under the License.
 #include "models/person_detect_model_data.h"
 #include "tensorflow/lite/micro/system_setup.h"
 #include "tensorflow/lite/schema/schema_generated.h"
+
+
+#define TFLITE_WITH_STABLE_ABI 0
+#define TFLITE_USE_OPAQUE_DELEGATE 0
+#define TFLITE_SINGLE_ROUNDING 0
 
 // Globals, used for compatibility with Arduino-style sketches.
 namespace {
