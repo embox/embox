@@ -25,17 +25,12 @@ struct cpu_info *get_cpu_info(void) {
 
 	hartid = 217;
 
-	set_feature_strval(&current_cpu, "Chip name", "AMUR");
+	set_feature_strval(&current_cpu, "Chip name", "MDR1206FI");
 	set_feature_strval(&current_cpu, "CPU ARCH", "RISC-V");
 
-	buf[0] = '0';
-	buf[1] = 'x';
-	str = itoa((hartid >> 28) & 0xF, buf + 2, 16);
+	str = itoa(hartid, buf, 10);
 	str = buf;
-	set_feature_strval(&current_cpu, "CPU revision:", str);
-	str = itoa((hartid >> 16) & 0xFFF, buf + 2, 16);
-	str = buf;
-	set_feature_strval(&current_cpu, "CPU part:", str);
+	set_feature_strval(&current_cpu, "CPU ID:", str);
 
 	return &current_cpu;
 }
