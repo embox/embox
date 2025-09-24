@@ -1,7 +1,6 @@
 
 include mk/core/common.mk
 
-include $(MKGEN_DIR)/build.mk
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 

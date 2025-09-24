@@ -7,10 +7,8 @@ __extbld-1 __extbld-2 :
 FORCE :
 
 include $(ROOT_DIR)/mk/core/compiler.mk
+include mk/flags.mk
 include mk/image_lib.mk
-include $(MKGEN_DIR)/build.mk
-
-include mk/flags.mk # It must be included after a user-defined config.
 
 .SECONDEXPANSION:
 

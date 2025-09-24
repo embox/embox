@@ -12,9 +12,8 @@ all : image
 
 FORCE :
 
+include $(ROOT_DIR)/mk/flags.mk
 include $(ROOT_DIR)/mk/image_lib.mk
-
-include $(MKGEN_DIR)/build.mk
 
 TARGET ?= embox$(if $(value PLATFORM),-$(PLATFORM))
 TARGET := $(TARGET)$(if $(value LOCALVERSION),-$(LOCALVERSION))
@@ -28,8 +27,6 @@ IMAGE_PIGGY = $(IMAGE).piggy
 IMAGE_A     = $(BIN_DIR)/lib$(TARGET).a
 IMAGE_LINKED_A = $(BIN_DIR)/lib$(TARGET)-linked.a
 
-include $(ROOT_DIR)/mk/flags.mk # It must be included after a user-defined config.
-
 ld_prerequisites =
 ar_prerequisites =
 initfs_prerequisites =
@@ -41,6 +38,9 @@ include $(MKGEN_DIR)/include.mk
 include $(__include_image)
 include $(__include_initfs)
 include $(__include)
+
+cp_T_if_supported := \
+	$(shell $(CP) --version 2>&1 | grep -l GNU >/dev/null && echo -T)
 
 .SECONDARY:
 .DELETE_ON_ERROR:
@@ -294,7 +294,7 @@ all : __copy_user_rootfs $(__cpio_files)
 
 $(__cpio_files) : FORCE
 	$(foreach f,$(patsubst $(abspath $(ROOTFS_DIR))/%,$(ROOTFS_OUT_DIR)/%,$(abspath $@)), \
-		$(CP) -r -T $(src_file) $f; \
+		$(CP) -r $(cp_T_if_supported) $(src_file) $f; \
 		$(foreach c,chmod chown,$(if $(and $($c),$(findstring $($c),'')),,$c $($c) $f;)) \
 		$(foreach a,$(strip $(subst ',,$(xattr))), \
 			attr -s $(basename $(subst =,.,$a)) -V $(subst .,,$(suffix $(subst =,.,$a))) $f;) \
@@ -307,4 +307,3 @@ __copy_user_rootfs :
 			&& cp -r * $(abspath $(ROOTFS_OUT_DIR)); \
 	fi
 endif
-

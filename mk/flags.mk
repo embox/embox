@@ -1,7 +1,14 @@
+ifndef __flags_mk
+__flags_mk := 1
 
 include mk/core/common.mk
 
-ARCH ?=
+include $(MKGEN_DIR)/build.mk
+
+ifndef ARCH
+$(error ARCH is not defined)
+endif
+
 CFLAGS ?=
 CXXFLAGS ?=
 CPPFLAGS ?=
@@ -136,7 +143,6 @@ override NDEBUG :=
 endif
 
 ifdef OPTIMIZE
-
 override OPTIMIZE := $(strip $(OPTIMIZE:-O%=%))
 __optimize_valid_values := s 0 1 2 3 4 5 99
 __optimize_invalid := $(filter-out $(__optimize_valid_values),$(OPTIMIZE))
@@ -151,42 +157,38 @@ endif
 
 override CFLAGS += -O$(OPTIMIZE)
 override CXXFLAGS += -O$(OPTIMIZE)
-
-endif
+endif # OPTIMIZE
 
 # Expand user defined flags and append them after default ones.
 
-__srcgen_includes_fn = \
-	$(addprefix $(call $1,$(SRCGEN_DIR))/, \
-		src/include \
-		src/arch/$(ARCH)/include)
-__srcgen_includes := $(call __srcgen_includes_fn,id)
-$(and $(shell $(MKDIR) $(__srcgen_includes)),)
+SRC_INCLUDE_PATH := \
+	include \
+	arch/$(ARCH)/include \
+	compat/linux/include \
+	compat/posix/include \
+	compat/bsd/include \
+	compat/libc/include
 
-cppflags_fn = \
+ifdef GEN_DIST
+cppflags_src_include := $(addprefix -I$(SRCGEN_DIR)/src/,$(SRC_INCLUDE_PATH))
+else
+cppflags_src_include := $(addprefix -I$(SRC_DIR)/,$(SRC_INCLUDE_PATH))
+endif
+
+cppflags := \
 	-U__linux__ -Ulinux -U__linux \
 	-D__EMBOX__ \
 	-D__unix \
-	-imacros $(call $1,$(AUTOCONF_DIR))/config.lds.h \
-	-I$(call $1,$(INCLUDE_INSTALL_DIR)) \
-	-I$(call $1,$(SRC_DIR))/include \
-	-I$(call $1,$(SRC_DIR))/arch/$(ARCH)/include \
-	-I$(call $1,$(SRCGEN_DIR))/include \
-	-I$(call $1,$(SRCGEN_DIR))/src/include \
-	$(addprefix -I,$(call __srcgen_includes_fn,$1)) \
-	$(if $(value PLATFORM_VENDOR),-I$(call $1,$(PLATFORM_DIR))/$(PLATFORM_VENDOR)/include) \
-	-I$(call $1,$(SRC_DIR))/compat/linux/include \
-	-I$(call $1,$(SRC_DIR))/compat/posix/include \
-	-I$(call $1,$(SRC_DIR))/compat/bsd/include \
-	-I$(call $1,$(SRC_DIR))/compat/libc/include \
+	-I$(INCLUDE_INSTALL_DIR) \
+	-I$(SRCGEN_DIR)/include \
+	-I$(SRCGEN_DIR)/src/include \
+	$(cppflags_src_include) \
 	-nostdinc \
-	-MMD -MP# -MT $@ -MF $(@:.o=.d)
+	-MMD -MP \
+	$(CPPFLAGS)
 
-# Preprocessor flags
-cppflags := $(CPPFLAGS)
-override CPPFLAGS  = $(call cppflags_fn,id) $(cppflags)
-EMBOX_EXPORT_CPPFLAGS = $(call cppflags_fn,abspath)
-EMBOX_EXPORT_CPPFLAGS += $(filter-out -D%" -D%',$(cppflags))
+override CPPFLAGS = $(cppflags)
+EMBOX_EXPORT_CPPFLAGS = $(filter-out -D%" -D%',$(cppflags))
 
 override COMMON_FLAGS := -pipe
 
@@ -200,9 +202,9 @@ ifdef PREFIX_MAP
 # to the the root embox directory, keep that in mind in order for the debugger
 # to properly find sources at runtime. If you don't want relative pathnames
 # for sources, comment the line PREFIX_MAP:=TRUE above
-debug_prefix_map_supported:=$(shell $(CPP) /dev/zero -fdebug-prefix-map=./=. 2>/dev/null && echo true)
+debug_prefix_map_supported:=$(shell $(CPP) /dev/zero -ffile-prefix-map=./=. 2>/dev/null && echo true)
 ifneq ($(debug_prefix_map_supported),)
-override COMMON_FLAGS += -fdebug-prefix-map=`pwd`=.
+override COMMON_FLAGS += -ffile-prefix-map=`pwd`=.
 endif
 endif
 
@@ -283,9 +285,6 @@ override ARFLAGS = rcs
 
 CCFLAGS ?=
 
-INCLUDES_FROM_FLAGS := \
-	$(patsubst -I%,%,$(filter -I%,$(CPPFLAGS) $(CXXFLAGS)))
-
 ifeq ($(ARCH),x86)
 AUTOCONF_ARCH := i386
 else
@@ -300,3 +299,5 @@ else
 EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-gcc
 EMBOX_GXX := $(ROOT_DIR)/mk/extbld/arch-embox-g++
 endif
+
+endif # __flags_mk
