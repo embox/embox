@@ -112,6 +112,14 @@ struct led_conf {
 	struct field_int level; /* LED on */
 };
 
+struct lcd_conf {
+	int status;
+	struct device_conf dev;
+	int width;
+	int height;
+	int bits_per_pixel;
+};
+
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
 #define UART_IDX    0
@@ -124,7 +132,8 @@ struct led_conf {
 #define CLK_IDX     7
 #define MMC_IDX     8
 #define DMA_IDX     9
-#define MAX_IDX     10
+#define LCD_IDX     10
+#define MAX_IDX     11
 
 
 #define EXPORT_CONFIG(...) \
@@ -191,6 +200,13 @@ struct led_conf {
 		(void *) &(mmcs)[0], \
 		ARRAY_SIZE(mmcs), \
 	}
+
+#define LCD(lcds) \
+	[LCD_IDX] = { \
+		(void *) &(lcds)[0], \
+		ARRAY_SIZE(lcds), \
+	}
+
 
 #define CONFIG   void config()
 

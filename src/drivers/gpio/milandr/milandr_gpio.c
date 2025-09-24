@@ -134,10 +134,10 @@ static void milandr_gpio_set(unsigned int port, gpio_mask_t pins, int level) {
 	}
 
 	if (level) {
-		gpio_reg->SETTX |= pins;
+		gpio_reg->SETTX = pins;
 	}
 	else {
-		gpio_reg->CLRTX |= pins;
+		gpio_reg->CLRTX = pins;
 	}
 }
 
@@ -149,7 +149,7 @@ static gpio_mask_t milandr_gpio_get(unsigned int port, gpio_mask_t pins) {
 		return -1;
 	}
 
-	return gpio_reg->RDTX & pins;
+	return gpio_reg->RXTX & pins;
 }
 
 static const struct gpio_chip milandr_gpio_chip = {

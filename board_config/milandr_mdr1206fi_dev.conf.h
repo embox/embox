@@ -90,7 +90,7 @@ struct gpio_conf gpios[] = {
 		.dev = {
 			.name = "GPIO_PORT_C",
 			.regs = {
-				REGMAP("BASE", (MDR_PORTA_BASE), 0x100),
+				REGMAP("BASE", (MDR_PORTC_BASE), 0x100),
 			},
 			.irqs = {
 				VAL("", EXT_INT1_IRQ),
@@ -208,5 +208,59 @@ struct uart_conf uarts[] = {
 	},
 };
 
+struct led_conf leds[] = {
+	[0] = {
+		.name = "LED1",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 5),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 6),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+	[2] = {
+		.name = "LED3",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("", 7),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+	[3] = {
+		.name = "LED4",
+		.port = VAL("", GPIO_PORT_D),
+		.pin = VAL("PIN", 7),
+		.level = VAL("", GPIO_PIN_LOW),
+	},
+};
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts))
+struct lcd_conf lcds[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "LCD",
+			.pins = {
+				PIN("DB0", GPIO_PORT_B, 6, 0),
+				PIN("DB1", GPIO_PORT_B, 7, 0),
+				PIN("DB2", GPIO_PORT_B, 8, 0),
+				PIN("DB3", GPIO_PORT_B, 9, 0),
+				PIN("DB4", GPIO_PORT_B, 10, 0),
+				PIN("DB5", GPIO_PORT_B, 11, 0),
+				PIN("DB6", GPIO_PORT_B, 12, 0),
+				PIN("DB7", GPIO_PORT_B, 13, 0),
+				PIN("CS1", GPIO_PORT_B, 4, 0),
+				PIN("CS2", GPIO_PORT_B, 5, 0),
+				PIN("RST", GPIO_PORT_A, 4, 0),
+				PIN("RW", GPIO_PORT_B, 14, 0),
+				PIN("RS", GPIO_PORT_B, 2, 0),
+				PIN("EN", GPIO_PORT_B, 3, 0),	
+			},
+		},
+		.width = 128,
+		.height = 64,
+		.bits_per_pixel = 1,
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), LCD(lcds))

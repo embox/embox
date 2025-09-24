@@ -218,6 +218,8 @@ int main() {
 	const struct clk_conf *clk;
 	struct conf_item *mmc_conf = &board_config[MMC_IDX];
 	const struct mmc_conf *mmc;
+	struct conf_item *lcd_conf = &board_config[LCD_IDX];
+	const struct lcd_conf *lcd;
 
 	config();
 
@@ -378,6 +380,20 @@ int main() {
 	printf("#define CONF_LED_QUANTITY %i\n", led_quantity);
 	printf("\n");
 
+
+	/* LCD */
+	for (i = 0; i < lcd_conf->array_size; i++) {
+		lcd = &((const struct lcd_conf *)lcd_conf->ptr)[i];
+
+		gen_device_conf(&lcd->dev);
+
+		gen_prop_ival(lcd->dev.name, "RES_X", lcd->width);
+		gen_prop_ival(lcd->dev.name, "RES_Y", lcd->height);
+		gen_prop_ival(lcd->dev.name, "BITS_PER_PIXEL", lcd->bits_per_pixel);
+
+		printf("\n");
+	}
+	
 	printf("#endif /* BOARD_CONFIG_H_ */\n");
 
 	return 0;
