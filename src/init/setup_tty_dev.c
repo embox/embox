@@ -19,8 +19,6 @@
 #include <util/err.h>
 #include <util/log.h>
 
-#include "setup_tty.h"
-
 const char *setup_tty(const char *dev_name) {
 	struct char_dev *cdev;
 	struct idesc_table *it;

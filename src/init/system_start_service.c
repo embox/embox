@@ -16,8 +16,6 @@
 #include <lib/libds/array.h>
 #include <util/log.h>
 
-#include "setup_tty.h"
-
 #define STOP_ON_ERROR OPTION_GET(BOOLEAN, stop_on_error)
 #define CMD_MAX_ARGV  OPTION_GET(NUMBER, cmd_max_argv)
 #define CMD_MAX_LEN   OPTION_GET(NUMBER, cmd_max_len)
@@ -27,6 +25,7 @@ static const char *script_commands[] = {
 };
 
 extern int graphic_init(void);
+extern const char *setup_tty(const char *dev_name);
 
 int system_start(void) {
 	const char *command;
