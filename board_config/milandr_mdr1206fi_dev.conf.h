@@ -90,7 +90,7 @@ struct gpio_conf gpios[] = {
 		.dev = {
 			.name = "GPIO_PORT_C",
 			.regs = {
-				REGMAP("BASE", (MDR_PORTA_BASE), 0x100),
+				REGMAP("BASE", (MDR_PORTC_BASE), 0x100),
 			},
 			.irqs = {
 				VAL("", EXT_INT1_IRQ),
