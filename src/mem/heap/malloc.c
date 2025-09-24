@@ -15,8 +15,7 @@
 #include <kernel/task/kernel_task.h>
 #include <kernel/task/resource/task_heap.h>
 #include <kernel/printk.h>
-
-#include "mspace_malloc.h"
+#include <mem/heap/mspace_malloc.h>
 
 static struct dlist_head *task_self_mspace(void) {
 	struct task_heap *task_heap;
