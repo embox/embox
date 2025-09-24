@@ -6,8 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-#include "siginfoq.h"
-
 #include <kernel/thread/signal.h>
 
 #include <assert.h>

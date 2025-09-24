@@ -6,8 +6,6 @@
  * @author Eldar Abusalimov
  */
 
-#include "sigstate.h"
-
 #include <kernel/thread/signal.h>
 
 #include <assert.h>
