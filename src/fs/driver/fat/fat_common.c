@@ -24,8 +24,7 @@
 #include <fs/super_block.h>
 
 #include <fs/mbr.h>
-
-#include "fat.h"
+#include <fs/fat.h>
 
 #include <util/log.h>
 #include <util/math.h>

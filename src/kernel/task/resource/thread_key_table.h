@@ -8,7 +8,6 @@
 #ifndef THREAD_KEY_TABLE_H_
 #define THREAD_KEY_TABLE_H_
 
-#include <kernel/task/resource/thread_key_table.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/thread/thread_local.h>
 #include <lib/libds/indexator.h>

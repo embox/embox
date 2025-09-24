@@ -15,8 +15,7 @@
 #include <fs/file_desc.h>
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "initfs.h"
+#include <fs/initfs.h>
 
 int initfs_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return -EACCES;

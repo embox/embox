@@ -18,8 +18,8 @@
 #include <net/sock.h>
 #include <net/inetdevice.h>
 
-#include "family.h"
-#include "net_sock.h"
+#include <net/family.h>
+#include <net/net_sock.h>
 
 #include <mem/misc/pool.h>
 

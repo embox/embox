@@ -13,8 +13,6 @@
 #include <stddef.h>
 #include <lib/libds/indexator.h>
 
-#include "thread_key_table.h"
-
 TASK_RESOURCE_DEF(task_thread_key_table_desc,
 		struct thread_key_table);
 

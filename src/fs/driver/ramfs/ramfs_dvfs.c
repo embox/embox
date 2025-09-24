@@ -12,8 +12,7 @@
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "ramfs.h"
+#include <fs/ramfs.h>
 
 extern struct ramfs_file_info ramfs_files[RAMFS_FILES];
 

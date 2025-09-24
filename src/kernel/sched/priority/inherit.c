@@ -10,7 +10,6 @@
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched.h>
 #include <errno.h>
-#include "inherit.h"
 
 int schedee_priority_init(struct schedee *s, int new_priority) {
 	s->priority.base_priority = new_priority;

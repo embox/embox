@@ -15,7 +15,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "net_sock.h"
+#include <net/net_sock.h>
 #include <embox/net/pack.h>
 
 #include <net/l3/ipv4/ip.h>

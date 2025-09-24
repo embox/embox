@@ -13,8 +13,6 @@
 #include <cmd/shell.h>
 #include <stdio.h>
 
-#include "setup_tty.h"
-
 #define START_SHELL OPTION_GET(NUMBER,shell_start)
 
 EMBOX_UNIT_INIT(run_script);
@@ -22,6 +20,8 @@ EMBOX_UNIT_INIT(run_script);
 static const char *script_commands[] = {
 	#include <start_script.inc>
 };
+
+extern const char *setup_tty(const char *dev_name);
 
 static int run_script(void) {
 	const char *command;

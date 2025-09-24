@@ -7,7 +7,7 @@
  * @author Ilia Vaprol
  */
 
-#include "net_sock.h"
+#include <net/net_sock.h>
 #include <stddef.h>
 #include <lib/libds/array.h>
 

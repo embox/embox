@@ -6,6 +6,9 @@ abstract module initfs {
 	option string section=".rodata.embox.initfs"
 	option number file_quantity=128
 
+	@IncludeExport(path="fs")
+	source "initfs.h"
+
 	source "initfs.lds.S"
 	source "initfs_image.S"
 

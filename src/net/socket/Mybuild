@@ -138,12 +138,16 @@ module socket {
 }
 
 module family {
+	@IncludeExport(path="net")
+	source "family.h"
 	source "family.c"
 
 	@NoRuntime depends embox.lib.libds
 }
 
 module net_sock {
+	@IncludeExport(path="net")
+	source "net_sock.h"
 	source "net_sock.c"
 
 	@NoRuntime depends embox.lib.libds

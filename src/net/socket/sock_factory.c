@@ -15,8 +15,8 @@
 #include <mem/misc/pool.h>
 #include <net/sock.h>
 
-#include "family.h"
-#include "net_sock.h"
+#include <net/family.h>
+#include <net/net_sock.h>
 
 #include <util/err.h>
 #include <security/security.h>

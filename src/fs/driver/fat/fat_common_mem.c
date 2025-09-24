@@ -6,7 +6,7 @@
  */
 #include <mem/misc/pool.h>
 
-#include "fat.h"
+#include <fs/fat.h>
 
 #include <framework/mod/options.h>
 

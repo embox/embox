@@ -13,8 +13,8 @@
 
 #include <mem/misc/pool.h>
 
-#include "net_sock.h"
-#include "family.h"
+#include <net/net_sock.h>
+#include <net/family.h>
 
 #include <net/sock.h>
 #include <net/l3/ipv4/ip.h>

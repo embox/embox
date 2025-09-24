@@ -7,6 +7,9 @@ abstract module ramfs {
 	option number ramfs_file_size=4096
 	option number ramfs_buffer_size = 4096
 
+	@IncludeExport(path="fs")
+	source "ramfs.h"
+
 	source "ramfs_ops.c"
 	source "ramfs_drv.c"
 

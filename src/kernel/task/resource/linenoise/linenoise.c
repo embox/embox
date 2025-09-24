@@ -11,9 +11,8 @@
 
 #include <kernel/task.h>
 #include <kernel/task/resource.h>
+#include <kernel/task/resource/linenoise.h>
 #include <lib/linenoise.h>
-
-#include "linenoise.h"
 
 TASK_RESOURCE_DEF(task_linenoise_desc, struct task_linenoise);
 

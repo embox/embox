@@ -251,6 +251,7 @@ $(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_pre
 	$(md5sums2_o) \
 	$(symbols_pass2_a) \
 	--cref -Map $@.map \
+	--print-memory-usage \
 	-o $@
 endif
 

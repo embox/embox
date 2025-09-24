@@ -14,7 +14,9 @@
 #include <errno.h>
 #include <stdarg.h>
 
-#include "setup_tty.h"
+#define DIAG_NAME "diag"
+
+extern int diag_fd(void);
 
 const char *setup_tty(const char *dev_name) {
 	int fd;

@@ -23,8 +23,8 @@
 #include <net/netlink.h>
 #include <net/inetdevice.h>
 
-#include "family.h"
-#include "net_sock.h"
+#include <net/family.h>
+#include <net/net_sock.h>
 
 #include <linux/if_link.h>
 #include <linux/netlink.h>
