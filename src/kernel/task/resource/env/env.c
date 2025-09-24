@@ -12,8 +12,6 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "env_impl.h"
-
 TASK_RESOURCE_DEF(task_env_desc, struct task_env);
 
 static void task_env_init(const struct task *task, void *env_space) {

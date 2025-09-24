@@ -11,8 +11,6 @@
 #include <kernel/task/resource.h>
 #include <kernel/task/resource/vfs.h>
 
-#include "vfs.h"
-
 TASK_RESOURCE_DEF(task_vfs_desc, struct task_vfs);
 
 static void task_vfs_init(const struct task *task, void *task_vfs) {
