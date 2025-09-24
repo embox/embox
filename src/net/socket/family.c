@@ -6,7 +6,7 @@
  * @author Ilia Vaprol
  */
 
-#include "family.h"
+#include <net/family.h>
 #include <stddef.h>
 #include <lib/libds/array.h>
 

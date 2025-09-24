@@ -26,7 +26,7 @@
 #include <mem/misc/pool.h>
 #include <netinet/in.h>
 
-#include "net_sock.h"
+#include <net/net_sock.h>
 
 #include <kernel/sched/sched_lock.h>
 #include <kernel/task/resource/idesc_event.h>
