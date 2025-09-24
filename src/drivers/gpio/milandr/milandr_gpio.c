@@ -149,7 +149,7 @@ static gpio_mask_t milandr_gpio_get(unsigned int port, gpio_mask_t pins) {
 		return -1;
 	}
 
-	return gpio_reg->RDTX & pins;
+	return gpio_reg->RXTX & pins;
 }
 
 static const struct gpio_chip milandr_gpio_chip = {
