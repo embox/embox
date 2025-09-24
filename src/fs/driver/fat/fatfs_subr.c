@@ -12,8 +12,7 @@
 #include <errno.h>
 
 #include <fs/hlpr_path.h>
-
-#include "fat.h"
+#include <fs/fat.h>
 
 int fat_check_filename(char *filename) {
 	char *point;

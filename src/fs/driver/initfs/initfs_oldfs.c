@@ -15,8 +15,7 @@
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "initfs.h"
+#include <fs/initfs.h>
 
 struct super_block_operations initfs_sbops = {
 	//.open_idesc = dvfs_file_open_idesc,

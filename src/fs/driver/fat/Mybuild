@@ -11,6 +11,9 @@ abstract module fat {
 
 	option boolean support_long_names = true
 
+	@IncludeExport(path="fs")
+	source "fat.h"
+
 	source "fat_common.c"
 	source "fatfs_subr.c"
 	source "fat_common_mem.c"

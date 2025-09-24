@@ -11,8 +11,7 @@
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "ramfs.h"
+#include <fs/ramfs.h>
 
 struct inode *ramfs_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;

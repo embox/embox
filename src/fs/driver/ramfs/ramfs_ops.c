@@ -11,14 +11,13 @@
 #include <fs/mount.h>
 #include <fs/super_block.h>
 #include <fs/dir_context.h>
+#include <fs/ramfs.h>
 
 #include <mem/misc/pool.h>
 #include <mem/page.h>
 
 #include <lib/libds/indexator.h>
 #include <util/math.h>
-
-#include "ramfs.h"
 
 struct ramfs_file_info ramfs_files[RAMFS_FILES];
 

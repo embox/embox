@@ -25,8 +25,7 @@
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "initfs.h"
+#include <fs/initfs.h>
 
 extern struct idesc *dvfs_file_open_idesc(struct lookup *lookup, int __oflag);
 

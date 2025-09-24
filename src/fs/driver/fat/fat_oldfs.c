@@ -10,8 +10,7 @@
 
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "fat.h"
+#include <fs/fat.h>
 
 struct inode *fat_ilookup(struct inode *node, char const *name, struct inode const *dir) {
 	return NULL;

@@ -23,10 +23,9 @@
 #include <fs/fs_driver.h>
 #include <fs/inode_operation.h>
 #include <fs/inode.h>
+#include <fs/fat.h>
 
 #include <drivers/block_dev.h>
-
-#include "fat.h"
 
 /* FIXME bdev_by_path is declared in dvfs.h and fs/mount.h */
 extern struct block_dev *bdev_by_path(const char *source);

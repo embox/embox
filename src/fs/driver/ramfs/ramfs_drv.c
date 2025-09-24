@@ -12,8 +12,7 @@
 #include <fs/inode.h>
 #include <fs/inode_operation.h>
 #include <fs/super_block.h>
-
-#include "ramfs.h"
+#include <fs/ramfs.h>
 
 extern int ramfs_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx);
 extern struct inode *ramfs_ilookup(struct inode *node, char const *name, struct inode const *dir);

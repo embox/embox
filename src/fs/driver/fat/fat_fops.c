@@ -10,8 +10,7 @@
 #include <fs/file_desc.h>
 #include <fs/inode.h>
 #include <fs/super_block.h>
-
-#include "fat.h"
+#include <fs/fat.h>
 
 static size_t fat_read(struct file_desc *desc, void *buf, size_t size) {
 	size_t rezult;

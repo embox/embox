@@ -14,10 +14,8 @@
 #include <assert.h>
 
 #include <fs/dir_context.h>
-
 #include <fs/inode.h>
-
-#include "initfs.h"
+#include <fs/initfs.h>
 
 extern int initfs_fillname(struct inode *inode, char *buf);
 

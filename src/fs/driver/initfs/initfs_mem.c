@@ -9,12 +9,11 @@
 #include <string.h>
 
 #include <fs/inode.h>
+#include <fs/initfs.h>
 
 #include <mem/misc/pool.h>
 
 #include <framework/mod/options.h>
-
-#include "initfs.h"
 
 POOL_DEF(initfs_file_pool, struct initfs_file_info, OPTION_GET(NUMBER,file_quantity));
 

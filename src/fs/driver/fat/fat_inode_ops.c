@@ -14,8 +14,7 @@
 #include <fs/super_block.h>
 #include <fs/inode_operation.h>
 #include <fs/dir_context.h>
-
-#include "fat.h"
+#include <fs/fat.h>
 
 extern int fat_alloc_inode_priv(struct inode *inode, struct fat_dirent *de);
 extern int fat_destroy_inode(struct inode *inode);
