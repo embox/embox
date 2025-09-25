@@ -3,6 +3,8 @@ package embox.compat.libc
 static module str {
 	option boolean strerror_short=false
 
+	source "inhibit_libcall.h"
+
 	source "memchr.c"
 	source "memrchr.c"
 	source "memcmp.c"
