@@ -2,9 +2,10 @@ package embox.driver.net
 
 module lan91c111 {
 	option string log_level="LOG_NONE"
-	source "lan91c111.c"
-
 	option number base_addr
+
+	source "lan91c111.h"
+	source "lan91c111.c"
 
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
