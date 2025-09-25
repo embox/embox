@@ -1,7 +1,7 @@
 package embox.compat.libc
 
 static module math_simple extends embox.compat.libc.math {
-	@NoRuntime depends math_builtins_header
+	source "math_private.h"
 
 	source "abs.c"
 	source "fmod.c", "modf.c"
@@ -12,4 +12,6 @@ static module math_simple extends embox.compat.libc.math {
 	source "round.c", "roundl.c"
 	source "signbit.c"
 	source "exp.c"
+
+	@NoRuntime depends math_builtins_header
 }

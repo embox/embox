@@ -18,7 +18,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
-#include "httpd.h"
+#include <net/util/httpd.h>
 
 #ifdef __EMBUILD_MOD__
 #	include <framework/mod/options.h>

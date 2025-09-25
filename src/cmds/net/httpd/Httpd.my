@@ -25,6 +25,7 @@ module httpd {
 	source "httpd_file.c"
 	source "httpd_parselib.c"
 	source "httpd_parselib2.c"
+	source "httpd_util.c"
 
 	depends httpd_processor_interface
 	@NoRuntime depends httpd_util
@@ -59,7 +60,8 @@ module httpd_pthread {
 	source "httpd_file.c"
 	source "httpd_parselib.c"
 	source "httpd_parselib2.c"
-	source "httpd_util.c"
+
+	@NoRuntime depends httpd_util
 
 	depends embox.compat.libc.all
 	depends embox.compat.posix.LibPosix
@@ -71,6 +73,10 @@ module httpd_pthread {
 
 static module httpd_util {
 	option string log_level="LOG_ERR"
+
+	@IncludeExport(path="net/util")
+	source "httpd.h"
+
 	source "httpd_util.c"
 }
 
@@ -86,9 +92,12 @@ module httpd_cgi extends httpd_processor_interface {
 
 	source "httpd_cgi.c"
 
+	@NoRuntime depends httpd_util
 	depends embox.compat.posix.proc.vfork
 }
 
 module httpd_no_cgi extends httpd_processor_interface {
 	source "httpd_no_cgi.c"
+
+	@NoRuntime depends httpd_util
 }

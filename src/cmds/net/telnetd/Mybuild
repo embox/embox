@@ -16,12 +16,13 @@ package embox.cmd.net
 			Vladimir Sokolov
 	''')
 module telnetd {
-	source "telnetd.c",
-		"telnet_util.c"
-
 	option number port = 23
 	option number max_connections = 5
 	option string shell = "tish"
+
+	source "telnet.h"
+	source "telnetd.c"
+	source "telnet_util.c"
 
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.ipc.ppty

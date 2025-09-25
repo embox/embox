@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
-#include "httpd.h"
+#include <net/util/httpd.h>
 
 #define PAGE_INDEX  "index.html"
 

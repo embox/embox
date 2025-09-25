@@ -22,6 +22,7 @@ static module libds {
 
 	@IncludeExport(path="lib/libds", target_name="indexator.h")
 	source "indexator/indexator.h"
+	source "indexator/index_priv.h"
 	source "indexator/index_alloc.c"
 	source "indexator/index_clamp.c"
 	source "indexator/index_clean.c"

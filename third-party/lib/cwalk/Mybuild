@@ -4,6 +4,8 @@ static module cwalk {
 	@IncludeExport(path="lib")
 	source "cwalk.h"
 
+	source "cwalk_priv.h"
+
 	source "cwalk_priv.c"
 	source "absolute.c"
 	source "basename.c"

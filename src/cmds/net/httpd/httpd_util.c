@@ -10,7 +10,7 @@
 #include <stddef.h>
 #include <string.h>
 
-#include "httpd.h"
+#include <net/util/httpd.h>
 
 static const char *ext2type_html[] = { ".html", ".htm", NULL };
 static const char *ext2type_jpeg[] = { ".jpeg", ".jpg", NULL };
