@@ -16,7 +16,7 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "httpd.h"
+#include <net/util/httpd.h>
 #ifdef __EMBUILD_MOD__
 #	include <framework/mod/options.h>
 # define CGI_PREFIX  OPTION_STRING_GET(cgi_prefix)

@@ -11,7 +11,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "httpd.h"
+#include <net/util/httpd.h>
 
 static const struct http_header_desc {
 	char *name;

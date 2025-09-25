@@ -10,7 +10,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "httpd.h"
+#include <net/util/httpd.h>
 
 static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
 	const int sk = cinfo->ci_sock;
