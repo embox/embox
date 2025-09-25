@@ -6,6 +6,8 @@ module gicv1 extends embox.driver.interrupt.irqctrl_api {
 	option number gicd_base /* GIC distributor base address */
 	option number gicc_base /* GIC CPU interface base address */
 
+	source "gicv1.h"
+
 	source "gicv1.c"
 	source "gic.h"
 
@@ -17,6 +19,10 @@ module gicv3 extends embox.driver.interrupt.irqctrl_api {
 
 	option number gicd_base /* GIC distributor base address */
 	option number gicr_base /* GIC redistributor base address */
+
+	source "gicv1.h"
+	source "gicv2.h"
+	source "gicv3.h"
 
 	source "gicv3.c"
 	source "gic.h"

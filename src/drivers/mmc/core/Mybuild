@@ -16,10 +16,12 @@ module mmc_core {
 
 	source "mmc_host.c"
 
+	source "sd_cmd.h"
+
 	/* Following files contain version-specific stuff */
-	source "sdio.c",
-		"sd.c",
-		"mmc.c"
+	source "sdio.c"
+	source "sd.c"
+	source "mmc.c"
 
 	depends embox.driver.block.partition
 }
