@@ -2,6 +2,7 @@ package embox.driver.interrupt
 
 module riscv_clic extends irqctrl_api {
 	option number base_addr=0x0d000000
+	option boolean vectored_mode=false
 
 	source "riscv_clic.h"
 	source "riscv_clic.c"
