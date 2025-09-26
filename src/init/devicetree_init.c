@@ -1,11 +1,11 @@
+#include <embox/unit.h>
 #include <kernel/printk.h>
 
 // Forward declaration (from devicetree.c)
-int devicetree_init(void);
-
-static int devicetree_bootstrap(void) {
+static int devicetree_init(void) {
     printk("DT: Running early init...\n");
-    return devicetree_init();
+    return 0;
 }
+// Register this function for early initialization
+EMBOX_UNIT_INIT(devicetree_init);
 
-EMBOX_UNIT_INIT(devicetree_bootstrap);
