@@ -1,0 +1,6 @@
+package platform.baikal.evu_ba
+
+module platform_init extends platform.platform_init {
+	source "platform_init.c"
+	source "evu_ba_clk_init.c"
+}
