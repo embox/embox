@@ -1,6 +1,6 @@
 package project.tensorflow.people_detection
 @AutoCmd
-@Cmd(name = "people_.detection", help = "face_detection")
+@Cmd(name = "people_detection", help = "It detects if a person is in the frame or not")
 @Build(stage=2)
 @BuildDepends(third_party.lib.tflite_micro.libtflm)
 @BuildDepends(third_party.lib.tflite_micro.tflite_micro_build_headers)

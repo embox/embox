@@ -1,0 +1,19 @@
+package project.tensorflow.linear_regression
+@AutoCmd
+@Cmd(name = "linear_regression", help = "custom model - linear regression demo")
+@Build(stage=2)
+@BuildDepends(third_party.lib.tflite_micro.libtflm)
+@BuildDepends(third_party.lib.tflite_micro.tflite_micro_build_headers)
+
+module linear_regression {
+
+    @Cflags("-Wno-undef")
+    @Cflags("-Imodels")
+
+    source "main.cc"
+    source "main_functions.cc"
+    source "output_handler.cc"
+    source "models/Linear_regression_model_data.cc"
+}
+
+
