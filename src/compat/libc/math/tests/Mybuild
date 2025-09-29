@@ -87,6 +87,11 @@ module expm1_test {
 	source "expm1_test.c"
 }
 
+module erfc_test {
+	@Cflags("-fno-builtin")
+    source "erfc_test.c"
+}
+
 module exp_test {
 	@Cflags("-fno-builtin")
 	source "exp_test.c"
