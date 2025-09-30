@@ -422,6 +422,7 @@ help_entries := \
 	all \
 	build \
 	buildgen \
+	distgen \
 	dot \
 	docsgen \
 	mod \

@@ -9,8 +9,9 @@ abstract module initfs {
 	@IncludeExport(path="fs")
 	source "initfs.h"
 
-	source "initfs.lds.S"
+	@DefineMacro("INITFS_IMAGE_PATH=\"$(ROOTFS_IMAGE)\"")
 	source "initfs_image.S"
+	source "initfs.lds.S"
 
 	source "initfs_drv.c"
 	source "initfs_mem.c"

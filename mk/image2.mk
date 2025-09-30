@@ -17,11 +17,8 @@ all : $(embox_o) $(image_lds)
 
 FORCE :
 
+include mk/flags.mk
 include mk/image_lib.mk
-
-include $(MKGEN_DIR)/build.mk
-
-include mk/flags.mk # It must be included after a user-defined config.
 
 .SECONDEXPANSION:
 
