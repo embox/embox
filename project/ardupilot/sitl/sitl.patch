@@ -1,0 +1,43 @@
+diff --color -aur ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py
+--- ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py       2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py  2025-10-04 00:34:41.384261094 +0300
+@@ -246,17 +246,17 @@
+             '-Wno-redundant-decls',
+             '-Wno-unknown-pragmas',
+             '-Wno-trigraphs',
+-            '-Werror=shadow',
++            '-Wno-error=shadow',
+             '-Werror=return-type',
+             '-Werror=unused-result',
+             '-Werror=unused-variable',
+             '-Werror=narrowing',
+             '-Werror=attributes',
+             '-Werror=overflow',
+-            '-Werror=parentheses',
++            '-Wno-error=parentheses',
+             '-Werror=format-extra-args',
+             '-Werror=ignored-qualifiers',
+-            '-Werror=undef',
++            '-Wno-error=undef',
+             '-DARDUPILOT_BUILD',
+         ]
+ 
+@@ -379,15 +379,15 @@
+             '-Werror=switch',
+             '-Werror=sign-compare',
+             '-Werror=type-limits',
+-            '-Werror=undef',
++            '-Wno-error=undef',
+             '-Werror=unused-result',
+-            '-Werror=shadow',
++            '-Wno-error=shadow',
+             '-Werror=unused-value',
+             '-Werror=unused-variable',
+             '-Werror=delete-non-virtual-dtor',
+             '-Wfatal-errors',
+             '-Wno-trigraphs',
+-            '-Werror=parentheses',
++            '-Wno-error=parentheses',
+             '-DARDUPILOT_BUILD',
+             '-Wuninitialized',
+             '-Warray-bounds',
