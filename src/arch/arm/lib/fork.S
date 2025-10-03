@@ -6,11 +6,14 @@
  * @date    02.06.2014
  */
 
-	.text
-	.global fork
 
+#include <asm/asm.h>
 #include <asm/ptrace.h>
 
-fork:
+.text
+.syntax unified
+
+ENTRY(fork)
 	CALL_WPTREGS fork_body
+END(fork)
 

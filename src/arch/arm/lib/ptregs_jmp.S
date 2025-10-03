@@ -6,15 +6,16 @@
  * @date    02.06.2014
  */
 
+#include <asm/asm.h>
+
 .text
-.global ptregs_jmp
 .syntax unified
 
-ptregs_jmp:
+ENTRY(ptregs_jmp)
 #if !defined(__ARM_ARCH_6M__)
 	add     r0, #4
 	ldmia   r0, {r1 - r12, r14}
-	ldr     sp, [r0, #52]; \
+	ldr     sp, [r0, #52]
 	add     sp, sp, #68
 	ldr     r0, [r0, #-4]
 	mov     pc, lr
@@ -41,3 +42,4 @@ ptregs_jmp:
 	ldr     r0, [r0]
 	mov     pc, lr
 #endif
+END(ptregs_jmp)

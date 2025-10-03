@@ -6,14 +6,14 @@
  * @date 25.10.2012
  */
 
+#include <asm/asm.h>
 #include <arm/fpu.h>
 
 .text
 .thumb
 .syntax unified
-.global context_switch
 
-context_switch:
+ENTRY(context_switch)
 #if !defined(__ARM_ARCH_6M__)
 	stmia   r0, {r0 - r12, r14}
 	str     sp, [r0, #56]
@@ -64,3 +64,4 @@ context_switch:
 
 	mov     pc, lr
 #endif
+END(context_switch)
