@@ -4,13 +4,15 @@ package project.ardupilot
 @CxxCmd(name = "ardupilot",
 	help = "TODO"
     )
+@BuildDepends(embox.lib.libstdcxx)
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 module sitl {
 	source "^BUILD/extbld/^MOD_PATH/install/ardupilot.o"
 	
-	depends waf
-	depends mavlink
-	depends dsdl
-	depends dronecan_dsdlc
-	depends libcanard
+	@NoRuntime depends waf
+	@NoRuntime depends mavlink
+	@NoRuntime depends dsdl
+	@NoRuntime depends dronecan_dsdlc
+	@NoRuntime depends libcanard
+	@NoRuntime depends embox.lib.libstdcxx
 }
