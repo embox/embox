@@ -18,8 +18,27 @@
 #      libsupc++, and libstdc++. With "Thread mode: posix".
 #
 
+ifeq (1,$(call option_get,BOOLEAN,force_gcc_version))
+GCC_VERSION := $(call option_get,STRING,gcc_version)
+else
+GNUC_MAJOR := $(call macro_get,__GNUC__)
+ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),15 14))
+GCC_VERSION := 14.3.0
+else ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),13))
+GCC_VERSION := 13.3.0
+else ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),12 11 10 9))
+GCC_VERSION := 9.3.0
+else ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),8))
+GCC_VERSION := 8.3.0
+else ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),7 6))
+GCC_VERSION := 6.3.0
+else
+$(error Unsupported compiler version)
+endif
+endif
+
 PKG_NAME    := gcc-releases-gcc
-PKG_VER     := $(call option_get,STRING,gcc_version)
+PKG_VER     := $(GCC_VERSION)
 PKG_SOURCES := https://github.com/gcc-mirror/gcc/archive/refs/tags/releases/gcc-$(PKG_VER).tar.gz
 PKG_PATCHES := gcc_$(PKG_VER).patch
 
@@ -27,7 +46,7 @@ PKG_MD5_6.3.0  := ec408c4056318f587a534653f21a6bad
 PKG_MD5_8.3.0  := 700467b46a64b8fbc89ebc3897922b8b
 PKG_MD5_9.3.0  := 62b4b034face742cf6679f2337f63423
 PKG_MD5_13.3.0 := ea39b36bf3553526ace8d22847dc6ba1
-PKG_MD5_14.2.0 := 6d8c205826f2891bd7027f6c69748921
+PKG_MD5_14.3.0 := 619f8a3f4c4f0d1e424590b426e01111
 PKG_MD5        := $(PKG_MD5_$(PKG_VER))
 
 ifeq (arm,$(EMBOX_ARCH))

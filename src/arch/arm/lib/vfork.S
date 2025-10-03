@@ -6,12 +6,12 @@
  * @date    15.05.2014
  */
 
-.text
-.global vfork
-.syntax unified
-
+#include <asm/asm.h>
 #include <asm/ptrace.h>
 
-vfork:
-	CALL_WPTREGS vfork_body
+.text
+.syntax unified
 
+ENTRY(vfork)
+	CALL_WPTREGS vfork_body
+END(vfork)	
