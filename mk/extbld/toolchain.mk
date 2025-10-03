@@ -18,6 +18,12 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CXXFLAGS))
 EMBOX_IMPORTED_LDFLAGS   = $(filter -static -nostdlib -EL -EB,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m%,$(subst -m elf_i386,-melf_i386,$(LDFLAGS))))
 
+# In GCC 14 some warnings are reported as errors. Downgrade these errors to warnings.
+_gnuc_major := $(shell echo __GNUC__ | $(CPP) -P -)
+ifeq ($(_gnuc_major),$(filter $(_gnuc_major),15 14))
+EMBOX_IMPORTED_CPPFLAGS += -fpermissive
+endif
+
 ifeq ($(ARCH),microblaze)
 # microblaze compiler wants vendor's xillinx.ld if no lds provided from command line.
 # Make it happy with empty lds
