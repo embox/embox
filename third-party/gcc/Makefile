@@ -21,7 +21,7 @@
 ifeq (1,$(call option_get,BOOLEAN,force_gcc_version))
 GCC_VERSION := $(call option_get,STRING,gcc_version)
 else
-GNUC_MAJOR := $(call gcc_macro_get,__GNUC__)
+GNUC_MAJOR := $(call macro_get,__GNUC__)
 ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),15 14))
 GCC_VERSION := 14.3.0
 else ifeq ($(GNUC_MAJOR),$(filter $(GNUC_MAJOR),13))

@@ -5,7 +5,7 @@ PKG_SOURCES := https://github.com/eclipse-4diac/$(PKG_NAME)/archive/refs/tags/$(
 PKG_MD5     := 6be3b6bd8b9276d8c22b8f38f6343515
 PKG_PATCHES := forte-2.0.1-endian.patch
 
-ifeq ($(call gxx_macro_get,__BYTE_ORDER__),$(call gxx_macro_get,__ORDER_LITTLE_ENDIAN__))
+ifeq ($(call macro_get,__BYTE_ORDER__),$(call macro_get,__ORDER_LITTLE_ENDIAN__))
 FORTE_ENDIAN_FLAGS := -DFORTE_LITTLE_ENDIAN=ON -DFORTE_BIG_ENDIAN=OFF
 else
 FORTE_ENDIAN_FLAGS := -DFORTE_LITTLE_ENDIAN=OFF -DFORTE_BIG_ENDIAN=ON

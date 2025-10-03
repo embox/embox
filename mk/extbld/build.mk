@@ -29,16 +29,8 @@ endef
 #  1. GCC macro
 # Return:
 #  Macro value if defined or empty string
-define gcc_macro_get
+define macro_get
 $(subst $(1),,$(shell echo $(1) | $(EMBOX_GCC) -P -E -))
-endef
-
-# Params:
-#  1. GXX macro
-# Return:
-#  Macro value if defined or empty string
-define gxx_macro_get
-$(subst $(1),,$(shell echo $(1) | $(EMBOX_GXX) -P -E -))
 endef
 
 PKG_SOURCE_DIR    = $(filter-out %/install,$(wildcard $(MOD_BUILD_DIR)/*))

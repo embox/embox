@@ -17,7 +17,7 @@ PKG_PATCHES := patch_4_5_2/disable_wstring.patch \
                patch_4_5_2/disable_dlopen.patch \
                patch_4_5_2/add_if_defined_embox.patch
 
-ifeq (1,$(call gxx_macro_get,__thumb__))
+ifeq (1,$(call macro_get,__thumb__))
 PKG_PATCHES += patch_4_5_2/disable_fpu_cortex_m.patch
 endif
 
@@ -41,9 +41,9 @@ else
 WITH_FFMPEG := OFF
 endif
 
-ifeq (1,$(call gxx_macro_get,__ARM_NEON__))
+ifeq (1,$(call macro_get,__ARM_NEON__))
 INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=ON -DENABLE_NEON=ON
-else ifeq (1,$(call gxx_macro_get,__SSE2__))
+else ifeq (1,$(call macro_get,__SSE2__))
 INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=ON -DENABLE_SSE2=ON
 else
 INTRINSIC_FLAGS := -DCV_ENABLE_INTRINSICS=OFF

@@ -6,8 +6,8 @@ PKG_SOURCES := https://github.com/JuliaMath/openlibm/archive/refs/tags/v$(PKG_VE
 PKG_MD5     := 8bdbe6bf53dfb8790b8ccb98773cafd6
 PKG_PATCHES := openlibm.patch
 
-DBL_MANT_DIG  := $(call gcc_macro_get,__DBL_MANT_DIG__)
-LDBL_MANT_DIG := $(call gcc_macro_get,__LDBL_MANT_DIG__)
+DBL_MANT_DIG  := $(call macro_get,__DBL_MANT_DIG__)
+LDBL_MANT_DIG := $(call macro_get,__LDBL_MANT_DIG__)
 
 ifneq ($(DBL_MANT_DIG),53)
 $(error Invalid DBL_MANT_DIG)
