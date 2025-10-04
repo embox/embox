@@ -1,0 +1,6 @@
+"export PWD=/",
+"export HOME=/",
+"netmanager",
+"service telnetd",
+//"source time_setup.sh",
+"tish",
