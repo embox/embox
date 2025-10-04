@@ -1,0 +1,25 @@
+package embox.driver.i2c.niisi
+
+module sc64_i2c {
+	source "sc64_i2c.c"
+
+	depends embox.driver.i2c_core
+}
+
+module sc64_i2c0 {
+	option number base_addr=0x01b400110
+
+	source "sc64_i2c0.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends sc64_i2c
+}
+
+module sc64_i2c1 {
+	option number base_addr=0x01b400120
+
+	source "sc64_i2c1.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends sc64_i2c
+}
