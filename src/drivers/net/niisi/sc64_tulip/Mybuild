@@ -1,0 +1,23 @@
+package embox.driver.net
+
+module sc64_tulip {
+	option string log_level="LOG_ERR"
+
+	option number base_addr=0x1b800000
+	option number irq_num=38
+
+	option number num_rx_desc=8
+	option number num_tx_desc=8
+
+	source "sc64_tulip.c"
+
+	@NoRuntime depends embox.net.dev
+	@NoRuntime depends embox.net.core
+	@NoRuntime depends embox.net.skbuff
+	@NoRuntime depends embox.net.entry_api
+	@NoRuntime depends embox.net.l2.ethernet
+	@NoRuntime depends embox.net.util.show_packet
+	@NoRuntime depends embox.driver.net.phy
+	@NoRuntime depends embox.kernel.irq
+	@NoRuntime depends embox.compat.posix.util.sleep
+}

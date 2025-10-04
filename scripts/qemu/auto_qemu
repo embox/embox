@@ -44,11 +44,16 @@ get_user_empty_guess() {
 }
 
 guess_arch() {
+	endianness=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/ENDIANNESS *= *//p')
 	arch=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p')
 	if [ "$arch" == "mips" ] || [ "$arch" == "riscv" ]; then
 		file ./build/base/bin/embox | grep -q "ELF 64-bit"
 		if [ $? -eq 0 ]; then
-			echo "${arch}64"
+			if [ "$endianness" == "EL" ] ; then
+				echo "${arch}64el"
+			else
+				echo "${arch}64"
+			fi
 		else
 			echo "$arch"
 		fi
@@ -134,6 +139,8 @@ guess_load_arg() {
 	if [ ! "$NAND_SIZE" ]; then
 		if [ "$AUTOQEMU_ARCH" = "riscv" ] || [ "$AUTOQEMU_ARCH" = "riscv64" ]; then
 			echo "-bios ${KERNEL:-./build/base/bin/embox}"
+		elif [ "$AUTOQEMU_ARCH" = "mips64el" ]; then
+			echo "-bios ${KERNEL:-./build/base/bin/embox.bin}"
 		else
 			echo "-kernel ${KERNEL:-./build/base/bin/embox}"
 		fi
@@ -194,7 +201,18 @@ guess_machine() {
 			fi
 			;;
 		mips64)
-			echo "-M mipssim"
+			if cat $BUILD_CONF | gcc -P -E - | grep "niisi_vm10" >/dev/null; then
+				echo "-M vm10"
+			else
+				echo "-M mipssim"
+			fi
+			;;
+		mips64el)
+			if cat $BUILD_CONF | gcc -P -E - | grep "niisi_vk01" >/dev/null; then
+				echo "-M vk01 -plc1-board bt75-403a"
+			elif cat $BUILD_CONF | gcc -P -E - | grep "mipssim" >/dev/null; then
+				echo "-M mipssim"
+			fi
 			;;
 		ppc)
 			echo "-M virtex-ml507"
@@ -273,6 +291,7 @@ NIC2QEMU=(
 	[dwc_gmac]="dwgmac"
 	[usbnet]="usb-net"
 	[cadence_gem]="cadence_gem"
+	[sc64_tulip]="tulip-sc64"
 )
 
 IFS=" " read -r -a qemu_nics <<< "$AUTOQEMU_NICS"

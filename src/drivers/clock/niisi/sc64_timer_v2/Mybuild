@@ -1,0 +1,10 @@
+package embox.driver.clock.niisi
+
+module sc64_timer_v2 {
+	option number base_addr=0x1b503000
+	option number irq_num=15
+
+	source "sc64_timer_v2.c"
+
+	@NoRuntime depends embox.kernel.time.clock_source
+}
