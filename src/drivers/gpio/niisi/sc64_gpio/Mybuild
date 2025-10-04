@@ -1,0 +1,19 @@
+package embox.driver.gpio.niisi
+
+module sc64_gpio {
+	option number chip_id=0
+
+	option number gpio_base_addr=0x01b400250
+	option number outer_base_addr=0x01b400130
+
+	option number porta2_irq=28
+	option number porta3_irq=29
+	option number portb2_irq=30
+	option number portb3_irq=31
+	option number outer0_irq=32
+	option number outer1_irq=33
+
+	source "sc64_gpio.c"
+
+	depends embox.driver.gpio.core
+}
