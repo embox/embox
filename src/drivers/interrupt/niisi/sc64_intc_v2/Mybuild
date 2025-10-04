@@ -1,0 +1,11 @@
+package embox.driver.interrupt.niisi
+
+module sc64_intc_v2 extends embox.driver.interrupt.irqctrl_api {
+	option number base_addr=0x1b502000
+	option number hw_interrupt_pin=3 /* 0..5 */
+
+	source "sc64_intc_v2.h"
+	source "sc64_intc_v2.c"
+
+	// depends embox.driver.periph_memory
+}
