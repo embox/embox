@@ -1,0 +1,15 @@
+package embox.cmd.tuntap_examples
+
+@AutoCmd
+@Cmd(name = "tun_example",
+	help = "This is a tun example",
+	man = '''
+        Man
+	''')
+module tun_example {
+	source "tun_example.c"
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.posix.net.inet_addr
+	depends embox.driver.net.tun
+}
+
