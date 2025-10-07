@@ -10,6 +10,9 @@ MODS_CONF=$CONFDIR/mods.conf
 LDS_CONF=$CONFDIR/lds.conf
 BUILD_CONF=$CONFDIR/build.conf
 
+CONFIG_ARCH=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p')
+CONFIG_PLATFORM=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/PLATFORM *= *//p')
+
 info() {
 	echo -e "$@" >&2
 }
@@ -44,22 +47,35 @@ get_user_empty_guess() {
 }
 
 guess_arch() {
-	endianness=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/ENDIANNESS *= *//p')
-	arch=$(cat $BUILD_CONF | gcc -P -E - | sed -n 's/ARCH *= *//p')
-	if [ "$arch" == "mips" ] || [ "$arch" == "riscv" ]; then
-		file ./build/base/bin/embox | grep -q "ELF 64-bit"
-		if [ $? -eq 0 ]; then
-			if [ "$endianness" == "EL" ] ; then
-				echo "${arch}64el"
-			else
-				echo "${arch}64"
-			fi
-		else
-			echo "$arch"
-		fi
+	file ./build/base/bin/embox | grep -q "64-bit"
+	[ $? -eq 0 ] && elf_64="true" || elf_64="false"
+	file ./build/base/bin/embox | grep -q "LSB"
+	[ $? -eq 0 ] && elf_lsb="true" || elf_lsb="false"
+
+	if [ "$CONFIG_ARCH" == "x86" ]; then
+		qemu_arch="i386"
 	else
-		echo "$arch"
-	fi	
+		qemu_arch="$CONFIG_ARCH"
+	fi
+
+	if [ "$CONFIG_ARCH" == "riscv" ]; then
+		if [ "$elf_64" == "true" ]; then
+			qemu_arch="${qemu_arch}64"
+		else
+			qemu_arch="${qemu_arch}32"
+		fi
+	fi
+
+	if [ "$CONFIG_ARCH" == "mips" ]; then
+		if [ "$elf_64" == "true" ]; then
+			qemu_arch="${qemu_arch}64"
+		fi
+		if [ "$elf_lsb" == "true" ]; then
+			qemu_arch="${qemu_arch}el"
+		fi
+	fi
+
+	echo "$qemu_arch"
 }
 get_user_empty_guess AUTOQEMU_ARCH guess_arch
 
@@ -113,7 +129,7 @@ guessed_info AUTOQEMU_DIAG_CONFIG "(got)"
 guess_kvm() {
 	ret=""
 	# Build kvm argument
-	if [ "$AUTOQEMU_ARCH" = "x86" ] && [ "$OSTYPE" = "linux-gnu" ]; then
+	if [ "$CONFIG_ARCH" == "x86" ] && [ "$OSTYPE" == "linux-gnu" ]; then
 		if grep -q -E '(vmx|svm)' /proc/cpuinfo; then
 			ret="-enable-kvm"
 		else
@@ -137,9 +153,9 @@ get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 guess_load_arg() {
 	NAND_SIZE=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p')
 	if [ ! "$NAND_SIZE" ]; then
-		if [ "$AUTOQEMU_ARCH" = "riscv" ] || [ "$AUTOQEMU_ARCH" = "riscv64" ]; then
+		if [ "$CONFIG_ARCH" == "riscv" ]; then
 			echo "-bios ${KERNEL:-./build/base/bin/embox}"
-		elif [ "$AUTOQEMU_ARCH" = "mips64el" ]; then
+		elif [ "$CONFIG_PLATFORM" == "niisi_vk01" ] || [ "$CONFIG_PLATFORM" == "niisi_vm10" ]; then
 			echo "-bios ${KERNEL:-./build/base/bin/embox.bin}"
 		else
 			echo "-kernel ${KERNEL:-./build/base/bin/embox}"
@@ -161,29 +177,29 @@ guess_load_arg() {
 get_user_empty_guess AUTOQEMU_LOAD_ARG guess_load_arg
 
 guess_machine() {
-	case $AUTOQEMU_ARCH in
+	case $CONFIG_ARCH in
 		arm)
-			if cat $BUILD_CONF | gcc -P -E - | grep "overo" >/dev/null; then
+			if [ "$CONFIG_PLATFORM" == "overo" ]; then
 				echo "-M overo"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "SECO-Q7-796" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "SECO-Q7-796" ]; then
 				echo "-M overo"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "integratorcp" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "integratorcp" ]; then
 				echo "-M integratorcp"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "vexpress-a9" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "vexpress-a9" ]; then
 				echo "-M vexpress-a9"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "sabrelite" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "sabrelite" ]; then
 				echo "-M sabrelite"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s811evb" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "lm3s811evb" ]; then
 				echo "-M lm3s811evb"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "lm3s6965evb" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "lm3s6965evb" ]; then
 				echo "-M lm3s6965evb"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "raspberry" ]; then
 				echo "-M raspi1ap"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "raspberry2" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "raspberry2" ]; then
 				echo "-M raspi2"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "netduinoplus2" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "netduinoplus2" ]; then
 				echo "-M netduinoplus2"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "stm32vl_discovery" > /dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "stm32vl_discovery" ]; then
 				echo "-M stm32vldiscovery"
 			fi
 			;;
@@ -194,24 +210,14 @@ guess_machine() {
 			echo "-M petalogix-s3adsp1800"
 			;;
 		mips)
-			if cat $BUILD_CONF | gcc -P -E - | grep "baikal-t" >/dev/null; then
+			if [ "$CONFIG_PLATFORM" == "mipssim" ]; then
+				echo "-M mipssim"
+			elif [ "$CONFIG_PLATFORM" == "baikal-t" ]; then
 				echo "-M baikal-t"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "mipssim" >/dev/null; then
-				echo "-M mipssim"
-			fi
-			;;
-		mips64)
-			if cat $BUILD_CONF | gcc -P -E - | grep "niisi_vm10" >/dev/null; then
-				echo "-M vm10"
-			else
-				echo "-M mipssim"
-			fi
-			;;
-		mips64el)
-			if cat $BUILD_CONF | gcc -P -E - | grep "niisi_vk01" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "niisi_vk01" ]; then
 				echo "-M vk01 -plc1-board bt75-403a"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "mipssim" >/dev/null; then
-				echo "-M mipssim"
+			elif [ "$CONFIG_PLATFORM" == "niisi_vm10" ]; then
+				echo "-M vm10"
 			fi
 			;;
 		ppc)
@@ -221,31 +227,19 @@ guess_machine() {
 			echo "-M leon3_generic -cpu LEON3"
 			;;
 		riscv)
-			if cat $BUILD_CONF | gcc -P -E - | grep "sifive_e" >/dev/null; then
+			if [ "$CONFIG_PLATFORM" == "virt" ]; then
+				echo "-M virt"
+			elif [ "$CONFIG_PLATFORM" == "sifive_e" ]; then
 				echo "-M sifive_e"
-			
-			elif cat $BUILD_CONF | gcc -P -E - | grep "sifive_u" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "sifive_u" ]; then
 				echo "-M sifive_u"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr1" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "syntacore_scr1" ]; then
 				echo "-M scr1"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr4" >/dev/null; then
-				echo "-M scr4"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr3" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "syntacore_scr3" ]; then
 				echo "-M scr3"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr5" >/dev/null; then
-				echo "-M scr5"
-			else
-				echo "-M virt"
-			fi
-			;;
-		riscv64)
-			if cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr4" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "syntacore_scr4" ]; then
 				echo "-M scr4"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr3" >/dev/null; then
-				echo "-M scr3"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "virt" >/dev/null; then
-				echo "-M virt"
-			elif cat $BUILD_CONF | gcc -P -E - | grep "syntacore_scr5" >/dev/null; then
+			elif [ "$CONFIG_PLATFORM" == "syntacore_scr5" ]; then
 				echo "-M scr5"
 			fi
 			;;
@@ -261,13 +255,7 @@ guess_cpuhartnum() {
 }
 get_user_undef_guess AUTOQEMU_CPUHARTNUM guess_cpuhartnum
 
-declare -A ARCH2QEMU
-ARCH2QEMU=(
-	[x86]="i386"
-	[riscv]="riscv32"
-)
-
-QEMU=${AUTOQEMU_PREFIX}qemu-system-${ARCH2QEMU[$AUTOQEMU_ARCH]:-$AUTOQEMU_ARCH}
+QEMU=${AUTOQEMU_PREFIX}qemu-system-${AUTOQEMU_ARCH}
 AWK=$(which gawk >/dev/null && echo gawk || echo awk)
 QEMU_VER=$($QEMU --version | $AWK -f "$DATADIR"/qemuver.awk)
 
@@ -313,14 +301,14 @@ if [ "$nic_n" -gt 0 ]; then
 			host_nic_config=${qemu_nics_config[$ni]}
 		else
 			host_nic_config="tap,script=$DATADIR/start_script,downscript=$DATADIR/stop_script"
-			if [ "$nic_model" = "virtio" ]; then
+			if [ "$nic_model" == "virtio" ]; then
 				host_nic_config="$host_nic_config,vnet_hdr=no"
 			fi
 		fi
 
 		nic_macaddr="AA:BB:CC:DD:EE:0$(($ni + 2))"
 
-		if [ "$nic_model" = "usb-net" ]; then
+		if [ "$nic_model" == "usb-net" ]; then
 			nic_lines="$nic_lines \
 				-device usb-net,netdev=n$ni,mac=$nic_macaddr"
 		else
@@ -432,7 +420,7 @@ if [ "$graphic_n" -gt 0 ]; then
 			if [ ! "$graphic_model" ]; then
 				graphic_lines="-nographic"
 			else
-				if [ "$graphic_model" = "pl110" ] || [ "$graphic_model" = "ssd0323" ]; then
+				if [ "$graphic_model" == "pl110" ] || [ "$graphic_model" == "ssd0323" ]; then
 					graphic_lines="-serial mon:stdio"
 				else
 					graphic_lines="-vga $graphic_model -serial mon:stdio"
@@ -440,8 +428,8 @@ if [ "$graphic_n" -gt 0 ]; then
 				break
 			fi
 		done
-		if [ "$graphic_lines" = "-nographic" ]; then
-			if [ "$(guess_diag)" = "embox__driver__console__vc__vga" ]; then
+		if [ "$graphic_lines" == "-nographic" ]; then
+			if [ "$(guess_diag)" == "embox__driver__console__vc__vga" ]; then
 				graphic_lines="-vga std"
 			fi
 		fi
@@ -463,7 +451,7 @@ if [[ "$(id -u)" -ne 0 ]] ; then
 	sudo='sudo -E'
 fi
 
-ARG_LINE="$sudo $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
+ARG_LINE="${AUTOQEMU_SUDO:-$sudo} $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
 
 info $ARG_LINE
 $ARG_LINE
