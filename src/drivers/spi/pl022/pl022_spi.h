@@ -12,6 +12,7 @@
 #include <stdint.h>
 
 struct pl022_spi {
+	struct spi_controller *spi_controller;
 	uint32_t base_addr;
 };
 
