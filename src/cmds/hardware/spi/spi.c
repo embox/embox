@@ -10,6 +10,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <inttypes.h>
 
 #include <lib/libds/array.h>
 
@@ -39,6 +40,21 @@ static void list_spi_devices(void) {
 
 	array_spread_foreach(cntl, __spi_controller_registry) {
 		printf("Bus: %s\n", cntl->cdev.name);
+		printf("\t0x%" PRIxPTR "\n", cntl->spic_label);
+		if (cntl->spic_pins) {
+			printf("\tSCLK:(PORT%d.%d func(%d)\n",
+				cntl->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
+				cntl->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin,
+				cntl->spic_pins[SPIC_PIN_SCLK_IDX].pd_func);
+			printf("\tMISO:(PORT%d.%d func(%d)\n",
+				cntl->spic_pins[SPIC_PIN_MISO_IDX].pd_port,
+				cntl->spic_pins[SPIC_PIN_MISO_IDX].pd_pin,
+				cntl->spic_pins[SPIC_PIN_MISO_IDX].pd_func);
+			printf("\tMOSI:(PORT%d.%d func(%d)\n",
+				cntl->spic_pins[SPIC_PIN_MOSI_IDX].pd_port,
+				cntl->spic_pins[SPIC_PIN_MOSI_IDX].pd_pin,
+				cntl->spic_pins[SPIC_PIN_MOSI_IDX].pd_func);
+		}
 	}
 
 	array_spread_foreach(dev, __spi_device_registry) {	

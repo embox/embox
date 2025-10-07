@@ -73,6 +73,10 @@ struct rcu_reg {
 #define RCU_CGCFGAPB_TMR2EN         (1 << 3)
 #define RCU_CGCFGAPB_TMR16_EN(nr)   (1 << (1 + nr))
 
+#define RCU_CGCFGAPB_SPI0EN         (1 << 5)
+#define RCU_CGCFGAPB_SPI1EN         (1 << 6)
+#define RCU_CGCFGAPB_SPI_EN(nr)     (1 << (5 + nr))
+
 #define RCU_CGCFGAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_CGCFGAPB_UART0EN        (1 << 6)
 #define RCU_CGCFGAPB_UART1EN        (1 << 7)
@@ -90,6 +94,10 @@ struct rcu_reg {
 #define RCU_RSTDISAPB_TMR1EN         (1 << 2)
 #define RCU_RSTDISAPB_TMR2EN         (1 << 3)
 #define RCU_RSTDISAPB_TMR16_EN(num)  (1 << (1 + num))
+
+#define RCU_RSTDISAPB_SPI0EN         (1 << 5)
+#define RCU_RSTDISAPB_SPI1EN         (1 << 6)
+#define RCU_RSTDISAPB_SPI_EN(num)    (1 << (5 + num))
 
 #define RCU_RSTDISAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_RSTDISAPB_UART0EN        (1 << 6)
@@ -170,6 +178,12 @@ void niiet_tmr_set_rcu(int num) {
 	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_TMR16_EN(num);
 }
 
+void niiet_spi_set_rcu(int num) {
+	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_SPI_EN(num);
+	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_SPI_EN(num);
+}
+
+
 int clk_enable(char *clk_name) {
     int num;
 
@@ -181,6 +195,11 @@ int clk_enable(char *clk_name) {
     if (0 == strncmp(clk_name, CLK_NAME_UART, sizeof(CLK_NAME_UART) - 1)) {
         num = clk_name[sizeof(CLK_NAME_UART) - 1]  - '0';
         niiet_uart_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_SPI, sizeof(CLK_NAME_SPI) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_SPI) - 1]  - '0';
+        niiet_spi_set_rcu(num);
         return 0;
     }
     if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {

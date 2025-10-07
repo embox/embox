@@ -184,12 +184,15 @@ struct uart_conf uarts[] = {
 
 struct spi_conf spis[] = {
 	[0] = {
-		.status = DISABLED,
+		.status = ENABLED,
 		.name = "SPI0",
 		.dev = {
 			.name = "SPI0",
 			.regs = {
 				REGMAP("BASE_ADDR", (SPI0_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_SPI0_VECTNUM),
 			},
 			.pins = {
 				PIN("CLK", GPIO_PORT_B, 0, 1),
@@ -203,12 +206,15 @@ struct spi_conf spis[] = {
 		},
 	},
 	[1] = {
-		.status = DISABLED,
+		.status = ENABLED,
 		.name = "SPI1",
 		.dev = {
 			.name = "SPI1",
 			.regs = {
 				REGMAP("BASE_ADDR", (SPI1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_SPI1_VECTNUM),
 			},
 			.pins = {
 				PIN("CLK", GPIO_PORT_B, 4, 1),
@@ -325,4 +331,4 @@ struct pwm_conf pwms[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts),  LED(leds), PWM(pwms))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), SPI(spis), I2C(i2cs), PWM(pwms))

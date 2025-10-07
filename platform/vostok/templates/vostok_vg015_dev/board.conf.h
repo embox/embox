@@ -7,5 +7,6 @@ CONFIG {
 	uarts[3].status = DISABLED;
 	uarts[4].status = DISABLED;
 
-//	spis[1].status = ENABLED;
+	spis[0].status = ENABLED;
+	spis[1].status = ENABLED;
 }

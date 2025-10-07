@@ -21,6 +21,14 @@
 
 struct spi_controller_ops;
 struct spi_device;
+struct pin_description;
+
+#define SPIC_PIN_SCLK_IDX   0
+#define SPIC_PIN_MISO_IDX   1 /* Master In Slave Out */
+#define SPIC_PIN_MOSI_IDX   2 /* Master Out Slave In */
+
+#define SPIC_PIN_RX_IDX     SPIC_PIN_MISO_IDX
+#define SPIC_PIN_TX_IDX     SPIC_PIN_MOSI_IDX
 
 struct spi_controller {
 	struct char_dev cdev;
@@ -32,7 +40,9 @@ struct spi_controller {
 	struct spi_controller_ops *spi_ops;
 	void *priv;
 
-	int                         spic_bus_num;
+	int                           spic_bus_num;
+	uintptr_t                     spic_label;
+	const struct pin_description *spic_pins;
 };
 
 struct spi_controller_ops {

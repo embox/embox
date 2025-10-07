@@ -3,15 +3,24 @@
 #define FLASH_BASE    (0x3000D000UL)
 #define PMUSYS_BASE   (0x3000F000UL)
 
+
 #define GPIOA_BASE              0x28000000UL
 #define GPIOB_BASE              0x28001000UL
 #define GPIOC_BASE              0x28002000UL
+
+#define SPI0_BASE               0x20060000UL
+#define SPI1_BASE               0x20050000UL
+#define QSPI1_BASE              0x20040000UL
 
 #define TMR32_BASE              0x30000000UL
 
 #define TMR0_BASE               0x30001000UL
 #define TMR1_BASE               0x30002000UL
 #define TMR2_BASE               0x30003000UL
+
+#define TRNG_BASE               0x30004000UL
+
+#define I2C0_BASE               0x30005000UL
 
 #define UART0_BASE              0x30006000UL
 #define UART1_BASE              0x30007000UL
@@ -31,8 +40,8 @@
 #define PLIC_TMR1_VECTNUM       8
 #define PLIC_TMR2_VECTNUM       9
 #define PLIC_QSPI0_VECTNUM      10
-#define PLIC_QSPI1_VECTNUM      11
-#define PLIC_QSPI2_VECTNUM      12
+#define PLIC_SPI0_VECTNUM       11
+#define PLIC_SPI1_VECTNUM       12
 #define PLIC_DMA0_VECTNUM       13
 #define PLIC_DMA1_VECTNUM       14
 #define PLIC_DMA2_VECTNUM       15
