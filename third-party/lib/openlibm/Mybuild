@@ -12,4 +12,7 @@ static module OpenLibm extends embox.compat.libc.math_openlibm {
 
 	@IncludeExport(target_name="tgmath.h")
 	source "openlibm_tgmath.h"
+
+	@IncludeExport(target_name="fenv.h")
+	source "openlibm_fenv.h"
 }
