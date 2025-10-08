@@ -193,8 +193,9 @@ $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(symbols_pass2_a) \
 	$(phymem_cflags_addon) \
 	$(CC_MAP_FLAGS) \
-	-o $@
-else
+	-o $@ | tee $@.mem
+
+else # FINAL_LINK_WITH_CC
 
 $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) --relocatable $(ldflags) \
@@ -261,8 +262,9 @@ $(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_pre
 	$(symbols_pass2_a) \
 	$(LD_MAP_FLAGS) \
 	--print-memory-usage \
-	-o $@
-endif
+	-o $@ | tee $@.mem
+
+endif # FINAL_LINK_WITH_CC
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@
@@ -278,23 +280,12 @@ $(IMAGE_PIGGY): $(IMAGE)
 	@$(LD) -r -b binary $@.tmp -o $@
 	@$(RM) $@.tmp
 
-image_size_sort = \
-	echo "" >> $@;                    \
-	echo "sort by $2 size" >> $@;     \
-	cat $@.tmp | sort -g -k $1 >> $@;
-
 $(IMAGE_SIZE): $(IMAGE)
 	@if which $(SIZE) >/dev/null 2>&1; then \
-	    $(SIZE) $^ | tee $@.tmp;            \
-		echo "size util generated output for $(TARGET)" > $@; \
-		$(call image_size_sort,1,text)     \
-		$(call image_size_sort,2,data)     \
-		$(call image_size_sort,3,bss)      \
-		$(call image_size_sort,4,total)    \
-		$(RM) $@.tmp;                      \
-	else                                   \
-		echo "$(SIZE) util not found" > $@;   \
-	fi;
+	    $(SIZE) $^ | tee $@; \
+	else \
+		echo "$(SIZE) util not found" > $@; \
+	fi
 
 ifdef ROOTFS_OUT_DIR
 
