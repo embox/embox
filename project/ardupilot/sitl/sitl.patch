@@ -1,6 +1,18 @@
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp    2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp       2025-10-08 21:12:39.989277571 +0300
+@@ -24,7 +24,7 @@
+ #include "AP_Param.h"
+ 
+ #include <cmath>
+-#include <string.h>
++#include <strings.h>
+ 
+ #include <AP_Common/AP_Common.h>
+ #include <AP_HAL/AP_HAL.h>
 diff --color -aur ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py
 --- ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py       2025-07-18 02:43:00.000000000 +0300
-+++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py  2025-10-04 00:34:41.384261094 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py  2025-10-08 21:16:36.417536457 +0300
 @@ -246,17 +246,17 @@
              '-Wno-redundant-decls',
              '-Wno-unknown-pragmas',
@@ -41,3 +53,12 @@ diff --color -aur ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py ../build
              '-DARDUPILOT_BUILD',
              '-Wuninitialized',
              '-Warray-bounds',
+@@ -760,7 +760,7 @@
+         cfg.check_librt(env)
+         cfg.check_feenableexcept()
+ 
+-        env.LINKFLAGS += ['-pthread',]
++        # env.LINKFLAGS += ['-pthread',]
+ 
+         if cfg.env.DEBUG and 'clang++' in cfg.env.COMPILER_CXX and cfg.options.asan:
+              env.LINKFLAGS += ['-fsanitize=address']

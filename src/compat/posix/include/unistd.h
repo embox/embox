@@ -183,8 +183,8 @@ extern int execvp(const char *file, char *const argv[]);
 extern int execl(const char *path, const char *arg, ...);
 
 // extern int link(const char *oldpath, const char *newpath);
-// extern ssize_t readlink(const char *path, char *buf,
-// 		       size_t bufsize);
+extern ssize_t readlink(const char *path, char *buf,
+		       size_t bufsize);
 extern ssize_t readlinkat(int fd, const char *path,
 		       char *buf, size_t bufsize);
 
