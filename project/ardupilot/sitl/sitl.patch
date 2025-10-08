@@ -1,6 +1,62 @@
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/AP_Filesystem/AP_Filesystem_posix.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Filesystem/AP_Filesystem_posix.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/AP_Filesystem/AP_Filesystem_posix.cpp    2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Filesystem/AP_Filesystem_posix.cpp       2025-10-09 00:10:44.932167119 +0300
+@@ -27,7 +27,7 @@
+ #if defined(__APPLE__) || defined(__OpenBSD__)
+ #include <sys/mount.h>
+ #elif CONFIG_HAL_BOARD != HAL_BOARD_QURT
+-#include <sys/vfs.h>
++#include <sys/stat.h>
+ #endif
+ 
+ #if AP_FILESYSTEM_POSIX_HAVE_UTIME
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/Scheduler.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/Scheduler.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/Scheduler.cpp        2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/Scheduler.cpp   2025-10-09 00:09:18.159672967 +0300
+@@ -7,11 +7,11 @@
+ #include <sys/time.h>
+ #include <fenv.h>
+ #include <AP_BoardConfig/AP_BoardConfig.h>
+-#if defined (__clang__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__OpenBSD__)
++// #if defined (__clang__) || (defined (__APPLE__) && defined (__MACH__)) || defined (__OpenBSD__)
+ #include <stdlib.h>
+-#else
+-#include <malloc.h>
+-#endif
++// #else
++// #include <malloc.h>
++// #endif
+ #include <AP_RCProtocol/AP_RCProtocol.h>
+ #ifdef UBSAN_ENABLED
+ #include <fcntl.h>
+@@ -385,9 +385,9 @@
+         goto failed;
+     }
+ 
+-#if !defined(__APPLE__) && !defined(__OpenBSD__)
+-    pthread_setname_np(thread, name);
+-#endif
++// #if !defined(__APPLE__) && !defined(__OpenBSD__)
++//     pthread_setname_np(thread, name);
++// #endif
+ 
+     a->next = threads;
+     threads = a;
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/UART_utils.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/UART_utils.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/UART_utils.cpp       2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_HAL_SITL/UART_utils.cpp  2025-10-09 00:11:10.370776991 +0300
+@@ -26,7 +26,7 @@
+ #ifdef USE_TERMIOS
+ #include <termios.h>
+ #else
+-#include <asm/ioctls.h>
++// #include <asm/ioctls.h>
+ #include <asm/termbits.h>
+ #endif
+ 
 diff --color -aur ./ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp
 --- ./ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp    2025-07-18 02:43:00.000000000 +0300
-+++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp       2025-10-08 21:12:39.989277571 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp       2025-10-09 00:09:18.160204138 +0300
 @@ -24,7 +24,7 @@
  #include "AP_Param.h"
  
@@ -10,9 +66,84 @@ diff --color -aur ./ardupilot-Copter-4.6.2/libraries/AP_Param/AP_Param.cpp ../bu
  
  #include <AP_Common/AP_Common.h>
  #include <AP_HAL/AP_HAL.h>
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/SITL/SIM_Frame.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/SITL/SIM_Frame.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/SITL/SIM_Frame.cpp       2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/SITL/SIM_Frame.cpp  2025-10-09 00:12:22.801526809 +0300
+@@ -25,6 +25,8 @@
+ #include <stdio.h>
+ #include <sys/stat.h>
+ 
++#include <strings.h>
++
+ using namespace SITL;
+ 
+ static Motor quad_plus_motors[] =
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/SITL/SIM_JSBSim.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/SITL/SIM_JSBSim.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/SITL/SIM_JSBSim.cpp      2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/SITL/SIM_JSBSim.cpp 2025-10-09 00:18:23.361458964 +0300
+@@ -194,7 +194,7 @@
+     pid_t child_pid = fork();
+     if (child_pid == 0) {
+         // in child
+-        setsid();
++        // setsid();
+         dup2(devnull, 0);
+         dup2(p[1], 1);
+         close(p[0]);
+@@ -215,15 +215,16 @@
+             perror(autotest_dir);
+             exit(1);
+         }
+-
+-        int ret = execlp("JSBSim",
+-                         "JSBSim",
+-                         "--suspend",
+-                         rate,
+-                         nice,
+-                         logdirective,
+-                         script,
+-                         nullptr);
++        char *args[] = {
++            "JSBSim",
++            "--suspend",
++            rate,
++            nice,
++            logdirective,
++            script,
++            NULL
++        };
++        int ret = execvp("JSBSim", args);
+         if (ret != 0) {
+             perror("JSBSim");
+         }
+diff --color -aur ./ardupilot-Copter-4.6.2/libraries/SITL/SIM_last_letter.cpp ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/SITL/SIM_last_letter.cpp
+--- ./ardupilot-Copter-4.6.2/libraries/SITL/SIM_last_letter.cpp 2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/libraries/SITL/SIM_last_letter.cpp    2025-10-09 00:19:45.194523010 +0300
+@@ -60,12 +60,15 @@
+       for (uint8_t i=3; i<100; i++) {
+           close(i);
+       }
+-      int ret = execlp("roslaunch",
+-                       "roslaunch",
+-                       "last_letter",
+-                       "gazebo.launch",
+-                       "ArduPlane:=true",
+-                       nullptr);
++      char *args[] = {
++        "roslaunch",
++        "last_letter", 
++        "gazebo.launch",
++        "ArduPlane:=true",
++        NULL
++      };
++
++      int ret = execvp("roslaunch", args);
+       if (ret != 0) {
+           perror("roslaunch");
+       }
 diff --color -aur ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py
 --- ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py       2025-07-18 02:43:00.000000000 +0300
-+++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py  2025-10-08 21:16:36.417536457 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py  2025-10-09 00:09:18.160541109 +0300
 @@ -246,17 +246,17 @@
              '-Wno-redundant-decls',
              '-Wno-unknown-pragmas',
@@ -53,6 +184,15 @@ diff --color -aur ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py ../build
              '-DARDUPILOT_BUILD',
              '-Wuninitialized',
              '-Warray-bounds',
+@@ -674,7 +674,7 @@
+ class sitl(Board):
+ 
+     def __init__(self):
+-        self.with_can = True
++        self.with_can = False
+ 
+     def configure_env(self, cfg, env):
+         super(sitl, self).configure_env(cfg, env)
 @@ -760,7 +760,7 @@
          cfg.check_librt(env)
          cfg.check_feenableexcept()
