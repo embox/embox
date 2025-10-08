@@ -24,7 +24,6 @@ struct idesc {
 	const struct idesc_xattrops *idesc_xattrops;
 	unsigned int idesc_flags;
 	int idesc_usage_count;
-	void *priv;
 };
 
 /**
