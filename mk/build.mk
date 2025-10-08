@@ -11,10 +11,6 @@ include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
-ifneq ($(filter distgen,$(MAKECMDGOALS)),)
-export GEN_DIST := 1
-endif
-
 .PHONY : buildgen distgen build docsgen dot
 
 build_gen_ts := $(BUILD_DIR)/build-gen.timestamp

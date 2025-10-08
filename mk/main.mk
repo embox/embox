@@ -65,7 +65,7 @@ endef # buildgen
 .PHONY : distgen dg
 dg : distgen
 distgen :
-	+@$(make_mybuild) $@
+	+@$(make_mybuild) $@ GEN_DIST=y
 
 define help-distgen
 Usage: $(MAKE) distgen-<template>
