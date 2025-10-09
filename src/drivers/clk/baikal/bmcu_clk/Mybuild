@@ -1,0 +1,7 @@
+package embox.driver.clk.baikal
+
+module bmcu_clk extends embox.driver.clk.core {
+	option string log_level="LOG_NONE"
+
+	source "bmcu_clk.c"
+}
