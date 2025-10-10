@@ -1,22 +1,25 @@
 
-include mk/core/common.mk
-
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
-# Ignore Warning Options
-EMBOX_IMPORTED_CPPFLAGS  = $(filter-out -MMD -MP -W%,$(EMBOX_EXPORT_CPPFLAGS))
+# Ignore warning options and -MMD -MP
+EMBOX_IMPORTED_CPPFLAGS := $(filter-out -MMD -MP -W%,$(EMBOX_EXPORT_CPPFLAGS))
 EMBOX_IMPORTED_CPPFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(EMBOX_EXPORT_CPPFLAGS))
 
-EMBOX_IMPORTED_CFLAGS    = $(filter-out -std=% -W%,$(CFLAGS))
+# Ignore warning options and -std=<standard>
+EMBOX_IMPORTED_CFLAGS   := $(filter-out -std=% -W%,$(CFLAGS))
 EMBOX_IMPORTED_CFLAGS   += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CFLAGS))
 
-EMBOX_IMPORTED_CXXFLAGS  = $(filter-out -W%,$(CXXFLAGS))
+# Only machine-dependent options
+EMBOX_IMPORTED_M_CFLAGS := $(filter -m% -EL -EB,$(CFLAGS))
+
+# Ignore warning options and -std=<standard>
+EMBOX_IMPORTED_CXXFLAGS := $(filter-out -std=% -W%,$(CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CXXFLAGS))
 
-# Ignore LDFLAGS except -static -nostdlib -E<endian> and -m<emulation>
-EMBOX_IMPORTED_LDFLAGS   = $(filter -static -nostdlib -EL -EB,$(LDFLAGS))
-EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m%,$(subst -m elf_i386,-melf_i386,$(LDFLAGS))))
+# Only -static -nostdlib and machine-dependent options
+EMBOX_IMPORTED_LDFLAGS  := $(filter -static -nostdlib -EL -EB,$(LDFLAGS))
+EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m%,$(subst -m ,-m,$(LDFLAGS))))
 
 # In GCC 14 some warnings are reported as errors. Downgrade these errors to warnings.
 _gnuc_major := $(shell echo __GNUC__ | $(CPP) -P -)
@@ -32,7 +35,7 @@ $(shell touch $(_empty_lds_hack))
 EMBOX_IMPORTED_LDFLAGS += -T $(_empty_lds_hack)
 endif
 
-EMBOX_IMPORTED_LDFLAGS_FULL  =
+EMBOX_IMPORTED_LDFLAGS_FULL :=
 LD_DISABLE_RELAXATION ?= n
 ifeq (n,$(LD_DISABLE_RELAXATION))
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--relax
@@ -67,25 +70,35 @@ else
 root2dist = $1
 endif
 
-$(EMBOX_GCC_ENV): $(MKGEN_DIR)/build.mk $(MKGEN_DIR)/image.rule.mk
-$(EMBOX_GCC_ENV): mk/flags.mk mk/extbld/toolchain.mk
-$(EMBOX_GCC_ENV): | $(dir $(EMBOX_GCC_ENV))
-	@echo EMBOX_CROSS_COMPILE='"$(CROSS_COMPILE)"'                       > $@
+embox_compilers := $(EMBOX_GCC) $(EMBOX_GXX)
+embox_binutils  := \
+	$(TOOLCHAIN_DIR)/embox-ar \
+	$(TOOLCHAIN_DIR)/embox-ranlib \
+	$(TOOLCHAIN_DIR)/embox-nm \
+	$(TOOLCHAIN_DIR)/embox-size
+
+embox_toolchain := $(embox_compilers) $(embox_binutils)
+
+.PHONY : all
+all : $(embox_toolchain)
+
+$(embox_toolchain) : $(MKGEN_DIR)/build.mk $(MKGEN_DIR)/image.rule.mk
+$(embox_toolchain) : | $(TOOLCHAIN_DIR)
+
+$(TOOLCHAIN_DIR) :
+	@$(MKDIR) $@
+
+$(embox_compilers) :
+	@cat $(ROOT_DIR)/mk/extbld/compiler_start.sh                                            > $@
 	@echo EMBOX_IMPORTED_CPPFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CPPFLAGS))"'         >> $@
 	@echo EMBOX_IMPORTED_CFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CFLAGS))"'             >> $@
+	@echo EMBOX_IMPORTED_M_CFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_M_CFLAGS))"'         >> $@
 	@echo EMBOX_IMPORTED_CXXFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CXXFLAGS))"'         >> $@
 	@echo EMBOX_IMPORTED_LDFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS))"'           >> $@
 	@echo EMBOX_IMPORTED_LDFLAGS_FULL='"$(call root2dist,$(EMBOX_IMPORTED_LDFLAGS_FULL))"' >> $@
+	@cat $(ROOT_DIR)/mk/extbld/compiler_end.sh                                             >> $@
+	@chmod +x $@
 
-TOOLCHAIN_TEST_SRC := $(ROOT_DIR)/mk/extbld/toolchain_test.c
-TOOLCHAIN_TEST_OUT := $(OBJ_DIR)/toolchain_test
-
-.PHONY : do_test
-do_test : $(TOOLCHAIN_TEST_OUT)
-
-$(TOOLCHAIN_TEST_OUT): $(EMBOX_GCC_ENV)
-ifeq ($(filter usermode%,$(ARCH)),)
-	EMBOX_GCC_LINK=full $(EMBOX_GCC) $(TOOLCHAIN_TEST_SRC) -o $(TOOLCHAIN_TEST_OUT)
-else
-	@echo "Full linking mode isn't supported for usermode arch!"
-endif
+$(embox_binutils) :
+	@cat $(ROOT_DIR)/mk/extbld/utils_stub.sh > $@
+	@chmod +x $@

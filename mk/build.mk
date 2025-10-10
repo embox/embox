@@ -24,7 +24,7 @@ build : $(build_gen_ts)
 	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=1
-	@$(MAKE) -f mk/extbld/toolchain.mk do_test
+	@$(MAKE) -f mk/extbld/toolchain_test.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-2
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=2
 	@$(MAKE) -f mk/image3.mk MAKEFILES=''
@@ -38,7 +38,7 @@ distgen : $(build_gen_ts)
 	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=1
-	@$(MAKE) -f mk/extbld/toolchain.mk do_test
+	@$(MAKE) -f mk/extbld/toolchain_test.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-2
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=2
 

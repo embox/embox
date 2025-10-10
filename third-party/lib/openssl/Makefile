@@ -13,7 +13,7 @@ $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		./Configure \
 		linux-armv4 \
-		--cross-compile-prefix=$(ROOT_DIR)/mk/extbld/arch-embox- \
+		--cross-compile-prefix=$(TOOLCHAIN_DIR)/embox- \
 		no-idea \
 		no-mdc2 \
 		no-rc5 \
