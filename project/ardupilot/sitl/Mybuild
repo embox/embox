@@ -7,7 +7,7 @@ package project.ardupilot
 @BuildDepends(embox.lib.libstdcxx)
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 module sitl {
-	source "^BUILD/extbld/^MOD_PATH/install/ardupilot.o"
+	source "^BUILD/extbld/^MOD_PATH/install/arducopter.o"
 	
 	@NoRuntime depends waf
 	@NoRuntime depends mavlink

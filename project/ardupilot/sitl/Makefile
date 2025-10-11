@@ -24,5 +24,5 @@ $(BUILD):
 	touch $@
 
 $(INSTALL):
-	$(CP) $(PKG_SOURCE_DIR)build/sitl/bin/arducopter $(PKG_INSTALL_DIR)/arducopter.o
+	$(CP) $(PKG_SOURCE_DIR)/build/sitl/bin/arducopter $(PKG_INSTALL_DIR)/arducopter.o
 	touch $@
