@@ -1,0 +1,10 @@
+package embox.driver.gpio.baikal
+
+module bmcu_gpio {
+	option number gpio_chip_id=0
+
+	source "bmcu_gpio.c"
+
+	@NoRuntime depends embox.driver.clk.core
+	@NoRuntime depends embox.driver.gpio.core
+}
