@@ -25,4 +25,5 @@ $(BUILD):
 
 $(INSTALL):
 	$(CP) $(PKG_SOURCE_DIR)/build/sitl/bin/arducopter $(PKG_INSTALL_DIR)/arducopter.o
+	$(CP) $(PKG_SOURCE_DIR)/build/sitl/lib/libArduCopter_libs.a $(PKG_INSTALL_DIR)/libArduCopter_libs.a
 	touch $@

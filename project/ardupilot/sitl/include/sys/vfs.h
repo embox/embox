@@ -1,6 +1,8 @@
 #ifndef ARDUPILOT_VFS_H_
 #define ARDUPILOT_VFS_H_
 
+#include <sys/cdefs.h>
+
 typedef struct {
 	int val[2];
 } fsid_t;
@@ -18,6 +20,7 @@ struct statfs {
    long    f_spare[6];
 };
 
+__BEGIN_DECLS
 extern int statfs(const char *path, struct statfs *buf);
-
+__END_DECLS
 #endif
