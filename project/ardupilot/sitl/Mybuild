@@ -1,11 +1,15 @@
 package project.ardupilot
 
+@AutoCmd
+@CxxCmd(name = "ardupilot",
+	help = "TODO"
+    )
 @BuildDepends(embox.lib.libstdcxx)
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
-module sitl_lib {
+module sitl {
 	source "stubs.c"
-	source "^BUILD/extbld/^MOD_PATH/install/libArduCopter_libs.a"
-	
+	source "^BUILD/extbld/^MOD_PATH/install/arducopter.o"
+
 	@NoRuntime depends waf
 	@NoRuntime depends mavlink
 	@NoRuntime depends dsdl
@@ -15,18 +19,4 @@ module sitl_lib {
 	@NoRuntime depends embox.compat.posix.stubs
 	@NoRuntime depends embox.compat.posix.ipc.pipe
 	@NoRuntime depends embox.compat.posix.proc.fork
-}
-
-@AutoCmd
-@CxxCmd(name = "ardupilot",
-	help = "TODO"
-    )
-@BuildDepends(embox.lib.libstdcxx)
-@BuildDepends(sitl_lib)
-@Build(stage=2)
-module sitl {
-	source "^BUILD/extbld/project/ardupilot/sitl_lib/install/arducopter.o"
-	
-	depends sitl_lib
-	@NoRuntime depends embox.lib.libstdcxx
 }
