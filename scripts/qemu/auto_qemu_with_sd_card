@@ -11,6 +11,8 @@ else
 	/sbin/mkfs.vfat $image_file_name
 fi
 
+qemu-img resize $image_file_name 512M
+
 ./scripts/qemu/auto_qemu \
 	-drive if=sd,format=raw,file=$image_file_name \
 	"$@"
