@@ -103,7 +103,7 @@ endif
 
 QT_CPPFLAGS += -include qt_embox_compat.h
 QT_CFLAGS   := $(QT_CPPFLAGS) -Wno-error
-QT_CXXFLAGS := $(QT_CPPFLAGS) -fpermissive -Wno-error
+QT_CXXFLAGS := $(QT_CPPFLAGS) -fpermissive -Wno-error -std=gnu++11
 
 $(CONFIGURE) :
 	cd $(PKG_SOURCE_DIR) && ( \
