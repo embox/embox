@@ -1,6 +1,11 @@
-"export PWD=/",
+"export PWD=/mnt",
 "export HOME=/",
 
 "netmanager",
+
+"mkdir -s /mnt",
+"mount -t vfat /dev/mmc0 /mnt",
+"cd /mnt",
+
 "ardupilot -S -w --model copter --speedup 8 --defaults /copter.parm --slave 0 --sim-address=10.0.2.10 -I0",
 "tish",
