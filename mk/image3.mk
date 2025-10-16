@@ -72,6 +72,15 @@ else
 relax = --no-relax
 endif
 
+GEN_LINKER_MAP ?= n
+ifeq ($(GEN_LINKER_MAP),y)
+CC_MAP_FLAGS = -Wl,--cref -Wl,-Map,$@.map
+LD_MAP_FLAGS = --cref -Map $@.map
+else
+CC_MAP_FLAGS :=
+LD_MAP_FLAGS :=
+endif
+
 # This must be expanded in a secondary expansion context.
 # NOTE: must be the last one in a list of prerequisites (contains order-only)
 common_prereqs = $(ROOT_DIR)/mk/image2.mk $(ROOT_DIR)/mk/flags.mk $(MKGEN_DIR)/build.mk \
@@ -155,7 +164,7 @@ $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
 	$(phymem_cflags_addon) \
-	-Wl,--cref -Wl,-Map,$@.map \
+	$(CC_MAP_FLAGS) \
 	-o $@
 
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
@@ -165,7 +174,7 @@ $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
 	$(phymem_cflags_addon) \
-	-Wl,--cref -Wl,-Map,$@.map \
+	$(CC_MAP_FLAGS) \
 	-o $@
 
 $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
@@ -174,7 +183,7 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	$(FINAL_LDFLAGS) \
 	$(symbols_pass1_a) \
 	$(phymem_cflags_addon) \
-	-Wl,--cref -Wl,-Map,$@.map \
+	$(CC_MAP_FLAGS) \
 	-o $@
 
 $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
@@ -183,9 +192,10 @@ $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(FINAL_LDFLAGS) \
 	$(symbols_pass2_a) \
 	$(phymem_cflags_addon) \
-	-Wl,--cref -Wl,-Map,$@.map \
-	-o $@
-else
+	$(CC_MAP_FLAGS) \
+	-o $@ | tee $@.mem
+
+else # FINAL_LINK_WITH_CC
 
 $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) --relocatable $(ldflags) \
@@ -193,7 +203,7 @@ $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(embox_o) \
 	--defsym=__symbol_table=0 \
 	--defsym=__symbol_table_size=0 \
-	--cref -Map $@.map \
+	$(LD_MAP_FLAGS) \
 	-o $@
 
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
@@ -203,7 +213,7 @@ $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(embox_o) \
 	--defsym=__symbol_table=0 \
 	--defsym=__symbol_table_size=0 \
-	--cref -Map $@.map \
+	$(LD_MAP_FLAGS) \
 	-o $@
 
 $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
@@ -212,7 +222,7 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	-T $(image_lds) \
 	$(embox_o) \
 	$(symbols_pass1_a) \
-	--cref -Map $@.map \
+	$(LD_MAP_FLAGS) \
 	-o $@
 
 gensums_py := $(ROOT_DIR)/mk/gensums.py
@@ -240,7 +250,7 @@ $(image_nocksum): $(image_lds) $(embox_o) $(md5sums1_o) $(symbols_pass2_a) $$(co
 	$(embox_o) \
 	$(md5sums1_o) \
 	$(symbols_pass2_a) \
-	--cref -Map $@.map \
+	$(LD_MAP_FLAGS) \
 	-o $@
 
 $(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_prereqs)
@@ -250,10 +260,11 @@ $(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_pre
 	$(embox_o) \
 	$(md5sums2_o) \
 	$(symbols_pass2_a) \
-	--cref -Map $@.map \
+	$(LD_MAP_FLAGS) \
 	--print-memory-usage \
-	-o $@
-endif
+	-o $@ | tee $@.mem
+
+endif # FINAL_LINK_WITH_CC
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@
@@ -269,23 +280,12 @@ $(IMAGE_PIGGY): $(IMAGE)
 	@$(LD) -r -b binary $@.tmp -o $@
 	@$(RM) $@.tmp
 
-image_size_sort = \
-	echo "" >> $@;                    \
-	echo "sort by $2 size" >> $@;     \
-	cat $@.tmp | sort -g -k $1 >> $@;
-
 $(IMAGE_SIZE): $(IMAGE)
 	@if which $(SIZE) >/dev/null 2>&1; then \
-	    $(SIZE) $^ | tee $@.tmp;            \
-		echo "size util generated output for $(TARGET)" > $@; \
-		$(call image_size_sort,1,text)     \
-		$(call image_size_sort,2,data)     \
-		$(call image_size_sort,3,bss)      \
-		$(call image_size_sort,4,total)    \
-		$(RM) $@.tmp;                      \
-	else                                   \
-		echo "$(SIZE) util not found" > $@;   \
-	fi;
+	    $(SIZE) $^ | tee $@; \
+	else \
+		echo "$(SIZE) util not found" > $@; \
+	fi
 
 ifdef ROOTFS_OUT_DIR
 

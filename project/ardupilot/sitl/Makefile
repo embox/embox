@@ -13,7 +13,7 @@ $(CONFIGURE):
 	$(CP) -r $(ROOT_DIR)/build/extbld/project/ardupilot/dronecan_dsdlc/install/* $(PKG_SOURCE_DIR)/modules/DroneCAN/dronecan_dsdlc && \
 	$(CP) -r $(ROOT_DIR)/build/extbld/project/ardupilot/libcanard/install/* $(PKG_SOURCE_DIR)/modules/DroneCAN/libcanard && \
 	cd $(PKG_SOURCE_DIR) && ( \
-		./waf configure --board sitl --debug --static --toolchain=$(ROOT_DIR)/mk/extbld/arch-embox \
+		./waf configure --board sitl --debug --static --toolchain=$(TOOLCHAIN_DIR)/embox \
 	)
 	touch $@
 

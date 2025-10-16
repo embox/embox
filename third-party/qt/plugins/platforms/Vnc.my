@@ -6,6 +6,7 @@ module vnc {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/Qt-4.8.7-master/plugins/platforms")
 	source "libqvncgraphicssystem.a"
 
+	@Cflags("-std=gnu++11")
 	@Generated(script="$(MAKE) -f $(ROOT_DIR)/mk/script/qt-plugin.mk MK_PLUGIN_NAME=vnc")
 	source "vnc.cpp"
 

@@ -15,13 +15,14 @@ CPPFLAGS ?=
 ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
-COMPILER ?=
 BUILD_DEPS_LDFLAGS ?=
 BUILD_DEPS_CPPFLAGS_BEFORE ?=
 BUILD_DEPS_CPPFLAGS_AFTER ?=
 MODULE_CPPFLAGS ?=
 
+COMPILER ?= gcc
 CROSS_COMPILE ?=
+
 CXX     ?= $(CROSS_COMPILE)g++
 AR      ?= $(CROSS_COMPILE)ar
 AS      ?= $(CROSS_COMPILE)as
@@ -132,7 +133,7 @@ EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
 LOADABLE_MAKE = \
 	$(MAKE) \
 	-C $(dir $(my_file)) \
-	-f $(EMBOX_ROOT_DIR)/mk/script/loadable-build.mk \
+	-f $(ROOT_DIR)/mk/script/loadable-build.mk \
 	$(EXTERNAL_MAKE_FLAGS)
 
 ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
@@ -294,10 +295,11 @@ endif
 AUTOCONF_TARGET_TRIPLET := $(AUTOCONF_ARCH)-unknown-none
 
 ifeq ($(COMPILER),clang)
-EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-clang
+EMBOX_GCC := $(TOOLCHAIN_DIR)/embox-clang
+EMBOX_GXX := $(TOOLCHAIN_DIR)/embox-clang++
 else
-EMBOX_GCC := $(ROOT_DIR)/mk/extbld/arch-embox-gcc
-EMBOX_GXX := $(ROOT_DIR)/mk/extbld/arch-embox-g++
+EMBOX_GCC := $(TOOLCHAIN_DIR)/embox-gcc
+EMBOX_GXX := $(TOOLCHAIN_DIR)/embox-g++
 endif
 
 endif # __flags_mk

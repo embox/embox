@@ -4,7 +4,7 @@ PKG_VER := 1.20.1
 PKG_SOURCES := https://github.com/debevv/nanoMODBUS/archive/refs/tags/v$(PKG_VER).tar.gz
 PKG_MD5 := 0a9941241e3ff277dd02f8d25cb42cd7
 
-RANLIB ?= $(ROOT_DIR)/mk/extbld/arch-embox-ranlib
+RANLIB ?= $(TOOLCHAIN_DIR)/embox-ranlib
 
 $(BUILD):
 	cd $(PKG_SOURCE_DIR) && (mkdir build/ || true) && cd build && \

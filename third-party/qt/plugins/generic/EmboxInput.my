@@ -6,6 +6,7 @@ module emboxinput {
 	@AddPrefix("^BUILD/extbld/third_party/qt/core/Qt-4.8.7-master/plugins/generic")
 	source "libqemboxinputplugin.a"
 
+	@Cflags("-std=gnu++11")
 	@Generated(script="$(MAKE) -f $(ROOT_DIR)/mk/script/qt-plugin.mk MK_PLUGIN_NAME=qemboxinputplugin")
 	source "qemboxinputplugin.cpp"
 
