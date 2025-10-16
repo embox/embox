@@ -1,0 +1,7 @@
+package project.ardupilot
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@BuildDepends(project.ardupilot.pymavlink)
+module mavlink {
+	depends pymavlink
+}

@@ -564,6 +564,26 @@ extern size_t strnlen(const char *s, size_t maxlen);
  */
 extern char *strndup(const char *s, size_t size);
 
+/**
+ * Finds the first occurrence of the byte sequence @a needle of length @a ne_len
+ * in the memory area pointed to by @a haystack of length @a hs_len.
+ *
+ * @param haystack
+ *   Pointer to the memory block to be searched.
+ * @param hs_len
+ *   Length in bytes of the memory block @a haystack.
+ * @param needle
+ *   Pointer to the byte sequence to search for.
+ * @param ne_len
+ *   Length in bytes of the byte sequence @a needle.
+ * @return
+ *   Pointer to the beginning of the located byte sequence within
+ *   @a haystack if a match is found. If @a ne_len is zero, returns
+ *   @a haystack. Returns NULL if no match is found.
+ */
+extern void *memmem(const void *haystack, size_t hs_len, const void *needle,
+    size_t ne_len);
+
 #include <string_bsd.h>
 
 __END_DECLS

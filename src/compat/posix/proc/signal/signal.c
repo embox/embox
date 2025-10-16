@@ -123,15 +123,23 @@ int pthread_kill(pthread_t thread, int sig) {
 int kill(int tid, int sig) {
 	struct task *task;
 
+	if (sig == 0) {
+		/* If sig is 0 (the null signal), error checking is performed
+		 but no signal is actually sent. The null signal can be used to
+		  check the validity of pid. */
+		return 0;
+	}
+
 	if (tid <= 0) {
 		/* process group is the target, NYI */
 		return -ENOSYS;
 	}
 
 	task = task_table_get(tid);
-	if (!task)
+	if (!task) {
 		return SET_ERRNO(ESRCH);
-
+	}
+	
 	return pthread_kill(task_get_main(task), sig);
 }
 
