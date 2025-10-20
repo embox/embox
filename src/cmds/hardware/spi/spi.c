@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 		printf("Failed to select bus #%d\n", spi_bus);
 		return -ENOENT;
 	}
-	dev->is_master = true;
+	dev->spid_is_master = true;
 
 	if (set_mode) {
 		if (master_mode) {
@@ -124,11 +124,11 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	dev->flags |= SPI_CS_ACTIVE;
+	dev->spid_flags |= SPI_CS_ACTIVE;
 	if (full_time_cs)
-		dev->flags &= ~SPI_CS_INACTIVE;
+		dev->spid_flags &= ~SPI_CS_INACTIVE;
 	else
-		dev->flags |= SPI_CS_INACTIVE;
+		dev->spid_flags |= SPI_CS_INACTIVE;
 
 	ret = spi_select(dev, spi_line);
 	if (ret < 0) {
@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
 		uint16_t buf_in, buf_out;
 		buf_out = strtol(argv[i], NULL, 0);
 		if (i + 1 == argc)
-			dev->flags |= SPI_CS_INACTIVE;
+			dev->spid_flags |= SPI_CS_INACTIVE;
 		spi_transfer(dev, (uint8_t *)&buf_out, (uint8_t *)&buf_in, 1);
 		if (format_16bit) {
 			printf(" 0x%04x", buf_in);

@@ -60,7 +60,7 @@ static int spi_ioctl(struct char_dev *cdev, int request, void *data) {
 		    transfer_arg->count);
 		break;
 	case SPI_IOCTL_CS_MODE:
-		dev->flags = (int)(intptr_t)data;
+		dev->spid_flags = (int)(intptr_t)data;
 		break;
 	}
 

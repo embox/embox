@@ -40,12 +40,12 @@ static int spi_init(void) {
 		if (cntl && cntl->spi_ops && cntl->spi_ops->init) {
 			cntl->spi_ops->init(cntl);
 		}
-		if (!dev->spi_ops) {
+		if (!dev->spid_ops) {
 			continue;
 		}
 
-		if (dev->spi_ops->init) {
-			dev->spi_ops->init(dev);
+		if (dev->spid_ops->init) {
+			dev->spid_ops->init(dev);
 		}
 		else {
 			log_warning("SPI%d has no init funcion", dev->spid_bus_num);
@@ -76,18 +76,18 @@ int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt) {
 	cntl = dev->spid_spi_cntl;
 	if (cntl && cntl->spi_ops && cntl->spi_ops->transfer) {
 		/** TODO: lock ??? */
-		cntl->flags = dev->flags;
+		cntl->flags = dev->spid_flags;
 		err = cntl->spi_ops->transfer(cntl, in, out, cnt);
 		/** TODO: unlock ??? */
 		return err;
 	}
 
-	if (dev->spi_ops->transfer == NULL) {
+	if (dev->spid_ops->transfer == NULL) {
 		log_debug("Transfer operation is not supported for SPI%d", spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
-	return dev->spi_ops->transfer(dev, in, out, cnt);
+	return dev->spid_ops->transfer(dev, in, out, cnt);
 }
 
 /**
@@ -103,12 +103,12 @@ int spi_select(struct spi_device *dev, int cs) {
 		return cntl->spi_ops->select(cntl, cs);
 	}
 
-	if (dev->spi_ops->select == NULL) {
+	if (dev->spid_ops->select == NULL) {
 		log_debug("Select operation is not supported for SPI%d", spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
-	return dev->spi_ops->select(dev, cs);
+	return dev->spid_ops->select(dev, cs);
 }
 
 /**
@@ -124,14 +124,14 @@ static int spi_set_mode(struct spi_device *dev, bool is_master) {
 		return cntl->spi_ops->set_mode(cntl, is_master);
 	}
 
-	if (dev->spi_ops->set_mode == NULL) {
+	if (dev->spid_ops->set_mode == NULL) {
 		log_debug("SPI mode setting is not supported for SPI%d", spi_dev_id(dev));
 		return -ENOSUPP;
 	}
 
-	dev->is_master = is_master;
+	dev->spid_is_master = is_master;
 
-	return dev->spi_ops->set_mode(dev, is_master);
+	return dev->spid_ops->set_mode(dev, is_master);
 }
 
 int spi_set_master_mode(struct spi_device *dev) {
