@@ -30,8 +30,6 @@ module stm32cube_spi2 {
 module stm32cube_spi3 {
 	option string log_level="LOG_ERR"
 
-	option number pullup=1
-
 	source "stm32_spi3.c"
 
 	depends embox.driver.spi.spi3_dev0
