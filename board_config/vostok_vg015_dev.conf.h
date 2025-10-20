@@ -243,7 +243,7 @@ struct i2c_conf i2cs[] = {
 			},
 			.pins = {
 				PIN("SCL", GPIO_PORT_C, 12, 1),
-				PIN("SDA", GPIO_PORT_B, 13, 1),
+				PIN("SDA", GPIO_PORT_C, 13, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_I2C0"),
