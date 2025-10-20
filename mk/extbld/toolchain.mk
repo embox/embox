@@ -63,9 +63,7 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
 #EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_scripts1:.%=-Wl,-T,$(abspath $(ROOT_DIR))%)
 
 ifdef GEN_DIST
-root2dist = $(strip \
-	$(subst $(abspath $(DIST_BASE_DIR)),$${EMBOX_DIST_BASE_DIR}, \
-		$(subst $(abspath $(ROOT_DIR)),$${EMBOX_ROOT_DIR},$1)))
+root2dist = $(strip $(subst $(DIST_BASE_DIR),$${EMBOX_DIST_BASE_DIR},$1))
 else
 root2dist = $1
 endif

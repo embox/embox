@@ -15,3 +15,5 @@ case " $@ " in
 		exit $?;;
 esac
 
+: "${EMBOX_DIST_BASE_DIR:=$(realpath $(dirname $(realpath $0))/../base)}"
+
