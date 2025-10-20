@@ -235,10 +235,3 @@ struct spi_controller_ops sc64_spi_ops = {
 struct sc64_spi_dev sc64_spi_dev0;
 
 SPI_CONTROLLER_DEF(sc64_spi0, &sc64_spi_ops, &sc64_spi_dev0, 0);
-
-#define SPI_BUS_NUM        0
-#define SPI_DEV_NUM        0
-#define SPI_DEV_NAME       MACRO_CONCAT(MACRO_CONCAT(spi_,SPI_BUS_NUM),_)
-#define SPI_DEV_FULL_NAME  MACRO_CONCAT(SPI_DEV_NAME,SPI_DEV_NUM)
-
-SPI_DEV_DEF(SPI_DEV_FULL_NAME, NULL, NULL, SPI_BUS_NUM, SPI_DEV_NUM, NULL);

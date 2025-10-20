@@ -16,3 +16,63 @@ module core {
 
 	@NoRuntime depends embox.device.pin_description
 }
+
+module spi0_dev0 {
+	option string log_level="LOG_NONE"
+
+	option boolean bconf_use=false
+
+	option string dev_name="EMPTY"
+
+	source "spi0_dev0.c"
+}
+
+module spi1_dev0 {
+	option string log_level="LOG_NONE"
+
+	option boolean bconf_use=false
+
+	option string dev_name="EMPTY"
+
+	source "spi1_dev0.c"
+}
+
+module spi2_dev0 {
+	option string log_level="LOG_NONE"
+
+	option boolean bconf_use=false
+
+	option string dev_name="EMPTY"
+
+	source "spi2_dev0.c"
+}
+
+module spi3_dev0 {
+	option string log_level="LOG_NONE"
+
+	option boolean bconf_use=false
+
+	option string dev_name="EMPTY"
+
+	source "spi3_dev0.c"
+}
+
+module spi4_dev0 {
+	option string log_level="LOG_NONE"
+
+	option boolean bconf_use=false
+
+	option string dev_name="EMPTY"
+
+	source "spi4_dev0.c"
+}
+
+module spi5_dev0 {
+	option string log_level="LOG_NONE"
+
+	option boolean bconf_use=false
+
+	option string dev_name="EMPTY"
+
+	source "spi5_dev0.c"
+}
