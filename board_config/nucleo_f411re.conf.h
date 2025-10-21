@@ -130,16 +130,12 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-				PIN("MISO", GPIO_PORT_A, PIN_6, AF5),
-				PIN("MOSI", GPIO_PORT_A, PIN_7, AF5),
-				PIN("CS",   GPIO_PORT_D, PIN_14, NOAF),
+				PIN("SCK",  GPIO_PORT_A, 5, AF5),
+				PIN("MISO", GPIO_PORT_A, 6, AF5),
+				PIN("MOSI", GPIO_PORT_A, 7, AF5),
+				PIN("CS",   GPIO_PORT_D, 14, NOAF),
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOA),
-				VAL("MISO", CLK_GPIOA),
-				VAL("MOSI", CLK_GPIOA),
-				VAL("CS",   CLK_GPIOD),
 				VAL("SPI",  CLK_SPI1),
 			}
 		},

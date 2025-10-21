@@ -56,16 +56,12 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-				PIN("MISO", GPIO_PORT_A, PIN_6, AF5),
-				PIN("MOSI", GPIO_PORT_A, PIN_7, AF5),
-				PIN("CS",   GPIO_PORT_A, PIN_15, NOAF),
+				PIN("SCK",  GPIO_PORT_A, 5, AF5),
+				PIN("MISO", GPIO_PORT_A, 6, AF5),
+				PIN("MOSI", GPIO_PORT_A, 7, AF5),
+				PIN("CS",   GPIO_PORT_A, 15, NOAF),
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOA),
-				VAL("MISO", CLK_GPIOA),
-				VAL("MOSI", CLK_GPIOA),
-				VAL("CS",   CLK_GPIOA),
 				VAL("SPI",  CLK_SPI1),
 			}
 		},
@@ -76,16 +72,12 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI2",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_B, PIN_10, AF5),
-				PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
-				PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
-				PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
+				PIN("SCK",  GPIO_PORT_B, 10, AF5),
+				PIN("MISO", GPIO_PORT_B, 14, AF5),
+				PIN("MOSI", GPIO_PORT_B, 15, AF5),
+				PIN("CS",   GPIO_PORT_B, 12, NOAF),
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOB),
-				VAL("MISO", CLK_GPIOB),
-				VAL("MOSI", CLK_GPIOB),
-				VAL("CS",   CLK_GPIOB),
 				VAL("SPI",  CLK_SPI2),
 			}
 		},
@@ -98,20 +90,16 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI3",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_C, PIN_10, AF6),
-				PIN("MISO", GPIO_PORT_C, PIN_11, AF6),
-				PIN("MOSI", GPIO_PORT_C, PIN_12, AF6),
-				PIN("CS",   GPIO_PORT_E, PIN_0, NOAF),	// for WiFi module
-				PIN("WAKE", GPIO_PORT_B, PIN_13, NOAF),
-				PIN("CMDDATA", GPIO_PORT_E, PIN_1, NOAF),
-				PIN("RESET", GPIO_PORT_E, PIN_8, NOAF),
-				PIN("WIFI_LED", GPIO_PORT_C, PIN_9, NOAF),
+				PIN("SCK",  GPIO_PORT_C, 10, AF6),
+				PIN("MISO", GPIO_PORT_C, 11, AF6),
+				PIN("MOSI", GPIO_PORT_C, 12, AF6),
+				PIN("CS",   GPIO_PORT_E, 0, NOAF),	   // for WiFi module
+				PIN("WAKE", GPIO_PORT_B, 13, NOAF),    // for WiFi module
+				PIN("CMDDATA", GPIO_PORT_E, 1, NOAF),  // for WiFi module
+				PIN("RESET", GPIO_PORT_E, 8, NOAF),    // for WiFi module
+				PIN("WIFI_LED", GPIO_PORT_C, 9, NOAF), // for WiFi module
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOC),
-				VAL("MISO", CLK_GPIOC),
-				VAL("MOSI", CLK_GPIOC),
-				VAL("CS",   CLK_GPIOE),		// for WiFi module
 				VAL("SPI",  CLK_SPI3),
 			}
 		},

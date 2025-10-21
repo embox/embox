@@ -18,6 +18,8 @@
 #endif
 
 struct stm32_spi {
+	struct spi_controller *spi_controller;
+	uintptr_t base_addr;
 	int (*hw_init)(void);
 	SPI_HandleTypeDef handle;
 	unsigned short nss_port;

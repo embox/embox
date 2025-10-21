@@ -14,7 +14,7 @@
 #include <drivers/spi.h>
 
 #include <config/board_config.h>
-#include <bsp/stm32cube_hal.h> /* FIXUP! only for STM PINS configuration */
+//#include <bsp/stm32cube_hal.h> /* FIXUP! only for STM PINS configuration */
 
 #include <libs/ism43362.h>
 #include "ism43362_config.h"
@@ -30,8 +30,11 @@
 static struct spi_device *spi_dev;
 
 static inline int gpio_setup_out_mode(unsigned short port, gpio_mask_t pins, int mode, int pinlevel) {
-	int ret = gpio_setup_mode(port, pins, mode|GPIO_MODE_OUT);
+	int ret;
+
+	ret = gpio_setup_mode(port, pins, mode | GPIO_MODE_OUT);
 	gpio_set(port, pins, pinlevel);
+
 	return ret;
 }
 

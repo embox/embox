@@ -31,7 +31,7 @@
 #if defined CONF_SPI1_REGION_BASE
 #define SPI_REGION_BASE        ((uintptr_t)MACRO_CONCAT(CONF_SPI,_REGION_BASE))
 #else
-#define SPI_REGION_BASE         MACRO_CONCAT(SPI,SPI_BUS_NUM)
+#define SPI_REGION_BASE         ((uintptr_t)MACRO_CONCAT(SPI,SPI_BUS_NUM))
 #endif /* defined CONF_SPI1_REGION_BASE */
 
 #define CLK_ENABLE_SPI          MACRO_CONCAT(CONF_SPI,_CLK_ENABLE_SPI)
@@ -47,6 +47,14 @@
 #define SPI_PIN_MOSI_PORT       MACRO_CONCAT(CONF_SPI,_PIN_MOSI_PORT)
 #define SPI_PIN_MOSI_NR         MACRO_CONCAT(CONF_SPI,_PIN_MOSI_NR)
 #define SPI_PIN_MOSI_AF         MACRO_CONCAT(CONF_SPI,_PIN_MOSI_AF)
+
+static const struct pin_description stm32_spi_pins[] = {
+	{SPI_PIN_SCK_PORT, SPI_PIN_SCK_NR, SPI_PIN_SCK_AF},
+	{SPI_PIN_MISO_PORT, SPI_PIN_MISO_NR, SPI_PIN_MISO_AF},
+	{SPI_PIN_MOSI_PORT, SPI_PIN_MOSI_NR, SPI_PIN_MOSI_AF},
+};
+
+extern void hw_pins_config(struct spi_controller *spi_c);
 
 static int stm32_spi1_init(void);
 static struct stm32_spi stm32_spi1 = {
@@ -65,29 +73,26 @@ static int stm32_spi1_init(void) {
 	       Please, enable this option in platform.stm32.f4.stm32f4_discovery.arch
 #endif
 
+	struct spi_controller *spi_c = spi_controller_by_id(SPI_BUS_NUM);
+
+	stm32_spi1.spi_controller = spi_c;
+	spi_c->spic_label = SPI_REGION_BASE;
+	spi_c->spic_pins = stm32_spi_pins;
+
 	CLK_ENABLE_SPI();
 
 	stm32_spi_init(&stm32_spi1, (void *) SPI_REGION_BASE);
 
-	gpio_setup_mode(SPI_PIN_SCK_PORT, SPI_PIN_SCK_NR,
-		GPIO_MODE_ALT_SET(SPI_PIN_SCK_AF) |
-		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
-
-	gpio_setup_mode(SPI_PIN_MISO_PORT, SPI_PIN_MISO_NR,
-		GPIO_MODE_ALT_SET(SPI_PIN_MISO_AF) |
-		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
-
-	gpio_setup_mode(SPI_PIN_MOSI_PORT, SPI_PIN_MOSI_NR,
-		GPIO_MODE_ALT_SET(SPI_PIN_MOSI_AF) |
-		GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
+	hw_pins_config(spi_c);
 
 #if defined(CONF_SPI1_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */
-	gpio_setup_mode(CONF_SPI1_PIN_CS_PORT, CONF_SPI1_PIN_CS_NR,
+	gpio_setup_mode(CONF_SPI1_PIN_CS_PORT,
+		(1 << CONF_SPI1_PIN_CS_NR),
 		GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP);
 		
 	/* Chip Select is in inactive state by default. */
-	gpio_set(CONF_SPI1_PIN_CS_PORT, CONF_SPI1_PIN_CS_NR, GPIO_PIN_HIGH);
+	gpio_set(CONF_SPI1_PIN_CS_PORT, (1 << CONF_SPI1_PIN_CS_NR), GPIO_PIN_HIGH);
 #endif
 
 	return 0;

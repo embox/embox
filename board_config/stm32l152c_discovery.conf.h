@@ -81,10 +81,10 @@ struct spi_conf spis[] = {
 			REGMAP("BASE", (SPI1_BASE), 0x100),
 		},
    		.pins = {
-   			PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-   			PIN("MISO", GPIO_PORT_A, PIN_11, AF5),
-   			PIN("MOSI", GPIO_PORT_A, PIN_12, AF5),
-   			PIN("CS",   GPIO_PORT_C, PIN_12, NOAF),
+   			PIN("SCK",  GPIO_PORT_A, 5, AF5),
+   			PIN("MISO", GPIO_PORT_A, 11, AF5),
+   			PIN("MOSI", GPIO_PORT_A, 12, AF5),
+   			PIN("CS",   GPIO_PORT_C, 12, NOAF),
    		},
    		.clocks = {
    			VAL("SPI",  CLK_SPI1),
@@ -100,10 +100,10 @@ struct spi_conf spis[] = {
 			REGMAP("BASE", (SPI2_BASE), 0x100),
 		},
    		.pins = {
-   			PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
-   			PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
-   			PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
-   			PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
+   			PIN("SCK",  GPIO_PORT_B, 13, AF5),
+   			PIN("MISO", GPIO_PORT_B, 14, AF5),
+   			PIN("MOSI", GPIO_PORT_B, 15, AF5),
+   			PIN("CS",   GPIO_PORT_B, 12, NOAF),
    		},
    		.clocks = {
    			VAL("SPI",  CLK_SPI2),
