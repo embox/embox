@@ -14,13 +14,10 @@
 #include <drivers/spi.h>
 
 #include <config/board_config.h>
-//#include <bsp/stm32cube_hal.h> /* FIXUP! only for STM PINS configuration */
 
 #include <libs/ism43362.h>
 #include "ism43362_config.h"
 
-
-// #define WIFI_LED_PIN (1 << 9)
 
 #define WIFI_CHIP_SELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_LOW);} while(0)
 #define WIFI_CHIP_DESELECT()	do {gpio_set(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_PIN_HIGH);} while(0)
@@ -39,18 +36,30 @@ static inline int gpio_setup_out_mode(unsigned short port, gpio_mask_t pins, int
 }
 
 static inline int spi_pins_setup(void){
+	struct spi_controller *spi_c = spi_controller_by_id(CONF_ESWIFI_BUS_NUM);
 
  	/* configure SPI soft NSS pin for WiFi module */
 	gpio_setup_out_mode(CONF_SPI_PIN_CS_PORT, CONF_SPI_PIN_CS_NR, GPIO_MODE_OUT_PUSH_PULL, GPIO_PIN_HIGH);
-	
-	/* configure SPI CLK pin */
-	gpio_setup_mode(CONF_SPI_PIN_SCK_PORT, CONF_SPI_PIN_SCK_NR, GPIO_MODE_ALT_SET(CONF_SPI_PIN_SCK_AF) | GPIO_MODE_OUT_PUSH_PULL);
-	
-	/* configure SPI MISO pin */
-	gpio_setup_mode(CONF_SPI_PIN_MISO_PORT, CONF_SPI_PIN_MISO_NR, GPIO_MODE_ALT_SET(CONF_SPI_PIN_MISO_AF) | GPIO_MODE_OUT_PUSH_PULL);
 
+	/* configure SPI CLK pin */
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin),
+			GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_func) |
+			GPIO_MODE_OUT_PUSH_PULL
+		);
+
+	/* configure SPI MISO pin */
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_pin),
+			GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func) |
+			GPIO_MODE_OUT_PUSH_PULL
+		);
 	/* configure SPI MOSI pin */
-	gpio_setup_mode(CONF_SPI_PIN_MOSI_PORT, CONF_SPI_PIN_MOSI_NR, GPIO_MODE_ALT_SET(CONF_SPI_PIN_MOSI_AF) | GPIO_MODE_OUT_PUSH_PULL);
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
+			GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func) |
+			GPIO_MODE_OUT_PUSH_PULL
+		);
 
 	return 0;
 }
@@ -65,7 +74,7 @@ int ism43362_init() {
 	spi_pins_setup();
 
 	// Get SPI device pointer
-	if (!(spi_dev = spi_dev_by_id(WIFI_SPI_BUS))){
+	if (!(spi_dev = spi_dev_by_id(CONF_ESWIFI_BUS_NUM))){
 		return -10006;
 	}
 
@@ -114,6 +123,14 @@ int ism43362_init() {
 
 	return 0;
 }
+
+static const struct pin_description eswifi_spi_cs = {
+	CONF_ESWIFI_PIN_CS_PORT,
+	CONF_ESWIFI_PIN_CS_NR,
+	-1
+};
+
+SPI_DEV_DEF(ESWIFI, NULL, NULL, CONF_ESWIFI_BUS_NUM, CONF_ESWIFI_IDX, &eswifi_spi_cs);
 
 /*	Low level exchange action with module
 	only trailling NAKs are excluded in answer
