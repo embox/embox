@@ -156,9 +156,9 @@ void hw_pins_config(struct spi_controller *spi_c) {
 			// GPIO_MODE_OUT
 		);
 
-	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_port,
-			(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
-			GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func) |
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_pin),
+			GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func) |
 			GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP
 			//GPIO_MODE_IN		
 		);
