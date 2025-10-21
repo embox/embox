@@ -70,12 +70,23 @@ struct uart_conf {
 	unsigned int baudrate;
 };
 
+struct spi_dev_conf {
+	int status;
+	const char *name;
+	struct device_conf dev;
+	int bits_per_word;
+	int clk_freq;
+	int bus_num;
+	int idx;
+};
+
 struct spi_conf {
 	int status;
 	const char *name;
 	struct device_conf dev;
 	int bits_per_word;
 	int clk_div;
+	struct spi_dev_conf spi_devs[16];
 };
 
 struct i2c_conf {

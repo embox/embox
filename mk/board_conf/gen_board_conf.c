@@ -300,6 +300,18 @@ int main() {
 
 		gen_prop_ival(spi->dev.name, "BITS_PER_WORD", spi->bits_per_word);
 		gen_prop_ival(spi->dev.name, "CLK_DIV", spi->clk_div);
+		for (int j = 0; j < sizeof(spi->spi_devs) / sizeof(spi->spi_devs[0]); j ++) {
+			const struct spi_dev_conf *spi_dev = &spi->spi_devs[j];
+			if (spi_dev->status == ENABLED) {
+				gen_device_conf(&spi_dev->dev);
+
+				gen_prop_ival(spi_dev->dev.name, "BITS_PER_WORD", spi_dev->bits_per_word);
+				gen_prop_ival(spi_dev->dev.name, "CLK_FREQ", spi_dev->clk_freq);
+				gen_prop_ival(spi_dev->dev.name, "BUS_NUM", spi_dev->bus_num);
+				gen_prop_ival(spi_dev->dev.name, "IDX", spi_dev->idx);
+			}
+
+		}
 
 		printf("\n");
 	}
