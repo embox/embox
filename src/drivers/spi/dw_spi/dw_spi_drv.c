@@ -111,7 +111,7 @@ static int dw_spi_rx(struct dw_spi_priv *dw_spi, uint8_t *buf, int count) {
 }
 
 static int dw_spi_select(struct spi_controller *dev, int cs) {
-	struct dw_spi_priv *dw_spi = dev->priv;
+	struct dw_spi_priv *dw_spi = dev->spic_priv;
 
 	if (cs < 0 || cs > 3) {
 		log_error("Only cs=0..3 are avalable!");
@@ -125,7 +125,7 @@ static int dw_spi_select(struct spi_controller *dev, int cs) {
 
 static int dw_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	struct dw_spi_priv *dw_spi = dev->priv;
+	struct dw_spi_priv *dw_spi = dev->spic_priv;
 	int tx_cnt, rx_cnt;
 
 	if (!inbuf || !outbuf) {
@@ -145,7 +145,7 @@ static int dw_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops dw_spi_ops = {
+struct spi_controller_ops dw_spic_ops = {
 	.select   = dw_spi_select,
 	.transfer = dw_spi_transfer
 };

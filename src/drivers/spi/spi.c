@@ -37,8 +37,8 @@ static int spi_init(void) {
 		cntl = spi_controller_by_id(dev->spid_bus_num);
 		dev->spid_spi_cntl = cntl;
 
-		if (cntl && cntl->spi_ops && cntl->spi_ops->init) {
-			cntl->spi_ops->init(cntl);
+		if (cntl && cntl->spic_ops && cntl->spic_ops->init) {
+			cntl->spic_ops->init(cntl);
 		}
 		if (!dev->spid_ops) {
 			continue;
@@ -74,10 +74,10 @@ int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt) {
 	assert(in || out);
 
 	cntl = dev->spid_spi_cntl;
-	if (cntl && cntl->spi_ops && cntl->spi_ops->transfer) {
+	if (cntl && cntl->spic_ops && cntl->spic_ops->transfer) {
 		/** TODO: lock ??? */
 		cntl->flags = dev->spid_flags;
-		err = cntl->spi_ops->transfer(cntl, in, out, cnt);
+		err = cntl->spic_ops->transfer(cntl, in, out, cnt);
 		/** TODO: unlock ??? */
 		return err;
 	}
@@ -99,8 +99,8 @@ int spi_select(struct spi_device *dev, int cs) {
 	assert(dev);
 
 	cntl = dev->spid_spi_cntl;
-	if (cntl && cntl->spi_ops && cntl->spi_ops->select) {
-		return cntl->spi_ops->select(cntl, cs);
+	if (cntl && cntl->spic_ops && cntl->spic_ops->select) {
+		return cntl->spic_ops->select(cntl, cs);
 	}
 
 	if (dev->spid_ops->select == NULL) {
@@ -120,8 +120,8 @@ static int spi_set_mode(struct spi_device *dev, bool is_master) {
 	assert(dev);
 
 	cntl = dev->spid_spi_cntl;
-	if (cntl && cntl->spi_ops && cntl->spi_ops->set_mode) {
-		return cntl->spi_ops->set_mode(cntl, is_master);
+	if (cntl && cntl->spic_ops && cntl->spic_ops->set_mode) {
+		return cntl->spic_ops->set_mode(cntl, is_master);
 	}
 
 	if (dev->spid_ops->set_mode == NULL) {

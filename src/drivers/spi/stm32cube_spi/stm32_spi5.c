@@ -87,4 +87,4 @@ static int stm32_spi5_init(void) {
 	return 0;
 }
 
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &stm32_spi_ops, &stm32_spi5, SPI_BUS_NUM);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &stm32_spic_ops, &stm32_spi5, SPI_BUS_NUM);

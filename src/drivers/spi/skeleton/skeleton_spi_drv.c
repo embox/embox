@@ -51,7 +51,7 @@ static int skeleton_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops skeleton_spi_ops = {
+struct spi_controller_ops skeleton_spic_ops = {
 	.select   = skeleton_spi_select,
 	.set_mode = skeleton_spi_set_mode,
 	.transfer = skeleton_spi_transfer

@@ -107,7 +107,7 @@ static int sc64_spi_get_instr_baudrate(int clk_div) {
 static int sc64_spi_init(struct spi_controller *dev) {
 	struct sc64_spi_dev *spi;
 
-	spi = (struct sc64_spi_dev *)dev->priv;
+	spi = (struct sc64_spi_dev *)dev->spic_priv;
 
 	assert(spi);
 
@@ -128,7 +128,7 @@ static int sc64_spi_select(struct spi_controller *dev, int cs) {
 	int baud;
 	int div;
 
-	spi = (struct sc64_spi_dev *)dev->priv;
+	spi = (struct sc64_spi_dev *)dev->spic_priv;
 
 	assert(spi);
 
@@ -171,7 +171,7 @@ static int sc64_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 	uintptr_t rxaddr;
 	uint32_t param;
 
-	spi = (struct sc64_spi_dev *)dev->priv;
+	spi = (struct sc64_spi_dev *)dev->spic_priv;
 
 	assert(spi);
 
@@ -226,7 +226,7 @@ static int sc64_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops sc64_spi_ops = {
+struct spi_controller_ops sc64_spic_ops = {
     .init = sc64_spi_init,
     .select = sc64_spi_select,
     .transfer = sc64_spi_transfer,
@@ -234,4 +234,4 @@ struct spi_controller_ops sc64_spi_ops = {
 
 struct sc64_spi_dev sc64_spi_dev0;
 
-SPI_CONTROLLER_DEF(sc64_spi0, &sc64_spi_ops, &sc64_spi_dev0, 0);
+SPI_CONTROLLER_DEF(sc64_spi0, &sc64_spic_ops, &sc64_spi_dev0, 0);

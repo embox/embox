@@ -29,6 +29,6 @@ struct stm32_spi {
 };
 
 extern int stm32_spi_init(struct stm32_spi *dev, void *instance);
-extern struct spi_controller_ops stm32_spi_ops;
+extern struct spi_controller_ops stm32_spic_ops;
 
 #endif /* SRC_DRIVERS_SPI_STM32_I2C_H_ */

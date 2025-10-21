@@ -30,6 +30,7 @@ struct pin_description;
 #define SPIC_PIN_RX_IDX     SPIC_PIN_MISO_IDX
 #define SPIC_PIN_TX_IDX     SPIC_PIN_MOSI_IDX
 
+struct spi_device;
 struct spi_controller {
 	struct char_dev cdev;
 
@@ -37,9 +38,10 @@ struct spi_controller {
 	bool is_master;
 	int bits_per_word;
 
-	struct spi_controller_ops *spi_ops;
-	void *priv;
+	struct spi_controller_ops    *spic_ops;
+	void                         *spic_priv;
 
+	struct spi_device            *spic_active_dev;
 	int                           spic_bus_num;
 	uintptr_t                     spic_label;
 	const struct pin_description *spic_pins;
@@ -57,12 +59,12 @@ extern int spi_controller_id(struct spi_controller *dev);
 
 extern const struct char_dev_ops __spi_cdev_ops;
 
- #define SPI_CONTROLLER_DEF(dev_name, spi_dev_ops, dev_priv, idx)         \
+ #define SPI_CONTROLLER_DEF(name, ops, dev_priv, idx)         \
  	struct spi_controller MACRO_CONCAT(spi_controller, idx) = {           \
 		.cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_controller, idx).cdev, \
-			MACRO_STRING(dev_name), &__spi_cdev_ops),             \
-		.spi_ops = spi_dev_ops,                                   \
-		.priv = dev_priv,                                         \
+			MACRO_STRING(name), &__spi_cdev_ops),             \
+		.spic_ops = ops,                                          \
+		.spic_priv = dev_priv,                                         \
 		.spic_bus_num = idx,                                      \
  	};                                                            \
 	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_controller, idx)); \

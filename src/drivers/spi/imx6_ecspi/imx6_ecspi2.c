@@ -79,4 +79,4 @@ static int imx6_ecspi2_init(void) {
 
 PERIPH_MEMORY_DEFINE(imx6_ecspi2, BASE_ADDR, 0x44);
 
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &imx6_ecspi_ops, &imx6_ecspi2, 1);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &imx6_ecspic_ops, &imx6_ecspi2, 1);

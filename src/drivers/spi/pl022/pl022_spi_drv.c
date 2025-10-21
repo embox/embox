@@ -297,7 +297,7 @@ static int pl022_spi_select(struct spi_controller *spi_dev, int cs) {
 }
 
 static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
-	struct pl022_spi *dev = spi_dev->priv;
+	struct pl022_spi *dev = spi_dev->spic_priv;
 	uint16_t reg;
 
 	reg = REG16_LOAD(SSP_CR0(dev->base_addr));
@@ -315,7 +315,7 @@ static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 
 static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	struct pl022_spi *dev = spi_dev->priv;
+	struct pl022_spi *dev = spi_dev->spic_priv;
 	uint8_t value;
 	int tx_cnt;
 	int rx_cnt;
@@ -372,7 +372,7 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops pl022_spi_ops = {
+struct spi_controller_ops pl022_spic_ops = {
 	.select   = pl022_spi_select,
 	.set_mode = pl022_spi_set_mode,
 	.transfer = pl022_spi_transfer

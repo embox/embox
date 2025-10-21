@@ -107,7 +107,7 @@ static uint8_t imx6_ecspi_transfer_byte(struct imx6_ecspi *dev, uint8_t val) {
 }
 
 static int imx6_ecspi_select(struct spi_controller *dev, int cs) {
-	struct imx6_ecspi *priv = dev->priv;
+	struct imx6_ecspi *priv = dev->spic_priv;
 
 	if (cs < 0 || cs > priv->cs_count) {
 		log_error("Only cs=0..%d are available!", priv->cs_count - 1);
@@ -121,7 +121,7 @@ static int imx6_ecspi_select(struct spi_controller *dev, int cs) {
 
 static int imx6_ecspi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	struct imx6_ecspi *priv = dev->priv;
+	struct imx6_ecspi *priv = dev->spic_priv;
 	uint8_t val;
 
 	if (dev->flags & SPI_CS_ACTIVE) {
@@ -145,7 +145,7 @@ static int imx6_ecspi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops imx6_ecspi_ops = {
+struct spi_controller_ops imx6_ecspic_ops = {
 	.select   = imx6_ecspi_select,
 	.transfer = imx6_ecspi_transfer
 };

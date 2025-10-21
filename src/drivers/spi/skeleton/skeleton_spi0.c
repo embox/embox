@@ -31,4 +31,4 @@ static int skeleton_spi0_init(void) {
 	return 0;
 }
 
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &skeleton_spi_ops, &skeleton_spi0, SPI_BUS_NUM);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &skeleton_spic_ops, &skeleton_spi0, SPI_BUS_NUM);

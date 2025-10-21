@@ -106,7 +106,7 @@ static int stm32_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops stm32_spi_ops = {
+struct spi_controller_ops stm32_spic_ops = {
 	.select   = stm32_spi_select,
 	.set_mode = stm32_spi_set_mode,
 	.transfer = stm32_spi_transfer
@@ -123,7 +123,7 @@ static int stm32_spi1_init(void) {
 
 #define SPI_DEV_NAME      stm32_spi_1
 
-SPI_CONTROLLER_DEF(SPI_DEV_NAME, &stm32_spi_ops, &stm32_spi1, 1);
+SPI_CONTROLLER_DEF(SPI_DEV_NAME, &stm32_spic_ops, &stm32_spi1, 1);
 SPI_DEV_DEF(SPI_DEV_NAME, NULL, NULL, 1, 0, NULL);
 
 EMBOX_UNIT_INIT(stm32_spi1_init);
