@@ -204,6 +204,19 @@ struct spi_conf spis[] = {
 				VAL("SPI",  "CLK_SPI0"),
 			}
 		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI0_0",
+			.bits_per_word = 8,
+			.bus_num = 0,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI0_0",
+				.pins = {
+					PIN("FSS", GPIO_PORT_B, 1, 1),
+				},
+			},
+		},
 	},
 	[1] = {
 		.status = ENABLED,
@@ -225,6 +238,19 @@ struct spi_conf spis[] = {
 			.clocks = {
 				VAL("SPI",  "CLK_SPI1"),
 			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				.pins = {
+					PIN("FSS", GPIO_PORT_B, 5, 1),
+				},
+			},
 		},
 	},
 };

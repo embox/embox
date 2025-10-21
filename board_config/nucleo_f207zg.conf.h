@@ -241,8 +241,20 @@ struct spi_conf spis[] = {
 				VAL("SPI",  CLK_SPI1),
 			}
 		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_D, 14, NOAF),
+				},
+			},
+		},
 	},
-
 };
 
 struct i2c_conf i2cs[] = {

@@ -63,7 +63,20 @@ struct spi_conf spis[] = {
 			},
 			.clocks = {
 				VAL("SPI",  CLK_SPI1),
-			}
+			},
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_A, 15, NOAF),
+				},
+			},
 		},
 	},
 	[2] = {
@@ -79,7 +92,20 @@ struct spi_conf spis[] = {
 			},
 			.clocks = {
 				VAL("SPI",  CLK_SPI2),
-			}
+			},
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI2_0",
+			.bits_per_word = 8,
+			.bus_num = 2,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI2_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_B, 12, NOAF),
+				},
+			},
 		},
 	},
 	[3] = {
@@ -101,7 +127,35 @@ struct spi_conf spis[] = {
 			},
 			.clocks = {
 				VAL("SPI",  CLK_SPI3),
-			}
+			},
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI3_0",
+			.bits_per_word = 8,
+			.bus_num = 3,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI3_0",
+			},
+		},
+		.spi_devs[1] = {
+			.status = ENABLED,
+			.name = "ESWIFI",
+			.bits_per_word = 16,
+			.clk_freq = 8, /* clk_div */
+			.bus_num = 3,
+			.idx     = 1,
+			.dev = {
+				.name = "ESWIFI",
+				.pins = {
+					PIN("CS",   GPIO_PORT_E, 0, NOAF),	   // for WiFi module
+					PIN("WAKE", GPIO_PORT_B, 13, NOAF),    // for WiFi module
+					PIN("CMDDATA", GPIO_PORT_E, 1, NOAF),  // for WiFi module
+					PIN("RESET", GPIO_PORT_E, 8, NOAF),    // for WiFi module
+					PIN("WIFI_LED", GPIO_PORT_C, 9, NOAF), // for WiFi module
+				},
+			},
 		},
 	},
 };
