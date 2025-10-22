@@ -1,0 +1,6 @@
+package embox.driver.clk
+
+module core {
+	@IncludeExport(path="drivers")
+	source "clk.h"
+}

@@ -20,6 +20,7 @@
 #define CSR_IP     sip
 #define CSR_EPC    sepc
 #define CSR_TVEC   stvec
+#define CSR_TVT    0x0107
 #else
 #define CSR_CAUSE  mcause
 #define CSR_STATUS mstatus
@@ -27,6 +28,7 @@
 #define CSR_IP     mip
 #define CSR_EPC    mepc
 #define CSR_TVEC   mtvec
+#define CSR_TVT    0x0307
 #endif
 
 /* Exception causes */
@@ -84,6 +86,9 @@
 #define CSR_IP_SIP (1UL << RISCV_IRQ_SOFT)  /* Software Interrupt Pending */
 #define CSR_IP_TIE (1UL << RISCV_IRQ_TIMER) /* Timer Interrupt Pending */
 #define CSR_IP_EIE (1UL << RISCV_IRQ_EXT)   /* External Interrupt Pending */
+
+#define CSR_TVEC_MODE_DIRECT   0UL
+#define CSR_TVEC_MODE_VECTORED 1UL
 
 #define csr_swap(csr, val)                                         \
 	({                                                             \

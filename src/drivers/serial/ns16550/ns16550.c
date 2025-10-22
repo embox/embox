@@ -16,6 +16,7 @@
 #define CLK_FREQ     OPTION_GET(NUMBER, clk_freq)
 #define REG_WIDTH    OPTION_GET(NUMBER, reg_width)
 #define MEM32_ACCESS OPTION_GET(BOOLEAN, mem32_access)
+#define USE_BOARD_CONF OPTION_GET(BOOLEAN, use_bconf)
 
 #ifdef RALINK
 /**
@@ -121,6 +122,14 @@ static_assert(REG_WIDTH > 0, "");
 #define UART_REG_ANDIN(addr, mask) REG8_ANDIN(addr, mask)
 #endif
 
+#if USE_BOARD_CONF
+#include "uart_setup_hw_board_config.inc"
+#else
+static inline int uart_setup_hw(struct uart *dev) {
+	return 0;
+}
+#endif /* USE_BOARD_CONF */
+
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		UART_REG_ORIN(UART_IER(dev->base_addr), UART_IER_DR);
@@ -139,6 +148,8 @@ static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
 	UART_REG_STORE(UART_DLM(dev->base_addr), (baud_divisor >> 8) & 0xff);
 	UART_REG_STORE(UART_LCR(dev->base_addr), lcr);
 #endif
+
+	uart_setup_hw(dev);
 
 	return 0;
 }
