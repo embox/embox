@@ -19,7 +19,7 @@
 static void print_help(char **argv) {
 	printf("Transfer bytes via SPI bus\n");
 	printf("Usage:\n");
-	printf("%s [-s] [-m] [-b] bus_number line_number data0 [data1 [data2 "
+	printf("%s [-s] [-m] bus_number line_number data0 [data1 [data2 "
 	       "[...]]]\n",
 	    argv[0]);
 	printf("%s [-l] [-h]\n", argv[0]);
