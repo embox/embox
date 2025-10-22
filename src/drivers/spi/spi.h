@@ -51,7 +51,7 @@ struct spi_device {
 	int                           spid_clk_freq;
 	int                           spid_polarity;
 
-	struct spid_ops               *spid_ops;
+	const struct spid_ops        *spid_ops;
 	void                         *spid_priv;
 
 	int                           spid_bus_num;
