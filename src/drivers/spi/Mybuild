@@ -22,17 +22,28 @@ module spi0_dev0 {
 
 	option boolean bconf_use=false
 
-	option string dev_name="EMPTY"
+	option string dev_name ="SPI0_0"
+	option number cs_port = 0xff
+	option number cs_pin = 0xff
+	option number cs_func = 0xff
+	option number cs_pullup = 0
+	option number cs_pushpull = 0
 
 	source "spi0_dev0.c"
 }
+
 
 module spi1_dev0 {
 	option string log_level="LOG_NONE"
 
 	option boolean bconf_use=false
 
-	option string dev_name="EMPTY"
+	option string dev_name ="SPI1_0"
+	option number cs_port = 0xff
+	option number cs_pin = 0xff
+	option number cs_func = 0xff
+	option number cs_pullup = 0
+	option number cs_pushpull = 0
 
 	source "spi1_dev0.c"
 }
@@ -42,7 +53,12 @@ module spi2_dev0 {
 
 	option boolean bconf_use=false
 
-	option string dev_name="EMPTY"
+	option string dev_name ="SPI2_0"
+	option number cs_port = 0xff
+	option number cs_pin = 0xff
+	option number cs_func = 0xff
+	option number cs_pullup = 0
+	option number cs_pushpull = 0
 
 	source "spi2_dev0.c"
 }
@@ -52,7 +68,12 @@ module spi3_dev0 {
 
 	option boolean bconf_use=false
 
-	option string dev_name="EMPTY"
+	option string dev_name ="SPI3_0"
+	option number cs_port = 0xff
+	option number cs_pin = 0xff
+	option number cs_func = 0xff
+	option number cs_pullup = 0
+	option number cs_pushpull = 0
 
 	source "spi3_dev0.c"
 }
@@ -62,7 +83,12 @@ module spi4_dev0 {
 
 	option boolean bconf_use=false
 
-	option string dev_name="EMPTY"
+	option string dev_name ="SPI4_0"
+	option number cs_port = 0xff
+	option number cs_pin = 0xff
+	option number cs_func = 0xff
+	option number cs_pullup = 0
+	option number cs_pushpull = 0
 
 	source "spi4_dev0.c"
 }
@@ -72,7 +98,12 @@ module spi5_dev0 {
 
 	option boolean bconf_use=false
 
-	option string dev_name="EMPTY"
+	option string dev_name ="SPI5_0"
+	option number cs_port = 0xff
+	option number cs_pin = 0xff
+	option number cs_func = 0xff
+	option number cs_pullup = 0
+	option number cs_pushpull = 0
 
 	source "spi5_dev0.c"
 }
