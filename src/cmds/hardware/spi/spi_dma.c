@@ -27,7 +27,7 @@ static int test_poll(struct spi_device *spi, int spi_line, uint8_t *dataOut, uin
 		int res;
 
 		//////  SPI_MODE_0
-		spi->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv);
+		spi->spi_dflags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
@@ -44,21 +44,21 @@ static int test_poll(struct spi_device *spi, int spi_line, uint8_t *dataOut, uin
 		res = spi_transfer(spi, NULL, dataIn, 32);
 
 		//////  SPI_MODE_1
-		spi->flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_1) | SPI_CS_DIVSOR(clkdiv);
+		spi->spid_flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_1) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
 		res = spi_transfer(spi, dataOut, dataIn, 4);
 
 		//////  SPI_MODE_2
-		spi->flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_2) | SPI_CS_DIVSOR(clkdiv);
+		spi->spid_flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_2) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
 		res = spi_transfer(spi, dataOut, dataIn, 4);
 
 		//////  SPI_MODE_3
-		spi->flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_3) | SPI_CS_DIVSOR(clkdiv);
+		spi->spid_flags = SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_3) | SPI_CS_DIVSOR(clkdiv);
 		res = spi_select(spi, spi_line);
 
 		// read/write
@@ -95,7 +95,7 @@ static irq_return_t data_block_complete(unsigned int irq_nr, void *dma_data) {
 static int test_interrupt(struct spi_device *dev, int spi_line, uint8_t *dataOut, uint8_t *dataIn, int clkdiv, int bytes) {
 	int ret;
 
-	dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
+	dev->spid_flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
 		| SPI_CS_IRQD | SPI_CS_IRQR;
 
 	spi_irq_prepare(dev->spid_spi_cntl, data_sent, data_received);
@@ -192,7 +192,7 @@ int main(int argc, char **argv) {
 	spi_line = strtol(argv[2 + optargs], NULL, 0);
 
 	dev = spi_dev_by_id(spi_bus);
-	dev->flags = 0; 	
+	dev->spid_flags = 0;
 	if (dev == NULL) {
 		printf("Failed to select bus #%d\n", spi_bus);
 		return -ENOENT;
@@ -261,7 +261,7 @@ int main(int argc, char **argv) {
 			fill_test(mem_handle->physical_addr, DMA_MEM / 2);
 
 			// Configure SPI
-			dev->flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
+			dev->spid_flags |= SPI_CS_ACTIVE | SPI_CS_MODE(SPI_MODE_0) | SPI_CS_DIVSOR(clkdiv)
 				| SPI_CS_DMAEN;
 			spi_dma_prepare(dev->spid_spi_cntl,
 					data_block_complete, DMA_CHAN_OUT, DMA_CHAN_IN,
@@ -359,8 +359,8 @@ int main(int argc, char **argv) {
 		report("\nR", dataIn, 32);
 		break;
 	default:
-		dev->flags |= SPI_CS_ACTIVE;
-		dev->flags |= SPI_CS_INACTIVE;
+		dev->spid_flags |= SPI_CS_ACTIVE;
+		dev->spid_flags |= SPI_CS_INACTIVE;
 		ret = spi_select(dev, spi_line);
 		if (ret < 0) {
 			printf("Failed to select line #%d!\n", spi_line);

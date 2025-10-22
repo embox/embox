@@ -19,7 +19,7 @@
 static void print_help(char **argv) {
 	printf("Transfer bytes via SPI bus\n");
 	printf("Usage:\n");
-	printf("%s [-s] [-m] [-b] bus_number line_number data0 [data1 [data2 "
+	printf("%s [-s] [-m] bus_number line_number data0 [data1 [data2 "
 	       "[...]]]\n",
 	    argv[0]);
 	printf("%s [-l] [-h]\n", argv[0]);
@@ -42,15 +42,15 @@ static void list_spi_devices(void) {
 		printf("Bus: %s\n", cntl->cdev.name);
 		printf("\t0x%" PRIxPTR "\n", cntl->spic_label);
 		if (cntl->spic_pins) {
-			printf("\tSCLK:(PORT%d.%d func(%d)\n",
+			printf("\tSCLK:PORT%d.%d func(%d)\n",
 				cntl->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
 				cntl->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin,
 				cntl->spic_pins[SPIC_PIN_SCLK_IDX].pd_func);
-			printf("\tMISO:(PORT%d.%d func(%d)\n",
+			printf("\tMISO:PORT%d.%d func(%d)\n",
 				cntl->spic_pins[SPIC_PIN_MISO_IDX].pd_port,
 				cntl->spic_pins[SPIC_PIN_MISO_IDX].pd_pin,
 				cntl->spic_pins[SPIC_PIN_MISO_IDX].pd_func);
-			printf("\tMOSI:(PORT%d.%d func(%d)\n",
+			printf("\tMOSI:PORT%d.%d func(%d)\n",
 				cntl->spic_pins[SPIC_PIN_MOSI_IDX].pd_port,
 				cntl->spic_pins[SPIC_PIN_MOSI_IDX].pd_pin,
 				cntl->spic_pins[SPIC_PIN_MOSI_IDX].pd_func);
@@ -58,7 +58,18 @@ static void list_spi_devices(void) {
 	}
 
 	array_spread_foreach(dev, __spi_device_registry) {	
-		printf("device: %s\n", dev->cdev.name);
+		printf("device: %s (%d:%d) ", dev->cdev.name,
+						dev->spid_bus_num, dev->spid_idx
+					);
+		if (NULL != dev->spid_cs_pin) {
+			printf("CS:PORT%d.%d func(%d)\n",
+						dev->spid_cs_pin->pd_port,
+						dev->spid_cs_pin->pd_pin,
+						dev->spid_cs_pin->pd_func
+					);
+		} else {
+			printf("\n");
+		}
 	}
 }
 
@@ -107,7 +118,7 @@ int main(int argc, char **argv) {
 		printf("Failed to select bus #%d\n", spi_bus);
 		return -ENOENT;
 	}
-	dev->is_master = true;
+	dev->spid_is_master = true;
 
 	if (set_mode) {
 		if (master_mode) {
@@ -124,11 +135,11 @@ int main(int argc, char **argv) {
 		}
 	}
 
-	dev->flags |= SPI_CS_ACTIVE;
+	dev->spid_flags |= SPI_CS_ACTIVE;
 	if (full_time_cs)
-		dev->flags &= ~SPI_CS_INACTIVE;
+		dev->spid_flags &= ~SPI_CS_INACTIVE;
 	else
-		dev->flags |= SPI_CS_INACTIVE;
+		dev->spid_flags |= SPI_CS_INACTIVE;
 
 	ret = spi_select(dev, spi_line);
 	if (ret < 0) {
@@ -141,7 +152,7 @@ int main(int argc, char **argv) {
 		uint16_t buf_in, buf_out;
 		buf_out = strtol(argv[i], NULL, 0);
 		if (i + 1 == argc)
-			dev->flags |= SPI_CS_INACTIVE;
+			dev->spid_flags |= SPI_CS_INACTIVE;
 		spi_transfer(dev, (uint8_t *)&buf_out, (uint8_t *)&buf_in, 1);
 		if (format_16bit) {
 			printf(" 0x%04x", buf_in);

@@ -62,7 +62,7 @@ void k1921vk035_spi_config(struct spi_controller *dev){
 }
 static int k1921vk035_spi_init(struct spi_controller *dev) {
 
-	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
+	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->spic_priv;
 	int pin = 0;
 	int port = 0;
 
@@ -103,7 +103,7 @@ static void k1921vk035_spi_set_cs(const k1921vk035_spi_dev_t* k1921vk035_spi_dev
 }
 
 static int k1921vk035_spi_select(struct spi_controller *dev, int cs) {
-	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
+	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->spic_priv;
 	int res = 0;
 	int pin = 0;
 	int port = 0;
@@ -135,7 +135,7 @@ static uint8_t k1921vk035_spi_transfer_byte(const k1921vk035_spi_dev_t* k1921vk0
 
 static int k1921vk035_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
-	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->priv;
+	k1921vk035_spi_dev_t* k1921vk035_spi_dev = dev->spic_priv;
 	uint8_t val;
 
 	if (dev->flags & SPI_CS_ACTIVE) {
@@ -159,12 +159,12 @@ static int k1921vk035_spi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 	return 0;
 }
 
-struct spi_controller_ops k1921vk035_spi_ops = {
+struct spi_controller_ops k1921vk035_spic_ops = {
 	.init     = k1921vk035_spi_init,
 	.select   = k1921vk035_spi_select,
 	.transfer = k1921vk035_spi_transfer
 };
 
-SPI_CONTROLLER_DEF(spi0, &k1921vk035_spi_ops, &k1921vk035_spi0_dev, 0);
+SPI_CONTROLLER_DEF(spi0, &k1921vk035_spic_ops, &k1921vk035_spi0_dev, 0);
 
 SPI_DEV_DEF(spi0, NULL, NULL, 0, 0, NULL);

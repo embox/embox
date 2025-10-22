@@ -14,25 +14,31 @@ module stm32cube_spi {
 module stm32cube_spi1 {
 	option string log_level="LOG_ERR"
 	source "stm32_spi1.c"
+
+	depends embox.driver.spi.spi1_dev0
 }
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi2 {
 	option string log_level="LOG_ERR"
 	source "stm32_spi2.c"
+
+	depends embox.driver.spi.spi2_dev0
 }
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi3 {
 	option string log_level="LOG_ERR"
 
-	option number pullup=1
-
 	source "stm32_spi3.c"
+
+	depends embox.driver.spi.spi3_dev0
 }
 
 @BuildDepends(stm32cube_spi)
 module stm32cube_spi5 {
 	option string log_level="LOG_ERR"
 	source "stm32_spi5.c"
+
+	depends embox.driver.spi.spi5_dev0
 }

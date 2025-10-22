@@ -73,10 +73,6 @@ struct rcu_reg {
 #define RCU_CGCFGAPB_TMR2EN         (1 << 3)
 #define RCU_CGCFGAPB_TMR16_EN(nr)   (1 << (1 + nr))
 
-#define RCU_CGCFGAPB_SPI0EN         (1 << 5)
-#define RCU_CGCFGAPB_SPI1EN         (1 << 6)
-#define RCU_CGCFGAPB_SPI_EN(nr)     (1 << (5 + nr))
-
 #define RCU_CGCFGAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_CGCFGAPB_UART0EN        (1 << 6)
 #define RCU_CGCFGAPB_UART1EN        (1 << 7)
@@ -89,15 +85,15 @@ struct rcu_reg {
 #define RCU_CGCFGAHB_GPIOBEN        (1 << 9)
 #define RCU_CGCFGAHB_GPIOCEN        (1 << 10)
 
+#define RCU_CGCFGAHB_SPI0EN         (1 << 5)
+#define RCU_CGCFGAHB_SPI1EN         (1 << 6)
+#define RCU_CGCFGAHB_SPI_EN(nr)     (1 << (5 + nr))
+
 #define RCU_RSTDISAPB_TMR32EN        (1 << 0)
 #define RCU_RSTDISAPB_TMR0EN         (1 << 1)
 #define RCU_RSTDISAPB_TMR1EN         (1 << 2)
 #define RCU_RSTDISAPB_TMR2EN         (1 << 3)
 #define RCU_RSTDISAPB_TMR16_EN(num)  (1 << (1 + num))
-
-#define RCU_RSTDISAPB_SPI0EN         (1 << 5)
-#define RCU_RSTDISAPB_SPI1EN         (1 << 6)
-#define RCU_RSTDISAPB_SPI_EN(num)    (1 << (5 + num))
 
 #define RCU_RSTDISAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_RSTDISAPB_UART0EN        (1 << 6)
@@ -110,6 +106,10 @@ struct rcu_reg {
 #define RCU_RSTDISAHB_GPIOAEN        (1 << 8)
 #define RCU_RSTDISAHB_GPIOBEN        (1 << 9)
 #define RCU_RSTDISAHB_GPIOCEN        (1 << 10)
+
+#define RCU_RSTDISAHB_SPI0EN         (1 << 5)
+#define RCU_RSTDISAHB_SPI1EN         (1 << 6)
+#define RCU_RSTDISAHB_SPI_EN(num)    (1 << (5 + num))
 
 #define RCU_CLKSTAT_SRC_MASK        (0x3)
 #define  RCU_CLKSTAT_SRC_HSICLK      (0x0)
@@ -135,12 +135,26 @@ struct rcu_reg {
 #define RCU_PLLSYSCFG0_REFDIV_MASK  (0x3F << 7) /* 7-12*/
 #define RCU_PLLSYSCFG0_REFDIV_VAL(val)   ((val & 0x3F) << 7) /* 7-12*/
 
-#define RCU_UARTCLKCFG_CLKEN_MASK	 	 	 	0x00000001UL
-#define RCU_UARTCLKCFG_RSTDIS_MASK	 	 	 	0x00000100UL
-#define RCU_UARTCLKCFG_CLKSEL_MASK	 	 	 	0x00030000UL
-#define  RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK   0x00020000UL
-#define RCU_UARTCLKCFG_DIVEN_MASK	 	 	 	0x00100000UL
-#define RCU_UARTCLKCFG_DIVN_MASK	 	 	 	0x3f000000UL
+#define RCU_UARTCLKCFG_CLKEN_MASK               0x00000001UL
+#define RCU_UARTCLKCFG_RSTDIS_MASK              0x00000100UL
+#define RCU_UARTCLKCFG_CLKSEL_MASK              0x00030000UL
+# define  RCU_UARTCLKCFG_CLKSEL_HSICLK_MASK      0x00000000UL
+# define  RCU_UARTCLKCFG_CLKSEL_HSECLK_MASK      0x00010000UL
+# define  RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK  0x00020000UL
+# define  RCU_UARTCLKCFG_CLKSEL_SYSPLL1CLK_MASK  0x00020000UL
+#define RCU_UARTCLKCFG_DIVEN_MASK               0x00100000UL
+#define RCU_UARTCLKCFG_DIVN_MASK                0x3f000000UL
+
+#define RCU_SPICLKCFG_CLKEN_MASK                0x00000001UL
+#define RCU_SPICLKCFG_RSTDIS_MASK               0x00000100UL
+#define RCU_SPICLKCFG_CLKSEL_MASK               0x00030000UL
+# define  RCU_SPICLKCFG_CLKSEL_HSICLK_MASK       0x00000000UL
+# define  RCU_SPICLKCFG_CLKSEL_HSECLK_MASK       0x00010000UL
+# define  RCU_SPICLKCFG_CLKSEL_SYSPLL0CLK_MASK   0x00020000UL
+# define  RCU_SPICLKCFG_CLKSEL_SYSPLL1CLK_MASK   0x00020000UL
+#define RCU_SPICLKCFG_DIVEN_MASK                0x00100000UL
+#define RCU_SPICLKCFG_DIVN_MASK	                0x3f000000UL
+
 
 int niiet_gpio_clock_setup(unsigned char port) {
     RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_GPIOEN(port);
@@ -149,19 +163,19 @@ int niiet_gpio_clock_setup(unsigned char port) {
 	return 0;
 }
 
-void niiet_uart_set_rcu(int uart_num) {
-    uint32_t *rcu_uartclkcfg_reg = (void *)&RCU->RCU_UARTCLKCFG0_reg;
+void niiet_uart_set_rcu(int num) {
+    volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_UARTCLKCFG0_reg;
 
-	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_UART_EN(uart_num);
-	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_UART_EN(uart_num);
+	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_UART_EN(num);
+	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_UART_EN(num);
 
-    rcu_uartclkcfg_reg += uart_num;
+    rcu_clkcfg_reg += num;
 
-	*rcu_uartclkcfg_reg = 0;
-	*rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK;
+	*rcu_clkcfg_reg = 0;
+	*rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKSEL_SYSPLL0CLK_MASK;
 
-	*rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_CLKEN_MASK;
-    *rcu_uartclkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
+	*rcu_clkcfg_reg |= RCU_UARTCLKCFG_CLKEN_MASK;
+    *rcu_clkcfg_reg |= RCU_UARTCLKCFG_RSTDIS_MASK;
 }
 
 void niiet_tmr32_set_rcu(void) {
@@ -179,8 +193,18 @@ void niiet_tmr_set_rcu(int num) {
 }
 
 void niiet_spi_set_rcu(int num) {
-	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_SPI_EN(num);
-	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_SPI_EN(num);
+    volatile uint32_t *rcu_clkcfg_reg = &RCU->RCU_SPICLKCFG0_reg;
+
+	RCU->RCU_CGCFGAHB_reg |= RCU_CGCFGAHB_SPI_EN(num);
+	RCU->RCU_RSTDISAHB_reg |= RCU_RSTDISAHB_SPI_EN(num);
+
+    rcu_clkcfg_reg += num;
+
+	*rcu_clkcfg_reg = 0;
+	*rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKSEL_SYSPLL0CLK_MASK;
+
+	*rcu_clkcfg_reg |= RCU_SPICLKCFG_CLKEN_MASK;
+    *rcu_clkcfg_reg |= RCU_SPICLKCFG_RSTDIS_MASK;
 }
 
 

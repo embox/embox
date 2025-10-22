@@ -18,6 +18,8 @@
 #endif
 
 struct stm32_spi {
+	struct spi_controller *spi_controller;
+	uintptr_t base_addr;
 	int (*hw_init)(void);
 	SPI_HandleTypeDef handle;
 	unsigned short nss_port;
@@ -27,6 +29,6 @@ struct stm32_spi {
 };
 
 extern int stm32_spi_init(struct stm32_spi *dev, void *instance);
-extern struct spi_controller_ops stm32_spi_ops;
+extern struct spi_controller_ops stm32_spic_ops;
 
 #endif /* SRC_DRIVERS_SPI_STM32_I2C_H_ */

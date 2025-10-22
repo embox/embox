@@ -179,8 +179,8 @@ EMBOX_UNIT_INIT(xr20m1172_init);
 
 static int xr20m1172_init(void) {
 	spi_bus_dev = spi_dev_by_id(SPI_BUS);
-	spi_bus_dev->flags |= SPI_CS_ACTIVE;
-	spi_bus_dev->flags |= SPI_CS_INACTIVE;
+	spi_bus_dev->spid_flags |= SPI_CS_ACTIVE;
+	spi_bus_dev->spid_flags |= SPI_CS_INACTIVE;
 	spi_select(spi_bus_dev, SPI_CS);
 	return 0;
 }

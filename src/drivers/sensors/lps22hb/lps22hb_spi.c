@@ -66,7 +66,7 @@ int lps22hb_hw_init(struct lps22hb_dev *dev) {
 
 	spi_select(dev->spi_dev, 0);
 
-	dev->spi_dev->flags |= SPI_CS_ACTIVE;
-	dev->spi_dev->flags |= SPI_CS_INACTIVE;
+	dev->spi_dev->spid_flags |= SPI_CS_ACTIVE;
+	dev->spi_dev->spid_flags |= SPI_CS_INACTIVE;
 	return 0;
 }

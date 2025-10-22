@@ -20,7 +20,7 @@
 
 #include "dw_spi.h"
 
-extern struct spi_controller_ops dw_spi_ops;
+extern struct spi_controller_ops dw_spic_ops;
 extern int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr);
 
 #define SPI_DE0_NANO_SOC          OPTION_GET(BOOLEAN,spi_de0_nano_soc)
@@ -36,7 +36,7 @@ static struct dw_spi_priv DW_SPI_CTRL_STRUCT_NAME;
 
 PERIPH_MEMORY_DEFINE(SPI_BUS_NAME, DW_SPI_BASE, 0x100);
 
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &dw_spi_ops, &DW_SPI_CTRL_STRUCT_NAME, SPI_BUS_NUM);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &dw_spic_ops, &DW_SPI_CTRL_STRUCT_NAME, SPI_BUS_NUM);
 
 EMBOX_UNIT_INIT(dw_spi_module_init);
 

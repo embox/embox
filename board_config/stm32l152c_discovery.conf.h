@@ -73,42 +73,68 @@ struct uart_conf uarts[] = {
 
 struct spi_conf spis[] = {
     [1] = {
-   	 .status = DISABLED,
-   	 .name = "SPI1",
-   	 .dev = {
+		.status = DISABLED,
 		.name = "SPI1",
-		.regs = {
-			REGMAP("BASE", (SPI1_BASE), 0x100),
+		.dev = {
+			.name = "SPI1",
+			.regs = {
+				REGMAP("BASE", (SPI1_BASE), 0x100),
+			},
+			.pins = {
+				PIN("SCK",  GPIO_PORT_A, 5, AF5),
+				PIN("MISO", GPIO_PORT_A, 11, AF5),
+				PIN("MOSI", GPIO_PORT_A, 12, AF5),
+				PIN("CS",   GPIO_PORT_C, 12, NOAF),
+			},
+			.clocks = {
+				VAL("SPI",  CLK_SPI1),
+			}
 		},
-   		.pins = {
-   			PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-   			PIN("MISO", GPIO_PORT_A, PIN_11, AF5),
-   			PIN("MOSI", GPIO_PORT_A, PIN_12, AF5),
-   			PIN("CS",   GPIO_PORT_C, PIN_12, NOAF),
-   		},
-   		.clocks = {
-   			VAL("SPI",  CLK_SPI1),
-   		}
-   	 },
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_C, 12, NOAF),
+				},
+			},
+		},
     },
     [2] = {
-   	 .status = DISABLED,
-   	 .name = "SPI2",
-   	 .dev = {
+   		.status = DISABLED,
 		.name = "SPI2",
-		.regs = {
-			REGMAP("BASE", (SPI2_BASE), 0x100),
-		},
-   		.pins = {
-   			PIN("SCK",  GPIO_PORT_B, PIN_13, AF5),
-   			PIN("MISO", GPIO_PORT_B, PIN_14, AF5),
-   			PIN("MOSI", GPIO_PORT_B, PIN_15, AF5),
-   			PIN("CS",   GPIO_PORT_B, PIN_12, NOAF),
+   		.dev = {
+			.name = "SPI2",
+			.regs = {
+				REGMAP("BASE", (SPI2_BASE), 0x100),
+			},
+			.pins = {
+				PIN("SCK",  GPIO_PORT_B, 13, AF5),
+				PIN("MISO", GPIO_PORT_B, 14, AF5),
+				PIN("MOSI", GPIO_PORT_B, 15, AF5),
+				PIN("CS",   GPIO_PORT_B, 12, NOAF),
+			},
+			.clocks = {
+				VAL("SPI",  CLK_SPI2),
+			}
    		},
-   		.clocks = {
-   			VAL("SPI",  CLK_SPI2),
-   		}
-   	 },
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI2_0",
+			.bits_per_word = 8,
+			.bus_num = 2,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI2_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_A, 15, NOAF),
+				},
+			},
+		},
     },
 };
 

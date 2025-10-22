@@ -1,5 +1,5 @@
 /**
- * @file imx6_spi.c
+ * @file
  * @brief Basic test for SPI-flash JEDEC read operation
  * @author Denis Deryugin <deryugin.denis@gmail.com>
  * @version
@@ -29,7 +29,7 @@ TEST_CASE("Read JEDEC ID") {
 	dev = spi_dev_by_id(SPI_FLASH_BUS);
 	test_assert(dev);
 
-	dev->flags |= SPI_CS_ACTIVE | SPI_CS_INACTIVE;
+	dev->spid_flags |= SPI_CS_ACTIVE | SPI_CS_INACTIVE;
 
 	res = spi_select(dev, SPI_FLASH_CS);
 	test_assert(res == 0);

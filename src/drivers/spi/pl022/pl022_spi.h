@@ -18,6 +18,6 @@ struct pl022_spi {
 
 extern int pl022_spi_init(struct pl022_spi *dev);
 
-extern struct spi_controller_ops pl022_spi_ops;
+extern struct spi_controller_ops pl022_spic_ops;
 
 #endif /* SRC_DRIVERS_SPI_PL022_PL022_SPI_H_ */

@@ -21,8 +21,8 @@ struct dma_ctrl_blk *init_dma_block_spi_in(struct spi_controller *dev, struct dm
 	struct bcm283x_spi_dev *bcm283x_spi_dev;
 
 	assert(dev);
-	assert(dev->spi_ops);
-	bcm283x_spi_dev = dev->priv;
+	assert(dev->spic_ops);
+	bcm283x_spi_dev = dev->spic_priv;
 
 	if(bcm283x_spi_dev->init_dma_block_spi_in == NULL) {
 		log_debug("Select operation is not supported for SPI%d", dev->spic_bus_num);
@@ -37,8 +37,8 @@ struct dma_ctrl_blk *init_dma_block_spi_out(struct spi_controller *dev, struct d
 	struct bcm283x_spi_dev *bcm283x_spi_dev;
 
 	assert(dev);
-	assert(dev->spi_ops);
-	bcm283x_spi_dev = dev->priv;
+	assert(dev->spic_ops);
+	bcm283x_spi_dev = dev->spic_priv;
 
 	if(bcm283x_spi_dev->init_dma_block_spi_out == NULL) {
 		log_debug("Select operation is not supported for SPI%d", dev->spic_bus_num);
@@ -55,7 +55,7 @@ int spi_dma_prepare(struct spi_controller *dev,
 
 	assert(dev);
 
-	bcm283x_spi_dev = dev->priv;
+	bcm283x_spi_dev = dev->spic_priv;
 
 	bcm283x_spi_dev->dma_complete = dma_complete;
 	bcm283x_spi_dev->dma_chan_out = dma_chan_out;
@@ -71,7 +71,7 @@ int spi_irq_prepare(struct spi_controller *dev,
 
 	assert(dev);
 
-	bcm283x_spi_dev = dev->priv;
+	bcm283x_spi_dev = dev->spic_priv;
 
 	bcm283x_spi_dev->send_complete = send_complete;
 	bcm283x_spi_dev->received_data = received_data;

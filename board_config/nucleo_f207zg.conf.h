@@ -232,21 +232,29 @@ struct spi_conf spis[] = {
 				REGMAP("BASE", (SPI1_BASE), 0x100),
 			},
 			.pins = {
-				PIN("SCK",  GPIO_PORT_A, PIN_5, AF5),
-				PIN("MISO", GPIO_PORT_A, PIN_6, AF5),
-				PIN("MOSI", GPIO_PORT_A, PIN_7, AF5),
-				PIN("CS",   GPIO_PORT_D, PIN_14, NOAF),
+				PIN("SCK",  GPIO_PORT_A, 5, AF5),
+				PIN("MISO", GPIO_PORT_A, 6, AF5),
+				PIN("MOSI", GPIO_PORT_A, 7, AF5),
+				PIN("CS",   GPIO_PORT_D, 14, NOAF),
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOA),
-				VAL("MISO", CLK_GPIOA),
-				VAL("MOSI", CLK_GPIOA),
-				VAL("CS",   CLK_GPIOD),
 				VAL("SPI",  CLK_SPI1),
 			}
 		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				.pins = {
+					PIN("CS",   GPIO_PORT_D, 14, NOAF),
+				},
+			},
+		},
 	},
-
 };
 
 struct i2c_conf i2cs[] = {

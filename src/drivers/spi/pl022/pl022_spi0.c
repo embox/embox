@@ -67,9 +67,9 @@ static void hw_pins_config(struct spi_controller *spi_c) {
 			(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
 			GPIO_MODE_OUT | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func));
 
-	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_port,
-			(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
-			GPIO_MODE_IN | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func));
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_pin),
+			GPIO_MODE_IN | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func));
 }
 
 #endif /* USE_BOARD_CONF */
@@ -92,4 +92,4 @@ static int pl022_spi0_init(void) {
 	return 0;
 }
 
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spi_ops, &pl022_spi0, SPI_BUS_NUM);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &pl022_spic_ops, &pl022_spi0, SPI_BUS_NUM);

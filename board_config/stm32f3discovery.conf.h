@@ -142,18 +142,27 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_B, PIN_5, AF5),
-				PIN("MISO", GPIO_PORT_B, PIN_6, AF5),
-				PIN("MOSI", GPIO_PORT_B, PIN_7, AF5),
-				/* PIN("CS",   GPIO_PORT_B, PIN_2, NOAF), */
+				PIN("SCK",  GPIO_PORT_B, 5, AF5),
+				PIN("MISO", GPIO_PORT_B, 6, AF5),
+				PIN("MOSI", GPIO_PORT_B, 7, AF5),
+				/* PIN("CS",   GPIO_PORT_B, 2, NOAF), */
 			},
 			.clocks = {
-				VAL("SCK",  CLK_GPIOA),
-				VAL("MISO", CLK_GPIOA),
-				VAL("MOSI", CLK_GPIOA),
-				/* VAL("CS",   CLK_GPIOB), */
 				VAL("SPI",  CLK_SPI1),
 			}
+		},
+		.spi_devs[0] = {
+			.status = ENABLED,
+			.name = "SPI1_0",
+			.bits_per_word = 8,
+			.bus_num = 1,
+			.idx     = 0,
+			.dev = {
+				.name = "SPI1_0",
+				/*.pins = {
+					PIN("CS",   GPIO_PORT_A, 15, NOAF),
+				},*/
+			},
 		},
 	},
 

@@ -40,5 +40,7 @@ module sc64_spi {
 
 	source "sc64_spi.c"
 
+	@NoRuntime depends embox.driver.spi.spi0_dev0
+
 	depends embox.driver.spi.core
 }

@@ -25,7 +25,7 @@
 
 #include <drivers/pin_description.h>
 
-struct spi_ops;
+struct spid_ops;
 
 /* Host modes */
 enum spi_mode_t {
@@ -43,21 +43,24 @@ enum spi_pol_phase_t {
 };
 
 struct spi_device {
-	struct char_dev cdev;
+	struct char_dev               cdev;
 
-	uint32_t flags;
-	bool is_master;
-	int bits_per_word;
+	uint32_t                      spid_flags;
+	bool                          spid_is_master;
+	int                           spid_bits_per_word;
+	int                           spid_clk_freq;
+	int                           spid_polarity;
 
-	struct spi_ops *spi_ops;
-	void *priv;
+	const struct spid_ops        *spid_ops;
+	void                         *spid_priv;
 
-	int                    spid_bus_num;
-	struct spi_controller *spid_spi_cntl;
+	int                           spid_bus_num;
+	int                           spid_idx;
+	struct spi_controller        *spid_spi_cntl;
 	const struct pin_description *spid_cs_pin;
 };
 
-struct spi_ops {
+struct spid_ops {
 	int (*init)(struct spi_device *dev);
 	int (*select)(struct spi_device *dev, int cs);
 	int (*set_mode)(struct spi_device *dev, bool is_master);
@@ -92,20 +95,24 @@ extern int spi_set_slave_mode(struct spi_device *dev);
 
 extern const struct char_dev_ops __spi_cdev_ops;
 
+#define SPID_STR_NAME(bus_idx, dev_idx) \
+			MACRO_CONCAT(MACRO_CONCAT(MACRO_CONCAT(spi_dev, bus_idx),_),dev_idx)
+
 /* Note: if you get linker error like "redefinition of 'spi_device0'"
  * then you should reconfig system so SPI bus indecies do not overlap */
-#define SPI_DEV_DEF(dev_name, spi_dev_ops, dev_priv, bus_idx, dev_idx, cs_pin) \
-	struct spi_device MACRO_CONCAT(spi_device, bus_idx) = {           \
-	    .cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_device, bus_idx).cdev, \
-	        MACRO_STRING(dev_name), &__spi_cdev_ops),             \
-	    .spi_ops = spi_dev_ops,                                   \
-	    .priv = dev_priv,                                         \
-		.spid_bus_num = bus_idx,                                      \
-		.spid_cs_pin  = cs_pin,                                   \
-	};                                                            \
-	CHAR_DEV_REGISTER((struct char_dev *)&MACRO_CONCAT(spi_device, bus_idx)); \
-	ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);       \
-	ARRAY_SPREAD_ADD(__spi_device_registry, &MACRO_CONCAT(spi_device, bus_idx))
+#define SPI_DEV_DEF(name, ops, priv, bus_idx, dev_idx, cs_pin)    \
+	struct spi_device SPID_STR_NAME(bus_idx, dev_idx) = {                     \
+	    .cdev = CHAR_DEV_INIT(SPID_STR_NAME(bus_idx, dev_idx).cdev,           \
+	        MACRO_STRING(name), &__spi_cdev_ops),                             \
+	    .spid_ops = ops,                                                      \
+	    .spid_priv = priv,                                                    \
+		.spid_bus_num = bus_idx,                                              \
+		.spid_idx = dev_idx,                                                  \
+		.spid_cs_pin  = cs_pin,                                               \
+	};                                                                        \
+	CHAR_DEV_REGISTER((struct char_dev *)&SPID_STR_NAME(bus_idx, dev_idx));   \
+	ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);         \
+	ARRAY_SPREAD_ADD(__spi_device_registry, &SPID_STR_NAME(bus_idx, dev_idx))
 
 /* IOCTL-related stuff */
 #define SPI_IOCTL_CS       0x1
