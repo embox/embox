@@ -1,0 +1,27 @@
+package embox.driver.i2c
+
+module skeleton_i2c_drv {
+	option string log_level="LOG_ERR"
+
+	source "skeleton_i2c_drv.c"
+
+	depends embox.driver.i2c_core
+}
+
+module skeleton_i2c0 {
+	option string log_level="LOG_ERR"
+
+	source "skeleton_i2c0.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends skeleton_i2c_drv
+}
+
+module skeleton_i2c1 {
+	option string log_level="LOG_ERR"
+
+	source "skeleton_i2c1.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends skeleton_i2c_drv
+}
