@@ -1,7 +1,7 @@
-package embox.driver.i2c
+package embox.driver.i2c.niiet
 
 @BuildDepends(third_party.bsp.niiet.plib)
-module niiet_i2c {
+module plib_i2c {
 	option boolean vg015_stub=false /* REMOVE ME */
 
 	option number i2c_frequency=125000
