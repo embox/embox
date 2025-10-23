@@ -49,10 +49,14 @@ struct i2c_ops {
 	int (*i2c_deinit)(const struct i2c_bus *bus);
 };
 
+struct pin_description;
+
 struct i2c_bus {
 	const struct i2c_ops *i2c_ops;
 	void *i2c_priv;
 	unsigned i2c_id;
+	const struct pin_description *spid_cs_pin;
+
 };
 
 __BEGIN_DECLS
