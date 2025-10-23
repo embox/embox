@@ -1,0 +1,20 @@
+package embox.driver.i2c.niiet
+
+module vg015_i2c_drv {
+	option string log_level="LOG_ERR"
+
+	source "vg015_i2c_drv.c"
+
+	depends embox.driver.i2c_core
+}
+
+module vg015_i2c0 {
+	option string log_level="LOG_ERR"
+	option number base_addr
+	option boolean use_bconf=true
+
+	source "vg015_i2c0.c"
+
+	depends embox.driver.i2c_core
+	@NoRuntime depends vg015_i2c_drv
+}
