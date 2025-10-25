@@ -14,6 +14,8 @@
 
 #include <drivers/i2c/i2c.h>
 
+
+
 struct niiet_i2c_regs {                                                            
 	volatile uint32_t SDA;                                               /*!< Data register */
 	volatile uint32_t ST;                                                /*!< Status register */
@@ -56,8 +58,11 @@ static int vg015_i2c_master_xfer(const struct i2c_bus *bus, struct i2c_msg *msgs
 	return res;
 }
 
+extern int vg015_i2c_hw_init0(const struct i2c_bus *bus);
+
 static int vg015_i2c_init(const struct i2c_bus *bus) {
 
+	vg015_i2c_hw_init0(bus);
 	
 	return 0;
 }
