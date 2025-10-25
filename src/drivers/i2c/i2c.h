@@ -55,7 +55,8 @@ struct i2c_bus {
 	const struct i2c_ops *i2c_ops;
 	void *i2c_priv;
 	unsigned i2c_id;
-	const struct pin_description *spid_cs_pin;
+	const struct pin_description *i2cb_pins;
+	uintptr_t                     i2cb_label;
 
 };
 
