@@ -226,8 +226,11 @@ module erf_test {
 	@Cflags("-fno-builtin")
 	source "erf_test.c"
 }
-
 module tan_test {
 	@Cflags("-fno-builtin")
 	source "tan_test.c"
+}
+module rint_test {
+	@Cflags("-fno-builtin")
+	source "rint_test.c"
 }
