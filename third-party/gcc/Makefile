@@ -81,6 +81,7 @@ endif
 
 $(CONFIGURE) :
 	$(MKDIR) $(GCC_BUILD_DIR) && cd $(GCC_BUILD_DIR) && ( \
+		CC=gcc CXX=g++ AR=ar RANLIB=ranlib \
 		$(PKG_SOURCE_DIR)/configure \
 			--with-cross-host=embox \
 			--target=$(GCC_TARGET) \
