@@ -24,7 +24,7 @@ typedef struct fpu_context {
 	union {
 		float s[32];
 		double d[16];
-	} vfp_regs;
+	} __attribute__((packed, aligned(4))) vfp_regs;
 } __attribute__((packed, aligned(4))) fpu_context_t;
 
 static inline void arm_fpu_context_init(void *opaque) {
