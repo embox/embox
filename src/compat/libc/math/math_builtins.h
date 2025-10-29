@@ -208,14 +208,28 @@ __END_DECLS
     ((sizeof (x) == sizeof (float)) ? __isfinitef(x)	\
     : (sizeof (x) == sizeof (double)) ? __isfinite(x)	\
     : __isfinitel(x))
+
+#ifdef __clang__
+#define	isinf(x)					\
+				__builtin_isinf(x)
+#else
 #define	isinf(x)					\
     ((sizeof (x) == sizeof (float)) ? __builtin_isinff(x)	\
     : (sizeof (x) == sizeof (double)) ? __builtin_isinf(x)	\
     : __builtin_isinfl(x))
+
+#endif
+
+#ifdef __clang__
+#define	isnan(x)					\
+	__builtin_isnan(x)
+#else
 #define	isnan(x)					\
     ((sizeof (x) == sizeof (float)) ? __builtin_isnanf(x)	\
     : (sizeof (x) == sizeof (double)) ? __builtin_isnan(x)	\
     : __builtin_isnanl(x))
+
+#endif
 
 #define	isnormal(x)					\
     ((sizeof (x) == sizeof (float)) ? __isnormalf(x)	\
