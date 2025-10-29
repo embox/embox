@@ -29,23 +29,23 @@ else
 COMPILER_SPEC := "USEGCC=1"
 endif
 
-OLIBM_CPPFLAGS := -D__ELF__
+OPENLIBM_CPPFLAGS := -D__ELF__
 
 ifeq ($(EMBOX_ARCH), aarch64)
-OLIBM_ARCH := aarch64
+OPENLIBM_ARCH := aarch64
 else ifeq ($(EMBOX_ARCH), arm)
-OLIBM_ARCH := arm
+OPENLIBM_ARCH := arm
 else ifeq ($(EMBOX_ARCH), mips)
-OLIBM_ARCH := mips
+OPENLIBM_ARCH := mips
 else ifeq ($(EMBOX_ARCH), ppc)
-OLIBM_ARCH := powerpc
-OLIBM_CPPFLAGS := -D__powerpc__
+OPENLIBM_ARCH := powerpc
+OPENLIBM_CPPFLAGS := -D__powerpc__
 else ifeq ($(EMBOX_ARCH), riscv)
-OLIBM_ARCH := riscv64
+OPENLIBM_ARCH := riscv64
 else ifeq ($(EMBOX_ARCH), usermode86)
-OLIBM_ARCH := i387
+OPENLIBM_ARCH := i387
 else ifeq ($(EMBOX_ARCH), x86)
-OLIBM_ARCH := i387
+OPENLIBM_ARCH := i387
 else
 $(error Unsupported architecture)
 endif
@@ -58,8 +58,8 @@ $(BUILD) :
 		$(MAKE) $(COMPILER_SPEC) \
 			OS=Embox \
 			CC=$(EMBOX_GCC) \
-			ARCH=$(OLIBM_ARCH) \
-			CPPFLAGS="$(OLIBM_CPPFLAGS)" \
+			ARCH=$(OPENLIBM_ARCH) \
+			CPPFLAGS="$(OPENLIBM_CPPFLAGS)" \
 			LONG_DOUBLE_SIZE=$(LONG_DOUBLE_SIZE) \
 			libopenlibm.a; \
 	)
