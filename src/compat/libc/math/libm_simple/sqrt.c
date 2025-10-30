@@ -24,7 +24,7 @@ static long double sqrt_common(long double x) {
 			r = m;
 		}
 		m = r - (r - l) / 2;
-	} while (steps-- > 0 && fabs(x - m*m) < eps);
+	} while (steps-- > 0 && fabsl(x - m*m) < eps);
 
 	return m;
 }
@@ -40,5 +40,4 @@ float sqrtf(float x) {
 double sqrt(double x) {
 	return sqrt_common(x);
 }
-
 

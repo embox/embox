@@ -13,7 +13,7 @@
 
 #include <string.h>
 
-char *__attribute__((no_sanitize_undefined))
+char *__attribute__((no_sanitize("undefined")))
 stpcpy(char *dest, const char *src) {
 	while ((*dest = *src++)) {
 		++dest;
