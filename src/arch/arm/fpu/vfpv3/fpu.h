@@ -22,11 +22,9 @@
 
 typedef struct fpu_context {
 	uint32_t fpexc; /* cpacr actually */
-	union {
-		float s[64];
-		double d[32];
-	} __attribute__((packed, aligned(4))) vfp_regs;
-} __attribute__((packed, aligned(4))) fpu_context_t;
+	float vfp_regs[64];
+	// double vfp_regs[32];
+} fpu_context_t;
 
 static inline void arm_fpu_context_init(void *opaque) {
 	memset(opaque, 0, sizeof(uint32_t) * FPU_DATA_LEN);
