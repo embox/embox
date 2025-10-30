@@ -203,38 +203,32 @@ __END_DECLS
 	__builtin_fpclassify(FP_NAN, FP_INFINITE, FP_NORMAL, \
 		FP_SUBNORMAL, FP_ZERO, x)
 
-
-#define	isfinite(x)					\
-    ((sizeof (x) == sizeof (float)) ? __isfinitef(x)	\
-    : (sizeof (x) == sizeof (double)) ? __isfinite(x)	\
-    : __isfinitel(x))
-
 #ifdef __clang__
-#define	isinf(x)					\
-				__builtin_isinf(x)
+#define isfinite(x) __isfinite(x)
+#define isnormal(x) __isnormal(x)
+#define isinf(x) __builtin_isinf(x)
+#define isnan(x) __builtin_isnan(x)
 #else
-#define	isinf(x)					\
-    ((sizeof (x) == sizeof (float)) ? __builtin_isinff(x)	\
-    : (sizeof (x) == sizeof (double)) ? __builtin_isinf(x)	\
-    : __builtin_isinfl(x))
+#define isfinite(x)                                      \
+	((sizeof(x) == sizeof(float))       ? __isfinitef(x) \
+	    : (sizeof(x) == sizeof(double)) ? __isfinite(x)  \
+	                                    : __isfinitel(x))
 
+#define isnormal(x)                                      \
+	((sizeof(x) == sizeof(float))       ? __isnormalf(x) \
+	    : (sizeof(x) == sizeof(double)) ? __isnormal(x)  \
+	                                    : __isnormall(x))
+
+#define isinf(x)                                              \
+	((sizeof(x) == sizeof(float))       ? __builtin_isinff(x) \
+	    : (sizeof(x) == sizeof(double)) ? __builtin_isinf(x)  \
+	                                    : __builtin_isinfl(x))
+
+#define isnan(x)                                              \
+	((sizeof(x) == sizeof(float))       ? __builtin_isnanf(x) \
+	    : (sizeof(x) == sizeof(double)) ? __builtin_isnan(x)  \
+	                                    : __builtin_isnanl(x))
 #endif
-
-#ifdef __clang__
-#define	isnan(x)					\
-	__builtin_isnan(x)
-#else
-#define	isnan(x)					\
-    ((sizeof (x) == sizeof (float)) ? __builtin_isnanf(x)	\
-    : (sizeof (x) == sizeof (double)) ? __builtin_isnan(x)	\
-    : __builtin_isnanl(x))
-
-#endif
-
-#define	isnormal(x)					\
-    ((sizeof (x) == sizeof (float)) ? __isnormalf(x)	\
-    : (sizeof (x) == sizeof (double)) ? __isnormal(x)	\
-    : __isnormall(x))
 
 #define HUGE_VAL   (__builtin_huge_val())
 #define HUGE_VALF  __builtin_huge_valf()
