@@ -33,13 +33,15 @@ OBJCOPY ?= $(CROSS_COMPILE)objcopy
 SIZE    ?= $(CROSS_COMPILE)size
 
 ifeq ($(COMPILER),clang)
-CC      := clang
-# for clang LIBGCC_FINDER will be set externally to arm-none-eabi-gcc or something like that
+CC  := clang
+CXX := clang++
 else
-CC      := $(CROSS_COMPILE)gcc
-LIBGCC_FINDER=$(CC) $(CFLAGS)
+CC  := $(CROSS_COMPILE)gcc
+CXX := $(CROSS_COMPILE)g++
 endif
-CPP     ?= $(CC) -E
+CPP := $(CC) -E
+
+LIBGCC_FINDER = $(CROSS_COMPILE)gcc $(CFLAGS)
 
 CPPFLAGS += -D__EMBOX_VERSION__=\"$(EMBOX_VERSION)\"
 
