@@ -13,12 +13,7 @@
 
 #include <string.h>
 
-#ifdef __clang__
-#define ATTR_NO_SANITIZE 
-#elif __GNUC__
-#define ATTR_NO_SANITIZE  __attribute__((no_sanitize_undefined))
-#endif 
-char *ATTR_NO_SANITIZE
+char *__attribute__((no_sanitize("undefined")))
 stpcpy(char *dest, const char *src) {
 	while ((*dest = *src++)) {
 		++dest;
