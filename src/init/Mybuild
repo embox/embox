@@ -106,8 +106,3 @@ module system_start_cmd extends system_start {
 
 	source "system_start_cmd.c"
 }
-
-module devicetree_init {
-    @Runlevel(1)
-    source "devicetree_init.c"
-}

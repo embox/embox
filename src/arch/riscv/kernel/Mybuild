@@ -15,8 +15,3 @@ module cpu_idle extends embox.arch.cpu_idle {
 module ipl extends embox.arch.interrupt {
 	source "ipl.h"
 }
-
-module devicetree_core {
-    source "devicetree.c"
-    depends third_party.libfdt
-}
