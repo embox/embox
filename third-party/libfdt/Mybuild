@@ -1,0 +1,18 @@
+package third_party
+
+module libfdt {
+    source "include/fdt.h"
+    source "include/libfdt_env.h"
+    source "include/libfdt_internal.h"
+    source "include/libfdt.h"
+    source "fdt.c"
+    source "fdt_ro.c"
+    source "fdt_rw.c"
+    source "fdt_strerror.c"
+    source "fdt_addresses.c"
+    source "fdt_empty_tree.c"
+    source "fdt_overlay.c"
+    source "fdt_sw.c"
+    source "fdt_check.c"
+
+}

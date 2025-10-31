@@ -1,0 +1,49 @@
+/dts-v1/;
+
+/ {
+    compatible = "st,stm32f4";
+    #address-cells = <1>;
+    #size-cells = <1>;
+
+    aliases {
+        serial0 = &usart1;
+    };
+
+    chosen {
+        stdout-path = "serial0:115200n8";
+    };
+
+    soc {
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        rcc: clock-controller@40023800 {
+            compatible = "st,stm32f4-rcc";
+            reg = <0x40023800 0x400>;
+            #clock-cells = <1>;
+        };
+
+        pinctrl: pin-controller@40020000 {
+            compatible = "st,stm32f4-pinctrl";
+            reg = <0x40020000 0x400>;
+
+            usart1_pins: pinmux@0 {
+                pinctrl-single,pins = <
+                    0x0009 0x07  // PA9  - USART1_TX (AF7)
+                    0x000A 0x07  // PA10 - USART1_RX (AF7)
+                >;
+            };
+        };
+
+        usart1: serial@40011000 {
+            compatible = "st,stm32-uart";
+            reg = <0x40011000 0x400>;
+            interrupts = <37>;
+            clocks = <&rcc 0>;  // Dummy clock ID
+            status = "okay";
+            current-speed = <115200>;
+            pinctrl-names = "default";
+            pinctrl-0 = <&usart1_pins>;
+        };
+    };
+};
