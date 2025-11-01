@@ -15,7 +15,7 @@
 static int httpd_read_http_header(const struct client_info *cinfo, char *buf, size_t buf_sz) {
 	const int sk = cinfo->ci_sock;
 	const char *pattern = "\r\n\r\n";
-	char pattbuf[strlen("\r\n\r\n")];
+	char pattbuf[sizeof("\r\n\r\n") - 1];
 	char *pb;
 
 	pb = buf;

@@ -61,7 +61,7 @@ static const char char2b[256] = {
 #define CHAR_TO_B(ch, out) \
 	do { \
 		char b = char2b[(unsigned char)(ch)]; \
-		if (b == -1) { \
+		if (b == (char)-1) { \
 			return -EINVAL; \
 		} \
 		out = (unsigned char)b; \

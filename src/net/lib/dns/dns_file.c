@@ -49,7 +49,7 @@ const char *dns_get_nameserver(void) {
 
 		do {
 			c = fgetc(input);
-		} while (c != '\n' && c != EOF);
+		} while (c != '\n' && c != (char)EOF);
 	}
 
 	if (ret == EOF) {
