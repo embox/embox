@@ -11,10 +11,10 @@
  * "Error: expected comma after name `' in .size directive"
  */
 
+#include <compiler.h>
 #include <string.h>
 
-char *__attribute__((no_sanitize_undefined))
-stpcpy(char *dest, const char *src) {
+__attribute_no_ubsan char *stpcpy(char *dest, const char *src) {
 	while ((*dest = *src++)) {
 		++dest;
 	}

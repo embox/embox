@@ -53,7 +53,8 @@ static int cdfs_fnmatch(struct cdfs_fs_info *cdfs, char *fn1, int len1, char *fn
 			return 0;
 		}
 		while (len1--) {
-			if (*fn1++ != ntohs(*wfn2++)) {
+			wchar_t tmp = *wfn2++;
+			if (*fn1++ != ntohs(tmp)) {
 				return 0;
 			}
 		}

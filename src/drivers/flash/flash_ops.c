@@ -135,7 +135,6 @@ struct flash_dev *flash_by_bdev(struct block_dev *bdev) {
 
 int flash_read_aligned(struct flash_dev *flashdev, unsigned long offset,
     void *buff, size_t len) {
-	int i;
 	char *b;
 	uint32_t word32;
 	int head;
@@ -170,7 +169,7 @@ int flash_read_aligned(struct flash_dev *flashdev, unsigned long offset,
 		len -= head_cnt;
 	}
 
-	for (i = 0; len >= word_size; i++) {
+	while (len >= word_size) {
 		flash_read(flashdev, offset, b, word_size);
 		memcpy(buff, b, word_size);
 
@@ -196,7 +195,6 @@ int flash_read_aligned(struct flash_dev *flashdev, unsigned long offset,
  */
 int flash_write_aligned(struct flash_dev *flashdev, unsigned long offset,
     const void *buff, size_t len) {
-	int i;
 	char *b;
 	uint32_t word32;
 	int head;
@@ -232,7 +230,7 @@ int flash_write_aligned(struct flash_dev *flashdev, unsigned long offset,
 		len -= head_write_cnt;
 	}
 
-	for (i = 0; len >= word_size; i++) {
+	while (len >= word_size) {
 		memcpy(b, buff, word_size);
 		flash_write(flashdev, offset, b, word_size);
 

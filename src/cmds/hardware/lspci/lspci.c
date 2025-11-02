@@ -498,7 +498,7 @@ dump_regs(struct pci_slot_dev *pci_dev, uint32_t offset, uint32_t length) {
 		if (ret != PCIUTILS_SUCCESS) {
 			printf("E%" PRIx32 "", ret);
 		} else {
-			printf("%" PRIx8 "%" PRIx8 "", val/16, val%16);
+			printf("%x%x", val/16, val%16);
 		}
 
 		if (i % 16 == 15) {
