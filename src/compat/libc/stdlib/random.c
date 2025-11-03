@@ -207,8 +207,7 @@ static struct random_data unsafe_state =
    introduced by the L.C.R.N.G.  Note that the initialization of randtbl[]
    for default usage relies on values produced by this routine.  */
 void
-srandom (x)
-     unsigned int x;
+srandom (unsigned int x)
 {
   //__libc_lock_lock (lock);
   (void) srandom_r (x, &unsafe_state);
@@ -230,10 +229,9 @@ srandom (x)
    setstate so that it doesn't matter when initstate is called.
    Returns a pointer to the old state.  */
 char *
-initstate (seed, arg_state, n)
-     unsigned int seed;
-     char *arg_state;
-     size_t n;
+initstate (unsigned int seed,
+     char *arg_state,
+     size_t n)
 {
   int32_t *ostate;
 
@@ -259,8 +257,7 @@ initstate (seed, arg_state, n)
    same state as the current state
    Returns a pointer to the old state information.  */
 char *
-setstate (arg_state)
-     char *arg_state;
+setstate (char *arg_state)
 {
   int32_t *ostate;
 
@@ -290,7 +287,7 @@ setstate (arg_state)
    pointer if the front one has wrapped.  Returns a 31-bit random number.  */
 
 long int
-random ()
+random (void)
 {
   int32_t retval;
 
