@@ -166,9 +166,8 @@ static const struct random_poly_info random_poly_info =
    introduced by the L.C.R.N.G.  Note that the initialization of randtbl[]
    for default usage relies on values produced by this routine.  */
 int
-srandom_r (seed, buf)
-     unsigned int seed;
-     struct random_data *buf;
+srandom_r (unsigned int seed,
+     struct random_data *buf)
 {
   int type;
   int32_t *state;
@@ -237,11 +236,10 @@ srandom_r (seed, buf)
    setstate so that it doesn't matter when initstate is called.
    Returns 0 on success, non-zero on failure.  */
 int
-initstate_r (seed, arg_state, n, buf)
-     unsigned int seed;
-     char *arg_state;
-     size_t n;
-     struct random_data *buf;
+initstate_r (unsigned int seed,
+     char *arg_state,
+     size_t n,
+     struct random_data *buf)
 {
   int32_t *old_state;
   int degree;
@@ -310,9 +308,8 @@ initstate_r (seed, arg_state, n, buf)
    same state as the current state
    Returns 0 on success, non-zero on failure.  */
 int
-setstate_r (arg_state, buf)
-     char *arg_state;
-     struct random_data *buf;
+setstate_r (char *arg_state,
+     struct random_data *buf)
 {
   int32_t *new_state = 1 + (int32_t *) arg_state;
   int type;
@@ -370,9 +367,8 @@ setstate_r (arg_state, buf)
    pointer if the front one has wrapped.  Returns a 31-bit random number.  */
 
 int
-random_r (buf, result)
-     struct random_data *buf;
-     int32_t *result;
+random_r (struct random_data *buf,
+     int32_t *result)
 {
   int32_t *state;
 

@@ -3,6 +3,15 @@ __flags_mk := 1
 
 include mk/core/common.mk
 
+override undefine CFLAGS
+override undefine CXXFLAGS
+override undefine CPPFLAGS
+override undefine ASFLAGS
+override undefine ARFLAGS
+override undefine LDFLAGS
+
+COMPILER ?= gcc
+
 include $(MKGEN_DIR)/build.mk
 
 ifndef ARCH
@@ -15,66 +24,44 @@ CPPFLAGS ?=
 ASFLAGS ?=
 ARFLAGS ?=
 LDFLAGS ?=
+
 BUILD_DEPS_LDFLAGS ?=
 BUILD_DEPS_CPPFLAGS_BEFORE ?=
 BUILD_DEPS_CPPFLAGS_AFTER ?=
 MODULE_CPPFLAGS ?=
 
-COMPILER ?= gcc
 CROSS_COMPILE ?=
 
-CXX     ?= $(CROSS_COMPILE)g++
-AR      ?= $(CROSS_COMPILE)ar
-AS      ?= $(CROSS_COMPILE)as
-LD      ?= $(CROSS_COMPILE)ld
-NM      ?= $(CROSS_COMPILE)nm
-OBJDUMP ?= $(CROSS_COMPILE)objdump
-OBJCOPY ?= $(CROSS_COMPILE)objcopy
-SIZE    ?= $(CROSS_COMPILE)size
+GCC     := $(CROSS_COMPILE)gcc
+GXX     := $(CROSS_COMPILE)g++
+AR      := $(CROSS_COMPILE)ar
+AS      := $(CROSS_COMPILE)as
+LD      := $(CROSS_COMPILE)ld
+NM      := $(CROSS_COMPILE)nm
+OBJDUMP := $(CROSS_COMPILE)objdump
+OBJCOPY := $(CROSS_COMPILE)objcopy
+SIZE    := $(CROSS_COMPILE)size
 
 ifeq ($(COMPILER),clang)
-CC      := clang
-# for clang LIBGCC_FINDER will be set externally to arm-none-eabi-gcc or something like that
+CC  := clang
+CXX := clang++
 else
-CC      := $(CROSS_COMPILE)gcc
-LIBGCC_FINDER=$(CC) $(CFLAGS)
+CC  := $(GCC)
+CXX := $(GXX)
 endif
-CPP     ?= $(CC) -E
+CPP := $(CC) -E
 
-CPPFLAGS += -D__EMBOX_VERSION__=\"$(EMBOX_VERSION)\"
-
-ifdef PLATFORM
-CPPFLAGS += -D__EMBOX_PLATFORM__$(subst -,_,$(PLATFORM))__
+ifeq ($(COMPILER),gcc)
+GCC_VERSION_MAJOR := $(shell echo __GNUC__ | $(GCC) -E -P -)
+else
+GCC_VERSION_MAJOR :=
 endif
 
-comma_sep_list = $(subst $(\s),$(,),$(strip $1))
-
-COVERAGE_CFLAGS ?= -finstrument-functions \
-   -finstrument-functions-exclude-function-list=$(call comma_sep_list, \
-			symbol_lookup \
-			__cyg_profile_func_enter \
-			__cyg_profile_func_exit \
-			__coverage_func_enter \
-			__coverage_func_exit \
-			bitmap_set_bit)
-
-PROFILING_CFLAGS ?= -finstrument-functions \
-   -finstrument-functions-exclude-function-list=$(call comma_sep_list, \
-			__cyg_profile_func_enter \
-			__cyg_profile_func_exit \
-			cyg_tracing_profiler_enter \
-			cyg_tracing_profiler_exit \
-			__coverage_func_enter \
-			__coverage_func_exit \
-			trace_block_func_enter \
-			trace_block_func_exit \
-			get_trace_block_hash \
-			cmp_trace_blocks \
-			trace_block_enter \
-			trace_block_leave \
-			__tracepoint_handle \
-			get_profiling_mode \
-			set_profiling_mode)
+ifeq ($(COMPILER),clang)
+CLANG_VERSION_MAJOR := $(shell echo __clang_major__ | clang -E -P -)
+else
+CLANG_VERSION_MAJOR :=
+endif
 
 #
 # We use '+', because we want to call external build as recursive sub-make.
@@ -106,7 +93,7 @@ EXTERNAL_MAKE_FLAGS = \
 	MOD_DIR=$(abspath $(dir $(my_file))) \
 	MOD_BUILD_DIR=$(abspath $(mod_build_dir)) \
 	AUTOCONF_ARCH=$(AUTOCONF_ARCH) \
-	AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_TARGET_TRIPLET) \
+	AUTOCONF_TARGET_TRIPLET=$(AUTOCONF_ARCH)-unknown-none \
 	COMPILER=$(COMPILER) \
 	EMBOX_ARCH=$(ARCH) \
 	EMBOX_GCC=$(EMBOX_GCC) \
@@ -126,41 +113,27 @@ MAIN_STRIPPING = \
 	$(MAKE) -f $(ROOT_DIR)/mk/main-stripping.mk \
 	$(EXTERNAL_MAKE_FLAGS) TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'
 
-mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
-
-EXTERNAL_OBJ_DIR =^BUILD/extbld/^MOD_PATH#
-
 LOADABLE_MAKE = \
 	$(MAKE) \
 	-C $(dir $(my_file)) \
 	-f $(ROOT_DIR)/mk/script/loadable-build.mk \
 	$(EXTERNAL_MAKE_FLAGS)
+	
+mod_build_dir = $(EXTERNAL_BUILD_DIR)/$(mod_path)
 
-ifneq ($(patsubst N,0,$(patsubst n,0,$(or $(value NDEBUG),0))),0)
-override CPPFLAGS += -DNDEBUG
-override NDEBUG := 1
-else
-override NDEBUG :=
-endif
-
-ifdef OPTIMIZE
-override OPTIMIZE := $(strip $(OPTIMIZE:-O%=%))
-__optimize_valid_values := s 0 1 2 3 4 5 99
-__optimize_invalid := $(filter-out $(__optimize_valid_values),$(OPTIMIZE))
-ifneq ($(__optimize_invalid),)
-$(error Invalid value for OPTIMIZE flag: $(__optimize_invalid). \
-  Valid values are: $(__optimize_valid_values))
-endif
-
-ifneq ($(words $(OPTIMIZE)),1)
-$(error Only single value for OPTIMIZE flag is permitted)
-endif
-
-override CFLAGS += -O$(OPTIMIZE)
-override CXXFLAGS += -O$(OPTIMIZE)
-endif # OPTIMIZE
-
+#
 # Expand user defined flags and append them after default ones.
+#
+
+cppflags_macros := \
+	-U__linux__ -Ulinux -U__linux \
+	-D__unix \
+	-D__EMBOX__ \
+	-D__EMBOX_VERSION__=\"$(EMBOX_VERSION)\"
+
+ifdef PLATFORM
+cppflags_macros += -D__EMBOX_PLATFORM__$(subst -,_,$(PLATFORM))__
+endif
 
 SRC_INCLUDE_PATH := \
 	include \
@@ -176,10 +149,9 @@ else
 cppflags_src_include := $(addprefix -I$(SRC_DIR)/,$(SRC_INCLUDE_PATH))
 endif
 
+# Preprocessor flags
 cppflags := \
-	-U__linux__ -Ulinux -U__linux \
-	-D__EMBOX__ \
-	-D__unix \
+	$(cppflags_macros) \
 	-I$(INCLUDE_INSTALL_DIR) \
 	-I$(SRCGEN_DIR)/include \
 	-I$(SRCGEN_DIR)/src/include \
@@ -188,103 +160,83 @@ cppflags := \
 	-MMD -MP \
 	$(CPPFLAGS)
 
-override CPPFLAGS = $(cppflags)
+CPPFLAGS = $(cppflags)
 EMBOX_EXPORT_CPPFLAGS = $(filter-out -D%" -D%',$(cppflags))
 
-override COMMON_FLAGS := -pipe
+common_flags := -pipe
 
-PREFIX_MAP:=TRUE
-ifdef PREFIX_MAP
+# Assembler flags
+asflags := $(common_flags) $(CFLAGS)
+ASFLAGS = $(asflags)
+
+common_ccflags := $(common_flags)
+common_ccflags += -fno-strict-aliasing
+common_ccflags += -fno-common
+common_ccflags += -fno-stack-protector
+common_ccflags += -fno-pic
+common_ccflags += -Wall -Werror -Wformat -Wundef
+common_ccflags += -Wno-trigraphs -Wno-char-subscripts
+
 # check whether option is supported by sending all errors to /dev/null
 # if not supported 'echo true' will be ANDed with zero output
 # else it is supported
-# backslashed pwd at execution time in shell will produce root embox directory
 # this flag makes the pathnames to sources for debug symbols relative
 # to the the root embox directory, keep that in mind in order for the debugger
-# to properly find sources at runtime. If you don't want relative pathnames
-# for sources, comment the line PREFIX_MAP:=TRUE above
-debug_prefix_map_supported:=$(shell $(CPP) /dev/zero -ffile-prefix-map=./=. 2>/dev/null && echo true)
+# to properly find sources at runtime.
+file_prefix_map_supported := $(shell $(CPP) /dev/zero -ffile-prefix-map=./=. 2>/dev/null && echo true)
 ifneq ($(debug_prefix_map_supported),)
-override COMMON_FLAGS += -ffile-prefix-map=`pwd`=.
+common_ccflags += -ffile-prefix-map=`$(ROOT_DIR)`=.
 endif
-endif
 
-# Assembler flags
-asflags := $(CFLAGS)
-override ASFLAGS = $(COMMON_FLAGS)
-override ASFLAGS += $(asflags)
-
-override COMMON_CCFLAGS := $(COMMON_FLAGS)
-override COMMON_CCFLAGS += -fno-strict-aliasing -fno-common
-override COMMON_CCFLAGS += -fno-stack-protector
-override COMMON_CCFLAGS += -fno-pic
-override COMMON_CCFLAGS += -Wall -Werror
-override COMMON_CCFLAGS += -Wundef -Wno-trigraphs -Wno-char-subscripts
-
-ifeq ($(COMPILER),clang)
-	override COMMON_CCFLAGS += -Wno-gnu-designator
-else
-	override GCC_VERSION := $(word 3,$(shell $(CC) --version 2>&1 | head -n1))
-	override GCC_VERSION_MAJOR := $(word 1,$(subst ., ,$(GCC_VERSION)))
-
+ifeq ($(COMPILER),gcc)
+# This option conflicts with some third-party stuff, so we disable it.
+CFLAGS += -Wno-misleading-indentation
+# GCC 6 seems to have many library functions declared as __nonnull__, like
+# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU
+# support could cause real damage to whole system in contrast with segfault of
+# application, we decided to keep explicit null checks and disable the warning.
+CFLAGS += -Wno-nonnull-compare
 ifeq ($(GCC_VERSION_MAJOR),7)
-	override COMMON_CCFLAGS += -Wno-error=format-truncation=
-	override COMMON_CCFLAGS += -Wno-error=alloc-size-larger-than=
+common_ccflags += -Wno-error=format-truncation=
+common_ccflags += -Wno-error=alloc-size-larger-than=
 endif
 ifeq ($(ARCH),x86)
-	ifeq ($(shell expr $(GCC_VERSION_MAJOR) \>= 8), 1)
-		# This fixes gdb corrupt stack when debugging with QEMU.
-		# This options is added here to suppress addbr32 instr generation,
-		# which is incorrectly interpreted by QEMU.
-		override COMMON_CCFLAGS += -fcf-protection=none
-	endif
-
-	# There are some troubles on x86 with optimizations (O1 and more)
-	# without this flag*/
-	override COMMON_CCFLAGS += -fno-omit-frame-pointer
+ifeq ($(shell expr $(GCC_VERSION_MAJOR) \>= 8), 1)
+# This fixes gdb corrupt stack when debugging with QEMU.
+# This options is added here to suppress addbr32 instr generation,
+# which is incorrectly interpreted by QEMU.
+common_ccflags += -fcf-protection=none
+endif
+# There are some troubles on x86 with optimizations (O1 and more)
+# without this flag*/
+common_ccflags += -fno-omit-frame-pointer
 endif
 endif
 
-override COMMON_CCFLAGS += -Wformat
-
-cxxflags := $(CXXFLAGS)
-override CXXFLAGS = $(COMMON_CCFLAGS)
-#override CXXFLAGS += -fno-rtti
-#override CXXFLAGS += -fno-exceptions
-#override CXXFLAGS += -fno-threadsafe-statics
-#	C++ has build-in type bool
-override CXXFLAGS += -DSTDBOOL_H_
-override CXXFLAGS += $(cxxflags)
-
-# Compiler flags
-cflags := $(CFLAGS)
-override CFLAGS  = $(COMMON_CCFLAGS)
-override CFLAGS += -std=gnu99
-#override CFLAGS += -fexceptions
-override CFLAGS += $(cflags)
-
-ifneq ($(COMPILER),clang)
-ifneq ($(COMPILER),lcc)
-	# Not clang nor lcc means gcc
-	# This option conflicts with some third-party stuff, so we disable it.
-	override CFLAGS += -Wno-misleading-indentation
-
-	# GCC 6 seems to have many library functions declared as __nonnull__, like
-	# fread, fwrite, fprintf, ...  Since accessing NULL in embox without MMU
-	# support could cause real damage to whole system in contrast with segfault of
-	# application, we decided to keep explicit null checks and disable the warning.
-	override CFLAGS += -Wno-nonnull-compare
+ifeq ($(COMPILER),clang)
+common_ccflags += -Wno-gnu
+common_ccflags += -fshort-enums
+common_ccflags += -Wno-address-of-packed-member
+common_ccflags += -meabi gnu
+ifeq ($(shell expr $(CLANG_VERSION_MAJOR) \>= 16), 1)
+common_ccflags += -Wno-missing-multilib
 endif
 endif
+
+# C compiler flags
+cflags := -std=gnu99 $(common_ccflags) $(CFLAGS)
+CFLAGS = $(cflags)
+
+# C++ compiler flags
+cxxflags := $(common_ccflags) $(CXXFLAGS)
+CXXFLAGS = $(cxxflags)
 
 # Linker flags
-ldflags := $(LDFLAGS)
-override LDFLAGS  = -static -nostdlib
-override LDFLAGS += $(ldflags)
+ldflags := -static -nostdlib $(LDFLAGS)
+LDFLAGS = $(ldflags)
 
-override ARFLAGS = rcs
-
-CCFLAGS ?=
+# Archiver flags
+ARFLAGS = rcs
 
 ifeq ($(ARCH),x86)
 AUTOCONF_ARCH := i386
@@ -292,14 +244,12 @@ else
 AUTOCONF_ARCH := $(ARCH)
 endif
 
-AUTOCONF_TARGET_TRIPLET := $(AUTOCONF_ARCH)-unknown-none
+LIBGCC_FINDER = $(GCC) $(CFLAGS)
 
-ifeq ($(COMPILER),clang)
-EMBOX_GCC := $(TOOLCHAIN_DIR)/embox-clang
-EMBOX_GXX := $(TOOLCHAIN_DIR)/embox-clang++
-else
 EMBOX_GCC := $(TOOLCHAIN_DIR)/embox-gcc
 EMBOX_GXX := $(TOOLCHAIN_DIR)/embox-g++
-endif
+
+EMBOX_CLANG   := $(TOOLCHAIN_DIR)/embox-clang
+EMBOX_CLANGXX := $(TOOLCHAIN_DIR)/embox-clang++
 
 endif # __flags_mk

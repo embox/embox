@@ -5,6 +5,16 @@ cmd=$(basename $0)
 cmd=${cmd#embox-}
 
 case $cmd in
+	clang|clang++) compiler=$cmd;;
+	gcc|g++)       compiler=${EMBOX_CROSS_COMPILE}$cmd;;
+esac
+
+case $cmd in
+	gcc|clang)   arg_line_before="$EMBOX_IMPORTED_CFLAGS";;
+	g++|clang++) arg_line_before="$EMBOX_IMPORTED_CXXFLAGS";;
+esac
+
+case $cmd in
 	gcc|clang)   arg_line_before="$EMBOX_IMPORTED_CFLAGS";;
 	g++|clang++) arg_line_before="$EMBOX_IMPORTED_CXXFLAGS";;
 esac
@@ -22,5 +32,5 @@ esac
 # Command line arguments ("$@") follow imported cflags and cxxflags and can override them.
 # Imported cppflags follow command line arguments ("$@") for '#include_next' to work.
 # Imported ldflags must follow input files from command line arguments ("$@").
-${EMBOX_CROSS_COMPILE}${cmd} $arg_line_before "$@" $arg_line_after
+$compiler $arg_line_before "$@" $arg_line_after
 exit $?

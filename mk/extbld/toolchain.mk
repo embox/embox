@@ -1,4 +1,6 @@
 
+override COMPILER := gcc
+
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
@@ -21,10 +23,18 @@ EMBOX_IMPORTED_CXXFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CXXFLAGS))
 EMBOX_IMPORTED_LDFLAGS  := $(filter -static -nostdlib -EL -EB,$(LDFLAGS))
 EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m%,$(subst -m ,-m,$(LDFLAGS))))
 
+ifeq ($(COMPILER),clang)
+EMBOX_IMPORTED_CPPFLAGS += -Wno-missing-multilib
+EMBOX_IMPORTED_CPPFLAGS += -Wno-unused-command-line-argument
+EMBOX_IMPORTED_M_CFLAGS += $(filter --target=%,$(CFLAGS))
+EMBOX_IMPORTED_LDFLAGS  += $(filter --target=%,$(LDFLAGS))
+endif
+
 # In GCC 14 some warnings are reported as errors. Downgrade these errors to warnings.
-_gnuc_major := $(shell echo __GNUC__ | $(CPP) -P -)
-ifeq ($(_gnuc_major),$(filter $(_gnuc_major),15 14))
+ifeq ($(COMPILER),gcc)
+ifeq ($(shell expr $(GCC_VERSION_MAJOR) \>= 14), 1)
 EMBOX_IMPORTED_CPPFLAGS += -fpermissive
+endif
 endif
 
 ifeq ($(ARCH),microblaze)
@@ -63,7 +73,9 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
 #EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_scripts1:.%=-Wl,-T,$(abspath $(ROOT_DIR))%)
 
 ifdef GEN_DIST
-root2dist = $(strip $(subst $(DIST_BASE_DIR),$${EMBOX_DIST_BASE_DIR},$1))
+root2dist = $(strip \
+	$(subst $(DIST_BASE_DIR),$${EMBOX_DIST_BASE_DIR},$1) \
+	$(subst $(CROSS_COMPILE),$${EMBOX_CROSS_COMPILE},$1))
 else
 root2dist = $1
 endif
