@@ -1,6 +1,8 @@
 package embox.fs
 
 module fs_driver {
+	option string log_level="LOG_NONE"
+
 	source "fs_driver.c"
 
 	@IncludeExport(path="fs")
