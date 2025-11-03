@@ -27,7 +27,8 @@ static int rootfs_mount(const char *dev, const char *fs_type) {
 	int err;
 	const struct auto_mount *auto_mnt;
 
-	if (-1 == mount((char *)dev, "/", (char *)fs_type, 0, NULL)) {
+	err = mount((char *)dev, "/", (char *)fs_type, 0, NULL);
+	if (err) {
 		return -errno;
 	}
 
@@ -35,7 +36,8 @@ static int rootfs_mount(const char *dev, const char *fs_type) {
 	vfs_get_root_path(&root);
 
 	array_spread_foreach(auto_mnt, auto_mount_tab) {
-		if (0 != vfs_create(&root, auto_mnt->mount_path, mode, &node)) {
+		err = vfs_create(&root, auto_mnt->mount_path, mode, &node);
+		if (0 != err) {
 			return -1;
 		}
 
