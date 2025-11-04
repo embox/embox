@@ -6,10 +6,9 @@
 include mk/script/script-common.mk
 
 mod_autocmd_postbuild = \
-	$$(EXTERNAL_MAKE_FLAGS) \
 	MAIN_STRIPPING_LOCALS=$(if $(strip $1),no,yes) \
 	CXX_CMD=$(if $(strip $2),yes,no) \
-	$$(abspath $$(ROOT_DIR))/mk/main-stripping.sh \
+	$$(ROOT_DIR)/mk/main-stripping.sh \
 	$$(module_id) \
 	$$(abspath $$(obj_build)) \
 	$$(abspath $$(obj_postbuild))
