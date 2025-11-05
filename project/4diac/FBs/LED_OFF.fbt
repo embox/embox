@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<FBType Name="LED_OFF" Comment="Service Interface Function Block Type">
+	<Identification Standard="61499-2">
+	</Identification>
+	<VersionInfo Version="1.0" Author="dmitry" Date="2025-05-16">
+	</VersionInfo>
+	<InterfaceList>
+		<EventInputs>
+			<Event Name="REQ" Type="Event" Comment="Service Request">
+			</Event>
+		</EventInputs>
+		<EventOutputs>
+			<Event Name="CNF" Type="Event" Comment="Confirmation of Requested Service">
+			</Event>
+		</EventOutputs>
+		<InputVars>
+			<VarDeclaration Name="LED_N" Type="DINT" Comment="Led number"/>
+		</InputVars>
+		<OutputVars>
+			<VarDeclaration Name="SUCCESS" Type="BOOL" Comment=""/>
+		</OutputVars>
+	</InterfaceList>
+	<Service RightInterface="RESOURCE" LeftInterface="APPLICATION" Comment="Service Interface Function Block Type">
+	</Service>
+</FBType>
