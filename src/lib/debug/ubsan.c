@@ -12,7 +12,7 @@
 #include <kernel/printk.h>
 #include <util/location.h>
 
-#define STOP_ON_HANDLE       OPTION_GET(BOOLEAN,stop_on_handle)
+#define STOP_ON_HANDLE OPTION_GET(BOOLEAN, stop_on_handle)
 
 static void print_ubsan_data(void *data) {
 	/* Assume every handler-specific data member starts with location */
@@ -53,6 +53,22 @@ void __ubsan_handle_pointer_overflow(void *data, void *base, void *result) {
 	print_ubsan_data(data);
 }
 
+void __ubsan_handle_alignment_assumption(void *data, void *ptr, void *align,
+    void *offset) {
+	printk("UbSan alignment assumption ");
+	print_ubsan_data(data);
+}
+
+void __ubsan_handle_float_cast_overflow(void *data, void *from) {
+	printk("UbSan float cast overflow ");
+	print_ubsan_data(data);
+}
+
+void __ubsan_handle_function_type_mismatch(void *data, void *func) {
+	printk("UbSan function type mismatch ");
+	print_ubsan_data(data);
+}
+
 void __ubsan_handle_type_mismatch(void *data, void *type) {
 	printk("UbSan type mismatch ");
 	print_ubsan_data(data);
@@ -64,10 +80,11 @@ void __ubsan_handle_type_mismatch_v1(void *data, void *type) {
 }
 
 #if defined __GNUC__ && __GNUC__ < 6
-void __ubsan_handle_nonnull_arg(void *data, int num) {
+void __ubsan_handle_nonnull_arg(void *data, int num)
 #else
-void __ubsan_handle_nonnull_arg(void *data) {
+void __ubsan_handle_nonnull_arg(void *data)
 #endif
+{
 	printk("UbSan nonnull arg ");
 	print_ubsan_data(data);
 }
@@ -84,6 +101,11 @@ void __ubsan_handle_out_of_bounds(void *data, void *base) {
 
 void __ubsan_handle_invalid_builtin(void *data) {
 	printk("UbSan invalid builtin ");
+	print_ubsan_data(data);
+}
+
+void __ubsan_handle_builtin_unreachable(void *data) {
+	printk("UbSan builtin unreachable");
 	print_ubsan_data(data);
 }
 
