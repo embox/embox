@@ -2,7 +2,7 @@ package third_party.lib
 
 @BuildArtifactPath(cppflags="-I$(abspath $(THIRDPARTY_DIR))/lib/toolchain/libsupcxx_toolchain/include")
 static module libsupcxx_toolchain extends embox.lib.libsupcxx {
-	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libsupc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/toolchain/libsupcxx_toolchain/")
+	@Rule(script="$(CP) \"$$($(EMBOX_GCC) -print-file-name=libsupc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/toolchain/libsupcxx_toolchain/")
 	source "libsupc++.a"
 
 	depends third_party.lib.newlib_compat.reent

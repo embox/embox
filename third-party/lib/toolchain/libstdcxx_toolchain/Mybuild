@@ -1,9 +1,9 @@
 package third_party.lib
 
 @BuildArtifactPath(cppflags_before="-include $(ROOT_DIR)/third-party/lib/toolchain/newlib_compat/ctype.h")
-@BuildArtifactPath(cppflags="$(shell $(ROOT_DIR)/third-party/lib/toolchain/libstdcxx_toolchain/c++_headers_finder.sh \"$(LIBGCC_FINDER)\" \"$(AWK)\")")
+@BuildArtifactPath(cppflags="$(shell $(ROOT_DIR)/third-party/lib/toolchain/libstdcxx_toolchain/c++_headers_finder.sh \"$(AWK)\")")
 static module libstdcxx_toolchain extends embox.lib.libstdcxx {
-	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libstdc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/toolchain/libstdcxx_toolchain")
+	@Rule(script="$(CP) \"$$($(EMBOX_GCC) -print-file-name=libstdc++.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/toolchain/libstdcxx_toolchain")
 	source "libstdc++.a"
 
 	source "stubs.c"
