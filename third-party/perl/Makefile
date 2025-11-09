@@ -40,7 +40,7 @@ $(CONFIGURE) :
 	export EMBOX_GCC_LINK=full; \
 	cd $(PERL_SRC) && ( \
 		./cnf/configure \
-			-Darchname=$(AUTOCONF_ARCH) \
+			-Darchname=$(EMBOX_ARCH) \
 			-Dosname=none \
 			-Dosvers='' \
 			-Ddrand01='rand()' \
