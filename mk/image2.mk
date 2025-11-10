@@ -10,7 +10,7 @@ embox_o   := $(OBJ_DIR)/embox-2.o
 $(embox_o) : $(OBJ_DIR)/embox.o
 endif
 
-image_lds := $(OBJ_DIR)/mk/image.lds
+image_lds := $(OBJ_DIR)/image.lds
 
 .PHONY : all FORCE
 all : $(embox_o) $(image_lds)
@@ -82,6 +82,11 @@ initfs_cp_prerequisites += FORCE
 initfs_prerequisites    += FORCE
 endif
 
+#XXX
+MAIN_STRIPPING = \
+	$(MAKE) -f $(ROOT_DIR)/mk/main-stripping.mk \
+	TARGET_APP='$(module_id)' FILE_APP='$(abspath $@)'
+
 # Module-level rules.
 module_prereqs = $(o_files) $(a_files) $(common_prereqs)
 
@@ -135,7 +140,7 @@ do_objcopy = \
 			$(file >>$(tmp_file), $(wordlist 1,10000,$(wordlist $(i),$(words $1),$1))) \
 		) \
 	) \
-	$(EXTERNAL_MAKE_FLAGS) $(abspath $(ROOT_DIR))/mk/objcopy_helper.sh $(tmp_file) $2; \
+	$(abspath $(ROOT_DIR))/mk/objcopy_helper.sh $(tmp_file) $2; \
 	$(RM) $(tmp_file)
 
 ar_prerequisites = $(module_prereqs)
@@ -159,7 +164,7 @@ $(OBJ_DIR)/module/%.o :
 # Here goes image creation rules...
 #
 $(embox_o): ldflags_all = $(LDFLAGS) \
-		$(call fmt_line,$(call ld_scripts_flag,$(ld_scripts)))
+		$(call fmt_line,$(addprefix -T,$(ld_scripts)))
 $(embox_o):
 	mkdir -p $(OBJ_DIR)/mk;
 	$(ROOT_DIR)/mk/gen_buildinfo.sh > $(OBJ_DIR)/mk/buildinfo.ld;
@@ -180,11 +185,14 @@ $(embox_o) : ld_scripts = $(__image_ld_scripts1) # TODO check this twice
 $(embox_o) : ld_objs = $(foreach s,$(stages),$(__image_ld_objs$s))
 $(embox_o) : ld_libs = $(foreach s,$(stages),$(__image_ld_libs$s))
 
+$(GEN_DIR)/image.lds.S : $(ROOT_DIR)/mk/image.lds.S
+	$(CP) $< $@
+
 $(image_lds) : $$(common_prereqs)
 $(image_lds) : flags_before :=
-$(image_lds) : flags = \
-		$(addprefix -include ,$(wildcard \
-			$(SRC_DIR)/arch/$(ARCH)/embox.lds.S \
-			$(if $(value PLATFORM), \
-				$(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
+$(image_lds) : flags = $(addprefix -include ,$(wildcard \
+		$(SRC_DIR)/arch/$(ARCH)/embox.lds.S \
+		$(if $(value PLATFORM), $(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
+$(image_lds) : $(GEN_DIR)/image.lds.S
+
 -include $(image_lds).d

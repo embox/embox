@@ -3,12 +3,6 @@ __image_lib_mk := 1
 
 include mk/core/common.mk
 
-ifndef LD_SINGLE_T_OPTION
-ld_scripts_flag = $(1:%=-T%)
-else
-ld_scripts_flag = $(if $(strip $1),-T $1)
-endif
-
 # This must be expanded in a secondary expansion context.
 # NOTE: must be the last one in a list of prerequisites (contains order-only)
 common_prereqs = mk/image2.mk mk/image3.mk mk/image_lib.mk mk/flags.mk \
@@ -34,16 +28,7 @@ flags ?=
 iec2c ?=
 ieclib ?=
 
-ifdef GEN_DIST
-$(OBJ_DIR)/mk/%.lds : $(ROOT_DIR)/mk/%.lds.S
-	$(CPP) $(flags_before) $(CFLAGS) -P -D__LDS__ $(CPPFLAGS) $(flags) \
-	-I$(SRCGEN_DIR) \
-	-imacros $(SRCGEN_DIR)/config.lds.h \
-		-MMD -MT $@ -MF $@.d -o $@ $<
-
-$(GEN_DIR)/%.st.c : $(GEN_DIR)/%.st
-	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
-else
+ifndef GEN_DIST
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
@@ -96,9 +81,12 @@ $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
+$(GEN_DIR)/%.st.c : $(GEN_DIR)/%.st
+	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
+
 $(OBJ_DIR)/%.o : $(GEN_DIR)/%.st.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-	$(EXTERNAL_MAKE_FLAGS) $(ROOT_DIR)/mk/plc/localize_symbols.sh $@
+	$(ROOT_DIR)/mk/plc/localize_symbols.sh $@
 
 ifeq ($(value OSTYPE),cygwin)
 # GCC built for Windows doesn't recognize /cygdrive/... absolute paths. As a

@@ -4,7 +4,7 @@
 #
 
 embox_o   := $(OBJ_DIR)/embox-2.o
-image_lds := $(OBJ_DIR)/mk/image.lds
+image_lds := $(OBJ_DIR)/image.lds
 
 .PHONY : all image FORCE
 all : image
@@ -57,12 +57,6 @@ image : $(IMAGE_PIGGY)
 endif
 else ifeq ($(IMAGE_TARGET),library)
 image: $(IMAGE_A)
-endif
-
-ifndef LD_SINGLE_T_OPTION
-ld_scripts_flag = $(1:%=-T%)
-else
-ld_scripts_flag = $(if $(strip $1),-T $1)
 endif
 
 LD_DISABLE_RELAXATION ?= n
@@ -143,10 +137,9 @@ $(IMAGE_A) : $(embox_o) $$(common_prereqs)
 $(IMAGE_LINKED_A) : $(image_relocatable_o) $$(common_prereqs)
 	@$(RM) $@
 	$(AR) rcs $@ $<
-
+	
 #XXX
-FINAL_LINK_WITH_CC ?=
-ifeq (1,$(FINAL_LINK_WITH_CC))
+ifneq ($(filter usermode%,$(ARCH)),)
 
 ram_sz :=$(shell echo LDS_REGION_SIZE_RAM | $(GCC) -E -P -imacros $(SRCGEN_DIR)/config.lds.h - | sed 's/M/*1024*1024/' | bc)
 phymem_cflags_addon := \
@@ -156,11 +149,10 @@ phymem_cflags_addon := \
 	-DPHYMEM_SPACE_SIZE=$(ram_sz) \
 	mk/phymem_cc_addon.tmpl.c
 
-FINAL_LDFLAGS ?=
 $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(GCC) -Wl,--relocatable \
 	$(embox_o) \
-	$(FINAL_LDFLAGS) \
+	$(CFLAGS) \
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
 	$(phymem_cflags_addon) \
@@ -170,7 +162,7 @@ $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(GCC) -Wl,$(relax) \
 	$(embox_o) \
-	$(FINAL_LDFLAGS) \
+	$(CFLAGS) \
 	-Wl,--defsym=__symbol_table=0 \
 	-Wl,--defsym=__symbol_table_size=0 \
 	$(phymem_cflags_addon) \
@@ -180,7 +172,7 @@ $(image_nosymbols_o): $(image_lds) $(embox_o) $$(common_prereqs)
 $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 	$(GCC) -Wl,$(relax) \
 	$(embox_o) \
-	$(FINAL_LDFLAGS) \
+	$(CFLAGS) \
 	$(symbols_pass1_a) \
 	$(phymem_cflags_addon) \
 	$(CC_MAP_FLAGS) \
@@ -189,13 +181,13 @@ $(image_pass1_o): $(image_lds) $(embox_o) $(symbols_pass1_a) $$(common_prereqs)
 $(IMAGE): $(image_lds) $(embox_o) $(symbols_pass2_a) $$(common_prereqs)
 	$(GCC) -Wl,$(relax) \
 	$(embox_o) \
-	$(FINAL_LDFLAGS) \
+	$(CFLAGS) \
 	$(symbols_pass2_a) \
 	$(phymem_cflags_addon) \
 	$(CC_MAP_FLAGS) \
 	-o $@ | tee $@.mem
 
-else # FINAL_LINK_WITH_CC
+else
 
 $(image_relocatable_o): $(image_lds) $(embox_o) $$(common_prereqs)
 	$(LD) --relocatable $(ldflags) \
@@ -264,7 +256,7 @@ $(IMAGE): $(image_lds) $(embox_o) $(md5sums2_o) $(symbols_pass2_a) $$(common_pre
 	--print-memory-usage \
 	-o $@ | tee $@.mem
 
-endif # FINAL_LINK_WITH_CC
+endif
 
 $(IMAGE_DIS): $(IMAGE)
 	$(OBJDUMP) -S $< > $@

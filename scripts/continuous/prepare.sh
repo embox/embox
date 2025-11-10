@@ -4,7 +4,7 @@
 target=${1//\//__}
 
 x86__test__net() {
-	make confload-x86/test/ping-target
+	make confload-usermode86/test/ping-target
 	make -j $(nproc)
 	cp build/base/bin/embox ./ping-target
 }

@@ -1,6 +1,4 @@
 
-override COMPILER := gcc
-
 include mk/flags.mk
 include $(SRCGEN_DIR)/image.rule.mk
 
@@ -19,15 +17,13 @@ EMBOX_IMPORTED_M_CFLAGS := $(filter -m% -EL -EB,$(CFLAGS))
 EMBOX_IMPORTED_CXXFLAGS := $(filter-out -std=% -W%,$(CXXFLAGS))
 EMBOX_IMPORTED_CXXFLAGS += $(filter -Wa$(,)% -Wp$(,)% -Wl$(,)%,$(CXXFLAGS))
 
-# Only -static -nostdlib and machine-dependent options
+# Only -static -nostdlib -z<arg> and machine-dependent options
 EMBOX_IMPORTED_LDFLAGS  := $(filter -static -nostdlib -EL -EB,$(LDFLAGS))
+EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -z%,$(subst -z ,-z,$(LDFLAGS))))
 EMBOX_IMPORTED_LDFLAGS  += $(addprefix -Wl$(,),$(filter -m%,$(subst -m ,-m,$(LDFLAGS))))
 
 ifeq ($(COMPILER),clang)
-EMBOX_IMPORTED_CPPFLAGS += -Wno-missing-multilib
-EMBOX_IMPORTED_CPPFLAGS += -Wno-unused-command-line-argument
-EMBOX_IMPORTED_M_CFLAGS += $(filter --target=%,$(CFLAGS))
-EMBOX_IMPORTED_LDFLAGS  += $(filter --target=%,$(LDFLAGS))
+EMBOX_IMPORTED_M_CFLAGS += $(filter --target=%,$(subst -target ,--target=,$(CFLAGS)))
 endif
 
 # In GCC 14 some warnings are reported as errors. Downgrade these errors to warnings.
@@ -59,7 +55,7 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--gc-sections
 # will be discarded during garbage collection. This flag is needed to check
 # the implementation of functions by `configure` scripts
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--entry=main
-EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(abspath $(OBJ_DIR))/mk/image.lds
+EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(abspath $(OBJ_DIR))/image.lds
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
 EMBOX_IMPORTED_LDFLAGS_FULL += $(abspath $(OBJ_DIR))/embox.o
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--start-group
@@ -74,20 +70,30 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
 
 ifdef GEN_DIST
 root2dist = $(strip \
-	$(subst $(DIST_BASE_DIR),$${EMBOX_DIST_BASE_DIR},$1) \
-	$(subst $(CROSS_COMPILE),$${EMBOX_CROSS_COMPILE},$1))
+	$(subst $(DIST_BASE_DIR),$${EMBOX_DIST_BASE_DIR}, \
+	$(subst $(CROSS_COMPILE),$${EMBOX_CROSS_COMPILE},$1)))
 else
 root2dist = $1
 endif
 
-embox_compilers := $(EMBOX_GCC) $(EMBOX_GXX)
-embox_binutils  := \
+embox_gcc   := $(EMBOX_GCC) $(EMBOX_GXX)
+embox_clang := $(EMBOX_CLANG) $(EMBOX_CLANGXX)
+
+embox_binutils := \
 	$(TOOLCHAIN_DIR)/embox-ar \
 	$(TOOLCHAIN_DIR)/embox-ranlib \
 	$(TOOLCHAIN_DIR)/embox-nm \
 	$(TOOLCHAIN_DIR)/embox-size
 
-embox_toolchain := $(embox_compilers) $(embox_binutils)
+embox_toolchain := $(embox_binutils)
+
+ifeq ($(COMPILER),gcc)
+embox_toolchain += $(embox_gcc)
+endif
+
+ifeq ($(COMPILER),clang)
+embox_toolchain += $(embox_clang)
+endif
 
 .PHONY : all
 all : $(embox_toolchain)
@@ -98,7 +104,7 @@ $(embox_toolchain) : | $(TOOLCHAIN_DIR)
 $(TOOLCHAIN_DIR) :
 	@$(MKDIR) $@
 
-$(embox_compilers) :
+$(embox_gcc) $(embox_clang) :
 	@cat $(ROOT_DIR)/mk/extbld/compiler_start.sh                                            > $@
 	@echo EMBOX_IMPORTED_CPPFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CPPFLAGS))"'         >> $@
 	@echo EMBOX_IMPORTED_CFLAGS='"$(call root2dist,$(EMBOX_IMPORTED_CFLAGS))"'             >> $@

@@ -21,10 +21,12 @@ BEGIN {
 
 /^[0-9a-fA-F]* [tT]/ {
 	split($4,a,":");
-	if (a[1])
+	if (a[1]) {
+		sub(/\.\/\.\//, "./", a[1])
 		loc = sprintf("{ \"%s\", %d }", a[1], a[2])
-	else
+	} else {
 		loc = "{ 0 }"
+	}
 	printf "\t{ (void *) 0x%s, \"%s\", %s },\n", $1, $3, loc;
 }
 
@@ -34,4 +36,3 @@ END {
 	print "\tsizeof(__symbol_table) / sizeof(__symbol_table[0]);";
 	print "";
 }
-

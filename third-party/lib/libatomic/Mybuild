@@ -1,6 +1,6 @@
 package third_party.lib
 
 static module libatomic_toolchain  {
-	@Rule(script="$(CP) \"$$($(LIBGCC_FINDER) -print-file-name=libatomic.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/libatomic")
+	@Rule(script="$(CP) \"$$($(EMBOX_GCC) -print-file-name=libatomic.a | sed $$'s/\r$$//')\" $(OBJ_DIR)/third-party/lib/libatomic")
 	source "libatomic.a"
 }

@@ -1,5 +1,5 @@
 
-include $(MKGEN_DIR)/build.mk
+include mk/flags.mk
 
 CHIP_VENDOR ?=
 PLATFORM_VENDOR ?=

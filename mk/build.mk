@@ -21,7 +21,8 @@ build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/user-lds-sections-symbols.mk > $(SRCGEN_DIR)/section_symbols.lds.h
 	@$(MAKE) -f mk/script/lds-apps.mk > $(SRCGEN_DIR)/apps.lds.h
 	@$(MAKE) -f mk/script/incinst.mk
-	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=gcc
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=clang
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=1
 	@$(MAKE) -f mk/extbld/toolchain_test.mk MAKEFILES=''
@@ -35,7 +36,8 @@ distgen : $(build_gen_ts)
 	@$(MAKE) -f mk/script/user-lds-sections-symbols.mk > $(SRCGEN_DIR)/section_symbols.lds.h
 	@$(MAKE) -f mk/script/lds-apps.mk > $(SRCGEN_DIR)/apps.lds.h
 	@$(MAKE) -f mk/script/incinst.mk
-	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=gcc
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=clang
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=1
 	@$(MAKE) -f mk/extbld/toolchain_test.mk MAKEFILES=''
@@ -51,7 +53,8 @@ $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
 	@echo ' BUILDGEN $(DIST_DIR)'
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
 	@$(MAKE) -f $< MAKEFILES='$(MAKEFILES)'
-	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES=''
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=gcc
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=clang
 	@$(MAKE) -f mk/script/incinst.mk
 	@$(MKDIR) $(@D) && touch $@
 

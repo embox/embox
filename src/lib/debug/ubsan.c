@@ -8,6 +8,7 @@
 
 #include <debug/whereami.h>
 #include <framework/mod/options.h>
+#include <hal/cpu_idle.h>
 #include <kernel/panic.h>
 #include <kernel/printk.h>
 #include <util/location.h>
@@ -18,9 +19,10 @@ static void print_ubsan_data(void *data) {
 	/* Assume every handler-specific data member starts with location */
 	struct location *l = data;
 	printk("%s:%d\n", l->file, l->line);
-	if (STOP_ON_HANDLE) {
-		panic("UbSan handle\n");
-	}
+
+#if STOP_ON_HANDLE
+	panic("UbSan handle\n");
+#endif
 }
 
 void __ubsan_handle_add_overflow(void *data, void *lhs, void *rhs) {
@@ -107,6 +109,9 @@ void __ubsan_handle_invalid_builtin(void *data) {
 void __ubsan_handle_builtin_unreachable(void *data) {
 	printk("UbSan builtin unreachable");
 	print_ubsan_data(data);
+	while (1) {
+		arch_cpu_idle();
+	}
 }
 
 void __ubsan_handle_load_invalid_value(void *data, void *base) {
