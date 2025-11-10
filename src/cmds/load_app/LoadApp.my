@@ -14,7 +14,7 @@ module load_app {
 	depends embox.lib.LibElf
 }
 
-@Build(stage=1, script="$(LOADABLE_MAKE) SRC=hello.c DST=loadable_hello_world")
+@Build(stage=1, script="$(MAKE) -C $(dir $(my_file)) -f $(ROOT_DIR)/mk/script/loadable-build.mk SRC=hello.c DST=loadable_hello_world")
 module loadable_hello_world {
 	@InitFS
 	@AddPrefix("../../../build/loadable") // FIXME: teach initfs to handle absolute path
