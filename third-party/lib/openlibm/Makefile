@@ -23,7 +23,7 @@ else
 $(error Invalid LDBL_MANT_DIG)
 endif
 
-ifeq ($(COMPILER),clang)
+ifeq ($(EMBOX_COMPILER),clang)
 COMPILER_SPEC := "USECLANG=1"
 else
 COMPILER_SPEC := "USEGCC=1"
@@ -57,7 +57,7 @@ $(BUILD) :
 	cd $(PKG_SOURCE_DIR) && ( \
 		$(MAKE) $(COMPILER_SPEC) \
 			OS=Embox \
-			CC=$(EMBOX_GCC) \
+			CC=$(EMBOX_CC) \
 			ARCH=$(OLIBM_ARCH) \
 			CPPFLAGS="$(OLIBM_CPPFLAGS)" \
 			LONG_DOUBLE_SIZE=$(LONG_DOUBLE_SIZE) \
