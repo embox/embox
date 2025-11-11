@@ -6,7 +6,6 @@
  * @author Denis Deryugin
  */
 
-#include <debug/whereami.h>
 #include <framework/mod/options.h>
 #include <hal/cpu_idle.h>
 #include <kernel/panic.h>
