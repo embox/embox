@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Network perfomance test with `httperf' utillity
+# Network performance test with `httperf' utillity
 # Author: Anastasia Novoselova
 
 script_name=$0;
