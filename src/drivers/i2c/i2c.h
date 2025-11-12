@@ -51,6 +51,9 @@ struct i2c_ops {
 
 struct pin_description;
 
+#define I2C_BUS_PIN_SCL   0
+#define I2C_BUS_PIN_SDA   1
+
 struct i2c_bus {
 	const struct i2c_ops *i2c_ops;
 	void *i2c_priv;
