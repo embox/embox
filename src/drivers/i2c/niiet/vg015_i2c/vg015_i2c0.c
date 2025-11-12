@@ -29,12 +29,26 @@ extern int clk_enable(char *clk_name);
 
 static const struct pin_description vg015_i2c_pins[] = {
 	{CONF_I2C0_PIN_SCL_PORT, CONF_I2C0_PIN_SCL_NR, CONF_I2C0_PIN_SCL_NR},
-	{CONF_I2C0_PIN_SCL_PORT, CONF_I2C0_PIN_SCL_NR, CONF_I2C0_PIN_SDA_AF},
+	{CONF_I2C0_PIN_SDA_PORT, CONF_I2C0_PIN_SDA_NR, CONF_I2C0_PIN_SDA_AF},
 };
 
 int vg015_i2c_hw_init0(const struct i2c_bus *bus) {
-    clk_enable(CONF_I2C0_CLK_DEF);
+    if (bus->i2cb_pins) {
+        const struct pin_description *pin;
+
+        pin = &bus->i2cb_pins[I2C_BUS_PIN_SCL];
+    	gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+            GPIO_MODE_ALT_SET(pin->pd_func)
+                            | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
+
+        pin = &bus->i2cb_pins[I2C_BUS_PIN_SDA];
+    	gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+            GPIO_MODE_ALT_SET(pin->pd_func)
+                            | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
 	
+    }
+    clk_enable(CONF_I2C0_CLK_DEF);
+
     return 0;
 }
 
