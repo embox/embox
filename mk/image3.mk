@@ -78,13 +78,6 @@ else
 relax := --no-relax
 endif
 
-GEN_LINKER_MAP ?= n
-ifeq ($(GEN_LINKER_MAP),y)
-ld_map_flags = --cref -Map $@.map
-else
-ld_map_flags =
-endif
-
 SYMBOLS_WITH_FILENAME ?= y
 ifeq ($(SYMBOLS_WITH_FILENAME),y)
 nm_opts := --demangle --line-numbers --numeric-sort
@@ -205,7 +198,6 @@ $(IMAGE) : $(image_lds) $(embox_o) $(image_files) $$(common_prereqs)
 	-T $(image_lds) \
 	$(embox_o) \
 	$(image_files) \
-	$(ld_map_flags) \
 	--print-memory-usage \
 	-o $@ | tee $@.mem
 endif

@@ -173,6 +173,7 @@ $(embox_o):
 		--start-group \
 		$(call fmt_line,$(ld_libs)) \
 		--end-group \
+	--cref -Map $@.map \
 	-o $@
 
 stages := $(wordlist 1,$(STAGE),1 2)
