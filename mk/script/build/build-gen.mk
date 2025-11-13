@@ -546,9 +546,9 @@ $(@module_extbld_rmk) :
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(target),mk_file,$(mk_file)); \
 		$(call gen_make_tsvar,$(target),MODULE_CPPFLAGS,$(__module_cppflags)); \
-		$(call gen_add_tsvar,$(target),BUILD_DEPS_CPPFLAGS_BEFORE,$(__build_deps_artpath_cppflags_before)); \
-		$(call gen_add_tsvar,$(target),BUILD_DEPS_CPPFLAGS_AFTER,$(__build_deps_artpath_cppflags_after)); \
-		$(call gen_add_tsvar,$(target),BUILD_DEPS_LDFLAGS,$(__build_deps_artpath_ldflags)); \
+		$(call gen_make_tsvar,$(target),BUILD_DEPS_CPPFLAGS_BEFORE,$(__build_deps_artpath_cppflags_before)); \
+		$(call gen_make_tsvar,$(target),BUILD_DEPS_CPPFLAGS_AFTER,$(__build_deps_artpath_cppflags_after)); \
+		$(call gen_make_tsvar,$(target),BUILD_DEPS_LDFLAGS,$(__build_deps_artpath_ldflags)); \
 		$(foreach d,$(this_build_deps),$(call gen_make_rule,$(dir $d)%,,@true); ) \
 		$(call gen_make_rule,$(target), | $(this_build_deps),$(script)))
 
