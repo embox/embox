@@ -80,6 +80,9 @@ struct rcu_reg {
 #define RCU_CGCFGAPB_UART3EN        (1 << 9)
 #define RCU_CGCFGAPB_UART4EN        (1 << 10)
 
+#define RCU_CGCFGAPB_I2C_EN(port)   (1 << (5 + port))
+#define RCU_CGCFGAPB_I2C0EN         (1 << 5)
+
 #define RCU_CGCFGAHB_GPIOEN(port)   (1 << (8 + port))
 #define RCU_CGCFGAHB_GPIOAEN        (1 << 8)
 #define RCU_CGCFGAHB_GPIOBEN        (1 << 9)
@@ -101,6 +104,9 @@ struct rcu_reg {
 #define RCU_RSTDISAPB_UART2EN        (1 << 8)
 #define RCU_RSTDISAPB_UART3EN        (1 << 9)
 #define RCU_RSTDISAPB_UART4EN        (1 << 10)
+
+#define RCU_RSTDISAPB_I2C_EN(port)   (1 << (5 + port))
+#define RCU_RSTDISAPB_I2C0EN         (1 << 5)
 
 #define RCU_RSTDISAHB_GPIOEN(port)   (1 << (8 + port))
 #define RCU_RSTDISAHB_GPIOAEN        (1 << 8)
@@ -207,6 +213,11 @@ void niiet_spi_set_rcu(int num) {
     *rcu_clkcfg_reg |= RCU_SPICLKCFG_RSTDIS_MASK;
 }
 
+void niiet_i2c_set_rcu(int num) {
+
+	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_I2C_EN(num);
+	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_I2C_EN(num);
+}
 
 int clk_enable(char *clk_name) {
     int num;
@@ -229,6 +240,11 @@ int clk_enable(char *clk_name) {
     if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
         num = clk_name[sizeof(CLK_NAME_TMR) - 1]  - '0';
         niiet_tmr_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_I2C, sizeof(CLK_NAME_I2C) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_I2C) - 1]  - '0';
+        niiet_i2c_set_rcu(num);
         return 0;
     }
 
