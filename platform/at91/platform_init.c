@@ -1,6 +1,6 @@
 /**
  * @file
- * @brief XXX this is not arch code but platfrom at91sam7
+ * @brief XXX this is not arch code but platform at91sam7
  *
  * @date 21.06.10
  * @author Anton Kozlov

@@ -67,7 +67,7 @@ int nrf24_test_tx_rx(int host_nr, int payload_len) {
 	}
 
 	if (host_nr == 1) {
-		/* First board start transmiting at first */
+		/* First board start transmitting at first */
 		goto start_tx;
 	} else if (host_nr == 2) {
 		/* Second board start receiving at first */
@@ -118,7 +118,7 @@ start_rx:
 
 	/* Chack the data received is an expected data */
 	if (buffer_cmp((char *)tx_buf, (char *)rx_buf, data_sz) < 0) {
-		printf("Error: NRF24L01 rx and tx buffers comparision error\n");
+		printf("Error: NRF24L01 rx and tx buffers comparison error\n");
 		return -1;
 	}
 
