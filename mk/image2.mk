@@ -3,13 +3,15 @@
 # Author: Eldar Abusalimov
 #
 
-ifeq ($(STAGE),1)
-embox_o   := $(OBJ_DIR)/embox.o
-else
-embox_o   := $(OBJ_DIR)/embox-2.o
-$(embox_o) : $(OBJ_DIR)/embox.o
+ifndef STAGE
+$(error STAGE is not defined)
 endif
 
+ifneq ($(STAGE),$(filter $(STAGE),1 2))
+$(error STAGE has invalid value)
+endif
+
+embox_o   := $(OBJ_DIR)/embox-$(STAGE).o
 image_lds := $(OBJ_DIR)/image.lds
 
 .PHONY : all FORCE
@@ -161,14 +163,12 @@ $(OBJ_DIR)/module/%.o :
 	@$(if $(module_id),$(call do_objcopy, $(objcopy_options), $(obj_build)))
 	$(mod_postbuild)
 
-# Here goes image creation rules...
-#
-$(embox_o): ldflags_all = $(LDFLAGS) \
-		$(call fmt_line,$(addprefix -T,$(ld_scripts)))
 $(embox_o):
-	mkdir -p $(OBJ_DIR)/mk;
-	$(ROOT_DIR)/mk/gen_buildinfo.sh > $(OBJ_DIR)/mk/buildinfo.ld;
-	$(LD) -r $(ldflags_all) \
+# buildinfo.ld contains build time information,
+# so it must be updated every time the image is rebuilt.
+	$(ROOT_DIR)/mk/gen_buildinfo.sh > $(GEN_DIR)/buildinfo.ld
+	$(LD) -r $(LDFLAGS) \
+		$(call fmt_line,$(addprefix -T,$(ld_scripts))) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
 		$(call fmt_line,$(ld_libs)) \

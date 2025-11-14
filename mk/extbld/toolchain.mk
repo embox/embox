@@ -57,7 +57,7 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--gc-sections
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--entry=main
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,-T,$(abspath $(OBJ_DIR))/image.lds
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--defsym=__symbol_table=0,--defsym=__symbol_table_size=0
-EMBOX_IMPORTED_LDFLAGS_FULL += $(abspath $(OBJ_DIR))/embox.o
+EMBOX_IMPORTED_LDFLAGS_FULL += $(abspath $(OBJ_DIR))/embox-1.o
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--start-group
 EMBOX_IMPORTED_LDFLAGS_FULL += $(__image_ld_libs1:.%=-Wl,$(abspath $(ROOT_DIR))%)
 EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
