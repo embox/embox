@@ -12,17 +12,23 @@ export EXT_PROJECT_DIR          := $(ROOT_DIR)/ext_project
 export BUILD_DIR                := $(ROOT_DIR)/build
 export CONF_DIR                 := $(ROOT_DIR)/conf
 export TEMPLATES_DIR            := $(ROOT_DIR)/templates
+export DIST_INSTALL_DIR         := $(ROOT_DIR)/dist
 
 export BUILD_BASE_DIR           := $(BUILD_DIR)/base
 export EXTERNAL_BUILD_DIR       := $(BUILD_DIR)/extbld
 export LOADABLE_DIR             := $(BUILD_DIR)/loadable
 export TOOLCHAIN_DIR            := $(BUILD_DIR)/toolchain
 export DOC_DIR                  := $(BUILD_DIR)/doc
+export DIST_DIR                 := $(BUILD_DIR)/dist
 
 export BIN_DIR                  := $(BUILD_BASE_DIR)/bin
 export OBJ_DIR                  := $(BUILD_BASE_DIR)/obj
 export GEN_DIR                  := $(BUILD_BASE_DIR)/gen
 export INCLUDE_INSTALL_DIR      := $(BUILD_BASE_DIR)/include
+
+export DIST_INC_DIR             := $(DIST_DIR)/include
+export DIST_LIB_DIR             := $(DIST_DIR)/lib
+export DIST_BIN_DIR             := $(DIST_DIR)/bin
 
 export DOT_DIR                  := $(DOC_DIR)
 export DOCS_OUT_DIR             := $(DOC_DIR)

@@ -1,9 +1,8 @@
 
-.PHONY : all include_install include_path_install
+.PHONY : all include_install
 
-all: include_install include_path_install
+all: include_install
 
-include mk/flags.mk
 include mk/image_lib.mk
 
 INCLUDE_INSTALL := include_install
@@ -32,16 +31,3 @@ $(INCLUDE_INSTALL_DIR)/% : | $(INCLUDE_INSTALL_DIR)/.
 $(INCLUDE_INSTALL_DIR)/. :
 	@$(MKDIR) $(@D)
 #################################
-
-############################
-srcgen_include_path := $(addprefix $(SRCGEN_DIR)/src/,$(SRC_INCLUDE_PATH))
-include_path_install : $(srcgen_include_path)
-
-$(srcgen_include_path) :
-	@$(MKDIR) $@
-
-ifdef GEN_DIST
-include_path_install :
-	cd $(SRC_DIR) && $(CP) -r --parents $(SRC_INCLUDE_PATH) $(SRCGEN_DIR)/src
-endif # GEN_DIST
-############################

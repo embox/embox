@@ -11,7 +11,7 @@ include mk/codegen-dot.mk
 
 include mk/help-module.mk
 
-.PHONY : buildgen distgen build docsgen dot
+.PHONY : buildgen distgen build dist docsgen dot
 
 build_gen_ts := $(BUILD_BASE_DIR)/build-gen.timestamp
 
@@ -31,6 +31,7 @@ build : $(build_gen_ts)
 	@$(MAKE) -f mk/image3.mk MAKEFILES=''
 
 distgen : $(build_gen_ts)
+	@$(MKDIR) $(DIST_INC_DIR) $(DIST_LIB_DIR) $(DIST_BIN_DIR)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
 	@$(MAKE) -f mk/board_conf/board-conf-gen.mk MAKEFILES=''
 	@$(MAKE) -f mk/script/user-lds-sections-symbols.mk > $(SRCGEN_DIR)/section_symbols.lds.h
@@ -38,13 +39,19 @@ distgen : $(build_gen_ts)
 	@$(MAKE) -f mk/script/incinst.mk
 	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=gcc
 	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=clang
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' DIST_GEN=y COMPILER=gcc
+	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' DIST_GEN=y COMPILER=clang
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-1
 	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=1
 	@$(MAKE) -f mk/extbld/toolchain_test.mk MAKEFILES=''
 	@$(MAKE) -f mk/extbld.mk MAKEFILES='' __extbld-2
-	@$(MAKE) -f mk/image2.mk MAKEFILES='' STAGE=2
+	@$(MAKE) -f mk/image2.mk MAKEFILES='' DIST_GEN=y STAGE=2
+	@$(MAKE) -f mk/dist-gen.mk MAKEFILES=''
 
-buildgen: $(build_gen_ts)
+dist : distgen
+	@$(MAKE) -f mk/dist.mk MAKEFILES=''
+
+buildgen : $(build_gen_ts)
 ifneq ($(filter buildgen,$(MAKECMDGOALS)),)
 .PHONY : $(build_gen_ts)
 endif
@@ -67,7 +74,7 @@ ifneq ($(words $(__include)), $(words $(wildcard $(__include))))
 .PHONY : $(build_gen_ts)
 endif
 
-docsgen:
+docsgen :
 	@[ -d $(DOCS_OUT_DIR) ] || $(MKDIR) $(DOCS_OUT_DIR)
 	doxygen mk/Doxyfile
 	@echo 'Docs generation complete'
@@ -85,5 +92,5 @@ $(MODULE_LIST:%=mod-brief-%) : mod-brief-% :
 	@$(info $(call mod_brief,$*))#
 
 
-mod-brief-% mod-include-reason-%:
+mod-brief-% mod-include-reason-% :
 	@echo There is no $* module in build
