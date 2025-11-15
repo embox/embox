@@ -23,8 +23,8 @@
 typedef struct fpu_context {
 	uint32_t fpexc; /* cpacr actually */
 	union {
-		float s[32];
-		double d[16];
+		float s[64];
+		double d[32];
 	} __attribute__((packed)) vfp_regs;
 } __attribute__((packed)) fpu_context_t;
 
