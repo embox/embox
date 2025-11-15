@@ -128,12 +128,18 @@ struct uart_conf uarts[] = {
 
 };
 
-/* Using XP6 pins (pin33=PA6 & pin33=PC13) not real LEDs */
+/* LED1 PB10 is real  LED2 (PB11) is only for beremiz demo */
 struct led_conf leds[] = {
 	[0] = {
 		.name = "LED1",
 		.port = VAL("", GPIO_PORT_B),
 		.pin = VAL("", 10),
+		.level = VAL("", GPIO_PIN_HIGH),
+	},
+	[1] = {
+		.name = "LED2",
+		.port = VAL("", GPIO_PORT_B),
+		.pin = VAL("", 11),
 		.level = VAL("", GPIO_PIN_HIGH),
 	},
 };
