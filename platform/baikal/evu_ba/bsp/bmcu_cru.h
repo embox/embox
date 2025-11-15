@@ -17,8 +17,20 @@
 #ifndef __BMCU_CRU_H
 #define __BMCU_CRU_H
 
+#include <stdint.h>
+
+
 #include "bmcu_common.h"
-#include "bmcu_def.h"
+
+
+
+typedef enum
+{
+    SUCCESS = 0,
+    ERROR
+} ErrorStatus;
+
+
 
 
 /** @brief CRU clocks frequency structure */

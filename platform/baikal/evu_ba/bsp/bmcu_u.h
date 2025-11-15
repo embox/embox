@@ -18,7 +18,6 @@
 #define __BMCU_U_H
 
 #include <stdint.h>
-#include "basis_core_riscv.h"
 
 #define __ALIGNED(x)                __attribute__((aligned(x)))
 #define __PACKED       __attribute__((packed, aligned(4)))
