@@ -1,0 +1,14 @@
+package embox.cmd.tuntap_examples
+
+@AutoCmd
+@Cmd(name = "tap_example",
+	help = "This is a tap example",
+	man = '''
+        Man
+	''')
+module tap_example {
+	source "tap_example.c"
+	depends embox.compat.libc.stdio.printf
+	depends embox.compat.posix.net.inet_addr
+}
+
