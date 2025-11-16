@@ -16,24 +16,24 @@ export EXT_PROJECT_DIR = $(ROOT_DIR)/ext_project
 
 export SUBPLATFORM_TEMPLATE_DIR = templates/
 
-export BUILD_DIR       = $(ROOT_DIR)/build/base
+export BUILD_BASE_DIR       = $(ROOT_DIR)/build/base
 export EXTERNAL_BUILD_DIR  = $(ROOT_DIR)/build/extbld
 export LOADABLE_DIR    = $(ROOT_DIR)/build/loadable
 export TOOLCHAIN_DIR   = $(ROOT_DIR)/build/toolchain
 
 export DOC_DIR         = $(ROOT_DIR)/build/doc
 
-export BIN_DIR         = $(BUILD_DIR)/bin
-export OBJ_DIR         = $(BUILD_DIR)/obj
+export BIN_DIR         = $(BUILD_BASE_DIR)/bin
+export OBJ_DIR         = $(BUILD_BASE_DIR)/obj
 
-export DIST_DIR        = $(ROOT_DIR)/build
-export DIST_BASE_DIR   = $(DIST_DIR)/base
-export GEN_DIR         = $(DIST_BASE_DIR)/gen
+export BUILD_DIR        = $(ROOT_DIR)/build
+export BUILD_BASE_DIR   = $(BUILD_DIR)/base
+export GEN_DIR         = $(BUILD_BASE_DIR)/gen
 export SRCGEN_DIR      = $(GEN_DIR)
 export MKGEN_DIR       = $(GEN_DIR)
 export AUTOCONF_DIR    = $(GEN_DIR)
 
-export INCLUDE_INSTALL_DIR  = $(DIST_BASE_DIR)/include
+export INCLUDE_INSTALL_DIR  = $(BUILD_BASE_DIR)/include
 
 export ROOTFS_DIR      = $(OBJ_DIR)/rootfs
 export ROOTFS_IMAGE    = $(OBJ_DIR)/rootfs.cpio
@@ -43,8 +43,7 @@ export DOCS_OUT_DIR    = $(DOC_DIR)
 
 export CACHE_DIR       = mk/.cache
 
-export EMBOX_DIST_BASE_DIR := $(abspath $(DIST_BASE_DIR))
-export EMBOX_GCC_ENV       := $(abspath $(MKGEN_DIR))/embox_gcc_env.sh
+export EMBOX_DIST_BASE_DIR := $(abspath $(BUILD_BASE_DIR))
 
 export ANNOTATION_HANDLERS  = mk/mybuild/annotation_handlers
 

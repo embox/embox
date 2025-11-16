@@ -70,7 +70,7 @@ EMBOX_IMPORTED_LDFLAGS_FULL += -Wl,--end-group
 
 ifdef GEN_DIST
 root2dist = $(strip \
-	$(subst $(DIST_BASE_DIR),$${EMBOX_DIST_BASE_DIR}, \
+	$(subst $(BUILD_BASE_DIR),$${EMBOX_DIST_BASE_DIR}, \
 	$(subst $(CROSS_COMPILE),$${EMBOX_CROSS_COMPILE},$1)))
 else
 root2dist = $1

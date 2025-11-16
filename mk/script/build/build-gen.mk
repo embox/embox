@@ -787,9 +787,9 @@ $(@source_dist) : | $$(@dir)/.
 $(@source_dist) :
 	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
 
-# @dist_makefile := dist-makefile-/$(DIST_BASE_DIR)/../Makefile
+# @dist_makefile := dist-makefile-/$(BUILD_BASE_DIR)/../Makefile
 
-# @dist_cpfiles := $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+# @dist_cpfiles := $(addprefix dist-cpfile-/$(BUILD_BASE_DIR)/, \
 # 	mk/core/common.mk \
 # 	mk/core/string.mk \
 # 	$(wildcard mk/extbld/*) \
@@ -813,14 +813,14 @@ $(@source_dist) :
 # 	mk/variables.mk \
 # 	mk/version.mk)
 
-# @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+# @dist_cpfiles += $(addprefix dist-cpfile-/$(BUILD_BASE_DIR)/, \
 # 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
 
-# @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+# @dist_cpfiles += $(addprefix dist-cpfile-/$(BUILD_BASE_DIR)/, \
 # 	$(SRC_DIR)/arch/$(ARCH)/embox.lds.S)
 
 # __source_dirs := $(sort $(dir $(call source_file,$(build_sources))))
-# @dist_cpfiles += $(addprefix dist-cpfile-/$(DIST_BASE_DIR)/, \
+# @dist_cpfiles += $(addprefix dist-cpfile-/$(BUILD_BASE_DIR)/, \
 # 	$(wildcard $(foreach e,*.h include/*.h include/*/*.h *.inc Makefile *.txt *.patch *.diff, \
 # 		$(addsuffix $e,$(__source_dirs)))))
 
@@ -829,7 +829,7 @@ $(@source_dist) :
 # @dist_includes_headers :=
 
 # @dist_includes := $(addprefix dist-includes-/,$(sort \
-# 	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(DIST_BASE_DIR)/%, \
+# 	$(call filter-patsubst,$(abspath $(ROOT_DIR))/%,$(BUILD_BASE_DIR)/%, \
 # 		$(filter-out $(abspath \
 # 				$(CONF_DIR) $(CONF_DIR)/% \
 # 				$(EXTERNAL_BUILD_DIR) $(EXTERNAL_BUILD_DIR)/%),$(abspath \
@@ -842,7 +842,7 @@ $(@source_dist) :
 # @dist_includes := \
 # 	$(filter-out $(addsuffix /%,$(@dist_includes)),$(@dist_includes))
 
-# @dist_conf := $(addprefix dist-conf-/$(DIST_BASE_DIR)/conf/, \
+# @dist_conf := $(addprefix dist-conf-/$(BUILD_BASE_DIR)/conf/, \
 # 	rootfs \
 # 	start_script.inc)
 
@@ -856,24 +856,24 @@ $(@source_dist) :
 # all .PHONY : $(@dist_all)
 # $(@dist_makefile) : dist-makefile-/% : | $$(*D)/.
 # $(@dist_makefile) : @file = $(@:dist-makefile-/%=%)
-# $(@dist_makefile) : file = $(@:dist-makefile-/$(DIST_BASE_DIR)/../%=$(ROOT_DIR)/%)
+# $(@dist_makefile) : file = $(@:dist-makefile-/$(BUILD_BASE_DIR)/../%=$(ROOT_DIR)/%)
 # $(@dist_makefile) :
 # 	@sed 's/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))/\$$(dir \$$(lastword \$$(MAKEFILE_LIST)))\/base/g' < $(file) > $(@file)
 
 # $(@dist_cpfiles) : dist-cpfile-/% : | $$(*D)/.
 # $(@dist_cpfiles) : @file = $(foreach f,$(@:dist-cpfile-/%=%),$(dir $f)$(subst -dist.,.,$(notdir $f)))
-# $(@dist_cpfiles) : file = $(@:dist-cpfile-/$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
+# $(@dist_cpfiles) : file = $(@:dist-cpfile-/$(BUILD_BASE_DIR)/%=$(ROOT_DIR)/%)
 # $(@dist_cpfiles) :
 # 	@cp -Trf $(file) $(@file)
 
 
 # $(@dist_includes) : dist-includes-/% : | $$(*D)/.
 # $(@dist_includes) : @file = $(@:dist-includes-/%=%)
-# $(@dist_includes) : file = $(@file:$(DIST_BASE_DIR)/%=$(ROOT_DIR)/%)
+# $(@dist_includes) : file = $(@file:$(BUILD_BASE_DIR)/%=$(ROOT_DIR)/%)
 
 # $(@dist_conf) : dist-conf-/% : | $$(*D)/.
 # $(@dist_conf) : @file = $(@:dist-conf-/%=%)
-# $(@dist_conf) : file = $(@file:$(DIST_BASE_DIR)/conf/%=$(CONF_DIR)/%)
+# $(@dist_conf) : file = $(@file:$(BUILD_BASE_DIR)/conf/%=$(CONF_DIR)/%)
 
 # $(@dist_includes) $(@dist_conf) :
 # 	@if [ -e $(file) ]; then cp -Trf $(file) $(@file); fi
