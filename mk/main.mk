@@ -187,7 +187,7 @@ $(templates:%=confload-%) : confload-% :
 	@$(RM) -fR $(CONF_DIR)   #if this is a link, removes link only
 	@$(MKDIR) $(CONF_DIR)
 	@$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
-	@$(RM) -r $(ROOT_DIR)/build
+	@$(RM) -r $(BUILD_DIR)
 	@echo 'Config complete'
 
 define help-confload
@@ -315,8 +315,7 @@ ext_conf:
 .PHONY : clean
 c : clean
 clean : #clean regardless build folder as symlink or not
-	@$(RM) -r $(ROOT_DIR)/build/*
-	@$(RM) -r $(DIST_DIR)/*
+	@$(RM) -r $(BUILD_DIR)/*
 
 define help-clean
 Usage: $(MAKE) clean
@@ -329,8 +328,7 @@ endef # clean
 confclean :
 	@$(RM) -r $(CONF_DIR)/*
 	@#executes effectively clean on static build folder; not on symlink build 'folder'
-	@$(RM) -r $(ROOT_DIR)/build
-	@$(RM) -r $(DIST_DIR)
+	@$(RM) -r $(BUILD_DIR)
 
 define help-confclean
 Usage: $(MAKE) confclean

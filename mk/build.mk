@@ -13,7 +13,7 @@ include mk/help-module.mk
 
 .PHONY : buildgen distgen build docsgen dot
 
-build_gen_ts := $(BUILD_DIR)/build-gen.timestamp
+build_gen_ts := $(BUILD_BASE_DIR)/build-gen.timestamp
 
 build : $(build_gen_ts)
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
@@ -50,7 +50,7 @@ ifneq ($(filter buildgen,$(MAKECMDGOALS)),)
 endif
 
 $(build_gen_ts) : mk/script/build/build-gen.mk $(load_mybuild_files)
-	@echo ' BUILDGEN $(DIST_DIR)'
+	@echo ' BUILDGEN $(BUILD_DIR)'
 	@$(MAKE) -f mk/script/build/oldconf-gen.mk MAKEFILES=''
 	@$(MAKE) -f $< MAKEFILES='$(MAKEFILES)'
 	@$(MAKE) -f mk/extbld/toolchain.mk MAKEFILES='' COMPILER=gcc
