@@ -131,6 +131,8 @@ static inline int uart_setup_hw(struct uart *dev) {
 #endif /* USE_BOARD_CONF */
 
 static int ns16550_setup(struct uart *dev, const struct uart_params *params) {
+	while (!(UART_REG_LOAD(UART_LSR(dev->base_addr)) & UART_LSR_TE)) {}
+
 	if (params->uart_param_flags & UART_PARAM_FLAGS_USE_IRQ) {
 		UART_REG_ORIN(UART_IER(dev->base_addr), UART_IER_DR);
 	}
