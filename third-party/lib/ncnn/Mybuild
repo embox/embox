@@ -1,0 +1,193 @@
+package third_party.lib.ncnn
+
+@BuildArtifactPath(
+    cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/layer"
+)
+
+module ncnn_build_headers {
+}
+
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
+@BuildArtifactPath(
+    cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/layer"
+)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(ncnn_build_headers)
+@BuildDepends(embox.compat.libc.math)
+@BuildDepends(third_party.lib.libsupcxx_toolchain)
+static module libncnn {
+    @Cflags("-march=armv5te")
+    @Cflags("-mtune=arm926ej-s")
+    @Cflags("-mfloat-abi=hard")
+    @Cflags("-mfpu=vfp")
+    @Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/platform.h")
+    @Cflags("-DNCNN_STDIO=0")
+    @Cflags("-DNCNN_THREADS=0")
+    @Cflags("-DNCNN_VULKAN=0")
+    @Cflags("-DNCNN_BENCHMARK=0")
+    @Cflags("-D__APPLE__=0")
+    @Cflags("-D__linux__=0")
+    @Cflags("-D__aarch64__=0")
+    @Cflags("-D__riscv=0")
+    @Cflags("-DC906=0")
+    @Cflags("-Wno-undef")
+    @Cflags("-Wno-error=unused-variable")
+    @Cflags("-Wno-error=undef")
+    @Cflags("-Wno-error=builtin-declaration-mismatch")
+    @Cflags("-Wno-unused-function")
+    @Cflags("-Wno-error=class-memaccess")
+    @Cflags("-D__ARM_NEON=0")
+    @Cflags("-D__SSE2__=0")
+    @Cflags("-D__mips_msa=0")
+    @Cflags("-D__loongarch_sx=0")
+    @Cflags("-D__riscv_vector=0")
+    @Cflags("-D__GLIBC_PREREQ(x,y)=0")
+    @Cflags("-I/usr/arm-none-eabi/include")
+    @Cflags("-Wno-error=unknown-pragmas")
+    @Cflags("-DNCNN_STRING=0")
+    @Cflags("-DNCNN_SIMPLESTL=1")
+    @Cflags("-U_GLIBCXX_USE_WCHAR_T")
+    @Cflags("-Wno-error=div-by-zero")
+    @Cflags("-Wno-error=return-type")
+    source
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/allocator.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/benchmark.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/blob.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/c_api.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/command.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/datareader.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/expression.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/gpu.cpp",
+
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/absval.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/batchnorm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/bias.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/binaryop.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/bnll.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/cast.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/celu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/clip.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/concat.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/convolution1d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/convolution3d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/convolution.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/convolutiondepthwise1d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/convolutiondepthwise3d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/convolutiondepthwise.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/copyto.cpp",
+
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/crop.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/cumulativesum.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deconvolution1d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deconvolution3d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deconvolution.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deconvolutiondepthwise1d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deconvolutiondepthwise3d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deconvolutiondepthwise.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deepcopy.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/deformableconv2d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/dequantize.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/detectionoutput.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/diag.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/dropout.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/einsum.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/eltwise.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/elu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/embed.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/erf.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/expanddims.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/exp.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/flatten.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/flip.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/fold.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/gelu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/gemm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/glu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/gridsample.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/groupnorm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/gru.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/hardsigmoid.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/hardswish.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/innerproduct.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/input.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/instancenorm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/interp.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/inversespectrogram.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/layernorm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/log.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/lrn.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/lstm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/matmul.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/memorydata.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/mish.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/multiheadattention.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/mvn.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/noop.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/normalize.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/packing.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/padding.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/permute.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/pixelshuffle.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/pooling1d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/pooling3d.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/pooling.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/power.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/prelu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/priorbox.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/proposal.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/psroipooling.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/quantize.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/reduction.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/relu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/reorg.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/requantize.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/reshape.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/rmsnorm.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/rnn.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/roialign.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/roipooling.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/scale.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/selu.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/shrink.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/shufflechannel.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/sigmoid.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/slice.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/softmax.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/softplus.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/spectrogram.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/split.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/spp.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/squeeze.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/statisticspooling.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/swish.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/tanh.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/threshold.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/tile.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/unaryop.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/unfold.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/yolodetectionoutput.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/yolov3detectionoutput.cpp",
+
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_affine.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_android.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_drawing.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_resize.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_rotate.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/modelbin.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/net.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/option.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/paramdict.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/pipelinecache.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/pipeline.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simpleocv.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simpleomp.cpp",
+        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simplevk.cpp",
+
+        "platform_embox_stubs.cpp",
+        "cpu_embox.cpp",
+        "ncnn_new_delete.cpp",
+        "ncnn_math_trig_shim.cpp"
+}
