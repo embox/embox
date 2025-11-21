@@ -20,7 +20,6 @@
 #include "dfl_decode.h"
 #include "nms.h"
 
-// маленький helper вместо std::round (чтобы не зависеть от C++11)
 static inline int iround(float x) {
     return (int)(x + (x >= 0.0f ? 0.5f : -0.5f));
 }
@@ -131,7 +130,6 @@ static const char* COCO80[80] = {
  "toaster","sink","refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrush"
 };
 
-// -------------------- простая отрисовка рамок --------------------
 static void draw_rect_rgb(unsigned char* rgb, int W, int H, int x, int y, int w, int h, int t=2) {
     #define PIX(xx,yy) (rgb + ((yy)*(W) + (xx))*3)
     int x0 = x < 0 ? 0 : x;
@@ -169,7 +167,6 @@ static bool save_ppm_rgb(const char* path, const unsigned char* rgb, int w, int 
     return n == (size_t)w*h*3;
 }
 
-// -------------------- letterbox как у Ultralytics --------------------
 struct LetterboxInfo { int nw, nh, pad_x, pad_y; float scale; };
 
 static std::vector<unsigned char>
@@ -243,7 +240,7 @@ static inline void clip_box(Det& d, int W, int H) {
 }
 
 int main(int argc, char** argv) {
-    const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.ppm";  // путь к картинке в rootfs
+    const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.ppm"; 
     const int   S   = (argc > 2) ? atoi(argv[2]) : 320;
     const float CONF = 0.25f;
     const float IOU  = 0.50f;
@@ -279,7 +276,7 @@ int main(int argc, char** argv) {
 
     LetterboxInfo LI;
     std::vector<unsigned char> lb = make_letterbox_rgb(rgb.data(), w0, h0, S, LI);
-    // save_ppm_rgb("/debug_input.ppm", lb.data(), S, S); // можно раскомментить, если FS настроена
+    // save_ppm_rgb("/debug_input.ppm", lb.data(), S, S);
 
     ncnn::Mat in = ncnn::Mat::from_pixels(lb.data(), ncnn::Mat::PIXEL_RGB, S, S);
     const float norm[3] = {1.f/255.f, 1.f/255.f, 1.f/255.f};
@@ -318,7 +315,6 @@ int main(int argc, char** argv) {
 
     const int TOPK = 1000;
     if (!dets.empty()) {
-        // простая O(N^2) сортировка – нормально, если детекций не десятки тысяч
         sort_dets_by_score_desc(dets);
 
         if ((int)dets.size() > TOPK) {
