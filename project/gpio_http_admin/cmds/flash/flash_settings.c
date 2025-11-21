@@ -189,7 +189,8 @@ static int flashset_led_restore(void) {
 		return errcode;
 	}
 
-	return leddrv_set_states(fsn_leds_state);
+	leddrv_set_states(fsn_leds_state);
+	return 0;
 }
 
 int main(int argc, char *argv[]) {
