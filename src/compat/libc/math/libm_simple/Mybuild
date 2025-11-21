@@ -5,6 +5,9 @@ static module math_simple extends embox.compat.libc.math {
 
 	source "abs.c"
 	source "fmod.c", "modf.c"
+
+    @Cflags("-O2")
+	@Cflags("-fno-sanitize=undefined")
 	source "log.c", "pow.c"
 	source "sqrt.c"
 	source "floor.c"
