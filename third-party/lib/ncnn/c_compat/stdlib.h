@@ -1,9 +1,4 @@
 #pragma once
-
-/* Очень минимальная заглушка stdlib.h под Embox,
- * чтобы удовлетворить <cstdlib> из libstdc++.
- */
-
 #include <stddef.h>
 
 #ifdef __cplusplus

@@ -1,11 +1,5 @@
 #pragma once
 
-/* Минимальный cwchar для bare-metal:
- * - объявляет нужные типы и функции для libstdc++
- * - НИЧЕГО не реализует, только прототипы
- * - wide-функции мы всё равно не используем в ncnn
- */
-
 #include <stddef.h>  // size_t
 #include <stdarg.h>  // va_list
 
@@ -13,10 +7,7 @@ extern "C" {
 
 typedef int wint_t;
 
-/* формально mbstate_t более сложный, но нам всё равно — лишь бы тип был */
 struct mbstate_t { int __dummy; };
-
-/* wide memory/string функции, которые хочет char_traits<wchar_t> */
 
 int wmemcmp(const wchar_t *s1, const wchar_t *s2, size_t n);
 size_t wcslen(const wchar_t *s);
@@ -29,7 +20,6 @@ wchar_t *wmemset(wchar_t *s, wchar_t c, size_t n);
 #define WEOF ((wint_t)-1)
 #endif
 
-/* конвертации, которые используются в stoi/stol/... для wstring */
 
 long wcstol(const wchar_t *nptr, wchar_t **endptr, int base);
 unsigned long wcstoul(const wchar_t *nptr, wchar_t **endptr, int base);
@@ -40,7 +30,6 @@ float wcstof(const wchar_t *nptr, wchar_t **endptr);
 double wcstod(const wchar_t *nptr, wchar_t **endptr);
 long double wcstold(const wchar_t *nptr, wchar_t **endptr);
 
-/* to_wstring через __to_xstring использует std::vswprintf */
 
 int vswprintf(wchar_t *s, size_t n, const wchar_t *format, va_list arg);
 

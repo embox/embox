@@ -18,7 +18,6 @@ int get_cpu_powersave()           { return g_cpu_powersave; }
 void set_omp_num_threads(int n)   { g_num_threads = (n > 0 ? n : 1); }
 int  get_omp_num_threads()        { return g_num_threads; }
 
-// никаких SIMD
 int get_cpu_support_arm_neon()    { return 0; }
 int get_cpu_support_arm_vfpv4()   { return 0; }
 int get_cpu_support_arm_asimdhp() { return 0; }
@@ -32,7 +31,6 @@ int get_cpu_support_x86_avx512()  { return 0; }
 
 int get_cpu_support_riscv_v()     { return 0; }
 
-// affinity – просто заглушка
 int set_sched_affinity(const CpuSet&)
 {
     return 0;
