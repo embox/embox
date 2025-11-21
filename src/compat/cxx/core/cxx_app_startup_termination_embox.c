@@ -5,11 +5,11 @@ extern "C" {
 #endif
 
 void cxx_app_startup(void) {
-    /* заглушка – можно оставить пустой */
+    // nothinh to do
 }
 
 void cxx_app_termination(void) {
-    /* заглушка – можно оставить пустой */
+    // nothinh to do
 }
 
 #ifdef __cplusplus
