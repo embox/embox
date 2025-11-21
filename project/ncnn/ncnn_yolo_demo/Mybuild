@@ -1,0 +1,62 @@
+package embox.cmd.ncnn
+
+@LinkerSection(text="ncnn_yolo_demo_test_text",rodata="ncnn_yolo_demo_test_rodata",data="ncnn_yolo_demo_test_data",bss="ncnn_yolo_demo_test_bss",arm_exidx="ncnn_demo_test_arm_exidx",arm_extab="ncnn_demo_test_arm_extab")
+@App
+@AutoCmd
+@CxxCmd(name="ncnn_yolo_demo", help="YOLOv8n NCNN demo on Embox")
+@Build(stage=2)
+@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(third_party.lib.ncnn.libncnn)
+module ncnn_yolo_demo {
+    @Cflags("-march=armv5te")
+    @Cflags("-mtune=arm926ej-s")
+    @Cflags("-mfloat-abi=hard")
+    @Cflags("-mfpu=vfp")
+    @Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/platform.h")
+
+    @Cflags("-fno-sanitize=undefined")
+    @Cflags("-I/usr/arm-none-eabi/include")
+    @Cflags("-Wno-error=undef")
+    @Cflags("-Wno-error=unused-variable")
+    @Cflags("-Wno-error=builtin-declaration-mismatch")
+    @Cflags("-Wno-unused-function")
+
+    @Cflags("-DNCNN_STDIO=0")
+    @Cflags("-DNCNN_THREADS=0")
+    @Cflags("-DNCNN_VULKAN=0")
+    @Cflags("-DNCNN_BENCHMARK=0")
+    @Cflags("-D__ARM_NEON=0")
+    @Cflags("-D__SSE2__=0")
+    @Cflags("-D__mips_msa=0")
+    @Cflags("-D__loongarch_sx=0")
+    @Cflags("-D__riscv_vector=0")
+    @Cflags("-D__GLIBC_PREREQ(x,y)=0")
+    @Cflags("-D__APPLE__=0")
+    @Cflags("-D__linux__=0")
+    @Cflags("-D__aarch64__=0")
+    @Cflags("-D__riscv=0")
+    @Cflags("-DC906=0")
+    @Cflags("-Wno-error=unused-variable")
+    @Cflags("-Wno-error=undef")
+    @Cflags("-Wno-error=builtin-declaration-mismatch")
+    @Cflags("-Wno-error=class-memaccess")
+    @Cflags("-Wno-error=unknown-pragmas")
+    @Cflags("-DNCNN_STRING=0")
+    @Cflags("-DNCNN_SIMPLESTL=1")
+    @Cflags("-Wno-error=div-by-zero")
+    @Cflags("-Wno-error=return-type")
+    @Cflags("-Wno-error=unused-variable")
+    @Cflags("-O2")
+
+    @Cflags("-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src")
+    @Cflags("-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/src")
+    @Cflags("-I$(SRC_DIR)/src/cmds/ncnn_yolo_demo")
+
+    source 
+        "main.cpp",
+        "dfl_decode.cpp",
+        "nms.cpp",
+        "yolov8n_ncnn_model/yolov8n.id.h",
+        "yolov8n_ncnn_model/yolov8n.mem.h"
+}

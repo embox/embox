@@ -49,6 +49,8 @@ static module libncnn {
     @Cflags("-U_GLIBCXX_USE_WCHAR_T")
     @Cflags("-Wno-error=div-by-zero")
     @Cflags("-Wno-error=return-type")
+    @Cflags("-O2")
+    @Cflags("-fno-sanitize=undefined")
     source
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/allocator.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/benchmark.cpp",

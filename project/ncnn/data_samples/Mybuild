@@ -1,0 +1,6 @@
+package embox.project.ncnn.data
+
+module photos {
+	@InitFS(target_dir="data")
+	source "photos"
+}
