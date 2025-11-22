@@ -9,15 +9,11 @@ static module nucleo_f410rb_conf extends third_party.bsp.stmf4cube.stm32f4_conf 
 @Build(stage=1)
 @BuildDepends(nucleo_f410rb_conf)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM32F4xx-Nucleo")
 static module bsp extends third_party.bsp.st_bsp_api {
 	source "clock_config.c"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-	source "Projects/STM32F410xx-Nucleo/Templates/Src/system_stm32f4xx.c"
-
-	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-	source "Drivers/BSP/STM32F4xx-Nucleo/stm32f4xx_nucleo.c"
+    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
 
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends nucleo_f410rb_conf

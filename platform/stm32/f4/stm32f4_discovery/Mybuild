@@ -9,7 +9,7 @@ static module stm32f4_discovery_conf extends third_party.bsp.stmf4cube.stm32f4_c
 @Build(stage=1)
 @BuildDepends(stm32f4_discovery_conf)
 @BuildDepends(third_party.bsp.stmf4cube.cube)
-@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM32F4-Discovery")
+//@BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/Drivers/BSP/STM32F4-Discovery")
 @BuildDepends(third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd)
 static module bsp extends third_party.bsp.st_bsp_api {
 	/* STM32F40x and STM32F41x Errata sheet:
@@ -22,8 +22,11 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	source "clock_config.c"
 
+	@IncludeExport(path="")
+	source "stm32f4_discovery.h"
+
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-	source "Projects/STM32F4-Discovery/Templates/Src/system_stm32f4xx.c"
+    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
 	source "Drivers/BSP/STM32F4-Discovery/stm32f4_discovery.c",
