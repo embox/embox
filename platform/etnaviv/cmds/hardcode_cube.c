@@ -138,8 +138,8 @@ static    struct etna_bo *rt_ts = 0; /* tile status for main render target */
 static    struct etna_bo *z = 0; /* depth for main render target */
 static    struct etna_bo *z_ts = 0; /* depth ts for main render target */
 static    struct etna_bo *vtx = 0; /* vertex buffer */
-static    struct etna_bo *aux_rt = 0; /* auxilary render target */
-static    struct etna_bo *aux_rt_ts = 0; /* tile status for auxilary render target */
+static    struct etna_bo *aux_rt = 0; /* auxiliary render target */
+static    struct etna_bo *aux_rt_ts = 0; /* tile status for auxiliary render target */
 static    int width = 400;
 static    int height = 240;
 
