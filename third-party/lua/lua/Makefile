@@ -1,9 +1,9 @@
 
 PKG_NAME := lua
-PKG_VER  := 5.4.6
+PKG_VER  := 5.4.8
 
 PKG_SOURCES := http://www.lua.org/ftp/$(PKG_NAME)-$(PKG_VER).tar.gz
-PKG_MD5     := 25a429319dff20dfbfb9956c2b5be911
+PKG_MD5     := 81cf5265b8634967d8a7480d238168ce
 PKG_PATCHES := pkg_patch.txt
 
 ifneq (0,$(call option_get,BOOLEAN,luasocket_support))
