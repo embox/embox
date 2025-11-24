@@ -9,11 +9,12 @@
 #ifndef FORK_COPY_ADDR_SPACE_H_
 #define FORK_COPY_ADDR_SPACE_H_
 
-#include <hal/stack.h>
-#include <sys/types.h>
-#include <lib/libds/dlist.h>
-#include <kernel/task.h>
+#include <stddef.h>
+
 #include <hal/ptrace.h>
+#include <hal/stack.h>
+#include <kernel/task.h>
+#include <kernel/task/resource/module_ptr.h>
 #include <lib/libds/dlist.h>
 
 struct stack_space {
@@ -49,11 +50,11 @@ struct addr_space {
 extern void fork_addr_space_prepare_switch();
 extern void fork_addr_space_finish_switch(void *safe_point);
 
-#define __ADDR_SPACE_PREPARE_SWITCH() \
-	fork_addr_space_prepare_switch()
+#define __ADDR_SPACE_PREPARE_SWITCH() fork_addr_space_prepare_switch()
+#define __ADDR_SPACE_FINISH_SWITCH()  fork_addr_space_finish_switch(stack_ptr())
 
-#define __ADDR_SPACE_FINISH_SWITCH() \
-	fork_addr_space_finish_switch(stack_ptr())
+#define __ADDR_SPACE_PREPARE_APP(mod) task_self_module_ptr_set(mod)
+#define __ADDR_SPACE_FINISH_APP()     task_self_module_ptr_set(NULL)
 
 /* Stack */
 struct thread;
@@ -72,4 +73,3 @@ extern void fork_static_restore(struct static_space *sspc);
 extern void fork_static_cleanup(struct static_space *sspc);
 
 #endif /* FORK_COPY_ADDR_SPACE_H_ */
-

@@ -12,8 +12,6 @@
 #include <framework/cmd/api.h>
 #include <cmd/shell.h>
 
-#include <kernel/task/resource/module_ptr.h>
-
 #include <kernel/task.h>
 #include <kernel/task/resource/task_argv.h>
 #include <kernel/task/resource.h>
@@ -62,7 +60,6 @@ int exec_call(void) {
 		cmd = cmd_lookup(cmd_name);
 
 		if (cmd) {
-			task_self_module_ptr_set(cmd2mod(cmd));
 			ecode = cmd_exec(cmd, c, v);
 		} else {
 			ecode = -ENOENT;

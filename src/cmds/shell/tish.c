@@ -27,7 +27,6 @@
 #include <embox/unit.h>
 #include <framework/cmd/api.h>
 #include <kernel/task.h>
-#include <kernel/task/resource/module_ptr.h>
 #include <lib/libds/array.h>
 #include <mem/sysmalloc.h>
 #include <readline/history.h>
@@ -181,7 +180,6 @@ static void *run_cmd(void *data) {
 		/* running noninteractive */
 	}
 
-	task_self_module_ptr_set(cmd2mod(cdata.cmd));
 	ret = cmd_exec(cdata.cmd, cdata.argc, cdata.argv);
 	if (ret != 0) {
 		printf("%s: Command returned with code %d: %s\n", cmd_name(cdata.cmd),

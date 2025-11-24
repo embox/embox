@@ -19,7 +19,6 @@
 #include <hal/context.h>
 #include <hal/vfork.h>
 
-#include <kernel/task/resource/module_ptr.h>
 #include <kernel/task/resource/task_argv.h>
 
 extern int exec_call(void);
