@@ -14,7 +14,7 @@ CHIP_VENDOR_DIR     := $(PLATFORM_DIR)/$(CHIP_VENDOR)/board_config
 PLATFORM_VENDOR_DIR := $(PLATFORM_DIR)/$(PLATFORM_VENDOR)/board_config
 
 board_config_h := $(SRCGEN_DIR)/include/config/board_config.h
-GEN_EXE        := $(BUILD_DIR)/gen_board_conf
+GEN_EXE        := $(BUILD_BASE_DIR)/gen_board_conf
 
 BOARD_CONF_INCLUDE := -I $(CONF_DIR) -I $(BOARD_CONF_DIR) -I $(BOARD_CONF_GEN_DIR)
 

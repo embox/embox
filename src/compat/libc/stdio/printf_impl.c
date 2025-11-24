@@ -226,6 +226,7 @@ print_i(int (*printchar_handler)(struct printchar_handler_data *d, int c),
 #define FMOD   fmodl
 #define POW    powl
 #define FABS   fabsl
+#define ROUND  roundl
 #else
 #define DOUBLE double
 #define MODF   modf
@@ -233,6 +234,7 @@ print_i(int (*printchar_handler)(struct printchar_handler_data *d, int c),
 #define FMOD   fmod
 #define POW    pow
 #define FABS   fabs
+#define ROUND  round
 #endif
 
 static int
@@ -310,14 +312,14 @@ print_f(int (*printchar_handler)(struct printchar_handler_data *d, int c),
 		fp *= base;
 	}
 
-	fp = roundl(fp);
+	fp = ROUND(fp);
 	if (precision) {
 		if (fp == POW(base, sign_count)) {
 			ip += 1.0L;
 		}
 	}
 	else {
-		ip = roundl(ip + fp);
+		ip = ROUND(ip + fp);
 	}
 
 	if (fp == POW(base, sign_count)) {

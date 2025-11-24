@@ -52,7 +52,3 @@ double round(double x)
 float roundf(float x) {
 	return round(x);
 }
-
-long double roundl(long double x) {
-	return round(x);
-}

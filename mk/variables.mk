@@ -2,51 +2,48 @@
 # Directories.
 #
 
-export ROOT_DIR       := $(abspath  .)
-export EMBOX_ROOT_DIR := $(abspath $(ROOT_DIR))
+export ROOT_DIR                 := $(abspath  .)
 
-export CONF_DIR        = $(ROOT_DIR)/conf
-export TEMPLATES_DIR   = $(ROOT_DIR)/templates
+export SRC_DIR                  := $(ROOT_DIR)/src
+export THIRDPARTY_DIR           := $(ROOT_DIR)/third-party
+export PLATFORM_DIR             := $(ROOT_DIR)/platform
+export PROJECT_DIR              := $(ROOT_DIR)/project
+export EXT_PROJECT_DIR          := $(ROOT_DIR)/ext_project
+export BUILD_DIR                := $(ROOT_DIR)/build
+export CONF_DIR                 := $(ROOT_DIR)/conf
+export TEMPLATES_DIR            := $(ROOT_DIR)/templates
+export DIST_INSTALL_DIR         := $(ROOT_DIR)/dist
 
-export SRC_DIR         = $(ROOT_DIR)/src
-export THIRDPARTY_DIR  = $(ROOT_DIR)/third-party
-export PLATFORM_DIR    = $(ROOT_DIR)/platform
-export PROJECT_DIR     = $(ROOT_DIR)/project
-export EXT_PROJECT_DIR = $(ROOT_DIR)/ext_project
+export BUILD_BASE_DIR           := $(BUILD_DIR)/base
+export EXTERNAL_BUILD_DIR       := $(BUILD_DIR)/extbld
+export LOADABLE_DIR             := $(BUILD_DIR)/loadable
+export TOOLCHAIN_DIR            := $(BUILD_DIR)/toolchain
+export DOC_DIR                  := $(BUILD_DIR)/doc
+export DIST_DIR                 := $(BUILD_DIR)/dist
 
-export SUBPLATFORM_TEMPLATE_DIR = templates/
+export BIN_DIR                  := $(BUILD_BASE_DIR)/bin
+export OBJ_DIR                  := $(BUILD_BASE_DIR)/obj
+export GEN_DIR                  := $(BUILD_BASE_DIR)/gen
+export INCLUDE_INSTALL_DIR      := $(BUILD_BASE_DIR)/include
 
-export BUILD_DIR       = $(ROOT_DIR)/build/base
-export EXTERNAL_BUILD_DIR  = $(ROOT_DIR)/build/extbld
-export LOADABLE_DIR    = $(ROOT_DIR)/build/loadable
-export TOOLCHAIN_DIR   = $(ROOT_DIR)/build/toolchain
+export DIST_INC_DIR             := $(DIST_DIR)/include
+export DIST_LIB_DIR             := $(DIST_DIR)/lib
+export DIST_BIN_DIR             := $(DIST_DIR)/bin
 
-export DOC_DIR         = $(ROOT_DIR)/build/doc
+export DOT_DIR                  := $(DOC_DIR)
+export DOCS_OUT_DIR             := $(DOC_DIR)
 
-export BIN_DIR         = $(BUILD_DIR)/bin
-export OBJ_DIR         = $(BUILD_DIR)/obj
+export SRCGEN_DIR               := $(GEN_DIR)
+export MKGEN_DIR                := $(GEN_DIR)
+export AUTOCONF_DIR             := $(GEN_DIR)
 
-export DIST_DIR        = $(ROOT_DIR)/build
-export DIST_BASE_DIR   = $(DIST_DIR)/base
-export GEN_DIR         = $(DIST_BASE_DIR)/gen
-export SRCGEN_DIR      = $(GEN_DIR)
-export MKGEN_DIR       = $(GEN_DIR)
-export AUTOCONF_DIR    = $(GEN_DIR)
+export ROOTFS_DIR               := $(OBJ_DIR)/rootfs
+export ROOTFS_IMAGE             := $(OBJ_DIR)/rootfs.cpio
+export USER_ROOTFS_DIR          := $(CONF_DIR)/rootfs
 
-export INCLUDE_INSTALL_DIR  = $(DIST_BASE_DIR)/include
-
-export ROOTFS_DIR      = $(OBJ_DIR)/rootfs
-export ROOTFS_IMAGE    = $(OBJ_DIR)/rootfs.cpio
-export USER_ROOTFS_DIR = $(CONF_DIR)/rootfs
-export DOT_DIR         = $(DOC_DIR)
-export DOCS_OUT_DIR    = $(DOC_DIR)
-
-export CACHE_DIR       = mk/.cache
-
-export EMBOX_DIST_BASE_DIR := $(abspath $(DIST_BASE_DIR))
-export EMBOX_GCC_ENV       := $(abspath $(MKGEN_DIR))/embox_gcc_env.sh
-
-export ANNOTATION_HANDLERS  = mk/mybuild/annotation_handlers
+export CACHE_DIR                := mk/.cache
+export SUBPLATFORM_TEMPLATE_DIR := templates/
+export ANNOTATION_HANDLERS      := mk/mybuild/annotation_handlers
 
 #
 # Tools.
