@@ -17,7 +17,7 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	source "clock_config.c"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
-	source "Projects/STM32F429I-Discovery/Templates/Src/system_stm32f4xx.c"
+    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
 	source "Drivers/BSP/STM32F429I-Discovery/stm32f429i_discovery.c",

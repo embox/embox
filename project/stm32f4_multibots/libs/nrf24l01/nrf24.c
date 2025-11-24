@@ -20,6 +20,8 @@
  * @author Alexander Kalmuk
  */
 
+#include <stdbool.h>
+
 #include "nrf24.h"
 #include "nrf24_stm32_cube.h"
 
