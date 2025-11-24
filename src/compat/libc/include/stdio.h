@@ -84,7 +84,12 @@ extern int fprintf(FILE *f, const char *format, ...);
 
 extern int vfprintf(FILE *f, const char *format, va_list args);
 
-extern int dprintf(int fildes, const char *format, ...);
+/**
+ * Write formatted output to file descriptor from the format string FORMAT.
+ */
+extern int dprintf(int fd, const char *format, ...);
+
+extern int vdprintf(int fd, const char *format, va_list args);
 
 /**
  * Write formatted output to string, according to the format string FORMAT.
