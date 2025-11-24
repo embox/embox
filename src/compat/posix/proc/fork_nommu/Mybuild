@@ -7,10 +7,11 @@ module fork_copy_everything extends fork {
 	source "fork_addr_space_heap.c"
 	source "fork_addr_space_static.c"
 
-	depends embox.arch.fork_entry
-	depends embox.kernel.task.resource.task_heap
-	depends embox.mem.phymem
-	depends fork_copy_addr_space
+	@NoRuntime depends embox.arch.fork_entry
+	@NoRuntime depends embox.kernel.task.resource.task_heap
+	@NoRuntime depends embox.kernel.task.resource.module_ptr
+	@NoRuntime depends embox.mem.phymem
+	@NoRuntime depends fork_copy_addr_space
 }
 
 /* FIXME artifical module to bypass single `extends` restriction */

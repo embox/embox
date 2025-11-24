@@ -14,6 +14,7 @@
 #include <framework/cmd/api.h>
 #include <framework/cmd/types.h>
 #include <framework/mod/options.h>
+#include <kernel/addr_space.h>
 #include <lib/libds/array.h>
 #include <util/getopt.h>
 
@@ -38,8 +39,7 @@ static int cmd_mod_init(const struct mod *mod) {
 			    app->data_sz);
 
 			for (i = 0; app->build_dep_data_vma[i]; i++) {
-				assert(
-				    app->build_dep_data_vma[i] == app->build_dep_data_lma[i]);
+				assert(app->build_dep_data_vma[i] == app->build_dep_data_lma[i]);
 
 				memcpy(app->build_dep_data_vma[i] + APP_DATA_RESERVE_OFFSET,
 				    app->build_dep_data_vma[i], app->build_dep_data_sz[i]);
@@ -122,7 +122,11 @@ int cmd_exec(const struct cmd *cmd, int argc, char **argv) {
 
 	getopt_init();
 
+	ADDR_SPACE_PREPARE_APP(cmd2mod(cmd));
+
 	err = cmd->exec(argc, argv);
+
+	ADDR_SPACE_FINISH_APP();
 
 	/* FIXME Here we make app's data and bss as they was
 	 * before app execution. It's required because we call all
