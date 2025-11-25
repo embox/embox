@@ -73,6 +73,9 @@ struct uart_conf uarts[] = {
 		.name = "USART1",
 		.dev = {
 			.name = "USART1",
+			.regs = {
+				REGMAP("BASE", (USART1_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 37),
 			},
@@ -93,6 +96,9 @@ struct uart_conf uarts[] = {
 		.name = "USART2",
 		.dev = {
 			.name = "USART2",
+			.regs = {
+				REGMAP("BASE", (USART2_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 38),
 			},
@@ -101,8 +107,6 @@ struct uart_conf uarts[] = {
 				PIN("RX", PA, PIN_3, AF7),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
 				VAL("UART", CLK_USART2),
 			}
 		},
@@ -113,16 +117,17 @@ struct uart_conf uarts[] = {
 		.name = "USART3",
 		.dev = {
 			.name = "USART3",
+			.regs = {
+				REGMAP("BASE", (USART3_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 39),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_10, AF7),
-				PIN("RX", PC, PIN_11, AF7),
+				PIN("TX", PD, PIN_8, AF7),
+				PIN("RX", PD, PIN_9, AF7),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOC),
-				VAL("RX",   CLK_GPIOC),
 				VAL("UART", CLK_USART3),
 			}
 		},
@@ -133,6 +138,9 @@ struct uart_conf uarts[] = {
 		.name = "UART4",
 		.dev = {
 			.name = "UART4",
+			.regs = {
+				REGMAP("BASE", (UART4_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 52),
 			},
@@ -141,8 +149,6 @@ struct uart_conf uarts[] = {
 				PIN("RX", PA, PIN_1, AF8),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
 				VAL("UART", CLK_UART4),
 			}
 		},
@@ -153,6 +159,9 @@ struct uart_conf uarts[] = {
 		.name = "UART5",
 		.dev = {
 			.name = "UART5",
+			.regs = {
+				REGMAP("BASE", (UART5_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 53),
 			},
@@ -161,8 +170,6 @@ struct uart_conf uarts[] = {
 				PIN("RX", PD, PIN_2, AF8),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOC),
-				VAL("RX",   CLK_GPIOD),
 				VAL("UART", CLK_UART5),
 			}
 		},
@@ -173,17 +180,60 @@ struct uart_conf uarts[] = {
 		.name = "USART6",
 		.dev = {
 			.name = "USART6",
+			.regs = {
+				REGMAP("BASE", (USART6_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_6, AF8),
-				PIN("RX", PC, PIN_7, AF8),
+				PIN("TX", PG, PIN_14, AF8),
+				PIN("RX", PG, PIN_9, AF8),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOC),
-				VAL("RX",   CLK_GPIOC),
 				VAL("UART", CLK_USART6),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[7] = {
+		.status = DISABLED,
+		.name = "UART7",
+		.dev = {
+			.name = "UART7",
+			.regs = {
+				REGMAP("BASE", (UART7_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 82),
+			},
+			.pins = {
+				PIN("TX", PE, PIN_8, AF8),
+				PIN("RX", PE, PIN_7, AF8),
+			},
+			.clocks = {
+				VAL("UART", CLK_UART7),
+			}
+		},
+		.baudrate = 115200,
+	},
+	[8] = {
+		.status = DISABLED,
+		.name = "UART8",
+		.dev = {
+			.name = "UART8",
+			.regs = {
+				REGMAP("BASE", (UART8_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 83),
+			},
+			.pins = {
+				PIN("TX", PE, PIN_1, AF8),
+				PIN("RX", PE, PIN_0, AF8),
+			},
+			.clocks = {
+				VAL("UART", CLK_UART8),
 			}
 		},
 		.baudrate = 115200,
@@ -196,6 +246,9 @@ struct spi_conf spis[] = {
 		.name = "SPI1",
 		.dev = {
 			.name = "SPI1",
+			.regs = {
+				REGMAP("BASE", (SPI1_BASE), 0x100),
+			},
 			.pins = {
 				PIN("SCK", GPIO_PORT_A, 5, AF5),
 				PIN("MISO", GPIO_PORT_A, 6, AF5),
@@ -225,6 +278,9 @@ struct spi_conf spis[] = {
 		.name = "SPI2",
 		.dev = {
 			.name = "SPI2",
+			.regs = {
+				REGMAP("BASE", (SPI2_BASE), 0x100),
+			},
 			.pins = {
 				PIN("SCK",  GPIO_PORT_B, 13, AF5),
 				PIN("MISO", GPIO_PORT_B, 14, AF5),
@@ -257,6 +313,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C1",
 		.dev = {
 			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 31),
 				VAL("ERROR", 32),
@@ -275,6 +334,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C2",
 		.dev = {
 			.name = "I2C2",
+			.regs = {
+				REGMAP("BASE", (I2C2_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 33),
 				VAL("ERROR", 34),
@@ -293,6 +355,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C3",
 		.dev = {
 			.name = "I2C3",
+			.regs = {
+				REGMAP("BASE", (I2C3_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 72),
 				VAL("ERROR", 73),
