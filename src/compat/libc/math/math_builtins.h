@@ -157,17 +157,17 @@ extern long double fabsl(long double x);
 #define trunc(x) __builtin_trunc(x)
 #define truncl(x) __builtin_truncl(x)
 
-#define fminf(x) __builtin_fminf(x)
-#define fmin(x) __builtin_fmin(x)
-#define fminl(x) __builtin_fminl(x)
+#define fminf(x, y) __builtin_fminf(x, y)
+#define fmin(x, y) __builtin_fmin(x, y)
+#define fminl(x, y) __builtin_fminl(x, y)
 
-#define fmaxf(x) __builtin_fmaxf(x)
-#define fmax(x) __builtin_fmax(x)
-#define fmaxl(x) __builtin_fmaxl(x)
+#define fmaxf(x, y) __builtin_fmaxf(x, y)
+#define fmax(x, y) __builtin_fmax(x, y)
+#define fmaxl(x, y) __builtin_fmaxl(x, y)
 
-#define copysignf(x) __builtin_copysignf(x)
-#define copysign(x) __builtin_copysign(x)
-#define copysignl(x) __builtin_copysignl(x)
+#define copysignf(x, y) __builtin_copysignf(x, y)
+#define copysign(x, y) __builtin_copysign(x, y)
+#define copysignl(x, y) __builtin_copysignl(x, y)
 
 #define lroundf(x) __builtin_lroundf(x)
 #define lround(x) __builtin_lround(x)
@@ -183,9 +183,9 @@ extern long double fabsl(long double x);
 #define __isfinitef(x) __builtin___isfinitef(x)
 #define __isfinitel(x) __builtin___isfinitel(x)
 
-#define hypot(x) __builtin_hypot(x)
-#define hypotf(x) __builtin_hypotf(x)
-#define hypotl(x) __builtin_hypotl(x)
+#define hypot(x, y) __builtin_hypot(x, y)
+#define hypotf(x, y) __builtin_hypotf(x, y)
+#define hypotl(x, y) __builtin_hypotl(x, y)
 
 #define cbrt(x) __builtin_cbrt(x)
 #define cbrtf(x) __builtin_cbrtf(x)
