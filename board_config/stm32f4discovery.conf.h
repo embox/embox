@@ -1,5 +1,6 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
+#include <stm32f4_chip.h>
 
 /**
   * @brief  Switch the PLL source from HSI to HSE, and select the PLL as SYSCLK
