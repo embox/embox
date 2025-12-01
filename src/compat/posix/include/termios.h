@@ -27,6 +27,7 @@
 #define IXON      0x0200 /* enable start/stop output control */
 #define PARMRK    0x0400 /* mark parity errors in the input queue */
 #define IXANY     0x0800
+#define CRTSCTS   0x1000 /* (not in POSIX) Enable RTS/CTS flow control.*/
 
 /* Values for termios c_oflag bit map.  POSIX Sec. 7.1.2.3. */
 #define OPOST     0x0001 /* perform output processing */
