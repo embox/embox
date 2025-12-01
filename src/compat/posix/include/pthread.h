@@ -255,6 +255,10 @@ extern int pthread_setaffinity_np(pthread_t thread, size_t cpusetsize,
 extern int pthread_getaffinity_np(pthread_t thread, size_t cpusetsize,
                                 cpu_set_t *cpuset);
 
+
+extern int pthread_setname_np(pthread_t thread, const char *name);
+extern int pthread_getname_np(pthread_t thread, const char *name, size_t len);
+
 __END_DECLS
 
 #endif /* PTHREAD_H_ */

@@ -7,6 +7,7 @@ static module pthreads {
 	source "pthread_mutex.c"
 	source "pthread_cancel.c"
 
+	source "pthread_name_np.c"
 	source "pthread_attr_affinity.c"
 	source "pthread_affinity.c"
 
