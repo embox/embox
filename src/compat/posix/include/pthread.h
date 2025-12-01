@@ -125,10 +125,11 @@ __BEGIN_DECLS
 /*
  * TODO: Implement!
  */
+/* in own module */
+extern int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
 
 extern int   pthread_attr_destroy(pthread_attr_t *);
 extern int   pthread_attr_getdetachstate(const pthread_attr_t *, int *);
-//extern int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
 extern int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
 extern int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
 extern int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);

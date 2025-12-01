@@ -11,6 +11,7 @@ static module pthreads {
 	source "pthread_affinity.c"
 
 	source "pthread_mutexattr_protocol_stubs.c"
+	source "pthread_attr_getguardsize_stub.c"
 
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
