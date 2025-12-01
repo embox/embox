@@ -28,7 +28,7 @@ extern const struct i2c_ops vg015_i2c_ops;
 extern int clk_enable(char *clk_name);
 
 static const struct pin_description vg015_i2c_pins[] = {
-	{CONF_I2C0_PIN_SCL_PORT, CONF_I2C0_PIN_SCL_NR, CONF_I2C0_PIN_SCL_NR},
+	{CONF_I2C0_PIN_SCL_PORT, CONF_I2C0_PIN_SCL_NR, CONF_I2C0_PIN_SCL_AF},
 	{CONF_I2C0_PIN_SDA_PORT, CONF_I2C0_PIN_SDA_NR, CONF_I2C0_PIN_SDA_AF},
 };
 
