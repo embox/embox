@@ -192,14 +192,21 @@ extern int   pthread_mutex_timedlock(pthread_mutex_t *mutex, const struct timesp
 
 extern int   pthread_mutexattr_destroy(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *, int *);
-//extern int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
 //extern int   pthread_mutexattr_getpshared(const pthread_mutexattr_t *, int *);
 extern int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
 extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_setprioceiling(pthread_mutexattr_t *, int);
-//extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
 extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
+
+/* pthread_mutexattr_setprotocol, pthread_mutexattr_getprotocol - set and get
+   protocol attribute of mutex attribute object (REALTIME THREADS)
+*/
+#define PTHREAD_PRIO_NONE     0x0
+#define PTHREAD_PRIO_INHERIT  0x1
+#define PTHREAD_PRIO_PROTECT  0x2
+extern int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
+extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
 
 extern int   pthread_once(pthread_once_t *, void (*)(void));
 

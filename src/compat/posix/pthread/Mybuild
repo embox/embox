@@ -10,6 +10,8 @@ static module pthreads {
 	source "pthread_attr_affinity.c"
 	source "pthread_affinity.c"
 
+	source "pthread_mutexattr_protocol_stubs.c"
+
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 	depends embox.kernel.task.syslib.thread_key_table
