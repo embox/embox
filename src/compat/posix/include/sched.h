@@ -97,6 +97,7 @@ extern void CPU_ZERO(cpu_set_t *set);
 extern void CPU_SET(int cpu, cpu_set_t *set);
 extern void CPU_CLR(int cpu, cpu_set_t *set);
 extern int  CPU_ISSET(int cpu, cpu_set_t *set);
+extern int  CPU_COUNT(cpu_set_t *set);
 
 extern int sched_getcpu(void);
 
