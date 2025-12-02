@@ -178,9 +178,12 @@ extern int daemon(int nochdir , int noclose);
 extern int nice(int incr);
 
 extern int execv(const char *path, char *const argv[]);
-extern int execve(const char *filename, char *const argv[], char *const envp[]);
+extern int execve(const char *path, char *const argv[], char *const envp[]);
 extern int execvp(const char *file, char *const argv[]);
+
 extern int execl(const char *path, const char *arg, ...);
+extern int execle(const char *path, const char *arg, ...);
+extern int execlp(const char *file, const char *arg, ...);
 
 // extern int link(const char *oldpath, const char *newpath);
 // extern ssize_t readlink(const char *path, char *buf,

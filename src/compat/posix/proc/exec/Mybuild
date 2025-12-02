@@ -1,0 +1,13 @@
+package embox.compat.posix.proc
+
+static module exec {
+	source "execl.c"
+	source "execv.c"
+	source "execle.c"
+	source "execve.c"
+
+	@NoRuntime depends embox.compat.posix.proc.vfork
+	@NoRuntime depends embox.compat.posix.proc.exec_lib
+	@NoRuntime depends embox.kernel.task.resource.argv
+	@NoRuntime depends embox.cmd.sh.shell_registry
+}

@@ -6,21 +6,20 @@
  * @date    02.06.2014
  */
 
-#include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
-#include <framework/cmd/api.h>
+#include <sys/cdefs.h>
+#include <unistd.h>
+
 #include <cmd/shell.h>
-
-#include <kernel/task.h>
-#include <kernel/task/resource/task_argv.h>
-#include <kernel/task/resource.h>
+#include <framework/cmd/api.h>
 #include <hal/vfork.h>
+#include <kernel/task.h>
+#include <kernel/task/resource.h>
+#include <kernel/task/resource/task_argv.h>
 
-#include <errno.h>
-#include <stdarg.h>
-
-static const char * exec_cmd_name(const char *path) {
+static const char *exec_cmd_name(const char *path) {
 	size_t path_len;
 
 	if (!strcmp(path, "/bin/sh")) {
@@ -29,7 +28,7 @@ static const char * exec_cmd_name(const char *path) {
 
 	path_len = strlen(path);
 	if (path_len >= strlen(".lua")
-			&& !strcmp(path + path_len - strlen(".lua"), ".lua")) {
+	    && !strcmp(path + path_len - strlen(".lua"), ".lua")) {
 		return "lua";
 	}
 
@@ -54,14 +53,16 @@ int exec_call(void) {
 	/* FIXME pass argv to shell_exec */
 	if (sh) {
 		ecode = shell_run(sh);
-	} else {
+	}
+	else {
 		const struct cmd *cmd;
 
 		cmd = cmd_lookup(cmd_name);
 
 		if (cmd) {
 			ecode = cmd_exec(cmd, c, v);
-		} else {
+		}
+		else {
 			ecode = -ENOENT;
 			errno = ENOENT;
 		}
@@ -72,17 +73,17 @@ int exec_call(void) {
 
 int execv(const char *path, char *const argv[]) {
 	struct task *task;
-    const struct cmd *cmd;
+	const struct cmd *cmd;
 
-    /* check whether a valid executable command name is given */
-    const struct shell *sh = shell_lookup(path);
-    if (!sh) {
-        cmd = cmd_lookup(path);
-        if (!cmd) {
-            errno = ENOENT;
-            return -1;
-        }
-    }
+	/* check whether a valid executable command name is given */
+	const struct shell *sh = shell_lookup(path);
+	if (!sh) {
+		cmd = cmd_lookup(path);
+		if (!cmd) {
+			errno = ENOENT;
+			return -1;
+		}
+	}
 
 	task = task_self();
 	task_resource_exec(task, path, argv);
@@ -111,7 +112,7 @@ int execv(const char *path, char *const argv[]) {
 		cmd_name[MAX_TASK_NAME_LEN - 1] = '\0';
 	}
 	task_set_name(task, cmd_name);
-#endif	
+#endif
 
 	/* If vforked then unblock parent and start execute new image */
 	vfork_child_done(task, task_exec_callback, NULL);
@@ -123,52 +124,6 @@ int execv(const char *path, char *const argv[]) {
 		task_exit(0);
 	}
 	return -1;
-
 }
 
-static int switch_env(char *const envp[]) {
-	int rc = 0;
-
-	if (!envp)
-		return 0;
-
-	clearenv();
-
-	while (*envp != NULL) {
-		rc = putenv(*envp);
-		if (rc != 0)
-			return rc;
-		envp++;
-	}
-
-	return 0;
-}
-
-int execve(const char *path, char *const argv[], char *const envp[]) {
-	int rc = 0;
-
-	rc = switch_env(envp);
-	if (rc != 0)
-		return rc;
-
-	return execv(path, argv);
-}
-
-int execl(const char *path, const char *arg, ...) {
-	char *buf[16];
-	int i;
-	va_list args;
-	
-	*buf = (char *)arg;
-	i = 0;
-	
-	va_start(args, arg);
-	while (buf[i] != NULL) {
-		if (++i == 16) {
-			return -1;
-		}
-		buf[i] = (char *)va_arg(args, const char *);
-	}
-	va_end(args);
-	return execv(path, buf);
-}
+__strong_alias(execvp, execv);

@@ -11,23 +11,23 @@
 #ifndef COMPAT_LIBC_LIMITS_H_
 #define COMPAT_LIBC_LIMITS_H_
 
-#define CHAR_BIT   __CHAR_BIT__
-#define WORD_BIT   (__SIZEOF_INT__ * 8)
-#define LONG_BIT   (__SIZEOF_LONG__ * 8)
+#define CHAR_BIT __CHAR_BIT__
+#define WORD_BIT (__SIZEOF_INT__ * 8)
+#define LONG_BIT (__SIZEOF_LONG__ * 8)
 
-#define CHAR_MAX   __SCHAR_MAX__
-#define SCHAR_MAX  __SCHAR_MAX__
-#define SHRT_MAX   __SHRT_MAX__
-#define INT_MAX    __INT_MAX__
-#define LONG_MAX   __LONG_MAX__
-#define LLONG_MAX  __LONG_LONG_MAX__
+#define CHAR_MAX  __SCHAR_MAX__
+#define SCHAR_MAX __SCHAR_MAX__
+#define SHRT_MAX  __SHRT_MAX__
+#define INT_MAX   __INT_MAX__
+#define LONG_MAX  __LONG_MAX__
+#define LLONG_MAX __LONG_LONG_MAX__
 
-#define CHAR_MIN   (-CHAR_MAX - 1)
-#define SCHAR_MIN  (-SCHAR_MAX - 1)
-#define SHRT_MIN   (-SHRT_MAX - 1)
-#define INT_MIN    (-INT_MAX - 1)
-#define LONG_MIN   (-LONG_MAX - 1)
-#define LLONG_MIN  (-LLONG_MAX - 1)
+#define CHAR_MIN  (-CHAR_MAX - 1)
+#define SCHAR_MIN (-SCHAR_MAX - 1)
+#define SHRT_MIN  (-SHRT_MAX - 1)
+#define INT_MIN   (-INT_MAX - 1)
+#define LONG_MIN  (-LONG_MAX - 1)
+#define LLONG_MIN (-LLONG_MAX - 1)
 
 #define UCHAR_MAX  (2U * SCHAR_MAX + 1)
 #define USHRT_MAX  (2U * SHRT_MAX + 1)
@@ -39,7 +39,9 @@
 #include <framework/mod/options.h>
 
 #include <config/embox/compat/libc/limits.h>
-#include <config/embox/kernel/task/resource/atexit_api.h>
+
+/* Maximum length of argument to the exec functions including environment data */
+#define ARG_MAX OPTION_MODULE_GET(embox__compat__libc__limits, NUMBER, arg_max)
 
 /* Maximum number of bytes in a filename (not including \0) */
 #define NAME_MAX \
@@ -49,10 +51,11 @@
 #define PATH_MAX \
 	OPTION_MODULE_GET(embox__compat__libc__limits, NUMBER, path_max)
 
-#define ATEXIT_MAX                                                       \
-	OPTION_MODULE_GET(embox__kernel__task__resource__atexit_api, NUMBER, \
-	    atexit_max)
+/* Maximum number of functions that may be registered with atexit() */
+#define ATEXIT_MAX \
+	OPTION_MODULE_GET(embox__compat__libc__limits, NUMBER, atexit_max)
 #else
+#define ARG_MAX    16
 #define NAME_MAX   32
 #define PATH_MAX   128
 #define ATEXIT_MAX 0
