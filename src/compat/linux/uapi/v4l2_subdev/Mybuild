@@ -1,0 +1,6 @@
+package embox.compat.linux.uapi
+
+module v4l2_subdev {
+    @IncludeExport(path="linux")
+	source "v4l2-subdev.h"
+}
