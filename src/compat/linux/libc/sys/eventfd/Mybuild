@@ -1,0 +1,8 @@
+package embox.compat.linux.libc.sys
+
+module eventfd_stub {
+	source "eventfd_stub.c"
+
+	@IncludeExport(path="sys")
+	source "eventfd.h"
+}
