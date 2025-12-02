@@ -37,6 +37,7 @@ static module str {
 	source "strcasecmp.c"
 	source "strncasecmp.c"
 	source "strtok.c"
+	source "strlcat.c"
 	source "strlcpy.c"
 	source "strnlen.c"
 	source "ffs.c"

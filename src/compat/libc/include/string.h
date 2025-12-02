@@ -584,8 +584,38 @@ extern char *strndup(const char *s, size_t size);
 extern void *memmem(const void *haystack, size_t hs_len, const void *needle,
     size_t ne_len);
 
-#include <string_bsd.h>
+/**
+ * Appends a null-terminated string to the end of another
+ * string in size-bounded buffer.
+ *
+ * @param dst
+ *   Destination null-terminated string to append the @param src to.
+ * @param src
+ *   The string being appended.
+ * @param size
+ *   Size of the destination buffer.
+ * @return
+ *   Length of @param dst string without terminating null byte.
+ */
+extern size_t strlcat(char *dst, const char *src, size_t size);
+
+/**
+ * Copies a null-terminated string to size-bounded buffer.
+ *
+ * @param dst
+ *   Destination buffer.
+ * @param src
+ *   The string being copied.
+ * @param size
+ *   Size of the destination buffer.
+ * @return
+ *   Length of @param dst string without terminating null byte.
+ */
+extern size_t strlcpy(char *dst, const char *src, size_t size);
 
 __END_DECLS
+
+/* For compatibility with Linux */
+#include <strings.h>
 
 #endif /* COMPAT_LIBC_STRING_H_ */
