@@ -588,4 +588,7 @@ extern void *memmem(const void *haystack, size_t hs_len, const void *needle,
 
 __END_DECLS
 
+/* For compatibility with Linux */
+#include <strings.h>
+
 #endif /* COMPAT_LIBC_STRING_H_ */
