@@ -80,7 +80,7 @@ guess_arch() {
 get_user_empty_guess AUTOQEMU_ARCH guess_arch
 
 guess_mem() {
-	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p')
+	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*[MK]\))/\1/p')
 	if [ "$ram" ]; then
 		echo "$ram"
 	else
