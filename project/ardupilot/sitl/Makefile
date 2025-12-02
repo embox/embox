@@ -30,7 +30,7 @@ $(BUILD):
 	touch $@
 
 $(INSTALL):
-	cd $(PKG_SOURCE_DIR)/build/sitl && ( \
+	cd $(PKG_SOURCE_DIR)/build/$(ARDUPILOT_BOARD) && ( \
 		$(EMBOX_GCC) -fno-exceptions -Wl,--wrap,malloc \
 			bin/arducopter \
 			-o $(PKG_INSTALL_DIR)/arducopter.o \
