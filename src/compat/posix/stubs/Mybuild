@@ -12,8 +12,6 @@ static module stubs {
 	source
 		"daemon.c",
 		"dlfcn.c",
-		"execlp.c",
-		"execvp.c",
 		"flockfile.c",
 		"ftrylockfile.c",
 		"funlockfile.c",
