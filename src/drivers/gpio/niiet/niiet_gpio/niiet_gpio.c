@@ -1,8 +1,9 @@
 /**
  * @file
- * @brief
+ * @brief GPIO driver for NIIET K1921VG015
  *
  * @author  Andrew Bursian
+ * @author  kimstik
  * @date    21.02.2023
  */
 
@@ -248,6 +249,19 @@ static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 
 	if (mode & GPIO_MODE_OUT) {
 		gpio_reg->GPIO_OUTENSET_reg |= pins;
+	}
+
+	/* Handle open-drain mode: each pin has 2 bits in OUTMODE register
+	 * Value 0b00 = push-pull (PP), 0b01 = open-drain (OD)
+	 * Reference: bme280.c uses GPIO_OUTMODE_PINxx_OD for I2C */
+	if (mode & GPIO_MODE_OUT_OPEN_DRAIN) {
+		for (int i = 0; i < GPIO_PINS_NUMBER; i++) {
+			if (pins & (1 << i)) {
+				/* Clear PP/OD field (2 bits), then set to OD (0b01) */
+				gpio_reg->GPIO_OUTMODE_reg &= ~(0x3 << (i * 2));
+				gpio_reg->GPIO_OUTMODE_reg |= (0x1 << (i * 2));
+			}
+		}
 	}
 
 	if (mode & GPIO_MODE_INT_SECTION) {

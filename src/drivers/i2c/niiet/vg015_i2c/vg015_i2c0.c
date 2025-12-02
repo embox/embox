@@ -1,30 +1,25 @@
 /**
  * @file
+ * @brief I2C0 bus instance for NIIET K1921VG015
  *
  * @date Oct 23, 2025
  * @author Anton Bondarev
+ * @author kimstik
  */
 
- #include <util/log.h>
-
-#include <errno.h>
 #include <stddef.h>
-#include <stdint.h>
 
-#include <drivers/i2c/i2c.h>
 #include <drivers/gpio.h>
-
-#include <framework/mod/options.h>
-#include <config/board_config.h>
-
-#define I2C_BUS_ID  0
-
-#define BASE_ADDR   OPTION_GET(NUMBER, base_addr)
-
-extern const struct i2c_ops vg015_i2c_ops;
-
+#include <drivers/i2c/i2c.h>
 #include <drivers/pin_description.h>
 
+#include <config/board_config.h>
+#include <framework/mod/options.h>
+
+#define I2C_BUS_ID   0
+#define BASE_ADDR    OPTION_GET(NUMBER, base_addr)
+
+extern const struct i2c_ops vg015_i2c_ops;
 extern int clk_enable(char *clk_name);
 
 static const struct pin_description vg015_i2c_pins[] = {
@@ -33,23 +28,23 @@ static const struct pin_description vg015_i2c_pins[] = {
 };
 
 int vg015_i2c_hw_init0(const struct i2c_bus *bus) {
-    if (bus->i2cb_pins) {
-        const struct pin_description *pin;
+	if (bus->i2cb_pins) {
+		const struct pin_description *pin;
 
-        pin = &bus->i2cb_pins[I2C_BUS_PIN_SCL];
-    	gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
-            GPIO_MODE_ALT_SET(pin->pd_func)
-                            | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
+		pin = &bus->i2cb_pins[I2C_BUS_PIN_SCL];
+		gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+		    GPIO_MODE_ALT_SET(pin->pd_func)
+		        | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
 
-        pin = &bus->i2cb_pins[I2C_BUS_PIN_SDA];
-    	gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
-            GPIO_MODE_ALT_SET(pin->pd_func)
-                            | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
-	
-    }
-    clk_enable(CONF_I2C0_CLK_DEF);
+		pin = &bus->i2cb_pins[I2C_BUS_PIN_SDA];
+		gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+		    GPIO_MODE_ALT_SET(pin->pd_func)
+		        | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
+	}
 
-    return 0;
+	clk_enable(CONF_I2C0_CLK_DEF);
+
+	return 0;
 }
 
 static const struct i2c_bus i2c_bus0 = {
@@ -61,4 +56,3 @@ static const struct i2c_bus i2c_bus0 = {
 };
 
 I2C_BUS_REGISTER(&i2c_bus0);
-
