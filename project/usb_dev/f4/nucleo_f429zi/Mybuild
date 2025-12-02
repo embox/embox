@@ -1,0 +1,24 @@
+package platform.stm32.f4.nucleo_f429zi
+
+@BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F4XX_NUCLEO_144")
+static module nucleo_f429zi_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
+	@IncludeExport(path="")
+	source "stm32f4xx_hal_conf.h"
+}
+
+@Build(stage=1)
+@BuildDepends(nucleo_f429zi_conf)
+@BuildDepends(third_party.bsp.stmf4cube.cube)
+static module bsp extends third_party.bsp.st_bsp_api {
+	source "clock_config.c"
+
+	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/")
+    source "Drivers/CMSIS/Device/ST/STM32F4xx/Source/Templates/system_stm32f4xx.c"
+
+
+	@NoRuntime depends third_party.bsp.stmf4cube.cube
+	@NoRuntime depends nucleo_f429zi_conf
+	@NoRuntime depends platform.stm32.stm32cube_compat
+	@NoRuntime depends embox.driver.clk.stm32f4_rcc
+	@NoRuntime depends platform.stm32.stm32cube_sysclock_init
+}
