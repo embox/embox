@@ -41,7 +41,13 @@
 #define PTHREAD_SCOPE_PROCESS       THREAD_SCOPE_PROCESS
 #define PTHREAD_SCOPE_SYSTEM        THREAD_SCOPE_SYSTEM
 
-
+#if 0
+#include <framework/mod/options.h>
+#include <module/embox/kernel/thread/core.h>
+#define PTHREAD_STACK_MIN     OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
+#else
+#define PTHREAD_STACK_MIN     0x2000
+#endif
 
 struct thread;
 typedef struct thread *pthread_t;
