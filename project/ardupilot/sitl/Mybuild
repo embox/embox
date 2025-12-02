@@ -7,6 +7,8 @@ package project.ardupilot
 @BuildDepends(embox.lib.libstdcxx)
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 module sitl {
+	option string board="sitl"
+
 	source "stubs.c"
 	source "^BUILD/extbld/^MOD_PATH/install/arducopter.o"
 

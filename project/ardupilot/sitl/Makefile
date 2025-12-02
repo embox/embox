@@ -5,6 +5,8 @@ PKG_SOURCES := https://github.com/ArduPilot/$(PKG_NAME)/archive/refs/tags/Copter
 PKG_PATCHES := sitl.patch
 PKG_MD5     := 20c25637166e1314a203eb6b1d2066a8
 
+ARDUPILOT_BOARD := $(call option_get,STRING,board)
+
 $(CONFIGURE):
 	export EMBOX_GCC_LINK=full; \
 	$(CP) -r $(ROOT_DIR)/build/extbld/project/ardupilot/waf/install/* $(PKG_SOURCE_DIR)/modules/waf && \
@@ -13,7 +15,11 @@ $(CONFIGURE):
 	$(CP) -r $(ROOT_DIR)/build/extbld/project/ardupilot/dronecan_dsdlc/install/* $(PKG_SOURCE_DIR)/modules/DroneCAN/dronecan_dsdlc && \
 	$(CP) -r $(ROOT_DIR)/build/extbld/project/ardupilot/libcanard/install/* $(PKG_SOURCE_DIR)/modules/DroneCAN/libcanard && \
 	cd $(PKG_SOURCE_DIR) && ( \
-		./waf configure --board sitl --debug --static --toolchain=$(TOOLCHAIN_DIR)/embox \
+		./waf configure \
+			--toolchain=$(TOOLCHAIN_DIR)/embox \
+			--board $(ARDUPILOT_BOARD) \
+			--debug \
+			--static \
 	)
 	touch $@
 
