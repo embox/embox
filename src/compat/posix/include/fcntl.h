@@ -30,6 +30,9 @@ extern int creat(const char *pathname, mode_t mode);
 
 extern int fcntl(int fd, int cmd, ...);
 
+/* _ATFILE_SOURCE */
+extern int openat(int dirfd, const char *pathname, int flags, ...);
+
 /* fcntl commands */
 #define F_GETFD            0
 #define F_SETFD            1

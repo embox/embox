@@ -41,7 +41,13 @@
 #define PTHREAD_SCOPE_PROCESS       THREAD_SCOPE_PROCESS
 #define PTHREAD_SCOPE_SYSTEM        THREAD_SCOPE_SYSTEM
 
-
+#if 0
+#include <framework/mod/options.h>
+#include <module/embox/kernel/thread/core.h>
+#define PTHREAD_STACK_MIN     OPTION_MODULE_GET(embox__kernel__thread__core, NUMBER, thread_stack_size)
+#else
+#define PTHREAD_STACK_MIN     0x2000
+#endif
 
 struct thread;
 typedef struct thread *pthread_t;
@@ -125,10 +131,11 @@ __BEGIN_DECLS
 /*
  * TODO: Implement!
  */
+/* in own module */
+extern int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
 
 extern int   pthread_attr_destroy(pthread_attr_t *);
 extern int   pthread_attr_getdetachstate(const pthread_attr_t *, int *);
-//extern int   pthread_attr_getguardsize(const pthread_attr_t *, size_t *);
 extern int   pthread_attr_getinheritsched(const pthread_attr_t *, int *);
 extern int   pthread_attr_getschedparam(const pthread_attr_t *, struct sched_param *);
 extern int   pthread_attr_getschedpolicy(const pthread_attr_t *, int *);
@@ -192,14 +199,21 @@ extern int   pthread_mutex_timedlock(pthread_mutex_t *mutex, const struct timesp
 
 extern int   pthread_mutexattr_destroy(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_getprioceiling(const pthread_mutexattr_t *, int *);
-//extern int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
 //extern int   pthread_mutexattr_getpshared(const pthread_mutexattr_t *, int *);
 extern int   pthread_mutexattr_gettype(const pthread_mutexattr_t *, int *);
 extern int   pthread_mutexattr_init(pthread_mutexattr_t *);
 //extern int   pthread_mutexattr_setprioceiling(pthread_mutexattr_t *, int);
-//extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
 //extern int   pthread_mutexattr_setpshared(pthread_mutexattr_t *, int);
 extern int   pthread_mutexattr_settype(pthread_mutexattr_t *, int);
+
+/* pthread_mutexattr_setprotocol, pthread_mutexattr_getprotocol - set and get
+   protocol attribute of mutex attribute object (REALTIME THREADS)
+*/
+#define PTHREAD_PRIO_NONE     0x0
+#define PTHREAD_PRIO_INHERIT  0x1
+#define PTHREAD_PRIO_PROTECT  0x2
+extern int   pthread_mutexattr_getprotocol(const pthread_mutexattr_t *, int *);
+extern int   pthread_mutexattr_setprotocol(pthread_mutexattr_t *, int);
 
 extern int   pthread_once(pthread_once_t *, void (*)(void));
 
@@ -246,6 +260,10 @@ extern int pthread_setaffinity_np(pthread_t thread, size_t cpusetsize,
                                 const cpu_set_t *cpuset);
 extern int pthread_getaffinity_np(pthread_t thread, size_t cpusetsize,
                                 cpu_set_t *cpuset);
+
+
+extern int pthread_setname_np(pthread_t thread, const char *name);
+extern int pthread_getname_np(pthread_t thread, const char *name, size_t len);
 
 __END_DECLS
 

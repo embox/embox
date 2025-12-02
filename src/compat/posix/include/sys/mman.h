@@ -29,6 +29,9 @@ __BEGIN_DECLS
 #define MAP_FIXED     0x40
 #define MAP_ANONYMOUS 0x80
 
+/* Linux */
+#define MAP_LOCKED    0x800
+
 #define MAP_FAILED (void*)-1
 
 extern int mprotect(void *, size_t, int);
