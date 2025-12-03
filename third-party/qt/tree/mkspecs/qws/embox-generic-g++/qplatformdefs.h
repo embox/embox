@@ -205,15 +205,6 @@ struct __res_state {
 
 #define TCP_NODELAY 0
 
-//------BEGIN QProcess
-
-static inline pid_t setsid(void) {
-	printf(">>> %s\n", __func__);
-	return 0;
-}
-
-//------ END QProcess
-
 // this is for FILESYSTEMWATCHER
 #define _PC_LINK_MAX         0
 #define _PC_MAX_CANON        1

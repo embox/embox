@@ -70,11 +70,6 @@ int lockf(int fd, int cmd, off_t len) {
 	return 0;
 }
 
-static inline pid_t setsid(void) {
-	DPRINT();
-	return -1;
-}
-
 static inline
 pid_t getppid(void) {
 	DPRINT();

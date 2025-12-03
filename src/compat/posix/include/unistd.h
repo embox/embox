@@ -209,6 +209,8 @@ extern uid_t getegid(void);
 
 extern int setpgid(pid_t pid, pid_t pgid);
 
+extern pid_t setsid(void);
+
 extern int setreuid(uid_t ruid, uid_t euid);
 extern int setuid(uid_t uid);
 extern int seteuid(uid_t uid);

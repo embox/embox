@@ -40,11 +40,6 @@ static inline int initgroups(const char *user, gid_t group) {
 	return 0;
 }
 
-static inline pid_t setsid(void) {
-	DPRINT();
-	return -1;
-}
-
 static inline pid_t getppid(void) {
 	DPRINT();
 	return 0;
