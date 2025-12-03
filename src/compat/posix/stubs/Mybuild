@@ -10,6 +10,7 @@ static module getpgrp_stub extends getpgrp {
 
 static module stubs {
 	source
+		"alarm.c",
 		"daemon.c",
 		"dlfcn.c",
 		"flockfile.c",
@@ -20,8 +21,8 @@ static module stubs {
 		"getppid.c",
 		"link.c",
 		"readlinkat.c",
-		"readlink.c",
 		"setpgid.c",
+		"setsid.c",
 		"sigsuspend.c"
 
 		depends embox.compat.posix.getpgrp

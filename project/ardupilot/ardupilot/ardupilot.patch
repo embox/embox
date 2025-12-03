@@ -1,0 +1,77 @@
+diff -aur ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py
+--- ./ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py	2025-07-18 02:43:00.000000000 +0300
++++ ../build/extbld/project/ardupilot/sitl/ardupilot-Copter-4.6.2/Tools/ardupilotwaf/boards.py	2025-11-24 18:11:36.166650169 +0300
+@@ -246,17 +246,17 @@
+             '-Wno-redundant-decls',
+             '-Wno-unknown-pragmas',
+             '-Wno-trigraphs',
+-            '-Werror=shadow',
++            '-Wno-error=shadow',
+             '-Werror=return-type',
+             '-Werror=unused-result',
+             '-Werror=unused-variable',
+             '-Werror=narrowing',
+             '-Werror=attributes',
+             '-Werror=overflow',
+-            '-Werror=parentheses',
++            '-Wno-error=parentheses',
+             '-Werror=format-extra-args',
+             '-Werror=ignored-qualifiers',
+-            '-Werror=undef',
++            '-Wno-error=undef',
+             '-DARDUPILOT_BUILD',
+         ]
+ 
+@@ -379,15 +379,15 @@
+             '-Werror=switch',
+             '-Werror=sign-compare',
+             '-Werror=type-limits',
+-            '-Werror=undef',
++            '-Wno-error=undef',
+             '-Werror=unused-result',
+-            '-Werror=shadow',
++            '-Wno-error=shadow',
+             '-Werror=unused-value',
+             '-Werror=unused-variable',
+             '-Werror=delete-non-virtual-dtor',
+             '-Wfatal-errors',
+             '-Wno-trigraphs',
+-            '-Werror=parentheses',
++            '-Wno-error=parentheses',
+             '-DARDUPILOT_BUILD',
+             '-Wuninitialized',
+             '-Warray-bounds',
+@@ -475,7 +475,7 @@
+         else:
+             env.LINKFLAGS += [
+                 '-fno-exceptions',
+-                '-Wl,--gc-sections',
++                # '-Wl,--gc-sections',
+             ]
+ 
+         if self.with_can:
+@@ -674,7 +674,7 @@
+ class sitl(Board):
+ 
+     def __init__(self):
+-        self.with_can = True
++        self.with_can = False
+ 
+     def configure_env(self, cfg, env):
+         super(sitl, self).configure_env(cfg, env)
+@@ -1335,14 +1338,11 @@
+ 
+ class linux(Board):
+     def __init__(self):
+-        if self.toolchain == 'native':
+-            self.with_can = True
+-        else:
+             self.with_can = False
+ 
+     def configure_env(self, cfg, env):
+         if cfg.options.board == 'linux':
+-            self.with_can = True
++            self.with_can = False
+         super(linux, self).configure_env(cfg, env)
+ 
+         env.BOARD_CLASS = "LINUX"

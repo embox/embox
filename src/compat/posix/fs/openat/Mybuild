@@ -1,7 +1,0 @@
-package embox.compat.posix
-
-static module openat_stub {
-	option string log_level="LOG_WARNING"
-
-	source "openat_stub.c"
-}

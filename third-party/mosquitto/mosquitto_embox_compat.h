@@ -40,11 +40,6 @@ static inline int initgroups(const char *user, gid_t group) {
 	return 0;
 }
 
-static inline pid_t setsid(void) {
-	DPRINT();
-	return -1;
-}
-
 static inline pid_t getppid(void) {
 	DPRINT();
 	return 0;
@@ -57,10 +52,6 @@ static inline pid_t fork() {
 }
 
 #include <sys/socket.h>
-
-static inline unsigned int alarm(unsigned int seconds) {
-	return 0;
-}
 
 #define pselect select
 

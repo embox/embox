@@ -2,7 +2,7 @@
 PKG_NAME    := ardupilot
 PKG_VER     := 4.6.2
 PKG_SOURCES := https://github.com/ArduPilot/$(PKG_NAME)/archive/refs/tags/Copter-$(PKG_VER).tar.gz
-PKG_PATCHES := sitl.patch
+PKG_PATCHES := ardupilot.patch
 PKG_MD5     := 20c25637166e1314a203eb6b1d2066a8
 
 ARDUPILOT_BOARD := $(call option_get,STRING,board)
