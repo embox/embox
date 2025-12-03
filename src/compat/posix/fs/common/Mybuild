@@ -11,6 +11,7 @@ static module file_system_common {
 	source "fsync.c"
 	source "getcwd.c"
 	source "lseek.c"
+	source "openat.c"
 	source "pread.c"
 	source "pwrite.c"
 	source "realpath.c"

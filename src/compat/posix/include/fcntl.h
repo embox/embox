@@ -20,6 +20,7 @@ __BEGIN_DECLS
  * int open (const char *path, int __oflag, mode_t mode);
  */
 extern int open(const char *path, int __oflag, ...);
+extern int openat(int fildes, const char *path, int __oflag, ...);
 
 /*
  * shall be equivalent to: open(path, O_WRONLY|O_CREAT|O_TRUNC, mode)
@@ -27,9 +28,6 @@ extern int open(const char *path, int __oflag, ...);
 extern int creat(const char *pathname, mode_t mode);
 
 extern int fcntl(int fd, int cmd, ...);
-
-/* _ATFILE_SOURCE */
-extern int openat(int dirfd, const char *pathname, int flags, ...);
 
 /* fcntl commands */
 #define F_GETFD      0

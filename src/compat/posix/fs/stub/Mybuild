@@ -18,6 +18,7 @@ static module file_system_stub extends file_system {
 	source "mknod_stub.c"
 	source "mount_stub.c" /* not part of posix */
 	source "open_stub.c"
+	source "openat_stub.c"
 	source "pread_stub.c"
 	source "pwrite_stub.c"
 	source "realpath_stub.c"
