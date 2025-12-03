@@ -20,7 +20,6 @@ static module stubs {
 		"getppid.c",
 		"link.c",
 		"readlinkat.c",
-		"readlink.c",
 		"setpgid.c",
 		"sigsuspend.c"
 

@@ -14,6 +14,7 @@ static module file_system_common {
 	source "openat.c"
 	source "pread.c"
 	source "pwrite.c"
+	source "readlink.c"
 	source "realpath.c"
 	source "rewinddir.c"
 	source "scandir.c"

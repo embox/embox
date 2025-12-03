@@ -21,6 +21,7 @@ static module file_system_stub extends file_system {
 	source "openat_stub.c"
 	source "pread_stub.c"
 	source "pwrite_stub.c"
+	source "readlink_stub.c"
 	source "realpath_stub.c"
 	source "remove_stub.c"
 	source "rename_stub.c"

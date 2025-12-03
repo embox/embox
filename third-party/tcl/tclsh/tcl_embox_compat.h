@@ -42,11 +42,6 @@ static inline int mknod(const char *pathname, mode_t mode, dev_t dev) {
 	return -1;
 }
 
-static inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
-	printf("tcl>>> %s\n", __func__);
-	return -1;
-}
-
 static inline int symlink(const char *oldpath, const char *newpath) {
 	printf("tcl>>> %s\n", __func__);
 	return -1;
