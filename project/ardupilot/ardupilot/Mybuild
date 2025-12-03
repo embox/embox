@@ -1,15 +1,12 @@
 package project.ardupilot
 
 @AutoCmd
-@CxxCmd(name = "ardupilot",
-	help = "TODO"
-    )
+@CxxCmd(name="ardupilot", help="TODO")
 @BuildDepends(embox.lib.libstdcxx)
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
-module sitl {
+module arducopter {
 	option string board="sitl"
 
-	source "stubs.c"
 	source "^BUILD/extbld/^MOD_PATH/install/arducopter.o"
 
 	@NoRuntime depends waf
