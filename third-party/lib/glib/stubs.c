@@ -28,10 +28,6 @@ char *mktemp(char *template) {
 	return template;
 }
 
-unsigned int alarm(unsigned int seconds) {
-	return 0;
-}
-
 
 #include <dirent.h>
 void seekdir(DIR *dirp, long offset) {

@@ -10,6 +10,7 @@ static module getpgrp_stub extends getpgrp {
 
 static module stubs {
 	source
+		"alarm.c",
 		"daemon.c",
 		"dlfcn.c",
 		"flockfile.c",

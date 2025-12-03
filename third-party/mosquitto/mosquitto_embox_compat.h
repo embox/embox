@@ -53,10 +53,6 @@ static inline pid_t fork() {
 
 #include <sys/socket.h>
 
-static inline unsigned int alarm(unsigned int seconds) {
-	return 0;
-}
-
 #define pselect select
 
 __END_DECLS

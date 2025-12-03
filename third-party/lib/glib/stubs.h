@@ -28,8 +28,6 @@ int res_query(const char *dname, int class, int type,
 
 char *mktemp(char *template);
 
-unsigned int alarm(unsigned int seconds);
-
 
 #include <dirent.h>
 void seekdir(DIR *dirp, long offset);
