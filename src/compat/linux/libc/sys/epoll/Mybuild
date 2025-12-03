@@ -1,0 +1,8 @@
+package embox.compat.linux.libc.sys
+
+module epoll_stub {
+	source "epoll_stub.c"
+
+	@IncludeExport(path="sys")
+	source "epoll.h"
+}

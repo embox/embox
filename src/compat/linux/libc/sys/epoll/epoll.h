@@ -8,6 +8,8 @@
 #ifndef __SYS_EPOLL_H__
 #define __SYS_EPOLL_H__
 
+#include <stdint.h>
+
 #include <sys/cdefs.h>
 
 /* Flags to be passed to epoll_create2.  */
