@@ -187,3 +187,19 @@ static const struct uart_params esp32c3_diag_params = {
 };
 
 DIAG_SERIAL_DEF(&esp32c3_diag, &esp32c3_diag_params);
+
+
+#include <util/macro.h>
+#define TTY_NAME ttyS0
+
+static struct uart esp32c3_ttyS0 = {
+    .uart_ops   = &esp32c3_uart_ops,
+    .irq_num    = 0,
+    .base_addr  = (unsigned long)UART_BASE,
+    .params = {
+        .baud_rate        = UART_BAUD_RATE,
+        .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
+    }
+};
+
+TTYS_DEF(TTY_NAME, &esp32c3_ttyS0);
