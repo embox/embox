@@ -1,17 +1,41 @@
-/**
+ /**
  * @file
- * @brief
  *
+ * @date Decab, 2025
  * @author  Efim Perevalov
- * @date    03.12.2025
  */
-#include <assert.h>
 #include <stdint.h>
-
-#include <drivers/common/memory.h>
-#include <drivers/serial/uart_dev.h>
-#include <framework/mod/options.h>
+#include <drivers/diag.h>
 #include <hal/reg.h>
+#include <drivers/serial/uart_dev.h>
+#include <drivers/serial/diag_serial.h>
+#include <drivers/ttys.h>
+#include <framework/mod/options.h>
+
+#define UART_BASE      UINTMAX_C(OPTION_GET(NUMBER, base_addr))
+#define UART_BAUD_RATE OPTION_GET(NUMBER, baud_rate)
+
+#define UART_ERR_WR_MASK_M   (1U << 26)
+
+#define UART_MEM_CLK_EN_V    0x1
+#define UART_MEM_CLK_EN_S    24
+#define UART_MEM_CLK_EN_M           ((UART_MEM_CLK_EN_V) << (UART_MEM_CLK_EN_S))
+
+#define UART_TXFIFO_EMPTY_THRHD_V       0x7F
+#define UART_TXFIFO_EMPTY_THRHD_S       8
+#define UART_TXFIFO_EMPTY_THRHD_M       ((UART_TXFIFO_EMPTY_THRHD_V) << (UART_TXFIFO_EMPTY_THRHD_S))
+
+#define UART_RXFIFO_FULL_THRHD_V        0x7F
+#define UART_RXFIFO_FULL_THRHD_S        0
+#define UART_RXFIFO_FULL_THRHD_M        ((UART_RXFIFO_FULL_THRHD_V) << (UART_RXFIFO_FULL_THRHD_S))
+
+#define UART_TX_SIZE_V  0xF
+#define UART_TX_SIZE_S  7
+#define UART_TX_SIZE_M  ((UART_TX_SIZE_V) << (UART_TX_SIZE_S))
+
+#define UART_RX_SIZE_V  0xF
+#define UART_RX_SIZE_S  3
+#define UART_RX_SIZE_M  ((UART_RX_SIZE_V) << (UART_RX_SIZE_S))
 
 /* FIFO Configuration */
 #define UART_FIFO(base) 	(base + 0x0000) /* RO */
@@ -94,12 +118,12 @@
 #define UHCI_INT_CLR(base)  ((base) + 0x0010)  /* WT */
 
 /* HCI Status Register */
-#define UHCI_STATE0(base)   ((base) + 0x0018)  /* RO */
-#define UHCI_STATE1(base)   ((base) + 0x001C)  /* RO */
-#define UHCI_RX_HEAD(base)  ((base) + 0x002c)  /* RO */
+#define UHCI_STATE0(base)       ((base) + 0x0018)  /* RO */
+#define UHCI_STATE1(base)       ((base) + 0x001C)  /* RO */
+#define UHCI_RX_HEAD(base)      ((base) + 0x002c)  /* RO */
 
 /* Version Register */
-#define UHCI_DATE(base) ((base) + 0x0080)  /* R/W */
+#define UHCI_DATE(base)      ((base) + 0x0080)  /* R/W */
 
 static int esp32c3_uart_getc(struct uart *dev) {
     return (REG32_LOAD(UART_STATUS(dev->base_addr)) & 0x3FF);
