@@ -1,0 +1,5 @@
+package embox.compat.posix.pthread
+
+static module pthread_mutexattr_protocol_stub {
+	source "pthread_mutexattr_protocol_stubs.c"
+}
