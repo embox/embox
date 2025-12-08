@@ -100,3 +100,27 @@
 
 /* Version Register */
 #define UHCI_DATE(base) ((base) + 0x0080)  /* R/W */
+
+static int esp32c3_uart_getc(struct uart *dev) {
+    return 0;
+}
+
+static int esp32c3_uart_putc(struct uart *dev, int ch) {
+    return 0;
+}
+
+static int esp32c3_uart_hasrx(struct uart *dev) {
+    return 0;
+}
+
+static int esp32c3_uart_setup(struct uart *dev, const struct uart_params *params) {
+    return 0;
+}
+
+static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *params) {
+    return 0;
+}
+
+static int esp32c3_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
+    return 0;
+}
