@@ -128,6 +128,33 @@ static int esp32c3_uart_hasrx(struct uart *dev) {
 }
 
 static int esp32c3_uart_setup(struct uart *dev, const struct uart_params *params) {
+    //  modifyreg32(UART_CONF0_REG(priv->id), UART_ERR_WR_MASK_M | UART_MEM_CLK_EN_M, UART_ERR_WR_MASK_M);
+    uint32_t conf0 = REG32_LOAD(UART_CONF0(dev->base_addr));
+    conf0 &= ~(UART_ERR_WR_MASK_M | UART_MEM_CLK_EN_M);
+    conf0 |= UART_ERR_WR_MASK_M;
+
+    REG32_STORE(UART_CONF0(dev->base_addr), conf0);
+
+    // modifyreg32(UART_CONF1_REG(priv->id), UART_TXFIFO_EMPTY_THRHD_M, 0);
+    uint32_t conf1 = REG32_LOAD(UART_CONF1(dev->base_addr));
+    conf1 &= ~UART_TXFIFO_EMPTY_THRHD_M;
+    conf1 |= 0;
+
+    REG32_STORE(UART_CONF1(dev->base_addr), conf1);
+
+    // modifyreg32(UART_CONF1_REG(priv->id), UART_RXFIFO_FULL_THRHD_M, 1 << UART_RXFIFO_FULL_THRHD_S);
+    conf1 = REG32_LOAD(UART_CONF1(dev->base_addr));
+    conf1 &= ~UART_RXFIFO_FULL_THRHD_M;
+    conf1 |= 1 << UART_RXFIFO_FULL_THRHD_S;
+
+    REG32_STORE(UART_CONF1(dev->base_addr), conf1);
+
+    // modifyreg32(UART_MEM_CONF_REG(priv->id), UART_TX_SIZE_M | UART_RX_SIZE_M, (1 << UART_TX_SIZE_S) | (1 << UART_RX_SIZE_S));
+    uint32_t mem_conf_reg = REG32_LOAD(UART_MEM_CONF(dev->base_addr));
+    mem_conf_reg &= ~(UART_TX_SIZE_M | UART_RX_SIZE_M);
+    mem_conf_reg |= (1 << UART_TX_SIZE_S) | (1 << UART_RX_SIZE_S);
+    REG32_STORE(UART_MEM_CONF(dev->base_addr), mem_conf_reg);
+
     return 0;
 }
 
