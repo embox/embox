@@ -1,0 +1,5 @@
+package embox.compat.posix.pthread
+
+static module pthread_name_np_stub {
+	source "pthread_name_np_stub.c"
+}
