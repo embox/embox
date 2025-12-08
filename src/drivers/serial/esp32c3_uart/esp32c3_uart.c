@@ -114,6 +114,16 @@ static int esp32c3_uart_putc(struct uart *dev, int ch) {
 }
 
 static int esp32c3_uart_hasrx(struct uart *dev) {
+    uint32_t uart_status;
+    uint32_t uart_rxfifo_cnt;
+
+    uart_status = REG32_LOAD(UART_STATUS(dev->base_addr));
+    uart_rxfifo_cnt = uart_status & 0x3FF;
+
+    if (uart_rxfifo_cnt) {
+        return 1;
+    };
+
     return 0;
 }
 
