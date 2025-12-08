@@ -165,3 +165,25 @@ static int esp32c3_uart_irq_en(struct uart *dev, const struct uart_params *param
 static int esp32c3_uart_irq_dis(struct uart *dev, const struct uart_params *params) {
     return 0;
 }
+
+static const struct uart_ops esp32c3_uart_ops = {
+		.uart_getc = esp32c3_uart_getc,
+		.uart_putc = esp32c3_uart_putc,
+		.uart_hasrx = esp32c3_uart_hasrx,
+		.uart_setup = esp32c3_uart_setup,
+		.uart_irq_en = esp32c3_uart_irq_en,
+		.uart_irq_dis = esp32c3_uart_irq_dis,
+};
+
+static struct uart esp32c3_diag = {
+    .uart_ops   = &esp32c3_uart_ops,
+    .irq_num    = 0,
+    .base_addr  = (unsigned long) UART_BASE,
+};
+
+static const struct uart_params esp32c3_diag_params = {
+    .baud_rate        = UART_BAUD_RATE,
+    .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
+};
+
+DIAG_SERIAL_DEF(&esp32c3_diag, &esp32c3_diag_params);
