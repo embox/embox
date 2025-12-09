@@ -7,8 +7,6 @@ static module pthreads {
 	source "pthread_mutex.c"
 	source "pthread_cancel.c"
 
-	source "pthread_attr_getguardsize_stub.c"
-
 	depends embox.kernel.thread.core
 	depends embox.kernel.thread.sync
 	depends embox.kernel.task.syslib.thread_key_table
