@@ -1,11 +1,10 @@
 "export PWD=/mnt",
 "export HOME=/",
 
-"netmanager",
+//"netmanager",
 
 "mkdir -s /mnt",
 "mount -t vfat /dev/mmc0 /mnt",
 "cd /mnt",
-
-"arducopter",
+"arducopter --serial0=/dev/ttyS1",
 "tish",

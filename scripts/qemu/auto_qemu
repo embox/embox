@@ -451,6 +451,11 @@ if [[ "$(id -u)" -ne 0 ]] ; then
 	sudo='sudo -E'
 fi
 
+#disable runas while sudo is disabled
+if [[ "$AUTOQEMU_SUDO" == " " ]] ; then
+	RUNAS=" "
+fi
+
 ARG_LINE="${AUTOQEMU_SUDO:-$sudo} $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
 
 info $ARG_LINE
