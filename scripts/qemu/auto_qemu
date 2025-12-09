@@ -440,23 +440,23 @@ if [ "$graphic_n" -gt 0 ]; then
 
 fi
 
-RUNAS=""
+runas=""
 # Don't try to drop privileges for root user; qemu fails otherwise
 if [[ "$(id -u)" -ne 0 ]] ; then
 	if [ "$QEMU_VER" -ge 100000 ]; then
-		RUNAS="-run-with user=$(whoami)"
+		runas="-run-with user=$(whoami)"
 	else 
-		RUNAS="-runas $(whoami)"
+		runas="-runas $(whoami)"
 	fi
 	sudo='sudo -E'
 fi
 
-#disable runas while sudo is disabled
-if [[ "$AUTOQEMU_SUDO" == " " ]] ; then
-	RUNAS=" "
+if [ "$AUTOQEMU_DISABLE_SUDO" == "y" ]; then
+	sudo=""
+	runas=""
 fi
 
-ARG_LINE="${AUTOQEMU_SUDO:-$sudo} $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
+ARG_LINE="$sudo $QEMU $runas $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
 
 info $ARG_LINE
 $ARG_LINE
