@@ -7,5 +7,5 @@
 "mount -t vfat /dev/mmc0 /mnt",
 "cd /mnt",
 
-"ardupilot",
+"arducopter",
 "tish",
