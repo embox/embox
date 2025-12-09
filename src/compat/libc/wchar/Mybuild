@@ -7,8 +7,8 @@ abstract module wchar_extended {
 static module wchar {
 	source "wcscmp.c"
 	source "wcsncpy.c"
-	source "wcstrtoimax.c"
-	source "wcstrtoumax.c"
+	source "wcstoimax.c"
+	source "wcstoumax.c"
 	source "wctype.c"
 	source "wcslen.c"
 	source "wcsnlen.c"
