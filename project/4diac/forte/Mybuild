@@ -11,7 +11,7 @@ module forte {
 	source "^BUILD/extbld/^MOD_PATH/install/forte.o"
     
 	@NoRuntime depends embox.lib.libstdcxx
-    @NoRuntime depends embox.compat.posix.pthread_stack
+    @NoRuntime depends embox.compat.posix.pthread.pthread_stack
     @NoRuntime depends embox.compat.posix.util.nanosleep
     @NoRuntime depends embox.lib.leddrv
 }

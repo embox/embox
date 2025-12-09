@@ -1,0 +1,8 @@
+package embox.compat.posix.pthread
+
+static module pthread_barrier {
+	source "pthread_barrier.c"
+
+	depends embox.compat.posix.pthreads
+	depends embox.compat.posix.semaphore
+}

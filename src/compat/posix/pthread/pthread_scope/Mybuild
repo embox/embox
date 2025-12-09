@@ -1,0 +1,9 @@
+package embox.compat.posix.pthread
+
+@DefaultImpl(pthread_scope_stub)
+abstract module pthread_scope {
+}
+
+static module pthread_scope_stub extends pthread_scope {
+	source "pthread_scope_stub.c"
+}

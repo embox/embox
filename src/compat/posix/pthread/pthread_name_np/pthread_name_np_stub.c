@@ -5,10 +5,9 @@
  * @author Anton Bondarev
  */
 
-#include <stdlib.h>
+#include <stddef.h>
 #include <errno.h>
 #include <pthread.h>
-#include <sched.h>
 
 
 int pthread_setname_np(pthread_t thread, const char *name) {

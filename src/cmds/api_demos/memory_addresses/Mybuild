@@ -10,6 +10,5 @@ module demo_addresses_symbols {
 	source "demo_addresses_symbols.c"
  /* include embox.framework.mod_sect_info */
 	@NoRuntime depends embox.framework.mod_sect_info
-/* include embox.compat.posix.pthread_stack_stub*/
-	@NoRuntime depends embox.compat.posix.pthread_stack
+	@NoRuntime depends embox.compat.posix.pthread.pthread_stack
 }
