@@ -26,8 +26,3 @@ static module pthread_key {
 static module pthread_rwlock {
 	source "pthread_rwlock.c"
 }
-
-static module pthread_scope_stub {
-	source "pthread_scope_stub.c"
-}
-
