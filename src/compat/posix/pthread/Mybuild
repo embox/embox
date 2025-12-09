@@ -27,14 +27,6 @@ static module pthread_rwlock {
 	source "pthread_rwlock.c"
 }
 
-@DefaultImpl(pthread_stack_stub)
-abstract module pthread_stack {
-}
-
-static module pthread_stack_stub extends pthread_stack {
-	source "pthread_stack_stub.c"
-}
-
 static module pthread_scope_stub {
 	source "pthread_scope_stub.c"
 }
