@@ -1,4 +1,4 @@
-package embox.test.cxx
+package embox.compat.cxx.tests
 
 @BuildDepends(embox.lib.libsupcxx)
 module memory_test {

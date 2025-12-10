@@ -5,7 +5,6 @@ module all {
 	depends environ_test
 	depends getopt_test
 	depends passwd
-	depends inttypes_test
 	depends libgen_test
 	depends memccpy_test
 	depends poll_test
@@ -50,12 +49,6 @@ module passwd {
 	source "passwd.c"
 
 	depends embox.compat.posix.passwd
-}
-
-module inttypes_test {
-	source "inttypes_test.c"
-
-	depends embox.compat.libc.int_types
 }
 
 module libgen_test {
@@ -138,12 +131,6 @@ module waitpid_test {
 	source "waitpid_test.c"
 
 	depends embox.compat.posix.proc.waitpid
-}
-
-module fnmatch_test {
-	source "fnmatch_test.c"
-
-	depends embox.compat.posix.fnmatch
 }
 
 module strcoll_test {

@@ -1,0 +1,5 @@
+package embox.compat.libc.inttypes.tests
+
+module inttypes_test {
+	source "inttypes_test.c"
+}
