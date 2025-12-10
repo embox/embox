@@ -1,0 +1,5 @@
+package embox.compat.posix.fnmatch.tests
+
+module fnmatch_test {
+	source "fnmatch_test.c"
+}

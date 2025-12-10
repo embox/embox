@@ -1,0 +1,5 @@
+package embox.compat.posix.regex.tests
+
+module regex_test {
+	source "regex_test.c"
+}
