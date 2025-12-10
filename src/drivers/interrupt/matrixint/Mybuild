@@ -1,0 +1,10 @@
+package embox.driver.interrupt
+
+module matrixint extends irqctrl_api {
+	option string log_level="LOG_NONE"
+
+	option number base_addr = 0x600C2000
+
+	source "matrixint.c"
+    source "matrixint.h"
+}
