@@ -18,3 +18,7 @@ module fork_copy_everything extends fork {
 module fork_copy_addr_space extends embox.kernel.addr_space {
 	source "fork_copy_addr_space.h"
 }
+
+module fork_stub {
+	source "fork_stub.c"
+}
