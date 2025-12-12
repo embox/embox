@@ -6,16 +6,17 @@
  * @date    25.06.2020
  */
 
+#include <assert.h>
 #include <stdint.h>
 #include <string.h>
-#include <assert.h>
+
+#include <drivers/usb/gadget/gadget.h>
+#include <drivers/usb/gadget/udc.h>
+#include <drivers/usb/usb_defines.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
-#include <util/math.h>
 #include <util/log.h>
-#include <drivers/usb/usb_defines.h>
-#include <drivers/usb/gadget/udc.h>
-#include <drivers/usb/gadget/gadget.h>
+#include <util/math.h>
 
 static DLIST_DEFINE(usb_gadget_func_list);
 
@@ -40,9 +41,8 @@ static void usb_gadget_reconfigure(struct usb_gadget *gadget) {
 	}
 }
 
-static int usb_gadget_prepare_config_desc(
-	    struct usb_gadget_composite *composite,
-	    uint16_t w_value) {
+static int usb_gadget_prepare_config_desc(struct usb_gadget_composite *composite,
+    uint16_t w_value) {
 	int i, j, size = 0;
 	uint8_t *buf = composite->req.buf;
 	struct usb_gadget *gadget;
@@ -84,19 +84,18 @@ static int usb_gadget_prepare_config_desc(
 
 		prev_func = func;
 	}
-	((struct usb_desc_configuration *) composite->req.buf)->w_total_length = size;
+	((struct usb_desc_configuration *)composite->req.buf)->w_total_length = size;
 
 	return size;
 }
 
-static int usb_gadget_prepare_string_desc(
-	    struct usb_gadget_composite *composite,
-	    uint16_t w_value) {
+static int usb_gadget_prepare_string_desc(struct usb_gadget_composite *composite,
+    uint16_t w_value) {
 	const char *str;
 	uint8_t *buf = composite->req.buf;
 	int len, wlen, i;
 	/* English US */
-	uint8_t lang[] = { 0x04, USB_DESC_TYPE_STRING, 0x09, 0x04 };
+	uint8_t lang[] = {0x04, USB_DESC_TYPE_STRING, 0x09, 0x04};
 
 	log_debug("str=%d", w_value);
 
@@ -125,7 +124,7 @@ static int usb_gadget_prepare_string_desc(
 }
 
 int usb_gadget_setup(struct usb_gadget_composite *composite,
-		const struct usb_control_header *ctrl, uint8_t *buffer) {
+    const struct usb_control_header *ctrl, uint8_t *buffer) {
 	struct usb_gadget_request *req = &composite->req;
 	struct usb_gadget *gadget = composite->config;
 	struct usb_gadget_function *f = NULL;
@@ -137,8 +136,8 @@ int usb_gadget_setup(struct usb_gadget_composite *composite,
 
 	switch (ctrl->b_request) {
 	case USB_REQ_GET_STATUS:
-		req->len = sizeof (uint16_t);
-		*(uint16_t *) req->buf = 0;
+		req->len = sizeof(uint16_t);
+		*(uint16_t *)req->buf = 0;
 		goto submit_req;
 	case USB_REQ_GET_DESCRIPTOR:
 		switch (ctrl->w_value >> 8) {
@@ -147,19 +146,43 @@ int usb_gadget_setup(struct usb_gadget_composite *composite,
 			memcpy(req->buf, &composite->device_desc, req->len);
 			goto submit_req;
 		case USB_DESC_TYPE_CONFIG:
-			len = usb_gadget_prepare_config_desc(composite,
-						ctrl->w_value & 0xff);
+			len = usb_gadget_prepare_config_desc(composite, ctrl->w_value & 0xff);
 			req->len = min(ctrl->w_length, len);
 			goto submit_req;
 		case USB_DESC_TYPE_STRING:
-			len = usb_gadget_prepare_string_desc(composite,
-						ctrl->w_value & 0xff);
+			len = usb_gadget_prepare_string_desc(composite, ctrl->w_value & 0xff);
 			req->len = min(ctrl->w_length, len);
 			goto submit_req;
 		default:
 			goto func_setup;
 		}
 		break;
+
+	case USB_REQ_GET_CONFIG: {
+		uint8_t cfg = 0;
+		if (composite->config) {
+			struct usb_gadget *g = composite->config;
+			cfg = g->config_desc.b_configuration_value;
+		}
+		req->len = min(ctrl->w_length, (uint16_t)1);
+		*(uint8_t *)req->buf = cfg;
+		goto submit_req;
+	}
+	case USB_REQ_SET_CONFIG: {
+		uint8_t cfg = ctrl->w_value & 0xff;
+		if (cfg == 0) {
+			composite->config = NULL;
+			req->len = 0;
+			goto submit_req;
+		}
+
+		if (usb_gadget_set_config(composite, cfg) != 0) {
+			log_error("usb_gadget_set_config(%u) failed", cfg);
+			return -1;
+		}
+		req->len = 0;
+		goto submit_req;
+	}
 	default:
 		goto func_setup;
 	}
@@ -186,7 +209,7 @@ func_setup:
 	}
 
 	log_error("Unsupported req: bm_request_type=0x%02x, b_request=0x%02x",
-		ctrl->bm_request_type, ctrl->b_request);
+	    ctrl->bm_request_type, ctrl->b_request);
 	return -1;
 
 submit_req:
@@ -225,8 +248,7 @@ void usb_gadget_register_function(struct usb_gadget_function *func) {
 	dlist_add_next(&func->link, &usb_gadget_func_list);
 }
 
-int usb_gadget_add_function(struct usb_gadget *gadget,
-	                         const char *func_name) {
+int usb_gadget_add_function(struct usb_gadget *gadget, const char *func_name) {
 	int res;
 	struct usb_gadget_function *func;
 
@@ -248,7 +270,7 @@ int usb_gadget_add_function(struct usb_gadget *gadget,
 }
 
 int usb_gadget_add_interface(struct usb_gadget *gadget,
-	                         struct usb_gadget_function *func) {
+    struct usb_gadget_function *func) {
 	int id;
 
 	id = gadget->intf_count;
@@ -262,15 +284,15 @@ int usb_gadget_add_interface(struct usb_gadget *gadget,
 	return id;
 }
 
-int usb_gadget_ep_configure(struct usb_gadget *gadget,
-	    struct usb_gadget_ep *ep) {
+int usb_gadget_ep_configure(struct usb_gadget *gadget, struct usb_gadget_ep *ep) {
 	uint32_t eps_mask, all_eps, active_eps;
 	int i;
 
 	if (ep->dir == USB_DIR_OUT) {
 		all_eps = ep->udc->out_ep_mask;
 		active_eps = gadget->out_ep_active_mask;
-	} else {
+	}
+	else {
 		all_eps = ep->udc->in_ep_mask;
 		active_eps = gadget->in_ep_active_mask;
 	}
@@ -293,8 +315,9 @@ int usb_gadget_ep_configure(struct usb_gadget *gadget,
 
 	if (ep->dir == USB_DIR_OUT) {
 		gadget->out_ep_active_mask |= (1 << ep->nr);
-	} else {
-		gadget->in_ep_active_mask  |= (1 << ep->nr);
+	}
+	else {
+		gadget->in_ep_active_mask |= (1 << ep->nr);
 	}
 
 	return 0;
