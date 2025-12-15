@@ -13,7 +13,10 @@ int pthread_attr_setstackaddr(pthread_attr_t *attr, void *stackaddr) {
 }
 
 int pthread_attr_setstacksize(pthread_attr_t *attr, size_t stacksize) {
+#if 0
 	return -ENOSYS;
+#endif
+	return 0;
 }
 
 int pthread_attr_setstack(pthread_attr_t *attr, void *stackaddr, size_t stacksize) {
