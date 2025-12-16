@@ -116,8 +116,8 @@ int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	skb = sock_get_skb(sk, timeout, &err);
 
 	if (!skb) {
-		assert(err);
-		return err;
+		assert(!err);
+		return 0;
 	}
 
 	nrecv = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
