@@ -4,16 +4,20 @@
  * @author Efim Perevalov
  * @date 8.12.2025
  */
+#include <asm/csr.h>
 #include <drivers/irqctrl.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
 
-#define BASE_ADDR OPTION_GET(NUMBER, base_addr)
+#define BASE_ADDR OPTION_GET	(NUMBER, base_addr)
+#define MSTATUS_MIE         	0x00000008
 
-#define INTERRUPT_CORE0_INTR_STATUS_0 	(BASE_ADDR + 0x00F8)
-#define INTERRUPT_CORE0_CPU_INT_ENABLE	(BASE_ADDR + 0x0104)
-#define mcause 							(BASE_ADDR + 0x342)
-#define mtvec 							(BASE_ADDR + 0x305)
+#define INTERRUPT_CORE0_CPU_INT_ENABLE		(BASE_ADDR + 0x0104)
+#define NTERRUPT_CORE0_CPU_INT_THRESH_REG	(BASE_ADDR + 0x0194)
+
+#define mcause 								0x342
+#define mstatus 							0x300
+#define mtvec 								0x305
 
 void irqctrl_enable(unsigned int irq) {
 	REG32_ORIN(INTERRUPT_CORE0_CPU_INT_ENABLE, 1 << irq);
@@ -30,8 +34,19 @@ int irqctrl_get_intid(void) {
 	return (REG32_LOAD(mcause) - mtvec) / 4;
 }
 
+void rv_utils_restore_intlevel_regval(uint32_t restoreval)
+{
+    REG32_STORE(NTERRUPT_CORE0_CPU_INT_THRESH_REG, restoreval);
+}
+
 int irqctrl_set_level(unsigned int irq, int level) {
-	return 0;
+	uint32_t old_mstatus = csr_read(mstatus);
+	csr_clear(mstatus, MSTATUS_MIE);
+    uint32_t old_thresh = REG32_LOAD(NTERRUPT_CORE0_CPU_INT_THRESH_REG);
+    rv_utils_restore_intlevel_regval(level);
+    csr_set(mstatus, old_mstatus & MSTATUS_MIE);
+
+    return old_thresh;
 }
 
 static int esp32c3_intc_init(void) {
