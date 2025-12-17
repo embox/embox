@@ -34,9 +34,9 @@ int irqctrl_set_level(unsigned int irq, int level) {
 	return 0;
 }
 
-static int matrixint_init(void) {
+static int esp32c3_intc_init(void) {
 	REG32_STORE(INTERRUPT_CORE0_CPU_INT_ENABLE, 0);
 	return 0;
 }
 
-IRQCTRL_DEF(matrixint, matrixint_init);
+IRQCTRL_DEF(esp32c3_intc, esp32c3_intc_init);
