@@ -18,6 +18,22 @@ TEST_CASE("Test hypot(0, 0) = 0") {
     test_assert(hypot(0, 0) == 0.0);
 }
 
+TEST_CASE("Test hypot returns +0.0 for signed zero inputs") {
+    double r;
+
+    r = hypot(0.0, 0.0);
+    test_assert(r == 0.0);
+    test_assert(!signbit(r));
+
+    r = hypot(-0.0, 0.0);
+    test_assert(r == 0.0);
+    test_assert(!signbit(r));
+
+    r = hypot(-0.0, -0.0);
+    test_assert(r == 0.0);
+    test_assert(!signbit(r));
+}
+
 TEST_CASE("Test hypot(5, 0) = 5") {
     test_assert(hypot(5, 0) == 5.0);
 }
@@ -48,6 +64,11 @@ TEST_CASE("Test hypot with -NAN") {
     test_assert(isnan(hypot(-NAN, 1)));
     test_assert(isnan(hypot(1, -NAN)));
     test_assert(isnan(hypot(-NAN, -NAN)));
+}
+
+TEST_CASE("Test hypot infinity takes precedence over NaN") {
+    test_assert(isinf(hypot(INFINITY, NAN)));
+    test_assert(isinf(hypot(NAN, INFINITY)));
 }
 
 TEST_CASE("Test hypot with large numbers") {
