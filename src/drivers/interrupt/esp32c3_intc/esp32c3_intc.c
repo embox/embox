@@ -31,7 +31,7 @@ void irqctrl_disable(unsigned int irq) {
 // }
 
 int irqctrl_get_intid(void) {
-	return (REG32_LOAD(mcause) - mtvec) / 4;
+	return csr_read(mcause) & 0x3FF;
 }
 
 void rv_utils_restore_intlevel_regval(uint32_t restoreval)
@@ -51,6 +51,7 @@ int irqctrl_set_level(unsigned int irq, int level) {
 
 static int esp32c3_intc_init(void) {
 	REG32_STORE(INTERRUPT_CORE0_CPU_INT_ENABLE, 0);
+	csr_set(mstatus, MSTATUS_MIE);
 	return 0;
 }
 
