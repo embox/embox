@@ -1,10 +1,10 @@
 package embox.driver.interrupt
 
-module matrixint extends irqctrl_api {
+module esp32c3_intc extends irqctrl_api {
 	option string log_level="LOG_NONE"
 
 	option number base_addr = 0x600C2000
 
-	source "matrixint.c"
-    source "matrixint.h"
+	source "esp32c3_intc.c"
+    source "esp32c3_intc.h"
 }
