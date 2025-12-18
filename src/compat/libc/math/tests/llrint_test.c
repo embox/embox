@@ -51,3 +51,8 @@ TEST_CASE("Test llrint with FE_UPWARD") {
 	test_assert(llrint(-2.9) == -2LL);
 }
 
+TEST_CASE("Test llrint with very small values") {
+	test_assert(llrint(1e-300) == 0LL);
+	test_assert(llrint(-1e-300) == 0LL);
+}
+
