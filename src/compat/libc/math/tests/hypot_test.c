@@ -93,3 +93,14 @@ TEST_CASE("Test hypot symmetry property") {
 
     test_assert(hypot(x, y) == hypot(y, x));
 }
+
+TEST_CASE("Test hypot with subnormal and normal") {
+    double x = 1e-308;
+    double y = 1.0;
+    test_assert(hypot(x, y) == 1.0);
+}
+
+TEST_CASE("Test hypot with negative infinity") {
+    test_assert(isinf(hypot(-INFINITY, 1)));
+    test_assert(isinf(hypot(1, -INFINITY)));
+}
