@@ -1,7 +1,7 @@
 package embox.driver.net
 
 module tun {
-	source "tun.c"
+	source "tuntap.c"
 
 	depends embox.net.entry_api
 	depends embox.net.l2.ethernet
