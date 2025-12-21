@@ -241,7 +241,7 @@ static inline void clip_box(Det& d, int W, int H) {
 }
 
 int main(int argc, char** argv) {
-    const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.ppm"; 
+    const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.png"; 
     const int   S   = (argc > 2) ? atoi(argv[2]) : 320;
     const float CONF = 0.25f;
     const float IOU  = 0.50f;

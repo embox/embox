@@ -8,6 +8,7 @@ package embox.cmd.ncnn
 @BuildDepends(embox.lib.libstdcxx)
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(third_party.lib.ncnn.libncnn)
+@BuildDepends(third_party.lib.stb)
 module ncnn_yolo_demo {
     @Cflags("-march=armv5te")
     @Cflags("-mtune=arm926ej-s")
