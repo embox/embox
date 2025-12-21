@@ -19,6 +19,7 @@
 
 #include "dfl_decode.h"
 #include "nms.h"
+#include "image_io.h"
 
 static inline int iround(float x) {
     return (int)(x + (x >= 0.0f ? 0.5f : -0.5f));
@@ -249,7 +250,7 @@ int main(int argc, char** argv) {
     std::vector<unsigned char> rgb;
     int w0 = 0, h0 = 0;
     printf("[1] start, loading image...\n");
-    if (!load_ppm_rgb(img, rgb, w0, h0)) {
+    if (!load_image_rgb(img, rgb, w0, h0)) {
         printf("image load failed: %s\n", img);
         return -2;
     }

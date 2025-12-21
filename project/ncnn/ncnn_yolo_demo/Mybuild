@@ -14,6 +14,7 @@ module ncnn_yolo_demo {
     @Cflags("-mfloat-abi=hard")
     @Cflags("-mfpu=vfp")
     @Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/platform.h")
+    @Cflags("-fno-stack-protector")
 
     @Cflags("-fno-sanitize=undefined")
     @Cflags("-I/usr/arm-none-eabi/include")
@@ -56,7 +57,9 @@ module ncnn_yolo_demo {
     source 
         "main.cpp",
         "dfl_decode.cpp",
+        "image_io.cpp",
         "nms.cpp",
+        "stb_image_impl.cpp",
         "yolov8n_ncnn_model/yolov8n.id.h",
         "yolov8n_ncnn_model/yolov8n.mem.h"
 }
