@@ -1,5 +1,3 @@
-// main.cpp — версия для Embox
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -277,7 +275,6 @@ int main(int argc, char** argv) {
 
     LetterboxInfo LI;
     std::vector<unsigned char> lb = make_letterbox_rgb(rgb.data(), w0, h0, S, LI);
-    // save_ppm_rgb("/debug_input.ppm", lb.data(), S, S);
 
     ncnn::Mat in = ncnn::Mat::from_pixels(lb.data(), ncnn::Mat::PIXEL_RGB, S, S);
     const float norm[3] = {1.f/255.f, 1.f/255.f, 1.f/255.f};
