@@ -1,0 +1,6 @@
+package embox.compat.linux.uapi
+
+module videodev2 {
+    @IncludeExport(path="linux")
+	source "videodev2.h"
+}

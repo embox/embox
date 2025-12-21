@@ -39,10 +39,6 @@ void closelog(void);
 
 typedef unsigned int u_int;
 
-static inline pid_t setsid(void) {
-	return 0;
-}
-
 static inline int initgroups(const char *user, gid_t group) {
 	(void) user;
 	(void) group;

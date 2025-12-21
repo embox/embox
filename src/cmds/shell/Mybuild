@@ -49,7 +49,6 @@ module tish extends shell_api {
 	@NoRuntime depends embox.compat.posix.util.sleep
 	depends embox.cmd.exit
 	depends embox.cmd.logout
-	@NoRuntime depends embox.kernel.task.resource.module_ptr
 }
 
 @AutoCmd

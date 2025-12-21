@@ -122,6 +122,11 @@ module frexp_test {
 	source "frexp_test.c"
 }
 
+module hypot_test {
+	@Cflags("-fno-builtin")
+	source "hypot_test.c"
+}
+
 module ldexp_test {
 	@Cflags("-fno-builtin")
 	source "ldexp_test.c"

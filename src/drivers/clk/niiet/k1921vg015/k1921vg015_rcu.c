@@ -1,7 +1,9 @@
 /**
  * @file
- * 
+ * @brief RCU (Reset and Clock Unit) driver for NIIET K1921VG015
+ *
  * @author Anton Bondarev
+ * @author kimstik
  * @date 04.04.2024
  */
 
@@ -214,8 +216,17 @@ void niiet_spi_set_rcu(int num) {
 }
 
 void niiet_i2c_set_rcu(int num) {
+	volatile uint32_t dummy;
 
+	/* Put I2C in reset state first */
+	RCU->RCU_RSTDISAPB_reg &= ~RCU_RSTDISAPB_I2C_EN(num);
+	dummy = RCU->RCU_RSTDISAPB_reg; /* dummy read */
+	(void)dummy;
+
+	/* Enable clock */
 	RCU->RCU_CGCFGAPB_reg |= RCU_CGCFGAPB_I2C_EN(num);
+
+	/* Release reset */
 	RCU->RCU_RSTDISAPB_reg |= RCU_RSTDISAPB_I2C_EN(num);
 }
 

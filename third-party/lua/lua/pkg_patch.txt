@@ -1,6 +1,6 @@
-diff -Naur -u lua-5.4.6.orig/src/ldo.c lua-5.4.6/src/ldo.c
---- lua-5.4.6.orig/src/ldo.c	2023-05-02 23:02:29.000000000 +0300
-+++ lua-5.4.6/src/ldo.c	2024-04-24 18:45:03.009789283 +0300
+diff -Naur -u lua-5.4.8.orig/src/ldo.c lua-5.4.8/src/ldo.c
+--- lua-5.4.8.orig/src/ldo.c	2023-05-02 23:02:29.000000000 +0300
++++ lua-5.4.8/src/ldo.c	2024-04-24 18:45:03.009789283 +0300
 @@ -60,7 +60,7 @@
  	try { a } catch(...) { if ((c)->status == 0) (c)->status = -1; }
  #define luai_jmpbuf		int  /* dummy variable */
@@ -10,8 +10,8 @@ diff -Naur -u lua-5.4.6.orig/src/ldo.c lua-5.4.6/src/ldo.c
  
  /* in POSIX, try _longjmp/_setjmp (more efficient) */
  #define LUAI_THROW(L,c)		_longjmp((c)->b, 1)
---- lua-5.4.6.orig/src/linit.c	2024-04-24 19:56:28.596313022 +0300
-+++ lua-5.4.6/src/linit.c	2024-04-24 20:06:39.529105277 +0300
+--- lua-5.4.8.orig/src/linit.c	2024-04-24 19:56:28.596313022 +0300
++++ lua-5.4.8/src/linit.c	2024-04-24 20:06:39.529105277 +0300
 @@ -35,6 +35,9 @@
  #include "lauxlib.h"
  
@@ -33,9 +33,9 @@ diff -Naur -u lua-5.4.6.orig/src/ldo.c lua-5.4.6/src/ldo.c
    {NULL, NULL}
  };
  
-diff -Naur -u lua-5.4.6.orig/src/liolib.c lua-5.4.6/src/liolib.c
---- lua-5.4.6.orig/src/liolib.c	2023-05-02 23:02:29.000000000 +0300
-+++ lua-5.4.6/src/liolib.c	2024-04-24 19:49:12.371459505 +0300
+diff -Naur -u lua-5.4.8.orig/src/liolib.c lua-5.4.8/src/liolib.c
+--- lua-5.4.8.orig/src/liolib.c	2023-05-02 23:02:29.000000000 +0300
++++ lua-5.4.8/src/liolib.c	2024-04-24 19:49:12.371459505 +0300
 @@ -54,7 +54,7 @@
  
  #if !defined(l_popen)		/* { */
@@ -54,9 +54,9 @@ diff -Naur -u lua-5.4.6.orig/src/liolib.c lua-5.4.6/src/liolib.c
  #define l_getc(f)		getc_unlocked(f)
  #define l_lockfile(f)		flockfile(f)
  #define l_unlockfile(f)		funlockfile(f)
-diff -Naur -u lua-5.4.6.orig/src/Makefile lua-5.4.6/src/Makefile
---- lua-5.4.6.orig/src/Makefile	2023-02-03 13:43:14.000000000 +0300
-+++ lua-5.4.6/src/Makefile	2024-04-24 19:51:49.316274576 +0300
+diff -Naur -u lua-5.4.8.orig/src/Makefile lua-5.4.8/src/Makefile
+--- lua-5.4.8.orig/src/Makefile	2023-02-03 13:43:14.000000000 +0300
++++ lua-5.4.8/src/Makefile	2024-04-24 19:51:49.316274576 +0300
 @@ -6,7 +6,7 @@
  # Your platform. See PLATS for possible values.
  PLAT= guess

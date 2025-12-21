@@ -27,6 +27,11 @@ int  CPU_ISSET(int cpu, cpu_set_t *set) {
 	return sched_affinity_check(set, 1 << cpu);
 }
 
+int CPU_COUNT(cpu_set_t *set) {
+	return 1; // FIXME CPU_GET_COUNTER
+
+}
+
 int sched_getcpu(void) {
 	uint32_t cpuid = cpu_get_id();
 	return cpuid;

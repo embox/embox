@@ -1,5 +1,6 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
+#include <stm32f4_chip.h>
 
 struct uart_conf uarts[] = {
  	[1] = {
@@ -11,8 +12,8 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", PA, PIN_9, AF7),
-				PIN("RX", PA, PIN_10, AF7),
+				PIN("TX", GPIO_PORT_A, 9, AF7),
+				PIN("RX", GPIO_PORT_A, 10, AF7),
 			},
 			.clocks = {
 				VAL("TX",   CLK_GPIOA),
@@ -31,8 +32,8 @@ struct uart_conf uarts[] = {
 				VAL("", 38),
 			},
 			.pins = {
-				PIN("TX", PA, PIN_2, AF7),
-				PIN("RX", PA, PIN_3, AF7),
+				PIN("TX", GPIO_PORT_A, 2, AF7),
+				PIN("RX", GPIO_PORT_A, 3, AF7),
 			},
 			.clocks = {
 				VAL("TX",   CLK_GPIOA),
@@ -51,8 +52,8 @@ struct uart_conf uarts[] = {
 				VAL("", 39),
 			},
 			.pins = {
-				PIN("TX", PD, PIN_8, AF7),
-				PIN("RX", PD, PIN_9, AF7),
+				PIN("TX", GPIO_PORT_D, 8, AF7),
+				PIN("RX", GPIO_PORT_D, 9, AF7),
 			},
 			.clocks = {
 				VAL("TX",   CLK_GPIOD),
@@ -71,8 +72,8 @@ struct uart_conf uarts[] = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_6, AF8),
-				PIN("RX", PC, PIN_7, AF8),
+				PIN("TX", GPIO_PORT_C, 6, AF8),
+				PIN("RX", GPIO_PORT_C, 7, AF8),
 			},
 			.clocks = {
 				VAL("TX",   CLK_GPIOC),
@@ -138,8 +139,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 32),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_B, PIN_6, AF4),
-				PIN("SDA", GPIO_PORT_B, PIN_9, AF4),
+				PIN("SCL", GPIO_PORT_B, 6, AF4),
+				PIN("SDA", GPIO_PORT_B, 9, AF4),
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C1),
@@ -156,8 +157,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 34),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_B, PIN_10, AF4),
-				PIN("SDA", GPIO_PORT_B, PIN_11, AF4),
+				PIN("SCL", GPIO_PORT_B, 10, AF4),
+				PIN("SDA", GPIO_PORT_B, 11, AF4),
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C1),

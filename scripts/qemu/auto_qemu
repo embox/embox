@@ -80,7 +80,7 @@ guess_arch() {
 get_user_empty_guess AUTOQEMU_ARCH guess_arch
 
 guess_mem() {
-	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*\)M)/\1/p')
+	ram=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/^RAM *([0-9x]*, *\([0-9]*[MK]\))/\1/p')
 	if [ "$ram" ]; then
 		echo "$ram"
 	else
@@ -153,7 +153,7 @@ get_user_undef_guess AUTOQEMU_KVM_ARG guess_kvm
 guess_load_arg() {
 	NAND_SIZE=$(cat $LDS_CONF | gcc -P -E - | sed -n 's/.*\<AUTOQEMU_UIMAGE_SIZE_MB=\([0-9]\+\).*$/\1/p')
 	if [ ! "$NAND_SIZE" ]; then
-		if [ "$CONFIG_ARCH" == "riscv" ]; then
+		if [ "$CONFIG_ARCH" == "riscv" ] && [ "$CONFIG_PLATFORM" != "esp32c3" ]; then
 			echo "-bios ${KERNEL:-./build/base/bin/embox}"
 		elif [ "$CONFIG_PLATFORM" == "niisi_vk01" ] || [ "$CONFIG_PLATFORM" == "niisi_vm10" ]; then
 			echo "-bios ${KERNEL:-./build/base/bin/embox.bin}"
@@ -241,6 +241,8 @@ guess_machine() {
 				echo "-M scr4"
 			elif [ "$CONFIG_PLATFORM" == "syntacore_scr5" ]; then
 				echo "-M scr5"
+			elif [ "$CONFIG_PLATFORM" == "esp32c3" ]; then
+				echo "-M esp32c3"
 			fi
 			;;
 		x86)
@@ -440,18 +442,23 @@ if [ "$graphic_n" -gt 0 ]; then
 
 fi
 
-RUNAS=""
+runas=""
 # Don't try to drop privileges for root user; qemu fails otherwise
 if [[ "$(id -u)" -ne 0 ]] ; then
-	if [ "$QEMU_VER" -ge 100000 ]; then
-		RUNAS="-run-with user=$(whoami)"
+	if [ "$QEMU_VER" -ge 90000 ]; then
+		runas="-run-with user=$(whoami)"
 	else 
-		RUNAS="-runas $(whoami)"
+		runas="-runas $(whoami)"
 	fi
 	sudo='sudo -E'
 fi
 
-ARG_LINE="${AUTOQEMU_SUDO:-$sudo} $QEMU $RUNAS $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
+if [ "$AUTOQEMU_DISABLE_SUDO" == "y" ]; then
+	sudo=""
+	runas=""
+fi
+
+ARG_LINE="$sudo $QEMU $runas $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
 
 info $ARG_LINE
 $ARG_LINE

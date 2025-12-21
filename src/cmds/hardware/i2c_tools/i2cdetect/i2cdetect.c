@@ -42,8 +42,8 @@ static void i2c_bus_scan(long busn, int read) {
 	ssize_t res;
 
 	printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f\n");
-	printf("00:         ");
-	for (i = 0x03; i < 0x77; i++) {
+	printf("00:      ");
+	for (i = 0x02; i < 0x77; i++) {
 		if (0 == (i % 0x10)) {
 			printf("\n%2X:", (unsigned)i);
 		}

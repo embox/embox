@@ -5,7 +5,7 @@ print_help() {
 	echo -e "./scripts/ld_map_info.sh [MAP_FILE] [SECTION_PATTERN]\n"
 	echo "Examples:"
 	echo "  ./scripts/ld_map_info.sh build/base/obj/embox-2.o.map \"\.text\""
-	echo "  ./scripts/ld_map_info.sh build/base/obj/embox.o.map \"\.rodata\""
+	echo "  ./scripts/ld_map_info.sh build/base/obj/embox-2.o.map \"\.rodata\""
 }
 
 MAP=$1

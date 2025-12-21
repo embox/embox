@@ -9,18 +9,9 @@ module All {
 		pid
 }
 
+/* XXX */	
 @DefaultImpl(exec_exchanged)
 abstract module exec_lib { }
-
-static module exec {
-	source "exec.c"
-	depends vfork
-	depends exec_lib
-	depends embox.kernel.task.resource.module_ptr
-	depends embox.kernel.task.resource.argv
-
-	depends embox.cmd.sh.shell_registry
-}
 
 @DefaultImpl(fork_copy_everything)
 abstract module fork { }

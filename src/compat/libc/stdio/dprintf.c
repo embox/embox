@@ -5,35 +5,27 @@
  * @author Anton Bondarev
  */
 
+#include <fcntl.h>
+#include <stdarg.h>
 #include <stdio.h>
-#include <stdint.h>
-#include <assert.h>
-#include <unistd.h>
 
-#include "printf_impl.h"
+#include "file_struct.h"
 
-struct printchar_handler_data {
-	int fd;
-};
+int vdprintf(int fd, const char *format, va_list args) {
+	FILE f = {
+	    .fd = fd,
+	    .flags = O_WRONLY,
+	};
 
-static int file_printchar(struct printchar_handler_data *d, int c) {
-	uint8_t buf;
-
-	buf = (uint8_t)c & 0xFF;
-
-	return write(d->fd, &buf, 1);
+	return vfprintf(&f, format, args);
 }
 
-int dprintf(int fildes, const char *format, ...) {
+int dprintf(int fd, const char *format, ...) {
 	int ret;
-	struct printchar_handler_data data;
 	va_list args;
 
-	assert(format != NULL);
-	data.fd = fildes;
-
 	va_start(args, format);
-	ret = __print(file_printchar, &data, format, args);
+	ret = vdprintf(fd, format, args);
 	va_end(args);
 
 	return ret;

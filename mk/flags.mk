@@ -72,14 +72,6 @@ else
 CLANG_VERSION_MAJOR :=
 endif
 
-SRC_INCLUDE_PATH := \
-	include \
-	arch/$(ARCH)/include \
-	compat/linux/include \
-	compat/posix/include \
-	compat/bsd/include \
-	compat/libc/include
-
 #
 # Preprocessor flags
 #
@@ -93,16 +85,19 @@ ifdef PLATFORM
 cppflags += -D__EMBOX_PLATFORM__$(subst -,_,$(PLATFORM))__
 endif
 
-cppflags += -I$(INCLUDE_INSTALL_DIR) -I$(SRCGEN_DIR)/include
+cppflags += \
+	-I$(INCLUDE_INSTALL_DIR) \
+	-I$(SRCGEN_DIR)/include \
+	-I$(SRC_DIR)/include \
+	-I$(SRC_DIR)/arch/$(ARCH)/include \
+	-I$(SRC_DIR)/compat/linux/include \
+	-I$(SRC_DIR)/compat/posix/include \
+	-I$(SRC_DIR)/compat/bsd/include \
+	-I$(SRC_DIR)/compat/libc/include
 
-ifdef GEN_DIST
-cppflags += $(addprefix -I$(SRCGEN_DIR)/src/,$(SRC_INCLUDE_PATH))
-else
-cppflags += $(addprefix -I$(SRC_DIR)/,$(SRC_INCLUDE_PATH))
-
-# Required for "@Generated" headers. See mk/ugly.mk.
+# XXX. Required for "@Generated" headers. See mk/ugly.mk.
 cppflags += -I$(SRCGEN_DIR)/src/include
-endif
+$(and $(shell $(MKDIR) $(SRCGEN_DIR)/src/include),)
 
 cppflags += -nostdinc -MMD -MP $(CPPFLAGS)
 CPPFLAGS := $(cppflags)

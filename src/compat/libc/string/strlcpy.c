@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <stddef.h>
 #include <string.h>
 
 /*
@@ -20,8 +21,8 @@ size_t strlcpy(char *dst, const char *src, size_t size) {
 		return strlen(src);
 	}
 
-	while(n-- != 1) {
-		if(*s == '\0') {
+	while (n-- != 1) {
+		if (*s == '\0') {
 			break;
 		}
 		*dst++ = *s++;

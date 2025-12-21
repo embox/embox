@@ -1,0 +1,8 @@
+package embox.driver.clock
+
+module esp32c3_systimer {
+	
+	source "esp32c3_systimer.c"
+
+	depends embox.kernel.time.clock_source
+}

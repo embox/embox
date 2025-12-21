@@ -28,23 +28,40 @@ flags ?=
 iec2c ?=
 ieclib ?=
 
-ifndef GEN_DIST
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.c
+	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.c
 	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.S
 	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.S
+	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cpp
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cpp
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cxx
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cxx
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.C
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.C
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
 $(OBJ_DIR)/%.o : $(ROOT_DIR)/%.cc
+	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
+
+$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cc
 	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
 
 $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
@@ -53,33 +70,14 @@ $(OBJ_DIR)/%.lds : $(ROOT_DIR)/%.lds.S
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
 
-$(GEN_DIR)/%.st.c : $(ROOT_DIR)/%.st
-	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
-endif # GEN_DIST
-
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.c
-	$(CC) $(flags_before) $(CFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.S
-	$(CC) $(flags_before) $(ASFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cpp
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cxx
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.C
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
-$(OBJ_DIR)/%.o : $(GEN_DIR)/%.cc
-	$(CXX) $(flags_before) $(CXXFLAGS) $(CPPFLAGS) $(flags) -c -o $@ $<
-
 $(OBJ_DIR)/%.lds : $(GEN_DIR)/%.lds.S
 	$(CPP) $(flags_before) $(CFLAGS) -P -D__LDS__ $(CPPFLAGS) $(flags) \
 	-I$(SRCGEN_DIR) \
 	-imacros $(SRCGEN_DIR)/config.lds.h \
 		-MMD -MT $@ -MF $@.d -o $@ $<
+
+$(GEN_DIR)/%.st.c : $(ROOT_DIR)/%.st
+	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@
 
 $(GEN_DIR)/%.st.c : $(GEN_DIR)/%.st
 	IEC2C=$(iec2c) IECLIB=$(ieclib) $(ROOT_DIR)/mk/plc/iec2c.sh $< $@

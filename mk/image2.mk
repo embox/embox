@@ -3,13 +3,15 @@
 # Author: Eldar Abusalimov
 #
 
-ifeq ($(STAGE),1)
-embox_o   := $(OBJ_DIR)/embox.o
-else
-embox_o   := $(OBJ_DIR)/embox-2.o
-$(embox_o) : $(OBJ_DIR)/embox.o
+ifndef STAGE
+$(error STAGE is not defined)
 endif
 
+ifneq ($(STAGE),$(filter $(STAGE),1 2))
+$(error STAGE has invalid value)
+endif
+
+embox_o   := $(OBJ_DIR)/embox-$(STAGE).o
 image_lds := $(OBJ_DIR)/image.lds
 
 .PHONY : all FORCE
@@ -161,14 +163,12 @@ $(OBJ_DIR)/module/%.o :
 	@$(if $(module_id),$(call do_objcopy, $(objcopy_options), $(obj_build)))
 	$(mod_postbuild)
 
-# Here goes image creation rules...
-#
-$(embox_o): ldflags_all = $(LDFLAGS) \
-		$(call fmt_line,$(addprefix -T,$(ld_scripts)))
 $(embox_o):
-	mkdir -p $(OBJ_DIR)/mk;
-	$(ROOT_DIR)/mk/gen_buildinfo.sh > $(OBJ_DIR)/mk/buildinfo.ld;
-	$(LD) -r $(ldflags_all) \
+# buildinfo.ld contains build time information,
+# so it must be updated every time the image is rebuilt.
+	$(ROOT_DIR)/mk/gen_buildinfo.sh > $(GEN_DIR)/buildinfo.ld
+	$(LD) -r $(LDFLAGS) \
+		$(call fmt_line,$(addprefix -T,$(ld_scripts))) \
 		$(call fmt_line,$(ld_objs)) \
 		--start-group \
 		$(call fmt_line,$(ld_libs)) \
@@ -182,7 +182,7 @@ image_prereqs = $(ld_scripts) $(ld_objs) $(ld_libs) $(common_prereqs)
 
 $(embox_o) : $$(image_prereqs)
 $(embox_o) : mk_file = $(__image_mk_file)
-$(embox_o) : ld_scripts = $(__image_ld_scripts1) # TODO check this twice
+$(embox_o) : ld_scripts = $(__image_ld_scripts1)
 $(embox_o) : ld_objs = $(foreach s,$(stages),$(__image_ld_objs$s))
 $(embox_o) : ld_libs = $(foreach s,$(stages),$(__image_ld_libs$s))
 
@@ -195,5 +195,23 @@ $(image_lds) : flags = $(addprefix -include ,$(wildcard \
 		$(SRC_DIR)/arch/$(ARCH)/embox.lds.S \
 		$(if $(value PLATFORM), $(PLATFORM_DIR)/$(PLATFORM)/arch/$(ARCH)/platform.lds.S)))
 $(image_lds) : $(GEN_DIR)/image.lds.S
+
+ifdef DIST_GEN
+embox_a   := $(OBJ_DIR)/embox-$(STAGE).a
+embox_mri := $(OBJ_DIR)/embox-$(STAGE).mri
+
+all : $(embox_a)
+
+$(embox_mri) :
+	@echo "create $(embox_a)" > $@
+	@for lib in $(foreach s,$(stages),$(__image_ld_libs$s)); do \
+		echo "addlib $$lib" >> $@; \
+	done
+	@echo "save" >> $@
+	@echo "end" >> $@
+
+$(embox_a) : $(embox_mri) $(embox_o)
+	$(AR) $(ARFLAGS) -M <$(embox_mri)
+endif # DIST_GEN
 
 -include $(image_lds).d

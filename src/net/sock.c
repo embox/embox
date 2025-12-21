@@ -115,10 +115,16 @@ int sock_dgram_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 	skb = sock_get_skb(sk, timeout, &err);
 
+	// FIXME: assert(err)?
+	if (!skb && msg->msg_flags & MSG_DONTWAIT) {
+		return 0;
+	}
+
 	if (!skb) {
 		assert(err);
 		return err;
 	}
+	// FIXME
 
 	nrecv = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
 			skb->p_data, skb->p_data_end - skb->p_data);

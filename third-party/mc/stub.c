@@ -31,10 +31,6 @@ pid_t getsid(pid_t pid) {
 	return -1;
 }
 
-pid_t setsid() {
-	return -1;
-}
-
 int statvfs(const char *path, struct statvfs *buf) {
 	return -1;
 }

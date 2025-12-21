@@ -65,7 +65,7 @@ endef # buildgen
 .PHONY : distgen dg
 dg : distgen
 distgen :
-	+@$(make_mybuild) $@ GEN_DIST=y
+	+@$(make_mybuild) $@
 
 define help-distgen
 Usage: $(MAKE) distgen-<template>
@@ -78,6 +78,16 @@ Usage: $(MAKE) distgen-<template>
 
   Note that in order to use simple form (with no template spesified),
   you have to configure the project first. See configuration targets.
+endef # distgen
+
+.PHONY : dist
+dist :
+	+@$(make_mybuild) $@
+
+define help-dist
+Usage: $(MAKE) dist
+
+  Build a distributable tarball.
 endef # distgen
 
 .PHONY : rootfs
@@ -187,7 +197,7 @@ $(templates:%=confload-%) : confload-% :
 	@$(RM) -fR $(CONF_DIR)   #if this is a link, removes link only
 	@$(MKDIR) $(CONF_DIR)
 	@$(CP) -fR $(call template_name2dir,$*)/* $(CONF_DIR)
-	@$(RM) -r $(ROOT_DIR)/build
+	@$(RM) -r $(BUILD_DIR)
 	@echo 'Config complete'
 
 define help-confload
@@ -315,22 +325,20 @@ ext_conf:
 .PHONY : clean
 c : clean
 clean : #clean regardless build folder as symlink or not
-	@$(RM) -r $(ROOT_DIR)/build/*
-	@$(RM) -r $(DIST_DIR)/*
+	@$(RM) -r $(BUILD_DIR)/*
 
 define help-clean
 Usage: $(MAKE) clean
    Or: $(MAKE) c
 
-  Remove most build artifacts (image, libraries, objects, etc.) #TODO Usecase?
+  Remove most build artifacts (image, libraries, objects, etc).
 endef # clean
 
 .PHONY : confclean
 confclean :
 	@$(RM) -r $(CONF_DIR)/*
 	@#executes effectively clean on static build folder; not on symlink build 'folder'
-	@$(RM) -r $(ROOT_DIR)/build
-	@$(RM) -r $(DIST_DIR)
+	@$(RM) -r $(BUILD_DIR)
 
 define help-confclean
 Usage: $(MAKE) confclean
@@ -355,13 +363,13 @@ endef # cacheclean
 .PHONY : distclean
 dc : distclean
 distclean : clean confclean cacheclean
+	@$(RM) -r $(DIST_INSTALL_DIR)
 
 define help-distclean
 Usage: $(MAKE) distclean
 
-  Performs full clean: clean, confclean, distclean. After running this,
-  root directory reverts to fresh state, just like after fresh checkout
-  or after archive extraction.
+  After running this, root directory reverts to fresh state,
+  just like after fresh checkout or after archive extraction.
 endef # distclean
 
 #
@@ -376,45 +384,46 @@ Usage: $(MAKE) [targets]
 Embox version $(EMBOX_VERSION).
 
 Building targets:
-  all (a)        - Default build target, alias to '$(MAKE) build'
-  build (b)      - Build the current active configuration
-  build-<t>      - Build a given configuration template
-  buildgen (bg)  - Unconditionally regenerate build environment
-  buildgen-<t>   - Prepare build environment for a given template
-  distgen (dg)   - Generate self-sustained build environment for distribution
-  distgen-<t>    - Prepare distribution for a given template
-  menubuild (mb) - Interactively select a configuration to build a menu based
-                   program (requires 'dialog')
-  xbuild (xb)    - Interactively select a configuration to build using GTK
-                   client (requires 'Xdialog')
-  disasm         - Build and make disassembly of image
-  piggy          - Build and prepare `piggy image'
+  all (a)         - Default build target, alias to '$(MAKE) build'
+  build (b)       - Build the current active configuration
+  build-<t>       - Build a given configuration template
+  buildgen (bg)   - Unconditionally regenerate build environment
+  buildgen-<t>    - Prepare build environment for a given template
+  distgen (dg)    - Generate self-sustained build environment for distribution
+  distgen-<t>     - Prepare distribution for a given template
+  dist            - Build a distributable tarball
+  menubuild (mb)  - Interactively select a configuration to build a menu based
+                    program (requires 'dialog')
+  xbuild (xb)     - Interactively select a configuration to build using GTK
+                    client (requires 'Xdialog')
+  disasm          - Build and make disassembly of image
+  piggy           - Build and prepare `piggy image'
 
 Configuration targets:
-  confload       - List available configuration templates
-  confload-<t>   - Load a configuration from template <t>
+  confload        - List available configuration templates
+  confload-<t>    - Load a configuration from template <t>
   menuconfig (mc) - Interactively select a configuration using a menu based
-                   program (requires 'dialog')
+                    program (requires 'dialog')
   xconfig (xc)    - Interactively select a configuration using GTK client
-                   (requires 'Xdialog')
+                    (requires 'Xdialog')
   ext_conf        - Add external project (folder) to be used together with Embox.
                     This folder can include one or more different sub-projects folders
                     with theirs own Embox modules, templates.
                     Example: make ext_conf EXT_PROJECT_PATH=<your projects path>
 
 Cleaning targets:
-  clean (c)      - Remove most build artifacts (image, libraries, objects, etc.)
-  confclean      - Remove loaded configuration (requires redo of configuration setup/load)
-		   Also executes clean when the build folder is static (not a symlink)
-  cacheclean     - Flush Mybuild internal cache
-  distclean (dc) - clean + confclean + cacheclean
+  clean (c)       - Remove most build artifacts (image, libraries, objects, etc.)
+  confclean       - Remove loaded configuration (requires redo of configuration setup/load)
+                    Also executes clean when the build folder is static (not a symlink)
+  cacheclean      - Flush Mybuild internal cache
+  distclean (dc)  - Remove all generated files
 
 Documentation targets:
-  dot            - Generate a picture with module dependency graph
-  docsgen        - Denerate documentation from doxygen comments
+  dot             - Generate a picture with module dependency graph
+  docsgen         - Denerate documentation from doxygen comments
 
 Module information:
-  mod            - Various module information. See more in help-mod
+  mod             - Various module information. See more in help-mod
 
 endef
 

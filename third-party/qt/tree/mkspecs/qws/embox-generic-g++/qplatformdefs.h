@@ -100,12 +100,6 @@
 
 #define O_LARGEFILE 0
 
-inline ssize_t readlink(const char *path, char *buf, size_t bufsiz) {
-	(void)path; (void)buf; (void)bufsiz;
-	printf(">>> readLink(%s)\n", path);
-	return 0;
-}
-
 inline int symlink(const char *oldpath, const char *newpath) {
 	(void)oldpath; (void)newpath;
 	printf(">>> symlink(%s, %s)\n", oldpath, newpath);
@@ -210,15 +204,6 @@ struct __res_state {
 
 
 #define TCP_NODELAY 0
-
-//------BEGIN QProcess
-
-static inline pid_t setsid(void) {
-	printf(">>> %s\n", __func__);
-	return 0;
-}
-
-//------ END QProcess
 
 // this is for FILESYSTEMWATCHER
 #define _PC_LINK_MAX         0

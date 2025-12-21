@@ -17,6 +17,7 @@ module core {
 	@NoRuntime depends embox.compat.posix.proc.exec_lib
 	@NoRuntime depends embox.compat.posix.index_descriptor
 	@NoRuntime depends embox.compat.posix.proc.exec
+	@NoRuntime depends embox.compat.posix.stubs
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
 	@NoRuntime depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap

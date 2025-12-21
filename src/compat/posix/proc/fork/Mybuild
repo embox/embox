@@ -1,0 +1,24 @@
+package embox.compat.posix.proc
+
+module fork_copy_everything extends fork {
+	source "fork.c"
+	source "fork_addr_space.c"
+	source "fork_addr_space_stack.c"
+	source "fork_addr_space_heap.c"
+	source "fork_addr_space_static.c"
+
+	@NoRuntime depends embox.arch.fork_entry
+	@NoRuntime depends embox.kernel.task.resource.task_heap
+	@NoRuntime depends embox.kernel.task.resource.module_ptr
+	@NoRuntime depends embox.mem.phymem
+	@NoRuntime depends fork_copy_addr_space
+}
+
+/* FIXME artifical module to bypass single `extends` restriction */
+module fork_copy_addr_space extends embox.kernel.addr_space {
+	source "fork_copy_addr_space.h"
+}
+
+module fork_stub {
+	source "fork_stub.c"
+}
