@@ -1,14 +1,8 @@
 package embox.driver.serial
 
 module esp32c3_uart {
-	// option string log_level="LOG_ERR"
-
-	// option number base_addr
-	// // option number irq_num
-
-	// // option number clock_freq
-	// option number baud_rate
-
+	option string log_level="LOG_ERR"
+	
 	source "esp32c3_uart.c"
 
 	depends embox.driver.serial.core
