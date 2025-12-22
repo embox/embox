@@ -34,3 +34,9 @@ module DestructionStatic extends DestructionPolicy {
 	option number table_size = 50
 	source "cxx_destruction_static.c"
 }
+
+module cxx_core {
+    source
+        "cxx_app_startup_termination_embox.c"
+}
+

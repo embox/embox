@@ -1,0 +1,58 @@
+#pragma once
+
+#include <stddef.h>  // size_t
+#include <stdarg.h>  // va_list
+
+extern "C" {
+
+typedef int wint_t;
+
+struct mbstate_t { int __dummy; };
+
+int wmemcmp(const wchar_t *s1, const wchar_t *s2, size_t n);
+size_t wcslen(const wchar_t *s);
+const wchar_t *wmemchr(const wchar_t *s, wchar_t c, size_t n);
+wchar_t *wmemmove(wchar_t *dest, const wchar_t *src, size_t n);
+wchar_t *wmemcpy(wchar_t *dest, const wchar_t *src, size_t n);
+wchar_t *wmemset(wchar_t *s, wchar_t c, size_t n);
+
+#ifndef WEOF
+#define WEOF ((wint_t)-1)
+#endif
+
+
+long wcstol(const wchar_t *nptr, wchar_t **endptr, int base);
+unsigned long wcstoul(const wchar_t *nptr, wchar_t **endptr, int base);
+long long wcstoll(const wchar_t *nptr, wchar_t **endptr, int base);
+unsigned long long wcstoull(const wchar_t *nptr, wchar_t **endptr, int base);
+
+float wcstof(const wchar_t *nptr, wchar_t **endptr);
+double wcstod(const wchar_t *nptr, wchar_t **endptr);
+long double wcstold(const wchar_t *nptr, wchar_t **endptr);
+
+
+int vswprintf(wchar_t *s, size_t n, const wchar_t *format, va_list arg);
+
+} // extern "C"
+
+namespace std {
+    using ::mbstate_t;
+    using ::wint_t;
+
+    using ::wmemcmp;
+    using ::wcslen;
+    using ::wmemchr;
+    using ::wmemmove;
+    using ::wmemcpy;
+    using ::wmemset;
+
+    using ::wcstol;
+    using ::wcstoul;
+    using ::wcstoll;
+    using ::wcstoull;
+    using ::wcstof;
+    using ::wcstod;
+    using ::wcstold;
+
+    using ::vswprintf;
+}
