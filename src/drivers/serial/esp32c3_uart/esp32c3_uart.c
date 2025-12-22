@@ -4,13 +4,13 @@
  * @date Decab, 2025
  * @author  Efim Perevalov
  */
+// #include <assert.h>
 #include <stdint.h>
-#include <drivers/diag.h>
-#include <hal/reg.h>
+
+#include <drivers/common/memory.h>
 #include <drivers/serial/uart_dev.h>
-#include <drivers/serial/diag_serial.h>
-#include <drivers/ttys.h>
 #include <framework/mod/options.h>
+#include <hal/reg.h>
 
 #define UART_BASE      UINTMAX_C(OPTION_GET(NUMBER, base_addr))
 #define UART_BAUD_RATE OPTION_GET(NUMBER, baud_rate)
@@ -126,7 +126,7 @@
 #define UHCI_DATE(base)      ((base) + 0x0080)  /* R/W */
 
 static int esp32c3_uart_getc(struct uart *dev) {
-    return (REG32_LOAD(UART_STATUS(dev->base_addr)) & 0x3FF);
+   return (int)(REG32_LOAD(UART_FIFO(dev->base_addr)) & 0xFF);
 }
 
 static int esp32c3_uart_putc(struct uart *dev, int ch) {
@@ -190,7 +190,7 @@ static int esp32c3_uart_irq_dis(struct uart *dev, const struct uart_params *para
     return 0;
 }
 
-static const struct uart_ops esp32c3_uart_ops = {
+const struct uart_ops esp32c3_uart_ops = {
 		.uart_getc = esp32c3_uart_getc,
 		.uart_putc = esp32c3_uart_putc,
 		.uart_hasrx = esp32c3_uart_hasrx,
@@ -198,32 +198,3 @@ static const struct uart_ops esp32c3_uart_ops = {
 		.uart_irq_en = esp32c3_uart_irq_en,
 		.uart_irq_dis = esp32c3_uart_irq_dis,
 };
-
-static struct uart esp32c3_diag = {
-    .uart_ops   = &esp32c3_uart_ops,
-    .irq_num    = 0,
-    .base_addr  = (unsigned long) UART_BASE,
-};
-
-static const struct uart_params esp32c3_diag_params = {
-    .baud_rate        = UART_BAUD_RATE,
-    .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
-};
-
-DIAG_SERIAL_DEF(&esp32c3_diag, &esp32c3_diag_params);
-
-
-#include <util/macro.h>
-#define TTY_NAME ttyS0
-
-static struct uart esp32c3_ttyS0 = {
-    .uart_ops   = &esp32c3_uart_ops,
-    .irq_num    = 0,
-    .base_addr  = (unsigned long)UART_BASE,
-    .params = {
-        .baud_rate        = UART_BAUD_RATE,
-        .uart_param_flags = UART_PARAM_FLAGS_8BIT_WORD,
-    }
-};
-
-TTYS_DEF(TTY_NAME, &esp32c3_ttyS0);
