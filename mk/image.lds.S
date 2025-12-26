@@ -67,7 +67,7 @@ SECTIONS {
 		KEEP(*(.eh_frame))
 		KEEP(*(.eh_frame.*))
 		KEEP(*(.eh_frame_end))
-		/* KEEP(*(.gcc_except_table*)) */
+		KEEP(*(.gcc_except_table*))
 
 		ALIGNMENT();
 		*(.checksum)
