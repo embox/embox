@@ -42,6 +42,8 @@ SECTIONS {
 		LDS_MODULES_RODATA
 		*(.rodata)
 		*(.rodata.*)
+		*(.srodata)
+		*(.srodata.*)
 		*(.const)
 
 		ALIGNMENT();
@@ -65,7 +67,7 @@ SECTIONS {
 		KEEP(*(.eh_frame))
 		KEEP(*(.eh_frame.*))
 		KEEP(*(.eh_frame_end))
-		/* KEEP(*(.gcc_except_table*)) */
+		KEEP(*(.gcc_except_table*))
 
 		ALIGNMENT();
 		*(.checksum)
@@ -78,8 +80,9 @@ SECTIONS {
 		_app_data_vma = .;
 		LDS_APPS_DATA
 		*(.data)
-		*(.sdata)
 		*(.data.*)
+		*(.sdata)
+		*(.sdata.*)
 		*(.got)
 		*(.got.*)
 
@@ -92,6 +95,7 @@ SECTIONS {
 		LDS_APPS_BSS
 		*(.bss)
 		*(.sbss)
+		*(.sbss.*)
 		*(.bss.[a-zA-Z0-9_-]*) /* this hell is to exclude '.bss..reserve'. */
 		/* *(.tbss) */
 		/* *(.tbss.*) */
