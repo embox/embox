@@ -99,6 +99,7 @@ copy_data_end:
 	/* Enable FPU */
 	lui     t0, (CSR_STATUS_FS_INIT >> 12)
 	csrs    CSR_STATUS, t0
+	csrw    fcsr, zero
 #endif
 
 	/* Start kernel. */
