@@ -26,7 +26,7 @@ static void print_help(char **argv) {
 	printf("\t -s - slave mode\n");
 	printf("\t -m - master mode\n");
 	printf("\t -f - full time cs\n");
-	printf("\t -x - 16 bit output format\n");
+//	printf("\t -x - 16 bit output format\n");
 	printf("\t -l - list SPI buses\n");
 	printf("\t -h - this help\n");
 }
@@ -76,8 +76,8 @@ static void list_spi_devices(void) {
 int main(int argc, char **argv) {
 	int spi_bus, spi_line;
 	int ret, opt;
-	bool set_mode = false, master_mode = false, full_time_cs = false,
-	     format_16bit = false;
+	bool set_mode = false, master_mode = false, full_time_cs = false ; //, format_16bit = false;
+
 	struct spi_device *dev;
 
 	while (-1 != (opt = getopt(argc, argv, "lhsmfx"))) {
@@ -93,9 +93,9 @@ int main(int argc, char **argv) {
 		case 'f':
 			full_time_cs = true;
 			break;
-		case 'x':
-			format_16bit = true;
-			break;
+	//	case 'x':
+	//		format_16bit = true;
+	//		break;
 		case 'l':
 			list_spi_devices();
 			return 0;
@@ -149,17 +149,18 @@ int main(int argc, char **argv) {
 
 	printf("Received data:");
 	for (int i = optind + 2; i < argc; i++) {
-		uint16_t buf_in, buf_out;
+		uint8_t buf_in, buf_out;		
+//		uint16_t buf_in, buf_out;
 		buf_out = strtol(argv[i], NULL, 0);
 		if (i + 1 == argc)
 			dev->spid_flags |= SPI_CS_INACTIVE;
 		spi_transfer(dev, (uint8_t *)&buf_out, (uint8_t *)&buf_in, 1);
-		if (format_16bit) {
-			printf(" 0x%04x", buf_in);
-		}
-		else {
+//		if (format_16bit) {
+//			printf(" 0x%04x", buf_in);
+//		}
+//		else {
 			printf(" 0x%02x", buf_in);
-		}
+//		}
 	}
 	printf("\n");
 

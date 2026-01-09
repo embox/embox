@@ -7,16 +7,12 @@
  */
 
 #include <util/log.h>
-
 #include <errno.h>
-
 #include <hal/reg.h>
-
-#include <drivers/spi.h>
-
-
+#include <drivers/spi.h>						 
 #include "pl022_spi.h"
 
+#include <drivers/gpio.h>				  
 
 struct pl022_regs {
 	uint32_t cr0;
@@ -244,7 +240,7 @@ static inline int pl022_spi_claim_bus(struct pl022_spi *dev) {
 	reg |= SSP_CR1_MASK_SSE;
 	REG16_STORE(SSP_CR1(dev->base_addr), reg);
 
-	pl022_spi_flush(dev);
+//	pl022_spi_flush(dev);
 
 	return 0;
 }
@@ -252,8 +248,8 @@ static inline int pl022_spi_claim_bus(struct pl022_spi *dev) {
 static inline int pl022_spi_release_bus(struct pl022_spi *dev) {
 	uint16_t reg;
 
-	pl022_spi_flush(dev);
 
+//	pl022_spi_flush(dev);
 	/* Disable the SPI hardware */
 	reg = REG16_LOAD(SSP_CR1(dev->base_addr));
 	reg &= ~SSP_CR1_MASK_SSE;
@@ -313,23 +309,42 @@ static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 	return pl022_spi_setup(dev, is_master);
 }
 
+static int pl022_cs_control(struct spi_device *dev, int state) {
+
+const struct pin_description *cs_pin;
+    
+    if ( !dev || !dev->spid_cs_pin ) {
+		log_debug("SPI_CS_NotUse\n");	        
+        return 0;	// CS управляется аппаратно или не используется 
+    }
+    
+    cs_pin = dev->spid_cs_pin; 
+
+    gpio_set(cs_pin->pd_port, (1 << cs_pin->pd_pin), state);
+
+    for (volatile int i = 0; i < 10; i++); // Небольшая задержка для стабилизации сигнала 
+    
+    return 0;
+}
+
 static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
-		uint8_t *outbuf, int count) {
+	uint8_t *outbuf, int count) {
 	struct pl022_spi *dev = spi_dev->spic_priv;
+	struct spi_device *a_dev = spi_dev->spic_active_dev; // spi устройство связанное с этим контроллером
 	uint8_t value;
 	int tx_cnt;
 	int rx_cnt;
 
 	rx_cnt = 0;
 	tx_cnt = 0;
-
-	if (spi_dev->flags & SPI_CS_ACTIVE && spi_dev->is_master) {
-		/* Note: we suppose that there's a single slave device
-		 * on the SPI bus, so we lower the same pin all the tiem */
+	
+	if (spi_dev->flags & SPI_CS_ACTIVE /*&& spi_dev->is_master*/) {
+		pl022_cs_control(a_dev, 0); // активизировать CS (низкий уровень)		
+		log_debug("SPI_CS_ACTIVE\n");	 
 	}
 
 	pl022_spi_claim_bus(dev);
-
+    pl022_spi_flush(dev);
 	/* transmit/recieve */
 	while (tx_cnt < count) {
 		if (REG16_LOAD(SSP_SR(dev->base_addr)) & SSP_SR_MASK_TNF) {
@@ -338,7 +353,7 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 			} else {
 				value = 0;
 			}
-
+			log_debug("SPI WRITE: data=0x%02X, txcnt=0x%02X ", value, tx_cnt);
 			REG16_STORE(SSP_DR(dev->base_addr), value);
 			tx_cnt++;
 		}
@@ -347,6 +362,7 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 			value = REG16_LOAD(SSP_DR(dev->base_addr));
 			if (outbuf) {
 				*outbuf++ = value;
+				log_debug("SPI READ: data=0x%02X, rxcnt=0x%02X\n", value, tx_cnt);																		
 			}
 			rx_cnt++;
 		}
@@ -357,6 +373,7 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 			value = REG16_LOAD(SSP_DR(dev->base_addr));
 			if (outbuf) {
 				*outbuf++ = value;
+				log_debug("SPI READ: data=0x%02X, rxcnt=0x%02X\n", value, tx_cnt);				
 			}
 			rx_cnt++;
 		}
@@ -364,9 +381,9 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 
 	pl022_spi_release_bus(dev);
 
-	if (spi_dev->flags & SPI_CS_INACTIVE && spi_dev->is_master) {
-		/* Note: we suppose that there's a single slave device
-		 * on the SPI bus, so we raise the same pin all the tiem */
+	if (spi_dev->flags & SPI_CS_INACTIVE /*&& spi_dev->is_master*/) {
+		pl022_cs_control(a_dev, 1); 		// CS - высокий уровень    
+		log_debug("SPI_CS_INACTIVE\n");	
 	}
 
 	return 0;

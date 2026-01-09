@@ -74,6 +74,9 @@ int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt) {
 	assert(in || out);
 
 	cntl = dev->spid_spi_cntl;
+	
+	cntl->spic_active_dev = dev; // сохраняем SPI устройство в контроллере
+
 	if (cntl && cntl->spic_ops && cntl->spic_ops->transfer) {
 		/** TODO: lock ??? */
 		cntl->flags = dev->spid_flags;
