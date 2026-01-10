@@ -135,9 +135,9 @@ static inline int uart_get_tx_alt(int num) {
 		alt = CONF_UART3_PIN_TX_AF;
 		break;
 #endif
-#if defined CONF_UART4_PIN_TX_NR
+#if defined CONF_UART4_PIN_TX_AF
 	case 4:
-		alt = CONF_UART4_PIN_TX_NR;
+		alt = CONF_UART4_PIN_TX_AF;
 		break;
 #endif
 	default:
@@ -243,9 +243,9 @@ static inline int uart_get_rx_alt(int num) {
 		alt = CONF_UART3_PIN_RX_AF;
 		break;
 #endif
-#if defined CONF_UART4_PIN_RX_NR
+#if defined CONF_UART4_PIN_RX_AF
 	case 4:
-		alt = CONF_UART4_PIN_RX_NR;
+		alt = CONF_UART4_PIN_RX_AF;
 		break;
 #endif
 	default:
