@@ -61,15 +61,15 @@ static const struct pin_description pl022_spi_pins[] = {
 static void hw_pins_config(struct spi_controller *spi_c) {
 	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
 			(1 << spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin),
-			GPIO_MODE_OUT | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_func));
+			GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_func));
 
 	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_port,
 			(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
-			GPIO_MODE_OUT | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func));
+			GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func));
 
 	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_port,
 			(1 << spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_pin),
-			GPIO_MODE_IN | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func));
+			GPIO_MODE_IN | GPIO_MODE_IN_PULL_UP | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func));
 }
 
 #endif /* USE_BOARD_CONF */
