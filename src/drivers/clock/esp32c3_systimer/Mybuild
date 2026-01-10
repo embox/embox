@@ -1,6 +1,8 @@
 package embox.driver.clock
 
 module esp32c3_systimer {
+	option number base_addr=0x60023000
+	option number irq_num=37
 	
 	source "esp32c3_systimer.c"
 
