@@ -281,24 +281,28 @@ struct i2c_conf i2cs[] = {
 
 struct led_conf leds[] = {
 	[0] = {
+		.status = ENABLED,
 		.name = "LED1",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("", 12),
 		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[1] = {
+		.status = ENABLED,	
 		.name = "LED2",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("", 13),
 		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[2] = {
+		.status = ENABLED,		
 		.name = "LED3",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("", 14),
 		.level = VAL("", GPIO_PIN_HIGH),
 	},
 	[3] = {
+		.status = ENABLED,		
 		.name = "LED4",
 		.port = VAL("", GPIO_PORT_A),
 		.pin = VAL("PIN", 15),
