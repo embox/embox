@@ -5,4 +5,4 @@
  * @author Efim Perevalov
  */
 
-#define __IRQCTRL_IRQS_TOTAL 0
+#define __IRQCTRL_IRQS_TOTAL 62
