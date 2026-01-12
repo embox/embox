@@ -1,0 +1,9 @@
+#ifndef LIBCXX_STANDALONE_CLIMITS_
+#define LIBCXX_STANDALONE_CLIMITS_
+
+#include <limits.h>
+
+namespace std {
+} // namespace std
+
+#endif // LIBCXX_STANDALONE_CLIMITS_

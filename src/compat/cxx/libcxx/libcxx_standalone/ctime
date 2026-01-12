@@ -1,5 +1,5 @@
-#ifndef CTIME_
-#define CTIME_
+#ifndef LIBCXX_STANDALONE_CTIME_
+#define LIBCXX_STANDALONE_CTIME_
 
 #include <time.h>
 
@@ -19,4 +19,4 @@ namespace std {
 	using ::difftime;
 } // namespace std
 
-#endif // CTIME_
+#endif // LIBCXX_STANDALONE_CTIME_

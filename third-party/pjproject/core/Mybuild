@@ -35,8 +35,8 @@ module core_c extends core {
 /* Currently not used. It will be used for PJSUA2 if required. */
 @Build(stage=2,script="$(EXTERNAL_MAKE) PJSIP_ENABLE_CXX=true")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/pjproject/core/install/include/")
-@BuildDepends(third_party.STLport.libstlportg)
+@BuildDepends(embox.lib.LibCxx)
 module core_cxx extends core {
 	depends pjsip_dependencies
-	depends third_party.STLport.libstlportg
+	depends embox.lib.LibCxx
 }

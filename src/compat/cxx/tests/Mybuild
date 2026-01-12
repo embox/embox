@@ -1,28 +1,28 @@
 package embox.compat.cxx.tests
 
-@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(embox.lib.LibCxx)
 module memory_test {
 	source "memory.cpp"
 
 	depends embox.lib.cxx.ConstructionPolicy
 	depends embox.lib.cxx.DestructionPolicy
-	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.LibCxx
 }
 
-@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(embox.lib.LibCxx)
 module exception_test {
 	source "exceptions.cpp"
 
 	depends embox.lib.cxx.ConstructionPolicy
 	depends embox.lib.cxx.DestructionPolicy
-	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.LibCxx
 }
 
-@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(embox.lib.LibCxx)
 module inheritance_test {
 	source "inheritance.cpp"
 
 	depends embox.lib.cxx.ConstructionPolicy
 	depends embox.lib.cxx.DestructionPolicy
-	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.LibCxx
 }

@@ -5,9 +5,9 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CASSERT_
-#define CASSERT_
+#ifndef LIBCXX_STANDALONE_CASSERT_
+#define LIBCXX_STANDALONE_CASSERT_
 
 #include <assert.h>
 
-#endif // CASSERT_
+#endif // LIBCXX_STANDALONE_CASSERT_

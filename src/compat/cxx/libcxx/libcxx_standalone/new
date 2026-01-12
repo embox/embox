@@ -6,15 +6,16 @@
  * @author Ilia Vaprol
  */
 
-#ifndef THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_NEW_
-#define THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_NEW_
+#ifndef LIBCXX_STANDALONE_NEW_
+#define LIBCXX_STANDALONE_NEW_
 
-#include <cstdlib>
 #include <exception>
+#include <cstdlib>
 
 extern "C++" {
 
 namespace std {
+
 	class bad_alloc : public exception {
 	public:
 		bad_alloc() throw() { }
@@ -40,13 +41,13 @@ namespace std {
 #endif
 
 // Single new and delete operators
-void* operator new(std::size_t) throw(std::bad_alloc);
+void* operator new(std::size_t) throw();
 void* operator new(std::size_t, const std::nothrow_t&) throw();
 void operator delete(void*) throw();
 void operator delete(void*, const std::nothrow_t&) throw();
 
 // Array new and delete operators (same)
-void* operator new[](std::size_t) throw(std::bad_alloc);
+void* operator new[](std::size_t) throw();
 void* operator new[](std::size_t, const std::nothrow_t&) throw();
 void operator delete[](void*) throw();
 void operator delete[](void*, const std::nothrow_t&) throw();
@@ -65,4 +66,4 @@ inline void operator delete[](void*, void*) throw() { }
 
 } // extern "C++"
 
-#endif // THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_NEW_
+#endif // LIBCXX_STANDALONE_NEW_

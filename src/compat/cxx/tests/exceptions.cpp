@@ -6,19 +6,25 @@
  */
 
 #include <exception>
+
 #include <embox/test.h>
+
 #include "test_cxx.h"
 
 EMBOX_TEST_SUITE_EXT("c++ exception test", NULL, NULL, NULL, NULL);
 
-namespace {
-
-class MyException : public std::exception
+namespace
 {
+
+class MyException: public std::exception {
 public:
-	MyException() { }
-	virtual ~MyException() throw() { }
-	virtual const char* what() const throw() { return "MyException"; }
+	MyException() {
+	}
+	virtual ~MyException() throw() {
+	}
+	virtual const char *what() const throw() {
+		return "MyException";
+	}
 };
 
 TEST_CASE("Throw/catch exception") {
@@ -26,7 +32,7 @@ TEST_CASE("Throw/catch exception") {
 		test_emit('a');
 		throw MyException();
 	}
-	catch (MyException& e) {
+	catch (MyException &e) {
 		test_emit('b');
 	}
 	test_assert_emitted("ab");
@@ -39,7 +45,8 @@ static void test_func_throw(void) {
 
 	if (++i < 100) {
 		test_func_throw();
-	} else {
+	}
+	else {
 		throw MyException();
 	}
 }
@@ -49,7 +56,7 @@ static void test_func_catch2(void) {
 		test_emit('a');
 		test_func_throw();
 	}
-	catch (std::exception& e) {
+	catch (std::exception &e) {
 		test_emit('b');
 	}
 }
@@ -58,7 +65,7 @@ static void test_func_catch1(void) {
 	try {
 		test_func_catch2();
 	}
-	catch (std::exception& e) {
+	catch (std::exception &e) {
 		test_emit('c');
 	}
 }

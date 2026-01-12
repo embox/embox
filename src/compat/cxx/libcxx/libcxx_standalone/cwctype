@@ -4,8 +4,8 @@
  * @author Alexander Kalmuk
  */
 
-#ifndef CWCTYPE_
-#define CWCTYPE_
+#ifndef LIBCXX_STANDALONE_CWCTYPE_
+#define LIBCXX_STANDALONE_CWCTYPE_
 
 #include <wctype.h>
 
@@ -32,4 +32,4 @@ namespace std {
    using ::wint_t;
 }
 
-#endif /* CWCTYPE_ */
+#endif /* LIBCXX_STANDALONE_CWCTYPE_ */

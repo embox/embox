@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CSTDARG_
-#define CSTDARG_
+#ifndef LIBCXX_STANDALONE_CSTDARG_
+#define LIBCXX_STANDALONE_CSTDARG_
 
 #include <stdarg.h>
 
@@ -14,4 +14,4 @@ namespace std {
 	using ::va_list;
 } // namespace std
 
-#endif // CSTDARG_
+#endif // LIBCXX_STANDALONE_CSTDARG_

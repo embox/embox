@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CSTDLIB_
-#define CSTDLIB_
+#ifndef LIBCXX_STANDALONE_CSTDLIB_
+#define LIBCXX_STANDALONE_CSTDLIB_
 
 #include <stdlib.h>
 
@@ -46,4 +46,4 @@ namespace std {
 	using ::system;
 } // namespace std
 
-#endif // CSTDLIB_
+#endif // LIBCXX_STANDALONE_CSTDLIB_

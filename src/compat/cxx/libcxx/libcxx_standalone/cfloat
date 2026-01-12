@@ -1,0 +1,9 @@
+#ifndef LIBCXX_STANDALONE_CFLOAT_
+#define LIBCXX_STANDALONE_CFLOAT_
+
+#include <float.h>
+
+namespace std {
+} // namespace std
+
+#endif // LIBCXX_STANDALONE_CFLOAT_

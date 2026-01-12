@@ -1,9 +1,0 @@
-#ifndef EMBOX_CFLOAT_
-#define EMBOX_CFLOAT_
-
-#include <float.h>
-
-namespace std {
-} // namespace std
-
-#endif // EMBOX_CFLOAT_

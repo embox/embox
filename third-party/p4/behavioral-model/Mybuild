@@ -2,9 +2,7 @@ package third_party.cmd
 
 @App
 @AutoCmd
-@BuildDepends(embox.lib.libsupcxx)
-@BuildDepends(embox.lib.libstdcxx)
-@BuildDepends(embox.lib.libgcc)
+@BuildDepends(embox.lib.LibCxx)
 @BuildDepends(third_party.boost.libs)
 @BuildDepends(third_party.lib.libpcap)
 @BuildDepends(third_party.lib.libgmp)
@@ -16,13 +14,10 @@ module l2_switch {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "l2_switch.o"
 
-
 	depends embox.compat.posix.util.gettimeofday
 	depends embox.compat.atomic.pseudo_atomic
 	depends embox.compat.libc.math
-	@NoRuntime depends embox.lib.libsupcxx
-	@NoRuntime depends embox.lib.libstdcxx
-	@NoRuntime depends embox.lib.libgcc
+	@NoRuntime depends embox.lib.LibCxx
 	@NoRuntime depends third_party.boost.libs
 	@NoRuntime depends third_party.lib.libpcap
 	@NoRuntime depends third_party.lib.libgmp

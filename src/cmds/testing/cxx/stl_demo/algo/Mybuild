@@ -4,22 +4,22 @@ package embox.cmd.testing.cxx
 @CxxCmd(name="stl_demo_sort1",
 	help="example for stl algo sort",
 	man="")
-@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.lib.LibCxx)
 @Build(stage=2,script="true")
 module stl_demo_sort1 {
 	source "sort1.cpp"
 
-	@NoRuntime depends embox.lib.libstdcxx
+	@NoRuntime depends embox.lib.LibCxx
 }
 
 @AutoCmd
 @CxxCmd(name="stl_demo_sort1",
 	help="example for stl algo sort",
 	man="")
-@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.lib.LibCxx)
 @Build(stage=2,script="true")
 module stl_demo_min_test {
 	source "min_test.cpp"
 
-	@NoRuntime depends embox.lib.libstdcxx
+	@NoRuntime depends embox.lib.LibCxx
 }

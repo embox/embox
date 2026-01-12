@@ -36,7 +36,6 @@ module DestructionStatic extends DestructionPolicy {
 }
 
 module cxx_core {
-    source
-        "cxx_app_startup_termination_embox.c"
+    source "cxx_app_startup_termination_embox.c"
 }
 

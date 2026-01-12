@@ -7,7 +7,7 @@ module backend {
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/tensorflow/install/include")
 @BuildDepends(backend)
-@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.lib.LibCxx)
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(third_party.lib.flatbuffers_download)
 static module build {

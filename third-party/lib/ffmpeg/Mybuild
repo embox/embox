@@ -2,11 +2,11 @@ package third_party.lib.ffmpeg
 
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ffmpeg/build/ffmpeg-4.3.1/")
-@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.lib.LibCxx)
 module build {
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.LibPosix
-	@NoRuntime depends embox.lib.libstdcxx
+	@NoRuntime depends embox.lib.LibCxx
 }
 
 @LinkerSection(text="ffmpeg_avcodec_text",rodata="ffmpeg_avcodec_rodata",data="ffmpeg_avcodec_data",bss="ffmpeg_avcodec_bss",arm_exidx="ffmpeg_avcodec_arm_exidx",arm_extab="ffmpeg_avcodec_arm_extab")

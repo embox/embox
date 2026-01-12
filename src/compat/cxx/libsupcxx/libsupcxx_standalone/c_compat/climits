@@ -1,9 +1,0 @@
-#ifndef EMBOX_CLIMITS_
-#define EMBOX_CLIMITS_
-
-#include <limits.h>
-
-namespace std {
-} // namespace std
-
-#endif // EMBOX_CLIMITS_

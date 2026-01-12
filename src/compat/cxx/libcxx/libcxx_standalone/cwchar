@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CWCHAR_
-#define CWCHAR_
+#ifndef LIBCXX_STANDALONE_CWCHAR_
+#define LIBCXX_STANDALONE_CWCHAR_
 
 #include <wchar.h>
 
@@ -22,4 +22,4 @@ namespace std {
 	using ::wcstold;
 }
 
-#endif // CWCHAR_
+#endif // LIBCXX_STANDALONE_CWCHAR_

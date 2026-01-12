@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CCTYPE_
-#define CCTYPE_
+#ifndef LIBCXX_STANDALONE_CCTYPE_
+#define LIBCXX_STANDALONE_CCTYPE_
 
 #include <ctype.h>
 
@@ -27,4 +27,4 @@ namespace std {
 	using ::isblank;
 } // namespace std
 
-#endif // CCTYPE_
+#endif // LIBCXX_STANDALONE_CCTYPE_
