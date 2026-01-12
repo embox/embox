@@ -1,8 +1,0 @@
-package embox.test.wcs
-
-module wcsncasecmp_test {
-	source "wcsncasecmp_test.c"
-
-	depends embox.compat.libc.wchar
-	depends embox.framework.LibFramework
-}

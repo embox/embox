@@ -46,7 +46,8 @@ TEST_CASE("wcsncasecmp compare identical wide-character strings") {
 	test_assert_zero(wcsncasecmp(ws1, ws2, 3));
 }
 
-TEST_CASE("wcsncasecmp compare equal wide-character strings with different cases") {
+TEST_CASE("wcsncasecmp compare equal wide-character strings with different"
+		" cases") {
 	wchar_t ws1[] = L"aBc";
 	wchar_t ws2[] = L"AbC";
 
@@ -60,18 +61,16 @@ TEST_CASE("wcsncasecmp compare different wide-character strings (n == 0)") {
 	test_assert_zero(wcsncasecmp(ws1, ws2, 0));
 }
 
-TEST_CASE(
-		"wcsncasecmp compare different wide-character strings
-		(n == length of equal part of the strings)") {
+TEST_CASE("wcsncasecmp compare different wide-character strings"
+		" (n == length of equal part of the strings)") {
 	wchar_t ws1[] = L"AbcD";
 	wchar_t ws2[] = L"aBcE";
 
 	test_assert_zero(wcsncasecmp(ws1, ws2, 3));
 }
 
-TEST_CASE(
-   		"wcsncasecmp compare equal wide-character strings
-		(n > max string length") {
+TEST_CASE("wcsncasecmp compare equal wide-character strings"
+		" (n > max string length") {
 	wchar_t ws1[] = L"aBc";
 	wchar_t ws2[] = L"abc";
 
