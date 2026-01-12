@@ -1,6 +1,0 @@
-package embox.test.stdlib
-
-// <strings.h>
-module ffs_test {
-	source "ffs_test.c"
-}

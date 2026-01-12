@@ -11,3 +11,8 @@ module strcasecmp_test {
 	@Cflags("-fno-builtin")
 	source "strcasecmp_test.c"
 }
+
+module ffs_test {
+	@Cflags("-fno-builtin")
+	source "ffs_test.c"
+}
