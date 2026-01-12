@@ -36,11 +36,6 @@ module memset_test {
 	source "memset_test.c"
 }
 
-module strcasecmp_test {
-	@Cflags("-fno-builtin")
-	source "strcasecmp_test.c"
-}
-
 module strcasestr_test {
 	@Cflags("-fno-builtin")
 	source "strcasestr_test.c"

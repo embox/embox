@@ -1,0 +1,9 @@
+package embox.compat.libc
+
+static module strings {
+    source "ffs.c"
+	source "bcopy.c"
+	source "bzero.c"
+	source "strcasecmp.c"
+	source "strncasecmp.c"
+}

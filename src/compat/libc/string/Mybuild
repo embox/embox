@@ -34,16 +34,13 @@ static module str {
 	source "strstr.c"
 	source "strcasestr.c"
 	source "strupr.c"
-	source "strcasecmp.c"
-	source "strncasecmp.c"
 	source "strtok.c"
 	source "strlcat.c"
 	source "strlcpy.c"
 	source "strnlen.c"
-	source "ffs.c"
-	source "bcopy.c"
-	source "bzero.c"
 	source "stpcpy.c"
+
+	@NoRuntime depends embox.compat.libc.strings
 }
 
 static module str_dup {
