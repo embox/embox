@@ -22,8 +22,9 @@ static module stubs {
 		"link.c",
 		"readlinkat.c",
 		"setpgid.c",
-		"setsid.c",
-		"sigsuspend.c"
+		"setsid.c"
+
+		depends embox.compat.posix.signal.sigsuspend_stub
 
 		depends embox.compat.posix.getpgrp
 }

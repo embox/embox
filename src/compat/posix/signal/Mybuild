@@ -4,3 +4,7 @@ package embox.compat.posix.signal
 static module sys_siglist {
 	source "sys_siglist.c"
 }
+
+static module sigsuspend_stub {
+	source "sigsuspend_stub.c"
+}
