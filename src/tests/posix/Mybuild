@@ -51,12 +51,6 @@ module passwd {
 	depends embox.compat.posix.passwd
 }
 
-module libgen_test {
-	source "libgen_test.c"
-
-	depends embox.compat.libc.int_types
-}
-
 module memccpy_test {
 	source "memccpy_test.c"
 

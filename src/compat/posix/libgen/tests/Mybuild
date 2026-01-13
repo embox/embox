@@ -1,0 +1,5 @@
+package embox.compat.posix.libgen.test
+
+module libgen_test {
+	source "libgen_test.c"
+}
