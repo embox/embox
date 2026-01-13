@@ -5,8 +5,6 @@ module all {
 	depends environ_test
 	depends getopt_test
 	depends passwd
-	depends libgen_test
-	depends memccpy_test
 	depends poll_test
 	depends select_test
 	depends pipe_test
@@ -16,8 +14,6 @@ module all {
 	depends sigchld_test
 	depends waitpid_test
 	depends utime_test
-	depends strcoll_test
-	depends strxfrm_test
 }
 
 module utime_test {
@@ -49,12 +45,6 @@ module passwd {
 	source "passwd.c"
 
 	depends embox.compat.posix.passwd
-}
-
-module memccpy_test {
-	source "memccpy_test.c"
-
-	depends embox.compat.libc.all
 }
 
 module poll_test {
@@ -125,18 +115,6 @@ module waitpid_test {
 	source "waitpid_test.c"
 
 	depends embox.compat.posix.proc.waitpid
-}
-
-module strcoll_test {
-	source "strcoll_test.c"
-
-	depends embox.compat.libc.all
-}
-
-module strxfrm_test {
-	source "strxfrm_test.c"
-
-	depends embox.compat.libc.all
 }
 
 module sem_test {

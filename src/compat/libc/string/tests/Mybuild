@@ -130,3 +130,18 @@ module strupr_test {
 	@Cflags("-fno-builtin")
 	source "strupr_test.c"
 }
+
+module memccpy_test {
+	@Cflags("-fno-builtin")
+	source "memccpy_test.c"
+}
+
+module strcoll_test {
+	@Cflags("-fno-builtin")
+	source "strcoll_test.c"
+}
+
+module strxfrm_test {
+	@Cflags("-fno-builtin")
+	source "strxfrm_test.c"
+}
