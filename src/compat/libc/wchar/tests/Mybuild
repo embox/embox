@@ -1,4 +1,4 @@
-package embox.test.wchar
+package embox.compat.libc.wchar.test
 
 module wcsncasecmp_test {
 	source "wcsncasecmp_test.c"
