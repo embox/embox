@@ -8,7 +8,7 @@ static module passwd extends pwd_api {
 	source "pwd_grp.c"
 
 	depends passwd_db
-	depends crypt
+	depends embox.compat.posix.crypt
 	depends embox.compat.libc.stdio.scanf_api
 	depends embox.compat.libc.stdio.fseek
 	depends embox.compat.libc.stdio.file_ops
@@ -36,8 +36,3 @@ module passwd_db_dynamic extends passwd_db {
 	depends embox.compat.posix.passwd_db_files
 }
 
-static module crypt {
-	source "crypt.c"
-
-	depends embox.lib.LibCrypt
-}

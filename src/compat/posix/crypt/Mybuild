@@ -1,0 +1,7 @@
+package embox.compat.posix
+
+static module crypt {
+	source "crypt.c"
+
+	depends embox.lib.LibCrypt
+}
