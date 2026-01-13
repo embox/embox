@@ -138,8 +138,9 @@ $(INSTALL) :
 		$(MAKE) install-target-libgcc; \
 		$(MAKE) install-target-libstdc++-v3; \
 	)
-	$(MV) $(PKG_INSTALL_DIR)/lib/gcc/$(GCC_TARGET)/$(PKG_VER)/libgcc.a $(PKG_INSTALL_DIR)/lib
-	$(MV) $(PKG_INSTALL_DIR)/$(GCC_TARGET)/lib/libstdc++.a $(PKG_INSTALL_DIR)/lib
-	$(MV) $(PKG_INSTALL_DIR)/$(GCC_TARGET)/lib/libsupc++.a $(PKG_INSTALL_DIR)/lib
-	$(MV) $(PKG_INSTALL_DIR)/include/$(GCC_TARGET) $(PKG_INSTALL_DIR)/include/_target
+	$(CP) $(PKG_INSTALL_DIR)/lib/gcc/$(GCC_TARGET)/$(PKG_VER)/libgcc.a $(PKG_INSTALL_DIR)/lib
+	$(CP) $(PKG_INSTALL_DIR)/$(GCC_TARGET)/lib/libstdc++.a $(PKG_INSTALL_DIR)/lib
+	$(CP) $(PKG_INSTALL_DIR)/$(GCC_TARGET)/lib/libsupc++.a $(PKG_INSTALL_DIR)/lib
+	$(CP) $(PKG_INSTALL_DIR)/include/$(GCC_TARGET)/bits/* $(PKG_INSTALL_DIR)/include/bits
+	$(CP) $(PKG_INSTALL_DIR)/include/$(GCC_TARGET)/ext/* $(PKG_INSTALL_DIR)/include/ext
 	touch $@
