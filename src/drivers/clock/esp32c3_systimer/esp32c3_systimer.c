@@ -12,7 +12,7 @@
 
 #include <framework/mod/options.h>
 
-#define BASE_ADDR       OPTION_GET(NUMBER,irq_num)
+#define BASE_ADDR       OPTION_GET(NUMBER,base_addr)
 #define IRQ_NUM         OPTION_GET(NUMBER,irq_num)
 
 struct esp32_systimer_val64 {
