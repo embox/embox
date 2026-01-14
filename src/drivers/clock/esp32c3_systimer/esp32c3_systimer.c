@@ -114,33 +114,32 @@ static int esp32c3_systimer_init(struct clock_source *cs) {
 	volatile struct esp32_systimer_regs *esp32_systimer = (void *)BASE_ADDR;
 
 	// systimer_ll_enable_clock(hal->dev, true);
-	esp32_systimer->conf |= 1U << 31;
+	REG32_ORIN(&esp32_systimer->conf,  1 << 31);
 
 	// systimer_ll_connect_alarm_counter(hal->dev, alarm_id, counter_id);
-	esp32_systimer->target_conf[0] = 1;
+	REG32_STORE(&esp32_systimer->target_conf[0], 1);
 
 	// systimer_ll_enable_counter(hal->dev, counter_id, true);
-	esp32_systimer->conf |= 1 << 30;
+	REG32_ORIN(&esp32_systimer->conf,  1 << 30);
 
 	// systimer_ll_counter_can_stall_by_cpu(hal->dev, counter_id, cpu_id, can);
-	esp32_systimer->conf &= ~(1 << (28 - 1 * 2));
-	esp32_systimer->conf |= 1 << ((28 - 1 * 2)); // ?????????????????????
+	REG32_ORIN(&esp32_systimer->conf,  1 << 26);
 
 	// systimer_ll_enable_alarm(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0, false);
-	esp32_systimer->conf &= ~(1 << 24);
+	REG32_ANDIN(&esp32_systimer->conf, ~(1 << 24));
 
 	// systimer_ll_set_alarm_target(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0, alarm.val);
 	// esp32_systimer->target_val[0].hi = alarm.val >> 32;
     // esp32_systimer->target_val[0].low = alarm.val & 0xFFFFFFFF;
 
 	// systimer_ll_apply_alarm_value(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0);
-	esp32_systimer->comp_load[0] = 0x01;
+	REG32_STORE(&esp32_systimer->comp_load[0], 0x01);
 
 	// systimer_ll_enable_alarm(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0, true);
-	esp32_systimer->conf |= 1 << 24;
+	REG32_ORIN(&esp32_systimer->conf,  1 << 24);
 
 	// systimer_ll_enable_alarm_int(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0, true);
-	esp32_systimer->int_ena |= 1 << 0;
+	REG32_ORIN(&esp32_systimer->int_ena, 1);
 
 	return 0;
 }
