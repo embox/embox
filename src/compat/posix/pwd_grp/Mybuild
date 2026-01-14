@@ -5,7 +5,10 @@ abstract module pwd_api {
 }
 
 static module passwd extends pwd_api {
-	source "pwd_grp.c"
+	source "pwd_grp_utils.c"
+	source "pwd.c"
+	source "grp.c"
+	source "shadow.c"
 
 	depends passwd_db
 	depends embox.compat.posix.crypt
