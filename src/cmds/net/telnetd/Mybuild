@@ -27,7 +27,7 @@ module telnetd {
 	depends embox.compat.posix.net.socket
 	depends embox.compat.posix.ipc.ppty
 	depends embox.compat.posix.index_descriptor
-	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.signal.signal
 	depends embox.compat.posix.proc.exec
 	depends embox.compat.posix.proc.waitpid
 	depends embox.compat.posix.proc.vfork

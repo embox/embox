@@ -8,7 +8,7 @@ abstract module task_breaking {
 
 module task_breaking_enable extends task_breaking {
 	source "task_break_enable.c"
-	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.signal.signal
 }
 
 module task_breaking_disable extends task_breaking {

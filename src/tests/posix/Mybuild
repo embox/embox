@@ -97,7 +97,7 @@ module sigchld_test {
 	source "sigchld_test.c"
 
 	depends embox.compat.posix.proc.exit
-	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.signal.signal
 }
 
 @TestFor(embox.compat.posix.util.sleep)
