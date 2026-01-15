@@ -11,7 +11,6 @@ module all {
 	depends ppty_test
 	depends fork_test
 	depends sleep_test
-	depends sigchld_test
 	depends waitpid_test
 	depends utime_test
 }
@@ -91,13 +90,6 @@ module vfork_test {
 
 	depends embox.compat.posix.proc.vfork
 	depends embox.compat.posix.proc.exec
-}
-
-module sigchld_test {
-	source "sigchld_test.c"
-
-	depends embox.compat.posix.proc.exit
-	depends embox.compat.posix.signal.signal
 }
 
 @TestFor(embox.compat.posix.util.sleep)

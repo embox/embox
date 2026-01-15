@@ -4,3 +4,7 @@ package embox.compat.posix.signal.test
 module sigwait_test {
 	source "sigwait_test.c"
 }
+
+module sigchld_test {
+	source "sigchld_test.c"
+}
