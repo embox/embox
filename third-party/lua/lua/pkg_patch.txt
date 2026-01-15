@@ -1,31 +1,77 @@
-diff -Naur -u lua-5.4.8.orig/src/ldo.c lua-5.4.8/src/ldo.c
---- lua-5.4.8.orig/src/ldo.c	2023-05-02 23:02:29.000000000 +0300
-+++ lua-5.4.8/src/ldo.c	2024-04-24 18:45:03.009789283 +0300
-@@ -60,7 +60,7 @@
- 	try { a } catch(...) { if ((c)->status == 0) (c)->status = -1; }
- #define luai_jmpbuf		int  /* dummy variable */
+diff -aur ./lua-5.5.0/src/Makefile ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/Makefile
+--- ./lua-5.5.0/src/Makefile	2025-07-07 03:19:14.000000000 +0300
++++ ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/Makefile	2026-01-15 21:42:14.106337059 +0300
+@@ -6,7 +6,7 @@
+ # Your platform. See PLATS for possible values.
+ PLAT= guess
+ 
+-CC= gcc -std=gnu99
++#CC= gcc -std=gnu99
+ CFLAGS= -O2 -Wall -Wextra $(SYSCFLAGS) $(MYCFLAGS)
+ LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
+ LIBS= -lm $(SYSLIBS) $(MYLIBS)
+@@ -38,7 +38,8 @@
+ BASE_O= $(CORE_O) $(LIB_O) $(MYOBJS)
+ 
+ LUA_T=	lua
+-LUA_O=	lua.o
++LUA_MAIN_O=	lua_main.o
++EMBOX_LUA_O= lua.o
+ 
+ LUAC_T=	luac
+ LUAC_O=	luac.o
+@@ -50,7 +51,7 @@
+ # Targets start here.
+ default: $(PLAT)
+ 
+-all:	$(ALL_T)
++all:	$(ALL_A) $(EMBOX_LUA_O)
+ 
+ o:	$(ALL_O)
+ 
+@@ -60,8 +61,11 @@
+ 	$(AR) $@ $(BASE_O)
+ 	$(RANLIB) $@
+ 
+-$(LUA_T): $(LUA_O) $(LUA_A)
+-	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
++$(EMBOX_LUA_O): $(LUA_MAIN_O) $(BASE_O)
++	$(CC) -r -o $@ $(LUA_MAIN_O) $(BASE_O)
++
++$(LUA_MAIN_O): lua.c
++	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ lua.c
+ 
+ $(LUAC_T): $(LUAC_O) $(LUA_A)
+ 	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+diff -aur ./lua-5.5.0/src/ldo.c ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/ldo.c
+--- ./lua-5.5.0/src/ldo.c	2025-12-15 13:44:39.000000000 +0300
++++ ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/ldo.c	2026-01-15 21:24:49.277678051 +0300
+@@ -92,7 +92,7 @@
+ }
+ 
  
 -#elif defined(LUA_USE_POSIX)				/* }{ */
-+#elif 0 /*defined(LUA_USE_POSIX)*/				/* }{ */
++#elif 0 /*defined(LUA_USE_POSIX)*/			/* }{ */
  
- /* in POSIX, try _longjmp/_setjmp (more efficient) */
+ /* in POSIX, use _longjmp/_setjmp (more efficient) */
  #define LUAI_THROW(L,c)		_longjmp((c)->b, 1)
---- lua-5.4.8.orig/src/linit.c	2024-04-24 19:56:28.596313022 +0300
-+++ lua-5.4.8/src/linit.c	2024-04-24 20:06:39.529105277 +0300
-@@ -35,6 +35,9 @@
+diff -aur ./lua-5.5.0/src/linit.c ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/linit.c
+--- ./lua-5.5.0/src/linit.c	2025-12-15 13:44:39.000000000 +0300
++++ ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/linit.c	2026-01-15 21:28:00.612710147 +0300
+@@ -20,6 +20,9 @@
  #include "lauxlib.h"
+ #include "llimits.h"
  
- 
-+extern int luaopen_socket_core(lua_State *L);
-+extern int luaopen_mime_core(lua_State *L);
++extern int luaopen_socket_core (lua_State *L);
++extern int luaopen_mime_core (lua_State *L);
 +
+ 
  /*
- ** these libs are loaded by lua.c and are readily available to any Lua
- ** program
-@@ -50,6 +53,10 @@
-   {LUA_MATHLIBNAME, luaopen_math},
+ ** Standard Libraries. (Must be listed in the same ORDER of their
+@@ -36,6 +39,10 @@
+   {LUA_STRLIBNAME, luaopen_string},
+   {LUA_TABLIBNAME, luaopen_table},
    {LUA_UTF8LIBNAME, luaopen_utf8},
-   {LUA_DBLIBNAME, luaopen_debug},
 +#ifdef LUASOCKET_SUPPORT
 +  {"socket.core", luaopen_socket_core},
 +  {"mime.core", luaopen_mime_core},
@@ -33,10 +79,10 @@ diff -Naur -u lua-5.4.8.orig/src/ldo.c lua-5.4.8/src/ldo.c
    {NULL, NULL}
  };
  
-diff -Naur -u lua-5.4.8.orig/src/liolib.c lua-5.4.8/src/liolib.c
---- lua-5.4.8.orig/src/liolib.c	2023-05-02 23:02:29.000000000 +0300
-+++ lua-5.4.8/src/liolib.c	2024-04-24 19:49:12.371459505 +0300
-@@ -54,7 +54,7 @@
+diff -aur ./lua-5.5.0/src/liolib.c ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/liolib.c
+--- ./lua-5.5.0/src/liolib.c	2025-12-15 13:44:39.000000000 +0300
++++ ../build/extbld/third_party/cmd/lua/lua-5.5.0/src/liolib.c	2026-01-15 21:26:01.397214263 +0300
+@@ -53,7 +53,7 @@
  
  #if !defined(l_popen)		/* { */
  
@@ -45,44 +91,4 @@ diff -Naur -u lua-5.4.8.orig/src/liolib.c lua-5.4.8/src/liolib.c
  
  #define l_popen(L,c,m)		(fflush(NULL), popen(c,m))
  #define l_pclose(L,file)	(pclose(file))
-@@ -94,7 +94,7 @@
- 
- #if !defined(l_getc)		/* { */
- 
--#if defined(LUA_USE_POSIX)
-+#if 0 /*defined(LUA_USE_POSIX)*/
- #define l_getc(f)		getc_unlocked(f)
- #define l_lockfile(f)		flockfile(f)
- #define l_unlockfile(f)		funlockfile(f)
-diff -Naur -u lua-5.4.8.orig/src/Makefile lua-5.4.8/src/Makefile
---- lua-5.4.8.orig/src/Makefile	2023-02-03 13:43:14.000000000 +0300
-+++ lua-5.4.8/src/Makefile	2024-04-24 19:51:49.316274576 +0300
-@@ -6,7 +6,7 @@
- # Your platform. See PLATS for possible values.
- PLAT= guess
- 
--CC= gcc -std=gnu99
-+#CC= gcc -std=gnu99
- CFLAGS= -O2 -Wall -Wextra -DLUA_COMPAT_5_3 $(SYSCFLAGS) $(MYCFLAGS)
- LDFLAGS= $(SYSLDFLAGS) $(MYLDFLAGS)
- LIBS= -lm $(SYSLIBS) $(MYLIBS)
-@@ -50,7 +50,7 @@
- # Targets start here.
- default: $(PLAT)
- 
--all:	$(ALL_T)
-+all:	$(LUA_T)
- 
- o:	$(ALL_O)
- 
-@@ -60,8 +60,8 @@
- 	$(AR) $@ $(BASE_O)
- 	$(RANLIB) $@
- 
--$(LUA_T): $(LUA_O) $(LUA_A)
--	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(LUA_A) $(LIBS)
-+$(LUA_T): $(LUA_O) $(BASE_O)
-+	$(CC) -o $@ $(LDFLAGS) $(LUA_O) $(BASE_O)
- 
- $(LUAC_T): $(LUAC_O) $(LUA_A)
- 	$(CC) -o $@ $(LDFLAGS) $(LUAC_O) $(LUA_A) $(LIBS)
+
