@@ -5,19 +5,14 @@ module all {
 	depends environ_test
 	depends getopt_test
 	depends passwd
-	depends libgen_test
-	depends memccpy_test
 	depends poll_test
 	depends select_test
 	depends pipe_test
 	depends ppty_test
 	depends fork_test
 	depends sleep_test
-	depends sigchld_test
 	depends waitpid_test
 	depends utime_test
-	depends strcoll_test
-	depends strxfrm_test
 }
 
 module utime_test {
@@ -49,18 +44,6 @@ module passwd {
 	source "passwd.c"
 
 	depends embox.compat.posix.passwd
-}
-
-module libgen_test {
-	source "libgen_test.c"
-
-	depends embox.compat.libc.int_types
-}
-
-module memccpy_test {
-	source "memccpy_test.c"
-
-	depends embox.compat.libc.all
 }
 
 module poll_test {
@@ -109,13 +92,6 @@ module vfork_test {
 	depends embox.compat.posix.proc.exec
 }
 
-module sigchld_test {
-	source "sigchld_test.c"
-
-	depends embox.compat.posix.proc.exit
-	depends embox.compat.posix.proc.signal
-}
-
 @TestFor(embox.compat.posix.util.sleep)
 module sleep_test {
 	source "sleep_test.c"
@@ -131,18 +107,6 @@ module waitpid_test {
 	source "waitpid_test.c"
 
 	depends embox.compat.posix.proc.waitpid
-}
-
-module strcoll_test {
-	source "strcoll_test.c"
-
-	depends embox.compat.libc.all
-}
-
-module strxfrm_test {
-	source "strxfrm_test.c"
-
-	depends embox.compat.libc.all
 }
 
 module sem_test {

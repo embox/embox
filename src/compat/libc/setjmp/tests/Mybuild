@@ -1,0 +1,5 @@
+package embox.compat.libc.setjmp.tests
+
+module setjmp_test {
+	source "setjmp_test.c"
+}

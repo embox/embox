@@ -21,7 +21,7 @@ module signal {
 	source "signal.c"
 
 	depends embox.kernel.task.api
-	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.signal.signal
 	depends embox.kernel.thread.signal.sigstate
 }
 
@@ -50,7 +50,7 @@ module rtsignal_test {
 	source "rt_signal.c"
 
 	depends embox.kernel.task.api
-	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.signal.signal
 	depends embox.kernel.thread.signal.sigstate
 	depends embox.kernel.thread.signal.siginfoq
 }

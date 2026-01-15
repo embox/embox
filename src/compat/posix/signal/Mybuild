@@ -1,6 +1,28 @@
 
 package embox.compat.posix.signal
 
+static module signal {
+	source "signal.c"
+
+	/* depends embox.kernel.thread.signal_impl */
+	depends embox.kernel.thread.signal_api
+	depends embox.kernel.task.resource.sig_table
+	depends sigset
+}
+
+static module sigset {
+	source "sigset.c"
+	@NoRuntime depends embox.lib.libds
+}
+
 static module sys_siglist {
 	source "sys_siglist.c"
+}
+
+static module sigwait_stub {
+	source "sigwait_stub.c"
+}
+
+static module sigsuspend_stub {
+	source "sigsuspend_stub.c"
 }

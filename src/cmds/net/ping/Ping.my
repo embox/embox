@@ -65,7 +65,7 @@ module ping {
 	depends embox.framework.LibFramework
 	depends embox.compat.posix.net.gethostbyname
 	depends embox.compat.posix.net.herror
-	depends embox.compat.posix.proc.signal
+	depends embox.compat.posix.signal.signal
 	depends embox.compat.posix.index_descriptor
 	depends embox.compat.posix.util.sleep
 }
