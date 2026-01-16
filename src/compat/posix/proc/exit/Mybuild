@@ -3,6 +3,6 @@ package embox.compat.posix.proc
 static module exit {
 	source "exit.c"
 
-	depends signal
+	depends embox.compat.posix.signal.signal
 	depends embox.compat.posix.proc.atexit_api
 }
