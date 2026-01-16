@@ -71,6 +71,12 @@ struct esp32_systimer_regs {
 } __attribute__((packed));
 
 static int esp32c3_systimer_set_periodic(struct clock_source *cs) {
+	volatile struct esp32_systimer_regs *esp32_systimer = (void *)BASE_ADDR;
+
+	REG32_STORE(&esp32_systimer->target_conf[0], 0);
+	REG32_ORIN(&esp32_systimer->target_conf[0], 16000000);
+	REG32_ORIN(&esp32_systimer->comp_load[0], 1);
+	REG32_ORIN(&esp32_systimer->target_conf[0], 1 << 30);
 
 	return 0;
 }
@@ -94,14 +100,16 @@ static struct time_counter_device esp32c3_systimer_cd = {
 */
 
 static irq_return_t esp32c3_systimer_irq_handler(unsigned int irq_nr,
-														void *data) {
+														void *data) {													
+	volatile struct esp32_systimer_regs *esp32_systimer = (void *)BASE_ADDR;
 
 	//systimer_ll_clear_alarm_int(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0);
+	REG32_ORIN(&esp32_systimer->int_ena, 1);
+	
 	clock_tick_handler(data);
 
 	return IRQ_HANDLED;
 }
-
 
 
 static int esp32c3_systimer_init(struct clock_source *cs) {
@@ -117,7 +125,7 @@ static int esp32c3_systimer_init(struct clock_source *cs) {
 	REG32_ORIN(&esp32_systimer->conf,  1 << 31);
 
 	// systimer_ll_connect_alarm_counter(hal->dev, alarm_id, counter_id);
-	REG32_STORE(&esp32_systimer->target_conf[0], 1);
+	REG32_STORE(&esp32_systimer->target_conf[0], 1 << 31);
 
 	// systimer_ll_enable_counter(hal->dev, counter_id, true);
 	REG32_ORIN(&esp32_systimer->conf,  1 << 30);
@@ -130,10 +138,12 @@ static int esp32c3_systimer_init(struct clock_source *cs) {
 
 	// systimer_ll_set_alarm_target(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0, alarm.val);
 	// esp32_systimer->target_val[0].hi = alarm.val >> 32;
+	REG32_STORE(&esp32_systimer->target_val[0].hi, 0);
     // esp32_systimer->target_val[0].low = alarm.val & 0xFFFFFFFF;
+	REG32_STORE(&esp32_systimer->target_val[0].low, 0);
 
 	// systimer_ll_apply_alarm_value(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0);
-	REG32_STORE(&esp32_systimer->comp_load[0], 0x01);
+	REG32_STORE(&esp32_systimer->comp_load[0], 1);
 
 	// systimer_ll_enable_alarm(systimer_hal.dev, SYSTIMER_ALARM_OS_TICK_CORE0, true);
 	REG32_ORIN(&esp32_systimer->conf,  1 << 24);
