@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CMATH_
-#define CMATH_
+#ifndef LIBCXX_STANDALONE_CMATH_
+#define LIBCXX_STANDALONE_CMATH_
 
 #include <stdbool.h>
 #include <math.h>
@@ -164,4 +164,4 @@ namespace std {
 
 } // namespace std
 
-#endif /* CMATH_ */
+#endif /* LIBCXX_STANDALONE_CMATH_ */

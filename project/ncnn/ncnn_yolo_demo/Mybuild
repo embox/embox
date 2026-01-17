@@ -5,7 +5,7 @@ package embox.cmd.ncnn
 @AutoCmd
 @CxxCmd(name="ncnn_yolo_demo", help="YOLOv8n NCNN demo on Embox")
 @Build(stage=2)
-@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.lib.LibCxx)
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(third_party.lib.ncnn.libncnn)
 @BuildDepends(third_party.lib.stb)

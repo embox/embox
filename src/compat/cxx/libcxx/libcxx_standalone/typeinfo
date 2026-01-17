@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_TYPEINFO_
-#define THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_TYPEINFO_
+#ifndef LIBCXX_STANDALONE_TYPEINFO_
+#define LIBCXX_STANDALONE_TYPEINFO_
 
 #include <exception>
 
@@ -48,4 +48,4 @@ namespace std {
 
 } // extern "C++"
 
-#endif // THIRD_PARTY_LIB_LIBSUPCXX_TOOLCHAIN_TYPEINFO_
+#endif // LIBCXX_STANDALONE_TYPEINFO_

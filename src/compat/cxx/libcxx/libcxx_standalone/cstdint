@@ -1,0 +1,10 @@
+#ifndef LIBCXX_STANDALONE_CSTDINT_
+#define LIBCXX_STANDALONE_CSTDINT_
+
+#include <stdint.h>
+
+namespace std {
+	using ::int_least32_t;
+} // namespace std
+
+#endif // LIBCXX_STANDALONE_CSTDINT_

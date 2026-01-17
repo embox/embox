@@ -1,15 +1,13 @@
 package third_party.zeromq
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildDepends(embox.lib.libstdcxx)
-@BuildDepends(embox.lib.libsupcxx)
+@BuildDepends(embox.lib.LibCxx)
 @BuildArtifactPath(cppflags_before="-I$(ROOT_DIR)/extbld/third_party/zeromq/core/include")
 static module core {
 	depends embox.compat.libc.all
 	depends embox.compat.libc.math
 
-	@NoRuntime depends embox.lib.libstdcxx
-	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.LibCxx
 	@NoRuntime depends embox.compat.posix.net.socketpair_stub
 
 	@AddPrefix("^BUILD/extbld/^MOD_PATH")
@@ -35,4 +33,3 @@ module zeromq_hwclient {
 
 	source "hwclient.cpp"
 }
-

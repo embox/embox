@@ -5,9 +5,9 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CERRNO_
-#define CERRNO_
+#ifndef LIBCXX_STANDALONE_CERRNO_
+#define LIBCXX_STANDALONE_CERRNO_
 
 #include <errno.h>
 
-#endif // CERRNO_
+#endif // LIBCXX_STANDALONE_CERRNO_

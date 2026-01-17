@@ -1,7 +1,7 @@
 package third_party.freedesktop.mesa
 
 @Build(script="$(EXTERNAL_MAKE)")
-@BuildDepends(third_party.STLport.libstlportg)
+@BuildDepends(embox.lib.LibCxx)
 @BuildDepends(third_party.freedesktop.mesa.libdrm)
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/src")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/freedesktop/mesa/mesa_osmesa/mesa-18.2.5/include")
@@ -19,5 +19,5 @@ module  mesa_osmesa {
 	@NoRuntime depends embox.compat.posix.file_system
 	@NoRuntime depends embox.compat.posix.pthread_key
 
-	depends embox.lib.cxx.libsupcxx_standalone
+	depends embox.lib.LibCxx
 }

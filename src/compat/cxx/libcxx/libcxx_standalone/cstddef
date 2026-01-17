@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CSTDDEF_
-#define CSTDDEF_
+#ifndef LIBCXX_STANDALONE_CSTDDEF_
+#define LIBCXX_STANDALONE_CSTDDEF_
 
 #include <stddef.h>
 
@@ -28,4 +28,4 @@ namespace std {
 	template<class T, ::size_t N> struct array;
 } // namespace std
 
-#endif // CSTDDEF_
+#endif // LIBCXX_STANDALONE_CSTDDEF_

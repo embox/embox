@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CSTRING_
-#define CSTRING_
+#ifndef LIBCXX_STANDALONE_CSTRING_
+#define LIBCXX_STANDALONE_CSTRING_
 
 #include <string.h>
 
@@ -34,4 +34,4 @@ namespace std {
 	using ::size_t;
 } // namespace std
 
-#endif // CSTRING_
+#endif // LIBCXX_STANDALONE_CSTRING_

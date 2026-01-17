@@ -3,8 +3,7 @@ package third_party.qt
 @LinkerSection(text="qt_text",rodata="qt_rodata",data="qt_data",bss="qt_bss")
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include -I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/qt/core/install/include/QtCore")
-@BuildDepends(embox.lib.libsupcxx)
-@BuildDepends(third_party.STLport.libstlportg)
+@BuildDepends(embox.lib.LibCxx)
 static module core {
 	option boolean stl_support=false
 	option boolean process_support=false
@@ -30,6 +29,6 @@ static module core {
 	@NoRuntime depends embox.lib.LibExecStub
 	@NoRuntime depends embox.compat.posix.pthread_key
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
-	@NoRuntime depends embox.lib.libsupcxx
+	@NoRuntime depends embox.lib.LibCxx
 	@NoRuntime depends embox.compat.posix.ipc.pipe
 }

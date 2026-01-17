@@ -1,6 +1,8 @@
-package embox.lib.cxx.standalone
+package embox.lib
 
-module c_compat {
+static module libcxx_standalone extends embox.lib.LibCxx {
+	@IncludeExport
+	source "new", "exception", "typeinfo"
 
 	@IncludeExport
 	source "cassert",
@@ -21,4 +23,8 @@ module c_compat {
 		"cwchar",
 		"cwctype"
 
+	source "new.cpp"
+	source "purevirt_routines.cpp"
+
+	@NoRuntime depends embox.compat.libc.all
 }

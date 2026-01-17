@@ -1,16 +1,14 @@
 package third_party.STLport
 
-@Build(script="$(EXTERNAL_MAKE)")
+@Build(stage=1, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/libstlportg/install/include/stlport")
-@BuildArtifactPath(cppflags="-Wno-narrowing")
-@BuildDepends(embox.lib.libsupcxx)
-static module libstlportg extends embox.lib.libstdcxx {
+@BuildArtifactPath(cppflags="-Wno-narrowing -Wno-misleading-indentation")
+static module libstlportg extends embox.lib.libcxx_standalone {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libstlportg.a"
 
 	depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api /* include sys/mman.h */
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends embox.lib.libsupcxx
 	@NoRuntime depends embox.compat.posix.pthread_key
 }

@@ -7,10 +7,6 @@
 
 #include <new>
 
-#if defined(__EXCEPTIONS) && __EXCEPTIONS==1
-#error Exceptions must be disabled
-#endif
-
 const std::nothrow_t std::nothrow = { };
 
 static std::new_handler alloc_failure_handler = 0;
@@ -103,4 +99,3 @@ void operator delete[](void* ptr) throw() {
 void operator delete[](void* ptr, const std::nothrow_t& nothrow_const) throw() {
 	::operator delete(ptr, nothrow_const);
 }
-

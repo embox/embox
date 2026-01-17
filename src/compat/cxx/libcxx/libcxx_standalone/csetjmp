@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CSETJMP_
-#define CSETJMP_
+#ifndef LIBCXX_STANDALONE_CSETJMP_
+#define LIBCXX_STANDALONE_CSETJMP_
 
 #include <setjmp.h>
 
@@ -16,4 +16,4 @@ namespace std {
 	using ::longjmp;
 } // namespace std
 
-#endif // CSETJMP_
+#endif // LIBCXX_STANDALONE_CSETJMP_

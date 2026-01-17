@@ -1,0 +1,10 @@
+#ifndef LIBCXX_STANDALONE_CLOCALE_
+#define LIBCXX_STANDALONE_CLOCALE_
+
+#include <locale.h>
+
+namespace std {
+	using ::setlocale;
+} // namespace std
+
+#endif // LIBCXX_STANDALONE_CLOCALE_

@@ -5,8 +5,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef CSTDIO_
-#define CSTDIO_
+#ifndef LIBCXX_STANDALONE_CSTDIO_
+#define LIBCXX_STANDALONE_CSTDIO_
 
 #include <stdio.h>
 
@@ -58,4 +58,4 @@ namespace std {
 	using ::size_t;
 } // namespace std
 
-#endif // CSTDIO_
+#endif // LIBCXX_STANDALONE_CSTDIO_

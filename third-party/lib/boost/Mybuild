@@ -2,8 +2,7 @@ package third_party.boost
 
 @Build(script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/boost/libs/install/include")
-@BuildDepends(embox.lib.libsupcxx)
-@BuildDepends(embox.lib.libstdcxx)
+@BuildDepends(embox.lib.LibCxx)
 static module libs {
 	option string boost_version="1_65_0"
 
@@ -25,7 +24,7 @@ static module libs {
 
 	@NoRuntime depends embox.compat.posix.util.environ
 	@NoRuntime depends embox.compat.libc.all
-	@NoRuntime depends embox.lib.libstdcxx
+	@NoRuntime depends embox.lib.LibCxx
 	@NoRuntime depends embox.compat.posix.pthread_key
 }
 
