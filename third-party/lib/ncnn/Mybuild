@@ -14,7 +14,7 @@ module ncnn_build_headers {
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(ncnn_build_headers)
 @BuildDepends(embox.compat.libc.math)
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 static module libncnn {
     @Cflags("-march=armv5te")
     @Cflags("-mtune=arm926ej-s")

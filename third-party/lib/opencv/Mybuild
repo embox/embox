@@ -14,7 +14,7 @@ module videoio_backend_ffmpeg extends videoio_backend {
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/opencv/build/install/include/opencv4")
 @BuildDepends(videoio_backend)
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 @BuildDepends(third_party.compiler_headers) /* headers for SIMD intrinsics */
 static module build {
 	option string opencv_version="4.5.2"
@@ -44,7 +44,7 @@ static module build {
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api // include sys/mman.h
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.pthread_key
-	@NoRuntime depends embox.lib.LibCxx
+	@NoRuntime depends embox.cxx.LibCxx
 	@NoRuntime depends third_party.compiler_headers
 }
 

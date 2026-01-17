@@ -3,11 +3,11 @@ package third_party.mqtt.paho_mqtt_cpp
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/mqtt/paho_mqtt_cpp/libpaho_mqttcpp3/install/include")
 @BuildDepends(third_party.mqtt.paho_mqtt_c.libpaho_mqtt3a)
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 static module libpaho_mqttcpp3 {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install")
 	source "libpaho-mqttpp3-static.a"
 
 	@NoRuntime depends third_party.mqtt.paho_mqtt_c.libpaho_mqtt3a
-	@NoRuntime depends embox.lib.LibCxx
+	@NoRuntime depends embox.cxx.LibCxx
 }

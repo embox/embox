@@ -3,7 +3,7 @@ package third_party.STLport
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags_before="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/STLport/libstlportg/install/include/stlport")
 @BuildArtifactPath(cppflags="-Wno-narrowing -Wno-misleading-indentation")
-static module libstlportg extends embox.lib.libcxx_standalone {
+static module libstlportg extends embox.cxx.libcxx_standalone {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libstlportg.a"
 

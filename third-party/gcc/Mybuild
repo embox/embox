@@ -3,7 +3,7 @@ package third_party.gcc
 @LinkerSection(text="libstdcxx_text",rodata="libstdcxx_rodata",data="libstdcxx_data",bss="libstdcxx_bss",arm_exidx="libstdcxx_arm_exidx",arm_extab="libstdcxx_arm_extab")
 @BuildDepends(gcc_build)
 @BuildArtifactPath(cppflags_before="-I$(EXTERNAL_BUILD_DIR)/third_party/gcc/gcc_build/install/include")
-static module libstdcxx extends embox.lib.LibCxx {
+static module libstdcxx extends embox.cxx.LibCxx {
 	@AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
 	source "libstdc++.a", "libsupc++.a"
 

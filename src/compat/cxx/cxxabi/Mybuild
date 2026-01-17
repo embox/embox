@@ -1,0 +1,7 @@
+package embox.cxx
+
+module cxxabi {
+	option number cxa_atexit_table_size=100
+
+	source "cxxabi.c"
+}

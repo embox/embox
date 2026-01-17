@@ -2,14 +2,14 @@ package third_party.lib
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/thrift/install/include")
 @Build(stage=2,script="$(EXTERNAL_MAKE)")
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 @BuildDepends(third_party.boost.libs)
 @BuildDepends(third_party.lib.openssl)
 static module thrift {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libthrift.a"
 
-	@NoRuntime depends embox.lib.LibCxx
+	@NoRuntime depends embox.cxx.LibCxx
 	@NoRuntime depends embox.compat.posix.pthread.pthread_stack
 	@NoRuntime depends embox.compat.posix.pthread_rwlock
 	@NoRuntime depends embox.compat.posix.net.All

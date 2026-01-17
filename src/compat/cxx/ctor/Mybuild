@@ -1,0 +1,24 @@
+package embox.cxx
+
+@DefaultImpl(ConstructionSingleApp)
+abstract module ConstructionPolicy {
+	source "cxx_ctor_common.c"
+}
+
+module ConstructionGlobal extends ConstructionPolicy {
+	source "cxx_ctor_global.c"
+
+	@NoRuntime depends embox.cxx.cxxabi
+}
+
+module ConstructionSingleApp extends ConstructionPolicy {
+	source "cxx_ctor_singleapp.c"
+
+	@NoRuntime depends embox.cxx.cxxabi
+}
+
+module ConstructionNone extends ConstructionPolicy {
+	source "cxx_ctor_none.c"
+
+	@NoRuntime depends embox.cxx.cxxabi
+}
