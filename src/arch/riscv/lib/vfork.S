@@ -17,4 +17,4 @@
 vfork:
 	SAVE_ALL
 	mv      a0, sp
-	j       vfork_body
+	call    vfork_body

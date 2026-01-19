@@ -1,5 +1,5 @@
-package embox.lib
+package embox.cxx
 
-@DefaultImpl(embox.lib.libcxx_standalone)
+@DefaultImpl(embox.cxx.libcxx_standalone)
 abstract module LibCxx {
 }

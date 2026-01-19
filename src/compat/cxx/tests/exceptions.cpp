@@ -13,8 +13,7 @@
 
 EMBOX_TEST_SUITE_EXT("c++ exception test", NULL, NULL, NULL, NULL);
 
-namespace
-{
+namespace {
 
 class MyException: public std::exception {
 public:
@@ -75,4 +74,5 @@ TEST_CASE("Catch exception in outer function") {
 	test_func_catch1();
 	test_assert_emitted("ab");
 }
+
 } /* namespace */

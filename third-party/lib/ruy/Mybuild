@@ -2,12 +2,12 @@ package third_party.lib.ruy
 
 @BuildDepends(third_party.lib.pytorch.cpuinfo)
 @BuildDepends(third_party.googletest)
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
 static module ruy_download {
 	@NoRuntime depends third_party.lib.pytorch.cpuinfo
 	@NoRuntime depends third_party.googletest
-	@NoRuntime depends embox.lib.LibCxx
+	@NoRuntime depends embox.cxx.LibCxx
 }
 
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ruy/ruy_download/install/include")

@@ -2,7 +2,7 @@ package project.ardupilot
 
 @AutoCmd
 @CxxCmd(name="arducopter", help="TODO")
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 @Build(stage=2, script="$(EXTERNAL_MAKE)")
 module arducopter {
 	option string board="sitl"
@@ -14,7 +14,7 @@ module arducopter {
 	@NoRuntime depends dsdl
 	@NoRuntime depends dronecan_dsdlc
 	@NoRuntime depends libcanard
-	@NoRuntime depends embox.lib.LibCxx
+	@NoRuntime depends embox.cxx.LibCxx
 	@NoRuntime depends embox.compat.posix.stubs
 	@NoRuntime depends embox.compat.posix.ipc.pipe
 	@NoRuntime depends embox.compat.posix.proc.fork

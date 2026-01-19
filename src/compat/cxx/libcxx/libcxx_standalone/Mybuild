@@ -1,6 +1,6 @@
-package embox.lib
+package embox.cxx
 
-static module libcxx_standalone extends embox.lib.LibCxx {
+static module libcxx_standalone extends embox.cxx.LibCxx {
 	@IncludeExport
 	source "new", "exception", "typeinfo"
 

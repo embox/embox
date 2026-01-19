@@ -8,7 +8,7 @@ module tflite_micro_build_headers {
 
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
 @BuildArtifactPath(cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/tflite_micro/libtflm/install/include")
-@BuildDepends(embox.lib.LibCxx)
+@BuildDepends(embox.cxx.LibCxx)
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(third_party.lib.flatbuffers_download)
 @BuildDepends(third_party.lib.gemmlowp)
@@ -303,7 +303,7 @@ static module libtflm {
 	@NoRuntime depends third_party.lib.kissfft_download
 	@NoRuntime depends third_party.lib.gemmlowp
 	@NoRuntime depends third_party.lib.ruy.libruy
-	@NoRuntime depends embox.lib.LibCxx
+	@NoRuntime depends embox.cxx.LibCxx
 	@NoRuntime depends third_party.compiler_headers
 	@NoRuntime depends third_party.lib.flatbuffers_download
 }

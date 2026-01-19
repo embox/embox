@@ -9,6 +9,7 @@
 #include <new>
 
 #include <embox/test.h>
+
 #include "test_cxx.h"
 
 namespace {
@@ -30,11 +31,20 @@ namespace {
 class Base {
 protected:
 	int field;
+
 public:
-	Base() { ++base_ctor; }
-	Base(int i) : field(i) { ++base_ctor; }
-	~Base() { ++base_dtor; }
-	int get_field(void) { return field; }
+	Base() {
+		++base_ctor;
+	}
+	Base(int i): field(i) {
+		++base_ctor;
+	}
+	~Base() {
+		++base_dtor;
+	}
+	int get_field(void) {
+		return field;
+	}
 };
 
 TEST_CASE("Class can allocated on stack") {
@@ -49,7 +59,7 @@ TEST_CASE("Class can allocated on stack") {
 
 TEST_CASE("Class can be allocated on stack using placement new") {
 	char storage[sizeof(Base)];
-	Base *base_ptr = new(storage) Base();
+	Base *base_ptr = new (storage) Base();
 	test_assert_equal(base_ctor, 1);
 	test_assert_equal(base_dtor, 0);
 	base_ptr->~Base();
@@ -58,7 +68,7 @@ TEST_CASE("Class can be allocated on stack using placement new") {
 }
 
 TEST_CASE("Class can be allocated in heap using nothrow new") {
-	Base *base_ptr = new(std::nothrow) Base();
+	Base *base_ptr = new (std::nothrow) Base();
 	test_assert_equal(base_ctor, 1);
 	test_assert_equal(base_dtor, 0);
 	delete base_ptr;
