@@ -78,6 +78,7 @@ static int stm32f4_udc_ep_queue(struct usb_gadget_ep *ep,
 		u->ep_info[0x4 | ep->nr].rem_length = req->len;
 
 		HAL_PCD_EP_Transmit(&hpcd, ep->nr, req->buf, req->len);
+		u->ep_info[0x4 | ep->nr].is_used = 0;
 	}
 
 	return 0;
