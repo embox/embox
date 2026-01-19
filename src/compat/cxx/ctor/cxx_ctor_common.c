@@ -19,11 +19,8 @@ __attribute__((weak)) void __register_frame(void *begin) {
 
 void cxx_invoke_constructors(void) {
 	extern const char _ctors_start, _ctors_end;
-	extern const char _eh_frame_begin;
 
 	ctor_func_t *func;
-
-	__register_frame((void *)&_eh_frame_begin);
 
 	for (func = (ctor_func_t *)&_ctors_start;
 	     func != (ctor_func_t *)&_ctors_end; func++) {
