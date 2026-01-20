@@ -27,14 +27,14 @@ void irqctrl_disable(unsigned int irq) {
 	REG32_CLEAR(INTERRUPT_CORE0_CPU_INT_ENABLE, 1 << irq);
 }
 
-// void irqctrl_eoi(unsigned int irq) {
-// }
+void irqctrl_eoi(unsigned int irq) {
+}
 
 int irqctrl_get_intid(void) {
 	return csr_read(mcause) & 0x3FF;
 }
 
-void rv_utils_restore_intlevel_regval(uint32_t restoreval)
+static inline void rv_utils_restore_intlevel_regval(uint32_t restoreval)
 {
     REG32_STORE(NTERRUPT_CORE0_CPU_INT_THRESH_REG, restoreval);
 }
