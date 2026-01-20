@@ -10,5 +10,4 @@ module platform_init extends platform.platform_init {
 static module mdr1206fi_clocks_init {
 	source "mdr1206fi_platform_clock.c"
 	source "mdr1206fi_rst_clk.c"
-	source "mdr1206fi_system.c"
 }

@@ -1,8 +1,6 @@
-#include "rst_clk.h"
+#include "mdr1206fi_rst_clk.h"
 
-#include "mdr1206fi.h"
 
-extern void SystemCoreClockUpdate(void);
 void ClockConfig()
 {
     int ErrorCode;
@@ -19,23 +17,16 @@ void ClockConfig()
 
     RST_CLK_HCLK_ClkSelection(RST_CLK_CPU_HCLK_CLK_SRC_HSI);
 
-    SystemCoreClockUpdate();
 
-    RST_CLK_HSE_Cmd(ENABLE);
-    while (RST_CLK_HSE_GetStatus() != SUCCESS) { }
+    RST_CLK_HSE_Cmd(1);
+    while (RST_CLK_HSE_GetStatus() != 1) { }
 
 
     ErrorCode = RST_CLK_HCLK_Init(&Clk);
 
-    if (ErrorCode != SUCCESS) {
+    if (ErrorCode != 1) {
         while(1);
     }
-
-    // RST_CLK_PER1_C2_ClkSelection(RST_CLK_PER1_C2_CLK_SRC_CPU_C1);
-    // RST_CLK_PER1_C2_SetPrescaler(RST_CLK_PER1_C2_UART1, RST_CLK_PER1_PRESCALER_DIV_1);
-    // RST_CLK_PER1_C2_Cmd(RST_CLK_PER1_C2_UART1, ENABLE);
-
-    // RST_CLK_PCLKCmd(RST_CLK_PCLK_UART1, ENABLE);
 
     return;
 }
