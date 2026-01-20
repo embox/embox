@@ -17,6 +17,10 @@
 
 static spinlock_t atomic_lock = SPIN_STATIC_UNLOCKED;
 
+_Bool __atomic_is_lock_free(size_t size, const volatile void *ptr) {
+    return (size == 1 || size == 2 || size == 4) ? 1 : 0;
+}
+
 uint8_t __atomic_fetch_sub_1(void *mem, uint8_t val, int model) {
 	spin_lock(&atomic_lock);
 	uint8_t ret = *((uint8_t *) mem);
@@ -79,6 +83,74 @@ uint64_t __atomic_fetch_add_8(void *mem, uint64_t val, int model) {
 	*((uint64_t *) mem) += val;
 	spin_unlock(&atomic_lock);
 	return ret;
+}
+
+uint8_t __atomic_fetch_and_1(void *mem, uint8_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint8_t ret = *((uint8_t *) mem);
+	*((uint8_t *) mem) &= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint16_t __atomic_fetch_and_2(void *mem, uint16_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint16_t ret = *((uint16_t *) mem);
+	*((uint16_t *) mem) &= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint32_t __atomic_fetch_and_4(void *mem, uint32_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint32_t ret = *((uint32_t *) mem);
+	*((uint32_t *) mem) &= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint64_t __atomic_fetch_and_8(void *mem, uint64_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint64_t ret = *((uint64_t *) mem);
+	*((uint64_t *) mem) &= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint8_t __atomic_fetch_or_1(void *mem, uint8_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint8_t ret = *((uint8_t *) mem);
+	*((uint8_t *) mem) |= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint16_t __atomic_fetch_or_2(void *mem, uint16_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint16_t ret = *((uint16_t *) mem);
+	*((uint16_t *) mem) |= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint32_t __atomic_fetch_or_4(void *mem, uint32_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint32_t ret = *((uint32_t *) mem);
+	*((uint32_t *) mem) |= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+uint64_t __atomic_fetch_or_8(void *mem, uint64_t val, int model) {
+	spin_lock(&atomic_lock);
+	uint64_t ret = *((uint64_t *) mem);
+	*((uint64_t *) mem) |= val;
+	spin_unlock(&atomic_lock);
+	return ret;
+}
+
+_Bool __atomic_is_lock_free(size_t size, const volatile void *ptr) {
+    return (size == 1 || size == 2 || size == 4) ? 1 : 0;
 }
 
 #ifndef __clang__
