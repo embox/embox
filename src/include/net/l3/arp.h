@@ -26,6 +26,7 @@ struct sk_buff;
  * ARP Hardware Space
  */
 enum arp_hdr {
+	ARP_HRD_NONE     =   0, /* No l2 header */
 	ARP_HRD_ETHERNET =   1, /* Ethernet device */
 	ARP_HRD_LOOPBACK = 772  /* Loopback device */
 };

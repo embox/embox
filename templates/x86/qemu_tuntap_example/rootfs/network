@@ -1,0 +1,13 @@
+iface tun0 inet static
+	address 10.0.3.1
+	netmask 255.255.255.0
+	hwaddress aa:bb:cd:dd:ee:02
+
+iface eth0 inet static
+	address 10.0.2.16
+	netmask 255.255.255.0
+	hwaddress aa:bb:cc:dd:ee:02
+
+iface lo inet static
+	address 127.0.0.1
+	netmask 255.0.0.0
