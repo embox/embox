@@ -1,6 +1,6 @@
-diff -aur ./openssl-1.0.2u/Makefile.org ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/Makefile.org
+diff -aur ./openssl-1.0.2u/Makefile.org ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/Makefile.org
 --- ./openssl-1.0.2u/Makefile.org	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/Makefile.org	2024-05-20 20:54:18.137632682 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/Makefile.org	2024-05-20 20:54:18.137632682 +0300
 @@ -137,7 +137,7 @@
  
  BASEADDR=
@@ -10,9 +10,9 @@ diff -aur ./openssl-1.0.2u/Makefile.org ../build/extbld/third_party/lib/openssl/
  ENGDIRS= ccgost
  SHLIBDIRS= crypto ssl
  
-diff -aur ./openssl-1.0.2u/crypto/engine/tb_asnmth.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/engine/tb_asnmth.c
+diff -aur ./openssl-1.0.2u/crypto/engine/tb_asnmth.c ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/engine/tb_asnmth.c
 --- ./openssl-1.0.2u/crypto/engine/tb_asnmth.c	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/engine/tb_asnmth.c	2024-05-10 20:27:04.214094294 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/engine/tb_asnmth.c	2024-05-10 20:27:04.214094294 +0300
 @@ -55,6 +55,7 @@
  #include "eng_int.h"
  #include "asn1_locl.h"
@@ -21,9 +21,9 @@ diff -aur ./openssl-1.0.2u/crypto/engine/tb_asnmth.c ../build/extbld/third_party
  
  /*
   * If this symbol is defined then ENGINE_get_pkey_asn1_meth_engine(), the
-diff -aur ./openssl-1.0.2u/crypto/x509v3/v3_utl.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/x509v3/v3_utl.c
+diff -aur ./openssl-1.0.2u/crypto/x509v3/v3_utl.c ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/x509v3/v3_utl.c
 --- ./openssl-1.0.2u/crypto/x509v3/v3_utl.c	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/x509v3/v3_utl.c	2024-05-10 20:27:52.302329385 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/x509v3/v3_utl.c	2024-05-10 20:27:52.302329385 +0300
 @@ -59,6 +59,7 @@
  /* X509 v3 extension utilities */
  
@@ -32,9 +32,9 @@ diff -aur ./openssl-1.0.2u/crypto/x509v3/v3_utl.c ../build/extbld/third_party/li
  #include <ctype.h>
  #include "cryptlib.h"
  #include <openssl/conf.h>
-diff -aur ./openssl-1.0.2u/crypto/bio/bss_dgram.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/bss_dgram.c
+diff -aur ./openssl-1.0.2u/crypto/bio/bss_dgram.c ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/bio/bss_dgram.c
 --- ./openssl-1.0.2u/crypto/bio/bss_dgram.c	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/bss_dgram.c	2024-05-10 20:27:17.402158767 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/bio/bss_dgram.c	2024-05-10 20:27:17.402158767 +0300
 @@ -500,7 +500,7 @@
      int *ip;
      struct sockaddr *to = NULL;
@@ -55,7 +55,7 @@ diff -aur ./openssl-1.0.2u/crypto/bio/bss_dgram.c ../build/extbld/third_party/li
          case AF_INET:
 diff -aur ./openssl-1.0.2u/crypto/asn1/ameth_lib.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/asn1/ameth_lib.c
 --- ./openssl-1.0.2u/crypto/asn1/ameth_lib.c	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/asn1/ameth_lib.c	2024-05-10 20:27:32.642233272 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/asn1/ameth_lib.c	2024-05-10 20:27:32.642233272 +0300
 @@ -57,6 +57,7 @@
   */
  
@@ -64,9 +64,9 @@ diff -aur ./openssl-1.0.2u/crypto/asn1/ameth_lib.c ../build/extbld/third_party/l
  #include "cryptlib.h"
  #include <openssl/asn1t.h>
  #include <openssl/x509.h>
-diff -aur ./openssl-1.0.2u/crypto/bio/b_sock.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/b_sock.c
+diff -aur ./openssl-1.0.2u/crypto/bio/b_sock.c ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/bio/b_sock.c
 --- ./openssl-1.0.2u/crypto/bio/b_sock.c	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/crypto/bio/b_sock.c	2024-06-05 13:52:52.205638737 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/crypto/bio/b_sock.c	2024-06-05 13:52:52.205638737 +0300
 @@ -590,7 +590,7 @@
   * The reason I have implemented this instead of using sscanf is because
   * Visual C 1.52c gives an unresolved external when linking a DLL :-(
@@ -76,9 +76,9 @@ diff -aur ./openssl-1.0.2u/crypto/bio/b_sock.c ../build/extbld/third_party/lib/o
  {
      unsigned int tmp[4];
      int num = 0, c, ok = 0;
-diff -aur ./openssl-1.0.2u/ssl/ssl_conf.c ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/ssl/ssl_conf.c
+diff -aur ./openssl-1.0.2u/ssl/ssl_conf.c ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/ssl/ssl_conf.c
 --- ./openssl-1.0.2u/ssl/ssl_conf.c	2019-12-20 16:02:41.000000000 +0300
-+++ ../build/extbld/third_party/lib/openssl/openssl-1.0.2u/ssl/ssl_conf.c	2024-05-10 20:29:10.190710162 +0300
++++ ../build/extbld/third_party/lib/openssl1/openssl-1.0.2u/ssl/ssl_conf.c	2024-05-10 20:29:10.190710162 +0300
 @@ -59,6 +59,7 @@
  # include <assert.h>
  #endif
