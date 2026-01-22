@@ -6,4 +6,6 @@ package embox.project.openssl3.cmd
 @Build(stage=2)
 module aesgcm_demo {
     source "aesgcm.c"
+
+    @NoRuntime depends third_party.lib.openssl
 }
