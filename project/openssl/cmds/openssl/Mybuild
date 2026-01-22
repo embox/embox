@@ -6,5 +6,4 @@ package embox.project.openssl.cmd
 @Build(stage=2)
 module openssl_rand_demo {
     source "openssl_rand_demo.c"
-    depends third_party.lib.openssl
 }
