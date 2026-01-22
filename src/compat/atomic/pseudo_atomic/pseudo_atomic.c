@@ -149,10 +149,6 @@ uint64_t __atomic_fetch_or_8(void *mem, uint64_t val, int model) {
 	return ret;
 }
 
-_Bool __atomic_is_lock_free(size_t size, const volatile void *ptr) {
-    return (size == 1 || size == 2 || size == 4) ? 1 : 0;
-}
-
 #ifndef __clang__
 uint8_t __sync_val_compare_and_swap_1(volatile void *ptr, uint8_t soldval,
 		uint8_t snewval) {
