@@ -59,7 +59,7 @@ struct gpio_conf gpios[] = {
 				REGMAP("BASE", (MDR_PORTA_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", EXT_INT1_IRQ),
+				VAL("", MDR_EXT_INT1_IRQ),
 			},
 			.clocks = {
 				VAL("", "CLK_GPIOA"),
@@ -76,7 +76,7 @@ struct gpio_conf gpios[] = {
 				REGMAP("BASE", (MDR_PORTB_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", EXT_INT1_IRQ),
+				VAL("", MDR_EXT_INT2_IRQ),
 			},
 			.clocks = {
 				VAL("", "CLK_GPIOB"),
@@ -93,7 +93,7 @@ struct gpio_conf gpios[] = {
 				REGMAP("BASE", (MDR_PORTC_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", EXT_INT1_IRQ),
+				VAL("", MDR_EXT_INT3_IRQ),
 			},
 			.clocks = {
 				VAL("", "CLK_GPIOC"),
@@ -110,7 +110,7 @@ struct gpio_conf gpios[] = {
 				REGMAP("BASE", (MDR_PORTD_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", EXT_INT1_IRQ),
+				VAL("", MDR_EXT_INT1_IRQ),
 			},
 			.clocks = {
 				VAL("", "CLK_GPIOD"),

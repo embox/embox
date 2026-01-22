@@ -9,6 +9,8 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include <kernel/irq.h>
+
 #include <drivers/gpio.h>
 #include <drivers/clk/mdr1206_rst_clk.h>
 
@@ -21,10 +23,6 @@
 #define GPIO_CHIP_ID     OPTION_GET(NUMBER, gpio_chip_id)
 #define GPIO_PINS_NUMBER 16
 
-#define CONF_GPIO_PORT_A_CLK_ENABLE() "CLK_GPIOA"
-#define CONF_GPIO_PORT_B_CLK_ENABLE() "CLK_GPIOB"
-#define CONF_GPIO_PORT_C_CLK_ENABLE() "CLK_GPIOC"
-#define CONF_GPIO_PORT_D_CLK_ENABLE() "CLK_GPIOD"
 
 struct gpio_reg {
     volatile uint32_t RXTX;      /*!< 0x00 PORT Data Register */
@@ -67,10 +65,8 @@ static inline char *milandr_gpio_get_gpio_clk(int port) {
 		return CONF_GPIO_PORT_B_CLK_ENABLE();
 	case 2:
 		return CONF_GPIO_PORT_C_CLK_ENABLE();
-		break;
 	case 3:
 		return CONF_GPIO_PORT_D_CLK_ENABLE();
-		break;
 	default:
 		return NULL;
 	}
@@ -164,3 +160,4 @@ static const struct gpio_chip milandr_gpio_chip = {
 
 GPIO_CHIP_DEF(&milandr_gpio_chip);
 
+STATIC_IRQ_ATTACH(CONF_GPIO_PORT_A_IRQ, gpio_irq_handler, NULL);
