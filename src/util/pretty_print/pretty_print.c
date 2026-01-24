@@ -24,7 +24,7 @@ int pretty_print_row(void *buf, size_t len, char *dest) {
 	}
 
 	for (int i = 0; i < len; i++) {
-		sprintf(dest, " %02hhX", *((uint8_t *) buf + offt));
+		snprintf(dest, len - offt, " %02hhX", *((uint8_t *) buf + offt));
 		offt++;
 		dest += 3; /* One space + two hex symbols */
 	}
