@@ -1,10 +1,13 @@
 package third_party.rt_tests
 
 @Build(stage=1,script="$(EXTERNAL_MAKE)")
+module src {}
+
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/rt_tests/src/rt-tests-2.9/src/include")
 module lib {
 	@IncludePath("$(THIRDPARTY_DIR)/rt-tests")
-	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/rt_tests/lib/rt-tests-2.9/src/include")
-	@AddPrefix("^BUILD/extbld/^MOD_PATH/rt-tests-2.9/src/lib")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/rt_tests/src/rt-tests-2.9/src/include")
+	@AddPrefix("^BUILD/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib")
 	source
 	"rt-error.c",
 	"rt-get_cpu.c",
@@ -13,4 +16,18 @@ module lib {
 	"rt-numa.c",
 	"histogram.c"
 
+	depends src
+}
+
+@AutoCmd
+@Cmd(	name = "cyclictest",
+	help = "cyclictest"
+)
+@BuildDepends(lib)
+module cyclictest {
+	@IncludePath("$(THIRDPARTY_DIR)/rt-tests")
+	@AddPrefix("^BUILD/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest")
+	source "cyclictest.c"
+
+	depends lib
 }
