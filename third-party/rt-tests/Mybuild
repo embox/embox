@@ -1,0 +1,16 @@
+package third_party.rt_tests
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+module lib {
+	@IncludePath("$(THIRDPARTY_DIR)/rt-tests")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/rt_tests/lib/rt-tests-2.9/src/include")
+	@AddPrefix("^BUILD/extbld/^MOD_PATH/rt-tests-2.9/src/lib")
+	source
+	"rt-error.c",
+	"rt-get_cpu.c",
+	"rt-sched.c",
+	"rt-utils.c",
+	"rt-numa.c",
+	"histogram.c"
+
+}
