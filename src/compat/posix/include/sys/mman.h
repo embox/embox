@@ -70,6 +70,10 @@ static inline int munlockall(void) {
 	return 0;
 }
 
+static inline int mlock(const void *addr, size_t len) {
+    return 0;
+}
+
 __END_DECLS
 
 #endif /* COMPAT_POSIX_SYS_MMAN_H_ */

@@ -14,6 +14,7 @@
 
 #define RLIMIT_STACK 0
 #define RLIMIT_CORE  1
+#define RLIMIT_RTPRIO 2
 #define RLIMIT_NOFILE 128
 #define RLIM_INFINITY 0
 
