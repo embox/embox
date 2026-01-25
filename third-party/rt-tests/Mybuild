@@ -29,5 +29,10 @@ module cyclictest {
 	@AddPrefix("^BUILD/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest")
 	source "cyclictest.c"
 
-	depends lib
+	@NoRuntime depends lib
+	@NoRuntime depends embox.compat.posix.pthread.pthread_barrier
+	@NoRuntime depends embox.compat.posix.pthread.pthreads_affinity_np_stubs
+	@NoRuntime depends embox.compat.linux.syscall_stub
+    @NoRuntime depends embox.compat.posix.util.nanosleep
+
 }
