@@ -115,6 +115,7 @@ extern void tzset(void);
 
 struct sigevent;
 extern int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid);
+int timer_delete(timer_t timerid);
 
 extern int timer_settime(timer_t timerid, int flags,
 				const struct itimerspec *value, struct itimerspec *ovalue);
