@@ -33,8 +33,19 @@ struct dev_module *dev_module_init(struct dev_module *devmod, const char *name,
 
 	memset(devmod, 0, sizeof(*devmod));
 
+/* FIXME #pragma GCC diagnostic ignored "-Wstringop-truncation" */
+#if defined(__GNUC__) && (__GNUC__ > 7)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+
 	strncpy(devmod->name, name, DEV_NAME_LEN);
 	devmod->name[DEV_NAME_LEN - 1] = '\0';
+
+#if defined(__GNUC__) && (__GNUC__ > 7)
+#pragma GCC diagnostic pop
+#endif
+
 	devmod->dev_iops = dev_iops;
 	devmod->dev_priv = privdata;
 
@@ -42,7 +53,8 @@ struct dev_module *dev_module_init(struct dev_module *devmod, const char *name,
 
 	return devmod;
 }
-
+#if 0
+/* Don't use now */
 /**
  * @brief Alloc and initialize device module with given parameters
  *
@@ -63,6 +75,7 @@ struct dev_module *dev_module_create(const char *name,
 
 	return dev_module_init(devmod, name, dev_iops, privdata);
 }
+#endif
 
 /**
  * @brief Free system resources related to given device module

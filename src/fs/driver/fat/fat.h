@@ -272,7 +272,7 @@ static inline int fat_sec_by_clus(struct fat_fs_info *fsi, int clus) {
 }
 
 extern void fat_set_filetime(struct fat_dirent *de);
-extern void fat_get_filename(char *tmppath, char *filename);
+//extern void fat_get_filename(char *tmppath, char *filename);
 extern int fat_check_filename(char *filename);
 extern int fat_read_filename(struct fat_file_info *fi, void *p_scratch, char *name);
 
@@ -305,11 +305,13 @@ extern void fat_dirinfo_free(struct dirinfo *di);
 
 extern int fat_fill_inode(struct inode *inode, struct fat_dirent *de,
 		struct dirinfo *di);
+#if 0
 struct dir_ctx;
 extern int fat_iterate(struct inode *next, char *name,
 		struct inode *parent, struct dir_ctx *ctx);
 extern int fat_delete(struct inode *dir, struct inode *node);
 extern int fat_truncate(struct inode *node, off_t length);
+#endif /* 0 */
 
 extern int fat_entries_per_name(const char *name);
 extern void fat_write_longname(char *name, struct fat_dirent *di);

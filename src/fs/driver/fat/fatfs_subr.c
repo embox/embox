@@ -54,13 +54,13 @@ int fat_check_filename(char *filename) {
 	}
 	return 0;
 }
-
+#if 0
 void fat_get_filename(char *tmppath, char *filename) {
 	char *p;
 
 	p = tmppath;
 	/* strip leading path separators */
-	while (*tmppath == DIR_SEPARATOR){
+	while (*tmppath == DIR_SEPARATOR) {
 		strcpy((char *) tmppath, (char *) tmppath + 1);
 	}
 	while (*(p++));
@@ -75,7 +75,7 @@ void fat_get_filename(char *tmppath, char *filename) {
 
 	return;
 }
-
+#endif
 void fat_set_filetime(struct fat_dirent *de) {
 	/* TODO set normal time */
 		de->crttime_l = 0x20;	/* 01:01:00am, Jan 1, 2006. */

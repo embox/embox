@@ -163,7 +163,7 @@ static void set_task_name(struct cmd_data *cdata) {
 		ptr = stpcpy(ptr, cdata->argv[i]);
 	}
 
-	task_set_name(task_self(), buf);
+	task_set_name(task_self(), cdata->argv[0]);
 }
 
 static void *run_cmd(void *data) {

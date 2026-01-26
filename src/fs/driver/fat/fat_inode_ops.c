@@ -26,7 +26,7 @@ extern int fat_destroy_inode(struct inode *inode);
  *
  * @return Error code
  */
-int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
+static int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir_ctx *ctx) {
 	struct dirinfo *dirinfo;
 	struct fat_dirent de;
 	int res;
@@ -58,7 +58,7 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 
 	switch (res) {
 	case DFS_OK: {
-		char tmp_name[128];
+		char tmp_name[NAME_MAX];
 		int res;
 
 		res = fat_alloc_inode_priv(next, &de);
@@ -74,7 +74,7 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 			fat_destroy_inode(next);
 			return -1;
 		}
-		strncpy(name, tmp_name, NAME_MAX-1);
+		strncpy(name, tmp_name, NAME_MAX);
 		name[NAME_MAX - 1] = '\0';
 
 		ctx->fs_ctx = (void *) ((uintptr_t) dirinfo->currententry);
@@ -87,7 +87,7 @@ int fat_iterate(struct inode *next, char *name, struct inode *parent, struct dir
 	}
 }
 
-int fat_truncate(struct inode *node, off_t length) {
+static int fat_truncate(struct inode *node, off_t length) {
 	assert(node);
 
 	inode_size_set(node, length);
@@ -155,7 +155,7 @@ int fat_create(struct inode *i_new, struct inode *i_dir, int mode) {
 	return 0;
 }
 extern int fat_dir_empty(struct fat_file_info *fi);
-int fat_delete(struct inode *dir, struct inode *node) {
+static int fat_delete(struct inode *dir, struct inode *node) {
 	struct fat_file_info *fi;
 
 	fi = inode_priv(node);

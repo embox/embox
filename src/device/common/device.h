@@ -37,8 +37,11 @@ struct dev_module {
 	void *dev_priv;
 };
 
+#if 0
+/* Don't use now */
 extern struct dev_module *dev_module_create(const char *name,
     const struct idesc_ops *dev_iops, void *privdata);
+#endif
 
 /**
  * @brief initialize device module with given parameters

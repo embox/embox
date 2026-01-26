@@ -19,7 +19,7 @@ struct task_argv {
 	int argc;
 	char argv_buff[ARGS_QUANTITY][ARG_LENGTH];
 	char *argv[ARGS_QUANTITY + 1]; /* null terminated */
-	char path[ARG_LENGTH];
+	char path[ARG_LENGTH]; /* FIXME PATH_MAX */
 };
 
 TASK_RESOURCE_DEF(task_argv_desc, struct task_argv);
@@ -41,8 +41,18 @@ static int task_argv_exec(const struct task *task, const char *path, char *const
 	}
 	task_argv->argv[i] = NULL;
 
+/* FIXME #pragma GCC diagnostic ignored "-Wstringop-truncation" */
+#if defined(__GNUC__) && (__GNUC__ > 7)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+
 	strncpy(task_argv->path, path, sizeof(task_argv->path));
 	task_argv->path[sizeof(task_argv->path) - 1] = '\0';
+
+#if defined(__GNUC__) && (__GNUC__ > 7)
+#pragma GCC diagnostic pop
+#endif
 
 	return 0;
 }
