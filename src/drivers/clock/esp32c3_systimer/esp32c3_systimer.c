@@ -82,7 +82,7 @@ struct esp32_systimer_regs {
 
 static int esp32c3_systimer_set_periodic(struct clock_source *cs) {
 	// REG32_STORE(&ESP32_SYSTIMER->target_conf[0], 0);
-	REG32_STORE(SYSTIMER_TARGET0_CONF, 0);
+	// REG32_STORE(SYSTIMER_TARGET0_CONF, 0);
 
 	// REG32_ORIN(&ESP32_SYSTIMER->target_conf[0], RTC_FREQ);
 	REG32_ORIN(SYSTIMER_TARGET0_CONF, RTC_FREQ/10000);
