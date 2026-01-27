@@ -32,6 +32,7 @@ module cyclictest {
 	@NoRuntime depends lib
 	@NoRuntime depends embox.compat.posix.pthread.pthread_barrier
 	@NoRuntime depends embox.compat.posix.pthread.pthreads_affinity_np_stubs
+	@NoRuntime depends embox.compat.posix.pthread.pthread_stack_stub 
 	@NoRuntime depends embox.compat.linux.syscall_stub
     @NoRuntime depends embox.compat.posix.util.nanosleep
 

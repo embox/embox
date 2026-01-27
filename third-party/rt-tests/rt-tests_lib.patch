@@ -1,10 +1,46 @@
-diff --color -aur rt-tests-2.9/src/include/rt-utils.h ../build/extbld/third_party/rt_tests/lib/rt-tests-2.9/src/include/rt-utils.h
+diff --color -aur rt-tests-2.9/src/cyclictest/cyclictest.c ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest/cyclictest.c
+--- rt-tests-2.9/src/cyclictest/cyclictest.c	2025-07-01 17:20:28.000000000 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest/cyclictest.c	2026-01-27 10:36:05.715798017 +0300
+@@ -52,7 +52,7 @@
+ #define SCHED_NORMAL SCHED_OTHER
+ #endif
+ 
+-#define sigev_notify_thread_id _sigev_un._tid
++// #define sigev_notify_thread_id _sigev_un._tid
+ 
+ #ifdef __UCLIBC__
+ #define MAKE_PROCESS_CPUCLOCK(pid, clock) \
+@@ -1039,8 +1039,8 @@
+ {
+ 	if (strncasecmp(polname, "other", 5) == 0)
+ 		policy = SCHED_OTHER;
+-	else if (strncasecmp(polname, "batch", 5) == 0)
+-		policy = SCHED_BATCH;
++	// else if (strncasecmp(polname, "batch", 5) == 0)
++	// 	policy = SCHED_BATCH;
+ 	else if (strncasecmp(polname, "idle", 4) == 0)
+ 		policy = SCHED_IDLE;
+ 	else if (strncasecmp(polname, "fifo", 4) == 0)
+@@ -1065,9 +1065,9 @@
+ 	case SCHED_RR:
+ 		policystr = "rr";
+ 		break;
+-	case SCHED_BATCH:
+-		policystr = "batch";
+-		break;
++	// case SCHED_BATCH:
++	// 	policystr = "batch";
++	// 	break;
+ 	case SCHED_IDLE:
+ 		policystr = "idle";
+ 		break;
+diff --color -aur rt-tests-2.9/src/include/rt-utils.h ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-utils.h
 --- rt-tests-2.9/src/include/rt-utils.h	2025-07-01 17:20:28.000000000 +0300
-+++ ../build/extbld/third_party/rt_tests/lib/rt-tests-2.9/src/include/rt-utils.h	2026-01-24 16:17:54.633083035 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-utils.h	2026-01-27 10:32:57.351436579 +0300
 @@ -34,9 +34,17 @@
  void tracemark(char *fmt, ...) __attribute__((format(printf, 1, 2)));
  void disable_trace_mark(void);
-
+ 
 -#define MSEC_PER_SEC		1000
 -#define USEC_PER_SEC		1000000
 -#define NSEC_PER_SEC		1000000000
@@ -22,9 +58,9 @@ diff --color -aur rt-tests-2.9/src/include/rt-utils.h ../build/extbld/third_part
  #define USEC_TO_NSEC(u)		((u) * 1000)
  #define USEC_TO_SEC(u)		(u) / USEC_PER_SEC)
  #define NSEC_TO_USEC(n)		((n) / 1000)
-diff --color -aur rt-tests-2.9/src/lib/rt-utils.c ../build/extbld/third_party/rt_tests/lib/rt-tests-2.9/src/lib/rt-utils.c
+diff --color -aur rt-tests-2.9/src/lib/rt-utils.c ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib/rt-utils.c
 --- rt-tests-2.9/src/lib/rt-utils.c	2025-07-01 17:20:28.000000000 +0300
-+++ ../build/extbld/third_party/rt_tests/lib/rt-tests-2.9/src/lib/rt-utils.c	2026-01-24 16:18:47.843342657 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib/rt-utils.c	2026-01-27 10:32:57.351564729 +0300
 @@ -303,10 +303,10 @@
  		return "SCHED_FIFO";
  	case SCHED_RR:
@@ -54,3 +90,4 @@ diff --color -aur rt-tests-2.9/src/lib/rt-utils.c ../build/extbld/third_party/rt
 +	// 	return SCHED_IDLE;
  	else if (!strcmp(str, "deadline"))
  		return SCHED_DEADLINE;
+ 
