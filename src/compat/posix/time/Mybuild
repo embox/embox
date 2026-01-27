@@ -1,5 +1,17 @@
 package embox.compat.posix.time
 
+static module clock {
+	source "clock.c"
+	//source "time.c"
+	depends embox.kernel.time.kernel_time
+}
+
+static module timer {
+	source "timer.c"
+
+	depends embox.kernel.time.kernel_time
+}
+
 module months_short_names {
 	source "months_short_names.c"
 }
