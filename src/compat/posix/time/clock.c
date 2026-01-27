@@ -45,15 +45,3 @@ int clock_settime(clockid_t clk_id, const struct timespec *ts) {
 	}
 	return 0;
 }
-
-time_t time(time_t *t) {
-	struct timespec ts;
-
-	getnsofday(&ts, NULL);
-
-	if (t != NULL) {
-		*t = ts.tv_sec;
-	}
-
-	return ts.tv_sec;
-}

@@ -2,7 +2,7 @@ package embox.compat.posix.time
 
 static module clock {
 	source "clock.c"
-	//source "time.c"
+	source "time.c"
 	depends embox.kernel.time.kernel_time
 }
 
