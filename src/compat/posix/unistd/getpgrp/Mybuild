@@ -1,4 +1,4 @@
-package embox.compat.posix
+package embox.compat.posix.unistd
 
 @DefaultImpl(getpgrp_stub)
 abstract module getpgrp {
