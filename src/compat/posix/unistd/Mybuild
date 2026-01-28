@@ -1,0 +1,5 @@
+package embox.compat.posix.unistd
+
+static module swab {
+	source "swab.c"
+}
