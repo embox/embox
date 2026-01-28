@@ -1,6 +1,6 @@
 #pragma once
 #include "mat.h"
-// #include <vector>
+#include "platform.h"
 namespace ncnn { class Mat; }
 
 struct Det { float x,y,w,h,score; int cls; };
