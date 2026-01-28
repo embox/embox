@@ -23,10 +23,6 @@ int fgetflags (const char *p, unsigned long *m) {
 	return -1;
 }
 
-int mkfifo(const char *pathname, mode_t mode) {
-	return 0;
-}
-
 pid_t getsid(pid_t pid) {
 	return -1;
 }

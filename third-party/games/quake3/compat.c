@@ -72,7 +72,3 @@ int pkey_mprotect(void *addr, size_t len, int prot, int pkey) {
 char * __xpg_basename(const char * path) {
 	return 0;
 }
-
-int mkfifo(const char *pathname, mode_t mode) {
-	return 0;
-}

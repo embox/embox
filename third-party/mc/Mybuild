@@ -18,6 +18,7 @@ module mc {
 	depends third_party.libs.libiconv
 
 	@NoRuntime depends embox.compat.posix.file_system
+	depends embox.compat.posix.sys.stat.mkfifo
 //	depends embox.driver.usb.hc.ohci_pci
 
 
