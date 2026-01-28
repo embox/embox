@@ -13,6 +13,8 @@ int nms(Det* d, int n, float thr, int* keep, int cap){
     for (int i=0;i<n && m<cap;++i){
         bool ok = true;
         for (int j=0;j<m;++j){
+            const Det& k = d[keep[j]];
+            if (d[i].cls != k.cls) continue; 
             if (iou(d[i], d[keep[j]]) > thr){ ok=false; break; }
         }
         if (ok) keep[m++] = i;
