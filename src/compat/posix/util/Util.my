@@ -1,19 +1,5 @@
 package embox.compat.posix.util
 
-module All {
-	depends
-		sleep,
-		gettimeofday,
-		getopt,
-		getpass,
-		gethostname,
-		environ,
-		swab
-
-	depends embox.compat.posix.sys.utsname
-	depends embox.compat.posix.sys.timeb
-}
-
 static module getopt {
 	@IncludeExport(path="util")
 	source "getopt.h"
