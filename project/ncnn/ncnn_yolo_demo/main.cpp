@@ -168,6 +168,31 @@ static bool save_ppm_rgb(const char* path, const unsigned char* rgb, int w, int 
 
 struct LetterboxInfo { int nw, nh, pad_x, pad_y; float scale; };
 
+
+static void log_mat(const char* tag, const ncnn::Mat& m)
+{
+    printf("[%s] Mat: w=%d h=%d c=%d dims=%d elemsize=%zu elempack=%d cstep=%zu data=%p\n",
+           tag, m.w, m.h, m.c, m.dims, (size_t)m.elemsize, m.elempack, (size_t)m.cstep, m.data);
+}
+
+static void log_letterbox(const LetterboxInfo& L, int S)
+{
+    printf("[LB] S=%d nw=%d nh=%d pad_x=%d pad_y=%d scale=%.6f\n",
+           S, L.nw, L.nh, L.pad_x, L.pad_y, (double)L.scale);
+}
+
+static void log_dets_head(const std::vector<Det>& dets, int n=5)
+{
+    printf("[DETS] count=%zu\n", dets.size());
+    for (int i = 0; i < n && i < (int)dets.size(); ++i)
+    {
+        const Det& d = dets[i];
+        printf("  #%d cls=%d score=%.5f x=%.2f y=%.2f w=%.2f h=%.2f\n",
+               i, d.cls, d.score, d.x, d.y, d.w, d.h);
+    }
+}
+
+
 static std::vector<unsigned char>
 make_letterbox_rgb(const unsigned char* src_rgb, int w, int h, int S, LetterboxInfo& L)
 {
@@ -191,7 +216,7 @@ make_letterbox_rgb(const unsigned char* src_rgb, int w, int h, int S, LetterboxI
     std::vector<unsigned char> lb;
     lb.resize((size_t)S * S * 3);
     for (size_t i = 0; i < lb.size(); ++i) {
-        lb[i] = (unsigned char)114;  // фон
+        lb[i] = (unsigned char)114;
     }
 
     for (int y = 0; y < L.nh; ++y) {
@@ -239,100 +264,102 @@ static inline void clip_box(Det& d, int W, int H) {
 }
 
 int main(int argc, char** argv) {
-    const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.png"; 
-    const int   S   = (argc > 2) ? atoi(argv[2]) : 320;
+    setvbuf(stdout, NULL, _IONBF, 0);
+    setvbuf(stderr, NULL, _IONBF, 0);
+
+    const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.png";
+    const int   S   = 320;
     const float CONF = 0.25f;
     const float IOU  = 0.50f;
     const int   REG_MAX = 16;
 
+    // [1] image
     std::vector<unsigned char> rgb;
     int w0 = 0, h0 = 0;
-    printf("[1] start, loading image...\n");
+    printf("[1] img=%s S=%d\n", img, S);
     if (!load_image_rgb(img, rgb, w0, h0)) {
-        printf("image load failed: %s\n", img);
+        printf("[1E] load_image_rgb failed\n");
         return -2;
     }
-    printf("[2] image loaded: %dx%d\n", w0, h0);
+    printf("[1] ok: %dx%d bytes=%zu\n", w0, h0, rgb.size());
 
-
+    // [2] model load
+    printf("[2] load model...\n");
     ncnn::Net net;
     net.opt.use_vulkan_compute = false;
     net.opt.num_threads = 1;
+    net.opt.lightmode = true;
+    net.opt.use_winograd_convolution = false;
+    net.opt.use_sgemm_convolution = false;
+    net.opt.use_packing_layout = false;
+
 
     const unsigned char* pparam = model_opt_param_bin;
     const unsigned char* pmodel = model_opt_bin;
+    printf("[2] ptrs: pparam=%p pmodel=%p\n", (const void*)pparam, (const void*)pmodel);
+
     ncnn::DataReaderFromMemory pr(pparam);
     ncnn::DataReaderFromMemory mr(pmodel);
 
-    if (net.load_param_bin(pr) != 0) {
-        printf("load_param failed\n");
-        return -3;
-    }
-    if (net.load_model(mr) != 0) {
-        printf("load_model failed\n");
-        return -4;
-    }
+    int r1 = net.load_param_bin(pr);
+    int r2 = (r1 == 0) ? net.load_model(mr) : -999;
+    printf("[2] rc: param=%d model=%d\n", r1, r2);
+    if (r1 != 0 || r2 != 0) return -3;
 
+    // [3] preprocess
+    printf("[3] preprocess(letterbox+norm)...\n");
     LetterboxInfo LI;
     std::vector<unsigned char> lb = make_letterbox_rgb(rgb.data(), w0, h0, S, LI);
+    printf("[3] lb bytes=%zu nw=%d nh=%d pad=(%d,%d) scale=%.6f\n",
+           lb.size(), LI.nw, LI.nh, LI.pad_x, LI.pad_y, (double)LI.scale);
 
     ncnn::Mat in = ncnn::Mat::from_pixels(lb.data(), ncnn::Mat::PIXEL_RGB, S, S);
     const float norm[3] = {1.f/255.f, 1.f/255.f, 1.f/255.f};
     in.substract_mean_normalize(0, norm);
+    printf("[3] in mat: w=%d h=%d c=%d dims=%d data=%p\n", in.w, in.h, in.c, in.dims, in.data);
 
+    // [4] inference
+    printf("[4] infer(input+extract)...\n");
     ncnn::Extractor ex = net.create_extractor();
     ex.set_light_mode(true);
 
     using namespace model_opt_param_id;
-    if (ex.input(BLOB_in0, in) != 0) {
-        printf("ex.input(BLOB_in0) failed\n");
-        return -5;
-    }
-
+    int ri = ex.input(BLOB_in0, in);
     ncnn::Mat out;
-    if (ex.extract(BLOB_out0, out) != 0) {
-        printf("ex.extract(BLOB_out0) failed\n");
-        return -6;
-    }
+    int ro = (ri == 0) ? ex.extract(BLOB_out0, out) : -999;
+    printf("[4] rc: input=%d extract=%d out(w=%d h=%d c=%d dims=%d data=%p)\n",
+           ri, ro, out.w, out.h, out.c, out.dims, out.data);
+    if (ri != 0 || ro != 0) return -6;
 
-    printf("out shape: w=%d h=%d c=%d\n", out.w, out.h, out.c);
-
+    // [5] postprocess
+    printf("[5] decode+nms...\n");
     std::vector<Det> dets;
     const int C = out.h;
 
-    if (C > 4 * REG_MAX) {
-        yolo_decode_xywh_flat(out, CONF, dets);
-    } else {
-        yolo_dfl_decode_flat(out, S, REG_MAX, CONF, dets);
-    }
+    if (C > 4 * REG_MAX) yolo_decode_xywh_flat(out, CONF, dets);
+    else                yolo_dfl_decode_flat(out, S, REG_MAX, CONF, dets);
 
-    if (dets.empty()) {
-        printf("no detections\n");
-        return 0;
-    }
-
-    const int TOPK = 1000;
-    if (!dets.empty()) {
-        sort_dets_by_score_desc(dets);
-
-        if ((int)dets.size() > TOPK) {
-            dets.resize(TOPK);
-        }
-    }
+    printf("[5] dets=%zu (C=%d)\n", dets.size(), C);
+    if (dets.empty()) return 0;
 
     for (size_t i = 0; i < dets.size(); ++i) {
-        clip_box(dets[i], S, S);
+        const Det& d = dets[i];
+        const char* name = (d.cls >= 0 && d.cls < 80) ? COCO80[d.cls] : "cls";
+        printf("raw[%zu] %s cls=%d conf=%.3f x=%.1f y=%.1f w=%.1f h=%.1f\n",
+            i, name, d.cls, d.score, d.x, d.y, d.w, d.h);
     }
 
-    std::vector<int> keep;
-    keep.resize(dets.size());
+    sort_dets_by_score_desc(dets);
+    for (auto& d : dets) clip_box(d, S, S);
+
+    std::vector<int> keep(dets.size());
     int k = nms(dets.data(), (int)dets.size(), IOU, keep.data(), (int)keep.size());
+    printf("[5] nms keep=%d\n", k);
 
-
-    for (int i = 0; i < k; ++i) {
+    for (int i = 0; i < k && i < 10; ++i) {
         const Det& d = dets[keep[i]];
         const char* name = (d.cls >= 0 && d.cls < 80) ? COCO80[d.cls] : "cls";
-        printf("%s (cls=%d) conf=%.3f x=%.1f y=%.1f w=%.1f h=%.1f\n",
+        printf("  %s cls=%d conf=%.3f x=%.1f y=%.1f w=%.1f h=%.1f\n",
                name, d.cls, d.score, d.x, d.y, d.w, d.h);
     }
 
