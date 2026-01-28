@@ -133,3 +133,8 @@ static int nanosleep_init(void) {
 
 	return 0;
 }
+
+int clock_nanosleep(clockid_t clock_id, int flags,
+						const struct timespec *rqtp, struct timespec *rmtp) {
+	return nanosleep(rqtp, rmtp);
+}

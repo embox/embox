@@ -104,7 +104,12 @@ extern size_t strftime(char *s, size_t max, const char *fmt,
 
 extern char *strptime(const char *s, const char *fmt, struct tm *tm);
 
+/* REALTIME */
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
+
+/* ADVINCED REALTIME */
+extern int clock_nanosleep(clockid_t clock_id, int flags,
+						const struct timespec *rqtp, struct timespec *rmtp);
 
 static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
