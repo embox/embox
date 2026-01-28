@@ -14,7 +14,7 @@ module dash {
 	source "strip.dash.o"
 
 	depends embox.compat.posix.signal.sys_siglist
-	depends embox.compat.posix.util.times
+	depends embox.compat.posix.sys.times
 	depends embox.compat.posix.stubs
 
 	depends embox.compat.libc.stdlib.core

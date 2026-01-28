@@ -23,7 +23,7 @@ static module core {
 	@NoRuntime depends embox.fs.root_file_system
 	@NoRuntime depends embox.compat.posix.LibPosix
 	@NoRuntime depends embox.compat.posix.util.environ
-	@NoRuntime depends embox.compat.posix.util.times
+	@NoRuntime depends embox.compat.posix.sys.times
 	@NoRuntime depends embox.compat.posix.time.time
 	@NoRuntime depends embox.compat.posix.proc.waitpid
 	@NoRuntime depends embox.lib.LibExecStub
