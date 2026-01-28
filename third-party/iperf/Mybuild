@@ -19,7 +19,7 @@ module iperf {
 	source "^BUILD/extbld/^MOD_PATH/install/iperf.o"
 
 	@NoRuntime depends embox.compat.posix.LibPosix
-	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
 
 	depends embox.compat.posix.proc.daemon_api
 	depends embox.compat.posix.proc.atexit_api
