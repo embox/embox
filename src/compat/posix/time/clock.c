@@ -45,3 +45,24 @@ int clock_settime(clockid_t clk_id, const struct timespec *ts) {
 	}
 	return 0;
 }
+
+int clock_getres(clockid_t clk_id, struct timespec *res) {
+	extern struct clock_source *kernel_clock_source;
+	switch (clk_id) {
+	case CLOCK_REALTIME:
+	case CLOCK_MONOTONIC:
+		if (res) {
+			res->tv_sec = 0;
+			if (kernel_clock_source->counter_device) {
+				res->tv_nsec = kernel_clock_source->counter_device->cycle_hz;
+			} else {
+				res->tv_nsec = kernel_clock_source->event_device->event_hz;
+			}
+		}
+		break;
+	default:
+		return SET_ERRNO(EINVAL);
+	}
+
+	return 0;
+}
