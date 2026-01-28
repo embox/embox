@@ -41,5 +41,7 @@ module cyclictest {
 	@NoRuntime depends embox.compat.posix.sys.time.itimer_stub
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
 	@NoRuntime depends embox.compat.posix.sys.stat.mkfifo_stub
+	@NoRuntime depends embox.compat.posix.sched.sched_getparam_stub
+	@NoRuntime depends embox.compat.posix.sched.sched_getscheduler_stub
 
 }
