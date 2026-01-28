@@ -58,7 +58,3 @@ static module environ {
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
 }
-
-static module swab {
-	source "swab.c"
-}
