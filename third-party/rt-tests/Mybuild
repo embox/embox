@@ -10,7 +10,7 @@ module lib {
 	@AddPrefix("^BUILD/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib")
 	source
 	"rt-error.c",
-	"rt-get_cpu.c",
+	//"rt-get_cpu.c",
 	"rt-sched.c",
 	"rt-utils.c",
 	"rt-numa.c",
@@ -33,6 +33,7 @@ module cyclictest {
 	@NoRuntime depends embox.compat.posix.pthread.pthread_barrier
 	@NoRuntime depends embox.compat.posix.pthread.pthreads_affinity_np_stubs
 	@NoRuntime depends embox.compat.posix.pthread.pthread_stack_stub 
+	@NoRuntime depends embox.compat.posix.sys.mman.shm_mem_nommu
 	@NoRuntime depends embox.compat.linux.syscall_stub
     @NoRuntime depends embox.compat.posix.util.nanosleep
 
