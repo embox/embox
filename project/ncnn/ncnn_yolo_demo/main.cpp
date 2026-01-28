@@ -4,7 +4,7 @@
 #include <ctype.h>
 #include <math.h>
 
-// #include <vector>
+#include "platform.h"
 // #include <algorithm>
 // #include <cmath>
 

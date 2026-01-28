@@ -9,7 +9,7 @@ int yolo_dfl_decode_head(const ncnn::Mat& fm, int stride,
                          int imgW, int imgH, std::vector<Det>& out)
 {
     if (fm.empty()) return 0;
-    const int W = fm.w, H = fm.h, C = fm.c;
+    const int W = fm.w, H = fm.h;
     const int plane = W * H;
     const float* base = (const float*)fm.data;
 
@@ -19,7 +19,6 @@ int yolo_dfl_decode_head(const ncnn::Mat& fm, int stride,
         for (int ix=0; ix<W; ++ix){
             const int idx = iy*W + ix;
 
-            float sum_cls = 0.f, max_raw = -1e9f;
             int best_c = -1; float best_p = 0.f;
             for (int c=0; c<num_classes; ++c){
                 float p = sigmoid(base[(4*reg_max + c)*plane + idx]);
