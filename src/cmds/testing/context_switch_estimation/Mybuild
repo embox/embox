@@ -1,0 +1,10 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(	name = "context_switch_estimation",
+	help = "context_switch_estimation"
+)
+module context_switch_estimation {
+
+	source "context_switch_estimation.c"
+}
