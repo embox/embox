@@ -9,8 +9,7 @@ module ncnn_headers {}
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
 @BuildDepends(third_party.lib.ncnn.ncnn_headers)
 @BuildDepends(third_party.compiler_headers)
-@BuildDepends(embox.compat.libc.math)
-@BuildDepends(third_party.lib.libstdcxx_toolchain)
+@BuildDepends(embox.cxx.LibCxx)
 static module libncnn {
 
     source
@@ -21,7 +20,6 @@ static module libncnn {
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/command.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/datareader.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/expression.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/gpu.cpp",
 
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/absval.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/batchnorm.cpp",
@@ -155,4 +153,8 @@ static module libncnn {
         "platform_embox_stubs.cpp",
         "cpu_embox.cpp",
         "ncnn_math_trig_shim.cpp"
+
+    depends third_party.lib.ncnn.ncnn_headers
+    depends third_party.compiler_headers
+    depends embox.cxx.LibCxx
 }
