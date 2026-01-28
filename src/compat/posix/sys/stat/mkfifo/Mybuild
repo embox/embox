@@ -1,0 +1,9 @@
+package embox.compat.posix.sys.stat
+
+@DefaultImpl(mkfifo_stub)
+abstract module mkfifo {
+}
+
+module mkfifo_stub extends mkfifo {
+	source "mkfifo_stub.c"
+}
