@@ -1,13 +1,5 @@
 package embox.compat.posix
 
-@DefaultImpl(getpgrp_stub)
-abstract module getpgrp {
-}
-
-static module getpgrp_stub extends getpgrp {
-	source "getpgrp.c"
-}
-
 static module stubs {
 	source
 		"alarm.c",
@@ -26,5 +18,5 @@ static module stubs {
 
 		depends embox.compat.posix.signal.sigsuspend_stub
 
-		depends embox.compat.posix.getpgrp
+		depends embox.compat.posix.unistd.getpgrp_stub
 }
