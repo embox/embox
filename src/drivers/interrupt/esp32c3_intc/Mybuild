@@ -7,4 +7,5 @@ module esp32c3_intc extends irqctrl_api {
 
 	source "esp32c3_intc.c"
     source "esp32c3_intc.h"
+	source "vector_table.S"
 }
