@@ -1,0 +1,9 @@
+package embox.compat.posix.unistd
+
+@DefaultImpl(getpgrp_stub)
+abstract module getpgrp {
+}
+
+static module getpgrp_stub extends getpgrp {
+	source "getpgrp_stub.c"
+}
