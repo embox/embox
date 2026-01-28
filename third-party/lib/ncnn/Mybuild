@@ -150,9 +150,9 @@ static module libncnn {
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simpleomp.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simplevk.cpp",
 
+        "ncnn_new_delete.cpp",
         "platform_embox.h",
         "platform_embox_stubs.cpp",
         "cpu_embox.cpp",
-        "ncnn_new_delete.cpp",
         "ncnn_math_trig_shim.cpp"
 }

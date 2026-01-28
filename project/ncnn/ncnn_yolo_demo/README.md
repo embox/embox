@@ -12,7 +12,7 @@ sudo ./scripts/qemu/auto_qemu
 ```
 
 
-Where 320 is the input size (letterbox). You may also try 640.
+Where 320 is the input size (letterbox).
 
 ```tish
 ncnn_yolo_demo ./data/photos/dog.png
