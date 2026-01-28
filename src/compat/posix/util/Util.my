@@ -5,12 +5,12 @@ module All {
 		sleep,
 		gettimeofday,
 		getopt,
-		utsname,
 		getpass,
 		gethostname,
 		environ,
 		swab
-	
+
+	depends embox.compat.posix.sys.utsname
 	depends embox.compat.posix.sys.timeb
 }
 
@@ -20,14 +20,6 @@ static module getopt {
 	source "getopt.c"
 	source "getopt_init.c"
 	source "getopt_long.c"
-
-	@NoRuntime depends embox.compat.libc.str
-}
-
-static module utsname {
-	option string system="Embox"
-	option string hostname="localhost"
-	source "utsname.c"
 
 	@NoRuntime depends embox.compat.libc.str
 }
@@ -69,7 +61,7 @@ static module getpass {
 
 static module gethostname {
 	source "gethostname.c"
-	depends utsname
+	depends embox.compat.posix.sys.utsname
 }
 
 static module environ {
