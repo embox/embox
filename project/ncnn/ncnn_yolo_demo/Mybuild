@@ -6,11 +6,7 @@ package embox.cmd.ncnn
 @AutoCmd
 @CxxCmd(name="ncnn_yolo_demo", help="YOLOv8n NCNN demo on Embox")
 @Build(stage=2)
-@BuildDepends(third_party.lib.ncnn.ncnn_headers)
-@BuildDepends(third_party.compiler_headers)
 @BuildDepends(third_party.lib.ncnn.libncnn)
-@BuildDepends(third_party.lib.stb)
-@BuildDepends(third_party.lib.libstdcxx_toolchain)
 module ncnn_yolo_demo {
 
     source 
@@ -21,4 +17,6 @@ module ncnn_yolo_demo {
         "stb_image_impl.cpp",
         "yolov8n_ncnn_model/yolov8n.id.h",
         "yolov8n_ncnn_model/yolov8n.mem.h"
+    
+    depends third_party.lib.ncnn.libncnn
 }
