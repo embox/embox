@@ -7,5 +7,5 @@ static module nanomodbus {
 	source "libnanomodbus.a"
 
 	@NoRuntime depends embox.compat.posix.net.All
-	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
 }

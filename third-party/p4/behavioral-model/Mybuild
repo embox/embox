@@ -25,7 +25,7 @@ module l2_switch {
 	@NoRuntime depends third_party.lib.thrift
 	@NoRuntime depends embox.compat.posix.pthread_rwlock
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
-	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.pthread_key
 }

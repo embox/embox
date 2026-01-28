@@ -9,6 +9,6 @@ module forte {
 
 	@NoRuntime depends embox.cxx.LibCxx
     @NoRuntime depends embox.compat.posix.pthread.pthread_stack
-    @NoRuntime depends embox.compat.posix.util.nanosleep
+    @NoRuntime depends embox.compat.posix.time.nanosleep
     @NoRuntime depends embox.lib.leddrv
 }

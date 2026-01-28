@@ -54,15 +54,6 @@ static module sleep {
 	depends embox.kernel.time.kernel_time
 }
 
-static module nanosleep {
-	option string log_level="LOG_NONE"
-
-	source "nanosleep.c"
-
-	depends embox.kernel.timer.sleep_api
-	depends embox.kernel.time.kernel_time
-}
-
 static module gettimeofday {
 	source "gettimeofday.c"
 

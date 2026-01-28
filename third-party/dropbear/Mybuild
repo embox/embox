@@ -51,6 +51,6 @@ module dropbear {
 	@NoRuntime depends embox.compat.posix.proc.vfork
 	@NoRuntime depends embox.compat.posix.crypt
 	@NoRuntime depends embox.compat.posix.proc.rlimit
-	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
 	@NoRuntime depends embox.compat.posix.file_system
 }

@@ -39,3 +39,12 @@ module tzset {
 module localtime {
 	source "localtime.c"
 }
+
+static module nanosleep {
+	option string log_level="LOG_NONE"
+
+	source "nanosleep.c"
+
+	depends embox.kernel.timer.sleep_api
+	depends embox.kernel.time.kernel_time
+}

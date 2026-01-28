@@ -22,6 +22,6 @@ module lua {
 	depends embox.mem.heap_api
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.compat.posix.time.time
-	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
 	@NoRuntime depends embox.kernel.task.resource.errno
 }
