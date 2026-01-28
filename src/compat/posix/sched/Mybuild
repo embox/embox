@@ -1,0 +1,19 @@
+package embox.compat.posix.sched
+
+@DefaultImpl(sched_getparam_stub)
+abstract module sched_getparam {}
+
+static module sched_getparam_stub extends sched_getparam {
+	option string log_level = "LOG_DEBUG"
+
+	source "sched_getparam_stub.c"
+}
+
+@DefaultImpl(sched_getscheduler_stub)
+abstract module sched_getscheduler {}
+
+static module sched_getscheduler_stub extends sched_getscheduler {
+	option string log_level = "LOG_DEBUG"
+
+	source "sched_getscheduler_stub.c"
+}
