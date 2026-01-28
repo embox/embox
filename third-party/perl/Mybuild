@@ -14,7 +14,7 @@ module perl {
 
 	@NoRuntime depends embox.compat.posix.LibPosix
 	@NoRuntime depends embox.compat.posix.time.time
-	@NoRuntime depends embox.compat.posix.util.times
+	@NoRuntime depends embox.compat.posix.sys.times
 	@NoRuntime depends embox.compat.posix.time.nanosleep
 	@NoRuntime depends embox.driver.virtual.null
 }

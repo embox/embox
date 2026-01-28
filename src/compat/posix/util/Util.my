@@ -18,11 +18,6 @@ static module time {
 	depends embox.kernel.time.kernel_time
 }
 
-static module times {
-	source "times.c"
-	depends embox.kernel.time.kernel_time
-}
-
 static module sleep {
 	option string log_level="LOG_NONE"
 

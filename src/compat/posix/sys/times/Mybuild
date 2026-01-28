@@ -1,0 +1,6 @@
+package embox.compat.posix.sys
+
+static module times {
+	source "times.c"
+	depends embox.kernel.time.kernel_time
+}
