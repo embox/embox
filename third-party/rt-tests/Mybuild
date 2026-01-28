@@ -33,8 +33,12 @@ module cyclictest {
 	@NoRuntime depends embox.compat.posix.pthread.pthread_barrier
 	@NoRuntime depends embox.compat.posix.pthread.pthreads_affinity_np_stubs
 	@NoRuntime depends embox.compat.posix.pthread.pthread_stack_stub 
-	@NoRuntime depends embox.compat.posix.sys.mman.shm_mem_nommu
+	@NoRuntime depends embox.compat.posix.sys.mman.shm_mem
 	@NoRuntime depends embox.compat.linux.syscall_stub
     @NoRuntime depends embox.compat.posix.time.nanosleep
+	@NoRuntime depends embox.compat.posix.signal.sigwait_stub
+	@NoRuntime depends embox.compat.posix.time.timer
+	@NoRuntime depends embox.compat.posix.sys.time.itimer_stub
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
 
 }
