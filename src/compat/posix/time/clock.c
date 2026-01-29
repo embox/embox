@@ -54,9 +54,9 @@ int clock_getres(clockid_t clk_id, struct timespec *res) {
 		if (res) {
 			res->tv_sec = 0;
 			if (kernel_clock_source->counter_device) {
-				res->tv_nsec = kernel_clock_source->counter_device->cycle_hz;
+				res->tv_nsec = NSEC_PER_SEC / kernel_clock_source->counter_device->cycle_hz;
 			} else {
-				res->tv_nsec = kernel_clock_source->event_device->event_hz;
+				res->tv_nsec = NSEC_PER_SEC / kernel_clock_source->event_device->event_hz;
 			}
 		}
 		break;
