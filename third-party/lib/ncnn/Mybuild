@@ -1,56 +1,17 @@
 package third_party.lib.ncnn
 
-@BuildArtifactPath(
-    cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/layer"
-)
 
-module ncnn_build_headers {
-}
+@BuildArtifactPath(
+  cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/layer"
+)
+module ncnn_headers {}
 
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
-@BuildArtifactPath(
-    cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/layer"
-)
+@BuildDepends(third_party.lib.ncnn.ncnn_headers)
 @BuildDepends(third_party.compiler_headers)
-@BuildDepends(ncnn_build_headers)
-@BuildDepends(embox.compat.libc.math)
 @BuildDepends(embox.cxx.LibCxx)
 static module libncnn {
-    @Cflags("-march=armv5te")
-    @Cflags("-mtune=arm926ej-s")
-    @Cflags("-mfloat-abi=hard")
-    @Cflags("-mfpu=vfp")
-    @Cflags("-include$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/platform.h")
-    @Cflags("-DNCNN_STDIO=0")
-    @Cflags("-DNCNN_THREADS=0")
-    @Cflags("-DNCNN_VULKAN=0")
-    @Cflags("-DNCNN_BENCHMARK=0")
-    @Cflags("-D__APPLE__=0")
-    @Cflags("-D__linux__=0")
-    @Cflags("-D__aarch64__=0")
-    @Cflags("-D__riscv=0")
-    @Cflags("-DC906=0")
-    @Cflags("-Wno-undef")
-    @Cflags("-Wno-error=unused-variable")
-    @Cflags("-Wno-error=undef")
-    @Cflags("-Wno-error=builtin-declaration-mismatch")
-    @Cflags("-Wno-unused-function")
-    @Cflags("-Wno-error=class-memaccess")
-    @Cflags("-D__ARM_NEON=0")
-    @Cflags("-D__SSE2__=0")
-    @Cflags("-D__mips_msa=0")
-    @Cflags("-D__loongarch_sx=0")
-    @Cflags("-D__riscv_vector=0")
-    @Cflags("-D__GLIBC_PREREQ(x,y)=0")
-    @Cflags("-I/usr/arm-none-eabi/include")
-    @Cflags("-Wno-error=unknown-pragmas")
-    @Cflags("-DNCNN_STRING=0")
-    @Cflags("-DNCNN_SIMPLESTL=1")
-    @Cflags("-U_GLIBCXX_USE_WCHAR_T")
-    @Cflags("-Wno-error=div-by-zero")
-    @Cflags("-Wno-error=return-type")
-    @Cflags("-O2")
-    @Cflags("-fno-sanitize=undefined")
+
     source
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/allocator.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/benchmark.cpp",
@@ -59,7 +20,6 @@ static module libncnn {
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/command.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/datareader.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/expression.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/gpu.cpp",
 
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/absval.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/layer/batchnorm.cpp",
@@ -188,8 +148,13 @@ static module libncnn {
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simpleomp.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simplevk.cpp",
 
+        "ncnn_new_delete.cpp",
+        "platform_embox.h",
         "platform_embox_stubs.cpp",
         "cpu_embox.cpp",
-        "ncnn_new_delete.cpp",
         "ncnn_math_trig_shim.cpp"
+
+    depends third_party.lib.ncnn.ncnn_headers
+    depends third_party.compiler_headers
+    depends embox.cxx.LibCxx
 }
