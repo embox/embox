@@ -1,0 +1,10 @@
+
+package embox.compat.posix.sched.test
+
+module sched_getparam_test {
+	source "sched_getparam_test.c"
+}
+
+module sched_getscheduler_test {
+	source "sched_getscheduler_test.c"
+}
