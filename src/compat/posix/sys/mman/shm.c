@@ -16,6 +16,7 @@
 #include <kernel/task/resource/idesc_table.h>
 #include <mem/mmap.h>
 #include <mem/misc/pool.h>
+#include "posix_errno.h"
 
 #define MODOPS_AMOUNT_SHMEM_OBJS OPTION_GET(NUMBER, amount_shmem_objs)
 
@@ -159,7 +160,8 @@ int shm_unlink(const char *name) {
 
 	shm = shm_lookup(name);
 	if (shm == NULL) {
-		return -1;
+
+		return SET_ERRNO(ENOENT);
 	}
 	shm_free(shm);
 
