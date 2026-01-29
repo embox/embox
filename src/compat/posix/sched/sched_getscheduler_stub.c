@@ -11,11 +11,17 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include <kernel/sched.h>
-
 #include <sched.h>
 
 int sched_getscheduler(pid_t pid) {
-	log_debug("stub %s(%ld)", __func__, (long) pid);
+	int policy;
+	struct sched_param param;
+
+	if (pid == 0) {
+		pthread_getschedparam(pthread_self(), &policy, &param);
+	} else {
+		log_debug("stub %s(%ld)", __func__, (long) pid);
+	}
+
 	return 0;
 }

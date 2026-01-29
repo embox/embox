@@ -11,11 +11,16 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#include <kernel/sched.h>
-
 #include <sched.h>
 
 int sched_getparam(pid_t pid, struct sched_param *param) {
-	log_debug("stub %s(%ld, %p)", __func__, (long) pid, param);
+	int policy;
+
+	if (pid == 0) {
+		pthread_getschedparam(pthread_self(), &policy, param);
+	} else {
+		log_debug("stub %s(%ld, %p)", __func__, (long) pid, param);
+	}
+
 	return 0;
 }
