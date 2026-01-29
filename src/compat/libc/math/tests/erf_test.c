@@ -1,3 +1,10 @@
+/**
+ * @file
+ * 
+ * @date December 18, 2025
+ * @author Biancaa Ramesh
+ */
+
 #include <math.h>
 #include <float.h>
 
@@ -42,4 +49,20 @@ TEST_CASE("odd: erf(-x) == -erf(x) for x=0.5") {
 TEST_CASE("erf(1.0) ~= 0.842700792949... (error <= 1e-6)") {
 	double ref = 0.84270079294971486934;
 	test_assert(close_eps(erf(1.0), ref, 1e-6));
+}
+
+TEST_CASE("erf(x) is monotonic increasing") {
+	test_assert(erf(0.5) < erf(1.0));
+	test_assert(erf(1.0) < erf(2.0));
+}
+
+TEST_CASE("erf saturates near 1") {
+	test_assert(erf(5.0) > 0.999999);
+	test_assert(erf(-5.0) < -0.999999);
+}
+
+TEST_CASE("erf(x) ~= 2/sqrt(pi)*x for small x") {
+	double x = 1e-10;
+	double approx = 1.1283791670955126 * x; /* 2/sqrt(pi) */
+	test_assert(close_eps(erf(x), approx, 1e-20));
 }
