@@ -1,6 +1,6 @@
-diff --color -aur rt-tests-2.9/src/cyclictest/cyclictest.c ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest/cyclictest.c
---- rt-tests-2.9/src/cyclictest/cyclictest.c	2025-07-01 17:20:28.000000000 +0300
-+++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest/cyclictest.c	2026-01-27 10:36:05.715798017 +0300
+diff '--color=auto' -aur ./rt-tests-2.9/src/cyclictest/cyclictest.c ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest/cyclictest.c
+--- ./rt-tests-2.9/src/cyclictest/cyclictest.c	2025-07-01 17:20:28.000000000 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest/cyclictest.c	2026-01-29 19:14:07.331993500 +0300
 @@ -52,7 +52,7 @@
  #define SCHED_NORMAL SCHED_OTHER
  #endif
@@ -34,9 +34,28 @@ diff --color -aur rt-tests-2.9/src/cyclictest/cyclictest.c ../build/extbld/third
  	case SCHED_IDLE:
  		policystr = "idle";
  		break;
-diff --color -aur rt-tests-2.9/src/include/rt-utils.h ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-utils.h
---- rt-tests-2.9/src/include/rt-utils.h	2025-07-01 17:20:28.000000000 +0300
-+++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-utils.h	2026-01-27 10:32:57.351436579 +0300
+diff '--color=auto' -aur ./rt-tests-2.9/src/include/rt-sched.h ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-sched.h
+--- ./rt-tests-2.9/src/include/rt-sched.h	2025-07-01 17:20:28.000000000 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-sched.h	2026-01-29 19:14:57.870400706 +0300
+@@ -37,6 +37,15 @@
+ #endif
+ #endif
+ 
++#ifdef __riscv
++#ifndef __NR_sched_setattr
++#define __NR_sched_setattr		380
++#endif
++#ifndef __NR_sched_getattr
++#define __NR_sched_getattr		381
++#endif
++#endif
++
+ #ifdef __tilegx__
+ #define __NR_sched_setattr		274
+ #define __NR_sched_getattr		275
+diff '--color=auto' -aur ./rt-tests-2.9/src/include/rt-utils.h ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-utils.h
+--- ./rt-tests-2.9/src/include/rt-utils.h	2025-07-01 17:20:28.000000000 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/include/rt-utils.h	2026-01-29 19:14:07.332243565 +0300
 @@ -34,9 +34,17 @@
  void tracemark(char *fmt, ...) __attribute__((format(printf, 1, 2)));
  void disable_trace_mark(void);
@@ -58,9 +77,9 @@ diff --color -aur rt-tests-2.9/src/include/rt-utils.h ../build/extbld/third_part
  #define USEC_TO_NSEC(u)		((u) * 1000)
  #define USEC_TO_SEC(u)		(u) / USEC_PER_SEC)
  #define NSEC_TO_USEC(n)		((n) / 1000)
-diff --color -aur rt-tests-2.9/src/lib/rt-utils.c ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib/rt-utils.c
---- rt-tests-2.9/src/lib/rt-utils.c	2025-07-01 17:20:28.000000000 +0300
-+++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib/rt-utils.c	2026-01-27 10:32:57.351564729 +0300
+diff '--color=auto' -aur ./rt-tests-2.9/src/lib/rt-utils.c ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib/rt-utils.c
+--- ./rt-tests-2.9/src/lib/rt-utils.c	2025-07-01 17:20:28.000000000 +0300
++++ ../build/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib/rt-utils.c	2026-01-29 19:14:07.332370046 +0300
 @@ -303,10 +303,10 @@
  		return "SCHED_FIFO";
  	case SCHED_RR:
