@@ -4,4 +4,5 @@
 "service telnetd",
 "service httpd",
 "source time_setup.sh",
+"cyclictest --dbg_cyclictest --resolution",
 "tish",

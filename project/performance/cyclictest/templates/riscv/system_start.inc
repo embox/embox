@@ -1,0 +1,7 @@
+"export PWD=/",
+"export HOME=/",
+//"netmanager",
+//"service telnetd",
+//"service httpd",
+"cyclictest --dbg_cyclictest --resolution",
+"tish",
