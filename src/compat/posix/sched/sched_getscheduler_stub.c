@@ -11,6 +11,7 @@
 #include <errno.h>
 #include <sys/types.h>
 
+#include <pthread.h>
 #include <sched.h>
 
 int sched_getscheduler(pid_t pid) {
