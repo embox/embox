@@ -1,0 +1,14 @@
+package third_party.llvm
+
+// @BuildArtifactPath(cppflags_before="-I$(EXTERNAL_BUILD_DIR)/third_party/gcc/gcc_build/install/include")
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+static module libcxx {
+	option boolean optimize_size=true
+	option boolean enable_assertions=false
+
+	// @AddPrefix("^BUILD/extbld/third_party/gcc/gcc_build/install/lib")
+	// source "libstdc++.a", "libsupc++.a"
+
+	@NoRuntime depends embox.compat.libc.all
+	@NoRuntime depends embox.compat.posix.proc.atexit_api
+}
