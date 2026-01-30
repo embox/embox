@@ -67,7 +67,7 @@ static cycle_t integratorcp_get_cycles(struct clock_source *cs) {
 }
 
 static uint64_t integratorcp_get_time(struct clock_source *cs) {
-	return (uint64_t)(cs->event_device->jiffies * (NSEC_PER_SEC / cs->event_device->event_hz)) + CLOCK_RATE - (REG32_LOAD(TMR_VAL) & 0xFFFF);
+	return (uint64_t)(cs->event_device->jiffies * (NSEC_PER_SEC / cs->event_device->event_hz)) + TIMER_COUNT - (REG32_LOAD(TMR_VAL) & 0xFFFF);
 }
 
 static struct time_counter_device integratorcp_counter_device = {
