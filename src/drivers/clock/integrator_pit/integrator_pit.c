@@ -65,8 +65,13 @@ static cycle_t integratorcp_get_cycles(struct clock_source *cs) {
 	return REG32_LOAD(TMR_VAL) & 0xFFFF;
 }
 
+static uint64_t integratorcp_get_time(struct clock_source *cs) {
+	return REG32_LOAD(TMR_VAL) & 0xFFFF;
+}
+
 static struct time_counter_device integratorcp_counter_device = {
     .get_cycles = integratorcp_get_cycles,
+	.get_time   = integratorcp_get_time,
     .cycle_hz = CLOCK_RATE,
 };
 
