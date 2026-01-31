@@ -23,3 +23,8 @@ module strftime_test {
 module strptime_test {
 	source "strptime_test.c"
 }
+
+module timer_test {
+	source "timer_test.c"
+}
+
