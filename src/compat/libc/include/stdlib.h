@@ -77,11 +77,18 @@ __BEGIN_DECLS
 extern long int strtol(const char *nptr, char **endptr, int base);
 extern unsigned long int strtoul(const char *nptr, char **endptr, int base);
 extern long long int strtoll(const char *nptr, char **endptr, int base);
-extern unsigned long long int strtoull(const char *nptr, char **endptr,
-    int base);
+extern unsigned long long int strtoull(const char *nptr, char **endptr, int base);
 extern float strtof(const char *nptr, char **endptr);
 extern double strtod(const char *nptr, char **endptr);
 extern long double strtold(const char *nptr, char **endptr);
+
+#define strtol_l(nptr, endptr, base, loc)   strtol(nptr, endptr, base)
+#define strtoul_l(nptr, endptr, base, loc)  strtoul(nptr, endptr, base)
+#define strtoll_l(nptr, endptr, base, loc)  strtoll(nptr, endptr, base)
+#define strtoull_l(nptr, endptr, base, loc) strtoull(nptr, endptr, base)
+#define strtof_l(nptr, endptr, loc)         strtof(nptr, endptr)
+#define strtod_l(nptr, endptr, loc)         strtod(nptr, endptr)
+#define strtold_l(nptr, endptr, loc)        strtold(nptr, endptr)
 
 extern double atof(const char *nptr);
 extern int atoi(const char *nptr);
@@ -161,7 +168,7 @@ extern void abort(void);
  * specified by the current locale.
  * MB_CUR_MAX >= 1
 */
-#define MB_CUR_MAX   1
+#define MB_CUR_MAX 1
 
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
