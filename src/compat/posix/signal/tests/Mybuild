@@ -8,3 +8,20 @@ module sigwait_test {
 module sigchld_test {
 	source "sigchld_test.c"
 }
+
+module rtsignal_test {
+	source "rt_signal_test.c"
+
+	//depends embox.kernel.task.api
+	//depends embox.compat.posix.signal.signal
+	//depends embox.kernel.thread.signal.sigstate
+	//depends embox.kernel.thread.signal.siginfoq
+}
+
+module signal_test {
+	source "signal_test.c"
+
+	//depends embox.kernel.task.api
+	//depends embox.compat.posix.signal.signal
+	//depends embox.kernel.thread.signal.sigstate
+}
