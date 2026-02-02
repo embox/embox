@@ -13,8 +13,6 @@
 #include <stddef.h>
 #include <sys/cdefs.h>
 
-__BEGIN_DECLS
-
 /** 
  * These are the possibilities for the first argument to setlocale.
  * The code assumes that the lowest LC_* symbol has the value zero.
@@ -32,6 +30,27 @@ __BEGIN_DECLS
 #define LC_TELEPHONE      10
 #define LC_MEASUREMENT    11
 #define LC_IDENTIFICATION 12
+
+#define LC_CTYPE_MASK          (1 << LC_CTYPE)
+#define LC_NUMERIC_MASK        (1 << LC_NUMERIC)
+#define LC_TIME_MASK           (1 << LC_TIME)
+#define LC_COLLATE_MASK        (1 << LC_COLLATE)
+#define LC_MONETARY_MASK       (1 << LC_MONETARY)
+#define LC_MESSAGES_MASK       (1 << LC_MESSAGES)
+#define LC_PAPER_MASK          (1 << LC_PAPER)
+#define LC_NAME_MASK           (1 << LC_NAME)
+#define LC_ADDRESS_MASK        (1 << LC_ADDRESS)
+#define LC_TELEPHONE_MASK      (1 << LC_TELEPHONE)
+#define LC_MEASUREMENT_MASK    (1 << LC_MEASUREMENT)
+#define LC_IDENTIFICATION_MASK (1 << LC_IDENTIFICATION)
+
+#define LC_ALL_MASK                                                          \
+	(LC_CTYPE_MASK | LC_NUMERIC_MASK | LC_TIME_MASK | LC_COLLATE_MASK        \
+	    | LC_MONETARY_MASK | LC_MESSAGES_MASK | LC_PAPER_MASK | LC_NAME_MASK \
+	    | LC_ADDRESS_MASK | LC_TELEPHONE_MASK | LC_MEASUREMENT_MASK          \
+	    | LC_IDENTIFICATION_MASK)
+
+#define LC_GLOBAL_LOCALE ((locale_t)-1)
 
 struct lconv {
 	char *decimal_point;
@@ -60,8 +79,17 @@ struct lconv {
 	char int_p_sign_posn;
 };
 
+typedef void *locale_t;
+
+__BEGIN_DECLS
+
 extern char *setlocale(int category, const char *locale);
 extern struct lconv *localeconv(void);
+
+extern locale_t newlocale(int category_mask, const char *locale, locale_t base);
+extern locale_t duplocale(locale_t locobj);
+extern void freelocale(locale_t locobj);
+extern locale_t uselocale(locale_t newloc);
 
 __END_DECLS
 

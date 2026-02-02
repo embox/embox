@@ -1,0 +1,103 @@
+diff -aur ./libcxx-master/include/cwchar ../build/extbld/third_party/llvm/libcxx/libcxx-master/include/cwchar
+--- ./libcxx-master/include/cwchar	2019-10-22 18:16:49.000000000 +0300
++++ ../build/extbld/third_party/llvm/libcxx/libcxx-master/include/cwchar	2026-01-29 13:38:17.621587301 +0300
+@@ -117,19 +117,19 @@
+ using ::tm;
+ using ::wint_t;
+ using ::FILE;
+-using ::fwprintf;
+-using ::fwscanf;
++// using ::fwprintf;
++// using ::fwscanf;
+ using ::swprintf;
+-using ::vfwprintf;
++// using ::vfwprintf;
+ using ::vswprintf;
+-using ::swscanf;
+-using ::vfwscanf;
+-using ::vswscanf;
+-using ::fgetwc;
+-using ::fgetws;
+-using ::fputwc;
+-using ::fputws;
+-using ::fwide;
++// using ::swscanf;
++// using ::vfwscanf;
++// using ::vswscanf;
++// using ::fgetwc;
++// using ::fgetws;
++// using ::fputwc;
++// using ::fputws;
++// using ::fwide;
+ using ::getwc;
+ using ::putwc;
+ using ::ungetwc;
+@@ -144,23 +144,23 @@
+ #ifndef _LIBCPP_HAS_NO_LONG_LONG
+ using ::wcstoull;
+ #endif // _LIBCPP_HAS_NO_LONG_LONG
+-using ::wcscpy;
++// using ::wcscpy;
+ using ::wcsncpy;
+-using ::wcscat;
+-using ::wcsncat;
++// using ::wcscat;
++// using ::wcsncat;
+ using ::wcscmp;
+ using ::wcscoll;
+-using ::wcsncmp;
++// using ::wcsncmp;
+ using ::wcsxfrm;
+-using ::wcschr;
+-using ::wcspbrk;
+-using ::wcsrchr;
+-using ::wcsstr;
++// using ::wcschr;
++// using ::wcspbrk;
++// using ::wcsrchr;
++// using ::wcsstr;
+ using ::wmemchr;
+-using ::wcscspn;
++// using ::wcscspn;
+ using ::wcslen;
+-using ::wcsspn;
+-using ::wcstok;
++// using ::wcsspn;
++// using ::wcstok;
+ using ::wmemcmp;
+ using ::wmemcpy;
+ using ::wmemmove;
+@@ -168,23 +168,23 @@
+ using ::wcsftime;
+ using ::btowc;
+ using ::wctob;
+-using ::mbsinit;
+-using ::mbrlen;
++// using ::mbsinit;
++// using ::mbrlen;
+ using ::mbrtowc;
+ using ::wcrtomb;
+-using ::mbsrtowcs;
+-using ::wcsrtombs;
++// using ::mbsrtowcs;
++// using ::wcsrtombs;
+ 
+ #ifndef _LIBCPP_HAS_NO_STDIN
+-using ::getwchar;
+-using ::vwscanf;
+-using ::wscanf;
++// using ::getwchar;
++// using ::vwscanf;
++// using ::wscanf;
+ #endif
+ 
+ #ifndef _LIBCPP_HAS_NO_STDOUT
+-using ::putwchar;
+-using ::vwprintf;
+-using ::wprintf;
++// using ::putwchar;
++// using ::vwprintf;
++// using ::wprintf;
+ #endif
+ 
+ _LIBCPP_END_NAMESPACE_STD
