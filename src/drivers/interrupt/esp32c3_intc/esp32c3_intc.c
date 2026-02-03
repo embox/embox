@@ -15,9 +15,6 @@
 #define INTERRUPT_CORE0_CPU_INT_ENABLE		(BASE_ADDR + 0x0104)
 #define INTERRUPT_CORE0_CPU_INT_THRESH_REG	(BASE_ADDR + 0x0194)
 
-#define mcause	0x342
-#define mstatus	0x300
-
 #define INTERRUPT_CORE0_CPU_INT_PRI(cpu_line)	(BASE_ADDR + 0x0118 + 0x4*(cpu_line - 1))
 #define INTERRUPT_CORE0_INTR_MAP(irq) 			(BASE_ADDR + irq * 4)
 #define CPU_LINE 4
@@ -44,7 +41,7 @@ void irqctrl_eoi(unsigned int irq) {
 }
 
 int irqctrl_get_intid(void) {
-	return csr_read(mcause) & 0x3FF;
+	return csr_read(CSR_CAUSE) & 0x3FF;
 }
 
 static inline void rv_utils_restore_intlevel_regval(uint32_t restoreval)
@@ -53,11 +50,11 @@ static inline void rv_utils_restore_intlevel_regval(uint32_t restoreval)
 }
 
 int irqctrl_set_level(unsigned int irq, int level) {
-	uint32_t old_mstatus = csr_read(mstatus);
-	csr_clear(mstatus, MSTATUS_MIE);
+	uint32_t old_mstatus = csr_read(CSR_STATUS);
+	csr_clear(CSR_STATUS, MSTATUS_MIE);
     uint32_t old_thresh = REG32_LOAD(INTERRUPT_CORE0_CPU_INT_THRESH_REG);
     rv_utils_restore_intlevel_regval(level);
-    csr_set(mstatus, old_mstatus & MSTATUS_MIE);
+    csr_set(CSR_STATUS, old_mstatus & MSTATUS_MIE);
 
     return old_thresh;
 }
@@ -71,7 +68,7 @@ static int esp32c3_intc_init(void) {
 	csr_set(CSR_TVEC, CSR_TVEC_MODE_VECTORED);
 
 	REG32_STORE(INTERRUPT_CORE0_CPU_INT_ENABLE, 0);
-	csr_set(mstatus, MSTATUS_MIE);
+	csr_set(CSR_STATUS, MSTATUS_MIE);
 
 	rv_utils_restore_intlevel_regval(1);
 
