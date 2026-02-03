@@ -18,16 +18,22 @@
 #define mcause	0x342
 #define mstatus	0x300
 
-#define INTERRUPT_CORE0_INTR_MAP(irq) (BASE_ADDR + irq * 4)
+#define INTERRUPT_CORE0_CPU_INT_PRI(cpu_line)	(BASE_ADDR + 0x0118 + 0x4*(cpu_line - 1))
+#define INTERRUPT_CORE0_INTR_MAP(irq) 			(BASE_ADDR + irq * 4)
 #define CPU_LINE 4
 
 void map_irq_to_cpu(unsigned int irq, unsigned int cpu_line) {
     REG32_STORE(INTERRUPT_CORE0_INTR_MAP(irq), cpu_line);
 }
 
+void set_priority(unsigned int cpu_line, unsigned int priority) {
+	REG32_STORE(INTERRUPT_CORE0_CPU_INT_PRI(cpu_line), priority);
+}
+
 void irqctrl_enable(unsigned int irq) {
 	map_irq_to_cpu(irq, CPU_LINE);
 	REG32_ORIN(INTERRUPT_CORE0_CPU_INT_ENABLE, 1 << CPU_LINE);
+	set_priority(CPU_LINE, 1);
 }
 
 void irqctrl_disable(unsigned int irq) {
