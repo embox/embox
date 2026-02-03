@@ -153,6 +153,11 @@ static inline int sys_timer_is_inited(struct sys_timer *tmr) {
 /** Type declaration for system timer structure */
 typedef struct sys_timer sys_timer_t;
 
+extern struct sys_timer *sys_timer_alloc(void);
+
+extern void sys_timer_free(struct sys_timer *tmr);
+
+
 /**
  * Make timer bare initialization.
  * Note, this not schedules timer.

@@ -20,6 +20,14 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
+struct sys_timer *sys_timer_alloc(void) {
+	return (struct sys_timer *) pool_alloc(&timer_pool);
+}
+
+void sys_timer_free(struct sys_timer *tmr) {
+	pool_free(&timer_pool, tmr);
+}
+
 int sys_timer_init(struct sys_timer *tmr, unsigned int flags,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
@@ -74,7 +82,8 @@ int sys_timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiff
 		sys_timer_handler_t handler, void *param) {
 	int err;
 
-	if ((err = sys_timer_init(tmr, flags, handler, param))) {
+	err = sys_timer_init(tmr, flags, handler, param);
+	if (0 != err) {
 		return err;
 	}
 
@@ -98,12 +107,14 @@ int sys_timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
 		return -EINVAL;
 	}
 
-	if (NULL == (tmr = (sys_timer_t*) pool_alloc(&timer_pool))) {
+	tmr = sys_timer_alloc();
+	if (NULL == tmr) {
 		return -ENOMEM;
 	}
 
-	if ((err = sys_timer_init_start_msec(tmr, flags, msec, handler, param))) {
-		pool_free(&timer_pool, tmr);
+	err = sys_timer_init_start_msec(tmr, flags, msec, handler, param);
+	if (0 != err) {
+		sys_timer_free(tmr);
 		return err;
 	}
 
@@ -122,7 +133,7 @@ int sys_timer_close(struct sys_timer *tmr) {
 
 	if (sys_timer_is_preallocated(tmr)) {
 		sys_timer_clear_preallocated(tmr);
-		pool_free(&timer_pool, tmr);
+		sys_timer_free(tmr);
 	}
 
 	return ENOERR;
