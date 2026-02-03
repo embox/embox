@@ -67,6 +67,8 @@ static int esp32c3_intc_init(void) {
 	REG32_STORE(INTERRUPT_CORE0_CPU_INT_ENABLE, 0);
 	csr_set(mstatus, MSTATUS_MIE);
 
+	rv_utils_restore_intlevel_regval(1);
+
 	return 0;
 }
 
