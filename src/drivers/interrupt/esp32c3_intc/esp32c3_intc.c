@@ -58,14 +58,15 @@ int irqctrl_set_level(unsigned int irq, int level) {
 
 static int esp32c3_intc_init(void) {
 	extern void (*vector_table)(void);
-	static void *_vector_table[] __attribute__((aligned(256))) = {
-	    [0 ... IRQCTRL_IRQS_TOTAL] = &vector_table};
+	// static void *_vector_table[] __attribute__((aligned(256))) = {
+	//     [0 ... IRQCTRL_IRQS_TOTAL] = &vector_table};
 
+	csr_write(CSR_TVEC, &vector_table);
 	csr_set(CSR_TVEC, CSR_TVEC_MODE_VECTORED);
-	csr_write(CSR_TVEC, _vector_table);
 
 	REG32_STORE(INTERRUPT_CORE0_CPU_INT_ENABLE, 0);
 	csr_set(mstatus, MSTATUS_MIE);
+
 	return 0;
 }
 

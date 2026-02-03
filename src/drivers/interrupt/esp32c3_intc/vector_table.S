@@ -2,6 +2,7 @@
 #include <framework/mod/options.h>
 
 .section .text
+.balign 256
 .global vector_table
 
 vector_table:
