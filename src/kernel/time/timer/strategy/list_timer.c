@@ -12,7 +12,7 @@
 #include <hal/ipl.h>
 #include <hal/clock.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 static DLIST_DEFINE(sys_timers_list);
 

@@ -13,7 +13,7 @@
 #include <hal/cpu_idle.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 void arch_cpu_idle(void) {
 	extern const struct clock_source *cs_jiffies;

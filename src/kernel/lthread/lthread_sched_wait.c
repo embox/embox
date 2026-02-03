@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <util/math.h>
 #include <hal/clock.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include <kernel/lthread/lthread.h>
 

@@ -17,7 +17,7 @@
 #include <net/l3/ipv4/ip.h>
 
 #include <mem/objalloc.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 
 #include <util/math.h>

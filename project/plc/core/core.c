@@ -14,7 +14,7 @@
 
 #include <drivers/gpio.h>
 #include <kernel/time/time.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <lib/libds/array.h>
 #include <plc/core.h>
 

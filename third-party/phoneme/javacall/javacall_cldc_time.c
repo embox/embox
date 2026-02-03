@@ -7,7 +7,7 @@
  */
 
 #include <javacall_time.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 #include <time.h>
 #include <hal/clock.h>

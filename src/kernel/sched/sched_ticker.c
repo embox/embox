@@ -10,7 +10,7 @@
 #include <hal/cpu.h>
 #include <kernel/sched.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/cpu/cpu.h>
 
 #include <kernel/panic.h>

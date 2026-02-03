@@ -10,7 +10,7 @@
  * @author Zeng Zixian
  */
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/sched.h>
 #include <hal/clock.h>
 #include <hal/ipl.h>

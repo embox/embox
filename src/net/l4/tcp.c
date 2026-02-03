@@ -36,7 +36,7 @@
 #include <net/lib/ipv6.h>
 #include <net/lib/tcp.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/time/ktime.h>
 

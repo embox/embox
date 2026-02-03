@@ -17,7 +17,7 @@
 #include <drivers/pins.h>
 #include <drivers/bluetooth/bluetooth.h>
 #include <drivers/bluetooth/lego/blue_core4.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include <embox/unit.h>
 

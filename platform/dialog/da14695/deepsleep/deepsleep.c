@@ -11,7 +11,7 @@
 #include <hal/clock.h>
 #include <time.h>
 #include <kernel/time/time.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <drivers/rtc.h>
 
 #include <config/custom_config_qspi.h>

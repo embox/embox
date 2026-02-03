@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <lib/leddrv.h>
 #include <lib/libds/array.h>
 

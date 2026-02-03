@@ -11,7 +11,7 @@
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched.h>

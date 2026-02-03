@@ -5,7 +5,7 @@
 
 #include <execinfo.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/printk.h>
 
 #include <embox/unit.h>

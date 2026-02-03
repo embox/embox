@@ -22,7 +22,7 @@
 #include <mem/sysmalloc.h>
 #include <embox/unit.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 EMBOX_UNIT_INIT(usbnet_init);
 

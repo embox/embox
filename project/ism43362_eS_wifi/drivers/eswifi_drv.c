@@ -16,7 +16,7 @@
 
 #include <util/macro.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 
 #include <net/l2/ethernet.h>

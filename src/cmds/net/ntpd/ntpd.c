@@ -17,7 +17,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include <net/lib/ntp.h>
 

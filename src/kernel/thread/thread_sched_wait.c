@@ -9,7 +9,7 @@
 
 #include <kernel/spinlock.h>
 #include <kernel/sched.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include <kernel/sched/current.h>
 

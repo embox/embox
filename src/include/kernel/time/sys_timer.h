@@ -12,8 +12,8 @@
  * @author Ilia Vaprol
  */
 
-#ifndef KERNEL_TIME_TIMER_H_
-#define KERNEL_TIME_TIMER_H_
+#ifndef KERNEL_TIME_SYS_TIMER_H_
+#define KERNEL_TIME_SYS_TIMER_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -225,4 +225,4 @@ extern int sys_timer_close(struct sys_timer *ptimer);
 
 __END_DECLS
 
-#endif /* KERNEL_TIME_TIMER_H_ */
+#endif /* KERNEL_TIME_SYS_TIMER_H_ */

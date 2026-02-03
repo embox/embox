@@ -16,7 +16,7 @@
 #include <lib/libds/dlist.h>
 
 #include <kernel/time/ktime.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/sched/sched_lock.h>
 #include <mem/misc/pool.h>
 

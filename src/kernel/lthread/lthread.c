@@ -16,7 +16,7 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee_priority.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 int __lthread_is_disabled(struct lthread *lt) {
 	assert(lt);

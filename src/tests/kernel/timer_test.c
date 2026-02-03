@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 #include <embox/test.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/sched/sync/mutex.h>

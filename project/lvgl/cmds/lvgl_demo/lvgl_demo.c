@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include "lvgl.h"
 #if LVGL_VERSION_MAJOR == 7

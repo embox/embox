@@ -8,7 +8,7 @@
  * @author Fedor Burdun
  */
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <hal/clock.h>
 #include <hal/ipl.h>
 

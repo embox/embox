@@ -8,7 +8,7 @@
 
 #ifndef __LINUX_TIMER_H_
 #define __LINUX_TIMER_H_
-
-#include <kernel/time/timer.h>
+/* TODO why does this include need */
+#include <kernel/time/sys_timer.h>
 
 #endif /* TIMER_H_ */

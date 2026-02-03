@@ -271,7 +271,7 @@ int os_mutex_create(struct mutex **m_p) {
 	return 0;
 }
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <mem/misc/pool.h>
 #include "osal.h"
 

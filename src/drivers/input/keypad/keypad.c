@@ -11,7 +11,7 @@
 #include <assert.h>
 
 //#include <kernel/irq.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <drivers/input/input_dev.h>
 
 #include <drivers/gpio.h>

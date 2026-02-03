@@ -7,7 +7,7 @@
 
 #include <unistd.h>
 #include <embox/test.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 EMBOX_TEST_SUITE("oneshot timer tests");
 

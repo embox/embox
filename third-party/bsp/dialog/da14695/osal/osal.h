@@ -147,7 +147,7 @@ extern int os_mutex_create(struct mutex **m_p);
 
 #include <time.h>
 #include <kernel/time/time.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 /**** Timer ****/
 extern struct sys_timer *os_timer_create(int period, int reload, void *handler );
 extern int os_timer_start(struct sys_timer * t );

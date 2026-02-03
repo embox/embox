@@ -11,7 +11,7 @@
 #include <string.h>
 
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <wifi/esp32c3/emulator/esp32c3_emulator.h>
 
 /* WiFi connection simulation delay (ms) */

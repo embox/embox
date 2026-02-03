@@ -11,7 +11,7 @@
 
 #include <hal/cpu_idle.h>
 #include <kernel/time/ktime.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 static void wake_up(sys_timer_t *timer, void *param) {
 	*(int *)param = 0;

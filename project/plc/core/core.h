@@ -13,7 +13,7 @@
 #include <sys/cdefs.h>
 #include <time.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <lib/libds/array.h>
 
 #define PLC_PHYS_VAR_QX  0 /* Digital Outputs */
