@@ -123,7 +123,7 @@ int plc_start(const struct plc_config *config) {
 	ticktime_ms = *config->common_ticktime / NSEC_PER_MSEC;
 	current_config = config;
 
-	err = timer_set(&plc_timer, TIMER_PERIODIC, ticktime_ms, plc_handler, NULL);
+	err = sys_timer_set(&plc_timer, SYS_TIMER_PERIODIC, ticktime_ms, plc_handler, NULL);
 	if (err) {
 		return err;
 	}
@@ -133,7 +133,7 @@ int plc_start(const struct plc_config *config) {
 
 int plc_stop(void) {
 	if (current_config) {
-		timer_close(plc_timer);
+		sys_timer_close(plc_timer);
 		current_config = NULL;
 	}
 

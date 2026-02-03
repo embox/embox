@@ -27,13 +27,13 @@ int ksleep(useconds_t msec) {
 
 	wait_flag = 1;
 
-	if (timer_init_start_msec(&timer, TIMER_ONESHOT, msec, &wake_up,
+	if (sys_timer_init_start_msec(&timer, SYS_TIMER_ONESHOT, msec, &wake_up,
 	        (void *)&wait_flag)) {
 		return 1;
 	}
 	while (wait_flag) {
 		arch_cpu_idle();
 	}
-	timer_close(&timer);
+	sys_timer_close(&timer);
 	return 0;
 }

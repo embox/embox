@@ -39,7 +39,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 
 out:
 
-	timer_set_started(tmr);
+	sys_timer_set_started(tmr);
 	dlist_add_prev(&tmr->lnk, next_tmr_lnk);
 	ipl_restore(ipl);
 }
@@ -49,7 +49,7 @@ void timer_strat_stop(struct sys_timer *ptimer) {
 	ipl_t ipl;
 
 	ipl = ipl_save();
-	timer_set_stopped(ptimer);
+	sys_timer_set_stopped(ptimer);
 
 	if (ptimer->lnk.next != &sys_timers_list) {
 		next_tmr = (struct sys_timer *)ptimer->lnk.next;
@@ -93,7 +93,7 @@ void timer_strat_sched(clock_t jiffies) {
 		jiffies -= timer->cnt;
 
 		timer_strat_stop(timer);
-		if (timer_is_periodic(timer)) {
+		if (sys_timer_is_periodic(timer)) {
 			timer_strat_start(timer);
 		}
 

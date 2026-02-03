@@ -18,7 +18,7 @@ int a16, int a17) {
     if (local = bar(a1, a2, a3,
             a16, a17)) {int local2;
     }
-	if (r = timer_set(&info->tmr, TIMER_ONESHOT, jiffies2ms(info->remain),
+	if (r = sys_timer_set(&info->tmr, SYS_TIMER_ONESHOT, jiffies2ms(info->remain),
 		sched_wait_timeout_handler, &self->schedee) +
 		foodie(12)) {
 	}

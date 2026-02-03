@@ -78,7 +78,7 @@ struct keypad_s {
 	unsigned long timer_counter;	// timer_counter*KEYBOARD_POLL_PERIOD is the time elapsed from open or flush
 	int POLL_PERIOD;		// in ms
 	int HOLD_TICKS;			// number of poll periods to ensure that key is up
-	sys_timer_t * timer;		// timer pointer for timer_close
+	sys_timer_t * timer;		// timer pointer for sys_timer_close
 };
 
 static struct keypad_s keypad; // static initialisation see below 
@@ -132,7 +132,7 @@ static int keypad_start(struct input_dev *dev) {
 	keypad_flush(kp);
 
 	// Set timer handler
-	if (timer_set(&(kp->timer), TIMER_PERIODIC, kp->POLL_PERIOD, keypad_timer_handler, kp)) {
+	if (sys_timer_set(&(kp->timer), SYS_TIMER_PERIODIC, kp->POLL_PERIOD, keypad_timer_handler, kp)) {
 		log_error("Failed to install timer");
 		return -1;
 	}
@@ -142,7 +142,7 @@ static int keypad_start(struct input_dev *dev) {
 static int keypad_stop(struct input_dev *dev) {
 	struct keypad_s *kp=(struct keypad_s *)&keypad;				// ????
 	// Reset timer handler
-	timer_close(kp->timer);
+	sys_timer_close(kp->timer);
 	return 0;
 }
 

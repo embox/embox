@@ -90,7 +90,7 @@ static int wifi_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 
 	/* Start connection timer */
 	wifi->timer_active = true;
-	timer_init_start_msec(&wifi->connect_timer, TIMER_ONESHOT,
+	sys_timer_init_start_msec(&wifi->connect_timer, SYS_TIMER_ONESHOT,
 	    wifi->hw_ops->timeouts.connect_ms, wifi_connect_timeout, wifi);
 
 	/* Send connect command */
@@ -98,7 +98,7 @@ static int wifi_cfg80211_connect(struct wiphy *wiphy, struct net_device *dev,
 
 	if (result != AT_OK) {
 		wifi->timer_active = false;
-		timer_stop(&wifi->connect_timer);
+		sys_timer_stop(&wifi->connect_timer);
 		cfg80211_update_connection_state(&wifi->wdev, CFG80211_DISCONNECTED);
 		wifi->stats.connect_failures++;
 
@@ -126,7 +126,7 @@ static int wifi_cfg80211_disconnect(struct wiphy *wiphy, struct net_device *dev,
 	/* Stop any pending connection timer */
 	if (wifi->timer_active) {
 		wifi->timer_active = false;
-		timer_stop(&wifi->connect_timer);
+		sys_timer_stop(&wifi->connect_timer);
 	}
 
 	/* Get disconnect command */
@@ -322,7 +322,7 @@ static void wifi_core_urc_handler(const char *line, void *arg) {
 	if (ops->urc_patterns.got_ip && strstr(line, ops->urc_patterns.got_ip)) {
 		if (wifi->timer_active) {
 			wifi->timer_active = false;
-			timer_stop(&wifi->connect_timer);
+			sys_timer_stop(&wifi->connect_timer);
 		}
 
 		/* Get IP configuration if available */
@@ -349,7 +349,7 @@ static void wifi_core_urc_handler(const char *line, void *arg) {
 	    && strstr(line, ops->urc_patterns.disconnected)) {
 		if (wifi->timer_active) {
 			wifi->timer_active = false;
-			timer_stop(&wifi->connect_timer);
+			sys_timer_stop(&wifi->connect_timer);
 		}
 
 		/* Clear connection info */
@@ -508,7 +508,7 @@ void wifi_core_destroy(struct wiphy *wiphy) {
 	/* Stop any active timer */
 	if (wifi->timer_active) {
 		wifi->timer_active = false;
-		timer_stop(&wifi->connect_timer);
+		sys_timer_stop(&wifi->connect_timer);
 	}
 
 	/* Disconnect if connected */

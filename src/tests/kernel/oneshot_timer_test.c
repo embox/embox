@@ -17,7 +17,7 @@ static void test_timer_handler(sys_timer_t* timer, void *param) {
 	*((int *) param) += 1;
 }
 
-TEST_CASE("testing timer_set function") {
+TEST_CASE("testing sys_timer_set function") {
 	int i;
 	sys_timer_t * timer;
 	volatile int tick_counter;
@@ -25,7 +25,7 @@ TEST_CASE("testing timer_set function") {
 	/* Timer value changing means ok */
 	tick_counter = 0;
 
-	if (timer_set(&timer, TIMER_ONESHOT, TEST_TIMER_PERIOD, test_timer_handler,
+	if (sys_timer_set(&timer, SYS_TIMER_ONESHOT, TEST_TIMER_PERIOD, test_timer_handler,
 			(void *) &tick_counter)) {
 		test_fail("failed to install timer");
 	}
@@ -35,7 +35,7 @@ TEST_CASE("testing timer_set function") {
 	while (i--) {
 	}
 
-	timer_close(timer);
+	sys_timer_close(timer);
 
 	test_assert_equal(tick_counter, 1);
 }

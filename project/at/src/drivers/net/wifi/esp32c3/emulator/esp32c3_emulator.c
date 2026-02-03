@@ -49,11 +49,11 @@ static void emu_timer_stop(esp32c3_emu_data_t *data) {
 	mutex_lock(&data->timer_mutex);
 
 	if (data->timer_active) {
-		timer_stop(&data->conn_timer);
+		sys_timer_stop(&data->conn_timer);
 		data->timer_active = false;
 	}
 	if (data->ip_timer_active) {
-		timer_stop(&data->ip_timer);
+		sys_timer_stop(&data->ip_timer);
 		data->ip_timer_active = false;
 	}
 
@@ -76,7 +76,7 @@ static void wifi_connect_timer_handler(struct sys_timer *timer, void *param) {
 
 		/* Schedule IP acquisition */
 		if (!data->ip_timer_active) {
-			timer_init_start_msec(&data->ip_timer, TIMER_ONESHOT,
+			sys_timer_init_start_msec(&data->ip_timer, SYS_TIMER_ONESHOT,
 			    WIFI_IP_DELAY_MS, wifi_connect_timer_handler, data);
 			data->ip_timer_active = true;
 		}
@@ -233,7 +233,7 @@ static at_result_t cmd_cwjap(at_emulator_t *emu, at_cmd_type_t type,
 				mutex_unlock(&data->state_mutex);
 
 				mutex_lock(&data->timer_mutex);
-				timer_init_start_msec(&data->conn_timer, TIMER_ONESHOT,
+				sys_timer_init_start_msec(&data->conn_timer, SYS_TIMER_ONESHOT,
 				    WIFI_CONNECT_DELAY_MS, wifi_connect_timer_handler, data);
 				data->timer_active = true;
 				mutex_unlock(&data->timer_mutex);

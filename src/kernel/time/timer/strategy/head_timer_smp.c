@@ -70,7 +70,7 @@ void timer_strat_start(struct sys_timer *tmr) {
 		tmr->cnt -= it_tmr->cnt;
 	}
 
-	timer_set_started(tmr);
+	sys_timer_set_started(tmr);
 	if(sched_ticker_get_timer() == (void*)tmr) {
 		dlist_add_prev(&tmr->multi_lnk[cpuid], next_tmr_lnk);
 	}else{
@@ -87,7 +87,7 @@ void timer_strat_stop(struct sys_timer *tmr) {
 	cpuid = cpu_get_id();
 	ipl_restore(ipl);
 
-	timer_set_stopped(tmr);
+	sys_timer_set_stopped(tmr);
 
 	if(sched_ticker_get_timer() == (void*)tmr) {
 		if (tmr->multi_lnk[cpuid].next != &sys_timers_list[cpuid]) {
@@ -162,7 +162,7 @@ void timer_strat_sched(clock_t jiffies) {
 		jiffies -= it_tmr->cnt;
 
 		timer_strat_stop(it_tmr);
-		if (timer_is_periodic(it_tmr)) {
+		if (sys_timer_is_periodic(it_tmr)) {
 			timer_strat_start(it_tmr);
 		}
 

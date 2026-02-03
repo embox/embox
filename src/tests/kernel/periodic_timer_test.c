@@ -24,7 +24,7 @@ TEST_CASE("testing periodic timer") {
 	/* Timer value changing means ok */
 	tick_counter = 0;
 
-	if (timer_set(&timer, TIMER_PERIODIC, TEST_TIMER_PERIOD, test_timer_handler,
+	if (sys_timer_set(&timer, SYS_TIMER_PERIODIC, TEST_TIMER_PERIOD, test_timer_handler,
 			(void *) &tick_counter)) {
 		test_fail("failed to install timer");
 	}
@@ -34,7 +34,7 @@ TEST_CASE("testing periodic timer") {
 	while (i--) {
 	}
 
-	timer_close(timer);
+	sys_timer_close(timer);
 
 	test_assert(tick_counter > 1);
 }

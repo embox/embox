@@ -19,7 +19,7 @@ static DLIST_DEFINE(sys_timers_list);
 void timer_strat_start(struct sys_timer *tmr) {
 	ipl_t ipl;
 
-	timer_set_started(tmr);
+	sys_timer_set_started(tmr);
 
 	dlist_head_init(&tmr->lnk);
 
@@ -66,7 +66,7 @@ void timer_strat_sched(clock_t jiffies) {
 
 	dlist_foreach_entry(tmr, &sys_timers_list, lnk) {
 		if (jiffies >= tmr->cnt) {
-			if (timer_is_periodic(tmr)) {
+			if (sys_timer_is_periodic(tmr)) {
 				tmr->cnt = clock_sys_ticks() + tmr->load;
 			} else {
 				timer_strat_stop(tmr);
@@ -80,7 +80,7 @@ void timer_strat_sched(clock_t jiffies) {
 void timer_strat_stop(struct sys_timer *tmr) {
 	ipl_t ipl;
 
-	timer_set_stopped(tmr);
+	sys_timer_set_stopped(tmr);
 
 	ipl = ipl_save();
 	dlist_del(&tmr->lnk);

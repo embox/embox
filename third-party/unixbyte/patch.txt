@@ -196,7 +196,7 @@ diff -ur UnixBench/src/timeit.c unixbyte/src/timeit.c
 -	/* get the clock running */
 -	alarm(seconds);
 +
-+	timer_set(&timer, TIMER_ONESHOT, seconds * 1000, timer_handler, NULL);
++	sys_timer_set(&timer, SYS_TIMER_ONESHOT, seconds * 1000, timer_handler, NULL);
  }
 
 

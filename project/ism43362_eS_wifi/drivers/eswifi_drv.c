@@ -326,7 +326,7 @@ static int eswifi_init(void) {
 
 	res = cfg80211_register_netdevice(nic);
 
-	//timer_init(&eswifi_dev.eswifi_timer, TIMER_PERIODIC, eswifi_poll_handler, &eswifi_dev);
+	//sys_timer_init(&eswifi_dev.eswifi_timer, SYS_TIMER_PERIODIC, eswifi_poll_handler, &eswifi_dev);
 
 
 	return res;
