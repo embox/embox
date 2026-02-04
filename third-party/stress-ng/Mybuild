@@ -1,0 +1,11 @@
+package third_party.cmd
+
+@App
+@Cmd(name="stress-ng", help="")
+@Build(stage=2,script="$(EXTERNAL_MAKE)")
+static module stress_ng {
+	@AddPrefix("^BUILD/extbld/third_party/stress-ng/install")
+	source "stress-ng.o"
+
+	@NoRuntime depends embox.compat.libc.all
+}
