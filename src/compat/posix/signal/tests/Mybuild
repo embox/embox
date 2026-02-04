@@ -25,3 +25,8 @@ module signal_test {
 	//depends embox.compat.posix.signal.signal
 	//depends embox.kernel.thread.signal.sigstate
 }
+
+//@TestFor(embox.compat.posix.pthreads)
+module pthread_kill_test {
+	source "pthread_kill_test.c"
+}
