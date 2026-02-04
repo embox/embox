@@ -12,6 +12,7 @@
 
 #include <defines/_sig_total_define.h>
 #include <defines/pthread_attr_t_define.h>
+#include <defines/pthread_t_define.h>
 #include <defines/sigset_t_define.h>
 #include <defines/stack_t_define.h>
 #include <defines/ucontext_t_define.h>
@@ -150,6 +151,8 @@ extern int sigqueue(int tid, int signo, const union sigval value);
 extern int raise(int signo);
 
 extern int sigwait(const sigset_t * /*restrict*/ set, int * /*restrict*/ sig);
+
+extern int pthread_kill(pthread_t thread, int sig);
 
 extern const char *const sys_siglist[];
 
