@@ -9,7 +9,7 @@
 #include <embox/test.h>
 #include <drivers/at91_olimex_debug_led.h>
 #include <drivers/pins.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <unistd.h>
 
 EMBOX_TEST_SUITE("olimex blinking_led_timer");
@@ -41,11 +41,11 @@ TEST_CASE("olimex blinking_led_timer test") {
 	sys_timer_t tmr;
 	pin_config_output(OLIMEX_SAM7_LED1 | OLIMEX_SAM7_LED2);
 
-	timer_init_start_msec(&tmr, TIMER_PERIODIC, 1000, timer_hdn, NULL);
+	sys_timer_init_start_msec(&tmr, SYS_TIMER_PERIODIC, 1000, timer_hdn, NULL);
 
 	while (count) { } ;
 
-	timer_close(&tmr);
+	sys_timer_close(&tmr);
 
 	return 0;
 }

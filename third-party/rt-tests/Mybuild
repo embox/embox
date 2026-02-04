@@ -1,0 +1,47 @@
+package third_party.rt_tests
+
+@Build(stage=1,script="$(EXTERNAL_MAKE)")
+module src {}
+
+@BuildArtifactPath(cppflags="-I$(abspath $(EXTERNAL_BUILD_DIR))/third_party/rt_tests/src/rt-tests-2.9/src/include")
+module lib {
+	@IncludePath("$(THIRDPARTY_DIR)/rt-tests")
+	@IncludePath("$(EXTERNAL_BUILD_DIR)/third_party/rt_tests/src/rt-tests-2.9/src/include")
+	@AddPrefix("^BUILD/extbld/third_party/rt_tests/src/rt-tests-2.9/src/lib")
+	source
+	"rt-error.c",
+	//"rt-get_cpu.c",
+	"rt-sched.c",
+	"rt-utils.c",
+	"rt-numa.c",
+	"histogram.c"
+
+	depends src
+}
+
+@AutoCmd
+@Cmd(	name = "cyclictest",
+	help = "cyclictest"
+)
+@BuildDepends(lib)
+module cyclictest {
+	@IncludePath("$(THIRDPARTY_DIR)/rt-tests")
+	@AddPrefix("^BUILD/extbld/third_party/rt_tests/src/rt-tests-2.9/src/cyclictest")
+	source "cyclictest.c"
+
+	@NoRuntime depends lib
+	@NoRuntime depends embox.compat.posix.pthread.pthread_barrier
+	@NoRuntime depends embox.compat.posix.pthread.pthreads_affinity_np_stubs
+	@NoRuntime depends embox.compat.posix.pthread.pthread_stack_stub 
+	@NoRuntime depends embox.compat.posix.sys.mman.shm_mem
+	@NoRuntime depends embox.compat.linux.syscall_stub
+    depends embox.compat.posix.time.nanosleep
+	@NoRuntime depends embox.compat.posix.signal.sigwait_stub
+	@NoRuntime depends embox.compat.posix.time.timer
+	@NoRuntime depends embox.compat.posix.sys.time.itimer_stub
+	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
+	@NoRuntime depends embox.compat.posix.sys.stat.mkfifo_stub
+	@NoRuntime depends embox.compat.posix.sched.sched_getparam_stub
+	@NoRuntime depends embox.compat.posix.sched.sched_getscheduler_stub
+
+}

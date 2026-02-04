@@ -16,7 +16,7 @@
 #include <kernel/printk.h>
 #include <kernel/thread/sync/mutex.h>
 #include <kernel/time/time.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <net/cfg80211.h>
 #include <net/netdevice.h>
 

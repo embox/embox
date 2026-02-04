@@ -5,6 +5,7 @@
  * @author: Anton Bondarev
  */
 
+#include <stdint.h>
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
@@ -21,10 +22,12 @@
 #define CLOCK_IRQ      5
 
 /* The clock rate per second */
-#define CLOCK_RATE     48054841L
+// #define CLOCK_RATE     48054841L
+#define CLOCK_RATE     40000000L
 
 /* The initial counter value */
 #define TIMER_COUNT    (CLOCK_RATE / JIFFIES_PERIOD)
+#define NSEC_PER_CYCLE    (NSEC_PER_SEC / CLOCK_RATE)
 
 /* Timer 1 registers */
 #define TMR_LOAD       (TIMER_BASE + 0x000)
@@ -65,8 +68,13 @@ static cycle_t integratorcp_get_cycles(struct clock_source *cs) {
 	return REG32_LOAD(TMR_VAL) & 0xFFFF;
 }
 
+static uint64_t integratorcp_get_time(struct clock_source *cs) {
+	return (uint64_t)(cs->event_device->jiffies * (NSEC_PER_SEC / cs->event_device->event_hz)) + (TIMER_COUNT - 1 - (REG32_LOAD(TMR_VAL) & 0xFFFF)) * NSEC_PER_CYCLE;
+}
+
 static struct time_counter_device integratorcp_counter_device = {
     .get_cycles = integratorcp_get_cycles,
+	.get_time   = integratorcp_get_time,
     .cycle_hz = CLOCK_RATE,
 };
 

@@ -1,0 +1,5 @@
+package embox.compat.posix.sys.time
+
+module itimer_stub {
+    source "setitimer_stub.c", "getitimer_stub.c"
+}

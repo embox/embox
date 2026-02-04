@@ -9,7 +9,7 @@
 #include <embox/unit.h>
 #include <string.h>
 #include <hal/reg.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <drivers/at91sam7s256.h>
 #include <drivers/twi.h>
 #include <drivers/nxt/buttons.h>
@@ -92,7 +92,7 @@ static int init(void) {
 
 	sensors_init();
 
-	result = timer_set(&avr_timer, TIMER_PERIODIC, 1, (sys_timer_handler_t) avr_handler, 0);
+	result = sys_timer_set(&avr_timer, SYS_TIMER_PERIODIC, 1, (sys_timer_handler_t) avr_handler, 0);
 
 	return result;
 }

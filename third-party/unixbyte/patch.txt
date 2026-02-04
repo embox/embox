@@ -178,7 +178,7 @@ diff -ur UnixBench/src/timeit.c unixbyte/src/timeit.c
  
  #include <signal.h>
  #include <unistd.h>
-+#include <kernel/time/timer.h>
++#include <kernel/time/sys_timer.h>
  
 -void wake_me(seconds, func)
 +static void timer_handler(struct sys_timer *timer, void *param) {
@@ -196,7 +196,7 @@ diff -ur UnixBench/src/timeit.c unixbyte/src/timeit.c
 -	/* get the clock running */
 -	alarm(seconds);
 +
-+	timer_set(&timer, TIMER_ONESHOT, seconds * 1000, timer_handler, NULL);
++	sys_timer_set(&timer, SYS_TIMER_ONESHOT, seconds * 1000, timer_handler, NULL);
  }
 
 

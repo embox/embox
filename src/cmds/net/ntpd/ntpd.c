@@ -17,7 +17,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include <net/lib/ntp.h>
 
@@ -68,8 +68,8 @@ static void timer_handler(struct sys_timer *timer, void *param) {
 
 	if (!param_->replied && param_->poll < NTP_POLL_MAX) {
 		++param_->poll;
-		timer_close(param_->tmr);
-		timer_set(&param_->tmr, TIMER_PERIODIC,
+		sys_timer_close(param_->tmr);
+		sys_timer_set(&param_->tmr, SYS_TIMER_PERIODIC,
 				(1 << param_->poll) * MSEC_PER_SEC,
 				timer_handler, param);
 	}
@@ -155,7 +155,7 @@ static int ntpd_start(struct ntpd_param *param) {
 		return ret;
 	}
 
-	ret = timer_set(&param->tmr, TIMER_PERIODIC,
+	ret = sys_timer_set(&param->tmr, SYS_TIMER_PERIODIC,
 			(1 << param->poll) * MSEC_PER_SEC, timer_handler, param);
 	if (ret != 0) {
 		close(param->sock);
@@ -171,7 +171,7 @@ static int ntpd_stop(struct ntpd_param *param) {
 	assert(param != NULL);
 
 	if (param->running) {
-		timer_close(param->tmr);
+		sys_timer_close(param->tmr);
 		close(param->sock);
 		param->running = 0;
 	}

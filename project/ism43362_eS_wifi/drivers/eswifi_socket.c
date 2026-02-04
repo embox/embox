@@ -19,7 +19,7 @@
 
 #include <util/macro.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 
 #include <net/l2/ethernet.h>
@@ -250,9 +250,9 @@ static int eswifi_sock_accept(struct sock *sk, struct sockaddr *addr,
     eswifi_dev.state = ESWIFI_STATE_SERVER_START;
     eswifi_dev.sk = sk;
 
-	//timer_start(&eswifi_dev.eswifi_timer, ms2jiffies(ESWIFI_TIMER_TICK));
+	//sys_timer_start(&eswifi_dev.eswifi_timer, ms2jiffies(ESWIFI_TIMER_TICK));
 
-    //timer_init(&eswifi_dev.eswifi_timer, TIMER_PERIODIC, eswifi_poll_handler, &eswifi_dev);
+    //sys_timer_init(&eswifi_dev.eswifi_timer, SYS_TIMER_PERIODIC, eswifi_poll_handler, &eswifi_dev);
 
 	res = pthread_create(&eswifi_dev.eswifi_poll_thread, 0, eswifi_poll_loop, &eswifi_dev);
 	if (res != 0) {

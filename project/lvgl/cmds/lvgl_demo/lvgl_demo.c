@@ -9,7 +9,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include "lvgl.h"
 #if LVGL_VERSION_MAJOR == 7
@@ -181,7 +181,7 @@ int main(int argc, char **argv) {
 
 	lv_demo_widgets();
 
-	timer_set(&timer, TIMER_PERIODIC, 50, lvgl_timer_handler, NULL);
+	sys_timer_set(&timer, SYS_TIMER_PERIODIC, 50, lvgl_timer_handler, NULL);
 
 	while (1) {
 		/* Periodically call the lv_task handler.

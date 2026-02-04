@@ -1,0 +1,14 @@
+package embox.kernel.task.resource
+
+module idesc_table {
+	@IncludeExport(path="kernel/task/resource")
+	source "idesc_table.h"
+
+	option number idesc_table_size=64
+	source "idesc_table.c"
+
+	@NoRuntime depends embox.kernel.task.idesc
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.kernel.task.idesc
+	@NoRuntime depends embox.compat.libc.assert
+}

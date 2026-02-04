@@ -5,7 +5,7 @@
 
 #include <execinfo.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/printk.h>
 
 #include <embox/unit.h>
@@ -73,7 +73,7 @@ static int sampling_profiler_set(int interval) {
 	int res;
 	interval = (interval == 0) ? (SAMPLE_TIMER_INTERVAL) : interval;
 
-	res = timer_set(&sampling_timer, TIMER_PERIODIC, interval,
+	res = sys_timer_set(&sampling_timer, SYS_TIMER_PERIODIC, interval,
 		sampling_timer_handler, NULL);
 	if (res) {
 		printk("Failed to install timer\n");
@@ -115,6 +115,6 @@ int start_profiler(int interval) {
 
 int stop_profiler(void) {
 	is_running = false;
-	timer_close(sampling_timer);
+	sys_timer_close(sampling_timer);
 	return ENOERR;
 }

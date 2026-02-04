@@ -25,3 +25,7 @@ int timer_gettime(timer_t timerid, struct itimerspec *value) {
 int timer_getoverrun(timer_t timerid) {
 	return 0;
 }
+
+int timer_delete(timer_t timerid) {
+	return 0;
+}

@@ -8,7 +8,7 @@
 #ifndef WATCHDOG_H_
 #define WATCHDOG_H_
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 
 typedef void (*watchdog_handler_t)(struct sys_timer *timer, void *param);

@@ -11,7 +11,7 @@
 #include <embox/unit.h>
 #include <mem/misc/pool.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/sched.h>
@@ -20,7 +20,15 @@
 
 POOL_DEF(timer_pool, sys_timer_t, OPTION_GET(NUMBER,timer_quantity));
 
-int timer_init(struct sys_timer *tmr, unsigned int flags,
+struct sys_timer *sys_timer_alloc(void) {
+	return (struct sys_timer *) pool_alloc(&timer_pool);
+}
+
+void sys_timer_free(struct sys_timer *tmr) {
+	pool_free(&timer_pool, tmr);
+}
+
+int sys_timer_init(struct sys_timer *tmr, unsigned int flags,
 		sys_timer_handler_t handler, void *param) {
 	if (!handler || !tmr) {
 		return -EINVAL;
@@ -46,9 +54,9 @@ int timer_init(struct sys_timer *tmr, unsigned int flags,
 	return ENOERR;
 }
 
-void timer_start(struct sys_timer *tmr, clock_t jiffies) {
+void sys_timer_start(struct sys_timer *tmr, clock_t jiffies) {
 
-	timer_stop(tmr);
+	sys_timer_stop(tmr);
 
 	tmr->load = jiffies;
 	tmr->cnt = clock_sys_ticks() + tmr->load;
@@ -60,36 +68,37 @@ void timer_start(struct sys_timer *tmr, clock_t jiffies) {
 	sched_unlock();
 }
 
-void timer_stop(struct sys_timer *tmr) {
+void sys_timer_stop(struct sys_timer *tmr) {
 	sched_lock();
 	{
-		if (timer_is_started(tmr)) {
+		if (sys_timer_is_started(tmr)) {
 			timer_strat_stop(tmr);
 		}
 	}
 	sched_unlock();
 }
 
-int timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
+int sys_timer_init_start(struct sys_timer *tmr, unsigned int flags, clock_t jiffies,
 		sys_timer_handler_t handler, void *param) {
 	int err;
 
-	if ((err = timer_init(tmr, flags, handler, param))) {
+	err = sys_timer_init(tmr, flags, handler, param);
+	if (0 != err) {
 		return err;
 	}
 
-	timer_start(tmr, jiffies);
+	sys_timer_start(tmr, jiffies);
 
 	return ENOERR;
 }
 
-int timer_init_start_msec(struct sys_timer *tmr, unsigned int flags, uint32_t msec,
+int sys_timer_init_start_msec(struct sys_timer *tmr, unsigned int flags, uint32_t msec,
 		sys_timer_handler_t handler, void *param) {
 
-	return timer_init_start(tmr, flags, ms2jiffies(msec), handler, param);
+	return sys_timer_init_start(tmr, flags, ms2jiffies(msec), handler, param);
 }
 
-int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
+int sys_timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
 		sys_timer_handler_t handler, void *param) {
 	int err;
 	struct sys_timer *tmr;
@@ -98,31 +107,33 @@ int timer_set(struct sys_timer **ptimer, unsigned int flags, uint32_t msec,
 		return -EINVAL;
 	}
 
-	if (NULL == (tmr = (sys_timer_t*) pool_alloc(&timer_pool))) {
+	tmr = sys_timer_alloc();
+	if (NULL == tmr) {
 		return -ENOMEM;
 	}
 
-	if ((err = timer_init_start_msec(tmr, flags, msec, handler, param))) {
-		pool_free(&timer_pool, tmr);
+	err = sys_timer_init_start_msec(tmr, flags, msec, handler, param);
+	if (0 != err) {
+		sys_timer_free(tmr);
 		return err;
 	}
 
-	timer_set_preallocated(tmr);
+	sys_timer_set_preallocated(tmr);
 
 	*ptimer = tmr;
 	return ENOERR;
 }
 
-int timer_close(struct sys_timer *tmr) {
+int sys_timer_close(struct sys_timer *tmr) {
 	if (NULL == tmr) {
 		return -EINVAL;
 	}
 
-	timer_stop(tmr);
+	sys_timer_stop(tmr);
 
-	if (timer_is_preallocated(tmr)) {
-		timer_clear_preallocated(tmr);
-		pool_free(&timer_pool, tmr);
+	if (sys_timer_is_preallocated(tmr)) {
+		sys_timer_clear_preallocated(tmr);
+		sys_timer_free(tmr);
 	}
 
 	return ENOERR;

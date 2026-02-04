@@ -11,7 +11,7 @@
 
 #include <at/emulator/at_emulator.h>
 #include <kernel/thread/sync/mutex.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 /**
  * @brief ESP32-C3 WiFi state

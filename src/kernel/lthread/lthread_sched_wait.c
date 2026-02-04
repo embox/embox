@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <util/math.h>
 #include <hal/clock.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #include <kernel/lthread/lthread.h>
 
@@ -52,7 +52,7 @@ void sched_wait_cleanup_lthread(struct lthread *self) {
 
 	if (info->status & SCHED_WAIT_STARTED &&
 			info->remain != SCHED_TIMEOUT_INFINITE) {
-		timer_close(info->tmr);
+		sys_timer_close(info->tmr);
 	}
 
 	sched_wait_info_clear(info);
@@ -79,7 +79,7 @@ int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain) {
 	}
 
 	if (info->status & SCHED_WAIT_STARTED) {
-		timer_close(info->tmr);
+		sys_timer_close(info->tmr);
 
 		info->status &= ~SCHED_WAIT_STARTED;
 
@@ -90,7 +90,7 @@ int sched_wait_timeout_lthread(struct lthread *self, clock_t *remain) {
 		return info->remain ? 0 : -ETIMEDOUT;
 	}
 
-	if ((res = timer_set(&info->tmr, TIMER_ONESHOT, jiffies2ms(info->remain),
+	if ((res = sys_timer_set(&info->tmr, SYS_TIMER_ONESHOT, jiffies2ms(info->remain),
 			sched_wait_timeout_handler, &self->schedee))) {
 		return res;
 	}

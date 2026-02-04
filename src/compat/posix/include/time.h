@@ -104,7 +104,12 @@ extern size_t strftime(char *s, size_t max, const char *fmt,
 
 extern char *strptime(const char *s, const char *fmt, struct tm *tm);
 
+/* REALTIME */
 extern int nanosleep(const struct timespec *req, struct timespec *rem);
+
+/* ADVINCED REALTIME */
+extern int clock_nanosleep(clockid_t clock_id, int flags,
+						const struct timespec *rqtp, struct timespec *rmtp);
 
 static inline double difftime(time_t time1, time_t time0) {
 	return (time1 - time0);
@@ -115,6 +120,7 @@ extern void tzset(void);
 
 struct sigevent;
 extern int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid);
+extern int timer_delete(timer_t timerid);
 
 extern int timer_settime(timer_t timerid, int flags,
 				const struct itimerspec *value, struct itimerspec *ovalue);

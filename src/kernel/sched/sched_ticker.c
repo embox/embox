@@ -10,7 +10,7 @@
 #include <hal/cpu.h>
 #include <kernel/sched.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/cpu/cpu.h>
 
 #include <kernel/panic.h>
@@ -40,33 +40,33 @@ static void sched_tick(sys_timer_t *timer, void *param) {
 }
 
 void sched_ticker_add(void) {
-	if (!timer_is_started(&sched_tick_timer)) {
-		timer_init_start_msec(&sched_tick_timer, TIMER_PERIODIC,
+	if (!sys_timer_is_started(&sched_tick_timer)) {
+		sys_timer_init_start_msec(&sched_tick_timer, SYS_TIMER_PERIODIC,
 				SCHED_TICK_INTERVAL, sched_tick, NULL);
 	}
 }
 
 void sched_ticker_del(void) {
-	if (timer_is_started(&sched_tick_timer)) {
-		timer_stop(&sched_tick_timer);
+	if (sys_timer_is_started(&sched_tick_timer)) {
+		sys_timer_stop(&sched_tick_timer);
 	}
 }
 
 #ifdef SMP /* XXX */
 void sched_ticker_set_shared(void) {
-	if (!timer_is_shared(&sched_tick_timer)) {
+	if (!sys_timer_is_shared(&sched_tick_timer)) {
 		sched_tick_timer.timer_sharing = &sched_tick_sharing;
-		if(timer_is_started(&sched_tick_timer))
+		if(sys_timer_is_started(&sched_tick_timer))
 			sched_tick_timer.timer_sharing->shared_cpu = (0x1 << cpu_get_id());
-		timer_set_shared(&sched_tick_timer);
+		sys_timer_set_shared(&sched_tick_timer);
 	}else{
 		panic("Once-called function, check up\n");
 	}
 }
 
 void sched_ticker_set_private(void) {
-	if (timer_is_shared(&sched_tick_timer)) {
-		timer_set_private(&sched_tick_timer);
+	if (sys_timer_is_shared(&sched_tick_timer)) {
+		sys_timer_set_private(&sched_tick_timer);
 	}
 }
 

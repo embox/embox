@@ -46,14 +46,23 @@ int clock_settime(clockid_t clk_id, const struct timespec *ts) {
 	return 0;
 }
 
-time_t time(time_t *t) {
-	struct timespec ts;
-
-	getnsofday(&ts, NULL);
-
-	if (t != NULL) {
-		*t = ts.tv_sec;
+int clock_getres(clockid_t clk_id, struct timespec *res) {
+	extern struct clock_source *kernel_clock_source;
+	switch (clk_id) {
+	case CLOCK_REALTIME:
+	case CLOCK_MONOTONIC:
+		if (res) {
+			res->tv_sec = 0;
+			if (kernel_clock_source->counter_device) {
+				res->tv_nsec = NSEC_PER_SEC / kernel_clock_source->counter_device->cycle_hz;
+			} else {
+				res->tv_nsec = NSEC_PER_SEC / kernel_clock_source->event_device->event_hz;
+			}
+		}
+		break;
+	default:
+		return SET_ERRNO(EINVAL);
 	}
 
-	return ts.tv_sec;
+	return 0;
 }

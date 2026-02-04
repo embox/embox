@@ -15,7 +15,7 @@
 #include <kernel/lthread/lthread.h>
 #include <kernel/sched/schedee_priority.h>
 #include <kernel/time/clock_source.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 
 #define CLOCK_HND_PRIORITY OPTION_GET(NUMBER, hnd_priority)
 

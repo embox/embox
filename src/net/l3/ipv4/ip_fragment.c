@@ -17,7 +17,7 @@
 #include <net/l3/ipv4/ip.h>
 
 #include <mem/objalloc.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/time/time.h>
 
 #include <util/math.h>
@@ -98,7 +98,7 @@ static void ttl_handler(struct sys_timer *timer, void *param) {
 	}
 
 	if (i == 0) {
-		timer_stop(timer);
+		sys_timer_stop(timer);
 	}
 }
 
@@ -197,11 +197,11 @@ static struct dgram_buf *ip_buf_create(struct iphdr *iph) {
 		return NULL;
 	}
 
-	if (!timer_is_inited(&ip_frag_timer)) {
-		timer_init(&ip_frag_timer, TIMER_PERIODIC, ttl_handler, NULL);
+	if (!sys_timer_is_inited(&ip_frag_timer)) {
+		sys_timer_init(&ip_frag_timer, SYS_TIMER_PERIODIC, ttl_handler, NULL);
 		log_debug("timer init");
 	}
-	timer_start(&ip_frag_timer, ms2jiffies(TIMER_TICK));
+	sys_timer_start(&ip_frag_timer, ms2jiffies(TIMER_TICK));
 
 	skb_queue_init(&buf->fragments);
 	dlist_head_init(&buf->next_buf);

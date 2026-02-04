@@ -1,0 +1,8 @@
+package embox.compat.posix.sys
+
+static module utsname {
+	option string system="Embox"
+	option string hostname="localhost"
+
+	source "utsname.c"
+}

@@ -1,19 +1,5 @@
 package embox.compat.posix.util
 
-module All {
-	depends time,
-		sleep,
-		gettimeofday,
-		getopt,
-		utsname,
-		getpass,
-		gethostname,
-		environ,
-		swab
-	
-	depends embox.compat.posix.sys.timeb
-}
-
 static module getopt {
 	@IncludeExport(path="util")
 	source "getopt.h"
@@ -24,24 +10,11 @@ static module getopt {
 	@NoRuntime depends embox.compat.libc.str
 }
 
-static module utsname {
-	option string system="Embox"
-	option string hostname="localhost"
-	source "utsname.c"
-
-	@NoRuntime depends embox.compat.libc.str
-}
-
 static module time {
-	source "time.c"
+ 	depends embox.compat.posix.time.clock
 	source "linux_timer.c"
-	source "time_timer.c"
+	depends embox.compat.posix.time.timer
 
-	depends embox.kernel.time.kernel_time
-}
-
-static module times {
-	source "times.c"
 	depends embox.kernel.time.kernel_time
 }
 
@@ -49,15 +22,6 @@ static module sleep {
 	option string log_level="LOG_NONE"
 
 	source "sleep.c"
-
-	depends embox.kernel.timer.sleep_api
-	depends embox.kernel.time.kernel_time
-}
-
-static module nanosleep {
-	option string log_level="LOG_NONE"
-
-	source "nanosleep.c"
 
 	depends embox.kernel.timer.sleep_api
 	depends embox.kernel.time.kernel_time
@@ -78,7 +42,7 @@ static module getpass {
 
 static module gethostname {
 	source "gethostname.c"
-	depends utsname
+	depends embox.compat.posix.sys.utsname
 }
 
 static module environ {
@@ -88,8 +52,4 @@ static module environ {
 	depends embox.kernel.task.resource.errno
 	@NoRuntime depends embox.compat.libc.assert
 	@NoRuntime depends embox.compat.libc.str
-}
-
-static module swab {
-	source "swab.c"
 }

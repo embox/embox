@@ -16,7 +16,7 @@
 #include <lib/libds/dlist.h>
 
 #include <kernel/time/ktime.h>
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/sched/sched_lock.h>
 #include <mem/misc/pool.h>
 
@@ -56,12 +56,12 @@ static void nbr_set_haddr(struct neighbour *nbr, const void *haddr) {
 
 static void neighbour_timer_update(void) {
 	if (dlist_empty(&neighbour_list)) {
-		if (timer_is_started(&neighbour_tmr)) {
-			timer_stop(&neighbour_tmr);
+		if (sys_timer_is_started(&neighbour_tmr)) {
+			sys_timer_stop(&neighbour_tmr);
 		}
 	} else {
-		if (!timer_is_started(&neighbour_tmr)) {
-			timer_init_start_msec(&neighbour_tmr, TIMER_PERIODIC,
+		if (!sys_timer_is_started(&neighbour_tmr)) {
+			sys_timer_init_start_msec(&neighbour_tmr, SYS_TIMER_PERIODIC,
 					MODOPS_NEIGHBOUR_TMR_FREQ, nbr_timer_handler, NULL);
 		}
 	}

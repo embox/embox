@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module thread_key_table {
+	source "thread_key_table.c", "thread_key_table.h"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.kernel.thread.mutex
+	@NoRuntime depends embox.kernel.thread.thread_local
+	@NoRuntime depends embox.compat.libc.assert
+	@NoRuntime depends embox.lib.libds
+}
+

@@ -25,7 +25,7 @@ module core {
 	@NoRuntime depends embox.compat.posix.net.socket
 	@NoRuntime depends embox.compat.posix.util.gethostname
 	@NoRuntime depends embox.compat.posix.util.sleep
-	@NoRuntime depends embox.compat.posix.util.utsname
+	@NoRuntime depends embox.compat.posix.sys.utsname
 	@NoRuntime depends embox.compat.libc.all
 	@NoRuntime depends embox.net.lib.getifaddrs
 	@NoRuntime depends third_party.boost.libs

@@ -6,7 +6,17 @@ module LibPosix {
 	depends embox.compat.posix.proc.All
 	depends embox.compat.posix.passwd
 	depends embox.compat.posix.utmp_api
-	depends embox.compat.posix.util.All
+	//depends embox.compat.posix.util.All
+	depends embox.compat.posix.util.sleep
+	depends embox.compat.posix.util.gettimeofday
+	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.util.getpass
+	depends embox.compat.posix.util.gethostname
+	depends embox.compat.posix.util.environ
+	depends embox.compat.posix.unistd.swab
+	depends embox.compat.posix.sys.utsname
+	depends embox.compat.posix.sys.timeb
+	depends embox.compat.posix.util.time
 	depends embox.compat.posix.pthreads
 	depends embox.compat.posix.timerfd
 	depends embox.compat.posix.fnmatch

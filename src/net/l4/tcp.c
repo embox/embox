@@ -36,7 +36,7 @@
 #include <net/lib/ipv6.h>
 #include <net/lib/tcp.h>
 
-#include <kernel/time/timer.h>
+#include <kernel/time/sys_timer.h>
 #include <kernel/sched/sched_lock.h>
 #include <kernel/time/ktime.h>
 
@@ -231,13 +231,13 @@ static void tcp_timer_update(void) {
 	}
 
 	if (enable_tcp_timer) {
-		if (!timer_is_started(&tcp_tmr_default)) {
-			timer_init_start_msec(&tcp_tmr_default, TIMER_PERIODIC,
+		if (!sys_timer_is_started(&tcp_tmr_default)) {
+			sys_timer_init_start_msec(&tcp_tmr_default, SYS_TIMER_PERIODIC,
 					TCP_TIMER_FREQUENCY, tcp_timer_handler, NULL);
 		}
 	} else {
-		if (timer_is_started(&tcp_tmr_default)) {
-			timer_stop(&tcp_tmr_default);
+		if (sys_timer_is_started(&tcp_tmr_default)) {
+			sys_timer_stop(&tcp_tmr_default);
 		}
 	}
 }
