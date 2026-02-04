@@ -71,7 +71,7 @@
 /* USB classes */
 #define USB_CLASS_COMM       0x02
 #define USB_CLASS_HUB        0x09
-#define USB_CLASS_CDC_DATA   0x0a
+#define USB_CLASS_CDC_DATA   0x0A
 
 #define USB_DT_HUB     (USB_REQ_TYPE_CLASS | USB_CLASS_HUB)
 

@@ -8,7 +8,7 @@
 
 #include <assert.h>
 #include <string.h>
-
+#include <stdio.h>
 #include <drivers/udc/stm32/usb_stm32.h>
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
@@ -29,6 +29,40 @@ EMBOX_UNIT_INIT(stm32f4_udc_init);
 
 #define STM32F4_UDC_IN_EP_MASK  ((1 << 5) | (1 << 6) | (1 << 7))
 #define STM32F4_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
+
+#define USB_URB_TRACE 1
+#define USB_DUMP_BYTES 64
+
+#if USB_URB_TRACE
+static void dump_bytes(const char *tag, const void *data, int len) {
+	const uint8_t *p = data;
+	int n = len > USB_DUMP_BYTES ? USB_DUMP_BYTES : len;
+	int i;
+
+	if (!data || len <= 0) {
+		log_debug("%s: <no data> len=%d", tag, len);
+		return;
+	}
+
+	log_debug("%s: len=%d dump_first=%d", tag, len, n);
+
+	for (i = 0; i < n; i += 16) {
+		char line[128];
+		int j, pos = 0;
+
+		pos += snprintf(line + pos, sizeof(line) - pos, "%04x: ", i);
+
+		for (j = 0; j < 16 && (i + j) < n; j++) {
+			pos += snprintf(line + pos, sizeof(line) - pos,
+			                "%02x ", p[i + j]);
+		}
+
+		log_debug("%s", line);
+	}
+}
+#else
+static inline void dump_bytes(const char *tag, const void *data, int len) { }
+#endif
 
 struct ep_status {
 	//	uint32_t status;
@@ -79,6 +113,14 @@ static int stm32f4_udc_ep_queue(struct usb_gadget_ep *ep,
 
 		HAL_PCD_EP_Transmit(&hpcd, ep->nr, req->buf, req->len);
 	}
+
+	log_debug("EPQ: ep=%u dir=%s len=%u",
+          ep->nr, ep->dir == USB_DIR_IN ? "IN" : "OUT", req->len);
+
+	if (ep->dir == USB_DIR_IN) {
+		dump_bytes("EPQ IN payload", req->buf, req->len);
+	}
+
 
 	return 0;
 }
@@ -246,6 +288,12 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
 		}
 		break;
 	}
+
+	log_debug("SETUP: bm=0x%02x bReq=0x%02x wVal=0x%04x wIdx=0x%04x wLen=%u",
+          ctrl.bm_request_type, ctrl.b_request,
+          ctrl.w_value, ctrl.w_index, ctrl.w_length);
+	dump_bytes("SETUP raw", hpcd->Setup, 8);
+
 }
 
 /**
@@ -293,6 +341,9 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 				HAL_PCD_EP_Receive(hpcd, 0U, NULL, 0U);
 			}
 		}
+		log_debug("IN: ep=%u xfer_count=%u",
+          epnum, (unsigned)hpcd->IN_ep[epnum].xfer_count);
+
 #if 1
 	}
 	else {
@@ -319,6 +370,11 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
  */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 	log_debug("usb: dataOUTstage of 0x%x\n", epnum);
+	log_debug("OUT: ep=%u xfer_count=%u",
+          epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
+dump_bytes("OUT payload", hpcd->OUT_ep[epnum].xfer_buff,
+           hpcd->OUT_ep[epnum].xfer_count);
+
 #if 0
 	struct ep_status *pep;
 

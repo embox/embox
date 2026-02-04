@@ -94,23 +94,12 @@ static const uint8_t cdc_union_fdesc[] = {
 	0x01,                       /*  u8    bSlaveInterface0 */
 };
 
-static struct usb_desc_interface acm_data_intf_nop_desc = {
-	.b_length                = sizeof(struct usb_desc_interface),
-	.b_desc_type             = USB_DESC_TYPE_INTERFACE,
-	.b_interface_number      = 0, /* DYNAMIC */
-	.b_alternate_setting     = 0,
-	.b_num_endpoints         = 0,
-	.b_interface_class       = USB_CLASS_CDC_DATA,
-	.b_interface_subclass    = 0,
-	.b_interface_protocol    = 0,
-	.i_interface             = 0,
-};
 
 static struct usb_desc_interface acm_data_intf_desc = {
 	.b_length                = sizeof(struct usb_desc_interface),
 	.b_desc_type             = USB_DESC_TYPE_INTERFACE,
 	.b_interface_number      = 0, /* DYNAMIC */
-	.b_alternate_setting     = 1,
+	.b_alternate_setting     = 0,
 	.b_num_endpoints         = 2,
 	.b_interface_class       = USB_CLASS_CDC_DATA,
 	.b_interface_subclass    = 0,
@@ -126,9 +115,6 @@ static const struct usb_desc_common_header *acm_descs[] = {
 	(struct usb_desc_common_header *) &cdc_acm_fdesc,
 	(struct usb_desc_common_header *) &cdc_union_fdesc,
 	(struct usb_desc_common_header *) &int_ep_desc,
-
-	/* Data interface alt 0 */
-	(struct usb_desc_common_header *) &acm_data_intf_nop_desc,
 
 	/* Data interface alt 1 */
 	(struct usb_desc_common_header *) &acm_data_intf_desc,
@@ -200,11 +186,8 @@ static int acm_probe(struct usb_gadget *gadget) {
 	acm_control_intf_desc.b_interface_number =
 		usb_gadget_add_interface(gadget, &acm_func);
 
-	acm_data_intf_nop_desc.b_interface_number =
-		usb_gadget_add_interface(gadget, &acm_func);
-
 	acm_data_intf_desc.b_interface_number =
-		acm_data_intf_nop_desc.b_interface_number;
+		usb_gadget_add_interface(gadget, &acm_func);
 
 	/* FIXME */
 	intr.udc    = gadget->composite->ep0.udc;

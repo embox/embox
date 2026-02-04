@@ -12,6 +12,7 @@ module f_acm {
 
 module acm_gadget {
 	option string log_level="LOG_ERR"
+	option number max_packet_size = 64
 
 	source "acm_gadget.c"
 
