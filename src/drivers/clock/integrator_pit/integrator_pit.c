@@ -5,36 +5,30 @@
  * @author: Anton Bondarev
  */
 
+#include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
 #include <hal/clock.h>
 #include <hal/reg.h>
+#include <hal/system.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 
-#define TIMER_BASE     OPTION_GET(NUMBER, base_addr)
+#define TIMER0_BASE OPTION_GET(NUMBER, base_addr)
+#define TIMER0_IRQ  5
 
-/* Interrupt vector for timer (TMR1) */
-#define CLOCK_IRQ      5
+#define CYCLE_PER_SEC  SYS_CLOCK
+#define CYCLE_PER_TICK (CYCLE_PER_SEC / JIFFIES_PERIOD)
 
-/* The clock rate per second */
-// #define CLOCK_RATE     48054841L
-#define CLOCK_RATE     40000000L
-
-/* The initial counter value */
-#define TIMER_COUNT    (CLOCK_RATE / JIFFIES_PERIOD)
-#define NSEC_PER_CYCLE    (NSEC_PER_SEC / CLOCK_RATE)
-
-/* Timer 1 registers */
-#define TMR_LOAD       (TIMER_BASE + 0x000)
-#define TMR_VAL        (TIMER_BASE + 0x004)
-#define TMR_CTRL       (TIMER_BASE + 0x008)
-#define TMR_CLR        (TIMER_BASE + 0x00c)
-#define TMR_BGLOAD     (TIMER_BASE + 0x024)
+/* Timer0 registers */
+#define TMR_LOAD   (TIMER0_BASE + 0x000)
+#define TMR_VAL    (TIMER0_BASE + 0x004)
+#define TMR_CTRL   (TIMER0_BASE + 0x008)
+#define TMR_CLR    (TIMER0_BASE + 0x00c)
+#define TMR_BGLOAD (TIMER0_BASE + 0x024)
 
 /* Timer control register */
 #define TCTRL_DISABLE  0x00
@@ -49,7 +43,7 @@
 static int integratorcp_clock_setup(struct clock_source *cs) {
 	/* Setup counter value */
 	REG32_STORE(TMR_CTRL, TCTRL_DISABLE);
-	REG32_STORE(TMR_LOAD, TIMER_COUNT);
+	REG32_STORE(TMR_LOAD, CYCLE_PER_TICK);
 	REG32_ORIN(TMR_CTRL, (TCTRL_ENABLE | TCTRL_PERIODIC));
 
 	/* Enable timer interrupt */
@@ -61,21 +55,35 @@ static int integratorcp_clock_setup(struct clock_source *cs) {
 static struct time_event_device integratorcp_event_device = {
     .set_periodic = integratorcp_clock_setup,
     .name = "integratorcp_clk",
-    .irq_nr = CLOCK_IRQ,
+    .irq_nr = TIMER0_IRQ,
 };
 
 static cycle_t integratorcp_get_cycles(struct clock_source *cs) {
-	return REG32_LOAD(TMR_VAL) & 0xFFFF;
+	return (CYCLE_PER_TICK - 1) - (REG32_LOAD(TMR_VAL) & 0xFFFF);
 }
 
 static uint64_t integratorcp_get_time(struct clock_source *cs) {
-	return (uint64_t)(cs->event_device->jiffies * (NSEC_PER_SEC / cs->event_device->event_hz)) + (TIMER_COUNT - 1 - (REG32_LOAD(TMR_VAL) & 0xFFFF)) * NSEC_PER_CYCLE;
+	clock_t jiffies;
+	cycle_t cycles;
+
+	do {
+		jiffies = cs->event_device->jiffies;
+		cycles = integratorcp_get_cycles(cs);
+	} while (jiffies != cs->event_device->jiffies);
+
+	cycles += jiffies * CYCLE_PER_TICK;
+
+#if NSEC_PER_SEC >= CYCLE_PER_SEC
+	return cycles * (NSEC_PER_SEC / CYCLE_PER_SEC);
+#else
+	return cycles / (CYCLE_PER_SEC / NSEC_PER_SEC);
+#endif
 }
 
 static struct time_counter_device integratorcp_counter_device = {
     .get_cycles = integratorcp_get_cycles,
-	.get_time   = integratorcp_get_time,
-    .cycle_hz = CLOCK_RATE,
+    .get_time = integratorcp_get_time,
+    .cycle_hz = CYCLE_PER_SEC,
 };
 
 static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
@@ -85,10 +93,10 @@ static irq_return_t clock_handler(unsigned int irq_nr, void *dev_id) {
 }
 
 static int integratorcp_cs_init(struct clock_source *cs) {
-	return irq_attach(CLOCK_IRQ, clock_handler, 0, cs, "integratorcp_clk");
+	return irq_attach(TIMER0_IRQ, clock_handler, 0, cs, "integratorcp_clk");
 }
 
 CLOCK_SOURCE_DEF(integratorcp, integratorcp_cs_init, NULL,
     &integratorcp_event_device, &integratorcp_counter_device);
 
-PERIPH_MEMORY_DEFINE(integratorcp_clock, TIMER_BASE, 0x30);
+PERIPH_MEMORY_DEFINE(integratorcp_clock, TIMER0_BASE, 0x30);

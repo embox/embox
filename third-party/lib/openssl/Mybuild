@@ -8,6 +8,6 @@ module openssl {
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/install/lib")
 	source "libssl.a", "libcrypto.a"
 
-	@NoRuntime depends embox.compat.posix.util.nanosleep
+	@NoRuntime depends embox.compat.posix.time.nanosleep
 	@NoRuntime depends embox.compat.atomic.pseudo_atomic
 }
