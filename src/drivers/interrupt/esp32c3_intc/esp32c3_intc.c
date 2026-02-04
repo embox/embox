@@ -15,19 +15,22 @@
 #define INTERRUPT_CORE0_CPU_INT_ENABLE		(BASE_ADDR + 0x0104)
 #define INTERRUPT_CORE0_CPU_INT_THRESH_REG	(BASE_ADDR + 0x0194)
 
-#define mcause	0x342
-#define mstatus	0x300
-
-#define INTERRUPT_CORE0_INTR_MAP(irq) (BASE_ADDR + irq * 4)
+#define INTERRUPT_CORE0_CPU_INT_PRI(cpu_line)	(BASE_ADDR + 0x0118 + 0x4*(cpu_line - 1))
+#define INTERRUPT_CORE0_INTR_MAP(irq) 			(BASE_ADDR + irq * 4)
 #define CPU_LINE 4
 
 void map_irq_to_cpu(unsigned int irq, unsigned int cpu_line) {
     REG32_STORE(INTERRUPT_CORE0_INTR_MAP(irq), cpu_line);
 }
 
+void set_priority(unsigned int cpu_line, unsigned int priority) {
+	REG32_STORE(INTERRUPT_CORE0_CPU_INT_PRI(cpu_line), priority);
+}
+
 void irqctrl_enable(unsigned int irq) {
 	map_irq_to_cpu(irq, CPU_LINE);
 	REG32_ORIN(INTERRUPT_CORE0_CPU_INT_ENABLE, 1 << CPU_LINE);
+	set_priority(CPU_LINE, 1);
 }
 
 void irqctrl_disable(unsigned int irq) {
@@ -38,7 +41,7 @@ void irqctrl_eoi(unsigned int irq) {
 }
 
 int irqctrl_get_intid(void) {
-	return csr_read(mcause) & 0x3FF;
+	return csr_read(CSR_CAUSE) & 0x3FF;
 }
 
 static inline void rv_utils_restore_intlevel_regval(uint32_t restoreval)
@@ -47,25 +50,28 @@ static inline void rv_utils_restore_intlevel_regval(uint32_t restoreval)
 }
 
 int irqctrl_set_level(unsigned int irq, int level) {
-	uint32_t old_mstatus = csr_read(mstatus);
-	csr_clear(mstatus, MSTATUS_MIE);
+	uint32_t old_mstatus = csr_read(CSR_STATUS);
+	csr_clear(CSR_STATUS, MSTATUS_MIE);
     uint32_t old_thresh = REG32_LOAD(INTERRUPT_CORE0_CPU_INT_THRESH_REG);
     rv_utils_restore_intlevel_regval(level);
-    csr_set(mstatus, old_mstatus & MSTATUS_MIE);
+    csr_set(CSR_STATUS, old_mstatus & MSTATUS_MIE);
 
     return old_thresh;
 }
 
 static int esp32c3_intc_init(void) {
 	extern void (*vector_table)(void);
-	static void *_vector_table[] __attribute__((aligned(256))) = {
-	    [0 ... IRQCTRL_IRQS_TOTAL] = &vector_table};
+	// static void *_vector_table[] __attribute__((aligned(256))) = {
+	//     [0 ... IRQCTRL_IRQS_TOTAL] = &vector_table};
 
+	csr_write(CSR_TVEC, &vector_table);
 	csr_set(CSR_TVEC, CSR_TVEC_MODE_VECTORED);
-	csr_write(CSR_TVEC, _vector_table);
 
 	REG32_STORE(INTERRUPT_CORE0_CPU_INT_ENABLE, 0);
-	csr_set(mstatus, MSTATUS_MIE);
+	csr_set(CSR_STATUS, MSTATUS_MIE);
+
+	rv_utils_restore_intlevel_regval(1);
+
 	return 0;
 }
 
