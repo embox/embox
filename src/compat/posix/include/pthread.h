@@ -49,9 +49,7 @@
 #define PTHREAD_STACK_MIN     0x2000
 #endif
 
-struct thread;
-typedef struct thread *pthread_t;
-
+#include <defines/pthread_t_define.h>
 
 #define PTHREAD_INHERIT_SCHED       THREAD_FLAG_PRIORITY_INHERIT
 #define PTHREAD_EXPLICIT_SCHED      THREAD_FLAG_PRIORITY_EXPLICIT
