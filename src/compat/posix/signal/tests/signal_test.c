@@ -29,7 +29,7 @@ static void sig_hnd(int sig) {
 
 static void *task_hnd(void *arg) {
 
-	signal(9, sig_hnd);
+	signal(SIGKILL, sig_hnd);
 
 	while(1)
 		sleep(0);
@@ -40,14 +40,14 @@ static void *task_hnd(void *arg) {
 TEST_CASE("create task and send signal") {
 	int tid = new_task("", task_hnd, NULL);
 	ksleep(100);
-	kill(tid, 9);
+	kill(tid, SIGKILL);
 	ksleep(100);
 	test_assert(flag != 0);
 
 }
 
 static void sig_hnd2(int sig) {
-	if (sig == 9) {
+	if (sig == SIGKILL) {
 		task_exit(NULL);
 	} else {
 		flag2 ++;
@@ -56,7 +56,7 @@ static void sig_hnd2(int sig) {
 
 static void *task_hnd2(void *arg) {
 
-	signal(9, sig_hnd2);
+	signal(SIGKILL, sig_hnd2);
 	signal(1, sig_hnd2);
 
 	while(1)
@@ -76,7 +76,7 @@ TEST_CASE("create task and send him signal 3 times") {
 	kill(tid, 1);
 
 	ksleep(100);
-	kill(tid, 9);
+	kill(tid, SIGKILL);
 
 	test_assert(flag2 == 2);
 
