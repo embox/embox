@@ -42,6 +42,7 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid) {
 	desc.sigevent = *evp;
 	desc.sys_timer = sys_timer;
 	desc.task = task_self();
+	desc.overrun_count = 0;
 
 	task_resource_timer_table_add(task_self(), idx, &desc);
 
@@ -53,12 +54,15 @@ int timer_create(clockid_t clockid, struct sigevent *evp, timer_t *timerid) {
 static void timer_handler(struct sys_timer *timer, void *param) {
 	struct task_resource_timer_desc *desc;
 	struct task *task;
+	struct timespec ts;
 
 	desc = param;
 	task = desc->task;
+	//desc->overrun_count++;
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+	desc->next_value = timespec_add(ts, desc->value.it_interval);
 
 	kill(task_get_id(task), desc->sigevent.sigev_signo);
-
 }
 
 int timer_settime(timer_t timerid, int flags, const struct itimerspec *value,
@@ -89,13 +93,35 @@ int timer_settime(timer_t timerid, int flags, const struct itimerspec *value,
 }
 
 int timer_gettime(timer_t timerid, struct itimerspec *value) {
-	log_debug("timer_gettime() has not been implemented yet");
+	struct task_resource_timer_desc *desc;
+	struct timespec ts;
+
+	if (value == NULL) {
+		return -EINVAL;
+	}
+
+	desc = task_resource_timer_table_get(task_self(), timerid);
+	if (desc == NULL) {
+		return -EINVAL;
+	}
+
+	clock_gettime(CLOCK_MONOTONIC, &ts);
+
+	value->it_value = timespec_sub(ts, desc->value.it_interval);
+	value->it_interval = desc->value.it_interval;
+
 	return 0;
 }
 
 int timer_getoverrun(timer_t timerid) {
-	log_debug("timer_getoverrun() has not been implemented yet");
-	return 0;
+	struct task_resource_timer_desc *desc;
+
+	desc = task_resource_timer_table_get(task_self(), timerid);
+	if (desc == NULL) {
+		return -EINVAL;
+	}
+
+	return desc->overrun_count;
 }
 
 int timer_delete(timer_t timerid) {
