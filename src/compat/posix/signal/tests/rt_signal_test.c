@@ -67,6 +67,6 @@ TEST_CASE("send 3 rt signals of the same type between two tasks and check"
 	/* Check order, in witch signals were handled. */
 	test_assert_emitted("123");
 
-	kill(tid, 9);
+	kill(tid, SIGKILL);
 	waitpid(tid, NULL, 0);
 }

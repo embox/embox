@@ -4,7 +4,6 @@ package embox.compat.posix.pthread.test
 @TestFor(embox.compat.posix.pthreads)
 module pthread_tests {
 	depends pthread_mutex_test
-	depends pthread_kill_test
 	depends pthread_rwlock_test
 	depends pthread_barrier_test
 	depends pthread_policy_test
@@ -18,11 +17,6 @@ module pthread_tests {
 @TestFor(embox.compat.posix.pthreads)
 module pthread_mutex_test {
 	source "pthread_mutex_test.c"
-}
-
-@TestFor(embox.compat.posix.pthreads)
-module pthread_kill_test {
-	source "pthread_kill_test.c"
 }
 
 @TestFor(embox.compat.posix.pthreads)

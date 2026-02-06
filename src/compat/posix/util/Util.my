@@ -13,7 +13,6 @@ static module getopt {
 static module time {
  	depends embox.compat.posix.time.clock
 	source "linux_timer.c"
-	depends embox.compat.posix.time.timer
 
 	depends embox.kernel.time.kernel_time
 }

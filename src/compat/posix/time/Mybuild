@@ -7,9 +7,11 @@ static module clock {
 }
 
 static module timer {
+	option string log_level = "LOG_DEBUG"
+
 	source "timer.c"
 
-	depends embox.kernel.time.kernel_time
+	depends embox.kernel.task.resource.timer_table
 }
 
 module months_short_names {

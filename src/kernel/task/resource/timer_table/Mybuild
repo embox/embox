@@ -1,0 +1,12 @@
+package embox.kernel.task.resource
+
+module timer_table {
+	option number task_timer_max = 4
+
+	source "timer_table.c"
+	source "timer_table.h"
+
+	depends embox.kernel.task.task_resource
+	@NoRuntime depends embox.lib.libds // indexator
+}
+

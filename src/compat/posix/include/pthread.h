@@ -49,9 +49,7 @@
 #define PTHREAD_STACK_MIN     0x2000
 #endif
 
-struct thread;
-typedef struct thread *pthread_t;
-
+#include <defines/pthread_t_define.h>
 
 #define PTHREAD_INHERIT_SCHED       THREAD_FLAG_PRIORITY_INHERIT
 #define PTHREAD_EXPLICIT_SCHED      THREAD_FLAG_PRIORITY_EXPLICIT
@@ -61,15 +59,6 @@ typedef struct thread *pthread_t;
 
 #define PTHREAD_BARRIER_SERIAL_THREAD (-1)
 
-#if 0
-typedef struct pthread_attr {
-	uint32_t flags; /* scope, inherit, detachstate */
-	void *stack;
-	uint32_t stack_size;
-	int policy;
-	struct sched_param sched_param;
-} pthread_attr_t;
-#endif
 #include <defines/pthread_attr_t_define.h>
 
 typedef cond_t pthread_cond_t;
@@ -90,9 +79,11 @@ typedef struct mutexattr pthread_mutexattr_t;
 
 typedef struct rwlock pthread_rwlock_t;
 
-typedef struct pthread_rwlockattr {
+struct pthread_rwlockattr {
 
-} pthread_rwlockattr_t;
+};
+
+typedef struct pthread_rwlockattr pthread_rwlockattr_t;
 
 
 typedef size_t pthread_key_t;
@@ -112,11 +103,14 @@ struct _pthread_barrier_t {
     pthread_mutex_t mutex_lock;
 };
 
-typedef  struct _pthread_barrierattr_t {
-    int pshared;
-} pthread_barrierattr_t;
-
 typedef struct _pthread_barrier_t *pthread_barrier_t;
+
+struct _pthread_barrierattr_t {
+    int pshared;
+};
+
+typedef struct _pthread_barrierattr_t pthread_barrierattr_t;
+
 
 #define PTHREAD_ONCE_INIT PTHREAD_MUTEX_INITIALIZER
 
@@ -185,8 +179,6 @@ extern int   pthread_join(pthread_t, void **);
 
 extern int   pthread_key_create(pthread_key_t *, void (*)(void *));
 extern int   pthread_key_delete(pthread_key_t);
-
-extern int   pthread_kill(pthread_t thread, int sig);
 
 extern int   pthread_mutex_destroy(pthread_mutex_t *);
 //extern int   pthread_mutex_getprioceiling(const pthread_mutex_t *, int *);
