@@ -24,6 +24,8 @@ struct task_resource_timer_desc {
 	struct itimerspec ovalue;
 	struct sys_timer *sys_timer;
 	struct task *task;
+	int overrun_count;
+	struct timespec next_value;
 };
 
 struct task;
