@@ -19,6 +19,7 @@
 #include <kernel/time/time.h>
 #include <lib/libds/dlist.h>
 #include <util/math.h>
+#include "kernel/irq_lock.h"
 
 static DLIST_DEFINE(clock_source_list);
 
@@ -81,8 +82,9 @@ struct timespec clock_source_read(struct clock_source *cs) {
 	else if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
 		ns = (uint64_t)ed->jiffies * (NSEC_PER_SEC / ed->event_hz);
 	}
-
+	irq_lock();
 	ts = ns_to_timespec(ns);
+	irq_unlock();
 
 	return ts;
 }
