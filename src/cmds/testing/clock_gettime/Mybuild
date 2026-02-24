@@ -1,0 +1,10 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "clock_gettime",
+     help = "Helps estimate timer frequency")
+module clock_gettime {
+	source "clock_gettime.c"
+
+	depends embox.compat.libc.stdio.printf
+}
