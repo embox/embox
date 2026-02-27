@@ -226,6 +226,7 @@ static void stm32f4_ll_handle_standard_request(struct usb_control_header *req) {
         /* status stage for control-OUT request */
         HAL_PCD_EP_Transmit(&hpcd, 0x00U, NULL, 0U);
         // HAL_PCD_EP_Receive(&hpcd, 0x00U, NULL, 0U);
+		break;
     }
 	case USB_REQ_GET_CONFIG:
 		//stm32f4_ll_get_configuration(req);
