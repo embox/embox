@@ -63,7 +63,7 @@ static cycle_t integratorcp_get_cycles(struct clock_source *cs) {
 }
 
 static uint64_t integratorcp_get_time(struct clock_source *cs) {
-	clock_t jiffies;
+	volatile clock_t jiffies;
 	cycle_t cycles;
 
 	do {
