@@ -11,7 +11,7 @@ module lib {
 	source
 	"rt-error.c",
 	//"rt-get_cpu.c",
-	"rt-sched.c",
+	//"rt-sched.c",
 	"rt-utils.c",
 	"rt-numa.c",
 	"histogram.c"
