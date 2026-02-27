@@ -5,19 +5,16 @@
  * @author Dmitry Pilyuk
  */
 
-#include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 #include <unistd.h>
 
-#include "kernel/time/ktime.h"
-#include "riscv/clint.h"
 #include "sys/time.h"
 
 int main(int argc, char **argv) {
 	struct timespec now, prev;
 	int i = 0;
-	// ktime_get_timespec(&now);
+	
 	clock_gettime(CLOCK_MONOTONIC, &prev);
 	clock_gettime(CLOCK_MONOTONIC, &now);
 
