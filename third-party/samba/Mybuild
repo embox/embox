@@ -21,7 +21,6 @@ module core {
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap_api
 	@NoRuntime depends embox.compat.posix.proc.atexit_api
 	@NoRuntime depends embox.compat.posix.sys.mman.mmap
-	@NoRuntime depends embox.compat.posix.sys.mman.msync
 	@NoRuntime depends embox.compat.posix.file_system
 	@NoRuntime depends embox.net.lib.getifaddrs
 	@NoRuntime depends third_party.zlib.libs
