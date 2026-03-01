@@ -26,6 +26,7 @@
 #include <kernel/thread.h>
 #include <kernel/time/ktime.h>
 #include <sys/mman.h>
+#include <mem/vmem_device_memory.h>
 
 #ifdef DEBUG
 #define PRINTD(msg) printk("ACPICA OSL DEBUG: " msg "\n")

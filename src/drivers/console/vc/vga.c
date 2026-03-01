@@ -14,6 +14,7 @@
 #include <drivers/video/vga.h>
 #include <drivers/console/vc/vc_vga.h>
 #include <util/member.h>
+#include <mem/vmem_device_memory.h>
 
 /* The video memory address. */
 #define VIDEO          0xB8000

@@ -25,6 +25,7 @@
 #include <drivers/video/cirrus_logic.h>
 #include <drivers/video/vga.h>
 #include <drivers/video/fb.h>
+#include <mem/vmem_device_memory.h>
 
 struct cirrus_chip_info {
 	unsigned int *regbase;

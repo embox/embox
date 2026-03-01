@@ -14,6 +14,7 @@
 #include <sys/mman.h>
 
 #include <drivers/video/fb.h>
+#include <mem/vmem_device_memory.h>
 
 #define NK_PRIVATE
 #define NK_INCLUDE_DEFAULT_ALLOCATOR

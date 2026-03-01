@@ -19,6 +19,7 @@
 #include <util/binalign.h>
 #include <framework/mod/options.h>
 #include <mem/page.h>
+#include <mem/vmem_device_memory.h>
 
 PCI_DRIVER("bochs", bochs_init, PCI_VENDOR_ID_BOCHS, PCI_DEV_ID_BOCHS_VGA);
 

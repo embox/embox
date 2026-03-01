@@ -57,10 +57,6 @@ extern int msync(void *addr, size_t len, int flags);
 
 #define PROT_NOCACHE 0x80
 
-/* TODO move to compat/qnx */
-extern void *mmap_device_memory(void *addr, size_t len, int prot, int flags,
-    uintptr_t physical);
-
 #define MCL_CURRENT       0x0
 #define MCL_FUTURE        0x1
 

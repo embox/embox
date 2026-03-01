@@ -16,6 +16,7 @@
 #include <drivers/pci/pci_driver.h>
 #include <framework/mod/options.h>
 #include <mem/page.h>
+#include <mem/vmem_device_memory.h>
 #include <util/binalign.h>
 
 #include <module/embox/arch/x86/boot/multiboot.h>

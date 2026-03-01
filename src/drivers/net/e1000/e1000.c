@@ -29,6 +29,7 @@
 #include <hal/reg.h>
 
 #include <mem/misc/pool.h>
+#include <mem/vmem_device_memory.h>
 
 #include <util/log.h>
 #include <util/binalign.h>

@@ -14,6 +14,7 @@
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
+#include <mem/vmem_device_memory.h>
 
 #include "lynxfb.h"
 #include "lynxfb_hw750.h"

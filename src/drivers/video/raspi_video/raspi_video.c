@@ -15,6 +15,7 @@
 #include <drivers/mailbox/bcm2835_mailbox.h>
 #include <drivers/video/fb.h>
 #include <mem/page.h>
+#include <mem/vmem_device_memory.h>
 #include <util/binalign.h>
 
 #include <embox/unit.h>

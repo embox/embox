@@ -19,6 +19,7 @@
 #include <drivers/pci/pci_driver.h>
 #include <drivers/usb/usb.h>
 #include <mem/misc/pool.h>
+#include <mem/vmem_device_memory.h>
 #include <util/log.h>
 
 #include "ohci.h"

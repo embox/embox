@@ -21,6 +21,7 @@
 #include <drivers/audio/audio_dev.h>
 
 #include <drivers/audio/ac97.h>
+#include <mem/vmem_device_memory.h>
 
 #include <embox/unit.h>
 

@@ -39,6 +39,7 @@
 
 #include <drivers/video/fb.h>
 #include <drivers/input/input_dev.h>
+#include <mem/vmem_device_memory.h>
 
 #include "rawfb.h"
 
