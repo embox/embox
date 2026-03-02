@@ -71,7 +71,7 @@ static uint64_t integratorcp_get_time(struct clock_source *cs) {
 		cycles = integratorcp_get_cycles(cs);
 	} while (jiffies != cs->event_device->jiffies);
 
-	cycles += jiffies * CYCLE_PER_TICK;
+	cycles += (uint64_t)jiffies * CYCLE_PER_TICK;
 
 #if NSEC_PER_SEC >= CYCLE_PER_SEC
 	return cycles * (NSEC_PER_SEC / CYCLE_PER_SEC);
