@@ -7,9 +7,11 @@
  * @author Archit Checker <archit.checker5@gmail.com>
  */
 
-#include <embox/test.h>
 #include <sys/mman.h>
 #include <unistd.h>
+
+#include <embox/test.h>
+#include <mem/page.h>
 
 EMBOX_TEST_SUITE("mprotect");
 
