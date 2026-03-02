@@ -73,8 +73,6 @@ int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *rqtp,
 	ms_tosleep = timespec_to_ms(&timetosleep);
 	if (ms_tosleep > 0) {
 		ksleep(ms_tosleep - 1);
-	} else {
-		return ksleep(0);
 	}
 
 	// now.tv_sec = 0;
