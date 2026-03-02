@@ -32,7 +32,6 @@ module core {
 	@NoRuntime depends third_party.e2fsprogs.core
 	@NoRuntime depends embox.compat.posix.pthread_key
 	@NoRuntime depends embox.compat.posix.regex
-	@NoRuntime depends embox.compat.posix.sys.mman.msync
 	@NoRuntime depends embox.compat.posix.net.socketpair_stub
 }
 

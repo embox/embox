@@ -1,5 +1,0 @@
-package embox.compat.posix.sys.mman
-
-static module libmman {
-	depends embox.compat.posix.sys.mman.msync
-}

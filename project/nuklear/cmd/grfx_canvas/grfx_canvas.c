@@ -5,6 +5,7 @@
 #include <sys/mman.h>
 
 #include <drivers/video/fb.h>
+#include <mem/vmem_device_memory.h>
 
 /* includes for nuklear*/
 

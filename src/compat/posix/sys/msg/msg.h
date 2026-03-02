@@ -5,12 +5,13 @@
  * @author Aleksey Zhmulin
  * @date 19.07.23
  */
-#ifndef SYS_MSG_H_
-#define SYS_MSG_H_
 
+#ifndef COMPAT_POSIX_SYS_MSG_H_
+#define COMPAT_POSIX_SYS_MSG_H_
+
+#include <sys/cdefs.h>
 #include <sys/ipc.h>
 #include <sys/types.h>
-#include <sys/cdefs.h>
 
 /* Message operation flags */
 #define MSG_NOERROR 010000 /* No error if message is too big */
@@ -63,8 +64,7 @@ extern int msgget(key_t key, int msgflg);
  *
  * @return
  */
-extern ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp,
-    int msgflg);
+extern ssize_t msgrcv(int msqid, void *msgp, size_t msgsz, long msgtyp, int msgflg);
 
 /**
  * @brief Send message to sessage queue.
@@ -80,4 +80,4 @@ extern int msgsnd(int msqid, const void *msgp, size_t msgsz, int msgflg);
 
 __END_DECLS
 
-#endif /* SYS_MSG_H_ */
+#endif /* COMPAT_POSIX_SYS_MSG_H_ */

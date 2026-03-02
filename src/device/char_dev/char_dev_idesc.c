@@ -20,6 +20,7 @@
 #include <kernel/task/resource/idesc.h>
 #include <lib/libds/array.h>
 #include <mem/misc/pool.h>
+#include <mem/vmem_device_memory.h>
 #include <util/err.h>
 #include <util/log.h>
 

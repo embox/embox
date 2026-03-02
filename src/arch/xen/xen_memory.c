@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <mem/page.h>
 #include <grant_table.h>
+#include <mem/vmem_device_memory.h>
 
 EMBOX_UNIT_INIT(xen_memory_init);
 

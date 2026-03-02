@@ -7,6 +7,10 @@ static module msg {
 
 	source "msg.c"
 
-	@NoRuntime depends embox.lib.libds
+	@IncludeExport(path="sys")
+	source "msg.h"
+
 	@NoRuntime depends embox.mem.pool
+	@NoRuntime depends embox.lib.libds
+	@NoRuntime depends embox.compat.posix.sys.ipc
 }

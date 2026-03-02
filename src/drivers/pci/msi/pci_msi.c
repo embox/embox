@@ -17,6 +17,7 @@
 #include <drivers/pci/pci_msi.h>
 #include <drivers/pci/pci_regs.h>
 #include <kernel/irq/irq_msi.h>
+#include <mem/vmem_device_memory.h>
 
 #include <hal/reg.h>
 

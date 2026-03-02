@@ -14,6 +14,7 @@
 #include <kernel/time/clock_source.h>
 #include <kernel/time/ktime.h>
 #include <kernel/printk.h>
+#include <mem/vmem_device_memory.h>
 
 #include <embox/unit.h>
 

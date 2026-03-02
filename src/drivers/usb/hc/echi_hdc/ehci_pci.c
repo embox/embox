@@ -9,6 +9,7 @@
 #include <kernel/irq.h>
 
 #include <mem/misc/pool.h>
+#include <mem/vmem_device_memory.h>
 
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>

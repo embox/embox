@@ -14,6 +14,7 @@
 
 #include <drivers/common/memory.h>
 #include <mem/page.h>
+#include <mem/vmem_device_memory.h>
 #include <hal/reg.h>
 #include <drivers/irqctrl.h>
 #include <drivers/amba_pnp.h>

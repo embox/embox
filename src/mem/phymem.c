@@ -10,6 +10,7 @@
 #include <embox/unit.h>
 #include <mem/page.h>
 #include <mem/phymem.h>
+#include <mem/vmem_device_memory.h>
 #include <util/binalign.h>
 #include <util/log.h>
 
