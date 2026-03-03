@@ -20,6 +20,7 @@
 #include <net/skbuff.h>
 #include <net/socket/packet.h>
 #include <net/l2/ethernet.h>
+#include "net/l3/arp.h"
 
 extern int netif_tx(struct net_device *dev,  struct sk_buff *skb);
 
@@ -67,6 +68,11 @@ int net_tx(struct sk_buff *skb, struct net_header_info *hdr_info) {
 
 	dev = skb->dev;
 	assert(dev != NULL);
+
+	if (dev->type == ARP_HRD_NONE)
+	{
+		goto send;
+	}
 
 	if (dev->flags & (IFF_LOOPBACK | IFF_NOARP)) {
 		eth_hdr(skb)->h_proto = htons(hdr_info->type);
