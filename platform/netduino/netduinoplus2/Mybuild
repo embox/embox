@@ -4,9 +4,6 @@ package platform.netduino.netduinoplus2
 @BuildArtifactPath(cppflags="-DSTM32F405xx")
 static module netduinoplus2_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
     @IncludeExport(path="")
-    source "stm32f4xx_hal_conf.h"
-
-    @IncludeExport(path="")
 	source "cube_conf.h"
 }
 
