@@ -3,9 +3,6 @@ package platform.stm32.f4.nucleo_f411re
 @BuildArtifactPath(cppflags="-DSTM32F411xE -DUSE_STM32F4XX_NUCLEO")
 static module nucleo_f411re_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
-	source "stm32f4xx_hal_conf.h"
-
-	@IncludeExport(path="")
 	source "cube_conf.h"
 }
 

@@ -3,9 +3,6 @@ package platform.stm32.f4.stm32f411_blackpill
 @BuildArtifactPath(cppflags="-DSTM32F411xE")
 static module stm32f411_blackpill_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
-	source "stm32f4xx_hal_conf.h"
-
-	@IncludeExport(path="")
 	source "cube_conf.h"
 }
 
