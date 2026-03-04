@@ -80,7 +80,21 @@ struct timespec clock_source_read(struct clock_source *cs) {
 		ns = cd->get_time(cs);
 	}
 	else if (ed && (ed->flags & CLOCK_EVENT_PERIODIC_MODE)) {
-		ns = (uint64_t)ed->jiffies * (NSEC_PER_SEC / ed->event_hz);
+		cycle_t cycle;
+		volatile clock_t jiffies;
+
+		cycle = 0;
+		jiffies = ed->jiffies;
+
+		if (cd && cd->get_cycles) {
+			do {
+				jiffies = ed->jiffies;
+				cycle = cd->get_cycles(cs);
+			} while (jiffies != ed->jiffies);
+			ns = cycle * (NSEC_PER_SEC / cd->cycle_hz);		
+		}
+
+		ns += (uint64_t)jiffies * (NSEC_PER_SEC / ed->event_hz);
 	}
 
 	ts = ns_to_timespec(ns);

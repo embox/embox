@@ -55,6 +55,9 @@ int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *rqtp,
 	ktime_get_timespec(&now);
 
 	if ((flags & TIMER_ABSTIME) != 0) {
+		if (timespeccmp(&now, rqtp, >=)) {
+			return 0;
+		}
 		timetosleep = timespec_sub(*rqtp, now);
 		timetowake = *rqtp;
 	}
@@ -63,28 +66,14 @@ int clock_nanosleep(clockid_t clock_id, int flags, const struct timespec *rqtp,
 		timetowake = timespec_add(now, *rqtp);
 	}
 
-	if ( ( timetosleep.tv_sec < 0 ) ||
-			(timetosleep.tv_sec == 0 && timetosleep.tv_nsec == 0)) {
-		return ksleep(0);
-	}
-
-	//timetosleep = get_timetosleep(&timetosleep);
-	// ms_tosleep = timetosleep.tv_sec * 1000 + timetosleep.tv_nsec / 1000000;
 	ms_tosleep = timespec_to_ms(&timetosleep);
 	if (ms_tosleep > 0) {
 		ksleep(ms_tosleep - 1);
-	} else {
-		return ksleep(0);
 	}
-
-	// now.tv_sec = 0;
-	// now.tv_nsec = 1000;
-	// timetowake =  timespec_add(timetowake, now);
 
 	do {
 		ktime_get_timespec(&now);
-	} while ( (now.tv_sec < timetowake.tv_sec) ||
-		(now.tv_sec == timetowake.tv_sec && now.tv_nsec < timetowake.tv_nsec) );
+	} while (timespeccmp(&now, &timetowake, <));
 
 	if (rmtp != NULL) {
 		rmtp->tv_nsec = 0;
