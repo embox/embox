@@ -134,7 +134,7 @@
 #define  VDD_VALUE                    3300U /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            0x0FU /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
-#define  PREFETCH_ENABLE              1U
+
 #define  INSTRUCTION_CACHE_ENABLE     1U
 #define  DATA_CACHE_ENABLE            1U
 
@@ -184,14 +184,7 @@
   */
 /* #define USE_FULL_ASSERT    1U */
 
-/* ################## SPI peripheral configuration ########################## */
-
-/* CRC FEATURE: Use to activate CRC feature inside HAL SPI Driver
-* Activated: CRC code is present inside driver
-* Deactivated: CRC code cleaned from driver
-*/
-
-#define USE_SPI_CRC                     1U
+#include <cube_conf.h>
 
 /* Includes ------------------------------------------------------------------*/
 /**
@@ -230,6 +223,10 @@
   #include "stm32f4xx_hal_can_legacy.h"
 #endif /* HAL_CAN_LEGACY_MODULE_ENABLED */
 
+#ifdef HAL_CEC_MODULE_ENABLED
+  #include "stm32f4xx_hal_cec.h"
+#endif /* HAL_CEC_MODULE_ENABLED */
+
 #ifdef HAL_CRC_MODULE_ENABLED
   #include "stm32f4xx_hal_crc.h"
 #endif /* HAL_CRC_MODULE_ENABLED */
@@ -253,6 +250,10 @@
 #ifdef HAL_ETH_MODULE_ENABLED
   #include "stm32f4xx_hal_eth.h"
 #endif /* HAL_ETH_MODULE_ENABLED */
+
+#ifdef HAL_ETH_LEGACY_MODULE_ENABLED
+  #include "Legacy/stm32f4xx_hal_eth_legacy.h"
+#endif /* HAL_ETH_LEGACY_MODULE_ENABLED */
 
 #ifdef HAL_FLASH_MODULE_ENABLED
   #include "stm32f4xx_hal_flash.h"
@@ -298,9 +299,17 @@
  #include "stm32f4xx_hal_ltdc.h"
 #endif /* HAL_LTDC_MODULE_ENABLED */
 
+#ifdef HAL_DSI_MODULE_ENABLED
+ #include "stm32f4xx_hal_dsi.h"
+#endif /* HAL_DSI_MODULE_ENABLED */
+
 #ifdef HAL_PWR_MODULE_ENABLED
  #include "stm32f4xx_hal_pwr.h"
 #endif /* HAL_PWR_MODULE_ENABLED */
+
+#ifdef HAL_QSPI_MODULE_ENABLED
+ #include "stm32f4xx_hal_qspi.h"
+#endif /* HAL_QSPI_MODULE_ENABLED */
 
 #ifdef HAL_RNG_MODULE_ENABLED
  #include "stm32f4xx_hal_rng.h"
@@ -317,6 +326,10 @@
 #ifdef HAL_SD_MODULE_ENABLED
  #include "stm32f4xx_hal_sd.h"
 #endif /* HAL_SD_MODULE_ENABLED */
+
+#ifdef HAL_SPDIFRX_MODULE_ENABLED
+ #include "stm32f4xx_hal_spdifrx.h"
+#endif /* HAL_SPDIFRX_MODULE_ENABLED */
 
 #ifdef HAL_SPI_MODULE_ENABLED
  #include "stm32f4xx_hal_spi.h"

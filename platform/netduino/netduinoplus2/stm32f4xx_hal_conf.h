@@ -133,8 +133,7 @@
 #define  VDD_VALUE                    (3300U) /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            (0x0FU) /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
-#define  PREFETCH_ENABLE              0U /* The prefetch will be enabled in SystemClock_Config(), depending on the used 
-                                            STM32F405/415/07/417 device: RevA (prefetch must be off) or RevZ (prefetch can be on/off) */
+
 #define  INSTRUCTION_CACHE_ENABLE     1U
 #define  DATA_CACHE_ENABLE            1U
 
@@ -184,14 +183,8 @@
   */
 /* #define USE_FULL_ASSERT    1U */
 
-/* ################## SPI peripheral configuration ########################## */
+#include <cube_conf.h>
 
-/* CRC FEATURE: Use to activate CRC feature inside HAL SPI Driver
-* Activated: CRC code is present inside driver
-* Deactivated: CRC code cleaned from driver
-*/
-
-#define USE_SPI_CRC                     1U
 
 /* Includes ------------------------------------------------------------------*/
 /**
