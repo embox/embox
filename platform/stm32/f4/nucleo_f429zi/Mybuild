@@ -4,6 +4,9 @@ package platform.stm32.f4.nucleo_f429zi
 static module nucleo_f429zi_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
 	source "stm32f4xx_hal_conf.h"
+
+	@IncludeExport(path="")
+	source "cube_conf.h"
 }
 
 @Build(stage=1)

@@ -209,6 +209,8 @@
   */
 /* #define USE_FULL_ASSERT    1U */
 
+#include <cube_conf.h>
+
 /* Includes ------------------------------------------------------------------*/
 /**
   * @brief Include module's header file
