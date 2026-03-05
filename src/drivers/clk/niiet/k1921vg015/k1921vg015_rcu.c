@@ -19,7 +19,7 @@
 
 #include <framework/mod/options.h>
 
-#include <drivers/clk/k1921vg015_rcu.h>
+#include <drivers/clk/niiet_rcu.h>
 
 /* FROM board_config.h*/
 #define CLK_NAME_GPIO     "CLK_GPIO"
