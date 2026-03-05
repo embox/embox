@@ -1,6 +1,6 @@
 #include <gen_board_conf.h>
 
-#include <niiet_k1921vg015_chip.h>
+#include <soc/niiet_k1921vg015_chip.h>
 
 struct clk_conf clks[] = {
 	[0] = {
