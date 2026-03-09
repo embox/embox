@@ -43,3 +43,38 @@ TEST_CASE("erf(1.0) ~= 0.842700792949... (error <= 1e-6)") {
 	double ref = 0.84270079294971486934;
 	test_assert(close_eps(erf(1.0), ref, 1e-6));
 }
+
+TEST_CASE("erf(-1.0) ~= -0.842700792949") {
+    double ref = -0.84270079294971486934;
+    test_assert(close_eps(erf(-1.0), ref, 1e-12));
+}
+
+TEST_CASE("erf(0.5) ~= 0.520499877813") {
+    double ref = 0.52049987781304653768;
+    test_assert(close_eps(erf(0.5), ref, 1e-12));
+}
+
+TEST_CASE("erf(2.0) ~= 0.995322265018") {
+    double ref = 0.99532226501895273416;
+    test_assert(close_eps(erf(2.0), ref, 1e-12));
+}
+
+TEST_CASE("strictly increasing: erf(x) is monotonic") {
+	test_assert(erf(0.1) < erf(0.5));
+	test_assert(erf(0.5) < erf(1.5));
+	test_assert(erf(1.5) < erf(3.0));
+}
+
+TEST_CASE("saturation: erf(6.0) == 1.0 in double precision") {
+	test_assert(erf(6.0) == 1.0);
+}
+
+TEST_CASE("saturation: erf(-6.0) == -1.0 in double precision") {
+	test_assert(erf(-6.0) == -1.0);
+}
+
+TEST_CASE("linear approximation near zero: erf(1e-5) ~= 2*x/sqrt(PI)") {
+	double x = 1e-5;
+	double ref = 1.12837916709551257390 * x;
+	test_assert(close_eps(erf(x), ref, 1e-15));
+}
