@@ -40,6 +40,8 @@ static struct sock * sock_alloc(
 			return NULL;
 		}
 
+		memset(sk, 0, sizeof(struct sock));
+
 		if (p_ops->sock_pool != NULL) {
 			p_sk = pool_alloc(p_ops->sock_pool);
 			if (p_sk == NULL) {
@@ -48,6 +50,7 @@ static struct sock * sock_alloc(
 				log_error("could not alloc sock_proto");
 				return NULL;
 			}
+			memset(p_sk, 0, sizeof(struct proto_sock));
 		}
 		else {
 			p_sk = NULL;
