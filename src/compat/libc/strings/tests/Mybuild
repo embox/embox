@@ -16,3 +16,8 @@ module ffs_test {
 	@Cflags("-fno-builtin")
 	source "ffs_test.c"
 }
+
+module bzero_test {
+        @Cflags("-fno-builtin")
+        source "bzero_test.c"
+}
