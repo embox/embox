@@ -4,7 +4,7 @@ package platform.stm32.f2.nucleo_f207zg
 @BuildArtifactPath(cppflags="-DSTM32F207xx -DUSE_STM32F2XX_NUCLEO_144")
 static module nucleo_f207zg_conf extends third_party.bsp.stmf2cube.stm32f2_conf {
 	@IncludeExport(path="")
-	source "stm32f2xx_hal_conf.h"
+	source "cube_conf.h"
 }
 
 @Build(stage=1)
@@ -16,9 +16,6 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/")
 	source "Projects/NUCLEO-F207ZG/Templates/Src/system_stm32f2xx.c"
-
-//	@AddPrefix("^BUILD/extbld/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/Drivers/BSP/STM32F2xx_Nucleo_144")
-//	source "stm32f2xx_nucleo_144.c"
 
 	@NoRuntime depends third_party.bsp.stmf2cube.cube
 	@NoRuntime depends nucleo_f207zg_conf

@@ -3,7 +3,8 @@ package third_party.bsp.stmf2cube
 @BuildArtifactPath(cppflags="-DUSE_HAL_DRIVER -DSTM32F2_CUBE")
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf2cube/cube/STM32CubeF2-1.9.4/, Drivers/STM32F2xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F2xx/Include Drivers/CMSIS/Include)")
 module cube_cppflags {
-
+	@IncludeExport(path="")
+	source "stm32f2xx_hal_conf.h"
 }
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
@@ -16,8 +17,6 @@ static module cube {
 	@IncludeExport(path="bsp")
 	source "stm32cube_hal.h"
 
-//	@Cflags("-Wno-unused")
-//	@Cflags("-Wno-undef")
 	@AddPrefix("^BUILD/extbld/^MOD_PATH/STM32CubeF2-1.9.4/Drivers/STM32F2xx_HAL_Driver/Src")
 	source 
 		"stm32f2xx_hal.c",
