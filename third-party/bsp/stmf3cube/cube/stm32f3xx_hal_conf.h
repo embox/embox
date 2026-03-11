@@ -1,39 +1,3 @@
-/**
-  ******************************************************************************
-  * @file    stm32f3xx_hal_conf.h
-  * @author  MCD Application Team
-  * @version V1.4.0
-  * @date    13-November-2015
-  * @brief   HAL configuration file.
-  ******************************************************************************
-  * @attention
-  *
-  * <h2><center>&copy; COPYRIGHT(c) 2015 STMicroelectronics</center></h2>
-  *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  *
-  ******************************************************************************
-  */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __STM32F3xx_HAL_CONF_H
@@ -43,11 +7,6 @@
  extern "C" {
 #endif
 
-#define USE_HAL_I2C_REGISTER_CALLBACKS   0
-#define USE_HAL_SPI_REGISTER_CALLBACKS   0
-#define USE_HAL_TIM_REGISTER_CALLBACKS   0
-#define USE_HAL_UART_REGISTER_CALLBACKS  0
-#define USE_HAL_USART_REGISTER_CALLBACKS 0
 
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
@@ -57,33 +16,33 @@
   * @brief This is the list of modules to be used in the HAL driver
   */
 #define HAL_MODULE_ENABLED
-// #define HAL_ADC_MODULE_ENABLED
-// #define HAL_CAN_MODULE_ENABLED
-// #define HAL_CEC_MODULE_ENABLED
-// #define HAL_COMP_MODULE_ENABLED
+#define HAL_ADC_MODULE_ENABLED
+#define HAL_CAN_MODULE_ENABLED
+#define HAL_CEC_MODULE_ENABLED
+#define HAL_COMP_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
 // #define HAL_CRC_MODULE_ENABLED
-// #define HAL_DAC_MODULE_ENABLED
+#define HAL_DAC_MODULE_ENABLED
 #define HAL_DMA_MODULE_ENABLED
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_GPIO_MODULE_ENABLED
-// #define HAL_HRTIM_MODULE_ENABLED
+#define HAL_HRTIM_MODULE_ENABLED
 #define HAL_I2C_MODULE_ENABLED
-// #define HAL_I2S_MODULE_ENABLED
-// #define HAL_IRDA_MODULE_ENABLED
-// #define HAL_IWDG_MODULE_ENABLED
-// #define HAL_OPAMP_MODULE_ENABLED
-// #define HAL_PWR_MODULE_ENABLED
+#define HAL_I2S_MODULE_ENABLED
+#define HAL_IRDA_MODULE_ENABLED
+#define HAL_IWDG_MODULE_ENABLED
+#define HAL_OPAMP_MODULE_ENABLED
+#define HAL_PWR_MODULE_ENABLED
 #define HAL_RCC_MODULE_ENABLED
-// #define HAL_RTC_MODULE_ENABLED
-// #define HAL_SDADC_MODULE_ENABLED
-// #define HAL_SMARTCARD_MODULE_ENABLED
+#define HAL_RTC_MODULE_ENABLED
+#define HAL_SDADC_MODULE_ENABLED
+#define HAL_SMARTCARD_MODULE_ENABLED
 #define HAL_SPI_MODULE_ENABLED
 #define HAL_TIM_MODULE_ENABLED
-// #define HAL_TSC_MODULE_ENABLED
+#define HAL_TSC_MODULE_ENABLED
 #define HAL_UART_MODULE_ENABLED
 #define HAL_USART_MODULE_ENABLED
-// #define HAL_WWDG_MODULE_ENABLED
+#define HAL_WWDG_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**
@@ -163,9 +122,29 @@
 #define  VDD_VALUE                    ((uint32_t)3300) /*!< Value of VDD in mv */
 #define  TICK_INT_PRIORITY            ((uint32_t)(1<<__NVIC_PRIO_BITS) - 1)   /*!< tick interrupt priority (lowest by default) */
 #define  USE_RTOS                     0
-#define  PREFETCH_ENABLE              1
+
 #define  INSTRUCTION_CACHE_ENABLE     0
 #define  DATA_CACHE_ENABLE            0
+
+#define USE_HAL_I2C_REGISTER_CALLBACKS         0U
+#define USE_HAL_SPI_REGISTER_CALLBACKS         0U
+#define USE_HAL_TIM_REGISTER_CALLBACKS         0U
+#define USE_HAL_UART_REGISTER_CALLBACKS        0U
+#define USE_HAL_USART_REGISTER_CALLBACKS       0U
+#define USE_HAL_IRDA_REGISTER_CALLBACKS        0U
+#define USE_HAL_I2S_REGISTER_CALLBACKS         0U
+#define USE_HAL_ADC_REGISTER_CALLBACKS         0U
+#define USE_HAL_RTC_REGISTER_CALLBACKS         0U
+#define USE_HAL_SD_REGISTER_CALLBACKS          0U
+#define USE_HAL_SMARTCARD_REGISTER_CALLBACKS   0U
+#define USE_HAL_IRDA_REGISTER_CALLBACKS        0U
+#define USE_HAL_SRAM_REGISTER_CALLBACKS        0U
+#define USE_HAL_WWDG_REGISTER_CALLBACKS        0U
+#define USE_HAL_TSC_REGISTER_CALLBACKS         0U
+#define USE_HAL_CAN_REGISTER_CALLBACKS         0U
+#define USE_HAL_COMP_REGISTER_CALLBACKS        0U
+#define USE_HAL_OPAMP_REGISTER_CALLBACKS       0U
+#define USE_HAL_DAC_REGISTER_CALLBACKS         0U
 
 /* ########################## Assert Selection ############################## */
 /**
@@ -173,6 +152,20 @@
   *        HAL drivers code
   */
 /*#define USE_FULL_ASSERT    1*/
+
+#include <cube_conf.h>
+
+/* Definition of the Ethernet driver buffers size and count */
+#define ETH_RX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for receive               */
+#define ETH_TX_BUF_SIZE                ETH_MAX_PACKET_SIZE /* buffer size for transmit              */
+
+#include <framework/mod/options.h>
+#include <config/third_party/bsp/stmf3cube/cube.h>
+
+#define ETH_RXBUFNB \
+	OPTION_MODULE_GET(third_party__bsp__stmf3cube__cube, NUMBER, eth_rx_packet_count)
+#define ETH_TXBUFNB \
+	OPTION_MODULE_GET(third_party__bsp__stmf3cube__cube, NUMBER, eth_tx_packet_count)
 
 /* Includes ------------------------------------------------------------------*/
 /**

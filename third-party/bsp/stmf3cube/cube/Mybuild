@@ -3,13 +3,16 @@ package third_party.bsp.stmf3cube
 @BuildArtifactPath(cppflags="-DUSE_RTOS=0 -DUSE_HAL_DRIVER -DSTM32F3_CUBE -DSTM32F3_CUBE_1_11_0")
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf3cube/cube/STM32CubeF3-1.11.0/Drivers/,STM32F3xx_HAL_Driver/Inc CMSIS/Device/ST/STM32F3xx/Include CMSIS/Include)")
 module cube_cppflags {
-
+	@IncludeExport(path="")
+	source "stm32f3xx_hal_conf.h"
 }
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")
 @BuildDepends(cube_cppflags)
 @BuildDepends(third_party.bsp.stmf3cube.stm32f3_conf)
 static module cube {
+	option number eth_rx_packet_count = 4
+	option number eth_tx_packet_count = 2
 
 	@IncludeExport(path="bsp")
 	source "stm32cube_hal.h"
