@@ -30,7 +30,7 @@ struct stm32cube_bt_indev {
 
 static struct stm32cube_bt_indev stm32cube_bt_dev;
 
-static void stm32cube_bt_irq_hnd(void *data) {
+static int stm32cube_bt_irq_hnd(unsigned int irq_nr, void *data) {
 	struct input_dev *dev;
 	gpio_mask_t status;
 	struct input_event ev;
@@ -48,6 +48,7 @@ static void stm32cube_bt_irq_hnd(void *data) {
 	ev.value = 0;
 
 	input_dev_report_event(dev, &ev);
+	return 0;
 }
 
 static int stm32cube_bt_start(struct input_dev *dev) {

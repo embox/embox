@@ -306,7 +306,7 @@ irq_return_t bcm283x_gpio_irq_handler(unsigned int irq_nr, void *data) {
 			// Clear the interrupt event on GPIO port
 			REGS_GPIO->ev_detect_status.data[port] = 0xFFFFFFFF;
 
-			gpio_handle_irq(&bcm283x_gpio_chip, port, pins);
+			gpio_handle_irq(irq_nr, &bcm283x_gpio_chip, port, pins);
 		}
 	}
 

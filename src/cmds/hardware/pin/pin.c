@@ -29,8 +29,9 @@ static void print_usage(void) {
 		"    pin GPIOA 12 irq both    -- Test irq in RISING_FALLING mode\n");
 }
 
-void pin_irq_hnd(void *data) {
+int pin_irq_hnd(unsigned int irq_nr, void *data) {
 	(*(int *) data)++;
+	return 0;
 }
 
 static int gpio_by_name(const char *name) {

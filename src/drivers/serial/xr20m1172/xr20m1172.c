@@ -101,8 +101,9 @@ static struct spi_device *spi_bus_dev;
 #define UART_REG_CLEAR(reg, val) \
 	UART_REG_STORE(reg, UART_REG_LOAD(reg) & ~((uint8_t)val))
 
-static void xr20m1172_irq_handler(void *uart) {
+static int xr20m1172_irq_handler(unsigned int irq_nr, void *uart) {
 	uart_irq_handler(0 /* XXX */, uart);
+	return 0;
 }
 
 static int xr20m1172_setup(struct uart *dev, const struct uart_params *params) {

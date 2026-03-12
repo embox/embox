@@ -168,7 +168,7 @@ irq_return_t sc64_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
 
 	pins = GPIO_REG_LOAD(port, REG_ISR);
 
-	gpio_handle_irq(&sc64_gpio_chip, port, pins);
+	gpio_handle_irq(irq_nr, &sc64_gpio_chip, port, pins);
 
 	for (i = 0; i < GPIO_NPINS; i++) {
 		if (pins & (1 << i)) {

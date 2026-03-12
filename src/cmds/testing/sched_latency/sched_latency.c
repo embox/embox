@@ -36,17 +36,19 @@ struct arguments {
 #define STATUS_HAPPENED    2
 #define STATUS_FINISHED   3
 
-static void irq_hnd(void *arg) {
+static int irq_hnd(unsigned int irq_nr, void *arg) {
 	struct arguments *a = arg;
 
 	if (a->done != STATUS_WAIT) {
 		/* work_routine has not started yet */
-		return;
+		return 0;
 	}
 
 	a->done = STATUS_HAPPENED;
 
 	sched_wakeup(&a->work_thread->schedee);
+
+	return 0;
 }
 
 static void *work_routine(void *arg) {

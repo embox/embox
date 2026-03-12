@@ -83,7 +83,7 @@
 	ARRAY_SPREAD_ADD(__gpio_chip_registry, chip)
 
 typedef uint32_t gpio_mask_t;
-typedef void (*gpio_irq_hnd_t)(void *);
+typedef int (*gpio_irq_hnd_t)(unsigned int irq_nt, void *data);
 
 struct gpio_chip {
 	int (*setup_mode)(unsigned int port, gpio_mask_t pins, uint32_t mode);
@@ -110,8 +110,8 @@ extern int gpio_irq_attach(unsigned int port, gpio_mask_t pins,
 
 extern int gpio_irq_detach(unsigned int port, gpio_mask_t pins);
 
-extern void gpio_handle_irq(const struct gpio_chip *chip, unsigned int port,
-    gpio_mask_t pins);
+extern void gpio_handle_irq(unsigned int irq_nr, const struct gpio_chip *chip,
+	unsigned int port, gpio_mask_t pins);
 
 __END_DECLS
 

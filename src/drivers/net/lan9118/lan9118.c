@@ -303,7 +303,7 @@ irq_return_t lan9118_irq_handler(unsigned int irq_nr, void *nic) {
 	return IRQ_HANDLED;
 }
 
-void lan9118_gpio_irq_handler(void *nic) {
+int lan9118_gpio_irq_handler(unsigned int irq_nr, void *nic) {
 	uint32_t l = lan9118_reg_read(nic, LAN9118_INT_STS);
 
 	if (l & _LAN9118_INT_STS_RSFL_INT) {
@@ -311,6 +311,7 @@ void lan9118_gpio_irq_handler(void *nic) {
 	}
 
 	lan9118_reg_write(nic, LAN9118_INT_STS, l);
+	return 0;
 }
 
 static void mdelay(int value) {
