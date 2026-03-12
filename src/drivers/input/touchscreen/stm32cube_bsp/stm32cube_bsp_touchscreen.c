@@ -15,17 +15,8 @@
 #include <drivers/input/input_dev.h>
 #include <drivers/video/fb.h>
 
-#if defined STM32F746xx
-#include "stm32746g_discovery_ts.h"
-#elif defined STM32F769xx
-#include "stm32f769i_discovery_ts.h"
-#else
-#error Unsupported platform
-#endif
 
-#define STM32_TS_INT_PIN   TS_INT_PIN
-#define STM32_TS_IRQ       OPTION_GET(NUMBER, ts_irq)
-static_assert(STM32_TS_IRQ == TS_INT_EXTI_IRQn, "");
+#include <stm32bsp_touchscreen.h>
 
 EMBOX_UNIT_INIT(stm32_ts_init);
 
@@ -44,19 +35,19 @@ static int stm32_ts_start(struct input_dev *dev) {
 		return -1;
 	}
 
-	ret = BSP_TS_Init(fb->var.xres, fb->var.yres);
-	if (ret != TS_OK) {
+	ret = stm32bsp_touch_init(fb->var.xres, fb->var.yres);
+	if (ret != HAL_OK) {
 		log_error("BSP_TS_Init failed");
 		return -1;
 	}
 
-	BSP_TS_ITConfig();
+	TOUCH_IRQ_CONFIG();
 
 	return 0;
 }
 
 static void stm32_ts_poll(struct input_dev *dev) {
-	TS_StateTypeDef ts_state;
+	TOUCH_STATE_TYPE ts_state;
 	struct stm32_ts_indev *ts_dev = (struct stm32_ts_indev *) dev->data;
 	struct input_event ev;
 	int i;
@@ -65,18 +56,18 @@ static void stm32_ts_poll(struct input_dev *dev) {
 
 	assert(dev && ts_dev);
 
-	BSP_TS_GetState(&ts_state);
+	TOUCH_GETSTATE(&ts_state);
 
-	for (i = 0; i < min(ts_state.touchDetected, 2); i++) {
+	for (i = 0; i < min(TOUCH_DETECTED(ts_state), 2); i++) {
 		ev.type = (TS_TOUCH_1 + i);
-#if (TS_MULTI_TOUCH_SUPPORTED == 1)
+#if (defined(TS_MULTI_TOUCH_SUPPORTED) && (TS_MULTI_TOUCH_SUPPORTED == 1))
 		/* We will send touched area if multi touch is supported. */
 		ev.type |= TS_EVENT_NEXT;
 #endif
-		ev.value = (ts_state.touchX[i] << 16) | (ts_state.touchY[i] & 0xffff);
+		ev.value = (TOUCH_X(ts_state,i) << 16) | (TOUCH_Y(ts_state,i) & 0xffff);
 		input_dev_report_event(dev, &ev);
 
-#if (TS_MULTI_TOUCH_SUPPORTED == 1)
+#if (defined(TS_MULTI_TOUCH_SUPPORTED) && (TS_MULTI_TOUCH_SUPPORTED == 1))
 		ev.type = TS_TOUCH_PRESSURE;
 		ev.value = ts_state.touchWeight[i];
 		input_dev_report_event(dev, &ev);
@@ -103,7 +94,7 @@ static irq_return_t stm32_ts_irq_hnd(unsigned int irq_nr, void *data) {
 
 	stm32_ts_poll(dev);
 
-	__HAL_GPIO_EXTI_CLEAR_IT(STM32_TS_INT_PIN);
+	TOUCH_IRQ_HANDLE();
 
 	return IRQ_HANDLED;
 }
