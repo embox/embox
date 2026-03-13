@@ -12,7 +12,7 @@
 
 /* The prefetch will be enabled in SystemClock_Config(), depending on the used
    STM32F405/415/07/417 device: RevA (prefetch must be off) or RevZ (prefetch can be on/off) */
-#define  PREFETCH_ENABLE              0U
+#define  PREFETCH_ENABLE              1U
 
 #if defined(STM32F4_CUBE_1_25_0)
 #define HAL_ETH_MODULE_ENABLED
@@ -71,5 +71,14 @@
 #define PHY_MISR_LINK_INT_EN            ((uint16_t)0x0020)  /*!< Enable Interrupt on change of link status       */
 #define PHY_LINK_INTERRUPT              ((uint16_t)0x2000)  /*!< PHY link status interrupt mask                  */
 
+
+/* ################## SPI peripheral configuration ########################## */
+
+/* CRC FEATURE: Use to activate CRC feature inside HAL SPI Driver
+* Activated: CRC code is present inside driver
+* Deactivated: CRC code cleaned from driver
+*/
+
+#define USE_SPI_CRC                     1U
 
 #endif /* STM32_CUBE_CONF_H */
