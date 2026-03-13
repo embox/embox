@@ -28,8 +28,9 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@NoRuntime depends third_party.bsp.stmf4cube.components.ili9341
 	@NoRuntime depends third_party.bsp.stmf4cube.components.stmpe811
-	@NoRuntime depends third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends stm32f429i_discovery_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
+	@NoRuntime depends embox.driver.clk.stm32f4_rcc
+	@NoRuntime depends platform.stm32.stm32cube_sysclock_init
 }
