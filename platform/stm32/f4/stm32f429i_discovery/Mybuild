@@ -33,13 +33,3 @@ static module bsp extends third_party.bsp.st_bsp_api {
 	@NoRuntime depends stm32f429i_discovery_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
 }
-
-module devicetree_core {
-    source "devicetree.c"
-    depends third_party.libfdt
-}
-
-module devicetree_dtb {
-    @InitFS
-    source "devicetree/stm32f4_uart.dtb"
-}
