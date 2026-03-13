@@ -289,3 +289,58 @@ STATIC_IRQ_ATTACH(EXTI9_5_IRQ, stm32_gpio_irq_handler, NULL);
 #if (EXTI15_10_IRQ != 0)
 STATIC_IRQ_ATTACH(EXTI15_10_IRQ, stm32_gpio_irq_handler, NULL);
 #endif
+
+int stm32_gpio_addr_to_num(void *gpio_base) {
+	switch ((intptr_t)gpio_base) {
+	case (intptr_t)GPIOA:
+		return 0;
+	case (intptr_t)GPIOB:
+		return 1;
+	case (intptr_t)GPIOC:
+		return 2;
+
+#ifdef GPIOD
+	case (intptr_t)GPIOD:
+		return 3;
+#endif /* GPIOD */
+
+#ifdef GPIOE
+	case (intptr_t)GPIOE:
+		return 4;
+#endif /* GPIOE */
+
+#ifdef GPIOF
+	case (intptr_t)GPIOF:
+		return 5;
+#endif /* GPIOF */
+
+#ifdef GPIOG
+	case (intptr_t)GPIOG:
+		return 6;
+#endif /* GPIOG */
+
+#ifdef GPIOH
+	case (intptr_t)GPIOH:
+		return 7;
+#endif /* GPIOH */
+
+#ifdef GPIOI
+	case (intptr_t)GPIOI:
+		return 8;
+#endif /* GPIOI */
+
+#ifdef GPIOJ
+	case (intptr_t)GPIOJ:
+		return 9;
+#endif /* GPIOJ */
+
+#ifdef GPIOK
+	case (intptr_t)GPIOK:
+		return 9;;
+#endif /* GPIOK */
+
+	default:
+		return -1;
+	}
+	return -1;
+}
