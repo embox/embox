@@ -21,9 +21,10 @@
 #define OUT_PORT      OPTION_GET(NUMBER,out_port)
 #define OUT_PIN_MASK (1 << OPTION_GET(NUMBER,out_pin))
 
-static void irq_hnd(void *done) {
+static int irq_hnd(unsigned int irq_nr, void *done) {
 	gpio_set(OUT_PORT, OUT_PIN_MASK, GPIO_PIN_HIGH);
 	(*(volatile int *) done) = 1;
+	return 0;
 }
 
 int main(void) {

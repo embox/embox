@@ -3,7 +3,7 @@ package platform.stm32.f4.nucleo_f410rb
 @BuildArtifactPath(cppflags="-DSTM32F410Rx -DUSE_STM32F4XX_NUCLEO")
 static module nucleo_f410rb_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
-	source "stm32f4xx_hal_conf.h"
+	source "cube_conf.h"
 }
 
 @Build(stage=1)

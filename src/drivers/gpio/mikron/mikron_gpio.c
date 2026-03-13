@@ -92,7 +92,7 @@ irq_return_t mik_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
 
 	mik_gpio_irq_clear_status(gpio_reg, mask);
 
-	gpio_handle_irq(&mik_gpio_chip, port_num, mask);
+	gpio_handle_irq(irq_nr, &mik_gpio_chip, port_num, mask);
 
 	return IRQ_HANDLED;
 }

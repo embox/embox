@@ -121,7 +121,7 @@ static irq_return_t gpio_irq_handler(unsigned int irq_nr, void *gpio_) {
 	GPIO_TypeDef *gpio = (GPIO_TypeDef *)gpio_;
 	uint32_t mask = gpio->INTSTATUS;
 	// GPIO_PORT_A = 0; GPIO_PORT_B = 1
-	gpio_handle_irq(&k1921vk035_gpio_chip, gpio == GPIOB, mask);
+	gpio_handle_irq(irq_nr, &k1921vk035_gpio_chip, gpio == GPIOB, mask);
 	GPIO_ITStatusClear(gpio, mask);
 	return IRQ_HANDLED;
 }

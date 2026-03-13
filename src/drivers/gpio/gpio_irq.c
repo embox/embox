@@ -110,8 +110,8 @@ int gpio_irq_detach(unsigned int port, gpio_mask_t pins) {
 	return 0;
 }
 
-void gpio_handle_irq(const struct gpio_chip *chip, unsigned int port,
-    gpio_mask_t pins) {
+void gpio_handle_irq(unsigned int irq_nr, const struct gpio_chip *chip,
+	unsigned int port, gpio_mask_t pins) {
 	struct gpio_irq *gpio_irq;
 	int i;
 
@@ -119,7 +119,7 @@ void gpio_handle_irq(const struct gpio_chip *chip, unsigned int port,
 		if (pins & 0x1) {
 			gpio_irq = gpio_irq_find(chip, port, (1 << i));
 			if (gpio_irq) {
-				gpio_irq->handler(gpio_irq->data);
+				gpio_irq->handler(irq_nr, gpio_irq->data);
 			}
 		}
 	}

@@ -276,7 +276,7 @@ irq_return_t stm32_gpio_irq_handler(unsigned int irq_nr, void *data) {
 
 	/* Notify all GPIO ports about interrupt */
 	for (int i = 0; i < STM32_GPIO_PORTS_COUNT; i++) {
-		gpio_handle_irq(&stm32_gpio_chip, i, pending);
+		gpio_handle_irq(irq_nr, &stm32_gpio_chip, i, pending);
 	}
 
 	return IRQ_HANDLED;

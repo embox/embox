@@ -2,6 +2,71 @@
 #include <stm32.h>
 #include <stm32f4_chip.h>
 
+#if 0
+#if OPTION_GET(BOOLEAN, errata_spi_wrong_last_bit)
+	/* One of possible workarounds, as suggested by
+	 * STM32F40x and STM32F41x Errata sheet is to decrease
+	 * APB clock speed. */
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV8;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV4;
+#else
+	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
+	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+#endif
+#endif
+
+/**
+  * @brief  Switch the PLL source from HSI to HSE, and select the PLL as SYSCLK
+  *         source.
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 168000000
+  *            HCLK(Hz)                       = 168000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 336
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 5
+  * @param  None
+  * @retval None
+  */
+
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("SYSCLK_VAL",  168000000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("ERRATA_SPI_WRONG_LAST_BIT",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  8),
+				VAL("PLL_N_VAL",  336),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  7),
+				VAL("FLASH_LATENCY", 5),
+			}
+		},
+		.type = {
+			VAL("PLL", 1),
+			VAL("HSE", 1),
+		},
+	},
+};
+
+
 struct uart_conf uarts[] = {
  	[1] = {
  		.status = ENABLED,
@@ -155,6 +220,46 @@ struct spi_conf spis[] = {
 	},
 };
 
+struct i2c_conf i2cs[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "I2C1",
+		.dev = {
+			.name = "I2C1",
+			.irqs = {
+				VAL("EVENT", 31),
+				VAL("ERROR", 32),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 6, AF4),
+				PIN("SDA", GPIO_PORT_B, 9, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+	},
+	[2] = {
+		.status = DISABLED,
+		.name = "I2C2",
+		.dev = {
+			.name = "I2C2",
+			.irqs = {
+				VAL("EVENT", 33),
+				VAL("ERROR", 34),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 10, AF4),
+				PIN("SDA", GPIO_PORT_B, 11, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+	},
+
+};
+
 struct led_conf leds[] = {
 	[0] = {
 		.status = ENABLED,
@@ -172,4 +277,4 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(UART(uarts), SPI(spis), LED(leds))
+EXPORT_CONFIG(CLK(clks), UART(uarts), SPI(spis), I2C(i2cs), LED(leds))

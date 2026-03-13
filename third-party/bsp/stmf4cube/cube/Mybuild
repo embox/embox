@@ -4,7 +4,8 @@ package third_party.bsp.stmf4cube
 @BuildArtifactPath(cppflags="-DSTM32F4_CUBE_1_27_1")
 @BuildArtifactPath(cppflags="$(addprefix -I$(EXTERNAL_BUILD_DIR)/third_party/bsp/stmf4cube/cube/STM32CubeF4-1.27.1/,Drivers/STM32F4xx_HAL_Driver/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include Drivers/CMSIS/Include)")
 module cube_cppflags {
-
+	@IncludeExport(path="")
+	source "stm32f4xx_hal_conf.h"
 }
 
 @Build(stage=1,script="$(EXTERNAL_MAKE) download extract patch")

@@ -3,7 +3,7 @@ package platform.stm32.f4.stm32f429i_discovery
 @BuildArtifactPath(cppflags="-DSTM32F429xx -DUSE_STM32F429I_DISCOVERY")
 static module stm32f429i_discovery_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
 	@IncludeExport(path="")
-	source "stm32f4xx_hal_conf.h"
+	source "cube_conf.h"
 }
 
 @Build(stage=1)
@@ -28,18 +28,9 @@ static module bsp extends third_party.bsp.st_bsp_api {
 
 	@NoRuntime depends third_party.bsp.stmf4cube.components.ili9341
 	@NoRuntime depends third_party.bsp.stmf4cube.components.stmpe811
-	@NoRuntime depends third_party.bsp.stmf4cube.bsp_drivers.stm324xg_eval_sd
 	@NoRuntime depends third_party.bsp.stmf4cube.cube
 	@NoRuntime depends stm32f429i_discovery_conf
 	@NoRuntime depends platform.stm32.stm32cube_compat
-}
-
-module devicetree_core {
-    source "devicetree.c"
-    depends third_party.libfdt
-}
-
-module devicetree_dtb {
-    @InitFS
-    source "devicetree/stm32f4_uart.dtb"
+	@NoRuntime depends embox.driver.clk.stm32f4_rcc
+	@NoRuntime depends platform.stm32.stm32cube_sysclock_init
 }

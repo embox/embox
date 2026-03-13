@@ -176,7 +176,7 @@ irq_return_t sc64_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
 			pins |= gpio_isr_regs[i].pins[1];
 		}
 		if (pins) {
-			gpio_handle_irq(&sc64_gpio_chip, gpio_isr_regs[i].port, pins);
+			gpio_handle_irq(irq_nr, &sc64_gpio_chip, gpio_isr_regs[i].port, pins);
 			REG8_STORE(gpio_isr_regs[i].reg, isr);
 		}
 	}
