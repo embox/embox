@@ -12,6 +12,7 @@
 #include "stm32f429i_discovery_ts.h"
 
 #define STM32_TS_INT_PIN   STMPE811_INT_PIN
+#define STM32_TS_INT_PORT  STMPE811_INT_GPIO_PORT
 #define STM32_TS_IRQ       OPTION_GET(NUMBER, ts_irq)
 static_assert(STM32_TS_IRQ == STMPE811_INT_EXTI, "");
 

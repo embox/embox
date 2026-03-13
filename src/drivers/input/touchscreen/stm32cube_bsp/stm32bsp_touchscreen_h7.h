@@ -12,6 +12,7 @@
 #include "stm32h745i_discovery_ts.h"
 
 #define STM32_TS_INT_PIN   TS_INT_PIN
+#define STM32_TS_INT_PORT  TS_INT_GPIO_PORT
 #define STM32_TS_IRQ       OPTION_GET(NUMBER, ts_irq)
 static_assert(STM32_TS_IRQ == TS_INT_EXTI_IRQn, "");
 

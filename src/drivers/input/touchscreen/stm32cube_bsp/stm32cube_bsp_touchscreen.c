@@ -14,7 +14,7 @@
 #include <kernel/irq.h>
 #include <drivers/input/input_dev.h>
 #include <drivers/video/fb.h>
-
+#include <drivers/gpio.h>
 
 #include <stm32bsp_touchscreen.h>
 
@@ -89,7 +89,7 @@ static void stm32_ts_poll(struct input_dev *dev) {
 	}
 }
 
-static irq_return_t stm32_ts_irq_hnd(unsigned int irq_nr, void *data) {
+static int stm32_ts_irq_hnd(unsigned int irq_nr, void *data) {
 	struct input_dev *dev = (struct input_dev *) data;
 
 	stm32_ts_poll(dev);
@@ -111,11 +111,22 @@ static struct stm32_ts_indev stm32_ts_dev = {
 	},
 };
 
+extern int stm32_gpio_addr_to_num(void *gpio_base) ;
+
 static int stm32_ts_init(void) {
 	int ret = 0;
+	int port_num;
 
-	ret = irq_attach(STM32_TS_IRQ, stm32_ts_irq_hnd, 0,
-					 &stm32_ts_dev.input_dev, "stm32 touchscreen");
+	port_num = stm32_gpio_addr_to_num(STM32_TS_INT_PORT);
+	if (port_num == -1) {
+		log_error("wrong STM32_TS_INT_PORT (%p)", STM32_TS_INT_PORT);
+		return -EINVAL;
+	}
+
+	// ret = irq_attach(STM32_TS_IRQ, stm32_ts_irq_hnd, 0,
+	// 				 &stm32_ts_dev.input_dev, "stm32 touchscreen");
+	ret = gpio_irq_attach(port_num,
+			STM32_TS_INT_PIN, stm32_ts_irq_hnd, &stm32_ts_dev.input_dev);
 	if (ret != 0) {
 		log_error("irq_attach failed");
 		return ret;
@@ -137,8 +148,10 @@ static int stm32_ts_init(void) {
 	return 0;
 
 err_irq_detach:
-	irq_detach(STM32_TS_IRQ, &stm32_ts_dev.input_dev);
+	//irq_detach(STM32_TS_IRQ, &stm32_ts_dev.input_dev);
+	gpio_irq_detach(port_num, STM32_TS_INT_PIN);
 	return ret;
 }
 
-STATIC_IRQ_ATTACH(STM32_TS_IRQ, stm32_ts_irq_hnd, &stm32_ts_dev.input_dev);
+//FIXME STATIC GPIO_IRQ_ATTACH
+//STATIC_IRQ_ATTACH(STM32_TS_IRQ, stm32_ts_irq_hnd, &stm32_ts_dev.input_dev);
