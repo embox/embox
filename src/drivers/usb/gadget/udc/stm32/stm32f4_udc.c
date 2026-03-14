@@ -30,7 +30,7 @@ EMBOX_UNIT_INIT(stm32f4_udc_init);
 #define STM32F4_UDC_IN_EP_MASK  ((1 << 5) | (1 << 6) | (1 << 7))
 #define STM32F4_UDC_OUT_EP_MASK ((1 << 1) | (1 << 2) | (1 << 3))
 
-#define USB_URB_TRACE 1
+#define USB_URB_TRACE 0
 #define USB_DUMP_BYTES 64
 
 #if USB_URB_TRACE
@@ -91,38 +91,36 @@ static int stm32f4_udc_start(struct usb_udc *udc) {
 	return 0;
 }
 
-static int stm32f4_udc_ep_queue(struct usb_gadget_ep *ep,
-    struct usb_gadget_request *req) {
-	struct stm32f4_udc *u = (struct stm32f4_udc *)ep->udc;
+static int stm32f4_udc_ep_queue(struct usb_gadget_ep *ep, struct usb_gadget_request *req) {
+    struct stm32f4_udc *u = (struct stm32f4_udc *)ep->udc;
+    uint8_t n = (uint8_t)ep->nr;
 
-	assert(ep && req);
+    assert(ep && req);
 
-	log_debug("> ep=%d, len=%d", ep->nr, req->len);
+    log_debug("EPQ: ep=%u dir=%s len=%u",
+              n, ep->dir == USB_DIR_IN ? "IN" : "OUT", (unsigned)req->len);
 
-	u->requests[ep->nr] = req;
+    if (n == 0 || ep->dir == USB_DIR_IN) {
+        while (u->ep_info[0x4 | n].is_used) { }
+        u->ep_info[0x4 | n].is_used = 1;
+        u->ep_info[0x4 | n].total_length = req->len;
+        u->ep_info[0x4 | n].rem_length = req->len;
 
-	if (ep->nr == 0 || ep->dir == USB_DIR_IN) {
-		/* It would be better to use queue here, put req in queue,
-		 * then get next req from queue after current finished. */
-		while (u->ep_info[0x4 | ep->nr].is_used) {}
-		/* shouldnt this be able to handle requests over EP max length? */
-		//pdev->ep0_state = USBD_EP0_DATA_IN;
-		u->ep_info[0x4 | ep->nr].is_used = 1;
-		u->ep_info[0x4 | ep->nr].total_length = req->len;
-		u->ep_info[0x4 | ep->nr].rem_length = req->len;
+        u->requests[n] = req;
 
-		HAL_PCD_EP_Transmit(&hpcd, ep->nr, req->buf, req->len);
-	}
+        HAL_PCD_EP_Transmit(&hpcd, n, req->buf, req->len);
+        return 0;
+    }
 
-	log_debug("EPQ: ep=%u dir=%s len=%u",
-          ep->nr, ep->dir == USB_DIR_IN ? "IN" : "OUT", req->len);
+    while (u->ep_info[0x0 | n].is_used) { }
+    u->ep_info[0x0 | n].is_used = 1;
+    u->ep_info[0x0 | n].total_length = req->len;
+    u->ep_info[0x0 | n].rem_length = req->len;
 
-	if (ep->dir == USB_DIR_IN) {
-		dump_bytes("EPQ IN payload", req->buf, req->len);
-	}
+    u->requests[n] = req;
 
-
-	return 0;
+    HAL_PCD_EP_Receive(&hpcd, n, req->buf, req->len);
+    return 0;
 }
 
 static void stm32f4_udc_ep_enable(struct usb_gadget_ep *ep) {
@@ -219,12 +217,17 @@ static void stm32f4_ll_handle_standard_request(struct usb_control_header *req) {
 		break;
 	case USB_REQ_SET_CONFIG:
 		ret = usb_gadget_setup(stm32f4_udc.udc.composite,
-		    (const struct usb_control_header *)req, NULL);
-		if (ret != 0) {
-			log_error("SET_CONFIGURATION failed, req=0x%x", req->b_request);
-			HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
-		}
+        (const struct usb_control_header *)req, NULL);
+
+    if (ret != 0) {
+        log_error("SET_CONFIGURATION failed, req=0x%x", req->b_request);
+        HAL_PCD_EP_SetStall(&hpcd, req->bm_request_type & 0x80U);
+    } else {
+        /* status stage for control-OUT request */
+        HAL_PCD_EP_Transmit(&hpcd, 0x00U, NULL, 0U);
+        // HAL_PCD_EP_Receive(&hpcd, 0x00U, NULL, 0U);
 		break;
+    }
 	case USB_REQ_GET_CONFIG:
 		//stm32f4_ll_get_configuration(req);
 		log_debug("GET_CONFIGURATION");
@@ -303,6 +306,10 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
+	if (epnum != 0U) {
+    stm32f4_udc.ep_info[0x4 | epnum].is_used = 0;
+    return;
+}
 	log_debug("usb: dataINstage of 0x%x\n", epnum);
 
 	struct ep_status *pep;
@@ -369,6 +376,10 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
  * @retval None
  */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
+	log_debug("DOUT: ep=%u xfer_count=%u", epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
+	if (epnum < STM32F4_UDC_EPS_COUNT) {
+    stm32f4_udc.ep_info[0x0 | epnum].is_used = 0;
+}
 	log_debug("usb: dataOUTstage of 0x%x\n", epnum);
 	log_debug("OUT: ep=%u xfer_count=%u",
           epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
