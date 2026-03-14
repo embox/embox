@@ -11,8 +11,8 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_B, PIN_6, AF7),
-				PIN("RX", GPIO_PORT_B, PIN_7, AF7),
+				PIN("TX", GPIO_PORT_B, 6, AF7),
+				PIN("RX", GPIO_PORT_B, 7, AF7),
 			},
 			.clocks = {
 				VAL("TX",   CLK_GPIOB),
