@@ -1,0 +1,8 @@
+package embox.compat.posix.sys
+
+module auxv {
+	@IncludeExport(path="sys", target_name="auxv.h")
+	source "auxv.h"
+
+	source "getauxval.c"
+}
