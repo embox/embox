@@ -239,3 +239,7 @@ module rint_test {
 	@Cflags("-fno-builtin")
 	source "rint_test.c"
 }
+module yn_test {
+	@Cflags("-fno-builtin")
+	source "yn_test.c"
+}
