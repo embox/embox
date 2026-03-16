@@ -7,7 +7,7 @@
  */
 
 #include <stdint.h>
-//#include <string.h>
+#include <string.h>
 
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
