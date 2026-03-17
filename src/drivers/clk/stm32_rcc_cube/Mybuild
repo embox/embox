@@ -1,7 +1,15 @@
 package embox.driver.clk
 
 abstract module stm32_rcc {
+}
 
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_rcc extends stm32_rcc {
+	option string log_level="LOG_ERR"
+
+	source "stm32cube_rcc.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
 }
 
 @BuildDepends(third_party.bsp.st_bsp_api)
