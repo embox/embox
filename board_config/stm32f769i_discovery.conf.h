@@ -3,6 +3,179 @@
 
 #include <stm32f7_chip.h>
 
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow : 
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 216000000
+  *            HCLK(Hz)                       = 216000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 25000000
+  *            PLL_M                          = 25
+  *            PLL_N                          = 432
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 9
+  *            PLL_R                          = 7
+  *            VDD(V)                         = 3.3
+  *            Main regulator output voltage  = Scale1 mode
+  *            Flash Latency(WS)              = 7
+  * @param  None
+  * @retval None
+  */
+struct clk_conf clks[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "RCC",
+			.regs = {
+				REGMAP("BASE", (RCC_BASE), 0x100),
+			},
+			.clocks = {
+				VAL("SYSCLK_VAL", 216000000UL),
+				VAL("HSECLK_VAL",  25000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  25),
+				VAL("PLL_N_VAL",  432),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  9),
+				VAL("FLASH_LATENCY", 7),
+			}
+		},
+		.type = {
+			VAL("PLL", 1),
+			VAL("HSE", 1),
+			/* activate the OverDrive to reach the 216 Mhz Frequency */
+			VAL("OVERDRIVE", 1),
+		},
+	},
+};
+
+struct gpio_conf gpios[] = {
+	[0] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_A",
+			.regs = {
+				REGMAP("BASE", (GPIOA_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOA),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_B",
+			.regs = {
+				REGMAP("BASE", (GPIOB_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOB),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+	[2] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_C",
+			.regs = {
+				REGMAP("BASE", (GPIOC_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOC),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+	[3] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_D",
+			.regs = {
+				REGMAP("BASE", (GPIOD_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOD),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+	[4] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_E",
+			.regs = {
+				REGMAP("BASE", (GPIOE_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOE),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+	[5] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_F",
+			.regs = {
+				REGMAP("BASE", (GPIOF_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOF),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+	[6] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_G",
+			.regs = {
+				REGMAP("BASE", (GPIOG_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOG),
+			}
+		},
+		.port_num = 11,
+		.port_width = 16,
+	},
+};
+
 struct uart_conf uarts[] = {
 	[1] = {
 		.status = DISABLED,
@@ -150,4 +323,4 @@ struct mmc_conf mmcs[] = {
 };
 
 
-EXPORT_CONFIG(UART(uarts), LED(leds), MMC(mmcs))
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), MMC(mmcs))
