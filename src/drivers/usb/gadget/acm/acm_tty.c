@@ -7,7 +7,7 @@
  */
 
 #include <stdint.h>
-//#include <string.h>
+#include <string.h>
 
 #include <drivers/serial/uart_dev.h>
 #include <drivers/serial/diag_serial.h>
@@ -28,6 +28,8 @@ static struct usb_gadget_request req_tx;
 static struct usb_gadget_request req_rx;
 
 static int acm_uart_putc(struct uart *dev, int ch) {
+	req_tx.buf[0] = (uint8_t)ch;
+	req_tx.len = 1;
 	usb_gadget_ep_queue(bulk_tx, &req_tx);
 	return 0;
 }
@@ -91,6 +93,12 @@ static struct uart acm_ttyS0 = {
 TTYS_DEF(TTY_NAME, &acm_ttyS0);
 
 int acm_rx_complete(struct usb_gadget_ep *ep, struct usb_gadget_request *req) {
+	memcpy(req_tx.buf, req->buf, req->actual_len);
+    req_tx.len = req->actual_len;
+    usb_gadget_ep_queue(bulk_tx, &req_tx);
+
+    req_rx.len = sizeof(req_rx.buf);
+    usb_gadget_ep_queue(bulk_rx, &req_rx);
 	return 0;
 }
 
