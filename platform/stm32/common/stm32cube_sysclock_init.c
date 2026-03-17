@@ -220,6 +220,15 @@ void stm32_sysclock_init(void) {
 #endif /* defined(CONF_RCC_TYPE_PLL) */
 	RCC_OscConfig(&RCC_OscInitStruct);
 
+# if defined(CONF_RCC_CLK_DEF_OVERDRIVE) && (CONF_RCC_CLK_DEF_OVERDRIVE != 0)
+	/* activate the OverDrive to reach the 216 Mhz Frequency */
+	if (HAL_PWREx_EnableOverDrive() != HAL_OK) {
+		/* Initialization Error */
+		while (1)
+			;
+	}
+#endif /* defined(CONF_RCC_CLK_DEF_OVERDRIVE) && (CONF_RCC_CLK_DEF_OVERDRIVE != 0)*/
+
 	/* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
      clocks dividers */
 	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK
