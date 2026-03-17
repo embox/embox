@@ -12,7 +12,6 @@
 #define COMPAT_LINUX_SYS_IOCTL_H_
 
 #include <sys/cdefs.h>
-#include <termios.h>
 
 /* 16-bit IOCTL numbers */
 #define _IOC_DIRBITS  0
@@ -50,9 +49,15 @@
 
 /* Encoding IOCTL numbers */
 #define _IO(type, nr)        _IOC(_IOC_NONE, type, nr, 0)
+#define _IOR(type, nr, arg)  _IOC(_IOC_READ, type, nr, 0)
+#define _IOW(type, nr, arg)  _IOC(_IOC_WRITE, type, nr, 0)
+#define _IOWR(type, nr, arg) _IOC(_IOC_READ | _IOC_WRITE, type, nr, 0)
+#if 0
+#define _IO(type, nr)        _IOC(_IOC_NONE, type, nr, 0)
 #define _IOR(type, nr, arg)  _IOC(_IOC_READ, type, nr, sizeof(arg))
 #define _IOW(type, nr, arg)  _IOC(_IOC_WRITE, type, nr, sizeof(arg))
 #define _IOWR(type, nr, arg) _IOC(_IOC_READ | _IOC_WRITE, type, nr, sizeof(arg))
+#endif
 
 /* Decoding */
 #define _IOC_DIR(ioc_nr)  (((ioc_nr) >> _IOC_DIRSHIFT) & _IOC_DIRMASK)
