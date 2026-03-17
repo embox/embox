@@ -8,16 +8,17 @@ cat << 'EOF'
 case " $@ " in
 	*" -shared "* | \
 	*" -pthread "* | \
-	*" -rdynamic "* | \
-	*" -l"* | \
-	*" -I/usr/"*)
+	*" -rdynamic "*)
 		$0 $(echo " $@" | sed \
 		-e 's/ -shared//g' \
 		-e 's/ -pthread//g' \
-		-e 's/ -rdynamic//g' \
-		-e 's/ -l[0-9a-zA-Z_]*//g' \
-		-e 's/ -I\/usr\/[0-9a-zA-Z_]*//g'); \
+		-e 's/ -rdynamic//g'); \
 		exit $?;;
+esac
+
+case " $@ " in
+	*" -l"*)      $0 $(for i in "$@"; do echo ${i/#-l*/}; done); exit $?;;
+	*" -I/usr/"*) $0 $(for i in "$@"; do echo ${i/#-I\/usr\/*/}; done); exit $?;;
 esac
 
 EOF
