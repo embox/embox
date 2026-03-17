@@ -66,6 +66,108 @@ struct gpio_conf gpios[] = {
 		.port_num = 7,
 		.port_width = 16,
 	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_B",
+			.regs = {
+				REGMAP("BASE", (GPIOB_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOB),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+	[2] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_C",
+			.regs = {
+				REGMAP("BASE", (GPIOC_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOC),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+	[3] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_D",
+			.regs = {
+				REGMAP("BASE", (GPIOD_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOD),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+	[4] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_E",
+			.regs = {
+				REGMAP("BASE", (GPIOE_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOE),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+	[5] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_F",
+			.regs = {
+				REGMAP("BASE", (GPIOF_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOF),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
+	[6] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_G",
+			.regs = {
+				REGMAP("BASE", (GPIOG_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", 0),
+			},
+			.clocks = {
+				VAL("",   CLK_GPIOG),
+			}
+		},
+		.port_num = 7,
+		.port_width = 16,
+	},
 };
 
 struct uart_conf uarts[] = {
