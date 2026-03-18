@@ -349,7 +349,7 @@ if [ "$sound_n" -gt 0 ]; then
 			if [ ! "$sound_model" ]; then
 				error "sound model ${qemu_sound[$ni]} is not supported"
 			fi
-			sound_lines="$sound_lines -soundhw $sound_model"
+			sound_lines="$sound_lines -device $sound_model"
 		fi
 	done
 	if [[ -z "${QEMU_AUDIO_DRV}" ]]; then
