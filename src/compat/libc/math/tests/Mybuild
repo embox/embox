@@ -243,3 +243,7 @@ module yn_test {
 	@Cflags("-fno-builtin")
 	source "yn_test.c"
 }
+module y1_test {
+	@Cflags("-fno-builtin")
+	source "y1_test.c"
+}
