@@ -150,3 +150,8 @@ module stpcpy_test {
 	@Cflags("-fno-builtin")
 	source "stpcpy_test.c"
 }
+
+module strspn_test {
+	@Cflags("-fno-builtin")
+	source "strspn_test.c"
+}
