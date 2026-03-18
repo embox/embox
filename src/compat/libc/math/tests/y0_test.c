@@ -1,0 +1,34 @@
+#include <math.h>
+#include <embox/test.h>
+
+EMBOX_TEST_SUITE("y0() tests");
+
+#define EPS 1e-6
+
+TEST_CASE("Test for y0() with negative argument") {
+	test_assert(isnan(y0(-1.0)));
+}
+
+TEST_CASE("Test for y0(0.0)") {
+	test_assert(y0(0.0) == -INFINITY);
+}
+
+TEST_CASE("Test for y0(INFINITY)") {
+	test_assert(y0(INFINITY) == 0.0);
+}
+
+TEST_CASE("Test for y0(NaN)") {
+	test_assert(isnan(y0(NAN)));
+}
+
+TEST_CASE("Test for y0(1.0)") {
+	test_assert(fabs(y0(1.0) - 0.088256) < EPS);
+}
+
+TEST_CASE("Test for y0(2.0)") {
+	test_assert(fabs(y0(2.0) - 0.510375) < EPS);
+}
+
+TEST_CASE("Test for y0(0.5)") {
+	test_assert(fabs(y0(0.5) + 0.444519) < EPS);
+}
