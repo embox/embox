@@ -1,0 +1,10 @@
+package embox.cmd.testing
+
+@AutoCmd
+@Cmd(name = "spi_nor_test", help = "SPI NOR flash smoke test")
+module spi_nor_test {
+	source "spi_nor_test.c"
+
+	depends embox.driver.flash.core
+	depends embox.compat.posix.util.getopt
+}

@@ -13,6 +13,8 @@ module imx6_ecspi1 {
 	option string log_level="LOG_ERR"
 	option number base_addr
 	option number pins_group
+	option number cs_count=1
+	option number use_configreg=0
 
 	source "imx6_ecspi1.c"
 	@NoRuntime depends embox.driver.spi.spi1_dev0
@@ -25,6 +27,8 @@ module imx6_ecspi2 {
 	option string log_level="LOG_ERR"
 	option number base_addr
 	option number pins_group
+	option number cs_count=1
+	option number use_configreg=0
 
 	source "imx6_ecspi2.c"
 	@NoRuntime depends embox.driver.spi.spi2_dev0

@@ -22,6 +22,7 @@ struct imx6_ecspi {
 	 * details in IMX6DQRM.pdf at page 426 */
 	unsigned char cs_array[IMX6_ECSPI_MAX_CS][2];
 	int cs_iomux[IMX6_ECSPI_MAX_CS];
+	int use_configreg;
 };
 
 extern int imx6_ecspi_init(struct imx6_ecspi *dev);
