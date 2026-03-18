@@ -145,3 +145,8 @@ module strxfrm_test {
 	@Cflags("-fno-builtin")
 	source "strxfrm_test.c"
 }
+
+module stpcpy_test {
+	@Cflags("-fno-builtin")
+	source "stpcpy_test.c"
+}
