@@ -163,15 +163,12 @@ endif
 # without this flag*/
 common_ccflags += -fno-omit-frame-pointer
 endif
-
 ifeq ($(ARCH),aarch64)
-ifeq ($(COMPILER),gcc)
+ifeq ($(shell expr $(GCC_VERSION_MAJOR) \>= 10), 1)
 # GCC 10+ on aarch64-linux-gnu includes lse-init.o in libgcc which calls
 # __getauxval() - a glibc symbol not present in Embox. Disable runtime
 # LSE atomics CPU detection to avoid this undefined reference.
-ifeq ($(shell expr $(GCC_VERSION_MAJOR) \>= 10), 1)
 common_ccflags += -mno-outline-atomics
-endif
 endif
 endif
 endif
