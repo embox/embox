@@ -186,10 +186,40 @@ static void lan9118_mac_write(struct net_device *dev, unsigned int offset, uint3
 	/* FIXME check if operation was completed successfully. */
 }
 
+/*
+ * Alignment-safe FIFO helpers.
+ *
+ * On ARM Cortex-A9 a 32-bit access to a non-4-byte-aligned address causes a
+ * data abort. skb->mac.raw is not guaranteed to be 4-byte aligned, so all
+ * FIFO transfers go through a stack-local uint32_t (which the compiler always
+ * aligns) and use memcpy to move bytes to/from the potentially unaligned
+ * packet buffer.
+ */
+static void lan9118_fifo_read(struct net_device *dev, void *buf, int len) {
+	uint8_t *dst = (uint8_t *)buf;
+	while (len > 0) {
+		uint32_t word = lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
+		int copy = len > 4 ? 4 : len;
+		memcpy(dst, &word, copy);
+		dst += copy;
+		len -= copy;
+	}
+}
+
+static void lan9118_fifo_write(struct net_device *dev, const void *buf, int len) {
+	const uint8_t *src = (const uint8_t *)buf;
+	while (len > 0) {
+		uint32_t word = 0;
+		int copy = len > 4 ? 4 : len;
+		memcpy(&word, src, copy);
+		lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, word);
+		src += copy;
+		len -= copy;
+	}
+}
+
 static int lan9118_xmit(struct net_device *dev, struct sk_buff *skb) {
 	uint32_t l, freespace;
-	uint32_t *src, *dst;
-	int wrsz;
 
 	freespace = lan9118_reg_read(dev, LAN9118_TX_FIFO_INF) & _LAN9118_TX_FIFO_INF_TDFREE;
 
@@ -197,8 +227,12 @@ static int lan9118_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 	irq_lock();
 	{
-		l = (uint32_t) ((unsigned long)skb->mac.raw & 0x03) << 16;
-		l |= _LAN9118_TX_CMD_A_FIRST_SEG_ | _LAN9118_TX_CMD_A_LAST_SEG_;
+		/*
+		 * TX_CMD_A: TX_DATA_OFFSET (bits [18:16]) must be zero because
+		 * lan9118_fifo_write always starts at skb->mac.raw[0] with no
+		 * leading padding.
+		 */
+		l = _LAN9118_TX_CMD_A_FIRST_SEG_ | _LAN9118_TX_CMD_A_LAST_SEG_;
 		l |= skb->len;
 		lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
 
@@ -206,19 +240,8 @@ static int lan9118_xmit(struct net_device *dev, struct sk_buff *skb) {
 		l |= skb->len;
 		lan9118_reg_write(dev, LAN9118_TX_DATA_FIFO, l);
 
-		src = (uint32_t*) ((uint32_t)skb->mac.raw & (~0x3));
-		dst = (uint32_t*) (dev->base_addr + LAN9118_TX_DATA_FIFO);
-
 		assert(freespace >= skb->len);
-
-		wrsz = (uint32_t)skb->len + 3;
-		wrsz += (uint32_t)((unsigned long)skb->mac.raw & 0x3);
-		wrsz >>= 2;
-
-		while (wrsz > 0) {
-			*dst = *src++;
-			wrsz--;
-		}
+		lan9118_fifo_write(dev, skb->mac.raw, skb->len);
 
 		skb_free(skb);
 	}
@@ -240,21 +263,34 @@ static uint32_t lan9118_rx_status(struct net_device *dev) {
 
 static void lan9118_rx(struct net_device *dev) {
 	uint32_t rx_status;
-	int packet_len;
+	int packet_len, words;
 	struct sk_buff *skb;
-	uint32_t *dst;
 
 	irq_lock();
 	{
 		rx_status = lan9118_rx_status(dev);
-		assert(rx_status != 0);
+
+		/* Spurious or racy IRQ with empty status FIFO — harmless, just return. */
+		if (rx_status == 0) {
+			irq_unlock();
+			return;
+		}
 
 		packet_len = ((rx_status & 0x3FFF0000) >> 16);
+		/*
+		 * Compute the number of 32-bit words to drain BEFORE trimming the
+		 * 4-byte FCS.  The hardware always writes ceil(packet_len/4) words
+		 * (packet_len includes the FCS).  Using floor division left up to
+		 * one word behind per frame, permanently desyncing the FIFOs.
+		 */
+		words = (packet_len + 3) / 4;
 repeat:
-		packet_len -= 4; /* checksum */
+		packet_len -= 4; /* strip FCS/CRC */
 
 		if (rx_status & _LAN9118_RX_STS_ES) {
 			log_debug("error rx_status - 0x%08x", rx_status);
+			/* Drain data words so the FIFO stays in sync. */
+			{ int _w = words; while (_w--) lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO); }
 			irq_unlock();
 			return;
 		}
@@ -262,26 +298,23 @@ repeat:
 		if ((skb = skb_alloc(packet_len))) {
 			log_debug("packet_len - %d", packet_len);
 
-			dst = (uint32_t*) skb->mac.raw;
-
-			while (packet_len > 0) {
-				*dst++ = lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
-				packet_len -= 4;
-			}
-			/* and read the last word */
-			lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO);
+			/* Read words*4 bytes to consume the full FIFO entry (including pad). */
+			lan9118_fifo_read(dev, skb->mac.raw, words * 4);
 
 			skb->dev = dev;
-			//dev->stats.rx_packets++;
-			//dev->stats.rx_bytes += skb->len;
+			dev->stats.rx_packets++;
+			dev->stats.rx_bytes += skb->len;
 			netif_rx(skb);
 		} else {
-			//dev->stats.rx_dropped++;
+			dev->stats.rx_dropped++;
 			log_debug("dropped %d", packet_len);
+			/* Drain data words so the FIFO stays in sync. */
+			{ int _w = words; while (_w--) lan9118_reg_read(dev, LAN9118_RX_DATA_FIFO); }
 		}
 
 		rx_status = lan9118_rx_status(dev);
 		packet_len = ((rx_status & 0x3FFF0000) >> 16);
+		words = (packet_len + 3) / 4;
 
 		if (packet_len > 0)
 			goto repeat;
