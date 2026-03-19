@@ -1,0 +1,28 @@
+
+		TEST CASE "Reject cd into file" running ...
+
+spawn telnet 10.0.2.16
+Trying 10.0.2.16...
+Connected to 10.0.2.16.
+Escape character is '^]'.
+root@embox:/#touch /tmp/1.txt
+touch: Command returned with code -2: No such entity
+tish error: #254
+root@embox:/#
+
+autotest error: Error running "touch /tmp/1.txt"
+
+
+
+		TEST CASE "Touch and rm on /dev/ should be rejected" running ...
+
+
+		TEST CASE "Is there /dev/ttyS0" running ...
+
+spawn telnet 10.0.2.16
+Trying 10.0.2.16...
+Connected to 10.0.2.16.
+Escape character is '^]'.
+root@embox:/#ls /dev/ttyS0
+	dev/ttyS0
+root@embox:/#Connection closed by foreign host.
