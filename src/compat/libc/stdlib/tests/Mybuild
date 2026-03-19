@@ -4,6 +4,10 @@ module atof_test {
 	source "atof_test.c"
 }
 
+module atol_test { 
+    source "atol_test.c"
+}
+
 module bsearch_test {
 	source "bsearch_test.c"
 }
@@ -23,3 +27,4 @@ module mblen_test {
 module qsort_test {
 	source "qsort_test.c"
 }
+
