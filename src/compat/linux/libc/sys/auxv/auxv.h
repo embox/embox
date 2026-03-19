@@ -7,8 +7,8 @@
  * The implementation returns 0 for all types.
  */
 
-#ifndef COMPAT_POSIX_SYS_AUXV_H_
-#define COMPAT_POSIX_SYS_AUXV_H_
+#ifndef COMPAT_LINUX_LIBC_SYS_AUXV_H_
+#define COMPAT_LINUX_LIBC_SYS_AUXV_H_
 
 #include <sys/cdefs.h>
 
@@ -19,4 +19,4 @@ extern unsigned long __getauxval(unsigned long type);
 
 __END_DECLS
 
-#endif /* COMPAT_POSIX_SYS_AUXV_H_ */
+#endif /* COMPAT_LINUX_LIBC_SYS_AUXV_H_ */

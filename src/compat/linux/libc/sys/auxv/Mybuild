@@ -1,0 +1,8 @@
+package embox.compat.linux.libc.sys
+
+module auxv {
+	@IncludeExport(path="sys")
+	source "auxv.h"
+
+	source "getauxval.c"
+}
