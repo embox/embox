@@ -37,8 +37,8 @@ TEST_CASE("Test for y0(1e-10)") {
 	test_assert(y0(1e-10) < 0);
 }
 
-TEST_CASE("Test for y0(0.8936)") {
-	test_assert(fabs(y0(0.8936)) < 1e-4);
+TEST_CASE("Test for y0(0.893576966)") {
+	test_assert(fabs(y0(0.893576966)) < 1e-4);
 }
 
 TEST_CASE("Test for y0(10.0)") {
