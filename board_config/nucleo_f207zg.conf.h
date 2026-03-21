@@ -146,8 +146,6 @@ struct uart_conf uarts[] = {
 				PIN("RX", GPIO_PORT_A, 10, AF7),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
 				VAL("UART", CLK_USART1),
 			}
 		},
@@ -169,8 +167,6 @@ struct uart_conf uarts[] = {
 				PIN("RX", GPIO_PORT_A, 3, AF7),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOA),
-				VAL("RX",   CLK_GPIOA),
 				VAL("UART", CLK_USART2),
 			}
 		},
@@ -192,8 +188,6 @@ struct uart_conf uarts[] = {
 				PIN("RX", GPIO_PORT_D, 9, AF7),
 			},
 			.clocks = {
-				VAL("TX",   CLK_GPIOD),
-				VAL("RX",   CLK_GPIOD),
 				VAL("UART", CLK_USART3),
 			}
 		},
