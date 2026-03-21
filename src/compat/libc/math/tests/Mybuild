@@ -112,6 +112,11 @@ module floor_test {
 	source "floor_test.c"
 }
 
+module fmin_test {
+    @Cflags("-fno-builtin")
+    source "fmin_test.c"
+}
+
 module fmod_test {
 	@Cflags("-fno-builtin")
 	source "fmod_test.c"
