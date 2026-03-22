@@ -28,3 +28,6 @@ module qsort_test {
 	source "qsort_test.c"
 }
 
+module itoa_test {
+	source "itoa_test.c"
+}
