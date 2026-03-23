@@ -56,7 +56,7 @@ struct pin_description;
 
 struct i2c_bus {
 	const struct i2c_ops *i2c_ops;
-	void *i2c_priv;
+	void *i2cb_priv;
 	unsigned i2cb_id;
 	const struct pin_description *i2cb_pins;
 	uintptr_t                     i2cb_label;

@@ -25,7 +25,7 @@ static struct i2c_dw_dev i2c_dw0_priv = {
 };
 
 static const struct i2c_bus i2c_dw0_bus = {
-    .i2c_priv = &i2c_dw0_priv,
+    .i2cb_priv = &i2c_dw0_priv,
     .i2c_ops = &i2c_dw_ops,
     .i2cb_id = I2C_DW_ID,
 };

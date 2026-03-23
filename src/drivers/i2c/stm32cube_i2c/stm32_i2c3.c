@@ -48,7 +48,7 @@ static struct stm32_i2c_priv stm32_i2c3_priv = {
 };
 
 static const struct i2c_bus stm32_i2c3_bus = {
-    .i2c_priv = &stm32_i2c3_priv,
+    .i2cb_priv = &stm32_i2c3_priv,
     .i2c_ops = &stm32_i2c_ops,
     .i2cb_id = IMX_I2C_ID,
 };

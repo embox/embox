@@ -48,7 +48,7 @@ int vg015_i2c_hw_init0(const struct i2c_bus *bus) {
 }
 
 static const struct i2c_bus i2c_bus0 = {
-    .i2c_priv = NULL,
+    .i2cb_priv = NULL,
     .i2c_ops = &vg015_i2c_ops,
     .i2cb_id = I2C_BUS_ID,
     .i2cb_pins = vg015_i2c_pins,

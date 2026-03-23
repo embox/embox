@@ -141,7 +141,7 @@ static int stm32_i2c_init(const struct i2c_bus *bus) {
 	struct stm32_i2c_priv *priv;
 	I2C_HandleTypeDef *i2c_handle;
 
-	priv = bus->i2c_priv;
+	priv = bus->i2cb_priv;
 	i2c_handle = priv->i2c_handle;
 
 	i2c_handle->Instance = priv->i2c;
@@ -172,7 +172,7 @@ static int stm32_i2c_master_xfer(const struct i2c_bus *bus,
 	int i;
 	int res = -1;
 
-	priv = bus->i2c_priv;
+	priv = bus->i2cb_priv;
 	assert(priv);
 	assert(priv->i2c_handle);
 

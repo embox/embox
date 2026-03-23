@@ -148,7 +148,7 @@ static int sc64_i2c_master_xfer(const struct i2c_bus *bus, struct i2c_msg *msgs,
 	int err;
 	int i;
 
-	regs = (struct sc64_i2c_regs *)bus->i2c_priv;
+	regs = (struct sc64_i2c_regs *)bus->i2cb_priv;
 	send_stop = false;
 	err = 0;
 
@@ -188,7 +188,7 @@ static int sc64_i2c_master_xfer(const struct i2c_bus *bus, struct i2c_msg *msgs,
 static int sc64_i2c_init(const struct i2c_bus *bus) {
 	struct sc64_i2c_regs *regs;
 
-	regs = (struct sc64_i2c_regs *)bus->i2c_priv;
+	regs = (struct sc64_i2c_regs *)bus->i2cb_priv;
 	if (!regs) {
 		return -EINVAL;
 	}

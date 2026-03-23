@@ -281,7 +281,7 @@ static int i2c_dw_xfer(const struct i2c_bus *bus, struct i2c_msg *msgs,
 	struct i2c_dw_dev *dev;
 	int ret;
 
-	dev = bus->i2c_priv;
+	dev = bus->i2cb_priv;
 
 	dev->msgs = msgs;
 	dev->msgs_num = num_msgs;
@@ -491,7 +491,7 @@ static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 static int i2c_dw_init(const struct i2c_bus *bus) {
 	struct i2c_dw_dev *dev;
 
-	dev = bus->i2c_priv;
+	dev = bus->i2cb_priv;
 
 	i2c_dw_hw_init(dev);
 

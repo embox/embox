@@ -47,7 +47,7 @@ static const struct imx_i2c_priv imx_i2c1_priv = {
 };
 
 static const struct i2c_bus imx_i2c1_bus = {
-    .i2c_priv = (void *)&imx_i2c1_priv,
+    .i2cb_priv = (void *)&imx_i2c1_priv,
     .i2c_ops = &imx_i2c_ops,
     .i2cb_id = IMX_I2C_ID,
 };
