@@ -9,6 +9,8 @@ module i2c_core {
 	source "i2c.h"
 	@IncludeExport(path="drivers/i2c")
 	source "i2c_bus.h"
+	@IncludeExport(path="drivers/i2c")
+	source "i2c_dev.h"
 
 	source "i2c_bus.c"
 }
