@@ -6,5 +6,5 @@ module spi_nor_test {
 	source "spi_nor_test.c"
 
 	depends embox.driver.flash.core
-	depends embox.compat.posix.util.getopt
+	depends embox.compat.posix.unistd.getopt
 }
