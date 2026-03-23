@@ -1,0 +1,7 @@
+"export PWD=/",
+"export HOME=/",
+"ifconfig lo 127.0.0.1 netmask 255.0.0.0 up",
+"netmanager",
+"service telnetd",
+"service httpd",
+"tish",

@@ -62,14 +62,16 @@ int imx6_ecspi_init(struct imx6_ecspi *dev) {
 	/* Set default speed */
 	REG32_ORIN(ECSPI_CONREG(dev), 0x2 << 12);
 
-	/* SCLK_CTL */
-	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 20);
-	/* DATA_CTL */
-	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 16);
-	/* SCLK_POL */
-	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 4);
-	/* SCLK_PHA */
-	REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 0);
+	if (dev->use_configreg) {
+		/* SCLK_CTL */
+		REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 20);
+		/* DATA_CTL */
+		REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 16);
+		/* SCLK_POL */
+		REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 4);
+		/* SCLK_PHA */
+		REG32_ORIN(ECSPI_CONFIGREG(dev), 0xf << 0);
+	}
 
 	imx6_ecspi_show_regs(dev);
 

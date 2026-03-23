@@ -1,0 +1,11 @@
+package embox.driver.flash
+
+module spi_nor {
+	source "spi_nor.c"
+
+	option number spi_bus = 1
+	option number spi_cs  = 0
+
+	depends embox.driver.flash.core
+	depends embox.driver.spi.core
+}
