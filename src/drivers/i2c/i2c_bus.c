@@ -31,7 +31,7 @@ int i2c_bus_register(const struct i2c_bus *bus) {
 		return -EINVAL;
 	}
 
-	bus_id = bus->i2c_id;
+	bus_id = bus->i2cb_id;
 
 	if (bus_id >= I2C_BUS_MAX) {
 		return -EINVAL;

@@ -20,7 +20,7 @@ extern const struct i2c_ops skeleton_i2c_ops;
 static const struct i2c_bus i2c_bus1 = {
     .i2c_priv = NULL,
     .i2c_ops = &skeleton_i2c_ops,
-    .i2c_id = I2C_BUS_ID,
+    .i2cb_id = I2C_BUS_ID,
 };
 
 I2C_BUS_REGISTER(&i2c_bus1);

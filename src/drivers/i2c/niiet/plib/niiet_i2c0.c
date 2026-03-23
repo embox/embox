@@ -98,7 +98,7 @@ const struct i2c_ops niiet_i2c_ops = {
 static const struct i2c_bus niiet_i2c_bus = {
     .i2c_ops = &niiet_i2c_ops,
     .i2c_priv = NULL,
-    .i2c_id = IMX_I2C_ID,
+    .i2cb_id = IMX_I2C_ID,
 };
 
 I2C_BUS_REGISTER(&niiet_i2c_bus);
