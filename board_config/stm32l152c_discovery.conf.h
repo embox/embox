@@ -7,6 +7,8 @@
 #define SPI2_BASE             (APB1PERIPH_BASE + 0x00003800UL)
 #define SPI3_BASE             (APB1PERIPH_BASE + 0x00003C00UL)
 #define SPI1_BASE             (APB2PERIPH_BASE + 0x00003000UL)
+#define I2C1_BASE             (APB1PERIPH_BASE + 0x5400UL)
+#define I2C2_BASE             (APB1PERIPH_BASE + 0x5800UL)
 
 struct uart_conf uarts[] = {
 	[1] = {
@@ -134,40 +136,46 @@ struct spi_conf spis[] = {
 
 struct i2c_conf i2cs[] = {
     [1] = {
-   	 .status = DISABLED,
-   	 .name = "I2C1",
-   	 .dev = {
+		.status = DISABLED,
 		.name = "I2C1",
-   		 .irqs = {
-   			 VAL("EVENT", 31),
-   			 VAL("ERROR", 32),
-   		 },
-   		 .pins = {
-			PIN("SCL", GPIO_PORT_B, 8, AF4),
-			PIN("SDA", GPIO_PORT_B, 9, AF4),
-   		 },
-   		 .clocks = {
-   			 VAL("I2C", CLK_I2C1),
-   		 }
-   	 },
-    },
-    [2] = {
-   	 .status = DISABLED,
-   	 .name = "I2C2",
-   	 .dev = {
+		.dev = {
+			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("EVENT", 31),
+				VAL("ERROR", 32),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 8, AF4),
+				PIN("SDA", GPIO_PORT_B, 9, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C1),
+			}
+		},
+		},
+	[2] = {
+		.status = DISABLED,
 		.name = "I2C2",
-   		 .irqs = {
-   			 VAL("EVENT", 33),
-   			 VAL("ERROR", 34),
-   		 },
-   		 .pins = {
-			PIN("SCL", GPIO_PORT_B, 10, AF4),
-			PIN("SDA", GPIO_PORT_B, 11, AF4),
-   		 },
-   		 .clocks = {
-   			 VAL("I2C", CLK_I2C2),
-   		 }
-   	 },
+		.dev = {
+			.name = "I2C2",
+			.regs = {
+				REGMAP("BASE", (I2C2_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("EVENT", 33),
+				VAL("ERROR", 34),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_B, 10, AF4),
+				PIN("SDA", GPIO_PORT_B, 11, AF4),
+			},
+			.clocks = {
+				VAL("I2C", CLK_I2C2),
+			}
+		},
     },
 };
 
