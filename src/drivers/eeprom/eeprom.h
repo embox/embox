@@ -33,7 +33,7 @@ struct eeprom_dev {
 #define eeprom_DEV_OPENED (1 << 0)
 
 	struct dlist_head eed_dev_link;  /* global device list */
-
+//FIXME use struct i2c_dev eed_i2c_dev;
 	uint8_t eed_bus;
 	uint16_t eed_bus_addr;
 

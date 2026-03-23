@@ -17,13 +17,15 @@
 #define LSM6DSL_I2C_BUS   OPTION_GET(NUMBER, i2c_bus)
 
 struct lsm6dsl_dev {
-	int i2c_bus;
-	int i2c_addr;
+	struct i2c_dev i2c_dev;
 };
 
 struct lsm6dsl_dev lsm6dsl_dev0 = {
-	.i2c_bus  = LSM6DSL_I2C_BUS,
-	.i2c_addr = LSM6DSL_I2C_ADDR
+	.i2c_dev = {
+		.i2cd_type_name = "LSM6DSL_I2C",
+		.i2cd_bus  = LSM6DSL_I2C_BUS,
+		.i2cd_addr = LSM6DSL_I2C_ADDR
+	},
 };
 
 int lsm6dsl_hw_init(struct lsm6dsl_dev *dev) {
@@ -32,21 +34,27 @@ int lsm6dsl_hw_init(struct lsm6dsl_dev *dev) {
 }
 
 int lsm6dsl_readb(struct lsm6dsl_dev *dev, int offset, uint8_t *ret) {
-	if (i2c_bus_write(dev->i2c_bus, dev->i2c_addr,
+	struct i2c_dev *i2c_dev = &dev->i2c_dev;
+
+	if (i2c_bus_write(i2c_dev->i2cd_bus, i2c_dev->i2cd_addr,
 	        (uint8_t *) &offset, 1) < 0) {
 		return -1;
 	}
-	if (i2c_bus_read(dev->i2c_bus, dev->i2c_addr, ret, 1) < 0) {
+
+	if (i2c_bus_read(i2c_dev->i2cd_bus, i2c_dev->i2cd_addr, ret, 1) < 0) {
 		return -1;
 	}
+
 	return 0;
 }
 
-int lsm6dsl_writeb(struct lsm6dsl_dev *dev,
-	    int offset, uint8_t val) {
+int lsm6dsl_writeb(struct lsm6dsl_dev *dev, int offset, uint8_t val) {
+	struct i2c_dev *i2c_dev = &dev->i2c_dev;
 	uint16_t tmp = (offset & 0xFF) | (val << 8);
-	if (i2c_bus_write(dev->i2c_bus, dev->i2c_addr, (void *) &tmp, 2)) {
+
+	if (i2c_bus_write(i2c_dev->i2cd_bus, i2c_dev->i2cd_addr, (void *) &tmp, 2)) {
 		return -1;
 	}
+
 	return 0;
 }

@@ -6,12 +6,15 @@
  * @date 17.12.2019
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 
 #include <drivers/i2c/i2c.h>
 #include <drivers/sensors/adxl345.h>
+
 #include <framework/mod/options.h>
-#include <util/log.h>
+
 
 #define ADXL345_DEVID           0x00
 #define ADXL345_OFSX            0x1E

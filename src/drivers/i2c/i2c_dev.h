@@ -11,6 +11,8 @@
 #include <sys/cdefs.h>
 
 struct i2c_dev {
+	const char *i2cd_type_name;
+
 	int i2cd_bus;
 	int i2cd_addr;
 };
