@@ -16,7 +16,7 @@
 
 static const struct i2c_bus sc64_i2c1_bus = {
     .i2cb_priv = (void *)BASE_ADDR,
-    .i2c_ops = &sc64_i2c_ops,
+    .i2cb_ops = &sc64_i2c_ops,
     .i2cb_id = I2C_BUS_ID,
 };
 

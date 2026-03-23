@@ -41,7 +41,7 @@ struct i2c_msg {
 	uint16_t flags; /* flags */
 };
 
-struct i2c_ops {
+struct i2c_bus_ops {
 	int (*i2c_master_xfer)(const struct i2c_bus *bus, struct i2c_msg *msgs,
 	    size_t num_msgs);
 	int (*i2c_set_baudrate)(const struct i2c_bus *bus, uint32_t baudrate);
@@ -55,7 +55,7 @@ struct pin_description;
 #define I2C_BUS_PIN_SDA   1
 
 struct i2c_bus {
-	const struct i2c_ops *i2c_ops;
+	const struct i2c_bus_ops *i2cb_ops;
 	void *i2cb_priv;
 	unsigned i2cb_id;
 	const struct pin_description *i2cb_pins;

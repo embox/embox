@@ -19,7 +19,7 @@
 #define I2C_BUS_ID   0
 #define BASE_ADDR    OPTION_GET(NUMBER, base_addr)
 
-extern const struct i2c_ops vg015_i2c_ops;
+extern const struct i2c_bus_ops vg015_i2c_ops;
 extern int clk_enable(char *clk_name);
 
 static const struct pin_description vg015_i2c_pins[] = {
@@ -49,7 +49,7 @@ int vg015_i2c_hw_init0(const struct i2c_bus *bus) {
 
 static const struct i2c_bus i2c_bus0 = {
     .i2cb_priv = NULL,
-    .i2c_ops = &vg015_i2c_ops,
+    .i2cb_ops = &vg015_i2c_ops,
     .i2cb_id = I2C_BUS_ID,
     .i2cb_pins = vg015_i2c_pins,
     .i2cb_label = BASE_ADDR,

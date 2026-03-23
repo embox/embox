@@ -90,13 +90,13 @@ static int niiet_i2c_init() {
 	return 0;
 }
 
-const struct i2c_ops niiet_i2c_ops = {
+const struct i2c_bus_ops niiet_i2c_ops = {
     .i2c_master_xfer = niiet_i2c_master_xfer,
     .i2c_init = niiet_i2c_init,
 };
 
 static const struct i2c_bus niiet_i2c_bus = {
-    .i2c_ops = &niiet_i2c_ops,
+    .i2cb_ops = &niiet_i2c_ops,
     .i2cb_priv = NULL,
     .i2cb_id = IMX_I2C_ID,
 };

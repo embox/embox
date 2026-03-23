@@ -244,7 +244,7 @@ static int imx_i2c_init(const struct i2c_bus *bus) {
 	return 0;
 }
 
-const struct i2c_ops imx_i2c_ops = {
+const struct i2c_bus_ops imx_i2c_ops = {
     .i2c_master_xfer = imx_i2c_master_xfer,
     .i2c_init = imx_i2c_init,
 };

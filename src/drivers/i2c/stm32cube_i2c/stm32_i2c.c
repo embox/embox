@@ -192,7 +192,7 @@ static int stm32_i2c_master_xfer(const struct i2c_bus *bus,
 	return res;
 }
 
-const struct i2c_ops stm32_i2c_ops = {
+const struct i2c_bus_ops stm32_i2c_ops = {
     .i2c_master_xfer = stm32_i2c_master_xfer,
     .i2c_init = stm32_i2c_init,
 };

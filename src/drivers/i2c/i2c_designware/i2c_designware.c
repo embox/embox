@@ -498,7 +498,7 @@ static int i2c_dw_init(const struct i2c_bus *bus) {
 	return irq_attach(dev->irq_num, i2c_dw_irq_handler, 0, dev, "i2c_dw");
 }
 
-const struct i2c_ops i2c_dw_ops = {
+const struct i2c_bus_ops i2c_dw_ops = {
     .i2c_master_xfer = i2c_dw_xfer,
     .i2c_init = i2c_dw_init,
 };

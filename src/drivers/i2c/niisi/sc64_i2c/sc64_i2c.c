@@ -199,7 +199,7 @@ static int sc64_i2c_init(const struct i2c_bus *bus) {
 	return 0;
 }
 
-const struct i2c_ops sc64_i2c_ops = {
+const struct i2c_bus_ops sc64_i2c_ops = {
     .i2c_master_xfer = sc64_i2c_master_xfer,
     .i2c_init = sc64_i2c_init,
 };

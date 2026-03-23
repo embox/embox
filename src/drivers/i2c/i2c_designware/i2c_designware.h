@@ -60,7 +60,7 @@ struct i2c_dw_dev {
 	int rx_outstanding;
 };
 
-extern const struct i2c_ops i2c_dw_ops;
+extern const struct i2c_bus_ops i2c_dw_ops;
 
 extern int i2c_dw_master_init(struct i2c_dw_dev *dev);
 
