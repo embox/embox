@@ -55,12 +55,11 @@ struct pin_description;
 #define I2C_BUS_PIN_SDA   1
 
 struct i2c_bus {
-	const struct i2c_bus_ops *i2cb_ops;
-	void *i2cb_priv;
-	unsigned i2cb_id;
-	const struct pin_description *i2cb_pins;
+	const struct i2c_bus_ops     *i2cb_ops;
 	uintptr_t                     i2cb_label;
-
+	const struct pin_description *i2cb_pins;
+	unsigned                      i2cb_id;
+	void                         *i2cb_priv;
 };
 
 __BEGIN_DECLS
