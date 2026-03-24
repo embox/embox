@@ -28,6 +28,76 @@ ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);
 
 EMBOX_UNIT_INIT(spi_init);
 
+#if USE_GPIO_CS
+
+#include <drivers/gpio.h>
+
+static inline int spi_ctrl_pins_init(struct spi_controller *spi_c) {
+	if (spi_c->spic_pins) {
+		gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
+				(1 << spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin),
+				GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_func) |
+				GPIO_MODE_OUT_PUSH_PULL
+				// GPIO_MODE_OUT
+			);
+
+		gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_port,
+				(1 << spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_pin),
+				GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_TX_IDX].pd_func) |
+				GPIO_MODE_OUT_PUSH_PULL
+				// GPIO_MODE_OUT
+			);
+
+		gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_port,
+				(1 << spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_pin),
+				GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_RX_IDX].pd_func) |
+				GPIO_MODE_IN_PULL_UP
+				//GPIO_MODE_IN		
+			);
+	}
+	return 0;
+}
+
+static inline int spi_dev_cs_pin_init(struct spi_device *dev) {
+	(void) dev;
+	return 0;
+}
+
+static inline int spi_dev_cs_control(struct spi_device *dev, int state) {
+	const struct pin_description *cs_pin;
+    
+    if ( !dev || !dev->spid_cs_pin ) {
+		log_debug("SPI_CS is not used");	        
+        return 0;	// CS not use by software
+    }
+    
+    cs_pin = dev->spid_cs_pin; 
+
+    gpio_set(cs_pin->pd_port, (1 << cs_pin->pd_pin), state);
+    
+    return 0;
+}
+
+#else /* USE_GPIO_CS == false */
+
+static inline int spi_ctrl_pins_init(struct spi_controller *spi_c) {
+	(void) spi_c;
+	return 0;
+}
+
+static inline int spi_dev_cs_pin_init(struct spi_device *dev) {
+	(void) dev;
+	return 0;
+}
+
+static inline int spi_dev_cs_control(struct spi_device *dev, int state) {
+	(void) dev;
+	(void) state;
+	return 0;
+}
+
+#endif /* USE_GPIO_CS */
+
 /**
  * @brief Call device-specific init handlers for all
  * registered SPI devices.
@@ -38,15 +108,22 @@ static int spi_init(void) {
 	struct spi_device *dev;
 	struct spi_controller *cntl;
 
+	array_spread_foreach(cntl, __spi_controller_registry) {
+		assert(cntl);
+		if (cntl->spic_ops && cntl->spic_ops->init) {
+
+			cntl->spic_ops->init(cntl);
+		}
+	}
+
 	array_spread_foreach(dev, __spi_device_registry) {
 		assert(dev);
 
 		cntl = spi_controller_by_id(dev->spid_bus_num);
 		dev->spid_spi_cntl = cntl;
 
-		if (cntl && cntl->spic_ops && cntl->spic_ops->init) {
-			cntl->spic_ops->init(cntl);
-		}
+		spi_dev_cs_pin_init(dev);
+
 		if (!dev->spid_ops) {
 			continue;
 		}
@@ -61,33 +138,6 @@ static int spi_init(void) {
 
 	return 0;
 }
-
-#if USE_GPIO_CS
-
-#include <drivers/gpio.h>
-
-static int spi_dev_cs_control(struct spi_device *dev, int state) {
-	const struct pin_description *cs_pin;
-    
-    if ( !dev || !dev->spid_cs_pin ) {
-		log_debug("SPI_CS is not used");	        
-        return 0;	// CS not use by software
-    }
-    
-    cs_pin = dev->spid_cs_pin; 
-
-    gpio_set(cs_pin->pd_port, (1 << cs_pin->pd_pin), state);
-    
-    return 0;
-}
-#else /* USE_GPIO_CS == false */
-static inline int spi_dev_cs_control(struct spi_device *dev, int state) {
-	(void) dev;
-	(void) state;
-	return 0;
-}
-
-#endif /* USE_GPIO_CS */
 
 /**
  * @brief Perform device-dependent SPI transfer operation
