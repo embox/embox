@@ -8,6 +8,6 @@ module k1921vg015_rcu {
 
 	source "k1921vg015_rcu.c"
 
-	@IncludeExport(path="drivers/clk")
+	@IncludeExport(path="drivers/clk", target_name="niiet_rcu.h")
 	source "k1921vg015_rcu.h"
 }

@@ -9,7 +9,7 @@
 
 #include <stdint.h>
 
-#include <drivers/clk/k1921vg015_rcu.h>
+#include <drivers/clk/niiet_rcu.h>
 #include <drivers/gpio.h>
 #include <framework/mod/options.h>
 #include <hal/reg.h>
@@ -32,7 +32,7 @@ struct gpio_reg {
 	uint32_t GPIO_DATAOUTSET_reg; /* 0x08 */
 	uint32_t GPIO_DATAOUTCLR_reg; /* 0x0C */
 	uint32_t GPIO_DATAOUTTGL_reg; /* 0x10 */
-	uint32_t GPIO_DENSET_reg;     /* 0x14 */
+	uint32_t GPIO_DENSET_reg;     /* 0x14 VG1T Reserved_denset */
 	uint32_t GPIO_DENCLR_reg;     /* 0x18 */
 	uint32_t GPIO_INMODE_reg;     /* 0x1C */
 	uint32_t GPIO_PULLMODE_reg;   /* 0x20 */
@@ -42,8 +42,8 @@ struct gpio_reg {
 	uint32_t GPIO_OUTENCLR_reg;   /* 0x30 */
 	uint32_t GPIO_ALTFUNCSET_reg; /* 0x34 */
 	uint32_t GPIO_ALTFUNCCLR_reg; /* 0x38 */
-	uint32_t GPIO_ALTFUNCNUM_reg; /* 0x3C */
-	uint32_t reserved2[1];
+	uint32_t GPIO_ALTFUNCNUM0_reg; /* 0x3C */
+	uint32_t reserved2[1];        /* 0x40 VG1T ALTFUNCNUM1*/
 	uint32_t GPIO_SYNCSET_reg;     /* 0x44 */
 	uint32_t GPIO_SYNCCLR_reg;     /* 0x48 */
 	uint32_t GPIO_QUALSET_reg;     /* 0x4C */
@@ -64,7 +64,7 @@ struct gpio_reg {
 	uint32_t GPIO_DMAREQCLR_reg;   /* 0x88 */
 	uint32_t GPIO_ADCSOCSET_reg;   /* 0x8C */
 	uint32_t GPIO_ADCSOCCLR_reg;   /* 0x90 */
-	uint32_t reserved3[2];
+	uint32_t reserved3[2];      /* VG1T  RXEVSET & RXEVCLR */
 	uint32_t GPIO_LOCKKEY_reg; /* 0x9C */
 	uint32_t GPIO_LOCKSET_reg; /* 0xA0 */
 	uint32_t GPIO_LOCKCLR_reg; /* 0xA4 */
@@ -230,6 +230,26 @@ static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 		clk_name = CONF_GPIO_PORT_C_CLK_ENABLE();
 #endif /* defined CONF_GPIO_PORT_C_CLK_ENABLE */
 		break;
+	case 3:
+#if defined CONF_GPIO_PORT_D_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_D_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_D_CLK_ENABLE */
+		break;
+	case 4:
+#if defined CONF_GPIO_PORT_E_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_E_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_E_CLK_ENABLE */
+		break;
+	case 5:
+#if defined CONF_GPIO_PORT_F_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_F_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_F_CLK_ENABLE */
+		break;
+	case 6:
+#if defined CONF_GPIO_PORT_G_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_G_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_G_CLK_ENABLE */
+		break;
 	default:
 		return -1;
 	}
@@ -276,8 +296,8 @@ static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 			if (pins & (1 << i)) {
 				uint32_t alt = GPIO_MODE_ALT_GET(mode);
 
-				gpio_reg->GPIO_ALTFUNCNUM_reg &= ~(0x3 << i * 2);
-				gpio_reg->GPIO_ALTFUNCNUM_reg |= alt << i * 2;
+				gpio_reg->GPIO_ALTFUNCNUM0_reg &= ~(0x3 << i * 2);
+				gpio_reg->GPIO_ALTFUNCNUM0_reg |= alt << i * 2;
 			}
 		}
 	}

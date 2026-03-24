@@ -19,7 +19,7 @@
 
 #include <framework/mod/options.h>
 
-#include <drivers/clk/k1921vg015_rcu.h>
+#include <drivers/clk/niiet_rcu.h>
 
 /* FROM board_config.h*/
 #define CLK_NAME_GPIO     "CLK_GPIO"
@@ -333,6 +333,24 @@ if ((RCU->RCU_CLKSTAT_reg & RCU_CLKSTAT_SRC_MASK) == RCU_CLKSTAT_SRC_SYSPLL0CLK)
     RCU->RCU_PLLSYSCFG0_reg |= (7 << 25);/* PLLSYSCFG0_PD1B */
 
     RCU->RCU_PLLSYSCFG0_reg |= RCU_PLLSYSCFG0_DACEN;
+
+#if 0
+/* FIXME a neater version */
+    // Fout0 = 50 000 000 Hz
+// Fout1 = 50 000 000 Hz
+ RCU->PLLSYSCFG0 =( 0 << RCU_PLLSYSCFG0_PD1B_Pos) |  //PD1B
+      ( 4 << RCU_PLLSYSCFG0_PD1A_Pos) |  //PD1A
+      ( 0 << RCU_PLLSYSCFG0_PD0B_Pos) |  //PD0B
+      ( 4 << RCU_PLLSYSCFG0_PD0A_Pos) |  //PD0A
+      ( 8 << RCU_PLLSYSCFG0_REFDIV_Pos)    |  //refdiv
+      ( 0 << RCU_PLLSYSCFG0_FOUTEN_Pos)    |  //fouten
+      ( 0 << RCU_PLLSYSCFG0_DSMEN_Pos)     |  //dsmen
+      ( 0 << RCU_PLLSYSCFG0_DACEN_Pos)     |  //dacen
+      ( 3 << RCU_PLLSYSCFG0_BYP_Pos)       |  //bypass
+      ( 1 << RCU_PLLSYSCFG0_PLLEN_Pos);       //en
+ RCU->PLLSYSCFG1 = 0;          //FRAC = 0      
+ RCU->PLLSYSCFG2 = 125;         //FBDIV
+#endif
 
 #elif (CONF_RCU_CLK_ENABLE_HSECLK_VAL() == 20000000)
 // Fout0 = 50 000 000 Hz
