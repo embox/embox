@@ -199,7 +199,7 @@ static int imx_i2c_master_xfer(const struct i2c_bus *bus, struct i2c_msg *msgs,
 	int i;
 	uint8_t tmp;
 
-	priv = (const struct imx_i2c_priv *)bus->i2c_priv;
+	priv = (const struct imx_i2c_priv *)bus->i2cb_priv;
 
 	res = imx_i2c_start(priv);
 	if (res) {
@@ -235,7 +235,7 @@ out:
 static int imx_i2c_init(const struct i2c_bus *bus) {
 	const struct imx_i2c_priv *priv;
 
-	priv = (const struct imx_i2c_priv *)bus->i2c_priv;
+	priv = (const struct imx_i2c_priv *)bus->i2cb_priv;
 
 	if (priv->init_pins) {
 		priv->init_pins();
@@ -244,7 +244,7 @@ static int imx_i2c_init(const struct i2c_bus *bus) {
 	return 0;
 }
 
-const struct i2c_ops imx_i2c_ops = {
+const struct i2c_bus_ops imx_i2c_ops = {
     .i2c_master_xfer = imx_i2c_master_xfer,
     .i2c_init = imx_i2c_init,
 };

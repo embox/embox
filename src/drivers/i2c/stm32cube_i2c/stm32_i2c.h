@@ -26,7 +26,7 @@ struct stm32_i2c_priv {
 	int error_irq;
 };
 
-extern const struct i2c_ops stm32_i2c_ops;
+extern const struct i2c_bus_ops stm32_i2c_ops;
 
 extern int stm32_i2c_common_init(struct stm32_i2c_priv *adapter);
 

@@ -174,6 +174,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C1",
 		.dev = {
 			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 31),
 				VAL("ERROR", 32),
@@ -192,6 +195,9 @@ struct i2c_conf i2cs[] = {
 		.name = "I2C2",
 		.dev = {
 			.name = "I2C2",
+			.regs = {
+				REGMAP("BASE", (I2C2_BASE), 0x100),
+			},
 			.irqs = {
 				VAL("EVENT", 33),
 				VAL("ERROR", 34),

@@ -37,6 +37,6 @@ struct imx_i2c_priv {
 	int irq_num;
 };
 
-extern const struct i2c_ops imx_i2c_ops;
+extern const struct i2c_bus_ops imx_i2c_ops;
 
 #endif /* SRC_DRIVERS_I2C_IMX6_I2C_IMX6_H_ */

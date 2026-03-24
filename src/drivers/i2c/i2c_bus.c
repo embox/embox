@@ -27,11 +27,11 @@ int i2c_bus_register(const struct i2c_bus *bus) {
 	unsigned bus_id;
 	int err;
 
-	if (!bus || !bus->i2c_ops || !bus->i2c_ops->i2c_master_xfer) {
+	if (!bus || !bus->i2cb_ops || !bus->i2cb_ops->i2c_master_xfer) {
 		return -EINVAL;
 	}
 
-	bus_id = bus->i2c_id;
+	bus_id = bus->i2cb_id;
 
 	if (bus_id >= I2C_BUS_MAX) {
 		return -EINVAL;
@@ -41,8 +41,8 @@ int i2c_bus_register(const struct i2c_bus *bus) {
 		return -EBUSY;
 	}
 
-	if (bus->i2c_ops->i2c_init) {
-		err = bus->i2c_ops->i2c_init(bus);
+	if (bus->i2cb_ops->i2c_init) {
+		err = bus->i2cb_ops->i2c_init(bus);
 		if (err) {
 			return err;
 		}
@@ -62,8 +62,8 @@ int i2c_bus_unregister(unsigned bus_id) {
 		return -EINVAL;
 	}
 
-	if (bus->i2c_ops->i2c_deinit) {
-		err = bus->i2c_ops->i2c_deinit(bus);
+	if (bus->i2cb_ops->i2c_deinit) {
+		err = bus->i2cb_ops->i2c_deinit(bus);
 		if (err) {
 			return err;
 		}
@@ -86,7 +86,7 @@ int i2c_bus_transfer(unsigned bus_id, struct i2c_msg *msgs, size_t num_msgs) {
 		return -EINVAL;
 	}
 
-	return bus->i2c_ops->i2c_master_xfer(bus, msgs, num_msgs);
+	return bus->i2cb_ops->i2c_master_xfer(bus, msgs, num_msgs);
 }
 
 int i2c_bus_set_baudrate(unsigned bus_id, uint32_t baudrate) {
@@ -97,11 +97,11 @@ int i2c_bus_set_baudrate(unsigned bus_id, uint32_t baudrate) {
 		return -EINVAL;
 	}
 
-	if (!bus->i2c_ops->i2c_set_baudrate) {
+	if (!bus->i2cb_ops->i2c_set_baudrate) {
 		return -ENOSUPP;
 	}
 
-	return bus->i2c_ops->i2c_set_baudrate(bus, baudrate);
+	return bus->i2cb_ops->i2c_set_baudrate(bus, baudrate);
 }
 
 const struct i2c_bus *i2c_bus_get(unsigned bus_id) {

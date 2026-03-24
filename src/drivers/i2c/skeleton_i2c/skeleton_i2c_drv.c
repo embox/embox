@@ -49,7 +49,7 @@ static int skeleton_i2c_init(const struct i2c_bus *bus) {
 	return 0;
 }
 
-const struct i2c_ops skeleton_i2c_ops = {
+const struct i2c_bus_ops skeleton_i2c_ops = {
     .i2c_master_xfer = skeleton_i2c_master_xfer,
     .i2c_init = skeleton_i2c_init,
 };
