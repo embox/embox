@@ -9,17 +9,24 @@
  * @date 03.12.2018
  */
 
+#include <util/log.h>
+
 #include <assert.h>
 #include <errno.h>
 
 #include <drivers/char_dev.h>
 #include <drivers/spi.h>
+
 #include <embox/unit.h>
+
 #include <framework/mod/options.h>
-#include <util/log.h>
+
+#define USE_GPIO_CS     OPTION_GET(BOOLEAN, use_cs)
 
 ARRAY_SPREAD_DECLARE(struct spi_device *, __spi_device_registry);
 ARRAY_SPREAD_DECLARE(struct spi_controller *, __spi_controller_registry);
+
+EMBOX_UNIT_INIT(spi_init);
 
 /**
  * @brief Call device-specific init handlers for all
@@ -54,7 +61,33 @@ static int spi_init(void) {
 
 	return 0;
 }
-EMBOX_UNIT_INIT(spi_init);
+
+#if USE_GPIO_CS
+
+#include <drivers/gpio.h>
+
+static int spi_dev_cs_control(struct spi_device *dev, int state) {
+	const struct pin_description *cs_pin;
+    
+    if ( !dev || !dev->spid_cs_pin ) {
+		log_debug("SPI_CS is not used");	        
+        return 0;	// CS not use by software
+    }
+    
+    cs_pin = dev->spid_cs_pin; 
+
+    gpio_set(cs_pin->pd_port, (1 << cs_pin->pd_pin), state);
+    
+    return 0;
+}
+#else /* USE_GPIO_CS == false */
+static inline int spi_dev_cs_control(struct spi_device *dev, int state) {
+	(void) dev;
+	(void) state;
+	return 0;
+}
+
+#endif /* USE_GPIO_CS */
 
 /**
  * @brief Perform device-dependent SPI transfer operation
@@ -68,29 +101,45 @@ EMBOX_UNIT_INIT(spi_init);
  */
 int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt) {
 	struct spi_controller *cntl;
-	int err;
+	int res;
 
 	assert(dev);
 	assert(in || out);
 
 	cntl = dev->spid_spi_cntl;
 	
-	cntl->spic_active_dev = dev; // сохраняем SPI устройство в контроллере
+	cntl->spic_active_dev = dev; /* store an active SPI device in controller */
+
+	if (dev->spid_flags & SPI_CS_ACTIVE /*&& spi_dev->is_master*/) {
+		spi_dev_cs_control(dev, 0);	
+		log_debug("SPI_CS_ACTIVE(%d::%d)", dev->spid_bus_num, dev->spid_idx);
+	}
 
 	if (cntl && cntl->spic_ops && cntl->spic_ops->transfer) {
 		/** TODO: lock ??? */
 		cntl->flags = dev->spid_flags;
-		err = cntl->spic_ops->transfer(cntl, in, out, cnt);
+		res = cntl->spic_ops->transfer(cntl, in, out, cnt);
 		/** TODO: unlock ??? */
-		return err;
+		goto out;
 	}
 
 	if (dev->spid_ops->transfer == NULL) {
 		log_debug("Transfer operation is not supported for SPI%d", spi_dev_id(dev));
-		return -ENOSUPP;
+		res = -ENOSUPP;
 	}
 
-	return dev->spid_ops->transfer(dev, in, out, cnt);
+	res = dev->spid_ops->transfer(dev, in, out, cnt);
+
+out:
+
+	if (dev->spid_flags & SPI_CS_INACTIVE /*&& dev->is_master*/) {
+		spi_dev_cs_control(dev, 1);
+		log_debug("SPI_CS_INACTIVE(%d::%d)", dev->spid_bus_num, dev->spid_idx);
+	}
+
+	cntl->spic_active_dev = NULL; /* store an active SPI device in controller */
+
+	return res;
 }
 
 /**
