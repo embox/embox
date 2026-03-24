@@ -257,3 +257,7 @@ module y1_test {
 	@Cflags("-fno-builtin")
 	source "y1_test.c"
 }
+module y0_test {
+	@Cflags("-fno-builtin")
+	source "y0_test.c"
+}
