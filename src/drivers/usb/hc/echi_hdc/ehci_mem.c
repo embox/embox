@@ -11,16 +11,21 @@
 
 #include "ehci.h"
 
+#ifndef NOMMU
 #include <mem/vmem.h>
 #include <module/embox/arch/mmu.h>
+#define EHCI_ALIGNMENT    MMU_PAGE_SIZE
+#else
+#define EHCI_ALIGNMENT    4
+#endif
 
 #define EHCI_MAX_REQUESTS 0x40
 
-POOL_DEF_ATTR(ehci_qtd_pool, struct ehci_qtd_hw, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
-POOL_DEF_ATTR(ehci_qh_hw_pool, struct ehci_qh_hw, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
-POOL_DEF_ATTR(ehci_itd_pool, struct ehci_itd, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
-POOL_DEF_ATTR(ehci_sitd_pool, struct ehci_sitd, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
-POOL_DEF_ATTR(ehci_qh_pool, struct ehci_qh, EHCI_MAX_REQUESTS, __attribute__((aligned(MMU_PAGE_SIZE))));
+POOL_DEF_ATTR(ehci_qtd_pool, struct ehci_qtd_hw, EHCI_MAX_REQUESTS, __attribute__((aligned(EHCI_ALIGNMENT))));
+POOL_DEF_ATTR(ehci_qh_hw_pool, struct ehci_qh_hw, EHCI_MAX_REQUESTS, __attribute__((aligned(EHCI_ALIGNMENT))));
+POOL_DEF_ATTR(ehci_itd_pool, struct ehci_itd, EHCI_MAX_REQUESTS, __attribute__((aligned(EHCI_ALIGNMENT))));
+POOL_DEF_ATTR(ehci_sitd_pool, struct ehci_sitd, EHCI_MAX_REQUESTS, __attribute__((aligned(EHCI_ALIGNMENT))));
+POOL_DEF_ATTR(ehci_qh_pool, struct ehci_qh, EHCI_MAX_REQUESTS, __attribute__((aligned(EHCI_ALIGNMENT))));
 
 POOL_DEF(ehci_req_pool, struct ehci_req, EHCI_MAX_REQUESTS);
 
