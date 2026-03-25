@@ -165,6 +165,6 @@ struct spi_controller_ops k1921vk035_spic_ops = {
 	.transfer = k1921vk035_spi_transfer
 };
 
-SPI_CONTROLLER_DEF(spi0, &k1921vk035_spic_ops, &k1921vk035_spi0_dev, 0);
+SPI_CONTROLLER_DEF(spi0, &k1921vk035_spic_ops, &k1921vk035_spi0_dev, 0, NULL);
 
 SPI_DEV_DEF(spi0, NULL, NULL, 0, 0, NULL);

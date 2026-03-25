@@ -59,7 +59,7 @@ extern int spi_controller_id(struct spi_controller *dev);
 
 extern const struct char_dev_ops __spi_cdev_ops;
 
- #define SPI_CONTROLLER_DEF(name, ops, dev_priv, idx)         \
+ #define SPI_CONTROLLER_DEF(name, ops, dev_priv, idx, pins)         \
  	struct spi_controller MACRO_CONCAT(spi_controller, idx) = {           \
 		.cdev = CHAR_DEV_INIT(MACRO_CONCAT(spi_controller, idx).cdev, \
 			MACRO_STRING(name), &__spi_cdev_ops),             \

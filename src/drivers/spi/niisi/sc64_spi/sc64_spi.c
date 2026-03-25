@@ -234,4 +234,4 @@ struct spi_controller_ops sc64_spic_ops = {
 
 struct sc64_spi_dev sc64_spi_dev0;
 
-SPI_CONTROLLER_DEF(sc64_spi0, &sc64_spic_ops, &sc64_spi_dev0, 0);
+SPI_CONTROLLER_DEF(sc64_spi0, &sc64_spic_ops, &sc64_spi_dev0, 0, NULL);
