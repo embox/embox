@@ -73,7 +73,7 @@ static int stm32_spi3_init(void) {
 
 	stm32_spi_init(&stm32_spi3, (void *) SPI_REGION_BASE);
 
-	hw_pins_config(spi_c);
+	//hw_pins_config(spi_c);
 
 #if defined(CONF_SPI3_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */

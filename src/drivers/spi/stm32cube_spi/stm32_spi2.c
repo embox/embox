@@ -73,7 +73,7 @@ static int stm32_spi2_init(void) {
 
 	stm32_spi_init(&stm32_spi2, (void *) SPI_REGION_BASE);
 
-	hw_pins_config(spi_c);
+	//hw_pins_config(spi_c);
 
 #if defined(CONF_SPI2_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */

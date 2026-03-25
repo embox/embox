@@ -141,6 +141,7 @@ struct spi_controller_ops stm32_spic_ops = {
 	.transfer = stm32_spi_transfer
 };
 
+#if 0
 void hw_pins_config(struct spi_controller *spi_c) {
 	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
 			(1 << spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin),
@@ -163,3 +164,4 @@ void hw_pins_config(struct spi_controller *spi_c) {
 			//GPIO_MODE_IN		
 		);
 }
+#endif

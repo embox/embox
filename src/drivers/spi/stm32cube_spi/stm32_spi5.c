@@ -72,7 +72,7 @@ static int stm32_spi5_init(void) {
 
 	stm32_spi_init(&stm32_spi5, (void *) SPI_REGION_BASE);
 
-	hw_pins_config(spi_c);
+	//hw_pins_config(spi_c);
 
 #if defined(CONF_SPI5_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */
