@@ -3,6 +3,10 @@ package embox.lib
 module libds_array {
 	@IncludeExport(path="lib/libds")
 	source "array.h"
+
+	@IncludeExport(path="lib/libds")
+	source "array_spread.h"
+
 	source "array_impl.h"
 	source "array_spread.lds.S"
 }

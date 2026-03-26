@@ -14,7 +14,7 @@
 #include <sys/types.h>
 
 #include <framework/mod/options.h>
-#include <lib/libds/array.h>
+#include <lib/libds/array_spread.h>
 
 #include <config/embox/driver/i2c_core.h>
 
