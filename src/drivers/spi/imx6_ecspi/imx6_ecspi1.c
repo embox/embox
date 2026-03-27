@@ -28,6 +28,7 @@ EMBOX_UNIT_INIT(imx6_ecspi1_init);
 static struct imx6_ecspi imx6_ecspi1 = {
 	.base_addr     = BASE_ADDR,
 	.cs_count      = ECSPI1_CS_COUNT,
+	/* .cs_array      =  { {1, 30}, {2, 19}, {2, 24}, {2, 25} }, */
 	.cs_array      = { {2, 19}, {1, 30}, {2, 24}, {2, 25} },
 	.use_configreg = OPTION_GET(NUMBER, use_configreg),
 };
