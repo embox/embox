@@ -383,6 +383,14 @@ size_t block_dev_block_size(struct block_dev *dev) {
 	return dev->block_size;
 }
 
+size_t block_dev_set_block_size(struct block_dev *dev, size_t block_size) {
+	assert(dev);
+
+	dev->block_size = block_size;
+
+	return dev->block_size;
+}
+
 struct block_dev *block_dev_parent(struct block_dev *dev) {
 	assert(dev);
 
