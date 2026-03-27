@@ -5,4 +5,5 @@
 "service httpd",
 //"i2cdetect -y 1",
 //"dd if=/dev/at24_eeprom count=1 format=hex_c",
+//"dd if=/dev/spi_nor0 count=1 format=hex_c",
 "tish",
