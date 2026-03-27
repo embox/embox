@@ -84,6 +84,9 @@ static int spi_dev0_probe(struct spi_device *dev) {
     gpio_setup_mode(CS_PIN_DESC_PTR->pd_port,
 		(1 << CS_PIN_DESC_PTR->pd_pin),
 		flags);
+
+    /* deasserted = high */
+    gpio_set(CS_PIN_DESC_PTR->pd_port, (1 << CS_PIN_DESC_PTR->pd_pin), 1);
 #endif /* defined(CS_USE) */
 
     return 0;
