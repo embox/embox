@@ -81,6 +81,8 @@ extern ssize_t i2c_bus_transfer(unsigned bus_id, struct i2c_msg *msgs,
 
 extern int i2c_bus_set_baudrate(unsigned bus_id, uint32_t baudrate);
 
+extern uint8_t i2c_bus_get_mask();
+
 __END_DECLS
 
 #define I2C_BUS_REGISTER(bus)                                         \
