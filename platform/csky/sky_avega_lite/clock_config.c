@@ -5,7 +5,6 @@
 extern void stm32_sysclock_init(void);
 
 /**
-  * @brief  System Clock Configuration
   *         The system Clock is configured as follow : 
   *            System Clock source            = PLL (HSE)
   *            SYSCLK(Hz)                     = 168000000
@@ -14,8 +13,8 @@ extern void stm32_sysclock_init(void);
   *            APB1 Prescaler                 = 4
   *            APB2 Prescaler                 = 2
   *            HSE Frequency(Hz)              = 8000000
-  *            PLL_M                          = 8
-  *            PLL_N                          = 336
+  *            PLL_M                          = 4
+  *            PLL_N                          = 168
   *            PLL_P                          = 2
   *            PLL_Q                          = 7
   *            VDD(V)                         = 3.3

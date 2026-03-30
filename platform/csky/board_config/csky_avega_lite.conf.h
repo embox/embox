@@ -11,8 +11,8 @@
   *            APB1 Prescaler                 = 4
   *            APB2 Prescaler                 = 2
   *            HSE Frequency(Hz)              = 8000000
-  *            PLL_M                          = 8
-  *            PLL_N                          = 336
+  *            PLL_M                          = 4
+  *            PLL_N                          = 168
   *            PLL_P                          = 2
   *            PLL_Q                          = 7
   *            VDD(V)                         = 3.3
@@ -28,13 +28,13 @@ struct clk_conf clks[] = {
 				REGMAP("BASE", (RCC_BASE), 0x100),
 			},
 			.clocks = {
-				VAL("SYSCLK_VAL", 16800000UL),
+				VAL("SYSCLK_VAL", 168000000UL),
 				VAL("HSECLK_VAL",  8000000UL),
 				VAL("AHB_PRESCALER_VAL",  1),
 				VAL("APB1_PRESCALER_VAL", 4),
 				VAL("APB2_PRESCALER_VAL", 2),
-				VAL("PLL_M_VAL",  8),
-				VAL("PLL_N_VAL",  336),
+				VAL("PLL_M_VAL",  4),
+				VAL("PLL_N_VAL",  168),
 				VAL("PLL_P_VAL",  2),
 				VAL("PLL_Q_VAL",  7),
 				VAL("FLASH_LATENCY", 5),
