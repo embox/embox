@@ -73,8 +73,8 @@ static int stm32_spi3_init(void) {
 
 	stm32_spi_init(&stm32_spi3, (void *) SPI_REGION_BASE);
 
-	hw_pins_config(spi_c);
-
+	//hw_pins_config(spi_c);
+#if 0
 #if defined(CONF_SPI3_PIN_CS_PORT)
 	/* Chip Select is usual GPIO pin. */
 	gpio_setup_mode(CONF_SPI3_PIN_CS_PORT,
@@ -84,8 +84,8 @@ static int stm32_spi3_init(void) {
 	/* Chip Select is in inactive state by default. */
 	gpio_set(CONF_SPI3_PIN_CS_PORT, (1 << CONF_SPI3_PIN_CS_NR), GPIO_PIN_HIGH);
 #endif
-
+#endif
 	return 0;
 }
 
-SPI_CONTROLLER_DEF(SPI_BUS_NAME, &stm32_spic_ops, &stm32_spi3, SPI_BUS_NUM);
+SPI_CONTROLLER_DEF(SPI_BUS_NAME, &stm32_spic_ops, &stm32_spi3, SPI_BUS_NUM, stm32_spi_pins);

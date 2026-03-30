@@ -103,6 +103,7 @@ extern struct dev_module *block_dev_to_device(struct block_dev *dev);
 
 extern uint64_t block_dev_size(struct block_dev *dev);
 extern size_t block_dev_block_size(struct block_dev *dev);
+extern size_t block_dev_set_block_size(struct block_dev *dev, size_t bsize);
 extern struct block_dev *block_dev_parent(struct block_dev *dev);
 extern const char *block_dev_name(struct block_dev *dev);
 extern dev_t block_dev_id(struct block_dev *dev);
