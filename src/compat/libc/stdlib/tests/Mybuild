@@ -31,3 +31,7 @@ module qsort_test {
 module itoa_test {
 	source "itoa_test.c"
 }
+
+module strtof_test {
+    source "strtof_test.c"
+}
