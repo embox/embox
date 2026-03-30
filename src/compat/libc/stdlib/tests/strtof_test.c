@@ -100,4 +100,4 @@ TEST_CASE("endptr points past consumed characters") {
 	char *end;
 	strtof("3.14rest", &end);
 	test_assert(end != NULL && *end == 'r');
-}   
+}
