@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <math.h>
 #include <errno.h>
+#include <float.h>
 
 #define EPS 1e-5f
 #define FLOAT_EQ(a, b) (fabsf((a) - (b)) < EPS)
@@ -92,7 +93,7 @@ TEST_CASE("Overflow") {
 TEST_CASE("Underflow") {
 	errno = 0;
 	float res = strtof("1e-1000", NULL);
-	test_assert(res == 0.0f || res < 1e-37f);
+	test_assert(res >= 0.0f && res <= FLT_MIN);
 	test_assert(errno == ERANGE);
 }
 
