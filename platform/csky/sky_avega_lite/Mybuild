@@ -4,7 +4,7 @@ package platform.csky.csky_avega_lite
 @BuildArtifactPath(cppflags="-DSTM32F427xx")
 static module csky_avega_lite_conf extends third_party.bsp.stmf4cube.stm32f4_conf {
     @IncludeExport(path="")
-    source "stm32f4xx_hal_conf.h"
+    source "cube_conf.h"
 }
 
 @Build(stage=1)
