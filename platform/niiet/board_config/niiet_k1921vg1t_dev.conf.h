@@ -2,9 +2,9 @@
 
 #include <soc/niiet_k1921vg1t_chip.h>
 
-#define HSICLK_VAL 4000000UL
-#define HSECLK_VAL 16000000UL
-#define EXTCLK_VAL 10000000UL
+//#define HSICLK_VAL 4000000UL
+#define HSECLK_VAL 27000000UL
+//#define EXTCLK_VAL 10000000UL
 
 struct clk_conf clks[] = {
 	[0] = {
