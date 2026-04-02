@@ -21,3 +21,8 @@ module bcopy_test {
 	@Cflags("-fno-builtin")
 	source "bcopy_test.c"
 }
+
+module bzero_test {
+	@Cflags("-fno-builtin")
+	source "bzero_test.c"
+}
