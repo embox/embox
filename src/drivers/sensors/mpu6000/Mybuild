@@ -1,0 +1,16 @@
+package embox.driver.sensors
+
+
+abstract module mpu6000 {
+	@IncludeExport(path="drivers/sensors", target_name="mpu6000.h")
+	source "mpu6000.h"
+
+	source "mpu6000.c"
+}
+
+static module mpu6000_spi extends mpu6000 {
+	option string log_level="LOG_ERR"
+	option number spi_bus = 0
+
+	source "mpu6000_spi.c"
+}
