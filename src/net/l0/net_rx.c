@@ -21,10 +21,18 @@
 #include <net/netdevice.h>
 #include <net/skbuff.h>
 #include <net/socket/packet.h>
+#include "net/l3/arp.h"
 
 int net_rx(struct sk_buff *skb) {
 	const struct net_pack *npack;
 	unsigned short type; /* packet type */
+
+	if (skb->dev->type == ARP_HRD_NONE)
+	{
+		/* type = ntohs(ETH_P_IP); */
+		type = ETH_P_IP;
+		goto setup_l3;
+	}
 
 	/* check L2 header size */
 	assert(skb != NULL);
@@ -56,6 +64,7 @@ int net_rx(struct sk_buff *skb) {
 
 	log_debug("%p len %zu type %#.6hx", skb, skb->len, type);
 
+setup_l3:
 	/* decrypt packet */
 	skb = net_decrypt(skb);
 	if (skb == NULL) {

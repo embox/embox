@@ -33,6 +33,7 @@
 
 #include <embox/net/pack.h>
 #include <net/lib/ipv4.h>
+#include <net/l3/arp.h>
 
 #define IP_DEBUG 0
 #if IP_DEBUG
@@ -132,14 +133,17 @@ int ip_forward(struct sk_buff *skb) {
 	best_route = rt_fib_get_best(iph->daddr, NULL);
 #endif
 
-	/* Drop broadcast and multicast addresses of 2 and 3 layers
-	 * Note, that some kinds of those addresses we can't get here, because
-	 * they processed in other part of code - see ip_is_local(,true,xxx);
-	 * And, of course, loopback packets must not be processed here
-	 */
-	if ((pkt_type(skb) != PACKET_HOST) || ipv4_is_multicast(iph->daddr)) {
-		skb_free(skb);
-		return 0;
+	if (skb->dev->type != ARP_HRD_NONE)
+	{
+		/* Drop broadcast and multicast addresses of 2 and 3 layers
+		 * Note, that some kinds of those addresses we can't get here, because
+		 * they processed in other part of code - see ip_is_local(,true,xxx);
+		 * And, of course, loopback packets must not be processed here
+		 */
+		if ((pkt_type(skb) != PACKET_HOST) || ipv4_is_multicast(iph->daddr)) {
+			skb_free(skb);
+			return 0;
+		}
 	}
 
 	/* IP Options is a security violation
@@ -257,7 +261,16 @@ static int ip_make(const struct sock *sk,
 	ret = rt_fib_out_dev_net_ns(dst_ip, in_sk != NULL ? &in_sk->sk : NULL,
 			&dev, net_ns);
 #else
-	ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL, &dev);
+	if (*out_skb && (*out_skb)->dev->type == ARP_HRD_NONE)
+	{
+		dev = (*out_skb)->dev;
+		dst_ip =(*out_skb)->nh.iph->daddr;
+		ret = 0;
+	}
+	else
+	{
+		ret = rt_fib_out_dev(dst_ip, in_sk != NULL ? &in_sk->sk : NULL, &dev);
+	}
 #endif
 	if (ret != 0) {
 		DBG(printk("ip_make: unknown device for %s\n",
