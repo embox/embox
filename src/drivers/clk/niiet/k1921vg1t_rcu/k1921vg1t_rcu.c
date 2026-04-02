@@ -310,7 +310,23 @@ void niiet_sysclk_init(void) {
 #elif (CONF_RCU_CLK_ENABLE_HSECLK_VAL() == 20000000)
 
 #elif (CONF_RCU_CLK_ENABLE_HSECLK_VAL() == 24000000)
-
+#elif (CONF_RCU_CLK_ENABLE_HSECLK_VAL() == 27000000)
+    //FOUT = 204 000 000 Hz  from 27 MHz HSE
+    // RCU->PLLDIV is equivalent for RCU->PLL[0].DIV
+    RCU->RCU_PLLCFG_reg[0].DIV = ( 1 << RCU_PLL_DIV_DIV1A_Pos ) |
+                  ( 2 << RCU_PLL_DIV_DIV1B_Pos ) |
+                  ( 1 << RCU_PLL_DIV_PREDIV_Pos) |
+                  ( 1 << RCU_PLL_DIV_NNCLR_Pos ) |             // N-divider enable
+                  ( 1 << RCU_PLL_DIV_RNCLR_Pos ) |             // R-divider enable
+                  ( 2 << RCU_PLL_DIV_RDIV_Pos  ) |
+                  (100 << RCU_PLL_DIV_NDIV_Pos );
+	RCU->RCU_PLLCFG_reg[0].MOD  = (1 << RCU_PLL_FRAC_FRAC_Pos );
+	RCU->RCU_PLLCFG_reg[0].FRAC = (1 << RCU_PLL_MOD_MOD_Pos   );
+	RCU->RCU_PLLCFG_reg[0].CFG  = (1 << RCU_PLL_CFG_FOUTEN_Pos ) |			// Fout enable
+			       (3 << RCU_PLL_CFG_PFD_Pos    ) |
+			       (0 << RCU_PLL_CFG_CLKSEL_Pos ) |
+			       (1 << RCU_PLL_CFG_VCOMODE_Pos) |
+			       (0 << RCU_PLL_CFG_ST_Pos) ;				  // ST = 0 for integer divider
 #else
 #error "Please define HSECLK_VAL with correct values!"
 #endif
