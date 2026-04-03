@@ -5,25 +5,29 @@
  * @author Aleksey Zhmulin
  * @date 19.05.25
  */
+#include <util/log.h>
 
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
-#include <embox/unit.h>
+
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 #include <util/field.h>
-#include <util/log.h>
 
-#define TMR32_BASE 0x30000000UL
-#define TMR32_IRQ  6
+#include <embox/unit.h>
+#include <framework/mod/options.h>
+
+//#define TMR32_BASE 0x30000000UL
+//#define TMR32_IRQ  6
+#define TMR32_BASE     ((uintptr_t)OPTION_GET(NUMBER,base_addr))
+#define TMR32_IRQ      OPTION_GET(NUMBER,irq_num)
 
 /* clang-format off */
 #define TMR_CTRL         (TMR32_BASE + 0x00) /* Timer Control Register */
@@ -144,4 +148,4 @@ static int tmr32_init(struct clock_source *cs) {
 
 CLOCK_SOURCE_DEF(tmr32, tmr32_init, NULL, &tmr32_event, &tmr32_counter);
 
-PERIPH_MEMORY_DEFINE(tmr32, PTIMER_BASE_ADDR, 0x40);
+PERIPH_MEMORY_DEFINE(tmr32, TMR32_BASE, 0x40);
