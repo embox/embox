@@ -82,11 +82,11 @@ struct rcu_reg {
     uint32_t 	RCU_PLLSTAT_reg;
 };
 
-#define RCU_CGCFGAPB_TMR32EN        (1 << 0)
-#define RCU_CGCFGAPB_TMR0EN         (1 << 1)
-#define RCU_CGCFGAPB_TMR1EN         (1 << 2)
-#define RCU_CGCFGAPB_TMR2EN         (1 << 3)
-#define RCU_CGCFGAPB_TMR16_EN(nr)   (1 << (1 + nr))
+#define RCU_CGCFGAPB_TMR_OFFSET     16
+#define RCU_CGCFGAPB_TMR0EN         (1 << (RCU_CGCFGAPB_TMR_OFFSET + 0))
+#define RCU_CGCFGAPB_TMR1EN         (1 << (RCU_CGCFGAPB_TMR_OFFSET + 1))
+#define RCU_CGCFGAPB_TMR2EN         (1 << (RCU_CGCFGAPB_TMR_OFFSET + 2))
+#define RCU_CGCFGAPB_TMR_EN(nr)     (1 << (RCU_CGCFGAPB_TMR_OFFSET + nr))
 
 #define RCU_CGCFGAPB_UART_EN(port)  (1 << (16 + port))
 
@@ -101,11 +101,11 @@ struct rcu_reg {
 #define RCU_CGCFGAHB_SPI1EN         (1 << 6)
 #define RCU_CGCFGAHB_SPI_EN(nr)     (1 << (5 + nr))
 
-#define RCU_RSTDISAPB_TMR32EN        (1 << 0)
-#define RCU_RSTDISAPB_TMR0EN         (1 << 1)
-#define RCU_RSTDISAPB_TMR1EN         (1 << 2)
-#define RCU_RSTDISAPB_TMR2EN         (1 << 3)
-#define RCU_RSTDISAPB_TMR16_EN(num)  (1 << (1 + num))
+#define RCU_RSTDISAPB_TMR_OFFSET     16
+#define RCU_RSTDISAPB_TMR0EN         (1 << (RCU_RSTDISAPB_TMR_OFFSET + 0))
+#define RCU_RSTDISAPB_TMR1EN         (1 << (RCU_RSTDISAPB_TMR_OFFSET + 1))
+#define RCU_RSTDISAPB_TMR2EN         (1 << (RCU_RSTDISAPB_TMR_OFFSET + 2))
+#define RCU_RSTDISAPB_TMR_EN(num)    (1 << (RCU_RSTDISAPB_TMR_OFFSET + num))
 
 #define RCU_RSTDISAPB_UART_EN(port)  (1 << (6 + port))
 #define RCU_RSTDISAPB_UART0EN        (1 << 6)
@@ -252,6 +252,11 @@ void niiet_uart_set_rcu(int num) {
 }
 
 
+void niiet_tmr_set_rcu(int num) {
+	RCU->RCU_CGCFGAPB1_reg |= RCU_CGCFGAPB_TMR_EN(num);
+	RCU->RCU_RSTDISAPB1_reg |= RCU_RSTDISAPB_TMR_EN(num);
+}
+
 int clk_enable(char *clk_name) {
     int num;
 
@@ -263,6 +268,11 @@ int clk_enable(char *clk_name) {
     if (0 == strncmp(clk_name, CLK_NAME_UART, sizeof(CLK_NAME_UART) - 1)) {
         num = clk_name[sizeof(CLK_NAME_UART) - 1]  - '0';
         niiet_uart_set_rcu(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_TMR) - 1]  - '0';
+        niiet_tmr_set_rcu(num);
         return 0;
     }
 
