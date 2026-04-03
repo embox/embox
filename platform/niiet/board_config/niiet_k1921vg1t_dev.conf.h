@@ -39,7 +39,7 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOA"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
 		.port_width = 16,
 	},
 	[1] = {
@@ -56,7 +56,7 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOB"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
 		.port_width = 16,
 	},
 	[2] = {
@@ -73,7 +73,7 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOC"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
 		.port_width = 16,
 	},
 	[3] = {
@@ -90,7 +90,7 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOD"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
 		.port_width = 16,
 	},
 	[4] = {
@@ -107,7 +107,7 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOE"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
 		.port_width = 16,
 	},
 	[5] = {
@@ -124,7 +124,7 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOF"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
 		.port_width = 16,
 	},
 	[6] = {
@@ -141,7 +141,24 @@ struct gpio_conf gpios[] = {
 				VAL("", "CLK_GPIOG"),
 			}
 		},
-		.port_num = 7,
+		.port_num = 8,
+		.port_width = 16,
+	},
+	[7] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "GPIO_PORT_H",
+			.regs = {
+				REGMAP("BASE", (GPIOH_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", PLIC_IRQ_GPIOH),
+			},
+			.clocks = {
+				VAL("", "CLK_GPIOH"),
+			}
+		},
+		.port_num = 8,
 		.port_width = 16,
 	},
 };
