@@ -18,7 +18,18 @@
 #include <config/board_config.h>
 
 #define GPIO_CHIP_ID     OPTION_GET(NUMBER, gpio_chip_id)
+
+
 #define GPIO_PINS_NUMBER 16
+
+#define ALTFUNC_WIDTH         OPTION_GET(NUMBER, altfunc_field_width)
+#if (ALTFUNC_WIDTH == 4) /* VG1T */
+#define ALTFUNC_MASK          0x7
+#elif (ALTFUNC_WIDTH == 2) /* VG1015 & VK035 */
+#define ALTFUNC_MASK          0x3
+#else
+#error "wrong ALTFUNCNUM_FIELD_WIDTH"
+#endif /* ALTFUNC_WIDTH */
 
 struct gpio_reg {
 	uint32_t GPIO_DATA_reg;       /* 0x00 */
@@ -36,8 +47,8 @@ struct gpio_reg {
 	uint32_t GPIO_OUTENCLR_reg;   /* 0x30 */
 	uint32_t GPIO_ALTFUNCSET_reg; /* 0x34 */
 	uint32_t GPIO_ALTFUNCCLR_reg; /* 0x38 */
-	uint32_t GPIO_ALTFUNCNUM0_reg; /* 0x3C */
-	uint32_t reserved2[1];        /* 0x40 VG1T ALTFUNCNUM1*/
+	uint32_t GPIO_ALTFUNCNUM_reg[2]; /* 0x3C */
+	/* uint32_t reserved2[1]; */    /* 0x40 VG1T ALTFUNCNUM1*/
 	uint32_t GPIO_SYNCSET_reg;     /* 0x44 */
 	uint32_t GPIO_SYNCCLR_reg;     /* 0x48 */
 	uint32_t GPIO_QUALSET_reg;     /* 0x4C */
@@ -129,7 +140,7 @@ static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(
 #endif /* defined (CONF_GPIO_PORT_B_REGION_BASE) */
 #if defined(CONF_GPIO_PORT_C_REGION_BASE)
 	case 2:
-		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_B_REGION_BASE);
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_C_REGION_BASE);
 #endif /* defined (CONF_GPIO_PORT_C_REGION_BASE) */
 #if defined(CONF_GPIO_PORT_D_REGION_BASE)
 	case 3:
@@ -231,8 +242,7 @@ static int niiet_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 		return -1;
 	}
 
-	res = irq_attach(0, niiet_gpio_irq_handler, 0, (void *)gpio_reg,
-	    "GPIO Irq");
+	res = irq_attach(0, niiet_gpio_irq_handler, 0, (void *)gpio_reg, "GPIO");
 	if (res < 0) {
 		return res;
 	}
@@ -270,6 +280,22 @@ static int niiet_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 	}
 
 	return res;
+}
+
+static inline void niiet_gpio_set_altfunc(volatile struct gpio_reg *gpio_reg,
+					int i, uint32_t alt) {
+	volatile uint32_t *altfunc;
+
+	altfunc = &gpio_reg->GPIO_ALTFUNCNUM_reg[0];
+
+#if ALTFUNC_WIDTH  == 4
+	if(i > 7) {
+		altfunc = &gpio_reg->GPIO_ALTFUNCNUM_reg[1];
+	}
+#endif /* ALTFUNC_WIDTH  == 4 */
+
+	*altfunc &= ~(ALTFUNC_MASK << (i * ALTFUNC_WIDTH));
+	*altfunc |= alt << (i * ALTFUNC_WIDTH);
 }
 
 static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
@@ -329,8 +355,7 @@ static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 			if (pins & (1 << i)) {
 				uint32_t alt = GPIO_MODE_ALT_GET(mode);
 
-				gpio_reg->GPIO_ALTFUNCNUM0_reg &= ~(0x3 << i * 2);
-				gpio_reg->GPIO_ALTFUNCNUM0_reg |= alt << i * 2;
+				niiet_gpio_set_altfunc(gpio_reg, i, alt);
 			}
 		}
 	}
