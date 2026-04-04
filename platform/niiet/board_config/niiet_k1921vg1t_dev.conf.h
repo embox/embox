@@ -176,8 +176,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_IRQ_UART0),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_B, 1, 1),
-				PIN("RX", GPIO_PORT_B, 0, 1),
+				PIN("TX", GPIO_PORT_B, 1, 3),
+				PIN("RX", GPIO_PORT_B, 0, 3),
 			},
 			.clocks = {
 				VAL("", "CLK_UART0"),
