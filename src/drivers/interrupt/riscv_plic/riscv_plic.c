@@ -37,6 +37,8 @@
 
 /* Context Interrupt Enable */
 #define PLIC_CIE(n) (PLIC_BASE + 0x2000 + PLIC_CONTEXT * 0x80 + 4 * (n))
+/* Mode Enable 0x1f0000 - 0x1f0ffc */
+#define PLIC_MODE(n) (PLIC_BASE + 0x1f0000 + 4 * (n))
 /* Context Threshold */
 #define PLIC_CTH    (PLIC_BASE + 0x200000 + PLIC_CONTEXT * 0x1000)
 /* Context Claim/Complete */
@@ -53,14 +55,19 @@ static int plic_init(void) {
 
 void irqctrl_enable(unsigned int irq) {
 	if (irq < PLIC_IRQS_TOTAL) {
+		uint32_t irq_bank = (irq / 32);
+		uint32_t irq_pos = irq % 32;
+
 		/* Set up interrupt priorty */
 		REG32_STORE(PLIC_SPR(irq), 1);
+		REG32_STORE(PLIC_MODE(irq), 1); /* PLIC_IRQMODE_HILEVEL */
 
-		REG32_ORIN(PLIC_CIE(irq / 32), 1 << irq);
+		REG32_ORIN(PLIC_CIE(irq_bank), 1 << irq_pos);
 	}
 	else {
 		csr_set(CSR_IE, 1 << (irq - PLIC_IRQS_TOTAL));
 	}
+
 }
 
 void irqctrl_disable(unsigned int irq) {
