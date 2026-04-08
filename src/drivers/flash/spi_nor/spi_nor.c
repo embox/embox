@@ -16,6 +16,7 @@
 #include <framework/mod/options.h>
 
 #include <drivers/spi.h>
+#include <drivers/block_dev.h>
 #include <drivers/flash/flash.h>
 #include <drivers/flash/flash_cache.h>
 
@@ -201,6 +202,7 @@ static int spi_nor_flash_read(struct flash_dev *dev, uint32_t base,
 	struct spi_nor_priv *priv = dev->privdata;
 	uint8_t cmd[5];
 	size_t cmd_len;
+	int res = 0;
 
 	if (base + len > dev->size) {
 		log_error("spi_nor: read out of range");
@@ -220,7 +222,13 @@ static int spi_nor_flash_read(struct flash_dev *dev, uint32_t base,
 		cmd[3] = (uint8_t)(base >>  0);
 		cmd_len = 4;
 	}
-	return nor_xfer(priv, cmd, cmd_len, data, len);
+
+	res = nor_xfer(priv, cmd, cmd_len, data, len);
+	if (res != 0) {
+		return res;
+	}
+
+	return len;
 }
 
 static int spi_nor_flash_erase_block(struct flash_dev *dev, uint32_t block) {
@@ -425,6 +433,8 @@ static int spi_nor_unit_init(void) {
 	flash->fld_word_size    = info->word_size;
 	flash->fld_aligned_word = priv->aligned_word;
 	flash->fld_cache        = FLASH_CACHE_GET(flash, spi_nor);
+
+	block_dev_set_block_size(flash->bdev, info->page_size);
 
 	log_info("spi_nor: %s ready: %uKiB, %u x %uKiB sectors, "
 	         "fast_read=%d aai=%d",

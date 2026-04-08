@@ -12,7 +12,9 @@
 #include <drivers/spi.h>						 
 #include "pl022_spi.h"
 
+#if 0
 #include <drivers/gpio.h>				  
+#endif
 
 struct pl022_regs {
 	uint32_t cr0;
@@ -309,6 +311,7 @@ static int pl022_spi_set_mode(struct spi_controller *spi_dev, bool is_master) {
 	return pl022_spi_setup(dev, is_master);
 }
 
+#if 0
 static int pl022_cs_control(struct spi_device *dev, int state) {
 
 const struct pin_description *cs_pin;
@@ -326,23 +329,26 @@ const struct pin_description *cs_pin;
     
     return 0;
 }
+#endif
 
 static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 	uint8_t *outbuf, int count) {
 	struct pl022_spi *dev = spi_dev->spic_priv;
+#if 0
 	struct spi_device *a_dev = spi_dev->spic_active_dev; // spi устройство связанное с этим контроллером
+#endif
 	uint8_t value;
 	int tx_cnt;
 	int rx_cnt;
 
 	rx_cnt = 0;
 	tx_cnt = 0;
-	
+#if 0
 	if (spi_dev->flags & SPI_CS_ACTIVE /*&& spi_dev->is_master*/) {
 		pl022_cs_control(a_dev, 0); // активизировать CS (низкий уровень)		
 		log_debug("SPI_CS_ACTIVE\n");	 
 	}
-
+#endif
 	pl022_spi_claim_bus(dev);
     pl022_spi_flush(dev);
 	/* transmit/recieve */
@@ -380,12 +386,12 @@ static int pl022_spi_transfer(struct spi_controller *spi_dev, uint8_t *inbuf,
 	}
 
 	pl022_spi_release_bus(dev);
-
+#if 0
 	if (spi_dev->flags & SPI_CS_INACTIVE /*&& spi_dev->is_master*/) {
 		pl022_cs_control(a_dev, 1); 		// CS - высокий уровень    
 		log_debug("SPI_CS_INACTIVE\n");	
 	}
-
+#endif
 	return 0;
 }
 

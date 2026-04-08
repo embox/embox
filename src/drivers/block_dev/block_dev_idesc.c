@@ -65,7 +65,7 @@ static ssize_t bdev_idesc_read(struct idesc *desc, const struct iovec *iov,
 		return 0;
 	}
 
-	if (cnt != bdev->block_size) {
+	if (nbyte != bdev->block_size) {
 		cache_buf = malloc(bdev->block_size);
 		if (!cache_buf) {
 			log_error("could not alloc cache_buff (%zi)", bdev->block_size);

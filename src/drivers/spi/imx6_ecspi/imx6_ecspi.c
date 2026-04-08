@@ -78,20 +78,22 @@ int imx6_ecspi_init(struct imx6_ecspi *dev) {
 	return 0;
 }
 
+#if 0
 static void imx6_ecspi_set_cs(struct imx6_ecspi *dev, int state) {
 	int gpio_n = 0;
 	int port = 0;
 
 	assert(dev->cs < dev->cs_count);
 
-	REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_CHANNEL_SELECT_MASK);
-	REG32_ORIN(ECSPI_CONREG(dev), dev->cs << ECSPI_CONREG_CHANNEL_SELECT_OFFT);
+	//REG32_CLEAR(ECSPI_CONREG(dev), ECSPI_CONREG_CHANNEL_SELECT_MASK);
+	//REG32_ORIN(ECSPI_CONREG(dev), dev->cs << ECSPI_CONREG_CHANNEL_SELECT_OFFT);
 
 	gpio_n = dev->cs_array[dev->cs][0];
 	port   = dev->cs_array[dev->cs][1];
 
 	gpio_set(gpio_n, 1 << port, state);
 }
+#endif
 
 static uint8_t imx6_ecspi_transfer_byte(struct imx6_ecspi *dev, uint8_t val) {
 	int timeout;
@@ -125,10 +127,11 @@ static int imx6_ecspi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		uint8_t *outbuf, int count) {
 	struct imx6_ecspi *priv = dev->spic_priv;
 	uint8_t val;
-
+#if 0
 	if (dev->flags & SPI_CS_ACTIVE) {
 		imx6_ecspi_set_cs(priv, 0);
 	}
+#endif
 
 	while (count--) {
 		val = inbuf ? *inbuf++ : 0;
@@ -139,10 +142,11 @@ static int imx6_ecspi_transfer(struct spi_controller *dev, uint8_t *inbuf,
 		if (outbuf)
 			*outbuf++ = val;
 	}
-
+#if 0
 	if (dev->flags & SPI_CS_INACTIVE) {
 		imx6_ecspi_set_cs(priv, 1);
 	}
+#endif
 
 	return 0;
 }

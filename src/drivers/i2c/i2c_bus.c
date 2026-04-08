@@ -134,6 +134,16 @@ ssize_t i2c_bus_write(unsigned bus_id, uint16_t addr, uint8_t *buf, size_t len) 
 	return i2c_bus_transfer(bus_id, &msg, 1);
 }
 
+uint8_t i2c_bus_get_mask() {
+	uint8_t mask = 0U;
+	for (unsigned i = 0; i < I2C_BUS_MAX; i++) {
+		if (i2c_bus_repo[i]) {
+			mask |= (1U << i);
+		}
+	}
+	return mask;
+}
+
 static int i2c_bus_registry_init(void) {
 	const struct i2c_bus *bus;
 	int err;
