@@ -5,6 +5,7 @@
  * @date 04.10.2019
  * @author Anastasia Nizharadze
  */
+#include <util/log.h>
 
 #include <asm/csr.h>
 #include <drivers/irqctrl.h>
