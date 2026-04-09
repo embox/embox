@@ -14,21 +14,23 @@
 #include <util/macro.h>
 
 #if RISCV_SMODE
-#define CSR_CAUSE  scause
-#define CSR_STATUS sstatus
-#define CSR_IE     sie
-#define CSR_IP     sip
-#define CSR_EPC    sepc
-#define CSR_TVEC   stvec
-#define CSR_TVT    0x0107
+#define CSR_CAUSE          scause
+#define CSR_STATUS         sstatus
+#define CSR_IE             sie
+#define CSR_IP             sip
+#define CSR_EPC            sepc
+#define CSR_TVEC           stvec
+#define CSR_TVT            0x0107
+#define CSR_SCRATCH        sscratch
 #else
-#define CSR_CAUSE  mcause
-#define CSR_STATUS mstatus
-#define CSR_IE     mie
-#define CSR_IP     mip
-#define CSR_EPC    mepc
-#define CSR_TVEC   mtvec
-#define CSR_TVT    0x0307
+#define CSR_CAUSE          mcause
+#define CSR_STATUS         mstatus
+#define CSR_IE             mie
+#define CSR_IP             mip
+#define CSR_EPC            mepc
+#define CSR_TVEC           mtvec
+#define CSR_TVT            0x0307
+#define CSR_SCRATCH        mscratch
 #endif
 
 /* Exception causes */
