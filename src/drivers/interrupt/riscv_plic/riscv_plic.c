@@ -16,9 +16,10 @@
 #define PLIC_BASE OPTION_GET(NUMBER, base_addr)
 
 #ifdef SMP
-#define __PLIC_HARTID cpu_get_id()
+#define __PLIC_HARTID       cpu_get_id()
+
 #else
-#define __PLIC_HARTID 0
+#define __PLIC_HARTID       0
 #endif
 
 /**
@@ -26,10 +27,12 @@
  * the hart x under privilege level y
  */
 #if RISCV_SMODE
-#define PLIC_CONTEXT (1 + __PLIC_HARTID * 2)
+#define PLIC_CONTEXT        (1 + __PLIC_HARTID * 2)
 #else
-#define PLIC_CONTEXT (0 + __PLIC_HARTID * 2)
+#define PLIC_CONTEXT        (0 + __PLIC_HARTID * 2)
 #endif
+
+#define PLIC_CONTEXT_MAX    (1 + PLIC_CONTEXT)
 
 /* Source Priority */
 #define PLIC_SPR(n) (PLIC_BASE + 4 * (n))
@@ -46,9 +49,16 @@
 #define PLIC_CCL    (PLIC_BASE + 0x200004 + PLIC_CONTEXT * 0x1000)
 
 static int plic_init(void) {
+	int i;
 	/* Configure PLIC for current context */
-	REG32_STORE(PLIC_CTH, 0);
-
+	REG32_STORE(PLIC_CTH, PLIC_CONTEXT);
+	for (i = 0; i < PLIC_IRQS_TOTAL / 32; i ++) {
+		REG32_STORE(PLIC_CIE(i), 0);
+	}
+	for (i = 0; i < PLIC_IRQS_TOTAL; i ++) {
+		REG32_STORE(PLIC_SPR(i), 0);
+		REG32_STORE(PLIC_MODE(i), 0); /*PLIC_SRC_MODE_OFF*/
+	}
 	csr_set(CSR_IE, CSR_IE_EIE);
 
 	return 0;
