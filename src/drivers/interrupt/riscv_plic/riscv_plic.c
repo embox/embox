@@ -83,7 +83,14 @@ void irqctrl_enable(unsigned int irq) {
 
 void irqctrl_disable(unsigned int irq) {
 	if (irq < PLIC_IRQS_TOTAL) {
-		REG32_CLEAR(PLIC_CIE(irq / 32), 1 << irq);
+		uint32_t irq_bank = (irq / 32);
+		uint32_t irq_pos = irq % 32;
+
+		/* Set up interrupt priorty */
+		//REG32_STORE(PLIC_SPR(irq),0);
+		//REG32_STORE(PLIC_MODE(irq), 0); /* PLIC_IRQMODE_HILEVEL */
+
+		REG32_CLEAR(PLIC_CIE(irq_bank), 1 << irq_pos);
 	}
 	else {
 		csr_clear(CSR_IE, 1 << (irq - PLIC_IRQS_TOTAL));
