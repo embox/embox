@@ -124,10 +124,22 @@
 
 #define TMR_PERIOD_VALUE ((SYS_CLOCK / JIFFIES_PERIOD) - 1)
 
-static int tmr32_set_periodic(struct clock_source *cs) {
+// FIXME USE separate SIU module instead 
+#define SIU_BASE_ADDR   0x50003000UL
+
+#define SIU_TMREN_REG   (SIU_BASE_ADDR + 0x54)
+
+int tmr32_set_periodic(struct clock_source *cs) {
+
+	REG32_STORE(TMR_CTRL, 0);
+	REG32_STORE(TMR_IC, 0x1FF);
 	REG32_STORE(TMR_PERIOD, TMR_PERIOD_VALUE);
 	REG32_STORE(TMR_CTRL, FIELD(TMR_CTRL_MODE, TMR_CTRL_MODE_UP));
+
 	REG32_STORE(TMR_IM, TMR_IM_TMR);
+
+	// FIXME USE separate SIU module instead 
+	REG32_STORE(SIU_TMREN_REG, (1 << 0)); /* TMR0*/
 
 	return 0;
 }
