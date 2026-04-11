@@ -278,9 +278,10 @@ $(@build_include_install) :
 	@$(call cmd_notouch_stdout,$(@file), \
 		$(gen_banner); \
 		$(call gen_make_var,build_include_install,$(include_install)); \
+		$(call gen_make_var_list,include_install_files,$(include_install_files)); \
 		$(call gen_make_dep,$(target_file),$$$$(include_install_prerequisites)); \
-		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)); \
-		$(call gen_make_tsvar_list,$(target_file),include_install_files,$(include_install_files)))
+		$(call gen_make_dep,$(target_file),$$(include_install_files)); \
+		$(call gen_make_tsvar,$(target_file),mk_file,$(mk_file)))
 ###########################
 
 ##################
