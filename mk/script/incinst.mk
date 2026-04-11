@@ -8,8 +8,7 @@ include mk/image_lib.mk
 INCLUDE_INSTALL := include_install
 
 src_file =
-include_install_files =
-include_install_prerequisites = $(include_install_files) $(src_file) $(common_prereqs)
+include_install_prerequisites = $(src_file) $(common_prereqs)
 
 .SECONDEXPANSION:
 

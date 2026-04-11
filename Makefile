@@ -21,6 +21,10 @@ MAKEFLAGS += --no-builtin-variables
 MAKEFLAGS += --no-print-directory
 MAKEFLAGS += --warn-undefined-variables
 
+# Avoids "undefined variable" warning when using --no-builtin-variables
+# and --warn-undefined-variables options in GNU Make 4.4.
+export GNUMAKEFLAGS :=
+
 # Fixup for case when prompt contains dollar signs.
 # Avoids bogus 'undefined variable' warnings.
 export PS1 :=
