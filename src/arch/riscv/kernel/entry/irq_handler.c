@@ -24,18 +24,21 @@ void riscv_interrupt_handler(void) {
 	assert(irq_nr_valid(irq));
 	assert(!critical_inside(CRITICAL_IRQ_LOCK));
 
-	irqctrl_disable(irq);
 	irqctrl_eoi(irq);
+	irqctrl_disable(irq);
+	//irqctrl_eoi(irq);
 	critical_enter(CRITICAL_IRQ_HANDLER);
 	{
 		ipl_enable();
 
 		irq_dispatch(irq);
+		//irqctrl_eoi(irq);
 
 		ipl_disable();
 	}
-	irqctrl_enable(irq);
 	critical_leave(CRITICAL_IRQ_HANDLER);
+
+	irqctrl_enable(irq);
 
 	critical_dispatch_pending();
 }
