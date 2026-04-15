@@ -2,21 +2,24 @@ package third_party.lib.ncnn
 
 
 @BuildArtifactPath(
-  cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src -I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src/layer"
+  cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/src"
 )
-module ncnn_headers {}
+module ncnn_internal_headers {}
+
+@BuildArtifactPath(
+  cppflags="-I$(EXTERNAL_BUILD_DIR)/third_party/lib/ncnn/libncnn/install/include/ncnn"
+)
+module ncnn_public_headers {}
 
 @Build(stage=1, script="$(EXTERNAL_MAKE)")
-@BuildDepends(third_party.lib.ncnn.ncnn_headers)
+@BuildDepends(third_party.lib.ncnn.ncnn_internal_headers)
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(embox.cxx.LibCxx)
 static module libncnn {
 
     source
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/allocator.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/benchmark.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/blob.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/c_api.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/command.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/datareader.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/expression.cpp",
@@ -133,7 +136,6 @@ static module libncnn {
 
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_affine.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_android.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_drawing.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/mat_pixel_resize.cpp",
@@ -142,19 +144,13 @@ static module libncnn {
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/net.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/option.cpp",
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/paramdict.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/pipelinecache.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/pipeline.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simpleocv.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simpleomp.cpp",
-        "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/src/simplevk.cpp",
 
         "ncnn_new_delete.cpp",
-        "platform_embox.h",
         "platform_embox_stubs.cpp",
         "cpu_embox.cpp",
         "ncnn_math_trig_shim.cpp"
 
-    depends third_party.lib.ncnn.ncnn_headers
+    depends third_party.lib.ncnn.ncnn_internal_headers
     depends third_party.compiler_headers
     depends embox.cxx.LibCxx
 }
