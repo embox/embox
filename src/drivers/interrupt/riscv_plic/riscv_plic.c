@@ -9,11 +9,14 @@
 
 #include <asm/csr.h>
 #include <drivers/irqctrl.h>
-#include <framework/mod/options.h>
 #include <hal/cpu.h>
 #include <hal/reg.h>
 
-#define PLIC_BASE OPTION_GET(NUMBER, base_addr)
+#include <framework/mod/options.h>
+
+#define PLIC_BASE           OPTION_GET(NUMBER, base_addr)
+
+#define PLIC_MODE_SUPPORT   OPTION_GET(BOOLEAN,  plic_mode_support)
 
 #ifdef SMP
 #define __PLIC_HARTID       cpu_get_id()
@@ -48,6 +51,12 @@
 /* Context Claim/Complete */
 #define PLIC_CCL    (PLIC_BASE + 0x200004 + PLIC_CONTEXT * 0x1000)
 
+
+#if PLIC_MODE_SUPPORT
+#define PLIC_MODE_SET(i,v)    REG32_STORE(PLIC_MODE(i), v)
+#else
+#define PLIC_MODE_SET(i,v) 
+#endif
 static int plic_init(void) {
 	int i;
 	/* Configure PLIC for current context */
@@ -57,7 +66,9 @@ static int plic_init(void) {
 	}
 	for (i = 0; i < PLIC_IRQS_TOTAL; i ++) {
 		REG32_STORE(PLIC_SPR(i), 0);
-		REG32_STORE(PLIC_MODE(i), 0); /*PLIC_SRC_MODE_OFF*/
+
+		PLIC_MODE_SET(i, 0); /*PLIC_SRC_MODE_OFF*/
+
 	}
 	csr_set(CSR_IE, CSR_IE_EIE);
 
@@ -71,8 +82,8 @@ void irqctrl_enable(unsigned int irq) {
 
 		/* Set up interrupt priorty */
 		REG32_STORE(PLIC_SPR(irq), 1);
-		REG32_STORE(PLIC_MODE(irq), 1); /* PLIC_IRQMODE_HILEVEL */
-
+		PLIC_MODE_SET(irq, 1); /* PLIC_IRQMODE_HILEVEL */
+	
 		REG32_ORIN(PLIC_CIE(irq_bank), 1 << irq_pos);
 	}
 	else {
@@ -88,8 +99,8 @@ void irqctrl_disable(unsigned int irq) {
 
 		/* Set up interrupt priorty */
 		//REG32_STORE(PLIC_SPR(irq),0);
-		//REG32_STORE(PLIC_MODE(irq), 0); /* PLIC_IRQMODE_HILEVEL */
-
+		//PLIC_MODE_SET(i, 0); /*PLIC_SRC_MODE_OFF*/
+	
 		REG32_CLEAR(PLIC_CIE(irq_bank), 1 << irq_pos);
 	}
 	else {
