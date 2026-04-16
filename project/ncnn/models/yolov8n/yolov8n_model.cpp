@@ -13,6 +13,34 @@
 #include "../../common/postprocess/dfl_decode.h"
 #include "../../common/postprocess/nms.h"
 
+static const char* COCO80[80] = {
+ "person","bicycle","car","motorcycle","airplane","bus","train","truck","boat","traffic light",
+ "fire hydrant","stop sign","parking meter","bench","bird","cat","dog","horse","sheep","cow",
+ "elephant","bear","zebra","giraffe","backpack","umbrella","handbag","tie","suitcase","frisbee",
+ "skis","snowboard","sports ball","kite","baseball bat","baseball glove","skateboard","surfboard","tennis racket","bottle",
+ "wine glass","cup","fork","knife","spoon","bowl","banana","apple","sandwich","orange",
+ "broccoli","carrot","hot dog","pizza","donut","cake","chair","couch","potted plant","bed",
+ "dining table","toilet","tv","laptop","mouse","remote","keyboard","cell phone","microwave","oven",
+ "toaster","sink","refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrush"
+};
+
+static const YoloV8NConfig kYoloV8NDefaultConfig = {
+    320,
+    0.25f,
+    0.50f,
+    16
+};
+
+const YoloV8NConfig& yolov8n_default_config()
+{
+    return kYoloV8NDefaultConfig;
+}
+
+const char* yolov8n_class_name(int cls)
+{
+    return (cls >= 0 && cls < 80) ? COCO80[cls] : "cls";
+}
+
 static inline int iround(float x) {
     return (int)(x + (x >= 0.0f ? 0.5f : -0.5f));
 }
@@ -94,10 +122,7 @@ bool yolov8n_detect_rgb(const unsigned char* rgb,
                         int w,
                         int h,
                         std::vector<Det>& dets,
-                        int target_size,
-                        float conf_thr,
-                        float iou_thr,
-                        int reg_max)
+                        const YoloV8NConfig& cfg)
 {
     dets.clear();
 
@@ -127,9 +152,9 @@ bool yolov8n_detect_rgb(const unsigned char* rgb,
     }
 
     LetterboxInfo LI;
-    std::vector<unsigned char> lb = make_letterbox_rgb(rgb, w, h, target_size, LI);
+    std::vector<unsigned char> lb = make_letterbox_rgb(rgb, w, h, cfg.target_size, LI);
 
-    ncnn::Mat in = ncnn::Mat::from_pixels(lb.data(), ncnn::Mat::PIXEL_RGB, target_size, target_size);
+    ncnn::Mat in = ncnn::Mat::from_pixels(lb.data(), ncnn::Mat::PIXEL_RGB, cfg.target_size, cfg.target_size);
     const float norm[3] = {1.f / 255.f, 1.f / 255.f, 1.f / 255.f};
     in.substract_mean_normalize(0, norm);
 
@@ -148,10 +173,10 @@ bool yolov8n_detect_rgb(const unsigned char* rgb,
     }
 
     const int C = out.h;
-    if (C > 4 * reg_max) {
-        yolo_decode_xywh_flat(out, conf_thr, dets);
+    if (C > 4 * cfg.reg_max) {
+        yolo_decode_xywh_flat(out, cfg.conf_thr, dets);
     } else {
-        yolo_dfl_decode_flat(out, target_size, reg_max, conf_thr, dets);
+        yolo_dfl_decode_flat(out, cfg.target_size, cfg.reg_max, cfg.conf_thr, dets);
     }
 
     if (dets.empty()) {
@@ -160,11 +185,11 @@ bool yolov8n_detect_rgb(const unsigned char* rgb,
 
     sort_dets_by_score_desc(dets);
     for (size_t i = 0; i < dets.size(); ++i) {
-        clip_box(dets[i], target_size, target_size);
+        clip_box(dets[i], cfg.target_size, cfg.target_size);
     }
 
     std::vector<int> keep(dets.size());
-    int k = nms(dets.data(), (int)dets.size(), iou_thr, keep.data(), (int)keep.size());
+    int k = nms(dets.data(), (int)dets.size(), cfg.iou_thr, keep.data(), (int)keep.size());
 
     if (k < 0) {
         dets.clear();
