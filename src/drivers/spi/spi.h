@@ -16,7 +16,7 @@
 #include <drivers/char_dev.h>
 
 #include <kernel/irq.h>
-#include <lib/libds/array.h>
+#include <lib/libds/array_spread.h>
 #include <util/macro.h>
 /* #include <drivers/dma/dma.h> */
 

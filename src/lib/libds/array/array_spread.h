@@ -31,7 +31,7 @@
 #ifndef UTIL_ARRAY_SPREAD_H_
 #define UTIL_ARRAY_SPREAD_H_
 
-#include <module/embox/lib/libds_array.h>
+#include <lib/libds/array_spread_impl.h>
 
 /**
  * Analogs for spread array.
