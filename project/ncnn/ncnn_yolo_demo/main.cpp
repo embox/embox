@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "coco80.h"
 #include "image_io.h"
 #include "yolov8n_model.h"
 
@@ -28,7 +28,7 @@ int main(int argc, char** argv) {
     printf("[2] detections=%d\n", (int)dets.size());
     for (size_t i = 0; i < dets.size(); ++i) {
         const Det& d = dets[i];
-        const char* name = yolov8n_class_name(d.cls);
+        const char* name = coco80_class_name(d.cls);
         printf("%s cls=%d conf=%.3f x=%.1f y=%.1f w=%.1f h=%.1f\n",
                name, d.cls, d.score, d.x, d.y, d.w, d.h);
     }

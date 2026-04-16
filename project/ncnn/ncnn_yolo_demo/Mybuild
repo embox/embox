@@ -9,11 +9,13 @@ package embox.cmd.ncnn
 @BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
 @BuildDepends(project.ncnn.common.image.image)
 @BuildDepends(project.ncnn.common.postprocess.postprocess)
+@BuildDepends(project.ncnn.common.labels.coco80)
 @BuildDepends(project.ncnn.common.image.headers)
 @BuildDepends(project.ncnn.common.postprocess.headers)
 @BuildDepends(project.ncnn.common.types.headers)
 @BuildDepends(project.ncnn.models.yolov8n.headers)
 @BuildDepends(project.ncnn.models.yolov8n.yolov8n_model)
+@BuildDepends(project.ncnn.common.labels.headers)
 module ncnn_yolo_demo {
 
     source
@@ -28,4 +30,7 @@ module ncnn_yolo_demo {
     depends project.ncnn.models.yolov8n.yolov8n_model
     depends project.ncnn.models.yolov8n.headers
     depends project.ncnn.common.types.headers
+    depends project.ncnn.common.labels.headers
+    depends project.ncnn.common.labels.coco80
+    
 }

@@ -16,5 +16,4 @@ bool yolov8n_detect_rgb(const unsigned char* rgb,
                         std::vector<Det>& dets,
                         const YoloV8NConfig& cfg);
 
-const char* yolov8n_class_name(int cls);
 const YoloV8NConfig& yolov8n_default_config();

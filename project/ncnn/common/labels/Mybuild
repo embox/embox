@@ -1,0 +1,20 @@
+package project.ncnn.common.labels
+
+@BuildArtifactPath(
+  cppflags="-I$(ROOT_DIR)/project/ncnn/common/labels"
+)
+module headers {}
+
+@Build(stage=2)
+@BuildDepends(project.ncnn.common.labels.headers)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(embox.cxx.LibCxx)
+static module coco80 {
+
+    source
+        "coco80.cpp"
+
+    depends project.ncnn.common.labels.headers
+    depends third_party.compiler_headers
+    depends embox.cxx.LibCxx
+}
