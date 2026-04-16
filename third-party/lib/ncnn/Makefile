@@ -4,37 +4,56 @@ PKG_VER  := 20250916
 PKG_SOURCES := https://github.com/Tencent/$(PKG_NAME)/archive/refs/tags/$(PKG_VER).tar.gz
 PKG_MD5     := da74ad0af613a8dd4d9a4a02a234ecef
 
+NCNN_FLAGS = \
+	-DCMAKE_TOOLCHAIN_FILE=$(abspath $(MOD_DIR))/cmake/embox-toolchain.cmake \
+	-DCMAKE_C_COMPILER:FILEPATH=$(abspath $(EMBOX_GCC)) \
+	-DCMAKE_CXX_COMPILER:FILEPATH=$(abspath $(EMBOX_GXX)) \
+	-DCMAKE_INSTALL_PREFIX=$(abspath $(PKG_INSTALL_DIR)) \
+	-DCMAKE_BUILD_TYPE=None \
+	-DNCNN_BUILD_TOOLS=OFF \
+	-DNCNN_BUILD_EXAMPLES=OFF \
+	-DNCNN_BUILD_BENCHMARK=OFF \
+	-DNCNN_BUILD_TESTS=OFF \
+	-DNCNN_SHARED_LIB=OFF \
+	-DNCNN_VULKAN=OFF \
+	-DNCNN_OPENMP=OFF \
+	-DNCNN_THREADS=OFF \
+	-DNCNN_RUNTIME_CPU=OFF \
+	-DNCNN_C_API=OFF \
+	-DNCNN_BENCHMARK=OFF \
+	-DNCNN_STDIO=OFF \
+	-DNCNN_STRING=OFF \
+	-DNCNN_SIMPLESTL=ON \
+	-DNCNN_SIMPLEOMP=OFF \
+	-DNCNN_SIMPLEOCV=OFF \
+	-DNCNN_AVX=OFF \
+	-DNCNN_AVX2=OFF \
+	-DNCNN_SSE2=OFF
+
 $(CONFIGURE) :
+	mkdir -p $(PKG_SOURCE_DIR)/build-embox
+
+	# Embox-compatible headers for source/build tree
+	cp $(MOD_DIR)/features_embox.h $(PKG_SOURCE_DIR)/src/features.h
+	cp $(MOD_DIR)/cwchar $(PKG_SOURCE_DIR)/src/cwchar
+
+	cd $(PKG_SOURCE_DIR)/build-embox && cmake .. $(NCNN_FLAGS)
+
+	# Temporary bridge: override generated platform.h with Embox-compatible one
+	cp $(MOD_DIR)/platform_embox.h $(PKG_SOURCE_DIR)/build-embox/src/platform.h
+
 	touch $@
 
 $(BUILD) :
+	cd $(PKG_SOURCE_DIR)/build-embox && cmake --build . -j$$(nproc || echo 4)
 	touch $@
 
 $(INSTALL) :
-	mkdir -p $(PKG_INSTALL_DIR)/src
+	cd $(PKG_SOURCE_DIR)/build-embox && cmake --install .
+
+	# Keep public include tree explicit
 	mkdir -p $(PKG_INSTALL_DIR)/include/ncnn
-
-	cp -r $(PKG_SOURCE_DIR)/src/* $(PKG_INSTALL_DIR)/src/
-
-	rm -rf $(PKG_INSTALL_DIR)/src/layer/arm
-
-	cp $(PKG_INSTALL_DIR)/src/*.h $(PKG_INSTALL_DIR)/include/ncnn/ || true
-
-	cp $(MOD_DIR)/platform_embox.h $(PKG_INSTALL_DIR)/src/platform.h
-	cp $(MOD_DIR)/features_embox.h $(PKG_INSTALL_DIR)/src/features.h
-
-	cp $(MOD_DIR)/generated/layer_type_enum.h $(PKG_INSTALL_DIR)/src/layer_type_enum.h
-	cp $(MOD_DIR)/generated/layer_declaration.h $(PKG_INSTALL_DIR)/src/layer_declaration.h
-	cp $(MOD_DIR)/generated/layer_registry.h $(PKG_INSTALL_DIR)/src/layer_registry.h
-	cp $(MOD_DIR)/generated/layer_shader_registry.h $(PKG_INSTALL_DIR)/src/layer_shader_registry.h
-	cp $(MOD_DIR)/generated/layer_shader_spv_data.h $(PKG_INSTALL_DIR)/src/layer_shader_spv_data.h
-	cp $(MOD_DIR)/generated/ncnn_export.h $(PKG_INSTALL_DIR)/src/ncnn_export.h
-	cp $(MOD_DIR)/generated/layer_shader_type_enum.h $(PKG_INSTALL_DIR)/src/layer_shader_type_enum.h
-
 	cp $(MOD_DIR)/platform_embox.h $(PKG_INSTALL_DIR)/include/ncnn/platform.h
 	cp $(MOD_DIR)/features_embox.h $(PKG_INSTALL_DIR)/include/ncnn/features.h
-	cp $(MOD_DIR)/generated/ncnn_export.h $(PKG_INSTALL_DIR)/include/ncnn/ncnn_export.h
-
-	cp $(MOD_DIR)/cwchar $(PKG_INSTALL_DIR)/src/cwchar
 
 	touch $@
