@@ -1,4 +1,4 @@
-// third_party/lib/ncnn/features_embox.h
+// third_party/lib/ncnn/tree/src/features.h
 #pragma once
 
 #ifndef NCNN_PLATFORM_API

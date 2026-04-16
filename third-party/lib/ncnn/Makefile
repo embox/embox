@@ -3,7 +3,9 @@ PKG_VER  := 20250916
 
 PKG_SOURCES := https://github.com/Tencent/$(PKG_NAME)/archive/refs/tags/$(PKG_VER).tar.gz
 PKG_MD5     := da74ad0af613a8dd4d9a4a02a234ecef
-PKG_PATCHES := patches/0001-embox-platform-template.patch
+PKG_PATCHES := \
+	patches/0001-embox-platform-template.patch \
+	patches/0002-embox-install-features-header.patch
 
 NCNN_FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(abspath $(MOD_DIR))/cmake/embox-toolchain.cmake \
@@ -35,10 +37,6 @@ NCNN_FLAGS = \
 $(CONFIGURE) :
 	mkdir -p $(PKG_SOURCE_DIR)/build-embox
 
-	# Embox-compatible headers for source/build tree
-	cp $(MOD_DIR)/features_embox.h $(PKG_SOURCE_DIR)/src/features.h
-	cp $(MOD_DIR)/cwchar $(PKG_SOURCE_DIR)/src/cwchar
-
 	cd $(PKG_SOURCE_DIR)/build-embox && cmake .. $(NCNN_FLAGS)
 
 	touch $@
@@ -49,10 +47,5 @@ $(BUILD) :
 
 $(INSTALL) :
 	cd $(PKG_SOURCE_DIR)/build-embox && cmake --install .
-
-	# Keep public include tree explicit
-	mkdir -p $(PKG_INSTALL_DIR)/include/ncnn
-	cp $(MOD_DIR)/platform_embox.h $(PKG_INSTALL_DIR)/include/ncnn/platform.h
-	cp $(MOD_DIR)/features_embox.h $(PKG_INSTALL_DIR)/include/ncnn/features.h
 
 	touch $@
