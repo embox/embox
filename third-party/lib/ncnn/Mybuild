@@ -15,7 +15,6 @@ static module libncnn {
     source
         "^BUILD/extbld/third_party/lib/ncnn/libncnn/install/lib/libncnn.a",
         "ncnn_new_delete.cpp",
-        "cpu_embox.cpp",
         "ncnn_math_trig_shim.cpp"
 
     depends third_party.lib.ncnn.ncnn_public_headers
