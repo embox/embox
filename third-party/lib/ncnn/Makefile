@@ -3,12 +3,14 @@ PKG_VER  := 20250916
 
 PKG_SOURCES := https://github.com/Tencent/$(PKG_NAME)/archive/refs/tags/$(PKG_VER).tar.gz
 PKG_MD5     := da74ad0af613a8dd4d9a4a02a234ecef
+PKG_PATCHES := patches/0001-embox-platform-template.patch
 
 NCNN_FLAGS = \
 	-DCMAKE_TOOLCHAIN_FILE=$(abspath $(MOD_DIR))/cmake/embox-toolchain.cmake \
 	-DCMAKE_C_COMPILER:FILEPATH=$(abspath $(EMBOX_GCC)) \
 	-DCMAKE_CXX_COMPILER:FILEPATH=$(abspath $(EMBOX_GXX)) \
 	-DCMAKE_INSTALL_PREFIX=$(abspath $(PKG_INSTALL_DIR)) \
+	-DNCNN_PLATFORM_TEMPLATE=$(abspath $(MOD_DIR))/templates/platform_embox.h.in \
 	-DCMAKE_BUILD_TYPE=None \
 	-DNCNN_BUILD_TOOLS=OFF \
 	-DNCNN_BUILD_EXAMPLES=OFF \
@@ -38,9 +40,6 @@ $(CONFIGURE) :
 	cp $(MOD_DIR)/cwchar $(PKG_SOURCE_DIR)/src/cwchar
 
 	cd $(PKG_SOURCE_DIR)/build-embox && cmake .. $(NCNN_FLAGS)
-
-	# Temporary bridge: override generated platform.h with Embox-compatible one
-	cp $(MOD_DIR)/platform_embox.h $(PKG_SOURCE_DIR)/build-embox/src/platform.h
 
 	touch $@
 

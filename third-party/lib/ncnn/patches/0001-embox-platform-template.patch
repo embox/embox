@@ -1,0 +1,17 @@
+--- ncnn-20250916/src/CMakeLists.txt
++++ ncnn-20250916/src/CMakeLists.txt
+@@ -1,7 +1,13 @@
+ 
+ ##############################################
+ 
+-configure_file(platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/platform.h)
++if(NCNN_PLATFORM_TEMPLATE)
++  configure_file(${NCNN_PLATFORM_TEMPLATE} ${CMAKE_CURRENT_BINARY_DIR}/platform.h)
++else()
++  configure_file(platform.h.in ${CMAKE_CURRENT_BINARY_DIR}/platform.h)
++endif()
++
++set(NCNN_PLATFORM_TEMPLATE "" CACHE STRING "Custom platform.h.in template")
+ 
+ # Add source file to list, and add to special visual folder
+ function(ncnn_src_group ncnn_src_string folder)
