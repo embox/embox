@@ -1,6 +1,5 @@
 package embox.cmd.ncnn
 
-
 @LinkerSection(text="ncnn_yolo_demo_test_text",rodata="ncnn_yolo_demo_test_rodata",data="ncnn_yolo_demo_test_data",bss="ncnn_yolo_demo_test_bss",arm_exidx="ncnn_demo_test_arm_exidx",arm_extab="ncnn_demo_test_arm_extab")
 @App
 @AutoCmd
@@ -8,15 +7,17 @@ package embox.cmd.ncnn
 @Build(stage=2)
 @BuildDepends(third_party.lib.ncnn.libncnn)
 @BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
+@BuildDepends(project.ncnn.common.image.image)
+@BuildDepends(project.ncnn.common.postprocess.postprocess)
+@BuildDepends(project.ncnn.models.yolov8n.yolov8n_model)
 module ncnn_yolo_demo {
 
-    source 
-        "main.cpp",
-        "dfl_decode.cpp",
-        "image_io.cpp",
-        "nms.cpp",
-        "stb_image_impl.cpp"
-    
+    source
+        "main.cpp"
+
     depends third_party.lib.ncnn.libncnn
     depends third_party.lib.ncnn.ncnn_public_headers
+    depends project.ncnn.common.image.image
+    depends project.ncnn.common.postprocess.postprocess
+    depends project.ncnn.models.yolov8n.yolov8n_model
 }

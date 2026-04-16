@@ -1,0 +1,16 @@
+package project.ncnn.common.image
+
+@Build(stage=2)
+@BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(embox.cxx.LibCxx)
+static module image {
+
+    source
+        "image_io.cpp",
+        "stb_image_impl.cpp"
+
+    depends third_party.lib.ncnn.ncnn_public_headers
+    depends third_party.compiler_headers
+    depends embox.cxx.LibCxx
+}
