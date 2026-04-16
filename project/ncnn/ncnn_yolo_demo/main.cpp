@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "../common/image/image_io.h"
-#include "../models/yolov8n/yolov8n_model.h"
+#include "image_io.h"
+#include "yolov8n_model.h"
 
 
 int main(int argc, char** argv) {

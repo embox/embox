@@ -1,5 +1,3 @@
-#include "yolov8n_model.h"
-
 #include <string.h>
 
 #include "platform.h"
@@ -10,8 +8,10 @@
 #include "assets/yolov8n_ncnn_model/yolov8n.id.h"
 #include "assets/yolov8n_ncnn_model/yolov8n.mem.h"
 
-#include "../../common/postprocess/dfl_decode.h"
-#include "../../common/postprocess/nms.h"
+#include "yolov8n_model.h"
+
+#include "dfl_decode.h"
+#include "nms.h"
 
 static const char* COCO80[80] = {
  "person","bicycle","car","motorcycle","airplane","bus","train","truck","boat","traffic light",

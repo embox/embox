@@ -1,6 +1,12 @@
 package project.ncnn.common.image
 
+@BuildArtifactPath(
+  cppflags="-I$(ROOT_DIR)/project/ncnn/common/image"
+)
+module headers {}
+
 @Build(stage=2)
+@BuildDepends(project.ncnn.common.image.headers)
 @BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
 @BuildDepends(third_party.compiler_headers)
 @BuildDepends(embox.cxx.LibCxx)
@@ -10,6 +16,7 @@ static module image {
         "image_io.cpp",
         "stb_image_impl.cpp"
 
+    depends project.ncnn.common.image.headers
     depends third_party.lib.ncnn.ncnn_public_headers
     depends third_party.compiler_headers
     depends embox.cxx.LibCxx

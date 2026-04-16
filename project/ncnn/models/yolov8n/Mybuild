@@ -1,15 +1,24 @@
 package project.ncnn.models.yolov8n
 
+@BuildArtifactPath(
+  cppflags="-I$(ROOT_DIR)/project/ncnn/models/yolov8n"
+)
+module headers {}
+
 @Build(stage=2)
+@BuildDepends(project.ncnn.models.yolov8n.headers)
 @BuildDepends(third_party.lib.ncnn.libncnn)
 @BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
 @BuildDepends(project.ncnn.common.postprocess.postprocess)
+@BuildDepends(project.ncnn.common.postprocess.headers)
 module yolov8n_model {
 
     source
         "yolov8n_model.cpp"
 
+    depends project.ncnn.models.yolov8n.headers
     depends third_party.lib.ncnn.libncnn
     depends third_party.lib.ncnn.ncnn_public_headers
     depends project.ncnn.common.postprocess.postprocess
+    depends project.ncnn.common.postprocess.headers
 }

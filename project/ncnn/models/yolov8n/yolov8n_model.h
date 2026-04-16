@@ -1,6 +1,7 @@
 #pragma once
 
-#include "../../common/postprocess/nms.h"
+#include "platform.h"
+#include "detection.h"
 
 struct YoloV8NConfig {
     int target_size;
