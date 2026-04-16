@@ -467,7 +467,6 @@ static inline float sinhf(float x) { return (float)sinh((double)x); }
 #endif
 static inline float coshf(float x) { return (float)cosh((double)x); }
 
-// tanhf мы уже переопределяли, но сделаем по тому же паттерну
 #ifdef tanhf
 #undef tanhf
 #endif
@@ -491,7 +490,6 @@ static inline float asinhf(float x) {
     return (float)log(xd + sqrt(xd * xd + 1.0));
 }
 
-/* Приближённая erf(x) — формула Абрамовица–Стегуна 7.1.26 */
 static inline float erff(float x) {
     double xd = (double)x;
     double t = 1.0 / (1.0 + 0.5 * fabs(xd));

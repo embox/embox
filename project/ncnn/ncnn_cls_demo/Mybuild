@@ -1,0 +1,25 @@
+package embox.cmd.ncnn
+
+@LinkerSection(text="ncnn_cls_demo_test_text",rodata="ncnn_cls_demo_test_rodata",data="ncnn_cls_demo_test_data",bss="ncnn_cls_demo_test_bss",arm_exidx="ncnn_cls_demo_arm_exidx",arm_extab="ncnn_cls_demo_arm_extab")
+@App
+@AutoCmd
+@CxxCmd(name="ncnn_cls_demo", help="MobileNetV3-Small classification demo on Embox")
+@Build(stage=2)
+@BuildDepends(project.ncnn.common.image.image)
+@BuildDepends(project.ncnn.common.image.headers)
+@BuildDepends(project.ncnn.common.types.headers)
+@BuildDepends(project.ncnn.models.mobilenetv3_small.mobilenetv3_small_model)
+@BuildDepends(project.ncnn.models.mobilenetv3_small.headers)
+@BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
+module ncnn_cls_demo {
+
+    source
+        "main.cpp"
+
+    depends project.ncnn.common.image.image
+    depends project.ncnn.common.image.headers
+    depends project.ncnn.common.types.headers
+    depends project.ncnn.models.mobilenetv3_small.mobilenetv3_small_model
+    depends project.ncnn.models.mobilenetv3_small.headers
+    depends third_party.lib.ncnn.ncnn_public_headers
+}
