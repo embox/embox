@@ -7,9 +7,9 @@
  */
 #include <unistd.h>
 #include <util/log.h>
-#include <drivers/i2c/i2c.h>
 
 #include "bmp280.h"
+#include "bmp280_transfer.h"
 
 /* https://www.bosch-sensortec.com/media/boschsensortec/downloads/datasheets/bst-bmp280-ds001.pdf*/
 
@@ -31,8 +31,14 @@
 extern struct bmp280_dev bmp280_dev0;
 
 int16_t bmp280_get_temperature(void) {
+	// recommended to use a burst read and not address every register individually
+	uint8_t msb, lsb, xlsb;
+	
+    bmp280_readb(&bmp280_dev0, BMP280_TEMP_MSB,  &msb);
+    bmp280_readb(&bmp280_dev0, BMP280_TEMP_LSB,  &lsb);
+    bmp280_readb(&bmp280_dev0, BMP280_TEMP_XLSB, &xlsb);
 
-    return 0;
+    return ((int32_t)msb << 12) | ((int32_t)lsb << 4) | (xlsb >> 4);
 }
 
 int16_t bmp280_get_humidity(void) {

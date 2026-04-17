@@ -6,3 +6,9 @@ abstract module bmp280 {
 
 	source "bmp280.c"
 }
+
+static module bmp280_i2c extends bmp280 {
+	option string log_level="LOG_ERR"
+	option number i2c_bus = 0
+	source "bmp280_i2c.c"
+}
