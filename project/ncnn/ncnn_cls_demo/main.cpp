@@ -3,6 +3,7 @@
 
 #include "image_io.h"
 #include "mobilenetv3_small_model.h"
+#include "imagenet1000_labels.h"
 
 int main(int argc, char** argv) {
     const char* img = (argc > 1) ? argv[1] : "/data/photos/dog.png";
@@ -26,7 +27,10 @@ int main(int argc, char** argv) {
 
     printf("[2] topk=%d\n", (int)out.size());
     for (size_t i = 0; i < out.size(); ++i) {
-        printf("cls=%d prob=%.3f\n", out[i].cls, out[i].prob);
+        printf("cls=%d prob=%.3f name=%s\n",
+               out[i].cls,
+               out[i].prob,
+               mobilenetv3_small_label_name(out[i].cls));
     }
 
     return 0;
