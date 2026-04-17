@@ -1,6 +1,8 @@
 #include "mobilenetv3_small_model.h"
 
+#include <cstdio>
 #include <math.h>
+#include <string.h>
 
 #include "platform.h"
 #include "mat.h"
@@ -73,11 +75,26 @@ bool mobilenetv3_small_classify_rgb(const unsigned char* rgb,
     net.opt.lightmode = true;
     net.opt.use_packing_layout = false;
 
-    const unsigned char* param_mem = mobilenetv3_small_ncnn_param;
-    const unsigned char* model_mem = mobilenetv3_small_ncnn_bin;
+    std::vector<unsigned char> param_buf;
+    
+    param_buf.resize(mobilenetv3_small_ncnn_param_len + 1);
+    memcpy(param_buf.data(), mobilenetv3_small_ncnn_param, mobilenetv3_small_ncnn_param_len);
+    param_buf[mobilenetv3_small_ncnn_param_len] = 0;
+    printf("[3] load_param\n");
+
+    std::vector<unsigned char> model_buf;
+    model_buf.resize(mobilenetv3_small_ncnn_bin_len);
+    memcpy(model_buf.data(), mobilenetv3_small_ncnn_bin, mobilenetv3_small_ncnn_bin_len);
+    printf("[4] load_model\n");
+
+    const unsigned char* param_mem = param_buf.data();
+    const unsigned char* model_mem = model_buf.data();
+    printf("[5] make input\n");
 
     ncnn::DataReaderFromMemory param_dr(param_mem);
+    printf("[6] ex.input\n");
     ncnn::DataReaderFromMemory model_dr(model_mem);
+    printf("[7] ex.extract\n");
 
     if (net.load_param(param_dr) != 0) {
         return false;
