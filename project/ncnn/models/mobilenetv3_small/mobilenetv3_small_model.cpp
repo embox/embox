@@ -1,22 +1,22 @@
 #include "mobilenetv3_small_model.h"
 
-#include <cstdio>
+#include <stdio.h>
 #include <math.h>
 #include <string.h>
 
 #include "platform.h"
 #include "mat.h"
-#include "net.h"
 #include "datareader.h"
+#include "net.h"
 
-#include "assets/mobilenetv3_small_ncnn_param.h"
-#include "assets/mobilenetv3_small_ncnn_bin.h"
+#include "assets/mobilenetv3_small.id.h"
+#include "assets/mobilenetv3_small.mem.h"
 
 static const MobileNetV3SmallConfig kMobileNetV3SmallDefaultConfig = {
     224,
     5
 };
- 
+
 const MobileNetV3SmallConfig& mobilenetv3_small_default_config()
 {
     return kMobileNetV3SmallDefaultConfig;
@@ -75,33 +75,23 @@ bool mobilenetv3_small_classify_rgb(const unsigned char* rgb,
     net.opt.lightmode = true;
     net.opt.use_packing_layout = false;
 
-    std::vector<unsigned char> param_buf;
-    
-    param_buf.resize(mobilenetv3_small_ncnn_param_len + 1);
-    memcpy(param_buf.data(), mobilenetv3_small_ncnn_param, mobilenetv3_small_ncnn_param_len);
-    param_buf[mobilenetv3_small_ncnn_param_len] = 0;
-    printf("[3] load_param\n");
+    const unsigned char* param_bin_mem = mobilenet_v3_small_embedded_ncnn_param_bin;
+    ncnn::DataReaderFromMemory param_bin_dr(param_bin_mem);
 
-    std::vector<unsigned char> model_buf;
-    model_buf.resize(mobilenetv3_small_ncnn_bin_len);
-    memcpy(model_buf.data(), mobilenetv3_small_ncnn_bin, mobilenetv3_small_ncnn_bin_len);
-    printf("[4] load_model\n");
-
-    const unsigned char* param_mem = param_buf.data();
-    const unsigned char* model_mem = model_buf.data();
-    printf("[5] make input\n");
-
-    ncnn::DataReaderFromMemory param_dr(param_mem);
-    printf("[6] ex.input\n");
-    ncnn::DataReaderFromMemory model_dr(model_mem);
-    printf("[7] ex.extract\n");
-
-    if (net.load_param(param_dr) != 0) {
+    if (net.load_param_bin(param_bin_dr) != 0) {
+        printf("[E] load_param_bin failed\n");
         return false;
     }
-    if (net.load_model(model_dr) != 0) {
+    printf("[OK] load_param_bin\n");
+
+    const unsigned char* model_bin_mem = mobilenet_v3_small_embedded_ncnn_bin;
+    ncnn::DataReaderFromMemory model_bin_dr(model_bin_mem);
+
+    if (net.load_model(model_bin_dr) != 0) {
+        printf("[E] load_model(DataReader) failed\n");
         return false;
     }
+    printf("[OK] load_model\n");
 
     ncnn::Mat in = ncnn::Mat::from_pixels_resize(
         rgb, ncnn::Mat::PIXEL_RGB, w, h, cfg.input_size, cfg.input_size
@@ -113,19 +103,27 @@ bool mobilenetv3_small_classify_rgb(const unsigned char* rgb,
     ncnn::Extractor ex = net.create_extractor();
     ex.set_light_mode(true);
 
-    if (ex.input("in0", in) != 0) {
+    if (ex.input(mobilenet_v3_small_embedded_ncnn_param_id::BLOB_in0, in) != 0) {
+    printf("[E] ex.input failed\n");
         return false;
     }
+    printf("[OK] ex.input\n");
 
     ncnn::Mat prob;
-    if (ex.extract("out0", prob) != 0) {
+    if (ex.extract(mobilenet_v3_small_embedded_ncnn_param_id::BLOB_out0, prob) != 0) {
+        printf("[E] ex.extract failed\n");
         return false;
     }
+    printf("[OK] ex.extract\n");
+
+    printf("[DBG] prob: w=%d h=%d c=%d\n", prob.w, prob.h, prob.c);
 
     const int count = prob.w * prob.h * prob.c;
     if (count <= 0) {
+        printf("[E] empty output\n");
         return false;
     }
+    printf("[OK] count=%d\n", count);
 
     const float* p = (const float*)prob.data;
     out.resize(count);
