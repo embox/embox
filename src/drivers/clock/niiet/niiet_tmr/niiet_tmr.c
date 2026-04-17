@@ -5,26 +5,45 @@
  * @author Aleksey Zhmulin
  * @date 19.05.25
  */
+#include <util/log.h>
 
 #include <stddef.h>
 #include <stdint.h>
 #include <sys/mman.h>
 
 #include <drivers/common/memory.h>
-#include <embox/unit.h>
+
 #include <hal/clock.h>
 #include <hal/reg.h>
 #include <hal/system.h>
 #include <kernel/irq.h>
-#include <kernel/printk.h>
 #include <kernel/time/clock_source.h>
 #include <kernel/time/time.h>
 #include <util/field.h>
-#include <util/log.h>
 
-#define TMR32_BASE 0x30000000UL
-#define TMR32_IRQ  6
+#include <embox/unit.h>
+#include <framework/mod/options.h>
 
+#define TMR32_BASE     ((uintptr_t)OPTION_GET(NUMBER,base_addr))
+#define TMR32_IRQ      OPTION_GET(NUMBER,irq_num)
+
+#define VG1T_VERSION   OPTION_GET(NUMBER, vg1t_version)
+
+#if VG1T_VERSION == 1
+
+#define TMR_CTRL         (TMR32_BASE + 0x00) /* Timer Control Register */
+#define TMR_COUNT        (TMR32_BASE + 0x04) /* Current Value Timer Register */
+#define TMR_CLKDIV       (TMR32_BASE + 0x08)
+#define TMR_PERIOD       (TMR32_BASE + 0x0C)
+#define TMR_IM           (TMR32_BASE + 0x10) /* Interrupt Mask Register */
+#define TMR_RIS          (TMR32_BASE + 0x14) /* Raw Interrupt Status Register */
+#define TMR_MIS          (TMR32_BASE + 0x18) /* Masked Interrupt Status Register */
+#define TMR_IC           (TMR32_BASE + 0x1C) /* Clear Interrupt Status Register */
+#define TMR_CAPCOM0_CTRL (TMR32_BASE + 0x100) /* Capture/Compare Control Register */
+#define TMR_CAPCOM0_VAL0 (TMR32_BASE + 0x104) /* Capture/Compare Value Register */
+#define TMR_CAPCOM0_VAL1 (TMR32_BASE + 0x108) /* Capture/Compare Value Register */
+
+#else
 /* clang-format off */
 #define TMR_CTRL         (TMR32_BASE + 0x00) /* Timer Control Register */
 #define TMR_COUNT        (TMR32_BASE + 0x04) /* Current Value Timer Register */
@@ -36,7 +55,8 @@
 #define TMR_CAPCOM0_VAL  (TMR32_BASE + 0x1c) /* Capture/Compare Value Register */
 #define TMR_DMA_IM       (TMR32_BASE + 0x38) /* DMA Request Mask Register */
 #define TMR_ADC_IM       (TMR32_BASE + 0x3c) /* ADC Request Mask Register */
-/* clang-format on */
+
+#endif
 
 #define TMR_CAPCOM_CTRL(n) (TMR_CAPCOM0_CTRL + 8 * n) /* (n: 0..3) */
 #define TMR_CAPCOM_VAL(n)  (TMR_CAPCOM0_VAL + 8 * n)  /* (n: 0..3) */
@@ -102,12 +122,24 @@
 #define TMR_DMA_IM_CAP0 (1 << 1) /* Capcom0 DMA Request Enable */
 #define TMR_DMA_IM_TMR  (1 << 0) /* Timer DMA Request Enable */
 
-#define TMR_PERIOD ((SYS_CLOCK / JIFFIES_PERIOD) - 1)
+#define TMR_PERIOD_VALUE ((SYS_CLOCK / JIFFIES_PERIOD) - 1)
 
-static int tmr32_set_periodic(struct clock_source *cs) {
-	REG32_STORE(TMR_CAPCOM0_VAL, TMR_PERIOD);
+// FIXME USE separate SIU module instead 
+#define SIU_BASE_ADDR   0x50003000UL
+
+#define SIU_TMREN_REG   (SIU_BASE_ADDR + 0x54)
+
+int tmr32_set_periodic(struct clock_source *cs) {
+
+	REG32_STORE(TMR_CTRL, 0);
+	REG32_STORE(TMR_IC, 0x1FF);
+	REG32_STORE(TMR_PERIOD, TMR_PERIOD_VALUE);
 	REG32_STORE(TMR_CTRL, FIELD(TMR_CTRL_MODE, TMR_CTRL_MODE_UP));
-	REG32_STORE(TMR_IM, TMR_IM_CAP0);
+
+	REG32_STORE(TMR_IM, TMR_IM_TMR);
+
+	// FIXME USE separate SIU module instead 
+	REG32_STORE(SIU_TMREN_REG, (1 << 0)); /* TMR0*/
 
 	return 0;
 }
@@ -129,19 +161,19 @@ static struct time_counter_device tmr32_counter = {
 static irq_return_t tmr32_irq_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(data);
 
-	REG32_STORE(TMR_IC, TMR_IC_CAP0);
+	REG32_STORE(TMR_IC, TMR_IC_TMR);
 
 	return IRQ_HANDLED;
 }
 
 static int tmr32_init(struct clock_source *cs) {
-	extern void niiet_tmr32_set_rcu(void);
+	extern void niiet_tmr_set_rcu(int);
 
-	niiet_tmr32_set_rcu();
+	niiet_tmr_set_rcu(0);
 
 	return irq_attach(TMR32_IRQ, tmr32_irq_handler, 0, cs, "tmr32");
 }
 
 CLOCK_SOURCE_DEF(tmr32, tmr32_init, NULL, &tmr32_event, &tmr32_counter);
 
-PERIPH_MEMORY_DEFINE(tmr32, PTIMER_BASE_ADDR, 0x40);
+PERIPH_MEMORY_DEFINE(tmr32, TMR32_BASE, 0x40);

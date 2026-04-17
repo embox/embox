@@ -1,6 +1,11 @@
-package embox.driver.clock
+package embox.driver.clock.niiet
 
 module k1921vg015_tmr32 {
+	option string log_level = "LOG_NONE"
+
+	option number base_addr = 0x30000000
+	option number irq_num   = 6
+
 	source "k1921vg015_tmr32.c"
 
 	depends embox.driver.interrupt.irqctrl_api

@@ -12,6 +12,7 @@
 #define GPIOE_BASE             (0x40004000UL)
 #define GPIOF_BASE             (0x40005000UL)
 #define GPIOG_BASE             (0x40006000UL)
+#define GPIOH_BASE             (0x40007000UL)
 #define CANFD0_BASE            (0x41000000UL)
 #define CANFD1_BASE            (0x41001000UL)
 #define CANFD2_BASE            (0x41002000UL)

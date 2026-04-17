@@ -18,13 +18,18 @@
 #include <config/board_config.h>
 
 #define GPIO_CHIP_ID     OPTION_GET(NUMBER, gpio_chip_id)
+
+
 #define GPIO_PINS_NUMBER 16
 
-#define GPIOA ((volatile struct gpio_reg *)CONF_GPIO_PORT_A_REGION_BASE)
-#define GPIOB ((volatile struct gpio_reg *)CONF_GPIO_PORT_B_REGION_BASE)
-#if defined(CONF_GPIO_PORT_C_REGION_BASE)
-#define GPIOC ((volatile struct gpio_reg *)CONF_GPIO_PORT_C_REGION_BASE)
-#endif /* defined(CONF_GPIO_PORT_C_REGION_BASE) */
+#define ALTFUNC_WIDTH         OPTION_GET(NUMBER, altfunc_field_width)
+#if (ALTFUNC_WIDTH == 4) /* VG1T */
+#define ALTFUNC_MASK          0x7
+#elif (ALTFUNC_WIDTH == 2) /* VG1015 & VK035 */
+#define ALTFUNC_MASK          0x3
+#else
+#error "wrong ALTFUNCNUM_FIELD_WIDTH"
+#endif /* ALTFUNC_WIDTH */
 
 struct gpio_reg {
 	uint32_t GPIO_DATA_reg;       /* 0x00 */
@@ -42,8 +47,8 @@ struct gpio_reg {
 	uint32_t GPIO_OUTENCLR_reg;   /* 0x30 */
 	uint32_t GPIO_ALTFUNCSET_reg; /* 0x34 */
 	uint32_t GPIO_ALTFUNCCLR_reg; /* 0x38 */
-	uint32_t GPIO_ALTFUNCNUM0_reg; /* 0x3C */
-	uint32_t reserved2[1];        /* 0x40 VG1T ALTFUNCNUM1*/
+	uint32_t GPIO_ALTFUNCNUM_reg[2]; /* 0x3C */
+	/* uint32_t reserved2[1]; */    /* 0x40 VG1T ALTFUNCNUM1*/
 	uint32_t GPIO_SYNCSET_reg;     /* 0x44 */
 	uint32_t GPIO_SYNCCLR_reg;     /* 0x48 */
 	uint32_t GPIO_QUALSET_reg;     /* 0x4C */
@@ -125,20 +130,90 @@ niiet_gpio_irq_clear_status(volatile struct gpio_reg *gpio_reg, uint32_t mask) {
 static inline volatile struct gpio_reg *niiet_gpio_get_gpio_port(
     unsigned int port) {
 	switch (port) {
+#if defined(CONF_GPIO_PORT_A_REGION_BASE)
 	case 0:
-		return GPIOA;
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_A_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_A_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_B_REGION_BASE)
 	case 1:
-		return GPIOB;
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_B_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_B_REGION_BASE) */
 #if defined(CONF_GPIO_PORT_C_REGION_BASE)
 	case 2:
-		return GPIOC;
-		break;
-#endif /* defined (PORTC) */
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_C_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_C_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_D_REGION_BASE)
+	case 3:
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_D_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_D_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_E_REGION_BASE)
+	case 4:
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_E_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_E_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_F_REGION_BASE)
+	case 5:
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_F_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_F_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_G_REGION_BASE)
+	case 6:
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_G_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_G_REGION_BASE) */
+#if defined(CONF_GPIO_PORT_H_REGION_BASE)
+	case 7:
+		return ((volatile struct gpio_reg *)CONF_GPIO_PORT_H_REGION_BASE);
+#endif /* defined (CONF_GPIO_PORT_H_REGION_BASE) */
 	default:
 		return NULL;
 	}
 
-	return 0;
+	return NULL;
+}
+
+static inline char *niiet_gpio_get_gpio_clk(unsigned int port) {
+	char *clk_name;
+
+	switch (port) {
+	case 0:
+		clk_name = CONF_GPIO_PORT_A_CLK_ENABLE();
+		break;
+	case 1:
+		clk_name = CONF_GPIO_PORT_B_CLK_ENABLE();
+		break;
+	case 2:
+#if defined CONF_GPIO_PORT_C_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_C_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_C_CLK_ENABLE */
+		break;
+	case 3:
+#if defined CONF_GPIO_PORT_D_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_D_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_D_CLK_ENABLE */
+		break;
+	case 4:
+#if defined CONF_GPIO_PORT_E_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_E_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_E_CLK_ENABLE */
+		break;
+	case 5:
+#if defined CONF_GPIO_PORT_F_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_F_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_F_CLK_ENABLE */
+		break;
+	case 6:
+#if defined CONF_GPIO_PORT_G_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_G_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_G_CLK_ENABLE */
+		break;
+	case 7:
+#if defined CONF_GPIO_PORT_H_CLK_ENABLE
+		clk_name = CONF_GPIO_PORT_H_CLK_ENABLE();
+#endif /* defined CONF_GPIO_PORT_H_CLK_ENABLE */
+		break;
+	default:
+		return NULL;
+	}
+
+	return clk_name;
 }
 
 irq_return_t niiet_gpio_irq_handler(unsigned int irq_nr, void *gpio) {
@@ -167,8 +242,7 @@ static int niiet_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 		return -1;
 	}
 
-	res = irq_attach(0, niiet_gpio_irq_handler, 0, (void *)gpio_reg,
-	    "GPIO Irq");
+	res = irq_attach(0, niiet_gpio_irq_handler, 0, (void *)gpio_reg, "GPIO");
 	if (res < 0) {
 		return res;
 	}
@@ -208,6 +282,22 @@ static int niiet_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 	return res;
 }
 
+static inline void niiet_gpio_set_altfunc(volatile struct gpio_reg *gpio_reg,
+					int i, uint32_t alt) {
+	volatile uint32_t *altfunc;
+
+	altfunc = &gpio_reg->GPIO_ALTFUNCNUM_reg[0];
+
+#if ALTFUNC_WIDTH  == 4
+	if(i > 7) {
+		altfunc = &gpio_reg->GPIO_ALTFUNCNUM_reg[1];
+	}
+#endif /* ALTFUNC_WIDTH  == 4 */
+
+	*altfunc &= ~(ALTFUNC_MASK << (i * ALTFUNC_WIDTH));
+	*altfunc |= alt << (i * ALTFUNC_WIDTH);
+}
+
 static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
     uint32_t mode) {
 	volatile struct gpio_reg *gpio_reg;
@@ -218,39 +308,8 @@ static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 		return -1;
 	}
 
-	switch (port) {
-	case 0:
-		clk_name = CONF_GPIO_PORT_A_CLK_ENABLE();
-		break;
-	case 1:
-		clk_name = CONF_GPIO_PORT_B_CLK_ENABLE();
-		break;
-	case 2:
-#if defined CONF_GPIO_PORT_C_CLK_ENABLE
-		clk_name = CONF_GPIO_PORT_C_CLK_ENABLE();
-#endif /* defined CONF_GPIO_PORT_C_CLK_ENABLE */
-		break;
-	case 3:
-#if defined CONF_GPIO_PORT_D_CLK_ENABLE
-		clk_name = CONF_GPIO_PORT_D_CLK_ENABLE();
-#endif /* defined CONF_GPIO_PORT_D_CLK_ENABLE */
-		break;
-	case 4:
-#if defined CONF_GPIO_PORT_E_CLK_ENABLE
-		clk_name = CONF_GPIO_PORT_E_CLK_ENABLE();
-#endif /* defined CONF_GPIO_PORT_E_CLK_ENABLE */
-		break;
-	case 5:
-#if defined CONF_GPIO_PORT_F_CLK_ENABLE
-		clk_name = CONF_GPIO_PORT_F_CLK_ENABLE();
-#endif /* defined CONF_GPIO_PORT_F_CLK_ENABLE */
-		break;
-	case 6:
-#if defined CONF_GPIO_PORT_G_CLK_ENABLE
-		clk_name = CONF_GPIO_PORT_G_CLK_ENABLE();
-#endif /* defined CONF_GPIO_PORT_G_CLK_ENABLE */
-		break;
-	default:
+	clk_name = niiet_gpio_get_gpio_clk(port);
+	if (clk_name == NULL) {
 		return -1;
 	}
 
@@ -296,8 +355,7 @@ static int niiet_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 			if (pins & (1 << i)) {
 				uint32_t alt = GPIO_MODE_ALT_GET(mode);
 
-				gpio_reg->GPIO_ALTFUNCNUM0_reg &= ~(0x3 << i * 2);
-				gpio_reg->GPIO_ALTFUNCNUM0_reg |= alt << i * 2;
+				niiet_gpio_set_altfunc(gpio_reg, i, alt);
 			}
 		}
 	}
@@ -336,10 +394,10 @@ static const struct gpio_chip niiet_gpio_chip = {
     .setup_mode = niiet_gpio_setup_mode,
     .get = niiet_gpio_get,
     .set = niiet_gpio_set,
-#if defined(CONF_GPIO_PORT_C_REGION_BASE)
-    .nports = 3,
+#if defined(CONF_GPIO_PORT_A_NUM)
+    .nports = CONF_GPIO_PORT_A_NUM,
 #else
-    .nports = 2,
+    .nports = 8,
 #endif
     .chip_id = GPIO_CHIP_ID,
 };

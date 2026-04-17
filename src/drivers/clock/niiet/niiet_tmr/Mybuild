@@ -1,0 +1,16 @@
+package embox.driver.clock.niiet
+
+module niiet_tmr {
+	option string log_level = "LOG_NONE"
+
+	option number base_addr = 0x51008000 /* Timer 0 base addr */
+	option number irq_num   = 16 /* Timer 0 combine interrupt */
+
+	option number vg1t_version = 1
+
+	source "niiet_tmr.c"
+
+	depends embox.driver.interrupt.irqctrl_api
+	//depends embox.driver.clk.niiet.k1921vg015_rcu
+	@NoRuntime depends embox.kernel.time.clock_source
+}
