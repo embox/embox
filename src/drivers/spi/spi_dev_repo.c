@@ -12,6 +12,7 @@
 
 #include <assert.h>
 #include <errno.h>
+#include <string.h>
 
 #include <drivers/spi.h>
 
@@ -47,4 +48,18 @@ int spi_dev_id(struct spi_device *spi_dev) {
 
 	log_error("Wrong SPI device pointer: %p", spi_dev);
 	return -1;
+}
+
+/**
+ * @brief Get SPI device pointer by it's name
+ */
+struct spi_device *spi_dev_by_name(const char *name) {
+	struct spi_device *dev;
+
+	array_spread_foreach(dev, __spi_device_registry) {
+		if(!strcmp(dev->cdev.name, name)) {
+			return dev;
+		}
+	}
+	return NULL;
 }

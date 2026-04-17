@@ -16,7 +16,7 @@
 #include <drivers/char_dev.h>
 
 #include <kernel/irq.h>
-#include <lib/libds/array.h>
+#include <lib/libds/array_spread.h>
 #include <util/macro.h>
 /* #include <drivers/dma/dma.h> */
 
@@ -24,6 +24,7 @@
 #include <drivers/spi_controller.h>
 
 #include <drivers/pin_description.h>
+#include "sys/cdefs.h"
 
 struct spid_ops;
 
@@ -67,8 +68,12 @@ struct spid_ops {
 	int (*transfer)(struct spi_device *dev, uint8_t *in, uint8_t *out, int cnt);
 };
 
+__BEGIN_DECLS
+
 extern struct spi_device *spi_dev_by_id(int id);
 extern int spi_dev_id(struct spi_device *dev);
+
+extern struct spi_device *spi_dev_by_name(const char *name);
 
 
 /* In polling mode: 
@@ -92,6 +97,8 @@ extern int spi_transfer(struct spi_device *dev, uint8_t *in, uint8_t *out,
 extern int spi_select(struct spi_device *dev, int cs);
 extern int spi_set_master_mode(struct spi_device *dev);
 extern int spi_set_slave_mode(struct spi_device *dev);
+
+__END_DECLS
 
 extern const struct char_dev_ops __spi_cdev_ops;
 

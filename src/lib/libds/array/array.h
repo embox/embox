@@ -33,6 +33,22 @@
 
 #include <module/embox/lib/libds_array.h>
 
+/* Pointer foreach iterations. */
+
+#define __array_foreach_ptr(element_ptr, array, size) \
+	__array_range_foreach_ptr_nm(element_ptr, array, \
+			MACRO_GUARD(__ptr) + (size), \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+
+#define __array_range_foreach_ptr(element_ptr, array_begin, array_end) \
+	__array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
+			MACRO_GUARD(__ptr), MACRO_GUARD(__end))
+
+#define __array_range_foreach_ptr_nm(element_ptr, array_begin, array_end, \
+		_ptr, _end) \
+	for (typeof(element_ptr) _ptr = (array_begin), _end = (array_end); \
+			(_ptr < _end) && ((element_ptr) = _ptr); ++_ptr)
+
 /* Foreach iterators for generic arrays: with given size or null-terminated. */
 
 /**

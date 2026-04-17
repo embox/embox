@@ -7,6 +7,8 @@ module libds_array {
 	@IncludeExport(path="lib/libds")
 	source "array_spread.h"
 
-	source "array_impl.h"
+	@IncludeExport(path="lib/libds")
+	source "array_spread_impl.h"
+
 	source "array_spread.lds.S"
 }
