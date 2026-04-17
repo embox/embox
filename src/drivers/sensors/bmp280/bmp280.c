@@ -24,6 +24,7 @@
 #define BMP280_TEMP_MSB      0xFA
 #define BMP280_TEMP_LSB      0xFB
 #define BMP280_TEMP_XLSB     0xFC
+
 #define BMP280_CALIB_START   0x88
 #define BMP280_CHIP_ID_VAL   0x58
 #define BMP280_RESET_VAL     0xB6
@@ -52,6 +53,13 @@ int16_t bmp280_get_pressure(void) {
 }
 
 int bmp280_init(void) {
+    uint8_t chip_id;
 
-	return 0;
+    bmp280_readb(&bmp280_dev0, BMP280_ID, &chip_id);
+    if (chip_id != BMP280_CHIP_ID_VAL) {
+        log_error("BMP280: wrong chip id 0x%02x\n", chip_id);
+        return -1;
+    }
+
+    return 0;
 }
