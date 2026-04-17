@@ -1,0 +1,7 @@
+package embox.cmd.hardware.sensors
+
+@AutoCmd
+@Cmd(name="bmp280", help="bmp280 sensor demo")
+module bmp280 {
+	source "bmp280.c"
+}

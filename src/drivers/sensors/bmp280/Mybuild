@@ -1,0 +1,14 @@
+package embox.driver.sensors
+
+abstract module bmp280 {
+	@IncludeExport(path="drivers/sensors", target_name="bmp280.h")
+	source "bmp280.h"
+
+	source "bmp280.c"
+}
+
+static module bmp280_i2c extends bmp280 {
+	option string log_level="LOG_ERR"
+	option number i2c_bus = 1
+	source "bmp280_i2c.c"
+}
