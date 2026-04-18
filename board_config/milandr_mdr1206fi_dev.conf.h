@@ -134,8 +134,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART1_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_B, 0, 1),
-				PIN("RX", GPIO_PORT_B, 1, 1),
+				PIN("TX", GPIO_PORT_B, 0, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_B, 1, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
@@ -155,8 +155,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART2_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 4, 1),
-				PIN("RX", GPIO_PORT_D, 5, 1),
+				PIN("TX", GPIO_PORT_D, 4, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_D, 5, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART2"),
@@ -176,8 +176,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART3_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 7, 1),
-				PIN("RX", GPIO_PORT_D, 6, 1),
+				PIN("TX", GPIO_PORT_D, 7, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_D, 6, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART3"),
@@ -197,8 +197,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART4_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 9, 1),
-				PIN("RX", GPIO_PORT_D, 8, 1),
+				PIN("TX", GPIO_PORT_D, 9, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_D, 8, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART4"),
@@ -241,20 +241,20 @@ struct lcd_conf lcds[] = {
 		.dev = {
 			.name = "LCD",
 			.pins = {
-				PIN("DB0", GPIO_PORT_B, 6, 0),
-				PIN("DB1", GPIO_PORT_B, 7, 0),
-				PIN("DB2", GPIO_PORT_B, 8, 0),
-				PIN("DB3", GPIO_PORT_B, 9, 0),
-				PIN("DB4", GPIO_PORT_B, 10, 0),
-				PIN("DB5", GPIO_PORT_B, 11, 0),
-				PIN("DB6", GPIO_PORT_B, 12, 0),
-				PIN("DB7", GPIO_PORT_B, 13, 0),
-				PIN("CS1", GPIO_PORT_B, 4, 0),
-				PIN("CS2", GPIO_PORT_B, 5, 0),
-				PIN("RST", GPIO_PORT_A, 4, 0),
-				PIN("RW", GPIO_PORT_B, 14, 0),
-				PIN("RS", GPIO_PORT_B, 2, 0),
-				PIN("EN", GPIO_PORT_B, 3, 0),	
+				PIN("DB0", GPIO_PORT_B, 6, 0, 0),
+				PIN("DB1", GPIO_PORT_B, 7, 0, 0),
+				PIN("DB2", GPIO_PORT_B, 8, 0, 0),
+				PIN("DB3", GPIO_PORT_B, 9, 0, 0),
+				PIN("DB4", GPIO_PORT_B, 10, 0, 0),
+				PIN("DB5", GPIO_PORT_B, 11, 0, 0),
+				PIN("DB6", GPIO_PORT_B, 12, 0, 0),
+				PIN("DB7", GPIO_PORT_B, 13, 0, 0),
+				PIN("CS1", GPIO_PORT_B, 4, 0, 0),
+				PIN("CS2", GPIO_PORT_B, 5, 0, 0),
+				PIN("RST", GPIO_PORT_A, 4, 0, 0),
+				PIN("RW", GPIO_PORT_B, 14, 0, 0),
+				PIN("RS", GPIO_PORT_B, 2, 0, 0),
+				PIN("EN", GPIO_PORT_B, 3, 0, 0),	
 			},
 		},
 		.width = 128,
