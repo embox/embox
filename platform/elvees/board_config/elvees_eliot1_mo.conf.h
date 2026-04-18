@@ -126,8 +126,8 @@ struct uart_conf uarts[] = {
 				VAL("", IRQ_NUM_UART0),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 0, AF(4)),
-				PIN("RX", GPIO_PORT_A, 1, AF(4)),
+				PIN("TX", GPIO_PORT_A, 0, GPIO_MODE_AF, AF(4)),
+				PIN("RX", GPIO_PORT_A, 1, GPIO_MODE_AF, AF(4)),
 			},
 			.clocks = {
 				VAL("", "CLK_UART0"),
@@ -147,8 +147,8 @@ struct uart_conf uarts[] = {
 				VAL("", IRQ_NUM_UART1),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 0, AF(4)),
-				PIN("RX", GPIO_PORT_D, 1, AF(4)),
+				PIN("TX", GPIO_PORT_D, 0, GPIO_MODE_AF, AF(4)),
+				PIN("RX", GPIO_PORT_D, 1, GPIO_MODE_AF, AF(4)),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
@@ -168,8 +168,8 @@ struct uart_conf uarts[] = {
 				VAL("", IRQ_NUM_UART2),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 5, AF(4)),
-				PIN("RX", GPIO_PORT_A, 4, AF(4)),
+				PIN("TX", GPIO_PORT_A, 5, GPIO_MODE_AF, AF(4)),
+				PIN("RX", GPIO_PORT_A, 4, GPIO_MODE_AF, AF(4)),
 			},
 			.clocks = {
 				VAL("", "CLK_UART2"),
@@ -189,8 +189,8 @@ struct uart_conf uarts[] = {
 				VAL("", IRQ_NUM_UART3),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 7, AF(4)),
-				PIN("RX", GPIO_PORT_A, 6, AF(4)),
+				PIN("TX", GPIO_PORT_A, 7, GPIO_MODE_AF, AF(4)),
+				PIN("RX", GPIO_PORT_A, 6, GPIO_MODE_AF, AF(4)),
 			},
 			.clocks = {
 				VAL("", "CLK_UART3"),
@@ -213,15 +213,15 @@ struct spi_conf spis[] = {
 				VAL("", IRQ_NUM_SPI0),
 			},
 			.pins = {
-				PIN("MOSI", GPIO_PORT_A, 3, AF(3)), /* AF3*/
-				PIN("MISO", GPIO_PORT_A, 4, AF(3)), /* AF3*/
-				PIN("SCK", GPIO_PORT_A, 2, AF(3)),  /* AF3*/
-				PIN("SS", GPIO_PORT_A, 5, AF(3)),   /* AF3*/
+				PIN("MOSI", GPIO_PORT_A, 3, GPIO_MODE_AF, AF(3)), /* AF3*/
+				PIN("MISO", GPIO_PORT_A, 4, GPIO_MODE_AF, AF(3)), /* AF3*/
+				PIN("SCK", GPIO_PORT_A, 2, GPIO_MODE_AF, AF(3)),  /* AF3*/
+				PIN("SS", GPIO_PORT_A, 5, GPIO_MODE_AF, AF(3)),   /* AF3*/
 
-				//PIN("MOSI", GPIO_PORT_C, 0, AF(3)), /* AF3*/
-				//PIN("MISO", GPIO_PORT_C, 1, AF(3)), /* AF3*/
-				//PIN("SCK", GPIO_PORT_C, 2, AF(3)),  /* AF3*/
-				//PIN("SS", GPIO_PORT_C, 3, AF(3)),   /* AF3*/
+				//PIN("MOSI", GPIO_PORT_C, 0, GPIO_MODE_AF, AF(3)), /* AF3*/
+				//PIN("MISO", GPIO_PORT_C, 1, GPIO_MODE_AF, AF(3)), /* AF3*/
+				//PIN("SCK", GPIO_PORT_C, 2, GPIO_MODE_AF, AF(3)),  /* AF3*/
+				//PIN("SS", GPIO_PORT_C, 3, GPIO_MODE_AF, AF(3)),   /* AF3*/
 			},
 			.clocks = {
 				VAL("SPI",  "CLK_SPI0"),
@@ -236,7 +236,7 @@ struct spi_conf spis[] = {
 			.dev = {
 				.name = "SPI0_0",
 				.pins = {
-					PIN("SS", GPIO_PORT_A, 5, AF(3)),   /* AF3*/
+					PIN("SS", GPIO_PORT_A, 5, GPIO_MODE_AF, AF(3)),   /* AF3*/
 				},
 			},
 		},
@@ -253,10 +253,10 @@ struct spi_conf spis[] = {
 				VAL("", IRQ_NUM_SPI1),
 			},
 			.pins = {
-				PIN("MOSI", GPIO_PORT_C, 4, AF(3)), /* AF3*/
-				PIN("MISO", GPIO_PORT_C, 5, AF(3)), /* AF3*/
-				PIN("SCK", GPIO_PORT_B, 11, AF(3)),  /* AF3*/
-				PIN("SS", GPIO_PORT_C, 14, AF(3)),   /* AF3*/
+				PIN("MOSI", GPIO_PORT_C, 4, GPIO_MODE_AF, AF(3)), /* AF3*/
+				PIN("MISO", GPIO_PORT_C, 5, GPIO_MODE_AF, AF(3)), /* AF3*/
+				PIN("SCK", GPIO_PORT_B, 11, GPIO_MODE_AF, AF(3)),  /* AF3*/
+				PIN("SS", GPIO_PORT_C, 14, GPIO_MODE_AF, AF(3)),   /* AF3*/
 			},
 			.clocks = {
 				VAL("SPI",  "CLK_SPI1"),
@@ -271,7 +271,7 @@ struct spi_conf spis[] = {
 			.dev = {
 				.name = "SPI1_0",
 				.pins = {
-					PIN("SS", GPIO_PORT_C, 14, AF(3)),   /* AF3*/
+					PIN("SS", GPIO_PORT_C, 14, GPIO_MODE_AF, AF(3)),   /* AF3*/
 				},
 			},
 		},
@@ -288,10 +288,10 @@ struct spi_conf spis[] = {
 				VAL("", IRQ_NUM_SPI2),
 			},
 			.pins = {
-				PIN("MOSI", GPIO_PORT_C, 1, AF(6)), /* AF6*/
-				PIN("MISO", GPIO_PORT_C, 2, AF(6)), /* AF6*/
-				PIN("SCK", GPIO_PORT_C, 0, AF(6)),  /* AF6*/
-				PIN("SS", GPIO_PORT_C, 53, AF(6)),   /* AF6*/
+				PIN("MOSI", GPIO_PORT_C, 1, GPIO_MODE_AF, AF(6)), /* AF6*/
+				PIN("MISO", GPIO_PORT_C, 2, GPIO_MODE_AF, AF(6)), /* AF6*/
+				PIN("SCK", GPIO_PORT_C, 0, GPIO_MODE_AF, AF(6)),  /* AF6*/
+				PIN("SS", GPIO_PORT_C, 53, GPIO_MODE_AF, AF(6)),   /* AF6*/
 			},
 			.clocks = {
 				VAL("SPI",  "CLK_SPI2"),
@@ -306,7 +306,7 @@ struct spi_conf spis[] = {
 			.dev = {
 				.name = "SPI2_0",
 				.pins = {
-					PIN("SS", GPIO_PORT_C, 53, AF(6)),   /* AF6*/
+					PIN("SS", GPIO_PORT_C, 53, GPIO_MODE_AF, AF(6)),   /* AF6*/
 				},
 			},
 		},
@@ -326,14 +326,14 @@ struct i2c_conf i2cs[] = {
 				VAL("", IRQ_NUM_I2C0),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_A, 7, AF(2)), /* AF2 */
-				PIN("SDA", GPIO_PORT_A, 6, AF(2)), /* AF2 */
+				PIN("SCL", GPIO_PORT_A, 7, GPIO_MODE_AF, AF(2)), /* AF2 */
+				PIN("SDA", GPIO_PORT_A, 6, GPIO_MODE_AF, AF(2)), /* AF2 */
 
-				//PIN("SCL", GPIO_PORT_C, 5, AF(2)), /* AF2 */
-				//PIN("SDA", GPIO_PORT_C, 4, AF(2)), /* AF2 */
+				//PIN("SCL", GPIO_PORT_C, 5, GPIO_MODE_AF, AF(2)), /* AF2 */
+				//PIN("SDA", GPIO_PORT_C, 4, GPIO_MODE_AF, AF(2)), /* AF2 */
 
-				//PIN("SCL", GPIO_PORT_D, 3, AF(2)), /* AF2 */
-				//PIN("SDA", GPIO_PORT_D, 2, AF(2)), /* AF2 */
+				//PIN("SCL", GPIO_PORT_D, 3, GPIO_MODE_AF, AF(2)), /* AF2 */
+				//PIN("SDA", GPIO_PORT_D, 2, GPIO_MODE_AF, AF(2)), /* AF2 */
 			},
 			.clocks = {
 				VAL("", "CLK_I2C0"),
@@ -352,10 +352,10 @@ struct i2c_conf i2cs[] = {
 				VAL("", IRQ_NUM_I2C1),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_B, 10, AF(2)),  /* AF2 */
-				PIN("SDA", GPIO_PORT_B, 9, AF(2)),   /* AF2 */
-				//PIN("SCL", GPIO_PORT_D, 5, AF(2)),  /* AF2 */
-				//PIN("SDA", GPIO_PORT_D, 4, AF(2)),   /* AF2 */
+				PIN("SCL", GPIO_PORT_B, 10, GPIO_MODE_AF, AF(2)),  /* AF2 */
+				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_AF, AF(2)),   /* AF2 */
+				//PIN("SCL", GPIO_PORT_D, 5, GPIO_MODE_AF, AF(2)),  /* AF2 */
+				//PIN("SDA", GPIO_PORT_D, 4, GPIO_MODE_AF, AF(2)),   /* AF2 */
 
 			},
 			.clocks = {

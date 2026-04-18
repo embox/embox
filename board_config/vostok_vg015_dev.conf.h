@@ -87,8 +87,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_UART0_VECTNUM),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 1, 1),
-				PIN("RX", GPIO_PORT_A, 0, 1),
+				PIN("TX", GPIO_PORT_A, 1, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_A, 0, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART0"),
@@ -108,8 +108,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_UART1_VECTNUM),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 11, 3),
-				PIN("RX", GPIO_PORT_A, 10, 3),
+				PIN("TX", GPIO_PORT_A, 11, GPIO_MODE_AF, 3),
+				PIN("RX", GPIO_PORT_A, 10, GPIO_MODE_AF, 3),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
@@ -129,8 +129,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_UART2_VECTNUM),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 5, 1),
-				PIN("RX", GPIO_PORT_A, 4, 1),
+				PIN("TX", GPIO_PORT_A, 5, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_A, 4, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART2"),
@@ -150,8 +150,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_UART3_VECTNUM),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 7, 1),
-				PIN("RX", GPIO_PORT_A, 6, 1),
+				PIN("TX", GPIO_PORT_A, 7, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_A, 6, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART3"),
@@ -171,8 +171,8 @@ struct uart_conf uarts[] = {
 				VAL("", PLIC_UART4_VECTNUM),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 9, 1),
-				PIN("RX", GPIO_PORT_A, 8, 1),
+				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_A, 8, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART4"),
@@ -195,10 +195,11 @@ struct spi_conf spis[] = {
 				VAL("", PLIC_SPI0_VECTNUM),
 			},
 			.pins = {
-				PIN("CLK", GPIO_PORT_B, 0, 1),
-				PIN("FSS", GPIO_PORT_B, 1, 1),
-				PIN("RX", GPIO_PORT_B, 2, 1),
-				PIN("TX", GPIO_PORT_B, 3, 1),
+				PIN("CLK", GPIO_PORT_B, 0, GPIO_MODE_AF, 1),
+				PIN("FSS", GPIO_PORT_B, 1, GPIO_MODE_AF, 1),
+				// PIN("FSS", GPIO_PORT_B, 1, GPIO_MODE_OUT, -1),
+				PIN("RX", GPIO_PORT_B, 2, GPIO_MODE_AF, 1),
+				PIN("TX", GPIO_PORT_B, 3, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("SPI",  "CLK_SPI0"),
@@ -213,7 +214,8 @@ struct spi_conf spis[] = {
 			.dev = {
 				.name = "SPI0_0",
 				.pins = {
-					PIN("FSS", GPIO_PORT_B, 1, 1),
+					PIN("FSS", GPIO_PORT_B, 1, GPIO_MODE_AF, 1),
+					// PIN("FSS", GPIO_PORT_B, 1, GPIO_MODE_OUT, -1),
 				},
 			},
 		},
@@ -230,10 +232,11 @@ struct spi_conf spis[] = {
 				VAL("", PLIC_SPI1_VECTNUM),
 			},
 			.pins = {
-				PIN("CLK", GPIO_PORT_B, 4, 1),
-				PIN("FSS", GPIO_PORT_B, 5, 1),
-				PIN("RX", GPIO_PORT_B, 6, 1),
-				PIN("TX", GPIO_PORT_B, 7, 1),
+				PIN("CLK", GPIO_PORT_B, 4, GPIO_MODE_AF, 1),
+				PIN("FSS", GPIO_PORT_B, 5, GPIO_MODE_AF, 1),
+				// PIN("FSS", GPIO_PORT_B, 5, GPIO_MODE_OUT, -1),
+				PIN("RX", GPIO_PORT_B, 6, GPIO_MODE_AF, 1),
+				PIN("TX", GPIO_PORT_B, 7, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("SPI",  "CLK_SPI1"),
@@ -248,7 +251,8 @@ struct spi_conf spis[] = {
 			.dev = {
 				.name = "SPI1_0",
 				.pins = {
-					PIN("FSS", GPIO_PORT_B, 5, 1),
+					PIN("FSS", GPIO_PORT_B, 5, GPIO_MODE_AF, 1),
+					// PIN("FSS", GPIO_PORT_B, 5, GPIO_MODE_OUT, -1),
 				},
 			},
 		},
@@ -268,8 +272,8 @@ struct i2c_conf i2cs[] = {
 				VAL("", PLIC_I2C_VECTNUM),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_C, 12, 1),
-				PIN("SDA", GPIO_PORT_C, 13, 1),
+				PIN("SCL", GPIO_PORT_C, 12, GPIO_MODE_AF, 1),
+				PIN("SDA", GPIO_PORT_C, 13, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_I2C0"),
@@ -320,7 +324,7 @@ struct pwm_conf pwms[] = {
 				REGMAP("BASE_ADDR", (TMR0_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_C, 7, 1),
+				PIN("OUT", GPIO_PORT_C, 7, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR0"),
@@ -336,7 +340,7 @@ struct pwm_conf pwms[] = {
 				REGMAP("BASE_ADDR", (TMR1_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_A, 8, 2),
+				PIN("OUT", GPIO_PORT_A, 8, GPIO_MODE_AF, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR1"),
@@ -352,7 +356,7 @@ struct pwm_conf pwms[] = {
 				REGMAP("BASE_ADDR", (TMR2_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_A, 2, 2),
+				PIN("OUT", GPIO_PORT_A, 2, GPIO_MODE_AF, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR2"),

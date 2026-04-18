@@ -124,6 +124,13 @@ static int gen_field_pin(const char *dev_name, const char *prop_name,
 	sprintf(buf, "%-50s %s", def, f->n);
 	printf("%s\n", buf);
 
+	sprintf(def, "#define CONF_%s_%s_%s_MODE", dev_name, prop_name, f->name);
+	sprintf(buf, "%-50s %u", def, f->flags);
+	printf("%s\n", buf);
+
+	// sprintf(buf, "%s_MODE", prop_name);
+	// gen_prop_ival(dev_name, buf, f->flags);
+
 	sprintf(def, "#define CONF_%s_%s_%s_AF", dev_name, prop_name, f->name);
 	sprintf(buf, "%-50s %s", def, f->af);
 	printf("%s\n", buf);
