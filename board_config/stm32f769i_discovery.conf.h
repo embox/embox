@@ -186,8 +186,8 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 9, AF7),
-				PIN("RX", GPIO_PORT_A, 10, AF7),
+				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_AF, AF7),
+				PIN("RX", GPIO_PORT_A, 10, GPIO_MODE_AF, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART1),
@@ -204,8 +204,8 @@ struct uart_conf uarts[] = {
 				VAL("", 38),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 2, AF7),
-				PIN("RX", GPIO_PORT_A, 3, AF7),
+				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_AF, AF7),
+				PIN("RX", GPIO_PORT_A, 3, GPIO_MODE_AF, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART2),
@@ -222,8 +222,8 @@ struct uart_conf uarts[] = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_C, 6, AF8),
-				PIN("RX", GPIO_PORT_C, 7, AF8),
+				PIN("TX", GPIO_PORT_C, 6, GPIO_MODE_AF, AF8),
+				PIN("RX", GPIO_PORT_C, 7, GPIO_MODE_AF, AF8),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART6),
@@ -262,8 +262,8 @@ struct mmc_conf mmcs[] = {
 				VAL("", 49),
 			},
 			.pins = {
-				PIN("TX", PC, PIN_6, AF8),
-				PIN("RX", PC, PIN_7, AF8),
+				PIN("TX", PC, PIN_6, GPIO_MODE_AF, AF8),
+				PIN("RX", PC, PIN_7, GPIO_MODE_AF, AF8),
 			},
 			.clocks = {
 				VAL("", CLK_SDMMC1),
@@ -286,14 +286,14 @@ struct mmc_conf mmcs[] = {
 				VAL("DMA_TX", 68),
 			},
 			.pins = {
-				PIN("D0", GPIO_PORT_B, 3, AF10),
-				PIN("D1", GPIO_PORT_B, 4, AF10),
-				PIN("D2", GPIO_PORT_D, 6, AF11),
-				PIN("D3", GPIO_PORT_D, 7, AF11),
-				PIN("CK", GPIO_PORT_G, 9, AF11),
-				PIN("CMD", GPIO_PORT_G, 10, AF11),
+				PIN("D0", GPIO_PORT_B, 3, GPIO_MODE_AF, AF10),
+				PIN("D1", GPIO_PORT_B, 4, GPIO_MODE_AF, AF10),
+				PIN("D2", GPIO_PORT_D, 6, GPIO_MODE_AF, AF11),
+				PIN("D3", GPIO_PORT_D, 7, GPIO_MODE_AF, AF11),
+				PIN("CK", GPIO_PORT_G, 9, GPIO_MODE_AF, AF11),
+				PIN("CMD", GPIO_PORT_G, 10, GPIO_MODE_AF, AF11),
 
-				PIN("DETECT", GPIO_PORT_I, 15, 0),
+				PIN("DETECT", GPIO_PORT_I, 15, 0,  0),
 
 			},
 			.clocks = {

@@ -99,8 +99,8 @@ struct uart_conf uarts[] = {
 				VAL("", EPIC_UART_0_INDEX),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 5, 1),
-				PIN("RX", GPIO_PORT_A, 6, 1),
+				PIN("TX", GPIO_PORT_A, 5, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_A, 6, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART0"),
@@ -120,8 +120,8 @@ struct uart_conf uarts[] = {
 				VAL("", EPIC_UART_1_INDEX),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_B, 8, 1),
-				PIN("RX", GPIO_PORT_B, 9, 1),
+				PIN("TX", GPIO_PORT_B, 8, GPIO_MODE_AF, 1),
+				PIN("RX", GPIO_PORT_B, 9, GPIO_MODE_AF, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
