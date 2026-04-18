@@ -1,0 +1,6 @@
+package project.ncnn.common.types
+
+@BuildArtifactPath(
+  cppflags="-I$(ROOT_DIR)/project/ncnn/common/types"
+)
+module headers {}

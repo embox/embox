@@ -1,0 +1,25 @@
+package project.ncnn.common.postprocess
+
+@BuildArtifactPath(
+  cppflags="-I$(ROOT_DIR)/project/ncnn/common/postprocess"
+)
+module headers {}
+
+@Build(stage=2)
+@BuildDepends(project.ncnn.common.types.headers)
+@BuildDepends(project.ncnn.common.postprocess.headers)
+@BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(embox.cxx.LibCxx)
+static module postprocess {
+
+    source
+        "dfl_decode.cpp",
+        "nms.cpp"
+
+    depends project.ncnn.common.types.headers
+    depends project.ncnn.common.postprocess.headers
+    depends third_party.lib.ncnn.ncnn_public_headers
+    depends third_party.compiler_headers
+    depends embox.cxx.LibCxx
+}

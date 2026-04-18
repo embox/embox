@@ -1,22 +1,25 @@
 package embox.cmd.ncnn
 
-
 @LinkerSection(text="ncnn_yolo_demo_test_text",rodata="ncnn_yolo_demo_test_rodata",data="ncnn_yolo_demo_test_data",bss="ncnn_yolo_demo_test_bss",arm_exidx="ncnn_demo_test_arm_exidx",arm_extab="ncnn_demo_test_arm_extab")
 @App
 @AutoCmd
 @CxxCmd(name="ncnn_yolo_demo", help="YOLOv8n NCNN demo on Embox")
 @Build(stage=2)
-@BuildDepends(third_party.lib.ncnn.libncnn)
+@BuildDepends(project.ncnn.common.image.image)
+@BuildDepends(project.ncnn.common.image.headers)
+@BuildDepends(project.ncnn.common.output.detections_printer)
+@BuildDepends(project.ncnn.common.output.headers)
+@BuildDepends(project.ncnn.models.yolov8n.yolov8n_model)
+@BuildDepends(project.ncnn.models.yolov8n.headers)
 module ncnn_yolo_demo {
 
-    source 
-        "main.cpp",
-        "dfl_decode.cpp",
-        "image_io.cpp",
-        "nms.cpp",
-        "stb_image_impl.cpp",
-        "yolov8n_ncnn_model/yolov8n.id.h",
-        "yolov8n_ncnn_model/yolov8n.mem.h"
-    
-    depends third_party.lib.ncnn.libncnn
+    source
+        "main.cpp"
+
+    depends project.ncnn.common.image.image
+    depends project.ncnn.common.image.headers
+    depends project.ncnn.common.output.detections_printer
+    depends project.ncnn.common.output.headers
+    depends project.ncnn.models.yolov8n.yolov8n_model
+    depends project.ncnn.models.yolov8n.headers
 }

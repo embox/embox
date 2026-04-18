@@ -1,0 +1,10 @@
+--- ncnn-20250916/src/CMakeLists.txt
++++ ncnn-20250916/src/CMakeLists.txt
+@@ -774,6 +774,7 @@
+         net.h
+         option.h
+         paramdict.h
++        features.h
+         pipeline.h
+         pipelinecache.h
+         simpleocv.h

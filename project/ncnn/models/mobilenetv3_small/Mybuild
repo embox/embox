@@ -1,0 +1,24 @@
+package project.ncnn.models.mobilenetv3_small
+
+@BuildArtifactPath(
+  cppflags="-I$(ROOT_DIR)/project/ncnn/models/mobilenetv3_small"
+)
+module headers {}
+
+@Build(stage=2)
+@BuildDepends(project.ncnn.common.types.headers)
+@BuildDepends(project.ncnn.models.mobilenetv3_small.headers)
+@BuildDepends(third_party.lib.ncnn.ncnn_public_headers)
+@BuildDepends(third_party.compiler_headers)
+@BuildDepends(embox.cxx.LibCxx)
+module mobilenetv3_small_model {
+
+    source
+        "mobilenetv3_small_model.cpp"
+
+    depends project.ncnn.common.types.headers
+    depends project.ncnn.models.mobilenetv3_small.headers
+    depends third_party.lib.ncnn.ncnn_public_headers
+    depends third_party.compiler_headers
+    depends embox.cxx.LibCxx
+}
