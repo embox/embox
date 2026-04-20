@@ -21,6 +21,8 @@ int main(int argc, char **argv) {
 	}
 
 	int temp = bmp280_get_temperature();
+	int press = bmp280_get_pressure();
 
-	printf("TEMP: %4d\n", temp);
+	printf("Temperature: %4d\n", temp);
+	printf("Pressure: %4d\n", press);
 }

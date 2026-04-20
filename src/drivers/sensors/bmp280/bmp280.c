@@ -25,13 +25,15 @@
 #define BMP280_TEMP_LSB      0xFB
 #define BMP280_TEMP_XLSB     0xFC
 
-#define BMP280_CALIB_START   0x88
 #define BMP280_CHIP_ID_VAL   0x58
 #define BMP280_RESET_VAL     0xB6
+#define BMP280_SLEEP_MODE    0x00
+#define BMP280_FORCED_MODE   0x01
+#define BMP280_NORMAL_MODE   0x03
 
 extern struct bmp280_dev bmp280_dev0;
 
-int16_t bmp280_get_temperature(void) {
+int32_t bmp280_get_temperature(void) {
 	// recommended to use a burst read and not address every register individually
 	uint8_t msb, lsb, xlsb;
 	
@@ -42,14 +44,20 @@ int16_t bmp280_get_temperature(void) {
     return ((int32_t)msb << 12) | ((int32_t)lsb << 4) | (xlsb >> 4);
 }
 
-int16_t bmp280_get_humidity(void) {
+int32_t bmp280_get_humidity(void) {
 
 	return 0;
 }
 
-int16_t bmp280_get_pressure(void) {
+int32_t bmp280_get_pressure(void) {
+    // recommended to use a burst read and not address every register individually
+    uint8_t msb, lsb, xlsb;
+	
+    bmp280_readb(&bmp280_dev0, BMP280_PRESS_MSB,  &msb);
+    bmp280_readb(&bmp280_dev0, BMP280_PRESS_LSB,  &lsb);
+    bmp280_readb(&bmp280_dev0, BMP280_PRESS_XLSB, &xlsb);
 
-	return 0;
+    return ((int32_t)msb << 12) | ((int32_t)lsb << 4) | (xlsb >> 4);
 }
 
 int bmp280_init(void) {
@@ -60,6 +68,8 @@ int bmp280_init(void) {
         log_error("BMP280: wrong chip id 0x%02x\n", chip_id);
         return -1;
     }
+
+	bmp280_writeb(&bmp280_dev0, BMP280_CTRL_MEAS, BMP280_NORMAL_MODE);
 
     return 0;
 }
