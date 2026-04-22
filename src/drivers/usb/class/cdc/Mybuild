@@ -1,0 +1,10 @@
+package embox.driver.usb.class
+
+
+module cdc {
+	option string log_level="LOG_NONE"
+
+	@IncludeExport(path="drivers/usb/class")
+	source "usb_cdc.h"
+
+}
