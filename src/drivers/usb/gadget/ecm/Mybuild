@@ -6,6 +6,8 @@ module f_ecm {
 	source "f_ecm.c"
 	source "ecm_net_card.c"
 
+	@NoRuntime depends embox.driver.usb.class.cdc
+
 	depends embox.net.skbuff
 	depends embox.net.l2.ethernet
 	depends embox.net.dev
