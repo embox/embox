@@ -6,6 +6,8 @@
  * @date    22.07.2020
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 #include <string.h>
 
@@ -13,21 +15,25 @@
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/usb_desc.h>
-#include <embox/unit.h>
+#include <drivers/usb/class/usb_cdc.h>
+
 #include <net/l2/ethernet.h>
-#include <util/log.h>
+
+#include <embox/unit.h>
 
 /* TODO Remove. It's only used for i_interface, iMACAddress, etc. defines. */
 #include <drivers/usb/function/f_ecm_idx.h>
 
 EMBOX_UNIT_INIT(ecm_init);
 
+#if 0
 /* TODO These defines should be moved to some CDC part. */
 #define USB_CDC_SUBCLASS_ETHERNET 0x06
 
 #define USB_CDC_HEADER_TYPE   0x00
 #define USB_CDC_UNION_TYPE    0x06
 #define USB_CDC_ETHERNET_TYPE 0x0f
+#endif
 
 static int ecm_probe(struct usb_gadget *gadget);
 
