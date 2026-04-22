@@ -110,6 +110,8 @@ enum {
 #define AF_NETLINK PF_NETLINK
 	PF_RDS     =  19,   /* Reliable Datagram Sockets (RDS) protocol */
 #define AF_RDS     PF_RDS
+	PF_CAN     =  29,   /* Controller Area Network. */
+#define AF_CAN     PF_CAN
 	PF_MAX          /* upper bound of protocol family */
 #define AF_MAX    PF_MAX
 };
