@@ -6,17 +6,24 @@
  * @date    20.07.2020
  */
 
+#include <util/log.h>
+
 #include <stdint.h>
 #include <string.h>
-#include <embox/unit.h>
-#include <util/log.h>
+
+
 #include <drivers/usb/usb_defines.h>
 #include <drivers/usb/usb_desc.h>
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/gadget/gadget.h>
+#include <drivers/usb/class/usb_cdc.h>
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(acm_init);
 
+
+#if 0
 /* TODO These defines should be moved to some CDC part. */
 #define USB_CDC_SUBCLASS_ACM        0x02
 #define USB_CDC_PROTOCOL_ATV250     0x01
@@ -25,7 +32,7 @@ EMBOX_UNIT_INIT(acm_init);
 #define USB_CDC_CALL_TYPE           0x01
 #define USB_CDC_ACM_TYPE            0x02
 #define USB_CDC_UNION_TYPE          0x06
-
+#endif
 static int acm_probe(struct usb_gadget *gadget);
 
 static struct usb_desc_endpoint int_ep_desc = {
