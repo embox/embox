@@ -1,0 +1,6 @@
+package embox.net.can
+
+module can_utils {
+    @IncludeExport(path="linux")
+    source "can.h"
+}
