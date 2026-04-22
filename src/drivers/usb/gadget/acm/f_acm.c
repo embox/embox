@@ -150,21 +150,41 @@ static int acm_setup(struct usb_gadget_function *f,
 	struct usb_gadget *gadget = f->gadget;
 	struct usb_gadget_request *req = &gadget->composite->req;
 
-	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) != USB_REQ_TYPE_STANDARD) {
-		log_error("Not a standard request");
-		return -1;
+	log_debug("EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
+	    ctrl->w_length);
+	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_STANDARD) {
+		switch (ctrl->b_request) {
+		case USB_REQ_SET_INTERFACE:
+			/* Send zero-length reply */
+			req->len = 0;
+			usb_gadget_ep_queue(&gadget->composite->ep0, req);
+			return 0;
+		default:
+			log_error("Not supported standard request");
+			break;
+		}
 	}
+	/* 2) CLASS requests */
+	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) == USB_REQ_TYPE_CLASS) {
+		log_error("USB_REQ_TYPE_CLASS EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
+	    ctrl->w_length);
+		switch (ctrl->b_request) {
+		case SET_LINE_CODING:
+			log_error("ACM SET_LINE_CODING: val=%04x", ctrl->w_value);
+			req->len = 0;
+			usb_gadget_ep_queue(&gadget->composite->ep0, req);
+			return 0;
 
-	switch (ctrl->b_request) {
-	case USB_REQ_SET_INTERFACE:
-		/* Send zero-length reply */
-		req->len = 0;
-		usb_gadget_ep_queue(&gadget->composite->ep0, req);
-		return 0;
-	default:
-		log_error("Not supported standard request");
-		break;
+		default:
+			log_error("Unsupported CDC CLASS bReq=%02x", ctrl->b_request);
+			return -1;
+		}
 	}
+	log_error("Unsupported EP0: bm=%02x bReq=%02x wValue=%04x wIndex=%04x wLen=%04x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value, ctrl->w_index,
+	    ctrl->w_length);
 
 	return -1;
 }
