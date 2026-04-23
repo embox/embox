@@ -4,3 +4,7 @@ module can_utils {
     @IncludeExport(path="linux")
     source "can.h"
 }
+
+module af_can_socket {
+    source "af_can.c"
+}
