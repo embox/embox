@@ -21,7 +21,10 @@ int main(void) {
 
     // 2. Specify Interface
     strcpy(ifr.ifr_name, "vcan0");
-    ioctl(s, SIOCGIFINDEX, &ifr);
+    if (0 > ioctl(s, SIOCGIFINDEX, &ifr)) {
+        printf("ioctl SIOCGIFINDEX failed\n");
+        return 1;
+    }
 
     memset(&addr, 0, sizeof(addr));
     addr.can_family = AF_CAN;
