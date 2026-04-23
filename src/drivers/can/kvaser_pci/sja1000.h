@@ -10,7 +10,7 @@
 
 #include <stdint.h>
 
-/* PeliCan Mode Registers */
+/*  Registers (PeliCan Mode) */
 #define SJA_MOD   0x00 /* Mode Control Register */
 #define SJA_CMR   0x01 /* Command Register */
 #define SJA_SR    0x02 /* Status Register */
@@ -24,13 +24,49 @@
 #define SJA_EWLR  0x0d /* Error Warning Limit Register */
 #define SJA_RXERR 0x0e /* RX Error Counter Register */
 #define SJA_TXERR 0x0f /* TX Error Counter Register */
-#define SJA_FRM   0x10 /* Frame Information */
-#define SJA_ID0   0x11 /*  */
-#define SJA_ID1   0x12 /*  */
-#define SJA_ID2   0x13 /*  */
 #define SJA_RMC   0x1d /* RX Message Counter Register */
 #define SJA_RBSA  0x1e /* Rx Buffer Start Addr Register */
 #define SJA_CDR   0x1f /* Clock Divider Register */
+
+/**
+ * +-------------+-----------------------------+-----------------------------+
+ * |   address   | Standard frame format (SFF) | Extended frame format (EFF) |
+ * +-------------+-----------------------------+-----------------------------+
+ * |                                                                         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   1  | 0x10 |      frame information      |      frame information      |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   2  | 0x11 |        identifier 0         |        identifier 0         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   3  | 0x12 |        identifier 1         |        identifier 1         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   4  | 0x13 |         data byte 0         |        identifier 2         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   5  | 0x14 |         data byte 1         |        identifier 3         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   6  | 0x15 |         data byte 2         |         data byte 0         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   7  | 0x16 |         data byte 3         |         data byte 1         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   8  | 0x17 |         data byte 4         |         data byte 2         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |   9  | 0x18 |         data byte 5         |         data byte 3         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |  10  | 0x19 |         data byte 6         |         data byte 4         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |  11  | 0x1a |         data byte 7         |         data byte 5         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |  12  | 0x1b |           unused            |         data byte 6         |
+ * +------+------+-----------------------------+-----------------------------+
+ * |  13  | 0x1c |           unused            |         data byte 7         |
+ * +------+------+-----------------------------+-----------------------------+
+ */
+
+/* Transmit / Receive Buffer (PeliCan Mode) */
+#define SJA_FRM      0x10       /* Frame Information */
+#define SJA_ID(n)    (0x11 + n) /* Identifier N */
+#define SJA_SFDAT(n) (0x13 + n) /* Standard Frame Data Byte N */
+#define SJA_EFDAT(n) (0x15 + n) /* Extended Frame Data Byte N */
 
 /* SJA_MOD */
 #define SJA_MOD_RM  (1 << 0) /* Reset Mode */
@@ -104,5 +140,10 @@
 #define SJA_CDR_RXINTEN (1 << 5) /* TX1 pin Mode */
 #define SJA_CDR_CBP     (1 << 6) /* Comparator Bypass */
 #define SJA_CDR_MOD     (1 << 7) /* PeliCAN mode */
+
+/* SJA_FRM */
+#define SJA_FRM_DLC (1 << 0) /* Data Length Code Bit */
+#define SJA_FRM_RTR (1 << 6) /* Remote Transmission Request */
+#define SJA_FRM_FF  (1 << 7) /* Frame Format (EFF) */
 
 #endif /* DRIVERS_CAN_SJA1000_H_ */
