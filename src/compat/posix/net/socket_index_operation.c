@@ -12,6 +12,7 @@
 #include <sys/uio.h>
 #include <sys/socket.h>
 #include <poll.h>
+#include <net/if.h>
 
 #include <net/socket/ksocket.h>
 
@@ -84,12 +85,20 @@ static ssize_t socket_write(struct idesc *desc, const struct iovec *iov, int cnt
 	return ret_size;
 }
 
+int ifreq_get_index(struct ifreq *ifreq) {
+	ifreq->ifr_ifindex = 0x11; //FIXME
+	return 0;
+}
+
 static int socket_ioctl(struct idesc *idesc, int request, void *data) {
 	struct sock *sk = (struct sock *) idesc;
 
 	switch (request) {
 	case SIOCGSTAMP:
 		memcpy(data, &sk->last_packet_tstamp, sizeof(struct timeval));
+		return 0;
+	case SIOCGIFINDEX:
+		ifreq_get_index(data);
 		return 0;
 	default:
 		break;
