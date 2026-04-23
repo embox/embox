@@ -8,4 +8,5 @@ module socketcan_demo {
 	source "socketcan_demo.c"
 
 	@NoRuntime depends embox.net.can.can_utils
+	@NoRuntime depends embox.net.can.af_can_socket
 }
