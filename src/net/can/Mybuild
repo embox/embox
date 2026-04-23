@@ -7,4 +7,5 @@ module can_utils {
 
 module af_can_socket {
     source "af_can.c"
+    source "af_can_sock.c"
 }
