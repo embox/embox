@@ -6,6 +6,14 @@ module can_utils {
 }
 
 module af_can_socket {
+    option string log_level = "LOG_NONE"
+    option number max_can_sock = 8
+    option number can_id = 0x11
+
     source "af_can.c"
     source "af_can_sock.c"
+    source "can_netdevice.c"
+
+    @IncludeExport(path="net")
+    source "can_netdevice.h"
 }

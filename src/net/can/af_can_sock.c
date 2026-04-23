@@ -1,10 +1,8 @@
 /**
  * @file
- * @brief Implements udp socket function.
  *
- * @date 04.02.10
+ * @date 23.04.26
  * @author Anton Bondarev
- * @author Ilia Vaprol
  */
 
 #include <assert.h>
@@ -21,7 +19,6 @@
 #include <linux/can.h>
 
 #include <net/sock.h>
-
 
 #include <lib/libds/dlist.h>
 

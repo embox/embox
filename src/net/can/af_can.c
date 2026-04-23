@@ -16,7 +16,14 @@
 #include <net/sock.h>
 #include <netinet/in.h>
 
+#include <linux/can.h>
+
 #include <embox/net/pack.h>
+#include <net/netdevice.h>
+#include <net/can_netdevice.h>
+#include <net/skbuff.h>
+
+#include <util/math.h>
 
 #include <mem/misc/pool.h>
 
@@ -41,6 +48,7 @@ EMBOX_NET_FAMILY(AF_CAN, af_can_types, af_can_ops);
 struct af_can_sock {
 	/* sk has to be the first member */
 	struct sock sk;
+	struct sockaddr_can skaddr_can;
 	int can_ifindex;
 };
 
@@ -79,6 +87,17 @@ static int af_can_shutdown(struct sock *sk, int how) {
 
 static int af_can_bind(struct sock *sk, const struct sockaddr *addr,
 		socklen_t addrlen) {
+	struct af_can_sock *skcan;
+
+	assert(sk);
+
+	skcan = (struct af_can_sock *)sk;
+	memcpy(&skcan->skaddr_can, addr, min(sizeof(skcan->skaddr_can), addrlen));
+
+	sk->sock_netdev = cannetdev_get(NULL, skcan->skaddr_can.can_ifindex);
+	if (NULL == sk->sock_netdev) {
+		return -ENOTSUP;
+	}
 
 	return 0;
 }
@@ -87,7 +106,30 @@ static int af_can_bind_local(struct sock *sk) {
 	return 0;
 }
 
+static struct sk_buff *af_can_make_skb(struct msghdr *msg) {
+	struct sk_buff *skb;
+
+	skb = skb_alloc(msg->msg_iov->iov_len);
+	if (skb == NULL) {
+		return NULL;
+	}
+
+	memcpy(skb->mac.raw , msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+
+	return skb;
+}
+
 static int af_can_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
+	struct sk_buff *skb;
+
+	skb = af_can_make_skb(msg);
+
+	if (skb == NULL) {
+		return -ENOMEM;
+	}
+
+	sk->sock_netdev->drv_ops->xmit(sk->sock_netdev, skb);
+
 	return 0;
 }
 
