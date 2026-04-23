@@ -1,0 +1,9 @@
+package embox.driver.can
+
+module kvaser_pci {
+	option string log_level="LOG_ERR"
+
+	source "kvaser_pci.c"
+
+	depends embox.driver.pci
+}
