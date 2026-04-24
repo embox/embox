@@ -11,7 +11,6 @@
 #include <stdlib.h>
 
 #include <embox/unit.h>
-#include <framework/mod/options.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
 #include <util/err.h>

@@ -5,8 +5,8 @@
  * @author Anton Bondarev
  */
 
-#ifndef DRIVERS_I2C_CORE_H_
-#define DRIVERS_I2C_CORE_H_
+#ifndef DRIVERS_I2C_BUS_H_
+#define DRIVERS_I2C_BUS_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -30,7 +30,6 @@
 #define I2C_M_REV_DIR_ADDR 0x2000 /* if I2C_FUNC_PROTOCOL_MANGLING */
 #define I2C_M_NOSTART      0x4000 /* if I2C_FUNC_NOSTART */
 #define I2C_M_STOP         0x8000 /* if I2C_FUNC_PROTOCOL_MANGLING */
-
 
 struct i2c_msg {
 	uint8_t *buf;   /* pointer to msg data */
@@ -56,4 +55,4 @@ extern uint8_t i2c_bus_get_mask();
 
 __END_DECLS
 
-#endif /* DRIVERS_I2C_CORE_H_ */
+#endif /* DRIVERS_I2C_BUS_H_ */
