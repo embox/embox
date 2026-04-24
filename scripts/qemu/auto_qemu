@@ -96,6 +96,13 @@ get_user_undef_guess AUTOQEMU_NICS guess_nics
 
 guessed_info AUTOQEMU_NICS_CONFIG "(got)"
 
+guess_can() {
+	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.can.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | head -n 1;
+}
+get_user_undef_guess AUTOQEMU_CAN guess_can
+
+guessed_info AUTOQEMU_CAN_CONFIG "(got)"
+
 guess_sound() {
 	cat $MODS_CONF | gcc -P -E - | sed -n 's#.*include\ embox.driver.audio.\([a-z0-9_]\+\)\((.*)\|\)$#\1#p' | \
 	grep -v "portaudio_stub\|portaudio_lib" | head -n 1;
@@ -267,6 +274,9 @@ else
 	MB_XEMACLINE="xilinx-ethlite"
 fi
 
+#############################################
+# NIC
+#############################################
 declare -A NIC2QEMU
 NIC2QEMU=(
 	[e1000]="e1000"
@@ -325,6 +335,36 @@ if [ "$nic_n" -gt 0 ]; then
 			-netdev $host_nic_config,id=n$ni"
 	done
 fi
+#############################################
+# END NIC
+#############################################
+
+#############################################
+# CAN
+#############################################
+declare -A CAN2QEMU
+CAN2QEMU=(
+	[kvaser_pci]="kvaser_pci"
+)
+
+AUDIO_DEV=" " read -r -a qemu_can <<< "$AUTOQEMU_CAN"
+
+can_lines=""
+can_n=${#qemu_can[*]}
+if [ "$can_n" -gt 0 ]; then
+	for can in "${!qemu_can[@]}"; do
+		can_model=${CAN2QEMU[${qemu_can[$can]}]}
+		echo
+		if [ ! "$can_model" ]; then
+			error "can model ${qemu_can[$can]} is not supported"
+		else
+			can_lines="-object can-bus,id=canbus0 -device $can_model,canbus=canbus0"
+		fi
+	done
+fi
+#############################################
+# END CAN
+#############################################
 
 #############################################
 # AUDIO
@@ -347,7 +387,7 @@ if [ "$sound_n" -gt 0 ]; then
 		echo
 		if [ "$sound_model" != "default" ]; then
 			if [ ! "$sound_model" ]; then
-				error "sound model ${qemu_sound[$ni]} is not supported"
+				error "sound model ${qemu_sound[$so]} is not supported"
 			fi
 			sound_lines="$sound_lines -device $sound_model"
 		fi
@@ -387,12 +427,12 @@ usb_n=${#qemu_usb[*]}
 if [ "$usb_n" -gt 0 ]; then
 
 	for so in "${!qemu_usb[@]}"; do
-		if [ "${qemu_usb[$ni]}" != "ehci_hcd" ]; then
+		if [ "${qemu_usb[$so]}" != "ehci_hcd" ]; then
 			usb_model=${USB2QEMU[${qemu_usb[$so]}]}
 			hci_id=${USB2QEMUID[${qemu_usb[$so]}]}
 			echo
 			if [ ! "$usb_model" ]; then
-				error "usb model ${qemu_usb[$so]} ${qemu_usb[$ni]} is not supported"
+				error "usb model ${qemu_usb[$so]} ${qemu_usb[$so]} is not supported"
 			else
 				usb_lines="$usb_lines -device $usb_model,id=$hci_id"
 			fi
@@ -403,6 +443,9 @@ fi
 # END USB
 #############################################
 
+#############################################
+# GRAPHIC
+#############################################
 #-vga [std|cirrus|vmware|qxl|xenfb|tcx|cg3|none]
 declare -A GRAPHIC2QEMU
 GRAPHIC2QEMU=(
@@ -439,8 +482,10 @@ if [ "$graphic_n" -gt 0 ]; then
 	else
 		graphic_lines=$AUTOQEMU_NOGRAPHIC_ARG
 	fi
-
 fi
+#############################################
+# END GRAPHIC
+#############################################
 
 runas=""
 # Don't try to drop privileges for root user; qemu fails otherwise
@@ -458,7 +503,7 @@ if [ "$AUTOQEMU_DISABLE_SUDO" == "y" ]; then
 	runas=""
 fi
 
-ARG_LINE="$sudo $QEMU $runas $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $sound_lines $graphic_lines $@"
+ARG_LINE="$sudo $QEMU $runas $AUTOQEMU_MACHINE $AUTOQEMU_LOAD_ARG $AUTOQEMU_KVM_ARG -m $AUTOQEMU_MEM -smp $AUTOQEMU_CPUHARTNUM $usb_lines $nic_lines $can_lines $sound_lines $graphic_lines $@"
 
 info $ARG_LINE
 $ARG_LINE
