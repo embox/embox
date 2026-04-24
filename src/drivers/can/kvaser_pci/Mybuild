@@ -5,5 +5,7 @@ module kvaser_pci {
 
 	source "kvaser_pci.c"
 
-	depends embox.driver.pci
+	@NoRuntime depends embox.driver.pci
+	@NoRuntime depends embox.net.can.can_utils
+	@NoRuntime depends embox.net.can.af_can_socket
 }
