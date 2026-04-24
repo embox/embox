@@ -102,7 +102,7 @@ static int kvaser_xmit(struct net_device *dev, struct sk_buff *skb) {
 		return -EBUSY;
 	}
 
-	frame = skb_data_cast_in(skb->data);
+	frame = (struct can_frame *)skb_data_cast_in(skb->data);
 	// len = skb->len;
 
 	frame_info = frame->can_dlc;
@@ -160,7 +160,7 @@ static int kvaser_init(struct pci_slot_dev *pci_dev) {
 		return -ENOMEM;
 	}
 
-	netdev->base_addr = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+	netdev->base_addr = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
 	netdev->irq = pci_dev->irq;
 	netdev->drv_ops = &kvaser_drv_ops;
 
@@ -169,5 +169,9 @@ static int kvaser_init(struct pci_slot_dev *pci_dev) {
 	// 	return err;
 	// }
 
-	return cannetdev_register(netdev);
+	cannetdev_register(netdev);
+
+	kvaser_start(netdev);
+
+	return 0;
 }
