@@ -307,6 +307,9 @@ int ksendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 			sock_set_state(sk, SS_BOUND);
 		}
 
+		if (sk->opt.so_domain == AF_CAN) {
+			break;
+		}
 		if (msg->msg_name == NULL) {
 			if (msg->msg_namelen != 0) {
 				return -EINVAL;
