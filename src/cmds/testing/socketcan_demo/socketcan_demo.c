@@ -11,9 +11,9 @@
 
 int main(void) {
     int s;
-    struct sockaddr_can addr;
-    struct ifreq ifr;
-    struct can_frame frame;
+    struct sockaddr_can addr = {0};
+    struct ifreq ifr = {0};
+    struct can_frame frame = {0};
 
     // 1. Create Socket (PF_CAN, Raw Socket, CAN_RAW)
     if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
