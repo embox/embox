@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include <drivers/i2c/i2c.h>
+#include "../i2c_priv.h"
 
 
 static int skeleton_i2c_tx(const struct i2c_bus *bus, uint16_t addr,

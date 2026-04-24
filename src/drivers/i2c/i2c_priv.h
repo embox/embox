@@ -1,12 +1,12 @@
 /**
  * @file
  *
- * @date Nov 16, 2018
- * @author Anton Bondarev
+ * @date Apr 24, 2026
+ * @author Dmitry Pilyuk
  */
 
-#ifndef DRIVERS_I2C_CORE_H_
-#define DRIVERS_I2C_CORE_H_
+#ifndef I2C_PRIV_H_
+#define I2C_PRIV_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -14,6 +14,7 @@
 #include <sys/types.h>
 
 #include <framework/mod/options.h>
+#include <lib/libds/array_spread.h>
 
 #include <config/embox/driver/i2c_core.h>
 
@@ -31,6 +32,7 @@
 #define I2C_M_NOSTART      0x4000 /* if I2C_FUNC_NOSTART */
 #define I2C_M_STOP         0x8000 /* if I2C_FUNC_PROTOCOL_MANGLING */
 
+struct i2c_bus;
 
 struct i2c_msg {
 	uint8_t *buf;   /* pointer to msg data */
@@ -39,7 +41,34 @@ struct i2c_msg {
 	uint16_t flags; /* flags */
 };
 
+struct i2c_bus_ops {
+	int (*i2c_master_xfer)(const struct i2c_bus *bus, struct i2c_msg *msgs,
+	    size_t num_msgs);
+	int (*i2c_set_baudrate)(const struct i2c_bus *bus, uint32_t baudrate);
+	int (*i2c_init)(const struct i2c_bus *bus);
+	int (*i2c_deinit)(const struct i2c_bus *bus);
+};
+
+struct pin_description;
+
+#define I2C_BUS_PIN_SCL   0
+#define I2C_BUS_PIN_SDA   1
+
+struct i2c_bus {
+	const struct i2c_bus_ops     *i2cb_ops;
+	uintptr_t                     i2cb_label;
+	const struct pin_description *i2cb_pins;
+	unsigned                      i2cb_id;
+	void                         *i2cb_priv;
+};
+
 __BEGIN_DECLS
+
+extern int i2c_bus_register(const struct i2c_bus *bus);
+
+extern int i2c_bus_unregister(unsigned bus_id);
+
+extern const struct i2c_bus *i2c_bus_get(unsigned bus_id);
 
 extern ssize_t i2c_bus_read(unsigned bus_id, uint16_t addr, uint8_t *buf,
     size_t len);
@@ -56,4 +85,8 @@ extern uint8_t i2c_bus_get_mask();
 
 __END_DECLS
 
-#endif /* DRIVERS_I2C_CORE_H_ */
+#define I2C_BUS_REGISTER(bus)                                         \
+	ARRAY_SPREAD_DECLARE(const struct i2c_bus *, __i2c_bus_registry); \
+	ARRAY_SPREAD_ADD(__i2c_bus_registry, bus)
+
+#endif /* I2C_PRIV_H_ */

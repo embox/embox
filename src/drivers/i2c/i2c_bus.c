@@ -10,12 +10,13 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-#include <drivers/i2c/i2c.h>
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 #include <lib/libds/array.h>
 #include <lib/libds/dlist.h>
 #include <util/err.h>
+
+#include "i2c_priv.h"
 
 EMBOX_UNIT_INIT(i2c_bus_registry_init);
 

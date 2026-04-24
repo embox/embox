@@ -10,10 +10,10 @@
 #define SRC_DRIVERS_ADAPTERS_I2C_STM32_I2C_H_
 
 #include <bsp/stm32cube_hal.h>
-#include <drivers/i2c/i2c.h>
 #include <framework/mod/options.h>
 
 #include <config/embox/driver/i2c/stm32cube_i2c.h>
+#include "../i2c_priv.h"
 
 #define USE_I2C_IRQ \
 	OPTION_MODULE_GET(embox__driver__i2c__stm32cube_i2c, BOOLEAN, use_i2c_irq)

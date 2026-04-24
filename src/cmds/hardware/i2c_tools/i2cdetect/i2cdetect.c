@@ -25,12 +25,11 @@ static void print_error(void) {
 }
 
 static void i2c_bus_list(void) {
-	const struct i2c_bus *bus;
+	const uint8_t mask = i2c_bus_get_mask();
 	int i;
 
 	for (i = 0; i < I2C_BUS_MAX; i++) {
-		bus = i2c_bus_get(i);
-		if (bus) {
+		if ((mask >> i) & 1) {
 			printf("i2c_bus%d\n", i);
 		}
 	}

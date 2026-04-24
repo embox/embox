@@ -10,12 +10,12 @@
 
 #include <bsp/stm32cube_hal.h>
 #include <drivers/gpio.h>
-#include <drivers/i2c/i2c.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 
 #include <config/board_config.h>
 
+#include "../i2c_priv.h"
 #include "stm32_i2c.h"
 
 #define IMX_I2C_ID 2
