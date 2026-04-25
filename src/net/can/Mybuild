@@ -14,6 +14,8 @@ module af_can_socket {
     source "af_can_sock.c"
     source "can_netdevice.c"
 
+    source "can_entry_rx.c"
+
     @IncludeExport(path="net")
     source "can_netdevice.h"
 }

@@ -12,4 +12,6 @@ extern int cannetdev_register(struct net_device *netdev);
 
 extern struct net_device *cannetdev_get(const char *name, int idx);
 
+extern int canif_rx(void *data);
+
 #endif /* __CAN_NETDEVICE_H_ */
