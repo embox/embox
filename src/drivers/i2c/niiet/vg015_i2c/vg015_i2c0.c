@@ -10,11 +10,12 @@
 #include <stddef.h>
 
 #include <drivers/gpio.h>
-#include <drivers/i2c/i2c.h>
 #include <drivers/pin_description.h>
 
 #include <config/board_config.h>
 #include <framework/mod/options.h>
+
+#include "../../i2c_priv.h"
 
 #define I2C_BUS_ID   0
 #define BASE_ADDR    OPTION_GET(NUMBER, base_addr)

@@ -10,11 +10,11 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <drivers/i2c/i2c.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
 #include <util/log.h>
 
+#include "../i2c_priv.h"
 #include "stm32_i2c.h"
 
 #define I2C_XMIT_TIMEOUT 1000

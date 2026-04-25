@@ -10,10 +10,10 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include <drivers/i2c/i2c.h>
 #include <hal/reg.h>
 #include <util/log.h>
 
+#include "../i2c_priv.h"
 #include "imx_i2c.h"
 
 static inline int imx_i2c_wait_status(const struct imx_i2c_priv *priv,

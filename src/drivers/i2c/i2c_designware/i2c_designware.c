@@ -12,12 +12,12 @@
 #include <swab.h>
 #include <unistd.h>
 
-#include <drivers/i2c/i2c.h>
 #include <hal/reg.h>
 #include <kernel/irq.h>
 #include <kernel/printk.h>
 #include <util/log.h>
 
+#include "../i2c_priv.h"
 #include "i2c_designware.h"
 
 static uint32_t i2c_dw_read(struct i2c_dw_dev *dev, int offset) {
