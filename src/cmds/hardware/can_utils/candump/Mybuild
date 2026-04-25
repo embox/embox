@@ -1,0 +1,12 @@
+package embox.cmd.hw.can_utils
+
+@AutoCmd
+@Cmd(	name = "candump",
+	help = "candump"
+)
+module candump {
+	source "candump.c"
+
+	@NoRuntime depends embox.net.can.can_utils
+	@NoRuntime depends embox.net.can.af_can_socket
+}
