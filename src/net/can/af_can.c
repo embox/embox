@@ -127,14 +127,56 @@ static int af_can_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	if (skb == NULL) {
 		return -ENOMEM;
 	}
+	skb->dev = sk->sock_netdev;
 
 	sk->sock_netdev->drv_ops->xmit(sk->sock_netdev, skb);
 
 	return 0;
 }
 
+extern unsigned long sock_calc_timeout(struct sock *sk);
+
+extern struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int *err_p);
+
 static int af_can_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
-	return 0;
+	unsigned long timeout;
+	struct sk_buff *skb;
+	int err, nrecv;
+
+	assert(sk != NULL);
+
+	timeout = sock_calc_timeout(sk);
+
+	if (msg->msg_flags & MSG_DONTWAIT) {
+		timeout = 0;
+	}
+
+	skb = sock_get_skb(sk, timeout, &err);
+
+	// FIXME: assert(err)?
+	if (!skb && msg->msg_flags & MSG_DONTWAIT) {
+		return 0;
+	}
+
+	if (!skb) {
+		assert(err);
+		return err;
+	}
+	// FIXME
+
+	nrecv = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
+			skb->p_data, skb->p_data_end - skb->p_data);
+
+	sk->rx_data_len -= skb->p_data_end - skb->p_data;
+
+	assert(sk->p_ops != NULL);
+	if (sk->p_ops->fillmsg && msg->msg_name) {
+		sk->p_ops->fillmsg(sk, msg, skb);
+	}
+
+	skb_free(skb);
+
+	return nrecv;
 }
 
 
