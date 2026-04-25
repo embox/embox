@@ -62,7 +62,7 @@ int sock_close(struct sock *sk) {
 	return sk->f_ops->close(sk);
 }
 
-static unsigned long sock_calc_timeout(struct sock *sk) {
+unsigned long sock_calc_timeout(struct sock *sk) {
 	unsigned long timeout = timeval_to_ms(&sk->opt.so_rcvtimeo);
 	if (timeout == 0) {
 		timeout = SCHED_TIMEOUT_INFINITE;
@@ -70,7 +70,7 @@ static unsigned long sock_calc_timeout(struct sock *sk) {
 	return timeout;
 }
 
-static struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int *err_p) {
+struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int *err_p) {
 	struct sk_buff *skb;
 	int err;
 
