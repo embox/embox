@@ -5,28 +5,32 @@
  * @date 14.04.26
  */
 
-#ifndef DRIVERS_CAN_SJA1000_H_
-#define DRIVERS_CAN_SJA1000_H_
+#ifndef DRIVERS_CAN_KVASER_PCI_SJA1000_H_
+#define DRIVERS_CAN_KVASER_PCI_SJA1000_H_
 
 #include <stdint.h>
 
+#include <asm/io.h>
+
 /*  Registers (PeliCan Mode) */
-#define SJA_MOD   0x00 /* Mode Control Register */
-#define SJA_CMR   0x01 /* Command Register */
-#define SJA_SR    0x02 /* Status Register */
-#define SJA_IR    0x03 /* Interrupt register */
-#define SJA_IER   0x04 /* Interrupt Enable Register */
-#define SJA_BTR0  0x06 /* Bus Timing Register 0 */
-#define SJA_BTR1  0x07 /* Bus Timing Register 1 */
-#define SJA_OCR   0x08 /* Output Control Register */
-#define SJA_ALC   0x0b /* Arbitration Lost Capture Register */
-#define SJA_ECC   0x0c /* Error Code Capture Register */
-#define SJA_EWLR  0x0d /* Error Warning Limit Register */
-#define SJA_RXERR 0x0e /* RX Error Counter Register */
-#define SJA_TXERR 0x0f /* TX Error Counter Register */
-#define SJA_RMC   0x1d /* RX Message Counter Register */
-#define SJA_RBSA  0x1e /* Rx Buffer Start Addr Register */
-#define SJA_CDR   0x1f /* Clock Divider Register */
+#define SJA_MOD    0x00       /* Mode Control Register */
+#define SJA_CMR    0x01       /* Command Register */
+#define SJA_SR     0x02       /* Status Register */
+#define SJA_IR     0x03       /* Interrupt register */
+#define SJA_IER    0x04       /* Interrupt Enable Register */
+#define SJA_BTR0   0x06       /* Bus Timing Register 0 */
+#define SJA_BTR1   0x07       /* Bus Timing Register 1 */
+#define SJA_OCR    0x08       /* Output Control Register */
+#define SJA_ALC    0x0b       /* Arbitration Lost Capture Register */
+#define SJA_ECC    0x0c       /* Error Code Capture Register */
+#define SJA_EWLR   0x0d       /* Error Warning Limit Register */
+#define SJA_RXERR  0x0e       /* RX Error Counter Register */
+#define SJA_TXERR  0x0f       /* TX Error Counter Register */
+#define SJA_ACR(n) (0x10 + n) /* Acceptance Code Register (Reset Mode) */
+#define SJA_AMR(n) (0x14 + n) /* Acceptance Mask Register (Reset Mode) */
+#define SJA_RMC    0x1d       /* RX Message Counter Register */
+#define SJA_RBSA   0x1e       /* Rx Buffer Start Addr Register */
+#define SJA_CDR    0x1f       /* Clock Divider Register */
 
 /**
  * +-------------+-----------------------------+-----------------------------+
@@ -142,8 +146,28 @@
 #define SJA_CDR_MOD     (1 << 7) /* PeliCAN mode */
 
 /* SJA_FRM */
-#define SJA_FRM_DLC (1 << 0) /* Data Length Code Bit */
-#define SJA_FRM_RTR (1 << 6) /* Remote Transmission Request */
-#define SJA_FRM_FF  (1 << 7) /* Frame Format (EFF) */
+#define SJA_FRM_DLC (0xf << 0) /* Data Length Code */
+#define SJA_FRM_RTR (1 << 6)   /* Remote Transmission Request */
+#define SJA_FRM_FF  (1 << 7)   /* Frame Format (EFF) */
 
-#endif /* DRIVERS_CAN_SJA1000_H_ */
+static inline void sja_reg_store(uintptr_t base, unsigned int reg, uint8_t val) {
+	out8(val, base + reg);
+}
+
+static inline uint8_t sja_reg_load(uintptr_t base, unsigned int reg) {
+	return in8(base + reg);
+}
+
+static inline void sja_reg_orin(uintptr_t base, unsigned int reg, uint8_t mask) {
+	return sja_reg_store(base, reg, sja_reg_load(base, reg) | mask);
+}
+
+static inline void sja_reg_andin(uintptr_t base, unsigned int reg, uint8_t mask) {
+	return sja_reg_store(base, reg, sja_reg_load(base, reg) & mask);
+}
+
+static inline void sja_reg_clear(uintptr_t base, unsigned int reg, uint8_t mask) {
+	return sja_reg_store(base, reg, sja_reg_load(base, reg) & ~mask);
+}
+
+#endif /* DRIVERS_CAN_KVASER_PCI_SJA1000_H_ */

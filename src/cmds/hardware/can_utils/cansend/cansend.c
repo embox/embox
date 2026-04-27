@@ -6,7 +6,6 @@
 #include <unistd.h>
 
 #include <net/if.h>
-#include <util/math.h>
 
 int main(void) {
 	int s;
@@ -37,15 +36,18 @@ int main(void) {
 		return 1;
 	}
 
-	/* read */
-	if (read(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
-		printf("read failed\n");
+	// 4. Prepare frame
+	frame.can_id = 0x123;
+	frame.can_dlc = 2;
+	frame.data[0] = 0xDE;
+	frame.data[1] = 0xAD;
+
+	// 5. Write frame
+	if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+		printf("Write failed\n");
 		return 1;
 	}
-	printf("Recv: can_id = 0x%08x, can_dlc=%d\n"
-	       "data(%02x:%02x:%02x:%02x:%02x:%02x:%02x:%02x)\n",
-	    frame.can_id, frame.can_dlc, frame.data[0], frame.data[1], frame.data[2],
-	    frame.data[3], frame.data[4], frame.data[5], frame.data[6], frame.data[7]);
+
 	// 6. Close socket
 	close(s);
 	return 0;

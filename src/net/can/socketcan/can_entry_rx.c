@@ -1,7 +1,7 @@
 /**
  * @file
  *
- * @date 23.04.2012
+ * @date 23.04.26
  * @author Anton Bondarev
  */
 
@@ -10,20 +10,14 @@
 #include <stdint.h>
 #include <sys/socket.h>
 
-#include <net/netdevice.h>
-#include <net/can_netdevice.h>
-
-#include <net/sock.h>
-
 #include <hal/ipl.h>
+#include <kernel/lthread/lthread.h>
+#include <kernel/sched/schedee_priority.h>
+#include <lib/libds/dlist.h>
+#include <net/can.h>
 #include <net/netdevice.h>
 #include <net/skbuff.h>
-
-#include <kernel/sched/schedee_priority.h>
-#include <kernel/lthread/lthread.h>
-
-
-#include <lib/libds/dlist.h>
+#include <net/sock.h>
 
 #define CANIF_RX_HND_PRIORITY 200
 
@@ -39,8 +33,7 @@ static LTHREAD_DEF(canif_tx_handler, canif_tx_action, CANIF_RX_HND_PRIORITY);
 
 extern const struct sock_proto_ops *const af_can_sock_ops;
 
-static int can_rcv_tester(const struct sock *sk,
-						const struct sk_buff *skb) {
+static int can_rcv_tester(const struct sock *sk, const struct sk_buff *skb) {
 	assert(sk != NULL);
 	return (sk->opt.so_domain == AF_CAN);
 }
@@ -49,25 +42,23 @@ void cansock_rx(struct sk_buff *skb) {
 	struct sock *sk;
 	sk = sock_lookup(NULL, af_can_sock_ops, can_rcv_tester, skb);
 	if (sk != NULL) {
-			sock_rcv(sk, skb, skb->mac.raw, skb->len);
-		}
+		sock_rcv(sk, skb, skb->mac.raw, skb->len);
+	}
 }
 
 static int canif_rx_action(struct lthread *self) {
 	struct net_device *dev = NULL;
 	ipl_t ipl;
 
-	ipl= ipl_save();
+	ipl = ipl_save();
 	{
 		dlist_foreach_entry_safe(dev, &canif_rx_list, rx_lnk) {
 			struct sk_buff *skb;
 
 			while ((skb = skb_queue_pop(&dev->dev_queue)) != NULL) {
 				ipl_restore(ipl);
-				{
-					cansock_rx(skb);
-				}
-				ipl= ipl_save();
+				{ cansock_rx(skb); }
+				ipl = ipl_save();
 			}
 			dlist_del_init(&dev->rx_lnk);
 		}
@@ -76,7 +67,6 @@ static int canif_rx_action(struct lthread *self) {
 
 	return 0;
 }
-
 
 /* we can be in irq mode */
 int canif_rx(void *data) {

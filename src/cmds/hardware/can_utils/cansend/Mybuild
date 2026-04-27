@@ -1,9 +1,9 @@
 package embox.cmd.hw.can_utils
 
 @AutoCmd
-@Cmd(name="candump",help="")
-module candump {
-	source "candump.c"
+@Cmd(name="cansend",help="")
+module cansend {
+	source "cansend.c"
 
 	@NoRuntime depends embox.net.can
 }

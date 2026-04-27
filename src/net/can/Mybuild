@@ -1,21 +1,7 @@
-package embox.net.can
+package embox.net
 
-module can_utils {
-    @IncludeExport(path="linux")
-    source "can.h"
-}
-
-module af_can_socket {
-    option string log_level = "LOG_NONE"
-    option number max_can_sock = 8
-    option number can_id = 0x11
-
-    source "af_can.c"
-    source "af_can_sock.c"
-    source "can_netdevice.c"
-
-    source "can_entry_rx.c"
-
+@DefaultImpl(embox.net.socketcan)
+abstract module can {
     @IncludeExport(path="net")
-    source "can_netdevice.h"
+    source "can.h"
 }

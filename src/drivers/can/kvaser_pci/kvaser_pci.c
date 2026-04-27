@@ -7,103 +7,128 @@
 
 #include <errno.h>
 #include <linux/can.h>
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
 #include <asm/io.h>
+#include <drivers/can/sja1000.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
+#include <framework/mod/options.h>
 #include <kernel/irq.h>
-#include <net/can_netdevice.h>
-#include <net/inetdevice.h>
-#include <net/l2/ethernet.h>
-#include <net/netdevice.h>
-#include <net/skbuff.h>
+#include <net/can.h>
 
-#include "sja1000.h"
+#define SINGLE_FILTER_MODE OPTION_GET(BOOLEAN, single_filter)
 
-PCI_DRIVER("kvaser_pci", kvaser_init, 0x10e8, 0x8406);
+#define KVASER_VENDOR_ID 0x10e8
+#define KVASER_DEVICE_ID 0x8406
 
-static void sja_reg_store(struct net_device *dev, unsigned int reg, uint8_t val) {
-	out8(val, dev->base_addr + reg);
-}
+/* s5920 32-Bit PCI Bus Target Interface */
+#define S5920_INTCSR     0x38      /* Interrupt Control/Status Register */
+#define S5920_INTCSR_AIE (1 << 13) /* Add-On Interrupt pin Enable */
+#define S5920_INTCSR_AIS (1 << 22) /* Add-On Interrupt pin Status */
+#define S5920_INTCSR_IA  (1 << 23) /* Interrupt Asserted */
 
-static uint8_t sja_reg_load(struct net_device *dev, unsigned int reg) {
-	return in8(dev->base_addr + reg);
-}
-
-static inline void sja_reg_orin(struct net_device *dev, unsigned int reg,
-    uint8_t mask) {
-	return sja_reg_store(dev, reg, sja_reg_load(dev, reg) | mask);
-}
-
-static inline void sja_reg_andin(struct net_device *dev, unsigned int reg,
-    uint8_t mask) {
-	return sja_reg_store(dev, reg, sja_reg_load(dev, reg) & mask);
-}
-
-static inline void sja_reg_clear(struct net_device *dev, unsigned int reg,
-    uint8_t mask) {
-	return sja_reg_store(dev, reg, sja_reg_load(dev, reg) & ~mask);
-}
-
-static int kvaser_reset(struct net_device *dev) {
-	/* Enable reset mode */
-	sja_reg_store(dev, SJA_MOD, SJA_MOD_RM);
-
-	/* Enable PeliCAN mode */
-	sja_reg_orin(dev, SJA_CDR, SJA_CDR_MOD);
-
-	/* Clear registers */
-	sja_reg_store(dev, SJA_RXERR, 0);
-	sja_reg_store(dev, SJA_TXERR, 0);
-	sja_reg_store(dev, SJA_RMC, 0);
-	sja_reg_store(dev, SJA_FRM, 0);
-	sja_reg_store(dev, SJA_BTR0, 0);
-	sja_reg_store(dev, SJA_BTR1, 0);
-	sja_reg_store(dev, SJA_OCR, 0);
-	sja_reg_store(dev, SJA_IER, 0);
-
-	/* Enable operating mode and dual filter mode */
-	sja_reg_store(dev, SJA_MOD, 0);
-
-	return 0;
-}
-
-static int kvaser_start(struct net_device *dev) {
-	kvaser_reset(dev);
-
-	/* Enable interrupts */
-	sja_reg_orin(dev, SJA_IER, SJA_IER_RIE);
-	sja_reg_orin(dev, SJA_IER, SJA_IER_TIE);
-
-	return 0;
-}
-
-static int kvaser_stop(struct net_device *dev) {
-	/* Disable interrupts */
-	sja_reg_clear(dev, SJA_IER, SJA_IER_RIE);
-	sja_reg_clear(dev, SJA_IER, SJA_IER_TIE);
-
-	/* Enable sleep mode */
-	sja_reg_orin(dev, SJA_MOD, SJA_MOD_SM);
-
-	return 0;
-}
-
-static int kvaser_xmit(struct net_device *dev, struct sk_buff *skb) {
-	struct can_frame *frame;
-	uint8_t frame_info;
-	unsigned int data_base;
+static void kvaser_set_filter(struct can_controller *can, uint32_t code,
+    uint32_t mask) {
+	uintptr_t sja_base;
 	int i;
 
-	/* Check if TX buffer is ready */
-	if (!(sja_reg_load(dev, SJA_SR) & SJA_SR_TBS)) {
-		return -EBUSY;
-	}
+	sja_base = (uintptr_t)can->priv;
 
-	frame = (struct can_frame *)skb_data_cast_in(skb->data);
-	// len = skb->len;
+	for (i = 0; i < 4; i++) {
+		sja_reg_store(sja_base, SJA_ACR(i), ((code >> ((3 - i) * 8)) & 0xff));
+		sja_reg_store(sja_base, SJA_AMR(i), ((mask >> ((3 - i) * 8)) & 0xff));
+	}
+}
+
+int kvaser_start(struct can_controller *can) {
+	uintptr_t sja_base;
+
+	sja_base = (uintptr_t)can->priv;
+
+	/* Enable reset mode */
+	sja_reg_store(sja_base, SJA_MOD, SJA_MOD_RM);
+
+	/* Enable PeliCAN mode */
+	sja_reg_orin(sja_base, SJA_CDR, SJA_CDR_MOD);
+
+	/* Clear registers */
+	sja_reg_store(sja_base, SJA_RXERR, 0);
+	sja_reg_store(sja_base, SJA_TXERR, 0);
+	sja_reg_store(sja_base, SJA_RMC, 0);
+	sja_reg_store(sja_base, SJA_BTR0, 0);
+	sja_reg_store(sja_base, SJA_BTR1, 0);
+	sja_reg_store(sja_base, SJA_OCR, 0);
+	sja_reg_store(sja_base, SJA_IER, 0);
+	sja_reg_store(sja_base, SJA_FRM, 0);
+
+	/* Set filter to receive all CAN frames */
+	kvaser_set_filter(can, 0, 0xffffffff);
+
+	/* Enable operating mode */
+#if SINGLE_FILTER_MODE
+	sja_reg_store(sja_base, SJA_MOD, SJA_MOD_AFM);
+#else
+	sja_reg_store(sja_base, SJA_MOD, 0);
+#endif
+
+	/* Enable RX interrupts */
+	sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
+
+	/* Release RX buffer */
+	sja_reg_store(sja_base, SJA_CMR, SJA_CMR_RRB);
+
+	return 0;
+}
+
+int kvaser_stop(struct can_controller *can) {
+	uintptr_t sja_base;
+
+	sja_base = (uintptr_t)can->priv;
+
+	/* Disable RX interrupts */
+	sja_reg_clear(sja_base, SJA_IER, SJA_IER_RIE);
+
+	/* Enable sleep mode */
+	sja_reg_orin(sja_base, SJA_MOD, SJA_MOD_SM);
+
+	return 0;
+}
+
+void kvaser_eoi(struct can_controller *can) {
+	uintptr_t sja_base;
+
+	sja_base = (uintptr_t)can->priv;
+
+	/* Clear pending interrupts */
+	sja_reg_orin(sja_base, SJA_IR, 0);
+}
+
+int kvaser_hasrx(struct can_controller *can) {
+	uintptr_t sja_base;
+
+	sja_base = (uintptr_t)can->priv;
+
+	/* Check if RX buffer is not empty */
+	return (sja_reg_load(sja_base, SJA_SR) & SJA_SR_RBS);
+}
+
+int kvaser_send(struct can_controller *can, struct can_frame *frame) {
+	uintptr_t sja_base;
+	unsigned data_base;
+	uint8_t frame_info;
+	int i;
+
+	sja_base = (uintptr_t)can->priv;
+
+	/* Check if TX buffer is ready */
+	for (i = 0; !(sja_reg_load(sja_base, SJA_SR) & SJA_SR_TBS); i++) {
+		if (i >= 10000) {
+			return -1;
+		}
+	}
 
 	frame_info = frame->can_dlc;
 
@@ -116,62 +141,103 @@ static int kvaser_xmit(struct net_device *dev, struct sk_buff *skb) {
 
 		data_base = SJA_EFDAT(0);
 
-		sja_reg_store(dev, SJA_ID(0), (frame->can_id & 0x1fe00000) >> 21);
-		sja_reg_store(dev, SJA_ID(1), (frame->can_id & 0x001fe000) >> 13);
-		sja_reg_store(dev, SJA_ID(2), (frame->can_id & 0x00001fe0) >> 5);
-		sja_reg_store(dev, SJA_ID(3), (frame->can_id & 0x0000001f) << 3);
+		sja_reg_store(sja_base, SJA_ID(0), (frame->can_id & 0x1fe00000) >> 21);
+		sja_reg_store(sja_base, SJA_ID(1), (frame->can_id & 0x001fe000) >> 13);
+		sja_reg_store(sja_base, SJA_ID(2), (frame->can_id & 0x00001fe0) >> 5);
+		sja_reg_store(sja_base, SJA_ID(3), (frame->can_id & 0x0000001f) << 3);
 	}
 	else {
 		data_base = SJA_SFDAT(0);
 
-		sja_reg_store(dev, SJA_ID(0), (frame->can_id & 0x07f8) >> 3);
-		sja_reg_store(dev, SJA_ID(1), (frame->can_id & 0x0007) << 5);
+		sja_reg_store(sja_base, SJA_ID(0), (frame->can_id & 0x07f8) >> 3);
+		sja_reg_store(sja_base, SJA_ID(1), (frame->can_id & 0x0007) << 5);
 	}
 
-	sja_reg_store(dev, SJA_FRM, frame_info);
+	sja_reg_store(sja_base, SJA_FRM, frame_info);
 
 	for (i = 0; i < frame->can_dlc; i++) {
-		sja_reg_store(dev, data_base + i, frame->data[i]);
+		sja_reg_store(sja_base, data_base + i, frame->data[i]);
 	}
 
-	sja_reg_store(dev, SJA_CMR, SJA_CMR_TR);
-
-	skb_free(skb);
+	sja_reg_store(sja_base, SJA_CMR, SJA_CMR_TR);
 
 	return 0;
 }
 
-static const struct net_driver kvaser_drv_ops = {
-    .xmit = kvaser_xmit,
+int kvaser_receive(struct can_controller *can, struct can_frame *frame) {
+	uintptr_t sja_base;
+	unsigned data_base;
+	uint8_t frame_info;
+	int i;
+
+	sja_base = (uintptr_t)can->priv;
+
+	frame_info = sja_reg_load(sja_base, SJA_FRM);
+
+	frame->can_dlc = frame_info & SJA_FRM_DLC;
+	if (frame->can_dlc > 8) {
+		frame->can_dlc = 8;
+	}
+
+	frame->can_id = 0;
+
+	if (frame_info & SJA_FRM_RTR) {
+		frame->can_id |= CAN_RTR_FLAG;
+	}
+
+	if (frame_info & SJA_FRM_FF) {
+		frame->can_id |= CAN_EFF_FLAG;
+		frame->can_id |= (sja_reg_load(sja_base, SJA_ID(0)) << 21);
+		frame->can_id |= (sja_reg_load(sja_base, SJA_ID(1)) << 13);
+		frame->can_id |= (sja_reg_load(sja_base, SJA_ID(2)) << 5);
+		frame->can_id |= (sja_reg_load(sja_base, SJA_ID(3)) >> 3);
+
+		data_base = SJA_EFDAT(0);
+	}
+	else {
+		frame->can_id = (sja_reg_load(sja_base, SJA_ID(0)) << 3);
+		frame->can_id |= (sja_reg_load(sja_base, SJA_ID(1)) >> 5);
+
+		data_base = SJA_SFDAT(0);
+	}
+
+	for (i = 0; i < frame->can_dlc; i++) {
+		frame->data[i] = sja_reg_load(sja_base, data_base + i);
+	}
+
+	/* Release RX buffer */
+	sja_reg_store(sja_base, SJA_CMR, SJA_CMR_RRB);
+
+	return 0;
+}
+
+static const struct can_ops kvaser_can_ops = {
     .start = kvaser_start,
     .stop = kvaser_stop,
+    .eoi = kvaser_eoi,
+    .hasrx = kvaser_hasrx,
+    .send = kvaser_send,
+    .receive = kvaser_receive,
 };
 
-// static irq_return_t kvaser_irq_handler(unsigned int irq_num, void *dev_id) {
-// 	return IRQ_HANDLED;
-// }
+static struct can_controller kvaser_can_controller;
 
-static int kvaser_init(struct pci_slot_dev *pci_dev) {
-	struct net_device *netdev;
-	// int err;
+CAN_CONTROLLER_REGISTER(kvaser_can_controller);
 
-	netdev = etherdev_alloc(0);
-	if (netdev == NULL) {
-		return -ENOMEM;
-	}
+static int kvaser_pci_init(struct pci_slot_dev *pci_dev) {
+	uintptr_t s5920_base;
 
-	netdev->base_addr = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
-	netdev->irq = pci_dev->irq;
-	netdev->drv_ops = &kvaser_drv_ops;
+	kvaser_can_controller.ops = &kvaser_can_ops;
+	kvaser_can_controller.irq = pci_dev->irq;
+	kvaser_can_controller.priv = (void *)(pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK);
 
-	// err = irq_attach(netdev->irq, kvaser_irq_handler, 0, NULL, "kvaser_pci");
-	// if (err < 0) {
-	// 	return err;
-	// }
+	s5920_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
 
-	cannetdev_register(netdev);
-
-	kvaser_start(netdev);
+	/* Enable card interrupts */
+	out32(in32(s5920_base + S5920_INTCSR) | S5920_INTCSR_AIE,
+	    s5920_base + S5920_INTCSR);
 
 	return 0;
 }
+
+PCI_DRIVER("kvaser_pci", kvaser_pci_init, KVASER_VENDOR_ID, KVASER_DEVICE_ID);
