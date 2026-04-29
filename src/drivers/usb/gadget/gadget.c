@@ -123,12 +123,37 @@ static int usb_gadget_prepare_string_desc(struct usb_gadget_composite *composite
 	return wlen;
 }
 
+int usb_gadget_setup_req_get_descriptor(struct usb_gadget_composite *composite,
+					const struct usb_control_header *ctrl, uint8_t *buffer) {
+	int len;
+	struct usb_gadget_request *req = &composite->req;
+
+	switch (ctrl->w_value >> 8) {
+		case USB_DESC_TYPE_DEV:
+			req->len = min(ctrl->w_length, sizeof composite->device_desc);
+			memcpy(req->buf, &composite->device_desc, req->len);
+			return 0;
+		case USB_DESC_TYPE_CONFIG:
+			len = usb_gadget_prepare_config_desc(composite, ctrl->w_value & 0xff);
+			req->len = min(ctrl->w_length, len);
+			return 0;
+		case USB_DESC_TYPE_STRING:
+			len = usb_gadget_prepare_string_desc(composite, ctrl->w_value & 0xff);
+			req->len = min(ctrl->w_length, len);
+			return 0;
+		default:
+			return -1;
+	}
+	
+	return -1;
+}
+
 int usb_gadget_setup(struct usb_gadget_composite *composite,
     const struct usb_control_header *ctrl, uint8_t *buffer) {
 	struct usb_gadget_request *req = &composite->req;
 	struct usb_gadget *gadget = composite->config;
 	struct usb_gadget_function *f = NULL;
-	int len, intf;
+	int intf;
 
 	if ((ctrl->bm_request_type & USB_REQ_TYPE_MASK) != USB_REQ_TYPE_STANDARD) {
 		goto func_setup;
@@ -140,21 +165,8 @@ int usb_gadget_setup(struct usb_gadget_composite *composite,
 		*(uint16_t *)req->buf = 0;
 		goto submit_req;
 	case USB_REQ_GET_DESCRIPTOR:
-		switch (ctrl->w_value >> 8) {
-		case USB_DESC_TYPE_DEV:
-			req->len = min(ctrl->w_length, sizeof composite->device_desc);
-			memcpy(req->buf, &composite->device_desc, req->len);
+		if (!usb_gadget_setup_req_get_descriptor(composite, ctrl, buffer)) {
 			goto submit_req;
-		case USB_DESC_TYPE_CONFIG:
-			len = usb_gadget_prepare_config_desc(composite, ctrl->w_value & 0xff);
-			req->len = min(ctrl->w_length, len);
-			goto submit_req;
-		case USB_DESC_TYPE_STRING:
-			len = usb_gadget_prepare_string_desc(composite, ctrl->w_value & 0xff);
-			req->len = min(ctrl->w_length, len);
-			goto submit_req;
-		default:
-			goto func_setup;
 		}
 		break;
 
@@ -208,8 +220,8 @@ func_setup:
 		return f->setup(f, ctrl, buffer);
 	}
 
-	log_error("Unsupported req: bm_request_type=0x%02x, b_request=0x%02x",
-	    ctrl->bm_request_type, ctrl->b_request);
+	log_error("Unsupported req: type=0x%02x, b_req=0x%02x w_value=0x%02x",
+	    ctrl->bm_request_type, ctrl->b_request, ctrl->w_value);
 	return -1;
 
 submit_req:
