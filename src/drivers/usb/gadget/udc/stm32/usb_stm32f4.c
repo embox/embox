@@ -6,10 +6,13 @@
  * @date 03.07.2020
  */
 
+#include <util/log.h>
+
 #include <assert.h>
+
 #include <kernel/irq.h>
 #include <kernel/lthread/lthread.h>
-#include <util/log.h>
+
 #include <framework/mod/options.h>
 
 /* FIX: add dependency */
@@ -20,6 +23,8 @@
 #include <drivers/udc/stm32/usb_stm32.h>
 
 #define USB_IRQ OPTION_GET(NUMBER, irq)
+
+#define USE_USB_HS_IN_FS  OPTION_GET(NUMBER,usb_hs_in_fs)
 
 static int usb_stm32f4_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(usb_stm32f4_reset_lt, usb_stm32f4_reset_hnd, 200);
@@ -68,11 +73,28 @@ void HAL_PCD_MspInit(PCD_HandleTypeDef *hpcd) {
 		/* Enable USB FS Clocks */
 		__HAL_RCC_USB_OTG_FS_CLK_ENABLE();
 
-		/* Set USBFS Interrupt priority */
-//		HAL_NVIC_SetPriority(USB_IRQ, 6, 0);
+	} else if (hpcd->Instance == USB_OTG_HS) {
 
-		/* Enable USBFS Interrupt */
-//		HAL_NVIC_EnableIRQ(USB_IRQ);
+		/* Configure USB FS GPIOs */
+		__HAL_RCC_GPIOB_CLK_ENABLE();
+
+		/* Configure GPIO for HS on FS mode */
+		GPIO_InitStruct.Pin = GPIO_PIN_12 | GPIO_PIN_14 | GPIO_PIN_15;
+		GPIO_InitStruct.Mode = GPIO_MODE_AF_PP;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		GPIO_InitStruct.Speed = GPIO_SPEED_HIGH;
+		GPIO_InitStruct.Alternate = GPIO_AF12_OTG_HS_FS;
+		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+		/* Configure VBUS Pin */
+		GPIO_InitStruct.Pin = GPIO_PIN_13;
+		GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+		HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+		GPIO_InitStruct.Pull = GPIO_NOPULL;
+
+		/* Enable USB HS Clocks */
+		__HAL_RCC_USB_OTG_HS_CLK_ENABLE();
 	}
 }
 
@@ -103,7 +125,7 @@ void HAL_PCD_ConnectCallback(PCD_HandleTypeDef *hpcd) {
 PCD_HandleTypeDef hpcd;
 extern void HAL_PCD_IRQHandler(PCD_HandleTypeDef *hpcd);
 static irq_return_t usb_stm32f4_usb_irq_handler(unsigned int irq_nr, void *data) {
-	printk("usb: irq entry\n");
+	log_debug("usb: irq entry");
 	HAL_PCD_IRQHandler(&hpcd);
 	return IRQ_HANDLED;
 }
@@ -111,8 +133,7 @@ static irq_return_t usb_stm32f4_usb_irq_handler(unsigned int irq_nr, void *data)
 int usb_stm32f4_init(void) {
 	int ret = 0;
 
-//	NVIC_SetPriority (SysTick_IRQn, 0);
-
+#if USE_USB_HS_IN_FS == 0
 	/*Set LL Driver parameters */
 	/* FIXME: should be dependent on gadget */
 	hpcd.Instance = USB_OTG_FS;
@@ -133,7 +154,32 @@ int usb_stm32f4_init(void) {
 	HAL_PCDEx_SetRxFiFo(&hpcd, 0x80);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
 	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x80);
+#else /* USE_USB_HS_IN_FS */
+	/* Set LL Driver parameters */
+	hpcd.Instance = USB_OTG_HS;
+	hpcd.Init.dev_endpoints = 6;
+	hpcd.Init.use_dedicated_ep1 = 0;
 
+	hpcd.Init.dma_enable = 0;
+
+	hpcd.Init.low_power_enable = 0;
+
+	hpcd.Init.phy_itface = PCD_PHY_EMBEDDED;
+	hpcd.Init.speed = PCD_SPEED_HIGH_IN_FULL;
+
+	hpcd.Init.Sof_enable = 0;
+	hpcd.Init.vbus_sensing_enable = 0;
+	/* Link The driver to the stack */
+	//hpcd.pData = pdev;
+	//pdev->pData = &hpcd;
+	/* Initialize LL Driver */
+	HAL_PCD_Init(&hpcd);
+
+	HAL_PCDEx_SetRxFiFo(&hpcd, 0x200);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 0, 0x40);
+	HAL_PCDEx_SetTxFiFo(&hpcd, 1, 0x80);
+
+#endif /* USE_USB_HS_IN_FS */
 	ret = irq_attach(USB_IRQ, usb_stm32f4_usb_irq_handler, 0, NULL,
 		"usb stm32f4");
 	if (ret != 0) {
