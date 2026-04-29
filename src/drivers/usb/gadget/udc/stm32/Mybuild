@@ -12,7 +12,10 @@ module stm32f4_udc {
 @BuildDepends(third_party.bsp.st_bsp_api)
 module usb_stm32f4 {
 	option string log_level="LOG_ERR"
+	option number usb_hs_in_fs = 0
+
 	option number irq = 67 //OTG_FS_IRQn
+	//option number irq = 77 //OTG_HS_IRQn
 
 	@IncludeExport(path="drivers/udc/stm32", target_name="usb_stm32.h")
 	source "usb_stm32f4.h"
