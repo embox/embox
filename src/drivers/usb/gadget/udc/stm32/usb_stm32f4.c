@@ -26,6 +26,7 @@
 
 #define USE_USB_HS_IN_FS  OPTION_GET(NUMBER,usb_hs_in_fs)
 
+#if 0
 static int usb_stm32f4_reset_hnd(struct lthread *self);
 static LTHREAD_DEF(usb_stm32f4_reset_lt, usb_stm32f4_reset_hnd, 200);
 
@@ -34,6 +35,7 @@ static int usb_stm32f4_reset_hnd(struct lthread *self) {
 	//hw_usb_reset_event();
 	return 0;
 }
+#endif
 
 /*** PCD Driver required functions ***/
 
