@@ -20,6 +20,8 @@
 
 #include <framework/mod/options.h>
 
+#define DW_SPI_CHECK_VERSION  OPTION_GET(BOOLEAN, check_version)
+
 /* I am not sure it's a constant for all types of DW SPI controllers.
  * For example, Linux calculates this value in drivers/spi/spi-dw.c:spi_hw_init,
  * But at the same time, DW SPI datasheet says something
@@ -51,6 +53,7 @@ int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr) {
 
 	dw_spi_write(dw_spi, DW_SPI_ENR, 0);
 
+#if DW_SPI_CHECK_VERSION
 	reg = dw_spi_read(dw_spi, DW_SPI_SPI_VERSION_ID);
 	if (reg != DW_SPI_VERSION) {
 		log_error("SPI Version mismatch!");
@@ -62,6 +65,8 @@ int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr) {
 		log_error("SPI ID mismatch!");
 		return -1;
 	}
+#endif
+
 	/* Disable all interrupts */
 	dw_spi_write(dw_spi, DW_SPI_IMR, 0);
 

@@ -1,7 +1,8 @@
 package embox.driver.spi
 
 module dw_spi_drv {
-	option string log_level="LOG_NONE"
+	option string  log_level="LOG_NONE"
+	option boolean check_version=true
 
 	source "dw_spi_drv.c"
 
