@@ -176,7 +176,11 @@ static int acm_setup(struct usb_gadget_function *f,
 			req->len = 0;
 			usb_gadget_ep_queue(&gadget->composite->ep0, req);
 			return 0;
-
+		case SET_CONTROL_LINE_STATE:
+			log_error("ACM SET_CONTROL_LINE_STATE: val=%04x", ctrl->w_value);
+			req->len = 0;
+			usb_gadget_ep_queue(&gadget->composite->ep0, req);
+			return 0;
 		default:
 			log_error("Unsupported CDC CLASS bReq=%02x", ctrl->b_request);
 			return -1;
