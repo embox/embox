@@ -6,19 +6,27 @@
  * @date    03.07.2020
  */
 
+#include <util/log.h>
+
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+
+#include <lib/libds/array.h>
+
+#include <util/math.h>
+
+#include <kernel/printk.h>
+
 #include <drivers/udc/stm32/usb_stm32.h>
 #include <drivers/usb/gadget/udc.h>
 #include <drivers/usb/usb_defines.h>
-#include <embox/unit.h>
+
 #include <kernel/irq.h>
-#include <lib/libds/array.h>
-#include <util/log.h>
-#include <util/math.h>
 
 #include "stm32f4xx_hal.h"
+
+#include <embox/unit.h>
 
 EMBOX_UNIT_INIT(stm32f4_udc_init);
 
@@ -306,13 +314,9 @@ void HAL_PCD_SetupStageCallback(PCD_HandleTypeDef *hpcd) {
   * @retval None
   */
 void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
-	if (epnum != 0U) {
-    stm32f4_udc.ep_info[0x4 | epnum].is_used = 0;
-    return;
-}
-	log_debug("usb: dataINstage of 0x%x\n", epnum);
-
 	struct ep_status *pep;
+
+	log_debug("usb: dataINstage of 0x%x\n", epnum);
 
 	if (epnum == 0U) {
 		pep = &stm32f4_udc.ep_info[0x4 | epnum];
@@ -354,7 +358,11 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
 #if 1
 	}
 	else {
-		log_debug("usb: din: EP%d\n", epnum);
+		//log_debug("usb: din: EP%d\n", epnum);
+		printk("usb: din: EP%d\n", epnum);
+		stm32f4_udc.ep_info[0x4 | epnum].is_used = 0;
+		return;
+
 	}
 #else /*  uncomment for EP!=0 later */
 	}
@@ -376,16 +384,21 @@ void HAL_PCD_DataInStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
  * @retval None
  */
 void HAL_PCD_DataOutStageCallback(PCD_HandleTypeDef *hpcd, uint8_t epnum) {
+	//printk("DOUT: ep=%u xfer_count=%u", epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
 	log_debug("DOUT: ep=%u xfer_count=%u", epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
 	if (epnum < STM32F4_UDC_EPS_COUNT) {
-    stm32f4_udc.ep_info[0x0 | epnum].is_used = 0;
-}
+		stm32f4_udc.ep_info[0x0 | epnum].is_used = 0;
+		log_error("HAL_PCD_DataOutStageCallback epnum(%d)", epnum);
+	}
 	log_debug("usb: dataOUTstage of 0x%x\n", epnum);
 	log_debug("OUT: ep=%u xfer_count=%u",
           epnum, (unsigned)hpcd->OUT_ep[epnum].xfer_count);
-dump_bytes("OUT payload", hpcd->OUT_ep[epnum].xfer_buff,
+	dump_bytes("OUT payload", hpcd->OUT_ep[epnum].xfer_buff,
            hpcd->OUT_ep[epnum].xfer_count);
-
+	if (epnum != 0U) {
+		//log_debug("usb: dout: EP%d\n", epnum);
+		printk("usb: dout: EP%d\n", epnum);
+	}
 #if 0
 	struct ep_status *pep;
 
@@ -425,7 +438,8 @@ void HAL_PCD_ResetCallback(PCD_HandleTypeDef *hpcd) {
 	int i;
 
 	/* Reset Device */
-	log_debug("usb: reset\n");
+	//log_debug("usb: reset\n");
+	printk("usb: reset\n");
 
 	/*TODO: DeInit some stuff */
 
