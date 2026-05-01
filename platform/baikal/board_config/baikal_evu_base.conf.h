@@ -128,6 +128,48 @@ struct uart_conf uarts[] = {
 
 };
 
+struct spi_conf spis[] = {
+	[0] = {
+		.status = ENABLED,
+		.name = "SPI0",
+		.dev = {
+			.name = "SPI0",
+			.pins = {
+				PIN("SCK",  GPIO_PORT_A, 1, 1),
+				PIN("MISO", GPIO_PORT_A, 2, 1),
+				PIN("MOSI", GPIO_PORT_A, 3, 1),
+				PIN("CS",   GPIO_PORT_A, 0, 1),
+			},
+			.clocks = {
+				VAL("SPI",  "CLK_SPI0"),
+			}
+		},
+	},
+};
+
+struct i2c_conf i2cs[] = {
+	[0] = {
+		.status = DISABLED,
+		.name = "I2C0",
+		.dev = {
+			.name = "I2C0",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", CLIC_I2C0_IRQn),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_A, 4, 1),
+				PIN("SDA", GPIO_PORT_A, 5, 1),
+			},
+			.clocks = {
+				VAL("I2C", "CLK_I2C0"),
+			}
+		},
+	},
+};
+
 /* LED1 PB10 is real  LED2 (PB11) is only for beremiz demo */
 struct led_conf leds[] = {
 	[0] = {
@@ -144,4 +186,4 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts),  LED(leds));
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), SPI(spis), I2C(i2cs),  LED(leds));
