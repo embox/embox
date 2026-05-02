@@ -23,6 +23,8 @@
 extern struct spi_controller_ops dw_spic_ops;
 extern int dw_spi_init(struct dw_spi_priv *dw_spi, uintptr_t base_addr, int spi_nr);
 
+#define USE_BOARD_CONF	  		  OPTION_GET(BOOLEAN,use_board_conf)
+
 #define SPI_DE0_NANO_SOC          OPTION_GET(BOOLEAN,spi_de0_nano_soc)
 
 #define DW_SPI_BASE               OPTION_GET(NUMBER, base_addr)
@@ -48,6 +50,51 @@ static void spi1_de0_nano_soc_init(void) {
 	gpio_set(GPIO_PORT_B, 1 << 11, GPIO_PIN_LOW);
 }
 #endif
+
+#if USE_BOARD_CONF
+#include <drivers/gpio.h>
+
+#include <config/board_config.h>
+
+#define CONF_SPI		MACRO_CONCAT(CONF_SPI,SPI_BUS_NUM)
+
+#define SCK_PORT        MACRO_CONCAT(CONF_SPI,_PIN_SCK_PORT)
+#define SCK_PIN         MACRO_CONCAT(CONF_SPI,_PIN_SCK_NR)
+#define SCK_AF          MACRO_CONCAT(CONF_SPI,_PIN_SCK_AF)
+
+#define MISO_PORT		MACRO_CONCAT(CONF_SPI,_PIN_MISO_PORT)
+#define MISO_PIN		MACRO_CONCAT(CONF_SPI,_PIN_MISO_NR)
+#define MISO_AF			MACRO_CONCAT(CONF_SPI,_PIN_MISO_AF)
+
+#define MOSI_PORT		MACRO_CONCAT(CONF_SPI,_PIN_MOSI_PORT)
+#define MOSI_PIN		MACRO_CONCAT(CONF_SPI,_PIN_MOSI_NR)
+#define MOSI_AF			MACRO_CONCAT(CONF_SPI,_PIN_MOSI_AF)
+
+#define CLK_NAME		MACRO_CONCAT(CONF_SPI,_CLK_DEF_SPI)
+
+extern int clk_enable(char *clk_name);
+
+static const struct pin_description dw_spi_pins[] = {
+	{SCK_PORT, SCK_PIN, SCK_AF},
+	{MISO_PORT, MISO_PIN, MISO_AF},
+	{MOSI_PORT, MOSI_PIN, MOSI_AF},
+};
+
+static void hw_pins_config(struct spi_controller *spi_c) {
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_pin),
+			GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_SCLK_IDX].pd_func));
+
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_MISO_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_MISO_IDX].pd_pin),
+			GPIO_MODE_IN | GPIO_MODE_IN_PULL_UP | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_MISO_IDX].pd_func));
+
+	gpio_setup_mode(spi_c->spic_pins[SPIC_PIN_MOSI_IDX].pd_port,
+			(1 << spi_c->spic_pins[SPIC_PIN_MOSI_IDX].pd_pin),
+			GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_ALT_SET(spi_c->spic_pins[SPIC_PIN_MOSI_IDX].pd_func));
+}
+
+#endif /* USE_BOARD_CONF */
 
 static int dw_spi_module_init(void) {
 #if SPI_DE0_NANO_SOC
