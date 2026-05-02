@@ -134,6 +134,9 @@ static void bmcu_cru_uart_en(int num) {
 }
 
 static void bmcu_cru_spi_en(int num) {
+	int periph = CRU_APB0_PERIPH_SPI0 + num;
+
+	CRU->PCLK0EN |= (1UL << (periph)&0xFFFFUL);
 }
 
 int clk_enable(char *clk_name) {
