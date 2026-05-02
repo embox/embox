@@ -60,5 +60,69 @@ struct cdc_acm_line_coding {
 	uint8_t bDataBits;
 } __attribute__((packed));
 
+/** Header Functional Descriptor */
+struct cdc_header_descriptor {
+	uint8_t bFunctionLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
+	uint16_t bcdCDC;
+} __attribute__((packed));
+
+/** Union Interface Functional Descriptor */
+struct cdc_union_descriptor {
+	uint8_t bFunctionLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
+	uint8_t bControlInterface;
+	uint8_t bSubordinateInterface0;
+} __attribute__((packed));
+
+/** Call Management Functional Descriptor */
+struct cdc_cm_descriptor {
+	uint8_t bFunctionLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
+	uint8_t bmCapabilities;
+	uint8_t bDataInterface;
+} __attribute__((packed));
+
+/** Abstract Control Management Functional Descriptor */
+struct cdc_acm_descriptor {
+	uint8_t bFunctionLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
+	uint8_t bmCapabilities;
+} __attribute__((packed));
+
+/** Data structure for the notification about SerialState */
+struct cdc_acm_notification {
+	uint8_t bmRequestType;
+	uint8_t bNotificationType;
+	uint16_t wValue;
+	uint16_t wIndex;
+	uint16_t wLength;
+	uint16_t data;
+} __attribute__((packed));
+
+/** Ethernet Networking Functional Descriptor */
+struct cdc_ecm_descriptor {
+	uint8_t bFunctionLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
+	uint8_t iMACAddress;
+	uint32_t bmEthernetStatistics;
+	uint16_t wMaxSegmentSize;
+	uint16_t wNumberMCFilters;
+	uint8_t bNumberPowerFilters;
+} __attribute__((packed));
+
+/** Ethernet Network Control Model (NCM) Descriptor */
+struct cdc_ncm_descriptor {
+	uint8_t bFunctionLength;
+	uint8_t bDescriptorType;
+	uint8_t bDescriptorSubtype;
+	uint16_t bcdNcmVersion;
+	uint8_t bmNetworkCapabilities;
+} __attribute__((packed));
 
 #endif /* USB_CLASS_USB_CDC_H_ */
