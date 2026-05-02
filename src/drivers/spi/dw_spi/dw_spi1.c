@@ -101,6 +101,17 @@ static int dw_spi_module_init(void) {
 	spi1_de0_nano_soc_init();
 #endif
 
+#if USE_BOARD_CONF
+	struct spi_controller *spi_c = spi_controller_by_id(SPI_BUS_NUM);
+
+	spi_c->spic_label = DW_SPI_BASE;
+	spi_c->spic_pins = dw_spi_pins;
+	clk_enable(CLK_NAME);
+	hw_pins_config(spi_c);
+#else
+	spi_c->spic_pins = NULL;
+#endif /* USE_BOARD_CONF */
+
 	dw_spi_init(&DW_SPI_CTRL_STRUCT_NAME, DW_SPI_BASE, SPI_BUS_NUM);
 
 	return 0;
