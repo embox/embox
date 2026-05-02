@@ -130,7 +130,7 @@ struct uart_conf uarts[] = {
 
 struct spi_conf spis[] = {
 	[0] = {
-		.status = ENABLED,
+		.status = DISABLED,
 		.name = "SPI0",
 		.dev = {
 			.name = "SPI0",
@@ -142,6 +142,22 @@ struct spi_conf spis[] = {
 			},
 			.clocks = {
 				VAL("SPI",  "CLK_SPI0"),
+			}
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "SPI1",
+		.dev = {
+			.name = "SPI1",
+			.pins = {
+				PIN("SCK",  GPIO_PORT_A, 9, 1),
+				PIN("MISO", GPIO_PORT_A, 11, 1),
+				PIN("MOSI", GPIO_PORT_A, 10, 1),
+				PIN("CS",   GPIO_PORT_A, 8, 1),
+			},
+			.clocks = {
+				VAL("SPI",  "CLK_SPI1"),
 			}
 		},
 	},
