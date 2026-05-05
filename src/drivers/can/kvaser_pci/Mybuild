@@ -1,11 +1,11 @@
 package embox.driver.can
 
 module kvaser_pci {
-	option string log_level="LOG_ERR"
+	option boolean single_filter=false
 
 	source "kvaser_pci.c"
 
-	@NoRuntime depends embox.driver.pci
-	@NoRuntime depends embox.net.can.can_utils
-	@NoRuntime depends embox.net.can.af_can_socket
+	depends embox.driver.pci
+	@NoRuntime depends embox.net.can
+	@NoRuntime depends embox.driver.can.sja1000
 }

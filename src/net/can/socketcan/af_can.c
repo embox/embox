@@ -1,40 +1,36 @@
 /**
  * @file
  *
- * @brief PF_UNIX protocol family socket handler
- *
- * @date 31.01.2012
+ * @date 23.04.26
  * @author Anton Bondarev
  */
 
- #include <errno.h>
 #include <assert.h>
+#include <errno.h>
+#include <linux/can.h>
+#include <netinet/in.h>
 #include <sys/socket.h>
 
+#include <embox/net/pack.h>
+#include <mem/misc/pool.h>
+#include <net/can.h>
 #include <net/family.h>
 #include <net/net_sock.h>
-#include <net/sock.h>
-#include <netinet/in.h>
-
-#include <linux/can.h>
-
-#include <embox/net/pack.h>
 #include <net/netdevice.h>
-#include <net/can_netdevice.h>
 #include <net/skbuff.h>
-
+#include <net/sock.h>
 #include <util/math.h>
 
-#include <mem/misc/pool.h>
+#include "can_netdevice.h"
 
-#define MODOPS_AMOUNT_CAN_SOCK   8
+#define MODOPS_AMOUNT_CAN_SOCK 8
 
 /* Prototypes */
 static const struct sock_family_ops af_can_raw_ops;
 
 static const struct net_family_type af_can_types[] = {
-	{ SOCK_DGRAM, &af_can_raw_ops },
-	{ SOCK_RAW, &af_can_raw_ops }
+    {SOCK_DGRAM, &af_can_raw_ops},
+    {SOCK_RAW, &af_can_raw_ops},
 };
 
 static const struct net_pack_out_ops can_out_ops_struct;
@@ -53,7 +49,6 @@ struct af_can_sock {
 };
 
 static int af_can_init(struct sock *sk) {
-
 	assert(sk);
 
 	return 0;
@@ -70,7 +65,6 @@ static int af_can_close(struct sock *sk) {
 	}
 
 	return sk->p_ops->close(sk);
-
 }
 
 static int af_can_shutdown(struct sock *sk, int how) {
@@ -84,9 +78,8 @@ static int af_can_shutdown(struct sock *sk, int how) {
 	return sk->p_ops->shutdown(sk, how);
 }
 
-
 static int af_can_bind(struct sock *sk, const struct sockaddr *addr,
-		socklen_t addrlen) {
+    socklen_t addrlen) {
 	struct af_can_sock *skcan;
 
 	assert(sk);
@@ -94,7 +87,7 @@ static int af_can_bind(struct sock *sk, const struct sockaddr *addr,
 	skcan = (struct af_can_sock *)sk;
 	memcpy(&skcan->skaddr_can, addr, min(sizeof(skcan->skaddr_can), addrlen));
 
-	sk->sock_netdev = cannetdev_get(NULL, skcan->skaddr_can.can_ifindex);
+	sk->sock_netdev = can_netdev_get(NULL, skcan->skaddr_can.can_ifindex);
 	if (NULL == sk->sock_netdev) {
 		return -ENOTSUP;
 	}
@@ -114,7 +107,7 @@ static struct sk_buff *af_can_make_skb(struct msghdr *msg) {
 		return NULL;
 	}
 
-	memcpy(skb->mac.raw , msg->msg_iov->iov_base, msg->msg_iov->iov_len);
+	memcpy(skb->mac.raw, msg->msg_iov->iov_base, msg->msg_iov->iov_len);
 
 	return skb;
 }
@@ -136,7 +129,8 @@ static int af_can_sendmsg(struct sock *sk, struct msghdr *msg, int flags) {
 
 extern unsigned long sock_calc_timeout(struct sock *sk);
 
-extern struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout, int *err_p);
+extern struct sk_buff *sock_get_skb(struct sock *sk, unsigned long timeout,
+    int *err_p);
 
 static int af_can_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	unsigned long timeout;
@@ -164,8 +158,8 @@ static int af_can_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	}
 	// FIXME
 
-	nrecv = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen,
-			skb->p_data, skb->p_data_end - skb->p_data);
+	nrecv = skb_iovec_buf(msg->msg_iov, msg->msg_iovlen, skb->p_data,
+	    skb->p_data_end - skb->p_data);
 
 	sk->rx_data_len -= skb->p_data_end - skb->p_data;
 
@@ -179,16 +173,13 @@ static int af_can_recvmsg(struct sock *sk, struct msghdr *msg, int flags) {
 	return nrecv;
 }
 
-
 POOL_DEF(af_can_sock_pool, struct af_can_sock, MODOPS_AMOUNT_CAN_SOCK);
 
-static const struct sock_family_ops af_can_raw_ops = {
-	.init        = af_can_init,
-	.close       = af_can_close,
-	.bind        = af_can_bind,
-	.bind_local  = af_can_bind_local,
-	.sendmsg     = af_can_sendmsg,
-	.recvmsg     = af_can_recvmsg,
-	.shutdown    = af_can_shutdown,
-	.sock_pool   = &af_can_sock_pool
-};
+static const struct sock_family_ops af_can_raw_ops = {.init = af_can_init,
+    .close = af_can_close,
+    .bind = af_can_bind,
+    .bind_local = af_can_bind_local,
+    .sendmsg = af_can_sendmsg,
+    .recvmsg = af_can_recvmsg,
+    .shutdown = af_can_shutdown,
+    .sock_pool = &af_can_sock_pool};

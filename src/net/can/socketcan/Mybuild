@@ -1,0 +1,21 @@
+package embox.net
+
+module socketcan extends embox.net.can {
+    option string log_level="LOG_NONE"
+    option number max_can_sock=8
+    option number can_id=0x11
+
+    source "socketcan.h"
+    source "socketcan.c"
+
+    source "af_can.c"
+    source "af_can_sock.c"
+    source "can_netdevice.c"
+    source "can_entry_rx.c"
+
+	@NoRuntime depends embox.net.dev
+	@NoRuntime depends embox.net.core
+	@NoRuntime depends embox.net.skbuff
+	@NoRuntime depends embox.net.entry_api
+	@NoRuntime depends embox.net.l2.ethernet /* XXX */
+}

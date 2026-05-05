@@ -1,0 +1,5 @@
+package embox.net
+
+module can_chardev extends embox.net.can {
+	source "can_chardev.h"
+}
