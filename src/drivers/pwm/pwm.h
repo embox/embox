@@ -10,8 +10,9 @@
 #define DRIVERS_PWM_PWM_H_
 
 #include <stdint.h>
+#include <sys/cdefs.h>
 
-#include <lib/libds/array.h>
+#include <lib/libds/array_spread.h>
 
 #include <drivers/pin_description.h>
 
@@ -32,12 +33,15 @@ struct pwm_device {
 	uintptr_t               pwmd_base_addr;
 };
 
+__BEGIN_DECLS
 
 extern int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns);
 extern int pwm_enable(struct pwm_device *pwm);
 extern void pwm_disable(struct pwm_device *pwm);
 
 extern struct pwm_device *pwm_dev_by_id(int id);
+
+__END_DECLS
 
 #define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr) \
 	ARRAY_SPREAD_DECLARE(const struct pwm_device, __pwm_device_registry); \
