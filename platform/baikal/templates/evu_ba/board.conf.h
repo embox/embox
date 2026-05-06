@@ -2,4 +2,6 @@
 
 CONFIG {
 	uarts[0].status = ENABLED;
+
+	spis[1].status = ENABLED;
 }

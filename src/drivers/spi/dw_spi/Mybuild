@@ -14,6 +14,7 @@ module dw_spi_drv {
 module dw_spi0 {
 	option string log_level="LOG_NONE"
 	option number base_addr = 0
+	option boolean use_board_conf=false
 
 	source "dw_spi0.c"
 	@NoRuntime depends embox.driver.spi.spi0_dev0
@@ -26,6 +27,7 @@ module dw_spi0 {
 module dw_spi1 {
 	/* TODO pins_init */
 	option boolean spi_de0_nano_soc = false
+	option boolean use_board_conf=false
 
 	option string log_level="LOG_NONE"
 	option number base_addr = 0
