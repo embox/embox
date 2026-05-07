@@ -1,0 +1,17 @@
+package embox.driver.usb.gadget
+
+module f_hid {
+	option string log_level="LOG_ERR"
+
+	source "f_hid.c"
+}
+
+module hid_gadget {
+	option string log_level="LOG_ERR"
+	option number max_packet_size = 64
+
+	source "hid_gadget.c"
+
+	depends f_hid
+	//@NoRuntime depends embox.driver.usb.core
+}
