@@ -139,6 +139,12 @@ static void bmcu_cru_spi_en(int num) {
 	CRU->PCLK0EN |= (1UL << (periph)&0xFFFFUL);
 }
 
+static void bmcu_cru_i2c_en(int num) {
+	int periph = CRU_APB0_PERIPH_I2C0 + num;
+
+	CRU->PCLK0EN |= (1UL << (periph)&0xFFFFUL);
+}
+
 int clk_enable(char *clk_name) {
 	int num;
 
@@ -166,6 +172,13 @@ int clk_enable(char *clk_name) {
 	if (0 == strncmp(clk_name, CLK_NAME_SPI, sizeof(CLK_NAME_SPI) - 1)) {
 		num = clk_name[sizeof(CLK_NAME_SPI) - 1] - '0';
 		bmcu_cru_spi_en(num);
+
+		return 0;
+	}
+
+	if (0 == strncmp(clk_name, CLK_NAME_I2C, sizeof(CLK_NAME_I2C) - 1)) {
+		num = clk_name[sizeof(CLK_NAME_I2C) - 1] - '0';
+		bmcu_cru_i2c_en(num);
 
 		return 0;
 	}
