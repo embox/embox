@@ -15,6 +15,10 @@ PKG_PATCHES_v7.11.0 :=
 PKG_MD5_v8.1.0     := 2e2ce43854ab77ade4f6af0d4b175b0b
 PKG_PATCHES_v8.1.0 := patch-8.1.0.txt
 
+#PKG_VER := v9.2.2
+PKG_MD5_v9.2.2     := ccbb8f8fb5a320c0bc4ab9ccfaecfe5c
+PKG_PATCHES_v9.2.2 := #patch-9.2.2.txt
+
 PKG_PATCHES := $(PKG_PATCHES_$(PKG_VER))
 PKG_MD5     := $(PKG_MD5_$(PKG_VER))
 
@@ -39,5 +43,5 @@ $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/include
 	cp $(PKG_SOURCE_DIR)/*.h $(PKG_INSTALL_DIR)/include
 	cp -r $(PKG_SOURCE_DIR)/src $(PKG_INSTALL_DIR)/include
-	cp $(PKG_SOURCE_DIR)/build/liblvgl.a $(PKG_INSTALL_DIR)/bin
+	cp $(PKG_SOURCE_DIR)/build/lib/liblvgl.a $(PKG_INSTALL_DIR)/bin
 	touch $@
