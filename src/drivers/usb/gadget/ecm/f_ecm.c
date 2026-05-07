@@ -39,14 +39,14 @@ static int ecm_probe(struct usb_gadget *gadget);
 
 /* IAD descriptor */
 static const uint8_t iad_descriptor[8] = {
-    0x08,                      /*    bLength */
-    0x0B,                      /*    bDescriptorType */
-    0x00,                      /*    bFirstInterface */
-    0x02,                      /*    bInterfaceCount */
-    USB_CLASS_COMM,            /*    bFunctionClass  */
-    USB_CDC_SUBCLASS_ETHERNET, /*    bFunctionSubClass */
-    0x00,                      /*    bFunctionProtocol */
-    ECM_STR_CONFIGURATION      /*    iFunction   "RNDIS" */
+    0x08,                          /*    bLength */
+    USB_DESC_TYPE_INTERFACE_ASSOC, /*    bDescriptorType */
+    0x00,                          /*    bFirstInterface */
+    0x02,                          /*    bInterfaceCount */
+    USB_CLASS_COMM,                /*    bFunctionClass  */
+    USB_CDC_SUBCLASS_ETHERNET,     /*    bFunctionSubClass */
+    0x00,                          /*    bFunctionProtocol */
+    ECM_STR_CONFIGURATION          /*    iFunction   "RNDIS" */
 };
 
 static struct usb_desc_endpoint int_ep_desc = {
