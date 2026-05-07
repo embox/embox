@@ -95,10 +95,18 @@ const uint8_t mouse_cursor_icon_map[] = {
 };
 
 lv_img_dsc_t mouse_cursor_icon = {
+#if LVGL_VERSION_MAJOR < 9
     .header.always_zero = 0,
     .header.w = 14,
     .header.h = 20,
     .data_size = 280 * LV_IMG_PX_SIZE_ALPHA_BYTE,
     .header.cf = LV_IMG_CF_TRUE_COLOR_ALPHA,
+#else
+    .header.magic = LV_IMAGE_HEADER_MAGIC,
+    .header.w = 14,
+    .header.h = 20,
+    .data_size = 280 * 4,
+    .header.cf = LV_COLOR_FORMAT_ARGB8888,
+#endif
     .data = mouse_cursor_icon_map,
 };
