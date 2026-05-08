@@ -17,7 +17,7 @@ PKG_PATCHES_v8.1.0 := patch-8.1.0.txt
 
 #PKG_VER := v9.2.2
 PKG_MD5_v9.2.2     := ccbb8f8fb5a320c0bc4ab9ccfaecfe5c
-PKG_PATCHES_v9.2.2 := #patch-9.2.2.txt
+PKG_PATCHES_v9.2.2 := patch-9.2.2.txt
 
 PKG_PATCHES := $(PKG_PATCHES_$(PKG_VER))
 PKG_MD5     := $(PKG_MD5_$(PKG_VER))
