@@ -32,6 +32,7 @@ static char *input_dev_path;
 static int input_is_mouse = 0;
 
 static lv_color_t *buf1_1;
+static lv_indev_t *mouse_indev;
 #if LVGL_VERSION_MAJOR == 7
 static lv_disp_buf_t disp_buf1;
 #elif LVGL_VERSION_MAJOR == 8
@@ -62,7 +63,6 @@ static void input_dev_touchscreen_handler(lv_timer_t *t) {
 static int hal_init(void) {
 #if LVGL_VERSION_MAJOR >= 9
 	lv_display_t *disp;
-	lv_indev_t *indev;
 
 	if (lvgl_port_fbdev_init(fb_path) < 0) {
 		fprintf(stderr, "Failed to init framebuffer %s\n", fb_path);
@@ -81,7 +81,7 @@ static int hal_init(void) {
 
 	lv_display_set_flush_cb(disp, lvgl_port_fbdev_flush);
 	lv_display_set_buffers(disp, buf1_1, NULL, hor * ver * 4,
-	    LV_DISPLAY_RENDER_MODE_PARTIAL);
+	    LV_DISPLAY_RENDER_MODE_FULL);
 
 	if (lvgl_port_input_dev_init(input_dev_path) < 0) {
 		fprintf(stderr, "Error open input device %s\n", input_dev_path);
@@ -89,17 +89,10 @@ static int hal_init(void) {
 		return -1;
 	}
 
-	indev = lv_indev_create();
-	lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
-	lv_indev_set_read_cb(indev, lvgl_port_input_dev_read);
-	lv_indev_set_display(indev, disp);
-
-	if (input_is_mouse) {
-		LV_IMG_DECLARE(mouse_cursor_icon);
-		lv_obj_t *cursor_obj = lv_image_create(lv_screen_active());
-		lv_image_set_src(cursor_obj, &mouse_cursor_icon);
-		lv_indev_set_cursor(indev, cursor_obj);
-	}
+	mouse_indev = lv_indev_create();
+	lv_indev_set_type(mouse_indev, LV_INDEV_TYPE_POINTER);
+	lv_indev_set_read_cb(mouse_indev, lvgl_port_input_dev_read);
+	lv_indev_set_display(mouse_indev, disp);
 
 	if (input_is_mouse) {
 		lv_timer_create(input_dev_mouse_handler, 10, NULL);
@@ -236,6 +229,15 @@ int main(int argc, char **argv) {
 	}
 
 	lv_demo_widgets();
+
+#if LVGL_VERSION_MAJOR >= 9
+	if (input_is_mouse) {
+		LV_IMG_DECLARE(mouse_cursor_icon);
+		lv_obj_t *cursor_obj = lv_image_create(lv_layer_sys());
+		lv_image_set_src(cursor_obj, &mouse_cursor_icon);
+		lv_indev_set_cursor(mouse_indev, cursor_obj);
+	}
+#endif
 
 	sys_timer_set(&timer, SYS_TIMER_PERIODIC, 50, lvgl_timer_handler, NULL);
 
