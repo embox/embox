@@ -177,9 +177,9 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	}
 	else if (mode
 	         & (GPIO_MODE_IN | GPIO_MODE_IN_PULL_UP | GPIO_MODE_IN_PULL_DOWN
-	             | GPIO_MODE_IN_SCHMITT | GPIO_MODE_INT_MODE_LEVEL0
-	             | GPIO_MODE_INT_MODE_LEVEL1 | GPIO_MODE_INT_MODE_RISING
-	             | GPIO_MODE_INT_MODE_FALLING)) {
+	             | GPIO_MODE_IN_SCHMITT | GPIO_MODE_INT_LEVEL0
+	             | GPIO_MODE_INT_LEVEL1 | GPIO_MODE_INT_RISING
+	             | GPIO_MODE_INT_FALLING)) {
 		bcm283x_gpio_pin_set_func(port, pins, GFInput);
 	}
 	else {
@@ -187,7 +187,7 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	}
 
 	// Synchornous rising edge
-	if (mode & GPIO_MODE_INT_MODE_RISING) {
+	if (mode & GPIO_MODE_INT_RISING) {
 		REGS_GPIO->re_detect_enable.data[port] |= pins;
 		REGS_GPIO->ev_detect_status.data[port] |= pins;
 	}
@@ -196,7 +196,7 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	}
 
 	// Synchornous falling edge
-	if (mode & GPIO_MODE_INT_MODE_FALLING) {
+	if (mode & GPIO_MODE_INT_FALLING) {
 		REGS_GPIO->fe_detect_enable.data[port] |= pins;
 		REGS_GPIO->ev_detect_status.data[port] |= pins;
 	}
@@ -205,7 +205,7 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	}
 
 	// Level Lo
-	if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
+	if (mode & GPIO_MODE_INT_LEVEL0) {
 		REGS_GPIO->lo_detect_enable.data[port] |= pins;
 		REGS_GPIO->ev_detect_status.data[port] |= pins;
 	}
@@ -214,7 +214,7 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	}
 
 	// Level Hi
-	if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
+	if (mode & GPIO_MODE_INT_LEVEL1) {
 		REGS_GPIO->hi_detect_enable.data[port] |= pins;
 		REGS_GPIO->ev_detect_status.data[port] |= pins;
 	}
@@ -224,7 +224,7 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 
 	// Async mode = no sampleing, synch = sampleing
 	// (kind of like a schmitt trigger in that debouncing happens)
-	if (mode & GPIO_MODE_IN_SCHMITT && mode & GPIO_MODE_INT_MODE_RISING) {
+	if (mode & GPIO_MODE_IN_SCHMITT && mode & GPIO_MODE_INT_RISING) {
 		REGS_GPIO->re_async_detect_enable.data[port] &= ~pins;
 	}
 	else {
@@ -233,7 +233,7 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 
 	// Async mode = no sampleing, synch = sampleing
 	// (kind of like a schmitt trigger in that debouncing happens)
-	if (mode & GPIO_MODE_IN_SCHMITT && mode & GPIO_MODE_INT_MODE_FALLING) {
+	if (mode & GPIO_MODE_IN_SCHMITT && mode & GPIO_MODE_INT_FALLING) {
 		REGS_GPIO->fe_async_detect_enable.data[port] &= ~pins;
 	}
 	else {
@@ -242,9 +242,9 @@ static int bcm283x_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 
 	// If no interrupt is requested, disable event interrupts
 	//
-	if (!(mode & GPIO_MODE_INT_MODE_LEVEL1 || mode & GPIO_MODE_INT_MODE_LEVEL0
-	        || mode & GPIO_MODE_INT_MODE_RISING
-	        || mode & GPIO_MODE_INT_MODE_FALLING)) {
+	if (!(mode & GPIO_MODE_INT_LEVEL1 || mode & GPIO_MODE_INT_LEVEL0
+	        || mode & GPIO_MODE_INT_RISING
+	        || mode & GPIO_MODE_INT_FALLING)) {
 		REGS_GPIO->ev_detect_status.data[port] &= ~pins;
 		REGS_GPIO->fe_async_detect_enable.data[port] &= ~pins;
 		REGS_GPIO->re_async_detect_enable.data[port] &= ~pins;

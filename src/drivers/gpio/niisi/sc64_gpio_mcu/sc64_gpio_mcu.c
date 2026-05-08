@@ -87,20 +87,20 @@ static int sc64_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	if (mode & (GPIO_MODE_INT_SECTION)) {
 		irq_mode = 0;
 
-		if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
+		if (mode & GPIO_MODE_INT_LEVEL0) {
 			irq_mode = REG_EVENT_IE | REG_EVENT_L0;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
+		else if (mode & GPIO_MODE_INT_LEVEL1) {
 			irq_mode = REG_EVENT_IE | REG_EVENT_L1;
 		}
-		else if ((mode & GPIO_MODE_INT_MODE_RISING)
-		         && (mode & GPIO_MODE_INT_MODE_FALLING)) {
+		else if ((mode & GPIO_MODE_INT_RISING)
+		         && (mode & GPIO_MODE_INT_FALLING)) {
 			irq_mode = REG_EVENT_IE | REG_EVENT_RF;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_RISING) {
+		else if (mode & GPIO_MODE_INT_RISING) {
 			irq_mode = REG_EVENT_IE | REG_EVENT_RE;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_FALLING) {
+		else if (mode & GPIO_MODE_INT_FALLING) {
 			irq_mode = REG_EVENT_IE | REG_EVENT_FE;
 		}
 
@@ -111,10 +111,10 @@ static int sc64_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 					event &= ~(uint8_t)0b1110;
 					event |= irq_mode;
 				}
-				if (mode & GPIO_MODE_IN_INT_EN) {
+				if (mode & GPIO_MODE_INT_EN) {
 					event |= REG_EVENT_IE;
 				}
-				if (mode & GPIO_MODE_IN_INT_DIS) {
+				if (mode & GPIO_MODE_INT_DIS) {
 					event &= ~(uint8_t)REG_EVENT_IE;
 				}
 				event |= REG_EVENT_ES;

@@ -104,16 +104,16 @@ static int sc64_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	if (mode & GPIO_MODE_INT_SECTION) {
 		irq_mode = -1;
 
-		if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
+		if (mode & GPIO_MODE_INT_LEVEL0) {
 			irq_mode = GPIO_IRQ_LOW;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
+		else if (mode & GPIO_MODE_INT_LEVEL1) {
 			irq_mode = GPIO_IRQ_HIGH;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_RISING) {
+		else if (mode & GPIO_MODE_INT_RISING) {
 			irq_mode = GPIO_IRQ_RISING;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_FALLING) {
+		else if (mode & GPIO_MODE_INT_FALLING) {
 			irq_mode = GPIO_IRQ_FALLING;
 		}
 
@@ -126,10 +126,10 @@ static int sc64_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 							isr &= ~(uint8_t)(0b11 << (4 + 2 * j));
 							isr |= (irq_mode << (4 + 2 * j));
 						}
-						if (mode & GPIO_MODE_IN_INT_EN) {
+						if (mode & GPIO_MODE_INT_EN) {
 							isr |= 0b0100 << j;
 						}
-						if (mode & GPIO_MODE_IN_INT_DIS) {
+						if (mode & GPIO_MODE_INT_DIS) {
 							isr &= ~(uint8_t)(0b100 << j);
 						}
 						isr |= (0b01 << j);

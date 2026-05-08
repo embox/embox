@@ -114,19 +114,19 @@ static int mik_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 		return res;
 	}
 
-	if ((mode & GPIO_MODE_INT_MODE_LEVEL0)
-	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {}
+	if ((mode & GPIO_MODE_INT_LEVEL0)
+	    || (mode & GPIO_MODE_INT_LEVEL1)) {}
 	else {}
 
-	if ((mode & GPIO_MODE_INT_MODE_RISING)
-	    && (mode & GPIO_MODE_INT_MODE_FALLING)) {}
+	if ((mode & GPIO_MODE_INT_RISING)
+	    && (mode & GPIO_MODE_INT_FALLING)) {}
 	else {}
 
-	if ((mode & GPIO_MODE_INT_MODE_RISING)
-	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {}
+	if ((mode & GPIO_MODE_INT_RISING)
+	    || (mode & GPIO_MODE_INT_LEVEL1)) {}
 	else {}
 
-	if (mode & GPIO_MODE_IN_INT_EN) {
+	if (mode & GPIO_MODE_INT_EN) {
 		mik_gpio_irq_en(gpio_reg, mask);
 	}
 

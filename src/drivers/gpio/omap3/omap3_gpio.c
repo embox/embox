@@ -35,7 +35,7 @@ static int omap3_gpio_setup_mode(unsigned int port, gpio_mask_t mask,
 
 	/* check if mode is incorrect */
 	if (((mode & GPIO_MODE_OUT_SECTION) && (mode & GPIO_MODE_IN_SECTION))
-	    || ((mode & GPIO_MODE_IN_INT_EN) && (mode & GPIO_MODE_IN_INT_DIS))) {
+	    || ((mode & GPIO_MODE_INT_EN) && (mode & GPIO_MODE_INT_DIS))) {
 		return -1;
 	}
 
@@ -48,24 +48,24 @@ static int omap3_gpio_setup_mode(unsigned int port, gpio_mask_t mask,
 	}
 
 	/* interrupt disable */
-	if (mode & GPIO_MODE_IN_INT_DIS) {
+	if (mode & GPIO_MODE_INT_DIS) {
 		/* clear front and level detect register, if you need */
-		if (mode & GPIO_MODE_INT_MODE_RISING) {
+		if (mode & GPIO_MODE_INT_RISING) {
 			l = gpio_reg_read(gpio_base, GPIO_RISINGDETECT);
 			gpio_reg_write(gpio_base, GPIO_RISINGDETECT, l & ~mask);
 		}
 
-		if (mode & GPIO_MODE_INT_MODE_FALLING) {
+		if (mode & GPIO_MODE_INT_FALLING) {
 			l = gpio_reg_read(gpio_base, GPIO_FALLINGDETECT);
 			gpio_reg_write(gpio_base, GPIO_FALLINGDETECT, l & ~mask);
 		}
 
-		if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
+		if (mode & GPIO_MODE_INT_LEVEL0) {
 			l = gpio_reg_read(gpio_base, GPIO_LEVELDETECT0);
 			gpio_reg_write(gpio_base, GPIO_LEVELDETECT0, l & ~mask);
 		}
 
-		if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
+		if (mode & GPIO_MODE_INT_LEVEL1) {
 			l = gpio_reg_read(gpio_base, GPIO_LEVELDETECT1);
 			gpio_reg_write(gpio_base, GPIO_LEVELDETECT1, l & ~mask);
 		}
@@ -77,24 +77,24 @@ static int omap3_gpio_setup_mode(unsigned int port, gpio_mask_t mask,
 	}
 
 	/* set interrupt mode, if needed */
-	if (mode & GPIO_MODE_INT_MODE_RISING) {
+	if (mode & GPIO_MODE_INT_RISING) {
 		gpio_reg_write(gpio_base, GPIO_RISINGDETECT, mask);
 	}
 
-	if (mode & GPIO_MODE_INT_MODE_FALLING) {
+	if (mode & GPIO_MODE_INT_FALLING) {
 		gpio_reg_write(gpio_base, GPIO_FALLINGDETECT, mask);
 	}
 
-	if (mode & GPIO_MODE_INT_MODE_LEVEL0) {
+	if (mode & GPIO_MODE_INT_LEVEL0) {
 		gpio_reg_write(gpio_base, GPIO_LEVELDETECT0, mask);
 	}
 
-	if (mode & GPIO_MODE_INT_MODE_LEVEL1) {
+	if (mode & GPIO_MODE_INT_LEVEL1) {
 		gpio_reg_write(gpio_base, GPIO_LEVELDETECT1, mask);
 	}
 
 	/* enable interrupt */
-	if (mode & GPIO_MODE_IN_INT_EN) {
+	if (mode & GPIO_MODE_INT_EN) {
 		gpio_reg_write(gpio_base, GPIO_IRQENABLE1, mask);
 	}
 

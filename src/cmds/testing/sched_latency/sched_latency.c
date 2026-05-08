@@ -84,7 +84,7 @@ int main(void) {
 
 	args.done = 0;
 
-	gpio_setup_mode(IN_PORT, IN_PIN_MASK, GPIO_MODE_INT_MODE_RISING);
+	gpio_setup_mode(IN_PORT, IN_PIN_MASK, GPIO_MODE_INT_RISING);
 	if (0 > gpio_irq_attach(IN_PORT, IN_PIN_MASK, irq_hnd, (void *)&args)) {
 		printf("couldn't attach IRQ for port(%d) pin(%d)\n",
 							IN_PORT, OPTION_GET(NUMBER,in_pin) );

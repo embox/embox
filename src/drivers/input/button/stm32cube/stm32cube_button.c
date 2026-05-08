@@ -52,7 +52,7 @@ static int stm32cube_bt_irq_hnd(unsigned int irq_nr, void *data) {
 }
 
 static int stm32cube_bt_start(struct input_dev *dev) {
-	gpio_setup_mode(USER_BUTTON_PORT, USER_BUTTON_PIN_MASK, GPIO_MODE_INT_MODE_RISING_FALLING);
+	gpio_setup_mode(USER_BUTTON_PORT, USER_BUTTON_PIN_MASK, GPIO_MODE_INT_RISING_FALLING);
 	if (0 > gpio_irq_attach(USER_BUTTON_PORT, USER_BUTTON_PIN_MASK, stm32cube_bt_irq_hnd, &stm32cube_bt_dev)) {
 		log_error("Failed to attach IRQ handler");
 		return -1;
