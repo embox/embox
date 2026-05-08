@@ -170,7 +170,7 @@ struct i2c_conf i2cs[] = {
 		.dev = {
 			.name = "I2C0",
 			.regs = {
-				REGMAP("BASE", (I2C1_BASE), 0x100),
+				REGMAP("BASE", (I2C0_BASE), 0x100),
 			},
 			.irqs = {
 				VAL("", CLIC_I2C0_IRQn),
@@ -181,6 +181,26 @@ struct i2c_conf i2cs[] = {
 			},
 			.clocks = {
 				VAL("I2C", "CLK_I2C0"),
+			}
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.name = "I2C1",
+		.dev = {
+			.name = "I2C1",
+			.regs = {
+				REGMAP("BASE", (I2C1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", CLIC_I2C1_IRQn),
+			},
+			.pins = {
+				PIN("SCL", GPIO_PORT_A, 12, 1),
+				PIN("SDA", GPIO_PORT_A, 13, 1),
+			},
+			.clocks = {
+				VAL("I2C", "CLK_I2C1"),
 			}
 		},
 	},

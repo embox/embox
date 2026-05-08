@@ -3,9 +3,12 @@ package embox.driver.i2c
 module i2c_designware {
 	option string log_level="LOG_ERR"
 
+	option boolean use_board_conf=false
+
 	source "i2c_designware.c"
 
 	depends embox.driver.i2c_core
+	@NoRuntime depends embox.device.pin_description
 }
 
 module i2c_designware_0 {
@@ -23,6 +26,7 @@ module i2c_designware_0 {
 module i2c_designware_1 {
 	option string log_level="LOG_ERR"
 
+	option boolean use_board_conf=false
 	option number base_addr=0xFFC05000
 	option number irq_num=191
 

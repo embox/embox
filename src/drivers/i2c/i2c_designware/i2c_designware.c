@@ -20,6 +20,10 @@
 #include "../i2c_priv.h"
 #include "i2c_designware.h"
 
+#include <framework/mod/options.h>
+
+#define  USE_BOARD_CONF OPTION_GET(BOOLEAN, use_board_conf)
+
 static uint32_t i2c_dw_read(struct i2c_dw_dev *dev, int offset) {
 	uint32_t value;
 
@@ -446,6 +450,7 @@ tx_aborted:
 static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 	uint32_t reg;
 
+#if !USE_BOARD_CONF
 	reg = i2c_dw_read(dev, I2C_DW_IC_COMP_TYPE);
 
 	/* This register should be equal to I2C_DW_IC_COMP_TYPE_VALUE,
@@ -462,6 +467,7 @@ static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 		    reg);
 		return -ENODEV;
 	}
+#endif
 
 	reg = i2c_dw_read(dev, I2C_DW_IC_COMP_PARAM_1);
 	dev->tx_fifo_depth = ((reg >> 16) & 0xff) + 1;
@@ -488,8 +494,41 @@ static int i2c_dw_hw_init(struct i2c_dw_dev *dev) {
 	return 0;
 }
 
+#if USE_BOARD_CONF
+
+#include <drivers/gpio.h>
+#include <drivers/pin_description.h>
+#include <config/board_config.h>
+
+extern int clk_enable(char *clk_name);
+
+int dw_i2c_pin_init(const struct i2c_bus *bus) {
+	if (bus->i2cb_pins) {
+		const struct pin_description *pin;
+
+		pin = &bus->i2cb_pins[I2C_BUS_PIN_SCL];
+		gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+		    GPIO_MODE_ALT_SET(pin->pd_func)
+		        | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
+
+		pin = &bus->i2cb_pins[I2C_BUS_PIN_SDA];
+		gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin),
+		    GPIO_MODE_ALT_SET(pin->pd_func)
+		        | GPIO_MODE_OUT_OPEN_DRAIN | GPIO_MODE_IN_PULL_UP);
+	}
+
+	clk_enable(CONF_I2C1_CLK_DEF_I2C);
+
+	return 0;
+}
+#endif
+
 static int i2c_dw_init(const struct i2c_bus *bus) {
 	struct i2c_dw_dev *dev;
+
+#if USE_BOARD_CONF
+	dw_i2c_pin_init(bus);
+#endif
 
 	dev = bus->i2cb_priv;
 
