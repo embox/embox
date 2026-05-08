@@ -14,11 +14,18 @@
 #include "lvgl.h"
 #if LVGL_VERSION_MAJOR == 7
 #include "lv_examples.h"
-#else
+#elif LVGL_VERSION_MAJOR == 8
 #include "lv_demo.h"
+#else
+#include "demos/lv_demos.h"
+#include "demos/widgets/lv_demo_widgets.h"
 #endif
 
+#if LVGL_VERSION_MAJOR >= 9
+#include "lvgl_port_v9.h"
+#else
 #include "lvgl_port.h"
+#endif
 
 static char *fb_path;
 static char *input_dev_path;
@@ -29,6 +36,7 @@ static lv_color_t *buf1_1;
 static lv_disp_buf_t disp_buf1;
 #elif LVGL_VERSION_MAJOR == 8
 static lv_disp_draw_buf_t disp_buf1;
+#elif LVGL_VERSION_MAJOR == 9
 #else
 #error "wrong LVGL version"
 #endif
@@ -52,6 +60,56 @@ static void input_dev_touchscreen_handler(lv_timer_t *t) {
 #endif
 
 static int hal_init(void) {
+#if LVGL_VERSION_MAJOR >= 9
+	lv_display_t *disp;
+	lv_indev_t *indev;
+
+	if (lvgl_port_fbdev_init(fb_path) < 0) {
+		fprintf(stderr, "Failed to init framebuffer %s\n", fb_path);
+		return -1;
+	}
+	disp = lv_display_create(640, 480);
+
+	int32_t hor = lv_display_get_horizontal_resolution(disp);
+	int32_t ver = lv_display_get_vertical_resolution(disp);
+	buf1_1 = malloc(hor * ver * 4);
+
+	if (!buf1_1) {
+		fprintf(stderr, "Error allocation buffer for LVGL display\n");
+		return -1;
+	}
+
+	lv_display_set_flush_cb(disp, lvgl_port_fbdev_flush);
+	lv_display_set_buffers(disp, buf1_1, NULL, hor * ver * 4,
+	    LV_DISPLAY_RENDER_MODE_PARTIAL);
+
+	if (lvgl_port_input_dev_init(input_dev_path) < 0) {
+		fprintf(stderr, "Error open input device %s\n", input_dev_path);
+		free(buf1_1);
+		return -1;
+	}
+
+	indev = lv_indev_create();
+	lv_indev_set_type(indev, LV_INDEV_TYPE_POINTER);
+	lv_indev_set_read_cb(indev, lvgl_port_input_dev_read);
+	lv_indev_set_display(indev, disp);
+
+	if (input_is_mouse) {
+		LV_IMG_DECLARE(mouse_cursor_icon);
+		lv_obj_t *cursor_obj = lv_image_create(lv_screen_active());
+		lv_image_set_src(cursor_obj, &mouse_cursor_icon);
+		lv_indev_set_cursor(indev, cursor_obj);
+	}
+
+	if (input_is_mouse) {
+		lv_timer_create(input_dev_mouse_handler, 10, NULL);
+	}
+	else {
+		lv_timer_create(input_dev_touchscreen_handler, 10, NULL);
+	}
+	return 0;
+
+#else
 	static lv_disp_drv_t disp_drv;
 	static lv_indev_drv_t indev_drv;
 	lv_indev_t *mouse_indev;
@@ -77,9 +135,9 @@ static int hal_init(void) {
 #if LVGL_VERSION_MAJOR == 7
 	disp_drv.buffer = &disp_buf1;
 #else
-    /*Set the resolution of the display*/
-    disp_drv.hor_res = LV_HOR_RES_MAX;
-    disp_drv.ver_res = LV_VER_RES_MAX;
+	/*Set the resolution of the display*/
+	disp_drv.hor_res = LV_HOR_RES_MAX;
+	disp_drv.ver_res = LV_VER_RES_MAX;
 	disp_drv.draw_buf = &disp_buf1;
 #endif
 	disp_drv.flush_cb = lvgl_port_fbdev_flush;
@@ -110,14 +168,12 @@ static int hal_init(void) {
 #if LVGL_VERSION_MAJOR == 7
 	if (input_is_mouse) {
 		lv_task_create(input_dev_mouse_handler, 10, LV_TASK_PRIO_HIGH, NULL);
-
 	} else {
 		lv_task_create(input_dev_touchscreen_handler, 10, LV_TASK_PRIO_HIGH, NULL);
 	}
 #else
 	if (input_is_mouse) {
 		lv_timer_create(input_dev_mouse_handler, 10, NULL);
-
 	} else {
 		lv_timer_create(input_dev_touchscreen_handler, 10, NULL);
 	}
@@ -127,11 +183,12 @@ static int hal_init(void) {
 err_free:
 	free(buf1_1);
 	return -1;
+#endif
 }
 
 static inline void lvgl_timer_handler(struct sys_timer *timer, void *param) {
-	(void) timer;
-	(void) param;
+	(void)timer;
+	(void)param;
 
 	lv_tick_inc(50);
 }
@@ -139,8 +196,7 @@ static inline void lvgl_timer_handler(struct sys_timer *timer, void *param) {
 static void print_usage(void) {
 	printf("Usage: lvgl_demo [-t] fb input_dev\n"
 	       "\t -t: Ifspecified, this means input device is touchscreen.\n"
-	       "\t     Othervice, it's mouse.\n"
-	);
+	       "\t     Othervice, it's mouse.\n");
 }
 
 int main(int argc, char **argv) {
