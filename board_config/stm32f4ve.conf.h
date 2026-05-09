@@ -180,8 +180,8 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_AF, AF7),
-				PIN("RX", GPIO_PORT_A, 10, GPIO_MODE_AF, AF7),
+				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_ALT, AF7),
+				PIN("RX", GPIO_PORT_A, 10, GPIO_MODE_ALT, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART1),
@@ -198,8 +198,8 @@ struct uart_conf uarts[] = {
 				VAL("", 38),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_AF, AF7),
-				PIN("RX", GPIO_PORT_A, 3, GPIO_MODE_AF, AF7),
+				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_ALT, AF7),
+				PIN("RX", GPIO_PORT_A, 3, GPIO_MODE_ALT, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART2),
@@ -216,8 +216,8 @@ struct uart_conf uarts[] = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_C, 6, GPIO_MODE_AF, AF8),
-				PIN("RX", GPIO_PORT_C, 7, GPIO_MODE_AF, AF8),
+				PIN("TX", GPIO_PORT_C, 6, GPIO_MODE_ALT, AF8),
+				PIN("RX", GPIO_PORT_C, 7, GPIO_MODE_ALT, AF8),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART6),
@@ -234,9 +234,9 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_B, 3, GPIO_MODE_AF, AF5),
-				PIN("MISO", GPIO_PORT_B, 4, GPIO_MODE_AF, AF5),
-				PIN("MOSI", GPIO_PORT_B, 5, GPIO_MODE_AF, AF5),
+				PIN("SCK",  GPIO_PORT_B, 3, GPIO_MODE_ALT, AF5),
+				PIN("MISO", GPIO_PORT_B, 4, GPIO_MODE_ALT, AF5),
+				PIN("MOSI", GPIO_PORT_B, 5, GPIO_MODE_ALT, AF5),
 				PIN("CS",   GPIO_PORT_B, 2, GPIO_MODE_OUT, NOAF),
 			},
 			.clocks = {
@@ -263,9 +263,9 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI2",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_B, 13, GPIO_MODE_AF, AF5),
-				PIN("MISO", GPIO_PORT_B, 14, GPIO_MODE_AF, AF5),
-				PIN("MOSI", GPIO_PORT_B, 15, GPIO_MODE_AF, AF5),
+				PIN("SCK",  GPIO_PORT_B, 13, GPIO_MODE_ALT, AF5),
+				PIN("MISO", GPIO_PORT_B, 14, GPIO_MODE_ALT, AF5),
+				PIN("MOSI", GPIO_PORT_B, 15, GPIO_MODE_ALT, AF5),
 				PIN("CS",   GPIO_PORT_B, 12, GPIO_MODE_OUT, NOAF),
 			},
 			.clocks = {
@@ -338,12 +338,12 @@ struct mmc_conf mmcs[] = {
 				VAL("DMA_TX", 69), /* DMA2_Stream6 */				
 			},
 			.pins = {
-				PIN("D0", GPIO_PORT_C, 8, GPIO_MODE_AF, AF12),
-				PIN("D1", GPIO_PORT_C, 9, GPIO_MODE_AF, AF12),
-				PIN("D2", GPIO_PORT_C, 10, GPIO_MODE_AF, AF12),
-				PIN("D3", GPIO_PORT_C, 11, GPIO_MODE_AF, AF12),
-				PIN("CK", GPIO_PORT_C, 12, GPIO_MODE_AF, AF12),
-				PIN("CMD", GPIO_PORT_D, 2, GPIO_MODE_AF, AF12),
+				PIN("D0", GPIO_PORT_C, 8, GPIO_MODE_ALT, AF12),
+				PIN("D1", GPIO_PORT_C, 9, GPIO_MODE_ALT, AF12),
+				PIN("D2", GPIO_PORT_C, 10, GPIO_MODE_ALT, AF12),
+				PIN("D3", GPIO_PORT_C, 11, GPIO_MODE_ALT, AF12),
+				PIN("CK", GPIO_PORT_C, 12, GPIO_MODE_ALT, AF12),
+				PIN("CMD", GPIO_PORT_D, 2, GPIO_MODE_ALT, AF12),
 
 			},
 			.clocks = {

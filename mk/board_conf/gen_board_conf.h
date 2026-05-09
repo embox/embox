@@ -15,7 +15,7 @@ struct field_reg_map {
 	const char *len;
 };
 
-#define GPIO_MODE_AF    0x00000001
+#define GPIO_MODE_ALT    0x00000001
 #define GPIO_MODE_IN    0x00000002
 #define GPIO_MODE_OUT   0x00000004
 

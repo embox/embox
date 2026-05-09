@@ -134,8 +134,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART1_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_B, 0, GPIO_MODE_AF, 1),
-				PIN("RX", GPIO_PORT_B, 1, GPIO_MODE_AF, 1),
+				PIN("TX", GPIO_PORT_B, 0, GPIO_MODE_ALT, 1),
+				PIN("RX", GPIO_PORT_B, 1, GPIO_MODE_ALT, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART1"),
@@ -155,8 +155,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART2_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 4, GPIO_MODE_AF, 1),
-				PIN("RX", GPIO_PORT_D, 5, GPIO_MODE_AF, 1),
+				PIN("TX", GPIO_PORT_D, 4, GPIO_MODE_ALT, 1),
+				PIN("RX", GPIO_PORT_D, 5, GPIO_MODE_ALT, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART2"),
@@ -176,8 +176,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART3_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 7, GPIO_MODE_AF, 1),
-				PIN("RX", GPIO_PORT_D, 6, GPIO_MODE_AF, 1),
+				PIN("TX", GPIO_PORT_D, 7, GPIO_MODE_ALT, 1),
+				PIN("RX", GPIO_PORT_D, 6, GPIO_MODE_ALT, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART3"),
@@ -197,8 +197,8 @@ struct uart_conf uarts[] = {
 				VAL("", MDR_UART4_IRQ),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_D, 9, GPIO_MODE_AF, 1),
-				PIN("RX", GPIO_PORT_D, 8, GPIO_MODE_AF, 1),
+				PIN("TX", GPIO_PORT_D, 9, GPIO_MODE_ALT, 1),
+				PIN("RX", GPIO_PORT_D, 8, GPIO_MODE_ALT, 1),
 			},
 			.clocks = {
 				VAL("", "CLK_UART4"),

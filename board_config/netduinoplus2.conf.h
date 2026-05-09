@@ -77,8 +77,8 @@ struct uart_conf uarts[] = {
 				VAL("", 37),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_B, 6, GPIO_MODE_AF, AF7),
-				PIN("RX", GPIO_PORT_B, 7, GPIO_MODE_AF, AF7),
+				PIN("TX", GPIO_PORT_B, 6, GPIO_MODE_ALT, AF7),
+				PIN("RX", GPIO_PORT_B, 7, GPIO_MODE_ALT, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART1),
@@ -95,8 +95,8 @@ struct uart_conf uarts[] = {
 				VAL("", 38),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_AF, AF7),
-				PIN("RX", GPIO_PORT_A, 3, GPIO_MODE_AF, AF7),
+				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_ALT, AF7),
+				PIN("RX", GPIO_PORT_A, 3, GPIO_MODE_ALT, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART2),
@@ -113,8 +113,8 @@ struct uart_conf uarts[] = {
 				VAL("", 39),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_C, 10, GPIO_MODE_AF, AF7),
-				PIN("RX", GPIO_PORT_C, 11, GPIO_MODE_AF, AF7),
+				PIN("TX", GPIO_PORT_C, 10, GPIO_MODE_ALT, AF7),
+				PIN("RX", GPIO_PORT_C, 11, GPIO_MODE_ALT, AF7),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART3),
@@ -131,8 +131,8 @@ struct uart_conf uarts[] = {
 				VAL("", 52),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_A, 0, GPIO_MODE_AF, AF8),
-				PIN("RX", GPIO_PORT_A, 1, GPIO_MODE_AF, AF8),
+				PIN("TX", GPIO_PORT_A, 0, GPIO_MODE_ALT, AF8),
+				PIN("RX", GPIO_PORT_A, 1, GPIO_MODE_ALT, AF8),
 			},
 			.clocks = {
 				VAL("UART", CLK_UART4),
@@ -149,8 +149,8 @@ struct uart_conf uarts[] = {
 				VAL("", 53),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_C, 12, GPIO_MODE_AF, AF8),
-				PIN("RX", GPIO_PORT_D, 2, GPIO_MODE_AF, AF8),
+				PIN("TX", GPIO_PORT_C, 12, GPIO_MODE_ALT, AF8),
+				PIN("RX", GPIO_PORT_D, 2, GPIO_MODE_ALT, AF8),
 			},
 			.clocks = {
 				VAL("UART", CLK_UART5),
@@ -167,8 +167,8 @@ struct uart_conf uarts[] = {
 				VAL("", 71),
 			},
 			.pins = {
-				PIN("TX", GPIO_PORT_C, 6, GPIO_MODE_AF, AF8),
-				PIN("RX", GPIO_PORT_C, 7, GPIO_MODE_AF, AF8),
+				PIN("TX", GPIO_PORT_C, 6, GPIO_MODE_ALT, AF8),
+				PIN("RX", GPIO_PORT_C, 7, GPIO_MODE_ALT, AF8),
 			},
 			.clocks = {
 				VAL("UART", CLK_USART6),
@@ -185,9 +185,9 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI1",
 			.pins = {
-				PIN("SCK", GPIO_PORT_A, 5, GPIO_MODE_AF, AF5),
-				PIN("MISO", GPIO_PORT_A, 6, GPIO_MODE_AF, AF5),
-				PIN("MOSI", GPIO_PORT_A, 7, GPIO_MODE_AF, AF5),
+				PIN("SCK", GPIO_PORT_A, 5, GPIO_MODE_ALT, AF5),
+				PIN("MISO", GPIO_PORT_A, 6, GPIO_MODE_ALT, AF5),
+				PIN("MOSI", GPIO_PORT_A, 7, GPIO_MODE_ALT, AF5),
 				PIN("CS",   GPIO_PORT_C, 13, GPIO_MODE_OUT, NOAF),
 			},
 			.clocks = {
@@ -214,9 +214,9 @@ struct spi_conf spis[] = {
 		.dev = {
 			.name = "SPI2",
 			.pins = {
-				PIN("SCK",  GPIO_PORT_B, 13, GPIO_MODE_AF, AF5),
-				PIN("MISO", GPIO_PORT_B, 14, GPIO_MODE_AF, AF5),
-				PIN("MOSI", GPIO_PORT_B, 15, GPIO_MODE_AF, AF5),
+				PIN("SCK",  GPIO_PORT_B, 13, GPIO_MODE_ALT, AF5),
+				PIN("MISO", GPIO_PORT_B, 14, GPIO_MODE_ALT, AF5),
+				PIN("MOSI", GPIO_PORT_B, 15, GPIO_MODE_ALT, AF5),
 				PIN("CS",   GPIO_PORT_C, 14, GPIO_MODE_OUT, NOAF),
 			},
 			.clocks = {
@@ -253,8 +253,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 32),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_B, 8, GPIO_MODE_AF, AF4),
-				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_AF, AF4),
+				PIN("SCL", GPIO_PORT_B, 8, GPIO_MODE_ALT, AF4),
+				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_ALT, AF4),
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C1),
@@ -274,8 +274,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 34),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_F, 0, GPIO_MODE_AF, AF4),
-				PIN("SDA", GPIO_PORT_F, 1, GPIO_MODE_AF, AF4),
+				PIN("SCL", GPIO_PORT_F, 0, GPIO_MODE_ALT, AF4),
+				PIN("SDA", GPIO_PORT_F, 1, GPIO_MODE_ALT, AF4),
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C2),
@@ -295,8 +295,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 73),
 			},
 			.pins = {
-				PIN("SCL", GPIO_PORT_H, 4, GPIO_MODE_AF, AF4),
-				PIN("SDA", GPIO_PORT_H, 5, GPIO_MODE_AF, AF4),
+				PIN("SCL", GPIO_PORT_H, 4, GPIO_MODE_ALT, AF4),
+				PIN("SDA", GPIO_PORT_H, 5, GPIO_MODE_ALT, AF4),
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C3),
