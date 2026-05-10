@@ -32,7 +32,9 @@ static char *input_dev_path;
 static int input_is_mouse = 0;
 
 static lv_color_t *buf1_1;
+#if LVGL_VERSION_MAJOR >= 9
 static lv_indev_t *mouse_indev;
+#endif
 #if LVGL_VERSION_MAJOR == 7
 static lv_disp_buf_t disp_buf1;
 #elif LVGL_VERSION_MAJOR == 8

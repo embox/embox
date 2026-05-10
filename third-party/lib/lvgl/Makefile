@@ -43,5 +43,9 @@ $(INSTALL) :
 	mkdir -p $(PKG_INSTALL_DIR)/include
 	cp $(PKG_SOURCE_DIR)/*.h $(PKG_INSTALL_DIR)/include
 	cp -r $(PKG_SOURCE_DIR)/src $(PKG_INSTALL_DIR)/include
+ifeq ($(filter v9.%,$(PKG_VER)),$(PKG_VER))
 	cp $(PKG_SOURCE_DIR)/build/lib/liblvgl.a $(PKG_INSTALL_DIR)/bin
+else
+	cp $(PKG_SOURCE_DIR)/build/liblvgl.a $(PKG_INSTALL_DIR)/bin
+endif
 	touch $@
