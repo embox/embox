@@ -1,0 +1,11 @@
+diff -aur ./lvgl-9.2.2/CMakeLists.txt ../lvgl-9.2.2/CMakeLists.txt
+--- ./lvgl-9.2.2/CMakeLists.txt	2024-10-30 10:14:36.000000000 +0300
++++ ../lvgl-9.2.2/CMakeLists.txt	2026-04-27 17:44:06.170303200 +0300
+@@ -1,7 +1,6 @@
+ cmake_minimum_required(VERSION 3.12.4)
+ 
+ set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+-
+ if(NOT ESP_PLATFORM)
+   if(NOT (CMAKE_C_COMPILER_ID STREQUAL "MSVC"))
+     project(lvgl LANGUAGES C CXX ASM HOMEPAGE_URL https://github.com/lvgl/lvgl)
