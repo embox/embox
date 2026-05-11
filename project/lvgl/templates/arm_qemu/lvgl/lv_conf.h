@@ -67,7 +67,7 @@
 #define LV_DISP_LARGE_LIMIT  70
 
 /* Type of coordinates. Should be `int16_t` (or `int32_t` for extreme cases) */
-typedef int16_t lv_coord_t;
+typedef int32_t lv_coord_t;
 
 /*=========================
    Memory manager settings
@@ -760,7 +760,10 @@ typedef void * lv_obj_user_data_t;
 #endif
 
 /*--END OF LV_CONF_H--*/
-
+/* v9 demo options */
+#if LVGL_VERSION_MAJOR >= 9
+#define LV_USE_DEMO_WIDGETS 1
+#endif
 #endif /*LV_CONF_H*/
 
 #endif /*End of "Content enable"*/

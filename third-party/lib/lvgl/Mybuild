@@ -37,3 +37,25 @@ static module lvgl_input_dev_port {
 
 	source "input_dev_port.c"
 }
+
+@BuildDepends(lvgl)
+static module lvgl_display_port_memcpy_v9 extends lvgl_display_port_api {
+    option string log_level="LOG_ERR"
+    source "display_port.c",
+           "display_port_memcpy_v9.c"
+}
+
+@BuildDepends(lvgl)
+@BuildDepends(third_party.bsp.st_bsp_api)
+static module lvgl_display_port_stm32_v9 extends lvgl_display_port_api {
+    option string log_level="LOG_ERR"
+    source "display_port.c",
+           "display_port_stm32_v9.c"
+    @NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(lvgl)
+static module lvgl_input_dev_port_v9 {
+    option string log_level="LOG_ERR"
+    source "input_dev_port_v9.c"
+}
