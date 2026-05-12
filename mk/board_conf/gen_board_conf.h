@@ -15,16 +15,12 @@ struct field_reg_map {
 	const char *len;
 };
 
-#define GPIO_MODE_ALT    0x00000001
-#define GPIO_MODE_IN    0x00000002
-#define GPIO_MODE_OUT   0x00000004
-
 struct field_pin {
-	const char *name;
-	const char *port;
-	const char *n;
-	uint32_t flags;
-	const char *af;
+	const char       *name;
+	const char       *port;
+	const char       *n;
+	struct field_int  flags;
+	const char       *af;
 };
 
 struct device_conf {
@@ -241,7 +237,7 @@ struct lcd_conf {
 #define PIN(_name, _gpio, _n, _flags, _af) \
 	{ .name = _name, \
 		.port = MACRO_STRING(_gpio), .n = MACRO_STRING(_n), \
-		.flags = _flags,        \
+		.flags = VAL("", _flags),        \
 		.af = MACRO_STRING(_af) \
 	}
 

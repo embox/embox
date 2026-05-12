@@ -109,7 +109,7 @@ static int gen_field_func(const char *dev_name, const char *prop_name,
 
 static int gen_field_pin(const char *dev_name, const char *prop_name,
     const struct field_pin *f) {
-	char buf[128];
+	char buf[512];
 	char def[64];
 
 	if (!f->name) {
@@ -125,11 +125,8 @@ static int gen_field_pin(const char *dev_name, const char *prop_name,
 	printf("%s\n", buf);
 
 	sprintf(def, "#define CONF_%s_%s_%s_MODE", dev_name, prop_name, f->name);
-	sprintf(buf, "%-50s %u", def, f->flags);
+	sprintf(buf, "%-50s %s", def, f->flags.val);
 	printf("%s\n", buf);
-
-	// sprintf(buf, "%s_MODE", prop_name);
-	// gen_prop_ival(dev_name, buf, f->flags);
 
 	sprintf(def, "#define CONF_%s_%s_%s_AF", dev_name, prop_name, f->name);
 	sprintf(buf, "%-50s %s", def, f->af);
