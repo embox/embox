@@ -177,15 +177,15 @@ static int stm32_i2c_master_xfer(const struct i2c_bus *bus,
 	assert(priv->i2c_handle);
 
 	for (i = 0; i < num_msgs; i++) {
-		if (stm32_i2c_current_slave_addr(priv) != msgs->addr) {
-			stm32_i2c_slave_select(priv, msgs->addr);
+		if (stm32_i2c_current_slave_addr(priv) != msgs[i].addr) {
+			stm32_i2c_slave_select(priv, msgs[i].addr);
 		}
 
 		if (msgs[i].flags & I2C_M_RD) {
-			res = stm32_i2c_rx(priv, msgs->addr, msgs->buf, msgs->len);
+			res = stm32_i2c_rx(priv, msgs[i].addr, msgs[i].buf, msgs[i].len);
 		}
 		else {
-			res = stm32_i2c_tx(priv, msgs->addr, msgs->buf, msgs->len);
+			res = stm32_i2c_tx(priv, msgs[i].addr, msgs[i].buf, msgs[i].len);
 		}
 	}
 
