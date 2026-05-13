@@ -247,24 +247,24 @@ static int niiet_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 		return res;
 	}
 
-	if ((mode & GPIO_MODE_INT_MODE_LEVEL0)
-	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {
+	if ((mode & GPIO_MODE_INT_LEVEL0)
+	    || (mode & GPIO_MODE_INT_LEVEL1)) {
 		type = 0;
 	}
 	else {
 		type = 1;
 	}
 
-	if ((mode & GPIO_MODE_INT_MODE_RISING)
-	    && (mode & GPIO_MODE_INT_MODE_FALLING)) {
+	if ((mode & GPIO_MODE_INT_RISING)
+	    && (mode & GPIO_MODE_INT_FALLING)) {
 		edge = 1;
 	}
 	else {
 		edge = 0;
 	}
 
-	if ((mode & GPIO_MODE_INT_MODE_RISING)
-	    || (mode & GPIO_MODE_INT_MODE_LEVEL1)) {
+	if ((mode & GPIO_MODE_INT_RISING)
+	    || (mode & GPIO_MODE_INT_LEVEL1)) {
 		pol = 1;
 	}
 	else {
@@ -275,7 +275,7 @@ static int niiet_gpio_setup_irq(int port, uint32_t mask, uint32_t mode) {
 	niiet_gpio_irq_conf_edge(gpio_reg, mask, edge);
 	niiet_gpio_irq_conf_type(gpio_reg, mask, type);
 
-	if (mode & GPIO_MODE_IN_INT_EN) {
+	if (mode & GPIO_MODE_INT_EN) {
 		niiet_gpio_irq_en(gpio_reg, mask);
 	}
 

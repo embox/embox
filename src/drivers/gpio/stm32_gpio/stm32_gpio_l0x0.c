@@ -216,17 +216,17 @@ static int stm32_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 
 		reset_exti_interrupt(port, pins);
 	}
-	else if (mode & GPIO_MODE_INT_MODE_RISING_FALLING) {
-		if ((mode & GPIO_MODE_INT_MODE_RISING_FALLING)
-		    == GPIO_MODE_INT_MODE_RISING_FALLING) {
+	else if (mode & GPIO_MODE_INT_RISING_FALLING) {
+		if ((mode & GPIO_MODE_INT_RISING_FALLING)
+		    == GPIO_MODE_INT_RISING_FALLING) {
 			set_gpio_it_rising(pins);
 			set_gpio_it_falling(pins);
 		}
-		else if (mode & GPIO_MODE_INT_MODE_RISING) {
+		else if (mode & GPIO_MODE_INT_RISING) {
 			set_gpio_it_rising(pins);
 			reset_gpio_it_falling(pins);
 		}
-		else if (mode & GPIO_MODE_INT_MODE_FALLING) {
+		else if (mode & GPIO_MODE_INT_FALLING) {
 			reset_gpio_it_rising(pins);
 			set_gpio_it_falling(pins);
 		}

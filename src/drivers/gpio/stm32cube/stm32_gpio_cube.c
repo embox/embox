@@ -198,15 +198,15 @@ static int stm32_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 			GPIO_InitStruct.Pull = GPIO_PULLDOWN;
 		}
 	}
-	else if (mode & GPIO_MODE_INT_MODE_RISING_FALLING) {
-		if ((mode & GPIO_MODE_INT_MODE_RISING_FALLING)
-		    == GPIO_MODE_INT_MODE_RISING_FALLING) {
+	else if (mode & GPIO_MODE_INT_RISING_FALLING) {
+		if ((mode & GPIO_MODE_INT_RISING_FALLING)
+		    == GPIO_MODE_INT_RISING_FALLING) {
 			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING_FALLING;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_RISING) {
+		else if (mode & GPIO_MODE_INT_RISING) {
 			GPIO_InitStruct.Mode = GPIO_MODE_IT_RISING;
 		}
-		else if (mode & GPIO_MODE_INT_MODE_FALLING) {
+		else if (mode & GPIO_MODE_INT_FALLING) {
 			GPIO_InitStruct.Mode = GPIO_MODE_IT_FALLING;
 		}
 	}

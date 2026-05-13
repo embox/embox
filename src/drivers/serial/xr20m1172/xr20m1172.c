@@ -125,7 +125,7 @@ static int xr20m1172_setup(struct uart *dev, const struct uart_params *params) {
 	    dev);
 
 	gpio_setup_mode(GPIO_IRQ_PORT, 1 << GPIO_IRQ_PIN,
-	    GPIO_MODE_IN | GPIO_MODE_INT_EN | GPIO_MODE_INT_MODE_FALLING);
+	    GPIO_MODE_IN | GPIO_MODE_INT_EN | GPIO_MODE_INT_FALLING);
 
 	UART_REG_ORIN(UART_IER, UART_IER_DR);
 

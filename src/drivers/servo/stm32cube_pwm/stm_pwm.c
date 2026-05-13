@@ -6,14 +6,20 @@
  * @date 2016-04-04
  */
 
+
+
 /* Read "servo.h" for details of how servo actually works */
+#include <util/log.h>
 
 #include <string.h>
+
 #include <hal/reg.h>
+
+#include <drivers/gpio.h>
+
 #include <drivers/servo/servo.h>
-#include <drivers/servo/stm32_servo_conf.h>
-#include <util/log.h>
-#include <kernel/printk.h>
+
+#include <bsp/stm32cube_hal.h>
 
 #include <config/board_config.h>
 
@@ -26,6 +32,7 @@ static TIM_OC_InitTypeDef sConfig;
  * @return Zero. Code is too simple for considering any errors
  */
 static int stm32_pwm_init(void) {
+#if 0
 	CONF_PWM0_CLK_ENABLE_GPIO();
 
 	GPIO_InitTypeDef PORT;
@@ -36,6 +43,12 @@ static int stm32_pwm_init(void) {
 	PORT.Speed = GPIO_SPEED_FREQ_HIGH;
 	PORT.Alternate = CONF_PWM0_PIN_TIM_AF;
 	HAL_GPIO_Init(CONF_PWM0_PIN_TIM_PORT, &PORT);
+#else
+	gpio_setup_mode(CONF_PWM0_PIN_TIM_PORT, 1 << CONF_PWM0_PIN_TIM_NR,
+	    GPIO_MODE_ALT_SET(CONF_PWM0_PIN_TIM_AF) | GPIO_MODE_OUT_PUSH_PULL
+	        | GPIO_MODE_IN_PULL_UP);
+
+#endif
 
 	CONF_PWM0_CLK_ENABLE_TIM();
         memset(&TimHandle, 0, sizeof(TimHandle));

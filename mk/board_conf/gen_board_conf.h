@@ -16,10 +16,11 @@ struct field_reg_map {
 };
 
 struct field_pin {
-	const char *name;
-	const char *port;
-	const char *n;
-	const char *af;
+	const char       *name;
+	const char       *port;
+	const char       *n;
+	struct field_int  flags;
+	const char       *af;
 };
 
 struct device_conf {
@@ -49,7 +50,7 @@ struct fpioa_conf {
 struct clk_conf {
 	int status;
 	struct device_conf dev;
-	struct field_int type[16];
+	struct field_int type[32];
 
 };
 
@@ -233,8 +234,11 @@ struct lcd_conf {
 #define REGMAP(_name, _addr, _len) \
 	{ .name = _name, .baseaddr = MACRO_STRING(_addr), .len = MACRO_STRING(_len) }
 
-#define PIN(_name, _gpio, _n, _af) \
-	{ .name = _name, .port = MACRO_STRING(_gpio), .n = MACRO_STRING(_n), \
-		.af = MACRO_STRING(_af) }
+#define PIN(_name, _gpio, _n, _flags, _af) \
+	{ .name = _name, \
+		.port = MACRO_STRING(_gpio), .n = MACRO_STRING(_n), \
+		.flags = VAL("", _flags),        \
+		.af = MACRO_STRING(_af) \
+	}
 
 #endif /* GEN_BOARD_CONF_H_ */

@@ -66,18 +66,18 @@ static int k1921vk035_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	k1921vk035_gpio_int_setup(port);
 
 	GPIO_IntType_TypeDef GPIO_IntType =
-	    ((mode & GPIO_MODE_INT_MODE_LEVEL0)
-	                || (mode & GPIO_MODE_INT_MODE_LEVEL1)
+	    ((mode & GPIO_MODE_INT_LEVEL0)
+	                || (mode & GPIO_MODE_INT_LEVEL1)
 	            ? GPIO_IntType_Level
 	            : GPIO_IntType_Edge);
 	GPIO_IntEdge_TypeDef GPIO_IntEdge =
-	    (((mode & GPIO_MODE_INT_MODE_RISING)
-	         && (mode & GPIO_MODE_INT_MODE_FALLING))
+	    (((mode & GPIO_MODE_INT_RISING)
+	         && (mode & GPIO_MODE_INT_FALLING))
 	            ? GPIO_IntEdge_Any
 	            : GPIO_IntEdge_Polarity);
-	GPIO_IntPol_TypeDef GPIO_IntPol = ((mode & GPIO_MODE_INT_MODE_RISING)
+	GPIO_IntPol_TypeDef GPIO_IntPol = ((mode & GPIO_MODE_INT_RISING)
 	                                           || (mode
-	                                               & GPIO_MODE_INT_MODE_LEVEL1)
+	                                               & GPIO_MODE_INT_LEVEL1)
 	                                       ? GPIO_IntPol_Positive
 	                                       : GPIO_IntPol_Negative);
 
@@ -85,8 +85,8 @@ static int k1921vk035_gpio_setup_mode(unsigned int port, gpio_mask_t pins,
 	GPIO_ITEdgeConfig(GPIO, pins, GPIO_IntEdge);
 	GPIO_ITTypeConfig(GPIO, pins, GPIO_IntType);
 
-	// XXX GPIO_MODE_IN_INT_DIS unused (default)
-	GPIO_ITCmd(GPIO, pins, (mode & GPIO_MODE_IN_INT_EN) != 0);
+	// XXX GPIO_MODE_INT_DIS unused (default)
+	GPIO_ITCmd(GPIO, pins, (mode & GPIO_MODE_INT_EN) != 0);
 
 	return 0;
 }

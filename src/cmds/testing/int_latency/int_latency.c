@@ -30,7 +30,7 @@ static int irq_hnd(unsigned int irq_nr, void *done) {
 int main(void) {
 	volatile int done;
 
-	gpio_setup_mode(IN_PORT, IN_PIN_MASK, GPIO_MODE_INT_MODE_RISING);
+	gpio_setup_mode(IN_PORT, IN_PIN_MASK, GPIO_MODE_INT_RISING);
 	if (0 > gpio_irq_attach(IN_PORT, IN_PIN_MASK, irq_hnd, (void *)&done)) {
 		printf("couldn't attach IRQ for port(%d) pin(%d)\n",
 							IN_PORT, OPTION_GET(NUMBER,in_pin) );

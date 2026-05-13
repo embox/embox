@@ -125,13 +125,13 @@ int main(int argc, char **argv) {
 		opt++;
 
 		if (!strcmp("rising", argv[opt])) {
-			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_MODE_RISING);
+			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_RISING);
 			expected = 1; /* Single rising IRQ */
 		} else if (!strcmp("falling", argv[opt])) {
-			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_MODE_FALLING);
+			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_FALLING);
 			expected = 1; /* Single falling IRQ */
 		} else if (!strcmp("both", argv[opt])) {
-			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_MODE_RISING_FALLING);
+			gpio_setup_mode(gpio, pin, GPIO_MODE_INT_RISING_FALLING);
 			expected = 2; /* One rising and one falling IRQs */
 		} else {
 			fprintf(stderr, "Unknown IRQ mode \"%s\"\n", argv[opt]);

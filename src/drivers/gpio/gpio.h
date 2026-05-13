@@ -33,7 +33,7 @@
 #define GPIO_MODE_IN_PULL_UP   (1 << 1)
 #define GPIO_MODE_IN_PULL_DOWN (1 << 2)
 #define GPIO_MODE_IN_SCHMITT   (1 << 3)
-#define GPIO_MODE_IN_ALTERNATE (1 << 4)
+
 
 /* GPIO_MODE_OUT_SECTION 8..15 */
 #define GPIO_MODE_OUT            (1 << 8)
@@ -42,26 +42,19 @@
 #define GPIO_MODE_VDD_LEVEL      (1 << 11)
 
 /* GPIO_MODE_ALT_SECTION 16..23 */
-#define GPIO_MODE_ALT_SET(func) (((0x7f & (func)) << 16) | (1 << 23))
-#define GPIO_MODE_ALT_GET(mode) (((mode) >> 16) & 0x7f)
+#define GPIO_MODE_ALT            (1 << 23)
+#define GPIO_MODE_ALT_SET(func)  (((0x7f & (func)) << 16) | (GPIO_MODE_ALT))
+#define GPIO_MODE_ALT_GET(mode)  (((mode) >> 16) & 0x7f)
 
 /* GPIO_MODE_INT_SECTION 24..31 */
-#define GPIO_MODE_INT_EN      (1 << 24)
-#define GPIO_MODE_INT_DIS     (1 << 25)
-#define GPIO_MODE_INT_RISING  (1 << 26)
-#define GPIO_MODE_INT_FALLING (1 << 27)
-#define GPIO_MODE_INT_LEVEL0  (1 << 28)
-#define GPIO_MODE_INT_LEVEL1  (1 << 29)
-#define GPIO_MODE_INT_RISING_FALLING
-
-#define GPIO_MODE_IN_INT_EN        (1 << 24)
-#define GPIO_MODE_IN_INT_DIS       (1 << 25)
-#define GPIO_MODE_INT_MODE_RISING  (1 << 26)
-#define GPIO_MODE_INT_MODE_FALLING (1 << 27)
-#define GPIO_MODE_INT_MODE_LEVEL0  (1 << 28)
-#define GPIO_MODE_INT_MODE_LEVEL1  (1 << 29)
-#define GPIO_MODE_INT_MODE_RISING_FALLING \
-	(GPIO_MODE_INT_MODE_RISING | GPIO_MODE_INT_MODE_FALLING)
+#define GPIO_MODE_INT_EN                (1 << 24)
+#define GPIO_MODE_INT_DIS               (1 << 25)
+#define GPIO_MODE_INT_RISING            (1 << 26)
+#define GPIO_MODE_INT_FALLING           (1 << 27)
+#define GPIO_MODE_INT_LEVEL0            (1 << 28)
+#define GPIO_MODE_INT_LEVEL1            (1 << 29)
+#define GPIO_MODE_INT_RISING_FALLING    \
+			(GPIO_MODE_INT_RISING | GPIO_MODE_INT_FALLING)
 
 #define GPIO_PORT_A 0
 #define GPIO_PORT_B 1

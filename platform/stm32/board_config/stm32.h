@@ -1,6 +1,7 @@
 #ifndef STM32_H_
 #define STM32_H_
 
+#if 0
 #define PA     GPIOA
 #define PB     GPIOB
 #define PC     GPIOC
@@ -29,6 +30,7 @@
 #define PIN_13  GPIO_PIN_13
 #define PIN_14  GPIO_PIN_14
 #define PIN_15  GPIO_PIN_15
+#endif
 
 #define AF0    0x0
 #define AF1    0x1
