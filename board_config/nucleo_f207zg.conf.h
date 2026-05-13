@@ -48,7 +48,7 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE", (USART1_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", 37),
+				VAL("", USART1_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_ALT, AF7),
@@ -69,7 +69,7 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE", (USART2_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", 38),
+				VAL("", USART2_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_ALT, AF7),
@@ -90,7 +90,7 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE", (USART3_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", 39),
+				VAL("", USART3_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_D, 8, GPIO_MODE_ALT, AF7),
