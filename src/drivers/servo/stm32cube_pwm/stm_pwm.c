@@ -18,9 +18,8 @@
 #include <drivers/gpio.h>
 
 #include <drivers/servo/servo.h>
-#include <drivers/servo/stm32_servo_conf.h>
 
-//#include <kernel/printk.h>
+#include <bsp/stm32cube_hal.h>
 
 #include <config/board_config.h>
 
