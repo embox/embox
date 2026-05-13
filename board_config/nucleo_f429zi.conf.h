@@ -182,13 +182,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 32),
 			},
 			.pins = {
-<<<<<<< HEAD
 				PIN("SCL", GPIO_PORT_B, 8, GPIO_MODE_AF, AF4),
 				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_AF, AF4),
-=======
-				PIN("SCL", GPIO_PORT_B, 6, GPIO_MODE_ALT, AF4),
-				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_ALT, AF4),
->>>>>>> 498d1f2980 (board_config: Rn GPIO_MODE_AF -> GPIO_MODE_ALT)
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C1),
