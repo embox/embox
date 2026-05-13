@@ -1,0 +1,33 @@
+package embox.driver.servo
+
+
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f3_pwm {
+	source "stm_pwm.c"
+
+	@IncludeExport(path="drivers/servo", target_name="stm32_servo_conf.h")
+	source "stm32_servo_conf_f3.h"
+
+	depends servo
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f4_pwm {
+	source "stm_pwm.c"
+
+	@IncludeExport(path="drivers/servo", target_name="stm32_servo_conf.h")
+	source "stm32_servo_conf_f4.h"
+
+	depends servo
+	depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32f7_pwm {
+	source "stm32f7_pwm.c"
+
+	depends servo
+	depends third_party.bsp.st_bsp_api
+}
