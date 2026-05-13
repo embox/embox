@@ -68,10 +68,10 @@ struct pwm_conf pwms[] = {
 		.dev = {
 			.name = "PWM0",
 			.pins = {
-				PIN("TIM",  PD, PIN_4, GPIO_MODE_ALT, AF2),
+				PIN("TIM",  GPIO_PORT_D, 4, GPIO_MODE_ALT | GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP, AF2),
 			},
 			.clocks = {
-				VAL("GPIO",  CLK_GPIOD),
+				//VAL("GPIO",  CLK_GPIOD),
 				VAL("TIM",  CLK_TIM2),
 			}
 		},
