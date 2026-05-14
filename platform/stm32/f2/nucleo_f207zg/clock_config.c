@@ -7,6 +7,8 @@
 
 #include <bsp/stm32cube_hal.h>
 
+extern void stm32_sysclock_init(void);
+
 /**
   * @brief  System Clock Configuration
   *         The system Clock is configured as follow :
@@ -27,6 +29,7 @@
   * @retval None
   */
 void SystemClock_Config(void) {
+#if 0
 	RCC_ClkInitTypeDef RCC_ClkInitStruct;
 	RCC_OscInitTypeDef RCC_OscInitStruct;
 
@@ -50,4 +53,7 @@ void SystemClock_Config(void) {
 	RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
 	RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 	HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3);
+#else
+	stm32_sysclock_init();
+#endif
 }
