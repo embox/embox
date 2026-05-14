@@ -2,6 +2,27 @@
 #include <stm32.h>
 #include <stm32f2_chip.h>
 
+
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow :
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 120000000
+  *            HCLK(Hz)                       = 120000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 240
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 5
+  *            VDD(V)                         = 3.3
+  *            Flash Latency(WS)              = 3
+  * @param  None
+  * @retval None
+  */
+
 struct clk_conf clks[] = {
 	[0] = {
 		.status = ENABLED,
@@ -10,10 +31,22 @@ struct clk_conf clks[] = {
 			.regs = {
 				REGMAP("BASE", (RCC_BASE), 0x100),
 			},
-			
+			.clocks = {
+				VAL("SYSCLK_VAL",  120000000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  8),
+				VAL("PLL_N_VAL",  240),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  5),
+				VAL("FLASH_LATENCY", 3),
+			}
 		},
 		.type = {
-			VAL("", 0),
+			VAL("PLL", 1),
+			VAL("HSE", 1),
 		},
 	},
 };
