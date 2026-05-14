@@ -57,7 +57,7 @@ struct uart_conf uarts[] = {
 		.dev = {
 			.name = "USART2",
 			.irqs = {
-				VAL("", 38),
+				VAL("", USART2_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_ALT, AF7),
@@ -75,7 +75,7 @@ struct uart_conf uarts[] = {
 		.dev = {
 			.name = "USART3",
 			.irqs = {
-				VAL("", 39),
+				VAL("", USART3_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_D, 8, GPIO_MODE_ALT, AF7),
@@ -93,7 +93,7 @@ struct uart_conf uarts[] = {
 		.dev = {
 			.name = "USART6",
 			.irqs = {
-				VAL("", 71),
+				VAL("", USART6_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_G, 14, GPIO_MODE_ALT, AF8),
@@ -182,13 +182,8 @@ struct i2c_conf i2cs[] = {
 				VAL("ERROR", 32),
 			},
 			.pins = {
-<<<<<<< HEAD
 				PIN("SCL", GPIO_PORT_B, 8, GPIO_MODE_AF, AF4),
 				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_AF, AF4),
-=======
-				PIN("SCL", GPIO_PORT_B, 6, GPIO_MODE_ALT, AF4),
-				PIN("SDA", GPIO_PORT_B, 9, GPIO_MODE_ALT, AF4),
->>>>>>> 498d1f2980 (board_config: Rn GPIO_MODE_AF -> GPIO_MODE_ALT)
 			},
 			.clocks = {
 				VAL("I2C", CLK_I2C1),

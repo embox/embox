@@ -1,97 +1,27 @@
 #include <gen_board_conf.h>
 #include <stm32.h>
+#include <stm32f2_chip.h>
 
-#define PERIPH_BASE           0x40000000UL
 
-#define APB1PERIPH_BASE       (PERIPH_BASE)
-#define APB2PERIPH_BASE       (PERIPH_BASE + 0x00010000UL)
-#define AHB1PERIPH_BASE       (PERIPH_BASE + 0x00020000UL)
-#define AHB2PERIPH_BASE       (PERIPH_BASE + 0x10000000UL)
-
-/*!< APB1 peripherals */
-#define TIM2_BASE             (APB1PERIPH_BASE + 0x0000UL)
-#define TIM3_BASE             (APB1PERIPH_BASE + 0x0400UL)
-#define TIM4_BASE             (APB1PERIPH_BASE + 0x0800UL)
-#define TIM5_BASE             (APB1PERIPH_BASE + 0x0C00UL)
-#define TIM6_BASE             (APB1PERIPH_BASE + 0x1000UL)
-#define TIM7_BASE             (APB1PERIPH_BASE + 0x1400UL)
-#define TIM12_BASE            (APB1PERIPH_BASE + 0x1800UL)
-#define TIM13_BASE            (APB1PERIPH_BASE + 0x1C00UL)
-#define TIM14_BASE            (APB1PERIPH_BASE + 0x2000UL)
-#define RTC_BASE              (APB1PERIPH_BASE + 0x2800UL)
-#define WWDG_BASE             (APB1PERIPH_BASE + 0x2C00UL)
-#define IWDG_BASE             (APB1PERIPH_BASE + 0x3000UL)
-#define SPI2_BASE             (APB1PERIPH_BASE + 0x3800UL)
-#define SPI3_BASE             (APB1PERIPH_BASE + 0x3C00UL)
-#define USART2_BASE           (APB1PERIPH_BASE + 0x4400UL)
-#define USART3_BASE           (APB1PERIPH_BASE + 0x4800UL)
-#define UART4_BASE            (APB1PERIPH_BASE + 0x4C00UL)
-#define UART5_BASE            (APB1PERIPH_BASE + 0x5000UL)
-#define I2C1_BASE             (APB1PERIPH_BASE + 0x5400UL)
-#define I2C2_BASE             (APB1PERIPH_BASE + 0x5800UL)
-#define I2C3_BASE             (APB1PERIPH_BASE + 0x5C00UL)
-#define CAN1_BASE             (APB1PERIPH_BASE + 0x6400UL)
-#define CAN2_BASE             (APB1PERIPH_BASE + 0x6800UL)
-#define PWR_BASE              (APB1PERIPH_BASE + 0x7000UL)
-#define DAC_BASE              (APB1PERIPH_BASE + 0x7400UL)
-
-/*!< APB2 peripherals */
-#define TIM1_BASE             (APB2PERIPH_BASE + 0x0000UL)
-#define TIM8_BASE             (APB2PERIPH_BASE + 0x0400UL)
-#define USART1_BASE           (APB2PERIPH_BASE + 0x1000UL)
-#define USART6_BASE           (APB2PERIPH_BASE + 0x1400UL)
-#define ADC1_BASE             (APB2PERIPH_BASE + 0x2000UL)
-#define ADC2_BASE             (APB2PERIPH_BASE + 0x2100UL)
-#define ADC3_BASE             (APB2PERIPH_BASE + 0x2200UL)
-#define ADC123_COMMON_BASE    (APB2PERIPH_BASE + 0x2300UL)
-/* Legacy define */
-#define ADC_BASE               ADC123_COMMON_BASE
-
-#define SDIO_BASE             (APB2PERIPH_BASE + 0x2C00UL)
-#define SPI1_BASE             (APB2PERIPH_BASE + 0x3000UL)
-#define SYSCFG_BASE           (APB2PERIPH_BASE + 0x3800UL)
-#define EXTI_BASE             (APB2PERIPH_BASE + 0x3C00UL)
-#define TIM9_BASE             (APB2PERIPH_BASE + 0x4000UL)
-#define TIM10_BASE            (APB2PERIPH_BASE + 0x4400UL)
-#define TIM11_BASE            (APB2PERIPH_BASE + 0x4800UL)
-
-/*!< AHB1 peripherals */
-#define GPIOA_BASE            (AHB1PERIPH_BASE + 0x0000UL)
-#define GPIOB_BASE            (AHB1PERIPH_BASE + 0x0400UL)
-#define GPIOC_BASE            (AHB1PERIPH_BASE + 0x0800UL)
-#define GPIOD_BASE            (AHB1PERIPH_BASE + 0x0C00UL)
-#define GPIOE_BASE            (AHB1PERIPH_BASE + 0x1000UL)
-#define GPIOF_BASE            (AHB1PERIPH_BASE + 0x1400UL)
-#define GPIOG_BASE            (AHB1PERIPH_BASE + 0x1800UL)
-#define GPIOH_BASE            (AHB1PERIPH_BASE + 0x1C00UL)
-#define GPIOI_BASE            (AHB1PERIPH_BASE + 0x2000UL)
-#define CRC_BASE              (AHB1PERIPH_BASE + 0x3000UL)
-#define RCC_BASE              (AHB1PERIPH_BASE + 0x3800UL)
-#define FLASH_R_BASE          (AHB1PERIPH_BASE + 0x3C00UL)
-#define DMA1_BASE             (AHB1PERIPH_BASE + 0x6000UL)
-#define DMA1_Stream0_BASE     (DMA1_BASE + 0x010UL)
-#define DMA1_Stream1_BASE     (DMA1_BASE + 0x028UL)
-#define DMA1_Stream2_BASE     (DMA1_BASE + 0x040UL)
-#define DMA1_Stream3_BASE     (DMA1_BASE + 0x058UL)
-#define DMA1_Stream4_BASE     (DMA1_BASE + 0x070UL)
-#define DMA1_Stream5_BASE     (DMA1_BASE + 0x088UL)
-#define DMA1_Stream6_BASE     (DMA1_BASE + 0x0A0UL)
-#define DMA1_Stream7_BASE     (DMA1_BASE + 0x0B8UL)
-#define DMA2_BASE             (AHB1PERIPH_BASE + 0x6400UL)
-#define DMA2_Stream0_BASE     (DMA2_BASE + 0x010UL)
-#define DMA2_Stream1_BASE     (DMA2_BASE + 0x028UL)
-#define DMA2_Stream2_BASE     (DMA2_BASE + 0x040UL)
-#define DMA2_Stream3_BASE     (DMA2_BASE + 0x058UL)
-#define DMA2_Stream4_BASE     (DMA2_BASE + 0x070UL)
-#define DMA2_Stream5_BASE     (DMA2_BASE + 0x088UL)
-#define DMA2_Stream6_BASE     (DMA2_BASE + 0x0A0UL)
-#define DMA2_Stream7_BASE     (DMA2_BASE + 0x0B8UL)
-#define ETH_BASE              (AHB1PERIPH_BASE + 0x8000UL)
-#define ETH_MAC_BASE          (ETH_BASE)
-#define ETH_MMC_BASE          (ETH_BASE + 0x0100UL)
-#define ETH_PTP_BASE          (ETH_BASE + 0x0700UL)
-#define ETH_DMA_BASE          (ETH_BASE + 0x1000UL)
-
+/**
+  * @brief  System Clock Configuration
+  *         The system Clock is configured as follow :
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 120000000
+  *            HCLK(Hz)                       = 120000000
+  *            AHB Prescaler                  = 1
+  *            APB1 Prescaler                 = 4
+  *            APB2 Prescaler                 = 2
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLL_M                          = 8
+  *            PLL_N                          = 240
+  *            PLL_P                          = 2
+  *            PLL_Q                          = 5
+  *            VDD(V)                         = 3.3
+  *            Flash Latency(WS)              = 3
+  * @param  None
+  * @retval None
+  */
 
 struct clk_conf clks[] = {
 	[0] = {
@@ -101,10 +31,22 @@ struct clk_conf clks[] = {
 			.regs = {
 				REGMAP("BASE", (RCC_BASE), 0x100),
 			},
-			
+			.clocks = {
+				VAL("SYSCLK_VAL",  120000000UL),
+				VAL("HSECLK_VAL",  8000000UL),
+				VAL("AHB_PRESCALER_VAL",  1),
+				VAL("APB1_PRESCALER_VAL", 4),
+				VAL("APB2_PRESCALER_VAL", 2),
+				VAL("PLL_M_VAL",  8),
+				VAL("PLL_N_VAL",  240),
+				VAL("PLL_P_VAL",  2),
+				VAL("PLL_Q_VAL",  5),
+				VAL("FLASH_LATENCY", 3),
+			}
 		},
 		.type = {
-			VAL("", 0),
+			VAL("PLL", 1),
+			VAL("HSE", 1),
 		},
 	},
 };
@@ -139,7 +81,7 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE", (USART1_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", 37),
+				VAL("", USART1_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_ALT, AF7),
@@ -160,7 +102,7 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE", (USART2_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", 38),
+				VAL("", USART2_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_ALT, AF7),
@@ -181,7 +123,7 @@ struct uart_conf uarts[] = {
 				REGMAP("BASE", (USART3_BASE), 0x100),
 			},
 			.irqs = {
-				VAL("", 39),
+				VAL("", USART3_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_D, 8, GPIO_MODE_ALT, AF7),
@@ -297,5 +239,53 @@ struct i2c_conf i2cs[] = {
 
 };
 
+/* Ethernet pins configuration ************************************************/
+/*
+        RMII_REF_CLK ----------------------> PA1
+        RMII_MDIO -------------------------> PA2
+        RMII_MDC --------------------------> PC1
+        RMII_MII_CRS_DV -------------------> PA7
+        RMII_MII_RXD0 ---------------------> PC4
+        RMII_MII_RXD1 ---------------------> PC5
+        RMII_MII_RXER ---------------------> PG2
+        RMII_MII_TX_EN --------------------> PG11
+        RMII_MII_TXD0 ---------------------> PG13
+        RMII_MII_TXD1 ---------------------> PB13
+*/
+struct eth_conf eths[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "ETH",
+		.dev = {
+			.name = "ETH",
+			.regs = {
+				REGMAP("BASE", (ETH_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", ETH_IRQn),
+			},
+			.pins = {
+				PIN("RMII_REF_CLK",    GPIO_PORT_A, 1, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MDIO",       GPIO_PORT_A, 2, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MDC",        GPIO_PORT_C, 1, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_CRS_DV", GPIO_PORT_A, 7, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_RXD0",   GPIO_PORT_C, 4, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_RXD1",   GPIO_PORT_C, 5, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_RXER",   GPIO_PORT_G, 2, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_TX_EN",  GPIO_PORT_G, 11, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_TXD0",   GPIO_PORT_G, 13, GPIO_MODE_ALT, AF11),
+				PIN("RMII_MII_TXD1",   GPIO_PORT_B, 13, GPIO_MODE_ALT, AF11),
+			},
+			.clocks = {
+				VAL("ETH", STM32_CLK_ENABLE(ETH)),
+			},
+			.misc = {
+				VAL("PHY_ADDR", 0),
+				VAL("MEDIA_TYPE", RMII),
+			}
+		},
+	},
+};
+
 EXPORT_CONFIG(CLK(clks), GPIO(gpios),
-				UART(uarts), LED(leds), SPI(spis), I2C(i2cs))
+				UART(uarts), LED(leds), SPI(spis), I2C(i2cs), ETH(eths))

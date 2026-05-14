@@ -100,6 +100,8 @@ struct eth_conf {
 	int status;
 	const char *name;
 	struct device_conf dev;
+//	int phy_addr;
+//	int media_type;
 };
 
 struct conf_item {
@@ -145,7 +147,8 @@ struct lcd_conf {
 #define MMC_IDX     8
 #define DMA_IDX     9
 #define LCD_IDX     10
-#define MAX_IDX     11
+#define ETH_IDX     11
+#define MAX_IDX     12
 
 
 #define EXPORT_CONFIG(...) \
@@ -217,6 +220,12 @@ struct lcd_conf {
 	[LCD_IDX] = { \
 		(void *) &(lcds)[0], \
 		ARRAY_SIZE(lcds), \
+	}
+
+#define ETH(eth) \
+	[ETH_IDX] = { \
+		(void *) &(eths)[0], \
+		ARRAY_SIZE(eths), \
 	}
 
 

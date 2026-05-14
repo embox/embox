@@ -224,6 +224,8 @@ int main() {
 	const struct mmc_conf *mmc;
 	struct conf_item *lcd_conf = &board_config[LCD_IDX];
 	const struct lcd_conf *lcd;
+	struct conf_item *eth_conf = &board_config[ETH_IDX];
+	const struct eth_conf *eth;
 
 	config();
 
@@ -356,6 +358,19 @@ int main() {
 		}
 
 		gen_device_conf(&mmc->dev);
+
+		printf("\n");
+	}
+
+	/* ETH */
+	for (i = 0; i < eth_conf->array_size; i++) {
+		eth = &((const struct eth_conf *)eth_conf->ptr)[i];
+
+		if (eth->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&eth->dev);
 
 		printf("\n");
 	}

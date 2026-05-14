@@ -9,7 +9,7 @@ struct uart_conf uarts[] = {
 		.dev = {
 			.name = "USART1",
 			.irqs = {
-				VAL("", 37),
+				VAL("", USART1_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 9, GPIO_MODE_ALT, AF7),
@@ -27,7 +27,7 @@ struct uart_conf uarts[] = {
 		.dev = {
 			.name = "USART2",
 			.irqs = {
-				VAL("", 38),
+				VAL("", USART2_IRQn),
 			},
 			.pins = {
 				PIN("TX", GPIO_PORT_A, 2, GPIO_MODE_ALT, AF7),

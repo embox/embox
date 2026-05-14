@@ -23,6 +23,8 @@
 #include <embox/unit.h>
 #include <arm/cpu_cache.h>
 
+#include <bsp/stm32cube_hal.h>
+
 EMBOX_UNIT_INIT(stm32eth_init);
 
 #define STM32ETH_IRQ   OPTION_GET(NUMBER, irq)
