@@ -1,0 +1,16 @@
+package embox.driver.pwm
+
+module skeleton_pwm_drv {
+	source "skeleton_pwm_drv.c"
+
+	depends embox.driver.pwm.pwm_dev
+}
+
+module skeleton_pwm0 {
+	option boolean use_bconf=false
+
+	source "skeleton_pwm0.c"
+
+	depends skeleton_pwm_drv
+}
+
