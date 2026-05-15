@@ -19,25 +19,33 @@
 struct pwm_device;
 
 struct pwm_ops {
-	int (*pwmo_init)(struct pwm_device *dev);
-	int (*pwmo_config)(struct pwm_device *dev,  int duty_ns, int period_ns);
-	int (*pwmo_enable)(struct pwm_device *dev);
-	void (*pwmo_disable)(struct pwm_device *dev);
+	int  (*pwmo_init)(struct pwm_device *dev);
+	int  (*pwmo_set_period)(struct pwm_device *dev, int period_ns);
+	int  (*pwmo_set_duty)(struct pwm_device *dev,  int chan_num, int duty_ns);
+	int  (*pwmo_enable)(struct pwm_device *dev, uint32_t chan_mask);
+	void (*pwmo_disable)(struct pwm_device *dev, uint32_t chan_mask);
 };
 
 struct pwm_device {
-	int pwmd_id;
-	const struct pwm_ops   *pwmd_ops;
-	void                   *pwmd_priv;
-	const struct pin_description *pwmd_pin;
-	uintptr_t               pwmd_base_addr;
+	int                           pwmd_id;
+	const struct pwm_ops         *pwmd_ops;
+	void                         *pwmd_priv;
+	const struct pin_description *pwmd_pin; /* per chan */
+	uintptr_t                     pwmd_base_addr;
+	int                           pwmd_max_chan;
+
+	int                           pwmd_period;
+	int                           pwmd_mask;
+	int                           pwmd_duty[]; /* per chan */
 };
 
 __BEGIN_DECLS
 
 extern int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns);
-extern int pwm_enable(struct pwm_device *pwm);
-extern void pwm_disable(struct pwm_device *pwm);
+extern int pwm_set_period(struct pwm_device *pwm, int period_ns);
+extern int pwm_set_duty(struct pwm_device *dev,  int chan_num, int duty_ns);
+extern int pwm_enable(struct pwm_device *pwm, uint32_t chan_mask);
+extern void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask);
 
 extern struct pwm_device *pwm_dev_by_id(int id);
 

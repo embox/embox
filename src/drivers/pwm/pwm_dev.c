@@ -53,35 +53,69 @@ struct pwm_device *pwm_dev_by_id(int id) {
 }
 
 int pwm_config(struct pwm_device *pwm, int duty, int period) {
+	int err;
 	if (pwm == NULL) {
 		return -EINVAL;
 	}
 	if (period  < 1 || duty < 2 || period < duty) {
 		return -EINVAL;
 	}
-
-	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_config == NULL) {
-		return -ENOSUPP;
+	err = pwm_set_period(pwm, period);
+	if (err) {
+		return err;
 	}
-    return pwm->pwmd_ops->pwmo_config(pwm, duty, period);
+	err = pwm_set_duty(pwm, 0, duty);
+	if (err) {
+		return err;
+	}
+	return 0;
 }
 
-int pwm_enable(struct pwm_device *pwm) {
+int pwm_set_period(struct pwm_device *pwm, int period_ns) {
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+	if (period_ns  < 1) {
+		return -EINVAL;
+	}
+
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_set_period == NULL) {
+		return -ENOSUPP;
+	}
+
+    return pwm->pwmd_ops->pwmo_set_period(pwm, period_ns);
+}
+
+int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns)  {
+	if (pwm == NULL) {
+		return -EINVAL;
+	}
+	if (duty_ns < 2) {
+		return -EINVAL;
+	}
+
+	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_set_duty == NULL) {
+		return -ENOSUPP;
+	}
+    return pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, duty_ns);
+}
+
+int pwm_enable(struct pwm_device *pwm, uint32_t chan_mask) {
 	if (pwm == NULL) {
 		return -EINVAL;
 	}
 	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_enable == NULL) {
 		return -ENOSUPP;
 	}
-    return pwm->pwmd_ops->pwmo_enable(pwm);
+    return pwm->pwmd_ops->pwmo_enable(pwm, chan_mask);
 }
 
-void pwm_disable(struct pwm_device *pwm) {
+void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask) {
 	if (pwm == NULL) {
 		return;
 	}
 	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_disable == NULL) {
 		return;
 	}
-	pwm->pwmd_ops->pwmo_disable(pwm);
+	pwm->pwmd_ops->pwmo_disable(pwm, chan_mask);
 }

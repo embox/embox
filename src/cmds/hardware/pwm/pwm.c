@@ -72,7 +72,7 @@ int main(int argc, char **argv) {
 	}
 
 	if (stop) {
-		pwm_disable(pwm_dev);
+		pwm_disable(pwm_dev, 0xFF);
 		printf("Diasbled PWM ID %d\n", id);
 	} else {
 		int period;
@@ -86,9 +86,9 @@ int main(int argc, char **argv) {
 			return -EINVAL;
 		}
 
-		pwm_disable(pwm_dev);
+		pwm_disable(pwm_dev, 0xFF);
 		pwm_config(pwm_dev, duty, period);
-		pwm_enable(pwm_dev);
+		pwm_enable(pwm_dev, 0xFF);
 		printf("Enabled PWM ID %d period(%d) duty(%d)\n", id, period, duty);
 	}
 
