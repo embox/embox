@@ -13,6 +13,8 @@
 
 #include <drivers/pwm.h> /* only for struct pin_description  */
 
+#define NIIET_PWM_CHAN_MAX    (4)
+
 struct niiet_pwm_priv {
 	const struct pin_description *pin_desc;
 	const uintptr_t               base_addr;

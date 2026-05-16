@@ -69,4 +69,4 @@ static struct skeleton_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
 };
 
 PWM_DEV_DEF(PWM_DEV_ID, &skeleton_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
-                        PTR_PIN_DESC, PWM_BASE_ADDR);
+                        PTR_PIN_DESC, PWM_BASE_ADDR, 1 << 0 /* 0 chan avail */);

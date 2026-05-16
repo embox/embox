@@ -32,7 +32,7 @@ struct pwm_device {
 	void                         *pwmd_priv;
 	const struct pin_description *pwmd_pin; /* per chan */
 	uintptr_t                     pwmd_base_addr;
-	int                           pwmd_max_chan;
+	uint32_t                      pwmd_avail_chan_mask;
 
 	int                           pwmd_period;
 	int                           pwmd_mask;
@@ -51,8 +51,8 @@ extern struct pwm_device *pwm_dev_by_id(int id);
 
 __END_DECLS
 
-#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr) \
+#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask) \
 	ARRAY_SPREAD_DECLARE(const struct pwm_device, __pwm_device_registry); \
-	ARRAY_SPREAD_ADD(__pwm_device_registry, { id, ops, priv, out_pin, base_addr } )
+	ARRAY_SPREAD_ADD(__pwm_device_registry, { id, ops, priv, out_pin, base_addr, avail_mask } )
 
 #endif /* DRIVERS_PWM_PWM_H_ */
