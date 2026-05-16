@@ -325,6 +325,9 @@ struct pwm_conf pwms[] = {
 			},
 			.pins = {
 				PIN("OUT", GPIO_PORT_C, 7, GPIO_MODE_ALT, 1),
+				PIN("OUT1", GPIO_PORT_C, 7, GPIO_MODE_ALT, 1),
+				PIN("OUT2", GPIO_PORT_C, 8, GPIO_MODE_ALT, 1),
+				PIN("OUT3", GPIO_PORT_C, 3, GPIO_MODE_ALT, 1),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR0"),
@@ -341,6 +344,7 @@ struct pwm_conf pwms[] = {
 			},
 			.pins = {
 				PIN("OUT", GPIO_PORT_A, 8, GPIO_MODE_ALT, 2),
+				PIN("OUT2", GPIO_PORT_A, 8, GPIO_MODE_ALT, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR1"),
@@ -357,6 +361,7 @@ struct pwm_conf pwms[] = {
 			},
 			.pins = {
 				PIN("OUT", GPIO_PORT_A, 2, GPIO_MODE_ALT, 2),
+				PIN("OUT2", GPIO_PORT_A, 8, GPIO_MODE_ALT, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR2"),
