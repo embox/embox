@@ -49,6 +49,10 @@ extern void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask);
 
 extern struct pwm_device *pwm_dev_by_id(int id);
 
+static inline int pwm_dev_max_chan(struct pwm_device *pwm) {
+	return (int)(pwm->pwmd_avail_chan_mask >> 16);
+}
+
 __END_DECLS
 
 #define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask) \

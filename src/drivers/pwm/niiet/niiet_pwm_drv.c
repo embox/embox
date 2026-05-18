@@ -34,12 +34,20 @@ static inline void niiet_pwm_init_regs(struct pwm_device *dev) {
 
 static int niiet_pwm_init(struct pwm_device *dev) {
     struct niiet_pwm_priv *priv;
-    const struct pin_description *pin;
+
+    int i;
 
     priv = dev->pwmd_priv;
-    pin = &priv->pin_desc[priv->channel];
 
-    gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin), GPIO_MODE_ALT_SET(pin->pd_func));
+    for (i = 0; i < NIIET_PWM_CHAN_MAX; i ++) {
+        if (dev->pwmd_avail_chan_mask & (1 << i)) {
+            const struct pin_description *pin;
+
+            pin = &priv->pin_desc[i];
+            gpio_setup_mode(pin->pd_port, (1 << pin->pd_pin), GPIO_MODE_ALT_SET(pin->pd_func));
+        }
+    }
+
     clk_enable((char *)priv->clk_name);
     niiet_pwm_init_regs(dev);
 
