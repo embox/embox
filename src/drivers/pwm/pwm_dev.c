@@ -57,25 +57,6 @@ struct pwm_device*pwm_dev_by_id(int id) {
 	return 0;
 }
 
-int pwm_config(struct pwm_device *pwm, int duty, int period) {
-	int err;
-	if (pwm == NULL) {
-		return -EINVAL;
-	}
-	if (period  < 1 || duty < 2 || period < duty) {
-		return -EINVAL;
-	}
-	err = pwm_set_period(pwm, period);
-	if (err) {
-		return err;
-	}
-	err = pwm_set_duty(pwm, 0, duty);
-	if (err) {
-		return err;
-	}
-	return 0;
-}
-
 int pwm_set_period(struct pwm_device *pwm, int period_ns) {
 	if (pwm == NULL) {
 		return -EINVAL;

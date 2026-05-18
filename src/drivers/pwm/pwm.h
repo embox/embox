@@ -37,19 +37,18 @@ struct pwm_desc {
 };
 
 struct pwm_device {
-	const struct pwm_desc *pwmd_desc;
+	const struct pwm_desc        *pwmd_desc;
 	int                           pwmd_id;
 	const struct pwm_ops         *pwmd_ops;
 	void                         *pwmd_priv;
 
 	int                           pwmd_period;
 	int                           pwmd_mask;
-	int                           pwmd_duty[]; /* per chan */
+	int                          *pwmd_duty; /* per chan */
 };
 
 __BEGIN_DECLS
 
-extern int pwm_config(struct pwm_device *pwm, int duty_ns, int period_ns);
 extern int pwm_set_period(struct pwm_device *pwm, int period_ns);
 extern int pwm_set_duty(struct pwm_device *dev,  int chan_num, int duty_ns);
 extern int pwm_enable(struct pwm_device *pwm, uint32_t chan_mask);
@@ -69,14 +68,19 @@ __END_DECLS
 #define PWM_DEV_GLOBAL_PTR(id) \
 					MACRO_CONCAT(ptr_pwm_dev_, id)
 
-#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask) \
+#define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask, max_chan) \
 	static const struct pwm_desc MACRO_CONCAT(pwm_desc_, id) = \
-						{ id, ops, priv, out_pin, base_addr, avail_mask }; \
+						{ id, ops, priv, out_pin, base_addr, \
+							(max_chan << 16) | avail_mask }; \
 	ARRAY_SPREAD_DECLARE(const struct pwm_desc, __pwm_desc_registry); \
 	ARRAY_SPREAD_ADD(__pwm_desc_registry,  MACRO_CONCAT(pwm_desc_, id)); \
 	const struct pwm_desc *PWM_DESC_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_desc_, id); \
+	static int MACRO_CONCAT(_pwm_chan_duty_buf_,id)[max_chan] = {0}; \
 	static struct pwm_device MACRO_CONCAT(pwm_dev_, id) = \
-								{&MACRO_CONCAT(pwm_desc_, id)} ; \
+						{ \
+							.pwmd_desc = &MACRO_CONCAT(pwm_desc_, id),  \
+							.pwmd_duty = &MACRO_CONCAT(_pwm_chan_duty_buf_,id)[0], \
+						} ; \
 	ARRAY_SPREAD_DECLARE(const struct pwm_device *, __pwm_device_registry); \
 	ARRAY_SPREAD_ADD(__pwm_device_registry,  &MACRO_CONCAT(pwm_dev_, id)); \
 	const struct pwm_device *PWM_DEV_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_dev_, id)

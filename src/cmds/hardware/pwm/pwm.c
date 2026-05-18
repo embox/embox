@@ -31,7 +31,7 @@ static void print_pwm_list(void) {
 	printf("PWM's list:\n");
 	array_spread_foreach(pwm_dev, __pwm_device_registry) {
 		int i;
-		const struct pwm_device_desc *pwmd_desc;
+		const struct pwm_desc *pwmd_desc;
 	
 		pwmd_desc = pwm_dev->pwmd_desc;
 	

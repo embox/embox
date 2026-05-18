@@ -121,4 +121,4 @@ static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
 
 PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
                         &pwm_pin_desc[0], PWM_BASE_ADDR,
-                        (NIIET_PWM_CHAN_MAX << 16) | PWM_AVAIL_MASK);
+                        PWM_AVAIL_MASK, NIIET_PWM_CHAN_MAX);
