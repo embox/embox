@@ -30,9 +30,17 @@ static void print_pwm_list(void) {
 
 	printf("PWM's list:\n");
 	array_spread_foreach_ptr(pwm_dev, __pwm_device_registry) {
-		printf("\tPWM id(%d): base_addr(0x%" PRIxPTR ") out_pin(PORT%d.%d)\n",
-			pwm_dev->pwmd_id, pwm_dev->pwmd_base_addr,
-			pwm_dev->pwmd_pin->pd_port, pwm_dev->pwmd_pin->pd_pin);
+		int i;
+		printf("\tPWM id(%d): base_addr(0x%" PRIxPTR ") period(%d)\n",
+			pwm_dev->pwmd_id, pwm_dev->pwmd_base_addr, pwm_dev->pwmd_period);
+		for (i = 0; i < pwm_dev_max_chan(pwm_dev); i++) {
+			if (pwm_dev->pwmd_avail_chan_mask & (1 << i)) {
+				printf("\t\tchan(%d): duty(%d) out_pin(PORT%d.%d)\n",
+						i, pwm_dev->pwmd_duty[i],
+						pwm_dev->pwmd_pin[i].pd_port, pwm_dev->pwmd_pin[i].pd_pin);
+			}
+
+		}
 	}
 }
 
@@ -41,19 +49,23 @@ int main(int argc, char **argv) {
 	struct pwm_device *pwm_dev;
 	int id;
 	int stop = 0;
+	int err;
 
 	if (argc == 1) {
 		print_pwm_list();
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc, argv, "hp"))) {
+	while (-1 != (opt = getopt(argc, argv, "hpl"))) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
 			/* FALLTHROUGH */
 		case 'h':
 			print_usage();
+			return 0;
+		case 'l':
+			print_pwm_list();
 			return 0;
 		case 'p':
 			stop = 1;
@@ -87,8 +99,18 @@ int main(int argc, char **argv) {
 		}
 
 		pwm_disable(pwm_dev, 0xFF);
-		pwm_config(pwm_dev, duty, period);
+
+		err = pwm_set_period(pwm_dev, period);
+		if (err) {
+			return err;
+		}
+		err = pwm_set_duty(pwm_dev, 0, duty);
+		if (err) {
+			return err;
+		}
+
 		pwm_enable(pwm_dev, 0xFF);
+
 		printf("Enabled PWM ID %d period(%d) duty(%d)\n", id, period, duty);
 	}
 
