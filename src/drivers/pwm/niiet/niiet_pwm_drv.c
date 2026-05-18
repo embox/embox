@@ -24,7 +24,7 @@ static inline void niiet_pwm_init_regs(struct pwm_device *dev) {
 
     assert(dev);
 
-    regs = (void *)dev->pwmd_base_addr;
+    regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 
     ctrl = 0;
     ctrl |= TMR_CTRL_DIV(TMR_CTRL_DIV_8);
@@ -40,7 +40,7 @@ static int niiet_pwm_init(struct pwm_device *dev) {
     priv = dev->pwmd_priv;
 
     for (i = 0; i < NIIET_PWM_CHAN_MAX; i ++) {
-        if (dev->pwmd_avail_chan_mask & (1 << i)) {
+        if (dev->pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
             const struct pin_description *pin;
 
             pin = &priv->pin_desc[i];
@@ -60,7 +60,7 @@ static int niiet_pwm_enable(struct pwm_device *dev, uint32_t chan_mask) {
 
     assert(dev);
 
-    regs = (void *)dev->pwmd_base_addr;
+    regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 
     ctrl = regs->CTRL;
     ctrl &= ~TMR_CTRL_MODE(TMR_CTRL_MODE_MASK);
@@ -76,7 +76,7 @@ static void niiet_pwm_disable(struct pwm_device *dev, uint32_t chan_mask) {
 
     assert(dev);
 
-    regs = (void *)dev->pwmd_base_addr;
+    regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 
     ctrl = regs->CTRL;
     ctrl &= ~TMR_CTRL_MODE(TMR_CTRL_MODE_MASK);
@@ -89,7 +89,7 @@ static int niiet_pwm_set_period(struct pwm_device *dev, int period) {
 
     assert(dev);
 
-    regs = (void *)dev->pwmd_base_addr;
+    regs = (void *)dev->pwmd_desc->pwmd_base_addr;
     regs->CAPCOM[0].CAPCOM_VAL = period - 1;
 
     dev->pwmd_period = period;
@@ -110,7 +110,7 @@ static int niiet_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
         return -EINVAL;
     }
 
-    regs = (void *)dev->pwmd_base_addr;
+    regs = (void *)dev->pwmd_desc->pwmd_base_addr;
     capcom_reg = &regs->CAPCOM[priv->channel];
     cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
     capcom_reg->CAPCOM_CTRL = cap_ctrl;

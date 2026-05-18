@@ -27,12 +27,10 @@ static void skeleton_pwm_disable(struct pwm_device *dev, uint32_t chan_mask) {
 }
 
 static int skeleton_pwm_set_period(struct pwm_device *dev, int period) {
-
     return 0;
 }
 
 static int skeleton_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
-
     return 0;
 }
 

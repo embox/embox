@@ -26,13 +26,21 @@ struct pwm_ops {
 	void (*pwmo_disable)(struct pwm_device *dev, uint32_t chan_mask);
 };
 
-struct pwm_device {
+struct pwm_desc {
 	int                           pwmd_id;
 	const struct pwm_ops         *pwmd_ops;
 	void                         *pwmd_priv;
 	const struct pin_description *pwmd_pin; /* per chan */
 	uintptr_t                     pwmd_base_addr;
 	uint32_t                      pwmd_avail_chan_mask;
+
+};
+
+struct pwm_device {
+	const struct pwm_desc *pwmd_desc;
+	int                           pwmd_id;
+	const struct pwm_ops         *pwmd_ops;
+	void                         *pwmd_priv;
 
 	int                           pwmd_period;
 	int                           pwmd_mask;
@@ -50,13 +58,27 @@ extern void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask);
 extern struct pwm_device *pwm_dev_by_id(int id);
 
 static inline int pwm_dev_max_chan(struct pwm_device *pwm) {
-	return (int)(pwm->pwmd_avail_chan_mask >> 16);
+	return (int)(pwm->pwmd_desc->pwmd_avail_chan_mask >> 16);
 }
 
 __END_DECLS
 
+#define PWM_DESC_GLOBAL_PTR(id) \
+					MACRO_CONCAT(ptr_pwm_desc_, id)
+
+#define PWM_DEV_GLOBAL_PTR(id) \
+					MACRO_CONCAT(ptr_pwm_dev_, id)
+
 #define PWM_DEV_DEF(id, ops, priv, out_pin, base_addr, avail_mask) \
-	ARRAY_SPREAD_DECLARE(const struct pwm_device, __pwm_device_registry); \
-	ARRAY_SPREAD_ADD(__pwm_device_registry, { id, ops, priv, out_pin, base_addr, avail_mask } )
+	static const struct pwm_desc MACRO_CONCAT(pwm_desc_, id) = \
+						{ id, ops, priv, out_pin, base_addr, avail_mask }; \
+	ARRAY_SPREAD_DECLARE(const struct pwm_desc, __pwm_desc_registry); \
+	ARRAY_SPREAD_ADD(__pwm_desc_registry,  MACRO_CONCAT(pwm_desc_, id)); \
+	const struct pwm_desc *PWM_DESC_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_desc_, id); \
+	static struct pwm_device MACRO_CONCAT(pwm_dev_, id) = \
+								{&MACRO_CONCAT(pwm_desc_, id)} ; \
+	ARRAY_SPREAD_DECLARE(const struct pwm_device *, __pwm_device_registry); \
+	ARRAY_SPREAD_ADD(__pwm_device_registry,  &MACRO_CONCAT(pwm_dev_, id)); \
+	const struct pwm_device *PWM_DEV_GLOBAL_PTR(id) = &MACRO_CONCAT(pwm_dev_, id)
 
 #endif /* DRIVERS_PWM_PWM_H_ */

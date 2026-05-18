@@ -17,15 +17,20 @@
 
 #include <embox/unit.h>
 
-ARRAY_SPREAD_DECLARE(const struct pwm_device, __pwm_device_registry);
+ARRAY_SPREAD_DECLARE(struct pwm_device *, __pwm_device_registry);
 
 EMBOX_UNIT_INIT(pwm_subsystem_init);
 
 static int pwm_subsystem_init(void) {
 	struct pwm_device *pwm_dev;
 
-	array_spread_foreach_ptr(pwm_dev, __pwm_device_registry) {
+	array_spread_foreach(pwm_dev, __pwm_device_registry) {
 		assert(pwm_dev);
+
+		pwm_dev->pwmd_ops = pwm_dev->pwmd_desc->pwmd_ops;
+		pwm_dev->pwmd_id = pwm_dev->pwmd_desc->pwmd_id;
+		pwm_dev->pwmd_priv = pwm_dev->pwmd_desc->pwmd_priv;
+
 		if (!pwm_dev->pwmd_ops) {
 			continue;
 		}
@@ -40,10 +45,10 @@ static int pwm_subsystem_init(void) {
 	return 0;
 }
 
-struct pwm_device *pwm_dev_by_id(int id) {
+struct pwm_device*pwm_dev_by_id(int id) {
 	struct pwm_device *pwm_dev;
 
-	array_spread_foreach_ptr(pwm_dev, __pwm_device_registry) {
+	array_spread_foreach(pwm_dev, __pwm_device_registry) {
 		if (id == pwm_dev->pwmd_id) {
 			return pwm_dev;
 		}

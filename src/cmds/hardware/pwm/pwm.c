@@ -15,7 +15,7 @@
 
 #include <drivers/pwm.h>
 
-ARRAY_SPREAD_DECLARE(const struct pwm_device, __pwm_device_registry);
+ARRAY_SPREAD_DECLARE(struct pwm_device *, __pwm_device_registry);
 
 static void print_usage(void) {
 	printf("Usage:\n");
@@ -29,15 +29,20 @@ static void print_pwm_list(void) {
 	struct pwm_device *pwm_dev;
 
 	printf("PWM's list:\n");
-	array_spread_foreach_ptr(pwm_dev, __pwm_device_registry) {
+	array_spread_foreach(pwm_dev, __pwm_device_registry) {
 		int i;
+		const struct pwm_device_desc *pwmd_desc;
+	
+		pwmd_desc = pwm_dev->pwmd_desc;
+	
 		printf("\tPWM id(%d): base_addr(0x%" PRIxPTR ") period(%d)\n",
-			pwm_dev->pwmd_id, pwm_dev->pwmd_base_addr, pwm_dev->pwmd_period);
+			pwm_dev->pwmd_id, pwmd_desc->pwmd_base_addr, pwm_dev->pwmd_period);
 		for (i = 0; i < pwm_dev_max_chan(pwm_dev); i++) {
-			if (pwm_dev->pwmd_avail_chan_mask & (1 << i)) {
+			if (pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
 				printf("\t\tchan(%d): duty(%d) out_pin(PORT%d.%d)\n",
 						i, pwm_dev->pwmd_duty[i],
-						pwm_dev->pwmd_pin[i].pd_port, pwm_dev->pwmd_pin[i].pd_pin);
+						pwmd_desc->pwmd_pin[i].pd_port,
+						pwmd_desc->pwmd_pin[i].pd_pin);
 			}
 
 		}
