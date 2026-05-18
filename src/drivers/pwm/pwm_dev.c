@@ -83,6 +83,11 @@ int pwm_set_duty(struct pwm_device *pwm, int chan_num, int duty_ns)  {
 	if (pwm->pwmd_ops == NULL || pwm->pwmd_ops->pwmo_set_duty == NULL) {
 		return -ENOSUPP;
 	}
+
+	if (pwm_dev_max_chan(pwm) < chan_num) {
+		return -EINVAL;
+	}
+
     return pwm->pwmd_ops->pwmo_set_duty(pwm, chan_num, duty_ns);
 }
 

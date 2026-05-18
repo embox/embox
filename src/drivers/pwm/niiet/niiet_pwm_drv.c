@@ -99,19 +99,13 @@ static int niiet_pwm_set_period(struct pwm_device *dev, int period) {
 
 static int niiet_pwm_set_duty(struct pwm_device *dev, int chan_num, int duty) {
     struct niiet_tmr16_regs *regs;
-    struct niiet_pwm_priv   *priv;
     struct niiet_capcom_reg *capcom_reg;
     uint32_t cap_ctrl;
 
     assert(dev);
 
-    priv = dev->pwmd_priv;
-    if (priv->channel > 3) {
-        return -EINVAL;
-    }
-
     regs = (void *)dev->pwmd_desc->pwmd_base_addr;
-    capcom_reg = &regs->CAPCOM[priv->channel];
+    capcom_reg = &regs->CAPCOM[chan_num];
     cap_ctrl = TMR_CAPCOM_CTRL_OUTMODE(TMR_CAPCOM_CTRL_OUTMODE_RESET_SET);
     capcom_reg->CAPCOM_CTRL = cap_ctrl;
     capcom_reg->CAPCOM_VAL = duty - 1;
