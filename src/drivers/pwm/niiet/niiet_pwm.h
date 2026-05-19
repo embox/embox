@@ -20,6 +20,8 @@ struct niiet_pwm_priv {
 	const uintptr_t               base_addr;
 	const char                   *clk_name;
 	const int                     channel;
+	int                           clk_div;
+	uint32_t                      comp_mask;
 };
 
 struct niiet_capcom_reg {

@@ -42,6 +42,8 @@ struct pwm_device {
 	const struct pwm_ops         *pwmd_ops;
 	void                         *pwmd_priv;
 
+	int                           pwmd_base_freq;
+	uint64_t                      pwmd_max_period;
 	int                           pwmd_period;
 	int                           pwmd_mask;
 	int                          *pwmd_duty; /* per chan */
@@ -50,6 +52,7 @@ struct pwm_device {
 __BEGIN_DECLS
 
 extern int pwm_set_period(struct pwm_device *pwm, int period_ns);
+extern int pwm_set_frequency(struct pwm_device *pwm, int hz);
 extern int pwm_set_duty(struct pwm_device *dev,  int chan_num, int duty_ns);
 extern int pwm_enable(struct pwm_device *pwm, uint32_t chan_mask);
 extern void pwm_disable(struct pwm_device *pwm, uint32_t chan_mask);

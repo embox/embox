@@ -22,6 +22,7 @@ static void print_usage(void) {
 	printf("\tpwm [-h] - print usage\n");
 	printf("\tpwm -i - Print info of PWM devices\n");
 	printf("\tpwm -p <pwm_id> <period> - setup period\n");
+	printf("\tpwm -f <pwm_id> <freq> - setup frequency (1/period)\n");
 	printf("\tpwm -d <pwm_id> <chan id> <duty> - setup duty and start\n");
 	printf("\tpwm -D <pwm_id> - stop PWM\n");
 }
@@ -36,8 +37,10 @@ static void print_pwm_list(void) {
 	
 		pwmd_desc = pwm_dev->pwmd_desc;
 	
-		printf("\tPWM id(%d): base_addr(0x%" PRIxPTR ") period(%d)\n",
-			pwm_dev->pwmd_id, pwmd_desc->pwmd_base_addr, pwm_dev->pwmd_period);
+		printf("\tid(%d): addr(0x%" PRIxPTR ") freq(%d) "
+			"period(%" PRIu64 ": %d)\n",
+			pwm_dev->pwmd_id, pwmd_desc->pwmd_base_addr, pwm_dev->pwmd_base_freq,
+			pwm_dev->pwmd_max_period, pwm_dev->pwmd_period);
 		for (i = 0; i < pwm_dev_max_chan(pwm_dev); i++) {
 			if (pwmd_desc->pwmd_avail_chan_mask & (1 << i)) {
 				printf("\t\tchan(%d): duty(%d) out_pin(PORT%d.%d)\n",
@@ -58,13 +61,14 @@ int main(int argc, char **argv) {
 	int err;
 	int period = 0;
 	int duty = 0;
+	int freq = 0;
 
 	if (argc == 1) {
-		print_pwm_list();
+		print_usage();
 		return 0;
 	}
 
-	while (-1 != (opt = getopt(argc, argv, "hpipdD"))) {
+	while (-1 != (opt = getopt(argc, argv, "hipdfD"))) {
 		switch (opt) {
 		case '?':
 			printf("Invalid command line option\n");
@@ -80,6 +84,9 @@ int main(int argc, char **argv) {
 			break;
 		case 'p':
 			period = 1;
+			break;
+		case 'f':
+			freq = 1;
 			break;
 		case 'd':
 			duty = 1;
@@ -99,8 +106,15 @@ int main(int argc, char **argv) {
 	}
 
 	if (stop) {
-		pwm_disable(pwm_dev, 0xFF);
-		printf("Diasbled PWM ID %d\n", id);
+		if (argc == 3) {
+			pwm_disable(pwm_dev, 0xFF);
+			printf("Diasbled PWM ID %d\n", id);
+		} else {
+			int chan;
+			chan = atoi(argv[3]);
+			pwm_disable(pwm_dev, chan);
+		}
+
 		return 0;
 	}
 
@@ -118,20 +132,34 @@ int main(int argc, char **argv) {
 		return 0;
 	}
 
+	if (freq) {
+		freq = atoi(argv[3]);
+
+
+		err = pwm_set_frequency(pwm_dev, freq);
+		if (err) {
+			return err;
+		}
+
+		printf("Set period PWM ID %d freq(%d)\n", id, freq);
+
+		return 0;
+	}
+
 	if (duty) {
 		int chan =  atoi(argv[3]);
 
 		duty = atoi(argv[4]);
 
 
-		pwm_disable(pwm_dev, 0xFF);
+		//pwm_disable(pwm_dev, 0xFF);
 	
 		err = pwm_set_duty(pwm_dev, chan, duty);
 		if (err) {
 			return err;
 		}
 
-		pwm_enable(pwm_dev, 0xFF);
+		pwm_enable(pwm_dev, chan);
 
 		printf("Enabled PWM ID %d chan(%d) duty(%d)\n", id, chan, duty);
 	}

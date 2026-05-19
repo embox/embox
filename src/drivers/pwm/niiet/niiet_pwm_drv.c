@@ -6,9 +6,14 @@
  * @date 13.08.2022
  */
 
+#include <stdint.h>
 #include <stddef.h>
 #include <errno.h>
 #include <assert.h>
+
+#include <hal/system.h>
+
+#include <kernel/time/time.h>
 
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
@@ -17,6 +22,34 @@
 #include "niiet_pwm.h"
 
 extern int clk_enable(char *clk_name);
+
+static inline uint32_t niiet_pwm_get_clk_div(struct niiet_pwm_priv *priv) {
+    switch(priv->clk_div) {
+        case 2:
+            return TMR_CTRL_DIV(TMR_CTRL_DIV_2);
+        case 4:
+             return TMR_CTRL_DIV(TMR_CTRL_DIV_4);
+        case 8:
+             return TMR_CTRL_DIV(TMR_CTRL_DIV_8);
+        case 1:
+        default:
+            return TMR_CTRL_DIV(TMR_CTRL_DIV_1);
+    }
+}
+
+static inline int niiet_pwm_check_clk_div(struct niiet_pwm_priv *priv) {
+    switch(priv->clk_div) {
+        case 2:
+            return 2;
+        case 4:
+             return 4;
+        case 8:
+             return 8;
+        case 1:
+        default:
+            return 1;
+    }
+}
 
 static inline void niiet_pwm_init_regs(struct pwm_device *dev) {
     struct niiet_tmr16_regs *regs;
@@ -27,7 +60,8 @@ static inline void niiet_pwm_init_regs(struct pwm_device *dev) {
     regs = (void *)dev->pwmd_desc->pwmd_base_addr;
 
     ctrl = 0;
-    ctrl |= TMR_CTRL_DIV(TMR_CTRL_DIV_8);
+    //ctrl |= TMR_CTRL_DIV(TMR_CTRL_DIV_8);
+    ctrl |= niiet_pwm_get_clk_div(dev->pwmd_priv);
     ctrl |= TMR_CTRL_MODE(TMR_CTRL_MODE_STOP);
     regs->CTRL = ctrl;
 }
@@ -50,6 +84,9 @@ static int niiet_pwm_init(struct pwm_device *dev) {
 
     clk_enable((char *)priv->clk_name);
     niiet_pwm_init_regs(dev);
+
+    dev->pwmd_base_freq = (SYS_CLOCK / niiet_pwm_check_clk_div(priv));
+    dev->pwmd_max_period = (uint64_t)(priv->comp_mask * (NSEC_PER_SEC / dev->pwmd_base_freq)) ;
 
     return 0;
 }
@@ -91,8 +128,6 @@ static int niiet_pwm_set_period(struct pwm_device *dev, int period) {
 
     regs = (void *)dev->pwmd_desc->pwmd_base_addr;
     regs->CAPCOM[0].CAPCOM_VAL = period - 1;
-
-    dev->pwmd_period = period;
 
     return 0;
 }

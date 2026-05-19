@@ -16,6 +16,8 @@
 #include <drivers/pwm.h>
 #include <drivers/pin_description.h>
 
+#include <framework/mod/options.h>
+
 #include "niiet_pwm.h"
 
 #define PWM_DEV_ID                0
@@ -117,6 +119,8 @@ static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .base_addr = PWM_BASE_ADDR,
     .clk_name  = PWM_CLK_NAME(),
     .channel   = PWM_CHANNEL_NR(),
+    .clk_div   = OPTION_GET(NUMBER,clk_div),
+    .comp_mask = CONF_PWM0_MISC_COMP_MASK
 };
 
 PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
