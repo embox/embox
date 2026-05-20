@@ -24,37 +24,41 @@
 #include <embox/unit.h>
 #include <framework/mod/options.h>
 
-#define TMR32_BASE     ((uintptr_t)OPTION_GET(NUMBER,base_addr))
-#define TMR32_IRQ      OPTION_GET(NUMBER,irq_num)
+#define TMR_IDX       0
+
+#define BASE_ADDR     ((uintptr_t)OPTION_GET(NUMBER,base_addr))
+#define IRQ_NUM        OPTION_GET(NUMBER,irq_num)
 
 #define VG1T_VERSION   OPTION_GET(NUMBER, vg1t_version)
 
+
+
 #if VG1T_VERSION == 1
 
-#define TMR_CTRL         (TMR32_BASE + 0x00) /* Timer Control Register */
-#define TMR_COUNT        (TMR32_BASE + 0x04) /* Current Value Timer Register */
-#define TMR_CLKDIV       (TMR32_BASE + 0x08)
-#define TMR_PERIOD       (TMR32_BASE + 0x0C)
-#define TMR_IM           (TMR32_BASE + 0x10) /* Interrupt Mask Register */
-#define TMR_RIS          (TMR32_BASE + 0x14) /* Raw Interrupt Status Register */
-#define TMR_MIS          (TMR32_BASE + 0x18) /* Masked Interrupt Status Register */
-#define TMR_IC           (TMR32_BASE + 0x1C) /* Clear Interrupt Status Register */
-#define TMR_CAPCOM0_CTRL (TMR32_BASE + 0x100) /* Capture/Compare Control Register */
-#define TMR_CAPCOM0_VAL0 (TMR32_BASE + 0x104) /* Capture/Compare Value Register */
-#define TMR_CAPCOM0_VAL1 (TMR32_BASE + 0x108) /* Capture/Compare Value Register */
+#define TMR_CTRL         (BASE_ADDR + 0x00) /* Timer Control Register */
+#define TMR_COUNT        (BASE_ADDR + 0x04) /* Current Value Timer Register */
+#define TMR_CLKDIV       (BASE_ADDR + 0x08)
+#define TMR_PERIOD       (BASE_ADDR + 0x0C)
+#define TMR_IM           (BASE_ADDR + 0x10) /* Interrupt Mask Register */
+#define TMR_RIS          (BASE_ADDR + 0x14) /* Raw Interrupt Status Register */
+#define TMR_MIS          (BASE_ADDR + 0x18) /* Masked Interrupt Status Register */
+#define TMR_IC           (BASE_ADDR + 0x1C) /* Clear Interrupt Status Register */
+#define TMR_CAPCOM0_CTRL (BASE_ADDR + 0x100) /* Capture/Compare Control Register */
+#define TMR_CAPCOM0_VAL0 (BASE_ADDR + 0x104) /* Capture/Compare Value Register */
+#define TMR_CAPCOM0_VAL1 (BASE_ADDR + 0x108) /* Capture/Compare Value Register */
 
 #else
 /* clang-format off */
-#define TMR_CTRL         (TMR32_BASE + 0x00) /* Timer Control Register */
-#define TMR_COUNT        (TMR32_BASE + 0x04) /* Current Value Timer Register */
-#define TMR_IM           (TMR32_BASE + 0x08) /* Interrupt Mask Register */
-#define TMR_RIS          (TMR32_BASE + 0x0c) /* Raw Interrupt Status Register */
-#define TMR_MIS          (TMR32_BASE + 0x10) /* Masked Interrupt Status Register */
-#define TMR_IC           (TMR32_BASE + 0x14) /* Clear Interrupt Status Register */
-#define TMR_CAPCOM0_CTRL (TMR32_BASE + 0x18) /* Capture/Compare Control Register */
-#define TMR_CAPCOM0_VAL  (TMR32_BASE + 0x1c) /* Capture/Compare Value Register */
-#define TMR_DMA_IM       (TMR32_BASE + 0x38) /* DMA Request Mask Register */
-#define TMR_ADC_IM       (TMR32_BASE + 0x3c) /* ADC Request Mask Register */
+#define TMR_CTRL         (BASE_ADDR + 0x00) /* Timer Control Register */
+#define TMR_COUNT        (BASE_ADDR + 0x04) /* Current Value Timer Register */
+#define TMR_IM           (BASE_ADDR + 0x08) /* Interrupt Mask Register */
+#define TMR_RIS          (BASE_ADDR + 0x0c) /* Raw Interrupt Status Register */
+#define TMR_MIS          (BASE_ADDR + 0x10) /* Masked Interrupt Status Register */
+#define TMR_IC           (BASE_ADDR + 0x14) /* Clear Interrupt Status Register */
+#define TMR_CAPCOM0_CTRL (BASE_ADDR + 0x18) /* Capture/Compare Control Register */
+#define TMR_CAPCOM0_VAL  (BASE_ADDR + 0x1c) /* Capture/Compare Value Register */
+#define TMR_DMA_IM       (BASE_ADDR + 0x38) /* DMA Request Mask Register */
+#define TMR_ADC_IM       (BASE_ADDR + 0x3c) /* ADC Request Mask Register */
 
 #endif
 
@@ -124,12 +128,10 @@
 
 #define TMR_PERIOD_VALUE ((SYS_CLOCK / JIFFIES_PERIOD) - 1)
 
-// FIXME USE separate SIU module instead 
-#define SIU_BASE_ADDR   0x50003000UL
+extern int sys_ctrl_enable_tmr(int num) ;
+extern int sys_ctrl_enable_dev(const char *name);
 
-#define SIU_TMREN_REG   (SIU_BASE_ADDR + 0x54)
-
-int tmr32_set_periodic(struct clock_source *cs) {
+static int niiet_tmr_set_periodic(struct clock_source *cs) {
 
 	REG32_STORE(TMR_CTRL, 0);
 	REG32_STORE(TMR_IC, 0x1FF);
@@ -138,27 +140,24 @@ int tmr32_set_periodic(struct clock_source *cs) {
 
 	REG32_STORE(TMR_IM, TMR_IM_TMR);
 
-	// FIXME USE separate SIU module instead 
-	REG32_STORE(SIU_TMREN_REG, (1 << 0)); /* TMR0*/
-
 	return 0;
 }
 
-static cycle_t tmr32_get_cycles(struct clock_source *cs) {
+static cycle_t niiet_tmr_get_cycles(struct clock_source *cs) {
 	return (cycle_t)REG32_LOAD(TMR_COUNT);
 }
 
-static struct time_event_device tmr32_event = {
-    .set_periodic = tmr32_set_periodic,
-    .irq_nr = TMR32_IRQ,
+static struct time_event_device niiet_tmr_event = {
+    .set_periodic = niiet_tmr_set_periodic,
+    .irq_nr = IRQ_NUM,
 };
 
-static struct time_counter_device tmr32_counter = {
-    .get_cycles = tmr32_get_cycles,
+static struct time_counter_device niiet_tmr_counter = {
+    .get_cycles = niiet_tmr_get_cycles,
     .cycle_hz = TMR_PERIOD,
 };
 
-static irq_return_t tmr32_irq_handler(unsigned int irq_nr, void *data) {
+static irq_return_t niiet_tmr_irq_handler(unsigned int irq_nr, void *data) {
 	clock_tick_handler(data);
 
 	REG32_STORE(TMR_IC, TMR_IC_TMR);
@@ -166,14 +165,16 @@ static irq_return_t tmr32_irq_handler(unsigned int irq_nr, void *data) {
 	return IRQ_HANDLED;
 }
 
-static int tmr32_init(struct clock_source *cs) {
+static int niiet_tmr_init(struct clock_source *cs) {
 	extern void niiet_tmr_set_rcu(int);
 
-	niiet_tmr_set_rcu(0);
+	niiet_tmr_set_rcu(TMR_IDX);
 
-	return irq_attach(TMR32_IRQ, tmr32_irq_handler, 0, cs, "tmr32");
+	sys_ctrl_enable_tmr(TMR_IDX);
+
+	return irq_attach(IRQ_NUM, niiet_tmr_irq_handler, 0, cs, "tmr32");
 }
 
-CLOCK_SOURCE_DEF(tmr32, tmr32_init, NULL, &tmr32_event, &tmr32_counter);
+CLOCK_SOURCE_DEF(tmr32, niiet_tmr_init, NULL, &niiet_tmr_event, &niiet_tmr_counter);
 
-PERIPH_MEMORY_DEFINE(tmr32, TMR32_BASE, 0x40);
+PERIPH_MEMORY_DEFINE(tmr32, BASE_ADDR, 0x40);
