@@ -1,0 +1,5 @@
+package embox.driver.sys_ctrl.niiet
+
+module siu_k1921vg1t {
+	source "siu_k1921vg1t.c"
+}
