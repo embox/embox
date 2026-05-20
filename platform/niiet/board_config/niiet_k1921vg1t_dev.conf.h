@@ -2,9 +2,8 @@
 
 #include <soc/niiet_k1921vg1t_chip.h>
 
-//#define HSICLK_VAL 4000000UL
 #define HSECLK_VAL 27000000UL
-//#define EXTCLK_VAL 10000000UL
+
 
 struct clk_conf clks[] = {
 	[0] = {
@@ -20,6 +19,15 @@ struct clk_conf clks[] = {
 		},
 		.type = {
 			VAL("SYSCLK_PLL", 1),
+		},
+	},
+	[1] = {
+		.status = ENABLED,
+		.dev = {
+			.name = "SIU",
+			.regs = {
+				REGMAP("BASE", (SIU_BASE), 0x100),
+			},
 		},
 	},
 };
@@ -219,4 +227,99 @@ struct led_conf leds[] = {
 	},
 };
 
-EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds))
+struct pwm_conf pwms[] = {
+	[0] = {
+		.name = "PWM0",
+		.dev = {
+			.name = "PWM0",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR0_BASE), 0x100),
+			},
+			.pins = {
+				// PIN("OUT0", GPIO_PORT_A, 0, GPIO_MODE_ALT, 5),
+				// PIN("OUT1", GPIO_PORT_A, 1, GPIO_MODE_ALT, 5),
+				// PIN("OUT2", GPIO_PORT_A, 2, GPIO_MODE_ALT, 5),
+				// PIN("OUT3", GPIO_PORT_A, 3, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR0"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR0"),
+				VAL("TMR_IDX", 0),
+			},
+		},
+	},
+	[1] = {
+		.name = "PWM1",
+		.dev = {
+			.name = "PWM1",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR1_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_A, 4, GPIO_MODE_ALT, 5),
+				PIN("OUT1", GPIO_PORT_A, 5, GPIO_MODE_ALT, 5),
+				PIN("OUT2", GPIO_PORT_A, 6, GPIO_MODE_ALT, 5),
+				PIN("OUT3", GPIO_PORT_A, 7, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR1"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR1"),
+				VAL("TMR_IDX", 1),
+			},
+		},
+	},
+	[2] = {
+		.name = "PWM2",
+		.dev = {
+			.name = "PWM2",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR2_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_A, 8, GPIO_MODE_ALT, 5),
+				PIN("OUT1", GPIO_PORT_A, 9, GPIO_MODE_ALT, 5),
+				PIN("OUT2", GPIO_PORT_A, 10, GPIO_MODE_ALT, 5),
+				PIN("OUT3", GPIO_PORT_A, 11, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR2"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR2"),
+				VAL("TMR_IDX", 2),
+			},
+		},
+	},
+	[3] = {
+		.name = "PWM3",
+		.dev = {
+			.name = "PWM3",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR3_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT0", GPIO_PORT_A, 12, GPIO_MODE_ALT, 5),
+				PIN("OUT1", GPIO_PORT_A, 13, GPIO_MODE_ALT, 5),
+				PIN("OUT2", GPIO_PORT_A, 14, GPIO_MODE_ALT, 5),
+				PIN("OUT3", GPIO_PORT_A, 15, GPIO_MODE_ALT, 5),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR3"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+				VAL("TMR_NAME", "TMR3"),
+				VAL("TMR_IDX", 3),
+			},
+		},
+	},
+};
+
+EXPORT_CONFIG(CLK(clks), GPIO(gpios), UART(uarts), LED(leds), PWM(pwms))
