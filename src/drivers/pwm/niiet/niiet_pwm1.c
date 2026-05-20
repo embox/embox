@@ -118,7 +118,6 @@ static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .pin_desc  = &pwm_pin_desc[0],
     .base_addr = PWM_BASE_ADDR,
     .clk_name  = PWM_CLK_NAME(),
-    .channel   = PWM_CHANNEL_NR(),
     .clk_div   = OPTION_GET(NUMBER,clk_div),
     .comp_mask = CONF_PWM1_MISC_COMP_MASK
 };
