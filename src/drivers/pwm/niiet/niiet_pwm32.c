@@ -18,7 +18,7 @@
 
 #include <framework/mod/options.h>
 
-#include "niiet_pwm.h"
+#include "niiet_pwm_priv.h"
 
 #define PWM_DEV_ID                32
 #define PWM_DEV_PRIV_STRUCT_NAME  MACRO_CONCAT(pwm_dev_priv, PWM_DEV_ID)
@@ -27,9 +27,10 @@
 
 #if defined CONF_PWM32_ENABLED
 
-#define PWM_BASE_ADDR  MACRO_CONCAT(CONF_PWM,_REGION_BASE_ADDR)
-#define PWM_CLK_NAME   MACRO_CONCAT(CONF_PWM,_CLK_ENABLE)
-#define PWM_CHANNEL_NR MACRO_CONCAT(CONF_PWM,_CHANNEL)
+#define PWM_BASE_ADDR        MACRO_CONCAT(CONF_PWM,_REGION_BASE_ADDR)
+#define PWM_CLK_NAME         MACRO_CONCAT(CONF_PWM,_CLK_ENABLE)
+#define PWM_CHANNEL_NR       MACRO_CONCAT(CONF_PWM,_CHANNEL)
+#define PWM_COMP_MASK        MACRO_CONCAT(CONF_PWM,_MISC_COMP_MASK)
 
 #if defined(CONF_PWM32_PIN_OUT0_PORT)
 #define PWM_CHAN0_PORT       MACRO_CONCAT(CONF_PWM,_PIN_OUT0_PORT)
@@ -119,7 +120,8 @@ static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .base_addr = PWM_BASE_ADDR,
     .clk_name  = PWM_CLK_NAME(),
     .clk_div   = OPTION_GET(NUMBER,clk_div),
-    .comp_mask = CONF_PWM32_MISC_COMP_MASK
+    .comp_mask = PWM_COMP_MASK,
+    .idx       = PWM_DEV_ID
 };
 
 PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,

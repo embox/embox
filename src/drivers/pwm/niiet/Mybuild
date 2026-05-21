@@ -1,6 +1,8 @@
 package embox.driver.pwm
 
 module niiet_pwm_drv {
+	option number vg1t_version = 0
+
 	source "niiet_pwm_drv.c"
 
 	depends embox.driver.pwm.pwm_dev
