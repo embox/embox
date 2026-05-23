@@ -20,6 +20,7 @@
 #include <net/netdevice.h>
 #include <net/util/macaddr.h>
 #include <lib/libds/array.h>
+#include "net/l3/arp.h"
 
 struct ifconfig_args {
 	char with_a;
@@ -162,6 +163,8 @@ static int ifconfig_print_long_info(struct in_device *iface) {
 	printf("%s\tLink encap:", &iface->dev->name[0]);
 	if (iface->dev->flags & IFF_LOOPBACK) {
 		printf("Local Loopback");
+	} else if (iface->dev->type == ARP_HRD_NONE) {
+		printf("Unspec");
 	} else {
 		macaddr_print(mac, &iface->dev->dev_addr[0]);
 		printf("Ethernet  HWaddr %s", mac);
