@@ -1,0 +1,31 @@
+package platform.stm32
+
+abstract module osc_config {
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_osc_config_hal extends osc_config {
+	option string log_level="LOG_ERR"
+
+	source "stm32cube_osc_config_hal.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_osc_config_f1 extends osc_config {
+	option string log_level="LOG_ERR"
+
+	source "stm32cube_osc_config_f1.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_osc_config_f4 extends osc_config {
+	option string log_level="LOG_ERR"
+
+	source "stm32cube_osc_config_f4.c"
+
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
