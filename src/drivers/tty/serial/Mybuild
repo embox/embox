@@ -16,7 +16,6 @@ module serial {
 
 	depends tty
 	depends embox.device.char_dev
-	depends embox.device.common
 }
 
 module serial_stub {

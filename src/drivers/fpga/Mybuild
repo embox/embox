@@ -9,7 +9,6 @@ module core {
 
 	source "fpga.c"
 
-	depends embox.device.common
 	depends embox.mem.pool
 	@NoRuntime depends embox.lib.libds
 	depends embox.device.char_dev

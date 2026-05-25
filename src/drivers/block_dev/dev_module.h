@@ -6,12 +6,10 @@
  * @date 2015-10-29
  */
 
-#ifndef COMMON_DEVICE_H_
-#define COMMON_DEVICE_H_
+#ifndef DRIVERS_DEV_MODULE_H_
+#define DRIVERS_DEV_MODULE_H_
 
-#include <framework/mod/options.h>
-
-#include <config/embox/device/common.h>
+#include <limits.h>
 
 #define DEV_NAME_LEN \
 	OPTION_MODULE_GET(embox__device__common, NUMBER, device_name_len)
@@ -30,18 +28,12 @@ struct idesc_ops;
 
 struct dev_module {
 	int dev_id;
-	char name[DEV_NAME_LEN];
+	char name[NAME_MAX];
 
 	const struct idesc_ops *dev_iops;
 
 	void *dev_priv;
 };
-
-#if 0
-/* Don't use now */
-extern struct dev_module *dev_module_create(const char *name,
-    const struct idesc_ops *dev_iops, void *privdata);
-#endif
 
 /**
  * @brief initialize device module with given parameters
@@ -55,12 +47,10 @@ extern struct dev_module *dev_module_create(const char *name,
 extern struct dev_module *dev_module_init(struct dev_module *devmod,
     const char *name, const struct idesc_ops *dev_iops, void *privdata);
 
-extern int dev_module_destroy(struct dev_module *dev);
-
 extern int dev_module_deinit(struct dev_module *dev);
 
 /* Used only in old devfs to create node for new device */
 extern void devfs_notify_new_module(struct dev_module *devmod);
 extern void devfs_notify_del_module(struct dev_module *devmod);
 
-#endif /* COMMON_DEVICE_H_ */
+#endif /* DRIVERS_DEV_MODULE_H_ */

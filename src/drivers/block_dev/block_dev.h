@@ -13,7 +13,7 @@
 #include <stdint.h>
 #include <sys/types.h>
 
-#include <drivers/device.h>
+#include <drivers/dev_module.h>
 #include <framework/mod/options.h>
 #include <lib/libds/array.h>
 #include <util/member.h>

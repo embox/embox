@@ -12,12 +12,16 @@ module block_dev {
 	source "block_dev.c"
 	source "block_dev_namer.c"
 
+	@IncludeExport(path="drivers")
+	source "dev_module.h"
+	source "dev_module.c"
+
+	depends embox.fs.driver.devfs /* devfs_notify_new_module() */
 	depends embox.mem.phymem
 	depends embox.fs.buffer_cache
 	depends embox.driver.buffer_crypt_api
 	depends embox.mem.phymem
 	depends embox.mem.heap_place
-	depends embox.device.common
 	@NoRuntime depends embox.compat.posix.libgen
 }
 

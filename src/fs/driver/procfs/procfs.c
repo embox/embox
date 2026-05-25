@@ -11,7 +11,6 @@
 
 #include <drivers/char_dev.h>
 #include <drivers/block_dev.h>
-#include <drivers/device.h>
 #include <module/embox/driver/block_dev.h>
 
 #include <fs/dir_context.h>

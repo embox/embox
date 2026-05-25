@@ -10,7 +10,6 @@
 
 #include <limits.h>
 
-#include <drivers/device.h>
 #include <kernel/task/resource/idesc.h>
 #include <lib/libds/array_spread.h>
 #include <lib/libds/dlist.h>

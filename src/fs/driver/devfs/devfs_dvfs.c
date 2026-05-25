@@ -20,7 +20,7 @@
 
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
-#include <drivers/device.h>
+#include <drivers/dev_module.h>
 #include <framework/mod/options.h>
 #include <fs/dvfs.h>
 #include <kernel/task/resource/idesc.h>
