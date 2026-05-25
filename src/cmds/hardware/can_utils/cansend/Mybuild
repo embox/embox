@@ -5,5 +5,5 @@ package embox.cmd.hw.can_utils
 module cansend {
 	source "cansend.c"
 
-	@NoRuntime depends embox.net.can
+	@NoRuntime depends embox.device.can_dev
 }

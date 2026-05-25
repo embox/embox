@@ -75,11 +75,14 @@ typedef uint32_t can_err_mask_t;
 
 /* Basic CAN frame */
 struct can_frame {
-	canid_t can_id;  /* 32 bit CAN_ID + EFF/RTR/ERR flags */
-	uint8_t can_dlc; /* frame payload length in byte (0 .. CAN_MAX_DLEN) */
-	uint8_t __pad;   /* padding */
-	uint8_t __res0;  /* reserved / padding */
-	uint8_t __res1;  /* reserved / padding */
+	canid_t can_id; /* 32 bit CAN_ID + EFF/RTR/ERR flags */
+	union {
+		uint8_t len;     /* frame payload length in byte (0 .. CAN_MAX_DLEN) */
+		uint8_t can_dlc; /* deprecated */
+	} __attribute__((packed));
+	uint8_t __pad;  /* padding */
+	uint8_t __res0; /* reserved / padding */
+	uint8_t __res1; /* reserved / padding */
 	uint8_t data[CAN_MAX_DLEN];
 };
 

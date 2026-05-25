@@ -1,54 +1,38 @@
+/**
+ * @brief
+ *
+ * @author Aleksey Zhmulin
+ * @date 26.05.26
+ */
+
+#include <fcntl.h>
 #include <linux/can.h>
 #include <stdio.h>
-#include <string.h>
-#include <sys/ioctl.h>
-#include <sys/socket.h>
 #include <unistd.h>
 
-#include <net/if.h>
-
 int main(void) {
-	int s;
-	struct sockaddr_can addr = {0};
-	struct ifreq ifr = {0};
-	struct can_frame frame = {0};
+	struct can_frame frame;
+	int fd;
 
-	// 1. Create Socket (PF_CAN, Raw Socket, CAN_RAW)
-	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-		printf("Socket failed\n");
-		return 1;
-	}
+	fd = open("/dev/can0", O_RDWR);
 
-	// 2. Specify Interface
-	strcpy(ifr.ifr_name, "vcan0");
-	if (0 > ioctl(s, SIOCGIFINDEX, &ifr)) {
-		printf("ioctl SIOCGIFINDEX failed\n");
-		return 1;
-	}
-
-	memset(&addr, 0, sizeof(addr));
-	addr.can_family = AF_CAN;
-	addr.can_ifindex = ifr.ifr_ifindex;
-
-	// 3. Bind the socket to the CAN interface
-	if (bind(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
-		printf("Bind failed\n");
-		return 1;
-	}
-
-	// 4. Prepare frame
 	frame.can_id = 0x123;
-	frame.can_dlc = 2;
-	frame.data[0] = 0xDE;
-	frame.data[1] = 0xAD;
+	frame.len = 8;
+	frame.data[0] = 0x00;
+	frame.data[1] = 0x11;
+	frame.data[2] = 0x22;
+	frame.data[3] = 0x33;
+	frame.data[4] = 0x44;
+	frame.data[5] = 0x55;
+	frame.data[6] = 0x66;
+	frame.data[7] = 0x77;
 
-	// 5. Write frame
-	if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
+	if (write(fd, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
 		printf("Write failed\n");
-		return 1;
+		return -1;
 	}
 
-	// 6. Close socket
-	close(s);
+	close(fd);
+
 	return 0;
 }
