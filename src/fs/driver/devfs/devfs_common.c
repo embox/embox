@@ -14,7 +14,6 @@
 
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
-#include <drivers/device.h>
 #include <fs/dir_context.h>
 #include <fs/file_desc.h>
 #include <fs/inode.h>

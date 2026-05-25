@@ -14,7 +14,7 @@
 #include <sys/uio.h>
 
 #include <drivers/block_dev.h>
-#include <drivers/device.h>
+#include <drivers/dev_module.h>
 #include <fs/file_desc.h>
 #include <util/err.h>
 #include <util/log.h>

@@ -20,7 +20,7 @@
 
 #include <drivers/block_dev.h>
 #include <drivers/char_dev.h>
-#include <drivers/device.h>
+#include <drivers/dev_module.h>
 
 extern struct inode_operations devfs_iops;
 extern struct file_operations devfs_fops;

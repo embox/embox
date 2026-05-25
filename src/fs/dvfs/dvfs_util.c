@@ -9,7 +9,6 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#include <drivers/device.h>
 #include <fs/dvfs.h>
 #include <framework/mod/options.h>
 #include <mem/misc/pool.h>

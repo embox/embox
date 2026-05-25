@@ -26,7 +26,6 @@ module file_system_full extends file_system {
 
 	depends embox.fs.syslib.fs_full        // kfile_fill_stat
 
-	depends embox.device.common
 	depends embox.fs.core
 	depends embox.fs.file_desc_oldfs
 

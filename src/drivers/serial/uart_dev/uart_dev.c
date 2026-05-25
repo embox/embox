@@ -18,8 +18,6 @@
 
 #include <kernel/irq.h>
 #include <mem/misc/pool.h>
-
-#include <drivers/device.h>
 #include <drivers/serial/uart_dev.h>
 
 ARRAY_SPREAD_DEF(struct uart *const, __uart_device_registry);

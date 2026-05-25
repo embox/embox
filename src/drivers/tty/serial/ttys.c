@@ -11,7 +11,6 @@
 #include <string.h>
 
 #include <drivers/char_dev.h>
-#include <drivers/device.h>
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 #include <framework/mod/options.h>

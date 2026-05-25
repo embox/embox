@@ -22,7 +22,6 @@
 #include <mem/misc/pool.h>
 #include <mem/vmem_device_memory.h>
 #include <util/err.h>
-#include <util/log.h>
 
 #define IDESC_POOL_SIZE OPTION_GET(NUMBER, idesc_pool_size)
 
@@ -30,16 +29,16 @@ POOL_DEF(idesc_pool, struct char_dev_idesc, IDESC_POOL_SIZE);
 
 static const struct idesc_ops char_dev_idesc_ops;
 
-static bool char_dev_idesc_is_valid(struct idesc *idesc) {
-	return idesc && (idesc->idesc_ops == &char_dev_idesc_ops);
-}
+static struct char_dev *idesc2cdev(struct idesc *idesc) {
+	struct char_dev *cdev;
 
-static struct char_dev *char_dev_idesc_get_dev(struct idesc *idesc) {
-	if (!char_dev_idesc_is_valid(idesc)) {
-		return NULL;
-	}
+	assert(idesc);
+	assert(idesc->idesc_ops == &char_dev_idesc_ops);
 
-	return ((struct char_dev_idesc *)idesc)->cdev;
+	cdev = ((struct char_dev_idesc *)idesc)->cdev;
+	assert(cdev);
+
+	return cdev;
 }
 
 static ssize_t char_dev_readv(struct idesc *idesc, const struct iovec *iov,
@@ -49,13 +48,15 @@ static ssize_t char_dev_readv(struct idesc *idesc, const struct iovec *iov,
 	ssize_t res;
 	int i;
 
-	cdev = char_dev_idesc_get_dev(idesc);
-	assert(cdev);
+	cdev = idesc2cdev(idesc);
+
+	if (!cdev->ops->read) {
+		return -EBADF;
+	}
 
 	if (idesc->idesc_flags & O_PATH) {
 		return -EBADF;
 	}
-	assert(cdev->ops->read);
 
 	for (i = 0, nbyte = 0; i < iovcnt; i++) {
 		res = cdev->ops->read(cdev, iov[i].iov_base, iov[i].iov_len);
@@ -76,13 +77,15 @@ static ssize_t char_dev_writev(struct idesc *idesc, const struct iovec *iov,
 	ssize_t res;
 	int i;
 
-	cdev = char_dev_idesc_get_dev(idesc);
-	assert(cdev);
+	cdev = idesc2cdev(idesc);
+
+	if (!cdev->ops->write) {
+		return -EBADF;
+	}
 
 	if (idesc->idesc_flags & O_PATH) {
 		return -EBADF;
 	}
-	assert(cdev->ops->write);
 
 	for (i = 0, nbyte = 0; i < iovcnt; i++) {
 		res = cdev->ops->write(cdev, iov[i].iov_base, iov[i].iov_len);
@@ -99,8 +102,7 @@ static ssize_t char_dev_writev(struct idesc *idesc, const struct iovec *iov,
 void char_dev_close(struct idesc *idesc) {
 	struct char_dev *cdev;
 
-	cdev = char_dev_idesc_get_dev(idesc);
-	assert(cdev);
+	cdev = idesc2cdev(idesc);
 
 	if (idesc->idesc_flags & O_PATH) {
 		goto out;
@@ -123,8 +125,7 @@ out:
 static int char_dev_ioctl(struct idesc *idesc, int request, void *data) {
 	struct char_dev *cdev;
 
-	cdev = char_dev_idesc_get_dev(idesc);
-	assert(cdev);
+	cdev = idesc2cdev(idesc);
 
 	if (!cdev->ops->ioctl) {
 		return -EBADF;
@@ -134,9 +135,6 @@ static int char_dev_ioctl(struct idesc *idesc, int request, void *data) {
 }
 
 static int char_dev_fstat(struct idesc *idesc, struct stat *stat) {
-	assert(char_dev_idesc_is_valid(idesc));
-	assert(stat);
-
 	memset(stat, 0, sizeof(struct stat));
 	stat->st_mode = S_IFCHR;
 
@@ -146,8 +144,7 @@ static int char_dev_fstat(struct idesc *idesc, struct stat *stat) {
 static int char_dev_status(struct idesc *idesc, int mask) {
 	struct char_dev *cdev;
 
-	cdev = char_dev_idesc_get_dev(idesc);
-	assert(cdev);
+	cdev = idesc2cdev(idesc);
 
 	if (!cdev->ops->status) {
 		return -EBADF;
@@ -161,8 +158,7 @@ static void *char_dev_mmap(struct idesc *idesc, void *addr, size_t len,
 	struct char_dev *cdev;
 	void *phy_addr;
 
-	cdev = char_dev_idesc_get_dev(idesc);
-	assert(cdev);
+	cdev = idesc2cdev(idesc);
 
 	if (!cdev->ops->direct_access) {
 		return NULL;

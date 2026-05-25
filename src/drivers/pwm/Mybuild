@@ -8,6 +8,4 @@ module pwm_dev {
 
 	@IncludeExport(path="drivers")
 	source "pwm.h"
-
-	@NoRuntime depends embox.device.pin_description
 }

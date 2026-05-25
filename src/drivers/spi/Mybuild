@@ -14,8 +14,6 @@ module core {
 
 	depends embox.device.char_dev
 	depends embox.driver.dma.dma_api
-
-	@NoRuntime depends embox.device.pin_description
 }
 
 module spi0_dev0 {

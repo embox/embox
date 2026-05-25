@@ -10,7 +10,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <drivers/device.h>
 #include <drivers/serial/uart_dev.h>
 #include <drivers/ttys.h>
 #include <kernel/irq.h>

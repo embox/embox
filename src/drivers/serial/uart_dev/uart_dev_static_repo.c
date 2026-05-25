@@ -14,7 +14,6 @@
 #include <util/log.h>
 #include <lib/libds/array.h>
 
-#include <drivers/device.h>
 #include <drivers/char_dev.h>
 #include <drivers/serial/uart_dev.h>
 

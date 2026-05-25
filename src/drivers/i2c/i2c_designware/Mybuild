@@ -8,7 +8,6 @@ module i2c_designware {
 	source "i2c_designware.c"
 
 	depends embox.driver.i2c_core
-	@NoRuntime depends embox.device.pin_description
 }
 
 module i2c_designware_0 {
