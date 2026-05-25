@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <errno.h>
+#include <string.h>
 
 #include <bsp/stm32cube_hal.h>
 
@@ -17,15 +18,32 @@
 #define CLK_NAME_I2C      "CLK_I2C"
 #define CLK_NAME_TMR      "CLK_TMR"
 
-int stm32cube_rcc_tmr_en(int) {
+int stm32cube_rcc_tmr_en(int num) {
+  switch(num) {
+    case 1:
+      __HAL_RCC_TIM1_CLK_ENABLE();
+      return 0;
+    case 2:
+      __HAL_RCC_TIM2_CLK_ENABLE();
+      return 0;
+    case 3:
+      __HAL_RCC_TIM3_CLK_ENABLE();
+      return 0;
+    case 4:
+      __HAL_RCC_TIM4_CLK_ENABLE();
+      return 0;
+    default:
+      return -ENOTSUP;
+  }
+
+  return -ENOTSUP;
+}
+
+int stm32cube_rcc_gpio_en(int num) {
   return 0;
 }
 
-int stm32cube_rcc_gpio_en(int) {
-  return 0;
-}
-
-int stm32cube_rcc_uart_en(int) {
+int stm32cube_rcc_uart_en(int num) {
   return 0;
 }
 
