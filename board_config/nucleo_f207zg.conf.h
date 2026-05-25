@@ -287,5 +287,48 @@ struct eth_conf eths[] = {
 	},
 };
 
+struct pwm_conf pwms[] = {
+
+	[3] = {
+		.name = "PWM3",
+		.dev = {
+			.name = "PWM3",
+			.regs = {
+				REGMAP("BASE_ADDR", (TIM3_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT1",  GPIO_PORT_B, 1, GPIO_MODE_ALT | GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP, 2),
+
+			},
+			.clocks = {
+				VAL("TIM",  CLK_TIM3),
+				VAL("",  "CLK_TMR3"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+			},
+		},
+	},
+	[4] = {
+		.name = "PWM4",
+		.dev = {
+			.name = "PWM4",
+			.regs = {
+				REGMAP("BASE_ADDR", (TIM4_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT3",  GPIO_PORT_B, 8, GPIO_MODE_ALT | GPIO_MODE_OUT | GPIO_MODE_OUT_PUSH_PULL | GPIO_MODE_IN_PULL_UP, 2),
+			},
+			.clocks = {
+				VAL("TIM",  CLK_TIM4),
+				VAL("",  "CLK_TMR4"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0x0000FFFF),
+			},
+		},
+	},
+};
+
 EXPORT_CONFIG(CLK(clks), GPIO(gpios),
-				UART(uarts), LED(leds), SPI(spis), I2C(i2cs), ETH(eths))
+				UART(uarts), LED(leds), SPI(spis), I2C(i2cs), ETH(eths), PWM(pwms))
