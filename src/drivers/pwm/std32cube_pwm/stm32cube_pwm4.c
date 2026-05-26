@@ -18,21 +18,21 @@
 
 #include <framework/mod/options.h>
 
-#include "niiet_pwm_priv.h"
+#include "stm32cube_pwm_priv.h"
 
-#define PWM_DEV_ID                0
+#define PWM_DEV_ID                4
 #define PWM_DEV_PRIV_STRUCT_NAME  MACRO_CONCAT(pwm_dev_priv, PWM_DEV_ID)
 
 #define CONF_PWM                  MACRO_CONCAT(CONF_PWM,PWM_DEV_ID)
 
-#if defined CONF_PWM0_ENABLED
+#if defined CONF_PWM4_ENABLED
 
 #define PWM_BASE_ADDR        MACRO_CONCAT(CONF_PWM,_REGION_BASE_ADDR)
 #define PWM_CLK_NAME         MACRO_CONCAT(CONF_PWM,_CLK_ENABLE)
 #define PWM_CHANNEL_NR       MACRO_CONCAT(CONF_PWM,_CHANNEL)
 #define PWM_COMP_MASK        MACRO_CONCAT(CONF_PWM,_MISC_COMP_MASK)
 
-#if defined(CONF_PWM0_PIN_OUT0_PORT)
+#if defined(CONF_PWM4_PIN_OUT0_PORT)
 #define PWM_CHAN0_PORT       MACRO_CONCAT(CONF_PWM,_PIN_OUT0_PORT)
 #define PWM_CHAN0_PIN        MACRO_CONCAT(CONF_PWM,_PIN_OUT0_NR)
 #define PWM_CHAN0_FUNC       MACRO_CONCAT(CONF_PWM,_PIN_OUT0_AF)
@@ -44,7 +44,7 @@
 #define PWM_CHAN0_MASK_AVAIL (0 << 0)
 #endif
 
-#if defined(CONF_PWM0_PIN_OUT1_PORT)
+#if defined(CONF_PWM4_PIN_OUT1_PORT)
 #define PWM_CHAN1_PORT       MACRO_CONCAT(CONF_PWM,_PIN_OUT1_PORT)
 #define PWM_CHAN1_PIN        MACRO_CONCAT(CONF_PWM,_PIN_OUT1_NR)
 #define PWM_CHAN1_FUNC       MACRO_CONCAT(CONF_PWM,_PIN_OUT1_AF)
@@ -56,7 +56,7 @@
 #define PWM_CHAN1_MASK_AVAIL (0 << 1)
 #endif
 
-#if defined(CONF_PWM0_PIN_OUT2_PORT)
+#if defined(CONF_PWM4_PIN_OUT2_PORT)
 #define PWM_CHAN2_PORT       MACRO_CONCAT(CONF_PWM,_PIN_OUT2_PORT)
 #define PWM_CHAN2_PIN        MACRO_CONCAT(CONF_PWM,_PIN_OUT2_NR)
 #define PWM_CHAN2_FUNC       MACRO_CONCAT(CONF_PWM,_PIN_OUT2_AF)
@@ -68,7 +68,7 @@
 #define PWM_CHAN2_MASK_AVAIL (0 << 2)
 #endif
 
-#if defined(CONF_PWM0_PIN_OUT3_PORT)
+#if defined(CONF_PWM4_PIN_OUT3_PORT)
 #define PWM_CHAN3_PORT       MACRO_CONCAT(CONF_PWM,_PIN_OUT3_PORT)
 #define PWM_CHAN3_PIN        MACRO_CONCAT(CONF_PWM,_PIN_OUT3_NR)
 #define PWM_CHAN3_FUNC       MACRO_CONCAT(CONF_PWM,_PIN_OUT3_AF)
@@ -90,9 +90,9 @@
                 PWM_CHAN3_MASK_AVAIL \
             )
 
-extern struct pwm_ops niiet_pwm_ops;
+extern struct pwm_ops stm32cube_pwm_ops;
 
-static const struct pin_description pwm_pin_desc[NIIET_PWM_CHAN_MAX] = {
+static const struct pin_description pwm_pin_desc[STM_PWM_CHAN_MAX] = {
     {
         .pd_port = PWM_CHAN0_PORT,
         .pd_pin = PWM_CHAN0_PIN,
@@ -115,15 +115,15 @@ static const struct pin_description pwm_pin_desc[NIIET_PWM_CHAN_MAX] = {
     },
 };
 
-static struct niiet_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
+static struct stm32cube_pwm_priv PWM_DEV_PRIV_STRUCT_NAME = {
     .pin_desc  = &pwm_pin_desc[0],
     .base_addr = PWM_BASE_ADDR,
     .clk_name  = PWM_CLK_NAME(),
-    .clk_div   = OPTION_GET(NUMBER,clk_div),
+    .tim_freq  = OPTION_GET(NUMBER,tim_freq),
+    .idx       = PWM_DEV_ID,
     .comp_mask = PWM_COMP_MASK,
-    .idx       = PWM_DEV_ID
 };
 
-PWM_DEV_DEF(PWM_DEV_ID, &niiet_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
+PWM_DEV_DEF(PWM_DEV_ID, &stm32cube_pwm_ops, &PWM_DEV_PRIV_STRUCT_NAME,
                         &pwm_pin_desc[0], PWM_BASE_ADDR,
-                        PWM_AVAIL_MASK, NIIET_PWM_CHAN_MAX);
+                        PWM_AVAIL_MASK, STM_PWM_CHAN_MAX);

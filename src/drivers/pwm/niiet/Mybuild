@@ -1,26 +1,45 @@
 package embox.driver.pwm
 
 module niiet_pwm_drv {
+	option number vg1t_version = 0
+
 	source "niiet_pwm_drv.c"
 
 	depends embox.driver.pwm.pwm_dev
 }
 
 module niiet_pwm0 {
+	option number base_addr = 0
+	option number clk_div = 1
+
 	source "niiet_pwm0.c"
 
 	depends niiet_pwm_drv
 }
 
 module niiet_pwm1 {
+	option number base_addr = 0
+	option number clk_div = 1
+
 	source "niiet_pwm1.c"
 
 	depends niiet_pwm_drv
 }
 
 module niiet_pwm2 {
+	option number base_addr = 0
+	option number clk_div = 1
+
 	source "niiet_pwm2.c"
 
 	depends niiet_pwm_drv
 }
 
+module niiet_pwm32 {
+	option number base_addr = 0
+	option number clk_div = 1
+
+	source "niiet_pwm32.c"
+
+	depends niiet_pwm_drv
+}

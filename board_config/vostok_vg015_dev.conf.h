@@ -324,11 +324,16 @@ struct pwm_conf pwms[] = {
 				REGMAP("BASE_ADDR", (TMR0_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_C, 7, GPIO_MODE_ALT, 1),
+				PIN("OUT1", GPIO_PORT_C, 7, GPIO_MODE_ALT, 1),
+				PIN("OUT2", GPIO_PORT_C, 8, GPIO_MODE_ALT, 1),
+				PIN("OUT3", GPIO_PORT_C, 3, GPIO_MODE_ALT, 1),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR0"),
-			}
+			},
+			.misc = {
+				VAL("COMP_MASK",  0x0000FFFF),
+			},
 		},
 	},
 	[1] = {
@@ -340,11 +345,14 @@ struct pwm_conf pwms[] = {
 				REGMAP("BASE_ADDR", (TMR1_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_A, 8, GPIO_MODE_ALT, 2),
+				PIN("OUT2", GPIO_PORT_A, 8, GPIO_MODE_ALT, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR1"),
-			}
+			},
+			.misc = {
+				VAL("COMP_MASK",  0x0000FFFF),
+			},
 		},
 	},
 	[2] = {
@@ -356,11 +364,35 @@ struct pwm_conf pwms[] = {
 				REGMAP("BASE_ADDR", (TMR2_BASE), 0x100),
 			},
 			.pins = {
-				PIN("OUT", GPIO_PORT_A, 2, GPIO_MODE_ALT, 2),
+				PIN("OUT2", GPIO_PORT_A, 8, GPIO_MODE_ALT, 2),
 			},
 			.clocks = {
 				VAL("",  "CLK_TMR2"),
-			}
+			},
+			.misc = {
+				VAL("COMP_MASK",  0x0000FFFF),
+			},
+		},
+	},
+	[3] = {
+		.name = "PWM32",
+		.channel = VAL("", 2),
+		.dev = {
+			.name = "PWM32",
+			.regs = {
+				REGMAP("BASE_ADDR", (TMR32_BASE), 0x100),
+			},
+			.pins = {
+				PIN("OUT1", GPIO_PORT_C, 1, GPIO_MODE_ALT, 1),
+				PIN("OUT2", GPIO_PORT_C, 2, GPIO_MODE_ALT, 1),
+				PIN("OUT3", GPIO_PORT_C, 3, GPIO_MODE_ALT, 1),
+			},
+			.clocks = {
+				VAL("",  "CLK_TMR32"),
+			},
+			.misc = {
+				VAL("COMP_MASK",  0xFFFFFFFF),
+			},
 		},
 	},
 };

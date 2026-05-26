@@ -5,6 +5,20 @@
  * @author Anton Bondarev
  */
 
+#include <errno.h>
+#include <stdint.h>
+#include <string.h>
+
+#include <hal/reg.h>
+
+#include <config/board_config.h>
+
+/* FROM board_config.h*/
+
+#define MOD_NAME_TMR      "TMR"
+
+#define SIU_REGS          ((volatile struct siu_regs *) CONF_SIU_REGION_BASE)
+
 struct siu_regs {
 	volatile const uint32_t CHIPID_reg; /*!< Chip identifier */
 
@@ -89,3 +103,33 @@ struct siu_regs {
 
 	volatile uint32_t NODE4CTRL; /*!< Node 4 control register */
 };
+
+#if 0
+// FIXME USE separate SIU module instead 
+#define SIU_BASE_ADDR   0x50003000UL
+
+#define SIU_TMREN_REG   (SIU_BASE_ADDR + 0x54)
+
+int sys_ctrl_enable_tmr(int num)  {
+	// FIXME USE separate SIU module instead 
+	REG32_STORE(SIU_TMREN_REG, (1 << num)); /* TMR0*/
+	return 0;
+}
+#else
+int sys_ctrl_enable_tmr(int num) {
+	REG32_STORE(&SIU_REGS->TMREN, (1 << num));
+	return 0;
+}
+#endif
+
+int sys_ctrl_enable_dev(const char *name) {
+    int num;
+
+    if (0 == strncmp(name, MOD_NAME_TMR, sizeof(MOD_NAME_TMR) - 1)) {
+        num = name[sizeof(MOD_NAME_TMR) - 1]  - '0';
+        sys_ctrl_enable_tmr(num);
+        return 0;
+    }
+
+    return -ENOSUPP;
+}

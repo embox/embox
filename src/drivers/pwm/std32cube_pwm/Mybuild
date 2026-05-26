@@ -1,0 +1,72 @@
+package embox.driver.pwm
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_pwm_drv {
+	option string log_level = "LOG_ERR"
+
+	source "stm32cube_pwm_drv.c"
+
+	depends embox.driver.pwm.pwm_dev
+	@NoRuntime depends embox.driver.clk.stm32cube_rcc
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_pwm0 {
+	option boolean use_bconf=false
+	option number clk_div = 0
+	option number tim_freq = 1000000
+
+	source "stm32cube_pwm0.c"
+
+	depends stm32cube_pwm_drv
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_pwm1 {
+	option boolean use_bconf=false
+	option number clk_div = 0
+	option number tim_freq = 1000000
+
+	source "stm32cube_pwm1.c"
+
+	depends stm32cube_pwm_drv
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_pwm2 {
+	option boolean use_bconf=false
+	option number clk_div = 0
+	option number tim_freq = 1000000
+
+	source "stm32cube_pwm2.c"
+
+	depends stm32cube_pwm_drv
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_pwm3 {
+	option boolean use_bconf=false
+	option number clk_div = 0
+	option number tim_freq = 1000000
+
+	source "stm32cube_pwm3.c"
+
+	@NoRuntime depends stm32cube_pwm_drv
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_pwm4 {
+	option boolean use_bconf=false
+	option number clk_div = 0
+	option number tim_freq = 1000000
+
+	source "stm32cube_pwm4.c"
+
+	@NoRuntime depends stm32cube_pwm_drv
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
