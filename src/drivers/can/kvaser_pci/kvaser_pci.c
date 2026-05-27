@@ -13,12 +13,13 @@
 
 #include <asm/io.h>
 #include <drivers/can/sja1000.h>
+#include <drivers/can_dev.h>
 #include <drivers/pci/pci.h>
 #include <drivers/pci/pci_driver.h>
 #include <framework/mod/options.h>
 #include <kernel/irq.h>
-#include <net/can.h>
 
+#define CAN_DEV_ID         OPTION_GET(NUMBER, dev_id)
 #define SINGLE_FILTER_MODE OPTION_GET(BOOLEAN, single_filter)
 
 #define KVASER_VENDOR_ID 0x10e8
@@ -30,12 +31,10 @@
 #define S5920_INTCSR_AIS (1 << 22) /* Add-On Interrupt pin Status */
 #define S5920_INTCSR_IA  (1 << 23) /* Interrupt Asserted */
 
-static void kvaser_set_filter(struct can_controller *can, uint32_t code,
-    uint32_t mask) {
-	uintptr_t sja_base;
-	int i;
+static uintptr_t sja_base;
 
-	sja_base = (uintptr_t)can->priv;
+static void kvaser_set_filter(uint32_t code, uint32_t mask) {
+	int i;
 
 	for (i = 0; i < 4; i++) {
 		sja_reg_store(sja_base, SJA_ACR(i), ((code >> ((3 - i) * 8)) & 0xff));
@@ -43,11 +42,7 @@ static void kvaser_set_filter(struct can_controller *can, uint32_t code,
 	}
 }
 
-int kvaser_start(struct can_controller *can) {
-	uintptr_t sja_base;
-
-	sja_base = (uintptr_t)can->priv;
-
+int kvaser_open(struct can_dev *dev) {
 	/* Enable reset mode */
 	sja_reg_store(sja_base, SJA_MOD, SJA_MOD_RM);
 
@@ -65,7 +60,7 @@ int kvaser_start(struct can_controller *can) {
 	sja_reg_store(sja_base, SJA_FRM, 0);
 
 	/* Set filter to receive all CAN frames */
-	kvaser_set_filter(can, 0, 0xffffffff);
+	kvaser_set_filter(0, 0xffffffff);
 
 	/* Enable operating mode */
 #if SINGLE_FILTER_MODE
@@ -74,54 +69,41 @@ int kvaser_start(struct can_controller *can) {
 	sja_reg_store(sja_base, SJA_MOD, 0);
 #endif
 
-	/* Enable RX interrupts */
-	sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
-
 	/* Release RX buffer */
 	sja_reg_store(sja_base, SJA_CMR, SJA_CMR_RRB);
 
 	return 0;
 }
 
-int kvaser_stop(struct can_controller *can) {
-	uintptr_t sja_base;
-
-	sja_base = (uintptr_t)can->priv;
-
-	/* Disable RX interrupts */
-	sja_reg_clear(sja_base, SJA_IER, SJA_IER_RIE);
-
+void kvaser_close(struct can_dev *dev) {
 	/* Enable sleep mode */
 	sja_reg_orin(sja_base, SJA_MOD, SJA_MOD_SM);
-
-	return 0;
 }
 
-void kvaser_eoi(struct can_controller *can) {
-	uintptr_t sja_base;
-
-	sja_base = (uintptr_t)can->priv;
-
+void kvaser_eoi(struct can_dev *dev) {
 	/* Clear pending interrupts */
 	sja_reg_orin(sja_base, SJA_IR, 0);
 }
 
-int kvaser_hasrx(struct can_controller *can) {
-	uintptr_t sja_base;
+void kvaser_irq_en(struct can_dev *dev) {
+	/* Enable RX interrupts */
+	sja_reg_orin(sja_base, SJA_IER, SJA_IER_RIE);
+}
 
-	sja_base = (uintptr_t)can->priv;
+void kvaser_irq_dis(struct can_dev *dev) {
+	/* Disable RX interrupts */
+	sja_reg_clear(sja_base, SJA_IER, SJA_IER_RIE);
+}
 
+int kvaser_hasrx(struct can_dev *dev) {
 	/* Check if RX buffer is not empty */
 	return (sja_reg_load(sja_base, SJA_SR) & SJA_SR_RBS);
 }
 
-int kvaser_send(struct can_controller *can, struct can_frame *frame) {
-	uintptr_t sja_base;
+int kvaser_send(struct can_dev *dev, can_frame_t *frame) {
 	unsigned data_base;
 	uint8_t frame_info;
 	int i;
-
-	sja_base = (uintptr_t)can->priv;
 
 	/* Check if TX buffer is ready */
 	for (i = 0; !(sja_reg_load(sja_base, SJA_SR) & SJA_SR_TBS); i++) {
@@ -130,7 +112,7 @@ int kvaser_send(struct can_controller *can, struct can_frame *frame) {
 		}
 	}
 
-	frame_info = frame->can_dlc;
+	frame_info = frame->len;
 
 	if (frame->can_id & CAN_RTR_FLAG) {
 		frame_info |= SJA_FRM_RTR;
@@ -155,7 +137,7 @@ int kvaser_send(struct can_controller *can, struct can_frame *frame) {
 
 	sja_reg_store(sja_base, SJA_FRM, frame_info);
 
-	for (i = 0; i < frame->can_dlc; i++) {
+	for (i = 0; i < frame->len; i++) {
 		sja_reg_store(sja_base, data_base + i, frame->data[i]);
 	}
 
@@ -164,19 +146,16 @@ int kvaser_send(struct can_controller *can, struct can_frame *frame) {
 	return 0;
 }
 
-int kvaser_receive(struct can_controller *can, struct can_frame *frame) {
-	uintptr_t sja_base;
+int kvaser_receive(struct can_dev *dev, can_frame_t *frame) {
 	unsigned data_base;
 	uint8_t frame_info;
 	int i;
 
-	sja_base = (uintptr_t)can->priv;
-
 	frame_info = sja_reg_load(sja_base, SJA_FRM);
 
-	frame->can_dlc = frame_info & SJA_FRM_DLC;
-	if (frame->can_dlc > 8) {
-		frame->can_dlc = 8;
+	frame->len = frame_info & SJA_FRM_DLC;
+	if (frame->len > 8) {
+		frame->len = 8;
 	}
 
 	frame->can_id = 0;
@@ -201,7 +180,7 @@ int kvaser_receive(struct can_controller *can, struct can_frame *frame) {
 		data_base = SJA_SFDAT(0);
 	}
 
-	for (i = 0; i < frame->can_dlc; i++) {
+	for (i = 0; i < frame->len; i++) {
 		frame->data[i] = sja_reg_load(sja_base, data_base + i);
 	}
 
@@ -212,26 +191,31 @@ int kvaser_receive(struct can_controller *can, struct can_frame *frame) {
 }
 
 static const struct can_ops kvaser_can_ops = {
-    .start = kvaser_start,
-    .stop = kvaser_stop,
+    .open = kvaser_open,
+    .close = kvaser_close,
     .eoi = kvaser_eoi,
+    .irq_en = kvaser_irq_en,
+    .irq_dis = kvaser_irq_dis,
     .hasrx = kvaser_hasrx,
     .send = kvaser_send,
     .receive = kvaser_receive,
 };
 
-static struct can_controller kvaser_can_controller;
-
-CAN_CONTROLLER_REGISTER(kvaser_can_controller);
+CAN_DEVICE_DEF(kvaser_can_dev, &kvaser_can_ops, NULL, CAN_DEV_ID);
 
 static int kvaser_pci_init(struct pci_slot_dev *pci_dev) {
 	uintptr_t s5920_base;
-
-	kvaser_can_controller.ops = &kvaser_can_ops;
-	kvaser_can_controller.irq = pci_dev->irq;
-	kvaser_can_controller.priv = (void *)(pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK);
+	int irq;
+	int err;
 
 	s5920_base = pci_dev->bar[0] & PCI_BASE_ADDR_IO_MASK;
+	sja_base = pci_dev->bar[1] & PCI_BASE_ADDR_IO_MASK;
+	irq = pci_dev->irq;
+
+	err = irq_attach(irq, can_dev_irq_handler, IF_SHARESUP, &kvaser_can_dev, NULL);
+	if (err) {
+		return err;
+	}
 
 	/* Enable card interrupts */
 	out32(in32(s5920_base + S5920_INTCSR) | S5920_INTCSR_AIE,

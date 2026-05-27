@@ -9,6 +9,7 @@
 
 #include <stddef.h>
 #include <string.h>
+
 #include <lib/libds/ring.h>
 #include <lib/libds/ring_buff.h>
 
@@ -20,25 +21,8 @@ int ring_buff_get_space(struct ring_buff *buf) {
 	return ring_room_size(&buf->ring, buf->capacity);
 }
 
-int ring_buff_alloc(struct ring_buff *buf, int cnt, void **ret) {
-	struct ring *ring = &buf->ring;
-	void *write_to = (char *)buf->storage + (ring->head * buf->elem_size);
-	int can_write;
-
-	if (ring_full(ring, buf->capacity)) {
-		return 0;
-	}
-
-	*ret = write_to;
-
-	can_write = ring_can_write(&buf->ring, buf->capacity, cnt);
-	memset(write_to, 0, buf->elem_size * can_write);
-
-	return ring_just_write(ring, buf->capacity, can_write);
-}
-
-static int __ring_buff_enqueue(struct ring_buff *buf,
-	void *into_buf, void *from_buf, int cnt) {
+static int __ring_buff_enqueue(struct ring_buff *buf, void *into_buf,
+    void *from_buf, int cnt) {
 	struct ring *ring = &buf->ring;
 	int can_write;
 
@@ -67,14 +51,14 @@ int ring_buff_enqueue(struct ring_buff *buf, void *from_buf, int cnt) {
 	rest = cnt - written;
 	if (rest) {
 		written += __ring_buff_enqueue(buf, buf->storage,
-			(char *)from_buf + buf->elem_size * written, rest);
+		    (char *)from_buf + buf->elem_size * written, rest);
 	}
 
 	return written;
 }
 
-static int __ring_buff_dequeue(struct ring_buff *buf,
-	void *into_buf, void *from_buf, int cnt) {
+static int __ring_buff_dequeue(struct ring_buff *buf, void *into_buf,
+    void *from_buf, int cnt) {
 	struct ring *ring = &buf->ring;
 	int can_read;
 
@@ -102,14 +86,15 @@ int ring_buff_dequeue(struct ring_buff *buf, void *into_buf, int cnt) {
 
 	rest = cnt - read;
 	if (rest) {
-		read += __ring_buff_dequeue(buf, (char *)into_buf + buf->elem_size * read,
-			buf->storage, rest);
+		read += __ring_buff_dequeue(buf,
+		    (char *)into_buf + buf->elem_size * read, buf->storage, rest);
 	}
 
 	return read;
 }
 
-int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count, void *storage) {
+int ring_buff_init(struct ring_buff *buf, size_t elem_size, int count,
+    void *storage) {
 	ring_init(&buf->ring);
 	buf->capacity = count;
 	buf->storage = storage;

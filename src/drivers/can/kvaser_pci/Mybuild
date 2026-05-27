@@ -1,11 +1,12 @@
 package embox.driver.can
 
 module kvaser_pci {
+	option number dev_id=0
 	option boolean single_filter=false
 
 	source "kvaser_pci.c"
 
 	depends embox.driver.pci
-	@NoRuntime depends embox.net.can
+	@NoRuntime depends embox.device.can_dev
 	@NoRuntime depends embox.driver.can.sja1000
 }

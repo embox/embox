@@ -26,11 +26,11 @@ static int socketcan_stop(struct net_device *dev) {
 }
 
 static int socketcan_send(struct net_device *dev, struct sk_buff *skb) {
-	struct can_controller *can;
+	struct can_dev *can;
 	struct can_frame *frame;
 	int err;
 
-	can = (struct can_controller *)dev->base_addr;
+	can = (struct can_dev *)dev->base_addr;
 	frame = (struct can_frame *)skb_data_cast_in(skb->data);
 
 	err = can->ops->send(can, frame);
@@ -49,14 +49,14 @@ static const struct net_driver socketcan_ops = {
 extern int canif_rx(void *data);
 
 static irq_return_t socketcan_irq_handler(unsigned int irq_num, void *dev_id) {
-	struct can_controller *can;
+	struct can_dev *can;
 	struct net_device *dev;
 	struct can_frame *frame;
 	struct sk_buff *skb;
 	int err;
 
 	dev = (struct net_device *)dev_id;
-	can = (struct can_controller *)dev->base_addr;
+	can = (struct can_dev *)dev->base_addr;
 
 	while (can->ops->hasrx(can)) {
 		skb = skb_alloc(sizeof(struct can_frame));
@@ -80,10 +80,10 @@ static irq_return_t socketcan_irq_handler(unsigned int irq_num, void *dev_id) {
 
 EMBOX_UNIT_INIT(socketcan_init);
 
-ARRAY_SPREAD_DEF(struct can_controller *const, __can_socketcan_registry);
+ARRAY_SPREAD_DEF(struct can_dev *const, __can_socketcan_registry);
 
 static int socketcan_init(void) {
-	struct can_controller *can;
+	struct can_dev *can;
 	struct net_device *netdev;
 	int err;
 
