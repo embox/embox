@@ -330,5 +330,31 @@ struct pwm_conf pwms[] = {
 	},
 };
 
+struct can_conf cans[] = {
+	[1] = {
+		.status = ENABLED,
+		.name = "CAN1",
+		.dev = {
+			.name = "CAN1",
+			.regs = {
+				REGMAP("BASE", (CAN1_BASE), 0x100),
+			},
+			.irqs = {
+				VAL("", CAN1_RX0_IRQn),
+			},
+			.pins = {
+				PIN("CAN_L", GPIO_PORT_D, 0, GPIO_MODE_ALT | GPIO_MODE_IN_PULL_UP, 9),
+				PIN("CAN_H", GPIO_PORT_D, 1, GPIO_MODE_ALT | GPIO_MODE_IN_PULL_UP, 9),
+
+			},
+			.clocks = {
+				//VAL("CAN",  STM32_CLK_ENABLE(CAN1)),
+				VAL("", "CLK_CAN1"),
+			},
+		},
+	},
+};
+
 EXPORT_CONFIG(CLK(clks), GPIO(gpios),
-				UART(uarts), LED(leds), SPI(spis), I2C(i2cs), ETH(eths), PWM(pwms))
+				UART(uarts), LED(leds), SPI(spis), I2C(i2cs), ETH(eths),
+				PWM(pwms), CAN(cans))
