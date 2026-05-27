@@ -51,6 +51,7 @@ static module libds {
 	@IncludeExport(path="lib/libds", target_name="ring_buff.h")
 	source "ring_buff/ring_buff.h"
 	source "ring_buff/ring_buff.c"
+	source "ring_buff/ring_buff_alloc.c"
 
 	@IncludeExport(path="lib/libds", target_name="slist.h")
 	source "slist/slist.h"
