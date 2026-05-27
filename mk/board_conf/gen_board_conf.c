@@ -226,6 +226,8 @@ int main() {
 	const struct lcd_conf *lcd;
 	struct conf_item *eth_conf = &board_config[ETH_IDX];
 	const struct eth_conf *eth;
+	struct conf_item *can_conf = &board_config[CAN_IDX];
+	const struct can_conf *can;
 
 	config();
 
@@ -371,6 +373,19 @@ int main() {
 		}
 
 		gen_device_conf(&eth->dev);
+
+		printf("\n");
+	}
+
+	/* CAN BUS */
+	for (i = 0; i < can_conf->array_size; i++) {
+		can = &((const struct can_conf *)can_conf->ptr)[i];
+
+		if (can->status != ENABLED) {
+			continue;
+		}
+
+		gen_device_conf(&can->dev);
 
 		printf("\n");
 	}

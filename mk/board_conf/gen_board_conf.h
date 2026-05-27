@@ -104,6 +104,13 @@ struct eth_conf {
 //	int media_type;
 };
 
+struct can_conf {
+	int status;
+	const char *name;
+	struct device_conf dev;
+};
+
+
 struct conf_item {
 	void *ptr;
 	unsigned array_size;
@@ -148,7 +155,8 @@ struct lcd_conf {
 #define DMA_IDX     9
 #define LCD_IDX     10
 #define ETH_IDX     11
-#define MAX_IDX     12
+#define CAN_IDX     12
+#define MAX_IDX     13
 
 
 #define EXPORT_CONFIG(...) \
@@ -222,12 +230,17 @@ struct lcd_conf {
 		ARRAY_SIZE(lcds), \
 	}
 
-#define ETH(eth) \
+#define ETH(eths) \
 	[ETH_IDX] = { \
 		(void *) &(eths)[0], \
 		ARRAY_SIZE(eths), \
 	}
 
+#define CAN(cans) \
+	[CAN_IDX] = { \
+		(void *) &(cans)[0], \
+		ARRAY_SIZE(cans), \
+	}
 
 #define CONFIG   void config()
 
