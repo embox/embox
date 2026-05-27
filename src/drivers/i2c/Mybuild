@@ -12,5 +12,8 @@ module i2c_core {
 	@IncludeExport(path="drivers/i2c")
 	source "i2c_dev.h"
 
+	@IncludeExport(path="drivers/i2c")
+	source "i2c_priv.h"
+
 	source "i2c_bus.c"
 }

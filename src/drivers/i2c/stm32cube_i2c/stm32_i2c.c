@@ -14,7 +14,7 @@
 #include <kernel/irq.h>
 #include <util/log.h>
 
-#include "../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "stm32_i2c.h"
 
 #define I2C_XMIT_TIMEOUT 1000

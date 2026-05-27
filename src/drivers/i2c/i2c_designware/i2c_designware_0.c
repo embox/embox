@@ -12,7 +12,7 @@
 #include <drivers/common/memory.h>
 #include <util/log.h>
 
-#include "../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "i2c_designware.h"
 
 #define I2C_DW_BASE    OPTION_GET(NUMBER, base_addr)

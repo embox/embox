@@ -6,7 +6,7 @@
 #include <kernel/irq.h>
 #include <kernel/sched.h>
 
-#include "../../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "niiet_i2c.h"
 
 #define IMX_I2C_ID 0

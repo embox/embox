@@ -17,7 +17,7 @@
 #include <kernel/printk.h>
 #include <util/log.h>
 
-#include "../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "i2c_designware.h"
 
 #include <framework/mod/options.h>
