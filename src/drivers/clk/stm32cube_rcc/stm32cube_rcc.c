@@ -17,6 +17,8 @@
 #define CLK_NAME_SPI      "CLK_SPI"
 #define CLK_NAME_I2C      "CLK_I2C"
 #define CLK_NAME_TMR      "CLK_TMR"
+#define CLK_NAME_CAN      "CLK_CAN"
+#define CLK_NAME_ETH      "CLK_ETH"
 
 int stm32cube_rcc_tmr_en(int num) {
   switch(num) {
@@ -39,11 +41,39 @@ int stm32cube_rcc_tmr_en(int num) {
   return -ENOTSUP;
 }
 
+int stm32cube_rcc_can_en(int num) {
+  switch(num) {
+    case 1:
+      __HAL_RCC_CAN1_CLK_ENABLE();
+      return 0;
+    case 2:
+      __HAL_RCC_CAN2_CLK_ENABLE();
+      return 0;
+    default:
+      return -ENOTSUP;
+  }
+
+  return -ENOTSUP;
+}
+
 int stm32cube_rcc_gpio_en(int num) {
   return 0;
 }
 
 int stm32cube_rcc_uart_en(int num) {
+  return 0;
+}
+
+int stm32cube_rcc_eth_en(int num) {
+    switch(num) {
+    case 0:
+      __HAL_RCC_ETH_CLK_ENABLE();
+      return 0;
+    default:
+      return -ENOTSUP;
+  }
+
+  return -ENOTSUP;
   return 0;
 }
 
@@ -63,6 +93,15 @@ int clk_enable(char *clk_name) {
     if (0 == strncmp(clk_name, CLK_NAME_TMR, sizeof(CLK_NAME_TMR) - 1)) {
         num = clk_name[sizeof(CLK_NAME_TMR) - 1]  - '0';
         stm32cube_rcc_tmr_en(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_CAN, sizeof(CLK_NAME_CAN) - 1)) {
+        num = clk_name[sizeof(CLK_NAME_CAN) - 1]  - '0';
+        stm32cube_rcc_can_en(num);
+        return 0;
+    }
+    if (0 == strncmp(clk_name, CLK_NAME_ETH, sizeof(CLK_NAME_ETH) - 1)) {
+        stm32cube_rcc_eth_en(0);
         return 0;
     }
 

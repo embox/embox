@@ -14,7 +14,7 @@
 #include <hal/reg.h>
 #include <util/log.h>
 
-#include "../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "imx_i2c.h"
 
 #define I2C_PIN_SEL  OPTION_GET(NUMBER, i2c_pins_select)

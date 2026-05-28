@@ -13,7 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "../../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 
 
 #define I2C_SYSTEM_FREQ    50000000

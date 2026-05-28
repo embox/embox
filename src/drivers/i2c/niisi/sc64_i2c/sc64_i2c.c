@@ -14,7 +14,7 @@
 
 #include <hal/reg.h>
 
-#include "../../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "sc64_i2c.h"
 
 struct sc64_i2c_regs {

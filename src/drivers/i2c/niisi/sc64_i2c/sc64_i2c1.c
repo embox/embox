@@ -8,7 +8,7 @@
 
 #include <drivers/common/memory.h>
 
-#include "../../i2c_priv.h"
+#include <drivers/i2c/i2c_priv.h>
 #include "sc64_i2c.h"
 
 #define BASE_ADDR  OPTION_GET(NUMBER, base_addr)
