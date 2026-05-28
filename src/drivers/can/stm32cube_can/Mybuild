@@ -1,0 +1,20 @@
+package embox.driver.can
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_can_drv {
+
+	source "stm32cube_can_drv.c"
+
+	@NoRuntime depends embox.device.can_dev
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
+
+@BuildDepends(third_party.bsp.st_bsp_api)
+module stm32cube_can1 {
+	option number base_addr = 0x40006400
+
+	source "stm32cube_can1.c"
+
+	@NoRuntime depends stm32cube_can_drv
+	@NoRuntime depends third_party.bsp.st_bsp_api
+}
